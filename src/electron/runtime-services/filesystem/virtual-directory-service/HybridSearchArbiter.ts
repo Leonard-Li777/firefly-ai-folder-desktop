@@ -47,8 +47,8 @@ export const HYBRID_SEARCH_WEIGHTS = {
 } as const
 /** 单源候选池大小（FTS / 向量 / FS 各自的上限，也是融合池的上限） */
 export const HYBRID_SEARCH_POOL_SIZE = 200
-/** BM25 完整 9 列列权（对齐 files_fts 架构：name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags） */
-export const HYBRID_BM25_COLUMN_WEIGHTS = [8.0, 6.0, 4.0, 3.0, 5.0, 4.0, 3.0, 4.0, 5.0] as const
+/** BM25 完整 10 列列权（第 0 列为 file_fingerprint UNINDEXED 赋 0.0，随后 9 列对齐 files_fts 架构：name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags） */
+export const HYBRID_BM25_COLUMN_WEIGHTS = [0.0, 8.0, 6.0, 4.0, 3.0, 5.0, 4.0, 3.0, 4.0, 5.0] as const
 
 /** 列权名字典（支持多模式/历史桩表动态自适应） */
 export const DEFAULT_COLUMN_WEIGHT_MAP: Record<string, number> = {
@@ -273,8 +273,10 @@ export function computeNameBoost(
   if (candidates.length === 0) return 0
 
   // 1. 全串完全包含 -> 1.0 (最高等级强提升)
+  // 支持带空格查询对紧凑文件名的完全匹配（如 "英语 学习" -> "英语学习.pdf"）
+  const compactQ = q.replace(/\s+/g, '')
   for (const cand of candidates) {
-    if (cand.includes(q)) return 1
+    if (cand.includes(q) || (compactQ.length >= 2 && cand.includes(compactQ))) return 1
   }
 
   // 2. 严格 token 抽取：过滤单字虚词；仅允许 >= 2 字符的有效实体词，或在全查询本身仅为单字符时的特例
@@ -294,8 +296,9 @@ export function computeNameBoost(
       if (cand.includes(t.toLowerCase())) hitTokens += 1
     }
     const ratio = hitTokens / effectiveTokens.length
-    // 部分匹配平滑阻尼，封顶 0.35，避免弱名字匹配压制高分向量与正文
-    const score = ratio * 0.35
+    // 部分匹配平滑阻尼，上限 0.035（加权后为 0.9 * 0.035 = 0.0315），
+    // 确保与高质量向量 Top 1（0.0328）同级良性竞争，绝不暴力碾压纯多模态语义召回
+    const score = ratio * 0.035
     if (score > best) best = score
   }
   return Math.round(best * 1000) / 1000
@@ -666,16 +669,17 @@ export class HybridSearchArbiter {
           }
         }
 
+        const escapedId = `%${id.replace(/([%_\\])/g, '\\$1')}%`
         const nameRows = this.db
           .prepare(`
             SELECT wf.file_fingerprint AS file_fingerprint
             FROM workspace_files wf
             LEFT JOIN files f ON f.file_fingerprint = wf.file_fingerprint
-            WHERE (wf.name LIKE ? OR f.smart_name LIKE ?)
+            WHERE (wf.name LIKE ? ESCAPE '\\' OR f.smart_name LIKE ? ESCAPE '\\')
               ${extraWhere}
             LIMIT ?
           `)
-          .all(`%${id}%`, `%${id}%`, ...queryParams, poolSize) as Array<{ file_fingerprint: string }>
+          .all(escapedId, escapedId, ...queryParams, poolSize) as Array<{ file_fingerprint: string }>
         for (const r of nameRows) {
           if (!seen.has(r.file_fingerprint)) {
             seen.add(r.file_fingerprint)
@@ -720,7 +724,11 @@ export class HybridSearchArbiter {
         try {
           const safeQuery = sanitizeFtsQuery(trimmed)
           if (safeQuery) {
-            const weights = indexedCols.map(c => DEFAULT_COLUMN_WEIGHT_MAP[c] ?? 1.0)
+            // FTS5 bm25 严格按虚拟表物理声明列顺序（从 0 开始）赋值，包含 UNINDEXED 列
+            // 第 0 列 file_fingerprint UNINDEXED 必须赋予 0.0 占位，避免后续列权向左整体错位！
+            const weights = ftsCols.map(c =>
+              c.name === 'file_fingerprint' ? 0.0 : (DEFAULT_COLUMN_WEIGHT_MAP[c.name] ?? 1.0)
+            )
             rows = this.db
               .prepare(`
                 SELECT f.file_fingerprint AS file_fingerprint
@@ -734,13 +742,16 @@ export class HybridSearchArbiter {
               `)
               .all(safeQuery, ...queryParams, poolSize) as Array<{ file_fingerprint: string }>
           }
-        } catch {
-          // MATCH 语法失败（如特殊字符引起）平滑进入 LIKE 兜底
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err)
+          logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchArbiter] FTS MATCH 异常，降级进入多列 LIKE 召回: ', msg)
         }
       }
 
       // 2. 若 MATCH 未能召回任何候选（短词 <3 字符、空格分隔多词或未命中），执行多列 LIKE 安全降级召回
       if (rows.length === 0 && tokens.length > 0) {
+        // 保守防 DoS 截断：最多取前 8 个有效词
+        const safeTokens = tokens.slice(0, 8)
         const targetSearchCols = [
           'name',
           'smart_name',
@@ -756,7 +767,7 @@ export class HybridSearchArbiter {
         if (targetSearchCols.length > 0) {
           const likeConditions: string[] = []
           const likeParams: any[] = []
-          for (const token of tokens) {
+          for (const token of safeTokens) {
             const colLikes = targetSearchCols.map(c => `files_fts.${c} LIKE ? ESCAPE '\\'`).join(' OR ')
             likeConditions.push(`(${colLikes})`)
             const p = `%${token.replace(/([%_\\])/g, '\\$1')}%`
@@ -766,6 +777,7 @@ export class HybridSearchArbiter {
           }
 
           const exactNameParam = `%${trimmed.replace(/([%_\\])/g, '\\$1')}%`
+          // GROUP BY f.file_fingerprint 防止多工作区/多路径文件重复占用 LIMIT 并干扰 RRF rank
           const fallbackSql = `
             SELECT f.file_fingerprint AS file_fingerprint
             FROM files_fts
@@ -773,19 +785,23 @@ export class HybridSearchArbiter {
             JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint
             WHERE ${likeConditions.join(' AND ')}
               ${extraWhere}
+            GROUP BY f.file_fingerprint
             ORDER BY
-              CASE
-                WHEN wf.name LIKE ? ESCAPE '\\' THEN 0
-                WHEN files_fts.smart_name LIKE ? ESCAPE '\\' THEN 1
-                ${colSet.has('tags') ? "WHEN files_fts.tags LIKE ? ESCAPE '\\' THEN 2" : ''}
-                WHEN files_fts.description LIKE ? ESCAPE '\\' THEN 3
-                ELSE 4
-              END ASC
+              MIN(
+                CASE
+                  WHEN wf.name LIKE ? ESCAPE '\\' THEN 0
+                  ${colSet.has('smart_name') ? "WHEN files_fts.smart_name LIKE ? ESCAPE '\\' THEN 1" : ''}
+                  ${colSet.has('tags') ? "WHEN files_fts.tags LIKE ? ESCAPE '\\' THEN 2" : ''}
+                  ${colSet.has('description') ? "WHEN files_fts.description LIKE ? ESCAPE '\\' THEN 3" : ''}
+                  ELSE 4
+                END
+              ) ASC
             LIMIT ?
           `
-          const orderParams = [exactNameParam, exactNameParam]
+          const orderParams = [exactNameParam]
+          if (colSet.has('smart_name')) orderParams.push(exactNameParam)
           if (colSet.has('tags')) orderParams.push(exactNameParam)
-          orderParams.push(exactNameParam)
+          if (colSet.has('description')) orderParams.push(exactNameParam)
 
           rows = this.db.prepare(fallbackSql).all(
             ...likeParams,
