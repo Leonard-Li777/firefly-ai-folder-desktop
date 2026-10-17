@@ -1,31 +1,11 @@
 {
   "schema": 1,
-  "generatedAt": "2026-10-16T01:26:00.153Z",
+  "generatedAt": "2026-10-17T11:23:29.602Z",
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources"
   },
   "resources": {
-    "fastfetch": {
-      "version": "2.62.0",
-      "source": "shared",
-      "asset": {
-        "name": "fastfetch-2.62.0-win32-x64.zip",
-        "sha256": "3381c3b208f9495e7c2954784e4340833e48bfbc1e448618c87d779cc7457378",
-        "size": 2908282,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/fastfetch-2.62.0-win32-x64.zip"
-      }
-    },
-    "llama-model-download": {
-      "version": "1.0.0",
-      "source": "shared",
-      "asset": {
-        "name": "llama-model-download-1.0.0-win32-x64.zip",
-        "sha256": "50966cc8f346240d20897cee219ec51bdafb6bcf2c2f11ce50b3f7e8dfed9ec0",
-        "size": 782485,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/llama-model-download-1.0.0-win32-x64.zip"
-      }
-    },
     "ffmpeg": {
       "version": "master-20260827",
       "source": "shared",
@@ -141,8 +121,8 @@
       "source": "shared",
       "asset": {
         "name": "chinese-clip-int8.zip",
-        "sha256": "4c7f511cc465cd240a9d79d28f40803acb3709a81c08907eba83cea5cad54525",
-        "size": 69238051,
+        "sha256": "bb44f8cd6dbdf8139c9f0a5ea223f5051ddafdc2638d4ae74942e3cd5941b86f",
+        "size": 69298990,
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/chinese-clip-int8.zip"
       }
     },
