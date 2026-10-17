@@ -83,14 +83,21 @@ export class QueueDao {
     task_type?: AnalysisTaskType
     status: string
     progress?: number
+    force_reanalyze?: boolean
+    meta?: Record<string, any>
   }): number {
     const itemType = item.item_type ?? 'file'
     const itemId = item.item_id ?? null
     const taskType: AnalysisTaskType = item.task_type ?? 'analysis'
+    const metaObj: Record<string, any> = { ...(item.meta || {}) }
+    if (item.force_reanalyze) {
+      metaObj.force_reanalyze = true
+    }
+    const metaJson = JSON.stringify(metaObj)
 
     const result = this.db
       .prepare(
-        `INSERT INTO analysis_queue (item_id, item_type, task_type, status, progress, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO analysis_queue (item_id, item_type, task_type, status, progress, created_at, updated_at, meta) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .run(
         itemId,
@@ -99,7 +106,8 @@ export class QueueDao {
         item.status,
         item.progress ?? 0,
         new Date().toISOString(),
-        new Date().toISOString()
+        new Date().toISOString(),
+        metaJson
       )
 
     // 确保返回普通 number 类型，BigInt 无法被 Electron IPC 序列化

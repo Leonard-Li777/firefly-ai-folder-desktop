@@ -12,7 +12,7 @@ import {
   FileProcessorService
 } from '@firefly/core-engine'
 import type { EnqueueInput, IErrorRecoveryConfig } from './types'
-import { LogCategory, logger, PerformanceTimer, isCpuBackend } from '@firefly/shared'
+import { LogCategory, logger, PerformanceTimer, isCpuBackend, FileCategory, getFileCategory } from '@firefly/shared'
 import { loggingService } from '../system/logging-service'
 import { systemHealthService } from '../system'
 import { loadIgnoreRules } from '../analysis/analysis-ignore-service'
@@ -437,6 +437,28 @@ export class AnalysisQueueService {
           // GPU 消费者据此透传 cpuSkipped，使 fresh 重建为仅含本次 GPU 指标
           const cpuSkippedIds = new Set<number>()
 
+          const isVideoFile = (filePath: string): boolean => {
+            return getFileCategory(filePath) === FileCategory.VIDEO
+          }
+
+          const hasMissingVideoChunks = (item: AnalysisQueueItem): boolean => {
+            if (!isVideoFile(item.path)) return false
+            const db = databaseService.db
+            if (!db || !item.workspaceId) return false
+            try {
+              const wf = db
+                .prepare('SELECT file_fingerprint FROM workspace_files WHERE workspace_id = ? AND path = ?')
+                .get(item.workspaceId, item.path) as { file_fingerprint?: string } | undefined
+              if (!wf?.file_fingerprint) return true
+              const chunkRow = db
+                .prepare('SELECT 1 FROM file_video_chunks WHERE file_fingerprint = ? LIMIT 1')
+                .get(wf.file_fingerprint)
+              return !chunkRow
+            } catch {
+              return true
+            }
+          }
+
           const isAlreadyStage2 = (item: AnalysisQueueItem): boolean => {
             const db = databaseService.db
             if (!db || !item.workspaceId) return false
@@ -445,9 +467,16 @@ export class AnalysisQueueService {
           }
 
           // 判断“强制重新分析 + 复用关闭 + 之前已分析完成”场景：此时必须重新提取
-          // is_analyzed = false 表示文件尚未分析完成（如刚做完 stage1/2 后暂停），
-          // 已有提取数据有效，可跳过 CPU 阶段复用
+          // 视频文件时序切片与特征向量受抽帧步长与嵌入配置驱动，强制重新分析或已分析视频重入队时绝不跳过 CPU 阶段；
+          // 普通文档/图片则遵循 REUSE_BASIC_ANALYSIS_DATA 配置。
           const isForcedReextract = (item: AnalysisQueueItem): boolean => {
+            if (isVideoFile(item.path)) {
+              if (item.forceReanalyze === true || item.isAnalyzed === true) return true
+              const db = databaseService.db
+              if (db && item.workspaceId) {
+                if (getFileAnalysisStateFromDB(db, item.workspaceId, item.path).isAnalyzed) return true
+              }
+            }
             if (item.forceReanalyze !== true) return false
             const reuseBasicAnalysisData =
               ConfigOrchestrator.getInstance().getValue<boolean>('REUSE_BASIC_ANALYSIS_DATA') ??
@@ -476,8 +505,9 @@ export class AnalysisQueueService {
               // - 暂停/恢复：无论是否开启数据复用，都不应重复执行 Stage 2 提取
               // - 强制重新分析 + 复用开启：可跳过、复用已有提取数据
               // - 强制重新分析 + 复用关闭 + 之前已分析完成（is_analyzed=true）：不能跳过，必须重新提取
-              // - 强制重新分析 + 复用关闭 + 未完成过（is_analyzed=false，如暂停恢复）：数据有效，可跳过复用
-              const shouldSkipCpu = isAlreadyStage2(item) && !isForcedReextract(item)
+              // - 视频文件若缺失时序切片（file_video_chunks），严禁跳过 CPU 提取
+              const shouldSkipCpu =
+                isAlreadyStage2(item) && !hasMissingVideoChunks(item) && !isForcedReextract(item)
 
               if (shouldSkipCpu) {
                 logger.debug(

@@ -157,7 +157,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
           flag: {
             isPanDimension: true,
             isRequiresAI: true,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -272,7 +272,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -326,7 +326,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -482,7 +482,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
           flag: {
             isRuleSubdivision: true,
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -748,7 +748,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
           flag: {
             isRuleSubdivision: true,
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -784,7 +784,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
           flag: {
             isRuleSubdivision: true,
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -818,7 +818,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
           flag: {
             isRuleSubdivision: true,
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -857,7 +857,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
             isRuleSubdivision: true,
             isPanDimension: true,
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -934,7 +934,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
           flag: {
             isRuleSubdivision: true,
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -970,7 +970,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -1106,7 +1106,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -1230,7 +1230,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -1379,7 +1379,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -1519,7 +1519,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -1648,7 +1648,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
           flag: {
             isRuleSubdivision: true,
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -1857,7 +1857,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
           flag: {
             isRuleSubdivision: true,
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -2572,7 +2572,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -2618,7 +2618,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -2986,7 +2986,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -3032,7 +3032,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -3116,7 +3116,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -3226,7 +3226,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -3268,7 +3268,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -3309,7 +3309,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -3352,7 +3352,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -3397,7 +3397,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -3463,7 +3463,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -3688,7 +3688,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
             isPanDimension: false,
             isMicroService: true,
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -3886,7 +3886,57 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
             t('写实拟真'),
             t('复古胶片'),
             t('赛博朋克'),
-            t('水彩水墨')
+            t('水彩水墨'),
+            t('吉卜力手绘'),
+            t('新海诚光影'),
+            t('皮克斯渲染'),
+            t('迪士尼手绘'),
+            t('赛博霓虹'),
+            t('低多边形'),
+            t('超现实CG'),
+            t('数码浮世绘'),
+            t('蒸汽波'),
+            t('故障艺术'),
+            t('厚涂插画'),
+            t('像素艺术'),
+            t('手绘水彩'),
+            t('赛璐璐'),
+            t('光追渲染'),
+            t('体积雾效'),
+            t('生物机械'),
+            t('数字极简'),
+            t('复古未来'),
+            t('暗黑哥特'),
+            t('三维水墨'),
+            t('波普艺术'),
+            t('赛博故障'),
+            t('超扁平'),
+            t('动态漫画'),
+            t('程序生成'),
+            t('全息投影'),
+            t('蒸汽朋克'),
+            t('数字水彩'),
+            t('金属质感'),
+            t('漫画分镜'),
+            t('霓虹手绘'),
+            t('生物发光'),
+            t('复古CRT'),
+            t('极简赛博'),
+            t('水彩厚涂'),
+            t('机械有机'),
+            t('动态模糊'),
+            t('算法抽象'),
+            t('虚拟空间'),
+            t('国风水墨'),
+            t('故障摄影'),
+            t('赛博纹样'),
+            t('液态金属'),
+            t('暗黑奇幻'),
+            t('数字拼贴'),
+            t('极简界面'),
+            t('霓虹字体'),
+            t('生物形态'),
+            t('动态粒子')
           ],
         description: t('视觉作品的美术基调与画面质感风格'),
         applicableFileTypes: [
@@ -3908,7 +3958,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
           ],
         metadata: {
           flag: {
-            isPanDimension: true,
+            isPanDimension: false,
             isMicroService: true,
             isRequiresAI: false,
             isMultiSelect: true
@@ -4046,7 +4096,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -4087,7 +4137,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -4130,7 +4180,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -4174,7 +4224,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -4212,7 +4262,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -4254,7 +4304,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -4295,7 +4345,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -4336,7 +4386,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -4380,7 +4430,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -4422,7 +4472,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -4460,7 +4510,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },
@@ -4497,7 +4547,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         metadata: {
           flag: {
             isRequiresAI: false,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },

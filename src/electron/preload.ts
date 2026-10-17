@@ -654,6 +654,8 @@ const electronAPI = {
       ipcRenderer.invoke('batch-rename:random-template'),
     applyTags: (operation: any): Promise<any> =>
       ipcRenderer.invoke('batch-tag:apply', operation),
+    inspectControlledTags: (items: any[], language?: string): Promise<any> =>
+      ipcRenderer.invoke('batch-tag:inspect-controlled-tags', items, language),
     deleteTagGlobally: (dimensionId: number, tagName: string): Promise<boolean> =>
       ipcRenderer.invoke('delete-tag-globally', dimensionId, tagName),
     scanDuplicates: (options: any): Promise<any[]> =>

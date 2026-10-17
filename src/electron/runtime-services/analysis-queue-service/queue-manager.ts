@@ -122,27 +122,34 @@ export class QueueManager {
           const taskType: AnalysisTaskType = 'analysis'
           const analysisStage = parsedStats ? Number(parsedStats.analysis_stage ?? 0) : undefined
 
-          return {
-            id: r.id,
-            workspaceId: r.workspace_id,
-            path: filePath,
-            name: r.file_name,
-            size: r.size ?? 0,
-            type: fileExtension, // 文件扩展名，目录时为空
-            itemType: itemType, // 'file' 或 'directory'
-            taskType,
-            stage: analysisStage,
-            status: r.status as 'pending' | 'analyzing' | 'completed' | 'failed',
-            error: r.error ?? undefined,
-            addedAt: r.created_at ? new Date(r.created_at).getTime() : Date.now(),
-            updatedAt: r.updated_at ? new Date(r.updated_at).getTime() : Date.now(),
-            progress: r.progress ?? 0,
-            fromCache: !!r.is_hit,
-            // 重新分析标记：内存队列项在 addItems 时设置，载入时从 DB 列（若有）恢复
-            forceReanalyze: r.force_reanalyze === 1 || r.force_reanalyze === true || undefined,
-            analysisStats: parsedStats,
-            analysisStage
-          } as AnalysisQueueItem
+            let parsedMeta: any = undefined
+            if (r.meta) {
+              try {
+                parsedMeta = typeof r.meta === 'string' ? JSON.parse(r.meta) : r.meta
+              } catch {}
+            }
+
+            return {
+              id: r.id,
+              workspaceId: r.workspace_id,
+              path: filePath,
+              name: r.file_name,
+              size: r.size ?? 0,
+              type: fileExtension, // 文件扩展名，目录时为空
+              itemType: itemType, // 'file' 或 'directory'
+              taskType,
+              stage: analysisStage,
+              status: r.status as 'pending' | 'analyzing' | 'completed' | 'failed',
+              error: r.error ?? undefined,
+              addedAt: r.created_at ? new Date(r.created_at).getTime() : Date.now(),
+              updatedAt: r.updated_at ? new Date(r.updated_at).getTime() : Date.now(),
+              progress: r.progress ?? 0,
+              fromCache: !!r.is_hit,
+              // 重新分析标记：内存队列项在 addItems 时设置，载入时从 DB 列或 meta 中恢复
+              forceReanalyze: r.force_reanalyze === 1 || r.force_reanalyze === true || parsedMeta?.force_reanalyze === true || undefined,
+              analysisStats: parsedStats,
+              analysisStage
+            } as AnalysisQueueItem
         })
         .filter(item => item !== null) as AnalysisQueueItem[]
 
@@ -351,8 +358,15 @@ export class QueueManager {
               `[分析队列] 文件已在队列中 (原状态: ${oldStatus})，${reason}，重置为 pending: ${file.nativePath}`
             )
 
-            const existingDbRow = db?.prepare('SELECT id FROM analysis_queue WHERE id = ?').get(exists.id)
+            const existingDbRow = db?.prepare('SELECT id, meta FROM analysis_queue WHERE id = ?').get(exists.id) as any
             if (existingDbRow) {
+              let existingMeta: Record<string, any> = {}
+              try {
+                existingMeta = typeof existingDbRow.meta === 'string' ? JSON.parse(existingDbRow.meta) : (existingDbRow.meta || {})
+              } catch {}
+              if (shouldForceReanalyze) {
+                existingMeta.force_reanalyze = true
+              }
               databaseService.updateAnalysisQueue({
                 id: exists.id,
                 status: 'pending',
@@ -360,6 +374,10 @@ export class QueueManager {
                 error: null,
                 taskType: 'analysis'
               })
+              db?.prepare('UPDATE analysis_queue SET meta = ? WHERE id = ?').run(
+                JSON.stringify(existingMeta),
+                exists.id
+              )
             } else {
               const itemType = file.type === 'folder' ? 'directory' : 'file'
               let itemId: number | null = null
@@ -447,7 +465,8 @@ export class QueueManager {
           item_type: itemType,
           task_type: 'analysis',
           status: item.status,
-          progress: 0
+          progress: 0,
+          force_reanalyze: shouldForceReanalyze
         })
 
         item.id = Number(dbId)

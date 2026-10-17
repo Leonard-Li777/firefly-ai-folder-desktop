@@ -202,6 +202,16 @@ export function sanitizeFtsQuery(query: string): string {
 }
 
 /**
+ * 剥离中文常见数量词前缀（如 "一辆", "两只", "三部", "几个", "一张", "一段", "一个" 等），
+ * 提取纯净核心实体概念，避免量词分散多模态多语言分词器对核心实体的注意力权重。
+ */
+export function cleanSearchQueryEntities(text: string): string {
+  if (!text) return text
+  const quantifierRegex = /^[一两三四五六七八九十几]+[个只辆张部条架顶本套根群首座栋双把台副所顶间支件块面扇道头匹段幅尾]\s*/
+  return text.replace(quantifierRegex, '').trim() || text
+}
+
+/**
  * RRF 单路得分：rank 不存在或非法时返回 0
  */
 export function rrfScore(rank: number | undefined, k: number = HYBRID_SEARCH_RRF_K): number {
@@ -693,7 +703,20 @@ export class HybridSearchArbiter {
     try {
       let embedding = queryEmbedding
       if (!embedding || embedding.length === 0) {
-        const analysis = await omniService.analyzeText(keyword)
+        const profile = typeof omniService.getEmbeddingProfile === 'function'
+          ? await omniService.getEmbeddingProfile().catch(() => 'classic_light')
+          : 'classic_light'
+        const cleanKeyword = cleanSearchQueryEntities(keyword)
+        const queryText = profile === 'gemma_unified' && !cleanKeyword.startsWith('task:')
+          ? `task: search result | query: ${cleanKeyword}`
+          : cleanKeyword
+        let analysis = await omniService.analyzeText(queryText)
+        if (!analysis?.embedding_dense && queryText !== cleanKeyword) {
+          analysis = await omniService.analyzeText(cleanKeyword)
+        }
+        if (!analysis?.embedding_dense && cleanKeyword !== keyword) {
+          analysis = await omniService.analyzeText(keyword)
+        }
         embedding = analysis?.embedding_dense
       }
       if (!embedding || embedding.length === 0) {

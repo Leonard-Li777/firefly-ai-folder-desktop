@@ -1359,6 +1359,14 @@ export function registerVirtualDirectoryIPCHandlers() {
     return await databaseService.batchApplyTags(operation)
   })
 
+  ipcMain.handle(
+    'batch-tag:inspect-controlled-tags',
+    async (event, items: any[], language?: string) => {
+      const { omniService } = await import('../../runtime-services/system/omni-service')
+      return await omniService.inspectControlledTags(items, language)
+    }
+  )
+
   ipcMain.handle('delete-tag-globally', async (event, dimensionId: number, tagName: string) => {
     return await databaseService.deleteTagGlobally(dimensionId, tagName)
   })

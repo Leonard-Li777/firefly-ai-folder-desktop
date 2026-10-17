@@ -562,9 +562,30 @@ export class FileProcessor {
         } catch {
           // 忽略查询异常，视为未完成过分析
         }
+        const isVideo = getFileCategory(filePath) === FileCategory.VIDEO
+        const hasMissingVideoChunks =
+          isVideo &&
+          (() => {
+            try {
+              const wf = db
+                .prepare(
+                  'SELECT file_fingerprint FROM workspace_files WHERE workspace_id = ? AND path = ?'
+                )
+                .get(currentWorkspaceId, filePath) as { file_fingerprint?: string } | undefined
+              if (!wf?.file_fingerprint) return true
+              const chunkRow = db
+                .prepare('SELECT 1 FROM file_video_chunks WHERE file_fingerprint = ? LIMIT 1')
+                .get(wf.file_fingerprint)
+              return !chunkRow
+            } catch {
+              return true
+            }
+          })()
+
         const forcedReextract =
-          item.forceReanalyze === true && !reuseBasicAnalysisData && alreadyAnalyzed
-        if (initialStage >= 2 && !forcedReextract) {
+          item.forceReanalyze === true &&
+          (isVideo || (!reuseBasicAnalysisData && alreadyAnalyzed))
+        if (initialStage >= 2 && !forcedReextract && !hasMissingVideoChunks) {
           if (isAiStageEnabled(analysisMode)) {
             // quick_name / full 模式：跳过 CPU 提取，直接进入 GPU AI 阶段（stage3/4）。
             // 注意：AI 阶段入口会自行校验并撤销「以当前模式衡量尚未达标」的残留 is_analyzed 标记。
@@ -1530,7 +1551,7 @@ export class FileProcessor {
         ? (ConfigOrchestrator.getInstance().getValue<number>('AUDIO_ANALYSIS_DURATION') ?? 30)
         : undefined
       const videoFrameIntervalSeconds = isVideo
-        ? (ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 5.0)
+        ? (ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 2.0)
         : undefined
 
       // 0. 统一调用 Omni 原生引擎进行端到端内容与元数据提取（覆盖文档、图片、纯文本、代码、音视频、字体等所有格式并输出真实 Benchmark）

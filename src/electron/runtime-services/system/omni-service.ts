@@ -547,7 +547,8 @@ export class OmniService {
           'MAX_CONTENT_SIZE_KB',
           'MAX_FILE_SIZE',
           'ANALYSIS_MODE',
-          'REUSE_BASIC_ANALYSIS_DATA'
+          'REUSE_BASIC_ANALYSIS_DATA',
+          'VIDEO_FRAME_INTERVAL_SECONDS'
         ] as const
         ocrKeys.forEach(key => {
           orchestrator.onValueChange(key as any, () => {
@@ -660,7 +661,7 @@ export class OmniService {
    * 生产环境不启动该监听（打包产物不会被就地覆盖）。
    */
   public startDevBinaryWatch(intervalMs: number = OmniService.DEV_BINARY_WATCH_INTERVAL_MS): void {
-    const isDev = !app.isPackaged || process.env.NODE_ENV !== 'production'
+    const isDev = !app?.isPackaged || process.env.NODE_ENV !== 'production'
     if (this.devBinaryWatchTimer || !isDev) {
       return
     }
@@ -735,7 +736,7 @@ export class OmniService {
   public resolveOmniExecutable(): string | null {
     const isWin = process.platform === 'win32'
     const exeName = isWin ? 'firefly-omni.exe' : 'firefly-omni'
-    const isDev = !app.isPackaged || process.env.NODE_ENV !== 'production'
+    const isDev = !app?.isPackaged || process.env.NODE_ENV !== 'production'
     const root = process.cwd()
 
     // 1. 生产或已部署环境：通过 ResourceLocator 检索
@@ -861,7 +862,7 @@ export class OmniService {
       }
 
       logger.info(LogCategory.SYSTEM, `[OmniService] 正在拉起 firefly-omni 守护进程 (Port: ${port}): ${exePath}`)
-      const isDevMode = !app.isPackaged || process.env.NODE_ENV !== 'production'
+      const isDevMode = !app?.isPackaged || process.env.NODE_ENV !== 'production'
       const binDir = path.dirname(exePath)
       const existingPath = process.env.PATH || ''
       const injectedPath = [binDir, existingPath].filter(Boolean).join(path.delimiter)
@@ -932,6 +933,7 @@ export class OmniService {
           '[OmniService] 未解析到 omni-geo 地理数据集（geo/geonames-compact.json），逆地理编码将以 available:false 软降级'
         )
       }
+      env.OMNI_WATCH_STDIN = '1'
 
       // 注入当前激活的多模态嵌入画像档位 (classic_light | gemma_unified) 与 MRL 维度 (Spec §3.4.1)
       try {
@@ -1204,6 +1206,10 @@ export class OmniService {
         excludedItems = []
       }
 
+      const embeddingProfile =
+        orchestrator.getValue<'classic_light' | 'gemma_unified'>('AI_EMBEDDING_PROFILE') || 'classic_light'
+      const mrlDimension = orchestrator.getValue<number>('EMBEDDING_MRL_DIMENSION') || 512
+
       const payload = JSON.stringify({
         enable_office_cover: enableOfficeCover,
         max_document_ocr_items: maxDocOcrItems,
@@ -1215,7 +1221,9 @@ export class OmniService {
         reuse_basic_analysis_data: reuseBasic,
         audio_analysis_duration: audioAnalysisDuration,
         excluded_items: excludedItems,
-        language: currentLanguage
+        language: currentLanguage,
+        embedding_profile: embeddingProfile,
+        mrl_dimension: mrlDimension
       })
 
       const res = await fetch(`${this.baseUrl}/api/config`, {
@@ -1228,7 +1236,7 @@ export class OmniService {
       if (res.ok) {
         logger.info(
           LogCategory.SYSTEM,
-          `[OmniService] 已向 Omni 引擎同步配置: enable_office_cover=${enableOfficeCover}, max_document_ocr_items=${maxDocOcrItems}, enable_image_ocr=${enableImageOcr}, ocr_model_size=${ocrModelSize}, audio_analysis_duration=${audioAnalysisDuration}s, excluded_items_count=${excludedItems.length}, language=${currentLanguage}`
+          `[OmniService] 已向 Omni 引擎同步配置: enable_office_cover=${enableOfficeCover}, max_document_ocr_items=${maxDocOcrItems}, enable_image_ocr=${enableImageOcr}, ocr_model_size=${ocrModelSize}, audio_analysis_duration=${audioAnalysisDuration}s, excluded_items_count=${excludedItems.length}, language=${currentLanguage}, embedding_profile=${embeddingProfile}, mrl_dimension=${mrlDimension}`
         )
         return true
       }
@@ -2104,6 +2112,19 @@ export class OmniService {
   }
 
   /**
+   * 获取当前生效的嵌入模型档位 (classic_light | gemma_unified)
+   */
+  public async getEmbeddingProfile(): Promise<'classic_light' | 'gemma_unified'> {
+    try {
+      const { ConfigOrchestrator } = await import('../../config/config-orchestrator')
+      const orchestrator = ConfigOrchestrator.getInstance()
+      return orchestrator.getValue<'classic_light' | 'gemma_unified'>('AI_EMBEDDING_PROFILE') || 'classic_light'
+    } catch {
+      return 'classic_light'
+    }
+  }
+
+  /**
    * Tier 1 端侧纯 CPU 文本特征与 384 维向量提取 (支柱 4)
    * POST /api/text/analyze
    */
@@ -2180,6 +2201,66 @@ export class OmniService {
       return null
     }
   }
+
+  /**
+   * 批量鉴别标签是否属于受控语义本体并检验祖先继承链 (POST /api/v1/taxonomy/inspect-tag)
+   * 严格遵循悲观熔断：超时 1500ms 强阻断，严禁静默吞异常
+   */
+  public async inspectControlledTags(
+    items: InspectControlledTagItem[],
+    language: string = 'zh-CN',
+    timeoutMs: number = 1500
+  ): Promise<InspectControlledTagsResponse> {
+    await this.ensureRunning()
+    const reqBody = {
+      items,
+      language
+    }
+
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), timeoutMs)
+
+    try {
+      const res = await fetch(`${this.baseUrl}/api/v1/taxonomy/inspect-tag`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reqBody),
+        signal: controller.signal
+      })
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+      }
+      return (await res.json()) as InspectControlledTagsResponse
+    } catch (err: any) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[OmniService] inspectControlledTags 异常或超时: ${err.message}`
+      )
+      throw new Error(`Omni受控标签鉴别失败: ${err.message}`)
+    } finally {
+      clearTimeout(timer)
+    }
+  }
+}
+
+export interface InspectControlledTagItem {
+  tagName: string
+  targetParentCode: string
+}
+
+export interface InspectControlledTagResult {
+  tagName: string
+  isControlled: boolean
+  matchedParent: boolean
+  code: string | null
+  canonicalName: string | null
+  parentCodes: string[]
+  ancestryMatchedCode: string | null
+}
+
+export interface InspectControlledTagsResponse {
+  success: boolean
+  results: InspectControlledTagResult[]
 }
 
 export const omniService = OmniService.getInstance()
