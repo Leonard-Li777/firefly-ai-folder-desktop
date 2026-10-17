@@ -26,7 +26,9 @@ import {
   tokenize,
   isUsefulToken,
   normalizeForCache,
-  isTestEnvironment
+  isTestEnvironment,
+  isStopwordOrGenericWord,
+  hasValidNameMinLength
 } from '@firefly/shared'
 import {
   omniClient,
@@ -215,13 +217,17 @@ export function sanitizeFtsQuery(query: string): string {
 }
 
 /**
- * 剥离中文常见数量词前缀（如 "一辆", "两只", "三部", "几个", "一张", "一段", "一个" 等），
- * 提取纯净核心实体概念，避免量词分散多模态多语言分词器对核心实体的注意力权重。
+ * 剥离常见数量词与冠词前缀（如 "一辆", "两只", "三部", "几个", "一张", "一段", "一个", "a ", "the " 等），
+ * 提取纯净核心实体概念，避免量词与冠词分散多模态多语言分词器对核心实体的注意力权重。
  */
 export function cleanSearchQueryEntities(text: string): string {
   if (!text) return text
+  // 1. 中文常见数词+量词前缀剥离
   const quantifierRegex = /^[一两三四五六七八九十几]+[个只辆张部条架顶本套根群首座栋双把台副所顶间支件块面扇道头匹段幅尾]\s*/
-  return text.replace(quantifierRegex, '').trim() || text
+  let cleaned = text.replace(quantifierRegex, '').trim()
+  // 2. 国际化英文常见冠词/数词前缀剥离 (a, an, the, one)
+  cleaned = cleaned.replace(/^(?:a|an|the|one)\s+/i, '').trim()
+  return cleaned || text
 }
 
 /**
@@ -250,15 +256,9 @@ export function weightedRrfScore(
 }
 
 /**
-/** 中文高频无意义虚词集合，避免污染多词覆盖率计算 */
-const CHINESE_STOP_WORDS = new Set([
-  '的', '了', '在', '是', '有', '和', '与', '或', '个', '只', '部', '张', '本', '套', '条', '幅', '块', '支', '所', '间'
-])
-
-/**
  * 文件名提升分（NameMatch）：
  * - name / smart_name 任意一个含查询全串（不区分大小写）→ 1.0 (强字面置顶)
- * - 否则取核心有效 token 覆盖率并施加平滑阻尼（封顶 0.35），防止无意义单字虚假命中暴打向量与 FTS
+ * - 否则取核心有效 token 覆盖率并施加平滑阻尼（封顶 0.035），防止无意义单字虚假命中暴打向量与 FTS
  */
 export function computeNameBoost(
   name: string | undefined,
@@ -279,23 +279,29 @@ export function computeNameBoost(
     if (cand.includes(q) || (compactQ.length >= 2 && cand.includes(compactQ))) return 1
   }
 
-  // 2. 严格 token 抽取：过滤单字虚词；仅允许 >= 2 字符的有效实体词，或在全查询本身仅为单字符时的特例
+  // 2. 严格 token 抽取：结合标签过滤方案（tag-admissibility SSOT）与国际化最小字数门禁
+  // 2.1 依赖 tag-admissibility 体系过滤中英文停用词、通用文件系统泛词（temp/copy/新建等）、元保留字与抽象空洞壳名词
+  // 2.2 结合 hasValidNameMinLength（支持 10 种国际化语言最小字数要求：东亚 CJK >= 2，拉丁等纯字母 >= 2，4K 等规格放行）
   const rawTokens = Array.from(new Set(tokenize(q))).filter(isUsefulToken)
   const effectiveTokens = rawTokens.filter(t => {
-    if (CHINESE_STOP_WORDS.has(t)) return false
-    if (t.length < 2 && q.length >= 2) return false
+    // 结合标签准入门禁：过滤停用词、抽象空洞词与通用文件系统占位词
+    if (isStopwordOrGenericWord(t).matched) return false
+    // 结合 10 语最小字数门禁：仅当查询全串自身满足最小长度要求时，才剔除不满足最小长度的子词片段
+    if (hasValidNameMinLength(q) && !hasValidNameMinLength(t)) return false
     return true
   })
 
-  if (effectiveTokens.length === 0) return 0
+  // 若全部有效词均被过滤（如极端停用词检索），平滑退化使用原始 useful tokens
+  const tokensToScore = effectiveTokens.length > 0 ? effectiveTokens : rawTokens
+  if (tokensToScore.length === 0) return 0
 
   let best = 0
   for (const cand of candidates) {
     let hitTokens = 0
-    for (const t of effectiveTokens) {
+    for (const t of tokensToScore) {
       if (cand.includes(t.toLowerCase())) hitTokens += 1
     }
-    const ratio = hitTokens / effectiveTokens.length
+    const ratio = hitTokens / tokensToScore.length
     // 部分匹配平滑阻尼，上限 0.035（加权后为 0.9 * 0.035 = 0.0315），
     // 确保与高质量向量 Top 1（0.0328）同级良性竞争，绝不暴力碾压纯多模态语义召回
     const score = ratio * 0.035
