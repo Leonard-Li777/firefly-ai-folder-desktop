@@ -105,7 +105,23 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
     executeMatching('')
   }, [executeMatching])
 
-  // 按 Domain -> Category 聚类身份列表
+  // 实时搜索关键词
+  const searchKeyword = prompt.trim().toLowerCase()
+
+  // 基于搜索词过滤身份列表
+  const filteredIdentities = useMemo(() => {
+    if (!searchKeyword) return recommendedIdentities
+    return recommendedIdentities.filter(item => {
+      const nameMatch = (item.name || '').toLowerCase().includes(searchKeyword)
+      const descMatch = (item.description || '').toLowerCase().includes(searchKeyword)
+      const tagMatch = (item.taskTags || []).some(t => t.toLowerCase().includes(searchKeyword))
+      const breadcrumbMatch = (item.breadcrumbs || []).some(b => b.toLowerCase().includes(searchKeyword))
+      const idMatch = (item.identityId || '').toLowerCase().includes(searchKeyword)
+      return nameMatch || descMatch || tagMatch || breadcrumbMatch || idMatch
+    })
+  }, [searchKeyword, recommendedIdentities])
+
+  // 按 Domain -> Category 聚类当前展示的身份列表
   const domainGroups = useMemo(() => {
     const groups = new Map<
       string,
@@ -123,7 +139,7 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
       }
     >()
 
-    for (const item of recommendedIdentities) {
+    for (const item of filteredIdentities) {
       const dName = item.breadcrumbs[0] || item.domainId
       const cName = item.breadcrumbs[1] || item.categoryId
 
@@ -150,7 +166,17 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
       ...d,
       categories: Array.from(d.categories.values())
     }))
-  }, [recommendedIdentities])
+  }, [filteredIdentities])
+
+  // 搜索态下自动展开所有命中结果所在的领域与分类
+  useEffect(() => {
+    if (searchKeyword && filteredIdentities.length > 0) {
+      const matchedDomainIds = new Set(filteredIdentities.map(i => i.domainId))
+      const matchedCatIds = new Set(filteredIdentities.map(i => i.categoryId))
+      setExpandedDomains(prev => new Set([...prev, ...matchedDomainIds]))
+      setExpandedCategories(prev => new Set([...prev, ...matchedCatIds]))
+    }
+  }, [searchKeyword, filteredIdentities])
 
   // 切换勾选身份
   const handleToggleIdentity = (id: string) => {
@@ -211,11 +237,18 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
 
   // 过滤或协同提升右侧结构卡片
   const displayStructures = useMemo(() => {
-    if (selectedIdentityIds.length === 0) {
+    // 优先采用勾选的身份，若无勾选但在搜索中命中身份，则优先提升命中身份的模板
+    let effectiveTargetIds = selectedIdentityIds
+    if (effectiveTargetIds.length === 0 && searchKeyword && filteredIdentities.length > 0) {
+      effectiveTargetIds = filteredIdentities.map(i => i.identityId)
+    }
+
+    if (effectiveTargetIds.length === 0) {
       return recommendedStructures
     }
-    // 若勾选了具体身份，优先将契合所选身份的模板排在前列
-    const set = new Set(selectedIdentityIds)
+
+    // 若勾选了具体身份或搜索命中了身份，优先将契合的模板排在前列
+    const set = new Set(effectiveTargetIds)
     const sorted = [...recommendedStructures].sort((a, b) => {
       const aHit = a.targetIdentities.some(tid => set.has(tid))
       const bHit = b.targetIdentities.some(tid => set.has(tid))
@@ -224,7 +257,7 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
       return b.score - a.score
     })
     return sorted
-  }, [selectedIdentityIds, recommendedStructures])
+  }, [selectedIdentityIds, searchKeyword, filteredIdentities, recommendedStructures])
 
   return (
     <div className="flex-1 flex flex-col h-full w-full overflow-hidden bg-background">
@@ -353,10 +386,17 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
           {/* 身份树层级展示 */}
           <div className="space-y-2 pt-2 border-t border-border/40">
             <div className="flex items-center justify-between px-1">
-              <span className="text-xs font-semibold text-foreground/80">
-                {t('全量身份库 ({count} 个身份)', { count: recommendedIdentities.length })}
+              <span className="text-xs font-semibold text-foreground/80 flex items-center gap-1.5">
+                {searchKeyword ? (
+                  <>
+                    <MaterialIcon icon="filter_list" className="text-xs text-primary" />
+                    <span>{t('搜索结果 ({count} 个身份)', { count: filteredIdentities.length })}</span>
+                  </>
+                ) : (
+                  <span>{t('全量身份库 ({count} 个身份)', { count: recommendedIdentities.length })}</span>
+                )}
               </span>
-              {recommendedIdentities.length > 0 && (
+              {filteredIdentities.length > 0 && (
                 <button
                   type="button"
                   onClick={handleToggleAll}
@@ -463,6 +503,28 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
                   </div>
                 )
               })}
+              {domainGroups.length === 0 && searchKeyword && (
+                <div className="py-8 px-4 text-center rounded-xl border border-dashed border-border/80 bg-muted/10 space-y-2">
+                  <MaterialIcon icon="search_off" className="text-3xl text-muted-foreground/60 mx-auto" />
+                  <p className="text-xs font-semibold text-foreground/80">
+                    {t('未找到匹配“{keyword}”的身份', { keyword: prompt.trim() })}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {t('可尝试搜索“游戏”、“音乐”、“小说”等关键词，或点击“匹配”进行意图理解')}
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setPrompt('')
+                      executeMatching('')
+                    }}
+                    className="h-7 text-xs mt-2"
+                  >
+                    {t('清空搜索')}
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
