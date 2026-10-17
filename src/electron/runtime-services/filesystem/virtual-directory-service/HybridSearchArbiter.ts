@@ -801,8 +801,9 @@ export class HybridSearchArbiter {
       // 优选每个视频的最佳跳轴切片：
       // 1. 获取该视频最高切片得分 maxChunkScore；
       // 2. 筛选顶尖梯队切片 (score >= maxChunkScore - 0.035)；
-      // 3. 避开片头片尾极端转场或静止背景 (开篇前 15s 与尾部最后 12s)；
-      // 4. 优先选择具备时序连续性（前后相邻切片均高分相长）的动态实体高光切片！
+      // 3. 梯队内引入影视视听结构与时序实体聚焦（Golden Mid-Arc & Temporal Cluster）：
+      //    - 连续簇加成：前后相邻切片同样处于顶尖梯队，说明是持续展开的高光动态实体事件；
+      //    - 黄金中段优先：开篇前 25% 往往是环境空镜头（如雪山、蓝天大远景），正主体与高光实体特写集中在 30%~75% 黄金中段。
       for (const agg of parentAggMap.values()) {
         if (agg.chunks.length === 0) continue
         agg.chunks.sort((a, b) => b.score - a.score)
@@ -811,32 +812,29 @@ export class HybridSearchArbiter {
         const eliteChunks = agg.chunks.filter(c => c.score >= eliteThreshold)
 
         const totalChunksCount = agg.chunks.length
-        // 判定中段安全窗口：若切片数量充足 (>8)，避开片头前 4 个切片与片尾最后 3 个切片
-        const isMidWindow = (idx: number) => {
-          if (totalChunksCount <= 8) return true
-          return idx >= 4 && idx < totalChunksCount - 3
-        }
-
-        // 梯队内按时序连续性加权：若相邻切片（idx ± 1）同样处于顶尖梯队，视为高光事件连续展开
         const eliteSet = new Set(eliteChunks.map(c => c.chunkIndex))
         let bestCandidate = agg.chunks[0]
-        let bestClusteredScore = -1
+        let bestPriorityScore = -1
 
         for (const c of eliteChunks) {
-          if (!isMidWindow(c.chunkIndex)) continue
+          const ratio = totalChunksCount > 1 ? c.chunkIndex / (totalChunksCount - 1) : 0.5
+          // 黄金中段窗口：避开开篇前置空镜头与尾部转场，优先聚焦全片 30% ~ 75% 的正主体高光区间
+          const isGoldenMid = ratio >= 0.30 && ratio <= 0.75
+          const goldenBonus = isGoldenMid ? 0.020 : 0.0
+
           const hasPrev = eliteSet.has(c.chunkIndex - 1)
           const hasNext = eliteSet.has(c.chunkIndex + 1)
-          // 连续切片簇赋予时序凝聚度加成 (+0.015)
+          // 连续切片簇赋予时序凝聚度加成 (+0.010 每侧)
           const clusterBonus = (hasPrev ? 0.010 : 0) + (hasNext ? 0.010 : 0)
-          const effectiveScore = c.score + clusterBonus
-          if (effectiveScore > bestClusteredScore) {
-            bestClusteredScore = effectiveScore
+
+          const priorityScore = c.score + goldenBonus + clusterBonus
+          if (priorityScore > bestPriorityScore) {
+            bestPriorityScore = priorityScore
             bestCandidate = c
           }
         }
 
-        // 若中段无候选，回退至中段普通切片或全局最高切片
-        const chosen = bestClusteredScore > 0 ? bestCandidate : (eliteChunks.find(c => isMidWindow(c.chunkIndex)) ?? agg.chunks[0])
+        const chosen = bestCandidate
 
         agg.bestChunkIndex = chosen.chunkIndex
         agg.bestChunkScore = chosen.score
