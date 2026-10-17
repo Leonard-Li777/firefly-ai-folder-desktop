@@ -448,7 +448,7 @@ const TagPill: React.FC<TagPillProps> = React.memo(
         {isPan && onDelete && (
           <button
             type="button"
-            title={t('删除该标签')}
+            title={t('移除该标签')}
             onClick={e => onDelete(dimId, tagName, e)}
             className={cn(
               'absolute -top-1.5 -right-1.5 z-20 w-5 h-5 rounded-full',
@@ -476,6 +476,7 @@ interface DimensionGroupCardProps {
   isPan: boolean
   groupNewTags: string[]
   isInputActive: boolean
+  isInspecting?: boolean
   inputVal: string
   tagStates: Record<string, TagActionState>
   tagFileCounts: Record<string, number>
@@ -498,6 +499,7 @@ const DimensionGroupCard: React.FC<DimensionGroupCardProps> = React.memo(
     isPan,
     groupNewTags,
     isInputActive,
+    isInspecting,
     inputVal,
     tagStates,
     tagFileCounts,
@@ -552,7 +554,7 @@ const DimensionGroupCard: React.FC<DimensionGroupCardProps> = React.memo(
                 className="text-[11px] text-muted-foreground hover:text-foreground px-1.5 py-0.5 rounded-md hover:bg-muted transition-colors cursor-pointer"
                 title={t('恢复该维度默认状态')}
               >
-                {t('重置')}
+                {t('恢复')}
               </button>
             </div>
           )}
@@ -566,16 +568,17 @@ const DimensionGroupCard: React.FC<DimensionGroupCardProps> = React.memo(
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-background rounded-xl border border-primary/60 shadow-xs animate-in zoom-in-95 duration-150">
                 <Input
                   autoFocus
+                  disabled={isInspecting}
                   value={inputVal}
                   onChange={e => onInputChange(e.target.value)}
                   onBlur={() => {
-                    if (inputVal.trim()) {
+                    if (inputVal.trim() && !isInspecting) {
                       onSubmitAddNewTag(group.id)
                     }
                   }}
                   onKeyDown={e => {
-                    if (e.key === 'Enter') onSubmitAddNewTag(group.id)
-                    if (e.key === 'Escape') {
+                    if (e.key === 'Enter' && !isInspecting) onSubmitAddNewTag(group.id)
+                    if (e.key === 'Escape' && !isInspecting) {
                       onCancelAddNewTag()
                     }
                   }}
@@ -585,14 +588,20 @@ const DimensionGroupCard: React.FC<DimensionGroupCardProps> = React.memo(
                 <Button
                   size="icon"
                   variant="ghost"
+                  disabled={isInspecting}
                   className="h-5.5 w-5.5 text-primary hover:text-primary hover:bg-primary/10 rounded-md cursor-pointer"
-                  onClick={() => onSubmitAddNewTag(group.id)}
+                  onClick={() => !isInspecting && onSubmitAddNewTag(group.id)}
                 >
-                  <MaterialIcon icon="check" className="text-xs" />
+                  {isInspecting ? (
+                    <MaterialIcon icon="progress_activity" className="text-xs animate-spin" />
+                  ) : (
+                    <MaterialIcon icon="check" className="text-xs" />
+                  )}
                 </Button>
                 <Button
                   size="icon"
                   variant="ghost"
+                  disabled={isInspecting}
                   className="h-5.5 w-5.5 text-muted-foreground hover:text-foreground rounded-md cursor-pointer"
                   onClick={onCancelAddNewTag}
                 >
@@ -623,7 +632,7 @@ const DimensionGroupCard: React.FC<DimensionGroupCardProps> = React.memo(
               <MaterialIcon icon="add_circle" className="text-xs" />
               <span>{name}</span>
               <Badge variant="secondary" className="text-[9px] px-1 py-0 h-3.5 bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 font-normal">
-                {t('待添加')}
+                {t('待附加')}
               </Badge>
               <MaterialIcon
                 icon="close"
@@ -672,7 +681,7 @@ DimensionGroupCard.displayName = 'DimensionGroupCard'
 /**
  * 分类维度树形层级嵌套卡片组件 (React.memo)
  * 根维度卡片 -> 直属标签 -> 树形引导线 -> 子维度分组卡片 (如安全等级、处理状态)
- * 支持平滑折叠/展开、直属标签与子维度独立批量全附/重置、命中高亮徽章
+ * 支持平滑折叠/展开、直属标签与子维度独立批量全附/恢复、命中高亮徽章
  */
 interface HierarchicalDimensionCardProps {
   item: HierarchicalDimensionGroup
@@ -791,7 +800,7 @@ const HierarchicalDimensionCard: React.FC<HierarchicalDimensionCardProps> = Reac
                   className="text-[11px] text-muted-foreground hover:text-foreground px-1.5 py-0.5 rounded-md hover:bg-muted transition-colors cursor-pointer"
                   title={t('恢复该维度默认状态')}
                 >
-                  {t('重置')}
+                  {t('恢复')}
                 </button>
               </div>
             )}
@@ -892,7 +901,7 @@ const HierarchicalDimensionCard: React.FC<HierarchicalDimensionCardProps> = Reac
                                 className="text-[10px] text-muted-foreground hover:text-foreground px-1 py-0.5 rounded hover:bg-muted transition-colors cursor-pointer"
                                 title={t('恢复该子维度默认状态')}
                               >
-                                {t('重置')}
+                                {t('恢复')}
                               </button>
                             </div>
                           )}
@@ -956,11 +965,29 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
   const [tagStates, setTagStates] = useState<Record<string, TagActionState>>({})
   // 新建标签列表: dimensionId -> string[]
   const [newTagNames, setNewTagNames] = useState<Record<number, string[]>>({})
+  // 新建标签的受控元数据映射: dimensionId -> tagName -> { isControlled, matchedParent, code?, ancestryMatchedCode?, targetParentCode }
+  const [newTagMetaMap, setNewTagMetaMap] = useState<
+    Record<
+      number,
+      Record<
+        string,
+        {
+          isControlled: boolean
+          matchedParent: boolean
+          code?: string | null
+          ancestryMatchedCode?: string | null
+          targetParentCode: string
+        }
+      >
+    >
+  >({})
   // 标记待删除的已有泛维度标签集合: Set of `${dimensionId}::${tagValue}`
   const [deletedTagKeys, setDeletedTagKeys] = useState<Set<string>>(() => new Set())
   // 正在内嵌输入的维度ID
   const [activeInputDimId, setActiveInputDimId] = useState<number | null>(null)
   const [inputVal, setInputVal] = useState('')
+  // 正在向 Omni 预检受控语义的加载状态 (互斥防重)
+  const [isInspectingTag, setIsInspectingTag] = useState(false)
   // 搜索关键字
   const [searchQuery, setSearchQuery] = useState('')
   // 异步获取的全量预设维度定义（包含当前文件集合未拥有的所有预设标签）
@@ -1377,8 +1404,8 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
           resolvedDimId = matched.dimId
           resolvedDimName = matched.name
         } else {
-          resolvedDimId = 28
-          resolvedDimName = t('内容标签')
+          resolvedDimId = undefined
+          resolvedDimName = CANONICAL_NAMES.CONTENT_TAGS
         }
       }
 
@@ -1430,8 +1457,12 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
     result.sort((a, b) => {
       if (a.dimensionName !== b.dimensionName) {
         // 让“内容标签”排在最后
-        const isAContent = a.dimensionId === 28 || a.dimensionName === CANONICAL_NAMES.CONTENT_TAGS
-        const isBContent = b.dimensionId === 28 || b.dimensionName === CANONICAL_NAMES.CONTENT_TAGS
+        const isAContent =
+          a.dimensionName === CANONICAL_NAMES.CONTENT_TAGS ||
+          (a.dimensionId ? CONTROLLED_DIMENSION_ROOT_CODES[a.dimensionId] === CONTENT_TAGS_CODE : false)
+        const isBContent =
+          b.dimensionName === CANONICAL_NAMES.CONTENT_TAGS ||
+          (b.dimensionId ? CONTROLLED_DIMENSION_ROOT_CODES[b.dimensionId] === CONTENT_TAGS_CODE : false)
         if (isAContent && !isBContent) return 1
         if (!isAContent && isBContent) return -1
         return a.dimensionName.localeCompare(b.dimensionName, 'zh-CN')
@@ -1512,29 +1543,93 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
   }, [])
 
   // 提交新建标签
-  const handleAddNewTag = useCallback((dimensionId: number) => {
-    const trimmed = inputVal.trim()
-    if (!trimmed) {
-      setActiveInputDimId(null)
-      return
-    }
-    if (isExtensionTag(trimmed)) {
-      toast.warning(t('扩展名由程序自动处理，无需手动新建扩展名标签'))
-      return
-    }
-    // 铁律：维度名称绝不能作为标签添加
-    const targetGroup = effectiveDimensionGroups.find(g => g.id === dimensionId)
-    if ((targetGroup && trimmed === targetGroup.name.trim()) || rootCategoryNamesSet.has(trimmed)) {
-      toast.warning(t('维度名称不能作为标签添加'))
-      return
-    }
-    setNewTagNames(prev => ({
-      ...prev,
-      [dimensionId]: [...(prev[dimensionId] || []).filter(n => n !== trimmed), trimmed]
-    }))
-    setInputVal('')
-    setActiveInputDimId(null)
-  }, [inputVal, effectiveDimensionGroups, rootCategoryNamesSet])
+  const handleAddNewTag = useCallback(
+    async (dimensionId: number) => {
+      const trimmed = inputVal.trim()
+      if (!trimmed) {
+        setActiveInputDimId(null)
+        return
+      }
+      if (isExtensionTag(trimmed)) {
+        toast.warning(t('扩展名由程序自动识别，无需手动新建标签'))
+        return
+      }
+      // 铁律：维度名称绝不能作为标签添加 (多重自我同名拦截)
+      const targetGroup = effectiveDimensionGroups.find(g => g.id === dimensionId)
+      if (
+        (targetGroup &&
+          (trimmed === targetGroup.name.trim() ||
+            (isControlledConcept(trimmed) && targetGroup.code === concept(trimmed)))) ||
+        rootCategoryNamesSet.has(trimmed)
+      ) {
+        toast.warning(t('维度名称不能作为标签，请输入具体标签名'))
+        return
+      }
+
+      if (isInspectingTag) return
+      setIsInspectingTag(true)
+
+      try {
+        const targetParentCode =
+          targetGroup?.code ||
+          (targetGroup?.name && isControlledConcept(targetGroup.name) ? concept(targetGroup.name) : undefined) ||
+          'builtin.content_tags'
+
+        // 即时预检受控语义
+        let meta: {
+          isControlled: boolean
+          matchedParent: boolean
+          code?: string | null
+          ancestryMatchedCode?: string | null
+          targetParentCode: string
+        } = {
+          isControlled: false,
+          matchedParent: false,
+          targetParentCode
+        }
+
+        if (window.electronAPI?.organizeBatch?.inspectControlledTags) {
+          try {
+            const inspectRes = await window.electronAPI.organizeBatch.inspectControlledTags([
+              { tagName: trimmed, targetParentCode }
+            ])
+            if (inspectRes && inspectRes.success && inspectRes.results?.[0]) {
+              const r = inspectRes.results[0]
+              meta = {
+                isControlled: r.isControlled,
+                matchedParent: r.matchedParent,
+                code: r.code,
+                ancestryMatchedCode: r.ancestryMatchedCode,
+                targetParentCode
+              }
+            }
+          } catch (err: any) {
+            // 悲观熔断铁律：Omni 离线或超时强阻断，保留输入框文本，严禁静默假成功
+            toast.error(t('受控标签鉴别失败: Omni 服务未就绪或响应超时'))
+            return
+          }
+        }
+
+        setNewTagMetaMap(prev => ({
+          ...prev,
+          [dimensionId]: {
+            ...(prev[dimensionId] || {}),
+            [trimmed]: meta
+          }
+        }))
+
+        setNewTagNames(prev => ({
+          ...prev,
+          [dimensionId]: [...(prev[dimensionId] || []).filter(n => n !== trimmed), trimmed]
+        }))
+        setInputVal('')
+        setActiveInputDimId(null)
+      } finally {
+        setIsInspectingTag(false)
+      }
+    },
+    [inputVal, effectiveDimensionGroups, rootCategoryNamesSet, isInspectingTag]
+  )
 
   // 删除新建标签
   const handleRemoveNewTag = useCallback((dimensionId: number, name: string) => {
@@ -1542,6 +1637,14 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       ...prev,
       [dimensionId]: (prev[dimensionId] || []).filter(n => n !== name)
     }))
+    setNewTagMetaMap(prev => {
+      const nextDimMap = { ...(prev[dimensionId] || {}) }
+      delete nextDimMap[name]
+      return {
+        ...prev,
+        [dimensionId]: nextDimMap
+      }
+    })
   }, [])
 
   // 标记泛维度中的已有标签为待删除（从当前工作台中隐藏并加入移除变更队列）
@@ -1566,7 +1669,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       return next
     })
 
-    toast.info(t('已将标签「{name}」标记为待删除，点击保存后生效', { name: tagName }))
+    toast.info(t('已将标签「{name}」标记为待移除，点击保存后生效', { name: tagName }))
   }, [])
 
   // 汇总变更并提交
@@ -1579,12 +1682,70 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
 
     if (activeInputDimId !== null && inputVal.trim()) {
       const trimmed = inputVal.trim()
-      if (!isExtensionTag(trimmed)) {
-        activeNewTags[activeInputDimId] = [
-          ...(activeNewTags[activeInputDimId] || []).filter(n => n !== trimmed),
-          trimmed
-        ]
+      const targetGroup = effectiveDimensionGroups.find(g => g.id === activeInputDimId)
+      const isDimName =
+        (targetGroup &&
+          (trimmed === targetGroup.name.trim() ||
+            (isControlledConcept(trimmed) && targetGroup.code === concept(trimmed)))) ||
+        rootCategoryNamesSet.has(trimmed)
+
+      if (isExtensionTag(trimmed)) {
+        toast.warning(t('扩展名由程序自动识别，无需手动新建标签'))
+        return
       }
+      if (isDimName) {
+        toast.warning(t('维度名称不能作为标签，请输入具体标签名'))
+        return
+      }
+
+      // 提取未提交文本即时向 Omni 预检，严禁未鉴别直接保存
+      const targetParentCode =
+        targetGroup?.code ||
+        (targetGroup?.name && isControlledConcept(targetGroup.name) ? concept(targetGroup.name) : undefined) ||
+        'builtin.content_tags'
+
+      let meta: {
+        isControlled: boolean
+        matchedParent: boolean
+        code?: string | null
+        ancestryMatchedCode?: string | null
+        targetParentCode: string
+      } = {
+        isControlled: false,
+        matchedParent: false,
+        targetParentCode
+      }
+
+      if (window.electronAPI?.organizeBatch?.inspectControlledTags) {
+        try {
+          const inspectRes = await window.electronAPI.organizeBatch.inspectControlledTags([
+            { tagName: trimmed, targetParentCode }
+          ])
+          if (inspectRes && inspectRes.success && inspectRes.results?.[0]) {
+            const r = inspectRes.results[0]
+            meta = {
+              isControlled: r.isControlled,
+              matchedParent: r.matchedParent,
+              code: r.code,
+              ancestryMatchedCode: r.ancestryMatchedCode,
+              targetParentCode
+            }
+          }
+        } catch (err: any) {
+          toast.error(t('受控标签鉴别失败: Omni 服务未就绪或响应超时'))
+          return
+        }
+      }
+
+      newTagMetaMap[activeInputDimId] = {
+        ...(newTagMetaMap[activeInputDimId] || {}),
+        [trimmed]: meta
+      }
+
+      activeNewTags[activeInputDimId] = [
+        ...(activeNewTags[activeInputDimId] || []).filter(n => n !== trimmed),
+        trimmed
+      ]
       setInputVal('')
       setActiveInputDimId(null)
     }
@@ -1617,7 +1778,10 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
         CONTROLLED_DIMENSION_ROOT_CODES[dimId] ||
         (dimName && isControlledConcept(dimName) ? concept(dimName) : undefined)
       const matchedTag = (group?.tags || []).find(t => t.tagValue === tagValue)
-      const tagCode = (matchedTag as any)?.tagCode || (matchedTag as any)?.code
+      const tagCode =
+        (matchedTag as any)?.tagCode ||
+        (matchedTag as any)?.code ||
+        (isControlledConcept(tagValue) ? concept(tagValue) : undefined)
 
       if (state === 'add_all') {
         addTags.push({
@@ -1656,7 +1820,10 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
           CONTROLLED_DIMENSION_ROOT_CODES[dimId] ||
           (dimName && isControlledConcept(dimName) ? concept(dimName) : undefined)
         const matchedTag = (group?.tags || []).find(t => t.tagValue === tagValue)
-        const tagCode = (matchedTag as any)?.tagCode || (matchedTag as any)?.code
+        const tagCode =
+          (matchedTag as any)?.tagCode ||
+          (matchedTag as any)?.code ||
+          (isControlledConcept(tagValue) ? concept(tagValue) : undefined)
         removeTags.push({
           dimensionId: dimId,
           dimensionCode: dimCode,
@@ -1678,12 +1845,16 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
         (dimName && isControlledConcept(dimName) ? concept(dimName) : undefined)
       for (const name of names) {
         if (name && name.trim()) {
+          const trimmedName = name.trim()
+          const cachedMeta = newTagMetaMap[dimId]?.[trimmedName]
+          const isControlledHit = cachedMeta?.isControlled && cachedMeta?.matchedParent && cachedMeta?.code
           newTags.push({
             dimensionId: dimId,
             dimensionCode: dimCode,
             dimensionName: dimName,
-            viaParentCode: dimCode,
-            tagName: name.trim()
+            viaParentCode: cachedMeta?.ancestryMatchedCode || dimCode,
+            tagCode: isControlledHit ? cachedMeta.code! : undefined,
+            tagName: trimmedName
           })
         }
       }
@@ -1694,16 +1865,22 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       return
     }
 
-    await onSaveTags({
-      fileIds,
-      addTags,
-      removeTags,
-      newTags
-    })
-    await loadFullDimensions()
-    setTagStates({})
-    setNewTagNames({})
-    setDeletedTagKeys(new Set())
+    try {
+      await onSaveTags({
+        fileIds,
+        addTags,
+        removeTags,
+        newTags
+      })
+      await loadFullDimensions()
+      setTagStates({})
+      setNewTagNames({})
+      setNewTagMetaMap({})
+      setDeletedTagKeys(new Set())
+    } catch (err: any) {
+      toast.error(t('保存标签失败: {msg}', { msg: err?.message || String(err) }))
+      // 悲观保护：发生异常时绝不重置工作台，保留已录入标签
+    }
   }
 
   // 过滤后的维度与标签列表
@@ -1741,10 +1918,12 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       }
     }
 
-    // 泛维度标签列：将“内容标签”维度（通过 CONTENT_TAGS_CODE / ID=28 / 名称）放置到最后
+    // 泛维度标签列：将“内容标签”维度（通过 CONTENT_TAGS_CODE / CANONICAL_NAMES）放置到最后
     pan.sort((a, b) => {
-      const isAContent = (a as any).code === CONTENT_TAGS_CODE || a.id === 28 || a.name === '内容标签' || a.name?.includes('内容标签')
-      const isBContent = (b as any).code === CONTENT_TAGS_CODE || b.id === 28 || b.name === '内容标签' || b.name?.includes('内容标签')
+      const codeA = (a as any).code || (a.id ? CONTROLLED_DIMENSION_ROOT_CODES[a.id] : undefined)
+      const codeB = (b as any).code || (b.id ? CONTROLLED_DIMENSION_ROOT_CODES[b.id] : undefined)
+      const isAContent = codeA === CONTENT_TAGS_CODE || a.name === CANONICAL_NAMES.CONTENT_TAGS
+      const isBContent = codeB === CONTENT_TAGS_CODE || b.name === CANONICAL_NAMES.CONTENT_TAGS
       if (isAContent && !isBContent) return 1
       if (!isAContent && isBContent) return -1
       return 0
@@ -2170,6 +2349,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
                             isPan={true}
                             groupNewTags={newTagNames[group.id] || []}
                             isInputActive={activeInputDimId === group.id}
+                            isInspecting={isInspectingTag}
                             inputVal={inputVal}
                             tagStates={tagStates}
                             tagFileCounts={tagFileCounts}

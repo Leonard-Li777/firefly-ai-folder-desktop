@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
 import { BatchTagView } from '../components/BatchTagView'
 import { DimensionGroup } from '@firefly/types'
 import { concept } from '@firefly/shared'
+import { toast } from '../../../common/Toast'
 
 const { mockT } = vi.hoisted(() => {
   const tFn = (key: string, params?: any) => {
@@ -122,6 +123,21 @@ describe('BatchTagView 批量打标视图回归测试', () => {
     ;(window as any).electronAPI = {
       analyzedDirectory: {
         getDimensionGroups: vi.fn().mockResolvedValue({ groups: mockPresetGroups })
+      },
+      organizeBatch: {
+        inspectControlledTags: vi.fn().mockResolvedValue({
+          success: true,
+          results: [
+            {
+              tagName: '刘慈欣',
+              isControlled: false,
+              matchedParent: false,
+              code: null,
+              canonicalName: null,
+              parentCodes: []
+            }
+          ]
+        })
       }
     }
   })
@@ -259,7 +275,9 @@ describe('BatchTagView 批量打标视图回归测试', () => {
     fireEvent.keyDown(tagInput, { key: 'Enter', code: 'Enter' })
 
     // 检查“刘慈欣”是否出现在卡片中
-    expect(rightCol).toHaveTextContent('刘慈欣')
+    await waitFor(() => {
+      expect(rightCol).toHaveTextContent('刘慈欣')
+    })
 
     // 触发保存操作
     const saveTrigger = document.getElementById('btn-save-tags-trigger')
@@ -279,5 +297,157 @@ describe('BatchTagView 批量打标视图回归测试', () => {
         })
       )
     })
+  })
+
+  it('移除安全等级维度的“公开”标签并保存时，必须准确提交 removeTags 且包含安全等级上下文', async () => {
+    const handleSaveTags = vi.fn().mockResolvedValue(undefined)
+    render(
+      <BatchTagView
+        files={mockFiles}
+        dimensionGroups={[]}
+        onSaveTags={handleSaveTags}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('section-standard-dimensions')).toBeInTheDocument()
+    })
+
+    const leftCol = screen.getByTestId('section-standard-dimensions')
+    await waitFor(() => {
+      expect(leftCol).toHaveTextContent('安全等级')
+    })
+
+    // 找到安全等级下的“公开”标签胶囊并点击两次（Initial -> Add All -> Remove All）
+    const publicPill = await waitFor(() => screen.getByText('公开'))
+    fireEvent.click(publicPill) // -> add_all
+    fireEvent.click(publicPill) // -> remove_all
+
+    // 触发保存操作
+    const saveTrigger = document.getElementById('btn-save-tags-trigger')
+    expect(saveTrigger).toBeInTheDocument()
+    fireEvent.click(saveTrigger!)
+
+    await waitFor(() => {
+      expect(handleSaveTags).toHaveBeenCalledWith(
+        expect.objectContaining({
+          removeTags: expect.arrayContaining([
+            expect.objectContaining({
+              dimensionId: 17,
+              dimensionName: '安全等级',
+              tagName: '公开'
+            })
+          ])
+        })
+      )
+    })
+  })
+
+  it('防自身同名污染：在作者维度下输入“作者”时必须被拦截阻止添加并弹出警告 toast', async () => {
+    render(
+      <BatchTagView
+        files={mockFiles}
+        dimensionGroups={[]}
+        onSaveTags={vi.fn()}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('section-pan-dimensions')).toBeInTheDocument()
+    })
+
+    // 点击作者维度的“+ 新建”按钮进入输入态
+    const authorCard = screen.getByText('作者').closest('.space-y-3')
+    expect(authorCard).toBeInTheDocument()
+    const addBtn = within(authorCard!).getByText('新建标签')
+    fireEvent.click(addBtn)
+
+    const input = await waitFor(() => screen.getByPlaceholderText('输入新标签名...'))
+    expect(input).toBeInTheDocument()
+
+    // 输入与维度同名的“作者”并敲回车
+    fireEvent.change(input, { target: { value: '作者' } })
+    fireEvent.keyDown(input, { key: 'Enter' })
+
+    // 必须触发警告且不应发起 Omni 预检
+    expect(toast.warning).toHaveBeenCalledWith('维度名称不能作为标签，请输入具体标签名')
+  })
+
+  it('即时预检受控语义：输入受控标签后正确调用 inspectControlledTags 并携带目标父级 code', async () => {
+    const inspectMock = vi.fn().mockResolvedValue({
+      success: true,
+      results: [
+        {
+          tagName: '塔防',
+          isControlled: true,
+          matchedParent: true,
+          code: 'builtin.tower_defense',
+          canonicalName: '塔防',
+          parentCodes: ['builtin.game_type']
+        }
+      ]
+    })
+    ;(window as any).electronAPI.organizeBatch.inspectControlledTags = inspectMock
+
+    render(
+      <BatchTagView
+        files={mockFiles}
+        dimensionGroups={[]}
+        onSaveTags={vi.fn()}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('section-pan-dimensions')).toBeInTheDocument()
+    })
+
+    const authorCard = screen.getByText('作者').closest('.space-y-3')
+    expect(authorCard).toBeInTheDocument()
+    const addBtn = within(authorCard!).getByText('新建标签')
+    fireEvent.click(addBtn)
+
+    const input = await waitFor(() => screen.getByPlaceholderText('输入新标签名...'))
+    fireEvent.change(input, { target: { value: '塔防' } })
+    fireEvent.keyDown(input, { key: 'Enter' })
+
+    await waitFor(() => {
+      expect(inspectMock).toHaveBeenCalledWith([
+        { tagName: '塔防', targetParentCode: concept('作者') }
+      ])
+    })
+  })
+
+  it('悲观强阻断：Omni 服务超时或抛错时必须弹窗阻断添加并保留输入框文本', async () => {
+    const inspectMock = vi.fn().mockRejectedValue(new Error('Omni timeout 1500ms'))
+    ;(window as any).electronAPI.organizeBatch.inspectControlledTags = inspectMock
+
+    render(
+      <BatchTagView
+        files={mockFiles}
+        dimensionGroups={[]}
+        onSaveTags={vi.fn()}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('section-pan-dimensions')).toBeInTheDocument()
+    })
+
+    const authorCard = screen.getByText('作者').closest('.space-y-3')
+    expect(authorCard).toBeInTheDocument()
+    const addBtn = within(authorCard!).getByText('新建标签')
+    fireEvent.click(addBtn)
+
+    const input = await waitFor(() => screen.getByPlaceholderText('输入新标签名...'))
+    fireEvent.change(input, { target: { value: '三体' } })
+    fireEvent.keyDown(input, { key: 'Enter' })
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('受控标签鉴别失败: Omni 服务未就绪或响应超时')
+    })
+
+    // 输入框依然保持可见，严禁被假装成功清空
+    expect(input).toBeInTheDocument()
+    expect(input).toHaveValue('三体')
   })
 })
