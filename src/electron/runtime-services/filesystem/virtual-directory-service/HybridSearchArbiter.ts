@@ -38,17 +38,30 @@ import { omniService } from '../../system/omni-service'
 
 /** RRF 平滑常量 K（避免 top-rank 分数悬殊、稳定融合放缩） */
 export const HYBRID_SEARCH_RRF_K = 60
-/** 加权 RRF 四路权重：精确标识符 > FTS 字面 > 向量语义 > 文件名提升 */
+/** 加权 RRF 四路权重：精确标识符 > FTS 字面 / 向量语义 > 文件名提升 */
 export const HYBRID_SEARCH_WEIGHTS = {
   fts: 2.2,
-  vector: 1.6,
+  vector: 2.0,
   name: 0.9,
   exact: 2.8
 } as const
 /** 单源候选池大小（FTS / 向量 / FS 各自的上限，也是融合池的上限） */
 export const HYBRID_SEARCH_POOL_SIZE = 200
-/** BM25 列权（对齐 file-dao.ts 现有 bm25(files_fts, 10.0, 5.0, 1.0, 2.0) 调用） */
-export const HYBRID_BM25_COLUMN_WEIGHTS = [10.0, 5.0, 1.0, 2.0] as const
+/** BM25 完整 9 列列权（对齐 files_fts 架构：name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags） */
+export const HYBRID_BM25_COLUMN_WEIGHTS = [8.0, 6.0, 4.0, 3.0, 5.0, 4.0, 3.0, 4.0, 5.0] as const
+
+/** 列权名字典（支持多模式/历史桩表动态自适应） */
+export const DEFAULT_COLUMN_WEIGHT_MAP: Record<string, number> = {
+  name: 8.0,
+  smart_name: 6.0,
+  tags: 5.0,
+  multimodal_content: 5.0,
+  description: 4.0,
+  ocr: 4.0,
+  asr: 4.0,
+  content: 3.0,
+  lrc: 3.0
+}
 
 /** 已融合的已分析候选 */
 export interface HybridRankedCandidate {
@@ -237,9 +250,15 @@ export function weightedRrfScore(
 }
 
 /**
+/** 中文高频无意义虚词集合，避免污染多词覆盖率计算 */
+const CHINESE_STOP_WORDS = new Set([
+  '的', '了', '在', '是', '有', '和', '与', '或', '个', '只', '部', '张', '本', '套', '条', '幅', '块', '支', '所', '间'
+])
+
+/**
  * 文件名提升分（NameMatch）：
- * - name / smart_name 任意一个含查询全串（不区分大小写）→ 1.0
- * - 否则取 token 覆盖率最大值（分词命中比例）
+ * - name / smart_name 任意一个含查询全串（不区分大小写）→ 1.0 (强字面置顶)
+ * - 否则取核心有效 token 覆盖率并施加平滑阻尼（封顶 0.35），防止无意义单字虚假命中暴打向量与 FTS
  */
 export function computeNameBoost(
   name: string | undefined,
@@ -252,19 +271,34 @@ export function computeNameBoost(
     .filter((s): s is string => !!s && typeof s === 'string')
     .map(s => s.toLowerCase())
   if (candidates.length === 0) return 0
-  const tokens = Array.from(new Set(tokenize(q))).filter(isUsefulToken)
-  let best = 0
+
+  // 1. 全串完全包含 -> 1.0 (最高等级强提升)
   for (const cand of candidates) {
     if (cand.includes(q)) return 1
-    if (tokens.length === 0) continue
+  }
+
+  // 2. 严格 token 抽取：过滤单字虚词；仅允许 >= 2 字符的有效实体词，或在全查询本身仅为单字符时的特例
+  const rawTokens = Array.from(new Set(tokenize(q))).filter(isUsefulToken)
+  const effectiveTokens = rawTokens.filter(t => {
+    if (CHINESE_STOP_WORDS.has(t)) return false
+    if (t.length < 2 && q.length >= 2) return false
+    return true
+  })
+
+  if (effectiveTokens.length === 0) return 0
+
+  let best = 0
+  for (const cand of candidates) {
     let hitTokens = 0
-    for (const t of tokens) {
+    for (const t of effectiveTokens) {
       if (cand.includes(t.toLowerCase())) hitTokens += 1
     }
-    const ratio = hitTokens / tokens.length
-    if (ratio > best) best = ratio
+    const ratio = hitTokens / effectiveTokens.length
+    // 部分匹配平滑阻尼，封顶 0.35，避免弱名字匹配压制高分向量与正文
+    const score = ratio * 0.35
+    if (score > best) best = score
   }
-  return best
+  return Math.round(best * 1000) / 1000
 }
 
 /**
@@ -657,7 +691,7 @@ export class HybridSearchArbiter {
     }
   }
 
-  /** FTS5 快速字面候选（按 bm25 权重升序 = 相关度降序），返回 null 表示该路失败 */
+  /** FTS5 快速字面候选（按 bm25 权重升序 = 相关度降序），包含短词/多词智能 LIKE 安全降级召回，返回 null 表示该路失败 */
   private queryFtsCandidates(
     keyword: string,
     whereClauses: string[],
@@ -665,23 +699,103 @@ export class HybridSearchArbiter {
     poolSize: number
   ): string[] | null {
     try {
-      const ftsTable = this.db
-        .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='files_fts'")
-        .get()
-      if (!ftsTable) return []
+      const ftsCols = this.db
+        .prepare("PRAGMA table_info(files_fts)")
+        .all() as Array<{ name: string }>
+      if (!ftsCols || ftsCols.length === 0) return []
+
+      const indexedCols = ftsCols.filter(c => c.name !== 'file_fingerprint').map(c => c.name)
+      const colSet = new Set(indexedCols)
       const extraWhere = whereClauses.length > 0 ? `AND ${whereClauses.join(' AND ')}` : ''
-      const rows = this.db
-        .prepare(`
-          SELECT f.file_fingerprint AS file_fingerprint
-          FROM files_fts
-          JOIN files f ON f.rowid = files_fts.rowid
-          JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint
-          WHERE files_fts MATCH ?
-            ${extraWhere}
-          ORDER BY bm25(files_fts, ${HYBRID_BM25_COLUMN_WEIGHTS.join(', ')}) ASC
-          LIMIT ?
-        `)
-        .all(sanitizeFtsQuery(keyword), ...queryParams, poolSize) as Array<{ file_fingerprint: string }>
+
+      const trimmed = (keyword || '').trim()
+      if (!trimmed) return []
+
+      let rows: Array<{ file_fingerprint: string }> = []
+      const tokens = trimmed.split(/\s+/).filter(Boolean)
+      const hasLongToken = tokens.some(t => t.length >= 3)
+
+      // 1. 若存在 >=3 字符的有效 token，优先尝试 FTS5 trigram MATCH
+      if (hasLongToken) {
+        try {
+          const safeQuery = sanitizeFtsQuery(trimmed)
+          if (safeQuery) {
+            const weights = indexedCols.map(c => DEFAULT_COLUMN_WEIGHT_MAP[c] ?? 1.0)
+            rows = this.db
+              .prepare(`
+                SELECT f.file_fingerprint AS file_fingerprint
+                FROM files_fts
+                JOIN files f ON f.rowid = files_fts.rowid
+                JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint
+                WHERE files_fts MATCH ?
+                  ${extraWhere}
+                ORDER BY bm25(files_fts, ${weights.join(', ')}) ASC
+                LIMIT ?
+              `)
+              .all(safeQuery, ...queryParams, poolSize) as Array<{ file_fingerprint: string }>
+          }
+        } catch {
+          // MATCH 语法失败（如特殊字符引起）平滑进入 LIKE 兜底
+        }
+      }
+
+      // 2. 若 MATCH 未能召回任何候选（短词 <3 字符、空格分隔多词或未命中），执行多列 LIKE 安全降级召回
+      if (rows.length === 0 && tokens.length > 0) {
+        const targetSearchCols = [
+          'name',
+          'smart_name',
+          'description',
+          'content',
+          'multimodal_content',
+          'ocr',
+          'asr',
+          'lrc',
+          'tags'
+        ].filter(c => colSet.has(c))
+
+        if (targetSearchCols.length > 0) {
+          const likeConditions: string[] = []
+          const likeParams: any[] = []
+          for (const token of tokens) {
+            const colLikes = targetSearchCols.map(c => `files_fts.${c} LIKE ? ESCAPE '\\'`).join(' OR ')
+            likeConditions.push(`(${colLikes})`)
+            const p = `%${token.replace(/([%_\\])/g, '\\$1')}%`
+            for (let i = 0; i < targetSearchCols.length; i++) {
+              likeParams.push(p)
+            }
+          }
+
+          const exactNameParam = `%${trimmed.replace(/([%_\\])/g, '\\$1')}%`
+          const fallbackSql = `
+            SELECT f.file_fingerprint AS file_fingerprint
+            FROM files_fts
+            JOIN files f ON f.rowid = files_fts.rowid
+            JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint
+            WHERE ${likeConditions.join(' AND ')}
+              ${extraWhere}
+            ORDER BY
+              CASE
+                WHEN wf.name LIKE ? ESCAPE '\\' THEN 0
+                WHEN files_fts.smart_name LIKE ? ESCAPE '\\' THEN 1
+                ${colSet.has('tags') ? "WHEN files_fts.tags LIKE ? ESCAPE '\\' THEN 2" : ''}
+                WHEN files_fts.description LIKE ? ESCAPE '\\' THEN 3
+                ELSE 4
+              END ASC
+            LIMIT ?
+          `
+          const orderParams = [exactNameParam, exactNameParam]
+          if (colSet.has('tags')) orderParams.push(exactNameParam)
+          orderParams.push(exactNameParam)
+
+          rows = this.db.prepare(fallbackSql).all(
+            ...likeParams,
+            ...queryParams,
+            ...orderParams,
+            poolSize
+          ) as Array<{ file_fingerprint: string }>
+        }
+      }
+
       return rows.map(r => r.file_fingerprint)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
@@ -798,12 +912,57 @@ export class HybridSearchArbiter {
         return []
       }
 
-      // 优选每个视频的最佳跳轴切片：
-      // 1. 获取该视频最高切片得分 maxChunkScore；
-      // 2. 筛选顶尖梯队切片 (score >= maxChunkScore - 0.035)；
-      // 3. 梯队内引入影视视听结构与时序实体聚焦（Golden Mid-Arc & Temporal Cluster）：
+      // 1. 预先批量查询所有命中切片视频的 file_video_chunks 元数据（包括各切片起止时间与视频总时长）
+      const parentsWithAnyChunks = Array.from(parentAggMap.values()).filter(p => p.chunks.length > 0)
+      const chunkTimingMap = new Map<string, { startSec: number; endSec: number }>()
+      const videoDurationMap = new Map<string, number>()
+      const videoMaxChunkIndexMap = new Map<string, number>()
+
+      if (parentsWithAnyChunks.length > 0) {
+        try {
+          const placeholders = parentsWithAnyChunks.map(() => '?').join(',')
+          const rows = this.db
+            .prepare(
+              `SELECT file_fingerprint, chunk_index, start_sec, end_sec
+               FROM file_video_chunks
+               WHERE file_fingerprint IN (${placeholders})`
+            )
+            .all(...parentsWithAnyChunks.map(p => p.parentFp)) as Array<{
+            file_fingerprint: string
+            chunk_index: number
+            start_sec: number
+            end_sec: number
+          }>
+
+          for (const r of rows) {
+            chunkTimingMap.set(`${r.file_fingerprint}:c${r.chunk_index}`, {
+              startSec: r.start_sec,
+              endSec: r.end_sec
+            })
+
+            const currentMaxEnd = videoDurationMap.get(r.file_fingerprint) ?? 0
+            if (r.end_sec > currentMaxEnd) {
+              videoDurationMap.set(r.file_fingerprint, r.end_sec)
+            }
+
+            const currentMaxIdx = videoMaxChunkIndexMap.get(r.file_fingerprint) ?? 0
+            if (r.chunk_index > currentMaxIdx) {
+              videoMaxChunkIndexMap.set(r.file_fingerprint, r.chunk_index)
+            }
+          }
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err)
+          logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchArbiter] 查询 file_video_chunks 失败: ', msg)
+        }
+      }
+
+      // 2. 优选每个视频的最佳跳轴切片：
+      // 1) 获取该视频最高切片得分 maxChunkScore；
+      // 2) 筛选顶尖梯队切片 (score >= maxChunkScore - 0.035)；
+      // 3) 梯队内引入影视视听结构与时序实体聚焦（Golden Mid-Arc & Temporal Cluster）：
       //    - 连续簇加成：前后相邻切片同样处于顶尖梯队，说明是持续展开的高光动态实体事件；
-      //    - 黄金中段优先：开篇前 25% 往往是环境空镜头（如雪山、蓝天大远景），正主体与高光实体特写集中在 30%~75% 黄金中段。
+      //    - 黄金中段余弦钟形加成：开篇前 20% 往往是环境空镜头（如雪山、蓝天大远景），片尾 20% 为转场收尾，
+      //      正主体与高光实体特写高度聚焦在 40%~65% 黄金中心轴线（最高享有 +0.030 满额加成，向两侧平滑衰减）。
       for (const agg of parentAggMap.values()) {
         if (agg.chunks.length === 0) continue
         agg.chunks.sort((a, b) => b.score - a.score)
@@ -811,21 +970,35 @@ export class HybridSearchArbiter {
         const eliteThreshold = maxChunkScore - 0.035
         const eliteChunks = agg.chunks.filter(c => c.score >= eliteThreshold)
 
-        const totalChunksCount = agg.chunks.length
         const eliteSet = new Set(eliteChunks.map(c => c.chunkIndex))
+        const duration = videoDurationMap.get(agg.parentFp) ?? 0
+        const fallbackMaxChunk = videoMaxChunkIndexMap.get(agg.parentFp) ?? Math.max(...agg.chunks.map(c => c.chunkIndex), 1)
+
         let bestCandidate = agg.chunks[0]
         let bestPriorityScore = -1
 
         for (const c of eliteChunks) {
-          const ratio = totalChunksCount > 1 ? c.chunkIndex / (totalChunksCount - 1) : 0.5
-          // 黄金中段窗口：避开开篇前置空镜头与尾部转场，优先聚焦全片 30% ~ 75% 的正主体高光区间
-          const isGoldenMid = ratio >= 0.30 && ratio <= 0.75
-          const goldenBonus = isGoldenMid ? 0.020 : 0.0
+          // 精确计算物理时间比例 ratio（0.0 ~ 1.0）
+          let ratio = 0.5
+          const timing = chunkTimingMap.get(`${agg.parentFp}:c${c.chunkIndex}`)
+          if (timing && duration > 0) {
+            const midSec = (timing.startSec + timing.endSec) * 0.5
+            ratio = Math.max(0, Math.min(1, midSec / duration))
+          } else if (fallbackMaxChunk > 0) {
+            ratio = Math.max(0, Math.min(1, c.chunkIndex / fallbackMaxChunk))
+          }
 
+          // 黄金中心轴加成：以正片 50% 轴线为核心，采用半余弦平滑钟形加权（顶峰 +0.030，半宽 0.30）
+          const distFromCenter = Math.abs(ratio - 0.50)
+          let goldenBonus = 0
+          if (distFromCenter <= 0.30) {
+            goldenBonus = 0.030 * Math.cos((distFromCenter / 0.30) * (Math.PI / 2))
+          }
+
+          // 连续切片簇赋予时序凝聚度加成 (+0.005 每侧)
           const hasPrev = eliteSet.has(c.chunkIndex - 1)
           const hasNext = eliteSet.has(c.chunkIndex + 1)
-          // 连续切片簇赋予时序凝聚度加成 (+0.010 每侧)
-          const clusterBonus = (hasPrev ? 0.010 : 0) + (hasNext ? 0.010 : 0)
+          const clusterBonus = (hasPrev ? 0.005 : 0) + (hasNext ? 0.005 : 0)
 
           const priorityScore = c.score + goldenBonus + clusterBonus
           if (priorityScore > bestPriorityScore) {
@@ -845,36 +1018,7 @@ export class HybridSearchArbiter {
         (a, b) => b.bestScore - a.bestScore
       )
 
-      // 3. 批量查询切片起止时间元数据
-      const parentsWithChunks = sortedParents.filter(p => p.bestChunkIndex !== undefined)
-      const chunkTimingMap = new Map<string, { startSec: number; endSec: number }>()
-      if (parentsWithChunks.length > 0) {
-        try {
-          const placeholders = parentsWithChunks.map(() => '?').join(',')
-          const rows = this.db
-            .prepare(
-              `SELECT file_fingerprint, chunk_index, start_sec, end_sec
-               FROM file_video_chunks
-               WHERE file_fingerprint IN (${placeholders})`
-            )
-            .all(...parentsWithChunks.map(p => p.parentFp)) as Array<{
-            file_fingerprint: string
-            chunk_index: number
-            start_sec: number
-            end_sec: number
-          }>
-          for (const r of rows) {
-            chunkTimingMap.set(`${r.file_fingerprint}:c${r.chunk_index}`, {
-              startSec: r.start_sec,
-              endSec: r.end_sec
-            })
-          }
-        } catch (err: unknown) {
-          const msg = err instanceof Error ? err.message : String(err)
-          logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchArbiter] 查询 file_video_chunks 失败: ', msg)
-        }
-      }
-
+      // 3. 组装 VectorMatch 输出
       const out: VectorMatch[] = []
       for (const [idx, p] of sortedParents.entries()) {
         let matchedChunk: VectorMatch['matchedChunk']

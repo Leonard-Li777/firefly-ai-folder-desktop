@@ -24,14 +24,22 @@ import {
   loadPromptParagraph,
   IdentityMatchService,
   PathCosineService,
+  buildDirectoryPrompt,
+  buildFilePrompt,
   type MatchPerspectivesRequest,
-  type CalculateFilePathsCosineRequest
+  type CalculateFilePathsCosineRequest,
+  type FileMetaItem
 } from '@firefly/core-engine'
+import { OmniService } from '../../runtime-services/system/omni-service'
 import { createCoreEngineAdapters } from '../../adapters'
 import fs from 'fs-extra'
 import path from 'node:path'
 import { VIRTUAL_DIRECTORY_ROOT } from '../../runtime-services/filesystem/virtual-directory-service/utils'
 import { NamingDSLEngine } from '../../runtime-services/filesystem/naming-dsl-engine'
+
+/** 批量整理会话级文本特征向量缓存 (fileId -> number[])，防投毒且杜绝重复推理 */
+const organizeSessionVectorCache = new Map<number, number[]>()
+
 
 async function exportTreeToDirectory(
   tree: any[],
@@ -913,87 +921,195 @@ export function registerVirtualDirectoryIPCHandlers() {
     'organize-real-directory/calculate-file-paths-cosine',
     async (event, request: CalculateFilePathsCosineRequest) => {
       const rawProfile =
-        ConfigOrchestrator.getInstance().getValue<string>('AI_EMBEDDING_PROFILE')
-      const activeProfile: 'bekko_384' | 'gemma_512' =
-        request.aiProfile || (rawProfile === 'gemma_unified' ? 'gemma_512' : 'bekko_384')
+        ConfigOrchestrator.getInstance().getValue<string>('AI_EMBEDDING_PROFILE') || 'classic_light'
+      const mrlDim =
+        ConfigOrchestrator.getInstance().getValue<number>('EMBEDDING_MRL_DIMENSION') || 512
+
+      let activeProfile: string = rawProfile
+      let activeDim = 384
+
+      if (request.aiProfile) {
+        if (request.aiProfile.includes('gemma')) {
+          activeProfile = 'gemma_unified'
+          if (request.aiProfile.includes('256')) activeDim = 256
+          else if (request.aiProfile.includes('1024')) activeDim = 1024
+          else activeDim = 512
+        } else {
+          activeProfile = 'classic_light'
+          activeDim = 384
+        }
+      } else {
+        if (rawProfile === 'gemma_unified') {
+          activeProfile = 'gemma_unified'
+          activeDim = mrlDim
+        } else {
+          activeProfile = 'classic_light'
+          activeDim = 384
+        }
+      }
 
       const cosineService = PathCosineService.getInstance()
-      let injectedFileVectors = request.injectedFileVectors
+      const paths = request.paths || request.candidatePaths || []
+      const injectedFileVectors: Record<number, number[]> = request.injectedFileVectors ? { ...request.injectedFileVectors } : {}
+      const injectedPathVectors: Record<string, number[]> = request.injectedPathVectors ? { ...request.injectedPathVectors } : {}
+      const injectedFileMeta: Record<number, FileMetaItem> = request.injectedFileMeta ? { ...request.injectedFileMeta } : {}
 
-      // 当调用方未直接提供文件特征向量时，从数据库查出受控标签并池化为语义特征向量
-      if (!injectedFileVectors && request.fileIds && request.fileIds.length > 0) {
-        injectedFileVectors = {}
+      // 1. 从 SQLite 批量拉取全字段文件元数据 (若调用方未提供 injectedFileMeta)
+      if (request.fileIds && request.fileIds.length > 0) {
         try {
           const db = databaseService.db
           if (db) {
-            const fileTagsMap: Record<number, Array<{ code: string; weight: number }>> = {}
-            const fileNamesMap: Record<number, string> = {}
+            const fileIds = request.fileIds || []
             const CHUNK_SIZE = 500
-
-            for (let i = 0; i < request.fileIds.length; i += CHUNK_SIZE) {
-              const chunk = request.fileIds.slice(i, i + CHUNK_SIZE)
+            for (let i = 0; i < fileIds.length; i += CHUNK_SIZE) {
+              const chunk = fileIds.slice(i, i + CHUNK_SIZE)
               const placeholders = chunk.map(() => '?').join(',')
               const rows = db
                 .prepare(
                   `
                 SELECT
                   wf.id AS file_id,
-                  wf.name AS file_name,
-                  ftr.tag_code AS code,
-                  ftr.confidence AS weight
+                  wf.name AS raw_name,
+                  f.extension AS extension,
+                  f.file_group AS file_group,
+                  f.smart_name AS smart_name,
+                  f.description AS description,
+                  ftr.tag_code AS tag_code,
+                  ftr.name_path AS name_path,
+                  ftr.code_path AS code_path
                 FROM workspace_files wf
+                LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
                 LEFT JOIN file_tag_relations ftr ON ftr.file_fingerprint = wf.file_fingerprint
                 WHERE wf.id IN (${placeholders})
               `
                 )
                 .all(...chunk) as Array<{
                 file_id: number
-                file_name: string | null
-                code: string | null
-                weight: number | null
+                raw_name: string | null
+                extension: string | null
+                file_group: string | null
+                smart_name: string | null
+                description: string | null
+                tag_code: string | null
+                name_path: string | null
+                code_path: string | null
               }>
 
               for (const row of rows) {
-                if (row.file_name && !fileNamesMap[row.file_id]) {
-                  fileNamesMap[row.file_id] = row.file_name
-                }
-                if (row.code) {
-                  if (!fileTagsMap[row.file_id]) {
-                    fileTagsMap[row.file_id] = []
+                if (!injectedFileMeta[row.file_id]) {
+                  injectedFileMeta[row.file_id] = {
+                    smartName: row.smart_name || undefined,
+                    rawName: row.raw_name || `file_${row.file_id}`,
+                    tags: [],
+                    tagCodes: [],
+                    codePaths: [],
+                    description: row.description || undefined,
+                    fileGroup: row.file_group || undefined,
+                    extension: row.extension || undefined
                   }
-                  fileTagsMap[row.file_id].push({
-                    code: row.code,
-                    weight: typeof row.weight === 'number' ? row.weight : 1.0
-                  })
+                }
+                const meta = injectedFileMeta[row.file_id]
+                if (row.name_path) {
+                  const parts = row.name_path.split('/').filter(Boolean)
+                  const tagName = parts[parts.length - 1]
+                  if (tagName && !meta.tags?.includes(tagName)) {
+                    meta.tags?.push(tagName)
+                  }
+                }
+                if (row.tag_code && !meta.tagCodes?.includes(row.tag_code)) {
+                  meta.tagCodes?.push(row.tag_code)
+                }
+                if (row.code_path) {
+                  const codeChain = row.code_path.split('/').filter(Boolean)
+                  if (codeChain.length > 0) {
+                    meta.codePaths?.push(codeChain)
+                  }
                 }
               }
-            }
-
-            const matchService = IdentityMatchService.getInstance()
-            const assets = matchService.loadAssets(activeProfile)
-            const dim = activeProfile === 'gemma_512' ? 512 : 384
-
-            for (const fId of request.fileIds) {
-              const tags = fileTagsMap[fId] || []
-              let vec = matchService.poolFileTagsEmbedding(tags, assets)
-              const isNonZero = vec && vec.some(v => Math.abs(v) > 1e-6)
-              if (!isNonZero) {
-                const fileName = fileNamesMap[fId] || `file_${fId}`
-                const projected = cosineService.generatePathVector(fileName, dim)
-                vec = Array.from(projected)
-              }
-              injectedFileVectors[fId] = vec
             }
           }
         } catch (err) {
-          logger.warn(LogCategory.FILE_ORGANIZATION, '[IPC] 计算路径余弦时提取文件特征向量失败:', err)
+          logger.warn(LogCategory.FILE_ORGANIZATION, '[IPC] 提取文件全字段元数据异常:', err)
         }
+      }
+
+      // 2. 在线特征向量提取（整理会话级缓存 + Omni batch-embed-text，防投毒隔离）
+      try {
+        const omni = OmniService.getInstance()
+
+        // 2.1 路径向量提取
+        const missingPathPrompts: { path: string; prompt: string }[] = []
+        for (const p of paths) {
+          if (!injectedPathVectors[p]) {
+            const prompt = buildDirectoryPrompt(
+              p,
+              request.identityName,
+              request.templateKeywordsMap?.[p]
+            )
+            missingPathPrompts.push({ path: p, prompt })
+          }
+        }
+
+        if (missingPathPrompts.length > 0) {
+          const resp = await omni.batchEmbedText(
+            missingPathPrompts.map(item => item.prompt),
+            { profile: activeProfile, dim: activeDim, timeoutMs: 5000 }
+          )
+          if (resp && resp.vectors) {
+            for (let idx = 0; idx < missingPathPrompts.length; idx++) {
+              if (resp.vectors[idx]) {
+                injectedPathVectors[missingPathPrompts[idx].path] = resp.vectors[idx]
+              }
+            }
+          }
+        }
+
+        // 2.2 文件向量提取 (会话内存缓存优先)
+        const missingFileItems: { fileId: number; prompt: string }[] = []
+        for (const fId of request.fileIds) {
+          if (injectedFileVectors[fId]) continue
+          const cached = organizeSessionVectorCache.get(fId)
+          if (cached && cached.length === activeDim) {
+            injectedFileVectors[fId] = cached
+            continue
+          }
+          const meta = injectedFileMeta[fId] || { rawName: `file_${fId}` }
+          const prompt = buildFilePrompt(meta)
+          missingFileItems.push({ fileId: fId, prompt })
+        }
+
+        if (missingFileItems.length > 0) {
+          const BATCH_SIZE = 200
+          for (let i = 0; i < missingFileItems.length; i += BATCH_SIZE) {
+            const slice = missingFileItems.slice(i, i + BATCH_SIZE)
+            const resp = await omni.batchEmbedText(
+              slice.map(s => s.prompt),
+              { profile: activeProfile, dim: activeDim, timeoutMs: 8000 }
+            )
+            if (resp && resp.vectors) {
+              for (let idx = 0; idx < slice.length; idx++) {
+                const vec = resp.vectors[idx]
+                if (vec) {
+                  injectedFileVectors[slice[idx].fileId] = vec
+                  organizeSessionVectorCache.set(slice[idx].fileId, vec)
+                }
+              }
+            }
+          }
+        }
+      } catch (err: any) {
+        logger.warn(
+          LogCategory.FILE_ORGANIZATION,
+          `[IPC] Omni batchEmbedText 提取特征向量异常或超时，平稳降级至本体规则打分: ${err.message}`
+        )
       }
 
       return cosineService.calculateFilePathsCosine({
         ...request,
-        aiProfile: activeProfile,
-        injectedFileVectors
+        aiProfile: activeProfile as any,
+        injectedFileVectors,
+        injectedPathVectors,
+        injectedFileMeta
       })
     }
   )

@@ -2241,6 +2241,64 @@ export class OmniService {
       clearTimeout(timer)
     }
   }
+
+  /**
+   * 批量计算文本特征向量 (POST /api/v1/vector/batch-embed-text)
+   * 依据 batch-organize-hybrid-vector-classification-spec.md 规格契约：
+   * 支持 classic_light (Bekko 384d) 与 gemma_unified (Gemma 256/512/1024d) 双底座动态路由
+   */
+  public async batchEmbedText(
+    texts: string[],
+    options?: {
+      profile?: string
+      dim?: number
+      timeoutMs?: number
+    }
+  ): Promise<{
+    vectors: number[][]
+    count: number
+    dim: number
+    profile: string
+    durationMs: number
+  }> {
+    await this.ensureRunning()
+    const reqBody = {
+      texts,
+      profile: options?.profile,
+      dim: options?.dim
+    }
+
+    const timeoutMs = options?.timeoutMs ?? 10000
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), timeoutMs)
+
+    try {
+      const res = await fetch(`${this.baseUrl}/api/v1/vector/batch-embed-text`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reqBody),
+        signal: controller.signal
+      })
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+      }
+      return (await res.json()) as {
+        vectors: number[][]
+        count: number
+        dim: number
+        profile: string
+        durationMs: number
+      }
+    } catch (err: any) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[OmniService] batchEmbedText 异常或超时: ${err.message}`
+      )
+      throw err
+    } finally {
+      clearTimeout(timer)
+    }
+  }
 }
 
 export interface InspectControlledTagItem {

@@ -20,6 +20,12 @@ const resolveNodeModule = (moduleName: string): string => {
 }
 
 export default defineConfig({
+  server: {
+    fs: {
+      strict: false,
+      allow: ['..', resolve(__dirname, '../../..')]
+    }
+  },
   plugins: [react()],
   define: {
     __AI_ENGINE__: JSON.stringify('llamacpp'),

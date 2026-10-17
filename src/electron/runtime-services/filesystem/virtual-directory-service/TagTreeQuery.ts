@@ -2880,7 +2880,7 @@ export class TagTreeQuery {
       const rows = this.db
         .prepare(
           `
-          SELECT file_fingerprint, content, multimodal_content, ocr, lrc
+          SELECT file_fingerprint, content, multimodal_content, ocr, lrc, asr
           FROM file_contents
           WHERE file_fingerprint IN (${placeholders})
         `
@@ -2891,10 +2891,11 @@ export class TagTreeQuery {
         multimodal_content: string | Buffer | null
         ocr: string | Buffer | null
         lrc: string | Buffer | null
+        asr: string | Buffer | null
       }>
       for (const r of rows) {
         const parts: string[] = []
-        for (const col of [r.content, r.multimodal_content, r.ocr, r.lrc]) {
+        for (const col of [r.content, r.multimodal_content, r.ocr, r.lrc, r.asr]) {
           if (col === null || col === undefined) continue
           try {
             const text = decompressText(col)
