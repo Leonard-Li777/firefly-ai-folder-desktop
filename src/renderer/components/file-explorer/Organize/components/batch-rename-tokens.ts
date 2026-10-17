@@ -1,4 +1,5 @@
 import { DimensionGroup } from '@firefly/types'
+import { concept } from '@firefly/shared'
 import { FILE_DIMENSION_DATA } from '@app/electron/config/file-dimension-source'
 
 export interface TokenItem {
@@ -689,54 +690,83 @@ export function getCommonCategoriesPartitioned(
     .filter(cat => cat.tokens.length > 0)
 }
 
+// 1. 核心高频常用维度规范名称白名单（内部母语规范名集合，严禁在此包裹 t() 参与集合判定）
+const COMMON_CANONICAL_NAMES = new Set<string>([
+  '文件类型',
+  '文件用途',
+  '文件来源',
+  '作者',
+  '图片细分',
+  '视频细分',
+  '音频细分',
+  '文档细分',
+  '文本细分',
+  '压缩包细分',
+  '安全等级',
+  '处理状态',
+  '学科领域',
+  '作品来源',
+  '证照细分',
+  '摄影照片细分'
+])
+
+// 2. 权威 7 大受控根维度规范名集合（母语单一事实源）
+const ROOT_CANONICAL_NAMES = new Set<string>([
+  '文件类型',
+  '文件用途',
+  '文件来源',
+  '作者',
+  '文件质量',
+  '内容标签',
+  '内容分级'
+])
+
+interface RawDimensionEntry {
+  rawName: string
+  rawDesc?: string
+  level: number
+}
+
+/**
+ * 敏感内容维度标识符判定：
+ * 严格基于母语规范名与受控代码比对，严禁使用 t()
+ */
+const isSensitiveDimIdentifier = (identifier?: string): boolean => {
+  if (!identifier) return false
+  return (
+    identifier === '敏感内容' || // locale-invariant-ok: 统一母语单一事实源比对
+    identifier === concept('敏感内容')
+  )
+}
+
 /**
  * 从系统权威事实源 (file-dimension-source / ConfigDbManager) 动态构建受控维度体系
- * 1. 根节点严格依从 Genesis V1 创世 7 大受控根维度；
- * 2. 二级与三级维度基于 triggerConditions 声明的 parentDimension 原生关系自顶向下组装；
- * 3. 严格受控过滤：敏感内容仅显示到 2 级维度，彻底不显示其下的 3、4 级细分子维度（如色情细分、涉政细分等）；
- * 4. 其它所有内置维度（包括二级作品来源、三级证照细分等）与自定义维度全部完整显示。
+ * 1. 内部处理 100% 基于未翻译的母语规范名与受控代码进行拓扑判定，严禁在分支与集合判定中使用 t()；
+ * 2. 根节点严格依从 Genesis V1 创世 7 大受控根维度；
+ * 3. 二级与三级维度基于 triggerConditions 声明的 parentDimension 原生关系自顶向下组装；
+ * 4. 严格受控过滤：敏感内容仅显示到 2 级维度，彻底不显示其下的 3、4 级细分子维度（如色情细分、涉政细分等）；
+ * 5. 其它所有内置维度（包括二级作品来源、三级证照细分等）与自定义维度全部完整显示；
+ * 6. 输出展示阶段（Egress）统一使用 t() 进行本地化。
  */
 export function buildDimensionSystem(
   dimensionGroups: DimensionGroup[] = [],
   t: (key: string, params?: any) => string
 ): { dimensionTokens: TokenItem[]; dimensionTree: DimensionTreeNode[] } {
-  const SENSITIVE_DIM_NAME = t('敏感内容')
-
-  // 1. 核心高频常用维度名称白名单
-  const COMMON_DIM_NAMES = new Set<string>([
-    t('文件类型'),
-    t('文件用途'),
-    t('文件来源'),
-    t('作者'),
-    t('图片细分'),
-    t('视频细分'),
-    t('音频细分'),
-    t('文档细分'),
-    t('文本细分'),
-    t('压缩包细分'),
-    t('安全等级'),
-    t('处理状态'),
-    t('学科领域'),
-    t('作品来源'),
-    t('证照细分'),
-    t('摄影照片细分')
-  ])
-
-  // 2. 加载权威事实源
+  // 1. 加载权威事实源
   const rawDims = FILE_DIMENSION_DATA?.file_dimensions || []
 
-  // 3. 构建 parentName -> children 拓扑映射
-  const childrenMap = new Map<string, Array<{ name: string; desc: string; level: number }>>()
+  // 2. 构建 parentName -> children 拓扑映射（纯母语规范名键）
+  const childrenMap = new Map<string, RawDimensionEntry[]>()
   const primaryParentMap = new Map<string, string>()
 
   for (const d of rawDims) {
-    const dimName = t(d.name)
+    const rawName = d.name
     const conditions = d.triggerConditions || []
 
-    // 过滤规则：任何父级为敏感内容的子维度一律跳过
+    // 过滤规则：任何父级为敏感内容的子维度一律跳过（在未翻译的母语规范名层面比对）
     const validParents = conditions
-      .map(c => t(c.parentDimension))
-      .filter(p => p && p !== SENSITIVE_DIM_NAME)
+      .map(c => c.parentDimension)
+      .filter((p): p is string => Boolean(p && !isSensitiveDimIdentifier(p)))
 
     // 若该维度只在敏感内容下触发（如色情细分、涉政细分、血腥细分、违规细分），彻底不予显示
     if (conditions.length > 0 && validParents.length === 0) {
@@ -745,47 +775,37 @@ export function buildDimensionSystem(
 
     if (validParents.length > 0) {
       // 敏感内容：严格只作为「内容分级」之下的二级维度显示，不作为三级维度在媒体细分下重复挂载
-      if (dimName === SENSITIVE_DIM_NAME) {
-        const rootParent = t('内容分级')
+      if (isSensitiveDimIdentifier(rawName)) {
+        const rootParent = '内容分级'
         const list = childrenMap.get(rootParent) || []
-        if (!list.some(item => item.name === dimName)) {
+        if (!list.some(item => item.rawName === rawName)) {
           list.push({
-            name: dimName,
-            desc: d.description ? t(d.description) : t('匹配该文件的「{name}」维度标签', { name: dimName }),
+            rawName,
+            rawDesc: d.description,
             level: 2
           })
         }
         childrenMap.set(rootParent, list)
-        primaryParentMap.set(dimName, rootParent)
+        primaryParentMap.set(rawName, rootParent)
         continue
       }
 
       // 规范层级匹配：若维度定义为 level 2，且父级中包含根维度，优先挂载于根维度（如「作品来源」作为二级维度归入「文件类型」）
-      const ROOT_DIM_NAMES = new Set([
-        t('文件类型'),
-        t('文件用途'),
-        t('文件来源'),
-        t('作者'),
-        t('文件质量'),
-        t('内容标签'),
-        t('内容分级')
-      ])
-
       let chosenParents = validParents
       if (d.level === 2) {
-        const rootParents = validParents.filter(p => ROOT_DIM_NAMES.has(p))
+        const rootParents = validParents.filter(p => ROOT_CANONICAL_NAMES.has(p))
         if (rootParents.length > 0) {
           chosenParents = rootParents
         }
       }
 
-      primaryParentMap.set(dimName, chosenParents[0])
+      primaryParentMap.set(rawName, chosenParents[0])
       for (const parent of chosenParents) {
         const list = childrenMap.get(parent) || []
-        if (!list.some(item => item.name === dimName)) {
+        if (!list.some(item => item.rawName === rawName)) {
           list.push({
-            name: dimName,
-            desc: d.description ? t(d.description) : t('匹配该文件的「{name}」维度标签', { name: dimName }),
+            rawName,
+            rawDesc: d.description,
             level: d.level
           })
         }
@@ -794,42 +814,54 @@ export function buildDimensionSystem(
     }
   }
 
-  // 4. 合并外部传入的自定义维度（来自工作区或用户定义）
+  // 3. 合并外部传入的自定义维度（来自工作区或用户定义）
   for (const g of dimensionGroups || []) {
-    const dimName = t(g.name)
+    const rawName = g.name
     const rawParent = (g as any).parentDimension || (g as any).parentDimensionName
-    const parent = rawParent ? t(rawParent) : undefined
-    if (parent && parent !== SENSITIVE_DIM_NAME) {
-      const list = childrenMap.get(parent) || []
-      if (!list.some(item => item.name === dimName)) {
+    if (rawParent && !isSensitiveDimIdentifier(rawParent)) {
+      const list = childrenMap.get(rawParent) || []
+      if (!list.some(item => item.rawName === rawName)) {
         list.push({
-          name: dimName,
-          desc: t('匹配该文件的「{name}」维度标签', { name: dimName }),
+          rawName,
+          rawDesc: undefined,
           level: (g.level ?? 1) + 1
         })
       }
-      childrenMap.set(parent, list)
-      if (!primaryParentMap.has(dimName)) {
-        primaryParentMap.set(dimName, parent)
+      childrenMap.set(rawParent, list)
+      if (!primaryParentMap.has(rawName)) {
+        primaryParentMap.set(rawName, rawParent)
       }
     }
   }
 
-  // 5. 递归拼装原生维度树
+  // 4. 递归拼装原生维度树（在展示输出阶段应用 t() 翻译）
   const allTokensMap = new Map<string, TokenItem>()
 
-  const createToken = (name: string, desc: string, level: number, parentName?: string): TokenItem => {
-    const tokenVal = `{TAG:${name}}`
+  const createToken = (
+    rawName: string,
+    rawDesc: string | undefined,
+    level: number,
+    rawParentName?: string
+  ): TokenItem => {
+    const localizedName = t(rawName)
+    const tokenVal = `{TAG:${localizedName}}`
     const existing = allTokensMap.get(tokenVal)
     if (existing) return existing
 
+    const desc = rawDesc ? t(rawDesc) : t('匹配该文件的「{name}」维度标签', { name: localizedName })
+    const parentName = rawParentName
+      ? t(rawParentName)
+      : primaryParentMap.has(rawName)
+        ? t(primaryParentMap.get(rawName)!)
+        : undefined
+
     const item: TokenItem = {
-      label: name,
+      label: localizedName,
       value: tokenVal,
-      desc: desc || t('匹配该文件的「{name}」维度标签', { name }),
+      desc,
       pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: COMMON_DIM_NAMES.has(name),
-      parentName: parentName || primaryParentMap.get(name),
+      isCommon: COMMON_CANONICAL_NAMES.has(rawName),
+      parentName,
       level,
       groupLabel: t('分类维度')
     }
@@ -838,65 +870,68 @@ export function buildDimensionSystem(
   }
 
   const assembleNode = (
-    name: string,
-    desc: string,
+    rawName: string,
+    rawDesc: string | undefined,
     currentLevel: number,
-    parentName?: string,
+    rawParentName?: string,
     branchPath: string = ''
   ): DimensionTreeNode => {
-    const token = createToken(name, desc, currentLevel, parentName)
-    const currentPath = `${branchPath}/${name}`
+    const localizedName = t(rawName)
+    const token = createToken(rawName, rawDesc, currentLevel, rawParentName)
+    const currentPath = `${branchPath}/${rawName}`
 
     // 核心门禁：敏感内容只显示到 2 级维度，不显示其下的 3、4 级细分子维度
-    if (name === SENSITIVE_DIM_NAME) {
+    if (isSensitiveDimIdentifier(rawName)) {
       return {
-        id: `${name}-${parentName || 'root'}-${currentLevel}`,
-        name,
+        id: `${rawName}-${rawParentName || 'root'}-${currentLevel}`,
+        name: localizedName,
         token,
         level: currentLevel,
         children: []
       }
     }
 
-    const rawChildren = childrenMap.get(name) || []
+    const rawChildren = childrenMap.get(rawName) || []
     const childrenNodes: DimensionTreeNode[] = []
     for (const child of rawChildren) {
-      if (branchPath.includes(child.name)) continue // 防回环保护
-      childrenNodes.push(assembleNode(child.name, child.desc, currentLevel + 1, name, currentPath))
+      if (branchPath.includes(child.rawName)) continue // 防回环保护
+      childrenNodes.push(
+        assembleNode(child.rawName, child.rawDesc, currentLevel + 1, rawName, currentPath)
+      )
     }
 
     return {
-      id: `${name}-${parentName || 'root'}-${currentLevel}`,
-      name,
+      id: `${rawName}-${rawParentName || 'root'}-${currentLevel}`,
+      name: localizedName,
       token,
       level: currentLevel,
       children: childrenNodes
     }
   }
 
-  // 6. 权威 7 大受控根维度为顶层树干
-  const ROOT_DIM_DEFINITIONS = [
-    { name: t('文件类型'), desc: t('文件的基础格式分类 (如文本/图片/视频/音频等)') },
-    { name: t('文件用途'), desc: t('文件的核心使用场景 (如工作文档/学习资料/游戏娱乐等)') },
-    { name: t('文件来源'), desc: t('文件的原始获取途径 (如本地创建/网络下载/设备导入等)') },
-    { name: t('作者'), desc: t('文件的创建者或贡献者') },
-    { name: t('文件质量'), desc: t('文件的品质与质量评分 (如优质/良好/一般等)') },
-    { name: t('内容标签'), desc: t('开放式语义与主题内容标签') },
-    { name: t('内容分级'), desc: t('合规安全审查与年龄受众分级') }
+  // 5. 权威 7 大受控根维度为顶层树干
+  const ROOT_CANONICAL_DEFINITIONS = [
+    { rawName: '文件类型', rawDesc: '文件的基础格式分类 (如文本/图片/视频/音频等)' },
+    { rawName: '文件用途', rawDesc: '文件的核心使用场景 (如工作文档/学习资料/游戏娱乐等)' },
+    { rawName: '文件来源', rawDesc: '文件的原始获取途径 (如本地创建/网络下载/设备导入等)' },
+    { rawName: '作者', rawDesc: '文件的创建者或贡献者' },
+    { rawName: '文件质量', rawDesc: '文件的品质与质量评分 (如优质/良好/一般等)' },
+    { rawName: '内容标签', rawDesc: '开放式语义与主题内容标签' },
+    { rawName: '内容分级', rawDesc: '合规安全审查与年龄受众分级' }
   ]
 
   const dimensionTree: DimensionTreeNode[] = []
-  for (const rootDef of ROOT_DIM_DEFINITIONS) {
-    dimensionTree.push(assembleNode(rootDef.name, rootDef.desc, 0))
+  for (const rootDef of ROOT_CANONICAL_DEFINITIONS) {
+    dimensionTree.push(assembleNode(rootDef.rawName, rootDef.rawDesc, 0))
   }
 
   // 外部传入且未绑定父级的自定义维度追加为根节点
-  const rootNameSet = new Set(ROOT_DIM_DEFINITIONS.map(r => r.name))
+  const rootRawNameSet = new Set(ROOT_CANONICAL_DEFINITIONS.map(r => r.rawName))
   for (const g of dimensionGroups || []) {
-    const dimName = t(g.name)
-    if (!rootNameSet.has(dimName) && !primaryParentMap.has(dimName)) {
-      rootNameSet.add(dimName)
-      dimensionTree.push(assembleNode(dimName, t('匹配该文件的「{name}」维度标签', { name: dimName }), 0))
+    const rawName = g.name
+    if (!rootRawNameSet.has(rawName) && !primaryParentMap.has(rawName)) {
+      rootRawNameSet.add(rawName)
+      dimensionTree.push(assembleNode(rawName, undefined, 0))
     }
   }
 

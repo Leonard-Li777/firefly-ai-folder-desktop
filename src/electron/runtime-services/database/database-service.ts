@@ -1628,7 +1628,9 @@ export class DatabaseService {
         }
 
         // 2. 处理待移除标签 removeTags 与 removeTagCodes（精准受控与动态私有分流）
-        const directDeleteCodes = new Set<string>(operation.removeTagCodes || [])
+        // 区分「维度限定精准点删 (via_parent_code)」与「全量全局点删」
+        const globalDeleteCodes = new Set<string>(operation.removeTagCodes || [])
+        const dimDeletePlansMap = new Map<string, Set<string>>()
         const removeItemPlans: Array<{ tagCodes: string[]; dimCode?: string }> = []
 
         if (operation.removeTags && operation.removeTags.length > 0) {
@@ -1641,7 +1643,6 @@ export class DatabaseService {
 
             const itemCodes: string[] = []
             if (item.tagCode) {
-              directDeleteCodes.add(item.tagCode)
               itemCodes.push(item.tagCode)
             } else if (item.tagName) {
               const tagName = String(item.tagName).trim()
@@ -1656,14 +1657,12 @@ export class DatabaseService {
                 }
 
                 if (controlled) {
-                  directDeleteCodes.add(controlled)
                   itemCodes.push(controlled)
                 }
 
                 // 2. 别名表与私有表解析 (统一委托给 resolveTagCode)
                 const resolved = this.resolveTagCode(tagName, dimCode)
                 if (resolved) {
-                  directDeleteCodes.add(resolved)
                   itemCodes.push(resolved)
                 }
 
@@ -1674,19 +1673,29 @@ export class DatabaseService {
                   ).all(tagName) as Array<{ code: string }>
                   for (const r of rows) {
                     if (r.code) {
-                      directDeleteCodes.add(r.code)
                       itemCodes.push(r.code)
                     }
                   }
                 } catch {}
 
-                directDeleteCodes.add(tagName)
                 itemCodes.push(tagName)
               }
             }
 
             if (dimCode && itemCodes.length > 0) {
+              let dimSet = dimDeletePlansMap.get(dimCode)
+              if (!dimSet) {
+                dimSet = new Set<string>()
+                dimDeletePlansMap.set(dimCode, dimSet)
+              }
+              for (const c of itemCodes) {
+                dimSet.add(c)
+              }
               removeItemPlans.push({ tagCodes: itemCodes, dimCode })
+            } else {
+              for (const c of itemCodes) {
+                globalDeleteCodes.add(c)
+              }
             }
           }
         }
@@ -1776,6 +1785,28 @@ export class DatabaseService {
           return nonVisualExts.some(ext => lower.endsWith(ext))
         }
 
+        // 提前预计算当前批次待添加标签的物化路径三元组 (O(M) 缓存，杜绝热循环内部 O(N*M) 重复 SQL 查询)
+        const materializedMap = new Map<string, { codePath: string; namePath: string; depth: number }>()
+        for (const item of allAddTagItems) {
+          const tagName = item.tagName || getCanonicalConceptName(item.tagCode) || item.tagCode
+          const key = `${item.viaParentCode}:${item.tagCode}`
+          if (!materializedMap.has(key)) {
+            materializedMap.set(
+              key,
+              resolveRuntimeMaterializedPath({
+                db: this._db!,
+                tagCode: item.tagCode,
+                viaParentCode: item.viaParentCode,
+                tagName
+              })
+            )
+          }
+        }
+
+        const insertStmt = this._db!.prepare(
+          "INSERT OR REPLACE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, code_path, name_path, depth, tag_group, source, confidence, sync_status, created_at) VALUES (?, ?, ?, ?, ?, ?, 'user', 'user', 1.0, 0, CURRENT_TIMESTAMP)"
+        )
+
         for (const fileId of operation.fileIds) {
           try {
             let fp: string | undefined
@@ -1826,9 +1857,6 @@ export class DatabaseService {
             // 添加标签关联（写入 via_parent_code 与 tag_group='user', source='user'，以及完整的 code_path, name_path, depth）
             // ADR-0045：本路径为用户手动批量打标，来源分组固定落 'user'，source 固定落 'user'
             if (allAddTagItems.length > 0) {
-              const insertStmt = this._db!.prepare(
-                "INSERT OR REPLACE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, code_path, name_path, depth, tag_group, source, confidence, sync_status, created_at) VALUES (?, ?, ?, ?, ?, ?, 'user', 'user', 1.0, 0, CURRENT_TIMESTAMP)"
-              )
               for (const item of allAddTagItems) {
                 // 全媒体领域排他门控铁律：非视觉介质（音频/文档/代码/压缩包）严禁挂载视觉专有维度与标签
                 if (
@@ -1858,13 +1886,12 @@ export class DatabaseService {
                   continue
                 }
 
-                // 运行时计算整个父级链路的物化路径三元组 (code_path, name_path, depth)
-                const materialized = resolveRuntimeMaterializedPath({
-                  db: this._db!,
-                  tagCode: item.tagCode,
-                  viaParentCode: item.viaParentCode,
-                  tagName
-                })
+                const key = `${item.viaParentCode}:${item.tagCode}`
+                const materialized = materializedMap.get(key) || {
+                  codePath: `/${item.viaParentCode || 'content_tags'}/${item.tagCode}`,
+                  namePath: `/${item.viaParentCode || '内容标签'}/${tagName}`,
+                  depth: item.viaParentCode ? 2 : 1
+                }
 
                 insertStmt.run(
                   fp,
@@ -1877,12 +1904,21 @@ export class DatabaseService {
               }
             }
 
-            // 移除标签关联（单批精确索引点删，彻底消灭 LIKE 模糊全表扫描）
-            if (directDeleteCodes.size > 0) {
-              const placeholders = Array.from(directDeleteCodes).map(() => '?').join(',')
+            // 移除标签关联（精准索引点删：有维度限定走带 via_parent_code，无维度限定走全局点删）
+            for (const [dimCode, codeSet] of dimDeletePlansMap.entries()) {
+              if (codeSet.size > 0) {
+                const placeholders = Array.from(codeSet).map(() => '?').join(',')
+                this._db!.prepare(
+                  `DELETE FROM file_tag_relations WHERE file_fingerprint = ? AND via_parent_code = ? AND tag_code IN (${placeholders})`
+                ).run(fp, dimCode, ...Array.from(codeSet))
+              }
+            }
+
+            if (globalDeleteCodes.size > 0) {
+              const placeholders = Array.from(globalDeleteCodes).map(() => '?').join(',')
               this._db!.prepare(
                 `DELETE FROM file_tag_relations WHERE file_fingerprint = ? AND tag_code IN (${placeholders})`
-              ).run(fp, ...Array.from(directDeleteCodes))
+              ).run(fp, ...Array.from(globalDeleteCodes))
             }
 
             successCount++
@@ -1898,10 +1934,20 @@ export class DatabaseService {
         }
 
         // 同步清理 file_tags_private 中针对已移除维度的 parent_codes 关联
+        // 铁律：仅当全库中已无任何文件在此维度下引用该标签时，才从全局词库解绑该维度的 parent_codes，绝不误杀多文件共享词库！
         for (const plan of removeItemPlans) {
           if (plan.dimCode && plan.tagCodes.length > 0) {
             for (const code of plan.tagCodes) {
               try {
+                const refRow = this._db!.prepare(
+                  'SELECT COUNT(*) as c FROM file_tag_relations WHERE tag_code = ? AND via_parent_code = ?'
+                ).get(code, plan.dimCode) as { c: number } | undefined
+                const remainingCount = refRow?.c || 0
+                if (remainingCount > 0) {
+                  // 数据库中仍有其他文件在当前维度下关联此标签，绝不破坏全局词库关系！
+                  continue
+                }
+
                 const row = this._db!.prepare(
                   'SELECT parent_codes FROM file_tags_private WHERE code = ?'
                 ).get(code) as { parent_codes?: string } | undefined

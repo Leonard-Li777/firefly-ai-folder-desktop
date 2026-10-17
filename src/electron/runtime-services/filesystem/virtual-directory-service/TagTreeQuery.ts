@@ -1824,6 +1824,7 @@ export class TagTreeQuery {
                   let existingTag = rootGroup.tags.find(
                     t => t.code === cand.code || t.tagValue === cand.name
                   )
+                  const isDirectRootChild = pCode === rootDimCode
                   if (!existingTag) {
                     rootGroup.tags.push({
                       dimensionId: rootGroup.id,
@@ -1831,10 +1832,14 @@ export class TagTreeQuery {
                       dimensionName: rootGroup.name,
                       tagValue: cand.name,
                       fileCount: cand.files.size,
-                      level: pCode === rootDimCode ? 1 : 2,
+                      level: isDirectRootChild ? 1 : 2,
                       code: cand.code,
-                      codePath: `/${rootGroup.code}/${pCode}/${cand.code}`,
-                      namePath: `/${rootGroup.name}/${aliasResolver(pCode, pCode)}/${cand.name}`,
+                      codePath: isDirectRootChild
+                        ? `/${rootGroup.code}/${cand.code}`
+                        : `/${rootGroup.code}/${pCode}/${cand.code}`,
+                      namePath: isDirectRootChild
+                        ? `/${rootGroup.name}/${cand.name}`
+                        : `/${rootGroup.name}/${aliasResolver(pCode, pCode)}/${cand.name}`,
                       viaParentCode: pCode,
                       isMultiSelect: false,
                       order: 9999
