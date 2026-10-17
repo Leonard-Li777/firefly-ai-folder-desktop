@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "count": 21,
+  "count": 32,
   "dimensions": {
     "bekko": 384,
     "gemma": 512
@@ -36,7 +36,7 @@
       "target_identities": [
         "id.designer.ui",
         "id.designer.graphic",
-        "id.pm.product"
+        "id.designer.illustrator"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -86,7 +86,8 @@
       "target_identities": [
         "id.dev.frontend",
         "id.dev.mobile",
-        "id.qa.tester"
+        "id.qa.tester",
+        "id.dev.fullstack"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -131,7 +132,10 @@
       },
       "target_identities": [
         "id.dev.backend",
-        "id.ops.sre"
+        "id.ops.sre",
+        "id.dev.fullstack",
+        "id.dev.ai_ml",
+        "id.dev.embedded"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -174,12 +178,41 @@
         "it-IT": "Classic Tiago Forte framework: Projects, Areas, Resources, and Archives"
       },
       "target_identities": [
+        "id.designer.ui",
+        "id.designer.graphic",
+        "id.designer.illustrator",
         "id.pm.product",
-        "id.student.undergrad",
+        "id.designer.industrial",
+        "id.researcher.ux",
+        "id.dev.frontend",
+        "id.dev.mobile",
+        "id.data.analyst",
+        "id.ops.sre",
+        "id.qa.tester",
+        "id.dev.fullstack",
         "id.ops.newmedia",
-        "id.life.digital_hoarder",
         "id.marketing.planner",
-        "id.sales.bd"
+        "id.creator.freelance",
+        "id.ops.private_domain",
+        "id.ops.sem_seo",
+        "id.sales.bd",
+        "id.biz.consultant",
+        "id.student.undergrad",
+        "id.student.self_learner",
+        "id.edu.k12_teacher",
+        "id.edu.trainer",
+        "id.student.study_abroad",
+        "id.hobby.photographer",
+        "id.hobby.gamer",
+        "id.creator.writer",
+        "id.life.traveler",
+        "id.life.digital_hoarder",
+        "id.life.fitness",
+        "id.life.minimalist",
+        "id.life.pet_owner",
+        "id.health.psychologist",
+        "id.health.nutritionist",
+        "id.eng.architect"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -222,10 +255,21 @@
         "it-IT": "Numerical indexed categories for high-precision institutional filing"
       },
       "target_identities": [
+        "id.dev.backend",
+        "id.finance.accountant",
         "id.hr.admin",
         "id.legal.compliance",
-        "id.finance.accountant",
-        "id.student.grad"
+        "id.finance.cashier",
+        "id.hr.recruiter",
+        "id.finance.auditor",
+        "id.legal.attorney",
+        "id.legal.ip_agent",
+        "id.mgmt.supply_chain",
+        "id.student.grad",
+        "id.researcher.faculty",
+        "id.life.homemaker",
+        "id.life.digital_hoarder",
+        "id.eng.civil_engineer"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -315,9 +359,10 @@
         "it-IT": "Tailored for Premiere, Final Cut, and Resolve projects and asset tiers"
       },
       "target_identities": [
-        "id.hobby.vlogger",
         "id.designer.3d",
-        "id.hobby.podcaster"
+        "id.hobby.vlogger",
+        "id.hobby.podcaster",
+        "id.creator.sound_designer"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -361,9 +406,13 @@
         "it-IT": "Comprehensive filing for literature reviews, datasets, LaTeX, and defense decks"
       },
       "target_identities": [
-        "id.student.grad",
+        "id.dev.ai_ml",
         "id.student.undergrad",
-        "id.student.exam"
+        "id.student.grad",
+        "id.student.exam",
+        "id.researcher.faculty",
+        "id.student.study_abroad",
+        "id.health.doctor"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -407,7 +456,10 @@
         "it-IT": "Structured ledger storage for tax filings, payroll, and audit documentation"
       },
       "target_identities": [
-        "id.finance.accountant"
+        "id.finance.accountant",
+        "id.finance.cashier",
+        "id.finance.auditor",
+        "id.mgmt.supply_chain"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -451,7 +503,9 @@
         "it-IT": "Long-term filing for identity docs, contracts, warranties, policies, and health"
       },
       "target_identities": [
-        "id.life.homemaker"
+        "id.life.homemaker",
+        "id.life.minimalist",
+        "id.life.pet_owner"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -496,7 +550,10 @@
       },
       "target_identities": [
         "id.ops.newmedia",
-        "id.marketing.planner"
+        "id.ops.private_domain",
+        "id.hobby.vlogger",
+        "id.hobby.podcaster",
+        "id.creator.sound_designer"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -540,7 +597,8 @@
         "it-IT": "Product samples, marketing creatives, product detail pages, and promotion audits"
       },
       "target_identities": [
-        "id.ops.ecommerce"
+        "id.ops.ecommerce",
+        "id.ops.cross_border"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -584,9 +642,9 @@
         "it-IT": "Organized game design docs, sprite sheets, audio, and playable builds"
       },
       "target_identities": [
-        "id.hobby.gamer",
         "id.designer.3d",
-        "id.dev.frontend"
+        "id.dev.frontend",
+        "id.hobby.gamer"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -630,9 +688,10 @@
         "it-IT": "Organizes listings, customs declarations, FBA receipts, ads, and refund statements"
       },
       "target_identities": [
-        "id.ops.cross_border",
         "id.ops.ecommerce",
-        "id.ops.sem_seo"
+        "id.ops.cross_border",
+        "id.ops.sem_seo",
+        "id.mgmt.supply_chain"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -675,8 +734,8 @@
         "it-IT": "Structured legal files by complaint, evidence chains, court hearings, and rulings"
       },
       "target_identities": [
-        "id.legal.attorney",
         "id.legal.compliance",
+        "id.legal.attorney",
         "id.legal.ip_agent"
       ],
       "lifecycle_stages": [
@@ -720,9 +779,9 @@
         "it-IT": "Organizes diagnostic reports, cohort follow-ups, IRB approvals, and manuscripts"
       },
       "target_identities": [
+        "id.student.grad",
         "id.health.doctor",
-        "id.health.nurse",
-        "id.student.grad"
+        "id.health.nurse"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -809,9 +868,9 @@
         "it-IT": "Industry research, target financials, expert interview notes, and strategic deliverables"
       },
       "target_identities": [
-        "id.biz.consultant",
         "id.data.analyst",
-        "id.marketing.planner"
+        "id.marketing.planner",
+        "id.biz.consultant"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -854,9 +913,9 @@
         "it-IT": "CAD floor plans, 3D renderings, structural calculations, and bill of quantities"
       },
       "target_identities": [
+        "id.designer.industrial",
         "id.eng.architect",
-        "id.eng.civil_engineer",
-        "id.designer.industrial"
+        "id.eng.civil_engineer"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -899,9 +958,9 @@
         "it-IT": "World-building lore, character bios, chapter drafts, and publisher review notes"
       },
       "target_identities": [
-        "id.creator.writer",
         "id.ops.newmedia",
-        "id.creator.freelance"
+        "id.creator.freelance",
+        "id.creator.writer"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -944,9 +1003,10 @@
         "it-IT": "Psychological assessments, customized diet plans, fitness logs, and wellness tracking"
       },
       "target_identities": [
+        "id.life.fitness",
+        "id.health.nurse",
         "id.health.psychologist",
-        "id.health.nutritionist",
-        "id.life.fitness"
+        "id.health.nutritionist"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -961,6 +1021,575 @@
         "04-阶段复盘与回访记录/调理效果对比总结"
       ],
       "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_pm_product_workflow",
+      "name": {
+        "zh-CN": "敏捷产品经理与PRD需求规划工作流",
+        "en-US": "Agile Product Management & PRD Workflow",
+        "ja-JP": "アジャイルプロダクトマネジメント＆PRD要件定義ワークフロー",
+        "ko-KR": "애자일 프로덕트 매니지먼트 및 PRD 요구사항 워크플로우",
+        "de-DE": "Agiles Produktmanagement- & PRD-Workflow",
+        "fr-FR": "Flux de gestion de produit agile et spécifications PRD",
+        "es-ES": "Flujo de gestión de producto ágil y especificaciones PRD",
+        "ru-RU": "Гибкий рабочий процесс управления продуктом и PRD",
+        "pt-BR": "Fluxo de gerenciamento de produto ágil e PRD",
+        "it-IT": "Workflow agile di gestione del prodotto e specifiche PRD"
+      },
+      "description": {
+        "zh-CN": "覆盖产品愿景规划、PRD功能规格书、原型与交互设计、用户调研反馈与敏捷迭代交付的端到端管理架构",
+        "en-US": "End-to-end framework covering product roadmaps, PRD specifications, prototypes, user research, and agile delivery",
+        "ja-JP": "End-to-end framework covering product roadmaps, PRD specifications, prototypes, user research, and agile delivery",
+        "ko-KR": "End-to-end framework covering product roadmaps, PRD specifications, prototypes, user research, and agile delivery",
+        "de-DE": "End-to-end framework covering product roadmaps, PRD specifications, prototypes, user research, and agile delivery",
+        "fr-FR": "End-to-end framework covering product roadmaps, PRD specifications, prototypes, user research, and agile delivery",
+        "es-ES": "End-to-end framework covering product roadmaps, PRD specifications, prototypes, user research, and agile delivery",
+        "ru-RU": "End-to-end framework covering product roadmaps, PRD specifications, prototypes, user research, and agile delivery",
+        "pt-BR": "End-to-end framework covering product roadmaps, PRD specifications, prototypes, user research, and agile delivery",
+        "it-IT": "End-to-end framework covering product roadmaps, PRD specifications, prototypes, user research, and agile delivery"
+      },
+      "target_identities": [
+        "id.pm.product",
+        "id.researcher.ux"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-战略路线图与商业分析/01-产品愿景与年度Roadmap",
+        "01-战略路线图与商业分析/02-竞品深度分析与商业洞察",
+        "02-用户研究与数据指标/01-用户访谈与问卷调研",
+        "02-用户研究与数据指标/02-业务核心指标与数据看板",
+        "03-需求规划与PRD文档/01-功能清单与版本规划",
+        "03-需求规划与PRD文档/02-PRD详细规格说明书",
+        "04-原型设计与交互流程/01-低保真原型与草图",
+        "04-原型设计与交互流程/02-用户故事与业务流程图",
+        "05-敏捷迭代交付/01-Sprint迭代需求池与排期",
+        "05-敏捷迭代交付/02-上线发布公告与迭代复盘"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{YYYYMMDD}_{ProjectName}_{DocName}_v{Version}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_data_science_analytics",
+      "name": {
+        "zh-CN": "数据科学与商业智能工作流 (CRISP-DM 规范版)",
+        "en-US": "Data Science & Business Intelligence Workflow (CRISP-DM)",
+        "ja-JP": "データサイエンス＆ビジネスインテリジェンスワークフロー",
+        "ko-KR": "데이터 사이언스 및 비즈니스 인텔리전스 워크플로우",
+        "de-DE": "Data Science & Business Intelligence-Workflow",
+        "fr-FR": "Flux de travail science des données et intelligence d'affaires",
+        "es-ES": "Flujo de ciencia de datos e inteligencia empresarial",
+        "ru-RU": "Рабочий процесс науки о данных и бизнес-аналитики",
+        "pt-BR": "Fluxo de ciência de dados e inteligência de negócios",
+        "it-IT": "Workflow di scienza dei dati e business intelligence"
+      },
+      "description": {
+        "zh-CN": "遵循CRISP-DM工业标准的数据挖掘与商业智能架构 (原始数据、特征清洗、Notebook实验、模型沉淀与BI看板)",
+        "en-US": "CRISP-DM standard framework: raw data, feature pipelines, notebooks, models, and BI dashboards",
+        "ja-JP": "CRISP-DM standard framework: raw data, feature pipelines, notebooks, models, and BI dashboards",
+        "ko-KR": "CRISP-DM standard framework: raw data, feature pipelines, notebooks, models, and BI dashboards",
+        "de-DE": "CRISP-DM standard framework: raw data, feature pipelines, notebooks, models, and BI dashboards",
+        "fr-FR": "CRISP-DM standard framework: raw data, feature pipelines, notebooks, models, and BI dashboards",
+        "es-ES": "CRISP-DM standard framework: raw data, feature pipelines, notebooks, models, and BI dashboards",
+        "ru-RU": "CRISP-DM standard framework: raw data, feature pipelines, notebooks, models, and BI dashboards",
+        "pt-BR": "CRISP-DM standard framework: raw data, feature pipelines, notebooks, models, and BI dashboards",
+        "it-IT": "CRISP-DM standard framework: raw data, feature pipelines, notebooks, models, and BI dashboards"
+      },
+      "target_identities": [
+        "id.data.analyst",
+        "id.dev.ai_ml"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-原始数据抽取/01-离线数据倾倒与SQL",
+        "01-原始数据抽取/02-API接口与网络抓取数据",
+        "02-特征加工与清洗/01-数据清洗与归一化脚本",
+        "02-特征加工与清洗/02-加工后特征宽表",
+        "03-探索性数据分析/01-Jupyter与RNotebook实验",
+        "03-探索性数据分析/02-统计假设检验与相关性分析",
+        "04-算法建模与评估/01-训练模型权重与参数",
+        "04-算法建模与评估/02-验证集评估指标与ROC曲线",
+        "05-商业看板与汇报/01-Tableau与PowerBI工程",
+        "05-商业看板与汇报/02-数据洞察分析PPT与PDF"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{YYYYMMDD}_{ProjectName}_{DatasetName}_v{Version}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_qa_testing_lifecycle",
+      "name": {
+        "zh-CN": "软件测试与质量工程全生命周期 (IEEE 829 标准版)",
+        "en-US": "Software QA & Testing Engineering Lifecycle (IEEE 829)",
+        "ja-JP": "ソフトウェアQA＆テストエンジニアリングライフサイクル",
+        "ko-KR": "소프트웨어 QA 및 테스트 엔지니어링 라이프사이클",
+        "de-DE": "Software-QA & Test-Engineering-Lebenszyklus",
+        "fr-FR": "Cycle de vie de l'ingénierie QA et des tests logiciels",
+        "es-ES": "Ciclo de vida de ingeniería de pruebas y control de calidad",
+        "ru-RU": "Жизненный цикл тестирования и обеспечения качества ПО",
+        "pt-BR": "Ciclo de vida de engenharia de testes e QA de software",
+        "it-IT": "Ciclo di vita dell'ingegneria del controllo qualità del software"
+      },
+      "description": {
+        "zh-CN": "涵盖测试策略大纲、手工与自动化测试用例集、缺陷Bug复现与排查日志、性能压测指标及版本准出报告",
+        "en-US": "Test strategies, manual/auto test suites, bug reproductions, benchmark logs, and release sign-offs",
+        "ja-JP": "Test strategies, manual/auto test suites, bug reproductions, benchmark logs, and release sign-offs",
+        "ko-KR": "Test strategies, manual/auto test suites, bug reproductions, benchmark logs, and release sign-offs",
+        "de-DE": "Test strategies, manual/auto test suites, bug reproductions, benchmark logs, and release sign-offs",
+        "fr-FR": "Test strategies, manual/auto test suites, bug reproductions, benchmark logs, and release sign-offs",
+        "es-ES": "Test strategies, manual/auto test suites, bug reproductions, benchmark logs, and release sign-offs",
+        "ru-RU": "Test strategies, manual/auto test suites, bug reproductions, benchmark logs, and release sign-offs",
+        "pt-BR": "Test strategies, manual/auto test suites, bug reproductions, benchmark logs, and release sign-offs",
+        "it-IT": "Test strategies, manual/auto test suites, bug reproductions, benchmark logs, and release sign-offs"
+      },
+      "target_identities": [
+        "id.qa.tester"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-测试策略与计划/01-测试需求分解与用例大纲",
+        "01-测试策略与计划/02-测试环境搭建与配置清单",
+        "02-测试用例与脚本/01-功能测试用例与脑图",
+        "02-测试用例与脚本/02-UI与接口自动化测试脚本",
+        "03-缺陷跟踪与复现/01-Bug复现截图与录屏证据",
+        "03-缺陷跟踪与复现/02-崩溃日志与网络抓包包",
+        "04-专项性能与安全测试/01-JMeter压测脚本与基准",
+        "04-专项性能与安全测试/02-安全渗透与弱网测试报告",
+        "05-测试交付与准出/01-发布版本质量准出报告",
+        "05-测试交付与准出/02-线上缺陷复盘与回归备忘"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{YYYYMMDD}_{Module}_{TestCase}_v{Version}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_sales_pipeline_crm",
+      "name": {
+        "zh-CN": "B2B 商务拓展与销售客户生命周期管理 (CRM 漏斗版)",
+        "en-US": "B2B Sales Pipeline & Key Account Management (CRM Lifecycle)",
+        "ja-JP": "B2Bビジネス開発＆セールスパイプライン管理",
+        "ko-KR": "B2B 비즈니스 개발 및 영업 파이프라인 관리 체계",
+        "de-DE": "B2B-Vertriebspipeline & Key-Account-Management",
+        "fr-FR": "Gestion du pipeline de vente B2B et des grands comptes",
+        "es-ES": "Gestión de pipeline de ventas B2B y cuentas clave",
+        "ru-RU": "Управление воронкой продаж B2B и ключевыми клиентами",
+        "pt-BR": "Gestão de pipeline de vendas B2B e contas-chave",
+        "it-IT": "Gestione della pipeline di vendita B2B e dei clienti chiave"
+      },
+      "description": {
+        "zh-CN": "覆盖销售全漏斗生命周期：潜客线索挖掘、客户画像与拜访纪要、商业方案报价、招投标资质文件、签约合同与发票回款对账",
+        "en-US": "Full B2B sales lifecycle: lead gen, client meetings, proposals, RFPs, contracts, and revenue reconciliation",
+        "ja-JP": "Full B2B sales lifecycle: lead gen, client meetings, proposals, RFPs, contracts, and revenue reconciliation",
+        "ko-KR": "Full B2B sales lifecycle: lead gen, client meetings, proposals, RFPs, contracts, and revenue reconciliation",
+        "de-DE": "Full B2B sales lifecycle: lead gen, client meetings, proposals, RFPs, contracts, and revenue reconciliation",
+        "fr-FR": "Full B2B sales lifecycle: lead gen, client meetings, proposals, RFPs, contracts, and revenue reconciliation",
+        "es-ES": "Full B2B sales lifecycle: lead gen, client meetings, proposals, RFPs, contracts, and revenue reconciliation",
+        "ru-RU": "Full B2B sales lifecycle: lead gen, client meetings, proposals, RFPs, contracts, and revenue reconciliation",
+        "pt-BR": "Full B2B sales lifecycle: lead gen, client meetings, proposals, RFPs, contracts, and revenue reconciliation",
+        "it-IT": "Full B2B sales lifecycle: lead gen, client meetings, proposals, RFPs, contracts, and revenue reconciliation"
+      },
+      "target_identities": [
+        "id.sales.bd"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-商机线索与跟进/01-线索名单与客户画像分析",
+        "01-商机线索与跟进/02-客户访谈纪要与需求挖掘表",
+        "02-商业提案与报价/01-定制化解决方案演示PPT",
+        "02-商业提案与报价/02-项目成本核算与商务报价单",
+        "03-招投标与资质/01-公司资质证明与过往案例",
+        "03-招投标与资质/02-正式标书编制与技术应答",
+        "04-合同谈判与签署/01-商务合同草案与法务审核版",
+        "04-合同谈判与签署/02-双方法定签署盖章正本扫描件",
+        "05-回款对账与客情/01-阶段开票申请与银行回单",
+        "05-回款对账与客情/02-客户定期回访与续约评估"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{YYYYMMDD}_{ClientName}_{DocType}_v{Version}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_hr_people_operations",
+      "name": {
+        "zh-CN": "人力资源管理与组织人才发展工作流 (HRM 规范版)",
+        "en-US": "Human Resources & People Operations Workflow (HRM Standard)",
+        "ja-JP": "人事労務管理＆組織人材開発ワークフロー",
+        "ko-KR": "인사 관리 및 조직 인재 개발 워크플로우",
+        "de-DE": "Personalmanagement & Organisationsentwicklung",
+        "fr-FR": "Gestion des ressources humaines et développement des talents",
+        "es-ES": "Gestión de recursos humanos y desarrollo del talento",
+        "ru-RU": "Управление человеческими ресурсами и развитие талантов",
+        "pt-BR": "Gestão de recursos humanos e desenvolvimento de talentos",
+        "it-IT": "Gestione delle risorse umane e sviluppo dei talenti"
+      },
+      "description": {
+        "zh-CN": "人力资源经典模块全覆盖：组织架构与岗位JD、招聘简历与面试评估、入转调离手续合规、薪酬绩效考核、员工培训与企业文化",
+        "en-US": "Comprehensive HRM framework: org charts, JDs, resumes, interviews, onboarding, payroll, KPIs, and trainings",
+        "ja-JP": "Comprehensive HRM framework: org charts, JDs, resumes, interviews, onboarding, payroll, KPIs, and trainings",
+        "ko-KR": "Comprehensive HRM framework: org charts, JDs, resumes, interviews, onboarding, payroll, KPIs, and trainings",
+        "de-DE": "Comprehensive HRM framework: org charts, JDs, resumes, interviews, onboarding, payroll, KPIs, and trainings",
+        "fr-FR": "Comprehensive HRM framework: org charts, JDs, resumes, interviews, onboarding, payroll, KPIs, and trainings",
+        "es-ES": "Comprehensive HRM framework: org charts, JDs, resumes, interviews, onboarding, payroll, KPIs, and trainings",
+        "ru-RU": "Comprehensive HRM framework: org charts, JDs, resumes, interviews, onboarding, payroll, KPIs, and trainings",
+        "pt-BR": "Comprehensive HRM framework: org charts, JDs, resumes, interviews, onboarding, payroll, KPIs, and trainings",
+        "it-IT": "Comprehensive HRM framework: org charts, JDs, resumes, interviews, onboarding, payroll, KPIs, and trainings"
+      },
+      "target_identities": [
+        "id.hr.admin",
+        "id.hr.recruiter"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-组织架构与职位/01-公司编制与组织架构图",
+        "01-组织架构与职位/02-岗位职责说明书与JD库",
+        "02-招聘与人才引进/01-简历人才库与背景调查",
+        "02-招聘与人才引进/02-面试评估表与Offer录用函",
+        "03-员工生命周期与劳动关系/01-入职材料与劳动合同归档",
+        "03-员工生命周期与劳动关系/02-转正调岗与离职离岗审批",
+        "04-薪酬福利与绩效/01-每月考勤汇总与社保公积金",
+        "04-薪酬福利与绩效/02-季度与年度KPI绩效考核结果",
+        "05-培训发展与员工关怀/01-新人入职培训与专业内训课件",
+        "05-培训发展与员工关怀/02-团建活动策划与员工关怀关照"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{YYYYMMDD}_{Dept}_{EmployeeName}_{DocName}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_marketing_campaign_imc",
+      "name": {
+        "zh-CN": "整合营销传播与品牌活动策划全案 (IMC 规范版)",
+        "en-US": "Integrated Marketing Communications (IMC) Campaign Vault",
+        "ja-JP": "統合型マーケティングコミュニケーション（IMC）キャンペーン管理",
+        "ko-KR": "통합 마케팅 커뮤니케이션(IMC) 캠페인 기획 체계",
+        "de-DE": "Integrierte Marketingkommunikation (IMC) Kampagnen-System",
+        "fr-FR": "Communication marketing intégrée (IMC) et campagnes de marque",
+        "es-ES": "Comunicaciones integradas de marketing (IMC) y campañas",
+        "ru-RU": "Интегрированные маркетинговые коммуникации (IMC) и кампании",
+        "pt-BR": "Comunicação integrada de marketing (IMC) e campanhas",
+        "it-IT": "Comunicazione integrata di marketing (IMC) e campagne"
+      },
+      "description": {
+        "zh-CN": "4A与互联网品牌营销全流程：行业竞品调研、整合营销全案、创意文案与宣发物料、KOL与渠道媒介排期、活动ROI结案",
+        "en-US": "Full 4A agency & brand marketing workflow: market insights, IMC decks, creative assets, media buys, and ROI reviews",
+        "ja-JP": "Full 4A agency & brand marketing workflow: market insights, IMC decks, creative assets, media buys, and ROI reviews",
+        "ko-KR": "Full 4A agency & brand marketing workflow: market insights, IMC decks, creative assets, media buys, and ROI reviews",
+        "de-DE": "Full 4A agency & brand marketing workflow: market insights, IMC decks, creative assets, media buys, and ROI reviews",
+        "fr-FR": "Full 4A agency & brand marketing workflow: market insights, IMC decks, creative assets, media buys, and ROI reviews",
+        "es-ES": "Full 4A agency & brand marketing workflow: market insights, IMC decks, creative assets, media buys, and ROI reviews",
+        "ru-RU": "Full 4A agency & brand marketing workflow: market insights, IMC decks, creative assets, media buys, and ROI reviews",
+        "pt-BR": "Full 4A agency & brand marketing workflow: market insights, IMC decks, creative assets, media buys, and ROI reviews",
+        "it-IT": "Full 4A agency & brand marketing workflow: market insights, IMC decks, creative assets, media buys, and ROI reviews"
+      },
+      "target_identities": [
+        "id.marketing.planner",
+        "id.ops.private_domain",
+        "id.ops.sem_seo"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-市场调研与品牌定位/01-行业趋势与竞品营销拆解",
+        "01-市场调研与品牌定位/02-目标受众画像与核心品牌主张",
+        "02-活动策划全案/01-营销Campaign主策划方案PPT",
+        "02-活动策划全案/02-项目推进甘特图与分工排期表",
+        "03-创意内容与物料生产/01-宣传文案脚本与主视觉KV",
+        "03-创意内容与物料生产/02-社交媒体多尺寸投放海报物料",
+        "04-媒介排期与KOL采买/01-达人KOL筛选与合作报价单",
+        "04-媒介排期与KOL采买/02-全网媒介投放执行排期日历",
+        "05-数据监控与结案复盘/01-投放实时数据追踪与转化监控",
+        "05-数据监控与结案复盘/02-Campaign结案总结与ROI复盘报告"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{YYYYMMDD}_{CampaignName}_{MaterialType}_v{Version}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_corporate_legal_compliance",
+      "name": {
+        "zh-CN": "企业法务合规审查与知识产权管理工作流",
+        "en-US": "Corporate Legal Compliance & IP Governance Workflow",
+        "ja-JP": "企業法務コンプライアンス審査＆知的財産管理ワークフロー",
+        "ko-KR": "기업 법무 컴플라이언스 및 지식재산권 관리 체계",
+        "de-DE": "Unternehmensrecht, Compliance & IP-Management-Workflow",
+        "fr-FR": "Conformité juridique d'entreprise et gestion de la propriété intellectuelle",
+        "es-ES": "Cumplimiento legal corporativo y gestión de propiedad intelectual",
+        "ru-RU": "Корпоративное право, комплаенс и управление интеллектуальной собственностью",
+        "pt-BR": "Conformidade jurídica corporativa e gestão de propriedade intelectual",
+        "it-IT": "Conformità legale aziendale e gestione della proprietà intellettuale"
+      },
+      "description": {
+        "zh-CN": "专为公司法务打造的合同全生命周期管理、合规制度审查、知识产权商标专利布局与法律纠纷争议处理体系",
+        "en-US": "End-to-end corporate legal workflow: contract reviews, compliance policies, IP/trademarks, and litigation filings",
+        "ja-JP": "End-to-end corporate legal workflow: contract reviews, compliance policies, IP/trademarks, and litigation filings",
+        "ko-KR": "End-to-end corporate legal workflow: contract reviews, compliance policies, IP/trademarks, and litigation filings",
+        "de-DE": "End-to-end corporate legal workflow: contract reviews, compliance policies, IP/trademarks, and litigation filings",
+        "fr-FR": "End-to-end corporate legal workflow: contract reviews, compliance policies, IP/trademarks, and litigation filings",
+        "es-ES": "End-to-end corporate legal workflow: contract reviews, compliance policies, IP/trademarks, and litigation filings",
+        "ru-RU": "End-to-end corporate legal workflow: contract reviews, compliance policies, IP/trademarks, and litigation filings",
+        "pt-BR": "End-to-end corporate legal workflow: contract reviews, compliance policies, IP/trademarks, and litigation filings",
+        "it-IT": "End-to-end corporate legal workflow: contract reviews, compliance policies, IP/trademarks, and litigation filings"
+      },
+      "target_identities": [
+        "id.legal.compliance",
+        "id.legal.ip_agent"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-日常合同合规审查/01-待审核商务合同草案",
+        "01-日常合同合规审查/02-法务修改留痕版与审查意见书",
+        "02-标准合同范本库/01-采购销售与劳动标准范本",
+        "02-标准合同范本库/02-保密协议与战略合作框架模板",
+        "03-企业制度与合规治理/01-员工手册与内部管理规章",
+        "03-企业制度与合规治理/02-数据合规与个人信息保护评估",
+        "04-知识产权与无形资产/01-商标注册与软著申请底稿",
+        "04-知识产权与无形资产/02-专利申请书与维权存证证据",
+        "05-法律纠纷与诉讼管理/01-律师函与仲裁应诉文书",
+        "05-法律纠纷与诉讼管理/02-司法判决与和解协议归档"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{YYYYMMDD}_{CaseOrContract}_{DocType}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_embedded_iot_firmware",
+      "name": {
+        "zh-CN": "嵌入式系统与物联网软硬件协同开发架构",
+        "en-US": "Embedded Systems & IoT Hardware-Firmware Architecture",
+        "ja-JP": "組込みシステム＆IoTハード・ファームウェア協調開発",
+        "ko-KR": "임베디드 시스템 및 IoT 하드웨어-펌웨어 협업 개발 체계",
+        "de-DE": "Embedded Systems & IoT Hardware-Firmware-Architektur",
+        "fr-FR": "Systèmes embarqués et architecture matérielle-logicielle IoT",
+        "es-ES": "Sistemas embebidos y arquitectura hardware-firmware IoT",
+        "ru-RU": "Встраиваемые системы и архитектура аппаратно-программного обеспечения IoT",
+        "pt-BR": "Sistemas embarcados e arquitetura de hardware-firmware IoT",
+        "it-IT": "Sistemi embedded e architettura hardware-firmware IoT"
+      },
+      "description": {
+        "zh-CN": "软硬件协同开发工业标准：硬件原理图PCB与BOM、底层BSP驱动与SDK、RTOS固件源码、通信协议抓包与量产固件烧录包",
+        "en-US": "Hardware-firmware co-design: PCB schematics, BOM, BSP drivers, RTOS firmware, protocols, and flash binaries",
+        "ja-JP": "Hardware-firmware co-design: PCB schematics, BOM, BSP drivers, RTOS firmware, protocols, and flash binaries",
+        "ko-KR": "Hardware-firmware co-design: PCB schematics, BOM, BSP drivers, RTOS firmware, protocols, and flash binaries",
+        "de-DE": "Hardware-firmware co-design: PCB schematics, BOM, BSP drivers, RTOS firmware, protocols, and flash binaries",
+        "fr-FR": "Hardware-firmware co-design: PCB schematics, BOM, BSP drivers, RTOS firmware, protocols, and flash binaries",
+        "es-ES": "Hardware-firmware co-design: PCB schematics, BOM, BSP drivers, RTOS firmware, protocols, and flash binaries",
+        "ru-RU": "Hardware-firmware co-design: PCB schematics, BOM, BSP drivers, RTOS firmware, protocols, and flash binaries",
+        "pt-BR": "Hardware-firmware co-design: PCB schematics, BOM, BSP drivers, RTOS firmware, protocols, and flash binaries",
+        "it-IT": "Hardware-firmware co-design: PCB schematics, BOM, BSP drivers, RTOS firmware, protocols, and flash binaries"
+      },
+      "target_identities": [
+        "id.dev.embedded"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-硬件设计与电路PCB/01-原理图工程与PCB布线源文件",
+        "01-硬件设计与电路PCB/02-器件选型Datasheet与BOM物料表",
+        "02-底层驱动与芯片SDK/01-芯片厂家原厂SDK与HAL固件库",
+        "02-底层驱动与芯片SDK/02-外设传感驱动与板级支持包BSP",
+        "03-嵌入式应用固件/01-RTOS任务逻辑与算法核心源码",
+        "03-嵌入式应用固件/02-通信协议封装(MQTT/BLE/CAN/Modbus)",
+        "04-软硬件联调与测试/01-逻辑分析仪抓包与串口调试日志",
+        "04-软硬件联调与测试/02-EMC与高低温环境测试报告",
+        "05-量产发布交付/01-正式量产固件Hex与Bin烧录包",
+        "05-量产发布交付/02-产测治具使用说明与烧录作业指导书"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{YYYYMMDD}_{BoardName}_{FirmwareVersion}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_3d_cg_animation",
+      "name": {
+        "zh-CN": "三维数字资产、CG建模与动效渲染流水线",
+        "en-US": "3D Digital Assets, CG Modeling & Animation Pipeline",
+        "ja-JP": "3Dデジタルアセット・CGモデリング＆アニメーションパイプライン",
+        "ko-KR": "3D 디지털 애셋, CG 모델링 및 애니메이션 파이프라인",
+        "de-DE": "3D-Digital-Assets, CG-Modellierung & Animationspipeline",
+        "fr-FR": "Actifs numériques 3D, modélisation CG et pipeline d'animation",
+        "es-ES": "Activos digitales 3D, modelado CG y pipeline de animación",
+        "ru-RU": "3D-цифровые активы, CG-моделирование и анимационный конвейер",
+        "pt-BR": "Ativos digitais 3D, modelagem CG e pipeline de animação",
+        "it-IT": "Asset digitali 3D, modellazione CG e pipeline di animazione"
+      },
+      "description": {
+        "zh-CN": "专业CG视觉制作管线：概念原画参考、高低模模型工程(Blender/C4D/Maya)、材质贴图与PBR纹理、骨骼动画与高画质成片渲染",
+        "en-US": "Professional CG pipeline: concept art, 3D meshes (Blender/C4D), PBR textures, rigs/animations, and final renders",
+        "ja-JP": "Professional CG pipeline: concept art, 3D meshes (Blender/C4D), PBR textures, rigs/animations, and final renders",
+        "ko-KR": "Professional CG pipeline: concept art, 3D meshes (Blender/C4D), PBR textures, rigs/animations, and final renders",
+        "de-DE": "Professional CG pipeline: concept art, 3D meshes (Blender/C4D), PBR textures, rigs/animations, and final renders",
+        "fr-FR": "Professional CG pipeline: concept art, 3D meshes (Blender/C4D), PBR textures, rigs/animations, and final renders",
+        "es-ES": "Professional CG pipeline: concept art, 3D meshes (Blender/C4D), PBR textures, rigs/animations, and final renders",
+        "ru-RU": "Professional CG pipeline: concept art, 3D meshes (Blender/C4D), PBR textures, rigs/animations, and final renders",
+        "pt-BR": "Professional CG pipeline: concept art, 3D meshes (Blender/C4D), PBR textures, rigs/animations, and final renders",
+        "it-IT": "Professional CG pipeline: concept art, 3D meshes (Blender/C4D), PBR textures, rigs/animations, and final renders"
+      },
+      "target_identities": [
+        "id.designer.3d",
+        "id.designer.industrial"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-灵感参考与概念草图/01-情绪板Moodboard与原画参考",
+        "01-灵感参考与概念草图/02-三视图设定与尺度比例标注",
+        "02-三维建模工程/01-高模雕刻源文件(ZBrush/Blender)",
+        "02-三维建模工程/02-拓扑低模与UV拆分交付(FBX/OBJ)",
+        "03-材质纹理与渲染贴图/01-SubstancePainter材质工程",
+        "03-材质纹理与渲染贴图/02-4K-PBR贴图集(Normal/Roughness/Albedo)",
+        "04-骨骼绑定与动效关键帧/01-人物机械骨骼绑定Rig",
+        "04-骨骼绑定与动效关键帧/02-动画动力学与布料毛发模拟",
+        "05-成片渲染与后期合成/01-多通道渲染分层(EXR/TIFF)",
+        "05-成片渲染与后期合成/02-AE调色合成与最终母片导出"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{ProjectName}_{AssetName}_v{Version}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_freelance_business_delivery",
+      "name": {
+        "zh-CN": "自由职业者商业接单与项目全交付体系",
+        "en-US": "Freelancer Solo-Business & Client Delivery Vault",
+        "ja-JP": "フリーランス受注＆クライアント納品管理システム",
+        "ko-KR": "프리랜서 외주 수주 및 클라이언트 납품 관리 체계",
+        "de-DE": "Freiberufler-Auftragsabwicklung & Kundenlieferung",
+        "fr-FR": "Système de livraison pour indépendants et gestion des missions",
+        "es-ES": "Sistema de entrega y gestión de proyectos para autónomos",
+        "ru-RU": "Система ведения заказов и сдачи проектов для фрилансеров",
+        "pt-BR": "Sistema de gestão de freelas e entrega a clientes",
+        "it-IT": "Sistema di gestione commesse e consegna clienti per freelance"
+      },
+      "description": {
+        "zh-CN": "适合独立创作者、自由职业者与独立顾问的商业管理架构：客户Brief与报价排期、签约合同、过程版交付、结算发票与作品集归档",
+        "en-US": "Solo-business framework: client briefs, estimates, signed contracts, WIP deliverables, invoices, and portfolio",
+        "ja-JP": "Solo-business framework: client briefs, estimates, signed contracts, WIP deliverables, invoices, and portfolio",
+        "ko-KR": "Solo-business framework: client briefs, estimates, signed contracts, WIP deliverables, invoices, and portfolio",
+        "de-DE": "Solo-business framework: client briefs, estimates, signed contracts, WIP deliverables, invoices, and portfolio",
+        "fr-FR": "Solo-business framework: client briefs, estimates, signed contracts, WIP deliverables, invoices, and portfolio",
+        "es-ES": "Solo-business framework: client briefs, estimates, signed contracts, WIP deliverables, invoices, and portfolio",
+        "ru-RU": "Solo-business framework: client briefs, estimates, signed contracts, WIP deliverables, invoices, and portfolio",
+        "pt-BR": "Solo-business framework: client briefs, estimates, signed contracts, WIP deliverables, invoices, and portfolio",
+        "it-IT": "Solo-business framework: client briefs, estimates, signed contracts, WIP deliverables, invoices, and portfolio"
+      },
+      "target_identities": [
+        "id.creator.freelance"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-客户意向与商业接单/01-客户需求Brief与沟通纪要",
+        "01-客户意向与商业接单/02-项目工时评估与正式报价单",
+        "02-合作签约与合规/01-合作协议与保密条款签署件",
+        "02-合作签约与合规/02-预付款到账确认与请款单据",
+        "03-项目执行与阶段交付/01-第一阶段初稿与草案版本",
+        "03-项目执行与阶段交付/02-客户反馈意见与修改对照记录",
+        "04-最终验收与结算归档/01-终版高清可商用产物交付包",
+        "04-最终验收与结算归档/02-客户验收签字单与发票结算回单",
+        "05-个人品牌与作品集/01-已公开标杆商业案例展示包装",
+        "05-个人品牌与作品集/02-个人商业介绍PDF与服务报价手册"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{YYYYMMDD}_{ClientName}_{Deliverable}_v{Version}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_pkm_knowledge_vault",
+      "name": {
+        "zh-CN": "终身学习与卡片盒个人知识库 (PKM / Zettelkasten)",
+        "en-US": "Lifelong Learning & Personal Knowledge Management (PKM Vault)",
+        "ja-JP": "生涯学習＆Zettelkasten個人知識ベース（PKM）",
+        "ko-KR": "평생 학습 및 제텔카스텐 개인 지식 베이스(PKM)",
+        "de-DE": "Lebenslanges Lernen & Zettelkasten Wissens-Tresor (PKM)",
+        "fr-FR": "Apprentissage continu et coffre-fort de connaissances (PKM)",
+        "es-ES": "Aprendizaje permanente y bóveda de conocimiento personal (PKM)",
+        "ru-RU": "Непрерывное обучение и персональная база знаний (PKM / Zettelkasten)",
+        "pt-BR": "Aprendizado contínuo e cofre de conhecimento pessoal (PKM)",
+        "it-IT": "Apprendimento continuo e cassaforte della conoscenza personale (PKM)"
+      },
+      "description": {
+        "zh-CN": "适合自学者、终身学者与数字知识创作者的第二大脑架构：文献收集箱、卡片盒原子笔记、技能实战项目工程与长期思维复盘",
+        "en-US": "Second brain for lifelong learners: inboxes, atomic literature/permanent notes, project practice, and reflections",
+        "ja-JP": "Second brain for lifelong learners: inboxes, atomic literature/permanent notes, project practice, and reflections",
+        "ko-KR": "Second brain for lifelong learners: inboxes, atomic literature/permanent notes, project practice, and reflections",
+        "de-DE": "Second brain for lifelong learners: inboxes, atomic literature/permanent notes, project practice, and reflections",
+        "fr-FR": "Second brain for lifelong learners: inboxes, atomic literature/permanent notes, project practice, and reflections",
+        "es-ES": "Second brain for lifelong learners: inboxes, atomic literature/permanent notes, project practice, and reflections",
+        "ru-RU": "Second brain for lifelong learners: inboxes, atomic literature/permanent notes, project practice, and reflections",
+        "pt-BR": "Second brain for lifelong learners: inboxes, atomic literature/permanent notes, project practice, and reflections",
+        "it-IT": "Second brain for lifelong learners: inboxes, atomic literature/permanent notes, project practice, and reflections"
+      },
+      "target_identities": [
+        "id.student.self_learner",
+        "id.student.exam",
+        "id.life.digital_hoarder"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "00-临时闪念收集箱Inbox/待加工网页剪藏与灵感备忘",
+        "01-卡片盒原子笔记Zettel/01-概念文献卡片LiteratureNotes",
+        "01-卡片盒原子笔记Zettel/02-永久核心笔记PermanentNotes",
+        "02-技能学习与实战项目/01-在线课程笔记与课后习题",
+        "02-技能学习与实战项目/02-开源项目复现实战代码工程",
+        "03-经典通识书库与研读/01-电子书籍精读与高光摘录",
+        "03-经典通识书库与研读/02-深度书评与心智模型导图",
+        "04-周期复盘与沉淀Output/01-每月与年度个人成长复盘",
+        "04-周期复盘与沉淀Output/02-对外公开发布的文章与博客归档"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{YYYYMMDD}_{Topic}_{NoteTitle}.{ext}"
+      }
     }
   ]
 }
