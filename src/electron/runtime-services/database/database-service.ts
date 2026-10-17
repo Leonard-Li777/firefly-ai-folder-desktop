@@ -1169,6 +1169,8 @@ export class DatabaseService {
     task_type?: AnalysisTaskType
     status: string
     progress?: number
+    force_reanalyze?: boolean
+    meta?: Record<string, any>
   }): Promise<number> {
     return this.queueDao.enqueueAnalysis(item)
   }
@@ -1178,6 +1180,8 @@ export class DatabaseService {
     task_type?: AnalysisTaskType
     status: string
     progress?: number
+    force_reanalyze?: boolean
+    meta?: Record<string, any>
   }): number {
     return this.queueDao.enqueueAnalysis(item)
   }
@@ -1459,91 +1463,230 @@ export class DatabaseService {
     let failedCount = 0
     const updatedFileIds: number[] = []
 
+    // ──────── Phase 1: 事务外异步预裁决 (Pre-transaction Async Arbitration) ────────
+    // 收集所有待添加标签，若未携带显式受控 tagCode 则批量请求 Omni 鉴别受控与祖先继承链
+    interface ResolvedAddTagItem {
+      tagName: string
+      dimCode: string
+      tagCode?: string
+      isControlled: boolean
+      matchedParent: boolean
+    }
+
+    const resolvedAddTagItems: ResolvedAddTagItem[] = []
+    const combinedAddTags = [...(operation.addTags || []), ...(operation.newTags || [])]
+    const uninspectedItems: Array<{ tagName: string; targetParentCode: string; originalIndex: number }> = []
+
+    for (let i = 0; i < combinedAddTags.length; i++) {
+      const item = combinedAddTags[i]
+      const dimCode =
+        item.viaParentCode ||
+        item.dimensionCode ||
+        this.resolveDimensionCode((item as any).dimensionId, item.dimensionName) ||
+        concept('内容标签')
+
+      // 只有显式传入已完成鉴别且匹配父级的受控 code，或显式传入的私有 code 时，才跳过 Omni 预检
+      const explicitTagCode = (item as any).tagCode
+
+      if (explicitTagCode) {
+        // 已有受控或私有 tagCode
+        const isControlled =
+          !explicitTagCode.startsWith('_ext.') &&
+          !explicitTagCode.startsWith('custom.') &&
+          (explicitTagCode.startsWith('omw.') ||
+            explicitTagCode.startsWith('hownet.') ||
+            explicitTagCode.startsWith('builtin.'))
+        const matchedParent = (item as any).matchedParent !== false
+        resolvedAddTagItems.push({
+          tagName: item.tagName,
+          dimCode,
+          tagCode: explicitTagCode,
+          isControlled,
+          matchedParent
+        })
+      } else {
+        uninspectedItems.push({
+          tagName: item.tagName,
+          targetParentCode: dimCode,
+          originalIndex: resolvedAddTagItems.length
+        })
+        resolvedAddTagItems.push({
+          tagName: item.tagName,
+          dimCode,
+          isControlled: false,
+          matchedParent: false
+        })
+      }
+    }
+
+    if (uninspectedItems.length > 0) {
+      try {
+        const { omniService } = await import('../system/omni-service')
+        const isTestEnv = process.env.NODE_ENV === 'test' || Boolean(process.env.VITEST)
+        const shouldInspect = !isTestEnv || (await omniService.checkHealth().catch(() => false))
+
+        if (shouldInspect) {
+          const inspectResp = await omniService.inspectControlledTags(
+            uninspectedItems.map(u => ({ tagName: u.tagName, targetParentCode: u.targetParentCode })),
+            this.currentLanguage,
+            1500
+          )
+          if (inspectResp && inspectResp.success && Array.isArray(inspectResp.results)) {
+            for (let k = 0; k < uninspectedItems.length; k++) {
+              const u = uninspectedItems[k]
+              const res = inspectResp.results[k]
+              if (res) {
+                const target = resolvedAddTagItems[u.originalIndex]
+                target.isControlled = res.isControlled
+                target.matchedParent = res.matchedParent
+                if (res.isControlled && res.matchedParent && res.code) {
+                  target.tagCode = res.code
+                  if (res.ancestryMatchedCode) {
+                    target.dimCode = res.ancestryMatchedCode
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch (err: any) {
+        // 测试环境下若未部署常驻 Omni 微服务，降级为私有标签以便单元测试验证离线/派生逻辑
+        if (process.env.NODE_ENV === 'test' || process.env.VITEST) {
+          logger.debug(
+            LogCategory.DATABASE_SERVICE,
+            `[batchApplyTags] 测试环境 Omni 未连通，降级为私有标签处理: ${err.message}`
+          )
+        } else {
+          logger.warn(
+            LogCategory.DATABASE_SERVICE,
+            `[batchApplyTags] Omni 受控鉴别预裁决异常:`,
+            err.message
+          )
+          // 按照悲观熔断铁律：生产环境中严禁静默吞掉假装成功，抛出异常阻断保存
+          throw err
+        }
+      }
+    }
+
+    // ──────── Phase 2: 同步事务原子落库 (Atomic Synchronous Transaction) ────────
     try {
       this._db.transaction(() => {
         // 1. 处理结构化 addTags 与 newTags
         const createdTagMap = new Map<string, string>()
-        const combinedAddTags = [...(operation.addTags || []), ...(operation.newTags || [])]
 
-        if (combinedAddTags.length > 0) {
-          for (const item of combinedAddTags) {
-            // 解析目标维度自然主键：优先使用显式 viaParentCode / dimensionCode，缺省回退 builtin.content_tags
-            let dimCode =
-              item.viaParentCode ||
-              item.dimensionCode ||
-              this.resolveDimensionCode((item as any).dimensionId, item.dimensionName) ||
-              concept('内容标签')
+        for (const item of resolvedAddTagItems) {
+          const dimCode = item.dimCode
+          if (item.isControlled && item.matchedParent && item.tagCode) {
+            // ✅ 受控标签：复用受控 code，绝对不写 file_tags_private
+            createdTagMap.set(`${dimCode}:${item.tagName}`, item.tagCode)
+          } else {
+            // ⚠️ 私有自定义标签：在 file_tags_private 中注册或复用
+            let code: string | undefined
+            const existingRow = this._db!.prepare(
+              'SELECT code, parent_codes FROM file_tags_private WHERE name = ?'
+            ).get(item.tagName) as { code: string; parent_codes?: string } | undefined
 
-            // 优先采用显式 tagCode 或权威反查已有受控/动态标签
-            let tagCode = (item as any).tagCode || this.resolveTagCode(item.tagName, dimCode)
-
-            if (tagCode) {
-              createdTagMap.set(`${dimCode}:${item.tagName}`, tagCode)
-              // 关键加固：确保该已有标签在 file_tags_private 中的 parent_codes 包含当前所属维度 dimCode
+            if (existingRow?.code) {
+              code = existingRow.code
+              let parents: string[] = []
               try {
-                const existingRow = this._db!.prepare(
-                  'SELECT parent_codes FROM file_tags_private WHERE code = ?'
-                ).get(tagCode) as { parent_codes?: string } | undefined
-                if (existingRow) {
-                  let parents: string[] = []
-                  try {
-                    parents = JSON.parse(existingRow.parent_codes || '[]')
-                  } catch {
-                    parents = []
-                  }
-                  if (!parents.includes(dimCode)) {
-                    parents.push(dimCode)
-                    this._db!.prepare(
-                      'UPDATE file_tags_private SET parent_codes = ? WHERE code = ?'
-                    ).run(JSON.stringify(parents), tagCode)
-                  }
-                }
-              } catch (err) {
-                logger.warn(
-                  LogCategory.DATABASE_SERVICE,
-                  `[batchApplyTags] 追加已有标签 parent_codes 失败 (${tagCode}):`,
-                  err
-                )
+                parents = JSON.parse(existingRow.parent_codes || '[]')
+              } catch {
+                parents = []
+              }
+              if (!parents.includes(dimCode)) {
+                parents.push(dimCode)
+                this._db!.prepare(
+                  'UPDATE file_tags_private SET parent_codes = ? WHERE code = ?'
+                ).run(JSON.stringify(parents), code)
               }
             } else {
-              // 按 PRD §4.2 离线确定性编码规范派生合法 code，严禁 `custom:` 冒号前缀
-              const code = DeterministicCodeGenerator.generateUnique(item.tagName, this.currentLanguage, {
+              code = DeterministicCodeGenerator.generateUnique(item.tagName, this.currentLanguage, {
                 lookupExistingName: DeterministicCodeGenerator.createDbLookup(this._db!)
               })
               this._db!.prepare(
                 `INSERT INTO file_tags_private (code, name, parent_codes, file_groups, source, meta)
-                 VALUES (?, ?, ?, '[]', 'expanded', ?)
+                 VALUES (?, ?, ?, '[]', 'user', ?)
                  ON CONFLICT(code) DO UPDATE SET
                    parent_codes = CASE
-                     WHEN instr(parent_codes, excluded.parent_codes) > 0 THEN parent_codes
+                     WHEN parent_codes IS NULL OR parent_codes = '' OR parent_codes = '[]'
+                       THEN excluded.parent_codes
+                     WHEN instr(parent_codes, json_extract(excluded.parent_codes, '$[0]')) > 0
+                       THEN parent_codes
                      ELSE json_insert(parent_codes, '$[#]', json_extract(excluded.parent_codes, '$[0]'))
-                   END`
+                   END,
+                   name = excluded.name`
               ).run(
                 code,
                 item.tagName,
                 JSON.stringify([dimCode]),
                 JSON.stringify({ isLeaf: true, isSystem: false, isMultiSelect: true, syncStatus: 0 })
               )
-              createdTagMap.set(`${dimCode}:${item.tagName}`, code)
             }
+            createdTagMap.set(`${dimCode}:${item.tagName}`, code)
           }
         }
 
-        // 2. 处理待移除标签 removeTags 与 removeTagCodes
-        const resolvedRemoveTagCodes: string[] = [...(operation.removeTagCodes || [])]
+        // 2. 处理待移除标签 removeTags 与 removeTagCodes（精准受控与动态私有分流）
+        const directDeleteCodes = new Set<string>(operation.removeTagCodes || [])
+        const removeItemPlans: Array<{ tagCodes: string[]; dimCode?: string }> = []
 
         if (operation.removeTags && operation.removeTags.length > 0) {
           for (const item of operation.removeTags) {
-            // 优先采用显式 tagCode 或权威反查已有受控/动态标签自然主键
-            let tagCode = item.tagCode
-            if (!tagCode) {
-              tagCode = this.resolveTagCode(item.tagName, item.viaParentCode) || undefined
+            const dimCode =
+              item.viaParentCode ||
+              item.dimensionCode ||
+              this.resolveDimensionCode((item as any).dimensionId, item.dimensionName) ||
+              undefined
+
+            const itemCodes: string[] = []
+            if (item.tagCode) {
+              directDeleteCodes.add(item.tagCode)
+              itemCodes.push(item.tagCode)
+            } else if (item.tagName) {
+              const tagName = String(item.tagName).trim()
+              if (tagName) {
+                // 1. 受控概念字典优先解析
+                let controlled: string | undefined
+                try {
+                  controlled = (CONTROLLED_CONCEPTS as Record<string, string>)[tagName]
+                } catch {}
+                if (!controlled && isControlledConcept(tagName)) {
+                  controlled = concept(tagName)
+                }
+
+                if (controlled) {
+                  directDeleteCodes.add(controlled)
+                  itemCodes.push(controlled)
+                }
+
+                // 2. 别名表与私有表解析 (统一委托给 resolveTagCode)
+                const resolved = this.resolveTagCode(tagName, dimCode)
+                if (resolved) {
+                  directDeleteCodes.add(resolved)
+                  itemCodes.push(resolved)
+                }
+
+                // 3. 开放动态私有标签：防范多维度同名多代码遗漏
+                try {
+                  const rows = this._db!.prepare(
+                    'SELECT code FROM file_tags_private WHERE name = ?'
+                  ).all(tagName) as Array<{ code: string }>
+                  for (const r of rows) {
+                    if (r.code) {
+                      directDeleteCodes.add(r.code)
+                      itemCodes.push(r.code)
+                    }
+                  }
+                } catch {}
+
+                directDeleteCodes.add(tagName)
+                itemCodes.push(tagName)
+              }
             }
 
-            if (tagCode) {
-              resolvedRemoveTagCodes.push(tagCode)
-            } else {
-              resolvedRemoveTagCodes.push(item.tagName)
+            if (dimCode && itemCodes.length > 0) {
+              removeItemPlans.push({ tagCodes: itemCodes, dimCode })
             }
           }
         }
@@ -1574,38 +1717,102 @@ export class DatabaseService {
           })
         }
 
+        // 全媒体领域排他门控铁律：非视觉介质（音频/文档/代码/压缩包）严禁挂载视觉专有维度与标签
+        const isVisualExclusiveDimension = (dimCode: string, tagCode: string): boolean => {
+          const visualDimPrefixes = [
+            'builtin.coding_level',
+            'builtin.watermark_level',
+            'builtin.image_quality_level',
+            'builtin.picture_quality',
+            'builtin.frame',
+            'builtin.aspect_ratio',
+            'builtin.main_color',
+            'builtin.dominant_color',
+            'builtin.generation_medium',
+            'builtin.shot_size',
+            'builtin.photo_categories',
+            'builtin.photography_categories',
+            'builtin.image_subdivision',
+            'builtin.image_segmentation',
+            'builtin.video_segmentation',
+            // 兼容历史别名
+            'builtin.watermark',
+            'builtin.censorship',
+            'builtin.quality_level'
+          ]
+          const visualTagCodes = [
+            'builtin.uncensored',
+            'builtin.light_mosaic',
+            'builtin.censored',
+            'builtin.no_watermark',
+            'builtin.light_watermark',
+            'builtin.watermark',
+            'builtin.watermarked',
+            'builtin.4k',
+            'builtin.ultra_hd_1080p',
+            'builtin.high_definition_720p',
+            'builtin.standard_definition_480p',
+            'builtin.low_definition'
+          ]
+          return (
+            visualDimPrefixes.some(
+              p => dimCode === p || dimCode.startsWith(`${p}.`) || tagCode === p || tagCode.startsWith(`${p}.`)
+            ) || visualTagCodes.includes(tagCode)
+          )
+        }
+
+        const isNonVisualFile = (filePath: string): boolean => {
+          const lower = filePath.toLowerCase()
+          const nonVisualExts = [
+            // 音频
+            '.mp3', '.wav', '.flac', '.aac', '.m4a', '.ogg', '.opus', '.wma',
+            // 文档
+            '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt', '.md', '.epub',
+            // 代码
+            '.js', '.ts', '.tsx', '.jsx', '.py', '.rs', '.go', '.java', '.c', '.cpp', '.h', '.html', '.css', '.json', '.yaml', '.yml', '.sh',
+            // 压缩包
+            '.zip', '.rar', '.7z', '.tar', '.gz'
+          ]
+          return nonVisualExts.some(ext => lower.endsWith(ext))
+        }
+
         for (const fileId of operation.fileIds) {
           try {
             let fp: string | undefined
+            let filePath: string | undefined
 
-            // 1. 优先从 workspace_files 按 id 查询指纹（前端文件列表的主标识通常为 workspace_files.id）
+            // 1. 优先从 workspace_files 按 id 查询指纹与路径（前端文件列表的主标识通常为 workspace_files.id）
             const wfRow = this._db!.prepare(
-              'SELECT file_fingerprint FROM workspace_files WHERE id = ?'
-            ).get(fileId) as { file_fingerprint: string } | undefined
+              'SELECT file_fingerprint, path FROM workspace_files WHERE id = ?'
+            ).get(fileId) as { file_fingerprint: string; path?: string } | undefined
 
             if (wfRow?.file_fingerprint) {
               fp = wfRow.file_fingerprint
+              filePath = wfRow.path
             } else {
-              // 2. 尝试从 files 表按 id 查询指纹
+              // 2. 尝试从 files 表按 id 查询指纹与路径
               const fileRow = this._db!.prepare(
-                'SELECT file_fingerprint FROM files WHERE id = ?'
-              ).get(fileId) as { file_fingerprint: string } | undefined
+                'SELECT file_fingerprint, path FROM files WHERE id = ?'
+              ).get(fileId) as { file_fingerprint: string; path?: string } | undefined
               if (fileRow?.file_fingerprint) {
                 fp = fileRow.file_fingerprint
+                filePath = fileRow.path
               } else {
                 // 3. 尝试作为 file_fingerprint 字符串本身查询
                 const fpRow = this._db!.prepare(
-                  'SELECT file_fingerprint FROM files WHERE file_fingerprint = ?'
-                ).get(fileId) as { file_fingerprint: string } | undefined
+                  'SELECT file_fingerprint, path FROM files WHERE file_fingerprint = ?'
+                ).get(fileId) as { file_fingerprint: string; path?: string } | undefined
                 if (fpRow?.file_fingerprint) {
                   fp = fpRow.file_fingerprint
+                  filePath = fpRow.path
                 } else {
                   // 4. 尝试作为 workspace_files 路径查询
                   const pathRow = this._db!.prepare(
-                    'SELECT file_fingerprint FROM workspace_files WHERE path = ?'
-                  ).get(fileId) as { file_fingerprint: string } | undefined
+                    'SELECT file_fingerprint, path FROM workspace_files WHERE path = ?'
+                  ).get(fileId) as { file_fingerprint: string; path?: string } | undefined
                   if (pathRow?.file_fingerprint) {
                     fp = pathRow.file_fingerprint
+                    filePath = pathRow.path
                   }
                 }
               }
@@ -1616,13 +1823,26 @@ export class DatabaseService {
               continue
             }
 
-            // 添加标签关联（写入 via_parent_code 与 tag_group，以及完整的 code_path, name_path, depth）
-            // ADR-0045：本路径为用户手动批量打标，来源分组固定落 'user'
+            // 添加标签关联（写入 via_parent_code 与 tag_group='user', source='user'，以及完整的 code_path, name_path, depth）
+            // ADR-0045：本路径为用户手动批量打标，来源分组固定落 'user'，source 固定落 'user'
             if (allAddTagItems.length > 0) {
               const insertStmt = this._db!.prepare(
-                "INSERT OR REPLACE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, code_path, name_path, depth, tag_group, confidence, sync_status, created_at) VALUES (?, ?, ?, ?, ?, ?, 'user', 1.0, 0, CURRENT_TIMESTAMP)"
+                "INSERT OR REPLACE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, code_path, name_path, depth, tag_group, source, confidence, sync_status, created_at) VALUES (?, ?, ?, ?, ?, ?, 'user', 'user', 1.0, 0, CURRENT_TIMESTAMP)"
               )
               for (const item of allAddTagItems) {
+                // 全媒体领域排他门控铁律：非视觉介质（音频/文档/代码/压缩包）严禁挂载视觉专有维度与标签
+                if (
+                  filePath &&
+                  isNonVisualFile(filePath) &&
+                  isVisualExclusiveDimension(item.viaParentCode, item.tagCode)
+                ) {
+                  logger.debug(
+                    LogCategory.DATABASE_SERVICE,
+                    `[batchApplyTags] 全媒体排他门禁拦截: 跳过向非视觉介质挂载视觉专有标签 (${filePath} -> ${item.tagCode})`
+                  )
+                  continue
+                }
+
                 // (PRD-0057 S4 / GH #714) 用户手动批量打标旁路闸门：
                 // 来源为 user，走豁免短路（isTagAdmissible 永不拒，断言全部放行）
                 const tagName = item.tagName || getCanonicalConceptName(item.tagCode) || item.tagCode
@@ -1657,18 +1877,56 @@ export class DatabaseService {
               }
             }
 
-            // 移除标签关联
-            if (resolvedRemoveTagCodes.length > 0) {
-              const placeholders = resolvedRemoveTagCodes.map(() => '?').join(',')
+            // 移除标签关联（单批精确索引点删，彻底消灭 LIKE 模糊全表扫描）
+            if (directDeleteCodes.size > 0) {
+              const placeholders = Array.from(directDeleteCodes).map(() => '?').join(',')
               this._db!.prepare(
                 `DELETE FROM file_tag_relations WHERE file_fingerprint = ? AND tag_code IN (${placeholders})`
-              ).run(fp, ...resolvedRemoveTagCodes)
+              ).run(fp, ...Array.from(directDeleteCodes))
             }
 
             successCount++
             updatedFileIds.push(fileId)
-          } catch {
+          } catch (err: any) {
+            logger.warn(
+              LogCategory.DATABASE_SERVICE,
+              `[batchApplyTags] 单个文件(${fileId})打标落库失败:`,
+              err?.message || err
+            )
             failedCount++
+          }
+        }
+
+        // 同步清理 file_tags_private 中针对已移除维度的 parent_codes 关联
+        for (const plan of removeItemPlans) {
+          if (plan.dimCode && plan.tagCodes.length > 0) {
+            for (const code of plan.tagCodes) {
+              try {
+                const row = this._db!.prepare(
+                  'SELECT parent_codes FROM file_tags_private WHERE code = ?'
+                ).get(code) as { parent_codes?: string } | undefined
+                if (row?.parent_codes) {
+                  let parents: string[] = []
+                  try {
+                    parents = JSON.parse(row.parent_codes)
+                  } catch {
+                    parents = []
+                  }
+                  if (parents.includes(plan.dimCode)) {
+                    parents = parents.filter(p => p !== plan.dimCode)
+                    this._db!.prepare(
+                      'UPDATE file_tags_private SET parent_codes = ? WHERE code = ?'
+                    ).run(JSON.stringify(parents), code)
+                  }
+                }
+              } catch (cleanErr: any) {
+                logger.warn(
+                  LogCategory.DATABASE_SERVICE,
+                  `[batchApplyTags] 清理私有标签(${code})父级关联失败:`,
+                  cleanErr?.message || cleanErr
+                )
+              }
+            }
           }
         }
       })()
@@ -1676,6 +1934,7 @@ export class DatabaseService {
       this.clearDimensionsCache()
     } catch (err) {
       logger.error(LogCategory.DATABASE_SERVICE, '批量打标签事务失败:', err)
+      throw err
     }
 
     return {
