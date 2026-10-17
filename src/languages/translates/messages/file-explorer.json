@@ -1493,7 +1493,7 @@
     "de-DE": "Dateien laden...",
     "fr-FR": "Chargement des fichiers...",
     "ko-KR": "파일 불러오는 중...\r",
-    "$files": ["src/renderer/components/file-explorer/FileExplorerLayout/index.tsx(12142-12154)"],
+    "$files": ["src/renderer/components/file-explorer/FileExplorerLayout/index.tsx(12812-12824)"],
     "$id": 4118
   },
   "在此维度中未找到文件": {
@@ -1506,7 +1506,7 @@
     "de-DE": "Datei in dieser Dimension nicht gefunden",
     "fr-FR": "Fichier introuvable dans cette dimension",
     "ko-KR": "이 차원에서 파일을 찾을 수 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileExplorerLayout/index.tsx(12498-12512)"],
+    "$files": ["src/renderer/components/file-explorer/FileExplorerLayout/index.tsx(13168-13182)"],
     "$id": 7514
   },
   "当前维度标签下暂无匹配文件，请选择其他维度分类。": {
@@ -1519,7 +1519,7 @@
     "de-DE": "Unter der aktuellen Dimensionsbezeichnung gibt es keine passenden Dateien. Bitte wählen Sie eine andere Dimensionskategorie aus.",
     "fr-FR": "Il n'existe aucun fichier correspondant sous l'étiquette de dimension actuelle. Veuillez sélectionner une autre catégorie de dimension.",
     "ko-KR": "현재 측정기준 라벨 아래에 일치하는 파일이 없습니다. 다른 측정기준 카테고리를 선택하세요.",
-    "$files": ["src/renderer/components/file-explorer/FileExplorerLayout/index.tsx(12551-12579)"],
+    "$files": ["src/renderer/components/file-explorer/FileExplorerLayout/index.tsx(13221-13249)"],
     "$id": 7515
   },
   "全域搜索:": {

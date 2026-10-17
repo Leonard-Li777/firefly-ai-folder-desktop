@@ -175,7 +175,7 @@
     "ko-KR": "알 수 없는 파일",
     "$files": [
       "src/renderer/components/file-explorer/FileList/index.tsx(38996-39004)",
-      "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(28990-28998)",
+      "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(30150-30158)",
       "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(29743-29751)"
     ],
     "$id": 8511
@@ -373,8 +373,8 @@
     "fr-FR": "Échec de l'ouverture du fichier : {message}",
     "ko-KR": "파일을 열지 못했습니다: {message}",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(10653-10674)",
-      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(18658-18679)",
+      "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(11813-11834)",
+      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(20456-20477)",
       "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(8777-8798)",
       "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(13988-14009)"
     ],
@@ -391,8 +391,8 @@
     "fr-FR": "Perdu",
     "ko-KR": "손실됨",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(11782-11789)",
-      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(22435-22442)",
+      "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(12942-12949)",
+      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(24233-24240)",
       "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(17231-17238)"
     ],
     "$id": 8527
@@ -407,7 +407,7 @@
     "de-DE": "Vektorähnlichkeit",
     "fr-FR": "Similarité vectorielle",
     "ko-KR": "벡터 유사성",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/GridCell.tsx(12301-12310)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/components/GridCell.tsx(13461-13470)"],
     "$id": 21047
   },
   "未知失败原因": {
@@ -486,7 +486,7 @@
     "fr-FR": "Dossier",
     "ko-KR": "폴더",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(15222-15229)",
+      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(15863-15870)",
       "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(23699-23706)"
     ],
     "$id": 8533
@@ -502,7 +502,7 @@
     "fr-FR": "Fichier",
     "ko-KR": "파일",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(29979-29985)",
+      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(31777-31783)",
       "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(23733-23739)"
     ],
     "$id": 8534
@@ -551,8 +551,8 @@
     "ko-KR": "분석 대기열에 이미 추가됨",
     "$files": [
       "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(3501-3512)",
-      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(5119-5130)",
-      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(5583-5594)"
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(6126-6137)",
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(6590-6601)"
     ],
     "$id": 8542
   },
@@ -607,7 +607,7 @@
     "ko-KR": "즉시 분석",
     "$files": [
       "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(7006-7014)",
-      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(5356-5364)"
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(6363-6371)"
     ],
     "$id": 8544
   },
@@ -624,18 +624,54 @@
     "$files": ["src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(8321-8331)"],
     "$id": 21283
   },
-  "匹配视频时间片段": {
-    "en-US": "Match video time segments",
-    "es-ES": "Fragmentos de video correspondientes",
-    "ar-EG": "مطابقة مقاطع الفيديو الزمنية",
-    "pt-PT": "Correspondência de segmentos de vídeo por tempo",
-    "ru-RU": "Сопоставление фрагментов времени в видео",
-    "ja-JP": "動画のタイムスタンプ区間を一致させる",
-    "de-DE": "Videosegmente übereinstimmen",
-    "fr-FR": "Correspondance avec des segments de temps de la vidéo",
-    "ko-KR": "비디오 시간 구간 매칭",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(8827-8839)"],
-    "$id": 20700
+  "在外部应用中精准定位打开": {
+    "en-US": "Accurately locate and open in external applications",
+    "es-ES": "Localizar y abrir con precisión en aplicaciones externas",
+    "ar-EG": "تحديد بدقة وفتح في التطبيقات الخارجية",
+    "pt-PT": "Localizar e Abrir com precisão em aplicações externas",
+    "ru-RU": "Точное определение местоположения и открытие во внешних приложениях",
+    "ja-JP": "外部アプリケーションで正確に検索して開く",
+    "de-DE": "Genaues Auffinden und Öffnen in externen Anwendungen",
+    "fr-FR": "Localiser et ouvrir avec précision dans des applications externes",
+    "ko-KR": "외부 응용 프로그램에서 정확하게 찾아 열기",
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(8904-8920)",
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(4124-4140)"
+    ],
+    "$id": 21985
+  },
+  "未检测到支持精准定位的外部应用，已按默认方式打开": {
+    "en-US": "No external application that supports precise positioning has been detected, and it has been opened in the default way",
+    "es-ES": "No se ha detectado ninguna aplicación externa que admita un posicionamiento preciso y se ha abierto de la forma predeterminada.",
+    "ar-EG": "لم يتم الكشف عن أي تطبيق خارجي يدعم تحديد المواقع بدقة ، وتم فتحه بالطريقة الافتراضية",
+    "pt-PT": "Nenhuma aplicação externa que suporte um posicionamento preciso foi detectada e foi aberta da forma predefinida",
+    "ru-RU": "Не обнаружено внешнего приложения, поддерживающего точное позиционирование, и оно было открыто способом, используемым по умолчанию",
+    "ja-JP": "正確な位置決めをサポートする外部アプリケーションは検出されておらず、デフォルトの方法で開かれています",
+    "de-DE": "Es wurde keine externe Anwendung erkannt, die eine präzise Positionierung unterstützt, und sie wurde standardmäßig geöffnet",
+    "fr-FR": "Aucune application externe prenant en charge un positionnement précis n'a été détectée et elle a été ouverte de la manière par défaut",
+    "ko-KR": "정확한 위치를 지원하는 외부 응용 프로그램이 검색되지 않았으며 기본 방식으로 열렸습니다",
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(9548-9576)",
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(4746-4774)"
+    ],
+    "$id": 21986
+  },
+  "打开文件失败": {
+    "en-US": "Failed to open file",
+    "es-ES": "No se pudo abrir el archivo",
+    "ar-EG": "فشل في فتح الملف",
+    "pt-PT": "Falha ao abrir o arquivo",
+    "ru-RU": "Не удалось открыть файл",
+    "ja-JP": "ファイルを開けませんでした",
+    "de-DE": "Datei konnte nicht geöffnet werden",
+    "fr-FR": "Échec de l'ouverture du fichier",
+    "ko-KR": "파일을 열지 못했습니다.",
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(9755-9765)",
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(4003-4013)",
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(4945-4955)"
+    ],
+    "$id": 8537
   },
   "预览": {
     "en-US": "Preview",
@@ -663,19 +699,6 @@
     "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(3706-3717)"],
     "$id": 8536
   },
-  "打开文件失败": {
-    "en-US": "Failed to open file",
-    "es-ES": "No se pudo abrir el archivo",
-    "ar-EG": "فشل في فتح الملف",
-    "pt-PT": "Falha ao abrir o arquivo",
-    "ru-RU": "Не удалось открыть файл",
-    "ja-JP": "ファイルを開けませんでした",
-    "de-DE": "Datei konnte nicht geöffnet werden",
-    "fr-FR": "Échec de l'ouverture du fichier",
-    "ko-KR": "파일을 열지 못했습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(4003-4013)"],
-    "$id": 8537
-  },
   "复制文件路径": {
     "en-US": "Copy file path",
     "es-ES": "Copiar ruta del archivo",
@@ -686,7 +709,7 @@
     "de-DE": "Dateipfad kopieren",
     "fr-FR": "Copier le chemin du fichier",
     "ko-KR": "파일 경로 복사",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(4075-4085)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(5082-5092)"],
     "$id": 8538
   },
   "已复制到剪贴板": {
@@ -699,7 +722,7 @@
     "de-DE": "In die Zwischenablage kopiert",
     "fr-FR": "Copié dans le presse-papiers",
     "ko-KR": "클립보드에 복사됨",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(4660-4671)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(5667-5678)"],
     "$id": 8539
   },
   "复制失败": {
@@ -712,7 +735,7 @@
     "de-DE": "Das Kopieren ist fehlgeschlagen",
     "fr-FR": "Échec de la copie",
     "ko-KR": "복사 실패",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(4799-4807)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(5806-5814)"],
     "$id": 8540
   },
   "重新分析": {
@@ -725,7 +748,7 @@
     "de-DE": "Erneut analysieren",
     "fr-FR": "Réanalyser",
     "ko-KR": "재분석",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(4895-4903)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(5902-5910)"],
     "$id": 8541
   },
   "操作失败": {
@@ -739,9 +762,9 @@
     "fr-FR": "L'opération a échoué",
     "ko-KR": "작업 실패",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(5267-5275)",
-      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(5731-5739)",
-      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(6740-6748)"
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(6274-6282)",
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(6738-6746)",
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(7747-7755)"
     ],
     "$id": 8543
   },
@@ -755,7 +778,7 @@
     "de-DE": "Suchen Sie im echten Verzeichnis",
     "fr-FR": "Localiser dans un répertoire réel",
     "ko-KR": "실제 디렉토리에서 찾기",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(5813-5825)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(6820-6832)"],
     "$id": 8545
   },
   "打开目录失败": {
@@ -768,7 +791,7 @@
     "de-DE": "Verzeichnis konnte nicht geöffnet werden",
     "fr-FR": "Échec de l'ouverture du répertoire",
     "ko-KR": "디렉터리를 열지 못했습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(6105-6115)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(7112-7122)"],
     "$id": 8546
   },
   "在虚拟目录中定位": {
@@ -781,7 +804,7 @@
     "de-DE": "Suchen Sie im virtuellen Verzeichnis",
     "fr-FR": "Localiser dans le répertoire virtuel",
     "ko-KR": "가상 디렉터리에서 찾기",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(6177-6189)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(7184-7196)"],
     "$id": 8547
   },
   "请先导出虚拟目录（虚拟目录不占硬盘空间）": {
@@ -794,7 +817,7 @@
     "de-DE": "Bitte exportieren Sie zuerst das virtuelle Verzeichnis (das virtuelle Verzeichnis belegt keinen Festplattenspeicher).",
     "fr-FR": "Veuillez d'abord exporter le répertoire virtuel (le répertoire virtuel n'occupe pas d'espace sur le disque dur)",
     "ko-KR": "먼저 가상 디렉터리를 내보내십시오. (가상 디렉터리는 하드 디스크 공간을 차지하지 않습니다.)",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(6568-6592)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(7575-7599)"],
     "$id": 8548
   }
 }
