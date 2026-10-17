@@ -1253,23 +1253,19 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       const rawTags = group.tags || []
 
       // 安全等级单字异常防腐：防止历史脏别名 '共'、'内' 侵入，规范化为 '公开'、'内部'
-      const isSecurityDim =
-        (group as any).code === SECURITY_LEVEL_CODE ||
-        group.name === '安全等级'
+      const isSecurityDim = (group as any).code === SECURITY_LEVEL_CODE
 
       const sanitizedRawTags = rawTags.map(t => {
         if (isSecurityDim && t.tagValue) {
           const trimmed = t.tagValue.trim()
-          if (trimmed === '共') return { ...t, tagValue: '公开' }
-          if (trimmed === '内') return { ...t, tagValue: '内部' }
+          if (trimmed === '共') return { ...t, tagValue: '公开' } // locale-invariant-ok: 历史脏别名清洗
+          if (trimmed === '内') return { ...t, tagValue: '内部' } // locale-invariant-ok: 历史脏别名清洗
         }
         return t
       })
 
       // 文件用途直属标签纯净化：严禁混入属于处理状态、安全等级等子维度的预设标签
-      const isFilePurposeRoot =
-        (group as any).code === FILE_PURPOSE_CODE ||
-        group.name === '文件用途'
+      const isFilePurposeRoot = (group as any).code === FILE_PURPOSE_CODE
 
       const purifiedRawTags = isFilePurposeRoot
         ? sanitizedRawTags.filter(t => !purposeSubdimensionTagNames.has(t.tagValue.trim()))

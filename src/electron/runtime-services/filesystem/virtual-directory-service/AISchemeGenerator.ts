@@ -11,6 +11,7 @@ import { LogCategory, logger, DIMENSION_CODES, CANONICAL_NAMES, getCanonicalConc
 import { selectBestClusterFolderName, PathCosineService } from '@firefly/core-engine'
 
 const FILE_QUALITY_NAME = CANONICAL_NAMES.FILE_QUALITY
+const DEFAULT_CLUSTER_FALLBACK_NAME = '其他' // locale-invariant-ok: 聚类默认目录名哨兵
 import Database from 'better-sqlite3'
 import path from 'node:path'
 import { t } from '@app/languages'
@@ -293,17 +294,17 @@ export class AISchemeGenerator {
           userPrompt
         )
         const bestFolderName =
-          scoringResult.folderName && scoringResult.folderName !== '其他'
+          scoringResult.folderName && scoringResult.folderName !== DEFAULT_CLUSTER_FALLBACK_NAME
             ? scoringResult.folderName
-            : cluster.folderName || '其他'
+            : cluster.folderName || DEFAULT_CLUSTER_FALLBACK_NAME
 
         let clusterPath: string[]
         // 用户明确指定提示词时，基于语义与字符重合度算出的最佳目录名强优于无偏置的默认路径
-        if (userPrompt && userPrompt.trim() && bestFolderName && bestFolderName !== '其他') {
+        if (userPrompt && userPrompt.trim() && bestFolderName && bestFolderName !== DEFAULT_CLUSTER_FALLBACK_NAME) {
           if (
             cluster.path &&
             cluster.path.length > 1 &&
-            !cluster.path.every(p => p === '其他')
+            !cluster.path.every(p => p === DEFAULT_CLUSTER_FALLBACK_NAME)
           ) {
             clusterPath = [...cluster.path.slice(0, -1), bestFolderName]
           } else {
@@ -312,7 +313,7 @@ export class AISchemeGenerator {
         } else if (
           cluster.path &&
           cluster.path.length > 0 &&
-          !cluster.path.every(p => p === '其他')
+          !cluster.path.every(p => p === DEFAULT_CLUSTER_FALLBACK_NAME)
         ) {
           clusterPath = cluster.path
         } else if (

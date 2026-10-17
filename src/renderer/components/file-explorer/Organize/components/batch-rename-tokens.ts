@@ -736,7 +736,7 @@ export function buildDimensionSystem(
     // 过滤规则：任何父级为敏感内容的子维度一律跳过
     const validParents = conditions
       .map(c => t(c.parentDimension))
-      .filter(p => p && p !== SENSITIVE_DIM_NAME && p !== '敏感内容')
+      .filter(p => p && p !== SENSITIVE_DIM_NAME)
 
     // 若该维度只在敏感内容下触发（如色情细分、涉政细分、血腥细分、违规细分），彻底不予显示
     if (conditions.length > 0 && validParents.length === 0) {
@@ -745,7 +745,7 @@ export function buildDimensionSystem(
 
     if (validParents.length > 0) {
       // 敏感内容：严格只作为「内容分级」之下的二级维度显示，不作为三级维度在媒体细分下重复挂载
-      if (dimName === SENSITIVE_DIM_NAME || dimName === '敏感内容') {
+      if (dimName === SENSITIVE_DIM_NAME) {
         const rootParent = t('内容分级')
         const list = childrenMap.get(rootParent) || []
         if (!list.some(item => item.name === dimName)) {
@@ -799,7 +799,7 @@ export function buildDimensionSystem(
     const dimName = t(g.name)
     const rawParent = (g as any).parentDimension || (g as any).parentDimensionName
     const parent = rawParent ? t(rawParent) : undefined
-    if (parent && parent !== SENSITIVE_DIM_NAME && parent !== '敏感内容') {
+    if (parent && parent !== SENSITIVE_DIM_NAME) {
       const list = childrenMap.get(parent) || []
       if (!list.some(item => item.name === dimName)) {
         list.push({
@@ -848,7 +848,7 @@ export function buildDimensionSystem(
     const currentPath = `${branchPath}/${name}`
 
     // 核心门禁：敏感内容只显示到 2 级维度，不显示其下的 3、4 级细分子维度
-    if (name === SENSITIVE_DIM_NAME || name === '敏感内容') {
+    if (name === SENSITIVE_DIM_NAME) {
       return {
         id: `${name}-${parentName || 'root'}-${currentLevel}`,
         name,
