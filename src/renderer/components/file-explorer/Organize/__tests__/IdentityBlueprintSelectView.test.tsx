@@ -233,4 +233,34 @@ describe('IdentityBlueprintSelectView Component', () => {
       expect(titleTexts[0]).not.toContain('专业 UI/UX 设计素材库')
     })
   })
+
+  it('用户输入搜索词时应即时过滤身份列表并自动展开匹配项', async () => {
+    render(
+      <IdentityBlueprintSelectView
+        workspaceId={1}
+        workspaceDirectoryPath="/test/workspace"
+        onSelectStructure={mockSelectStructure}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('UI设计师')).toBeInTheDocument()
+    })
+
+    const searchInput = screen.getByPlaceholderText(/搜索身份或输入诉求/i)
+    fireEvent.change(searchInput, { target: { value: '财务' } })
+
+    // 即时过滤：搜索自动展开命中分类，界面上应展示财务会计，而 UI设计师 被过滤隐藏
+    await waitFor(() => {
+      expect(screen.getByText('财务会计')).toBeInTheDocument()
+      expect(screen.queryByText('UI设计师')).not.toBeInTheDocument()
+      expect(screen.getByText(/搜索结果 \(1 个身份\)/i)).toBeInTheDocument()
+    })
+
+    // 输入无匹配的词时应展示友好空状态
+    fireEvent.change(searchInput, { target: { value: '不存在的奇异外星人角色' } })
+    await waitFor(() => {
+      expect(screen.getByText(/未找到匹配“不存在的奇异外星人角色”的身份/i)).toBeInTheDocument()
+    })
+  })
 })
