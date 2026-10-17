@@ -13,12 +13,283 @@ import {
   isPanDimension as checkIsPanDimension,
   filterDimensionTags,
   DIMENSION_CODES,
-  CANONICAL_NAMES
+  concept,
+  CANONICAL_NAMES,
+  resolveRootDimension,
+  LEVEL_1_ROOT_CODES,
+  CONTROLLED_SUBDIMENSION_PARENTS_GENERATED,
+  CONTROLLED_DIMENSION_ROOT_CODES
 } from '@firefly/shared'
 import { toast } from '../../../common/Toast'
 import { SplitPane } from '../../../common/SplitPane'
 
 export { isExtensionDimension }
+
+/**
+ * 分类维度层级嵌套分组结构
+ */
+export interface HierarchicalDimensionGroup {
+  /** 根维度组（如文件用途、文件来源、文件质量等） */
+  root: DimensionGroup
+  /** 下属子维度组列表（如安全等级、处理状态等） */
+  children: DimensionGroup[]
+  /** 聚合指标：当前根维度及所有子维度下的标签总数 */
+  totalTagsCount: number
+  /** 聚合指标：当前待整理文件中是否有文件命中了该根或其子维度标签 */
+  hasActiveFileHits: boolean
+}
+
+/**
+ * 敏感内容维度的隐蔽门禁判定：
+ * 敏感内容维度的所有层级及标签，不适合直接展示：
+ * 除非同维度的标签有一个及以上文件计数，那么可以展示同维度其它标签，否则都不展示。
+ */
+export const isSensitiveDimension = (g: DimensionGroup): boolean => {
+  const code = (g as any).code || ''
+  const rootCode = (g as any).rootCode || ''
+  const sensitiveConceptCode = concept('敏感内容')
+  const ratingConceptCode = concept('内容分级')
+  const eroticConceptCode = concept('色情分级')
+
+  if (
+    code === sensitiveConceptCode ||
+    code === ratingConceptCode ||
+    code === eroticConceptCode ||
+    rootCode === sensitiveConceptCode ||
+    rootCode === ratingConceptCode
+  ) {
+    return true
+  }
+  const id = Number(g.id)
+  if (id === 130 || id === 123 || id === 162 || (id >= 131 && id <= 134) || (id >= 150 && id <= 161)) {
+    return true
+  }
+  return false
+}
+
+/**
+ * 基于权威事实源（fileDimension_zh-CN.json）中 triggerConditions.parentDimension 提取的纯净父级映射
+ * 铁律（PRD / 用户明确指示）：
+ * 只考虑 triggerConditions 指向的层级关系，绝不考虑 tagImplications 延伸的关系！
+ */
+const FILE_TYPE_CODE = concept('文件类型')
+const FILE_PURPOSE_CODE = concept('文件用途')
+const IMAGE_SUBDIVISION_CODE = concept('图片细分')
+const SENSITIVE_CONTENT_CODE = concept('敏感内容')
+const PORNOGRAPHY_SUBGENRES_CODE = concept('色情细分')
+const AUDIO_SEGMENTATION_CODE = concept('音频细分')
+const CONTENT_TAGS_CODE = concept('内容标签')
+const SECURITY_LEVEL_CODE = concept('安全等级')
+const PROCESSING_STATUS_CODE = concept('处理状态')
+
+export const TRIGGER_CONDITIONS_PARENT_MAP: Record<number, string[]> = {
+  // === 属于文件用途的子维度 ===
+  17: [FILE_PURPOSE_CODE], // 安全等级
+  18: [FILE_PURPOSE_CODE], // 处理状态
+  20: [FILE_PURPOSE_CODE], // 旅行内容
+  21: [FILE_PURPOSE_CODE], // 财务类型
+  22: [FILE_PURPOSE_CODE], // 游戏类型
+  23: [FILE_PURPOSE_CODE], // 学科领域
+  29: [FILE_PURPOSE_CODE], // 家庭生活细分
+  119: [FILE_PURPOSE_CODE], // 游戏平台
+
+  // === 属于图片细分的子维度 ===
+  // 铁律：摄影照片细分、合同票据细分等 triggerConditions 指向的是图片细分，严禁因 tagImplications 算入文件用途！
+  126: [IMAGE_SUBDIVISION_CODE], // 摄影照片细分
+  127: [IMAGE_SUBDIVISION_CODE], // 照片质量
+  128: [IMAGE_SUBDIVISION_CODE], // 合同票据细分
+  129: [IMAGE_SUBDIVISION_CODE], // 证照细分
+  135: [IMAGE_SUBDIVISION_CODE], // 截图细分
+  137: [IMAGE_SUBDIVISION_CODE], // 景别
+  138: [IMAGE_SUBDIVISION_CODE], // 光照
+  140: [IMAGE_SUBDIVISION_CODE], // 视角
+  142: [IMAGE_SUBDIVISION_CODE], // 系统生态
+  144: [IMAGE_SUBDIVISION_CODE], // 主体数量
+  146: [IMAGE_SUBDIVISION_CODE], // 文字密度
+  147: [IMAGE_SUBDIVISION_CODE], // 质感风格
+  148: [IMAGE_SUBDIVISION_CODE], // 时间季节
+
+  // === 属于敏感内容的子维度 ===
+  123: [SENSITIVE_CONTENT_CODE], // 色情分级
+  131: [SENSITIVE_CONTENT_CODE], // 血腥细分
+  132: [SENSITIVE_CONTENT_CODE], // 涉政细分
+  133: [SENSITIVE_CONTENT_CODE], // 违规细分
+  134: [SENSITIVE_CONTENT_CODE], // 色情细分
+  // 色情细分下的三级细分 (150~161 全部指向色情细分 -> 敏感内容)
+  150: [PORNOGRAPHY_SUBGENRES_CODE],
+  151: [PORNOGRAPHY_SUBGENRES_CODE],
+  152: [PORNOGRAPHY_SUBGENRES_CODE],
+  153: [PORNOGRAPHY_SUBGENRES_CODE],
+  154: [PORNOGRAPHY_SUBGENRES_CODE],
+  155: [PORNOGRAPHY_SUBGENRES_CODE],
+  156: [PORNOGRAPHY_SUBGENRES_CODE],
+  157: [PORNOGRAPHY_SUBGENRES_CODE],
+  158: [PORNOGRAPHY_SUBGENRES_CODE],
+  159: [PORNOGRAPHY_SUBGENRES_CODE],
+  160: [PORNOGRAPHY_SUBGENRES_CODE],
+  161: [PORNOGRAPHY_SUBGENRES_CODE],
+
+  // === 属于音频细分的子维度 ===
+  26: [AUDIO_SEGMENTATION_CODE], // 音乐类型
+
+  // === 属于文件类型的二级格式细分维度 ===
+  5: [FILE_TYPE_CODE], // 应用数据细分
+  6: [FILE_TYPE_CODE], // 图片细分
+  7: [FILE_TYPE_CODE], // 视频细分
+  8: [FILE_TYPE_CODE], // 音频细分
+  9: [FILE_TYPE_CODE], // 压缩包细分
+  10: [FILE_TYPE_CODE], // 程序细分
+  11: [FILE_TYPE_CODE], // 语言细分
+  12: [FILE_TYPE_CODE], // 系统文件细分
+  14: [FILE_TYPE_CODE], // 数据库细分
+  15: [FILE_TYPE_CODE], // 磁盘映像细分
+  19: [FILE_TYPE_CODE], // 软件性质
+  24: [FILE_TYPE_CODE], // 电子书细分
+  100: [FILE_TYPE_CODE], // 文本细分
+  101: [FILE_TYPE_CODE], // 文档细分
+  105: [FILE_TYPE_CODE], // 源代码细分
+  106: [FILE_TYPE_CODE], // 字体细分
+  136: [FILE_TYPE_CODE], // 生成载体
+  139: [FILE_TYPE_CODE], // 背景
+  141: [FILE_TYPE_CODE], // 版面
+  143: [FILE_TYPE_CODE], // 画幅
+  145: [FILE_TYPE_CODE], // 主体类型
+  149: [FILE_TYPE_CODE], // 主色调
+  163: [FILE_TYPE_CODE], // 运行平台
+  164: [FILE_TYPE_CODE], // 运行时框架
+  165: [FILE_TYPE_CODE] // 程序能力特征
+}
+
+/**
+ * 受控维度与分类架构规范名清单（保障维度名只作为区块名，绝对不能作为叶子可选标签）
+ */
+export const BUILTIN_DIMENSION_NAMES = [
+  '文件类型',
+  '文件用途',
+  '文件来源',
+  '作者',
+  '文件质量',
+  '内容标签',
+  '安全等级',
+  '处理状态',
+  '出版状态',
+  '摄影照片细分'
+]
+
+export const ROOT_CATEGORY_NAMES = new Set<string>(BUILTIN_DIMENSION_NAMES)
+
+/**
+ * 依据 triggerConditions 提取维度的直接父维度标识
+ * 只考虑 triggerConditions 指向的层级关系，绝不考虑 tagImplications 延伸的关系
+ */
+export const getTriggerConditionParentCodes = (group: DimensionGroup): string[] => {
+  // 1. 优先读取维度对象上的 triggerConditions
+  const tcs = (group as any).triggerConditions || (group.metadata as any)?.triggerConditions
+  if (Array.isArray(tcs) && tcs.length > 0) {
+    const list: string[] = []
+    for (const tc of tcs) {
+      if (tc.parentDimension) {
+        const p = String(tc.parentDimension).trim()
+        try {
+          const cCode = concept(p as any)
+          if (cCode) {
+            list.push(cCode)
+            continue
+          }
+        } catch {}
+        if (p.startsWith('builtin.') || p.startsWith('omw.') || p.startsWith('hownet.')) {
+          list.push(p)
+        }
+      }
+    }
+    if (list.length > 0) return list
+  }
+
+  // 2. 根据 ID 查阅权威 triggerConditions 映射表
+  if (TRIGGER_CONDITIONS_PARENT_MAP[group.id]) {
+    return TRIGGER_CONDITIONS_PARENT_MAP[group.id]
+  }
+
+  return []
+}
+
+/**
+ * 仅依据 triggerConditions 解析维度所属的大类代码（根大类）
+ * 严格阻断任何 tagImplications 延伸！
+ */
+export const resolveDimensionRootCode = (group: DimensionGroup): string => {
+  const parents = getTriggerConditionParentCodes(group)
+  if (parents.length === 0) {
+    return (group as any).code || `dim_${group.id}`
+  }
+
+  const firstParent = parents[0]
+  // 若直接父维度为色情细分，向上追溯至敏感内容
+  if (firstParent === PORNOGRAPHY_SUBGENRES_CODE) {
+    return SENSITIVE_CONTENT_CODE
+  }
+
+  // 若父维度是文件类型（左侧已排除该大类），则该细分维度自身（如图片细分）作为一级大类展示
+  if (firstParent === FILE_TYPE_CODE) {
+    return (group as any).code || `dim_${group.id}`
+  }
+
+  return firstParent
+}
+
+/**
+ * 判断是否为根大类（在左列分类维度中作为顶级卡片展示）
+ * 规则：无 triggerConditions，或其 triggerConditions 指向已排除的元分类（如文件类型）
+ */
+export const isRootDimension = (group: DimensionGroup): boolean => {
+  const parents = getTriggerConditionParentCodes(group)
+  if (parents.length === 0) return true
+  // 若其父维度是已过滤排除的元分类文件类型，该维度自身就是根卡片
+  if (parents.includes(FILE_TYPE_CODE)) {
+    return true
+  }
+  return false
+}
+
+/**
+ * 判断维度是否为泛维度
+ * 严格遵循单一事实源原则：仅通过策略元数据 flag.isPanDimension === true 判定
+ * 严禁任何硬编码维度 ID、名称或受控 code
+ */
+export const isPanDimensionGroup = (
+  group: DimensionGroup,
+  presetGroups?: DimensionGroup[]
+): boolean => {
+  if (!group) return false
+
+  // 1. 标准 checkIsPanDimension (来自 @firefly/shared，读取 metadata.flag.isPanDimension)
+  if (checkIsPanDimension(group)) return true
+
+  // 2. 结构容错：读取 metadata.flag / meta.flag / isPanDimension 顶层属性
+  const flag = (group.metadata as any)?.flag || (group.meta as any)?.flag
+  if (flag?.isPanDimension === true) return true
+  if ((group.metadata as any)?.isPanDimension === true) return true
+  if ((group.meta as any)?.isPanDimension === true) return true
+  if ((group as any).isPanDimension === true) return true
+
+  // 3. 动态对照：若传入的 group 缺失 metadata，尝试从由 ConfigDbManager 预加载的全量维度池中获取其策略
+  if (presetGroups && presetGroups.length > 0) {
+    const matched = presetGroups.find(
+      p =>
+        (group.code && p.code === group.code) ||
+        (group.id && p.id === group.id)
+    )
+    if (matched) {
+      if (checkIsPanDimension(matched)) return true
+      const mFlag = (matched.metadata as any)?.flag || (matched.meta as any)?.flag
+      if (mFlag?.isPanDimension === true) return true
+      if ((matched.metadata as any)?.isPanDimension === true) return true
+      if ((matched as any).isPanDimension === true) return true
+    }
+  }
+
+  return false
+}
 
 interface BatchTagViewProps {
   files: any[]
@@ -150,7 +421,7 @@ const TagPill: React.FC<TagPillProps> = React.memo(
           {/* 标签名称 */}
           <span className="relative z-10">{tagName}</span>
 
-          {/* 数量与比例统计徽章 */}
+          {/* 数量统计徽章（仅显示当前匹配文件计数，不显示总数） */}
           <span
             className={cn(
               'relative z-10 text-[10px] tabular-nums font-mono px-1 rounded',
@@ -164,12 +435,11 @@ const TagPill: React.FC<TagPillProps> = React.memo(
                       ? 'bg-black/20 text-white'
                       : 'bg-background/80 text-muted-foreground border border-border/40'
             )}
+            title={t('{count} 个文件', {
+              count: isAllAttached ? totalFilesCount : isAllRemoved ? 0 : count
+            })}
           >
-            {isAllAttached
-              ? `${totalFilesCount}/${totalFilesCount}`
-              : isAllRemoved
-                ? `0/${totalFilesCount}`
-                : `${count}/${totalFilesCount}`}
+            {isAllAttached ? totalFilesCount : isAllRemoved ? 0 : count}
           </span>
         </div>
 
@@ -398,6 +668,278 @@ const DimensionGroupCard: React.FC<DimensionGroupCardProps> = React.memo(
 
 DimensionGroupCard.displayName = 'DimensionGroupCard'
 
+/**
+ * 分类维度树形层级嵌套卡片组件 (React.memo)
+ * 根维度卡片 -> 直属标签 -> 树形引导线 -> 子维度分组卡片 (如安全等级、处理状态)
+ * 支持平滑折叠/展开、直属标签与子维度独立批量全附/重置、命中高亮徽章
+ */
+interface HierarchicalDimensionCardProps {
+  item: HierarchicalDimensionGroup
+  isExpanded: boolean
+  onToggleExpand: (rootKey: string) => void
+  tagStates: Record<string, TagActionState>
+  tagFileCounts: Record<string, number>
+  totalFilesCount: number
+  inspectedTagSet: Set<string>
+  hasInspected: boolean
+  onToggleTag: (tagKey: string) => void
+  onBatchSetTags: (group: DimensionGroup, state: TagActionState) => void
+}
+
+const HierarchicalDimensionCard: React.FC<HierarchicalDimensionCardProps> = React.memo(
+  ({
+    item,
+    isExpanded,
+    onToggleExpand,
+    tagStates,
+    tagFileCounts,
+    totalFilesCount,
+    inspectedTagSet,
+    hasInspected,
+    onToggleTag,
+    onBatchSetTags
+  }) => {
+    const { root, children, hasActiveFileHits } = item
+    const rootKey = root.code || `dim_${root.id}`
+    const rootTags = root.tags || []
+    const rootNameLower = root.name.trim().toLowerCase()
+
+    // 根据维度特征选择代表性图标
+    const getDimensionIcon = (code?: string, name?: string) => {
+      if (code?.includes('file_purpose') || name?.includes('用途')) return 'folder_shared'
+      if (code?.includes('file_source') || name?.includes('来源')) return 'cloud_download'
+      if (code?.includes('document_quality') || name?.includes('质量')) return 'verified'
+      if (code?.includes('geographical') || name?.includes('地理')) return 'place'
+      if (code?.includes('financial') || name?.includes('财务')) return 'payments'
+      if (code?.includes('travel') || name?.includes('旅行')) return 'flight'
+      if (code?.includes('publication') || name?.includes('出版')) return 'auto_stories'
+      if (code?.includes('family') || name?.includes('家庭')) return 'family_restroom'
+      if (code?.includes('game') || name?.includes('游戏')) return 'sports_esports'
+      if (code?.includes('music') || name?.includes('音乐')) return 'music_note'
+      return 'category'
+    }
+
+    return (
+      <div className="rounded-2xl border border-border/60 bg-card/70 overflow-hidden shadow-2xs hover:border-border/90 transition-all duration-150">
+        {/* 根维度卡片头部：点击整栏切换展开/折叠 */}
+        <div
+          onClick={() => onToggleExpand(rootKey)}
+          className={cn(
+            'flex items-center justify-between gap-2 px-4 py-3 cursor-pointer select-none',
+            'hover:bg-muted/30 transition-colors',
+            isExpanded ? 'bg-muted/15 border-b border-border/40' : ''
+          )}
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            {/* 展开/折叠箭头 */}
+            <MaterialIcon
+              icon="expand_more"
+              className={cn(
+                'text-sm text-muted-foreground transition-transform duration-200 shrink-0',
+                !isExpanded && '-rotate-90'
+              )}
+            />
+
+            {/* 根维度图标 */}
+            <div className="w-5 h-5 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <MaterialIcon icon={getDimensionIcon(root.code, root.name)} className="text-xs" />
+            </div>
+
+            {/* 根维度名称 */}
+            <span className="text-xs font-bold text-foreground truncate">{root.name}</span>
+
+            {/* 直属标签数徽章 */}
+            {rootTags.length > 0 && (
+              <Badge variant="outline" className="text-[10px] h-4.5 px-1.5 font-normal bg-background/80 shrink-0">
+                {t('{count} 个直属标签', { count: rootTags.length })}
+              </Badge>
+            )}
+
+            {/* 子维度数量徽章 */}
+            {children.length > 0 && (
+              <Badge variant="secondary" className="text-[10px] h-4.5 px-1.5 font-medium bg-primary/10 text-primary border border-primary/20 shrink-0">
+                {t('{count} 个子维度', { count: children.length })}
+              </Badge>
+            )}
+
+            {/* 待整理文件命中提示 */}
+            {hasActiveFileHits && (
+              <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium shrink-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                {t('已命中')}
+              </span>
+            )}
+          </div>
+
+          {/* 快捷全选操作与展开折叠切换 */}
+          <div className="flex items-center gap-2 shrink-0" onClick={e => e.stopPropagation()}>
+            {rootTags.length > 0 && (
+              <div className="flex items-center gap-1 opacity-80 hover:opacity-100 transition-opacity">
+                <button
+                  type="button"
+                  onClick={() => onBatchSetTags(root, 'add_all')}
+                  className="text-[11px] text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 px-1.5 py-0.5 rounded-md hover:bg-emerald-500/10 transition-colors cursor-pointer"
+                  title={t('全部附加该维度直属标签')}
+                >
+                  {t('全附')}
+                </button>
+                <span className="text-muted-foreground/30 text-xs">|</span>
+                <button
+                  type="button"
+                  onClick={() => onBatchSetTags(root, 'initial')}
+                  className="text-[11px] text-muted-foreground hover:text-foreground px-1.5 py-0.5 rounded-md hover:bg-muted transition-colors cursor-pointer"
+                  title={t('恢复该维度默认状态')}
+                >
+                  {t('重置')}
+                </button>
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => onToggleExpand(rootKey)}
+              className="text-muted-foreground hover:text-foreground text-xs p-1 rounded-md hover:bg-muted transition-colors cursor-pointer"
+              title={isExpanded ? t('折叠') : t('展开')}
+            >
+              <MaterialIcon icon={isExpanded ? 'unfold_less' : 'unfold_more'} className="text-xs" />
+            </button>
+          </div>
+        </div>
+
+        {/* 展开内容区域 */}
+        {isExpanded && (
+          <div className="p-4 pt-3 space-y-4">
+            {/* 1. 根维度直属标签区 */}
+            {rootTags.length > 0 && (
+              <div className="space-y-2">
+                {children.length > 0 && (
+                  <div className="text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider flex items-center gap-1">
+                    <MaterialIcon icon="label_outline" className="text-xs" />
+                    <span>{t('直属标签')}</span>
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2 items-center">
+                  {rootTags.map((tag: DimensionTag, tagIndex: number) => {
+                    const tagKey = `${root.id}::${tag.tagValue}`
+                    const count = tagFileCounts[tag.tagValue] || 0
+                    const state = tagStates[tagKey] || 'initial'
+                    const isOwnedByInspected = hasInspected
+                      ? inspectedTagSet.has(tag.tagValue.trim().toLowerCase()) ||
+                        inspectedTagSet.has(`${root.id}::${tag.tagValue.trim().toLowerCase()}`) ||
+                        inspectedTagSet.has(`${rootNameLower}::${tag.tagValue.trim().toLowerCase()}`)
+                      : false
+
+                    return (
+                      <TagPill
+                        key={getTagPillKey(root.id, tag, tagIndex)}
+                        dimId={root.id}
+                        tagName={tag.tagValue}
+                        tagKey={tagKey}
+                        count={count}
+                        totalFilesCount={totalFilesCount}
+                        state={state}
+                        isOwnedByInspected={isOwnedByInspected}
+                        isPan={false}
+                        onToggle={onToggleTag}
+                      />
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* 2. 子维度树形嵌套分组区 */}
+            {children.length > 0 && (
+              <div className={cn('space-y-3', rootTags.length > 0 ? 'pt-3 border-t border-border/40' : '')}>
+                <div className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5 px-0.5">
+                  <MaterialIcon icon="subdirectory_arrow_right" className="text-xs text-primary/70" />
+                  <span>{t('子维度 ({count})', { count: children.length })}</span>
+                </div>
+
+                <div className="space-y-2.5 pl-2 sm:pl-3 border-l-2 border-primary/20">
+                  {children.map(subGroup => {
+                    const subTags = subGroup.tags || []
+                    const subNameLower = subGroup.name.trim().toLowerCase()
+
+                    return (
+                      <div
+                        key={subGroup.id}
+                        className="p-3 rounded-xl bg-muted/25 border border-border/40 hover:border-border/70 transition-colors space-y-2.5"
+                      >
+                        {/* 子维度头部 */}
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span className="text-xs font-semibold text-foreground/90">{subGroup.name}</span>
+                            <Badge variant="outline" className="text-[9px] h-4 px-1 font-normal bg-background/80">
+                              {subTags.length}
+                            </Badge>
+                          </div>
+
+                          {subTags.length > 0 && (
+                            <div className="flex items-center gap-1 opacity-80 hover:opacity-100 transition-opacity">
+                              <button
+                                type="button"
+                                onClick={() => onBatchSetTags(subGroup, 'add_all')}
+                                className="text-[10px] text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 px-1 py-0.5 rounded hover:bg-emerald-500/10 transition-colors cursor-pointer"
+                                title={t('全部附加该子维度标签')}
+                              >
+                                {t('全附')}
+                              </button>
+                              <span className="text-muted-foreground/30 text-xs">|</span>
+                              <button
+                                type="button"
+                                onClick={() => onBatchSetTags(subGroup, 'initial')}
+                                className="text-[10px] text-muted-foreground hover:text-foreground px-1 py-0.5 rounded hover:bg-muted transition-colors cursor-pointer"
+                                title={t('恢复该子维度默认状态')}
+                              >
+                                {t('重置')}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* 子维度标签排布 */}
+                        <div className="flex flex-wrap gap-1.5 items-center">
+                          {subTags.map((tag: DimensionTag, subTagIdx: number) => {
+                            const tagKey = `${subGroup.id}::${tag.tagValue}`
+                            const count = tagFileCounts[tag.tagValue] || 0
+                            const state = tagStates[tagKey] || 'initial'
+                            const isOwnedByInspected = hasInspected
+                              ? inspectedTagSet.has(tag.tagValue.trim().toLowerCase()) ||
+                                inspectedTagSet.has(`${subGroup.id}::${tag.tagValue.trim().toLowerCase()}`) ||
+                                inspectedTagSet.has(`${subNameLower}::${tag.tagValue.trim().toLowerCase()}`)
+                              : false
+
+                            return (
+                              <TagPill
+                                key={getTagPillKey(subGroup.id, tag, subTagIdx)}
+                                dimId={subGroup.id}
+                                tagName={tag.tagValue}
+                                tagKey={tagKey}
+                                count={count}
+                                totalFilesCount={totalFilesCount}
+                                state={state}
+                                isOwnedByInspected={isOwnedByInspected}
+                                isPan={false}
+                                onToggle={onToggleTag}
+                              />
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    )
+  }
+)
+
+HierarchicalDimensionCard.displayName = 'HierarchicalDimensionCard'
+
 export const BatchTagView: React.FC<BatchTagViewProps> = ({
   files,
   dimensionGroups = [],
@@ -422,6 +964,8 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
   const [searchQuery, setSearchQuery] = useState('')
   // 异步获取的全量预设维度定义（包含当前文件集合未拥有的所有预设标签）
   const [fullPresetGroups, setFullPresetGroups] = useState<DimensionGroup[]>([])
+  // 是否正在加载预设维度数据（防首屏空态误闪烁）
+  const [isLoadingPresets, setIsLoadingPresets] = useState(true)
 
   // 拉取全量预设维度与标签数据
   const loadFullDimensions = useCallback(async () => {
@@ -435,6 +979,8 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       }
     } catch (err) {
       console.warn('[BatchTagView] 加载全量预设维度失败，使用传入的维度数据:', err)
+    } finally {
+      setIsLoadingPresets(false)
     }
   }, [])
 
@@ -519,6 +1065,11 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
     return { tagFileCounts: counts, fileCustomTags: customTagsByDim }
   }, [files])
 
+  // 铁律：维度名只用于区块/卡片名，绝不能作为自身区块下的标签供用户选择；顶层元根名不能作为叶子标签
+  const rootCategoryNamesSet = useMemo(() => {
+    return ROOT_CATEGORY_NAMES
+  }, [])
+
   // 2. 合并全量预设维度、传入维度以及当前待整理文件中已拥有的自定义标签（排除被用户在工作台标记删除的标签）
   const effectiveDimensionGroups = useMemo(() => {
     const isDeletedTag = (dimId: number, tagVal: string) => {
@@ -531,6 +1082,25 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
 
     const dimMap = new Map<number, DimensionGroup>()
 
+    // 归一化查找已存在的维度组（按 ID、Code、Name 精准匹配，杜绝同一维度分裂出两个卡片）
+    const findExistingGroup = (candidate: DimensionGroup): DimensionGroup | undefined => {
+      if (candidate.id !== undefined && dimMap.has(candidate.id)) {
+        return dimMap.get(candidate.id)
+      }
+      if (candidate.code) {
+        for (const g of dimMap.values()) {
+          if (g.code && g.code === candidate.code) return g
+        }
+      }
+      if (candidate.name) {
+        const cName = candidate.name.trim()
+        for (const g of dimMap.values()) {
+          if (g.name && g.name.trim() === cName) return g
+        }
+      }
+      return undefined
+    }
+
     // 1. 载入全量预设维度定义
     for (const g of fullPresetGroups) {
       dimMap.set(g.id, {
@@ -539,15 +1109,37 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       })
     }
 
-    // 2. 合并传入的 dimensionGroups（包含数据库中已存的自定义标签）
+    // 2. 合并传入的 dimensionGroups（包含数据库中已存的自定义标签，按 ID/Code/Name 精确归并）
     for (const g of dimensionGroups) {
-      if (dimMap.has(g.id)) {
-        const existing = dimMap.get(g.id)!
+      const existing = findExistingGroup(g)
+      if (existing) {
         const existingTagValues = new Set((existing.tags || []).map(t => t.tagValue.toLowerCase()))
         for (const t of g.tags || []) {
-          if (!isDeletedTag(g.id, t.tagValue) && !existingTagValues.has(t.tagValue.toLowerCase())) {
-            existing.tags = [...(existing.tags || []), t]
+          if (!isDeletedTag(existing.id, t.tagValue) && !existingTagValues.has(t.tagValue.toLowerCase())) {
+            existing.tags = [
+              ...(existing.tags || []),
+              {
+                ...t,
+                dimensionId: existing.id,
+                dimensionName: existing.name
+              }
+            ]
             existingTagValues.add(t.tagValue.toLowerCase())
+          }
+        }
+        if (!existing.code && g.code) existing.code = g.code
+        if ((g as any).isPanDimension || (g.metadata as any)?.flag?.isPanDimension) {
+          const prevMeta =
+            typeof existing.metadata === 'object' && existing.metadata !== null
+              ? (existing.metadata as Record<string, any>)
+              : {}
+          const prevFlag = typeof prevMeta.flag === 'object' && prevMeta.flag !== null ? prevMeta.flag : {}
+          existing.metadata = {
+            ...prevMeta,
+            flag: {
+              ...prevFlag,
+              isPanDimension: true
+            }
           }
         }
       } else {
@@ -558,55 +1150,128 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       }
     }
 
-    // 3. 将待整理文件中收集到的自定义标签高效合并
+    // 3. 将待整理文件中收集到的自定义标签高效合并（坚决阻断维度名作为标签侵入）
     fileCustomTags.forEach((tagSet, dimId) => {
-      const g = dimMap.get(dimId)
+      let g = dimMap.get(dimId)
+      if (!g) {
+        for (const group of dimMap.values()) {
+          if (group.id === dimId || String(group.id) === String(dimId)) {
+            g = group
+            break
+          }
+        }
+      }
       if (g) {
         const existingTagValues = new Set((g.tags || []).map(t => t.tagValue.toLowerCase()))
         tagSet.forEach(strVal => {
-          if (!isDeletedTag(dimId, strVal) && !existingTagValues.has(strVal.toLowerCase())) {
+          const trimmed = strVal.trim()
+          if (!trimmed) return
+          // 铁律：维度名称绝不能作为自身区块下的标签，且顶层元分类根名不能作为标签
+          if (trimmed === g.name.trim() || rootCategoryNamesSet.has(trimmed)) {
+            return
+          }
+          if (!isDeletedTag(g.id, strVal) && !existingTagValues.has(trimmed.toLowerCase())) {
             g.tags = [
               ...(g.tags || []),
               {
                 dimensionId: g.id,
                 dimensionName: g.name,
-                tagValue: strVal,
-                fileCount: tagFileCounts[strVal] || 1,
+                tagValue: trimmed,
+                fileCount: tagFileCounts[trimmed] || 1,
                 level: g.level || 2
               }
             ]
-            existingTagValues.add(strVal.toLowerCase())
+            existingTagValues.add(trimmed.toLowerCase())
           }
         })
       }
     })
 
     // 4. 过滤排除扩展名维度、文件类型维度以及由标签找补程序处理的规则细分维度
-    const nonExtGroups = Array.from(dimMap.values()).filter(
-      g =>
-        !isExtensionDimension(g) &&
-        !isFileTypeDimension(g) &&
-        g.id !== 1 &&
-        !isRuleSubdivisionDimension(g)
-    )
+    const nonExtGroups = Array.from(dimMap.values()).filter(g => {
+      if (
+        isExtensionDimension(g) ||
+        isFileTypeDimension(g) ||
+        g.id === 1 ||
+        isRuleSubdivisionDimension(g)
+      ) {
+        return false
+      }
+      // 敏感内容维度的隐蔽门禁：除非同维度的标签有一个及以上文件计数，否则全量隐藏不展示
+      if (isSensitiveDimension(g)) {
+        const hasHit = (g.tags || []).some(
+          t => (tagFileCounts[t.tagValue] || t.fileCount || 0) > 0
+        )
+        if (!hasHit) return false
+      }
+      return true
+    })
+
+    // 动态收集属于文件用途子维度的预置标签值（如处理状态、安全等级等），严禁硬编码静态数组
+    const purposeSubdimensionTagNames = new Set<string>()
+    if (fullPresetGroups && fullPresetGroups.length > 0) {
+      for (const g of fullPresetGroups) {
+        const parents = getTriggerConditionParentCodes(g)
+        if (parents.includes(FILE_PURPOSE_CODE)) {
+          for (const t of g.tags || []) {
+            if (t.tagValue) purposeSubdimensionTagNames.add(t.tagValue.trim())
+          }
+        }
+      }
+    }
 
     return nonExtGroups.map(group => {
       // 过滤排除首部或尾部的预设扩展名触发标签
       const rawTags = group.tags || []
+
+      // 安全等级单字异常防腐：防止历史脏别名 '共'、'内' 侵入，规范化为 '公开'、'内部'
+      const isSecurityDim =
+        (group as any).code === SECURITY_LEVEL_CODE ||
+        group.name === '安全等级'
+
+      const sanitizedRawTags = rawTags.map(t => {
+        if (isSecurityDim && t.tagValue) {
+          const trimmed = t.tagValue.trim()
+          if (trimmed === '共') return { ...t, tagValue: '公开' }
+          if (trimmed === '内') return { ...t, tagValue: '内部' }
+        }
+        return t
+      })
+
+      // 文件用途直属标签纯净化：严禁混入属于处理状态、安全等级等子维度的预设标签
+      const isFilePurposeRoot =
+        (group as any).code === FILE_PURPOSE_CODE ||
+        group.name === '文件用途'
+
+      const purifiedRawTags = isFilePurposeRoot
+        ? sanitizedRawTags.filter(t => !purposeSubdimensionTagNames.has(t.tagValue.trim()))
+        : sanitizedRawTags
+
       const allowedTagValues = new Set(
-        filterDimensionTags({ id: group.id, tags: rawTags.map(t => t.tagValue) })
+        filterDimensionTags({ id: group.id, tags: purifiedRawTags.map(t => t.tagValue) })
       )
-      const validTags = rawTags.filter(
-        t =>
-          !isDeletedTag(group.id, t.tagValue) &&
-          allowedTagValues.has(t.tagValue) &&
-          !isExtensionTag(t.tagValue)
-      )
+
+      // 去重并确保单字替换后不重复，严格阻断维度名称作为可选标签
+      const seenTagValues = new Set<string>()
+      const validTags = purifiedRawTags.filter(t => {
+        if (isDeletedTag(group.id, t.tagValue)) return false
+        if (!allowedTagValues.has(t.tagValue)) return false
+        if (isExtensionTag(t.tagValue)) return false
+        const trimmed = t.tagValue.trim()
+        // 铁律：维度名本身绝对不能作为其自身区块下的标签，只有其下的标签才是可选标签；顶层元分类根名不能作为标签
+        if (trimmed === group.name.trim() || rootCategoryNamesSet.has(trimmed)) {
+          return false
+        }
+        const lowerVal = trimmed.toLowerCase()
+        if (seenTagValues.has(lowerVal)) return false
+        seenTagValues.add(lowerVal)
+        return true
+      })
 
       // 注意：同一 code / 同名标签挂在多父级下（codePath 各异）是既有设计，**严禁在此归并去重**；
       // 分支条目的 React key 唯一性由渲染层 getTagPillKey（纳入 codePath）保证。
       // 如果是泛维度，预先排序好 tags，避免每次组件渲染都重复执行 Array.sort
-      const isPan = checkIsPanDimension(group)
+      const isPan = isPanDimensionGroup(group, fullPresetGroups)
       if (isPan) {
         validTags.sort((a, b) => {
           const countA = tagFileCounts[a.tagValue] ?? a.fileCount ?? 0
@@ -620,10 +1285,10 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
         tags: validTags
       }
     })
-  }, [fullPresetGroups, dimensionGroups, fileCustomTags, tagFileCounts, deletedTagKeys])
+  }, [fullPresetGroups, dimensionGroups, fileCustomTags, tagFileCounts, deletedTagKeys, rootCategoryNamesSet])
 
-  // 判断是否为泛维度（metadata 驱动，维度自身属性单源判定）
-  const isPanDimension = useCallback((group: DimensionGroup) => checkIsPanDimension(group), [])
+  // 判断是否为泛维度（由策略元数据 flag.isPanDimension === true 驱动）
+  const isPanDimension = useCallback((group: DimensionGroup) => isPanDimensionGroup(group, fullPresetGroups), [fullPresetGroups])
 
   // 提取选中聚焦文件所拥有的所有标签集合（兼容数组或单个对象、各种字段名与维度ID）
   const inspectedTagSet = useMemo(() => {
@@ -698,7 +1363,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
     const addTag = (dimId: number | undefined, dimName: string | undefined, tagVal: any) => {
       if (!tagVal) return
       const valStr = String(tagVal).trim()
-      if (!valStr || isExtensionTag(valStr)) return
+      if (!valStr || isExtensionTag(valStr) || rootCategoryNamesSet.has(valStr)) return
 
       let resolvedDimId = dimId
       let resolvedDimName = dimName
@@ -774,7 +1439,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
     })
 
     return result
-  }, [inspectedFileItem, dimIdToName, tagToDimName, activeLanguage])
+  }, [inspectedFileItem, dimIdToName, tagToDimName, activeLanguage, rootCategoryNamesSet])
 
   // 统计已添加和已移除的变更数量
   const changeStats = useMemo(() => {
@@ -856,13 +1521,19 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       toast.warning(t('扩展名由程序自动处理，无需手动新建扩展名标签'))
       return
     }
+    // 铁律：维度名称绝不能作为标签添加
+    const targetGroup = effectiveDimensionGroups.find(g => g.id === dimensionId)
+    if ((targetGroup && trimmed === targetGroup.name.trim()) || rootCategoryNamesSet.has(trimmed)) {
+      toast.warning(t('维度名称不能作为标签添加'))
+      return
+    }
     setNewTagNames(prev => ({
       ...prev,
       [dimensionId]: [...(prev[dimensionId] || []).filter(n => n !== trimmed), trimmed]
     }))
     setInputVal('')
     setActiveInputDimId(null)
-  }, [inputVal])
+  }, [inputVal, effectiveDimensionGroups, rootCategoryNamesSet])
 
   // 删除新建标签
   const handleRemoveNewTag = useCallback((dimensionId: number, name: string) => {
@@ -921,9 +1592,17 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       .map(f => f?.id ?? f?.fileId ?? f?.workspaceFileId ?? f?.path)
       .filter(Boolean)
 
-    const addTags: Array<{ dimensionId: number; dimensionName: string; tagName: string }> = []
-    const removeTags: Array<{ dimensionId: number; dimensionName: string; tagName: string }> = []
-    const newTags: Array<{ dimensionId: number; dimensionName: string; tagName: string }> = []
+    type TagItemWithMeta = {
+      dimensionId: number
+      dimensionName: string
+      tagName: string
+      dimensionCode?: string
+      viaParentCode?: string
+      tagCode?: string
+    }
+    const addTags: TagItemWithMeta[] = []
+    const removeTags: TagItemWithMeta[] = []
+    const newTags: TagItemWithMeta[] = []
     const processedRemoveKeys = new Set<string>()
 
     for (const [tagKey, state] of Object.entries(tagStates)) {
@@ -932,11 +1611,28 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       const dimId = Number(dimIdStr)
       const group = fullPresetGroups.find(g => g.id === dimId) || dimensionGroups.find(g => g.id === dimId)
       const dimName = group?.name || '内容标签'
+      const dimCode = group?.code
+      const matchedTag = (group?.tags || []).find(t => t.tagValue === tagValue)
+      const tagCode = (matchedTag as any)?.tagCode || (matchedTag as any)?.code
 
       if (state === 'add_all') {
-        addTags.push({ dimensionId: dimId, dimensionName: dimName, tagName: tagValue })
+        addTags.push({
+          dimensionId: dimId,
+          dimensionCode: dimCode,
+          dimensionName: dimName,
+          viaParentCode: dimCode,
+          tagCode,
+          tagName: tagValue
+        })
       } else if (state === 'remove_all') {
-        removeTags.push({ dimensionId: dimId, dimensionName: dimName, tagName: tagValue })
+        removeTags.push({
+          dimensionId: dimId,
+          dimensionCode: dimCode,
+          dimensionName: dimName,
+          viaParentCode: dimCode,
+          tagCode,
+          tagName: tagValue
+        })
         processedRemoveKeys.add(`${dimId}::${tagValue.toLowerCase()}`)
       }
     }
@@ -951,7 +1647,17 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
         processedRemoveKeys.add(lowerKey)
         const group = fullPresetGroups.find(g => g.id === dimId) || dimensionGroups.find(g => g.id === dimId)
         const dimName = group?.name || '内容标签'
-        removeTags.push({ dimensionId: dimId, dimensionName: dimName, tagName: tagValue })
+        const dimCode = group?.code
+        const matchedTag = (group?.tags || []).find(t => t.tagValue === tagValue)
+        const tagCode = (matchedTag as any)?.tagCode || (matchedTag as any)?.code
+        removeTags.push({
+          dimensionId: dimId,
+          dimensionCode: dimCode,
+          dimensionName: dimName,
+          viaParentCode: dimCode,
+          tagCode,
+          tagName: tagValue
+        })
       }
     }
 
@@ -959,9 +1665,16 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       const dimId = Number(dimIdStr)
       const group = fullPresetGroups.find(g => g.id === dimId) || dimensionGroups.find(g => g.id === dimId)
       const dimName = group?.name || '内容标签'
+      const dimCode = group?.code
       for (const name of names) {
         if (name && name.trim()) {
-          newTags.push({ dimensionId: dimId, dimensionName: dimName, tagName: name.trim() })
+          newTags.push({
+            dimensionId: dimId,
+            dimensionCode: dimCode,
+            dimensionName: dimName,
+            viaParentCode: dimCode,
+            tagName: name.trim()
+          })
         }
       }
     }
@@ -1018,10 +1731,10 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       }
     }
 
-    // 泛维度标签列：将“内容标签”维度（ID=28 或名称包含“内容标签”）放置到最后
+    // 泛维度标签列：将“内容标签”维度（通过 CONTENT_TAGS_CODE / ID=28 / 名称）放置到最后
     pan.sort((a, b) => {
-      const isAContent = a.id === 28 || (a as any).code === DIMENSION_CODES.CONTENT_TAGS || a.name === CANONICAL_NAMES.CONTENT_TAGS || a.name?.includes(CANONICAL_NAMES.CONTENT_TAGS)
-      const isBContent = b.id === 28 || (b as any).code === DIMENSION_CODES.CONTENT_TAGS || b.name === CANONICAL_NAMES.CONTENT_TAGS || b.name?.includes(CANONICAL_NAMES.CONTENT_TAGS)
+      const isAContent = (a as any).code === CONTENT_TAGS_CODE || a.id === 28 || a.name === '内容标签' || a.name?.includes('内容标签')
+      const isBContent = (b as any).code === CONTENT_TAGS_CODE || b.id === 28 || b.name === '内容标签' || b.name?.includes('内容标签')
       if (isAContent && !isBContent) return 1
       if (!isAContent && isBContent) return -1
       return 0
@@ -1029,6 +1742,142 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
 
     return { standardGroups: std, panGroups: pan }
   }, [filteredDimensionGroups, isPanDimension])
+
+  // 建立分类维度的树形层级嵌套结构（根维度 -> 子维度分组）
+  const hierarchicalGroups = useMemo<HierarchicalDimensionGroup[]>(() => {
+    const rootMap = new Map<string, HierarchicalDimensionGroup>()
+    const nonRootList: DimensionGroup[] = []
+
+    // 1. 优先提取所有根维度（Level 1 根维度）
+    for (const group of standardGroups) {
+      if (isRootDimension(group)) {
+        const rootKey = (group as any).code || resolveDimensionRootCode(group) || `dim_${group.id}`
+        rootMap.set(rootKey, {
+          root: group,
+          children: [],
+          totalTagsCount: (group.tags || []).length,
+          hasActiveFileHits: (group.tags || []).some(t => (tagFileCounts[t.tagValue] || 0) > 0)
+        })
+      } else {
+        nonRootList.push(group)
+      }
+    }
+
+    // 2. 将子维度精确归入其所属根维度
+    for (const subGroup of nonRootList) {
+      const rootKey = resolveDimensionRootCode(subGroup)
+      let parentNode = rootMap.get(rootKey)
+
+      // 若未在当前 standardGroups 找到根维度，尝试按 code 查找
+      if (!parentNode) {
+        for (const [k, p] of rootMap.entries()) {
+          if (p.root.code === rootKey || (p.root as any).rootCode === rootKey) {
+            parentNode = p
+            break
+          }
+        }
+      }
+
+      if (parentNode) {
+        parentNode.children.push(subGroup)
+        parentNode.totalTagsCount += (subGroup.tags || []).length
+        if ((subGroup.tags || []).some(t => (tagFileCounts[t.tagValue] || 0) > 0)) {
+          parentNode.hasActiveFileHits = true
+        }
+      } else {
+        // 找不到所属根维度的子维度，作为独立卡片兜底，绝不丢失任何维度与标签
+        const fallbackKey = (subGroup as any).code || `dim_${subGroup.id}`
+        rootMap.set(fallbackKey, {
+          root: subGroup,
+          children: [],
+          totalTagsCount: (subGroup.tags || []).length,
+          hasActiveFileHits: (subGroup.tags || []).some(t => (tagFileCounts[t.tagValue] || 0) > 0)
+        })
+      }
+    }
+
+    const result = Array.from(rootMap.values())
+
+    // 3. 根维度排序：文件用途排首位，其余按官方权威 order 或 ID 排序
+    result.sort((a, b) => {
+      const codeA = a.root.code || ''
+      const codeB = b.root.code || ''
+      if (codeA === FILE_PURPOSE_CODE) return -1
+      if (codeB === FILE_PURPOSE_CODE) return 1
+      const orderA = a.root.order || (a.root.metadata as any)?.order || a.root.id
+      const orderB = b.root.order || (b.root.metadata as any)?.order || b.root.id
+      return orderA - orderB
+    })
+
+    // 4. 每个根维度内部的子维度排序
+    result.forEach(item => {
+      item.children.sort((a, b) => {
+        const orderA = a.order || (a.metadata as any)?.order || a.id
+        const orderB = b.order || (b.metadata as any)?.order || b.id
+        return orderA - orderB
+      })
+    })
+
+    return result
+  }, [standardGroups, tagFileCounts])
+
+  // 展开/折叠状态管理
+  const [expandedRootKeys, setExpandedRootKeys] = useState<Set<string>>(() => new Set())
+  const [hasInitializedExpand, setHasInitializedExpand] = useState(false)
+
+  // 默认展开：有命中的根维度卡片 + 首个核心根维度（如文件用途）
+  useEffect(() => {
+    if (hierarchicalGroups.length > 0 && !hasInitializedExpand) {
+      const initialKeys = new Set<string>()
+      hierarchicalGroups.forEach((item, idx) => {
+        const key = item.root.code || `dim_${item.root.id}`
+        if (item.hasActiveFileHits || idx === 0 || item.root.code === FILE_PURPOSE_CODE) {
+          initialKeys.add(key)
+        }
+      })
+      setExpandedRootKeys(initialKeys)
+      setHasInitializedExpand(true)
+    }
+  }, [hierarchicalGroups, hasInitializedExpand])
+
+  // 切换单个根维度的展开/折叠
+  const handleToggleExpandRoot = useCallback((rootKey: string) => {
+    setExpandedRootKeys(prev => {
+      const next = new Set(prev)
+      if (next.has(rootKey)) {
+        next.delete(rootKey)
+      } else {
+        next.add(rootKey)
+      }
+      return next
+    })
+  }, [])
+
+  // 全部展开
+  const handleExpandAll = useCallback(() => {
+    const allKeys = new Set<string>()
+    hierarchicalGroups.forEach(item => {
+      const key = item.root.code || `dim_${item.root.id}`
+      allKeys.add(key)
+    })
+    setExpandedRootKeys(allKeys)
+  }, [hierarchicalGroups])
+
+  // 全部折叠
+  const handleCollapseAll = useCallback(() => {
+    setExpandedRootKeys(new Set())
+  }, [])
+
+  // 判断某个卡片当前是否展开（搜索时自动展开所有包含结果的卡片）
+  const isCardExpanded = useCallback(
+    (rootKey: string) => {
+      if (searchQuery.trim()) {
+        return true
+      }
+      return expandedRootKeys.has(rootKey)
+    },
+    [searchQuery, expandedRootKeys]
+  )
 
   // 开启新建标签输入
   const handleStartAddNewTag = useCallback((dimId: number) => {
@@ -1191,7 +2040,12 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
 
       {/* 3. 两列独立滚动与支持调整宽度的 SplitPane (左列：分类维度；右列：泛维度标签) */}
       <div className="flex-1 overflow-hidden min-h-0 relative">
-        {filteredDimensionGroups.length === 0 ? (
+        {isLoadingPresets && effectiveDimensionGroups.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center space-y-3 h-full">
+            <MaterialIcon icon="progress_activity" className="text-3xl text-primary animate-spin" />
+            <p className="text-xs font-semibold text-foreground/80">{t('正在加载维度与标签...')}</p>
+          </div>
+        ) : filteredDimensionGroups.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center space-y-2 h-full">
             <MaterialIcon icon="search_off" className="text-3xl text-muted-foreground/50" />
             <p className="text-xs font-semibold text-foreground/80">{t('未找到匹配的维度或标签')}</p>
@@ -1216,40 +2070,60 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
                         <MaterialIcon icon="category" className="text-sm text-primary" />
                         <span className="text-xs font-bold text-foreground">{t('分类维度')}</span>
                         <Badge variant="outline" className="text-[10px] h-4.5 px-1.5 font-normal text-muted-foreground bg-background">
-                          {standardGroups.length}
+                          {t('{count} 个根分类', { count: hierarchicalGroups.length })}
                         </Badge>
                       </div>
+
+                      {/* 快捷展开/折叠全部 */}
+                      {hierarchicalGroups.length > 0 && (
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={handleExpandAll}
+                            className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground px-2 py-0.5 rounded-lg hover:bg-muted/80 transition-colors cursor-pointer"
+                            title={t('展开所有分类维度')}
+                          >
+                            <MaterialIcon icon="unfold_more" className="text-xs" />
+                            <span>{t('全部展开')}</span>
+                          </button>
+                          <span className="text-muted-foreground/30 text-xs">|</span>
+                          <button
+                            type="button"
+                            onClick={handleCollapseAll}
+                            className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground px-2 py-0.5 rounded-lg hover:bg-muted/80 transition-colors cursor-pointer"
+                            title={t('折叠所有分类维度')}
+                          >
+                            <MaterialIcon icon="unfold_less" className="text-xs" />
+                            <span>{t('全部折叠')}</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                     {/* 左列独立滚动区域 */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                      {standardGroups.length === 0 ? (
+                    <div className="flex-1 overflow-y-auto p-4 space-y-3.5">
+                      {hierarchicalGroups.length === 0 ? (
                         <div className="p-8 text-center text-xs text-muted-foreground bg-muted/10 rounded-2xl border border-dashed border-border/50">
                           {t('无匹配的分类维度')}
                         </div>
                       ) : (
-                        standardGroups.map(group => (
-                          <DimensionGroupCard
-                            key={group.id}
-                            group={group}
-                            isPan={false}
-                            groupNewTags={newTagNames[group.id] || []}
-                            isInputActive={activeInputDimId === group.id}
-                            inputVal={inputVal}
-                            tagStates={tagStates}
-                            tagFileCounts={tagFileCounts}
-                            totalFilesCount={totalFilesCount}
-                            inspectedTagSet={inspectedTagSet}
-                            hasInspected={hasInspected}
-                            onToggleTag={handleToggleTag}
-                            onDeleteExistingTag={handleDeleteExistingTag}
-                            onBatchSetTags={handleBatchSetDimensionTags}
-                            onStartAddNewTag={handleStartAddNewTag}
-                            onCancelAddNewTag={handleCancelAddNewTag}
-                            onInputChange={setInputVal}
-                            onSubmitAddNewTag={handleAddNewTag}
-                            onRemoveNewTag={handleRemoveNewTag}
-                          />
-                        ))
+                        hierarchicalGroups.map(item => {
+                          const rootKey = item.root.code || `dim_${item.root.id}`
+                          return (
+                            <HierarchicalDimensionCard
+                              key={rootKey}
+                              item={item}
+                              isExpanded={isCardExpanded(rootKey)}
+                              onToggleExpand={handleToggleExpandRoot}
+                              tagStates={tagStates}
+                              tagFileCounts={tagFileCounts}
+                              totalFilesCount={totalFilesCount}
+                              inspectedTagSet={inspectedTagSet}
+                              hasInspected={hasInspected}
+                              onToggleTag={handleToggleTag}
+                              onBatchSetTags={handleBatchSetDimensionTags}
+                            />
+                          )
+                        })
                       )}
                     </div>
                   </div>

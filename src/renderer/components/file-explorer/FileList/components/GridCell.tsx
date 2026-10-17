@@ -222,8 +222,22 @@ export const GridCellInner = React.memo((props: GridCellInnerProps) => {
               pageId,
               pageMode
             })
+            const targetCurrentTime =
+              (fileItem as any)?.currentTime ?? (fileItem as any)?.matchedChunk?.startSec
+            const targetHighlightRange =
+              (fileItem as any)?.highlightRange ??
+              ((fileItem as any)?.matchedChunk
+                ? [
+                    (fileItem as any).matchedChunk.startSec,
+                    (fileItem as any).matchedChunk.endSec
+                  ]
+                : undefined)
+
             if (routeType !== 'unsupported') {
-              splitState.openPreview(item.path, fileItem.smartName || item.name, ext, pageId)
+              splitState.openPreview(item.path, fileItem.smartName || item.name, ext, pageId, {
+                currentTime: targetCurrentTime,
+                highlightRange: targetHighlightRange
+              })
             } else {
               logger.info(
                 LogCategory.RENDERER,
@@ -250,10 +264,24 @@ export const GridCellInner = React.memo((props: GridCellInnerProps) => {
             fileItem.path.split('.').pop() ||
             ''
           const routeType = getPreviewRouteType(ext)
+          const targetCurrentTime =
+            (fileItem as any)?.currentTime ?? (fileItem as any)?.matchedChunk?.startSec
+          const targetHighlightRange =
+            (fileItem as any)?.highlightRange ??
+            ((fileItem as any)?.matchedChunk
+              ? [
+                  (fileItem as any).matchedChunk.startSec,
+                  (fileItem as any).matchedChunk.endSec
+                ]
+              : undefined)
+
           if (routeType !== 'unsupported') {
             usePreviewOverlayStore
               .getState()
-              .openPreview(fileItem.path, fileItem.smartName || fileItem.name || '', ext, pageId)
+              .openPreview(fileItem.path, fileItem.smartName || fileItem.name || '', ext, pageId, {
+                currentTime: targetCurrentTime,
+                highlightRange: targetHighlightRange
+              })
           } else {
             try {
               if (window.electronAPI!) {

@@ -237,8 +237,26 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
             ''
           const routeType = getPreviewRouteType(ext)
           if (routeType !== 'unsupported') {
-            if (splitState.filePath !== filePath || splitState.activePageId !== pageId) {
-              splitState.openPreview(filePath, fileName, ext, pageId)
+            const targetCurrentTime =
+              (item as any).currentTime ?? (item as any).matchedChunk?.startSec
+            const targetHighlightRange =
+              (item as any).highlightRange ??
+              ((item as any).matchedChunk
+                ? [
+                    (item as any).matchedChunk.startSec,
+                    (item as any).matchedChunk.endSec
+                  ]
+                : undefined)
+
+            if (
+              splitState.filePath !== filePath ||
+              splitState.activePageId !== pageId ||
+              splitState.currentTime !== targetCurrentTime
+            ) {
+              splitState.openPreview(filePath, fileName, ext, pageId, {
+                currentTime: targetCurrentTime,
+                highlightRange: targetHighlightRange
+              })
             }
           } else if (splitState.activePageId === pageId && splitState.filePath) {
             splitState.clearPreview(pageId)

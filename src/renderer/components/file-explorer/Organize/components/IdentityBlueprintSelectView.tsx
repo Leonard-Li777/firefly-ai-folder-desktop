@@ -72,8 +72,14 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
         })
 
         if (res) {
-          const idents: RecommendedIdentityItem[] = res.recommendedIdentities || []
-          const structs: RecommendedStructureItem[] = res.recommendedStructures || []
+          const idents: RecommendedIdentityItem[] =
+            res.allIdentities && res.allIdentities.length > 0
+              ? res.allIdentities
+              : res.recommendedIdentities || []
+          const structs: RecommendedStructureItem[] =
+            res.allStructures && res.allStructures.length > 0
+              ? res.allStructures
+              : res.recommendedStructures || []
           setRecommendedIdentities(idents)
           setRecommendedStructures(structs)
 
@@ -206,7 +212,7 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
   // 过滤或协同提升右侧结构卡片
   const displayStructures = useMemo(() => {
     if (selectedIdentityIds.length === 0) {
-      return recommendedStructures.slice(0, 3)
+      return recommendedStructures
     }
     // 若勾选了具体身份，优先将契合所选身份的模板排在前列
     const set = new Set(selectedIdentityIds)
@@ -217,7 +223,7 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
       if (!aHit && bHit) return 1
       return b.score - a.score
     })
-    return sorted.slice(0, 3)
+    return sorted
   }, [selectedIdentityIds, recommendedStructures])
 
   return (
@@ -461,19 +467,26 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
           </div>
         </div>
 
-        {/* 右栏：Top 3 推荐目录结构卡片 */}
+        {/* 右栏：推荐目录结构卡片 */}
         <div className="flex-1 flex flex-col h-full overflow-y-auto p-4 md:p-6 bg-card/40 space-y-5">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-bold text-foreground">
-                {t('推荐候选目录结构 (Top 3)')}
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-foreground">
+                  {t('推荐候选目录结构')}
+                </h3>
+                {displayStructures.length > 0 && (
+                  <Badge variant="outline" className="text-xs">
+                    {t('{count} 个匹配方案', { count: displayStructures.length })}
+                  </Badge>
+                )}
+              </div>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {selectedIdentityNames.length > 0
                   ? t('已绑定身份: {names}，点击“使用此结构”进入目录微调', {
                       names: selectedIdentityNames.join(' + ')
                     })
-                  : t('基于文件内容语义匹配推荐，点击“使用此结构”进入目录微调')}
+                  : t('基于文件内容与身份语义全量匹配推荐，点击“使用此结构”进入目录微调')}
               </p>
             </div>
           </div>

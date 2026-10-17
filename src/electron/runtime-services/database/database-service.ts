@@ -5,7 +5,18 @@ import type {
   Unit,
   UnitCreationData
 } from '@firefly/types'
-import { LogCategory, logger, isTestEnvironment, getCanonicalConceptName, isTagAdmissible, resolveRuntimeMaterializedPath } from '@firefly/shared'
+import {
+  LogCategory,
+  logger,
+  isTestEnvironment,
+  getCanonicalConceptName,
+  isTagAdmissible,
+  resolveRuntimeMaterializedPath,
+  CONTROLLED_CONCEPTS,
+  CONTROLLED_DIMENSION_ROOT_CODES,
+  concept,
+  isControlledConcept
+} from '@firefly/shared'
 import {
   findTagCodeTwoStage,
   getDatabaseConfig,
@@ -28,6 +39,7 @@ import { DeterministicCodeGenerator } from '@firefly/core-engine'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { AccessTimeBatchUpdater } from './access-time-batch-updater'
 import { loadIgnoreRules, shouldIgnoreFile } from '../analysis/analysis-ignore-service'
+import { ConfigDbManager } from '../config/config-db-manager'
 
 /**
  * 数据库服务 Facade
@@ -51,7 +63,7 @@ export class DatabaseService {
    * 解析维度的自然主键 code
    *
    * 优先使用调用方显式传入的维度 code（非纯数字）；
-   * 仅在显式 code 缺失或为纯数字 ID 时才按维度显示名反查标签树根节点，避免额外查询开销。
+   * 仅在显式 code 缺失或为纯数字 ID 时才按权威字典及维度显示名反查，避免降级为 content_tags。
    */
   private resolveDimensionCode(
     dimensionId?: number | string,
@@ -61,21 +73,100 @@ export class DatabaseService {
       const raw = String(dimensionId)
       // 若已是自然主键 code 则直接采用
       if (/^[a-z]/.test(raw) && !/^\d+$/.test(raw)) return raw
-    }
-    if (dimensionName && this._db) {
-      try {
-        const row = this._db
-          .prepare(
-            `SELECT code FROM file_tags_private
-             WHERE name = ? AND (parent_codes IS NULL OR parent_codes = '[]')
-             LIMIT 1`
-          )
-          .get(dimensionName) as { code: string } | undefined
-        if (row?.code) return row.code
-      } catch {
-        // 查询容错：标签树不可用时返回 null，由调用方兜底
+
+      // 权威数字 ID 映射（对齐 file-dimension-source.ts / controlled-concepts）
+      const numId = Number(dimensionId)
+      if (!isNaN(numId)) {
+        if (CONTROLLED_DIMENSION_ROOT_CODES[numId]) {
+          return CONTROLLED_DIMENSION_ROOT_CODES[numId]
+        }
+
+        try {
+          const dims = ConfigDbManager.getInstance().getFileDimensions()
+          const matched = dims.find(d => d.id === numId)
+          if (matched?.code) return matched.code
+        } catch {}
       }
     }
+
+    if (dimensionName) {
+      const trimmedName = String(dimensionName).trim()
+      // 1. 优先使用系统唯一权威受控字典解析（覆盖全部 929+ 个受控概念与维度自然主键）
+      if (isControlledConcept(trimmedName)) {
+        return concept(trimmedName)
+      }
+
+      for (const [id, code] of Object.entries(CONTROLLED_DIMENSION_ROOT_CODES)) {
+        const canonical = getCanonicalConceptName(code)
+        if (canonical === trimmedName) return code
+      }
+
+      try {
+        const dims = ConfigDbManager.getInstance().getFileDimensions()
+        const matched = dims.find(d => d.name === trimmedName)
+        if (matched?.code) return matched.code
+      } catch {}
+
+      if (this._db) {
+        try {
+          const row = this._db
+            .prepare(
+              `SELECT code FROM file_tags_private
+               WHERE name = ? AND (parent_codes IS NULL OR parent_codes = '[]')
+               LIMIT 1`
+            )
+            .get(trimmedName) as { code: string } | undefined
+          if (row?.code) return row.code
+        } catch {
+          // 查询容错：标签树不可用时返回 null，由调用方兜底
+        }
+      }
+    }
+    return null
+  }
+
+  /**
+   * 权威反查标签的自然主键 code
+   * 1. 优先查 tag_aliases_{lang} 当前语言别名表（受控 + 动态标签本地镜像）
+   * 2. 查 AOT 受控词表 CONTROLLED_CONCEPTS 字典
+   * 3. 查 file_tags_private 本地私有表
+   */
+  private resolveTagCode(tagName: string, viaParentCode?: string): string | null {
+    if (!tagName) return null
+    const trimmed = String(tagName).trim()
+    if (!trimmed) return null
+
+    // 1. 查询当前语言别名分表
+    if (this._db) {
+      try {
+        const targetLocale = this.currentLanguage || 'zh-CN'
+        const langTable = resolveTagAliasesLangTable(targetLocale)
+        const row = this._db
+          .prepare(
+            `SELECT tag_code FROM ${langTable}
+             WHERE lemma = ?
+             ORDER BY is_canonical DESC
+             LIMIT 1`
+          )
+          .get(trimmed) as { tag_code: string } | undefined
+        if (row?.tag_code) return row.tag_code
+      } catch {}
+
+      // 2. 查询 file_tags_private 本地私有表
+      try {
+        const row = this._db
+          .prepare('SELECT code FROM file_tags_private WHERE name = ? LIMIT 1')
+          .get(trimmed) as { code: string } | undefined
+        if (row?.code) return row.code
+      } catch {}
+    }
+
+    // 3. AOT 受控词表字典兜底
+    try {
+      const code = (CONTROLLED_CONCEPTS as Record<string, string>)[trimmed]
+      if (code) return code
+    } catch {}
+
     return null
   }
 
@@ -1381,15 +1472,13 @@ export class DatabaseService {
               item.viaParentCode ||
               item.dimensionCode ||
               this.resolveDimensionCode((item as any).dimensionId, item.dimensionName) ||
-              'builtin.content_tags'
+              concept('内容标签')
 
-            // 以 code 自然主键精确查找已有标签（同名视为同一标签，直接复用）
-            const existingTag = this._db!.prepare(
-              'SELECT code FROM file_tags_private WHERE name = ? LIMIT 1'
-            ).get(item.tagName) as { code: string } | undefined
+            // 优先采用显式 tagCode 或权威反查已有受控/动态标签
+            let tagCode = (item as any).tagCode || this.resolveTagCode(item.tagName, dimCode)
 
-            if (existingTag) {
-              createdTagMap.set(`${dimCode}:${item.tagName}`, existingTag.code)
+            if (tagCode) {
+              createdTagMap.set(`${dimCode}:${item.tagName}`, tagCode)
             } else {
               // 按 PRD §4.2 离线确定性编码规范派生合法 code，严禁 `custom:` 冒号前缀
               const code = DeterministicCodeGenerator.generateUnique(item.tagName, this.currentLanguage, {
@@ -1414,15 +1503,14 @@ export class DatabaseService {
 
         if (operation.removeTags && operation.removeTags.length > 0) {
           for (const item of operation.removeTags) {
-            // 以 code 自然主键或标签名精确解析待移除标签
-            const existingTag = this._db!.prepare(
-              'SELECT code FROM file_tags_private WHERE name = ? LIMIT 1'
-            ).get(item.tagName) as { code: string } | undefined
+            // 优先采用显式 tagCode 或权威反查已有受控/动态标签自然主键
+            let tagCode = item.tagCode
+            if (!tagCode) {
+              tagCode = this.resolveTagCode(item.tagName, item.viaParentCode) || undefined
+            }
 
-            if (existingTag) {
-              resolvedRemoveTagCodes.push(existingTag.code)
-            } else if (item.tagCode) {
-              resolvedRemoveTagCodes.push(item.tagCode)
+            if (tagCode) {
+              resolvedRemoveTagCodes.push(tagCode)
             } else {
               resolvedRemoveTagCodes.push(item.tagName)
             }

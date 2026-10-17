@@ -70,7 +70,7 @@ import path from 'node:path'
 import { saveCloudResult } from './save-cloud-result'
 import { handleEmptyFile } from './handle-empty-file'
 import { processLocalAnalysis } from './process-local-analysis'
-import { classifyAnalysisError, tagErrorPhase, createTimeoutError } from './analysis-error-classifier'
+import { classifyAnalysisError, tagErrorPhase, createTimeoutError, isTransientInfraError } from './analysis-error-classifier'
 import { processQuickNameAnalysis } from './process-quick-name-analysis'
 import { saveLocalAnalysisResult } from './save-local-cache-result'
 import { resolveFileDescription } from './resolve-file-description'
@@ -455,6 +455,7 @@ export class FileProcessor {
     let tier1FallbackName: string | null = null
     let filePath: string | null = null
     let currentWorkspaceId: number | null | undefined = null
+    let analysisMode = resolveAnalysisMode()
     try {
       // 入口中止检查：用户点击暂停时，队列服务的 pause() 会 abort 当前 signal。
       // 必须在真正开始分析前检查一次，否则已排队的下一个文件仍会照常执行，
@@ -547,7 +548,7 @@ export class FileProcessor {
       const initialStage = db ? getFileStageFromDB(db, currentWorkspaceId, filePath) : 0
 
       // 提前读取分析模式配置（统一走 analysis-mode 模块，避免各处口径漂移与静默兜底）
-      const analysisMode = resolveAnalysisMode()
+      analysisMode = resolveAnalysisMode()
 
       if (phase === 'all') {
         // 串行分支与并行分支保持一致：只要文件已处于 Stage >= 2（CPU 提取已完成）即跳过 CPU 阶段，
@@ -1524,8 +1525,12 @@ export class FileProcessor {
       // 音视频文件：需传递 enableAudioTranscript + audioAnalysisDuration 给 Omni，触发 SenseVoice 转录
       const isAudioOrVideo =
         extractFileCategory === FileCategory.AUDIO || extractFileCategory === FileCategory.VIDEO
+      const isVideo = extractFileCategory === FileCategory.VIDEO
       const audioAnalysisDuration = isAudioOrVideo
         ? (ConfigOrchestrator.getInstance().getValue<number>('AUDIO_ANALYSIS_DURATION') ?? 30)
+        : undefined
+      const videoFrameIntervalSeconds = isVideo
+        ? (ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 5.0)
         : undefined
 
       // 0. 统一调用 Omni 原生引擎进行端到端内容与元数据提取（覆盖文档、图片、纯文本、代码、音视频、字体等所有格式并输出真实 Benchmark）
@@ -1546,6 +1551,7 @@ export class FileProcessor {
           // 音视频文件启用 SenseVoice 语音转录，并传递配置的截取时长
           enableAudioTranscript: isAudioOrVideo ? true : undefined,
           audioAnalysisDuration: audioAnalysisDuration,
+          videoFrameIntervalSeconds: videoFrameIntervalSeconds,
           // 显式激活 Tier 1 端侧纯 CPU 文本特征与 384d 向量提取 (Issue #631)
           enableTextAnalysis: true,
           // 若磁盘已存在缩略图，通知 Omni 无需生成缩略图封面
@@ -1969,6 +1975,39 @@ export class FileProcessor {
           void databaseService.upsertFileVectorToOmni(fileFingerprint, denseEmbedding)
         } catch (vecErr) {
           logger.debug(LogCategory.ANALYSIS_QUEUE, '[分析队列] Omni 向量 upsert 失败(非致命):', vecErr)
+        }
+      }
+
+      // 视频时序切片元数据落库与切片向量写入 Omni zvec (${fileFingerprint}:c${chunk_index})
+      const videoChunks = (anydocResult?.perception as any)?.video_chunks as Array<{
+        chunk_index: number
+        start_sec: number
+        end_sec: number
+        vector: number[]
+        asr_text?: string
+      }> | undefined
+      if (fileFingerprint && !fileFingerprint.startsWith('temp_') && Array.isArray(videoChunks) && videoChunks.length > 0) {
+        try {
+          const { databaseService } = await import('../../database/database-service')
+          databaseService.insertVideoChunks(
+            videoChunks.map(c => ({
+              fileFingerprint,
+              chunkIndex: c.chunk_index,
+              startSec: c.start_sec,
+              endSec: c.end_sec
+            }))
+          )
+          for (const c of videoChunks) {
+            if (Array.isArray(c.vector) && c.vector.length > 0) {
+              void databaseService.upsertFileVectorToOmni(`${fileFingerprint}:c${c.chunk_index}`, c.vector)
+            }
+          }
+          logger.info(
+            LogCategory.ANALYSIS_QUEUE,
+            `[分析队列] 视频时序切片持久化完成: fp=${fileFingerprint}, chunksCount=${videoChunks.length}`
+          )
+        } catch (chunkErr) {
+          logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 视频切片写入失败(非致命):', chunkErr)
         }
       }
 
@@ -2491,8 +2530,20 @@ export class FileProcessor {
         }
         logger.error(LogCategory.ANALYSIS_QUEUE, `[分析队列] 文件分析失败: ${item.name}`, error)
 
-        // slice-3 双层仲裁：仅推理阶段（inference）的失败（超时、服务未就绪、显存不足等），
-        // 若 Tier 1 已产出可读命名，则静默降级为 completed (analysisStage 2)。
+        // 若为底层 AI 引擎瞬态未就绪错误（如 503 模型加载中、连接被拒绝 ECONNREFUSED），
+        // 绝不触发 Tier 1 降级，恢复为 pending 并重新抛出，通知外层调度器等待引擎就绪后重试
+        if (isTransientInfraError(error)) {
+          logger.warn(
+            LogCategory.ANALYSIS_QUEUE,
+            `[分析队列] 遇到 AI 引擎瞬态未就绪错误，任务恢复为 pending 准备等待重试: ${item.name}`,
+            error
+          )
+          this.updateItemStatus(item.id, 'pending', 0)
+          throw error
+        }
+
+        // slice-3 双层仲裁：仅真正的推理阶段（inference）失败（如超时、显存不足等），
+        // 若 Tier 1 已产出可读命名，则降级为 completed (analysisStage 2)。
         // Tier 2 故障不再演化为用户可见的失败项，全部由 Tier 1（Omni）兜底。
         if (allowTier1Fallback && tier1FallbackName) {
           logger.info(

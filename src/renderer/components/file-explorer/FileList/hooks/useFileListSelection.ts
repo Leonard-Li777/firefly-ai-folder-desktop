@@ -18,7 +18,20 @@ function tryTriggerSplitPreview(item: FileType | DirectoryItem, pageId?: string)
   const pageMode = state.pageStates[pageId]?.mode ?? 'split'
   if (pageMode !== 'split') return
   const ext = (item as any).extension || item.path?.split('.').pop() || ''
-  state.openPreview(item.path || '', item.name, ext, pageId)
+  const targetCurrentTime =
+    (item as any).currentTime ?? (item as any).matchedChunk?.startSec
+  const targetHighlightRange =
+    (item as any).highlightRange ??
+    ((item as any).matchedChunk
+      ? [
+          (item as any).matchedChunk.startSec,
+          (item as any).matchedChunk.endSec
+        ]
+      : undefined)
+  state.openPreview(item.path || '', item.name, ext, pageId, {
+    currentTime: targetCurrentTime,
+    highlightRange: targetHighlightRange
+  })
 }
 
 interface UseFileListSelectionProps {

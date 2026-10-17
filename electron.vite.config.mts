@@ -127,7 +127,73 @@ function killPort(port: number): void {
   }
 }
 
+/**
+ * 模块解析扩展名顺序：优先命中 TypeScript 源码，剥夺同名旧 .js 编译产物的劫持能力
+ */
+const SOURCE_EXTENSIONS = ['.ts', '.tsx', '.mts', '.js', '.jsx', '.mjs', '.json']
+
+/**
+ * 递归扫描并清理 src 源码目录下由于 tsc 等工具误生成的 .js/.js.map/.d.ts/.d.ts.map 残留物
+ * 只有在同目录下存在同名的 .ts 或 .tsx 文件时，才认定该文件为渗漏产物并安全删除
+ */
+function cleanInSourceArtifacts(dir: string): void {
+  if (!fs.existsSync(dir)) return
+  try {
+    const entries = fs.readdirSync(dir, { withFileTypes: true })
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name)
+      if (entry.isDirectory()) {
+        cleanInSourceArtifacts(fullPath)
+      } else if (entry.isFile()) {
+        const name = entry.name
+        let baseName = ''
+        let isArtifact = false
+        if (name.endsWith('.d.ts.map')) {
+          baseName = name.slice(0, -'.d.ts.map'.length)
+          isArtifact = true
+        } else if (name.endsWith('.js.map')) {
+          baseName = name.slice(0, -'.js.map'.length)
+          isArtifact = true
+        } else if (name.endsWith('.d.ts')) {
+          baseName = name.slice(0, -'.d.ts'.length)
+          isArtifact = true
+        } else if (name.endsWith('.js') && !name.endsWith('.min.js')) {
+          baseName = name.slice(0, -'.js'.length)
+          isArtifact = true
+        } else if (name.endsWith('.jsx')) {
+          baseName = name.slice(0, -'.jsx'.length)
+          isArtifact = true
+        }
+
+        if (isArtifact && baseName) {
+          const siblingTs = path.join(dir, `${baseName}.ts`)
+          const siblingTsx = path.join(dir, `${baseName}.tsx`)
+          if (fs.existsSync(siblingTs) || fs.existsSync(siblingTsx)) {
+            try {
+              fs.unlinkSync(fullPath)
+              console.warn(
+                `🧹 [vite-cleaner] 自动清除源码渗漏编译产物: ${path.relative(__dirname, fullPath)}`
+              )
+            } catch (err) {
+              console.error(`❌ [vite-cleaner] 清理残留文件失败 ${fullPath}:`, err)
+            }
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.error(`❌ [vite-cleaner] 扫描源码目录异常 ${dir}:`, err)
+  }
+}
+
 export default defineConfig(({ command, mode }) => {
+  // 启动即时消杀：确保配置加载时立即清除任何潜伏的源码级 .js/.d.ts 残留
+  cleanInSourceArtifacts(path.resolve(__dirname, 'src'))
+  const proPackagesDir = path.resolve(__dirname, 'pro/packages')
+  if (fs.existsSync(proPackagesDir)) {
+    cleanInSourceArtifacts(proPackagesDir)
+  }
+
   const isProd = command === 'build' || ['production', 'canary'].includes(mode)
   console.log({ command, mode, isProd })
   // 是否禁用主进程代码变化后的自动重启和前端热更新（用于调试场景，避免频繁重启）
@@ -375,6 +441,16 @@ export default defineConfig(({ command, mode }) => {
               )
             }
           }
+        },
+        {
+          name: 'clean-in-source-artifacts',
+          buildStart() {
+            cleanInSourceArtifacts(path.resolve(__dirname, 'src'))
+            const proPackagesDir = path.resolve(__dirname, 'pro/packages')
+            if (fs.existsSync(proPackagesDir)) {
+              cleanInSourceArtifacts(proPackagesDir)
+            }
+          }
         }
       ],
       define: {
@@ -402,6 +478,7 @@ export default defineConfig(({ command, mode }) => {
         'process.env.BUILD_REGION': JSON.stringify(process.env.BUILD_REGION || 'CN')
       },
       resolve: {
+        extensions: SOURCE_EXTENSIONS,
         alias: {
           '@': path.resolve(__dirname, 'src'),
           '@app': path.resolve(__dirname, 'src'),
@@ -554,6 +631,7 @@ export default defineConfig(({ command, mode }) => {
         'process.env.BUILD_REGION': JSON.stringify(process.env.BUILD_REGION || 'CN')
       },
       resolve: {
+        extensions: SOURCE_EXTENSIONS,
         alias: {
           '@': path.resolve(__dirname, 'src'),
           '@app': path.resolve(__dirname, 'src'),
@@ -712,6 +790,7 @@ export default defineConfig(({ command, mode }) => {
         )
       },
       resolve: {
+        extensions: SOURCE_EXTENSIONS,
         alias: [
           { find: '@', replacement: path.resolve(__dirname, 'src') },
           { find: '@app', replacement: path.resolve(__dirname, 'src') },

@@ -221,20 +221,15 @@ export class AISchemeGenerator {
         return null
       }
 
-      // 3. 计算提示词向量并调用 Omni 原生端侧 HAC 聚类
-      let promptEmbedding: number[] | undefined
-      if (userPrompt && userPrompt.trim()) {
-        const vec = PathCosineService.getInstance().generatePathVector(userPrompt.trim(), 384)
-        promptEmbedding = Array.from(vec)
-      }
-
+      // 3. 调用 Omni 原生端侧 HAC 聚类
+      // 注意：不传伪随机哈希向量作为 promptEmbedding，留空由 Omni 端直接通过原生 BekkoEmbedder::embed 生成真实语义嵌入
       logger.info(
         LogCategory.FILE_ORGANIZATION,
         `[HAC智能聚类] 正在调用 Omni 端侧 HAC 聚类引擎: 文档数=${docs.length}, prompt=${userPrompt || 'none'}`
       )
       const clusterRes = await omniService.clusterDocuments({
         documents: docs,
-        prompt: userPrompt
+        prompt: userPrompt && userPrompt.trim() ? userPrompt.trim() : undefined,
       })
 
       if (!clusterRes || !clusterRes.success || !clusterRes.result) {
@@ -252,9 +247,21 @@ export class AISchemeGenerator {
         `[HAC智能聚类] 聚类计算成功: 生成簇数=${clusters.length}, 未归类=${otherFiles.length}, 耗时=${durationMs}ms`
       )
 
+      // 提取提示词中的核心意图词元作为高优候选注入池 (PRD-0058 / ADR-0056)
+      const promptConceptTokens: string[] = []
+      if (userPrompt && userPrompt.trim()) {
+        const rawTokens = userPrompt.split(/[\s,，、/\\+\-_·与和或按及]+/g).filter(Boolean)
+        for (const raw of rawTokens) {
+          const clean = raw.replace(/^(按|从|将|把|以)/, '').replace(/(归类|归档|整理|分类|类|型)$/, '').trim()
+          if (clean.length >= 2 && isCandidateWordAdmissible(clean).admissible && !promptConceptTokens.includes(clean)) {
+            promptConceptTokens.push(clean)
+          }
+        }
+      }
+
       // 4. 将 OmniClusterTreeResult 转换为系统统一的 AIDirectoryStructure
       // 并在有用户提示词时，基于提示词联合余弦打分优化每个簇的规范目录命名 (PRD-0058 / ADR-0056)
-      const dirMap = new Map<string, DirectoryNode>()
+      const dirMap = new Map<string, any>()
 
       for (const cluster of clusters) {
         // 统计簇内全部文件的关键词频次
@@ -266,16 +273,22 @@ export class AISchemeGenerator {
           }
         }
 
-        const kwItems = Array.from(kwFreq.entries()).map(([keyword, count]) => {
-          const embedding = Array.from(
-            PathCosineService.getInstance().generatePathVector(keyword, 384)
-          )
-          return { keyword, count, embedding }
-        })
+        const kwItems: Array<{ keyword: string; count: number; embedding?: number[] }> =
+          Array.from(kwFreq.entries()).map(([keyword, count]) => ({
+            keyword,
+            count,
+          }))
+
+        // 将从提示词中解析出的意图概念作为候选注入
+        for (const pToken of promptConceptTokens) {
+          if (!kwFreq.has(pToken)) {
+            kwItems.push({ keyword: pToken, count: 1 })
+          }
+        }
 
         const scoringResult = selectBestClusterFolderName(
           kwItems,
-          promptEmbedding,
+          undefined,
           3.0,
           userPrompt
         )
@@ -285,8 +298,18 @@ export class AISchemeGenerator {
             : cluster.folderName || '其他'
 
         let clusterPath: string[]
-        // 若 Omni 已返回结构化多级路径且不全为"其他"，优先采纳 Omni 路径
-        if (
+        // 用户明确指定提示词时，基于语义与字符重合度算出的最佳目录名强优于无偏置的默认路径
+        if (userPrompt && userPrompt.trim() && bestFolderName && bestFolderName !== '其他') {
+          if (
+            cluster.path &&
+            cluster.path.length > 1 &&
+            !cluster.path.every(p => p === '其他')
+          ) {
+            clusterPath = [...cluster.path.slice(0, -1), bestFolderName]
+          } else {
+            clusterPath = [bestFolderName]
+          }
+        } else if (
           cluster.path &&
           cluster.path.length > 0 &&
           !cluster.path.every(p => p === '其他')
@@ -313,6 +336,7 @@ export class AISchemeGenerator {
               id: dirKey,
               name: dirName,
               parent: currentParent,
+              subdirectories: [],
               files: [],
               fileCount: 0
             })
@@ -322,7 +346,7 @@ export class AISchemeGenerator {
 
         const leafKey = clusterPath.join('/')
         const leafNode = dirMap.get(leafKey)!
-        const filesInCluster: FileInfoBase[] = []
+        const filesInCluster: any[] = []
 
         for (const fp of cluster.fingerprints) {
           const fInfos = fileMap.get(fp)
@@ -330,27 +354,32 @@ export class AISchemeGenerator {
             for (const fInfo of fInfos) {
               filesInCluster.push({
                 id: fInfo.id,
+                fileId: fInfo.id,
                 name: fInfo.name,
-                path: fInfo.path
+                smartName: fInfo.name,
+                path: fInfo.path,
+                originalPath: fInfo.path
               })
             }
           }
         }
         leafNode.files = [...(leafNode.files || []), ...filesInCluster]
-        leafNode.fileCount = leafNode.files.length
       }
 
       // 未归入主要聚类簇的文件，集中归入「其他文件」
       if (otherFiles && otherFiles.length > 0) {
-        const otherFilesList: FileInfoBase[] = []
+        const otherFilesList: any[] = []
         for (const fp of otherFiles) {
           const fInfos = fileMap.get(fp)
           if (fInfos && fInfos.length > 0) {
             for (const fInfo of fInfos) {
               otherFilesList.push({
                 id: fInfo.id,
+                fileId: fInfo.id,
                 name: fInfo.name,
-                path: fInfo.path
+                smartName: fInfo.name,
+                path: fInfo.path,
+                originalPath: fInfo.path
               })
             }
           }
@@ -360,10 +389,45 @@ export class AISchemeGenerator {
             id: '__other__',
             name: t('其他文件'),
             parent: '',
+            subdirectories: [],
             files: otherFilesList,
             fileCount: otherFilesList.length
           })
         }
+      }
+
+      // 5. 将 dirMap 扁平节点转换为标准的嵌套树结构 (Nested Tree) 并自底向上汇总文件数量
+      const rootNodes: any[] = []
+      for (const [key, node] of dirMap.entries()) {
+        if (!node.parent) {
+          rootNodes.push(node)
+        } else {
+          const parentNode = dirMap.get(node.parent)
+          if (parentNode) {
+            if (!parentNode.subdirectories) {
+              parentNode.subdirectories = []
+            }
+            if (!parentNode.subdirectories.some((s: any) => s.id === node.id)) {
+              parentNode.subdirectories.push(node)
+            }
+          } else {
+            rootNodes.push(node)
+          }
+        }
+      }
+
+      const rollupCounts = (node: any): number => {
+        let count = (node.files || []).length
+        if (node.subdirectories && node.subdirectories.length > 0) {
+          for (const sub of node.subdirectories) {
+            count += rollupCounts(sub)
+          }
+        }
+        node.fileCount = count
+        return count
+      }
+      for (const root of rootNodes) {
+        rollupCounts(root)
       }
 
       return {
@@ -371,7 +435,7 @@ export class AISchemeGenerator {
           count: clusters.length,
           ms: durationMs || 0
         }),
-        directories: Array.from(dirMap.values()),
+        directories: rootNodes,
         isReadOnly: false
       }
     } catch (error) {

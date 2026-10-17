@@ -112,6 +112,8 @@ export interface OmniPerceptionOptions {
   /** 是否需要生成缩略图/封面（若已有则传 false，不要求生成） */
   generateThumbnail?: boolean
   enableCover?: boolean
+  /** 视频内容定位精度（抽帧间隔秒数），默认 5.0，精细模式可设为 1.0 */
+  videoFrameIntervalSeconds?: number
 }
 
 export interface OmniPerceptionBenchmarkResponse {
@@ -285,9 +287,20 @@ export interface OmniPerceptionResponse {
   name_slots?: Record<string, any>
   embedding_dense?: number[]
 
+  /** 视频时序切片集合（30 秒窗口切片） */
+  video_chunks?: OmniVideoChunkItem[]
+
   phash?: string
   is_corrupted: boolean
   benchmark?: OmniPerceptionBenchmarkResponse
+}
+
+export interface OmniVideoChunkItem {
+  chunk_index: number
+  start_sec: number
+  end_sec: number
+  vector: number[]
+  asr_text?: string
 }
 
 export interface OmniAudioTranscribeResponse {
@@ -1599,7 +1612,8 @@ export class OmniService {
       enable_text_analysis: options?.enableTextAnalysis,
       max_content_size_kb: options?.maxContentSizeKb,
       audio_analysis_duration: options?.audioAnalysisDuration,
-      generate_thumbnail: options?.generateThumbnail ?? options?.enableCover
+      generate_thumbnail: options?.generateThumbnail ?? options?.enableCover,
+      video_frame_interval_seconds: options?.videoFrameIntervalSeconds
     }
     logger.debug(
       LogCategory.SYSTEM,

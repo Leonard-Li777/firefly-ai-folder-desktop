@@ -1,4 +1,5 @@
 import { DimensionGroup } from '@firefly/types'
+import { FILE_DIMENSION_DATA } from '@app/electron/config/file-dimension-source'
 
 export interface TokenItem {
   label: string
@@ -11,11 +12,20 @@ export interface TokenItem {
   groupLabel?: string
 }
 
+export interface DimensionTreeNode {
+  id: number | string
+  name: string
+  token: TokenItem
+  level: number
+  children: DimensionTreeNode[]
+}
+
 export interface TokenCategory {
   key: string
   category: string
   badgeColor: string
   tokens: TokenItem[]
+  tree?: DimensionTreeNode[]
 }
 
 /**
@@ -25,8 +35,11 @@ export function getBatchRenameTokenCategories(
   dimensionGroups: DimensionGroup[] = [],
   t: (key: string, params?: any) => string
 ): TokenCategory[] {
-  // ─── 1. 分类维度构建（含层级与父子从属关系） ───────────────────────
-  const dimensionTokens: TokenItem[] = [
+  // ─── 1. 分类维度：从系统权威事实源动态组装全量受控维度体系 ──────────────
+  const { dimensionTokens, dimensionTree } = buildDimensionSystem(dimensionGroups, t)
+
+  /* 废弃的手写旧常量已由 buildDimensionSystem 完全取代
+  const legacyTokens: TokenItem[] = [
     // 根级：文件类型
     {
       label: t('文件类型'),
@@ -141,13 +154,63 @@ export function getBatchRenameTokenCategories(
       groupLabel: t('基础文件格式与细分')
     },
 
-    // 文件类型 -> 文档与书刊分支
+    // 文件类型 -> 文档与文本分支（文本、文档本就是维度，既可作为层级组织也可作为文件名构成）
+    {
+      label: t('文本细分'),
+      value: `{TAG:${t('文本细分')}}`,
+      desc: t('匹配纯文本/日志/说明文档/配置文件等属性'),
+      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
+      isCommon: true,
+      parentName: t('文件类型'),
+      level: 1,
+      groupLabel: t('基础文件格式与细分')
+    },
+    {
+      label: t('文本扩展名'),
+      value: `{TAG:${t('文本扩展名')}}`,
+      desc: t('匹配.txt/.md/.log/.ini等文本类扩展名'),
+      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
+      isCommon: false,
+      parentName: t('文本细分'),
+      level: 2,
+      groupLabel: t('基础文件格式与细分')
+    },
     {
       label: t('文档细分'),
       value: `{TAG:${t('文档细分')}}`,
       desc: t('匹配办公文档/企划书/论文/报表等属性'),
       pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
       isCommon: true,
+      parentName: t('文件类型'),
+      level: 1,
+      groupLabel: t('基础文件格式与细分')
+    },
+    {
+      label: t('文档扩展名'),
+      value: `{TAG:${t('文档扩展名')}}`,
+      desc: t('匹配.docx/.pdf/.pptx/.xlsx等文档扩展名'),
+      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
+      isCommon: false,
+      parentName: t('文档细分'),
+      level: 2,
+      groupLabel: t('基础文件格式与细分')
+    },
+    {
+      label: t('版面'),
+      value: `{TAG:${t('版面')}}`,
+      desc: t('匹配横版/竖版/双栏等文档与页面排版构成'),
+      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
+      isCommon: false,
+      parentName: t('文档细分'),
+      level: 2,
+      groupLabel: t('基础文件格式与细分')
+    },
+    {
+      label: t('语言细分'),
+      value: `{TAG:${t('语言细分')}}`,
+      desc: t('匹配中文/英文/日文/法文等多语言属性'),
+      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
+      isCommon: false,
       parentName: t('文件类型'),
       level: 1,
       groupLabel: t('基础文件格式与细分')
@@ -275,21 +338,105 @@ export function getBatchRenameTokenCategories(
     },
 
     // ─── 核心业务与场景维度 ───────────────────────────────
+    // 根级：文件用途
     {
       label: t('文件用途'),
       value: `{TAG:${t('文件用途')}}`,
-      desc: t('匹配工作文档/学习资料/游戏娱乐/创意项目等用途'),
+      desc: t('匹配工作文档/学习资料/游戏娱乐/创意项目等核心使用场景'),
       pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
       isCommon: true,
       level: 0,
       groupLabel: t('业务与组织场景')
     },
+    // 文件用途 -> 子维度体系
+    {
+      label: t('安全等级'),
+      value: `{TAG:${t('安全等级')}}`,
+      desc: t('匹配绝密/机密/秘密/内部/公开等保密级别'),
+      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
+      isCommon: true,
+      parentName: t('文件用途'),
+      level: 1,
+      groupLabel: t('业务与组织场景')
+    },
+    {
+      label: t('处理状态'),
+      value: `{TAG:${t('处理状态')}}`,
+      desc: t('匹配草稿/审阅中/已定稿/已归档等工作流状态'),
+      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
+      isCommon: true,
+      parentName: t('文件用途'),
+      level: 1,
+      groupLabel: t('业务与组织场景')
+    },
+    {
+      label: t('学科领域'),
+      value: `{TAG:${t('学科领域')}}`,
+      desc: t('匹配计算机/理工/人文社科/经管/医学等学科分类'),
+      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
+      isCommon: true,
+      parentName: t('文件用途'),
+      level: 1,
+      groupLabel: t('业务与组织场景')
+    },
+    {
+      label: t('财务类型'),
+      value: `{TAG:${t('财务类型')}}`,
+      desc: t('匹配报销/发票/账单/流水/预算等财务凭证属性'),
+      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
+      isCommon: false,
+      parentName: t('文件用途'),
+      level: 1,
+      groupLabel: t('业务与组织场景')
+    },
+    {
+      label: t('旅行内容'),
+      value: `{TAG:${t('旅行内容')}}`,
+      desc: t('匹配行程规划/交通凭证/游记攻略/照片记录'),
+      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
+      isCommon: false,
+      parentName: t('文件用途'),
+      level: 1,
+      groupLabel: t('业务与组织场景')
+    },
+    {
+      label: t('家庭生活细分'),
+      value: `{TAG:${t('家庭生活细分')}}`,
+      desc: t('匹配日常开销/健康医疗/育儿亲子/家居账单'),
+      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
+      isCommon: false,
+      parentName: t('文件用途'),
+      level: 1,
+      groupLabel: t('业务与组织场景')
+    },
+    {
+      label: t('游戏类型'),
+      value: `{TAG:${t('游戏类型')}}`,
+      desc: t('匹配RPG/动作/策略/射击/模拟等游戏分类'),
+      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
+      isCommon: false,
+      parentName: t('文件用途'),
+      level: 1,
+      groupLabel: t('业务与组织场景')
+    },
+    {
+      label: t('游戏平台'),
+      value: `{TAG:${t('游戏平台')}}`,
+      desc: t('匹配PC/主机/掌机/移动端等游戏运行硬件平台'),
+      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
+      isCommon: false,
+      parentName: t('文件用途'),
+      level: 1,
+      groupLabel: t('业务与组织场景')
+    },
+
+    // 根级：文件来源、作者、文件质量、内容分级
     {
       label: t('文件来源'),
       value: `{TAG:${t('文件来源')}}`,
       desc: t('匹配内部创作/网络下载/外部传输等来源属性'),
       pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
+      isCommon: true,
       level: 0,
       groupLabel: t('业务与组织场景')
     },
@@ -328,27 +475,19 @@ export function getBatchRenameTokenCategories(
       isCommon: false,
       level: 0,
       groupLabel: t('业务与组织场景')
+    },
+    {
+      label: t('敏感内容'),
+      value: `{TAG:${t('敏感内容')}}`,
+      desc: t('匹配合规安全审查分类 (如色情/血腥/涉政/违规)'),
+      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
+      isCommon: false,
+      parentName: t('内容分级'),
+      level: 1,
+      groupLabel: t('业务与组织场景')
     }
   ]
-
-  // 动态追加由外部传入且未收录的自定义维度
-  const knownValues = new Set(dimensionTokens.map(d => d.value.toLowerCase()))
-  for (const g of dimensionGroups || []) {
-    const dimLabel = t(g.name)
-    const tokenVal = `{TAG:${dimLabel}}`
-    if (!knownValues.has(tokenVal.toLowerCase())) {
-      dimensionTokens.push({
-        label: dimLabel,
-        value: tokenVal,
-        desc: t('匹配该文件的「{name}」维度标签', { name: dimLabel }),
-        pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-        isCommon: false,
-        level: g.level ?? 0,
-        groupLabel: t('自定义维度')
-      })
-      knownValues.add(tokenVal.toLowerCase())
-    }
-  }
+  */
 
   // ─── 各独立功能大类 ──────────────────────────────────────────
   const coreCategory: TokenCategory = {
@@ -455,7 +594,8 @@ export function getBatchRenameTokenCategories(
     key: 'dimension',
     category: t('分类维度'),
     badgeColor: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
-    tokens: dimensionTokens
+    tokens: dimensionTokens,
+    tree: dimensionTree
   }
 
   const metaCategory: TokenCategory = {
@@ -547,4 +687,232 @@ export function getCommonCategoriesPartitioned(
       tokens: cat.tokens.filter(t => t.isCommon)
     }))
     .filter(cat => cat.tokens.length > 0)
+}
+
+/**
+ * 从系统权威事实源 (file-dimension-source / ConfigDbManager) 动态构建受控维度体系
+ * 1. 根节点严格依从 Genesis V1 创世 7 大受控根维度；
+ * 2. 二级与三级维度基于 triggerConditions 声明的 parentDimension 原生关系自顶向下组装；
+ * 3. 严格受控过滤：敏感内容仅显示到 2 级维度，彻底不显示其下的 3、4 级细分子维度（如色情细分、涉政细分等）；
+ * 4. 其它所有内置维度（包括二级作品来源、三级证照细分等）与自定义维度全部完整显示。
+ */
+export function buildDimensionSystem(
+  dimensionGroups: DimensionGroup[] = [],
+  t: (key: string, params?: any) => string
+): { dimensionTokens: TokenItem[]; dimensionTree: DimensionTreeNode[] } {
+  const SENSITIVE_DIM_NAME = t('敏感内容')
+
+  // 1. 核心高频常用维度名称白名单
+  const COMMON_DIM_NAMES = new Set<string>([
+    t('文件类型'),
+    t('文件用途'),
+    t('文件来源'),
+    t('作者'),
+    t('图片细分'),
+    t('视频细分'),
+    t('音频细分'),
+    t('文档细分'),
+    t('文本细分'),
+    t('压缩包细分'),
+    t('安全等级'),
+    t('处理状态'),
+    t('学科领域'),
+    t('作品来源'),
+    t('证照细分'),
+    t('摄影照片细分')
+  ])
+
+  // 2. 加载权威事实源
+  const rawDims = FILE_DIMENSION_DATA?.file_dimensions || []
+
+  // 3. 构建 parentName -> children 拓扑映射
+  const childrenMap = new Map<string, Array<{ name: string; desc: string; level: number }>>()
+  const primaryParentMap = new Map<string, string>()
+
+  for (const d of rawDims) {
+    const dimName = t(d.name)
+    const conditions = d.triggerConditions || []
+
+    // 过滤规则：任何父级为敏感内容的子维度一律跳过
+    const validParents = conditions
+      .map(c => t(c.parentDimension))
+      .filter(p => p && p !== SENSITIVE_DIM_NAME && p !== '敏感内容')
+
+    // 若该维度只在敏感内容下触发（如色情细分、涉政细分、血腥细分、违规细分），彻底不予显示
+    if (conditions.length > 0 && validParents.length === 0) {
+      continue
+    }
+
+    if (validParents.length > 0) {
+      // 敏感内容：严格只作为「内容分级」之下的二级维度显示，不作为三级维度在媒体细分下重复挂载
+      if (dimName === SENSITIVE_DIM_NAME || dimName === '敏感内容') {
+        const rootParent = t('内容分级')
+        const list = childrenMap.get(rootParent) || []
+        if (!list.some(item => item.name === dimName)) {
+          list.push({
+            name: dimName,
+            desc: d.description ? t(d.description) : t('匹配该文件的「{name}」维度标签', { name: dimName }),
+            level: 2
+          })
+        }
+        childrenMap.set(rootParent, list)
+        primaryParentMap.set(dimName, rootParent)
+        continue
+      }
+
+      // 规范层级匹配：若维度定义为 level 2，且父级中包含根维度，优先挂载于根维度（如「作品来源」作为二级维度归入「文件类型」）
+      const ROOT_DIM_NAMES = new Set([
+        t('文件类型'),
+        t('文件用途'),
+        t('文件来源'),
+        t('作者'),
+        t('文件质量'),
+        t('内容标签'),
+        t('内容分级')
+      ])
+
+      let chosenParents = validParents
+      if (d.level === 2) {
+        const rootParents = validParents.filter(p => ROOT_DIM_NAMES.has(p))
+        if (rootParents.length > 0) {
+          chosenParents = rootParents
+        }
+      }
+
+      primaryParentMap.set(dimName, chosenParents[0])
+      for (const parent of chosenParents) {
+        const list = childrenMap.get(parent) || []
+        if (!list.some(item => item.name === dimName)) {
+          list.push({
+            name: dimName,
+            desc: d.description ? t(d.description) : t('匹配该文件的「{name}」维度标签', { name: dimName }),
+            level: d.level
+          })
+        }
+        childrenMap.set(parent, list)
+      }
+    }
+  }
+
+  // 4. 合并外部传入的自定义维度（来自工作区或用户定义）
+  for (const g of dimensionGroups || []) {
+    const dimName = t(g.name)
+    const rawParent = (g as any).parentDimension || (g as any).parentDimensionName
+    const parent = rawParent ? t(rawParent) : undefined
+    if (parent && parent !== SENSITIVE_DIM_NAME && parent !== '敏感内容') {
+      const list = childrenMap.get(parent) || []
+      if (!list.some(item => item.name === dimName)) {
+        list.push({
+          name: dimName,
+          desc: t('匹配该文件的「{name}」维度标签', { name: dimName }),
+          level: (g.level ?? 1) + 1
+        })
+      }
+      childrenMap.set(parent, list)
+      if (!primaryParentMap.has(dimName)) {
+        primaryParentMap.set(dimName, parent)
+      }
+    }
+  }
+
+  // 5. 递归拼装原生维度树
+  const allTokensMap = new Map<string, TokenItem>()
+
+  const createToken = (name: string, desc: string, level: number, parentName?: string): TokenItem => {
+    const tokenVal = `{TAG:${name}}`
+    const existing = allTokensMap.get(tokenVal)
+    if (existing) return existing
+
+    const item: TokenItem = {
+      label: name,
+      value: tokenVal,
+      desc: desc || t('匹配该文件的「{name}」维度标签', { name }),
+      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
+      isCommon: COMMON_DIM_NAMES.has(name),
+      parentName: parentName || primaryParentMap.get(name),
+      level,
+      groupLabel: t('分类维度')
+    }
+    allTokensMap.set(tokenVal, item)
+    return item
+  }
+
+  const assembleNode = (
+    name: string,
+    desc: string,
+    currentLevel: number,
+    parentName?: string,
+    branchPath: string = ''
+  ): DimensionTreeNode => {
+    const token = createToken(name, desc, currentLevel, parentName)
+    const currentPath = `${branchPath}/${name}`
+
+    // 核心门禁：敏感内容只显示到 2 级维度，不显示其下的 3、4 级细分子维度
+    if (name === SENSITIVE_DIM_NAME || name === '敏感内容') {
+      return {
+        id: `${name}-${parentName || 'root'}-${currentLevel}`,
+        name,
+        token,
+        level: currentLevel,
+        children: []
+      }
+    }
+
+    const rawChildren = childrenMap.get(name) || []
+    const childrenNodes: DimensionTreeNode[] = []
+    for (const child of rawChildren) {
+      if (branchPath.includes(child.name)) continue // 防回环保护
+      childrenNodes.push(assembleNode(child.name, child.desc, currentLevel + 1, name, currentPath))
+    }
+
+    return {
+      id: `${name}-${parentName || 'root'}-${currentLevel}`,
+      name,
+      token,
+      level: currentLevel,
+      children: childrenNodes
+    }
+  }
+
+  // 6. 权威 7 大受控根维度为顶层树干
+  const ROOT_DIM_DEFINITIONS = [
+    { name: t('文件类型'), desc: t('文件的基础格式分类 (如文本/图片/视频/音频等)') },
+    { name: t('文件用途'), desc: t('文件的核心使用场景 (如工作文档/学习资料/游戏娱乐等)') },
+    { name: t('文件来源'), desc: t('文件的原始获取途径 (如本地创建/网络下载/设备导入等)') },
+    { name: t('作者'), desc: t('文件的创建者或贡献者') },
+    { name: t('文件质量'), desc: t('文件的品质与质量评分 (如优质/良好/一般等)') },
+    { name: t('内容标签'), desc: t('开放式语义与主题内容标签') },
+    { name: t('内容分级'), desc: t('合规安全审查与年龄受众分级') }
+  ]
+
+  const dimensionTree: DimensionTreeNode[] = []
+  for (const rootDef of ROOT_DIM_DEFINITIONS) {
+    dimensionTree.push(assembleNode(rootDef.name, rootDef.desc, 0))
+  }
+
+  // 外部传入且未绑定父级的自定义维度追加为根节点
+  const rootNameSet = new Set(ROOT_DIM_DEFINITIONS.map(r => r.name))
+  for (const g of dimensionGroups || []) {
+    const dimName = t(g.name)
+    if (!rootNameSet.has(dimName) && !primaryParentMap.has(dimName)) {
+      rootNameSet.add(dimName)
+      dimensionTree.push(assembleNode(dimName, t('匹配该文件的「{name}」维度标签', { name: dimName }), 0))
+    }
+  }
+
+  return {
+    dimensionTokens: Array.from(allTokensMap.values()),
+    dimensionTree
+  }
+}
+
+/**
+ * 兼容旧接口函数，委托给 buildDimensionSystem
+ */
+export function buildRawDimensionTree(
+  dimensionTokens: TokenItem[],
+  t: (key: string, params?: any) => string
+): DimensionTreeNode[] {
+  const { dimensionTree } = buildDimensionSystem([], t)
+  return dimensionTree
 }

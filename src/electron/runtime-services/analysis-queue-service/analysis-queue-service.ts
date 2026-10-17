@@ -42,6 +42,7 @@ import { FileProcessor, getFileStageFromDB, getFileAnalysisStateFromDB } from '.
 import path from 'node:path'
 import { engineBridgeService } from '../engine-bridge'
 import { isRenameProtectedExtension } from '../../utils/extension-rename-whitelist'
+import { isTransientInfraError } from './file-processor/analysis-error-classifier'
 
 class StageNotifier {
   private resolvers = new Map<number, () => void>()
@@ -419,6 +420,15 @@ export class AnalysisQueueService {
             break
           }
 
+          // 并行分析模式：在启动并行流水线前，确保底层引擎处于主语言模型模式；
+          // 避免应用刚启动或加载模型期间（10~20s）GPU 消费者抢跑导致反向代理 503
+          if (isAiStageEnabled(analysisMode)) {
+            const modeRes = await engineBridgeService?.ensureMode?.('language')
+            if (modeRes && !modeRes.ok) {
+              logger.warn(LogCategory.ANALYSIS_QUEUE, '[并行分析] 确保主语言模型就绪告警:', modeRes.error)
+            }
+          }
+
           const notifier = new StageNotifier()
           this.currentAbortController = new AbortController()
           const signal = this.currentAbortController.signal
@@ -583,6 +593,52 @@ export class AnalysisQueueService {
                 if (isAbort) {
                   logger.info(LogCategory.ANALYSIS_QUEUE, `[并行队列:GPU通道] GPU 任务被中止: ${item.name}`)
                   this.updateItemStatus(item.id, 'pending', 0)
+                } else if (isTransientInfraError(err)) {
+                  logger.warn(
+                    LogCategory.ANALYSIS_QUEUE,
+                    `[并行队列:GPU通道] AI 引擎瞬态未就绪，重置为 pending 并等待引擎恢复: ${item.name}`,
+                    err
+                  )
+                  this.updateItemStatus(item.id, 'pending', 0)
+                  const isReady = await this.aiServiceManager.waitForAIServiceReady()
+                  if (isReady && !signal.aborted && this.running) {
+                    await engineBridgeService?.ensureMode?.('language')
+                    try {
+                      logger.info(
+                        LogCategory.ANALYSIS_QUEUE,
+                        `[并行队列:GPU通道] AI 引擎已恢复，重试 GPU AI 分析: ${item.name}`
+                      )
+                      this.updateItemStatus(item.id, 'analyzing', 51, undefined, { analysisStage: 3 })
+                      await this.fileProcessor.processFile(
+                        item,
+                        signal,
+                        'gpu',
+                        cpuSkippedIds.has(item.id)
+                      )
+                      logger.info(
+                        LogCategory.ANALYSIS_QUEUE,
+                        `[并行队列:GPU通道] 重试后 GPU AI 分析成功完成: ${item.name}`
+                      )
+                      cloudSyncWorker.triggerSync(2000)
+                    } catch (retryErr: any) {
+                      const isRetryAbort = retryErr && (retryErr.name === 'AbortError' || retryErr.message === 'Aborted')
+                      if (isRetryAbort) {
+                        this.updateItemStatus(item.id, 'pending', 0)
+                      } else {
+                        logger.error(
+                          LogCategory.ANALYSIS_QUEUE,
+                          `[并行队列:GPU通道] GPU 重试分析失败: ${item.name}`,
+                          retryErr
+                        )
+                        this.updateItemStatus(
+                          item.id,
+                          'failed',
+                          100,
+                          retryErr instanceof Error ? retryErr.message : String(retryErr)
+                        )
+                      }
+                    }
+                  }
                 } else {
                   logger.error(
                     LogCategory.ANALYSIS_QUEUE,

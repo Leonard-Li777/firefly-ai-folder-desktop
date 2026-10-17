@@ -205,12 +205,27 @@ export const RowRenderer = React.memo(({ index, style, data }: RowRendererProps)
                 pageId: data.pageId,
                 pageMode
               })
+              const targetCurrentTime =
+                (fileItem as any)?.currentTime ?? (fileItem as any)?.matchedChunk?.startSec
+              const targetHighlightRange =
+                (fileItem as any)?.highlightRange ??
+                ((fileItem as any)?.matchedChunk
+                  ? [
+                      (fileItem as any).matchedChunk.startSec,
+                      (fileItem as any).matchedChunk.endSec
+                    ]
+                  : undefined)
+
               if (routeType !== 'unsupported') {
                 splitState.openPreview(
                   item.path,
                   data.getItemDisplayName?.(item) || item.name,
                   ext,
-                  data.pageId
+                  data.pageId,
+                  {
+                    currentTime: targetCurrentTime,
+                    highlightRange: targetHighlightRange
+                  }
                 )
               } else {
                 logger.info(
@@ -420,12 +435,27 @@ export const RowRenderer = React.memo(({ index, style, data }: RowRendererProps)
               pageId: data.pageId,
               pageMode
             })
+            const targetCurrentTime =
+              (fileItem as any)?.currentTime ?? (fileItem as any)?.matchedChunk?.startSec
+            const targetHighlightRange =
+              (fileItem as any)?.highlightRange ??
+              ((fileItem as any)?.matchedChunk
+                ? [
+                    (fileItem as any).matchedChunk.startSec,
+                    (fileItem as any).matchedChunk.endSec
+                  ]
+                : undefined)
+
             if (routeType !== 'unsupported') {
               splitState.openPreview(
                 item.path,
                 data.getItemDisplayName?.(item) || item.name,
                 ext,
-                data.pageId
+                data.pageId,
+                {
+                  currentTime: targetCurrentTime,
+                  highlightRange: targetHighlightRange
+                }
               )
             } else {
               logger.info(
@@ -448,11 +478,25 @@ export const RowRenderer = React.memo(({ index, style, data }: RowRendererProps)
           fileItem.path.split('.').pop() ||
           ''
         const routeType = getPreviewRouteType(ext)
+        const targetCurrentTime =
+          (fileItem as any)?.currentTime ?? (fileItem as any)?.matchedChunk?.startSec
+        const targetHighlightRange =
+          (fileItem as any)?.highlightRange ??
+          ((fileItem as any)?.matchedChunk
+            ? [
+                (fileItem as any).matchedChunk.startSec,
+                (fileItem as any).matchedChunk.endSec
+              ]
+            : undefined)
+
         if (routeType !== 'unsupported') {
           // 可预览 → 打开全局覆盖层
           usePreviewOverlayStore
             .getState()
-            .openPreview(fileItem.path, fileItem.smartName || fileItem.name || '', ext, data.pageId)
+            .openPreview(fileItem.path, fileItem.smartName || fileItem.name || '', ext, data.pageId, {
+              currentTime: targetCurrentTime,
+              highlightRange: targetHighlightRange
+            })
         } else {
           // 不可预览 → 使用系统默认程序打开
           try {

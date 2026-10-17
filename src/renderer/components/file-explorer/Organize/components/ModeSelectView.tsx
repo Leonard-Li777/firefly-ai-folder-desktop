@@ -138,8 +138,8 @@ export function ModeSelectView({
 
                   <div className="pt-3 border-t border-border/40 grid grid-cols-2 gap-2.5 text-[11px] text-muted-foreground font-medium">
                     {[
-                      t('34+ 职业与生活身份库'),
-                      t('13 套四要素标准模板'),
+                      t('60+ 职业与生活身份库'),
+                      t('21 套四要素标准模板'),
                       t('动态容差与及格线限定'),
                       t('支持 4 阶段交互微调')
                     ].map((feat, idx) => (

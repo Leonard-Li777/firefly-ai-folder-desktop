@@ -1714,6 +1714,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
             "pt",
             "pth",
             "pub",
+            "rdp",
             "reg",
             "sqlite",
             "sqlite3",
@@ -1992,6 +1993,8 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         level: 3,
         tags: [
             "txt",
+            "htm",
+            "html",
             "bib",
             "diff",
             "patch",

@@ -214,11 +214,21 @@ export class HybridSearchSession {
           if (!base) continue
           const e = enrichment.get(ref.fileFingerprint)
           const cand = candidateByFp.get(ref.fileFingerprint)
+          const matchedChunk = cand?.matchedChunk
+            ? {
+                startSec: cand.matchedChunk.startSec,
+                endSec: cand.matchedChunk.endSec,
+                similarity: cand.matchedChunk.similarity
+              }
+            : undefined
           items.push({
             ...base,
             snippet: e?.snippet,
-            matchType: e?.matchType ?? (ref.hasLiteral ? 'fuzzy' : 'semantic'),
-            similarity: e?.similarity ?? cand?.vecScore
+            matchType: matchedChunk
+              ? 'semantic'
+              : (e?.matchType ?? (ref.hasLiteral ? 'fuzzy' : 'semantic')),
+            similarity: matchedChunk?.similarity ?? e?.similarity ?? cand?.vecScore,
+            matchedChunk
           })
         } else {
           items.push(this.collaborators.synthesizeUnanalyzedItem(ref, workspaceDirectoryPath))

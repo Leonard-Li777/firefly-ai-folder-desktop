@@ -20,6 +20,7 @@ import {
   getCanonicalConceptName,
   CANONICAL_NAMES,
   DIMENSION_CODES,
+  concept,
   CONTROLLED_SUBDIMENSION_PARENTS_GENERATED
 } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
@@ -87,7 +88,7 @@ const WELL_KNOWN_PARENT_TO_ROOT: Record<string, string> = {
   'builtin.file_type': 'builtin.file_type',
   'builtin.file_purpose': 'builtin.file_purpose',
   'builtin.file_source': 'builtin.file_source',
-  'builtin.author': 'builtin.author',
+  [concept('作者')]: concept('作者'),
   'builtin.language_segmentation': 'builtin.file_type',
   'builtin.security_level': 'builtin.file_purpose',
   'builtin.processing_status': 'builtin.file_purpose',
@@ -967,6 +968,14 @@ export class TagTreeQuery {
         }
       }
 
+      // 本地统一配置管理器权威维度表（code/id -> 规范 id + metadata.flag）：
+      // omni 树自身不带策略元数据，前端的 flag 判定（isPanDimension / isFileTypeDimension …）
+      // 必须由本地配置管理器按 code/id 补齐，严禁改向 Omni 索取。
+      const authorityDimsData = this.resolveAuthorityDimensions()
+      const authorityDimByCode = authorityDimsData.byCode
+      const authorityDimById = authorityDimsData.byId
+      const allAuthorityDims = authorityDimsData.all
+
       for (const root of dimensionRoots) {
         const dimCode = root.code
         seenDimCodes.add(dimCode)
@@ -1000,10 +1009,18 @@ export class TagTreeQuery {
 
         const dimensionTags: DimensionTag[] = []
 
-        // 提取数值型 ID 用于向前兼容（Fix-06：dimensionId 恢复为声明的 number 类型，
-        // 标签归属改用 dimensionCode/code 承载，不再把字符串 code 强塞进数字字段）
+        // 提取数值型 ID 用于向前兼容并优先采用受控权威规范 ID（如作者为 4，内容标签为 28）
         const numIdMatch = dimCode.match(/^dim\.(\d+)$/)
-        const legacyNumericId = numIdMatch ? parseInt(numIdMatch[1], 10) : groups.length + 1
+        const authority =
+          authorityDimByCode.get(dimCode) ||
+          (ROOT_DIMENSION_META[dimCode]?.id !== undefined
+            ? authorityDimById.get(ROOT_DIMENSION_META[dimCode].id)
+            : undefined)
+        const canonicalId =
+          authority?.id ??
+          ROOT_DIMENSION_META[dimCode]?.id ??
+          (numIdMatch ? parseInt(numIdMatch[1], 10) : groups.length + 1)
+        const dimFlag = authority?.flag
 
         for (const child of directChildren) {
           // #625：解析子标签的 meta 与 parent_codes，透出给前端纯树形状态机
@@ -1055,7 +1072,7 @@ export class TagTreeQuery {
             tagChainsMap.get(child.code)?.[0]?.name_path ||
             `/${aliasResolver(root.code, root.name)}/${aliasResolver(child.code, child.name)}`
           dimensionTags.push({
-            dimensionId: legacyNumericId,
+            dimensionId: canonicalId,
             dimensionCode: dimCode,
             dimensionName: aliasResolver(root.code, root.name),
             tagValue: aliasResolver(child.code, child.name),
@@ -1082,7 +1099,7 @@ export class TagTreeQuery {
               tagChainsMap.get(sub.code)?.[0]?.name_path ||
               `/${aliasResolver(root.code, root.name)}/${sub.name}`
             dimensionTags.push({
-              dimensionId: legacyNumericId,
+              dimensionId: canonicalId,
               dimensionCode: dimCode,
               dimensionName: aliasResolver(root.code, root.name),
               tagValue: sub.name,
@@ -1107,22 +1124,38 @@ export class TagTreeQuery {
         }
 
         groups.push({
-          id: legacyNumericId,
+          id: canonicalId,
           name: aliasResolver(root.code, root.name),
           level: 1,
           tags: dimensionTags,
           code: dimCode,
-          isMultiSelect: dimMeta?.isMultiSelect === true,
-          metadata: dimMeta
+          isMultiSelect: dimMeta?.isMultiSelect === true || dimFlag?.isMultiSelect === true,
+          metadata: {
+            ...(dimMeta || {}),
+            ...(dimFlag ? { flag: dimFlag } : {})
+          },
+          meta: {
+            ...(dimMeta || {}),
+            ...(dimFlag ? { flag: dimFlag } : {})
+          }
         })
       }
 
       // 6. 合并 Omni 受控分类树（builtin / omw 不再入库主库，走 HTTP API 拉取树结构）
       const dbPath = (this.db as any).name
-      const treeRes = await omniClient.getTaxonomyTree(locale, undefined, dbPath, {
-        workspaceId: opts.workspaceId,
-        directoryPrefix: workspaceDirectoryPath
-      })
+      let treeRes: Awaited<ReturnType<typeof omniClient.getTaxonomyTree>> | null = null
+      try {
+        treeRes = await omniClient.getTaxonomyTree(locale, undefined, dbPath, {
+          workspaceId: opts.workspaceId,
+          directoryPrefix: workspaceDirectoryPath
+        })
+      } catch (omniErr) {
+        logger.warn(
+          LogCategory.VIRTUAL_DIRECTORY,
+          '[TagTreeQuery] omniClient.getTaxonomyTree 失败，降级使用本地预设维度:',
+          omniErr
+        )
+      }
       // 将 Omni 受控树父→子边注入邻接图（复用本次 HTTP 结果，无需再次请求）
       if (treeRes?.rootNodes) {
         this.buildOmniEdgesFromTree(treeRes.rootNodes)
@@ -1143,14 +1176,7 @@ export class TagTreeQuery {
         }
       }
 
-      // 本地统一配置管理器权威维度表（code/id -> 规范 id + metadata.flag）：
-      // omni 树自身不带策略元数据，前端的 flag 判定（isPanDimension / isFileTypeDimension …）
-      // 必须由本地配置管理器按 code/id 补齐，严禁改向 Omni 索取。
-      const authorityDimsData = this.resolveAuthorityDimensions()
-      const authorityDimByCode = authorityDimsData.byCode
-      const authorityDimById = authorityDimsData.byId
-      const allAuthorityDims = authorityDimsData.all
-      // 已占用的数值 ID（本地维度组 legacyNumericId）集合，避免与受控根维度规范 ID 冲突
+      // 已占用的数值 ID（本地维度组 canonicalId）集合，避免与受控根维度规范 ID 冲突
       const usedNumericIds = new Set<number>(groups.map(g => g.id))
 
       const omniGroups: Array<Omit<DimensionGroup, 'tags'> & { tags: DimensionTag[] }> =
@@ -1466,7 +1492,7 @@ export class TagTreeQuery {
           'builtin.file_type': 'builtin.file_type',
           'builtin.file_purpose': 'builtin.file_purpose',
           'builtin.file_source': 'builtin.file_source',
-          'builtin.author': 'builtin.author',
+          [concept('作者')]: concept('作者'),
           'builtin.language_segmentation': 'builtin.file_type',
           'builtin.security_level': 'builtin.file_purpose',
           'builtin.processing_status': 'builtin.file_purpose',
@@ -2039,12 +2065,14 @@ export class TagTreeQuery {
               isMultiSelect: dimFlag?.isMultiSelect ?? false,
               parentCodes: authDim.parentCodes || [],
               rootCode: rootDimCode || dimCode,
+              triggerConditions: authDim.triggerConditions || [],
               meta: {
                 source: 'builtin',
                 order: canonicalId || 9999,
                 sort_order: canonicalId || 9999,
                 parentCodes: authDim.parentCodes || [],
                 rootCode: rootDimCode || dimCode,
+                triggerConditions: authDim.triggerConditions || [],
                 ...(dimFlag ? { flag: dimFlag } : {})
               },
               metadata: {
@@ -2053,6 +2081,7 @@ export class TagTreeQuery {
                 sort_order: canonicalId || 9999,
                 parentCodes: authDim.parentCodes || [],
                 rootCode: rootDimCode || dimCode,
+                triggerConditions: authDim.triggerConditions || [],
                 ...(dimFlag ? { flag: dimFlag } : {})
               }
             }
@@ -2065,6 +2094,9 @@ export class TagTreeQuery {
             const rootDimCode = dimCode ? resolveSubdimensionRoot(dimCode) : undefined
             if (authDim.parentCodes && (!targetGroup.parentCodes || targetGroup.parentCodes.length === 0)) {
               targetGroup.parentCodes = authDim.parentCodes
+            }
+            if (authDim.triggerConditions && !(targetGroup as any).triggerConditions) {
+              (targetGroup as any).triggerConditions = authDim.triggerConditions
             }
             if (rootDimCode && !targetGroup.rootCode) {
               targetGroup.rootCode = rootDimCode
@@ -2108,6 +2140,7 @@ export class TagTreeQuery {
               if (!presetTagName || typeof presetTagName !== 'string') continue
               const trimmed = presetTagName.trim()
               if (!trimmed || existingValues.has(trimmed.toLowerCase())) continue
+              if (trimmed === targetGroup.name.trim()) continue
 
               const tagCode = `${targetGroup.code || `dim.${targetGroup.id}`}.${trimmed}`
               const resolvedTagName = aliasResolver(tagCode, trimmed)
@@ -2158,6 +2191,39 @@ export class TagTreeQuery {
               }
             }
           }
+        }
+      }
+
+      // 铁闸门禁：严格执行「维度名不能作为标签，维度名只用于区块名，只有其下的标签才能作为用户的可选择标签」铁律
+      // 1. 维度名本身绝对不能作为其自身区块下的标签（如作者卡片不能有作者标签、安全等级卡片不能有安全等级标签）
+      // 2. 顶层元分类根名（如文件类型、文件用途）与所有受控子维度名（如安全等级、处理状态）不能作为叶子标签出现
+      const bannedDimensionNames = new Set<string>()
+      for (const [code, meta] of Object.entries(ROOT_DIMENSION_META)) {
+        if (meta.name) bannedDimensionNames.add(meta.name.trim())
+        bannedDimensionNames.add(aliasResolver(code, meta.name).trim())
+      }
+      if (allAuthorityDims) {
+        for (const ad of allAuthorityDims) {
+          if (ad.name) bannedDimensionNames.add(ad.name.trim())
+          if (ad.code) bannedDimensionNames.add(aliasResolver(ad.code, ad.name || ad.code).trim())
+        }
+      }
+      for (const g of finalGroups) {
+        if (g.name) bannedDimensionNames.add(g.name.trim())
+      }
+
+      for (const g of finalGroups) {
+        if (Array.isArray(g.tags)) {
+          const groupNameTrimmed = g.name.trim()
+          g.tags = g.tags.filter(t => {
+            const val = t.tagValue?.trim()
+            if (!val) return false
+            // 维度名本身不能作为其下的标签
+            if (val === groupNameTrimmed) return false
+            // 任何维度名（顶层根名或子维度名）都不能作为可选择标签出现
+            if (bannedDimensionNames.has(val)) return false
+            return true
+          })
         }
       }
 

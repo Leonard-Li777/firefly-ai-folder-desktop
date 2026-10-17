@@ -6,7 +6,7 @@ import {
   VirtualDirectoryNode,
   WorkspaceDirectory
 } from '@firefly/types'
-import { LogCategory, logger, SENTINEL_NAMES } from '@firefly/shared'
+import { LogCategory, logger, SENTINEL_NAMES, concept } from '@firefly/shared'
 import i18nScope, { t } from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
 import { toast } from '../../../common/Toast'
@@ -2627,8 +2627,8 @@ export function useOrganizeState() {
                 if (
                   dimIdentifier === 4 ||
                   dimIdentifier === 28 ||
-                  dimIdentifier === 'builtin.author' ||
-                  dimIdentifier === 'builtin.content_tags'
+                  dimIdentifier === concept('作者') ||
+                  dimIdentifier === concept('内容标签')
                 ) {
                   try {
                     await window.electronAPI.organizeBatch.deleteTagGlobally(dimIdentifier, rt.tagName)
@@ -2643,7 +2643,11 @@ export function useOrganizeState() {
             await loadFilesToOrganize()
             if (currentWorkspaceDirectory?.path && window.electronAPI?.analyzedDirectory?.getDimensionGroups) {
               try {
-                const groupsRes = await window.electronAPI.analyzedDirectory.getDimensionGroups(currentWorkspaceDirectory.path)
+                const groupsRes = await window.electronAPI.analyzedDirectory.getDimensionGroups({
+                  workspaceDirectoryPath: currentWorkspaceDirectory.path,
+                  includeAllPresetTags: true,
+                  excludeExtensionDimension: true
+                })
                 if (groupsRes?.groups) {
                   useAnalyzedDirectoryStore.getState().setDimensionGroups(groupsRes.groups)
                 }
@@ -2677,7 +2681,11 @@ export function useOrganizeState() {
             await loadFilesToOrganize()
             if (currentWorkspaceDirectory?.path && window.electronAPI?.analyzedDirectory?.getDimensionGroups) {
               try {
-                const groupsRes = await window.electronAPI.analyzedDirectory.getDimensionGroups(currentWorkspaceDirectory.path)
+                const groupsRes = await window.electronAPI.analyzedDirectory.getDimensionGroups({
+                  workspaceDirectoryPath: currentWorkspaceDirectory.path,
+                  includeAllPresetTags: true,
+                  excludeExtensionDimension: true
+                })
                 if (groupsRes?.groups) {
                   useAnalyzedDirectoryStore.getState().setDimensionGroups(groupsRes.groups)
                 }

@@ -11,7 +11,9 @@ import { BatchRenamePreviewItem, DimensionGroup, FileInfoForAI } from '@firefly/
 import { isExtensionTriggerTagName } from '@firefly/shared'
 import {
   getBatchRenameTokenCategories,
-  getCommonCategoriesPartitioned
+  getCommonCategoriesPartitioned,
+  type DimensionTreeNode,
+  type TokenItem
 } from './batch-rename-tokens'
 
 /**
@@ -1003,26 +1005,33 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                   <div className="flex-1 overflow-y-auto p-3.5 space-y-4">
                     {(() => {
                       let candidateCategories = tokenCategories
-                      if (selectedTokenCategory === 'common') {
-                        candidateCategories = getCommonCategoriesPartitioned(tokenCategories, t)
-                      } else if (selectedTokenCategory === 'all') {
-                        candidateCategories = tokenCategories
+                      if (tokenSearch.trim()) {
+                        if (selectedTokenCategory === 'common' || selectedTokenCategory === 'all') {
+                          // 搜索模式下自动扩展至全量类别，确保用户能检索到系统内所有可用属性
+                          candidateCategories = tokenCategories
+                        } else {
+                          candidateCategories = tokenCategories.filter(cat => cat.key === selectedTokenCategory)
+                        }
                       } else {
-                        candidateCategories = tokenCategories.filter(cat => cat.key === selectedTokenCategory)
+                        if (selectedTokenCategory === 'common') {
+                          candidateCategories = getCommonCategoriesPartitioned(tokenCategories, t)
+                        } else if (selectedTokenCategory === 'all') {
+                          candidateCategories = tokenCategories
+                        } else {
+                          candidateCategories = tokenCategories.filter(cat => cat.key === selectedTokenCategory)
+                        }
                       }
 
                       const visibleCategories = candidateCategories
                         .map(cat => ({
                           ...cat,
-                          tokens: cat.tokens
-                            .filter(t => !isTokenInTemplate(t.value, template))
-                            .filter(t =>
-                              tokenSearch.trim()
-                                ? t.label.toLowerCase().includes(tokenSearch.toLowerCase()) ||
-                                  t.value.toLowerCase().includes(tokenSearch.toLowerCase()) ||
-                                  (t.parentName && t.parentName.toLowerCase().includes(tokenSearch.toLowerCase()))
-                                : true
-                            )
+                          tokens: cat.tokens.filter(t =>
+                            tokenSearch.trim()
+                              ? t.label.toLowerCase().includes(tokenSearch.toLowerCase()) ||
+                                t.value.toLowerCase().includes(tokenSearch.toLowerCase()) ||
+                                (t.parentName && t.parentName.toLowerCase().includes(tokenSearch.toLowerCase()))
+                              : true
+                          )
                         }))
                         .filter(cat => cat.tokens.length > 0)
 
@@ -1039,63 +1048,157 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                         )
                       }
 
-                      return visibleCategories.map((cat, catIdx) => (
-                        <div key={catIdx} className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className={cn('px-2 py-0.5 rounded text-[10px] font-bold border', cat.badgeColor)}>
-                              {cat.category}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground/70 font-mono">
-                              {t('{count} 个可用', { count: cat.tokens.length })}
-                            </span>
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {cat.tokens.map((token, tIdx) => {
-                              const isSelfNamed =
-                                token.value.startsWith('{TAG:') || token.value.startsWith('{META:')
-                              const hasParent = Boolean(token.parentName)
-                              const isLevel2 = token.level === 2
+                      const renderTokenButton = (token: TokenItem, keySuffix: string | number) => {
+                        const isSelfNamed =
+                          token.value.startsWith('{TAG:') || token.value.startsWith('{META:')
+                        const isInTemplate = isTokenInTemplate(token.value, template)
 
-                              return (
-                                <button
-                                  key={tIdx}
-                                  type="button"
-                                  title={
-                                    token.parentName
+                        return (
+                          <button
+                            key={keySuffix}
+                            type="button"
+                            title={
+                              isInTemplate
+                                ? t('已选入命名模板: {desc}', {
+                                    desc: token.parentName
                                       ? t('所属「{parent}」维度: {desc}', { parent: token.parentName, desc: token.desc })
                                       : token.desc
-                                  }
-                                  onClick={() => handleInsertToken(token.value)}
-                                  className={cn(
-                                    'inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium border transition-all duration-150',
-                                    'hover:-translate-y-0.5 hover:shadow-2xs active:scale-95 cursor-pointer',
-                                    hasParent && 'border-dashed border-emerald-500/40 bg-emerald-500/5',
-                                    token.pillClass || 'bg-muted/30 hover:bg-primary/15 border-border/40 text-foreground'
-                                  )}
-                                >
-                                  {isSelfNamed ? (
-                                    <span className="font-mono flex items-center gap-1">
-                                      {hasParent && (
-                                        <span className="text-[10px] text-muted-foreground font-sans select-none opacity-70">
-                                          {isLevel2 ? '└── ' : '└─ '}
-                                        </span>
-                                      )}
-                                      <span>{token.value}</span>
-                                    </span>
-                                  ) : (
-                                    <>
-                                      <span>{token.label}</span>
-                                      <span className="text-[10px] font-mono opacity-60 ml-0.5">
-                                        {token.value}
-                                      </span>
-                                    </>
-                                  )}
-                                </button>
-                              )
-                            })}
+                                  })
+                                : token.parentName
+                                ? t('所属「{parent}」维度: {desc}', { parent: token.parentName, desc: token.desc })
+                                : token.desc
+                            }
+                            onClick={() => handleInsertToken(token.value)}
+                            className={cn(
+                              'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border transition-all duration-150',
+                              'hover:-translate-y-0.5 hover:shadow-2xs active:scale-95 cursor-pointer',
+                              token.pillClass || 'bg-muted/30 hover:bg-primary/15 border-border/40 text-foreground',
+                              isInTemplate && 'opacity-40 hover:opacity-75 bg-muted/20 border-dashed saturate-50 ring-1 ring-primary/20'
+                            )}
+                          >
+                            {isSelfNamed ? (
+                              <span className="font-mono">{token.value}</span>
+                            ) : (
+                              <>
+                                <span>{token.label}</span>
+                                <span className="text-[10px] font-mono opacity-60 ml-0.5">
+                                  {token.value}
+                                </span>
+                              </>
+                            )}
+                          </button>
+                        )
+                      }
+
+                      return visibleCategories.map((cat, catIdx) => {
+                        // ─── 维度体系：专用的原生维度树状层级导轨渲染 ───────────────
+                        if (cat.tree && cat.tree.length > 0) {
+                          const searchLower = tokenSearch.trim().toLowerCase()
+                          const filterNode = (node: DimensionTreeNode): DimensionTreeNode | null => {
+                            const isSelfMatch =
+                              !searchLower ||
+                              node.token.label.toLowerCase().includes(searchLower) ||
+                              node.token.value.toLowerCase().includes(searchLower) ||
+                              (node.token.parentName && node.token.parentName.toLowerCase().includes(searchLower))
+
+                            const matchedChildren = (!searchLower || isSelfMatch)
+                              ? (node.children || [])
+                              : (node.children || [])
+                                  .map(child => filterNode(child))
+                                  .filter(Boolean) as DimensionTreeNode[]
+
+                            if (!searchLower || isSelfMatch || matchedChildren.length > 0) {
+                              return {
+                                ...node,
+                                children: matchedChildren
+                              }
+                            }
+                            return null
+                          }
+
+                          const visibleRoots = cat.tree
+                            .map(rootNode => filterNode(rootNode))
+                            .filter(Boolean) as DimensionTreeNode[]
+
+                          return (
+                            <div key={catIdx} className="space-y-3">
+                              <div className="flex items-center justify-between">
+                                <span className={cn('px-2 py-0.5 rounded text-[10px] font-bold border', cat.badgeColor)}>
+                                  {cat.category}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground/70 font-mono">
+                                  {t('{count} 个可用', { count: cat.tokens.length })}
+                                </span>
+                              </div>
+
+                              <div className="space-y-3">
+                                {visibleRoots.map(root => (
+                                  <div
+                                    key={root.id}
+                                    className="rounded-lg border border-border/50 bg-muted/15 p-3 space-y-2.5 transition-all shadow-2xs"
+                                  >
+                                    {/* 顶层根节点：根维度本身即树根，无需多余 title 与 '根维度:' 文本 */}
+                                    <div className="flex items-center gap-1.5 pb-1.5 border-b border-border/40">
+                                      <MaterialIcon icon="category" className="text-emerald-500 text-sm shrink-0" />
+                                      {renderTokenButton(root.token, `root-${root.id}`)}
+                                    </div>
+
+                                    {/* 主树干导轨 */}
+                                    {root.children && root.children.length > 0 && (
+                                      <div className="pl-3.5 ml-1 border-l-2 border-emerald-500/30 space-y-3">
+                                        {root.children.map((child, cIdx) => (
+                                          <div key={child.id} className="space-y-1.5">
+                                            {/* 二级节点 */}
+                                            <div className="flex items-center gap-1.5 flex-wrap">
+                                              <span className="text-[11px] text-emerald-600/70 dark:text-emerald-400/70 font-mono select-none">
+                                                ├─
+                                              </span>
+                                              {renderTokenButton(child.token, `child-${child.id}-${cIdx}`)}
+                                            </div>
+
+                                            {/* 三级细分叶子节点（在二级节点下方，次级虚线导轨缩进） */}
+                                            {child.children && child.children.length > 0 && (
+                                              <div className="pl-4 ml-3 border-l border-dashed border-emerald-500/30 flex flex-wrap gap-2 py-0.5">
+                                                {child.children.map((grandChild, gIdx) => (
+                                                  <div key={grandChild.id} className="flex items-center gap-1">
+                                                    <span className="text-[10px] text-emerald-600/50 dark:text-emerald-400/50 font-mono select-none">
+                                                      └─
+                                                    </span>
+                                                    {renderTokenButton(grandChild.token, `sub-${child.id}-${gIdx}`)}
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            )}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )
+                        }
+
+                        // ─── 其他分类（核心、时间、元数据、序号）：标准网格/胶囊流 ───────
+                        return (
+                          <div key={catIdx} className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className={cn('px-2 py-0.5 rounded text-[10px] font-bold border', cat.badgeColor)}>
+                                {cat.category}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground/70 font-mono">
+                                {t('{count} 个可用', { count: cat.tokens.length })}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {cat.tokens.map((token, tIdx) =>
+                                renderTokenButton(token, `cat-${catIdx}-${tIdx}`)
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))
+                        )
+                      })
                     })()}
                   </div>
                 </div>

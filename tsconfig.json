@@ -12,6 +12,7 @@
     "jsx": "react-jsx",
     "declaration": true,
     "declarationMap": true,
+    "noEmit": true,
     "composite": false,
     "strict": true,
     "forceConsistentCasingInFileNames": true,

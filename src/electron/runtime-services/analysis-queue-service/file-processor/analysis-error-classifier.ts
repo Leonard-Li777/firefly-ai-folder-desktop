@@ -59,13 +59,41 @@ export function isTimeoutError(err: unknown): boolean {
   )
 }
 
+/** 是否为基础设施未就绪等瞬态错误（不可静默降级为完成，必须等待就绪或重试） */
+export function isTransientInfraError(err: unknown): boolean {
+  if (!err) return false
+  if (typeof err === 'object') {
+    const e = err as { status?: number; statusCode?: number; code?: string; message?: string }
+    if (
+      e.status === 503 ||
+      e.statusCode === 503 ||
+      e.code === 'ECONNREFUSED' ||
+      e.code === 'ECONNRESET'
+    ) {
+      return true
+    }
+  }
+  const msg = err instanceof Error ? err.message : String(err)
+  return (
+    msg.includes('503') ||
+    msg.includes('AI engine is starting') ||
+    msg.includes('AI 服务未就绪') ||
+    msg.includes('AI服务未就绪') ||
+    msg.includes('ECONNREFUSED') ||
+    msg.includes('服务器未运行') ||
+    msg.includes('服务尚未初始化')
+  )
+}
+
 /** 分析错误分类结果 */
 export interface AnalysisErrorClassification {
   /** 是否超时（TimeoutError / ETIMEDOUT 标记） */
   isTimeout: boolean
+  /** 是否为基础设施未就绪等瞬态错误 */
+  isTransient: boolean
   /** 来源阶段（未打标为 undefined） */
   errorPhase: AnalysisErrorPhase | undefined
-  /** 是否允许 Tier 1 命名兜底静默降级 —— 仅推理阶段（inference）失败允许 */
+  /** 是否允许 Tier 1 命名兜底静默降级 —— 仅非瞬态错误且处于推理阶段（inference）失败才允许 */
   allowTier1Fallback: boolean
 }
 
@@ -74,9 +102,15 @@ export interface AnalysisErrorClassification {
  */
 export function classifyAnalysisError(err: unknown): AnalysisErrorClassification {
   const errorPhase = getErrorPhase(err)
+  const isTimeout = isTimeoutError(err)
+  const isTransient = isTransientInfraError(err)
   return {
-    isTimeout: isTimeoutError(err),
+    isTimeout,
+    isTransient,
     errorPhase,
-    allowTier1Fallback: errorPhase === 'inference'
+    // 关键底线：瞬态基础设施未就绪（如 503/启动中/网络拒绝等）绝对禁止静默降级为 Stage 2 完成，
+    // 只有真正的模型推理语义失败才可由 Tier 1 兜底
+    allowTier1Fallback: errorPhase === 'inference' && !isTransient
   }
 }
+

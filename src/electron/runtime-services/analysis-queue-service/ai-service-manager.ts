@@ -3,6 +3,7 @@ import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
 import { isAiStageEnabled } from '@app/electron/config/analysis-mode'
 import { LogCategory, logger, isTestEnvironment, shouldSkipAIServiceInTest } from '@firefly/shared'
 import { t } from '@app/languages'
+import { engineBridgeService } from '../engine-bridge'
 
 /**
  * AI 服务状态管理器
@@ -66,13 +67,30 @@ export class AIServiceManager {
       return true
     }
 
+    // 检查底层本地引擎桥接状态：若底层正在启动中（如正在加载模型），绝不能视为已就绪
+    const engineSnap = engineBridgeService?.getSnapshot?.()
+    const isEngineStarting = engineSnap && engineSnap.available && engineSnap.raw?.status === 'starting'
+    if (isEngineStarting) {
+      logger.info(
+        LogCategory.ANALYSIS_QUEUE,
+        '[分析队列] 底层 AI 引擎正在加载模型 (status: starting)，等待就绪...'
+      )
+      this.lastHealthCheckOkTime = 0
+      const modeRes = await engineBridgeService?.ensureMode?.('language')
+      if (modeRes && modeRes.ok) {
+        this.lastHealthCheckOkTime = Date.now()
+        return true
+      }
+    }
+
     let status = aiService.getServiceStatus()
 
     if (status === AIServiceStatus.IDLE || status === AIServiceStatus.PROCESSING) {
-      // 【性能优化】如果上次深度健康检查在缓存有效期内，直接返回成功
+      // 【性能优化】如果上次深度健康检查在缓存有效期内且引擎未处于启动中，直接返回成功
       // 避免处理大量文件时每个文件前都发一次 HTTP 健康检查
       const now = Date.now()
       if (
+        !isEngineStarting &&
         this.lastHealthCheckOkTime > 0 &&
         now - this.lastHealthCheckOkTime < AIServiceManager.HEALTH_CHECK_CACHE_TTL
       ) {
@@ -152,6 +170,13 @@ export class AIServiceManager {
       if (!this.isRunning()) {
         this.notifyFrontend('info', t('分析已暂停'), false, 'waiting-for-ai', 3000)
         return false
+      }
+
+      // 若底层引擎仍在 starting 中，继续等待
+      const snap = engineBridgeService?.getSnapshot?.()
+      if (snap && snap.available && snap.raw?.status === 'starting') {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        continue
       }
 
       status = aiService.getServiceStatus()

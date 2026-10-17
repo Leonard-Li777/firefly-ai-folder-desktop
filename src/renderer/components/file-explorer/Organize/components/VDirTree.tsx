@@ -108,6 +108,31 @@ export function VDirTree({
   // ─── 内部受控的展开节点 State ──────────────────────────────────────────────────
   const [internalExpandedKeys, setInternalExpandedKeys] = useState<Set<string>>(new Set())
 
+  // 递归收集所有目录的 Key，用于全局一键展开/折叠
+  const getAllDirKeys = React.useCallback((list: any[], parentKey = ''): Set<string> => {
+    const keys = new Set<string>()
+    const walk = (nodes: any[], pKey = '') => {
+      for (const n of nodes || []) {
+        if (!n || n.isFile || n.isAddingPlaceholder) continue
+        const curKey = dirKey(n)
+        keys.add(curKey)
+        if (n.subdirectories && n.subdirectories.length > 0) {
+          walk(n.subdirectories, curKey)
+        }
+      }
+    }
+    walk(list, parentKey)
+    return keys
+  }, [])
+
+  // 当 nodes 变更且为 expand-all 模式时，自动初始化展开所有层级，确保文件立刻可见
+  useEffect(() => {
+    if (nodes && nodes.length > 0 && expandMode === 'expand-all') {
+      const allKeys = getAllDirKeys(nodes)
+      setInternalExpandedKeys(allKeys)
+    }
+  }, [nodes, expandMode, getAllDirKeys])
+
   // 触发行内新增子目录时自动展开父节点及祖先链
   const handleStartAdd = (node: any, parentKey: string) => {
     if (node && isUnclassifiedNode(node)) return
@@ -193,26 +218,41 @@ export function VDirTree({
 
   return (
     <div className="h-full flex flex-col relative select-none">
-      {((allowEdit && onAddSubdir) || extraHeaderAction) && (
-        <div className="p-2 border-b border-border/40 flex items-center justify-between gap-2 bg-muted/20 shrink-0">
-          {allowEdit && onAddSubdir ? (
+      <div className="p-2 border-b border-border/40 flex items-center justify-between gap-2 bg-muted/20 shrink-0">
+        {allowEdit && onAddSubdir ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleStartAdd(null, '')}
+            className="h-6 text-[11px] gap-1 text-primary hover:text-primary hover:bg-primary/10 px-2 rounded-md font-bold shrink-0"
+          >
+            <Plus className="w-3 h-3" />
+            {t('新建根目录')}
+          </Button>
+        ) : (
+          <div />
+        )}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {nodes && nodes.length > 0 && (
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => handleStartAdd(null, '')}
-              className="h-6 text-[11px] gap-1 text-primary hover:text-primary hover:bg-primary/10 px-2 rounded-md font-bold shrink-0"
+              onClick={() => {
+                if (internalExpandedKeys.size > 0) {
+                  setInternalExpandedKeys(new Set())
+                } else {
+                  setInternalExpandedKeys(getAllDirKeys(nodes))
+                }
+              }}
+              className="h-6 text-[11px] text-muted-foreground hover:text-foreground px-2 rounded-md font-medium"
+              title={internalExpandedKeys.size > 0 ? t('全部折叠') : t('全部展开')}
             >
-              <Plus className="w-3 h-3" />
-              {t('新建根目录')}
+              {internalExpandedKeys.size > 0 ? t('全部折叠') : t('全部展开')}
             </Button>
-          ) : (
-            <div />
           )}
-          {extraHeaderAction && (
-            <div className="flex items-center shrink-0">{extraHeaderAction}</div>
-          )}
+          {extraHeaderAction}
         </div>
-      )}
+      </div>
 
       <div className="flex-1 overflow-auto p-1">
         <TreeView<any>

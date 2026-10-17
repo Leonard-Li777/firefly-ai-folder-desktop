@@ -8,7 +8,8 @@ import {
   isTestEnvironment,
   ResourceLocator,
   updateRuntimeFileConstants,
-  CONTROLLED_DIMENSION_ROOT_CODES
+  CONTROLLED_DIMENSION_ROOT_CODES,
+  getCanonicalConceptName
 } from '@firefly/shared'
 import { createSupabaseClient } from '../system/supabase-client-factory'
 import { WORKSPACE_CONSTANTS } from '@firefly/server'
@@ -664,8 +665,16 @@ export class ConfigDbManager {
       const codeTagsMap = new Map<string, string[]>()
       if (Array.isArray(identityData.tags)) {
         for (const t of identityData.tags) {
-          const tagDisplay =
-            aliasMap.get(t.code) || t.aliases?.[language] || t.aliases?.['zh-CN'] || t.en || t.code
+          const isZh = language.toLowerCase().startsWith('zh')
+          const canonical = isZh ? getCanonicalConceptName(t.code) : undefined
+          const identityAlias = t.aliases?.[language] || t.aliases?.['zh-CN'] || t.en
+          const dbAlias = aliasMap.get(t.code)
+          // 若 dbAlias 为单字且 identityAlias 存在且长度大于 1（例如 '内' vs '内部', '共' vs '公开'），严禁被单字污染覆盖
+          const safeDbAlias =
+            dbAlias && isZh && dbAlias.length === 1 && identityAlias && identityAlias.length > 1
+              ? undefined
+              : dbAlias
+          const tagDisplay = canonical || safeDbAlias || identityAlias || t.code
           if (t.dimId !== undefined) {
             const list = dimTagsMap.get(t.dimId) || []
             list.push(tagDisplay)
