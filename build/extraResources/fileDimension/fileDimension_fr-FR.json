@@ -129,7 +129,7 @@
         "flag": {
           "isPanDimension": true,
           "isRequiresAI": true,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -244,7 +244,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -298,7 +298,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -454,7 +454,7 @@
         "flag": {
           "isRuleSubdivision": true,
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -720,7 +720,7 @@
         "flag": {
           "isRuleSubdivision": true,
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -756,7 +756,7 @@
         "flag": {
           "isRuleSubdivision": true,
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -790,7 +790,7 @@
         "flag": {
           "isRuleSubdivision": true,
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -829,7 +829,7 @@
           "isRuleSubdivision": true,
           "isPanDimension": true,
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -906,7 +906,7 @@
         "flag": {
           "isRuleSubdivision": true,
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -942,7 +942,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -1078,7 +1078,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -1202,7 +1202,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -1351,7 +1351,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -1491,7 +1491,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -1620,7 +1620,7 @@
         "flag": {
           "isRuleSubdivision": true,
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -1829,7 +1829,7 @@
         "flag": {
           "isRuleSubdivision": true,
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -2544,7 +2544,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -2590,7 +2590,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -2958,7 +2958,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -3003,7 +3003,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -3087,7 +3087,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -3197,7 +3197,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -3239,7 +3239,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -3280,7 +3280,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -3323,7 +3323,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -3368,7 +3368,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -3434,7 +3434,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -3659,7 +3659,7 @@
           "isPanDimension": false,
           "isMicroService": true,
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -3860,7 +3860,7 @@
         "Encre aquarelle",
         "Dessin à la main style Ghibli",
         "Lumière et ombre style Makoto Shinkai",
-        "Rendu pixar",
+        "Rendu Pixar",
         "Dessin à la main style Disney",
         "Néon cyber",
         "Low poly",
@@ -3892,7 +3892,7 @@
         "Néon peint à la main",
         "Bioluminescence",
         "CRT rétro",
-        "Cyber Minimaliste",
+        "Cyber minimaliste",
         "Aquarelle en empâtement",
         "Organique mécanique",
         "Flou de mouvement",
@@ -3929,7 +3929,7 @@
       ],
       "metadata": {
         "flag": {
-          "isPanDimension": true,
+          "isPanDimension": false,
           "isMicroService": true,
           "isRequiresAI": false,
           "isMultiSelect": true
@@ -4067,7 +4067,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -4108,7 +4108,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -4151,7 +4151,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -4195,7 +4195,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -4233,7 +4233,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -4275,7 +4275,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -4316,7 +4316,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -4357,7 +4357,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -4401,7 +4401,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -4443,7 +4443,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -4481,7 +4481,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
@@ -4518,7 +4518,7 @@
       "metadata": {
         "flag": {
           "isRequiresAI": false,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },
