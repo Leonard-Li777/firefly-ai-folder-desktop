@@ -21,7 +21,8 @@ import {
   CANONICAL_NAMES,
   DIMENSION_CODES,
   concept,
-  CONTROLLED_SUBDIMENSION_PARENTS_GENERATED
+  resolveSubdimensionRoot,
+  getParentDimensionCodeOfTag
 } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { ConfigDbManager } from '../../config/config-db-manager'
@@ -65,8 +66,8 @@ type HybridPageRef =
  * 2. 高效下推文件与复合标签的筛选计算，杜绝在 Node.js 内存中递归拼装扩展名映射；
  * 3. 彻底消除魔法数字区间（102..117），全量依托 file_tags_private 树与 file_tag_relations 自然主键关联。
  */
-/** builtin.content_tags: parent_codes 为空数组的标签的逻辑父级 code */
-const CONTENT_TAGS_CODE = 'builtin.content_tags'
+/** 内容标签 parent_codes 为空数组的标签的逻辑父级 code */
+const CONTENT_TAGS_CODE = concept('内容标签')
 /** builtin.content_tags 恒定垫底序值（与 omni fast path / 回退路径 / 前端比较层的 9999 特例口径统一） */
 const CONTENT_TAGS_TAIL_ORDER = 9999
 const escapeLike = (s: string) => s.replace(/([%_\\])/g, '\\$1')
@@ -83,64 +84,6 @@ const ROOT_DIMENSION_META: Record<string, { id: number; name: string }> = {
 }
 
 const ROOT_DIMENSION_CODES = new Set<string>(Object.keys(ROOT_DIMENSION_META))
-
-const WELL_KNOWN_PARENT_TO_ROOT: Record<string, string> = {
-  'builtin.file_type': 'builtin.file_type',
-  'builtin.file_purpose': 'builtin.file_purpose',
-  'builtin.file_source': 'builtin.file_source',
-  [concept('作者')]: concept('作者'),
-  'builtin.language_segmentation': 'builtin.file_type',
-  'builtin.security_level': 'builtin.file_purpose',
-  'builtin.processing_status': 'builtin.file_purpose',
-  'builtin.financial_type': 'builtin.file_purpose',
-  'builtin.document_quality': 'builtin.document_quality',
-  'builtin.content_rating': 'builtin.content_rating',
-  'builtin.image_subdivision': 'builtin.file_type',
-  'builtin.image_segmentation': 'builtin.file_type',
-  'builtin.photo_subdivision': 'builtin.file_type',
-  'builtin.photography_categories': 'builtin.file_type',
-  'builtin.screenshot_breakdown': 'builtin.file_type',
-  'builtin.screenshot_subdivision': 'builtin.file_type',
-  'builtin.manga_subdivision': 'builtin.file_type',
-  'builtin.comic_segmentation': 'builtin.file_type',
-  'builtin.porn_subdivision': 'builtin.content_rating',
-  'builtin.erotic_scale': 'builtin.content_rating',
-  'builtin.sensitive_content': 'builtin.content_rating',
-  'builtin.bloody_segmentation': 'builtin.content_rating',
-  'builtin.political_subcategories': 'builtin.content_rating',
-  'builtin.violation_categories': 'builtin.content_rating',
-  'builtin.pornography_subgenres': 'builtin.content_rating',
-  'builtin.watermark_level': 'builtin.file_type',
-  'builtin.coding_level': 'builtin.file_type',
-  'builtin.mosaic_level': 'builtin.file_type',
-  'builtin.theme': 'builtin.file_type',
-  'builtin.game_platform': 'builtin.file_purpose',
-  'builtin.travel_content': 'builtin.file_purpose'
-}
-
-/**
- * 递归求解任意受控子维度所归属的一级根维度代码（builtin.file_type, builtin.file_purpose 等）
- */
-function resolveSubdimensionRoot(dimCode: string): string | undefined {
-  if (!dimCode) return undefined
-  if (ROOT_DIMENSION_CODES.has(dimCode)) return dimCode
-  if (WELL_KNOWN_PARENT_TO_ROOT[dimCode]) return WELL_KNOWN_PARENT_TO_ROOT[dimCode]
-
-  let cur = dimCode
-  const visited = new Set<string>()
-  while (cur && !visited.has(cur)) {
-    visited.add(cur)
-    if (ROOT_DIMENSION_CODES.has(cur)) return cur
-    if (WELL_KNOWN_PARENT_TO_ROOT[cur]) return WELL_KNOWN_PARENT_TO_ROOT[cur]
-    const mapped = CONTROLLED_SUBDIMENSION_PARENTS_GENERATED[cur]
-    if (mapped?.parentCode) {
-      cur = mapped.parentCode
-    } else {
-      break
-    }
-  }
-  return ROOT_DIMENSION_CODES.has(cur) ? cur : undefined
-}
 
 export class TagTreeQuery {
   private hybridArbiter: HybridSearchArbiter
@@ -891,7 +834,7 @@ export class TagTreeQuery {
           const { databaseService } = await import('@runtime/database/database-service')
           Object.assign(
             aliasMap,
-            databaseService.resolveTagDisplayNames(Array.from(aliasCodes), locale)
+            databaseService.resolveTagDisplayNames(Array.from(aliasCodes), locale, this.db)
           )
         } catch (err) {
           logger.warn(
@@ -904,8 +847,10 @@ export class TagTreeQuery {
       const aliasResolver = (code: string, fallbackName?: string): string => {
         const resolved = aliasMap[code]
         if (resolved && resolved !== code) return resolved
-        const canonical = getCanonicalConceptName(code)
-        if (canonical) return canonical
+        if (code.startsWith('builtin.') || code.startsWith('omw.') || code.startsWith('hownet.')) {
+          const canonical = getCanonicalConceptName(code)
+          if (canonical) return canonical
+        }
         return fallbackName || code
       }
 
@@ -1488,31 +1433,6 @@ export class TagTreeQuery {
           return group
         }
 
-        const WELL_KNOWN_PARENT_TO_ROOT: Record<string, string> = {
-          'builtin.file_type': 'builtin.file_type',
-          'builtin.file_purpose': 'builtin.file_purpose',
-          'builtin.file_source': 'builtin.file_source',
-          [concept('作者')]: concept('作者'),
-          'builtin.language_segmentation': 'builtin.file_type',
-          'builtin.security_level': 'builtin.file_purpose',
-          'builtin.processing_status': 'builtin.file_purpose',
-          'builtin.document_quality': 'builtin.document_quality',
-          'builtin.content_rating': 'builtin.content_rating',
-          'builtin.image_subdivision': 'builtin.file_type',
-          'builtin.image_segmentation': 'builtin.file_type',
-          'builtin.photo_subdivision': 'builtin.file_type',
-          'builtin.photography_categories': 'builtin.file_type',
-          'builtin.screenshot_breakdown': 'builtin.file_type',
-          'builtin.screenshot_subdivision': 'builtin.file_type',
-          'builtin.manga_subdivision': 'builtin.file_type',
-          'builtin.comic_segmentation': 'builtin.file_type',
-          'builtin.porn_subdivision': 'builtin.file_type',
-          'builtin.erotic_scale': 'builtin.file_type',
-          'builtin.watermark_level': 'builtin.file_type',
-          'builtin.mosaic_level': 'builtin.file_type',
-          'builtin.theme': 'builtin.file_type'
-        }
-
         // 祖先追溯辅助：向上递归寻找第一个属于受控/本地已知维度的祖先与对应组
         const traceAncestorGroup = (
           parents: string[],
@@ -1539,7 +1459,7 @@ export class TagTreeQuery {
             }
 
             // 命中已知受控细分映射
-            const mappedRoot = WELL_KNOWN_PARENT_TO_ROOT[p]
+            const mappedRoot = resolveSubdimensionRoot(p)
             if (mappedRoot) {
               const group =
                 finalGroups.find(g => g.code === mappedRoot) || ensureRootDimensionGroup(mappedRoot)
@@ -1699,23 +1619,61 @@ export class TagTreeQuery {
           pathChains: Array<{ code_path: string; name_path: string }>
         }
 
+        // 收集所有已知预置维度代码，严禁已知非内容标签维度的标签被误作为内容标签候选
+        const knownPresetCodesSet = new Set<string>()
+        if (allAuthorityDims) {
+          for (const ad of allAuthorityDims) {
+            if (ad.code === CONTENT_TAGS_CODE) continue
+            if (ad.code) knownPresetCodesSet.add(ad.code)
+          }
+        }
+
         const contentCandidates: ContentCandidate[] = []
         for (const t of tagRows) {
           if (assignedCodes.has(t.code)) continue
-          const resolvedName = aliasResolver(t.code, t.name)
-          const selfFiles = tagFilesMap.get(t.code) || new Set<string>()
-          const count = selfFiles.size > 0 ? selfFiles.size : tagCountMap.get(t.code) || 0
-          if (removeEmptyTags && !includeAllPresetTags && count === 0) continue
+
+          // 核心门禁 1：反查受控标签所属父维度，凡属于已知非内容标签受控维度的标签，严禁作为内容标签候选
+          const directParentDim = getParentDimensionCodeOfTag(t.code)
+          if (directParentDim && directParentDim !== CONTENT_TAGS_CODE) {
+            continue
+          }
+
+          // 核心门禁 2：若 tag code 本身是已知受控维度或根维度（非内容标签），严禁作为内容标签候选
+          if (
+            (ROOT_DIMENSION_CODES.has(t.code) && t.code !== CONTENT_TAGS_CODE) ||
+            knownPresetCodesSet.has(t.code) ||
+            (Boolean(resolveSubdimensionRoot(t.code)) && resolveSubdimensionRoot(t.code) !== CONTENT_TAGS_CODE)
+          ) {
+            continue
+          }
 
           let parents: string[] = []
           try {
             parents = JSON.parse(t.parent_codes || '[]')
           } catch {}
+
+          // 核心门禁 3：如果 parents 明确指向非内容标签的已知维度，严禁作为内容标签候选
+          const hasKnownNonContentParent = parents.some(
+            p =>
+              p &&
+              p !== CONTENT_TAGS_CODE &&
+              (knownPresetCodesSet.has(p) ||
+                ROOT_DIMENSION_CODES.has(p) ||
+                Boolean(resolveSubdimensionRoot(p)))
+          )
+          if (hasKnownNonContentParent) {
+            continue
+          }
+
+          const selfFiles = tagFilesMap.get(t.code) || new Set<string>()
+          const count = selfFiles.size > 0 ? selfFiles.size : tagCountMap.get(t.code) || 0
+          if (removeEmptyTags && !includeAllPresetTags && count === 0) continue
+
           const mPaths = [...(tagChainsMap.get(t.code) || [])]
 
           contentCandidates.push({
             code: t.code,
-            name: resolvedName,
+            name: aliasResolver(t.code, t.name),
             files: new Set(selfFiles),
             parents,
             pathChains: mPaths
@@ -1789,7 +1747,6 @@ export class TagTreeQuery {
                   if (!matchedRootCode) {
                     // 若首段为受控子维度（如摄影照片细分、图片细分、文字密度等），溯源其一级受控根维度
                     const mappedRoot =
-                      WELL_KNOWN_PARENT_TO_ROOT[firstSeg] ||
                       resolveSubdimensionRoot(firstSeg) ||
                       omniCodeToRootCodeMap.get(firstSeg)
                     if (mappedRoot && ROOT_DIMENSION_CODES.has(mappedRoot)) {
@@ -1853,12 +1810,16 @@ export class TagTreeQuery {
             }
           }
 
-          // 2. 次优：存在父节点声明时，挂载在父节点下
+          // 2. 次优：存在父节点声明时，挂载在对应父维度下
           if (!assigned && cand.parents.length > 0) {
             const pCode = cand.parents[0]
             if (pCode && pCode !== cand.code) {
-              if (ROOT_DIMENSION_CODES.has(pCode) && pCode !== CONTENT_TAGS_CODE) {
-                const rootGroup = ensureRootDimensionGroup(pCode)
+              const rootDimCode =
+                resolveSubdimensionRoot(pCode) ||
+                (ROOT_DIMENSION_CODES.has(pCode) ? pCode : undefined)
+
+              if (rootDimCode && rootDimCode !== CONTENT_TAGS_CODE) {
+                const rootGroup = ensureRootDimensionGroup(rootDimCode)
                 if (rootGroup) {
                   let existingTag = rootGroup.tags.find(
                     t => t.code === cand.code || t.tagValue === cand.name
@@ -1870,10 +1831,10 @@ export class TagTreeQuery {
                       dimensionName: rootGroup.name,
                       tagValue: cand.name,
                       fileCount: cand.files.size,
-                      level: 1,
+                      level: pCode === rootDimCode ? 1 : 2,
                       code: cand.code,
-                      codePath: `/${rootGroup.code}/${cand.code}`,
-                      namePath: `/${rootGroup.name}/${cand.name}`,
+                      codePath: `/${rootGroup.code}/${pCode}/${cand.code}`,
+                      namePath: `/${rootGroup.name}/${aliasResolver(pCode, pCode)}/${cand.name}`,
                       viaParentCode: pCode,
                       isMultiSelect: false,
                       order: 9999
@@ -2238,24 +2199,23 @@ export class TagTreeQuery {
         return orderA - orderB
       })
       // 判断是否属于敏感内容层级（敏感内容及下属所有细分、色情分级、内容分级等）
+      const CODE_SENSITIVE = concept('敏感内容')
+      const CODE_EROTIC = concept('色情分级')
+      const CODE_CONTENT_RATING = concept('内容分级')
       const isSensitiveDimension = (g: any): boolean => {
         const code = g.code || ''
         const id = Number(g.id)
-        const name = g.name || ''
         if (
-          code === 'builtin.sensitive_content' ||
-          code === 'builtin.erotic_scale' ||
-          code === 'builtin.content_rating' ||
-          id === 130 || id === 123 || id === 162 ||
-          name.includes('敏感内容') ||
-          name.includes('色情分级') ||
-          name.includes('内容分级')
+          code === CODE_SENSITIVE ||
+          code === CODE_EROTIC ||
+          code === CODE_CONTENT_RATING ||
+          (code && (resolveSubdimensionRoot(code) === CODE_CONTENT_RATING || resolveSubdimensionRoot(code) === CODE_SENSITIVE))
         ) {
           return true
         }
+        if (id === 130 || id === 123 || id === 162) return true
         if (id >= 131 && id <= 134) return true
         if (id >= 150 && id <= 161) return true
-        if (code && resolveSubdimensionRoot(code) === 'builtin.sensitive_content') return true
         return false
       }
 

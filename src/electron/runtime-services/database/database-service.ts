@@ -1958,7 +1958,11 @@ export class DatabaseService {
     return this.currentLanguage
   }
 
-  public resolveTagDisplayNames(tagCodes: string[], locale?: string): Record<string, string> {
+  public resolveTagDisplayNames(
+    tagCodes: string[],
+    locale?: string,
+    dbInstance?: Database.Database
+  ): Record<string, string> {
     const result: Record<string, string> = {}
     if (!tagCodes || tagCodes.length === 0) return result
     for (const code of tagCodes) {
@@ -1969,51 +1973,64 @@ export class DatabaseService {
     if (distinctCodes.length === 0) return result
 
     try {
+      const activeDb = dbInstance || this._db
       const targetLocale = locale || this.currentLanguage || 'zh-CN'
       const langTable = resolveTagAliasesLangTable(targetLocale)
       const isZh = targetLocale.toLowerCase().startsWith('zh')
 
-      // 0) 中文环境下优先 AOT 受控权威词条
+      // 0) 中文环境下优先 AOT 受控权威词条（仅针对受控代码：omw.*, hownet.*, builtin.*）
       if (isZh) {
         for (const code of distinctCodes) {
-          const canonical = getCanonicalConceptName(code)
-          if (canonical) {
-            result[code] = canonical
+          if (code.startsWith('builtin.') || code.startsWith('omw.') || code.startsWith('hownet.')) {
+            const canonical = getCanonicalConceptName(code)
+            if (canonical) {
+              result[code] = canonical
+            }
           }
         }
       }
 
       // 1) 受控 + 动态标签统一查当前语言分表（替换内存总线优先）
-      if (this._db && distinctCodes.length > 0) {
-        const aliasPlaceholders = distinctCodes.map(() => '?').join(',')
-        // 优先规范名（is_canonical=1），其次首个词形
-        const aliasRows = this._db
-          .prepare(
-            `SELECT tag_code, lemma FROM ${langTable}
-             WHERE tag_code IN (${aliasPlaceholders})
-             ORDER BY is_canonical DESC`
-          )
-          .all(...distinctCodes) as { tag_code: string; lemma: string }[]
-        for (const r of aliasRows) {
-          if (r.lemma && result[r.tag_code] === r.tag_code) {
-            result[r.tag_code] = r.lemma
+      if (activeDb && distinctCodes.length > 0) {
+        try {
+          const aliasPlaceholders = distinctCodes.map(() => '?').join(',')
+          // 优先规范名（is_canonical=1），其次首个词形
+          const aliasRows = activeDb
+            .prepare(
+              `SELECT tag_code, lemma FROM ${langTable}
+               WHERE tag_code IN (${aliasPlaceholders})
+               ORDER BY is_canonical DESC`
+            )
+            .all(...distinctCodes) as { tag_code: string; lemma: string }[]
+          for (const r of aliasRows) {
+            if (r.lemma && result[r.tag_code] === r.tag_code) {
+              result[r.tag_code] = r.lemma
+            }
           }
+        } catch {
+          // 若当前分表在 mock DB 中不存在，平滑降级到 private 表或原名
         }
       }
 
       // 2) 未命中分表时，以本地 file_tags_private.name（默认名）兜底
       const stillMissing = distinctCodes.filter(c => result[c] === c)
-      if (this._db && stillMissing.length > 0) {
-        const tagPlaceholders = stillMissing.map(() => '?').join(',')
-        const tagRows = this._db
-          .prepare(`SELECT code, name FROM file_tags_private WHERE code IN (${tagPlaceholders})`)
-          .all(...stillMissing) as { code: string; name: string }[]
-        for (const row of tagRows) {
-          if (row.name) {
-            const canonical = isZh ? getCanonicalConceptName(row.code) : undefined
-            result[row.code] = canonical || row.name
+      if (activeDb && stillMissing.length > 0) {
+        try {
+          const tagPlaceholders = stillMissing.map(() => '?').join(',')
+          const tagRows = activeDb
+            .prepare(`SELECT code, name FROM file_tags_private WHERE code IN (${tagPlaceholders})`)
+            .all(...stillMissing) as { code: string; name: string }[]
+          for (const row of tagRows) {
+            if (row.name) {
+              const isControlled =
+                row.code.startsWith('builtin.') ||
+                row.code.startsWith('omw.') ||
+                row.code.startsWith('hownet.')
+              const canonical = isZh && isControlled ? getCanonicalConceptName(row.code) : undefined
+              result[row.code] = canonical || row.name
+            }
           }
-        }
+        } catch {}
       }
 
       // 3) 仍未命中的受控标签，优先 AOT 概念字典兜底，再提取可读 slug
