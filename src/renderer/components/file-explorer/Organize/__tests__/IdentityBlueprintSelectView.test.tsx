@@ -7,9 +7,8 @@ import {
   RecommendedStructureItem
 } from '../components/IdentityBlueprintSelectView'
 
-// Mock 语言包
-vi.mock('@app/languages', () => ({
-  t: (key: string, params?: any) => {
+const { mockT } = vi.hoisted(() => {
+  const tFn = (key: string, params?: any) => {
     if (params && typeof params === 'object') {
       let res = key
       for (const k in params) {
@@ -18,11 +17,21 @@ vi.mock('@app/languages', () => ({
       return res
     }
     return key
-  },
+  }
+  return { mockT: tFn }
+})
+
+// Mock 语言包
+vi.mock('@app/languages', () => ({
+  t: mockT,
   $t: (key: string) => key,
   Translate: ({ children }: any) => children,
-  i18nScope: { t: (s: string) => s, activeLanguage: 'zh-CN', defaultLanguage: 'zh-CN' },
-  default: { t: (s: string) => s, activeLanguage: 'zh-CN', defaultLanguage: 'zh-CN' }
+  i18nScope: { t: mockT, activeLanguage: 'zh-CN', defaultLanguage: 'zh-CN' },
+  default: { t: mockT, activeLanguage: 'zh-CN', defaultLanguage: 'zh-CN' }
+}))
+
+vi.mock('@voerkai18n/react', () => ({
+  useVoerkaI18n: () => ({ activeLanguage: 'zh-CN', t: mockT })
 }))
 
 describe('IdentityBlueprintSelectView Component', () => {
@@ -40,7 +49,8 @@ describe('IdentityBlueprintSelectView Component', () => {
       score: 0.92,
       breadcrumbs: ['创意与媒体', '视觉设计', 'UI设计师'],
       taskTags: ['原型', '组件库', '设计规范'],
-      associatedTemplateIds: ['tpl_ui_design']
+      associatedTemplateIds: ['tpl_ui_design'],
+      aliases: ['界面设计', 'GUI设计师']
     },
     {
       identityId: 'accountant',
@@ -51,7 +61,8 @@ describe('IdentityBlueprintSelectView Component', () => {
       score: 0.81,
       breadcrumbs: ['商业与金融', '财务审计', '财务会计'],
       taskTags: ['发票', '凭证', '报表'],
-      associatedTemplateIds: ['tpl_finance_accounting']
+      associatedTemplateIds: ['tpl_finance_accounting'],
+      aliases: ['出纳', '财务专员']
     }
   ]
 
@@ -261,6 +272,30 @@ describe('IdentityBlueprintSelectView Component', () => {
     fireEvent.change(searchInput, { target: { value: '不存在的奇异外星人角色' } })
     await waitFor(() => {
       expect(screen.getByText(/未找到匹配“不存在的奇异外星人角色”的身份/i)).toBeInTheDocument()
+    })
+  })
+
+  it('用户输入身份别名时也应精准命中该身份并自动展开', async () => {
+    render(
+      <IdentityBlueprintSelectView
+        workspaceId={1}
+        workspaceDirectoryPath="/test/workspace"
+        onSelectStructure={mockSelectStructure}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('UI设计师')).toBeInTheDocument()
+    })
+
+    const searchInput = screen.getByPlaceholderText(/搜索身份或输入诉求/i)
+    // 输入别名“出纳”（属于财务会计）
+    fireEvent.change(searchInput, { target: { value: '出纳' } })
+
+    await waitFor(() => {
+      expect(screen.getByText('财务会计')).toBeInTheDocument()
+      expect(screen.queryByText('UI设计师')).not.toBeInTheDocument()
+      expect(screen.getByText(/搜索结果 \(1 个身份\)/i)).toBeInTheDocument()
     })
   })
 })

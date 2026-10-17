@@ -4,7 +4,8 @@ import { Button } from '../../../ui/button'
 import { Badge } from '../../../ui/badge'
 import { Input } from '../../../ui/input'
 import { Checkbox } from '../../../ui/checkbox'
-import { t } from '@app/languages'
+import i18nScope, { t } from '@app/languages'
+import { useVoerkaI18n } from '@voerkai18n/react'
 
 export interface RecommendedIdentityItem {
   identityId: string
@@ -16,6 +17,7 @@ export interface RecommendedIdentityItem {
   breadcrumbs: string[]
   taskTags: string[]
   associatedTemplateIds: string[]
+  aliases?: string[]
 }
 
 export interface RecommendedStructureItem {
@@ -49,6 +51,7 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
   onSelectStructure,
   onBack
 }) => {
+  const { t, activeLanguage } = useVoerkaI18n(i18nScope)
   const [prompt, setPrompt] = useState<string>('')
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [recommendedIdentities, setRecommendedIdentities] = useState<RecommendedIdentityItem[]>([])
@@ -68,7 +71,7 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
           workspaceId,
           fileIds: fileIds || [],
           naturalLanguagePrompt: userPrompt.trim(),
-          language: 'zh-CN'
+          language: (activeLanguage as any) || 'zh-CN'
         })
 
         if (res) {
@@ -88,7 +91,7 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
             const allDomains = new Set(idents.map(i => i.domainId))
             setExpandedDomains(allDomains)
             const top1 = idents[0]
-            setExpandedCategories(prev => new Set([...prev, top1.categoryId]))
+            setExpandedCategories(new Set([top1.categoryId]))
           }
         }
       } catch (err) {
@@ -97,7 +100,7 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
         setIsLoading(false)
       }
     },
-    [workspaceId, fileIds]
+    [workspaceId, fileIds, activeLanguage]
   )
 
   // 首启触发初始匹配
@@ -117,7 +120,8 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
       const tagMatch = (item.taskTags || []).some(t => t.toLowerCase().includes(searchKeyword))
       const breadcrumbMatch = (item.breadcrumbs || []).some(b => b.toLowerCase().includes(searchKeyword))
       const idMatch = (item.identityId || '').toLowerCase().includes(searchKeyword)
-      return nameMatch || descMatch || tagMatch || breadcrumbMatch || idMatch
+      const aliasMatch = (item.aliases || []).some(a => a.toLowerCase().includes(searchKeyword))
+      return nameMatch || descMatch || tagMatch || breadcrumbMatch || idMatch || aliasMatch
     })
   }, [searchKeyword, recommendedIdentities])
 
@@ -168,15 +172,24 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
     }))
   }, [filteredIdentities])
 
-  // 搜索态下自动展开所有命中结果所在的领域与分类
+  // 搜索态下自动展开所有命中结果所在的领域与分类，清空时重置为初始状态
   useEffect(() => {
-    if (searchKeyword && filteredIdentities.length > 0) {
-      const matchedDomainIds = new Set(filteredIdentities.map(i => i.domainId))
-      const matchedCatIds = new Set(filteredIdentities.map(i => i.categoryId))
-      setExpandedDomains(prev => new Set([...prev, ...matchedDomainIds]))
-      setExpandedCategories(prev => new Set([...prev, ...matchedCatIds]))
+    if (searchKeyword) {
+      if (filteredIdentities.length > 0) {
+        const matchedDomainIds = new Set(filteredIdentities.map(i => i.domainId))
+        const matchedCatIds = new Set(filteredIdentities.map(i => i.categoryId))
+        setExpandedDomains(matchedDomainIds)
+        setExpandedCategories(matchedCatIds)
+      }
+    } else if (recommendedIdentities.length > 0) {
+      const allDomains = new Set(recommendedIdentities.map(i => i.domainId))
+      setExpandedDomains(allDomains)
+      const top1 = recommendedIdentities[0]
+      if (top1) {
+        setExpandedCategories(new Set([top1.categoryId]))
+      }
     }
-  }, [searchKeyword, filteredIdentities])
+  }, [searchKeyword, filteredIdentities, recommendedIdentities])
 
   // 切换勾选身份
   const handleToggleIdentity = (id: string) => {
