@@ -18,7 +18,8 @@ import {
   resolveRootDimension,
   LEVEL_1_ROOT_CODES,
   CONTROLLED_SUBDIMENSION_PARENTS_GENERATED,
-  CONTROLLED_DIMENSION_ROOT_CODES
+  CONTROLLED_DIMENSION_ROOT_CODES,
+  isControlledConcept
 } from '@firefly/shared'
 import { toast } from '../../../common/Toast'
 import { SplitPane } from '../../../common/SplitPane'
@@ -1611,7 +1612,10 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       const dimId = Number(dimIdStr)
       const group = fullPresetGroups.find(g => g.id === dimId) || dimensionGroups.find(g => g.id === dimId)
       const dimName = group?.name || '内容标签'
-      const dimCode = group?.code
+      const dimCode =
+        group?.code ||
+        CONTROLLED_DIMENSION_ROOT_CODES[dimId] ||
+        (dimName && isControlledConcept(dimName) ? concept(dimName) : undefined)
       const matchedTag = (group?.tags || []).find(t => t.tagValue === tagValue)
       const tagCode = (matchedTag as any)?.tagCode || (matchedTag as any)?.code
 
@@ -1647,7 +1651,10 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
         processedRemoveKeys.add(lowerKey)
         const group = fullPresetGroups.find(g => g.id === dimId) || dimensionGroups.find(g => g.id === dimId)
         const dimName = group?.name || '内容标签'
-        const dimCode = group?.code
+        const dimCode =
+          group?.code ||
+          CONTROLLED_DIMENSION_ROOT_CODES[dimId] ||
+          (dimName && isControlledConcept(dimName) ? concept(dimName) : undefined)
         const matchedTag = (group?.tags || []).find(t => t.tagValue === tagValue)
         const tagCode = (matchedTag as any)?.tagCode || (matchedTag as any)?.code
         removeTags.push({
@@ -1665,7 +1672,10 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       const dimId = Number(dimIdStr)
       const group = fullPresetGroups.find(g => g.id === dimId) || dimensionGroups.find(g => g.id === dimId)
       const dimName = group?.name || '内容标签'
-      const dimCode = group?.code
+      const dimCode =
+        group?.code ||
+        CONTROLLED_DIMENSION_ROOT_CODES[dimId] ||
+        (dimName && isControlledConcept(dimName) ? concept(dimName) : undefined)
       for (const name of names) {
         if (name && name.trim()) {
           newTags.push({

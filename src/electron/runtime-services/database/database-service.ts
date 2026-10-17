@@ -1479,14 +1479,45 @@ export class DatabaseService {
 
             if (tagCode) {
               createdTagMap.set(`${dimCode}:${item.tagName}`, tagCode)
+              // 关键加固：确保该已有标签在 file_tags_private 中的 parent_codes 包含当前所属维度 dimCode
+              try {
+                const existingRow = this._db!.prepare(
+                  'SELECT parent_codes FROM file_tags_private WHERE code = ?'
+                ).get(tagCode) as { parent_codes?: string } | undefined
+                if (existingRow) {
+                  let parents: string[] = []
+                  try {
+                    parents = JSON.parse(existingRow.parent_codes || '[]')
+                  } catch {
+                    parents = []
+                  }
+                  if (!parents.includes(dimCode)) {
+                    parents.push(dimCode)
+                    this._db!.prepare(
+                      'UPDATE file_tags_private SET parent_codes = ? WHERE code = ?'
+                    ).run(JSON.stringify(parents), tagCode)
+                  }
+                }
+              } catch (err) {
+                logger.warn(
+                  LogCategory.DATABASE_SERVICE,
+                  `[batchApplyTags] 追加已有标签 parent_codes 失败 (${tagCode}):`,
+                  err
+                )
+              }
             } else {
               // 按 PRD §4.2 离线确定性编码规范派生合法 code，严禁 `custom:` 冒号前缀
               const code = DeterministicCodeGenerator.generateUnique(item.tagName, this.currentLanguage, {
                 lookupExistingName: DeterministicCodeGenerator.createDbLookup(this._db!)
               })
               this._db!.prepare(
-                `INSERT OR IGNORE INTO file_tags_private (code, name, parent_codes, file_groups, source, meta)
-                 VALUES (?, ?, ?, '[]', 'expanded', ?)`
+                `INSERT INTO file_tags_private (code, name, parent_codes, file_groups, source, meta)
+                 VALUES (?, ?, ?, '[]', 'expanded', ?)
+                 ON CONFLICT(code) DO UPDATE SET
+                   parent_codes = CASE
+                     WHEN instr(parent_codes, excluded.parent_codes) > 0 THEN parent_codes
+                     ELSE json_insert(parent_codes, '$[#]', json_extract(excluded.parent_codes, '$[0]'))
+                   END`
               ).run(
                 code,
                 item.tagName,
