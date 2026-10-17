@@ -169,4 +169,68 @@ describe('IdentityBlueprintSelectView Component', () => {
       identities: []
     })
   })
+
+  it('勾选产品经理身份时，应优先置顶敏捷产品规划模板而非UI/UX设计模板', async () => {
+    const pmIdentities: RecommendedIdentityItem[] = [
+      {
+        identityId: 'id.pm.product',
+        domainId: 'domain_work_it',
+        categoryId: 'cat_product_design',
+        name: '产品经理 (PM)',
+        description: '负责PRD需求文档与功能路线图',
+        score: 0.95,
+        breadcrumbs: ['数字化技术与研发', '产品规划与体验设计', '产品经理 (PM)'],
+        taskTags: ['需求', 'PRD'],
+        associatedTemplateIds: ['tpl_pm_product_workflow']
+      }
+    ]
+
+    const pmStructures: RecommendedStructureItem[] = [
+      {
+        templateId: 'tpl_ui_ux_standard',
+        name: '专业 UI/UX 设计素材库',
+        targetIdentities: ['id.designer.ui'], // 已移除了 id.pm.product
+        paths: ['10-设计规范与组件库'],
+        score: 0.88,
+        rationale: '设计规范'
+      },
+      {
+        templateId: 'tpl_pm_product_workflow',
+        name: '敏捷产品经理与PRD需求规划工作流',
+        targetIdentities: ['id.pm.product'],
+        paths: ['01-战略路线图与商业分析', '03-需求规划与PRD文档'],
+        score: 0.92,
+        rationale: '覆盖产品愿景规划与PRD规格书'
+      }
+    ]
+
+    mockMatchPerspectives.mockResolvedValueOnce({
+      recommendedIdentities: pmIdentities,
+      recommendedStructures: pmStructures
+    })
+
+    render(
+      <IdentityBlueprintSelectView
+        workspaceId={1}
+        workspaceDirectoryPath="/test/workspace"
+        onSelectStructure={mockSelectStructure}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('产品经理 (PM)')).toBeInTheDocument()
+    })
+
+    // 点击复选框勾选“产品经理 (PM)”
+    const pmCheckbox = screen.getByRole('checkbox', { name: /产品经理/i })
+    fireEvent.click(pmCheckbox)
+
+    // 勾选后，displayStructures 必须将 targetIdentities 包含 id.pm.product 的模板排在首位
+    await waitFor(() => {
+      const titles = screen.getAllByRole('heading', { level: 4 })
+      const titleTexts = titles.map(el => el.textContent)
+      expect(titleTexts[0]).toContain('敏捷产品经理与PRD需求规划工作流')
+      expect(titleTexts[0]).not.toContain('专业 UI/UX 设计素材库')
+    })
+  })
 })

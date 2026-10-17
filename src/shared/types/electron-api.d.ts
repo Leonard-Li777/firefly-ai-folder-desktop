@@ -663,6 +663,21 @@ declare global {
         executeRename: (template: string, files: any[]) => Promise<any>
         getRandomTemplate: () => Promise<string>
         applyTags: (operation: any) => Promise<any>
+        inspectControlledTags: (
+          items: Array<{ tagName: string; targetParentCode: string }>,
+          language?: string
+        ) => Promise<{
+          success: boolean
+          results: Array<{
+            tagName: string
+            isControlled: boolean
+            matchedParent: boolean
+            code: string | null
+            canonicalName: string | null
+            parentCodes: string[]
+            ancestryMatchedCode: string | null
+          }>
+        }>
         deleteTagGlobally: (dimensionId: number | string, tagName: string) => Promise<boolean>
         scanDuplicates: (options: any) => Promise<any[]>
         onScanProgress?: (callback: (data: any) => void) => () => void

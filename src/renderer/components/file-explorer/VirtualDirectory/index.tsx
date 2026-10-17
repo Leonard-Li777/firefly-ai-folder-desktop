@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { getFileNameFromPath, HAC_FEATURE_FLAGS } from '@firefly/shared'
+import { getFileNameFromPath } from '@firefly/shared'
 import { useVirtualDirectory } from './hooks/useVirtualDirectory'
 import { DimensionTreeSidebar } from '../DimensionTreeSidebar'
 import { VirtualDirectorySidebar } from './components/VirtualDirectorySidebar'
@@ -15,7 +15,6 @@ import {
   DirectoryManagementModalsRef
 } from './components/DirectoryManagementModals'
 import { OrganizeModals, OrganizeModalsRef } from './components/OrganizeModals'
-import { HacOrganizeDialog } from '../../organize/HacOrganizeDialog'
 import { ExportSelector } from './components/ExportSelector'
 import { VirtualDirectoryFileList } from './components/VirtualDirectoryFileList'
 import { DimensionFileListPanel } from '../DimensionFileListPanel'
@@ -111,7 +110,6 @@ export const VirtualDirectory: React.FC = () => {
 
   const dirModalsRef = useRef<DirectoryManagementModalsRef>(null)
   const organizeModalsRef = useRef<OrganizeModalsRef>(null)
-  const [showHacDialog, setShowHacDialog] = useState(false)
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-background">
@@ -302,13 +300,6 @@ export const VirtualDirectory: React.FC = () => {
                       computed_limits={computed_limits}
                       handleExportVdir={() => organizeModalsRef.current?.triggerExportVdir()}
                       handleExportReal={() => organizeModalsRef.current?.triggerExportReal()}
-                      handleOpenHac={() => {
-                        if (!HAC_FEATURE_FLAGS.ENABLE_HAC_CLUSTERING) {
-                          toast.info(t('该功能正在数据源迁移中，暂不可用'))
-                          return
-                        }
-                        setShowHacDialog(true)
-                      }}
                     />
                   ) : (
                     <SplitPane
@@ -476,16 +467,6 @@ export const VirtualDirectory: React.FC = () => {
         selectedTags={selectedTags}
         previewTree={previewTree}
         exportPreviewOptions={exportPreviewOptions}
-      />
-
-      <HacOrganizeDialog
-        open={showHacDialog}
-        onOpenChange={setShowHacDialog}
-        workspaceId={currentWorkspaceDirectory?.id}
-        onSaved={async () => {
-          await loadVDirs()
-          await loadTree()
-        }}
       />
     </div>
   )
