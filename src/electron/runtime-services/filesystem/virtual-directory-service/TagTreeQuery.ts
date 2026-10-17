@@ -2870,7 +2870,7 @@ export class TagTreeQuery {
   }
 
   /**
-   * 批量加载 file_contents 四类正文列并解压拼接，供摘要提取使用
+   * 批量加载 file_contents 五类正文列（content, multimodal_content, ocr, lrc, asr）并解压拼接，供摘要提取使用
    */
   private fetchContentsForSearch(fileFingerprints: string[]): Map<string, string> {
     const map = new Map<string, string>()
