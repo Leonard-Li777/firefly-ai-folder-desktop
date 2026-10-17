@@ -443,7 +443,9 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
       })
     } catch (error) {
       logger.error(LogCategory.RENDERER, '读取目录失败:', error)
-      const message = t('未知错误')
+      let rawMessage = error instanceof Error ? error.message : String(error)
+      rawMessage = rawMessage.replace(/^(Error:\s*)?Error invoking remote method '[^']+':\s*(Error:\s*)?/, '')
+      const message = rawMessage.trim() || t('未知错误')
       toast.error(t('读取目录失败: {message}', { message }))
       // 读取失败时清空文件和目录
       useFileExplorerStore.getState().setFiles([])
@@ -873,7 +875,9 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
       }
     } catch (error) {
       logger.error(LogCategory.RENDERER, '刷新文件列表失败:', error)
-      const message = t('未知错误')
+      let rawMessage = error instanceof Error ? error.message : String(error)
+      rawMessage = rawMessage.replace(/^(Error:\s*)?Error invoking remote method '[^']+':\s*(Error:\s*)?/, '')
+      const message = rawMessage.trim() || t('未知错误')
       toast.error(t('刷新文件列表失败: {message}', { message }))
     }
   }, [currentPath, currentWorkspaceDirectory, selectedItem, setSelectedItem])

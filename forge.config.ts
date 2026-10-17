@@ -38,6 +38,9 @@ const MAJOR_VERSION = 'v' + (String(packageJson.version || '4.0.0').match(/\d+/)
 const APP_NAME = `firefly-ai-folder_${MAJOR_VERSION}_${BUILD_REGION}`
 const EXECUTABLE_NAME = process.platform === 'win32' ? 'firefly-ai-folder' : APP_NAME
 const SHORTCUT_NAME = BUILD_REGION === 'cn' ? '萤核智能文件夹' : 'Firefly AI folder'
+
+import { MAC_EXTEND_INFO } from './src/electron/constants/mac-permissions'
+export { MAC_EXTEND_INFO }
 // 存储需要打包的原生模块依赖
 let nativeModuleDependenciesToPackage: string[] = []
 
@@ -1290,6 +1293,8 @@ const config: ForgeConfig = {
         schemes: ['firefly']
       }
     ],
+    // macOS Info.plist 隐私与权限使用描述
+    extendInfo: MAC_EXTEND_INFO,
     // ASAR 打包配置
     asar: {
       unpack: '**/*.node',

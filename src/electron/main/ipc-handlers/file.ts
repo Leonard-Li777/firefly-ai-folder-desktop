@@ -22,6 +22,9 @@ import { virtualDirectoryService, syncedDirectories } from '../state'
 import { trayService } from '../../runtime-services/system/tray-service'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 
+export { getDirectoryAccessErrorMessage } from './directory-error'
+import { getDirectoryAccessErrorMessage } from './directory-error'
+
 export function registerFileIPCHandlers() {
   // 文件操作相关
 
@@ -160,7 +163,14 @@ export function registerFileIPCHandlers() {
         logger.info(LogCategory.MAIN, `[Main] 首次访问目录，触发同步: ${dirPath}`)
         syncedDirectories.add(dirPath)
         fileWatcherService.syncDirectory(dirPath).catch(err => {
-          logger.error(LogCategory.MAIN, '[Main] 异步同步目录失败:', { dirPath, error: err })
+          const isPermErr = err?.code === 'EPERM' || err?.code === 'EACCES'
+          if (isPermErr) {
+            logger.warn(LogCategory.MAIN, '[Main] 权限不足，跳过异步同步目录:', { dirPath })
+          } else {
+            logger.error(LogCategory.MAIN, '[Main] 异步同步目录失败:', { dirPath, error: err })
+          }
+          // 失败时从已同步缓存中剔除，允许用户授权后刷新重试
+          syncedDirectories.delete(dirPath)
         })
       }
       const files: FileItem[] = []
@@ -331,16 +341,9 @@ export function registerFileIPCHandlers() {
       logger.error(LogCategory.MAIN, '读取目录失败:', error)
       const errorMessage = error instanceof Error ? error : new Error(String(error))
       const errorCode = (errorMessage as any).code
-      if (errorCode === 'EPERM' || errorCode === 'EACCES')
-        throw new Error(t('权限不足，无法访问目录: {dirPath}', { dirPath }))
-      else if (errorCode === 'ENOENT') throw new Error(t('目录不存在: {dirPath}', { dirPath }))
-      else
-        throw new Error(
-          t('无法读取目录: {dirPath} ({errorDetail})', {
-            dirPath,
-            errorDetail: errorCode || errorMessage.message
-          })
-        )
+      throw new Error(
+        getDirectoryAccessErrorMessage(dirPath, errorCode, errorMessage.message)
+      )
     }
   })
 }
