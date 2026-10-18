@@ -963,15 +963,15 @@ export class HybridSearchArbiter {
     try {
       let embedding = queryEmbedding
       if (!embedding || embedding.length === 0) {
-        const profile = typeof omniService.getEmbeddingProfile === 'function'
-          ? await omniService.getEmbeddingProfile().catch(() => 'classic_light')
-          : 'classic_light'
         const cleanKeyword = cleanSearchQueryEntities(keyword)
-        const queryText = profile === 'gemma_unified' && !cleanKeyword.startsWith('task:')
-          ? `task: search result | query: ${cleanKeyword}`
-          : cleanKeyword
-        let analysis = await omniService.analyzeText(queryText)
-        if (!analysis?.embedding_dense && queryText !== cleanKeyword) {
+        // 剥离中文修饰助词（如 "红色的跑车" -> "红色跑车"），使自然语言描述与视觉向量特征空间紧密对齐；
+        // 彻底剔除脱离模型实际输入分布的人工提示词前缀 (如 'task: search result | query: ')，
+        // 杜绝 28 字节通用英文 ASCII 提示词暴力稀释核心语义，根除所有车辆查询均千篇一律收敛至同一噪点切片 (如 03:24) 的严重偏置。
+        const normalizedQuery = cleanKeyword
+          .replace(/(?<=[\u4e00-\u9fa5]{2,})[的之得地](?=[\u4e00-\u9fa5]{2,})/g, '')
+          .trim()
+        let analysis = await omniService.analyzeText(normalizedQuery)
+        if (!analysis?.embedding_dense && normalizedQuery !== cleanKeyword) {
           analysis = await omniService.analyzeText(cleanKeyword)
         }
         if (!analysis?.embedding_dense && cleanKeyword !== keyword) {
