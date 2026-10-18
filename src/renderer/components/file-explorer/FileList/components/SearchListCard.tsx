@@ -208,8 +208,17 @@ export const SearchListCard = React.memo(
 
         {/* 右侧：召回 label（仅语义召回展示）、修改时间和文件大小 */}
         <div className="shrink-0 flex flex-col items-end justify-between self-stretch text-xs pl-2 text-right">
-          {/* 召回 label：仅语义召回或视频匹配才显示 */}
+          {/* 召回 label：拼音展开、语义召回或视频匹配 */}
           <div className="flex items-center gap-1 justify-end min-h-[20px]">
+            {item.matchedPinyinCandidate && (
+              <span
+                className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded border text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/70 border-purple-200 dark:border-purple-800 shrink-0"
+                title={t('拼音展开: {cand}', { cand: item.matchedPinyinCandidate })}
+              >
+                <MaterialIcon icon="translate" className="text-[11px]" />
+                <span>{item.matchedPinyinCandidate}</span>
+              </span>
+            )}
             {isSemantic && (
               <span
                 className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded border text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-950/70 border-violet-200 dark:border-violet-800 shrink-0"

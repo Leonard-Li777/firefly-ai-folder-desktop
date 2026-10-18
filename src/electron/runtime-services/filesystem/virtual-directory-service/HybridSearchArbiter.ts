@@ -260,6 +260,8 @@ export function weightedRrfScore(
     exactRank?: number
     vecScore?: number
     vectorDamping?: number
+    ftsDamping?: number
+    maxScoreCap?: number
   },
   weights: { fts: number; vector: number; name: number; exact?: number } = HYBRID_SEARCH_WEIGHTS,
   k: number = HYBRID_SEARCH_RRF_K
@@ -271,19 +273,27 @@ export function weightedRrfScore(
     opts.vecScore !== undefined && Number.isFinite(opts.vecScore)
       ? 1.0 + Math.max(0, Math.min(1, opts.vecScore))
       : 1.0
-  const damping = Number.isFinite(opts.vectorDamping) ? Math.max(0, opts.vectorDamping!) : 1.0
-  const vecContrib = weights.vector * baseVec * scoreMultiplier * damping
+  const vecDamping = Number.isFinite(opts.vectorDamping) ? Math.max(0, opts.vectorDamping!) : 1.0
+  const vecContrib = weights.vector * baseVec * scoreMultiplier * vecDamping
+
+  const ftsDamping = Number.isFinite(opts.ftsDamping) ? Math.max(0, opts.ftsDamping!) : 1.0
+  const ftsContrib = weights.fts * rrfScore(opts.ftsRank, k) * ftsDamping
 
   const safeNameBoost = Number.isFinite(opts.nameBoost) ? Math.max(0, opts.nameBoost ?? 0) : 0
   const nameRrf = safeNameBoost / (k + 1)
   const nameContrib = weights.name * nameRrf
 
-  return (
-    weights.fts * rrfScore(opts.ftsRank, k) +
+  const rawScore = (
+    ftsContrib +
     vecContrib +
     nameContrib +
     wExact * rrfScore(opts.exactRank, k)
   )
+
+  if (opts.maxScoreCap !== undefined && Number.isFinite(opts.maxScoreCap)) {
+    return Math.min(rawScore, opts.maxScoreCap)
+  }
+  return rawScore
 }
 
 /**
@@ -541,10 +551,16 @@ export class HybridSearchArbiter {
       const { name, smartName } = nameMap.get(fp) ?? {}
       const nameBoost = computeNameBoost(name, smartName, keyword)
 
-      // 防倒挂公理：若由拼音展开词命中向量通道，但文件物理名称并未匹配原词（nameBoost < 0.85），
-      // 对其向量贡献施加安全阻尼 alpha_expand = 0.65，保障物理原词命中文件位居首位
-      const isExpandedVectorOnly = expanded?.isExpanded && nameBoost < 0.85
-      const vectorDamping = isExpandedVectorOnly ? 0.65 : 1.0
+      // 防倒挂公理：若由拼音展开词召回，但文件物理名称并未匹配原词（nameBoost < 0.85），
+      // 1. 对其向量与 FTS 贡献同步施加安全阻尼 alpha_expand = 0.50；
+      // 2. 施加数学天花板 maxScoreCap = (HYBRID_SEARCH_WEIGHTS.name * 0.82) / (HYBRID_SEARCH_RRF_K + 1)，
+      //    确保原词物理文件名命中（如 khxs.txt，nameBoost >= 0.85）在任何通道叠加下总分绝对第一
+      const isExpandedNonLiteral = expanded?.isExpanded && nameBoost < 0.85
+      const vectorDamping = isExpandedNonLiteral ? 0.5 : 1.0
+      const ftsDamping = isExpandedNonLiteral ? 0.5 : 1.0
+      const maxScoreCap = isExpandedNonLiteral
+        ? (HYBRID_SEARCH_WEIGHTS.name * 0.82) / (HYBRID_SEARCH_RRF_K + 1)
+        : undefined
 
       candidates.push({
         fileFingerprint: fp,
@@ -559,7 +575,9 @@ export class HybridSearchArbiter {
           nameBoost,
           exactRank,
           vecScore: vec?.score,
-          vectorDamping
+          vectorDamping,
+          ftsDamping,
+          maxScoreCap
         }),
         hasLiteral: exactRank !== undefined || ftsRank !== undefined || nameBoost >= 0.85,
         matchedChunk: vec?.matchedChunk
@@ -616,6 +634,41 @@ export class HybridSearchArbiter {
     return unanalyzedHits
   }
 
+  private static lastWorkspaceEntitySyncAt = 0
+
+  /**
+   * 同步工作区动态实体（用户标签与分类物化路径段）至拼音逆向展开引擎 (Tier 1 闭环)
+   */
+  private syncWorkspaceEntities(): void {
+    const now = Date.now()
+    if (now - HybridSearchArbiter.lastWorkspaceEntitySyncAt < 30_000) return
+    HybridSearchArbiter.lastWorkspaceEntitySyncAt = now
+    try {
+      const names: string[] = []
+      const tagRows = this.db
+        .prepare('SELECT name FROM file_tags_private WHERE name IS NOT NULL')
+        .all() as Array<{ name: string }>
+      for (const r of tagRows) {
+        if (r.name) names.push(r.name)
+      }
+      const pathRows = this.db
+        .prepare('SELECT DISTINCT name_path FROM file_tag_relations WHERE name_path IS NOT NULL')
+        .all() as Array<{ name_path: string }>
+      for (const r of pathRows) {
+        if (r.name_path) {
+          const parts = r.name_path.split('/').map(p => p.trim()).filter(Boolean)
+          names.push(...parts)
+        }
+      }
+      if (names.length > 0) {
+        PinyinQueryExpander.getInstance().registerWorkspaceEntities(names)
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchArbiter] 同步工作区实体至拼音展开引擎失败:', msg)
+    }
+  }
+
   /**
    * 执行混合检索并返回融合池（支持 Phase 1 流式快速回调）
    */
@@ -635,7 +688,8 @@ export class HybridSearchArbiter {
     const failures: HybridSearchFailures = { fts: false, vector: false, fs: false }
     const attemptedFs = !!workspaceDirectoryPath
 
-    // 0. 拼音逆向展开探测 (P2C)
+    // 0. 同步工作区动态实体并执行拼音逆向展开探测 (P2C)
+    this.syncWorkspaceEntities()
     const expanded = PinyinQueryExpander.getInstance().expand(keyword)
 
     // 1. 并发启动快速字面三路与慢速向量路

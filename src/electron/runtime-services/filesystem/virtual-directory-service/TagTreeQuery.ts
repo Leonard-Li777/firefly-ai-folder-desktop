@@ -40,6 +40,7 @@ import {
   splitPassages
 } from './HybridSearchArbiter'
 import { HybridSearchSession } from './hybrid-search-session'
+import { PinyinQueryExpander } from './pinyin-query-expander'
 
 export interface FilterFilesParams {
   selectedTags?: SelectedTag[]
@@ -78,6 +79,18 @@ const escapeLike = (s: string) => s.replace(/([%_\\])/g, '\\$1')
 
 /** 全系统顶级受控根维度集合（SSOT 事实源派生自 @firefly/shared） */
 const ROOT_DIMENSION_CODES = TOP_ROOT_CODES
+
+/**
+ * 标签级 isMultiSelect 派生（人工裁定 2026-10-18：**禁止硬编码**）。
+ *
+ * 虚拟目录树中「同父互斥」由父节点的 isMultiSelect 决定（virtual-directory-store.ts:356），
+ * 因此标签级该值控制的是「此标签的子节点能否并存」。统一走 S0 共享分类器（单一事实源），
+ * 与 §5.2「用分类器而非 group.isMultiSelect」的口径一致——不受降级路径影响，unknown 走保守分支。
+ *
+ * 只有多选维度的标签才允许子节点并存；规则自有 / 单选 / unknown 一律取 false（维持既有互斥行为）。
+ */
+const deriveTagMultiSelect = (dimensionCode?: string | null): boolean =>
+  dimensionCode ? classifyDimensionMutexScope(dimensionCode) === 'multi' : false
 
 export class TagTreeQuery {
   private hybridArbiter: HybridSearchArbiter
@@ -1621,7 +1634,7 @@ export class TagTreeQuery {
               codePath: tCodePath,
               namePath: tNamePath,
               viaParentCode: effectiveParent,
-              isMultiSelect: false,
+              isMultiSelect: deriveTagMultiSelect(targetGroup.code),
               order: 9999
             })
             continue
@@ -1658,7 +1671,7 @@ export class TagTreeQuery {
               codePath: tCodePath,
               namePath: tNamePath,
               viaParentCode: parentTag.code || parentTag.tagValue,
-              isMultiSelect: false,
+              isMultiSelect: deriveTagMultiSelect(targetGroup.code),
               order: 9999
             })
             continue
@@ -1832,7 +1845,7 @@ export class TagTreeQuery {
                             codePath: `/${rootGroup.code}/${segCode}`,
                             namePath: `/${rootGroup.name}/${segName}`,
                             viaParentCode: prevParent,
-                            isMultiSelect: false,
+                            isMultiSelect: deriveTagMultiSelect(rootGroup.code),
                             order: 9999
                           }
                           rootGroup.tags.push(existingTag)
@@ -1896,7 +1909,7 @@ export class TagTreeQuery {
                         ? `/${rootGroup.name}/${cand.name}`
                         : `/${rootGroup.name}/${aliasResolver(pCode, pCode)}/${cand.name}`,
                       viaParentCode: pCode,
-                      isMultiSelect: false,
+                      isMultiSelect: deriveTagMultiSelect(rootGroup.code),
                       order: 9999
                     })
                   } else {
@@ -2459,67 +2472,61 @@ export class TagTreeQuery {
 
     if (searchKeyword && searchKeyword.trim()) {
       const trimmed = searchKeyword.trim()
-      const likePattern = `%${trimmed}%`
+      const expanded = PinyinQueryExpander.getInstance().expand(trimmed)
+      const patterns = expanded.likePatterns
       const ftsAvailable = this.isFtsAvailable()
-      const ftsClause = ftsAvailable
-        ? `(wf.file_fingerprint IS NOT NULL AND wf.file_fingerprint IN (
-             SELECT f.file_fingerprint
-             FROM files_fts
-             JOIN files f ON f.rowid = files_fts.rowid
-             WHERE files_fts MATCH ?
-           )) OR `
-        : ''
-      const sanitizedQuery = trimmed.replace(/["*^()]/g, ' ').trim() || trimmed
 
-      whereClauses.push(`(
-        ${ftsClause}wf.name LIKE ?
-        OR f.smart_name LIKE ?
-        OR f.description LIKE ?
-        OR wf.path LIKE ?
-        OR f.extension LIKE ?
-        OR f.author LIKE ?
-        OR f.language LIKE ?
-        OR f.file_group LIKE ?
-        OR wf.file_fingerprint IN (
-          SELECT ftr.file_fingerprint
-          FROM file_tag_relations ftr
-          LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
-          WHERE ft.name LIKE ? OR ftr.name_path LIKE ?
-        )
-      )`)
-
+      let ftsClause = ''
+      let sanitizedQuery = ''
       if (ftsAvailable) {
-        // 绑定值个数必须与子句占位符严格一一对应：
-        // sanitizedQuery → files_fts MATCH ?；随后 10 个 likePattern 依次对应
-        // wf.name / f.smart_name / f.description / wf.path / f.extension /
-        // f.author / f.language / f.file_group / ft.name / ftr.name_path
-        queryParams.push(
-          sanitizedQuery,
-          likePattern,
-          likePattern,
-          likePattern,
-          likePattern,
-          likePattern,
-          likePattern,
-          likePattern,
-          likePattern,
-          likePattern,
-          likePattern
-        )
+        const rawTerms = [trimmed, ...(expanded.isExpanded ? expanded.chineseCandidates : [])]
+        const safeTerms = rawTerms
+          .map(w => {
+            const cleaned = w.replace(/[*^()"\\-]/g, ' ').trim()
+            return cleaned.length >= 3 ? `"${cleaned}"` : ''
+          })
+          .filter(Boolean)
+        if (safeTerms.length > 0) {
+          sanitizedQuery = safeTerms.join(' OR ')
+          ftsClause = `(wf.file_fingerprint IS NOT NULL AND wf.file_fingerprint IN (
+               SELECT f.file_fingerprint
+               FROM files_fts
+               JOIN files f ON f.rowid = files_fts.rowid
+               WHERE files_fts MATCH ?
+             )) OR `
+        }
+      }
+
+      const patternClauses: string[] = []
+      const likeParams: any[] = []
+      for (const pattern of patterns) {
+        patternClauses.push(`(
+          wf.name LIKE ?
+          OR f.smart_name LIKE ?
+          OR f.description LIKE ?
+          OR wf.path LIKE ?
+          OR f.extension LIKE ?
+          OR f.author LIKE ?
+          OR f.language LIKE ?
+          OR f.file_group LIKE ?
+          OR wf.file_fingerprint IN (
+            SELECT ftr.file_fingerprint
+            FROM file_tag_relations ftr
+            LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
+            WHERE ft.name LIKE ? OR ftr.name_path LIKE ?
+          )
+        )`)
+        for (let i = 0; i < 10; i++) {
+          likeParams.push(pattern)
+        }
+      }
+
+      whereClauses.push(`(${ftsClause}${patternClauses.join(' OR ')})`)
+
+      if (ftsClause) {
+        queryParams.push(sanitizedQuery, ...likeParams)
       } else {
-        // 无 FTS 时子句仍有 10 个 LIKE 占位符，绑定值必须同为 10 个
-        queryParams.push(
-          likePattern,
-          likePattern,
-          likePattern,
-          likePattern,
-          likePattern,
-          likePattern,
-          likePattern,
-          likePattern,
-          likePattern,
-          likePattern
-        )
+        queryParams.push(...likeParams)
       }
     }
 
@@ -2765,13 +2772,27 @@ export class TagTreeQuery {
   ): Promise<
     Map<
       string,
-      { snippet?: string; matchType: 'exact' | 'fuzzy' | 'semantic'; similarity?: number }
+      {
+        snippet?: string
+        matchType: 'exact' | 'fuzzy' | 'semantic'
+        similarity?: number
+        matchedPinyinCandidate?: string
+      }
     >
   > {
     const result = new Map<
       string,
-      { snippet?: string; matchType: 'exact' | 'fuzzy' | 'semantic'; similarity?: number }
+      {
+        snippet?: string
+        matchType: 'exact' | 'fuzzy' | 'semantic'
+        similarity?: number
+        matchedPinyinCandidate?: string
+      }
     >()
+
+    const expanded = PinyinQueryExpander.getInstance().expand(keyword)
+    const extraHighlightTokens = expanded.isExpanded ? expanded.chineseCandidates : undefined
+    const pinyinCandidate = expanded.isExpanded ? expanded.chineseCandidates[0] : undefined
 
     // 字面候选直接高亮
     const semanticBatch: Array<{ fileFingerprint: string; text: string }> = []
@@ -2781,25 +2802,49 @@ export class TagTreeQuery {
       const desc = descriptionsByFp?.get(ref.fileFingerprint) ?? ''
       if (cand?.hasLiteral) {
         // 优先在正文中提取高亮
-        const highlight = extractSnippet(text, keyword, { escapeHtml: false })
+        const highlight = extractSnippet(text, keyword, {
+          escapeHtml: false,
+          extraHighlightTokens
+        })
         if (highlight.hitCount > 0) {
+          const hitExpanded =
+            Boolean(pinyinCandidate) &&
+            highlight.matchedTokens.some(
+              t =>
+                pinyinCandidate &&
+                (t.toLowerCase() === pinyinCandidate.toLowerCase() ||
+                  (t.length >= 2 && pinyinCandidate.toLowerCase().includes(t.toLowerCase())))
+            )
           result.set(ref.fileFingerprint, {
             snippet: highlight.snippet,
             matchType: highlight.matchType,
             similarity:
-              cand?.vecScore !== undefined ? Math.round(cand.vecScore * 100) / 100 : undefined
+              cand?.vecScore !== undefined ? Math.round(cand.vecScore * 100) / 100 : undefined,
+            matchedPinyinCandidate: hitExpanded ? pinyinCandidate : undefined
           })
           continue
         }
         // 若正文无字面命中但文件描述存在字面命中，提取描述的高亮切片
         if (desc) {
-          const descHighlight = extractSnippet(desc, keyword, { escapeHtml: false })
+          const descHighlight = extractSnippet(desc, keyword, {
+            escapeHtml: false,
+            extraHighlightTokens
+          })
           if (descHighlight.hitCount > 0) {
+            const hitExpanded =
+              Boolean(pinyinCandidate) &&
+              descHighlight.matchedTokens.some(
+                t =>
+                  pinyinCandidate &&
+                  (t.toLowerCase() === pinyinCandidate.toLowerCase() ||
+                    (t.length >= 2 && pinyinCandidate.toLowerCase().includes(t.toLowerCase())))
+              )
             result.set(ref.fileFingerprint, {
               snippet: descHighlight.snippet,
               matchType: descHighlight.matchType,
               similarity:
-                cand?.vecScore !== undefined ? Math.round(cand.vecScore * 100) / 100 : undefined
+                cand?.vecScore !== undefined ? Math.round(cand.vecScore * 100) / 100 : undefined,
+              matchedPinyinCandidate: hitExpanded ? pinyinCandidate : undefined
             })
             continue
           }
@@ -2816,8 +2861,12 @@ export class TagTreeQuery {
       for (const b of semanticBatch) {
         alignItems.push({ fileFingerprint: b.fileFingerprint, passages: splitPassages(b.text) })
       }
+      const alignQuery =
+        expanded.isExpanded && expanded.semanticTextForVector
+          ? expanded.semanticTextForVector
+          : keyword
       const alignMap = await this.hybridArbiter.alignPassages(
-        keyword,
+        alignQuery,
         alignItems.map(a => ({ fileFingerprint: a.fileFingerprint, passages: a.passages }))
       )
       for (const b of semanticBatch) {
@@ -2827,15 +2876,20 @@ export class TagTreeQuery {
           result.set(b.fileFingerprint, {
             snippet: match.bestPassage,
             matchType: 'semantic',
-            similarity: Math.round(match.similarity * 100) / 100
+            similarity: Math.round(match.similarity * 100) / 100,
+            matchedPinyinCandidate: pinyinCandidate
           })
         } else {
           // 语义对齐缺失/失败 → 语义首段摘要 + 向量相似度
-          const highlight = extractSnippet(b.text, keyword, { escapeHtml: false })
+          const highlight = extractSnippet(b.text, keyword, {
+            escapeHtml: false,
+            extraHighlightTokens
+          })
           result.set(b.fileFingerprint, {
             snippet: highlight.snippet || undefined,
             matchType: 'semantic',
-            similarity: cand?.vecScore
+            similarity: cand?.vecScore,
+            matchedPinyinCandidate: pinyinCandidate
           })
         }
       }

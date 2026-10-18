@@ -50,7 +50,17 @@ export interface HybridSearchCollaborators {
     candidateByFp: Map<string, HybridRankedCandidate>,
     contentsByFp: Map<string, string>,
     descriptionsByFp?: Map<string, string>
-  ): Promise<Map<string, { snippet?: string; matchType: 'exact' | 'fuzzy' | 'semantic'; similarity?: number }>>
+  ): Promise<
+    Map<
+      string,
+      {
+        snippet?: string
+        matchType: 'exact' | 'fuzzy' | 'semantic'
+        similarity?: number
+        matchedPinyinCandidate?: string
+      }
+    >
+  >
   /** 由 FS 未分析命中合成 FileItem */
   synthesizeUnanalyzedItem(ref: Extract<HybridPageRef, { kind: 'unanalyzed' }>, workspaceDirectoryPath?: string): FileItem
   /** 回退路径：去除搜索词的常规分页查询 */
@@ -159,7 +169,12 @@ export class HybridSearchSession {
 
     let enrichment = new Map<
       string,
-      { snippet?: string; matchType: 'exact' | 'fuzzy' | 'semantic'; similarity?: number }
+      {
+        snippet?: string
+        matchType: 'exact' | 'fuzzy' | 'semantic'
+        similarity?: number
+        matchedPinyinCandidate?: string
+      }
     >()
     if (shouldEnrich && analyzedFps.length > 0) {
       const contentStart = performance.now()
@@ -199,7 +214,8 @@ export class HybridSearchSession {
             ? 'semantic'
             : (e?.matchType ?? (ref.hasLiteral ? 'fuzzy' : 'semantic')),
           similarity: matchedChunk?.similarity ?? e?.similarity ?? cand?.vecScore,
-          matchedChunk
+          matchedChunk,
+          matchedPinyinCandidate: e?.matchedPinyinCandidate
         })
       } else {
         items.push(this.collaborators.synthesizeUnanalyzedItem(ref, workspaceDirectoryPath))
