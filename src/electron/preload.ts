@@ -83,8 +83,35 @@ const electronAPI = {
   getFileIcon: (filePath: string, size?: 'small' | 'normal' | 'large'): Promise<string | null> =>
     ipcRenderer.invoke('get-file-icon', filePath, size),
 
-  searchWorkspaceFiles: (keyword: string, workspacePath: string): Promise<FileItem[]> =>
-    ipcRenderer.invoke('search-workspace-files', keyword, workspacePath),
+  searchWorkspaceFiles: (
+    keyword: string,
+    workspacePath: string,
+    options?: { stream?: boolean; seq?: number }
+  ): Promise<FileItem[]> =>
+    ipcRenderer.invoke('search-workspace-files', keyword, workspacePath, options),
+
+  onSearchProgress: (
+    callback: (payload: {
+      phase: 'phase1' | 'phase2'
+      seq: number
+      items: FileItem[]
+      total: number
+      tokens?: string[]
+    }) => void
+  ) => {
+    const handler = (
+      _event: any,
+      payload: {
+        phase: 'phase1' | 'phase2'
+        seq: number
+        items: FileItem[]
+        total: number
+        tokens?: string[]
+      }
+    ) => callback(payload)
+    ipcRenderer.on('search-workspace-files-progress', handler)
+    return () => ipcRenderer.removeListener('search-workspace-files-progress', handler)
+  },
 
   tokenizeText: (text: string): Promise<string[]> =>
     ipcRenderer.invoke('tokenize-text', text),

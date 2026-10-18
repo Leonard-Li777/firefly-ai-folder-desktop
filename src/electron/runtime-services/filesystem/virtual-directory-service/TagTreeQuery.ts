@@ -22,6 +22,7 @@ import {
   DIMENSION_CODES,
   concept,
   resolveSubdimensionRoot,
+  classifyDimensionMutexScope,
   getParentDimensionCodeOfTag,
   ROOT_DIMENSION_META,
   TOP_ROOT_CODES
@@ -53,6 +54,7 @@ export interface FilterFilesParams {
   virtualDirectoryId?: number
   unionMode?: 'union' | 'intersection'
   includeUnanalyzed?: boolean
+  onProgress?: (phase: 'phase1' | 'phase2', response: FilteredFilesResponse) => void
 }
 
 /** 混合检索分页引用：已分析候选 / 未分析 FS 命中 */
@@ -1984,6 +1986,11 @@ export class TagTreeQuery {
         }
 
         // 7. 输出 DimensionTag 数组
+        // S0-c（规格 §5.1）：内容标签维度属多选维度，单选策略不得硬编码。
+        // 标签级 / 组级 / meta / metadata 四处统一由分类器派生（DEC-02 三处 metadata 同源）。
+        // 未知/规则自有维度保守取单选（false），与 §5.2 的 unknown 保守分支对齐。
+        const contentTagsIsMultiSelect =
+          classifyDimensionMutexScope(CONTENT_TAGS_CODE) === 'multi'
         for (const [key, node] of contentNodeMap.entries()) {
           const count = node.files.size
           if (removeEmptyTags && !includeAllPresetTags && count === 0) continue
@@ -2003,7 +2010,7 @@ export class TagTreeQuery {
             codePath: cCodePath,
             namePath: cNamePath,
             viaParentCode: node.parentKey,
-            isMultiSelect: false,
+            isMultiSelect: contentTagsIsMultiSelect,
             order: 9999
           })
         }
@@ -2017,9 +2024,18 @@ export class TagTreeQuery {
             code: CONTENT_TAGS_CODE,
             // 恒定垫底：与 omni fast path / 回退路径的 9999 特例口径统一（缺省时前端 id 回退会得到 28 误排前排）
             order: CONTENT_TAGS_TAIL_ORDER,
-            isMultiSelect: false,
-            meta: { source: 'builtin', order: CONTENT_TAGS_TAIL_ORDER },
-            metadata: { isPanDimension: true, source: 'builtin', order: CONTENT_TAGS_TAIL_ORDER }
+            isMultiSelect: contentTagsIsMultiSelect,
+            meta: {
+              source: 'builtin',
+              order: CONTENT_TAGS_TAIL_ORDER,
+              isMultiSelect: contentTagsIsMultiSelect
+            },
+            metadata: {
+              isPanDimension: true,
+              source: 'builtin',
+              order: CONTENT_TAGS_TAIL_ORDER,
+              isMultiSelect: contentTagsIsMultiSelect
+            }
           })
           logger.debug(
             LogCategory.VIRTUAL_DIRECTORY,

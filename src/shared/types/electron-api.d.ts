@@ -437,7 +437,20 @@ declare global {
       // 文件操作
       getAllFiles: () => Promise<FileInfo[]>
       addFile: (file: FileInfo) => Promise<void>
-      searchWorkspaceFiles: (keyword: string, workspacePath: string) => Promise<FileItem[]>
+      searchWorkspaceFiles: (
+        keyword: string,
+        workspacePath: string,
+        options?: { stream?: boolean; seq?: number }
+      ) => Promise<FileItem[]>
+      onSearchProgress: (
+        callback: (payload: {
+          phase: 'phase1' | 'phase2'
+          seq: number
+          items: FileItem[]
+          total: number
+          tokens?: string[]
+        }) => void
+      ) => () => void
       tokenizeText: (text: string) => Promise<string[]>
 
       // AI分类

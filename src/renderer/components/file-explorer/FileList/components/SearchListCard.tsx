@@ -134,6 +134,7 @@ export const SearchListCard = React.memo(
             : 'hover:bg-accent/40 dark:hover:bg-accent/30'
         )}
         data-index={index}
+        data-path={item.path}
         onClick={e => onItemClick(index, e)}
         onDoubleClick={() => onDoubleClick?.()}
         onContextMenu={e => onContextMenu(e, item)}

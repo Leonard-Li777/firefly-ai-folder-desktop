@@ -10,6 +10,7 @@ import { MaterialIcon, cn } from '../../../lib/utils'
 import i18nScope, { t } from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
 import { logger, LogCategory } from '@firefly/shared'
+import { SEARCH_LIST_ROW_HEIGHT } from '../FileList/components/SearchListCard'
 
 interface GlobalSearchOverlayProps {
   workspaceDirectory: WorkspaceDirectory | null
@@ -30,9 +31,15 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
   const [showDetailsPanel, setShowDetailsPanel] = useState(true)
   const [viewMode, setViewMode] = useState<ViewMode>('search-list')
 
+  type SearchPhase = 'idle' | 'phase1_done_analyzing_semantic'
+  const [searchPhase, setSearchPhase] = useState<SearchPhase>('idle')
+
   const searchSeqRef = useRef(0)
+  const handledPhase2SeqRef = useRef<number>(-1)
   const searchDebounceTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const semanticTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const previousActivePageIdRef = useRef<string | null>(null)
+  const overlayContainerRef = useRef<HTMLDivElement>(null)
 
   // 1. 浮层激活与退出时的预览单例状态保护 (State Preservation)
   useEffect(() => {
@@ -63,10 +70,131 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
       setActiveItem(null)
       setSelectedFiles([])
       setIsLoading(false)
+      setSearchPhase('idle')
+      if (semanticTimeoutRef.current) {
+        clearTimeout(semanticTimeoutRef.current)
+        semanticTimeoutRef.current = null
+      }
     }
   }, [isSearchActive])
 
-  // 2. 搜索逻辑：防抖 + 竞态序号锁 + 全域跨目录检索
+  // 提取置换前当前可见行首个文件的路径作为滚动锚点 (Scroll Anchor)
+  const getFirstVisibleItemPath = useCallback((): string | null => {
+    if (!overlayContainerRef.current) return null
+    const cardEls = overlayContainerRef.current.querySelectorAll<HTMLElement>('[data-path]')
+    if (!cardEls || cardEls.length === 0) return null
+
+    const containerRect = overlayContainerRef.current.getBoundingClientRect()
+    for (let i = 0; i < cardEls.length; i++) {
+      const rect = cardEls[i].getBoundingClientRect()
+      if (rect.bottom > containerRect.top + 50) {
+        return cardEls[i].getAttribute('data-path')
+      }
+    }
+    return cardEls[0].getAttribute('data-path')
+  }, [])
+
+  // Phase 2 全量置换：保持激活项、多选区重连并防视口跳跃
+  const handlePhase2Replace = useCallback(
+    (completeItems: FileItem[]) => {
+      const anchorPath = getFirstVisibleItemPath()
+
+      // 1. 激活项与多选区重连
+      setActiveItem(prevActive => {
+        if (!prevActive?.path) return null
+        return completeItems.find(item => item.path === prevActive.path) || null
+      })
+
+      setSelectedFiles(prevSelected => {
+        if (!prevSelected.length) return []
+        const pathSet = new Set(prevSelected.map(f => f.path))
+        return completeItems.filter(item => pathSet.has(item.path))
+      })
+
+      // 2. 全量置换结果集
+      setSearchResults(completeItems)
+
+      // 3. 滚动锚定防跳跃：若存在锚点文件，在新结果集定位
+      if (anchorPath) {
+        const newIndex = completeItems.findIndex(item => item.path === anchorPath)
+        if (newIndex >= 0 && overlayContainerRef.current) {
+          const scroller = overlayContainerRef.current.querySelector<HTMLElement>(
+            '[data-scroll-container="virtual-file-list"] .scrollbar-thin, .scrollbar-thin, .List, .overflow-y-auto'
+          )
+          if (scroller) {
+            const targetScrollTop = newIndex * SEARCH_LIST_ROW_HEIGHT
+            if (Math.abs(scroller.scrollTop - targetScrollTop) > SEARCH_LIST_ROW_HEIGHT * 2) {
+              scroller.scrollTop = targetScrollTop
+            }
+          }
+        }
+      }
+    },
+    [getFirstVisibleItemPath]
+  )
+
+  // 2. 双阶段流式推送监听 (Phase 1 毫秒先行 -> Phase 2 语义置换)
+  useEffect(() => {
+    if (!window.electronAPI?.onSearchProgress) return
+
+    const unsubscribe = window.electronAPI.onSearchProgress(payload => {
+      // 仅当前活跃序号允许写回，丢弃过期旧请求推流
+      if (payload.seq !== searchSeqRef.current) return
+
+      if (payload.phase === 'phase1') {
+        // 若 Phase 2 已率先到达或处理，丢弃延迟的 Phase 1，防止全量置换被旧首屏覆盖
+        if (handledPhase2SeqRef.current === payload.seq) return
+
+        // Phase 1: 毫秒级字面先行上屏
+        setSearchResults(payload.items || [])
+        setSearchPhase('phase1_done_analyzing_semantic')
+        setIsLoading(false)
+
+        if (payload.tokens && payload.tokens.length > 0) {
+          useSearchStore.getState().setSearchTokens(payload.tokens)
+        }
+
+        // 挂载 1500ms 安全超时熔断，防止 Omni 死锁导致呼吸条挂起
+        if (semanticTimeoutRef.current) {
+          clearTimeout(semanticTimeoutRef.current)
+        }
+        semanticTimeoutRef.current = setTimeout(() => {
+          if (searchSeqRef.current === payload.seq) {
+            logger.warn(
+              LogCategory.RENDERER,
+              '[GlobalSearchOverlay] Phase 2 语义分析超时熔断(1500ms)，恢复空闲态'
+            )
+            setSearchPhase('idle')
+          }
+        }, 1500)
+      } else if (payload.phase === 'phase2') {
+        // 对称幂等保护：若已处理该序号的 Phase 2（例如 Promise 先行返回），直接短路
+        if (handledPhase2SeqRef.current === payload.seq) return
+        handledPhase2SeqRef.current = payload.seq
+        if (semanticTimeoutRef.current) {
+          clearTimeout(semanticTimeoutRef.current)
+          semanticTimeoutRef.current = null
+        }
+        handlePhase2Replace(payload.items || [])
+        setSearchPhase('idle')
+        setIsLoading(false)
+
+        if (payload.tokens && payload.tokens.length > 0) {
+          useSearchStore.getState().setSearchTokens(payload.tokens)
+        }
+      }
+    })
+
+    return () => {
+      unsubscribe()
+      if (semanticTimeoutRef.current) {
+        clearTimeout(semanticTimeoutRef.current)
+        semanticTimeoutRef.current = null
+      }
+    }
+  }, [handlePhase2Replace])
+
+  // 3. 搜索逻辑：防抖 + 竞态序号锁 + 双阶段全域跨目录检索
   useEffect(() => {
     if (searchDebounceTimerRef.current) {
       clearTimeout(searchDebounceTimerRef.current)
@@ -78,6 +206,7 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
       searchSeqRef.current++
       setSearchResults([])
       setIsLoading(false)
+      setSearchPhase('idle')
       return
     }
 
@@ -85,6 +214,7 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
       searchSeqRef.current++
       setSearchResults([])
       setIsLoading(false)
+      setSearchPhase('idle')
       return
     }
 
@@ -95,12 +225,20 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
       try {
         const results = await window.electronAPI!.searchWorkspaceFiles(
           keyword,
-          workspaceDirectory.path
+          workspaceDirectory.path,
+          { stream: true, seq: currentSeq }
         )
 
         // 仅最新一次请求允许写回 State，防止慢响应覆盖快响应
         if (currentSeq === searchSeqRef.current) {
-          setSearchResults(results || [])
+          // 若流式 Phase 2 已先行处理，跳过重复置换与视口抖动
+          if (handledPhase2SeqRef.current !== currentSeq) {
+            handledPhase2SeqRef.current = currentSeq
+            handlePhase2Replace(results || [])
+          }
+          setSearchPhase('idle')
+          setIsLoading(false)
+
           const tokens = (results as any)?.tokens || []
           if (tokens.length > 0) {
             useSearchStore.getState().setSearchTokens(tokens)
@@ -117,6 +255,7 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
         logger.error(LogCategory.RENDERER, '全域工作空间搜索失败:', error)
         if (currentSeq === searchSeqRef.current) {
           setSearchResults([])
+          setSearchPhase('idle')
         }
       } finally {
         if (currentSeq === searchSeqRef.current) {
@@ -131,7 +270,7 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
         clearTimeout(searchDebounceTimerRef.current)
       }
     }
-  }, [globalSearchKeyword, workspaceDirectory?.path])
+  }, [globalSearchKeyword, workspaceDirectory?.path, handlePhase2Replace])
 
   // 3. 键盘事件监听 (Escape 退出)
   useEffect(() => {
@@ -175,12 +314,21 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
 
   return (
     <div
+      ref={overlayContainerRef}
       className={cn(
         'fixed inset-x-0 bottom-0 z-40 bg-background flex flex-col overflow-hidden',
         'animate-in fade-in duration-200'
       )}
       style={{ top: 'var(--app-header-height, 53px)' }}
     >
+      {/* 顶部微型语义呼吸条 (Phase 1 -> Phase 2 状态机: 1.5px 紫罗兰色脉冲渐变微条) */}
+      <div
+        className={cn(
+          'absolute top-0 inset-x-0 h-[1.5px] z-50 pointer-events-none transition-opacity duration-300 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-indigo-500',
+          searchPhase === 'phase1_done_analyzing_semantic' ? 'opacity-100 animate-pulse' : 'opacity-0'
+        )}
+      />
+
       {/* 顶部搜索状态与操作引导条 */}
       <div className="flex-shrink-0 h-9 px-4 flex items-center justify-between border-b border-border/60 bg-muted/40 dark:bg-muted/20 text-xs">
         <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -197,6 +345,12 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
           <span className="text-muted-foreground/80 text-[11px] whitespace-nowrap sm:hidden">
             {t('（{count} 项）', { count: searchResults.length })}
           </span>
+          {searchPhase === 'phase1_done_analyzing_semantic' && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20 whitespace-nowrap shrink-0 animate-pulse flex items-center gap-1">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-violet-500 animate-ping" />
+              {t('深度语义对齐中...')}
+            </span>
+          )}
           {searchResults.length >= 500 && (
             <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 whitespace-nowrap shrink-0">
               {t('前 500 项')}

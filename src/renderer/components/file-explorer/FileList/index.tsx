@@ -953,6 +953,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
         <div
           className="flex-1 overflow-hidden"
           ref={listWrapperRef}
+          data-scroll-container="virtual-file-list"
           style={{
             fontSize: `${Math.max(11, Math.min(18, Math.round(11 + ((gridCardWidth - 50) / 350) * 7)))}px`
           }}

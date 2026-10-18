@@ -186,6 +186,7 @@
     "node-machine-id": "1.1.12",
     "path-browserify": "1.0.1",
     "pdfjs-dist": "6.2.108",
+    "pinyin-pro": "^3.29.5",
     "posthog-js": "1.364.7",
     "posthog-node": "5.28.11",
     "prebuild-install": "7.1.3",

@@ -37,31 +37,32 @@ import {
   OmniSearchFsItem
 } from '../../../services/omni-client'
 import { omniService } from '../../system/omni-service'
+import { calculateFzfScore } from './pinyin-fzf'
 
 /** RRF 平滑常量 K（避免 top-rank 分数悬殊、稳定融合放缩） */
 export const HYBRID_SEARCH_RRF_K = 60
-/** 加权 RRF 四路权重：精确标识符 > FTS 字面 / 向量语义 > 文件名提升 */
+/** 加权 RRF 四路权重：精确标识符 > 文件名提升 / FTS 字面 / 向量语义（跨媒体量纲统一平权） */
 export const HYBRID_SEARCH_WEIGHTS = {
   fts: 2.2,
   vector: 2.0,
-  name: 0.9,
+  name: 2.4,
   exact: 2.8
 } as const
 /** 单源候选池大小（FTS / 向量 / FS 各自的上限，也是融合池的上限） */
 export const HYBRID_SEARCH_POOL_SIZE = 200
 /** BM25 完整 10 列列权（第 0 列为 file_fingerprint UNINDEXED 赋 0.0，随后 9 列对齐 files_fts 架构：name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags） */
-export const HYBRID_BM25_COLUMN_WEIGHTS = [0.0, 8.0, 6.0, 4.0, 3.0, 5.0, 4.0, 3.0, 4.0, 5.0] as const
+export const HYBRID_BM25_COLUMN_WEIGHTS = [0.0, 4.0, 4.0, 3.0, 3.0, 3.5, 3.5, 3.0, 3.5, 3.5] as const
 
-/** 列权名字典（支持多模式/历史桩表动态自适应） */
+/** 列权名字典：恪守第一性原理，终结文件名在 BM25 中的超额膨胀，使图片 OCR、音频 ASR、视觉实体与文档正文健康平权 */
 export const DEFAULT_COLUMN_WEIGHT_MAP: Record<string, number> = {
-  name: 8.0,
-  smart_name: 6.0,
-  tags: 5.0,
-  multimodal_content: 5.0,
-  description: 4.0,
-  ocr: 4.0,
-  asr: 4.0,
+  name: 4.0,
+  smart_name: 4.0,
+  tags: 3.5,
+  multimodal_content: 3.5,
+  ocr: 3.5,
+  asr: 3.5,
   content: 3.0,
+  description: 3.0,
   lrc: 3.0
 }
 
@@ -239,18 +240,34 @@ export function rrfScore(rank: number | undefined, k: number = HYBRID_SEARCH_RRF
 }
 
 /**
- * 加权 RRF 融合得分（纯函数，便于单测）
+ * 加权 RRF 融合得分（纯函数，便于单测）：
+ * 恪守第一性原理彻底统一所有检索源的数学度量衡，杜绝裸加分项产生数量级压制：
+ * 1. 向量通道注入模型真实语义相似度物理量 vecScore (0.0~1.0)，在保持 RRF 单调性的同时奖励高置信度多模态实体；
+ * 2. 文件名提升分经过 (k+1) 归一化对齐到 RRF 标准尺度，杜绝 0.9 裸分对正文、图片与音频产生数十倍暴力碾压；
+ * 3. 严格包含防 NaN、防负数安全守卫。
  */
 export function weightedRrfScore(
-  opts: { ftsRank?: number; vecRank?: number; nameBoost?: number; exactRank?: number },
+  opts: { ftsRank?: number; vecRank?: number; nameBoost?: number; exactRank?: number; vecScore?: number },
   weights: { fts: number; vector: number; name: number; exact?: number } = HYBRID_SEARCH_WEIGHTS,
   k: number = HYBRID_SEARCH_RRF_K
 ): number {
   const wExact = weights.exact ?? HYBRID_SEARCH_WEIGHTS.exact
+  const baseVec = rrfScore(opts.vecRank, k)
+  // 当存在有效向量相似度时，按 (1.0 + clamp(vecScore, 0, 1)) 注入多模态语义置信度
+  const scoreMultiplier =
+    opts.vecScore !== undefined && Number.isFinite(opts.vecScore)
+      ? 1.0 + Math.max(0, Math.min(1, opts.vecScore))
+      : 1.0
+  const vecContrib = weights.vector * baseVec * scoreMultiplier
+
+  const safeNameBoost = Number.isFinite(opts.nameBoost) ? Math.max(0, opts.nameBoost ?? 0) : 0
+  const nameRrf = safeNameBoost / (k + 1)
+  const nameContrib = weights.name * nameRrf
+
   return (
     weights.fts * rrfScore(opts.ftsRank, k) +
-    weights.vector * rrfScore(opts.vecRank, k) +
-    weights.name * (opts.nameBoost ?? 0) +
+    vecContrib +
+    nameContrib +
     wExact * rrfScore(opts.exactRank, k)
   )
 }
@@ -269,14 +286,18 @@ export function computeNameBoost(
   if (!q) return 0
   const candidates = [name, smartName]
     .filter((s): s is string => !!s && typeof s === 'string')
-    .map(s => s.toLowerCase())
   if (candidates.length === 0) return 0
 
-  // 1. 全串完全包含 -> 1.0 (最高等级强提升)
-  // 支持带空格查询对紧凑文件名的完全匹配（如 "英语 学习" -> "英语学习.pdf"）
-  const compactQ = q.replace(/\s+/g, '')
+  // 1. 全串完全包含 / fzf 边界加权 / 拼音首字母匹配
+  let bestFzf = 0
   for (const cand of candidates) {
-    if (cand.includes(q) || (compactQ.length >= 2 && cand.includes(compactQ))) return 1
+    const fzfScore = calculateFzfScore(q, cand)
+    if (fzfScore > bestFzf) bestFzf = fzfScore
+  }
+
+  // 若 fzf / 拼音首字母缩写匹配达到高置信度（>= 0.85，对应完全子串包含、紧凑包含、拼音首字母或缩写命中），直接返回高提升分
+  if (bestFzf >= 0.85) {
+    return bestFzf
   }
 
   // 2. 严格 token 抽取：结合标签过滤方案（tag-admissibility SSOT）与国际化最小字数门禁
@@ -293,21 +314,26 @@ export function computeNameBoost(
 
   // 若全部有效词均被过滤（如极端停用词检索），平滑退化使用原始 useful tokens
   const tokensToScore = effectiveTokens.length > 0 ? effectiveTokens : rawTokens
-  if (tokensToScore.length === 0) return 0
+  if (tokensToScore.length === 0) {
+    return Math.round(bestFzf * 0.035 * 1000) / 1000
+  }
 
-  let best = 0
+  let bestTokenScore = 0
   for (const cand of candidates) {
+    const candLower = cand.toLowerCase()
     let hitTokens = 0
     for (const t of tokensToScore) {
-      if (cand.includes(t.toLowerCase())) hitTokens += 1
+      if (candLower.includes(t.toLowerCase())) hitTokens += 1
     }
     const ratio = hitTokens / tokensToScore.length
     // 部分匹配平滑阻尼，上限 0.035（加权后为 0.9 * 0.035 = 0.0315），
     // 确保与高质量向量 Top 1（0.0328）同级良性竞争，绝不暴力碾压纯多模态语义召回
     const score = ratio * 0.035
-    if (score > best) best = score
+    if (score > bestTokenScore) bestTokenScore = score
   }
-  return Math.round(best * 1000) / 1000
+
+  const dampenedFzf = Math.round(bestFzf * 0.035 * 1000) / 1000
+  return Math.round(Math.max(bestTokenScore, dampenedFzf) * 1000) / 1000
 }
 
 /**
@@ -461,72 +487,37 @@ export class HybridSearchArbiter {
   /**
    * 执行混合检索并返回融合池（不包含分页切片，分页由调用方基于 total/candidates 执行）
    */
-  async searchHybrid(context: HybridSearchContext): Promise<HybridRankPool> {
-    const {
-      keyword,
-      whereClauses,
-      queryParams,
-      workspaceDirectoryPath,
-      poolSize = HYBRID_SEARCH_POOL_SIZE,
-      queryEmbedding
-    } = context
-
-    const failures: HybridSearchFailures = { fts: false, vector: false, fs: false }
-
-    // 1. FTS5 BM25 / Omni 向量 / 真实目录 FS 未分析三路信号并发拉取 + 精确标识符探针
-    // 注：未提供 workspaceDirectoryPath 时不发起 FS 检索，且不视为 FS 故障
-    const attemptedFs = !!workspaceDirectoryPath
-    const fsPromise = attemptedFs
-      ? this.queryFastFs(workspaceDirectoryPath!, keyword, poolSize)
-      : Promise.resolve(null)
-    const identifiers = IdentifierProbe.extractIdentifiers(keyword)
-    const exactPromise =
-      identifiers.length > 0
-        ? Promise.resolve(
-            this.queryExactPhraseCandidates(identifiers, whereClauses, queryParams, poolSize)
-          )
-        : Promise.resolve([])
-    const [ftsResult, vectorResult, fsResult, exactResult] = await Promise.all([
-      this.queryFtsCandidates(keyword, whereClauses, queryParams, poolSize),
-      this.queryVectorCandidates(
-        keyword,
-        queryEmbedding,
-        whereClauses,
-        queryParams,
-        poolSize
-      ),
-      fsPromise,
-      exactPromise
-    ])
-
-    if (ftsResult === null) failures.fts = true
-    const ftsRankMap = new Map<string, number>()
-    for (const [idx, fp] of (ftsResult ?? []).entries()) ftsRankMap.set(fp, idx + 1)
-
-    const exactRankMap = new Map<string, number>()
-    for (const [idx, fp] of (exactResult ?? []).entries()) exactRankMap.set(fp, idx + 1)
-
-    if (vectorResult === null) failures.vector = true
-    const vecRankMap = new Map<
-      string,
-      { rank: number; score: number; matchedChunk?: VectorMatch['matchedChunk'] }
-    >()
-    for (const v of vectorResult ?? []) {
-      vecRankMap.set(v.fileFingerprint, {
-        rank: v.rank,
-        score: v.score,
-        matchedChunk: v.matchedChunk
-      })
-    }
-
-    // 2. 汇聚候选指纹并加载文件名信息
+  /**
+   * 内部构建加权 RRF 排序候选
+   */
+  private buildRankedCandidates(opts: {
+    keyword: string
+    ftsRankMap: Map<string, number>
+    exactRankMap: Map<string, number>
+    vecRankMap: Map<string, { rank: number; score: number; matchedChunk?: VectorMatch['matchedChunk'] }>
+    existingNameMap?: Map<string, { name?: string; smartName?: string; path?: string }>
+  }): {
+    candidates: HybridRankedCandidate[]
+    nameMap: Map<string, { name?: string; smartName?: string; path?: string }>
+  } {
+    const { keyword, ftsRankMap, exactRankMap, vecRankMap, existingNameMap } = opts
     const fpSet = new Set<string>()
     for (const fp of ftsRankMap.keys()) fpSet.add(fp)
     for (const fp of vecRankMap.keys()) fpSet.add(fp)
     for (const fp of exactRankMap.keys()) fpSet.add(fp)
-    const nameMap = this.queryNameMap(Array.from(fpSet))
 
-    // 3. 加权 RRF 融合 + 降序排序
+    let nameMap: Map<string, { name?: string; smartName?: string; path?: string }>
+    if (existingNameMap) {
+      nameMap = new Map(existingNameMap)
+      const missingFps = Array.from(fpSet).filter(fp => !nameMap.has(fp))
+      if (missingFps.length > 0) {
+        const deltaMap = this.queryNameMap(missingFps)
+        for (const [k, v] of deltaMap) nameMap.set(k, v)
+      }
+    } else {
+      nameMap = this.queryNameMap(Array.from(fpSet))
+    }
+
     const candidates: HybridRankedCandidate[] = []
     for (const fp of fpSet) {
       const ftsRank = ftsRankMap.get(fp)
@@ -541,8 +532,14 @@ export class HybridSearchArbiter {
         exactRank,
         vecScore: vec?.score,
         nameBoost,
-        score: weightedRrfScore({ ftsRank, vecRank: vec?.rank, nameBoost, exactRank }),
-        hasLiteral: exactRank !== undefined || ftsRank !== undefined || nameBoost >= 1,
+        score: weightedRrfScore({
+          ftsRank,
+          vecRank: vec?.rank,
+          nameBoost,
+          exactRank,
+          vecScore: vec?.score
+        }),
+        hasLiteral: exactRank !== undefined || ftsRank !== undefined || nameBoost >= 0.85,
         matchedChunk: vec?.matchedChunk
       })
     }
@@ -559,41 +556,157 @@ export class HybridSearchArbiter {
       if (aMin !== bMin) return aMin - bMin
       return a.fileFingerprint.localeCompare(b.fileFingerprint)
     })
+    return { candidates, nameMap }
+  }
 
-    // 4. 真实目录 FS 未分析命中（去重后追加尾部）
-    let unanalyzedHits: HybridUnanalyzedHit[] = []
-    if (attemptedFs) {
-      if (fsResult === null) {
-        failures.fs = true
-      } else if (fsResult.length) {
-        const seenFp = new Set(candidates.map(c => c.fileFingerprint))
-        const seenPath = new Set<string>()
-        for (const c of candidates) {
-          const p = nameMap.get(c.fileFingerprint)?.path
-          if (p) seenPath.add(normalizeForCache(p))
-        }
-        for (const hit of fsResult) {
-          if (!hit || !hit.path || !hit.name) continue
-          if (hit.fileFingerprint && seenFp.has(hit.fileFingerprint)) continue
-          const key = normalizeForCache(hit.path)
-          if (seenPath.has(key)) continue
-          seenFp.add(hit.fileFingerprint ?? '')
-          seenPath.add(key)
-          unanalyzedHits.push({
-            path: hit.path,
-            name: hit.name,
-            fileFingerprint: hit.fileFingerprint ?? undefined
-          })
-          if (unanalyzedHits.length >= poolSize) break
-        }
-      }
+  /**
+   * 内部构建 FS 未分析命中去重列表
+   */
+  private buildUnanalyzedHits(opts: {
+    fsResult: OmniSearchFsItem[] | null
+    candidates: HybridRankedCandidate[]
+    nameMap: Map<string, { name?: string; smartName?: string; path?: string }>
+    poolSize: number
+  }): HybridUnanalyzedHit[] {
+    const { fsResult, candidates, nameMap, poolSize } = opts
+    if (!fsResult || !fsResult.length) return []
+    const unanalyzedHits: HybridUnanalyzedHit[] = []
+    const seenFp = new Set(candidates.map(c => c.fileFingerprint))
+    const seenPath = new Set<string>()
+    for (const c of candidates) {
+      const p = nameMap.get(c.fileFingerprint)?.path
+      if (p) seenPath.add(normalizeForCache(p))
+    }
+    for (const hit of fsResult) {
+      if (!hit || !hit.path || !hit.name) continue
+      if (hit.fileFingerprint && seenFp.has(hit.fileFingerprint)) continue
+      const key = normalizeForCache(hit.path)
+      if (seenPath.has(key)) continue
+      seenFp.add(hit.fileFingerprint ?? '')
+      seenPath.add(key)
+      unanalyzedHits.push({
+        path: hit.path,
+        name: hit.name,
+        fileFingerprint: hit.fileFingerprint ?? undefined
+      })
+      if (unanalyzedHits.length >= poolSize) break
+    }
+    return unanalyzedHits
+  }
+
+  /**
+   * 执行混合检索并返回融合池（支持 Phase 1 流式快速回调）
+   */
+  async searchHybrid(
+    context: HybridSearchContext,
+    onPhase1?: (phase1Pool: HybridRankPool) => Promise<void> | void
+  ): Promise<HybridRankPool> {
+    const {
+      keyword,
+      whereClauses,
+      queryParams,
+      workspaceDirectoryPath,
+      poolSize = HYBRID_SEARCH_POOL_SIZE,
+      queryEmbedding
+    } = context
+
+    const failures: HybridSearchFailures = { fts: false, vector: false, fs: false }
+    const attemptedFs = !!workspaceDirectoryPath
+
+    // 1. 并发启动快速字面三路与慢速向量路
+    const fsPromise = attemptedFs
+      ? this.queryFastFs(workspaceDirectoryPath!, keyword, poolSize)
+      : Promise.resolve(null)
+    const identifiers = IdentifierProbe.extractIdentifiers(keyword)
+    const exactPromise =
+      identifiers.length > 0
+        ? Promise.resolve(
+            this.queryExactPhraseCandidates(identifiers, whereClauses, queryParams, poolSize)
+          )
+        : Promise.resolve([])
+    const ftsPromise = this.queryFtsCandidates(keyword, whereClauses, queryParams, poolSize)
+    const vectorPromise = this.queryVectorCandidates(
+      keyword,
+      queryEmbedding,
+      whereClauses,
+      queryParams,
+      poolSize
+    )
+
+    // Phase 1: 等待快速字面三路完成 (通常 10~25ms)
+    const [ftsResult, fsResult, exactResult] = await Promise.all([
+      ftsPromise,
+      fsPromise,
+      exactPromise
+    ])
+
+    if (ftsResult === null) failures.fts = true
+    const ftsRankMap = new Map<string, number>()
+    for (const [idx, fp] of (ftsResult ?? []).entries()) ftsRankMap.set(fp, idx + 1)
+
+    const exactRankMap = new Map<string, number>()
+    for (const [idx, fp] of (exactResult ?? []).entries()) exactRankMap.set(fp, idx + 1)
+
+    if (attemptedFs && fsResult === null) failures.fs = true
+
+    // 若注册了 Phase 1 回调，立即基于字面三路构建 Phase 1 融合池并向上回调
+    let p1NameMap: Map<string, { name?: string; smartName?: string; path?: string }> | undefined
+    if (onPhase1) {
+      const p1 = this.buildRankedCandidates({
+        keyword,
+        ftsRankMap,
+        exactRankMap,
+        vecRankMap: new Map()
+      })
+      p1NameMap = p1.nameMap
+      const p1Unanalyzed = this.buildUnanalyzedHits({
+        fsResult,
+        candidates: p1.candidates,
+        nameMap: p1.nameMap,
+        poolSize
+      })
+      await onPhase1({
+        candidates: p1.candidates,
+        unanalyzedHits: p1Unanalyzed,
+        failures: { ...failures },
+        total: p1.candidates.length + p1Unanalyzed.length
+      })
     }
 
+    // Phase 2: 等待慢速向量计算完成
+    const vectorResult = await vectorPromise
+    if (vectorResult === null) failures.vector = true
+    const vecRankMap = new Map<
+      string,
+      { rank: number; score: number; matchedChunk?: VectorMatch['matchedChunk'] }
+    >()
+    for (const v of vectorResult ?? []) {
+      vecRankMap.set(v.fileFingerprint, {
+        rank: v.rank,
+        score: v.score,
+        matchedChunk: v.matchedChunk
+      })
+    }
+
+    const p2 = this.buildRankedCandidates({
+      keyword,
+      ftsRankMap,
+      exactRankMap,
+      vecRankMap,
+      existingNameMap: p1NameMap
+    })
+    const unanalyzedHits = this.buildUnanalyzedHits({
+      fsResult,
+      candidates: p2.candidates,
+      nameMap: p2.nameMap,
+      poolSize
+    })
+
     return {
-      candidates,
+      candidates: p2.candidates,
       unanalyzedHits,
       failures,
-      total: candidates.length + unanalyzedHits.length
+      total: p2.candidates.length + unanalyzedHits.length
     }
   }
 
@@ -796,18 +909,29 @@ export class HybridSearchArbiter {
               MIN(
                 CASE
                   WHEN wf.name LIKE ? ESCAPE '\\' THEN 0
-                  ${colSet.has('smart_name') ? "WHEN files_fts.smart_name LIKE ? ESCAPE '\\' THEN 1" : ''}
-                  ${colSet.has('tags') ? "WHEN files_fts.tags LIKE ? ESCAPE '\\' THEN 2" : ''}
-                  ${colSet.has('description') ? "WHEN files_fts.description LIKE ? ESCAPE '\\' THEN 3" : ''}
-                  ELSE 4
+                  ${colSet.has('smart_name') ? "WHEN files_fts.smart_name LIKE ? ESCAPE '\\' THEN 0" : ''}
+                  ${colSet.has('tags') ? "WHEN files_fts.tags LIKE ? ESCAPE '\\' THEN 1" : ''}
+                  ${colSet.has('ocr') ? "WHEN files_fts.ocr LIKE ? ESCAPE '\\' THEN 1" : ''}
+                  ${colSet.has('asr') ? "WHEN files_fts.asr LIKE ? ESCAPE '\\' THEN 1" : ''}
+                  ${colSet.has('multimodal_content') ? "WHEN files_fts.multimodal_content LIKE ? ESCAPE '\\' THEN 1" : ''}
+                  ${colSet.has('content') ? "WHEN files_fts.content LIKE ? ESCAPE '\\' THEN 2" : ''}
+                  ${colSet.has('description') ? "WHEN files_fts.description LIKE ? ESCAPE '\\' THEN 2" : ''}
+                  ${colSet.has('lrc') ? "WHEN files_fts.lrc LIKE ? ESCAPE '\\' THEN 2" : ''}
+                  ELSE 3
                 END
-              ) ASC
+              ) ASC,
+              wf.id DESC
             LIMIT ?
           `
           const orderParams = [exactNameParam]
           if (colSet.has('smart_name')) orderParams.push(exactNameParam)
           if (colSet.has('tags')) orderParams.push(exactNameParam)
+          if (colSet.has('ocr')) orderParams.push(exactNameParam)
+          if (colSet.has('asr')) orderParams.push(exactNameParam)
+          if (colSet.has('multimodal_content')) orderParams.push(exactNameParam)
+          if (colSet.has('content')) orderParams.push(exactNameParam)
           if (colSet.has('description')) orderParams.push(exactNameParam)
+          if (colSet.has('lrc')) orderParams.push(exactNameParam)
 
           rows = this.db.prepare(fallbackSql).all(
             ...likeParams,
@@ -934,11 +1058,9 @@ export class HybridSearchArbiter {
         return []
       }
 
-      // 1. 预先批量查询所有命中切片视频的 file_video_chunks 元数据（包括各切片起止时间与视频总时长）
+      // 1. 预先批量查询所有命中切片视频的 file_video_chunks 元数据（获取各切片起止时间）
       const parentsWithAnyChunks = Array.from(parentAggMap.values()).filter(p => p.chunks.length > 0)
       const chunkTimingMap = new Map<string, { startSec: number; endSec: number }>()
-      const videoDurationMap = new Map<string, number>()
-      const videoMaxChunkIndexMap = new Map<string, number>()
 
       if (parentsWithAnyChunks.length > 0) {
         try {
@@ -961,16 +1083,6 @@ export class HybridSearchArbiter {
               startSec: r.start_sec,
               endSec: r.end_sec
             })
-
-            const currentMaxEnd = videoDurationMap.get(r.file_fingerprint) ?? 0
-            if (r.end_sec > currentMaxEnd) {
-              videoDurationMap.set(r.file_fingerprint, r.end_sec)
-            }
-
-            const currentMaxIdx = videoMaxChunkIndexMap.get(r.file_fingerprint) ?? 0
-            if (r.chunk_index > currentMaxIdx) {
-              videoMaxChunkIndexMap.set(r.file_fingerprint, r.chunk_index)
-            }
           }
         } catch (err: unknown) {
           const msg = err instanceof Error ? err.message : String(err)
@@ -978,61 +1090,15 @@ export class HybridSearchArbiter {
         }
       }
 
-      // 2. 优选每个视频的最佳跳轴切片：
-      // 1) 获取该视频最高切片得分 maxChunkScore；
-      // 2) 筛选顶尖梯队切片 (score >= maxChunkScore - 0.035)；
-      // 3) 梯队内引入影视视听结构与时序实体聚焦（Golden Mid-Arc & Temporal Cluster）：
-      //    - 连续簇加成：前后相邻切片同样处于顶尖梯队，说明是持续展开的高光动态实体事件；
-      //    - 黄金中段余弦钟形加成：开篇前 20% 往往是环境空镜头（如雪山、蓝天大远景），片尾 20% 为转场收尾，
-      //      正主体与高光实体特写高度聚焦在 40%~65% 黄金中心轴线（最高享有 +0.030 满额加成，向两侧平滑衰减）。
+      // 2. 优选每个视频的最佳跳轴切片（严格以向量语义相似度最高分为绝对基准）：
+      // 恪守第一性原理与 KISS 原则，严禁主观假定片头片尾是空镜头或人为施加黄金中段加权，
+      // 杜绝非目标中段切片（如 01:33）通过位置偏置篡改真实最高匹配度切片（如 1:48 红色跑车）
       for (const agg of parentAggMap.values()) {
         if (agg.chunks.length === 0) continue
         agg.chunks.sort((a, b) => b.score - a.score)
-        const maxChunkScore = agg.chunks[0].score
-        const eliteThreshold = maxChunkScore - 0.035
-        const eliteChunks = agg.chunks.filter(c => c.score >= eliteThreshold)
-
-        const eliteSet = new Set(eliteChunks.map(c => c.chunkIndex))
-        const duration = videoDurationMap.get(agg.parentFp) ?? 0
-        const fallbackMaxChunk = videoMaxChunkIndexMap.get(agg.parentFp) ?? Math.max(...agg.chunks.map(c => c.chunkIndex), 1)
-
-        let bestCandidate = agg.chunks[0]
-        let bestPriorityScore = -1
-
-        for (const c of eliteChunks) {
-          // 精确计算物理时间比例 ratio（0.0 ~ 1.0）
-          let ratio = 0.5
-          const timing = chunkTimingMap.get(`${agg.parentFp}:c${c.chunkIndex}`)
-          if (timing && duration > 0) {
-            const midSec = (timing.startSec + timing.endSec) * 0.5
-            ratio = Math.max(0, Math.min(1, midSec / duration))
-          } else if (fallbackMaxChunk > 0) {
-            ratio = Math.max(0, Math.min(1, c.chunkIndex / fallbackMaxChunk))
-          }
-
-          // 黄金中心轴加成：以正片 50% 轴线为核心，采用半余弦平滑钟形加权（顶峰 +0.030，半宽 0.30）
-          const distFromCenter = Math.abs(ratio - 0.50)
-          let goldenBonus = 0
-          if (distFromCenter <= 0.30) {
-            goldenBonus = 0.030 * Math.cos((distFromCenter / 0.30) * (Math.PI / 2))
-          }
-
-          // 连续切片簇赋予时序凝聚度加成 (+0.005 每侧)
-          const hasPrev = eliteSet.has(c.chunkIndex - 1)
-          const hasNext = eliteSet.has(c.chunkIndex + 1)
-          const clusterBonus = (hasPrev ? 0.005 : 0) + (hasNext ? 0.005 : 0)
-
-          const priorityScore = c.score + goldenBonus + clusterBonus
-          if (priorityScore > bestPriorityScore) {
-            bestPriorityScore = priorityScore
-            bestCandidate = c
-          }
-        }
-
-        const chosen = bestCandidate
-
-        agg.bestChunkIndex = chosen.chunkIndex
-        agg.bestChunkScore = chosen.score
+        const topChunk = agg.chunks[0]
+        agg.bestChunkIndex = topChunk.chunkIndex
+        agg.bestChunkScore = topChunk.score
       }
 
       // 按最高得分降序重排

@@ -269,7 +269,7 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
     }
 
     return (
-      <div className="w-full h-full overflow-hidden">
+      <div className="w-full h-full overflow-hidden" data-path={fileItem.path}>
         <SearchListCard
           item={fileItem}
           safeItemName={safeItemName}

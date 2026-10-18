@@ -17,7 +17,7 @@ import {
 } from '@firefly/shared'
 import { omniClient } from '../../services/omni-client'
 import { t } from '@app/languages'
-import type { FileInfo, FileItem, DirectoryItem, WorkspaceDirectory } from '@firefly/types'
+import type { FileInfo, FileItem, DirectoryItem, WorkspaceDirectory, FilteredFilesResponse } from '@firefly/types'
 import { virtualDirectoryService, syncedDirectories } from '../state'
 import { trayService } from '../../runtime-services/system/tray-service'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
@@ -54,12 +54,61 @@ export function registerFileIPCHandlers() {
     await databaseService.addFile(file)
   })
 
+  // 维护渲染进程 WebContents ID 到活跃搜索序号的映射，用于发射前丢弃过期推流
+  const activeSearchSeqBySender = new Map<number, number>()
+
   ipcMain.handle(
     'search-workspace-files',
-    async (event, keyword: string, workspacePath: string) => {
+    async (
+      event,
+      keyword: string,
+      workspacePath: string,
+      options?: { stream?: boolean; seq?: number }
+    ) => {
       // 真实目录搜索统一走数据库"文件全信息搜索"：
       // FTS 全字段（文件名/智能名/描述/内容/标签等）+ path/type/author/language/category LIKE，
       // 并包含未分析文件（通过基础字段兼容命中）
+      const searchSeq = options?.seq ?? 0
+      if (options?.stream && options?.seq !== undefined) {
+        if (!activeSearchSeqBySender.has(event.sender.id)) {
+          event.sender.once('destroyed', () => {
+            activeSearchSeqBySender.delete(event.sender.id)
+          })
+        }
+        activeSearchSeqBySender.set(event.sender.id, options.seq)
+      }
+
+      const onProgress = options?.stream
+        ? (phase: 'phase1' | 'phase2', response: FilteredFilesResponse) => {
+            // 发射前背压丢弃守卫：校验当前请求序号是否已被新请求取代
+            const currentActiveSeq = activeSearchSeqBySender.get(event.sender.id)
+            if (options?.seq !== undefined && currentActiveSeq !== undefined && searchSeq < currentActiveSeq) {
+              logger.debug(
+                LogCategory.VIRTUAL_DIRECTORY,
+                `[Search] 丢弃已过期的搜索任务推流: seq=${searchSeq}, active=${currentActiveSeq}, phase=${phase}`
+              )
+              return
+            }
+
+            if (event.sender.isDestroyed()) return
+
+            const mappedItems = response.items.map(item => ({
+              ...item,
+              id: item.path,
+              isSelected: item.isSelected ?? false
+            }))
+            ;(mappedItems as any).tokens = response.tokens ?? []
+
+            event.sender.send('search-workspace-files-progress', {
+              phase,
+              seq: searchSeq,
+              items: mappedItems,
+              total: response.total,
+              tokens: response.tokens ?? []
+            })
+          }
+        : undefined
+
       try {
         const result = await virtualDirectoryService.getFilteredFilesPaged({
           selectedTags: [],
@@ -69,7 +118,8 @@ export function registerFileIPCHandlers() {
           searchKeyword: keyword,
           includeUnanalyzed: true,
           limit: 500,
-          offset: 0
+          offset: 0,
+          onProgress
         })
         // 保持与原有文件系统搜索返回格式一致：id 使用文件路径
         const items = result.items.map(item => ({

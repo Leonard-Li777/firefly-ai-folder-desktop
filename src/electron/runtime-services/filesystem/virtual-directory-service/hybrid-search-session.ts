@@ -6,6 +6,7 @@ import { LogCategory, logger, normalizeForCache, tokenize, isUsefulToken } from 
 import { omniClient } from '../../../services/omni-client'
 import {
   HybridRankedCandidate,
+  HybridRankPool,
   HybridSearchArbiter,
   HYBRID_SEARCH_POOL_SIZE,
   slicePage
@@ -73,6 +74,145 @@ export class HybridSearchSession {
    * 混合检索分页：按融合候选的统一顺序返回当前页文件与总数。
    * whereClauses/queryParams 由宿主经第 2 参注入（不含 searchKeyword 自身 LIKE 条件）。
    */
+  /**
+   * 按候选池和字段覆盖补充源生成一页 FileItem
+   */
+  private async assemblePage(
+    params: FilterFilesParams,
+    pool: HybridRankPool,
+    fieldCoverageRefs: ReturnType<HybridSearchCollaborators['fetchFieldCoverageRefs']>,
+    keyword: string,
+    limit: number,
+    offset: number,
+    shouldEnrich: boolean
+  ): Promise<{ items: FileItem[]; total: number; dbQueryTime: number }> {
+    const workspaceDirectoryPath = params.workspaceDirectoryPath
+    let dbQueryTime = 0
+
+    const seenFp = new Set<string>()
+    const seenUnanalyzedPath = new Set<string>()
+    const fullPool: HybridPageRef[] = []
+
+    // 1. 仲裁候选（已分析）
+    for (const c of pool.candidates) {
+      if (!c.fileFingerprint) continue
+      if (seenFp.has(c.fileFingerprint)) continue
+      seenFp.add(c.fileFingerprint)
+      fullPool.push({
+        kind: 'analyzed',
+        fileFingerprint: c.fileFingerprint,
+        hasLiteral: c.hasLiteral
+      })
+    }
+
+    // 2. 字段覆盖补充候选（已分析）
+    for (const ref of fieldCoverageRefs.analyzed) {
+      if (!ref.fileFingerprint || seenFp.has(ref.fileFingerprint)) continue
+      seenFp.add(ref.fileFingerprint)
+      fullPool.push(ref)
+    }
+
+    // 3. FS 实时未分析命中
+    for (const h of pool.unanalyzedHits) {
+      if (h.fileFingerprint && seenFp.has(h.fileFingerprint)) continue
+      const key = normalizeForCache(h.path)
+      if (seenUnanalyzedPath.has(key)) continue
+      seenUnanalyzedPath.add(key)
+      fullPool.push({
+        kind: 'unanalyzed',
+        path: h.path,
+        name: h.name,
+        fileFingerprint: h.fileFingerprint
+      })
+    }
+
+    // 4. 字段覆盖补充源未分析行
+    for (const ref of fieldCoverageRefs.unanalyzed) {
+      if (ref.fileFingerprint && seenFp.has(ref.fileFingerprint)) continue
+      const key = normalizeForCache(ref.path)
+      if (seenUnanalyzedPath.has(key)) continue
+      seenUnanalyzedPath.add(key)
+      fullPool.push(ref)
+    }
+
+    const { items: pageRefs, total } = slicePage(fullPool, limit, offset)
+    if (pageRefs.length === 0) {
+      return { items: [], total, dbQueryTime }
+    }
+
+    const candidateByFp = new Map<string, HybridRankedCandidate>(
+      pool.candidates.map(c => [c.fileFingerprint, c])
+    )
+    const analyzedRefs = pageRefs.filter(
+      (r): r is Extract<HybridPageRef, { kind: 'analyzed' }> => r.kind === 'analyzed'
+    )
+    const analyzedFps = analyzedRefs.map(r => r.fileFingerprint)
+
+    const rowStart = performance.now()
+    const rows = analyzedFps.length ? this.collaborators.fetchRowsByFingerprints(analyzedFps) : []
+    dbQueryTime += performance.now() - rowStart
+
+    const baseItems = new Map<string, FileItem>()
+    for (const item of this.collaborators.mapFilesToItems(rows, workspaceDirectoryPath)) {
+      if (item.fileFingerprint) baseItems.set(item.fileFingerprint, item)
+    }
+
+    let enrichment = new Map<
+      string,
+      { snippet?: string; matchType: 'exact' | 'fuzzy' | 'semantic'; similarity?: number }
+    >()
+    if (shouldEnrich && analyzedFps.length > 0) {
+      const contentStart = performance.now()
+      const contentsByFp = this.collaborators.fetchContentsForSearch(analyzedFps)
+      const descriptionsByFp = new Map<string, string>()
+      for (const [fp, item] of baseItems) {
+        if (item.description) descriptionsByFp.set(fp, item.description)
+      }
+      enrichment = await this.collaborators.enrichSearchPage(
+        keyword,
+        analyzedRefs,
+        candidateByFp,
+        contentsByFp,
+        descriptionsByFp
+      )
+      dbQueryTime += performance.now() - contentStart
+    }
+
+    const items: FileItem[] = []
+    for (const ref of pageRefs) {
+      if (ref.kind === 'analyzed') {
+        const base = baseItems.get(ref.fileFingerprint)
+        if (!base) continue
+        const e = enrichment.get(ref.fileFingerprint)
+        const cand = candidateByFp.get(ref.fileFingerprint)
+        const matchedChunk = cand?.matchedChunk
+          ? {
+              startSec: cand.matchedChunk.startSec,
+              endSec: cand.matchedChunk.endSec,
+              similarity: cand.matchedChunk.similarity
+            }
+          : undefined
+        items.push({
+          ...base,
+          snippet: e?.snippet,
+          matchType: matchedChunk
+            ? 'semantic'
+            : (e?.matchType ?? (ref.hasLiteral ? 'fuzzy' : 'semantic')),
+          similarity: matchedChunk?.similarity ?? e?.similarity ?? cand?.vecScore,
+          matchedChunk
+        })
+      } else {
+        items.push(this.collaborators.synthesizeUnanalyzedItem(ref, workspaceDirectoryPath))
+      }
+    }
+
+    return { items, total, dbQueryTime }
+  }
+
+  /**
+   * 混合检索分页：按融合候选的统一顺序返回当前页文件与总数。
+   * whereClauses/queryParams 由宿主经第 2 参注入（不含 searchKeyword 自身 LIKE 条件）。
+   */
   async runPaged(
     params: FilterFilesParams,
     keyword: string,
@@ -86,14 +226,57 @@ export class HybridSearchSession {
       const limit = params.limit !== undefined ? Math.max(0, params.limit) : Math.max(1, params.pageSize ?? 100)
       const offset = params.offset !== undefined ? Math.max(0, params.offset) : Math.max(0, ((params.page ?? 1) - 1) * limit)
 
-      // 1. 仲裁融合（FTS + 向量 + 文件名）；过滤条件由宿主预先组装注入
-      const pool = await this.collaborators.searchHybrid({
-        keyword,
-        whereClauses: where.whereClauses,
-        queryParams: where.queryParams,
-        workspaceDirectoryPath,
-        poolSize: HYBRID_SEARCH_POOL_SIZE
-      })
+      // 字段覆盖补充候选源（LIKE 兜底）提前查询
+      const fieldCoverageRefs = this.collaborators.fetchFieldCoverageRefs(params)
+      if (fieldCoverageRefs.failure) {
+        logger.warn(
+          LogCategory.VIRTUAL_DIRECTORY,
+          '[HybridSearchSession] 字段覆盖补充候选源降级（FTS 未索引字段与短查询可能漏召回）:',
+          fieldCoverageRefs.failure
+        )
+      }
+
+      // Phase 1 流式快速回调：字面三路就绪时立即推送首屏（<= 100 项，不执行耗时段落对齐）
+      let phase2Dispatched = false
+      const onPhase1 = params.onProgress
+        ? async (p1Pool: HybridRankPool) => {
+            if (phase2Dispatched) return
+            try {
+              const p1 = await this.assemblePage(
+                params,
+                p1Pool,
+                fieldCoverageRefs,
+                keyword,
+                Math.min(100, limit),
+                0,
+                false
+              )
+              if (phase2Dispatched) return
+              params.onProgress!('phase1', {
+                items: p1.items,
+                total: p1.total,
+                performance: {
+                  dbQueryTime: Math.round(p1.dbQueryTime * 100) / 100,
+                  totalTime: Math.round((performance.now() - startTime) * 100) / 100
+                }
+              })
+            } catch (p1Err) {
+              logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchSession] Phase 1 推流异常:', p1Err)
+            }
+          }
+        : undefined
+
+      // 1. 仲裁融合（FTS + 向量 + 文件名；传入 onPhase1 支持双阶段）
+      const pool = await this.collaborators.searchHybrid(
+        {
+          keyword,
+          whereClauses: where.whereClauses,
+          queryParams: where.queryParams,
+          workspaceDirectoryPath,
+          poolSize: HYBRID_SEARCH_POOL_SIZE
+        },
+        onPhase1
+      )
 
       if (pool.failures.fts || pool.failures.vector || pool.failures.fs) {
         logger.debug(
@@ -102,138 +285,17 @@ export class HybridSearchSession {
         )
       }
 
-      // 2. 统一有序引用（已分析候选在前，未分析命中追加尾部）：
-      //    - 先取仲裁融合的高精度候选；
-      //    - 再用字段覆盖补充源（LIKE 兜底）补回 FTS 未索引字段（路径/扩展名/作者/语言/
-      //      文件分类/标签物化路径）、trigram 短查询（<3 字符）命中与 includeUnanalyzed 未分析行；
-      //    - FS 实时未分析命中追加最后。
-      const seenFp = new Set<string>()
-      const seenUnanalyzedPath = new Set<string>()
-      const fullPool: HybridPageRef[] = []
-      // 2.1 仲裁候选（已分析）
-      for (const c of pool.candidates) {
-        if (!c.fileFingerprint) continue
-        if (seenFp.has(c.fileFingerprint)) continue
-        seenFp.add(c.fileFingerprint)
-        fullPool.push({
-          kind: 'analyzed',
-          fileFingerprint: c.fileFingerprint,
-          hasLiteral: c.hasLiteral
-        })
-      }
-      // 2.2 字段覆盖补充候选（已分析）：覆盖 FTS 未索引字段与短查询，是仲裁三路之外的第四源
-      const fieldCoverageRefs = this.collaborators.fetchFieldCoverageRefs(params)
-      if (fieldCoverageRefs.failure) {
-        // 检索降级必须可观测：本源失败会让「FTS 未索引字段 / 短查询 / 未分析行」漏召回，
-        // 且漏召回不体现在 total 上，严禁静默降级（历史事故：占位符与绑定值不匹配被 warn 吞掉）。
-        logger.warn(
-          LogCategory.VIRTUAL_DIRECTORY,
-          '[HybridSearchSession] 字段覆盖补充候选源降级（FTS 未索引字段与短查询可能漏召回）:',
-          fieldCoverageRefs.failure
-        )
-      }
-      for (const ref of fieldCoverageRefs.analyzed) {
-        if (!ref.fileFingerprint || seenFp.has(ref.fileFingerprint)) continue
-        seenFp.add(ref.fileFingerprint)
-        fullPool.push(ref)
-      }
-      // 2.3 FS 实时未分析命中（真实目录模式，最新磁盘状态优先）
-      for (const h of pool.unanalyzedHits) {
-        if (h.fileFingerprint && seenFp.has(h.fileFingerprint)) continue
-        const key = normalizeForCache(h.path)
-        if (seenUnanalyzedPath.has(key)) continue
-        seenUnanalyzedPath.add(key)
-        fullPool.push({
-          kind: 'unanalyzed',
-          path: h.path,
-          name: h.name,
-          fileFingerprint: h.fileFingerprint
-        })
-      }
-      // 2.4 字段覆盖补充源的未分析行（includeUnanalyzed 语义兜底，路径去重避免与 FS 命中重复）
-      for (const ref of fieldCoverageRefs.unanalyzed) {
-        if (ref.fileFingerprint && seenFp.has(ref.fileFingerprint)) continue
-        const key = normalizeForCache(ref.path)
-        if (seenUnanalyzedPath.has(key)) continue
-        seenUnanalyzedPath.add(key)
-        fullPool.push(ref)
-      }
-      const { items: pageRefs, total } = slicePage(fullPool, limit, offset)
-
-      if (pageRefs.length === 0) {
-        return {
-          items: [],
-          total,
-          performance: {
-            dbQueryTime: Math.round(dbQueryTime * 100) / 100,
-            totalTime: Math.round((performance.now() - startTime) * 100) / 100
-          }
-        }
-      }
-
-      // 3. 已分析候选：加载数据库行与正文，供摘要丰富
-      const candidateByFp = new Map<string, HybridRankedCandidate>(
-        pool.candidates.map(c => [c.fileFingerprint, c])
-      )
-      const analyzedRefs = pageRefs.filter(
-        (r): r is Extract<HybridPageRef, { kind: 'analyzed' }> => r.kind === 'analyzed'
-      )
-      const analyzedFps = analyzedRefs.map(r => r.fileFingerprint)
-
-      const rowStart = performance.now()
-      const rows = analyzedFps.length ? this.collaborators.fetchRowsByFingerprints(analyzedFps) : []
-      dbQueryTime += performance.now() - rowStart
-
-      const baseItems = new Map<string, FileItem>()
-      for (const item of this.collaborators.mapFilesToItems(rows, workspaceDirectoryPath)) {
-        if (item.fileFingerprint) baseItems.set(item.fileFingerprint, item)
-      }
-
-      const contentStart = performance.now()
-      const contentsByFp = analyzedFps.length
-        ? this.collaborators.fetchContentsForSearch(analyzedFps)
-        : new Map<string, string>()
-      const descriptionsByFp = new Map<string, string>()
-      for (const [fp, item] of baseItems) {
-        if (item.description) descriptionsByFp.set(fp, item.description)
-      }
-
-      const enrichment = await this.collaborators.enrichSearchPage(
+      // Phase 2: 全量加权 RRF 页面构建与富摘要丰富
+      const p2 = await this.assemblePage(
+        params,
+        pool,
+        fieldCoverageRefs,
         keyword,
-        analyzedRefs,
-        candidateByFp,
-        contentsByFp,
-        descriptionsByFp
+        limit,
+        offset,
+        true
       )
-
-      // 4. 保持融合顺序组装最终条目
-      const items: FileItem[] = []
-      for (const ref of pageRefs) {
-        if (ref.kind === 'analyzed') {
-          const base = baseItems.get(ref.fileFingerprint)
-          if (!base) continue
-          const e = enrichment.get(ref.fileFingerprint)
-          const cand = candidateByFp.get(ref.fileFingerprint)
-          const matchedChunk = cand?.matchedChunk
-            ? {
-                startSec: cand.matchedChunk.startSec,
-                endSec: cand.matchedChunk.endSec,
-                similarity: cand.matchedChunk.similarity
-              }
-            : undefined
-          items.push({
-            ...base,
-            snippet: e?.snippet,
-            matchType: matchedChunk
-              ? 'semantic'
-              : (e?.matchType ?? (ref.hasLiteral ? 'fuzzy' : 'semantic')),
-            similarity: matchedChunk?.similarity ?? e?.similarity ?? cand?.vecScore,
-            matchedChunk
-          })
-        } else {
-          items.push(this.collaborators.synthesizeUnanalyzedItem(ref, workspaceDirectoryPath))
-        }
-      }
+      dbQueryTime += p2.dbQueryTime
 
       let searchTokens: string[] = []
       try {
@@ -244,18 +306,24 @@ export class HybridSearchSession {
         searchTokens = Array.from(new Set([keyword, ...tokenize(keyword)])).filter(isUsefulToken)
       }
 
-      return {
-        items,
-        total,
+      const finalResponse: FilteredFilesResponse = {
+        items: p2.items,
+        total: p2.total,
         tokens: searchTokens,
         performance: {
           dbQueryTime: Math.round(dbQueryTime * 100) / 100,
           totalTime: Math.round((performance.now() - startTime) * 100) / 100
         }
       }
+
+      if (params.onProgress) {
+        phase2Dispatched = true
+        params.onProgress('phase2', finalResponse)
+      }
+
+      return finalResponse
     } catch (err: unknown) {
       logger.error(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchSession] 混合检索分页失败，回退常规检索:', err)
-      // 回退：去除搜索词走常规分页，保证搜索异常时功能可用
       return this.collaborators.fallbackPaged({ ...params, searchKeyword: undefined })
     }
   }
