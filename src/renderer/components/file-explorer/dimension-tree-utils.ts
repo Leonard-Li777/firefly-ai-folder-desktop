@@ -4,6 +4,11 @@ import { DimensionTreeNode } from './AnalyzedDirectory/types'
 
 /** key 父级段的「常规父标签 code」前缀 */
 const PARENT_CODE_PREFIX = 'parentCode:'
+/** key 第 4 段的「分支消歧 codePath」前缀：多父维度（如语言细分）同名叶子在
+ * 文档/电子书等不同分支下的 dimensionId/tagValue/viaParentCode/parentTagValue
+ * 四元组完全相同（viaParentCode 均为语言细分自身），仅 codePath 不同。
+ * 勾选 key 不携带 codePath 会导致跨分支勾选态共享（canon 4/0 同族口径分裂问题）。 */
+const PATH_PREFIX = 'path:'
 /**
  * builtin.content_tags 根节点恒定垫底序值（与 omni fast path / 回退路径 / TagTreeQuery 虚拟注入的 9999 三处口径统一）。
  * 虚拟注入组缺 order 时 id 回退会得到 28，受控根未全量到位时会误排前排，故比较层强制垫底。
@@ -19,19 +24,30 @@ const LIFTED_PREFIX = 'liftCode:'
 
 /**
  * 生成标签唯一 key（包含父标签标识以区分同名标签，V4 优先由 viaParentCode 驱动）
+ *
+ * 第 4 段（可选）为 `path:` + codePath 分支消歧段：多父受控维度（语言细分/地理位置/
+ * 打码程度等）的同 code 叶子会在多个媒体分支下各自现身，四元组
+ * (dimensionId, tagValue, parentTagValue, viaParentCode) 在各分支下完全相同，
+ * 唯有 codePath（完整物化链）不同——不带第 4 段会导致勾选态跨分支串选。
+ * 无 codePath 的行（聚合行/旧数据）key 与历史三段格式逐字节一致，localStorage 旧存档兼容。
+ *
  * @param isLifted 是否为穿透提升聚合行（打 liftCode 标记，多选还原时按聚合口径处理）
+ * @param codePath 标签的完整物化代码路径（分支消歧锚，可选）
  */
 export function makeTagKey(
   dimensionId: number,
   tagValue: string,
   parentTagValue?: string,
   viaParentCode?: string,
-  isLifted = false
+  isLifted = false,
+  codePath?: string
 ): string {
   const parentIdStr = viaParentCode
     ? `${isLifted ? LIFTED_PREFIX : PARENT_CODE_PREFIX}${viaParentCode}`
     : parentTagValue || ''
-  return `${dimensionId}::${parentIdStr}::${tagValue}`
+  const base = `${dimensionId}::${parentIdStr}::${tagValue}`
+  const trimmedPath = codePath?.trim()
+  return trimmedPath ? `${base}::${PATH_PREFIX}${trimmedPath}` : base
 }
 
 /**
@@ -39,6 +55,12 @@ export function makeTagKey(
  */
 export function parseTagKey(key: string) {
   const parts = key.split('::')
+  // 第 4 段（可选）：`path:` + codePath 分支消歧段（makeTagKey 文档见上）
+  let codePath: string | undefined
+  if (parts.length > 3 && parts[parts.length - 1].startsWith(PATH_PREFIX)) {
+    codePath = parts[parts.length - 1].slice(PATH_PREFIX.length)
+    parts.pop()
+  }
   const parentPart = parts[1] || ''
   const isLifted = parentPart.startsWith(LIFTED_PREFIX)
   const isParentCode = isLifted || parentPart.startsWith(PARENT_CODE_PREFIX)
@@ -52,7 +74,8 @@ export function parseTagKey(key: string) {
     parentTagValue: isParentCode ? undefined : (parentPart || undefined),
     viaParentCode: viaParent,
     isLifted,
-    tagValue: parts.slice(2).join('::')
+    tagValue: parts.slice(2).join('::'),
+    codePath
   }
 }
 
@@ -913,8 +936,9 @@ export function getSelectedTagsFromSet(
         ? ancestorChain[ancestorChain.length - 2]
         : undefined)
 
-    // 多父同名/同 Code 兄弟实例：优先用 key 中携带的 viaParentCode 精确消歧，
-    // 避免取到兄弟分支的 codePath / namePath 造成跨介质误召回 (M-2 修复)
+    // 多父同名/同 Code 兄弟实例：优先用 key 携带的 codePath（分支消歧锚）精确匹配，
+    // 其次 viaParentCode 消歧——避免取到兄弟分支的 codePath / namePath 造成跨介质误召回
+    // （M-2 修复；语言细分等多父维度 viaParentCode 跨分支相同，必须 codePath 才能区分）
     const candidates = group.tags.filter(t => t.tagValue === tagValue)
 
     // 穿透提升聚合行 (liftCode 标记 key)：聚合行的 viaParentCode 已被重写为提升容器，
@@ -925,9 +949,11 @@ export function getSelectedTagsFromSet(
         ? buildLiftedAggregateRow(group, parsed.viaParentCode, tagValue)
         : undefined
 
-    const exactMatch = parsed.viaParentCode
-      ? candidates.find(t => (t.viaParentCode || undefined) === parsed.viaParentCode)
-      : undefined
+    const exactMatch = parsed.codePath
+      ? candidates.find(t => t.codePath === parsed.codePath)
+      : parsed.viaParentCode
+        ? candidates.find(t => (t.viaParentCode || undefined) === parsed.viaParentCode)
+        : undefined
     const tagItem = aggRow || exactMatch || candidates[0]
 
     const effectiveViaParent =
@@ -1010,7 +1036,8 @@ export function getAllKeys(
         tag.tagValue,
         parentTag,
         tag.viaParentCode ?? undefined,
-        tag.isLifted === true
+        tag.isLifted === true,
+        tag.codePath
       )
       const currentChain = [...chain, tag.tagValue]
       keys.push({ key, ancestorChain: currentChain })

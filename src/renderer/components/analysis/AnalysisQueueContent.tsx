@@ -180,7 +180,7 @@ export function getStageLabel(
 
 function StatusBadge({ item }: { item: AnalysisQueueItem }) {
   const status = item.status
-  const stage = item.stage ?? item.analysisStage ?? (item.analysisStats as any)?.analysis_stage
+  const stage = item.analysisStage ?? (item.analysisStats as any)?.analysis_stage ?? item.stage
   const isAnalyzing = status === 'analyzing'
 
   const label = getStageLabel(status, stage, item.taskType)
@@ -265,7 +265,7 @@ const QueueRowRenderer = React.memo(
         </div>
         <div className="px-1 truncate text-center">
           <HistoryBadge
-            stage={item.stage ?? item.analysisStage ?? (item.analysisStats as any)?.analysis_stage}
+            stage={item.analysisStage ?? (item.analysisStats as any)?.analysis_stage ?? item.stage}
             status={item.status}
             analysisMode={data.analysisMode}
             taskType={item.taskType}
@@ -367,6 +367,7 @@ const QueueRowRenderer = React.memo(
       prevItem.updatedAt === nextItem.updatedAt &&
       prevItem.isUnit === nextItem.isUnit &&
       prevItem.fromCache === nextItem.fromCache &&
+      prevItem.stage === nextItem.stage &&
       prevItem.analysisStage === nextItem.analysisStage &&
       (prevItem.analysisStats as any)?.analysis_stage ===
         (nextItem.analysisStats as any)?.analysis_stage &&

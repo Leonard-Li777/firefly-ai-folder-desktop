@@ -207,6 +207,14 @@ export class HybridSearchSession {
               similarity: cand.matchedChunk.similarity
             }
           : undefined
+        const matchedChunks = cand?.matchedChunks && cand.matchedChunks.length > 0
+          ? cand.matchedChunks.map(c => ({
+              chunkIndex: c.chunkIndex,
+              startSec: c.startSec,
+              endSec: c.endSec,
+              similarity: c.similarity
+            }))
+          : undefined
         items.push({
           ...base,
           snippet: e?.snippet,
@@ -215,6 +223,7 @@ export class HybridSearchSession {
             : (e?.matchType ?? (ref.hasLiteral ? 'fuzzy' : 'semantic')),
           similarity: matchedChunk?.similarity ?? e?.similarity ?? cand?.vecScore,
           matchedChunk,
+          matchedChunks,
           matchedPinyinCandidate: e?.matchedPinyinCandidate
         })
       } else {

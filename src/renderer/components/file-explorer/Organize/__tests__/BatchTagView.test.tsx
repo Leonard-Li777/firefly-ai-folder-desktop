@@ -528,4 +528,92 @@ describe('BatchTagView 批量打标视图回归测试', () => {
       )
     })
   })
+  it('动态泛维度归属与分类维度层级嵌套必须完全满足单一事实源规范', async () => {
+    // 模拟全量预设包含：文件用途(根), 安全等级(子维度), 处理状态(子维度), 作者(泛维度), 地理位置(泛维度), 内容标签(泛维度)
+    const customPresetGroups = [
+      {
+        id: 2,
+        name: '文件用途',
+        code: concept('文件用途'),
+        metadata: { flag: { isPanDimension: false } },
+        tags: [{ dimensionId: 2, tagValue: '办公文档', fileCount: 1 }]
+      },
+      {
+        id: 17,
+        name: '安全等级',
+        code: concept('安全等级'),
+        metadata: { flag: { isPanDimension: false } },
+        triggerConditions: [{ parentDimension: concept('文件用途') }],
+        tags: [{ dimensionId: 17, tagValue: '机密', fileCount: 0 }]
+      },
+      {
+        id: 18,
+        name: '处理状态',
+        code: concept('处理状态'),
+        metadata: { flag: { isPanDimension: false } },
+        triggerConditions: [{ parentDimension: concept('文件用途') }],
+        tags: [{ dimensionId: 18, tagValue: '待归档', fileCount: 0 }]
+      },
+      {
+        id: 4,
+        name: '作者',
+        code: concept('作者'),
+        metadata: { flag: { isPanDimension: true } },
+        tags: [{ dimensionId: 4, tagValue: '刘慈欣', fileCount: 1 }]
+      },
+      {
+        id: 16,
+        name: '地理位置',
+        code: concept('地理位置'),
+        metadata: { flag: { isPanDimension: true } },
+        tags: [{ dimensionId: 16, tagValue: '北京', fileCount: 0 }]
+      },
+      {
+        id: 28,
+        name: '内容标签',
+        code: concept('内容标签'),
+        metadata: { flag: { isPanDimension: true } },
+        tags: [{ dimensionId: 28, tagValue: '科幻小说', fileCount: 0 }]
+      }
+    ]
+
+    ;(window as any).electronAPI.analyzedDirectory.getDimensionGroups = vi
+      .fn()
+      .mockResolvedValue({ groups: customPresetGroups })
+
+    render(
+      <BatchTagView
+        files={mockFiles}
+        dimensionGroups={[]}
+        onSaveTags={vi.fn()}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('section-standard-dimensions')).toBeInTheDocument()
+      expect(screen.getByTestId('section-pan-dimensions')).toBeInTheDocument()
+    })
+
+    const leftCol = screen.getByTestId('section-standard-dimensions')
+    const rightCol = screen.getByTestId('section-pan-dimensions')
+
+    // 1. 验证泛维度：作者、地理位置、内容标签全部归入右列泛维度区块
+    expect(within(rightCol).getByText('作者')).toBeInTheDocument()
+    expect(within(rightCol).getByText('地理位置')).toBeInTheDocument()
+    expect(within(rightCol).getByText('内容标签')).toBeInTheDocument()
+
+    // 泛维度绝不能出现在左列分类维度中
+    expect(within(leftCol).queryByText('作者')).not.toBeInTheDocument()
+    expect(within(leftCol).queryByText('地理位置')).not.toBeInTheDocument()
+    expect(within(leftCol).queryByText('内容标签')).not.toBeInTheDocument()
+
+    // 2. 验证分类维度层级：左列中只展示 1 个根分类卡片（文件用途）
+    expect(within(leftCol).getByText('1 个根分类')).toBeInTheDocument()
+    expect(within(leftCol).getByText('文件用途')).toBeInTheDocument()
+
+    // 安全等级和处理状态必须作为子维度嵌套在文件用途卡片内部，而不是作为顶级独立卡片
+    expect(within(leftCol).getByText('子维度 (2)')).toBeInTheDocument()
+    expect(within(leftCol).getByText('安全等级')).toBeInTheDocument()
+    expect(within(leftCol).getByText('处理状态')).toBeInTheDocument()
+  })
 })

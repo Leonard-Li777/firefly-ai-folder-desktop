@@ -25,7 +25,7 @@ export interface LocalBadgeFacts {
   failed: boolean
   /** HTTP 探活成功 */
   connected: boolean
-  /** 推理服务就绪（raw.status === 'ready'） */
+  /** 推理服务就绪（raw.status ∈ { ready, processing }，见下方 isEngineServiceReady） */
   started: boolean
   /** 引擎二进制已部署 */
   available: boolean
@@ -101,6 +101,31 @@ function fromCloud(facts: CloudBadgeFacts): EngineBadgeResult {
     return { status: 'detecting', icon: 'starting', cls: CLS.detecting, grayed: false }
   }
   return { status: 'disconnected', icon: 'disconnected', cls: CLS.disconnected, grayed: false }
+}
+
+/**
+ * 引擎推理服务状态判定唯一事实源（PRD-0044；契约见 `GET /api/engine/status`）。
+ *
+ * 引擎侧 `EngineCoordinator::get_status()`
+ * （`apps/firefly-ai-engine/src-tauri/src/engine/mod.rs`）会把「有请求正在处理」单独上报：
+ *   ProcessStatus::Running + active_requests > 0  => "processing"
+ *   ProcessStatus::Running + active_requests == 0 => "ready"
+ * 即 **`processing` 与 `ready` 同属「推理服务已启动」，唯一区别是当前是否空闲**。
+ *
+ * 历史缺陷：UI 侧多处只认 `status === 'ready'`，于是分析文件时状态在
+ * `ready` ↔ `processing` 之间反复切换，导致「启动服务 / 停止服务」按钮与
+ * 「已启动 / 已连接」徽章交替闪现。凡属「服务是否已启动」的判定一律走下面两个函数，
+ * **禁止再散写 `=== 'ready'`**。
+ */
+
+/** 引擎推理服务已就绪（llama.cpp 子进程存活且可服务）：空闲 `ready` 或推理中 `processing` */
+export function isEngineServiceReady(status?: string | null): boolean {
+  return status === 'ready' || status === 'processing'
+}
+
+/** 引擎推理服务在线（含拉起中）：已就绪，或正在启动尚未就绪 */
+export function isEngineServiceOnline(status?: string | null): boolean {
+  return isEngineServiceReady(status) || status === 'starting'
 }
 
 /**

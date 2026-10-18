@@ -16,7 +16,13 @@ import { useEngineStore } from '../../stores/engine-store'
 import { toast } from '../common/Toast'
 import { CloudModelConfigSettings } from './cloud-model-config-settings'
 import { CloudErrorCard } from './cloud-error-card'
-import { deriveEngineBadge, type EngineBadgeResult, type EngineBadgeStatus } from '../../lib/engine-status-badge'
+import {
+  deriveEngineBadge,
+  isEngineServiceOnline,
+  isEngineServiceReady,
+  type EngineBadgeResult,
+  type EngineBadgeStatus
+} from '../../lib/engine-status-badge'
 import { useCloudEngineStatusStore, isCloudStrictConnected } from '../../stores/cloud-engine-status-store'
 import { runCloudProbe } from '../../lib/cloud-engine-probe'
 import type { CloudModelConfig } from '@firefly/types'
@@ -88,27 +94,32 @@ export const AIEngineConfigSettings: React.FC = () => {
   const loadSnapshot = useEngineStore(s => s.load)
   const [actionPending, setActionPending] = useState<string | null>(null)
   const aiServiceStatus = useAIServiceStore(s => s.status)
+  // 引擎推理服务是否已启动（口径统一走 isEngineServiceReady：
+  // 引擎在推理中会由 `ready` 切换为 `processing`，两者同属「已启动」，只认 'ready' 会导致
+  // 分析文件时按钮与徽章在「已启动/已连接」之间交替闪现）
+  const engineServiceReady = isEngineServiceReady(snapshot?.raw?.status)
+
   // 本地引擎异常判定（PRD-0045）：
-  // 1. 若本地引擎已就绪运行（snapshot?.raw?.status === 'ready'），绝对不属于引擎异常；
+  // 1. 若本地引擎已就绪运行（含推理中 processing），绝对不属于引擎异常；
   // 2. 若引擎明确上报 status === 'error' 或熔断器被触发开路（circuitState === 'open'），属于引擎异常；
-  // 3. 在引擎尚未就绪（status !== 'ready'）的前提下，AI 服务处于 ERROR 态才属于引擎异常。
+  // 3. 在引擎尚未就绪的前提下，AI 服务处于 ERROR 态才属于引擎异常。
   const isEngineFailed =
     !isCloudMode &&
-    snapshot?.raw?.status !== 'ready' &&
+    !engineServiceReady &&
     (snapshot?.raw?.status === 'error' ||
       snapshot?.circuitState === 'open' ||
       aiServiceStatus === AIServiceStatus.ERROR)
 
   // 当本地引擎处于就绪态时，自动自愈清除陈旧的历史错误，避免状态滞留导致误报「引擎异常」
   useEffect(() => {
-    if (!isCloudMode && snapshot?.raw?.status === 'ready') {
+    if (!isCloudMode && engineServiceReady) {
       const store = useAIServiceStore.getState()
       if (store.status === AIServiceStatus.ERROR) {
         store.clearError()
         store.updateStatus(AIServiceStatus.IDLE)
       }
     }
-  }, [isCloudMode, snapshot?.raw?.status])
+  }, [isCloudMode, engineServiceReady])
 
   // 云端引擎状态面（PRD-0045）
   const cloudStarted = useCloudEngineStatusStore(s => s.cloudStarted)
@@ -266,7 +277,7 @@ export const AIEngineConfigSettings: React.FC = () => {
 
   /**
    * 引擎状态徽章（PRD-0045）：单枚互斥文案 + 仅选中着色。
-   * 萤核已启动 = 推理服务就绪（raw.status === 'ready'）。
+   * 萤核已启动 = 推理服务就绪（raw.status ∈ { ready, processing }，推理中同属已启动）。
    * 云端已连接 = 已拉取模型列表且已选模型（严格条件）。
    * 文案按 status 用 t(静态字面量) 包裹（t 只收静态字符串）。
    */
@@ -304,7 +315,9 @@ export const AIEngineConfigSettings: React.FC = () => {
               detecting: loading && !snapshot,
               failed: isEngineFailed,
               connected: !!snapshot?.connected,
-              started: snapshot?.raw?.status === 'ready',
+              // 推理中（processing）同样属于「已启动」，否则分析文件时徽章会在
+              // 「已启动」与「已连接」之间反复跳变
+              started: engineServiceReady,
               available: snapshot?.available !== false
             }
           })
@@ -338,8 +351,11 @@ export const AIEngineConfigSettings: React.FC = () => {
   /** 萤核分支两态（PRD-0044）：已连接 = 引擎状态卡；未连接 = 提示卡 + 聚焦主按钮 */
   const isLocalBranch = isEnabled && !isCloudMode
   const engineConnected = !!snapshot?.connected
-  // 引擎侧 AI 推理服务是否运行中（引擎契约 status: "ready" 表示 llama.cpp 子进程已就绪）
-  const serviceRunning = snapshot?.raw?.status === 'ready'
+  // 引擎侧 AI 推理服务是否运行中（引擎契约：llama.cpp 子进程存活时 status 为
+  // "ready"（空闲）或 "processing"（推理中），"starting" 表示正在拉起）。
+  // 三者一律展示「停止服务」：服务一旦被拉起，无论当前是否在分析文件都不应回退为「启动服务」，
+  // 否则分析过程中两按钮会交替闪现。
+  const serviceRunning = isEngineServiceOnline(snapshot?.raw?.status)
   const openEngineBtnRef = React.useRef<HTMLButtonElement>(null)
 
   /** 将模型文件名或标识符美化为规范友好的模型展示名称 */

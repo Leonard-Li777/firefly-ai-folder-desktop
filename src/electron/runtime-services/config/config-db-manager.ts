@@ -387,21 +387,25 @@ export class ConfigDbManager {
         )
       }
 
-      // 3. 构建并写入初始 DIMENSION_POLICIES 策略项（DEC-03 & PRD-0059）
+      // 3. 构建并写入/更新初始 DIMENSION_POLICIES 策略项（DEC-03 & PRD-0059）
+      // 必须使用 INSERT OR REPLACE 确保预置策略（如 isPanDimension、isMultiSelect）变更时能同步刷新主库策略，
+      // 避免旧库中的历史策略因 INSERT OR IGNORE 永久冻结
       try {
         const presetPolicyPath = this.resolvePresetPolicyPath()
         if (presetPolicyPath && fs.existsSync(presetPolicyPath)) {
           const raw = fs.readFileSync(presetPolicyPath, 'utf-8')
-          insertStmt.run('DIMENSION_POLICIES', raw, now)
+          db.prepare(
+            `INSERT OR REPLACE INTO system_config (key, value, updated_at) VALUES ('DIMENSION_POLICIES', ?, ?)`
+          ).run(raw, now)
           logger.info(
             LogCategory.CONFIG,
-            'ConfigDbManager: 成功从 preset 增量导入初始 DIMENSION_POLICIES 数据'
+            'ConfigDbManager: 成功从 preset 导入并刷新 DIMENSION_POLICIES 数据'
           )
         }
       } catch (policyErr) {
         logger.warn(
           LogCategory.CONFIG,
-          'ConfigDbManager: 写入初始 DIMENSION_POLICIES 失败:',
+          'ConfigDbManager: 写入 DIMENSION_POLICIES 失败:',
           policyErr
         )
       }
@@ -562,7 +566,15 @@ export class ConfigDbManager {
         process.cwd(),
         'apps/desktop/build/extraResources/configs/dimension-policies.json'
       ),
-      path.resolve(process.cwd(), 'build/extraResources/configs/dimension-policies.json')
+      path.resolve(process.cwd(), 'build/extraResources/configs/dimension-policies.json'),
+      path.resolve(
+        __dirname,
+        '../../../../build/extraResources/configs/dimension-policies.json'
+      ),
+      path.resolve(
+        __dirname,
+        '../../../../../apps/desktop/build/extraResources/configs/dimension-policies.json'
+      )
     ]
     for (const p of candidates) {
       if (fs.existsSync(p)) return p

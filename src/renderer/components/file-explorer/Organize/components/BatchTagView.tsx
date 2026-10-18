@@ -5,7 +5,7 @@ import { useVoerkaI18n } from '@voerkai18n/react'
 import { Button } from '../../../ui/button'
 import { Input } from '../../../ui/input'
 import { Badge } from '../../../ui/badge'
-import { DimensionGroup, DimensionTag, BatchTagOperation } from '@firefly/types'
+import { DimensionGroup, DimensionTag, BatchTagOperation, BatchTagResult } from '@firefly/types'
 import {
   isExtensionDimension,
   isFileTypeDimension,
@@ -16,10 +16,13 @@ import {
   concept,
   CANONICAL_NAMES,
   resolveRootDimension,
+  resolveSubdimensionRoot,
   TOP_ROOT_CODES,
+  ROOT_DIMENSION_META,
   CONTROLLED_SUBDIMENSION_PARENTS_GENERATED,
   CONTROLLED_DIMENSION_ROOT_CODES,
-  isControlledConcept
+  isControlledConcept,
+  classifyDimensionMutexScope
 } from '@firefly/shared'
 import { toast } from '../../../common/Toast'
 import { SplitPane } from '../../../common/SplitPane'
@@ -86,123 +89,48 @@ export const isSensitiveDimension = (g: DimensionGroup): boolean => {
 }
 
 /**
- * 基于权威事实源（fileDimension_zh-CN.json）中 triggerConditions.parentDimension 提取的纯净父级映射
- * 铁律（PRD / 用户明确指示）：
- * 只考虑 triggerConditions 指向的层级关系，绝不考虑 tagImplications 延伸的关系！
+ * 基于受控概念与单一事实源（SSOT）的动态受控常数
+ * 严格使用 concept('...') 与 @firefly/shared，严禁任何手写自然语言字符串或私造伪受控代码
  */
 const FILE_TYPE_CODE = concept('文件类型')
 const FILE_PURPOSE_CODE = concept('文件用途')
-const IMAGE_SUBDIVISION_CODE = concept('图片细分')
 const SENSITIVE_CONTENT_CODE = concept('敏感内容')
 const PORNOGRAPHY_SUBGENRES_CODE = concept('色情细分')
-const AUDIO_SEGMENTATION_CODE = concept('音频细分')
 const CONTENT_TAGS_CODE = concept('内容标签')
 const SECURITY_LEVEL_CODE = concept('安全等级')
-const PROCESSING_STATUS_CODE = concept('处理状态')
 
-export const TRIGGER_CONDITIONS_PARENT_MAP: Record<number, string[]> = {
-  // === 属于文件用途的子维度 ===
-  17: [FILE_PURPOSE_CODE], // 安全等级
-  18: [FILE_PURPOSE_CODE], // 处理状态
-  20: [FILE_PURPOSE_CODE], // 旅行内容
-  21: [FILE_PURPOSE_CODE], // 财务类型
-  22: [FILE_PURPOSE_CODE], // 游戏类型
-  23: [FILE_PURPOSE_CODE], // 学科领域
-  29: [FILE_PURPOSE_CODE], // 家庭生活细分
-  119: [FILE_PURPOSE_CODE], // 游戏平台
-
-  // === 属于图片细分的子维度 ===
-  // 铁律：摄影照片细分、合同票据细分等 triggerConditions 指向的是图片细分，严禁因 tagImplications 算入文件用途！
-  126: [IMAGE_SUBDIVISION_CODE], // 摄影照片细分
-  127: [IMAGE_SUBDIVISION_CODE], // 照片质量
-  128: [IMAGE_SUBDIVISION_CODE], // 合同票据细分
-  129: [IMAGE_SUBDIVISION_CODE], // 证照细分
-  135: [IMAGE_SUBDIVISION_CODE], // 截图细分
-  137: [IMAGE_SUBDIVISION_CODE], // 景别
-  138: [IMAGE_SUBDIVISION_CODE], // 光照
-  140: [IMAGE_SUBDIVISION_CODE], // 视角
-  142: [IMAGE_SUBDIVISION_CODE], // 系统生态
-  144: [IMAGE_SUBDIVISION_CODE], // 主体数量
-  146: [IMAGE_SUBDIVISION_CODE], // 文字密度
-  147: [IMAGE_SUBDIVISION_CODE], // 质感风格
-  148: [IMAGE_SUBDIVISION_CODE], // 时间季节
-
-  // === 属于敏感内容的子维度 ===
-  123: [SENSITIVE_CONTENT_CODE], // 色情分级
-  131: [SENSITIVE_CONTENT_CODE], // 血腥细分
-  132: [SENSITIVE_CONTENT_CODE], // 涉政细分
-  133: [SENSITIVE_CONTENT_CODE], // 违规细分
-  134: [SENSITIVE_CONTENT_CODE], // 色情细分
-  // 色情细分下的三级细分 (150~161 全部指向色情细分 -> 敏感内容)
-  150: [PORNOGRAPHY_SUBGENRES_CODE],
-  151: [PORNOGRAPHY_SUBGENRES_CODE],
-  152: [PORNOGRAPHY_SUBGENRES_CODE],
-  153: [PORNOGRAPHY_SUBGENRES_CODE],
-  154: [PORNOGRAPHY_SUBGENRES_CODE],
-  155: [PORNOGRAPHY_SUBGENRES_CODE],
-  156: [PORNOGRAPHY_SUBGENRES_CODE],
-  157: [PORNOGRAPHY_SUBGENRES_CODE],
-  158: [PORNOGRAPHY_SUBGENRES_CODE],
-  159: [PORNOGRAPHY_SUBGENRES_CODE],
-  160: [PORNOGRAPHY_SUBGENRES_CODE],
-  161: [PORNOGRAPHY_SUBGENRES_CODE],
-
-  // === 属于音频细分的子维度 ===
-  26: [AUDIO_SEGMENTATION_CODE], // 音乐类型
-
-  // === 属于文件类型的二级格式细分维度 ===
-  5: [FILE_TYPE_CODE], // 应用数据细分
-  6: [FILE_TYPE_CODE], // 图片细分
-  7: [FILE_TYPE_CODE], // 视频细分
-  8: [FILE_TYPE_CODE], // 音频细分
-  9: [FILE_TYPE_CODE], // 压缩包细分
-  10: [FILE_TYPE_CODE], // 程序细分
-  11: [FILE_TYPE_CODE], // 语言细分
-  12: [FILE_TYPE_CODE], // 系统文件细分
-  14: [FILE_TYPE_CODE], // 数据库细分
-  15: [FILE_TYPE_CODE], // 磁盘映像细分
-  19: [FILE_TYPE_CODE], // 软件性质
-  24: [FILE_TYPE_CODE], // 电子书细分
-  100: [FILE_TYPE_CODE], // 文本细分
-  101: [FILE_TYPE_CODE], // 文档细分
-  105: [FILE_TYPE_CODE], // 源代码细分
-  106: [FILE_TYPE_CODE], // 字体细分
-  136: [FILE_TYPE_CODE], // 生成载体
-  139: [FILE_TYPE_CODE], // 背景
-  141: [FILE_TYPE_CODE], // 版面
-  143: [FILE_TYPE_CODE], // 画幅
-  145: [FILE_TYPE_CODE], // 主体类型
-  149: [FILE_TYPE_CODE], // 主色调
-  163: [FILE_TYPE_CODE], // 运行平台
-  164: [FILE_TYPE_CODE], // 运行时框架
-  165: [FILE_TYPE_CODE] // 程序能力特征
+/**
+ * 动态提取维度组的规范受控代码（支持 code / id / name 动态解析，100% 动态，无局部硬编码）
+ */
+export const resolveDimensionGroupCode = (group?: DimensionGroup | null): string | undefined => {
+  if (!group) return undefined
+  if (group.code) return group.code
+  if (group.id !== undefined && CONTROLLED_DIMENSION_ROOT_CODES[Number(group.id)]) {
+    return CONTROLLED_DIMENSION_ROOT_CODES[Number(group.id)]
+  }
+  if (group.name && isControlledConcept(group.name)) {
+    try {
+      return concept(group.name as any)
+    } catch {}
+  }
+  return undefined
 }
 
 /**
- * 受控维度与分类架构规范名清单（保障维度名只作为区块名，绝对不能作为叶子可选标签）
+ * 依据 triggerConditions 与 AOT 单亲受控拓扑动态提取维度的直接父维度受控代码列表
+ * 严格遵守 SSOT：只考虑 triggerConditions 与 AOT 父子关系，绝不考虑 tagImplications 延伸的关系！
  */
-export const BUILTIN_DIMENSION_NAMES = [
-  '文件类型',
-  '文件用途',
-  '文件来源',
-  '作者',
-  '文件质量',
-  '内容标签',
-  '安全等级',
-  '处理状态',
-  '出版状态',
-  '摄影照片细分'
-]
+export const getTriggerConditionParentCodes = (
+  group: DimensionGroup,
+  presetGroups?: DimensionGroup[]
+): string[] => {
+  if (!group) return []
 
-export const ROOT_CATEGORY_NAMES = new Set<string>(BUILTIN_DIMENSION_NAMES)
-
-/**
- * 依据 triggerConditions 提取维度的直接父维度标识
- * 只考虑 triggerConditions 指向的层级关系，绝不考虑 tagImplications 延伸的关系
- */
-export const getTriggerConditionParentCodes = (group: DimensionGroup): string[] => {
-  // 1. 优先读取维度对象上的 triggerConditions
-  const tcs = (group as any).triggerConditions || (group.metadata as any)?.triggerConditions
+  // 1. 优先读取维度对象自身的 triggerConditions 或 parentCodes
+  const tcs =
+    (group as any).triggerConditions ||
+    (group.metadata as any)?.triggerConditions ||
+    (group.meta as any)?.triggerConditions
   if (Array.isArray(tcs) && tcs.length > 0) {
     const list: string[] = []
     for (const tc of tcs) {
@@ -223,55 +151,152 @@ export const getTriggerConditionParentCodes = (group: DimensionGroup): string[] 
     if (list.length > 0) return list
   }
 
-  // 2. 根据 ID 查阅权威 triggerConditions 映射表
-  if (TRIGGER_CONDITIONS_PARENT_MAP[group.id]) {
-    return TRIGGER_CONDITIONS_PARENT_MAP[group.id]
+  const pCodes = (group as any).parentCodes || (group.metadata as any)?.parentCodes
+  if (Array.isArray(pCodes) && pCodes.length > 0) {
+    return pCodes.filter(Boolean)
+  }
+
+  // 2. 从预设维度池 presetGroups 中动态读取其预置 triggerConditions / parentCodes
+  if (presetGroups && presetGroups.length > 0) {
+    const gCode = resolveDimensionGroupCode(group)
+    const gId = group.id !== undefined ? Number(group.id) : undefined
+    const gName = group.name ? group.name.trim() : undefined
+
+    const matched = presetGroups.find(p => {
+      if (gId !== undefined && p.id !== undefined && Number(p.id) === gId) return true
+      if (gCode && p.code && p.code === gCode) return true
+      if (gName && p.name && p.name.trim() === gName) return true
+      return false
+    })
+
+    if (matched) {
+      const matchTcs =
+        (matched as any).triggerConditions ||
+        (matched.metadata as any)?.triggerConditions ||
+        (matched.meta as any)?.triggerConditions
+      if (Array.isArray(matchTcs) && matchTcs.length > 0) {
+        const list: string[] = []
+        for (const tc of matchTcs) {
+          if (tc.parentDimension) {
+            const p = String(tc.parentDimension).trim()
+            try {
+              const cCode = concept(p as any)
+              if (cCode) {
+                list.push(cCode)
+                continue
+              }
+            } catch {}
+            if (p.startsWith('builtin.') || p.startsWith('omw.') || p.startsWith('hownet.')) {
+              list.push(p)
+            }
+          }
+        }
+        if (list.length > 0) return list
+      }
+      const matchPCodes = (matched as any).parentCodes || (matched.metadata as any)?.parentCodes
+      if (Array.isArray(matchPCodes) && matchPCodes.length > 0) {
+        return matchPCodes.filter(Boolean)
+      }
+    }
+  }
+
+  // 3. 基于 @firefly/shared 导出的 AOT 单亲拓扑表 CONTROLLED_SUBDIMENSION_PARENTS_GENERATED 动态求解直接父级
+  const code = resolveDimensionGroupCode(group)
+  if (code && CONTROLLED_SUBDIMENSION_PARENTS_GENERATED[code]?.parentCode) {
+    return [CONTROLLED_SUBDIMENSION_PARENTS_GENERATED[code].parentCode]
   }
 
   return []
 }
 
 /**
- * 仅依据 triggerConditions 解析维度所属的大类代码（根大类）
- * 严格阻断任何 tagImplications 延伸！
+ * 动态解析分类维度所属的顶级根大类代码
+ * 100% 基于单一事实源（AOT 拓扑回溯器 resolveSubdimensionRoot 与 triggerConditions）动态求解
+ * 严禁任何硬编码静态字典
  */
-export const resolveDimensionRootCode = (group: DimensionGroup): string => {
-  const parents = getTriggerConditionParentCodes(group)
-  if (parents.length === 0) {
-    return (group as any).code || `dim_${group.id}`
+export const resolveDimensionRootCode = (
+  group: DimensionGroup,
+  presetGroups?: DimensionGroup[]
+): string => {
+  const code = resolveDimensionGroupCode(group)
+
+  // 1. 若当前维度直接声明了 rootCode（且不等于自身 code），优先使用
+  const explicitRootCode = (group as any).rootCode || (group.metadata as any)?.rootCode
+  if (explicitRootCode && explicitRootCode !== code && TOP_ROOT_CODES.has(explicitRootCode)) {
+    return explicitRootCode
   }
 
-  const firstParent = parents[0]
-  // 若直接父维度为色情细分，向上追溯至敏感内容
-  if (firstParent === PORNOGRAPHY_SUBGENRES_CODE) {
-    return SENSITIVE_CONTENT_CODE
+  // 2. 利用 @firefly/shared 导出的 AOT 递归溯根器 resolveSubdimensionRoot 求解一级根
+  if (code) {
+    const subRoot = resolveSubdimensionRoot(code)
+    if (subRoot) {
+      // 敏感内容 / 色情分级保护
+      if (subRoot === PORNOGRAPHY_SUBGENRES_CODE) {
+        return SENSITIVE_CONTENT_CODE
+      }
+      // 若回溯得到的是顶级根（如文件用途、文件来源、文件质量等）
+      if (TOP_ROOT_CODES.has(subRoot) && subRoot !== FILE_TYPE_CODE) {
+        return subRoot
+      }
+    }
   }
 
-  // 若父维度是文件类型（左侧已排除该大类），则该细分维度自身（如图片细分）作为一级大类展示
-  if (firstParent === FILE_TYPE_CODE) {
-    return (group as any).code || `dim_${group.id}`
+  // 3. 读取 triggerConditions 求解直接父级并向上回溯
+  const parents = getTriggerConditionParentCodes(group, presetGroups)
+  if (parents.length > 0) {
+    const firstParent = parents[0]
+    // 若直接父维度为色情细分，向上追溯至敏感内容
+    if (firstParent === PORNOGRAPHY_SUBGENRES_CODE) {
+      return SENSITIVE_CONTENT_CODE
+    }
+    // 若父维度是文件类型（左侧已排除该大类），则该细分维度自身（如图片细分）作为一级大类展示
+    if (firstParent === FILE_TYPE_CODE) {
+      return code || `dim_${group.id}`
+    }
+    // 递归追溯该父级所属的一级根维度
+    const ancestorRoot = resolveSubdimensionRoot(firstParent)
+    if (ancestorRoot && TOP_ROOT_CODES.has(ancestorRoot) && ancestorRoot !== FILE_TYPE_CODE) {
+      return ancestorRoot
+    }
+    return firstParent
   }
 
-  return firstParent
+  return code || `dim_${group.id}`
 }
 
 /**
  * 判断是否为根大类（在左列分类维度中作为顶级卡片展示）
- * 规则：无 triggerConditions，或其 triggerConditions 指向已排除的元分类（如文件类型）
+ * 规则：
+ * 1. 本身为全系统顶级受控根维度 TOP_ROOT_CODES（且不是已排除的文件类型）；
+ * 2. 或无父维度（parents 为空，且 resolveDimensionRootCode 返回自身）；
+ * 3. 或其直接父维度是已被排除的元分类（如文件类型，则如图片细分等自身提升为一级根卡片）。
  */
-export const isRootDimension = (group: DimensionGroup): boolean => {
-  const parents = getTriggerConditionParentCodes(group)
-  if (parents.length === 0) return true
-  // 若其父维度是已过滤排除的元分类文件类型，该维度自身就是根卡片
+export const isRootDimension = (
+  group: DimensionGroup,
+  presetGroups?: DimensionGroup[]
+): boolean => {
+  const code = resolveDimensionGroupCode(group)
+  if (code && TOP_ROOT_CODES.has(code) && code !== FILE_TYPE_CODE) {
+    return true
+  }
+
+  const parents = getTriggerConditionParentCodes(group, presetGroups)
+  if (parents.length === 0) {
+    const rootCode = resolveDimensionRootCode(group, presetGroups)
+    return rootCode === code || rootCode === `dim_${group.id}`
+  }
+
+  // 若其父维度是已过滤排除的元分类文件类型，该维度自身就是顶级根卡片
   if (parents.includes(FILE_TYPE_CODE)) {
     return true
   }
+
   return false
 }
 
 /**
  * 判断维度是否为泛维度
- * 严格遵循单一事实源原则：仅通过策略元数据 flag.isPanDimension === true 判定
+ * 严格遵循单一事实源原则：仅通过策略元数据 flag.isPanDimension === true 动态判定
  * 严禁任何硬编码维度 ID、名称或受控 code
  */
 export const isPanDimensionGroup = (
@@ -283,25 +308,32 @@ export const isPanDimensionGroup = (
   // 1. 标准 checkIsPanDimension (来自 @firefly/shared，读取 metadata.flag.isPanDimension)
   if (checkIsPanDimension(group)) return true
 
-  // 2. 结构容错：读取 metadata.flag / meta.flag / isPanDimension 顶层属性
-  const flag = (group.metadata as any)?.flag || (group.meta as any)?.flag
-  if (flag?.isPanDimension === true) return true
+  // 2. 结构容错：读取 metadata.flag / meta.flag / metadata / meta / 顶层 isPanDimension 属性
+  const metaFlag = (group.metadata as any)?.flag || (group.meta as any)?.flag
+  if (metaFlag?.isPanDimension === true) return true
   if ((group.metadata as any)?.isPanDimension === true) return true
   if ((group.meta as any)?.isPanDimension === true) return true
   if ((group as any).isPanDimension === true) return true
 
   // 3. 动态对照：若传入的 group 缺失 metadata，尝试从由 ConfigDbManager 预加载的全量维度池中获取其策略
   if (presetGroups && presetGroups.length > 0) {
-    const matched = presetGroups.find(
-      p =>
-        (group.code && p.code === group.code) ||
-        (group.id && p.id === group.id)
-    )
+    const gCode = resolveDimensionGroupCode(group)
+    const gId = group.id !== undefined ? Number(group.id) : undefined
+    const gName = group.name ? group.name.trim() : undefined
+
+    const matched = presetGroups.find(p => {
+      if (gId !== undefined && p.id !== undefined && Number(p.id) === gId) return true
+      if (gCode && p.code && p.code === gCode) return true
+      if (gName && p.name && p.name.trim() === gName) return true
+      return false
+    })
+
     if (matched) {
       if (checkIsPanDimension(matched)) return true
       const mFlag = (matched.metadata as any)?.flag || (matched.meta as any)?.flag
       if (mFlag?.isPanDimension === true) return true
       if ((matched.metadata as any)?.isPanDimension === true) return true
+      if ((matched.meta as any)?.isPanDimension === true) return true
       if ((matched as any).isPanDimension === true) return true
     }
   }
@@ -312,7 +344,9 @@ export const isPanDimensionGroup = (
 interface BatchTagViewProps {
   files: any[]
   dimensionGroups: DimensionGroup[]
-  onSaveTags: (changes: BatchTagOperation) => Promise<void>
+  // S3 规格 §5.5：透传 BatchTagResult，否则 §5.4 的覆盖提示拿不到 overriddenCount；
+  // 保存失败必须 reject（调用方靠 catch 实现「不重置工作台」）
+  onSaveTags: (changes: BatchTagOperation) => Promise<BatchTagResult | void>
   onDeleteTagGlobally?: (dimensionId: number, tagName: string) => Promise<boolean>
   isSaving?: boolean
   inspectedFile?: any | null
@@ -328,6 +362,22 @@ export const isExtensionTag = (tagName: string) => {
   if (!tagName) return false
   const trimmed = tagName.trim()
   return trimmed.startsWith('.')
+}
+
+/**
+ * S3（规格 §5.2 / §5.3）：该维度是否需要按「单选」做三态互斥。
+ *
+ * 与写库侧 `resolveBatchTagScopeMode` **同源**——都走共享分类器
+ * `classifyDimensionMutexScope`（S0 产物，`@firefly/shared`）：
+ *   - `single` / `unknown` ⇒ 互斥（unknown 取保守分支，ADR-0034 默认单选）
+ *   - `multi` / `rule`    ⇒ 不收拢
+ *
+ * 边界（规格 §5.2 明确）：这里的互斥**只改 UI 选中态**。已入库的旧标签不会被
+ * 置回 initial 这一动作删除，真正的库里收敛靠 S2 写库侧的覆盖删除。
+ */
+const isMutexSingleGroup = (group?: DimensionGroup | null): boolean => {
+  const scope = classifyDimensionMutexScope(group?.code)
+  return scope === 'single' || scope === 'unknown'
 }
 
 /**
@@ -556,14 +606,25 @@ const DimensionGroupCard: React.FC<DimensionGroupCardProps> = React.memo(
           {/* 维度快捷操作 */}
           {groupTags.length > 0 && (
             <div className="flex items-center gap-1 opacity-80 hover:opacity-100 transition-opacity">
-              <button
-                type="button"
-                onClick={() => onBatchSetTags(group, 'add_all')}
-                className="text-[11px] text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 px-1.5 py-0.5 rounded-md hover:bg-emerald-500/10 transition-colors cursor-pointer"
-                title={t('全部附加该维度下的所有标签')}
-              >
-                {t('全附')}
-              </button>
+              {/* D-02：单选/unknown 维度不渲染「全附」按钮，改为不可点纯文本提示。
+                  不用 disabled 按钮——它仍是可聚焦的死控件，读屏会念成「按不动的按钮」。 */}
+              {isMutexSingleGroup(group) ? (
+                <span
+                  className="text-[11px] text-muted-foreground/70 px-1.5 py-0.5 select-none"
+                  title={t('该维度为单选维度，一次只能附加一个标签')}
+                >
+                  {t('选一个')}
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => onBatchSetTags(group, 'add_all')}
+                  className="text-[11px] text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 px-1.5 py-0.5 rounded-md hover:bg-emerald-500/10 transition-colors cursor-pointer"
+                  title={t('全部附加该维度下的所有标签')}
+                >
+                  {t('全附')}
+                </button>
+              )}
               <span className="text-muted-foreground/30 text-xs">|</span>
               <button
                 type="button"
@@ -802,14 +863,24 @@ const HierarchicalDimensionCard: React.FC<HierarchicalDimensionCardProps> = Reac
           <div className="flex items-center gap-2 shrink-0" onClick={e => e.stopPropagation()}>
             {rootTags.length > 0 && (
               <div className="flex items-center gap-1 opacity-80 hover:opacity-100 transition-opacity">
-                <button
-                  type="button"
-                  onClick={() => onBatchSetTags(root, 'add_all')}
-                  className="text-[11px] text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 px-1.5 py-0.5 rounded-md hover:bg-emerald-500/10 transition-colors cursor-pointer"
-                  title={t('全部附加该维度直属标签')}
-                >
-                  {t('全附')}
-                </button>
+                {/* D-02：单选/unknown 维度不渲染「全附」按钮，改为不可点纯文本提示 */}
+                {isMutexSingleGroup(root) ? (
+                  <span
+                    className="text-[11px] text-muted-foreground/70 px-1.5 py-0.5 select-none"
+                    title={t('该维度为单选维度，一次只能附加一个标签')}
+                  >
+                    {t('选一个')}
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => onBatchSetTags(root, 'add_all')}
+                    className="text-[11px] text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 px-1.5 py-0.5 rounded-md hover:bg-emerald-500/10 transition-colors cursor-pointer"
+                    title={t('全部附加该维度直属标签')}
+                  >
+                    {t('全附')}
+                  </button>
+                )}
                 <span className="text-muted-foreground/30 text-xs">|</span>
                 <button
                   type="button"
@@ -903,14 +974,24 @@ const HierarchicalDimensionCard: React.FC<HierarchicalDimensionCardProps> = Reac
 
                           {subTags.length > 0 && (
                             <div className="flex items-center gap-1 opacity-80 hover:opacity-100 transition-opacity">
-                              <button
-                                type="button"
-                                onClick={() => onBatchSetTags(subGroup, 'add_all')}
-                                className="text-[10px] text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 px-1 py-0.5 rounded hover:bg-emerald-500/10 transition-colors cursor-pointer"
-                                title={t('全部附加该子维度标签')}
-                              >
-                                {t('全附')}
-                              </button>
+                              {/* D-02：单选/unknown 维度不渲染「全附」按钮，改为不可点纯文本提示 */}
+                              {isMutexSingleGroup(subGroup) ? (
+                                <span
+                                  className="text-[10px] text-muted-foreground/70 px-1 py-0.5 select-none"
+                                  title={t('该维度为单选维度，一次只能附加一个标签')}
+                                >
+                                  {t('选一个')}
+                                </span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => onBatchSetTags(subGroup, 'add_all')}
+                                  className="text-[10px] text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 px-1 py-0.5 rounded hover:bg-emerald-500/10 transition-colors cursor-pointer"
+                                  title={t('全部附加该子维度标签')}
+                                >
+                                  {t('全附')}
+                                </button>
+                              )}
                               <span className="text-muted-foreground/30 text-xs">|</span>
                               <button
                                 type="button"
@@ -1111,9 +1192,27 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
   }, [files])
 
   // 铁律：维度名只用于区块/卡片名，绝不能作为自身区块下的标签供用户选择；顶层元根名不能作为叶子标签
+  // 铁律：维度名只用于区块/卡片名，绝不能作为自身区块下的标签供用户选择；顶层元根名不能作为叶子标签
   const rootCategoryNamesSet = useMemo(() => {
-    return ROOT_CATEGORY_NAMES
-  }, [])
+    const names = new Set<string>()
+    // 1. 从 SSOT TOP_ROOT_CODES 中收集所有顶层根维度的权威名称
+    for (const code of TOP_ROOT_CODES) {
+      const meta = ROOT_DIMENSION_META[code]
+      if (meta?.name) names.add(meta.name.trim())
+      try {
+        const canonical = concept(code as any)
+        if (canonical) names.add(canonical)
+      } catch {}
+    }
+    // 2. 从全量维度预设池及传入维度组中收集所有维度名称
+    for (const g of fullPresetGroups) {
+      if (g.name) names.add(g.name.trim())
+    }
+    for (const g of dimensionGroups) {
+      if (g.name) names.add(g.name.trim())
+    }
+    return names
+  }, [fullPresetGroups, dimensionGroups])
 
   // 2. 合并全量预设维度、传入维度以及当前待整理文件中已拥有的自定义标签（排除被用户在工作台标记删除的标签）
   const effectiveDimensionGroups = useMemo(() => {
@@ -1148,8 +1247,16 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
 
     // 1. 载入全量预设维度定义
     for (const g of fullPresetGroups) {
+      const isPan = isPanDimensionGroup(g, fullPresetGroups)
+      const prevMeta = typeof g.metadata === 'object' && g.metadata !== null ? (g.metadata as Record<string, any>) : {}
+      const prevFlag = typeof prevMeta.flag === 'object' && prevMeta.flag !== null ? prevMeta.flag : {}
       dimMap.set(g.id, {
         ...g,
+        code: resolveDimensionGroupCode(g) || g.code,
+        metadata: {
+          ...prevMeta,
+          ...(isPan ? { flag: { ...prevFlag, isPanDimension: true } } : {})
+        },
         tags: g.tags ? g.tags.filter(t => !isDeletedTag(g.id, t.tagValue)) : []
       })
     }
@@ -1172,8 +1279,8 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
             existingTagValues.add(t.tagValue.toLowerCase())
           }
         }
-        if (!existing.code && g.code) existing.code = g.code
-        if ((g as any).isPanDimension || (g.metadata as any)?.flag?.isPanDimension) {
+        if (!existing.code) existing.code = resolveDimensionGroupCode(g) || g.code
+        if (isPanDimensionGroup(g, fullPresetGroups)) {
           const prevMeta =
             typeof existing.metadata === 'object' && existing.metadata !== null
               ? (existing.metadata as Record<string, any>)
@@ -1188,8 +1295,16 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
           }
         }
       } else {
+        const isPan = isPanDimensionGroup(g, fullPresetGroups)
+        const prevMeta = typeof g.metadata === 'object' && g.metadata !== null ? (g.metadata as Record<string, any>) : {}
+        const prevFlag = typeof prevMeta.flag === 'object' && prevMeta.flag !== null ? prevMeta.flag : {}
         dimMap.set(g.id, {
           ...g,
+          code: resolveDimensionGroupCode(g) || g.code,
+          metadata: {
+            ...prevMeta,
+            ...(isPan ? { flag: { ...prevFlag, isPanDimension: true } } : {})
+          },
           tags: g.tags ? g.tags.filter(t => !isDeletedTag(g.id, t.tagValue)) : []
         })
       }
@@ -1255,8 +1370,9 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
     const purposeSubdimensionTagNames = new Set<string>()
     if (fullPresetGroups && fullPresetGroups.length > 0) {
       for (const g of fullPresetGroups) {
-        const parents = getTriggerConditionParentCodes(g)
-        if (parents.includes(FILE_PURPOSE_CODE)) {
+        const parents = getTriggerConditionParentCodes(g, fullPresetGroups)
+        const rootCode = resolveDimensionRootCode(g, fullPresetGroups)
+        if (parents.includes(FILE_PURPOSE_CODE) || rootCode === FILE_PURPOSE_CODE) {
           for (const t of g.tags || []) {
             if (t.tagValue) purposeSubdimensionTagNames.add(t.tagValue.trim())
           }
@@ -1512,23 +1628,54 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
     return { addCount, removeCount, totalChanges: addCount + removeCount }
   }, [tagStates, newTagNames, activeInputDimId, inputVal, deletedTagKeys])
 
-  // 处理标签点击三态循环 (Initial -> Add All -> Remove All -> Initial)
-  const handleToggleTag = useCallback((tagKey: string) => {
-    setTagStates(prev => {
-      const curr = prev[tagKey] || 'initial'
-      let next: TagActionState = 'add_all'
-      if (curr === 'initial') next = 'add_all'
-      else if (curr === 'add_all') next = 'remove_all'
-      else if (curr === 'remove_all') next = 'initial'
+  // 维度 ID → 维度组映射。handleToggleTag 只拿到 tagKey（`${dimId}::${tagValue}`），
+  // 靠它反查所属维度以判定互斥策略（规格 §5.2）；随维度列表变化重建。
+  const groupById = useMemo(() => {
+    const map = new Map<number, DimensionGroup>()
+    for (const g of effectiveDimensionGroups) map.set(g.id, g)
+    return map
+  }, [effectiveDimensionGroups])
 
-      if (next === 'initial') {
+  // 处理标签点击三态循环 (Initial -> Add All -> Remove All -> Initial)
+  const handleToggleTag = useCallback(
+    (tagKey: string) => {
+      setTagStates(prev => {
+        const curr = prev[tagKey] || 'initial'
+        let next: TagActionState = 'add_all'
+        if (curr === 'initial') next = 'add_all'
+        else if (curr === 'add_all') next = 'remove_all'
+        else if (curr === 'remove_all') next = 'initial'
+
         const copy = { ...prev }
-        delete copy[tagKey]
+
+        if (next === 'initial') {
+          delete copy[tagKey]
+          return copy
+        }
+
+        // S3 规格 §5.2：单选 / unknown 维度下，把某标签置为 add_all 时，
+        // 清除同组其他标签的 add_all（置回 initial），仅保留当前标签。
+        // remove_all 不触发联动——用户显式要删的标签不应被互斥逻辑撤销。
+        // 注意：这只是选中态收敛，不删除库中已存在的旧标签（收敛靠 S2 写库侧）。
+        if (next === 'add_all') {
+          const dimId = Number(tagKey.split('::')[0])
+          const group = groupById.get(dimId)
+          if (group && isMutexSingleGroup(group)) {
+            const prefix = `${dimId}::`
+            for (const key of Object.keys(prev)) {
+              if (key !== tagKey && key.startsWith(prefix) && prev[key] === 'add_all') {
+                delete copy[key]
+              }
+            }
+          }
+        }
+
+        copy[tagKey] = next
         return copy
-      }
-      return { ...prev, [tagKey]: next }
-    })
-  }, [])
+      })
+    },
+    [groupById]
+  )
 
   // 重置全部标签变更
   const handleResetAllChanges = useCallback(() => {
@@ -1542,6 +1689,13 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
 
   // 快速全选某维度下的全部标签为全部附加
   const handleBatchSetDimensionTags = useCallback((group: DimensionGroup, targetState: TagActionState) => {
+    // S3 规格 §5.3 状态机层兜底（第二道防线）：单选 / unknown 维度禁止「全附」。
+    // 展示层已把这些按钮替换为纯文本提示「选一个」，但任何新增入口都会绕过展示层，
+    // 故这里必须独立判定。toast 说明原因，避免用户以为按钮坏了。
+    if (targetState === 'add_all' && isMutexSingleGroup(group)) {
+      toast.info(t('该维度为单选维度，一次只能附加一个标签'))
+      return
+    }
     setTagStates(prev => {
       const next = { ...prev }
       ;(group.tags || []).forEach(t => {
@@ -1882,12 +2036,18 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
     }
 
     try {
-      await onSaveTags({
+      const result = await onSaveTags({
         fileIds,
         addTags,
         removeTags,
         newTags
       })
+      // S3 规格 §5.4：保存成功后回显单选互斥的覆盖次数。
+      // 计数是跨文件/跨维度汇总，故用「共覆盖」；D-03 已裁定不提供撤销入口，
+      // 提示本身即终态反馈（不弹模态框，避免阻塞批量场景）。
+      if (result && typeof result.overriddenCount === 'number' && result.overriddenCount > 0) {
+        toast.info(t('共覆盖 {count} 处单选冲突标签', { count: result.overriddenCount }))
+      }
       await loadFullDimensions()
       setTagStates({})
       setNewTagNames({})
@@ -1895,7 +2055,8 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       setDeletedTagKeys(new Set())
     } catch (err: any) {
       toast.error(t('保存标签失败: {msg}', { msg: err?.message || String(err) }))
-      // 悲观保护：发生异常时绝不重置工作台，保留已录入标签
+      // 悲观保护：发生异常时绝不重置工作台，保留已录入标签。
+      // 依赖 saveBatchTags 在 toast.error 之后重抛（规格 §5.5），否则这里永远不触发。
     }
   }
 
@@ -1959,10 +2120,10 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
     const rootMap = new Map<string, HierarchicalDimensionGroup>()
     const nonRootList: DimensionGroup[] = []
 
-    // 1. 优先提取所有根维度（Level 1 根维度）
+    // 1. 优先提取所有根维度（Level 1 根维度卡片）
     for (const group of standardGroups) {
-      if (isRootDimension(group)) {
-        const rootKey = (group as any).code || resolveDimensionRootCode(group) || `dim_${group.id}`
+      if (isRootDimension(group, fullPresetGroups)) {
+        const rootKey = resolveDimensionGroupCode(group) || `dim_${group.id}`
         rootMap.set(rootKey, {
           root: group,
           children: [],
@@ -1974,18 +2135,46 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       }
     }
 
-    // 2. 将子维度精确归入其所属根维度
+    // 2. 将子维度精确归入其所属根维度卡片
     for (const subGroup of nonRootList) {
-      const rootKey = resolveDimensionRootCode(subGroup)
+      const rootKey = resolveDimensionRootCode(subGroup, fullPresetGroups)
       let parentNode = rootMap.get(rootKey)
 
-      // 若未在当前 standardGroups 找到根维度，尝试按 code 查找
+      // 若未直接命中，遍历按 code / id 查找
       if (!parentNode) {
         for (const [k, p] of rootMap.entries()) {
-          if (p.root.code === rootKey || (p.root as any).rootCode === rootKey) {
+          const pCode = resolveDimensionGroupCode(p.root)
+          if (
+            (pCode && pCode === rootKey) ||
+            (p.root as any).rootCode === rootKey ||
+            (p.root.id !== undefined && `dim_${p.root.id}` === rootKey)
+          ) {
             parentNode = p
             break
           }
+        }
+      }
+
+      // 如果当前 standardGroups 里由于过滤导致父根卡片没有出现，但该根维度存在于 fullPresetGroups 中
+      if (!parentNode && fullPresetGroups.length > 0) {
+        const matchedPresetRoot = fullPresetGroups.find(
+          p =>
+            resolveDimensionGroupCode(p) === rootKey ||
+            p.code === rootKey ||
+            `dim_${p.id}` === rootKey
+        )
+        if (matchedPresetRoot && !isPanDimensionGroup(matchedPresetRoot, fullPresetGroups)) {
+          const newRootGroup: DimensionGroup = {
+            ...matchedPresetRoot,
+            tags: []
+          }
+          parentNode = {
+            root: newRootGroup,
+            children: [],
+            totalTagsCount: 0,
+            hasActiveFileHits: false
+          }
+          rootMap.set(rootKey, parentNode)
         }
       }
 
@@ -1997,7 +2186,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
         }
       } else {
         // 找不到所属根维度的子维度，作为独立卡片兜底，绝不丢失任何维度与标签
-        const fallbackKey = (subGroup as any).code || `dim_${subGroup.id}`
+        const fallbackKey = resolveDimensionGroupCode(subGroup) || `dim_${subGroup.id}`
         rootMap.set(fallbackKey, {
           root: subGroup,
           children: [],
@@ -2011,8 +2200,8 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
 
     // 3. 根维度排序：文件用途排首位，其余按官方权威 order 或 ID 排序
     result.sort((a, b) => {
-      const codeA = a.root.code || ''
-      const codeB = b.root.code || ''
+      const codeA = resolveDimensionGroupCode(a.root) || ''
+      const codeB = resolveDimensionGroupCode(b.root) || ''
       if (codeA === FILE_PURPOSE_CODE) return -1
       if (codeB === FILE_PURPOSE_CODE) return 1
       const orderA = a.root.order || (a.root.metadata as any)?.order || a.root.id
@@ -2030,7 +2219,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
     })
 
     return result
-  }, [standardGroups, tagFileCounts])
+  }, [standardGroups, fullPresetGroups, tagFileCounts])
 
   // 展开/折叠状态管理
   const [expandedRootKeys, setExpandedRootKeys] = useState<Set<string>>(() => new Set())

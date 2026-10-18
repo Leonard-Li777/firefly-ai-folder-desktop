@@ -17,7 +17,8 @@ import {
   concept,
   isControlledConcept,
   isControlledDimensionApplicableInDomain,
-  getParentDimensionCodeOfTag
+  getParentDimensionCodeOfTag,
+  classifyDimensionMutexScope
 } from '@firefly/shared'
 import {
   findTagCodeTwoStage,
@@ -1419,7 +1420,7 @@ export class DatabaseService {
    */
   async batchApplyTags(operation: import('@firefly/types').BatchTagOperation): Promise<import('@firefly/types').BatchTagResult> {
     if (!this._db || !operation.fileIds || operation.fileIds.length === 0) {
-      return { successCount: 0, failedCount: 0, updatedFileIds: [] }
+      return { successCount: 0, failedCount: 0, updatedFileIds: [], overriddenCount: 0 }
     }
 
     let successCount = 0
@@ -1530,6 +1531,17 @@ export class DatabaseService {
         }
       }
     }
+
+    // S2 裁决明细（规格 §4.6）：收录所有发生过裁决的作用域（含「仅跳过、未删除」），最多 100 条。
+    // 声明必须在事务回调之外——返回点在回调外读取，放里面会 TS18004。
+    const overrides: Array<{
+      fileId: number | string
+      parentCode: string
+      keptTagCode: string
+      deletedTagCodes: string[]
+      skippedTagCodes: string[]
+    }> = []
+    let overriddenCount = 0
 
     // ──────── Phase 2: 同步事务原子落库 (Atomic Synchronous Transaction) ────────
     try {
@@ -1722,9 +1734,12 @@ export class DatabaseService {
         )
 
         // 预编译指纹与路径查询语句（杜绝循环内重复 prepare）
+        // 铁律（S0-b）：只能引用 GENESIS_V1_SCHEMA 中真实存在的列。
+        // files 表主键只有 file_fingerprint，既无 id 也无 path（database.ts:90-109）；
+        // id / path 仅存在于 workspace_files（database.ts:133-153）。better-sqlite3 的 prepare
+        // 是即时编译，引用不存在的列会在此处（逐文件 try/catch 之外）抛错并让整批事务回滚。
         const selectWfByIdStmt = this._db!.prepare('SELECT file_fingerprint, path FROM workspace_files WHERE id = ?')
-        const selectFilesByIdStmt = this._db!.prepare('SELECT file_fingerprint, path FROM files WHERE id = ?')
-        const selectFilesByFpStmt = this._db!.prepare('SELECT file_fingerprint, path FROM files WHERE file_fingerprint = ?')
+        const selectFilesByFpStmt = this._db!.prepare('SELECT file_fingerprint FROM files WHERE file_fingerprint = ?')
         const selectWfByPathStmt = this._db!.prepare('SELECT file_fingerprint, path FROM workspace_files WHERE path = ?')
 
         // 预编译精准删除语句（杜绝循环内重复 prepare，对齐 Spec §3.6 性能铁律）
@@ -1752,6 +1767,26 @@ export class DatabaseService {
           }
         }
 
+        // S2 互斥收拢语句（规格 §4.1 阶段 B / §4.3）：与 insertStmt 一同在事务开头预编译，循环内只 run/get。
+        // 覆盖删除必须写成「tag_code <> winner」而不是「清空该作用域」——否则 INSERT winner 失败时维度已被清空（P0-A）。
+        const selectSiblingsStmt = this._db!.prepare(
+          'SELECT tag_code FROM file_tag_relations WHERE file_fingerprint = ? AND via_parent_code = ? AND tag_code <> ?'
+        )
+        const overrideDeleteStmt = this._db!.prepare(
+          'DELETE FROM file_tag_relations WHERE file_fingerprint = ? AND via_parent_code = ? AND tag_code <> ?'
+        )
+
+        // S2 显式移除集合（覆盖删除豁免判定用，规格 §4.4 第三行）：
+        // removeTags 解析出的维度限定码 ∪ removeTagCodes 全局码。winner 落在本集合 ⇒ 跳过覆盖删除，
+        // 否则「既有兄弟被清空 + winner 随后又被点删 ⇒ 维度变空」，比「保留兄弟」更糟。
+        const explicitRemoveCodes = new Set<string>(globalDeleteCodes)
+        for (const codeSet of dimDeletePlansMap.values()) {
+          for (const c of codeSet) explicitRemoveCodes.add(c)
+        }
+
+        // S2 作用域判定批级缓存：父行 meta 在本事务前已注册，批内不变
+        const scopeModeCache = new Map<string, 'single' | 'multi' | 'skip'>()
+
         for (const fileId of operation.fileIds) {
           try {
             let fp: string | undefined
@@ -1764,24 +1799,16 @@ export class DatabaseService {
               fp = wfRow.file_fingerprint
               filePath = wfRow.path
             } else {
-              // 2. 尝试从 files 表按 id 查询指纹与路径
-              const fileRow = selectFilesByIdStmt.get(fileId) as { file_fingerprint: string; path?: string } | undefined
-              if (fileRow?.file_fingerprint) {
-                fp = fileRow.file_fingerprint
-                filePath = fileRow.path
+              // 2. 尝试作为 file_fingerprint 字符串本身查询（files 表无 path，只能取指纹）
+              const fpRow = selectFilesByFpStmt.get(fileId) as { file_fingerprint: string } | undefined
+              if (fpRow?.file_fingerprint) {
+                fp = fpRow.file_fingerprint
               } else {
-                // 3. 尝试作为 file_fingerprint 字符串本身查询
-                const fpRow = selectFilesByFpStmt.get(fileId) as { file_fingerprint: string; path?: string } | undefined
-                if (fpRow?.file_fingerprint) {
-                  fp = fpRow.file_fingerprint
-                  filePath = fpRow.path
-                } else {
-                  // 4. 尝试作为 workspace_files 路径查询
-                  const pathRow = selectWfByPathStmt.get(fileId) as { file_fingerprint: string; path?: string } | undefined
-                  if (pathRow?.file_fingerprint) {
-                    fp = pathRow.file_fingerprint
-                    filePath = pathRow.path
-                  }
+                // 3. 尝试作为 workspace_files 路径查询（UI 侧 fileIds 可能退化为 f.path）
+                const pathRow = selectWfByPathStmt.get(fileId) as { file_fingerprint: string; path?: string } | undefined
+                if (pathRow?.file_fingerprint) {
+                  fp = pathRow.file_fingerprint
+                  filePath = pathRow.path
                 }
               }
             }
@@ -1791,52 +1818,118 @@ export class DatabaseService {
               continue
             }
 
-            // 添加标签关联（写入 via_parent_code 与 tag_group='user', source='user'，以及完整的 code_path, name_path, depth）
-            // ADR-0045：本路径为用户手动批量打标，来源分组固定落 'user'，source 固定落 'user'
-            if (allAddTagItems.length > 0) {
-              for (const item of allAddTagItems) {
-                // 全媒体领域排他门控铁律：非视觉介质（音频/文档/代码/压缩包）严禁挂载视觉专有维度与标签
-                if (
-                  filePath &&
-                  isVisualExclusiveDimension(item.viaParentCode, item.tagCode, filePath)
-                ) {
-                  logger.debug(
-                    LogCategory.DATABASE_SERVICE,
-                    `[batchApplyTags] 全媒体排他门禁拦截: 跳过向非视觉介质挂载视觉专有标签 (${filePath} -> ${item.tagCode})`
-                  )
-                  continue
-                }
+            // ────────── S2 阶段 A：候选过滤 / 去重 / 分组 / 裁决（规格 §4.1 步骤 2-6） ──────────
+            // 门禁依赖 filePath，故过滤与分组必须逐文件进行（时效性：filePath 是本文件解析结果）。
+            // ADR-0045：本路径为用户手动批量打标，来源分组固定落 'user'，source 固定落 'user'。
+            const materializeOf = (tagCode: string, viaParentCode: string, tagName: string) =>
+              materializedMap.get(`${viaParentCode}:${tagCode}`) || {
+                codePath: `/${viaParentCode || 'content_tags'}/${tagCode}`,
+                namePath: `/${viaParentCode || '内容标签'}/${tagName}`,
+                depth: viaParentCode ? 2 : 1
+              }
 
-                // (PRD-0057 S4 / GH #714) 用户手动批量打标旁路闸门：
-                // 来源为 user，走豁免短路（isTagAdmissible 永不拒，断言全部放行）
-                const tagName = item.tagName || getCanonicalConceptName(item.tagCode) || item.tagCode
-                const verdict = isTagAdmissible({
-                  name: tagName,
-                  tagGroup: 'user'
-                })
-                if (verdict.outcome === 'rejected') {
-                  logger.debug(
-                    LogCategory.DATABASE_SERVICE,
-                    `[tag-admissibility] ${verdict.rule} 拒绝用户打标入库: "${tagName}" (${verdict.reason})`
-                  )
-                  continue
-                }
+            const insertItem = (tagCode: string, viaParentCode: string, tagName?: string) => {
+              const name = tagName || getCanonicalConceptName(tagCode) || tagCode
+              const materialized = materializeOf(tagCode, viaParentCode, name)
+              insertStmt.run(fp, tagCode, viaParentCode, materialized.codePath, materialized.namePath, materialized.depth)
+            }
 
-                const key = `${item.viaParentCode}:${item.tagCode}`
-                const materialized = materializedMap.get(key) || {
-                  codePath: `/${item.viaParentCode || 'content_tags'}/${item.tagCode}`,
-                  namePath: `/${item.viaParentCode || '内容标签'}/${tagName}`,
-                  depth: item.viaParentCode ? 2 : 1
-                }
-
-                insertStmt.run(
-                  fp,
-                  item.tagCode,
-                  item.viaParentCode,
-                  materialized.codePath,
-                  materialized.namePath,
-                  materialized.depth
+            // 步骤 2：过滤（全媒体排他门禁 + 准入闸）。被拦者不参与胜出裁决，也就不会造成覆盖删除。
+            const survivors: Array<{ tagCode: string; viaParentCode: string; tagName?: string }> = []
+            for (const item of allAddTagItems) {
+              // 全媒体领域排他门控铁律：非视觉介质（音频/文档/代码/压缩包）严禁挂载视觉专有维度与标签
+              if (filePath && isVisualExclusiveDimension(item.viaParentCode, item.tagCode, filePath)) {
+                logger.debug(
+                  LogCategory.DATABASE_SERVICE,
+                  `[batchApplyTags] 全媒体排他门禁拦截: 跳过向非视觉介质挂载视觉专有标签 (${filePath} -> ${item.tagCode})`
                 )
+                continue
+              }
+
+              // (PRD-0057 S4 / GH #714) 用户手动批量打标旁路闸门：
+              // 来源为 user，走豁免短路（isTagAdmissible 永不拒，断言全部放行）
+              const tagName = item.tagName || getCanonicalConceptName(item.tagCode) || item.tagCode
+              const verdict = isTagAdmissible({
+                name: tagName,
+                tagGroup: 'user'
+              })
+              if (verdict.outcome === 'rejected') {
+                logger.debug(
+                  LogCategory.DATABASE_SERVICE,
+                  `[tag-admissibility] ${verdict.rule} 拒绝用户打标入库: "${tagName}" (${verdict.reason})`
+                )
+                continue
+              }
+
+              survivors.push(item)
+            }
+
+            // 步骤 3+4：按 (effectiveParent, tagCode) 去重（保留末位）后按父级分组。
+            // 去重是必需的（规格 §4.2）：createdTagMap 以 `${dim}:${tagName}` 为键，不同别名可映射到
+            // 同一 code；addTagCodes 也会与 addTags 重复。不去重会出现「同一 code 既 kept 又 skipped」。
+            const candidateGroups = new Map<string, Array<{ tagCode: string; tagName?: string }>>()
+            for (const item of survivors) {
+              let group = candidateGroups.get(item.viaParentCode)
+              if (!group) {
+                group = []
+                candidateGroups.set(item.viaParentCode, group)
+              }
+              // 先移除同 code 旧位次再压入，保证组内顺序即「末位胜出」顺序
+              const dupIdx = group.findIndex(c => c.tagCode === item.tagCode)
+              if (dupIdx >= 0) group.splice(dupIdx, 1)
+              group.push({ tagCode: item.tagCode, tagName: item.tagName })
+            }
+
+            // ────────── S2 阶段 B：落库（规格 §4.1 步骤 7-8；铁律：先 INSERT winner，后 DELETE 兄弟） ──────────
+            for (const [parentCode, candidates] of candidateGroups) {
+              const mode = this.resolveBatchTagScopeMode(parentCode, scopeModeCache, this._db!)
+
+              if (mode !== 'single' || candidates.length === 0) {
+                // 8. multi / rule / unknown(显式多选) / 无父级：按原逻辑逐条 INSERT，绝不做覆盖删除
+                for (const c of candidates) insertItem(c.tagCode, parentCode, c.tagName)
+                continue
+              }
+
+              // 5. 裁决：数组末位胜出（D-06 已裁定不做点击顺序，末位仅作确定性兜底）
+              const winner = candidates[candidates.length - 1]
+              let skippedTagCodes = candidates.slice(0, -1).map(c => c.tagCode)
+
+              // 6. winner 被同批显式移除 ⇒ 用户意图是「删它」，跳过覆盖删除（否则维度被清空）
+              const skipOverrideDelete = explicitRemoveCodes.has(winner.tagCode)
+
+              // 7a. 先 INSERT winner：失败即抛（本文件记 failedCount），此刻未发生任何删除 ⇒ 维度未被修改
+              insertItem(winner.tagCode, parentCode, winner.tagName)
+
+              let deletedTagCodes: string[] = []
+              if (!skipOverrideDelete) {
+                // 7b. 覆盖前 SELECT 既有兄弟（不含 winner 自身）
+                const siblingRows = selectSiblingsStmt.all(fp, parentCode, winner.tagCode) as Array<{
+                  tag_code: string
+                }>
+                deletedTagCodes = siblingRows.map(r => r.tag_code).filter(Boolean)
+
+                if (deletedTagCodes.length > 0) {
+                  // 7c. 删除既有兄弟；`tag_code <> winner` 保证刚写入的 winner 不被自己删掉
+                  overrideDeleteStmt.run(fp, parentCode, winner.tagCode)
+                  // 7d. 只有真实删除过既有兄弟才计入 overriddenCount（回答「有没有覆盖旧值」）
+                  overriddenCount++
+                }
+
+                // 规格 §4.2 末段：同一 code 只按「被删」记一次，从 skipped 中剔除
+                if (deletedTagCodes.length > 0 && skippedTagCodes.length > 0) {
+                  skippedTagCodes = skippedTagCodes.filter(c => !deletedTagCodes.includes(c))
+                }
+              }
+
+              // 明细：收录所有发生过裁决的作用域（含「仅跳过」），这样 skippedTagCodes 才有承载对象
+              if (overrides.length < 100 && (skippedTagCodes.length > 0 || deletedTagCodes.length > 0)) {
+                overrides.push({
+                  fileId,
+                  parentCode,
+                  keptTagCode: winner.tagCode,
+                  deletedTagCodes,
+                  skippedTagCodes
+                })
               }
             }
 
@@ -1914,8 +2007,75 @@ export class DatabaseService {
     return {
       successCount,
       failedCount,
-      updatedFileIds
+      updatedFileIds,
+      // S2：互斥收拢统计（规格 §4.6）。overriddenCount 只统计真实删除过既有兄弟的「文件-作用域」次数；
+      // overrides 收录所有发生过裁决的作用域（含「仅跳过」），供 UI 做 toast 回显与排障。
+      overriddenCount,
+      overrides
     }
+  }
+
+  /**
+   * S2 互斥收拢的作用域判定（规格 §3.2 `resolveScopeMode`，是 `classifyDimensionMutexScope` 的写库侧包装）
+   *
+   * 判定顺序（`rule` 必须优先：规则自有维度本身就在 RAW_SINGLE / RAW_MULTI 里）：
+   *   1. 无父级            → 'skip'（无作用域可定义，绝不删）
+   *   2. 'rule'（规则自有） → 'skip'（程序写入的事实标签，误删会破坏扩展名/文件类型等识别结果）
+   *   3. 'multi'           → 'multi'（全放行）
+   *   4. 'single'          → 'single'（互斥收拢 + 覆盖删除）
+   *   5. 'unknown'         → 读父行 `file_tags_private.meta.isMultiSelect`：
+   *                         显式 true ⇒ 'multi'，否则 'single'（ADR-0034 默认单选）
+   *
+   * 第 5 条的逃生口恰好覆盖「叶标签当父级」：`batchApplyTags` 给私有叶标签写的 meta 恒为
+   * `{ isLeaf: true, isMultiSelect: true }`（本函数下方私有标签注册处），其语义是「子节点可多选」，
+   * 读到这里正好导向非破坏性的 'multi'。`unknown` 取 'single' 而非 'skip' 的理由见规格 §3.2：
+   * UI 互斥不删已入库标签（`BatchTagView.tsx` 仅把兄弟置回 `initial`），'skip' 会放任冲突累积。
+   *
+   * @param parentCode 作用域 = 维度根 code（写入键与删除键同源，均为 `via_parent_code`）
+   * @param cache 批级缓存：父行 meta 在事务前已注册，批内不变，同一父级只解析一次
+   */
+  private resolveBatchTagScopeMode(
+    parentCode: string,
+    cache: Map<string, 'single' | 'multi' | 'skip'>,
+    db: Database.Database
+  ): 'single' | 'multi' | 'skip' {
+    const cached = cache.get(parentCode)
+    if (cached) return cached
+
+    let mode: 'single' | 'multi' | 'skip'
+    if (!parentCode) {
+      mode = 'skip'
+    } else {
+      switch (classifyDimensionMutexScope(parentCode)) {
+        case 'rule':
+          mode = 'skip'
+          break
+        case 'multi':
+          mode = 'multi'
+          break
+        case 'single':
+          mode = 'single'
+          break
+        default: {
+          let isMulti = false
+          try {
+            const row = db
+              .prepare('SELECT meta FROM file_tags_private WHERE code = ?')
+              .get(parentCode) as { meta?: string } | undefined
+            if (row?.meta) {
+              const meta = JSON.parse(row.meta) as { isMultiSelect?: boolean } | null
+              isMulti = meta?.isMultiSelect === true
+            }
+          } catch {
+            // meta 缺失/解析失败：按单选兜底（保守方向，宁可收拢也不放任冲突）
+          }
+          mode = isMulti ? 'multi' : 'single'
+        }
+      }
+    }
+
+    cache.set(parentCode, mode)
+    return mode
   }
 
   /**

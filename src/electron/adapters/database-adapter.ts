@@ -133,7 +133,12 @@ export class DatabaseAdapter implements IDatabaseAdapter {
 
       getByPath: async (filePath: string): Promise<any | null> => {
         const db = this.getDatabase()
-        const stmt = db.prepare('SELECT * FROM files WHERE path = ?')
+        // 铁律（S0-b）：files 表没有 path 列（database.ts:90-109），物理路径只存在于
+        // workspace_files（database.ts:133-153）。直查 `files WHERE path` 会在 prepare 阶段
+        // 抛 no such column，故改为经 workspace_files 反查 files 行。
+        const stmt = db.prepare(
+          'SELECT f.* FROM files f JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint WHERE wf.path = ?'
+        )
         return stmt.get(filePath) || null
       },
 

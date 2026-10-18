@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { AIServiceStatus } from '@firefly/types'
 import { useAIServiceStore } from './ai-service-store'
 import { useModelStore } from './model-store'
+import { isEngineServiceReady } from '../lib/engine-status-badge'
 
 /**
  * 引擎桥接状态快照（渲染层视图，与主进程 EngineBridgeSnapshot 对齐，宽容解析）
@@ -55,9 +56,14 @@ interface EngineStoreState {
   subscribe: () => () => void
 }
 
-/** 辅助：当底层推理引擎进入 ready 态时，自愈清除陈旧的历史错误并恢复就绪 */
+/**
+ * 辅助：当底层推理引擎进入就绪态时，自愈清除陈旧的历史错误并恢复就绪。
+ * 「就绪」含推理中（processing）——引擎处理请求时 status 由 ready 变为 processing，
+ * 若只认 ready，分析期间陈旧错误会滞留不清。
+ */
 function healStaleAiServiceErrors(snap: EngineBridgeSnapshotUI | null | undefined): void {
-  if (snap?.raw?.status === 'ready') {
+  // 显式判空保留 TS 对 snap 的收窄（函数调用无法穿透可选链收窄）
+  if (snap && isEngineServiceReady(snap.raw?.status)) {
     const aiStore = useAIServiceStore.getState()
     if (aiStore.status === AIServiceStatus.ERROR) {
       aiStore.clearError()

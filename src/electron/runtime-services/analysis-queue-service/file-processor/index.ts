@@ -25,6 +25,7 @@ import {
   isGibberishOcrText,
   isTagProvenanceGroup,
   isTagAdmissible,
+  isTrustworthyMaterializedCodePath,
   getCanonicalConceptName,
   resolveRuntimeMaterializedPath,
   CONTROLLED_CONCEPTS
@@ -2850,6 +2851,13 @@ export class FileProcessor {
             let finalCodePath = relCodePath
             let finalNamePath = relNamePath
             let finalDepth = relDepth
+
+            // 受控概念指南 §1.4 写侧根对齐仲裁：夹具声明的伪 content_tags 包装链 / 半截短路径
+            // 一律丢弃并重新仲裁，杜绝 /content_tags/摄影照片细分/... 类历史伪链再次入库
+            if (finalCodePath && !isTrustworthyMaterializedCodePath(finalCodePath, viaParentCode)) {
+              finalCodePath = ''
+              finalNamePath = ''
+            }
 
             if (!finalCodePath || !finalNamePath) {
               const materialized = resolveRuntimeMaterializedPath({

@@ -63,7 +63,8 @@ interface DimensionTreeNodeProps {
     parentTagValue?: string,
     ancestorChain?: string[],
     viaParentCode?: string,
-    isLifted?: boolean
+    isLifted?: boolean,
+    codePath?: string
   ) => void
   getVisibleAndHiddenTags: (
     group: any,
@@ -210,7 +211,8 @@ const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
                               parentTagValue,
                               currentChain,
                               tag.viaParentCode || undefined,
-                              tag.isLifted === true
+                              tag.isLifted === true,
+                              tag.codePath
                             )
                           }
                         }}
@@ -226,7 +228,8 @@ const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
                               parentTagValue,
                               currentChain,
                               tag.viaParentCode || undefined,
-                              tag.isLifted === true
+                              tag.isLifted === true,
+                              tag.codePath
                             )
                           }
                           className="w-3.5 h-3.5 rounded border border-border/80 accent-primary cursor-pointer shrink-0"
@@ -255,7 +258,8 @@ const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
                             parentTagValue,
                             currentChain,
                             tag.viaParentCode || undefined,
-                            tag.isLifted === true
+                            tag.isLifted === true,
+                            tag.codePath
                           )
                         } else {
                           handleTagClick({
@@ -315,7 +319,9 @@ interface DimensionTreeRowProps {
     ancestorChain?: string[],
     viaParentCode?: string,
     /** 是否为穿透提升聚合行（key 打 liftCode 标记，ADR-0034 §4 / M-4） */
-    isLifted?: boolean
+    isLifted?: boolean,
+    /** 分支消歧锚：完整物化代码路径（多父维度同名叶子跨分支必传） */
+    codePath?: string
   ) => void
   handleTagClickInternal: (tag: any) => void
 }
@@ -437,7 +443,8 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
                     row.parentTagValue,
                     row.ancestorChain,
                     tag.viaParentCode || undefined,
-                    tag.isLifted === true
+                    tag.isLifted === true,
+                    tag.codePath
                   )
                 }
               }}
@@ -453,7 +460,8 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
                     row.parentTagValue,
                     row.ancestorChain,
                     tag.viaParentCode || undefined,
-                    tag.isLifted === true
+                    tag.isLifted === true,
+                    tag.codePath
                   )
                 }
                 className="w-3.5 h-3.5 rounded border border-border/80 accent-primary cursor-pointer shrink-0"
@@ -483,7 +491,8 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
                   row.parentTagValue,
                   row.ancestorChain,
                   tag.viaParentCode || undefined,
-                  tag.isLifted === true
+                  tag.isLifted === true,
+                  tag.codePath
                 )
               } else {
                 handleTagClickInternal({
@@ -837,8 +846,9 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       codePath?: string
     ): boolean => {
       if (isExportMode) {
-        // 聚合行与直系实例行可能同父 code，key 必须带 liftCode 标记区分 (ADR-0034 §4 / M-4)
-        const key = makeTagKey(dimensionId, tagValue, parentTagValue, viaParentCode, isLifted)
+        // 聚合行与直系实例行可能同父 code，key 必须带 liftCode 标记区分 (ADR-0034 §4 / M-4)；
+        // 多父维度同名叶子跨分支（文档/电子书下的语言细分）必须带 codePath 消歧，杜绝串选
+        const key = makeTagKey(dimensionId, tagValue, parentTagValue, viaParentCode, isLifted, codePath)
         return selectedTags.has(key)
       } else {
         const curParent = currentTag ? currentTag.viaParentCode : undefined
@@ -869,9 +879,12 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       parentTagValue?: string,
       ancestorChain?: string[],
       viaParentCode?: string,
-      isLifted?: boolean
+      isLifted?: boolean,
+      codePath?: string
     ) => {
-      const key = makeTagKey(dimensionId, tagValue, parentTagValue, viaParentCode, isLifted)
+      // 第 4 段 codePath 分支消歧：多父维度（语言细分等）同名叶子在文档/电子书等
+      // 分支下四元组全同，仅 codePath 不同；不带消歧段会跨分支共享勾选态
+      const key = makeTagKey(dimensionId, tagValue, parentTagValue, viaParentCode, isLifted, codePath)
 
       const isRemoving = selectedTags.has(key)
       const nextSelected = new Set(selectedTags)
@@ -945,7 +958,8 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
           tag.parentTagValue,
           tag.ancestorChain,
           effectiveViaParent,
-          tag.isLifted === true
+          tag.isLifted === true,
+          tag.codePath
         )
       } else {
         const newTag: SelectedTag = {

@@ -25,6 +25,14 @@ export interface FileType extends BaseFileType {
     score?: number
     similarity?: number
   }
+  /** 视频切片命中列表（同视频多片段命中，抽帧预览 Grid 模式） */
+  matchedChunks?: Array<{
+    chunkIndex?: number
+    startSec: number
+    endSec: number
+    score?: number
+    similarity?: number
+  }>
 }
 
 export interface FileListProps {

@@ -141,7 +141,8 @@ export function OrganizingView({
                     <span className="text-xs font-medium">
                       {isPaused
                         ? t('已暂停')
-                        : t('正在整理第 {current}/{total} 批次', {
+                        : progressInfo.message ||
+                          t('正在整理第 {current}/{total} 批次', {
                             current: progressInfo.current,
                             total: progressInfo.total
                           })}

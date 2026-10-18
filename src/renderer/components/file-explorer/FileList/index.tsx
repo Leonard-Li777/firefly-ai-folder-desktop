@@ -228,6 +228,32 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     isRealDirectory
   ])
 
+  // 搜索列表模式专属条目：若视频命中片段较多（一行放不下，> 4 个），自动排到第二行（占两个文件行展示）
+  const searchListItems = useMemo(() => {
+    if (viewMode !== 'search-list') return items
+    const expanded: any[] = []
+    const CHUNKS_PER_ROW = 4 // 每行最多展示 4 个大画幅抽帧片段，超出时占两个（或多个）文件行展示
+
+    for (const item of items) {
+      const matchedChunks = (item as any)?.matchedChunks
+      if (Array.isArray(matchedChunks) && matchedChunks.length > CHUNKS_PER_ROW) {
+        const totalRows = Math.ceil(matchedChunks.length / CHUNKS_PER_ROW)
+        for (let r = 0; r < totalRows; r++) {
+          const sliceChunks = matchedChunks.slice(r * CHUNKS_PER_ROW, (r + 1) * CHUNKS_PER_ROW)
+          expanded.push({
+            ...item,
+            matchedChunks: sliceChunks,
+            chunkRowIndex: r,
+            totalChunkRows: totalRows
+          })
+        }
+      } else {
+        expanded.push(item)
+      }
+    }
+    return expanded
+  }, [items, viewMode])
+
   const columnCount = useMemo(() => {
     // 增加安全边距（约 48px）用于处理滚动条和容器内边距，使布局更宽松
     const availableWidth = Math.max(0, containerSize.width - 48)
@@ -691,29 +717,41 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
         )}
 
         <div className="flex-1 overflow-hidden" ref={listWrapperRef}>
-          {reactWindowAvailable && ListComponent && listHeight > 0 && items.length > 0 ? (
+          {reactWindowAvailable && ListComponent && listHeight > 0 && searchListItems.length > 0 ? (
             isReactWindowV2 ? (
               <ListComponent
                 height={listHeight}
-                rowCount={items.length}
+                rowCount={searchListItems.length}
                 rowHeight={SEARCH_LIST_ROW_HEIGHT}
                 width={containerSize.width || '100%'}
                 className="scrollbar-thin overflow-x-hidden"
                 listRef={listRef}
-                rowProps={{ data: { ...itemData, viewMode: 'search-list', containerWidth: containerSize.width } }}
+                rowProps={{
+                  data: {
+                    ...itemData,
+                    items: searchListItems,
+                    viewMode: 'search-list',
+                    containerWidth: containerSize.width
+                  }
+                }}
                 rowComponent={VirtualRowRenderer}
                 onScroll={onListScroll}
               />
             ) : (
               <ListComponent
                 height={listHeight}
-                itemCount={items.length}
+                itemCount={searchListItems.length}
                 itemSize={SEARCH_LIST_ROW_HEIGHT}
                 width={containerSize.width || '100%'}
                 className="scrollbar-thin overflow-x-hidden"
                 ref={listRef}
                 outerRef={activeOuterRef}
-                itemData={{ ...itemData, viewMode: 'search-list', containerWidth: containerSize.width }}
+                itemData={{
+                  ...itemData,
+                  items: searchListItems,
+                  viewMode: 'search-list',
+                  containerWidth: containerSize.width
+                }}
                 onScroll={onListScroll}
               >
                 {VirtualRowRenderer}

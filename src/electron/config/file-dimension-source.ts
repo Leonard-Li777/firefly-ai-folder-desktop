@@ -212,6 +212,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
             t('医学影像'),
             t('图纸'),
             t('漫画'),
+            t('插画'),
             t('绘画'),
             t('有字图'),
             t('无字图')

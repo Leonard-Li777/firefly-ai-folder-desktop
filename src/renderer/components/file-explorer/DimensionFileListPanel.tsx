@@ -22,8 +22,8 @@ interface DimensionFileListPanelProps {
   // Selected tags & callbacks
   selectedTags: SelectedTag[]
   isMultiSelectMode: boolean
-  removeSelectedTag: (dimensionId: number, tagValue?: string, parentTagValue?: string) => void
-  toggleTagSelection: (dimensionId: number, tagValue: string, parentTagValue?: string) => void
+  removeSelectedTag: (dimensionId: number, tagValue?: string, parentTagValue?: string, codePath?: string) => void
+  toggleTagSelection: (dimensionId: number, tagValue: string, parentTagValue?: string, codePath?: string) => void
   clearSelectedTags: () => void
 
   // File selection & active preview item callbacks
@@ -448,7 +448,8 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
                           removeSelectedTag(
                             selectedTags[0].dimensionId,
                             selectedTags[0].tagValue,
-                            selectedTags[0].parentTagValue
+                            selectedTags[0].parentTagValue,
+                            selectedTags[0].codePath
                           )
                         }
                       >
@@ -473,7 +474,7 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
                         <button
                           className="ml-1.5 opacity-40 hover:opacity-100 cursor-pointer"
                           onClick={() =>
-                            toggleTagSelection(tag.dimensionId, tag.tagValue, tag.parentTagValue)
+                            toggleTagSelection(tag.dimensionId, tag.tagValue, tag.parentTagValue, tag.codePath)
                           }
                         >
                           <MaterialIcon icon="close" className="text-[12px]" />

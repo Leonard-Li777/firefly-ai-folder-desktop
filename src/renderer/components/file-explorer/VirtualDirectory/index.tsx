@@ -319,7 +319,7 @@ export const VirtualDirectory: React.FC = () => {
                                 virtualDirectoryId={selectedId || undefined}
                                 selectedTags={selectedTags}
                                 isMultiSelectMode={vdirMultiSelectMode}
-                                removeSelectedTag={(dimId, tagValue, parentTagValue) => {
+                                removeSelectedTag={(dimId, tagValue, parentTagValue, codePath) => {
                                   if (tagValue) {
                                     setSelectedTags(prev =>
                                       prev.filter(
@@ -327,7 +327,10 @@ export const VirtualDirectory: React.FC = () => {
                                           !(
                                             t.dimensionId === dimId &&
                                             t.tagValue === tagValue &&
-                                            t.parentTagValue === parentTagValue
+                                            t.parentTagValue === parentTagValue &&
+                                            // 多父维度（语言细分等）同名叶子跨分支按 codePath 消歧，
+                                            // 未携带 codePath 时维持旧三字段口径（向后兼容）
+                                            (!codePath || !t.codePath || t.codePath === codePath)
                                           )
                                       )
                                     )
@@ -335,13 +338,14 @@ export const VirtualDirectory: React.FC = () => {
                                     setSelectedTags(prev => prev.filter(t => t.dimensionId !== dimId))
                                   }
                                 }}
-                                toggleTagSelection={(dimId, val, parentVal) => {
+                                toggleTagSelection={(dimId, val, parentVal, codePath) => {
                                   setSelectedTags(prev => {
                                     const exists = prev.some(
                                       t =>
                                         t.dimensionId === dimId &&
                                         t.tagValue === val &&
-                                        t.parentTagValue === parentVal
+                                        t.parentTagValue === parentVal &&
+                                        (!codePath || !t.codePath || t.codePath === codePath)
                                     )
                                     if (exists) {
                                       return prev.filter(
@@ -349,12 +353,16 @@ export const VirtualDirectory: React.FC = () => {
                                           !(
                                             t.dimensionId === dimId &&
                                             t.tagValue === val &&
-                                            t.parentTagValue === parentVal
+                                            t.parentTagValue === parentVal &&
+                                            (!codePath || !t.codePath || t.codePath === codePath)
                                           )
                                       )
                                     } else {
                                       const group = dimensionGroups.find(g => g.id === dimId)
-                                      const tagDef = group?.tags.find(t => t.tagValue === val)
+                                      // 多父同名叶子：优先按 codePath 精确定位分支实例，避免取到兄弟分支的 level
+                                      const tagDef = group?.tags.find(
+                                        t => t.tagValue === val && (!codePath || !t.codePath || t.codePath === codePath)
+                                      )
                                       return [
                                         ...prev,
                                         {
@@ -362,6 +370,7 @@ export const VirtualDirectory: React.FC = () => {
                                           dimensionName: group?.name || '',
                                           tagValue: val,
                                           level: tagDef?.level ?? 0,
+                                          ...(codePath ? { codePath } : {}),
                                           ...(parentVal ? { parentTagValue: parentVal } : {})
                                         }
                                       ]

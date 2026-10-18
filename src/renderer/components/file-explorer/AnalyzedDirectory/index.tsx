@@ -381,8 +381,8 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
   )
 
   const handleToggleTagFromPanel = useCallback(
-    (dimId: number, val: string, parentVal?: string) => {
-      removeSelectedTag(dimId, val, parentVal)
+    (dimId: number, val: string, parentVal?: string, codePath?: string) => {
+      removeSelectedTag(dimId, val, parentVal, codePath)
     },
     [removeSelectedTag]
   )

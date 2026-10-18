@@ -11,9 +11,10 @@ export interface ReshapeOptions {
   baseTreeOutline: VirtualDirectoryNode[]
   rawMatches: Record<number | string, FilePathMatchItem[]>
   filesMap: Record<number | string, any>
-  y: number // 及格线阈值 [0.40, 0.90]，默认 0.60
+  y: number // 及格线阈值 [0.25, 0.90]，默认 0.40
   n: number // 多目录归属上限 [1, 5]，默认 1
   userPinnedFileMap?: Map<number | string, string[]> // 用户手动微调指定路径映射（锁定保护）
+  fallbackToTop1IfEmpty?: boolean // 当全量或单文件按 y 过滤不及格时，是否将具备物理底限（>=0.25）的 Top-1 作为保底归类（默认 true）
 }
 
 export interface ReshapeResult {
@@ -32,13 +33,14 @@ export function reshapeDirectoryTree(options: ReshapeOptions): ReshapeResult {
     baseTreeOutline,
     rawMatches = {},
     filesMap = {},
-    y = 0.6,
+    y = 0.4,
     n = 1,
-    userPinnedFileMap
+    userPinnedFileMap,
+    fallbackToTop1IfEmpty = false
   } = options
 
-  // 1. 约束 y 与 n 在合法区间
-  const clampedY = Math.max(0.4, Math.min(0.9, y))
+  // 1. 约束 y 与 n 在合法区间 (下限与后端绝对底限 floor=0.25 严格对齐)
+  const clampedY = Math.max(0.25, Math.min(0.9, y))
   const clampedN = Math.max(1, Math.min(5, Math.floor(n)))
 
   // 2. 深拷贝结构树（排除原有的未归类节点，清空所有 files）
@@ -128,7 +130,16 @@ export function reshapeDirectoryTree(options: ReshapeOptions): ReshapeResult {
       []
 
     // 5.3 过滤满足及格线的分支 (score >= y)
-    const passed = matches.filter(m => m.score >= clampedY)
+    let passed = matches.filter(m => m.score >= clampedY)
+
+    // 5.3.1 保底防御机制：若按 y 阈值过滤后无入围分支，但该文件拥有通过物理底限（score >= 0.25）的候选，
+    // 且开启了保底逻辑 (fallbackToTop1IfEmpty !== false)，则将 Top-1 最优候选作为保底分配，防止全量文件归入未归类
+    if (passed.length === 0 && fallbackToTop1IfEmpty && matches.length > 0) {
+      const sortedMatches = matches.slice().sort((a, b) => b.score - a.score)
+      if (sortedMatches[0] && sortedMatches[0].score >= 0.25) {
+        passed = [sortedMatches[0]]
+      }
+    }
 
     if (passed.length === 0) {
       // 不及格：收拢至未归类节点
@@ -141,10 +152,17 @@ export function reshapeDirectoryTree(options: ReshapeOptions): ReshapeResult {
     const sortedPassed = passed.slice().sort((a, b) => b.score - a.score)
     const topCandidates = sortedPassed.slice(0, clampedN)
 
-    // 5.5 挂载到胜出节点
+    // 5.5 挂载到胜出节点 (增加叶子目录名与规范化路径回退匹配)
     for (const cp of topCandidates) {
       const normalized = normalizePathKey(cp.path)
-      const targetNode = nodePathMap.get(normalized) || nodePathMap.get(cp.path)
+      let targetNode = nodePathMap.get(normalized) || nodePathMap.get(cp.path)
+      if (!targetNode) {
+        const leafName = normalized.split('/').pop() || ''
+        if (leafName) {
+          targetNode = nodePathMap.get(leafName)
+        }
+      }
+
       if (targetNode) {
         targetNode.files.push(file)
       } else {

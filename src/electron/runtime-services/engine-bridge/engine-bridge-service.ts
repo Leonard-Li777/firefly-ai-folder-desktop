@@ -544,7 +544,11 @@ export class EngineBridgeService {
    */
   private resolveDisplayModelPair(): { model: string | null; modelName: string | null } {
     const raw = this.lastRawStatus
-    const isRunningOrStarting = raw?.status === 'ready' || raw?.status === 'starting'
+    // 服务在线口径：已就绪（ready）/ 推理中（processing）/ 拉起中（starting）。
+    // 引擎在有请求处理时会把 status 由 ready 改为 processing，若此处只认 ready+starting，
+    // 分析过程中 P1「运行模型」会失效并回落到激活槽位，导致「当前模型」展示名交替跳变。
+    const isRunningOrStarting =
+      raw?.status === 'ready' || raw?.status === 'processing' || raw?.status === 'starting'
     const running =
       raw?.current_model ||
       raw?.model ||
@@ -1748,7 +1752,8 @@ export class EngineBridgeService {
     const isCurrentlyEmbedding = currentModel.includes('wemm') || currentModel.includes('embedding')
     const matchesTarget = mode === 'embedding' ? isCurrentlyEmbedding : !isCurrentlyEmbedding
 
-    if (status?.status === 'ready' && matchesTarget) {
+    // processing 亦属「服务已就绪」（仅表示当前有请求在处理），此时不得误判为模型不符而重启
+    if ((status?.status === 'ready' || status?.status === 'processing') && matchesTarget) {
       return { ok: true }
     }
 
@@ -1776,7 +1781,8 @@ export class EngineBridgeService {
         const isCurrentlyEmbedding = currentModel.includes('wemm') || currentModel.includes('embedding')
         const matchesTarget = mode === 'embedding' ? isCurrentlyEmbedding : !isCurrentlyEmbedding
 
-        if (status.status === 'ready' && matchesTarget) {
+        // 同上：processing 表示服务已就绪但正在处理请求，同样算达成「就绪」
+        if ((status.status === 'ready' || status.status === 'processing') && matchesTarget) {
           logger.info(
             LogCategory.SYSTEM,
             `[EngineBridge] 引擎推理服务已就绪（模式: ${mode}, 模型: ${status.current_model}）`

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import { formatDateTimeShort, logger, LogCategory } from '@firefly/shared'
 import { MaterialIcon, cn } from '../../../../lib/utils'
 import { t } from '@app/languages'
@@ -6,7 +6,10 @@ import { toast } from '../../../common/Toast'
 import { SystemFileIcon } from '../../../common/SystemFileIcon'
 import { HighlightText } from '../../../common/HighlightText'
 import { FileType } from '../types'
-import { formatVideoTimestamp } from '../../../../lib/video-preview-utils'
+import { formatVideoTimestamp, clampVideoTime } from '../../../../lib/video-preview-utils'
+import { getExtFromSmartName } from '../../../../lib/preview-utils'
+import { usePreviewOverlayStore } from '../../../../stores/preview-overlay-store'
+import { PageId } from '../../../../constants/page-ids'
 
 /**
  * 搜索列表模式专用行高（卡片式排版，较普通列表行更高）
@@ -29,6 +32,105 @@ export const sanitizeSnippetHtml = (snippet?: string): string => {
   return escaped.replace(/&lt;mark&gt;/g, '<mark>').replace(/&lt;\/mark&gt;/g, '</mark>')
 }
 
+/**
+ * 视频切片微型帧卡片（标准 16:9 画幅，Hover 提示起止时间，点击跳轴预览，双击外部定位播放）
+ */
+const VideoChunkFrame: React.FC<{
+  chunk: {
+    chunkIndex?: number
+    startSec: number
+    endSec: number
+    similarity?: number
+    score?: number
+  }
+  filePath: string
+  category?: any
+  onPreviewSeek: (startSec: number, endSec: number) => void
+}> = ({ chunk, filePath, category, onPreviewSeek }) => {
+  const [hasError, setHasError] = useState(false)
+
+  const videoUrl = useMemo(() => {
+    if (!filePath) return ''
+    const norm = filePath.replace(/\\/g, '/')
+    const clean = norm.startsWith('/') ? norm : `/${norm}`
+    return `file://${clean}#t=${clampVideoTime(chunk.startSec, 3600)}`
+  }, [filePath, chunk.startSec])
+
+  const chunkPercent =
+    typeof chunk.similarity === 'number'
+      ? Math.round(Math.min(1, Math.max(0, chunk.similarity)) * 100)
+      : typeof chunk.score === 'number'
+        ? Math.round(Math.min(1, Math.max(0, chunk.score)) * 100)
+        : null
+
+  // 悬浮到单帧上显示精准时间与相似度信息
+  const frameTooltip = `${formatVideoTimestamp(chunk.startSec)} - ${formatVideoTimestamp(chunk.endSec)}${
+    chunkPercent !== null ? ` (${t('相似度')}: ${chunkPercent}%)` : ''
+  }\n${t('单击跳轴预览，双击外部播放器打开')}`
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onPreviewSeek(chunk.startSec, chunk.endSec)
+  }
+
+  const handleDoubleClick = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    try {
+      const rawCat = category
+      const cat = typeof rawCat === 'object' && rawCat !== null ? rawCat.label : rawCat
+      const outcome = await window.electronAPI!.utils.launchExternalDeepLink({
+        filePath,
+        category: cat || 'video',
+        seekSeconds: chunk.startSec
+      })
+      if (outcome?.fallbackToDefault) {
+        toast.info(t('未检测到支持精准定位的外部应用，已按默认方式打开'))
+      }
+    } catch (err: unknown) {
+      logger.error(LogCategory.RENDERER, '外部深链定位打开失败:', err)
+      toast.error(t('打开文件失败'))
+    }
+  }
+
+  return (
+    <div
+      className="relative shrink-0 overflow-hidden bg-black/60 rounded-md border border-border/60 hover:border-primary/90 hover:ring-1 hover:ring-primary/80 transition-all cursor-pointer group/chunk select-none h-[76px] w-[135px]"
+      title={frameTooltip}
+      onClick={handleClick}
+      onDoubleClick={handleDoubleClick}
+    >
+      {!hasError && videoUrl ? (
+        <video
+          src={videoUrl}
+          preload="metadata"
+          muted
+          playsInline
+          className="w-full h-full object-cover pointer-events-none group-hover/chunk:scale-105 transition-transform duration-200"
+          onError={() => setHasError(true)}
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center bg-muted/40 text-muted-foreground/60">
+          <MaterialIcon icon="movie" className="text-xl" />
+        </div>
+      )}
+
+      {/* Hover 遮罩与跳轴小播放图标 */}
+      <div className="absolute inset-0 bg-black/25 opacity-0 group-hover/chunk:opacity-100 flex items-center justify-center transition-opacity">
+        <MaterialIcon icon="play_arrow" className="text-white drop-shadow text-xl" />
+      </div>
+
+      {/* 底部时间胶囊 */}
+      <div className="absolute bottom-1 left-1 rounded bg-black/80 font-mono text-white/90 backdrop-blur-xs flex items-center gap-1 px-1.5 py-0.5 text-[10px] shadow-xs border border-white/10 pointer-events-none">
+        <MaterialIcon icon="schedule" className="text-[10px] text-blue-400" />
+        <span>{`${formatVideoTimestamp(chunk.startSec)} - ${formatVideoTimestamp(chunk.endSec)}`}</span>
+        {chunkPercent !== null && (
+          <span className="text-violet-300 ml-0.5 font-semibold text-[9px]">{`${chunkPercent}%`}</span>
+        )}
+      </div>
+    </div>
+  )
+}
+
 interface SearchListCardProps {
   item: FileType
   safeItemName: string
@@ -40,14 +142,14 @@ interface SearchListCardProps {
   isSelected?: boolean
   isActive?: boolean
   index: number
+  pageId?: PageId
 }
 
 /**
  * 搜索列表模式专属卡片：
- * - 左侧：文件图标
- * - 中间（弹性自适应）：智能文件名、文件真实路径、文件描述/正文切片
- * - 右侧：仅在语义召回时展示召回 Label，修改时间和文件大小
- * - 无横向滚动条，随窗口缩放自适应
+ * - 抽帧预览模式 (Frame Preview Grid)：当命中视频多时序切片时，完全切换为 Grid 抽帧预览模式，
+ *   高度严格锁死 SEARCH_LIST_ROW_HEIGHT (96px)，整行 hover 显示文件详细信息，单帧 hover 显示时间与相似度；
+ * - 普通图文行模式：文件图标 + 文件名/路径/正文描述 + 召回 label/时间/大小。
  */
 export const SearchListCard = React.memo(
   ({
@@ -59,10 +161,12 @@ export const SearchListCard = React.memo(
     onDoubleClick,
     isSelected,
     isActive,
-    index
+    index,
+    pageId
   }: SearchListCardProps) => {
     const [isQueueSubmitting, setIsQueueSubmitting] = useState(false)
     const isUnanalyzed = Boolean(item.isUnanalyzed || item.matchType === 'unanalyzed')
+    const hasMatchedChunks = Boolean(item.matchedChunks && item.matchedChunks.length > 0)
 
     // 仅基于有效语义召回时才打上标签，其他情况不打标签；
     // 若相似度经计算为 0% 或负值，属于无相关性噪点，不应展示“语义召回 0%”
@@ -82,6 +186,32 @@ export const SearchListCard = React.memo(
 
     const primaryName = item.smartName || safeItemName
     const secondaryName = item.smartName && item.smartName !== safeItemName ? safeItemName : ''
+
+    /** 抽帧预览跳轴定位 */
+    const handlePreviewSeek = useCallback(
+      (startSec: number, endSec: number) => {
+        const splitState = usePreviewOverlayStore.getState()
+        const pageMode = pageId ? (splitState.pageStates[pageId]?.mode ?? 'split') : undefined
+        if (pageMode === 'split') {
+          const ext =
+            item.extension ||
+            getExtFromSmartName(item.smartName || item.name || '') ||
+            item.path.split('.').pop() ||
+            ''
+          splitState.openPreview(
+            item.path,
+            item.smartName || item.name || '',
+            ext,
+            pageId,
+            {
+              currentTime: startSec,
+              highlightRange: [startSec, endSec]
+            }
+          )
+        }
+      },
+      [item.path, item.name, item.smartName, item.extension, pageId]
+    )
 
     /** “立即分析”：将该文件插队至分析队列并给用户提示 */
     const handleAnalyzeNow = useCallback((e: React.MouseEvent) => {
@@ -123,6 +253,67 @@ export const SearchListCard = React.memo(
 
     const isRowActive = Boolean(isSelected || isActive)
 
+    if (hasMatchedChunks) {
+      const rowTooltip = [
+        `${t('文件名')}: ${primaryName}${secondaryName ? ` (${secondaryName})` : ''}`,
+        item.path ? `${t('完整路径')}: ${item.path}` : null,
+        item.size ? `${t('文件大小')}: ${formatFileSize(item.size)}` : null,
+        item.modifiedAt ? `${t('修改时间')}: ${formatDateTimeShort(item.modifiedAt)}` : null,
+        hasValidSimilarity ? `${t('整体匹配度')}: ${rawPercent}%` : null,
+        (item as any).totalChunkRows && (item as any).totalChunkRows > 1
+          ? `${t('时序片段 (第 {current}/{total} 行)', { current: ((item as any).chunkRowIndex ?? 0) + 1, total: (item as any).totalChunkRows })}`
+          : `${t('命中时序片段数')}: ${item.matchedChunks!.length}`
+      ]
+        .filter(Boolean)
+        .join('\n')
+
+      const isFirstOfMulti = (item as any).chunkRowIndex === 0 && ((item as any).totalChunkRows ?? 1) > 1
+      const isLastOfMulti =
+        (item as any).chunkRowIndex !== undefined &&
+        (item as any).chunkRowIndex === ((item as any).totalChunkRows ?? 1) - 1 &&
+        ((item as any).totalChunkRows ?? 1) > 1
+
+      return (
+        <div
+          className={cn(
+            'w-full h-full px-4 py-2 flex items-center border-border/30 select-none transition-colors duration-150',
+            'search-list-card overflow-hidden',
+            // 若为同一文件的多行拆分，中间无缝拼接为一体大卡片
+            isFirstOfMulti
+              ? 'border-b-transparent'
+              : isLastOfMulti
+                ? 'border-t-transparent border-b'
+                : 'border-b',
+            isRowActive
+              ? 'bg-primary/10 dark:bg-primary/20 border-l-[3px] border-l-primary pl-[13px]'
+              : 'hover:bg-accent/40 dark:hover:bg-accent/30'
+          )}
+          data-index={index}
+          data-path={item.path}
+          title={rowTooltip}
+          onClick={e => onItemClick(index, e)}
+          onDoubleClick={() => onDoubleClick?.()}
+          onContextMenu={e => onContextMenu(e, item)}
+        >
+          {/* 全宽抽帧预览 Grid：无左侧图标，无右侧信息条，全部宽度纯粹留给抽帧预览 */}
+          <div className="w-full h-full flex items-center gap-3 overflow-x-auto no-scrollbar py-0.5">
+            {item.matchedChunks!.map((chunk, cIdx) => (
+              <VideoChunkFrame
+                key={cIdx}
+                chunk={chunk}
+                filePath={item.path}
+                category={(item as any).category}
+                onPreviewSeek={handlePreviewSeek}
+              />
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    // ==========================================
+    // 普通图文行模式 (默认)
+    // ==========================================
     return (
       <div
         className={cn(

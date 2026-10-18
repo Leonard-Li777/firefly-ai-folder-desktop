@@ -384,6 +384,31 @@ describe('dimension-tree-utils - makeTagKey & parseTagKey', () => {
     const instanceKey = makeTagKey(7, '无码', undefined, 'builtin.image')
     expect(parseTagKey(instanceKey).isLifted).toBe(false)
   })
+
+  it('多父维度同名叶子跨分支：key 第 4 段携带 codePath 分支消歧，不同分支 key 不同', () => {
+    const docPath = '/builtin.file_type/omw.03234306.n/builtin.doc_categories/builtin.language_sub/omw.pt'
+    const ebookPath = '/builtin.file_type/omw.03234306.n/builtin.ebook_categories/builtin.language_sub/omw.pt'
+    const docKey = makeTagKey(120, '葡萄牙语', undefined, undefined, false, docPath)
+    const ebookKey = makeTagKey(120, '葡萄牙语', undefined, undefined, false, ebookPath)
+
+    // 四元组（dimensionId/tagValue/parentTagValue/viaParentCode）跨分支全同，仅 codePath 不同
+    expect(docKey).not.toBe(ebookKey)
+    expect(docKey).toBe(`120::::葡萄牙语::path:${docPath}`)
+
+    const parsedDoc = parseTagKey(docKey)
+    expect(parsedDoc.tagValue).toBe('葡萄牙语')
+    expect(parsedDoc.codePath).toBe(docPath)
+    expect(parseTagKey(ebookKey).codePath).toBe(ebookPath)
+  })
+
+  it('无 codePath（聚合行/旧存档）时 key 与历史三段格式逐字节一致（localStorage 兼容）', () => {
+    expect(makeTagKey(28, '建筑空间', '内容标签', undefined, false, undefined)).toBe('28::内容标签::建筑空间')
+    expect(makeTagKey(28, '建筑空间', '内容标签', undefined, false, '   ')).toBe('28::内容标签::建筑空间')
+    // 旧格式 key 解析不产生 codePath，getSelectedTagsFromSet 的 viaParentCode 兜底路径不受影响
+    const parsed = parseTagKey('28::内容标签::建筑空间')
+    expect(parsed.codePath).toBeUndefined()
+    expect(parsed.tagValue).toBe('建筑空间')
+  })
 })
 
 describe('dimension-tree-utils - buildDimensionTree', () => {
@@ -865,8 +890,9 @@ describe('migrateTagKeysAcrossScale 跨刻度自愈与全覆盖不变式测试',
       masterDimensionGroups: collideGroups
     })
 
-    const directInstanceKey = makeTagKey(7, '无码', undefined, 'builtin.image', false)
-    const deepInstanceKey = makeTagKey(7, '无码', undefined, 'builtin.manga', false)
+    // 带 codePath 的行 key 生成第 4 段 `path:` 分支消歧段（多父同名叶子勾选串选修复）
+    const directInstanceKey = makeTagKey(7, '无码', undefined, 'builtin.image', false, directP)
+    const deepInstanceKey = makeTagKey(7, '无码', undefined, 'builtin.manga', false, deepP)
 
     expect(result.hasChanged).toBe(true)
     expect(result.migratedSelected.has(directInstanceKey)).toBe(true)
@@ -880,9 +906,10 @@ describe('migrateTagKeysAcrossScale 跨刻度自愈与全覆盖不变式测试',
   it('AC-2: 刻度 4 全量勾选实例 ➔ 刻度 3 折叠收敛为聚合行 (N:1 全覆盖收敛)', () => {
     const scale3Tree = buildDimensionTree(collideGroups, null, null, 0, 3)
 
-    const directInstanceKey = makeTagKey(7, '无码', undefined, 'builtin.image', false)
-    const deepInstanceKey = makeTagKey(7, '无码', undefined, 'builtin.manga', false)
-    const liftedKey = makeTagKey(7, '无码', undefined, 'builtin.image', true)
+    const directInstanceKey = makeTagKey(7, '无码', undefined, 'builtin.image', false, directP)
+    const deepInstanceKey = makeTagKey(7, '无码', undefined, 'builtin.manga', false, deepP)
+    // 聚合行 codePath 保留最深分支主路径（nestGroupTags 聚合语义），key 第 4 段随之
+    const liftedKey = makeTagKey(7, '无码', undefined, 'builtin.image', true, deepP)
 
     const result = migrateTagKeysAcrossScale({
       prevSelected: new Set([directInstanceKey, deepInstanceKey]),
@@ -1010,12 +1037,27 @@ describe('migrateTagKeysAcrossScale 跨刻度自愈与全覆盖不变式测试',
     const scale3Tree = buildDimensionTree(multiContainerGroups, null, null, 0, 3)
 
     // 用户在展开态同时选中了：图片下的直系无码、图片漫画下的无码、以及视频短视频下的无码
-    const imageDirectKey = makeTagKey(7, '无码', undefined, 'builtin.image', false)
-    const imageDeepKey = makeTagKey(7, '无码', undefined, 'builtin.manga', false)
-    const videoDeepKey = makeTagKey(7, '无码', undefined, 'builtin.short_video', false)
+    const imageDirectKey = makeTagKey(7, '无码', undefined, 'builtin.image', false, directP)
+    const imageDeepKey = makeTagKey(7, '无码', undefined, 'builtin.manga', false, deepP)
+    const videoDeepKey = makeTagKey(
+      7,
+      '无码',
+      undefined,
+      'builtin.short_video',
+      false,
+      '/builtin.file_type/builtin.video/builtin.short_video/builtin.uncensored'
+    )
 
-    const imageLiftedKey = makeTagKey(7, '无码', undefined, 'builtin.image', true)
-    const videoLiftedKey = makeTagKey(7, '无码', undefined, 'builtin.video', true)
+    // 聚合行 codePath 保留最深分支主路径，key 第 4 段随之
+    const imageLiftedKey = makeTagKey(7, '无码', undefined, 'builtin.image', true, deepP)
+    const videoLiftedKey = makeTagKey(
+      7,
+      '无码',
+      undefined,
+      'builtin.video',
+      true,
+      '/builtin.file_type/builtin.video/builtin.short_video/builtin.uncensored'
+    )
 
     const result = migrateTagKeysAcrossScale({
       prevSelected: new Set([imageDirectKey, imageDeepKey, videoDeepKey]),
@@ -1104,12 +1146,13 @@ describe('migrateTagKeysAcrossScale 跨刻度自愈与全覆盖不变式测试',
     expect(liftedTag.isLifted).toBe(true)
 
     // 验证 getAllKeys 会根据 tag.isLifted === true 正确生成 liftCode 键
+    // （聚合行 codePath 保留最深分支主路径，key 第 4 段为 deepP 的 path: 消歧段）
     const allKeys = getAllKeys(scale3Tree)
     const liftedKeyItem = allKeys.find(
-      item => item.key.includes('liftCode:builtin.image') && item.key.endsWith('::无码')
+      item => item.key.includes('liftCode:builtin.image') && item.key.includes('::无码::path:')
     )
     expect(liftedKeyItem).toBeDefined()
-    expect(liftedKeyItem!.key).toBe(makeTagKey(7, '无码', undefined, 'builtin.image', true))
+    expect(liftedKeyItem!.key).toBe(makeTagKey(7, '无码', undefined, 'builtin.image', true, deepP))
   })
 
   it('AC-6: 刻度 2 树形态验证：全量标签平铺在顶层直属 tags 中，childTags 完全为 undefined，总深度严格为 2', () => {

@@ -196,4 +196,31 @@ describe('reshapeDirectoryTree In-Memory Reshaping Algorithm', () => {
     // 性能验收准则：< 10ms
     expect(elapsedMs).toBeLessThan(15)
   })
+
+  it('当开启 fallbackToTop1IfEmpty 时，低于及格线但高于物理底限 (>=0.25) 的文件应保底归入最优目录', () => {
+    const rawMatches = {
+      101: [{ path: '01_需求/PRD文档', score: 0.38 }], // 低于 y=0.50，但 >= 0.25
+      102: [{ path: '02_设计/原型稿', score: 0.20 }], // 低于 0.25 物理底限
+      103: [] // 无匹配
+    }
+
+    const res = reshapeDirectoryTree({
+      baseTreeOutline: baseOutline,
+      rawMatches,
+      filesMap,
+      y: 0.50,
+      n: 1,
+      fallbackToTop1IfEmpty: true
+    })
+
+    // 101 (0.38) 应被保底归入 01_需求/PRD文档
+    const prdNode = res.tree[0].subdirectories[0]
+    expect(prdNode.files.map(f => f.id)).toContain(101)
+
+    // 102 (<0.25) 与 103 (无匹配) 应依然进入未归类节点
+    expect(res.unclassifiedCount).toBe(2)
+    const unclassifiedNode = res.tree.find(n => n.name === SENTINEL_NAMES.UNCLASSIFIED)
+    expect(unclassifiedNode?.files.map(f => f.id)).toEqual(expect.arrayContaining([102, 103]))
+  })
 })
+

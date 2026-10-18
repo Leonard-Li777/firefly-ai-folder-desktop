@@ -25,7 +25,7 @@ interface AnalyzedDirectoryStore {
   selectedTags: SelectedTag[]
   setSelectedTags: (tags: SelectedTag[]) => void
   addSelectedTag: (tag: SelectedTag) => void
-  removeSelectedTag: (dimensionId: number, tagValue?: string, parentTagValue?: string) => void
+  removeSelectedTag: (dimensionId: number, tagValue?: string, parentTagValue?: string, codePath?: string) => void
   clearSelectedTags: () => void
 
   // Filtered files
@@ -147,16 +147,19 @@ export const useAnalyzedDirectoryStore = create<AnalyzedDirectoryStore>((set, ge
     }
   },
 
-  removeSelectedTag: (dimensionId: number, tagValue?: string, parentTagValue?: string) => {
+  removeSelectedTag: (dimensionId: number, tagValue?: string, parentTagValue?: string, codePath?: string) => {
     const { selectedTags } = get()
     if (tagValue) {
       // Remove specific tag from dimension (match on parentTagValue too)
+      // codePath 分支消歧（多父维度同名叶子跨分支串选防护）：携带时精确比对分支链，
+      // 未携带（旧调用）维持原三字段口径，保证向后兼容
       const filtered = selectedTags.filter(
         t =>
           !(
             t.dimensionId === dimensionId &&
             t.tagValue === tagValue &&
-            t.parentTagValue === parentTagValue
+            t.parentTagValue === parentTagValue &&
+            (!codePath || !t.codePath || t.codePath === codePath)
           )
       )
       set({ selectedTags: filtered })

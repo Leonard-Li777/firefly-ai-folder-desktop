@@ -1087,7 +1087,20 @@ export class AnalysisQueueService {
     if (error !== undefined) item.error = error
     if (extra?.analysisStats) item.analysisStats = extra.analysisStats
     if (extra?.fromCache !== undefined) item.fromCache = extra.fromCache
-    if (extra?.analysisStage !== undefined) item.analysisStage = extra.analysisStage
+
+    const currentStage =
+      extra?.analysisStage ??
+      (extra?.analysisStats ? Number(extra.analysisStats.analysis_stage) : undefined)
+
+    if (currentStage !== undefined) {
+      item.analysisStage = currentStage
+      item.stage = currentStage as any
+    } else if (status === 'completed') {
+      const statsStage = item.analysisStats ? Number(item.analysisStats.analysis_stage) : undefined
+      const finalStage = item.analysisStage ?? statsStage ?? 4
+      item.analysisStage = finalStage
+      item.stage = finalStage as any
+    }
 
     try {
       databaseService.updateAnalysisQueue({ id: itemId, status, progress, error: error || null })

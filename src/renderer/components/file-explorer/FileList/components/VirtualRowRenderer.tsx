@@ -78,6 +78,8 @@ const areEqual = (
     prevProps.fileItem?.matchType !== nextProps.fileItem?.matchType ||
     prevProps.fileItem?.similarity !== nextProps.fileItem?.similarity ||
     prevProps.fileItem?.isUnanalyzed !== nextProps.fileItem?.isUnanalyzed ||
+    prevProps.fileItem?.matchedChunk !== nextProps.fileItem?.matchedChunk ||
+    prevProps.fileItem?.matchedChunks !== nextProps.fileItem?.matchedChunks ||
     prevProps.onFileSelect !== nextProps.onFileSelect ||
     prevProps.getSelectedFiles !== nextProps.getSelectedFiles ||
     prevProps.selectionEnabled !== nextProps.selectionEnabled ||
@@ -280,6 +282,7 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
           isSelected={isSelected}
           isActive={Boolean(isActive)}
           index={index}
+          pageId={pageId}
         />
       </div>
     )

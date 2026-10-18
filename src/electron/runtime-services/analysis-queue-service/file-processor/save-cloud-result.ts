@@ -14,7 +14,9 @@ import {
   type TagProvenanceGroup,
   DIMENSION_CODES,
   CANONICAL_NAMES,
-  concept
+  concept,
+  isTrustworthyMaterializedCodePath,
+  resolveRuntimeMaterializedPath
 } from '@firefly/shared'
 import { t } from '@app/languages'
 
@@ -304,11 +306,8 @@ export async function saveCloudResult(
           metadata: r.meta
         }))
         const officialDimNames = new Set(allDimRows.map(d => d.name))
-        // 维度 code → 展示名（仅用于兜底 INSERT 的 name_path 组装）
-        const dimNameByCode = new Map<string, string>()
-        for (const row of allDimRows) {
-          dimNameByCode.set(row.code, row.name)
-        }
+        // 注：name_path 兜底组装已收口 resolveRuntimeMaterializedPath（受控概念指南 §1.4 根对齐仲裁），
+        // 不再需要「维度 code → 展示名」映射表
         // 内容标签维度作为兜底路由目标（受控域契约）。
         // GH #717：兜底值必须是受控 builtin.* code —— dim.content 已废除（spec §6.9.6），
         // 失配时落 DIMENSION_CODES.CONTENT_TAGS（builtin.content_tags），与动态命中值同码域。
@@ -370,14 +369,32 @@ export async function saveCloudResult(
             if (isControlled) {
               // PRD-0060 B-3b / D9 / AC-12：受控标签直写 file_tag_relations，
               // 严禁调用 insertTagToDb 派生 _ext.*，严禁插入 file_tags_private，避免身份篡改与反向污染
-              const dimDisplayName = dimNameByCode.get(localDimCode) || CONTENT_TAGS_NAME
-              const codePath = typeof tag.code_path === 'string' && tag.code_path
-                ? tag.code_path
-                : (localDimCode ? `/${localDimCode}/${tagCode}` : `/builtin.content_tags/${tagCode}`)
-              const namePath = typeof tag.name_path === 'string' && tag.name_path
-                ? tag.name_path
-                : `/${dimDisplayName}/${cleanName}`
-              const depth = typeof tag.depth === 'number' && tag.depth > 0 ? tag.depth : 2
+              // 受控概念指南 §1.4 写侧根对齐仲裁：载荷伪 content_tags 包装链 / 半截短路径一律丢弃，
+              // 整体回退 resolveRuntimeMaterializedPath 按受控拓扑重新补全根链（杜绝 /content_tags/摄影照片细分/... 入库）。
+              // 三元组（code_path/name_path/depth）必须同源，任一缺失即整体重物化，避免链段错位。
+              let codePath = ''
+              let namePath = ''
+              let depth = typeof tag.depth === 'number' && tag.depth > 0 ? tag.depth : 0
+              const payloadPathTrustworthy = isTrustworthyMaterializedCodePath(tag.code_path, viaParent)
+              if (payloadPathTrustworthy && typeof tag.name_path === 'string' && tag.name_path) {
+                codePath = (tag.code_path as string).trim()
+                namePath = tag.name_path
+              } else {
+                const materialized = resolveRuntimeMaterializedPath({
+                  db,
+                  tagCode,
+                  viaParentCode: viaParent,
+                  tagName: cleanName
+                })
+                codePath = materialized.codePath
+                namePath = materialized.namePath
+                if (depth <= 0) depth = materialized.depth
+                logger.warn(
+                  LogCategory.FILE_ANALYSIS,
+                  `[物化路径仲裁] 载荷物化三元组不可信（伪包装/半截路径/缺 name_path），已按受控拓扑重物化: tag=${tagCode}, via=${viaParent}, 新链=${codePath}`
+                )
+              }
+              if (depth <= 0) depth = 2
               const confidence = typeof tag.confidence === 'number' ? tag.confidence : 1.0
 
               db.prepare(
@@ -406,14 +423,31 @@ export async function saveCloudResult(
                 const finalTagCode = tagCode || DeterministicCodeGenerator.generateUnique(cleanName, 'zh-CN', {
                   lookupExistingName: DeterministicCodeGenerator.createDbLookup(db)
                 })
-                const dimDisplayName = dimNameByCode.get(localDimCode) || CONTENT_TAGS_NAME
-                const codePath = typeof tag.code_path === 'string' && tag.code_path
-                  ? tag.code_path
-                  : (localDimCode ? `/${localDimCode}/${finalTagCode}` : `/builtin.content_tags/${finalTagCode}`)
-                const namePath = typeof tag.name_path === 'string' && tag.name_path
-                  ? tag.name_path
-                  : `/${dimDisplayName}/${cleanName}`
-                const depth = typeof tag.depth === 'number' && tag.depth > 0 ? tag.depth : 2
+                // 受控概念指南 §1.4 写侧根对齐仲裁：与受控分支同口径——载荷伪 content_tags 包装链 /
+                // 半截短路径一律丢弃，三元组整体交由 resolveRuntimeMaterializedPath 按受控拓扑重物化
+                let codePath = ''
+                let namePath = ''
+                let depth = typeof tag.depth === 'number' && tag.depth > 0 ? tag.depth : 0
+                const payloadPathTrustworthy = isTrustworthyMaterializedCodePath(tag.code_path, viaParent)
+                if (payloadPathTrustworthy && typeof tag.name_path === 'string' && tag.name_path) {
+                  codePath = (tag.code_path as string).trim()
+                  namePath = tag.name_path
+                } else {
+                  const materialized = resolveRuntimeMaterializedPath({
+                    db,
+                    tagCode: finalTagCode,
+                    viaParentCode: viaParent,
+                    tagName: cleanName
+                  })
+                  codePath = materialized.codePath
+                  namePath = materialized.namePath
+                  if (depth <= 0) depth = materialized.depth
+                  logger.warn(
+                    LogCategory.FILE_ANALYSIS,
+                    `[物化路径仲裁] 载荷物化三元组不可信（伪包装/半截路径/缺 name_path），已按受控拓扑重物化: tag=${finalTagCode}, via=${viaParent}, 新链=${codePath}`
+                  )
+                }
+                if (depth <= 0) depth = 2
                 const confidence = typeof tag.confidence === 'number' ? tag.confidence : 1.0
 
                 db.prepare(

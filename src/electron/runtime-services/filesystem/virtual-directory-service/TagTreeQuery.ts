@@ -901,8 +901,16 @@ export class TagTreeQuery {
         } catch {
           parents = []
         }
-        // parent_codes 为空数组的标签，逻辑父级回退为 CONTENT_TAGS_CODE（内容标签）
-        const effectiveParents = parents.length > 0 ? parents : [CONTENT_TAGS_CODE]
+        // parent_codes 为空数组或仅含 CONTENT_TAGS_CODE 的标签，若本身为受控标签，自愈为真实受控父维度
+        let effectiveParents = parents.filter(p => p && p !== CONTENT_TAGS_CODE)
+        if (effectiveParents.length === 0) {
+          const directParentDim = getParentDimensionCodeOfTag(t.code)
+          if (directParentDim && directParentDim !== CONTENT_TAGS_CODE) {
+            effectiveParents = [directParentDim]
+          } else {
+            effectiveParents = [CONTENT_TAGS_CODE]
+          }
+        }
         for (const p of effectiveParents) {
           if (!dynamicTagsByParent.has(p)) {
             dynamicTagsByParent.set(p, [])
@@ -1248,7 +1256,9 @@ export class TagTreeQuery {
                     viaParentCode: parentCode || root.code,
                     isMultiSelect: false,
                     order: child.sortOrder,
-                    meta: { sort_order: child.sortOrder, order: child.sortOrder }
+                    // fromControlledTree：Omni 受控树节点来源标记（铁闸门禁跨域撞名豁免的判定锚，
+                    // 见下方铁闸注释；动态扩展/预设补全/本地孤儿标签不得携带）
+                    meta: { sort_order: child.sortOrder, order: child.sortOrder, fromControlledTree: true }
                   })
                   collect(child, code, level + 1, currentCodePath, currentNamePath)
                 }
@@ -1601,7 +1611,14 @@ export class TagTreeQuery {
           }
 
           // 2. 祖先追溯认领
-          const traced = traceAncestorGroup(parents)
+          let candidateParents = parents.filter(p => p && p !== CONTENT_TAGS_CODE)
+          if (candidateParents.length === 0) {
+            const directParentDim = getParentDimensionCodeOfTag(t.code)
+            if (directParentDim && directParentDim !== CONTENT_TAGS_CODE) {
+              candidateParents = [directParentDim]
+            }
+          }
+          const traced = traceAncestorGroup(candidateParents)
           if (traced) {
             const { targetGroup, parentCode: effectiveParent, level: effectiveLevel } = traced
             assignedCodes.add(t.code)
@@ -2254,20 +2271,28 @@ export class TagTreeQuery {
 
       // 铁闸门禁：严格执行「维度名不能作为标签，维度名只用于区块名，只有其下的标签才能作为用户的可选择标签」铁律
       // 1. 维度名本身绝对不能作为其自身区块下的标签（如作者卡片不能有作者标签、安全等级卡片不能有安全等级标签）
-      // 2. 顶层元分类根名（如文件类型、文件用途）与所有受控子维度名（如安全等级、处理状态）不能作为叶子标签出现
-      const bannedDimensionNames = new Set<string>()
+      // 2. 顶层元分类根名（如文件类型、文件用途）与受控子维度名不能混入「内容标签」动态池（动态标签与维度名撞名属污染）
+      //
+      // 【跨域撞名豁免（2026-10-18 修复 depth=6 只显示 2 层回归）】
+      // 受控分类树（file_type 等 Omni 组）的中间层节点名与其它域的受控维度名合法撞名
+      // （如 file_type 树的「语言细分」「图片细分」「水印程度」「背景」「画幅」既是树上节点又是受控子维度名，
+      //  code 完全不同）。历史实现把全部维度名收进单一 bannedDimensionNames 后跨组全局过滤，
+      //  误杀树上 32 个中间层节点 ⇒ viaParentCode 链断裂 ⇒ 前端 nestGroupTags 重建塌缩 ⇒ 树只剩 2 层。
+      //  修复：组自身名维持逐组封禁（铁律 1）；全局名单仅对「内容标签」动态池生效（铁律 2 的真实靶子），
+      //  受控树组（source=omni/builtin 的树形组）豁免跨域名单，保住 viaParentCode 链完整性。
+      const globalBannedNames = new Set<string>()
       for (const [code, meta] of Object.entries(ROOT_DIMENSION_META)) {
-        if (meta.name) bannedDimensionNames.add(meta.name.trim())
-        bannedDimensionNames.add(aliasResolver(code, meta.name).trim())
+        if (meta.name) globalBannedNames.add(meta.name.trim())
+        globalBannedNames.add(aliasResolver(code, meta.name).trim())
       }
       if (allAuthorityDims) {
         for (const ad of allAuthorityDims) {
-          if (ad.name) bannedDimensionNames.add(ad.name.trim())
-          if (ad.code) bannedDimensionNames.add(aliasResolver(ad.code, ad.name || ad.code).trim())
+          if (ad.name) globalBannedNames.add(ad.name.trim())
+          if (ad.code) globalBannedNames.add(aliasResolver(ad.code, ad.name || ad.code).trim())
         }
       }
       for (const g of finalGroups) {
-        if (g.name) bannedDimensionNames.add(g.name.trim())
+        if (g.name) globalBannedNames.add(g.name.trim())
       }
 
       for (const g of finalGroups) {
@@ -2276,10 +2301,14 @@ export class TagTreeQuery {
           g.tags = g.tags.filter(t => {
             const val = t.tagValue?.trim()
             if (!val) return false
-            // 维度名本身不能作为其下的标签
+            // 维度名本身不能作为其下的标签（铁律 1：组自身名逐组封禁，对所有来源生效）
             if (val === groupNameTrimmed) return false
-            // 任何维度名（顶层根名或子维度名）都不能作为可选择标签出现
-            if (bannedDimensionNames.has(val)) return false
+            // 顶层根名/受控维度名不得混入动态标签池（铁律 2）。
+            // 豁免仅限 Omni 受控树来源节点（meta.fromControlledTree）：受控树中间层节点名
+            // 与其它域受控维度名合法撞名（code 完全不同），跨组封禁会误杀树节点断链。
+            // 动态扩展/预设补全/本地孤儿标签一律不豁免，维持全局封禁（防脏数据污染）。
+            const fromControlledTree = (t as any)?.meta?.fromControlledTree === true
+            if (!fromControlledTree && globalBannedNames.has(val)) return false
             return true
           })
         }
@@ -2594,11 +2623,22 @@ export class TagTreeQuery {
    *
    * 契约（spec §3.4.2 / §5.2.4）：
    * 1. 当标签携带有效物化路径（`codePaths` 数组非空，或 `codePath` / `code_path` 非空）时，
-   *    **独占**走物化路径前缀穿透查询：
-   *    `(ftr.code_path = ? OR ftr.code_path LIKE (? || '/%') ESCAPE '\')`，每条路径一组绑定参数；
+   *    **独占**走物化路径穿透查询，每条路径一组绑定参数；
    *    **严禁**在此分支下 OR 全局 `ftr.tag_code IN (...)`——否则多父共享标签（如「打码程度/无码」
    *    同时挂在 影视/图片/漫画 三域）会跨介质召回污染，右侧 FileList 数量将大于左侧树徽标。
    * 2. 仅在 `codePath` 缺失的极端降级场景，才回退到 `ftr.tag_code IN (...)`（含子孙展开）。
+   *
+   * 根前缀自愈容错（2026-10-18 canon 4/0 案例修复）：
+   * Omni 树端 `query_taxonomy_tree_fast`（taxonomy.rs）对存量 `file_tag_relations.code_path`
+   * 做「倒排 Trie 自愈」——伪包在 `/builtin.content_tags` 下的受控子维度（摄影照片细分等）
+   * 会被剥前缀并补齐 `builtin.file_type` 等真实根。即：树端 codePath 与存量 code_path
+   * **仅差根前缀，尾部链恒定**。查询侧若只做「自愈后前缀」的裸匹配，将永远命中不了存量行
+   * （徽标按 tag_code 计数 → 计数 4，列表 0 文件，AC-4 口径分裂）。
+   * 故对每条候选路径追加「尾部链后缀匹配」（去掉首段后的 chain）：
+   * - `LIKE '%/' || tail`：任意合法根前缀下的末段精确命中（等价 exact）；
+   * - `LIKE '%/' || tail || '/%'`：尾部链作为中间段命中，覆盖子孙穿透。
+   * 尾部链含完整分支标识（受控子维度 + 标签 code），不存在跨分支召回污染，
+   * 且不会命中「同 code 挂在其它受控分支」的行（那需要尾部整链一致，即同一逻辑分支）。
    *
    * 单一事实源：左侧树徽标计数（getDimensionGroups）与右侧 FileList（buildFilterQuery）
    * 共用本函数，保证两端筛选口径 100% 绝对一致（AC-4）。
@@ -2610,13 +2650,23 @@ export class TagTreeQuery {
   private buildTagFilterSubClause(tag: SelectedTag, params: any[]): string | null {
     const rawPaths = this.resolveTagCodePaths(tag)
     if (rawPaths.length > 0) {
-      // 排他性物化路径前缀穿透：真实父与逻辑父均独占以自身及子孙前缀精准命中
+      // 排他性物化路径穿透：自愈后前缀精准命中 + 尾部链后缀容错（兼容存量伪根前缀）
       const pathClauses = rawPaths
-        .map(() => `(ftr.code_path = ? OR ftr.code_path LIKE (? || '/%') ESCAPE '\\')`)
+        .map(path => {
+          // 尾部链 = 去掉首段（根段）后的剩余 chain；单段路径无尾部链，跳过后缀容错
+          const segs = path.split('/').filter(Boolean)
+          const hasTail = segs.length > 1
+          const tail = hasTail ? segs.slice(1).join('/') : ''
+          const clause = `(ftr.code_path = ? OR ftr.code_path LIKE (? || '/%') ESCAPE '\\')`
+          if (!hasTail) {
+            params.push(path, escapeLike(path))
+            return clause
+          }
+          params.push(path, escapeLike(path))
+          params.push(escapeLike(tail), escapeLike(tail))
+          return `${clause} OR ftr.code_path LIKE ('%/' || ?) ESCAPE '\\' OR ftr.code_path LIKE ('%/' || ? || '/%') ESCAPE '\\'`
+        })
         .join(' OR ')
-      for (const path of rawPaths) {
-        params.push(path, escapeLike(path))
-      }
       return `(${pathClauses})`
     }
 

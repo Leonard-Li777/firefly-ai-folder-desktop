@@ -51,8 +51,8 @@ export const HYBRID_SEARCH_WEIGHTS = {
 } as const
 /** 单源候选池大小（FTS / 向量 / FS 各自的上限，也是融合池的上限） */
 export const HYBRID_SEARCH_POOL_SIZE = 200
-/** 视频切片跳轴绝对最小置信度阈值（生产环境 Gemma 空间 0.72，单测环境 0.60 兼容 mock，低于此分数的切片视为非目标噪点，杜绝假阳性时间戳下发） */
-export const TEMPORAL_CHUNK_MIN_CONFIDENCE = isTestEnvironment() ? 0.60 : 0.72
+/** 视频切片跳轴绝对最小置信度阈值（生产环境 Gemma 空间 0.65，单测环境 0.60 兼容 mock，低于此分数的切片视为非目标噪点，杜绝假阳性时间戳下发） */
+export const TEMPORAL_CHUNK_MIN_CONFIDENCE = isTestEnvironment() ? 0.60 : 0.65
 /** 视频切片跳轴相对显著性差值阈值（最高切片得分必须高出全视频所有切片均值至少此裕度，证明为目标瞬间而非全局背景色偏） */
 export const TEMPORAL_CHUNK_MIN_PROMINENCE = 0.015
 
@@ -89,13 +89,20 @@ export interface HybridRankedCandidate {
   score: number
   /** 是否存在字面命中（FTS 命中或文件名全子串命中） */
   hasLiteral: boolean
-  /** 命中的视频时序切片（若命中条目为视频时序切片向量） */
+  /** 命中的视频时序切片（最高分切片，向前兼容跳轴） */
   matchedChunk?: {
     chunkIndex: number
     startSec: number
     endSec: number
     similarity?: number
   }
+  /** 命中的多个视频时序切片（同视频多片段命中，抽帧预览 Grid 模式） */
+  matchedChunks?: Array<{
+    chunkIndex: number
+    startSec: number
+    endSec: number
+    similarity?: number
+  }>
 }
 
 /** 真实目录实时 FS 检索到的未分析文件命中 */
@@ -483,6 +490,12 @@ interface VectorMatch {
     endSec: number
     similarity?: number
   }
+  matchedChunks?: Array<{
+    chunkIndex: number
+    startSec: number
+    endSec: number
+    similarity?: number
+  }>
 }
 
 /**
@@ -518,7 +531,12 @@ export class HybridSearchArbiter {
     keyword: string
     ftsRankMap: Map<string, number>
     exactRankMap: Map<string, number>
-    vecRankMap: Map<string, { rank: number; score: number; matchedChunk?: VectorMatch['matchedChunk'] }>
+    vecRankMap: Map<string, {
+      rank: number
+      score: number
+      matchedChunk?: VectorMatch['matchedChunk']
+      matchedChunks?: VectorMatch['matchedChunks']
+    }>
     existingNameMap?: Map<string, { name?: string; smartName?: string; path?: string }>
     expanded?: ExpandedSearchQuery
   }): {
@@ -580,7 +598,8 @@ export class HybridSearchArbiter {
           maxScoreCap
         }),
         hasLiteral: exactRank !== undefined || ftsRank !== undefined || nameBoost >= 0.85,
-        matchedChunk: vec?.matchedChunk
+        matchedChunk: vec?.matchedChunk,
+        matchedChunks: vec?.matchedChunks
       })
     }
     candidates.sort((a, b) => {
@@ -765,13 +784,19 @@ export class HybridSearchArbiter {
     if (vectorResult === null) failures.vector = true
     const vecRankMap = new Map<
       string,
-      { rank: number; score: number; matchedChunk?: VectorMatch['matchedChunk'] }
+      {
+        rank: number
+        score: number
+        matchedChunk?: VectorMatch['matchedChunk']
+        matchedChunks?: VectorMatch['matchedChunks']
+      }
     >()
     for (const v of vectorResult ?? []) {
       vecRankMap.set(v.fileFingerprint, {
         rank: v.rank,
         score: v.score,
-        matchedChunk: v.matchedChunk
+        matchedChunk: v.matchedChunk,
+        matchedChunks: v.matchedChunks
       })
     }
 
@@ -1140,6 +1165,12 @@ export class HybridSearchArbiter {
         bestChunkIndex?: number
         bestChunkScore?: number
         chunks: Array<{ chunkIndex: number; score: number }>
+        matchedChunks?: Array<{
+          chunkIndex: number
+          startSec: number
+          endSec: number
+          similarity: number
+        }>
       }
       const parentAggMap = new Map<string, ParentAgg>()
       for (const m of parsedMatches) {
@@ -1197,27 +1228,89 @@ export class HybridSearchArbiter {
         }
       }
 
-      // 2. 优选每个视频的最佳跳轴切片（双重门禁：绝对置信度 + 相对显著性差值）：
+      // 2. 优选每个视频的跳轴切片并执行时序聚类（Temporal NMS）与多切片返回：
       // 恪守第一性原理：
-      // - 绝对门禁：topChunk.score 必须达到 TEMPORAL_CHUNK_MIN_CONFIDENCE，杜绝未命中切片凭空捏造时间戳；
-      // - 显著性门禁：切片得分必须高出全视频均值至少 TEMPORAL_CHUNK_MIN_PROMINENCE，证明为瞬态高光实体而非背景色偏；
-      // - 杜绝视频中根本不存在该实体（如黄色跑车、蓝色跑车）时，因某个无关切片（如黄色衣服）碰巧得分稍高而强行假阳性命中。
+      // - 绝对门禁：切片 score 必须达到 TEMPORAL_CHUNK_MIN_CONFIDENCE，杜绝未命中切片凭空捏造时间戳；
+      // - 显著性门禁：切片得分高出全视频均值至少 TEMPORAL_CHUNK_MIN_PROMINENCE，证明为瞬态高光实体而非背景色偏；
+      // - 时序聚类合并（Temporal NMS）：相邻或重叠片段（<= 3.0s 间隔）合并为单连续时段，保留波峰相似度；
+      // - 离散时段保留：间隔较远的不同高光段（如同一视频中 1:41 与 2:09 均出现目标跑车）同时保留并返回给前端！
       for (const agg of parentAggMap.values()) {
         if (agg.chunks.length === 0) continue
-        agg.chunks.sort((a, b) => b.score - a.score)
-        const topChunk = agg.chunks[0]
 
         const meanScore = agg.chunks.reduce((acc, c) => acc + c.score, 0) / agg.chunks.length
-        const prominence = topChunk.score - meanScore
-        const isConfident = topChunk.score >= TEMPORAL_CHUNK_MIN_CONFIDENCE
-        const isProminent = agg.chunks.length <= 2 || prominence >= TEMPORAL_CHUNK_MIN_PROMINENCE
+        const validChunks = agg.chunks.filter(c => {
+          const prominence = c.score - meanScore
+          const isConfident = c.score >= TEMPORAL_CHUNK_MIN_CONFIDENCE
+          const isProminent = agg.chunks.length <= 2 || prominence >= TEMPORAL_CHUNK_MIN_PROMINENCE
+          return isConfident && isProminent
+        })
 
-        if (isConfident && isProminent) {
-          agg.bestChunkIndex = topChunk.chunkIndex
-          agg.bestChunkScore = topChunk.score
+        // 提取带有效 timing 的候选区间
+        const candidateIntervals: Array<{
+          chunkIndex: number
+          startSec: number
+          endSec: number
+          similarity: number
+        }> = []
+
+        for (const vc of validChunks) {
+          const timing = chunkTimingMap.get(`${agg.parentFp}:c${vc.chunkIndex}`)
+          if (timing) {
+            candidateIntervals.push({
+              chunkIndex: vc.chunkIndex,
+              startSec: timing.startSec,
+              endSec: timing.endSec,
+              similarity: vc.score
+            })
+          }
+        }
+
+        if (candidateIntervals.length > 0) {
+          // 贪心合并相邻/重叠时段 (Temporal NMS)
+          candidateIntervals.sort((a, b) => a.startSec - b.startSec)
+          const mergedIntervals: Array<{
+            chunkIndex: number
+            startSec: number
+            endSec: number
+            similarity: number
+          }> = []
+
+          for (const curr of candidateIntervals) {
+            if (mergedIntervals.length === 0) {
+              mergedIntervals.push({ ...curr })
+            } else {
+              const prev = mergedIntervals[mergedIntervals.length - 1]
+              if (curr.startSec <= prev.endSec + 3.0) {
+                prev.endSec = Math.max(prev.endSec, curr.endSec)
+                if (curr.similarity > prev.similarity) {
+                  prev.similarity = curr.similarity
+                  prev.chunkIndex = curr.chunkIndex
+                }
+              } else {
+                mergedIntervals.push({ ...curr })
+              }
+            }
+          }
+
+          const topInterval = [...mergedIntervals].sort((a, b) => b.similarity - a.similarity)[0]
+          agg.bestChunkIndex = topInterval.chunkIndex
+          agg.bestChunkScore = topInterval.similarity
+          agg.matchedChunks = mergedIntervals
         } else {
-          agg.bestChunkIndex = undefined
-          agg.bestChunkScore = undefined
+          // 降级兜底：若未匹配到 Timing 元数据（如单测 mock），保留 topChunk 索引与分数
+          agg.chunks.sort((a, b) => b.score - a.score)
+          const topChunk = agg.chunks[0]
+          const prominence = topChunk.score - meanScore
+          const isConfident = topChunk.score >= TEMPORAL_CHUNK_MIN_CONFIDENCE
+          const isProminent = agg.chunks.length <= 2 || prominence >= TEMPORAL_CHUNK_MIN_PROMINENCE
+
+          if (isConfident && isProminent) {
+            agg.bestChunkIndex = topChunk.chunkIndex
+            agg.bestChunkScore = topChunk.score
+          } else {
+            agg.bestChunkIndex = undefined
+            agg.bestChunkScore = undefined
+          }
         }
       }
 
@@ -1245,7 +1338,8 @@ export class HybridSearchArbiter {
           fileFingerprint: p.parentFp,
           score: p.bestScore,
           rank: idx + 1,
-          matchedChunk
+          matchedChunk,
+          matchedChunks: p.matchedChunks
         })
       }
       return out

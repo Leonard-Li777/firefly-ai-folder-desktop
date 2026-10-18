@@ -331,13 +331,12 @@ export class QueueManager {
         const key = `${file.nativePath}|${file.workspaceId}`
         const exists = existingByPathAndWorkspace.get(key)
         if (exists) {
-          // 关键逻辑：如果文件已在队列中且分析成功，则强制重新分析；若为失败或高维修正残留，也重置为待办的基础分析
-          const shouldForceReanalyze =
-            forceReanalyze ||
-            exists.status === 'completed' ||
-            exists.status === 'failed'
+          // 关键逻辑：仅当用户显式请求强制重新分析时，才重置已完成项；若为失败状态且再次添加，也允许重试
+          const isExplicitForce = Boolean(forceReanalyze || file.forceReanalyze)
+          const shouldRetryFailed = exists.status === 'failed'
+          const shouldResetToPending = isExplicitForce || shouldRetryFailed
 
-          if (shouldForceReanalyze) {
+          if (shouldResetToPending) {
             const oldStatus = exists.status
             exists.status = 'pending'
             exists.taskType = 'analysis'
@@ -345,14 +344,12 @@ export class QueueManager {
             exists.error = undefined
             exists.updatedAt = now
             exists.progress = 0
-            exists.forceReanalyze = true
+            exists.forceReanalyze = isExplicitForce
             updatedCount++
 
-            const reason = forceReanalyze
+            const reason = isExplicitForce
               ? '用户强制重新分析'
-              : oldStatus === 'failed'
-                ? '失败重试'
-                : '文件已分析成功'
+              : '失败重试'
             logger.info(
               LogCategory.ANALYSIS_QUEUE,
               `[分析队列] 文件已在队列中 (原状态: ${oldStatus})，${reason}，重置为 pending: ${file.nativePath}`
@@ -364,7 +361,7 @@ export class QueueManager {
               try {
                 existingMeta = typeof existingDbRow.meta === 'string' ? JSON.parse(existingDbRow.meta) : (existingDbRow.meta || {})
               } catch {}
-              if (shouldForceReanalyze) {
+              if (isExplicitForce) {
                 existingMeta.force_reanalyze = true
               }
               databaseService.updateAnalysisQueue({
@@ -393,7 +390,8 @@ export class QueueManager {
                   item_id: itemId,
                   item_type: itemType,
                   task_type: 'analysis',
-                  status: 'pending'
+                  status: 'pending',
+                  force_reanalyze: isExplicitForce
                 })
                 if (dbId) {
                   exists.id = dbId
@@ -427,13 +425,16 @@ export class QueueManager {
           continue
         }
 
-        const shouldForceReanalyze = forceReanalyze || file.forceReanalyze || isAlreadyAnalyzed
-        if (isAlreadyAnalyzed && !forceReanalyze) {
+        const isExplicitForce = Boolean(forceReanalyze || file.forceReanalyze)
+        if (isAlreadyAnalyzed && !isExplicitForce) {
           logger.info(
             LogCategory.ANALYSIS_QUEUE,
-            `[分析队列] 文件已被分析过，自动设置强制重新分析: ${file.nativePath}`
+            `[分析队列] 文件已被分析过且未指定强制重新分析，跳过入队: ${file.nativePath}`
           )
+          continue
         }
+
+        const shouldForceReanalyze = isExplicitForce
 
         const fileExtension =
           itemType === 'file'
