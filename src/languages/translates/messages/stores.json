@@ -442,7 +442,7 @@
     "de-DE": "Audio wird synthetisiert und nach der Synthese automatisch umgeschaltet",
     "fr-FR": "L'audio est en cours de synthèse et il sera automatiquement commuté après la synthèse",
     "ko-KR": "오디오가 합성되고 있으며 합성 후 자동으로 전환됩니다",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(13951-13970)"],
+    "$files": ["src/renderer/stores/tts-audio-store.ts(14422-14441)"],
     "$id": 21557
   },
   "已自动切换播放": {
@@ -456,8 +456,8 @@
     "fr-FR": "La lecture a été automatiquement commutée",
     "ko-KR": "재생이 자동으로 전환되었습니다",
     "$files": [
-      "src/renderer/stores/tts-audio-store.ts(19427-19438)",
-      "src/renderer/stores/tts-audio-store.ts(23954-23965)"
+      "src/renderer/stores/tts-audio-store.ts(20032-20043)",
+      "src/renderer/stores/tts-audio-store.ts(24705-24716)"
     ],
     "$id": 21559
   },
@@ -472,8 +472,8 @@
     "fr-FR": "La commutation de tonalité a échoué et le service de synthèse vocale n'est pas disponible",
     "ko-KR": "톤 전환에 실패하고 음성 합성 서비스를 사용할 수 없습니다",
     "$files": [
-      "src/renderer/stores/tts-audio-store.ts(21574-21594)",
-      "src/renderer/stores/tts-audio-store.ts(28508-28528)"
+      "src/renderer/stores/tts-audio-store.ts(22244-22264)",
+      "src/renderer/stores/tts-audio-store.ts(29383-29403)"
     ],
     "$id": 21558
   },
@@ -487,7 +487,7 @@
     "de-DE": "Benutzerdefinierter Klontonwert",
     "fr-FR": "Tonalité de clonage définie par l'utilisateur",
     "ko-KR": "사용자 정의 클론 톤",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(29633-29646)"],
+    "$files": ["src/renderer/stores/tts-audio-store.ts(30540-30553)"],
     "$id": 21644
   },
   "语音合成失败，请检查服务连接状态": {
@@ -500,7 +500,7 @@
     "de-DE": "Sprachsynthese fehlgeschlagen, bitte überprüfen Sie den Status der Dienstverbindung",
     "fr-FR": "La synthèse vocale a échoué, veuillez vérifier l'état de la connexion au service",
     "ko-KR": "음성 합성 실패,서비스 연결 상태를 확인하시기 바랍니다",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(45247-45267)"],
+    "$files": ["src/renderer/stores/tts-audio-store.ts(46597-46617)"],
     "$id": 21560
   },
   "语音合成未能生成有效音频，请稍后重试": {
@@ -513,7 +513,7 @@
     "de-DE": "Sprachsynthese konnte kein gültiges Audio generieren, bitte versuchen Sie es später erneut",
     "fr-FR": "La synthèse vocale n'a pas réussi à générer un son valide, veuillez réessayer plus tard",
     "ko-KR": "음성 합성이 유효한 오디오를 생성하지 못했습니다.",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(48901-48923)"],
+    "$files": ["src/renderer/stores/tts-audio-store.ts(50357-50379)"],
     "$id": 21561
   },
   "语音合成服务异常，请稍后重试": {
@@ -526,7 +526,7 @@
     "de-DE": "Der Sprachsynthesedienst ist abnormal, bitte versuchen Sie es später erneut",
     "fr-FR": "Le service de synthèse vocale est anormal, veuillez réessayer plus tard",
     "ko-KR": "음성 합성 서비스가 이상,나중에 다시 시도하십시오",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(49245-49263)"],
+    "$files": ["src/renderer/stores/tts-audio-store.ts(50711-50729)"],
     "$id": 21562
   },
   "该片段正在合成中，请稍候...": {
@@ -539,7 +539,7 @@
     "de-DE": "Dieser Clip wird synthetisiert, bitte warten...",
     "fr-FR": "Ce clip est en cours de synthèse, veuillez patienter...",
     "ko-KR": "이 클립은 합성되고,기다려주십시오...",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(55176-55195)"],
+    "$files": ["src/renderer/stores/tts-audio-store.ts(56810-56829)"],
     "$id": 21645
   },
   "该片段合成失败，请稍后重试": {
@@ -552,7 +552,7 @@
     "de-DE": "Die Clipsynthese ist fehlgeschlagen, bitte versuchen Sie es später erneut",
     "fr-FR": "La synthèse du clip a échoué, veuillez réessayer plus tard",
     "ko-KR": "클립 합성에 실패,나중에 다시 시도하십시오",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(58028-58045)"],
+    "$files": ["src/renderer/stores/tts-audio-store.ts(59737-59754)"],
     "$id": 21646
   }
 }

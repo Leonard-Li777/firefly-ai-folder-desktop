@@ -410,7 +410,7 @@
     "de-DE": "Beispiel: Comedygeschichten mit höherem Gewicht bewerten; für technische Indikatoren Gewichtung senken; Beschreibung multimodaler Inhalte fokussiert auf zwischenmenschliche Beziehungen, lrc wird in {activeLanguage} übersetzt",
     "fr-FR": "Exemple : Accorder plus de points aux histoires comiques ; Réduire le poids des indicateurs techniques ; Les descriptions de contenu multimodal se concentrent sur les relations entre les personnages, traduire les fichiers lrc dans {activeLanguage}",
     "ko-KR": "예시: 코미디 스토리에 가중치 증가; 기술 지표는 가중치 감소; 멀티모달 콘텐츠 설명은 인물 관계에 중점을 두며, lrc는 {activeLanguage}로 번역",
-    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(2547-2620)"],
+    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(2627-2701)"],
     "$id": 20515
   },
   "示例：智能文件名需要翻译成{activeLanguage}，格式：作者_内容描述。例如：乔治·马丁_冰与火之歌.pdf。标签最多生成20个，且每个不要超过2个字，至少从文件名提取一个标签，其它必须从此集合里提取：[开心,痛苦,愤恨,...]": {
@@ -423,7 +423,7 @@
     "de-DE": "Beispiel: Der intelligente Dateiname muss in {activeLanguage} übersetzt werden, Format: Autor_Inhaltsbeschreibung. Beispiel: George_Martin_Die_Lehre_vom_Ringe.pdf. Maximal 20 Tags generieren, jedes maximal 2 Zeichen lang, mindestens ein Tag aus dem Dateinamen extrahieren, die restlichen müssen aus dieser Menge extrahiert werden: [froh, schmerzvoll, wütend,...]",
     "fr-FR": "Exemple : Les noms de fichiers intelligents doivent être traduits dans {activeLanguage}, format : Auteur_Description du contenu. Par exemple : Georges Martin_Le Trône de Fer.pdf. Générer au maximum 20 étiquettes, chacune ne devant pas dépasser 2 caractères, extraire au moins une étiquette du nom de fichier, les autres doivent obligatoirement être extraites de ce jeu : [Joie, Douleur, Rancune,...]",
     "ko-KR": "예시: 지능형 파일 이름은 {activeLanguage}로 번역해야 하며, 형식은: 작가_내용 설명. 예: George Martin_A Fire and Ice Saga.pdf. 태그는 최대 20개까지 생성하며, 각 태그는 2자를 초과하지 않아야 하고, 파일 이름에서 최소 하나의 태그를 추출해야 하며, 나머지는 반드시 다음 집합에서 추출해야 합니다: [기쁨, 고통, 분노,...]",
-    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(2773-2906)"],
+    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(2859-2993)"],
     "$id": 20516
   },
   "高级AI提示词": {
@@ -436,7 +436,7 @@
     "de-DE": "Erweiterte KI-Prompts",
     "fr-FR": "Prompt IA avancé",
     "ko-KR": "고급 AI 프롬프트",
-    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(3304-3315)"],
+    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(3405-3416)"],
     "$id": 20517
   },
   "已生效": {
@@ -449,7 +449,7 @@
     "de-DE": "Aktiviert",
     "fr-FR": "Actif",
     "ko-KR": "활성화됨",
-    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(3694-3701)"],
+    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(3803-3810)"],
     "$id": 20518
   },
   "需开启高级AI引擎": {
@@ -463,10 +463,10 @@
     "fr-FR": "L'activation du moteur IA avancé est requise",
     "ko-KR": "고급 AI 엔진을 활성화해야 합니다",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(3705-3718)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(11426-11439)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(14077-14090)",
-      "src/renderer/components/settings/unit-recognition-settings.tsx(5859-5872)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(3814-3827)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(11711-11724)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(14418-14431)",
+      "src/renderer/components/settings/unit-recognition-settings.tsx(6021-6034)"
     ],
     "$id": 20519
   },
@@ -480,7 +480,7 @@
     "de-DE": "Anpassen der Prompts, um die Generierungsregeln für Klassifizierungsnamen und Qualitätsbewertungen des Modells zu verfeinern",
     "fr-FR": "Le prompt personnalisé permet d'affiner les règles de génération du modèle pour le nommage des catégories et l'évaluation de la qualité",
     "ko-KR": "사용자 지정 프롬프트를 사용하여 분류 명명 및 품질 평가 생성 규칙을 미세 조정합니다",
-    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(3833-3863)"],
+    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(3946-3976)"],
     "$id": 20520
   },
   "高级AI引擎当前未开启，提示词暂不生效": {
@@ -493,7 +493,7 @@
     "de-DE": "Die erweiterte KI-Engine ist derzeit nicht aktiviert; die Prompts werden vorübergehend nicht angewendet.",
     "fr-FR": "Le moteur IA avancé est actuellement désactivé ; le prompt n'est pas effectif pour le moment",
     "ko-KR": "현재 고급 AI 엔진이 비활성 상태이므로 프롬프트가 일시적으로 적용되지 않습니다",
-    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(4556-4579)"],
+    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(4683-4706)"],
     "$id": 20521
   },
   "自定义质量评分和标签生成提示词依赖高级AI引擎的语言模型理解能力。开启高级AI引擎后方可生效。": {
@@ -506,7 +506,7 @@
     "de-DE": "Das Anpassen von Prompts für Qualitätsbewertungen und die Generierung von Tags hängt von den sprachlichen Modellverständnisfähigkeiten der erweiterten KI-Engine ab. Sie werden erst nach Aktivierung der erweiterten KI-Engine wirksam.",
     "fr-FR": "Le prompt personnalisé pour l'évaluation de la qualité et la génération d'étiquettes dépend des capacités de compréhension linguistique du modèle du moteur IA avancé. Il n'aura effet qu'une fois le moteur IA avancé activé.",
     "ko-KR": "사용자 지정 품질 평가 및 태그 생성 프롬프트는 고급 AI 엔진의 언어 모델 이해 능력에 의존합니다. 고급 AI 엔진을 활성화한 후 적용됩니다.",
-    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(4694-4745)"],
+    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(4824-4875)"],
     "$id": 20522
   },
   "前往开启高级AI引擎": {
@@ -520,8 +520,8 @@
     "fr-FR": "Passer à l'activation du moteur IA avancé",
     "ko-KR": "고급 AI 엔진을 활성화하러 이동하기",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(5084-5098)",
-      "src/renderer/components/settings/unit-recognition-settings.tsx(7494-7508)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(5224-5238)",
+      "src/renderer/components/settings/unit-recognition-settings.tsx(7694-7708)"
     ],
     "$id": 20523
   },
@@ -535,7 +535,7 @@
     "de-DE": "Anleitung zum Optimieren der Prompts",
     "fr-FR": "Notes sur l'optimisation du prompt",
     "ko-KR": "프롬프트 최적화 안내",
-    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(5541-5552)"],
+    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(5691-5702)"],
     "$id": 20524
   },
   "推荐使用遵循度较好的云端模型或高参数量模型；若因提示词字数过多导致 AI 分析失败，请适当精简内容。对于本地轻量小模型，建议精简至 100 字以内。": {
@@ -548,7 +548,7 @@
     "de-DE": "Es wird empfohlen, cloudbasierte Modelle mit hoher Einhaltungsquote oder Modelle mit vielen Parametern zu verwenden. Wenn die KI-Analyse aufgrund einer zu hohen Anzahl von Zeichen in den Prompts fehlschlägt, bitte den Inhalt entsprechend kürzen. Für lokale, leichte kleine Modelle wird empfohlen, den Inhalt auf weniger als 100 Zeichen zu kürzen.",
     "fr-FR": "Il est recommandé d'utiliser un modèle cloud ou un modèle à grands paramètres avec une bonne conformité. Si l'échec de l'analyse IA est causé par un nombre excessif de caractères dans le prompt, veuillez simplifier le contenu de manière appropriée. Pour les modèles locaux légers, il est conseillé de le réduire à moins de 100 caractères.",
     "ko-KR": "순수도를 비교적 잘 따르는 클라우드 모델이나 대량 파라미터 모델을 사용하는 것을 권장합니다. 프롬프트 문자 수가 많아 AI 분석이 실패하는 경우, 내용을 적절히 간결하게 하세요. 로컬 경량 소형 모델을 사용하는 경우 100자 이내로 줄이도록 권장합니다.",
-    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(5597-5675)"],
+    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(5750-5828)"],
     "$id": 20525
   },
   "质量评分提示词": {
@@ -561,7 +561,7 @@
     "de-DE": "Qualitätsbewertung: Prompt",
     "fr-FR": "Prompts de notation de la qualité",
     "ko-KR": "질량 채점 프롬프트",
-    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(6183-6194)"],
+    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(6349-6360)"],
     "$id": 20526
   },
   "未开启高级AI": {
@@ -575,8 +575,8 @@
     "fr-FR": "IA avancée non activée",
     "ko-KR": "고급 AI가 비활성화되었습니다",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(6462-6473)",
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(8944-8955)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(6633-6644)",
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(9177-9188)"
     ],
     "$id": 20527
   },
@@ -590,7 +590,7 @@
     "de-DE": "Mehrschichtfokussierung und Gewichtung bei der Bewertung multimodaler Inhalte anpassen",
     "fr-FR": "Ajustement des priorités et de la logique de pondération de la notation du contenu multimodal",
     "ko-KR": "다중 모드 콘텐츠 채점 우선순위 및 가중치 로직 조정",
-    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(6619-6640)"],
+    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(6795-6816)"],
     "$id": 20528
   },
   "清空": {
@@ -604,9 +604,9 @@
     "fr-FR": "Effacer",
     "ko-KR": "지우기",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(7019-7025)",
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(9501-9507)",
-      "src/renderer/components/settings/unit-recognition-settings.tsx(6629-6635)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(7206-7212)",
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(9750-9756)",
+      "src/renderer/components/settings/unit-recognition-settings.tsx(6811-6817)"
     ],
     "$id": 20529
   },
@@ -621,9 +621,9 @@
     "fr-FR": "Le moteur IA avancé n'est pas activé ; le prompt ne prend pas effet pour l'instant",
     "ko-KR": "고급 AI 엔진이 비활성화되어 프롬프트가 일시적으로 적용되지 않습니다",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(7822-7843)",
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(10293-10314)",
-      "src/renderer/components/settings/unit-recognition-settings.tsx(8250-8271)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(8031-8052)",
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(10564-10585)",
+      "src/renderer/components/settings/unit-recognition-settings.tsx(8473-8494)"
     ],
     "$id": 20530
   },
@@ -638,9 +638,9 @@
     "fr-FR": "Prompt personnalisé configuré",
     "ko-KR": "사용자 정의 프롬프트가 구성되었습니다",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(7971-7984)",
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(10438-10451)",
-      "src/renderer/components/settings/unit-recognition-settings.tsx(8631-8644)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(8184-8197)",
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(10713-10726)",
+      "src/renderer/components/settings/unit-recognition-settings.tsx(8863-8876)"
     ],
     "$id": 20531
   },
@@ -655,9 +655,9 @@
     "fr-FR": "Si laissé vide, le modèle de prompt par défaut sera utilisé",
     "ko-KR": "기본 프롬프트 단어 템플릿을 사용하려면 비워 두세요.",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(7988-8004)",
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(10455-10471)",
-      "src/renderer/components/settings/unit-recognition-settings.tsx(8648-8664)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(8201-8217)",
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(10730-10746)",
+      "src/renderer/components/settings/unit-recognition-settings.tsx(8880-8896)"
     ],
     "$id": 20532
   },
@@ -672,9 +672,9 @@
     "fr-FR": "Caractères",
     "ko-KR": "문자",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(8187-8193)",
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(10646-10652)",
-      "src/renderer/components/settings/unit-recognition-settings.tsx(8833-8839)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(8404-8410)",
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(10925-10931)",
+      "src/renderer/components/settings/unit-recognition-settings.tsx(9069-9075)"
     ],
     "$id": 20533
   },
@@ -688,7 +688,7 @@
     "de-DE": "Prompt für Taggenerierung und intelligente Dateinamen",
     "fr-FR": "Prompt de génération du nom de fichier intelligent et des étiquettes",
     "ko-KR": "태그 및 지능형 파일 이름 생성 프롬프트",
-    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(8659-8676)"],
+    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(8887-8904)"],
     "$id": 20534
   },
   "指导模型如何提炼关键词、格式化文件名与挑选分类标签": {
@@ -701,7 +701,7 @@
     "de-DE": "Leitet das Modell, wie Schlüsselwörter herauszufinden, Dateinamen zu formatieren und Kategorietags auszuwählen",
     "fr-FR": "Guide le modèle sur la manière d'extraire des mots-clés, de formater les noms de fichiers et de sélectionner les étiquettes de classification",
     "ko-KR": "모델이 키워드를 추출하고 파일 이름을 포맷팅하며 분류 태그를 선택하는 방법을 안내합니다",
-    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(9101-9130)"],
+    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(9339-9368)"],
     "$id": 20535
   },
   "提示词修改后将实时防抖保存，并应用于后续触发的全部文件分析任务。": {
@@ -714,7 +714,7 @@
     "de-DE": "Änderungen an Prompts werden automatisch gespeichert (mit Debouncing) und bei allen nachfolgenden Trigger-Datei-Analyse Aufgaben angewendet.",
     "fr-FR": "Les modifications du prompt seront enregistrées automatiquement avec une temporisation en temps réel et appliquées à toutes les tâches d'analyse de fichiers déclenchées ultérieurement.",
     "ko-KR": "프롬프트가 수정되면 실시간으로 디바운싱되어 저장되며 이후 트리거된 모든 파일 분석 작업에 적용됩니다.",
-    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(10947-10983)"],
+    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(11237-11273)"],
     "$id": 20536
   },
   "提示词依赖高级AI引擎的大语言模型能力。开启高级AI引擎后，此处配置将自动参与分析。": {
@@ -727,7 +727,7 @@
     "de-DE": "Prompts benötigen die Große-Sprach-Modell-Fähigkeit der erweiterten KI-Engine. Nach Aktivierung der erweiterten KI-Engine nimmt diese Konfiguration automatisch an der Analyse teil.",
     "fr-FR": "Le prompt dépend des capacités du grand modèle de langage du moteur IA avancé. Une fois le moteur IA avancé activé, la configuration effectuée ici participera automatiquement à l'analyse.",
     "ko-KR": "프롬프트는 고급 AI 엔진의 대규모 언어 모델(Large Language Model) 기능을 기반으로 합니다. 고급 AI 엔진이 활성화되면 여기에서 구성한 내용이 자동으로 분석에 참여합니다.",
-    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(10999-11045)"],
+    "$files": ["src/renderer/components/settings/advanced-ai-prompts-settings.tsx(11290-11336)"],
     "$id": 20537
   },
   "引擎状态良好": {
@@ -833,8 +833,8 @@
     "ko-KR": "감지 중...  ",
     "$files": [
       "src/renderer/components/settings/ai-engine-config-settings.tsx(11361-11371)",
-      "src/renderer/components/settings/content-extraction-settings.tsx(16673-16683)",
-      "src/renderer/components/settings/content-extraction-settings.tsx(17883-17893)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(17086-17096)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(18320-18330)"
     ],
     "$id": 20100
   },
@@ -1590,9 +1590,9 @@
     "fr-FR": "Fichiers",
     "ko-KR": "파일",
     "$files": [
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(1628-1634)",
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(5509-5515)",
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(8309-8315)"
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(1689-1695)",
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(5699-5705)",
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(8569-8575)"
     ],
     "$id": 20544
   },
@@ -1607,9 +1607,9 @@
     "fr-FR": "Dossiers",
     "ko-KR": "디렉터리",
     "$files": [
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(1695-1701)",
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(5535-5541)",
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(8384-8390)"
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(1757-1763)",
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(5726-5732)",
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(8645-8651)"
     ],
     "$id": 20545
   },
@@ -1624,9 +1624,9 @@
     "fr-FR": "Extensions",
     "ko-KR": "확장자",
     "$files": [
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(1762-1769)",
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(5561-5568)",
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(8459-8466)"
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(1825-1832)",
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(5753-5760)",
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(8721-8728)"
     ],
     "$id": 20546
   },
@@ -1641,9 +1641,9 @@
     "fr-FR": "Jokers",
     "ko-KR": "야동기호",
     "$files": [
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(1829-1836)",
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(5587-5594)",
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(8534-8541)"
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(1893-1900)",
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(5780-5787)",
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(8797-8804)"
     ],
     "$id": 20547
   },
@@ -1658,9 +1658,9 @@
     "fr-FR": "Expressions régulières",
     "ko-KR": "정규식",
     "$files": [
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(1893-1902)",
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(5610-5619)",
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(8606-8615)"
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(1958-1967)",
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(5804-5813)",
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(8870-8879)"
     ],
     "$id": 20548
   },
@@ -1675,8 +1675,8 @@
     "fr-FR": "Description (facultatif)",
     "ko-KR": "설명(선택 사항)",
     "$files": [
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(2225-2235)",
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(9182-9192)"
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(2303-2313)",
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(9461-9471)"
     ],
     "$id": 20549
   },
@@ -1691,8 +1691,8 @@
     "fr-FR": "Exclusion native lors du nettoyage et de la déduplication",
     "ko-KR": "정리 및 중복 제거 시 네이티브 제외 보호",
     "$files": [
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(2871-2887)",
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(10029-10045)"
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(2963-2979)",
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(10325-10341)"
     ],
     "$id": 20550
   },
@@ -1707,8 +1707,8 @@
     "fr-FR": "Enregistrer",
     "ko-KR": "저장",
     "$files": [
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(3108-3114)",
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(10314-10320)"
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(3206-3212)",
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(10616-10622)"
     ],
     "$id": 20551
   },
@@ -1723,11 +1723,11 @@
     "fr-FR": "Annuler",
     "ko-KR": "취소",
     "$files": [
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(3251-3257)",
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(10508-10514)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(30430-30436)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(32126-32132)",
-      "src/renderer/components/settings/tts-settings.tsx(41472-41478)"
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(3353-3359)",
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(10814-10820)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(31120-31126)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(32854-32860)",
+      "src/renderer/components/settings/tts-settings.tsx(42564-42570)"
     ],
     "$id": 20552
   },
@@ -1741,7 +1741,7 @@
     "de-DE": "KI-Analyse-Ausnahmeregeln",
     "fr-FR": "Règles d’ignorance pour l’analyse IA",
     "ko-KR": "AI 분석 무시 규칙",
-    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(5775-5787)"],
+    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(5977-5989)"],
     "$id": 20553
   },
   "配置不需要进行AI分析的文件与目录，提高分析效率并支持查重清理保护": {
@@ -1754,7 +1754,7 @@
     "de-DE": "Konfigurieren Sie Dateien und Verzeichnisse, die keiner KI-Analyse unterzogen werden, um die Analyseeffizienz zu steigern und Schutz bei der Duplikatsbereinigung zu unterstützen",
     "fr-FR": "Configurer les fichiers et dossiers n’entrant pas dans l’analyse IA pour améliorer l’efficacité et permettre une protection lors de la déduplication",
     "ko-KR": "AI 분석이 필요하지 않은 파일과 디렉터리를 구성하여 분석 효율을 높이고 중복 제거 정리 보호를 지원합니다",
-    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(5860-5897)"],
+    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(6064-6101)"],
     "$id": 20554
   },
   "忽略规则列表": {
@@ -1767,7 +1767,7 @@
     "de-DE": "Regelliste ignorieren",
     "fr-FR": "Ignorer la liste de règles",
     "ko-KR": "규칙 목록 무시",
-    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(6532-6542)"],
+    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(6749-6759)"],
     "$id": 20555
   },
   "{total} 条 · {active} 启用": {
@@ -1780,7 +1780,7 @@
     "de-DE": "{total} Einträge · {active} aktiv",
     "fr-FR": "{total} · {active} actives",
     "ko-KR": "{total}개 · {active}개 활성",
-    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(6683-6710)"],
+    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(6902-6929)"],
     "$id": 20556
   },
   "匹配规则的文件或目录将在分析时被跳过": {
@@ -1793,7 +1793,7 @@
     "de-DE": "Passende Dateien oder Ordner werden bei der Analyse übersprungen",
     "fr-FR": "Les fichiers ou répertoires correspondant aux règles seront ignorés lors de l'analyse",
     "ko-KR": "일치하는 규칙의 파일 또는 디렉토리는 분석 시 건너뜁니다",
-    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(6999-7021)"],
+    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(7225-7247)"],
     "$id": 20557
   },
   "取消添加": {
@@ -1806,7 +1806,7 @@
     "de-DE": "Hinzufügen abbrechen",
     "fr-FR": "Annuler l'ajout",
     "ko-KR": "추가 취소",
-    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(7494-7502)"],
+    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(7732-7740)"],
     "$id": 20558
   },
   "添加规则": {
@@ -1819,7 +1819,7 @@
     "de-DE": "Regel hinzufügen",
     "fr-FR": "Ajouter une règle",
     "ko-KR": "규칙 추가",
-    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(7506-7514)"],
+    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(7744-7752)"],
     "$id": 20559
   },
   "类型": {
@@ -1832,7 +1832,7 @@
     "de-DE": "Typ",
     "fr-FR": "Type",
     "ko-KR": "유형",
-    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(7859-7865)"],
+    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(8108-8114)"],
     "$id": 20560
   },
   "值": {
@@ -1845,7 +1845,7 @@
     "de-DE": "Wert",
     "fr-FR": "Valeur",
     "ko-KR": "값",
-    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(8792-8797)"],
+    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(9061-9066)"],
     "$id": 20561
   },
   "输入匹配值...": {
@@ -1858,7 +1858,7 @@
     "de-DE": "Passungswert eingeben...",
     "fr-FR": "Entrer une valeur de correspondance...",
     "ko-KR": "일치하는 값 입력...",
-    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(8906-8918)"],
+    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(9178-9190)"],
     "$id": 20562
   },
   "输入规则描述...": {
@@ -1871,7 +1871,7 @@
     "de-DE": "Regelbeschreibung eingeben...",
     "fr-FR": "Entrer la description de la règle...",
     "ko-KR": "규칙 설명 입력...",
-    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(9294-9307)"],
+    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(9576-9589)"],
     "$id": 20563
   },
   "全部": {
@@ -1885,8 +1885,8 @@
     "fr-FR": "Tous",
     "ko-KR": "전체",
     "$files": [
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(10798-10804)",
-      "src/renderer/components/settings/tts-settings.tsx(25376-25382)"
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(11115-11121)",
+      "src/renderer/components/settings/tts-settings.tsx(26087-26093)"
     ],
     "$id": 20564
   },
@@ -1901,10 +1901,10 @@
     "fr-FR": "Personnalisé",
     "ko-KR": "사용자 지정",
     "$files": [
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(10847-10854)",
-      "src/renderer/components/settings/tts-settings.tsx(17292-17299)",
-      "src/renderer/components/settings/tts-settings.tsx(25681-25688)",
-      "src/renderer/components/settings/tts-settings.tsx(30220-30227)"
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(11165-11172)",
+      "src/renderer/components/settings/tts-settings.tsx(17810-17817)",
+      "src/renderer/components/settings/tts-settings.tsx(26401-26408)",
+      "src/renderer/components/settings/tts-settings.tsx(31052-31059)"
     ],
     "$id": 20565
   },
@@ -1919,8 +1919,8 @@
     "fr-FR": "Intégré",
     "ko-KR": "기본 제공",
     "$files": [
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(10897-10903)",
-      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(14436-14442)"
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(11216-11222)",
+      "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(14839-14845)"
     ],
     "$id": 20566
   },
@@ -1934,7 +1934,7 @@
     "de-DE": "Keine benutzerdefinierten Regeln vorhanden. Klicken Sie oben auf „Regel hinzufügen“, um eine zu erstellen.",
     "fr-FR": "Aucune règle personnalisée. Cliquez sur « Ajouter une règle » ci-dessus pour en créer une",
     "ko-KR": "사용자 지정 규칙이 없습니다. 위의 \"규칙 추가\"를 클릭하여 생성하세요",
-    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(12567-12591)"],
+    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(12931-12955)"],
     "$id": 20567
   },
   "暂无匹配规则": {
@@ -1947,7 +1947,7 @@
     "de-DE": "Keine passenden Regeln gefunden.",
     "fr-FR": "Aucune règle de correspondance",
     "ko-KR": "일치하는 규칙 없음",
-    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(12615-12625)"],
+    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(12980-12990)"],
     "$id": 20568
   },
   "排除清理": {
@@ -1960,7 +1960,7 @@
     "de-DE": "Ausnahmebereinigung",
     "fr-FR": "Exclusions de nettoyage",
     "ko-KR": "제외 및 정리",
-    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(14160-14168)"],
+    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(14558-14566)"],
     "$id": 20569
   },
   "内置规则不可删除；通配符支持 * 和 ?，正则表达式支持更复杂的路径匹配模式。": {
@@ -1973,7 +1973,7 @@
     "de-DE": "Eingebaute Regeln können nicht gelöscht werden; Wildcards unterstützen * und ?, Regulausdrücke ermöglichen komplexere Pfadmatchingsmuster.",
     "fr-FR": "Les règles intégrées ne peuvent pas être supprimées ; les jokers prennent en charge * et ?, et les expressions régulières prennent en charge des modèles de correspondance de chemins plus complexes.",
     "ko-KR": "기본 제공 규칙은 삭제할 수 없습니다. 와일드카드는 * 및 ?를 지원하며, 정규식(RegEx)은 더 복잡한 경로 매칭 패턴을 지원합니다.",
-    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(16421-16464)"],
+    "$files": ["src/renderer/components/settings/analysis-ignore-rules-settings.tsx(16875-16918)"],
     "$id": 20570
   },
   "已切换搜索与理解模式并重启，新导入的文件将使用新模式分析": {
@@ -1986,7 +1986,7 @@
     "de-DE": "Suchmodus und Verstandmodus wurden umgestellt und neu gestartet. Neu importierte Dateien werden mit dem neuen Modus analysiert",
     "fr-FR": "Le mode de recherche et de compréhension a été basculé et redémarré. Les nouveaux fichiers importés seront analysés avec le nouveau mode.",
     "ko-KR": "검색 및 이해 모드를 전환하고 재시작했습니다. 새로 가져온 파일은 새 모드로 분석됩니다",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(4609-4641)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(4737-4769)"],
     "$id": 20571
   },
   "已将特征分析精度切换为 {dim} 维，已分析的文件重新分析后生效": {
@@ -1999,7 +1999,7 @@
     "de-DE": "Die Präzision der Merkanalyse wurde auf {dim} Dimensionen umgestellt. Dies wird wirksam, nachdem die bereits analysierten Dateien erneut analysiert wurden",
     "fr-FR": "La précision de l'analyse des caractéristiques a été commutée en {dim} dimensions. L'effet se produira après la réanalyse des fichiers déjà analysés.",
     "ko-KR": "특징 분석 정확도를 {dim} 차원으로 전환했습니다. 분석된 파일은 재분석 후에만 적용됩니다",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(4947-4984)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(5086-5123)"],
     "$id": 20572
   },
   "已同步硬件推荐配置（{profile} · {dim}维 · {interval}秒抽帧）": {
@@ -2012,7 +2012,7 @@
     "de-DE": "Die Hardware-Empfehlungseinstellung wurde synchronisiert ({profile} · {dim} Dimensionen · {interval} Sekunden Frame Sampling)",
     "fr-FR": "Configuration de recommandation matérielle synchronisée ({profile} · {dim} dimensions · découpage des images toutes les {interval} secondes).",
     "ko-KR": "하드웨어 권장 구성이 동기화되었습니다({profile} · {dim}차원 · {interval}초마다 프레임 추출)",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(5536-5585)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(5689-5738)"],
     "$id": 20573
   },
   "全模态标准档": {
@@ -2026,9 +2026,9 @@
     "fr-FR": "Standard à tous les modes",
     "ko-KR": "전체 모드 표준 등급",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(5656-5666)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(19021-19031)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(29780-29790)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(5810-5820)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(19472-19482)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(30457-30467)"
     ],
     "$id": 20574
   },
@@ -2043,9 +2043,9 @@
     "fr-FR": "Ultra rapide et léger",
     "ko-KR": "초경량 고속 등급",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(5670-5679)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(16916-16925)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(29794-29803)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(5824-5833)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(17325-17334)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(30471-30480)"
     ],
     "$id": 20575
   },
@@ -2059,7 +2059,7 @@
     "de-DE": "Basis-Einstellungen der KI-Engine",
     "fr-FR": "Configuration du moteur IA de base",
     "ko-KR": "기본 AI 엔진 구성",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(6411-6423)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(6590-6602)"],
     "$id": 20576
   },
   "配置分析模式、嵌入模型档位、MRL 向量维度与视频切片抽帧参数": {
@@ -2072,7 +2072,7 @@
     "de-DE": "Stellen Sie Suchmodus, Modus des Embedding-Modells, MRL Vektordimensionen und die Frame Sampling-Parameter des Video-Slice ein",
     "fr-FR": "Configurer le mode d'analyse, la classe de modèle d'incorporation, les dimensions de vecteurs MRL et les paramètres de découpage et de capture des images en tranches pour la vidéo.",
     "ko-KR": "분석 모드, 임베딩 모델 등급, MRL 벡터 차원 및 비디오 슬라이스 프레임 추출 매개변수를 구성합니다",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(6496-6531)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(6677-6712)"],
     "$id": 20577
   },
   "选择分析模式": {
@@ -2085,7 +2085,7 @@
     "de-DE": "Analysemodus wählen",
     "fr-FR": "Sélectionnez le mode d'analyse",
     "ko-KR": "분석 모드 선택",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(7051-7061)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(7245-7255)"],
     "$id": 20578
   },
   "根据需求选择不同模式，全面分析耗时最长但精度最高；标准分析最快。增强分析与全面分析需开启高级AI引擎。": {
@@ -2098,7 +2098,7 @@
     "de-DE": "Wählen Sie je nach Bedarf unterschiedliche Modi. Die umfassende Analyse benötigt am längsten, bietet aber die höchste Präzision; die Standardanalyse ist am schnellsten. Für die erweiterte und umfassende Analyse muss die Advanced-AI-Engine aktiviert sein.",
     "fr-FR": "Sélectionnez différents modes en fonction de vos besoins ; l'analyse exhaustive est la plus longue mais offre la plus grande précision ; l'analyse standard est la plus rapide. Les analyses renforcée et exhaustive nécessitent l'activation du moteur IA avancé.",
     "ko-KR": "요구에 따라 다른 모드를 선택하세요. 전체 분석은 시간이 가장 오래 걸리지만 정확도가 가장 높습니다. 표준 분석은 가장 빠릅니다. 향상된 분석과 전체 분석에는 고급 AI 엔진 활성화가 필요합니다.",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(7124-7198)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(7320-7395)"],
     "$id": 20579
   },
   "极速": {
@@ -2111,7 +2111,7 @@
     "de-DE": "Extreme Geschwindigkeit",
     "fr-FR": "Ultra-rapide",
     "ko-KR": "초고속",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(8078-8084)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(8295-8301)"],
     "$id": 20580
   },
   "标准分析": {
@@ -2124,7 +2124,7 @@
     "de-DE": "Standardanalyse",
     "fr-FR": "Analyse standard",
     "ko-KR": "표준 분석",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(8682-8690)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(8911-8919)"],
     "$id": 20581
   },
   "基于基础AI引擎高速获取文件标签、智能文件名和摘要": {
@@ -2137,7 +2137,7 @@
     "de-DE": "Ruft Datei-Tags, intelligente Dateinamen und Zusammenfassungen mit hoher Geschwindigkeit basierend auf der Basis-AI-Engine ab",
     "fr-FR": "Récupération rapide des étiquettes de fichiers, des noms de fichiers intelligents et des résumés grâce au moteur IA de base",
     "ko-KR": "기본 AI 엔진을 기반으로 파일 태그, 스마트 파일 이름 및 요약을 고속으로 가져옵니다",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(8836-8865)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(9069-9098)"],
     "$id": 20582
   },
   "默认": {
@@ -2151,8 +2151,8 @@
     "fr-FR": "Par défaut",
     "ko-KR": "기본값",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(9858-9864)",
-      "src/renderer/components/settings/tts-settings.tsx(18479-18485)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(10111-10117)",
+      "src/renderer/components/settings/tts-settings.tsx(19016-19022)"
     ],
     "$id": 20583
   },
@@ -2166,7 +2166,7 @@
     "de-DE": "Erweiterte Analyse",
     "fr-FR": "Analyse renforcée",
     "ko-KR": "향상된 분석",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(10556-10564)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(10823-10831)"],
     "$id": 20584
   },
   "【标准分析】+ 高级AI引擎润色智能文件名和描述以及补充标签": {
@@ -2179,7 +2179,7 @@
     "de-DE": "[Standardanalyse] + Erweiterte KI-Engine zum Polieren intelligenter Dateinamen und -beschreibungen sowie ergänzender Beschriftungen",
     "fr-FR": "[Analyse standard] + Moteur d'IA avancé pour peaufiner les noms et descriptions de fichiers intelligents et les étiquettes supplémentaires",
     "ko-KR": "[표준 분석]+고급 인공 지능 엔진은 스마트 파일 이름과 설명 및 보충 라벨을 연마합니다",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(10816-10850)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(11088-11122)"],
     "$id": 21480
   },
   "推荐": {
@@ -2193,13 +2193,13 @@
     "fr-FR": "Recommandé",
     "ko-KR": "권장",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(12478-12484)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(22335-22341)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(24002-24008)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(25661-25667)",
-      "src/renderer/components/settings/content-extraction-settings.tsx(25645-25651)",
-      "src/renderer/components/settings/tts-settings.tsx(18219-18225)",
-      "src/renderer/components/settings/tts-settings.tsx(30882-30888)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(12785-12791)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(22854-22860)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(24553-24559)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(26244-26250)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(26255-26261)",
+      "src/renderer/components/settings/tts-settings.tsx(18751-18757)",
+      "src/renderer/components/settings/tts-settings.tsx(31724-31730)"
     ],
     "$id": 20586
   },
@@ -2213,7 +2213,7 @@
     "de-DE": "Umfassende Analyse",
     "fr-FR": "Analyse exhaustive",
     "ko-KR": "전체 분석",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(13164-13172)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(13485-13493)"],
     "$id": 20587
   },
   "【增强分析】+ 全面AI分析，包含质量评分与详细图片、音频、视频内容描述等": {
@@ -2226,7 +2226,7 @@
     "de-DE": "【Erweiterte Analyse】+ Umfassende AI-Analyse, einschließlich Qualitätsbewertung sowie detaillierter Beschreibung von Bild-, Audio- und Videoinhalten",
     "fr-FR": "【Analyse renforcée】+ analyse IA complète, incluant le score de qualité et descriptions détaillées du contenu des images, de l'audio et de la vidéo, etc.",
     "ko-KR": "[향상된 분석] + 전체 AI 분석으로, 품질 점수 및 이미지, 오디오, 비디오 콘텐츠의 자세한 설명 등을 포함합니다",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(13424-13484)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(13750-13811)"],
     "$id": 20588
   },
   "语义搜索与智能理解模式": {
@@ -2239,7 +2239,7 @@
     "de-DE": "Semantische Suche & Intelligenter Verständigungsmodus",
     "fr-FR": "Recherche sémantique et mode de compréhension intelligente",
     "ko-KR": "의미 기반 검색 및 지능형 이해 모드",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(14770-14785)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(15129-15144)"],
     "$id": 20589
   },
   "决定文件与音视频的搜索理解深度。全模态标准档支持深层看懂图片与音视频对话；极速轻量档省电省内存、低发热。": {
@@ -2252,7 +2252,7 @@
     "de-DE": "Bestimmt die Such- und Verständigungstiefe für Dateien, Audi- und Videodateien. Der Vollmodalitäts-Standardmodus unterstützt ein tiefgreifendes Verstehen von Bildern und Audio-/Video-Dialogen; die ultraschnelle Leichtbauweise spart Strom, nutzt wenig Speicher und erzeugt geringe Wärme.",
     "fr-FR": "Définit la profondeur d'analyse pour la recherche de fichiers, audio et vidéo. Le mode standard toutes modalités permet une compréhension approfondie des images et des dialogues audio/vidéo ; le mode rapide et léger économise la batterie, la mémoire et réduit la chauffe.",
     "ko-KR": "파일 및 오디오/비디오 검색의 이해 깊이를 결정합니다. 전 모드 표준 프로필은 이미지 및 오디오/비디오 대화의 심층 파악을 지원하며, 초경량 초고속 프로필은 전력 및 메모리를 절약하고 발열을 낮춥니다.",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(14852-14929)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(15213-15291)"],
     "$id": 20590
   },
   "应用硬件推荐设置": {
@@ -2265,7 +2265,7 @@
     "de-DE": "Empfohlene Hardwareeinstellungen für die App",
     "fr-FR": "Réglages matériels recommandés",
     "ko-KR": "하드웨어 권장 설정 적용",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(15387-15399)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(15763-15775)"],
     "$id": 20591
   },
   "超省电 · 极速分析": {
@@ -2278,7 +2278,7 @@
     "de-DE": "Ultrasparsam · Ultra-Schnelle Analyse",
     "fr-FR": "Hyper économie d'énergie · Analyse express",
     "ko-KR": "초절전 · 초고속 분석",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(16281-16295)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(16677-16691)"],
     "$id": 20592
   },
   "硬件推荐": {
@@ -2292,8 +2292,8 @@
     "fr-FR": "Recommandation matériel",
     "ko-KR": "하드웨어 권장 사항",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(17198-17206)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(19308-19316)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(17611-17619)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(19763-19771)"
     ],
     "$id": 20593
   },
@@ -2307,7 +2307,7 @@
     "de-DE": "【Vorteile】Blitzschnelle Analyse, extrem niedriger Speicherverbrauch (< 80 MB), stromsparend und keine Überhitzung des Geräts.",
     "fr-FR": "【Avantages】Analyse ultra-rapide, occupation mémoire très faible (< 80 Mo), économie d'énergie et absence de surchauffe de l'appareil.",
     "ko-KR": "[장점] 분석이 빠르고, 메모리 사용량이 매우 낮으며(< 80MB), 절전 효과가 있고, 본체에 발열이 없습니다.",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(17390-17427)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(17808-17845)"],
     "$id": 20594
   },
   "【代价】仅支持文字与基础图片搜索，无法深度理解视频内容与对话。": {
@@ -2320,7 +2320,7 @@
     "de-DE": "【Nachteile】Unterstützt nur Text- und Basisbildsuche; keine tiefgreifende Analyse von Videoinhalten und Dialogen möglich.",
     "fr-FR": "【Limites】Prend uniquement en charge la recherche de texte et d'images de base, sans compréhension approfondie du contenu vidéo et des dialogues.",
     "ko-KR": "【제한 사항】텍스트 및 기본 이미지 검색만 지원하며, 비디오 내용과 대화의 심층적인 이해가 불가능합니다.",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(17458-17493)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(17877-17912)"],
     "$id": 20595
   },
   "【适合】8GB 内存轻薄本、日常基础办公或电池供电场景。": {
@@ -2333,7 +2333,7 @@
     "de-DE": "【Eignung】Slim-Laptops mit 8 GB RAM, alltägliche Basis-Bürotätigkeiten oder Nutzung mit Batteriestrom.",
     "fr-FR": "【Idéal pour】PC portables fins avec 8 Go de mémoire, bureautique de base au quotidien ou utilisation sur batterie.",
     "ko-KR": "【적합 대상】8GB 메모리를 갖춘 슬림 노트북, 일상적인 기본 업무 또는 배터리 전원 사용 환경.",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(17524-17556)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(17944-17976)"],
     "$id": 20596
   },
   "深度理解 · 音视频全能": {
@@ -2346,7 +2346,7 @@
     "de-DE": "Tiefes Verständnis · Vielseitig für Audio und Video",
     "fr-FR": "Comprehension approfondie · Multimédia audiovidéo complet",
     "ko-KR": "심도 깊은 이해 · 오디오/비디오 올인원",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(18384-18400)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(18822-18838)"],
     "$id": 20597
   },
   "【优势】看懂复杂画面细节与音视频对话，搜一句话即可秒级定位到视频片段。": {
@@ -2359,7 +2359,7 @@
     "de-DE": "【Vorteile】Verstehen Sie komplexe Bilddetails und Audio-Video-Dialoge; mit einer einzigen Suchanfrage werden Videoausschnitte in Sekunden lokalisiert.",
     "fr-FR": "【Avantage】Comprend les détails des images complexes et les dialogues audiovidéo ; une simple requête permet de localiser instantanément un extrait vidéo en quelques secondes.",
     "ko-KR": "【강점】복잡한 화면의 디테일과 오디오/비디오 대화를 분석하여, 문구 한 줄로 영상 클립을 즉시 정확히 찾아냅니다.",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(19500-19539)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(19960-19999)"],
     "$id": 20598
   },
   "【代价】分析时会占用一定算力与内存（约 300~500MB）。": {
@@ -2372,7 +2372,7 @@
     "de-DE": "【Nachteil】Verbrauchte Rechenleistung und Speicher beim Analysieren (ca. 300–500 MB).",
     "fr-FR": "【Inconvénient】L'analyse consomme une certaine puissance de calcul et de mémoire (environ 300~500 Mo).",
     "ko-KR": "【대가】분석 시 일부 계산 능력과 메모리가 필요합니다(약 300~500MB).",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(19570-19605)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(20031-20066)"],
     "$id": 20599
   },
   "【适合】16GB 及以上内存电脑，追求极致搜索与智能整理体验。": {
@@ -2385,7 +2385,7 @@
     "de-DE": "【Geeignet für】Computer mit 16 GB oder mehr Arbeitsspeicher, die ein maximales Such- und intelligentes Organisationserlebnis anstreben.",
     "fr-FR": "【Convient à】Ordinateurs dotés d'au moins 16 Go de RAM, pour une expérience de recherche et d'organisation intelligente haut de gamme.",
     "ko-KR": "【적합 대상】16GB 이상의 메모리를 갖춘 PC, 궁극적인 검색과 스마트 정리 경험을 추구하는 사용자.",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(19636-19671)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(20098-20133)"],
     "$id": 20600
   },
   "特征分析精度": {
@@ -2398,7 +2398,7 @@
     "de-DE": "Präzision der Merkmalserfassung",
     "fr-FR": "Précision de l'analyse des caractéristiques",
     "ko-KR": "특성 분석 정밀도",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(20204-20214)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(20679-20689)"],
     "$id": 20601
   },
   "决定为每个文件提取特征的精细程度。精度越高，模糊词和长句搜索越精准；精度越低，索引文件越省磁盘空间。": {
@@ -2411,7 +2411,7 @@
     "de-DE": "Bestimmt die Feinheit der Merkmale, die für jede Datei extrahiert werden. Je höher die Präzision, desto genauer sind Suchen mit unscharfen Begriffen und längeren Sätzen; je niedriger die Präzision, desto weniger Festplattenspeicher wird für die Indexdateien benötigt.",
     "fr-FR": "Définit le niveau de détail pour l'extraction des caractéristiques de chaque fichier. Plus la précision est élevée, plus les recherches par mots flous ou phrases longues seront exactes ; plus elle est basse, plus les fichiers d'index occuperont peu d'espace disque.",
     "ko-KR": "각 파일에서 추출하는 특성의 세밀한 정도를 결정합니다. 정밀도가 높을수록 모호한 단어와 긴 문장 검색이 더욱 정확해지며, 정밀도가 낮을수록 인덱스 파일이 차지하는 디스크 공간이 적습니다.",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(20310-20389)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(20788-20868)"],
     "$id": 20602
   },
   "硬件推荐：{level}（{dim}维）": {
@@ -2424,7 +2424,7 @@
     "de-DE": "Hardware-Empfehlung: {level} ({dim} Dimensionen)",
     "fr-FR": "Recommandation de matériel : {level} ({dim} dimensions)",
     "ko-KR": "하드웨어 권장사항: {level}({dim}차원)",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(20617-20641)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(21102-21126)"],
     "$id": 20603
   },
   "精准档": {
@@ -2437,7 +2437,7 @@
     "de-DE": "Präzisionsebene",
     "fr-FR": "Précision",
     "ko-KR": "정밀 등급",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(20773-20780)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(21261-21268)"],
     "$id": 20604
   },
   "标准档": {
@@ -2450,7 +2450,7 @@
     "de-DE": "Standardebene",
     "fr-FR": "Standard",
     "ko-KR": "표준 등급",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(20885-20892)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(21375-21382)"],
     "$id": 20605
   },
   "紧凑档": {
@@ -2463,7 +2463,7 @@
     "de-DE": "Kompakte Ebene",
     "fr-FR": "Compact",
     "ko-KR": "컴팩트 등급",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(20926-20933)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(21417-21424)"],
     "$id": 20606
   },
   "紧凑省盘档（256维）": {
@@ -2476,7 +2476,7 @@
     "de-DE": "Kompakte Datenträger-Einsparungs-Ebene (256 Dimensionen)",
     "fr-FR": "Compact & Économique (256 dimensions)",
     "ko-KR": "컴팩트 디스크 절약형 등급(256차원)",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(22048-22063)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(22563-22578)"],
     "$id": 20607
   },
   "【优势】极省磁盘，每文件仅约 1KB 索引，省 67% 存储空间。": {
@@ -2489,7 +2489,7 @@
     "de-DE": "[Vorteil] Extrem geringe Festplattennutzung, nur ca. 1 KB Index pro Datei, 67 % weniger Speicherplatz.",
     "fr-FR": "【Avantage】Très économe en espace disque, environ 1 Ko d'index par fichier, économie de 67 % de l'espace de stockage.",
     "ko-KR": "[장점] 디스크 공간 극대화 절약, 파일당 인덱스 약 1KB로 저장 공간 67% 절감.",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(22568-22605)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(23092-23129)"],
     "$id": 20608
   },
   "【代价】对极复杂细微描述的辨识度略有降低（约 95% 准确率）。": {
@@ -2502,7 +2502,7 @@
     "de-DE": "[Nachteil] Leicht verminderte Erkennungsfähigkeit für sehr komplexe und feine Beschreibungen (ca. 95 % Genauigkeit).",
     "fr-FR": "【Coût】Diminution légère de la distinction des descriptions très complexes et subtiles (précision d'environ 95 %).",
     "ko-KR": "[비용] 극도로 복잡한 미세한 설명에 대한 식별력이 약간 감소(약 95% 정확률).",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(22644-22680)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(23169-23205)"],
     "$id": 20609
   },
   "【适合】磁盘空间紧张或 8GB 内存设备。": {
@@ -2515,7 +2515,7 @@
     "de-DE": "[Geeignet für] Geräte mit begrenztem Speicherplatz oder 8 GB RAM.",
     "fr-FR": "【Convient à】Appareils dotés de 8 Go de mémoire ou à l'espace disque limité.",
     "ko-KR": "[추천] 디스크 공간이 부족하거나 8GB 메모리 장치.",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(22719-22744)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(23245-23270)"],
     "$id": 20610
   },
   "标准平衡档（512维）": {
@@ -2528,7 +2528,7 @@
     "de-DE": "Standard-Ausgewogenheits-Ebene (512 Dimensionen)",
     "fr-FR": "Équilibre standard (512 dimensions)",
     "ko-KR": "표준 균형형 등급(512차원)",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(23712-23727)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(24259-24274)"],
     "$id": 20611
   },
   "【优势】速度与精度的黄金平衡，保留 98.5% 以上细节辨识能力。": {
@@ -2541,7 +2541,7 @@
     "de-DE": "[Vorteil] Goldene Mitte zwischen Geschwindigkeit und Präzision, behält über 98,5 % der Detailerkennungsfähigkeit bei.",
     "fr-FR": "【Avantage】Équilibre idéal entre vitesse et précision, préservant une capacité de distinction des détails supérieure à 98,5 %.",
     "ko-KR": "[장점] 속도와 정밀도의 최적 균형, 세부 식별 능력 98.5% 이상 유지.",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(24235-24272)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(24791-24828)"],
     "$id": 20612
   },
   "【代价】每文件约 2KB 索引空间。": {
@@ -2554,7 +2554,7 @@
     "de-DE": "【Kosten】Ca. 2 KB Indexspeicher pro Datei.",
     "fr-FR": "【Coût】Environ 2 Ko d'espace d'index par fichier.",
     "ko-KR": "【비용】파일당 약 2KB의 인덱스 공간.",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(24311-24333)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(24868-24890)"],
     "$id": 20613
   },
   "【适合】8GB ~ 16GB 主流电脑首选推荐。": {
@@ -2567,7 +2567,7 @@
     "de-DE": "【Geeignet】Erste Wahl für die meisten Standard-PCs mit 8 GB bis 16 GB Speicher.",
     "fr-FR": "【Recommandation】Recommandé pour les PC standard de 8 Go à 16 Go.",
     "ko-KR": "【적합】8GB ~ 16GB의 주류 PC 사용자에게 우선 권장.",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(24372-24400)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(24930-24958)"],
     "$id": 20614
   },
   "旗舰精准档（768维）": {
@@ -2580,7 +2580,7 @@
     "de-DE": "Flaggschiff-Präzisionsstufe (768 Dimensionen)",
     "fr-FR": "Mode de précision Premium (768 dimensions)",
     "ko-KR": "플래그십 정밀 모드 (768차원)",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(25368-25383)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(25947-25962)"],
     "$id": 20615
   },
   "【优势】满血最高精度，对模糊长句和音画视频内容细节匹配最佳。": {
@@ -2593,7 +2593,7 @@
     "de-DE": "【Vorteile】Höchste Präzision bei voller Leistung, optimale Übereinstimmung mit vagen, langen Sätzen und den Details von Audio- und Videoinhalten.",
     "fr-FR": "【Avantage】Précision maximale, meilleur correspondance pour les détails de contenus vidéo et de phrases longues floues.",
     "ko-KR": "【장점】최대 정밀도를 제공하며, 모호한 긴 문구와 영상/비디오 콘텐츠의 세부 사항 일치에 최적화됨.",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(25894-25928)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(26482-26516)"],
     "$id": 20616
   },
   "【代价】每文件约 3KB 索引空间，分析时需稍多内存。": {
@@ -2606,7 +2606,7 @@
     "de-DE": "【Kosten】Ca. 3 KB Indexspeicher pro Datei, etwas mehr Speicherbedarf während der Analyse.",
     "fr-FR": "【Coût】Environ 3 Ko d'espace d'index par fichier, nécessite légèrement plus de mémoire lors de l'analyse.",
     "ko-KR": "【비용】파일당 약 3KB의 인덱스 공간, 분석 시 소량의 추가 메모리 사용.",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(25967-25998)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(26556-26587)"],
     "$id": 20617
   },
   "【适合】16GB / 32GB 及以上高性能电脑推荐。": {
@@ -2619,7 +2619,7 @@
     "de-DE": "【Geeignet】Empfohlen für leistungsstarke PCs mit 16 GB / 32 GB oder mehr Speicher.",
     "fr-FR": "【Recommandation】Recommandé pour les PC haute performance de 16 Go / 32 Go ou plus.",
     "ko-KR": "【적합】16GB / 32GB 이상의 고성능 PC 사용자에게 권장.",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(26037-26068)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(26627-26658)"],
     "$id": 20618
   },
   "视频内容定位精度（抽帧间隔）": {
@@ -2632,7 +2632,7 @@
     "de-DE": "Genauigkeit der Lokalisierung von Videoinhalten (Frame-Abtastintervall)",
     "fr-FR": "Précision du positionnement du contenu vidéo (intervalle de décorticage des images)",
     "ko-KR": "비디오 콘텐츠 위치 지정 정확도 (프레임 추출 간격)",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(26570-26588)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(27172-27190)"],
     "$id": 20619
   },
   "分析长视频时每隔几秒截取一次画面。间隔越短，越能精确按秒定位到视频画面片段；间隔越长，视频分析越省电快速。": {
@@ -2645,7 +2645,7 @@
     "de-DE": "Bei der Analyse langer Videos wird alle paar Sekunden ein Bildschirmabbild erfasst. Je kürzer das Intervall, desto präziser kann jeder einzelne Bildausschnitt des Videos auf Sekundenebene lokalisert werden; je länger das Intervall, desto stromsparender und schneller wird die Videoanalyse.",
     "fr-FR": "Lors de l'analyse de vidéos longues, les captures sont extraites toutes les quelques secondes. Plus l'intervalle est court, plus la localisation au niveau de la seconde des segments vidéo est précise ; plus l'intervalle est long, plus l'analyse est rapide et économe en énergie.",
     "ko-KR": "긴 영상 분석 시 몇 초 간격으로 화면을 캡처합니다. 간격이 짧을수록 영상 프레임의 해당 부분을 초 단위로 더 정확하게 지정할 수 있고, 간격이 길수록 영상 분석이 더 빠르고 배터리가 아껴집니다.",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(26684-26766)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(27289-27372)"],
     "$id": 20620
   },
   "恢复硬件推荐（{sec}秒）": {
@@ -2658,7 +2658,7 @@
     "de-DE": "Hardware-Empfehlung wiederherstellen ({sec} Sekunden)",
     "fr-FR": "Rétablir la configuration matérielle recommandée ({sec} s)",
     "ko-KR": "하드웨어 권장값 복구({sec}초)",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(27348-27366)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(27967-27985)"],
     "$id": 20621
   },
   "秒": {
@@ -2671,7 +2671,7 @@
     "de-DE": "Sekunden",
     "fr-FR": "Secondes",
     "ko-KR": "초",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(27649-27654)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(28272-28277)"],
     "$id": 20622
   },
   "【较短间隔（如 2.0 秒）】能精确定位视频中每一处画面细节，但长视频分析时间较长；": {
@@ -2684,7 +2684,7 @@
     "de-DE": "【Kürzeres Intervall (z. B. 2,0 Sekunden)】Ermöglicht eine präzise Lokalisierung jedes Bild DETAILS im Video, verlängert jedoch die Analysezeit für lange Videos;",
     "fr-FR": "【Intervalle court (ex. 2,0 s)】Permet une localisation précise de chaque détail visuel de la vidéo, mais l'analyse de vidéos longues prend plus de temps ;",
     "ko-KR": "[짧은 간격(예: 2.0초)]: 영상 내 각 프레임의 세부 사항을 정확하게 지정할 수 있지만, 긴 영상의 분석 시간이 길어집니다.",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(28982-29028)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(29639-29685)"],
     "$id": 20623
   },
   "【较长间隔（如 15.0 秒）】快速提取视频大意，极速省电，适合轻薄本。": {
@@ -2697,7 +2697,7 @@
     "de-DE": "【Längerer Intervall (z. B. 15,0 Sekunden)】Ermöglicht eine schnelle Extraktion des Videomehrwerts, ist extrem stromsparend und eignet sich für schlankere Notebooks.",
     "fr-FR": "【Intervalle long (ex. 15,0 s)】Extrait rapidement le contenu général de la vidéo, consommation d'énergie minimale, idéal pour les ordinateurs portables ultralégers.",
     "ko-KR": "[긴 간격(예: 15.0초)]: 영상의 개요를 빠르게 추출하고 초고속으로 배터리를 절약하며, 얇은 노트북에 적합합니다.",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(29061-29101)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(29719-29759)"],
     "$id": 20624
   },
   "确认切换智能理解模式？": {
@@ -2710,7 +2710,7 @@
     "de-DE": "Möchten Sie in den Modus für intelligente Analyse wechseln?",
     "fr-FR": "Confirmer le basculement en mode de compréhension intelligente ?",
     "ko-KR": "스마트 이해 모드로 전환할까요?",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(29429-29444)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(30099-30114)"],
     "$id": 20625
   },
   "即将切换为【{profile}】模式。切换后系统将自动重启 AI 引擎。": {
@@ -2723,7 +2723,7 @@
     "de-DE": "Der Wechsel in den 【{profile}】-Modus steht unmittelbar bevor. Nach dem Wechsel wird die AI-Engine automatisch neu gestartet.",
     "fr-FR": "Bientôt basculement dans le mode 【{profile}】. Après le basculement, le système redémarrera automatiquement le moteur d'IA.",
     "ko-KR": "곧 【{profile}】 모드로 전환됩니다. 전환 후 시스템이 자동으로 AI 엔진을 재시작합니다.",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(29627-29688)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(30301-30363)"],
     "$id": 20626
   },
   "⚠️ 注意事项与生效机制：": {
@@ -2736,7 +2736,7 @@
     "de-DE": "⚠️ Hinweise und Wirkungsmechanismen:",
     "fr-FR": "⚠️ Notes et mécanisme d'application :",
     "ko-KR": "⚠️ 주의사항 및 적용 방식:",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(30078-30095)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(30760-30777)"],
     "$id": 20627
   },
   "1. 新导入的文件：将立即自动采用新模式进行深度特征分析；": {
@@ -2749,7 +2749,7 @@
     "de-DE": "1. Neu importierte Dateien: Werden sofort automatisch mit dem neuen Modus einer tiefergehenden Merkmalsanalyse unterzogen;",
     "fr-FR": "1. Fichiers nouvellement importés : adopteront immédiatement le nouveau mode pour une analyse approfondie des caractéristiques ;",
     "ko-KR": "1. 새로 가져온 파일: 즉시 자동으로 새 모드를 채택하여 심층 특징 분석을 수행합니다;",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(30124-30157)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(30807-30840)"],
     "$id": 20628
   },
   "2. 已经分析过的旧文件：历史数据仍安全保留。如需让旧文件享受新模式的搜索特性，需在文件列表中右键选择「重新分析」。": {
@@ -2762,7 +2762,7 @@
     "de-DE": "2. Bereits analysierte ältere Dateien: Die historischen Daten bleiben sicher erhalten. Damit ältere Dateien über die Suchfunktionen des neuen Modus profitieren können, müssen sie in der Dateiliste per Rechtsklick über „Erneut analysieren“ ausgewählt werden.",
     "fr-FR": "2. Fichiers déjà analysés : les données historiques restent conservées en toute sécurité. Pour profiter des fonctionnalités de recherche du nouveau mode pour les anciens fichiers, il faut effectuer un clic droit dans la liste des fichiers et sélectionner « Réanalyser ».",
     "ko-KR": "2. 이미 분석된 기존 파일: 과거 데이터는 안전하게 유지됩니다. 기존 파일에 대해 새 모드의 검색 기능을 적용하려면 파일 목록에서 마우스 오른쪽 버튼을 클릭하여 '다시 분석'을 선택하십시오.",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(30186-30248)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(30870-30932)"],
     "$id": 20629
   },
   "立即应用并重启引擎": {
@@ -2775,7 +2775,7 @@
     "de-DE": "Sofort anwenden und Engine neu starten",
     "fr-FR": "Appliquer immédiatement et redémarrer le moteur",
     "ko-KR": "즉시 적용 및 엔진 재시작",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(30543-30556)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(31235-31248)"],
     "$id": 20630
   },
   "确认切换特征分析精度？": {
@@ -2788,7 +2788,7 @@
     "de-DE": "Wechsel der Merkmalsanalyse-Präzision bestätigen?",
     "fr-FR": "Confirmer le basculement de la précision d'analyse des caractéristiques ?",
     "ko-KR": "기능 분석 정밀도를 전환할까요?",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(30892-30907)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(31594-31609)"],
     "$id": 20631
   },
   "即将把特征分析精度调整为【{level}（{dim} 维）】。": {
@@ -2801,7 +2801,7 @@
     "de-DE": "Die Präzision der Merkmalsanalyse wird bald auf [{level} ({dim} Dimensionen)] eingestellt.",
     "fr-FR": "La précision de l'analyse des caractéristiques sera prochainement ajustée à [{level} ({dim} dimensions)].",
     "ko-KR": "아래와 같이 특징 분석 정밀도를 [{level}({dim} 차원)]으로 조정합니다.",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(31090-31146)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(31796-31853)"],
     "$id": 20632
   },
   "旗舰精准档": {
@@ -2814,7 +2814,7 @@
     "de-DE": "Flaggschiff-Präzisionsstufe",
     "fr-FR": "Niveau de précision phare",
     "ko-KR": "플래그십 정밀형",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(31276-31285)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(31987-31996)"],
     "$id": 20633
   },
   "标准平衡档": {
@@ -2827,7 +2827,7 @@
     "de-DE": "Standard-Ausgewogenheitsstufe",
     "fr-FR": "Niveau équilibré standard",
     "ko-KR": "표준 균형형",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(31370-31379)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(32083-32092)"],
     "$id": 20634
   },
   "紧凑省盘档": {
@@ -2840,7 +2840,7 @@
     "de-DE": "Kompakte Speichersparstufe",
     "fr-FR": "Niveau compact, économie de stockage",
     "ko-KR": "컴팩트 저장공간 절약형",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(31411-31420)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(32125-32134)"],
     "$id": 20635
   },
   "⚠️ 生效机制说明：": {
@@ -2853,7 +2853,7 @@
     "de-DE": "⚠️ Erläuterung der Wirkungsweise:",
     "fr-FR": "⚠️ Explication du mécanisme de prise d'effet :",
     "ko-KR": "⚠️ 적용 메커니즘 설명:",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(31743-31757)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(32463-32477)"],
     "$id": 20636
   },
   "1. 新导入的文件：将直接以 {dim} 维精度生成特征索引；": {
@@ -2866,7 +2866,7 @@
     "de-DE": "1. Neu importierte Dateien: Die Merkmalsindizes werden direkt mit der Präzision von {dim} Dimensionen erstellt;",
     "fr-FR": "1. Fichiers nouvellement importés : l'index de caractéristiques sera généré directement avec la précision de {dim} dimensions ;",
     "ko-KR": "1. 새로 가져온 파일: {dim} 차원 정밀도로 특징 인덱스를 바로 생성합니다.",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(31786-31821)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(32507-32542)"],
     "$id": 20637
   },
   "2. 已分析的旧文件：旧特征索引不受破坏，但若要在搜索时享受当前精度的匹配效果，需在文件列表中执行「重新分析」。": {
@@ -2879,7 +2879,7 @@
     "de-DE": "2. Bereits analysierte Altdateien: Die alten Merkmalsindizes bleiben unverändert, jedoch muss im Dateiverzeichnis „Neu analysieren“ ausgeführt werden, um bei der Suche die Match-Effekte der aktuellen Präzision zu nutzen.",
     "fr-FR": "2. Fichiers précédemment analysés : les anciens index de caractéristiques ne seront pas endommagés, mais pour bénéficier de l'effet de correspondance de la précision actuelle lors des recherches, il faut exécuter « Réanalyser » dans la liste des fichiers.",
     "ko-KR": "2. 분석된 기존 파일: 기존 특징 인덱스는 손상되지 않지만, 검색 시 현재 정밀도의 매칭 효과를 누리려면 파일 목록에서 ‘다시 분석’을 실행해야 합니다.",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(31884-31944)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(32606-32666)"],
     "$id": 20638
   },
   "确认调整精度": {
@@ -2892,7 +2892,7 @@
     "de-DE": "Präziseinstellung bestätigen",
     "fr-FR": "Confirmer l'ajustement de la précision",
     "ko-KR": "정밀도 조정 확인",
-    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(32241-32251)"],
+    "$files": ["src/renderer/components/settings/basic-ai-engine-config-settings.tsx(32971-32981)"],
     "$id": 20639
   },
   "获取模型列表": {
@@ -2905,7 +2905,7 @@
     "de-DE": "Modellliste abrufen",
     "fr-FR": "Récupérer la liste des modèles",
     "ko-KR": "모델 목록 가져오기",
-    "$files": ["src/renderer/components/settings/cloud-error-card.tsx(777-787)"],
+    "$files": ["src/renderer/components/settings/cloud-error-card.tsx(802-812)"],
     "$id": 19462
   },
   "分析请求": {
@@ -2918,7 +2918,7 @@
     "de-DE": "Anfrage analysieren",
     "fr-FR": "Analyser la demande",
     "ko-KR": "요청 분석",
-    "$files": ["src/renderer/components/settings/cloud-error-card.tsx(822-830)"],
+    "$files": ["src/renderer/components/settings/cloud-error-card.tsx(849-857)"],
     "$id": 19463
   },
   "对话探针": {
@@ -2931,7 +2931,7 @@
     "de-DE": "Dialogprobe",
     "fr-FR": "Probe de conversation",
     "ko-KR": "대화 탐지",
-    "$files": ["src/renderer/components/settings/cloud-error-card.tsx(858-866)"],
+    "$files": ["src/renderer/components/settings/cloud-error-card.tsx(887-895)"],
     "$id": 19464
   },
   "云端引擎错误详情": {
@@ -2944,7 +2944,7 @@
     "de-DE": "Fehlerdetails der Cloud-Engine",
     "fr-FR": "Détails de l'erreur du moteur cloud",
     "ko-KR": "클라우드 엔진 오류 세부 정보",
-    "$files": ["src/renderer/components/settings/cloud-error-card.tsx(1794-1806)"],
+    "$files": ["src/renderer/components/settings/cloud-error-card.tsx(1843-1855)"],
     "$id": 19465
   },
   "清除": {
@@ -2958,8 +2958,8 @@
     "fr-FR": "Effacer",
     "ko-KR": "초기화",
     "$files": [
-      "src/renderer/components/settings/cloud-error-card.tsx(1990-1996)",
-      "src/renderer/components/settings/cloud-error-card.tsx(3973-3979)"
+      "src/renderer/components/settings/cloud-error-card.tsx(2045-2051)",
+      "src/renderer/components/settings/cloud-error-card.tsx(4080-4086)"
     ],
     "$id": 19466
   },
@@ -2973,7 +2973,7 @@
     "de-DE": "Zeit",
     "fr-FR": "Heure",
     "ko-KR": "시간",
-    "$files": ["src/renderer/components/settings/cloud-error-card.tsx(2313-2319)"],
+    "$files": ["src/renderer/components/settings/cloud-error-card.tsx(2377-2383)"],
     "$id": 19467
   },
   "服务商": {
@@ -2986,7 +2986,7 @@
     "de-DE": "Anbieter",
     "fr-FR": "Fournisseur",
     "ko-KR": "서비스 제공자",
-    "$files": ["src/renderer/components/settings/cloud-error-card.tsx(2536-2543)"],
+    "$files": ["src/renderer/components/settings/cloud-error-card.tsx(2606-2613)"],
     "$id": 19468
   },
   "模型": {
@@ -2999,7 +2999,7 @@
     "de-DE": "Modell",
     "fr-FR": "Modèle",
     "ko-KR": "모델",
-    "$files": ["src/renderer/components/settings/cloud-error-card.tsx(2710-2716)"],
+    "$files": ["src/renderer/components/settings/cloud-error-card.tsx(2784-2790)"],
     "$id": 19469
   },
   "失败阶段": {
@@ -3012,7 +3012,7 @@
     "de-DE": "Fehlphasen",
     "fr-FR": "Étape de l'échec",
     "ko-KR": "실패 단��",
-    "$files": ["src/renderer/components/settings/cloud-error-card.tsx(2880-2888)"],
+    "$files": ["src/renderer/components/settings/cloud-error-card.tsx(2958-2966)"],
     "$id": 19470
   },
   "测试中...": {
@@ -3025,7 +3025,7 @@
     "de-DE": "Wird getestet...",
     "fr-FR": "Test en cours...",
     "ko-KR": "테스트 중...",
-    "$files": ["src/renderer/components/settings/cloud-error-card.tsx(3703-3713)"],
+    "$files": ["src/renderer/components/settings/cloud-error-card.tsx(3802-3812)"],
     "$id": 19471
   },
   "重新测试": {
@@ -3038,7 +3038,7 @@
     "de-DE": "Erneut testen",
     "fr-FR": "Retester",
     "ko-KR": "다시 테스트",
-    "$files": ["src/renderer/components/settings/cloud-error-card.tsx(3717-3725)"],
+    "$files": ["src/renderer/components/settings/cloud-error-card.tsx(3816-3824)"],
     "$id": 19472
   },
   "内容萃取设置": {
@@ -3051,7 +3051,7 @@
     "de-DE": "Einstellungen für die Inhaltsextraktion",
     "fr-FR": "Réglages d'extraction du contenu",
     "ko-KR": "내용 추출 설정",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(6636-6646)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(6844-6854)"],
     "$id": 20640
   },
   "控制文件与文档文本、OCR、音视频等内容提取范围及精度": {
@@ -3064,7 +3064,7 @@
     "de-DE": "Kontrolldatei und Dokumenttext, OCR, Audio/Video und andere Bereiche sowie die Genauigkeit der Inhalts extraktion",
     "fr-FR": "Portée et précision de l'extraction de contenu pour les fichiers et les documents texte, l'OCR, les contenus audio et vidéo, etc.",
     "ko-KR": "제어 파일 및 문서 텍스트, OCR, 오디오-비디오 등 콘텐츠 추출 범위 및 정밀도",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(6719-6750)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(6929-6960)"],
     "$id": 20641
   },
   "文档与内容提取": {
@@ -3077,7 +3077,7 @@
     "de-DE": "Dokumente und Inhalts extraktion",
     "fr-FR": "Extraction de documents et de contenu",
     "ko-KR": "문서 및 콘텐츠 추출",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(7125-7136)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(7346-7357)"],
     "$id": 20642
   },
   "内容(含OCR）提取大小上限": {
@@ -3090,7 +3090,7 @@
     "de-DE": "Maximaler Extraktionsumfang für Inhalte (einschließlich OCR)",
     "fr-FR": "Limite de taille maximale pour l'extraction de contenu (incluant l'OCR)",
     "ko-KR": "콘텐츠(OCR 포함) 추출 크기 상한",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(7520-7538)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(7749-7767)"],
     "$id": 20643
   },
   "单个文本指标（文本/文档/OCR/HTML）的最大提取大小，超长内容会被自动截断。否则过多占用存储空间，影响性能。": {
@@ -3103,7 +3103,7 @@
     "de-DE": "Maximaler Extraktionsumfang für einzelne Textindikatoren (Text/Dokument/OCR/HTML). Überlanger Inhalt wird automatisch abgeschnitten. Andernfalls wird zu viel Speicherplatz belegt und die Leistung beeinträchtigt.",
     "fr-FR": "Taille maximale d'extraction pour une métrique de texte individuelle (texte/document/OCR/HTML). Les contenus trop longs seront automatiquement tronqués. Autrement, une consommation excessive de stockage et une dégradation des performances en résulteraient.",
     "ko-KR": "단일 텍스트 지표(텍스트/문서/OCR/HTML)의 최대 추출 크기. 과도하게 긴 콘텐츠는 자동으로 잘립니다. 그렇지 않으면 저장 공간이 과다하게 차지되어 성능에 영향을 미칩니다.",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(7628-7712)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(7860-7945)"],
     "$id": 20644
   },
   "不限": {
@@ -3117,10 +3117,10 @@
     "fr-FR": "Illimitée",
     "ko-KR": "제한 없음",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(8056-8062)",
-      "src/renderer/components/settings/content-extraction-settings.tsx(11590-11596)",
-      "src/renderer/components/settings/content-extraction-settings.tsx(21489-21495)",
-      "src/renderer/components/settings/content-extraction-settings.tsx(24038-24044)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(8296-8302)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(11900-11906)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(22012-22018)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(24614-24620)"
     ],
     "$id": 20645
   },
@@ -3135,8 +3135,8 @@
     "fr-FR": "10 000",
     "ko-KR": "만",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(8745-8750)",
-      "src/renderer/components/settings/content-extraction-settings.tsx(9082-9087)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(8997-9002)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(9340-9345)"
     ],
     "$id": 20646
   },
@@ -3150,7 +3150,7 @@
     "de-DE": "Entspricht ungefähr {zh} Zeichen oder {en} Wörtern",
     "fr-FR": "Équivaut à environ {zh} caractères ou {en} mots",
     "ko-KR": "약 {zh}자 또는 {en} 단어에 해당",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(9186-9210)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(9446-9470)"],
     "$id": 20647
   },
   "开启Office文档封面截图": {
@@ -3163,7 +3163,7 @@
     "de-DE": "Aktivieren von Office-Dokument-Cover-Screenshots",
     "fr-FR": "Activer la capture d'écran de couverture pour les documents Office",
     "ko-KR": "Office 문서 커버 스크린샷 활성화",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(12240-12258)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(12566-12584)"],
     "$id": 20648
   },
   "支持Office文档首页导出为封面缩略图，但会大大增加Office内容提取耗时，PDF不受影响。需要安装LibreOffice。": {
@@ -3176,7 +3176,7 @@
     "de-DE": "Unterstützt den Export der ersten Seite von Office-Dokumenten als Cover-Schnappbild, verlängert jedoch die Extraktionszeit für Office-Inhalte erheblich. PDFs sind nicht betroffen. LibreOffice muss installiert werden.",
     "fr-FR": "Permet l'exportation de la première page des documents Office en miniature de couverture, mais augmente considérablement le temps d'extraction du contenu Office ; les PDF ne sont pas affectés. Nécessite l'installation de LibreOffice.",
     "ko-KR": "Office 문서 첫 페이지를 커버 섬네일로 내보내는 기능을 지원하지만, Office 콘텐츠 추출 시간이 크게 증가하며, PDF에는 영향을 미치지 않습니다. LibreOffice 설치가 필요합니다.",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(12354-12447)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(12683-12777)"],
     "$id": 20649
   },
   "开启，调用LibreOffice转首页为缩略图封面（非常耗时）": {
@@ -3189,7 +3189,7 @@
     "de-DE": "Einschalten, LibreOffice aufrufen, um die erste Seite als Thumbnail-Cover zu konvertieren (sehr zeitaufwendig)",
     "fr-FR": "Activer, utiliser LibreOffice pour convertir la première page en vignette de couverture (très chronophage)",
     "ko-KR": "활성, LibreOffice를 호출하여 첫 페이지를 섬네일 커버로 변환(매우 오래 걸림)",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(12653-12688)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(12989-13024)"],
     "$id": 20650
   },
   "关闭，跳过Office封面图提取": {
@@ -3202,7 +3202,7 @@
     "de-DE": "Deaktivieren, Office-Cover-Extraktion überspringen",
     "fr-FR": "Désactiver, ignorer l’extraction de la couverture Office",
     "ko-KR": "비활성, Office 커버 이미지 추출 건너뛰기",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(12714-12734)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(13051-13071)"],
     "$id": 20651
   },
   "插件安装：LibreOffice": {
@@ -3215,7 +3215,7 @@
     "de-DE": "Plugin-Installation: LibreOffice",
     "fr-FR": "Installation du plugin : LibreOffice",
     "ko-KR": "플러그인 설치: LibreOffice",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(13613-13633)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(13970-13990)"],
     "$id": 20652
   },
   "支持Office文件整页转换与封面图提取": {
@@ -3228,7 +3228,7 @@
     "de-DE": "Unterstützt die Ganseiten-Konvertierung von Office-Dateien und die Cover-Bildextraktion",
     "fr-FR": "Prise en charge de la conversion de page entière de fichiers Office et de l’extraction de la couverture",
     "ko-KR": "Office 파일 전체 페이지 변환 및 커버 이미지 추출 지원",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(13796-13820)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(14157-14181)"],
     "$id": 20653
   },
   "但会大大增加Office内容提取耗时，PDF不受影响": {
@@ -3241,7 +3241,7 @@
     "de-DE": "Verlängert jedoch die Extraktionszeit für Office-Inhalte erheblich; PDFs sind nicht betroffen",
     "fr-FR": "Cependant, cela augmente considérablement le temps d’extraction du contenu des fichiers Office ; les PDF ne sont pas affectés",
     "ko-KR": "그러나 Office 콘텐츠 추출에 소요되는 시간을 크게 증가시키며, PDF에는 영향 없음",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(13929-13959)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(14292-14322)"],
     "$id": 20654
   },
   "收起 Windows 安装教程 💡": {
@@ -3254,7 +3254,7 @@
     "de-DE": "Windows-Installationstutorial einklappen 💡",
     "fr-FR": "Replier le Tutoriel d’installation Windows 💡",
     "ko-KR": "수축 Windows 설치 가이드 💡",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(14613-14635)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(14988-15010)"],
     "$id": 20655
   },
   "展开 Windows 安装与 PATH 配置教程 💡": {
@@ -3267,7 +3267,7 @@
     "de-DE": "Windows-Installation und PATH-Konfiguration tutorial ausklappen 💡",
     "fr-FR": "Déplier le Tutoriel d’installation Windows et de configuration du PATH 💡",
     "ko-KR": "전개 Windows 설치 및 PATH 구성 가이드 💡",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(14671-14702)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(15047-15078)"],
     "$id": 20656
   },
   "如何配置：": {
@@ -3280,7 +3280,7 @@
     "de-DE": "So konfigurieren:",
     "fr-FR": "Comment configurer :",
     "ko-KR": "설정 방법:",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(15377-15386)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(15763-15772)"],
     "$id": 20657
   },
   "请先将 LibreOffice 的安装路径添加进系统的 PATH 环境变量": {
@@ -3293,7 +3293,7 @@
     "de-DE": "Bitte fügen Sie zuerst den Installationspfad von LibreOffice in die Umgebungsvariable PATH des Systems ein",
     "fr-FR": "Veuillez d'abord ajouter le chemin d'installation de LibreOffice à la variable d'environnement PATH du système",
     "ko-KR": "먼저 LibreOffice 설치 경로를 시스템의 PATH 환경 변수에 추가하세요.",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(15545-15586)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(15934-15975)"],
     "$id": 20658
   },
   "默认位置：": {
@@ -3306,7 +3306,7 @@
     "de-DE": "Standardort:",
     "fr-FR": "Emplacement par défaut :",
     "ko-KR": "기본 위치:",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(15668-15677)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(16059-16068)"],
     "$id": 20659
   },
   "配置后重启应用再次点击重新检测。": {
@@ -3319,7 +3319,7 @@
     "de-DE": "Starten Sie die Anwendung nach der Konfiguration neu und klicken Sie erneut auf „Erneut prüfen“.",
     "fr-FR": "Redémarrez l'application après configuration, puis cliquez à nouveau sur « Redétecter ».",
     "ko-KR": "설정 후 앱을 재시작하고 다시 '다시 감지'를 클릭하세요.",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(15760-15780)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(16152-16172)"],
     "$id": 20660
   },
   "前往下载": {
@@ -3332,7 +3332,7 @@
     "de-DE": "Zum Download",
     "fr-FR": "Accéder au téléchargement",
     "ko-KR": "다운로드 페이지로 이동",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(16346-16354)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(16752-16760)"],
     "$id": 20661
   },
   "已安装": {
@@ -3345,7 +3345,7 @@
     "de-DE": "Installiert",
     "fr-FR": "Installé",
     "ko-KR": "설치됨",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(17002-17009)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(17420-17427)"],
     "$id": 20662
   },
   "未检测到": {
@@ -3358,7 +3358,7 @@
     "de-DE": "Nicht erkannt",
     "fr-FR": "Non détecté",
     "ko-KR": "검출되지 않음",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(17444-17452)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(17869-17877)"],
     "$id": 20663
   },
   "重新检测": {
@@ -3371,7 +3371,7 @@
     "de-DE": "Erneut prüfen",
     "fr-FR": "Redétecter",
     "ko-KR": "다시 감지",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(17897-17905)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(18334-18342)"],
     "$id": 20664
   },
   "音频分析截取时长": {
@@ -3384,7 +3384,7 @@
     "de-DE": "Länge des für die Audioanalyse eingeschnittenen Bereichs",
     "fr-FR": "Durée de capture pour l'analyse audio",
     "ko-KR": "오디오 분석 캡처 길이",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(18407-18419)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(18857-18869)"],
     "$id": 20665
   },
   "截取音视频前N秒进行降噪与语音转录提取，最大值100秒，设置过大会增加耗时": {
@@ -3397,7 +3397,7 @@
     "de-DE": "Schnitt der ersten N Sekunden von Audio- und Videodateien zur Rauschunterdrückung und Extraktion der Sprachtranskription; max. 100 Sekunden, eine zu große Einstellung verlängert die Bearbeitungszeit",
     "fr-FR": "Capturer les premiers N secondes de l'audio/vidéo pour la réduction de bruit et l'extraction de la transcription vocale, valeur maximale de 100 secondes ; un réglage trop élevé augmentera le temps de traitement",
     "ko-KR": "오디오/비디오의 처음 N초를 캡처하여 노이즈 감소 및 음성 전사 추출을 수행합니다. 최대 100초이며, 값을 지나치게 크게 설정하면 소요 시간이 증가합니다.",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(18509-18550)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(18962-19003)"],
     "$id": 20666
   },
   "截取音视频前N秒进行语音转录，超大会增加分析耗时甚至超时失败": {
@@ -3410,7 +3410,7 @@
     "de-DE": "Schnitt der ersten N Sekunden von Audio- und Videodateien für die Sprachtranskription; zu große Werte verlängern die Analysezeit und können zu einem Timeout-Fehler führen",
     "fr-FR": "Capturer les premiers N secondes de l'audio/vidéo pour la transcription vocale ; un réglage excessivement élevé augmentera le temps d'analyse et pourrait entraîner un échec par dépassement de délai",
     "ko-KR": "오디오/비디오의 처음 N초를 캡처하여 음성 전사를 수행합니다. 값을 지나치게 크게 설정하면 분석 소요 시간이 증가하거나 시간 초과로 실패할 수 있습니다.",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(18678-18712)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(19135-19169)"],
     "$id": 20667
   },
   "OCR 识别与处理": {
@@ -3423,7 +3423,7 @@
     "de-DE": "OCR-Erkennung und -Verarbeitung",
     "fr-FR": "OCR : reconnaissance et traitement",
     "ko-KR": "OCR 인식 및 처리",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(19583-19596)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(20064-20077)"],
     "$id": 20668
   },
   "开启图片OCR智能识别": {
@@ -3436,7 +3436,7 @@
     "de-DE": "Smart OCR-Erkennung für Bilder aktivieren",
     "fr-FR": "Activer la reconnaissance OCR intelligente des images",
     "ko-KR": "이미지 OCR 지능형 인식 활성화",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(19986-20001)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(20475-20490)"],
     "$id": 20669
   },
   "毫秒级智能感知图片中是否有文本，有则进行OCR识别": {
@@ -3450,8 +3450,8 @@
     "fr-FR": "Perception intelligente de la présence de texte dans les images en quelques millisecondes ; si du texte est détecté, lancer la reconnaissance OCR",
     "ko-KR": "밀리초 수준의 지능형 감지로 이미지 내 텍스트 유무를 확인하고, 텍스트가 있으면 OCR 인식을 수행",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(20091-20120)",
-      "src/renderer/components/settings/content-extraction-settings.tsx(20248-20277)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(20583-20612)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(20744-20773)"
     ],
     "$id": 20670
   },
@@ -3465,7 +3465,7 @@
     "de-DE": "Anzahl der Dokument-OCR-Erkennungen",
     "fr-FR": "Quantité de reconnaissance OCR des documents",
     "ko-KR": "문서 OCR 인식 수량",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(21055-21068)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(21569-21582)"],
     "$id": 20671
   },
   "文档OCR识别数量上限（Office文档内嵌图片数量 / PDF文档页数）": {
@@ -3478,7 +3478,7 @@
     "de-DE": "Obergrenze für die Anzahl der Dokument-OCR-Erkennungen (Anzahl der eingebetteten Bilder in Office-Dokumenten / Seitenzahl von PDF-Dokumenten)",
     "fr-FR": "Limite de quantité de reconnaissance OCR des documents (nombre d'images intégrées dans les documents Office / nombre de pages du document PDF)",
     "ko-KR": "문서 OCR 인식 수량 상한선(Office 문서 내장 이미지 수 / PDF 문서 페이지 수)",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(21158-21199)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(21675-21716)"],
     "$id": 20672
   },
   "关闭 (0)": {
@@ -3491,7 +3491,7 @@
     "de-DE": "Deaktiviert (0)",
     "fr-FR": "Désactivé (0)",
     "ko-KR": "꺼짐 (0)",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(21571-21581)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(22096-22106)"],
     "$id": 20673
   },
   "项/页": {
@@ -3504,7 +3504,7 @@
     "de-DE": "Einheiten pro Seite",
     "fr-FR": "éléments/page",
     "ko-KR": "항/페이지",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(21633-21640)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(22159-22166)"],
     "$id": 20674
   },
   "OCR识别精度": {
@@ -3517,7 +3517,7 @@
     "de-DE": "Genauigkeit der OCR-Erkennung",
     "fr-FR": "Précision de la reconnaissance OCR",
     "ko-KR": "OCR 인식 정확도",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(24495-24506)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(25084-25095)"],
     "$id": 20675
   },
   "选择OCR文字识别的精度等级。极速OCR适合大部分场景；高精度OCR识别更准确但耗时稍长。": {
@@ -3530,7 +3530,7 @@
     "de-DE": "Wählen Sie die Genauigkeitsstufe der OCR-Texterkennung. Ultra-Schnell-OCR eignet sich für die meisten Szenarien; die Hochgenauigkeits-OCR ist präziser, benötigt jedoch etwas mehr Zeit.",
     "fr-FR": "Sélectionnez le niveau de précision de la reconnaissance de texte par OCR. OCR ultra-rapide convient à la plupart des scénarios ; OCR haute précision offre une reconnaissance plus exacte mais nécessite un peu plus de temps.",
     "ko-KR": "OCR 텍스트 인식의 정확도 레벨을 선택합니다. 초고속 OCR은 대부분의 시나리오에 적합하며, 고정밀 OCR은 더 정확하지만 소액의 시간이 더 소요됩니다.",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(24573-24643)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(25164-25235)"],
     "$id": 20676
   },
   "极速OCR": {
@@ -3543,7 +3543,7 @@
     "de-DE": "Turbo-OCR",
     "fr-FR": "OCR ultra rapide",
     "ko-KR": "Lightning-Fast OCR",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(26440-26449)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(27065-27074)"],
     "$id": 20677
   },
   "单图1~2秒内完成，适合大部分场景": {
@@ -3556,7 +3556,7 @@
     "de-DE": "Eine einzelne Bilddatei in 1–2 Sekunden, geeignet für die meisten Anwendungsfälle",
     "fr-FR": "Traitement d'une image en 1 à 2 secondes, adapté à la plupart des scénarios",
     "ko-KR": "Completions a single image within 1–2 seconds, suitable for most scenarios.",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(26611-26632)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(27240-27261)"],
     "$id": 20678
   },
   "高精度OCR": {
@@ -3569,7 +3569,7 @@
     "de-DE": "High-Präzision-OCR",
     "fr-FR": "OCR haute précision",
     "ko-KR": "High-accuracy OCR",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(28110-28120)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(28768-28778)"],
     "$id": 20679
   },
   "单图2~4秒内完成，提高识别精度": {
@@ -3582,7 +3582,7 @@
     "de-DE": "Eine einzelne Bilddatei in 2–4 Sekunden, bessere Erkennungsgenauigkeit",
     "fr-FR": "Traitement d'une image en 2 à 4 secondes, améliorant la précision de reconnaissance",
     "ko-KR": "Completions a single image within 2–4 seconds, improving recognition accuracy.",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(28282-28302)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(28944-28964)"],
     "$id": 20680
   },
   "重新分析时复用数据": {
@@ -3595,7 +3595,7 @@
     "de-DE": "Wiederverwendung von Daten bei erneuter Analyse",
     "fr-FR": "Réutilisation des données lors de l'analyse",
     "ko-KR": "Reuse data when re-analyzing",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(28833-28846)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(29508-29521)"],
     "$id": 20681
   },
   "如果文件有更新，请关闭此项，否则任意文件基础信息已存在则跳过该项信息获取，基础信息包括：文件类型、缩略图、元数据、文件内容": {
@@ -3608,7 +3608,7 @@
     "de-DE": "Falls sich die Datei geändert hat, deaktivieren Sie diese Option. Andernfalls wird die Erfassung der Basisinformationen für eine beliebige Datei übersprungen, falls die Basisinformationen bereits vorliegen. Die Basisinformationen umfassen: Dateityp, Thumbnail, Metadaten und Dateiinhalte",
     "fr-FR": "Si le fichier a été mis à jour, veuillez désactiver cette option ; sinon, si les informations de base du fichier existent déjà, l'acquisition de ces informations est ignorée. Les informations de base comprennent : le type de fichier, l'aperçu, les métadonnées et le contenu du fichier",
     "ko-KR": "If files have been updated, uncheck this option. Otherwise, any file's basic information already present will cause that information retrieval to be skipped. Basic information includes: file type, thumbnail, metadata, and file content.",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(28936-29024)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(29614-29703)"],
     "$id": 20682
   },
   "分析提速，不会重新获取标准分析阶段的信息": {
@@ -3621,7 +3621,7 @@
     "de-DE": "Analyse wird beschleunigt, Standard-Phaseninformationen werden nicht erneut geholt",
     "fr-FR": "Accélération de l'analyse, les informations de l'étape standard d'analyse ne seront pas réacquises",
     "ko-KR": "Speeds up analysis without re-fetching information from the standard analysis stage.",
-    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(29173-29197)"],
+    "$files": ["src/renderer/components/settings/content-extraction-settings.tsx(29857-29881)"],
     "$id": 20683
   },
   "中文": {
@@ -3635,8 +3635,8 @@
     "fr-FR": "Chinois",
     "ko-KR": "중국어",
     "$files": [
-      "src/renderer/components/settings/tts-settings.tsx(3781-3787)",
-      "src/renderer/components/settings/tts-settings.tsx(26888-26894)"
+      "src/renderer/components/settings/tts-settings.tsx(3900-3906)",
+      "src/renderer/components/settings/tts-settings.tsx(27644-27650)"
     ],
     "$id": 21566
   },
@@ -3650,7 +3650,7 @@
     "de-DE": "Die aktuelle Umgebung unterstützt das Dialogfeld zur lokalen Dateiauswahl nicht",
     "fr-FR": "L'environnement actuel ne prend pas en charge la boîte de dialogue de sélection de fichier local",
     "ko-KR": "현재 환경에서 로컬 파일 선택 대화 상자를 지원하지 않습니다",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(7743-7763)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(7973-7993)"],
     "$id": 21567
   },
   "音频文件": {
@@ -3663,7 +3663,7 @@
     "de-DE": "Audiodatei",
     "fr-FR": "Fichier audio",
     "ko-KR": "오디오 파일",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(7939-7947)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(8177-8185)"],
     "$id": 21568
   },
   "克隆音色": {
@@ -3676,7 +3676,7 @@
     "de-DE": "Klon-Ton",
     "fr-FR": "Tonalité de clonage",
     "ko-KR": "클론 톤",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(8798-8806)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(9062-9070)"],
     "$id": 21569
   },
   "用户自定义克隆音色": {
@@ -3690,8 +3690,8 @@
     "fr-FR": "Tonalité de clonage définie par l'utilisateur",
     "ko-KR": "사용자 정의 클론 톤",
     "$files": [
-      "src/renderer/components/settings/tts-settings.tsx(8822-8835)",
-      "src/renderer/components/settings/tts-settings.tsx(9599-9612)"
+      "src/renderer/components/settings/tts-settings.tsx(9087-9100)",
+      "src/renderer/components/settings/tts-settings.tsx(9894-9907)"
     ],
     "$id": 21565
   },
@@ -3705,7 +3705,7 @@
     "de-DE": "Audioanalyse fehlgeschlagen, bitte überprüfen Sie, ob das Audioformat gültig ist",
     "fr-FR": "L'analyse audio a échoué, veuillez vérifier si le format audio est valide",
     "ko-KR": "오디오 분석 실패,오디오 포맷이 유효한지 여부를 확인하시기 바랍니다",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(8959-8981)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(9228-9250)"],
     "$id": 21570
   },
   "尚未提取有效音频特征，请先选择有效音频文件": {
@@ -3718,7 +3718,7 @@
     "de-DE": "Gültige Audiofunktionen wurden nicht extrahiert, bitte wählen Sie zuerst eine gültige Audiodatei aus",
     "fr-FR": "Les fonctionnalités audio valides n'ont pas été extraites, veuillez d'abord sélectionner un fichier audio valide",
     "ko-KR": "유효한 오디오 기능이 추출되지 않았으므로 먼저 유효한 오디오 파일을 선택하십시오",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(9165-9190)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(9443-9468)"],
     "$id": 21571
   },
   "请输入音色显示名称": {
@@ -3731,7 +3731,7 @@
     "de-DE": "Bitte geben Sie den Anzeigenamen des Tons ein",
     "fr-FR": "Veuillez entrer le nom d'affichage de la tonalité",
     "ko-KR": "톤 표시 이름을 입력하십시오",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(9271-9284)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(9553-9566)"],
     "$id": 21572
   },
   "保存自定义音色失败": {
@@ -3744,7 +3744,7 @@
     "de-DE": "Fehler beim Speichern des benutzerdefinierten Tons",
     "fr-FR": "Impossible d'enregistrer la tonalité personnalisée",
     "ko-KR": "사용자 지정 톤을 저장하지 못했습니다",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(9710-9723)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(10009-10022)"],
     "$id": 21573
   },
   "保存音色失败，请重试": {
@@ -3757,7 +3757,7 @@
     "de-DE": "Fehler beim Speichern des Tons, bitte versuchen Sie es erneut",
     "fr-FR": "Impossible d'enregistrer la tonalité, veuillez réessayer",
     "ko-KR": "톤을 저장하지 못했습니다,다시 시도하십시오",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(10191-10205)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(10507-10521)"],
     "$id": 21574
   },
   "确定要删除自定义音色“{name}”吗？此操作无法撤销。": {
@@ -3770,7 +3770,7 @@
     "de-DE": "Sind Sie sicher, dass Sie den benutzerdefinierten Ton \"{name}\" löschen möchten?Dieser Vorgang kann nicht rückgängig gemacht werden.",
     "fr-FR": "Êtes-vous sûr de vouloir supprimer la tonalité personnalisée \"{name}\"?Cette opération ne peut pas être annulée.",
     "ko-KR": "사용자 지정 톤\"{name}\"을 삭제하시겠습니까?이 작업은 취소할 수 없습니다.",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(10599-10631)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(10936-10968)"],
     "$id": 21575
   },
   "离线语音合成 (TTS)": {
@@ -3783,7 +3783,7 @@
     "de-DE": "Offline-Sprachsynthese (TTS)",
     "fr-FR": "Synthèse vocale hors ligne (TTS)",
     "ko-KR": "오프라인 음성 합성",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(13986-14002)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(14428-14444)"],
     "$id": 21576
   },
   "48kHz 高保真离线模型，支持多语言发音与零样本声音克隆": {
@@ -3796,7 +3796,7 @@
     "de-DE": "48-kHz-High-Fidelity-Offline-Modell, unterstützt mehrsprachige Aussprache und Klonen von Null-Sample-Sounds",
     "fr-FR": "Modèle hors ligne haute fidélité 48 kHz, prise en charge de la prononciation multilingue et clonage sonore sans échantillon",
     "ko-KR": "48 키로헤르쯔 높은 충실도 오프라인 모델,지원 다국어 발음 제로 샘플 사운드 복제",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(14079-14112)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(14523-14556)"],
     "$id": 21577
   },
   "默认朗读倍率": {
@@ -3809,7 +3809,7 @@
     "de-DE": "Standard-Lesevergrößerung",
     "fr-FR": "Grossissement de lecture par défaut",
     "ko-KR": "과태 독서 확대",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(14344-14354)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(14796-14806)"],
     "$id": 21242
   },
   "全局默认播放速度，可在朗读时通过按钮组快捷档位随时调整。": {
@@ -3822,7 +3822,7 @@
     "de-DE": "Die globale Standardwiedergabegeschwindigkeit kann beim Vorlesen jederzeit über die Tastengruppe Shortcut Gear angepasst werden.",
     "fr-FR": "La vitesse de lecture globale par défaut peut être ajustée à tout moment via l'engrenage de raccourci du groupe de boutons lors de la lecture à haute voix.",
     "ko-KR": "소리내어 읽을 때 전역 기본 재생 속도는 버튼 그룹 바로 가기 기어를 통해 언제든지 조정할 수 있습니다.",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(14434-14466)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(14888-14920)"],
     "$id": 21243
   },
   "我的收藏音色": {
@@ -3835,7 +3835,7 @@
     "de-DE": "Meine Sammlung.",
     "fr-FR": "Ma collection.",
     "ko-KR": "내 컬렉션.",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(15409-15419)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(15889-15899)"],
     "$id": 21244
   },
   "朗读胶囊下拉菜单中仅呈现收藏音色。默认朗读音色必须从收藏中选定。": {
@@ -3848,7 +3848,7 @@
     "de-DE": "Im Dropdown-Menü der Lesekapsel werden nur die bevorzugten Klangfarben angezeigt.Der Standardleseton muss aus der Sammlung ausgewählt werden.",
     "fr-FR": "Seuls les timbres favoris sont affichés dans le menu déroulant de la capsule de lecture.La tonalité de lecture par défaut doit être sélectionnée dans la collection.",
     "ko-KR": "읽기 캡슐의 드롭다운 메뉴에는 좋아하는 음색만 표시됩니다.컬렉션에서 기본 읽기 톤을 선택해야 합니다.",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(15503-15539)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(15985-16021)"],
     "$id": 21245
   },
   "个音色": {
@@ -3862,8 +3862,8 @@
     "fr-FR": "Tonalité",
     "ko-KR": "음색",
     "$files": [
-      "src/renderer/components/settings/tts-settings.tsx(15682-15689)",
-      "src/renderer/components/settings/tts-settings.tsx(22209-22216)"
+      "src/renderer/components/settings/tts-settings.tsx(16168-16175)",
+      "src/renderer/components/settings/tts-settings.tsx(22837-22844)"
     ],
     "$id": 21246
   },
@@ -3877,7 +3877,7 @@
     "de-DE": "Audio wird generiert...",
     "fr-FR": "L'audio est généré...",
     "ko-KR": "오디오가 생성되고 있습니다...",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(18985-18998)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(19537-19550)"],
     "$id": 21249
   },
   "暂停试听": {
@@ -3890,7 +3890,7 @@
     "de-DE": "Pausiere das Vorsprechen",
     "fr-FR": "Suspendre l'audition",
     "ko-KR": "오디션 일시 중지",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(19064-19072)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(19618-19626)"],
     "$id": 21250
   },
   "恢复播放": {
@@ -3903,7 +3903,7 @@
     "de-DE": "Wiedergabe fortsetzen",
     "fr-FR": "Reprendre la lecture",
     "ko-KR": "재생 재개",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(19141-19149)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(19697-19705)"],
     "$id": 21251
   },
   "试听例句": {
@@ -3916,7 +3916,7 @@
     "de-DE": "Beispielsätze anhören",
     "fr-FR": "Écoutez des exemples de phrases",
     "ko-KR": "예제 문장 듣기",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(19181-19189)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(19738-19746)"],
     "$id": 21252
   },
   "设为默认音色": {
@@ -3929,7 +3929,7 @@
     "de-DE": "Als Standardton festlegen",
     "fr-FR": "Définir comme tonalité par défaut",
     "ko-KR": "기본 톤으로 설정",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(20635-20645)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(21222-21232)"],
     "$id": 21253
   },
   "当前默认朗读音色": {
@@ -3942,7 +3942,7 @@
     "de-DE": "Der aktuelle Standard-Leseton",
     "fr-FR": "La tonalité de lecture par défaut actuelle",
     "ko-KR": "현재 기본 읽기 톤",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(20775-20787)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(21365-21377)"],
     "$id": 21254
   },
   "移除收藏": {
@@ -3955,7 +3955,7 @@
     "de-DE": "Favoriten entfernen",
     "fr-FR": "Supprimer les favoris",
     "ko-KR": "즐겨 찾기 제거",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(21156-21164)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(21755-21763)"],
     "$id": 21255
   },
   "发音人音色库": {
@@ -3968,7 +3968,7 @@
     "de-DE": "Aussprache-Soundbibliothek",
     "fr-FR": "Bibliothèque de sons Pronouncer",
     "ko-KR": "발음자 사운드 라이브러리",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(21573-21583)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(22186-22196)"],
     "$id": 21578
   },
   "浏览 51 个精选音色及自定义克隆音色，试听并将喜欢的音色加入快捷收藏。": {
@@ -3981,7 +3981,7 @@
     "de-DE": "Durchsuchen Sie 51 ausgewählte Klangfarben und benutzerdefinierte geklonte Klangfarben, hören Sie sie sich an und fügen Sie Ihrer Schnellsammlung Ihre Lieblings-Klangfarben hinzu.",
     "fr-FR": "Parcourez 51 timbres sélectionnés et timbres clonés personnalisés, écoutez-les et ajoutez vos timbres préférés à votre collection rapide.",
     "ko-KR": "51 선택한 음색 및 사용자 정의 복제 음색을 찾아 그들에게 듣고 빠른 컬렉션에 당신의 마음에 드는 음색을 추가 할 수 있습니다.",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(21667-21707)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(22282-22322)"],
     "$id": 21579
   },
   "克隆新音色": {
@@ -3994,7 +3994,7 @@
     "de-DE": "Klonen Sie einen neuen Ton",
     "fr-FR": "Cloner une nouvelle tonalité",
     "ko-KR": "새로운 톤 복제",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(22037-22046)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(22662-22671)"],
     "$id": 21580
   },
   "试听例句内容": {
@@ -4007,7 +4007,7 @@
     "de-DE": "Hören Sie sich den Inhalt von Beispielsätzen an",
     "fr-FR": "Écoutez le contenu des phrases d'exemple",
     "ko-KR": "예문 내용 듣기",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(22518-22528)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(23154-23164)"],
     "$id": 21258
   },
   "所有发音人试听均以此为准": {
@@ -4020,7 +4020,7 @@
     "de-DE": "Alle Aussprachen basieren auf diesem Standard für das Vorsprechen",
     "fr-FR": "Toutes les prononciations sont basées sur cette norme pour l'audition",
     "ko-KR": "모든 발음은 오디션에 대한 이 표준을 기반으로 합니다.",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(22619-22635)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(23257-23273)"],
     "$id": 21259
   },
   "选择语言": {
@@ -4033,7 +4033,7 @@
     "de-DE": "Sprache auswählen",
     "fr-FR": "Sélectionner la langue  ",
     "ko-KR": "언어 선택",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(23623-23631)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(24287-24295)"],
     "$id": 21260
   },
   "搜索发音人姓名、语言、特征风格或情感 (如: 云希, Trump, 喜悦)...": {
@@ -4046,7 +4046,7 @@
     "de-DE": "Suchen Sie nach dem Namen, der Sprache, dem charakteristischen Stil oder der Emotion des Sprechers (z. B. Yunxi, Trump, Freude)...",
     "fr-FR": "Recherchez le nom, la langue, le style caractéristique ou l'émotion du prononciateur (par exemple: Yunxi, Atout, Joie)...",
     "ko-KR": "발음자의 이름,언어,특징적인 스타일 또는 감정(예:윤시,트럼프,기쁨)을 검색합니다...",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(24601-24645)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(25290-25334)"],
     "$id": 21581
   },
   "女声": {
@@ -4060,9 +4060,9 @@
     "fr-FR": "Voix féminine",
     "ko-KR": "여성 목소리",
     "$files": [
-      "src/renderer/components/settings/tts-settings.tsx(25987-25993)",
-      "src/renderer/components/settings/tts-settings.tsx(31280-31286)",
-      "src/renderer/components/settings/tts-settings.tsx(39874-39880)"
+      "src/renderer/components/settings/tts-settings.tsx(26716-26722)",
+      "src/renderer/components/settings/tts-settings.tsx(32129-32135)",
+      "src/renderer/components/settings/tts-settings.tsx(40925-40931)"
     ],
     "$id": 21269
   },
@@ -4077,9 +4077,9 @@
     "fr-FR": "Voix masculine",
     "ko-KR": "남성 목소리",
     "$files": [
-      "src/renderer/components/settings/tts-settings.tsx(26288-26294)",
-      "src/renderer/components/settings/tts-settings.tsx(31316-31322)",
-      "src/renderer/components/settings/tts-settings.tsx(39966-39972)"
+      "src/renderer/components/settings/tts-settings.tsx(27026-27032)",
+      "src/renderer/components/settings/tts-settings.tsx(32165-32171)",
+      "src/renderer/components/settings/tts-settings.tsx(41018-41024)"
     ],
     "$id": 21270
   },
@@ -4094,8 +4094,8 @@
     "fr-FR": "Tongsheng, Chine",
     "ko-KR": "퉁",
     "$files": [
-      "src/renderer/components/settings/tts-settings.tsx(26591-26597)",
-      "src/renderer/components/settings/tts-settings.tsx(31326-31332)"
+      "src/renderer/components/settings/tts-settings.tsx(27338-27344)",
+      "src/renderer/components/settings/tts-settings.tsx(32175-32181)"
     ],
     "$id": 21582
   },
@@ -4109,7 +4109,7 @@
     "de-DE": "Englischsprachig",
     "fr-FR": "Anglais",
     "ko-KR": "영어",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(27185-27191)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(27950-27956)"],
     "$id": 21248
   },
   "日语": {
@@ -4122,7 +4122,7 @@
     "de-DE": "Japanisch",
     "fr-FR": "Japonais",
     "ko-KR": "일본어",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(27482-27488)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(28256-28262)"],
     "$id": 21583
   },
   "更多语言": {
@@ -4135,7 +4135,7 @@
     "de-DE": "Weitere Sprachen",
     "fr-FR": "Plus de langues",
     "ko-KR": "더 많은 언어",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(27978-27986)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(28765-28773)"],
     "$id": 21584
   },
   "更多...": {
@@ -4148,7 +4148,7 @@
     "de-DE": "Mehr...",
     "fr-FR": "Plus...",
     "ko-KR": "더...",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(28170-28179)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(28961-28970)"],
     "$id": 21585
   },
   "合成中": {
@@ -4161,7 +4161,7 @@
     "de-DE": "Unter Synthese",
     "fr-FR": "En cours de synthèse",
     "ko-KR": "합성 중",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(32362-32369)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(33234-33241)"],
     "$id": 21271
   },
   "暂停": {
@@ -4174,7 +4174,7 @@
     "de-DE": "Pausieren",
     "fr-FR": "Suspendre",
     "ko-KR": "일시 중지",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(32584-32590)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(33461-33467)"],
     "$id": 21272
   },
   "继续": {
@@ -4187,7 +4187,7 @@
     "de-DE": "Fortsetzen\r",
     "fr-FR": "Reprendre",
     "ko-KR": "계속",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(32803-32809)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(33685-33691)"],
     "$id": 21273
   },
   "试听": {
@@ -4200,7 +4200,7 @@
     "de-DE": "Audition",
     "fr-FR": "Audition",
     "ko-KR": "오디션",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(33001-33007)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(33888-33894)"],
     "$id": 21274
   },
   "已在收藏": {
@@ -4213,7 +4213,7 @@
     "de-DE": "Bereits in der Sammlung",
     "fr-FR": "Déjà en collection",
     "ko-KR": "이미 수집 중",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(33313-33321)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(34208-34216)"],
     "$id": 21275
   },
   "加入收藏": {
@@ -4226,7 +4226,7 @@
     "de-DE": "Zu Favoriten hinzufügen",
     "fr-FR": "Ajouter aux favoris",
     "ko-KR": "즐겨찾기에 추가",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(33772-33780)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(34678-34686)"],
     "$id": 21276
   },
   "删除自定义音色": {
@@ -4239,7 +4239,7 @@
     "de-DE": "Benutzerdefinierten Ton löschen",
     "fr-FR": "Supprimer la tonalité personnalisée",
     "ko-KR": "사용자 정의 톤 삭제",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(34149-34160)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(35066-35077)"],
     "$id": 21586
   },
   "未找到匹配的发音人音色": {
@@ -4252,7 +4252,7 @@
     "de-DE": "Es wurde kein passender Aussprachetonton gefunden",
     "fr-FR": "Aucune tonalité de personne de prononciation correspondante n'a été trouvée",
     "ko-KR": "일치하는 발음 사람 톤을 찾을 수 없습니다",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(34631-34646)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(35561-35576)"],
     "$id": 21277
   },
   "零样本克隆新音色": {
@@ -4265,7 +4265,7 @@
     "de-DE": "Null-Sample-Klon neuer Ton",
     "fr-FR": "Zéro clone d'échantillon nouveau son",
     "ko-KR": "제로 샘플 복제 새로운 톤",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(35041-35053)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(35983-35995)"],
     "$id": 21587
   },
   "上传一段 3~10 秒清晰的人声参考音频，系统将自动识别语言与情感并提取高保真声学特征。": {
@@ -4278,7 +4278,7 @@
     "de-DE": "Laden Sie ein klares Gesangsreferenzaudio von 3 bis 10 Sekunden hoch, und das System erkennt Sprache und Emotionen automatisch und extrahiert akustische Eigenschaften mit hoher Wiedergabetreue.",
     "fr-FR": "Téléchargez un son de référence vocal clair de 3 à 10 secondes, et le système reconnaîtra automatiquement la langue et les émotions et extraira les caractéristiques acoustiques haute fidélité.",
     "ko-KR": "3~10 초 명확한 음성 참조 오디오를 업로드하면 시스템이 자동으로 언어와 감정을 인식하고 고 충실도 음향 특성을 추출합니다.",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(35157-35205)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(36102-36150)"],
     "$id": 21588
   },
   "选择音频文件 (WAV, MP3, M4A, FLAC)...": {
@@ -4291,7 +4291,7 @@
     "de-DE": "Wählen Sie die Audiodatei (WAV, MP3, M4A, FLAC)...",
     "fr-FR": "Sélectionnez le fichier audio (WAV, MP3, M4A, FLAC)...",
     "ko-KR": "오디오 파일을 선택합니다...",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(35880-35915)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(36842-36877)"],
     "$id": 21589
   },
   "SenseVoice 正在解析音频声学特征、语种与情感标签...": {
@@ -4304,7 +4304,7 @@
     "de-DE": "SenseVoice analysiert audioakustische Eigenschaften, Sprache und emotionale Etiketten...",
     "fr-FR": "SenseVoice analyse les caractéristiques acoustiques audio, le langage et les étiquettes émotionnelles...",
     "ko-KR": "센스보이스는 오디오 음향 특성,언어,감정적 라벨을 분석하고 있습니다...",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(36284-36320)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(37256-37292)"],
     "$id": 21590
   },
   "音频特征提取成功": {
@@ -4317,7 +4317,7 @@
     "de-DE": "Erfolgreiche Extraktion von Audiomerkmalen",
     "fr-FR": "Extraction réussie des fonctionnalités audio",
     "ko-KR": "성공적인 오디오 기능 추출",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(37052-37064)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(38041-38053)"],
     "$id": 21591
   },
   "音色名称": {
@@ -4330,7 +4330,7 @@
     "de-DE": "Name des Tons",
     "fr-FR": "Nom de la tonalité",
     "ko-KR": "톤 이름",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(37501-37509)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(38501-38509)"],
     "$id": 21592
   },
   "例如：我的旁白音色": {
@@ -4343,7 +4343,7 @@
     "de-DE": "Zum Beispiel: mein Erzählton",
     "fr-FR": "Par exemple: mon ton de narration",
     "ko-KR": "예:내 나레이션 톤",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(37695-37708)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(38699-38712)"],
     "$id": 21593
   },
   "语言": {
@@ -4356,7 +4356,7 @@
     "de-DE": "Sprache",
     "fr-FR": "Langue  ",
     "ko-KR": "언어  ",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(38070-38076)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(39083-39089)"],
     "$id": 21594
   },
   "AI 识别": {
@@ -4369,7 +4369,7 @@
     "de-DE": "KI-Erkennung",
     "fr-FR": "Reconnaissance de l'IA",
     "ko-KR": "인공지능 인식",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(38204-38213)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(39219-39228)"],
     "$id": 21595
   },
   "性别": {
@@ -4382,7 +4382,7 @@
     "de-DE": "Geschlecht",
     "fr-FR": "Sexe",
     "ko-KR": "성별",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(39322-39328)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(40362-40368)"],
     "$id": 21596
   },
   "人工确认": {
@@ -4395,7 +4395,7 @@
     "de-DE": "Manuelle Bestätigung",
     "fr-FR": "Confirmation manuelle",
     "ko-KR": "수동 확인",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(39414-39422)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(40455-40463)"],
     "$id": 21597
   },
   "萌娃/童声": {
@@ -4408,7 +4408,7 @@
     "de-DE": "Süßes Baby / Tongsheng",
     "fr-FR": "Bébé mignon / Tongsheng",
     "ko-KR": "귀여운 아기/통성",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(40059-40068)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(41112-41121)"],
     "$id": 21598
   },
   "识别情感:": {
@@ -4421,7 +4421,7 @@
     "de-DE": "Emotionen erkennen:",
     "fr-FR": "Reconnaître les émotions:",
     "ko-KR": "감정 인식:",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(40391-40400)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(41453-41462)"],
     "$id": 21599
   },
   "音色描述 (选填)": {
@@ -4434,7 +4434,7 @@
     "de-DE": "Klangbeschreibung (optional)",
     "fr-FR": "Description de la tonalité (facultatif)",
     "ko-KR": "톤 설명(선택 사항)",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(40790-40803)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(41861-41874)"],
     "$id": 21600
   },
   "例如：沉稳青年男声、欢快活泼...": {
@@ -4447,7 +4447,7 @@
     "de-DE": "Zum Beispiel: eine ruhige junge Männerstimme, fröhlich und lebhaft...",
     "fr-FR": "Par exemple: une jeune voix masculine calme, joyeuse et vivante...",
     "ko-KR": "예:차분한 젊은 남성 목소리,쾌활하고 활기찬...",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(40975-40996)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(42050-42071)"],
     "$id": 21601
   },
   "保存中...": {
@@ -4460,7 +4460,7 @@
     "de-DE": "Einsparung...",
     "fr-FR": "Économiser...",
     "ko-KR": "저장...",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(41933-41943)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(43037-43047)"],
     "$id": 21602
   },
   "确认保存音色": {
@@ -4473,7 +4473,7 @@
     "de-DE": "Bestätigen Sie, um den Ton zu speichern",
     "fr-FR": "Confirmez pour enregistrer la tonalité",
     "ko-KR": "톤을 저장하려면 확인",
-    "$files": ["src/renderer/components/settings/tts-settings.tsx(42016-42026)"],
+    "$files": ["src/renderer/components/settings/tts-settings.tsx(43123-43133)"],
     "$id": 21603
   },
   "示例：作为整体单元的文件集合特征为：文件命名带数字后缀的文件集合，例如：1.txt, 2.txt, 3.txt": {
@@ -4486,7 +4486,7 @@
     "de-DE": "Beispiel: Merkmalsbeschreibung einer Datei-Gruppe als übergeordnete Einheit: Datei-Gruppen, deren Filenamen eine Zahlenangabe enthalten, z. B. 1.txt, 2.txt, 3.txt",
     "fr-FR": "Exemple : Les caractéristiques d'un ensemble de fichiers en tant qu'unité globale sont : un ensemble de fichiers dont les noms portent des suffixes numériques, par exemple : 1.txt, 2.txt, 3.txt",
     "ko-KR": "Example: Features of file collections treated as a single unit: file collections whose names carry numeric suffixes. For example: 1.txt, 2.txt, 3.txt",
-    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(2780-2848)"],
+    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(2867-2936)"],
     "$id": 20684
   },
   "最小单元识别": {
@@ -4499,7 +4499,7 @@
     "de-DE": "Mindesteinheiten-Erkennung",
     "fr-FR": "Identification des unités minimales",
     "ko-KR": "최소 단위 식별",
-    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(2982-2992)"],
+    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(3078-3088)"],
     "$id": 20685
   },
   "识别系列文件、音轨专辑、工程目录等整体单元，并支持自定义单元识别提示词": {
@@ -4512,7 +4512,7 @@
     "de-DE": "Erkennt Gesamt-Einheiten wie Serien von Dateien, Tonspur-Alben und Projektverzeichnisse und unterstützt benutzerdefinierte Erkennungsanweisungen für Mindesteinheiten",
     "fr-FR": "Identification des unités globales telles que des séries de fichiers, des albums audio, des répertoires de projets, avec prise en charge des mots-clés personnalisés pour l'identification",
     "ko-KR": "시리즈 파일, 음원 앨범, 프로젝트 디렉터리 등 전체 단위를 식별하며 사용자 정의 단위 식별 프롬프트를 지원함",
-    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(3065-3104)"],
+    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(3163-3202)"],
     "$id": 20686
   },
   "启用最小单元识别": {
@@ -4525,7 +4525,7 @@
     "de-DE": "Mindesteinheiten-Erkennung aktivieren",
     "fr-FR": "Activer l'identification des unités minimales",
     "ko-KR": "최소 단위 식별 사용",
-    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(3812-3824)"],
+    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(3927-3939)"],
     "$id": 20687
   },
   "以下类别强制识别，无需开启：系统目录、软件安装目录、工程项目、游戏包、AI数据集/模型、缓存与LFS、虚拟环境": {
@@ -4538,7 +4538,7 @@
     "de-DE": "Die folgenden Kategorien werden erzwungenermaßen erkannt, ohne dass sie aktiviert werden müssen: Systemverzeichnisse, Softwareinstallationsverzeichnisse, Projekte, Spiele-Pakete, KI-Datensätze/Modelle, Caches und LFS, virtuelle Umgebungen",
     "fr-FR": "Les catégories suivantes sont forcées et identifiées sans activation nécessaire : répertoires système, répertoires d'installation de logiciels, projets d'ingénierie, paquets de jeux, ensembles de données/modèles IA, caches et LFS, environnements virtuels",
     "ko-KR": "다음 카테고리들은 강제로 식별되며 활성화 불필요: 시스템 디렉터리, 소프트웨어 설치 디렉터리, 프로젝트, 게임 패키지, AI 데이터셋/모델, 캐시 및 LFS, 가상 환경",
-    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(3908-3988)"],
+    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(4026-4107)"],
     "$id": 20688
   },
   "启用后，识别为最小单元的目录，跳过文件逐一分析": {
@@ -4551,7 +4551,7 @@
     "de-DE": "Nach der Aktivierung werden Verzeichnisse, die als Mindesteinheiten erkannt werden, übersprungen, und die Datei-einzeln-Analyse wird unterdrückt",
     "fr-FR": "Après activation, les répertoires identifiés comme unités minimales éviteront l'analyse fichier par fichier",
     "ko-KR": "사용 후, 최소 단위로 식별된 디렉터리는 개별 파일 분석을 건너뜀",
-    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(4150-4177)"],
+    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(4274-4301)"],
     "$id": 20689
   },
   "系列文件：连续编号的文档或图片（如 01.jpg, 02.jpg, 03.jpg）": {
@@ -4564,7 +4564,7 @@
     "de-DE": "Serien von Dateien: aufeinanderfolgend nummerierte Dokumente oder Bilder (z. B. 01.jpg, 02.jpg, 03.jpg)",
     "fr-FR": "Séries de fichiers : documents ou images numérotés de manière séquentielle (par ex. 01.jpg, 02.jpg, 03.jpg)",
     "ko-KR": "시리즈 파일: 연속된 번호가 매겨진 문서 또는 이미지 (예: 01.jpg, 02.jpg, 03.jpg)",
-    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(4759-4804)"],
+    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(4900-4945)"],
     "$id": 20690
   },
   "音频专辑：同一专辑的音轨文件集合（如 .flac, .mp3）": {
@@ -4577,7 +4577,7 @@
     "de-DE": "Audio-Album: Sammlung von Audio-Dateien desselben Albums (z. B. .flac, .mp3)",
     "fr-FR": "Audio Album : Ensemble de fichiers audio appartenant au même album (par ex. .flac, .mp3)",
     "ko-KR": "오디오 앨범: 동일한 앨범의 트랙 파일 집합 (예: .flac, .mp3)",
-    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(4829-4864)"],
+    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(4971-5006)"],
     "$id": 20691
   },
   "设计工程：含工程文件及资源目录的设计项目（如 .prproj、.aep、.blend）": {
@@ -4590,7 +4590,7 @@
     "de-DE": "Designprojekt: Designprojekt mit Projektdatei und Ressourcenverzeichnis (z. B. .prproj, .aep, .blend)",
     "fr-FR": "Projet de design : Projet de conception incluant le fichier de projet et le répertoire des ressources (par ex. .prproj, .aep, .blend)",
     "ko-KR": "디자인 엔지니어링: 엔지니어링 파일 및 리소스 디렉터리를 포함하는 디자인 프로젝트 (예: .prproj, .aep, .blend)",
-    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(4889-4936)"],
+    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(5032-5079)"],
     "$id": 20692
   },
   "提示：关闭后所有文件将独立分析，适用于需对每个文件单独生成描述和标签的场景": {
@@ -4603,7 +4603,7 @@
     "de-DE": "Hinweis: Nach dem Deaktivieren werden alle Dateien separat analysiert, geeignet für Szenarien, in denen für jede Datei individuelle Beschreibungen und Tags erstellt werden müssen",
     "fr-FR": "Astuce : Une fois désactivé, tous les fichiers seront analysés indépendamment, ce qui convient aux scénarios où une description et des étiquettes doivent être générées individuellement pour chaque fichier",
     "ko-KR": "팁: 비활성화 시 모든 파일이 독립적으로 분석되며, 각 파일에 대한 설명 및 태그를 개별적으로 생성해야 하는 시나리오에 적합합니다",
-    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(5054-5095)"],
+    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(5200-5241)"],
     "$id": 20693
   },
   "最小单元识别提示词": {
@@ -4616,7 +4616,7 @@
     "de-DE": "Eingabeaufforderung für die Erkennung minimaler Einheiten",
     "fr-FR": "Mot-clé de l'identification de l'unité minimale",
     "ko-KR": "최소 단위 식별 프롬프트",
-    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(5548-5561)"],
+    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(5705-5718)"],
     "$id": 20694
   },
   "需开启上方开关方可生效": {
@@ -4629,7 +4629,7 @@
     "de-DE": "Erfordert das Aktivieren des Schalter oben, um wirksam zu werden",
     "fr-FR": "Doit être activé à l'aide de l'interrupteur ci-dessus pour prendre effet",
     "ko-KR": "위 온/오프 스위치를 켜야만 활성화됩니다",
-    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(6086-6101)"],
+    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(6252-6267)"],
     "$id": 20695
   },
   "定义什么样的文件集合应被视作一个整体单元，微调模型的识别判断": {
@@ -4642,7 +4642,7 @@
     "de-DE": "Definiert, welche Art von Dateisammlung als eine ganzheitliche Einheit betrachtet werden soll; Justierung des Erkennungsverhaltens des Modells",
     "fr-FR": "Définit quel ensemble de fichiers doit être considéré comme une unité unique, afin d'affiner le jugement de reconnaissance du modèle",
     "ko-KR": "무슨 유형의 파일 집합이 하나의 전체 단위로 고려되어야 하는지 정의하여 모델의 식별 판단을 미세 조정합니다",
-    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(6244-6278)"],
+    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(6415-6449)"],
     "$id": 20696
   },
   "自定义最小单元提示词依赖高级AI引擎的语言模型理解能力，当前未开启。": {
@@ -4655,7 +4655,7 @@
     "de-DE": "Die benutzerdefinierte Prompt-Vorlage für die minimale Einheit ist auf die Sprachmodellverständnisfähigkeit des erweiterten KI-Engines angewiesen und derzeit nicht aktiviert.",
     "fr-FR": "Le prompt minimal personnalisé repose sur les capacités de compréhension du modèle linguistique du moteur IA avancé, qui n'est actuellement pas activé.",
     "ko-KR": "사용자 정의 최소 단위 프롬프트는 고급 AI 엔진의 언어 모델 이해 능력을 의존하며, 현재 비활성화되어 있습니다.",
-    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(7120-7158)"],
+    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(7312-7350)"],
     "$id": 20697
   },
   "上方开关未开启，提示词暂不生效": {
@@ -4668,7 +4668,7 @@
     "de-DE": "Die obige Umschaltfunktion ist nicht aktiviert, daher hat der Prompt vorerst keine Wirkung.",
     "fr-FR": "L'interrupteur ci-dessus n'étant pas activé, le prompt n'est pas appliqué pour le moment.",
     "ko-KR": "위쪽 스위치가 켜지지 않아 프롬프트가 일시적으로 적용되지 않습니다.",
-    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(8495-8514)"],
+    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(8723-8742)"],
     "$id": 20698
   },
   "作为最小单元识别的目录将被整体作为一个文件处理，避免产生过多碎片分析结果。": {
@@ -4681,7 +4681,7 @@
     "de-DE": "Als minimale Einheiten erkannte Verzeichnisse werden jeweils als eine einzelne Datei verarbeitet, um zu viele fragmentierte Analyseergebnisse zu vermeiden.",
     "fr-FR": "Le dossier identifié comme unité minimale est traité dans son ensemble comme un fichier unique, afin d'éviter la génération de résultats d'analyse trop fragmentés.",
     "ko-KR": "최소 단위로 식별된 디렉터리는 하나의 파일로 전체 처리되어 과도한 조각 분석 결과를 방지합니다.",
-    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(9081-9122)"],
+    "$files": ["src/renderer/components/settings/unit-recognition-settings.tsx(9326-9367)"],
     "$id": 20699
   }
 }

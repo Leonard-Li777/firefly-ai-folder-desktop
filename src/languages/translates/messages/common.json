@@ -2101,7 +2101,7 @@
     "de-DE": "Audiodateien wurden im Ordner gefunden",
     "fr-FR": "Les fichiers audio ont été localisés dans le dossier",
     "ko-KR": "오디오 파일이 폴더에 있습니다",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(5899-5915)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(6115-6131)"],
     "$id": 21215
   },
   "音频文件尚未生成，播放后将自动缓存": {
@@ -2114,7 +2114,7 @@
     "de-DE": "Die Audiodatei wurde noch nicht generiert und wird nach der Wiedergabe automatisch zwischengespeichert",
     "fr-FR": "Le fichier audio n'a pas encore été généré et sera automatiquement mis en cache après la lecture",
     "ko-KR": "오디오 파일은 아직 생성되지 않았으며 재생 후 자동으로 캐시됩니다",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(5953-5974)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(6171-6192)"],
     "$id": 21216
   },
   "暂停朗读": {
@@ -2127,7 +2127,7 @@
     "de-DE": "Leseunterbrechung",
     "fr-FR": "Pause lecture",
     "ko-KR": "읽기 일시 중지",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(6689-6697)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(6927-6935)"],
     "$id": 21217
   },
   "继续朗读": {
@@ -2140,7 +2140,7 @@
     "de-DE": "Lesen Sie weiter laut",
     "fr-FR": "Continuez à lire à haute voix",
     "ko-KR": "소리내어 계속 읽기",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(6712-6720)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(6950-6958)"],
     "$id": 21218
   },
   "语音朗读": {
@@ -2153,7 +2153,7 @@
     "de-DE": "Stimmenlesen",
     "fr-FR": "Lecture vocale",
     "ko-KR": "음성 읽기",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(6724-6732)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(6962-6970)"],
     "$id": 21219
   },
   "播放中": {
@@ -2166,7 +2166,7 @@
     "de-DE": "Spielend",
     "fr-FR": "Jouer",
     "ko-KR": "재생",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(7587-7594)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(7844-7851)"],
     "$id": 21220
   },
   "暂停": {
@@ -2179,7 +2179,7 @@
     "de-DE": "Pausieren",
     "fr-FR": "Suspendre",
     "ko-KR": "일시 중지",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(7647-7653)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(7906-7912)"],
     "$id": 21221
   },
   "朗读": {
@@ -2192,7 +2192,7 @@
     "de-DE": "Vorlesen",
     "fr-FR": "Lire à haute voix",
     "ko-KR": "소리내어 읽기",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(7677-7683)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(7937-7943)"],
     "$id": 21222
   },
   "拖动切换朗读片段": {
@@ -2205,7 +2205,7 @@
     "de-DE": "Ziehen Sie, um den Leseclip zu wechseln",
     "fr-FR": "Faites glisser pour changer le clip de lecture",
     "ko-KR": "드래그하여 읽기 클립 전환",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(9561-9573)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(9872-9884)"],
     "$id": 21647
   },
   "片段": {
@@ -2218,7 +2218,7 @@
     "de-DE": "Fragment",
     "fr-FR": "Fragment",
     "ko-KR": "조각",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(10284-10290)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(10603-10609)"],
     "$id": 21648
   },
   "拖动即播": {
@@ -2231,7 +2231,7 @@
     "de-DE": "Ziehen und spielen",
     "fr-FR": "Glisser et jouer",
     "ko-KR": "드래그 앤 플레이",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(10421-10429)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(10741-10749)"],
     "$id": 21649
   },
   "正在准备分句...": {
@@ -2244,7 +2244,7 @@
     "de-DE": "Vorbereitung einer Klausel...",
     "fr-FR": "Préparer une clause...",
     "ko-KR": "절 준비...",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(10619-10632)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(10942-10955)"],
     "$id": 21650
   },
   "切换朗读发音人": {
@@ -2257,7 +2257,7 @@
     "de-DE": "Wechseln Sie zum Vorlesesprecher",
     "fr-FR": "Basculer pour lire le prononciateur à haute voix",
     "ko-KR": "소리내어 발음기로 전환",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(11160-11171)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(11503-11514)"],
     "$id": 21223
   },
   "收藏音色": {
@@ -2270,7 +2270,7 @@
     "de-DE": "Kollektion tone",
     "fr-FR": "Ton de collection",
     "ko-KR": "컬렉션 톤",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(11853-11861)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(12206-12214)"],
     "$id": 21224
   },
   "自定义": {
@@ -2283,7 +2283,7 @@
     "de-DE": "Benutzerdefiniert",
     "fr-FR": "Personnalisé",
     "ko-KR": "사용자 지정",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(12830-12837)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(13202-13209)"],
     "$id": 21651
   },
   "管理音色与设置...": {
@@ -2296,7 +2296,7 @@
     "de-DE": "Verwalten Sie Klangfarbe und Einstellungen...",
     "fr-FR": "Gérer le timbre et les paramètres...",
     "ko-KR": "음색 및 설정을 관리합니다...",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(13470-13484)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(13854-13868)"],
     "$id": 21225
   },
   "调节朗读语速": {
@@ -2309,7 +2309,7 @@
     "de-DE": "Passen Sie die Geschwindigkeit des Vorlesens an",
     "fr-FR": "Ajustez la vitesse de lecture à haute voix",
     "ko-KR": "소리내어 읽는 속도 조정",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(13892-13902)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(14292-14302)"],
     "$id": 21226
   },
   "在文件夹中定位音频文件": {
@@ -2322,7 +2322,7 @@
     "de-DE": "Audiodateien in Ordnern suchen",
     "fr-FR": "Localiser les fichiers audio dans des dossiers",
     "ko-KR": "폴더에서 오디오 파일 찾기",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(15278-15293)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(15713-15728)"],
     "$id": 21227
   },
   "无法加载文件预览，请检查文件权限或格式。": {

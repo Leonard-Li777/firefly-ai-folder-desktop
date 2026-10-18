@@ -9,7 +9,9 @@
     "de-DE": "AI-Engine-Prüfung abgeschlossen",
     "fr-FR": "Vérification du moteur IA terminée",
     "ko-KR": "AI 엔진 검사 완료",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(3608-3621)"],
+    "$files": [
+      "src/electron/main/ipc-handlers/ai-service.ts(3608-3621)"
+    ],
     "$id": 19416
   },
   "AI服务初始化失败：无法创建实例": {
@@ -22,7 +24,9 @@
     "de-DE": "Die Initialisierung des AI-Dienstes ist fehlgeschlagen: Instanz kann nicht erstellt werden",
     "fr-FR": "Échec de l'initialisation du service AI : impossible de créer une instance",
     "ko-KR": "AI 서비스 초기화 실패: 인스턴스를 생성할 수 없습니다.",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(4006-4026)"],
+    "$files": [
+      "src/electron/main/ipc-handlers/ai-service.ts(4006-4026)"
+    ],
     "$id": 7670
   },
   "LlamaIndex AI服务初始化成功": {
@@ -35,7 +39,9 @@
     "de-DE": "Initialisierung des LlamaIndex AI-Dienstes erfolgreich",
     "fr-FR": "Initialisation réussie du service LlamaIndex AI",
     "ko-KR": "LlamaIndex AI 서비스 초기화 성공",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(5542-5566)"],
+    "$files": [
+      "src/electron/main/ipc-handlers/ai-service.ts(5542-5566)"
+    ],
     "$id": 10173
   },
   "AI服务未创建": {
@@ -48,7 +54,9 @@
     "de-DE": "AI-Dienst nicht erstellt",
     "fr-FR": "Service IA non créé",
     "ko-KR": "AI 서비스가 생성되지 않았습니다.",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(8177-8188)"],
+    "$files": [
+      "src/electron/main/ipc-handlers/ai-service.ts(8177-8188)"
+    ],
     "$id": 10175
   },
   "模型切换通知已处理": {
@@ -61,7 +69,9 @@
     "de-DE": "Modellwechselbenachrichtigung verarbeitet",
     "fr-FR": "Notification de changement de modèle traitée",
     "ko-KR": "모델 전환 알림 처리됨",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(9204-9217)"],
+    "$files": [
+      "src/electron/main/ipc-handlers/ai-service.ts(9204-9217)"
+    ],
     "$id": 10176
   },
   "处理失败": {
@@ -74,7 +84,9 @@
     "de-DE": "Die Verarbeitung ist fehlgeschlagen",
     "fr-FR": "Échec du traitement",
     "ko-KR": "처리 실패",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(9349-9357)"],
+    "$files": [
+      "src/electron/main/ipc-handlers/ai-service.ts(9349-9357)"
+    ],
     "$id": 10177
   },
   "AI服务初始化成功": {
@@ -87,7 +99,9 @@
     "de-DE": "Initialisierung des KI-Dienstes erfolgreich",
     "fr-FR": "Initialisation du service IA réussie",
     "ko-KR": "AI 서비스 초기화 성공",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(14962-14975)"],
+    "$files": [
+      "src/electron/main/ipc-handlers/ai-service.ts(14962-14975)"
+    ],
     "$id": 10178
   },
   "模型正在切换中，请等待": {
@@ -103,10 +117,10 @@
     "$files": [
       "src/electron/main/ipc-handlers/ai-service.ts(15768-15783)",
       "src/electron/main/ipc-handlers/ai-service.ts(17667-17682)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(14493-14508)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(18614-18629)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(38850-38865)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(42714-42729)"
+      "src/electron/main/ipc-handlers/virtual-directory.ts(14758-14773)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(18879-18894)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(43403-43418)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(47267-47282)"
     ],
     "$id": 7900
   },
@@ -120,7 +134,9 @@
     "de-DE": "Die KI arbeitet derzeit, etwa an der Analyse der Warteschlange. Bitte stoppen Sie und fordern Sie dann erneut an.",
     "fr-FR": "L'IA travaille actuellement, comme l'analyse de la file d'attente. Veuillez arrêter, puis demander à nouveau.",
     "ko-KR": "현재 대기열 분석 등 AI가 작동하고 있다. 중지한 후 다시 요청하세요.",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(18037-18066)"],
+    "$files": [
+      "src/electron/main/ipc-handlers/ai-service.ts(18037-18066)"
+    ],
     "$id": 11303
   },
   "AI 服务正在初始化中，请稍候再试": {
@@ -135,25 +151,27 @@
     "ko-KR": "AI 서비스를 초기화 중입니다. 나중에 다시 시도해 주세요.",
     "$files": [
       "src/electron/main/ipc-handlers/ai-service.ts(18413-18434)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(19043-19064)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(19398-19419)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(39539-39560)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(43133-43154)"
+      "src/electron/main/ipc-handlers/virtual-directory.ts(19308-19329)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(19663-19684)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(44092-44113)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(47686-47707)"
     ],
     "$id": 10179
   },
-  "缺少目标后端参数": {
-    "en-US": "Missing target backend parameters",
-    "es-ES": "Faltan parámetros del backend objetivo",
-    "ar-EG": "معاملات الخادم الهدف مفقودة",
-    "pt-PT": "Parâmetros de backend de destino ausentes",
-    "ru-RU": "Отсутствуют параметры целевого бэкенда",
-    "ja-JP": "対象のバックエンドパラメータがありません",
-    "de-DE": "Ziel-Backend-Parameter fehlen",
-    "fr-FR": "Paramètres du backend cible manquants",
-    "ko-KR": "대상 백엔드 매개변수 누락",
-    "$files": ["src/electron/main/ipc-handlers/engine-bridge.ts(2978-2990)"],
-    "$id": 19377
+  "权限不足，请前往 macOS「系统设置 -> 隐私与安全性 -> 文件和文件夹」授予本应用访问该目录的权限: {dirPath}": {
+    "en-US": "Insufficient permissions, please go to macOS \"System Settings-> Privacy and Security-> Files and Folders\" to grant this application access to this directory: {dirPath}",
+    "es-ES": "Permisos insuficientes, vaya a macOS \"Configuración del sistema - > Privacidad y seguridad-> Archivos y carpetas\" para otorgar acceso a esta aplicación a este directorio: {dirPath}",
+    "ar-EG": "أذونات غير كافية ، يرجى الذهاب إلى ماك \"إعدادات النظام - > الخصوصية والأمن - > الملفات والمجلدات\" لمنح هذا التطبيق الوصول إلى هذا الدليل: {dirPath}",
+    "pt-PT": "Permissões insuficientes, vá para macOS \"configurações do sistema - > Privacidade e segurança - > arquivos e pastas\" para conceder a este aplicativo acesso a este diretório: {dirPath}",
+    "ru-RU": "Недостаточно разрешений, пожалуйста, перейдите в macOS \"Системные настройки-> Конфиденциальность и безопасность-> Файлы и папки\", чтобы предоставить этому приложению доступ к этому каталогу: _BOS_}",
+    "ja-JP": "権限が不十分な場合は、macOSの「システム設定->プライバシーとセキュリティ->ファイルとフォルダ」に移動して、このアプリケーションにこのディレクトリへのアクセスを許可してください。{dirPath}",
+    "de-DE": "Unzureichende Berechtigungen, gehen Sie bitte zu macOS \"Systemeinstellungen-> Datenschutz und Sicherheit-> Dateien und Ordner\", um dieser Anwendung Zugriff auf dieses Verzeichnis zu gewähren: {dirPath}",
+    "fr-FR": "Autorisations insuffisantes, veuillez vous rendre sur macOS \"Paramètres système - > Confidentialité et sécurité - > Fichiers et dossiers\" pour accorder à cette application l'accès à ce répertoire: {dirPath}",
+    "ko-KR": "이 디렉토리에이 응용 프로그램에 액세스 권한을 부여하려면\"시스템 설정->개인 정보 및 보안->파일 및 폴더\"로 이동하십시오.{dirPath}",
+    "$files": [
+      "src/electron/main/ipc-handlers/directory-error.ts(351-428)"
+    ],
+    "$id": 21855
   },
   "权限不足，无法访问目录: {dirPath}": {
     "en-US": "Insufficient permissions to access directory: {dirPath}",
@@ -165,7 +183,9 @@
     "de-DE": "Unzureichende Berechtigungen für den Zugriff auf das Verzeichnis: {dirPath}",
     "fr-FR": "Permissions insuffisantes pour accéder au répertoire : {dirPath}",
     "ko-KR": "권한이 부족하여 디렉터리에 접근할 수 없습니다: {dirPath}",
-    "$files": ["src/electron/main/ipc-handlers/file.ts(12618-12644)"],
+    "$files": [
+      "src/electron/main/ipc-handlers/directory-error.ts(475-501)"
+    ],
     "$id": 8125
   },
   "目录不存在: {dirPath}": {
@@ -178,7 +198,9 @@
     "de-DE": "Das Verzeichnis existiert nicht: {dirPath}",
     "fr-FR": "Le répertoire n'existe pas : {dirPath}",
     "ko-KR": "디렉터리가 존재하지 않습니다: {dirPath}",
-    "$files": ["src/electron/main/ipc-handlers/file.ts(12716-12736)"],
+    "$files": [
+      "src/electron/main/ipc-handlers/directory-error.ts(563-583)"
+    ],
     "$id": 8126
   },
   "无法读取目录: {dirPath} ({errorDetail})": {
@@ -191,8 +213,25 @@
     "de-DE": "Verzeichnis kann nicht gelesen werden: {dirPath} ({errorDetail})",
     "fr-FR": "Impossible de lire le répertoire : {dirPath} ({errorDetail})",
     "ko-KR": "디렉터리를 읽을 수 없습니다: {dirPath} ({errorDetail})",
-    "$files": ["src/electron/main/ipc-handlers/file.ts(12801-12838)"],
+    "$files": [
+      "src/electron/main/ipc-handlers/directory-error.ts(611-648)"
+    ],
     "$id": 8127
+  },
+  "缺少目标后端参数": {
+    "en-US": "Missing target backend parameters",
+    "es-ES": "Faltan parámetros del backend objetivo",
+    "ar-EG": "معاملات الخادم الهدف مفقودة",
+    "pt-PT": "Parâmetros de backend de destino ausentes",
+    "ru-RU": "Отсутствуют параметры целевого бэкенда",
+    "ja-JP": "対象のバックエンドパラメータがありません",
+    "de-DE": "Ziel-Backend-Parameter fehlen",
+    "fr-FR": "Paramètres du backend cible manquants",
+    "ko-KR": "대상 백엔드 매개변수 누락",
+    "$files": [
+      "src/electron/main/ipc-handlers/engine-bridge.ts(2978-2990)"
+    ],
+    "$id": 19377
   },
   "未在工作空间找到该文件信息": {
     "en-US": "The file information was not found in the workspace",
@@ -204,7 +243,9 @@
     "de-DE": "Die Dateiinformationen wurden im Arbeitsbereich nicht gefunden",
     "fr-FR": "Les informations du fichier sont introuvables dans l'espace de travail",
     "ko-KR": "작업공간에서 파일정보를 찾을 수 없습니다",
-    "$files": ["src/electron/main/ipc-handlers/misc.ts(7022-7039)"],
+    "$files": [
+      "src/electron/main/ipc-handlers/misc.ts(7022-7039)"
+    ],
     "$id": 7671
   },
   "未找到所属的工作区目录": {
@@ -217,7 +258,9 @@
     "de-DE": "Das entsprechende Arbeitsbereichsverzeichnis wurde nicht gefunden",
     "fr-FR": "Le répertoire de l'espace de travail correspondant est introuvable",
     "ko-KR": "해당 작업공간 디렉터리를 찾을 수 없습니다.",
-    "$files": ["src/electron/main/ipc-handlers/misc.ts(7200-7215)"],
+    "$files": [
+      "src/electron/main/ipc-handlers/misc.ts(7200-7215)"
+    ],
     "$id": 7672
   },
   "未知错误": {
@@ -232,7 +275,7 @@
     "ko-KR": "알 수 없는 오류",
     "$files": [
       "src/electron/main/ipc-handlers/misc.ts(13455-13463)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(40506-40514)"
+      "src/electron/main/ipc-handlers/virtual-directory.ts(45059-45067)"
     ],
     "$id": 10180
   },
@@ -278,7 +321,9 @@
     "de-DE": "Netzwerkverbindung fehlgeschlagen",
     "fr-FR": "La connexion réseau a échoué",
     "ko-KR": "네트워크 연결 실패",
-    "$files": ["src/electron/main/ipc-handlers/misc.ts(15550-15560)"],
+    "$files": [
+      "src/electron/main/ipc-handlers/misc.ts(15550-15560)"
+    ],
     "$id": 10181
   },
   "仅允许 http: 和 https: 协议": {
@@ -291,7 +336,9 @@
     "de-DE": "Es sind nur die Protokolle http: und https: zulässig",
     "fr-FR": "Seuls les protocoles http: et https: sont autorisés",
     "ko-KR": "http: 및 https: 프로토콜만 허용됩니다.",
-    "$files": ["src/electron/main/ipc-handlers/misc.ts(22267-22292)"],
+    "$files": [
+      "src/electron/main/ipc-handlers/misc.ts(22267-22292)"
+    ],
     "$id": 10182
   },
   "无效的 URL": {
@@ -304,7 +351,9 @@
     "de-DE": "Ungültige URL",
     "fr-FR": "URL invalide",
     "ko-KR": "잘못된 URL",
-    "$files": ["src/electron/main/ipc-handlers/misc.ts(22423-22434)"],
+    "$files": [
+      "src/electron/main/ipc-handlers/misc.ts(22423-22434)"
+    ],
     "$id": 10183
   },
   "核心引擎未初始化": {
@@ -354,27 +403,27 @@
     "fr-FR": "Service d'annuaire virtuel non initialisé",
     "ko-KR": "가상 디렉터리 서비스가 초기화되지 않았습니다.",
     "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(7242-7256)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(16709-16723)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(17239-17253)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(17642-17656)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(21185-21199)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(22007-22021)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(22372-22386)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(22644-22658)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(22884-22898)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(23166-23180)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(23486-23500)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(23822-23836)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(24132-24146)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(24394-24408)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(24648-24662)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(24917-24931)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(25211-25225)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(25468-25482)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(25705-25719)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(26408-26422)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(37505-37519)"
+      "src/electron/main/ipc-handlers/virtual-directory.ts(7507-7521)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(16974-16988)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(17504-17518)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(17907-17921)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(21450-21464)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(22272-22286)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(22637-22651)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(22909-22923)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(23149-23163)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(23431-23445)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(23751-23765)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(24087-24101)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(24397-24411)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(24659-24673)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(24913-24927)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(25182-25196)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(25476-25490)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(25733-25747)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(25970-25984)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(26673-26687)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(42058-42072)"
     ],
     "$id": 7678
   },
@@ -388,7 +437,9 @@
     "de-DE": "Virtuelles Verzeichnis existiert nicht",
     "fr-FR": "Le répertoire virtuel n'existe pas",
     "ko-KR": "가상 디렉터리가 존재하지 않습니다.",
-    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(11307-11318)"],
+    "$files": [
+      "src/electron/main/ipc-handlers/virtual-directory.ts(11572-11583)"
+    ],
     "$id": 7508
   },
   "工作目录不存在": {
@@ -401,7 +452,9 @@
     "de-DE": "Arbeitsverzeichnis existiert nicht",
     "fr-FR": "Le répertoire de travail n'existe pas",
     "ko-KR": "작업 디렉토리가 존재하지 않습니다",
-    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(11476-11487)"],
+    "$files": [
+      "src/electron/main/ipc-handlers/virtual-directory.ts(11741-11752)"
+    ],
     "$id": 7509
   },
   "真实目录服务未初始化": {
@@ -414,7 +467,9 @@
     "de-DE": "Echter Verzeichnisdienst nicht initialisiert",
     "fr-FR": "Service d'annuaire réel non initialisé",
     "ko-KR": "실제 디렉터리 서비스가 초기화되지 않았습니다.",
-    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(12743-12757)"],
+    "$files": [
+      "src/electron/main/ipc-handlers/virtual-directory.ts(13008-13022)"
+    ],
     "$id": 7510
   },
   "未设置工作目录": {
@@ -427,7 +482,9 @@
     "de-DE": "Kein Arbeitsverzeichnis festgelegt",
     "fr-FR": "Aucun répertoire de travail défini",
     "ko-KR": "작업 디렉터리가 설정되지 않았습니다.",
-    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(25888-25899)"],
+    "$files": [
+      "src/electron/main/ipc-handlers/virtual-directory.ts(26153-26164)"
+    ],
     "$id": 7679
   },
   "授权校验失败，请联网或激活企业版后再执行此操作": {
@@ -441,9 +498,9 @@
     "fr-FR": "La vérification de l'autorisation a échoué. Veuillez vous connecter à Internet ou activer la version entreprise avant d'effectuer cette opération.",
     "ko-KR": "승인 확인에 실패했습니다. 이 작업을 수행하기 전에 인터넷에 연결하거나 기업 버전을 활성화하십시오.",
     "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(26312-26339)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(31276-31303)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(39101-39128)"
+      "src/electron/main/ipc-handlers/virtual-directory.ts(26577-26604)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(31541-31568)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(43654-43681)"
     ],
     "$id": 10185
   },
@@ -458,15 +515,15 @@
     "fr-FR": "Assembler un service d'annuaire réel non initialisé",
     "ko-KR": "실제 디렉터리 서비스 대조가 초기화되지 않았습니다.",
     "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(27032-27048)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(28327-28343)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(29571-29587)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(29897-29913)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(30203-30219)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(30530-30546)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(30845-30861)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(31370-31386)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(39683-39699)"
+      "src/electron/main/ipc-handlers/virtual-directory.ts(27297-27313)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(28592-28608)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(29836-29852)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(30162-30178)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(30468-30484)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(30795-30811)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(31110-31126)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(31635-31651)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(44236-44252)"
     ],
     "$id": 10186
   },
@@ -481,8 +538,8 @@
     "fr-FR": "Pas assez de grains de feu",
     "ko-KR": "Firecores이 부족해요",
     "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(27736-27744)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(29214-29222)"
+      "src/electron/main/ipc-handlers/virtual-directory.ts(28001-28009)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(29479-29487)"
     ],
     "$id": 10184
   },
@@ -496,7 +553,9 @@
     "de-DE": "Fehlende Arbeitsbereich-ID",
     "fr-FR": "ID d'espace de travail manquant",
     "ko-KR": "누락 된 작업 공간 아이디",
-    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(37840-37852)"],
+    "$files": [
+      "src/electron/main/ipc-handlers/virtual-directory.ts(42393-42405)"
+    ],
     "$id": 21563
   },
   "智能聚类执行失败或有效向量文件数不足": {
@@ -509,7 +568,9 @@
     "de-DE": "Die Ausführung des intelligenten Clusters ist fehlgeschlagen oder die Anzahl der gültigen Vektordateien ist unzureichend",
     "fr-FR": "L'exécution du clustering intelligent a échoué ou le nombre de fichiers vectoriels valides est insuffisant",
     "ko-KR": "지능형 클러스터링 실행 실패 또는 유효한 벡터 파일 수가 부족합니다",
-    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(38169-38191)"],
+    "$files": [
+      "src/electron/main/ipc-handlers/virtual-directory.ts(42722-42744)"
+    ],
     "$id": 21564
   },
   "没有正在进行的任务": {
@@ -522,7 +583,9 @@
     "de-DE": "Keine Aufgaben in Bearbeitung",
     "fr-FR": "Aucune tâche en cours",
     "ko-KR": "진행 중인 작업이 없습니다.",
-    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(41033-41046)"],
+    "$files": [
+      "src/electron/main/ipc-handlers/virtual-directory.ts(45586-45599)"
+    ],
     "$id": 10187
   },
   "服务未初始化": {
@@ -536,9 +599,9 @@
     "fr-FR": "Service non initialisé",
     "ko-KR": "서비스가 초기화되지 않았습니다.",
     "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(41259-41269)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(41697-41707)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(42133-42143)"
+      "src/electron/main/ipc-handlers/virtual-directory.ts(45812-45822)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(46250-46260)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(46686-46696)"
     ],
     "$id": 10188
   },
@@ -553,10 +616,10 @@
     "fr-FR": "Service de contexte d'annuaire non initialisé",
     "ko-KR": "디렉터리 컨텍스트 서비스가 초기화되지 않았습니다.",
     "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(43760-43775)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(47158-47173)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(48268-48283)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(49563-49578)"
+      "src/electron/main/ipc-handlers/virtual-directory.ts(48313-48328)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(51711-51726)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(52821-52836)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(54116-54131)"
     ],
     "$id": 7680
   },

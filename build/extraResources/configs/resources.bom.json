@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-10-17T15:53:20.862Z",
+  "generatedAt": "2026-10-18T09:56:49.434Z",
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources"
@@ -121,8 +121,8 @@
       "source": "shared",
       "asset": {
         "name": "chinese-clip-int8.zip",
-        "sha256": "3cbf43ada28be28ef4ba27ebf35796aba369f103518a5acf465e32aefd3a36af",
-        "size": 69298991,
+        "sha256": "30bff06529dec809f570fa13ffbcbed239ba43aa1648c93eed10322095606e43",
+        "size": 69300155,
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/chinese-clip-int8.zip"
       }
     },
@@ -151,8 +151,8 @@
       "source": "shared",
       "asset": {
         "name": "embeddinggemma-2-onnx-1.0.0.zip",
-        "sha256": "833defb0a72fd6ee94eb28cebf0347f89569bd716ece2028f52e896c92a54716",
-        "size": 254002885,
+        "sha256": "d77ce4c120efbab7be10cd8ab59b3ea9b75cbfcaa7af924b9cc8da9eea6f63a0",
+        "size": 254004174,
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/embeddinggemma-2-onnx-1.0.0.zip"
       }
     },

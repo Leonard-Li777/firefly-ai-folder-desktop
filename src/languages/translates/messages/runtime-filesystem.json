@@ -22,7 +22,7 @@
     "de-DE": "Datenbankverbindung nicht initialisiert",
     "fr-FR": "La connexion à la base de données n'est pas initialisée",
     "ko-KR": "데이터베이스 연결이 초기화되지 않았습니다",
-    "$files": ["src/electron/runtime-services/filesystem/directory-context-service.ts(2118-2131)"],
+    "$files": ["src/electron/runtime-services/filesystem/directory-context-service.ts(2181-2194)"],
     "$id": 8134
   },
   "100% 完全精确一致文件": {
@@ -572,7 +572,7 @@
     "ko-KR": "콘텐츠 태그",
     "$files": [
       "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(8141-8149)",
-      "src/electron/runtime-services/filesystem/organize-real-directory-service/DatabaseHelper.ts(11297-11305)"
+      "src/electron/runtime-services/filesystem/organize-real-directory-service/DatabaseHelper.ts(11613-11621)"
     ],
     "$id": 10694
   },

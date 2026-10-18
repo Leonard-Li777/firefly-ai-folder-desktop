@@ -9,7 +9,7 @@
     "de-DE": "Wichtige Versionshinweise",
     "fr-FR": "Avis de mise à jour majeure",
     "ko-KR": "중요 버전 업데이트 알림",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(2884-2896)"],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(2969-2981)"],
     "$id": 21098
   },
   "检测到应用存在重大架构或协议演进，当前版本已无法继续提供基础服务，必须升级至 v{version} 即可恢复使用。": {
@@ -22,7 +22,7 @@
     "de-DE": "Es wurde eine wesentliche architektonische oder protokollbezogene Weiterentwicklung der App festgestellt. Die aktuelle Version kann die Basisservices nicht mehr bereitstellen; ein Upgrade auf v{version} ist erforderlich, um die Nutzung wieder aufzunehmen.",
     "fr-FR": "Une évolution importante de l'architecture ou du protocole a été détectée ; la version actuelle ne peut plus fournir les services de base. Il est impératif de mettre à niveau vers v{version} pour rétablir le fonctionnement.",
     "ko-KR": "앱에 중요한 아키텍처 또는 프로토콜 진화가 감지되어, 현재 버전으로는 기본 서비스를 더 ��상 제공할 수 없으며 v{version}으로 업그레이드해야만 사용이 복구됩니다.",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(3021-3082)"],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(3111-3172)"],
     "$id": 21099
   },
   "正在差分增量下载...": {
@@ -35,7 +35,7 @@
     "de-DE": "Differenzielle Zuzugsübertragung wird geladen...",
     "fr-FR": "Téléchargement incrémental par différences en cours...",
     "ko-KR": "차등 증분 다운로드 중...",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(3644-3659)"],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(3749-3764)"],
     "$id": 21100
   },
   "速度: {speed}/s": {
@@ -48,7 +48,7 @@
     "de-DE": "Geschwindigkeit: {speed}/s",
     "fr-FR": "Vitesse : {speed}/s",
     "ko-KR": "속도: {speed}/s",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(4233-4250)"],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(4350-4367)"],
     "$id": 21101
   },
   "更新包下载遇到网络障碍": {
@@ -61,7 +61,7 @@
     "de-DE": "Netzwerkausfall beim Herunterladen des Update-Pakets",
     "fr-FR": "Obstacle réseau rencontré lors du téléchargement du paquet de mise à jour",
     "ko-KR": "업데이트 패키지 다운로드 중 네트워크 장애 발생",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(4712-4727)"],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(4839-4854)"],
     "$id": 21102
   },
   "网络连接超时或不可达": {
@@ -74,7 +74,7 @@
     "de-DE": "Netzwerkzeitüberschreitung oder nicht erreichbar",
     "fr-FR": "Délai d'attente d'expiration de la connexion ou réseau inatteignable",
     "ko-KR": "네트워크 연결 시간 초과 또는 접근 불가",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(4793-4807)"],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(4921-4935)"],
     "$id": 21103
   },
   "正在准备覆盖安装...": {
@@ -87,7 +87,7 @@
     "de-DE": "Aufbereiten des Überlagerungshinweises...",
     "fr-FR": "Préparation de l'installation par écrasement en cours...",
     "ko-KR": "자동 덮어쓰기 설치 준비 중...",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(5418-5433)"],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(5563-5578)"],
     "$id": 21104
   },
   "立即重启并生效": {
@@ -100,7 +100,7 @@
     "de-DE": "Sofort neu starten und aktivieren",
     "fr-FR": "Redémarrer immédiatement pour appliquer les changements",
     "ko-KR": "즉시 재시작하여 적용",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(5437-5448)"],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(5582-5593)"],
     "$id": 21105
   },
   "正在重新探测...": {
@@ -113,7 +113,7 @@
     "de-DE": "Neuer Suchvorgang läuft...",
     "fr-FR": "Nouvelle détection en cours...",
     "ko-KR": "재탐색 중...",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(6030-6043)"],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(6192-6205)"],
     "$id": 21106
   },
   "重试连接": {
@@ -126,7 +126,7 @@
     "de-DE": "Verbindung erneut herstellen",
     "fr-FR": "Tenter de reconnecter",
     "ko-KR": "연결 재시도",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(6047-6055)"],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(6209-6217)"],
     "$id": 21107
   },
   "正在高速下载更新包...": {
@@ -139,7 +139,7 @@
     "de-DE": "Update-Paket wird mit hoher Geschwindigkeit heruntergeladen...",
     "fr-FR": "Téléchargement accéléré du paquet de mise à jour en cours...",
     "ko-KR": "고속으로 업데이트 패키지 다운로드 중...",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(6281-6297)"],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(6448-6464)"],
     "$id": 21108
   },
   "官网手动下载": {
@@ -152,7 +152,7 @@
     "de-DE": "Website manuell herunterladen",
     "fr-FR": "Téléchargement manuel depuis le site officiel",
     "ko-KR": "공식 웹사이트에서 수동으로 다운로드",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(6637-6647)"],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(6815-6825)"],
     "$id": 21109
   },
   "退出应用": {
@@ -165,7 +165,7 @@
     "de-DE": "App beenden",
     "fr-FR": "Quitter l'application",
     "ko-KR": "앱에서 종료",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(7297-7305)"],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(7495-7503)"],
     "$id": 21110
   },
   "新版本已就绪": {
@@ -178,7 +178,7 @@
     "de-DE": "Neue Version bereit",
     "fr-FR": "Nouvelle version prête",
     "ko-KR": "새 버전이 준비되었습니다",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(8319-8329)"],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(8545-8555)"],
     "$id": 21111
   },
   "正在后台下载新版本": {
@@ -191,7 +191,7 @@
     "de-DE": "Neue Version wird im Hintergrund heruntergeladen",
     "fr-FR": "Téléchargement de la nouvelle version en arrière-plan",
     "ko-KR": "백그라운드로 새 버전 다운로드 중",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(8333-8346)"],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(8559-8572)"],
     "$id": 21112
   },
   "关闭": {
@@ -204,7 +204,7 @@
     "de-DE": "Schließen",
     "fr-FR": "Fermer",
     "ko-KR": "닫기",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(8558-8564)"],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(8789-8795)"],
     "$id": 21113
   },
   "萤核智能文件夹 v{version} 已下载完成，可立即重启更新或在下次启动时自动应用。": {
@@ -217,7 +217,7 @@
     "de-DE": "Firefly AI Folder v{version} wurde erfolgreich heruntergeladen. Sie können sofort neu starten, um das Update anzuwenden, oder es beim nächsten Start automatisch anwenden.",
     "fr-FR": "Le téléchargement de Firefly AI Folder v{version} est terminé. Vous pouvez redémarrer immédiatement pour mettre à jour ou appliquer automatiquement la mise à jour au prochain démarrage.",
     "ko-KR": "Firefly AI Folder v{version} 다운로드 완료. 즉시 재시작하여 업데이트하거나 다음 시작 시 자동 적용할 수 있습니다.",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(8794-8842)"],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(9034-9082)"],
     "$id": 21114
   },
   "正在为您拉取最新版本 v{version} 增量差分更新包...": {
@@ -230,7 +230,7 @@
     "de-DE": "Erstelle nun das inkrementelle Delta-Updatepaket für die neueste Version v{version} für Sie...",
     "fr-FR": "Téléchargement du paquet de mise à jour différentielle incrémentielle v{version}...",
     "ko-KR": "최신 버전 v{version} 증분 차등 업데이트 패키지를 가져오는 중...",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(8961-8997)"],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(9207-9243)"],
     "$id": 21115
   },
   "下次启动生效": {
@@ -243,7 +243,7 @@
     "de-DE": "Wirkt beim nächsten Start",
     "fr-FR": "Prise d'effet au prochain démarrage",
     "ko-KR": "다음 시작 시 적용",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(10028-10038)"],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(10306-10316)"],
     "$id": 21116
   },
   "立即重启更新": {
@@ -256,7 +256,7 @@
     "de-DE": "Sofort neu starten",
     "fr-FR": "Redémarrer immédiatement pour mettre à jour",
     "ko-KR": "즉시 재시작하여 업데이트",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(10375-10385)"],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(10664-10674)"],
     "$id": 21117
   }
 }

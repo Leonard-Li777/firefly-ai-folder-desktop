@@ -991,7 +991,7 @@
     "de-DE": "Dateiverzeichnis",
     "fr-FR": "Répertoire de fichiers",
     "ko-KR": "파일 디렉터리",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(5038-5046)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(5191-5199)"],
     "$id": 8756
   },
   "分类维度": {
@@ -1004,7 +1004,7 @@
     "de-DE": "Klassifizierungsdimension",
     "fr-FR": "Dimension de classement",
     "ko-KR": "분류 차원",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(5611-5619)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(5778-5786)"],
     "$id": 8757
   },
   "筛选模式": {
@@ -1017,7 +1017,7 @@
     "de-DE": "Filtermodus",
     "fr-FR": "Mode filtre",
     "ko-KR": "필터 모드",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(6027-6035)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(6202-6210)"],
     "$id": 8758
   },
   "多选": {
@@ -1030,7 +1030,7 @@
     "de-DE": "Multiple Choice",
     "fr-FR": "Choix multiple",
     "ko-KR": "객관식",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(6183-6189)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(6361-6367)"],
     "$id": 8759
   },
   "加载中...": {
@@ -1043,7 +1043,7 @@
     "de-DE": "Wird geladen...\r",
     "fr-FR": "Chargement en cours...",
     "ko-KR": "불러오는 중...",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(13694-13704)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(14041-14051)"],
     "$id": 8761
   },
   "暂无维度数据": {
@@ -1056,7 +1056,7 @@
     "de-DE": "Noch keine Dimensionsdaten",
     "fr-FR": "Aucune donnée de dimension pour l'instant",
     "ko-KR": "아직 측정기준 데이터가 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(13885-13895)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(14236-14246)"],
     "$id": 8762
   },
   "{count} 个子目录": {
@@ -1069,7 +1069,7 @@
     "de-DE": "Unterverzeichnis {count}",
     "fr-FR": "{count} sous-répertoire",
     "ko-KR": "{count} 하위 디렉터리",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(14976-14992)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(15354-15370)"],
     "$id": 8763
   },
   "{count} 个维度组": {
@@ -1082,7 +1082,7 @@
     "de-DE": "{count} Dimensionsgruppen",
     "fr-FR": "{count} groupes de dimensions",
     "ko-KR": "{count} 차원 그룹",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(15038-15054)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(15417-15433)"],
     "$id": 8764
   },
   "展开侧边栏": {
@@ -1175,6 +1175,22 @@
     "ko-KR": "재생성",
     "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(8953-8961)"],
     "$id": 8838
+  },
+  "新虚拟目录": {
+    "en-US": "New virtual directory",
+    "es-ES": "Nuevo directorio virtual",
+    "ar-EG": "الدليل الظاهري الجديد",
+    "pt-PT": "Novo diretório virtual",
+    "ru-RU": "новый виртуальный каталог",
+    "ja-JP": "新しい仮想ディレクトリ",
+    "de-DE": "Neues virtuelles Verzeichnis",
+    "fr-FR": "Nouveau répertoire virtuel",
+    "ko-KR": "새 가상 디렉터리",
+    "$files": [
+      "src/renderer/components/file-explorer/VirtualDirectory/utils/vdir-naming-utils.ts(296-305)",
+      "src/renderer/components/file-explorer/VirtualDirectory/utils/vdir-naming-utils.ts(705-714)"
+    ],
+    "$id": 8856
   },
   "正在通过拷贝模式重试...": {
     "en-US": "Retrying via copy mode...",
@@ -1360,21 +1376,5 @@
     "ko-KR": "모든 파일",
     "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualNavigation.ts(1715-1723)"],
     "$id": 8855
-  },
-  "新虚拟目录": {
-    "en-US": "New virtual directory",
-    "es-ES": "Nuevo directorio virtual",
-    "ar-EG": "الدليل الظاهري الجديد",
-    "pt-PT": "Novo diretório virtual",
-    "ru-RU": "новый виртуальный каталог",
-    "ja-JP": "新しい仮想ディレクトリ",
-    "de-DE": "Neues virtuelles Verzeichnis",
-    "fr-FR": "Nouveau répertoire virtuel",
-    "ko-KR": "새 가상 디렉터리",
-    "$files": [
-      "src/renderer/components/file-explorer/VirtualDirectory/utils/vdir-naming-utils.ts(296-305)",
-      "src/renderer/components/file-explorer/VirtualDirectory/utils/vdir-naming-utils.ts(705-714)"
-    ],
-    "$id": 8856
   }
 }
