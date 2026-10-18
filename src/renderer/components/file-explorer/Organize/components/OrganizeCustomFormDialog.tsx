@@ -5,7 +5,7 @@ import { Input } from '../../../ui/input'
 import { Textarea } from '../../../ui/textarea'
 import { MaterialIcon, cn } from '../../../../lib/utils'
 import { t } from '@app/languages'
-
+import { extractVirtualDirName, parseStrategyToTree } from '../utils/helpers'
 import { OrganizeMode } from '../types'
 
 interface OrganizeCustomFormDialogProps {
@@ -51,15 +51,33 @@ export const OrganizeCustomFormDialog: React.FC<OrganizeCustomFormDialogProps> =
   const [strategy, setStrategy] = useState(initialStrategy)
   const [isDirty, setIsDirty] = useState(false)
 
+  const isExternalAiMode = targetMode === 'external-ai'
   const isFastMode = targetMode === 'fast-organize'
+
+  const defaultFallbackName = workspacePath
+    ? `${workspacePath.replace(/[/\\]$/, '').split(/[/\\]/).pop() || ''} ${t('整理方案')}`
+    : t('自定义整理方案')
 
   useEffect(() => {
     if (open) {
-      // 从 localStorage 读取当前工作空间的自定义方案
-      if (workspacePath) {
+      if (isExternalAiMode) {
+        // 外部 AI 模式导入时，不沿用工作区旧任务的历史缓存名称
+        setName(initialName || '')
+        if (initialStrategy) {
+          const { name: extractedName, cleanStrategy } = extractVirtualDirName(initialStrategy)
+          if (extractedName && !initialName) {
+            setName(extractedName)
+          }
+          setStrategy(cleanStrategy || initialStrategy)
+          setIsDirty(true)
+        } else {
+          setStrategy('')
+          setIsDirty(false)
+        }
+      } else if (workspacePath) {
         const savedName = localStorage.getItem(`organize_custom_name_${workspacePath}`)
         const savedStrategy = localStorage.getItem(`organize_custom_strategy_${workspacePath}`)
-        setName(savedName || initialName || t('行政2025年归档'))
+        setName(savedName || initialName || defaultFallbackName)
         if (savedStrategy || initialStrategy) {
           setStrategy(savedStrategy || initialStrategy)
           setIsDirty(true)
@@ -68,7 +86,7 @@ export const OrganizeCustomFormDialog: React.FC<OrganizeCustomFormDialogProps> =
           setIsDirty(false)
         }
       } else {
-        setName(initialName || t('行政2025年归档'))
+        setName(initialName || defaultFallbackName)
         if (initialStrategy) {
           setStrategy(initialStrategy)
           setIsDirty(true)
@@ -78,16 +96,54 @@ export const OrganizeCustomFormDialog: React.FC<OrganizeCustomFormDialogProps> =
         }
       }
     }
-  }, [open, initialName, initialStrategy, workspacePath])
+  }, [open, initialName, initialStrategy, workspacePath, isExternalAiMode, defaultFallbackName])
 
-  const handleSumbit = (e: React.FormEvent) => {
+  const handleStrategyChange = (newVal: string) => {
+    setIsDirty(true)
+    const { name: extractedName, cleanStrategy } = extractVirtualDirName(newVal)
+    if (extractedName) {
+      // 自动提取首行虚拟目录名填入输入框
+      setName(extractedName)
+      setStrategy(cleanStrategy)
+    } else {
+      setStrategy(newVal)
+    }
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name.trim()) return
-    const finalStrategy = isDirty ? strategy.trim() : DEFAULT_STRATEGY.trim()
-    onSubmit(name.trim(), finalStrategy, targetMode)
-    // 保存到 localStorage
-    if (workspacePath) {
-      localStorage.setItem(`organize_custom_name_${workspacePath}`, name.trim())
+    let finalStrategy = isExternalAiMode
+      ? strategy.trim()
+      : isDirty
+        ? strategy.trim()
+        : DEFAULT_STRATEGY.trim()
+    if (!finalStrategy) return
+
+    const { name: extractedName, cleanStrategy } = extractVirtualDirName(finalStrategy)
+    if (extractedName && !name.trim()) {
+      setName(extractedName)
+    }
+    if (cleanStrategy) {
+      finalStrategy = cleanStrategy
+    }
+
+    let finalName = name.trim() || extractedName || ''
+    if (!finalName) {
+      // 动态兜底：优先取解析后的第一级根目录名，次优取工作区名
+      const parsedTree = parseStrategyToTree(finalStrategy)
+      if (parsedTree && parsedTree.length > 0 && parsedTree[0].name) {
+        finalName = parsedTree[0].name
+      } else if (workspacePath) {
+        finalName = defaultFallbackName
+      } else {
+        finalName = t('自定义整理方案')
+      }
+    }
+
+    onSubmit(finalName, finalStrategy, targetMode)
+    // 保存到 localStorage（仅非 external-ai 时保存通用缓存，防脏数据污染）
+    if (workspacePath && !isExternalAiMode) {
+      localStorage.setItem(`organize_custom_name_${workspacePath}`, finalName)
       localStorage.setItem(`organize_custom_strategy_${workspacePath}`, finalStrategy)
     }
     setName('')
@@ -97,15 +153,21 @@ export const OrganizeCustomFormDialog: React.FC<OrganizeCustomFormDialogProps> =
   }
 
   const handleReset = () => {
-    setName(initialName || t('行政2025年归档'))
+    setName(initialName || defaultFallbackName)
     setStrategy(DEFAULT_STRATEGY)
     setIsDirty(false)
-    // 清除 localStorage 中的保存
-    if (workspacePath) {
+    if (workspacePath && !isExternalAiMode) {
       localStorage.removeItem(`organize_custom_name_${workspacePath}`)
       localStorage.removeItem(`organize_custom_strategy_${workspacePath}`)
     }
   }
+
+  const currentStrategy = isExternalAiMode
+    ? strategy.trim()
+    : isDirty
+      ? strategy.trim()
+      : DEFAULT_STRATEGY.trim()
+  const canSubmit = Boolean(currentStrategy)
 
   return (
     <Dialog open={open} onOpenChange={(val: boolean) => !val && onClose()}>
@@ -116,36 +178,58 @@ export const OrganizeCustomFormDialog: React.FC<OrganizeCustomFormDialogProps> =
           </div>
           <DialogHeader className="relative z-10">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
-                <MaterialIcon icon="settings_suggest" className="text-xl" />
+              <div
+                className={cn(
+                  'p-2.5 rounded-xl',
+                  isExternalAiMode
+                    ? 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400'
+                    : 'bg-primary/10 text-primary'
+                )}
+              >
+                <MaterialIcon
+                  icon={isExternalAiMode ? 'travel_explore' : 'settings_suggest'}
+                  className="text-xl"
+                />
               </div>
               <div>
                 <DialogTitle className="text-lg font-bold tracking-tight flex items-center gap-2">
                   <span>
-                    {isFastMode ? t('快速整理自定义目录树') : t('精细整理自定义目录树')}
+                    {isExternalAiMode
+                      ? t('导入外部AI生成的目录结构')
+                      : isFastMode
+                        ? t('快速整理自定义目录树')
+                        : t('精细整理自定义目录树')}
                   </span>
                   <span
                     className={cn(
                       'text-xs font-semibold px-2 py-0.5 rounded-full border',
-                      isFastMode
-                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                        : 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20'
+                      isExternalAiMode
+                        ? 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20'
+                        : isFastMode
+                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                          : 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20'
                     )}
                   >
-                    {isFastMode ? t('快速整理模式') : t('精细整理模式')}
+                    {isExternalAiMode
+                      ? t('外部AI生成')
+                      : isFastMode
+                        ? t('快速整理模式')
+                        : t('精细整理模式')}
                   </span>
                 </DialogTitle>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {isFastMode
-                    ? t('贴入外部AI生成的目录树，通过高频特征直接完成极速归类')
-                    : t('贴入外部AI生成的目录树，后续将结合模型进行深度语义推理归类')}
+                  {isExternalAiMode
+                    ? t('粘贴外部AI生成的目录树，首行可附带【虚拟目录名称：xxxx】自动识别')
+                    : isFastMode
+                      ? t('贴入外部AI生成的目录树，通过高频特征直接完成极速归类')
+                      : t('贴入外部AI生成的目录树，后续将结合模型进行深度语义推理归类')}
                 </p>
               </div>
             </div>
           </DialogHeader>
         </div>
 
-        <form onSubmit={handleSumbit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div className="space-y-2">
             <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
               <span>{t('虚拟目录名')}</span>
@@ -154,9 +238,8 @@ export const OrganizeCustomFormDialog: React.FC<OrganizeCustomFormDialogProps> =
             <Input
               value={name}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
-              placeholder={t('例：办公文员视角、行政视角、财务视角、人事视角')}
+              placeholder={t('例：办公文员视角、行政综合、研发项目')}
               className="h-11 rounded-xl border-border/60 bg-background/50 focus-visible:ring-primary focus-visible:border-primary placeholder:text-muted-foreground/50 transition-all font-medium"
-              required
             />
             <p className="text-[11px] text-muted-foreground/75 px-0.5">
               {t('此名称将作为最终物理文件夹的名字')}
@@ -165,15 +248,18 @@ export const OrganizeCustomFormDialog: React.FC<OrganizeCustomFormDialogProps> =
 
           <div className="space-y-2">
             <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              {t('整理策略')}
+              {t('整理策略与目录树')}
             </label>
             <Textarea
-              value={isDirty ? strategy : DEFAULT_STRATEGY}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                setIsDirty(true)
-                setStrategy(e.target.value)
-              }}
-              placeholder={t('请直接给出目录树结构和文件归类策略')}
+              value={isExternalAiMode ? strategy : (isDirty ? strategy : DEFAULT_STRATEGY)}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                handleStrategyChange(e.target.value)
+              }
+              placeholder={
+                isExternalAiMode
+                  ? t('请直接粘贴外部AI生成的目录树，首行可写：虚拟目录名称：xxxx')
+                  : t('请直接给出目录树结构和文件归类策略')
+              }
               rows={12}
               className="rounded-xl border-border/60 bg-background/50 focus-visible:ring-primary focus-visible:border-primary placeholder:text-muted-foreground/50 resize-none transition-all text-sm leading-relaxed"
             />
@@ -201,7 +287,7 @@ export const OrganizeCustomFormDialog: React.FC<OrganizeCustomFormDialogProps> =
             </Button>
             <Button
               type="submit"
-              disabled={!name.trim()}
+              disabled={!canSubmit}
               className="rounded-xl font-bold bg-primary hover:bg-primary/95 text-primary-foreground shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
             >
               {t('确定')}

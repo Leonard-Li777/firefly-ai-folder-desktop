@@ -41,6 +41,7 @@ export function StageBreadcrumb({
     }
   }
 
+  const draft = useOrganizeStore(s => s.draft)
   const isDirectDone = Boolean(
     stage === 'done' &&
     ((vdIdParam && actionParam !== 'regenerate' && modeParam !== 'incremental-organize') ||
@@ -71,15 +72,22 @@ export function StageBreadcrumb({
     ]
   } else {
     // 默认整理主流程分支
+    const isExternalAi = stage === 'external-ai' || draft?.source === 'external-ai'
     const isIdentityMode = organizeMode === 'identity-blueprint'
     const organizeSteps: Array<{ key: Stage; label: string; icon: string }> = [
       homeStep,
       { key: 'mode-select', label: t('模式选择'), icon: 'auto_fix_high' },
-      {
-        key: 'candidates',
-        label: isIdentityMode ? t('身份蓝图') : t('选择方案'),
-        icon: isIdentityMode ? 'psychology' : 'auto_awesome_motion'
-      },
+      isExternalAi
+        ? {
+            key: 'external-ai',
+            label: t('外部AI引导'),
+            icon: 'travel_explore'
+          }
+        : {
+            key: 'candidates',
+            label: isIdentityMode ? t('身份蓝图') : t('选择方案'),
+            icon: isIdentityMode ? 'psychology' : 'auto_awesome_motion'
+          },
       { key: 'structure', label: t('目录微调'), icon: 'folder_open' },
       { key: 'organizing', label: t('自动归类'), icon: 'auto_fix_high' },
       { key: 'done', label: t('完成'), icon: 'check_circle' }
@@ -105,6 +113,10 @@ export function StageBreadcrumb({
     // 批量整理在 organize 分支下若曾经选择过
     if (key === 'mode-select') {
       return visitedStages.includes('mode-select')
+    }
+    // 外部 AI 步骤点亮
+    if (key === 'external-ai') {
+      return stage === 'external-ai' || visitedStages.includes('external-ai') || Boolean(draft?.source === 'external-ai')
     }
     // 具备前置生成数据的步骤点亮
     if (key === 'candidates') {

@@ -597,6 +597,34 @@ export function buildSelectedTagsTree(groups: any[]) {
 }
 
 /**
+ * 提取文本首行的推荐虚拟目录名，并返回剥离首行后的纯净策略文本
+ */
+export function extractVirtualDirName(rawText: string): { name?: string; cleanStrategy: string } {
+  if (!rawText || !rawText.trim()) return { cleanStrategy: rawText || '' }
+
+  let textToProcess = rawText.trim()
+  // 若包含 Markdown 代码块，优先解出代码块内部正文
+  const codeBlockMatch = textToProcess.match(/```(?:markdown|text)?\s*([\s\S]*?)```/i)
+  if (codeBlockMatch && codeBlockMatch[1].trim()) {
+    textToProcess = codeBlockMatch[1].trim()
+  }
+
+  const lines = textToProcess.split('\n')
+  const firstLine = lines[0].trim()
+  const nameMatch =
+    firstLine.match(/^(?:虚拟目录名(?:称)?|方案名(?:称)?|目录名(?:称)?|推荐名称)[：:]\s*(.+)$/i) ||
+    firstLine.match(/^#+\s*(?:虚拟目录名(?:称)?|方案名(?:称)?)[：:]\s*(.+)$/i)
+
+  if (nameMatch && nameMatch[1]) {
+    const extractedName = nameMatch[1].replace(/[*`"']/g, '').trim()
+    const remainingLines = lines.slice(1).join('\n').trim()
+    return { name: extractedName, cleanStrategy: remainingLines }
+  }
+
+  return { cleanStrategy: textToProcess }
+}
+
+/**
  * 解析用户编辑的目录树文本为 VirtualDirectoryNode[] 结构
  * 支持格式：markdown 列表格式，如：
  * - 办公文档
@@ -608,14 +636,19 @@ export function buildSelectedTagsTree(groups: any[]) {
 export function parseStrategyToTree(strategyText: string): VirtualDirectoryNode[] | null {
   if (!strategyText || !strategyText.trim()) return null
 
-  const lines = strategyText.split('\n')
+  // 前置提取首行虚拟目录名，以获取干净的策略目录树文本
+  const { cleanStrategy } = extractVirtualDirName(strategyText)
+  const targetText = cleanStrategy || strategyText
+
+  const lines = targetText.split('\n')
   const result: VirtualDirectoryNode[] = []
   const stack: Array<{ node: VirtualDirectoryNode; indent: number }> = []
 
   // 判断文本中是否包含标准列表标识符（- 或 * 或 树形符号 ├/└/│）
   const hasListMarkers = lines.some(l => /^[\s]*[-*│├└|]/.test(l))
 
-  for (const line of lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
     const trimmedLine = line.trim()
     if (!trimmedLine) continue
 
@@ -624,9 +657,32 @@ export function parseStrategyToTree(strategyText: string): VirtualDirectoryNode[
     if (matchMd) {
       content = matchMd[1].trim()
     } else {
-      // 如果存在列表标记，但当前行没有任何列表/树形符号（如开头的提示/视角描述文字），则跳过
+      // 如果存在列表标记，但当前行没有任何列表/树形符号：
       if (hasListMarkers && !/^[│├└─|]/.test(trimmedLine)) {
-        continue
+        // 关键修复：当栈为空且尚未添加任何根节点时，检查后续非空行是否包含制表符或列表符
+        // 若紧随其后的非空行是树形子节点，则当前行为该树的根目录名，不可跳过
+        let isRootNode = false
+        if (stack.length === 0 && result.length === 0) {
+          for (let j = i + 1; j < lines.length; j++) {
+            const nextTrimmed = lines[j].trim()
+            if (nextTrimmed) {
+              if (/^[│├└─|]/.test(nextTrimmed) || /^[-*]\s+/.test(nextTrimmed)) {
+                if (
+                  !/[：:]$/.test(trimmedLine) &&
+                  trimmedLine.length <= 40 &&
+                  !trimmedLine.includes('方案') &&
+                  !trimmedLine.includes('视角')
+                ) {
+                  isRootNode = true
+                }
+              }
+              break
+            }
+          }
+        }
+        if (!isRootNode) {
+          continue
+        }
       }
       content = trimmedLine
         .replace(/^[│\s├└─|]+/, '')
@@ -638,7 +694,17 @@ export function parseStrategyToTree(strategyText: string): VirtualDirectoryNode[
     if (!content || content === UNCLASSIFIED_NAME || content === PROJECT_CORE_NAME || content === CORE_PROJECT_NAME)
       continue
 
-    const indent = line.length - line.trimStart().length
+    let indent = line.length - line.trimStart().length
+    if (!matchMd) {
+      const treePrefixMatch = line.match(/^([│\s├└─|]+)/)
+      if (treePrefixMatch) {
+        // 树形制表符本身的字符序列长度即代表其层级深度
+        indent = treePrefixMatch[1].length
+      } else if (hasListMarkers) {
+        // 若整体含列表或树形符，而当前行无前缀（根节点），其缩进明确为 0
+        indent = 0
+      }
+    }
 
     const newNode: VirtualDirectoryNode = {
       name: sanitizeDirectoryName(content),

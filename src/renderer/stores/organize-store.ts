@@ -9,6 +9,7 @@ export type Stage =
   | 'mode-select'
   | 'smart-clustering'
   | 'candidates'
+  | 'external-ai'
   | 'structure'
   | 'organizing'
   | 'done'
@@ -18,6 +19,7 @@ export type OrganizeMode =
   | 'fast-organize'
   | 'fine-organize'
   | 'incremental-organize'
+  | 'external-ai'
   | undefined
 
 export interface OrganizeOptions {
@@ -138,7 +140,7 @@ export const useOrganizeStore = create<OrganizeStoreState>(set => ({
   rawMatches: {},
   filesMap: {},
   userPinnedFileMap: new Map(),
-  thresholdScore: 0.6,
+  thresholdScore: 0.4,
   maxCandidatesPerFile: 1,
 
   setStage: stage =>

@@ -305,6 +305,9 @@ export function useOrganizeState() {
     let baseFiles = (allWorkspaceFiles || []).filter(
       f => (f as any).is_analyzed !== 0 && f.isAnalyzed !== false
     )
+    if (baseFiles.length === 0 && (allWorkspaceFiles || []).length > 0) {
+      baseFiles = allWorkspaceFiles
+    }
 
     // 1. 如果是从已分析页面勾选带入的（按 id 匹配，缺失时回退 path 匹配，兼容两种数据源）
     if (
@@ -1117,12 +1120,20 @@ export function useOrganizeState() {
       isSavedRef.current = false
       if (mode === 'smart-clustering') {
         setStage('smart-clustering')
+      } else if (mode === 'external-ai') {
+        setStage('external-ai')
       } else {
         setStage('candidates')
       }
     },
     [setCurrentVDir, setDraft, setDraftTree, setFinalTree, setIncrementalFiles, setIncrementalVdId, setInitialDraftTree, setOrganizeMode, setSelectedCandidate, setStage]
   )
+
+  // ─── 切换至外部 AI 规划模式 ──────────────────────────────────────────────
+  const handleSwitchToExternalAi = useCallback(() => {
+    setOrganizeMode('external-ai')
+    setStage('external-ai')
+  }, [setOrganizeMode, setStage])
 
   // ─── 指导方案生成 ───────────────────────────────────────────────────────
   const handleGuideGeneration = useCallback(async () => {
@@ -1166,6 +1177,7 @@ export function useOrganizeState() {
 
   const handleSelectCandidate = useCallback(
     async (candidate: any) => {
+      setOrganizeMode('fine-organize')
       setSelectedCandidate(candidate)
       const existingNames = (virtualDirectories || []).map(vd => vd.name)
       const rawName = candidate.name || t('新虚拟目录')
@@ -1196,6 +1208,16 @@ export function useOrganizeState() {
       })
 
       setStage('structure')
+
+      // 核心体验提升：精细整理大模型直接生成了完整的层级目录树（Markdown 格式），
+      // 优先直接解析进入目录树调整与预览，消除长达数十秒的二次模型推理等待
+      const directParsedTree = candidate.strategy ? parseStrategyToTree(candidate.strategy) : null
+      if (directParsedTree && directParsedTree.length > 0) {
+        setDraftTree(directParsedTree)
+        setIsGeneratingTree(false)
+        return
+      }
+
       setIsGeneratingTree(true)
       setDraftTree([])
 
@@ -1296,14 +1318,18 @@ export function useOrganizeState() {
   // ─── 自定义方案提交 → 直接解析目录树 → 进入 State 2 ──────────────────────
   const handleCustomSubmit = useCallback(
     async (name: string, strategy: string, targetMode?: OrganizeMode) => {
-      const activeMode = targetMode || organizeMode
-      if (targetMode) {
-        setOrganizeMode(targetMode)
-      }
+      const isFromExternalAi = targetMode === 'external-ai' || organizeMode === 'external-ai'
+      const activeMode: OrganizeMode = isFromExternalAi ? 'fine-organize' : targetMode || organizeMode || 'fast-organize'
+      setOrganizeMode(activeMode)
+
       const candidate = { name, strategy }
       setSelectedCandidate(candidate)
       setCurrentVDir(null)
-      setDraft({ name, strategy, source: 'user-defined' })
+      setDraft({
+        name,
+        strategy,
+        source: isFromExternalAi ? 'external-ai' : 'user-defined'
+      })
       setShowCustomForm(false)
       setStage('structure')
 
@@ -1454,9 +1480,21 @@ export function useOrganizeState() {
       ) {
         filesToOrganize = toOrganizeFiles
       }
+      if (!Array.isArray(filesToOrganize) || filesToOrganize.length === 0) {
+        if (Array.isArray(allWorkspaceFiles) && allWorkspaceFiles.length > 0) {
+          filesToOrganize = allWorkspaceFiles
+        }
+      }
 
-      // ─── 模式分支：身份蓝图（基于端侧离线向量余弦打分与内存重塑） ────────────
-      if (organizeMode === 'identity-blueprint') {
+      // ─── 统一归类底座：身份蓝图、精细整理、外部AI均走端侧离线向量余弦打分与内存重塑 ──
+      const shouldUseCosineMatching =
+        organizeMode === 'identity-blueprint' ||
+        organizeMode === 'fine-organize' ||
+        (draft as any)?.source === 'identity-blueprint' ||
+        (draft as any)?.source === 'external-ai' ||
+        (draft as any)?.source === 'draft' ||
+        (draft as any)?.source === 'user-defined'
+      if (shouldUseCosineMatching) {
         setProgressInfo({ current: 1, total: 2, message: t('正在计算路径余弦打分...') })
 
         const candidatePaths = extractCandidatePathsFromTree(draftTree)
@@ -1486,7 +1524,7 @@ export function useOrganizeState() {
 
         setProgressInfo({ current: 2, total: 2, message: t('正在生成重塑目录树...') })
 
-        const thresholdScore = useOrganizeStore.getState().thresholdScore || 0.6
+        const thresholdScore = useOrganizeStore.getState().thresholdScore || 0.4
         const maxCandidatesPerFile = useOrganizeStore.getState().maxCandidatesPerFile || 1
         const userPinnedFileMap = useOrganizeStore.getState().userPinnedFileMap
 
@@ -1496,6 +1534,7 @@ export function useOrganizeState() {
           filesMap,
           y: thresholdScore,
           n: maxCandidatesPerFile,
+          fallbackToTop1IfEmpty: true,
           userPinnedFileMap
         })
 
@@ -1650,28 +1689,32 @@ export function useOrganizeState() {
     // 优先使用后端估算的批次数（与实际整理上报的 totalSteps 保持一致）。
     // 此前按全部文件数估算会导致与实际批次数不一致（例如快速整理的骨架直出会先按已有标签预分配文件）。
     let batchCount = Math.ceil(toOrganizeFiles.map(f => f.id).length / batchSize)
-    try {
-      const backendTagsTree = convertTreeForBackend(draftTree)
-      const allFiles = collectAllFiles(dimensionGroups, regenerateFiles)
-      const estimated = await window.electronAPI!.virtualDirectory.estimateReorganizeBatches(
-        currentVDir?.id || 0,
-        {
-          workspaceDirectoryPath: currentWorkspaceDirectory.path,
-          mode: organizeMode,
-          selectedFileIds: toOrganizeFiles.map(f => f.id),
-          selectedTagsTree: backendTagsTree,
-          files: allFiles,
-          userInstruction: draft.strategy,
-          allowCreateNew: options.allowCreateNew,
-          batchSize,
-          dimensionInfo: dimensionGroups
+    const isBlueprint =
+      organizeMode === 'identity-blueprint' || (draft as any)?.source === 'identity-blueprint'
+    if (!isBlueprint) {
+      try {
+        const backendTagsTree = convertTreeForBackend(draftTree)
+        const allFiles = collectAllFiles(dimensionGroups, regenerateFiles)
+        const estimated = await window.electronAPI!.virtualDirectory.estimateReorganizeBatches(
+          currentVDir?.id || 0,
+          {
+            workspaceDirectoryPath: currentWorkspaceDirectory.path,
+            mode: organizeMode,
+            selectedFileIds: toOrganizeFiles.map(f => f.id),
+            selectedTagsTree: backendTagsTree,
+            files: allFiles,
+            userInstruction: draft.strategy,
+            allowCreateNew: options.allowCreateNew,
+            batchSize,
+            dimensionInfo: dimensionGroups
+          }
+        )
+        if (typeof estimated === 'number' && estimated > 0) {
+          batchCount = estimated
         }
-      )
-      if (typeof estimated === 'number' && estimated > 0) {
-        batchCount = estimated
+      } catch (e) {
+        logger.error(LogCategory.FILE_ORGANIZATION, '估算整理批次失败，使用本地估算:', e)
       }
-    } catch (e) {
-      logger.error(LogCategory.FILE_ORGANIZATION, '估算整理批次失败，使用本地估算:', e)
     }
 
     if (batchCount > maxBatchWarnLimit) {
@@ -2537,10 +2580,18 @@ export function useOrganizeState() {
       setStage('mode-select')
       return
     }
+    if (stage === 'external-ai') {
+      setStage('mode-select')
+      return
+    }
 
     const isVDirOrDraft = Boolean(currentVDir?.id || organizeMode === 'incremental-organize')
 
     if (stage === 'structure') {
+      if (draft?.source === 'external-ai') {
+        setStage('external-ai')
+        return
+      }
       if (isVDirOrDraft) {
         setIncrementalVdId(null)
         setIncrementalFiles([])
@@ -2604,7 +2655,9 @@ export function useOrganizeState() {
   // ─── 批量保存打标 ─────────────────────────────────────────────────────────
   const [isSavingTags, setIsSavingTags] = useState(false)
   const saveBatchTags = useCallback(
-    async (changes: import('@firefly/types').BatchTagOperation) => {
+    async (
+      changes: import('@firefly/types').BatchTagOperation
+    ): Promise<import('@firefly/types').BatchTagResult | void> => {
       const fileIds = changes.fileIds && changes.fileIds.length > 0
         ? changes.fileIds
         : toOrganizeFiles.map(f => f.id).filter(Boolean)
@@ -2640,6 +2693,10 @@ export function useOrganizeState() {
             }
 
             toast.success(t('成功为 {count} 个文件更新标签', { count: res.successCount }))
+
+            // S3 规格 §5.5：把结果透传给调用方（BatchTagView 的 onSaveTags）。
+            // §5.4 的「共覆盖 N 处单选冲突标签」提示由调用方依据 overriddenCount 发出
+            // （保存反馈的出口统一在视图层），这里只负责不吞结果、不吞异常。
             await loadFilesToOrganize()
             if (currentWorkspaceDirectory?.path && window.electronAPI?.analyzedDirectory?.getDimensionGroups) {
               try {
@@ -2657,10 +2714,15 @@ export function useOrganizeState() {
             }
             window.dispatchEvent(new CustomEvent('tags-updated'))
             window.dispatchEvent(new CustomEvent('tags:updated'))
+            return res
           }
         }
       } catch (err: any) {
         toast.error(err?.message || t('批量打标失败'))
+        // S3 规格 §5.5：保留 toast 后必须重抛。
+        // 原来这里吞掉异常并 resolve，调用方（BatchTagView.handleSave）的 try/catch
+        // 永远不触发 ⇒ 「保存失败不重置工作台」不可实现。
+        throw err
       } finally {
         setIsSavingTags(false)
       }
@@ -2997,6 +3059,7 @@ export function useOrganizeState() {
     setShowRegenerateFirecoreConfirm,
     isGeneratingTree,
     handleModeSelect,
+    handleSwitchToExternalAi,
     handleGuideGeneration,
     handleSelectCandidate,
     handleCustomSubmit,
