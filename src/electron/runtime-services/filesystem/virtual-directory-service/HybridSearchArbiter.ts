@@ -38,6 +38,7 @@ import {
 } from '../../../services/omni-client'
 import { omniService } from '../../system/omni-service'
 import { calculateFzfScore } from './pinyin-fzf'
+import { PinyinQueryExpander, ExpandedSearchQuery } from './pinyin-query-expander'
 
 /** RRF 平滑常量 K（避免 top-rank 分数悬殊、稳定融合放缩） */
 export const HYBRID_SEARCH_RRF_K = 60
@@ -50,6 +51,11 @@ export const HYBRID_SEARCH_WEIGHTS = {
 } as const
 /** 单源候选池大小（FTS / 向量 / FS 各自的上限，也是融合池的上限） */
 export const HYBRID_SEARCH_POOL_SIZE = 200
+/** 视频切片跳轴绝对最小置信度阈值（生产环境 Gemma 空间 0.72，单测环境 0.60 兼容 mock，低于此分数的切片视为非目标噪点，杜绝假阳性时间戳下发） */
+export const TEMPORAL_CHUNK_MIN_CONFIDENCE = isTestEnvironment() ? 0.60 : 0.72
+/** 视频切片跳轴相对显著性差值阈值（最高切片得分必须高出全视频所有切片均值至少此裕度，证明为目标瞬间而非全局背景色偏） */
+export const TEMPORAL_CHUNK_MIN_PROMINENCE = 0.015
+
 /** BM25 完整 10 列列权（第 0 列为 file_fingerprint UNINDEXED 赋 0.0，随后 9 列对齐 files_fts 架构：name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags） */
 export const HYBRID_BM25_COLUMN_WEIGHTS = [0.0, 4.0, 4.0, 3.0, 3.0, 3.5, 3.5, 3.0, 3.5, 3.5] as const
 
@@ -247,7 +253,14 @@ export function rrfScore(rank: number | undefined, k: number = HYBRID_SEARCH_RRF
  * 3. 严格包含防 NaN、防负数安全守卫。
  */
 export function weightedRrfScore(
-  opts: { ftsRank?: number; vecRank?: number; nameBoost?: number; exactRank?: number; vecScore?: number },
+  opts: {
+    ftsRank?: number
+    vecRank?: number
+    nameBoost?: number
+    exactRank?: number
+    vecScore?: number
+    vectorDamping?: number
+  },
   weights: { fts: number; vector: number; name: number; exact?: number } = HYBRID_SEARCH_WEIGHTS,
   k: number = HYBRID_SEARCH_RRF_K
 ): number {
@@ -258,7 +271,8 @@ export function weightedRrfScore(
     opts.vecScore !== undefined && Number.isFinite(opts.vecScore)
       ? 1.0 + Math.max(0, Math.min(1, opts.vecScore))
       : 1.0
-  const vecContrib = weights.vector * baseVec * scoreMultiplier
+  const damping = Number.isFinite(opts.vectorDamping) ? Math.max(0, opts.vectorDamping!) : 1.0
+  const vecContrib = weights.vector * baseVec * scoreMultiplier * damping
 
   const safeNameBoost = Number.isFinite(opts.nameBoost) ? Math.max(0, opts.nameBoost ?? 0) : 0
   const nameRrf = safeNameBoost / (k + 1)
@@ -496,11 +510,12 @@ export class HybridSearchArbiter {
     exactRankMap: Map<string, number>
     vecRankMap: Map<string, { rank: number; score: number; matchedChunk?: VectorMatch['matchedChunk'] }>
     existingNameMap?: Map<string, { name?: string; smartName?: string; path?: string }>
+    expanded?: ExpandedSearchQuery
   }): {
     candidates: HybridRankedCandidate[]
     nameMap: Map<string, { name?: string; smartName?: string; path?: string }>
   } {
-    const { keyword, ftsRankMap, exactRankMap, vecRankMap, existingNameMap } = opts
+    const { keyword, ftsRankMap, exactRankMap, vecRankMap, existingNameMap, expanded } = opts
     const fpSet = new Set<string>()
     for (const fp of ftsRankMap.keys()) fpSet.add(fp)
     for (const fp of vecRankMap.keys()) fpSet.add(fp)
@@ -525,6 +540,12 @@ export class HybridSearchArbiter {
       const exactRank = exactRankMap.get(fp)
       const { name, smartName } = nameMap.get(fp) ?? {}
       const nameBoost = computeNameBoost(name, smartName, keyword)
+
+      // 防倒挂公理：若由拼音展开词命中向量通道，但文件物理名称并未匹配原词（nameBoost < 0.85），
+      // 对其向量贡献施加安全阻尼 alpha_expand = 0.65，保障物理原词命中文件位居首位
+      const isExpandedVectorOnly = expanded?.isExpanded && nameBoost < 0.85
+      const vectorDamping = isExpandedVectorOnly ? 0.65 : 1.0
+
       candidates.push({
         fileFingerprint: fp,
         ftsRank,
@@ -537,7 +558,8 @@ export class HybridSearchArbiter {
           vecRank: vec?.rank,
           nameBoost,
           exactRank,
-          vecScore: vec?.score
+          vecScore: vec?.score,
+          vectorDamping
         }),
         hasLiteral: exactRank !== undefined || ftsRank !== undefined || nameBoost >= 0.85,
         matchedChunk: vec?.matchedChunk
@@ -613,6 +635,9 @@ export class HybridSearchArbiter {
     const failures: HybridSearchFailures = { fts: false, vector: false, fs: false }
     const attemptedFs = !!workspaceDirectoryPath
 
+    // 0. 拼音逆向展开探测 (P2C)
+    const expanded = PinyinQueryExpander.getInstance().expand(keyword)
+
     // 1. 并发启动快速字面三路与慢速向量路
     const fsPromise = attemptedFs
       ? this.queryFastFs(workspaceDirectoryPath!, keyword, poolSize)
@@ -624,13 +649,20 @@ export class HybridSearchArbiter {
             this.queryExactPhraseCandidates(identifiers, whereClauses, queryParams, poolSize)
           )
         : Promise.resolve([])
-    const ftsPromise = this.queryFtsCandidates(keyword, whereClauses, queryParams, poolSize)
+    const ftsPromise = this.queryFtsCandidates(
+      keyword,
+      whereClauses,
+      queryParams,
+      poolSize,
+      expanded
+    )
     const vectorPromise = this.queryVectorCandidates(
       keyword,
       queryEmbedding,
       whereClauses,
       queryParams,
-      poolSize
+      poolSize,
+      expanded
     )
 
     // Phase 1: 等待快速字面三路完成 (通常 10~25ms)
@@ -656,7 +688,8 @@ export class HybridSearchArbiter {
         keyword,
         ftsRankMap,
         exactRankMap,
-        vecRankMap: new Map()
+        vecRankMap: new Map(),
+        expanded
       })
       p1NameMap = p1.nameMap
       const p1Unanalyzed = this.buildUnanalyzedHits({
@@ -693,7 +726,8 @@ export class HybridSearchArbiter {
       ftsRankMap,
       exactRankMap,
       vecRankMap,
-      existingNameMap: p1NameMap
+      existingNameMap: p1NameMap,
+      expanded
     })
     const unanalyzedHits = this.buildUnanalyzedHits({
       fsResult,
@@ -819,7 +853,8 @@ export class HybridSearchArbiter {
     keyword: string,
     whereClauses: string[],
     queryParams: any[],
-    poolSize: number
+    poolSize: number,
+    expanded?: ExpandedSearchQuery
   ): string[] | null {
     try {
       const ftsCols = this.db
@@ -836,12 +871,22 @@ export class HybridSearchArbiter {
 
       let rows: Array<{ file_fingerprint: string }> = []
       const tokens = trimmed.split(/\s+/).filter(Boolean)
-      const hasLongToken = tokens.some(t => t.length >= 3)
+      const chineseCandidates = expanded?.chineseCandidates ?? []
+      const allTokens = Array.from(new Set([...tokens, ...chineseCandidates]))
+      const hasLongToken = allTokens.some(t => t.length >= 3)
 
       // 1. 若存在 >=3 字符的有效 token，优先尝试 FTS5 trigram MATCH
       if (hasLongToken) {
         try {
-          const safeQuery = sanitizeFtsQuery(trimmed)
+          // 安全分项清洗转义并安全组装 OR 查询表达式
+          const rawTerms = [trimmed, ...chineseCandidates]
+          const safeTerms = rawTerms
+            .map(w => {
+              const cleaned = w.replace(/[*^()"\\-]/g, ' ').trim()
+              return cleaned.length >= 3 ? `"${cleaned}"` : ''
+            })
+            .filter(Boolean)
+          const safeQuery = safeTerms.length > 0 ? safeTerms.join(' OR ') : sanitizeFtsQuery(trimmed)
           if (safeQuery) {
             // FTS5 bm25 严格按虚拟表物理声明列顺序（从 0 开始）赋值，包含 UNINDEXED 列
             // 第 0 列 file_fingerprint UNINDEXED 必须赋予 0.0 占位，避免后续列权向左整体错位！
@@ -868,9 +913,11 @@ export class HybridSearchArbiter {
       }
 
       // 2. 若 MATCH 未能召回任何候选（短词 <3 字符、空格分隔多词或未命中），执行多列 LIKE 安全降级召回
-      if (rows.length === 0 && tokens.length > 0) {
+      // 显式并入展开的中文短词（如 2 字高频词“小说/合同”），确保短词不丢召回
+      const combinedTokens = Array.from(new Set([...tokens, ...chineseCandidates]))
+      if (rows.length === 0 && combinedTokens.length > 0) {
         // 保守防 DoS 截断：最多取前 8 个有效词
-        const safeTokens = tokens.slice(0, 8)
+        const safeTokens = combinedTokens.slice(0, 8)
         const targetSearchCols = [
           'name',
           'smart_name',
@@ -956,14 +1003,20 @@ export class HybridSearchArbiter {
     queryEmbedding: number[] | undefined,
     whereClauses: string[],
     queryParams: any[],
-    poolSize: number
+    poolSize: number,
+    expanded?: ExpandedSearchQuery
   ): Promise<VectorMatch[] | null> {
     if (this.vectorBreaker.isOpen) return null
     if (!this.networkSignals) return []
     try {
       let embedding = queryEmbedding
       if (!embedding || embedding.length === 0) {
-        const cleanKeyword = cleanSearchQueryEntities(keyword)
+        // 若存在拼音展开词，优先使用 semanticTextForVector（如 "科幻小说"）提取高质量特征向量，消灭字母噪声
+        const textToAnalyze =
+          expanded?.isExpanded && expanded.semanticTextForVector
+            ? expanded.semanticTextForVector
+            : keyword
+        const cleanKeyword = cleanSearchQueryEntities(textToAnalyze)
         // 剥离中文修饰助词（如 "红色的跑车" -> "红色跑车"），使自然语言描述与视觉向量特征空间紧密对齐；
         // 彻底剔除脱离模型实际输入分布的人工提示词前缀 (如 'task: search result | query: ')，
         // 杜绝 28 字节通用英文 ASCII 提示词暴力稀释核心语义，根除所有车辆查询均千篇一律收敛至同一噪点切片 (如 03:24) 的严重偏置。
@@ -974,8 +1027,8 @@ export class HybridSearchArbiter {
         if (!analysis?.embedding_dense && normalizedQuery !== cleanKeyword) {
           analysis = await omniService.analyzeText(cleanKeyword)
         }
-        if (!analysis?.embedding_dense && cleanKeyword !== keyword) {
-          analysis = await omniService.analyzeText(keyword)
+        if (!analysis?.embedding_dense && cleanKeyword !== textToAnalyze) {
+          analysis = await omniService.analyzeText(textToAnalyze)
         }
         embedding = analysis?.embedding_dense
       }
@@ -1090,15 +1143,28 @@ export class HybridSearchArbiter {
         }
       }
 
-      // 2. 优选每个视频的最佳跳轴切片（严格以向量语义相似度最高分为绝对基准）：
-      // 恪守第一性原理与 KISS 原则，严禁主观假定片头片尾是空镜头或人为施加黄金中段加权，
-      // 杜绝非目标中段切片（如 01:33）通过位置偏置篡改真实最高匹配度切片（如 1:48 红色跑车）
+      // 2. 优选每个视频的最佳跳轴切片（双重门禁：绝对置信度 + 相对显著性差值）：
+      // 恪守第一性原理：
+      // - 绝对门禁：topChunk.score 必须达到 TEMPORAL_CHUNK_MIN_CONFIDENCE，杜绝未命中切片凭空捏造时间戳；
+      // - 显著性门禁：切片得分必须高出全视频均值至少 TEMPORAL_CHUNK_MIN_PROMINENCE，证明为瞬态高光实体而非背景色偏；
+      // - 杜绝视频中根本不存在该实体（如黄色跑车、蓝色跑车）时，因某个无关切片（如黄色衣服）碰巧得分稍高而强行假阳性命中。
       for (const agg of parentAggMap.values()) {
         if (agg.chunks.length === 0) continue
         agg.chunks.sort((a, b) => b.score - a.score)
         const topChunk = agg.chunks[0]
-        agg.bestChunkIndex = topChunk.chunkIndex
-        agg.bestChunkScore = topChunk.score
+
+        const meanScore = agg.chunks.reduce((acc, c) => acc + c.score, 0) / agg.chunks.length
+        const prominence = topChunk.score - meanScore
+        const isConfident = topChunk.score >= TEMPORAL_CHUNK_MIN_CONFIDENCE
+        const isProminent = agg.chunks.length <= 2 || prominence >= TEMPORAL_CHUNK_MIN_PROMINENCE
+
+        if (isConfident && isProminent) {
+          agg.bestChunkIndex = topChunk.chunkIndex
+          agg.bestChunkScore = topChunk.score
+        } else {
+          agg.bestChunkIndex = undefined
+          agg.bestChunkScore = undefined
+        }
       }
 
       // 按最高得分降序重排
