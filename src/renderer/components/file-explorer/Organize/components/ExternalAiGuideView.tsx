@@ -10,7 +10,6 @@ interface ExternalAiGuideViewProps {
   files: any[]
   highFrequencyTags?: any
   workspaceDirectoryPath?: string
-  onNext: () => void
   onBack: () => void
 }
 
@@ -48,7 +47,6 @@ const AI_PLATFORMS = [
 export const ExternalAiGuideView: React.FC<ExternalAiGuideViewProps> = ({
   files = [],
   highFrequencyTags,
-  onNext,
   onBack
 }) => {
   const [promptText, setPromptText] = useState('')
@@ -232,7 +230,7 @@ export const ExternalAiGuideView: React.FC<ExternalAiGuideViewProps> = ({
                 {
                   step: 4,
                   title: t('导入并极速智能归类'),
-                  desc: t('复制满意方案的代码块，点击下方【已生成，下一步】导入完成秒级归类。')
+                  desc: t('复制满意方案的代码块，点击右上角【已生成，下一步】导入完成秒级归类。')
                 }
               ].map(item => (
                 <div key={item.step} className="flex items-start gap-3">
@@ -287,17 +285,6 @@ export const ExternalAiGuideView: React.FC<ExternalAiGuideViewProps> = ({
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* 底部推进操作坞 */}
-          <div className="pt-2 shrink-0">
-            <Button
-              onClick={onNext}
-              className="w-full h-12 rounded-xl text-sm font-bold bg-cyan-600 hover:bg-cyan-700 text-white shadow-lg shadow-cyan-600/20 transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2"
-            >
-              <MaterialIcon icon="file_download" className="text-base" />
-              <span>{t('第三方 AI 已生成目录结构，下一步')}</span>
-            </Button>
           </div>
         </div>
       </div>

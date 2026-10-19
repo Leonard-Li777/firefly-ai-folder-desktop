@@ -508,6 +508,19 @@ export const Organize: React.FC = () => {
                 </Button>
               </>
             )}
+
+            {stage === 'external-ai' && (
+              <Button
+                size="sm"
+                onClick={() => openCustomForm('external-ai')}
+                className="text-xs gap-1.5 bg-primary hover:bg-primary/90 px-4 font-bold shadow-md shadow-primary/10 h-8 shrink-0"
+                title={t('第三方 AI 已生成目录结构，下一步')}
+              >
+                <MaterialIcon icon="file_download" className="text-sm shrink-0" />
+                <span className="truncate">{t('第三方 AI 已生成目录结构，下一步')}</span>
+              </Button>
+            )}
+
             {stage === 'structure' && (
               <div className="flex items-center gap-3 shrink-0 min-w-0">
                 <span
@@ -839,7 +852,6 @@ export const Organize: React.FC = () => {
                               files={toOrganizeFiles}
                               highFrequencyTags={highFrequencyTags}
                               workspaceDirectoryPath={currentWorkspaceDirectory?.path || ''}
-                              onNext={() => openCustomForm('external-ai')}
                               onBack={() => setStage('mode-select')}
                             />
                           )}

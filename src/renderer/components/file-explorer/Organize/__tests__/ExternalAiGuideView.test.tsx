@@ -38,7 +38,6 @@ vi.mock('../../../common/Toast', () => ({
 
 describe('ExternalAiGuideView 外部 AI 引导视图组件', () => {
   const mockGeneratePrompt = vi.fn()
-  const mockOnNext = vi.fn()
   const mockOnBack = vi.fn()
 
   const sampleFiles = [
@@ -74,7 +73,6 @@ describe('ExternalAiGuideView 外部 AI 引导视图组件', () => {
       <ExternalAiGuideView
         files={sampleFiles}
         highFrequencyTags={['文档', '办公']}
-        onNext={mockOnNext}
         onBack={mockOnBack}
       />
     )
@@ -92,7 +90,6 @@ describe('ExternalAiGuideView 外部 AI 引导视图组件', () => {
       <ExternalAiGuideView
         files={sampleFiles}
         highFrequencyTags={['文档', '办公']}
-        onNext={mockOnNext}
         onBack={mockOnBack}
       />
     )
@@ -108,7 +105,6 @@ describe('ExternalAiGuideView 外部 AI 引导视图组件', () => {
       <ExternalAiGuideView
         files={sampleFiles}
         highFrequencyTags={['文档', '办公']}
-        onNext={mockOnNext}
         onBack={mockOnBack}
       />
     )
@@ -134,7 +130,6 @@ describe('ExternalAiGuideView 外部 AI 引导视图组件', () => {
       <ExternalAiGuideView
         files={sampleFiles}
         highFrequencyTags={['文档', '办公']}
-        onNext={mockOnNext}
         onBack={mockOnBack}
       />
     )
@@ -152,31 +147,11 @@ describe('ExternalAiGuideView 外部 AI 引导视图组件', () => {
     expect(openExternalLink).toHaveBeenCalledWith('https://chatgpt.com/')
   })
 
-  it('点击下一步应当触发 onNext 呼出自定义导入弹窗', async () => {
-    render(
-      <ExternalAiGuideView
-        files={sampleFiles}
-        highFrequencyTags={['文档', '办公']}
-        onNext={mockOnNext}
-        onBack={mockOnBack}
-      />
-    )
-
-    await waitFor(() => {
-      expect(mockGeneratePrompt).toHaveBeenCalled()
-    })
-
-    const nextBtn = screen.getByText('第三方 AI 已生成目录结构，下一步')
-    fireEvent.click(nextBtn)
-    expect(mockOnNext).toHaveBeenCalled()
-  })
-
   it('点击返回应当触发 onBack 返回模式选择', async () => {
     render(
       <ExternalAiGuideView
         files={sampleFiles}
         highFrequencyTags={['文档', '办公']}
-        onNext={mockOnNext}
         onBack={mockOnBack}
       />
     )
