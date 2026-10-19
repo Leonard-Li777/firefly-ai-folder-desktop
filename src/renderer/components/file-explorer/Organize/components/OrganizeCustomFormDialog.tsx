@@ -129,12 +129,14 @@ export const OrganizeCustomFormDialog: React.FC<OrganizeCustomFormDialogProps> =
 
     let finalName = name.trim() || extractedName || ''
     if (!finalName) {
-      // 动态兜底：优先取解析后的第一级根目录名，次优取工作区名
+      // 动态兜底：若只有单一根目录则取该根目录名，若为多顶级分类并列结构则取工作区名兜底
       const parsedTree = parseStrategyToTree(finalStrategy)
-      if (parsedTree && parsedTree.length > 0 && parsedTree[0].name) {
+      if (parsedTree && parsedTree.length === 1 && parsedTree[0].name) {
         finalName = parsedTree[0].name
       } else if (workspacePath) {
         finalName = defaultFallbackName
+      } else if (parsedTree && parsedTree.length > 0 && parsedTree[0].name) {
+        finalName = parsedTree[0].name
       } else {
         finalName = t('自定义整理方案')
       }

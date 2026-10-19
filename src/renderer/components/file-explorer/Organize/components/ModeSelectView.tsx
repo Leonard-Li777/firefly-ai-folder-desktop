@@ -188,7 +188,7 @@ export function ModeSelectView({
                     </div>
                     {isAdvancedAiEnabled ? (
                       <span className="text-[11px] font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2.5 py-0.5 rounded-full border border-purple-500/20 flex items-center gap-1">
-                        <MaterialIcon icon="neurology" className="text-xs" />
+                        <MaterialIcon icon="bolt" className="text-xs" />
                         {t('需高级AI引擎')}
                       </span>
                     ) : (

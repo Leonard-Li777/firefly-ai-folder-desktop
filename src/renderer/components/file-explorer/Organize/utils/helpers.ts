@@ -625,20 +625,52 @@ export function extractVirtualDirName(rawText: string): { name?: string; cleanSt
 }
 
 /**
+ * 若目录树仅包含唯一的顶层根节点，且该节点与虚拟目录名称同名（或高度匹配）且自身拥有子目录，
+ * 则自动剥离该冗余的单根目录，将其子目录提升为顶层根节点（消除多余的单根嵌套包装）。
+ */
+export function unwrapRedundantRoot(
+  tree: VirtualDirectoryNode[] | null,
+  virtualDirName?: string
+): VirtualDirectoryNode[] | null {
+  if (!tree || tree.length !== 1) return tree
+  const singleRoot = tree[0]
+  if (!singleRoot.subdirectories || singleRoot.subdirectories.length === 0) return tree
+
+  if (virtualDirName && virtualDirName.trim()) {
+    const vName = virtualDirName.trim().toLowerCase()
+    const rootName = (singleRoot.name || '').trim().toLowerCase()
+    const cleanVName = vName.replace(/(?:方案|目录|整理|架构|规划|视角)$/, '')
+    const cleanRootName = rootName.replace(/(?:方案|目录|整理|架构|规划|视角)$/, '')
+    if (rootName === vName || (cleanVName && cleanRootName && cleanRootName === cleanVName)) {
+      return singleRoot.subdirectories.map(sub => ({
+        ...sub,
+        parent: null
+      }))
+    }
+  }
+  return tree
+}
+
+/**
  * 解析用户编辑的目录树文本为 VirtualDirectoryNode[] 结构
  * 支持格式：markdown 列表格式，如：
  * - 办公文档
  *   - 行政人事
  *     - 考勤记录
  * @param strategyText 用户输入的策略文本
+ * @param virtualDirName 可选的虚拟目录方案名称，用于自动剥离冗余的同名单根节点
  * @returns 解析后的目录树，解析失败返回 null
  */
-export function parseStrategyToTree(strategyText: string): VirtualDirectoryNode[] | null {
+export function parseStrategyToTree(
+  strategyText: string,
+  virtualDirName?: string
+): VirtualDirectoryNode[] | null {
   if (!strategyText || !strategyText.trim()) return null
 
   // 前置提取首行虚拟目录名，以获取干净的策略目录树文本
-  const { cleanStrategy } = extractVirtualDirName(strategyText)
+  const { name: extractedName, cleanStrategy } = extractVirtualDirName(strategyText)
   const targetText = cleanStrategy || strategyText
+  const activeVDirName = virtualDirName || extractedName
 
   const lines = targetText.split('\n')
   const result: VirtualDirectoryNode[] = []
@@ -730,7 +762,8 @@ export function parseStrategyToTree(strategyText: string): VirtualDirectoryNode[
     stack.push({ node: newNode, indent })
   }
 
-  return result.length > 0 ? result : null
+  const unwrapped = unwrapRedundantRoot(result, activeVDirName)
+  return unwrapped && unwrapped.length > 0 ? unwrapped : result.length > 0 ? result : null
 }
 
 /** 获取文件唯一的比对 Key（兼容下划线/小驼峰/指纹/路径/名称形态） */

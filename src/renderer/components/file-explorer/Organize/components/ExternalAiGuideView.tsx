@@ -26,7 +26,7 @@ const AI_PLATFORMS = [
     name: 'OpenAI · ChatGPT',
     desc: '全球顶尖大模型，架构逻辑严密',
     url: 'https://chatgpt.com/',
-    icon: 'neurology',
+    icon: 'bolt',
     badge: '强大'
   },
   {
