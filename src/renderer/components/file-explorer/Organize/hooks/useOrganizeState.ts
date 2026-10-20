@@ -555,7 +555,7 @@ export function useOrganizeState() {
             setRegenerateFiles(files)
           }
 
-          setShowCustomForm(true)
+          setStage('custom-tree')
         } catch (e) {
           logger.error(LogCategory.FILE_ORGANIZATION, 'Failed to load regenerate data:', e)
         }
@@ -732,8 +732,7 @@ export function useOrganizeState() {
     if (plan) {
       navigate('/organize', { replace: true, state: null })
       setInitialVDirInfo({ name: plan.name, strategy: plan.strategy })
-      setStage('candidates')
-      setShowCustomForm(true)
+      setStage('custom-tree')
     }
   }, [location.state])
 
@@ -741,7 +740,6 @@ export function useOrganizeState() {
   const [candidates, setCandidates] = useState<any[]>([])
   const [isGeneratingCandidates, setIsGeneratingCandidates] = useState(false)
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null)
-  const [showCustomForm, setShowCustomForm] = useState(false)
   const hasAttemptedCandidatesRef = useRef(false)
 
   // ─── 目录树草稿 & 整理进度 (由 store 统一托管持久化) ────────────────────────────────
@@ -836,7 +834,7 @@ export function useOrganizeState() {
 
     setStage('mode-select')
     setViewMode('grid')
-    setOrganizeMode('fast-organize')
+    setOrganizeMode(undefined)
     setIncrementalVdId(null)
     setIncrementalFiles([])
     setIsLimitPredict(false)
@@ -845,7 +843,6 @@ export function useOrganizeState() {
     setCandidates([])
     setIsGeneratingCandidates(false)
     setSelectedCandidate(null)
-    setShowCustomForm(false)
     hasAttemptedCandidatesRef.current = false
     setDraftTree([])
     setInitialDraftTree([])
@@ -1127,6 +1124,8 @@ export function useOrganizeState() {
         setStage('smart-clustering')
       } else if (mode === 'external-ai') {
         setStage('external-ai')
+      } else if (mode === 'custom-tree') {
+        setStage('custom-tree')
       } else {
         setStage('candidates')
       }
@@ -1322,9 +1321,17 @@ export function useOrganizeState() {
 
   // ─── 自定义方案提交 → 直接解析目录树 → 进入 State 2 ──────────────────────
   const handleCustomSubmit = useCallback(
-    async (name: string, strategy: string, targetMode?: OrganizeMode) => {
-      const isFromExternalAi = targetMode === 'external-ai' || organizeMode === 'external-ai'
-      const activeMode: OrganizeMode = isFromExternalAi ? 'fine-organize' : targetMode || organizeMode || 'fast-organize'
+    async (
+      name: string,
+      strategy: string,
+      treeOrMode?: VirtualDirectoryNode[] | OrganizeMode
+    ) => {
+      const isFromExternalAi =
+        treeOrMode === 'external-ai' || organizeMode === 'external-ai'
+      const targetMode = typeof treeOrMode === 'string' ? treeOrMode : undefined
+      const activeMode: OrganizeMode = isFromExternalAi
+        ? 'fine-organize'
+        : targetMode || organizeMode || 'custom-tree'
       setOrganizeMode(activeMode)
 
       const candidate = { name, strategy }
@@ -1333,20 +1340,24 @@ export function useOrganizeState() {
       setDraft({
         name,
         strategy,
-        source: isFromExternalAi ? 'external-ai' : 'user-defined'
+        source: isFromExternalAi ? 'external-ai' : 'custom-tree'
       })
-      setShowCustomForm(false)
       setStage('structure')
 
       setIsGeneratingTree(true)
       setDraftTree([])
 
       try {
-        const parsedTree = parseStrategyToTree(strategy)
-        const finalCustomTree =
-          parsedTree && parsedTree.length > 0
-            ? parsedTree
-            : buildSkeletonTree(dimensionGroups, activeMode)
+        let finalCustomTree: VirtualDirectoryNode[] | null = null
+        if (Array.isArray(treeOrMode) && treeOrMode.length > 0) {
+          finalCustomTree = treeOrMode
+        } else {
+          const parsedTree = parseStrategyToTree(strategy, name.trim())
+          finalCustomTree =
+            parsedTree && parsedTree.length > 0
+              ? parsedTree
+              : buildSkeletonTree(dimensionGroups, activeMode)
+        }
 
         setDraftTree(finalCustomTree)
       } catch (e) {
@@ -1495,8 +1506,10 @@ export function useOrganizeState() {
       const shouldUseCosineMatching =
         organizeMode === 'identity-blueprint' ||
         organizeMode === 'fine-organize' ||
+        organizeMode === 'custom-tree' ||
         (draft as any)?.source === 'identity-blueprint' ||
         (draft as any)?.source === 'external-ai' ||
+        (draft as any)?.source === 'custom-tree' ||
         (draft as any)?.source === 'draft' ||
         (draft as any)?.source === 'user-defined'
       if (shouldUseCosineMatching) {
@@ -2557,7 +2570,6 @@ export function useOrganizeState() {
       ((vdIdParam && actionParam !== 'regenerate' && modeParam !== 'incremental-organize') ||
         (currentVDir &&
           currentVDir.source !== 'draft' &&
-          organizeMode !== 'fast-organize' &&
           organizeMode !== 'fine-organize'))
     )
 
@@ -2590,12 +2602,24 @@ export function useOrganizeState() {
       setStage('mode-select')
       return
     }
+    if (stage === 'custom-tree') {
+      if (draft?.source === 'external-ai' || organizeMode === 'external-ai') {
+        setStage('external-ai')
+      } else {
+        setStage('mode-select')
+      }
+      return
+    }
 
     const isVDirOrDraft = Boolean(currentVDir?.id || organizeMode === 'incremental-organize')
 
     if (stage === 'structure') {
+      if (organizeMode === 'custom-tree' || draft?.source === 'custom-tree' || draft?.source === 'user-defined') {
+        setStage('custom-tree')
+        return
+      }
       if (draft?.source === 'external-ai') {
-        setStage('external-ai')
+        setStage('custom-tree')
         return
       }
       if (isVDirOrDraft) {
@@ -3026,8 +3050,6 @@ export function useOrganizeState() {
     generateCandidates,
     selectedCandidate,
     setSelectedCandidate,
-    showCustomForm,
-    setShowCustomForm,
     draftTree,
     setDraftTree,
     draft,

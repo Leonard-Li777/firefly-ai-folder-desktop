@@ -11,7 +11,7 @@ import { EditStrategyDialog } from './components/EditStrategyDialog'
 import { EmptyState } from '../../common/EmptyState'
 import { FileList } from '../FileList'
 import { FileExplorerLayout } from '../FileExplorerLayout'
-import { OrganizeCustomFormDialog } from './components/OrganizeCustomFormDialog'
+import { CustomTreeView } from './components/CustomTreeView'
 import { PersistentTooltip } from '../../common/PersistentTooltip'
 import { CardSizePopover } from '../../common/CardSizePopover'
 import { MiniViewDisplaySettingsPopover } from '../../common/MiniViewDisplaySettingsPopover'
@@ -76,8 +76,6 @@ export const Organize: React.FC = () => {
     generateCandidates,
     selectedCandidate,
     setSelectedCandidate,
-    showCustomForm,
-    setShowCustomForm,
     draftTree,
     setDraftTree,
     draft,
@@ -203,12 +201,7 @@ export const Organize: React.FC = () => {
       organizeMode !== 'fast-organize' &&
       organizeMode !== 'fine-organize')
 
-  const [customFormMode, setCustomFormMode] = useState<OrganizeMode>('fast-organize')
 
-  const openCustomForm = useCallback((mode: OrganizeMode) => {
-    setCustomFormMode(mode)
-    setShowCustomForm(true)
-  }, [setShowCustomForm])
 
   const hasClassifiedInTree = useMemo(() => {
     const tree = finalTree?.length ? finalTree : draftTree
@@ -472,7 +465,7 @@ export const Organize: React.FC = () => {
               </Button>
             )}
 
-            {stage === 'candidates' && (
+            {stage === 'candidates' && organizeMode === 'fine-organize' && (
               <>
                 <PersistentTooltip
                   id="organize_regenerate_hint"
@@ -508,41 +501,20 @@ export const Organize: React.FC = () => {
                   <MaterialIcon icon="tips_and_updates" className="text-sm shrink-0" />
                   <span className="truncate">{t('指导方案生成')}</span>
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => openCustomForm('fast-organize')}
-                  disabled={isGeneratingCandidates}
-                  className={cn(
-                    'text-xs gap-1 h-8 shrink-0 font-medium',
-                    organizeMode === 'fast-organize' && 'border-emerald-500/50 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10'
-                  )}
-                  title={t('快速整理自定义目录树')}
-                >
-                  <MaterialIcon icon="bolt" className="text-sm shrink-0 text-emerald-500" />
-                  <span className="truncate">{t('快速整理自定义目录树')}</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => openCustomForm('fine-organize')}
-                  disabled={isGeneratingCandidates}
-                  className={cn(
-                    'text-xs gap-1 h-8 shrink-0 font-medium',
-                    organizeMode === 'fine-organize' && 'border-purple-500/50 text-purple-600 dark:text-purple-400 bg-purple-500/5 hover:bg-purple-500/10'
-                  )}
-                  title={t('精细整理自定义目录树')}
-                >
-                  <MaterialIcon icon="psychology" className="text-sm shrink-0 text-purple-500" />
-                  <span className="truncate">{t('精细整理自定义目录树')}</span>
-                </Button>
               </>
             )}
 
             {stage === 'external-ai' && (
               <Button
                 size="sm"
-                onClick={() => openCustomForm('external-ai')}
+                onClick={() => {
+                  setDraft({
+                    name: '',
+                    strategy: '',
+                    source: 'external-ai'
+                  })
+                  setStage('custom-tree')
+                }}
                 className="text-xs gap-1.5 bg-primary hover:bg-primary/90 px-4 font-bold shadow-md shadow-primary/10 h-8 shrink-0"
                 title={t('第三方 AI 已生成目录结构，下一步')}
               >
@@ -888,6 +860,19 @@ export const Organize: React.FC = () => {
                             />
                           )}
 
+                          {stage === 'custom-tree' && (
+                            <CustomTreeView
+                              initialName={initialVDirInfo?.name || draft?.name}
+                              initialStrategy={initialVDirInfo?.strategy || draft?.strategy}
+                              workspaceDirectoryPath={currentWorkspaceDirectory?.path || ''}
+                              isExternalAi={draft?.source === 'external-ai' || organizeMode === 'external-ai'}
+                              onBack={handleBack}
+                              onSubmit={(name, strategy, tree) => {
+                                handleCustomSubmit(name, strategy, tree)
+                              }}
+                            />
+                          )}
+
                           {stage === 'candidates' && (
                             organizeMode === 'identity-blueprint' ? (
                               <IdentityBlueprintSelectView
@@ -989,15 +974,7 @@ export const Organize: React.FC = () => {
           )}
         </div>
 
-        <OrganizeCustomFormDialog
-          open={showCustomForm}
-          onClose={() => setShowCustomForm(false)}
-          onSubmit={handleCustomSubmit}
-          initialName={initialVDirInfo?.name}
-          initialStrategy={initialVDirInfo?.strategy}
-          workspacePath={currentWorkspaceDirectory?.path}
-          targetMode={customFormMode}
-        />
+
 
         {showEditStrategy && (
           <EditStrategyDialog

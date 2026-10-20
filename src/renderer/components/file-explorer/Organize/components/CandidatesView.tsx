@@ -231,7 +231,7 @@ export function CandidatesView({
           <MaterialIcon icon="auto_awesome" className="text-primary animate-pulse" />
           <span>{t('AI 精细规划目录结构直选')}</span>{' '}
           <span className="ml-1 text-xs px-2.5 py-0.5 rounded-full bg-purple-500/15 text-purple-600 dark:text-purple-400 font-bold border border-purple-500/30">
-            {organizeMode === 'fast-organize' ? t('快速整理') : t('精细整理')}
+            {t('由文件推导目录树')}
           </span>
         </h2>
         {isLoading && loadingSeconds >= 15 && (

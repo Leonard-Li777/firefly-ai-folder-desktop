@@ -32,7 +32,7 @@ vi.mock('../../../common/Toast', () => ({
   }
 }))
 
-describe('ModeSelectView 2x2 对称网格与高级 AI 门禁', () => {
+describe('ModeSelectView 2+3 结构化网格与高级 AI 门禁', () => {
   const mockOnSelectMode = vi.fn()
 
   beforeEach(() => {
@@ -44,13 +44,14 @@ describe('ModeSelectView 2x2 对称网格与高级 AI 门禁', () => {
     })
   })
 
-  it('应当正确渲染 4 种整理模式卡片', () => {
+  it('应当正确渲染 5 种整理模式卡片', () => {
     render(<ModeSelectView onSelectMode={mockOnSelectMode} />)
 
     expect(screen.getByText('身份蓝图')).toBeDefined()
-    expect(screen.getByText('智能聚类')).toBeDefined()
-    expect(screen.getByText('精细整理')).toBeDefined()
     expect(screen.getByText('外部AI生成目录结构')).toBeDefined()
+    expect(screen.getByText('智能聚类')).toBeDefined()
+    expect(screen.getByText('由文件推导目录树')).toBeDefined()
+    expect(screen.getByText('自定义目录树')).toBeDefined()
   })
 
   it('点击【身份蓝图】应当触发 identity-blueprint 回调', () => {
@@ -60,6 +61,13 @@ describe('ModeSelectView 2x2 对称网格与高级 AI 门禁', () => {
     expect(mockOnSelectMode).toHaveBeenCalledWith('identity-blueprint')
   })
 
+  it('点击【外部AI生成目录结构】应当触发 external-ai 模式回调', () => {
+    render(<ModeSelectView onSelectMode={mockOnSelectMode} />)
+
+    fireEvent.click(screen.getByText('外部AI生成目录结构'))
+    expect(mockOnSelectMode).toHaveBeenCalledWith('external-ai')
+  })
+
   it('点击【智能聚类】应当触发 smart-clustering 回调', () => {
     render(<ModeSelectView onSelectMode={mockOnSelectMode} />)
 
@@ -67,7 +75,7 @@ describe('ModeSelectView 2x2 对称网格与高级 AI 门禁', () => {
     expect(mockOnSelectMode).toHaveBeenCalledWith('smart-clustering')
   })
 
-  it('高级 AI 引擎就绪时，点击【精细整理】应当正常触发 fine-organize 回调并显示高中生模型建议', () => {
+  it('高级 AI 引擎就绪时，点击【由文件推导目录树】应当正常触发 fine-organize 回调并显示高中生模型建议', () => {
     useSettingsStore.setState({
       config: {
         aiServiceMode: 'local'
@@ -77,11 +85,11 @@ describe('ModeSelectView 2x2 对称网格与高级 AI 门禁', () => {
     render(<ModeSelectView onSelectMode={mockOnSelectMode} />)
 
     expect(screen.getByText(/建议使用“高中生”级别以上的模型才能获取较好效果/)).toBeDefined()
-    fireEvent.click(screen.getByText('精细整理'))
+    fireEvent.click(screen.getByText('由文件推导目录树'))
     expect(mockOnSelectMode).toHaveBeenCalledWith('fine-organize')
   })
 
-  it('高级 AI 引擎禁用时，精细整理卡片应当显示锁定标签，点击弹出 Toast 提示', () => {
+  it('高级 AI 引擎禁用时，由文件推导目录树卡片应当显示锁定标签，点击弹出 Toast 提示', () => {
     useSettingsStore.setState({
       config: {
         aiServiceMode: 'disabled'
@@ -91,17 +99,17 @@ describe('ModeSelectView 2x2 对称网格与高级 AI 门禁', () => {
     render(<ModeSelectView onSelectMode={mockOnSelectMode} />)
 
     expect(screen.getByText('需开启高级AI引擎')).toBeDefined()
-    fireEvent.click(screen.getByText('精细整理'))
+    fireEvent.click(screen.getByText('由文件推导目录树'))
     expect(mockOnSelectMode).not.toHaveBeenCalled()
     expect(toast.info).toHaveBeenCalledWith(
-      expect.stringContaining('精细整理需要高级AI引擎支持')
+      expect.stringContaining('由文件推导目录树需要高级AI引擎支持')
     )
   })
 
-  it('点击【外部AI生成目录结构】应当触发 external-ai 模式回调', () => {
+  it('点击【自定义目录树】应当触发 custom-tree 模式回调', () => {
     render(<ModeSelectView onSelectMode={mockOnSelectMode} />)
 
-    fireEvent.click(screen.getByText('外部AI生成目录结构'))
-    expect(mockOnSelectMode).toHaveBeenCalledWith('external-ai')
+    fireEvent.click(screen.getByText('自定义目录树'))
+    expect(mockOnSelectMode).toHaveBeenCalledWith('custom-tree')
   })
 })

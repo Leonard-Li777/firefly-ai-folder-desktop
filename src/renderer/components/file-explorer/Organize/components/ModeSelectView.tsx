@@ -44,7 +44,7 @@ export function ModeSelectView({
 
         {/* 模式选择网格 */}
         <div className="space-y-7">
-          {/* ==================== 分组 1：新建整理方案 (2x2 经典对称网格) ==================== */}
+          {/* ==================== 分组 1：新建整理方案 (2 + 3 结构化网格) ==================== */}
           <div className="space-y-3.5">
             <div className="flex items-center justify-between px-1">
               <div className="flex items-center gap-2">
@@ -58,6 +58,7 @@ export function ModeSelectView({
               </div>
             </div>
 
+            {/* 第一行 (2 列)：身份蓝图 + 外部AI生成目录结构 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4.5">
               {/* 1. 身份蓝图 (推荐 · 金色) */}
               <div
@@ -109,7 +110,59 @@ export function ModeSelectView({
                 </div>
               </div>
 
-              {/* 2. 智能聚类 (极速直出 · 蓝色) */}
+              {/* 2. 外部AI生成目录结构 (借力外部AI · 青色) */}
+              <div
+                onClick={() => onSelectMode('external-ai')}
+                className="group relative cursor-pointer rounded-2xl p-5 border bg-card/80 backdrop-blur-xs border-border/60 hover:border-cyan-500/60 hover:bg-cyan-500/[0.02] hover:-translate-y-1 hover:shadow-xl hover:shadow-cyan-500/5 transition-all duration-300 flex flex-col justify-between select-none overflow-hidden focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center border transition-all duration-300 bg-cyan-500/10 border-cyan-500/20 text-cyan-600 dark:text-cyan-400 group-hover:bg-gradient-to-br group-hover:from-cyan-500 group-hover:to-teal-600 group-hover:text-white group-hover:shadow-md group-hover:shadow-cyan-500/20 group-hover:scale-105">
+                      <MaterialIcon icon="travel_explore" className="text-xl" />
+                    </div>
+                    <span className="text-[11px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 px-2.5 py-0.5 rounded-full border border-cyan-500/20 flex items-center gap-1">
+                      <MaterialIcon icon="open_in_browser" className="text-xs" />
+                      {t('借力外部AI')}
+                    </span>
+                  </div>
+
+                  <div>
+                    <h4 className="text-base font-bold text-foreground group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors flex items-center gap-2">
+                      {t('外部AI生成目录结构')}
+                      <span className="text-xs text-muted-foreground font-normal">
+                        ({t('豆包/ChatGPT/Kimi · 引导与导入')})
+                      </span>
+                    </h4>
+                    <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+                      {t(
+                        '针对本地算力有限的用户，提供当前文件画像的精准结构化提示词，复制后由外部大模型规划目录结构并一键导入。'
+                      )}
+                    </p>
+                  </div>
+
+                  <div className="pt-3 border-t border-border/40 grid grid-cols-2 gap-2.5 text-[11px] text-muted-foreground font-medium">
+                    {[
+                      t('精准提示词一键复制'),
+                      t('适配外部主流大模型'),
+                      t('首行命名智能自动对齐'),
+                      t('端侧余弦秒级智能归类')
+                    ].map((feat, idx) => (
+                      <div key={idx} className="flex items-center gap-1.5">
+                        <MaterialIcon
+                          icon="check_circle"
+                          className="text-xs text-cyan-500 shrink-0"
+                        />
+                        <span>{feat}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 第二行 (3 列)：智能聚类 + 由文件推导目录树 + 自定义目录树 */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4.5">
+              {/* 3. 智能聚类 (极速直出 · 蓝色) */}
               <div
                 onClick={() => onSelectMode('smart-clustering')}
                 className="group relative cursor-pointer rounded-2xl p-5 border bg-card/80 backdrop-blur-xs border-border/60 hover:border-blue-500/60 hover:bg-blue-500/[0.02] hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 flex flex-col justify-between select-none overflow-hidden focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
@@ -158,11 +211,11 @@ export function ModeSelectView({
                 </div>
               </div>
 
-              {/* 3. 精细整理 (高级 AI · 紫色) */}
+              {/* 4. 由文件推导目录树 (高级 AI · 紫色) */}
               <div
                 onClick={() => {
                   if (!isAdvancedAiEnabled) {
-                    toast.info(t('精细整理需要高级AI引擎支持，请前往“设置 -> AI引擎配置”开启'))
+                    toast.info(t('由文件推导目录树需要高级AI引擎支持，请前往“设置 -> AI引擎配置”开启'))
                     return
                   }
                   onSelectMode('fine-organize')
@@ -208,7 +261,7 @@ export function ModeSelectView({
                           : 'text-muted-foreground'
                       )}
                     >
-                      {t('精细整理')}
+                      {t('由文件推导目录树')}
                       <span className="text-xs text-muted-foreground font-normal">
                         ({t('本地/云端大模型 · 3套目录树直选')})
                       </span>
@@ -248,47 +301,47 @@ export function ModeSelectView({
                 </div>
               </div>
 
-              {/* 4. 外部AI生成目录结构 (借力外部AI · 青色) */}
+              {/* 5. 自定义目录树 (灵活自由 · 翡翠绿) */}
               <div
-                onClick={() => onSelectMode('external-ai')}
-                className="group relative cursor-pointer rounded-2xl p-5 border bg-card/80 backdrop-blur-xs border-border/60 hover:border-cyan-500/60 hover:bg-cyan-500/[0.02] hover:-translate-y-1 hover:shadow-xl hover:shadow-cyan-500/5 transition-all duration-300 flex flex-col justify-between select-none overflow-hidden focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
+                onClick={() => onSelectMode('custom-tree')}
+                className="group relative cursor-pointer rounded-2xl p-5 border bg-card/80 backdrop-blur-xs border-border/60 hover:border-emerald-500/60 hover:bg-emerald-500/[0.02] hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-300 flex flex-col justify-between select-none overflow-hidden focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="w-11 h-11 rounded-xl flex items-center justify-center border transition-all duration-300 bg-cyan-500/10 border-cyan-500/20 text-cyan-600 dark:text-cyan-400 group-hover:bg-gradient-to-br group-hover:from-cyan-500 group-hover:to-teal-600 group-hover:text-white group-hover:shadow-md group-hover:shadow-cyan-500/20 group-hover:scale-105">
-                      <MaterialIcon icon="travel_explore" className="text-xl" />
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center border transition-all duration-300 bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400 group-hover:bg-gradient-to-br group-hover:from-emerald-500 group-hover:to-teal-600 group-hover:text-white group-hover:shadow-md group-hover:shadow-emerald-500/20 group-hover:scale-105">
+                      <MaterialIcon icon="account_tree" className="text-xl" />
                     </div>
-                    <span className="text-[11px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 px-2.5 py-0.5 rounded-full border border-cyan-500/20 flex items-center gap-1">
-                      <MaterialIcon icon="open_in_browser" className="text-xs" />
-                      {t('借力外部AI')}
+                    <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
+                      <MaterialIcon icon="bolt" className="text-xs" />
+                      {t('灵活自由')}
                     </span>
                   </div>
 
                   <div>
-                    <h4 className="text-base font-bold text-foreground group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors flex items-center gap-2">
-                      {t('外部AI生成目录结构')}
+                    <h4 className="text-base font-bold text-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors flex items-center gap-2">
+                      {t('自定义目录树')}
                       <span className="text-xs text-muted-foreground font-normal">
-                        ({t('豆包/ChatGPT/Kimi · 引导与导入')})
+                        ({t('手写/粘贴 Markdown 树 · 实时解析')})
                       </span>
                     </h4>
                     <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
                       {t(
-                        '针对本地算力有限的用户，提供当前文件画像的精准结构化提示词，复制后由外部大模型规划目录结构并一键导入。'
+                        '支持手写或粘贴 Markdown 格式的完整目录大纲，右侧实时解析渲染，端侧余弦向量秒级深度归类。'
                       )}
                     </p>
                   </div>
 
                   <div className="pt-3 border-t border-border/40 grid grid-cols-2 gap-2.5 text-[11px] text-muted-foreground font-medium">
                     {[
-                      t('精准提示词一键复制'),
-                      t('适配外部主流大模型'),
-                      t('首行命名智能自动对齐'),
-                      t('端侧余弦秒级智能归类')
+                      t('直接手写或粘贴'),
+                      t('实时层级语法解析'),
+                      t('支持外部AI方案导入'),
+                      t('端侧余弦极速归类')
                     ].map((feat, idx) => (
                       <div key={idx} className="flex items-center gap-1.5">
                         <MaterialIcon
                           icon="check_circle"
-                          className="text-xs text-cyan-500 shrink-0"
+                          className="text-xs text-emerald-500 shrink-0"
                         />
                         <span>{feat}</span>
                       </div>
@@ -431,7 +484,7 @@ export function ModeSelectView({
                 <h4 className="text-sm font-bold text-foreground">{t('暂无已保存的虚拟目录')}</h4>
                 <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
                   {t(
-                    '增量整理用于在已有虚拟目录的基础上追加新文件。您当前工作区尚未保存任何虚拟目录，请先从上方选择“快速整理”或“精细整理”完成并保存虚拟目录。'
+                    '增量整理用于在已有虚拟目录的基础上追加新文件。您当前工作区尚未保存任何虚拟目录，请先从上方选择适合的整理模式完成并保存虚拟目录。'
                   )}
                 </p>
               </div>

@@ -10,6 +10,7 @@ export type Stage =
   | 'smart-clustering'
   | 'candidates'
   | 'external-ai'
+  | 'custom-tree'
   | 'structure'
   | 'organizing'
   | 'done'
@@ -18,6 +19,7 @@ export type OrganizeMode =
   | 'identity-blueprint'
   | 'fast-organize'
   | 'fine-organize'
+  | 'custom-tree'
   | 'incremental-organize'
   | 'external-ai'
   | undefined
@@ -122,7 +124,7 @@ export const useOrganizeStore = create<OrganizeStoreState>(set => ({
   stage: 'root-mode-select',
   activeBranch: 'organize',
   visitedStages: ['root-mode-select'],
-  organizeMode: 'fast-organize',
+  organizeMode: undefined,
   selectedVDirId: null,
   currentVDir: null,
 
@@ -155,6 +157,9 @@ export const useOrganizeStore = create<OrganizeStoreState>(set => ({
       } else if (
         stage === 'mode-select' ||
         stage === 'candidates' ||
+        stage === 'custom-tree' ||
+        stage === 'external-ai' ||
+        stage === 'smart-clustering' ||
         stage === 'structure' ||
         stage === 'organizing' ||
         stage === 'done'
@@ -235,7 +240,7 @@ export const useOrganizeStore = create<OrganizeStoreState>(set => ({
       stage: 'root-mode-select',
       activeBranch: 'organize',
       visitedStages: ['root-mode-select'],
-      organizeMode: 'fast-organize',
+      organizeMode: undefined,
       selectedVDirId: null,
       currentVDir: null,
       draftTree: [],

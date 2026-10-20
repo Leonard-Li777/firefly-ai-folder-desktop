@@ -47,7 +47,6 @@ export function StageBreadcrumb({
     ((vdIdParam && actionParam !== 'regenerate' && modeParam !== 'incremental-organize') ||
       (currentVDir &&
         currentVDir.source !== 'draft' &&
-        organizeMode !== 'fast-organize' &&
         organizeMode !== 'fine-organize'))
   )
 
@@ -72,22 +71,49 @@ export function StageBreadcrumb({
     ]
   } else {
     // 默认整理主流程分支
-    const isExternalAi = stage === 'external-ai' || draft?.source === 'external-ai'
+    const isCustomTree = organizeMode === 'custom-tree' || stage === 'custom-tree' || draft?.source === 'custom-tree' || draft?.source === 'user-defined'
+    const isExternalAi = stage === 'external-ai' || draft?.source === 'external-ai' || organizeMode === 'external-ai'
     const isIdentityMode = organizeMode === 'identity-blueprint'
+
+    const intermediateSteps: Array<{ key: Stage; label: string; icon: string }> = []
+
+    if (isExternalAi) {
+      intermediateSteps.push({
+        key: 'external-ai',
+        label: t('外部AI引导'),
+        icon: 'travel_explore'
+      })
+      if (
+        stage === 'custom-tree' ||
+        stage === 'structure' ||
+        stage === 'organizing' ||
+        stage === 'done' ||
+        visitedStages.includes('custom-tree')
+      ) {
+        intermediateSteps.push({
+          key: 'custom-tree',
+          label: t('自定义目录树'),
+          icon: 'account_tree'
+        })
+      }
+    } else if (isCustomTree) {
+      intermediateSteps.push({
+        key: 'custom-tree',
+        label: t('自定义目录树'),
+        icon: 'account_tree'
+      })
+    } else {
+      intermediateSteps.push({
+        key: 'candidates',
+        label: isIdentityMode ? t('身份蓝图') : t('选择方案'),
+        icon: isIdentityMode ? 'psychology' : 'auto_awesome_motion'
+      })
+    }
+
     const organizeSteps: Array<{ key: Stage; label: string; icon: string }> = [
       homeStep,
       { key: 'mode-select', label: t('模式选择'), icon: 'auto_fix_high' },
-      isExternalAi
-        ? {
-            key: 'external-ai',
-            label: t('外部AI引导'),
-            icon: 'travel_explore'
-          }
-        : {
-            key: 'candidates',
-            label: isIdentityMode ? t('身份蓝图') : t('选择方案'),
-            icon: isIdentityMode ? 'psychology' : 'auto_awesome_motion'
-          },
+      ...intermediateSteps,
       { key: 'structure', label: t('目录微调'), icon: 'folder_open' },
       { key: 'organizing', label: t('自动归类'), icon: 'auto_fix_high' },
       { key: 'done', label: t('完成'), icon: 'check_circle' }
@@ -95,7 +121,7 @@ export function StageBreadcrumb({
 
     steps =
       organizeMode === 'incremental-organize' || currentVDir?.source === 'draft'
-        ? organizeSteps.filter(s => s.key !== 'candidates')
+        ? organizeSteps.filter(s => s.key !== 'candidates' && s.key !== 'custom-tree' && s.key !== 'external-ai')
         : organizeSteps
   }
 
@@ -117,6 +143,10 @@ export function StageBreadcrumb({
     // 外部 AI 步骤点亮
     if (key === 'external-ai') {
       return stage === 'external-ai' || visitedStages.includes('external-ai') || Boolean(draft?.source === 'external-ai')
+    }
+    // 自定义目录树步骤点亮
+    if (key === 'custom-tree') {
+      return stage === 'custom-tree' || visitedStages.includes('custom-tree') || Boolean(draftTree?.length > 0)
     }
     // 具备前置生成数据的步骤点亮
     if (key === 'candidates') {
