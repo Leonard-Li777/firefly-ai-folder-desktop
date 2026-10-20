@@ -165,7 +165,7 @@ export function StageBreadcrumb({
   }
 
   return (
-    <div className="flex items-center gap-1 text-xs shrink min-w-0 overflow-hidden">
+    <div className="flex items-center gap-1 text-xs shrink min-w-0 overflow-x-auto no-scrollbar py-0.5">
       {steps.map((step, idx) => {
         const isActive = step.key === stage
         const isLit = isStepLit(step.key)
@@ -187,7 +187,7 @@ export function StageBreadcrumb({
                 }
               }}
               className={cn(
-                'flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold transition-all duration-200 min-w-0 shrink overflow-hidden select-none',
+                'flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold transition-all duration-200 shrink-0 overflow-hidden select-none',
                 isClickable ? 'cursor-pointer' : 'cursor-not-allowed opacity-35',
                 isHome
                   ? 'bg-primary text-primary-foreground shadow-md ring-1 ring-primary/40 hover:bg-primary/90 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
