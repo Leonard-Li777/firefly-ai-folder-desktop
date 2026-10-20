@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { SmartClusteringView } from '../components/SmartClusteringView'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
+import { SmartClusteringView, SmartClusteringViewHandle } from '../components/SmartClusteringView'
 import { VirtualDirectoryNode } from '@firefly/types'
 
 // Mock 语言包
@@ -122,9 +122,11 @@ describe('SmartClusteringView Component', () => {
     })
   })
 
-  it('点击保存虚拟目录按钮应使用提示词或默认名称调用 onSaveVirtualDirectory', async () => {
+  it('经句柄保存应使用提示词或默认名称调用 onSaveVirtualDirectory', async () => {
+    const ref = React.createRef<SmartClusteringViewHandle>()
     render(
       <SmartClusteringView
+        ref={ref}
         workspaceId={1}
         workspaceDirectoryPath="/test/workspace"
         onSaveVirtualDirectory={mockSaveVirtualDirectory}
@@ -135,8 +137,9 @@ describe('SmartClusteringView Component', () => {
       expect(screen.getByText('2026年度财务')).toBeInTheDocument()
     })
 
-    const saveBtn = screen.getByText('保存为虚拟目录')
-    fireEvent.click(saveBtn)
+    await act(async () => {
+      await ref.current?.save()
+    })
 
     await waitFor(() => {
       expect(mockSaveVirtualDirectory).toHaveBeenCalledWith(
@@ -147,8 +150,10 @@ describe('SmartClusteringView Component', () => {
   })
 
   it('如果用户输入了提示词，保存时应优先采用用户提示词作为虚拟目录名称', async () => {
+    const ref = React.createRef<SmartClusteringViewHandle>()
     render(
       <SmartClusteringView
+        ref={ref}
         workspaceId={1}
         workspaceDirectoryPath="/test/workspace"
         onSaveVirtualDirectory={mockSaveVirtualDirectory}
@@ -162,11 +167,48 @@ describe('SmartClusteringView Component', () => {
     const textarea = screen.getByPlaceholderText(/如：按年份和财务归类/)
     fireEvent.change(textarea, { target: { value: '2026年Q1财务专项目录' } })
 
-    const saveBtn = screen.getByText('保存为虚拟目录')
-    fireEvent.click(saveBtn)
+    await act(async () => {
+      await ref.current?.save()
+    })
 
     await waitFor(() => {
       expect(mockSaveVirtualDirectory).toHaveBeenCalledWith('2026年Q1财务专项目录', sampleNodes)
+    })
+  })
+
+  it('保存为虚拟目录按钮不应再渲染在视图内部（已统一迁至面包屑栏右侧）', async () => {
+    render(
+      <SmartClusteringView
+        workspaceId={1}
+        workspaceDirectoryPath="/test/workspace"
+        onSaveVirtualDirectory={mockSaveVirtualDirectory}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('2026年度财务')).toBeInTheDocument()
+    })
+
+    expect(screen.queryByText('保存为虚拟目录')).toBeNull()
+  })
+
+  it('聚类完成后应经 onSaveStateChange 上报保存按钮可用态，供面包屑栏按钮同步', async () => {
+    const mockOnSaveStateChange = vi.fn()
+    render(
+      <SmartClusteringView
+        workspaceId={1}
+        workspaceDirectoryPath="/test/workspace"
+        onSaveVirtualDirectory={mockSaveVirtualDirectory}
+        onSaveStateChange={mockOnSaveStateChange}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('2026年度财务')).toBeInTheDocument()
+    })
+
+    await waitFor(() => {
+      expect(mockOnSaveStateChange).toHaveBeenLastCalledWith({ canSave: true, isSaving: false })
     })
   })
 })

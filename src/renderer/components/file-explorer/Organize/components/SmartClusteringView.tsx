@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useImperativeHandle } from 'react'
 import { VirtualDirectoryNode } from '@firefly/types'
 import { MaterialIcon, cn } from '../../../../lib/utils'
 import { Button } from '../../../ui/button'
@@ -17,11 +17,22 @@ import {
   AlertDialogTitle
 } from '../../../ui/alert-dialog'
 
+/**
+ * 智能聚类视图命令式句柄。
+ * 「保存为虚拟目录」主操作按钮已统一迁至面包屑栏右侧，保存动作经此句柄触发，
+ * 完整沿用视图内部命名规则（提示词优先、默认名兜底）与防重复保存逻辑。
+ */
+export interface SmartClusteringViewHandle {
+  save: () => void | Promise<void>
+}
+
 export interface SmartClusteringViewProps {
   workspaceId?: number
   workspaceDirectoryPath: string
   fileIds?: number[]
   onSaveVirtualDirectory: (name: string, tree: VirtualDirectoryNode[]) => Promise<void>
+  /** 保存按钮可用态/保存中态变更上报，供面包屑栏右侧按钮同步禁用与「正在保存...」文案 */
+  onSaveStateChange?: (state: { canSave: boolean; isSaving: boolean }) => void
   onBack?: () => void
 }
 
@@ -35,13 +46,17 @@ const PRESET_EXAMPLE_PROMPTS = [
   '会议纪要与周报总结'
 ]
 
-export const SmartClusteringView: React.FC<SmartClusteringViewProps> = ({
-  workspaceId,
-  workspaceDirectoryPath,
-  fileIds,
-  onSaveVirtualDirectory,
-  onBack
-}) => {
+const SmartClusteringViewInner = (
+  {
+    workspaceId,
+    workspaceDirectoryPath,
+    fileIds,
+    onSaveVirtualDirectory,
+    onSaveStateChange,
+    onBack
+  }: SmartClusteringViewProps,
+  ref: React.Ref<SmartClusteringViewHandle>
+) => {
   const [prompt, setPrompt] = useState<string>('')
   const [tree, setTree] = useState<VirtualDirectoryNode[]>([])
   const [isGenerating, setIsGenerating] = useState<boolean>(false)
@@ -291,6 +306,17 @@ export const SmartClusteringView: React.FC<SmartClusteringViewProps> = ({
     }
   }
 
+  // 暴露保存动作给面包屑栏右侧按钮（命令式触发，逻辑仍收敛在本视图内）
+  useImperativeHandle(ref, () => ({ save: handleSave }), [handleSave])
+
+  // 保存按钮可用态/保存中态上报，驱动面包屑栏按钮的禁用与「正在保存...」文案
+  useEffect(() => {
+    onSaveStateChange?.({
+      canSave: tree.length > 0 && !isGenerating && !isSaving,
+      isSaving
+    })
+  }, [tree.length, isGenerating, isSaving, onSaveStateChange])
+
   return (
     <div className="flex-1 flex flex-col md:flex-row h-full w-full overflow-hidden bg-background">
       {/* ─── 左栏：通俗直白意图输入与示例词 (Left Control Panel) ─── */}
@@ -416,21 +442,6 @@ export const SmartClusteringView: React.FC<SmartClusteringViewProps> = ({
               </span>
             )}
           </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <Button
-              onClick={handleSave}
-              disabled={tree.length === 0 || isGenerating || isSaving}
-              size="sm"
-              className="h-8 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 shadow-xs"
-            >
-              <MaterialIcon
-                icon={isSaving ? 'progress_activity' : 'bookmark_add'}
-                className={cn('text-sm', isSaving && 'animate-spin')}
-              />
-              <span>{isSaving ? t('正在保存...') : t('保存为虚拟目录')}</span>
-            </Button>
-          </div>
         </div>
 
         {/* 目录树展示与内联微调区 */}
@@ -506,3 +517,11 @@ export const SmartClusteringView: React.FC<SmartClusteringViewProps> = ({
     </div>
   )
 }
+
+/**
+ * 智能聚类视图。保存主操作按钮由面包屑栏右侧统一承载，
+ * 故以 forwardRef 暴露 save 句柄并上报按钮可用态。
+ */
+export const SmartClusteringView = React.forwardRef<SmartClusteringViewHandle, SmartClusteringViewProps>(
+  SmartClusteringViewInner
+)

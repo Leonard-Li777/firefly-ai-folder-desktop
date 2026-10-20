@@ -34,7 +34,7 @@ import { BatchTagView } from './components/BatchTagView'
 import { BatchDuplicateView } from './components/BatchDuplicateView'
 import { ModeSelectView } from './components/ModeSelectView'
 import { ExternalAiGuideView } from './components/ExternalAiGuideView'
-import { SmartClusteringView } from './components/SmartClusteringView'
+import { SmartClusteringView, SmartClusteringViewHandle } from './components/SmartClusteringView'
 import { IdentityBlueprintSelectView } from './components/IdentityBlueprintSelectView'
 import { CandidatesView } from './components/CandidatesView'
 import { StructureView } from './components/StructureView'
@@ -169,6 +169,15 @@ export const Organize: React.FC = () => {
   const [inspectedFile, setInspectedFile] = useState<any | null>(null)
   const [duplicateSelectedCount, setDuplicateSelectedCount] = useState<number>(0)
   const [isDuplicateProcessing, setIsDuplicateProcessing] = useState<boolean>(false)
+
+  // 智能聚类「保存为虚拟目录」主操作按钮已统一迁至面包屑栏右侧：
+  // 动作经 ref 句柄命令式触发（保留视图内提示词优先/默认名兜底与防重复保存逻辑），
+  // 可用态/保存中态由视图经 onSaveStateChange 上报后同步按钮禁用与文案
+  const smartClusteringRef = useRef<SmartClusteringViewHandle>(null)
+  const [smartClusterSaveState, setSmartClusterSaveState] = useState<{
+    canSave: boolean
+    isSaving: boolean
+  }>({ canSave: false, isSaving: false })
 
   // 始终持有最新 inspectedFile 的引用，用于“点击已选中文件则取消选中”的可靠判断，
   // 避免依赖 FileExplorerLayout 受控 selectedIds 同步的竞态延迟
@@ -440,6 +449,27 @@ export const Organize: React.FC = () => {
                   </span>
                 </Button>
               </>
+            )}
+
+            {stage === 'smart-clustering' && (
+              <Button
+                size="sm"
+                onClick={() => smartClusteringRef.current?.save()}
+                disabled={!smartClusterSaveState.canSave}
+                className="text-xs gap-1.5 bg-primary hover:bg-primary/90 px-4 font-bold shadow-md shadow-primary/10 h-8 shrink-0"
+                title={t('保存为虚拟目录')}
+              >
+                <MaterialIcon
+                  icon={smartClusterSaveState.isSaving ? 'sync' : 'bookmark_add'}
+                  className={cn(
+                    'text-sm shrink-0',
+                    smartClusterSaveState.isSaving && 'animate-spin'
+                  )}
+                />
+                <span className="truncate">
+                  {smartClusterSaveState.isSaving ? t('正在保存...') : t('保存为虚拟目录')}
+                </span>
+              </Button>
             )}
 
             {stage === 'candidates' && (
@@ -839,10 +869,12 @@ export const Organize: React.FC = () => {
 
                           {stage === 'smart-clustering' && (
                             <SmartClusteringView
+                              ref={smartClusteringRef}
                               workspaceId={currentWorkspaceDirectory?.id}
                               workspaceDirectoryPath={currentWorkspaceDirectory?.path || ''}
                               fileIds={toOrganizeFiles.map(f => f.id)}
                               onSaveVirtualDirectory={handleSaveSmartClusteringVDir}
+                              onSaveStateChange={setSmartClusterSaveState}
                               onBack={() => setStage('mode-select')}
                             />
                           )}
