@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useMemo, useDeferredValue } from 'react'
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useDeferredValue,
+  forwardRef,
+  useImperativeHandle
+} from 'react'
 import { VirtualDirectoryNode } from '@firefly/types'
 import { MaterialIcon, cn } from '../../../../lib/utils'
 import { Button } from '../../../ui/button'
@@ -7,6 +14,11 @@ import { Textarea } from '../../../ui/textarea'
 import { t } from '@app/languages'
 import { extractVirtualDirName, parseStrategyToTree, sanitizeDirectoryName } from '../utils/helpers'
 
+export interface CustomTreeViewHandle {
+  /** 命令式触发提交（供面包屑栏「下一步」按钮调用） */
+  submit: () => void
+}
+
 interface CustomTreeViewProps {
   initialName?: string
   initialStrategy?: string
@@ -14,6 +26,8 @@ interface CustomTreeViewProps {
   isExternalAi?: boolean
   onBack: () => void
   onSubmit: (name: string, strategy: string, tree: VirtualDirectoryNode[]) => void
+  /** 上报「下一步」按钮可用态，驱动面包屑栏按钮禁用 */
+  onCanSubmitChange?: (canSubmit: boolean) => void
 }
 
 const DEFAULT_STRATEGY = `以办公文员视角，按以下目录结构整理文档：
@@ -133,14 +147,8 @@ const clearDraft = (workspacePath?: string) => {
   } catch {}
 }
 
-export const CustomTreeView: React.FC<CustomTreeViewProps> = ({
-  initialName = '',
-  initialStrategy = '',
-  workspaceDirectoryPath,
-  isExternalAi = false,
-  onBack,
-  onSubmit
-}) => {
+export const CustomTreeView = forwardRef<CustomTreeViewHandle, CustomTreeViewProps>(
+  ({ initialName = '', initialStrategy = '', workspaceDirectoryPath, isExternalAi = false, onBack, onSubmit, onCanSubmitChange }, ref) => {
   const defaultFallbackName = workspaceDirectoryPath
     ? `${workspaceDirectoryPath.replace(/[/\\]$/, '').split(/[/\\]/).pop() || ''} ${t('整理方案')}`
     : t('自定义整理方案')
@@ -230,6 +238,11 @@ export const CustomTreeView: React.FC<CustomTreeViewProps> = ({
   const dirCount = useMemo(() => countDirectories(parsedTree), [parsedTree])
   const canSubmit = parsedTree.length > 0
 
+  // 向父级上报「下一步」可用态（面包屑栏按钮禁用态由此驱动）
+  useEffect(() => {
+    onCanSubmitChange?.(canSubmit)
+  }, [canSubmit, onCanSubmitChange])
+
   const handleResetSample = () => {
     setName(initialName || defaultFallbackName)
     setStrategy(DEFAULT_STRATEGY)
@@ -280,6 +293,17 @@ export const CustomTreeView: React.FC<CustomTreeViewProps> = ({
     }
     onSubmit(cleanSafeName, finalStrategy, parsedTree)
   }
+
+  // 暴露 submit 句柄：面包屑栏「下一步」按钮命令式触发，命名/草稿保存逻辑仍收敛在视图内
+  useImperativeHandle(
+    ref,
+    () => ({
+      submit: () => handleSubmit()
+    }),
+    // handleSubmit 依赖的均为渲染期内状态，此处按渲染快照捕获
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [name, strategy, isExternalAi, isDirty, parsedTree, workspaceDirectoryPath, onSubmit]
+  )
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden p-6 md:p-8 bg-background">
@@ -454,8 +478,8 @@ export const CustomTreeView: React.FC<CustomTreeViewProps> = ({
             )}
           </div>
 
-          {/* 底部操作条 */}
-          <div className="pt-4 mt-3 border-t border-border/40 flex items-center justify-between shrink-0">
+          {/* 底部状态条（主操作按钮已统一至面包屑栏右侧） */}
+          <div className="pt-4 mt-3 border-t border-border/40 flex items-center shrink-0">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <MaterialIcon
                 icon={canSubmit ? 'check_circle' : 'info'}
@@ -467,34 +491,10 @@ export const CustomTreeView: React.FC<CustomTreeViewProps> = ({
                   : t('请输入至少一个有效目录后继续')}
               </span>
             </div>
-
-            <div className="flex items-center gap-3">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={onBack}
-                className="rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground"
-              >
-                {t('取消')}
-              </Button>
-              <Button
-                type="button"
-                disabled={!canSubmit}
-                onClick={() => handleSubmit()}
-                className={cn(
-                  'rounded-xl text-xs font-bold px-5 h-9 shadow-md transition-all active:scale-[0.98] gap-1.5',
-                  canSubmit
-                    ? 'bg-primary hover:bg-primary/95 text-primary-foreground shadow-primary/20'
-                    : 'opacity-50 cursor-not-allowed'
-                )}
-              >
-                <span>{t('下一步：微调目录结构')}</span>
-                <MaterialIcon icon="arrow_forward" className="text-sm" />
-              </Button>
-            </div>
           </div>
         </div>
       </div>
     </div>
   )
-}
+})
+CustomTreeView.displayName = 'CustomTreeView'
