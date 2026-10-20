@@ -1128,10 +1128,23 @@ export class FileProcessor {
 
         this.updateItemStatus(item.id, 'analyzing', 98)
 
-        const rawCoreSmartName = dimResult?.smartName || enhancedInfo.smartName || ''
+        // AI 智能名占位符模板回吐防护（缺陷实证 2026-10-20：.lnk 文件被端侧模型
+        // 按提示词「【形态】主体」模板逐字命名为"[形态]主体(n)"）。
+        // 本地 AI 链路历史未过 cleanSmartName 失败检测（云端 save-cloud-result 一直有），
+        // 此处统一补齐：命中失败特征（[领域]/【形态】/主体(n) 等）即视为 AI 未产出
+        // 可用核心名，回落机器命名或原文件名，coreNameSource 同步降级保证口径真实。
+        const originalStemName = path.basename(filePath, path.extname(filePath))
+        const aiSmartNameCleaned = dimResult?.smartName
+          ? cleanSmartName(dimResult.smartName, path.basename(filePath))
+              .replace(/\.[a-zA-Z0-9]{1,10}$/i, '')
+              .trim()
+          : ''
+        // cleanSmartName 命中失败特征时回退为原文件名；与原名一致即视为无可用 AI 核心名
+        const hasUsableAiSmartName = Boolean(aiSmartNameCleaned) && aiSmartNameCleaned !== originalStemName
+        const rawCoreSmartName = (hasUsableAiSmartName ? aiSmartNameCleaned : enhancedInfo.smartName) || ''
         // 核心名来源：stage3 高级AI引擎语言模型命名 → 'ai'；Omni 5W 造句 → 'machine'；
         // 二者皆无（回退到原始文件名）→ null
-        const coreNameSource: SmartNameSource | null = dimResult?.smartName
+        const coreNameSource: SmartNameSource | null = hasUsableAiSmartName
           ? 'ai'
           : enhancedInfo.smartName
             ? 'machine'
@@ -2190,7 +2203,7 @@ export class FileProcessor {
       // 背景（2026-10-14 定性）：CPU 阶段结束时 Omni 感知的 fact_tags / fused_tags / visual_tags
       // 已全部就绪（预检管线日志可证），但 full / quick_name 模式的标签落库点历史上只存在于
       // **AI 阶段之后**（executeProTagReconciliation 在 processLocalAnalysis 成功返回后调用）。
-      // 一旦 AI 阶段失败并被 Tier 1 静默降级（如质量评分返回「缺少choices字段」），
+      // 一旦 AI 阶段超时失败并被 Tier 1 静默降级（如超大 PDF 推理超时），
       // 该落库点被整段跳过，导致：
       //   - file_tag_relations 全表为空（标签在内存里算完即丢弃，日志有、面板无）；
       //   - workspace_files.is_analyzed 保持 0，属性面板按 is_analyzed 门控连「无标签」提示都不渲染。
@@ -2201,7 +2214,7 @@ export class FileProcessor {
           // 强制重新分析时清空该文件的旧标签关联：一次性动作，必须落在 CPU 阶段「落库之前」。
           // 绝不可放在 AI（GPU）阶段 —— 并行流水线的 CPU 与 GPU 是两次独立 processFile 调用且
           // 共享同一 item，forceReanalyze 在 GPU 阶段仍为 true，若在 GPU 阶段清空，会把 CPU 阶段
-          // 刚落库的新标签全部删除；随后 AI 阶段一旦失败并被 Tier 1 静默降级（不再重新落库），
+          // 刚落库的新标签全部删除；随后 AI 阶段一旦超时失败并被 Tier 1 静默降级（不再重新落库），
           // 标签将永久丢失，表现为「日志里标签齐全、属性面板一个标签都不显示」。
           if (item.forceReanalyze === true) {
             try {
@@ -2503,13 +2516,26 @@ export class FileProcessor {
 
       this.updateItemStatus(item.id, 'analyzing', 98)
 
+      // AI 智能名占位符模板回吐防护（与 GPU 复用分支同口径，缺陷实证 2026-10-20：
+      // 端侧模型把提示词「【形态】主体」模板逐字回吐成"[形态]主体(n)"）。
+      // 命中 cleanSmartName 失败检测（[领域]/【形态】/主体(n) 等）即视为 AI 未产出
+      // 可用核心名，回落机器命名或原文件名，核心名来源同步降级。
+      const originalStemNameMain = path.basename(filePath, path.extname(filePath))
+      const aiSmartNameCleanedMain = dimResult?.smartName
+        ? cleanSmartName(dimResult.smartName, path.basename(filePath))
+            .replace(/\.[a-zA-Z0-9]{1,10}$/i, '')
+            .trim()
+        : ''
+      const hasUsableAiSmartNameMain =
+        Boolean(aiSmartNameCleanedMain) && aiSmartNameCleanedMain !== originalStemNameMain
+
       // ========== 保存本地分析结果 ==========
       const { workspaceFile } = await saveLocalAnalysisResult(
         item,
         fileFingerprint,
         processResult,
         magikaCategory,
-        dimResult?.smartName || enhancedSmartName,
+        hasUsableAiSmartNameMain ? aiSmartNameCleanedMain : enhancedSmartName,
         enhancedFileType,
         thumbnailRelativePath || undefined,
         currentWorkspaceId,
@@ -2524,7 +2550,7 @@ export class FileProcessor {
         stage1Benchmark,
         // 核心名来源：stage3 LLM 命名为 'ai'，否则回退 Omni 5W 造句 'machine'，再否则原名 null。
         // 本主流程 AI 分支不套用目录命名模板（模板套用仅发生在 GPU 复用分支），故模板来源为 null。
-        dimResult?.smartName ? 'ai' : cpuNameIsMachine ? 'machine' : null,
+        hasUsableAiSmartNameMain ? 'ai' : cpuNameIsMachine ? 'machine' : null,
         null
       )
 
@@ -2604,9 +2630,13 @@ export class FileProcessor {
           throw error
         }
 
-        // slice-3 双层仲裁：仅真正的推理阶段（inference）失败（如超时、显存不足等），
-        // 若 Tier 1 已产出可读命名，则降级为 completed (analysisStage 2)。
-        // Tier 2 故障不再演化为用户可见的失败项，全部由 Tier 1（Omni）兜底。
+        // slice-3 双层仲裁：仅推理阶段（inference）**超时类**失败（如超大 PDF 推理超时），
+        // 若 Tier 1 已产出可读命名，则降级为 completed (analysisStage 2) —— 这是规格 sanction 的
+        // 唯一静默降级类（「Tier 2 超时或崩溃」，崩溃走上方瞬态重试路径）。
+        // 其余推理阶段失败（AI 接口契约违规：缺 choices / 空响应 / 结果解析失败等系统性故障）
+        // 一律落到下方 failed 终态并带上错误原因，由队列「失败/跳过原因」列 surfaced 给用户，
+        // 严禁静默降级为 completed（AGENTS.md §2.9；2026-10-20 用户报告回归护栏：
+        // analysis-error-classifier.test.ts + file-processor-stage2-persistence.test.ts）。
         if (allowTier1Fallback && tier1FallbackName) {
           logger.info(
             LogCategory.ANALYSIS_QUEUE,

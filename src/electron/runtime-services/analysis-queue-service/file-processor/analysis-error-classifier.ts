@@ -93,7 +93,22 @@ export interface AnalysisErrorClassification {
   isTransient: boolean
   /** 来源阶段（未打标为 undefined） */
   errorPhase: AnalysisErrorPhase | undefined
-  /** 是否允许 Tier 1 命名兜底静默降级 —— 仅非瞬态错误且处于推理阶段（inference）失败才允许 */
+  /**
+   * 是否允许 Tier 1 命名兜底静默降级 —— 仅推理阶段（inference）的**超时类**失败才允许。
+   *
+   * 口径依据（slice-3 双层仲裁规格，issue-tier2-slice-3）：Tier 1 静默熔断保底仅 sanction
+   * 「Tier 2 超时（默认 10s）或崩溃」：
+   * - 超时：单文件推理过慢（如超大 PDF），Tier 1 命名仍可交付，降级为 completed (stage 2)；
+   * - 崩溃：引擎进程崩溃在传输层表现为连接类瞬态错误，走 isTransientInfraError 的
+   *   pending 等待重试路径，不经过本降级。
+   *
+   * 严禁降级的其余推理阶段失败（必须 surfaced 为 failed + 错误原因）：
+   * - AI 接口契约违规：「AI响应格式异常：缺少choices字段」「收到空响应」「响应无效」
+   *   「结果解析失败」等 —— 表明 Tier 2 服务端已无法产出有效推理结果，属系统性故障，
+   *   逐文件必然复发。若静默降级，用户会在「全部 completed、无任何错误提示」的状态下
+   *   丢失整个 AI 阶段产出，正是 AGENTS.md §2.9 禁止的静默降级（2026-10-20 用户报告：
+   *   GPU 阶段 AI 接口错误未标记失败、队列无错误原因，反而标记已完成）。
+   */
   allowTier1Fallback: boolean
 }
 
@@ -108,9 +123,12 @@ export function classifyAnalysisError(err: unknown): AnalysisErrorClassification
     isTimeout,
     isTransient,
     errorPhase,
-    // 关键底线：瞬态基础设施未就绪（如 503/启动中/网络拒绝等）绝对禁止静默降级为 Stage 2 完成，
-    // 只有真正的模型推理语义失败才可由 Tier 1 兜底
-    allowTier1Fallback: errorPhase === 'inference' && !isTransient
+    // 关键底线 1：瞬态基础设施未就绪（如 503/启动中/网络拒绝等）绝对禁止静默降级为 Stage 2 完成，
+    //   必须恢复 pending 等待引擎就绪后重试；
+    // 关键底线 2：AI 接口契约违规类错误（响应格式异常/空响应/解析失败等）同上严禁降级，
+    //   它们是逐文件复发的系统性故障，必须 surfaced 为 failed + 错误原因；
+    // 仅 slice-3 规格 sanction 的「Tier 2 超时」类允许 Tier 1 兜底（崩溃走瞬态重试路径）。
+    allowTier1Fallback: errorPhase === 'inference' && isTimeout && !isTransient
   }
 }
 
