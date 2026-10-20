@@ -11,7 +11,7 @@ import { EditStrategyDialog } from './components/EditStrategyDialog'
 import { EmptyState } from '../../common/EmptyState'
 import { FileList } from '../FileList'
 import { FileExplorerLayout } from '../FileExplorerLayout'
-import { CustomTreeView } from './components/CustomTreeView'
+import { CustomTreeView, CustomTreeViewHandle } from './components/CustomTreeView'
 import { PersistentTooltip } from '../../common/PersistentTooltip'
 import { CardSizePopover } from '../../common/CardSizePopover'
 import { MiniViewDisplaySettingsPopover } from '../../common/MiniViewDisplaySettingsPopover'
@@ -180,6 +180,12 @@ export const Organize: React.FC = () => {
     canSave: boolean
     isSaving: boolean
   }>({ canSave: false, isSaving: false })
+
+  // 自定义目录树（含外部 AI 导入）「下一步：微调目录结构」主操作按钮已统一迁至面包屑栏右侧：
+  // 动作经 ref 句柄命令式触发（保留视图内命名提取/草稿保存逻辑），
+  // 可用态由视图经 onCanSubmitChange 上报后同步按钮禁用
+  const customTreeRef = useRef<CustomTreeViewHandle>(null)
+  const [customTreeCanSubmit, setCustomTreeCanSubmit] = useState<boolean>(false)
 
   // 始终持有最新 inspectedFile 的引用，用于“点击已选中文件则取消选中”的可靠判断，
   // 避免依赖 FileExplorerLayout 受控 selectedIds 同步的竞态延迟
@@ -527,6 +533,19 @@ export const Organize: React.FC = () => {
               </Button>
             )}
 
+            {stage === 'custom-tree' && (
+              <Button
+                size="sm"
+                onClick={() => customTreeRef.current?.submit()}
+                disabled={!customTreeCanSubmit}
+                className="text-xs gap-1.5 bg-primary hover:bg-primary/90 px-4 font-bold shadow-md shadow-primary/10 h-8 shrink-0"
+                title={t('下一步：微调目录结构')}
+              >
+                <MaterialIcon icon="arrow_forward" className="text-sm shrink-0" />
+                <span className="truncate">{t('下一步：微调目录结构')}</span>
+              </Button>
+            )}
+
             {stage === 'structure' && (
               <div className="flex items-center gap-3 shrink-0 min-w-0">
                 <span
@@ -866,11 +885,13 @@ export const Organize: React.FC = () => {
 
                           {stage === 'custom-tree' && (
                             <CustomTreeView
+                              ref={customTreeRef}
                               initialName={initialVDirInfo?.name || draft?.name}
                               initialStrategy={initialVDirInfo?.strategy || draft?.strategy}
                               workspaceDirectoryPath={currentWorkspaceDirectory?.path || ''}
                               isExternalAi={draft?.source === 'external-ai' || organizeMode === 'external-ai'}
                               onBack={handleBack}
+                              onCanSubmitChange={setCustomTreeCanSubmit}
                               onSubmit={(name, strategy, tree) => {
                                 handleCustomSubmit(name, strategy, tree)
                               }}
