@@ -22,6 +22,7 @@ import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { DirectoryContextService } from '../directory-context-service'
 import { unifiedModelManager } from '../../llama/unified-model-manager'
 import { omniService, OmniClusterDocument } from '../../system/omni-service'
+import { omniClient } from '../../../services/omni-client'
 import { decompressJson } from '../../../utils/text-compressor'
 
 export interface AISchemeProvider {
@@ -185,6 +186,10 @@ export class AISchemeGenerator {
               list.push(tok)
             }
           }
+          if (list.length === 0) {
+            const fallbackToken = baseName.trim() || rawName.trim() || '文件'
+            list.push(fallbackToken)
+          }
         }
       }
 
@@ -220,6 +225,63 @@ export class AISchemeGenerator {
           `[HAC智能聚类] 候选去重文档数(${docs.length})不足，平滑回退传统方案`
         )
         return null
+      }
+
+      // 2.1 端侧向量探活与 JIT 预嵌入 (ADR-0056 / JIT Fallback Embedding)：
+      // 探测哪些文档在 Omni zvec 中已拥有有效向量，若缺失则通过 batchEmbedText 毫秒级计算并回填
+      try {
+        const uniqueFpList = docs.map(d => d.fingerprint)
+        const targetDim = (await omniService.getEmbeddingProfile()) === 'gemma_unified' ? 512 : 384
+        const probeRes = await omniClient.getVectors(uniqueFpList, targetDim, 3000)
+        const existingVectorMap = new Map<string, number[]>()
+        if (probeRes?.vectors && Array.isArray(probeRes.vectors)) {
+          for (const item of probeRes.vectors) {
+            if (item.fileFingerprint && Array.isArray(item.vector) && item.vector.length === targetDim) {
+              existingVectorMap.set(item.fileFingerprint, item.vector)
+            }
+          }
+        }
+
+        const missingIndices: number[] = []
+        const missingTexts: string[] = []
+        for (let i = 0; i < docs.length; i++) {
+          const fp = docs[i].fingerprint
+          const existingVec = existingVectorMap.get(fp)
+          if (existingVec && existingVec.length === targetDim) {
+            docs[i].embedding = existingVec
+          } else {
+            missingIndices.push(i)
+            const kws = docs[i].keywords && docs[i].keywords.length > 0
+              ? docs[i].keywords.join(' ')
+              : (fileMap.get(fp)?.[0]?.name || fp)
+            missingTexts.push(kws)
+          }
+        }
+
+        if (missingTexts.length > 0) {
+          logger.info(
+            LogCategory.FILE_ORGANIZATION,
+            `[HAC智能聚类] 检测到 ${missingTexts.length} 份文档缺失持久化向量，正在执行端侧 JIT 快速嵌入...`
+          )
+          const embedRes = await omniService.batchEmbedText(missingTexts, {
+            dim: targetDim,
+            timeoutMs: 10000
+          })
+          if (embedRes?.vectors && embedRes.vectors.length === missingTexts.length) {
+            const { databaseService } = await import('../../database/database-service')
+            for (let j = 0; j < missingIndices.length; j++) {
+              const idx = missingIndices[j]
+              const computedVec = embedRes.vectors[j]
+              if (Array.isArray(computedVec) && computedVec.length === targetDim) {
+                docs[idx].embedding = computedVec
+                // 顺便异步写入 Omni zvec 槽位加速后续使用
+                void databaseService.upsertFileVectorToOmni(docs[idx].fingerprint, computedVec)
+              }
+            }
+          }
+        }
+      } catch (embErr) {
+        logger.warn(LogCategory.FILE_ORGANIZATION, '[HAC智能聚类] JIT 向量探活或预计算异常，交由 Omni 端内自愈:', embErr)
       }
 
       // 3. 调用 Omni 原生端侧 HAC 聚类

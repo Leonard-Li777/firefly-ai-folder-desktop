@@ -80,6 +80,8 @@ const areEqual = (
     prevProps.fileItem?.isUnanalyzed !== nextProps.fileItem?.isUnanalyzed ||
     prevProps.fileItem?.matchedChunk !== nextProps.fileItem?.matchedChunk ||
     prevProps.fileItem?.matchedChunks !== nextProps.fileItem?.matchedChunks ||
+    prevProps.fileItem?.virtualRowKey !== nextProps.fileItem?.virtualRowKey ||
+    prevProps.fileItem?.chunkRowIndex !== nextProps.fileItem?.chunkRowIndex ||
     prevProps.onFileSelect !== nextProps.onFileSelect ||
     prevProps.getSelectedFiles !== nextProps.getSelectedFiles ||
     prevProps.selectionEnabled !== nextProps.selectionEnabled ||
@@ -671,6 +673,10 @@ const areVirtualRowPropsEqual = (prevProps: RowRendererProps, nextProps: RowRend
   const prevFile = 'extension' in prevItem ? prevItem : undefined
   const nextFile = 'extension' in nextItem ? nextItem : undefined
 
+  if (prevFile?.virtualRowKey !== nextFile?.virtualRowKey) return false
+  if (prevFile?.chunkRowIndex !== nextFile?.chunkRowIndex) return false
+  if (prevFile?.totalChunkRows !== nextFile?.totalChunkRows) return false
+
   if (prevFile?.smartName !== nextFile?.smartName) return false
   if (prevFile?.description !== nextFile?.description) return false
   // 搜索结果字段：snippet/matchType/similarity/isUnanalyzed 变化时必须重渲染搜索卡片
@@ -684,6 +690,22 @@ const areVirtualRowPropsEqual = (prevProps: RowRendererProps, nextProps: RowRend
     prevFile?.matchedChunk?.similarity !== nextFile?.matchedChunk?.similarity
   ) {
     return false
+  }
+
+  const prevChunks = prevFile?.matchedChunks
+  const nextChunks = nextFile?.matchedChunks
+  if (prevChunks !== nextChunks) {
+    if (!prevChunks || !nextChunks) return false
+    if (prevChunks.length !== nextChunks.length) return false
+    for (let c = 0; c < prevChunks.length; c++) {
+      if (
+        prevChunks[c].startSec !== nextChunks[c].startSec ||
+        prevChunks[c].endSec !== nextChunks[c].endSec ||
+        prevChunks[c].similarity !== nextChunks[c].similarity
+      ) {
+        return false
+      }
+    }
   }
 
   // activeItem 比对：若引用一致则直接跳过路径比对

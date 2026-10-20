@@ -3,7 +3,8 @@ import type {
   LanguageCode,
   WorkspaceDirectory,
   Unit,
-  UnitCreationData
+  UnitCreationData,
+  VideoChunkRecord
 } from '@firefly/types'
 import {
   LogCategory,
@@ -1334,7 +1335,7 @@ export class DatabaseService {
         this._db!.prepare('DELETE FROM file_tag_relations').run()
         this._db!.prepare('DELETE FROM file_tags_private').run()
         this._db!.prepare('DELETE FROM analysis_queue').run()
-        this._db!.prepare('DELETE FROM file_video_chunks').run()
+        // Spec §3.3 铁律：清空分析数据仅重置文件业务状态，坚决不删除 file_video_chunks，保护切片时序与向量资产
       })()
       logger.info(LogCategory.DATABASE_SERVICE, t('所有AI分析数据已重置'))
     } catch (error) {
@@ -2253,9 +2254,7 @@ export class DatabaseService {
   /**
    * 批量写入视频时序切片记录
    */
-  insertVideoChunks(
-    chunks: Array<{ fileFingerprint: string; chunkIndex: number; startSec: number; endSec: number }>
-  ): void {
+  insertVideoChunks(chunks: VideoChunkRecord[]): void {
     this.ensureInitialized()
     this.fileDao!.insertVideoChunks(chunks)
   }
@@ -2265,7 +2264,7 @@ export class DatabaseService {
    */
   getVideoChunks(
     fileFingerprint: string
-  ): Array<{ id: number; fileFingerprint: string; chunkIndex: number; startSec: number; endSec: number; createdAt: string }> {
+  ): Array<{ id: number; fileFingerprint: string; chunkIndex: number; startSec: number; endSec: number; samplingIntervalSeconds: number; createdAt: string }> {
     this.ensureInitialized()
     return this.fileDao!.getVideoChunks(fileFingerprint)
   }

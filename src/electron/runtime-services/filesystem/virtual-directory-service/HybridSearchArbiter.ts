@@ -1266,7 +1266,9 @@ export class HybridSearchArbiter {
         }
 
         if (candidateIntervals.length > 0) {
-          // 贪心合并相邻/重叠时段 (Temporal NMS)
+          // =========================================================================
+          // Phase 1：时序相邻合并 (必须严格按 startSec ASC 升序排列，满足单遍合并数学前提)
+          // =========================================================================
           candidateIntervals.sort((a, b) => a.startSec - b.startSec)
           const mergedIntervals: Array<{
             chunkIndex: number
@@ -1280,6 +1282,7 @@ export class HybridSearchArbiter {
               mergedIntervals.push({ ...curr })
             } else {
               const prev = mergedIntervals[mergedIntervals.length - 1]
+              // 若两切片相邻或重叠（间隔 <= 3.0s），合并并保留局部最高分
               if (curr.startSec <= prev.endSec + 3.0) {
                 prev.endSec = Math.max(prev.endSec, curr.endSec)
                 if (curr.similarity > prev.similarity) {
@@ -1292,10 +1295,46 @@ export class HybridSearchArbiter {
             }
           }
 
-          const topInterval = [...mergedIntervals].sort((a, b) => b.similarity - a.similarity)[0]
-          agg.bestChunkIndex = topInterval.chunkIndex
-          agg.bestChunkScore = topInterval.similarity
-          agg.matchedChunks = mergedIntervals
+          // =========================================================================
+          // Phase 2：Top-Peak 动态门禁与相似度降序重排 (高置信度核心镜头置顶)
+          // =========================================================================
+          const PEAK_MARGIN = 0.040
+          const minConfidence = TEMPORAL_CHUNK_MIN_CONFIDENCE
+
+          // 找到当前视频合并后时段的最高峰值分
+          const maxScore =
+            mergedIntervals.length > 0 ? Math.max(...mergedIntervals.map(i => i.similarity)) : 0
+
+          if (maxScore < minConfidence) {
+            agg.matchedChunks = []
+            agg.bestChunkIndex = undefined
+            agg.bestChunkScore = undefined
+          } else {
+            // 1. 双向时序区间间隙保护 (Interval Gap)，避免前序铺垫或后置飞驰镜头被误杀
+            const filteredChunks = mergedIntervals.filter(chunk => {
+              if (chunk.similarity < minConfidence) return false
+              if (chunk.similarity >= maxScore - PEAK_MARGIN) return true
+
+              const isAdjacentToPeak = mergedIntervals.some(peak => {
+                if (peak.similarity < maxScore - PEAK_MARGIN) return false
+                // 无向区间间隙：计算真实时间差值，前后均支持
+                const gap = Math.max(0, Math.max(chunk.startSec - peak.endSec, peak.startSec - chunk.endSec))
+                return gap <= 5.0
+              })
+              return isAdjacentToPeak
+            })
+
+            // 2. 最终输出结果严格按 similarity DESC 降序排列，保证最高分片段排在最前
+            filteredChunks.sort((a, b) => b.similarity - a.similarity)
+            agg.matchedChunks = filteredChunks
+            if (filteredChunks.length > 0) {
+              agg.bestChunkIndex = filteredChunks[0].chunkIndex
+              agg.bestChunkScore = filteredChunks[0].similarity
+            } else {
+              agg.bestChunkIndex = undefined
+              agg.bestChunkScore = undefined
+            }
+          }
         } else {
           // 降级兜底：若未匹配到 Timing 元数据（如单测 mock），保留 topChunk 索引与分数
           agg.chunks.sort((a, b) => b.score - a.score)
@@ -1323,7 +1362,15 @@ export class HybridSearchArbiter {
       const out: VectorMatch[] = []
       for (const [idx, p] of sortedParents.entries()) {
         let matchedChunk: VectorMatch['matchedChunk']
-        if (p.bestChunkIndex !== undefined) {
+        if (p.matchedChunks && p.matchedChunks.length > 0) {
+          const top = p.matchedChunks[0]
+          matchedChunk = {
+            chunkIndex: top.chunkIndex,
+            startSec: top.startSec,
+            endSec: top.endSec,
+            similarity: top.similarity
+          }
+        } else if (p.bestChunkIndex !== undefined) {
           const timing = chunkTimingMap.get(`${p.parentFp}:c${p.bestChunkIndex}`)
           if (timing) {
             matchedChunk = {

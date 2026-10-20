@@ -33,6 +33,10 @@ export interface FileType extends BaseFileType {
     score?: number
     similarity?: number
   }>
+  /** 视频多切片多行平铺虚拟行 Key 与索引信息 (Spec §3.6.2) */
+  virtualRowKey?: string
+  chunkRowIndex?: number
+  totalChunkRows?: number
 }
 
 export interface FileListProps {

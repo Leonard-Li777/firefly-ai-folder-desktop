@@ -451,9 +451,13 @@ export class AnalysisQueueService {
                 .get(item.workspaceId, item.path) as { file_fingerprint?: string } | undefined
               if (!wf?.file_fingerprint) return true
               const chunkRow = db
-                .prepare('SELECT 1 FROM file_video_chunks WHERE file_fingerprint = ? LIMIT 1')
-                .get(wf.file_fingerprint)
-              return !chunkRow
+                .prepare('SELECT sampling_interval_seconds FROM file_video_chunks WHERE file_fingerprint = ? LIMIT 1')
+                .get(wf.file_fingerprint) as { sampling_interval_seconds?: number } | undefined
+              if (!chunkRow) return true
+              const currentInterval =
+                ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 1.0
+              const recordedInterval = chunkRow.sampling_interval_seconds ?? 1.0
+              return Math.abs(recordedInterval - currentInterval) > 0.1
             } catch {
               return true
             }
@@ -467,16 +471,8 @@ export class AnalysisQueueService {
           }
 
           // 判断“强制重新分析 + 复用关闭 + 之前已分析完成”场景：此时必须重新提取
-          // 视频文件时序切片与特征向量受抽帧步长与嵌入配置驱动，强制重新分析或已分析视频重入队时绝不跳过 CPU 阶段；
-          // 普通文档/图片则遵循 REUSE_BASIC_ANALYSIS_DATA 配置。
+          // 视频文件时序切片与普通文件统一遵循 REUSE_BASIC_ANALYSIS_DATA 配置与抽帧精度对齐校验
           const isForcedReextract = (item: AnalysisQueueItem): boolean => {
-            if (isVideoFile(item.path)) {
-              if (item.forceReanalyze === true || item.isAnalyzed === true) return true
-              const db = databaseService.db
-              if (db && item.workspaceId) {
-                if (getFileAnalysisStateFromDB(db, item.workspaceId, item.path).isAnalyzed) return true
-              }
-            }
             if (item.forceReanalyze !== true) return false
             const reuseBasicAnalysisData =
               ConfigOrchestrator.getInstance().getValue<boolean>('REUSE_BASIC_ANALYSIS_DATA') ??

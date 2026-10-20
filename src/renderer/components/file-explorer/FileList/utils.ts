@@ -268,3 +268,41 @@ export const getUnitBadgeClass = (theme: UnitTypeTheme): string => {
     theme.darkBorder
   ].join(' ')
 }
+
+/**
+ * 搜索列表模式下展平多片段视频条目（Spec §3.6.2 & 形态 B）
+ * 单行容量限制（默认 4 个切片），超出部分平铺为多行虚拟条目，保持 96px 恒定虚拟行高
+ */
+export function flattenItemsWithVideoChunks<T extends Record<string, any>>(
+  items: T[],
+  chunksPerRow = 4
+): T[] {
+  if (!Array.isArray(items) || items.length === 0) return []
+  const expanded: T[] = []
+
+  for (const item of items) {
+    const chunks = (item as any)?.matchedChunks
+    const itemKey = (item as any).fileFingerprint || (item as any).id || item.path || 'item'
+
+    if (!Array.isArray(chunks) || chunks.length <= chunksPerRow) {
+      expanded.push({
+        ...item,
+        virtualRowKey: `${itemKey}__r0`
+      })
+    } else {
+      const totalRows = Math.ceil(chunks.length / chunksPerRow)
+      for (let r = 0; r < totalRows; r++) {
+        const sliceChunks = chunks.slice(r * chunksPerRow, (r + 1) * chunksPerRow)
+        expanded.push({
+          ...item,
+          matchedChunks: sliceChunks,
+          chunkRowIndex: r,
+          totalChunkRows: totalRows,
+          virtualRowKey: `${itemKey}__r${r}`
+        })
+      }
+    }
+  }
+  return expanded
+}
+

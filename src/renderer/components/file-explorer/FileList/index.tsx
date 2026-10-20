@@ -12,7 +12,7 @@ import { LogCategory, logger } from '@firefly/shared'
 import { MaterialIcon, cn } from '../../../lib/utils'
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { RowRenderer, renderAnalysisStatus } from './components/RowRenderer'
-import { formatDate, isImageFile } from './utils'
+import { formatDate, isImageFile, flattenItemsWithVideoChunks } from './utils'
 import { formatFileSize, getFileIcon } from '../FileItem'
 
 import { AnalysisStatus } from '@firefly/types'
@@ -228,31 +228,15 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     isRealDirectory
   ])
 
-  // 搜索列表模式专属条目：若视频命中片段较多（一行放不下，> 4 个），自动排到第二行（占两个文件行展示）
+  // 搜索列表模式专属条目：若视频命中片段较多（一行放不下，> 4 个），自动排到第二行（占两个文件行展示，Spec §3.6.2）
   const searchListItems = useMemo(() => {
     if (viewMode !== 'search-list') return items
-    const expanded: any[] = []
-    const CHUNKS_PER_ROW = 4 // 每行最多展示 4 个大画幅抽帧片段，超出时占两个（或多个）文件行展示
-
-    for (const item of items) {
-      const matchedChunks = (item as any)?.matchedChunks
-      if (Array.isArray(matchedChunks) && matchedChunks.length > CHUNKS_PER_ROW) {
-        const totalRows = Math.ceil(matchedChunks.length / CHUNKS_PER_ROW)
-        for (let r = 0; r < totalRows; r++) {
-          const sliceChunks = matchedChunks.slice(r * CHUNKS_PER_ROW, (r + 1) * CHUNKS_PER_ROW)
-          expanded.push({
-            ...item,
-            matchedChunks: sliceChunks,
-            chunkRowIndex: r,
-            totalChunkRows: totalRows
-          })
-        }
-      } else {
-        expanded.push(item)
-      }
-    }
-    return expanded
+    return flattenItemsWithVideoChunks(items, 4)
   }, [items, viewMode])
+
+  const effectiveItems = useMemo(() => {
+    return viewMode === 'search-list' ? searchListItems : items
+  }, [viewMode, searchListItems, items])
 
   const columnCount = useMemo(() => {
     // 增加安全边距（约 48px）用于处理滚动条和容器内边距，使布局更宽松
@@ -328,7 +312,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
   )
 
   const { scrollOffset, handleScroll, handleGridScroll } = useFileListScroll({
-    items,
+    items: effectiveItems,
     hasMore,
     onLoadMore,
     containerSize,
@@ -367,7 +351,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
   }, [])
 
   const { handleMouseDown, handleItemClick, handleKeyDown, isDraggingRef } = useFileListSelection({
-    items,
+    items: effectiveItems,
     selectedFiles,
     getSelectedFiles: stableGetSelectedFiles,
     activeItem,
@@ -460,7 +444,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
         logger.warn(LogCategory.RENDERER, 'Failed to scroll list to top:', error)
       }
     }
-  }, [items, viewMode])
+  }, [effectiveItems, viewMode])
 
   const selectedPathsSet = useMemo(() => {
     const set = new Set<string>()
@@ -500,7 +484,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
 
   const itemData: ListItemData = useMemo(
     () => ({
-      items,
+      items: effectiveItems,
       selectedFiles,
       selectedPathsSet,
       activeItem,
@@ -533,7 +517,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
       containerWidth: containerSize.width
     }),
     [
-      items,
+      effectiveItems,
       selectedFiles,
       selectedPathsSet,
       activeItem,
@@ -726,6 +710,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
                 width={containerSize.width || '100%'}
                 className="scrollbar-thin overflow-x-hidden"
                 listRef={listRef}
+                rowKey={(index: number) => (searchListItems[index] as any)?.virtualRowKey || searchListItems[index]?.path || index}
                 rowProps={{
                   data: {
                     ...itemData,
@@ -746,6 +731,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
                 className="scrollbar-thin overflow-x-hidden"
                 ref={listRef}
                 outerRef={activeOuterRef}
+                itemKey={(index: number) => (searchListItems[index] as any)?.virtualRowKey || searchListItems[index]?.path || index}
                 itemData={{
                   ...itemData,
                   items: searchListItems,

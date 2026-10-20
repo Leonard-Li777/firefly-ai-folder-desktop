@@ -919,6 +919,9 @@ export class OmniService {
       if (dbPath) {
         spawnArgs.push('--db-path', dbPath)
         logger.info(LogCategory.SYSTEM, `[OmniService] 🎯 业务主库路径 (--db-path): ${dbPath}`)
+        const vectorsDir = path.join(path.dirname(dbPath), 'vectors')
+        spawnArgs.push('--vectors-path', vectorsDir)
+        logger.info(LogCategory.SYSTEM, `[OmniService] 🎯 矢量数据隔离路径 (--vectors-path): ${vectorsDir}`)
       }
       if (packPath) {
         spawnArgs.push('--pack-path', packPath)

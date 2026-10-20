@@ -59,6 +59,7 @@ import {
   executeProTextTagging
 } from '@pro'
 import { omniService } from '../../system/omni-service'
+import { omniClient } from '../../../services/omni-client'
 import { thumbnailService } from '../../filesystem/thumbnail-service'
 import { anydocService, AnydocAsset, AnydocResult } from '../../system/anydoc-service'
 import { cloudAnalysisService } from '@firefly/server'
@@ -564,28 +565,64 @@ export class FileProcessor {
           // 忽略查询异常，视为未完成过分析
         }
         const isVideo = getFileCategory(filePath) === FileCategory.VIDEO
-        const hasMissingVideoChunks =
-          isVideo &&
-          (() => {
-            try {
-              const wf = db
-                .prepare(
-                  'SELECT file_fingerprint FROM workspace_files WHERE workspace_id = ? AND path = ?'
-                )
-                .get(currentWorkspaceId, filePath) as { file_fingerprint?: string } | undefined
-              if (!wf?.file_fingerprint) return true
+        let hasMissingVideoChunks = false
+        if (isVideo) {
+          try {
+            const wf = db
+              .prepare(
+                'SELECT file_fingerprint FROM workspace_files WHERE workspace_id = ? AND path = ?'
+              )
+              .get(currentWorkspaceId, filePath) as { file_fingerprint?: string } | undefined
+            if (!wf?.file_fingerprint) {
+              hasMissingVideoChunks = true
+            } else {
               const chunkRow = db
-                .prepare('SELECT 1 FROM file_video_chunks WHERE file_fingerprint = ? LIMIT 1')
-                .get(wf.file_fingerprint)
-              return !chunkRow
-            } catch {
-              return true
+                .prepare('SELECT chunk_index, sampling_interval_seconds FROM file_video_chunks WHERE file_fingerprint = ? LIMIT 1')
+                .get(wf.file_fingerprint) as { chunk_index?: number; sampling_interval_seconds?: number } | undefined
+              if (!chunkRow) {
+                hasMissingVideoChunks = true
+              } else {
+                const currentInterval =
+                  ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 1.0
+                const recordedInterval = chunkRow.sampling_interval_seconds ?? 1.0
+                if (Math.abs(recordedInterval - currentInterval) > 0.1) {
+                  logger.info(
+                    LogCategory.ANALYSIS_QUEUE,
+                    `[串行队列] 视频切片抽帧间隔变更 (历史 ${recordedInterval}s vs 当前 ${currentInterval}s)，需重新提取: ${filePath}`
+                  )
+                  hasMissingVideoChunks = true
+                } else {
+                  // 物理向量探活：检验切片向量是否真实存在于 Omni 物理存储中（防用户清理向量或切片向量损坏）
+                  const probeFp = `${wf.file_fingerprint}:c${chunkRow.chunk_index ?? 0}`
+                  const profile = ConfigOrchestrator.getInstance().getValue<string>('AI_EMBEDDING_PROFILE') || 'gemma_unified'
+                  const targetDim =
+                    profile === 'gemma_unified' || profile.includes('gemma')
+                      ? (ConfigOrchestrator.getInstance().getValue<number>('EMBEDDING_MRL_DIMENSION') ?? 512)
+                      : 384
+                  try {
+                    const probeRes = await omniClient.getVectors([probeFp], targetDim, 3000)
+                    if (!probeRes?.vectors || probeRes.vectors.length === 0) {
+                      logger.info(
+                        LogCategory.ANALYSIS_QUEUE,
+                        `[串行队列] 视频切片物理向量缺失 (${probeFp}, dim=${targetDim})，需重新提取: ${filePath}`
+                      )
+                      hasMissingVideoChunks = true
+                    }
+                  } catch (probeErr) {
+                    logger.warn(LogCategory.ANALYSIS_QUEUE, '[串行队列] 物理向量探活异常，保守重新提取:', probeErr)
+                    hasMissingVideoChunks = true
+                  }
+                }
+              }
             }
-          })()
+          } catch {
+            hasMissingVideoChunks = true
+          }
+        }
 
         const forcedReextract =
           item.forceReanalyze === true &&
-          (isVideo || (!reuseBasicAnalysisData && alreadyAnalyzed))
+          (!reuseBasicAnalysisData && alreadyAnalyzed)
         if (initialStage >= 2 && !forcedReextract && !hasMissingVideoChunks) {
           if (isAiStageEnabled(analysisMode)) {
             // quick_name / full 模式：跳过 CPU 提取，直接进入 GPU AI 阶段（stage3/4）。
@@ -1552,7 +1589,7 @@ export class FileProcessor {
         ? (ConfigOrchestrator.getInstance().getValue<number>('AUDIO_ANALYSIS_DURATION') ?? 30)
         : undefined
       const videoFrameIntervalSeconds = isVideo
-        ? (ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 2.0)
+        ? (ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 1.0)
         : undefined
 
       // 0. 统一调用 Omni 原生引擎进行端到端内容与元数据提取（覆盖文档、图片、纯文本、代码、音视频、字体等所有格式并输出真实 Benchmark）
@@ -2011,12 +2048,15 @@ export class FileProcessor {
       if (fileFingerprint && !fileFingerprint.startsWith('temp_') && Array.isArray(videoChunks) && videoChunks.length > 0) {
         try {
           const { databaseService } = await import('../../database/database-service')
+          const currentInterval =
+            ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 1.0
           databaseService.insertVideoChunks(
             videoChunks.map(c => ({
               fileFingerprint,
               chunkIndex: c.chunk_index,
               startSec: c.start_sec,
-              endSec: c.end_sec
+              endSec: c.end_sec,
+              samplingIntervalSeconds: currentInterval
             }))
           )
           for (const c of videoChunks) {

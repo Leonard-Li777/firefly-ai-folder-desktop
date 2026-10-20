@@ -300,6 +300,8 @@ export class WorkspaceDao {
       workspaceId
     })
 
+    const allFingerprintsToDelete: string[] = []
+
     this.db.transaction(() => {
       // 1. 获取该工作区下的所有 workspace_files ID（用于后续清理孤儿文件）
       const workspaceFileIds = this.db
@@ -358,7 +360,23 @@ export class WorkspaceDao {
           const orphans = batch.filter(fp => !stillReferenced.includes(fp))
           if (orphans.length > 0) {
             const orphanPlaceholders = orphans.map(() => '?').join(',')
-            // file_contents 和 file_tag_relations 会通过外键级联删除
+
+            // (a) 从 file_video_chunks 中查出孤儿文件的全部切片元数据并组装受控指纹
+            try {
+              const chunkRows = this.db
+                .prepare(
+                  `SELECT file_fingerprint, chunk_index FROM file_video_chunks WHERE file_fingerprint IN (${orphanPlaceholders})`
+                )
+                .all(...orphans) as Array<{ file_fingerprint: string; chunk_index: number }>
+
+              const chunkFingerprints = chunkRows.map(r => `${r.file_fingerprint}:c${r.chunk_index}`)
+              allFingerprintsToDelete.push(...orphans, ...chunkFingerprints)
+            } catch (chunkErr) {
+              logger.warn(LogCategory.DATABASE_SERVICE, '查询孤儿切片指纹失败:', chunkErr)
+              allFingerprintsToDelete.push(...orphans)
+            }
+
+            // (b) file_contents, file_tag_relations, file_video_chunks 会通过外键级联删除
             this.db
               .prepare(`DELETE FROM files WHERE file_fingerprint IN (${orphanPlaceholders})`)
               .run(...orphans)
@@ -371,6 +389,21 @@ export class WorkspaceDao {
         path: directoryPath
       })
     })()
+
+    // 3. 严格在 SQLite 事务提交成功后，再在事务外部触发异步网络物理清理，杜绝单向脏数据
+    if (allFingerprintsToDelete.length > 0) {
+      import('../../../services/omni-client')
+        .then(({ omniClient }) => {
+          return omniClient.deleteVectors(allFingerprintsToDelete)
+        })
+        .catch(err => {
+          logger.warn(
+            LogCategory.DATABASE_SERVICE,
+            '级联清理 Omni 孤儿向量失败（将在下一次重启时自愈）',
+            { count: allFingerprintsToDelete.length, err }
+          )
+        })
+    }
 
     logger.info(LogCategory.DATABASE_SERVICE, '工作目录删除完成', { path: directoryPath })
   }
