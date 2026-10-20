@@ -31,6 +31,8 @@ import { app, BrowserWindow, net, dialog, shell } from 'electron'
 import * as path from 'node:path'
 import { logger, LogCategory, ErrorNormalizer, APP_PORTS, getWorktreeDebugPortBase } from '@firefly/shared'
 import { loggingService } from '../runtime-services/system/logging-service'
+// 逆地理编码适配器注册：将 omniService 能力注入 core-engine（模块求值即注册，须早于任何维度分析）
+import '../runtime-services/system/geo-adapter'
 import { touchActiveWorktree } from './worktree-env'
 import { processReaper } from './process-reaper'
 import { iconExtractorClient } from './icon-extractor-client'

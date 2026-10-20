@@ -26,6 +26,7 @@ import {
 } from '@firefly/shared'
 import { toast } from '../../../common/Toast'
 import { SplitPane } from '../../../common/SplitPane'
+import { useAnalyzedDirectoryStore } from '@/renderer/stores/analyzed-directory-store'
 
 export { isExtensionDimension }
 
@@ -671,7 +672,7 @@ const DimensionGroupCard: React.FC<DimensionGroupCardProps> = React.memo(
                   onClick={() => !isInspecting && onSubmitAddNewTag(group.id)}
                 >
                   {isInspecting ? (
-                    <MaterialIcon icon="progress_activity" className="text-xs animate-spin" />
+                    <MaterialIcon icon="sync" className="text-xs animate-spin" />
                   ) : (
                     <MaterialIcon icon="check" className="text-xs" />
                   )}
@@ -1096,7 +1097,9 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
   // 拉取全量预设维度与标签数据
   const loadFullDimensions = useCallback(async () => {
     try {
+      const workspacePath = useAnalyzedDirectoryStore.getState().currentWorkspaceDirectory?.path
       const res = await window.electronAPI?.analyzedDirectory?.getDimensionGroups({
+        ...(workspacePath ? { workspaceDirectoryPath: workspacePath } : {}),
         includeAllPresetTags: true,
         excludeExtensionDimension: true
       })
@@ -1131,7 +1134,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
   // 1. 单次快速循环：统计待整理文件中各标签的覆盖计数，并汇总各维度的自定义标签（避免重复多重扫描）
   const { tagFileCounts, fileCustomTags } = useMemo(() => {
     const counts: Record<string, number> = {}
-    const customTagsByDim = new Map<number, Set<string>>()
+    const customTagsByDim = new Map<string, Set<string>>()
 
     for (let i = 0; i < files.length; i++) {
       const f = files[i]
@@ -1145,14 +1148,16 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
           if (val) {
             const strVal = String(val).trim()
             fileTagSet.add(strVal)
-            if (dimId) {
-              const numDimId = Number(dimId)
-              let dimSet = customTagsByDim.get(numDimId)
-              if (!dimSet) {
-                dimSet = new Set<string>()
-                customTagsByDim.set(numDimId, dimSet)
+            if (dimId !== undefined && dimId !== null) {
+              const strDimKey = String(dimId).trim()
+              if (strDimKey) {
+                let dimSet = customTagsByDim.get(strDimKey)
+                if (!dimSet) {
+                  dimSet = new Set<string>()
+                  customTagsByDim.set(strDimKey, dimSet)
+                }
+                dimSet.add(strVal)
               }
-              dimSet.add(strVal)
             }
           }
         }
@@ -1169,14 +1174,16 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
             if (val) {
               const strVal = String(val).trim()
               fileTagSet.add(strVal)
-              if (dimId) {
-                const numDimId = Number(dimId)
-                let dimSet = customTagsByDim.get(numDimId)
-                if (!dimSet) {
-                  dimSet = new Set<string>()
-                  customTagsByDim.set(numDimId, dimSet)
+              if (dimId !== undefined && dimId !== null) {
+                const strDimKey = String(dimId).trim()
+                if (strDimKey) {
+                  let dimSet = customTagsByDim.get(strDimKey)
+                  if (!dimSet) {
+                    dimSet = new Set<string>()
+                    customTagsByDim.set(strDimKey, dimSet)
+                  }
+                  dimSet.add(strVal)
                 }
-                dimSet.add(strVal)
               }
             }
           }
@@ -1311,16 +1318,46 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
     }
 
     // 3. 将待整理文件中收集到的自定义标签高效合并（坚决阻断维度名作为标签侵入）
-    fileCustomTags.forEach((tagSet, dimId) => {
-      let g = dimMap.get(dimId)
+    fileCustomTags.forEach((tagSet, dimIdentifier) => {
+      let g: DimensionGroup | undefined
+      // 1. 若为数字 ID 或数字字符串，优先按 ID 精确查找
+      const numDimId = Number(dimIdentifier)
+      if (!Number.isNaN(numDimId)) {
+        g = dimMap.get(numDimId)
+        if (!g) {
+          for (const group of dimMap.values()) {
+            if (group.id === numDimId) {
+              g = group
+              break
+            }
+          }
+        }
+      }
+      // 2. 若未匹配，按受控维度 Code 匹配（例如 builtin.geographical_location）
       if (!g) {
         for (const group of dimMap.values()) {
-          if (group.id === dimId || String(group.id) === String(dimId)) {
+          const gCode = resolveDimensionGroupCode(group) || group.code
+          if (gCode && gCode === dimIdentifier) {
             g = group
             break
           }
         }
       }
+      // 3. 若仍未匹配，按权威常量 ROOT_DIMENSION_META 映射数字 ID
+      if (!g && ROOT_DIMENSION_META[dimIdentifier]?.id !== undefined) {
+        const canonicalId = ROOT_DIMENSION_META[dimIdentifier].id
+        g = dimMap.get(canonicalId)
+      }
+      // 4. 保底：按维度展示名称匹配
+      if (!g) {
+        for (const group of dimMap.values()) {
+          if (group.name && group.name.trim() === dimIdentifier.trim()) {
+            g = group
+            break
+          }
+        }
+      }
+
       if (g) {
         const existingTagValues = new Set((g.tags || []).map(t => t.tagValue.toLowerCase()))
         tagSet.forEach(strVal => {
@@ -2442,7 +2479,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       <div className="flex-1 overflow-hidden min-h-0 relative">
         {isLoadingPresets && effectiveDimensionGroups.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center space-y-3 h-full">
-            <MaterialIcon icon="progress_activity" className="text-3xl text-primary animate-spin" />
+            <MaterialIcon icon="sync" className="text-3xl text-primary animate-spin" />
             <p className="text-xs font-semibold text-foreground/80">{t('正在加载维度与标签...')}</p>
           </div>
         ) : filteredDimensionGroups.length === 0 ? (

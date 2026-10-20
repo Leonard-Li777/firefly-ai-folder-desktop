@@ -661,6 +661,33 @@ export function unwrapRedundantRoot(
  * @param virtualDirName 可选的虚拟目录方案名称，用于自动剥离冗余的同名单根节点
  * @returns 解析后的目录树，解析失败返回 null
  */
+/**
+ * 检查目录名是否为占位符名称（如 {目录}、目录、{Directory} 等）
+ *
+ * 除规范词与英文形态外，同时容错当前界面语言下的本地化占位词（经 t() 比对），
+ * 避免切换语言后本地化别名漏过滤。
+ */
+export function isPlaceholderDirectoryName(name: string): boolean {
+  if (!name) return true
+  const clean = name.trim().replace(/[{}[\\\]（）()]/g, '').trim()
+  const lower = clean.toLowerCase()
+  return (
+    clean === '目录' ||
+    clean === t('目录') || // locale-invariant-ok: 容错当前界面语言的本地化占位词
+    lower === 'directory' ||
+    clean === '文件夹' ||
+    clean === t('文件夹') || // locale-invariant-ok: 容错当前界面语言的本地化占位词
+    lower === 'folder'
+  )
+}
+
+/** 检查节点名是否形如具体文件（带扩展名且非隐藏目录） */
+export function isLikelyFileName(name: string): boolean {
+  if (!name) return false
+  const clean = name.trim().replace(/^["']|["']$/g, '')
+  if (clean.startsWith('.')) return false
+  return /\.[a-zA-Z0-9]{1,10}$/i.test(clean)
+}
 export function parseStrategyToTree(
   strategyText: string,
   virtualDirName?: string
@@ -718,12 +745,20 @@ export function parseStrategyToTree(
       }
       content = trimmedLine
         .replace(/^[│\s├└─|]+/, '')
+        .replace(/^\d+[\.\、\s]+/, '')
         .replace(/[/\\].*$/, '')
         .replace(/（.*$/, '')
         .trim()
     }
 
-    if (!content || content === UNCLASSIFIED_NAME || content === PROJECT_CORE_NAME || content === CORE_PROJECT_NAME)
+    if (
+      !content ||
+      isPlaceholderDirectoryName(content) ||
+      isLikelyFileName(content) ||
+      content === UNCLASSIFIED_NAME ||
+      content === PROJECT_CORE_NAME ||
+      content === CORE_PROJECT_NAME
+    )
       continue
 
     let indent = line.length - line.trimStart().length
@@ -1044,11 +1079,14 @@ export function parseStrategyToNodes(strategy: string): VirtualDirectoryNode[] {
   for (const line of lines) {
     const cleanName = line
       .replace(/^[│\s├└─|]+/, '')
+      .replace(/^\d+[\.\、\s]+/, '')
       .replace(/[/\\].*$/, '')
       .replace(/（.*$/, '')
       .trim()
     if (
       !cleanName ||
+      isPlaceholderDirectoryName(cleanName) ||
+      isLikelyFileName(cleanName) ||
       isUnclassifiedNodeName(cleanName) ||
       cleanName === PROJECT_CORE_NAME ||
       cleanName === CORE_PROJECT_NAME ||

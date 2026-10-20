@@ -15,12 +15,13 @@ import {
   countRealFiles,
   recalculateNodeFileCounts,
   getAllFileKeys,
-  isUnclassifiedNodeName
+  isUnclassifiedNodeName,
+  extractFilesFromTree
 } from '../utils/helpers'
 import { useSettingsStore } from '../../../../stores/settings-store'
 import { useOrganizeStore } from '../../../../stores/organize-store'
 import { reshapeDirectoryTree } from '../utils/reshape-directory-tree'
-import { SENTINEL_NAMES } from '@firefly/shared'
+import { SENTINEL_NAMES, logger, LogCategory } from '@firefly/shared'
 
 const UNCLASSIFIED_NAME = SENTINEL_NAMES.UNCLASSIFIED
 
@@ -244,8 +245,21 @@ export function DoneView({
 
       setFinalTree(res.tree)
       setUnmatchedCount(res.unclassifiedCount)
+
+      if (currentVDir?.id && res.tree.length > 0) {
+        const finalFiles = extractFilesFromTree(res.tree)
+        window.electronAPI?.virtualDirectory.replaceFiles(currentVDir.id, finalFiles).catch(err => {
+          logger.warn(LogCategory.FILE_ORGANIZATION, '滑块重塑落库失败:', err)
+        })
+        window.electronAPI?.virtualDirectory.syncIncrementalDirectoryTree(currentVDir.id, res.tree).then(() => {
+          window.dispatchEvent(new CustomEvent('vdir:updated', { detail: { vdirId: currentVDir.id } }))
+          window.dispatchEvent(new CustomEvent('vdir:incremental-updated', { detail: { vdirId: currentVDir.id } }))
+        }).catch(err => {
+          logger.warn(LogCategory.FILE_ORGANIZATION, '滑块重塑同步树失败:', err)
+        })
+      }
     },
-    [draftTree, tree, rawMatches, filesMap, userPinnedFileMap, setFinalTree, setUnmatchedCount]
+    [draftTree, tree, rawMatches, filesMap, userPinnedFileMap, setFinalTree, setUnmatchedCount, currentVDir?.id]
   )
 
   // 拦截文件微调事件，记录用户手动固定的路径映射 (Pinned 保护)
@@ -278,15 +292,15 @@ export function DoneView({
               <span>{t('及格线阈值 (Score Threshold)')}</span>
             </span>
             <span className="text-xs font-bold text-primary font-mono bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
-              {Math.round((thresholdScore || 0.6) * 100)}%
+              {Math.round((thresholdScore ?? 0.4) * 100)}%
             </span>
           </div>
           <input
             type="range"
-            min={0.4}
+            min={0.05}
             max={0.9}
             step={0.05}
-            value={thresholdScore || 0.6}
+            value={thresholdScore ?? 0.4}
             onChange={e => {
               const val = parseFloat(e.target.value)
               setThresholdScore(val)
@@ -319,7 +333,7 @@ export function DoneView({
             onChange={e => {
               const val = parseInt(e.target.value, 10)
               setMaxCandidatesPerFile(val)
-              handleReshape(thresholdScore || 0.6, val)
+              handleReshape(thresholdScore ?? 0.4, val)
             }}
             className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-amber-500"
           />

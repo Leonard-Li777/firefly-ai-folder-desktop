@@ -298,4 +298,35 @@ describe('IdentityBlueprintSelectView Component', () => {
       expect(screen.getByText(/搜索结果 \(1 个身份\)/i)).toBeInTheDocument()
     })
   })
-})
+  it('候选目录结构卡片只显示结构名和真实目录树，不显示推荐理由、全周期阶段和契合度百分比', async () => {
+    render(
+      <IdentityBlueprintSelectView
+        workspaceId={1}
+        workspaceDirectoryPath="/test/workspace"
+        onSelectStructure={mockSelectStructure}
+      />
+    )
+
+    await waitFor(() => {
+      // 结构名（虚拟目录名）
+      expect(screen.getByText('UI/UX 设计全生命周期模板')).toBeInTheDocument()
+      expect(screen.getByText('标准财务会计归档模板')).toBeInTheDocument()
+    })
+
+    // 不显示推荐理由与全周期阶段
+    expect(screen.queryByText(/推荐理由/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/全周期阶段/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/契合度/i)).not.toBeInTheDocument()
+
+    // 真实目录树节点展开展示：原本平铺的 '01_需求与调研/用户访谈' 解析为目录树层级
+    expect(screen.getByText('01_需求与调研')).toBeInTheDocument()
+    expect(screen.getByText('用户访谈')).toBeInTheDocument()
+    expect(screen.getByText('02_设计资产')).toBeInTheDocument()
+    expect(screen.getByText('设计规范')).toBeInTheDocument()
+    expect(screen.getByText('03_交付成果')).toBeInTheDocument()
+    expect(screen.getByText('高保真原型')).toBeInTheDocument()
+
+    // 不包含原平铺路径字符串作为纯文本
+    expect(screen.queryByText('01_需求与调研/用户访谈')).not.toBeInTheDocument()
+  })
+});

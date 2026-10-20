@@ -1080,8 +1080,18 @@ export function registerVirtualDirectoryIPCHandlers() {
 
         if (missingFileItems.length > 0) {
           const BATCH_SIZE = 200
+          const totalBatches = Math.ceil(missingFileItems.length / BATCH_SIZE)
           for (let i = 0; i < missingFileItems.length; i += BATCH_SIZE) {
             const slice = missingFileItems.slice(i, i + BATCH_SIZE)
+            const batchIdx = Math.floor(i / BATCH_SIZE) + 1
+            // 文件向量提取批次进度推送，让渲染进程进度条平滑推进
+            try {
+              event.sender.send('virtual-directory/reorganize-progress', {
+                currentStep: batchIdx,
+                totalSteps: totalBatches,
+                message: '正在提取文件特征向量 (' + batchIdx + '/' + totalBatches + ')...'
+              })
+            } catch { /* webContents 可能已销毁，安全忽略 */ }
             const resp = await omni.batchEmbedText(
               slice.map(s => s.prompt),
               { profile: activeProfile, dim: activeDim, timeoutMs: 8000 }

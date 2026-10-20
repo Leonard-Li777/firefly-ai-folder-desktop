@@ -385,7 +385,7 @@ const SmartClusteringViewInner = (
             className="w-full h-8 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center gap-1.5 shadow-xs"
           >
             <MaterialIcon
-              icon={isGenerating ? 'progress_activity' : 'auto_fix_high'}
+              icon={isGenerating ? 'sync' : 'auto_fix_high'}
               className={cn('text-sm', isGenerating && 'animate-spin')}
             />
             <span>{isGenerating ? t('正在聚类分析...') : t('重新生成聚类')}</span>
@@ -448,7 +448,7 @@ const SmartClusteringViewInner = (
         <div className="flex-1 overflow-y-auto p-4 md:p-6 relative">
           {isGenerating ? (
             <div className="h-full flex flex-col items-center justify-center space-y-3 py-20 text-muted-foreground">
-              <MaterialIcon icon="progress_activity" className="text-3xl animate-spin text-primary" />
+              <MaterialIcon icon="sync" className="text-3xl animate-spin text-primary" />
               <p className="text-sm font-medium">{t('端侧 HAC 聚类引擎正在计算...')}</p>
             </div>
           ) : errorMsg ? (

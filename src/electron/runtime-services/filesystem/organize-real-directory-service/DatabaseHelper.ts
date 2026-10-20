@@ -6,7 +6,8 @@ import {
   isDimensionApplicableToFile,
   getCanonicalConceptName,
   getControlledDimensionRootCode,
-  CONTROLLED_CONCEPTS
+  CONTROLLED_CONCEPTS,
+  ROOT_DIMENSION_META
 } from '@firefly/shared'
 import { databaseService } from '../../database/database-service'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
@@ -286,7 +287,14 @@ export class DatabaseHelper {
           )
         }
 
-        const formattedDimensionTags: Array<{ dimension: string; tag: string }> = []
+        const formattedDimensionTags: Array<{
+          dimension: string
+          tag: string
+          dimensionId?: number
+          dimensionCode?: string
+          dimensionName?: string
+          tagValue?: string
+        }> = []
         for (const tItem of dimensionTagsArray) {
           let applicableTypes: string[] | undefined = undefined
           if (tItem.applicableFileTypes) {
@@ -301,11 +309,21 @@ export class DatabaseHelper {
           }
 
           if (isDimensionApplicableToFile(applicableTypes, file.path || file.name)) {
-            const dimName = this.resolveTagName(tItem.dimension, tItem.dimensionName) || String(tItem.dimension || '')
+            const dimCode = tItem.dimension || tItem.via_parent_code || ''
+            const canonicalMeta = ROOT_DIMENSION_META[dimCode]
+            const dimName =
+              this.resolveTagName(dimCode, tItem.dimensionName) ||
+              canonicalMeta?.name ||
+              String(dimCode || '')
             const tagVal = this.resolveTagName(tItem.tag_code, tItem.tag)
+            const dimId = canonicalMeta?.id
             formattedDimensionTags.push({
               dimension: dimName,
-              tag: tagVal
+              tag: tagVal,
+              dimensionId: dimId,
+              dimensionCode: dimCode,
+              dimensionName: dimName,
+              tagValue: tagVal
             })
           }
         }
@@ -315,7 +333,11 @@ export class DatabaseHelper {
           if (ctName) {
             formattedDimensionTags.push({
               dimension: t('内容标签'),
-              tag: ctName
+              tag: ctName,
+              dimensionId: 28,
+              dimensionCode: 'builtin.content_tags',
+              dimensionName: t('内容标签'),
+              tagValue: ctName
             })
           }
         }

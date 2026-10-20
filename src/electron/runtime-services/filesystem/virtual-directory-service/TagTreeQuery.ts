@@ -1400,13 +1400,11 @@ export class TagTreeQuery {
         finalGroups.push(g)
       }
 
-      // 注入"内容标签"（builtin.content_tags）虚拟维度组：
+      // 注入与合并"内容标签"（builtin.content_tags）虚拟维度组及本地受控扩展标签：
       // 收纳未被受控/本地已知维度根节点覆盖的所有动态标签，并建立内部多级树形层级结构与穿透提升支持。
-      // 若 finalGroups 中已包含该 code（来自 Omni 树原生输出），则跳过注入以避免重复。
-      if (!dedupeCodes.has(CONTENT_TAGS_CODE)) {
-        const contentTagsDimId = 28 // 系统规范约定的 ID（ADR-0037）
-        const contentTagDisplayName = aliasResolver(CONTENT_TAGS_CODE, '内容标签')
-        const contentDimTags: DimensionTag[] = []
+      const contentTagsDimId = 28 // 系统规范约定的 ID（ADR-0037）
+      const contentTagDisplayName = aliasResolver(CONTENT_TAGS_CODE, '内容标签')
+      const contentDimTags: DimensionTag[] = []
 
         // 建立已入组的 code -> DimensionGroup 映射，确保孤儿识别时优先回归所属原有维度
         const tagToGroupMap = new Map<string, DimensionGroup>()
@@ -2045,7 +2043,23 @@ export class TagTreeQuery {
           })
         }
 
-        if (contentDimTags.length > 0) {
+        const existingContentGroup = finalGroups.find(g => g.code === CONTENT_TAGS_CODE)
+        if (existingContentGroup) {
+          if (!existingContentGroup.tags) existingContentGroup.tags = []
+          const existingTagCodes = new Set(existingContentGroup.tags.map(t => t.code || t.tagValue))
+          for (const cTag of contentDimTags) {
+            const codeKey = cTag.code || cTag.tagValue
+            if (codeKey && !existingTagCodes.has(codeKey)) {
+              existingContentGroup.tags.push(cTag)
+              if (cTag.code) existingTagCodes.add(cTag.code)
+              if (cTag.tagValue) existingTagCodes.add(cTag.tagValue)
+            }
+          }
+          logger.debug(
+            LogCategory.VIRTUAL_DIRECTORY,
+            `[TagTreeQuery] 向既有内容标签维度组追加合并 ${contentDimTags.length} 个多级节点`
+          )
+        } else if (contentDimTags.length > 0 || (includeAllPresetTags && true)) {
           finalGroups.push({
             id: contentTagsDimId,
             name: contentTagDisplayName,
@@ -2067,12 +2081,12 @@ export class TagTreeQuery {
               isMultiSelect: contentTagsIsMultiSelect
             }
           })
+          dedupeCodes.add(CONTENT_TAGS_CODE)
           logger.debug(
             LogCategory.VIRTUAL_DIRECTORY,
             `[TagTreeQuery] 注入多级树化内容标签维度组，共 ${contentDimTags.length} 个多级节点`
           )
         }
-      }
 
       // 8. 当 includeAllPresetTags 为 true 时（批量标签、维度管理等视图），
       // 从本地权威配置管理器（ConfigDbManager）回填全部受控预置维度与标签（未命中文件时记为 0）

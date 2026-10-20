@@ -1046,6 +1046,10 @@ export function useOrganizeState() {
     if (!currentWorkspaceDirectory?.id) {
       return
     }
+    // 门禁：仅精细整理模式才需要调用高级 AI 语言模型生成目录方案，身份蓝图等模式严禁调用
+    if (organizeMode !== 'fine-organize') {
+      return
+    }
     setIsGeneratingCandidates(true)
     setCandidates([])
     try {
@@ -1077,9 +1081,9 @@ export function useOrganizeState() {
     }
   }, [currentWorkspaceDirectory?.id, organizeMode, toOrganizeFiles, activeGuidancePrompt])
 
-  // 当进入 candidates 阶段且无候选方案时，自动生成
+  // 当进入 candidates 阶段且为精细整理模式无候选方案时，自动生成
   useEffect(() => {
-    if (stage !== 'candidates') {
+    if (stage !== 'candidates' || organizeMode !== 'fine-organize') {
       hasAttemptedCandidatesRef.current = false
       return
     }
@@ -1092,6 +1096,7 @@ export function useOrganizeState() {
     }
   }, [
     stage,
+    organizeMode,
     candidates.length,
     isGeneratingCandidates,
     generateCandidates,
@@ -1495,10 +1500,10 @@ export function useOrganizeState() {
         (draft as any)?.source === 'draft' ||
         (draft as any)?.source === 'user-defined'
       if (shouldUseCosineMatching) {
-        setProgressInfo({ current: 1, total: 2, message: t('正在计算路径余弦打分...') })
-
         const candidatePaths = extractCandidatePathsFromTree(draftTree)
         const fileIds = filesToOrganize.map((f: any) => f.id || f.fileId).filter(Boolean)
+        // 以文件总数为分母初始化进度（IPC 侧 batchEmbedText 每批次会推送实时进度覆盖此值）
+        setProgressInfo({ current: 0, total: Math.max(fileIds.length, 1), message: t('正在计算路径余弦打分...') })
         const filesMap: Record<number | string, any> = {}
         for (const f of filesToOrganize) {
           const fid = f.id != null ? f.id : (f as any).fileId
@@ -1508,7 +1513,8 @@ export function useOrganizeState() {
         const cosineRes = await window.electronAPI!.organizeRealDirectory.calculateFilePathsCosine({
           workspaceId: currentWorkspaceDirectory.id,
           fileIds,
-          candidatePaths
+          candidatePaths,
+          floorThreshold: 0.05  // 支持用户将及格线降低至 5%，后端绝对底限与前端 slider min 同步
         })
 
         let rawMatches = cosineRes?.matches
@@ -1522,9 +1528,9 @@ export function useOrganizeState() {
         useOrganizeStore.getState().setRawMatches(rawMatches)
         useOrganizeStore.getState().setFilesMap(filesMap)
 
-        setProgressInfo({ current: 2, total: 2, message: t('正在生成重塑目录树...') })
+        setProgressInfo({ current: fileIds.length, total: Math.max(fileIds.length, 1), message: t('正在生成重塑目录树...') })
 
-        const thresholdScore = useOrganizeStore.getState().thresholdScore || 0.4
+        const thresholdScore = useOrganizeStore.getState().thresholdScore ?? 0.4
         const maxCandidatesPerFile = useOrganizeStore.getState().maxCandidatesPerFile || 1
         const userPinnedFileMap = useOrganizeStore.getState().userPinnedFileMap
 
@@ -1534,7 +1540,7 @@ export function useOrganizeState() {
           filesMap,
           y: thresholdScore,
           n: maxCandidatesPerFile,
-          fallbackToTop1IfEmpty: true,
+          fallbackToTop1IfEmpty: false,
           userPinnedFileMap
         })
 

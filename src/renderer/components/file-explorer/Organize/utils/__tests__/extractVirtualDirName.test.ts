@@ -116,4 +116,33 @@ describe('extractVirtualDirName & parseStrategyToTree 方案命名与树形结�
     expect(tree?.[0].subdirectories.length).toBe(2)
     expect(tree?.[0].subdirectories.map(s => s.name)).toEqual(['前端工程', '后端服务'])
   })
-})
+
+  it('parseStrategyToTree 应该过滤占位符根目录并剔除误输出的具体文件名节点', () => {
+    const raw = `{目录}
+  {目录}
+  ├── Tools
+  │   ├── SystemTools
+  │   │   └──迅雷下载器_2026-08-25.lnk
+  │   ├── Forms
+  │   │   └──主体 (21).lnk
+  │   ├── Visuals
+  │   │   └──浏览器内嵌 HTML 代码与布局示意图.gif
+  │   ├──TechnicalDocs
+  │   │   └──JS Promise 解析规则图解.png
+  │   ├──FileForms
+  │3.    Docker构建命令分析.bat`
+
+    const tree = parseStrategyToTree(raw)
+    expect(tree).not.toBeNull()
+    // 根目录应为 Tools，占位符 {目录} 被剔除
+    expect(tree?.length).toBe(1)
+    expect(tree?.[0].name).toBe('Tools')
+    // 子目录应为纯文件夹，所有 .lnk / .gif / .png / .bat 文件均被剔除
+    const subNames = tree?.[0].subdirectories.map(s => s.name)
+    expect(subNames).toEqual(['SystemTools', 'Forms', 'Visuals', 'TechnicalDocs', 'FileForms'])
+    // 验证子目录下没有挂载文件
+    for (const sub of tree?.[0].subdirectories || []) {
+      expect(sub.subdirectories.length).toBe(0)
+    }
+  })
+});

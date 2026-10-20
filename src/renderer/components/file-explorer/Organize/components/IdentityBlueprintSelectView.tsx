@@ -6,6 +6,8 @@ import { Input } from '../../../ui/input'
 import { Checkbox } from '../../../ui/checkbox'
 import i18nScope, { t } from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
+import { VirtualDirectoryNode } from '@firefly/types'
+import { pathsToDirectoryNodes } from '../utils/treeFromPaths'
 
 export interface RecommendedIdentityItem {
   identityId: string
@@ -42,6 +44,102 @@ export interface IdentityBlueprintSelectViewProps {
     identities: string[]
   }) => void
   onBack?: () => void
+}
+
+/**
+ * 递归渲染只读目录结构树（带层级缩进与树导引线）
+ */
+export function ReadonlyDirectoryTree({
+  nodes,
+  depth = 0
+}: {
+  nodes: VirtualDirectoryNode[]
+  depth?: number
+}) {
+  if (!nodes || nodes.length === 0) return null
+  return (
+    <div className={cn('space-y-0.5', depth > 0 && 'border-l border-border/50 ml-2 pl-1.5')}>
+      {nodes.map((node, idx) => {
+        const hasChildren = Boolean(node.subdirectories && node.subdirectories.length > 0)
+        return (
+          <div key={`${node.name}_${idx}`} className="text-xs">
+            <div
+              className="flex items-center gap-1.5 py-0.5 px-1.5 rounded-md hover:bg-muted/40 transition-colors select-none"
+              title={node.name}
+            >
+              <MaterialIcon
+                icon={hasChildren ? 'folder_open' : 'folder'}
+                className={cn(
+                  'text-xs shrink-0',
+                  depth === 0 ? 'text-amber-500' : 'text-amber-500/80'
+                )}
+              />
+              <span className="font-medium text-foreground/90 truncate">{node.name}</span>
+            </div>
+            {hasChildren && (
+              <ReadonlyDirectoryTree nodes={node.subdirectories} depth={depth + 1} />
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+/**
+ * 推荐候选目录结构卡片：
+ * 仅展示虚拟目录名（结构名）与真实的目录结构树，空间充裕时一行多卡，不足自动换行
+ */
+const StructureCard: React.FC<{
+  struct: RecommendedStructureItem
+  selectedIdentityNames: string[]
+  onSelectStructure: IdentityBlueprintSelectViewProps['onSelectStructure']
+}> = ({ struct, selectedIdentityNames, onSelectStructure }) => {
+  const treeNodes = useMemo(() => pathsToDirectoryNodes(struct.paths || []), [struct.paths])
+
+  return (
+    <div className="p-4 rounded-xl border border-border/70 hover:border-primary/60 bg-card hover:bg-card/90 transition-all duration-200 shadow-xs flex flex-col justify-between space-y-3 h-full">
+      <div className="space-y-2.5 flex-1 flex flex-col min-h-0">
+        {/* 目录结构名（虚拟目录名） */}
+        <div className="flex items-center gap-2 min-w-0">
+          <MaterialIcon icon="folder_special" className="text-primary text-base shrink-0" />
+          <h4 className="text-sm font-bold text-foreground truncate" title={struct.name}>
+            {struct.name}
+          </h4>
+        </div>
+
+        {/* 真实的目录结构树 */}
+        <div className="flex-1 min-h-[140px] max-h-[260px] overflow-y-auto p-2.5 rounded-lg bg-muted/20 border border-border/40 custom-scrollbar">
+          {treeNodes.length > 0 ? (
+            <ReadonlyDirectoryTree nodes={treeNodes} />
+          ) : (
+            <div className="flex items-center justify-center h-full py-6 text-muted-foreground text-xs italic">
+              {t('暂无目录结构')}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 卡片底部操作按钮 */}
+      <div className="pt-2 border-t border-border/40 flex items-center justify-end">
+        <Button
+          onClick={() =>
+            onSelectStructure({
+              templateId: struct.templateId,
+              name: struct.name,
+              paths: struct.paths,
+              rationale: struct.rationale,
+              identities: selectedIdentityNames
+            })
+          }
+          className="w-full h-8 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center gap-1.5 shadow-xs px-3"
+        >
+          <MaterialIcon icon="check" className="text-sm" />
+          <span>{t('使用此结构')}</span>
+        </Button>
+      </div>
+    </div>
+  )
 }
 
 export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewProps> = ({
@@ -340,7 +438,7 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
             className="h-8 text-xs bg-primary hover:bg-primary/90 text-primary-foreground shrink-0"
           >
             <MaterialIcon
-              icon={isLoading ? 'progress_activity' : 'tune'}
+              icon={isLoading ? 'sync' : 'tune'}
               className={cn('text-xs mr-1', isLoading && 'animate-spin')}
             />
             <span>{isLoading ? t('计算中...') : t('匹配')}</span>
@@ -568,112 +666,19 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
 
           {isLoading ? (
             <div className="h-64 flex flex-col items-center justify-center space-y-3 text-muted-foreground">
-              <MaterialIcon icon="progress_activity" className="text-3xl animate-spin text-primary" />
+              <MaterialIcon icon="sync" className="text-3xl animate-spin text-primary" />
               <p className="text-sm">{t('正在协同计算最契合的目录模板...')}</p>
             </div>
           ) : displayStructures.length > 0 ? (
-            <div className="grid grid-cols-1 gap-4 max-w-4xl">
-              {displayStructures.map((struct, idx) => {
-                const matchPct = Math.round((struct.score || 0) * 100)
-                return (
-                  <div
-                    key={struct.templateId || idx}
-                    className="p-5 rounded-2xl border-2 border-border/70 hover:border-primary/60 bg-card hover:bg-card/90 transition-all duration-200 shadow-xs flex flex-col justify-between space-y-4"
-                  >
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
-                            {idx + 1}
-                          </div>
-                          <div>
-                            <h4 className="text-base font-bold text-foreground flex items-center gap-2">
-                              {struct.name}
-                            </h4>
-                          </div>
-                        </div>
-
-                        <span
-                          className={cn(
-                            'text-xs font-bold px-2.5 py-0.5 rounded-full border flex items-center gap-1',
-                            matchPct >= 80
-                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                              : 'bg-primary/10 text-primary border-primary/20'
-                          )}
-                        >
-                          <MaterialIcon icon="verified" className="text-xs" />
-                          <span>{t('{pct}% 契合度', { pct: matchPct })}</span>
-                        </span>
-                      </div>
-
-                      {/* 理由说明 */}
-                      <p className="text-xs text-muted-foreground leading-relaxed bg-muted/40 p-2.5 rounded-xl border border-border/40">
-                        <span className="font-semibold text-foreground/85 mr-1">{t('推荐理由:')}</span>
-                        {struct.rationale}
-                      </p>
-
-                      {/* 生命周期阶段标签 */}
-                      {struct.lifecycleStages && struct.lifecycleStages.length > 0 && (
-                        <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                          <span className="text-[11px] text-muted-foreground mr-1">
-                            {t('全周期阶段:')}
-                          </span>
-                          {struct.lifecycleStages.map((stage, sIdx) => (
-                            <Badge
-                              key={sIdx}
-                              variant="outline"
-                              className="text-[10px] font-normal px-2 py-0.2 bg-background"
-                            >
-                              {stage}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* 目录路径预览 */}
-                      <div className="space-y-1.5 pt-2">
-                        <span className="text-[11px] font-semibold text-foreground/80 block">
-                          {t('包含的典型目录结构 ({count} 个):', { count: struct.paths.length })}
-                        </span>
-                        <div className="max-h-36 overflow-y-auto p-2.5 rounded-xl bg-muted/20 border border-border/40 grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs text-muted-foreground">
-                          {struct.paths.slice(0, 10).map((path, pIdx) => (
-                            <div key={pIdx} className="flex items-center gap-1.5 truncate">
-                              <MaterialIcon icon="folder" className="text-xs text-amber-500 shrink-0" />
-                              <span className="truncate font-mono text-[11px]">{path}</span>
-                            </div>
-                          ))}
-                          {struct.paths.length > 10 && (
-                            <div className="text-[11px] text-muted-foreground italic col-span-2 pt-1">
-                              {t('... 以及另外 {more} 个子目录', {
-                                more: struct.paths.length - 10
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 卡片底部操作按钮 */}
-                    <div className="pt-2 border-t border-border/40 flex items-center justify-end">
-                      <Button
-                        onClick={() =>
-                          onSelectStructure({
-                            templateId: struct.templateId,
-                            name: struct.name,
-                            paths: struct.paths,
-                            rationale: struct.rationale,
-                            identities: selectedIdentityNames
-                          })
-                        }
-                        className="h-8 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-1.5 shadow-xs px-4"
-                      >
-                        <MaterialIcon icon="check" className="text-sm" />
-                        <span>{t('使用此结构')}</span>
-                      </Button>
-                    </div>
-                  </div>
-                )
-              })}
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4 w-full">
+              {displayStructures.map((struct, idx) => (
+                <StructureCard
+                  key={struct.templateId || idx}
+                  struct={struct}
+                  selectedIdentityNames={selectedIdentityNames}
+                  onSelectStructure={onSelectStructure}
+                />
+              ))}
             </div>
           ) : (
             <div className="h-64 flex flex-col items-center justify-center space-y-3 text-muted-foreground text-center">

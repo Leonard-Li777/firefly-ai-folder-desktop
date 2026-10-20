@@ -11,10 +11,10 @@ export interface ReshapeOptions {
   baseTreeOutline: VirtualDirectoryNode[]
   rawMatches: Record<number | string, FilePathMatchItem[]>
   filesMap: Record<number | string, any>
-  y: number // 及格线阈值 [0.25, 0.90]，默认 0.40
+  y: number // 及格线阈值 [0.05, 0.90]，默认 0.40
   n: number // 多目录归属上限 [1, 5]，默认 1
   userPinnedFileMap?: Map<number | string, string[]> // 用户手动微调指定路径映射（锁定保护）
-  fallbackToTop1IfEmpty?: boolean // 当全量或单文件按 y 过滤不及格时，是否将具备物理底限（>=0.25）的 Top-1 作为保底归类（默认 true）
+  fallbackToTop1IfEmpty?: boolean // 当全量或单文件按 y 过滤不及格时，是否将具备物理底限（>=0.25）的 Top-1 作为保底归类（默认 false）
 }
 
 export interface ReshapeResult {
@@ -40,7 +40,7 @@ export function reshapeDirectoryTree(options: ReshapeOptions): ReshapeResult {
   } = options
 
   // 1. 约束 y 与 n 在合法区间 (下限与后端绝对底限 floor=0.25 严格对齐)
-  const clampedY = Math.max(0.25, Math.min(0.9, y))
+  const clampedY = Math.max(0.05, Math.min(0.9, y))
   const clampedN = Math.max(1, Math.min(5, Math.floor(n)))
 
   // 2. 深拷贝结构树（排除原有的未归类节点，清空所有 files）
@@ -136,7 +136,7 @@ export function reshapeDirectoryTree(options: ReshapeOptions): ReshapeResult {
     // 且开启了保底逻辑 (fallbackToTop1IfEmpty !== false)，则将 Top-1 最优候选作为保底分配，防止全量文件归入未归类
     if (passed.length === 0 && fallbackToTop1IfEmpty && matches.length > 0) {
       const sortedMatches = matches.slice().sort((a, b) => b.score - a.score)
-      if (sortedMatches[0] && sortedMatches[0].score >= 0.25) {
+      if (sortedMatches[0] && sortedMatches[0].score >= 0.05) {
         passed = [sortedMatches[0]]
       }
     }

@@ -150,7 +150,7 @@ export const UndoHistoryDialog: React.FC<UndoHistoryDialogProps> = ({
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center mb-2">
-                        <MaterialIcon icon="folder_move" className="text-blue-500 text-lg mr-2" />
+                        <MaterialIcon icon="drive_file_move" className="text-blue-500 text-lg mr-2" />
                         <span className="font-semibold text-foreground">
                           {formatDate(session.timestamp)}
                         </span>

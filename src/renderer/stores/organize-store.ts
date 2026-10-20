@@ -249,7 +249,7 @@ export const useOrganizeStore = create<OrganizeStoreState>(set => ({
       rawMatches: {},
       filesMap: {},
       userPinnedFileMap: new Map(),
-      thresholdScore: 0.6,
+      thresholdScore: 0.4,
       maxCandidatesPerFile: 1
     })
 }))
