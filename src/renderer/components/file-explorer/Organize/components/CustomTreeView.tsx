@@ -300,8 +300,7 @@ export const CustomTreeView = forwardRef<CustomTreeViewHandle, CustomTreeViewPro
     () => ({
       submit: () => handleSubmit()
     }),
-    // handleSubmit 依赖的均为渲染期内状态，此处按渲染快照捕获
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // handleSubmit 每次渲染重建，依赖渲染期内状态，此处按渲染快照捕获
     [name, strategy, isExternalAi, isDirty, parsedTree, workspaceDirectoryPath, onSubmit]
   )
 
