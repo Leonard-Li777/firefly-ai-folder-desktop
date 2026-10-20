@@ -1632,7 +1632,14 @@ export class OmniService {
       JSON.stringify(reqBody)
     )
 
-    const timeoutMs = options?.timeoutMs || 120000
+    const isVideoOrAudio = Boolean(
+      options?.videoFrameIntervalSeconds !== undefined ||
+      options?.audioAnalysisDuration !== undefined ||
+      filePath.match(/\.(mp4|mkv|mov|avi|flv|wmv|webm|ts|m4v|mp3|wav|flac|m4a|aac|ogg)$/i)
+    )
+    // 音视频多模态抽帧与语音转录包含 CPU ONNX 推理，长视频需要更宽裕的超时窗口（默认 10 分钟），杜绝 120s 强杀降级
+    const defaultTimeout = isVideoOrAudio ? 600000 : 120000
+    const timeoutMs = options?.timeoutMs || defaultTimeout
 
     const doFetch = async () => {
       const res = await fetch(`${this.baseUrl}/api/perceive`, {

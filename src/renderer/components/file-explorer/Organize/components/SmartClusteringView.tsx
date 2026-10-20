@@ -74,6 +74,10 @@ const SmartClusteringViewInner = (
   const currentRequestIdRef = React.useRef<number>(0)
   const lastExecutedPromptRef = React.useRef<string | null>(null)
 
+  // 始终持有最新 props 引用，确保 executeClustering 句柄永久稳定，杜绝父组件渲染导致死循环重聚类
+  const paramsRef = React.useRef({ workspaceId, workspaceDirectoryPath, fileIds })
+  paramsRef.current = { workspaceId, workspaceDirectoryPath, fileIds }
+
   // 执行聚类请求核心函数
   const executeClustering = useCallback(
     async (userPrompt: string) => {
@@ -82,10 +86,11 @@ const SmartClusteringViewInner = (
       setIsGenerating(true)
       setErrorMsg('')
       try {
+        const { workspaceId: wsId, workspaceDirectoryPath: wsPath, fileIds: fIds } = paramsRef.current
         const res = await window.electronAPI.organizeRealDirectory.smartClusterHac({
-          workspaceId,
-          workspaceDirectoryPath,
-          fileIds,
+          workspaceId: wsId,
+          workspaceDirectoryPath: wsPath,
+          fileIds: fIds,
           prompt: userPrompt.trim()
         })
 
@@ -115,13 +120,20 @@ const SmartClusteringViewInner = (
         }
       }
     },
-    [workspaceId, workspaceDirectoryPath, fileIds]
+    []
   )
 
-  // 首启自动生成基准聚类
+  // 首启自动生成基准聚类（通过 workspaceKey 守卫，仅工作区或待整理集合实质变动时初始化一次，杜绝重复渲染死循环）
+  const fileIdsKey = Array.isArray(fileIds) ? fileIds.join(',') : ''
+  const workspaceKey = `${workspaceId ?? ''}::${workspaceDirectoryPath ?? ''}::${fileIdsKey}`
+  const lastInitializedKeyRef = React.useRef<string | null>(null)
+
   useEffect(() => {
-    executeClustering('')
-  }, [executeClustering])
+    if (lastInitializedKeyRef.current !== workspaceKey) {
+      lastInitializedKeyRef.current = workspaceKey
+      executeClustering('')
+    }
+  }, [workspaceKey, executeClustering])
 
   // 输入提示词防抖自动聚类 (仅在非脏树状态下自动触发，防抖 600ms)
   useEffect(() => {
@@ -310,11 +322,16 @@ const SmartClusteringViewInner = (
   useImperativeHandle(ref, () => ({ save: handleSave }), [handleSave])
 
   // 保存按钮可用态/保存中态上报，驱动面包屑栏按钮的禁用与「正在保存...」文案
+  const lastReportedStateRef = React.useRef<{ canSave: boolean; isSaving: boolean }>({ canSave: false, isSaving: false })
   useEffect(() => {
-    onSaveStateChange?.({
-      canSave: tree.length > 0 && !isGenerating && !isSaving,
-      isSaving
-    })
+    const nextCanSave = tree.length > 0 && !isGenerating && !isSaving
+    if (
+      lastReportedStateRef.current.canSave !== nextCanSave ||
+      lastReportedStateRef.current.isSaving !== isSaving
+    ) {
+      lastReportedStateRef.current = { canSave: nextCanSave, isSaving }
+      onSaveStateChange?.({ canSave: nextCanSave, isSaving })
+    }
   }, [tree.length, isGenerating, isSaving, onSaveStateChange])
 
   return (

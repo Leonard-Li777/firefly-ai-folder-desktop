@@ -245,6 +245,29 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
   const [workspaceSearchResults, setWorkspaceSearchResults] = useState<FileType[]>([])
   const [isSearchingAllDirs, setIsSearchingAllDirs] = useState(false)
   const searchDebounceRef = useRef<NodeJS.Timeout | null>(null)
+  const searchSeqRef = useRef<number>(0)
+
+  // 监听后端两阶段渐进式搜索推流：Phase 1 毫秒级字面命中秒级上屏，Phase 2 语义向量平滑更新
+  useEffect(() => {
+    if (!window.electronAPI?.onSearchProgress) return
+
+    const unsubscribe = window.electronAPI.onSearchProgress(payload => {
+      // 丢弃旧序号过时推流，杜绝乱序竞态
+      if (payload.seq !== searchSeqRef.current) return
+
+      if (payload.phase === 'phase1') {
+        setWorkspaceSearchResults(payload.items as any)
+      } else if (payload.phase === 'phase2') {
+        setWorkspaceSearchResults(payload.items as any)
+      }
+    })
+
+    return () => {
+      if (typeof unsubscribe === 'function') {
+        unsubscribe()
+      }
+    }
+  }, [])
 
   const toggleQueue = useAnalysisQueueStore(s => s.toggleQueue)
   const addItems = useAnalysisQueueStore(s => s.addItems)
@@ -323,18 +346,26 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
     setIsSearchingAllDirs(true)
 
     searchDebounceRef.current = setTimeout(async () => {
+      const currentSeq = ++searchSeqRef.current
       try {
         const results = await window.electronAPI!.searchWorkspaceFiles(
           keyword,
-          currentWorkspaceDirectory.path
+          currentWorkspaceDirectory.path,
+          { stream: true, seq: currentSeq }
         )
-        // 后端已返回 FileItem 格式，直接使用
-        setWorkspaceSearchResults(results)
+        // 校验序号，防止过时请求覆盖
+        if (currentSeq === searchSeqRef.current) {
+          setWorkspaceSearchResults(results as any)
+        }
       } catch (error) {
-        logger.error(LogCategory.RENDERER, '跨目录搜索失败:', error)
-        setWorkspaceSearchResults([])
+        if (currentSeq === searchSeqRef.current) {
+          logger.error(LogCategory.RENDERER, '跨目录搜索失败:', error)
+          setWorkspaceSearchResults([])
+        }
       } finally {
-        setIsSearchingAllDirs(false)
+        if (currentSeq === searchSeqRef.current) {
+          setIsSearchingAllDirs(false)
+        }
       }
     }, 300)
 
@@ -351,19 +382,18 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
       return { files, directories }
     }
 
-    const keyword = realDirectoryKeyword.toLowerCase().trim()
-
-    // 跨目录搜索进行中，保留当前目录结果作为过渡
-    if (isSearchingAllDirs) {
-      return { files, directories }
-    }
-
-    // 跨目录搜索完成，使用搜索结果
-    if (workspaceSearchResults.length > 0 || !isSearchingAllDirs) {
+    // 只要有跨目录搜索结果（包含 Phase 1 毫秒级字面先行结果），立即优先渲染
+    if (workspaceSearchResults.length > 0) {
       return { files: workspaceSearchResults, directories: [] }
     }
 
-    return { files, directories }
+    // 跨目录搜索已结束且无结果
+    if (!isSearchingAllDirs) {
+      return { files: [], directories: [] }
+    }
+
+    // 搜索刚发起且无结果上屏前，展示空列表等待 Phase 1 毫秒级推送，避免展示当前目录无关文件造成闪烁
+    return { files: [], directories: [] }
   }, [files, directories, realDirectoryKeyword, workspaceSearchResults, isSearchingAllDirs])
 
   const isAllSelected = useMemo(() => {

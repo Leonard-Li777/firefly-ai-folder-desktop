@@ -227,62 +227,8 @@ export class AISchemeGenerator {
         return null
       }
 
-      // 2.1 端侧向量探活与 JIT 预嵌入 (ADR-0056 / JIT Fallback Embedding)：
-      // 探测哪些文档在 Omni zvec 中已拥有有效向量，若缺失则通过 batchEmbedText 毫秒级计算并回填
-      try {
-        const uniqueFpList = docs.map(d => d.fingerprint)
-        const targetDim = (await omniService.getEmbeddingProfile()) === 'gemma_unified' ? 512 : 384
-        const probeRes = await omniClient.getVectors(uniqueFpList, targetDim, 3000)
-        const existingVectorMap = new Map<string, number[]>()
-        if (probeRes?.vectors && Array.isArray(probeRes.vectors)) {
-          for (const item of probeRes.vectors) {
-            if (item.fileFingerprint && Array.isArray(item.vector) && item.vector.length === targetDim) {
-              existingVectorMap.set(item.fileFingerprint, item.vector)
-            }
-          }
-        }
-
-        const missingIndices: number[] = []
-        const missingTexts: string[] = []
-        for (let i = 0; i < docs.length; i++) {
-          const fp = docs[i].fingerprint
-          const existingVec = existingVectorMap.get(fp)
-          if (existingVec && existingVec.length === targetDim) {
-            docs[i].embedding = existingVec
-          } else {
-            missingIndices.push(i)
-            const kws = docs[i].keywords && docs[i].keywords.length > 0
-              ? docs[i].keywords.join(' ')
-              : (fileMap.get(fp)?.[0]?.name || fp)
-            missingTexts.push(kws)
-          }
-        }
-
-        if (missingTexts.length > 0) {
-          logger.info(
-            LogCategory.FILE_ORGANIZATION,
-            `[HAC智能聚类] 检测到 ${missingTexts.length} 份文档缺失持久化向量，正在执行端侧 JIT 快速嵌入...`
-          )
-          const embedRes = await omniService.batchEmbedText(missingTexts, {
-            dim: targetDim,
-            timeoutMs: 10000
-          })
-          if (embedRes?.vectors && embedRes.vectors.length === missingTexts.length) {
-            const { databaseService } = await import('../../database/database-service')
-            for (let j = 0; j < missingIndices.length; j++) {
-              const idx = missingIndices[j]
-              const computedVec = embedRes.vectors[j]
-              if (Array.isArray(computedVec) && computedVec.length === targetDim) {
-                docs[idx].embedding = computedVec
-                // 顺便异步写入 Omni zvec 槽位加速后续使用
-                void databaseService.upsertFileVectorToOmni(docs[idx].fingerprint, computedVec)
-              }
-            }
-          }
-        }
-      } catch (embErr) {
-        logger.warn(LogCategory.FILE_ORGANIZATION, '[HAC智能聚类] JIT 向量探活或预计算异常，交由 Omni 端内自愈:', embErr)
-      }
+      // 2.1 向量直读与进程内自愈 (ADR-0054 / ADR-0056):
+      // 传 embedding: [] 交由 Omni 端侧在进程内直接读取 zvec 槽位，未命中时由 Omni 原生 JIT 自愈，杜绝跨进程大批量文本嵌入的超时等待
 
       // 3. 调用 Omni 原生端侧 HAC 聚类
       // 注意：不传伪随机哈希向量作为 promptEmbedding，留空由 Omni 端直接通过原生 BekkoEmbedder::embed 生成真实语义嵌入
@@ -293,6 +239,8 @@ export class AISchemeGenerator {
       const clusterRes = await omniService.clusterDocuments({
         documents: docs,
         prompt: userPrompt && userPrompt.trim() ? userPrompt.trim() : undefined,
+        distanceThreshold: 0.80,
+        maxLeafSize: Math.max(8, Math.min(30, Math.ceil(docs.length / 3))),
       })
 
       if (!clusterRes || !clusterRes.success || !clusterRes.result) {
@@ -342,13 +290,8 @@ export class AISchemeGenerator {
             count,
           }))
 
-        // 将从提示词中解析出的意图概念作为候选注入
-        for (const pToken of promptConceptTokens) {
-          if (!kwFreq.has(pToken)) {
-            kwItems.push({ keyword: pToken, count: 1 })
-          }
-        }
-
+        // 基于提示词联合打分对簇内真实存在的关键词进行语义提振 (PRD-0058 / ADR-0056)
+        // 杜绝盲目向所有簇注入提示词导致鸠占鹊巢与分类错乱
         const scoringResult = selectBestClusterFolderName(
           kwItems,
           undefined,
@@ -361,23 +304,21 @@ export class AISchemeGenerator {
             : cluster.folderName || DEFAULT_CLUSTER_FALLBACK_NAME
 
         let clusterPath: string[]
-        // 用户明确指定提示词时，基于语义与字符重合度算出的最佳目录名强优于无偏置的默认路径
-        if (userPrompt && userPrompt.trim() && bestFolderName && bestFolderName !== DEFAULT_CLUSTER_FALLBACK_NAME) {
-          if (
-            cluster.path &&
-            cluster.path.length > 1 &&
-            !cluster.path.every(p => p === DEFAULT_CLUSTER_FALLBACK_NAME)
-          ) {
-            clusterPath = [...cluster.path.slice(0, -1), bestFolderName]
-          } else {
-            clusterPath = [bestFolderName]
-          }
-        } else if (
+        // 优先采纳 Omni 聚类引擎生成的多级路径（已在 Rust 端结合 prompt_embedding 进行了层次下钻与路径优化）
+        if (
           cluster.path &&
           cluster.path.length > 0 &&
           !cluster.path.every(p => p === DEFAULT_CLUSTER_FALLBACK_NAME)
         ) {
-          clusterPath = cluster.path
+          clusterPath = [...cluster.path]
+          // 当簇内经过提示词打分提振出高契合代表词且未出现在路径中时，更新叶子路径名称
+          if (bestFolderName && bestFolderName !== DEFAULT_CLUSTER_FALLBACK_NAME) {
+            if (clusterPath.length === 1) {
+              clusterPath = [bestFolderName]
+            } else if (!clusterPath.includes(bestFolderName)) {
+              clusterPath[clusterPath.length - 1] = bestFolderName
+            }
+          }
         } else if (
           scoringResult.rankedKeywords.length >= 2 &&
           cluster.fingerprints.length >= 4

@@ -55,6 +55,8 @@ export const HYBRID_SEARCH_POOL_SIZE = 200
 export const TEMPORAL_CHUNK_MIN_CONFIDENCE = isTestEnvironment() ? 0.60 : 0.65
 /** 视频切片跳轴相对显著性差值阈值（最高切片得分必须高出全视频所有切片均值至少此裕度，证明为目标瞬间而非全局背景色偏） */
 export const TEMPORAL_CHUNK_MIN_PROMINENCE = 0.015
+/** 通用多模态/文档纯向量检索最低语义置信度门限（防止 KNN 强制截取无关文件造成的假阳性噪点） */
+export const MIN_GENERIC_VECTOR_SCORE = isTestEnvironment() ? 0.30 : 0.58
 
 /** BM25 完整 10 列列权（第 0 列为 file_fingerprint UNINDEXED 赋 0.0，随后 9 列对齐 files_fts 架构：name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags） */
 export const HYBRID_BM25_COLUMN_WEIGHTS = [0.0, 4.0, 4.0, 3.0, 3.0, 3.5, 3.5, 3.0, 3.5, 3.5] as const
@@ -579,6 +581,15 @@ export class HybridSearchArbiter {
       const maxScoreCap = isExpandedNonLiteral
         ? (HYBRID_SEARCH_WEIGHTS.name * 0.82) / (HYBRID_SEARCH_RRF_K + 1)
         : undefined
+
+      const hasLiteral = exactRank !== undefined || ftsRank !== undefined || nameBoost >= 0.85
+      // 纯向量假阳性过滤：如果一个文件完全没有字面匹配（无 FTS、无 exact、无文件名命中），
+      // 且无有效时序切片命中，向量得分又低于 MIN_GENERIC_VECTOR_SCORE，坚决不参与排序，防止假阳性污染
+      if (!hasLiteral && (!vec?.matchedChunks || vec.matchedChunks.length === 0)) {
+        if (!vec?.score || vec.score < MIN_GENERIC_VECTOR_SCORE) {
+          continue
+        }
+      }
 
       candidates.push({
         fileFingerprint: fp,
@@ -1188,7 +1199,12 @@ export class HybridSearchArbiter {
           existing.bestScore = m.score
         }
         if (m.chunkIndex !== undefined) {
-          existing.chunks.push({ chunkIndex: m.chunkIndex, score: m.score })
+          const found = existing.chunks.find(c => c.chunkIndex === m.chunkIndex)
+          if (found) {
+            if (m.score > found.score) found.score = m.score
+          } else {
+            existing.chunks.push({ chunkIndex: m.chunkIndex, score: m.score })
+          }
         }
       }
 
@@ -1326,10 +1342,24 @@ export class HybridSearchArbiter {
 
             // 2. 最终输出结果严格按 similarity DESC 降序排列，保证最高分片段排在最前
             filteredChunks.sort((a, b) => b.similarity - a.similarity)
-            agg.matchedChunks = filteredChunks
-            if (filteredChunks.length > 0) {
-              agg.bestChunkIndex = filteredChunks[0].chunkIndex
-              agg.bestChunkScore = filteredChunks[0].similarity
+
+            // 3. 严格区间去重守卫：杜绝返回起止时间重合的重复微缩帧卡片
+            const uniqueChunks: typeof filteredChunks = []
+            for (const c of filteredChunks) {
+              const isDuplicate = uniqueChunks.some(
+                u =>
+                  (Math.round(u.startSec) === Math.round(c.startSec) &&
+                    Math.round(u.endSec) === Math.round(c.endSec)) ||
+                  (u.startSec === c.startSec && u.endSec === c.endSec)
+              )
+              if (!isDuplicate) {
+                uniqueChunks.push(c)
+              }
+            }
+            agg.matchedChunks = uniqueChunks
+            if (uniqueChunks.length > 0) {
+              agg.bestChunkIndex = uniqueChunks[0].chunkIndex
+              agg.bestChunkScore = uniqueChunks[0].similarity
             } else {
               agg.bestChunkIndex = undefined
               agg.bestChunkScore = undefined

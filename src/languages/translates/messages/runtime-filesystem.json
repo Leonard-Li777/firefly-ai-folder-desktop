@@ -572,7 +572,8 @@
     "ko-KR": "콘텐츠 태그",
     "$files": [
       "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(8141-8149)",
-      "src/electron/runtime-services/filesystem/organize-real-directory-service/DatabaseHelper.ts(11613-11621)"
+      "src/electron/runtime-services/filesystem/organize-real-directory-service/DatabaseHelper.ts(12179-12187)",
+      "src/electron/runtime-services/filesystem/organize-real-directory-service/DatabaseHelper.ts(12334-12342)"
     ],
     "$id": 10694
   },
@@ -877,7 +878,7 @@
     "de-DE": "Andere Datei",
     "fr-FR": "Autre fichier",
     "ko-KR": "기타 파일",
-    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(14387-14395)"],
+    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(14753-14761)"],
     "$id": 19963
   },
   "端侧 HAC 智能聚类完成，共识别出 {count} 个主题目录 (耗时 {ms}ms)": {
@@ -890,7 +891,7 @@
     "de-DE": "Intelligentes Clustering von endseitigem HAC ist abgeschlossen und {count} Themenkataloge werden im Konsens festgelegt (zeitaufwändige {ms} ms)",
     "fr-FR": "Le clustering intelligent des HAC côté terminal est terminé et les {count} catalogues de sujets sont déterminés par consensus ({ms} ms chronophages)",
     "ko-KR": "엔드사이드 해크의 지능형 클러스터링이 완료되고{count}주제 카탈로그는 합의에 의해 결정됩니다(시간이 많이 걸리는{ms}밀리초).",
-    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(15695-15743)"],
+    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(16061-16109)"],
     "$id": 19964
   },
   "核心引擎未初始化，请等待初始化完成后再试": {
@@ -904,8 +905,8 @@
     "fr-FR": "Le moteur principal n'a pas été initialisé, veuillez attendre la fin de l'initialisation et réessayer.",
     "ko-KR": "핵심 엔진이 초기화되지 않았습니다. 초기화가 완료된 후 다시 시도해 주세요.",
     "$files": [
-      "src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(28863-28887)",
-      "src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(29729-29753)"
+      "src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(29229-29253)",
+      "src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(30095-30119)"
     ],
     "$id": 8077
   },

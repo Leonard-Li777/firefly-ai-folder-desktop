@@ -172,6 +172,10 @@ export const Organize: React.FC = () => {
   // 动作经 ref 句柄命令式触发（保留视图内提示词优先/默认名兜底与防重复保存逻辑），
   // 可用态/保存中态由视图经 onSaveStateChange 上报后同步按钮禁用与文案
   const smartClusteringRef = useRef<SmartClusteringViewHandle>(null)
+  const toOrganizeFileIds = useMemo(
+    () => toOrganizeFiles.map(f => f.id),
+    [toOrganizeFiles]
+  )
   const [smartClusterSaveState, setSmartClusterSaveState] = useState<{
     canSave: boolean
     isSaving: boolean
@@ -844,7 +848,7 @@ export const Organize: React.FC = () => {
                               ref={smartClusteringRef}
                               workspaceId={currentWorkspaceDirectory?.id}
                               workspaceDirectoryPath={currentWorkspaceDirectory?.path || ''}
-                              fileIds={toOrganizeFiles.map(f => f.id)}
+                              fileIds={toOrganizeFileIds}
                               onSaveVirtualDirectory={handleSaveSmartClusteringVDir}
                               onSaveStateChange={setSmartClusterSaveState}
                               onBack={() => setStage('mode-select')}
@@ -878,7 +882,7 @@ export const Organize: React.FC = () => {
                               <IdentityBlueprintSelectView
                                 workspaceId={currentWorkspaceDirectory?.id}
                                 workspaceDirectoryPath={currentWorkspaceDirectory?.path || ''}
-                                fileIds={toOrganizeFiles.map(f => f.id)}
+                                fileIds={toOrganizeFileIds}
                                 onSelectStructure={handleSelectIdentityStructure}
                                 onBack={() => setStage('mode-select')}
                               />
