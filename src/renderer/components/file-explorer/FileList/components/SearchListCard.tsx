@@ -240,7 +240,7 @@ interface SearchListCardProps {
 /**
  * 搜索列表模式专属卡片（三行式多模态卡片架构，定高 104px）：
  * - 左侧：64×64px 媒体区（图片优先渲染真实缩略图，其他展示系统文件图标）
- * - 右侧第一行：主文件名 + 双层 Flex 绝对右对齐度量（弹性召回槽 + 固定 188px 日期/大小列）
+ * - 右侧第一行：主文件名 + 双层 Flex 右侧度量（国际化自适应召回徽标 + 确定宽度日期/大小列）
  * - 右侧第二行：真实文件名（Hover 浮现绝对物理路径） + 标签序列（溢出自动截断）
  * - 右侧第三行：类型化专有内容（文本高亮摘要 / 图片多模态描述 / 视频微缩抽帧序列 / 音频 ASR 命名芯片）
  */
@@ -480,13 +480,13 @@ export const SearchListCard = React.memo(
               )}
             </div>
 
-            {/* 右侧：双层 Flex 度量区（弹性 Badge 槽 + 绝对锁定 188px 列） */}
+            {/* 右侧：双层 Flex 度量区（国际化自适应召回徽标 + 确定宽度时间与大小列） */}
             <div className="flex items-center gap-2 shrink-0 ml-2">
-              {/* 1. 弹性召回徽标槽 */}
-              <div className="flex items-center gap-1 max-w-[200px] overflow-hidden justify-end">
+              {/* 1. 语义召回与展开徽标（随国际化语言长度自适应展开，无多余空隙） */}
+              <div className="flex items-center gap-1 shrink-0">
                 {item.matchedPinyinCandidate && (
                   <span
-                    className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded border text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/70 border-purple-200 dark:border-purple-800 shrink-0"
+                    className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded border text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/70 border-purple-200 dark:border-purple-800 shrink-0 whitespace-nowrap"
                     title={t('拼音展开: {cand}', { cand: item.matchedPinyinCandidate })}
                   >
                     <MaterialIcon icon="translate" className="text-[11px]" />
@@ -495,7 +495,7 @@ export const SearchListCard = React.memo(
                 )}
                 {isSemantic && (
                   <span
-                    className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded border text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-950/70 border-violet-200 dark:border-violet-800 shrink-0"
+                    className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded border text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-950/70 border-violet-200 dark:border-violet-800 shrink-0 whitespace-nowrap"
                     title={t('向量语义召回')}
                   >
                     <MaterialIcon icon="psychology" className="text-[11px]" />
@@ -504,10 +504,10 @@ export const SearchListCard = React.memo(
                 )}
               </div>
 
-              {/* 2. 绝对锁定度量列 (固定 188px 纵向对齐) */}
-              <div className="w-[188px] flex items-center justify-end shrink-0 gap-2 font-mono text-[11px]">
+              {/* 2. 确定宽度度量列 (时间固定 78px 靠左，大小固定 70px 靠右，纵向对齐) */}
+              <div className="flex items-center shrink-0 gap-2 font-mono text-[11px]">
                 <span
-                  className="w-[108px] text-right text-muted-foreground/75 truncate"
+                  className="w-[78px] text-left text-muted-foreground/75 truncate shrink-0"
                   title={item.modifiedAt ? formatDateTimeShort(item.modifiedAt) : undefined}
                 >
                   {item.modifiedAt ? formatDateTimeShort(item.modifiedAt) : '-'}

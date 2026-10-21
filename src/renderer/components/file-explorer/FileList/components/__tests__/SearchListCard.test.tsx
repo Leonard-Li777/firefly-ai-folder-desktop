@@ -139,7 +139,7 @@ describe('SearchListCard Component', () => {
       expect(screen.getByText('搜索架构')).toBeDefined()
     })
 
-    it('renders two-tier right-aligned metrics with fixed 188px column', () => {
+    it('renders right-aligned metrics with deterministic date (78px) and size (70px) columns', () => {
       const { container } = render(
         <SearchListCard
           item={textItem}
@@ -151,10 +151,8 @@ describe('SearchListCard Component', () => {
         />
       )
 
-      const fixedMetricCol = container.querySelector('.w-\\[188px\\]')
-      expect(fixedMetricCol).toBeDefined()
+      expect(container.querySelector('.w-\\[78px\\]')).toBeDefined()
       expect(container.querySelector('.w-\\[70px\\]')).toBeDefined()
-      expect(container.querySelector('.w-\\[108px\\]')).toBeDefined()
     })
   })
 
