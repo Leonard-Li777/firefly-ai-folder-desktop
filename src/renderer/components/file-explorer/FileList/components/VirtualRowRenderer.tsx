@@ -80,6 +80,9 @@ const areEqual = (
     prevProps.fileItem?.isUnanalyzed !== nextProps.fileItem?.isUnanalyzed ||
     prevProps.fileItem?.matchedChunk !== nextProps.fileItem?.matchedChunk ||
     prevProps.fileItem?.matchedChunks !== nextProps.fileItem?.matchedChunks ||
+    prevProps.fileItem?.multimodalContent !== nextProps.fileItem?.multimodalContent ||
+    prevProps.fileItem?.thumbnailPath !== nextProps.fileItem?.thumbnailPath ||
+    prevProps.fileItem?.tags !== nextProps.fileItem?.tags ||
     prevProps.fileItem?.virtualRowKey !== nextProps.fileItem?.virtualRowKey ||
     prevProps.fileItem?.chunkRowIndex !== nextProps.fileItem?.chunkRowIndex ||
     prevProps.onFileSelect !== nextProps.onFileSelect ||
@@ -684,6 +687,9 @@ const areVirtualRowPropsEqual = (prevProps: RowRendererProps, nextProps: RowRend
   if (prevFile?.matchType !== nextFile?.matchType) return false
   if (prevFile?.similarity !== nextFile?.similarity) return false
   if (prevFile?.isUnanalyzed !== nextFile?.isUnanalyzed) return false
+  if (prevFile?.multimodalContent !== nextFile?.multimodalContent) return false
+  if (prevFile?.thumbnailPath !== nextFile?.thumbnailPath) return false
+  if (prevFile?.tags !== nextFile?.tags) return false
   if (
     prevFile?.matchedChunk?.startSec !== nextFile?.matchedChunk?.startSec ||
     prevFile?.matchedChunk?.endSec !== nextFile?.matchedChunk?.endSec ||
