@@ -17,6 +17,8 @@ export interface FileType extends BaseFileType {
   similarity?: number
   /** 是否为尚未 AI 分析的文件（命中文件名） */
   isUnanalyzed?: boolean
+  /** 多模态融合标签 (tag_group === 'fused') */
+  fusedTags?: string[]
   /** 视频切片命中信息（跳轴搜索） */
   matchedChunk?: {
     chunkIndex?: number

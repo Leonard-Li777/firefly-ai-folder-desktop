@@ -17,6 +17,8 @@ import { formatVideoTimestamp } from '../../../../lib/video-preview-utils'
 import { getExtFromSmartName } from '../../../../lib/preview-utils'
 import { usePreviewOverlayStore } from '../../../../stores/preview-overlay-store'
 import { PageId } from '../../../../constants/page-ids'
+import { useSearchStore } from '../../../../stores/search-store'
+import { getOrganizedSearchTags, OrganizedTagItem } from './search-list-tag-utils'
 
 /**
  * 搜索列表模式专用行高（三行式多模态卡片排版，规格书定高 104px）
@@ -203,6 +205,10 @@ interface SearchListCardProps {
   isActive?: boolean
   index: number
   pageId?: PageId
+  /** 显式传入搜索关键词（用于单测或外部指定，缺省自动从 search-store 订阅） */
+  searchKeyword?: string
+  /** 显式传入搜索分词列表（用于单测或外部指定，缺省自动从 search-store 订阅） */
+  searchTokens?: string[]
 }
 
 /**
@@ -223,10 +229,36 @@ export const SearchListCard = React.memo(
     isSelected,
     isActive,
     index,
-    pageId
+    pageId,
+    searchKeyword: propKeyword,
+    searchTokens: propTokens
   }: SearchListCardProps) => {
     const [isQueueSubmitting, setIsQueueSubmitting] = useState(false)
     const [imgError, setImgError] = useState(false)
+
+    const storeGlobalKeyword = useSearchStore(s => s.globalSearchKeyword)
+    const storeRealKeyword = useSearchStore(s => s.realDirectoryKeyword)
+    const storeAnalyzedKeyword = useSearchStore(s => s.analyzedDirectoryKeyword)
+    const storeVirtualKeyword = useSearchStore(s => s.virtualDirectoryKeyword)
+    const storeTokens = useSearchStore(s => s.searchTokens)
+
+    const effectiveKeyword =
+      propKeyword !== undefined
+        ? propKeyword
+        : (storeGlobalKeyword || storeAnalyzedKeyword || storeVirtualKeyword || storeRealKeyword || '')
+    const effectiveTokens =
+      propTokens && propTokens.length > 0 ? propTokens : storeTokens
+
+    // 标签微胶囊三级梯队编排与泛化过滤（关键词优先 > 融合标签次之 > 其它标签确定性随机；过滤全年龄/已归档）
+    const organizedTags = useMemo<OrganizedTagItem[]>(() => {
+      return getOrganizedSearchTags({
+        tags: item.tags,
+        fusedTags: item.fusedTags,
+        searchTokens: effectiveTokens,
+        searchKeyword: effectiveKeyword,
+        seed: item.path || item.fileFingerprint || item.id || ''
+      })
+    }, [item.tags, item.fusedTags, effectiveTokens, effectiveKeyword, item.path, item.fileFingerprint, item.id])
 
     // 虚拟行复用保护：路径变更时重置图片加载错误状态，防状态穿透
     useEffect(() => {
@@ -472,18 +504,25 @@ export const SearchListCard = React.memo(
               <HighlightText text={safeItemName} />
             </span>
 
-            {/* 标签微胶囊序列（溢出自动隐藏截断） */}
-            {item.tags && item.tags.length > 0 && (
+            {/* 标签微胶囊序列（三级梯队排序：关键词命中 > 融合标签 > 其它随机；过滤全年龄/已归档） */}
+            {organizedTags.length > 0 && (
               <div
                 className="flex items-center gap-1 overflow-hidden shrink min-w-0"
-                title={item.tags.join(', ')}
+                title={organizedTags.map(t => `#${t.name}`).join(' ')}
               >
-                {item.tags.map((tag, tIdx) => (
+                {organizedTags.map((tagItem, tIdx) => (
                   <span
-                    key={tIdx}
-                    className="inline-flex items-center text-[10px] bg-secondary/60 text-secondary-foreground px-1.5 py-0.2 rounded border border-border/40 shrink-0 truncate max-w-[120px]"
+                    key={`${tagItem.name}-${tIdx}`}
+                    className={cn(
+                      'inline-flex items-center text-[10px] px-1.5 py-0.2 rounded border shrink-0 truncate max-w-[120px]',
+                      tagItem.isKeywordMatch
+                        ? 'bg-primary/15 text-primary border-primary/35 font-medium'
+                        : tagItem.isFused
+                          ? 'bg-secondary/80 text-secondary-foreground border-border/50'
+                          : 'bg-secondary/45 text-muted-foreground/90 border-border/30'
+                    )}
                   >
-                    #{tag}
+                    #{tagItem.name}
                   </span>
                 ))}
               </div>

@@ -325,4 +325,101 @@ describe('SearchListCard Component', () => {
       expect(window.electronAPI!.addToAnalysisQueue).toHaveBeenCalled()
     })
   })
-})
+
+  describe('Tag filtering and three-tier sorting in SearchListCard', () => {
+    it('filters out pervasive tags like 全年龄, 已归档, 无水印 by default', () => {
+      const itemWithPervasiveTags: FileType = {
+        id: 'filter-1',
+        name: 'sample.png',
+        path: 'D:\\workspace\\sample.png',
+        parentPath: 'D:\\workspace',
+        size: 1024,
+        extension: 'png',
+        modifiedAt: new Date('2026-10-21T01:00:00Z'),
+        tags: ['全年龄', '已归档', '无水印', '自然风景', '日落']
+      }
+
+      render(
+        <SearchListCard
+          item={itemWithPervasiveTags}
+          safeItemName="sample.png"
+          formatFileSize={defaultFormatSize}
+          onItemClick={mockItemClick}
+          onContextMenu={mockContextMenu}
+          index={0}
+          searchKeyword="风景"
+        />
+      )
+
+      expect(screen.queryByText('#全年龄')).toBeNull()
+      expect(screen.queryByText('#已归档')).toBeNull()
+      expect(screen.queryByText('#无水印')).toBeNull()
+      expect(screen.getByText('#自然风景')).toBeDefined()
+      expect(screen.getByText('#日落')).toBeDefined()
+    })
+
+    it('permits pervasive tag when explicitly searched by user', () => {
+      const itemWithArchived: FileType = {
+        id: 'filter-2',
+        name: 'report.pdf',
+        path: 'D:\\workspace\\report.pdf',
+        parentPath: 'D:\\workspace',
+        size: 1024,
+        extension: 'pdf',
+        modifiedAt: new Date('2026-10-21T01:00:00Z'),
+        tags: ['全年龄', '已归档', '财务报表']
+      }
+
+      render(
+        <SearchListCard
+          item={itemWithArchived}
+          safeItemName="report.pdf"
+          formatFileSize={defaultFormatSize}
+          onItemClick={mockItemClick}
+          onContextMenu={mockContextMenu}
+          index={0}
+          searchKeyword="已归档"
+        />
+      )
+
+      expect(screen.queryByText('#全年龄')).toBeNull()
+      expect(screen.getByText('#已归档')).toBeDefined()
+      expect(screen.getByText('#财务报表')).toBeDefined()
+    })
+
+    it('orders keyword-matched tags first, then fused tags, then other tags', () => {
+      const itemWithTiers: FileType = {
+        id: 'tier-1',
+        name: 'photo.jpg',
+        path: 'D:\\workspace\\photo.jpg',
+        parentPath: 'D:\\workspace',
+        size: 1024,
+        extension: 'jpg',
+        modifiedAt: new Date('2026-10-21T01:00:00Z'),
+        tags: ['热带海滩', '晚霞', '高清4K', '日落'],
+        fusedTags: ['晚霞', '日落']
+      }
+
+      const { container } = render(
+        <SearchListCard
+          item={itemWithTiers}
+          safeItemName="photo.jpg"
+          formatFileSize={defaultFormatSize}
+          onItemClick={mockItemClick}
+          onContextMenu={mockContextMenu}
+          index={0}
+          searchKeyword="海滩"
+        />
+      )
+
+      const tagEls = Array.from(container.querySelectorAll('.search-list-card span'))
+        .filter(el => el.textContent?.startsWith('#'))
+        .map(el => el.textContent)
+
+      expect(tagEls[0]).toBe('#热带海滩')
+      expect(['#晚霞', '#日落']).toContain(tagEls[1])
+      expect(['#晚霞', '#日落']).toContain(tagEls[2])
+      expect(tagEls[3]).toBe('#高清4K')
+    })
+  })
+});

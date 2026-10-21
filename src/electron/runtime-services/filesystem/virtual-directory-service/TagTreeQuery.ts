@@ -2793,7 +2793,13 @@ export class TagTreeQuery {
             FROM file_tag_relations ftr
             LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
             WHERE ftr.file_fingerprint = wf.file_fingerprint
-          ) as dimension_tags
+          ) as dimension_tags,
+          (
+            SELECT json_group_array(COALESCE(ft.name, ftr.tag_code))
+            FROM file_tag_relations ftr
+            LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
+            WHERE ftr.file_fingerprint = wf.file_fingerprint AND ftr.tag_group = 'fused'
+          ) as fused_tags
         FROM workspace_files wf
         LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
         LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
@@ -2994,7 +3000,13 @@ export class TagTreeQuery {
           FROM file_tag_relations ftr
           LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
           WHERE ftr.file_fingerprint = wf.file_fingerprint
-        ) as dimension_tags
+        ) as dimension_tags,
+          (
+            SELECT json_group_array(COALESCE(ft.name, ftr.tag_code))
+            FROM file_tag_relations ftr
+            LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
+            WHERE ftr.file_fingerprint = wf.file_fingerprint AND ftr.tag_group = 'fused'
+          ) as fused_tags
       FROM workspace_files wf
       LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
       LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
@@ -3223,7 +3235,13 @@ export class TagTreeQuery {
             FROM file_tag_relations ftr
             LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
             WHERE ftr.file_fingerprint = wf.file_fingerprint
-          ) as dimension_tags
+          ) as dimension_tags,
+          (
+            SELECT json_group_array(COALESCE(ft.name, ftr.tag_code))
+            FROM file_tag_relations ftr
+            LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
+            WHERE ftr.file_fingerprint = wf.file_fingerprint AND ftr.tag_group = 'fused'
+          ) as fused_tags
         FROM workspace_files wf
         LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
         LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
@@ -3343,6 +3361,24 @@ export class TagTreeQuery {
           }
         }
 
+        let fusedTags: string[] = []
+        if (file.fused_tags) {
+          try {
+            fusedTags = typeof file.fused_tags === 'string' ? JSON.parse(file.fused_tags) : file.fused_tags
+          } catch {
+            fusedTags = []
+          }
+        }
+        if (Array.isArray(fusedTags) && fusedTags.length > 0) {
+          fusedTags = fusedTags.map(t => {
+            if (t && (t.startsWith('builtin.') || t.startsWith('omw.') || t.startsWith('hownet.'))) {
+              const canonical = getCanonicalConceptName(t)
+              return canonical || (t.split('.').pop() || t)
+            }
+            return t
+          })
+        }
+
         if (Array.isArray(tags) && tags.length > 0) {
           tags = tags.map(t => {
             if (t && (t.startsWith('builtin.') || t.startsWith('omw.') || t.startsWith('hownet.'))) {
@@ -3385,7 +3421,8 @@ export class TagTreeQuery {
           relativePathPrefix: relativePathPrefix || undefined,
           author: file.author || undefined,
           language: file.language || undefined,
-          tags: Array.isArray(tags) ? tags : []
+          tags: Array.isArray(tags) ? tags : [],
+          fusedTags: Array.isArray(fusedTags) ? fusedTags : []
         }
       })
       .filter((item): item is NonNullable<typeof item> => item !== null)
