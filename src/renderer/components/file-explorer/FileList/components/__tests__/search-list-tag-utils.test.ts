@@ -1,24 +1,43 @@
 import { describe, it, expect } from 'vitest'
+import { concept, getCanonicalConceptName } from '@firefly/shared'
 import {
   isPervasiveTag,
   isTagMatchingTokens,
   deterministicShuffle,
   getOrganizedSearchTags,
-  PERVASIVE_GENERIC_TAGS
+  PERVASIVE_GENERIC_TAGS,
+  PERVASIVE_CONCEPT_CODES
 } from '../search-list-tag-utils'
 
 describe('search-list-tag-utils', () => {
+  describe('PERVASIVE_CONCEPT_CODES 受控单源定义', () => {
+    it('包含六大核心受控泛化代码', () => {
+      expect(PERVASIVE_CONCEPT_CODES).toContain(concept('全年龄'))
+      expect(PERVASIVE_CONCEPT_CODES).toContain(concept('已归档'))
+      expect(PERVASIVE_CONCEPT_CODES).toContain(concept('未归档'))
+      expect(PERVASIVE_CONCEPT_CODES).toContain(concept('公开'))
+      expect(PERVASIVE_CONCEPT_CODES).toContain(concept('无水印'))
+      expect(PERVASIVE_CONCEPT_CODES).toContain(concept('无码'))
+    })
+  })
+
   describe('isPervasiveTag 泛化标签判定', () => {
-    it('应正确识别系统默认泛化标签', () => {
-      expect(isPervasiveTag('全年龄')).toBe(true)
-      expect(isPervasiveTag('已归档')).toBe(true)
-      expect(isPervasiveTag('未归档')).toBe(true)
-      expect(isPervasiveTag('公开')).toBe(true)
-      expect(isPervasiveTag('安全')).toBe(true)
-      expect(isPervasiveTag('无水印')).toBe(true)
-      expect(isPervasiveTag('无码')).toBe(true)
-      expect(isPervasiveTag('All Ages')).toBe(true)
-      expect(isPervasiveTag('archived')).toBe(true)
+    it('应正确识别受控代码与规范展示名', () => {
+      // 1. 验证权威受控代码识别
+      expect(isPervasiveTag(concept('全年龄'))).toBe(true)
+      expect(isPervasiveTag(concept('已归档'))).toBe(true)
+      expect(isPervasiveTag(concept('未归档'))).toBe(true)
+      expect(isPervasiveTag(concept('公开'))).toBe(true)
+      expect(isPervasiveTag(concept('无水印'))).toBe(true)
+      expect(isPervasiveTag(concept('无码'))).toBe(true)
+
+      // 2. 验证权威母语规范展示名识别
+      expect(isPervasiveTag(getCanonicalConceptName(concept('全年龄'))!)).toBe(true)
+      expect(isPervasiveTag(getCanonicalConceptName(concept('已归档'))!)).toBe(true)
+      expect(isPervasiveTag(getCanonicalConceptName(concept('未归档'))!)).toBe(true)
+      expect(isPervasiveTag(getCanonicalConceptName(concept('公开'))!)).toBe(true)
+      expect(isPervasiveTag(getCanonicalConceptName(concept('无水印'))!)).toBe(true)
+      expect(isPervasiveTag(getCanonicalConceptName(concept('无码'))!)).toBe(true)
     })
 
     it('不应误伤业务内容标签', () => {

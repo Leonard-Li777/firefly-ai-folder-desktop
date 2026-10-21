@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
+import { concept, getCanonicalConceptName } from '@firefly/shared'
 import { SearchListCard, SEARCH_LIST_ROW_HEIGHT, sanitizeSnippetHtml } from '../SearchListCard'
 import type { FileType } from '../../types'
 
@@ -328,6 +329,10 @@ describe('SearchListCard Component', () => {
 
   describe('Tag filtering and three-tier sorting in SearchListCard', () => {
     it('filters out pervasive tags like 全年龄, 已归档, 无水印 by default', () => {
+      const allAges = getCanonicalConceptName(concept('全年龄'))!
+      const archived = getCanonicalConceptName(concept('已归档'))!
+      const noWatermark = getCanonicalConceptName(concept('无水印'))!
+
       const itemWithPervasiveTags: FileType = {
         id: 'filter-1',
         name: 'sample.png',
@@ -336,7 +341,7 @@ describe('SearchListCard Component', () => {
         size: 1024,
         extension: 'png',
         modifiedAt: new Date('2026-10-21T01:00:00Z'),
-        tags: ['全年龄', '已归档', '无水印', '自然风景', '日落']
+        tags: [allAges, archived, noWatermark, '自然风景', '日落']
       }
 
       render(
@@ -351,14 +356,17 @@ describe('SearchListCard Component', () => {
         />
       )
 
-      expect(screen.queryByText('#全年龄')).toBeNull()
-      expect(screen.queryByText('#已归档')).toBeNull()
-      expect(screen.queryByText('#无水印')).toBeNull()
+      expect(screen.queryByText(`#${allAges}`)).toBeNull()
+      expect(screen.queryByText(`#${archived}`)).toBeNull()
+      expect(screen.queryByText(`#${noWatermark}`)).toBeNull()
       expect(screen.getByText('#自然风景')).toBeDefined()
       expect(screen.getByText('#日落')).toBeDefined()
     })
 
     it('permits pervasive tag when explicitly searched by user', () => {
+      const allAges = getCanonicalConceptName(concept('全年龄'))!
+      const archived = getCanonicalConceptName(concept('已归档'))!
+
       const itemWithArchived: FileType = {
         id: 'filter-2',
         name: 'report.pdf',
@@ -367,7 +375,7 @@ describe('SearchListCard Component', () => {
         size: 1024,
         extension: 'pdf',
         modifiedAt: new Date('2026-10-21T01:00:00Z'),
-        tags: ['全年龄', '已归档', '财务报表']
+        tags: [allAges, archived, '财务报表']
       }
 
       render(
@@ -378,12 +386,12 @@ describe('SearchListCard Component', () => {
           onItemClick={mockItemClick}
           onContextMenu={mockContextMenu}
           index={0}
-          searchKeyword="已归档"
+          searchKeyword={archived}
         />
       )
 
-      expect(screen.queryByText('#全年龄')).toBeNull()
-      expect(screen.getByText('#已归档')).toBeDefined()
+      expect(screen.queryByText(`#${allAges}`)).toBeNull()
+      expect(screen.getByText(`#${archived}`)).toBeDefined()
       expect(screen.getByText('#财务报表')).toBeDefined()
     })
 

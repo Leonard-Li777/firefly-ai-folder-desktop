@@ -1,41 +1,36 @@
-import { CANONICAL_NAMES } from '@firefly/shared'
+import { concept, getCanonicalConceptName, isControlledConcept } from '@firefly/shared'
 
 /**
- * 低区分度泛化通用标签集合（黑名单）：
- * 这些标签大多数文件默认都有（尺度分级、归档状态、公开密级、无水印/无码物理状态等），
+ * 低区分度泛化通用标签的权威受控概念代码列表（单一事实源，编译期类型约束）：
+ * 这些标签大多数文件默认都有（尺度分级、处理/归档状态、公开密级、水印/打码等物理状态），
+ * 严格依据 PRD-0058 受控概念规范，使用 concept('中文') 获取权威受控代码，
+ * 严禁裸敲 builtin 伪代码或私造局部字典。
  * 在搜索结果列表中默认不显示，避免挤占宝贵的有限排版空间；
  * 仅当用户主动在搜索框中键入对应关键词时，才破例放行至关键词匹配第一梯队。
  */
-export const PERVASIVE_GENERIC_TAGS: ReadonlySet<string> = new Set([
-  '全年龄',
-  'all ages',
-  'all_ages',
-  'builtin.all_ages',
-  '已归档',
-  'archived',
-  'builtin.archived',
-  '未归档',
-  'unarchived',
-  'builtin.unarchived',
-  '公开',
-  'public',
-  'builtin.public',
-  '安全',
-  'safe',
-  'builtin.safe',
-  '无水印',
-  'no watermark',
-  'no_watermark',
-  'builtin.no_watermark',
-  '无码',
-  'no mosaic',
-  'no_mosaic',
-  'builtin.no_mosaic',
-  // 权威受控规范名安全注入
-  CANONICAL_NAMES.ALL_AGE.toLowerCase(),
-  CANONICAL_NAMES.NO_WATERMARK.toLowerCase(),
-  CANONICAL_NAMES.NO_MOSAIC.toLowerCase()
-])
+export const PERVASIVE_CONCEPT_CODES: ReadonlyArray<string> = [
+  concept('全年龄'),
+  concept('已归档'),
+  concept('未归档'),
+  concept('公开'),
+  concept('无水印'),
+  concept('无码')
+]
+
+/**
+ * 低区分度泛化通用标签集合：
+ * 100% 基于 PERVASIVE_CONCEPT_CODES 由单一事实源字典 getCanonicalConceptName 动态派生，
+ * 严禁业务层直接裸写手敲 builtin 代码字符串字面量、自然语言中文字符串或自建多语言并列数组。
+ */
+export const PERVASIVE_GENERIC_TAGS: ReadonlySet<string> = new Set(
+  PERVASIVE_CONCEPT_CODES.flatMap(code => {
+    const canonicalName = getCanonicalConceptName(code)
+    return [
+      code.toLowerCase(),
+      ...(canonicalName ? [canonicalName.toLowerCase()] : [])
+    ]
+  })
+)
 
 export interface OrganizedTagItem {
   name: string
@@ -49,8 +44,18 @@ export interface OrganizedTagItem {
  */
 export function isPervasiveTag(tag: string): boolean {
   if (!tag) return false
-  const norm = tag.trim().toLowerCase()
-  return PERVASIVE_GENERIC_TAGS.has(norm)
+  const trimmed = tag.trim()
+  const lower = trimmed.toLowerCase()
+  if (PERVASIVE_GENERIC_TAGS.has(lower)) {
+    return true
+  }
+  if (isControlledConcept(trimmed)) {
+    const code = concept(trimmed)
+    if (PERVASIVE_GENERIC_TAGS.has(code.toLowerCase())) {
+      return true
+    }
+  }
+  return false
 }
 
 /**
