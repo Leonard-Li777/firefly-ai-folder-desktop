@@ -4,7 +4,7 @@ import { MaterialIcon } from '../../lib/utils'
 import { Button } from '../ui/button'
 import { Switch } from '../ui/switch'
 import { Label } from '../ui/label'
-import { usePreviewOverlayStore } from '../../stores/preview-overlay-store'
+import { usePreviewOverlayStore, getCurrentVideoPlaybackTime } from '../../stores/preview-overlay-store'
 import { TTSActionGroup } from '../common/TTSActionGroup'
 import { isCategory, FileCategory, logger, LogCategory } from '@firefly/shared'
 import { toast } from '../common/Toast'
@@ -73,7 +73,8 @@ export const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
 
     const state = usePreviewOverlayStore.getState()
     const pageFile = pageId ? state.pageStates[pageId] : undefined
-    const effectiveCurrentTime = pageFile?.currentTime ?? state.currentTime
+    const liveTime = getCurrentVideoPlaybackTime()
+    const effectiveCurrentTime = liveTime ?? pageFile?.currentTime ?? state.currentTime
 
     const isVideo = isCategory(targetFilePath, FileCategory.VIDEO)
     const isAudio = isCategory(targetFilePath, FileCategory.AUDIO)

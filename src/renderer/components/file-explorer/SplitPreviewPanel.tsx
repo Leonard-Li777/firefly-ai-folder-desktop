@@ -30,6 +30,8 @@ export const SplitPreviewPanel: React.FC<SplitPreviewPanelProps> = ({ pageId }) 
   const activePageId = usePreviewOverlayStore(s => s.activePageId)
   const getPagePreviewFile = usePreviewOverlayStore(s => s.getPagePreviewFile)
   const closePreview = usePreviewOverlayStore(s => s.closePreview)
+  const isFullscreenOpen = usePreviewOverlayStore(s => s.isOpen)
+  const pageMode = usePreviewOverlayStore(s => s.pageStates[pageId]?.mode ?? 'split')
 
   const isActive = activePageId === pageId
 
@@ -62,6 +64,11 @@ export const SplitPreviewPanel: React.FC<SplitPreviewPanelProps> = ({ pageId }) 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [closePreview, pageId])
+
+  // 全屏展开时分栏挂起，避免重复渲染多媒体抢占硬件解码器与产生双重背景音
+  if (pageMode === 'fullscreen' || (isFullscreenOpen && activePageId === pageId)) {
+    return <div className="h-full w-full bg-background" />
+  }
 
   if (!previewFilePath) {
     return (

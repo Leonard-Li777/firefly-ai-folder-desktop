@@ -4,7 +4,7 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { concept, getCanonicalConceptName } from '@firefly/shared'
 import { SearchListCard, SEARCH_LIST_ROW_HEIGHT, sanitizeSnippetHtml } from '../SearchListCard'
 import type { FileType } from '../../types'
-import { usePreviewOverlayStore } from '../../../../../stores/preview-overlay-store'
+import { usePreviewOverlayStore, setCurrentVideoPlaybackTime, getCurrentVideoPlaybackTime } from '../../../../../stores/preview-overlay-store'
 
 vi.mock('@app/languages', () => ({
   default: {},
@@ -611,11 +611,53 @@ describe('SearchListCard Component', () => {
       expect(defaultAppBtn).not.toBeNull()
       fireEvent.click(defaultAppBtn!)
 
+      // VERIFY_DEEP_LINK
       expect(window.electronAPI!.utils.launchExternalDeepLink).toHaveBeenCalledWith({
         filePath: testVideoPath,
         category: 'video',
         seekSeconds: 42
       })
     })
+
+    it('seamlessly hands over live playback time when toggling fullscreen during playback', () => {
+      const pageId = 'test-live-video-page'
+      const store = usePreviewOverlayStore.getState()
+      store.openPreview('D:/videos/live.mp4', 'live.mp4', 'mp4', pageId, {
+        currentTime: 10,
+        highlightRange: [10, 30]
+      })
+
+      // 模拟视频已播放到 28.5 秒
+      setCurrentVideoPlaybackTime(28.5)
+
+      // 切换全屏模式
+      usePreviewOverlayStore.getState().togglePreviewMode(pageId)
+      const fullscreenState = usePreviewOverlayStore.getState()
+      expect(fullscreenState.isOpen).toBe(true)
+      expect(fullscreenState.currentTime).toBe(28.5)
+
+      // 模拟全屏中继续播放到 45 秒并退回分栏
+      setCurrentVideoPlaybackTime(45)
+      usePreviewOverlayStore.getState().togglePreviewMode(pageId)
+      const splitState = usePreviewOverlayStore.getState()
+      expect(splitState.isOpen).toBe(false)
+      expect(splitState.currentTime).toBe(45)
+    })
+
+    it('injects W3C Media Fragments #t= URI for native video in FilePreview', async () => {
+      const { FilePreview } = await import('../../../FilePreview')
+      const { container } = render(
+        <FilePreview
+          filePath="D:/videos/media-fragment.mp4"
+          fileName="media-fragment.mp4"
+          extension="mp4"
+          currentTime={33.7}
+        />
+      )
+
+      const videoEl = container.querySelector('video')
+      expect(videoEl).not.toBeNull()
+      expect(videoEl?.getAttribute("src")).toContain("#t=33.7")
+    })
   })
-});
+})
