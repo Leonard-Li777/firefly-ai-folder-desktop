@@ -28,7 +28,8 @@ import {
   normalizeForCache,
   isTestEnvironment,
   isStopwordOrGenericWord,
-  hasValidNameMinLength
+  hasValidNameMinLength,
+  CONTROLLED_CONCEPTS
 } from '@firefly/shared'
 import {
   omniClient,
@@ -60,6 +61,16 @@ export const MIN_GENERIC_VECTOR_SCORE = isTestEnvironment() ? 0.30 : 0.58
 
 /** BM25 完整 10 列列权（第 0 列为 file_fingerprint UNINDEXED 赋 0.0，随后 9 列对齐 files_fts 架构：name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags） */
 export const HYBRID_BM25_COLUMN_WEIGHTS = [0.0, 4.0, 4.0, 3.0, 3.0, 3.5, 3.5, 3.0, 3.5, 3.5] as const
+
+/**
+ * 中文双字短词倒排点查快道的高置信度采纳阈值（Ticket 09 / Spec §4.8）：
+ * 点查命中数 >= 此阈值时直接采用倒排召回集合（跳过 9 列 LIKE 全表扫描）；
+ * 低于此阈值时无缝并入 LIKE 安全降级候选，保证低频生僻短词不漏召回。
+ */
+export const SHORT_HAN_INVERTED_MIN_HITS = 5
+
+/** 中文双字纯汉字短词判定（FTS5 trigram 物理上无法为 <3 字符建索引的唯一快道适用窗口） */
+const SHORT_HAN_TOKEN_PATTERN = /^[\u4e00-\u9fa5]{2}$/
 
 /** 列权名字典：恪守第一性原理，终结文件名在 BM25 中的超额膨胀，使图片 OCR、音频 ASR、视觉实体与文档正文健康平权 */
 export const DEFAULT_COLUMN_WEIGHT_MAP: Record<string, number> = {
@@ -136,7 +147,12 @@ export function applyWingTrimming(
   if (!intervals || intervals.length === 0) return []
 
   const sorted = [...intervals].sort((a, b) => a.startSec - b.startSec || a.chunkIndex - b.chunkIndex)
-  const MAX_CHUNK_SPAN_SECONDS = 12.0
+  // Ticket 09 (Spec §4.4)：分组跨度上限与候选切片自身窗口自适应联动，废除固定 12s 硬编码。
+  // 长视频自适应切片窗口可达 14s~60s，单个切片长度即可超过旧固定上限，
+  // 若仍用固定 12s 会把本应连续命中的重叠切片机械拆组，导致侧翼剥离静默失效。
+  // 联动公式：max(12.0, maxChunkLen * 2.5)，短窗口切片行为与旧版完全一致（下限 12.0 托底）。
+  const maxChunkLen = sorted.reduce((m, c) => Math.max(m, c.endSec - c.startSec), 0)
+  const maxChunkSpanSeconds = Math.max(12.0, maxChunkLen * 2.5)
   const groups: VideoChunkCandidateInterval[][] = []
   let currentGroup: VideoChunkCandidateInterval[] = []
 
@@ -146,7 +162,7 @@ export function applyWingTrimming(
     } else {
       const prev = currentGroup[currentGroup.length - 1]
       const rawSpan = Math.max(curr.endSec, ...currentGroup.map(c => c.endSec)) - currentGroup[0].startSec
-      if (curr.startSec < prev.endSec - 0.2 && rawSpan <= MAX_CHUNK_SPAN_SECONDS) {
+      if (curr.startSec < prev.endSec - 0.2 && rawSpan <= maxChunkSpanSeconds) {
         currentGroup.push(curr)
       } else {
         groups.push(currentGroup)
@@ -229,6 +245,12 @@ export interface HybridSearchContext {
   queryParams: any[]
   /** 仅真实目录模式提供：触发 FS 实时文件名检索并追加未分析命中 */
   workspaceDirectoryPath?: string
+  /**
+   * 当前工作区 ID（Ticket 09 / Spec §4.8）：
+   * 中文双字短词倒排点查快道的工作区隔离过滤依据。
+   * 未提供时若能从 workspaceDirectoryPath 解析出根工作区则自动回填，解析失败则安全跳过快道走 LIKE 兜底。
+   */
+  workspaceId?: number
   poolSize?: number
   /** 调用方可直接注入查询向量（测试复用 / 避免重复 analyzeText） */
   queryEmbedding?: number[]
@@ -803,6 +825,12 @@ export class HybridSearchArbiter {
       queryEmbedding
     } = context
 
+    // Ticket 09：解析双字短词倒排点查快道的工作区隔离 ID。
+    // 优先采用调用方显式注入的 workspaceId；否则尝试从 workspaceDirectoryPath 反查根工作区；
+    // 两路皆不可得时快道安全跳过（走 LIKE 兜底），绝不放宽工作区隔离边界。
+    const shortHanWorkspaceId =
+      context.workspaceId ?? this.resolveWorkspaceIdFromPath(workspaceDirectoryPath)
+
     const failures: HybridSearchFailures = { fts: false, vector: false, fs: false }
     const attemptedFs = !!workspaceDirectoryPath
 
@@ -826,7 +854,8 @@ export class HybridSearchArbiter {
       whereClauses,
       queryParams,
       poolSize,
-      expanded
+      expanded,
+      shortHanWorkspaceId
     )
     const vectorPromise = this.queryVectorCandidates(
       keyword,
@@ -1026,13 +1055,93 @@ export class HybridSearchArbiter {
     }
   }
 
+  /**
+   * 从目录路径解析工作区 ID（双字短词倒排点查快道的隔离依据，Ticket 09 / Spec §4.8）。
+   * 依次尝试 workspaces 根路径与 workspace_directories 子目录路径精确匹配；
+   * 查询失败时显式上报并返回 undefined（调用方安全跳过快道走 LIKE 兜底，禁止静默降级）。
+   */
+  private resolveWorkspaceIdFromPath(workspaceDirectoryPath?: string): number | undefined {
+    if (!workspaceDirectoryPath) return undefined
+    try {
+      const rootRow = this.db
+        .prepare('SELECT workspace_id FROM workspaces WHERE path = ? LIMIT 1')
+        .get(workspaceDirectoryPath) as { workspace_id: number } | undefined
+      if (rootRow?.workspace_id !== undefined) return rootRow.workspace_id
+      const dirRow = this.db
+        .prepare('SELECT workspace_id FROM workspace_directories WHERE path = ? LIMIT 1')
+        .get(workspaceDirectoryPath) as { workspace_id: number } | undefined
+      return dirRow?.workspace_id
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      logger.warn(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[HybridSearchArbiter] 解析工作区 ID 失败，双字短词倒排点查快道安全跳过（走 LIKE 兜底）: ',
+        msg
+      )
+      return undefined
+    }
+  }
+
+  /**
+   * 中文双字受控概念倒排点查快道（Ticket 09 / Spec §4.8，严格遵循 AGENTS.md §2.3 受控概念铁律）：
+   * Step 1: TS 内存 Ingress 归一化 —— 从静态强类型 CONTROLLED_CONCEPTS 字典点查受控 code，
+   *         禁止任何数据库层自然语言模糊比对；
+   * Step 2: 私有标签映射点查 —— `SELECT code FROM file_tags_private WHERE name = ?`；
+   * Step 3: 带工作区隔离的高性能倒排点查 —— 命中物理索引 idx_file_tag_relations_tag(tag_code, file_fingerprint)，
+   *         耗时 <3ms，结果严格限定当前 workspace_id。
+   * 返回 null 表示快道失败（调用方继续 LIKE 兜底），空数组表示确认无受控码可用。
+   */
+  private queryShortHanInvertedIndexCandidates(
+    shortHanTokens: string[],
+    workspaceId: number,
+    poolSize: number
+  ): string[] | null {
+    try {
+      const targetCodes = new Set<string>()
+      for (const token of shortHanTokens) {
+        // Step 1: 受控概念内存字典点查（Ingress 归一化为受控 code，绝不落入 SQL 模糊比对）
+        const conceptCode = CONTROLLED_CONCEPTS[token as keyof typeof CONTROLLED_CONCEPTS]
+        if (conceptCode) targetCodes.add(conceptCode)
+        // Step 2: 私有标签映射点查（用户自定义/动态扩展标签的显示名 → 受控 code）
+        const privRow = this.db
+          .prepare('SELECT code FROM file_tags_private WHERE name = ? LIMIT 1')
+          .get(token) as { code: string } | undefined
+        if (privRow?.code) targetCodes.add(privRow.code)
+      }
+      if (targetCodes.size === 0) return []
+
+      // Step 3: 带工作区隔离的倒排点查（DISTINCT 去重同指纹多路径引用，严格 workspace_id 边界）
+      const codes = Array.from(targetCodes)
+      const placeholders = codes.map(() => '?').join(',')
+      const rows = this.db
+        .prepare(
+          `SELECT DISTINCT r.file_fingerprint AS file_fingerprint
+           FROM file_tag_relations r
+           JOIN workspace_files wf ON wf.file_fingerprint = r.file_fingerprint
+           WHERE r.tag_code IN (${placeholders}) AND wf.workspace_id = ?
+           LIMIT ?`
+        )
+        .all(...codes, workspaceId, poolSize) as Array<{ file_fingerprint: string }>
+      return rows.map(r => r.file_fingerprint)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      logger.warn(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[HybridSearchArbiter] 双字短词倒排点查快道失败，降级进入多列 LIKE 召回: ',
+        msg
+      )
+      return null
+    }
+  }
+
   /** FTS5 快速字面候选（按 bm25 权重升序 = 相关度降序），包含短词/多词智能 LIKE 安全降级召回，返回 null 表示该路失败 */
   private queryFtsCandidates(
     keyword: string,
     whereClauses: string[],
     queryParams: any[],
     poolSize: number,
-    expanded?: ExpandedSearchQuery
+    expanded?: ExpandedSearchQuery,
+    shortHanWorkspaceId?: number
   ): string[] | null {
     try {
       const ftsCols = this.db
@@ -1093,6 +1202,30 @@ export class HybridSearchArbiter {
       // 2. 若 MATCH 未能召回任何候选（短词 <3 字符、空格分隔多词或未命中），执行多列 LIKE 安全降级召回
       // 显式并入展开的中文短词（如 2 字高频词“小说/合同”），确保短词不丢召回
       const combinedTokens = Array.from(new Set([...tokens, ...chineseCandidates]))
+
+      // 1.5 中文双字受控概念倒排点查快道 (Ticket 09 / Spec §4.8)：
+      // FTS5 trigram 物理上无法为 2 字符建索引，"合同/发票/图片/视频"等高频双字词在此前
+      // 会直接落入 9 列 LIKE 全表扫描（大库 80~150ms）。快道三阶段点查 <3ms：
+      // 受控概念内存字典 → file_tags_private 映射 → idx_file_tag_relations_tag 物理倒排（带 workspace_id 隔离）。
+      // 命中 >= SHORT_HAN_INVERTED_MIN_HITS 直接采用（高置信度召回）；不足阈值无缝并入 LIKE 降级（低频不漏召回）。
+      let invertedHeadHits: string[] = []
+      if (rows.length === 0 && shortHanWorkspaceId !== undefined) {
+        const shortHanTokens = combinedTokens.filter(t => SHORT_HAN_TOKEN_PATTERN.test(t))
+        if (shortHanTokens.length > 0) {
+          const invertedHits = this.queryShortHanInvertedIndexCandidates(
+            shortHanTokens,
+            shortHanWorkspaceId,
+            poolSize
+          )
+          if (invertedHits && invertedHits.length >= SHORT_HAN_INVERTED_MIN_HITS) {
+            return invertedHits
+          }
+          if (invertedHits && invertedHits.length > 0) {
+            invertedHeadHits = invertedHits
+          }
+        }
+      }
+
       if (rows.length === 0 && combinedTokens.length > 0) {
         // 保守防 DoS 截断：最多取前 8 个有效词
         const safeTokens = combinedTokens.slice(0, 8)
@@ -1165,6 +1298,18 @@ export class HybridSearchArbiter {
             poolSize
           ) as Array<{ file_fingerprint: string }>
         }
+      }
+
+      // 双字短词低频点查结果并入 LIKE 召回头部（保序去重，点查命中优先，绝不漏召回）
+      if (invertedHeadHits.length > 0) {
+        const seen = new Set(invertedHeadHits)
+        for (const row of rows) {
+          if (!seen.has(row.file_fingerprint)) {
+            invertedHeadHits.push(row.file_fingerprint)
+            seen.add(row.file_fingerprint)
+          }
+        }
+        return invertedHeadHits.slice(0, poolSize)
       }
 
       return rows.map(r => r.file_fingerprint)
