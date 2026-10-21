@@ -502,6 +502,35 @@ export async function persistOmniVectors(params: OmniVectorPersistenceParams): P
   }
 }
 
+/**
+ * Ticket 03 裁定项 3 治理：重分析前清理旧切片物理向量
+ * 当音视频重分析时，若数据库中已存在旧切片（可能切片数较多，例如 106 片），
+ * 在重新分析前调用 Omni deleteVectors 清空，防止抽帧步长增大或切片缩容时残留无法对齐的孤儿向量。
+ */
+export async function cleanupOrphanedVideoChunks(
+  db: any,
+  fileFingerprint: string,
+  omniClientInstance: { deleteVectors: (fps: string[]) => Promise<any> }
+): Promise<string[]> {
+  if (!fileFingerprint || fileFingerprint.startsWith('temp_')) return []
+  try {
+    const oldChunks = db
+      .prepare('SELECT chunk_index FROM file_video_chunks WHERE file_fingerprint = ?')
+      .all(fileFingerprint) as Array<{ chunk_index: number }>
+    if (!oldChunks || oldChunks.length === 0) return []
+    const oldChunkFps = oldChunks.map(c => `${fileFingerprint}:c${c.chunk_index}`)
+    await omniClientInstance.deleteVectors(oldChunkFps)
+    logger.info(
+      LogCategory.ANALYSIS_QUEUE,
+      `[FileProcessor] 重分析前已清理 ${oldChunkFps.length} 条旧切片向量: ${fileFingerprint}`
+    )
+    return oldChunkFps
+  } catch (cleanupErr) {
+    logger.warn(LogCategory.ANALYSIS_QUEUE, '[FileProcessor] 清理旧切片向量异常(非致命):', cleanupErr)
+    return []
+  }
+}
+
 export class FileProcessor {
   private mockData: any = null
   private selectWorkspaceFileStmt: any = null
@@ -1858,6 +1887,11 @@ export class FileProcessor {
       const existingThumbCheck = rootWorkspaceDir
         ? await thumbnailService.hasThumbnail(rootWorkspaceDir.path, fileFingerprint)
         : { exists: false, relativePath: '', absolutePath: '' }
+
+      // 针对音视频文件，在重新提取分析前精确清理 Omni 中的旧切片向量 (Ticket 03 裁定项 3 治理)
+      if (isAudioOrVideo) {
+        await cleanupOrphanedVideoChunks(db, fileFingerprint, omniClient)
+      }
 
       const anydocStartTime = Date.now()
       const anydocResult: AnydocResult = await anydocService
