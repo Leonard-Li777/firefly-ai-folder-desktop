@@ -122,6 +122,94 @@ export interface HybridSearchFailures {
 }
 
 /** 混合检索融合池结果 */
+export interface VideoChunkCandidateInterval {
+  chunkIndex: number
+  startSec: number
+  endSec: number
+  similarity: number
+}
+
+export function applyWingTrimming(
+  intervals: VideoChunkCandidateInterval[],
+  maxChunkIndex?: number
+): VideoChunkCandidateInterval[] {
+  if (!intervals || intervals.length === 0) return []
+
+  const sorted = [...intervals].sort((a, b) => a.startSec - b.startSec || a.chunkIndex - b.chunkIndex)
+  const MAX_CHUNK_SPAN_SECONDS = 12.0
+  const groups: VideoChunkCandidateInterval[][] = []
+  let currentGroup: VideoChunkCandidateInterval[] = []
+
+  for (const curr of sorted) {
+    if (currentGroup.length === 0) {
+      currentGroup.push(curr)
+    } else {
+      const prev = currentGroup[currentGroup.length - 1]
+      const rawSpan = Math.max(curr.endSec, ...currentGroup.map(c => c.endSec)) - currentGroup[0].startSec
+      if (curr.startSec < prev.endSec - 0.2 && rawSpan <= MAX_CHUNK_SPAN_SECONDS) {
+        currentGroup.push(curr)
+      } else {
+        groups.push(currentGroup)
+        currentGroup = [curr]
+      }
+    }
+  }
+  if (currentGroup.length > 0) {
+    groups.push(currentGroup)
+  }
+
+  const mergedIntervals: VideoChunkCandidateInterval[] = []
+
+  for (const group of groups) {
+    if (group.length === 1) {
+      mergedIntervals.push({ ...group[0] })
+      continue
+    }
+
+    const rawStart = group[0].startSec
+    const rawEnd = Math.max(...group.map(c => c.endSec))
+    let trimmedStart = rawStart
+    let trimmedEnd = rawEnd
+
+    const isHead = group[0].chunkIndex === 0 || group[0].startSec <= 1.0
+    const isLeftPeak = group[0].similarity - group[1].similarity >= 0.05
+    if (!isHead && !isLeftPeak) {
+      trimmedStart = Math.max(group[0].startSec, group[1].startSec - 1.0)
+    }
+
+    const last = group.length - 1
+    const secondLast = group.length - 2
+    const isTail = maxChunkIndex !== undefined && group[last].chunkIndex === maxChunkIndex
+    const isRightPeak = group[last].similarity - group[secondLast].similarity >= 0.05
+    if (!isTail && !isRightPeak) {
+      trimmedEnd = Math.min(rawEnd, group[secondLast].endSec + 1.0)
+    }
+
+    if (trimmedEnd - trimmedStart < 2.0 || trimmedStart >= trimmedEnd) {
+      trimmedStart = rawStart
+      trimmedEnd = rawEnd
+    }
+
+    let bestSimilarity = -Infinity
+    let bestChunkIndex = group[0].chunkIndex
+    for (const c of group) {
+      if (c.similarity > bestSimilarity) {
+        bestSimilarity = c.similarity
+        bestChunkIndex = c.chunkIndex
+      }
+    }
+
+    mergedIntervals.push({
+      chunkIndex: bestChunkIndex,
+      startSec: trimmedStart,
+      endSec: trimmedEnd,
+      similarity: bestSimilarity
+    })
+  }
+
+  return mergedIntervals
+}
+
 export interface HybridRankPool {
   /** 已分析候选（按分数降序） */
   candidates: HybridRankedCandidate[]
@@ -1215,6 +1303,7 @@ export class HybridSearchArbiter {
       // 1. 预先批量查询所有命中切片视频的 file_video_chunks 元数据（获取各切片起止时间）
       const parentsWithAnyChunks = Array.from(parentAggMap.values()).filter(p => p.chunks.length > 0)
       const chunkTimingMap = new Map<string, { startSec: number; endSec: number }>()
+      const maxChunkIndexMap = new Map<string, number>()
 
       if (parentsWithAnyChunks.length > 0) {
         try {
@@ -1233,6 +1322,10 @@ export class HybridSearchArbiter {
           }>
 
           for (const r of rows) {
+            const curMax = maxChunkIndexMap.get(r.file_fingerprint) ?? -1
+            if (r.chunk_index > curMax) {
+              maxChunkIndexMap.set(r.file_fingerprint, r.chunk_index)
+            }
             chunkTimingMap.set(`${r.file_fingerprint}:c${r.chunk_index}`, {
               startSec: r.start_sec,
               endSec: r.end_sec
@@ -1254,12 +1347,22 @@ export class HybridSearchArbiter {
         if (agg.chunks.length === 0) continue
 
         const meanScore = agg.chunks.reduce((acc, c) => acc + c.score, 0) / agg.chunks.length
-        const validChunks = agg.chunks.filter(c => {
-          const prominence = c.score - meanScore
-          const isConfident = c.score >= TEMPORAL_CHUNK_MIN_CONFIDENCE
-          const isProminent = agg.chunks.length <= 2 || prominence >= TEMPORAL_CHUNK_MIN_PROMINENCE
-          return isConfident && isProminent
-        })
+        const maxScore = Math.max(...agg.chunks.map(c => c.score))
+        const peakProminence = maxScore - meanScore
+
+        // 核心门禁 1：若视频全片切片得分平铺（peakProminence < TEMPORAL_CHUNK_MIN_PROMINENCE），
+        // 证明没有任何切片能够突出于全局背景基线，属于纯背景噪声，彻底阻断跳轴与切片下发！
+        const hasSignificantPeak = agg.chunks.length <= 2 || peakProminence >= TEMPORAL_CHUNK_MIN_PROMINENCE
+
+        const validChunks = hasSignificantPeak
+          ? agg.chunks.filter(c => {
+              const prominence = c.score - meanScore
+              const isConfident = c.score >= TEMPORAL_CHUNK_MIN_CONFIDENCE
+              const isNearPeak = c.score >= maxScore - 0.015
+              const isProminent = prominence >= TEMPORAL_CHUNK_MIN_PROMINENCE || isNearPeak
+              return isConfident && isProminent
+            })
+          : []
 
         // 提取带有效 timing 的候选区间
         const candidateIntervals: Array<{
@@ -1283,38 +1386,15 @@ export class HybridSearchArbiter {
 
         if (candidateIntervals.length > 0) {
           // =========================================================================
-          // Phase 1：时序相邻合并 (必须严格按 startSec ASC 升序排列，满足单遍合并数学前提)
+          // Phase 1：时序相邻对称加固版 Wing Trimming (侧翼剥离) 与受限合并 (Ticket 05)
           // =========================================================================
-          candidateIntervals.sort((a, b) => a.startSec - b.startSec)
-          const mergedIntervals: Array<{
-            chunkIndex: number
-            startSec: number
-            endSec: number
-            similarity: number
-          }> = []
-
-          for (const curr of candidateIntervals) {
-            if (mergedIntervals.length === 0) {
-              mergedIntervals.push({ ...curr })
-            } else {
-              const prev = mergedIntervals[mergedIntervals.length - 1]
-              // 若两切片相邻或重叠（间隔 <= 3.0s），合并并保留局部最高分
-              if (curr.startSec <= prev.endSec + 3.0) {
-                prev.endSec = Math.max(prev.endSec, curr.endSec)
-                if (curr.similarity > prev.similarity) {
-                  prev.similarity = curr.similarity
-                  prev.chunkIndex = curr.chunkIndex
-                }
-              } else {
-                mergedIntervals.push({ ...curr })
-              }
-            }
-          }
+          const maxChunkIndex = maxChunkIndexMap.get(agg.parentFp)
+          const mergedIntervals = applyWingTrimming(candidateIntervals, maxChunkIndex)
 
           // =========================================================================
           // Phase 2：Top-Peak 动态门禁与相似度降序重排 (高置信度核心镜头置顶)
           // =========================================================================
-          const PEAK_MARGIN = 0.040
+          const PEAK_MARGIN = 0.020 // 收紧至 0.020，杜绝与峰值相差过大的背景切片混入
           const minConfidence = TEMPORAL_CHUNK_MIN_CONFIDENCE
 
           // 找到当前视频合并后时段的最高峰值分
@@ -1335,31 +1415,43 @@ export class HybridSearchArbiter {
                 if (peak.similarity < maxScore - PEAK_MARGIN) return false
                 // 无向区间间隙：计算真实时间差值，前后均支持
                 const gap = Math.max(0, Math.max(chunk.startSec - peak.endSec, peak.startSec - chunk.endSec))
-                return gap <= 5.0
+                return gap <= 3.0 // 收紧至 3.0s，只有紧邻高光波峰的同镜头延伸片段才予保全
               })
               return isAdjacentToPeak
             })
 
-            // 2. 最终输出结果严格按 similarity DESC 降序排列，保证最高分片段排在最前
-            filteredChunks.sort((a, b) => b.similarity - a.similarity)
+            // 2. 最终输出结果严格按 similarity DESC 降序排列（分数并列时按时间先后升序），保证最高分片段排在最前
+            filteredChunks.sort((a, b) => {
+              const diff = b.similarity - a.similarity
+              if (Math.abs(diff) > 0.0001) return diff
+              return a.startSec - b.startSec
+            })
 
-            // 3. 严格区间去重守卫：杜绝返回起止时间重合的重复微缩帧卡片
+            // 3. 严格区间与时序 NMS 抑制守卫：去重并抑制与更高分镜头重叠过大 (>= 4.0s) 的冗余次要帧
             const uniqueChunks: typeof filteredChunks = []
             for (const c of filteredChunks) {
-              const isDuplicate = uniqueChunks.some(
-                u =>
-                  (Math.round(u.startSec) === Math.round(c.startSec) &&
-                    Math.round(u.endSec) === Math.round(c.endSec)) ||
-                  (u.startSec === c.startSec && u.endSec === c.endSec)
-              )
-              if (!isDuplicate) {
+              const hasHeavyOverlap = uniqueChunks.some(selected => {
+                const overlapStart = Math.max(c.startSec, selected.startSec)
+                const overlapEnd = Math.min(c.endSec, selected.endSec)
+                const overlapLen = Math.max(0, overlapEnd - overlapStart)
+                return (
+                  overlapLen >= 4.0 ||
+                  (Math.round(selected.startSec) === Math.round(c.startSec) &&
+                    Math.round(selected.endSec) === Math.round(c.endSec)) ||
+                  (selected.startSec === c.startSec && selected.endSec === c.endSec)
+                )
+              })
+              if (!hasHeavyOverlap) {
                 uniqueChunks.push(c)
               }
+              if (uniqueChunks.length >= 4) break // 单个视频最多保留 4 个最具代表性的高光镜头
             }
+
             agg.matchedChunks = uniqueChunks
             if (uniqueChunks.length > 0) {
               agg.bestChunkIndex = uniqueChunks[0].chunkIndex
               agg.bestChunkScore = uniqueChunks[0].similarity
+              agg.bestScore = Math.max(agg.bestScore, uniqueChunks[0].similarity)
             } else {
               agg.bestChunkIndex = undefined
               agg.bestChunkScore = undefined
@@ -1373,7 +1465,7 @@ export class HybridSearchArbiter {
           const isConfident = topChunk.score >= TEMPORAL_CHUNK_MIN_CONFIDENCE
           const isProminent = agg.chunks.length <= 2 || prominence >= TEMPORAL_CHUNK_MIN_PROMINENCE
 
-          if (isConfident && isProminent) {
+          if (hasSignificantPeak && isConfident && isProminent) {
             agg.bestChunkIndex = topChunk.chunkIndex
             agg.bestChunkScore = topChunk.score
           } else {
