@@ -114,6 +114,8 @@ export interface OmniPerceptionOptions {
   enableCover?: boolean
   /** 视频内容定位精度（抽帧间隔秒数），默认 5.0，精细模式可设为 1.0 */
   videoFrameIntervalSeconds?: number
+  /** 文件指纹，用于感知完成后在 Omni 内部就地批量落盘向量（Ticket 02 / 04） */
+  fileFingerprint?: string
 }
 
 export interface OmniPerceptionBenchmarkResponse {
@@ -289,6 +291,8 @@ export interface OmniPerceptionResponse {
 
   /** 视频时序切片集合（30 秒窗口切片） */
   video_chunks?: OmniVideoChunkItem[]
+  /** 是否已在 Omni 内部就地完成批量向量持久化（Ticket 02 / 04） */
+  vector_saved?: boolean
 
   phash?: string
   is_corrupted: boolean
@@ -373,6 +377,10 @@ export interface OmniClusterDocument {
   fingerprint: string
   embedding: number[]
   keywords: string[]
+  /** 送嵌入引擎的富文本（智能命名/文件名 + 准入关键词），供 zvec 未命中时 JIT 自愈 */
+  embeddingText?: string
+  /** 正文不含可见语义文本时，本次聚类改用 embeddingText 编码；服务端仅在 zvec 槽位缺失时回填，不覆盖已有向量 */
+  preferEmbeddingText?: boolean
 }
 
 export interface OmniClusterGroup {
@@ -699,7 +707,21 @@ export class OmniService {
       return
     }
     const signature = this.binarySignature(exePath)
-    if (!signature || signature === this.spawnedBinarySignature) {
+    if (!signature) {
+      this.pendingUpdateSignature = null
+      this.pendingUpdateSince = 0
+      return
+    }
+
+    // 关键防御：若尚未记录过已拉起的二进制签名，直接以当前二进制签名作为基准，绝不能误判为产物更新去触发 restart()
+    if (!this.spawnedBinarySignature) {
+      this.spawnedBinarySignature = signature
+      this.pendingUpdateSignature = null
+      this.pendingUpdateSince = 0
+      return
+    }
+
+    if (signature === this.spawnedBinarySignature) {
       this.pendingUpdateSignature = null
       this.pendingUpdateSince = 0
       return
@@ -969,6 +991,12 @@ export class OmniService {
         windowsHide: true
       })
 
+      // 立即记录当前拉起的二进制签名与拉起时间戳（启动 15s 冷静期保护，防启动中途被 checkBinaryUpdated 误杀）
+      this.lastSpawnedAt = Date.now()
+      this.spawnedBinarySignature = this.binarySignature(exePath)
+      this.pendingUpdateSignature = null
+      this.pendingUpdateSince = 0
+
       // 登记进全局精准进程回收器
       try {
         const { processReaper } = require('../../main/process-reaper')
@@ -1042,6 +1070,16 @@ export class OmniService {
 
       // 等待服务就绪探活 (最多 200 次 * 200ms = 40秒，容纳 71.6 万条多语言别名冷启动解密热载与 SenseVoice/MOSS-TTS 模型加载时间)
       for (let i = 0; i < 200; i++) {
+        // 关键防御：若子进程在探活期间提前退出或被终止，立即中止等待，拒绝僵尸死等 40s 阻塞系统
+        if (child.exitCode !== null || child.killed || this.process !== child || !this.isStarting) {
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[OmniService] firefly-omni 子进程在就绪前异常退出 (exitCode=${child.exitCode}, killed=${child.killed})，中止启动探活`
+          )
+          this.isStarting = false
+          return false
+        }
+
         await new Promise(r => setTimeout(r, 200))
         if (await this.checkHealth()) {
           logger.info(LogCategory.SYSTEM, `[OmniService] firefly-omni 服务就绪并在 ${this.baseUrl} 正常监听`)
@@ -1128,6 +1166,11 @@ export class OmniService {
   public async restart(): Promise<boolean> {
     logger.info(LogCategory.SYSTEM, '[OmniService] 正在优雅重启 Omni 服务进程...')
     this.stop()
+    if (this.startPromise) {
+      try {
+        await this.startPromise
+      } catch {}
+    }
     await this.waitForPortReleased(3000)
     return await this.start()
   }
@@ -1616,6 +1659,7 @@ export class OmniService {
     const tStart = Date.now()
     const reqBody = {
       file_path: filePath,
+      file_fingerprint: options?.fileFingerprint,
       language: options?.language,
       enable_visual_tags: options?.enableVisualTags ?? true,
       enable_asr: options?.enableAudioTranscript,
@@ -2053,6 +2097,10 @@ export class OmniService {
       documents: OmniClusterDocument[]
       prompt?: string
       promptEmbedding?: number[]
+      /** 当前嵌入档位：classic_light (bekko 384d) | gemma_unified (MRL 256/512/768d) */
+      embeddingProfile?: string
+      /** 当前目标向量维度；缺省时由 Omni 端按档位与服务器配置自适应 */
+      embeddingDim?: number
       distanceThreshold?: number
       maxLeafSize?: number
     },

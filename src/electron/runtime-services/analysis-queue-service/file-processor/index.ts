@@ -246,6 +246,262 @@ export function getFileAnalysisStateFromDB(
  * 文件处理类
  * 处理单个文件的分析、缓存匹配和落库
  */
+
+/**
+ * 基础数据完整性校验结果
+ */
+export interface BasicDataCompletenessResult {
+  isComplete: boolean
+  missingReasons: string[]
+}
+
+/**
+ * 检查文件核心基础数据与向量数据的健全性（用于决定重新分析时是否安全复用并跳过 CPU 阶段）
+ * 涵盖：全量/切片向量探活、文本内容/摘要、图片/文档 OCR、音频 ASR/LRC 等
+ */
+export async function checkBasicDataCompleteness(
+  db: any,
+  workspaceId: number,
+  filePath: string,
+  fingerprint?: string
+): Promise<BasicDataCompletenessResult> {
+  const missingReasons: string[] = []
+  if (!fingerprint) {
+    return { isComplete: false, missingReasons: ['no_fingerprint'] }
+  }
+
+  const category = getFileCategory(filePath)
+
+  // 1. 物理向量探活 (Omni zvec)
+  const profile = ConfigOrchestrator.getInstance().getValue<string>('AI_EMBEDDING_PROFILE') || 'gemma_unified'
+  const targetDim =
+    profile === 'gemma_unified' || profile.includes('gemma')
+      ? (ConfigOrchestrator.getInstance().getValue<number>('EMBEDDING_MRL_DIMENSION') ?? 512)
+      : 384
+
+  if (category === FileCategory.VIDEO) {
+    // 视频：检查切片记录与切片向量
+    try {
+      const chunkRows = db
+        .prepare(
+          'SELECT chunk_index, sampling_interval_seconds, start_sec, end_sec FROM file_video_chunks WHERE file_fingerprint = ? ORDER BY chunk_index ASC'
+        )
+        .all(fingerprint) as Array<{ chunk_index?: number; sampling_interval_seconds?: number; start_sec?: number; end_sec?: number }>
+
+      if (!chunkRows || chunkRows.length === 0) {
+        missingReasons.push('missing_video_chunks')
+      } else {
+        const currentInterval =
+          ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 1.0
+        const firstChunk = chunkRows[0]
+        const recordedInterval = firstChunk.sampling_interval_seconds ?? 1.0
+        if (Math.abs(recordedInterval - currentInterval) > 0.1) {
+          missingReasons.push(`video_interval_mismatch_${recordedInterval}_vs_${currentInterval}`)
+        } else {
+          // 旧 8s 切片缓存自动升级防护（Ticket 04 & Spec §4.3）：
+          // 检查首切片跨度是否与新公式 Math.min(16, Math.max(4, currentInterval * 2)) 吻合
+          const expectedSpan = Math.min(16, Math.max(4, currentInterval * 2))
+          const firstSpan = (firstChunk.end_sec ?? 0) - (firstChunk.start_sec ?? 0)
+          const isSpanOutdated =
+            chunkRows.length > 1 && Math.abs(firstSpan - expectedSpan) >= 0.5
+          if (isSpanOutdated) {
+            missingReasons.push(`video_chunk_span_outdated_${firstSpan}_vs_${expectedSpan}`)
+          } else {
+            const probeFp = `${fingerprint}:c${firstChunk.chunk_index ?? 0}`
+            try {
+              const probeRes = await omniClient.getVectors([probeFp], targetDim, 3000)
+              if (!probeRes?.vectors || probeRes.vectors.length === 0) {
+                missingReasons.push('missing_video_chunk_vectors')
+              }
+            } catch {
+              missingReasons.push('video_vector_probe_error')
+            }
+          }
+        }
+      }
+    } catch {
+      missingReasons.push('query_video_chunks_error')
+    }
+  } else {
+    // 非视频文件（文档、图片、音频、代码等）：探活主文件物理向量
+    try {
+      const probeRes = await omniClient.getVectors([fingerprint], targetDim, 3000)
+      if (!probeRes?.vectors || probeRes.vectors.length === 0) {
+        missingReasons.push('missing_file_vector')
+      }
+    } catch {
+      missingReasons.push('file_vector_probe_error')
+    }
+  }
+
+  // 2. 查询 file_contents 表中的内容提取数据
+  let contentRow: {
+    content?: Buffer | string
+    ocr?: Buffer | string
+    lrc?: Buffer | string
+    asr?: Buffer | string
+    exif?: Buffer | string
+  } | undefined
+
+  try {
+    contentRow = db
+      .prepare('SELECT content, ocr, lrc, asr, exif FROM file_contents WHERE file_fingerprint = ?')
+      .get(fingerprint)
+  } catch {
+    missingReasons.push('query_file_contents_error')
+  }
+
+  // 解压文本字段安全判定
+  const hasContent = contentRow?.content ? decompressText(contentRow.content as any).trim().length > 0 : false
+  const hasOcr = contentRow?.ocr ? decompressText(contentRow.ocr as any).trim().length > 0 : false
+  const hasLrc = contentRow?.lrc ? decompressText(contentRow.lrc as any).trim().length > 0 : false
+  const hasAsr = contentRow?.asr ? decompressText(contentRow.asr as any).trim().length > 0 : false
+
+  // 3. 针对不同类型文件的基础数据健全性检查
+  if (category === FileCategory.DOCUMENT || category === FileCategory.TEXT || category === FileCategory.CODE) {
+    // 文档/代码/纯文本：必须存在内容/摘要
+    if (!hasContent) {
+      missingReasons.push('missing_document_content')
+    }
+  } else if (category === FileCategory.IMAGE) {
+    // 图片：
+    // a) 检查缩略图
+    try {
+      const wsRow = db
+        .prepare('SELECT thumbnail_path FROM workspace_files WHERE workspace_id = ? AND path = ?')
+        .get(workspaceId, filePath) as { thumbnail_path?: string } | undefined
+      if (!wsRow?.thumbnail_path) {
+        missingReasons.push('missing_thumbnail')
+      }
+    } catch {
+      missingReasons.push('thumbnail_check_error')
+    }
+
+    // b) 检查 OCR：如果配置启用了图片 OCR (ENABLE_IMAGE_OCR)，且图片未曾提取过 OCR/Content
+    const enableImageOcr = ConfigOrchestrator.getInstance().getValue<boolean>('ENABLE_IMAGE_OCR') ?? true
+    if (enableImageOcr && !hasOcr && !hasContent) {
+      missingReasons.push('missing_image_ocr')
+    }
+  } else if (category === FileCategory.AUDIO) {
+    // 音频：应检查是否有歌词 (lrc) 或 ASR 语音转录 (asr) 或内容 (content)
+    if (!hasLrc && !hasAsr && !hasContent) {
+      missingReasons.push('missing_audio_transcript_or_lyrics')
+    }
+  }
+
+  return {
+    isComplete: missingReasons.length === 0,
+    missingReasons
+  }
+}
+
+/**
+ * Omni 向量与切片持久化参数 (Ticket 04)
+ */
+export interface OmniVectorPersistenceParams {
+  vectorSaved: boolean | undefined
+  fileFingerprint?: string
+  denseEmbedding?: number[]
+  videoChunks?: Array<{
+    chunk_index?: number
+    chunkIndex?: number
+    start_sec?: number
+    startSec?: number
+    end_sec?: number
+    endSec?: number
+    vector?: number[]
+    asr_text?: string
+  }>
+  databaseService: {
+    upsertFileVectorToOmni: (fp: string, vec: number[]) => Promise<any>
+    upsertFileVectorsToOmni: (items: Array<{ fileFingerprint: string; vector: number[] }>) => Promise<any>
+    insertVideoChunks: (chunks: any[]) => void
+  }
+  samplingIntervalSeconds?: number
+}
+
+/**
+ * Ticket 04: Omni 内部就地持久化三态判定与向量回传状态机
+ *
+ * 1. 态 1 (vector_saved === true): Omni 内部已单次原子批量落盘，彻底阻断主向量与切片向量二次回传，写向 Omni 的向量数严格为 0；
+ * 2. 态 2 (vector_saved === false): Omni 内部批量写盘失败，抛出错误触发分析队列重试机制，严禁假性成功导致后续探活死循环；
+ * 3. 态 3 (vector_saved === undefined): 兼容旧版 Omni，保留原有主向量与切片向量回传落盘兜底逻辑。
+ */
+export async function persistOmniVectors(params: OmniVectorPersistenceParams): Promise<void> {
+  const {
+    vectorSaved,
+    fileFingerprint,
+    denseEmbedding,
+    videoChunks,
+    databaseService,
+    samplingIntervalSeconds
+  } = params
+
+  if (vectorSaved === false) {
+    // 态 2: Omni 内部写盘失败，抛出错误触发分析队列重试机制，严禁假性成功导致后续探活死循环
+    throw new Error(`[OmniService] Omni 内部批量向量落盘失败: fp=${fileFingerprint}`)
+  }
+
+  // 态 1 (vectorSaved === true): 已在 Omni 内部完成原子批量落盘，彻底阻断主向量回传
+  // 态 3 (vectorSaved === undefined): 兼容旧版 Omni，保留原有主向量回传兜底
+  if (
+    vectorSaved === undefined &&
+    fileFingerprint &&
+    !fileFingerprint.startsWith('temp_') &&
+    Array.isArray(denseEmbedding) &&
+    denseEmbedding.length > 0
+  ) {
+    try {
+      await databaseService.upsertFileVectorToOmni(fileFingerprint, denseEmbedding)
+    } catch (vecErr) {
+      logger.debug(LogCategory.ANALYSIS_QUEUE, '[分析队列] Omni 向量 upsert 失败(非致命):', vecErr)
+    }
+  }
+
+  // 视频时序切片元数据落库与切片向量写入 Omni zvec (${fileFingerprint}:c${chunk_index})
+  if (
+    fileFingerprint &&
+    !fileFingerprint.startsWith('temp_') &&
+    Array.isArray(videoChunks) &&
+    videoChunks.length > 0
+  ) {
+    try {
+      databaseService.insertVideoChunks(
+        videoChunks.map(c => ({
+          fileFingerprint,
+          chunkIndex: c.chunk_index ?? c.chunkIndex ?? 0,
+          startSec: c.start_sec ?? c.startSec ?? 0,
+          endSec: c.end_sec ?? c.endSec ?? 0,
+          samplingIntervalSeconds: samplingIntervalSeconds ?? 1.0
+        }))
+      )
+      // 态 1 (vectorSaved === true): 切片向量已在 Omni 内部批量写盘且浮点数组已被清空，彻底阻断切片向量回传
+      // 态 3 (vectorSaved === undefined): 兼容旧版 Omni，若切片包含浮点数组，向 Omni 回传落盘
+      if (vectorSaved === undefined) {
+        const chunkVectors: Array<{ fileFingerprint: string; vector: number[] }> = []
+        for (const c of videoChunks) {
+          if (Array.isArray(c.vector) && c.vector.length > 0) {
+            const idx = c.chunk_index ?? c.chunkIndex ?? 0
+            chunkVectors.push({
+              fileFingerprint: `${fileFingerprint}:c${idx}`,
+              vector: c.vector
+            })
+          }
+        }
+        if (chunkVectors.length > 0) {
+          await databaseService.upsertFileVectorsToOmni(chunkVectors)
+        }
+      }
+      logger.info(
+        LogCategory.ANALYSIS_QUEUE,
+        `[分析队列] 视频时序切片持久化完成: fp=${fileFingerprint}, chunksCount=${videoChunks.length}, vectorSaved=${vectorSaved}`
+      )
+    } catch (chunkErr) {
+      logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 视频切片写入失败(非致命):', chunkErr)
+    }
+  }
+}
+
 export class FileProcessor {
   private mockData: any = null
   private selectWorkspaceFileStmt: any = null
@@ -333,12 +589,18 @@ export class FileProcessor {
     thumbnailPath?: string
     metadata?: any
     content?: string
+    ocr?: string
+    lrc?: string
+    asr?: string
   } {
     const result: {
       category?: any
       thumbnailPath?: string
       metadata?: any
       content?: string
+      ocr?: string
+      lrc?: string
+      asr?: string
     } = {}
 
     try {
@@ -369,10 +631,10 @@ export class FileProcessor {
         result.thumbnailPath = wsFileRow.thumbnail_path
       }
 
-      // 3. 获取 metadata 和 content (file_contents 表)
+      // 3. 获取 metadata, content, ocr, lrc, asr (file_contents 表)
       const contentRow = db
-        .prepare('SELECT exif, content FROM file_contents WHERE file_fingerprint = ?')
-        .get(fingerprint) as { exif?: string; content?: string } | undefined
+        .prepare('SELECT exif, content, ocr, lrc, asr FROM file_contents WHERE file_fingerprint = ?')
+        .get(fingerprint) as { exif?: string; content?: string; ocr?: string; lrc?: string; asr?: string } | undefined
 
       if (contentRow) {
         if (contentRow.exif) {
@@ -390,6 +652,15 @@ export class FileProcessor {
         if (contentRow.content) {
           // content 列是 BLOB（compressText 压缩），需解压还原为字符串
           result.content = decompressText(contentRow.content as unknown as Buffer | string)
+        }
+        if (contentRow.ocr) {
+          result.ocr = decompressText(contentRow.ocr as unknown as Buffer | string)
+        }
+        if (contentRow.lrc) {
+          result.lrc = decompressText(contentRow.lrc as unknown as Buffer | string)
+        }
+        if (contentRow.asr) {
+          result.asr = decompressText(contentRow.asr as unknown as Buffer | string)
         }
       }
     } catch (error) {
@@ -553,77 +824,49 @@ export class FileProcessor {
       analysisMode = resolveAnalysisMode()
 
       if (phase === 'all') {
-        // 串行分支与并行分支保持一致：只要文件已处于 Stage >= 2（CPU 提取已完成）即跳过 CPU 阶段，
-        // 除非“强制重新分析 + 复用关闭 + 之前已分析完成（is_analyzed=true）”才必须重新提取
+        // 串行分支与并行分支保持一致：只要文件已处于 Stage >= 2（CPU 提取已完成）
         let alreadyAnalyzed = false
+        let existingFp: string | undefined
         try {
           const wfRow = db
-            .prepare(`SELECT is_analyzed FROM workspace_files WHERE workspace_id = ? AND path = ?`)
-            .get(currentWorkspaceId, filePath) as { is_analyzed?: number } | undefined
+            .prepare(`SELECT is_analyzed, file_fingerprint FROM workspace_files WHERE workspace_id = ? AND path = ?`)
+            .get(currentWorkspaceId, filePath) as { is_analyzed?: number; file_fingerprint?: string } | undefined
           alreadyAnalyzed = wfRow?.is_analyzed === 1
+          existingFp = wfRow?.file_fingerprint
         } catch {
           // 忽略查询异常，视为未完成过分析
         }
-        const isVideo = getFileCategory(filePath) === FileCategory.VIDEO
-        let hasMissingVideoChunks = false
-        if (isVideo) {
-          try {
-            const wf = db
-              .prepare(
-                'SELECT file_fingerprint FROM workspace_files WHERE workspace_id = ? AND path = ?'
-              )
-              .get(currentWorkspaceId, filePath) as { file_fingerprint?: string } | undefined
-            if (!wf?.file_fingerprint) {
-              hasMissingVideoChunks = true
-            } else {
-              const chunkRow = db
-                .prepare('SELECT chunk_index, sampling_interval_seconds FROM file_video_chunks WHERE file_fingerprint = ? LIMIT 1')
-                .get(wf.file_fingerprint) as { chunk_index?: number; sampling_interval_seconds?: number } | undefined
-              if (!chunkRow) {
-                hasMissingVideoChunks = true
-              } else {
-                const currentInterval =
-                  ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 1.0
-                const recordedInterval = chunkRow.sampling_interval_seconds ?? 1.0
-                if (Math.abs(recordedInterval - currentInterval) > 0.1) {
-                  logger.info(
-                    LogCategory.ANALYSIS_QUEUE,
-                    `[串行队列] 视频切片抽帧间隔变更 (历史 ${recordedInterval}s vs 当前 ${currentInterval}s)，需重新提取: ${filePath}`
-                  )
-                  hasMissingVideoChunks = true
-                } else {
-                  // 物理向量探活：检验切片向量是否真实存在于 Omni 物理存储中（防用户清理向量或切片向量损坏）
-                  const probeFp = `${wf.file_fingerprint}:c${chunkRow.chunk_index ?? 0}`
-                  const profile = ConfigOrchestrator.getInstance().getValue<string>('AI_EMBEDDING_PROFILE') || 'gemma_unified'
-                  const targetDim =
-                    profile === 'gemma_unified' || profile.includes('gemma')
-                      ? (ConfigOrchestrator.getInstance().getValue<number>('EMBEDDING_MRL_DIMENSION') ?? 512)
-                      : 384
-                  try {
-                    const probeRes = await omniClient.getVectors([probeFp], targetDim, 3000)
-                    if (!probeRes?.vectors || probeRes.vectors.length === 0) {
-                      logger.info(
-                        LogCategory.ANALYSIS_QUEUE,
-                        `[串行队列] 视频切片物理向量缺失 (${probeFp}, dim=${targetDim})，需重新提取: ${filePath}`
-                      )
-                      hasMissingVideoChunks = true
-                    }
-                  } catch (probeErr) {
-                    logger.warn(LogCategory.ANALYSIS_QUEUE, '[串行队列] 物理向量探活异常，保守重新提取:', probeErr)
-                    hasMissingVideoChunks = true
-                  }
-                }
-              }
-            }
-          } catch {
-            hasMissingVideoChunks = true
+
+        let forcedReextract = false
+        if (!reuseBasicAnalysisData) {
+          // 用户配置关闭复用：重新分析或已分析均强制重跑 CPU 提取
+          forcedReextract = item.forceReanalyze === true || alreadyAnalyzed
+        } else {
+          // 用户配置开启复用：严格检查核心数据（向量、OCR、LRC、内容摘要、切片等）是否齐全
+          const completeness = await checkBasicDataCompleteness(
+            db,
+            currentWorkspaceId,
+            filePath,
+            existingFp
+          )
+          if (!completeness.isComplete) {
+            // 数据有残缺（如向量未落盘、缺少 OCR 等），即使用户开启复用，也必须进入 CPU 提取补全
+            forcedReextract = true
+            logger.info(
+              LogCategory.ANALYSIS_QUEUE,
+              `[串行队列] 文件基础数据不完整 (${completeness.missingReasons.join(', ')})，触发 CPU 阶段重新提取: ${item.name}`
+            )
+          } else {
+            // 数据健全存在（向量在、切片在、OCR在、摘要在）：复用并跳过 CPU 提取
+            forcedReextract = false
+            logger.info(
+              LogCategory.ANALYSIS_QUEUE,
+              `[串行队列] 文件基础数据健全存在（向量、OCR/LRC/摘要均完备），执行复用并跳过 CPU 提取: ${item.name}`
+            )
           }
         }
 
-        const forcedReextract =
-          item.forceReanalyze === true &&
-          (!reuseBasicAnalysisData && alreadyAnalyzed)
-        if (initialStage >= 2 && !forcedReextract && !hasMissingVideoChunks) {
+        if (initialStage >= 2 && !forcedReextract) {
           if (isAiStageEnabled(analysisMode)) {
             // quick_name / full 模式：跳过 CPU 提取，直接进入 GPU AI 阶段（stage3/4）。
             // 注意：AI 阶段入口会自行校验并撤销「以当前模式衡量尚未达标」的残留 is_analyzed 标记。
@@ -1627,7 +1870,9 @@ export class FileProcessor {
           // 显式激活 Tier 1 端侧纯 CPU 文本特征与 384d 向量提取 (Issue #631)
           enableTextAnalysis: true,
           // 若磁盘已存在缩略图，通知 Omni 无需生成缩略图封面
-          generateThumbnail: !existingThumbCheck.exists
+          generateThumbnail: !existingThumbCheck.exists,
+          // 传递文件指纹以激活 Omni 内部就地批量向量写入 (Ticket 04)
+          fileFingerprint
         })
         .catch(err => {
           logger.warn(LogCategory.ANALYSIS_QUEUE, `[Omni/anydoc] 提取失败: ${err.message}`)
@@ -2036,55 +2281,24 @@ export class FileProcessor {
         fileFingerprint = await calculateFileFingerprint(filePath)
       }
 
-      // ADR-0038 / ADR-0054：分析产出 384d dense 向量后写入 Omni zvec（废除 SQLite file_vectors 与 exif 冗余）
+      // Ticket 04: Omni 内部就地持久化状态机三态判定与落库 (委托给 persistOmniVectors)
+      const vectorSaved = anydocResult?.perception?.vector_saved
       const denseEmbedding =
         (contentResult.metadata?.embedding_dense as number[] | undefined) ||
         (contentResult.metadata?.embeddingDense as number[] | undefined) ||
-        ((anydocResult?.perception as any)?.embedding_dense as number[] | undefined)
-      if (fileFingerprint && !fileFingerprint.startsWith('temp_') && Array.isArray(denseEmbedding) && denseEmbedding.length > 0) {
-        try {
-          const { databaseService } = await import('../../database/database-service')
-          void databaseService.upsertFileVectorToOmni(fileFingerprint, denseEmbedding)
-        } catch (vecErr) {
-          logger.debug(LogCategory.ANALYSIS_QUEUE, '[分析队列] Omni 向量 upsert 失败(非致命):', vecErr)
-        }
-      }
+        anydocResult?.perception?.embedding_dense
+      const videoChunks = anydocResult?.perception?.video_chunks
+      const currentInterval =
+        ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 1.0
 
-      // 视频时序切片元数据落库与切片向量写入 Omni zvec (${fileFingerprint}:c${chunk_index})
-      const videoChunks = (anydocResult?.perception as any)?.video_chunks as Array<{
-        chunk_index: number
-        start_sec: number
-        end_sec: number
-        vector: number[]
-        asr_text?: string
-      }> | undefined
-      if (fileFingerprint && !fileFingerprint.startsWith('temp_') && Array.isArray(videoChunks) && videoChunks.length > 0) {
-        try {
-          const { databaseService } = await import('../../database/database-service')
-          const currentInterval =
-            ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 1.0
-          databaseService.insertVideoChunks(
-            videoChunks.map(c => ({
-              fileFingerprint,
-              chunkIndex: c.chunk_index,
-              startSec: c.start_sec,
-              endSec: c.end_sec,
-              samplingIntervalSeconds: currentInterval
-            }))
-          )
-          for (const c of videoChunks) {
-            if (Array.isArray(c.vector) && c.vector.length > 0) {
-              void databaseService.upsertFileVectorToOmni(`${fileFingerprint}:c${c.chunk_index}`, c.vector)
-            }
-          }
-          logger.info(
-            LogCategory.ANALYSIS_QUEUE,
-            `[分析队列] 视频时序切片持久化完成: fp=${fileFingerprint}, chunksCount=${videoChunks.length}`
-          )
-        } catch (chunkErr) {
-          logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 视频切片写入失败(非致命):', chunkErr)
-        }
-      }
+      await persistOmniVectors({
+        vectorSaved,
+        fileFingerprint,
+        denseEmbedding,
+        videoChunks,
+        databaseService,
+        samplingIntervalSeconds: currentInterval
+      })
 
       // ADR-0054：本地 SQLite 零向量原则，写入 zvec 后立即从 metadata 剥离向量字段，杜绝污染 file_contents.exif
       if (contentResult.metadata && typeof contentResult.metadata === 'object') {
