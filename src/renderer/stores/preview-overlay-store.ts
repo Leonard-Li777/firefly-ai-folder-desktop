@@ -309,21 +309,66 @@ export const usePreviewOverlayStore = create<PreviewOverlayState>((set, get) => 
     const newMode: PagePreviewMode = currentMode === 'fullscreen' ? 'split' : 'fullscreen'
     savePagePreviewMode(targetPageId, newMode)
 
-    if (newMode === 'fullscreen' && state.filePath && state.activePageId === targetPageId) {
+    const targetPageState = targetPageId ? state.pageStates[targetPageId] : undefined
+    const effectiveFilePath = targetPageState?.filePath || state.filePath
+    const effectiveFileName = targetPageState?.fileName || state.fileName
+    const effectiveExtension = targetPageState?.extension || state.extension
+    const effectiveCurrentTime = targetPageState?.currentTime ?? state.currentTime
+    const effectiveHighlightRange = targetPageState?.highlightRange ?? state.highlightRange
+
+    if (newMode === 'fullscreen' && effectiveFilePath) {
       set({
         previewMode: newMode,
+        activePageId: targetPageId || state.activePageId,
+        filePath: effectiveFilePath,
+        fileName: effectiveFileName,
+        extension: effectiveExtension,
+        currentTime: effectiveCurrentTime,
+        highlightRange: effectiveHighlightRange,
+        isOpen: true,
         ...(targetPageId
-          ? { pageStates: { ...state.pageStates, [targetPageId]: { mode: newMode } } }
-          : {}),
-        isOpen: true
+          ? {
+              pageStates: {
+                ...state.pageStates,
+                [targetPageId]: {
+                  ...state.pageStates[targetPageId],
+                  mode: newMode,
+                  filePath: effectiveFilePath,
+                  fileName: effectiveFileName,
+                  extension: effectiveExtension,
+                  currentTime: effectiveCurrentTime,
+                  highlightRange: effectiveHighlightRange
+                }
+              }
+            }
+          : {})
       })
-    } else if (newMode === 'split' && state.filePath && state.activePageId === targetPageId) {
+    } else if (newMode === 'split') {
       set({
         previewMode: newMode,
+        activePageId: targetPageId || state.activePageId,
+        filePath: effectiveFilePath,
+        fileName: effectiveFileName,
+        extension: effectiveExtension,
+        currentTime: effectiveCurrentTime,
+        highlightRange: effectiveHighlightRange,
+        isOpen: false,
         ...(targetPageId
-          ? { pageStates: { ...state.pageStates, [targetPageId]: { mode: newMode } } }
-          : {}),
-        isOpen: false
+          ? {
+              pageStates: {
+                ...state.pageStates,
+                [targetPageId]: {
+                  ...state.pageStates[targetPageId],
+                  mode: newMode,
+                  filePath: effectiveFilePath,
+                  fileName: effectiveFileName,
+                  extension: effectiveExtension,
+                  currentTime: effectiveCurrentTime,
+                  highlightRange: effectiveHighlightRange
+                }
+              }
+            }
+          : {})
       })
     } else {
       set({

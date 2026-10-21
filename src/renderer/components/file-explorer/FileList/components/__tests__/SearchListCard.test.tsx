@@ -44,13 +44,27 @@ describe('SearchListCard Component', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    window.electronAPI = {
+    const baseApi = {
       utils: {
         launchExternalDeepLink: vi.fn().mockResolvedValue({ success: true }),
+        openFileWithDefaultApp: vi.fn().mockResolvedValue(true),
         isPathEqual: (p1: string, p2: string) => p1 === p2
       },
-      addToAnalysisQueue: vi.fn().mockResolvedValue(true)
-    } as any
+      addToAnalysisQueue: vi.fn().mockResolvedValue(true),
+      onModelStatusChanged: vi.fn().mockReturnValue(() => {}),
+      onAIServiceError: vi.fn().mockReturnValue(() => {}),
+      getAIStatus: vi.fn().mockResolvedValue({ status: 'ready' }),
+      getAIModelStatus: vi.fn().mockResolvedValue({ status: 'ready' })
+    }
+    window.electronAPI = new Proxy(baseApi, {
+      get(target: any, prop: string) {
+        if (prop in target) return target[prop]
+        if (typeof prop === 'string' && prop.startsWith('on')) {
+          return vi.fn().mockReturnValue(() => {})
+        }
+        return vi.fn().mockResolvedValue(undefined)
+      }
+    }) as any
   })
 
   it('exports SEARCH_LIST_ROW_HEIGHT as 104', () => {
@@ -307,6 +321,49 @@ describe('SearchListCard Component', () => {
       expect(previewState.currentTime).toBe(15)
       expect(previewState.highlightRange).toEqual([15, 45])
     })
+    it('does not re-trigger onItemClick on second chunk click when already active, avoiding selection toggle off', () => {
+      const { container, rerender } = render(
+        <SearchListCard
+          item={videoItem}
+          safeItemName="highway-drive.mp4"
+          formatFileSize={defaultFormatSize}
+          onItemClick={mockItemClick}
+          onContextMenu={mockContextMenu}
+          index={3}
+          isActive={false}
+          isSelected={false}
+        />
+      )
+
+      const chunks = container.querySelectorAll('.group\\/chunk')
+      expect(chunks.length).toBeGreaterThanOrEqual(2)
+
+      // 第一次点击：未激活时，通知父级选中
+      fireEvent.click(chunks[0])
+      expect(mockItemClick).toHaveBeenCalledTimes(1)
+      expect(usePreviewOverlayStore.getState().currentTime).toBe(15)
+
+      // 模拟父级状态已将该行激活/选中
+      rerender(
+        <SearchListCard
+          item={videoItem}
+          safeItemName="highway-drive.mp4"
+          formatFileSize={defaultFormatSize}
+          onItemClick={mockItemClick}
+          onContextMenu={mockContextMenu}
+          index={3}
+          isActive={true}
+          isSelected={true}
+        />
+      )
+
+      // 第二次点击（点击另一个切片）：不重复调用 onItemClick，防范父级单选 toggle 取消选择
+      fireEvent.click(chunks[1])
+      expect(mockItemClick).toHaveBeenCalledTimes(1) // 依然是 1 次，没有被再次调用！
+      // 但时间轴精准更新为第 2 个切片的时间 (startSec = 80)
+      expect(usePreviewOverlayStore.getState().currentTime).toBe(80)
+      expect(usePreviewOverlayStore.getState().highlightRange).toEqual([80, 110])
+    })
   })
 
   describe('Audio rendering with ASR chunks', () => {
@@ -501,6 +558,64 @@ describe('SearchListCard Component', () => {
       expect(['#晚霞', '#日落']).toContain(tagEls[1])
       expect(['#晚霞', '#日落']).toContain(tagEls[2])
       expect(tagEls[3]).toBe('#高清4K')
+    })
+  })
+
+  describe('PreviewToolbar and togglePreviewMode seek retention', () => {
+    it('preserves seek timestamp and range when toggling between split and fullscreen modes', () => {
+      const pageId = 'test-video-page'
+      const store = usePreviewOverlayStore.getState()
+      store.openPreview('D:\test.mp4', 'test.mp4', 'mp4', pageId, {
+        currentTime: 25,
+        highlightRange: [25, 60]
+      })
+
+      // 切换全屏
+      usePreviewOverlayStore.getState().togglePreviewMode(pageId)
+      const fullscreenState = usePreviewOverlayStore.getState()
+      expect(fullscreenState.isOpen).toBe(true)
+      expect(fullscreenState.previewMode).toBe('fullscreen')
+      expect(fullscreenState.currentTime).toBe(25)
+      expect(fullscreenState.highlightRange).toEqual([25, 60])
+
+      // 切换回分栏
+      usePreviewOverlayStore.getState().togglePreviewMode(pageId)
+      const splitState = usePreviewOverlayStore.getState()
+      expect(splitState.isOpen).toBe(false)
+      expect(splitState.previewMode).toBe('split')
+      expect(splitState.currentTime).toBe(25)
+      expect(splitState.highlightRange).toEqual([25, 60])
+    })
+
+    it('launches external deep link with seekSeconds when clicking default app in PreviewToolbar', async () => {
+      const pageId = 'test-toolbar-page'
+      const testVideoPath = 'D:/videos/demo.mp4'
+      usePreviewOverlayStore.getState().openPreview(testVideoPath, 'demo.mp4', 'mp4', pageId, {
+        currentTime: 42,
+        highlightRange: [42, 80]
+      })
+
+      const { PreviewToolbar } = await import('../../../PreviewToolbar')
+      render(
+        <PreviewToolbar
+          pageId={pageId}
+          filePath={testVideoPath}
+          fileName="demo.mp4"
+          showSwitch={false}
+          showRawText={false}
+          onToggleRawText={() => {}}
+        />
+      )
+
+      const defaultAppBtn = screen.getByText('默认程序打开').closest('button')
+      expect(defaultAppBtn).not.toBeNull()
+      fireEvent.click(defaultAppBtn!)
+
+      expect(window.electronAPI!.utils.launchExternalDeepLink).toHaveBeenCalledWith({
+        filePath: testVideoPath,
+        category: 'video',
+        seekSeconds: 42
+      })
     })
   })
 });

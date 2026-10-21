@@ -400,6 +400,16 @@ export const SearchListCard = React.memo(
 
     const isRowActive = Boolean(isSelected || isActive)
 
+    /** 切片点击选中守护：若当前卡片尚未被激活才触发 onItemClick，避免触发父级单选 toggle 取消选择 */
+    const handleChunkSelect = useCallback(
+      (e: React.MouseEvent) => {
+        if (!isRowActive) {
+          onItemClick(index, e)
+        }
+      },
+      [isRowActive, onItemClick, index]
+    )
+
     // 视频切片合集（兼容多切片 matchedChunks 与单切片 matchedChunk）
     const videoChunks = useMemo(() => {
       if (hasMatchedChunks) return item.matchedChunks!
@@ -575,7 +585,7 @@ export const SearchListCard = React.memo(
                     filePath={item.path}
                     category={(item as any).category}
                     onPreviewSeek={handlePreviewSeek}
-                    onItemSelect={e => onItemClick(index, e)}
+                    onItemSelect={handleChunkSelect}
                   />
                 ))}
               </div>
@@ -592,7 +602,7 @@ export const SearchListCard = React.memo(
                     filePath={item.path}
                     category={(item as any).category}
                     onPreviewSeek={handlePreviewSeek}
-                    onItemSelect={e => onItemClick(index, e)}
+                    onItemSelect={handleChunkSelect}
                   />
                 ))}
               </div>

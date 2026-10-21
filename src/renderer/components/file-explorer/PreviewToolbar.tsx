@@ -6,6 +6,8 @@ import { Switch } from '../ui/switch'
 import { Label } from '../ui/label'
 import { usePreviewOverlayStore } from '../../stores/preview-overlay-store'
 import { TTSActionGroup } from '../common/TTSActionGroup'
+import { isCategory, FileCategory, logger, LogCategory } from '@firefly/shared'
+import { toast } from '../common/Toast'
 
 interface PreviewToolbarProps {
   /** 页面标识，用于操作对应页面的预览状态 */
@@ -66,13 +68,41 @@ export const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
     }
   }, [targetFilePath])
 
-  const handleLaunch = useCallback(() => {
-    if (targetFilePath) {
-      window.electronAPI?.utils.openFileWithDefaultApp(targetFilePath).catch((err: Error) => {
-        console.error('Failed to open file with default app:', err)
-      })
+  const handleLaunch = useCallback(async () => {
+    if (!targetFilePath) return
+
+    const state = usePreviewOverlayStore.getState()
+    const pageFile = pageId ? state.pageStates[pageId] : undefined
+    const effectiveCurrentTime = pageFile?.currentTime ?? state.currentTime
+
+    const isVideo = isCategory(targetFilePath, FileCategory.VIDEO)
+    const isAudio = isCategory(targetFilePath, FileCategory.AUDIO)
+    const category = isVideo ? 'video' : isAudio ? 'audio' : ''
+
+    try {
+      if (
+        typeof effectiveCurrentTime === 'number' &&
+        Number.isFinite(effectiveCurrentTime) &&
+        effectiveCurrentTime > 0 &&
+        (isVideo || isAudio) &&
+        window.electronAPI?.utils?.launchExternalDeepLink
+      ) {
+        const outcome = await window.electronAPI.utils.launchExternalDeepLink({
+          filePath: targetFilePath,
+          category,
+          seekSeconds: effectiveCurrentTime
+        })
+        if (outcome?.fallbackToDefault) {
+          toast.info(t('未检测到支持精准定位的外部应用，已按默认方式打开'))
+        }
+      } else {
+        await window.electronAPI?.utils.openFileWithDefaultApp(targetFilePath)
+      }
+    } catch (err: unknown) {
+      logger.error(LogCategory.RENDERER, '外部应用打开失败:', err)
+      toast.error(t('打开文件失败'))
     }
-  }, [targetFilePath])
+  }, [targetFilePath, pageId])
 
   const handleClose = useCallback(() => {
     if (onClose) {
