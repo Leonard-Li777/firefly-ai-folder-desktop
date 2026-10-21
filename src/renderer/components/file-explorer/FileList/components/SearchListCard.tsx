@@ -13,7 +13,7 @@ import { toast } from '../../../common/Toast'
 import { SystemFileIcon } from '../../../common/SystemFileIcon'
 import { HighlightText } from '../../../common/HighlightText'
 import { FileType } from '../types'
-import { formatVideoTimestamp } from '../../../../lib/video-preview-utils'
+import { formatVideoTimestamp, clampVideoTime } from '../../../../lib/video-preview-utils'
 import { getExtFromSmartName } from '../../../../lib/preview-utils'
 import { usePreviewOverlayStore } from '../../../../stores/preview-overlay-store'
 import { PageId } from '../../../../constants/page-ids'
@@ -42,7 +42,7 @@ export const sanitizeSnippetHtml = (snippet?: string): string => {
 }
 
 /**
- * 视频切片极简微缩帧（标准 16:9 画幅，免原生 <video> 标签以保护解码器，Hover 提示完整起止时间与相似度）
+ * 视频切片微型抽帧帧卡片（标准 16:9 画幅，时间锚定抽帧缩图预览，Hover 提示完整起止时间与相似度）
  */
 const VideoChunkFrame: React.FC<{
   chunk: {
@@ -56,6 +56,21 @@ const VideoChunkFrame: React.FC<{
   category?: any
   onPreviewSeek: (startSec: number, endSec: number) => void
 }> = ({ chunk, filePath, category, onPreviewSeek }) => {
+  const [hasError, setHasError] = useState(false)
+
+  const videoUrl = useMemo(() => {
+    if (!filePath) return ''
+    const norm = normalizeForCache(filePath).replace(/\\/g, '/')
+    const clean = norm.startsWith('/') ? norm : `/${norm}`
+    const safeTime = clampVideoTime(chunk.startSec, 3600)
+    return `file://${clean}#t=${safeTime}`
+  }, [filePath, chunk.startSec])
+
+  // 虚拟行复用时重置错误状态
+  useEffect(() => {
+    setHasError(false)
+  }, [filePath, chunk.startSec])
+
   const chunkPercent =
     typeof chunk.similarity === 'number'
       ? Math.round(Math.min(1, Math.max(0, chunk.similarity)) * 100)
@@ -99,8 +114,19 @@ const VideoChunkFrame: React.FC<{
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
     >
-      {/* 极简占位胶囊背景与播放图标 */}
-      <MaterialIcon icon="movie" className="text-muted-foreground/50 text-base" />
+      {/* 视频指定时间点抽帧缩略图，破损时平滑回退占位图标 */}
+      {!hasError && videoUrl ? (
+        <video
+          src={videoUrl}
+          preload="metadata"
+          muted
+          playsInline
+          className="w-full h-full object-cover pointer-events-none group-hover/chunk:scale-105 transition-transform duration-200"
+          onError={() => setHasError(true)}
+        />
+      ) : (
+        <MaterialIcon icon="movie" className="text-muted-foreground/50 text-base" />
+      )}
 
       {/* Hover 遮罩与跳轴播放图标 */}
       <div className="absolute inset-0 bg-black/35 opacity-0 group-hover/chunk:opacity-100 flex items-center justify-center transition-opacity">

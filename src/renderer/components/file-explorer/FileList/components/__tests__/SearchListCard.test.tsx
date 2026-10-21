@@ -240,7 +240,7 @@ describe('SearchListCard Component', () => {
       ]
     }
 
-    it('renders video micro chunk frames without native video tags to protect decoders', () => {
+    it('renders video micro chunk frames with time-anchored video preview and timestamp badge', () => {
       const { container } = render(
         <SearchListCard
           item={videoItem}
@@ -252,10 +252,15 @@ describe('SearchListCard Component', () => {
         />
       )
 
-      // 验证不直接渲染原生 <video> 标签
-      expect(container.querySelectorAll('video').length).toBe(0)
       // 验证渲染了 2 个微缩卡片
       expect(container.querySelectorAll('.group\\/chunk').length).toBe(2)
+
+      // 验证渲染了带有时间锚点的 video 抽帧缩略图
+      const videos = container.querySelectorAll('video')
+      expect(videos.length).toBe(2)
+      expect(videos[0].getAttribute('src')).toContain('#t=15')
+      expect(videos[1].getAttribute('src')).toContain('#t=80')
+
       // 验证渲染了时间戳
       expect(screen.getByText('00:15')).toBeDefined()
       expect(screen.getByText('01:20')).toBeDefined()
