@@ -7,11 +7,36 @@ import {
   DirectoryReorganizeOptions,
   DirectoryReorganizeResult
 } from '@firefly/types'
-import { LogCategory, logger, DIMENSION_CODES, CANONICAL_NAMES, getCanonicalConceptName, isCandidateWordAdmissible } from '@firefly/shared'
-import { selectBestClusterFolderName, PathCosineService } from '@firefly/core-engine'
+import {
+  LogCategory,
+  logger,
+  DIMENSION_CODES,
+  CANONICAL_NAMES,
+  getCanonicalConceptName,
+  isCandidateWordAdmissible,
+  TagProvenanceGroup
+} from '@firefly/shared'
+import { sanitizeFolderName } from './utils'
 
 const FILE_QUALITY_NAME = CANONICAL_NAMES.FILE_QUALITY
 const DEFAULT_CLUSTER_FALLBACK_NAME = '其他' // locale-invariant-ok: 聚类默认目录名哨兵
+/** HAC 聚类默认余弦距离切分阈值（规格 §4.3 IPC 契约） */
+const HAC_DEFAULT_DISTANCE_THRESHOLD = 0.4
+/** HAC 聚类默认叶簇文件数上限（规格 §4.3 IPC 契约） */
+const HAC_DEFAULT_MAX_LEAF_SIZE = 50
+/** EmbeddingGemma MRL 支持的弹性维度 */
+const GEMMA_MRL_DIMS = new Set([256, 512, 768])
+/**
+ * 可参与聚类主题词与富文本嵌入的标签来源分组 (ADR-0045)。
+ * fact/visual 承载文件类型、来源、分级、归档状态、画质等元数据事实，
+ * 它们在同一批候选中往往全量出现（如 .lnk 文件的「lnk」「全年龄」），
+ * 既不能区分语义簇，还会劫持目录命名并导致多簇路径碰撞。
+ */
+const HAC_SEMANTIC_TAG_GROUPS: ReadonlySet<TagProvenanceGroup> = new Set([
+  'fused',
+  'ai',
+  'user'
+])
 import Database from 'better-sqlite3'
 import path from 'node:path'
 import { t } from '@app/languages'
@@ -23,7 +48,78 @@ import { DirectoryContextService } from '../directory-context-service'
 import { unifiedModelManager } from '../../llama/unified-model-manager'
 import { omniService, OmniClusterDocument } from '../../system/omni-service'
 import { omniClient } from '../../../services/omni-client'
-import { decompressJson } from '../../../utils/text-compressor'
+import { decompressJson, decompressText } from '../../../utils/text-compressor'
+// Ticket 10 (Spec §4.9)：JIT 向量补全 60ms 软熔断与后台队列异步消费
+// 注意：analysis-queue-service 依赖图极重（队列/AI服务/云同步 Worker），
+// 缺省入队器在运行时动态导入（enqueueMissingVectorFiles），单测注入 mock 时零加载
+import {
+  runJitVectorCompletionGate,
+  JIT_VECTOR_SYNC_BUDGET_MS,
+  JIT_VECTOR_SYNC_MAX_FILES
+} from './jit-vector-gate'
+import type { EnqueueInput } from '../../analysis-queue-service/types'
+
+/**
+ * 判定文本是否含可参与语义嵌入的可见字符。
+ *
+ * NUL、控制字符、Unicode 替换符与纯空白都不构成有效正文：占位内容（如 `\0`）
+ * 若被当作正文送入嵌入模型，会产出与任何主题都无关的垃圾向量并污染聚类。
+ */
+function hasVisibleText(text: string): boolean {
+  for (const ch of text) {
+    if (ch === '\uFFFD' || /\s/.test(ch) || /[\u0000-\u001F\u007F-\u009F]/.test(ch)) {
+      continue
+    }
+    return true
+  }
+  return false
+}
+
+/** 兼容 BLOB（压缩文本）与历史明文 string 的可见文本判定 */
+function contentHasVisibleText(content: unknown): boolean {
+  if (content === null || content === undefined) return false
+  const text =
+    typeof content === 'string'
+      ? content
+      : Buffer.isBuffer(content)
+        ? decompressText(content)
+        : ''
+  return hasVisibleText(text)
+}
+
+/** 剥掉智能命名模板骨架：扩展名、方括号前缀（如「[程序]」）、尾随自动日期 */
+function stripNamingSkeleton(name: string): string {
+  return path
+    .parse(String(name || '').trim())
+    .name.replace(/[\[【][^\]】]*[\]】]/g, ' ')
+    .replace(/[_\-]?\d{4}[-_.]\d{1,2}[-_.]\d{1,2}\s*$/, '')
+    .trim()
+}
+
+/**
+ * 组装参与聚类语义嵌入的富文本（证据口径）。
+ *
+ * 智能命名由模板生成，方括号前缀、尾随日期与扩展名几乎人人相同；把这些格式骨架
+ * 与文件名一起送入嵌入模型，会把全库两两余弦相似度垫到同一高位，约束层次聚类
+ * 只能在合并高度上切出占据过半样本的巨型簇，表现为「任意提示词都只有一个目录」。
+ * 主题词是已过受控准入门禁的真实语义证据，因此有主题词时富文本只由主题词构成；
+ * 仅当一份文件拿不到任何主题词时，才回退到剥掉模板骨架后的文件名。
+ * 注意：keywords 仍原样交给 Omni 作为目录命名池，本函数只收缩语义证据面。
+ */
+export function buildClusterEmbeddingText(input: {
+  displayName: string
+  rawName: string
+  keywords: string[]
+}): string {
+  const { displayName, rawName, keywords } = input
+  if (keywords.length > 0) return keywords.join(' ').trim()
+  const primary = stripNamingSkeleton(displayName)
+  const secondary = rawName !== displayName ? stripNamingSkeleton(rawName) : ''
+  return [primary, secondary && secondary !== primary ? secondary : '']
+    .filter(Boolean)
+    .join(' ')
+    .trim()
+}
 
 export interface AISchemeProvider {
   db: Database.Database
@@ -40,53 +136,82 @@ export interface AISchemeProvider {
   getDimensionGroups(options?: any, language?: string): Promise<any>
 }
 
+/** AISchemeGenerator 可注入选项（单测隔离 / 行为覆写） */
+export interface AISchemeGeneratorOptions {
+  /**
+   * 缺失向量文件的后台队列入队器（Ticket 10）：
+   * 缺省走 analysisQueueService.addItems(missingInputs, false) 低优先级静默消费；
+   * 单测可注入 mock 断言入队参数。
+   */
+  analysisQueueEnqueuer?: (inputs: EnqueueInput[], forceReanalyze: boolean) => Promise<void>
+  /** JIT 同步补全软预算（ms），缺省 60 */
+  jitVectorBudgetMs?: number
+  /** JIT 同步补全文件数配额，缺省 2 */
+  jitVectorMaxSyncCount?: number
+}
+
 export class AISchemeGenerator {
-  constructor(private provider: AISchemeProvider) {}
+  constructor(private provider: AISchemeProvider, private options?: AISchemeGeneratorOptions) {}
 
   /**
-   * 基于端侧 384d 密集向量与 Omni 约束层次聚类 (HAC) 生成目录整理方案 (Issue #633)
+   * 基于端侧稠密向量与 Omni 约束层次聚类 (HAC) 生成目录整理方案 (Issue #633 / ADR-0056)
    * 纯 CPU 毫秒级运算，零显卡依赖、零 Token 消耗
    */
   async generateHACClusterScheme(
     workspaceId: number,
     selectedFileIds?: number[],
-    userPrompt?: string
+    userPrompt?: string,
+    options?: {
+      distanceThreshold?: number
+      maxLeafSize?: number
+      /** 仅测试/内部显式覆盖；缺省读取 ConfigOrchestrator 当前档位 */
+      embeddingProfile?: string
+      embeddingDim?: number
+    }
   ): Promise<AIDirectoryStructure | null> {
     try {
       // 1. 获取工作区文件 (支持精确定位所选文件，避免大型工作区全表扫描)
+      //    前置分析门禁：批量整理管线只接纳已完成 AI 语义分析的文件 (规格 §5.3)
       let targetRows: Array<{
         id: number
         path: string
         name: string
         file_fingerprint: string
         smart_name?: string
-        content?: string
-        exif?: string
+        content?: Buffer | string
+        ocr?: Buffer | string
+        asr?: Buffer | string
+        lrc?: Buffer | string
+        exif?: Buffer | string
+        /** file_contents 行存在性：NULL 表示该文件无 AI 分析产物行，是未向量化强证据 (Ticket 10) */
+        contents_fp?: string | null
       }>
 
       if (selectedFileIds && selectedFileIds.length > 0 && selectedFileIds.length <= 1000) {
         const placeholders = selectedFileIds.map(() => '?').join(',')
         targetRows = this.provider.db
           .prepare(`
-            SELECT 
+            SELECT
               wf.id, wf.path, wf.name, wf.file_fingerprint,
-              f.smart_name, fc.content, fc.exif
+              f.smart_name, fc.file_fingerprint AS contents_fp,
+              fc.content, fc.ocr, fc.asr, fc.lrc, fc.exif
             FROM workspace_files wf
             JOIN files f ON wf.file_fingerprint = f.file_fingerprint
             LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
-            WHERE wf.workspace_id = ? AND wf.id IN (${placeholders})
+            WHERE wf.workspace_id = ? AND wf.is_analyzed = 1 AND wf.id IN (${placeholders})
           `)
           .all(workspaceId, ...selectedFileIds) as any[]
       } else {
         const rows = this.provider.db
           .prepare(`
-            SELECT 
+            SELECT
               wf.id, wf.path, wf.name, wf.file_fingerprint,
-              f.smart_name, fc.content, fc.exif
+              f.smart_name, fc.file_fingerprint AS contents_fp,
+              fc.content, fc.ocr, fc.asr, fc.lrc, fc.exif
             FROM workspace_files wf
             JOIN files f ON wf.file_fingerprint = f.file_fingerprint
             LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
-            WHERE wf.workspace_id = ?
+            WHERE wf.workspace_id = ? AND wf.is_analyzed = 1
           `)
           .all(workspaceId) as any[]
         const selectIdSet =
@@ -97,6 +222,12 @@ export class AISchemeGenerator {
       }
 
       if (targetRows.length === 0) {
+        // 显式上报候选集为空的原因（禁止静默降级）：前端只能看到「未生成有效聚类」，
+        // 若无此日志无法区分是工作区 ID 错配、选中文件未入库还是扫描范围问题
+        logger.warn(
+          LogCategory.FILE_ORGANIZATION,
+          `[HAC智能聚类] 工作区 ${workspaceId} 候选文件行数为 0 (选中 fileIds=${selectedFileIds?.length ?? '全量'})，降级回传统方案`
+        )
         return null
       }
 
@@ -112,14 +243,24 @@ export class AISchemeGenerator {
         try {
           const tagRows = this.provider.db
             .prepare(`
-              SELECT ftr.file_fingerprint, COALESCE(ft.name, ftr.tag_code) as tag_name, ftr.name_path
+              SELECT ftr.file_fingerprint, COALESCE(ft.name, ftr.tag_code) as tag_name, ftr.name_path, ftr.tag_group
               FROM file_tag_relations ftr
               LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
               WHERE ftr.file_fingerprint IN (${placeholders})
+              ORDER BY ftr.file_fingerprint ASC, COALESCE(ftr.confidence, 0) DESC, ftr.tag_code ASC
             `)
-            .all(...chunk) as Array<{ file_fingerprint: string; tag_name: string; name_path: string }>
+            .all(...chunk) as Array<{
+            file_fingerprint: string
+            tag_name: string
+            name_path: string
+            tag_group: string
+          }>
 
           for (const rel of tagRows) {
+            // 元数据事实标签（文件类型/来源/分级/归档状态等）不得作为主题词或嵌入证据
+            if (!HAC_SEMANTIC_TAG_GROUPS.has(rel.tag_group as TagProvenanceGroup)) {
+              continue
+            }
             let list = fpTagMap.get(rel.file_fingerprint)
             if (!list) {
               list = []
@@ -164,8 +305,14 @@ export class AISchemeGenerator {
             }
             if (meta && Array.isArray(meta.keywords)) {
               for (const kw of meta.keywords) {
-                if (typeof kw === 'string' && kw.trim() && !list.includes(kw.trim())) {
-                  list.push(kw.trim())
+                if (typeof kw !== 'string') continue
+                const trimmed = kw.trim()
+                if (
+                  trimmed &&
+                  !list.includes(trimmed) &&
+                  isCandidateWordAdmissible(trimmed).admissible
+                ) {
+                  list.push(trimmed)
                 }
               }
             }
@@ -174,12 +321,19 @@ export class AISchemeGenerator {
         // 仅当文件既无标签关系又无 exif 关键词时，以文件名/智能命名切词兜底
         if (list.length === 0) {
           const rawName = row.smart_name || row.name || ''
-          const baseName = path.parse(rawName).name
+          const stem = path.parse(rawName).name
+          // 模板化命名的方括号前缀（如 [程序]）与自动追加的日期都是格式元数据，
+          // 直接参与命名会让所有文件坍缩到「程序/2026」这类无区分度目录
+          const baseName = stem
+            .replace(/[\[【][^\]】]*[\]】]/g, ' ')
+            .replace(/[_\-]?\d{4}[-_.]\d{1,2}[-_.]\d{1,2}\s*$/, '')
+            .trim()
           const tokens = baseName.split(/[\s_\-\.\(\)\[\]【】_—·，,]+/).filter(Boolean)
           for (const tok of tokens) {
             if (
               tok.length >= 2 &&
               tok.length <= 15 &&
+              !/^\d+$/.test(tok) &&
               isCandidateWordAdmissible(tok).admissible &&
               !list.includes(tok)
             ) {
@@ -187,8 +341,15 @@ export class AISchemeGenerator {
             }
           }
           if (list.length === 0) {
-            const fallbackToken = baseName.trim() || rawName.trim() || '文件'
-            list.push(fallbackToken)
+            const fallbackToken = baseName.trim() || stem.trim() || rawName.trim()
+            // 兜底词同样必须通过受控候选词准入门禁，杜绝机械噪音词进入目录命名池
+            if (
+              fallbackToken.length >= 2 &&
+              fallbackToken.length <= 15 &&
+              isCandidateWordAdmissible(fallbackToken).admissible
+            ) {
+              list.push(fallbackToken)
+            }
           }
         }
       }
@@ -210,19 +371,35 @@ export class AISchemeGenerator {
 
         if (!seenFp.has(row.file_fingerprint)) {
           seenFp.add(row.file_fingerprint)
+          const keywords = fpTagMap.get(row.file_fingerprint) || []
+          const smartName = (row.smart_name || '').trim()
+          const rawName = (row.name || '').trim()
+          const displayName = smartName || rawName
+          // 证据口径见 buildClusterEmbeddingText：主题词优先，杜绝模板骨架垫平相似度导致巨型簇坍缩
+          const embeddingText = buildClusterEmbeddingText({ displayName, rawName, keywords })
+          // 正文、OCR、ASR、歌词字幕任一含可见语义文本，说明分析产出的向量有内容依据，
+          // 不得用文件名富文本替代；全部缺失时才标记为无效正文
+          const hasSemanticText =
+            contentHasVisibleText(row.content) ||
+            contentHasVisibleText(row.ocr) ||
+            contentHasVisibleText(row.asr) ||
+            contentHasVisibleText(row.lrc)
           docs.push({
             fingerprint: row.file_fingerprint,
             embedding: [],
-            keywords: fpTagMap.get(row.file_fingerprint) || []
+            keywords,
+            embeddingText: embeddingText || undefined,
+            // 仅当所有文本载体都无可见字符时，聚类改用富文本证据
+            preferEmbeddingText: !hasSemanticText
           })
         }
       }
 
       // 如果去重后候选文档不足 2 份，无法形成有效聚类，返回 null 降级
       if (docs.length < 2) {
-        logger.info(
+        logger.warn(
           LogCategory.FILE_ORGANIZATION,
-          `[HAC智能聚类] 候选去重文档数(${docs.length})不足，平滑回退传统方案`
+          `[HAC智能聚类] 候选去重文档数(${docs.length})不足（总行数 ${targetRows.length}，缺 file_fingerprint 或重复指纹），平滑回退传统方案`
         )
         return null
       }
@@ -231,16 +408,74 @@ export class AISchemeGenerator {
       // 传 embedding: [] 交由 Omni 端侧在进程内直接读取 zvec 槽位，未命中时由 Omni 原生 JIT 自愈，杜绝跨进程大批量文本嵌入的超时等待
 
       // 3. 调用 Omni 原生端侧 HAC 聚类
-      // 注意：不传伪随机哈希向量作为 promptEmbedding，留空由 Omni 端直接通过原生 BekkoEmbedder::embed 生成真实语义嵌入
+      // 注意：不传伪随机哈希向量作为 promptEmbedding，留空由 Omni 端按当前嵌入档位生成真实语义嵌入
+      const config = ConfigOrchestrator.getInstance()
+      const configuredProfile =
+        options?.embeddingProfile ||
+        config.getValue<string>('AI_EMBEDDING_PROFILE') ||
+        'classic_light'
+      const isGemma = configuredProfile.includes('gemma')
+      const embeddingProfile = isGemma ? 'gemma_unified' : 'classic_light'
+      const configuredDim = config.getValue<number>('EMBEDDING_MRL_DIMENSION') || 512
+      const embeddingDim = isGemma
+        ? options?.embeddingDim && GEMMA_MRL_DIMS.has(options.embeddingDim)
+          ? options.embeddingDim
+          : GEMMA_MRL_DIMS.has(configuredDim)
+            ? configuredDim
+            : 512
+        : 384
+
+      // ===== Ticket 10 (Spec §4.9)：JIT 向量补全 60ms 软熔断与后台队列异步消费 =====
+      // 未向量化本地代理口径：桌面端无法直读 Omni zvec 槽位状态，而正常分析链路会在感知阶段
+      // 同步写入 zvec 槽位与 file_contents 分析产物行（二者同生共死），因此「无 file_contents 行」
+      // 的文件在 Omni 端聚类时必然触发进程内 JIT 串行编码，是单请求 3~6s 首屏卡顿的直接来源。
+      const contentsReadyFps = new Set(
+        targetRows.filter(r => r.contents_fp).map(r => r.file_fingerprint)
+      )
+      const missingVectorDocs = docs.filter(d => !contentsReadyFps.has(d.fingerprint))
+      const jitGate = await runJitVectorCompletionGate({
+        missingItems: missingVectorDocs,
+        completeBatch: items =>
+          this.completeMissingVectorEmbeddings(items, embeddingProfile, embeddingDim),
+        budgetMs: this.options?.jitVectorBudgetMs ?? JIT_VECTOR_SYNC_BUDGET_MS,
+        maxSyncCount: this.options?.jitVectorMaxSyncCount ?? JIT_VECTOR_SYNC_MAX_FILES
+      })
+
+      // 熔断显式上报（禁止静默降级，AGENTS.md §2.9）：熔断文件排除出本轮同步聚类请求，
+      // 转 analysisQueueService 后台低优先级队列静默消费；后台补全完毕后由队列完成回调触发界面增量刷新
+      if (jitGate.tripped) {
+        logger.warn(
+          LogCategory.FILE_ORGANIZATION,
+          `[HAC智能聚类] JIT 向量补全触发软熔断 (reason=${jitGate.reason}, elapsed=${jitGate.elapsedMs}ms, missing=${missingVectorDocs.length}, deferred=${jitGate.deferred.length})，本轮聚类仅基于已就绪向量先行渲染，保证首屏 < 100ms`
+        )
+        await this.enqueueMissingVectorFiles(jitGate.deferred, workspaceId)
+      }
+
+      // 本轮实际参与聚类的文档：熔断时剔除未就绪文件（先行基于已有向量完成本轮聚类视图渲染）；
+      // 配额内补全成功的文档已在 completeMissingVectorEmbeddings 中内联向量，Omni 端可跳过 JIT
+      const clusterDocs = jitGate.tripped
+        ? docs.filter(d => !jitGate.deferred.some(item => item.fingerprint === d.fingerprint))
+        : docs
+
+      if (clusterDocs.length < 2) {
+        logger.warn(
+          LogCategory.FILE_ORGANIZATION,
+          `[HAC智能聚类] 剔除 JIT 熔断未就绪文件后有效文档数(${clusterDocs.length})不足 2 份，本轮聚类终止（缺失文件已入后台队列，补全完成后可再次触发聚类）`
+        )
+        return null
+      }
+
       logger.info(
         LogCategory.FILE_ORGANIZATION,
-        `[HAC智能聚类] 正在调用 Omni 端侧 HAC 聚类引擎: 文档数=${docs.length}, prompt=${userPrompt || 'none'}`
+        `[HAC智能聚类] 正在调用 Omni 端侧 HAC 聚类引擎: 文档数=${clusterDocs.length}, prompt=${userPrompt || 'none'}, profile=${embeddingProfile}, dim=${embeddingDim}, jitAdmitted=${jitGate.admitted.length}, jitDeferred=${jitGate.deferred.length}`
       )
       const clusterRes = await omniService.clusterDocuments({
-        documents: docs,
+        documents: clusterDocs,
         prompt: userPrompt && userPrompt.trim() ? userPrompt.trim() : undefined,
-        distanceThreshold: 0.80,
-        maxLeafSize: Math.max(8, Math.min(30, Math.ceil(docs.length / 3))),
+        embeddingProfile,
+        embeddingDim,
+        distanceThreshold: options?.distanceThreshold ?? HAC_DEFAULT_DISTANCE_THRESHOLD,
+        maxLeafSize: options?.maxLeafSize ?? HAC_DEFAULT_MAX_LEAF_SIZE
       })
 
       if (!clusterRes || !clusterRes.success || !clusterRes.result) {
@@ -258,78 +493,57 @@ export class AISchemeGenerator {
         `[HAC智能聚类] 聚类计算成功: 生成簇数=${clusters.length}, 未归类=${otherFiles.length}, 耗时=${durationMs}ms`
       )
 
-      // 提取提示词中的核心意图词元作为高优候选注入池 (PRD-0058 / ADR-0056)
-      const promptConceptTokens: string[] = []
-      if (userPrompt && userPrompt.trim()) {
-        const rawTokens = userPrompt.split(/[\s,，、/\\+\-_·与和或按及]+/g).filter(Boolean)
-        for (const raw of rawTokens) {
-          const clean = raw.replace(/^(按|从|将|把|以)/, '').replace(/(归类|归档|整理|分类|类|型)$/, '').trim()
-          if (clean.length >= 2 && isCandidateWordAdmissible(clean).admissible && !promptConceptTokens.includes(clean)) {
-            promptConceptTokens.push(clean)
-          }
-        }
-      }
-
       // 4. 将 OmniClusterTreeResult 转换为系统统一的 AIDirectoryStructure
-      // 并在有用户提示词时，基于提示词联合余弦打分优化每个簇的规范目录命名 (PRD-0058 / ADR-0056)
+      // 目录命名已在 Omni Rust 端按规格 §5.1 的 tanh 饱和词频 + 提示词语义提振公式生成，
+      // 此处仅做 Omni 返回「其他/空」时的确定性兜底，绝不再用纯文本重叠覆盖语义命名。
       const dirMap = new Map<string, any>()
+      const usedLeafKeys = new Set<string>()
 
       for (const cluster of clusters) {
-        // 统计簇内全部文件的关键词频次
+        // 统计簇内全部文件的关键词频次（仅用于空名兜底，Rust 端已完成正式打分）
         const kwFreq = new Map<string, number>()
         for (const fp of cluster.fingerprints) {
           const kws = fpTagMap.get(fp) || []
-          for (const kw of kws) {
+          for (const kw of new Set(kws)) {
             kwFreq.set(kw, (kwFreq.get(kw) || 0) + 1)
           }
         }
 
-        const kwItems: Array<{ keyword: string; count: number; embedding?: number[] }> =
-          Array.from(kwFreq.entries()).map(([keyword, count]) => ({
-            keyword,
-            count,
-          }))
+        const fallbackKeyword =
+          Array.from(kwFreq.entries())
+            .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] ||
+          DEFAULT_CLUSTER_FALLBACK_NAME
 
-        // 基于提示词联合打分对簇内真实存在的关键词进行语义提振 (PRD-0058 / ADR-0056)
-        // 杜绝盲目向所有簇注入提示词导致鸠占鹊巢与分类错乱
-        const scoringResult = selectBestClusterFolderName(
-          kwItems,
-          undefined,
-          3.0,
-          userPrompt
-        )
-        const bestFolderName =
-          scoringResult.folderName && scoringResult.folderName !== DEFAULT_CLUSTER_FALLBACK_NAME
-            ? scoringResult.folderName
-            : cluster.folderName || DEFAULT_CLUSTER_FALLBACK_NAME
+        const pathFromRust = (cluster.path || []).filter(Boolean)
+        const hasMeaningfulPath =
+          pathFromRust.length > 0 &&
+          !pathFromRust.every(p => p === DEFAULT_CLUSTER_FALLBACK_NAME)
+        const rustFolderName =
+          cluster.folderName && cluster.folderName !== DEFAULT_CLUSTER_FALLBACK_NAME
+            ? cluster.folderName
+            : fallbackKeyword
+        let clusterPath = hasMeaningfulPath ? pathFromRust : [rustFolderName]
+        let leafKey = clusterPath.join('/')
 
-        let clusterPath: string[]
-        // 优先采纳 Omni 聚类引擎生成的多级路径（已在 Rust 端结合 prompt_embedding 进行了层次下钻与路径优化）
-        if (
-          cluster.path &&
-          cluster.path.length > 0 &&
-          !cluster.path.every(p => p === DEFAULT_CLUSTER_FALLBACK_NAME)
-        ) {
-          clusterPath = [...cluster.path]
-          // 当簇内经过提示词打分提振出高契合代表词且未出现在路径中时，更新叶子路径名称
-          if (bestFolderName && bestFolderName !== DEFAULT_CLUSTER_FALLBACK_NAME) {
-            if (clusterPath.length === 1) {
-              clusterPath = [bestFolderName]
-            } else if (!clusterPath.includes(bestFolderName)) {
-              clusterPath[clusterPath.length - 1] = bestFolderName
-            }
+        // 不同簇可能因共享主题词派生出同一路径；静默并入同一叶节点会吞掉聚类成果
+        if (usedLeafKeys.has(leafKey)) {
+          const parentPath = clusterPath.slice(0, -1)
+          const baseLeaf = clusterPath[clusterPath.length - 1] || DEFAULT_CLUSTER_FALLBACK_NAME
+          let ordinal = 2
+          let candidateLeaf = `${baseLeaf} (${ordinal})`
+          while (dirMap.has([...parentPath, candidateLeaf].join('/'))) {
+            ordinal += 1
+            candidateLeaf = `${baseLeaf} (${ordinal})`
           }
-        } else if (
-          scoringResult.rankedKeywords.length >= 2 &&
-          cluster.fingerprints.length >= 4
-        ) {
-          clusterPath = [
-            scoringResult.rankedKeywords[0].keyword,
-            scoringResult.rankedKeywords[1].keyword
-          ]
-        } else {
-          clusterPath = [bestFolderName]
+          const mergedPath = leafKey
+          clusterPath = [...parentPath, candidateLeaf]
+          leafKey = clusterPath.join('/')
+          logger.warn(
+            LogCategory.FILE_ORGANIZATION,
+            `[HAC智能聚类] 多个簇派生出相同目录路径 "${mergedPath}"，已追加序号区分为 "${leafKey}"`
+          )
         }
+        usedLeafKeys.add(leafKey)
 
         let currentParent = ''
         for (let i = 0; i < clusterPath.length; i++) {
@@ -348,7 +562,6 @@ export class AISchemeGenerator {
           currentParent = dirKey
         }
 
-        const leafKey = clusterPath.join('/')
         const leafNode = dirMap.get(leafKey)!
         const filesInCluster: any[] = []
 
@@ -449,6 +662,102 @@ export class AISchemeGenerator {
   }
 
   /**
+   * Ticket 10：缺失向量文件的同步 JIT 预补全（60ms 软预算内执行）。
+   * 桌面端通过 batchEmbedText 先行编码并把向量内联进聚类文档，
+   * Omni 端见到文档自带目标维度向量即跳过 zvec 未命中的进程内串行 JIT 编码。
+   * 返回「确认完成补全」的文档子集：接口异常或向量缺失的文件不予确认，
+   * 由调用方 runJitVectorCompletionGate 一律按熔断转后台队列处理。
+   */
+  private async completeMissingVectorEmbeddings(
+    items: OmniClusterDocument[],
+    embeddingProfile: string,
+    embeddingDim: number
+  ): Promise<OmniClusterDocument[]> {
+    const texts = items.map(
+      d => (d.embeddingText && d.embeddingText.trim()) || d.keywords.join(' ') || d.fingerprint
+    )
+    try {
+      const resp = await omniService.batchEmbedText(texts, {
+        profile: embeddingProfile,
+        dim: embeddingDim,
+        timeoutMs: 2000
+      })
+      const completed: OmniClusterDocument[] = []
+      if (resp?.vectors) {
+        for (let i = 0; i < items.length; i++) {
+          const vec = resp.vectors[i]
+          if (vec && vec.length > 0) {
+            items[i].embedding = vec
+            completed.push(items[i])
+          }
+        }
+      }
+      return completed
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      logger.warn(
+        LogCategory.FILE_ORGANIZATION,
+        `[HAC智能聚类] 缺失向量同步预补全失败（${items.length} 项，转后台队列处理）: ${msg}`
+      )
+      return []
+    }
+  }
+
+  /**
+   * Ticket 10：将熔断未就绪文件排入后台低优先级分析队列静默消费。
+   * addItems(inputs, false) 不强制重析，重复指纹由 queueManager 幂等去重；
+   * 入队失败必须显式上报（禁止静默降级），但不阻断聚类主链路。
+   * 入队明细按指纹点查 workspace_files/files 组装 EnqueueInput（path/name/size/type），
+   * 不侵入主查询 SELECT（部分历史测试 schema 无 size/extension 列，保持向后兼容）。
+   */
+  private async enqueueMissingVectorFiles(
+    deferredDocs: OmniClusterDocument[],
+    workspaceId: number
+  ): Promise<void> {
+    try {
+      const missingInputs: EnqueueInput[] = []
+      for (const doc of deferredDocs) {
+        const row = this.provider.db
+          .prepare(
+            `SELECT wf.path, wf.name, COALESCE(f.size, 0) AS size, COALESCE(f.extension, '') AS type
+             FROM workspace_files wf
+             JOIN files f ON wf.file_fingerprint = f.file_fingerprint
+             WHERE wf.file_fingerprint = ? AND wf.workspace_id = ?
+             LIMIT 1`
+          )
+          .get(doc.fingerprint, workspaceId) as
+          | { path: string; name: string; size: number; type: string }
+          | undefined
+        if (!row) continue
+        missingInputs.push({
+          path: row.path,
+          name: row.name,
+          size: row.size ?? 0,
+          type: row.type ?? ''
+        })
+      }
+      if (missingInputs.length === 0) return
+      const enqueuer =
+        this.options?.analysisQueueEnqueuer ??
+        (async (inputs: EnqueueInput[], forceReanalyze: boolean) => {
+          const { analysisQueueService } = await import('../../analysis-queue-service/index')
+          await analysisQueueService.addItems(inputs, forceReanalyze)
+        })
+      await enqueuer(missingInputs, false)
+      logger.info(
+        LogCategory.FILE_ORGANIZATION,
+        `[HAC智能聚类] ${missingInputs.length} 个未向量化文件已排入后台低优先级分析队列静默消费 (forceReanalyze=false)`
+      )
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      logger.warn(
+        LogCategory.FILE_ORGANIZATION,
+        `[HAC智能聚类] 未向量化文件后台队列入队失败: ${msg}`
+      )
+    }
+  }
+
+  /**
    * 获取当前选中模型的 numPredict 值
    * 优先从模型 recommendedConfig 读取，云端模式或无模型时回退到默认值
    */
@@ -482,9 +791,11 @@ export class AISchemeGenerator {
     name: string,
     structure: AIDirectoryStructure
   ): Promise<VirtualDirectory> {
+    // 规格 §5.4：虚拟目录名与所有目录段落库/落盘前必须经过 Windows 路径安全清洗
+    const safeVdirName = sanitizeFolderName(name, t('智能聚类整理'))
     const vd = await this.provider.createFromStrategy(
       workspaceId,
-      name,
+      safeVdirName,
       JSON.stringify({ summary: structure.summary }),
       'ai_skill'
     )
@@ -500,7 +811,8 @@ export class AISchemeGenerator {
       const dir = structure.directories.find(d => (d.id || d.name) === dirId)
       if (!dir) return ''
       const parentPath = dir.parent ? buildPath(dir.parent, visited) : ''
-      const joined = parentPath ? `${parentPath}/${dir.name}` : dir.name
+      const safeDirName = sanitizeFolderName(dir.name || '', DEFAULT_CLUSTER_FALLBACK_NAME)
+      const joined = parentPath ? `${parentPath}/${safeDirName}` : safeDirName
       const fullPath = joined.replace(/\\/g, '/').replace(/\/+/g, '/')
       directoryPaths.set(dirId, fullPath)
       return fullPath
