@@ -4,6 +4,7 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { concept, getCanonicalConceptName } from '@firefly/shared'
 import { SearchListCard, SEARCH_LIST_ROW_HEIGHT, sanitizeSnippetHtml } from '../SearchListCard'
 import type { FileType } from '../../types'
+import { usePreviewOverlayStore } from '../../../../../stores/preview-overlay-store'
 
 vi.mock('@app/languages', () => ({
   default: {},
@@ -263,6 +264,49 @@ describe('SearchListCard Component', () => {
       expect(screen.getByText('00:15')).toBeDefined()
       expect(screen.getByText('01:20')).toBeDefined()
     })
+
+    it('hides timestamp badge by default with opacity-0 and reveals on hover', () => {
+      const { container } = render(
+        <SearchListCard
+          item={videoItem}
+          safeItemName="highway-drive.mp4"
+          formatFileSize={defaultFormatSize}
+          onItemClick={mockItemClick}
+          onContextMenu={mockContextMenu}
+          index={0}
+        />
+      )
+
+      // 验证微型时间胶囊包含 opacity-0，保证画面纯净不遮挡
+      const badges = container.querySelectorAll('.group\\/chunk .opacity-0')
+      expect(badges.length).toBeGreaterThanOrEqual(2)
+    })
+
+    it('triggers item selection and opens preview with seek timestamp upon clicking video chunk', () => {
+      const { container } = render(
+        <SearchListCard
+          item={videoItem}
+          safeItemName="highway-drive.mp4"
+          formatFileSize={defaultFormatSize}
+          onItemClick={mockItemClick}
+          onContextMenu={mockContextMenu}
+          index={3}
+        />
+      )
+
+      const firstChunk = container.querySelector('.group\\/chunk')
+      expect(firstChunk).not.toBeNull()
+      fireEvent.click(firstChunk!)
+
+      // 验证触发了父级行选中
+      expect(mockItemClick).toHaveBeenCalledWith(3, expect.anything())
+
+      // 验证触发了预览跳轴参数同步
+      const previewState = usePreviewOverlayStore.getState()
+      expect(previewState.filePath).toBe(videoItem.path)
+      expect(previewState.currentTime).toBe(15)
+      expect(previewState.highlightRange).toEqual([15, 45])
+    })
   })
 
   describe('Audio rendering with ASR chunks', () => {
@@ -294,6 +338,32 @@ describe('SearchListCard Component', () => {
       expect(container.querySelectorAll('.group\\/audio').length).toBe(1)
       expect(screen.getByText('01:05 - 01:35')).toBeDefined()
       expect(screen.getByText('海外研发预算分配规划')).toBeDefined()
+    })
+
+    it('triggers item selection and opens preview upon clicking audio chunk', () => {
+      const { container } = render(
+        <SearchListCard
+          item={audioItem}
+          safeItemName="financial-review.mp3"
+          formatFileSize={defaultFormatSize}
+          onItemClick={mockItemClick}
+          onContextMenu={mockContextMenu}
+          index={1}
+        />
+      )
+
+      const chip = container.querySelector('.group\\/audio')
+      expect(chip).not.toBeNull()
+      fireEvent.click(chip!)
+
+      // 验证触发了父级行选中
+      expect(mockItemClick).toHaveBeenCalledWith(1, expect.anything())
+
+      // 验证触发了音频切片跳轴参数同步
+      const previewState = usePreviewOverlayStore.getState()
+      expect(previewState.filePath).toBe(audioItem.path)
+      expect(previewState.currentTime).toBe(65)
+      expect(previewState.highlightRange).toEqual([65, 95])
     })
   })
 

@@ -11,7 +11,7 @@ import { getPreviewRouteType, getExtFromSmartName } from '../../../../lib/previe
 import { usePreviewOverlayStore } from '../../../../stores/preview-overlay-store'
 import { useDragSelectStore } from '../../../../stores/drag-select-store'
 import { renderAnalysisStatus } from './RowRenderer'
-import { PageId } from '../../../../constants/page-ids'
+import { PageId, PAGE_IDS } from '../../../../constants/page-ids'
 import { checkIsUnit, getUnitTypeLabel, getUnitTheme, getUnitTooltip } from '../utils'
 import { useFileQueueState } from '../../../../stores/analysis-queue-store'
 import { SystemFileIcon } from '../../../common/SystemFileIcon'
@@ -218,20 +218,25 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
         ''
       const routeType = getPreviewRouteType(ext)
       if (routeType !== 'unsupported') {
-        usePreviewOverlayStore
-          .getState()
-          .openPreview(
-            fileItem.path,
-            fileItem.smartName || fileItem.name || '',
-            ext,
-            pageId,
-            {
-              currentTime: fileItem.matchedChunk?.startSec,
-              highlightRange: fileItem.matchedChunk
-                ? [fileItem.matchedChunk.startSec, fileItem.matchedChunk.endSec]
-                : undefined
-            }
-          )
+        const splitState = usePreviewOverlayStore.getState()
+        const effectivePageId = pageId || splitState.activePageId || PAGE_IDS.REAL_DIRECTORY
+        const targetCurrentTime =
+          (fileItem as any).currentTime ?? fileItem.matchedChunk?.startSec
+        const targetHighlightRange =
+          (fileItem as any).highlightRange ??
+          (fileItem.matchedChunk
+            ? [fileItem.matchedChunk.startSec, fileItem.matchedChunk.endSec]
+            : undefined)
+        splitState.openPreview(
+          fileItem.path,
+          fileItem.smartName || fileItem.name || '',
+          ext,
+          effectivePageId,
+          {
+            currentTime: targetCurrentTime,
+            highlightRange: targetHighlightRange
+          }
+        )
       } else {
         window.electronAPI!.utils.openFileWithDefaultApp(fileItem.path).catch((error: Error) => {
           logger.error(LogCategory.RENDERER, '打开文件失败:', error)
@@ -249,7 +254,8 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
       if (!fileItem.path) return
 
       const splitState = usePreviewOverlayStore.getState()
-      const pageMode = pageId ? (splitState.pageStates[pageId]?.mode ?? 'split') : undefined
+      const effectivePageId = pageId || splitState.activePageId || PAGE_IDS.REAL_DIRECTORY
+      const pageMode = splitState.pageStates[effectivePageId]?.mode ?? 'split'
       if (pageMode !== 'split') {
         return
       }
@@ -261,16 +267,21 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
         ''
       const routeType = getPreviewRouteType(ext)
       if (routeType !== 'unsupported') {
+        const targetCurrentTime =
+          (fileItem as any).currentTime ?? fileItem.matchedChunk?.startSec
+        const targetHighlightRange =
+          (fileItem as any).highlightRange ??
+          (fileItem.matchedChunk
+            ? [fileItem.matchedChunk.startSec, fileItem.matchedChunk.endSec]
+            : undefined)
         splitState.openPreview(
           fileItem.path,
           fileItem.smartName || fileItem.name || '',
           ext,
-          pageId,
+          effectivePageId,
           {
-            currentTime: fileItem.matchedChunk?.startSec,
-            highlightRange: fileItem.matchedChunk
-              ? [fileItem.matchedChunk.startSec, fileItem.matchedChunk.endSec]
-              : undefined
+            currentTime: targetCurrentTime,
+            highlightRange: targetHighlightRange
           }
         )
       }

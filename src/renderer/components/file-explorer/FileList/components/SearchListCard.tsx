@@ -16,7 +16,7 @@ import { FileType } from '../types'
 import { formatVideoTimestamp, clampVideoTime } from '../../../../lib/video-preview-utils'
 import { getExtFromSmartName } from '../../../../lib/preview-utils'
 import { usePreviewOverlayStore } from '../../../../stores/preview-overlay-store'
-import { PageId } from '../../../../constants/page-ids'
+import { PageId, PAGE_IDS } from '../../../../constants/page-ids'
 import { useSearchStore } from '../../../../stores/search-store'
 import { getOrganizedSearchTags, OrganizedTagItem } from './search-list-tag-utils'
 
@@ -55,7 +55,8 @@ const VideoChunkFrame: React.FC<{
   filePath: string
   category?: any
   onPreviewSeek: (startSec: number, endSec: number) => void
-}> = ({ chunk, filePath, category, onPreviewSeek }) => {
+  onItemSelect?: (e: React.MouseEvent) => void
+}> = ({ chunk, filePath, category, onPreviewSeek, onItemSelect }) => {
   const [hasError, setHasError] = useState(false)
 
   const videoUrl = useMemo(() => {
@@ -85,6 +86,7 @@ const VideoChunkFrame: React.FC<{
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation()
+    onItemSelect?.(e)
     onPreviewSeek(chunk.startSec, chunk.endSec)
   }
 
@@ -133,8 +135,8 @@ const VideoChunkFrame: React.FC<{
         <MaterialIcon icon="play_arrow" className="text-white drop-shadow text-base" />
       </div>
 
-      {/* 底部微型起止时间胶囊 */}
-      <div className="absolute bottom-0.5 right-0.5 rounded bg-black/85 font-mono text-white/90 backdrop-blur-xs flex items-center gap-0.5 px-1 py-0.2 text-[9px] shadow-xs border border-white/10 pointer-events-none">
+      {/* 底部微型起止时间胶囊（平时隐藏，Hover 时浮现，保持预览画面纯净无遮挡） */}
+      <div className="absolute bottom-0.5 right-0.5 rounded bg-black/85 font-mono text-white/90 backdrop-blur-xs flex items-center gap-0.5 px-1 py-0.2 text-[9px] shadow-xs border border-white/10 pointer-events-none opacity-0 group-hover/chunk:opacity-100 transition-opacity">
         <span>{formatVideoTimestamp(chunk.startSec)}</span>
         {chunkPercent !== null && (
           <span className="text-violet-300 font-semibold">{`${chunkPercent}%`}</span>
@@ -158,7 +160,8 @@ const AudioChunkChip: React.FC<{
   filePath: string
   category?: any
   onPreviewSeek: (startSec: number, endSec: number) => void
-}> = ({ chunk, filePath, category, onPreviewSeek }) => {
+  onItemSelect?: (e: React.MouseEvent) => void
+}> = ({ chunk, filePath, category, onPreviewSeek, onItemSelect }) => {
   const chunkPercent =
     typeof chunk.similarity === 'number'
       ? Math.round(Math.min(1, Math.max(0, chunk.similarity)) * 100)
@@ -172,6 +175,7 @@ const AudioChunkChip: React.FC<{
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation()
+    onItemSelect?.(e)
     onPreviewSeek(chunk.startSec, chunk.endSec)
   }
 
@@ -331,27 +335,29 @@ export const SearchListCard = React.memo(
     /** 抽帧/音频切片跳轴定位 */
     const handlePreviewSeek = useCallback(
       (startSec: number, endSec: number) => {
+        // 同步挂载到当前内存 item 实例上，保证 FileExplorerLayout 的响应式监听能读取到最新的切片跳转参数
+        ;(item as any).currentTime = startSec
+        ;(item as any).highlightRange = [startSec, endSec]
+
         const splitState = usePreviewOverlayStore.getState()
-        const pageMode = pageId ? (splitState.pageStates[pageId]?.mode ?? 'split') : 'split'
-        if (pageMode === 'split') {
-          const ext =
-            item.extension ||
-            getExtFromSmartName(item.smartName || item.name || '') ||
-            item.path.split('.').pop() ||
-            ''
-          splitState.openPreview(
-            item.path,
-            item.smartName || item.name || '',
-            ext,
-            pageId,
-            {
-              currentTime: startSec,
-              highlightRange: [startSec, endSec]
-            }
-          )
-        }
+        const effectivePageId = pageId || splitState.activePageId || PAGE_IDS.REAL_DIRECTORY
+        const ext =
+          item.extension ||
+          getExtFromSmartName(item.smartName || item.name || '') ||
+          item.path.split('.').pop() ||
+          ''
+        splitState.openPreview(
+          item.path,
+          item.smartName || item.name || '',
+          ext,
+          effectivePageId,
+          {
+            currentTime: startSec,
+            highlightRange: [startSec, endSec]
+          }
+        )
       },
-      [item.path, item.name, item.smartName, item.extension, pageId]
+      [item, pageId]
     )
 
     /** “立即分析”：将该文件插队至分析队列并给用户提示 */
@@ -569,6 +575,7 @@ export const SearchListCard = React.memo(
                     filePath={item.path}
                     category={(item as any).category}
                     onPreviewSeek={handlePreviewSeek}
+                    onItemSelect={e => onItemClick(index, e)}
                   />
                 ))}
               </div>
@@ -585,6 +592,7 @@ export const SearchListCard = React.memo(
                     filePath={item.path}
                     category={(item as any).category}
                     onPreviewSeek={handlePreviewSeek}
+                    onItemSelect={e => onItemClick(index, e)}
                   />
                 ))}
               </div>
