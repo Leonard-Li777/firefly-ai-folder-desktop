@@ -718,7 +718,23 @@ declare global {
         getAnalyzedFiles: (workspaceDirectoryPath: string) => Promise<FileInfo[]>
         matchPerspectivesAndStructures: (request: any) => Promise<any>
         calculateFilePathsCosine: (request: any) => Promise<any>
-        smartClusterHac: (params: any) => Promise<any>
+        smartClusterHac: (params: {
+          workspaceId?: number
+          workspaceDirectoryPath?: string
+          fileIds?: number[]
+          prompt?: string
+          distanceThreshold?: number
+          maxLeafSize?: number
+          maxDepth?: number
+          maxRootDirectories?: number
+          maxSubdirectories?: number
+          similarityThreshold?: number
+        }) => Promise<{
+          success: boolean
+          summary: string
+          directories: any[]
+          durationMs: number
+        }>
         quickOrganize: (params: QuickOrganizeParams) => Promise<OrganizePreviewResult>
         generatePlan: (params: OrganizePlanParams) => Promise<AIGeneratedStructure>
         listSessions: (workspaceDirectoryPath: string) => Promise<OrganizeSession[]>

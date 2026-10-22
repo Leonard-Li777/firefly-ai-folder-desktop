@@ -942,6 +942,10 @@ export class VirtualDirectoryService {
     options?: {
       distanceThreshold?: number
       maxLeafSize?: number
+      maxDepth?: number
+      maxRootDirectories?: number
+      maxSubdirectories?: number
+      similarityThreshold?: number
       embeddingProfile?: string
       embeddingDim?: number
     }

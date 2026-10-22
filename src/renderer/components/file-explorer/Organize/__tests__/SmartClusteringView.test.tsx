@@ -86,7 +86,11 @@ describe('SmartClusteringView Component', () => {
       workspaceId: 1,
       workspaceDirectoryPath: '/test/workspace',
       fileIds: undefined,
-      prompt: ''
+      prompt: '',
+      maxDepth: 3,
+      maxRootDirectories: 5,
+      maxSubdirectories: 5,
+      similarityThreshold: 0.6
     })
 
     // 等待渲染完成
@@ -117,7 +121,11 @@ describe('SmartClusteringView Component', () => {
         workspaceId: 1,
         workspaceDirectoryPath: '/test/workspace',
         fileIds: undefined,
-        prompt: '按年份与财务类型归类'
+        prompt: '按年份与财务类型归类',
+        maxDepth: 3,
+        maxRootDirectories: 5,
+        maxSubdirectories: 5,
+        similarityThreshold: 0.6
       })
     })
   })
@@ -325,4 +333,89 @@ describe('SmartClusteringView Component', () => {
       expect(mockOnSaveStateChange).toHaveBeenLastCalledWith({ canSave: true, isSaving: false })
     })
   })
-})
+
+  it('四维调节滑块平铺展示且拖拽后防抖触发带新参数的聚类请求', async () => {
+    render(
+      <SmartClusteringView
+        workspaceId={1}
+        workspaceDirectoryPath="/test/workspace"
+        onSaveVirtualDirectory={mockSaveVirtualDirectory}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('2026年度财务')).toBeInTheDocument()
+    })
+
+    // 检查 4 个滑块均渲染在界面上
+    expect(screen.getByText('目录层级深度')).toBeInTheDocument()
+    expect(screen.getByText('根目录数上限')).toBeInTheDocument()
+    expect(screen.getByText('子目录数上限')).toBeInTheDocument()
+    expect(screen.getByText('相似度阈值')).toBeInTheDocument()
+
+    // 获取所有 range inputs
+    const rangeInputs = screen.getAllByRole('slider')
+    expect(rangeInputs.length).toBe(4)
+
+    // 修改目录层级为 5
+    fireEvent.change(rangeInputs[0], { target: { value: '5' } })
+
+    // 等待 400ms 防抖
+    await waitFor(() => {
+      expect(mockSmartClusterHac).toHaveBeenCalledWith({
+        workspaceId: 1,
+        workspaceDirectoryPath: '/test/workspace',
+        fileIds: undefined,
+        prompt: '',
+        maxDepth: 5,
+        maxRootDirectories: 5,
+        maxSubdirectories: 5,
+        similarityThreshold: 0.6
+      })
+    }, { timeout: 2000 })
+  })
+
+  it('在目录树脏状态下调整滑块触发覆盖确认弹窗，点击取消应回滚滑块状态', async () => {
+    render(
+      <SmartClusteringView
+        workspaceId={1}
+        workspaceDirectoryPath="/test/workspace"
+        onSaveVirtualDirectory={mockSaveVirtualDirectory}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('2026年度财务')).toBeInTheDocument()
+    })
+
+    // 重命名节点触发 isTreeDirty
+    const renameInputs = screen.queryAllByRole('textbox')
+    // 通过拖拽或内联操作使树变脏
+    const targetRow = screen.getByText('设计稿素材').closest('[draggable="true"]')!
+    fireEvent.drop(targetRow, {
+      dataTransfer: {
+        getData: () =>
+          JSON.stringify({ type: 'file', file: { id: 1, name: 'Q1报表.xlsx' }, sourceNodeKey: '2026年度财务' })
+      }
+    })
+
+    // 此时树已脏
+    const rangeInputs = screen.getAllByRole('slider')
+    // 拖动第 1 个滑块到 7
+    fireEvent.change(rangeInputs[0], { target: { value: '7' } })
+
+    // 应弹出覆盖确认弹窗
+    await waitFor(() => {
+      expect(screen.getByText('覆盖微调确认')).toBeInTheDocument()
+    })
+
+    // 点击取消
+    const cancelBtn = screen.getByText('取消')
+    fireEvent.click(cancelBtn)
+
+    // 滑块值应回滚为 3
+    await waitFor(() => {
+      expect(rangeInputs[0]).toHaveValue('3')
+    })
+  })
+});

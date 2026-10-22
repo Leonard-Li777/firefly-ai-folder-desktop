@@ -1023,7 +1023,18 @@ const electronAPI = {
       ipcRenderer.invoke('organize-real-directory/match-perspectives-and-structures', request),
     calculateFilePathsCosine: (request: any) =>
       ipcRenderer.invoke('organize-real-directory/calculate-file-paths-cosine', request),
-    smartClusterHac: (params: any) =>
+    smartClusterHac: (params: {
+      workspaceId?: number
+      workspaceDirectoryPath?: string
+      fileIds?: number[]
+      prompt?: string
+      distanceThreshold?: number
+      maxLeafSize?: number
+      maxDepth?: number
+      maxRootDirectories?: number
+      maxSubdirectories?: number
+      similarityThreshold?: number
+    }) =>
       ipcRenderer.invoke('organize-real-directory/smart-cluster-hac', params),
     quickOrganize: (params: { workspaceDirectoryPath: string; aiGeneratedStructure: any }) =>
       ipcRenderer.invoke('organize-real-directory/quick-organize', params),

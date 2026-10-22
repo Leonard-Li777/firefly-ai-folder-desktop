@@ -164,6 +164,10 @@ export class AISchemeGenerator {
     options?: {
       distanceThreshold?: number
       maxLeafSize?: number
+      maxDepth?: number
+      maxRootDirectories?: number
+      maxSubdirectories?: number
+      similarityThreshold?: number
       /** 仅测试/内部显式覆盖；缺省读取 ConfigOrchestrator 当前档位 */
       embeddingProfile?: string
       embeddingDim?: number
@@ -469,13 +473,23 @@ export class AISchemeGenerator {
         LogCategory.FILE_ORGANIZATION,
         `[HAC智能聚类] 正在调用 Omni 端侧 HAC 聚类引擎: 文档数=${clusterDocs.length}, prompt=${userPrompt || 'none'}, profile=${embeddingProfile}, dim=${embeddingDim}, jitAdmitted=${jitGate.admitted.length}, jitDeferred=${jitGate.deferred.length}`
       )
+      let distanceThreshold = options?.distanceThreshold ?? HAC_DEFAULT_DISTANCE_THRESHOLD
+      if (options?.similarityThreshold !== undefined) {
+        let sim = options.similarityThreshold
+        if (sim > 1.0) sim /= 100
+        distanceThreshold = Math.max(0.05, Math.min(0.95, 1.0 - sim))
+      }
+
       const clusterRes = await omniService.clusterDocuments({
         documents: clusterDocs,
         prompt: userPrompt && userPrompt.trim() ? userPrompt.trim() : undefined,
         embeddingProfile,
         embeddingDim,
-        distanceThreshold: options?.distanceThreshold ?? HAC_DEFAULT_DISTANCE_THRESHOLD,
-        maxLeafSize: options?.maxLeafSize ?? HAC_DEFAULT_MAX_LEAF_SIZE
+        distanceThreshold,
+        maxLeafSize: options?.maxLeafSize ?? HAC_DEFAULT_MAX_LEAF_SIZE,
+        maxDepth: options?.maxDepth,
+        maxRootDirectories: options?.maxRootDirectories,
+        maxSubdirectories: options?.maxSubdirectories
       })
 
       if (!clusterRes || !clusterRes.success || !clusterRes.result) {
@@ -529,19 +543,23 @@ export class AISchemeGenerator {
         if (usedLeafKeys.has(leafKey)) {
           const parentPath = clusterPath.slice(0, -1)
           const baseLeaf = clusterPath[clusterPath.length - 1] || DEFAULT_CLUSTER_FALLBACK_NAME
-          let ordinal = 2
-          let candidateLeaf = `${baseLeaf} (${ordinal})`
-          while (dirMap.has([...parentPath, candidateLeaf].join('/'))) {
-            ordinal += 1
-            candidateLeaf = `${baseLeaf} (${ordinal})`
+          if (baseLeaf === DEFAULT_CLUSTER_FALLBACK_NAME) {
+            // “其他”为受控长尾归并槽，允许多个簇并入同一 [parent, "其他"] 目录，不加序号
+          } else {
+            let ordinal = 2
+            let candidateLeaf = `${baseLeaf} (${ordinal})`
+            while (dirMap.has([...parentPath, candidateLeaf].join('/'))) {
+              ordinal += 1
+              candidateLeaf = `${baseLeaf} (${ordinal})`
+            }
+            const mergedPath = leafKey
+            clusterPath = [...parentPath, candidateLeaf]
+            leafKey = clusterPath.join('/')
+            logger.warn(
+              LogCategory.FILE_ORGANIZATION,
+              `[HAC智能聚类] 多个簇派生出相同目录路径 "${mergedPath}"，已追加序号区分为 "${leafKey}"`
+            )
           }
-          const mergedPath = leafKey
-          clusterPath = [...parentPath, candidateLeaf]
-          leafKey = clusterPath.join('/')
-          logger.warn(
-            LogCategory.FILE_ORGANIZATION,
-            `[HAC智能聚类] 多个簇派生出相同目录路径 "${mergedPath}"，已追加序号区分为 "${leafKey}"`
-          )
         }
         usedLeafKeys.add(leafKey)
 

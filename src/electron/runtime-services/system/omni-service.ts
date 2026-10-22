@@ -2103,6 +2103,9 @@ export class OmniService {
       embeddingDim?: number
       distanceThreshold?: number
       maxLeafSize?: number
+      maxDepth?: number
+      maxRootDirectories?: number
+      maxSubdirectories?: number
     },
     timeoutMs: number = 30000
   ): Promise<OmniClusterResponse | null> {

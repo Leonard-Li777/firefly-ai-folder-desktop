@@ -1135,6 +1135,10 @@ export function registerVirtualDirectoryIPCHandlers() {
         prompt?: string
         distanceThreshold?: number
         maxLeafSize?: number
+        maxDepth?: number
+        maxRootDirectories?: number
+        maxSubdirectories?: number
+        similarityThreshold?: number
       }
     ) => {
       const startTime = Date.now()
@@ -1161,7 +1165,11 @@ export function registerVirtualDirectoryIPCHandlers() {
         params.prompt,
         {
           distanceThreshold: params.distanceThreshold,
-          maxLeafSize: params.maxLeafSize
+          maxLeafSize: params.maxLeafSize,
+          maxDepth: params.maxDepth,
+          maxRootDirectories: params.maxRootDirectories,
+          maxSubdirectories: params.maxSubdirectories,
+          similarityThreshold: params.similarityThreshold
         }
       )
 

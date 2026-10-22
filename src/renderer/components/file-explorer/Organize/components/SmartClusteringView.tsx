@@ -51,6 +51,25 @@ function getPresetExamplePrompts(): string[] {
   ]
 }
 
+function getSimilarityLabel(percent: number): string {
+  if (percent >= 75) return `${percent}% (${t('细分')})`
+  if (percent <= 45) return `${percent}% (${t('松散')})`
+  return `${percent}% (${t('标准')})`
+}
+
+function getSubdirectoryLabel(count: number): string {
+  if (count <= 1) return t('仅一级')
+  return t('≤ {count} 个', { count })
+}
+
+function getRootDirectoryLabel(count: number): string {
+  return t('≤ {count} 个', { count })
+}
+
+function getMaxDepthLabel(depth: number): string {
+  return t('{depth} 级', { depth })
+}
+
 /** 本地日期戳 YYYYMMDD（避免 toLocaleDateString 产生斜杠污染目录名） */
 function formatDateStamp(date = new Date()): string {
   const pad = (n: number) => String(n).padStart(2, '0')
@@ -104,6 +123,11 @@ const SmartClusteringViewInner = (
   ref: React.Ref<SmartClusteringViewHandle>
 ) => {
   const [prompt, setPrompt] = useState<string>('')
+  const [maxDepth, setMaxDepth] = useState<number>(3)
+  const [maxRootDirectories, setMaxRootDirectories] = useState<number>(5)
+  const [maxSubdirectories, setMaxSubdirectories] = useState<number>(5)
+  const [similarityThreshold, setSimilarityThreshold] = useState<number>(60)
+
   const presetExamplePrompts = getPresetExamplePrompts()
   const [tree, setTree] = useState<VirtualDirectoryNode[]>([])
   const [isGenerating, setIsGenerating] = useState<boolean>(false)
@@ -115,11 +139,29 @@ const SmartClusteringViewInner = (
 
   // 脏状态防覆盖弹窗状态
   const [showDirtyDialog, setShowDirtyDialog] = useState<boolean>(false)
-  const [pendingPrompt, setPendingPrompt] = useState<string | null>(null)
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
 
   const isFirstMount = React.useRef(true)
   const currentRequestIdRef = React.useRef<number>(0)
-  const lastExecutedPromptRef = React.useRef<string | null>(null)
+
+  // 记录最近一次已提交并在跑或跑完的有效参数
+  const lastCommittedParamsRef = React.useRef({
+    prompt: '',
+    maxDepth: 3,
+    maxRootDirectories: 5,
+    maxSubdirectories: 5,
+    similarityThreshold: 60
+  })
+
+  // 引用最新参数，供 executeClustering 使用
+  const maxDepthRef = React.useRef(maxDepth)
+  maxDepthRef.current = maxDepth
+  const maxRootDirectoriesRef = React.useRef(maxRootDirectories)
+  maxRootDirectoriesRef.current = maxRootDirectories
+  const maxSubdirectoriesRef = React.useRef(maxSubdirectories)
+  maxSubdirectoriesRef.current = maxSubdirectories
+  const similarityThresholdRef = React.useRef(similarityThreshold)
+  similarityThresholdRef.current = similarityThreshold
 
   // 始终持有最新 props 引用，确保 executeClustering 句柄永久稳定，杜绝父组件渲染导致死循环重聚类
   const paramsRef = React.useRef({ workspaceId, workspaceDirectoryPath, fileIds })
@@ -127,18 +169,34 @@ const SmartClusteringViewInner = (
 
   // 执行聚类请求核心函数
   const executeClustering = useCallback(
-    async (userPrompt: string) => {
+    async (
+      userPrompt: string,
+      customOptions?: {
+        maxDepth?: number
+        maxRootDirectories?: number
+        maxSubdirectories?: number
+        similarityThreshold?: number
+      }
+    ) => {
       const requestId = ++currentRequestIdRef.current
-      lastExecutedPromptRef.current = userPrompt.trim()
       setIsGenerating(true)
       setErrorMsg('')
       try {
         const { workspaceId: wsId, workspaceDirectoryPath: wsPath, fileIds: fIds } = paramsRef.current
+        const effectiveDepth = customOptions?.maxDepth ?? maxDepthRef.current
+        const effectiveRoots = customOptions?.maxRootDirectories ?? maxRootDirectoriesRef.current
+        const effectiveSubdirs = customOptions?.maxSubdirectories ?? maxSubdirectoriesRef.current
+        const effectiveSim = customOptions?.similarityThreshold ?? (similarityThresholdRef.current / 100)
+
         const res = await window.electronAPI.organizeRealDirectory.smartClusterHac({
           workspaceId: wsId,
           workspaceDirectoryPath: wsPath,
           fileIds: fIds,
-          prompt: userPrompt.trim()
+          prompt: userPrompt.trim(),
+          maxDepth: effectiveDepth,
+          maxRootDirectories: effectiveRoots,
+          maxSubdirectories: effectiveSubdirs,
+          similarityThreshold: effectiveSim
         })
 
         // 若请求已过时（用户后续输入已触发新请求），丢弃该次响应
@@ -178,11 +236,23 @@ const SmartClusteringViewInner = (
   useEffect(() => {
     if (lastInitializedKeyRef.current !== workspaceKey) {
       lastInitializedKeyRef.current = workspaceKey
-      executeClustering('')
+      lastCommittedParamsRef.current = {
+        prompt: '',
+        maxDepth: 3,
+        maxRootDirectories: 5,
+        maxSubdirectories: 5,
+        similarityThreshold: 60
+      }
+      executeClustering('', {
+        maxDepth: 3,
+        maxRootDirectories: 5,
+        maxSubdirectories: 5,
+        similarityThreshold: 0.6
+      })
     }
   }, [workspaceKey, executeClustering])
 
-  // 输入提示词防抖自动聚类 (仅在非脏树状态下自动触发，防抖 600ms)
+  // 聚类参数防抖联动 (400ms)
   useEffect(() => {
     if (isFirstMount.current) {
       isFirstMount.current = false
@@ -192,31 +262,85 @@ const SmartClusteringViewInner = (
       return
     }
     const timer = setTimeout(() => {
-      if (prompt.trim() !== lastExecutedPromptRef.current) {
-        executeClustering(prompt)
+      const last = lastCommittedParamsRef.current
+      if (
+        prompt.trim() !== last.prompt ||
+        maxDepth !== last.maxDepth ||
+        maxRootDirectories !== last.maxRootDirectories ||
+        maxSubdirectories !== last.maxSubdirectories ||
+        similarityThreshold !== last.similarityThreshold
+      ) {
+        lastCommittedParamsRef.current = {
+          prompt: prompt.trim(),
+          maxDepth,
+          maxRootDirectories,
+          maxSubdirectories,
+          similarityThreshold
+        }
+        executeClustering(prompt, {
+          maxDepth,
+          maxRootDirectories,
+          maxSubdirectories,
+          similarityThreshold: similarityThreshold / 100
+        })
       }
-    }, 600)
+    }, 400)
     return () => clearTimeout(timer)
-  }, [prompt, isTreeDirty, executeClustering])
+  }, [prompt, maxDepth, maxRootDirectories, maxSubdirectories, similarityThreshold, isTreeDirty, executeClustering])
 
   // 用户请求触发聚类（带脏状态拦截）
   const handleRequestClustering = (targetPrompt: string) => {
     if (isTreeDirty) {
-      setPendingPrompt(targetPrompt)
+      setPendingAction(() => () => {
+        setPrompt(targetPrompt)
+        lastCommittedParamsRef.current.prompt = targetPrompt.trim()
+        executeClustering(targetPrompt)
+      })
       setShowDirtyDialog(true)
     } else {
       setPrompt(targetPrompt)
+      lastCommittedParamsRef.current.prompt = targetPrompt.trim()
       executeClustering(targetPrompt)
     }
   }
 
-  // 确认覆盖脏微调并重新聚类
-  const handleConfirmDirtyOverwrite = () => {
-    const nextPrompt = pendingPrompt ?? prompt
+  const handleSliderChange = (
+    setter: (val: number) => void,
+    name: 'maxDepth' | 'maxRootDirectories' | 'maxSubdirectories' | 'similarityThreshold',
+    val: number
+  ) => {
+    if (isTreeDirty) {
+      setPendingAction(() => () => {
+        setter(val)
+        lastCommittedParamsRef.current[name] = val
+        executeClustering(prompt, {
+          [name]: name === 'similarityThreshold' ? val / 100 : val
+        })
+      })
+      setShowDirtyDialog(true)
+    } else {
+      setter(val)
+    }
+  }
+
+  const handleCancelDirtyOverwrite = () => {
     setShowDirtyDialog(false)
-    setPendingPrompt(null)
-    setPrompt(nextPrompt)
-    executeClustering(nextPrompt)
+    setPendingAction(null)
+    // 立即回滚 4 个滑块到最近一次稳定状态
+    const last = lastCommittedParamsRef.current
+    setMaxDepth(last.maxDepth)
+    setMaxRootDirectories(last.maxRootDirectories)
+    setMaxSubdirectories(last.maxSubdirectories)
+    setSimilarityThreshold(last.similarityThreshold)
+  }
+
+  const handleConfirmDirtyOverwrite = () => {
+    setShowDirtyDialog(false)
+    setIsTreeDirty(false)
+    if (pendingAction) {
+      pendingAction()
+      setPendingAction(null)
+    }
   }
 
   // 辅助函数：计算节点的路径唯一 key
@@ -260,32 +384,20 @@ const SmartClusteringViewInner = (
 
   const handleAddSubdir = useCallback((parentKey: string, subdirName: string) => {
     const insertSubdir = (nodes: VirtualDirectoryNode[]): VirtualDirectoryNode[] => {
-      if (!parentKey) {
-        // 新建根节点
-        const newNode: VirtualDirectoryNode = {
-          name: subdirName,
-          parent: null,
-          files: [],
-          fileCount: 0,
-          totalSize: 0,
-          subdirectories: []
-        }
-        return [...nodes, newNode]
-      }
       return nodes.map(node => {
         const curKey = getNodeKey(node)
         if (curKey === parentKey) {
-          const newChild: VirtualDirectoryNode = {
+          const newSub: VirtualDirectoryNode = {
             name: subdirName,
             parent: curKey,
-            files: [],
             fileCount: 0,
             totalSize: 0,
+            files: [],
             subdirectories: []
           }
           return {
             ...node,
-            subdirectories: [...(node.subdirectories || []), newChild]
+            subdirectories: [...(node.subdirectories || []), newSub]
           }
         }
         if (node.subdirectories && node.subdirectories.length > 0) {
@@ -298,44 +410,41 @@ const SmartClusteringViewInner = (
     setIsTreeDirty(true)
   }, [])
 
-  const handleMoveNodeOrFile = useCallback((draggedData: any, targetNodeKey: string) => {
-    if (!draggedData || !draggedData.file) return
-    const fileToMove = draggedData.file
-
-    const isSameFile = (a: any, b: any): boolean => {
-      if (a?.id != null && b?.id != null) return String(a.id) === String(b.id)
-      const aPath = a?.originalPath || a?.path
-      const bPath = b?.originalPath || b?.path
-      return !!aPath && aPath === bPath
-    }
-
+  const handleMoveNodeOrFile = useCallback((source: any, targetNodeKey: string) => {
     setTree(prev => {
-      // 1. 从所有节点移除源文件（不依赖拖拽负载是否携带 sourceNodeKey，杜绝“移动变复制”）
+      let targetFile: any = null
+
       const removeFromAll = (nodes: VirtualDirectoryNode[]): VirtualDirectoryNode[] => {
         return nodes.map(node => {
-          const files = (node.files || []).filter(f => !isSameFile(f, fileToMove))
+          let files = node.files || []
+          if (source.type === 'file') {
+            const found = files.find(f => (f.id ?? f.name) === (source.file?.id ?? source.file?.name))
+            if (found) {
+              targetFile = found
+              files = files.filter(f => (f.id ?? f.name) !== (source.file?.id ?? source.file?.name))
+            }
+          }
           const subdirs = node.subdirectories ? removeFromAll(node.subdirectories) : []
           return { ...node, files, subdirectories: subdirs }
         })
       }
 
-      // 2. 将文件添加到目标节点
       const addFileToTarget = (nodes: VirtualDirectoryNode[]): VirtualDirectoryNode[] => {
         return nodes.map(node => {
           const curKey = getNodeKey(node)
-          let files = node.files || []
-          if (curKey === targetNodeKey) {
-            const exists = files.some(f => isSameFile(f, fileToMove))
-            if (!exists) {
-              files = [...files, fileToMove]
+          if (curKey === targetNodeKey && targetFile) {
+            return {
+              ...node,
+              files: [...(node.files || []), targetFile]
             }
           }
-          const subdirs = node.subdirectories ? addFileToTarget(node.subdirectories) : []
-          return { ...node, files, subdirectories: subdirs }
+          if (node.subdirectories && node.subdirectories.length > 0) {
+            return { ...node, subdirectories: addFileToTarget(node.subdirectories) }
+          }
+          return node
         })
       }
 
-      // 3. 自底向上重算 fileCount（嵌套目录需计入子目录文件数）
       const recomputeFileCounts = (nodes: VirtualDirectoryNode[]): VirtualDirectoryNode[] => {
         return nodes.map(node => {
           const subdirs = recomputeFileCounts(node.subdirectories || [])
@@ -381,8 +490,8 @@ const SmartClusteringViewInner = (
 
   return (
     <div className="flex-1 flex flex-col md:flex-row h-full w-full overflow-hidden bg-background">
-      {/* ─── 左栏：通俗直白意图输入与示例词 (Left Control Panel) ─── */}
-      <div className="w-full md:w-88 lg:w-96 border-b md:border-b-0 md:border-r border-border/60 bg-muted/20 flex flex-col shrink-0 p-5 space-y-6 overflow-y-auto">
+      {/* ─── 左栏：通俗直白意图输入、微调滑块与示例词 (Left Control Panel) ─── */}
+      <div className="w-full md:w-88 lg:w-96 border-b md:border-b-0 md:border-r border-border/60 bg-muted/20 flex flex-col shrink-0 p-5 space-y-5 overflow-y-auto">
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 flex items-center gap-1">
@@ -438,7 +547,7 @@ const SmartClusteringViewInner = (
               }
             }}
             placeholder={t('如：按年份和财务归类、项目文档归档... (输入自动聚类或回车立即聚类)')}
-            className="min-h-[90px] text-xs resize-none bg-background focus-visible:ring-1"
+            className="min-h-[80px] text-xs resize-none bg-background focus-visible:ring-1"
           />
           <Button
             onClick={() => handleRequestClustering(prompt)}
@@ -452,6 +561,116 @@ const SmartClusteringViewInner = (
             />
             <span>{isGenerating ? t('正在聚类分析...') : t('重新生成聚类')}</span>
           </Button>
+        </div>
+
+        {/* 四维聚类调节滑块面板 */}
+        <div className="space-y-3.5 pt-3 pb-1 border-t border-border/40">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-foreground/85 flex items-center gap-1">
+              <MaterialIcon icon="tune" className="text-xs text-primary" />
+              {t('结构与聚类参数微调')}
+            </span>
+          </div>
+
+          {/* 1. 目录层级深度 (1..=10) */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">{t('目录层级深度')}</span>
+              <Badge variant="outline" className="text-[11px] h-5 px-1.5 font-mono">
+                {getMaxDepthLabel(maxDepth)}
+              </Badge>
+            </div>
+            <input
+              type="range"
+              min={1}
+              max={10}
+              step={1}
+              value={maxDepth}
+              disabled={isGenerating}
+              onChange={e => handleSliderChange(setMaxDepth, 'maxDepth', Number(e.target.value))}
+              className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+            />
+            <div className="flex justify-between text-[10px] text-muted-foreground/60 px-0.5">
+              <span>1</span>
+              <span>3 ({t('默认')})</span>
+              <span>10</span>
+            </div>
+          </div>
+
+          {/* 2. 根目录数上限 (1..=100) */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">{t('根目录数上限')}</span>
+              <Badge variant="outline" className="text-[11px] h-5 px-1.5 font-mono">
+                {getRootDirectoryLabel(maxRootDirectories)}
+              </Badge>
+            </div>
+            <input
+              type="range"
+              min={1}
+              max={100}
+              step={1}
+              value={maxRootDirectories}
+              disabled={isGenerating}
+              onChange={e => handleSliderChange(setMaxRootDirectories, 'maxRootDirectories', Number(e.target.value))}
+              className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+            />
+            <div className="flex justify-between text-[10px] text-muted-foreground/60 px-0.5">
+              <span>1</span>
+              <span>5 ({t('默认')})</span>
+              <span>100</span>
+            </div>
+          </div>
+
+          {/* 3. 子目录数上限 (0..=100) */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">{t('子目录数上限')}</span>
+              <Badge variant="outline" className="text-[11px] h-5 px-1.5 font-mono">
+                {getSubdirectoryLabel(maxSubdirectories)}
+              </Badge>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={1}
+              value={maxSubdirectories}
+              disabled={isGenerating}
+              onChange={e => handleSliderChange(setMaxSubdirectories, 'maxSubdirectories', Number(e.target.value))}
+              className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+            />
+            <div className="flex justify-between text-[10px] text-muted-foreground/60 px-0.5">
+              <span>{t('仅一级')}</span>
+              <span>5 ({t('默认')})</span>
+              <span>100</span>
+            </div>
+          </div>
+
+          {/* 4. 相似度阈值 (0%..=100%) */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">{t('相似度阈值')}</span>
+              <Badge variant="outline" className="text-[11px] h-5 px-1.5 font-mono">
+                {getSimilarityLabel(similarityThreshold)}
+              </Badge>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={5}
+              value={similarityThreshold}
+              disabled={isGenerating}
+              onChange={e => handleSliderChange(setSimilarityThreshold, 'similarityThreshold', Number(e.target.value))}
+              className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+            />
+            <div className="flex justify-between text-[10px] text-muted-foreground/60 px-0.5">
+              <span>{t('松散')} (0%)</span>
+              <span>60% ({t('标准')})</span>
+              <span>{t('细分')} (100%)</span>
+            </div>
+          </div>
         </div>
 
         {/* 6 组精选场景示例词 */}
@@ -564,7 +783,7 @@ const SmartClusteringViewInner = (
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setPendingPrompt(null)}>
+            <AlertDialogCancel onClick={handleCancelDirtyOverwrite}>
               {t('取消')}
             </AlertDialogCancel>
             <AlertDialogAction
