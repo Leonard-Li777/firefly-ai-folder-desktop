@@ -51,6 +51,8 @@ interface VirtualRowRendererInnerProps {
   /** 搜索卡片双击打开回调（可选；缺省时由 Inner 回退预览/系统打开） */
   onFileDoubleClick?: (file: FileType) => void
   containerWidth?: number
+  /** 当前工作区目录路径（用于卡片缩略图拼接绝对物理路径） */
+  workspaceDirectoryPath?: string | null
 }
 
 const areEqual = (
@@ -63,6 +65,7 @@ const areEqual = (
     prevProps.isActive !== nextProps.isActive ||
     prevProps.index !== nextProps.index ||
     prevProps.itemPath !== nextProps.itemPath ||
+    prevProps.workspaceDirectoryPath !== nextProps.workspaceDirectoryPath ||
     prevProps.showsmartName !== nextProps.showsmartName ||
     prevProps.swapFileNameDisplay !== nextProps.swapFileNameDisplay ||
     prevProps.totalWidth !== nextProps.totalWidth ||
@@ -139,7 +142,8 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
     selectionEnabled,
     pageId,
     viewMode,
-    onFileDoubleClick
+    onFileDoubleClick,
+    workspaceDirectoryPath
   } = props
 
   const selectedFilesRef = useRef(selectedFiles)
@@ -300,6 +304,7 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
           isActive={Boolean(isActive)}
           index={index}
           pageId={pageId}
+          workspaceDirectoryPath={workspaceDirectoryPath}
         />
       </div>
     )
@@ -754,6 +759,7 @@ const areVirtualRowPropsEqual = (prevProps: RowRendererProps, nextProps: RowRend
     if (prevIsSelected !== nextIsSelected) return false
   }
 
+  if (prevData.workspaceDirectoryPath !== nextData.workspaceDirectoryPath) return false
   if (prevData.refreshKey !== nextData.refreshKey) return false
   if (prevData.viewMode !== nextData.viewMode) return false
   if (prevData.showsmartName !== nextData.showsmartName) return false
@@ -798,7 +804,8 @@ export const VirtualRowRenderer = React.memo(({ index, style, data }: RowRendere
     selectionEnabled,
     pageId,
     viewMode,
-    onFileDoubleClick
+    onFileDoubleClick,
+    workspaceDirectoryPath
   } = data
   const swapFileNameDisplay = swapFileNameDisplayRaw ?? false
 
@@ -866,6 +873,7 @@ export const VirtualRowRenderer = React.memo(({ index, style, data }: RowRendere
         viewMode={data.viewMode}
         onFileDoubleClick={onFileDoubleClick}
         containerWidth={data.containerWidth}
+        workspaceDirectoryPath={workspaceDirectoryPath}
       />
     </div>
   )

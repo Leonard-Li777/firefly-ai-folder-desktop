@@ -4,8 +4,7 @@ import {
   logger,
   LogCategory,
   isCategory,
-  FileCategory,
-  normalizeForCache
+  FileCategory
 } from '@firefly/shared'
 import { MaterialIcon, cn } from '../../../../lib/utils'
 import { t } from '@app/languages'
@@ -42,6 +41,23 @@ export const sanitizeSnippetHtml = (snippet?: string): string => {
 }
 
 /**
+ * 转换本地路径为安全的 Chromium file:/// 协议 URL
+ * 编码非 ASCII 字符以及 #、?、% 等特殊 URL 关键字符，防止被截断或解析错乱
+ */
+export function toSafeFileUrl(filePath: string): string {
+  if (!filePath) return ''
+  const unified = filePath.replace(/\\/g, '/').replace(/\/+/g, '/')
+  const segments = unified.split('/')
+  const encoded = segments
+    .map((seg, i) => {
+      if (i === 0 && /^[a-zA-Z]:$/.test(seg)) return seg
+      return encodeURIComponent(seg)
+    })
+    .join('/')
+  return `file://${encoded.startsWith('/') ? '' : '/'}${encoded}`
+}
+
+/**
  * 视频切片微型抽帧帧卡片（标准 16:9 画幅，时间锚定抽帧缩图预览，Hover 提示完整起止时间与相似度）
  */
 const VideoChunkFrame: React.FC<{
@@ -61,10 +77,9 @@ const VideoChunkFrame: React.FC<{
 
   const videoUrl = useMemo(() => {
     if (!filePath) return ''
-    const norm = normalizeForCache(filePath).replace(/\\/g, '/')
-    const clean = norm.startsWith('/') ? norm : `/${norm}`
+    const base = toSafeFileUrl(filePath)
     const safeTime = clampVideoTime(chunk.startSec, 3600)
-    return `file://${clean}#t=${safeTime}`
+    return `${base}#t=${safeTime}`
   }, [filePath, chunk.startSec])
 
   // 虚拟行复用时重置错误状态
@@ -239,6 +254,8 @@ interface SearchListCardProps {
   searchKeyword?: string
   /** 显式传入搜索分词列表（用于单测或外部指定，缺省自动从 search-store 订阅） */
   searchTokens?: string[]
+  /** 工作目录绝对路径（用于将缩略图相对路径转换为真实物理路径） */
+  workspaceDirectoryPath?: string | null
 }
 
 /**
@@ -261,9 +278,11 @@ export const SearchListCard = React.memo(
     index,
     pageId,
     searchKeyword: propKeyword,
-    searchTokens: propTokens
+    searchTokens: propTokens,
+    workspaceDirectoryPath
   }: SearchListCardProps) => {
     const [isQueueSubmitting, setIsQueueSubmitting] = useState(false)
+    const [useFallbackImg, setUseFallbackImg] = useState(false)
     const [imgError, setImgError] = useState(false)
 
     const storeGlobalKeyword = useSearchStore(s => s.globalSearchKeyword)
@@ -292,26 +311,80 @@ export const SearchListCard = React.memo(
 
     // 虚拟行复用保护：路径变更时重置图片加载错误状态，防状态穿透
     useEffect(() => {
+      setUseFallbackImg(false)
       setImgError(false)
     }, [item.path, item.thumbnailPath])
 
     const isUnanalyzed = Boolean(item.isUnanalyzed || item.matchType === 'unanalyzed')
     const hasMatchedChunks = Boolean(item.matchedChunks && item.matchedChunks.length > 0)
 
-    // 强类型媒体分类判定（对齐 PRD-0058，严禁自然语言硬编码比对）
-    const filePathOrName = item.path || item.name || safeItemName
-    const isImage = isCategory(filePathOrName, FileCategory.IMAGE)
-    const isVideo = isCategory(filePathOrName, FileCategory.VIDEO)
-    const isAudio = isCategory(filePathOrName, FileCategory.AUDIO)
+    // 强类型媒体分类判定（对齐 PRD-0058，严禁自然语言硬编码比对；覆盖扩展名与路径全场景）
+    const isImage = Boolean(
+      (item.extension && isCategory(item.extension, FileCategory.IMAGE)) ||
+      (item.path && isCategory(item.path, FileCategory.IMAGE)) ||
+      (item.name && isCategory(item.name, FileCategory.IMAGE)) ||
+      (safeItemName && isCategory(safeItemName, FileCategory.IMAGE))
+    )
+    const isVideo = Boolean(
+      (item.extension && isCategory(item.extension, FileCategory.VIDEO)) ||
+      (item.path && isCategory(item.path, FileCategory.VIDEO)) ||
+      (item.name && isCategory(item.name, FileCategory.VIDEO)) ||
+      (safeItemName && isCategory(safeItemName, FileCategory.VIDEO))
+    )
+    const isAudio = Boolean(
+      (item.extension && isCategory(item.extension, FileCategory.AUDIO)) ||
+      (item.path && isCategory(item.path, FileCategory.AUDIO)) ||
+      (item.name && isCategory(item.name, FileCategory.AUDIO)) ||
+      (safeItemName && isCategory(safeItemName, FileCategory.AUDIO))
+    )
 
-    // Windows 安全 file:/// 缩略图工厂协议（与 GridCell 对齐）
-    const imagePreviewUrl = useMemo(() => {
-      if (!isImage || (!item.thumbnailPath && !item.path)) return ''
-      const rawPath = item.thumbnailPath || item.path
-      const normalized = normalizeForCache(rawPath).replace(/\\/g, '/')
-      const clean = normalized.startsWith('/') ? normalized : `/${normalized}`
-      return `file://${clean}`
-    }, [isImage, item.path, item.thumbnailPath])
+    // Windows 安全 file:/// 协议与双层图片加载（缩略图优先 + 原始图片平滑回退，防幽灵破损图标）
+    const { primaryImageUrl, fallbackImageUrl } = useMemo(() => {
+      if (!isImage) return { primaryImageUrl: '', fallbackImageUrl: '' }
+
+      const originalUrl = item.path ? toSafeFileUrl(item.path) : ''
+      let thumbUrl = ''
+
+      if (item.thumbnailPath) {
+        const thumbPath = item.thumbnailPath
+        const isAbs =
+          /^[a-zA-Z]:[\\/]/.test(thumbPath) ||
+          thumbPath.startsWith('/') ||
+          thumbPath.startsWith('\\')
+
+        if (isAbs) {
+          thumbUrl = toSafeFileUrl(thumbPath)
+        } else {
+          let wsDir = workspaceDirectoryPath || (item as any).workspaceDirectoryPath || ''
+          if (!wsDir && item.path) {
+            const virtIdx = item.path.indexOf('.VirtualDirectory')
+            if (virtIdx > 0) {
+              wsDir = item.path.substring(0, virtIdx).replace(/[\\/]+$/, '')
+            }
+          }
+          if (wsDir) {
+            const cleanWs = wsDir.replace(/[\\/]+$/, '')
+            const cleanThumb = thumbPath.replace(/^[\\/]+/, '')
+            thumbUrl = toSafeFileUrl(`${cleanWs}/${cleanThumb}`)
+          }
+        }
+      }
+
+      return {
+        primaryImageUrl: thumbUrl || originalUrl,
+        fallbackImageUrl: thumbUrl && originalUrl ? originalUrl : ''
+      }
+    }, [isImage, item.path, item.thumbnailPath, workspaceDirectoryPath, (item as any).workspaceDirectoryPath])
+
+    const activeImageUrl = !useFallbackImg ? primaryImageUrl : fallbackImageUrl
+
+    const handleImageLoadError = useCallback(() => {
+      if (!useFallbackImg && fallbackImageUrl) {
+        setUseFallbackImg(true)
+      } else {
+        setImgError(true)
+      }
+    }, [useFallbackImg, fallbackImageUrl])
 
     // 仅基于有效语义召回时才打上标签，其他情况不打标签；
     // 若相似度经计算为 0% 或负值，属于无相关性噪点，不应展示“语义召回 0%”
@@ -447,13 +520,13 @@ export const SearchListCard = React.memo(
         {/* 左侧：64×64px 媒体缩略图 / 系统分类图标区 */}
         {/* ======================================================== */}
         <div className="w-[64px] h-[64px] shrink-0 flex items-center justify-center overflow-hidden rounded-md border border-border/40 bg-muted/20">
-          {isImage && imagePreviewUrl && !imgError ? (
+          {isImage && activeImageUrl && !imgError ? (
             <img
-              src={imagePreviewUrl}
+              src={activeImageUrl}
               alt={safeItemName}
               loading="lazy"
               className="w-full h-full object-cover transition-transform duration-200 hover:scale-105"
-              onError={() => setImgError(true)}
+              onError={handleImageLoadError}
             />
           ) : (
             <SystemFileIcon
@@ -523,12 +596,12 @@ export const SearchListCard = React.memo(
               {/* 2. 确定宽度度量列 (时间固定 78px 靠左，大小固定 70px 靠右，纵向对齐) */}
               <div className="flex items-center shrink-0 gap-2 font-mono text-[11px]">
                 <span
-                  className="w-[78px] text-left text-muted-foreground/75 truncate shrink-0"
+                  className="w-[70px] text-left text-muted-foreground/75 truncate shrink-0"
                   title={item.modifiedAt ? formatDateTimeShort(item.modifiedAt) : undefined}
                 >
                   {item.modifiedAt ? formatDateTimeShort(item.modifiedAt) : '-'}
                 </span>
-                <span className="w-[70px] text-right text-foreground/80 font-medium shrink-0">
+                <span className="w-[50px] text-right text-foreground/80 font-medium shrink-0">
                   {formatFileSize(item.size)}
                 </span>
               </div>

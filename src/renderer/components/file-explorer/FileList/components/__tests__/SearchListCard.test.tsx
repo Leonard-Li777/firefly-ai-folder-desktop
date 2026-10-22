@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { concept, getCanonicalConceptName } from '@firefly/shared'
-import { SearchListCard, SEARCH_LIST_ROW_HEIGHT, sanitizeSnippetHtml } from '../SearchListCard'
+import { SearchListCard, SEARCH_LIST_ROW_HEIGHT, sanitizeSnippetHtml, toSafeFileUrl } from '../SearchListCard'
 import type { FileType } from '../../types'
 import { usePreviewOverlayStore, setCurrentVideoPlaybackTime, getCurrentVideoPlaybackTime } from '../../../../../stores/preview-overlay-store'
 
@@ -35,6 +35,22 @@ vi.mock('../../../common/Toast', () => ({
     info: vi.fn()
   }
 }))
+
+describe('toSafeFileUrl utility', () => {
+  it('converts Windows drive path to safe file URL', () => {
+    expect(toSafeFileUrl('D:\\workspace\\cat.png')).toBe('file:///D:/workspace/cat.png')
+  })
+
+  it('encodes special characters like # and spaces in paths', () => {
+    expect(toSafeFileUrl('D:\\workspace\\设计图#1 [最新].png')).toBe(
+      'file:///D:/workspace/%E8%AE%BE%E8%AE%A1%E5%9B%BE%231%20%5B%E6%9C%80%E6%96%B0%5D.png'
+    )
+  })
+
+  it('handles empty path safely', () => {
+    expect(toSafeFileUrl('')).toBe('')
+  })
+})
 
 describe('SearchListCard Component', () => {
   const defaultFormatSize = (size?: number) => `${size || 0} B`
@@ -154,7 +170,7 @@ describe('SearchListCard Component', () => {
       expect(screen.getByText('搜索架构')).toBeDefined()
     })
 
-    it('renders right-aligned metrics with deterministic date (78px) and size (70px) columns', () => {
+    it('renders right-aligned metrics with deterministic date (70px) and size (50px) columns', () => {
       const { container } = render(
         <SearchListCard
           item={textItem}
@@ -166,8 +182,8 @@ describe('SearchListCard Component', () => {
         />
       )
 
-      expect(container.querySelector('.w-\\[78px\\]')).toBeDefined()
-      expect(container.querySelector('.w-\\[70px\\]')).toBeDefined()
+      expect(container.querySelector('.w-\\[70px\\]')).not.toBeNull()
+      expect(container.querySelector('.w-\\[50px\\]')).not.toBeNull()
     })
   })
 
@@ -203,7 +219,100 @@ describe('SearchListCard Component', () => {
       expect(img?.getAttribute('src')).toContain('concept-car.png')
     })
 
-    it('falls back to SystemFileIcon if thumbnail fails to load', () => {
+    it('resolves relative thumbnailPath using workspaceDirectoryPath prop', () => {
+      const relativeThumbItem: FileType = {
+        ...imageItem,
+        thumbnailPath: '.VirtualDirectory/.thumbnail/thumb-1.webp'
+      }
+      const { container } = render(
+        <SearchListCard
+          item={relativeThumbItem}
+          safeItemName="concept-car.png"
+          workspaceDirectoryPath="D:\\workspace"
+          formatFileSize={defaultFormatSize}
+          onItemClick={mockItemClick}
+          onContextMenu={mockContextMenu}
+          index={0}
+        />
+      )
+      const img = container.querySelector('img')
+      expect(img).not.toBeNull()
+      expect(img?.getAttribute('src')).toBe('file:///D:/workspace/.VirtualDirectory/.thumbnail/thumb-1.webp')
+    })
+
+    it('infers workspaceDirectoryPath from item.path containing .VirtualDirectory', () => {
+      const virtualPathItem: FileType = {
+        ...imageItem,
+        path: 'D:\\projects\\repo\\.VirtualDirectory\\images\\cat.png',
+        thumbnailPath: '.VirtualDirectory/.thumbnail/cat-thumb.webp'
+      }
+      const { container } = render(
+        <SearchListCard
+          item={virtualPathItem}
+          safeItemName="cat.png"
+          formatFileSize={defaultFormatSize}
+          onItemClick={mockItemClick}
+          onContextMenu={mockContextMenu}
+          index={0}
+        />
+      )
+      const img = container.querySelector('img')
+      expect(img).not.toBeNull()
+      expect(img?.getAttribute('src')).toBe('file:///D:/projects/repo/.VirtualDirectory/.thumbnail/cat-thumb.webp')
+    })
+
+    it('gracefully falls back from thumbnail to original image, and to icon only when both fail', () => {
+      const dualSourceItem: FileType = {
+        ...imageItem,
+        path: 'D:\\workspace\\gallery\\original-photo.png',
+        thumbnailPath: 'D:\\workspace\\thumbnails\\broken-thumb.webp'
+      }
+      const { container } = render(
+        <SearchListCard
+          item={dualSourceItem}
+          safeItemName="original-photo.png"
+          formatFileSize={defaultFormatSize}
+          onItemClick={mockItemClick}
+          onContextMenu={mockContextMenu}
+          index={0}
+        />
+      )
+      const img = container.querySelector('img')
+      expect(img).not.toBeNull()
+      expect(img?.getAttribute('src')).toBe('file:///D:/workspace/thumbnails/broken-thumb.webp')
+
+      // 第一次失败：缩略图损坏，平滑降级渲染原图
+      fireEvent.error(img!)
+      expect(container.querySelector('img')?.getAttribute('src')).toBe('file:///D:/workspace/gallery/original-photo.png')
+
+      // 第二次失败：原图也损坏，退化为系统图标
+      fireEvent.error(container.querySelector('img')!)
+      expect(screen.getByTestId('system-file-icon')).toBeDefined()
+    })
+
+    it('identifies image even if path has no extension but item.extension is set', () => {
+      const extensionOnlyItem: FileType = {
+        id: 'img-virtual',
+        name: 'abstract-art',
+        path: 'virtual-id-12345',
+        extension: 'png',
+        size: 2048,
+        modifiedAt: new Date('2026-10-20T08:00:00Z')
+      }
+      const { container } = render(
+        <SearchListCard
+          item={extensionOnlyItem}
+          safeItemName="abstract-art"
+          formatFileSize={defaultFormatSize}
+          onItemClick={mockItemClick}
+          onContextMenu={mockContextMenu}
+          index={0}
+        />
+      )
+      expect(container.querySelector('img')).not.toBeNull()
+    })
+
+    it('falls back to SystemFileIcon if single image source fails to load', () => {
       const { container } = render(
         <SearchListCard
           item={imageItem}
