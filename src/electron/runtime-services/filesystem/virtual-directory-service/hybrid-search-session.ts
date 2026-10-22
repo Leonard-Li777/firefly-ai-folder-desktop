@@ -198,6 +198,22 @@ export class HybridSearchSession {
       if (ref.kind === 'analyzed') {
         const base = baseItems.get(ref.fileFingerprint)
         if (!base) continue
+        // 未分析行（is_analyzed=0）虽以指纹命中 FTS/补充候选源，仍须按未分析口径展示：
+        // 若放行进入语义 enrichment，正文为空会被兜底盖上 'semantic'（且无相似度），
+        // 导致未分析视频错误显示「语义召回」徽标并丢失「尚未进行 AI 深度分析」提示
+        if (!base.isAnalyzed) {
+          items.push({
+            ...base,
+            isUnanalyzed: true,
+            matchType: 'unanalyzed',
+            snippet: undefined,
+            similarity: undefined,
+            matchedChunk: undefined,
+            matchedChunks: undefined,
+            matchedPinyinCandidate: undefined
+          })
+          continue
+        }
         const e = enrichment.get(ref.fileFingerprint)
         const cand = candidateByFp.get(ref.fileFingerprint)
         const matchedChunk = cand?.matchedChunk

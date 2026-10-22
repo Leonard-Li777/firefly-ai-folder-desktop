@@ -2920,9 +2920,13 @@ export class TagTreeQuery {
           }
         }
       }
-      // 若正文为空但描述非空，语义对齐可使用描述文本作为语义输入
+      // 若正文为空但描述非空，语义对齐可使用描述文本作为语义输入；
+      // 两者皆空的文件（如未分析或无文本产出的视频）严禁进入语义批次——
+      // 空文本对齐必然无命中，会被兜底盖上无相似度的 'semantic'，产生假「语义召回」徽标
       const semanticText = text.trim() ? text : desc
-      semanticBatch.push({ fileFingerprint: ref.fileFingerprint, text: semanticText })
+      if (semanticText.trim()) {
+        semanticBatch.push({ fileFingerprint: ref.fileFingerprint, text: semanticText })
+      }
     }
 
     // 无字面命中 → 段落级语义对齐

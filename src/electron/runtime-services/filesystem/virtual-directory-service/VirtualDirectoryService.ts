@@ -938,7 +938,13 @@ export class VirtualDirectoryService {
   async generateHACClusterScheme(
     workspaceId: number,
     selectedFileIds?: number[],
-    userPrompt?: string
+    userPrompt?: string,
+    options?: {
+      distanceThreshold?: number
+      maxLeafSize?: number
+      embeddingProfile?: string
+      embeddingDim?: number
+    }
   ): Promise<AIDirectoryStructure | null> {
     this.ensureInitialized()
     // 功能开关降级：向量数据源迁移期间禁用，避免无向量时恒降级返回 null
@@ -946,7 +952,8 @@ export class VirtualDirectoryService {
     return this._aiSchemeGenerator!.generateHACClusterScheme(
       workspaceId,
       selectedFileIds,
-      userPrompt
+      userPrompt,
+      options
     )
   }
 
