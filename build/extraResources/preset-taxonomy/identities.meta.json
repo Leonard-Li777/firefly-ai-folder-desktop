@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "count": 72,
+  "count": 88,
   "dimensions": {
     "bekko": 384,
     "gemma": 512
@@ -22,16 +22,16 @@
         "it-IT": "Pulizia universale · Desktop, download e transito"
       },
       "description": {
-        "zh-CN": "针对电脑桌面堆积杂物、浏览器下载目录混合文件、未归类中转站的高频急救与分流整理",
-        "en-US": "High-frequency triage and decluttering for messy desktops, browser downloads, and mixed staging hubs",
-        "ja-JP": "针对电脑桌面堆积杂物、浏览器下载目录混合文件、未归类中转站的高频急救与分流整理",
-        "ko-KR": "针对电脑桌面堆积杂物、浏览器下载目录混合文件、未归类中转站的高频急救与分流整理",
-        "de-DE": "针对电脑桌面堆积杂物、浏览器下载目录混合文件、未归类中转站的高频急救与分流整理",
-        "fr-FR": "针对电脑桌面堆积杂物、浏览器下载目录混合文件、未归类中转站的高频急救与分流整理",
-        "es-ES": "针对电脑桌面堆积杂物、浏览器下载目录混合文件、未归类中转站的高频急救与分流整理",
-        "ru-RU": "针对电脑桌面堆积杂物、浏览器下载目录混合文件、未归类中转站的高频急救与分流整理",
-        "pt-BR": "针对电脑桌面堆积杂物、浏览器下载目录混合文件、未归类中转站的高频急救与分流整理",
-        "it-IT": "针对电脑桌面堆积杂物、浏览器下载目录混合文件、未归类中转站的高频急救与分流整理"
+        "zh-CN": "针对电脑桌面堆积杂物、浏览器下载目录、文档/图片/音视频专库、未归类中转站的高频急救与分流整理",
+        "en-US": "High-frequency triage and decluttering for messy desktops, browser downloads, media libraries, and staging hubs",
+        "ja-JP": "针对电脑桌面堆积杂物、浏览器下载目录、文档/图片/音视频专库、未归类中转站的高频急救与分流整理",
+        "ko-KR": "针对电脑桌面堆积杂物、浏览器下载目录、文档/图片/音视频专库、未归类中转站的高频急救与分流整理",
+        "de-DE": "针对电脑桌面堆积杂物、浏览器下载目录、文档/图片/音视频专库、未归类中转站的高频急救与分流整理",
+        "fr-FR": "针对电脑桌面堆积杂物、浏览器下载目录、文档/图片/音视频专库、未归类中转站的高频急救与分流整理",
+        "es-ES": "针对电脑桌面堆积杂物、浏览器下载目录、文档/图片/音视频专库、未归类中转站的高频急救与分流整理",
+        "ru-RU": "针对电脑桌面堆积杂物、浏览器下载目录、文档/图片/音视频专库、未归类中转站的高频急救与分流整理",
+        "pt-BR": "针对电脑桌面堆积杂物、浏览器下载目录、文档/图片/音视频专库、未归类中转站的高频急救与分流整理",
+        "it-IT": "针对电脑桌面堆积杂物、浏览器下载目录、文档/图片/音视频专库、未归类中转站的高频急救与分流整理"
       },
       "categories": [
         {
@@ -162,6 +162,85 @@
               "category_id": "cat_universal_triage"
             },
             {
+              "identity_id": "id.scene.system_cache_appdata",
+              "identity_type": "life",
+              "name": {
+                "zh-CN": "软件运行缓存与历史残留清理",
+                "en-US": "Software Cache & Application Data Cleanup",
+                "ja-JP": "アプリキャッシュ＆履歴ファイル整理",
+                "ko-KR": "소프트웨어 캐시 및 기록 잔여물 정리",
+                "de-DE": "Software-Cache & Anwendungsdaten-Bereinigung",
+                "fr-FR": "Nettoyage du cache logiciel et des résidus d'applications",
+                "es-ES": "Limpieza de caché de software y residuos de aplicaciones",
+                "ru-RU": "Очистка кэша приложений и остаточных данных",
+                "pt-BR": "Limpeza de cache de software e resíduos de aplicativos",
+                "it-IT": "Pulizia cache software e residui applicazioni"
+              },
+              "description": {
+                "zh-CN": "针对应用运行日志、崩溃转储Dump、解压临时缓存与历史未删残留进行快速集中分流与排查",
+                "en-US": "Triages application runtime logs, crash dumps, unzip temporary caches, and lingering app residues",
+                "ja-JP": "Triages application runtime logs, crash dumps, unzip temporary caches, and lingering app residues",
+                "ko-KR": "Triages application runtime logs, crash dumps, unzip temporary caches, and lingering app residues",
+                "de-DE": "Triages application runtime logs, crash dumps, unzip temporary caches, and lingering app residues",
+                "fr-FR": "Triages application runtime logs, crash dumps, unzip temporary caches, and lingering app residues",
+                "es-ES": "Triages application runtime logs, crash dumps, unzip temporary caches, and lingering app residues",
+                "ru-RU": "Triages application runtime logs, crash dumps, unzip temporary caches, and lingering app residues",
+                "pt-BR": "Triages application runtime logs, crash dumps, unzip temporary caches, and lingering app residues",
+                "it-IT": "Triages application runtime logs, crash dumps, unzip temporary caches, and lingering app residues"
+              },
+              "aliases": [
+                "缓存清理",
+                "临时文件",
+                "日志清理",
+                "应用残留",
+                "系统垃圾",
+                "AppData",
+                "Log",
+                "Dump"
+              ],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.archive",
+                "builtin.software"
+              ],
+              "external_ids": {},
+              "associated_template_ids": [
+                "tpl_system_cache_appdata_vault",
+                "tpl_inbox_staging_universal"
+              ],
+              "domain_id": "domain_universal_cleanup",
+              "category_id": "cat_universal_triage"
+            }
+          ]
+        },
+        {
+          "category_id": "cat_staging_and_transfer",
+          "category_name": {
+            "zh-CN": "通讯社交与跨端流转中转",
+            "en-US": "Chat Receipts & Cross-Device Staging",
+            "ja-JP": "チャットファイル＆デバイス間転送中継",
+            "ko-KR": "메신저 파일 수신 및 기기 간 전송 중계",
+            "de-DE": "Chat-Dateien & Geräteübergreifendes Staging",
+            "fr-FR": "Fichiers de messagerie et relais multi-appareils",
+            "es-ES": "Archivos de mensajería y puente entre dispositivos",
+            "ru-RU": "Файлы мессенджеров и межплатформенный буфер",
+            "pt-BR": "Arquivos de chat e transferência entre dispositivos",
+            "it-IT": "File di messaggistica e transito cross-device"
+          },
+          "description": {
+            "zh-CN": "",
+            "en-US": "",
+            "ja-JP": "",
+            "ko-KR": "",
+            "de-DE": "",
+            "fr-FR": "",
+            "es-ES": "",
+            "ru-RU": "",
+            "pt-BR": "",
+            "it-IT": ""
+          },
+          "identities": [
+            {
               "identity_id": "id.scene.temporary_staging",
               "identity_type": "life",
               "name": {
@@ -177,16 +256,16 @@
                 "it-IT": "Area di transito temporanea e hub universale di file"
               },
               "description": {
-                "zh-CN": "针对未分类混合文件箱、U盘数据拷贝、微信/QQ接收文件与跨设备文件流转进行收敛与快速归档",
-                "en-US": "Collects unsorted mixed boxes, USB copies, chat receipts, and cross-device transfers for quick filing",
-                "ja-JP": "Collects unsorted mixed boxes, USB copies, chat receipts, and cross-device transfers for quick filing",
-                "ko-KR": "Collects unsorted mixed boxes, USB copies, chat receipts, and cross-device transfers for quick filing",
-                "de-DE": "Collects unsorted mixed boxes, USB copies, chat receipts, and cross-device transfers for quick filing",
-                "fr-FR": "Collects unsorted mixed boxes, USB copies, chat receipts, and cross-device transfers for quick filing",
-                "es-ES": "Collects unsorted mixed boxes, USB copies, chat receipts, and cross-device transfers for quick filing",
-                "ru-RU": "Collects unsorted mixed boxes, USB copies, chat receipts, and cross-device transfers for quick filing",
-                "pt-BR": "Collects unsorted mixed boxes, USB copies, chat receipts, and cross-device transfers for quick filing",
-                "it-IT": "Collects unsorted mixed boxes, USB copies, chat receipts, and cross-device transfers for quick filing"
+                "zh-CN": "针对未分类混合文件箱、U盘数据拷贝、跨设备文件流转进行收敛与快速归档",
+                "en-US": "Collects unsorted mixed boxes, USB copies, and cross-device transfers for quick filing",
+                "ja-JP": "Collects unsorted mixed boxes, USB copies, and cross-device transfers for quick filing",
+                "ko-KR": "Collects unsorted mixed boxes, USB copies, and cross-device transfers for quick filing",
+                "de-DE": "Collects unsorted mixed boxes, USB copies, and cross-device transfers for quick filing",
+                "fr-FR": "Collects unsorted mixed boxes, USB copies, and cross-device transfers for quick filing",
+                "es-ES": "Collects unsorted mixed boxes, USB copies, and cross-device transfers for quick filing",
+                "ru-RU": "Collects unsorted mixed boxes, USB copies, and cross-device transfers for quick filing",
+                "pt-BR": "Collects unsorted mixed boxes, USB copies, and cross-device transfers for quick filing",
+                "it-IT": "Collects unsorted mixed boxes, USB copies, and cross-device transfers for quick filing"
               },
               "aliases": [
                 "中转站",
@@ -208,7 +287,926 @@
                 "tpl_johnny_decimal"
               ],
               "domain_id": "domain_universal_cleanup",
-              "category_id": "cat_universal_triage"
+              "category_id": "cat_staging_and_transfer"
+            },
+            {
+              "identity_id": "id.scene.chat_software_files",
+              "identity_type": "life",
+              "name": {
+                "zh-CN": "通讯软件接收文件整理 · 微信/QQ/钉钉",
+                "en-US": "Messaging App Files Triage · WeChat/QQ/DingTalk",
+                "ja-JP": "チャット受信ファイル整理・WeChat/QQ/DingTalk",
+                "ko-KR": "메신저 수신 파일 정리 · 위챗/QQ/딩톡",
+                "de-DE": "Messaging-Dateien-Triage · WeChat/QQ/DingTalk",
+                "fr-FR": "Tri des fichiers reçus par messagerie · WeChat/QQ",
+                "es-ES": "Organización de archivos de mensajería · WeChat/QQ",
+                "ru-RU": "Сортировка файлов из мессенджеров · WeChat/QQ",
+                "pt-BR": "Organização de arquivos de mensagens · WeChat/QQ",
+                "it-IT": "Smistamento file da app di messaggistica"
+              },
+              "description": {
+                "zh-CN": "针对微信WeChat Files、QQ、钉钉工作群聊混杂接收的文档、图片发票、音视频、压缩包分门别类",
+                "en-US": "Sorts mixed documents, invoices, media clips, and archives received from chat software",
+                "ja-JP": "Sorts mixed documents, invoices, media clips, and archives received from chat software",
+                "ko-KR": "Sorts mixed documents, invoices, media clips, and archives received from chat software",
+                "de-DE": "Sorts mixed documents, invoices, media clips, and archives received from chat software",
+                "fr-FR": "Sorts mixed documents, invoices, media clips, and archives received from chat software",
+                "es-ES": "Sorts mixed documents, invoices, media clips, and archives received from chat software",
+                "ru-RU": "Sorts mixed documents, invoices, media clips, and archives received from chat software",
+                "pt-BR": "Sorts mixed documents, invoices, media clips, and archives received from chat software",
+                "it-IT": "Sorts mixed documents, invoices, media clips, and archives received from chat software"
+              },
+              "aliases": [
+                "微信文件",
+                "QQ接收文件",
+                "钉钉文件",
+                "聊天文件",
+                "微信整理",
+                "WeChat Files",
+                "群文件"
+              ],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.document",
+                "builtin.archive",
+                "builtin.image"
+              ],
+              "external_ids": {},
+              "associated_template_ids": [
+                "tpl_chat_software_vault",
+                "tpl_inbox_staging_universal"
+              ],
+              "domain_id": "domain_universal_cleanup",
+              "category_id": "cat_staging_and_transfer"
+            },
+            {
+              "identity_id": "id.scene.cross_device_transfer",
+              "identity_type": "life",
+              "name": {
+                "zh-CN": "手机与电脑跨端互传 · AirDrop/快传",
+                "en-US": "Cross-Device File Transfer · AirDrop & QuickShare",
+                "ja-JP": "スマホ・PC間データ相互転送・AirDrop/QuickShare",
+                "ko-KR": "스마트폰-PC 기기 간 전송 · 에어드롭/퀵쉐어",
+                "de-DE": "Geräteübergreifender Transfer · AirDrop & QuickShare",
+                "fr-FR": "Transfert inter-appareils · AirDrop et QuickShare",
+                "es-ES": "Transferencia entre móvil y PC · AirDrop/QuickShare",
+                "ru-RU": "Передача файлов между телефоном и ПК · AirDrop/QuickShare",
+                "pt-BR": "Transferência celular-PC · AirDrop e QuickShare",
+                "it-IT": "Trasferimento file telefono-PC · AirDrop e QuickShare"
+              },
+              "description": {
+                "zh-CN": "针对手机通过AirDrop、局域网快传、蓝牙、文件传输助手传到电脑的随手拍相片、录音备忘与单据整理",
+                "en-US": "Organizes photos, voice memos, and mobile scan receipts transferred from phone to computer",
+                "ja-JP": "Organizes photos, voice memos, and mobile scan receipts transferred from phone to computer",
+                "ko-KR": "Organizes photos, voice memos, and mobile scan receipts transferred from phone to computer",
+                "de-DE": "Organizes photos, voice memos, and mobile scan receipts transferred from phone to computer",
+                "fr-FR": "Organizes photos, voice memos, and mobile scan receipts transferred from phone to computer",
+                "es-ES": "Organizes photos, voice memos, and mobile scan receipts transferred from phone to computer",
+                "ru-RU": "Organizes photos, voice memos, and mobile scan receipts transferred from phone to computer",
+                "pt-BR": "Organizes photos, voice memos, and mobile scan receipts transferred from phone to computer",
+                "it-IT": "Organizes photos, voice memos, and mobile scan receipts transferred from phone to computer"
+              },
+              "aliases": [
+                "手机传电脑",
+                "隔空投送",
+                "AirDrop",
+                "跨端互传",
+                "局域网传输",
+                "快传",
+                "多端协同",
+                "QuickShare"
+              ],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.image",
+                "builtin.audio",
+                "builtin.document"
+              ],
+              "external_ids": {},
+              "associated_template_ids": [
+                "tpl_cross_device_transfer_vault",
+                "tpl_inbox_staging_universal"
+              ],
+              "domain_id": "domain_universal_cleanup",
+              "category_id": "cat_staging_and_transfer"
+            }
+          ]
+        },
+        {
+          "category_id": "cat_scratchpad_and_captures",
+          "category_name": {
+            "zh-CN": "屏幕捕捉与零散碎片急救",
+            "en-US": "Screen Captures & Scratchpad Drafts",
+            "ja-JP": "スクリーンキャプチャ＆下書きメモ整理",
+            "ko-KR": "화면 캡처 및 임시 메모 초안 정리",
+            "de-DE": "Bildschirmaufnahmen & Entwurfsnotizen",
+            "fr-FR": "Captures d'écran et brouillons temporaires",
+            "es-ES": "Capturas de pantalla y borradores temporales",
+            "ru-RU": "Снимки экрана и черновые заметки",
+            "pt-BR": "Capturas de tela e rascunhos temporários",
+            "it-IT": "Screenshot e bozze temporanee"
+          },
+          "description": {
+            "zh-CN": "",
+            "en-US": "",
+            "ja-JP": "",
+            "ko-KR": "",
+            "de-DE": "",
+            "fr-FR": "",
+            "es-ES": "",
+            "ru-RU": "",
+            "pt-BR": "",
+            "it-IT": ""
+          },
+          "identities": [
+            {
+              "identity_id": "id.scene.screenshots_recordings",
+              "identity_type": "life",
+              "name": {
+                "zh-CN": "屏幕截图与音视频录制归仓",
+                "en-US": "Screenshots & Screen Recordings Vault",
+                "ja-JP": "スクリーンショット＆録画ファイル仕分け",
+                "ko-KR": "화면 캡처 및 화면 녹화 파일 정리",
+                "de-DE": "Screenshots & Bildschirmaufnahmen-Archiv",
+                "fr-FR": "Archives des captures d'écran et enregistrements",
+                "es-ES": "Capturas de pantalla y grabaciones en video",
+                "ru-RU": "Скриншоты и записи экрана",
+                "pt-BR": "Capturas de tela e gravações de vídeo",
+                "it-IT": "Screenshot e registrazioni dello schermo"
+              },
+              "description": {
+                "zh-CN": "针对快捷键截图、微信截图、Snipaste、OBS及系统录屏生成的海量杂乱图片与视频文件",
+                "en-US": "Files screenshots, Snipaste snippets, OBS recordings, and screen clips into structured folders",
+                "ja-JP": "Files screenshots, Snipaste snippets, OBS recordings, and screen clips into structured folders",
+                "ko-KR": "Files screenshots, Snipaste snippets, OBS recordings, and screen clips into structured folders",
+                "de-DE": "Files screenshots, Snipaste snippets, OBS recordings, and screen clips into structured folders",
+                "fr-FR": "Files screenshots, Snipaste snippets, OBS recordings, and screen clips into structured folders",
+                "es-ES": "Files screenshots, Snipaste snippets, OBS recordings, and screen clips into structured folders",
+                "ru-RU": "Files screenshots, Snipaste snippets, OBS recordings, and screen clips into structured folders",
+                "pt-BR": "Files screenshots, Snipaste snippets, OBS recordings, and screen clips into structured folders",
+                "it-IT": "Files screenshots, Snipaste snippets, OBS recordings, and screen clips into structured folders"
+              },
+              "aliases": [
+                "截图整理",
+                "录屏整理",
+                "屏幕截图",
+                "会议录屏",
+                "Snipaste",
+                "OBS录像",
+                "屏幕录制",
+                "截图"
+              ],
+              "task_tags": [
+                "omw.06613686.n",
+                "builtin.image",
+                "builtin.video"
+              ],
+              "external_ids": {},
+              "associated_template_ids": [
+                "tpl_screenshots_screenrecord_vault",
+                "tpl_inbox_staging_universal"
+              ],
+              "domain_id": "domain_universal_cleanup",
+              "category_id": "cat_scratchpad_and_captures"
+            },
+            {
+              "identity_id": "id.scene.scratchpad_drafts",
+              "identity_type": "life",
+              "name": {
+                "zh-CN": "零散便签与未命名草稿急救",
+                "en-US": "Scratchpad Notes & Untitled Drafts Triage",
+                "ja-JP": "散乱メモ＆無題の下書きファイル救済",
+                "ko-KR": "임시 메모 및 무제 초안 파일 긴급 정리",
+                "de-DE": "Notizzettel & Unbenannte Entwürfe-Triage",
+                "fr-FR": "Notes éparpillées et brouillons sans titre",
+                "es-ES": "Notas sueltas y borradores sin título",
+                "ru-RU": "Разрозненные заметки и черновики без названия",
+                "pt-BR": "Notas avulsas e rascunhos sem título",
+                "it-IT": "Appunti sparsi e bozze senza titolo"
+              },
+              "description": {
+                "zh-CN": "针对桌面与工作区散落的新建文本文档、未命名Word/Excel、副本文件与随手记事草稿收敛",
+                "en-US": "Rescues untitled text files, draft spreadsheets, and random quick notes scattered on desktop",
+                "ja-JP": "Rescues untitled text files, draft spreadsheets, and random quick notes scattered on desktop",
+                "ko-KR": "Rescues untitled text files, draft spreadsheets, and random quick notes scattered on desktop",
+                "de-DE": "Rescues untitled text files, draft spreadsheets, and random quick notes scattered on desktop",
+                "fr-FR": "Rescues untitled text files, draft spreadsheets, and random quick notes scattered on desktop",
+                "es-ES": "Rescues untitled text files, draft spreadsheets, and random quick notes scattered on desktop",
+                "ru-RU": "Rescues untitled text files, draft spreadsheets, and random quick notes scattered on desktop",
+                "pt-BR": "Rescues untitled text files, draft spreadsheets, and random quick notes scattered on desktop",
+                "it-IT": "Rescues untitled text files, draft spreadsheets, and random quick notes scattered on desktop"
+              },
+              "aliases": [
+                "新建文本文档",
+                "未命名草稿",
+                "临时便签",
+                "草稿整理",
+                "随手记事",
+                "零碎文档",
+                "未整理草稿"
+              ],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.document",
+                "builtin.document_sheet"
+              ],
+              "external_ids": {},
+              "associated_template_ids": [
+                "tpl_scratchpad_drafts_vault",
+                "tpl_para_universal"
+              ],
+              "domain_id": "domain_universal_cleanup",
+              "category_id": "cat_scratchpad_and_captures"
+            }
+          ]
+        },
+        {
+          "category_id": "cat_external_and_digitization",
+          "category_name": {
+            "zh-CN": "外接介质与实体数字化",
+            "en-US": "External Storage & Paper Digitization",
+            "ja-JP": "外部メディア＆書類デジタル化整理",
+            "ko-KR": "외장 저장장치 및 종이 문서 디지털화",
+            "de-DE": "Externe Medien & Papier-Digitalisierung",
+            "fr-FR": "Supports externes et numérisation de documents",
+            "es-ES": "Almacenamiento externo y digitalización",
+            "ru-RU": "Внешние накопители и оцифровка документов",
+            "pt-BR": "Mídia externa e digitalização de documentos",
+            "it-IT": "Supporti esterni e digitalizzazione cartacea"
+          },
+          "description": {
+            "zh-CN": "",
+            "en-US": "",
+            "ja-JP": "",
+            "ko-KR": "",
+            "de-DE": "",
+            "fr-FR": "",
+            "es-ES": "",
+            "ru-RU": "",
+            "pt-BR": "",
+            "it-IT": ""
+          },
+          "identities": [
+            {
+              "identity_id": "id.scene.external_media_triage",
+              "identity_type": "life",
+              "name": {
+                "zh-CN": "U盘与外接移动存储导入分流",
+                "en-US": "USB Drive & External Storage Triage",
+                "ja-JP": "USBメモリ＆外付けストレージ仕分け",
+                "ko-KR": "USB 및 외장 하드 데이터 분류",
+                "de-DE": "USB-Stick & Externe Festplatten-Triage",
+                "fr-FR": "Tri des clés USB et disques externes",
+                "es-ES": "Triaje de memorias USB y discos externos",
+                "ru-RU": "Сортировка данных с USB-флешек и внешних дисков",
+                "pt-BR": "Triagem de pendrives e armazenamento externo",
+                "it-IT": "Smistamento chiavette USB e dischi esterni"
+              },
+              "description": {
+                "zh-CN": "针对从他人U盘、移动硬盘或相机SD卡拷出来的临时散乱数据文件夹，包含办公文档与工具软件",
+                "en-US": "Sorts mixed files, documents, and portable tools imported from USB sticks or external drives",
+                "ja-JP": "Sorts mixed files, documents, and portable tools imported from USB sticks or external drives",
+                "ko-KR": "Sorts mixed files, documents, and portable tools imported from USB sticks or external drives",
+                "de-DE": "Sorts mixed files, documents, and portable tools imported from USB sticks or external drives",
+                "fr-FR": "Sorts mixed files, documents, and portable tools imported from USB sticks or external drives",
+                "es-ES": "Sorts mixed files, documents, and portable tools imported from USB sticks or external drives",
+                "ru-RU": "Sorts mixed files, documents, and portable tools imported from USB sticks or external drives",
+                "pt-BR": "Sorts mixed files, documents, and portable tools imported from USB sticks or external drives",
+                "it-IT": "Sorts mixed files, documents, and portable tools imported from USB sticks or external drives"
+              },
+              "aliases": [
+                "U盘整理",
+                "移动硬盘",
+                "SD卡导入",
+                "外接存储",
+                "移动U盘",
+                "拷贝文件",
+                "USB"
+              ],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.archive",
+                "builtin.software",
+                "builtin.document"
+              ],
+              "external_ids": {},
+              "associated_template_ids": [
+                "tpl_external_storage_vault",
+                "tpl_inbox_staging_universal"
+              ],
+              "domain_id": "domain_universal_cleanup",
+              "category_id": "cat_external_and_digitization"
+            },
+            {
+              "identity_id": "id.scene.scanned_documents",
+              "identity_type": "life",
+              "name": {
+                "zh-CN": "扫描件与纸质翻拍单据整理",
+                "en-US": "Scanned Documents & Paper Receipts Triage",
+                "ja-JP": "スキャン書類＆紙伝票デジタル化整理",
+                "ko-KR": "스캔 문서 및 종이 영수증 디지털 정리",
+                "de-DE": "Gescannte Dokumente & Beleg-Digitalisierung",
+                "fr-FR": "Documents numérisés et reçus papier",
+                "es-ES": "Documentos escaneados y comprobantes en papel",
+                "ru-RU": "Сканированные документы и квитанции",
+                "pt-BR": "Documentos digitalizados e recibos em papel",
+                "it-IT": "Documenti scansionati e ricevute cartacee"
+              },
+              "description": {
+                "zh-CN": "针对扫描全能王、高拍仪或打印机扫描的时间戳PDF、证件翻拍、合同盖章件与报销票据归类",
+                "en-US": "Classifies mobile scanner PDFs, ID card photos, stamped contracts, and paper receipts",
+                "ja-JP": "Classifies mobile scanner PDFs, ID card photos, stamped contracts, and paper receipts",
+                "ko-KR": "Classifies mobile scanner PDFs, ID card photos, stamped contracts, and paper receipts",
+                "de-DE": "Classifies mobile scanner PDFs, ID card photos, stamped contracts, and paper receipts",
+                "fr-FR": "Classifies mobile scanner PDFs, ID card photos, stamped contracts, and paper receipts",
+                "es-ES": "Classifies mobile scanner PDFs, ID card photos, stamped contracts, and paper receipts",
+                "ru-RU": "Classifies mobile scanner PDFs, ID card photos, stamped contracts, and paper receipts",
+                "pt-BR": "Classifies mobile scanner PDFs, ID card photos, stamped contracts, and paper receipts",
+                "it-IT": "Classifies mobile scanner PDFs, ID card photos, stamped contracts, and paper receipts"
+              },
+              "aliases": [
+                "扫描件整理",
+                "扫描全能王",
+                "纸质扫描",
+                "翻拍证件",
+                "合同扫描件",
+                "发票翻拍",
+                "高拍仪",
+                "扫描件"
+              ],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.document",
+                "builtin.image",
+                "builtin.document_sheet"
+              ],
+              "external_ids": {},
+              "associated_template_ids": [
+                "tpl_scanned_documents_vault",
+                "tpl_inbox_staging_universal"
+              ],
+              "domain_id": "domain_universal_cleanup",
+              "category_id": "cat_external_and_digitization"
+            }
+          ]
+        },
+        {
+          "category_id": "cat_documents_library",
+          "category_name": {
+            "zh-CN": "文档专库系统整理",
+            "en-US": "Documents Library System",
+            "ja-JP": "ドキュメントライブラリ系統整理",
+            "ko-KR": "문서 라이브러리 체계적 정리",
+            "de-DE": "Dokumenten-Bibliothek-System",
+            "fr-FR": "Système de bibliothèque de documents",
+            "es-ES": "Sistema de biblioteca de documentos",
+            "ru-RU": "Систематизация библиотеки документов",
+            "pt-BR": "Sistema de biblioteca de documentos",
+            "it-IT": "Sistema libreria documenti"
+          },
+          "description": {
+            "zh-CN": "",
+            "en-US": "",
+            "ja-JP": "",
+            "ko-KR": "",
+            "de-DE": "",
+            "fr-FR": "",
+            "es-ES": "",
+            "ru-RU": "",
+            "pt-BR": "",
+            "it-IT": ""
+          },
+          "identities": [
+            {
+              "identity_id": "id.scene.personal_office_docs",
+              "identity_type": "life",
+              "name": {
+                "zh-CN": "个人日常办公与工作文档归集",
+                "en-US": "Daily Office Work & Personal Documents",
+                "ja-JP": "日常業務・個人オフィス文書整理",
+                "ko-KR": "일반 업무 및 개인 오피스 문서 정리",
+                "de-DE": "Tägliche Büro- & Arbeitsdokumente",
+                "fr-FR": "Documents de bureau quotidiens et personnels",
+                "es-ES": "Documentos de oficina diaria y personales",
+                "ru-RU": "Повседневные офисные и рабочие документы",
+                "pt-BR": "Documentos de escritório diário e pessoais",
+                "it-IT": "Documenti di lavoro quotidiano e personali"
+              },
+              "description": {
+                "zh-CN": "针对Documents文档库中沉淀的日常办公文件，按合同方案、汇报PPT、统计报表归集",
+                "en-US": "Archives contracts, proposals, presentation decks, and work reports in personal document library",
+                "ja-JP": "Archives contracts, proposals, presentation decks, and work reports in personal document library",
+                "ko-KR": "Archives contracts, proposals, presentation decks, and work reports in personal document library",
+                "de-DE": "Archives contracts, proposals, presentation decks, and work reports in personal document library",
+                "fr-FR": "Archives contracts, proposals, presentation decks, and work reports in personal document library",
+                "es-ES": "Archives contracts, proposals, presentation decks, and work reports in personal document library",
+                "ru-RU": "Archives contracts, proposals, presentation decks, and work reports in personal document library",
+                "pt-BR": "Archives contracts, proposals, presentation decks, and work reports in personal document library",
+                "it-IT": "Archives contracts, proposals, presentation decks, and work reports in personal document library"
+              },
+              "aliases": [
+                "办公文档",
+                "工作文档",
+                "合同方案",
+                "汇报PPT",
+                "文档归类",
+                "个人文档",
+                "Documents",
+                "工作总结"
+              ],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.document",
+                "builtin.document_sheet"
+              ],
+              "external_ids": {},
+              "associated_template_ids": [
+                "tpl_docs_office_vault",
+                "tpl_office_document_dispatch_flow"
+              ],
+              "domain_id": "domain_universal_cleanup",
+              "category_id": "cat_documents_library"
+            },
+            {
+              "identity_id": "id.scene.study_research_docs",
+              "identity_type": "life",
+              "name": {
+                "zh-CN": "学习笔记与学术研究文档整理",
+                "en-US": "Study Notes & Academic Research Documents",
+                "ja-JP": "学習ノート＆学術研究ドキュメント整理",
+                "ko-KR": "학습 노트 및 학술 연구 문서 정리",
+                "de-DE": "Studiennotizen & Akademische Forschungsdokumente",
+                "fr-FR": "Notes d'étude et documents de recherche",
+                "es-ES": "Apuntes de estudio e investigación académica",
+                "ru-RU": "Учебные конспекты и научные материалы",
+                "pt-BR": "Anotações de estudo e pesquisa acadêmica",
+                "it-IT": "Appunti di studio e documenti di ricerca accademica"
+              },
+              "description": {
+                "zh-CN": "针对学生、自学者、考研考公积累的教材讲义、电子书、开题报告、学术研报与真题试卷归类",
+                "en-US": "Organizes course slides, ebooks, research papers, exam archives, and lecture notes",
+                "ja-JP": "Organizes course slides, ebooks, research papers, exam archives, and lecture notes",
+                "ko-KR": "Organizes course slides, ebooks, research papers, exam archives, and lecture notes",
+                "de-DE": "Organizes course slides, ebooks, research papers, exam archives, and lecture notes",
+                "fr-FR": "Organizes course slides, ebooks, research papers, exam archives, and lecture notes",
+                "es-ES": "Organizes course slides, ebooks, research papers, exam archives, and lecture notes",
+                "ru-RU": "Organizes course slides, ebooks, research papers, exam archives, and lecture notes",
+                "pt-BR": "Organizes course slides, ebooks, research papers, exam archives, and lecture notes",
+                "it-IT": "Organizes course slides, ebooks, research papers, exam archives, and lecture notes"
+              },
+              "aliases": [
+                "学习资料",
+                "课件讲义",
+                "论文文献",
+                "考研考公",
+                "研究报告",
+                "复习题库",
+                "学术文档",
+                "教材课件"
+              ],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.document",
+                "builtin.archive"
+              ],
+              "external_ids": {},
+              "associated_template_ids": [
+                "tpl_docs_study_research_vault",
+                "tpl_academic_thesis"
+              ],
+              "domain_id": "domain_universal_cleanup",
+              "category_id": "cat_documents_library"
+            },
+            {
+              "identity_id": "id.scene.finance_tax_docs",
+              "identity_type": "life",
+              "name": {
+                "zh-CN": "财务账目与报销发票凭据整理",
+                "en-US": "Financial Bills & Tax Invoice Dossier",
+                "ja-JP": "会計領収書＆経費精算書類整理",
+                "ko-KR": "재무 영수증 및 세금계산서 정산 정리",
+                "de-DE": "Finanzbelege & Steuerrechnungs-Dossier",
+                "fr-FR": "Factures financières et notes de frais",
+                "es-ES": "Comprobantes fiscales y facturas para reembolso",
+                "ru-RU": "Финансовые счета и налоговые накладные",
+                "pt-BR": "Comprovantes financeiros e notas fiscais",
+                "it-IT": "Fatture fiscali e ricevute di rimborso"
+              },
+              "description": {
+                "zh-CN": "针对电子发票、报销明细、银行流水账单、税费凭条、家庭对账单与资产记录收敛",
+                "en-US": "Collects electronic invoices, expense vouchers, bank statements, and tax receipts",
+                "ja-JP": "Collects electronic invoices, expense vouchers, bank statements, and tax receipts",
+                "ko-KR": "Collects electronic invoices, expense vouchers, bank statements, and tax receipts",
+                "de-DE": "Collects electronic invoices, expense vouchers, bank statements, and tax receipts",
+                "fr-FR": "Collects electronic invoices, expense vouchers, bank statements, and tax receipts",
+                "es-ES": "Collects electronic invoices, expense vouchers, bank statements, and tax receipts",
+                "ru-RU": "Collects electronic invoices, expense vouchers, bank statements, and tax receipts",
+                "pt-BR": "Collects electronic invoices, expense vouchers, bank statements, and tax receipts",
+                "it-IT": "Collects electronic invoices, expense vouchers, bank statements, and tax receipts"
+              },
+              "aliases": [
+                "发票报销",
+                "财务凭据",
+                "发票整理",
+                "银行对账单",
+                "税务凭证",
+                "家庭账目",
+                "电子发票",
+                "报销单据"
+              ],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.document",
+                "builtin.document_sheet"
+              ],
+              "external_ids": {},
+              "associated_template_ids": [
+                "tpl_finance_accounting",
+                "tpl_household_dossier_vault"
+              ],
+              "domain_id": "domain_universal_cleanup",
+              "category_id": "cat_documents_library"
+            }
+          ]
+        },
+        {
+          "category_id": "cat_pictures_library",
+          "category_name": {
+            "zh-CN": "图片与相册专库整理",
+            "en-US": "Pictures & Photo Album Library",
+            "ja-JP": "ピクチャ＆フォトアルバム整理",
+            "ko-KR": "사진 및 앨범 라이브러리 정리",
+            "de-DE": "Bilder & Fotoalbum-Bibliothek",
+            "fr-FR": "Bibliothèque d'images et d'albums photos",
+            "es-ES": "Biblioteca de imágenes y álbumes de fotos",
+            "ru-RU": "Библиотека изображений и фотоальбомов",
+            "pt-BR": "Biblioteca de imagens e álbuns de fotos",
+            "it-IT": "Libreria immagini e album fotografici"
+          },
+          "description": {
+            "zh-CN": "",
+            "en-US": "",
+            "ja-JP": "",
+            "ko-KR": "",
+            "de-DE": "",
+            "fr-FR": "",
+            "es-ES": "",
+            "ru-RU": "",
+            "pt-BR": "",
+            "it-IT": ""
+          },
+          "identities": [
+            {
+              "identity_id": "id.scene.personal_photos_album",
+              "identity_type": "life",
+              "name": {
+                "zh-CN": "个人与家庭生活照片相册整理",
+                "en-US": "Personal & Family Life Photo Albums",
+                "ja-JP": "個人・家族の思い出フォトアルバム整理",
+                "ko-KR": "개인 및 가족 생활 사진 앨범 정리",
+                "de-DE": "Persönliche & Familien-Fotoalben",
+                "fr-FR": "Albums photos personnels et de famille",
+                "es-ES": "Álbumes de fotos personales y familiares",
+                "ru-RU": "Личные и семейные фотоальбомы",
+                "pt-BR": "Álbuns de fotos pessoais e de família",
+                "it-IT": "Album fotografici personali e di famiglia"
+              },
+              "description": {
+                "zh-CN": "针对手机相机导出的生活照片、家庭聚会、旅游风景、证件照与成长相册归集",
+                "en-US": "Archives family gatherings, vacation trips, portraits, and life event photos into organized albums",
+                "ja-JP": "Archives family gatherings, vacation trips, portraits, and life event photos into organized albums",
+                "ko-KR": "Archives family gatherings, vacation trips, portraits, and life event photos into organized albums",
+                "de-DE": "Archives family gatherings, vacation trips, portraits, and life event photos into organized albums",
+                "fr-FR": "Archives family gatherings, vacation trips, portraits, and life event photos into organized albums",
+                "es-ES": "Archives family gatherings, vacation trips, portraits, and life event photos into organized albums",
+                "ru-RU": "Archives family gatherings, vacation trips, portraits, and life event photos into organized albums",
+                "pt-BR": "Archives family gatherings, vacation trips, portraits, and life event photos into organized albums",
+                "it-IT": "Archives family gatherings, vacation trips, portraits, and life event photos into organized albums"
+              },
+              "aliases": [
+                "相册整理",
+                "照片整理",
+                "家庭相册",
+                "旅游照片",
+                "生活照",
+                "证件照",
+                "Pictures",
+                "日常相册"
+              ],
+              "task_tags": [
+                "omw.03931044.n",
+                "builtin.image"
+              ],
+              "external_ids": {},
+              "associated_template_ids": [
+                "tpl_photography_pipeline",
+                "tpl_family_household"
+              ],
+              "domain_id": "domain_universal_cleanup",
+              "category_id": "cat_pictures_library"
+            },
+            {
+              "identity_id": "id.scene.design_graphics_assets",
+              "identity_type": "life",
+              "name": {
+                "zh-CN": "设计素材与高清壁纸图片库",
+                "en-US": "Design Graphic Assets & HD Wallpapers",
+                "ja-JP": "デザイン素材＆高画質壁紙ライブラリ",
+                "ko-KR": "디자인 그래픽 리소스 및 고화질 배경화면",
+                "de-DE": "Design-Grafikressourcen & HD-Wallpaper",
+                "fr-FR": "Ressources graphiques et fonds d'écran HD",
+                "es-ES": "Recursos gráficos de diseño y fondos HD",
+                "ru-RU": "Графические материалы и HD-обои",
+                "pt-BR": "Recursos gráficos de design e papéis de parede HD",
+                "it-IT": "Asset grafici di design e sfondi HD"
+              },
+              "description": {
+                "zh-CN": "针对4K壁纸、网页免抠元素、矢量图标、插画海报、样机与设计灵感图库整理",
+                "en-US": "Curates 4K desktop wallpapers, transparent PNGs, vector icons, and inspiration graphics",
+                "ja-JP": "Curates 4K desktop wallpapers, transparent PNGs, vector icons, and inspiration graphics",
+                "ko-KR": "Curates 4K desktop wallpapers, transparent PNGs, vector icons, and inspiration graphics",
+                "de-DE": "Curates 4K desktop wallpapers, transparent PNGs, vector icons, and inspiration graphics",
+                "fr-FR": "Curates 4K desktop wallpapers, transparent PNGs, vector icons, and inspiration graphics",
+                "es-ES": "Curates 4K desktop wallpapers, transparent PNGs, vector icons, and inspiration graphics",
+                "ru-RU": "Curates 4K desktop wallpapers, transparent PNGs, vector icons, and inspiration graphics",
+                "pt-BR": "Curates 4K desktop wallpapers, transparent PNGs, vector icons, and inspiration graphics",
+                "it-IT": "Curates 4K desktop wallpapers, transparent PNGs, vector icons, and inspiration graphics"
+              },
+              "aliases": [
+                "壁纸库",
+                "设计素材",
+                "图标素材",
+                "免抠元素",
+                "灵感插画",
+                "图片素材",
+                "海报素材",
+                "高清壁纸"
+              ],
+              "task_tags": [
+                "omw.03931044.n",
+                "builtin.image"
+              ],
+              "external_ids": {},
+              "associated_template_ids": [
+                "tpl_graphic_brand_design",
+                "tpl_illustration_cg_art"
+              ],
+              "domain_id": "domain_universal_cleanup",
+              "category_id": "cat_pictures_library"
+            }
+          ]
+        },
+        {
+          "category_id": "cat_audio_library",
+          "category_name": {
+            "zh-CN": "音乐与音频专库整理",
+            "en-US": "Music & Audio Library System",
+            "ja-JP": "音楽＆オーディオライブラリ系統整理",
+            "ko-KR": "음악 및 오디오 라이브러리 정리",
+            "de-DE": "Musik- & Audio-Bibliothek-System",
+            "fr-FR": "Système de bibliothèque musicale et audio",
+            "es-ES": "Sistema de biblioteca de música y audio",
+            "ru-RU": "Систематизация библиотеки музыки и аудио",
+            "pt-BR": "Sistema de biblioteca de música e áudio",
+            "it-IT": "Sistema libreria musica e audio"
+          },
+          "description": {
+            "zh-CN": "",
+            "en-US": "",
+            "ja-JP": "",
+            "ko-KR": "",
+            "de-DE": "",
+            "fr-FR": "",
+            "es-ES": "",
+            "ru-RU": "",
+            "pt-BR": "",
+            "it-IT": ""
+          },
+          "identities": [
+            {
+              "identity_id": "id.scene.music_collection_vault",
+              "identity_type": "life",
+              "name": {
+                "zh-CN": "个人音乐收藏与无损专辑仓储",
+                "en-US": "Personal Music Collection & Lossless Albums",
+                "ja-JP": "個人音楽コレクション＆ハイレゾアルバム保管",
+                "ko-KR": "개인 음악 컬렉션 및 무손실 음원 보관소",
+                "de-DE": "Musiksammlung & Lossless-Albenarchiv",
+                "fr-FR": "Collection musicale et albums sans perte",
+                "es-ES": "Colección musical personal y álbumes sin pérdida",
+                "ru-RU": "Личная музыкальная коллекция и Lossless-альбомы",
+                "pt-BR": "Coleção musical pessoal e álbuns lossless",
+                "it-IT": "Collezione musicale personale e album lossless"
+              },
+              "description": {
+                "zh-CN": "针对下载的MP3、FLAC、APE无损音乐、发烧唱片、流行歌单、古典交响与专辑原盘归档",
+                "en-US": "Organizes MP3, FLAC, and APE lossless songs, album discographies, and classical symphonies",
+                "ja-JP": "Organizes MP3, FLAC, and APE lossless songs, album discographies, and classical symphonies",
+                "ko-KR": "Organizes MP3, FLAC, and APE lossless songs, album discographies, and classical symphonies",
+                "de-DE": "Organizes MP3, FLAC, and APE lossless songs, album discographies, and classical symphonies",
+                "fr-FR": "Organizes MP3, FLAC, and APE lossless songs, album discographies, and classical symphonies",
+                "es-ES": "Organizes MP3, FLAC, and APE lossless songs, album discographies, and classical symphonies",
+                "ru-RU": "Organizes MP3, FLAC, and APE lossless songs, album discographies, and classical symphonies",
+                "pt-BR": "Organizes MP3, FLAC, and APE lossless songs, album discographies, and classical symphonies",
+                "it-IT": "Organizes MP3, FLAC, and APE lossless songs, album discographies, and classical symphonies"
+              },
+              "aliases": [
+                "音乐库",
+                "本地音乐",
+                "无损音乐",
+                "FLAC音乐",
+                "专辑歌曲",
+                "歌单整理",
+                "Music",
+                "Hi-Res"
+              ],
+              "task_tags": [
+                "omw.00543233.n",
+                "builtin.audio"
+              ],
+              "external_ids": {},
+              "associated_template_ids": [
+                "tpl_home_theater_audiophile",
+                "tpl_media_collector_vault"
+              ],
+              "domain_id": "domain_universal_cleanup",
+              "category_id": "cat_audio_library"
+            },
+            {
+              "identity_id": "id.scene.voice_recordings_audio",
+              "identity_type": "life",
+              "name": {
+                "zh-CN": "语音录音与播客有声书整理",
+                "en-US": "Voice Memos & Podcasts Audiobook Library",
+                "ja-JP": "ボイスレコーダー録音＆ポッドキャスト整理",
+                "ko-KR": "음성 녹음 및 팟캐스트 오디오북 정리",
+                "de-DE": "Sprachmemos & Podcast-Hörbucharchiv",
+                "fr-FR": "Mémos vocaux et livres audio podcasts",
+                "es-ES": "Notas de voz y audiolibros / pódcasts",
+                "ru-RU": "Голосовые заметки, подкасты и аудиокниги",
+                "pt-BR": "Gravações de voz, podcasts e audiolivros",
+                "it-IT": "Memo vocali, podcast e audiolibri"
+              },
+              "description": {
+                "zh-CN": "针对会议录音笔文件、采访录音、讲座课堂音频、播客节目与有声小说归档",
+                "en-US": "Sorts meeting voice recordings, interview clips, lecture audio, and podcast episodes",
+                "ja-JP": "Sorts meeting voice recordings, interview clips, lecture audio, and podcast episodes",
+                "ko-KR": "Sorts meeting voice recordings, interview clips, lecture audio, and podcast episodes",
+                "de-DE": "Sorts meeting voice recordings, interview clips, lecture audio, and podcast episodes",
+                "fr-FR": "Sorts meeting voice recordings, interview clips, lecture audio, and podcast episodes",
+                "es-ES": "Sorts meeting voice recordings, interview clips, lecture audio, and podcast episodes",
+                "ru-RU": "Sorts meeting voice recordings, interview clips, lecture audio, and podcast episodes",
+                "pt-BR": "Sorts meeting voice recordings, interview clips, lecture audio, and podcast episodes",
+                "it-IT": "Sorts meeting voice recordings, interview clips, lecture audio, and podcast episodes"
+              },
+              "aliases": [
+                "录音整理",
+                "会议录音",
+                "语音备忘",
+                "播客音频",
+                "有声书",
+                "采访录音",
+                "录音笔",
+                "课堂音频"
+              ],
+              "task_tags": [
+                "omw.00543233.n",
+                "builtin.audio"
+              ],
+              "external_ids": {},
+              "associated_template_ids": [
+                "tpl_audio_sound_engineering",
+                "tpl_inbox_staging_universal"
+              ],
+              "domain_id": "domain_universal_cleanup",
+              "category_id": "cat_audio_library"
+            }
+          ]
+        },
+        {
+          "category_id": "cat_videos_library",
+          "category_name": {
+            "zh-CN": "视频与影视专库整理",
+            "en-US": "Videos & Movie Collection Library",
+            "ja-JP": "ビデオ＆映画・ドラマコレクション整理",
+            "ko-KR": "동영상 및 영화 드라마 보관소",
+            "de-DE": "Video- & Filmsammlungs-Bibliothek",
+            "fr-FR": "Bibliothèque de vidéos et collection de films",
+            "es-ES": "Biblioteca de videos y películas",
+            "ru-RU": "Библиотека видео и коллекции фильмов",
+            "pt-BR": "Biblioteca de vídeos e coleção de filmes",
+            "it-IT": "Libreria video e collezione film"
+          },
+          "description": {
+            "zh-CN": "",
+            "en-US": "",
+            "ja-JP": "",
+            "ko-KR": "",
+            "de-DE": "",
+            "fr-FR": "",
+            "es-ES": "",
+            "ru-RU": "",
+            "pt-BR": "",
+            "it-IT": ""
+          },
+          "identities": [
+            {
+              "identity_id": "id.scene.movies_tv_collection",
+              "identity_type": "life",
+              "name": {
+                "zh-CN": "个人电影追剧与影视合集整理",
+                "en-US": "Movies & TV Series Media Collection",
+                "ja-JP": "映画・ドラマ・アニメコレクション整理",
+                "ko-KR": "영화 및 드라마 시리즈 영상 보관소",
+                "de-DE": "Filme & TV-Serien Mediencorpus",
+                "fr-FR": "Collection de films et séries télévisées",
+                "es-ES": "Colección de películas y series de televisión",
+                "ru-RU": "Фильмы и сериалы в личной видеотеке",
+                "pt-BR": "Coleção de filmes e séries de TV",
+                "it-IT": "Collezione di film e serie TV"
+              },
+              "description": {
+                "zh-CN": "针对高清电影原盘、连续剧、动漫番剧、科普纪录片与综艺视频合集整理",
+                "en-US": "Catalogs HD movies, episodic drama seasons, anime series, and documentaries",
+                "ja-JP": "Catalogs HD movies, episodic drama seasons, anime series, and documentaries",
+                "ko-KR": "Catalogs HD movies, episodic drama seasons, anime series, and documentaries",
+                "de-DE": "Catalogs HD movies, episodic drama seasons, anime series, and documentaries",
+                "fr-FR": "Catalogs HD movies, episodic drama seasons, anime series, and documentaries",
+                "es-ES": "Catalogs HD movies, episodic drama seasons, anime series, and documentaries",
+                "ru-RU": "Catalogs HD movies, episodic drama seasons, anime series, and documentaries",
+                "pt-BR": "Catalogs HD movies, episodic drama seasons, anime series, and documentaries",
+                "it-IT": "Catalogs HD movies, episodic drama seasons, anime series, and documentaries"
+              },
+              "aliases": [
+                "电影整理",
+                "追剧整理",
+                "影视库",
+                "电影合集",
+                "动漫番剧",
+                "纪录片",
+                "Videos",
+                "剧集合集"
+              ],
+              "task_tags": [
+                "omw.06613686.n",
+                "builtin.video"
+              ],
+              "external_ids": {},
+              "associated_template_ids": [
+                "tpl_media_collector_vault",
+                "tpl_home_theater_audiophile"
+              ],
+              "domain_id": "domain_universal_cleanup",
+              "category_id": "cat_videos_library"
+            },
+            {
+              "identity_id": "id.scene.video_production_clips",
+              "identity_type": "life",
+              "name": {
+                "zh-CN": "视频剪辑素材与自媒体片段仓",
+                "en-US": "Video Editing Clips & Social Media Assets",
+                "ja-JP": "動画編集素材＆クリエイタークリップ保管庫",
+                "ko-KR": "영상 편집 소스 및 1인 미디어 클립 저장소",
+                "de-DE": "Videoschnitt-Material & Creator-Clips",
+                "fr-FR": "Ressources de montage vidéo et clips créateur",
+                "es-ES": "Material de edición de video y clips de creador",
+                "ru-RU": "Материалы для видеомонтажа и клипы блогера",
+                "pt-BR": "Material de edição de vídeo e clipes de criador",
+                "it-IT": "Materiale di montaggio video e clip creator"
+              },
+              "description": {
+                "zh-CN": "针对自媒体创作、短视频剪辑、无人机航拍原片、B-roll、绿幕特效、配乐音效与成片归档",
+                "en-US": "Manages B-roll footages, drone aerials, sound effects, green screens, and final exports",
+                "ja-JP": "Manages B-roll footages, drone aerials, sound effects, green screens, and final exports",
+                "ko-KR": "Manages B-roll footages, drone aerials, sound effects, green screens, and final exports",
+                "de-DE": "Manages B-roll footages, drone aerials, sound effects, green screens, and final exports",
+                "fr-FR": "Manages B-roll footages, drone aerials, sound effects, green screens, and final exports",
+                "es-ES": "Manages B-roll footages, drone aerials, sound effects, green screens, and final exports",
+                "ru-RU": "Manages B-roll footages, drone aerials, sound effects, green screens, and final exports",
+                "pt-BR": "Manages B-roll footages, drone aerials, sound effects, green screens, and final exports",
+                "it-IT": "Manages B-roll footages, drone aerials, sound effects, green screens, and final exports"
+              },
+              "aliases": [
+                "剪辑素材",
+                "视频素材",
+                "航拍原片",
+                "自媒体视频",
+                "短视频剪辑",
+                "绿幕音效",
+                "视频成片",
+                "B-roll"
+              ],
+              "task_tags": [
+                "omw.06613686.n",
+                "builtin.video"
+              ],
+              "external_ids": {},
+              "associated_template_ids": [
+                "tpl_video_production",
+                "tpl_newmedia_content"
+              ],
+              "domain_id": "domain_universal_cleanup",
+              "category_id": "cat_videos_library"
             }
           ]
         }
@@ -3959,6 +4957,56 @@
       "category_id": "cat_universal_triage"
     },
     {
+      "identity_id": "id.scene.system_cache_appdata",
+      "identity_type": "life",
+      "name": {
+        "zh-CN": "软件运行缓存与历史残留清理",
+        "en-US": "Software Cache & Application Data Cleanup",
+        "ja-JP": "アプリキャッシュ＆履歴ファイル整理",
+        "ko-KR": "소프트웨어 캐시 및 기록 잔여물 정리",
+        "de-DE": "Software-Cache & Anwendungsdaten-Bereinigung",
+        "fr-FR": "Nettoyage du cache logiciel et des résidus d'applications",
+        "es-ES": "Limpieza de caché de software y residuos de aplicaciones",
+        "ru-RU": "Очистка кэша приложений и остаточных данных",
+        "pt-BR": "Limpeza de cache de software e resíduos de aplicativos",
+        "it-IT": "Pulizia cache software e residui applicazioni"
+      },
+      "description": {
+        "zh-CN": "针对应用运行日志、崩溃转储Dump、解压临时缓存与历史未删残留进行快速集中分流与排查",
+        "en-US": "Triages application runtime logs, crash dumps, unzip temporary caches, and lingering app residues",
+        "ja-JP": "Triages application runtime logs, crash dumps, unzip temporary caches, and lingering app residues",
+        "ko-KR": "Triages application runtime logs, crash dumps, unzip temporary caches, and lingering app residues",
+        "de-DE": "Triages application runtime logs, crash dumps, unzip temporary caches, and lingering app residues",
+        "fr-FR": "Triages application runtime logs, crash dumps, unzip temporary caches, and lingering app residues",
+        "es-ES": "Triages application runtime logs, crash dumps, unzip temporary caches, and lingering app residues",
+        "ru-RU": "Triages application runtime logs, crash dumps, unzip temporary caches, and lingering app residues",
+        "pt-BR": "Triages application runtime logs, crash dumps, unzip temporary caches, and lingering app residues",
+        "it-IT": "Triages application runtime logs, crash dumps, unzip temporary caches, and lingering app residues"
+      },
+      "aliases": [
+        "缓存清理",
+        "临时文件",
+        "日志清理",
+        "应用残留",
+        "系统垃圾",
+        "AppData",
+        "Log",
+        "Dump"
+      ],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.archive",
+        "builtin.software"
+      ],
+      "external_ids": {},
+      "associated_template_ids": [
+        "tpl_system_cache_appdata_vault",
+        "tpl_inbox_staging_universal"
+      ],
+      "domain_id": "domain_universal_cleanup",
+      "category_id": "cat_universal_triage"
+    },
+    {
       "identity_id": "id.scene.temporary_staging",
       "identity_type": "life",
       "name": {
@@ -3974,16 +5022,16 @@
         "it-IT": "Area di transito temporanea e hub universale di file"
       },
       "description": {
-        "zh-CN": "针对未分类混合文件箱、U盘数据拷贝、微信/QQ接收文件与跨设备文件流转进行收敛与快速归档",
-        "en-US": "Collects unsorted mixed boxes, USB copies, chat receipts, and cross-device transfers for quick filing",
-        "ja-JP": "Collects unsorted mixed boxes, USB copies, chat receipts, and cross-device transfers for quick filing",
-        "ko-KR": "Collects unsorted mixed boxes, USB copies, chat receipts, and cross-device transfers for quick filing",
-        "de-DE": "Collects unsorted mixed boxes, USB copies, chat receipts, and cross-device transfers for quick filing",
-        "fr-FR": "Collects unsorted mixed boxes, USB copies, chat receipts, and cross-device transfers for quick filing",
-        "es-ES": "Collects unsorted mixed boxes, USB copies, chat receipts, and cross-device transfers for quick filing",
-        "ru-RU": "Collects unsorted mixed boxes, USB copies, chat receipts, and cross-device transfers for quick filing",
-        "pt-BR": "Collects unsorted mixed boxes, USB copies, chat receipts, and cross-device transfers for quick filing",
-        "it-IT": "Collects unsorted mixed boxes, USB copies, chat receipts, and cross-device transfers for quick filing"
+        "zh-CN": "针对未分类混合文件箱、U盘数据拷贝、跨设备文件流转进行收敛与快速归档",
+        "en-US": "Collects unsorted mixed boxes, USB copies, and cross-device transfers for quick filing",
+        "ja-JP": "Collects unsorted mixed boxes, USB copies, and cross-device transfers for quick filing",
+        "ko-KR": "Collects unsorted mixed boxes, USB copies, and cross-device transfers for quick filing",
+        "de-DE": "Collects unsorted mixed boxes, USB copies, and cross-device transfers for quick filing",
+        "fr-FR": "Collects unsorted mixed boxes, USB copies, and cross-device transfers for quick filing",
+        "es-ES": "Collects unsorted mixed boxes, USB copies, and cross-device transfers for quick filing",
+        "ru-RU": "Collects unsorted mixed boxes, USB copies, and cross-device transfers for quick filing",
+        "pt-BR": "Collects unsorted mixed boxes, USB copies, and cross-device transfers for quick filing",
+        "it-IT": "Collects unsorted mixed boxes, USB copies, and cross-device transfers for quick filing"
       },
       "aliases": [
         "中转站",
@@ -4005,7 +5053,752 @@
         "tpl_johnny_decimal"
       ],
       "domain_id": "domain_universal_cleanup",
-      "category_id": "cat_universal_triage"
+      "category_id": "cat_staging_and_transfer"
+    },
+    {
+      "identity_id": "id.scene.chat_software_files",
+      "identity_type": "life",
+      "name": {
+        "zh-CN": "通讯软件接收文件整理 · 微信/QQ/钉钉",
+        "en-US": "Messaging App Files Triage · WeChat/QQ/DingTalk",
+        "ja-JP": "チャット受信ファイル整理・WeChat/QQ/DingTalk",
+        "ko-KR": "메신저 수신 파일 정리 · 위챗/QQ/딩톡",
+        "de-DE": "Messaging-Dateien-Triage · WeChat/QQ/DingTalk",
+        "fr-FR": "Tri des fichiers reçus par messagerie · WeChat/QQ",
+        "es-ES": "Organización de archivos de mensajería · WeChat/QQ",
+        "ru-RU": "Сортировка файлов из мессенджеров · WeChat/QQ",
+        "pt-BR": "Organização de arquivos de mensagens · WeChat/QQ",
+        "it-IT": "Smistamento file da app di messaggistica"
+      },
+      "description": {
+        "zh-CN": "针对微信WeChat Files、QQ、钉钉工作群聊混杂接收的文档、图片发票、音视频、压缩包分门别类",
+        "en-US": "Sorts mixed documents, invoices, media clips, and archives received from chat software",
+        "ja-JP": "Sorts mixed documents, invoices, media clips, and archives received from chat software",
+        "ko-KR": "Sorts mixed documents, invoices, media clips, and archives received from chat software",
+        "de-DE": "Sorts mixed documents, invoices, media clips, and archives received from chat software",
+        "fr-FR": "Sorts mixed documents, invoices, media clips, and archives received from chat software",
+        "es-ES": "Sorts mixed documents, invoices, media clips, and archives received from chat software",
+        "ru-RU": "Sorts mixed documents, invoices, media clips, and archives received from chat software",
+        "pt-BR": "Sorts mixed documents, invoices, media clips, and archives received from chat software",
+        "it-IT": "Sorts mixed documents, invoices, media clips, and archives received from chat software"
+      },
+      "aliases": [
+        "微信文件",
+        "QQ接收文件",
+        "钉钉文件",
+        "聊天文件",
+        "微信整理",
+        "WeChat Files",
+        "群文件"
+      ],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.document",
+        "builtin.archive",
+        "builtin.image"
+      ],
+      "external_ids": {},
+      "associated_template_ids": [
+        "tpl_chat_software_vault",
+        "tpl_inbox_staging_universal"
+      ],
+      "domain_id": "domain_universal_cleanup",
+      "category_id": "cat_staging_and_transfer"
+    },
+    {
+      "identity_id": "id.scene.cross_device_transfer",
+      "identity_type": "life",
+      "name": {
+        "zh-CN": "手机与电脑跨端互传 · AirDrop/快传",
+        "en-US": "Cross-Device File Transfer · AirDrop & QuickShare",
+        "ja-JP": "スマホ・PC間データ相互転送・AirDrop/QuickShare",
+        "ko-KR": "스마트폰-PC 기기 간 전송 · 에어드롭/퀵쉐어",
+        "de-DE": "Geräteübergreifender Transfer · AirDrop & QuickShare",
+        "fr-FR": "Transfert inter-appareils · AirDrop et QuickShare",
+        "es-ES": "Transferencia entre móvil y PC · AirDrop/QuickShare",
+        "ru-RU": "Передача файлов между телефоном и ПК · AirDrop/QuickShare",
+        "pt-BR": "Transferência celular-PC · AirDrop e QuickShare",
+        "it-IT": "Trasferimento file telefono-PC · AirDrop e QuickShare"
+      },
+      "description": {
+        "zh-CN": "针对手机通过AirDrop、局域网快传、蓝牙、文件传输助手传到电脑的随手拍相片、录音备忘与单据整理",
+        "en-US": "Organizes photos, voice memos, and mobile scan receipts transferred from phone to computer",
+        "ja-JP": "Organizes photos, voice memos, and mobile scan receipts transferred from phone to computer",
+        "ko-KR": "Organizes photos, voice memos, and mobile scan receipts transferred from phone to computer",
+        "de-DE": "Organizes photos, voice memos, and mobile scan receipts transferred from phone to computer",
+        "fr-FR": "Organizes photos, voice memos, and mobile scan receipts transferred from phone to computer",
+        "es-ES": "Organizes photos, voice memos, and mobile scan receipts transferred from phone to computer",
+        "ru-RU": "Organizes photos, voice memos, and mobile scan receipts transferred from phone to computer",
+        "pt-BR": "Organizes photos, voice memos, and mobile scan receipts transferred from phone to computer",
+        "it-IT": "Organizes photos, voice memos, and mobile scan receipts transferred from phone to computer"
+      },
+      "aliases": [
+        "手机传电脑",
+        "隔空投送",
+        "AirDrop",
+        "跨端互传",
+        "局域网传输",
+        "快传",
+        "多端协同",
+        "QuickShare"
+      ],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.image",
+        "builtin.audio",
+        "builtin.document"
+      ],
+      "external_ids": {},
+      "associated_template_ids": [
+        "tpl_cross_device_transfer_vault",
+        "tpl_inbox_staging_universal"
+      ],
+      "domain_id": "domain_universal_cleanup",
+      "category_id": "cat_staging_and_transfer"
+    },
+    {
+      "identity_id": "id.scene.screenshots_recordings",
+      "identity_type": "life",
+      "name": {
+        "zh-CN": "屏幕截图与音视频录制归仓",
+        "en-US": "Screenshots & Screen Recordings Vault",
+        "ja-JP": "スクリーンショット＆録画ファイル仕分け",
+        "ko-KR": "화면 캡처 및 화면 녹화 파일 정리",
+        "de-DE": "Screenshots & Bildschirmaufnahmen-Archiv",
+        "fr-FR": "Archives des captures d'écran et enregistrements",
+        "es-ES": "Capturas de pantalla y grabaciones en video",
+        "ru-RU": "Скриншоты и записи экрана",
+        "pt-BR": "Capturas de tela e gravações de vídeo",
+        "it-IT": "Screenshot e registrazioni dello schermo"
+      },
+      "description": {
+        "zh-CN": "针对快捷键截图、微信截图、Snipaste、OBS及系统录屏生成的海量杂乱图片与视频文件",
+        "en-US": "Files screenshots, Snipaste snippets, OBS recordings, and screen clips into structured folders",
+        "ja-JP": "Files screenshots, Snipaste snippets, OBS recordings, and screen clips into structured folders",
+        "ko-KR": "Files screenshots, Snipaste snippets, OBS recordings, and screen clips into structured folders",
+        "de-DE": "Files screenshots, Snipaste snippets, OBS recordings, and screen clips into structured folders",
+        "fr-FR": "Files screenshots, Snipaste snippets, OBS recordings, and screen clips into structured folders",
+        "es-ES": "Files screenshots, Snipaste snippets, OBS recordings, and screen clips into structured folders",
+        "ru-RU": "Files screenshots, Snipaste snippets, OBS recordings, and screen clips into structured folders",
+        "pt-BR": "Files screenshots, Snipaste snippets, OBS recordings, and screen clips into structured folders",
+        "it-IT": "Files screenshots, Snipaste snippets, OBS recordings, and screen clips into structured folders"
+      },
+      "aliases": [
+        "截图整理",
+        "录屏整理",
+        "屏幕截图",
+        "会议录屏",
+        "Snipaste",
+        "OBS录像",
+        "屏幕录制",
+        "截图"
+      ],
+      "task_tags": [
+        "omw.06613686.n",
+        "builtin.image",
+        "builtin.video"
+      ],
+      "external_ids": {},
+      "associated_template_ids": [
+        "tpl_screenshots_screenrecord_vault",
+        "tpl_inbox_staging_universal"
+      ],
+      "domain_id": "domain_universal_cleanup",
+      "category_id": "cat_scratchpad_and_captures"
+    },
+    {
+      "identity_id": "id.scene.scratchpad_drafts",
+      "identity_type": "life",
+      "name": {
+        "zh-CN": "零散便签与未命名草稿急救",
+        "en-US": "Scratchpad Notes & Untitled Drafts Triage",
+        "ja-JP": "散乱メモ＆無題の下書きファイル救済",
+        "ko-KR": "임시 메모 및 무제 초안 파일 긴급 정리",
+        "de-DE": "Notizzettel & Unbenannte Entwürfe-Triage",
+        "fr-FR": "Notes éparpillées et brouillons sans titre",
+        "es-ES": "Notas sueltas y borradores sin título",
+        "ru-RU": "Разрозненные заметки и черновики без названия",
+        "pt-BR": "Notas avulsas e rascunhos sem título",
+        "it-IT": "Appunti sparsi e bozze senza titolo"
+      },
+      "description": {
+        "zh-CN": "针对桌面与工作区散落的新建文本文档、未命名Word/Excel、副本文件与随手记事草稿收敛",
+        "en-US": "Rescues untitled text files, draft spreadsheets, and random quick notes scattered on desktop",
+        "ja-JP": "Rescues untitled text files, draft spreadsheets, and random quick notes scattered on desktop",
+        "ko-KR": "Rescues untitled text files, draft spreadsheets, and random quick notes scattered on desktop",
+        "de-DE": "Rescues untitled text files, draft spreadsheets, and random quick notes scattered on desktop",
+        "fr-FR": "Rescues untitled text files, draft spreadsheets, and random quick notes scattered on desktop",
+        "es-ES": "Rescues untitled text files, draft spreadsheets, and random quick notes scattered on desktop",
+        "ru-RU": "Rescues untitled text files, draft spreadsheets, and random quick notes scattered on desktop",
+        "pt-BR": "Rescues untitled text files, draft spreadsheets, and random quick notes scattered on desktop",
+        "it-IT": "Rescues untitled text files, draft spreadsheets, and random quick notes scattered on desktop"
+      },
+      "aliases": [
+        "新建文本文档",
+        "未命名草稿",
+        "临时便签",
+        "草稿整理",
+        "随手记事",
+        "零碎文档",
+        "未整理草稿"
+      ],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.document",
+        "builtin.document_sheet"
+      ],
+      "external_ids": {},
+      "associated_template_ids": [
+        "tpl_scratchpad_drafts_vault",
+        "tpl_para_universal"
+      ],
+      "domain_id": "domain_universal_cleanup",
+      "category_id": "cat_scratchpad_and_captures"
+    },
+    {
+      "identity_id": "id.scene.external_media_triage",
+      "identity_type": "life",
+      "name": {
+        "zh-CN": "U盘与外接移动存储导入分流",
+        "en-US": "USB Drive & External Storage Triage",
+        "ja-JP": "USBメモリ＆外付けストレージ仕分け",
+        "ko-KR": "USB 및 외장 하드 데이터 분류",
+        "de-DE": "USB-Stick & Externe Festplatten-Triage",
+        "fr-FR": "Tri des clés USB et disques externes",
+        "es-ES": "Triaje de memorias USB y discos externos",
+        "ru-RU": "Сортировка данных с USB-флешек и внешних дисков",
+        "pt-BR": "Triagem de pendrives e armazenamento externo",
+        "it-IT": "Smistamento chiavette USB e dischi esterni"
+      },
+      "description": {
+        "zh-CN": "针对从他人U盘、移动硬盘或相机SD卡拷出来的临时散乱数据文件夹，包含办公文档与工具软件",
+        "en-US": "Sorts mixed files, documents, and portable tools imported from USB sticks or external drives",
+        "ja-JP": "Sorts mixed files, documents, and portable tools imported from USB sticks or external drives",
+        "ko-KR": "Sorts mixed files, documents, and portable tools imported from USB sticks or external drives",
+        "de-DE": "Sorts mixed files, documents, and portable tools imported from USB sticks or external drives",
+        "fr-FR": "Sorts mixed files, documents, and portable tools imported from USB sticks or external drives",
+        "es-ES": "Sorts mixed files, documents, and portable tools imported from USB sticks or external drives",
+        "ru-RU": "Sorts mixed files, documents, and portable tools imported from USB sticks or external drives",
+        "pt-BR": "Sorts mixed files, documents, and portable tools imported from USB sticks or external drives",
+        "it-IT": "Sorts mixed files, documents, and portable tools imported from USB sticks or external drives"
+      },
+      "aliases": [
+        "U盘整理",
+        "移动硬盘",
+        "SD卡导入",
+        "外接存储",
+        "移动U盘",
+        "拷贝文件",
+        "USB"
+      ],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.archive",
+        "builtin.software",
+        "builtin.document"
+      ],
+      "external_ids": {},
+      "associated_template_ids": [
+        "tpl_external_storage_vault",
+        "tpl_inbox_staging_universal"
+      ],
+      "domain_id": "domain_universal_cleanup",
+      "category_id": "cat_external_and_digitization"
+    },
+    {
+      "identity_id": "id.scene.scanned_documents",
+      "identity_type": "life",
+      "name": {
+        "zh-CN": "扫描件与纸质翻拍单据整理",
+        "en-US": "Scanned Documents & Paper Receipts Triage",
+        "ja-JP": "スキャン書類＆紙伝票デジタル化整理",
+        "ko-KR": "스캔 문서 및 종이 영수증 디지털 정리",
+        "de-DE": "Gescannte Dokumente & Beleg-Digitalisierung",
+        "fr-FR": "Documents numérisés et reçus papier",
+        "es-ES": "Documentos escaneados y comprobantes en papel",
+        "ru-RU": "Сканированные документы и квитанции",
+        "pt-BR": "Documentos digitalizados e recibos em papel",
+        "it-IT": "Documenti scansionati e ricevute cartacee"
+      },
+      "description": {
+        "zh-CN": "针对扫描全能王、高拍仪或打印机扫描的时间戳PDF、证件翻拍、合同盖章件与报销票据归类",
+        "en-US": "Classifies mobile scanner PDFs, ID card photos, stamped contracts, and paper receipts",
+        "ja-JP": "Classifies mobile scanner PDFs, ID card photos, stamped contracts, and paper receipts",
+        "ko-KR": "Classifies mobile scanner PDFs, ID card photos, stamped contracts, and paper receipts",
+        "de-DE": "Classifies mobile scanner PDFs, ID card photos, stamped contracts, and paper receipts",
+        "fr-FR": "Classifies mobile scanner PDFs, ID card photos, stamped contracts, and paper receipts",
+        "es-ES": "Classifies mobile scanner PDFs, ID card photos, stamped contracts, and paper receipts",
+        "ru-RU": "Classifies mobile scanner PDFs, ID card photos, stamped contracts, and paper receipts",
+        "pt-BR": "Classifies mobile scanner PDFs, ID card photos, stamped contracts, and paper receipts",
+        "it-IT": "Classifies mobile scanner PDFs, ID card photos, stamped contracts, and paper receipts"
+      },
+      "aliases": [
+        "扫描件整理",
+        "扫描全能王",
+        "纸质扫描",
+        "翻拍证件",
+        "合同扫描件",
+        "发票翻拍",
+        "高拍仪",
+        "扫描件"
+      ],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.document",
+        "builtin.image",
+        "builtin.document_sheet"
+      ],
+      "external_ids": {},
+      "associated_template_ids": [
+        "tpl_scanned_documents_vault",
+        "tpl_inbox_staging_universal"
+      ],
+      "domain_id": "domain_universal_cleanup",
+      "category_id": "cat_external_and_digitization"
+    },
+    {
+      "identity_id": "id.scene.personal_office_docs",
+      "identity_type": "life",
+      "name": {
+        "zh-CN": "个人日常办公与工作文档归集",
+        "en-US": "Daily Office Work & Personal Documents",
+        "ja-JP": "日常業務・個人オフィス文書整理",
+        "ko-KR": "일반 업무 및 개인 오피스 문서 정리",
+        "de-DE": "Tägliche Büro- & Arbeitsdokumente",
+        "fr-FR": "Documents de bureau quotidiens et personnels",
+        "es-ES": "Documentos de oficina diaria y personales",
+        "ru-RU": "Повседневные офисные и рабочие документы",
+        "pt-BR": "Documentos de escritório diário e pessoais",
+        "it-IT": "Documenti di lavoro quotidiano e personali"
+      },
+      "description": {
+        "zh-CN": "针对Documents文档库中沉淀的日常办公文件，按合同方案、汇报PPT、统计报表归集",
+        "en-US": "Archives contracts, proposals, presentation decks, and work reports in personal document library",
+        "ja-JP": "Archives contracts, proposals, presentation decks, and work reports in personal document library",
+        "ko-KR": "Archives contracts, proposals, presentation decks, and work reports in personal document library",
+        "de-DE": "Archives contracts, proposals, presentation decks, and work reports in personal document library",
+        "fr-FR": "Archives contracts, proposals, presentation decks, and work reports in personal document library",
+        "es-ES": "Archives contracts, proposals, presentation decks, and work reports in personal document library",
+        "ru-RU": "Archives contracts, proposals, presentation decks, and work reports in personal document library",
+        "pt-BR": "Archives contracts, proposals, presentation decks, and work reports in personal document library",
+        "it-IT": "Archives contracts, proposals, presentation decks, and work reports in personal document library"
+      },
+      "aliases": [
+        "办公文档",
+        "工作文档",
+        "合同方案",
+        "汇报PPT",
+        "文档归类",
+        "个人文档",
+        "Documents",
+        "工作总结"
+      ],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.document",
+        "builtin.document_sheet"
+      ],
+      "external_ids": {},
+      "associated_template_ids": [
+        "tpl_docs_office_vault",
+        "tpl_office_document_dispatch_flow"
+      ],
+      "domain_id": "domain_universal_cleanup",
+      "category_id": "cat_documents_library"
+    },
+    {
+      "identity_id": "id.scene.study_research_docs",
+      "identity_type": "life",
+      "name": {
+        "zh-CN": "学习笔记与学术研究文档整理",
+        "en-US": "Study Notes & Academic Research Documents",
+        "ja-JP": "学習ノート＆学術研究ドキュメント整理",
+        "ko-KR": "학습 노트 및 학술 연구 문서 정리",
+        "de-DE": "Studiennotizen & Akademische Forschungsdokumente",
+        "fr-FR": "Notes d'étude et documents de recherche",
+        "es-ES": "Apuntes de estudio e investigación académica",
+        "ru-RU": "Учебные конспекты и научные материалы",
+        "pt-BR": "Anotações de estudo e pesquisa acadêmica",
+        "it-IT": "Appunti di studio e documenti di ricerca accademica"
+      },
+      "description": {
+        "zh-CN": "针对学生、自学者、考研考公积累的教材讲义、电子书、开题报告、学术研报与真题试卷归类",
+        "en-US": "Organizes course slides, ebooks, research papers, exam archives, and lecture notes",
+        "ja-JP": "Organizes course slides, ebooks, research papers, exam archives, and lecture notes",
+        "ko-KR": "Organizes course slides, ebooks, research papers, exam archives, and lecture notes",
+        "de-DE": "Organizes course slides, ebooks, research papers, exam archives, and lecture notes",
+        "fr-FR": "Organizes course slides, ebooks, research papers, exam archives, and lecture notes",
+        "es-ES": "Organizes course slides, ebooks, research papers, exam archives, and lecture notes",
+        "ru-RU": "Organizes course slides, ebooks, research papers, exam archives, and lecture notes",
+        "pt-BR": "Organizes course slides, ebooks, research papers, exam archives, and lecture notes",
+        "it-IT": "Organizes course slides, ebooks, research papers, exam archives, and lecture notes"
+      },
+      "aliases": [
+        "学习资料",
+        "课件讲义",
+        "论文文献",
+        "考研考公",
+        "研究报告",
+        "复习题库",
+        "学术文档",
+        "教材课件"
+      ],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.document",
+        "builtin.archive"
+      ],
+      "external_ids": {},
+      "associated_template_ids": [
+        "tpl_docs_study_research_vault",
+        "tpl_academic_thesis"
+      ],
+      "domain_id": "domain_universal_cleanup",
+      "category_id": "cat_documents_library"
+    },
+    {
+      "identity_id": "id.scene.finance_tax_docs",
+      "identity_type": "life",
+      "name": {
+        "zh-CN": "财务账目与报销发票凭据整理",
+        "en-US": "Financial Bills & Tax Invoice Dossier",
+        "ja-JP": "会計領収書＆経費精算書類整理",
+        "ko-KR": "재무 영수증 및 세금계산서 정산 정리",
+        "de-DE": "Finanzbelege & Steuerrechnungs-Dossier",
+        "fr-FR": "Factures financières et notes de frais",
+        "es-ES": "Comprobantes fiscales y facturas para reembolso",
+        "ru-RU": "Финансовые счета и налоговые накладные",
+        "pt-BR": "Comprovantes financeiros e notas fiscais",
+        "it-IT": "Fatture fiscali e ricevute di rimborso"
+      },
+      "description": {
+        "zh-CN": "针对电子发票、报销明细、银行流水账单、税费凭条、家庭对账单与资产记录收敛",
+        "en-US": "Collects electronic invoices, expense vouchers, bank statements, and tax receipts",
+        "ja-JP": "Collects electronic invoices, expense vouchers, bank statements, and tax receipts",
+        "ko-KR": "Collects electronic invoices, expense vouchers, bank statements, and tax receipts",
+        "de-DE": "Collects electronic invoices, expense vouchers, bank statements, and tax receipts",
+        "fr-FR": "Collects electronic invoices, expense vouchers, bank statements, and tax receipts",
+        "es-ES": "Collects electronic invoices, expense vouchers, bank statements, and tax receipts",
+        "ru-RU": "Collects electronic invoices, expense vouchers, bank statements, and tax receipts",
+        "pt-BR": "Collects electronic invoices, expense vouchers, bank statements, and tax receipts",
+        "it-IT": "Collects electronic invoices, expense vouchers, bank statements, and tax receipts"
+      },
+      "aliases": [
+        "发票报销",
+        "财务凭据",
+        "发票整理",
+        "银行对账单",
+        "税务凭证",
+        "家庭账目",
+        "电子发票",
+        "报销单据"
+      ],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.document",
+        "builtin.document_sheet"
+      ],
+      "external_ids": {},
+      "associated_template_ids": [
+        "tpl_finance_accounting",
+        "tpl_household_dossier_vault"
+      ],
+      "domain_id": "domain_universal_cleanup",
+      "category_id": "cat_documents_library"
+    },
+    {
+      "identity_id": "id.scene.personal_photos_album",
+      "identity_type": "life",
+      "name": {
+        "zh-CN": "个人与家庭生活照片相册整理",
+        "en-US": "Personal & Family Life Photo Albums",
+        "ja-JP": "個人・家族の思い出フォトアルバム整理",
+        "ko-KR": "개인 및 가족 생활 사진 앨범 정리",
+        "de-DE": "Persönliche & Familien-Fotoalben",
+        "fr-FR": "Albums photos personnels et de famille",
+        "es-ES": "Álbumes de fotos personales y familiares",
+        "ru-RU": "Личные и семейные фотоальбомы",
+        "pt-BR": "Álbuns de fotos pessoais e de família",
+        "it-IT": "Album fotografici personali e di famiglia"
+      },
+      "description": {
+        "zh-CN": "针对手机相机导出的生活照片、家庭聚会、旅游风景、证件照与成长相册归集",
+        "en-US": "Archives family gatherings, vacation trips, portraits, and life event photos into organized albums",
+        "ja-JP": "Archives family gatherings, vacation trips, portraits, and life event photos into organized albums",
+        "ko-KR": "Archives family gatherings, vacation trips, portraits, and life event photos into organized albums",
+        "de-DE": "Archives family gatherings, vacation trips, portraits, and life event photos into organized albums",
+        "fr-FR": "Archives family gatherings, vacation trips, portraits, and life event photos into organized albums",
+        "es-ES": "Archives family gatherings, vacation trips, portraits, and life event photos into organized albums",
+        "ru-RU": "Archives family gatherings, vacation trips, portraits, and life event photos into organized albums",
+        "pt-BR": "Archives family gatherings, vacation trips, portraits, and life event photos into organized albums",
+        "it-IT": "Archives family gatherings, vacation trips, portraits, and life event photos into organized albums"
+      },
+      "aliases": [
+        "相册整理",
+        "照片整理",
+        "家庭相册",
+        "旅游照片",
+        "生活照",
+        "证件照",
+        "Pictures",
+        "日常相册"
+      ],
+      "task_tags": [
+        "omw.03931044.n",
+        "builtin.image"
+      ],
+      "external_ids": {},
+      "associated_template_ids": [
+        "tpl_photography_pipeline",
+        "tpl_family_household"
+      ],
+      "domain_id": "domain_universal_cleanup",
+      "category_id": "cat_pictures_library"
+    },
+    {
+      "identity_id": "id.scene.design_graphics_assets",
+      "identity_type": "life",
+      "name": {
+        "zh-CN": "设计素材与高清壁纸图片库",
+        "en-US": "Design Graphic Assets & HD Wallpapers",
+        "ja-JP": "デザイン素材＆高画質壁紙ライブラリ",
+        "ko-KR": "디자인 그래픽 리소스 및 고화질 배경화면",
+        "de-DE": "Design-Grafikressourcen & HD-Wallpaper",
+        "fr-FR": "Ressources graphiques et fonds d'écran HD",
+        "es-ES": "Recursos gráficos de diseño y fondos HD",
+        "ru-RU": "Графические материалы и HD-обои",
+        "pt-BR": "Recursos gráficos de design e papéis de parede HD",
+        "it-IT": "Asset grafici di design e sfondi HD"
+      },
+      "description": {
+        "zh-CN": "针对4K壁纸、网页免抠元素、矢量图标、插画海报、样机与设计灵感图库整理",
+        "en-US": "Curates 4K desktop wallpapers, transparent PNGs, vector icons, and inspiration graphics",
+        "ja-JP": "Curates 4K desktop wallpapers, transparent PNGs, vector icons, and inspiration graphics",
+        "ko-KR": "Curates 4K desktop wallpapers, transparent PNGs, vector icons, and inspiration graphics",
+        "de-DE": "Curates 4K desktop wallpapers, transparent PNGs, vector icons, and inspiration graphics",
+        "fr-FR": "Curates 4K desktop wallpapers, transparent PNGs, vector icons, and inspiration graphics",
+        "es-ES": "Curates 4K desktop wallpapers, transparent PNGs, vector icons, and inspiration graphics",
+        "ru-RU": "Curates 4K desktop wallpapers, transparent PNGs, vector icons, and inspiration graphics",
+        "pt-BR": "Curates 4K desktop wallpapers, transparent PNGs, vector icons, and inspiration graphics",
+        "it-IT": "Curates 4K desktop wallpapers, transparent PNGs, vector icons, and inspiration graphics"
+      },
+      "aliases": [
+        "壁纸库",
+        "设计素材",
+        "图标素材",
+        "免抠元素",
+        "灵感插画",
+        "图片素材",
+        "海报素材",
+        "高清壁纸"
+      ],
+      "task_tags": [
+        "omw.03931044.n",
+        "builtin.image"
+      ],
+      "external_ids": {},
+      "associated_template_ids": [
+        "tpl_graphic_brand_design",
+        "tpl_illustration_cg_art"
+      ],
+      "domain_id": "domain_universal_cleanup",
+      "category_id": "cat_pictures_library"
+    },
+    {
+      "identity_id": "id.scene.music_collection_vault",
+      "identity_type": "life",
+      "name": {
+        "zh-CN": "个人音乐收藏与无损专辑仓储",
+        "en-US": "Personal Music Collection & Lossless Albums",
+        "ja-JP": "個人音楽コレクション＆ハイレゾアルバム保管",
+        "ko-KR": "개인 음악 컬렉션 및 무손실 음원 보관소",
+        "de-DE": "Musiksammlung & Lossless-Albenarchiv",
+        "fr-FR": "Collection musicale et albums sans perte",
+        "es-ES": "Colección musical personal y álbumes sin pérdida",
+        "ru-RU": "Личная музыкальная коллекция и Lossless-альбомы",
+        "pt-BR": "Coleção musical pessoal e álbuns lossless",
+        "it-IT": "Collezione musicale personale e album lossless"
+      },
+      "description": {
+        "zh-CN": "针对下载的MP3、FLAC、APE无损音乐、发烧唱片、流行歌单、古典交响与专辑原盘归档",
+        "en-US": "Organizes MP3, FLAC, and APE lossless songs, album discographies, and classical symphonies",
+        "ja-JP": "Organizes MP3, FLAC, and APE lossless songs, album discographies, and classical symphonies",
+        "ko-KR": "Organizes MP3, FLAC, and APE lossless songs, album discographies, and classical symphonies",
+        "de-DE": "Organizes MP3, FLAC, and APE lossless songs, album discographies, and classical symphonies",
+        "fr-FR": "Organizes MP3, FLAC, and APE lossless songs, album discographies, and classical symphonies",
+        "es-ES": "Organizes MP3, FLAC, and APE lossless songs, album discographies, and classical symphonies",
+        "ru-RU": "Organizes MP3, FLAC, and APE lossless songs, album discographies, and classical symphonies",
+        "pt-BR": "Organizes MP3, FLAC, and APE lossless songs, album discographies, and classical symphonies",
+        "it-IT": "Organizes MP3, FLAC, and APE lossless songs, album discographies, and classical symphonies"
+      },
+      "aliases": [
+        "音乐库",
+        "本地音乐",
+        "无损音乐",
+        "FLAC音乐",
+        "专辑歌曲",
+        "歌单整理",
+        "Music",
+        "Hi-Res"
+      ],
+      "task_tags": [
+        "omw.00543233.n",
+        "builtin.audio"
+      ],
+      "external_ids": {},
+      "associated_template_ids": [
+        "tpl_home_theater_audiophile",
+        "tpl_media_collector_vault"
+      ],
+      "domain_id": "domain_universal_cleanup",
+      "category_id": "cat_audio_library"
+    },
+    {
+      "identity_id": "id.scene.voice_recordings_audio",
+      "identity_type": "life",
+      "name": {
+        "zh-CN": "语音录音与播客有声书整理",
+        "en-US": "Voice Memos & Podcasts Audiobook Library",
+        "ja-JP": "ボイスレコーダー録音＆ポッドキャスト整理",
+        "ko-KR": "음성 녹음 및 팟캐스트 오디오북 정리",
+        "de-DE": "Sprachmemos & Podcast-Hörbucharchiv",
+        "fr-FR": "Mémos vocaux et livres audio podcasts",
+        "es-ES": "Notas de voz y audiolibros / pódcasts",
+        "ru-RU": "Голосовые заметки, подкасты и аудиокниги",
+        "pt-BR": "Gravações de voz, podcasts e audiolivros",
+        "it-IT": "Memo vocali, podcast e audiolibri"
+      },
+      "description": {
+        "zh-CN": "针对会议录音笔文件、采访录音、讲座课堂音频、播客节目与有声小说归档",
+        "en-US": "Sorts meeting voice recordings, interview clips, lecture audio, and podcast episodes",
+        "ja-JP": "Sorts meeting voice recordings, interview clips, lecture audio, and podcast episodes",
+        "ko-KR": "Sorts meeting voice recordings, interview clips, lecture audio, and podcast episodes",
+        "de-DE": "Sorts meeting voice recordings, interview clips, lecture audio, and podcast episodes",
+        "fr-FR": "Sorts meeting voice recordings, interview clips, lecture audio, and podcast episodes",
+        "es-ES": "Sorts meeting voice recordings, interview clips, lecture audio, and podcast episodes",
+        "ru-RU": "Sorts meeting voice recordings, interview clips, lecture audio, and podcast episodes",
+        "pt-BR": "Sorts meeting voice recordings, interview clips, lecture audio, and podcast episodes",
+        "it-IT": "Sorts meeting voice recordings, interview clips, lecture audio, and podcast episodes"
+      },
+      "aliases": [
+        "录音整理",
+        "会议录音",
+        "语音备忘",
+        "播客音频",
+        "有声书",
+        "采访录音",
+        "录音笔",
+        "课堂音频"
+      ],
+      "task_tags": [
+        "omw.00543233.n",
+        "builtin.audio"
+      ],
+      "external_ids": {},
+      "associated_template_ids": [
+        "tpl_audio_sound_engineering",
+        "tpl_inbox_staging_universal"
+      ],
+      "domain_id": "domain_universal_cleanup",
+      "category_id": "cat_audio_library"
+    },
+    {
+      "identity_id": "id.scene.movies_tv_collection",
+      "identity_type": "life",
+      "name": {
+        "zh-CN": "个人电影追剧与影视合集整理",
+        "en-US": "Movies & TV Series Media Collection",
+        "ja-JP": "映画・ドラマ・アニメコレクション整理",
+        "ko-KR": "영화 및 드라마 시리즈 영상 보관소",
+        "de-DE": "Filme & TV-Serien Mediencorpus",
+        "fr-FR": "Collection de films et séries télévisées",
+        "es-ES": "Colección de películas y series de televisión",
+        "ru-RU": "Фильмы и сериалы в личной видеотеке",
+        "pt-BR": "Coleção de filmes e séries de TV",
+        "it-IT": "Collezione di film e serie TV"
+      },
+      "description": {
+        "zh-CN": "针对高清电影原盘、连续剧、动漫番剧、科普纪录片与综艺视频合集整理",
+        "en-US": "Catalogs HD movies, episodic drama seasons, anime series, and documentaries",
+        "ja-JP": "Catalogs HD movies, episodic drama seasons, anime series, and documentaries",
+        "ko-KR": "Catalogs HD movies, episodic drama seasons, anime series, and documentaries",
+        "de-DE": "Catalogs HD movies, episodic drama seasons, anime series, and documentaries",
+        "fr-FR": "Catalogs HD movies, episodic drama seasons, anime series, and documentaries",
+        "es-ES": "Catalogs HD movies, episodic drama seasons, anime series, and documentaries",
+        "ru-RU": "Catalogs HD movies, episodic drama seasons, anime series, and documentaries",
+        "pt-BR": "Catalogs HD movies, episodic drama seasons, anime series, and documentaries",
+        "it-IT": "Catalogs HD movies, episodic drama seasons, anime series, and documentaries"
+      },
+      "aliases": [
+        "电影整理",
+        "追剧整理",
+        "影视库",
+        "电影合集",
+        "动漫番剧",
+        "纪录片",
+        "Videos",
+        "剧集合集"
+      ],
+      "task_tags": [
+        "omw.06613686.n",
+        "builtin.video"
+      ],
+      "external_ids": {},
+      "associated_template_ids": [
+        "tpl_media_collector_vault",
+        "tpl_home_theater_audiophile"
+      ],
+      "domain_id": "domain_universal_cleanup",
+      "category_id": "cat_videos_library"
+    },
+    {
+      "identity_id": "id.scene.video_production_clips",
+      "identity_type": "life",
+      "name": {
+        "zh-CN": "视频剪辑素材与自媒体片段仓",
+        "en-US": "Video Editing Clips & Social Media Assets",
+        "ja-JP": "動画編集素材＆クリエイタークリップ保管庫",
+        "ko-KR": "영상 편집 소스 및 1인 미디어 클립 저장소",
+        "de-DE": "Videoschnitt-Material & Creator-Clips",
+        "fr-FR": "Ressources de montage vidéo et clips créateur",
+        "es-ES": "Material de edición de video y clips de creador",
+        "ru-RU": "Материалы для видеомонтажа и клипы блогера",
+        "pt-BR": "Material de edição de vídeo e clipes de criador",
+        "it-IT": "Materiale di montaggio video e clip creator"
+      },
+      "description": {
+        "zh-CN": "针对自媒体创作、短视频剪辑、无人机航拍原片、B-roll、绿幕特效、配乐音效与成片归档",
+        "en-US": "Manages B-roll footages, drone aerials, sound effects, green screens, and final exports",
+        "ja-JP": "Manages B-roll footages, drone aerials, sound effects, green screens, and final exports",
+        "ko-KR": "Manages B-roll footages, drone aerials, sound effects, green screens, and final exports",
+        "de-DE": "Manages B-roll footages, drone aerials, sound effects, green screens, and final exports",
+        "fr-FR": "Manages B-roll footages, drone aerials, sound effects, green screens, and final exports",
+        "es-ES": "Manages B-roll footages, drone aerials, sound effects, green screens, and final exports",
+        "ru-RU": "Manages B-roll footages, drone aerials, sound effects, green screens, and final exports",
+        "pt-BR": "Manages B-roll footages, drone aerials, sound effects, green screens, and final exports",
+        "it-IT": "Manages B-roll footages, drone aerials, sound effects, green screens, and final exports"
+      },
+      "aliases": [
+        "剪辑素材",
+        "视频素材",
+        "航拍原片",
+        "自媒体视频",
+        "短视频剪辑",
+        "绿幕音效",
+        "视频成片",
+        "B-roll"
+      ],
+      "task_tags": [
+        "omw.06613686.n",
+        "builtin.video"
+      ],
+      "external_ids": {},
+      "associated_template_ids": [
+        "tpl_video_production",
+        "tpl_newmedia_content"
+      ],
+      "domain_id": "domain_universal_cleanup",
+      "category_id": "cat_videos_library"
     },
     {
       "identity_id": "id.hobby.gamer",

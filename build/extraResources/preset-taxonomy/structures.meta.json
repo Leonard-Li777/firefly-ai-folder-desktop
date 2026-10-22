@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "count": 61,
+  "count": 70,
   "dimensions": {
     "bekko": 384,
     "gemma": 512
@@ -197,7 +197,8 @@
         "id.biz.consultant",
         "id.student.undergrad",
         "id.edu.k12_teacher",
-        "id.eng.architect"
+        "id.eng.architect",
+        "id.scene.scratchpad_drafts"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -297,7 +298,8 @@
       "template_type": "workflow",
       "target_identities": [
         "id.hobby.photographer",
-        "id.life.traveler"
+        "id.life.traveler",
+        "id.scene.personal_photos_album"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -348,7 +350,8 @@
         "id.creator.sound_designer",
         "id.hobby.vlogger",
         "id.designer.3d",
-        "id.media.collector_hoarder"
+        "id.media.collector_hoarder",
+        "id.scene.video_production_clips"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -398,7 +401,8 @@
         "id.student.undergrad",
         "id.student.exam",
         "id.student.study_abroad",
-        "id.health.doctor"
+        "id.health.doctor",
+        "id.scene.study_research_docs"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -445,7 +449,8 @@
       "target_identities": [
         "id.finance.accountant",
         "id.finance.cashier",
-        "id.finance.auditor"
+        "id.finance.auditor",
+        "id.scene.finance_tax_docs"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -494,7 +499,8 @@
         "id.life.pet_owner",
         "id.life.cooking_foodie",
         "id.life.minimalist",
-        "id.life.household_assets"
+        "id.life.household_assets",
+        "id.scene.personal_photos_album"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -541,7 +547,8 @@
       "target_identities": [
         "id.hobby.vlogger",
         "id.ops.newmedia",
-        "id.ops.private_domain"
+        "id.ops.private_domain",
+        "id.scene.video_production_clips"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -1732,7 +1739,9 @@
       },
       "template_type": "classification",
       "target_identities": [
-        "id.life.audiophile_cinephile"
+        "id.life.audiophile_cinephile",
+        "id.scene.movies_tv_collection",
+        "id.scene.music_collection_vault"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -2033,7 +2042,8 @@
       },
       "template_type": "workflow",
       "target_identities": [
-        "id.creator.sound_designer"
+        "id.creator.sound_designer",
+        "id.scene.voice_recordings_audio"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -2084,7 +2094,8 @@
       "template_type": "workflow",
       "target_identities": [
         "id.designer.graphic",
-        "id.designer.illustrator"
+        "id.designer.illustrator",
+        "id.scene.design_graphics_assets"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -2133,7 +2144,8 @@
       },
       "template_type": "workflow",
       "target_identities": [
-        "id.designer.illustrator"
+        "id.designer.illustrator",
+        "id.scene.design_graphics_assets"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -2471,7 +2483,14 @@
       },
       "template_type": "workflow",
       "target_identities": [
-        "id.scene.temporary_staging"
+        "id.scene.temporary_staging",
+        "id.scene.voice_recordings_audio",
+        "id.scene.scanned_documents",
+        "id.scene.system_cache_appdata",
+        "id.scene.chat_software_files",
+        "id.scene.cross_device_transfer",
+        "id.scene.screenshots_recordings",
+        "id.scene.external_media_triage"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -2850,7 +2869,8 @@
       },
       "template_type": "workflow",
       "target_identities": [
-        "id.office.general_clerk"
+        "id.office.general_clerk",
+        "id.scene.personal_office_docs"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -2894,7 +2914,8 @@
       },
       "template_type": "classification",
       "target_identities": [
-        "id.life.household_assets"
+        "id.life.household_assets",
+        "id.scene.finance_tax_docs"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -2942,7 +2963,9 @@
       },
       "template_type": "classification",
       "target_identities": [
-        "id.media.collector_hoarder"
+        "id.media.collector_hoarder",
+        "id.scene.movies_tv_collection",
+        "id.scene.music_collection_vault"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -3010,6 +3033,402 @@
         "03-开发环境与配置清单/01-Docker及K8s配置文件",
         "03-开发环境与配置清单/02-IDE与终端配置备份",
         "04-实用脚本与运维自动化/01-Shell与Python运维脚本"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_system_cache_appdata_vault",
+      "name": {
+        "zh-CN": "应用缓存与系统日志残留归档",
+        "en-US": "Application Cache & Crash Logs Archive",
+        "ja-JP": "アプリキャッシュ＆ログダンプアーカイブ",
+        "ko-KR": "애플리케이션 캐시 및 시스템 로그 보관소",
+        "de-DE": "Application Cache & Crash Logs Archive",
+        "fr-FR": "Application Cache & Crash Logs Archive",
+        "es-ES": "Application Cache & Crash Logs Archive",
+        "ru-RU": "Application Cache & Crash Logs Archive",
+        "pt-BR": "Application Cache & Crash Logs Archive",
+        "it-IT": "Application Cache & Crash Logs Archive"
+      },
+      "description": {
+        "zh-CN": "针对应用运行日志、崩溃转储Dump、解压临时缓存与历史未删残留的分类隔离体系",
+        "en-US": "Isolates runtime debug logs, crash dumps, unzip intermediate files, and expired residues",
+        "ja-JP": "Isolates runtime debug logs, crash dumps, unzip intermediate files, and expired residues",
+        "ko-KR": "Isolates runtime debug logs, crash dumps, unzip intermediate files, and expired residues",
+        "de-DE": "Isolates runtime debug logs, crash dumps, unzip intermediate files, and expired residues",
+        "fr-FR": "Isolates runtime debug logs, crash dumps, unzip intermediate files, and expired residues",
+        "es-ES": "Isolates runtime debug logs, crash dumps, unzip intermediate files, and expired residues",
+        "ru-RU": "Isolates runtime debug logs, crash dumps, unzip intermediate files, and expired residues",
+        "pt-BR": "Isolates runtime debug logs, crash dumps, unzip intermediate files, and expired residues",
+        "it-IT": "Isolates runtime debug logs, crash dumps, unzip intermediate files, and expired residues"
+      },
+      "template_type": "classification",
+      "target_identities": [
+        "id.scene.system_cache_appdata"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-运行日志与调试Dump",
+        "02-应用导出临时文件",
+        "03-压缩解压中间缓存",
+        "04-待清理过期残留"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_chat_software_vault",
+      "name": {
+        "zh-CN": "通讯软件接收文件分类资产库",
+        "en-US": "Messaging App Received Files Asset Vault",
+        "ja-JP": "チャット受信ファイル分類アセット保管庫",
+        "ko-KR": "메신저 수신 파일 분류 자산 보관소",
+        "de-DE": "Messaging App Received Files Asset Vault",
+        "fr-FR": "Messaging App Received Files Asset Vault",
+        "es-ES": "Messaging App Received Files Asset Vault",
+        "ru-RU": "Messaging App Received Files Asset Vault",
+        "pt-BR": "Messaging App Received Files Asset Vault",
+        "it-IT": "Messaging App Received Files Asset Vault"
+      },
+      "description": {
+        "zh-CN": "针对微信WeChat Files、QQ、钉钉接收文档、发票、音视频与压缩包的结构化收敛体系",
+        "en-US": "Structured repository for contracts, invoices, media clips, and archives received from chats",
+        "ja-JP": "Structured repository for contracts, invoices, media clips, and archives received from chats",
+        "ko-KR": "Structured repository for contracts, invoices, media clips, and archives received from chats",
+        "de-DE": "Structured repository for contracts, invoices, media clips, and archives received from chats",
+        "fr-FR": "Structured repository for contracts, invoices, media clips, and archives received from chats",
+        "es-ES": "Structured repository for contracts, invoices, media clips, and archives received from chats",
+        "ru-RU": "Structured repository for contracts, invoices, media clips, and archives received from chats",
+        "pt-BR": "Structured repository for contracts, invoices, media clips, and archives received from chats",
+        "it-IT": "Structured repository for contracts, invoices, media clips, and archives received from chats"
+      },
+      "template_type": "classification",
+      "target_identities": [
+        "id.scene.chat_software_files"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-群聊接收文档与合同",
+        "02-收发图片与视频媒体",
+        "03-微信传输压缩包",
+        "04-临时待转存与待办"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_cross_device_transfer_vault",
+      "name": {
+        "zh-CN": "跨端互传与快传中转资产库",
+        "en-US": "Cross-Device & AirDrop Staging Vault",
+        "ja-JP": "クロスデバイス・AirDrop転送アセット保管庫",
+        "ko-KR": "기기 간 전송 및 에어드롭 중계 보관소",
+        "de-DE": "Cross-Device & AirDrop Staging Vault",
+        "fr-FR": "Cross-Device & AirDrop Staging Vault",
+        "es-ES": "Cross-Device & AirDrop Staging Vault",
+        "ru-RU": "Cross-Device & AirDrop Staging Vault",
+        "pt-BR": "Cross-Device & AirDrop Staging Vault",
+        "it-IT": "Cross-Device & AirDrop Staging Vault"
+      },
+      "description": {
+        "zh-CN": "针对手机通过AirDrop、局域网快传传到电脑的照片、录音备忘与单据的中转分类体系",
+        "en-US": "Staging repository for photos, audio memos, and scanned receipts transferred across devices",
+        "ja-JP": "Staging repository for photos, audio memos, and scanned receipts transferred across devices",
+        "ko-KR": "Staging repository for photos, audio memos, and scanned receipts transferred across devices",
+        "de-DE": "Staging repository for photos, audio memos, and scanned receipts transferred across devices",
+        "fr-FR": "Staging repository for photos, audio memos, and scanned receipts transferred across devices",
+        "es-ES": "Staging repository for photos, audio memos, and scanned receipts transferred across devices",
+        "ru-RU": "Staging repository for photos, audio memos, and scanned receipts transferred across devices",
+        "pt-BR": "Staging repository for photos, audio memos, and scanned receipts transferred across devices",
+        "it-IT": "Staging repository for photos, audio memos, and scanned receipts transferred across devices"
+      },
+      "template_type": "classification",
+      "target_identities": [
+        "id.scene.cross_device_transfer"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-手机随手拍与实况相片",
+        "02-手机录音与语音备忘",
+        "03-移动端扫描单据",
+        "04-互传中转暂存"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_screenshots_screenrecord_vault",
+      "name": {
+        "zh-CN": "屏幕截图与录屏归档资产库",
+        "en-US": "Screenshots & Screen Recordings Vault",
+        "ja-JP": "スクリーンショット＆録画ファイル資産庫",
+        "ko-KR": "스크린샷 및 화면 녹화 파일 자산 보관소",
+        "de-DE": "Screenshots & Screen Recordings Vault",
+        "fr-FR": "Screenshots & Screen Recordings Vault",
+        "es-ES": "Screenshots & Screen Recordings Vault",
+        "ru-RU": "Screenshots & Screen Recordings Vault",
+        "pt-BR": "Screenshots & Screen Recordings Vault",
+        "it-IT": "Screenshots & Screen Recordings Vault"
+      },
+      "description": {
+        "zh-CN": "针对快捷键截图、微信截图、Snipaste与录屏素材的按用途分流归档体系",
+        "en-US": "Categorizes communication screenshots, bug recordings, design inspirations, and temporary snips",
+        "ja-JP": "Categorizes communication screenshots, bug recordings, design inspirations, and temporary snips",
+        "ko-KR": "Categorizes communication screenshots, bug recordings, design inspirations, and temporary snips",
+        "de-DE": "Categorizes communication screenshots, bug recordings, design inspirations, and temporary snips",
+        "fr-FR": "Categorizes communication screenshots, bug recordings, design inspirations, and temporary snips",
+        "es-ES": "Categorizes communication screenshots, bug recordings, design inspirations, and temporary snips",
+        "ru-RU": "Categorizes communication screenshots, bug recordings, design inspirations, and temporary snips",
+        "pt-BR": "Categorizes communication screenshots, bug recordings, design inspirations, and temporary snips",
+        "it-IT": "Categorizes communication screenshots, bug recordings, design inspirations, and temporary snips"
+      },
+      "template_type": "classification",
+      "target_identities": [
+        "id.scene.screenshots_recordings"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-工作沟通与待办截图",
+        "02-会议演示与操作录像",
+        "03-设计灵感与参考截图",
+        "04-已过期待清理截图"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_scratchpad_drafts_vault",
+      "name": {
+        "zh-CN": "零散草稿与未命名便签急救库",
+        "en-US": "Scratchpad Drafts & Quick Notes Vault",
+        "ja-JP": "散乱下書き＆一時メモ救済保管庫",
+        "ko-KR": "임시 초안 및 미분류 메모 긴급 보관소",
+        "de-DE": "Scratchpad Drafts & Quick Notes Vault",
+        "fr-FR": "Scratchpad Drafts & Quick Notes Vault",
+        "es-ES": "Scratchpad Drafts & Quick Notes Vault",
+        "ru-RU": "Scratchpad Drafts & Quick Notes Vault",
+        "pt-BR": "Scratchpad Drafts & Quick Notes Vault",
+        "it-IT": "Scratchpad Drafts & Quick Notes Vault"
+      },
+      "description": {
+        "zh-CN": "针对散落的新建文本文档、未命名表格、副本文件与随手记事草稿的收敛急救体系",
+        "en-US": "Collects untitled text files, draft spreadsheets, and random quick notes into organized categories",
+        "ja-JP": "Collects untitled text files, draft spreadsheets, and random quick notes into organized categories",
+        "ko-KR": "Collects untitled text files, draft spreadsheets, and random quick notes into organized categories",
+        "de-DE": "Collects untitled text files, draft spreadsheets, and random quick notes into organized categories",
+        "fr-FR": "Collects untitled text files, draft spreadsheets, and random quick notes into organized categories",
+        "es-ES": "Collects untitled text files, draft spreadsheets, and random quick notes into organized categories",
+        "ru-RU": "Collects untitled text files, draft spreadsheets, and random quick notes into organized categories",
+        "pt-BR": "Collects untitled text files, draft spreadsheets, and random quick notes into organized categories",
+        "it-IT": "Collects untitled text files, draft spreadsheets, and random quick notes into organized categories"
+      },
+      "template_type": "classification",
+      "target_identities": [
+        "id.scene.scratchpad_drafts"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-随手记事与快捷便签",
+        "02-在写草稿与进行中文档",
+        "03-临时摘抄与数据表格",
+        "04-已完结待沉淀文章"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_external_storage_vault",
+      "name": {
+        "zh-CN": "U盘与外接存储分流资产库",
+        "en-US": "USB Drive & External Media Asset Vault",
+        "ja-JP": "USBメモリ＆外付けメディア仕分け資産庫",
+        "ko-KR": "USB 및 외장 미디어 자산 분류 보관소",
+        "de-DE": "USB Drive & External Media Asset Vault",
+        "fr-FR": "USB Drive & External Media Asset Vault",
+        "es-ES": "USB Drive & External Media Asset Vault",
+        "ru-RU": "USB Drive & External Media Asset Vault",
+        "pt-BR": "USB Drive & External Media Asset Vault",
+        "it-IT": "USB Drive & External Media Asset Vault"
+      },
+      "description": {
+        "zh-CN": "针对从他人U盘、移动硬盘或相机卡拷出的临时散乱数据文件夹的分流体系",
+        "en-US": "Repository for portable work documents, media imports, portable tools, and temporary backups",
+        "ja-JP": "Repository for portable work documents, media imports, portable tools, and temporary backups",
+        "ko-KR": "Repository for portable work documents, media imports, portable tools, and temporary backups",
+        "de-DE": "Repository for portable work documents, media imports, portable tools, and temporary backups",
+        "fr-FR": "Repository for portable work documents, media imports, portable tools, and temporary backups",
+        "es-ES": "Repository for portable work documents, media imports, portable tools, and temporary backups",
+        "ru-RU": "Repository for portable work documents, media imports, portable tools, and temporary backups",
+        "pt-BR": "Repository for portable work documents, media imports, portable tools, and temporary backups",
+        "it-IT": "Repository for portable work documents, media imports, portable tools, and temporary backups"
+      },
+      "template_type": "classification",
+      "target_identities": [
+        "id.scene.external_media_triage"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-外带随身办公文档",
+        "02-相机与多媒体素材导入",
+        "03-便携工具与系统工具箱",
+        "04-历史项目临时快照"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_scanned_documents_vault",
+      "name": {
+        "zh-CN": "扫描件与纸质翻拍数字化资产库",
+        "en-US": "Scanned Documents & Digitized Records Vault",
+        "ja-JP": "スキャン書類＆紙伝票デジタル化資産庫",
+        "ko-KR": "스캔 문서 및 종이 영수증 디지털 자산 보관소",
+        "de-DE": "Scanned Documents & Digitized Records Vault",
+        "fr-FR": "Scanned Documents & Digitized Records Vault",
+        "es-ES": "Scanned Documents & Digitized Records Vault",
+        "ru-RU": "Scanned Documents & Digitized Records Vault",
+        "pt-BR": "Scanned Documents & Digitized Records Vault",
+        "it-IT": "Scanned Documents & Digitized Records Vault"
+      },
+      "description": {
+        "zh-CN": "针对手机扫描全能王PDF、证件翻拍、合同盖章件与报销发票的数字化归档体系",
+        "en-US": "Digital archive for stamped contracts, paper invoices, ID card scans, and pending OCR documents",
+        "ja-JP": "Digital archive for stamped contracts, paper invoices, ID card scans, and pending OCR documents",
+        "ko-KR": "Digital archive for stamped contracts, paper invoices, ID card scans, and pending OCR documents",
+        "de-DE": "Digital archive for stamped contracts, paper invoices, ID card scans, and pending OCR documents",
+        "fr-FR": "Digital archive for stamped contracts, paper invoices, ID card scans, and pending OCR documents",
+        "es-ES": "Digital archive for stamped contracts, paper invoices, ID card scans, and pending OCR documents",
+        "ru-RU": "Digital archive for stamped contracts, paper invoices, ID card scans, and pending OCR documents",
+        "pt-BR": "Digital archive for stamped contracts, paper invoices, ID card scans, and pending OCR documents",
+        "it-IT": "Digital archive for stamped contracts, paper invoices, ID card scans, and pending OCR documents"
+      },
+      "template_type": "classification",
+      "target_identities": [
+        "id.scene.scanned_documents"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-证照资质与身份证复印件",
+        "02-纸质合同与盖章协议扫描",
+        "03-财务票据与发票报销翻拍",
+        "04-待OCR识别文件"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_docs_office_vault",
+      "name": {
+        "zh-CN": "个人日常办公与工作文档资产库",
+        "en-US": "Daily Office Work & Personal Documents Vault",
+        "ja-JP": "日常業務・個人オフィス文書資産庫",
+        "ko-KR": "일상 업무 및 개인 오피스 문서 자산 보관소",
+        "de-DE": "Daily Office Work & Personal Documents Vault",
+        "fr-FR": "Daily Office Work & Personal Documents Vault",
+        "es-ES": "Daily Office Work & Personal Documents Vault",
+        "ru-RU": "Daily Office Work & Personal Documents Vault",
+        "pt-BR": "Daily Office Work & Personal Documents Vault",
+        "it-IT": "Daily Office Work & Personal Documents Vault"
+      },
+      "description": {
+        "zh-CN": "针对个人Documents文档库中沉淀的日常办公文件的高效分类收纳体系",
+        "en-US": "Organizes contracts, proposal decks, statistical spreadsheets, and institutional manuals",
+        "ja-JP": "Organizes contracts, proposal decks, statistical spreadsheets, and institutional manuals",
+        "ko-KR": "Organizes contracts, proposal decks, statistical spreadsheets, and institutional manuals",
+        "de-DE": "Organizes contracts, proposal decks, statistical spreadsheets, and institutional manuals",
+        "fr-FR": "Organizes contracts, proposal decks, statistical spreadsheets, and institutional manuals",
+        "es-ES": "Organizes contracts, proposal decks, statistical spreadsheets, and institutional manuals",
+        "ru-RU": "Organizes contracts, proposal decks, statistical spreadsheets, and institutional manuals",
+        "pt-BR": "Organizes contracts, proposal decks, statistical spreadsheets, and institutional manuals",
+        "it-IT": "Organizes contracts, proposal decks, statistical spreadsheets, and institutional manuals"
+      },
+      "template_type": "classification",
+      "target_identities": [
+        "id.scene.personal_office_docs"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-合同与法律协议",
+        "02-项目方案与汇报演示",
+        "03-统计报表与数据清单",
+        "04-规章制度与参考资料"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_docs_study_research_vault",
+      "name": {
+        "zh-CN": "学习研究与学术资料资产库",
+        "en-US": "Study Notes & Academic Research Vault",
+        "ja-JP": "学習・学術研究資料アセット保管庫",
+        "ko-KR": "학습 및 학술 연구 자료 자산 보관소",
+        "de-DE": "Study Notes & Academic Research Vault",
+        "fr-FR": "Study Notes & Academic Research Vault",
+        "es-ES": "Study Notes & Academic Research Vault",
+        "ru-RU": "Study Notes & Academic Research Vault",
+        "pt-BR": "Study Notes & Academic Research Vault",
+        "it-IT": "Study Notes & Academic Research Vault"
+      },
+      "description": {
+        "zh-CN": "针对学生、自学者与科研人员课程讲义、电子书、学术论文与练习题库的归集体系",
+        "en-US": "Archival taxonomy for textbooks, research literature, exam testbeds, and thesis drafts",
+        "ja-JP": "Archival taxonomy for textbooks, research literature, exam testbeds, and thesis drafts",
+        "ko-KR": "Archival taxonomy for textbooks, research literature, exam testbeds, and thesis drafts",
+        "de-DE": "Archival taxonomy for textbooks, research literature, exam testbeds, and thesis drafts",
+        "fr-FR": "Archival taxonomy for textbooks, research literature, exam testbeds, and thesis drafts",
+        "es-ES": "Archival taxonomy for textbooks, research literature, exam testbeds, and thesis drafts",
+        "ru-RU": "Archival taxonomy for textbooks, research literature, exam testbeds, and thesis drafts",
+        "pt-BR": "Archival taxonomy for textbooks, research literature, exam testbeds, and thesis drafts",
+        "it-IT": "Archival taxonomy for textbooks, research literature, exam testbeds, and thesis drafts"
+      },
+      "template_type": "classification",
+      "target_identities": [
+        "id.scene.study_research_docs"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-课程教材与电子书",
+        "02-学习笔记与知识整理",
+        "03-论文文献与学术研报",
+        "04-历年真题与练习题库"
       ],
       "naming_rules": {}
     }
