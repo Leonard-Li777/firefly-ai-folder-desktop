@@ -99,6 +99,48 @@ export function getOfficialSiteDomain(): string {
 }
 
 /**
+ * 获取定价页基础地址（唯一事实源）
+ *
+ * 优先级：显式配置的 pricing_url / official_site_url > 按区域推导的官网域名 + /pricing。
+ * ⚠️ 严禁在此硬编码国际版域名：国内版（cn）必须落到 SITE_DOMAIN（https://aifolder.iocn.cn），
+ * 否则"前往购买萤火""升级帐户"等入口会把国内版用户导向国际版站点。
+ */
+function getPricingBaseUrl(): string {
+  const config = (window as any).__APP_CONFIG__ || {}
+  const configured = config?.PAYMENT_INFO?.pricing_url || config?.PAYMENT_INFO?.official_site_url
+  if (configured) {
+    return configured
+  }
+  const domain = getOfficialSiteDomain().replace(/\/+$/, '')
+  return `${domain}/pricing`
+}
+
+/**
+ * 同步构造定价/购买页 URL（渲染期展示文本、离线复制链接等无法 await 的场景使用）
+ *
+ * @param action 可选的行为参数 (upgrade_pro | buy_firecores | enterprise)
+ * @param identCode 可选设备标识码（44 位 Base64）
+ */
+export function buildPricingUrlSync(action?: MarketingAction, identCode?: string): string {
+  const url = new URL(getPricingBaseUrl())
+
+  if (identCode) {
+    url.searchParams.set('ident_code', identCode)
+  }
+  if (action) {
+    url.searchParams.set('action', action)
+    // 若是购买萤火点数，附加 #firecores 锚点直接定位到萤火加油包；若是企业版，定位到企业版方案
+    if (action === 'buy_firecores') {
+      url.hash = '#firecores'
+    } else if (action === 'enterprise') {
+      url.hash = '#enterprise'
+    }
+  }
+
+  return url.toString()
+}
+
+/**
  * 根据机器码及当前版本区域生成对应的专属邀请链接
  */
 export function getInviteLink(machineId: string): string {
@@ -135,27 +177,9 @@ export async function getMarketingPricingUrl(
     }
   }
 
-  const config = (window as any).__APP_CONFIG__ || {}
-  const baseUrl =
-    config?.PAYMENT_INFO?.pricing_url ||
-    config?.PAYMENT_INFO?.official_site_url ||
-    'https://www.aifolder.net/pricing'
-
-  let url = new URL(baseUrl)
-
-  // 2. URL 严格仅携带 44 位 Base64 标识码 ident_code
-  if (identCode) {
-    url.searchParams.set('ident_code', identCode)
-  }
-  if (action) {
-    url.searchParams.set('action', action)
-    // 若是购买萤火点数，附加 #firecores 锚点直接定位到萤火加油包；若是企业版，定位到企业版方案
-    if (action === 'buy_firecores') {
-      url.hash = '#firecores'
-    } else if (action === 'enterprise') {
-      url.hash = '#enterprise'
-    }
-  }
+  // 2. 基础地址按区域推导（国内版 aifolder.iocn.cn / 国际版 www.aifolder.net），
+  //    并严格仅携带 44 位 Base64 标识码 ident_code
+  let url = new URL(buildPricingUrlSync(action, identCode || undefined))
 
   // 3. 携带 worktree 与环境标识，方便官网支付成功后精准单实例唤起对应分支客户端
   try {

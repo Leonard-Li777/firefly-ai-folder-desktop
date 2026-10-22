@@ -2,6 +2,7 @@ import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
 import { ipcMain, app, shell, BrowserWindow, clipboard } from 'electron'
+import { resolveAppRegion } from '../worktree-env'
 import { iconExtractorClient } from '../icon-extractor-client'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { databaseService } from '../../runtime-services/database/database-service'
@@ -675,7 +676,10 @@ export function registerMiscIPCHandlers() {
     logger.error(LogCategory.RENDERER, '渲染进程出错:', errorInfo)
   })
   ipcMain.on('open-download-page', () => {
-    shell.openExternal('https://aifolder.iocn.cn/download').catch(e => {
+    // 下载页必须跟随当前客户端区域域名，避免国内版用户被导向国际版站点（反之亦然）
+    const siteDomain =
+      resolveAppRegion() === 'cn' ? 'https://aifolder.iocn.cn' : 'https://www.aifolder.net'
+    shell.openExternal(`${siteDomain}/download`).catch(e => {
       logger.warn(LogCategory.MAIN, '[IPC] 打开下载页面失败:', e)
     })
   })

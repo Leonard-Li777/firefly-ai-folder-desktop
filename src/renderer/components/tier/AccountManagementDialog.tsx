@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog'
 import { Button } from '../ui/button'
 import { Card, CardContent } from '../ui/card'
-import { t } from '@app/languages'
+import { t, getLanguage } from '@app/languages'
 import {
   Crown,
   Building2,
@@ -25,7 +25,7 @@ import { useTierStore } from '../../stores/tier-store'
 import { useConfigStore } from '../../stores/config-store'
 import { UserTier, formatDateOnly, encodeMachineIdToBase64 } from '@firefly/shared'
 import { openExternalLink } from '../../lib/external-link'
-import { resolveDevCreemUrl } from '../../lib/marketing-link'
+import { resolveDevCreemUrl, getOfficialSiteDomain } from '../../lib/marketing-link'
 import { EmailSvg } from '../ui/EmailSvg'
 import { cn } from '../../lib/utils'
 
@@ -86,14 +86,20 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
 
   if (!open) return null
 
-  const portalUrl = paymentInfo?.cancellation_portal?.url || 'https://www.creem.io/portal'
+  // 兜底法律条款/门户链接必须跟随当前区域域名（国内版 aifolder.iocn.cn / 国际版 www.aifolder.net）
+  const siteDomain = getOfficialSiteDomain().replace(/\/+$/, '')
+  const legalLang = getLanguage() || 'zh-CN'
+  const isCreemBilling = paymentInfo?.method === 'creem'
+  const portalUrl =
+    paymentInfo?.cancellation_portal?.url ||
+    (isCreemBilling ? 'https://www.creem.io/portal' : `${siteDomain}/${legalLang}/pricing`)
   const supportEmail =
     paymentInfo?.support_email ||
-    (paymentInfo?.method === 'creem' ? 'support@aifolder.net' : 'support@iocn.cn')
+    (isCreemBilling ? 'support@aifolder.net' : 'support@iocn.cn')
   const privacyUrl =
-    paymentInfo?.legal_urls?.privacy_policy || 'https://www.aifolder.net/en-US/privacy'
+    paymentInfo?.legal_urls?.privacy_policy || `${siteDomain}/${legalLang}/privacy`
   const termsUrl =
-    paymentInfo?.legal_urls?.terms_of_service || 'https://www.aifolder.net/en-US/terms'
+    paymentInfo?.legal_urls?.terms_of_service || `${siteDomain}/${legalLang}/terms`
 
   const copyToClipboard = (text: string, key: string) => {
     try {

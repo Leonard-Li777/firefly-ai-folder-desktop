@@ -119,12 +119,15 @@ export const MonitoringSettings: React.FC = () => {
         currentWorkspaceDir && isPathEqual(currentWorkspaceDir.path, currentDirectory.path)
 
       // 调用后端API删除工作目录
+      // success:true 仍可能带 warning（如 .VirtualDirectory 因占用未删掉），必须如实告知用户
+      let deleteWarning: string | undefined
       if (typeof window.electronAPI?.deleteWorkspaceDirectory === 'function') {
         const result = await window.electronAPI!.deleteWorkspaceDirectory(currentDirectory.path)
         // 后端可能返回 success:false（如删除未生效），此时应视为失败并提示用户
         if (!result?.success) {
           throw new Error(result?.error || t('删除工作目录失败，请重试'))
         }
+        deleteWarning = result.warning
       }
 
       // 如果删除的是当前工作目录，清空当前选择
@@ -140,8 +143,12 @@ export const MonitoringSettings: React.FC = () => {
 
       console.log(`删除完成: ${currentDirectory.name}`)
 
-      // 显示成功消息
-      toast.success(t('工作目录 "{}" 已删除', [currentDirectory.name]))
+      // 显示结果消息：缓存目录残留时降级为警告，避免「已删除」掩盖磁盘脏数据
+      if (deleteWarning) {
+        toast.warning(deleteWarning)
+      } else {
+        toast.success(t('工作目录 "{}" 已删除', [currentDirectory.name]))
+      }
     } catch (error) {
       console.error('删除工作目录失败:', error)
       toast.error(

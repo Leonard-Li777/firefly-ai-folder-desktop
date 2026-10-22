@@ -24,7 +24,7 @@ import {
 import { toast } from '../common/Toast'
 import { t } from '@app/languages'
 import confetti from 'canvas-confetti'
-import { openMarketingPricingUrl, getMarketingPricingUrl } from '../../lib/marketing-link'
+import { openMarketingPricingUrl, getMarketingPricingUrl, buildPricingUrlSync } from '../../lib/marketing-link'
 
 
 interface ActivationCodeSectionProps {
@@ -327,11 +327,8 @@ const EnterpriseActivationFlow: React.FC<{ onActivated?: () => void }> = ({ onAc
   }
 
   const handleCopyUrl = () => {
-    const urlToCopy =
-      purchaseUrl ||
-      (identCode
-        ? `https://www.aifolder.net/pricing?ident_code=${encodeURIComponent(identCode)}&action=enterprise#enterprise`
-        : 'https://www.aifolder.net/pricing?action=enterprise#enterprise')
+    // 兜底链接同样必须按当前区域生成，严禁硬编码国际版域名
+    const urlToCopy = purchaseUrl || buildPricingUrlSync('enterprise', identCode || undefined)
 
     navigator.clipboard.writeText(urlToCopy)
     setHasCopiedUrl(true)
@@ -476,10 +473,7 @@ const EnterpriseActivationFlow: React.FC<{ onActivated?: () => void }> = ({ onAc
               <Input
                 readOnly
                 value={
-                  purchaseUrl ||
-                  (identCode
-                    ? `https://www.aifolder.net/pricing?ident_code=${encodeURIComponent(identCode)}&action=enterprise#enterprise`
-                    : 'https://www.aifolder.net/pricing?action=enterprise#enterprise')
+                  purchaseUrl || buildPricingUrlSync('enterprise', identCode || undefined)
                 }
                 className="font-mono text-xs md:text-sm bg-muted/40 border border-amber-500/30 h-12 pr-32 focus-visible:ring-amber-500/30 transition-all rounded-xl shadow-inner select-all text-foreground/90"
               />
