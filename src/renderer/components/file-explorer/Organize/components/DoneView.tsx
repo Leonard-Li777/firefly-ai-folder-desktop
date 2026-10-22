@@ -289,7 +289,7 @@ export function DoneView({
           <div className="flex items-center justify-between text-xs font-semibold text-foreground/90">
             <span className="flex items-center gap-1.5">
               <MaterialIcon icon="tune" className="text-sm text-primary" />
-              <span>{t('及格线阈值 (Score Threshold)')}</span>
+              <span>{t('及格线阈值')}</span>
             </span>
             <span className="text-xs font-bold text-primary font-mono bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
               {Math.round((thresholdScore ?? 0.4) * 100)}%
@@ -318,7 +318,7 @@ export function DoneView({
           <div className="flex items-center justify-between text-xs font-semibold text-foreground/90">
             <span className="flex items-center gap-1.5">
               <MaterialIcon icon="layers" className="text-sm text-amber-500" />
-              <span>{t('多目录归属上限 (Max Folders)')}</span>
+              <span>{t('多目录归属上限')}</span>
             </span>
             <span className="text-xs font-bold text-amber-600 dark:text-amber-400 font-mono bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
               {maxCandidatesPerFile || 1} {t('个目录')}

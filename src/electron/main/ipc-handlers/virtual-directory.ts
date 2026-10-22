@@ -1158,7 +1158,11 @@ export function registerVirtualDirectoryIPCHandlers() {
       const scheme = await virtualDirectoryService.generateHACClusterScheme(
         wsId,
         params.fileIds,
-        params.prompt
+        params.prompt,
+        {
+          distanceThreshold: params.distanceThreshold,
+          maxLeafSize: params.maxLeafSize
+        }
       )
 
       if (!scheme) {

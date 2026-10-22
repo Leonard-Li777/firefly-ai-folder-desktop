@@ -2252,6 +2252,26 @@ export class DatabaseService {
   }
 
   /**
+   * 批量将切片或文件 dense 向量写入 Omni zvec
+   */
+  public async upsertFileVectorsToOmni(
+    items: Array<{ fileFingerprint: string; vector: number[] | Float32Array }>
+  ): Promise<boolean> {
+    if (!items || items.length === 0) return true
+    const validItems: Array<{ fileFingerprint: string; vector: number[] }> = []
+    for (const item of items) {
+      if (!item.fileFingerprint || !item.vector) continue
+      const v = item.vector instanceof Float32Array ? Array.from(item.vector) : item.vector
+      if (Array.isArray(v) && v.length > 0) {
+        validItems.push({ fileFingerprint: item.fileFingerprint, vector: v })
+      }
+    }
+    if (validItems.length === 0) return true
+    const res = await omniClient.upsertVectors(validItems)
+    return !!res?.success
+  }
+
+  /**
    * 批量写入视频时序切片记录
    */
   insertVideoChunks(chunks: VideoChunkRecord[]): void {

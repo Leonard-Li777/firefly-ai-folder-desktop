@@ -577,7 +577,9 @@ declare global {
       getAllWorkspaceDirectories: () => Promise<WorkspaceDirectory[]>
       getCurrentWorkspaceDirectory: () => Promise<WorkspaceDirectory | null>
       setCurrentWorkspaceDirectory: (path: string | null) => Promise<void>
-      deleteWorkspaceDirectory: (path: string) => Promise<{ success: boolean; error?: string }>
+      deleteWorkspaceDirectory: (
+        path: string
+      ) => Promise<{ success: boolean; error?: string; warning?: string }>
       resetWorkspaceDirectory: (directoryPath: string) => Promise<void>
       rescanWorkspaceDirectory: (
         workspaceId: number

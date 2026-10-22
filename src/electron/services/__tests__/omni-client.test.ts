@@ -2,9 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { OmniClient } from '../omni-client'
 
 // 模拟 omniService
-vi.mock('../runtime-services/system/omni-service', () => ({
+// 注意：mock 路径必须与 omni-client.ts 中 import 的模块解析到同一文件，
+// 故这里相对 __tests__ 目录写作 ../../runtime-services/system/omni-service。
+vi.mock('../../runtime-services/system/omni-service', () => ({
   omniService: {
     ensureRunning: vi.fn().mockResolvedValue(true),
+    // getTaxonomyTree 前置快速探活：未就绪时不得阻塞等待冷启动（见下方护栏用例）
+    checkHealth: vi.fn().mockResolvedValue(true),
+    start: vi.fn().mockResolvedValue(true),
     getBaseUrl: vi.fn().mockReturnValue('http://127.0.0.1:39281')
   }
 }))
@@ -107,6 +112,30 @@ describe('OmniClient Taxonomy Tree API 契约测试', () => {
     // 关键断言：即使并发 8 次触发，由于 In-Flight Request Coalescing，底层 /api/v1/taxonomy/tree HTTP 请求严格只有 1 次
     const treeCalls = calledUrls.filter(u => u.includes('/api/v1/taxonomy/tree'))
     expect(treeCalls).toHaveLength(1)
+  })
+
+  it('Omni 未就绪时 getTaxonomyTree 不得阻塞等待冷启动：立即降级返回 null 并触发后台预热', async () => {
+    const { omniService } = await import('../../runtime-services/system/omni-service')
+    ;(omniService.checkHealth as any).mockResolvedValueOnce(false)
+
+    let fetchCalled = false
+    global.fetch = vi.fn().mockImplementation(() => {
+      fetchCalled = true
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({ locale: 'zh-CN', rootNodes: [], totalNodes: 0 })
+      })
+    })
+
+    const client = OmniClient.getInstance()
+    const res = await client.getTaxonomyTree('zh-CN', undefined, 'C:\\test\\firefly.db')
+
+    // 降级返回空树，且未发起树请求（即未走 ensureRunning 的 40s 冷启动探活链路）
+    expect(res).toBeNull()
+    expect(fetchCalled).toBe(false)
+    // 后台预热必须被触发，保证引擎就绪后受控维度树可被重取
+    expect(omniService.start).toHaveBeenCalled()
   })
 })
 

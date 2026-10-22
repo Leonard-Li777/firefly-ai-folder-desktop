@@ -610,7 +610,14 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
                       </div>
                     </div>
                     <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                      {isDimensionLoading && dimensionGroups.length === 0 ? (
+                      {/*
+                        已确认「零已分析文件」（analyzedFilesCount === 0）时不再进入加载分支：
+                        此时维度树必然为空，若仍按 isDimensionLoading 转圈，会因主进程等待 Omni
+                        引擎冷启动（探活最长 40s）而长时间停在"加载中"。直接落到"暂无数据"。
+                      */}
+                      {isDimensionLoading &&
+                      dimensionGroups.length === 0 &&
+                      analyzedFilesCount !== 0 ? (
                         <div className="text-center py-8">
                           <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-primary mb-2"></div>
                           <p>{t('加载中...')}</p>

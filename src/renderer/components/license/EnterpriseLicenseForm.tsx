@@ -18,7 +18,7 @@ import {
 import { toast } from '../common/Toast'
 import { t } from '@app/languages'
 import confetti from 'canvas-confetti'
-import { openExternalLink } from '../../lib/external-link'
+import { openMarketingPricingUrl } from '../../lib/marketing-link'
 
 interface EnterpriseLicenseFormProps {
   onActivated?: () => void
@@ -160,7 +160,8 @@ export const EnterpriseLicenseForm: React.FC<EnterpriseLicenseFormProps> = ({
   }
 
   const handleOpenEnterprisePage = () => {
-    openExternalLink('https://aifolder.iocn.cn/pricing')
+    // 按当前区域域名打开定价页（国内版 aifolder.iocn.cn / 国际版 www.aifolder.net）
+    void openMarketingPricingUrl('enterprise')
   }
 
   const handleActivate = async (code: string) => {

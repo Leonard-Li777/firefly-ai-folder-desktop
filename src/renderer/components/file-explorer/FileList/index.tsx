@@ -393,6 +393,9 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     setReactWindowAvailable(true)
   }, [])
 
+  // 依赖必须包含 loading：loading 早返回分支会卸载带 ref 的测量容器，
+  // 若不随 loading 重新执行，ResizeObserver 将永久观测已脱离文档的旧节点（尺寸 0×0），
+  // 导致 containerSize 卡死为 0 → 有结果仍渲染「没有找到匹配的文件」空态。
   useLayoutEffect(() => {
     if (containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect()
@@ -405,10 +408,11 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
         })
       }
     }
-  }, [viewMode])
+  }, [viewMode, loading])
 
   useEffect(() => {
-    if (!containerRef.current) return
+    const el = containerRef.current
+    if (!el) return
     const observer = new ResizeObserver(entries => {
       const entry = entries[0]
       if (!entry) return
@@ -419,9 +423,9 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
         return { width, height }
       })
     })
-    observer.observe(containerRef.current)
+    observer.observe(el)
     return () => observer.disconnect()
-  }, [viewMode])
+  }, [viewMode, loading])
 
   useEffect(() => {
     if (listRef.current) {

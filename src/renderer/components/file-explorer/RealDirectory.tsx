@@ -1320,6 +1320,7 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
               <FileExplorerLayout
                 files={filteredData.files}
                 directories={filteredData.directories}
+                isLoading={isSearchingAllDirs}
                 selectedFiles={selectedFiles}
                 activeItem={selectedItem}
                 onFileSelect={handleFileSelect}

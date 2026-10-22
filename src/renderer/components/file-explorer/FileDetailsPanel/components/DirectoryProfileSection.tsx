@@ -7,8 +7,35 @@ import { toast } from '../../../common/Toast'
 import { Button } from '../../../ui/button'
 import { LogCategory, logger, isValidNamingPattern } from '@firefly/shared'
 import { PersistentTooltip } from '../../../common/PersistentTooltip'
+import { openExternalLink } from '../../../../lib/external-link'
 import { useSettingsStore } from '../../../../stores/settings-store'
 import { SettingsCategory } from '@firefly/types'
+
+/**
+ * 常用外部 AI 平台快捷入口（与批量整理「外部 AI 生成目录结构」页保持一致，点击直达官网）
+ */
+const EXTERNAL_AI_PLATFORMS = [
+  {
+    name: '豆包',
+    url: 'https://www.doubao.com/chat/',
+    icon: 'smart_toy'
+  },
+  {
+    name: 'DeepSeek',
+    url: 'https://chat.deepseek.com/',
+    icon: 'psychology'
+  },
+  {
+    name: 'Kimi',
+    url: 'https://kimi.moonshot.cn/',
+    icon: 'auto_awesome'
+  },
+  {
+    name: 'ChatGPT',
+    url: 'https://chatgpt.com/',
+    icon: 'bolt'
+  }
+]
 
 /**
  * 预设更名模板列表
@@ -617,36 +644,57 @@ const DirectoryProfileSectionComponent: React.FC<{
                       </div>
                     )}
 
-                    {/* 外部 AI 帮生成格式引导卡片（非编辑态和编辑态均常显，支持一键复制格式提示词并进入编辑态） */}
-                    <div className="mt-2.5 p-2.5 rounded-md border border-primary/25 bg-primary/[0.04] dark:bg-primary/[0.08] flex flex-col gap-1.5 transition-all">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
-                          <MaterialIcon icon="psychology" className="text-sm text-primary" />
-                          <span>{t('让外部 AI 帮生成格式')}</span>
+                      {/* 外部 AI 帮生成格式引导卡片（非编辑态和编辑态均常显，支持一键复制格式提示词并进入编辑态） */}
+                      <div className="mt-2.5 p-2.5 rounded-md border border-primary/25 bg-primary/[0.04] dark:bg-primary/[0.08] flex flex-col gap-1.5 transition-all">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
+                            <MaterialIcon icon="psychology" className="text-sm text-primary" />
+                            <span>{t('让外部 AI 帮生成格式')}</span>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-6 px-2 text-xs border-primary/30 text-primary hover:bg-primary hover:text-secondary-foreground gap-1"
+                            onClick={handleCopyNamingFormatPrompt}
+                            title={t('复制格式提示词发给豆包或 ChatGPT，并自动进入编辑模式')}
+                          >
+                            <MaterialIcon icon="content_copy" className="text-xs" />
+                            <span>{t('复制格式提示词')}</span>
+                          </Button>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-6 px-2 text-xs border-primary/30 text-primary hover:bg-primary hover:text-secondary-foreground gap-1"
-                          onClick={handleCopyNamingFormatPrompt}
-                          title={t('复制格式提示词发给豆包或 ChatGPT，并自动进入编辑模式')}
-                        >
-                          <MaterialIcon icon="content_copy" className="text-xs" />
-                          <span>{t('复制格式提示词')}</span>
-                        </Button>
+                        {/* 常用外部 AI 官网快捷入口（与批量整理「外部 AI 生成目录结构」页一致） */}
+                        <div className="grid grid-cols-2 gap-1.5">
+                          {EXTERNAL_AI_PLATFORMS.map(p => (
+                            <div
+                              key={p.name}
+                              onClick={() => openExternalLink(p.url)}
+                              title={p.url}
+                              className="group cursor-pointer rounded-md px-2 py-1.5 border border-border/50 bg-muted/15 hover:bg-muted/40 hover:border-primary/40 transition-all flex items-center justify-between select-none"
+                            >
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <div className="w-5 h-5 rounded bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20 group-hover:scale-105 transition-transform">
+                                  <MaterialIcon icon={p.icon} className="text-[11px]" />
+                                </div>
+                                <span className="text-[11px] font-medium text-foreground group-hover:text-primary transition-colors truncate">
+                                  {p.name}
+                                </span>
+                              </div>
+                              <MaterialIcon
+                                icon="launch"
+                                className="text-[10px] text-muted-foreground/60 group-hover:text-primary transition-colors shrink-0 ml-1"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        <div className="pt-1 text-[11px] font-mono text-muted-foreground/80 border-t border-primary/10 flex flex-wrap items-center gap-1">
+                          <span>{t('格式示例：')}</span>
+                          <span className="font-semibold text-foreground/90">[xxx]xxx</span>
+                          <span className="text-muted-foreground/70">([{t('领域')}]{t('内容描述')})</span>
+                          <span className="text-muted-foreground/40">|</span>
+                          <span className="font-semibold text-foreground/90">xxx_xxx</span>
+                          <span className="text-muted-foreground/70">({t('内容描述')}_{t('角色名')}、{t('领域')}_{t('内容描述')})</span>
+                        </div>
                       </div>
-                      <p className="text-xs text-muted-foreground/90 leading-relaxed">
-                        {t('可复制格式提示词发给豆包或 ChatGPT，由它按规范定制理想的规则模板，生成后直接贴入上方保存生效。')}
-                      </p>
-                      <div className="pt-1 text-[11px] font-mono text-muted-foreground/80 border-t border-primary/10 flex flex-wrap items-center gap-1">
-                        <span>{t('格式示例：')}</span>
-                        <span className="font-semibold text-foreground/90">[xxx]xxx</span>
-                        <span className="text-muted-foreground/70">([{t('领域')}]{t('内容描述')})</span>
-                        <span className="text-muted-foreground/40">|</span>
-                        <span className="font-semibold text-foreground/90">xxx_xxx</span>
-                        <span className="text-muted-foreground/70">({t('内容描述')}_{t('角色名')}、{t('领域')}_{t('内容描述')})</span>
-                      </div>
-                    </div>
 
                     {/* 智能文件名格式建议展示与一键采纳（如果输入框/当前值与AI建议值相同，则不显示AI建议） */}
                     {Boolean(

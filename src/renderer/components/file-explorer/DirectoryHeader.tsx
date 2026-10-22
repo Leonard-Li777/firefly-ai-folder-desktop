@@ -855,8 +855,10 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                   setLocalSearchInput(val)
                   setShowHistoryPopover(true)
                   setActiveSuggestionIndex(-1)
-                  if (!isComposingRef.current) {
+                  const isNativeComposing = (e.nativeEvent as any)?.isComposing ?? isComposingRef.current
+                  if (!isNativeComposing) {
                     setGlobalSearchKeyword(val)
+                    onSearch?.(val)
                   }
                 }}
                 onKeyDown={e => {
@@ -881,6 +883,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                       setLocalSearchInput(chosen)
                       setGlobalSearchKeyword(chosen)
                       addSearchHistory(chosen, 'global')
+                      onSearch?.(chosen)
                       setShowHistoryPopover(false)
                       setActiveSuggestionIndex(-1)
                       return
@@ -888,8 +891,17 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                   }
 
                   if (e.key === 'Enter') {
-                    if (localSearchInput.trim()) {
-                      addSearchHistory(localSearchInput.trim(), 'global')
+                    // 若处于输入法组词中，交由 compositionend 处理，避免截断拼音
+                    if ((e.nativeEvent as any)?.isComposing || isComposingRef.current) {
+                      return
+                    }
+                    e.preventDefault()
+                    const finalKeyword = (searchInputRef.current?.value ?? localSearchInput).trim()
+                    if (finalKeyword) {
+                      setLocalSearchInput(finalKeyword)
+                      setGlobalSearchKeyword(finalKeyword)
+                      addSearchHistory(finalKeyword, 'global')
+                      onSearch?.(finalKeyword)
                     }
                     setShowHistoryPopover(false)
                     setActiveSuggestionIndex(-1)
@@ -910,8 +922,20 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                 }}
                 onCompositionEnd={e => {
                   isComposingRef.current = false
-                  const val = e.currentTarget.value
+                  // 健壮获取上屏文本：优先 DOM 真实值，兜底 event 目标值
+                  const val = searchInputRef.current?.value ?? (e.target as HTMLInputElement)?.value ?? e.currentTarget.value
+                  setLocalSearchInput(val)
                   setGlobalSearchKeyword(val)
+                  onSearch?.(val)
+                }}
+                onBlur={() => {
+                  if (isComposingRef.current) {
+                    isComposingRef.current = false
+                    const val = searchInputRef.current?.value ?? localSearchInput
+                    setLocalSearchInput(val)
+                    setGlobalSearchKeyword(val)
+                    onSearch?.(val)
+                  }
                 }}
                 placeholder={SEARCH_PLACEHOLDERS[currentPlaceholderIndex]}
                 className={cn(
@@ -978,6 +1002,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                         setLocalSearchInput(suggestion)
                         setGlobalSearchKeyword(suggestion)
                         addSearchHistory(suggestion, 'global')
+                        onSearch?.(suggestion)
                         setShowHistoryPopover(false)
                         setActiveSuggestionIndex(-1)
                         searchInputRef.current?.focus()

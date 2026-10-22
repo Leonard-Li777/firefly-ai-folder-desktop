@@ -225,6 +225,32 @@ export class OmniClient {
 
     const fetchPromise = (async () => {
       try {
+        // 冷启动不得阻塞调用方（已分析目录 / 虚拟目录左侧「分类维度」面板首屏会 await 本方法）：
+        // 原实现经 request() 内的 omniService.ensureRunning() 同步等待引擎 spawn 后的探活轮询
+        // （最长 200×200ms = 40s），叠加请求本身 3×8s 超时重试，会让面板长时间停在"加载中"。
+        // 此处改为：探活不通 ⇒ 触发后台预热并立即降级（返回历史缓存或 null），
+        // 引擎就绪后由渲染进程监听 omni:status-changed 主动重取，用户无感补齐受控维度树。
+        //
+        // 注意：探活必须放在 IIFE 内部（而非创建 fetchPromise 之前）——否则 await 会打开
+        // 并发窗口，使下面的 inFlight 登记失去原子性，Singleflight 合并随之失效。
+        if (!(await omniService.checkHealth())) {
+          void omniService.start().catch((err: unknown) => {
+            logger.warn(LogCategory.DIMENSION_SERVICE, '[OmniClient] Omni 引擎后台预热失败:', err)
+          })
+          if (cached) {
+            logger.warn(
+              LogCategory.DIMENSION_SERVICE,
+              '[OmniClient] Omni 引擎未就绪，taxonomy 树降级使用历史缓存（已触发后台预热）'
+            )
+            return cached.data
+          }
+          logger.warn(
+            LogCategory.DIMENSION_SERVICE,
+            '[OmniClient] Omni 引擎未就绪，taxonomy 树本次降级为空树（已触发后台预热，就绪后自动重取）'
+          )
+          return null
+        }
+
         const params = new URLSearchParams({ locale })
         if (root) params.set('root', root)
         if (dbPath) {

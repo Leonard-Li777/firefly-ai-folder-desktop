@@ -302,12 +302,11 @@ export function useOrganizeState() {
     }
 
     const action = searchParams.get('action')
+    // 前置分析门禁 (规格 §5.3)：批量整理只接纳已完成 AI 语义分析的文件，
+    // 未分析文件须先走分析队列；此处严禁回退到全量文件，否则会绕过门禁。
     let baseFiles = (allWorkspaceFiles || []).filter(
       f => (f as any).is_analyzed !== 0 && f.isAnalyzed !== false
     )
-    if (baseFiles.length === 0 && (allWorkspaceFiles || []).length > 0) {
-      baseFiles = allWorkspaceFiles
-    }
 
     // 1. 如果是从已分析页面勾选带入的（按 id 匹配，缺失时回退 path 匹配，兼容两种数据源）
     if (

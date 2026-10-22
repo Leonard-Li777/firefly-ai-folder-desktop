@@ -365,7 +365,7 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
                 {/* 文件列表区域 */}
                 <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
                   {isLoading && displayFiles.length === 0 && directories.length === 0 ? (
-                    <EmptyState isLoading={true} title={t('加载文件中...')} />
+                    <EmptyState isLoading={true} title={isRealDirectory ? t('正在搜索...') : t('加载文件中...')} />
                   ) : displayFiles.length === 0 &&
                     directories.length === 0 &&
                     (pageId === PAGE_IDS.ANALYZED_DIRECTORY ||
@@ -379,6 +379,7 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
                     <FileList
                       files={displayFiles}
                       directories={directories}
+                      loading={isLoading}
                       selectionEnabled={selectionEnabled}
                       selectedFiles={selectedFiles}
                       activeItem={activeItem}

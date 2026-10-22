@@ -216,6 +216,11 @@ export class EngineBridgeService {
   private pendingUpdateSince = 0
   /** 开发态二进制热更新轮询定时器 */
   private devBinaryWatchTimer: NodeJS.Timeout | null = null
+  /**
+   * 已确认有新二进制、但因引擎正在处理分析请求而推迟的重启。
+   * 待引擎回到 ready 后由 applyStatus 触发一次补检，避免在分析中途强杀引擎。
+   */
+  private deferredBinaryRestart = false
   private eventStreamAbortController: AbortController | null = null
   private listeners = new Set<(snapshot: EngineBridgeSnapshot) => void>()
   readonly circuitBreaker = new Tier2CircuitBreaker()
@@ -813,6 +818,20 @@ export class EngineBridgeService {
       return
     }
 
+    // 分析进行中不得重启：此刻回收进程会让正在分析的文件整批失败，
+    // 且会被上层错误处理误判为「引擎异常」再次重启（放大成连环重启）。
+    // 保留 pending 状态，等引擎回到 ready 后由 applyStatus 触发补检。
+    if (this.lastRawStatus?.status === 'processing') {
+      if (!this.deferredBinaryRestart) {
+        logger.info(
+          LogCategory.SYSTEM,
+          '[EngineBridge] 检测到引擎二进制更新，但引擎正在处理分析请求，推迟到空闲后重启'
+        )
+      }
+      this.deferredBinaryRestart = true
+      return
+    }
+
     const previous = this.spawnedBinarySignature
     this.spawnedBinarySignature = signature
     this.pendingUpdateSignature = null
@@ -949,6 +968,18 @@ export class EngineBridgeService {
     void this.syncThinkingModeFromEngine()
     // 确保已连接 SSE 实时状态流（用于毫秒级捕获引擎 API 开始/完成状态）
     this.ensureEventStream()
+
+    // 因分析进行中被推迟的二进制热更新：引擎回到空闲（ready）后补一次检测并重启
+    if (this.deferredBinaryRestart && data.status === 'ready') {
+      this.deferredBinaryRestart = false
+      logger.info(
+        LogCategory.SYSTEM,
+        '[EngineBridge] 引擎已空闲，开始应用推迟的二进制更新（重启加载新版本）'
+      )
+      setTimeout(() => {
+        void this.checkBinaryUpdated()
+      }, 800)
+    }
   }
 
   /**
@@ -1344,12 +1375,18 @@ export class EngineBridgeService {
       // desktop 侧由 healthCheck 的滑动区间探测兜底，不依赖该环境变量。
       const env = {
         ...process.env,
-        ENGINE_PORT: String(TIER2_ENGINE_PORT)
+        ENGINE_PORT: String(TIER2_ENGINE_PORT),
+        // 宿主生命周期守护：以管道方式提供 stdin（见下方 stdio），桌面端进程一旦消失
+        // （正常退出 / 崩溃 / 任务管理器强杀），管道写端由内核关闭，引擎读到 EOF 后
+        // 主动退出并带走 llama-server。与 firefly-omni 的 OMNI_WATCH_STDIN 同一约定。
+        ENGINE_WATCH_STDIN: '1'
       }
       // windowsHide: 抑制 Windows 控制台窗口闪烁（debug 构建的引擎为控制台子系统）
+      // stdio[0] 必须保留 'pipe'：'ignore' 会让引擎拿到 NUL 设备句柄而永远读不到 EOF，
+      // 宿主被强杀后引擎无法感知自身已成孤儿，正是此前「desktop 已结束但引擎仍在跑」的根因。
       const child = spawn(exePath, ['--silent', '--tray'], {
         detached: true,
-        stdio: 'ignore',
+        stdio: ['pipe', 'ignore', 'ignore'],
         windowsHide: true,
         env
       })
@@ -1376,10 +1413,28 @@ export class EngineBridgeService {
         this.broadcastStatus()
       })
       child.once('exit', (code, signal) => {
-        logger.warn(
-          LogCategory.SYSTEM,
-          `[EngineBridge] 引擎子进程已退出 (code=${code}, signal=${signal})`
-        )
+        // 区分「开发态二进制热部署的预期内退出」与真正的崩溃：
+        // 部署脚本替换 exe 前会先强杀进程（退出码 -1），若按崩溃记录会让用户看到「引擎异常」，
+        // 并在分析中途触发上层错误恢复（再次重启），放大成连环重启。
+        const exePathNow = this.resolveEngineExecutable()
+        const sigNow = exePathNow ? this.binarySignature(exePathNow) : null
+        const deploying =
+          this.deferredBinaryRestart ||
+          this.pendingUpdateSignature !== null ||
+          (sigNow !== null &&
+            this.spawnedBinarySignature !== null &&
+            sigNow !== this.spawnedBinarySignature)
+        if (deploying) {
+          logger.info(
+            LogCategory.SYSTEM,
+            `[EngineBridge] 引擎因二进制更新退出 (code=${code})，随后自动加载新版本`
+          )
+        } else {
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[EngineBridge] 引擎子进程已退出 (code=${code}, signal=${signal})`
+          )
+        }
         try {
           const { processReaper } = require('../../main/process-reaper')
           processReaper.unregisterChild(child.pid)

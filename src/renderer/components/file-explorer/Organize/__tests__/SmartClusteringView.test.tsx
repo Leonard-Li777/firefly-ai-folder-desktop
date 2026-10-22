@@ -122,7 +122,7 @@ describe('SmartClusteringView Component', () => {
     })
   })
 
-  it('经句柄保存应使用提示词或默认名称调用 onSaveVirtualDirectory', async () => {
+  it('未输入提示词时，保存应使用最大簇名称 + “整理”作为默认虚拟目录名', async () => {
     const ref = React.createRef<SmartClusteringViewHandle>()
     render(
       <SmartClusteringView
@@ -142,11 +142,125 @@ describe('SmartClusteringView Component', () => {
     })
 
     await waitFor(() => {
+      expect(mockSaveVirtualDirectory).toHaveBeenCalledWith('2026年度财务 整理', sampleNodes)
+    })
+  })
+
+  it('所有目录均无文件时，保存应回退为“智能聚类整理_YYYYMMDD”', async () => {
+    mockSmartClusterHac.mockResolvedValueOnce({
+      success: true,
+      directories: [
+        {
+          name: '空目录',
+          parent: null,
+          fileCount: 0,
+          totalSize: 0,
+          files: [],
+          subdirectories: []
+        }
+      ],
+      durationMs: 10,
+      summary: '空结果'
+    })
+
+    const ref = React.createRef<SmartClusteringViewHandle>()
+    render(
+      <SmartClusteringView
+        ref={ref}
+        workspaceId={1}
+        workspaceDirectoryPath="/test/workspace"
+        onSaveVirtualDirectory={mockSaveVirtualDirectory}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('空目录')).toBeInTheDocument()
+    })
+
+    await act(async () => {
+      await ref.current?.save()
+    })
+
+    await waitFor(() => {
       expect(mockSaveVirtualDirectory).toHaveBeenCalledWith(
-        expect.stringContaining('智能聚类整理'),
-        sampleNodes
+        expect.stringMatching(/^智能聚类整理_\d{8}$/),
+        expect.any(Array)
       )
     })
+  })
+
+  it('拖拽文件到目标目录应执行移动（源目录移除、目标目录新增、fileCount 自底向上重算）', async () => {
+    const moveNodes: VirtualDirectoryNode[] = [
+      {
+        name: '源目录',
+        parent: null,
+        fileCount: 2,
+        totalSize: 0,
+        files: [
+          { id: 10, name: 'a.txt', extension: 'txt', size: 1, originalPath: '/data/a.txt' },
+          { id: 11, name: 'b.txt', extension: 'txt', size: 1, originalPath: '/data/b.txt' }
+        ],
+        subdirectories: []
+      },
+      {
+        name: '目标目录',
+        parent: null,
+        fileCount: 0,
+        totalSize: 0,
+        files: [],
+        subdirectories: []
+      }
+    ]
+    mockSmartClusterHac.mockResolvedValueOnce({
+      success: true,
+      directories: moveNodes,
+      durationMs: 10,
+      summary: '拖拽测试'
+    })
+
+    const ref = React.createRef<SmartClusteringViewHandle>()
+    render(
+      <SmartClusteringView
+        ref={ref}
+        workspaceId={1}
+        workspaceDirectoryPath="/test/workspace"
+        onSaveVirtualDirectory={mockSaveVirtualDirectory}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('目标目录')).toBeInTheDocument()
+      expect(screen.getByText('a.txt')).toBeInTheDocument()
+    })
+
+    const targetRow = screen.getByText('目标目录').closest('[draggable="true"]')!
+    expect(targetRow).not.toBeNull()
+
+    fireEvent.drop(targetRow, {
+      dataTransfer: {
+        getData: () =>
+          JSON.stringify({ type: 'file', file: { id: 10, name: 'a.txt' }, sourceNodeKey: '源目录' })
+      }
+    })
+
+    await act(async () => {
+      await ref.current?.save()
+    })
+
+    const savedTree = mockSaveVirtualDirectory.mock.calls[0][1] as VirtualDirectoryNode[]
+    const source = savedTree.find(n => n.name === '源目录')!
+    const target = savedTree.find(n => n.name === '目标目录')!
+
+    expect(source.files!.map(f => (f as any).id)).toEqual([11])
+    expect(source.fileCount).toBe(1)
+    expect(target.files!.map(f => (f as any).id)).toEqual([10])
+    expect(target.fileCount).toBe(1)
+    // 文件全局只出现一次，杜绝“移动变复制”
+    const totalFileOccurrences = savedTree.reduce(
+      (sum, node) => sum + (node.files?.length || 0),
+      0
+    )
+    expect(totalFileOccurrences).toBe(2)
   })
 
   it('如果用户输入了提示词，保存时应优先采用用户提示词作为虚拟目录名称', async () => {

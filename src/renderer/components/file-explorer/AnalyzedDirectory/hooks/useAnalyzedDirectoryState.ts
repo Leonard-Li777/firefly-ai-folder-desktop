@@ -19,6 +19,45 @@ import { useAnalysisQueueStore } from '../../../../stores/analysis-queue-store'
 import { useSearchViewAutoSwitch } from '../../FileList/hooks/useSearchViewAutoSwitch'
 
 /**
+ * 维度组加载超时上限（毫秒）。
+ *
+ * 主进程 getDimensionGroups 内部会先 await Omni 引擎就绪：引擎未启动时
+ * `omniService.ensureRunning()` 要等 spawn 后的探活轮询（最长 40s），随后请求本身
+ * 还有 3×8s 超时重试。工作目录尚无分析数据时，本地维度标签又会被 removeEmptyTags 清空，
+ * 于是左侧「分类维度」面板会长时间停在"加载中"，最后才落到"暂无数据"。
+ * 这里加超时兜底：到点即结束 loading 并降级为空维度，避免面板无限转圈。
+ */
+const DIMENSION_LOAD_TIMEOUT_MS = 8000
+
+/**
+ * 为 Promise 追加超时上限：超时后 reject 并回调 onTimeout，
+ * 供调用方区分「超时降级」与「真实失败」。
+ *
+ * 注意：被包裹的 Promise 仍会继续执行，其后续结果由调用方的请求序号机制丢弃。
+ */
+const withTimeout = <T,>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  onTimeout: () => void
+): Promise<T> =>
+  new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      onTimeout()
+      reject(new Error(`DIMENSION_LOAD_TIMEOUT(${timeoutMs}ms)`))
+    }, timeoutMs)
+    promise.then(
+      value => {
+        clearTimeout(timer)
+        resolve(value)
+      },
+      err => {
+        clearTimeout(timer)
+        reject(err)
+      }
+    )
+  })
+
+/**
  * 虚拟目录状态管理 Hook
  * 处理工作目录、维度组、文件列表的加载和同步逻辑
  */
@@ -83,6 +122,10 @@ export const useAnalyzedDirectoryState = (
   const lastCompletedIds = useRef<Set<number>>(new Set())
   const refreshTimer = useRef<NodeJS.Timeout | null>(null)
   const [lastSingleTag, setLastSingleTag] = useState<SelectedTag | null>(null)
+  /** 维度组请求序号：并发/过期请求不得覆盖最新一次加载的 loading 与数据状态 */
+  const dimensionLoadSeqRef = useRef(0)
+  /** 上一次观测到的 Omni 引擎运行态，用于识别「未就绪 → 运行中」的跃迁并补取受控维度树 */
+  const omniRunningRef = useRef<boolean | null>(null)
 
   // Load initial data
   useEffect(() => {
@@ -232,6 +275,26 @@ export const useAnalyzedDirectoryState = (
     }
   }, [currentWorkspaceDirectory])
 
+  // 监听基础 AI 引擎（Omni）「未就绪 → 运行中」跃迁：
+  // 冷启动期间受控分类树会先降级为空树（避免阻塞首屏），引擎就绪后自动重取一次，
+  // 否则左侧「分类维度」会一直停留在"暂无数据"，直到用户手动触发刷新。
+  useEffect(() => {
+    const unsubscribe = window.electronAPI?.onOmniStatusChanged?.(status => {
+      const wasRunning = omniRunningRef.current
+      omniRunningRef.current = status.running
+      if (wasRunning === false && status.running && currentWorkspaceDirectory) {
+        logger.info(
+          LogCategory.RENDERER,
+          '[已分析目录] Omni 引擎已就绪，重新加载受控分类维度树'
+        )
+        loadDimensionGroups()
+      }
+    })
+    return () => {
+      if (unsubscribe) unsubscribe()
+    }
+  }, [currentWorkspaceDirectory])
+
 
   // 记录非勾选模式下的单选状态
   useEffect(() => {
@@ -296,7 +359,9 @@ export const useAnalyzedDirectoryState = (
 
   const loadDimensionGroups = async () => {
     const perfKey = 'Load Dimension Groups (Renderer)'
+    const seq = ++dimensionLoadSeqRef.current
     performanceTracker.start(perfKey)
+    let timedOut = false
     try {
       setIsDimensionLoading(true)
 
@@ -305,25 +370,34 @@ export const useAnalyzedDirectoryState = (
         tagValue: tag.tagValue
       }))
 
-      const [response, count] = await Promise.all([
-        (async () => {
-          const start = performance.now()
-          const result = await window.electronAPI!.analyzedDirectory.getDimensionGroups({
-            workspaceDirectoryPath: currentWorkspaceDirectory?.path,
-            removeEmptyTags: true
-          })
-          performanceTracker.record('IPC: getDimensionGroups', performance.now() - start)
-          return result
-        })(),
-        (async () => {
-          const start = performance.now()
-          const result = await window.electronAPI!.analyzedDirectory.getAnalyzedFilesCount(
-            currentWorkspaceDirectory?.path
-          )
-          performanceTracker.record('IPC: getAnalyzedFilesCount', performance.now() - start)
-          return result
-        })()
-      ])
+      const [response, count] = await withTimeout(
+        Promise.all([
+          (async () => {
+            const start = performance.now()
+            const result = await window.electronAPI!.analyzedDirectory.getDimensionGroups({
+              workspaceDirectoryPath: currentWorkspaceDirectory?.path,
+              removeEmptyTags: true
+            })
+            performanceTracker.record('IPC: getDimensionGroups', performance.now() - start)
+            return result
+          })(),
+          (async () => {
+            const start = performance.now()
+            const result = await window.electronAPI!.analyzedDirectory.getAnalyzedFilesCount(
+              currentWorkspaceDirectory?.path
+            )
+            performanceTracker.record('IPC: getAnalyzedFilesCount', performance.now() - start)
+            return result
+          })()
+        ]),
+        DIMENSION_LOAD_TIMEOUT_MS,
+        () => {
+          timedOut = true
+        }
+      )
+
+      // 已被更新的一次加载取代：丢弃过期结果，避免旧数据覆盖新状态
+      if (seq !== dimensionLoadSeqRef.current) return
 
       const groups = response.groups
       if (response.performance) {
@@ -338,11 +412,24 @@ export const useAnalyzedDirectoryState = (
       setDimensionGroups(groups)
       setAnalyzedFilesCount(count)
     } catch (error) {
-      logger.error(LogCategory.RENDERER, 'Failed to load dimension groups:', error)
-      toast.error(t('加载维度分组失败'))
-      setAnalyzedFilesCount(0)
+      if (seq !== dimensionLoadSeqRef.current) return
+      if (timedOut) {
+        // 超时属可观测降级（禁止静默吞异常）：记录 warn 并放开 loading，
+        // 引擎就绪后会由 omni:status-changed 监听自动重取受控维度树。
+        // 刻意不改写 analyzedFilesCount —— 超时无法证明"零已分析文件"，
+        // 误置 0 会让右侧文件区错显"暂无已分析文件"空状态。
+        logger.warn(
+          LogCategory.RENDERER,
+          `[已分析目录] 维度分组加载超时（>${DIMENSION_LOAD_TIMEOUT_MS}ms），本次降级为空维度，等待引擎就绪后自动重试`
+        )
+      } else {
+        logger.error(LogCategory.RENDERER, 'Failed to load dimension groups:', error)
+        toast.error(t('加载维度分组失败'))
+        setAnalyzedFilesCount(0)
+      }
     } finally {
-      setIsDimensionLoading(false)
+      // 仅最新一次请求有权结束 loading，避免并发请求互相踩踏
+      if (seq === dimensionLoadSeqRef.current) setIsDimensionLoading(false)
       performanceTracker.end(perfKey)
     }
   }

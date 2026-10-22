@@ -275,8 +275,8 @@ export function VDirTree({
               const rawName = f.name || ''
 
               if (
-                isUnclassifiedNodeName(rawSmartName) ||
-                isUnclassifiedNodeName(rawName) ||
+                (rawSmartName && isUnclassifiedNodeName(rawSmartName)) ||
+                (rawName && isUnclassifiedNodeName(rawName)) ||
                 f.isUnclassified ||
                 f.unclassified
               ) {
@@ -515,7 +515,7 @@ export function VDirTree({
           onDragStart={(node: any, event: React.DragEvent) => {
             const key = dirKey(node)
             const data = node.isFile
-              ? { type: 'file', file: node }
+              ? { type: 'file', file: node, sourceNodeKey: node.parentKey }
               : { type: 'dir', nodeKey: key, name: node.name }
             event.dataTransfer.setData('application/json', JSON.stringify(data))
             event.dataTransfer.effectAllowed = 'move'

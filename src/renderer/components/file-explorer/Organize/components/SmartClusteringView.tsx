@@ -36,15 +36,61 @@ export interface SmartClusteringViewProps {
   onBack?: () => void
 }
 
-/** 6 组精选场景示例词 */
-const PRESET_EXAMPLE_PROMPTS = [
-  '按年份与财务类型归类',
-  '按项目与设计稿归档',
-  '个人学习与技术笔记',
-  '合同与商务往来凭据',
-  '媒体素材与拍摄产出',
-  '会议纪要与周报总结'
-]
+/**
+ * 6 组精选场景示例词。
+ * 必须通过函数动态返回，确保切换语言后示例词实时刷新（静态字面量中的 t() 不会响应语言变更）。
+ */
+function getPresetExamplePrompts(): string[] {
+  return [
+    t('按年份与财务类型归类'),
+    t('按项目与设计稿归档'),
+    t('个人学习与技术笔记'),
+    t('合同与商务往来凭据'),
+    t('媒体素材与拍摄产出'),
+    t('会议纪要与周报总结')
+  ]
+}
+
+/** 本地日期戳 YYYYMMDD（避免 toLocaleDateString 产生斜杠污染目录名） */
+function formatDateStamp(date = new Date()): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}`
+}
+
+/**
+ * 虚拟目录默认命名策略（ADR-0056 §5）：
+ * 用户提示词 → 最大簇 Top-1 主题词 + “整理” → “智能聚类整理_YYYYMMDD”。
+ */
+function pickDefaultVirtualDirectoryName(
+  prompt: string,
+  tree: VirtualDirectoryNode[]
+): string {
+  const trimmed = prompt.trim()
+  if (trimmed) return trimmed
+
+  const candidates: Array<{ name: string; fileCount: number }> = []
+  const collect = (nodes: VirtualDirectoryNode[]) => {
+    for (const node of nodes) {
+      if (node?.name) {
+        candidates.push({ name: node.name, fileCount: node.fileCount || 0 })
+      }
+      if (node?.subdirectories?.length) collect(node.subdirectories)
+    }
+  }
+  collect(tree)
+
+  candidates.sort((a, b) => b.fileCount - a.fileCount || a.name.localeCompare(b.name))
+  const largest = candidates.find(
+    item =>
+      item.fileCount > 0 &&
+      item.name !== '其他' && // locale-invariant-ok: Omni 聚类兜底目录名哨兵
+      item.name !== t('其他文件')
+  )
+  if (largest) {
+    return t('{name} 整理', { name: largest.name })
+  }
+  return t('智能聚类整理_{date}', { date: formatDateStamp() })
+}
 
 const SmartClusteringViewInner = (
   {
@@ -58,6 +104,7 @@ const SmartClusteringViewInner = (
   ref: React.Ref<SmartClusteringViewHandle>
 ) => {
   const [prompt, setPrompt] = useState<string>('')
+  const presetExamplePrompts = getPresetExamplePrompts()
   const [tree, setTree] = useState<VirtualDirectoryNode[]>([])
   const [isGenerating, setIsGenerating] = useState<boolean>(false)
   const [isTreeDirty, setIsTreeDirty] = useState<boolean>(false)
@@ -254,24 +301,21 @@ const SmartClusteringViewInner = (
   const handleMoveNodeOrFile = useCallback((draggedData: any, targetNodeKey: string) => {
     if (!draggedData || !draggedData.file) return
     const fileToMove = draggedData.file
-    const sourceNodeKey = draggedData.sourceNodeKey
+
+    const isSameFile = (a: any, b: any): boolean => {
+      if (a?.id != null && b?.id != null) return String(a.id) === String(b.id)
+      const aPath = a?.originalPath || a?.path
+      const bPath = b?.originalPath || b?.path
+      return !!aPath && aPath === bPath
+    }
 
     setTree(prev => {
-      // 1. 从原节点移除文件
-      const cleanNodes = (nodes: VirtualDirectoryNode[]): VirtualDirectoryNode[] => {
+      // 1. 从所有节点移除源文件（不依赖拖拽负载是否携带 sourceNodeKey，杜绝“移动变复制”）
+      const removeFromAll = (nodes: VirtualDirectoryNode[]): VirtualDirectoryNode[] => {
         return nodes.map(node => {
-          const curKey = getNodeKey(node)
-          let files = node.files || []
-          if (curKey === sourceNodeKey) {
-            files = files.filter(f => {
-              if (f.id && fileToMove.id) return f.id !== fileToMove.id
-              const fPath = f.originalPath || (f as any).path
-              const mPath = fileToMove.originalPath || fileToMove.path
-              return fPath !== mPath
-            })
-          }
-          const subdirs = node.subdirectories ? cleanNodes(node.subdirectories) : []
-          return { ...node, files, fileCount: files.length, subdirectories: subdirs }
+          const files = (node.files || []).filter(f => !isSameFile(f, fileToMove))
+          const subdirs = node.subdirectories ? removeFromAll(node.subdirectories) : []
+          return { ...node, files, subdirectories: subdirs }
         })
       }
 
@@ -281,23 +325,28 @@ const SmartClusteringViewInner = (
           const curKey = getNodeKey(node)
           let files = node.files || []
           if (curKey === targetNodeKey) {
-            const exists = files.some(f => {
-              if (f.id && fileToMove.id) return f.id === fileToMove.id
-              const fPath = f.originalPath || (f as any).path
-              const mPath = fileToMove.originalPath || fileToMove.path
-              return fPath === mPath
-            })
+            const exists = files.some(f => isSameFile(f, fileToMove))
             if (!exists) {
               files = [...files, fileToMove]
             }
           }
           const subdirs = node.subdirectories ? addFileToTarget(node.subdirectories) : []
-          return { ...node, files, fileCount: files.length, subdirectories: subdirs }
+          return { ...node, files, subdirectories: subdirs }
         })
       }
 
-      const cleaned = cleanNodes(prev)
-      return addFileToTarget(cleaned)
+      // 3. 自底向上重算 fileCount（嵌套目录需计入子目录文件数）
+      const recomputeFileCounts = (nodes: VirtualDirectoryNode[]): VirtualDirectoryNode[] => {
+        return nodes.map(node => {
+          const subdirs = recomputeFileCounts(node.subdirectories || [])
+          const files = node.files || []
+          const fileCount =
+            files.length + subdirs.reduce((sum, sub) => sum + (sub.fileCount || 0), 0)
+          return { ...node, files, subdirectories: subdirs, fileCount }
+        })
+      }
+
+      return recomputeFileCounts(addFileToTarget(removeFromAll(prev)))
     })
     setIsTreeDirty(true)
   }, [])
@@ -307,11 +356,7 @@ const SmartClusteringViewInner = (
     if (tree.length === 0 || isSaving) return
     setIsSaving(true)
     try {
-      const vdirName =
-        prompt.trim() ||
-        t('智能聚类整理 {date}', {
-          date: new Date().toLocaleDateString()
-        })
+      const vdirName = pickDefaultVirtualDirectoryName(prompt, tree)
       await onSaveVirtualDirectory(vdirName, tree)
     } finally {
       setIsSaving(false)
@@ -417,7 +462,7 @@ const SmartClusteringViewInner = (
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
-            {PRESET_EXAMPLE_PROMPTS.map((ex, idx) => (
+            {presetExamplePrompts.map((ex, idx) => (
               <button
                 key={idx}
                 type="button"

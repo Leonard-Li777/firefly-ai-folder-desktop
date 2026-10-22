@@ -623,7 +623,9 @@ const electronAPI = {
   setCurrentWorkspaceDirectory: (path: string): Promise<void> =>
     ipcRenderer.invoke('set-current-workspace-directory', path),
 
-  deleteWorkspaceDirectory: (path: string): Promise<{ success: boolean; error?: string }> =>
+  deleteWorkspaceDirectory: (
+    path: string
+  ): Promise<{ success: boolean; error?: string; warning?: string }> =>
     ipcRenderer.invoke('delete-workspace-directory', path),
 
   resetWorkspaceDirectory: (directoryPath: string): Promise<void> =>
