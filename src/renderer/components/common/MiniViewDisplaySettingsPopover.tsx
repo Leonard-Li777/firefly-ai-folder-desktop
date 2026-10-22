@@ -227,10 +227,10 @@ export const MiniViewDisplaySettingsPopover: React.FC<MiniViewDisplaySettingsPop
       const gridShowFullFileName = getConfigValue<boolean>('GRID_SHOW_FULL_FILE_NAME') ?? false
       const showMissingFiles = getConfigValue<boolean>('SHOW_MISSING_FILES') ?? true
 
-      const isListMode = viewMode === 'list' || viewMode === 'search-list'
-      const effectiveMin = isListMode ? 88 : min
-      const effectiveMax = isListMode ? 240 : max
-      const effectiveDefault = isListMode ? 104 : defaultValue
+      const isSearchListMode = viewMode === 'search-list'
+      const effectiveMin = isSearchListMode ? 88 : min
+      const effectiveMax = isSearchListMode ? 220 : max
+      const effectiveDefault = isSearchListMode ? 104 : defaultValue
 
       // 计算当前进度百分比
       const sliderPercentage = useMemo(() => {
@@ -239,7 +239,7 @@ export const MiniViewDisplaySettingsPopover: React.FC<MiniViewDisplaySettingsPop
       }, [gridCardWidth, effectiveMin, effectiveMax])
 
       // 动态尺寸标题
-      const sizeTitle = isListMode ? t('列表行高大小') : t('卡片缩放大小')
+      const sizeTitle = isSearchListMode ? t('列表行高大小') : t('卡片缩放大小')
 
       return (
         <div className={`relative inline-flex items-center ${className}`}>

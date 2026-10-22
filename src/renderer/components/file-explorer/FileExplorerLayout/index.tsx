@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { FileItem, DirectoryItem } from '@firefly/types'
 import { FileList } from '../FileList'
+import { SEARCH_LIST_ROW_HEIGHT } from '../FileList/components/SearchListCard'
 import { FileDetailsPanel } from '../FileDetailsPanel'
 import { FilePreviewPanel } from '../FilePreviewPanel'
 import { SplitPreviewPanel } from '../SplitPreviewPanel'
@@ -277,11 +278,13 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
     try {
       const saved = localStorage.getItem(pageCardWidthKey)
       if (saved) return Number(saved)
-      // 若当前视图未单独配置过，则尝试使用通用的全局上一次配置
+      // 若当前视图未单独配置过，搜索列表专属默认高度为 SEARCH_LIST_ROW_HEIGHT (104px)
+      if (currentViewMode === 'search-list') return SEARCH_LIST_ROW_HEIGHT
+      // 其它视图尝试使用通用的全局上一次配置
       const globalSaved = localStorage.getItem('file_explorer_grid_card_width')
       return globalSaved ? Number(globalSaved) : 120
     } catch (e) {
-      return 120
+      return currentViewMode === 'search-list' ? SEARCH_LIST_ROW_HEIGHT : 120
     }
   })
 
@@ -291,23 +294,30 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
       const saved = localStorage.getItem(pageCardWidthKey)
       if (saved) {
         setGridCardWidth(Number(saved))
+      } else if (currentViewMode === 'search-list') {
+        setGridCardWidth(SEARCH_LIST_ROW_HEIGHT)
+      } else {
+        const globalSaved = localStorage.getItem('file_explorer_grid_card_width')
+        setGridCardWidth(globalSaved ? Number(globalSaved) : 120)
       }
     } catch (e) {
       // Ignore
     }
-  }, [pageCardWidthKey])
+  }, [pageCardWidthKey, currentViewMode])
 
   const handleGridCardWidthChange = useCallback(
     (newWidth: number) => {
       setGridCardWidth(newWidth)
       try {
         localStorage.setItem(pageCardWidthKey, String(newWidth))
-        localStorage.setItem('file_explorer_grid_card_width', String(newWidth))
+        if (currentViewMode !== 'search-list') {
+          localStorage.setItem('file_explorer_grid_card_width', String(newWidth))
+        }
       } catch (e) {
         // Ignore localStorage errors
       }
     },
-    [pageCardWidthKey]
+    [pageCardWidthKey, currentViewMode]
   )
 
   const layoutContext: FileExplorerLayoutContext = useMemo(

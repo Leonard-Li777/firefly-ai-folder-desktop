@@ -676,9 +676,9 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
   // 搜索列表模式：专属搜索卡片视图，挂载于 VirtualRowRenderer 之下，支持万级结果虚拟滚动与触底翻页
   if (viewMode === 'search-list') {
     const listHeight = containerSize.height > 0 ? containerSize.height : 0
-    // 搜索列表动态行高：由 gridCardWidth 控制（88~240px），缺省 104px
+    // 搜索列表动态行高：由 gridCardWidth 控制（88~220px），缺省 104px
     const effectiveSearchListRowHeight = Math.round(
-      Math.max(88, Math.min(240, gridCardWidth || SEARCH_LIST_ROW_HEIGHT))
+      Math.max(88, Math.min(220, gridCardWidth || SEARCH_LIST_ROW_HEIGHT))
     )
 
     return (

@@ -125,11 +125,11 @@ const VideoChunkFrame: React.FC<{
     }
   }
 
-    const frameWidth = Math.round(frameHeight * (16 / 9))
-    return (
-      <div
-        style={{ height: `${frameHeight}px`, width: `${frameWidth}px` }}
-        className="relative shrink-0 overflow-hidden bg-black/70 rounded border border-border/60 hover:border-primary/90 hover:ring-1 hover:ring-primary/80 transition-all cursor-pointer group/chunk select-none flex items-center justify-center"
+  const frameWidth = Math.round(frameHeight * (16 / 9))
+  return (
+    <div
+      style={{ height: `${frameHeight}px`, width: `${frameWidth}px` }}
+      className="relative shrink-0 overflow-hidden bg-black/70 rounded border border-border/60 hover:border-primary/90 hover:ring-1 hover:ring-primary/80 transition-all cursor-pointer group/chunk select-none flex items-center justify-center"
       title={frameTooltip}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
@@ -259,7 +259,7 @@ interface SearchListCardProps {
   searchTokens?: string[]
   /** 工作目录绝对路径（用于将缩略图相对路径转换为真实物理路径） */
   workspaceDirectoryPath?: string | null
-  /** 卡片动态行高（88~240px，默认 104px） */
+  /** 卡片动态行高（88~220px，默认 104px） */
   cardHeight?: number
 }
 
@@ -503,7 +503,7 @@ export const SearchListCard = React.memo(
       return []
     }, [hasMatchedChunks, item.matchedChunks, item.matchedChunk])
 
-    const effectiveCardHeight = cardHeight && cardHeight >= 80 ? cardHeight : 104
+    const effectiveCardHeight = cardHeight && cardHeight >= 80 ? Math.min(220, cardHeight) : 104
     // 左侧缩略图尺寸随行高弹性放大（行高 104 时为 64px，最大 140px）
     const mediaSize = Math.max(56, Math.min(140, Math.round(effectiveCardHeight * 0.65)))
     // 视频抽帧高度：按 16:9 比例等比变大变清晰（基准 38px，最大 80px）
@@ -676,6 +676,7 @@ export const SearchListCard = React.memo(
                     chunk={chunk}
                     filePath={item.path}
                     category={(item as any).category}
+                    frameHeight={chunkFrameHeight}
                     onPreviewSeek={handlePreviewSeek}
                     onItemSelect={handleChunkSelect}
                   />
