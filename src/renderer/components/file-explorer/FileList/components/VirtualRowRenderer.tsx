@@ -53,6 +53,8 @@ interface VirtualRowRendererInnerProps {
   containerWidth?: number
   /** 当前工作区目录路径（用于卡片缩略图拼接绝对物理路径） */
   workspaceDirectoryPath?: string | null
+  /** 搜索列表动态行高（88~240px，默认 104px） */
+  searchListRowHeight?: number
 }
 
 const areEqual = (
@@ -66,6 +68,7 @@ const areEqual = (
     prevProps.index !== nextProps.index ||
     prevProps.itemPath !== nextProps.itemPath ||
     prevProps.workspaceDirectoryPath !== nextProps.workspaceDirectoryPath ||
+    prevProps.searchListRowHeight !== nextProps.searchListRowHeight ||
     prevProps.showsmartName !== nextProps.showsmartName ||
     prevProps.swapFileNameDisplay !== nextProps.swapFileNameDisplay ||
     prevProps.totalWidth !== nextProps.totalWidth ||
@@ -143,7 +146,8 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
     pageId,
     viewMode,
     onFileDoubleClick,
-    workspaceDirectoryPath
+    workspaceDirectoryPath,
+    searchListRowHeight
   } = props
 
   const selectedFilesRef = useRef(selectedFiles)
@@ -305,6 +309,7 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
           index={index}
           pageId={pageId}
           workspaceDirectoryPath={workspaceDirectoryPath}
+          cardHeight={searchListRowHeight}
         />
       </div>
     )
@@ -766,6 +771,7 @@ const areVirtualRowPropsEqual = (prevProps: RowRendererProps, nextProps: RowRend
   if (prevData.swapFileNameDisplay !== nextData.swapFileNameDisplay) return false
   if (prevData.totalWidth !== nextData.totalWidth) return false
   if (prevData.listRowHeight !== nextData.listRowHeight) return false
+  if (prevData.searchListRowHeight !== nextData.searchListRowHeight) return false
   if (prevData.listFontSize !== nextData.listFontSize) return false
   if (prevData.selectionEnabled !== nextData.selectionEnabled) return false
   if (prevData.containerWidth !== nextData.containerWidth) return false
@@ -874,6 +880,7 @@ export const VirtualRowRenderer = React.memo(({ index, style, data }: RowRendere
         onFileDoubleClick={onFileDoubleClick}
         containerWidth={data.containerWidth}
         workspaceDirectoryPath={workspaceDirectoryPath}
+        searchListRowHeight={data.searchListRowHeight}
       />
     </div>
   )

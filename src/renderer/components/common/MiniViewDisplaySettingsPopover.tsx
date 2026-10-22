@@ -227,14 +227,19 @@ export const MiniViewDisplaySettingsPopover: React.FC<MiniViewDisplaySettingsPop
       const gridShowFullFileName = getConfigValue<boolean>('GRID_SHOW_FULL_FILE_NAME') ?? false
       const showMissingFiles = getConfigValue<boolean>('SHOW_MISSING_FILES') ?? true
 
+      const isListMode = viewMode === 'list' || viewMode === 'search-list'
+      const effectiveMin = isListMode ? 88 : min
+      const effectiveMax = isListMode ? 240 : max
+      const effectiveDefault = isListMode ? 104 : defaultValue
+
       // 计算当前进度百分比
       const sliderPercentage = useMemo(() => {
-        const clamped = Math.min(max, Math.max(min, gridCardWidth))
-        return ((clamped - min) / (max - min)) * 100
-      }, [gridCardWidth, min, max])
+        const clamped = Math.min(effectiveMax, Math.max(effectiveMin, gridCardWidth))
+        return ((clamped - effectiveMin) / (effectiveMax - effectiveMin)) * 100
+      }, [gridCardWidth, effectiveMin, effectiveMax])
 
       // 动态尺寸标题
-      const sizeTitle = viewMode === 'list' ? t('列表行高大小') : t('卡片缩放大小')
+      const sizeTitle = isListMode ? t('列表行高大小') : t('卡片缩放大小')
 
       return (
         <div className={`relative inline-flex items-center ${className}`}>
@@ -250,7 +255,11 @@ export const MiniViewDisplaySettingsPopover: React.FC<MiniViewDisplaySettingsPop
           >
             <MaterialIcon
               icon={
-                viewMode === 'list' ? 'view_list' : viewMode === 'grid' ? 'grid_view' : 'dashboard'
+                viewMode === 'list' || viewMode === 'search-list'
+                  ? 'view_list'
+                  : viewMode === 'grid'
+                    ? 'grid_view'
+                    : 'dashboard'
               }
               className="text-lg"
             />
@@ -275,12 +284,12 @@ export const MiniViewDisplaySettingsPopover: React.FC<MiniViewDisplaySettingsPop
                       {t('视图模式')}
                     </span>
                     <span className="text-[11px] font-medium text-foreground/80">
-                      {viewModeOptions.find(o => o.value === viewMode)?.label}
+                      {viewModeOptions.find(o => o.value === viewMode || (o.value === 'list' && viewMode === 'search-list'))?.label}
                     </span>
                   </div>
                   <div className="grid grid-cols-3 gap-1.5 bg-muted/40 p-1 rounded-xl border border-border/40">
                     {viewModeOptions.map(option => {
-                      const isSelected = viewMode === option.value
+                      const isSelected = viewMode === option.value || (option.value === 'list' && viewMode === 'search-list')
                       return (
                         <button
                           key={option.value}
@@ -313,9 +322,9 @@ export const MiniViewDisplaySettingsPopover: React.FC<MiniViewDisplaySettingsPop
                       </span>
                       <button
                         type="button"
-                        onClick={() => onGridCardWidthChange(defaultValue)}
+                        onClick={() => onGridCardWidthChange(effectiveDefault)}
                         className="text-[11px] text-primary hover:underline cursor-pointer disabled:opacity-40"
-                        disabled={gridCardWidth === defaultValue}
+                        disabled={gridCardWidth === effectiveDefault}
                       >
                         {t('重置')}
                       </button>
@@ -329,8 +338,8 @@ export const MiniViewDisplaySettingsPopover: React.FC<MiniViewDisplaySettingsPop
                       <button
                         type="button"
                         className="p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer disabled:opacity-30 transition-colors shrink-0"
-                        disabled={gridCardWidth <= min}
-                        onClick={() => onGridCardWidthChange(Math.max(min, gridCardWidth - 10))}
+                        disabled={gridCardWidth <= effectiveMin}
+                        onClick={() => onGridCardWidthChange(Math.max(effectiveMin, gridCardWidth - 10))}
                         title={t('缩小')}
                       >
                         <div className="w-2.5 h-2.5 rounded-[2px] border-2 border-current" />
@@ -340,8 +349,8 @@ export const MiniViewDisplaySettingsPopover: React.FC<MiniViewDisplaySettingsPop
                       <div className="relative flex-1 flex items-center h-4">
                         <input
                           type="range"
-                          min={min}
-                          max={max}
+                          min={effectiveMin}
+                          max={effectiveMax}
                           step={step}
                           value={gridCardWidth}
                           onChange={e => onGridCardWidthChange(Number(e.target.value))}
@@ -356,8 +365,8 @@ export const MiniViewDisplaySettingsPopover: React.FC<MiniViewDisplaySettingsPop
                       <button
                         type="button"
                         className="p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer disabled:opacity-30 transition-colors shrink-0"
-                        disabled={gridCardWidth >= max}
-                        onClick={() => onGridCardWidthChange(Math.min(max, gridCardWidth + 10))}
+                        disabled={gridCardWidth >= effectiveMax}
+                        onClick={() => onGridCardWidthChange(Math.min(effectiveMax, gridCardWidth + 10))}
                         title={t('放大')}
                       >
                         <div className="w-3.5 h-3.5 rounded-[2px] border-2 border-current" />
@@ -370,9 +379,9 @@ export const MiniViewDisplaySettingsPopover: React.FC<MiniViewDisplaySettingsPop
                       <span
                         className={cn(
                           'cursor-pointer hover:text-primary transition-colors',
-                          Math.abs(gridCardWidth - defaultValue) <= 5 && 'text-primary font-semibold'
+                          Math.abs(gridCardWidth - effectiveDefault) <= 5 && 'text-primary font-semibold'
                         )}
-                        onClick={() => onGridCardWidthChange(defaultValue)}
+                        onClick={() => onGridCardWidthChange(effectiveDefault)}
                       >
                         {t('默认')}
                       </span>

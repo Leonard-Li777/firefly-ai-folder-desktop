@@ -939,7 +939,8 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                 }}
                 placeholder={SEARCH_PLACEHOLDERS[currentPlaceholderIndex]}
                 className={cn(
-                  'w-full h-9 rounded-full pl-8.5 pr-8 text-xs transition-all duration-200 ease-out select-text',
+                  'w-full h-9 rounded-full pl-8.5 text-xs transition-all duration-200 ease-out select-text',
+                  localSearchInput ? 'pr-26' : 'pr-8',
                   'bg-background/90 dark:bg-background/60',
                   // 默认无边框：仅在聚焦或已输入搜索文本时高亮显示边框
                   'border border-transparent',
@@ -953,6 +954,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
               />
               {localSearchInput ? (
                 <button
+                  type="button"
                   onClick={() => {
                     setLocalSearchInput('')
                     clearGlobalSearch()
@@ -960,10 +962,16 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                     setActiveSuggestionIndex(-1)
                     searchInputRef.current?.focus()
                   }}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full flex items-center justify-center text-muted-foreground/60 hover:text-foreground hover:bg-muted transition-colors cursor-pointer z-10"
-                  title={t('清除搜索')}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 h-6 px-2 rounded-full flex items-center gap-1 bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground text-[11px] font-medium transition-all duration-150 cursor-pointer border border-border/50 hover:border-border active:scale-95 z-10 shadow-2xs"
+                  title={t('退出搜索 (ESC)')}
                 >
-                  <MaterialIcon icon="close" className="text-[13px]" />
+                  <MaterialIcon icon="close" className="text-xs shrink-0" />
+                  <span className="hidden sm:inline leading-none whitespace-nowrap">
+                    {t('退出搜索')}
+                  </span>
+                  <kbd className="text-[9px] font-mono leading-none text-muted-foreground/80 bg-background/80 dark:bg-black/30 px-1 py-0.5 rounded border border-border/40 ml-0.5 shrink-0">
+                    ESC
+                  </kbd>
                 </button>
               ) : (
                 <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono text-muted-foreground/40 bg-muted/40 dark:bg-white/[0.06] px-1.5 py-0.5 rounded border border-border/30 select-none pointer-events-none hidden sm:inline-flex z-10">

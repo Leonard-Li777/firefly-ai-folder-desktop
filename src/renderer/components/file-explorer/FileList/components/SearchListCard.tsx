@@ -70,9 +70,10 @@ const VideoChunkFrame: React.FC<{
   }
   filePath: string
   category?: any
+  frameHeight?: number
   onPreviewSeek: (startSec: number, endSec: number) => void
   onItemSelect?: (e: React.MouseEvent) => void
-}> = ({ chunk, filePath, category, onPreviewSeek, onItemSelect }) => {
+}> = ({ chunk, filePath, category, frameHeight = 38, onPreviewSeek, onItemSelect }) => {
   const [hasError, setHasError] = useState(false)
 
   const videoUrl = useMemo(() => {
@@ -124,9 +125,11 @@ const VideoChunkFrame: React.FC<{
     }
   }
 
-  return (
-    <div
-      className="relative shrink-0 overflow-hidden bg-black/70 rounded border border-border/60 hover:border-primary/90 hover:ring-1 hover:ring-primary/80 transition-all cursor-pointer group/chunk select-none h-[38px] w-[68px] flex items-center justify-center"
+    const frameWidth = Math.round(frameHeight * (16 / 9))
+    return (
+      <div
+        style={{ height: `${frameHeight}px`, width: `${frameWidth}px` }}
+        className="relative shrink-0 overflow-hidden bg-black/70 rounded border border-border/60 hover:border-primary/90 hover:ring-1 hover:ring-primary/80 transition-all cursor-pointer group/chunk select-none flex items-center justify-center"
       title={frameTooltip}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
@@ -256,6 +259,8 @@ interface SearchListCardProps {
   searchTokens?: string[]
   /** 工作目录绝对路径（用于将缩略图相对路径转换为真实物理路径） */
   workspaceDirectoryPath?: string | null
+  /** 卡片动态行高（88~240px，默认 104px） */
+  cardHeight?: number
 }
 
 /**
@@ -279,7 +284,8 @@ export const SearchListCard = React.memo(
     pageId,
     searchKeyword: propKeyword,
     searchTokens: propTokens,
-    workspaceDirectoryPath
+    workspaceDirectoryPath,
+    cardHeight
   }: SearchListCardProps) => {
     const [isQueueSubmitting, setIsQueueSubmitting] = useState(false)
     const [useFallbackImg, setUseFallbackImg] = useState(false)
@@ -497,19 +503,26 @@ export const SearchListCard = React.memo(
       return []
     }, [hasMatchedChunks, item.matchedChunks, item.matchedChunk])
 
+    const effectiveCardHeight = cardHeight && cardHeight >= 80 ? cardHeight : 104
+    // 左侧缩略图尺寸随行高弹性放大（行高 104 时为 64px，最大 140px）
+    const mediaSize = Math.max(56, Math.min(140, Math.round(effectiveCardHeight * 0.65)))
+    // 视频抽帧高度：按 16:9 比例等比变大变清晰（基准 38px，最大 80px）
+    const chunkFrameHeight = Math.max(34, Math.min(80, Math.round((effectiveCardHeight - 60) * 0.7)))
+
     // 图片多模态描述内容
     const imageDesc = item.multimodalContent || item.description || ''
 
     return (
       <div
         className={cn(
-          'w-full box-border h-[104px] px-4 py-2 flex items-center gap-3 border-b border-border/30 select-none transition-colors duration-150',
+          'w-full box-border px-4 py-2 flex items-center gap-3 border-b border-border/30 select-none transition-colors duration-150',
           'search-list-card overflow-hidden',
           isUnanalyzed && 'bg-amber-500/[0.02] dark:bg-amber-950/10',
           isRowActive
             ? 'bg-primary/10 dark:bg-primary/20 border-l-[3px] border-l-primary pl-[13px]'
             : 'hover:bg-accent/40 dark:hover:bg-accent/30'
         )}
+        style={{ height: `${effectiveCardHeight}px` }}
         data-index={index}
         data-path={item.path}
         onClick={e => onItemClick(index, e)}
@@ -519,7 +532,10 @@ export const SearchListCard = React.memo(
         {/* ======================================================== */}
         {/* 左侧：64×64px 媒体缩略图 / 系统分类图标区 */}
         {/* ======================================================== */}
-        <div className="w-[64px] h-[64px] shrink-0 flex items-center justify-center overflow-hidden rounded-md border border-border/40 bg-muted/20">
+        <div
+          style={{ width: `${mediaSize}px`, height: `${mediaSize}px` }}
+          className="shrink-0 flex items-center justify-center overflow-hidden rounded-md border border-border/40 bg-muted/20"
+        >
           {isImage && activeImageUrl && !imgError ? (
             <img
               src={activeImageUrl}
@@ -547,7 +563,10 @@ export const SearchListCard = React.memo(
         {/* ======================================================== */}
         {/* 右侧：高度定准 87px，严格三行式信息流 */}
         {/* ======================================================== */}
-        <div className="flex-1 min-w-0 flex flex-col justify-between h-[87px] overflow-hidden">
+        <div
+          style={{ height: `${effectiveCardHeight - 16}px` }}
+          className="flex-1 min-w-0 flex flex-col justify-between overflow-hidden"
+        >
           {/* ------------------------------------------------------ */}
           {/* 第一行 (Row 1, 22px)：主文件名 + 双层 Flex 绝对右对齐度量列 */}
           {/* ------------------------------------------------------ */}
@@ -647,7 +666,7 @@ export const SearchListCard = React.memo(
           {/* ------------------------------------------------------ */}
           {/* 第三行 (Row 3, 42px)：类型化专有内容（文本/图片/视频/音频） */}
           {/* ------------------------------------------------------ */}
-          <div className="w-full h-[42px] flex items-center min-w-0 overflow-hidden">
+          <div className="w-full flex-1 min-h-0 flex items-center min-w-0 overflow-hidden">
             {/* 分支 1: 视频微缩抽帧序列 */}
             {isVideo && videoChunks.length > 0 ? (
               <div className="w-full h-full flex items-center gap-2 overflow-x-auto overflow-y-hidden no-scrollbar py-0.5">
@@ -681,10 +700,18 @@ export const SearchListCard = React.memo(
               </div>
             ) : isImage && imageDesc ? (
               /* 分支 3: 图片多模态 AI 描述 */
-              <div className="flex items-center gap-1.5 text-xs text-foreground/80 min-w-0 truncate" title={imageDesc}>
-                <MaterialIcon icon="auto_awesome" className="text-xs text-violet-500 shrink-0" />
-                <span className="text-muted-foreground/80 shrink-0 text-[11px]">{t('AI描述')}:</span>
-                <span className="truncate">{imageDesc}</span>
+              <div
+                className={cn(
+                  'text-xs text-foreground/80 overflow-hidden leading-relaxed break-words w-full',
+                  effectiveCardHeight > 170 ? 'line-clamp-6' : effectiveCardHeight > 135 ? 'line-clamp-4' : 'line-clamp-2'
+                )}
+                title={imageDesc}
+              >
+                <span className="inline-flex items-center gap-1 text-primary font-medium mr-1.5 select-none">
+                  <MaterialIcon icon="auto_awesome" className="text-xs text-violet-500" />
+                  {t('AI描述')}:
+                </span>
+                <HighlightText text={imageDesc} />
               </div>
             ) : isUnanalyzed ? (
               /* 分支 4: 未分析状态提示与立即分析按钮 */
@@ -703,13 +730,22 @@ export const SearchListCard = React.memo(
             ) : item.snippet ? (
               /* 分支 5: 文本富高亮摘要 */
               <p
-                className="text-xs text-foreground/80 leading-snug line-clamp-2 [&_mark]:bg-amber-300/60 [&_mark]:dark:bg-amber-400/30 [&_mark]:text-amber-950 [&_mark]:dark:text-amber-100 [&_mark]:font-semibold [&_mark]:rounded-sm [&_mark]:px-0.5 overflow-hidden"
+                className={cn(
+                  'text-xs text-foreground/80 leading-snug [&_mark]:bg-amber-300/60 [&_mark]:dark:bg-amber-400/30 [&_mark]:text-amber-950 [&_mark]:dark:text-amber-100 [&_mark]:font-semibold [&_mark]:rounded-sm [&_mark]:px-0.5 overflow-hidden',
+                  effectiveCardHeight > 170 ? 'line-clamp-6' : effectiveCardHeight > 135 ? 'line-clamp-4' : 'line-clamp-2'
+                )}
                 title={item.snippet.replace(/<[^>]+>/g, '')}
                 dangerouslySetInnerHTML={{ __html: sanitizeSnippetHtml(item.snippet) }}
               />
             ) : item.description ? (
               /* 分支 6: 普通文件描述 */
-              <p className="text-xs text-foreground/75 leading-snug truncate" title={item.description}>
+              <p
+                className={cn(
+                  'text-xs text-foreground/75 leading-snug overflow-hidden',
+                  effectiveCardHeight > 170 ? 'line-clamp-6' : effectiveCardHeight > 135 ? 'line-clamp-4' : 'line-clamp-2'
+                )}
+                title={item.description}
+              >
                 <HighlightText text={item.description} />
               </p>
             ) : (

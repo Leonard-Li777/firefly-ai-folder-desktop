@@ -676,6 +676,10 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
   // 搜索列表模式：专属搜索卡片视图，挂载于 VirtualRowRenderer 之下，支持万级结果虚拟滚动与触底翻页
   if (viewMode === 'search-list') {
     const listHeight = containerSize.height > 0 ? containerSize.height : 0
+    // 搜索列表动态行高：由 gridCardWidth 控制（88~240px），缺省 104px
+    const effectiveSearchListRowHeight = Math.round(
+      Math.max(88, Math.min(240, gridCardWidth || SEARCH_LIST_ROW_HEIGHT))
+    )
 
     return (
       <div
@@ -715,7 +719,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
               <ListComponent
                 height={listHeight}
                 rowCount={searchListItems.length}
-                rowHeight={SEARCH_LIST_ROW_HEIGHT}
+                rowHeight={effectiveSearchListRowHeight}
                 width={containerSize.width || '100%'}
                 className="scrollbar-thin overflow-x-hidden"
                 listRef={listRef}
@@ -724,7 +728,8 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
                     ...itemData,
                     items: searchListItems,
                     viewMode: 'search-list',
-                    containerWidth: containerSize.width
+                    containerWidth: containerSize.width,
+                    searchListRowHeight: effectiveSearchListRowHeight
                   }
                 }}
                 rowComponent={VirtualRowRenderer}
@@ -734,7 +739,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
               <ListComponent
                 height={listHeight}
                 itemCount={searchListItems.length}
-                itemSize={SEARCH_LIST_ROW_HEIGHT}
+                itemSize={effectiveSearchListRowHeight}
                 width={containerSize.width || '100%'}
                 className="scrollbar-thin overflow-x-hidden"
                 ref={listRef}
@@ -744,7 +749,8 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
                   ...itemData,
                   items: searchListItems,
                   viewMode: 'search-list',
-                  containerWidth: containerSize.width
+                  containerWidth: containerSize.width,
+                  searchListRowHeight: effectiveSearchListRowHeight
                 }}
                 onScroll={onListScroll}
               >

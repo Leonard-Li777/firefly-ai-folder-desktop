@@ -11,6 +11,7 @@ import i18nScope, { t } from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
 import { logger, LogCategory } from '@firefly/shared'
 import { SEARCH_LIST_ROW_HEIGHT } from '../FileList/components/SearchListCard'
+import { MiniViewDisplaySettingsPopover } from '../../common/MiniViewDisplaySettingsPopover'
 
 interface GlobalSearchOverlayProps {
   workspaceDirectory: WorkspaceDirectory | null
@@ -29,7 +30,24 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
   const [activeItem, setActiveItem] = useState<FileItem | null>(null)
   const [selectedFiles, setSelectedFiles] = useState<FileItem[]>([])
   const [showDetailsPanel, setShowDetailsPanel] = useState(true)
-  const [viewMode, setViewMode] = useState<ViewMode>('search-list')
+  const SEARCH_OVERLAY_VIEW_KEY = 'page_view_mode_search_overlay'
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    try {
+      const saved = localStorage.getItem(SEARCH_OVERLAY_VIEW_KEY)
+      if (saved && ['search-list', 'list', 'grid', 'waterfall'].includes(saved)) {
+        return saved === 'list' ? 'search-list' : (saved as ViewMode)
+      }
+    } catch (e) {}
+    return 'search-list'
+  })
+
+  const handleViewModeChange = useCallback((mode: ViewMode) => {
+    const targetMode = mode === 'list' ? 'search-list' : mode
+    setViewMode(targetMode)
+    try {
+      localStorage.setItem(SEARCH_OVERLAY_VIEW_KEY, targetMode)
+    } catch (e) {}
+  }, [])
 
   type SearchPhase = 'idle' | 'phase1_done_analyzing_semantic'
   const [searchPhase, setSearchPhase] = useState<SearchPhase>('idle')
@@ -316,7 +334,7 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
     <div
       ref={overlayContainerRef}
       className={cn(
-        'fixed inset-x-0 bottom-0 z-40 bg-background flex flex-col overflow-hidden',
+        'absolute inset-x-0 bottom-0 z-30 bg-background flex flex-col overflow-hidden',
         'animate-in fade-in duration-200'
       )}
       style={{ top: 'var(--app-header-height, 53px)' }}
@@ -329,45 +347,7 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
         )}
       />
 
-      {/* 顶部搜索状态与操作引导条 */}
-      <div className="flex-shrink-0 h-9 px-4 flex items-center justify-between border-b border-border/60 bg-muted/40 dark:bg-muted/20 text-xs">
-        <div className="flex items-center gap-2 min-w-0 flex-1">
-          <MaterialIcon icon="travel_explore" className="text-primary text-base flex-shrink-0" />
-          <span className="text-muted-foreground whitespace-nowrap text-xs">
-            {t('全域搜索:')}
-          </span>
-          <span className="font-semibold text-foreground truncate max-w-[160px] sm:max-w-[280px] md:max-w-[400px]">
-            "{keyword}"
-          </span>
-          <span className="text-muted-foreground/80 text-[11px] whitespace-nowrap hidden sm:inline">
-            {t('（共 {count} 项，包含未分析与已分析文件）', { count: searchResults.length })}
-          </span>
-          <span className="text-muted-foreground/80 text-[11px] whitespace-nowrap sm:hidden">
-            {t('（{count} 项）', { count: searchResults.length })}
-          </span>
-          {searchPhase === 'phase1_done_analyzing_semantic' && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20 whitespace-nowrap shrink-0 animate-pulse flex items-center gap-1">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-violet-500 animate-ping" />
-              {t('深度语义对齐中...')}
-            </span>
-          )}
-          {searchResults.length >= 500 && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 whitespace-nowrap shrink-0">
-              {t('前 500 项')}
-            </span>
-          )}
-        </div>
 
-        <button
-          onClick={() => clearGlobalSearch()}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/80 active:scale-95 transition-all cursor-pointer select-none border border-border/40 shrink-0 ml-2"
-          title={t('退出全域搜索 (ESC)')}
-        >
-          <MaterialIcon icon="close" className="text-sm" />
-          <span className="text-xs font-medium">{t('退出搜索')}</span>
-          <kbd className="hidden sm:inline-block text-[10px] font-mono text-muted-foreground/70 bg-muted px-1 rounded border border-border/40">ESC</kbd>
-        </button>
-      </div>
 
       {/* 核心三栏同构布局: FileList | SplitPreviewPanel | FileDetailsPanel，未选择工作空间时渲染 EmptyState */}
       <div className="flex-1 overflow-hidden relative">
@@ -386,7 +366,7 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
             onFileSelect={handleFileSelect}
             onFileDoubleClick={handleFileDoubleClick}
             viewMode={viewMode}
-            onViewModeChange={setViewMode}
+            onViewModeChange={handleViewModeChange}
             showPreviewPanel={true}
             showDetailsPanel={showDetailsPanel}
             onCloseDetailsPanel={() => setShowDetailsPanel(false)}
@@ -398,6 +378,53 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
             isLoading={isLoading}
             workspaceDirectoryPath={workspaceDirectory?.path}
             workspaceDirectoryType={workspaceDirectory?.type}
+            renderToolbar={layoutContext => (
+              <div className="flex-shrink-0 border-b border-border px-3 py-1.5 flex items-center justify-between bg-card gap-2 min-h-[44px]">
+                {/* 左侧：全域搜索状态与统计 */}
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <MaterialIcon icon="travel_explore" className="text-primary text-base flex-shrink-0" />
+                  <span className="text-muted-foreground whitespace-nowrap text-xs">
+                    {t('全域搜索:')}
+                  </span>
+                  <span className="font-semibold text-foreground truncate max-w-[120px] sm:max-w-[200px] md:max-w-[320px]">
+                    "{keyword}"
+                  </span>
+                  <span className="text-muted-foreground/80 text-[11px] whitespace-nowrap hidden sm:inline">
+                    {t('（共 {count} 项，包含未分析与已分析文件）', { count: searchResults.length })}
+                  </span>
+                  <span className="text-muted-foreground/80 text-[11px] whitespace-nowrap sm:hidden">
+                    {t('（{count} 项）', { count: searchResults.length })}
+                  </span>
+                  {searchPhase === 'phase1_done_analyzing_semantic' && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20 whitespace-nowrap shrink-0 animate-pulse flex items-center gap-1">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-violet-500 animate-ping" />
+                      {t('深度语义对齐中...')}
+                    </span>
+                  )}
+                  {searchResults.length >= 500 && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 whitespace-nowrap shrink-0">
+                      {t('前 500 项')}
+                    </span>
+                  )}
+                </div>
+
+                {/* 右侧：视图模式与显示设置 Mini 下拉弹窗 */}
+                <div className="flex items-center gap-2 text-foreground dark:text-foreground shrink-0">
+                  <MiniViewDisplaySettingsPopover
+                    viewMode={layoutContext.viewMode}
+                    onViewModeChange={newMode => {
+                      const effectiveMode = newMode === 'list' ? 'search-list' : newMode
+                      layoutContext.setViewMode(effectiveMode)
+                      try {
+                        localStorage.setItem(SEARCH_OVERLAY_VIEW_KEY, effectiveMode)
+                      } catch (e) {}
+                    }}
+                    gridCardWidth={layoutContext.gridCardWidth}
+                    onGridCardWidthChange={layoutContext.setGridCardWidth}
+                  />
+                </div>
+              </div>
+            )}
             renderFooter={layoutContext => (
               <div className="px-4 py-1.5 flex items-center text-xs text-muted-foreground shrink-0 border-t border-border/40 min-h-[32px]">
                 <MaterialIcon icon="insert_drive_file" className="mr-1.5 text-sm" />

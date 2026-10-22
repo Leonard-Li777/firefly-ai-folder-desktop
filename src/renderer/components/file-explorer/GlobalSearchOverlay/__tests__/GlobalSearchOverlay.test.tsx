@@ -32,6 +32,7 @@ vi.mock('@/renderer/components/file-explorer/FileExplorerLayout', () => ({
           {f.name}
         </div>
       ))}
+      {props.renderToolbar && props.renderToolbar({ viewMode: props.viewMode, setViewMode: props.onViewModeChange, gridCardWidth: 120, setGridCardWidth: vi.fn(), files: props.files })}
       {props.renderFooter && props.renderFooter({ files: props.files })}
     </div>
   )
@@ -46,6 +47,7 @@ vi.mock('../FileExplorerLayout', () => ({
           {f.name}
         </div>
       ))}
+      {props.renderToolbar && props.renderToolbar({ viewMode: props.viewMode, setViewMode: props.onViewModeChange, gridCardWidth: 120, setGridCardWidth: vi.fn(), files: props.files })}
       {props.renderFooter && props.renderFooter({ files: props.files })}
     </div>
   )
@@ -243,6 +245,17 @@ describe('GlobalSearchOverlay (Issue 03 / 双阶段流式上屏与呼吸微条)'
 
     // 验证呼吸徽章已安全归位 idle，未无限期挂起
     expect(screen.queryByText('深度语义对齐中...')).toBeNull()
+  })
+
+  it('在 Toolbar 中正确展示搜索统计信息与视图设置组件', () => {
+    render(<GlobalSearchOverlay workspaceDirectory={mockWorkspace} />)
+
+    act(() => {
+      useSearchStore.setState({ globalSearchKeyword: 'invoice' })
+    })
+
+    expect(screen.getByText('"invoice"')).toBeInTheDocument()
+    expect(screen.getByText(/全域搜索:/)).toBeInTheDocument()
   })
 
   it('按 ESC 键或点击退出按钮立即关闭浮层并清理搜索', () => {
