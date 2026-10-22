@@ -860,6 +860,9 @@ export function registerVirtualDirectoryIPCHandlers() {
     )
   })
 
+  /** 整理会话文件特征池化缓存 (避免搜索交互时反复扫 SQLite，容量 10 条工作区记录) */
+  const fileTagsSessionCache = new Map<string, Record<number, Array<{ code: string; weight: number }>>>()
+
   ipcMain.handle(
     'organize-real-directory/match-perspectives-and-structures',
     async (event, request: MatchPerspectivesRequest) => {
@@ -868,39 +871,58 @@ export function registerVirtualDirectoryIPCHandlers() {
       const activeProfile: 'bekko_384' | 'gemma_512' =
         request.aiProfile || (rawProfile === 'gemma_unified' ? 'gemma_512' : 'bekko_384')
 
-      let fileTags = request.injectedFileTags
-      if (!fileTags && request.fileIds && request.fileIds.length > 0) {
+      let fileTags: Record<number, Array<{ code: string; weight: number }>> | undefined =
+        request.injectedFileTags as Record<number, Array<{ code: string; weight: number }>> | undefined
+      const cacheKey =
+        request.fileIds && request.fileIds.length > 0
+          ? `${request.workspaceId || 0}:${request.fileIds.length}:${request.fileIds[0]}:${request.fileIds[request.fileIds.length - 1]}`
+          : ''
+
+      if (!fileTags && cacheKey && fileTagsSessionCache.has(cacheKey)) {
+        fileTags = fileTagsSessionCache.get(cacheKey)
+      } else if (!fileTags && request.fileIds && request.fileIds.length > 0) {
         fileTags = {}
         try {
           const db = databaseService.db
           if (db) {
-            const placeholders = request.fileIds.map(() => '?').join(',')
-            const rows = db
-              .prepare(
-                `
-              SELECT
-                wf.id AS file_id,
-                ftr.tag_code AS code,
-                ftr.confidence AS weight
-              FROM file_tag_relations ftr
-              INNER JOIN workspace_files wf ON ftr.file_fingerprint = wf.file_fingerprint
-              WHERE wf.id IN (${placeholders})
-            `
-              )
-              .all(...request.fileIds) as Array<{
-              file_id: number
-              code: string
-              weight: number | null
-            }>
+            const chunkSize = 500
+            for (let i = 0; i < request.fileIds.length; i += chunkSize) {
+              const chunk = request.fileIds.slice(i, i + chunkSize)
+              const placeholders = chunk.map(() => '?').join(',')
+              const rows = db
+                .prepare(
+                  `
+                SELECT
+                  wf.id AS file_id,
+                  ftr.tag_code AS code,
+                  ftr.confidence AS weight
+                FROM file_tag_relations ftr
+                INNER JOIN workspace_files wf ON ftr.file_fingerprint = wf.file_fingerprint
+                WHERE wf.id IN (${placeholders})
+              `
+                )
+                .all(...chunk) as Array<{
+                file_id: number
+                code: string
+                weight: number | null
+              }>
 
-            for (const row of rows) {
-              if (!fileTags[row.file_id]) {
-                fileTags[row.file_id] = []
+              for (const row of rows) {
+                if (!fileTags[row.file_id]) {
+                  fileTags[row.file_id] = []
+                }
+                fileTags[row.file_id].push({
+                  code: row.code,
+                  weight: typeof row.weight === 'number' ? row.weight : 1.0
+                })
               }
-              fileTags[row.file_id].push({
-                code: row.code,
-                weight: typeof row.weight === 'number' ? row.weight : 1.0
-              })
+            }
+            if (cacheKey) {
+              if (fileTagsSessionCache.size >= 10) {
+                const firstKey = fileTagsSessionCache.keys().next().value
+                if (firstKey) fileTagsSessionCache.delete(firstKey)
+              }
+              fileTagsSessionCache.set(cacheKey, fileTags)
             }
           }
         } catch (err) {

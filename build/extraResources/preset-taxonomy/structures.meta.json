@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "count": 50,
+  "count": 61,
   "dimensions": {
     "bekko": 384,
     "gemma": 512
@@ -33,6 +33,7 @@
         "pt-BR": "Standardized team workflow decoupling reusable design systems from projects",
         "it-IT": "Standardized team workflow decoupling reusable design systems from projects"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.researcher.ux",
         "id.designer.ui",
@@ -83,12 +84,12 @@
         "pt-BR": "Structured directories for assets, builds, mock data, and test reports",
         "it-IT": "Structured directories for assets, builds, mock data, and test reports"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.student.self_learner",
         "id.dev.frontend",
         "id.dev.fullstack",
-        "id.dev.mobile",
-        "id.qa.tester"
+        "id.dev.mobile"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -131,6 +132,7 @@
         "pt-BR": "Structured storage for DB migrations, API specs, K8s configs, and logs",
         "it-IT": "Structured storage for DB migrations, API specs, K8s configs, and logs"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.dev.backend",
         "id.dev.fullstack",
@@ -178,6 +180,7 @@
         "pt-BR": "Classic Tiago Forte framework: Projects, Areas, Resources, and Archives",
         "it-IT": "Classic Tiago Forte framework: Projects, Areas, Resources, and Archives"
       },
+      "template_type": "classification",
       "target_identities": [
         "id.scene.desktop_declutter",
         "id.scene.downloads_triage",
@@ -236,6 +239,7 @@
         "pt-BR": "Numerical indexed categories for high-precision institutional filing",
         "it-IT": "Numerical indexed categories for high-precision institutional filing"
       },
+      "template_type": "classification",
       "target_identities": [
         "id.scene.temporary_staging",
         "id.life.homemaker",
@@ -290,6 +294,7 @@
         "pt-BR": "Full pipeline from RAW ingest to culling, catalog editing, and client delivery",
         "it-IT": "Full pipeline from RAW ingest to culling, catalog editing, and client delivery"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.hobby.photographer",
         "id.life.traveler"
@@ -337,11 +342,13 @@
         "pt-BR": "Tailored for Premiere, Final Cut, and Resolve projects and asset tiers",
         "it-IT": "Tailored for Premiere, Final Cut, and Resolve projects and asset tiers"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.life.audiophile_cinephile",
         "id.creator.sound_designer",
         "id.hobby.vlogger",
-        "id.designer.3d"
+        "id.designer.3d",
+        "id.media.collector_hoarder"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -384,6 +391,7 @@
         "pt-BR": "Comprehensive filing for literature reviews, datasets, LaTeX, and defense decks",
         "it-IT": "Comprehensive filing for literature reviews, datasets, LaTeX, and defense decks"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.researcher.faculty",
         "id.student.grad",
@@ -433,6 +441,7 @@
         "pt-BR": "Structured ledger storage for tax filings, payroll, and audit documentation",
         "it-IT": "Structured ledger storage for tax filings, payroll, and audit documentation"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.finance.accountant",
         "id.finance.cashier",
@@ -479,11 +488,13 @@
         "pt-BR": "Long-term filing for identity docs, contracts, warranties, policies, and health",
         "it-IT": "Long-term filing for identity docs, contracts, warranties, policies, and health"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.life.homemaker",
         "id.life.pet_owner",
         "id.life.cooking_foodie",
-        "id.life.minimalist"
+        "id.life.minimalist",
+        "id.life.household_assets"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -526,6 +537,7 @@
         "pt-BR": "Integrated workflow covering brainstorming, graphic assets, and campaign reports",
         "it-IT": "Integrated workflow covering brainstorming, graphic assets, and campaign reports"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.hobby.vlogger",
         "id.ops.newmedia",
@@ -572,6 +584,7 @@
         "pt-BR": "Product samples, marketing creatives, product detail pages, and promotion audits",
         "it-IT": "Product samples, marketing creatives, product detail pages, and promotion audits"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.ops.ecommerce",
         "id.ops.cross_border"
@@ -617,6 +630,7 @@
         "pt-BR": "Organized game design docs, sprite sheets, audio, and playable builds",
         "it-IT": "Organized game design docs, sprite sheets, audio, and playable builds"
       },
+      "template_type": "workflow",
       "target_identities": [],
       "lifecycle_stages": [
         "inbox",
@@ -659,6 +673,7 @@
         "pt-BR": "Organizes listings, customs declarations, FBA receipts, ads, and refund statements",
         "it-IT": "Organizes listings, customs declarations, FBA receipts, ads, and refund statements"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.ops.ecommerce",
         "id.ops.cross_border",
@@ -705,6 +720,7 @@
         "pt-BR": "Structured legal files by complaint, evidence chains, court hearings, and rulings",
         "it-IT": "Structured legal files by complaint, evidence chains, court hearings, and rulings"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.legal.compliance",
         "id.legal.attorney",
@@ -750,6 +766,7 @@
         "pt-BR": "Organizes diagnostic reports, cohort follow-ups, IRB approvals, and manuscripts",
         "it-IT": "Organizes diagnostic reports, cohort follow-ups, IRB approvals, and manuscripts"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.health.doctor",
         "id.health.nurse",
@@ -795,6 +812,7 @@
         "pt-BR": "Organizes lesson plans, slides, exams, open-class recordings, and parent communications",
         "it-IT": "Organizes lesson plans, slides, exams, open-class recordings, and parent communications"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.edu.k12_teacher",
         "id.edu.trainer"
@@ -839,6 +857,7 @@
         "pt-BR": "Industry research, target financials, expert interview notes, and strategic deliverables",
         "it-IT": "Industry research, target financials, expert interview notes, and strategic deliverables"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.data.analyst",
         "id.marketing.planner",
@@ -885,6 +904,7 @@
         "pt-BR": "CAD floor plans, 3D renderings, structural calculations, and bill of quantities",
         "it-IT": "CAD floor plans, 3D renderings, structural calculations, and bill of quantities"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.designer.industrial",
         "id.eng.architect",
@@ -930,6 +950,7 @@
         "pt-BR": "World-building lore, character bios, chapter drafts, and publisher review notes",
         "it-IT": "World-building lore, character bios, chapter drafts, and publisher review notes"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.ops.newmedia",
         "id.creator.freelance",
@@ -975,6 +996,7 @@
         "pt-BR": "Psychological assessments, customized diet plans, fitness logs, and wellness tracking",
         "it-IT": "Psychological assessments, customized diet plans, fitness logs, and wellness tracking"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.life.fitness",
         "id.health.nurse",
@@ -1021,6 +1043,7 @@
         "pt-BR": "End-to-end framework covering product roadmaps, PRD specifications, prototypes, user research, and agile delivery",
         "it-IT": "End-to-end framework covering product roadmaps, PRD specifications, prototypes, user research, and agile delivery"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.pm.product",
         "id.researcher.ux"
@@ -1073,6 +1096,7 @@
         "pt-BR": "CRISP-DM standard framework: raw data, feature pipelines, notebooks, models, and BI dashboards",
         "it-IT": "CRISP-DM standard framework: raw data, feature pipelines, notebooks, models, and BI dashboards"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.data.analyst",
         "id.dev.ai_ml"
@@ -1125,6 +1149,7 @@
         "pt-BR": "Test strategies, manual/auto test suites, bug reproductions, benchmark logs, and release sign-offs",
         "it-IT": "Test strategies, manual/auto test suites, bug reproductions, benchmark logs, and release sign-offs"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.qa.tester"
       ],
@@ -1176,6 +1201,7 @@
         "pt-BR": "Full B2B sales lifecycle: lead gen, client meetings, proposals, RFPs, contracts, and revenue reconciliation",
         "it-IT": "Full B2B sales lifecycle: lead gen, client meetings, proposals, RFPs, contracts, and revenue reconciliation"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.sales.bd"
       ],
@@ -1227,6 +1253,7 @@
         "pt-BR": "Comprehensive HRM framework: org charts, JDs, resumes, interviews, onboarding, payroll, KPIs, and trainings",
         "it-IT": "Comprehensive HRM framework: org charts, JDs, resumes, interviews, onboarding, payroll, KPIs, and trainings"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.hr.admin",
         "id.hr.recruiter"
@@ -1279,6 +1306,7 @@
         "pt-BR": "Full 4A agency & brand marketing workflow: market insights, IMC decks, creative assets, media buys, and ROI reviews",
         "it-IT": "Full 4A agency & brand marketing workflow: market insights, IMC decks, creative assets, media buys, and ROI reviews"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.marketing.planner",
         "id.ops.private_domain",
@@ -1332,6 +1360,7 @@
         "pt-BR": "End-to-end corporate legal workflow: contract reviews, compliance policies, IP/trademarks, and litigation filings",
         "it-IT": "End-to-end corporate legal workflow: contract reviews, compliance policies, IP/trademarks, and litigation filings"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.legal.compliance",
         "id.legal.ip_agent"
@@ -1384,6 +1413,7 @@
         "pt-BR": "Hardware-firmware co-design: PCB schematics, BOM, BSP drivers, RTOS firmware, protocols, and flash binaries",
         "it-IT": "Hardware-firmware co-design: PCB schematics, BOM, BSP drivers, RTOS firmware, protocols, and flash binaries"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.dev.embedded"
       ],
@@ -1435,6 +1465,7 @@
         "pt-BR": "Professional CG pipeline: concept art, 3D meshes (Blender/C4D), PBR textures, rigs/animations, and final renders",
         "it-IT": "Professional CG pipeline: concept art, 3D meshes (Blender/C4D), PBR textures, rigs/animations, and final renders"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.designer.3d",
         "id.designer.industrial"
@@ -1487,6 +1518,7 @@
         "pt-BR": "Solo-business framework: client briefs, estimates, signed contracts, WIP deliverables, invoices, and portfolio",
         "it-IT": "Solo-business framework: client briefs, estimates, signed contracts, WIP deliverables, invoices, and portfolio"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.creator.freelance",
         "id.edu.trainer"
@@ -1539,6 +1571,7 @@
         "pt-BR": "Second brain for lifelong learners: inboxes, atomic literature/permanent notes, project practice, and reflections",
         "it-IT": "Second brain for lifelong learners: inboxes, atomic literature/permanent notes, project practice, and reflections"
       },
+      "template_type": "classification",
       "target_identities": [
         "id.life.novel_reader",
         "id.life.digital_hoarder",
@@ -1592,6 +1625,7 @@
         "pt-BR": "Designed for PC/console gamers to manage game saves, mods, game clips, screenshots, and walkthroughs",
         "it-IT": "Designed for PC/console gamers to manage game saves, mods, game clips, screenshots, and walkthroughs"
       },
+      "template_type": "classification",
       "target_identities": [
         "id.hobby.gamer",
         "id.life.acg_fan"
@@ -1644,6 +1678,7 @@
         "pt-BR": "Dedicated library for webnovel readers and book lovers to organize ebooks, series, and reviews",
         "it-IT": "Dedicated library for webnovel readers and book lovers to organize ebooks, series, and reviews"
       },
+      "template_type": "classification",
       "target_identities": [
         "id.life.novel_reader"
       ],
@@ -1695,6 +1730,7 @@
         "pt-BR": "Collects 4K UHD Blu-ray remuxes, lossless music albums, TV seasons, and external subtitles",
         "it-IT": "Collects 4K UHD Blu-ray remuxes, lossless music albums, TV seasons, and external subtitles"
       },
+      "template_type": "classification",
       "target_identities": [
         "id.life.audiophile_cinephile"
       ],
@@ -1746,6 +1782,7 @@
         "pt-BR": "Collection vault for anime series, digital manga volumes, illustration wallpapers, and audio dramas",
         "it-IT": "Collection vault for anime series, digital manga volumes, illustration wallpapers, and audio dramas"
       },
+      "template_type": "classification",
       "target_identities": [
         "id.life.acg_fan"
       ],
@@ -1795,6 +1832,7 @@
         "pt-BR": "Organizes PC DIY build specs, BIOS updates, peripheral macros, benchmark results, and warranty slips",
         "it-IT": "Organizes PC DIY build specs, BIOS updates, peripheral macros, benchmark results, and warranty slips"
       },
+      "template_type": "classification",
       "target_identities": [
         "id.life.tech_geek"
       ],
@@ -1842,6 +1880,7 @@
         "pt-BR": "Collects cooking recipes, baking ingredient ratios, wellness soups, cocktail mixes, and dining logs",
         "it-IT": "Collects cooking recipes, baking ingredient ratios, wellness soups, cocktail mixes, and dining logs"
       },
+      "template_type": "classification",
       "target_identities": [
         "id.life.cooking_foodie",
         "id.health.nutritionist"
@@ -1892,6 +1931,7 @@
         "pt-BR": "Tracks pet vaccination records, veterinary checkups, cute photo moments, diet reviews, and pet expenses",
         "it-IT": "Tracks pet vaccination records, veterinary checkups, cute photo moments, diet reviews, and pet expenses"
       },
+      "template_type": "classification",
       "target_identities": [
         "id.life.pet_owner"
       ],
@@ -1940,6 +1980,7 @@
         "pt-BR": "Organizes trip itineraries, flight/hotel bookings, camera RAW photos, edited views, GPX tracks, and ticket stubs",
         "it-IT": "Organizes trip itineraries, flight/hotel bookings, camera RAW photos, edited views, GPX tracks, and ticket stubs"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.life.traveler"
       ],
@@ -1990,6 +2031,7 @@
         "pt-BR": "Manages DAW sessions, audio loops/samples, vocal stems, synth presets, mastered exports, and licenses",
         "it-IT": "Manages DAW sessions, audio loops/samples, vocal stems, synth presets, mastered exports, and licenses"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.creator.sound_designer"
       ],
@@ -2039,6 +2081,7 @@
         "pt-BR": "Manages brand VI guidelines, print layouts, CMYK proofings, commercial fonts, and key visuals",
         "it-IT": "Manages brand VI guidelines, print layouts, CMYK proofings, commercial fonts, and key visuals"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.designer.graphic",
         "id.designer.illustrator"
@@ -2088,6 +2131,7 @@
         "pt-BR": "Covers sketches, layered PSD/Procreate projects, brush packs, character turnarounds, and licenses",
         "it-IT": "Covers sketches, layered PSD/Procreate projects, brush packs, character turnarounds, and licenses"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.designer.illustrator"
       ],
@@ -2134,6 +2178,7 @@
         "pt-BR": "Covers iOS/Android native & Flutter projects, certificates, store submission materials, and APK/IPA builds",
         "it-IT": "Covers iOS/Android native & Flutter projects, certificates, store submission materials, and APK/IPA builds"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.dev.mobile"
       ],
@@ -2182,6 +2227,7 @@
         "pt-BR": "Covers K8s manifests, Terraform IaC scripts, Prometheus alerts, Grafana dashboards, and postmortems",
         "it-IT": "Covers K8s manifests, Terraform IaC scripts, Prometheus alerts, Grafana dashboards, and postmortems"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.ops.sre"
       ],
@@ -2229,6 +2275,7 @@
         "pt-BR": "Manages vendor qualifications, purchase orders (PO), incoming QC reports, warehouse inventory, and customs",
         "it-IT": "Manages vendor qualifications, purchase orders (PO), incoming QC reports, warehouse inventory, and customs"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.mgmt.supply_chain"
       ],
@@ -2275,6 +2322,7 @@
         "pt-BR": "Covers university selection lists, test scores, SOPs, recommendation letters, transcripts, and visa records",
         "it-IT": "Covers university selection lists, test scores, SOPs, recommendation letters, transcripts, and visa records"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.student.study_abroad"
       ],
@@ -2322,6 +2370,7 @@
         "pt-BR": "Designed for messy desktops to organize today's tasks, drafts, screenshots, setups, and desktop backups",
         "it-IT": "Designed for messy desktops to organize today's tasks, drafts, screenshots, setups, and desktop backups"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.scene.desktop_declutter"
       ],
@@ -2369,6 +2418,7 @@
         "pt-BR": "Sorts downloads into applications, documents, media, and archives with an expired buffer for safe deletion",
         "it-IT": "Sorts downloads into applications, documents, media, and archives with an expired buffer for safe deletion"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.scene.downloads_triage"
       ],
@@ -2419,6 +2469,7 @@
         "pt-BR": "Builds GTD-based workflow: Inbox collection, Actions, Waiting, Reference, and Cold Archive",
         "it-IT": "Builds GTD-based workflow: Inbox collection, Actions, Waiting, Reference, and Cold Archive"
       },
+      "template_type": "workflow",
       "target_identities": [
         "id.scene.temporary_staging"
       ],
@@ -2438,6 +2489,529 @@
       "naming_rules": {
         "asset_pattern": "{YYYYMMDD}_{Context}_{Title}.{ext}"
       }
+    },
+    {
+      "template_id": "tpl_desktop_classic_classification",
+      "name": {
+        "zh-CN": "电脑桌面经典应用与多维资产分类体系",
+        "en-US": "Desktop Classic Application & Multi-Asset Taxonomy",
+        "ja-JP": "デスクトップ定番アプリ＆多次元資産分類体系",
+        "ko-KR": "바탕화면 클래식 응용프로그램 및 다차원 자산 분류 체계",
+        "de-DE": "Desktop-Klassische Anwendungen & Multi-Asset-Taxonomie",
+        "fr-FR": "Taxonomie classique du bureau pour applications et actifs",
+        "es-ES": "Taxonomía clásica de escritorio para aplicaciones y activos",
+        "ru-RU": "Классическая классификация приложений и файлов рабочего стола",
+        "pt-BR": "Taxonomia clássica da área de trabalho para aplicativos e arquivos",
+        "it-IT": "Tassonomia classica desktop per applicazioni e risorse"
+      },
+      "description": {
+        "zh-CN": "针对电脑桌面高频堆积的应用快捷方式、各业务文档、临时截图素材与安装包进行物理实体功能分类",
+        "en-US": "Categorizes desktop shortcuts, active documents, screenshots, and setup packages by functional entity",
+        "ja-JP": "Categorizes desktop shortcuts, active documents, screenshots, and setup packages by functional entity",
+        "ko-KR": "Categorizes desktop shortcuts, active documents, screenshots, and setup packages by functional entity",
+        "de-DE": "Categorizes desktop shortcuts, active documents, screenshots, and setup packages by functional entity",
+        "fr-FR": "Categorizes desktop shortcuts, active documents, screenshots, and setup packages by functional entity",
+        "es-ES": "Categorizes desktop shortcuts, active documents, screenshots, and setup packages by functional entity",
+        "ru-RU": "Categorizes desktop shortcuts, active documents, screenshots, and setup packages by functional entity",
+        "pt-BR": "Categorizes desktop shortcuts, active documents, screenshots, and setup packages by functional entity",
+        "it-IT": "Categorizes desktop shortcuts, active documents, screenshots, and setup packages by functional entity"
+      },
+      "template_type": "classification",
+      "target_identities": [
+        "id.scene.desktop_declutter"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-常用应用与快捷方式/01-办公协同与即时通讯",
+        "01-常用应用与快捷方式/02-开发运维与技术工具",
+        "01-常用应用与快捷方式/03-设计创作与多媒体",
+        "01-常用应用与快捷方式/04-游戏娱乐与生活影音",
+        "01-常用应用与快捷方式/05-系统辅助与管理工具",
+        "02-日常工作与个人文档/01-合同协议与商务发票",
+        "02-日常工作与个人文档/02-工作报表与周月总结",
+        "02-日常工作与个人文档/03-个人证件与申报证明",
+        "02-日常工作与个人文档/04-便签备忘与待查资料",
+        "03-临时截图与媒体素材/01-桌面截图与录屏原件",
+        "03-临时截图与媒体素材/02-设计参考与临时图片",
+        "04-软件安装与压缩暂存/01-软件安装包与驱动程序",
+        "04-软件安装与压缩暂存/02-压缩文件与临时解压包"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_qa_testing_asset_vault",
+      "name": {
+        "zh-CN": "软件测试工程资产库与质量度量中心",
+        "en-US": "Software QA Engineering Asset Vault & Metric Hub",
+        "ja-JP": "ソフトウェアテストエンジニアリング資産＆品質メトリクスハブ",
+        "ko-KR": "소프트웨어 QA 엔지니어링 자산 및 품질 메트릭 허브",
+        "de-DE": "Software-QA-Engineering-Asset-Vault & Qualitäts-Hub",
+        "fr-FR": "Coffre d'ingénierie QA logicielle et centre de métriques",
+        "es-ES": "Bóveda de activos de ingeniería de QA y métricas de calidad",
+        "ru-RU": "Хранилище активов тестирования ПО и центр метрик качества",
+        "pt-BR": "Repositório de engenharia de QA e centro de métricas de qualidade",
+        "it-IT": "Archivio di ingegneria QA del software e centro metriche"
+      },
+      "description": {
+        "zh-CN": "归档自动化测试脚本工程、手工用例脑图、Bug复现截图抓包、压测基准与版本准出清单",
+        "en-US": "Archives automated test suites, manual cases, bug evidence, benchmark baselines, and sign-off criteria",
+        "ja-JP": "Archives automated test suites, manual cases, bug evidence, benchmark baselines, and sign-off criteria",
+        "ko-KR": "Archives automated test suites, manual cases, bug evidence, benchmark baselines, and sign-off criteria",
+        "de-DE": "Archives automated test suites, manual cases, bug evidence, benchmark baselines, and sign-off criteria",
+        "fr-FR": "Archives automated test suites, manual cases, bug evidence, benchmark baselines, and sign-off criteria",
+        "es-ES": "Archives automated test suites, manual cases, bug evidence, benchmark baselines, and sign-off criteria",
+        "ru-RU": "Archives automated test suites, manual cases, bug evidence, benchmark baselines, and sign-off criteria",
+        "pt-BR": "Archives automated test suites, manual cases, bug evidence, benchmark baselines, and sign-off criteria",
+        "it-IT": "Archives automated test suites, manual cases, bug evidence, benchmark baselines, and sign-off criteria"
+      },
+      "template_type": "classification",
+      "target_identities": [
+        "id.qa.tester"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-自动化测试工程/01-E2E端到端与UI自动化用例",
+        "01-自动化测试工程/02-API接口用例与Mock测试脚本",
+        "02-测试文档与凭据/01-测试策略大纲与评审脑图",
+        "02-测试文档与凭据/02-Bug复现截图录屏与抓包日志",
+        "03-性能与安全专项/01-JMeter压测脚本与基线配置",
+        "03-性能与安全专项/02-安全渗透测试与漏洞扫描报告",
+        "04-准出与复盘资产/01-发布版本质量度量与准出清单"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_k12_education_vault",
+      "name": {
+        "zh-CN": "K12 中小学学科知识与成长教育资料库",
+        "en-US": "K-12 Academic Subject Knowledge & Growth Education Vault",
+        "ja-JP": "K12小中高教科別学習資料＆成長記録ライブラリ",
+        "ko-KR": "K-12 초중고 과목별 학습 자료 및 성장 교육 저장소",
+        "de-DE": "K-12 Fächerwissen & Bildungswachstums-Vault",
+        "fr-FR": "Savoirs scolaires K-12 et archives de croissance éducative",
+        "es-ES": "Conocimiento académico K-12 y bóveda de crecimiento educativo",
+        "ru-RU": "Учебные материалы K-12 и архив развития учащегося",
+        "pt-BR": "Acervo de disciplinas K-12 e arquivo de crescimento educacional",
+        "it-IT": "Archivio discipline scolastiche K-12 e crescita educativa"
+      },
+      "description": {
+        "zh-CN": "收纳语数英主科学科教辅、日常课后作业、错题重难点归纳、名师网课讲义与课外才艺考级",
+        "en-US": "Curates core subject materials, daily homework, mistake log notebooks, online courses, and certificates",
+        "ja-JP": "Curates core subject materials, daily homework, mistake log notebooks, online courses, and certificates",
+        "ko-KR": "Curates core subject materials, daily homework, mistake log notebooks, online courses, and certificates",
+        "de-DE": "Curates core subject materials, daily homework, mistake log notebooks, online courses, and certificates",
+        "fr-FR": "Curates core subject materials, daily homework, mistake log notebooks, online courses, and certificates",
+        "es-ES": "Curates core subject materials, daily homework, mistake log notebooks, online courses, and certificates",
+        "ru-RU": "Curates core subject materials, daily homework, mistake log notebooks, online courses, and certificates",
+        "pt-BR": "Curates core subject materials, daily homework, mistake log notebooks, online courses, and certificates",
+        "it-IT": "Curates core subject materials, daily homework, mistake log notebooks, online courses, and certificates"
+      },
+      "template_type": "classification",
+      "target_identities": [
+        "id.life.k12_student_parent"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-主要学科教辅资料/01-语文阅读与写作素材",
+        "01-主要学科教辅资料/02-数学奥数与思维练习题",
+        "01-主要学科教辅资料/03-英语听力音频与分级阅读",
+        "02-平时作业与错题精选/01-各科随堂作业与电子试卷",
+        "02-平时作业与错题精选/02-错题本归纳与复习笔记",
+        "03-网课录播与课件讲义/01-名师网课视频与板书",
+        "04-课外兴趣与才艺拓展/01-书法绘画与考级证书",
+        "04-课外兴趣与才艺拓展/02-体育赛事与社会实践记录"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_k12_school_term_pipeline",
+      "name": {
+        "zh-CN": "K12 学期阶段学习与升学备考工作流",
+        "en-US": "K-12 Semester Academic Stage & Exam Prep Workflow",
+        "ja-JP": "K12学期別学習ステップ＆受験対策ワークフロー",
+        "ko-KR": "K-12 학기별 학습 및 진학 시험 대비 워크플로우",
+        "de-DE": "K-12 Semester-Lern- & Prüfungsvorbereitungs-Workflow",
+        "fr-FR": "Flux d'apprentissage par semestre K-12 et préparation aux examens",
+        "es-ES": "Flujo de trabajo de aprendizaje semestral y preparación de exámenes K-12",
+        "ru-RU": "Семестровый учебный процесс K-12 и подготовка к экзаменам",
+        "pt-BR": "Fluxo semestral de aprendizagem e preparação para exames K-12",
+        "it-IT": "Workflow semestrale di apprendimento K-12 e preparazione esami"
+      },
+      "description": {
+        "zh-CN": "按学期生命周期分阶段管理：新学期规划课表、日常上课作业打卡、期中期末冲刺与寒暑假实践",
+        "en-US": "Manages semester lifecycle from planning, daily homework tracking, exam crunch, to vacation practice",
+        "ja-JP": "Manages semester lifecycle from planning, daily homework tracking, exam crunch, to vacation practice",
+        "ko-KR": "Manages semester lifecycle from planning, daily homework tracking, exam crunch, to vacation practice",
+        "de-DE": "Manages semester lifecycle from planning, daily homework tracking, exam crunch, to vacation practice",
+        "fr-FR": "Manages semester lifecycle from planning, daily homework tracking, exam crunch, to vacation practice",
+        "es-ES": "Manages semester lifecycle from planning, daily homework tracking, exam crunch, to vacation practice",
+        "ru-RU": "Manages semester lifecycle from planning, daily homework tracking, exam crunch, to vacation practice",
+        "pt-BR": "Manages semester lifecycle from planning, daily homework tracking, exam crunch, to vacation practice",
+        "it-IT": "Manages semester lifecycle from planning, daily homework tracking, exam crunch, to vacation practice"
+      },
+      "template_type": "workflow",
+      "target_identities": [
+        "id.life.k12_student_parent"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-开学规划与课表选课/01-学期学习计划与作息表",
+        "02-日常学习与随堂练习/01-每日课表跟进与打卡",
+        "03-期中期末专项冲刺/01-期中冲刺模拟卷",
+        "03-期中期末专项冲刺/02-期末复盘与总成绩单",
+        "04-学期归档与暑寒假规划/01-寒暑假作业与实践报告"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_senior_life_archive",
+      "name": {
+        "zh-CN": "银发长辈生活档案与家庭回忆录",
+        "en-US": "Senior Life Archive & Family Heritage Memoir",
+        "ja-JP": "シニアライフアーカイブ＆家族の思い出回想録",
+        "ko-KR": "실버 라이프 아카이브 및 가족 회고록",
+        "de-DE": "Senioren-Lebensarchiv & Familienerinnerungen",
+        "fr-FR": "Archives de vie des seniors et mémoires familiales",
+        "es-ES": "Archivo de vida de adultos mayores y memorias familiares",
+        "ru-RU": "Архив жизни пожилых людей и семейные мемуары",
+        "pt-BR": "Arquivo de vida na terceira idade e memórias familiares",
+        "it-IT": "Archivio di vita della terza età e memorie familiari"
+      },
+      "description": {
+        "zh-CN": "家庭老照片数字化、历年体检病历单据、处方常用药品清单与经典戏曲养生音画库",
+        "en-US": "Digitized old family photos, annual health reports, prescriptions, and traditional opera audio",
+        "ja-JP": "Digitized old family photos, annual health reports, prescriptions, and traditional opera audio",
+        "ko-KR": "Digitized old family photos, annual health reports, prescriptions, and traditional opera audio",
+        "de-DE": "Digitized old family photos, annual health reports, prescriptions, and traditional opera audio",
+        "fr-FR": "Digitized old family photos, annual health reports, prescriptions, and traditional opera audio",
+        "es-ES": "Digitized old family photos, annual health reports, prescriptions, and traditional opera audio",
+        "ru-RU": "Digitized old family photos, annual health reports, prescriptions, and traditional opera audio",
+        "pt-BR": "Digitized old family photos, annual health reports, prescriptions, and traditional opera audio",
+        "it-IT": "Digitized old family photos, annual health reports, prescriptions, and traditional opera audio"
+      },
+      "template_type": "classification",
+      "target_identities": [
+        "id.life.senior_citizen"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-家庭老照片与回忆相册/01-家庭团聚与亲友合影",
+        "01-家庭老照片与回忆相册/02-历史老照片数字化扫描",
+        "02-健康体检与医疗就医单/01-医院体检报告与化验单",
+        "02-健康体检与医疗就医单/02-常用处方药品清单与医嘱",
+        "03-戏曲曲艺与养生文摘/01-经典戏曲评书与老歌音频",
+        "03-戏曲曲艺与养生文摘/02-日常养生食谱与保健知识",
+        "04-养老证件与重要备忘/01-身份证医保卡社保卡复印件"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_senior_medical_care_pipeline",
+      "name": {
+        "zh-CN": "长辈就医挂号与体检随访全生命周期",
+        "en-US": "Elder Medical Care, Outpatient & Follow-Up Lifecycle",
+        "ja-JP": "シニア通院・検診・アフターフォロー全工程",
+        "ko-KR": "어르신 진료 예약 및 정기 검진 사후관리 라이프사이클",
+        "de-DE": "Senioren-Arztbesuche & Nachsorge-Lebenszyklus",
+        "fr-FR": "Cycle de soins médicaux des aînés, consultations et suivi",
+        "es-ES": "Ciclo de atención médica para mayores, consultas y seguimiento",
+        "ru-RU": "Жизненный цикл медицинского обслуживания и диспансеризации пожилых",
+        "pt-BR": "Ciclo de atendimento médico de idosos e acompanhamento",
+        "it-IT": "Ciclo di assistenza medica per anziani, visite e follow-up"
+      },
+      "description": {
+        "zh-CN": "按就医挂号、门诊检查进行中、医保报销结算与年度随访长期建档全流程管理",
+        "en-US": "End-to-end flow from appointments, outpatient receipts, insurance claims to annual follow-up",
+        "ja-JP": "End-to-end flow from appointments, outpatient receipts, insurance claims to annual follow-up",
+        "ko-KR": "End-to-end flow from appointments, outpatient receipts, insurance claims to annual follow-up",
+        "de-DE": "End-to-end flow from appointments, outpatient receipts, insurance claims to annual follow-up",
+        "fr-FR": "End-to-end flow from appointments, outpatient receipts, insurance claims to annual follow-up",
+        "es-ES": "End-to-end flow from appointments, outpatient receipts, insurance claims to annual follow-up",
+        "ru-RU": "End-to-end flow from appointments, outpatient receipts, insurance claims to annual follow-up",
+        "pt-BR": "End-to-end flow from appointments, outpatient receipts, insurance claims to annual follow-up",
+        "it-IT": "End-to-end flow from appointments, outpatient receipts, insurance claims to annual follow-up"
+      },
+      "template_type": "workflow",
+      "target_identities": [
+        "id.life.senior_citizen"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-就医挂号与就诊前准备/01-病历本与历史症状记录",
+        "02-门诊就医与检查进行中/01-门诊挂号单与检查发票",
+        "03-报销凭据与复诊随访/01-医保报销单据与回执",
+        "04-长期健康档案归档/01-年度健康汇总表"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_office_general_archive",
+      "name": {
+        "zh-CN": "综合文员行政公文与日常办公资料库",
+        "en-US": "Administrative Clerk Official Dispatch & Office Ledger Archive",
+        "ja-JP": "一般事務公文書＆日常オフィスデータアーカイブ",
+        "ko-KR": "종합 사무 행정 공문 및 일상 업무 자료 보관소",
+        "de-DE": "Büroverwaltung & Allgemeine Aktenablage",
+        "fr-FR": "Archives de secrétariat, dépêches officielles et registres de bureau",
+        "es-ES": "Archivo de oficinista general, despachos oficiales y registros de oficina",
+        "ru-RU": "Архив служебных документов и повседневного делопроизводства",
+        "pt-BR": "Arquivo administrativo de ofícios e rotinas de escritório",
+        "it-IT": "Archivio amministrativo per atti d'ufficio e documenti correnti"
+      },
+      "description": {
+        "zh-CN": "收纳规范行政红头公文、办公物资盘点表、收发台账、日常报销发票与常用合同盖章审批件",
+        "en-US": "Archives official notices, inventory sheets, dispatch ledgers, expense receipts, and contracts",
+        "ja-JP": "Archives official notices, inventory sheets, dispatch ledgers, expense receipts, and contracts",
+        "ko-KR": "Archives official notices, inventory sheets, dispatch ledgers, expense receipts, and contracts",
+        "de-DE": "Archives official notices, inventory sheets, dispatch ledgers, expense receipts, and contracts",
+        "fr-FR": "Archives official notices, inventory sheets, dispatch ledgers, expense receipts, and contracts",
+        "es-ES": "Archives official notices, inventory sheets, dispatch ledgers, expense receipts, and contracts",
+        "ru-RU": "Archives official notices, inventory sheets, dispatch ledgers, expense receipts, and contracts",
+        "pt-BR": "Archives official notices, inventory sheets, dispatch ledgers, expense receipts, and contracts",
+        "it-IT": "Archives official notices, inventory sheets, dispatch ledgers, expense receipts, and contracts"
+      },
+      "template_type": "classification",
+      "target_identities": [
+        "id.office.general_clerk"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-常用行政公文与函件/01-通知通报与公函红头文件",
+        "01-常用行政公文与函件/02-会议纪要与督办通知",
+        "02-业务登记与统计报表/01-日常资产设备登记盘点表",
+        "02-业务登记与统计报表/02-各类收发台账与周月报",
+        "03-报销凭单与发票汇总/01-差旅及日常报销发票PDF",
+        "03-报销凭单与发票汇总/02-付款审批单据与银行凭证",
+        "04-公章用印与标准合同/01-常用商务合同及协议模版",
+        "04-公章用印与标准合同/02-用印审批登记表"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_office_document_dispatch_flow",
+      "name": {
+        "zh-CN": "综合行政公文收发与督办运转工作流",
+        "en-US": "Administrative Document Dispatch, Review & Archiving Flow",
+        "ja-JP": "行政公文書収発・決裁・督促管理ワークフロー",
+        "ko-KR": "종합 행정 문서 접수·결재·독촉 처리 워크플로우",
+        "de-DE": "Verwaltungsdokumenten-Umlauf & Fristenüberwachungs-Workflow",
+        "fr-FR": "Flux de gestion, transmission et suivi des documents administratifs",
+        "es-ES": "Flujo de trabajo de despacho, trámite y archivo de documentos administrativos",
+        "ru-RU": "Документооборот, исполнение и контроль служебных документов",
+        "pt-BR": "Fluxo de tramitação, despacho e arquivamento de documentos",
+        "it-IT": "Workflow di gestione, protocollo e archiviazione atti amministrativi"
+      },
+      "description": {
+        "zh-CN": "外来文书收文承办、领导批示传阅交办、在办催办督查与办结归档销号全流程",
+        "en-US": "Full cycle covering document registration, supervisor review, task tracking, and close-out",
+        "ja-JP": "Full cycle covering document registration, supervisor review, task tracking, and close-out",
+        "ko-KR": "Full cycle covering document registration, supervisor review, task tracking, and close-out",
+        "de-DE": "Full cycle covering document registration, supervisor review, task tracking, and close-out",
+        "fr-FR": "Full cycle covering document registration, supervisor review, task tracking, and close-out",
+        "es-ES": "Full cycle covering document registration, supervisor review, task tracking, and close-out",
+        "ru-RU": "Full cycle covering document registration, supervisor review, task tracking, and close-out",
+        "pt-BR": "Full cycle covering document registration, supervisor review, task tracking, and close-out",
+        "it-IT": "Full cycle covering document registration, supervisor review, task tracking, and close-out"
+      },
+      "template_type": "workflow",
+      "target_identities": [
+        "id.office.general_clerk"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-公文收文与登记承办/01-外来公文登记与流转笺",
+        "02-领导批示与部门交办/01-领导批阅意见与传阅单",
+        "03-承办跟进与催办督办/01-在办督查单与进度反馈",
+        "04-办结归档与销号立卷/01-年度办结归档文书"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_household_dossier_vault",
+      "name": {
+        "zh-CN": "家庭数字资产证照与生活契约保险箱",
+        "en-US": "Household Digital Dossier, Credentials & Asset Safe",
+        "ja-JP": "家庭デジタル身分証・契約書・資産セーフ",
+        "ko-KR": "가정 디지털 증명서·생활 계약 및 자산 금고",
+        "de-DE": "Haushalts-Dokumentensafe & Lebensverträge",
+        "fr-FR": "Coffre-fort numérique familial, actes et contrats de vie",
+        "es-ES": "Caja fuerte digital para documentos familiares, escrituras y contratos",
+        "ru-RU": "Семейный цифровой сейф документов, договоров и активов",
+        "pt-BR": "Cofre digital familiar para certidões, escrituras e contratos",
+        "it-IT": "Cassaforte digitale familiare per documenti, atti e contratti"
+      },
+      "description": {
+        "zh-CN": "家庭核心成员身份户口簿、房产土地契税合同、医疗人身车险保单与水电账单分类留存",
+        "en-US": "Secure vault for IDs, property deeds, insurance policies, and utility statements",
+        "ja-JP": "Secure vault for IDs, property deeds, insurance policies, and utility statements",
+        "ko-KR": "Secure vault for IDs, property deeds, insurance policies, and utility statements",
+        "de-DE": "Secure vault for IDs, property deeds, insurance policies, and utility statements",
+        "fr-FR": "Secure vault for IDs, property deeds, insurance policies, and utility statements",
+        "es-ES": "Secure vault for IDs, property deeds, insurance policies, and utility statements",
+        "ru-RU": "Secure vault for IDs, property deeds, insurance policies, and utility statements",
+        "pt-BR": "Secure vault for IDs, property deeds, insurance policies, and utility statements",
+        "it-IT": "Secure vault for IDs, property deeds, insurance policies, and utility statements"
+      },
+      "template_type": "classification",
+      "target_identities": [
+        "id.life.household_assets"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-家庭成员证件与户籍档案/01-身份证户口本护照扫描件",
+        "01-家庭成员证件与户籍档案/02-结婚证学历证等证明",
+        "02-房产租售与合同契约/01-房产证购房合同与契税发票",
+        "02-房产租售与合同契约/02-租房合同与押金收条",
+        "03-家庭保险保单与理赔凭证/01-人身医疗重疾保险保单",
+        "03-家庭保险保单与理赔凭证/02-车险保单与理赔回执",
+        "04-公用事业缴费与银行票据/01-水电燃气暖气宽带缴费单",
+        "04-公用事业缴费与银行票据/02-银行定存与大额理财对账单"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_media_collector_vault",
+      "name": {
+        "zh-CN": "全模态影音剧集与数字媒体仓储库",
+        "en-US": "Multi-Modal Cinephile, Music & Digital Media Repository",
+        "ja-JP": "映画・ドラマ・ハイレゾ音楽マルチメディアリポジトリ",
+        "ko-KR": "멀티모달 영상·음악 디지털 미디어 종합 저장소",
+        "de-DE": "Multimodales Film-, Musik- & Medienarchiv",
+        "fr-FR": "Médiathèque multimodale pour séries, cinéma et musique haute fidélité",
+        "es-ES": "Repositorio multimedia para series, cine y música en alta fidelidad",
+        "ru-RU": "Мультимодальное хранилище фильмов, сериалов и музыки",
+        "pt-BR": "Repositório multimídia para séries, filmes e música de alta fidelidade",
+        "it-IT": "Repertorio multimediale per serie TV, film e musica ad alta fedeltà"
+      },
+      "description": {
+        "zh-CN": "电视剧集按季收纳、高清电影原盘、无损Hi-Res音频专辑、电子书漫画与装机镜像工具分类仓储",
+        "en-US": "Organizes TV shows by season, 4K Remux movies, Hi-Res FLAC/DSD albums, comics, and ISO images",
+        "ja-JP": "Organizes TV shows by season, 4K Remux movies, Hi-Res FLAC/DSD albums, comics, and ISO images",
+        "ko-KR": "Organizes TV shows by season, 4K Remux movies, Hi-Res FLAC/DSD albums, comics, and ISO images",
+        "de-DE": "Organizes TV shows by season, 4K Remux movies, Hi-Res FLAC/DSD albums, comics, and ISO images",
+        "fr-FR": "Organizes TV shows by season, 4K Remux movies, Hi-Res FLAC/DSD albums, comics, and ISO images",
+        "es-ES": "Organizes TV shows by season, 4K Remux movies, Hi-Res FLAC/DSD albums, comics, and ISO images",
+        "ru-RU": "Organizes TV shows by season, 4K Remux movies, Hi-Res FLAC/DSD albums, comics, and ISO images",
+        "pt-BR": "Organizes TV shows by season, 4K Remux movies, Hi-Res FLAC/DSD albums, comics, and ISO images",
+        "it-IT": "Organizes TV shows by season, 4K Remux movies, Hi-Res FLAC/DSD albums, comics, and ISO images"
+      },
+      "template_type": "classification",
+      "target_identities": [
+        "id.media.collector_hoarder"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-影视剧集按季收藏/01-国产与欧美剧集",
+        "01-影视剧集按季收藏/02-经典院线高清电影原盘",
+        "02-无损音乐专辑与歌单/01-Hi-Res及无损FLAC专辑",
+        "02-无损音乐专辑与歌单/02-DSD与黑胶无损抓轨",
+        "03-电子书籍与漫画期刊/01-EPUB电子书与Kindle库",
+        "03-电子书籍与漫画期刊/02-PDF高清杂志与漫画全集",
+        "04-常用工具与装机镜像/01-系统PE与ISO镜像",
+        "04-常用工具与装机镜像/02-常用绿色免安装工具包"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_code_asset_vault",
+      "name": {
+        "zh-CN": "现代工程通用代码组件与脚手架资产库",
+        "en-US": "Modern Engineering Code Components & Starter Vault",
+        "ja-JP": "モダンエンジニアリング共通コード＆スターターライブラリ",
+        "ko-KR": "모던 엔지니어링 공통 코드 컴포넌트 및 스타터 저장소",
+        "de-DE": "Moderne Engineering-Codekomponenten & Starter-Vault",
+        "fr-FR": "Composants de code d'ingénierie moderne et coffre de modèles",
+        "es-ES": "Componentes de código de ingeniería moderna y plantillas base",
+        "ru-RU": "Хранилище компонентов кода и шаблонов современной разработки",
+        "pt-BR": "Componentes de código e repositório de starters para engenharia",
+        "it-IT": "Componenti di codice per ingegneria moderna e starter pack"
+      },
+      "description": {
+        "zh-CN": "收纳前后端全栈Starter脚手架、通用UI组件库、工具函数封装、Docker配置及自动化运维脚本",
+        "en-US": "Organizes project starters, reusable UI components, utility SDKs, Dockerfiles, and DevOps scripts",
+        "ja-JP": "Organizes project starters, reusable UI components, utility SDKs, Dockerfiles, and DevOps scripts",
+        "ko-KR": "Organizes project starters, reusable UI components, utility SDKs, Dockerfiles, and DevOps scripts",
+        "de-DE": "Organizes project starters, reusable UI components, utility SDKs, Dockerfiles, and DevOps scripts",
+        "fr-FR": "Organizes project starters, reusable UI components, utility SDKs, Dockerfiles, and DevOps scripts",
+        "es-ES": "Organizes project starters, reusable UI components, utility SDKs, Dockerfiles, and DevOps scripts",
+        "ru-RU": "Organizes project starters, reusable UI components, utility SDKs, Dockerfiles, and DevOps scripts",
+        "pt-BR": "Organizes project starters, reusable UI components, utility SDKs, Dockerfiles, and DevOps scripts",
+        "it-IT": "Organizes project starters, reusable UI components, utility SDKs, Dockerfiles, and DevOps scripts"
+      },
+      "template_type": "classification",
+      "target_identities": [
+        "id.dev.frontend",
+        "id.dev.backend",
+        "id.dev.fullstack",
+        "id.dev.mobile",
+        "id.student.self_learner"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-项目模板与脚手架/01-前后端全栈Starter",
+        "01-项目模板与脚手架/02-微服务与CLI模板",
+        "02-公共组件与类库/01-通用UI组件与图标库",
+        "02-公共组件与类库/02-工具函数Utils与SDK封装",
+        "03-开发环境与配置清单/01-Docker及K8s配置文件",
+        "03-开发环境与配置清单/02-IDE与终端配置备份",
+        "04-实用脚本与运维自动化/01-Shell与Python运维脚本"
+      ],
+      "naming_rules": {}
     }
   ]
 }

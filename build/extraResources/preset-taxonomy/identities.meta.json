@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "count": 67,
+  "count": 72,
   "dimensions": {
     "bekko": 384,
     "gemma": 512
@@ -105,6 +105,7 @@
               ],
               "external_ids": {},
               "associated_template_ids": [
+                "tpl_desktop_classic_classification",
                 "tpl_desktop_declutter",
                 "tpl_para_universal"
               ],
@@ -660,6 +661,54 @@
               ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_audiovisual"
+            },
+            {
+              "identity_id": "id.media.collector_hoarder",
+              "identity_type": "life",
+              "name": {
+                "zh-CN": "纯媒体收藏与追剧影音仓储",
+                "en-US": "Media Collector & TV Series Digital Vault",
+                "ja-JP": "メディアコレクター＆動画ライブラリ",
+                "ko-KR": "미디어 수집가 및 영상 라이브러리 저장소",
+                "de-DE": "Mediensammler & TV-Serien-Archiv",
+                "fr-FR": "Collectionneur de médias et vidéothèque",
+                "es-ES": "Coleccionista de medios y videoteca digital",
+                "ru-RU": "Коллекционер медиа и видеотека",
+                "pt-BR": "Colecionador de mídia e videoteca",
+                "it-IT": "Collezionista multimediale e archivio serie TV"
+              },
+              "description": {
+                "zh-CN": "追剧剧集按季度收纳、高清电影原盘、无损音乐全集、电子书与常用装机工具包归档",
+                "en-US": "Organizes TV series by seasons, 4K movies, lossless music, ebooks, and setup archives",
+                "ja-JP": "Organizes TV series by seasons, 4K movies, lossless music, ebooks, and setup archives",
+                "ko-KR": "Organizes TV series by seasons, 4K movies, lossless music, ebooks, and setup archives",
+                "de-DE": "Organizes TV series by seasons, 4K movies, lossless music, ebooks, and setup archives",
+                "fr-FR": "Organizes TV series by seasons, 4K movies, lossless music, ebooks, and setup archives",
+                "es-ES": "Organizes TV series by seasons, 4K movies, lossless music, ebooks, and setup archives",
+                "ru-RU": "Organizes TV series by seasons, 4K movies, lossless music, ebooks, and setup archives",
+                "pt-BR": "Organizes TV series by seasons, 4K movies, lossless music, ebooks, and setup archives",
+                "it-IT": "Organizes TV series by seasons, 4K movies, lossless music, ebooks, and setup archives"
+              },
+              "aliases": [
+                "追剧收藏",
+                "电影原盘",
+                "媒体仓储",
+                "无损音乐库",
+                "影音收集",
+                "松鼠症仓储"
+              ],
+              "task_tags": [
+                "builtin.video",
+                "builtin.audio",
+                "builtin.archive"
+              ],
+              "external_ids": {},
+              "associated_template_ids": [
+                "tpl_media_collector_vault",
+                "tpl_video_production"
+              ],
+              "domain_id": "domain_life_entertainment",
+              "category_id": "cat_life_audiovisual"
             }
           ]
         },
@@ -998,6 +1047,102 @@
               ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_family_home"
+            },
+            {
+              "identity_id": "id.life.senior_citizen",
+              "identity_type": "life",
+              "name": {
+                "zh-CN": "银发长辈与居家颐养",
+                "en-US": "Senior Living & Elder Care Archive",
+                "ja-JP": "シニアライフ＆家庭回想録",
+                "ko-KR": "실버 라이프 및 노후 건강 관리",
+                "de-DE": "Seniorenleben & Häusliche Betreuung",
+                "fr-FR": "Vie des seniors et soins à domicile",
+                "es-ES": "Vida de adultos mayores y cuidados en el hogar",
+                "ru-RU": "Жизнь пожилых людей и домашний уход",
+                "pt-BR": "Vida na terceira idade e cuidados domésticos",
+                "it-IT": "Terza età e cura della salute in famiglia"
+              },
+              "description": {
+                "zh-CN": "家庭老照片回忆扫描、就医检查单据、常用医嘱备忘及经典戏曲养生资料归类",
+                "en-US": "Digitizes old family photos, medical reports, prescriptions, and health audio memoirs",
+                "ja-JP": "Digitizes old family photos, medical reports, prescriptions, and health audio memoirs",
+                "ko-KR": "Digitizes old family photos, medical reports, prescriptions, and health audio memoirs",
+                "de-DE": "Digitizes old family photos, medical reports, prescriptions, and health audio memoirs",
+                "fr-FR": "Digitizes old family photos, medical reports, prescriptions, and health audio memoirs",
+                "es-ES": "Digitizes old family photos, medical reports, prescriptions, and health audio memoirs",
+                "ru-RU": "Digitizes old family photos, medical reports, prescriptions, and health audio memoirs",
+                "pt-BR": "Digitizes old family photos, medical reports, prescriptions, and health audio memoirs",
+                "it-IT": "Digitizes old family photos, medical reports, prescriptions, and health audio memoirs"
+              },
+              "aliases": [
+                "长辈资料",
+                "老人相册",
+                "看病病历",
+                "戏曲养生",
+                "银发族",
+                "老年生活"
+              ],
+              "task_tags": [
+                "builtin.document",
+                "builtin.image",
+                "omw.00288234.n"
+              ],
+              "external_ids": {},
+              "associated_template_ids": [
+                "tpl_senior_life_archive",
+                "tpl_senior_medical_care_pipeline"
+              ],
+              "domain_id": "domain_life_entertainment",
+              "category_id": "cat_life_family_home"
+            },
+            {
+              "identity_id": "id.life.household_assets",
+              "identity_type": "life",
+              "name": {
+                "zh-CN": "个人生活证照与家庭账",
+                "en-US": "Personal Dossier & Household Assets Ledger",
+                "ja-JP": "身分証・契約書・家庭資産ファイル",
+                "ko-KR": "개인 증명서 및 가정 자산 관리",
+                "de-DE": "Persönliche Dokumente & Haushaltsvermögen",
+                "fr-FR": "Dossier personnel et patrimoine familial",
+                "es-ES": "Documentación personal y patrimonio familiar",
+                "ru-RU": "Личные документы и учет семейных активов",
+                "pt-BR": "Documentação pessoal e patrimônio familiar",
+                "it-IT": "Documenti personali e patrimonio familiare"
+              },
+              "description": {
+                "zh-CN": "身份证件扫描件、租买房屋合同、家庭保单、社保凭证与银行水电账单安全留存",
+                "en-US": "Securely stores IDs, housing contracts, policies, social security records, and bills",
+                "ja-JP": "Securely stores IDs, housing contracts, policies, social security records, and bills",
+                "ko-KR": "Securely stores IDs, housing contracts, policies, social security records, and bills",
+                "de-DE": "Securely stores IDs, housing contracts, policies, social security records, and bills",
+                "fr-FR": "Securely stores IDs, housing contracts, policies, social security records, and bills",
+                "es-ES": "Securely stores IDs, housing contracts, policies, social security records, and bills",
+                "ru-RU": "Securely stores IDs, housing contracts, policies, social security records, and bills",
+                "pt-BR": "Securely stores IDs, housing contracts, policies, social security records, and bills",
+                "it-IT": "Securely stores IDs, housing contracts, policies, social security records, and bills"
+              },
+              "aliases": [
+                "个人证件",
+                "家庭资产",
+                "租房合同",
+                "保险保单",
+                "水电缴费",
+                "户口本扫描"
+              ],
+              "task_tags": [
+                "builtin.finance",
+                "builtin.document",
+                "omw.00288234.n"
+              ],
+              "external_ids": {},
+              "associated_template_ids": [
+                "tpl_household_dossier_vault",
+                "tpl_family_household"
+              ],
+              "domain_id": "domain_life_entertainment",
+              "category_id": "cat_life_family_home"
             }
           ]
         },
@@ -1162,8 +1307,57 @@
               ],
               "external_ids": {},
               "associated_template_ids": [
+                "tpl_code_asset_vault",
                 "tpl_pkm_knowledge_vault",
                 "tpl_frontend_dev"
+              ],
+              "domain_id": "domain_life_entertainment",
+              "category_id": "cat_life_wellness_growth"
+            },
+            {
+              "identity_id": "id.life.k12_student_parent",
+              "identity_type": "life",
+              "name": {
+                "zh-CN": "K12 中小学生与辅导家长",
+                "en-US": "K-12 Student & Parenting Tutoring",
+                "ja-JP": "K12小中高生＆保護者・学習支援",
+                "ko-KR": "K-12 초중고 학생 및 학부모 튜터링",
+                "de-DE": "K-12 Schüler & Elternbetreuung",
+                "fr-FR": "Élève K-12 et parents accompagnateurs",
+                "es-ES": "Estudiante K-12 y tutoría de padres",
+                "ru-RU": "Учащийся K-12 и родительское репетиторство",
+                "pt-BR": "Estudante K-12 e tutoria parental",
+                "it-IT": "Studente K-12 e tutoraggio genitori"
+              },
+              "description": {
+                "zh-CN": "针对学科作业、网课课件、错题试卷、课外才艺与成长档案的体系化整理收纳",
+                "en-US": "Organizes homework, lecture slides, exam corrections, and extracurricular portfolios",
+                "ja-JP": "Organizes homework, lecture slides, exam corrections, and extracurricular portfolios",
+                "ko-KR": "Organizes homework, lecture slides, exam corrections, and extracurricular portfolios",
+                "de-DE": "Organizes homework, lecture slides, exam corrections, and extracurricular portfolios",
+                "fr-FR": "Organizes homework, lecture slides, exam corrections, and extracurricular portfolios",
+                "es-ES": "Organizes homework, lecture slides, exam corrections, and extracurricular portfolios",
+                "ru-RU": "Organizes homework, lecture slides, exam corrections, and extracurricular portfolios",
+                "pt-BR": "Organizes homework, lecture slides, exam corrections, and extracurricular portfolios",
+                "it-IT": "Organizes homework, lecture slides, exam corrections, and extracurricular portfolios"
+              },
+              "aliases": [
+                "中小学生",
+                "辅导家长",
+                "孩子作业",
+                "家庭辅导",
+                "学生作业",
+                "K12教育"
+              ],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.document",
+                "builtin.image"
+              ],
+              "external_ids": {},
+              "associated_template_ids": [
+                "tpl_k12_education_vault",
+                "tpl_k12_school_term_pipeline"
               ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_wellness_growth"
@@ -1266,6 +1460,7 @@
                 "isco": "2514"
               },
               "associated_template_ids": [
+                "tpl_code_asset_vault",
                 "tpl_frontend_dev",
                 "tpl_para_universal"
               ],
@@ -1312,6 +1507,7 @@
                 "isco": "2512"
               },
               "associated_template_ids": [
+                "tpl_code_asset_vault",
                 "tpl_backend_arch",
                 "tpl_johnny_decimal"
               ],
@@ -1358,6 +1554,7 @@
                 "isco": "2512"
               },
               "associated_template_ids": [
+                "tpl_code_asset_vault",
                 "tpl_frontend_dev",
                 "tpl_backend_arch"
               ],
@@ -1402,6 +1599,7 @@
               ],
               "external_ids": {},
               "associated_template_ids": [
+                "tpl_code_asset_vault",
                 "tpl_mobile_app_dev",
                 "tpl_frontend_dev"
               ],
@@ -1490,8 +1688,8 @@
               ],
               "external_ids": {},
               "associated_template_ids": [
-                "tpl_qa_testing_lifecycle",
-                "tpl_frontend_dev"
+                "tpl_qa_testing_asset_vault",
+                "tpl_qa_testing_lifecycle"
               ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_it_dev"
@@ -2930,6 +3128,57 @@
               ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_finance_hr_legal"
+            },
+            {
+              "identity_id": "id.office.general_clerk",
+              "identity_type": "profession",
+              "name": {
+                "zh-CN": "通用文员与基础行政办公",
+                "en-US": "General Office Clerk & Administrative Assistant",
+                "ja-JP": "一般事務＆オフィスアドミニストレーター",
+                "ko-KR": "일반 사무원 및 기초 행정 전문가",
+                "de-DE": "Bürokaufmann & Allgemeine Verwaltung",
+                "fr-FR": "Employé de bureau général et assistant administratif",
+                "es-ES": "Oficinista general y asistente administrativo",
+                "ru-RU": "Офисный клерк и административный помощник",
+                "pt-BR": "Auxiliar administrativo e rotinas de escritório",
+                "it-IT": "Impiegato d'ufficio generale e assistente amministrativo"
+              },
+              "description": {
+                "zh-CN": "收发公文登记、日常工作报表汇总、报销票据凭证整理与合同盖章文书归档",
+                "en-US": "Handles official dispatches, spreadsheets, reimbursement receipts, and stamped contracts",
+                "ja-JP": "Handles official dispatches, spreadsheets, reimbursement receipts, and stamped contracts",
+                "ko-KR": "Handles official dispatches, spreadsheets, reimbursement receipts, and stamped contracts",
+                "de-DE": "Handles official dispatches, spreadsheets, reimbursement receipts, and stamped contracts",
+                "fr-FR": "Handles official dispatches, spreadsheets, reimbursement receipts, and stamped contracts",
+                "es-ES": "Handles official dispatches, spreadsheets, reimbursement receipts, and stamped contracts",
+                "ru-RU": "Handles official dispatches, spreadsheets, reimbursement receipts, and stamped contracts",
+                "pt-BR": "Handles official dispatches, spreadsheets, reimbursement receipts, and stamped contracts",
+                "it-IT": "Handles official dispatches, spreadsheets, reimbursement receipts, and stamped contracts"
+              },
+              "aliases": [
+                "普通文员",
+                "行政文员",
+                "办公室文员",
+                "日常办公",
+                "办公内勤",
+                "打杂文员",
+                "收发报表"
+              ],
+              "task_tags": [
+                "builtin.document",
+                "builtin.document_sheet",
+                "builtin.finance"
+              ],
+              "external_ids": {
+                "isco": "4110"
+              },
+              "associated_template_ids": [
+                "tpl_office_general_archive",
+                "tpl_office_document_dispatch_flow"
+              ],
+              "domain_id": "domain_work_profession",
+              "category_id": "cat_prof_finance_hr_legal"
             }
           ]
         },
@@ -3653,6 +3902,7 @@
       ],
       "external_ids": {},
       "associated_template_ids": [
+        "tpl_desktop_classic_classification",
         "tpl_desktop_declutter",
         "tpl_para_universal"
       ],
@@ -4094,6 +4344,54 @@
       "category_id": "cat_life_audiovisual"
     },
     {
+      "identity_id": "id.media.collector_hoarder",
+      "identity_type": "life",
+      "name": {
+        "zh-CN": "纯媒体收藏与追剧影音仓储",
+        "en-US": "Media Collector & TV Series Digital Vault",
+        "ja-JP": "メディアコレクター＆動画ライブラリ",
+        "ko-KR": "미디어 수집가 및 영상 라이브러리 저장소",
+        "de-DE": "Mediensammler & TV-Serien-Archiv",
+        "fr-FR": "Collectionneur de médias et vidéothèque",
+        "es-ES": "Coleccionista de medios y videoteca digital",
+        "ru-RU": "Коллекционер медиа и видеотека",
+        "pt-BR": "Colecionador de mídia e videoteca",
+        "it-IT": "Collezionista multimediale e archivio serie TV"
+      },
+      "description": {
+        "zh-CN": "追剧剧集按季度收纳、高清电影原盘、无损音乐全集、电子书与常用装机工具包归档",
+        "en-US": "Organizes TV series by seasons, 4K movies, lossless music, ebooks, and setup archives",
+        "ja-JP": "Organizes TV series by seasons, 4K movies, lossless music, ebooks, and setup archives",
+        "ko-KR": "Organizes TV series by seasons, 4K movies, lossless music, ebooks, and setup archives",
+        "de-DE": "Organizes TV series by seasons, 4K movies, lossless music, ebooks, and setup archives",
+        "fr-FR": "Organizes TV series by seasons, 4K movies, lossless music, ebooks, and setup archives",
+        "es-ES": "Organizes TV series by seasons, 4K movies, lossless music, ebooks, and setup archives",
+        "ru-RU": "Organizes TV series by seasons, 4K movies, lossless music, ebooks, and setup archives",
+        "pt-BR": "Organizes TV series by seasons, 4K movies, lossless music, ebooks, and setup archives",
+        "it-IT": "Organizes TV series by seasons, 4K movies, lossless music, ebooks, and setup archives"
+      },
+      "aliases": [
+        "追剧收藏",
+        "电影原盘",
+        "媒体仓储",
+        "无损音乐库",
+        "影音收集",
+        "松鼠症仓储"
+      ],
+      "task_tags": [
+        "builtin.video",
+        "builtin.audio",
+        "builtin.archive"
+      ],
+      "external_ids": {},
+      "associated_template_ids": [
+        "tpl_media_collector_vault",
+        "tpl_video_production"
+      ],
+      "domain_id": "domain_life_entertainment",
+      "category_id": "cat_life_audiovisual"
+    },
+    {
       "identity_id": "id.hobby.photographer",
       "identity_type": "hobby",
       "name": {
@@ -4374,6 +4672,102 @@
       "category_id": "cat_life_family_home"
     },
     {
+      "identity_id": "id.life.senior_citizen",
+      "identity_type": "life",
+      "name": {
+        "zh-CN": "银发长辈与居家颐养",
+        "en-US": "Senior Living & Elder Care Archive",
+        "ja-JP": "シニアライフ＆家庭回想録",
+        "ko-KR": "실버 라이프 및 노후 건강 관리",
+        "de-DE": "Seniorenleben & Häusliche Betreuung",
+        "fr-FR": "Vie des seniors et soins à domicile",
+        "es-ES": "Vida de adultos mayores y cuidados en el hogar",
+        "ru-RU": "Жизнь пожилых людей и домашний уход",
+        "pt-BR": "Vida na terceira idade e cuidados domésticos",
+        "it-IT": "Terza età e cura della salute in famiglia"
+      },
+      "description": {
+        "zh-CN": "家庭老照片回忆扫描、就医检查单据、常用医嘱备忘及经典戏曲养生资料归类",
+        "en-US": "Digitizes old family photos, medical reports, prescriptions, and health audio memoirs",
+        "ja-JP": "Digitizes old family photos, medical reports, prescriptions, and health audio memoirs",
+        "ko-KR": "Digitizes old family photos, medical reports, prescriptions, and health audio memoirs",
+        "de-DE": "Digitizes old family photos, medical reports, prescriptions, and health audio memoirs",
+        "fr-FR": "Digitizes old family photos, medical reports, prescriptions, and health audio memoirs",
+        "es-ES": "Digitizes old family photos, medical reports, prescriptions, and health audio memoirs",
+        "ru-RU": "Digitizes old family photos, medical reports, prescriptions, and health audio memoirs",
+        "pt-BR": "Digitizes old family photos, medical reports, prescriptions, and health audio memoirs",
+        "it-IT": "Digitizes old family photos, medical reports, prescriptions, and health audio memoirs"
+      },
+      "aliases": [
+        "长辈资料",
+        "老人相册",
+        "看病病历",
+        "戏曲养生",
+        "银发族",
+        "老年生活"
+      ],
+      "task_tags": [
+        "builtin.document",
+        "builtin.image",
+        "omw.00288234.n"
+      ],
+      "external_ids": {},
+      "associated_template_ids": [
+        "tpl_senior_life_archive",
+        "tpl_senior_medical_care_pipeline"
+      ],
+      "domain_id": "domain_life_entertainment",
+      "category_id": "cat_life_family_home"
+    },
+    {
+      "identity_id": "id.life.household_assets",
+      "identity_type": "life",
+      "name": {
+        "zh-CN": "个人生活证照与家庭账",
+        "en-US": "Personal Dossier & Household Assets Ledger",
+        "ja-JP": "身分証・契約書・家庭資産ファイル",
+        "ko-KR": "개인 증명서 및 가정 자산 관리",
+        "de-DE": "Persönliche Dokumente & Haushaltsvermögen",
+        "fr-FR": "Dossier personnel et patrimoine familial",
+        "es-ES": "Documentación personal y patrimonio familiar",
+        "ru-RU": "Личные документы и учет семейных активов",
+        "pt-BR": "Documentação pessoal e patrimônio familiar",
+        "it-IT": "Documenti personali e patrimonio familiare"
+      },
+      "description": {
+        "zh-CN": "身份证件扫描件、租买房屋合同、家庭保单、社保凭证与银行水电账单安全留存",
+        "en-US": "Securely stores IDs, housing contracts, policies, social security records, and bills",
+        "ja-JP": "Securely stores IDs, housing contracts, policies, social security records, and bills",
+        "ko-KR": "Securely stores IDs, housing contracts, policies, social security records, and bills",
+        "de-DE": "Securely stores IDs, housing contracts, policies, social security records, and bills",
+        "fr-FR": "Securely stores IDs, housing contracts, policies, social security records, and bills",
+        "es-ES": "Securely stores IDs, housing contracts, policies, social security records, and bills",
+        "ru-RU": "Securely stores IDs, housing contracts, policies, social security records, and bills",
+        "pt-BR": "Securely stores IDs, housing contracts, policies, social security records, and bills",
+        "it-IT": "Securely stores IDs, housing contracts, policies, social security records, and bills"
+      },
+      "aliases": [
+        "个人证件",
+        "家庭资产",
+        "租房合同",
+        "保险保单",
+        "水电缴费",
+        "户口本扫描"
+      ],
+      "task_tags": [
+        "builtin.finance",
+        "builtin.document",
+        "omw.00288234.n"
+      ],
+      "external_ids": {},
+      "associated_template_ids": [
+        "tpl_household_dossier_vault",
+        "tpl_family_household"
+      ],
+      "domain_id": "domain_life_entertainment",
+      "category_id": "cat_life_family_home"
+    },
+    {
       "identity_id": "id.life.fitness",
       "identity_type": "hobby",
       "name": {
@@ -4507,8 +4901,57 @@
       ],
       "external_ids": {},
       "associated_template_ids": [
+        "tpl_code_asset_vault",
         "tpl_pkm_knowledge_vault",
         "tpl_frontend_dev"
+      ],
+      "domain_id": "domain_life_entertainment",
+      "category_id": "cat_life_wellness_growth"
+    },
+    {
+      "identity_id": "id.life.k12_student_parent",
+      "identity_type": "life",
+      "name": {
+        "zh-CN": "K12 中小学生与辅导家长",
+        "en-US": "K-12 Student & Parenting Tutoring",
+        "ja-JP": "K12小中高生＆保護者・学習支援",
+        "ko-KR": "K-12 초중고 학생 및 학부모 튜터링",
+        "de-DE": "K-12 Schüler & Elternbetreuung",
+        "fr-FR": "Élève K-12 et parents accompagnateurs",
+        "es-ES": "Estudiante K-12 y tutoría de padres",
+        "ru-RU": "Учащийся K-12 и родительское репетиторство",
+        "pt-BR": "Estudante K-12 e tutoria parental",
+        "it-IT": "Studente K-12 e tutoraggio genitori"
+      },
+      "description": {
+        "zh-CN": "针对学科作业、网课课件、错题试卷、课外才艺与成长档案的体系化整理收纳",
+        "en-US": "Organizes homework, lecture slides, exam corrections, and extracurricular portfolios",
+        "ja-JP": "Organizes homework, lecture slides, exam corrections, and extracurricular portfolios",
+        "ko-KR": "Organizes homework, lecture slides, exam corrections, and extracurricular portfolios",
+        "de-DE": "Organizes homework, lecture slides, exam corrections, and extracurricular portfolios",
+        "fr-FR": "Organizes homework, lecture slides, exam corrections, and extracurricular portfolios",
+        "es-ES": "Organizes homework, lecture slides, exam corrections, and extracurricular portfolios",
+        "ru-RU": "Organizes homework, lecture slides, exam corrections, and extracurricular portfolios",
+        "pt-BR": "Organizes homework, lecture slides, exam corrections, and extracurricular portfolios",
+        "it-IT": "Organizes homework, lecture slides, exam corrections, and extracurricular portfolios"
+      },
+      "aliases": [
+        "中小学生",
+        "辅导家长",
+        "孩子作业",
+        "家庭辅导",
+        "学生作业",
+        "K12教育"
+      ],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.document",
+        "builtin.image"
+      ],
+      "external_ids": {},
+      "associated_template_ids": [
+        "tpl_k12_education_vault",
+        "tpl_k12_school_term_pipeline"
       ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_wellness_growth"
@@ -4553,6 +4996,7 @@
         "isco": "2514"
       },
       "associated_template_ids": [
+        "tpl_code_asset_vault",
         "tpl_frontend_dev",
         "tpl_para_universal"
       ],
@@ -4599,6 +5043,7 @@
         "isco": "2512"
       },
       "associated_template_ids": [
+        "tpl_code_asset_vault",
         "tpl_backend_arch",
         "tpl_johnny_decimal"
       ],
@@ -4645,6 +5090,7 @@
         "isco": "2512"
       },
       "associated_template_ids": [
+        "tpl_code_asset_vault",
         "tpl_frontend_dev",
         "tpl_backend_arch"
       ],
@@ -4689,6 +5135,7 @@
       ],
       "external_ids": {},
       "associated_template_ids": [
+        "tpl_code_asset_vault",
         "tpl_mobile_app_dev",
         "tpl_frontend_dev"
       ],
@@ -4777,8 +5224,8 @@
       ],
       "external_ids": {},
       "associated_template_ids": [
-        "tpl_qa_testing_lifecycle",
-        "tpl_frontend_dev"
+        "tpl_qa_testing_asset_vault",
+        "tpl_qa_testing_lifecycle"
       ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_it_dev"
@@ -6127,6 +6574,57 @@
       "associated_template_ids": [
         "tpl_supply_chain_logistics",
         "tpl_cross_border_ops"
+      ],
+      "domain_id": "domain_work_profession",
+      "category_id": "cat_prof_finance_hr_legal"
+    },
+    {
+      "identity_id": "id.office.general_clerk",
+      "identity_type": "profession",
+      "name": {
+        "zh-CN": "通用文员与基础行政办公",
+        "en-US": "General Office Clerk & Administrative Assistant",
+        "ja-JP": "一般事務＆オフィスアドミニストレーター",
+        "ko-KR": "일반 사무원 및 기초 행정 전문가",
+        "de-DE": "Bürokaufmann & Allgemeine Verwaltung",
+        "fr-FR": "Employé de bureau général et assistant administratif",
+        "es-ES": "Oficinista general y asistente administrativo",
+        "ru-RU": "Офисный клерк и административный помощник",
+        "pt-BR": "Auxiliar administrativo e rotinas de escritório",
+        "it-IT": "Impiegato d'ufficio generale e assistente amministrativo"
+      },
+      "description": {
+        "zh-CN": "收发公文登记、日常工作报表汇总、报销票据凭证整理与合同盖章文书归档",
+        "en-US": "Handles official dispatches, spreadsheets, reimbursement receipts, and stamped contracts",
+        "ja-JP": "Handles official dispatches, spreadsheets, reimbursement receipts, and stamped contracts",
+        "ko-KR": "Handles official dispatches, spreadsheets, reimbursement receipts, and stamped contracts",
+        "de-DE": "Handles official dispatches, spreadsheets, reimbursement receipts, and stamped contracts",
+        "fr-FR": "Handles official dispatches, spreadsheets, reimbursement receipts, and stamped contracts",
+        "es-ES": "Handles official dispatches, spreadsheets, reimbursement receipts, and stamped contracts",
+        "ru-RU": "Handles official dispatches, spreadsheets, reimbursement receipts, and stamped contracts",
+        "pt-BR": "Handles official dispatches, spreadsheets, reimbursement receipts, and stamped contracts",
+        "it-IT": "Handles official dispatches, spreadsheets, reimbursement receipts, and stamped contracts"
+      },
+      "aliases": [
+        "普通文员",
+        "行政文员",
+        "办公室文员",
+        "日常办公",
+        "办公内勤",
+        "打杂文员",
+        "收发报表"
+      ],
+      "task_tags": [
+        "builtin.document",
+        "builtin.document_sheet",
+        "builtin.finance"
+      ],
+      "external_ids": {
+        "isco": "4110"
+      },
+      "associated_template_ids": [
+        "tpl_office_general_archive",
+        "tpl_office_document_dispatch_flow"
       ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_finance_hr_legal"
