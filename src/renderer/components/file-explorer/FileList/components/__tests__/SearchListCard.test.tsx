@@ -155,6 +155,27 @@ describe('SearchListCard Component', () => {
       expect(screen.getByText('#核心架构')).toBeDefined()
     })
 
+    it('swaps primary and secondary filenames when swapFileNameDisplay is true', () => {
+      const { container } = render(
+        <SearchListCard
+          item={textItem}
+          safeItemName="项目规划书.docx"
+          formatFileSize={defaultFormatSize}
+          onItemClick={mockItemClick}
+          onContextMenu={mockContextMenu}
+          index={0}
+          swapFileNameDisplay={true}
+        />
+      )
+
+      // Row 1 应该是真实文件名，Row 2 应该是智能文件名
+      const row1Title = container.querySelector('.text-\\[13px\\]')
+      expect(row1Title?.textContent).toContain('项目规划书.docx')
+
+      const row2Subtitle = container.querySelector('[title="D:\\\\workspace\\\\docs\\\\项目规划书.docx"]')
+      expect(row2Subtitle?.textContent).toContain('2026战略规划.docx')
+    })
+
     it('renders sanitized snippet in Row 3', () => {
       render(
         <SearchListCard

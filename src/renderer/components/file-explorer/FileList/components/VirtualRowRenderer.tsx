@@ -310,6 +310,7 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
           pageId={pageId}
           workspaceDirectoryPath={workspaceDirectoryPath}
           cardHeight={searchListRowHeight}
+          swapFileNameDisplay={swapFileNameDisplay}
         />
       </div>
     )

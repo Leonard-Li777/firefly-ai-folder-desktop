@@ -18,6 +18,7 @@ import { usePreviewOverlayStore } from '../../../../stores/preview-overlay-store
 import { PageId, PAGE_IDS } from '../../../../constants/page-ids'
 import { useSearchStore } from '../../../../stores/search-store'
 import { getOrganizedSearchTags, OrganizedTagItem } from './search-list-tag-utils'
+import { useSettingsStore } from '../../../../stores/settings-store'
 
 /**
  * 搜索列表模式专用行高（三行式多模态卡片排版，规格书定高 104px）
@@ -261,6 +262,8 @@ interface SearchListCardProps {
   workspaceDirectoryPath?: string | null
   /** 卡片动态行高（88~220px，默认 104px） */
   cardHeight?: number
+  /** 是否主副文件名互换显示（true: 真实文件名为主，智能名为辅；false: 智能名为主，真实名为辅） */
+  swapFileNameDisplay?: boolean
 }
 
 /**
@@ -285,7 +288,8 @@ export const SearchListCard = React.memo(
     searchKeyword: propKeyword,
     searchTokens: propTokens,
     workspaceDirectoryPath,
-    cardHeight
+    cardHeight,
+    swapFileNameDisplay
   }: SearchListCardProps) => {
     const [isQueueSubmitting, setIsQueueSubmitting] = useState(false)
     const [useFallbackImg, setUseFallbackImg] = useState(false)
@@ -408,8 +412,25 @@ export const SearchListCard = React.memo(
       ? `${t('语义召回')} ${rawPercent}%`
       : t('语义召回')
 
-    const primaryName = item.smartName || safeItemName
-    const secondaryName = item.smartName && item.smartName !== safeItemName ? safeItemName : ''
+    const storeSwap =
+      useSettingsStore(s => s.getConfigValue<boolean>('SWAP_FILE_NAME_DISPLAY')) ?? false
+    const effectiveSwap = swapFileNameDisplay ?? storeSwap
+    const isSwapped = Boolean(effectiveSwap)
+    const hasDiffSmartName = Boolean(item.smartName) && item.smartName !== safeItemName
+
+    // 主文件名 (Row 1): 真实名为主时取 safeItemName，智能名为主时取 item.smartName || safeItemName
+    const primaryName = isSwapped
+      ? safeItemName
+      : item.smartName || safeItemName
+
+    // 辅文件名 (Row 2): 真实名为主时取 item.smartName (若存在不同)，智能名为主时取 safeItemName
+    const secondaryName = hasDiffSmartName
+      ? isSwapped
+        ? item.smartName || ''
+        : safeItemName
+      : isSwapped
+        ? ''
+        : safeItemName
 
     /** 抽帧/音频切片跳轴定位 */
     const handlePreviewSeek = useCallback(
@@ -576,16 +597,8 @@ export const SearchListCard = React.memo(
               <HighlightText
                 text={primaryName}
                 className="text-[13px] font-semibold text-foreground tracking-tight truncate max-w-full"
-                title={primaryName}
+                title={item.path ? `${primaryName}\n${item.path}` : primaryName}
               />
-              {secondaryName && (
-                <span
-                  className="text-[11px] text-muted-foreground/70 truncate shrink min-w-0"
-                  title={t('原始文件名: {name}', { name: secondaryName })}
-                >
-                  (<HighlightText text={secondaryName} />)
-                </span>
-              )}
             </div>
 
             {/* 右侧：双层 Flex 度量区（国际化自适应召回徽标 + 确定宽度时间与大小列） */}
@@ -631,12 +644,14 @@ export const SearchListCard = React.memo(
           {/* 第二行 (Row 2, 20px)：真实文件名 (Hover 显路径) + 标签序列 */}
           {/* ------------------------------------------------------ */}
           <div className="flex items-center gap-2 min-w-0 h-[20px]">
-            <span
-              className="text-[11px] font-mono text-muted-foreground/80 max-w-[240px] truncate shrink-0 cursor-default hover:text-foreground transition-colors"
-              title={item.path}
-            >
-              <HighlightText text={safeItemName} />
-            </span>
+            {secondaryName ? (
+              <span
+                className="text-[11px] font-mono text-muted-foreground/80 max-w-[240px] truncate shrink-0 cursor-default hover:text-foreground transition-colors"
+                title={item.path}
+              >
+                <HighlightText text={secondaryName} />
+              </span>
+            ) : null}
 
             {/* 标签微胶囊序列（三级梯队排序：关键词命中 > 融合标签 > 其它随机；过滤全年龄/已归档） */}
             {organizedTags.length > 0 && (
