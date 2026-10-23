@@ -377,10 +377,12 @@ export interface OmniClusterDocument {
   fingerprint: string
   embedding: number[]
   keywords: string[]
-  /** 送嵌入引擎的富文本（智能命名/文件名 + 准入关键词），供 zvec 未命中时 JIT 自愈 */
+  /** 送嵌入引擎的富文本（智能命名/文件名 + 准入关键词），供 zvec 未命中时 JIT 即时编码 */
   embeddingText?: string
-  /** 正文不含可见语义文本时，本次聚类改用 embeddingText 编码；服务端仅在 zvec 槽位缺失时回填，不覆盖已有向量 */
+  /** 正文不含可见语义文本时，本次聚类改用 embeddingText 编码；JIT 向量仅服务当次 HAC 距离矩阵，严禁回写检索槽位 */
   preferEmbeddingText?: boolean
+  /** 受控文件分类（如 'application' | 'media' | 'document' | 'other'），用于跨模态互斥门禁 */
+  fileCategory?: string
 }
 
 export interface OmniClusterGroup {
@@ -854,11 +856,12 @@ export class OmniService {
         return true
       }
 
-      // 若基准端口未通且存在旧的未退出子进程，先执行安全清理
+      // 若基准端口未通且存在旧的未退出子进程，先执行安全清理（仅终止物理进程，不重置 isStarting 标记）
       if (this.process && !this.process.killed) {
-        this.stop()
+        this.killCurrentProcess()
         await new Promise(r => setTimeout(r, 300))
       }
+      this.isStarting = true
 
       // 寻找可用端口（支持冷门段 38200~38219 自动滑动）
       const port = await findAvailablePort(this.basePort, APP_PORTS.MAX_ATTEMPTS)
@@ -1071,7 +1074,8 @@ export class OmniService {
       // 等待服务就绪探活 (最多 200 次 * 200ms = 40秒，容纳 71.6 万条多语言别名冷启动解密热载与 SenseVoice/MOSS-TTS 模型加载时间)
       for (let i = 0; i < 200; i++) {
         // 关键防御：若子进程在探活期间提前退出或被终止，立即中止等待，拒绝僵尸死等 40s 阻塞系统
-        if (child.exitCode !== null || child.killed || this.process !== child || !this.isStarting) {
+        // 物理事实守卫：仅当子进程真正退出 (exitCode !== null) 或被显式 kill 时才判定为退出，杜绝状态位竞争引发的假性误杀
+        if (child.exitCode !== null || child.killed) {
           logger.warn(
             LogCategory.SYSTEM,
             `[OmniService] firefly-omni 子进程在就绪前异常退出 (exitCode=${child.exitCode}, killed=${child.killed})，中止启动探活`
@@ -1116,13 +1120,10 @@ export class OmniService {
   /**
    * 停止子进程
    */
-  public stop(): void {
-    this.isStarting = false
-    if (this.restartTimeout) {
-      clearTimeout(this.restartTimeout)
-      this.restartTimeout = null
-    }
-
+  /**
+   * 物理终止当前持有的 firefly-omni 子进程树（纯净终止，不污染 isStarting 状态机）
+   */
+  private killCurrentProcess(): void {
     if (this.process) {
       const pid = this.process.pid
       try {
@@ -1141,6 +1142,16 @@ export class OmniService {
       } catch {}
       this.process = null
     }
+  }
+
+  public stop(): void {
+    this.isStarting = false
+    if (this.restartTimeout) {
+      clearTimeout(this.restartTimeout)
+      this.restartTimeout = null
+    }
+
+    this.killCurrentProcess()
     // 主动推送"未运行"状态至渲染进程（基础AI引擎 Footer 展示）
     broadcastOmniStatus({ running: false, version: null })
   }
@@ -1360,9 +1371,11 @@ export class OmniService {
     try {
       return await doFetch()
     } catch (err: any) {
+      const causeMsg = err?.cause?.message || err?.cause?.code || (err?.cause ? String(err.cause) : '')
+      const fullError = causeMsg ? `${err.message} (cause: ${causeMsg})` : err.message
       logger.warn(
         LogCategory.SYSTEM,
-        `[OmniService] <<< POST /api/extract 首次调用异常 (${filePath}): 耗时: ${Date.now() - tStart}ms, 错误: ${err.message}，尝试自愈拉起并重试...`
+        `[OmniService] <<< POST /api/extract 首次调用异常 (${filePath}): 耗时: ${Date.now() - tStart}ms, 错误: ${fullError}，尝试自愈拉起并重试...`
       )
       // 若出现网络错误（如进程被外部杀死重构中），触发自愈并重试一次
       const restarted = await this.start()
@@ -1370,9 +1383,11 @@ export class OmniService {
         try {
           return await doFetch()
         } catch (retryErr: any) {
+          const retryCause = retryErr?.cause?.message || retryErr?.cause?.code || (retryErr?.cause ? String(retryErr.cause) : '')
+          const retryFull = retryCause ? `${retryErr.message} (cause: ${retryCause})` : retryErr.message
           logger.error(
             LogCategory.SYSTEM,
-            `[OmniService] <<< POST /api/extract 自愈重试仍失败 (${filePath}): ${retryErr.message}`
+            `[OmniService] <<< POST /api/extract 自愈重试仍失败 (${filePath}): ${retryFull}`
           )
         }
       }
@@ -1688,7 +1703,10 @@ export class OmniService {
     const doFetch = async () => {
       const res = await fetch(`${this.baseUrl}/api/perceive`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Connection': 'keep-alive'
+        },
         body: JSON.stringify(reqBody),
         signal: AbortSignal.timeout(timeoutMs)
       })
@@ -1803,18 +1821,22 @@ export class OmniService {
     try {
       return await doFetch()
     } catch (err: any) {
+      const causeMsg = err?.cause?.message || err?.cause?.code || (err?.cause ? String(err.cause) : '')
+      const fullError = causeMsg ? `${err.message} (cause: ${causeMsg})` : err.message
       logger.warn(
         LogCategory.SYSTEM,
-        `[OmniService] <<< POST /api/perceive 首次调用异常 (${filePath}): 耗时: ${Date.now() - tStart}ms, 错误: ${err.message}，尝试自愈拉起并重试...`
+        `[OmniService] <<< POST /api/perceive 首次调用异常 (${filePath}): 耗时: ${Date.now() - tStart}ms, 错误: ${fullError}，尝试自愈拉起并重试...`
       )
       const restarted = await this.start()
       if (restarted) {
         try {
           return await doFetch()
         } catch (retryErr: any) {
+          const retryCause = retryErr?.cause?.message || retryErr?.cause?.code || (retryErr?.cause ? String(retryErr.cause) : '')
+          const retryFull = retryCause ? `${retryErr.message} (cause: ${retryCause})` : retryErr.message
           logger.error(
             LogCategory.SYSTEM,
-            `[OmniService] <<< POST /api/perceive 自愈重试仍失败 (${filePath}): ${retryErr.message}`
+            `[OmniService] <<< POST /api/perceive 自愈重试仍失败 (${filePath}): ${retryFull}`
           )
         }
       }
