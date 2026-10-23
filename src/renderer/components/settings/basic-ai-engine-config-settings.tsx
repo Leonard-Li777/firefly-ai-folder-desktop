@@ -138,15 +138,17 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
       await updateConfigValue('EMBEDDING_MRL_DIMENSION', recommendedSettings.mrlDimension)
     }
     // 由「应用硬件推荐设置」触发的档位切换：确认后补齐硬件推荐的视频取帧间隔与画面精细度，
-    // 保证一键应用语义完整（手动点档位卡片不触发本分支）
+    // 保证一键应用语义完整（手动点档位卡片不触发本分支）；逐字段守卫防推荐数据缺项时写入 undefined
     if (pendingVideoRecommendation && recommendedSettings) {
-      await updateConfigValue(
-        'VIDEO_FRAME_INTERVAL_SECONDS',
-        recommendedSettings.videoFrameIntervalSeconds
-      )
-      await updateConfigValue('VIDEO_SOFT_TOKEN_BUDGET', recommendedSettings.videoSoftTokenBudget)
-      setLocalVideoInterval(recommendedSettings.videoFrameIntervalSeconds)
-      setLocalVideoSoftTokenBudget(recommendedSettings.videoSoftTokenBudget)
+      const rec = recommendedSettings
+      if (rec.videoFrameIntervalSeconds) {
+        await updateConfigValue('VIDEO_FRAME_INTERVAL_SECONDS', rec.videoFrameIntervalSeconds)
+        setLocalVideoInterval(rec.videoFrameIntervalSeconds)
+      }
+      if (rec.videoSoftTokenBudget) {
+        await updateConfigValue('VIDEO_SOFT_TOKEN_BUDGET', rec.videoSoftTokenBudget)
+        setLocalVideoSoftTokenBudget(rec.videoSoftTokenBudget)
+      }
     }
     setPendingVideoRecommendation(false)
     captureEvent('切换嵌入模型档位', { profile: target })
@@ -173,23 +175,34 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
       setPendingVideoRecommendation(true)
       return
     }
-    await updateConfigValue('EMBEDDING_MRL_DIMENSION', recommendedSettings.mrlDimension)
-    await updateConfigValue('VIDEO_FRAME_INTERVAL_SECONDS', recommendedSettings.videoFrameIntervalSeconds)
-    await updateConfigValue('VIDEO_SOFT_TOKEN_BUDGET', recommendedSettings.videoSoftTokenBudget)
-    setLocalVideoInterval(recommendedSettings.videoFrameIntervalSeconds)
-    setLocalVideoSoftTokenBudget(recommendedSettings.videoSoftTokenBudget)
+    const rec = recommendedSettings
+    // 逐字段守卫：推荐数据缺项时不把 undefined 写进配置
+    if (rec.mrlDimension) {
+      await updateConfigValue('EMBEDDING_MRL_DIMENSION', rec.mrlDimension)
+    }
+    if (rec.videoFrameIntervalSeconds) {
+      await updateConfigValue('VIDEO_FRAME_INTERVAL_SECONDS', rec.videoFrameIntervalSeconds)
+      setLocalVideoInterval(rec.videoFrameIntervalSeconds)
+    }
+    if (rec.videoSoftTokenBudget) {
+      await updateConfigValue('VIDEO_SOFT_TOKEN_BUDGET', rec.videoSoftTokenBudget)
+      setLocalVideoSoftTokenBudget(rec.videoSoftTokenBudget)
+    }
     toast.success(
       t('已同步硬件推荐配置（{profile} · {dim}维 · {interval}秒取帧 · 画面{detail}）', {
-        profile: recommendedSettings.profile === 'gemma_unified' ? t('全模态标准档') : t('极速轻量档'),
-        dim: recommendedSettings.mrlDimension,
-        interval: recommendedSettings.videoFrameIntervalSeconds,
-        detail: recommendedSettings.videoSoftTokenBudget === 70 ? t('精简快速') : t('标准精细')
+        profile: rec.profile === 'gemma_unified' ? t('全模态标准档') : t('极速轻量档'),
+        dim: rec.mrlDimension,
+        interval: rec.videoFrameIntervalSeconds,
+        detail: rec.videoSoftTokenBudget === 70 ? t('精简快速') : t('标准精细')
       })
     )
   }
 
-  // 视频切片抽帧间隔防抖同步
+  // 视频切片抽帧间隔防抖同步（挂载快照守卫：硬件推荐等程序化路径已自行落盘；
+  // 只有偏离挂载初值的用户实际改动才写配置，避免晚到 hydration 或 StrictMode 重挂载造成误写）
+  const initialVideoIntervalRef = React.useRef(localVideoInterval)
   useEffect(() => {
+    if (localVideoInterval === initialVideoIntervalRef.current) return
     const handler = setTimeout(() => {
       const currentConfigValue = getConfigValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 5.0
       if (localVideoInterval !== currentConfigValue) {
@@ -203,8 +216,10 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
     return () => clearTimeout(handler)
   }, [localVideoInterval])
 
-  // 视频画面精细度防抖同步
+  // 视频画面精细度防抖同步（守卫逻辑同上）
+  const initialVideoSoftTokenBudgetRef = React.useRef(localVideoSoftTokenBudget)
   useEffect(() => {
+    if (localVideoSoftTokenBudget === initialVideoSoftTokenBudgetRef.current) return
     const handler = setTimeout(() => {
       const currentConfigValue = getConfigValue<number>('VIDEO_SOFT_TOKEN_BUDGET') ?? 140
       if (localVideoSoftTokenBudget !== currentConfigValue) {
@@ -648,7 +663,7 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                     </Label>
                     <HelpTooltip
                       content={t(
-                        '每隔几秒从视频里取一帧画面来分析。间隔越短，越不容易漏掉一闪而过的画面，但分析更慢；间隔越长，分析越快，但可能错过快速变化的内容。'
+                        '每隔几秒从视频里取一帧画面来分析。间隔越短，越不容易漏掉一闪而过的画面，但分析更慢；间隔越长，分析越快，但可能错过快速变化的内容。已分析过的旧视频不会自动重算，修改后需在文件列表中右键「重新分析」才会生效。'
                       )}
                     />
                   </div>
@@ -713,7 +728,7 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                     </Label>
                     <HelpTooltip
                       content={t(
-                        '决定每一帧画面保留多少细节。标准精细看得更清，远处小物体和相近画面更容易区分，但视频分析更慢；精简快速速度约为前者的 2~3 倍，但细节和相近画面可能分不清。'
+                        '决定每一帧画面保留多少细节。标准精细看得更清，远处小物体和相近画面更容易区分，但视频分析更慢；精简快速速度约为前者的 2~3 倍，但细节和相近画面可能分不清。已分析过的旧视频不会自动重算，修改后需在文件列表中右键「重新分析」才会生效。'
                       )}
                     />
                   </div>

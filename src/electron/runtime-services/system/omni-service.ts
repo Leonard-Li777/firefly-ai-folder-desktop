@@ -557,6 +557,7 @@ export class OmniService {
       // 监听 Desktop 端 OCR 与分析相关的 ConfigKey 变更，实时自动推送到 Omni
       import('../../config/config-orchestrator').then(({ ConfigOrchestrator }) => {
         const orchestrator = ConfigOrchestrator.getInstance()
+        // 注意：VIDEO_SOFT_TOKEN_BUDGET 不在此列——它是逐请求参数（随 perceive 请求体透传），不进全局 OmniConfig
         const ocrKeys = [
           'ENABLE_IMAGE_OCR',
           'ENABLE_DOCUMENT_OCR',

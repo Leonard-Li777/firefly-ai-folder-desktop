@@ -873,7 +873,6 @@ const config: ForgeConfig = {
               )
             }
           }
-          }
         } catch (e: any) {
           if (e.message && e.message.includes('AI 引擎二进制包验证失败')) {
             throw e
