@@ -73,6 +73,9 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
     getConfigValue<'classic_light' | 'gemma_unified'>('AI_EMBEDDING_PROFILE') ?? 'classic_light'
   const [pendingProfile, setPendingProfile] = useState<'classic_light' | 'gemma_unified' | null>(null)
   const [pendingDimension, setPendingDimension] = useState<256 | 512 | 768 | null>(null)
+  // 「应用硬件推荐设置」在档位不一致时需先弹确认框，确认后必须补齐视频取帧间隔与画面精细度，
+  // 否则一键应用只改档位、视频两项被静默跳过（与手动点档位卡片的行为区分开）
+  const [pendingVideoRecommendation, setPendingVideoRecommendation] = useState(false)
 
   // MRL 多维度弹性降维 (256 | 512 | 768)
   const mrlDimension =
@@ -134,6 +137,18 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
     if (target === 'gemma_unified' && recommendedSettings?.mrlDimension) {
       await updateConfigValue('EMBEDDING_MRL_DIMENSION', recommendedSettings.mrlDimension)
     }
+    // 由「应用硬件推荐设置」触发的档位切换：确认后补齐硬件推荐的视频取帧间隔与画面精细度，
+    // 保证一键应用语义完整（手动点档位卡片不触发本分支）
+    if (pendingVideoRecommendation && recommendedSettings) {
+      await updateConfigValue(
+        'VIDEO_FRAME_INTERVAL_SECONDS',
+        recommendedSettings.videoFrameIntervalSeconds
+      )
+      await updateConfigValue('VIDEO_SOFT_TOKEN_BUDGET', recommendedSettings.videoSoftTokenBudget)
+      setLocalVideoInterval(recommendedSettings.videoFrameIntervalSeconds)
+      setLocalVideoSoftTokenBudget(recommendedSettings.videoSoftTokenBudget)
+    }
+    setPendingVideoRecommendation(false)
     captureEvent('切换嵌入模型档位', { profile: target })
     toast.success(
       t('已切换搜索与理解模式并重启，新导入的文件将使用新模式分析')
@@ -155,6 +170,7 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
     if (!recommendedSettings) return
     if (embeddingProfile !== recommendedSettings.profile) {
       setPendingProfile(recommendedSettings.profile)
+      setPendingVideoRecommendation(true)
       return
     }
     await updateConfigValue('EMBEDDING_MRL_DIMENSION', recommendedSettings.mrlDimension)
@@ -785,7 +801,12 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
       </Card>
 
       {/* 模式切换确认弹窗 */}
-      <AlertDialog open={!!pendingProfile} onOpenChange={open => !open && setPendingProfile(null)}>
+      <AlertDialog open={!!pendingProfile} onOpenChange={open => {
+        if (!open) {
+          setPendingProfile(null)
+          setPendingVideoRecommendation(false)
+        }
+      }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('确认切换智能理解模式？')}</AlertDialogTitle>
