@@ -1,8 +1,33 @@
-import { encodeMachineIdToRef, encodeMachineIdToBase64 } from '@firefly/shared'
+import {
+  encodeMachineIdToRef,
+  encodeMachineIdToBase64,
+  getSiteDomain,
+  getSiteHosts
+} from '@firefly/shared'
 import { openExternalLink } from './external-link'
 import i18nScope from '@src/languages'
+import { useConfigStore } from '../stores/config-store'
+import { getAppRegion } from './app-region'
 
 export type MarketingAction = 'upgrade_pro' | 'buy_firecores' | 'enterprise'
+
+/**
+ * 读取渲染进程真实生效的支付配置
+ *
+ * ⚠️ 注意：desktop 渲染层并不存在 `window.__APP_CONFIG__`（该全局从未被 preload 注入，
+ * 历史实现读它恒为 undefined）。配置的唯一可靠来源是 `useConfigStore`，其数据由
+ * 主进程 ConfigOrchestrator 经 IPC 下发（`app-config.cn.json` / `app-config.intl.json`）。
+ */
+function getPaymentInfo(): Record<string, any> {
+  try {
+    const config = useConfigStore.getState().config
+    return (config as any)?.PAYMENT_INFO || {}
+  } catch (err) {
+    // 配置尚未就绪属正常时序（启动早期），但必须留痕，避免静默降级掩盖配置缺口
+    console.warn('[MarketingLink] 读取 PAYMENT_INFO 失败，回退区域域名推导:', err)
+    return {}
+  }
+}
 
 /**
  * 将生产官网 URL 拦截替换为本地开发营销站 URL (仅在开发环境下生效)
@@ -14,7 +39,8 @@ function resolveDevMarketingUrl(targetUrl: URL): URL {
     return targetUrl
   }
 
-  const productionHosts = ['www.aifolder.net', 'aifolder.net', 'aifolder.iocn.cn']
+  // dev 拦截白名单与区域域名同源（@firefly/shared 的 SITE_DOMAINS），不含任何本地字面量
+  const productionHosts = getSiteHosts()
   if (!productionHosts.includes(targetUrl.hostname)) {
     return targetUrl
   }
@@ -82,47 +108,65 @@ export function resolveDevCreemUrl(urlStr: string): string {
  * 获取当前环境/区域的官方网站基础域名
  * 国内版 (CN): https://aifolder.iocn.cn
  * 国际版 (INTL): https://www.aifolder.net
+ *
+ * 区域判定见 `lib/app-region.ts`，域名表见 `@firefly/shared` 的 `SITE_DOMAINS`（双端唯一事实源）。
  */
 export function getOfficialSiteDomain(): string {
-  const config = (window as any).__APP_CONFIG__ || {}
-  if (config?.SITE_DOMAIN) {
-    return config.SITE_DOMAIN
-  }
-  // 优先读取动态注入的区域标识，缺省兜底为国际版域名
-  const region = String(
-    (window as any)?.__APP_REGION__ || (window as any)?.electronAPI?.getAppRegion?.() || ''
-  ).toLowerCase()
-  if (region === 'cn') {
-    return 'https://aifolder.iocn.cn'
-  }
-  return 'https://www.aifolder.net'
+  return getSiteDomain(getAppRegion())
+}
+
+/**
+ * 获取当前区域官网根地址（无尾斜杠），供拼接 /pricing、/download 等子路径使用
+ */
+export function getOfficialSiteOrigin(): string {
+  return getOfficialSiteDomain().replace(/\/+$/, '')
 }
 
 /**
  * 获取定价页基础地址（唯一事实源）
  *
- * 优先级：显式配置的 pricing_url / official_site_url > 按区域推导的官网域名 + /pricing。
- * ⚠️ 严禁在此硬编码国际版域名：国内版（cn）必须落到 SITE_DOMAIN（https://aifolder.iocn.cn），
- * 否则"前往购买萤火""升级帐户"等入口会把国内版用户导向国际版站点。
+ * 语义区分（易错点）：
+ * - `pricing_url` = 定价页**完整地址**，原样使用（可自带 query/路径）。
+ * - `official_site_url` = 官网**根地址**，必须补 `/pricing` 才能落到定价页；
+ *   若直接当定价页用会落在首页，`#firecores` / `#enterprise` 锚点与
+ *   `PricingPlans` 的 action 兜底滚动都会失效。
+ *
+ * 兜底：按区域推导（国内版 aifolder.iocn.cn / 国际版 www.aifolder.net）。
+ * ⚠️ 严禁在此硬编码国际版域名，否则"前往购买萤火""升级帐户"等入口会把国内版用户导向国际版站点。
  */
 function getPricingBaseUrl(): string {
-  const config = (window as any).__APP_CONFIG__ || {}
-  const configured = config?.PAYMENT_INFO?.pricing_url || config?.PAYMENT_INFO?.official_site_url
-  if (configured) {
-    return configured
+  const paymentInfo = getPaymentInfo()
+
+  const pricingUrl = paymentInfo?.pricing_url
+  if (pricingUrl) {
+    return pricingUrl
   }
-  const domain = getOfficialSiteDomain().replace(/\/+$/, '')
-  return `${domain}/pricing`
+
+  const officialSiteUrl = paymentInfo?.official_site_url
+  if (officialSiteUrl) {
+    try {
+      // 只取 origin，避免配置里带 path/query 污染定价页地址
+      return `${new URL(officialSiteUrl).origin}/pricing`
+    } catch (err) {
+      console.warn(
+        `[MarketingLink] official_site_url 非法（${officialSiteUrl}），改用区域域名推导:`,
+        err
+      )
+    }
+  }
+
+  return `${getOfficialSiteOrigin()}/pricing`
 }
 
 /**
- * 同步构造定价/购买页 URL（渲染期展示文本、离线复制链接等无法 await 的场景使用）
- *
- * @param action 可选的行为参数 (upgrade_pro | buy_firecores | enterprise)
- * @param identCode 可选设备标识码（44 位 Base64）
+ * 按 action / identCode 组装定价页 URL
  */
-export function buildPricingUrlSync(action?: MarketingAction, identCode?: string): string {
-  const url = new URL(getPricingBaseUrl())
+function composePricingUrl(
+  baseUrl: string,
+  action?: MarketingAction,
+  identCode?: string
+): string {
+  const url = new URL(baseUrl)
 
   if (identCode) {
     url.searchParams.set('ident_code', identCode)
@@ -138,6 +182,25 @@ export function buildPricingUrlSync(action?: MarketingAction, identCode?: string
   }
 
   return url.toString()
+}
+
+/**
+ * 同步构造定价/购买页 URL（渲染期展示文本、离线复制链接等无法 await 的场景使用）
+ *
+ * 配置值非法（缺 scheme、协议残缺等）时回退区域域名，避免在 JSX 渲染期抛错击穿 ErrorBoundary。
+ *
+ * @param action 可选的行为参数 (upgrade_pro | buy_firecores | enterprise)
+ * @param identCode 可选设备标识码（44 位 Base64）
+ */
+export function buildPricingUrlSync(action?: MarketingAction, identCode?: string): string {
+  const baseUrl = getPricingBaseUrl()
+  try {
+    return composePricingUrl(baseUrl, action, identCode)
+  } catch (err) {
+    const fallback = `${getOfficialSiteOrigin()}/pricing`
+    console.warn(`[MarketingLink] 定价页地址非法（${baseUrl}），已回退 ${fallback}:`, err)
+    return composePricingUrl(fallback, action, identCode)
+  }
 }
 
 /**
@@ -167,14 +230,19 @@ export async function getMarketingPricingUrl(
   let identCode = ''
 
   // 1. 获取机器码并生成统一的 44 位 Base64 标识码 ident_code
-  if (window.electronAPI?.license?.getIdentCode) {
-    identCode = await window.electronAPI.license.getIdentCode()
-  }
-  if (!identCode) {
-    const machineId = await window.electronAPI?.getMachineId?.()
-    if (machineId) {
-      identCode = encodeMachineIdToBase64(machineId)
+  try {
+    if (window.electronAPI?.license?.getIdentCode) {
+      identCode = await window.electronAPI.license.getIdentCode()
     }
+    if (!identCode) {
+      const machineId = await window.electronAPI?.getMachineId?.()
+      if (machineId) {
+        identCode = encodeMachineIdToBase64(machineId)
+      }
+    }
+  } catch (err) {
+    // 降级必须留痕：缺失 ident_code 时官网无法免密绑定设备，需用户手动复制标识码
+    console.warn('[MarketingLink] 读取设备标识码失败，链接将不带 ident_code:', err)
   }
 
   // 2. 基础地址按区域推导（国内版 aifolder.iocn.cn / 国际版 www.aifolder.net），
@@ -188,7 +256,10 @@ export async function getMarketingPricingUrl(
       url.searchParams.set('worktree', worktreeInfo.worktreeName)
       url.searchParams.set('env', worktreeInfo.isProd ? 'prod' : 'dev')
     }
-  } catch {}
+  } catch (err) {
+    // 降级必须留痕：缺失 worktree/env 会导致支付成功后无法精准唤起对应分支实例
+    console.warn('[MarketingLink] 读取 worktree 信息失败，链接将不带 worktree/env:', err)
+  }
 
   // 4. 开发环境自动拦截并替换至本地营销服务（若未强制生产域名）
   if (!options?.forceProductionDomain) {

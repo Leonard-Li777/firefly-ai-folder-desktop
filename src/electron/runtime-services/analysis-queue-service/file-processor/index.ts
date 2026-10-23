@@ -1876,6 +1876,9 @@ export class FileProcessor {
       const videoFrameIntervalSeconds = isVideo
         ? (ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 1.0)
         : undefined
+      const videoSoftTokenBudget = isVideo
+        ? (ConfigOrchestrator.getInstance().getValue<number>('VIDEO_SOFT_TOKEN_BUDGET') ?? 140)
+        : undefined
 
       // 0. 统一调用 Omni 原生引擎进行端到端内容与元数据提取（覆盖文档、图片、纯文本、代码、音视频、字体等所有格式并输出真实 Benchmark）
       //
@@ -1901,6 +1904,7 @@ export class FileProcessor {
           enableAudioTranscript: isAudioOrVideo ? true : undefined,
           audioAnalysisDuration: audioAnalysisDuration,
           videoFrameIntervalSeconds: videoFrameIntervalSeconds,
+          videoSoftTokenBudget: videoSoftTokenBudget,
           // 显式激活 Tier 1 端侧纯 CPU 文本特征与 384d 向量提取 (Issue #631)
           enableTextAnalysis: true,
           // 若磁盘已存在缩略图，通知 Omni 无需生成缩略图封面

@@ -14,7 +14,9 @@ import {
   CANONICAL_NAMES,
   getCanonicalConceptName,
   isCandidateWordAdmissible,
-  TagProvenanceGroup
+  stripNamingSkeleton,
+  TagProvenanceGroup,
+  getFileCategory
 } from '@firefly/shared'
 import { sanitizeFolderName } from './utils'
 
@@ -87,38 +89,73 @@ function contentHasVisibleText(content: unknown): boolean {
   return hasVisibleText(text)
 }
 
-/** 剥掉智能命名模板骨架：扩展名、方括号前缀（如「[程序]」）、尾随自动日期 */
-function stripNamingSkeleton(name: string): string {
-  return path
-    .parse(String(name || '').trim())
-    .name.replace(/[\[【][^\]】]*[\]】]/g, ' ')
-    .replace(/[_\-]?\d{4}[-_.]\d{1,2}[-_.]\d{1,2}\s*$/, '')
+function extractVisibleSnippet(content: unknown, maxLen = 80): string {
+  if (content === null || content === undefined) return ''
+  const text =
+    typeof content === 'string'
+      ? content
+      : Buffer.isBuffer(content)
+        ? decompressText(content)
+        : ''
+  if (!text) return ''
+  const cleaned = text
+    .replace(/[\u0000-\u001F\u007F-\u009F\uFFFD]/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim()
+  return cleaned.slice(0, maxLen)
 }
 
 /**
- * 组装参与聚类语义嵌入的富文本（证据口径）。
+ * 组装参与聚类语义嵌入的富文本（路径 B / JIT 编码证据口径）。
  *
- * 智能命名由模板生成，方括号前缀、尾随日期与扩展名几乎人人相同；把这些格式骨架
- * 与文件名一起送入嵌入模型，会把全库两两余弦相似度垫到同一高位，约束层次聚类
- * 只能在合并高度上切出占据过半样本的巨型簇，表现为「任意提示词都只有一个目录」。
- * 主题词是已过受控准入门禁的真实语义证据，因此有主题词时富文本只由主题词构成；
- * 仅当一份文件拿不到任何主题词时，才回退到剥掉模板骨架后的文件名。
- * 注意：keywords 仍原样交给 Omni 作为目录命名池，本函数只收缩语义证据面。
+ * 融合「智能命名/主文件名（剥掉格式骨架） + 受控语义标签 + 文件描述 + 正文/OCR 可见前缀」，
+ * 严禁塞入文件大小（如 32KB）等数值噪点，且去掉 "文件名:"、"核心标签:" 等固定模板前缀
+ * （防止全库向量各向异性坍缩），直接以纯净自然语言句号连接。
  */
 export function buildClusterEmbeddingText(input: {
   displayName: string
   rawName: string
   keywords: string[]
+  description?: string
+  contentSnippet?: string
 }): string {
-  const { displayName, rawName, keywords } = input
-  if (keywords.length > 0) return keywords.join(' ').trim()
-  const primary = stripNamingSkeleton(displayName)
-  const secondary = rawName !== displayName ? stripNamingSkeleton(rawName) : ''
-  return [primary, secondary && secondary !== primary ? secondary : '']
-    .filter(Boolean)
-    .join(' ')
-    .trim()
+  const { displayName, rawName, keywords, description, contentSnippet } = input
+  const parts: string[] = []
+
+  // 1. 核心名称（剥掉模板方括号前缀、日期骨架与扩展名）
+  const cleanSmart = stripNamingSkeleton(displayName)
+  const cleanRaw = rawName && rawName !== displayName ? stripNamingSkeleton(rawName) : ''
+  const namePart = cleanSmart || cleanRaw
+  if (namePart) {
+    parts.push(namePart)
+  }
+
+  // 2. 受控语义标签（取前 10 个高置信度主题词）
+  if (keywords && keywords.length > 0) {
+    const tagPart = keywords.slice(0, 10).join(' ')
+    if (tagPart) {
+      parts.push(tagPart)
+    }
+  }
+
+  // 3. AI 生成的文件描述（截取前 60 字）
+  if (description) {
+    const descSnippet = description.replace(/[\r\n\t]+/g, ' ').trim().slice(0, 60)
+    if (descSnippet) {
+      parts.push(descSnippet)
+    }
+  }
+
+  // 4. 正文/OCR 可见前缀（截取前 80 字）
+  if (contentSnippet) {
+    const textSnippet = contentSnippet.replace(/[\r\n\t]+/g, ' ').trim().slice(0, 80)
+    if (textSnippet) {
+      parts.push(textSnippet)
+    }
+  }
+
+  // 用句号自然拼接，绝不加入模板字段名前缀，杜绝各向异性坍缩
+  return parts.filter(Boolean).join('。').trim()
 }
 
 export interface AISchemeProvider {
@@ -182,6 +219,7 @@ export class AISchemeGenerator {
         name: string
         file_fingerprint: string
         smart_name?: string
+        description?: string
         content?: Buffer | string
         ocr?: Buffer | string
         asr?: Buffer | string
@@ -197,7 +235,7 @@ export class AISchemeGenerator {
           .prepare(`
             SELECT
               wf.id, wf.path, wf.name, wf.file_fingerprint,
-              f.smart_name, fc.file_fingerprint AS contents_fp,
+              f.smart_name, f.description, fc.file_fingerprint AS contents_fp,
               fc.content, fc.ocr, fc.asr, fc.lrc, fc.exif
             FROM workspace_files wf
             JOIN files f ON wf.file_fingerprint = f.file_fingerprint
@@ -210,7 +248,7 @@ export class AISchemeGenerator {
           .prepare(`
             SELECT
               wf.id, wf.path, wf.name, wf.file_fingerprint,
-              f.smart_name, fc.file_fingerprint AS contents_fp,
+              f.smart_name, f.description, fc.file_fingerprint AS contents_fp,
               fc.content, fc.ocr, fc.asr, fc.lrc, fc.exif
             FROM workspace_files wf
             JOIN files f ON wf.file_fingerprint = f.file_fingerprint
@@ -380,7 +418,19 @@ export class AISchemeGenerator {
           const rawName = (row.name || '').trim()
           const displayName = smartName || rawName
           // 证据口径见 buildClusterEmbeddingText：主题词优先，杜绝模板骨架垫平相似度导致巨型簇坍缩
-          const embeddingText = buildClusterEmbeddingText({ displayName, rawName, keywords })
+          const contentSnippet =
+            extractVisibleSnippet(row.ocr, 80) ||
+            extractVisibleSnippet(row.content, 80) ||
+            extractVisibleSnippet(row.asr, 80) ||
+            extractVisibleSnippet(row.lrc, 80)
+          const embeddingText = buildClusterEmbeddingText({
+            displayName,
+            rawName,
+            keywords,
+            description: row.description,
+            contentSnippet: contentSnippet || undefined
+          })
+          const fileCategory = getFileCategory(rawName || row.path)
           // 正文、OCR、ASR、歌词字幕任一含可见语义文本，说明分析产出的向量有内容依据，
           // 不得用文件名富文本替代；全部缺失时才标记为无效正文
           const hasSemanticText =
@@ -394,7 +444,8 @@ export class AISchemeGenerator {
             keywords,
             embeddingText: embeddingText || undefined,
             // 仅当所有文本载体都无可见字符时，聚类改用富文本证据
-            preferEmbeddingText: !hasSemanticText
+            preferEmbeddingText: !hasSemanticText,
+            fileCategory: fileCategory || undefined
           })
         }
       }

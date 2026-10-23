@@ -83,11 +83,17 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
     getConfigValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 5.0
   )
 
+  // 视频画面精细度（每帧视觉软 token 预算：140=标准精细，70=精简快速）
+  const [localVideoSoftTokenBudget, setLocalVideoSoftTokenBudget] = useState<number>(
+    getConfigValue<number>('VIDEO_SOFT_TOKEN_BUDGET') ?? 140
+  )
+
   // 硬件自适应推荐状态
   const [recommendedSettings, setRecommendedSettings] = useState<{
     profile: 'classic_light' | 'gemma_unified'
     mrlDimension: 256 | 512 | 768
     videoFrameIntervalSeconds: number
+    videoSoftTokenBudget: number
   } | null>(null)
   const recommendationCheckedRef = React.useRef(false)
 
@@ -109,6 +115,10 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
             if (rec.videoFrameIntervalSeconds) {
               updateConfigValue('VIDEO_FRAME_INTERVAL_SECONDS', rec.videoFrameIntervalSeconds)
               setLocalVideoInterval(rec.videoFrameIntervalSeconds)
+            }
+            if (rec.videoSoftTokenBudget) {
+              updateConfigValue('VIDEO_SOFT_TOKEN_BUDGET', rec.videoSoftTokenBudget)
+              setLocalVideoSoftTokenBudget(rec.videoSoftTokenBudget)
             }
           }
         }
@@ -149,12 +159,15 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
     }
     await updateConfigValue('EMBEDDING_MRL_DIMENSION', recommendedSettings.mrlDimension)
     await updateConfigValue('VIDEO_FRAME_INTERVAL_SECONDS', recommendedSettings.videoFrameIntervalSeconds)
+    await updateConfigValue('VIDEO_SOFT_TOKEN_BUDGET', recommendedSettings.videoSoftTokenBudget)
     setLocalVideoInterval(recommendedSettings.videoFrameIntervalSeconds)
+    setLocalVideoSoftTokenBudget(recommendedSettings.videoSoftTokenBudget)
     toast.success(
-      t('已同步硬件推荐配置（{profile} · {dim}维 · {interval}秒抽帧）', {
+      t('已同步硬件推荐配置（{profile} · {dim}维 · {interval}秒取帧 · 画面{detail}）', {
         profile: recommendedSettings.profile === 'gemma_unified' ? t('全模态标准档') : t('极速轻量档'),
         dim: recommendedSettings.mrlDimension,
-        interval: recommendedSettings.videoFrameIntervalSeconds
+        interval: recommendedSettings.videoFrameIntervalSeconds,
+        detail: recommendedSettings.videoSoftTokenBudget === 70 ? t('精简快速') : t('标准精细')
       })
     )
   }
@@ -174,12 +187,27 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
     return () => clearTimeout(handler)
   }, [localVideoInterval])
 
+  // 视频画面精细度防抖同步
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      const currentConfigValue = getConfigValue<number>('VIDEO_SOFT_TOKEN_BUDGET') ?? 140
+      if (localVideoSoftTokenBudget !== currentConfigValue) {
+        updateConfigValue('VIDEO_SOFT_TOKEN_BUDGET', localVideoSoftTokenBudget)
+        captureEvent('更新视频画面精细度', {
+          softTokenBudget: localVideoSoftTokenBudget
+        })
+      }
+    }, 500)
+
+    return () => clearTimeout(handler)
+  }, [localVideoSoftTokenBudget])
+
   return (
     <div className="p-6 space-y-6">
       <div>
         <h3 className="text-lg font-semibold mb-2">{t('基础AI引擎配置')}</h3>
         <p className="text-sm text-muted-foreground">
-          {t('配置分析模式、嵌入模型档位、MRL 向量维度与视频切片抽帧参数')}
+          {t('配置分析模式、嵌入模型档位、MRL 向量维度与视频取帧参数')}
         </p>
       </div>
 
@@ -595,16 +623,16 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                 </div>
               </div>
 
-              {/* 视频分析抽帧间隔滑块 */}
+              {/* 视频分析取帧间隔滑块 */}
               <div className="space-y-2 pt-2 border-t border-border/40">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     <Label htmlFor="video-interval-slider" className="text-sm font-medium text-foreground">
-                      {t('视频内容定位精度（抽帧间隔）')}
+                      {t('视频取帧间隔')}
                     </Label>
                     <HelpTooltip
                       content={t(
-                        '分析长视频时每隔几秒截取一次画面。间隔越短，越能精确按秒定位到视频画面片段；间隔越长，视频分析越省电快速。'
+                        '每隔几秒从视频里取一帧画面来分析。间隔越短，越不容易漏掉一闪而过的画面，但分析更慢；间隔越长，分析越快，但可能错过快速变化的内容。'
                       )}
                     />
                   </div>
@@ -655,8 +683,100 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                   </div>
                 </div>
                 <div className="text-[11px] text-muted-foreground leading-relaxed space-y-1">
-                  <div>{t('【较短间隔（如 2.0 秒）】能精确定位视频中每一处画面细节，但长视频分析时间较长；')}</div>
-                  <div>{t('【较长间隔（如 15.0 秒）】快速提取视频大意，极速省电，适合轻薄本。')}</div>
+                  <div>{t('【取帧密（如 2 秒）】每 2 秒取一帧，转场和快速动作不容易漏掉，但长视频分析更慢；')}</div>
+                  <div>{t('【取帧疏（如 15 秒）】每 15 秒取一帧，视频分析更快更省电，但一闪而过的画面可能取不到。')}</div>
+                </div>
+              </div>
+
+              {/* 视频画面精细度 */}
+              <div className="space-y-2 pt-2 border-t border-border/40">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Label className="text-sm font-medium text-foreground">
+                      {t('视频画面精细度')}
+                    </Label>
+                    <HelpTooltip
+                      content={t(
+                        '决定每一帧画面保留多少细节。标准精细看得更清，远处小物体和相近画面更容易区分，但视频分析更慢；精简快速速度约为前者的 2~3 倍，但细节和相近画面可能分不清。'
+                      )}
+                    />
+                  </div>
+                  {recommendedSettings?.videoSoftTokenBudget && (
+                    <button
+                      type="button"
+                      onClick={() => setLocalVideoSoftTokenBudget(recommendedSettings.videoSoftTokenBudget)}
+                      className="text-[11px] text-primary hover:underline transition-colors"
+                    >
+                      {t('恢复硬件推荐（{level}）', {
+                        level:
+                          recommendedSettings.videoSoftTokenBudget === 70
+                            ? t('精简快速')
+                            : t('标准精细')
+                      })}
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                  {/* 标准精细 140 */}
+                  <div
+                    onClick={() => setLocalVideoSoftTokenBudget(140)}
+                    className={`relative p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                      localVideoSoftTokenBudget === 140
+                        ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20'
+                        : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span
+                        className={`text-xs font-semibold ${
+                          localVideoSoftTokenBudget === 140 ? 'text-primary' : ''
+                        }`}
+                      >
+                        {t('标准精细（140）')}
+                      </span>
+                      {recommendedSettings?.videoSoftTokenBudget === 140 && (
+                        <span className="text-[9px] font-medium px-1 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400">
+                          {t('推荐')}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground mt-1.5 leading-snug space-y-1">
+                      <div>{t('【优势】看得更清，远处小物体、相近画面更容易区分。')}</div>
+                      <div>{t('【代价】视频分析更慢，耗时约是精简快速的 2~3 倍。')}</div>
+                      <div>{t('【适合】追求视频搜索准确度、电脑性能充足时。')}</div>
+                    </div>
+                  </div>
+
+                  {/* 精简快速 70 */}
+                  <div
+                    onClick={() => setLocalVideoSoftTokenBudget(70)}
+                    className={`relative p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                      localVideoSoftTokenBudget === 70
+                        ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20'
+                        : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span
+                        className={`text-xs font-semibold ${
+                          localVideoSoftTokenBudget === 70 ? 'text-primary' : ''
+                        }`}
+                      >
+                        {t('精简快速（70）')}
+                      </span>
+                      {recommendedSettings?.videoSoftTokenBudget === 70 && (
+                        <span className="text-[9px] font-medium px-1 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                          {t('推荐')}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground mt-1.5 leading-snug space-y-1">
+                      <div>{t('【优势】视频分析速度约为标准精细的 2~3 倍，省电省时。')}</div>
+                      <div>{t('【代价】画面细节和相近画面的区分能力会下降。')}</div>
+                      <div>{t('【适合】长视频快速建索引，或电脑性能有限、GPU/CPU 较忙时。')}</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

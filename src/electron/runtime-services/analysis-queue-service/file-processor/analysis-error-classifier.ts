@@ -59,6 +59,33 @@ export function isTimeoutError(err: unknown): boolean {
   )
 }
 
+/**
+ * Electron `net` 模块连接层失败码白名单。
+ *
+ * `net.request` / `net.fetch` 的连接失败以 `net::ERR_xxx` 形式出现在 message 中，
+ * 与 Node 层 `ECONNREFUSED` / `ECONNRESET` 是**两套互不包含的文案**
+ * （`ERR_CONNECTION_REFUSED` 与 `ECONNREFUSED` 没有公共子串），必须分别覆盖。
+ *
+ * 漏判后果（2026-10-22 事故）：引擎进程退出后端口无监听，队列 166 个文件在 18 秒内
+ * 全部以 `文本文件AI分析失败: net::ERR_CONNECTION_REFUSED` 失败并被判为永久 failed ——
+ * 既不恢复 pending，也不等待引擎就绪后重试，用户侧只看到「引擎发生错误」。
+ * 连接被拒绝/重置/关闭/中止均属「基础设施尚未就绪或正在重启」的瞬态状态，
+ * 唯一正确处理是回到 pending 等待引擎恢复。
+ */
+const ELECTRON_NET_TRANSIENT_CODES = [
+  'ERR_CONNECTION_REFUSED',
+  'ERR_CONNECTION_RESET',
+  'ERR_CONNECTION_CLOSED',
+  'ERR_CONNECTION_ABORTED',
+  'ERR_CONNECTION_FAILED'
+] as const
+
+/** 文本是否命中 Electron net 连接层失败码 */
+function matchesElectronNetTransientCode(text: string | undefined): boolean {
+  if (!text) return false
+  return ELECTRON_NET_TRANSIENT_CODES.some(code => text.includes(code))
+}
+
 /** 是否为基础设施未就绪等瞬态错误（不可静默降级为完成，必须等待就绪或重试） */
 export function isTransientInfraError(err: unknown): boolean {
   if (!err) return false
@@ -68,12 +95,20 @@ export function isTransientInfraError(err: unknown): boolean {
       e.status === 503 ||
       e.statusCode === 503 ||
       e.code === 'ECONNREFUSED' ||
-      e.code === 'ECONNRESET'
+      e.code === 'ECONNRESET' ||
+      matchesElectronNetTransientCode(e.code)
     ) {
       return true
     }
   }
-  const msg = err instanceof Error ? err.message : String(err)
+  // 非 Error 实例的对象也可能携带 message（如跨进程 IPC 透传的错误快照），
+  // 直接 String(err) 会退化成 "[object Object]" 而丢失判据
+  const msg =
+    err instanceof Error
+      ? err.message
+      : typeof (err as { message?: unknown })?.message === 'string'
+        ? (err as { message: string }).message
+        : String(err)
   return (
     msg.includes('503') ||
     msg.includes('AI engine is starting') ||
@@ -81,7 +116,8 @@ export function isTransientInfraError(err: unknown): boolean {
     msg.includes('AI服务未就绪') ||
     msg.includes('ECONNREFUSED') ||
     msg.includes('服务器未运行') ||
-    msg.includes('服务尚未初始化')
+    msg.includes('服务尚未初始化') ||
+    matchesElectronNetTransientCode(msg)
   )
 }
 

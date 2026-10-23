@@ -526,6 +526,7 @@ declare global {
         profile: 'classic_light' | 'gemma_unified'
         mrlDimension: 256 | 512 | 768
         videoFrameIntervalSeconds: number
+        videoSoftTokenBudget: number
       }>
       // PRD-0044（S5）：onModelMigrationProgress 声明随「内置模型迁移链」清退删除
 

@@ -21,6 +21,7 @@ import { app, BrowserWindow } from 'electron'
 import { ResourceLocator, logger, LogCategory, APP_PORTS } from '@firefly/shared'
 import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
 import { Tier2CircuitBreaker, Tier2CircuitState } from './tier2-circuit-breaker'
+import { CRASH_HEAL_MAX_ATTEMPTS, decideCrashHeal } from './crash-heal-policy'
 
 /** Tier 2 引擎基准端口（与本地 AI 服务端口收敛一致：38400） */
 export const TIER2_ENGINE_PORT = APP_PORTS.LLAMA_LOCAL_SERVER
@@ -70,6 +71,14 @@ const PORT_RELEASE_WAIT_MS = 8_000
 
 /** 引擎拉起后的就绪等待上限（毫秒）；冷启动含硬件探测，放宽到 40s 避免假超时 */
 const READY_WAIT_LIMIT_MS = 40_000
+
+/**
+ * 引擎连续稳定运行该时长后，归还崩溃自愈配额。
+ *
+ * 与「治愈一次」配合，防止「崩 → 自愈 → 10 秒后又崩」被无限循环拉起来：
+ * 只有真正稳定存活满 1 分钟，才算这次自愈成功、下次崩溃仍有 1 次机会。
+ */
+const STABLE_RUN_RESET_MS = 60_000
 /** 状态轮询间隔（毫秒） */
 const POLL_INTERVAL_MS = 5_000
 
@@ -221,6 +230,19 @@ export class EngineBridgeService {
    * 待引擎回到 ready 后由 applyStatus 触发一次补检，避免在分析中途强杀引擎。
    */
   private deferredBinaryRestart = false
+  /**
+   * 最近一次「我方主动 kill 子进程」的时间戳。
+   * 用户停止服务 / 切换引擎 / 退出应用 / 二进制热部署都会走 `killOwnProcess()`，
+   * 这些退出不得触发崩溃自愈（否则表现为「点了停止又自己起来」）。
+   * 用时间戳而非布尔标志：exit 事件异步到达，布尔标志容易残留并吞掉下一次真崩溃。
+   */
+  private lastSelfKillAt = 0
+  /** 本崩溃窗口内已消耗的自愈次数（稳定运行满 STABLE_RUN_RESET_MS 后清零） */
+  private autoHealAttempts = 0
+  /** 崩溃自愈定时器 */
+  private autoHealTimer: NodeJS.Timeout | null = null
+  /** 稳定运行重置计时器：到点归还自愈配额 */
+  private stableResetTimer: NodeJS.Timeout | null = null
   private eventStreamAbortController: AbortController | null = null
   private listeners = new Set<(snapshot: EngineBridgeSnapshot) => void>()
   readonly circuitBreaker = new Tier2CircuitBreaker()
@@ -228,6 +250,21 @@ export class EngineBridgeService {
   /** 当前是否正处于拉起启动流程中 */
   public isStartingNow(): boolean {
     return this.isStarting
+  }
+
+  /**
+   * 崩溃自愈配额已耗尽、且引擎仍未恢复（无进程、无状态快照）。
+   *
+   * 供分析队列做「快速失败」短路：引擎已判定救不回来时，后续文件不应再逐个
+   * 空等 `waitForAIServiceReady` 的 120s 预算（166 个文件会累计成数小时），
+   * 直接按既有 failed 路径处理即可 —— CPU 阶段（stage 1/2）产物早已落库，不受影响。
+   *
+   * 一旦引擎被任何路径拉起（`lastRawStatus` 恢复非空），本判定自动失效。
+   */
+  public isCrashHealExhaustedAndOffline(): boolean {
+    return (
+      this.autoHealAttempts >= CRASH_HEAL_MAX_ATTEMPTS && !this.process && !this.lastRawStatus
+    )
   }
 
   private constructor() {
@@ -1441,6 +1478,10 @@ export class EngineBridgeService {
         } catch {}
         this.process = null
         this.applyOffline()
+        // 非预期退出（非主动停止 / 非热部署）时自愈一次。
+        // 2026-10-22 事故：引擎以 0xC0000005 崩溃后无人拉起，分析队列 166 个文件
+        // 全部连接被拒，直到用户手动点开引擎面板才恢复。
+        void this.scheduleCrashHeal(deploying, code)
       })
 
       // 等待引擎就绪（轮询 /api/engine/status）
@@ -1459,6 +1500,10 @@ export class EngineBridgeService {
         this.lastError = null
       }
       this.broadcastStatus()
+      if (finalAlive || alreadyUp) {
+        // 引擎已真正起来：稳定运行满 STABLE_RUN_RESET_MS 后归还崩溃自愈配额
+        this.armStableReset()
+      }
       return finalAlive || alreadyUp
     } catch (err) {
       this.isStarting = false
@@ -1630,6 +1675,16 @@ export class EngineBridgeService {
    * 请求引擎优雅退出（不影响引擎管理面板自启），随后清理自己拉起的进程
    */
   public async shutdown(): Promise<{ ok: boolean }> {
+    // 用户显式停用引擎：撤销待执行的崩溃自愈，避免 8s 后被自己重新拉起
+    if (this.autoHealTimer) {
+      clearTimeout(this.autoHealTimer)
+      this.autoHealTimer = null
+    }
+    if (this.stableResetTimer) {
+      clearTimeout(this.stableResetTimer)
+      this.stableResetTimer = null
+    }
+    this.autoHealAttempts = 0
     const tryPorts = [this.activePort]
     if (this.activePort !== TIER2_ENGINE_PORT) {
       tryPorts.push(TIER2_ENGINE_PORT)
@@ -1912,11 +1967,107 @@ export class EngineBridgeService {
   }
 
   /**
+   * 引擎非预期退出后的自愈调度（2026-10-22 事故修复）
+   *
+   * 策略见 `crash-heal-policy.ts`：只治愈一次、留出间隔让崩溃残留条件（显存/端口/句柄）
+   * 释放，主动 kill / 热部署 / 引擎已禁用一律不自愈。
+   * **自愈失败不重试** —— 队列按既有 failed 路径处理，CPU 阶段（stage 1/2）产物不受影响。
+   */
+  private async scheduleCrashHeal(deploying: boolean, exitCode: number | null): Promise<void> {
+    // 已有待执行的自愈：同一次崩溃的重复 exit 事件不重复安排
+    if (this.autoHealTimer) {
+      return
+    }
+
+    let shouldRun = false
+    try {
+      shouldRun = await this.shouldEngineRun()
+    } catch {
+      // 配置读取失败按「不应运行」处理：宁可不起，也不要在云端/禁用模式下擅自拉起本地引擎
+      shouldRun = false
+    }
+
+    const decision = decideCrashHeal({
+      msSinceSelfKill: this.lastSelfKillAt > 0 ? Date.now() - this.lastSelfKillAt : null,
+      deploying,
+      attempts: this.autoHealAttempts,
+      shouldRun
+    })
+
+    if (!decision.heal) {
+      logger.info(
+        LogCategory.SYSTEM,
+        `[EngineBridge] 引擎退出后不自愈（${decision.reason}，code=${exitCode}）`
+      )
+      return
+    }
+
+    this.autoHealAttempts = decision.nextAttempts
+    logger.warn(
+      LogCategory.SYSTEM,
+      `[EngineBridge] 引擎非预期退出 (code=${exitCode})，${decision.delayMs}ms 后自动治愈一次`
+    )
+
+    this.autoHealTimer = setTimeout(() => {
+      this.autoHealTimer = null
+      void this.runCrashHeal()
+    }, decision.delayMs)
+    // 不因自愈定时器阻止应用退出
+    this.autoHealTimer.unref?.()
+  }
+
+  /** 执行一次崩溃自愈（force 拉起会复位熔断器，避免冷却期把恢复路径拦住） */
+  private async runCrashHeal(): Promise<void> {
+    try {
+      // 延迟窗口内用户可能已停用高级引擎或切到云端：执行前必须重新确认意图。
+      // ensureRunning({force:true}) 会跳过 shouldEngineRun 检查，故这里必须自己拦一道。
+      if (!(await this.shouldEngineRun())) {
+        logger.info(
+          LogCategory.SYSTEM,
+          '[EngineBridge] 崩溃自愈取消：当前已停用高级AI引擎或切至云端模式'
+        )
+        return
+      }
+      const ok = await this.ensureRunning({ force: true })
+      if (ok) {
+        logger.info(LogCategory.SYSTEM, '[EngineBridge] 崩溃自愈成功，引擎已重新拉起')
+      } else {
+        logger.warn(
+          LogCategory.SYSTEM,
+          '[EngineBridge] 崩溃自愈失败，本次不再重试；分析队列按既有失败路径处理（CPU 阶段产物不受影响）'
+        )
+      }
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[EngineBridge] 崩溃自愈异常，本次不再重试:', err)
+    } finally {
+      this.broadcastStatus()
+    }
+  }
+
+  /**
+   * 引擎稳定运行满 STABLE_RUN_RESET_MS 后归还自愈配额。
+   * 只有真正存活满 1 分钟才算这次自愈成功，防止「崩→重启→再崩」被无限循环拉起。
+   */
+  private armStableReset(): void {
+    if (this.stableResetTimer) {
+      clearTimeout(this.stableResetTimer)
+    }
+    this.stableResetTimer = setTimeout(() => {
+      this.stableResetTimer = null
+      this.autoHealAttempts = 0
+    }, STABLE_RUN_RESET_MS)
+    this.stableResetTimer.unref?.()
+  }
+
+  /**
    * 强制清理由本服务拉起的子进程（taskkill 兜底，Unix 走 SIGKILL）
    */
   private killOwnProcess(): void {
     const proc = this.process
     this.process = null
+    // 主动 kill 标记：抑制窗口内到达的 exit 事件不得触发崩溃自愈。
+    // 覆盖「用户停止服务 / 切换引擎 / 退出应用 / 二进制热部署」四类主动退出。
+    this.lastSelfKillAt = Date.now()
     if (!proc || proc.killed) {
       return
     }
@@ -2049,6 +2200,16 @@ export class EngineBridgeService {
    */
   public stop(): void {
     this.stopEpoch++
+    // 主动停止：撤销待执行的崩溃自愈与配额重置，避免「停用后又被自己拉起来」
+    if (this.autoHealTimer) {
+      clearTimeout(this.autoHealTimer)
+      this.autoHealTimer = null
+    }
+    if (this.stableResetTimer) {
+      clearTimeout(this.stableResetTimer)
+      this.stableResetTimer = null
+    }
+    this.autoHealAttempts = 0
     if (this.eventStreamAbortController) {
       this.eventStreamAbortController.abort()
       this.eventStreamAbortController = null

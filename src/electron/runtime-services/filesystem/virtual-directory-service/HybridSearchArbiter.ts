@@ -52,12 +52,24 @@ export const HYBRID_SEARCH_WEIGHTS = {
 } as const
 /** 单源候选池大小（FTS / 向量 / FS 各自的上限，也是融合池的上限） */
 export const HYBRID_SEARCH_POOL_SIZE = 200
-/** 视频切片跳轴绝对最小置信度阈值（生产环境 Gemma 空间 0.65，单测环境 0.60 兼容 mock，低于此分数的切片视为非目标噪点，杜绝假阳性时间戳下发） */
-export const TEMPORAL_CHUNK_MIN_CONFIDENCE = isTestEnvironment() ? 0.60 : 0.65
+/**
+ * 视频切片跳轴绝对最小置信度阈值（低于此分数的切片视为非目标噪点，杜绝假阳性时间戳下发）。
+ * 标定口径：视频切片向量由视觉塔产出（仍为 sentence_embedding 空间），文本查询已切换为内容
+ * token 池化空间。以存量 14 条图像/视频向量实测 9 组语义查询：真实跨模态命中 0.33~0.77
+ * （均值 0.445），无关分 p95≈0.43。历史 0.65 是旧对称空间标定值，在新空间会阻断几乎全部
+ * 真实切片命中；此处取真命中下沿 0.35。切片候选绕过通用纯向量门限，故本值是唯一绝对下限，
+ * 假阳性主要由 TEMPORAL_CHUNK_MIN_PROMINENCE 显著性门禁拦截。
+ */
+export const TEMPORAL_CHUNK_MIN_CONFIDENCE = 0.35
 /** 视频切片跳轴相对显著性差值阈值（最高切片得分必须高出全视频所有切片均值至少此裕度，证明为目标瞬间而非全局背景色偏） */
 export const TEMPORAL_CHUNK_MIN_PROMINENCE = 0.015
-/** 通用多模态/文档纯向量检索最低语义置信度门限（防止 KNN 强制截取无关文件造成的假阳性噪点） */
-export const MIN_GENERIC_VECTOR_SCORE = isTestEnvironment() ? 0.30 : 0.58
+/**
+ * 通用多模态/文档纯向量检索最低语义置信度门限（防止 KNN 强制截取无关文件造成的假阳性噪点）。
+ * 标定口径：EmbeddingGemma 内容 token 池化空间中，真实语义命中 top-1 约 0.30~0.55，
+ * 无关概念对 p90≈0.21 / p99≈0.40。历史 0.58 会误杀全部真实语义召回（如 股票≈0.303），
+ * 而 0.85 更会把仅剩的语义通道清零；此处取真命中下沿 0.30 作为纯向量准入线。
+ */
+export const MIN_GENERIC_VECTOR_SCORE = 0.30
 
 /** BM25 完整 10 列列权（第 0 列为 file_fingerprint UNINDEXED 赋 0.0，随后 9 列对齐 files_fts 架构：name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags） */
 export const HYBRID_BM25_COLUMN_WEIGHTS = [0.0, 4.0, 4.0, 3.0, 3.0, 3.5, 3.5, 3.0, 3.5, 3.5] as const
@@ -1562,7 +1574,13 @@ export class HybridSearchArbiter {
                 const gap = Math.max(0, Math.max(chunk.startSec - peak.endSec, peak.startSec - chunk.endSec))
                 return gap <= 3.0 // 收紧至 3.0s，只有紧邻高光波峰的同镜头延伸片段才予保全
               })
-              return isAdjacentToPeak
+              if (isAdjacentToPeak) return true
+
+              // 离散高光段保留（修复 Ticket 05 回归）：与所有峰值时段间隔 > 3.0s 的独立时段，
+              // 是视频中另一处真实高光而非同镜头延伸（如同一视频 1:41 与 2:20 两处出现目标跑车），
+              // 只要自身过绝对置信门禁（上方）与显著性门禁，就必须保留并返回前端，
+              // 不因 PEAK_MARGIN 收紧至 0.020 被误杀——恪守上方「离散时段保留」设计承诺。
+              return chunk.similarity - meanScore >= TEMPORAL_CHUNK_MIN_PROMINENCE
             })
 
             // 2. 最终输出结果严格按 similarity DESC 降序排列（分数并列时按时间先后升序），保证最高分片段排在最前

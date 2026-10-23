@@ -123,14 +123,16 @@ export async function initializeHardwareDetection(wait = false): Promise<void> {
           }) || {
             profile: totalMemGB >= 7.5 && cpuCores > 4 ? 'gemma_unified' : 'classic_light',
             mrlDimension: totalMemGB >= 15.5 ? 768 : totalMemGB >= 7.5 ? 512 : 256,
-            videoFrameIntervalSeconds: totalMemGB >= 15.5 && cpuCores >= 8 ? 2.0 : 5.0
+            videoFrameIntervalSeconds: totalMemGB >= 15.5 && cpuCores >= 8 ? 2.0 : 5.0,
+            videoSoftTokenBudget: totalMemGB < 7.5 || cpuCores <= 4 ? 70 : 140
           }
         config.updateValue('AI_EMBEDDING_PROFILE', settings.profile)
         config.updateValue('EMBEDDING_MRL_DIMENSION', settings.mrlDimension)
         config.updateValue('VIDEO_FRAME_INTERVAL_SECONDS', settings.videoFrameIntervalSeconds)
+        config.updateValue('VIDEO_SOFT_TOKEN_BUDGET', settings.videoSoftTokenBudget)
         logger.info(
           LogCategory.STARTUP,
-          `[Profile] 首次启动自适应推荐嵌入画像: profile=${settings.profile}, mrl=${settings.mrlDimension}, interval=${settings.videoFrameIntervalSeconds}s (内存: ${totalMemGB.toFixed(1)}GB, CPU: ${cpuCores}核)`
+          `[Profile] 首次启动自适应推荐嵌入画像: profile=${settings.profile}, mrl=${settings.mrlDimension}, interval=${settings.videoFrameIntervalSeconds}s, videoTokens=${settings.videoSoftTokenBudget} (内存: ${totalMemGB.toFixed(1)}GB, CPU: ${cpuCores}核)`
         )
       }
 

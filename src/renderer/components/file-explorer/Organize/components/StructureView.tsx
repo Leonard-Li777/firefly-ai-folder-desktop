@@ -84,9 +84,11 @@ export function StructureView({
           sections={[
             {
               id: 'plan-sidebar',
-              type: 'flex' as const,
-              defaultSize: 320,
-              minSize: 260,
+              // 与自动归类 stage (OrganizingView) 保持一致：方案侧栏固定像素宽，
+              // 确保「目录树预览」区块默认占据扣除侧栏后的全部剩余空间
+              type: 'pixel' as const,
+              defaultSize: 300,
+              minSize: 200,
               content: <PlanSidebar draft={draft} candidate={candidate} />
             },
             {

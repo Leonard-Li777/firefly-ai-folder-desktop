@@ -13,7 +13,7 @@ import { MaterialIcon } from '@/renderer/lib/utils'
 import i18nScope, { t } from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
 import { openExternalLink } from '@/renderer/lib/external-link'
-import { getOfficialSiteDomain } from '@/renderer/lib/marketing-link'
+import { getOfficialSiteOrigin } from '@/renderer/lib/marketing-link'
 import { useAIServiceError, useAIServiceStatus } from '@/renderer/stores/ai-service-store'
 import { useAnalysisQueueStore } from '@/renderer/stores/analysis-queue-store'
 import { useConfigStore } from '@/renderer/stores/config-store'
@@ -733,7 +733,7 @@ export function Footer() {
             <Button
               className="bg-blue-600 hover:bg-blue-700 text-white"
               onClick={() => {
-                openExternalLink(`${getOfficialSiteDomain().replace(/\/+$/, '')}/download`, {
+                openExternalLink(`${getOfficialSiteOrigin()}/download`, {
                   errorTitle: t('无法打开下载页面')
                 })
                 setShowUpdateModal(false)

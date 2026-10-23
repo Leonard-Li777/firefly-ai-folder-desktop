@@ -114,6 +114,8 @@ export interface OmniPerceptionOptions {
   enableCover?: boolean
   /** 视频内容定位精度（抽帧间隔秒数），默认 5.0，精细模式可设为 1.0 */
   videoFrameIntervalSeconds?: number
+  /** 视频画面精细度（每帧视觉软 token 预算，140=标准精细，70=精简快速），默认 140 */
+  videoSoftTokenBudget?: number
   /** 文件指纹，用于感知完成后在 Omni 内部就地批量落盘向量（Ticket 02 / 04） */
   fileFingerprint?: string
 }
@@ -1683,7 +1685,8 @@ export class OmniService {
       max_content_size_kb: options?.maxContentSizeKb,
       audio_analysis_duration: options?.audioAnalysisDuration,
       generate_thumbnail: options?.generateThumbnail ?? options?.enableCover,
-      video_frame_interval_seconds: options?.videoFrameIntervalSeconds
+      video_frame_interval_seconds: options?.videoFrameIntervalSeconds,
+      video_soft_token_budget: options?.videoSoftTokenBudget
     }
     logger.debug(
       LogCategory.SYSTEM,

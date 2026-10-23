@@ -563,6 +563,28 @@ const SmartClusteringViewInner = (
           </Button>
         </div>
 
+        {/* 6 组精选场景示例词 */}
+        <div className="space-y-2.5 pt-2 border-t border-border/40">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-foreground/80">
+              {t('精选示例 (点击一键填入)')}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {presetExamplePrompts.map((ex, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => handleRequestClustering(ex)}
+                className="text-[11px] px-2.5 py-1 rounded-lg border border-border/70 bg-card hover:border-blue-500/50 hover:bg-blue-500/5 hover:text-blue-600 dark:hover:text-blue-400 transition-all text-left flex items-center gap-1 shadow-2xs"
+              >
+                <MaterialIcon icon="lightbulb" className="text-xs text-amber-500 shrink-0" />
+                <span>{ex}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* 四维聚类调节滑块面板 */}
         <div className="space-y-3.5 pt-3 pb-1 border-t border-border/40">
           <div className="flex items-center justify-between">
@@ -670,28 +692,6 @@ const SmartClusteringViewInner = (
               <span>60% ({t('标准')})</span>
               <span>{t('细分')} (100%)</span>
             </div>
-          </div>
-        </div>
-
-        {/* 6 组精选场景示例词 */}
-        <div className="space-y-2.5 pt-2 border-t border-border/40">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-foreground/80">
-              {t('精选示例 (点击一键填入)')}
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {presetExamplePrompts.map((ex, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => handleRequestClustering(ex)}
-                className="text-[11px] px-2.5 py-1 rounded-lg border border-border/70 bg-card hover:border-blue-500/50 hover:bg-blue-500/5 hover:text-blue-600 dark:hover:text-blue-400 transition-all text-left flex items-center gap-1 shadow-2xs"
-              >
-                <MaterialIcon icon="lightbulb" className="text-xs text-amber-500 shrink-0" />
-                <span>{ex}</span>
-              </button>
-            ))}
           </div>
         </div>
 

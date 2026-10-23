@@ -7,7 +7,13 @@ import { iconExtractorClient } from '../icon-extractor-client'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { databaseService } from '../../runtime-services/database/database-service'
 import { analysisQueueService } from '../../runtime-services/analysis-queue-service'
-import { logger, LogCategory, ResourceLocator, getMimeTypeByExtension } from '@firefly/shared'
+import {
+  logger,
+  LogCategory,
+  ResourceLocator,
+  getMimeTypeByExtension,
+  getSiteDomain
+} from '@firefly/shared'
 import { SystemIdentityService } from '../../runtime-services/system/system-identity-service'
 import { LicenseService, LicenseStatus } from '../../runtime-services/system/license-service'
 import { cloudAnalysisService } from '@firefly/server'
@@ -676,10 +682,8 @@ export function registerMiscIPCHandlers() {
     logger.error(LogCategory.RENDERER, '渲染进程出错:', errorInfo)
   })
   ipcMain.on('open-download-page', () => {
-    // 下载页必须跟随当前客户端区域域名，避免国内版用户被导向国际版站点（反之亦然）
-    const siteDomain =
-      resolveAppRegion() === 'cn' ? 'https://aifolder.iocn.cn' : 'https://www.aifolder.net'
-    shell.openExternal(`${siteDomain}/download`).catch(e => {
+    // 下载页跟随当前客户端区域域名（区域表唯一事实源：@firefly/shared 的 SITE_DOMAINS）
+    shell.openExternal(`${getSiteDomain(resolveAppRegion())}/download`).catch(e => {
       logger.warn(LogCategory.MAIN, '[IPC] 打开下载页面失败:', e)
     })
   })

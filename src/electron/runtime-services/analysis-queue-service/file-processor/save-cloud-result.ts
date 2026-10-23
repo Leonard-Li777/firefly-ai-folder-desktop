@@ -21,7 +21,7 @@ import {
 import { t } from '@app/languages'
 
 const CONTENT_TAGS_NAME = CANONICAL_NAMES.CONTENT_TAGS
-import { DeterministicCodeGenerator } from '@firefly/core-engine'
+import { DeterministicCodeGenerator, stripXmlWrapperTags } from '@firefly/core-engine'
 import { databaseService } from '../../database/database-service'
 import { magikaService } from '../../system/magika-service'
 import { thumbnailService } from '../../filesystem/thumbnail-service'
@@ -130,7 +130,9 @@ export async function saveCloudResult(
     )
     const description = data.description || data.summary || null
     const content = data.content || data.textContent || null
-    const multimodalContent = data.multimodal_content || data.multimodalContent || null
+    // 云端多模态描述同样可能携带小模型输出的 XML 包装标记（<response><description> 等），落库前统一清洗
+    const multimodalContent =
+      stripXmlWrapperTags(data.multimodal_content || data.multimodalContent) || null
     const qualityScore = data.quality_score || data.qualityScore || null
     let analysisStats = data.analysis_stats || data.analysisStats || null
 

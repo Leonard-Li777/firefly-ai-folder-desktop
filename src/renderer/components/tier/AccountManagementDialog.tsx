@@ -25,7 +25,7 @@ import { useTierStore } from '../../stores/tier-store'
 import { useConfigStore } from '../../stores/config-store'
 import { UserTier, formatDateOnly, encodeMachineIdToBase64 } from '@firefly/shared'
 import { openExternalLink } from '../../lib/external-link'
-import { resolveDevCreemUrl, getOfficialSiteDomain } from '../../lib/marketing-link'
+import { resolveDevCreemUrl, getOfficialSiteOrigin } from '../../lib/marketing-link'
 import { EmailSvg } from '../ui/EmailSvg'
 import { cn } from '../../lib/utils'
 
@@ -87,7 +87,7 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
   if (!open) return null
 
   // 兜底法律条款/门户链接必须跟随当前区域域名（国内版 aifolder.iocn.cn / 国际版 www.aifolder.net）
-  const siteDomain = getOfficialSiteDomain().replace(/\/+$/, '')
+  const siteDomain = getOfficialSiteOrigin()
   const legalLang = getLanguage() || 'zh-CN'
   const isCreemBilling = paymentInfo?.method === 'creem'
   const portalUrl =
