@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-10-18T09:56:49.434Z",
+  "generatedAt": "2026-10-23T12:02:25.497Z",
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources"
@@ -67,13 +67,13 @@
       }
     },
     "onnxruntime-directml": {
-      "version": "1.28.0",
+      "version": "1.24.4",
       "source": "shared",
       "asset": {
-        "name": "onnxruntime-directml-1.28.0-win32-x64.zip",
-        "sha256": "0d6a85cf3debed559499a9a270a45709decba9d9d60c7ee6d477615c89dd2ded",
-        "size": 9954659,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/onnxruntime-directml-1.28.0-win32-x64.zip"
+        "name": "onnxruntime-directml-1.24.4-win32-x64.zip",
+        "sha256": "a988bde5acda3f488ce2f29b6634d25a40e5a6ed50f665cc945e96db1b9456be",
+        "size": 16033436,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/onnxruntime-directml-1.24.4-win32-x64.zip"
       }
     },
     "sensevoice-onnx": {
@@ -151,8 +151,8 @@
       "source": "shared",
       "asset": {
         "name": "embeddinggemma-2-onnx-1.0.0.zip",
-        "sha256": "d77ce4c120efbab7be10cd8ab59b3ea9b75cbfcaa7af924b9cc8da9eea6f63a0",
-        "size": 254004174,
+        "sha256": "f2cfc8643f708702c3abeeb5130df42becb909793d5ade429531daf810314f26",
+        "size": 254003864,
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/embeddinggemma-2-onnx-1.0.0.zip"
       }
     },
@@ -164,6 +164,16 @@
         "sha256": "e03a14c1bb971f25c141d677f226249757dd75c21e0f8757397b3e60043049a6",
         "size": 235887428,
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/kokoro-multi-lang-1.1.0.zip"
+      }
+    },
+    "sherpa-onnx-runtime": {
+      "version": "1.13.8",
+      "source": "shared",
+      "asset": {
+        "name": "sherpa-onnx-runtime-1.13.8-win32-x64.zip",
+        "sha256": "3cb751f7e27d9c0768687487335d67bee3dd9694b6825e50ee439ade7cb6bd04",
+        "size": 8282676,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/sherpa-onnx-runtime-1.13.8-win32-x64.zip"
       }
     }
   },
