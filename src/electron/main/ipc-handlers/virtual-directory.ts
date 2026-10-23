@@ -36,6 +36,7 @@ import fs from 'fs-extra'
 import path from 'node:path'
 import { VIRTUAL_DIRECTORY_ROOT } from '../../runtime-services/filesystem/virtual-directory-service/utils'
 import { NamingDSLEngine } from '../../runtime-services/filesystem/naming-dsl-engine'
+import { isGemmaMrlDim, resolveGemmaDim } from '../../utils/embedding-dim'
 
 /** 批量整理会话级文本特征向量缓存 (fileId -> number[])，防投毒且杜绝重复推理 */
 const organizeSessionVectorCache = new Map<number, number[]>()
@@ -950,12 +951,23 @@ export function registerVirtualDirectoryIPCHandlers() {
       let activeProfile: string = rawProfile
       let activeDim = 384
 
+      // 维度契约（方案 §3.4）：gemma_unified 只允许 256/512/768，1024 不是合法槽位。
+      // 维度一律以配置的 EMBEDDING_MRL_DIMENSION 为准（非法值回退 512 并告警），
+      // 禁止再用 aiProfile 字符串嗅探出 1024 这种非法维度。
+      const gemmaActive = request.aiProfile
+        ? request.aiProfile.includes('gemma')
+        : rawProfile === 'gemma_unified'
+      if (gemmaActive && !isGemmaMrlDim(mrlDim)) {
+        logger.warn(
+          LogCategory.FILE_ORGANIZATION,
+          `[IPC] EMBEDDING_MRL_DIMENSION=${mrlDim} 不是合法 MRL 槽位 (256/512/768)，已回退 512`
+        )
+      }
+
       if (request.aiProfile) {
         if (request.aiProfile.includes('gemma')) {
           activeProfile = 'gemma_unified'
-          if (request.aiProfile.includes('256')) activeDim = 256
-          else if (request.aiProfile.includes('1024')) activeDim = 1024
-          else activeDim = 512
+          activeDim = resolveGemmaDim(request.aiProfile, mrlDim)
         } else {
           activeProfile = 'classic_light'
           activeDim = 384
@@ -963,7 +975,7 @@ export function registerVirtualDirectoryIPCHandlers() {
       } else {
         if (rawProfile === 'gemma_unified') {
           activeProfile = 'gemma_unified'
-          activeDim = mrlDim
+          activeDim = resolveGemmaDim(rawProfile, mrlDim)
         } else {
           activeProfile = 'classic_light'
           activeDim = 384

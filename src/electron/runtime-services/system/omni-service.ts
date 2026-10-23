@@ -290,6 +290,12 @@ export interface OmniPerceptionResponse {
   one_sentence_desc?: string | null
   name_slots?: Record<string, any>
   embedding_dense?: number[]
+  /**
+   * 主向量 `embedding_dense` 的编码器出处（zvec v3 encoder_id：
+   * 0=Unknown/Legacy, 1=Bekko, 2=ChineseCLIP, 3=MobileCLIP, 4=Gemma）。
+   * 由 Omni 文本/视觉编码层给出，Desktop 原样透传，禁止按档位或语言猜测。
+   */
+  embedding_encoder_id?: number
 
   /** 视频时序切片集合（30 秒窗口切片） */
   video_chunks?: OmniVideoChunkItem[]
@@ -306,6 +312,8 @@ export interface OmniVideoChunkItem {
   start_sec: number
   end_sec: number
   vector: number[]
+  /** 切片向量的编码器出处（zvec v3 encoder_id），由 Omni 视觉层给出并原样透传 */
+  encoder_id?: number
   asr_text?: string
 }
 
@@ -2331,7 +2339,7 @@ export class OmniService {
   /**
    * 批量计算文本特征向量 (POST /api/v1/vector/batch-embed-text)
    * 依据 batch-organize-hybrid-vector-classification-spec.md 规格契约：
-   * 支持 classic_light (Bekko 384d) 与 gemma_unified (Gemma 256/512/1024d) 双底座动态路由
+   * 支持 classic_light (Bekko 384d) 与 gemma_unified (Gemma 256/512/768d) 双底座动态路由
    */
   public async batchEmbedText(
     texts: string[],

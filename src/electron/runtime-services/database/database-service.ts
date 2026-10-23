@@ -2239,31 +2239,35 @@ export class DatabaseService {
 
   /**
    * AI 分析完成后将 dense 向量写入 Omni zvec（替代旧 file_vectors BLOB 堆表）
+   * `encoderId` 必填：向量真实编码器出处（zvec v3 encoder_id），由调用方从 perceive 响应原样透传，
+   * 禁止本层按档位或语言补默认值。
    */
   public async upsertFileVectorToOmni(
     fileFingerprint: string,
-    embedding: number[] | Float32Array | null | undefined
+    embedding: number[] | Float32Array | null | undefined,
+    encoderId: number
   ): Promise<boolean> {
     if (!fileFingerprint || !embedding) return false
     const vector = embedding instanceof Float32Array ? Array.from(embedding) : embedding
     if (!Array.isArray(vector) || vector.length === 0) return false
-    const res = await omniClient.upsertVector(fileFingerprint, vector)
+    const res = await omniClient.upsertVector(fileFingerprint, vector, encoderId)
     return !!res?.success
   }
 
   /**
    * 批量将切片或文件 dense 向量写入 Omni zvec
+   * 每个条目必须携带自己的 `encoderId`（视频切片与主向量可能不同源），禁止本层统一猜测。
    */
   public async upsertFileVectorsToOmni(
-    items: Array<{ fileFingerprint: string; vector: number[] | Float32Array }>
+    items: Array<{ fileFingerprint: string; vector: number[] | Float32Array; encoderId: number }>
   ): Promise<boolean> {
     if (!items || items.length === 0) return true
-    const validItems: Array<{ fileFingerprint: string; vector: number[] }> = []
+    const validItems: Array<{ fileFingerprint: string; vector: number[]; encoderId: number }> = []
     for (const item of items) {
       if (!item.fileFingerprint || !item.vector) continue
       const v = item.vector instanceof Float32Array ? Array.from(item.vector) : item.vector
       if (Array.isArray(v) && v.length > 0) {
-        validItems.push({ fileFingerprint: item.fileFingerprint, vector: v })
+        validItems.push({ fileFingerprint: item.fileFingerprint, vector: v, encoderId: item.encoderId })
       }
     }
     if (validItems.length === 0) return true

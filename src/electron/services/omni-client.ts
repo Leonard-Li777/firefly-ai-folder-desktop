@@ -47,10 +47,53 @@ export interface OmniTagAliasRow {
 /** 多语言别名响应：Vec<TagAliasRow>（对齐 Rust Vec<TagAliasRow>，Slice 7） */
 export type OmniTaxonomyAliasesResponse = OmniTagAliasRow[]
 
+/**
+ * zvec v3 编码器身份（对齐 apps/omni/crates/omni-core/src/lib.rs `pub mod encoder_id`
+ * 与方案 §3.5）：0=Unknown/Legacy, 1=Bekko, 2=ChineseCLIP, 3=MobileCLIP, 4=Gemma。
+ * 写入时必须携带向量真实出处，禁止按档位或界面语言猜测。
+ */
+export const ENCODER_ID = {
+  UNKNOWN: 0,
+  BEKKO: 1,
+  CHINESE_CLIP: 2,
+  MOBILE_CLIP: 3,
+  GEMMA: 4
+} as const
+
+/**
+ * 查询侧编码器白名单（方案 §3.5 查询通路表，与引擎 `encoder_id::CLASSIC_384_ALLOWED` 对齐）：
+ * classic_light 384 槽只有 Bekko，放行 UNKNOWN 仅为 v2 旧记录过渡。
+ */
+export const ENCODER_FILTER_CLASSIC_384: readonly number[] = [ENCODER_ID.UNKNOWN, ENCODER_ID.BEKKO]
+
+/**
+ * 查询侧编码器白名单：gemma_unified 的 256/512/768 槽。
+ * 512 槽与 classic CLIP 共用，v2 记录无法区分编码器，故严格只放行 GEMMA。
+ */
+export const ENCODER_FILTER_GEMMA: readonly number[] = [ENCODER_ID.GEMMA]
+
+/** 预留：CLIP 文本通道（工单 12），只与 ChineseCLIP 图像塔配对，当前无调用点 */
+export const ENCODER_FILTER_CHINESE_CLIP: readonly number[] = [ENCODER_ID.CHINESE_CLIP]
+
+/** 预留：MobileCLIP 诊断（非 zh 界面不启用检索），当前全仓无调用点 */
+export const ENCODER_FILTER_MOBILE_CLIP: readonly number[] = [ENCODER_ID.MOBILE_CLIP]
+
+/**
+ * 按当前生效嵌入档位解析查询白名单：classic_light → [0, 1]；gemma_unified → [4]。
+ * 不提供「缺省不过滤」语义：档位缺失或未知时按 classic_light 处理。
+ */
+export function resolveQueryEncoderFilter(profile: string | null | undefined): number[] {
+  return (profile || '').toLowerCase().includes('gemma')
+    ? [...ENCODER_FILTER_GEMMA]
+    : [...ENCODER_FILTER_CLASSIC_384]
+}
+
 /** 向量写入条目 */
 export interface OmniVectorUpsertItem {
   fileFingerprint: string
   vector: number[]
+  /** zvec v3 编码器身份（ENCODER_ID），必填：缺失即被 Omni 以 400 encoder_id_required 拒绝 */
+  encoderId: number
 }
 
 export interface OmniVectorUpsertResponse {
@@ -63,6 +106,8 @@ export interface OmniVectorMatchItem {
   fileFingerprint: string
   score: number
   rank: number
+  /** 命中记录的 zvec v3 编码器身份 */
+  encoderId: number
 }
 
 export interface OmniVectorSearchResponse {
@@ -81,6 +126,8 @@ export interface OmniVectorDeleteResponse {
 export interface OmniVectorGetItem {
   fileFingerprint: string
   vector: number[]
+  /** 该向量落盘时携带的 zvec v3 编码器身份，供探活/白名单判定 */
+  encoderId: number
 }
 
 export interface OmniVectorGetResponse {
@@ -306,7 +353,8 @@ export class OmniClient {
 
   /**
    * 向量批量写入/更新：POST /api/v1/vector/upsert
-   * AI 分析提取 dense embedding 后由 Desktop 调用，向量由 Omni zvec 托管
+   * AI 分析提取 dense embedding 后由 Desktop 调用，向量由 Omni zvec 托管。
+   * `encoderId` 必填：Omni 侧缺省即 400 `encoder_id_required`，禁止由本层补默认值。
    */
   async upsertVectors(
     items: OmniVectorUpsertItem[],
@@ -316,7 +364,8 @@ export class OmniClient {
     const payload = {
       items: items.map(item => ({
         fileFingerprint: item.fileFingerprint,
-        vector: item.vector
+        vector: item.vector,
+        encoderId: item.encoderId
       }))
     }
     return this.request<OmniVectorUpsertResponse>('/api/v1/vector/upsert', {
@@ -325,26 +374,33 @@ export class OmniClient {
     }, timeoutMs)
   }
 
-  /** 便捷写入单文件向量 */
-  async upsertVector(fileFingerprint: string, vector: number[]): Promise<OmniVectorUpsertResponse | null> {
-    return this.upsertVectors([{ fileFingerprint, vector }])
+  /** 便捷写入单文件向量（`encoderId` 必填，语义同 upsertVectors） */
+  async upsertVector(
+    fileFingerprint: string,
+    vector: number[],
+    encoderId: number
+  ): Promise<OmniVectorUpsertResponse | null> {
+    return this.upsertVectors([{ fileFingerprint, vector, encoderId }])
   }
 
   /**
    * 以向量搜文件：POST /api/v1/vector/search
-   * 以文搜图、搜文档、相似文件推荐统一入口
+   * 以文搜图、搜文档、相似文件推荐统一入口。
+   * `options.encoderFilter` 必填（无默认值、无「缺省不过滤」兜底）：Omni 侧缺省或空数组即
+   * 400 `encoder_filter_required`；白名单由 `resolveQueryEncoderFilter` 按当前档位给出。
    */
   async searchVectors(
     vector: number[],
-    topK = 10,
-    threshold?: number
+    topK: number,
+    options: { encoderFilter: number[]; threshold?: number }
   ): Promise<OmniVectorSearchResponse | null> {
     return this.request<OmniVectorSearchResponse>('/api/v1/vector/search', {
       method: 'POST',
       body: JSON.stringify({
         vector,
         topK,
-        threshold
+        threshold: options.threshold,
+        encoderFilter: options.encoderFilter
       })
     })
   }

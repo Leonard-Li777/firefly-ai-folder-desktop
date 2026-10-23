@@ -402,6 +402,11 @@ export interface OmniVectorPersistenceParams {
   vectorSaved: boolean | undefined
   fileFingerprint?: string
   denseEmbedding?: number[]
+  /**
+   * 主向量编码器出处（perceive 响应 `embedding_encoder_id`，zvec v3 encoder_id）。
+   * 态 3 回传时原样透传；缺失即跳过回传并 warn，禁止按档位/语言猜测。
+   */
+  denseEmbeddingEncoderId?: number | null
   videoChunks?: Array<{
     chunk_index?: number
     chunkIndex?: number
@@ -410,11 +415,16 @@ export interface OmniVectorPersistenceParams {
     end_sec?: number
     endSec?: number
     vector?: number[]
+    /** 切片向量编码器出处（perceive 响应 `video_chunks[].encoder_id`） */
+    encoder_id?: number
+    encoderId?: number
     asr_text?: string
   }>
   databaseService: {
-    upsertFileVectorToOmni: (fp: string, vec: number[]) => Promise<any>
-    upsertFileVectorsToOmni: (items: Array<{ fileFingerprint: string; vector: number[] }>) => Promise<any>
+    upsertFileVectorToOmni: (fp: string, vec: number[], encoderId: number) => Promise<any>
+    upsertFileVectorsToOmni: (
+      items: Array<{ fileFingerprint: string; vector: number[]; encoderId: number }>
+    ) => Promise<any>
     insertVideoChunks: (chunks: any[]) => void
   }
   samplingIntervalSeconds?: number
@@ -432,6 +442,7 @@ export async function persistOmniVectors(params: OmniVectorPersistenceParams): P
     vectorSaved,
     fileFingerprint,
     denseEmbedding,
+    denseEmbeddingEncoderId,
     videoChunks,
     databaseService,
     samplingIntervalSeconds
@@ -451,10 +462,22 @@ export async function persistOmniVectors(params: OmniVectorPersistenceParams): P
     Array.isArray(denseEmbedding) &&
     denseEmbedding.length > 0
   ) {
-    try {
-      await databaseService.upsertFileVectorToOmni(fileFingerprint, denseEmbedding)
-    } catch (vecErr) {
-      logger.debug(LogCategory.ANALYSIS_QUEUE, '[分析队列] Omni 向量 upsert 失败(非致命):', vecErr)
+    // 编码器出处必须来自 perceive 响应，禁止按当前档位或语言猜测（方案 §3.5）
+    if (typeof denseEmbeddingEncoderId !== 'number') {
+      logger.warn(
+        LogCategory.ANALYSIS_QUEUE,
+        `[分析队列] 态 3 主向量缺少编码器出处（perceive 响应无 embedding_encoder_id），已跳过回传: fp=${fileFingerprint}`
+      )
+    } else {
+      try {
+        await databaseService.upsertFileVectorToOmni(
+          fileFingerprint,
+          denseEmbedding,
+          denseEmbeddingEncoderId
+        )
+      } catch (vecErr) {
+        logger.debug(LogCategory.ANALYSIS_QUEUE, '[分析队列] Omni 向量 upsert 失败(非致命):', vecErr)
+      }
     }
   }
 
@@ -478,13 +501,23 @@ export async function persistOmniVectors(params: OmniVectorPersistenceParams): P
       // 态 1 (vectorSaved === true): 切片向量已在 Omni 内部批量写盘且浮点数组已被清空，彻底阻断切片向量回传
       // 态 3 (vectorSaved === undefined): 兼容旧版 Omni，若切片包含浮点数组，向 Omni 回传落盘
       if (vectorSaved === undefined) {
-        const chunkVectors: Array<{ fileFingerprint: string; vector: number[] }> = []
+        const chunkVectors: Array<{ fileFingerprint: string; vector: number[]; encoderId: number }> = []
         for (const c of videoChunks) {
           if (Array.isArray(c.vector) && c.vector.length > 0) {
             const idx = c.chunk_index ?? c.chunkIndex ?? 0
+            // 切片编码器出处逐条取自 perceive 响应，缺失的切片跳过回传并 warn（禁止猜值）
+            const chunkEncoderId = c.encoder_id ?? c.encoderId
+            if (typeof chunkEncoderId !== 'number') {
+              logger.warn(
+                LogCategory.ANALYSIS_QUEUE,
+                `[分析队列] 态 3 切片向量缺少编码器出处（perceive 响应 video_chunks[].encoder_id），已跳过该切片: fp=${fileFingerprint}:c${idx}`
+              )
+              continue
+            }
             chunkVectors.push({
               fileFingerprint: `${fileFingerprint}:c${idx}`,
-              vector: c.vector
+              vector: c.vector,
+              encoderId: chunkEncoderId
             })
           }
         }
@@ -2326,6 +2359,8 @@ export class FileProcessor {
         (contentResult.metadata?.embeddingDense as number[] | undefined) ||
         anydocResult?.perception?.embedding_dense
       const videoChunks = anydocResult?.perception?.video_chunks
+      // 主向量编码器出处：仅取 perceive 响应原值，缺失即由 persistOmniVectors 跳过回传并 warn
+      const denseEmbeddingEncoderId = anydocResult?.perception?.embedding_encoder_id
       const currentInterval =
         ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 1.0
 
@@ -2333,6 +2368,7 @@ export class FileProcessor {
         vectorSaved,
         fileFingerprint,
         denseEmbedding,
+        denseEmbeddingEncoderId,
         videoChunks,
         databaseService,
         samplingIntervalSeconds: currentInterval

@@ -33,6 +33,7 @@ import {
 } from '@firefly/shared'
 import {
   omniClient,
+  resolveQueryEncoderFilter,
   OmniMatchPassagesItem,
   OmniPassageMatch,
   OmniSearchFsItem
@@ -1371,7 +1372,12 @@ export class HybridSearchArbiter {
         this.vectorBreaker.recordFailure()
         return null
       }
-      const resp = await omniClient.searchVectors(embedding, poolSize)
+      // 查询白名单必须显式给出（无「缺省不过滤」兜底）：
+      // classic_light 384 槽 → [0, 1]（Bekko + v2 旧记录过渡）；gemma_unified 各 MRL 槽 → [4]。
+      const embeddingProfile = await omniService.getEmbeddingProfile()
+      const resp = await omniClient.searchVectors(embedding, poolSize, {
+        encoderFilter: resolveQueryEncoderFilter(embeddingProfile)
+      })
       if (!resp || !Array.isArray(resp.matches)) {
         this.vectorBreaker.recordFailure()
         return null
