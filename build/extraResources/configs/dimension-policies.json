@@ -1,0 +1,1859 @@
+{
+  "builtin.file_type": {
+    "id": 1,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "*"
+    ],
+    "contextHints": [
+      "扩展名",
+      "MIME类型",
+      "文件签名"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.file_purpose": {
+    "id": 2,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "*"
+    ],
+    "contextHints": [
+      "存储路径",
+      "命名模式",
+      "关联应用"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.file_source": {
+    "id": 3,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "*"
+    ],
+    "contextHints": [
+      "路径特征",
+      "传输日志"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "hownet.000000043396.n": {
+    "id": 4,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "text",
+      "document",
+      "ebook",
+      "image",
+      "code",
+      "video",
+      "audio"
+    ],
+    "contextHints": [
+      "元数据",
+      "数字签名",
+      "水印"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": true,
+        "isRequiresAI": true,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.application_data_segmentation": {
+    "id": 5,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "application"
+    ],
+    "contextHints": [
+      "格式特征"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.image_subdivision": {
+    "id": 6,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "image"
+    ],
+    "contextHints": [
+      "EXIF数据",
+      "内容识别"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.video_segmentation": {
+    "id": 7,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "video"
+    ],
+    "contextHints": [
+      "时长特征",
+      "关键帧分析"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.audio_segmentation": {
+    "id": 8,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "audio"
+    ],
+    "contextHints": [
+      "频谱特征",
+      "元数据"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.compressed_package_breakdown": {
+    "id": 9,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "archive"
+    ],
+    "contextHints": [
+      "压缩算法",
+      "文件头签名",
+      "加密检测"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.program_segmentation": {
+    "id": 10,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "executable"
+    ],
+    "contextHints": [
+      "平台特征",
+      "签名证书"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.operating_platform": {
+    "id": 163,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "executable"
+    ],
+    "contextHints": [
+      "PE头特征",
+      "ELF头特征",
+      "Mach-O头特征"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.runtime_framework": {
+    "id": 164,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "executable"
+    ],
+    "contextHints": [
+      "依赖库探测",
+      "打包特征"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.program_ability_characteristics": {
+    "id": 165,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "executable"
+    ],
+    "contextHints": [
+      "IAT符号聚类",
+      "能力探测"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.language_segmentation": {
+    "id": 11,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "document",
+      "text",
+      "ebook",
+      "audio",
+      "video"
+    ],
+    "contextHints": [
+      "字符编码",
+      "语法特征"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.system_file_breakdown": {
+    "id": 12,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "filesystem"
+    ],
+    "contextHints": [
+      "路径位置",
+      "权限特征"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.publication_status": {
+    "id": 13,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "ebook",
+      "video",
+      "audio"
+    ],
+    "contextHints": [
+      "版权页",
+      "ISBN号",
+      "发布平台"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.database_segmentation": {
+    "id": 14,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "database"
+    ],
+    "contextHints": [
+      "文件签名",
+      "结构特征"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.disk_image_segmentation": {
+    "id": 15,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "diskimage"
+    ],
+    "contextHints": [
+      "卷标信息",
+      "分区结构"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.geographical_location": {
+    "id": 16,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "image",
+      "video"
+    ],
+    "contextHints": [
+      "GPS坐标",
+      "地标识别"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": true,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "omw.14428404.n": {
+    "id": 17,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "document",
+      "code",
+      "archive",
+      "database"
+    ],
+    "contextHints": [
+      "加密状态",
+      "权限设置"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.processing_status": {
+    "id": 18,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "document",
+      "code",
+      "design"
+    ],
+    "contextHints": [
+      "修改时间",
+      "版本标记"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.software_nature": {
+    "id": 19,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "executable"
+    ],
+    "contextHints": [
+      "许可证文件",
+      "授权标识"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.travel_content": {
+    "id": 20,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "image",
+      "video",
+      "document"
+    ],
+    "contextHints": [
+      "场景识别",
+      "时间特征"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.financial_type": {
+    "id": 21,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "document"
+    ],
+    "contextHints": [
+      "票据识别",
+      "金额模式"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.game_type": {
+    "id": 22,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "video",
+      "ebook",
+      "executable"
+    ],
+    "contextHints": [
+      "游戏"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.subject_area": {
+    "id": 23,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "document",
+      "video",
+      "ebook",
+      "code"
+    ],
+    "contextHints": [
+      "学科术语密度",
+      "教材章节结构",
+      "课程平台标识"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.e_book_segmentation": {
+    "id": 24,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "ebook"
+    ],
+    "contextHints": [
+      "章节结构",
+      "DRM状态"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.theme": {
+    "id": 25,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "video",
+      "audio",
+      "ebook",
+      "executable"
+    ],
+    "contextHints": [
+      "时长特征",
+      "关键帧分析",
+      "内容特征"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.music_type": {
+    "id": 26,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "audio"
+    ],
+    "contextHints": [
+      "时长特征",
+      "内容特征"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.document_quality": {
+    "id": 27,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "*"
+    ],
+    "contextHints": [
+      "内容质量",
+      "技术质量",
+      "美学质量"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.content_tags": {
+    "id": 28,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "*"
+    ],
+    "contextHints": [
+      "文本内容",
+      "视觉描述",
+      "语音转录"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": true,
+        "isRequiresAI": true,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.family_life_segmentation": {
+    "id": 29,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "text",
+      "document",
+      "ebook",
+      "image",
+      "video",
+      "audio",
+      "design"
+    ],
+    "contextHints": [
+      "存储路径",
+      "命名模式",
+      "关联应用"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.text_subdivision": {
+    "id": 100,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "text"
+    ],
+    "contextHints": [
+      "格式特征"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.document_subdivision": {
+    "id": 101,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "document"
+    ],
+    "contextHints": [
+      "格式特征"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.application_data_extensions": {
+    "id": 102,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "application"
+    ],
+    "contextHints": [
+      "文件扩展名"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.database_extensions": {
+    "id": 103,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "database"
+    ],
+    "contextHints": [
+      "文件扩展名"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.disk_image_extensions": {
+    "id": 104,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "diskimage"
+    ],
+    "contextHints": [
+      "文件扩展名"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.source_code_segmentation": {
+    "id": 105,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "code"
+    ],
+    "contextHints": [
+      "语法特征",
+      "解释器路径"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.font_segmentation": {
+    "id": 106,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "font"
+    ],
+    "contextHints": [
+      "字体格式",
+      "字符集"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.system_file_extensions": {
+    "id": 107,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "filesystem"
+    ],
+    "contextHints": [
+      "文件扩展名"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.document_extensions": {
+    "id": 108,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "document"
+    ],
+    "contextHints": [
+      "文件扩展名"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.text_extensions": {
+    "id": 109,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "text"
+    ],
+    "contextHints": [
+      "文件扩展名"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.image_extensions": {
+    "id": 110,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "image"
+    ],
+    "contextHints": [
+      "文件扩展名"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.video_extensions": {
+    "id": 111,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "video"
+    ],
+    "contextHints": [
+      "文件扩展名"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.audio_extensions": {
+    "id": 112,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "audio"
+    ],
+    "contextHints": [
+      "文件扩展名"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.compressed_package_extensions": {
+    "id": 113,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "archive"
+    ],
+    "contextHints": [
+      "文件扩展名"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.source_code_extensions": {
+    "id": 114,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "code"
+    ],
+    "contextHints": [
+      "文件扩展名"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.program_extensions": {
+    "id": 115,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "executable"
+    ],
+    "contextHints": [
+      "文件扩展名"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.ebook_extensions": {
+    "id": 116,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "ebook"
+    ],
+    "contextHints": [
+      "文件扩展名"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.font_extensions": {
+    "id": 117,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "font"
+    ],
+    "contextHints": [
+      "文件扩展名"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.comic_segmentation": {
+    "id": 118,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "ebook",
+      "image",
+      "archive"
+    ],
+    "contextHints": [
+      "内容特征",
+      "受众标识"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.game_platform": {
+    "id": 119,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "video",
+      "ebook",
+      "archive",
+      "executable"
+    ],
+    "contextHints": [
+      "平台标识",
+      "文件格式"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.source_of_work": {
+    "id": 120,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "ebook",
+      "image",
+      "video",
+      "audio",
+      "archive"
+    ],
+    "contextHints": [
+      "创作声明",
+      "数字水印",
+      "元数据"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.emotion_tags": {
+    "id": 121,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "ebook",
+      "image",
+      "video",
+      "audio"
+    ],
+    "contextHints": [
+      "情感分析",
+      "内容基调"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.image_quality_level": {
+    "id": 122,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "image",
+      "video"
+    ],
+    "contextHints": [
+      "分辨率检测",
+      "编码参数"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.erotic_scale": {
+    "id": 123,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "ebook",
+      "image",
+      "video",
+      "archive"
+    ],
+    "contextHints": [
+      "内容审查",
+      "分级标识"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.coding_level": {
+    "id": 124,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "image",
+      "video"
+    ],
+    "contextHints": [
+      "内容审查",
+      "分级标识"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.watermark_level": {
+    "id": 125,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "image",
+      "video"
+    ],
+    "contextHints": [
+      "内容审查",
+      "分级标识",
+      "版权标识"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.photography_categories": {
+    "id": 126,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "image"
+    ],
+    "contextHints": [
+      "EXIF数据",
+      "题材识别",
+      "场景感知"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.photo_quality": {
+    "id": 127,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "image"
+    ],
+    "contextHints": [
+      "画质检测",
+      "曝光分析",
+      "清晰度评估"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.breakdown_of_contracts_and_bills": {
+    "id": 128,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "image",
+      "document"
+    ],
+    "contextHints": [
+      "版式识别",
+      "公章印鉴",
+      "财务表格"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.license_and_permit_categories": {
+    "id": 129,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "image",
+      "document"
+    ],
+    "contextHints": [
+      "卡证边框",
+      "防伪底纹",
+      "官方证件"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.sensitive_content": {
+    "id": 130,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "ebook",
+      "image",
+      "video",
+      "archive"
+    ],
+    "contextHints": [
+      "敏感内容审查",
+      "合规安全检测",
+      "违规过滤"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.bloody_segmentation": {
+    "id": 131,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "ebook",
+      "image",
+      "video",
+      "archive"
+    ],
+    "contextHints": [
+      "暴力审查",
+      "血腥评级",
+      "猎奇检测"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.political_subcategories": {
+    "id": 132,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "ebook",
+      "image",
+      "video",
+      "archive"
+    ],
+    "contextHints": [
+      "政治合规",
+      "敏感人物",
+      "意识形态审查"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.violation_categories": {
+    "id": 133,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "ebook",
+      "image",
+      "video",
+      "archive"
+    ],
+    "contextHints": [
+      "违法检测",
+      "违禁品识别",
+      "黑产过滤"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.pornography_subgenres": {
+    "id": 134,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "ebook",
+      "image",
+      "video",
+      "archive"
+    ],
+    "contextHints": [
+      "成人审查",
+      "题材分类",
+      "情色识别"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.screenshot_breakdown": {
+    "id": 135,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "image"
+    ],
+    "contextHints": [
+      "屏幕捕获",
+      "界面分析",
+      "截图识别"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.generate_vector": {
+    "id": 136,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "image",
+      "video"
+    ],
+    "contextHints": [
+      "生成方式",
+      "渲染类型",
+      "载体识别"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.scenery_farewell": {
+    "id": 137,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "image"
+    ],
+    "contextHints": [
+      "取景范围",
+      "画幅构图",
+      "人物景别"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "omw.03769397.n": {
+    "id": 138,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "image"
+    ],
+    "contextHints": [
+      "光线分析",
+      "拍摄时间",
+      "氛围识别"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "omw.02768864.n": {
+    "id": 139,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "image"
+    ],
+    "contextHints": [
+      "Alpha通道",
+      "背景抠图",
+      "设计素材"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "omw.13919059.n": {
+    "id": 140,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "image",
+      "video"
+    ],
+    "contextHints": [
+      "拍摄视角",
+      "镜头透视",
+      "观察角度"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.layout": {
+    "id": 141,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "document",
+      "image"
+    ],
+    "contextHints": [
+      "排版结构",
+      "版面分析",
+      "图文比例"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.system_ecology": {
+    "id": 142,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "image"
+    ],
+    "contextHints": [
+      "操作系统",
+      "界面风格",
+      "设备来源"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.frame": {
+    "id": 143,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "image",
+      "video"
+    ],
+    "contextHints": [
+      "宽高比",
+      "分辨率分析",
+      "画幅走向"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.number_of_subjects": {
+    "id": 144,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "image"
+    ],
+    "contextHints": [
+      "主体计数",
+      "人像检测",
+      "场景构成"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.subject_type": {
+    "id": 145,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "image"
+    ],
+    "contextHints": [
+      "目标检测",
+      "主体识别",
+      "视觉焦点"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.text_density": {
+    "id": 146,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "image"
+    ],
+    "contextHints": [
+      "OCR识别",
+      "文本覆盖率",
+      "文字排版"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.texture_style": {
+    "id": 147,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "image"
+    ],
+    "contextHints": [
+      "色彩风格",
+      "质感渲染",
+      "艺术格调"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.time_season": {
+    "id": 148,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "image"
+    ],
+    "contextHints": [
+      "时序色彩",
+      "季节植物",
+      "气候特征"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  },
+  "builtin.main_color": {
+    "id": 149,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "image",
+      "video"
+    ],
+    "contextHints": [
+      "色温分析",
+      "色彩直方图",
+      "色调倾向"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.family_incest_breakdown": {
+    "id": 150,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "ebook",
+      "image",
+      "video",
+      "archive"
+    ],
+    "contextHints": [
+      "近亲题材",
+      "伦理禁忌",
+      "血缘叙事"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.extramarital_lust_breakdown": {
+    "id": 151,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "ebook",
+      "image",
+      "video",
+      "archive"
+    ],
+    "contextHints": [
+      "伴侣互换",
+      "婚外隐秘",
+      "人妻题材"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.teacher_student_erotica_breakdown": {
+    "id": 152,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "ebook",
+      "image",
+      "video",
+      "archive"
+    ],
+    "contextHints": [
+      "师生情欲",
+      "校园性爱",
+      "同窗情色"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.workplace_erotica_breakdown": {
+    "id": 153,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "ebook",
+      "image",
+      "video",
+      "archive"
+    ],
+    "contextHints": [
+      "职场情欲",
+      "邻里情色",
+      "社交情欲"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.multi_person_group_segmentation": {
+    "id": 154,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "ebook",
+      "image",
+      "video",
+      "archive"
+    ],
+    "contextHints": [
+      "多主体色情互动",
+      "群体色情互动",
+      "性爱聚会场景"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.sex_training_breakdown": {
+    "id": 155,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "ebook",
+      "image",
+      "video",
+      "archive"
+    ],
+    "contextHints": [
+      "亚文化调教",
+      "支配顺从",
+      "重度对抗"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.peep_exposed_segmentation": {
+    "id": 156,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "ebook",
+      "image",
+      "video",
+      "archive"
+    ],
+    "contextHints": [
+      "空间暴露",
+      "偷拍盗摄",
+      "户外展示"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.uniform_seduction_breakdown": {
+    "id": 157,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "ebook",
+      "image",
+      "video",
+      "archive"
+    ],
+    "contextHints": [
+      "制服人设",
+      "行业职业",
+      "角色扮演"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.erotic_literature_subcategories": {
+    "id": 158,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "ebook",
+      "image",
+      "video",
+      "archive"
+    ],
+    "contextHints": [
+      "情色文学",
+      "背景设定",
+      "文学流派"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.physiological_breakdown_of_desire": {
+    "id": 159,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "ebook",
+      "image",
+      "video",
+      "archive"
+    ],
+    "contextHints": [
+      "生理动作",
+      "器官特写",
+      "性感写真"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.involuntary_assault_breakdown": {
+    "id": 160,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "ebook",
+      "image",
+      "video",
+      "archive"
+    ],
+    "contextHints": [
+      "违背意愿",
+      "侵害违规",
+      "强迫侵犯"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.diverse_sexual_orientation_subcategories": {
+    "id": 161,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "ebook",
+      "image",
+      "video",
+      "archive"
+    ],
+    "contextHints": [
+      "多元性取向",
+      "同性题材",
+      "性向分类"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": true
+      }
+    }
+  },
+  "builtin.content_rating": {
+    "id": 162,
+    "threshold": 0.6,
+    "applicableFileTypes": [
+      "ebook",
+      "image",
+      "video",
+      "audio",
+      "archive",
+      "document"
+    ],
+    "contextHints": [
+      "年龄适宜性分级",
+      "内容分级",
+      "受众年龄审查"
+    ],
+    "metadata": {
+      "flag": {
+        "isPanDimension": false,
+        "isRequiresAI": false,
+        "isMultiSelect": false
+      }
+    }
+  }
+}
