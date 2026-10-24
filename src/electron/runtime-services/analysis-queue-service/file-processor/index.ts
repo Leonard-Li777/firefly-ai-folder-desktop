@@ -81,6 +81,15 @@ import { NamingDSLEngine } from '../../filesystem/naming-dsl-engine'
 import { solidifyCanonicalForTerminal } from '../canonical-text-service'
 
 /**
+ * CPU 阶段耗时登记表（item.id → 毫秒）
+ *
+ * 并行流水线里 CPU 提取与 GPU 推理是**两次** processFile 调用，各自新建 PerformanceTimer
+ * （计时起点是各自阶段开始）。AI 阶段要按「单文件总预算 − 已用」收紧超时，就必须补上
+ * CPU 阶段（含视频向量 + ASR）已经花掉的时间，否则单文件最坏耗时会是两段各自的上限之和。
+ */
+const cpuPhaseElapsedMs = new Map<number, number>()
+
+/**
  * @firecrawl/anydoc 支持的文档格式扩展名（小写）
  * 参考 anydoc 文档：Word / PowerPoint / Excel / OpenDocument / RTF / EPUB / CSV / PDF
  * 其它类型（如 .lnk 快捷方式、应用、音视频、压缩包等）anydoc 不支持，
@@ -293,31 +302,27 @@ export async function checkBasicDataCompleteness(
       if (!chunkRows || chunkRows.length === 0) {
         missingReasons.push('missing_video_chunks')
       } else {
-        const currentInterval =
-          ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 1.0
+        // 抽帧间隔已由引擎按预算自决（设置页已移除该项），不再与配置比对；
+        // 只保留「切片跨度是否与其自身记录的间隔吻合」的缓存升级防护。
         const firstChunk = chunkRows[0]
         const recordedInterval = firstChunk.sampling_interval_seconds ?? 1.0
-        if (Math.abs(recordedInterval - currentInterval) > 0.1) {
-          missingReasons.push(`video_interval_mismatch_${recordedInterval}_vs_${currentInterval}`)
+        // 旧 8s 切片缓存自动升级防护（Ticket 04 & Spec §4.3）：
+        // 检查首切片跨度是否与新公式 Math.min(16, Math.max(4, interval * 2)) 吻合
+        const expectedSpan = Math.min(16, Math.max(4, recordedInterval * 2))
+        const firstSpan = (firstChunk.end_sec ?? 0) - (firstChunk.start_sec ?? 0)
+        const isSpanOutdated =
+          chunkRows.length > 1 && Math.abs(firstSpan - expectedSpan) >= 0.5
+        if (isSpanOutdated) {
+          missingReasons.push(`video_chunk_span_outdated_${firstSpan}_vs_${expectedSpan}`)
         } else {
-          // 旧 8s 切片缓存自动升级防护（Ticket 04 & Spec §4.3）：
-          // 检查首切片跨度是否与新公式 Math.min(16, Math.max(4, currentInterval * 2)) 吻合
-          const expectedSpan = Math.min(16, Math.max(4, currentInterval * 2))
-          const firstSpan = (firstChunk.end_sec ?? 0) - (firstChunk.start_sec ?? 0)
-          const isSpanOutdated =
-            chunkRows.length > 1 && Math.abs(firstSpan - expectedSpan) >= 0.5
-          if (isSpanOutdated) {
-            missingReasons.push(`video_chunk_span_outdated_${firstSpan}_vs_${expectedSpan}`)
-          } else {
-            const probeFp = `${fingerprint}:c${firstChunk.chunk_index ?? 0}`
-            try {
-              const probeRes = await omniClient.getVectors([probeFp], targetDim, 3000)
-              if (!probeRes?.vectors || probeRes.vectors.length === 0) {
-                missingReasons.push('missing_video_chunk_vectors')
-              }
-            } catch {
-              missingReasons.push('video_vector_probe_error')
+          const probeFp = `${fingerprint}:c${firstChunk.chunk_index ?? 0}`
+          try {
+            const probeRes = await omniClient.getVectors([probeFp], targetDim, 3000)
+            if (!probeRes?.vectors || probeRes.vectors.length === 0) {
+              missingReasons.push('missing_video_chunk_vectors')
             }
+          } catch {
+            missingReasons.push('video_vector_probe_error')
           }
         }
       }
@@ -1370,6 +1375,9 @@ export class FileProcessor {
 
         let processResult: any
         let dimResult: any
+        // CPU 阶段已用时长（并行流水线下由上一次 processFile 登记）；读后即删，避免长期驻留
+        const elapsedBeforeAiMs = cpuPhaseElapsedMs.get(item.id) ?? 0
+        cpuPhaseElapsedMs.delete(item.id)
 
         if (analysisMode === 'quick_name') {
           const quickRes = await processQuickNameAnalysis(
@@ -1410,7 +1418,9 @@ export class FileProcessor {
               magikaCategory: existingBasicData.category || null,
               isSpeedy,
               initialStage,
-              forceReanalyze: item.forceReanalyze === true
+              forceReanalyze: item.forceReanalyze === true,
+              // 并行流水线：本次 timer 从 GPU 阶段起算，需补上 CPU 阶段（含视频向量 + ASR）耗时
+              elapsedBeforeAiMs
             },
             this.updateItemStatus.bind(this)
           ).catch(err => {
@@ -1909,12 +1919,12 @@ export class FileProcessor {
       const isAudioOrVideo =
         extractFileCategory === FileCategory.AUDIO || extractFileCategory === FileCategory.VIDEO
       const isVideo = extractFileCategory === FileCategory.VIDEO
+      // 语音识别时长：参与 Omni 侧 90s 向量预算求解（ASR 成本 = min(A, 可分析时长)·r）
       const audioAnalysisDuration = isAudioOrVideo
         ? (ConfigOrchestrator.getInstance().getValue<number>('AUDIO_ANALYSIS_DURATION') ?? 30)
         : undefined
-      const videoFrameIntervalSeconds = isVideo
-        ? (ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 1.0)
-        : undefined
+      // 抽帧间隔已从设置页移除：由引擎按预算自决（内部下限 1.0s，长视频自动放大），不再读配置
+      const videoFrameIntervalSeconds = undefined
       const videoSoftTokenBudget = isVideo
         ? (ConfigOrchestrator.getInstance().getValue<number>('VIDEO_SOFT_TOKEN_BUDGET') ?? 140)
         : undefined
@@ -2249,6 +2259,12 @@ export class FileProcessor {
         if (p.security_level) contentResult.metadata.security_level = p.security_level
         if (p.winning_hypothesis) contentResult.metadata.winning_hypothesis = p.winning_hypothesis
         if (p.smart_name) contentResult.metadata.smart_name = p.smart_name
+        if (p.video_analysis_duration_sec !== undefined) {
+          contentResult.metadata.video_analysis_duration_sec = p.video_analysis_duration_sec
+        }
+        if (p.video_truncated !== undefined) {
+          contentResult.metadata.video_truncated = p.video_truncated
+        }
       }
 
       logger.info(
@@ -2353,6 +2369,12 @@ export class FileProcessor {
       if (anydocResult?.perception?.author && !contentResult.metadata.author) {
         contentResult.metadata.author = anydocResult.perception.author
       }
+      if (anydocResult?.perception?.video_analysis_duration_sec !== undefined) {
+        contentResult.metadata.video_analysis_duration_sec = anydocResult.perception.video_analysis_duration_sec
+      }
+      if (anydocResult?.perception?.video_truncated !== undefined) {
+        contentResult.metadata.video_truncated = anydocResult.perception.video_truncated
+      }
 
       if (!fileFingerprint || fileFingerprint.startsWith('temp_')) {
         fileFingerprint = await calculateFileFingerprint(filePath)
@@ -2367,8 +2389,9 @@ export class FileProcessor {
       const videoChunks = anydocResult?.perception?.video_chunks
       // 主向量编码器出处：仅取 perceive 响应原值，缺失即由 persistOmniVectors 跳过回传并 warn
       const denseEmbeddingEncoderId = anydocResult?.perception?.embedding_encoder_id
-      const currentInterval =
-        ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 1.0
+      // 生效采样间隔必须取引擎回传值（抽帧间隔已不由用户配置）；缺失时退回 1.0
+      const effectiveInterval =
+        anydocResult?.perception?.video_sampling_interval_seconds ?? 1.0
 
       await persistOmniVectors({
         vectorSaved,
@@ -2377,7 +2400,7 @@ export class FileProcessor {
         denseEmbeddingEncoderId,
         videoChunks,
         databaseService,
-        samplingIntervalSeconds: currentInterval
+        samplingIntervalSeconds: effectiveInterval
       })
 
       // ADR-0054：本地 SQLite 零向量原则，写入 zvec 后立即从 metadata 剥离向量字段，杜绝污染 file_contents.exif
@@ -2542,6 +2565,8 @@ export class FileProcessor {
       }
 
       if (phase === 'cpu') {
+        // 登记 CPU 阶段耗时，供后续 GPU 阶段的 AI 超时按「单文件总预算 − 已用」收紧
+        cpuPhaseElapsedMs.set(item.id, timer.getTotalDuration())
         try {
           const cpuTimerStats = await this.collectAnalysisStats(timer)
           const cpuStatsWithBenchmark = applyMarkitdownBenchmark(cpuTimerStats, markitdownBenchmark, stage1Benchmark)

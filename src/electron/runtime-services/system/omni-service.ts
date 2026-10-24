@@ -14,6 +14,7 @@ import * as fs from 'node:fs'
 import { app, BrowserWindow } from 'electron'
 import { ResourceLocator, logger, LogCategory, APP_PORTS, findAvailablePort } from '@firefly/shared'
 import { MagikaFileCategory } from '@firefly/types'
+import { resolveAnalysisTimeoutBudget } from './analysis-timeout-policy'
 
 /**
  * 基础AI引擎（Omni）运行状态快照，主动推送至渲染进程（omni:status-changed）
@@ -299,6 +300,22 @@ export interface OmniPerceptionResponse {
 
   /** 视频时序切片集合（30 秒窗口切片） */
   video_chunks?: OmniVideoChunkItem[]
+  /**
+   * 本次视频分析实际生效的采样间隔（秒）
+   *
+   * 抽帧间隔已不由用户配置，由引擎按 120s 单文件预算自决。落库
+   * `file_video_chunks.sampling_interval_seconds` 必须用它，禁止再用配置值代替。
+   */
+  video_sampling_interval_seconds?: number
+  /**
+   * 视频实际分析的时长（秒）
+   * 未截断时为视频总时长，触发截断/看门狗时为实际分析覆盖的片长。
+   */
+  video_analysis_duration_sec?: number
+  /**
+   * 视频分析是否被截断（因超出单文件时间预算或动态看门狗熔断）
+   */
+  video_truncated?: boolean
   /** 是否已在 Omni 内部就地完成批量向量持久化（Ticket 02 / 04） */
   vector_saved?: boolean
 
@@ -571,7 +588,8 @@ export class OmniService {
           'MAX_FILE_SIZE',
           'ANALYSIS_MODE',
           'REUSE_BASIC_ANALYSIS_DATA',
-          'VIDEO_FRAME_INTERVAL_SECONDS'
+          // 抽帧间隔已由引擎按预算自决，不再进配置监听；语音识别时长仍需同步为引擎默认值
+          'AUDIO_ANALYSIS_DURATION'
         ] as const
         ocrKeys.forEach(key => {
           orchestrator.onValueChange(key as any, () => {
@@ -1263,6 +1281,7 @@ export class OmniService {
       const { resolveAnalysisMode } = await import('../../config/analysis-mode')
       const analysisMode = resolveAnalysisMode()
       const reuseBasic = orchestrator.getValue<boolean>('REUSE_BASIC_ANALYSIS_DATA') ?? true
+      // 语音识别时长（基础 AI 引擎口径，参与 120s 单文件预算求解）
       const audioAnalysisDuration = orchestrator.getValue<number>('AUDIO_ANALYSIS_DURATION') ?? 30
       // 当前用户界面语言，同步给 Omni 引擎（供 OCR/元数据提取等按语言处理）
       const currentLanguage = orchestrator.getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
@@ -1705,14 +1724,14 @@ export class OmniService {
       JSON.stringify(reqBody)
     )
 
-    const isVideoOrAudio = Boolean(
-      options?.videoFrameIntervalSeconds !== undefined ||
-      options?.audioAnalysisDuration !== undefined ||
-      filePath.match(/\.(mp4|mkv|mov|avi|flv|wmv|webm|ts|m4v|mp3|wav|flac|m4a|aac|ogg)$/i)
-    )
-    // 音视频多模态抽帧与语音转录包含 CPU ONNX 推理，长视频需要更宽裕的超时窗口（默认 10 分钟），杜绝 120s 强杀降级
-    const defaultTimeout = isVideoOrAudio ? 600000 : 120000
-    const timeoutMs = options?.timeoutMs || defaultTimeout
+    // perceive 超时 = CPU 阶段上限（总预算 − 按类型分配的 AI 保底），见 analysis-timeout-policy。
+    // 音视频不再放宽到 10 分钟：那会让单文件真实上限变成「10 分钟 + AI 分析」。
+    // 请求里带了音视频专属参数时以之为准，避免无扩展名的媒体文件被误判成文档。
+    const isMediaHint =
+      options?.enableAudioTranscript === true || options?.audioAnalysisDuration !== undefined
+    const timeoutMs =
+      options?.timeoutMs ||
+      resolveAnalysisTimeoutBudget(filePath, undefined, isMediaHint).cpuCapMs
 
     const doFetch = async () => {
       const res = await fetch(`${this.baseUrl}/api/perceive`, {

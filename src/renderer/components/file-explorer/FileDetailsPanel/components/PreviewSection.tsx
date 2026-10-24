@@ -124,6 +124,35 @@ export const PreviewSection: React.FC<any> = ({
               </div>
             </div>
           )}
+        {analysisResult?.metadata?.video_analysis_duration_sec != null && (
+          <div className="mt-1 flex justify-center">
+            <div className="inline-flex max-w-full items-center gap-1 bg-muted/60 text-muted-foreground px-2 py-0.5 rounded text-[10px]">
+              <MaterialIcon icon="timelapse" className="text-xs shrink-0" />
+              <span>
+                {(() => {
+                  const analyzed = formatDuration(analysisResult.metadata.video_analysis_duration_sec * 1000)
+                  const rawTotalSec =
+                    analysisResult.metadata.duration ??
+                    analysisResult.metadata.video?.duration ??
+                    analysisResult.metadata.video_duration
+                  const totalSec = typeof rawTotalSec === 'number' && rawTotalSec > 0 ? rawTotalSec : null
+
+                  if (analysisResult.metadata.video_truncated) {
+                    return totalSec && totalSec > analysisResult.metadata.video_analysis_duration_sec
+                      ? t('已分析前 {analyzed} / 共 {total}（已截断）', {
+                          analyzed,
+                          total: formatDuration(totalSec * 1000)
+                        })
+                      : t('已分析前 {analyzed}（已截断）', { analyzed })
+                  }
+                  return t('已分析全片（{duration}）', {
+                    duration: totalSec ? formatDuration(totalSec * 1000) : analyzed
+                  })
+                })()}
+              </span>
+            </div>
+          </div>
+        )}
       </>
     )
   }
@@ -150,6 +179,35 @@ export const PreviewSection: React.FC<any> = ({
                   </span>
                 </>
               ) : null}
+            </div>
+          </div>
+        )}
+        {analysisResult?.metadata?.video_analysis_duration_sec != null && (
+          <div className="mt-1 flex justify-center">
+            <div className="inline-flex max-w-full items-center gap-1 bg-muted/60 text-muted-foreground px-2 py-0.5 rounded text-[10px]">
+              <MaterialIcon icon="timelapse" className="text-xs shrink-0" />
+              <span>
+                {(() => {
+                  const analyzed = formatDuration(analysisResult.metadata.video_analysis_duration_sec * 1000)
+                  const rawTotalSec =
+                    analysisResult.metadata.duration ??
+                    analysisResult.metadata.video?.duration ??
+                    analysisResult.metadata.video_duration
+                  const totalSec = typeof rawTotalSec === 'number' && rawTotalSec > 0 ? rawTotalSec : null
+
+                  if (analysisResult.metadata.video_truncated) {
+                    return totalSec && totalSec > analysisResult.metadata.video_analysis_duration_sec
+                      ? t('已分析前 {analyzed} / 共 {total}（已截断）', {
+                          analyzed,
+                          total: formatDuration(totalSec * 1000)
+                        })
+                      : t('已分析前 {analyzed}（已截断）', { analyzed })
+                  }
+                  return t('已分析全片（{duration}）', {
+                    duration: totalSec ? formatDuration(totalSec * 1000) : analyzed
+                  })
+                })()}
+              </span>
             </div>
           </div>
         )}
