@@ -41,6 +41,14 @@ export const CANONICAL_MAINTENANCE_BATCH_SIZE = 32
 /** 回填并发上限（方案 §3.10：并发 1） */
 export const CANONICAL_BACKFILL_CONCURRENCY = 1
 
+/**
+ * 单次 `runMaintenance` 调用内最多串行跑几轮（含首次）。
+ *
+ * 维护期间的新触发会被合并为「补跑一轮」：只记最后一次原因，避免突发变更放大成 N 轮；
+ * 上限兜底病态抖动（如设置页连续切档）把单次调用拖成长跑。
+ */
+export const CANONICAL_MAINTENANCE_MAX_COALESCED_RUNS = 3
+
 /** 单次维护任务内探活推进的批数上限（防止长任务独占事件循环） */
 const PROBE_MAX_BATCHES_PER_SLOT = 64
 
@@ -253,6 +261,11 @@ export class CanonicalMaintenanceService {
    * 同一批指纹会被 `requeueForReanalysis` 入队两次。
    */
   private maintenanceRunning = false
+  /**
+   * 维护运行期间被闸门拦下的触发原因（只保留最后一次）。
+   * 由闸主在返回前补跑一轮消费：合并突发变更，且不让「切档后库内状态与配置不一致」静默存在。
+   */
+  private pendingMaintenanceReason: string | null = null
   /** 最近一次维护摘要（供设置页与测试观测） */
   private lastMaintenance: CanonicalRebuildCounts['lastMaintenance'] = null
 
@@ -266,19 +279,37 @@ export class CanonicalMaintenanceService {
    */
   async runMaintenance(reason: string): Promise<CanonicalRebuildCounts> {
     // 并发闸（并发 1）：同一次配置 flush 可能同时触发 profile 与 activeDim 两个 handler，
-    // 手动重建也可能撞上配置变更。重入会让同一批指纹被入队两次，故直接返回当前计数。
+    // 手动重建也可能撞上配置变更。重入会让同一批指纹被入队两次。
     if (this.maintenanceRunning) {
+      // 但不能直接丢弃：维护可持续数分钟，期间若用户再次切档，丢弃会让库内状态与配置长期不一致
+      // （启动路径不调用 runMaintenance，只能等下次配置变更或重启）。这里只记「最后一次」原因，
+      // 由闸主在 finally 前补跑一轮——合并突发变更，不会放大成 N 轮。
+      this.pendingMaintenanceReason = reason
       logger.info(
         LogCategory.ANALYSIS_QUEUE,
-        `[CanonicalMaintenance] 已有维护任务在运行，跳过本次触发: reason=${reason}`
+        `[CanonicalMaintenance] 已有维护任务在运行，本次触发已排队（合并为补跑一轮）: reason=${reason}`
       )
       return this.getRebuildCounts()
     }
     this.maintenanceRunning = true
     try {
-      return await this.runMaintenanceInner(reason)
+      let counts = await this.runMaintenanceInner(reason)
+      // 补跑：仅补最后一次排队的原因；每轮开始前清空，使补跑期间的新变更仍能再触发一次。
+      // 上限 3 轮兜底，防病态抖动把队列拖成长跑。
+      for (let i = 0; i < CANONICAL_MAINTENANCE_MAX_COALESCED_RUNS - 1; i++) {
+        const next = this.pendingMaintenanceReason
+        if (!next) break
+        this.pendingMaintenanceReason = null
+        logger.info(
+          LogCategory.ANALYSIS_QUEUE,
+          `[CanonicalMaintenance] 维护期间有新触发，补跑一轮: reason=${next}`
+        )
+        counts = await this.runMaintenanceInner(next)
+      }
+      return counts
     } finally {
       this.maintenanceRunning = false
+      this.pendingMaintenanceReason = null
     }
   }
 
