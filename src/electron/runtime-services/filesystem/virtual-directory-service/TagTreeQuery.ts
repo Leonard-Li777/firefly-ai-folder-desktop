@@ -55,7 +55,17 @@ export interface FilterFilesParams {
   virtualDirectoryId?: number
   unionMode?: 'union' | 'intersection'
   includeUnanalyzed?: boolean
-  onProgress?: (phase: 'phase1' | 'phase2', response: FilteredFilesResponse) => void
+  /**
+   * 流式检索进度回调。
+   *
+   * 工单 13：新增 `phase3` —— 冷态 CLIP 第 5 路结果在 phase2 之后异步追加，
+   * 语义是「往已渲染列表尾部补新项」，不是又一次全量置换。
+   * `clipPending` 仅在 phase2 出现，表示冷态视觉模型正在首次加载（UI 据此展示轻量提示）。
+   */
+  onProgress?: (
+    phase: 'phase1' | 'phase2' | 'phase3',
+    response: FilteredFilesResponse & { clipPending?: boolean }
+  ) => void
 }
 
 /** 混合检索分页引用：已分析候选 / 未分析 FS 命中 */

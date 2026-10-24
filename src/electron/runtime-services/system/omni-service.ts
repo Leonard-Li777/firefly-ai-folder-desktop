@@ -389,6 +389,8 @@ export interface OmniClusterDocument {
   keywords: string[]
   /** 送嵌入引擎的富文本（智能命名/文件名 + 准入关键词），供 zvec 未命中时 JIT 即时编码 */
   embeddingText?: string
+  /** 阶段二固化的 canonical 语义文本（工单 08：JIT 兜底的首选输入源，严禁回写 zvec） */
+  canonicalText?: string
   /** 正文不含可见语义文本时，本次聚类改用 embeddingText 编码；JIT 向量仅服务当次 HAC 距离矩阵，严禁回写检索槽位 */
   preferEmbeddingText?: boolean
   /** 受控文件分类（如 'application' | 'media' | 'document' | 'other'），用于跨模态互斥门禁 */

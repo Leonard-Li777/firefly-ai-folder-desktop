@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-10-23T12:02:25.497Z",
+  "generatedAt": "2026-10-23T15:38:17.095Z",
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources"
@@ -117,14 +117,20 @@
       }
     },
     "chinese-clip": {
-      "version": "INT8",
+      "version": "INT8-v2",
       "source": "shared",
       "asset": {
-        "name": "chinese-clip-int8.zip",
-        "sha256": "30bff06529dec809f570fa13ffbcbed239ba43aa1648c93eed10322095606e43",
-        "size": 69300155,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/chinese-clip-int8.zip"
-      }
+        "name": "chinese-clip-int8-v2.zip",
+        "sha256": null,
+        "size": null,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/chinese-clip-int8-v2.zip"
+      },
+      "files": [],
+      "pendingBuild": true,
+      "pendingAssets": [
+        "cn_clip_text.onnx",
+        "cn_clip_vocab.txt"
+      ]
     },
     "mobile-clip": {
       "version": "INT8",

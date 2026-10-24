@@ -14,7 +14,8 @@ import {
   CANONICAL_NAMES,
   getCanonicalConceptName,
   isCandidateWordAdmissible,
-  stripNamingSkeleton,
+  buildSemanticText,
+  SemanticTagInput,
   TagProvenanceGroup,
   getFileCategory
 } from '@firefly/shared'
@@ -49,7 +50,7 @@ import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { DirectoryContextService } from '../directory-context-service'
 import { unifiedModelManager } from '../../llama/unified-model-manager'
 import { omniService, OmniClusterDocument } from '../../system/omni-service'
-import { omniClient } from '../../../services/omni-client'
+import { omniClient, ENCODER_FILTER_GEMMA } from '../../../services/omni-client'
 import { decompressJson, decompressText } from '../../../utils/text-compressor'
 // Ticket 10 (Spec §4.9)：JIT 向量补全 60ms 软熔断与后台队列异步消费
 // 注意：analysis-queue-service 依赖图极重（队列/AI服务/云同步 Worker），
@@ -77,18 +78,6 @@ function hasVisibleText(text: string): boolean {
   return false
 }
 
-/** 兼容 BLOB（压缩文本）与历史明文 string 的可见文本判定 */
-function contentHasVisibleText(content: unknown): boolean {
-  if (content === null || content === undefined) return false
-  const text =
-    typeof content === 'string'
-      ? content
-      : Buffer.isBuffer(content)
-        ? decompressText(content)
-        : ''
-  return hasVisibleText(text)
-}
-
 function extractVisibleSnippet(content: unknown, maxLen = 80): string {
   if (content === null || content === undefined) return ''
   const text =
@@ -106,56 +95,29 @@ function extractVisibleSnippet(content: unknown, maxLen = 80): string {
 }
 
 /**
- * 组装参与聚类语义嵌入的富文本（路径 B / JIT 编码证据口径）。
+ * 组装参与聚类语义嵌入的兜底富文本（canonical 缺失时的 JIT 编码证据口径）。
  *
- * 融合「智能命名/主文件名（剥掉格式骨架） + 受控语义标签 + 文件描述 + 正文/OCR 可见前缀」，
- * 严禁塞入文件大小（如 32KB）等数值噪点，且去掉 "文件名:"、"核心标签:" 等固定模板前缀
- * （防止全库向量各向异性坍缩），直接以纯净自然语言句号连接。
+ * 工单 08（AC8）已把该公式统一收敛到 `@firefly/shared` 的 `buildSemanticText`：
+ * 二者都是「名称（剥掉模板骨架）→ 主题标签 → 描述 → 正文」的句号拼接、零模板前缀，
+ * 但 `buildSemanticText` 额外做了机器流水号名称识别与 120/120/60/256 码点分段契约，
+ * 因此这里直接复用，不再维护第二套近似实现（旧的 `buildClusterEmbeddingText` 已删除）。
+ *
+ * 仅保留本文件的调用封装，便于单点调整「聚类是否要额外带正文」这类口径。
  */
-export function buildClusterEmbeddingText(input: {
+function buildClusterFallbackText(input: {
   displayName: string
   rawName: string
-  keywords: string[]
+  tags: SemanticTagInput[]
   description?: string
   contentSnippet?: string
 }): string {
-  const { displayName, rawName, keywords, description, contentSnippet } = input
-  const parts: string[] = []
-
-  // 1. 核心名称（剥掉模板方括号前缀、日期骨架与扩展名）
-  const cleanSmart = stripNamingSkeleton(displayName)
-  const cleanRaw = rawName && rawName !== displayName ? stripNamingSkeleton(rawName) : ''
-  const namePart = cleanSmart || cleanRaw
-  if (namePart) {
-    parts.push(namePart)
-  }
-
-  // 2. 受控语义标签（取前 10 个高置信度主题词）
-  if (keywords && keywords.length > 0) {
-    const tagPart = keywords.slice(0, 10).join(' ')
-    if (tagPart) {
-      parts.push(tagPart)
-    }
-  }
-
-  // 3. AI 生成的文件描述（截取前 60 字）
-  if (description) {
-    const descSnippet = description.replace(/[\r\n\t]+/g, ' ').trim().slice(0, 60)
-    if (descSnippet) {
-      parts.push(descSnippet)
-    }
-  }
-
-  // 4. 正文/OCR 可见前缀（截取前 80 字）
-  if (contentSnippet) {
-    const textSnippet = contentSnippet.replace(/[\r\n\t]+/g, ' ').trim().slice(0, 80)
-    if (textSnippet) {
-      parts.push(textSnippet)
-    }
-  }
-
-  // 用句号自然拼接，绝不加入模板字段名前缀，杜绝各向异性坍缩
-  return parts.filter(Boolean).join('。').trim()
+  return buildSemanticText({
+    displayName: input.displayName,
+    rawName: input.rawName,
+    tags: input.tags,
+    description: input.description,
+    contentSnippet: input.contentSnippet
+  })
 }
 
 export interface AISchemeProvider {
@@ -227,6 +189,10 @@ export class AISchemeGenerator {
         exif?: Buffer | string
         /** file_contents 行存在性：NULL 表示该文件无 AI 分析产物行，是未向量化强证据 (Ticket 10) */
         contents_fp?: string | null
+        /** 阶段二固化的 canonical 语义文本（工单 08：聚类首选文本源，缺失才 JIT 兜底） */
+        canonical_text?: string | null
+        /** canonical 向量状态机（pending/ready/visual_only/skipped/failed） */
+        canonical_vector_state?: string | null
       }>
 
       if (selectedFileIds && selectedFileIds.length > 0 && selectedFileIds.length <= 1000) {
@@ -236,6 +202,7 @@ export class AISchemeGenerator {
             SELECT
               wf.id, wf.path, wf.name, wf.file_fingerprint,
               f.smart_name, f.description, fc.file_fingerprint AS contents_fp,
+              f.canonical_text, f.canonical_vector_state,
               fc.content, fc.ocr, fc.asr, fc.lrc, fc.exif
             FROM workspace_files wf
             JOIN files f ON wf.file_fingerprint = f.file_fingerprint
@@ -249,6 +216,7 @@ export class AISchemeGenerator {
             SELECT
               wf.id, wf.path, wf.name, wf.file_fingerprint,
               f.smart_name, f.description, fc.file_fingerprint AS contents_fp,
+              f.canonical_text, f.canonical_vector_state,
               fc.content, fc.ocr, fc.asr, fc.lrc, fc.exif
             FROM workspace_files wf
             JOIN files f ON wf.file_fingerprint = f.file_fingerprint
@@ -275,6 +243,10 @@ export class AISchemeGenerator {
 
       // 2. 批量聚合文件标签作为聚类关键词证据源 (ADR-0045 / ADR-0056)
       const fpTagMap = new Map<string, string[]>()
+      // 工单 08（AC8）：结构化标签另存一份，供 canonical 缺失时 buildSemanticText 兜底。
+      // 与 fpTagMap 的差别：这里保留 tag_group（buildSemanticText 是 fail-closed 的，
+      // 缺分组一律丢弃），而 fpTagMap 只服务目录命名的纯词面。
+      const fpStructuredTagMap = new Map<string, SemanticTagInput[]>()
       const uniqueFps = Array.from(
         new Set(targetRows.map(r => r.file_fingerprint).filter(Boolean))
       )
@@ -308,12 +280,18 @@ export class AISchemeGenerator {
               list = []
               fpTagMap.set(rel.file_fingerprint, list)
             }
+            let structured = fpStructuredTagMap.get(rel.file_fingerprint)
+            if (!structured) {
+              structured = []
+              fpStructuredTagMap.set(rel.file_fingerprint, structured)
+            }
             let name = rel.tag_name
             if (name && name.includes('.')) {
               name = getCanonicalConceptName(name) || (name.split('.').pop() || name)
             }
             if (name && isCandidateWordAdmissible(name).admissible && !list.includes(name)) {
               list.push(name)
+              structured.push({ name, tagGroup: rel.tag_group as TagProvenanceGroup })
             }
             if (rel.name_path) {
               const segs = rel.name_path.split('/').filter(Boolean)
@@ -417,34 +395,36 @@ export class AISchemeGenerator {
           const smartName = (row.smart_name || '').trim()
           const rawName = (row.name || '').trim()
           const displayName = smartName || rawName
-          // 证据口径见 buildClusterEmbeddingText：主题词优先，杜绝模板骨架垫平相似度导致巨型簇坍缩
+          // 证据口径：主题词优先，杜绝模板骨架垫平相似度导致巨型簇坍缩（回归锁见
+          // pro/tests/unit/cluster-organize-canonical.test.ts 的坍缩用例）
           const contentSnippet =
             extractVisibleSnippet(row.ocr, 80) ||
             extractVisibleSnippet(row.content, 80) ||
             extractVisibleSnippet(row.asr, 80) ||
             extractVisibleSnippet(row.lrc, 80)
-          const embeddingText = buildClusterEmbeddingText({
-            displayName,
-            rawName,
-            keywords,
-            description: row.description,
-            contentSnippet: contentSnippet || undefined
-          })
+          // 工单 08（AC8）：canonical 文本是阶段二固化的唯一语义真相，优先直用；
+          // 仅在尚未固化（NULL / 空串）时用 buildSemanticText 同一公式 JIT 兜底，
+          // 且兜底文本只服务当次 HAC 距离矩阵，严禁回写 zvec。
+          const canonicalText = (row.canonical_text || '').trim()
+          const embeddingText =
+            canonicalText ||
+            buildClusterFallbackText({
+              displayName,
+              rawName,
+              tags: fpStructuredTagMap.get(row.file_fingerprint) || [],
+              description: row.description,
+              contentSnippet: contentSnippet || undefined
+            })
           const fileCategory = getFileCategory(rawName || row.path)
-          // 正文、OCR、ASR、歌词字幕任一含可见语义文本，说明分析产出的向量有内容依据，
-          // 不得用文件名富文本替代；全部缺失时才标记为无效正文
-          const hasSemanticText =
-            contentHasVisibleText(row.content) ||
-            contentHasVisibleText(row.ocr) ||
-            contentHasVisibleText(row.asr) ||
-            contentHasVisibleText(row.lrc)
           docs.push({
             fingerprint: row.file_fingerprint,
             embedding: [],
             keywords,
             embeddingText: embeddingText || undefined,
-            // 仅当所有文本载体都无可见字符时，聚类改用富文本证据
-            preferEmbeddingText: !hasSemanticText,
+            canonicalText: canonicalText || undefined,
+            // 工单 08（AC8）：**固定 false**——zvec 命中时必须直读向量，不得被 JIT 文本绕开。
+            // 无字图片（visual_only）保留阶段一视觉向量，同样走 zvec 直读而非 JIT。
+            preferEmbeddingText: false,
             fileCategory: fileCategory || undefined
           })
         }
@@ -479,6 +459,12 @@ export class AISchemeGenerator {
             ? configuredDim
             : 512
         : 384
+
+      // 工单 08（AC8）：gemma 档 512 槽与 classic CLIP 共用 —— zvec 直读会把 encoder=2 的
+      // CLIP 视觉向量当成 gemma 文本向量送进 HAC（跨空间混算）。此处按批 getVectors 校验
+      // encoder，命中异空间的文档改为内联 canonical 文本向量，Omni 端即不再直读该槽位；
+      // classic 档 384 槽为 Bekko 专属（白名单 [0,1] 不可能出现 CLIP），无需额外校验。
+      await this.inlineCanonicalVectorsForMismatchedSlots(docs, embeddingProfile, embeddingDim)
 
       // ===== Ticket 10 (Spec §4.9)：JIT 向量补全 60ms 软熔断与后台队列异步消费 =====
       // 未向量化本地代理口径：桌面端无法直读 Omni zvec 槽位状态，而正常分析链路会在感知阶段
@@ -742,8 +728,15 @@ export class AISchemeGenerator {
     embeddingProfile: string,
     embeddingDim: number
   ): Promise<OmniClusterDocument[]> {
+    // 工单 08（AC8）：JIT 输入优先级 canonical_text → keywords → fingerprint。
+    // canonical 文本已在候选装配阶段写入 embeddingText，此处再显式取 canonicalText，
+    // 确保「有 canonical 就一定用它」不被任何中间赋值顺序影响。
     const texts = items.map(
-      d => (d.embeddingText && d.embeddingText.trim()) || d.keywords.join(' ') || d.fingerprint
+      d =>
+        (d.canonicalText && d.canonicalText.trim()) ||
+        (d.embeddingText && d.embeddingText.trim()) ||
+        d.keywords.join(' ') ||
+        d.fingerprint
     )
     try {
       const resp = await omniService.batchEmbedText(texts, {
@@ -769,6 +762,84 @@ export class AISchemeGenerator {
         `[HAC智能聚类] 缺失向量同步预补全失败（${items.length} 项，转后台队列处理）: ${msg}`
       )
       return []
+    }
+  }
+
+  /**
+   * 工单 08（AC8）：校验 zvec 直读槽位的 encoder 身份，把异空间文档替换为 canonical 文本向量。
+   *
+   * 背景：zvec 每槽每指纹仅一条记录、upsert 为 last-writer-wins，`encoder_id` 只是身份标签
+   * 而非命名空间。gemma@512 与 classic CLIP@512 共用同一槽位，若不校验就会把 encoder=2 的
+   * CLIP 视觉向量当作 gemma 文本向量喂进 HAC，造成跨空间混算。
+   *
+   * 处理口径：
+   * - encoder ∈ 当前档位白名单 → 保持 `embedding: []`，由 Omni 端直读 zvec（零额外编码）；
+   * - encoder ∉ 白名单（如 512 槽里的 CLIP(2)）→ 内联 canonical 文本向量，Omni 端不再直读；
+   * - 槽位无记录 → 保持空 embedding，交由后续 JIT 门禁按 canonical 文本补全。
+   *
+   * 只对 gemma 档执行：classic 384 槽白名单 [0,1] 不含 CLIP，天然无混算风险，
+   * 避免对大工作区做无谓的批量 getVectors。
+   */
+  private async inlineCanonicalVectorsForMismatchedSlots(
+    docs: OmniClusterDocument[],
+    embeddingProfile: string,
+    embeddingDim: number
+  ): Promise<void> {
+    if (embeddingProfile !== 'gemma_unified' || docs.length === 0) return
+    const allowed = new Set<number>(ENCODER_FILTER_GEMMA)
+    const CHUNK = 200
+    const mismatched: OmniClusterDocument[] = []
+    try {
+      for (let i = 0; i < docs.length; i += CHUNK) {
+        const slice = docs.slice(i, i + CHUNK)
+        const resp = await omniClient.getVectors(
+          slice.map(d => d.fingerprint),
+          embeddingDim,
+          5000
+        )
+        if (!resp || !Array.isArray(resp.vectors)) continue
+        const encoderByFp = new Map<string, number>()
+        for (const item of resp.vectors) encoderByFp.set(item.fileFingerprint, item.encoderId)
+        for (const doc of slice) {
+          const encoderId = encoderByFp.get(doc.fingerprint)
+          if (encoderId === undefined) continue // 槽位无记录：留给 JIT 门禁
+          if (allowed.has(encoderId)) continue // 白名单内：Omni 端直读，零编码
+          mismatched.push(doc)
+        }
+      }
+    } catch (err: unknown) {
+      // 探活失败不阻断聚类：宁可让 Omni 端直读（行为与改动前一致），也要显式告警
+      const msg = err instanceof Error ? err.message : String(err)
+      logger.warn(
+        LogCategory.FILE_ORGANIZATION,
+        `[HAC智能聚类] 槽位 encoder 探活失败，本轮跳过异空间隔离（可能混入非 gemma 向量）: ${msg}`
+      )
+      return
+    }
+    if (mismatched.length === 0) return
+
+    try {
+      const resp = await omniService.batchEmbedText(
+        mismatched.map(
+          d => (d.canonicalText && d.canonicalText.trim()) || d.embeddingText || d.fingerprint
+        ),
+        { profile: embeddingProfile, dim: embeddingDim, timeoutMs: 5000 }
+      )
+      if (!resp?.vectors) return
+      for (let i = 0; i < mismatched.length; i++) {
+        const vec = resp.vectors[i]
+        if (vec && vec.length > 0) mismatched[i].embedding = vec
+      }
+      logger.warn(
+        LogCategory.FILE_ORGANIZATION,
+        `[HAC智能聚类] ${mismatched.length} 个文件在 ${embeddingDim}d 槽位为异空间编码器（非 gemma），已改用 canonical 文本向量参与 HAC，杜绝跨空间混算`
+      )
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      logger.warn(
+        LogCategory.FILE_ORGANIZATION,
+        `[HAC智能聚类] 异空间文件 canonical 向量补全失败（${mismatched.length} 个），Omni 端将回退直读: ${msg}`
+      )
     }
   }
 

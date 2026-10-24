@@ -37,7 +37,7 @@
     "ko-KR": "재설정",
     "$files": [
       "src/renderer/components/common/CardSizePopover.tsx(3913-3919)",
-      "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(13083-13089)"
+      "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(13618-13624)"
     ],
     "$id": 7974
   },
@@ -53,7 +53,7 @@
     "ko-KR": "축소",
     "$files": [
       "src/renderer/components/common/CardSizePopover.tsx(4355-4361)",
-      "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(13801-13807)"
+      "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(14354-14360)"
     ],
     "$id": 7975
   },
@@ -69,7 +69,7 @@
     "ko-KR": "확대",
     "$files": [
       "src/renderer/components/common/CardSizePopover.tsx(5266-5272)",
-      "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(15345-15351)"
+      "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(15934-15940)"
     ],
     "$id": 7976
   },
@@ -149,8 +149,8 @@
     "fr-FR": "Anomalie du service AI",
     "ko-KR": "AI 서비스 이상",
     "$files": [
-      "src/renderer/components/common/Footer.tsx(5610-5620)",
-      "src/renderer/components/common/Footer.tsx(5765-5775)"
+      "src/renderer/components/common/Footer.tsx(5681-5691)",
+      "src/renderer/components/common/Footer.tsx(5836-5846)"
     ],
     "$id": 11299
   },
@@ -164,7 +164,7 @@
     "de-DE": "Lokal",
     "fr-FR": "Local",
     "ko-KR": "로컬",
-    "$files": ["src/renderer/components/common/Footer.tsx(13241-13247)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(13312-13318)"],
     "$id": 3893
   },
   "云端": {
@@ -177,7 +177,7 @@
     "de-DE": "Cloud",
     "fr-FR": "Cloud",
     "ko-KR": "클라우드",
-    "$files": ["src/renderer/components/common/Footer.tsx(13251-13257)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(13322-13328)"],
     "$id": 3894
   },
   "兼容模式": {
@@ -190,7 +190,7 @@
     "de-DE": "Kompatibilitätsmodus",
     "fr-FR": "Mode de compatibilité",
     "ko-KR": "호환성 모드",
-    "$files": ["src/renderer/components/common/Footer.tsx(13303-13311)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(13374-13382)"],
     "$id": 4655
   },
   "图片": {
@@ -204,7 +204,7 @@
     "fr-FR": "Image",
     "ko-KR": "그림",
     "$files": [
-      "src/renderer/components/common/Footer.tsx(14677-14683)",
+      "src/renderer/components/common/Footer.tsx(14748-14754)",
       "src/renderer/components/common/SupportedFormats.tsx(733-739)"
     ],
     "$id": 4290
@@ -220,7 +220,7 @@
     "fr-FR": "Audio",
     "ko-KR": "오디오",
     "$files": [
-      "src/renderer/components/common/Footer.tsx(14745-14751)",
+      "src/renderer/components/common/Footer.tsx(14816-14822)",
       "src/renderer/components/common/SupportedFormats.tsx(869-875)"
     ],
     "$id": 4291
@@ -236,7 +236,7 @@
     "fr-FR": "Vidéo",
     "ko-KR": "동영상",
     "$files": [
-      "src/renderer/components/common/Footer.tsx(14813-14819)",
+      "src/renderer/components/common/Footer.tsx(14884-14890)",
       "src/renderer/components/common/SupportedFormats.tsx(1013-1019)"
     ],
     "$id": 4292
@@ -251,7 +251,7 @@
     "de-DE": "Unterstützung",
     "fr-FR": "Soutien",
     "ko-KR": "지원하다",
-    "$files": ["src/renderer/components/common/Footer.tsx(14888-14894)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(14959-14965)"],
     "$id": 4293
   },
   "AI 服务未就绪": {
@@ -264,7 +264,7 @@
     "de-DE": "KI-Dienst ist nicht bereit",
     "fr-FR": "Le service AI n'est pas prêt",
     "ko-KR": "AI 서비스가 준비되지 않았습니다",
-    "$files": ["src/renderer/components/common/Footer.tsx(15047-15059)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(15118-15130)"],
     "$id": 3895
   },
   "正在配置 AI 服务...": {
@@ -277,7 +277,7 @@
     "de-DE": "KI-Dienst wird konfiguriert...",
     "fr-FR": "Configuration du service AI en cours...",
     "ko-KR": "AI 서비스를 구성하는 중입니다...",
-    "$files": ["src/renderer/components/common/Footer.tsx(15226-15243)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(15297-15314)"],
     "$id": 3896
   },
   "正在初始化 AI 引擎...": {
@@ -290,7 +290,7 @@
     "de-DE": "KI-Engine wird initialisiert...",
     "fr-FR": "Initialisation du moteur AI en cours...",
     "ko-KR": "AI 엔진을 초기화하는 중입니다...",
-    "$files": ["src/renderer/components/common/Footer.tsx(15433-15451)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(15504-15522)"],
     "$id": 3897
   },
   "正在重启 AI 服务...": {
@@ -303,7 +303,7 @@
     "de-DE": "KI-Dienst wird neu gestartet...",
     "fr-FR": "Redémarrage du service AI en cours...",
     "ko-KR": "AI 서비스를 재시작하는 중입니다...",
-    "$files": ["src/renderer/components/common/Footer.tsx(15635-15652)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(15706-15723)"],
     "$id": 3898
   },
   "{modelInfo} AI 服务未启动": {
@@ -316,7 +316,7 @@
     "de-DE": "{modelInfo} AI-Dienst nicht gestartet",
     "fr-FR": "{modelInfo} Service IA non démarré",
     "ko-KR": "{modelInfo} AI 서비스가 실행되지 않았습니다",
-    "$files": ["src/renderer/components/common/Footer.tsx(15872-15896)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(15943-15967)"],
     "$id": 19556
   },
   "AI 服务未启动": {
@@ -329,7 +329,7 @@
     "de-DE": "AI-Dienst nicht gestartet",
     "fr-FR": "Service IA non démarré",
     "ko-KR": "AI 서비스가 실행되지 않았습니다",
-    "$files": ["src/renderer/components/common/Footer.tsx(15928-15940)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(15999-16011)"],
     "$id": 19557
   },
   "{modelInfo} 模型已就绪，等待加载": {
@@ -342,7 +342,7 @@
     "de-DE": "{modelInfo} Modell ist bereit, auf das Laden warten",
     "fr-FR": "Le modèle {modelInfo} est prêt, en attente de chargement",
     "ko-KR": "{modelInfo} 모델이 준비되었으며 로딩을 대기 중입니다",
-    "$files": ["src/renderer/components/common/Footer.tsx(16144-16170)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(16215-16241)"],
     "$id": 3900
   },
   "{modelInfo} 配置已加载，等待连接": {
@@ -355,7 +355,7 @@
     "de-DE": "{modelInfo} Konfiguration ist geladen, auf die Verbindung warten",
     "fr-FR": "La configuration de {modelInfo} est chargée, en attente de connexion",
     "ko-KR": "{modelInfo} 구성이 로드되었으며 연결 대기 중입니다",
-    "$files": ["src/renderer/components/common/Footer.tsx(16204-16230)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(16275-16301)"],
     "$id": 3901
   },
   "{modelInfo} 模型资源加载中...": {
@@ -368,7 +368,7 @@
     "de-DE": "{modelInfo} Modellressourcen werden geladen...",
     "fr-FR": "Chargement des ressources du modèle {modelInfo} en cours...",
     "ko-KR": "{modelInfo} 모델 리소스를 로딩하는 중입니다...",
-    "$files": ["src/renderer/components/common/Footer.tsx(16406-16432)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(16477-16503)"],
     "$id": 3902
   },
   "{modelInfo} 正在测试服务连接...": {
@@ -381,7 +381,7 @@
     "de-DE": "{modelInfo} testet Dienstverbindung...\r",
     "fr-FR": "{modelInfo} Test de la connexion au service en cours...\r",
     "ko-KR": "{modelInfo} 서비스 연결 테스트 중...\r",
-    "$files": ["src/renderer/components/common/Footer.tsx(16641-16668)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(16712-16739)"],
     "$id": 3903
   },
   "{modelInfo} AI 服务就绪": {
@@ -394,7 +394,7 @@
     "de-DE": "{modelInfo} KI-Dienst bereit\r",
     "fr-FR": "{modelInfo} Service AI prêt\r",
     "ko-KR": "{modelInfo} AI 서비스 준비 완료\r",
-    "$files": ["src/renderer/components/common/Footer.tsx(16871-16894)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(16942-16965)"],
     "$id": 3904
   },
   "{modelInfo} AI 分析进行中...": {
@@ -407,7 +407,7 @@
     "de-DE": "{modelInfo} KI-Analyse läuft...\r",
     "fr-FR": "{modelInfo} Analyse IA en cours...\r",
     "ko-KR": "{modelInfo} AI 분석 진행 중...\r",
-    "$files": ["src/renderer/components/common/Footer.tsx(17066-17093)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(17137-17164)"],
     "$id": 3905
   },
   "未知错误": {
@@ -420,7 +420,7 @@
     "de-DE": "Unbekannter Fehler\r",
     "fr-FR": "Erreur inconnue\r",
     "ko-KR": "알 수 없는 오류\r",
-    "$files": ["src/renderer/components/common/Footer.tsx(17596-17604)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(17667-17675)"],
     "$id": 3907
   },
   "{modelInfo} 服务异常: {error}": {
@@ -433,7 +433,7 @@
     "de-DE": "{modelInfo} Dienstfehler: {error}\r",
     "fr-FR": "{modelInfo} Anomalie de service : {error}\r",
     "ko-KR": "{modelInfo} 서비스 이상: {error}\r",
-    "$files": ["src/renderer/components/common/Footer.tsx(17641-17670)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(17712-17741)"],
     "$id": 3906
   },
   "状态未知": {
@@ -446,7 +446,7 @@
     "de-DE": "Status unbekannt\r",
     "fr-FR": "Statut inconnu\r",
     "ko-KR": "상태 알 수 없음\r",
-    "$files": ["src/renderer/components/common/Footer.tsx(17875-17883)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(17946-17954)"],
     "$id": 3908
   },
   "高级AI引擎未运行，AI 服务未就绪": {
@@ -459,7 +459,7 @@
     "de-DE": "Das erweiterte KI-Engine ist nicht aktiv. Der KI-Dienst ist nicht bereit.",
     "fr-FR": "Le moteur IA avancé n'est pas en cours d'exécution, le service IA n'est pas prêt",
     "ko-KR": "고급 AI 엔진이 실행되지 않아 AI 서비스가 준비되지 않았습니다.",
-    "$files": ["src/renderer/components/common/Footer.tsx(19651-19673)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(19722-19744)"],
     "$id": 20509
   },
   "[基础AI引擎] Omni 服务就绪": {
@@ -472,7 +472,7 @@
     "de-DE": "[Basis-KI-Engine] Omni-Dienst bereit",
     "fr-FR": "[Moteur IA de base] Service Omni prêt",
     "ko-KR": "[기본 AI 엔진] Omni 서비스 준비됨",
-    "$files": ["src/renderer/components/common/Footer.tsx(20794-20816)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(20865-20887)"],
     "$id": 20510
   },
   "[基础AI引擎] Omni 服务未运行": {
@@ -485,7 +485,7 @@
     "de-DE": "[Basis-KI-Engine] Omni-Dienst nicht aktiv",
     "fr-FR": "[Moteur IA de base] Service Omni non fonctionnel",
     "ko-KR": "[기본 AI 엔진] Omni ��비스가 실행되지 않았습니다.",
-    "$files": ["src/renderer/components/common/Footer.tsx(20977-21000)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(21048-21071)"],
     "$id": 20511
   },
   "AI服务出现异常，点击查看详情与修复方案": {
@@ -498,7 +498,7 @@
     "de-DE": "Im KI-Dienst ist eine Anomalie aufgetreten. Klicken Sie hier, um Details und Reparaturplan anzuzeigen.",
     "fr-FR": "Une anomalie se produit dans le service AI. Cliquez pour afficher les détails et le plan de réparation.",
     "ko-KR": "AI 서비스에 이상이 발생합니다. 자세한 내용과 수리 계획을 보려면 클릭하세요.",
-    "$files": ["src/renderer/components/common/Footer.tsx(23765-23789)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(23836-23860)"],
     "$id": 11301
   },
   "点击查看AI服务错误详情": {
@@ -511,7 +511,7 @@
     "de-DE": "Klicken Sie hier, um Details zu AI-Dienstfehlern anzuzeigen",
     "fr-FR": "Cliquez pour afficher les détails de l'erreur du service AI",
     "ko-KR": "AI 서비스 오류 세부정보를 보려면 클릭하세요.",
-    "$files": ["src/renderer/components/common/Footer.tsx(24182-24198)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(24253-24269)"],
     "$id": 11302
   },
   "点击查看原因": {
@@ -524,7 +524,7 @@
     "de-DE": "Klicken Sie hier, um zu sehen, warum",
     "fr-FR": "Cliquez pour voir pourquoi",
     "ko-KR": "이유를 보려면 클릭하세요.",
-    "$files": ["src/renderer/components/common/Footer.tsx(24427-24437)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(24498-24508)"],
     "$id": 11214
   },
   "检测到您有高性能显卡，请切换更聪明的AI模型，立即设置": {
@@ -538,8 +538,8 @@
     "fr-FR": "Vous avez détecté que vous disposez d'une carte graphique hautes performances, veuillez passer à un modèle d'IA plus intelligent et le configurer maintenant",
     "ko-KR": "고성능 그래픽 카드가 있는 것으로 감지되었습니다. 지금 더 스마트한 AI 모델로 전환하여 설정하세요.",
     "$files": [
-      "src/renderer/components/common/Footer.tsx(24947-24978)",
-      "src/renderer/components/common/Footer.tsx(25024-25055)"
+      "src/renderer/components/common/Footer.tsx(25018-25049)",
+      "src/renderer/components/common/Footer.tsx(25095-25126)"
     ],
     "$id": 4525
   },
@@ -553,7 +553,7 @@
     "de-DE": "Derzeit wird die integrierte Basis-AI-Engine verwendet. Es wird empfohlen, eine fortgeschrittene AI-Engine zu konfigurieren. Nach der Konfiguration können die Analyseergebnisse verbessert werden. Klicken Sie hier, um zur Konfiguration zu gelangen.",
     "fr-FR": "Le moteur IA de base intégré est actuellement utilisé. Il est recommandé de configurer un moteur IA avancé pour améliorer les résultats d'analyse. Cliquez pour accéder à la configuration.",
     "ko-KR": "현재 기본 내장 AI 엔진이 사용 중입니다. 고급 AI 엔진을 구성할 것을 권장하며, 구성 후 분석 결과가 향상됩니다. 클릭하여 구성 페이지로 이동합니다.",
-    "$files": ["src/renderer/components/common/Footer.tsx(25509-25555)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(25580-25626)"],
     "$id": 19425
   },
   "当前为内置基础AI引擎，建议配置高级AI引擎，配置后可以增强分析结果": {
@@ -566,7 +566,7 @@
     "de-DE": "Derzeit wird die integrierte Basis-AI-Engine verwendet. Es wird empfohlen, eine fortgeschrittene AI-Engine zu konfigurieren. Nach der Konfiguration können die Analyseergebnisse verbessert werden.",
     "fr-FR": "Le moteur IA de base intégré est actuellement utilisé. Il est recommandé de configurer un moteur IA avancé pour améliorer les résultats d'analyse",
     "ko-KR": "현재 기본 내장 AI 엔진이 사용 중입니다. 고급 AI 엔진을 구성할 것을 권장하며, 구성 후 분석 결과가 향상됩니다",
-    "$files": ["src/renderer/components/common/Footer.tsx(25719-25757)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(25790-25828)"],
     "$id": 19426
   },
   "萤核智能文件夹 - 更新日志": {
@@ -579,7 +579,7 @@
     "de-DE": "Firefly AI Folder - Änderungsprotokoll",
     "fr-FR": "Firefly AI Folder - Notes de mise à jour",
     "ko-KR": "형광석 스마트 폴더 - 업데이트 로그",
-    "$files": ["src/renderer/components/common/Footer.tsx(26267-26285)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(26338-26356)"],
     "$id": 3278
   },
   "最新版本: v{version}": {
@@ -592,7 +592,7 @@
     "de-DE": "Neueste Version: v{version}",
     "fr-FR": "Dernière version : v{version}",
     "ko-KR": "최신 버전: v{version}",
-    "$files": ["src/renderer/components/common/Footer.tsx(26473-26493)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(26544-26564)"],
     "$id": 3279
   },
   "稍后再说": {
@@ -605,7 +605,7 @@
     "de-DE": "Später",
     "fr-FR": "Plus tard",
     "ko-KR": "나중에 하기",
-    "$files": ["src/renderer/components/common/Footer.tsx(27233-27241)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(27304-27312)"],
     "$id": 3280
   },
   "无法打开下载页面": {
@@ -618,7 +618,7 @@
     "de-DE": "Download-Seite kann nicht geöffnet werden",
     "fr-FR": "Impossible d'ouvrir la page de téléchargement",
     "ko-KR": "다운로드 페이지를 열 수 없습니다",
-    "$files": ["src/renderer/components/common/Footer.tsx(27492-27504)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(27565-27577)"],
     "$id": 4526
   },
   "去官网下载新版": {
@@ -631,7 +631,7 @@
     "de-DE": "Neue Version von der offiziellen Website herunterladen",
     "fr-FR": "Télécharger la nouvelle version sur le site officiel",
     "ko-KR": "공식 홈페이지에서 새 버전 다운로드",
-    "$files": ["src/renderer/components/common/Footer.tsx(27691-27702)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(27764-27775)"],
     "$id": 3283
   },
   "查看分析队列 - 当前: {ws}{name}": {
@@ -644,7 +644,7 @@
     "de-DE": "Analysewarteschlange anzeigen – Aktuell: {ws}{name}",
     "fr-FR": "Afficher la file d'attente d'analyse - Actuel : {ws}{name}",
     "ko-KR": "분석 대기열 보기 - 현재: {ws}{name}",
-    "$files": ["src/renderer/components/common/Footer.tsx(28310-28337)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(28383-28410)"],
     "$id": 7806
   },
   "查看分析队列 - {count} 个文件等待中": {
@@ -657,7 +657,7 @@
     "de-DE": "Analysewarteschlange anzeigen - {count} Dateien warten\r",
     "fr-FR": "Voir la file d'analyse - {count} fichiers en attente\r",
     "ko-KR": "분석 대기열 보기 - {count}개 파일 대기 중\r",
-    "$files": ["src/renderer/components/common/Footer.tsx(28510-28537)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(28583-28610)"],
     "$id": 3910
   },
   "等待: {count}": {
@@ -671,8 +671,8 @@
     "fr-FR": "En attente : {count}",
     "ko-KR": "기다리다: {count}",
     "$files": [
-      "src/renderer/components/common/Footer.tsx(31942-31957)",
-      "src/renderer/components/common/Footer.tsx(32416-32431)"
+      "src/renderer/components/common/Footer.tsx(32015-32030)",
+      "src/renderer/components/common/Footer.tsx(32489-32504)"
     ],
     "$id": 3913
   },
@@ -686,7 +686,7 @@
     "de-DE": "Warteschlange angehalten",
     "fr-FR": "Mise en attente de la file d'attente",
     "ko-KR": "대기열 일시 중지",
-    "$files": ["src/renderer/components/common/Footer.tsx(32116-32124)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(32189-32197)"],
     "$id": 11246
   },
   "空闲": {
@@ -699,7 +699,7 @@
     "de-DE": "Leerlauf",
     "fr-FR": "Inactif",
     "ko-KR": "게으른",
-    "$files": ["src/renderer/components/common/Footer.tsx(32241-32247)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(32314-32320)"],
     "$id": 3912
   },
   "点击打开基础AI引擎配置": {
@@ -712,7 +712,7 @@
     "de-DE": "Klicken, um die Konfiguration der Basis-KI-Engine zu öffnen",
     "fr-FR": "Cliquez pour ouvrir la configuration du moteur IA de base",
     "ko-KR": "클릭하여 기본 AI 엔진 설정을 엽니다.",
-    "$files": ["src/renderer/components/common/Footer.tsx(32860-32876)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(32933-32949)"],
     "$id": 20512
   },
   "标准分析": {
@@ -725,7 +725,7 @@
     "de-DE": "Standardanalyse",
     "fr-FR": "Analyse standard",
     "ko-KR": "표준 분석",
-    "$files": ["src/renderer/components/common/Footer.tsx(33328-33336)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(33401-33409)"],
     "$id": 19427
   },
   "增强分析": {
@@ -738,7 +738,7 @@
     "de-DE": "Erweiterte Analyse",
     "fr-FR": "Analyse avancée",
     "ko-KR": "강화 분석",
-    "$files": ["src/renderer/components/common/Footer.tsx(33412-33420)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(33485-33493)"],
     "$id": 19428
   },
   "全面分析": {
@@ -751,7 +751,7 @@
     "de-DE": "Umfassende Analyse",
     "fr-FR": "Analyse complète",
     "ko-KR": "종합적인 분석",
-    "$files": ["src/renderer/components/common/Footer.tsx(33441-33449)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(33514-33522)"],
     "$id": 9424
   },
   "点击打开AI引擎配置": {
@@ -764,7 +764,7 @@
     "de-DE": "Klicken Sie hier, um die KI-Engine-Konfiguration zu öffnen",
     "fr-FR": "Cliquez pour ouvrir la configuration du moteur AI",
     "ko-KR": "AI 엔진 구성을 열려면 클릭하세요.",
-    "$files": ["src/renderer/components/common/Footer.tsx(33792-33806)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(33865-33879)"],
     "$id": 7683
   },
   "思考": {
@@ -777,7 +777,7 @@
     "de-DE": "Denken",
     "fr-FR": "Pense",
     "ko-KR": "생각하다",
-    "$files": ["src/renderer/components/common/Footer.tsx(33861-33867)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(33934-33940)"],
     "$id": 7747
   },
   "开发模式标识：区域 - 环境 - 分支": {
@@ -790,7 +790,7 @@
     "de-DE": "Entwicklermodus-Kennung: Region - Umgebung - Zweig",
     "fr-FR": "Identifiant du mode de développement：Région - Environnement - Branche",
     "ko-KR": "개발 모드 식별자：영역 - 환경 - 브랜치",
-    "$files": ["src/renderer/components/common/Footer.tsx(34701-34724)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(34774-34797)"],
     "$id": 11484
   },
   "发现新版本 v{version}": {
@@ -803,7 +803,7 @@
     "de-DE": "Neue Version v{version} entdeckt",
     "fr-FR": "Nouvelle version détectée v{version}",
     "ko-KR": "새 버전 감지 v{version}",
-    "$files": ["src/renderer/components/common/Footer.tsx(35508-35528)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(35581-35601)"],
     "$id": 3263
   },
   "最小化窗口": {
@@ -923,7 +923,7 @@
     "de-DE": "Listenzeilenhöhe und -größe",
     "fr-FR": "Hauteur et taille des lignes de liste",
     "ko-KR": "행 높이 및 크기 나열",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(8977-8987)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(9281-9291)"],
     "$id": 11408
   },
   "卡片缩放大小": {
@@ -936,7 +936,7 @@
     "de-DE": "Karten-Zoom-Größe",
     "fr-FR": "Taille du zoom de la carte",
     "ko-KR": "카드 줌 크기",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(8991-9001)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(9295-9305)"],
     "$id": 11409
   },
   "视图与显示设置": {
@@ -949,7 +949,7 @@
     "de-DE": "Ansichts- und Anzeigeeinstellungen",
     "fr-FR": "Paramètres d'affichage et de vue",
     "ko-KR": "뷰 및 표시 설정",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(9449-9460)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(9753-9764)"],
     "$id": 7999
   },
   "视图模式": {
@@ -962,7 +962,7 @@
     "de-DE": "Ansichtsmodus",
     "fr-FR": "Mode d'affichage",
     "ko-KR": "뷰 모드",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(10568-10576)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(10982-10990)"],
     "$id": 8000
   },
   "更小": {
@@ -975,7 +975,7 @@
     "de-DE": "Smaller",
     "fr-FR": "Plus petit",
     "ko-KR": "더 작은",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(15721-15727)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16310-16316)"],
     "$id": 11410
   },
   "默认": {
@@ -988,7 +988,7 @@
     "de-DE": "Standard",
     "fr-FR": "Défaut",
     "ko-KR": "기본",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16147-16153)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16744-16750)"],
     "$id": 11411
   },
   "更大": {
@@ -1001,7 +1001,7 @@
     "de-DE": "Zweitgrößte",
     "fr-FR": "Plus grand",
     "ko-KR": "더 큰",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16217-16223)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16814-16820)"],
     "$id": 11412
   },
   "主副文件名显示": {
@@ -1014,7 +1014,7 @@
     "de-DE": "Anzeige des primären und sekundären Dateinamens",
     "fr-FR": "Affichage du nom de fichier principal et secondaire",
     "ko-KR": "기본 및 보조 파일 이름 표시",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16664-16675)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17261-17272)"],
     "$id": 11413
   },
   "互换主次位置": {
@@ -1027,7 +1027,7 @@
     "de-DE": "Tauschen Sie primäre und sekundäre Positionen",
     "fr-FR": "Permuter les positions primaires et secondaires",
     "ko-KR": "기본 및 보조 위치 교환",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16808-16818)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17405-17415)"],
     "$id": 11414
   },
   "智能名为主": {
@@ -1040,7 +1040,7 @@
     "de-DE": "Intelligenter Name Meister",
     "fr-FR": "Maître de nom intelligent",
     "ko-KR": "스마트 이름 마스터",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17058-17067)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17655-17664)"],
     "$id": 11415
   },
   "真实名为辅": {
@@ -1053,7 +1053,7 @@
     "de-DE": "Echter Name: Hilfskraft",
     "fr-FR": "Vrai nom: auxiliaire",
     "ko-KR": "실제 이름:보조",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17142-17151)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17739-17748)"],
     "$id": 11416
   },
   "真实名为主": {
@@ -1066,7 +1066,7 @@
     "de-DE": "Der wahre Name ist der Herr",
     "fr-FR": "Le vrai nom est le seigneur",
     "ko-KR": "진짜 이름은 주님",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17274-17283)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17871-17880)"],
     "$id": 11417
   },
   "智能名为辅": {
@@ -1079,7 +1079,7 @@
     "de-DE": "Intelligenter Name Hilfs",
     "fr-FR": "Auxiliaire de nom intelligent",
     "ko-KR": "스마트 이름 보조",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17358-17367)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17955-17964)"],
     "$id": 11418
   },
   "显示完整文件名": {
@@ -1092,7 +1092,7 @@
     "de-DE": "Vollen Dateinamen anzeigen",
     "fr-FR": "Afficher le nom de fichier complet",
     "ko-KR": "전체 파일명 표시",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(19791-19802)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(20388-20399)"],
     "$id": 8005
   },
   "显示丢失文件": {
@@ -1105,7 +1105,7 @@
     "de-DE": "Fehlende Dateien anzeigen",
     "fr-FR": "Afficher les fichiers manquants",
     "ko-KR": "누락된 파일 표시",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(20313-20323)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(20910-20920)"],
     "$id": 8006
   },
   "请选择您要整理的文件夹（工作目录）": {

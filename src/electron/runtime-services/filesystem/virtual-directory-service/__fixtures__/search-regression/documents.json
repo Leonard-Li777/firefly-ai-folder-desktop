@@ -1,0 +1,148 @@
+[
+  {
+    "id": "doc-01",
+    "title": "向量检索架构评审纪要",
+    "fileName": "向量检索架构评审纪要.pdf",
+    "bodyKeywords": [
+      "向量检索",
+      "架构评审",
+      "决议",
+      "行动项"
+    ],
+    "relevantQueries": [
+      "向量检索架构评审纪要",
+      "混合检索 RRF 权重调优"
+    ]
+  },
+  {
+    "id": "doc-02",
+    "title": "EmbeddingGemma 双档位迁移方案",
+    "fileName": "EmbeddingGemma 双档位迁移方案.docx",
+    "bodyKeywords": [
+      "EmbeddingGemma",
+      "classic_light",
+      "gemma_unified",
+      "迁移"
+    ],
+    "relevantQueries": [
+      "EmbeddingGemma 双档位迁移方案",
+      "MRL 维度 256 512 768 选择依据"
+    ]
+  },
+  {
+    "id": "doc-03",
+    "title": "zvec 编码器身份契约",
+    "fileName": "zvec 编码器身份契约.md",
+    "bodyKeywords": [
+      "zvec",
+      "encoder_id",
+      "v3",
+      "白名单"
+    ],
+    "relevantQueries": [
+      "zvec 编码器身份契约"
+    ]
+  },
+  {
+    "id": "doc-04",
+    "title": "语义文本构建公式",
+    "fileName": "语义文本构建公式.md",
+    "bodyKeywords": [
+      "buildSemanticText",
+      "码点",
+      "裁剪顺序",
+      "版本号"
+    ],
+    "relevantQueries": [
+      "语义文本构建公式"
+    ]
+  },
+  {
+    "id": "doc-05",
+    "title": "混合检索 RRF 权重调优",
+    "fileName": "混合检索 RRF 权重调优.md",
+    "bodyKeywords": [
+      "RRF",
+      "权重",
+      "fts",
+      "vec",
+      "name"
+    ],
+    "relevantQueries": [
+      "混合检索 RRF 权重调优",
+      "向量检索架构评审纪要"
+    ]
+  },
+  {
+    "id": "doc-06",
+    "title": "MRL 维度选择依据",
+    "fileName": "MRL 维度选择依据.md",
+    "bodyKeywords": [
+      "MRL",
+      "256",
+      "512",
+      "768",
+      "召回"
+    ],
+    "relevantQueries": [
+      "MRL 维度 256 512 768 选择依据"
+    ]
+  },
+  {
+    "id": "doc-07",
+    "title": "CLIP 文本塔以文搜图",
+    "fileName": "CLIP 文本塔以文搜图.md",
+    "bodyKeywords": [
+      "CLIP",
+      "text_embeds",
+      "以文搜图",
+      "512"
+    ],
+    "relevantQueries": [
+      "CLIP 文本塔以文搜图"
+    ]
+  },
+  {
+    "id": "doc-08",
+    "title": "聚类 HAC 输入一致性",
+    "fileName": "聚类 HAC 输入一致性.md",
+    "bodyKeywords": [
+      "HAC",
+      "聚类",
+      "维度一致",
+      "JIT"
+    ],
+    "relevantQueries": [
+      "聚类 HAC 输入一致性"
+    ]
+  },
+  {
+    "id": "doc-09",
+    "title": "整理归类消费 canonical 向量",
+    "fileName": "整理归类消费 canonical 向量.md",
+    "bodyKeywords": [
+      "整理归类",
+      "canonical",
+      "zvec",
+      "JIT"
+    ],
+    "relevantQueries": [
+      "整理归类消费 canonical 向量"
+    ]
+  },
+  {
+    "id": "doc-10",
+    "title": "搜索回归负样本治理",
+    "fileName": "搜索回归负样本治理.md",
+    "bodyKeywords": [
+      "负样本",
+      "lnk",
+      "阈值",
+      "vecScore"
+    ],
+    "relevantQueries": [
+      "搜索回归负样本治理",
+      "混合检索 RRF 权重调优"
+    ]
+  }
+]

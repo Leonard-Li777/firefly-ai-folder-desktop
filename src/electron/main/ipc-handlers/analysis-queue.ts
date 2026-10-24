@@ -2,6 +2,15 @@ import { ipcMain } from 'electron'
 import { analysisQueueService } from '../../runtime-services/analysis-queue-service'
 import { logger, LogCategory } from '@firefly/shared'
 
+/**
+ * 渲染进程可声明的 canonical 重建来源白名单。
+ *
+ * `reason` 会进入 `logger.info` 与设置页「最近一次重建：{reason}」文案，
+ * 属渲染进程可控字符串，必须先收敛再落日志/上屏（防换行注入与任意文案）。
+ * 服务内部的自动来源（`startup` / `AI_EMBEDDING_PROFILE:...`）不经此 IPC，不受此限。
+ */
+const CANONICAL_MAINTENANCE_REASONS = new Set(['settings_manual', 'manual'])
+
 export function registerAnalysisQueueIPCHandlers() {
   ipcMain.handle('analysis-queue/get', async (event, workspaceId?: number) => {
     return analysisQueueService.getSnapshot(workspaceId)
@@ -126,4 +135,34 @@ export function registerAnalysisQueueIPCHandlers() {
       }
     }
   )
+
+  /**
+   * 工单 13：canonical 语义索引重建计数。
+   * 工单 06 只暴露了服务方法（`getCanonicalRebuildCounts`），设置页需要的读数出口在此补齐。
+   */
+  ipcMain.handle('analysis-queue/canonical-rebuild-counts', async () => {
+    try {
+      return analysisQueueService.getCanonicalRebuildCounts()
+    } catch (error) {
+      logger.error(LogCategory.MAIN, '[IPC] 获取 canonical 重建计数失败:', error)
+      throw error
+    }
+  })
+
+  /** 工单 13：手动触发 canonical 语义索引重建（设置页「重建语义索引」入口） */
+  ipcMain.handle('analysis-queue/run-canonical-maintenance', async (_event, reason?: unknown) => {
+    try {
+      // reason 会进入日志行与设置页「最近一次重建：{reason}」文案，
+      // 渲染进程可控字符串必须先收敛到白名单，避免换行注入与任意文案上屏。
+      const safeReason =
+        typeof reason === 'string' && CANONICAL_MAINTENANCE_REASONS.has(reason)
+          ? reason
+          : 'settings_manual'
+      await analysisQueueService.runCanonicalMaintenance(safeReason)
+      return { success: true }
+    } catch (error) {
+      logger.error(LogCategory.MAIN, '[IPC] 触发 canonical 重建失败:', error)
+      throw error
+    }
+  })
 }

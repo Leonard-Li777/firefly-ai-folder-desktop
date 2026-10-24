@@ -8,8 +8,11 @@ import {
   HybridRankedCandidate,
   HybridRankPool,
   HybridSearchArbiter,
+  HybridSearchFailures,
   HYBRID_SEARCH_POOL_SIZE,
-  slicePage
+  HYBRID_SEARCH_WEIGHTS_WITH_CLIP,
+  slicePage,
+  weightedRrfScore
 } from './HybridSearchArbiter'
 import type { FilterFilesParams } from './TagTreeQuery'
 
@@ -77,8 +80,27 @@ export interface HybridSearchCollaborators {
  * 字段覆盖补充源的失败按「检索降级」显式上报（warn），不得静默降级。
  * 回退策略是本模块公开接口上的显式行为，可注入 fake 协作者直接测试。
  */
+/** 工单 13：phase3 追加的调度器（默认 fire-and-forget；测试注入可等待版本） */
+export interface HybridSearchSessionOptions {
+  /**
+   * phase3 任务调度器。
+   *
+   * 默认 `void task()` —— phase2 返回后立刻把控制权交还调用方，phase3 结果稍后经 `onProgress` 推流，
+   * 保证冷态 CLIP 的 6000ms 等待**绝不**计入 phase2 的 invoke 响应时间。
+   * 测试注入捕获版即可确定性等待 phase3 完成，无需 sleep。
+   */
+  schedulePhase3?: (task: () => Promise<void>) => void
+}
+
 export class HybridSearchSession {
-  constructor(private collaborators: HybridSearchCollaborators) {}
+  private readonly schedulePhase3: (task: () => Promise<void>) => void
+
+  constructor(
+    private collaborators: HybridSearchCollaborators,
+    options?: HybridSearchSessionOptions
+  ) {
+    this.schedulePhase3 = options?.schedulePhase3 ?? (task => void task())
+  }
 
   /**
    * 混合检索分页：按融合候选的统一顺序返回当前页文件与总数。
@@ -319,10 +341,11 @@ export class HybridSearchSession {
         onPhase1
       )
 
-      if (pool.failures.fts || pool.failures.vector || pool.failures.fs) {
+      if (pool.failures.fts || pool.failures.vector || pool.failures.fs || pool.failures.clip) {
         logger.debug(
           LogCategory.VIRTUAL_DIRECTORY,
-          `[HybridSearchSession] 混合检索部分降级: fts=${pool.failures.fts}, vector=${pool.failures.vector}, fs=${pool.failures.fs}`
+          `[HybridSearchSession] 混合检索部分降级: fts=${pool.failures.fts}, vector=${pool.failures.vector}, ` +
+            `fs=${pool.failures.fs}, clip=${pool.failures.clip}`
         )
       }
 
@@ -359,13 +382,99 @@ export class HybridSearchSession {
 
       if (params.onProgress) {
         phase2Dispatched = true
-        params.onProgress('phase2', finalResponse)
+        // 工单 13：冷态第 5 路尚未并入 phase2 ⇒ 打上 clipPending 标记，UI 据此展示「视觉模型首次加载中」提示。
+        // 热态（pendingClip 不存在）不带该字段，UI 不会闪一次多余提示。
+        params.onProgress(
+          'phase2',
+          pool.pendingClip ? { ...finalResponse, clipPending: true } : finalResponse
+        )
+      }
+
+      // 工单 13：冷态 CLIP 结果作为 phase3 追加。
+      // 关键点：**不 await** —— phase2 的 invoke 响应必须立刻返回，6000ms 的模型加载只影响稍后的追加。
+      if (params.onProgress && pool.pendingClip) {
+        this.schedulePhase3(() =>
+          this.dispatchPhase3({
+            params,
+            pending: pool.pendingClip!,
+            keyword,
+            limit,
+            baseTotal: finalResponse.total,
+            failures: pool.failures
+          })
+        )
       }
 
       return finalResponse
     } catch (err: unknown) {
       logger.error(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchSession] 混合检索分页失败，回退常规检索:', err)
       return this.collaborators.fallbackPaged({ ...params, searchKeyword: undefined })
+    }
+  }
+
+  /**
+   * 工单 13：把冷态 CLIP 第 5 路的结果作为 **phase3 追加** 推流。
+   *
+   * 语义边界（不可越界）：
+   * - **只追加**：不重排、不清空、不改 searchPhase；调用方按 `path` 去重，已在列表里的项不会重复出现；
+   * - **不新增排序逻辑**：仍然复用 `assemblePage` + 既有加权 RRF（第 5 路 rank 已在仲裁器内算好），
+   *   本方法只是把「CLIP 命中指纹」重新走一遍既有的分页装配；
+   * - **不带字段覆盖补充源**：那批候选在 phase1/phase2 已全量参与过，再带一次会把同一批条目重复追加；
+   * - 失败/熔断/空命中一律静默结束（本路是可选增强，不得让 UI 报错）。
+   */
+  private async dispatchPhase3(opts: {
+    params: FilterFilesParams
+    pending: NonNullable<HybridRankPool['pendingClip']>
+    keyword: string
+    limit: number
+    baseTotal: number
+    failures: HybridSearchFailures
+  }): Promise<void> {
+    const { params, pending, keyword, limit, baseTotal, failures } = opts
+    // phase3 独立计时：`totalTime` 是延迟埋点字段，写死 0 等同于伪造度量值。
+    // 语义 = **本次 phase3 自身的耗时**（含等待 `pending` 的 CLIP 等待），不是整条检索的累计耗时；
+    // phase1/phase2 各有自己的 `totalTime`，下游不得跨 phase 相加或相减。
+    const phase3StartedAt = Date.now()
+    try {
+      const hits = await pending
+      if (!hits || hits.length === 0) return
+
+      // 仅以 CLIP 命中构建迷你池：候选顺序即 CLIP 相似度顺序（已由仲裁器排好并重编号）
+      const miniPool: HybridRankPool = {
+        candidates: hits.map(h => ({
+          fileFingerprint: h.fileFingerprint,
+          clipRank: h.rank,
+          clipScore: h.score,
+          nameBoost: 0,
+          score: weightedRrfScore({ clipRank: h.rank }, HYBRID_SEARCH_WEIGHTS_WITH_CLIP),
+          hasLiteral: false
+        })),
+        unanalyzedHits: [],
+        failures,
+        total: hits.length
+      }
+
+      const page = await this.assemblePage(
+        params,
+        miniPool,
+        { analyzed: [], unanalyzed: [] },
+        keyword,
+        Math.max(0, limit),
+        0,
+        true
+      )
+      if (page.items.length === 0) return
+
+      params.onProgress!('phase3', {
+        items: page.items,
+        total: baseTotal + page.items.length,
+        performance: {
+          dbQueryTime: Math.round(page.dbQueryTime * 100) / 100,
+          totalTime: Date.now() - phase3StartedAt
+        }
+      })
+    } catch (err: unknown) {
+      logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchSession] phase3 追加失败（忽略，不影响已渲染列表）:', err)
     }
   }
 }

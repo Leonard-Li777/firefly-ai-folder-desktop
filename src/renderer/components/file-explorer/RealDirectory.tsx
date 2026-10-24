@@ -259,6 +259,16 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
         setWorkspaceSearchResults(payload.items as any)
       } else if (payload.phase === 'phase2') {
         setWorkspaceSearchResults(payload.items as any)
+      } else if (payload.phase === 'phase3') {
+        // 工单 13：冷态 CLIP 追加 —— 只把列表里没有的 path 补到尾部。
+        // 不重排、不清空：已有项的下标与相对顺序必须保持不变（用户滚动/悬停位置不跳变）。
+        setWorkspaceSearchResults(prev => {
+          const incoming = (payload.items || []) as any[]
+          if (!incoming.length) return prev
+          const existingPaths = new Set(prev.map(item => item?.path).filter(Boolean))
+          const fresh = incoming.filter(item => item?.path && !existingPaths.has(item.path))
+          return fresh.length ? ([...prev, ...fresh] as any) : prev
+        })
       }
     })
 

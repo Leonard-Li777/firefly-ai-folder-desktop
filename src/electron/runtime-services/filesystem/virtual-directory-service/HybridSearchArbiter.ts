@@ -34,11 +34,14 @@ import {
 import {
   omniClient,
   resolveQueryEncoderFilter,
+  ENCODER_FILTER_CHINESE_CLIP,
   OmniMatchPassagesItem,
   OmniPassageMatch,
-  OmniSearchFsItem
+  OmniSearchFsItem,
+  type OmniClipTextHealth
 } from '../../../services/omni-client'
 import { omniService } from '../../system/omni-service'
+import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { calculateFzfScore } from './pinyin-fzf'
 import { PinyinQueryExpander, ExpandedSearchQuery } from './pinyin-query-expander'
 
@@ -66,11 +69,187 @@ export const TEMPORAL_CHUNK_MIN_CONFIDENCE = 0.35
 export const TEMPORAL_CHUNK_MIN_PROMINENCE = 0.015
 /**
  * 通用多模态/文档纯向量检索最低语义置信度门限（防止 KNN 强制截取无关文件造成的假阳性噪点）。
- * 标定口径：EmbeddingGemma 内容 token 池化空间中，真实语义命中 top-1 约 0.30~0.55，
- * 无关概念对 p90≈0.21 / p99≈0.40。历史 0.58 会误杀全部真实语义召回（如 股票≈0.303），
- * 而 0.85 更会把仅剩的语义通道清零；此处取真命中下沿 0.30 作为纯向量准入线。
+ *
+ * 标定口径（canonical 空间，ADR-0039 附录 B + `__fixtures__/search-regression/calibration.json`）：
+ * - **旧值 0.58** → **新值 0.30**（2026-10-23 随文本嵌入空间修正重标，未沿用未经测量的旧值）；
+ * - 旧空间 ONNX 全 1 attention_mask 对 `<bos>/<eos>` 均值池化，把无关文本余弦抬到 0.6~0.9
+ *   （库内 66 个 `.lnk` 对「跑车」66/66 ≥0.58，最高 0.845），0.58 形同虚设；
+ * - canonical 空间改为内容 token 池化后：真实语义命中 top-1 约 0.30~0.55，
+ *   无关概念对 p90≈0.21 / p99≈0.40，同一批 66 个 `.lnk` 最高仅 0.275、0/66 越过 0.30；
+ * - 取真命中下沿 0.30 作为纯向量准入线。0.85 会把仅剩的语义通道清零（如 股票≈0.303）。
+ * 假阳性主要由 TEMPORAL_CHUNK_MIN_PROMINENCE 显著性门禁拦截。
+ *
+ * 回归夹具：66 负样本 vecScore 最大值必须 < 本值（AC7 硬门槛，见 search-regression-ac7 测试）。
  */
 export const MIN_GENERIC_VECTOR_SCORE = 0.30
+
+/**
+ * CLIP 文本第 5 路准入分（**初值，待工单 14 标定**）。
+ *
+ * 标定口径（写清以免被当成实测结论）：
+ * - Chinese-CLIP 文本塔与图像塔同处 512d CLIP 空间，跨模态余弦分布与 canonical 文本空间
+ *   （0.30 那条线）不可比：CLIP 对比学习把真配对拉到 0.25~0.45，无关图文对 p95 约 0.20；
+ * - 0.22 取「真配对下沿 - 安全裕度」，与 07 的 66 条 `.lnk` 负样本口径无关（那批是文本空间）；
+ * - **这是初值**，真实分布必须由工单 14 用授权图片集实测后回填，不得据此宣称精度。
+ */
+export const MIN_CLIP_VECTOR_SCORE = 0.22
+
+/**
+ * CLIP 文本第 5 路 RRF 权重（**初值，待工单 14 标定**）。
+ *
+ * 取 1.6 与向量路（2.0）同量级但略低：CLIP 文本召回的是「视觉语义相似」，
+ * 在 classic_light 档下应与既有向量路同权参与融合，但不能压过字面命中。
+ * 权重为 0 时第 5 路完全退化（weightedRrfScore 的默认行为）。
+ */
+export const HYBRID_SEARCH_CLIP_WEIGHT = 1.6
+
+/**
+ * 五路权重（四路基线 + CLIP 第 5 路）。
+ *
+ * 单独导出的原因：`weightedRrfScore` 的 `weights.clip` 缺省为 0（保证不传时完全退化），
+ * 只有显式使用这份权重表第 5 路才生效；这样「默认退化」与「启用第 5 路」是两处独立可测的行为。
+ */
+export const HYBRID_SEARCH_WEIGHTS_WITH_CLIP = {
+  ...HYBRID_SEARCH_WEIGHTS,
+  clip: HYBRID_SEARCH_CLIP_WEIGHT
+} as const
+
+/** 热态判定窗口：距上次成功编码超过此值即视为冷态（模型可能已被看门狗释放） */
+export const CLIP_TEXT_WARM_WINDOW_MS = 300_000
+/**
+ * Chinese-CLIP 文本塔输出维度（与图像塔同处 512d 空间）。
+ *
+ * 用途：检索前校验引擎回传向量维度。若引擎因配置错误返回 384/768，
+ * 直接送进 512 槽会被引擎判 400 或静默零命中——两种都表现为「搜不到图」且日志无线索。
+ */
+export const CLIP_TEXT_EMBED_DIM = 512
+/** 冷态编码超时预算（ms）：包含模型加载，故显著长于热态 */
+export const CLIP_TEXT_TIMEOUT_COLD_MS = 6000
+/** 热态编码超时预算（ms）：模型常驻，只覆盖一次前向 */
+export const CLIP_TEXT_TIMEOUT_WARM_MS = 800
+/** CLIP 文本熔断器参数：连续 3 次失败 → 打开 60s，指数退避 */
+export const CLIP_BREAKER_THRESHOLD = 3
+export const CLIP_BREAKER_COOLDOWN_MS = 60_000
+/** 退避倍率：第 n 次打开 = 60s * 2^(n-1)，避免模型长期缺失时每 60s 反复重试 */
+export const CLIP_BREAKER_BACKOFF_FACTOR = 2
+
+/**
+ * `/health.clipText` 五字段快照。
+ *
+ * **单一事实源**：直接复用 `omni-client` 的 `OmniClipTextHealth`。
+ * 此前在此处内联了一份同构定义，注释给的理由（「以免循环依赖」）不成立——
+ * 本文件本就从同一模块 import `omniClient`，类型导入不新增依赖边；
+ * 两份结构一旦漂移，赋值处因结构兼容不会报错，属静默失配。
+ */
+export type ClipTextHealthSnapshot = OmniClipTextHealth
+
+/**
+ * CLIP 第 5 路**零成本前置**门禁（纯函数）。
+ *
+ * 这三条判定不需要任何网络往返，因此必须在探活**之前**执行：
+ * 否则档位不对 / 开关关闭 / 非中文界面时仍会打一次 `/health`，违反 AC1「零请求」。
+ */
+export function evaluateClipChannelPrecondition(input: {
+  profile: string | null | undefined
+  enabled: boolean
+  lang: string | null | undefined
+}): { run: boolean; reason?: string } {
+  if ((input.profile || '') !== 'classic_light') return { run: false, reason: 'profile_not_classic_light' }
+  if (!input.enabled) return { run: false, reason: 'disabled_by_config' }
+  const lang = (input.lang || '').toLowerCase()
+  if (!lang.startsWith('zh')) return { run: false, reason: 'lang_not_zh' }
+  return { run: true }
+}
+
+/**
+ * CLIP 第 5 路**探活结果**门禁（纯函数）。
+ *
+ * 只有前置已通过才轮到这三条：它们决定「探活已拿到，但文本塔实际不可用」。
+ */
+export function evaluateClipTextHealthGate(
+  health: ClipTextHealthSnapshot | null | undefined
+): { run: boolean; reason?: string } {
+  if (!health) return { run: false, reason: 'health_unavailable' }
+  if (!health.available) return { run: false, reason: 'health_unavailable' }
+  if (health.imageEncoder !== 'chinese_clip') {
+    return { run: false, reason: 'image_encoder_not_chinese_clip' }
+  }
+  if (!health.textModelReady) return { run: false, reason: 'health_unavailable' }
+  if (!health.vocabReady) return { run: false, reason: 'health_unavailable' }
+  // 三态：null = 尚未验证过，允许尝试（首次成功后会转 true）
+  if (health.textOutputVerified === false) return { run: false, reason: 'text_output_unverified' }
+  return { run: true }
+}
+
+/**
+ * CLIP 第 5 路门禁全集（纯函数，便于穷举 AC1 的六种不满足场景）。
+ *
+ * 六种拒绝原因：
+ *   profile_not_classic_light / disabled_by_config / lang_not_zh /
+ *   health_unavailable / image_encoder_not_chinese_clip / text_output_unverified
+ *
+ * 本函数是**门禁语义的唯一权威定义**；热路径为了省掉探活会分两段调用
+ * （precondition → 探活 → healthGate），但两段之并必须与本函数逐项等价。
+ *
+ * 任一不满足都**零请求**：不编码、不检索，既有四路结果与延迟完全不变。
+ */
+export function evaluateClipChannelGate(input: {
+  profile: string | null | undefined
+  enabled: boolean
+  lang: string | null | undefined
+  health: ClipTextHealthSnapshot | null
+}): { run: boolean; reason?: string } {
+  const pre = evaluateClipChannelPrecondition(input)
+  if (!pre.run) return pre
+  return evaluateClipTextHealthGate(input.health)
+}
+
+/**
+ * CLIP 文本 query 是否剥离中文结构助词（`的/之/得/地`）。
+ *
+ * A/B 定稿在工单 14：默认 **false**（保留修饰词），因为 CLIP 文本塔在自然语言上训练，
+ * 「红色的跑车」正是它优于 Bekko 的地方；剥离后与既有向量路的清洗口径趋同，第 5 路就没有独立价值。
+ * 保留开关是为了让 14 能用同一份夹具跑 A/B 并回填结论，而不是把猜测写死。
+ */
+export const CLIP_TEXT_STRIP_PARTICLES = false
+
+/**
+ * CLIP 文本 query 清洗（**独立于 Bekko 向量路**，工单 12 AC2）。
+ *
+ * 与 `queryVectorCandidates` 的清洗差异（刻意不同，不可合并）：
+ * - **保留自然短语与方位/色彩修饰词**：CLIP 文本塔就是吃自然语言训练的，
+ *   「红色的跑车」「左边的沙发」这类修饰正是它的强项，剥离反而降低召回；
+ * - **中文 query 不追加拼音展开词**：CLIP 词表是中文 RoBERTa-wwm，拼音/字母串
+ *   会切成碎片 token 并稀释语义；
+ * - 仅当 query **整体是纯拼音/字母**（无 CJK 字符）时才用 `semanticTextForVector` 替代，
+ *   否则仍用原串；
+ * - 基础清洗只剔除非法符号与规整空白；助词剥离由 `CLIP_TEXT_STRIP_PARTICLES` 控制。
+ */
+export function cleanClipTextQuery(
+  keyword: string,
+  expanded?: { isExpanded?: boolean; semanticTextForVector?: string }
+): string {
+  const raw = (keyword || '').trim()
+  if (!raw) return ''
+  const hasCjk = /[\u4e00-\u9fa5]/.test(raw)
+  let base = raw
+  if (!hasCjk && expanded?.isExpanded && expanded.semanticTextForVector) {
+    // 纯拼音/字母 query：展开词是更贴近语义的载体（如 "khxs" → "科幻小说"）
+    base = expanded.semanticTextForVector
+  }
+  // 基础清洗：只剔除控制字符与常见代码符号，规整空白；不剥助词、不去修饰词
+  let cleaned = base
+    .replace(/[\u0000-\u001F\u007F]/g, ' ')
+    .replace(/[\\/{}<>|`"^~*\[\]]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (CLIP_TEXT_STRIP_PARTICLES) {
+    cleaned = cleaned
+      .replace(/(?<=[\u4e00-\u9fa5]{2,})[的之得地](?=[\u4e00-\u9fa5]{2,})/g, '')
+      .trim()
+  }
+  return cleaned
+}
 
 /** BM25 完整 10 列列权（第 0 列为 file_fingerprint UNINDEXED 赋 0.0，随后 9 列对齐 files_fts 架构：name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags） */
 export const HYBRID_BM25_COLUMN_WEIGHTS = [0.0, 4.0, 4.0, 3.0, 3.0, 3.5, 3.5, 3.0, 3.5, 3.5] as const
@@ -109,6 +288,13 @@ export interface HybridRankedCandidate {
   exactRank?: number
   /** 向量相似度（0~1） */
   vecScore?: number
+  /** 工单 12：CLIP 文本第 5 路排名（1-based，缺失即该路未命中） */
+  clipRank?: number
+  /**
+   * 工单 12：CLIP 文本相似度（0~1）。
+   * **只用于准入判定**，绝不写入 `vecScore`——两者是不同嵌入空间的余弦，混算会污染向量路语义。
+   */
+  clipScore?: number
   /** 文件名提升分（0~1） */
   nameBoost: number
   /** 加权 RRF 融合分数 */
@@ -143,6 +329,12 @@ export interface HybridSearchFailures {
   fts: boolean
   vector: boolean
   fs: boolean
+  /**
+   * 工单 12：CLIP 文本第 5 路是否失败/熔断。
+   * 可选字段，且**不影响**既有四路的失败语义——第 5 路是可选增强，
+   * 它的失败不应让调用方把整次检索标成降级。
+   */
+  clip?: boolean
 }
 
 /** 混合检索融合池结果 */
@@ -247,6 +439,16 @@ export interface HybridRankPool {
   failures: HybridSearchFailures
   /** 融合池总数（candidates + unanalyzedHits，供分页 total 近似） */
   total: number
+  /**
+   * 工单 13：冷态 CLIP 第 5 路的**延迟结果句柄**（phase3 追加用）。
+   *
+   * 冷态下第 5 路要等模型加载（预算 6000ms），绝不能并入 phase2 —— 否则首屏被拖慢一个量级。
+   * 但它也不该被丢掉：把 promise 交给上层，由 session 在 phase2 派发之后异步等待并作为 phase3 追加。
+   *
+   * - 热态：undefined（结果已并入 phase2，不需要二次刷新）
+   * - 冷态：Promise，resolve 为 null 表示本路失败/熔断（不派发 phase3）
+   */
+  pendingClip?: Promise<Array<{ fileFingerprint: string; rank: number; score: number }> | null>
 }
 
 /** 混合检索上下文（基础过滤条件由 TagTreeQuery.buildFilterQuery 提供，不含 searchKeyword 自身的 LIKE 条件） */
@@ -394,11 +596,15 @@ export function weightedRrfScore(
     vectorDamping?: number
     ftsDamping?: number
     maxScoreCap?: number
+    /** 工单 12：CLIP 文本第 5 路的 rank（缺失即该路不参与，完全退化为四路行为） */
+    clipRank?: number
   },
-  weights: { fts: number; vector: number; name: number; exact?: number } = HYBRID_SEARCH_WEIGHTS,
+  weights: { fts: number; vector: number; name: number; exact?: number; clip?: number } = HYBRID_SEARCH_WEIGHTS,
   k: number = HYBRID_SEARCH_RRF_K
 ): number {
   const wExact = weights.exact ?? HYBRID_SEARCH_WEIGHTS.exact
+  // 工单 12：第 5 路权重缺省 0 —— 默认完全退化，只有显式配置才生效
+  const wClip = weights.clip ?? 0
   const baseVec = rrfScore(opts.vecRank, k)
   // 当存在有效向量相似度时，按 (1.0 + clamp(vecScore, 0, 1)) 注入多模态语义置信度
   const scoreMultiplier =
@@ -415,10 +621,15 @@ export function weightedRrfScore(
   const nameRrf = safeNameBoost / (k + 1)
   const nameContrib = weights.name * nameRrf
 
+  // CLIP 第 5 路：**不注入 clipScore 作为乘子**——AC 明确 clipScore 只用于准入，
+  // 一旦进打分就会与 vecScore 的量纲混算（两者是不同嵌入空间的余弦）。
+  const clipContrib = wClip * rrfScore(opts.clipRank, k)
+
   const rawScore = (
     ftsContrib +
     vecContrib +
     nameContrib +
+    clipContrib +
     wExact * rrfScore(opts.exactRank, k)
   )
 
@@ -568,11 +779,19 @@ export function splitPassages(text: string, options: SplitPassagesOptions = {}):
 export class EndpointCircuitBreaker {
   private consecutiveFailures = 0
   private openUntil = 0
+  /** 累计「打开」次数（仅用于指数退避；成功一次即清零） */
+  private openCount = 0
 
   constructor(
     private readonly threshold: number = 3,
     private readonly cooldownMs: number = 30_000,
-    private readonly now: () => number = () => Date.now()
+    private readonly now: () => number = () => Date.now(),
+    /**
+     * 退避倍率：第 n 次打开时冷却 = cooldownMs * factor^(n-1)。
+     * 缺省 1 ⇒ `factor^anything === 1`，冷却恒为 cooldownMs，**与引入本参数前的行为逐位一致**，
+     * 既有 FTS/向量/FS 三路不受影响（工单 12 要求不得改动四路既有阈值结构）。
+     */
+    private readonly backoffFactor: number = 1
   ) {}
 
   /** 是否处于熔断打开状态（打开期间跳过网络请求） */
@@ -590,12 +809,15 @@ export class EndpointCircuitBreaker {
   recordSuccess(): void {
     this.consecutiveFailures = 0
     this.openUntil = 0
+    this.openCount = 0
   }
 
   recordFailure(): void {
     this.consecutiveFailures += 1
     if (this.consecutiveFailures >= this.threshold) {
-      this.openUntil = this.now() + this.cooldownMs
+      const factor = Number.isFinite(this.backoffFactor) && this.backoffFactor > 0 ? this.backoffFactor : 1
+      this.openUntil = this.now() + this.cooldownMs * Math.pow(factor, this.openCount)
+      this.openCount += 1
     }
   }
 
@@ -630,20 +852,47 @@ interface VectorMatch {
 export class HybridSearchArbiter {
   private readonly vectorBreaker: EndpointCircuitBreaker
   private readonly fsBreaker: EndpointCircuitBreaker
+  /**
+   * 工单 12：CLIP 文本第 5 路**独立熔断器**。
+   * 绝不复用 `vectorBreaker`：文本塔缺模型/未加载是常态（可选能力），
+   * 若共用熔断器，CLIP 连续失败会连带关掉既有 Bekko 向量路，属严重回归。
+   */
+  private readonly clipBreaker: EndpointCircuitBreaker
   private readonly networkSignals: boolean
+  /** 上次 CLIP 文本编码成功的时间戳（0 = 从未成功 ⇒ 冷态） */
+  private lastClipSuccessAt = 0
 
   constructor(
     private readonly db: Database.Database,
     options?: {
       vectorBreaker?: EndpointCircuitBreaker
       fsBreaker?: EndpointCircuitBreaker
+      clipBreaker?: EndpointCircuitBreaker
       /** 是否启用 Omni 网络信号（向量/FS/段落对齐）。默认测试环境关闭，避免真实 38200 端口请求拖慢单测 */
       networkSignals?: boolean
     }
   ) {
     this.vectorBreaker = options?.vectorBreaker ?? new EndpointCircuitBreaker()
     this.fsBreaker = options?.fsBreaker ?? new EndpointCircuitBreaker()
+    this.clipBreaker =
+      options?.clipBreaker ??
+      new EndpointCircuitBreaker(
+        CLIP_BREAKER_THRESHOLD,
+        CLIP_BREAKER_COOLDOWN_MS,
+        () => Date.now(),
+        CLIP_BREAKER_BACKOFF_FACTOR
+      )
     this.networkSignals = options?.networkSignals ?? !isTestEnvironment()
+  }
+
+  /**
+   * 文本塔是否热态：仅**成功**编码会刷新时间戳（工单 12 AC4）。
+   *
+   * 冷/热态决定超时预算（6000 vs 800ms），`coldStart` 响应字段只用于埋点、不参与判定——
+   * 引擎侧「是否冷」与 desktop 侧「上次成功多久」是两件事，后者才是首屏延迟的真实预测器。
+   */
+  private isClipWarm(now: number = Date.now()): boolean {
+    return this.lastClipSuccessAt > 0 && now - this.lastClipSuccessAt <= CLIP_TEXT_WARM_WINDOW_MS
   }
 
   /**
@@ -662,17 +911,21 @@ export class HybridSearchArbiter {
       matchedChunk?: VectorMatch['matchedChunk']
       matchedChunks?: VectorMatch['matchedChunks']
     }>
+    /** 工单 12：CLIP 文本第 5 路候选（fingerprint → rank/score） */
+    clipRankMap?: Map<string, { rank: number; score: number }>
     existingNameMap?: Map<string, { name?: string; smartName?: string; path?: string }>
     expanded?: ExpandedSearchQuery
   }): {
     candidates: HybridRankedCandidate[]
     nameMap: Map<string, { name?: string; smartName?: string; path?: string }>
   } {
-    const { keyword, ftsRankMap, exactRankMap, vecRankMap, existingNameMap, expanded } = opts
+    const { keyword, ftsRankMap, exactRankMap, vecRankMap, clipRankMap, existingNameMap, expanded } = opts
     const fpSet = new Set<string>()
     for (const fp of ftsRankMap.keys()) fpSet.add(fp)
     for (const fp of vecRankMap.keys()) fpSet.add(fp)
     for (const fp of exactRankMap.keys()) fpSet.add(fp)
+    // 工单 12：CLIP 命中的指纹必须并入 fpSet，否则 nameMap 不会为它们补全名称
+    if (clipRankMap) for (const fp of clipRankMap.keys()) fpSet.add(fp)
 
     let nameMap: Map<string, { name?: string; smartName?: string; path?: string }>
     if (existingNameMap) {
@@ -691,6 +944,7 @@ export class HybridSearchArbiter {
       const ftsRank = ftsRankMap.get(fp)
       const vec = vecRankMap.get(fp)
       const exactRank = exactRankMap.get(fp)
+      const clip = clipRankMap?.get(fp)
       const { name, smartName } = nameMap.get(fp) ?? {}
       const nameBoost = computeNameBoost(name, smartName, keyword)
 
@@ -706,9 +960,13 @@ export class HybridSearchArbiter {
         : undefined
 
       const hasLiteral = exactRank !== undefined || ftsRank !== undefined || nameBoost >= 0.85
-      // 纯向量假阳性过滤：如果一个文件完全没有字面匹配（无 FTS、无 exact、无文件名命中），
-      // 且无有效时序切片命中，向量得分又低于 MIN_GENERIC_VECTOR_SCORE，坚决不参与排序，防止假阳性污染
-      if (!hasLiteral && (!vec?.matchedChunks || vec.matchedChunks.length === 0)) {
+      // 工单 12：CLIP 命中只有达到准入分才算「有语义依据」，否则等同未命中，
+      // 避免引擎端阈值被绕过（desktop 侧不做后过滤，只做准入判定）
+      const hasClip = clip !== undefined && clip.score >= MIN_CLIP_VECTOR_SCORE
+      // 纯向量假阳性过滤：如果一个文件完全没有字面匹配（无 FTS、无 exact、无文件名命中）、
+      // 无 CLIP 准入命中，且无有效时序切片命中，向量得分又低于 MIN_GENERIC_VECTOR_SCORE，
+      // 坚决不参与排序，防止假阳性污染
+      if (!hasLiteral && !hasClip && (!vec?.matchedChunks || vec.matchedChunks.length === 0)) {
         if (!vec?.score || vec.score < MIN_GENERIC_VECTOR_SCORE) {
           continue
         }
@@ -720,6 +978,9 @@ export class HybridSearchArbiter {
         vecRank: vec?.rank,
         exactRank,
         vecScore: vec?.score,
+        // 工单 12：clipScore 只落到 clipScore，**绝不写入 vecScore**
+        clipRank: hasClip ? clip!.rank : undefined,
+        clipScore: hasClip ? clip!.score : undefined,
         nameBoost,
         score: weightedRrfScore({
           ftsRank,
@@ -729,8 +990,9 @@ export class HybridSearchArbiter {
           vecScore: vec?.score,
           vectorDamping,
           ftsDamping,
-          maxScoreCap
-        }),
+          maxScoreCap,
+          clipRank: hasClip ? clip!.rank : undefined
+        }, HYBRID_SEARCH_WEIGHTS_WITH_CLIP),
         hasLiteral: exactRank !== undefined || ftsRank !== undefined || nameBoost >= 0.85,
         matchedChunk: vec?.matchedChunk,
         matchedChunks: vec?.matchedChunks
@@ -878,6 +1140,16 @@ export class HybridSearchArbiter {
       poolSize,
       expanded
     )
+    // 工单 12：CLIP 第 5 路。**热态才并入 phase2**；冷态照常发起但不等待，
+    // 避免 6000ms 冷启动预算把首屏拖垮（phase3 由工单 13 消费该结果）。
+    const clipWarmAtStart = this.isClipWarm()
+    const clipPromise = this.queryClipVectorCandidates(
+      keyword,
+      whereClauses,
+      queryParams,
+      poolSize,
+      expanded
+    )
 
     // Phase 1: 等待快速字面三路完成 (通常 10~25ms)
     const [ftsResult, fsResult, exactResult] = await Promise.all([
@@ -921,7 +1193,28 @@ export class HybridSearchArbiter {
     }
 
     // Phase 2: 等待慢速向量计算完成
-    const vectorResult = await vectorPromise
+    // 工单 12：热态时把 CLIP 第 5 路与 Bekko 向量路同池等待（两者都是网络+模型路径，
+    // 并行等待不会增加延迟）；冷态时只等 Bekko，CLIP 结果本轮丢弃。
+    let clipResult: Array<{ fileFingerprint: string; rank: number; score: number }> | null = null
+    /** 本轮是否真正等待并采纳了 CLIP 结果——只有采纳过才谈得上「失败」 */
+    let clipJoined = false
+    let vectorResult: VectorMatch[] | null
+    if (clipWarmAtStart) {
+      const [v, c] = await Promise.all([vectorPromise, clipPromise])
+      vectorResult = v
+      clipResult = c
+      clipJoined = true
+    } else {
+      void clipPromise.catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : String(err)
+        logger.warn(
+          LogCategory.VIRTUAL_DIRECTORY,
+          '[HybridSearchArbiter] CLIP 冷态后台编码异常（本轮不参与 phase2）: ',
+          msg
+        )
+      })
+      vectorResult = await vectorPromise
+    }
     if (vectorResult === null) failures.vector = true
     const vecRankMap = new Map<
       string,
@@ -941,11 +1234,21 @@ export class HybridSearchArbiter {
       })
     }
 
+    // 工单 12：CLIP 命中转成 rankMap（null = 本路熔断/失败，空数组 = 门禁未过或无命中）
+    const clipRankMap = new Map<string, { rank: number; score: number }>()
+    // 冷态本轮根本没等待 CLIP，谈不上失败：标成 failures.clip 会让每一次首屏检索
+    // 都上报「降级」，把可选增强的常态误报成故障。
+    if (clipJoined && clipResult === null) failures.clip = true
+    for (const c of clipResult ?? []) {
+      clipRankMap.set(c.fileFingerprint, { rank: c.rank, score: c.score })
+    }
+
     const p2 = this.buildRankedCandidates({
       keyword,
       ftsRankMap,
       exactRankMap,
       vecRankMap,
+      clipRankMap,
       existingNameMap: p1NameMap,
       expanded
     })
@@ -960,7 +1263,9 @@ export class HybridSearchArbiter {
       candidates: p2.candidates,
       unanalyzedHits,
       failures,
-      total: p2.candidates.length + unanalyzedHits.length
+      total: p2.candidates.length + unanalyzedHits.length,
+      // 工单 13：冷态把第 5 路的 promise 交出去做 phase3；热态结果为 undefined（已并入 phase2）
+      pendingClip: clipJoined ? undefined : clipPromise
     }
   }
 
@@ -1333,6 +1638,181 @@ export class HybridSearchArbiter {
     }
   }
 
+  /**
+   * 工单 12：CLIP 文本塔第 5 路候选（文字 query → 文本塔向量 → 512 视觉槽检索）。
+   *
+   * 返回 null 表示熔断/失败，空数组表示「门禁未通过」或「无命中」——
+   * 二者对调用方语义不同（前者计入 failures，后者只是本路为空）。
+   *
+   * 全链路硬约束：
+   * - 门禁不通过时**零请求**（不编码、不检索），既有四路结果与延迟完全不变；
+   * - 检索白名单固定 `[2]`（ChineseCLIP），**不做 desktop 后过滤**，
+   *   阈值随请求下推给引擎，由引擎在 truncate(top_k) 之前剪枝；
+   * - 视频切片指纹（`fp:cN`）一律丢弃：v1 不检索视频切片；
+   * - 429 `busy` 不计熔断失败、不清空热态时间戳。
+   */
+  private async queryClipVectorCandidates(
+    keyword: string,
+    whereClauses: string[],
+    queryParams: any[],
+    poolSize: number,
+    expanded?: ExpandedSearchQuery
+  ): Promise<Array<{ fileFingerprint: string; rank: number; score: number }> | null> {
+    if (this.clipBreaker.isOpen) {
+      // AC：所有跳过都必须留痕。熔断跳过属真实故障态（不是「能力未启用」），用 warn 而非 debug，
+      // 否则用户只会看到「搜不到图」而日志里毫无线索。
+      logger.warn(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[HybridSearchArbiter] CLIP 文本通道熔断中，本轮跳过第 5 路'
+      )
+      return null
+    }
+    if (!this.networkSignals) return []
+    try {
+      // ---- 门禁（六种不满足场景一律零请求）----
+      const orchestrator = ConfigOrchestrator.getInstance()
+      const profile = await omniService.getEmbeddingProfile()
+      const enabled =
+        orchestrator.getValue<boolean>('AI_CLIP_TEXT_SEARCH_ENABLED') ?? true
+      const lang = orchestrator.getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
+
+      // 第一段：零成本前置。**必须在探活之前**——档位/开关/语言不满足时连 /health 都不该发。
+      const pre = evaluateClipChannelPrecondition({ profile, enabled, lang })
+      if (!pre.run) {
+        logger.debug(
+          LogCategory.VIRTUAL_DIRECTORY,
+          `[HybridSearchArbiter] CLIP 文本通道跳过 (reason=${pre.reason})`
+        )
+        return []
+      }
+
+      // 第二段：探活（5 分钟缓存，单飞）。只有前置通过才会走到这里。
+      const health = await omniClient.getClipTextHealth()
+      const healthGate = evaluateClipTextHealthGate(health)
+      if (!healthGate.run) {
+        // 走到这里说明「档位/开关/语言都要求第 5 路」，却因文本塔不可用而跳过 —— 这是真实的能力缺失，
+        // 必须 warn（而前置三条属稳态配置差异，用 debug 以免把最热的检索路径刷成告警风暴）。
+        logger.warn(
+          LogCategory.VIRTUAL_DIRECTORY,
+          `[HybridSearchArbiter] CLIP 文本通道跳过 (reason=${healthGate.reason})`
+        )
+        return []
+      }
+
+      // ---- query 清洗（独立于 Bekko 路）----
+      const text = cleanClipTextQuery(keyword, expanded)
+      if (!text) return []
+
+      // ---- 冷/热态超时预算 ----
+      // 冷态 = 从未成功编码，或距上次成功超过 300s（模型可能已被看门狗释放）。
+      // 预算按态取值，与响应里的 `coldStart` 无关：后者只做埋点，不参与判定。
+      const warm = this.isClipWarm()
+      const warmBudgetMs =
+        orchestrator.getValue<number>('AI_CLIP_TEXT_TIMEOUT_WARM_MS') ||
+        CLIP_TEXT_TIMEOUT_WARM_MS
+      const coldBudgetMs =
+        orchestrator.getValue<number>('AI_CLIP_TEXT_TIMEOUT_COLD_MS') ||
+        CLIP_TEXT_TIMEOUT_COLD_MS
+      const budget = warm ? warmBudgetMs : coldBudgetMs
+
+      const encoded = await omniClient.embedClipText(text, { timeoutMs: budget })
+      if (!encoded.ok) {
+        // 429 busy：引擎并发饱和，既不算失败也不清空热态——下一轮很可能直接成功
+        if (encoded.status === 429 || encoded.error === 'busy') {
+          logger.warn(
+            LogCategory.VIRTUAL_DIRECTORY,
+            '[HybridSearchArbiter] CLIP 文本编码 busy(429)，本轮跳过第 5 路（不计熔断）'
+          )
+          return []
+        }
+        this.clipBreaker.recordFailure()
+        // 超时 / 503 / 传输错误：热态失效，下次回到 6000ms 冷态预算
+        this.lastClipSuccessAt = 0
+        logger.warn(
+          LogCategory.VIRTUAL_DIRECTORY,
+          `[HybridSearchArbiter] CLIP 文本编码失败 (error=${encoded.error}, status=${encoded.status ?? '-'})，本轮跳过第 5 路`
+        )
+        return null
+      }
+      if (!encoded.vector || encoded.vector.length === 0) {
+        this.clipBreaker.recordFailure()
+        this.lastClipSuccessAt = 0
+        logger.warn(
+          LogCategory.VIRTUAL_DIRECTORY,
+          '[HybridSearchArbiter] CLIP 文本编码返回空向量，本轮跳过第 5 路'
+        )
+        return null
+      }
+      // 维度必须与 512 视觉槽一致：维度错位的向量送进引擎只会得到 400 或静默零命中，
+      // 两种都会表现为「搜不到图」而日志里没有线索，故在此显式拦截并留痕。
+      if (encoded.vector.length !== CLIP_TEXT_EMBED_DIM) {
+        this.clipBreaker.recordFailure()
+        this.lastClipSuccessAt = 0
+        logger.warn(
+          LogCategory.VIRTUAL_DIRECTORY,
+          `[HybridSearchArbiter] CLIP 文本向量维度异常（期望 ${CLIP_TEXT_EMBED_DIM}，实得 ${encoded.vector.length}），` +
+            `本轮跳过第 5 路`
+        )
+        return null
+      }
+      // 编码成功 ⇒ 文本塔进入热态（刷新热态时间戳）。
+      // 但熔断计数必须等**检索也成功**才清零：若在此处 recordSuccess，而检索恒失败，
+      // 序列会变成 success(0)→failure(1)→success(0)→failure(1)，consecutiveFailures
+      // 永远到不了阈值 3，「编码恒成功 + 检索恒失败」时熔断永不打开。
+      this.lastClipSuccessAt = Date.now()
+
+      // ---- 检索：白名单 [2]，阈值下推，引擎在 truncate 前剪枝 ----
+      // 必须透传冷/热态预算且禁用重试：`request()` 缺省是 8s × 3 次，
+      // 一旦沿用，phase2 会被单条 CLIP 链路拖到 25s 量级，与 800ms 热态契约冲突。
+      const resp = await omniClient.searchVectors(encoded.vector, poolSize, {
+        encoderFilter: [...ENCODER_FILTER_CHINESE_CLIP],
+        threshold: MIN_CLIP_VECTOR_SCORE,
+        timeoutMs: budget,
+        retries: 0
+      })
+      if (!resp || !Array.isArray(resp.matches)) {
+        // 检索失败与文本塔冷热无关：不计入 lastClipSuccessAt，只计入本路熔断
+        this.clipBreaker.recordFailure()
+        logger.warn(
+          LogCategory.VIRTUAL_DIRECTORY,
+          '[HybridSearchArbiter] CLIP 文本向量检索失败，本轮跳过第 5 路'
+        )
+        return null
+      }
+      // 编码 + 检索都成功，才算本路一次完整成功（重置熔断计数与退避代数）
+      this.clipBreaker.recordSuccess()
+      if (resp.matches.length === 0) return []
+
+      // ---- 切片排除 + 基础条件交集 ----
+      const chunkPattern = /^(.+):c(\d+)$/
+      const plainMatches = resp.matches.filter(m => !chunkPattern.test(m.fileFingerprint))
+      if (plainMatches.length === 0) return []
+      const allowed = this.filterMembersFromBase(
+        plainMatches.map(m => m.fileFingerprint),
+        whereClauses,
+        queryParams
+      )
+      const byFp = new Map<string, number>()
+      for (const m of plainMatches) {
+        if (!allowed.has(m.fileFingerprint)) continue
+        const prev = byFp.get(m.fileFingerprint)
+        if (prev === undefined || m.score > prev) byFp.set(m.fileFingerprint, m.score)
+      }
+      if (byFp.size === 0) return []
+
+      return Array.from(byFp.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, poolSize)
+        .map(([fileFingerprint, score], idx) => ({ fileFingerprint, rank: idx + 1, score }))
+    } catch (err: unknown) {
+      this.clipBreaker.recordFailure()
+      this.lastClipSuccessAt = 0
+      const msg = err instanceof Error ? err.message : String(err)
+      logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchArbiter] CLIP 第 5 路异常，降级: ', msg)
+      return null
+    }
+  }
+
   /** 向量候选（分析Text→embedding→searchVectors→基础过滤），返回 null 表示失败或熔断 */
   private async queryVectorCandidates(
     keyword: string,
@@ -1375,8 +1855,12 @@ export class HybridSearchArbiter {
       // 查询白名单必须显式给出（无「缺省不过滤」兜底）：
       // classic_light 384 槽 → [0, 1]（Bekko + v2 旧记录过渡）；gemma_unified 各 MRL 槽 → [4]。
       const embeddingProfile = await omniService.getEmbeddingProfile()
+      // 工单 07：门限同步下推给 Omni 端（AC7 双闸第一道）。引擎在 truncate(top_k) 之前
+      // 先按 threshold 剪枝，66 条 .lnk 负样本在最坏情况下也不会跨网络进入候选池；
+      // 桌面侧 L712 的 MIN_GENERIC_VECTOR_SCORE 过滤是第二道闸，两者必须同源同值。
       const resp = await omniClient.searchVectors(embedding, poolSize, {
-        encoderFilter: resolveQueryEncoderFilter(embeddingProfile)
+        encoderFilter: resolveQueryEncoderFilter(embeddingProfile),
+        threshold: MIN_GENERIC_VECTOR_SCORE
       })
       if (!resp || !Array.isArray(resp.matches)) {
         this.vectorBreaker.recordFailure()

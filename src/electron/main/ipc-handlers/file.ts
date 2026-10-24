@@ -79,7 +79,10 @@ export function registerFileIPCHandlers() {
       }
 
       const onProgress = options?.stream
-        ? (phase: 'phase1' | 'phase2', response: FilteredFilesResponse) => {
+        ? (
+            phase: 'phase1' | 'phase2' | 'phase3',
+            response: FilteredFilesResponse & { clipPending?: boolean }
+          ) => {
             // 发射前背压丢弃守卫：校验当前请求序号是否已被新请求取代
             const currentActiveSeq = activeSearchSeqBySender.get(event.sender.id)
             if (options?.seq !== undefined && currentActiveSeq !== undefined && searchSeq < currentActiveSeq) {
@@ -104,7 +107,9 @@ export function registerFileIPCHandlers() {
               seq: searchSeq,
               items: mappedItems,
               total: response.total,
-              tokens: response.tokens ?? []
+              tokens: response.tokens ?? [],
+              // 工单 13：仅 phase2 会带此标记（冷态视觉模型首次加载中），phase3 到达即代表加载完成
+              ...(response.clipPending ? { clipPending: true } : {})
             })
           }
         : undefined

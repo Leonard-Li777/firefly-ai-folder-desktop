@@ -52,6 +52,10 @@ import path from 'node:path'
 import { engineBridgeService } from '../engine-bridge'
 import { isRenameProtectedExtension } from '../../utils/extension-rename-whitelist'
 import { isTransientInfraError } from './file-processor/analysis-error-classifier'
+import {
+  canonicalMaintenanceService,
+  installCanonicalMaintenanceListener
+} from './canonical-maintenance-service'
 
 class StageNotifier {
   private resolvers = new Map<number, () => void>()
@@ -128,6 +132,9 @@ export class AnalysisQueueService {
 
   private wakeUpResolver?: () => void
   private wakeUpPromise?: Promise<void>
+
+  /** 工单 06：canonical 档位切换维护监听的取消订阅句柄 */
+  private canonicalMaintenanceUnsubscribe?: () => void
 
   constructor() {
     this.errorHandler = new ErrorHandler()
@@ -251,6 +258,7 @@ export class AnalysisQueueService {
       this.isInitialized = adaptersReady
       if (adaptersReady) {
         logger.info(LogCategory.ANALYSIS_QUEUE, '[分析队列] 服务初始化完成')
+        this.installCanonicalMaintenance()
       } else {
         logger.warn(
           LogCategory.ANALYSIS_QUEUE,
@@ -261,6 +269,44 @@ export class AnalysisQueueService {
     this.initializePromise = initPromise
 
     await initPromise
+  }
+
+  /**
+   * 工单 06：注册档位/维度变更监听，并启动一次「启动后有界回填」。
+   *
+   * - 监听只复用 `ConfigOrchestrator.onValueChange`（与 omni-service 热重启并列），不造第二套；
+   * - 启动后回填只扫 `NULL/pending/failed`，队列忙碌即暂停，可断点续跑；
+   * - 全部失败只 warn，绝不阻断分析队列初始化。
+   */
+  private installCanonicalMaintenance(): void {
+    try {
+      this.canonicalMaintenanceUnsubscribe = installCanonicalMaintenanceListener(
+        canonicalMaintenanceService
+      )
+    } catch (err: any) {
+      logger.warn(
+        LogCategory.ANALYSIS_QUEUE,
+        `[CanonicalMaintenance] 监听注册失败（不影响分析队列）: ${err?.message ?? err}`
+      )
+    }
+    // 启动后回填：先探空 ready 行（向量被删除但 state 未失效的场景），再有界回填
+    void (async () => {
+      try {
+        await canonicalMaintenanceService.probeReadyRowsForMissingVectors()
+        const solidified = await canonicalMaintenanceService.runBackfill()
+        if (solidified > 0) {
+          logger.info(
+            LogCategory.ANALYSIS_QUEUE,
+            `[CanonicalMaintenance] 启动后有界回填完成：固化 ${solidified} 个 canonical 向量`
+          )
+        }
+      } catch (err: any) {
+        logger.warn(
+          LogCategory.ANALYSIS_QUEUE,
+          `[CanonicalMaintenance] 启动后回填异常（不影响分析队列）: ${err?.message ?? err}`
+        )
+      }
+    })()
   }
 
   private reinitFromAdapters(adapters: any): void {
@@ -958,6 +1004,23 @@ export class AnalysisQueueService {
     return this.errorHandler.shouldRetry(errorType as any, retryCount)
   }
 
+  /**
+   * 工单 06：canonical 重建计数（供设置页展示，方案 §3.10「禁止静默空召回」）。
+   * UI 接入属工单 13，此处只暴露数据出口。
+   */
+  public getCanonicalRebuildCounts(): ReturnType<
+    typeof canonicalMaintenanceService.getRebuildCounts
+  > {
+    return canonicalMaintenanceService.getRebuildCounts()
+  }
+
+  /**
+   * 工单 06：手动触发一次 canonical 维护（「重建语义索引」入口，UI 由工单 13 接入）。
+   */
+  public async runCanonicalMaintenance(reason = 'manual'): Promise<void> {
+    await canonicalMaintenanceService.runMaintenance(reason)
+  }
+
   getMaxRetries(): number {
     return this.errorHandler.getErrorRecoveryConfig().maxRetries
   }
@@ -1031,7 +1094,10 @@ export class AnalysisQueueService {
   }
 
   /**
-   * 检测队列中是否存在待处理的任务（pending 状态）
+   * 检测队列中是否存在待处理的任务（pending / analyzing）。
+   *
+   * `analyzing` 必须计入：canonical 回填以此判断「队列忙碌即暂停」，
+   * 若只认 pending，正在跑的分析（且恰好暂无 pending）期间回填会与本地模型抢同一路嵌入。
    */
   public hasPendingItems(): boolean {
     if (!this.queueManager) {
@@ -1040,7 +1106,7 @@ export class AnalysisQueueService {
     const snapshot = this.queueManager.getSnapshot()
     return (
       Array.isArray(snapshot?.items) &&
-      snapshot.items.some(i => i.status === 'pending')
+      snapshot.items.some(i => i.status === 'pending' || i.status === 'analyzing')
     )
   }
 

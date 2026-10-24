@@ -1,6 +1,14 @@
 import { ipcMain } from 'electron'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
-import { logger, LogCategory, sanitizeDirectoryName, isTestEnvironment, HAC_FEATURE_FLAGS } from '@firefly/shared'
+import {
+  logger,
+  LogCategory,
+  sanitizeDirectoryName,
+  isTestEnvironment,
+  HAC_FEATURE_FLAGS,
+  buildSemanticText,
+  isSemanticTagGroup
+} from '@firefly/shared'
 import { userTierService } from '../../runtime-services/user-tier/user-tier-service'
 import { databaseService } from '../../runtime-services/database/database-service'
 import { analysisQueueService } from '../../runtime-services/analysis-queue-service'
@@ -31,6 +39,7 @@ import {
   type FileMetaItem
 } from '@firefly/core-engine'
 import { OmniService } from '../../runtime-services/system/omni-service'
+import { omniClient, resolveQueryEncoderFilter } from '../../services/omni-client'
 import { createCoreEngineAdapters } from '../../adapters'
 import fs from 'fs-extra'
 import path from 'node:path'
@@ -987,6 +996,17 @@ export function registerVirtualDirectoryIPCHandlers() {
       const injectedFileVectors: Record<number, number[]> = request.injectedFileVectors ? { ...request.injectedFileVectors } : {}
       const injectedPathVectors: Record<string, number[]> = request.injectedPathVectors ? { ...request.injectedPathVectors } : {}
       const injectedFileMeta: Record<number, FileMetaItem> = request.injectedFileMeta ? { ...request.injectedFileMeta } : {}
+      /** 工单 08（AC9）：fileId → 内容指纹（zvec 直读与 canonical 文本都按指纹定位） */
+      const fingerprintByFileId = new Map<number, string>()
+      /** 工单 08（AC9）：fileId → 阶段二固化的 canonical 语义文本 */
+      const canonicalTextByFileId = new Map<number, string>()
+      /**
+       * fileId → (tag_code → tag_group)。
+       * `buildSemanticText` 对缺 `tagGroup` 的标签是 fail-closed（直接丢弃），
+       * 只传 `{ code }` 会让兜底文本丢失**全部**标签证据；此处按行收集分组，
+       * 供下方 JIT 兜底拼装时补齐。
+       */
+      const tagGroupByFileId = new Map<number, Map<string, string>>()
 
       // 1. 从 SQLite 批量拉取全字段文件元数据 (若调用方未提供 injectedFileMeta)
       if (request.fileIds && request.fileIds.length > 0) {
@@ -1004,32 +1024,46 @@ export function registerVirtualDirectoryIPCHandlers() {
                 SELECT
                   wf.id AS file_id,
                   wf.name AS raw_name,
+                  wf.file_fingerprint AS file_fingerprint,
                   f.extension AS extension,
                   f.file_group AS file_group,
                   f.smart_name AS smart_name,
                   f.description AS description,
+                  f.canonical_text AS canonical_text,
                   ftr.tag_code AS tag_code,
+                  ftr.tag_group AS tag_group,
                   ftr.name_path AS name_path,
                   ftr.code_path AS code_path
                 FROM workspace_files wf
                 LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
                 LEFT JOIN file_tag_relations ftr ON ftr.file_fingerprint = wf.file_fingerprint
                 WHERE wf.id IN (${placeholders})
+                ORDER BY wf.id ASC, COALESCE(ftr.confidence, 0) DESC, ftr.tag_code ASC, ftr.via_parent_code ASC
               `
                 )
                 .all(...chunk) as Array<{
                 file_id: number
                 raw_name: string | null
+                file_fingerprint: string | null
                 extension: string | null
                 file_group: string | null
                 smart_name: string | null
                 description: string | null
+                canonical_text: string | null
                 tag_code: string | null
+                tag_group: string | null
                 name_path: string | null
                 code_path: string | null
               }>
 
               for (const row of rows) {
+                // 工单 08：指纹与 canonical 文本按行填充，与 injectedFileMeta 同批建立
+                if (row.file_fingerprint) {
+                  fingerprintByFileId.set(row.file_id, row.file_fingerprint)
+                }
+                if (row.canonical_text && row.canonical_text.trim()) {
+                  canonicalTextByFileId.set(row.file_id, row.canonical_text.trim())
+                }
                 if (!injectedFileMeta[row.file_id]) {
                   injectedFileMeta[row.file_id] = {
                     smartName: row.smart_name || undefined,
@@ -1052,6 +1086,16 @@ export function registerVirtualDirectoryIPCHandlers() {
                 }
                 if (row.tag_code && !meta.tagCodes?.includes(row.tag_code)) {
                   meta.tagCodes?.push(row.tag_code)
+                }
+                // tag_group 与 tag_code 同批收集：JIT 兜底拼装语义文本时必须带上分组，
+                // 否则 buildSemanticText 的 fail-closed 会把标签整段丢弃
+                if (row.tag_code && row.tag_group) {
+                  let byCode = tagGroupByFileId.get(row.file_id)
+                  if (!byCode) {
+                    byCode = new Map<string, string>()
+                    tagGroupByFileId.set(row.file_id, byCode)
+                  }
+                  byCode.set(row.tag_code, row.tag_group)
                 }
                 if (row.code_path) {
                   const codeChain = row.code_path.split('/').filter(Boolean)
@@ -1098,8 +1142,18 @@ export function registerVirtualDirectoryIPCHandlers() {
           }
         }
 
-        // 2.2 文件向量提取 (会话内存缓存优先)
-        const missingFileItems: { fileId: number; prompt: string }[] = []
+        // 2.2 文件向量提取（工单 08 AC9：zvec 直读优先 → canonical 文本 JIT 兜底 → 会话缓存）
+        //
+        // 优先级（与聚类链路同源，见 vector-semantic-text-unified-scheme §3.8）：
+        //   1) 调用方注入的向量（已由上层算好，不重复推理）
+        //   2) 会话级缓存（organizeSessionVectorCache，长度必须等于当前 activeDim）
+        //   3) zvec 直读 `getVectors(fps, activeDim)`，**且 encoder 必须属于当前档位白名单**——
+        //      gemma@512 与 classic CLIP@512 共槽，encoder=2 的 CLIP 向量按未命中处理
+        //   4) canonical 文本走 batchEmbedText；canonical 缺失时用 buildSemanticText(meta) JIT
+        //
+        // 硬约束：本函数只读 zvec，**任何分支都不得写回**（AC9 字节断言）。
+        const encoderWhitelist = new Set<number>(resolveQueryEncoderFilter(activeProfile))
+        const pendingFileIds: number[] = []
         for (const fId of request.fileIds) {
           if (injectedFileVectors[fId]) continue
           const cached = organizeSessionVectorCache.get(fId)
@@ -1107,8 +1161,68 @@ export function registerVirtualDirectoryIPCHandlers() {
             injectedFileVectors[fId] = cached
             continue
           }
+          pendingFileIds.push(fId)
+        }
+
+        // 3) zvec 直读：仅对已分析、有指纹且缓存未命中的文件发起
+        const fpToFileIds = new Map<string, number[]>()
+        for (const fId of pendingFileIds) {
+          const fp = fingerprintByFileId.get(fId)
+          if (!fp) continue
+          const list = fpToFileIds.get(fp) || []
+          list.push(fId)
+          fpToFileIds.set(fp, list)
+        }
+        if (fpToFileIds.size > 0) {
+          try {
+            const fps = Array.from(fpToFileIds.keys())
+            const VECTOR_READ_CHUNK = 200
+            for (let i = 0; i < fps.length; i += VECTOR_READ_CHUNK) {
+              const slice = fps.slice(i, i + VECTOR_READ_CHUNK)
+              const resp = await omniClient.getVectors(slice, activeDim, 5000)
+              if (!resp || !Array.isArray(resp.vectors)) continue
+              for (const item of resp.vectors) {
+                // encoder 白名单校验：异空间向量按未命中处理，交由 canonical JIT 重建
+                if (!encoderWhitelist.has(item.encoderId)) continue
+                if (!item.vector || item.vector.length !== activeDim) continue
+                for (const fId of fpToFileIds.get(item.fileFingerprint) || []) {
+                  if (injectedFileVectors[fId]) continue
+                  injectedFileVectors[fId] = item.vector
+                  organizeSessionVectorCache.set(fId, item.vector)
+                }
+              }
+            }
+          } catch (err: any) {
+            // zvec 直读失败不阻断：降级为 canonical 文本 JIT，但必须显式告警
+            logger.warn(
+              LogCategory.FILE_ORGANIZATION,
+              `[IPC] zvec 向量直读失败，降级至 canonical 文本 JIT: ${err?.message ?? err}`
+            )
+          }
+        }
+
+        // 4) canonical 文本 JIT：canonical_text → buildSemanticText(meta) → buildFilePrompt(meta)
+        const missingFileItems: { fileId: number; prompt: string }[] = []
+        for (const fId of pendingFileIds) {
+          if (injectedFileVectors[fId]) continue
+          const canonicalText = canonicalTextByFileId.get(fId)
           const meta = injectedFileMeta[fId] || { rawName: `file_${fId}` }
-          const prompt = buildFilePrompt(meta)
+          const semanticText =
+            canonicalText ||
+            buildSemanticText({
+              displayName: meta.smartName,
+              rawName: meta.rawName,
+              description: meta.description,
+              tags: (meta.tagCodes || []).map(code => {
+                const group = tagGroupByFileId.get(fId)?.get(code)
+                // DB 的 tag_group 是自由字符串，必须收敛到 {fused,ai,user} 白名单，
+                // 否则 buildSemanticText 会按 fail-closed 丢弃该标签
+                return { code, tagGroup: isSemanticTagGroup(group) ? group : undefined }
+              })
+            })
+          // buildFilePrompt 仅作最后的退化兜底（语义文本为空时），**不**被改造为语义文本别名，
+          // 它在 LLM 提示词链路中的原始职责保持不变。
+          const prompt = semanticText || buildFilePrompt(meta)
           missingFileItems.push({ fileId: fId, prompt })
         }
 

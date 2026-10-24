@@ -444,11 +444,13 @@ declare global {
       ) => Promise<FileItem[]>
       onSearchProgress: (
         callback: (payload: {
-          phase: 'phase1' | 'phase2'
+          phase: 'phase1' | 'phase2' | 'phase3'
           seq: number
           items: FileItem[]
           total: number
           tokens?: string[]
+          /** 工单 13：冷态视觉模型首次加载中（仅 phase2 携带） */
+          clipPending?: boolean
         }) => void
       ) => () => void
       tokenizeText: (text: string) => Promise<string[]>
@@ -512,6 +514,23 @@ declare global {
         }>
       >
       batchFixExtensions: (fixes: Array<{ fileFingerprint: string; chosenExtension: string | null }>) => Promise<{ success: boolean; count: number }>
+      /** 工单 13：canonical 语义索引重建计数（设置页展示「重建中 / 待重建」） */
+      getCanonicalRebuildCounts: () => Promise<{
+        pending: number
+        ready: number
+        visualOnly: number
+        skipped: number
+        failed: number
+        uncomputed: number
+        lastMaintenance: {
+          reason: string
+          at: number
+          invalidated: number
+          requeued: number
+        } | null
+      }>
+      /** 工单 13：手动触发一次 canonical 语义索引重建 */
+      runCanonicalMaintenance: (reason?: string) => Promise<{ success: boolean }>
       onAnalysisQueueUpdated: (callback: (payload: AnalysisQueue) => void) => () => void
       onDirectoryContextUpdated: (callback: (payload: { directoryPath: string; contextAnalysis: any }) => void) => () => void
       onModelStatusChanged: (callback: (payload: ModelStatusChange) => void) => () => void

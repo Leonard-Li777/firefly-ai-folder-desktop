@@ -34,9 +34,9 @@
     "fr-FR": "Espace de travail introuvable",
     "ko-KR": "작업공간을 찾을 수 없습니다",
     "$files": [
-      "src/electron/runtime-services/ipc/settings-ipc-handler.ts(6565-6575)",
-      "src/electron/runtime-services/ipc/settings-ipc-handler.ts(8962-8972)",
-      "src/electron/runtime-services/ipc/settings-ipc-handler.ts(9337-9347)"
+      "src/electron/runtime-services/ipc/settings-ipc-handler.ts(6071-6081)",
+      "src/electron/runtime-services/ipc/settings-ipc-handler.ts(8978-8988)",
+      "src/electron/runtime-services/ipc/settings-ipc-handler.ts(9353-9363)"
     ],
     "$id": 11062
   },
@@ -50,8 +50,25 @@
     "de-DE": "Löschen des Arbeitsverzeichnisses fehlgeschlagen, bitte erneut versuchen.",
     "fr-FR": "Échec de la suppression du répertoire de travail, veuillez réessayer",
     "ko-KR": "작업 디렉토리 삭제에 실패했습니다. 다시 시도해 주세요.",
-    "$files": ["src/electron/runtime-services/ipc/settings-ipc-handler.ts(7340-7356)"],
+    "$files": [
+      "src/electron/runtime-services/ipc/settings-ipc-handler.ts(7368-7384)"
+    ],
     "$id": 8078
+  },
+  "工作目录已移除，但缓存目录 .VirtualDirectory 删除失败（可能被占用），请稍后手动删除": {
+    "en-US": "The working directory has been removed, but the cache directory .VirtualDirectory failed to be deleted (may be occupied), please delete it manually later.",
+    "es-ES": "El directorio de trabajo se eliminó, pero el directorio de caché .VirtualDirectory no se pudo eliminar (puede estar ocupado), elimínelo manualmente más tarde.",
+    "ar-EG": "تمت إزالة دليل العمل، ولكن فشل حذف دليل ذاكرة التخزين المؤقت .VirtualDirectory (قد يكون مشغولاً)، يرجى حذفه يدويًا لاحقًا.",
+    "pt-PT": "O diretório de trabalho foi removido, mas o diretório de cache .VirtualDirectory não foi excluído (pode estar ocupado), exclua-o manualmente mais tarde.",
+    "ru-RU": "Рабочий каталог был удален, но каталог кэша .VirtualDirectory не удалось удалить (возможно, он занят), удалите его позже вручную.",
+    "ja-JP": "作業ディレクトリは削除されましたが、キャッシュ ディレクトリ .VirtualDirectory の削除に失敗しました (占有されている可能性があります)。後で手動で削除してください。",
+    "de-DE": "Das Arbeitsverzeichnis wurde entfernt, aber das Cache-Verzeichnis .VirtualDirectory konnte nicht gelöscht werden (möglicherweise belegt). Bitte löschen Sie es später manuell.",
+    "fr-FR": "Le répertoire de travail a été supprimé, mais le répertoire de cache .VirtualDirectory n'a pas pu être supprimé (peut être occupé), veuillez le supprimer manuellement ultérieurement.",
+    "ko-KR": "작업 디렉터리가 제거되었지만 캐시 디렉터리 .VirtualDirectory를 삭제하지 못했습니다(사용 중일 수 있음). 나중에 수동으로 삭제하세요.",
+    "$files": [
+      "src/electron/runtime-services/ipc/settings-ipc-handler.ts(7783-7838)"
+    ],
+    "$id": 21921
   },
   "未找到工作目录 ID: {workspaceId}": {
     "en-US": "Working directory ID not found: {workspaceId}",
@@ -63,7 +80,9 @@
     "de-DE": "Arbeitsverzeichnis ID wurde nicht gefunden: {workspaceId}",
     "fr-FR": "ID du répertoire de travail non trouvé : {workspaceId}",
     "ko-KR": "작업 디렉토리 ID를 찾을 수 없음: {workspaceId}",
-    "$files": ["src/electron/runtime-services/ipc/settings-ipc-handler.ts(10487-10516)"],
+    "$files": [
+      "src/electron/runtime-services/ipc/settings-ipc-handler.ts(10503-10532)"
+    ],
     "$id": 5969
   }
 }

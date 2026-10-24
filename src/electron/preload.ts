@@ -92,21 +92,24 @@ const electronAPI = {
 
   onSearchProgress: (
     callback: (payload: {
-      phase: 'phase1' | 'phase2'
+      phase: 'phase1' | 'phase2' | 'phase3'
       seq: number
       items: FileItem[]
       total: number
       tokens?: string[]
+      /** 工单 13：冷态视觉模型首次加载中（仅 phase2 携带），phase3 到达或超时后应隐藏提示 */
+      clipPending?: boolean
     }) => void
   ) => {
     const handler = (
       _event: any,
       payload: {
-        phase: 'phase1' | 'phase2'
+        phase: 'phase1' | 'phase2' | 'phase3'
         seq: number
         items: FileItem[]
         total: number
         tokens?: string[]
+        clipPending?: boolean
       }
     ) => callback(payload)
     ipcRenderer.on('search-workspace-files-progress', handler)
@@ -318,6 +321,22 @@ const electronAPI = {
     ipcRenderer.invoke('analysis-queue/check-stage4-files', filePaths),
   checkAlreadyAnalyzedFiles: (filePaths: string[]): Promise<any[]> =>
     ipcRenderer.invoke('analysis-queue/check-already-analyzed-files', filePaths),
+  /**
+   * 工单 13：canonical 语义索引重建计数（工单 06 只暴露服务方法，设置页在此接入）。
+   * 返回 pending/ready/visualOnly/skipped/failed/uncomputed 与最近一次维护摘要。
+   */
+  getCanonicalRebuildCounts: (): Promise<{
+    pending: number
+    ready: number
+    visualOnly: number
+    skipped: number
+    failed: number
+    uncomputed: number
+    lastMaintenance: { reason: string; at: number; invalidated: number; requeued: number } | null
+  }> => ipcRenderer.invoke('analysis-queue/canonical-rebuild-counts'),
+  /** 工单 13：手动触发一次 canonical 语义索引重建 */
+  runCanonicalMaintenance: (reason?: string): Promise<{ success: boolean }> =>
+    ipcRenderer.invoke('analysis-queue/run-canonical-maintenance', reason),
   onAnalysisQueueUpdated: (callback: (payload: any) => void) => {
     const handler = (_event: any, payload: any) => callback(payload)
     ipcRenderer.on('analysis-queue-updated', handler)

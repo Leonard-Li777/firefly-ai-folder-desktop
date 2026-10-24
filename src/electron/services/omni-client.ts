@@ -171,6 +171,44 @@ export interface OmniMatchPassagesResponse {
   durationMs: number
 }
 
+/**
+ * `/health.clipText` 五字段探活结果（工单 10 引擎侧契约）。
+ *
+ * `available` 由引擎聚合（图像塔 = chinese_clip && 文本塔就绪 && 词表就绪 &&
+ * 首次编码未验证为 false）；desktop 只做消费，不再自行推导。
+ */
+export interface OmniClipTextHealth {
+  available: boolean
+  /** 当前激活图像塔标签，只有 `chinese_clip` 才可能与文本塔同空间 */
+  imageEncoder: string | null
+  textModelReady: boolean
+  vocabReady: boolean
+  /** 三态：null = 尚未做过首次编码验证 */
+  textOutputVerified: boolean | null
+}
+
+/**
+ * CLIP 文本编码结果（工单 12）。
+ *
+ * **必须保留 `error`/`status`**：429 `busy` 与超时/传输错误在调用方有截然不同的处理
+ * （busy 不清空热态时间戳、不计入熔断），若沿用 `request()` 的 null 语义就无从区分。
+ */
+export interface OmniEmbedClipTextResult {
+  ok: boolean
+  /** 引擎业务码或 desktop 侧合成码（`transport` / `timeout` / `bad_shape`） */
+  error?: string
+  status?: number
+  vector?: number[]
+  dim?: number
+  /** 首次调用是否触发模型加载：**仅用于埋点/UI，不参与超时预算** */
+  coldStart?: boolean
+  loadMs?: number
+  encodeMs?: number
+}
+
+/** 探活缓存 TTL：5 分钟（工单 12 AC1） */
+const CLIP_TEXT_HEALTH_TTL_MS = 5 * 60 * 1000
+
 const DEFAULT_TIMEOUT_MS = 8000
 
 /**
@@ -392,17 +430,33 @@ export class OmniClient {
   async searchVectors(
     vector: number[],
     topK: number,
-    options: { encoderFilter: number[]; threshold?: number }
+    options: {
+      encoderFilter: number[]
+      threshold?: number
+      /**
+       * 单次请求预算（毫秒）。缺省沿用 `DEFAULT_TIMEOUT_MS`。
+       * CLIP 第 5 路必须显式传冷/热态预算，否则 phase2 会被这条链路拖到
+       * `timeoutMs × (retries + 1) + 退避` 的量级，与「热态 ≤800ms」的契约冲突。
+       */
+      timeoutMs?: number
+      /** 重试次数。CLIP 路传 0：预算已按冷/热态给定，重试会成倍放大首屏等待。 */
+      retries?: number
+    }
   ): Promise<OmniVectorSearchResponse | null> {
-    return this.request<OmniVectorSearchResponse>('/api/v1/vector/search', {
-      method: 'POST',
-      body: JSON.stringify({
-        vector,
-        topK,
-        threshold: options.threshold,
-        encoderFilter: options.encoderFilter
-      })
-    })
+    return this.request<OmniVectorSearchResponse>(
+      '/api/v1/vector/search',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          vector,
+          topK,
+          threshold: options.threshold,
+          encoderFilter: options.encoderFilter
+        })
+      },
+      options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+      options.retries ?? 2
+    )
   }
 
   /**
@@ -427,6 +481,120 @@ export class OmniClient {
       method: 'DELETE',
       body: JSON.stringify({ fileFingerprints })
     })
+  }
+
+  /**
+   * CLIP 文本塔探活：GET /health → `clipText` 五字段（工单 12 AC1）。
+   *
+   * 5 分钟缓存：探活本身要打一次 HTTP，若每次查询都探活会把首屏延迟抬高一个量级；
+   * 缓存按**成功响应**写入，失败不缓存（引擎热启动完成后应立即恢复）。
+   */
+  private _clipTextHealthCache: { data: OmniClipTextHealth; time: number } | null = null
+  private _clipTextHealthInFlight: Promise<OmniClipTextHealth | null> | null = null
+
+  async getClipTextHealth(options?: { forceRefresh?: boolean }): Promise<OmniClipTextHealth | null> {
+    const now = Date.now()
+    if (
+      !options?.forceRefresh &&
+      this._clipTextHealthCache &&
+      now - this._clipTextHealthCache.time < CLIP_TEXT_HEALTH_TTL_MS
+    ) {
+      return this._clipTextHealthCache.data
+    }
+    // Singleflight：并发查询共用同一次探活
+    if (this._clipTextHealthInFlight) return this._clipTextHealthInFlight
+
+    this._clipTextHealthInFlight = (async () => {
+      try {
+        await omniService.ensureRunning()
+        const res = await fetch(`${this.getBaseUrl()}/health`, {
+          signal: AbortSignal.timeout(2000)
+        })
+        if (!res.ok) return null
+        const data = (await res.json()) as { clipText?: Partial<OmniClipTextHealth> }
+        const raw = data?.clipText
+        if (!raw || typeof raw !== 'object') return null
+        const health: OmniClipTextHealth = {
+          available: raw.available === true,
+          imageEncoder: typeof raw.imageEncoder === 'string' ? raw.imageEncoder : null,
+          textModelReady: raw.textModelReady === true,
+          vocabReady: raw.vocabReady === true,
+          textOutputVerified:
+            raw.textOutputVerified === true
+              ? true
+              : raw.textOutputVerified === false
+                ? false
+                : null
+        }
+        this._clipTextHealthCache = { data: health, time: Date.now() }
+        return health
+      } catch {
+        return null
+      } finally {
+        this._clipTextHealthInFlight = null
+      }
+    })()
+    return this._clipTextHealthInFlight
+  }
+
+  /** 清空 CLIP 文本探活缓存（档位切换/引擎重启后调用） */
+  clearClipTextHealthCache(): void {
+    this._clipTextHealthCache = null
+    this._clipTextHealthInFlight = null
+  }
+
+  /**
+   * CLIP 文本塔编码：POST /api/v1/vector/embed-clip-text（工单 12）。
+   *
+   * 与 `request()` 的区别（**不可合并**）：
+   * - 不重试：超时预算由调用方按冷/热态给定，重试会成倍放大首屏等待；
+   * - 不吞状态码：429 `busy` 与 503 必须可区分（前者不计熔断失败、不清空热态时间戳）；
+   * - 超时由 `AbortSignal.timeout` 施加，`coldStart` 只回传给埋点，不参与预算判定。
+   */
+  async embedClipText(
+    text: string,
+    options: { timeoutMs: number }
+  ): Promise<OmniEmbedClipTextResult> {
+    const payload = (text ?? '').trim()
+    if (!payload) return { ok: false, error: 'empty_text', status: 422 }
+    try {
+      await omniService.ensureRunning()
+      const res = await fetch(`${this.getBaseUrl()}/api/v1/vector/embed-clip-text`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: payload }),
+        signal: AbortSignal.timeout(options.timeoutMs)
+      })
+      let body: any = null
+      try {
+        body = await res.json()
+      } catch {
+        body = null
+      }
+      if (!res.ok) {
+        return {
+          ok: false,
+          status: res.status,
+          error: typeof body?.error === 'string' ? body.error : `http_${res.status}`
+        }
+      }
+      if (!body || !Array.isArray(body.vector) || body.vector.length === 0) {
+        return { ok: false, status: res.status, error: 'bad_shape' }
+      }
+      return {
+        ok: true,
+        status: res.status,
+        vector: body.vector as number[],
+        dim: typeof body.dim === 'number' ? body.dim : body.vector.length,
+        coldStart: body.coldStart === true,
+        loadMs: typeof body.loadMs === 'number' ? body.loadMs : undefined,
+        encodeMs: typeof body.encodeMs === 'number' ? body.encodeMs : undefined
+      }
+    } catch (err: unknown) {
+      const name = err instanceof Error ? err.name : ''
+      const error = name === 'TimeoutError' || name === 'AbortError' ? 'timeout' : 'transport'
+      return { ok: false, error }
+    }
   }
 
   /**

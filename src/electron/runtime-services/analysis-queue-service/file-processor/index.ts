@@ -77,6 +77,8 @@ import { processQuickNameAnalysis } from './process-quick-name-analysis'
 import { saveLocalAnalysisResult } from './save-local-cache-result'
 import { resolveFileDescription } from './resolve-file-description'
 import { NamingDSLEngine } from '../../filesystem/naming-dsl-engine'
+// 工单 05：五条 completed 终态统一接入 canonical 语义文本/向量固化
+import { solidifyCanonicalForTerminal } from '../canonical-text-service'
 
 /**
  * @firecrawl/anydoc 支持的文档格式扩展名（小写）
@@ -1570,6 +1572,10 @@ export class FileProcessor {
 
         databaseService.syncFTSTags(fileFingerprint)
 
+        // 工单 05 终态 A（GPU 复用）：标签落库 + FTS 同步后固化 canonical 语义文本/向量。
+        // canonical 失败不阻断 completed（服务内部写 failed + warn）。
+        await solidifyCanonicalForTerminal('gpu_reuse', fileFingerprint)
+
         // 从数据库捞取合并后的全量 analysisStats（包含 CPU 阶段 1/2 + GPU 阶段 3/4）推送给前端 UI
         let finalMergedStats: any = null
         try {
@@ -2686,6 +2692,9 @@ export class FileProcessor {
 
         databaseService.syncFTSTags(fileFingerprint)
 
+        // 工单 05 终态 B（simple 模式）：标签落库 + FTS 同步后固化 canonical 语义文本/向量
+        await solidifyCanonicalForTerminal('simple', fileFingerprint)
+
         // 最终统计收集
         const analysisStats = await this.collectAnalysisStats(timer)
         const analysisStatsWithBenchmark = applyMarkitdownBenchmark(
@@ -2857,6 +2866,9 @@ export class FileProcessor {
 
       databaseService.syncFTSTags(fileFingerprint)
 
+      // 工单 05 终态 C（主流程）：标签落库 + FTS 同步后固化 canonical 语义文本/向量
+      await solidifyCanonicalForTerminal('main_flow', fileFingerprint)
+
       // 从数据库捞取合并后的全量 analysisStats（包含 CPU 阶段 1/2 + GPU 阶段 3/4）推送给前端 UI
       let finalMergedStats: any = null
       try {
@@ -2948,6 +2960,14 @@ export class FileProcessor {
               markAnalyzedError
             )
           }
+          // 工单 05 终态 E（Tier-1 命名兜底）：CPU 阶段标签已即时落库，
+          // 本路径同样必须固化 canonical 语义文本/向量（无 AI 标签也不得漏固化）。
+          // 注意：本分支位于 catch 内，try 中的 fileFingerprint 已出作用域，
+          // 故按路径反查指纹（查不到时固化入口自行按 missing 收敛，不阻断 completed）。
+          const tier1Fingerprint = filePath
+            ? databaseService.getFileFingerprintByPath(filePath)
+            : null
+          await solidifyCanonicalForTerminal('tier1_fallback', tier1Fingerprint ?? '')
           this.updateItemStatus(item.id, 'completed', 100, undefined, {
             analysisStage: 2
           })

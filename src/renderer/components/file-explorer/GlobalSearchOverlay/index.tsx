@@ -17,6 +17,13 @@ interface GlobalSearchOverlayProps {
   workspaceDirectory: WorkspaceDirectory | null
 }
 
+/**
+ * 工单 13：冷态视觉模型加载提示的最长展示时间。
+ * 与 desktop 侧 `CLIP_TEXT_TIMEOUT_COLD_MS`（6000ms）对齐 —— 超过这个预算还没等到 phase3，
+ * 说明本轮第 5 路已失败/熔断，提示必须静默收掉（搜索界面不弹错误）。
+ */
+const CLIP_COLD_HINT_TIMEOUT_MS = 6000
+
 export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
   workspaceDirectory
 }) => {
@@ -51,11 +58,20 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
 
   type SearchPhase = 'idle' | 'phase1_done_analyzing_semantic'
   const [searchPhase, setSearchPhase] = useState<SearchPhase>('idle')
+  /**
+   * 工单 13：冷态视觉模型首次加载提示。
+   * 只在 phase2 携带 clipPending 时点亮，phase3 到达或超时后熄灭；
+   * 它只影响提示条的显隐，**不参与** searchPhase 状态机（不阻塞、不置灰列表）。
+   */
+  const [isClipColdLoading, setIsClipColdLoading] = useState(false)
 
   const searchSeqRef = useRef(0)
   const handledPhase2SeqRef = useRef<number>(-1)
+  /** 工单 13：phase3 独立序号守卫 —— **不得复用** handledPhase2SeqRef，否则两者互相吞并 */
+  const handledPhase3SeqRef = useRef<number>(-1)
   const searchDebounceTimerRef = useRef<NodeJS.Timeout | null>(null)
   const semanticTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const clipHintTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const previousActivePageIdRef = useRef<string | null>(null)
   const overlayContainerRef = useRef<HTMLDivElement>(null)
 
@@ -151,7 +167,25 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
     [getFirstVisibleItemPath]
   )
 
-  // 2. 双阶段流式推送监听 (Phase 1 毫秒先行 -> Phase 2 语义置换)
+  /**
+   * 工单 13：phase3 **只追加**。
+   *
+   * 三条硬约束（AC11）：
+   * 1. 按 `path` 去重，已存在项一律忽略 —— 冷态 CLIP 命中的往往正是用户已看到的高相关项；
+   * 2. 不重排、不清空：新项只能出现在尾部，已有项的相对顺序与下标绝对不变（用户已滚动/悬停/点击时无跳变）；
+   * 3. 不动 `searchPhase`：phase3 到达不代表语义分析仍在进行，呼吸条/提示条各自独立收尾。
+   */
+  const appendPhase3Items = useCallback((appendedItems: FileItem[]) => {
+    if (!appendedItems.length) return
+    setSearchResults(prev => {
+      const existingPaths = new Set(prev.map(item => item.path))
+      const fresh = appendedItems.filter(item => item && item.path && !existingPaths.has(item.path))
+      if (!fresh.length) return prev
+      return [...prev, ...fresh]
+    })
+  }, [])
+
+  // 2. 双阶段流式推送监听 (Phase 1 毫秒先行 -> Phase 2 语义置换 -> Phase 3 冷态 CLIP 追加)
   useEffect(() => {
     if (!window.electronAPI?.onSearchProgress) return
 
@@ -200,6 +234,35 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
         if (payload.tokens && payload.tokens.length > 0) {
           useSearchStore.getState().setSearchTokens(payload.tokens)
         }
+
+        // 工单 13：冷态视觉模型首次加载 → 轻量提示；phase3 到达或超时即收
+        if (clipHintTimeoutRef.current) {
+          clearTimeout(clipHintTimeoutRef.current)
+          clipHintTimeoutRef.current = null
+        }
+        if (payload.clipPending) {
+          setIsClipColdLoading(true)
+          clipHintTimeoutRef.current = setTimeout(() => {
+            if (searchSeqRef.current === payload.seq) {
+              // 超时静默收提示：搜索界面不弹错误，用户只是看不到额外追加项
+              setIsClipColdLoading(false)
+            }
+          }, CLIP_COLD_HINT_TIMEOUT_MS)
+        } else {
+          setIsClipColdLoading(false)
+        }
+      } else if (payload.phase === 'phase3') {
+        // 工单 13：冷态 CLIP 追加。**独立序号守卫**（handledPhase3SeqRef），
+        // 与 phase2 的幂等标记互不干扰：phase2 已处理不代表 phase3 已处理，反之亦然。
+        if (handledPhase3SeqRef.current === payload.seq) return
+        handledPhase3SeqRef.current = payload.seq
+        if (clipHintTimeoutRef.current) {
+          clearTimeout(clipHintTimeoutRef.current)
+          clipHintTimeoutRef.current = null
+        }
+        setIsClipColdLoading(false)
+        // 只追加，不重排/不清空/不改 searchPhase；1500ms 熔断早已把呼吸条归位，此处不受影响
+        appendPhase3Items(payload.items || [])
       }
     })
 
@@ -209,8 +272,12 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
         clearTimeout(semanticTimeoutRef.current)
         semanticTimeoutRef.current = null
       }
+      if (clipHintTimeoutRef.current) {
+        clearTimeout(clipHintTimeoutRef.current)
+        clipHintTimeoutRef.current = null
+      }
     }
-  }, [handlePhase2Replace])
+  }, [handlePhase2Replace, appendPhase3Items])
 
   // 3. 搜索逻辑：防抖 + 竞态序号锁 + 双阶段全域跨目录检索
   useEffect(() => {
@@ -225,6 +292,12 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
       setSearchResults([])
       setIsLoading(false)
       setSearchPhase('idle')
+      // 工单 13：清空搜索词时一并收掉冷态提示，避免残留
+      if (clipHintTimeoutRef.current) {
+        clearTimeout(clipHintTimeoutRef.current)
+        clipHintTimeoutRef.current = null
+      }
+      setIsClipColdLoading(false)
       return
     }
 
@@ -233,6 +306,11 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
       setSearchResults([])
       setIsLoading(false)
       setSearchPhase('idle')
+      if (clipHintTimeoutRef.current) {
+        clearTimeout(clipHintTimeoutRef.current)
+        clipHintTimeoutRef.current = null
+      }
+      setIsClipColdLoading(false)
       return
     }
 
@@ -346,6 +424,17 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
           searchPhase === 'phase1_done_analyzing_semantic' ? 'opacity-100 animate-pulse' : 'opacity-0'
         )}
       />
+
+      {/* 工单 13：冷态视觉模型首次加载提示（搜索框下方轻量条，不遮挡列表、不弹错误） */}
+      {isClipColdLoading && (
+        <div
+          data-testid="clip-cold-hint"
+          className="flex-shrink-0 flex items-center justify-center gap-1.5 px-3 py-1 border-b border-border/60 bg-violet-500/5 text-[11px] text-violet-600 dark:text-violet-400"
+        >
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-violet-500 animate-ping" />
+          {t('正在加载视觉搜索模型，相关图片稍后追加…')}
+        </div>
+      )}
 
 
 
