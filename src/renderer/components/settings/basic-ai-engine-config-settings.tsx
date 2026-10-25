@@ -631,7 +631,7 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                     )}
                     <div className="flex items-center gap-2 pr-14">
                       <span className={`font-semibold text-sm ${mrlDimension === 256 ? 'text-primary' : ''}`}>
-                        {t('紧凑省盘档（256维）')}
+                        {t('紧凑省盘档')}
                       </span>
                       {recommendedSettings?.mrlDimension === 256 && (
                         <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">
@@ -674,7 +674,7 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                     )}
                     <div className="flex items-center gap-2 pr-14">
                       <span className={`font-semibold text-sm ${mrlDimension === 512 ? 'text-primary' : ''}`}>
-                        {t('标准平衡档（512维）')}
+                        {t('标准平衡档')}
                       </span>
                       {recommendedSettings?.mrlDimension === 512 && (
                         <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">
@@ -717,7 +717,7 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                     )}
                     <div className="flex items-center gap-2 pr-14">
                       <span className={`font-semibold text-sm ${mrlDimension === 768 ? 'text-primary' : ''}`}>
-                        {t('旗舰精准档（768维）')}
+                        {t('旗舰精准档')}
                       </span>
                       {recommendedSettings?.mrlDimension === 768 && (
                         <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">
@@ -748,9 +748,9 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                     />
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono font-medium text-foreground bg-muted px-2 py-0.5 rounded">
+                    <code className="text-xs font-mono font-semibold text-foreground bg-muted px-2 py-0.5 rounded">
                       {localAudioAsrDuration} {t('秒')}
-                    </span>
+                    </code>
                   </div>
                 </div>
 
@@ -802,10 +802,12 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                     />
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                      {t('当前预估最多可完整检索约 {mins} 分钟视频', {
-                        mins: estimateMaxVideoDurationMins(localVideoSoftTokenBudget, localAudioAsrDuration)
-                      })}
+                    <span className="text-[11px] font-medium text-primary bg-primary/10 px-2.5 py-0.5 rounded-full inline-flex items-center">
+                      {t('当前预估最多可完整检索约')}
+                      <code className="font-mono font-bold px-1.5 py-0.2 mx-1 rounded bg-primary/20 text-primary text-xs">
+                        {estimateMaxVideoDurationMins(localVideoSoftTokenBudget, localAudioAsrDuration)}
+                      </code>
+                      {t('分钟视频')}
                     </span>
                     {recommendedSettings?.videoSoftTokenBudget && (
                       <button
@@ -852,7 +854,7 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                         className={`font-semibold text-sm ${localVideoSoftTokenBudget === 48 ? 'text-primary' : ''
                           }`}
                       >
-                        {t('流畅极速搜索（48）')}
+                        {t('流畅极速搜索')}
                       </span>
                       {recommendedSettings?.videoSoftTokenBudget === 48 && (
                         <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">
@@ -861,10 +863,12 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                       )}
                     </div>
                     <div className="text-xs text-muted-foreground mt-2 leading-relaxed space-y-1">
-                      <div className="text-primary font-medium">
-                        {t('【可搜索时长】最多分析约 {mins} 分钟视频内容', {
-                          mins: estimateMaxVideoDurationMins(48, localAudioAsrDuration)
-                        })}
+                      <div className="text-primary font-medium flex items-center">
+                        <span>{t('【可搜索时长】最多分析约')}</span>
+                        <code className="font-mono font-bold px-1.5 py-0.5 mx-1 rounded bg-primary/15 text-primary text-xs">
+                          {estimateMaxVideoDurationMins(48, localAudioAsrDuration)}
+                        </code>
+                        <span>{t('分钟视频内容')}</span>
                       </div>
                       <div>{t('【处理速度】大幅减少分析耗时，省电流畅，不卡顿。')}</div>
                       <div>{t('【搜索精度】画面微小细节有所折损，但主体画面检索依然精准。')}</div>
@@ -899,7 +903,7 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                         className={`font-semibold text-sm ${localVideoSoftTokenBudget === 140 ? 'text-primary' : ''
                           }`}
                       >
-                        {t('高清精细搜索（140）')}
+                        {t('高清精细搜索')}
                       </span>
                       {recommendedSettings?.videoSoftTokenBudget === 140 && (
                         <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">
@@ -908,10 +912,12 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                       )}
                     </div>
                     <div className="text-xs text-muted-foreground mt-2 leading-relaxed space-y-1">
-                      <div className="text-primary font-medium">
-                        {t('【可搜索时长】最多分析约 {mins} 分钟视频内容', {
-                          mins: estimateMaxVideoDurationMins(140, localAudioAsrDuration)
-                        })}
+                      <div className="text-primary font-medium flex items-center">
+                        <span>{t('【可搜索时长】最多分析约')}</span>
+                        <code className="font-mono font-bold px-1.5 py-0.5 mx-1 rounded bg-primary/15 text-primary text-xs">
+                          {estimateMaxVideoDurationMins(140, localAudioAsrDuration)}
+                        </code>
+                        <span>{t('分钟视频内容')}</span>
                       </div>
                       <div>{t('【搜索精度】看得更清，远处微小物体与相近画面更易区分。')}</div>
                       <div>{t('【处理速度】视频分析耗时较长，对硬件算力要求较高。')}</div>
@@ -921,10 +927,11 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                 </div>
 
                 <div className="text-[11px] text-muted-foreground leading-relaxed pt-1">
-                  {t(
-                    '注：5 分钟以内视频（MP4/MOV）走极速压缩域选美（100% 完整覆盖）；超出预估时长的长视频将在安全边界截断，截断区间内所有镜头与关键画面 100% 完整捕获。预估时长随上方的语音识别时长（当前 {asr} 秒）动态此消彼长。',
-                    { asr: localAudioAsrDuration }
-                  )}
+                  <span>{t('注：5 分钟以内视频（MP4/MOV）走极速压缩域选美（100% 完整覆盖）；超出预估时长的长视频将在安全边界截断，截断区间内所有镜头与关键画面 100% 完整捕获。预估时长随上方的语音识别时长（当前')}</span>
+                  <code className="font-mono font-semibold px-1 py-0.5 mx-1 rounded bg-muted text-foreground text-[11px]">
+                    {localAudioAsrDuration}s
+                  </code>
+                  <span>{t('）动态此消彼长。')}</span>
                 </div>
               </div>
             </div>
