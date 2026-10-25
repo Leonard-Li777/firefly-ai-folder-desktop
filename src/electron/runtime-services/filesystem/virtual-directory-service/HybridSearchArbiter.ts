@@ -1458,8 +1458,9 @@ export class HybridSearchArbiter {
     profile: 'classic_light' | 'gemma_unified'
     dim: number
   }> {
-    const profile = await omniService.getEmbeddingProfile()
-    if (profile !== 'gemma_unified') {
+    const raw = await omniService.getEmbeddingProfile()
+    const isGemma = typeof raw === 'string' && raw.toLowerCase().includes('gemma')
+    if (!isGemma) {
       return { profile: 'classic_light', dim: 384 }
     }
     const configured = ConfigOrchestrator.getInstance().getValue<number>('EMBEDDING_MRL_DIMENSION')
