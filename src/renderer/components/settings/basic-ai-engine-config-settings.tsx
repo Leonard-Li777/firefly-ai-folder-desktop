@@ -164,7 +164,7 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
           }
         }
       })
-      .catch(() => {})
+      .catch(() => { })
   }, [])
 
   const handleConfirmProfileSwitch = async () => {
@@ -296,11 +296,10 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                 updateConfigValue('ANALYSIS_MODE', 'simple')
                 captureEvent('切换分析模式', { mode: 'simple' })
               }}
-              className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                analysisMode === 'simple'
+              className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 cursor-pointer transition-all ${analysisMode === 'simple'
                   ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20'
                   : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
-              }`}
+                }`}
             >
               <div className="absolute top-0 right-0 text-[11px] font-semibold bg-muted text-muted-foreground px-2.5 py-0.5 rounded-bl-md">
                 {t('极速')}
@@ -330,13 +329,12 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                 updateConfigValue('ANALYSIS_MODE', 'quick_name')
                 captureEvent('切换分析模式', { mode: 'quick_name' })
               }}
-              className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 transition-all ${
-                !isAdvancedAiEnabled
+              className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 transition-all ${!isAdvancedAiEnabled
                   ? 'border-border bg-muted/20 opacity-60 cursor-not-allowed'
                   : analysisMode === 'quick_name'
                     ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20 cursor-pointer'
                     : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30 cursor-pointer'
-              }`}
+                }`}
             >
               <div className="absolute top-0 right-0 text-[11px] font-semibold bg-muted text-muted-foreground px-2.5 py-0.5 rounded-bl-md">
                 {t('默认')}
@@ -349,9 +347,8 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
               )}
               <div className="flex items-center justify-between pr-8">
                 <span
-                  className={`font-semibold text-sm ${
-                    isAdvancedAiEnabled && analysisMode === 'quick_name' ? 'text-primary' : ''
-                  }`}
+                  className={`font-semibold text-sm ${isAdvancedAiEnabled && analysisMode === 'quick_name' ? 'text-primary' : ''
+                    }`}
                 >
                   {t('增强分析')}
                 </span>
@@ -384,13 +381,12 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                 updateConfigValue('ANALYSIS_MODE', 'full')
                 captureEvent('切换分析模式', { mode: 'full' })
               }}
-              className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 transition-all ${
-                !isAdvancedAiEnabled
+              className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 transition-all ${!isAdvancedAiEnabled
                   ? 'border-border bg-muted/20 opacity-60 cursor-not-allowed'
                   : analysisMode === 'full'
                     ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20 cursor-pointer'
                     : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30 cursor-pointer'
-              }`}
+                }`}
             >
               <div className="absolute top-0 right-0 text-[11px] font-semibold bg-green-500 text-white px-2.5 py-0.5 rounded-bl-md shadow-sm dark:bg-green-600">
                 {t('推荐')}
@@ -403,9 +399,8 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
               )}
               <div className="flex items-center justify-between pr-8">
                 <span
-                  className={`font-semibold text-sm ${
-                    isAdvancedAiEnabled && analysisMode === 'full' ? 'text-primary' : ''
-                  }`}
+                  className={`font-semibold text-sm ${isAdvancedAiEnabled && analysisMode === 'full' ? 'text-primary' : ''
+                    }`}
                 >
                   {t('全面分析')}
                 </span>
@@ -475,11 +470,10 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                   setPendingProfile('classic_light')
                 }
               }}
-              className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                embeddingProfile === 'classic_light'
+              className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 cursor-pointer transition-all ${embeddingProfile === 'classic_light'
                   ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20'
                   : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
-              }`}
+                }`}
             >
               <div className="absolute top-0 right-0 text-[11px] font-semibold bg-muted text-muted-foreground px-2.5 py-0.5 rounded-bl-md">
                 {t('超省电 · 极速分析')}
@@ -491,9 +485,8 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
               )}
               <div className="flex items-center gap-2 pr-8">
                 <span
-                  className={`font-semibold text-sm ${
-                    embeddingProfile === 'classic_light' ? 'text-primary' : ''
-                  }`}
+                  className={`font-semibold text-sm ${embeddingProfile === 'classic_light' ? 'text-primary' : ''
+                    }`}
                 >
                   {t('极速轻量档')}
                 </span>
@@ -517,11 +510,10 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                   setPendingProfile('gemma_unified')
                 }
               }}
-              className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                embeddingProfile === 'gemma_unified'
+              className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 cursor-pointer transition-all ${embeddingProfile === 'gemma_unified'
                   ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20'
                   : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
-              }`}
+                }`}
             >
               <div className="absolute top-0 right-0 text-[11px] font-semibold bg-green-500 text-white px-2.5 py-0.5 rounded-bl-md shadow-sm dark:bg-green-600">
                 {t('深度理解 · 音视频全能')}
@@ -533,9 +525,8 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
               )}
               <div className="flex items-center gap-2 pr-8">
                 <span
-                  className={`font-semibold text-sm ${
-                    embeddingProfile === 'gemma_unified' ? 'text-primary' : ''
-                  }`}
+                  className={`font-semibold text-sm ${embeddingProfile === 'gemma_unified' ? 'text-primary' : ''
+                    }`}
                 >
                   {t('全模态标准档')}
                 </span>
@@ -592,11 +583,10 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                         setPendingDimension(256)
                       }
                     }}
-                    className={`relative p-3 rounded-lg border-2 cursor-pointer transition-all flex flex-col justify-between ${
-                      mrlDimension === 256
+                    className={`relative p-3 rounded-lg border-2 cursor-pointer transition-all flex flex-col justify-between ${mrlDimension === 256
                         ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20'
                         : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
-                    }`}
+                      }`}
                   >
                     <div>
                       <div className="flex items-center justify-between">
@@ -624,11 +614,10 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                         setPendingDimension(512)
                       }
                     }}
-                    className={`relative p-3 rounded-lg border-2 cursor-pointer transition-all flex flex-col justify-between ${
-                      mrlDimension === 512
+                    className={`relative p-3 rounded-lg border-2 cursor-pointer transition-all flex flex-col justify-between ${mrlDimension === 512
                         ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20'
                         : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
-                    }`}
+                      }`}
                   >
                     <div>
                       <div className="flex items-center justify-between">
@@ -656,11 +645,10 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                         setPendingDimension(768)
                       }
                     }}
-                    className={`relative p-3 rounded-lg border-2 cursor-pointer transition-all flex flex-col justify-between ${
-                      mrlDimension === 768
+                    className={`relative p-3 rounded-lg border-2 cursor-pointer transition-all flex flex-col justify-between ${mrlDimension === 768
                         ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20'
                         : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
-                    }`}
+                      }`}
                   >
                     <div>
                       <div className="flex items-center justify-between">
@@ -767,50 +755,20 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-                  {/* 高清精细搜索 140 */}
-                  <div
-                    onClick={() => setLocalVideoSoftTokenBudget(140)}
-                    className={`relative p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                      localVideoSoftTokenBudget === 140
-                        ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20'
-                        : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span
-                        className={`text-xs font-semibold ${
-                          localVideoSoftTokenBudget === 140 ? 'text-primary' : ''
-                        }`}
-                      >
-                        {t('高清精细搜索（140）')}
-                      </span>
-                      {recommendedSettings?.videoSoftTokenBudget === 140 && (
-                        <span className="text-[9px] font-medium px-1 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400">
-                          {t('推荐（性能充足）')}
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-[11px] text-muted-foreground mt-1.5 leading-snug space-y-1">
-                      <div>{t('【搜索精度】看得更清，远处微小物体与相近画面更易区分。')}</div>
-                      <div>{t('【处理速度】视频分析耗时较长，对硬件算力要求较高。')}</div>
-                      <div>{t('【适用场景】追求极致检索准确度，且电脑性能充裕。')}</div>
-                    </div>
-                  </div>
+
 
                   {/* 流畅极速搜索 48 */}
                   <div
                     onClick={() => setLocalVideoSoftTokenBudget(48)}
-                    className={`relative p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                      localVideoSoftTokenBudget === 48
+                    className={`relative p-3 rounded-lg border-2 cursor-pointer transition-all ${localVideoSoftTokenBudget === 48
                         ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20'
                         : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center justify-between">
                       <span
-                        className={`text-xs font-semibold ${
-                          localVideoSoftTokenBudget === 48 ? 'text-primary' : ''
-                        }`}
+                        className={`text-xs font-semibold ${localVideoSoftTokenBudget === 48 ? 'text-primary' : ''
+                          }`}
                       >
                         {t('流畅极速搜索（48）')}
                       </span>
@@ -824,6 +782,33 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                       <div>{t('【处理速度】大幅减少分析耗时，省电流畅，不卡顿。')}</div>
                       <div>{t('【搜索精度】画面微小细节有所折损，但主体画面检索依然精准。')}</div>
                       <div>{t('【适用场景】长视频快速建索引、老旧电脑或轻薄本办公。')}</div>
+                    </div>
+                  </div>
+                  {/* 高清精细搜索 140 */}
+                  <div
+                    onClick={() => setLocalVideoSoftTokenBudget(140)}
+                    className={`relative p-3 rounded-lg border-2 cursor-pointer transition-all ${localVideoSoftTokenBudget === 140
+                        ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20'
+                        : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
+                      }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span
+                        className={`text-xs font-semibold ${localVideoSoftTokenBudget === 140 ? 'text-primary' : ''
+                          }`}
+                      >
+                        {t('高清精细搜索（140）')}
+                      </span>
+                      {recommendedSettings?.videoSoftTokenBudget === 140 && (
+                        <span className="text-[9px] font-medium px-1 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400">
+                          {t('推荐（性能充足）')}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground mt-1.5 leading-snug space-y-1">
+                      <div>{t('【搜索精度】看得更清，远处微小物体与相近画面更易区分。')}</div>
+                      <div>{t('【处理速度】视频分析耗时较长，对硬件算力要求较高。')}</div>
+                      <div>{t('【适用场景】追求极致检索准确度，且电脑性能充裕。')}</div>
                     </div>
                   </div>
                 </div>
@@ -878,10 +863,10 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                     ? t('索引状态读取失败，可稍后重试或手动重建。')
                     : rebuildCounts
                       ? t('待重建 {pending} 项 · 已就绪 {ready} 项 · 失败 {failed} 项', {
-                          pending: rebuildCounts.pending + rebuildCounts.uncomputed,
-                          ready: rebuildCounts.ready,
-                          failed: rebuildCounts.failed
-                        })
+                        pending: rebuildCounts.pending + rebuildCounts.uncomputed,
+                        ready: rebuildCounts.ready,
+                        failed: rebuildCounts.failed
+                      })
                       : t('正在读取索引状态…')}
                 </p>
                 {!rebuildError && rebuildCounts && rebuildCounts.lastMaintenance && (
