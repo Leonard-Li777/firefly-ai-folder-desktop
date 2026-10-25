@@ -179,12 +179,14 @@ export interface OmniMatchPassagesResponse {
  */
 export interface OmniClipTextHealth {
   available: boolean
-  /** 当前激活图像塔标签，只有 `chinese_clip` 才可能与文本塔同空间 */
+  /** 当前激活图像塔标签，只有 `chinese_clip` / `mobileclip` 才可能与对应文本塔同空间 */
   imageEncoder: string | null
   textModelReady: boolean
   vocabReady: boolean
   /** 三态：null = 尚未做过首次编码验证 */
   textOutputVerified: boolean | null
+  chineseClip?: OmniClipTextHealth
+  mobileClip?: OmniClipTextHealth
 }
 
 /**
@@ -200,6 +202,7 @@ export interface OmniEmbedClipTextResult {
   status?: number
   vector?: number[]
   dim?: number
+  encoderId?: number
   /** 首次调用是否触发模型加载：**仅用于埋点/UI，不参与超时预算** */
   coldStart?: boolean
   loadMs?: number
@@ -489,25 +492,32 @@ export class OmniClient {
    * 5 分钟缓存：探活本身要打一次 HTTP，若每次查询都探活会把首屏延迟抬高一个量级；
    * 缓存按**成功响应**写入，失败不缓存（引擎热启动完成后应立即恢复）。
    */
-  private _clipTextHealthCache: { data: OmniClipTextHealth; time: number } | null = null
-  private _clipTextHealthInFlight: Promise<OmniClipTextHealth | null> | null = null
+  private _clipTextHealthCacheMap: Map<string, { data: OmniClipTextHealth; time: number }> = new Map()
+  private _clipTextHealthInFlightMap: Map<string, Promise<OmniClipTextHealth | null>> = new Map()
 
-  async getClipTextHealth(options?: { forceRefresh?: boolean }): Promise<OmniClipTextHealth | null> {
+  async getClipTextHealth(options?: {
+    lang?: string | null
+    forceRefresh?: boolean
+  }): Promise<OmniClipTextHealth | null> {
+    const langKey = (options?.lang || '').toLowerCase().startsWith('zh') ? 'zh' : 'en'
     const now = Date.now()
+    const cached = this._clipTextHealthCacheMap.get(langKey)
     if (
       !options?.forceRefresh &&
-      this._clipTextHealthCache &&
-      now - this._clipTextHealthCache.time < CLIP_TEXT_HEALTH_TTL_MS
+      cached &&
+      now - cached.time < CLIP_TEXT_HEALTH_TTL_MS
     ) {
-      return this._clipTextHealthCache.data
+      return cached.data
     }
-    // Singleflight：并发查询共用同一次探活
-    if (this._clipTextHealthInFlight) return this._clipTextHealthInFlight
+    // Singleflight：并发查询按语言键共用同一次探活
+    const inFlight = this._clipTextHealthInFlightMap.get(langKey)
+    if (inFlight) return inFlight
 
-    this._clipTextHealthInFlight = (async () => {
+    const task = (async () => {
       try {
         await omniService.ensureRunning()
-        const res = await fetch(`${this.getBaseUrl()}/health`, {
+        const query = options?.lang ? `?lang=${encodeURIComponent(options.lang)}` : ''
+        const res = await fetch(`${this.getBaseUrl()}/health${query}`, {
           signal: AbortSignal.timeout(2000)
         })
         if (!res.ok) {
@@ -536,9 +546,11 @@ export class OmniClient {
               ? true
               : raw.textOutputVerified === false
                 ? false
-                : null
+                : null,
+          chineseClip: raw.chineseClip as OmniClipTextHealth | undefined,
+          mobileClip: raw.mobileClip as OmniClipTextHealth | undefined
         }
-        this._clipTextHealthCache = { data: health, time: Date.now() }
+        this._clipTextHealthCacheMap.set(langKey, { data: health, time: Date.now() })
         return health
       } catch (err) {
         // AGENTS §2.9：检索链路的降级必须留痕，禁止静默吞异常。
@@ -550,16 +562,17 @@ export class OmniClient {
         )
         return null
       } finally {
-        this._clipTextHealthInFlight = null
+        this._clipTextHealthInFlightMap.delete(langKey)
       }
     })()
-    return this._clipTextHealthInFlight
+    this._clipTextHealthInFlightMap.set(langKey, task)
+    return task
   }
 
   /** 清空 CLIP 文本探活缓存（档位切换/引擎重启后调用） */
   clearClipTextHealthCache(): void {
-    this._clipTextHealthCache = null
-    this._clipTextHealthInFlight = null
+    this._clipTextHealthCacheMap.clear()
+    this._clipTextHealthInFlightMap.clear()
   }
 
   /**
@@ -577,16 +590,20 @@ export class OmniClient {
    */
   async embedClipText(
     text: string,
-    options: { timeoutMs: number }
+    options: { lang?: string; timeoutMs: number }
   ): Promise<OmniEmbedClipTextResult> {
     const payload = (text ?? '').trim()
     if (!payload) return { ok: false, error: 'empty_text', status: 422 }
     try {
       await omniService.ensureRunning()
+      const reqBody: { text: string; lang?: string } = { text: payload }
+      if (options?.lang) {
+        reqBody.lang = options.lang
+      }
       const res = await fetch(`${this.getBaseUrl()}/api/v1/vector/embed-clip-text`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: payload }),
+        body: JSON.stringify(reqBody),
         signal: AbortSignal.timeout(options.timeoutMs)
       })
       let body: any = null
@@ -610,6 +627,7 @@ export class OmniClient {
         status: res.status,
         vector: body.vector as number[],
         dim: typeof body.dim === 'number' ? body.dim : body.vector.length,
+        encoderId: typeof body.encoderId === 'number' ? body.encoderId : undefined,
         coldStart: body.coldStart === true,
         loadMs: typeof body.loadMs === 'number' ? body.loadMs : undefined,
         encodeMs: typeof body.encodeMs === 'number' ? body.encodeMs : undefined

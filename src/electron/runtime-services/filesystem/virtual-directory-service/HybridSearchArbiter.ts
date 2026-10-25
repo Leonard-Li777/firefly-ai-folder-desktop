@@ -34,7 +34,7 @@ import {
 import {
   omniClient,
   resolveQueryEncoderFilter,
-  ENCODER_FILTER_CHINESE_CLIP,
+
   OmniMatchPassagesItem,
   OmniPassageMatch,
   OmniSearchFsItem,
@@ -196,6 +196,9 @@ export type ClipTextHealthSnapshot = OmniClipTextHealth
  * 这三条判定不需要任何网络往返，因此必须在探活**之前**执行：
  * 否则档位不对 / 开关关闭 / 非中文界面时仍会打一次 `/health`，违反 AC1「零请求」。
  */
+export const ENCODER_FILTER_CHINESE_CLIP = [2] as const
+export const ENCODER_FILTER_MOBILE_CLIP = [3] as const
+
 export function evaluateClipChannelPrecondition(input: {
   profile: string | null | undefined
   enabled: boolean
@@ -203,23 +206,26 @@ export function evaluateClipChannelPrecondition(input: {
 }): { run: boolean; reason?: string } {
   if ((input.profile || '') !== 'classic_light') return { run: false, reason: 'profile_not_classic_light' }
   if (!input.enabled) return { run: false, reason: 'disabled_by_config' }
-  const lang = (input.lang || '').toLowerCase()
-  if (!lang.startsWith('zh')) return { run: false, reason: 'lang_not_zh' }
+  // classic_light 现已支持双模态文本检索：zh 走 Chinese-CLIP，非 zh 走 MobileCLIP
   return { run: true }
 }
 
 /**
  * CLIP 第 5 路**探活结果**门禁（纯函数）。
  *
- * 只有前置已通过才轮到这三条：它们决定「探活已拿到，但文本塔实际不可用」。
+ * 只有前置已通过才轮到这几条：它们决定「探活已拿到，但文本塔实际不可用」。
+ * 支持双语分流：中文要求 chinese_clip 图像塔，非中文要求 mobileclip 图像塔。
  */
 export function evaluateClipTextHealthGate(
-  health: ClipTextHealthSnapshot | null | undefined
+  health: ClipTextHealthSnapshot | null | undefined,
+  lang?: string | null
 ): { run: boolean; reason?: string } {
   if (!health) return { run: false, reason: 'health_unavailable' }
   if (!health.available) return { run: false, reason: 'health_unavailable' }
-  if (health.imageEncoder !== 'chinese_clip') {
-    return { run: false, reason: 'image_encoder_not_chinese_clip' }
+  const isZh = (lang || 'zh').toLowerCase().startsWith('zh')
+  const expectedEncoder = isZh ? 'chinese_clip' : 'mobileclip'
+  if (health.imageEncoder !== expectedEncoder) {
+    return { run: false, reason: `image_encoder_not_${expectedEncoder}` }
   }
   if (!health.textModelReady) return { run: false, reason: 'health_unavailable' }
   if (!health.vocabReady) return { run: false, reason: 'health_unavailable' }
@@ -229,11 +235,7 @@ export function evaluateClipTextHealthGate(
 }
 
 /**
- * CLIP 第 5 路门禁全集（纯函数，便于穷举 AC1 的六种不满足场景）。
- *
- * 六种拒绝原因：
- *   profile_not_classic_light / disabled_by_config / lang_not_zh /
- *   health_unavailable / image_encoder_not_chinese_clip / text_output_unverified
+ * CLIP 第 5 路门禁全集（纯函数，便于穷举不满足场景）。
  *
  * 本函数是**门禁语义的唯一权威定义**；热路径为了省掉探活会分两段调用
  * （precondition → 探活 → healthGate），但两段之并必须与本函数逐项等价。
@@ -248,7 +250,7 @@ export function evaluateClipChannelGate(input: {
 }): { run: boolean; reason?: string } {
   const pre = evaluateClipChannelPrecondition(input)
   if (!pre.run) return pre
-  return evaluateClipTextHealthGate(input.health)
+  return evaluateClipTextHealthGate(input.health, input.lang)
 }
 
 /**
@@ -1997,8 +1999,8 @@ export class HybridSearchArbiter {
       }
 
       // 第二段：探活（5 分钟缓存，单飞）。只有前置通过才会走到这里。
-      const health = await omniClient.getClipTextHealth()
-      const healthGate = evaluateClipTextHealthGate(health)
+      const health = await omniClient.getClipTextHealth({ lang })
+      const healthGate = evaluateClipTextHealthGate(health, lang)
       if (!healthGate.run) {
         // 走到这里说明「档位/开关/语言都要求第 5 路」，却因文本塔不可用而跳过 —— 这是真实的能力缺失，
         // 必须 warn（而前置三条属稳态配置差异，用 debug 以免把最热的检索路径刷成告警风暴）。
@@ -2028,7 +2030,7 @@ export class HybridSearchArbiter {
       // 发起前捕获纪元：若飞行中出现 Omni 重启（`invalidateClipTextWarmState()`），
       // 旧进程已发出的 200 响应返回后不得把「新进程尚处于冷加载」误判为热态。
       const reqEpoch = clipWarmEpoch
-      const encoded = await omniClient.embedClipText(text, { timeoutMs: budget })
+      const encoded = await omniClient.embedClipText(text, { lang, timeoutMs: budget })
       if (!encoded.ok) {
         // 429 busy：引擎并发饱和，既不算失败也不清空热态——下一轮很可能直接成功
         if (encoded.status === 429 || encoded.error === 'busy') {
@@ -2076,11 +2078,17 @@ export class HybridSearchArbiter {
       // 写入**请求发起时**的纪元（而非现读）：参见上方 reqEpoch 的竞态说明
       this.lastClipWarmEpoch = reqEpoch
 
-      // ---- 检索：白名单 [2]，阈值下推，引擎在 truncate 前剪枝 ----
+      // ---- 检索：按语言与实际编码器出处分派 [2] (ChineseCLIP) 或 [3] (MobileCLIP) ----
+      const isZh = lang.toLowerCase().startsWith('zh')
+      const activeEncoderFilter =
+        encoded.encoderId === 3 || (!isZh && encoded.encoderId !== 2)
+          ? [...ENCODER_FILTER_MOBILE_CLIP]
+          : [...ENCODER_FILTER_CHINESE_CLIP]
+
       // 必须透传冷/热态预算且禁用重试：`request()` 缺省是 8s × 3 次，
       // 一旦沿用，phase2 会被单条 CLIP 链路拖到 25s 量级，与 800ms 热态契约冲突。
       const resp = await omniClient.searchVectors(encoded.vector, poolSize, {
-        encoderFilter: [...ENCODER_FILTER_CHINESE_CLIP],
+        encoderFilter: activeEncoderFilter,
         threshold: MIN_CLIP_VECTOR_SCORE,
         timeoutMs: budget,
         retries: 0
