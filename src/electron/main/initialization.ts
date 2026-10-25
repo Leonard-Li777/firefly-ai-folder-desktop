@@ -38,6 +38,33 @@ import { LicenseService, LicenseStatus } from '../runtime-services/system/licens
 import { checkLicenseAndNotify } from './utils'
 import { userTierService } from '../runtime-services/user-tier/user-tier-service'
 import { networkInterceptorService } from '../services/network-interceptor-service'
+import { omniService } from '../runtime-services/system/omni-service'
+import { omniClient } from '../services/omni-client'
+import { invalidateClipTextWarmState } from '../runtime-services/filesystem/virtual-directory-service/HybridSearchArbiter'
+
+/** CLIP 文本陈旧状态复位监听是否已注册（幂等保护：重复初始化/热重载都不得重复注册） */
+let clipTextRuntimeResetRegistered = false
+
+/**
+ * 注册「Omni 就绪 ⇒ CLIP 文本第 5 路陈旧状态复位」。
+ *
+ * 必要性：`firefly-omni` 进程（重）启动后，`/health.clipText` 缓存（5 分钟）与 3 个
+ * `HybridSearchArbiter` 实例热态时间戳都会停留在一个已经消失的进程上 —— 于是用 800ms
+ * 热态预算去打一次真实 1045~1195ms 的冷加载，超时失败后还会计入本路熔断。
+ *
+ * 挂点选 `omniService.onReady`：它是**事件**（复用已运行实例 / 端口顺延复用 / 新进程探活就绪
+ * 三条路径），不是轮询，因此稳态检索不会反复触发复位；且不放进任何懒单例的构造函数，
+ * 避免「单例没被用到就永远不注册」。
+ */
+function registerClipTextRuntimeReset(): void {
+  if (clipTextRuntimeResetRegistered) return
+  clipTextRuntimeResetRegistered = true
+  omniService.onReady(() => {
+    omniClient.clearClipTextHealthCache()
+    invalidateClipTextWarmState()
+    logger.info(LogCategory.MAIN, '[CLIP] Omni 已就绪，已复位文本塔探活缓存与热态纪元')
+  })
+}
 import { invitationService } from '../runtime-services/invitation/invitation-service'
 import { modelMigrationService } from '../runtime-services/llama/model-migration-service'
 import { deploymentIntegrityVerifier } from '../runtime-services/llama/deployment-integrity-verifier'
@@ -123,16 +150,15 @@ export async function initializeHardwareDetection(wait = false): Promise<void> {
           }) || {
             profile: totalMemGB >= 7.5 && cpuCores > 4 ? 'gemma_unified' : 'classic_light',
             mrlDimension: totalMemGB >= 15.5 ? 768 : totalMemGB >= 7.5 ? 512 : 256,
-            videoFrameIntervalSeconds: totalMemGB >= 15.5 && cpuCores >= 8 ? 2.0 : 5.0,
             videoSoftTokenBudget: totalMemGB < 7.5 || cpuCores <= 4 ? 70 : 140
           }
         config.updateValue('AI_EMBEDDING_PROFILE', settings.profile)
         config.updateValue('EMBEDDING_MRL_DIMENSION', settings.mrlDimension)
-        config.updateValue('VIDEO_FRAME_INTERVAL_SECONDS', settings.videoFrameIntervalSeconds)
+        // 抽帧间隔已改由引擎按 120s 单文件预算自决，不再持久化（避免与引擎求解值冲突）
         config.updateValue('VIDEO_SOFT_TOKEN_BUDGET', settings.videoSoftTokenBudget)
         logger.info(
           LogCategory.STARTUP,
-          `[Profile] 首次启动自适应推荐嵌入画像: profile=${settings.profile}, mrl=${settings.mrlDimension}, interval=${settings.videoFrameIntervalSeconds}s, videoTokens=${settings.videoSoftTokenBudget} (内存: ${totalMemGB.toFixed(1)}GB, CPU: ${cpuCores}核)`
+          `[Profile] 首次启动自适应推荐嵌入画像: profile=${settings.profile}, mrl=${settings.mrlDimension}, videoTokens=${settings.videoSoftTokenBudget} (内存: ${totalMemGB.toFixed(1)}GB, CPU: ${cpuCores}核)`
         )
       }
 
@@ -459,6 +485,9 @@ export async function initializeMinimalServices(options?: {
     } catch (bridgeError) {
       logger.warn(LogCategory.MAIN, '[EngineBridge] Tier 2 引擎桥接初始化异常（不阻断启动）:', bridgeError)
     }
+
+    // 2.6 CLIP 文本第 5 路陈旧状态复位：必须在任何检索发生前完成注册
+    registerClipTextRuntimeReset()
 
     await ffmpegService.initialize()
     logger.info(LogCategory.MAIN, 'FFmpeg 服务初始化完成')

@@ -510,10 +510,22 @@ export class OmniClient {
         const res = await fetch(`${this.getBaseUrl()}/health`, {
           signal: AbortSignal.timeout(2000)
         })
-        if (!res.ok) return null
+        if (!res.ok) {
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[omni-client] CLIP 文本探活响应异常 (HTTP ${res.status})，本轮按不可用处理`
+          )
+          return null
+        }
         const data = (await res.json()) as { clipText?: Partial<OmniClipTextHealth> }
         const raw = data?.clipText
-        if (!raw || typeof raw !== 'object') return null
+        if (!raw || typeof raw !== 'object') {
+          logger.warn(
+            LogCategory.SYSTEM,
+            '[omni-client] CLIP 文本探活响应缺少 clipText 载荷，本轮按不可用处理'
+          )
+          return null
+        }
         const health: OmniClipTextHealth = {
           available: raw.available === true,
           imageEncoder: typeof raw.imageEncoder === 'string' ? raw.imageEncoder : null,
@@ -528,7 +540,14 @@ export class OmniClient {
         }
         this._clipTextHealthCache = { data: health, time: Date.now() }
         return health
-      } catch {
+      } catch (err) {
+        // AGENTS §2.9：检索链路的降级必须留痕，禁止静默吞异常。
+        // 频次天然受 CLIP_TEXT_HEALTH_TTL_MS（5 分钟缓存）限制，不会把热路刷成告警风暴。
+        logger.warn(
+          LogCategory.SYSTEM,
+          '[omni-client] CLIP 文本探活失败，本轮按不可用处理:',
+          err instanceof Error ? err.message : String(err)
+        )
         return null
       } finally {
         this._clipTextHealthInFlight = null
@@ -550,6 +569,11 @@ export class OmniClient {
    * - 不重试：超时预算由调用方按冷/热态给定，重试会成倍放大首屏等待；
    * - 不吞状态码：429 `busy` 与 503 必须可区分（前者不计熔断失败、不清空热态时间戳）；
    * - 超时由 `AbortSignal.timeout` 施加，`coldStart` 只回传给埋点，不参与预算判定。
+   *
+   * `encoderId` 留痕（R4-5，ADR-0054）：本接口与向量检索侧的 `encoderId` 是引擎硬编码常量，
+   * 不是「这个向量确实来自当前模型」的身份证明；跨嵌入空间唯一真实防护是
+   * `getClipTextHealth().imageEncoder === 'chinese_clip'` 门禁。不要因为拿到 `encoderId` 就认为
+   * 空间一致已被保证（也不要因此新增字段解析）。
    */
   async embedClipText(
     text: string,
