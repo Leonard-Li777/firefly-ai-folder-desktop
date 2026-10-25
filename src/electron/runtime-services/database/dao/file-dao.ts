@@ -1935,6 +1935,51 @@ export class FileDao {
   }
 
   /**
+   * 批量版 collectTagsText（人工裁定项①：reconciler 逐行 2 次 SQL → 一次窗口一次 SQL）。
+   *
+   * 与逐行版同口径：受控标签展示名在主库语言分表 resolveDisplayName 解析（SQL 层无法访问
+   * 该动态分表），故只把 `(file_fingerprint, tag_code, file_tags_private.name)` 原始对
+   * 一次性预取，JS 侧按指纹分组后解析展示名。每个指纹的标签顺序与逐行版一致
+   * （同一 rowid 扫描序），故 src_hash 与逐行写入逐位相同。
+   *
+   * 返回 **null 表示批量失败**：调用方必须回退逐行 collectTagsText。若把失败当空串使用，
+   * 标签会从拼音列静默消失、src_hash 恒不命中 ⇒ reconciler 每窗口重写全表（正确性事故）。
+   */
+  private collectTagsTextBatch(fingerprints: string[]): Map<string, string> | null {
+    if (fingerprints.length === 0) return new Map()
+    // 分片防 SQLite 变量数上限（旧构建默认 999；现代构建 32766）
+    const CHUNK = 400
+    const grouped = new Map<string, string[]>()
+    try {
+      for (let i = 0; i < fingerprints.length; i += CHUNK) {
+        const chunk = fingerprints.slice(i, i + CHUNK)
+        const placeholders = chunk.map(() => '?').join(',')
+        const rows = this.db
+          .prepare(
+            `
+            SELECT ftr.file_fingerprint AS fp, ftr.tag_code AS id, ft.name AS ft_name
+            FROM file_tag_relations ftr
+            LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
+            WHERE ftr.file_fingerprint IN (${placeholders})
+          `
+          )
+          .all(...chunk) as Array<{ fp: string; id: string; ft_name: string | null }>
+        for (const r of rows) {
+          const display = this.resolveDisplayName(r.id, r.ft_name)
+          const arr = grouped.get(r.fp)
+          if (arr) arr.push(display)
+          else grouped.set(r.fp, [display])
+        }
+      }
+      const out = new Map<string, string>()
+      for (const [fp, arr] of grouped) out.set(fp, arr.join(' '))
+      return out
+    } catch {
+      return null
+    }
+  }
+
+  /**
    * 收集拼音索引四源字段（name/smart_name/description/tagsText）。
    *
    * **写入侧与查询侧校验回填共用同一实现**（设计文档 §5.3）：索引里存的是这四个字段的拼音，
@@ -2150,8 +2195,12 @@ export class FileDao {
         const hashStmt = this.db.prepare(
           `SELECT src_hash FROM files_pinyin_fts WHERE rowid = ?`
         )
+        // 人工裁定项①：标签文本一次窗口一次 SQL 批量预取；批量失败回退逐行（绝不静默按空串处理）
+        const tagsBatch = this.collectTagsTextBatch(rows.map(r => r.file_fingerprint))
         for (const r of rows) {
-          const tagsText = this.collectTagsText(r.file_fingerprint)
+          const tagsText = tagsBatch
+            ? (tagsBatch.get(r.file_fingerprint) ?? '')
+            : this.collectTagsText(r.file_fingerprint)
           const hash = computePinyinSrcHash({
             name: r.name,
             smartName: r.smart_name,

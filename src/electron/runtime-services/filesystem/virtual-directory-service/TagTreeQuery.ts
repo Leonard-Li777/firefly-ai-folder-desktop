@@ -2551,9 +2551,13 @@ export class TagTreeQuery {
       const trimmed = searchKeyword.trim()
       // 正排索引架构：查询分类由 PinyinQueryPlanner 承担（删封闭词库逆向展开）
       const plan = PinyinQueryPlanner.getInstance().plan(trimmed)
+      // LIKE 通配符转义（人工裁定项②，10-18 既存）：用户查询里的 `%`/`_`/`\` 必须按字面量
+      // 匹配，否则 `50%` 会退化成「含 50 的任意后缀」把全库捞回（node:sqlite 实测：无 ESCAPE
+      // 时模式 `a%b` 匹配含 `a\b`/`axb`/`a_b`/`a%b` 的全部行）。与 code_path 段同一口径
+      // （:88 escapeLike + 子句 ESCAPE '\\'）。
       const patterns = plan.isPinyin
-        ? Array.from(new Set([`%${plan.rawKeyword}%`]))
-        : [`%${trimmed}%`]
+        ? Array.from(new Set([`%${escapeLike(plan.rawKeyword)}%`]))
+        : [`%${escapeLike(trimmed)}%`]
       const ftsAvailable = this.isFtsAvailable()
 
       let ftsClause = ''
@@ -2596,19 +2600,19 @@ export class TagTreeQuery {
       const likeParams: any[] = []
       for (const pattern of patterns) {
         patternClauses.push(`(
-          wf.name LIKE ?
-          OR f.smart_name LIKE ?
-          OR f.description LIKE ?
-          OR wf.path LIKE ?
-          OR f.extension LIKE ?
-          OR f.author LIKE ?
-          OR f.language LIKE ?
-          OR f.file_group LIKE ?
+          wf.name LIKE ? ESCAPE '\\'
+          OR f.smart_name LIKE ? ESCAPE '\\'
+          OR f.description LIKE ? ESCAPE '\\'
+          OR wf.path LIKE ? ESCAPE '\\'
+          OR f.extension LIKE ? ESCAPE '\\'
+          OR f.author LIKE ? ESCAPE '\\'
+          OR f.language LIKE ? ESCAPE '\\'
+          OR f.file_group LIKE ? ESCAPE '\\'
           OR wf.file_fingerprint IN (
             SELECT ftr.file_fingerprint
             FROM file_tag_relations ftr
             LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
-            WHERE ft.name LIKE ? OR ftr.name_path LIKE ?
+            WHERE ft.name LIKE ? ESCAPE '\\' OR ftr.name_path LIKE ? ESCAPE '\\'
           )
         )`)
         for (let i = 0; i < 10; i++) {

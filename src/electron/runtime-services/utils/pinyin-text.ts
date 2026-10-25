@@ -22,6 +22,18 @@ const CJK_RUN_RE = /[\u4e00-\u9fa5]+/g
 /** 多音字变体交叉乘积上限：防长段组合爆炸（如 20 字长名） */
 export const MAX_PINYIN_VARIANTS = 16
 
+/** buildRunVariants LRU 缓存容量上限（条） */
+export const RUN_VARIANTS_CACHE_MAX = 512
+
+/** 超过该长度的 CJK 段不进入缓存（防单条超大键占用内存） */
+const RUN_VARIANTS_CACHE_MAX_RUN_LEN = 200
+
+/**
+ * buildRunVariants 有界 LRU 缓存（Map 保持插入序，最旧键在首位）。
+ * 仅缓存「纯查表」结果，无失效逻辑——pinyin-pro 词表为进程内常量。
+ */
+const runVariantsCache = new Map<string, RunVariant[]>()
+
 /** 单个 CJK 段的一种读音变体 */
 export interface RunVariant {
   /** 逐字音节数组（多音字变体下的读音序列） */
@@ -98,9 +110,27 @@ function charPinyins(ch: string): string[] {
 /**
  * 构建单个 CJK 段的读音变体（多音字全组合，封顶 MAX_PINYIN_VARIANTS）。
  * 超限时保留前 cap 种组合（主读音优先——交叉乘积按首字读音顺序展开）。
+ *
+ * **有界 LRU 缓存（人工裁定项④）**：pinyin-pro 按字取音是纯查表，同一 CJK 段会在
+ * 校验回填（Top-30 候选 × 多字段 × 多轮检索）与索引写入中被反复计算。缓存以
+ * `cap\u0000run` 为键（cap 必须入键，否则不同 cap 的结果会互相污染），
+ * 容量 RUN_VARIANTS_CACHE_MAX，超出淘汰最久未用；超长段不缓存（防单条超大键占内存）。
+ * **返回值为共享只读对象，调用方不得修改**（现有全部调用点均只读）。
  */
 export function buildRunVariants(run: string, cap: number = MAX_PINYIN_VARIANTS): RunVariant[] {
   if (!run) return []
+  const cacheable = run.length <= RUN_VARIANTS_CACHE_MAX_RUN_LEN
+  const key = cacheable ? `${cap}\u0000${run}` : ''
+  if (cacheable) {
+    const hit = runVariantsCache.get(key)
+    if (hit) {
+      // LRU 刷新：删除后重插即移到最新端
+      runVariantsCache.delete(key)
+      runVariantsCache.set(key, hit)
+      return hit
+    }
+  }
+
   const chars = Array.from(run)
   const perChar: string[][] = []
   for (const ch of chars) {
@@ -128,6 +158,14 @@ export function buildRunVariants(run: string, cap: number = MAX_PINYIN_VARIANTS)
     }
   }
   walk(0, [])
+
+  if (cacheable) {
+    runVariantsCache.set(key, variants)
+    if (runVariantsCache.size > RUN_VARIANTS_CACHE_MAX) {
+      const oldest = runVariantsCache.keys().next().value
+      if (oldest !== undefined) runVariantsCache.delete(oldest)
+    }
+  }
   return variants
 }
 

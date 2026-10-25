@@ -915,6 +915,20 @@ interface VectorMatch {
 }
 
 /**
+ * 生产 reconciler 定时器工厂：setInterval + unref。
+ * unref 是承重件——arbiter 为长生命周期对象且无销毁时点，若定时器引用事件循环，
+ * 进程退出会被无限期挂住（人工裁定项③的生命周期要求）。
+ */
+const defaultPinyinReconcileTimerFactory = (
+  cb: () => void,
+  ms: number
+): { clear: () => void } => {
+  const handle = setInterval(cb, ms)
+  ;(handle as { unref?: () => void }).unref?.()
+  return { clear: () => clearInterval(handle) }
+}
+
+/**
  * 混合检索仲裁器：编排 FTS5 / 向量 / 文件名三路信号并按加权 RRF 融合，
  * 真实目录模式下补充 FS 实时未分析命中。构造函数支持注入熔断器便于单测。
  */
@@ -941,6 +955,17 @@ export class HybridSearchArbiter {
       clipBreaker?: EndpointCircuitBreaker
       /** 是否启用 Omni 网络信号（向量/FS/段落对齐）。默认测试环境关闭，避免真实 38200 端口请求拖慢单测 */
       networkSignals?: boolean
+      /**
+       * 是否启用 reconciler 定时器驱动（人工裁定项③）。默认非测试环境开启——
+       * 无搜索会话时（如后台无检索的纯索引写入路径）也能周期性刷新拼音索引。
+       * 测试环境默认关闭（由 searchHybrid 内的节流 tick 驱动，行为与既有用例一致）。
+       */
+      enablePinyinReconcileTimer?: boolean
+      /** 测试注入：假定时器工厂（生产用 setInterval，句柄 unref 防常驻） */
+      pinyinReconcileTimerFactory?: (
+        cb: () => void,
+        ms: number
+      ) => { clear: () => void }
     }
   ) {
     this.vectorBreaker = options?.vectorBreaker ?? new EndpointCircuitBreaker()
@@ -954,6 +979,26 @@ export class HybridSearchArbiter {
         CLIP_BREAKER_BACKOFF_FACTOR
       )
     this.networkSignals = options?.networkSignals ?? !isTestEnvironment()
+
+    const timerEnabled = options?.enablePinyinReconcileTimer ?? !isTestEnvironment()
+    if (timerEnabled) {
+      const factory = options?.pinyinReconcileTimerFactory ?? defaultPinyinReconcileTimerFactory
+      this.pinyinReconcileTimer = factory(
+        () => this.reconcilePinyinIndexTick(),
+        HybridSearchArbiter.PINYIN_RECONCILE_INTERVAL_MS
+      )
+    }
+  }
+
+  /**
+   * 释放 arbiter 持有的 reconciler 定时器。
+   * 生产实例为长生命周期（不调用）；测试与热重载路径调用，防止定时器持有已关闭的 db 连接。
+   */
+  dispose(): void {
+    if (this.pinyinReconcileTimer) {
+      this.pinyinReconcileTimer.clear()
+      this.pinyinReconcileTimer = null
+    }
   }
 
   /**
@@ -1158,6 +1203,12 @@ export class HybridSearchArbiter {
 
   private static lastPinyinReconcileAt = 0
 
+  /** reconciler tick 间隔（与 searchHybrid 内节流同一常量） */
+  private static readonly PINYIN_RECONCILE_INTERVAL_MS = 30_000
+
+  /** 定时器句柄（可 clear；生产为 setInterval 的 Timeout，测试为注入的假定时器） */
+  private pinyinReconcileTimer: { clear: () => void } | null = null
+
   /**
    * 拼音索引 reconciler tick（设计文档 §4.3）：30s 节流批量补写缺失/陈旧拼音行。
    *
@@ -1167,7 +1218,12 @@ export class HybridSearchArbiter {
    */
   private reconcilePinyinIndexTick(): void {
     const now = Date.now()
-    if (now - HybridSearchArbiter.lastPinyinReconcileAt < 30_000) return
+    if (
+      now - HybridSearchArbiter.lastPinyinReconcileAt <
+      HybridSearchArbiter.PINYIN_RECONCILE_INTERVAL_MS
+    ) {
+      return
+    }
     HybridSearchArbiter.lastPinyinReconcileAt = now
     try {
       this.getFileDao().syncPinyinIndexDirty(300)
