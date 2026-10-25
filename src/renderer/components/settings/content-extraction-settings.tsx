@@ -58,9 +58,6 @@ export const ContentExtractionSettings: React.FC = () => {
   const [checkingLibreOffice, setCheckingLibreOffice] = useState(false)
   const [showLibreOfficeHelp, setShowLibreOfficeHelp] = useState(false)
 
-  const [localAudioDuration, setLocalAudioDuration] = useState<number>(
-    getConfigValue<number>('AUDIO_ANALYSIS_DURATION') ?? 30
-  )
   const [localExtractPages, setLocalExtractPages] = useState<number>(
     getConfigValue<number>('EXTRACT_PAGES') ?? 2
   )
@@ -73,23 +70,6 @@ export const ContentExtractionSettings: React.FC = () => {
   const [localMaxDocOcrItems, setLocalMaxDocOcrItems] = useState<number>(
     getConfigValue<number>('MAX_DOCUMENT_OCR_ITEMS') ?? 0
   )
-
-  /**
-   * 音频分析截取时长防抖同步
-   */
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      const currentConfigValue = getConfigValue<number>('AUDIO_ANALYSIS_DURATION') ?? 30
-      if (localAudioDuration !== currentConfigValue) {
-        updateConfigValue('AUDIO_ANALYSIS_DURATION', localAudioDuration)
-        captureEvent('更新音频分析截取时长', {
-          duration: localAudioDuration
-        })
-      }
-    }, 500)
-
-    return () => clearTimeout(handler)
-  }, [localAudioDuration])
 
   /**
    * PDF提取页数防抖同步
@@ -148,11 +128,6 @@ export const ContentExtractionSettings: React.FC = () => {
    * 监听外部配置变更更新本地显示
    */
   useEffect(() => {
-    const externalAudio = getConfigValue<number>('AUDIO_ANALYSIS_DURATION') ?? 30
-    if (externalAudio !== localAudioDuration) {
-      setLocalAudioDuration(externalAudio)
-    }
-
     const externalPages = getConfigValue<number>('EXTRACT_PAGES') ?? 2
     if (externalPages !== localExtractPages) {
       setLocalExtractPages(externalPages)
@@ -443,36 +418,6 @@ export const ContentExtractionSettings: React.FC = () => {
               )}
             </div>
 
-            {/* 音频分析截取时长 */}
-            <div className="flex items-center justify-between p-3.5 rounded-lg bg-muted/20 border border-border/50">
-              <div className="space-y-1 pr-4">
-                <div className="flex items-center gap-1">
-                  <Label htmlFor="audio-duration" className="text-sm font-medium">
-                    {t('音频分析截取时长')}
-                  </Label>
-                  <HelpTooltip
-                    content={t('截取音视频前N秒进行降噪与语音转录提取，最大值100秒，设置过大会增加耗时')}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {t('截取音视频前N秒进行语音转录，超大会增加分析耗时甚至超时失败')}
-                </p>
-              </div>
-              <div className="w-24 shrink-0">
-                <Input
-                  id="audio-duration"
-                  type="number"
-                  min={1}
-                  max={100}
-                  value={localAudioDuration}
-                  onChange={e => {
-                    const value = parseInt(e.target.value) || 0
-                    setLocalAudioDuration(value)
-                  }}
-                  className="h-8 text-xs text-right"
-                />
-              </div>
-            </div>
           </div>
 
           {/* 小节 2：OCR 识别与处理 */}

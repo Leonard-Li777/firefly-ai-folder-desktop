@@ -834,95 +834,93 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
       </Card>
 
       {/*
-        工单 13：视觉语义搜索（Chinese-CLIP 文本塔）开关与索引重建入口。
-        - 开关只对「极速轻量档 + 中文界面」生效（门禁在后端），此处如实说明，不做假承诺；
+        工单 13：视觉语义搜索（Chinese-CLIP / MobileCLIP 文本塔）开关与索引重建入口。
+        - 仅在极速轻量档开启时显示，全模态标准档隐藏；
+        - 支持中文（Chinese-CLIP）与多语言（MobileCLIP）；
         - 重建计数来自工单 06 的 canonical 维护服务，失败只在设置页提示一次（不弹全局 toast）。
       */}
-      <Card className="p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-violet-500 flex-shrink-0" />
-              <Label className="text-sm font-medium text-foreground">
-                {t('视觉语义搜索')}
-                <HelpTooltip
-                  content={t(
-                    '用自然语言描述画面（如「红色的跑车」「左边的沙发」）来搜索图片。仅在极速轻量档且界面语言为中文时生效；首次使用需要加载视觉模型，可能等待数秒。'
-                  )}
-                />
-              </Label>
-            </div>
-            <p className="text-[11px] text-muted-foreground mt-1.5 leading-snug">
-              {t('开启后可用画面描述检索图片；低配设备可关闭以节省内存。')}
-            </p>
-            {embeddingProfile !== 'classic_light' && (
-              <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1 leading-snug">
-                {t('当前为全模态标准档，该能力仅在极速轻量档下生效，开关设置会被保留。')}
-              </p>
-            )}
-          </div>
-          <Switch
-            checked={clipTextEnabled}
-            onCheckedChange={checked => {
-              void updateConfigValue('AI_CLIP_TEXT_SEARCH_ENABLED', checked)
-            }}
-            aria-label={t('视觉语义搜索')}
-          />
-        </div>
-
-        <div className="mt-4 pt-4 border-t border-border/60">
-          <div className="flex items-center justify-between gap-3">
+      {embeddingProfile === 'classic_light' && (
+        <Card className="p-5">
+          <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <Label className="text-sm font-medium text-foreground">
-                {t('语义索引状态')}
-              </Label>
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-violet-500 flex-shrink-0" />
+                <Label className="text-sm font-medium text-foreground">
+                  {t('视觉语义搜索')}
+                  <HelpTooltip
+                    content={t(
+                      '用自然语言描述画面（如「红色的跑车」「左边的沙发」）来搜索图片。支持中文与多语言检索；首次使用需要加载视觉模型，可能等待数秒。'
+                    )}
+                  />
+                </Label>
+              </div>
               <p className="text-[11px] text-muted-foreground mt-1.5 leading-snug">
-                {rebuildError
-                  ? t('索引状态读取失败，可稍后重试或手动重建。')
-                  : rebuildCounts
-                    ? t('待重建 {pending} 项 · 已就绪 {ready} 项 · 失败 {failed} 项', {
-                        pending: rebuildCounts.pending + rebuildCounts.uncomputed,
-                        ready: rebuildCounts.ready,
-                        failed: rebuildCounts.failed
-                      })
-                    : t('正在读取索引状态…')}
+                {t('开启后可用画面描述检索图片；低配设备可关闭以节省内存。')}
               </p>
-              {!rebuildError && rebuildCounts && rebuildCounts.lastMaintenance && (
-                <p className="text-[11px] text-muted-foreground/80 mt-1 leading-snug">
-                  {t('最近一次重建：{reason}，失效 {invalidated} 项，重新入队 {requeued} 项', {
-                    reason: rebuildCounts.lastMaintenance.reason,
-                    invalidated: rebuildCounts.lastMaintenance.invalidated,
-                    requeued: rebuildCounts.lastMaintenance.requeued
-                  })}
-                </p>
-              )}
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={isRebuilding}
-              onClick={async () => {
-                setIsRebuilding(true)
-                try {
-                  await window.electronAPI?.runCanonicalMaintenance?.('settings_manual')
-                  const counts = await window.electronAPI?.getCanonicalRebuildCounts?.()
-                  if (counts) {
-                    setRebuildCounts(counts)
-                    setRebuildError(null)
-                  }
-                } catch (err) {
-                  setRebuildError(err instanceof Error ? err.message : String(err))
-                } finally {
-                  setIsRebuilding(false)
-                }
+            <Switch
+              checked={clipTextEnabled}
+              onCheckedChange={checked => {
+                void updateConfigValue('AI_CLIP_TEXT_SEARCH_ENABLED', checked)
               }}
-            >
-              <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isRebuilding ? 'animate-spin' : ''}`} />
-              {isRebuilding ? t('重建中…') : t('重建语义索引')}
-            </Button>
+              aria-label={t('视觉语义搜索')}
+            />
           </div>
-        </div>
-      </Card>
+
+          <div className="mt-4 pt-4 border-t border-border/60">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <Label className="text-sm font-medium text-foreground">
+                  {t('语义索引状态')}
+                </Label>
+                <p className="text-[11px] text-muted-foreground mt-1.5 leading-snug">
+                  {rebuildError
+                    ? t('索引状态读取失败，可稍后重试或手动重建。')
+                    : rebuildCounts
+                      ? t('待重建 {pending} 项 · 已就绪 {ready} 项 · 失败 {failed} 项', {
+                          pending: rebuildCounts.pending + rebuildCounts.uncomputed,
+                          ready: rebuildCounts.ready,
+                          failed: rebuildCounts.failed
+                        })
+                      : t('正在读取索引状态…')}
+                </p>
+                {!rebuildError && rebuildCounts && rebuildCounts.lastMaintenance && (
+                  <p className="text-[11px] text-muted-foreground/80 mt-1 leading-snug">
+                    {t('最近一次重建：{reason}，失效 {invalidated} 项，重新入队 {requeued} 项', {
+                      reason: rebuildCounts.lastMaintenance.reason,
+                      invalidated: rebuildCounts.lastMaintenance.invalidated,
+                      requeued: rebuildCounts.lastMaintenance.requeued
+                    })}
+                  </p>
+                )}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isRebuilding}
+                onClick={async () => {
+                  setIsRebuilding(true)
+                  try {
+                    await window.electronAPI?.runCanonicalMaintenance?.('settings_manual')
+                    const counts = await window.electronAPI?.getCanonicalRebuildCounts?.()
+                    if (counts) {
+                      setRebuildCounts(counts)
+                      setRebuildError(null)
+                    }
+                  } catch (err) {
+                    setRebuildError(err instanceof Error ? err.message : String(err))
+                  } finally {
+                    setIsRebuilding(false)
+                  }
+                }}
+              >
+                <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isRebuilding ? 'animate-spin' : ''}`} />
+                {isRebuilding ? t('重建中…') : t('重建语义索引')}
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* 模式切换确认弹窗 */}
       <AlertDialog open={!!pendingProfile} onOpenChange={open => {

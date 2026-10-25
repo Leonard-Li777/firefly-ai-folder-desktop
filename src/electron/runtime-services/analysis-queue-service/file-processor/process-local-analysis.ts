@@ -12,6 +12,10 @@ import { IErrorRecoveryConfig } from '../types'
 import { databaseService } from '../../database/database-service'
 import path from 'node:path'
 import { compressText, decompressText, decompressJson } from '../../../utils/text-compressor'
+import {
+  resolveAnalysisTimeoutBudget,
+  resolveAiStageTimeoutMs
+} from '../../system/analysis-timeout-policy'
 
 /**
  * 处理本地 AI 分析任务（质量评分 + 维度标签）
@@ -36,6 +40,8 @@ export async function processLocalAnalysis(
     initialStage?: number
     forceReanalyze?: boolean
     lrc?: string | null
+    /** 并行流水线下 CPU 阶段已用时长（毫秒）：本次 timer 从 GPU 阶段起算，需补上这段 */
+    elapsedBeforeAiMs?: number
   },
   updateItemStatus: (
     itemId: number,
@@ -46,6 +52,31 @@ export async function processLocalAnalysis(
   ) => void
 ): Promise<any> {
   const { language, directoryContext, magikaCategory, isSpeedy } = options
+
+  // AI 阶段超时 = 该类型总额 − 本文件已用时间，但不低于该类型的 AI 保底值。
+  // 总额按「统一基数 120s + 类型增量（音频 +30s / 视频 +60s / 文档 0）」求解，
+  // 两段共享同一份额度：CPU 提前结束（短片/小文档）省下的时间自动归 AI（此消彼涨）。
+  // 保底值：文档 45s / 音频 50s / 视频 80s —— 视频要跑多帧视觉理解，所以增量最大。
+  // timer 由 processFile 在本次分析入口创建；并行流水线的 GPU 阶段另起 timer，
+  // 由调用方通过 elapsedBeforeAiMs 补上 CPU 阶段耗时。
+  // magika 的 mime 只用于兜底无扩展名的媒体文件：否则这类文件在 AI 阶段按文档算总额，
+  // 会比 perceive 侧实际给出的 CPU 上限少 60s，两段口径对不上。
+  const budget = resolveAnalysisTimeoutBudget(
+    fileInfo.path,
+    undefined,
+    false,
+    options.magikaCategory?.mime_type
+  )
+  const elapsedMs = timer.getTotalDuration() + (options.elapsedBeforeAiMs ?? 0)
+  const aiStageTimeoutMs = resolveAiStageTimeoutMs(budget, elapsedMs)
+  // 只在前面阶段确实吃掉可观额度时打点（≥10s，基本只有音视频会命中），避免每个文件都刷一行
+  if (elapsedMs >= 10000) {
+    logger.info(
+      LogCategory.ANALYSIS_QUEUE,
+      `[分析队列] AI 阶段预算 ${aiStageTimeoutMs}ms（总 ${budget.totalMs}ms − 已用 ${elapsedMs}ms，` +
+        `${budget.kind} 保底 ${budget.aiReserveMs}ms）: ${item.name}`
+    )
+  }
 
   // ========== 第三阶段：AI 文件质量分析 ==========
   updateItemStatus(item.id, 'analyzing', 12, undefined, { analysisStage: 3 })
@@ -110,7 +141,7 @@ export async function processLocalAnalysis(
           thumbnailRelativePath
             ? path.join(rootWorkspaceDirPath, thumbnailRelativePath)
             : undefined,
-          deps.errorRecoveryConfig.fileProcessingTimeout,
+          aiStageTimeoutMs,
           isSpeedy
         )
       : {

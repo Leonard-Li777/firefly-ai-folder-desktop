@@ -505,14 +505,12 @@ export class AnalysisQueueService {
                 .prepare('SELECT file_fingerprint FROM workspace_files WHERE workspace_id = ? AND path = ?')
                 .get(item.workspaceId, item.path) as { file_fingerprint?: string } | undefined
               if (!wf?.file_fingerprint) return true
+              // 抽帧间隔已由引擎按 90s 向量预算自决（设置页已移除该项），不再与配置比对；
+              // 此处只判断切片记录是否缺失
               const chunkRow = db
-                .prepare('SELECT sampling_interval_seconds FROM file_video_chunks WHERE file_fingerprint = ? LIMIT 1')
-                .get(wf.file_fingerprint) as { sampling_interval_seconds?: number } | undefined
-              if (!chunkRow) return true
-              const currentInterval =
-                ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 1.0
-              const recordedInterval = chunkRow.sampling_interval_seconds ?? 1.0
-              return Math.abs(recordedInterval - currentInterval) > 0.1
+                .prepare('SELECT 1 AS ok FROM file_video_chunks WHERE file_fingerprint = ? LIMIT 1')
+                .get(wf.file_fingerprint) as { ok?: number } | undefined
+              return !chunkRow
             } catch {
               return true
             }

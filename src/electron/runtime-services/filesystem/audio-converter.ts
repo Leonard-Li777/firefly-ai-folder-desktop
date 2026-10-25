@@ -19,7 +19,6 @@ if (process.platform !== 'win32') {
 import * as crypto from 'crypto'
 import { logger, LogCategory } from '@firefly/shared'
 import { ffmpegService } from '../system/ffmpeg-service'
-import { ConfigOrchestrator } from '../../config/config-orchestrator'
 
 /**
  * 音频转换工具
@@ -54,9 +53,10 @@ export class AudioConverter {
    * @returns 转换后的文件路径
    */
   async convertToStandard(inputPath: string): Promise<string> {
-    // 从配置中获取截取时长，默认为 30 秒
-    const DURATION_LIMIT =
-      ConfigOrchestrator.getInstance().getValue<number>('AUDIO_ANALYSIS_DURATION') || 30
+    // 该路径只服务于「多模态大模型直接听音频」（如 Gemma 4 E4B）的上下文限制，
+    // 与基础 AI 引擎的语音识别预算（AUDIO_ANALYSIS_DURATION）已隔离，固定 30 秒。
+    // 基础引擎的 ASR 走 perceive 链路，不经此处。
+    const DURATION_LIMIT = 30
 
     // 1. 优先调用 Omni 原生引擎进行降噪与标准重采样
     try {
