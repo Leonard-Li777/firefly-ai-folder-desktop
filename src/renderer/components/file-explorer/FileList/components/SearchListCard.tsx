@@ -80,9 +80,14 @@ const VideoChunkFrame: React.FC<{
   const videoUrl = useMemo(() => {
     if (!filePath) return ''
     const base = toSafeFileUrl(filePath)
-    const safeTime = clampVideoTime(chunk.startSec, 3600)
+    // 规避镜头切点处过渡黑帧或前序镜头残余，偏内侧取帧呈现镜头真实主体
+    const previewSec =
+      chunk.endSec > chunk.startSec
+        ? chunk.startSec + Math.min(0.5, (chunk.endSec - chunk.startSec) * 0.25)
+        : chunk.startSec
+    const safeTime = clampVideoTime(previewSec, 3600)
     return `${base}#t=${safeTime}`
-  }, [filePath, chunk.startSec])
+  }, [filePath, chunk.startSec, chunk.endSec])
 
   // 虚拟行复用时重置错误状态
   useEffect(() => {

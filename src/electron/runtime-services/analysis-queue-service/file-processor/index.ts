@@ -306,12 +306,14 @@ export async function checkBasicDataCompleteness(
         // 只保留「切片跨度是否与其自身记录的间隔吻合」的缓存升级防护。
         const firstChunk = chunkRows[0]
         const recordedInterval = firstChunk.sampling_interval_seconds ?? 1.0
+        // 真实镜头切片（sampling_interval_seconds <= 0）：起止由自然镜头边界自决，跳过滑动窗口 span 过期判定
+        const isShotBased = recordedInterval <= 0
         // 旧 8s 切片缓存自动升级防护（Ticket 04 & Spec §4.3）：
         // 检查首切片跨度是否与新公式 Math.min(16, Math.max(4, interval * 2)) 吻合
         const expectedSpan = Math.min(16, Math.max(4, recordedInterval * 2))
         const firstSpan = (firstChunk.end_sec ?? 0) - (firstChunk.start_sec ?? 0)
         const isSpanOutdated =
-          chunkRows.length > 1 && Math.abs(firstSpan - expectedSpan) >= 0.5
+          !isShotBased && chunkRows.length > 1 && Math.abs(firstSpan - expectedSpan) >= 0.5
         if (isSpanOutdated) {
           missingReasons.push(`video_chunk_span_outdated_${firstSpan}_vs_${expectedSpan}`)
         } else {
