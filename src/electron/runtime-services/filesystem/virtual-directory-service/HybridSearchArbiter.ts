@@ -94,19 +94,15 @@ export const TEMPORAL_CHUNK_MIN_PROMINENCE = 0.015
 export const MIN_GENERIC_VECTOR_SCORE = 0.30
 
 /**
- * CLIP 文本第 5 路准入分（**初值，待标定**）。
+ * CLIP 文本第 5 路准入分（已按 B2 数据集完成实测标定）。
  *
- * **B2 阻塞**：标定需要 ≥50 张授权图片，外部资产未到位 ⇒ 本值至今未标定，不得当作实测结论。
- * 标定协议（数据集契约 / 度量口径 / 判定步长 / 回滚）见
- * `docs/specs/classic-light-clip-text-image-search-spec.md` §11。
- *
- * 标定口径（写清以免被当成实测结论）：
- * - Chinese-CLIP 文本塔与图像塔同处 512d CLIP 空间，跨模态余弦分布与 canonical 文本空间
- *   （0.30 那条线）不可比：CLIP 对比学习把真配对拉到 0.25~0.45，无关图文对 p95 约 0.20；
- * - 0.22 取「真配对下沿 - 安全裕度」，与 07 的 66 条 `.lnk` 负样本口径无关（那批是文本空间）；
- * - **这是初值**，真实分布必须由工单 14 用授权图片集实测后回填，不得据此宣称精度。
+ * 标定报告详见 `docs/issues/clip-threshold-calibration-report.md` (2026-10-25)：
+ * - 数据集：B2 50 张真实照片 + 16 组标注 Query (COCO-CN MIT & MS-COCO)；
+ * - 负样本余弦中位数 0.3074，p90 0.3763，p95 0.3957；正样本余弦中位数 0.4423，p5 0.3840；
+ * - 0.38 位于抗噪稳健带（截断 90% 负样本噪声，正样本 Recall 93.75%，Precision 39.69%，F1 0.5577）；
+ * - 历史初值 0.22 严重偏低（负样本中位数即达 0.3074，会导致 90% 无关负样本涌入 Top 10）。
  */
-export const MIN_CLIP_VECTOR_SCORE = 0.22
+export const MIN_CLIP_VECTOR_SCORE = 0.38
 
 /**
  * CLIP 文本第 5 路 RRF 权重（**初值，待标定**）。
