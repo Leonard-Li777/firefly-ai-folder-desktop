@@ -43,7 +43,9 @@ import {
 import { omniService } from '../../system/omni-service'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { calculateFzfScore } from './pinyin-fzf'
-import { PinyinQueryExpander, ExpandedSearchQuery } from './pinyin-query-expander'
+import { PinyinQueryPlanner, type PinyinQueryPlan } from './pinyin-query-expander'
+import { verifyTextPinyin, type PinyinMatchType } from '../../utils/pinyin-text'
+import { FileDao } from '../../database/dao/file-dao'
 
 /** RRF 平滑常量 K（避免 top-rank 分数悬殊、稳定融合放缩） */
 export const HYBRID_SEARCH_RRF_K = 60
@@ -54,6 +56,14 @@ export const HYBRID_SEARCH_WEIGHTS = {
   name: 2.4,
   exact: 2.8
 } as const
+/**
+ * 拼音正排索引第 6 路权重（Pinyin Forward Index）。
+ *
+ * 与 CLIP 第 5 路同模式：缺省 0 完全退化，只有显式配置才生效。
+ * 取 1.6 与 CLIP 同量级：拼音路召回的是「字面等价的拼音命中」，是精确匹配的扩展，
+ * 不应压过 FTS 字面路（2.2），但应高于无差别语义召回。
+ */
+export const HYBRID_SEARCH_PINYIN_WEIGHT = 1.6
 /** 单源候选池大小（FTS / 向量 / FS 各自的上限，也是融合池的上限） */
 export const HYBRID_SEARCH_POOL_SIZE = 200
 /**
@@ -84,7 +94,11 @@ export const TEMPORAL_CHUNK_MIN_PROMINENCE = 0.015
 export const MIN_GENERIC_VECTOR_SCORE = 0.30
 
 /**
- * CLIP 文本第 5 路准入分（**初值，待工单 14 标定**）。
+ * CLIP 文本第 5 路准入分（**初值，待标定**）。
+ *
+ * **B2 阻塞**：标定需要 ≥50 张授权图片，外部资产未到位 ⇒ 本值至今未标定，不得当作实测结论。
+ * 标定协议（数据集契约 / 度量口径 / 判定步长 / 回滚）见
+ * `docs/specs/classic-light-clip-text-image-search-spec.md` §11。
  *
  * 标定口径（写清以免被当成实测结论）：
  * - Chinese-CLIP 文本塔与图像塔同处 512d CLIP 空间，跨模态余弦分布与 canonical 文本空间
@@ -95,7 +109,10 @@ export const MIN_GENERIC_VECTOR_SCORE = 0.30
 export const MIN_CLIP_VECTOR_SCORE = 0.22
 
 /**
- * CLIP 文本第 5 路 RRF 权重（**初值，待工单 14 标定**）。
+ * CLIP 文本第 5 路 RRF 权重（**初值，待标定**）。
+ *
+ * **B2 阻塞**：与 `MIN_CLIP_VECTOR_SCORE` 同步标定（同一份授权图片集），当前值未经验证；
+ * 协议见 `docs/specs/classic-light-clip-text-image-search-spec.md` §11。
  *
  * 取 1.6 与向量路（2.0）同量级但略低：CLIP 文本召回的是「视觉语义相似」，
  * 在 classic_light 档下应与既有向量路同权参与融合，但不能压过字面命中。
@@ -112,6 +129,11 @@ export const HYBRID_SEARCH_CLIP_WEIGHT = 1.6
 export const HYBRID_SEARCH_WEIGHTS_WITH_CLIP = {
   ...HYBRID_SEARCH_WEIGHTS,
   clip: HYBRID_SEARCH_CLIP_WEIGHT
+} as const
+/** 六路权重（四路基线 + CLIP 第 5 路 + 拼音第 6 路） */
+export const HYBRID_SEARCH_WEIGHTS_WITH_PINYIN = {
+  ...HYBRID_SEARCH_WEIGHTS_WITH_CLIP,
+  pinyin: HYBRID_SEARCH_PINYIN_WEIGHT
 } as const
 
 /** 热态判定窗口：距上次成功编码超过此值即视为冷态（模型可能已被看门狗释放） */
@@ -132,6 +154,35 @@ export const CLIP_BREAKER_THRESHOLD = 3
 export const CLIP_BREAKER_COOLDOWN_MS = 60_000
 /** 退避倍率：第 n 次打开 = 60s * 2^(n-1)，避免模型长期缺失时每 60s 反复重试 */
 export const CLIP_BREAKER_BACKOFF_FACTOR = 2
+
+/**
+ * CLIP 文本热态纪元（**进程内全局**，不是实例状态）。
+ *
+ * 背景：`HybridSearchArbiter` 在 `src` 内有 3 个长生命周期实例（`VirtualDirectoryService` /
+ * `DimensionManager` / `FileFilter` 各自的 `TagTreeQuery`），而 CLIP 文本塔的 session 住在
+ * **同一个** `firefly-omni` 进程里。因此「引擎（重）启动 ⇒ 所有实例的热态都失效」这个事实
+ * 天然是进程级的，用一个单调递增的纪元表达最直接：一次 bump 对全部实例同时生效，
+ * 既不需要跨服务注册表，也不需要枚举实例。
+ *
+ * 计数器使用 `let`（模块级可变）而不是 `var` 全局挂载到 window：主进程 Node 环境下模块单例即可。
+ */
+let clipWarmEpoch = 0
+
+/**
+ * 让所有 arbiter 实例的 CLIP 文本热态判定同时失效（Omni 进程（重）启动时调用）。
+ *
+ * 只清「热态」：熔断计数保持不动。重启后的首次编码即便超时也只记 1 次失败，
+ * 下一次必然回到冷态 6000ms 预算并成功，随即 `recordSuccess()` 清零——为清一个
+ * 「最多 1 次」的计数而引入跨实例注册表属于过度设计（方案 W2 第 2 条）。
+ */
+export function invalidateClipTextWarmState(): void {
+  clipWarmEpoch += 1
+}
+
+/** 只读：当前热态纪元（供诊断与单测断言，不改变状态） */
+export function getClipTextWarmEpoch(): number {
+  return clipWarmEpoch
+}
 
 /**
  * `/health.clipText` 五字段快照。
@@ -219,26 +270,15 @@ export const CLIP_TEXT_STRIP_PARTICLES = false
  * 与 `queryVectorCandidates` 的清洗差异（刻意不同，不可合并）：
  * - **保留自然短语与方位/色彩修饰词**：CLIP 文本塔就是吃自然语言训练的，
  *   「红色的跑车」「左边的沙发」这类修饰正是它的强项，剥离反而降低召回；
- * - **中文 query 不追加拼音展开词**：CLIP 词表是中文 RoBERTa-wwm，拼音/字母串
- *   会切成碎片 token 并稀释语义；
- * - 仅当 query **整体是纯拼音/字母**（无 CJK 字符）时才用 `semanticTextForVector` 替代，
- *   否则仍用原串；
+ * - **纯拼音/字母 query 不做语义替代**：正排索引架构下纯拼音查询在路由层即跳过 CLIP 路
+ *   （拼音串送入中文 RoBERTa-wwm 只会切成碎片 token），本函数不再承接展开词替换；
  * - 基础清洗只剔除非法符号与规整空白；助词剥离由 `CLIP_TEXT_STRIP_PARTICLES` 控制。
  */
-export function cleanClipTextQuery(
-  keyword: string,
-  expanded?: { isExpanded?: boolean; semanticTextForVector?: string }
-): string {
+export function cleanClipTextQuery(keyword: string): string {
   const raw = (keyword || '').trim()
   if (!raw) return ''
-  const hasCjk = /[\u4e00-\u9fa5]/.test(raw)
-  let base = raw
-  if (!hasCjk && expanded?.isExpanded && expanded.semanticTextForVector) {
-    // 纯拼音/字母 query：展开词是更贴近语义的载体（如 "khxs" → "科幻小说"）
-    base = expanded.semanticTextForVector
-  }
   // 基础清洗：只剔除控制字符与常见代码符号，规整空白；不剥助词、不去修饰词
-  let cleaned = base
+  let cleaned = raw
     .replace(/[\u0000-\u001F\u007F]/g, ' ')
     .replace(/[\\/{}<>|`"^~*\[\]]/g, ' ')
     .replace(/\s+/g, ' ')
@@ -295,6 +335,13 @@ export interface HybridRankedCandidate {
    * **只用于准入判定**，绝不写入 `vecScore`——两者是不同嵌入空间的余弦，混算会污染向量路语义。
    */
   clipScore?: number
+  /** 拼音正排索引第 6 路排名（1-based，缺失即该路未命中） */
+  pinyinRank?: number
+  /**
+   * 拼音路校验回填的命中中文词（音节边界对齐，供 `<mark>` 高亮与 matchedPinyinCandidate 回显）。
+   * 跨音节假阳性（如 anxiao 对 kehuanxiaoshuo）在回填阶段即被丢弃，不会出现在此。
+   */
+  matchedPinyinText?: string
   /** 文件名提升分（0~1） */
   nameBoost: number
   /** 加权 RRF 融合分数 */
@@ -315,6 +362,23 @@ export interface HybridRankedCandidate {
     endSec: number
     similarity?: number
   }>
+}
+
+/**
+ * 拼音路校验回填命中（verifyPinyinCandidates 产物）。
+ *
+ * 分级口径（设计文档 §5.3）：全拼精确 > 全拼音节切片 > 首字母缩写；
+ * 列间口径：name / smart_name / tags > description。
+ */
+export interface PinyinVerifyHit {
+  /** 音节边界对齐的命中中文词（<mark> 高亮与 matchedPinyinCandidate 回显目标） */
+  matchedText: string
+  /** 命中类型 */
+  type: PinyinMatchType
+  /** 命中列（列间优先级排序用） */
+  column: 'name' | 'smart_name' | 'tags' | 'description'
+  /** 产生该命中的查询 token */
+  token: string
 }
 
 /** 真实目录实时 FS 检索到的未分析文件命中 */
@@ -598,13 +662,17 @@ export function weightedRrfScore(
     maxScoreCap?: number
     /** 工单 12：CLIP 文本第 5 路的 rank（缺失即该路不参与，完全退化为四路行为） */
     clipRank?: number
+    /** 拼音正排索引第 6 路的 rank（缺失即该路不参与，完全退化为五路行为） */
+    pinyinRank?: number
   },
-  weights: { fts: number; vector: number; name: number; exact?: number; clip?: number } = HYBRID_SEARCH_WEIGHTS,
+  weights: { fts: number; vector: number; name: number; exact?: number; clip?: number; pinyin?: number } = HYBRID_SEARCH_WEIGHTS,
   k: number = HYBRID_SEARCH_RRF_K
 ): number {
   const wExact = weights.exact ?? HYBRID_SEARCH_WEIGHTS.exact
   // 工单 12：第 5 路权重缺省 0 —— 默认完全退化，只有显式配置才生效
   const wClip = weights.clip ?? 0
+  // 拼音第 6 路同样缺省 0：未传 weights.pinyin 时行为与旧版完全一致
+  const wPinyin = weights.pinyin ?? 0
   const baseVec = rrfScore(opts.vecRank, k)
   // 当存在有效向量相似度时，按 (1.0 + clamp(vecScore, 0, 1)) 注入多模态语义置信度
   const scoreMultiplier =
@@ -630,6 +698,7 @@ export function weightedRrfScore(
     vecContrib +
     nameContrib +
     clipContrib +
+    wPinyin * rrfScore(opts.pinyinRank, k) +
     wExact * rrfScore(opts.exactRank, k)
   )
 
@@ -861,6 +930,8 @@ export class HybridSearchArbiter {
   private readonly networkSignals: boolean
   /** 上次 CLIP 文本编码成功的时间戳（0 = 从未成功 ⇒ 冷态） */
   private lastClipSuccessAt = 0
+  /** 上次成功时的热态纪元（与当前纪元不一致 ⇒ 已发生引擎重启 ⇒ 冷态） */
+  private lastClipWarmEpoch = -1
 
   constructor(
     private readonly db: Database.Database,
@@ -892,7 +963,12 @@ export class HybridSearchArbiter {
    * 引擎侧「是否冷」与 desktop 侧「上次成功多久」是两件事，后者才是首屏延迟的真实预测器。
    */
   private isClipWarm(now: number = Date.now()): boolean {
-    return this.lastClipSuccessAt > 0 && now - this.lastClipSuccessAt <= CLIP_TEXT_WARM_WINDOW_MS
+    return (
+      this.lastClipSuccessAt > 0 &&
+      // 纪元不一致 ⇒ 期间发生过 Omni（重）启动，模型可能已重新冷加载
+      this.lastClipWarmEpoch === clipWarmEpoch &&
+      now - this.lastClipSuccessAt <= CLIP_TEXT_WARM_WINDOW_MS
+    )
   }
 
   /**
@@ -913,19 +989,33 @@ export class HybridSearchArbiter {
     }>
     /** 工单 12：CLIP 文本第 5 路候选（fingerprint → rank/score） */
     clipRankMap?: Map<string, { rank: number; score: number }>
+    /** 拼音正排索引第 6 路候选（fingerprint → bm25 排名） */
+    pinyinRankMap?: Map<string, number>
+    /** 拼音路校验回填结果（fingerprint → 音节边界对齐的中文命中词），供高亮与回显 */
+    pinyinVerifyMap?: Map<string, PinyinVerifyHit>
     existingNameMap?: Map<string, { name?: string; smartName?: string; path?: string }>
-    expanded?: ExpandedSearchQuery
   }): {
     candidates: HybridRankedCandidate[]
     nameMap: Map<string, { name?: string; smartName?: string; path?: string }>
   } {
-    const { keyword, ftsRankMap, exactRankMap, vecRankMap, clipRankMap, existingNameMap, expanded } = opts
+    const {
+      keyword,
+      ftsRankMap,
+      exactRankMap,
+      vecRankMap,
+      clipRankMap,
+      pinyinRankMap,
+      pinyinVerifyMap,
+      existingNameMap
+    } = opts
     const fpSet = new Set<string>()
     for (const fp of ftsRankMap.keys()) fpSet.add(fp)
     for (const fp of vecRankMap.keys()) fpSet.add(fp)
     for (const fp of exactRankMap.keys()) fpSet.add(fp)
     // 工单 12：CLIP 命中的指纹必须并入 fpSet，否则 nameMap 不会为它们补全名称
     if (clipRankMap) for (const fp of clipRankMap.keys()) fpSet.add(fp)
+    // 拼音第 6 路同理：不回填 nameMap 会导致 Phase 1 回调缺名称
+    if (pinyinRankMap) for (const fp of pinyinRankMap.keys()) fpSet.add(fp)
 
     let nameMap: Map<string, { name?: string; smartName?: string; path?: string }>
     if (existingNameMap) {
@@ -945,21 +1035,34 @@ export class HybridSearchArbiter {
       const vec = vecRankMap.get(fp)
       const exactRank = exactRankMap.get(fp)
       const clip = clipRankMap?.get(fp)
+      // §5.3-4：未通过音节边界校验的候选（跨音节假阳性 / 超出 Top-30 回填限额）不得加权、不计 literal——
+      // 假阳性在索引侧必然被 trigram 召回，但校验层按音节边界硬约束判负时其拼音贡献必须剥离
+      const pinyinRank = pinyinVerifyMap?.get(fp) ? pinyinRankMap?.get(fp) : undefined
       const { name, smartName } = nameMap.get(fp) ?? {}
       const nameBoost = computeNameBoost(name, smartName, keyword)
 
-      // 防倒挂公理：若由拼音展开词召回，但文件物理名称并未匹配原词（nameBoost < 0.85），
+      // 防倒挂公理：若由拼音路召回（拼音索引实际命中），但文件物理名称并未匹配原词（nameBoost < 0.85），
       // 1. 对其向量与 FTS 贡献同步施加安全阻尼 alpha_expand = 0.50；
       // 2. 施加数学天花板 maxScoreCap = (HYBRID_SEARCH_WEIGHTS.name * 0.82) / (HYBRID_SEARCH_RRF_K + 1)，
-      //    确保原词物理文件名命中（如 khxs.txt，nameBoost >= 0.85）在任何通道叠加下总分绝对第一
-      const isExpandedNonLiteral = expanded?.isExpanded && nameBoost < 0.85
+      //    确保原词物理文件名命中（如 khxs.txt，nameBoost >= 0.85）在任何通道叠加下总分绝对第一。
+      // 闸条件以「拼音索引实际命中」为准（R1 盲审 B-H1）：planner 无词库、无法凭输入形态区分拼音串与
+      // 英文词，若按 plan.isPinyin 判定，则 budget/docker 等零命中的纯英文查询也会被阻尼+封顶，
+      // 违反 §5.4「英文查询既有语义检索完全不受影响」——零命中时不存在拼音路候选，阻尼前提不成立。
+      const isExpandedNonLiteral =
+        pinyinRankMap !== undefined && pinyinRankMap.size > 0 && nameBoost < 0.85
       const vectorDamping = isExpandedNonLiteral ? 0.5 : 1.0
       const ftsDamping = isExpandedNonLiteral ? 0.5 : 1.0
       const maxScoreCap = isExpandedNonLiteral
         ? (HYBRID_SEARCH_WEIGHTS.name * 0.82) / (HYBRID_SEARCH_RRF_K + 1)
         : undefined
 
-      const hasLiteral = exactRank !== undefined || ftsRank !== undefined || nameBoost >= 0.85
+      // 拼音路命中是字面等价命中（索引侧拼音串即原文拼音），计入 literal 依据，
+      // 避免纯拼音召回的候选被「纯向量假阳性」门限误杀
+      const hasLiteral =
+        exactRank !== undefined ||
+        ftsRank !== undefined ||
+        pinyinRank !== undefined ||
+        nameBoost >= 0.85
       // 工单 12：CLIP 命中只有达到准入分才算「有语义依据」，否则等同未命中，
       // 避免引擎端阈值被绕过（desktop 侧不做后过滤，只做准入判定）
       const hasClip = clip !== undefined && clip.score >= MIN_CLIP_VECTOR_SCORE
@@ -981,6 +1084,9 @@ export class HybridSearchArbiter {
         // 工单 12：clipScore 只落到 clipScore，**绝不写入 vecScore**
         clipRank: hasClip ? clip!.rank : undefined,
         clipScore: hasClip ? clip!.score : undefined,
+        pinyinRank,
+        // 校验回填命中词：仅音节边界对齐的候选有回填词（假阳性/超限额候选的拼音贡献已在上面剥离）
+        matchedPinyinText: pinyinVerifyMap?.get(fp)?.matchedText,
         nameBoost,
         score: weightedRrfScore({
           ftsRank,
@@ -991,9 +1097,10 @@ export class HybridSearchArbiter {
           vectorDamping,
           ftsDamping,
           maxScoreCap,
-          clipRank: hasClip ? clip!.rank : undefined
-        }, HYBRID_SEARCH_WEIGHTS_WITH_CLIP),
-        hasLiteral: exactRank !== undefined || ftsRank !== undefined || nameBoost >= 0.85,
+          clipRank: hasClip ? clip!.rank : undefined,
+          pinyinRank
+        }, HYBRID_SEARCH_WEIGHTS_WITH_PINYIN),
+        hasLiteral,
         matchedChunk: vec?.matchedChunk,
         matchedChunks: vec?.matchedChunks
       })
@@ -1049,39 +1156,34 @@ export class HybridSearchArbiter {
     return unanalyzedHits
   }
 
-  private static lastWorkspaceEntitySyncAt = 0
+  private static lastPinyinReconcileAt = 0
 
   /**
-   * 同步工作区动态实体（用户标签与分类物化路径段）至拼音逆向展开引擎 (Tier 1 闭环)
+   * 拼音索引 reconciler tick（设计文档 §4.3）：30s 节流批量补写缺失/陈旧拼音行。
+   *
+   * 取代 10-18 的 syncWorkspaceEntities（向封闭词库注册工作区实体）——正排索引架构下
+   * 不再有内存词库，工作区标签/路径名的拼音由索引侧 write-through 承载，
+   * 此处只兜底覆盖不走 syncFTSTags 的变更路径（如触发器维护的 smart_name 更新）。
    */
-  private syncWorkspaceEntities(): void {
+  private reconcilePinyinIndexTick(): void {
     const now = Date.now()
-    if (now - HybridSearchArbiter.lastWorkspaceEntitySyncAt < 30_000) return
-    HybridSearchArbiter.lastWorkspaceEntitySyncAt = now
+    if (now - HybridSearchArbiter.lastPinyinReconcileAt < 30_000) return
+    HybridSearchArbiter.lastPinyinReconcileAt = now
     try {
-      const names: string[] = []
-      const tagRows = this.db
-        .prepare('SELECT name FROM file_tags_private WHERE name IS NOT NULL')
-        .all() as Array<{ name: string }>
-      for (const r of tagRows) {
-        if (r.name) names.push(r.name)
-      }
-      const pathRows = this.db
-        .prepare('SELECT DISTINCT name_path FROM file_tag_relations WHERE name_path IS NOT NULL')
-        .all() as Array<{ name_path: string }>
-      for (const r of pathRows) {
-        if (r.name_path) {
-          const parts = r.name_path.split('/').map(p => p.trim()).filter(Boolean)
-          names.push(...parts)
-        }
-      }
-      if (names.length > 0) {
-        PinyinQueryExpander.getInstance().registerWorkspaceEntities(names)
-      }
+      this.getFileDao().syncPinyinIndexDirty(300)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
-      logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchArbiter] 同步工作区实体至拼音展开引擎失败:', msg)
+      logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchArbiter] 拼音索引 reconciler tick 失败:', msg)
     }
+  }
+
+  /** 懒构造 FileDao（与数据库服务共享同一 db 连接；仅用于拼音源字段收集与 reconciler） */
+  private fileDaoInstance: FileDao | null = null
+  private getFileDao(): FileDao {
+    if (!this.fileDaoInstance) {
+      this.fileDaoInstance = new FileDao(this.db)
+    }
+    return this.fileDaoInstance
   }
 
   /**
@@ -1109,9 +1211,9 @@ export class HybridSearchArbiter {
     const failures: HybridSearchFailures = { fts: false, vector: false, fs: false }
     const attemptedFs = !!workspaceDirectoryPath
 
-    // 0. 同步工作区动态实体并执行拼音逆向展开探测 (P2C)
-    this.syncWorkspaceEntities()
-    const expanded = PinyinQueryExpander.getInstance().expand(keyword)
+    // 0. 拼音索引 reconciler tick（30s 节流兜底）+ 查询分类规划（PinyinQueryPlanner）
+    this.reconcilePinyinIndexTick()
+    const plan = PinyinQueryPlanner.getInstance().plan(keyword)
 
     // 1. 并发启动快速字面三路与慢速向量路
     const fsPromise = attemptedFs
@@ -1129,33 +1231,20 @@ export class HybridSearchArbiter {
       whereClauses,
       queryParams,
       poolSize,
-      expanded,
       shortHanWorkspaceId
     )
-    const vectorPromise = this.queryVectorCandidates(
-      keyword,
-      queryEmbedding,
-      whereClauses,
-      queryParams,
-      poolSize,
-      expanded
-    )
-    // 工单 12：CLIP 第 5 路。**热态才并入 phase2**；冷态照常发起但不等待，
-    // 避免 6000ms 冷启动预算把首屏拖垮（phase3 由工单 13 消费该结果）。
-    const clipWarmAtStart = this.isClipWarm()
-    const clipPromise = this.queryClipVectorCandidates(
-      keyword,
-      whereClauses,
-      queryParams,
-      poolSize,
-      expanded
-    )
+    // 拼音第 6 路：纯字母查询直接 MATCH files_pinyin_fts（设计文档 §5.2）。
+    // 同步点查 <3ms，归入 Phase 1 快路——向量路的启动决策依赖它的命中结果。
+    const pinyinPromise = plan.isPinyin
+      ? Promise.resolve(this.queryPinyinCandidates(plan, whereClauses, queryParams, poolSize))
+      : Promise.resolve([])
 
-    // Phase 1: 等待快速字面三路完成 (通常 10~25ms)
-    const [ftsResult, fsResult, exactResult] = await Promise.all([
+    // Phase 1: 等待快速字面三路 + 拼音路完成 (通常 10~25ms)
+    const [ftsResult, fsResult, exactResult, pinyinResult] = await Promise.all([
       ftsPromise,
       fsPromise,
-      exactPromise
+      exactPromise,
+      pinyinPromise
     ])
 
     if (ftsResult === null) failures.fts = true
@@ -1165,7 +1254,35 @@ export class HybridSearchArbiter {
     const exactRankMap = new Map<string, number>()
     for (const [idx, fp] of (exactResult ?? []).entries()) exactRankMap.set(fp, idx + 1)
 
+    const pinyinRankMap = new Map<string, number>()
+    for (const [idx, fp] of (pinyinResult ?? []).entries()) pinyinRankMap.set(fp, idx + 1)
+
     if (attemptedFs && fsResult === null) failures.fs = true
+
+    // 设计文档 §5.4：**拼音索引确有命中**才跳过向量路——拼音串送入中文 CLIP 无语义，
+    // 由拼音 FTS 路 + 原生路承载。纯字母但拼音零命中的查询（如英文单词 budget）
+    // 保持原行为走向量路（planner 无词库，无法凭输入形态区分拼音与英文单词，
+    // 以索引命中为判据是唯一可靠信号）。
+    const pinyinHit = pinyinRankMap.size > 0
+    const vectorPromise = pinyinHit
+      ? Promise.resolve(null)
+      : this.queryVectorCandidates(keyword, queryEmbedding, whereClauses, queryParams, poolSize)
+    // 工单 12：CLIP 第 5 路。**热态才并入 phase2**；冷态照常发起但不等待，
+    // 避免 6000ms 冷启动预算把首屏拖垮（phase3 由工单 13 消费该结果）。
+    // 拼音命中时同样跳过（拼音串无语义可编码）。
+    const clipWarmAtStart = this.isClipWarm()
+    const clipPromise = pinyinHit
+      ? Promise.resolve(null)
+      : this.queryClipVectorCandidates(keyword, whereClauses, queryParams, poolSize)
+
+    // 拼音路校验回填（设计文档 §5.3；二轮 review 红线：Top-30 限量，主线程阻塞压在 10ms 内）。
+    // 跨音节假阳性（anxiao 对 kehuanxiaoshuo）在此按音节边界硬约束判负，其拼音贡献在
+    // buildRankedCandidates 中被剥离（R1 盲审 B-M1：不得加权、不计 literal、不进首屏）。
+    // 提前到 Phase 1 之前执行：拼音命中是字面等价命中，首屏融合池必须带权重与回填词。
+    const pinyinVerifyMap =
+      pinyinRankMap.size > 0
+        ? this.verifyPinyinCandidates(plan, Array.from(pinyinRankMap.keys()))
+        : undefined
 
     // 若注册了 Phase 1 回调，立即基于字面三路构建 Phase 1 融合池并向上回调
     let p1NameMap: Map<string, { name?: string; smartName?: string; path?: string }> | undefined
@@ -1175,7 +1292,8 @@ export class HybridSearchArbiter {
         ftsRankMap,
         exactRankMap,
         vecRankMap: new Map(),
-        expanded
+        pinyinRankMap,
+        pinyinVerifyMap
       })
       p1NameMap = p1.nameMap
       const p1Unanalyzed = this.buildUnanalyzedHits({
@@ -1199,7 +1317,10 @@ export class HybridSearchArbiter {
     /** 本轮是否真正等待并采纳了 CLIP 结果——只有采纳过才谈得上「失败」 */
     let clipJoined = false
     let vectorResult: VectorMatch[] | null
-    if (clipWarmAtStart) {
+    if (pinyinHit) {
+      // 拼音索引命中：向量/CLIP 两路本轮未启动（策略性跳过，非故障）——不计 failures
+      vectorResult = null
+    } else if (clipWarmAtStart) {
       const [v, c] = await Promise.all([vectorPromise, clipPromise])
       vectorResult = v
       clipResult = c
@@ -1215,7 +1336,7 @@ export class HybridSearchArbiter {
       })
       vectorResult = await vectorPromise
     }
-    if (vectorResult === null) failures.vector = true
+    if (vectorResult === null && !pinyinHit) failures.vector = true
     const vecRankMap = new Map<
       string,
       {
@@ -1243,14 +1364,17 @@ export class HybridSearchArbiter {
       clipRankMap.set(c.fileFingerprint, { rank: c.rank, score: c.score })
     }
 
+    // 拼音路校验回填已在 Phase 1 前完成（见上）；此处直接消费 pinyinVerifyMap
+
     const p2 = this.buildRankedCandidates({
       keyword,
       ftsRankMap,
       exactRankMap,
       vecRankMap,
       clipRankMap,
-      existingNameMap: p1NameMap,
-      expanded
+      pinyinRankMap,
+      pinyinVerifyMap,
+      existingNameMap: p1NameMap
     })
     const unanalyzedHits = this.buildUnanalyzedHits({
       fsResult,
@@ -1453,12 +1577,17 @@ export class HybridSearchArbiter {
   }
 
   /** FTS5 快速字面候选（按 bm25 权重升序 = 相关度降序），包含短词/多词智能 LIKE 安全降级召回，返回 null 表示该路失败 */
+  /**
+   * 原生 FTS5 字面路（files_fts）。
+   *
+   * 正排索引架构下不再接收拼音展开词——纯字母/拼音查询由 queryPinyinCandidates
+   * （files_pinyin_fts 第 6 路）承载，本路只处理原生字面检索（设计文档 §5.1 闸 1）。
+   */
   private queryFtsCandidates(
     keyword: string,
     whereClauses: string[],
     queryParams: any[],
     poolSize: number,
-    expanded?: ExpandedSearchQuery,
     shortHanWorkspaceId?: number
   ): string[] | null {
     try {
@@ -1476,16 +1605,13 @@ export class HybridSearchArbiter {
 
       let rows: Array<{ file_fingerprint: string }> = []
       const tokens = trimmed.split(/\s+/).filter(Boolean)
-      const chineseCandidates = expanded?.chineseCandidates ?? []
-      const allTokens = Array.from(new Set([...tokens, ...chineseCandidates]))
-      const hasLongToken = allTokens.some(t => t.length >= 3)
+      const hasLongToken = tokens.some(t => t.length >= 3)
 
       // 1. 若存在 >=3 字符的有效 token，优先尝试 FTS5 trigram MATCH
       if (hasLongToken) {
         try {
           // 安全分项清洗转义并安全组装 OR 查询表达式
-          const rawTerms = [trimmed, ...chineseCandidates]
-          const safeTerms = rawTerms
+          const safeTerms = [trimmed]
             .map(w => {
               const cleaned = w.replace(/[*^()"\\-]/g, ' ').trim()
               return cleaned.length >= 3 ? `"${cleaned}"` : ''
@@ -1518,8 +1644,7 @@ export class HybridSearchArbiter {
       }
 
       // 2. 若 MATCH 未能召回任何候选（短词 <3 字符、空格分隔多词或未命中），执行多列 LIKE 安全降级召回
-      // 显式并入展开的中文短词（如 2 字高频词“小说/合同”），确保短词不丢召回
-      const combinedTokens = Array.from(new Set([...tokens, ...chineseCandidates]))
+      const combinedTokens = Array.from(new Set(tokens))
 
       // 1.5 中文双字受控概念倒排点查快道 (Ticket 09 / Spec §4.8)：
       // FTS5 trigram 物理上无法为 2 字符建索引，"合同/发票/图片/视频"等高频双字词在此前
@@ -1639,6 +1764,136 @@ export class HybridSearchArbiter {
   }
 
   /**
+   * 拼音正排索引第 6 路候选（files_pinyin_fts，设计文档 §5.2）。
+   *
+   * 纯字母查询直接 MATCH 拼音索引——不经过任何「拼音→中文」封闭词表：
+   * - len >= 3 token → trigram 子串匹配（全拼与首字母缩写通用）；
+   * - len == 2 token → 独立双字词精确匹配（索引侧同词 run 存为首尾补空格的 token，
+   *   故 " cw " 只命中独立成词的「财务」；句子内部缩写仍受 >=3 约束——已裁决边界）。
+   *
+   * bm25 权重按虚拟表物理声明列顺序赋值（file_fingerprint/name_py/smart_name_py/
+   * description_py/tags_py/src_hash），UNINDEXED 两列必须赋 0.0 占位防错位。
+   */
+  private queryPinyinCandidates(
+    plan: PinyinQueryPlan,
+    whereClauses: string[],
+    queryParams: any[],
+    poolSize: number
+  ): string[] {
+    if (!plan.isPinyin || plan.pinyinTokens.length === 0) return []
+    try {
+      const tableExists = this.db
+        .prepare(
+          `SELECT name FROM sqlite_master WHERE type='table' AND name='files_pinyin_fts'`
+        )
+        .get()
+      if (!tableExists) return []
+
+      // token → FTS5 MATCH 询项（2 字符加首尾空格做独立词精确匹配）
+      const orTerms = plan.pinyinTokens.map(t => (t.length >= 3 ? `"${t}"` : `" ${t} "`))
+      const matchExpr = orTerms.join(' OR ')
+      const extraWhere = whereClauses.length > 0 ? `AND ${whereClauses.join(' AND ')}` : ''
+
+      // 同一文件在 workspace_files 多行（多工作区/多路径）会重复占用 LIMIT 名额并扭曲 rank 分布：
+      // 子查询按 fp 去重（MIN(rowid) 定代表行）后回连做 bm25 排序（R1 盲审 B-M3）。
+      // 约束：SQLite 禁止 bm25 辅助函数进入聚合上下文——MIN(bm25(...)) 与 GROUP BY + ORDER BY bm25
+      // 均实测报 "unable to use function bm25 in the requested context"，故采用两段式。
+      // files 按 rowid 连接（拼音行 rowid = files.rowid，A-H1 对齐，与 files_fts 路径同构）。
+      const rows = this.db
+        .prepare(
+          `
+          SELECT fp AS file_fingerprint FROM (
+            SELECT f.file_fingerprint AS fp, MIN(files_pinyin_fts.rowid) AS rid
+            FROM files_pinyin_fts
+            JOIN files f ON f.rowid = files_pinyin_fts.rowid
+            JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint
+            WHERE files_pinyin_fts MATCH ?
+              ${extraWhere}
+            GROUP BY f.file_fingerprint
+          )
+          JOIN files_pinyin_fts ON files_pinyin_fts.rowid = rid
+          ORDER BY bm25(files_pinyin_fts, 0.0, 4.0, 4.0, 3.0, 3.5, 0.0) ASC
+          LIMIT ?
+        `
+        )
+        .all(matchExpr, ...queryParams, poolSize) as Array<{ file_fingerprint: string }>
+      return rows.map(r => r.file_fingerprint)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchArbiter] 拼音索引检索失败，降级: ', msg)
+      return []
+    }
+  }
+
+  /**
+   * 拼音路候选校验回填（设计文档 §5.3；二轮 review 红线：Top-30 限量）。
+   *
+   * 对召回候选读回四源字段（与索引写入严格同源），复用 pinyin-text.ts 构造器现算拼音：
+   * - 音节边界对齐硬约束：跨音节截断（anxiao 对 kehuanxiaoshuo）判假阳性丢弃，
+   *   绝不生成 <mark> 高亮（从机制上杜绝错误高亮）；
+   * - 命中分级：全拼精确 > 全拼音节切片 > 首字母缩写；列间 name/smart_name/tags > description；
+   * - token 越长越优先（更具体的查询项胜出）。
+   *
+   * 返回 fingerprint → 最优命中；无命中（假阳性被滤光）的指纹不出现在 map 中。
+   */
+  private verifyPinyinCandidates(
+    plan: PinyinQueryPlan,
+    fingerprints: string[],
+    limit = 30
+  ): Map<string, PinyinVerifyHit> {
+    const out = new Map<string, PinyinVerifyHit>()
+    if (!plan.isPinyin || plan.pinyinTokens.length === 0) return out
+    const dao = this.getFileDao()
+    const columnRank: Record<PinyinVerifyHit['column'], number> = {
+      name: 0,
+      smart_name: 0,
+      tags: 0,
+      description: 1
+    }
+    const typeRank: Record<PinyinMatchType, number> = {
+      full: 3,
+      'full-slice': 2,
+      initials: 1
+    }
+
+    for (const fp of fingerprints.slice(0, limit)) {
+      const fields = dao.getPinyinSourceFields(fp)
+      if (!fields) continue
+      let best: PinyinVerifyHit | null = null
+      for (const token of plan.pinyinTokens) {
+        const columns: Array<[PinyinVerifyHit['column'], string]> = [
+          ['name', fields.name],
+          ['smart_name', fields.smartName],
+          ['tags', fields.tagsText],
+          ['description', fields.description]
+        ]
+        for (const [column, text] of columns) {
+          const hit = verifyTextPinyin(text, token)
+          if (!hit) continue
+          const candidate: PinyinVerifyHit = {
+            matchedText: hit.matchedText,
+            type: hit.type,
+            column,
+            token
+          }
+          if (
+            !best ||
+            typeRank[candidate.type] > typeRank[best.type] ||
+            (typeRank[candidate.type] === typeRank[best.type] &&
+              (columnRank[candidate.column] < columnRank[best.column] ||
+                (columnRank[candidate.column] === columnRank[best.column] &&
+                  candidate.token.length > best.token.length)))
+          ) {
+            best = candidate
+          }
+        }
+      }
+      if (best) out.set(fp, best)
+    }
+    return out
+  }
+
+  /**
    * 工单 12：CLIP 文本塔第 5 路候选（文字 query → 文本塔向量 → 512 视觉槽检索）。
    *
    * 返回 null 表示熔断/失败，空数组表示「门禁未通过」或「无命中」——
@@ -1650,13 +1905,16 @@ export class HybridSearchArbiter {
    *   阈值随请求下推给引擎，由引擎在 truncate(top_k) 之前剪枝；
    * - 视频切片指纹（`fp:cN`）一律丢弃：v1 不检索视频切片；
    * - 429 `busy` 不计熔断失败、不清空热态时间戳。
+   *
+   * `encoderId` 留痕（R4-5，ADR-0054）：`[2]` 是写入时的身份标签，引擎侧下发/过滤的 `encoderId`
+   * 为硬编码常量，**不能反向证明当前写入向量真由 Chinese-CLIP 产生**；真实防护是
+   * `health.imageEncoder === 'chinese_clip'` 门禁（门禁不通过则零请求）。不要再加字段解析。
    */
   private async queryClipVectorCandidates(
     keyword: string,
     whereClauses: string[],
     queryParams: any[],
-    poolSize: number,
-    expanded?: ExpandedSearchQuery
+    poolSize: number
   ): Promise<Array<{ fileFingerprint: string; rank: number; score: number }> | null> {
     if (this.clipBreaker.isOpen) {
       // AC：所有跳过都必须留痕。熔断跳过属真实故障态（不是「能力未启用」），用 warn 而非 debug，
@@ -1700,7 +1958,7 @@ export class HybridSearchArbiter {
       }
 
       // ---- query 清洗（独立于 Bekko 路）----
-      const text = cleanClipTextQuery(keyword, expanded)
+      const text = cleanClipTextQuery(keyword)
       if (!text) return []
 
       // ---- 冷/热态超时预算 ----
@@ -1715,6 +1973,9 @@ export class HybridSearchArbiter {
         CLIP_TEXT_TIMEOUT_COLD_MS
       const budget = warm ? warmBudgetMs : coldBudgetMs
 
+      // 发起前捕获纪元：若飞行中出现 Omni 重启（`invalidateClipTextWarmState()`），
+      // 旧进程已发出的 200 响应返回后不得把「新进程尚处于冷加载」误判为热态。
+      const reqEpoch = clipWarmEpoch
       const encoded = await omniClient.embedClipText(text, { timeoutMs: budget })
       if (!encoded.ok) {
         // 429 busy：引擎并发饱和，既不算失败也不清空热态——下一轮很可能直接成功
@@ -1760,6 +2021,8 @@ export class HybridSearchArbiter {
       // 序列会变成 success(0)→failure(1)→success(0)→failure(1)，consecutiveFailures
       // 永远到不了阈值 3，「编码恒成功 + 检索恒失败」时熔断永不打开。
       this.lastClipSuccessAt = Date.now()
+      // 写入**请求发起时**的纪元（而非现读）：参见上方 reqEpoch 的竞态说明
+      this.lastClipWarmEpoch = reqEpoch
 
       // ---- 检索：白名单 [2]，阈值下推，引擎在 truncate 前剪枝 ----
       // 必须透传冷/热态预算且禁用重试：`request()` 缺省是 8s × 3 次，
@@ -1819,19 +2082,15 @@ export class HybridSearchArbiter {
     queryEmbedding: number[] | undefined,
     whereClauses: string[],
     queryParams: any[],
-    poolSize: number,
-    expanded?: ExpandedSearchQuery
+    poolSize: number
   ): Promise<VectorMatch[] | null> {
     if (this.vectorBreaker.isOpen) return null
     if (!this.networkSignals) return []
     try {
       let embedding = queryEmbedding
       if (!embedding || embedding.length === 0) {
-        // 若存在拼音展开词，优先使用 semanticTextForVector（如 "科幻小说"）提取高质量特征向量，消灭字母噪声
-        const textToAnalyze =
-          expanded?.isExpanded && expanded.semanticTextForVector
-            ? expanded.semanticTextForVector
-            : keyword
+        // 正排索引架构下纯拼音查询已在路由层跳过本路（拼音串无语义），此处只处理原生查询
+        const textToAnalyze = keyword
         const cleanKeyword = cleanSearchQueryEntities(textToAnalyze)
         // 剥离中文修饰助词（如 "红色的跑车" -> "红色跑车"），使自然语言描述与视觉向量特征空间紧密对齐；
         // 彻底剔除脱离模型实际输入分布的人工提示词前缀 (如 'task: search result | query: ')，

@@ -294,6 +294,17 @@ export class DatabaseService {
 
         this.cleanupOrphanQueueItems()
 
+        // 拼音正排索引启动回填（设计文档 §4.4）：幂等 hash 闸门扫描，新鲜行零成本跳过；
+        // 未完成部分由行内游标续扫（周期 reconciler 接入后从断点继续）；
+        // optimize 由回填内部按需触发（确有写入或未完成时才付段合并成本）
+        try {
+          this.fileDao.syncPinyinIndexBackfill(3_000)
+        } catch (pinyinError) {
+          logger.warn(LogCategory.DATABASE_SERVICE, '拼音索引启动回填失败（不影响启动）', {
+            error: pinyinError
+          })
+        }
+
         // 执行迁移后回调（如：从本地 JSON 加载初始配置）
         for (const cb of this.postMigrationCallbacks) {
           try {

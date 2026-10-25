@@ -40,7 +40,7 @@ import {
   splitPassages
 } from './HybridSearchArbiter'
 import { HybridSearchSession } from './hybrid-search-session'
-import { PinyinQueryExpander } from './pinyin-query-expander'
+import { PinyinQueryPlanner } from './pinyin-query-expander'
 
 export interface FilterFilesParams {
   selectedTags?: SelectedTag[]
@@ -356,6 +356,7 @@ export class TagTreeQuery {
   }
 
   private _ftsAvailable: boolean | null = null
+  private _pinyinAvailable: boolean | null = null
   private isFtsAvailable(): boolean {
     if (this._ftsAvailable !== null) return this._ftsAvailable
     try {
@@ -373,6 +374,29 @@ export class TagTreeQuery {
       this._ftsAvailable = false
     }
     return this._ftsAvailable
+  }
+
+  /**
+   * 拼音正排索引表可用性探针（与 isFtsAvailable 同构）：
+   * files_pinyin_fts 缺失（旧库未迁移 / 局部 schema）时跳过拼音子查询，
+   * 避免整条 SQL 抛错被静默降级为空集。
+   */
+  private isPinyinAvailable(): boolean {
+    if (this._pinyinAvailable !== null) return this._pinyinAvailable
+    try {
+      const row = this.db
+        .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='files_pinyin_fts'")
+        .get()
+      this._pinyinAvailable = !!row
+    } catch (err) {
+      logger.debug(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[TagTreeQuery] files_pinyin_fts 探针失败，按拼音索引不可用处理:',
+        err
+      )
+      // 瞬时错误（如 db 锁）不缓存 false：否则拼音子查询会被永久静默跳过（R1 盲审 B-S2）
+    }
+    return this._pinyinAvailable ?? false
   }
 
   /**
@@ -2525,15 +2549,17 @@ export class TagTreeQuery {
 
     if (searchKeyword && searchKeyword.trim()) {
       const trimmed = searchKeyword.trim()
-      const expanded = PinyinQueryExpander.getInstance().expand(trimmed)
-      const patterns = expanded.likePatterns
+      // 正排索引架构：查询分类由 PinyinQueryPlanner 承担（删封闭词库逆向展开）
+      const plan = PinyinQueryPlanner.getInstance().plan(trimmed)
+      const patterns = plan.isPinyin
+        ? Array.from(new Set([`%${plan.rawKeyword}%`]))
+        : [`%${trimmed}%`]
       const ftsAvailable = this.isFtsAvailable()
 
       let ftsClause = ''
       let sanitizedQuery = ''
       if (ftsAvailable) {
-        const rawTerms = [trimmed, ...(expanded.isExpanded ? expanded.chineseCandidates : [])]
-        const safeTerms = rawTerms
+        const safeTerms = [trimmed]
           .map(w => {
             const cleaned = w.replace(/[*^()"\\-]/g, ' ').trim()
             return cleaned.length >= 3 ? `"${cleaned}"` : ''
@@ -2548,6 +2574,22 @@ export class TagTreeQuery {
                WHERE files_fts MATCH ?
              )) OR `
         }
+      }
+
+      // 拼音第 6 路：纯字母查询并入 files_pinyin_fts 子查询（设计文档 §5.2）；
+      // 表不可用（旧库/局部 schema）时跳过，与 ftsClause 同样降级到 LIKE 路
+      let pinyinClause = ''
+      let pinyinMatchExpr = ''
+      if (plan.isPinyin && this.isPinyinAvailable()) {
+        pinyinMatchExpr = plan.pinyinTokens
+          .map(t => (t.length >= 3 ? `"${t}"` : `" ${t} "`))
+          .join(' OR ')
+        pinyinClause = `(wf.file_fingerprint IS NOT NULL AND wf.file_fingerprint IN (
+             SELECT f.file_fingerprint
+             FROM files_pinyin_fts
+             JOIN files f ON f.rowid = files_pinyin_fts.rowid
+             WHERE files_pinyin_fts MATCH ?
+           )) OR `
       }
 
       const patternClauses: string[] = []
@@ -2574,13 +2616,12 @@ export class TagTreeQuery {
         }
       }
 
-      whereClauses.push(`(${ftsClause}${patternClauses.join(' OR ')})`)
+      whereClauses.push(`(${ftsClause}${pinyinClause}${patternClauses.join(' OR ')})`)
 
-      if (ftsClause) {
-        queryParams.push(sanitizedQuery, ...likeParams)
-      } else {
-        queryParams.push(...likeParams)
-      }
+      // 占位符顺序必须与 SQL 文本同序：fts MATCH → pinyin MATCH → LIKE 模式们
+      if (ftsClause) queryParams.push(sanitizedQuery)
+      if (pinyinClause) queryParams.push(pinyinMatchExpr)
+      queryParams.push(...likeParams)
     }
 
     if (selectedTags.length > 0) {
@@ -2870,9 +2911,9 @@ export class TagTreeQuery {
       }
     >()
 
-    const expanded = PinyinQueryExpander.getInstance().expand(keyword)
-    const extraHighlightTokens = expanded.isExpanded ? expanded.chineseCandidates : undefined
-    const pinyinCandidate = expanded.isExpanded ? expanded.chineseCandidates[0] : undefined
+    // 正排索引架构：中文高亮词与 matchedPinyinCandidate 来自 arbiter 的拼音校验回填
+    // （candidate.matchedPinyinText，音节边界对齐；假阳性已在回填阶段丢弃）。
+    // 逐候选取词——不同候选可能命中不同中文词（缩写歧义场景）。
 
     // 字面候选直接高亮
     const semanticBatch: Array<{ fileFingerprint: string; text: string }> = []
@@ -2880,6 +2921,8 @@ export class TagTreeQuery {
       const cand = candidateByFp.get(ref.fileFingerprint)
       const text = contentsByFp.get(ref.fileFingerprint) ?? ''
       const desc = descriptionsByFp?.get(ref.fileFingerprint) ?? ''
+      const pinyinCandidate = cand?.matchedPinyinText
+      const extraHighlightTokens = pinyinCandidate ? [pinyinCandidate] : undefined
       if (cand?.hasLiteral) {
         // 优先在正文中提取高亮
         const highlight = extractSnippet(text, keyword, {
@@ -2945,10 +2988,12 @@ export class TagTreeQuery {
       for (const b of semanticBatch) {
         alignItems.push({ fileFingerprint: b.fileFingerprint, passages: splitPassages(b.text) })
       }
-      const alignQuery =
-        expanded.isExpanded && expanded.semanticTextForVector
-          ? expanded.semanticTextForVector
-          : keyword
+      // 语义对齐查询：优先用拼音校验回填的中文词（如 khxs → 科幻小说）——
+      // 纯拼音串本身无语义，直接送对齐会被分词器切成碎片 token
+      const firstPinyinText = semanticBatch
+        .map(b => candidateByFp.get(b.fileFingerprint)?.matchedPinyinText)
+        .find((v): v is string => !!v)
+      const alignQuery = firstPinyinText ?? keyword
       const alignMap = await this.hybridArbiter.alignPassages(
         alignQuery,
         alignItems.map(a => ({ fileFingerprint: a.fileFingerprint, passages: a.passages }))
@@ -2961,19 +3006,21 @@ export class TagTreeQuery {
             snippet: match.bestPassage,
             matchType: 'semantic',
             similarity: Math.round(match.similarity * 100) / 100,
-            matchedPinyinCandidate: pinyinCandidate
+            matchedPinyinCandidate: cand?.matchedPinyinText
           })
         } else {
           // 语义对齐缺失/失败 → 语义首段摘要 + 向量相似度
           const highlight = extractSnippet(b.text, keyword, {
             escapeHtml: false,
-            extraHighlightTokens
+            extraHighlightTokens: cand?.matchedPinyinText
+              ? [cand.matchedPinyinText]
+              : undefined
           })
           result.set(b.fileFingerprint, {
             snippet: highlight.snippet || undefined,
             matchType: 'semantic',
             similarity: cand?.vecScore,
-            matchedPinyinCandidate: pinyinCandidate
+            matchedPinyinCandidate: cand?.matchedPinyinText
           })
         }
       }

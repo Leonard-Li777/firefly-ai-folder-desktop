@@ -370,6 +370,21 @@ export const GENESIS_V1_SCHEMA = `
     tokenize='trigram'                           -- 使用 trigram 分词支持多语言模糊搜索
   );
 
+  -- 17.5 拼音正排索引（短字段；设计文档 docs/specs/pinyin-forward-index-redesign-spec.md §4.1）
+  -- 索引侧把 name/smart_name/description/tags 的中文段转拼音串（全拼+首字母，多音字全变体），
+  -- 查询侧纯字母输入直接 MATCH——不依赖任何封闭词表，索引里有什么中文就能搜什么。
+  -- 字段范围决策：仅短字段（正文拼音检索的投入产出比不成立，见设计文档 §7.2 / §11）。
+  -- src_hash 列利用 FTS5 原生 UNINDEXED 能力做陈旧检测，取代独立 meta 表（二轮 review 裁决）。
+  CREATE VIRTUAL TABLE IF NOT EXISTS files_pinyin_fts USING fts5(
+    file_fingerprint UNINDEXED,                  -- 关联键（不建全文索引）
+    name_py,                                     -- 物理文件名拼音串（空格分隔 token，首尾补空格）
+    smart_name_py,                               -- 智能名称拼音串
+    description_py,                              -- 描述拼音串
+    tags_py,                                     -- 标签聚合文本拼音串
+    src_hash UNINDEXED,                          -- sha256(name|smartName|description|tags)，reconciler 陈旧检测
+    tokenize='trigram'                           -- 与 files_fts 同构：>=3 字符串子串匹配
+  );
+
   -- 18. 高频索引
   CREATE INDEX IF NOT EXISTS idx_files_group ON files(file_group);
   CREATE INDEX IF NOT EXISTS idx_files_extension ON files(extension);
@@ -405,6 +420,7 @@ export const GENESIS_V1_SCHEMA = `
   DROP TRIGGER IF EXISTS trg_files_fts_delete;
   DROP TRIGGER IF EXISTS trg_workspace_files_fts_insert;
   DROP TRIGGER IF EXISTS trg_file_contents_fts_upsert;
+  DROP TRIGGER IF EXISTS trg_files_pinyin_fts_delete;
 
   CREATE TRIGGER trg_files_fts_insert AFTER INSERT ON files BEGIN
     INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags)
@@ -435,6 +451,14 @@ export const GENESIS_V1_SCHEMA = `
 
   CREATE TRIGGER trg_files_fts_delete AFTER DELETE ON files BEGIN
     DELETE FROM files_fts WHERE rowid = old.rowid;
+  END;
+
+  -- 拼音索引删除一致性（纯 SQL 方向）：files 删除即清拼音行，防孤儿行被搜索召回。
+  -- 写入/更新方向由 JS 计算拼音（pinyin-text.ts），走 FileDao write-through + reconciler，无法用触发器表达。
+  -- rowid 对齐（R1 盲审 A-H1）：拼音行 rowid = files.rowid，删除/寻址走 rowid（O(log n)）；
+  -- 按 file_fingerprint（UNINDEXED 列）删除对 FTS5 是全表扫描，批量删除 M 个文件 = M 次全表扫描。
+  CREATE TRIGGER trg_files_pinyin_fts_delete AFTER DELETE ON files BEGIN
+    DELETE FROM files_pinyin_fts WHERE rowid = old.rowid;
   END;
 
   CREATE TRIGGER trg_file_contents_fts_upsert AFTER INSERT ON file_contents BEGIN
@@ -526,6 +550,7 @@ export const migrations: IMigrationConfig[] = [
       DROP TABLE IF EXISTS workspace_directories;
       DROP TABLE IF EXISTS workspaces;
       DROP TABLE IF EXISTS files_fts;
+      DROP TABLE IF EXISTS files_pinyin_fts;
     `
   }
 ]
@@ -551,12 +576,12 @@ export function localeToTableSuffix(locale: string): string {
 /**
  * 分表兜底语言：白名单外 locale 一律回退，防止非法值拼入表名（Fix-09）
  */
-const TAG_ALIASES_FALLBACK_LOCALE = 'zh-CN'
+const TAG_ALIASES_FALLBACK_LOCALE = 'en-US'
 
 /**
  * 生成某个语言的分表名（与 Omni 语义包 tag_aliases_{lang} 一一对应）
  * 安全入口：locale 必须命中 SUPPORTED_LANGUAGES_KEY 白名单（与构建期语言清单同源），
- * 非白名单值回退 zh-CN 并记 warn，杜绝任意字符串拼入表名。
+ * 非白名单值回退 en-US 并记 warn，杜绝任意字符串拼入表名。
  * @param locale 如 zh-CN
  */
 export function resolveTagAliasesLangTable(locale: string): string {
