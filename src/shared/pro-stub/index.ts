@@ -39,16 +39,9 @@ export interface ProPreflightParams {
   stats?: any
   omniPerception?: any
   visualTags?: string[]
-  textTags?: string[]
+  textTags?: Array<string | any>
 }
 
-export interface ProTextTaggingParams {
-  filePath: string
-  content?: string
-  fileName?: string
-  mimeType?: string
-  language?: string
-}
 
 export interface ProPreflightResult {
   groundTruthTags: ProGroundTruthTag[]
@@ -76,11 +69,6 @@ export interface ProTagReconciliationResult {
   tagsWrittenCount: number
 }
 
-export interface ProVisualTaggingParams {
-  filePath: string
-  mimeType?: string
-  language?: string
-}
 
 /**
  * 开源社区版预检降级：仅透传基础元数据，不执行商业级既定事实推导
@@ -104,23 +92,6 @@ export function executeProTagReconciliation(
   }
 }
 
-/**
- * 开源社区版轻量视觉打标降级：安全空操作
- */
-export async function executeProVisualTagging(
-  _params: ProVisualTaggingParams
-): Promise<string[]> {
-  return []
-}
-
-/**
- * 开源社区版轻量文本打标降级：安全空操作
- */
-export async function executeProTextTagging(
-  _params: ProTextTaggingParams
-): Promise<string[]> {
-  return []
-}
 
 export interface ProHowNetSlot {
   slotName: string
