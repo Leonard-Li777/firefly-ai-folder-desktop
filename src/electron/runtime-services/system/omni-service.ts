@@ -671,6 +671,13 @@ export class OmniService {
   }
 
   /**
+   * 同步判定 Omni 服务是否已处于就绪运行态（无异步阻塞开销，供实时交互/快速检索 fast-fail 判定）
+   */
+  public isReady(): boolean {
+    return Boolean(this.process && !this.process.killed && !this.isStarting && this.cachedVersion !== null)
+  }
+
+  /**
    * 确保 Omni 服务处于运行与就绪状态（若未运行则自动按需拉起）
    */
   public async ensureRunning(): Promise<boolean> {

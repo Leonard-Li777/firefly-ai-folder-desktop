@@ -6,6 +6,7 @@ import { OmniClient } from '../omni-client'
 // 故这里相对 __tests__ 目录写作 ../../runtime-services/system/omni-service。
 vi.mock('../../runtime-services/system/omni-service', () => ({
   omniService: {
+    isReady: vi.fn().mockReturnValue(true),
     ensureRunning: vi.fn().mockResolvedValue(true),
     // getTaxonomyTree 前置快速探活：未就绪时不得阻塞等待冷启动（见下方护栏用例）
     checkHealth: vi.fn().mockResolvedValue(true),
@@ -139,4 +140,62 @@ describe('OmniClient Taxonomy Tree API 契约测试', () => {
   })
 })
 
+describe('OmniClient searchFastFs API 契约测试', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
 
+  it('Omni 未就绪时 searchFastFs 立即返回 null，触发后台预热且不发起 fetch', async () => {
+    const { omniService } = await import('../../runtime-services/system/omni-service')
+    ;(omniService.isReady as any).mockReturnValue(false)
+
+    let fetchCalled = false
+    global.fetch = vi.fn().mockImplementation(() => {
+      fetchCalled = true
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({ items: [], count: 0, durationMs: 1 })
+      })
+    })
+
+    const client = OmniClient.getInstance()
+    const res = await client.searchFastFs('D:\\workspace', 'test', 50)
+
+    expect(res).toBeNull()
+    expect(fetchCalled).toBe(false)
+    expect(omniService.ensureRunning).toHaveBeenCalled()
+  })
+
+  it('Omni 已就绪时 searchFastFs 成功直通发起 fetch (bypassEnsureRunning: true) 并在短超时内返回结果', async () => {
+    const { omniService } = await import('../../runtime-services/system/omni-service')
+    ;(omniService.isReady as any).mockReturnValue(true)
+
+    let capturedUrl = ''
+    global.fetch = vi.fn().mockImplementation((url: string) => {
+      capturedUrl = url
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          items: [{ path: 'D:\\workspace\\test.txt', name: 'test.txt', score: 100 }],
+          count: 1,
+          durationMs: 5
+        })
+      })
+    })
+
+    const client = OmniClient.getInstance()
+    const res = await client.searchFastFs('D:\\workspace', 'test', 50)
+
+    expect(res).not.toBeNull()
+    expect(res?.items).toHaveLength(1)
+    expect(res?.items[0].name).toBe('test.txt')
+
+    const parsedUrl = new URL(capturedUrl)
+    expect(parsedUrl.pathname).toBe('/api/v1/search/fs')
+    expect(parsedUrl.searchParams.get('dir')).toBe('D:\\workspace')
+    expect(parsedUrl.searchParams.get('q')).toBe('test')
+    expect(parsedUrl.searchParams.get('limit')).toBe('50')
+  })
+})

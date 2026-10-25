@@ -8,7 +8,7 @@
  *    RRF_x(d) = 1 / (K + rank_x(d))，rank 从 1 计
  * 2. 三重候选源（并行/近并行）：
  *    - 本地 FTS5 BM25（files_fts，bm25 列权对齐 file-dao.ts）
- *    - Omni 向量检索（omniClient.searchVectors，embedding 来自 omniService.analyzeText）
+ *    - Omni 向量检索（omniClient.searchVectors，embedding 来自 omniService.batchEmbedText，按当前嵌入档位编码）
  *    - 文件名提升（NameMatch：name/smart_name 全子串 = 1.0，否则 token 覆盖率）
  * 3. 真实目录实时 FS 快速文件名检索（searchFastFs）：未分析命中去重后追加至结果尾部
  * 4. 端点级熔断（EndpointCircuitBreaker）：连续失败达到阈值后进入冷却期，平滑降级
@@ -42,6 +42,7 @@ import {
 } from '../../../services/omni-client'
 import { omniService } from '../../system/omni-service'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
+import { normalizeGemmaMrlDim } from '../../../utils/embedding-dim'
 import { calculateFzfScore } from './pinyin-fzf'
 import { PinyinQueryPlanner, type PinyinQueryPlan } from './pinyin-query-expander'
 import { verifyTextPinyin, type PinyinMatchType } from '../../utils/pinyin-text'
@@ -529,7 +530,7 @@ export interface HybridSearchContext {
    */
   workspaceId?: number
   poolSize?: number
-  /** 调用方可直接注入查询向量（测试复用 / 避免重复 analyzeText） */
+  /** 调用方可直接注入查询向量（测试复用 / 避免重复编码） */
   queryEmbedding?: number[]
 }
 
@@ -1448,6 +1449,24 @@ export class HybridSearchArbiter {
   }
 
   /**
+   * 解析当前生效的嵌入档位与目标维度（检索/段落对齐链路的唯一口径）：
+   * classic_light → bekko-a8m 384d；gemma_unified → EmbeddingGemma 文本塔 MRL 维度（256/512/768，
+   * 非法配置回退 512）。所有查询侧编码（向量路、段落对齐）必须经此方法取档位，
+   * 严禁各自硬编码 bekko——否则 gemma 档位下会再次加载 bekko-a8m 且产出跨空间向量。
+   */
+  private async resolveEmbeddingTarget(): Promise<{
+    profile: 'classic_light' | 'gemma_unified'
+    dim: number
+  }> {
+    const profile = await omniService.getEmbeddingProfile()
+    if (profile !== 'gemma_unified') {
+      return { profile: 'classic_light', dim: 384 }
+    }
+    const configured = ConfigOrchestrator.getInstance().getValue<number>('EMBEDDING_MRL_DIMENSION')
+    return { profile: 'gemma_unified', dim: normalizeGemmaMrlDim(configured) }
+  }
+
+  /**
    * 段落级语义对齐（matchPassages）：为无字面命中的候选生成最契合段落摘要。
    * 失败/熔断时返回空映射，由调用方降级为语义首段摘要。
    */
@@ -1458,7 +1477,11 @@ export class HybridSearchArbiter {
     if (!items.length) return {}
     if (!this.networkSignals) return {}
     try {
-      const resp = await omniClient.matchPassages(keyword, items)
+      // 段落对齐编码器必须跟随当前嵌入档位：gemma_unified 下由 Omni 端 EmbeddingGemma
+      // 文本塔编码（与库内 gemma 槽位同空间），严禁沿用 bekko-a8m——否则每次检索都会
+      // 额外加载 384d 旧模型，且余弦相似度跨空间无意义。
+      const { profile, dim } = await this.resolveEmbeddingTarget()
+      const resp = await omniClient.matchPassages(keyword, items, { profile, dim })
       const map: Record<string, OmniPassageMatch> = {}
       if (resp && Array.isArray(resp.matches)) {
         for (const m of resp.matches) {
@@ -2147,6 +2170,9 @@ export class HybridSearchArbiter {
     if (this.vectorBreaker.isOpen) return null
     if (!this.networkSignals) return []
     try {
+      // 档位只解析一次并复用：查询向量编码器与 encoder 白名单必须同源，
+      // 否则「按 gemma 编码、按 classic 过滤」会让向量路恒定空召回。
+      const target = await this.resolveEmbeddingTarget()
       let embedding = queryEmbedding
       if (!embedding || embedding.length === 0) {
         // 正排索引架构下纯拼音查询已在路由层跳过本路（拼音串无语义），此处只处理原生查询
@@ -2158,14 +2184,34 @@ export class HybridSearchArbiter {
         const normalizedQuery = cleanKeyword
           .replace(/(?<=[\u4e00-\u9fa5]{2,})[的之得地](?=[\u4e00-\u9fa5]{2,})/g, '')
           .trim()
-        let analysis = await omniService.analyzeText(normalizedQuery)
-        if (!analysis?.embedding_dense && normalizedQuery !== cleanKeyword) {
-          analysis = await omniService.analyzeText(cleanKeyword)
+        // 查询向量必须由**当前嵌入档位的文本塔**产出（双档位契约，embeddinggemma 规格 §2.1）：
+        // classic_light → bekko-a8m 384d；gemma_unified → EmbeddingGemma 文本塔 MRL 256/512/768d。
+        // 历史上这里走 omniService.analyzeText（/api/text/analyze 的 OmniTextEngine 恒加载
+        // bekko-a8m，gemma 档位也只是事后覆盖向量），导致「已选 gemma_unified 却仍在加载
+        // bekko-a8m」且查询向量与 gemma 槽位不同空间；改走档位感知的 batch-embed-text 通道，
+        // gemma 档位全程不触碰 bekko。
+        const { profile, dim } = target
+        const encodeQuery = async (text: string): Promise<number[] | undefined> => {
+          try {
+            const resp = await omniService.batchEmbedText([text], {
+              profile,
+              dim,
+              timeoutMs: 10000
+            })
+            const vec = resp?.vectors?.[0]
+            return vec && vec.length > 0 ? vec : undefined
+          } catch {
+            // 编码失败由外层统一记熔断；此处仅中止本次尝试（与 analyzeText 返回 null 的旧行为一致）
+            return undefined
+          }
         }
-        if (!analysis?.embedding_dense && cleanKeyword !== textToAnalyze) {
-          analysis = await omniService.analyzeText(textToAnalyze)
+        embedding = await encodeQuery(normalizedQuery)
+        if (!embedding && normalizedQuery !== cleanKeyword) {
+          embedding = await encodeQuery(cleanKeyword)
         }
-        embedding = analysis?.embedding_dense
+        if (!embedding && cleanKeyword !== textToAnalyze) {
+          embedding = await encodeQuery(textToAnalyze)
+        }
       }
       if (!embedding || embedding.length === 0) {
         this.vectorBreaker.recordFailure()
@@ -2173,12 +2219,11 @@ export class HybridSearchArbiter {
       }
       // 查询白名单必须显式给出（无「缺省不过滤」兜底）：
       // classic_light 384 槽 → [0, 1]（Bekko + v2 旧记录过渡）；gemma_unified 各 MRL 槽 → [4]。
-      const embeddingProfile = await omniService.getEmbeddingProfile()
       // 工单 07：门限同步下推给 Omni 端（AC7 双闸第一道）。引擎在 truncate(top_k) 之前
       // 先按 threshold 剪枝，66 条 .lnk 负样本在最坏情况下也不会跨网络进入候选池；
       // 桌面侧 L712 的 MIN_GENERIC_VECTOR_SCORE 过滤是第二道闸，两者必须同源同值。
       const resp = await omniClient.searchVectors(embedding, poolSize, {
-        encoderFilter: resolveQueryEncoderFilter(embeddingProfile),
+        encoderFilter: resolveQueryEncoderFilter(target.profile),
         threshold: MIN_GENERIC_VECTOR_SCORE
       })
       if (!resp || !Array.isArray(resp.matches)) {
@@ -2499,6 +2544,11 @@ export class HybridSearchArbiter {
   ): Promise<OmniSearchFsItem[] | null> {
     if (this.fsBreaker.isOpen) return null
     if (!this.networkSignals) return []
+    // 引擎未就绪属于常态冷启动/预热，非网络异常，静默预热且不计入熔断器失败，防止误触发 30s 熔断
+    if (omniService.isReady?.() === false) {
+      void omniClient.searchFastFs(workspaceDirectoryPath, keyword, poolSize)
+      return null
+    }
     try {
       const resp = await omniClient.searchFastFs(workspaceDirectoryPath, keyword, poolSize)
       if (!resp || !Array.isArray(resp.items)) {

@@ -240,11 +240,14 @@ export class OmniClient {
     path: string,
     init?: RequestInit,
     timeoutMs: number = DEFAULT_TIMEOUT_MS,
-    retries: number = 2
+    retries: number = 2,
+    options?: { bypassEnsureRunning?: boolean }
   ): Promise<T | null> {
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
-        await omniService.ensureRunning()
+        if (!options?.bypassEnsureRunning) {
+          await omniService.ensureRunning()
+        }
         const res = await fetch(`${this.getBaseUrl()}${path}`, {
           ...init,
           headers: {
@@ -649,23 +652,44 @@ export class OmniClient {
     query: string,
     limit = 100
   ): Promise<OmniSearchFsResponse | null> {
+    // 关键防御：若 Omni 尚未完全就绪（未拉起/拉起中/崩溃恢复中），绝不死等 40s，立即返回 null 走本地 FTS5 毫秒级兜底并静默预热
+    if (!omniService.isReady()) {
+      void omniService.ensureRunning().catch(() => {})
+      return null
+    }
     const params = new URLSearchParams({ dir: dir, q: query, limit: String(limit) })
-    return this.request<OmniSearchFsResponse>(`/api/v1/search/fs?${params.toString()}`)
+    return this.request<OmniSearchFsResponse>(
+      `/api/v1/search/fs?${params.toString()}`,
+      undefined,
+      1500,
+      0,
+      { bypassEnsureRunning: true }
+    )
   }
 
   /**
    * 段落级语义对齐：POST /api/v1/vector/match-passages
    * 将查询向量与候选文件的前置分段列表对齐，返回每文件最契合段落与相似度，
-   * 用于对无字面命中候选生成语义召回摘要
+   * 用于对无字面命中候选生成语义召回摘要。
+   *
+   * `profile`/`dim` 必须随当前嵌入档位传入：gemma_unified 下由 Omni 端 EmbeddingGemma
+   * 文本塔编码（与库内 gemma 槽位同空间）；缺省按 classic_light（bekko-a8m 384d）处理。
+   * 严禁在 gemma 档位下省略 profile——那会让 Omni 端回退加载 bekko-a8m。
    */
   async matchPassages(
     query: string,
-    items: OmniMatchPassagesItem[]
+    items: OmniMatchPassagesItem[],
+    options?: { profile?: string; dim?: number }
   ): Promise<OmniMatchPassagesResponse | null> {
     if (!items.length) return { matches: [], durationMs: 0 }
     return this.request<OmniMatchPassagesResponse>('/api/v1/vector/match-passages', {
       method: 'POST',
-      body: JSON.stringify({ query, items })
+      body: JSON.stringify({
+        query,
+        items,
+        profile: options?.profile,
+        dim: options?.dim
+      })
     })
   }
 
