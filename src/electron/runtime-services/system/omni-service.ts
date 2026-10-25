@@ -239,6 +239,11 @@ export interface OmniPerceptionResponse {
   visual_tags: OmniTagChainItem[]
   fused_tags?: OmniTagChainItem[]
   /**
+   * 原生全文本/ASR标签直出 (Ticket 01/04)：
+   * 由 Omni TextTagger 从文档全文或 ASR 语音转录中抽取的两层漏斗受控标签链。
+   */
+  text_tags?: OmniTagChainItem[]
+  /**
    * 原生事实标签直出 (Task 2)：
    * 由 Omni 原生层从 ExifTool/音频/文档/图像元数据 + 下沉物理事实抽取的确定性标签链，
    * 置信度扁平统一 0.90（物理直读与规则推导同级），engine 统一为 "metadata"。
@@ -318,6 +323,8 @@ export interface OmniPerceptionResponse {
   video_truncated?: boolean
   /** 是否已在 Omni 内部就地完成批量向量持久化（Ticket 02 / 04） */
   vector_saved?: boolean
+  /** 视频代表帧封面 Base64 编码 WebP 格式（Ticket 03/05） */
+  cover_webp_base64?: string | null
 
   phash?: string
   is_corrupted: boolean

@@ -54,9 +54,7 @@ import {
 } from '@firefly/core-engine'
 import {
   executeProPreflight,
-  executeProTagReconciliation,
-  executeProVisualTagging,
-  executeProTextTagging
+  executeProTagReconciliation
 } from '@pro'
 import { omniService } from '../../system/omni-service'
 import { omniClient } from '../../../services/omni-client'
@@ -1203,18 +1201,6 @@ export class FileProcessor {
         }
 
         const effectiveMimeType = existingBasicData.category?.mime_type || getMimeType(enhancedInfo.fileType)
-        const visualTags = await executeProVisualTagging({
-          filePath,
-          mimeType: effectiveMimeType,
-          language
-        })
-        const textTags = await executeProTextTagging({
-          filePath,
-          content: existingBasicData.content,
-          fileName: item.name,
-          mimeType: effectiveMimeType,
-          language
-        })
 
         // 补捞 Stage 2 已持久化的标签，确保 GPU 阶段裁决时 Stage 2 标签不被冲掉，实现无损合并去重
         let existingTagRows: Array<any> = []
@@ -1257,7 +1243,11 @@ export class FileProcessor {
           winning_hypothesis: baseMetadata?.winning_hypothesis,
           smart_name: baseMetadata?.smart_name,
           binary_info: baseMetadata?.binary_info,
-          author: baseMetadata?.author
+          author: baseMetadata?.author,
+          visual_tags: baseMetadata?.visual_tags,
+          fused_tags: baseMetadata?.fused_tags,
+          text_tags: baseMetadata?.text_tags,
+          fact_tags: baseMetadata?.fact_tags
         }
 
         const preflightContext = executeProPreflight({
@@ -1269,9 +1259,7 @@ export class FileProcessor {
           contentPreview: existingBasicData.content ? existingBasicData.content.slice(0, 1000) : undefined,
           metadata: baseMetadata,
           omniPerception: restoredOmniPerception,
-          stats: currentStats,
-          visualTags,
-          textTags
+          stats: currentStats
         })
 
         if (Array.isArray(existingTagRows) && existingTagRows.length > 0) {
@@ -2274,15 +2262,34 @@ export class FileProcessor {
         `[FileProcessor] 阶段2内容与元数据提取完成: file=${item.name} combinedContentLen=${combinedContent.length} (metadataKeys=${Object.keys(contentResult.metadata || {}).length})`
       )
 
-      // 处理缩略图路径
-      if (thumbPath) {
-        thumbnailRelativePath = thumbPath
-      } else if (
-        generatedThumbnailOutPath &&
-        fs.existsSync(generatedThumbnailOutPath) &&
-        rootWorkspaceDir
-      ) {
-        thumbnailRelativePath = path.relative(rootWorkspaceDir.path, generatedThumbnailOutPath)
+      // Omni 原生代表帧封面直出 (Ticket 05)：当存在 cover_webp_base64 时，直接原子落盘至 .thumbnail/${fileFingerprint}.webp 并作为权威封面
+      if (anydocResult?.perception?.cover_webp_base64 && rootWorkspaceDir && fileFingerprint) {
+        try {
+          const thumbDir = await thumbnailService.ensureThumbnailDirectory(rootWorkspaceDir.path)
+          const webpPath = path.join(thumbDir, `${fileFingerprint}.webp`)
+          const buf = Buffer.from(anydocResult.perception.cover_webp_base64, 'base64')
+          await fs.promises.writeFile(webpPath, buf)
+          thumbnailRelativePath = path.relative(rootWorkspaceDir.path, webpPath)
+          logger.info(
+            LogCategory.ANALYSIS_QUEUE,
+            `[FileProcessor] Omni 原生代表帧封面已落盘: ${thumbnailRelativePath}`
+          )
+        } catch (err) {
+          logger.warn(LogCategory.ANALYSIS_QUEUE, '[FileProcessor] Omni 代表帧封面落盘失败:', err)
+        }
+      }
+
+      // 处理缩略图路径 (若无 Omni 直出封面则走兜底)
+      if (!thumbnailRelativePath) {
+        if (thumbPath) {
+          thumbnailRelativePath = thumbPath
+        } else if (
+          generatedThumbnailOutPath &&
+          fs.existsSync(generatedThumbnailOutPath) &&
+          rootWorkspaceDir
+        ) {
+          thumbnailRelativePath = path.relative(rootWorkspaceDir.path, generatedThumbnailOutPath)
+        }
       }
 
       // 封面降级：当无 markitdownserver 封面时正确降级为 anydoc 最大图片（根据 width * height 选出尺寸最大者）
@@ -2322,18 +2329,6 @@ export class FileProcessor {
       const stats = currentStats || fs.statSync(filePath)
 
       const effectiveMimeType = magikaCategory?.mime_type || getMimeType(enhancedFileType)
-      const visualTags = await executeProVisualTagging({
-        filePath,
-        mimeType: effectiveMimeType,
-        language
-      })
-      const textTags = await executeProTextTagging({
-        filePath,
-        content: contentResult.content,
-        fileName: item.name,
-        mimeType: effectiveMimeType,
-        language
-      })
 
       // 运行 CPU 阶段预计算特征流水线 (PreflightFeaturePipeline, ADR 0030)
       const preflightContext = executeProPreflight({
@@ -2345,9 +2340,7 @@ export class FileProcessor {
         contentPreview: contentResult.content ? contentResult.content.slice(0, 1000) : undefined,
         metadata: contentResult.metadata,
         stats,
-        omniPerception: anydocResult?.perception,
-        visualTags,
-        textTags
+        omniPerception: anydocResult?.perception
       })
 
 
