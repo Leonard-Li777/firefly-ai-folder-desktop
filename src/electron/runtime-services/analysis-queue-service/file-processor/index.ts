@@ -310,8 +310,12 @@ export async function checkBasicDataCompleteness(
         // 检查首切片跨度是否与新公式 Math.min(16, Math.max(4, interval * 2)) 吻合
         const expectedSpan = Math.min(16, Math.max(4, recordedInterval * 2))
         const firstSpan = (firstChunk.end_sec ?? 0) - (firstChunk.start_sec ?? 0)
+        // 兼容 Omni 原生标准 4.0s 切片跨度（stsz选美默认），避免标准切片被误判过期触发无休止重跑
         const isSpanOutdated =
-          !isShotBased && chunkRows.length > 1 && Math.abs(firstSpan - expectedSpan) >= 0.5
+          !isShotBased &&
+          chunkRows.length > 1 &&
+          Math.abs(firstSpan - expectedSpan) >= 0.5 &&
+          Math.abs(firstSpan - 4.0) >= 0.5
         if (isSpanOutdated) {
           missingReasons.push(`video_chunk_span_outdated_${firstSpan}_vs_${expectedSpan}`)
         } else {
@@ -2637,9 +2641,13 @@ export class FileProcessor {
             saveCpuError
           )
         }
-        this.updateItemStatus(item.id, 'pending', 50, undefined, {
-          analysisStage: cpuCompletionStage
-        })
+        // 关键防护：仅在任务未被完成时置为 pending 等待 GPU；
+        // 若 GPU 消费者已完成本任务（或已在分析中），严禁覆盖已完成状态引发重析死循环
+        if (item.status !== 'completed') {
+          this.updateItemStatus(item.id, 'pending', 50, undefined, {
+            analysisStage: cpuCompletionStage
+          })
+        }
         return
       }
 

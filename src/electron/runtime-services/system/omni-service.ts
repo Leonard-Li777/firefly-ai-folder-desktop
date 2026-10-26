@@ -1017,6 +1017,49 @@ export class OmniService {
           '[OmniService] 未解析到 omni-geo 地理数据集（geo/geonames-compact.json），逆地理编码将以 available:false 软降级'
         )
       }
+      // MOSS-TTS 48kHz 原生离线语音合成模型与预置音色库路径下发
+      const candidateMossDirs = [
+        ResourceLocator.resolveResourcePath?.('models/audio/moss'),
+        path.join(process.cwd(), 'apps/desktop/build/extraResources/models/audio/moss'),
+        path.join(process.cwd(), 'build/extraResources/models/audio/moss'),
+        path.join(
+          process.env.USERPROFILE || process.env.HOME || '',
+          '.cache/moss_tts_test/models/MOSS-TTS-Nano-100M-ONNX'
+        )
+      ]
+      let mossDir: string | null = null
+      for (const cand of candidateMossDirs) {
+        if (cand && fs.existsSync(path.join(cand, 'moss_tts_prefill.onnx'))) {
+          mossDir = cand
+          break
+        }
+      }
+      if (mossDir) {
+        env.OMNI_MOSS_MODEL_PATH = mossDir
+        logger.info(LogCategory.SYSTEM, `[OmniService] 🎙️ MOSS-TTS 模型目录 (OMNI_MOSS_MODEL_PATH): ${mossDir}`)
+      }
+
+      const candidateVoicesPaths = [
+        mossDir ? path.join(mossDir, 'preset_voices.bin') : null,
+        ResourceLocator.resolveResourcePath?.('models/audio/moss/preset_voices.bin'),
+        path.join(process.cwd(), 'apps/desktop/build/extraResources/models/audio/moss/preset_voices.bin'),
+        path.join(
+          process.env.USERPROFILE || process.env.HOME || '',
+          '.cache/moss_tts_test/test_voices.bin'
+        )
+      ]
+      let voicesPath: string | null = null
+      for (const cand of candidateVoicesPaths) {
+        if (cand && fs.existsSync(cand)) {
+          voicesPath = cand
+          break
+        }
+      }
+      if (voicesPath) {
+        env.OMNI_MOSS_VOICES_PATH = voicesPath
+        logger.info(LogCategory.SYSTEM, `[OmniService] 🎙️ MOSS-TTS 预置音色库 (OMNI_MOSS_VOICES_PATH): ${voicesPath}`)
+      }
+
       env.OMNI_WATCH_STDIN = '1'
 
       // 注入当前激活的多模态嵌入画像档位 (classic_light | gemma_unified) 与 MRL 维度 (Spec §3.4.1)

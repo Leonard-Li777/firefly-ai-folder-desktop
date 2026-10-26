@@ -77,8 +77,10 @@ export function Footer() {
   const isPaused = useAnalysisQueueStore(s => s.snapshot?.status === 'paused')
   const analyzing = useAnalysisQueueStore(
     useShallow(s => {
+      const currentItem = s.snapshot?.currentAnalyzingItem
       const item =
-        s.snapshot?.currentAnalyzingItem || s.snapshot?.items?.find(i => i.status === 'analyzing')
+        (currentItem && currentItem.status === 'analyzing' ? currentItem : null) ||
+        s.snapshot?.items?.find(i => i.status === 'analyzing')
       if (!item) return null
       return {
         id: item.id,
@@ -267,8 +269,12 @@ export function Footer() {
       setAnimScale(1)
       const timer = setTimeout(() => {
         const currentSnap = useAnalysisQueueStore.getState().snapshot
+        const currentAnalyzing =
+          currentSnap.currentAnalyzingItem && currentSnap.currentAnalyzingItem.status === 'analyzing'
+            ? currentSnap.currentAnalyzingItem
+            : null
         if (
-          !currentSnap.currentAnalyzingItem &&
+          !currentAnalyzing &&
           !currentSnap.items.find(i => i.status === 'analyzing')
         ) {
           setDisplayItem(null)

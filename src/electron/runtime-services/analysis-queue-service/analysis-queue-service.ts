@@ -665,7 +665,9 @@ export class AnalysisQueueService {
                   LogCategory.ANALYSIS_QUEUE,
                   `[并行队列:GPU通道] 等待 CPU 提取阶段就绪: ${item.name} (id: ${item.id})`
                 )
-                await notifier.waitForStage2(item.id, () => isAlreadyStage2(item), signal)
+                // 若 CPU 提取被跳过（cpuSkippedIds 包含），无需等待通知直接放行；
+                // 若 CPU 提取正在执行，必须严格等待 CPU 通知（禁止凭旧 isAlreadyStage2 抢跑）
+                await notifier.waitForStage2(item.id, () => cpuSkippedIds.has(item.id), signal)
                 logger.info(
                   LogCategory.ANALYSIS_QUEUE,
                   `[并行队列:GPU通道] CPU 阶段已就绪，进入 GPU AI 分析: ${item.name}`
@@ -754,6 +756,11 @@ export class AnalysisQueueService {
                     100,
                     err instanceof Error ? err.message : String(err)
                   )
+                }
+              } finally {
+                if (this.current?.id === item.id) {
+                  this.current = undefined
+                  this.emitUpdate()
                 }
               }
             }
@@ -1042,7 +1049,10 @@ export class AnalysisQueueService {
         ? this.runningWorkspaceStack[this.runningWorkspaceStack.length - 1]
         : undefined
 
-    const currentAnalyzingItem = this.current ? { ...this.current } : undefined
+    const currentAnalyzingItem =
+      this.current && this.current.status === 'analyzing'
+        ? { ...this.current }
+        : undefined
 
     const snapshot = this.queueManager.getSnapshot(this.current?.id, workspaceId)
     const isWorkspaceRunning =
