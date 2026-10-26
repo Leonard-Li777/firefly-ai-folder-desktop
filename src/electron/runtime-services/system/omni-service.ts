@@ -1754,9 +1754,14 @@ export class OmniService {
     // 请求里带了音视频专属参数时以之为准，避免无扩展名的媒体文件被误判成文档。
     const isMediaHint =
       options?.enableAudioTranscript === true || options?.audioAnalysisDuration !== undefined
-    const timeoutMs =
-      options?.timeoutMs ||
-      resolveAnalysisTimeoutBudget(filePath, undefined, isMediaHint).cpuCapMs
+    const budget = resolveAnalysisTimeoutBudget(filePath, undefined, isMediaHint)
+    // 视频抽帧与多模态感知具有客观重计算开销（如 200s+ 视频 Route A 需约 80-90s），
+    // 为防止压线 100s 触发 AbortSignal 导致整个视频切片与向量全毁，至少预留 totalMs - 20s 给 perceive
+    const effectiveCpuCapMs =
+      budget.kind === 'video'
+        ? Math.max(budget.cpuCapMs, budget.totalMs - 20000)
+        : budget.cpuCapMs
+    const timeoutMs = options?.timeoutMs || effectiveCpuCapMs
 
     const doFetch = async () => {
       const res = await fetch(`${this.baseUrl}/api/perceive`, {

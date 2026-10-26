@@ -842,4 +842,81 @@ describe('SearchListCard Component', () => {
       expect(videoEl?.getAttribute("src")).toContain("#t=33.7")
     })
   })
+
+  describe('Thumbnail rendering for non-image files with thumbnailPath', () => {
+    it('renders img thumbnail for video file when thumbnailPath is present', () => {
+      const videoItem: FileType = {
+        path: 'F:/videos/test-video.mp4',
+        name: 'test-video.mp4',
+        extension: 'mp4',
+        size: 1024 * 1024 * 50,
+        thumbnailPath: 'F:/workspaces/.VirtualDirectory/.thumbnail/thumb-video.webp'
+      }
+
+      const { container } = render(
+        <SearchListCard
+          item={videoItem}
+          safeItemName="test-video.mp4"
+          formatFileSize={defaultFormatSize}
+          onItemClick={mockItemClick}
+          onContextMenu={mockContextMenu}
+          index={0}
+        />
+      )
+
+      const imgEl = container.querySelector('img')
+      expect(imgEl).not.toBeNull()
+      expect(imgEl?.getAttribute('src')).toContain('thumb-video.webp')
+    })
+
+    it('renders img thumbnail for PDF file when thumbnailPath is relative and workspace is provided', () => {
+      const pdfItem: FileType = {
+        path: 'F:/docs/manual.pdf',
+        name: 'manual.pdf',
+        extension: 'pdf',
+        size: 1024 * 1024,
+        thumbnailPath: '.VirtualDirectory/.thumbnail/thumb-pdf.webp'
+      }
+
+      const { container } = render(
+        <SearchListCard
+          item={pdfItem}
+          safeItemName="manual.pdf"
+          formatFileSize={defaultFormatSize}
+          onItemClick={mockItemClick}
+          onContextMenu={mockContextMenu}
+          workspaceDirectoryPath="F:/docs"
+          index={0}
+        />
+      )
+
+      const imgEl = container.querySelector('img')
+      expect(imgEl).not.toBeNull()
+      expect(imgEl?.getAttribute('src')).toContain('thumb-pdf.webp')
+    })
+
+    it('falls back to SystemFileIcon when non-image file has no thumbnailPath', () => {
+      const videoItemWithoutThumb: FileType = {
+        path: 'F:/videos/no-thumb.mp4',
+        name: 'no-thumb.mp4',
+        extension: 'mp4',
+        size: 1024 * 1024 * 20
+      }
+
+      const { container } = render(
+        <SearchListCard
+          item={videoItemWithoutThumb}
+          safeItemName="no-thumb.mp4"
+          formatFileSize={defaultFormatSize}
+          onItemClick={mockItemClick}
+          onContextMenu={mockContextMenu}
+          index={0}
+        />
+      )
+
+      const imgEl = container.querySelector('img')
+      expect(imgEl).toBeNull()
+      expect(container.querySelector('.system-file-icon') || container.querySelector('[data-testid="file-icon"]') || container.querySelector('svg') || container.querySelector('.material-icons')).not.toBeNull()
+    })
+  })
 })

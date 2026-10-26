@@ -2240,11 +2240,13 @@ export class HybridSearchArbiter {
       }
       this.vectorBreaker.recordSuccess()
 
-      // 1. 解析时序切片格式（如 `${parentFp}:c${chunkIndex}`），提取父文件指纹并向基础条件做交集过滤
-      const chunkPattern = /^(.+):c(\d+)$/
+      // 1. 解析切片格式（视频切片 `${parentFp}:c${chunkIndex}` 或正文文本切片 `${parentFp}:tc${chunkIndex}`），
+      // 提取父文件指纹并向基础条件做交集过滤
+      const chunkPattern = /^(.+):(tc|c)(\d+)$/
       const parsedMatches: Array<{
         rawFp: string
         parentFp: string
+        chunkType?: 'video' | 'text'
         chunkIndex?: number
         score: number
       }> = resp.matches.map(m => {
@@ -2253,7 +2255,8 @@ export class HybridSearchArbiter {
           return {
             rawFp: m.fileFingerprint,
             parentFp: match[1],
-            chunkIndex: parseInt(match[2], 10),
+            chunkType: match[2] === 'tc' ? 'text' : 'video',
+            chunkIndex: parseInt(match[3], 10),
             score: m.score
           }
         }
@@ -2302,7 +2305,9 @@ export class HybridSearchArbiter {
         if (m.score > existing.bestScore) {
           existing.bestScore = m.score
         }
-        if (m.chunkIndex !== undefined) {
+        // 仅视频时序切片才登记至 chunks 参与后续 file_video_chunks 元数据查询与跳转时间对齐；
+        // 文本切片 (chunkType === 'text') 纯用于丰富全文检索得分，不登记视频时序切片元数据
+        if (m.chunkIndex !== undefined && m.chunkType !== 'text') {
           const found = existing.chunks.find(c => c.chunkIndex === m.chunkIndex)
           if (found) {
             if (m.score > found.score) found.score = m.score
@@ -2382,13 +2387,31 @@ export class HybridSearchArbiter {
         // 证明没有任何切片能够突出于全局背景基线，属于纯背景噪声，彻底阻断跳轴与切片下发！
         const hasSignificantPeak = agg.chunks.length <= 2 || peakProminence >= TEMPORAL_CHUNK_MIN_PROMINENCE
 
+        // 高光波峰切片集合（用于甄别伴生背景噪声 vs 独立离散高光）
+        const highPeakChunks = agg.chunks.filter(c => c.score >= maxScore - 0.020)
+
         const validChunks = hasSignificantPeak
           ? agg.chunks.filter(c => {
+              if (c.score < TEMPORAL_CHUNK_MIN_CONFIDENCE) return false
+
+              // 1. 本身即为高光核心或处于波峰容差内（收紧至 0.030，允许同镜头平滑过渡，阻断断崖）
+              if (c.score >= maxScore - 0.030) return true
+
+              // 2. 检查是否紧邻高光波峰（间距 <= 3.0s）
+              const isAdjacentToHighPeak = highPeakChunks.some(peak => {
+                const cTiming = chunkTimingMap.get(`${agg.parentFp}:c${c.chunkIndex}`)
+                const pTiming = chunkTimingMap.get(`${agg.parentFp}:c${peak.chunkIndex}`)
+                if (!cTiming || !pTiming) return false
+                const gap = Math.max(0, Math.max(cTiming.startSec - pTiming.endSec, pTiming.startSec - cTiming.endSec))
+                return gap <= 3.0
+              })
+
+              // 若紧邻高光波峰但自身落差过大（已 < maxScore - 0.030），属于被波峰碾压的伴生背景，杜绝向波峰合并恶意拉皮高光区间
+              if (isAdjacentToHighPeak) return false
+
+              // 3. 远离高光波峰的独立时段（间隔 > 3.0s），只要自身突出于全片基线，作为独立高光段保留
               const prominence = c.score - meanScore
-              const isConfident = c.score >= TEMPORAL_CHUNK_MIN_CONFIDENCE
-              const isNearPeak = c.score >= maxScore - 0.015
-              const isProminent = prominence >= TEMPORAL_CHUNK_MIN_PROMINENCE || isNearPeak
-              return isConfident && isProminent
+              return prominence >= TEMPORAL_CHUNK_MIN_PROMINENCE
             })
           : []
 

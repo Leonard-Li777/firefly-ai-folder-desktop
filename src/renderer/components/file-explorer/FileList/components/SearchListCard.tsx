@@ -19,6 +19,7 @@ import { PageId, PAGE_IDS } from '../../../../constants/page-ids'
 import { useSearchStore } from '../../../../stores/search-store'
 import { getOrganizedSearchTags, OrganizedTagItem } from './search-list-tag-utils'
 import { useSettingsStore } from '../../../../stores/settings-store'
+import { useVirtualDirectoryStore } from '../../../../stores/virtual-directory-store'
 
 /**
  * 搜索列表模式专用行高（三行式多模态卡片排版，规格书定高 104px）
@@ -354,9 +355,10 @@ export const SearchListCard = React.memo(
 
     // Windows 安全 file:/// 协议与双层图片加载（缩略图优先 + 原始图片平滑回退，防幽灵破损图标）
     const { primaryImageUrl, fallbackImageUrl } = useMemo(() => {
-      if (!isImage) return { primaryImageUrl: '', fallbackImageUrl: '' }
+      // 只要具备缩略图，或属于图片媒体，均放行解析图片 URL（视频抽帧/PDF封面/图片等统一展现）
+      if (!isImage && !item.thumbnailPath) return { primaryImageUrl: '', fallbackImageUrl: '' }
 
-      const originalUrl = item.path ? toSafeFileUrl(item.path) : ''
+      const originalUrl = isImage && item.path ? toSafeFileUrl(item.path) : ''
       let thumbUrl = ''
 
       if (item.thumbnailPath) {
@@ -374,7 +376,15 @@ export const SearchListCard = React.memo(
             const virtIdx = item.path.indexOf('.VirtualDirectory')
             if (virtIdx > 0) {
               wsDir = item.path.substring(0, virtIdx).replace(/[\\/]+$/, '')
+            } else {
+              const lastSep = Math.max(item.path.lastIndexOf('/'), item.path.lastIndexOf('\\'))
+              if (lastSep > 0) {
+                wsDir = item.path.substring(0, lastSep)
+              }
             }
+          }
+          if (!wsDir) {
+            wsDir = useVirtualDirectoryStore.getState().currentWorkspaceDirectory?.path || ''
           }
           if (wsDir) {
             const cleanWs = wsDir.replace(/[\\/]+$/, '')
@@ -561,7 +571,7 @@ export const SearchListCard = React.memo(
           style={{ width: `${mediaSize}px`, height: `${mediaSize}px` }}
           className="shrink-0 flex items-center justify-center overflow-hidden rounded-md border border-border/40 bg-muted/20"
         >
-          {isImage && activeImageUrl && !imgError ? (
+          {activeImageUrl && !imgError ? (
             <img
               src={activeImageUrl}
               alt={safeItemName}

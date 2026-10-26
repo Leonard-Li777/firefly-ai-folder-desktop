@@ -1,4 +1,5 @@
 import Database from 'better-sqlite3'
+import fs from 'node:fs'
 import path from 'node:path'
 import {
   DimensionFlags,
@@ -3479,7 +3480,25 @@ export class TagTreeQuery {
             : undefined,
           qualityScore: file.quality_score || undefined,
           description: file.description || undefined,
-          thumbnailPath: file.thumbnail_path || undefined,
+          thumbnailPath: (() => {
+            let resolved = file.thumbnail_path || undefined
+            if (resolved && !path.isAbsolute(resolved)) {
+              if (workspaceDirectoryPath) {
+                resolved = path.join(workspaceDirectoryPath, resolved)
+              } else if (file.path) {
+                let curDir = path.dirname(file.path)
+                while (curDir && curDir !== path.dirname(curDir)) {
+                  const testThumb = path.join(curDir, resolved)
+                  if (fs.existsSync(testThumb)) {
+                    resolved = testThumb
+                    break
+                  }
+                  curDir = path.dirname(curDir)
+                }
+              }
+            }
+            return resolved
+          })(),
           multimodalContent: file.multimodal_content
             ? decompressText(file.multimodal_content) || undefined
             : undefined,
