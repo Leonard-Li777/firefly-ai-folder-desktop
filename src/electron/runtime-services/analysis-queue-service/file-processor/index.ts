@@ -20,6 +20,7 @@ import {
   extractMarkitdownBenchmark,
   calculateFileFingerprint,
   cleanSmartName,
+  isSmartNameCopied,
   createSecretHmac,
   toBase62,
   isGibberishOcrText,
@@ -50,6 +51,7 @@ import {
   DimensionAnalyzer,
   TextFileProcessor,
   extractPureLyrics,
+  hasSubstantiveContent,
   type FileInfoInput
 } from '@firefly/core-engine'
 import {
@@ -1464,14 +1466,39 @@ export class FileProcessor {
           : ''
         // cleanSmartName 命中失败特征时回退为原文件名；与原名一致即视为无可用 AI 核心名
         const hasUsableAiSmartName = Boolean(aiSmartNameCleaned) && aiSmartNameCleaned !== originalStemName
-        const rawCoreSmartName = (hasUsableAiSmartName ? aiSmartNameCleaned : enhancedInfo.smartName) || ''
-        // 核心名来源：stage3 高级AI引擎语言模型命名 → 'ai'；Omni 5W 造句 → 'machine'；
-        // 二者皆无（回退到原始文件名）→ null
-        const coreNameSource: SmartNameSource | null = hasUsableAiSmartName
-          ? 'ai'
-          : enhancedInfo.smartName
-            ? 'machine'
-            : null
+        const hasSubstantive = hasSubstantiveContent(fileInfo.content)
+        const isCopied = isSmartNameCopied(aiSmartNameCleaned, originalStemName)
+        const hasValid5W = Boolean(enhancedInfo.smartName) && enhancedInfo.smartName !== originalStemName
+
+        let rawCoreSmartName = ''
+        let coreNameSource: SmartNameSource | null = null
+
+        if (!isCopied && hasUsableAiSmartName) {
+          // 优选：大模型完成实质地道提炼
+          rawCoreSmartName = aiSmartNameCleaned
+          coreNameSource = 'ai'
+        } else if (hasSubstantive && hasValid5W) {
+          // 次优：有正文但大模型偷懒照抄，拦截回落 CPU 5W 机械名
+          logger.info(LogCategory.ANALYSIS_QUEUE, '[智能命名仲裁] 检测到大模型偷懒照抄原名，回落采纳 CPU 5W 机械名', {
+            aiSmartNameCleaned,
+            originalStemName,
+            fallback5W: enhancedInfo.smartName
+          })
+          rawCoreSmartName = enhancedInfo.smartName
+          coreNameSource = 'machine'
+        } else if (aiSmartNameCleaned) {
+          // 兜底 1: 正文不足但 AI 给出了规范化包装（若照抄原名则来源为 null）
+          rawCoreSmartName = aiSmartNameCleaned
+          coreNameSource = isCopied ? null : 'ai'
+        } else if (hasValid5W) {
+          // 兜底 2: 无可用 AI 产出，回落 CPU 5W 机械名
+          rawCoreSmartName = enhancedInfo.smartName
+          coreNameSource = 'machine'
+        } else {
+          // 兜底 3: 全无，保留原文件名
+          rawCoreSmartName = originalStemName
+          coreNameSource = null
+        }
         const origExt = path.extname(filePath).replace(/^\./, '')
         // rawSmartName 不需要带扩展名
         let coreSmartName = rawCoreSmartName
@@ -2873,6 +2900,37 @@ export class FileProcessor {
         : ''
       const hasUsableAiSmartNameMain =
         Boolean(aiSmartNameCleanedMain) && aiSmartNameCleanedMain !== originalStemNameMain
+      const hasSubstantiveMain = hasSubstantiveContent(fileInfo.content)
+      const isCopiedMain = isSmartNameCopied(aiSmartNameCleanedMain, originalStemNameMain)
+      const hasValid5WMain = Boolean(enhancedSmartName) && cpuNameIsMachine
+
+      let finalTargetSmartName = ''
+      let finalTargetSmartNameSource: SmartNameSource | null = null
+
+      if (!isCopiedMain && hasUsableAiSmartNameMain) {
+        finalTargetSmartName = aiSmartNameCleanedMain
+        finalTargetSmartNameSource = 'ai'
+      } else if (hasSubstantiveMain && hasValid5WMain) {
+        logger.info(LogCategory.ANALYSIS_QUEUE, '[智能命名仲裁] 主流程大模型偷懒照抄原名，回落采纳 CPU 5W 机械名', {
+          aiSmartNameCleanedMain,
+          originalStemNameMain,
+          fallback5W: enhancedSmartName
+        })
+        finalTargetSmartName = enhancedSmartName
+        finalTargetSmartNameSource = 'machine'
+      } else if (aiSmartNameCleanedMain) {
+        // 兜底 1: 正文不足但 AI 给出了规范化包装（若照抄原名则来源为 null）
+        finalTargetSmartName = aiSmartNameCleanedMain
+        finalTargetSmartNameSource = isCopiedMain ? null : 'ai'
+      } else if (hasValid5WMain) {
+        // 兜底 2: 无可用 AI 产出，回落 CPU 5W 机械名
+        finalTargetSmartName = enhancedSmartName
+        finalTargetSmartNameSource = 'machine'
+      } else {
+        // 兜底 3: 全无，保留原文件名
+        finalTargetSmartName = originalStemNameMain
+        finalTargetSmartNameSource = null
+      }
 
       // ========== 保存本地分析结果 ==========
       const { workspaceFile } = await saveLocalAnalysisResult(
@@ -2880,7 +2938,7 @@ export class FileProcessor {
         fileFingerprint,
         processResult,
         magikaCategory,
-        hasUsableAiSmartNameMain ? aiSmartNameCleanedMain : enhancedSmartName,
+        finalTargetSmartName,
         enhancedFileType,
         thumbnailRelativePath || undefined,
         currentWorkspaceId,
@@ -2893,9 +2951,7 @@ export class FileProcessor {
         analysisMode === 'quick_name' ? 3 : 4,
         cpuSkipped,
         stage1Benchmark,
-        // 核心名来源：stage3 LLM 命名为 'ai'，否则回退 Omni 5W 造句 'machine'，再否则原名 null。
-        // 本主流程 AI 分支不套用目录命名模板（模板套用仅发生在 GPU 复用分支），故模板来源为 null。
-        hasUsableAiSmartNameMain ? 'ai' : cpuNameIsMachine ? 'machine' : null,
+        finalTargetSmartNameSource,
         null
       )
 
