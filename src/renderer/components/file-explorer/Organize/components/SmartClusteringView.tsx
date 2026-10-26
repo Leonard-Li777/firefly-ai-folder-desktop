@@ -25,6 +25,21 @@ import {
  */
 export type ClusteringMode = 'precise' | 'balanced' | 'complete'
 
+/**
+ * 根据文件数量 N 动态平滑推导推荐聚类参数 (Spec v2.1 §3.3)
+ */
+export function computeAdaptiveClusteringParams(fileCount: number): {
+  maxDepth: number
+  maxRootDirectories: number
+  maxSubdirectories: number
+} {
+  const n = Math.max(1, fileCount || 0)
+  const maxRoots = Math.max(3, Math.min(20, Math.round(Math.sqrt(n) * 0.8)))
+  const maxSubdirs = Math.max(2, Math.min(12, Math.round(Math.sqrt(n) * 0.6)))
+  const maxDepth = n > 500 ? 4 : (n > 100 ? 3 : 2)
+  return { maxDepth, maxRootDirectories: maxRoots, maxSubdirectories: maxSubdirs }
+}
+
 export interface SmartClusteringViewHandle {
   save: () => void | Promise<void>
 }
@@ -106,7 +121,6 @@ function pickDefaultVirtualDirectoryName(
     item =>
       item.fileCount > 0 &&
       item.name !== '其他' && // locale-invariant-ok: Omni 聚类兜底目录名哨兵
-      item.name !== t('其他文件') &&
       item.name !== SENTINEL_NAMES.UNCLASSIFIED
   )
   if (largest) {
@@ -126,12 +140,17 @@ const SmartClusteringViewInner = (
   }: SmartClusteringViewProps,
   ref: React.Ref<SmartClusteringViewHandle>
 ) => {
+  const initialCount = fileIds?.length || 0
+  const initialAdaptive = initialCount > 0
+    ? computeAdaptiveClusteringParams(initialCount)
+    : { maxDepth: 3, maxRootDirectories: 5, maxSubdirectories: 5 }
   const [prompt, setPrompt] = useState<string>('')
-  const [maxDepth, setMaxDepth] = useState<number>(3)
-  const [maxRootDirectories, setMaxRootDirectories] = useState<number>(5)
-  const [maxSubdirectories, setMaxSubdirectories] = useState<number>(5)
+  const [maxDepth, setMaxDepth] = useState<number>(initialAdaptive.maxDepth)
+  const [maxRootDirectories, setMaxRootDirectories] = useState<number>(initialAdaptive.maxRootDirectories)
+  const [maxSubdirectories, setMaxSubdirectories] = useState<number>(initialAdaptive.maxSubdirectories)
   const [similarityThreshold, setSimilarityThreshold] = useState<number>(60)
   const [clusteringMode, setClusteringMode] = useState<ClusteringMode>('balanced')
+  const hasUserModifiedSlidersRef = React.useRef<boolean>(false)
 
   const presetExamplePrompts = getPresetExamplePrompts()
   const [tree, setTree] = useState<VirtualDirectoryNode[]>([])
@@ -152,9 +171,9 @@ const SmartClusteringViewInner = (
   // 记录最近一次已提交并在跑或跑完的有效参数
   const lastCommittedParamsRef = React.useRef({
     prompt: '',
-    maxDepth: 3,
-    maxRootDirectories: 5,
-    maxSubdirectories: 5,
+    maxDepth: initialAdaptive.maxDepth,
+    maxRootDirectories: initialAdaptive.maxRootDirectories,
+    maxSubdirectories: initialAdaptive.maxSubdirectories,
     similarityThreshold: 60,
     clusteringMode: 'balanced' as ClusteringMode
   })
@@ -247,18 +266,29 @@ const SmartClusteringViewInner = (
   useEffect(() => {
     if (lastInitializedKeyRef.current !== workspaceKey) {
       lastInitializedKeyRef.current = workspaceKey
+      const initialCount = fileIds?.length || 0
+      const adaptive = !hasUserModifiedSlidersRef.current && initialCount > 0
+        ? computeAdaptiveClusteringParams(initialCount)
+        : { maxDepth: maxDepthRef.current, maxRootDirectories: maxRootDirectoriesRef.current, maxSubdirectories: maxSubdirectoriesRef.current }
+
+      if (!hasUserModifiedSlidersRef.current && initialCount > 0) {
+        setMaxDepth(adaptive.maxDepth)
+        setMaxRootDirectories(adaptive.maxRootDirectories)
+        setMaxSubdirectories(adaptive.maxSubdirectories)
+      }
+
       lastCommittedParamsRef.current = {
         prompt: '',
-        maxDepth: 3,
-        maxRootDirectories: 5,
-        maxSubdirectories: 5,
+        maxDepth: adaptive.maxDepth,
+        maxRootDirectories: adaptive.maxRootDirectories,
+        maxSubdirectories: adaptive.maxSubdirectories,
         similarityThreshold: 60,
         clusteringMode: 'balanced'
       }
       executeClustering('', {
-        maxDepth: 3,
-        maxRootDirectories: 5,
-        maxSubdirectories: 5,
+        maxDepth: adaptive.maxDepth,
+        maxRootDirectories: adaptive.maxRootDirectories,
+        maxSubdirectories: adaptive.maxSubdirectories,
         similarityThreshold: 0.6,
         clusteringMode: 'balanced'
       })
@@ -325,6 +355,8 @@ const SmartClusteringViewInner = (
     name: 'maxDepth' | 'maxRootDirectories' | 'maxSubdirectories' | 'similarityThreshold',
     val: number
   ) => {
+    // 标记用户已手动调节过滑块，后续不再被自适应默认值重置
+    hasUserModifiedSlidersRef.current = true
     if (isTreeDirty) {
       setPendingAction(() => () => {
         setter(val)

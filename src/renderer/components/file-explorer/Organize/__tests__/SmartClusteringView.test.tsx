@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import React from 'react'
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
-import { SmartClusteringView, SmartClusteringViewHandle } from '../components/SmartClusteringView'
+import { SmartClusteringView, SmartClusteringViewHandle, computeAdaptiveClusteringParams } from '../components/SmartClusteringView'
 import { VirtualDirectoryNode } from '@firefly/types'
 
 // Mock 语言包
@@ -535,5 +535,44 @@ describe('SmartClusteringView Component', () => {
     expect(screen.getByText('0% (松散)')).toBeInTheDocument()
     expect(screen.getByText('60% (标准)')).toBeInTheDocument()
     expect(screen.getByText('100% (精细)')).toBeInTheDocument()
+  })
+
+  it('computeAdaptiveClusteringParams 纯函数应符合 Spec v2.1 §3.3 自适应推导公式', () => {
+    // 1. 极小规模 / 兜底边界 (N <= 1)
+    const p1 = computeAdaptiveClusteringParams(0)
+    expect(p1).toEqual({ maxDepth: 2, maxRootDirectories: 3, maxSubdirectories: 2 })
+
+    // 2. 真实桌面工作区场景 (N = 165)
+    // sqrt(165) ≈ 12.845 => roots = round(10.28) = 10, subdirs = round(7.71) = 8, depth = 3
+    const p165 = computeAdaptiveClusteringParams(165)
+    expect(p165).toEqual({ maxDepth: 3, maxRootDirectories: 10, maxSubdirectories: 8 })
+
+    // 3. 超大规模工作区 (N = 600)
+    // N > 500 => depth = 4; sqrt(600) ≈ 24.49 => roots = clamp(20, 3, 20) = 20, subdirs = clamp(15, 2, 12) = 12
+    const p600 = computeAdaptiveClusteringParams(600)
+    expect(p600).toEqual({ maxDepth: 4, maxRootDirectories: 20, maxSubdirectories: 12 })
+  })
+
+  it('组件首启根据 fileIds 数量自适应默认滑块数值并驱动聚类', async () => {
+    const fileIds165 = Array.from({ length: 165 }, (_, i) => i + 1)
+    render(
+      <SmartClusteringView
+        workspaceId={1}
+        workspaceDirectoryPath="/test/workspace"
+        fileIds={fileIds165}
+        onSaveVirtualDirectory={mockSaveVirtualDirectory}
+      />
+    )
+
+    await waitFor(() => {
+      expect(mockSmartClusterHac).toHaveBeenCalled()
+    })
+
+    // 首次调用传入参数应使用针对 165 份文件推导的自适应参数 (roots: 10, subdirs: 8, depth: 3)
+    const callArgs = mockSmartClusterHac.mock.calls[0][0]
+    expect(callArgs.maxRootDirectories).toBe(10)
+    expect(callArgs.maxSubdirectories).toBe(8)
+    expect(callArgs.maxDepth).toBe(3)
+    expect(callArgs.clusteringMode).toBe('balanced')
   })
 });
