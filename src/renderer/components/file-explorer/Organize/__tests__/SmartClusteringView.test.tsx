@@ -90,7 +90,8 @@ describe('SmartClusteringView Component', () => {
       maxDepth: 3,
       maxRootDirectories: 5,
       maxSubdirectories: 5,
-      similarityThreshold: 0.6
+      similarityThreshold: 0.6,
+      clusteringMode: 'balanced'
     })
 
     // 等待渲染完成
@@ -125,7 +126,8 @@ describe('SmartClusteringView Component', () => {
         maxDepth: 3,
         maxRootDirectories: 5,
         maxSubdirectories: 5,
-        similarityThreshold: 0.6
+        similarityThreshold: 0.6,
+        clusteringMode: 'balanced'
       })
     })
   })
@@ -351,7 +353,7 @@ describe('SmartClusteringView Component', () => {
     expect(screen.getByText('目录层级深度')).toBeInTheDocument()
     expect(screen.getByText('根目录数上限')).toBeInTheDocument()
     expect(screen.getByText('子目录数上限')).toBeInTheDocument()
-    expect(screen.getByText('相似度阈值')).toBeInTheDocument()
+    expect(screen.getByText('相似度基准')).toBeInTheDocument()
 
     // 获取所有 range inputs
     const rangeInputs = screen.getAllByRole('slider')
@@ -370,7 +372,8 @@ describe('SmartClusteringView Component', () => {
         maxDepth: 5,
         maxRootDirectories: 5,
         maxSubdirectories: 5,
-        similarityThreshold: 0.6
+        similarityThreshold: 0.6,
+        clusteringMode: 'balanced'
       })
     }, { timeout: 2000 })
   })
@@ -417,5 +420,120 @@ describe('SmartClusteringView Component', () => {
     await waitFor(() => {
       expect(rangeInputs[0]).toHaveValue('3')
     })
+  })
+
+  it('点击聚类策略胶囊控件应切换模式并重新触发聚类', async () => {
+    render(
+      <SmartClusteringView
+        workspaceId={1}
+        workspaceDirectoryPath="/test/workspace"
+        onSaveVirtualDirectory={mockSaveVirtualDirectory}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('2026年度财务')).toBeInTheDocument()
+    })
+
+    // 默认平衡模式高亮
+    const balancedBtn = screen.getByRole('radio', { name: /平衡推荐/ })
+    expect(balancedBtn).toHaveAttribute('aria-checked', 'true')
+
+    // 点击【精准严谨】
+    const preciseBtn = screen.getByRole('radio', { name: /精准严谨/ })
+    fireEvent.click(preciseBtn)
+
+    await waitFor(() => {
+      expect(mockSmartClusterHac).toHaveBeenCalledWith({
+        workspaceId: 1,
+        workspaceDirectoryPath: '/test/workspace',
+        fileIds: undefined,
+        prompt: '',
+        maxDepth: 3,
+        maxRootDirectories: 5,
+        maxSubdirectories: 5,
+        similarityThreshold: 0.6,
+        clusteringMode: 'precise'
+      })
+    })
+
+    // 点击【全量收纳】
+    const completeBtn = screen.getByRole('radio', { name: /全量收纳/ })
+    fireEvent.click(completeBtn)
+
+    await waitFor(() => {
+      expect(mockSmartClusterHac).toHaveBeenCalledWith({
+        workspaceId: 1,
+        workspaceDirectoryPath: '/test/workspace',
+        fileIds: undefined,
+        prompt: '',
+        maxDepth: 3,
+        maxRootDirectories: 5,
+        maxSubdirectories: 5,
+        similarityThreshold: 0.6,
+        clusteringMode: 'complete'
+      })
+    })
+  })
+
+  it('在目录树脏状态下点击聚类策略胶囊应触发覆盖确认弹窗，点击取消应回滚模式', async () => {
+    render(
+      <SmartClusteringView
+        workspaceId={1}
+        workspaceDirectoryPath="/test/workspace"
+        onSaveVirtualDirectory={mockSaveVirtualDirectory}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('2026年度财务')).toBeInTheDocument()
+    })
+
+    // 拖拽使目录树变脏
+    const targetRow = screen.getByText('设计稿素材').closest('[draggable="true"]')!
+    fireEvent.drop(targetRow, {
+      dataTransfer: {
+        getData: () =>
+          JSON.stringify({ type: 'file', file: { id: 1, name: 'Q1报表.xlsx' }, sourceNodeKey: '2026年度财务' })
+      }
+    })
+
+    // 点击【全量收纳】
+    const completeBtn = screen.getByRole('radio', { name: /全量收纳/ })
+    fireEvent.click(completeBtn)
+
+    // 应弹出覆盖确认弹窗
+    await waitFor(() => {
+      expect(screen.getByText('覆盖微调确认')).toBeInTheDocument()
+    })
+
+    // 点击取消覆盖
+    const cancelBtn = screen.getByText('取消')
+    fireEvent.click(cancelBtn)
+
+    // 弹窗关闭，模式仍保持 balanced (推荐)
+    await waitFor(() => {
+      const balancedBtn = screen.getByRole('radio', { name: /平衡推荐/ })
+      expect(balancedBtn).toHaveAttribute('aria-checked', 'true')
+    })
+  })
+
+  it('相似度基准滑块文案与刻度标签应正确解耦展示', async () => {
+    render(
+      <SmartClusteringView
+        workspaceId={1}
+        workspaceDirectoryPath="/test/workspace"
+        onSaveVirtualDirectory={mockSaveVirtualDirectory}
+      />
+    )
+
+    // 标题解耦为「相似度基准」
+    expect(screen.getByText('相似度基准')).toBeInTheDocument()
+    // 默认 60% 对应标准匹配
+    expect(screen.getByText('60% (标准匹配)')).toBeInTheDocument()
+    // 底部刻度
+    expect(screen.getByText('0% (松散)')).toBeInTheDocument()
+    expect(screen.getByText('60% (标准)')).toBeInTheDocument()
+    expect(screen.getByText('100% (精细)')).toBeInTheDocument()
   })
 });

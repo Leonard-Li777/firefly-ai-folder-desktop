@@ -24,6 +24,7 @@ import { IconManager, FOLDER_ICONS, EXCLUDED_FOLDER_ICONS } from './IconManager'
 import { TreeBuilder } from './TreeBuilder'
 import { Exporter } from './Exporter'
 import { AISchemeGenerator } from './AISchemeGenerator'
+import { ClusteringMode } from '../../system/omni-service'
 import { PreviewTreeExporter } from './PreviewTreeExporter'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 
@@ -948,6 +949,7 @@ export class VirtualDirectoryService {
       similarityThreshold?: number
       embeddingProfile?: string
       embeddingDim?: number
+      clusteringMode?: ClusteringMode
     }
   ): Promise<AIDirectoryStructure | null> {
     this.ensureInitialized()

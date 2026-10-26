@@ -1287,6 +1287,7 @@ export function registerVirtualDirectoryIPCHandlers() {
         maxRootDirectories?: number
         maxSubdirectories?: number
         similarityThreshold?: number
+        clusteringMode?: 'precise' | 'balanced' | 'complete'
       }
     ) => {
       const startTime = Date.now()
@@ -1317,7 +1318,8 @@ export function registerVirtualDirectoryIPCHandlers() {
           maxDepth: params.maxDepth,
           maxRootDirectories: params.maxRootDirectories,
           maxSubdirectories: params.maxSubdirectories,
-          similarityThreshold: params.similarityThreshold
+          similarityThreshold: params.similarityThreshold,
+          clusteringMode: params.clusteringMode
         }
       )
 

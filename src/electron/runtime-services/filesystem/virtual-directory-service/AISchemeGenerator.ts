@@ -50,7 +50,7 @@ import { engineBridgeService } from '../../engine-bridge'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { DirectoryContextService } from '../directory-context-service'
 import { unifiedModelManager } from '../../llama/unified-model-manager'
-import { omniService, OmniClusterDocument } from '../../system/omni-service'
+import { omniService, OmniClusterDocument, ClusteringMode } from '../../system/omni-service'
 import { omniClient, ENCODER_FILTER_GEMMA } from '../../../services/omni-client'
 import { decompressJson, decompressText } from '../../../utils/text-compressor'
 // Ticket 10 (Spec §4.9)：JIT 向量补全 60ms 软熔断与后台队列异步消费
@@ -171,6 +171,7 @@ export class AISchemeGenerator {
       /** 仅测试/内部显式覆盖；缺省读取 ConfigOrchestrator 当前档位 */
       embeddingProfile?: string
       embeddingDim?: number
+      clusteringMode?: ClusteringMode
     }
   ): Promise<AIDirectoryStructure | null> {
     try {
@@ -527,7 +528,8 @@ export class AISchemeGenerator {
         maxLeafSize: options?.maxLeafSize ?? HAC_DEFAULT_MAX_LEAF_SIZE,
         maxDepth: options?.maxDepth,
         maxRootDirectories: options?.maxRootDirectories,
-        maxSubdirectories: options?.maxSubdirectories
+        maxSubdirectories: options?.maxSubdirectories,
+        clusteringMode: options?.clusteringMode
       })
 
       if (!clusterRes || !clusterRes.success || !clusterRes.result) {

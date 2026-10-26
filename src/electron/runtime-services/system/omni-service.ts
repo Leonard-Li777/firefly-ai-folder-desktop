@@ -409,6 +409,14 @@ export interface OmniHybridSearchResponse {
   error?: string
 }
 
+/**
+ * 智能聚类策略模式 (Spec v2.0):
+ * - precise: 【🎯 精准严谨】单轮严格阈值聚类，不触发任何降级，未达到阈值的文件全量归入「未归类」
+ * - balanced: 【⭐ 平衡推荐】多轮阶梯降级且车门焊死，降级文件绝不掺入已有目录，仅自行抱团；同名同路径自然汇入
+ * - complete: 【📦 全量收纳】阶梯降级双引擎（种子内向吸收 + 剩余抱团），最大化收敛消灭未归类文件
+ */
+export type ClusteringMode = 'precise' | 'balanced' | 'complete'
+
 export interface OmniClusterDocument {
   fingerprint: string
   embedding: number[]
@@ -2180,6 +2188,7 @@ export class OmniService {
       maxSubdirectories?: number
       similarityFloor?: number
       similarityStep?: number
+      clusteringMode?: ClusteringMode
     },
     timeoutMs: number = 30000
   ): Promise<OmniClusterResponse | null> {

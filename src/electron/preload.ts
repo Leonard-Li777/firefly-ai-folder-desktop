@@ -1053,6 +1053,7 @@ const electronAPI = {
       maxRootDirectories?: number
       maxSubdirectories?: number
       similarityThreshold?: number
+      clusteringMode?: 'precise' | 'balanced' | 'complete'
     }) =>
       ipcRenderer.invoke('organize-real-directory/smart-cluster-hac', params),
     quickOrganize: (params: { workspaceDirectoryPath: string; aiGeneratedStructure: any }) =>

@@ -749,6 +749,7 @@ declare global {
           maxRootDirectories?: number
           maxSubdirectories?: number
           similarityThreshold?: number
+          clusteringMode?: 'precise' | 'balanced' | 'complete'
         }) => Promise<{
           success: boolean
           summary: string

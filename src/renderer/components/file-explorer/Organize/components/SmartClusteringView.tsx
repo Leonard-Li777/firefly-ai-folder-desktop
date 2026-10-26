@@ -23,6 +23,8 @@ import {
  * 「保存为虚拟目录」主操作按钮已统一迁至面包屑栏右侧，保存动作经此句柄触发，
  * 完整沿用视图内部命名规则（提示词优先、默认名兜底）与防重复保存逻辑。
  */
+export type ClusteringMode = 'precise' | 'balanced' | 'complete'
+
 export interface SmartClusteringViewHandle {
   save: () => void | Promise<void>
 }
@@ -53,9 +55,9 @@ function getPresetExamplePrompts(): string[] {
 }
 
 function getSimilarityLabel(percent: number): string {
-  if (percent >= 75) return `${percent}% (${t('细分')})`
-  if (percent <= 45) return `${percent}% (${t('松散')})`
-  return `${percent}% (${t('标准')})`
+  if (percent > 75) return `${percent}% (${t('精细匹配')})`
+  if (percent < 40) return `${percent}% (${t('松散匹配')})`
+  return `${percent}% (${t('标准匹配')})`
 }
 
 function getSubdirectoryLabel(count: number): string {
@@ -129,6 +131,7 @@ const SmartClusteringViewInner = (
   const [maxRootDirectories, setMaxRootDirectories] = useState<number>(5)
   const [maxSubdirectories, setMaxSubdirectories] = useState<number>(5)
   const [similarityThreshold, setSimilarityThreshold] = useState<number>(60)
+  const [clusteringMode, setClusteringMode] = useState<ClusteringMode>('balanced')
 
   const presetExamplePrompts = getPresetExamplePrompts()
   const [tree, setTree] = useState<VirtualDirectoryNode[]>([])
@@ -152,7 +155,8 @@ const SmartClusteringViewInner = (
     maxDepth: 3,
     maxRootDirectories: 5,
     maxSubdirectories: 5,
-    similarityThreshold: 60
+    similarityThreshold: 60,
+    clusteringMode: 'balanced' as ClusteringMode
   })
 
   // 引用最新参数，供 executeClustering 使用
@@ -164,6 +168,8 @@ const SmartClusteringViewInner = (
   maxSubdirectoriesRef.current = maxSubdirectories
   const similarityThresholdRef = React.useRef(similarityThreshold)
   similarityThresholdRef.current = similarityThreshold
+  const clusteringModeRef = React.useRef(clusteringMode)
+  clusteringModeRef.current = clusteringMode
 
   // 始终持有最新 props 引用，确保 executeClustering 句柄永久稳定，杜绝父组件渲染导致死循环重聚类
   const paramsRef = React.useRef({ workspaceId, workspaceDirectoryPath, fileIds })
@@ -178,6 +184,7 @@ const SmartClusteringViewInner = (
         maxRootDirectories?: number
         maxSubdirectories?: number
         similarityThreshold?: number
+        clusteringMode?: ClusteringMode
       }
     ) => {
       const requestId = ++currentRequestIdRef.current
@@ -189,6 +196,7 @@ const SmartClusteringViewInner = (
         const effectiveRoots = customOptions?.maxRootDirectories ?? maxRootDirectoriesRef.current
         const effectiveSubdirs = customOptions?.maxSubdirectories ?? maxSubdirectoriesRef.current
         const effectiveSim = customOptions?.similarityThreshold ?? (similarityThresholdRef.current / 100)
+        const effectiveMode = customOptions?.clusteringMode ?? clusteringModeRef.current
 
         const res = await window.electronAPI.organizeRealDirectory.smartClusterHac({
           workspaceId: wsId,
@@ -198,7 +206,8 @@ const SmartClusteringViewInner = (
           maxDepth: effectiveDepth,
           maxRootDirectories: effectiveRoots,
           maxSubdirectories: effectiveSubdirs,
-          similarityThreshold: effectiveSim
+          similarityThreshold: effectiveSim,
+          clusteringMode: effectiveMode
         })
 
         // 若请求已过时（用户后续输入已触发新请求），丢弃该次响应
@@ -243,13 +252,15 @@ const SmartClusteringViewInner = (
         maxDepth: 3,
         maxRootDirectories: 5,
         maxSubdirectories: 5,
-        similarityThreshold: 60
+        similarityThreshold: 60,
+        clusteringMode: 'balanced'
       }
       executeClustering('', {
         maxDepth: 3,
         maxRootDirectories: 5,
         maxSubdirectories: 5,
-        similarityThreshold: 0.6
+        similarityThreshold: 0.6,
+        clusteringMode: 'balanced'
       })
     }
   }, [workspaceKey, executeClustering])
@@ -270,25 +281,28 @@ const SmartClusteringViewInner = (
         maxDepth !== last.maxDepth ||
         maxRootDirectories !== last.maxRootDirectories ||
         maxSubdirectories !== last.maxSubdirectories ||
-        similarityThreshold !== last.similarityThreshold
+        similarityThreshold !== last.similarityThreshold ||
+        clusteringMode !== last.clusteringMode
       ) {
         lastCommittedParamsRef.current = {
           prompt: prompt.trim(),
           maxDepth,
           maxRootDirectories,
           maxSubdirectories,
-          similarityThreshold
+          similarityThreshold,
+          clusteringMode
         }
         executeClustering(prompt, {
           maxDepth,
           maxRootDirectories,
           maxSubdirectories,
-          similarityThreshold: similarityThreshold / 100
+          similarityThreshold: similarityThreshold / 100,
+          clusteringMode
         })
       }
     }, 400)
     return () => clearTimeout(timer)
-  }, [prompt, maxDepth, maxRootDirectories, maxSubdirectories, similarityThreshold, isTreeDirty, executeClustering])
+  }, [prompt, maxDepth, maxRootDirectories, maxSubdirectories, similarityThreshold, clusteringMode, isTreeDirty, executeClustering])
 
   // 用户请求触发聚类（带脏状态拦截）
   const handleRequestClustering = (targetPrompt: string) => {
@@ -325,6 +339,23 @@ const SmartClusteringViewInner = (
     }
   }
 
+  
+  const handleModeChange = (mode: ClusteringMode) => {
+    if (mode === clusteringMode) return
+    if (isTreeDirty) {
+      setPendingAction(() => () => {
+        setClusteringMode(mode)
+        lastCommittedParamsRef.current.clusteringMode = mode
+        executeClustering(prompt, { clusteringMode: mode })
+      })
+      setShowDirtyDialog(true)
+    } else {
+      setClusteringMode(mode)
+      lastCommittedParamsRef.current.clusteringMode = mode
+      executeClustering(prompt, { clusteringMode: mode })
+    }
+  }
+
   const handleCancelDirtyOverwrite = () => {
     setShowDirtyDialog(false)
     setPendingAction(null)
@@ -334,6 +365,7 @@ const SmartClusteringViewInner = (
     setMaxRootDirectories(last.maxRootDirectories)
     setMaxSubdirectories(last.maxSubdirectories)
     setSimilarityThreshold(last.similarityThreshold)
+    setClusteringMode(last.clusteringMode)
   }
 
   const handleConfirmDirtyOverwrite = () => {
@@ -596,6 +628,66 @@ const SmartClusteringViewInner = (
             </span>
           </div>
 
+          {/* 聚类策略模式三选一胶囊单选控件 (Segmented Control) */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">{t('聚类策略')}</span>
+              <span className="text-[11px] text-muted-foreground/70">
+                {clusteringMode === 'precise' && t('单轮单阈值，不降级')}
+                {clusteringMode === 'balanced' && t('降级车门焊死，仅抱团')}
+                {clusteringMode === 'complete' && t('降级吸收+抱团，全收纳')}
+              </span>
+            </div>
+            <div role="radiogroup" aria-label={t('聚类策略')} className="grid grid-cols-3 p-1 bg-muted/60 rounded-xl border border-border/50 text-xs">
+              <button
+                type="button"
+                disabled={isGenerating}
+                role="radio" aria-checked={clusteringMode === 'precise'} onClick={() => handleModeChange('precise')}
+                className={cn(
+                  'py-1.5 px-2 rounded-lg text-center transition-all flex items-center justify-center gap-1 text-xs select-none',
+                  clusteringMode === 'precise'
+                    ? 'bg-background text-foreground shadow-xs font-semibold'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+                title={t('🎯 精准严谨：单轮严格按相似度基准聚类，不触发任何降级，未达到阈值的文件全量归入「未归类」')}
+              >
+                <span>🎯</span>
+                <span>{t('精准严谨')}</span>
+              </button>
+              <button
+                type="button"
+                disabled={isGenerating}
+                role="radio" aria-checked={clusteringMode === 'balanced'} onClick={() => handleModeChange('balanced')}
+                className={cn(
+                  'py-1.5 px-2 rounded-lg text-center transition-all flex items-center justify-center gap-1 text-xs select-none',
+                  clusteringMode === 'balanced'
+                    ? 'bg-background text-foreground shadow-xs font-semibold'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+                title={t('⭐ 平衡推荐：多轮阶梯降级且车门焊死，降级文件绝不掺入已有目录，仅自行抱团；同名同路径自然汇入')}
+              >
+                <span>⭐</span>
+                <span>{t('平衡推荐')}</span>
+              </button>
+              <button
+                type="button"
+                disabled={isGenerating}
+                role="radio" aria-checked={clusteringMode === 'complete'} onClick={() => handleModeChange('complete')}
+                className={cn(
+                  'py-1.5 px-2 rounded-lg text-center transition-all flex items-center justify-center gap-1 text-xs select-none',
+                  clusteringMode === 'complete'
+                    ? 'bg-background text-foreground shadow-xs font-semibold'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+                title={t('📦 全量收纳：阶梯降级双引擎（种子内向吸收 + 剩余抱团），最大化收敛消灭未归类文件')}
+              >
+                <span>📦</span>
+                <span>{t('全量收纳')}</span>
+              </button>
+            </div>
+          </div>
+
+
           {/* 1. 目录层级深度 (1..=10) */}
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs">
@@ -674,7 +766,7 @@ const SmartClusteringViewInner = (
           {/* 4. 相似度阈值 (0%..=100%) */}
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">{t('相似度阈值')}</span>
+              <span className="text-muted-foreground">{t('相似度基准')}</span>
               <Badge variant="outline" className="text-[11px] h-5 px-1.5 font-mono">
                 {getSimilarityLabel(similarityThreshold)}
               </Badge>
@@ -690,9 +782,9 @@ const SmartClusteringViewInner = (
               className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
             />
             <div className="flex justify-between text-[10px] text-muted-foreground/60 px-0.5">
-              <span>{t('松散')} (0%)</span>
+              <span>0% ({t('松散')})</span>
               <span>60% ({t('标准')})</span>
-              <span>{t('细分')} (100%)</span>
+              <span>100% ({t('精细')})</span>
             </div>
           </div>
         </div>
