@@ -630,7 +630,7 @@
       "tags": [
         "Extension du fichier système",
         "Fichier de configuration",
-        "Enregistrer",
+        "Journal d'événements",
         "Cache",
         "Fichiers temporaires",
         "Conduire"
@@ -666,7 +666,7 @@
       "tags": [
         "Livre séparé",
         "Sérialisation",
-        "Complété",
+        "Publication terminée",
         "Non coupé",
         "Supplémentaire",
         "En vedette",
@@ -769,7 +769,7 @@
         "Extension d'image disque",
         "Image système",
         "Mise en miroir des données",
-        "Image disque"
+        "Image de disque optique"
       ],
       "description": "Classification de l'utilisation des images disque",
       "applicableFileTypes": [
@@ -1382,7 +1382,7 @@
         "Thriller",
         "Conte de fées",
         "Animation",
-        "Enregistrer",
+        "Documentaire",
         "Nature",
         "Sciences humaines",
         "Éducation physique",
@@ -3631,7 +3631,7 @@
       "name": "Mise en page",
       "level": 2,
       "tags": [
-        "Texte brut",
+        "Texte uniquement",
         "Basé sur un graphique",
         "Graphiques et textes mixtes",
         "Notes manuscrites"
@@ -4037,12 +4037,12 @@
         "Belle-mère érotique",
         "Beau-père belle-mère érotique",
         "Beau-père belle-mère érotisme",
-        "Belle-soeur érotique",
+        "Érotique avec la jeune sœur de l'épouse",
         "Tante et neveu érotique",
-        "Oncle et neveu érotique",
-        "Oncle et neveu érotique",
+        "Érotique oncle paternel et neveu",
+        "Érotique oncle maternel et neveu",
         "Belle-cousine érotique",
-        "Belle-soeur érotique",
+        "Érotique avec l'épouse du frère aîné",
         "Érotisme intergénérationnel grand-père et petit-fils"
       ],
       "description": "Subdivision de la consanguinité, de l'ancienneté familiale et des thèmes éthiques tabous",
@@ -4247,8 +4247,8 @@
         "SM",
         "Esclave sexuelle",
         "Dressage et bondage",
-        "Sexe violent",
-        "Sexe violent",
+        "Sexe rude",
+        "Coït sauvage",
         "Perversion Hardcore",
         "Fouet à cire dégoulinant",
         "Pénchant sexuel fétichiste"

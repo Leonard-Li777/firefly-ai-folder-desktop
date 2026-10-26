@@ -526,8 +526,8 @@
     "ko-KR": "고급 AI 엔진을 활성화해야 합니다",
     "$files": [
       "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(3814-3827)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(15686-15699)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(18393-18406)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(15991-16004)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(18662-18675)",
       "src/renderer/components/settings/unit-recognition-settings.tsx(6021-6034)"
     ],
     "$id": 20519
@@ -825,7 +825,7 @@
     "fr-FR": "Moteur opérationnel",
     "ko-KR": "엔진 상태 양호",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(1775-1785)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(1803-1813)"
     ],
     "$id": 19430
   },
@@ -840,7 +840,7 @@
     "fr-FR": "Anomalie intermittente du moteur, réessai automatique en cours",
     "ko-KR": "엔진 간헐적 오류 발생, 자동 재시도 중",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(1829-1846)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(1857-1874)"
     ],
     "$id": 19431
   },
@@ -855,7 +855,7 @@
     "fr-FR": "Échec consécutif du moteur, temporairement désactivé et pris en charge par le moteur IA de secours",
     "ko-KR": "엔진 연속 실패, 일시 중단 및 기본 AI 엔진으로 대체",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(1886-1912)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(1914-1940)"
     ],
     "$id": 19432
   },
@@ -870,7 +870,7 @@
     "fr-FR": "L'opération a échoué, veuillez vérifier le journal",
     "ko-KR": "작업이 실패,로그를 확인하시기 바랍니다",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(9923-9937)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(10195-10209)"
     ],
     "$id": 20099
   },
@@ -885,7 +885,7 @@
     "fr-FR": "Exception de moteur",
     "ko-KR": "엔진 예외",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(11445-11453)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(11717-11725)"
     ],
     "$id": 11422
   },
@@ -900,7 +900,7 @@
     "fr-FR": "Démarré",
     "ko-KR": "시작됨",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(11494-11501)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(11766-11773)"
     ],
     "$id": 19433
   },
@@ -915,7 +915,7 @@
     "fr-FR": "Connecté",
     "ko-KR": "연결됨",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(11544-11551)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(11816-11823)"
     ],
     "$id": 20101
   },
@@ -930,9 +930,9 @@
     "fr-FR": "Détection en cours...",
     "ko-KR": "감지 중...  ",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(11594-11604)",
-      "src/renderer/components/settings/content-extraction-settings.tsx(17086-17096)",
-      "src/renderer/components/settings/content-extraction-settings.tsx(18320-18330)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(11866-11876)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(16262-16272)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(17496-17506)"
     ],
     "$id": 20100
   },
@@ -947,7 +947,7 @@
     "fr-FR": "Moteur non déployé",
     "ko-KR": "���진 미배포",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(11650-11659)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(11922-11931)"
     ],
     "$id": 20102
   },
@@ -962,7 +962,7 @@
     "fr-FR": "Non connecté",
     "ko-KR": "미연결",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(11693-11700)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(11965-11972)"
     ],
     "$id": 20103
   },
@@ -977,7 +977,7 @@
     "fr-FR": "MiniCPM5 1B (meilleur·jailbreak)",
     "ko-KR": "MiniCPM5 1B (더 좋음·탈옥)",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(14536-14558)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(14913-14935)"
     ],
     "$id": 20335
   },
@@ -992,7 +992,7 @@
     "fr-FR": "MiniCPM5 2B (haute qualité • haute vitesse)",
     "ko-KR": "MiniCPM5 2B (고품질 • 고속)",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(14623-14646)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(15000-15023)"
     ],
     "$id": 19560
   },
@@ -1007,7 +1007,7 @@
     "fr-FR": "Qwen 3.5 0.8B (meilleure prise en charge du chinois)",
     "ko-KR": "Qwen 3.5 0.8B (중국어 성능 우수)",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(14715-14739)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(15092-15116)"
     ],
     "$id": 19558
   },
@@ -1022,7 +1022,7 @@
     "fr-FR": "LFM2.5 1.2B Instruct (meilleure prise en charge de l'anglais • haute vitesse)",
     "ko-KR": "LFM2.5 1.2B Instruct (영어 성능 우수 • 고속)",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(14807-14840)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(15184-15217)"
     ],
     "$id": 19559
   },
@@ -1037,7 +1037,7 @@
     "fr-FR": "Échec du démarrage du moteur IA Firefly, veuillez ouvrir manuellement le moteur IA Firefly depuis le menu Démarrer puis réessayer",
     "ko-KR": "Firefly AI 엔진 시작 실패. 시작 메뉴에서 Firefly AI 엔진을 수동으로 시작한 후 다시 시도하십시오",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(15344-15378)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(15721-15755)"
     ],
     "$id": 19434
   },
@@ -1052,7 +1052,7 @@
     "fr-FR": "Prise en charge par Firefly AI Folder, application open source indépendante offrant un service local accéléré par le matériel, utilisée hors ligne pour la confidentialité et la sécurité.",
     "ko-KR": "화이어핵 AI 엔진이 독립적으로 오픈소스화한 애플리케이션을 지원하며, 하드웨어 가속을 갖춘 로컬 AI 서비스로 프라��버시와 안전성을 보장하고 오프라인에서도 사용할 수 있습니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(15506-15548)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(15883-15925)"
     ],
     "$id": 19435
   },
@@ -1067,7 +1067,7 @@
     "fr-FR": "Connectez d'autres services d'IA tiers pour une analyse, offrant de meilleures capacités de cognition linguistique. Une connexion réseau est requise.",
     "ko-KR": "기타 제3자 AI 서비스에 연결하여 분석을 수행하며, 더 강력한 언어 인지 기능을 제공합니다. 네트워크 연결 유지가 필요합니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(15563-15602)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(15940-15979)"
     ],
     "$id": 19436
   },
@@ -1082,8 +1082,8 @@
     "fr-FR": "Activer le moteur IA avancé",
     "ko-KR": "고급 AI 엔진 활성화",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(18036-18048)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(18691-18703)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(18413-18425)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(19068-19080)"
     ],
     "$id": 19437
   },
@@ -1098,7 +1098,7 @@
     "fr-FR": "Activé",
     "ko-KR": "활성화됨",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(18392-18399)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(18769-18776)"
     ],
     "$id": 19438
   },
@@ -1113,7 +1113,7 @@
     "fr-FR": "Désactivé",
     "ko-KR": "비활성화됨",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(18403-18410)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(18780-18787)"
     ],
     "$id": 19439
   },
@@ -1128,7 +1128,7 @@
     "fr-FR": "Moteur en cours d'utilisation : À l'activation, il prend en charge une expérience d'analyse IA supérieure. S'il est désactivé, uniquement le moteur IA de base est utilisé. L'activation du moteur avancé ne consomme pas de ressources.",
     "ko-KR": "사용할 엔진 선택: 활성화 시 보다 뛰어난 AI 분석 경험을 지원합니다. 비활성화 시 기본 AI 엔진만 사용되며, 고급 엔진이 비활성 상태에서는 리소스를 소모하지 않습니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(18529-18581)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(18906-18958)"
     ],
     "$id": 19440
   },
@@ -1143,7 +1143,7 @@
     "fr-FR": "Moteur IA avancé désactivé",
     "ko-KR": "고급 AI 엔진이 비활성화되었습니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(19342-19355)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(19719-19732)"
     ],
     "$id": 19441
   },
@@ -1158,7 +1158,7 @@
     "fr-FR": "L'analyse augmentée par l'IA est désactivée ; les fichiers seront traités automatiquement par le moteur IA intégré léger.",
     "ko-KR": "AI 강화 분석이 꺼져 있습니다. 파일은 내장된 경량 기본 AI 엔진에 의해 자동으로 처리됩니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(19478-19511)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(19855-19888)"
     ],
     "$id": 19561
   },
@@ -1173,7 +1173,7 @@
     "fr-FR": "Fonctionnalités réservées au moteur de base",
     "ko-KR": "기본 엔진의 유지되는 기능",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(19961-19973)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(20338-20350)"
     ],
     "$id": 20538
   },
@@ -1188,7 +1188,7 @@
     "fr-FR": "Prise en charge de l'attribution automatique d'étiquettes précises aux fichiers",
     "ko-KR": "파일에는 자동적으로 정확한 태그를 지정할 수 있음",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(20102-20118)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(20479-20495)"
     ],
     "$id": 19563
   },
@@ -1203,7 +1203,7 @@
     "fr-FR": "Prise en charge de la recherche sémantique du contenu texte et image",
     "ko-KR": "텍스트와 이미지 콘텐츠의 의미 기반 검색 지원",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(20144-20159)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(20521-20536)"
     ],
     "$id": 19564
   },
@@ -1218,7 +1218,7 @@
     "fr-FR": "Prise en charge de noms de fichiers et de descriptions intelligents",
     "ko-KR": "지능형 파��� 이름 및 설명 지원",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(20185-20199)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(20562-20576)"
     ],
     "$id": 19565
   },
@@ -1233,7 +1233,7 @@
     "fr-FR": "Prise en charge de la génération d'une structure de répertoires d'organisation des fichiers et de la classification selon cette structure",
     "ko-KR": "파일 정리를 위한 디렉터리 구조 생성 지원, 디렉터리 구조에 따른 분류 지원",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(20225-20251)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(20602-20628)"
     ],
     "$id": 19566
   },
@@ -1248,7 +1248,7 @@
     "fr-FR": "Léger et rapide, compatible avec tous les environnements matériels",
     "ko-KR": "경량 및 고속, 모든 하드웨어 환경 지원",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(20277-20294)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(20654-20671)"
     ],
     "$id": 19567
   },
@@ -1263,7 +1263,7 @@
     "fr-FR": "Activable avec le moteur avancé",
     "ko-KR": "고급 엔진을 활성화하면 잠금 해제",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(21034-21047)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(21411-21424)"
     ],
     "$id": 20539
   },
@@ -1278,7 +1278,7 @@
     "fr-FR": "Reformulation approfondie intelligente des noms de fichiers et descriptions (fini le ton mécanique)",
     "ko-KR": "파일 이름 및 설명의 자연스러운 심층 정제(기계적인 느낌 제거)",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(21176-21199)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(21553-21576)"
     ],
     "$id": 20540
   },
@@ -1293,7 +1293,7 @@
     "fr-FR": "Description approfondie en langage naturel des images et contenus visuels",
     "ko-KR": "이미지 및 시각 콘텐츠의 자연어 심층 설명",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(21225-21245)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(21602-21622)"
     ],
     "$id": 20541
   },
@@ -1308,7 +1308,7 @@
     "fr-FR": "Évaluation intelligente de la qualité des fichiers selon des critères professionnels",
     "ko-KR": "전문적 차원 기준에 따른 파일 품질의 지능형 평가",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(21271-21288)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(21648-21665)"
     ],
     "$id": 20542
   },
@@ -1323,7 +1323,7 @@
     "fr-FR": "Génération de plusieurs plans de rangement de fichiers au choix",
     "ko-KR": "다양한 파일 정리 방식 생성으로 자유로운 선택 가능",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(21314-21333)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(21691-21710)"
     ],
     "$id": 20543
   },
@@ -1338,7 +1338,7 @@
     "fr-FR": "Moteur actif",
     "ko-KR": "적용 엔진",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(22054-22062)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(22431-22439)"
     ],
     "$id": 19443
   },
@@ -1353,9 +1353,9 @@
     "fr-FR": "Moteur AI Firefly",
     "ko-KR": "Firefly AI Folder 엔진",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(22212-22222)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(26290-26300)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(26327-26337)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(22589-22599)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(26667-26677)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(26704-26714)"
     ],
     "$id": 19444
   },
@@ -1370,7 +1370,7 @@
     "fr-FR": "Moteur IA cloud",
     "ko-KR": "클라우드 AI 엔진",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(22449-22459)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(22826-22836)"
     ],
     "$id": 19445
   },
@@ -1385,7 +1385,7 @@
     "fr-FR": "Mode de pensée modèle",
     "ko-KR": "모델 사고 모드",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(23857-23867)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(24234-24244)"
     ],
     "$id": 7738
   },
@@ -1400,7 +1400,7 @@
     "fr-FR": "Augmentera la consommation de temps",
     "ko-KR": "시간 소모가 늘어나게 됩니다",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(24080-24089)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(24457-24466)"
     ],
     "$id": 8286
   },
@@ -1415,7 +1415,7 @@
     "fr-FR": "Après l'avoir activé, les modèles locaux et cloud sont autorisés à passer en mode réflexion, ce qui peut améliorer la qualité de l'analyse de l'IA, mais augmentera considérablement le temps de réponse.",
     "ko-KR": "이 기능을 켜면 로컬 및 클라우드 모델이 사고 모드를 시작할 수 있어 AI 분석 품질이 향상될 수 있지만 응답 시간이 크게 늘어납니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(24319-24394)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(24696-24771)"
     ],
     "$id": 7850
   },
@@ -1430,7 +1430,7 @@
     "fr-FR": "Les modèles étiquetés Instruct ne sont pas pris en charge.",
     "ko-KR": "Instruct 태그가 지정된 모델은 지원되지 않습니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(24560-24583)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(24937-24960)"
     ],
     "$id": 7741
   },
@@ -1445,7 +1445,7 @@
     "fr-FR": "Port de communication local",
     "ko-KR": "로컬 통신 ���트",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(27080-27090)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(27457-27467)"
     ],
     "$id": 20107
   },
@@ -1460,7 +1460,7 @@
     "fr-FR": "Arrêt en cours...",
     "ko-KR": "중지 중...",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(28041-28051)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(28418-28428)"
     ],
     "$id": 19446
   },
@@ -1475,7 +1475,7 @@
     "fr-FR": "Arrêter le service",
     "ko-KR": "서비스 중지",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(28055-28063)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(28432-28440)"
     ],
     "$id": 19447
   },
@@ -1490,8 +1490,8 @@
     "fr-FR": "Démarrage en cours...",
     "ko-KR": "시작 중...",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(28672-28682)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(35441-35451)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(29049-29059)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(35818-35828)"
     ],
     "$id": 20109
   },
@@ -1506,7 +1506,7 @@
     "fr-FR": "Démarrer le service",
     "ko-KR": "서비스 시작",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(28686-28694)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(29063-29071)"
     ],
     "$id": 19448
   },
@@ -1521,7 +1521,7 @@
     "fr-FR": "Ouvrir le panneau de gestion des moteurs",
     "ko-KR": "엔진 관리 패널 열기",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(29259-29271)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(29636-29648)"
     ],
     "$id": 20108
   },
@@ -1536,7 +1536,7 @@
     "fr-FR": "Moteur de calcul",
     "ko-KR": "컴퓨팅 엔진",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(29980-29988)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(30357-30365)"
     ],
     "$id": 19450
   },
@@ -1551,7 +1551,7 @@
     "fr-FR": "Inconnu",
     "ko-KR": "알려지지 않은",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(30403-30409)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(30780-30786)"
     ],
     "$id": 10571
   },
@@ -1566,7 +1566,7 @@
     "fr-FR": "Hors ligne",
     "ko-KR": "오프라인",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(30444-30450)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(30821-30827)"
     ],
     "$id": 20113
   },
@@ -1581,7 +1581,7 @@
     "fr-FR": "Modèles installés",
     "ko-KR": "설치된 모델",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(30793-30802)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(31170-31179)"
     ],
     "$id": 19453
   },
@@ -1596,7 +1596,7 @@
     "fr-FR": "Disponibles",
     "ko-KR": "개 사용 가능",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(31054-31061)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(31431-31438)"
     ],
     "$id": 19575
   },
@@ -1611,7 +1611,7 @@
     "fr-FR": "Modèle actuel",
     "ko-KR": "현재 모델",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(31551-31559)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(31928-31936)"
     ],
     "$id": 19576
   },
@@ -1626,7 +1626,7 @@
     "fr-FR": "État de santé du moteur",
     "ko-KR": "엔진 상태",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(32211-32221)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(32588-32598)"
     ],
     "$id": 19454
   },
@@ -1641,8 +1641,8 @@
     "fr-FR": "Le binaire du moteur est déployé",
     "ko-KR": "엔진 바이너리가 배포되었습니다",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(33814-33826)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(36054-36066)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(34191-34203)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(36431-36443)"
     ],
     "$id": 20118
   },
@@ -1657,7 +1657,7 @@
     "fr-FR": "Binaire du moteur non détecté, l'analyse en ligne est automatiquement prise en charge par le moteur IA de base.",
     "ko-KR": "엔진 바이너리가 감지되지 않았습니다. 온라인 분석은 기본 AI 엔진에서 자동으로 수행됩니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(33857-33887)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(34234-34264)"
     ],
     "$id": 19455
   },
@@ -1672,7 +1672,7 @@
     "fr-FR": "Le moteur Firefly AI Folder n'est pas connecté",
     "ko-KR": "Firefly AI Folder 엔진이 연결되지 않았습니다",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(34624-34637)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(35001-35014)"
     ],
     "$id": 19456
   },
@@ -1687,7 +1687,7 @@
     "fr-FR": "Le moteur Firefly AI Folder n'est actuellement pas en cours d'exécution. Cliquez sur le bouton ci-dessous pour démarrer automatiquement le moteur et ouvrir la fenêtre du moteur.",
     "ko-KR": "Firefly AI Folder 엔진이 현재 실행되지 않습니다. 아래 버튼을 클릭하면 엔진이 자동으로 시작되고 엔진 창이 열립니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(34825-34863)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(35202-35240)"
     ],
     "$id": 19457
   },
@@ -1702,7 +1702,7 @@
     "fr-FR": "Aucun moteur IA Firefly AI Folder n’a été détecté. Veuillez vous assurer que l’installation de l’application est complète, puis réessayer. Cliquez sur le bouton ci-dessous pour tenter de nouveau de le démarrer.",
     "ko-KR": "Firefly AI ​​엔진 프로그램이 감지되지 않았습니다. 애플리케이션이 완전히 설치되었는지 확인한 후 다시 시도하십시오. 다시 시작하려면 아래 버튼을 클릭하세요.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(34894-34938)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(35271-35315)"
     ],
     "$id": 19458
   },
@@ -1717,7 +1717,7 @@
     "fr-FR": "Ouvrir le moteur IA Firefly AI Folder",
     "ko-KR": "Firefly AI Folder 엔진 열기",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(35455-35467)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(35832-35844)"
     ],
     "$id": 19459
   },
@@ -1732,7 +1732,7 @@
     "fr-FR": "Binaire du moteur non détecté",
     "ko-KR": "엔진 바이너리가 감지되지 않았습니다",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(36097-36110)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(36474-36487)"
     ],
     "$id": 19577
   },
@@ -1747,7 +1747,7 @@
     "fr-FR": "Repli automatique sur le moteur IA de base",
     "ko-KR": "기본 AI 엔진 자동 폴백",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(36820-36834)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(37197-37211)"
     ],
     "$id": 19460
   },
@@ -1762,7 +1762,7 @@
     "fr-FR": "Lorsque le moteur IA avancé (moteur IA Firefly AI Folder ou nuage) échoue de manière répétée à analyser ou n’est pas connecté, le pipeline d’analyse se replie silencieusement sur le canal local pur du moteur IA de base, garantissant que les fichiers bénéficient toujours du nommage intelligent et de l’étiquetage, sans échec visible pour l’utilisateur.",
     "ko-KR": "고급 AI 엔진(Firefly AI Folder 엔진 또는 클라우드)에서 연례 분석 실패 또는 연결 실패가 발생하면, 분석 파이프라인은 기본 AI 엔진의 순수 로컬 채널로 무음으로 다운그레이드되어 파일이 여전히 지능형 네이밍 및 태그를 받을 수 있도록 하며, 사용자에게 노출되는 실패가 발생하지 않습니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(36969-37079)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(37346-37456)"
     ],
     "$id": 19461
   },
@@ -1777,7 +1777,7 @@
     "fr-FR": "Exceptions récentes",
     "ko-KR": "최근 예외",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(37379-37387)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(37756-37764)"
     ],
     "$id": 20122
   },
@@ -1927,8 +1927,8 @@
     "$files": [
       "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(3353-3359)",
       "src/renderer/components/settings/analysis-ignore-rules-settings.tsx(10814-10820)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(43812-43818)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(45546-45552)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(49886-49892)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(51620-51626)",
       "src/renderer/components/settings/tts-settings.tsx(42564-42570)"
     ],
     "$id": 20552
@@ -2219,7 +2219,7 @@
     "fr-FR": "Le mode de recherche et de compréhension a été basculé et redémarré. Les nouveaux fichiers importés seront analysés avec le nouveau mode.",
     "ko-KR": "검색 및 이해 모드를 전환하고 재시작했습니다. 새로 가져온 파일은 새 모드로 분석됩니다",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(7402-7434)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(8031-8063)"
     ],
     "$id": 20571
   },
@@ -2234,24 +2234,24 @@
     "fr-FR": "La précision de l'analyse des caractéristiques a été commutée en {dim} dimensions. L'effet se produira après la réanalyse des fichiers déjà analysés.",
     "ko-KR": "특징 분석 정확도를 {dim} 차원으로 전환했습니다. 분석된 파일은 재분석 후에만 적용됩니다",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(7751-7788)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(8380-8417)"
     ],
     "$id": 20572
   },
-  "已同步硬件推荐配置（{profile} · {dim}维 · {interval}秒取帧 · 画面{detail}）": {
-    "en-US": "Recommended configuration of synchronized hardware ({profile} · {dim} dimension · {interval} seconds to get frames · screen {detail})",
-    "es-ES": "Configuración recomendada de hardware sincronizado ({profile} · {dim} dimensión · {interval} segundos para obtener fotogramas · pantalla {detail})",
-    "ar-EG": "التكوين الموصى به للأجهزة المتزامنة ({profile} · {dim} البعد · {interval} ثانية للحصول على الإطارات · الشاشة {detail})",
-    "pt-PT": "Configuração recomendada de hardware sincronizado ({profile} · {dim} dimensão · {interval} segundos para obter quadros · tela {detail})",
-    "ru-RU": "Рекомендуемая конфигурация синхронизируемого оборудования ({profile} · {dim} размер · {interval} секунд для получения кадров · экран {detail})",
-    "ja-JP": "同期されたハードウェアの推奨構成 ({profile} · {dim} ディメンション · フレームを取得するのに {interval} 秒 · 画面 {detail})",
-    "de-DE": "Empfohlene Konfiguration der synchronisierten Hardware ({profile} · {dim} Dimension · {interval} Sekunden zum Erhalten von Frames · Bildschirm {detail})",
-    "fr-FR": "Configuration recommandée du matériel synchronisé ({profile} · {dim} dimension · {interval} secondes pour obtenir des images · écran {detail})",
-    "ko-KR": "동기화된 하드웨어의 권장 구성({profile} · {dim} 차원 · 프레임을 가져오는 데 {interval}초 · 화면 {detail})",
+  "已同步硬件推荐配置（{profile} · {dim}维 · 画面{detail}）": {
+    "en-US": "Recommended configuration of synchronized hardware ({profile} · {dim} dimension · screen {detail})",
+    "es-ES": "Configuración recomendada de hardware sincronizado ({profile} · {dim} dimensión · pantalla {detail})",
+    "ar-EG": "التكوين الموصى به للأجهزة المتزامنة ({profile} · {dim} البعد · الشاشة {detail})",
+    "pt-PT": "Configuração recomendada de hardware sincronizado ({profile} · {dim} dimensão · tela {detail})",
+    "ru-RU": "Рекомендуемая конфигурация синхронизируемого оборудования ({profile} · {dim} измерение · экран {detail})",
+    "ja-JP": "同期ハードウェアの推奨構成 ({profile} · {dim} ディメンション · 画面 {detail})",
+    "de-DE": "Empfohlene Konfiguration der synchronisierten Hardware ({profile} · {dim} Dimension · Bildschirm {detail})",
+    "fr-FR": "Configuration recommandée du matériel synchronisé ({profile} · {dim} dimension · écran {detail})",
+    "ko-KR": "동기화된 하드웨어의 권장 구성({profile} · {dim} 차원 · 화면 {detail})",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(8706-8768)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(9132-9178)"
     ],
-    "$id": 21928
+    "$id": 22139
   },
   "全模态标准档": {
     "en-US": "All-Modality Standard Tier",
@@ -2264,9 +2264,9 @@
     "fr-FR": "Standard à tous les modes",
     "ko-KR": "전체 모드 표준 등급",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(8824-8834)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(23447-23457)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(43149-43159)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(9234-9244)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(23644-23654)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(49223-49233)"
     ],
     "$id": 20574
   },
@@ -2281,43 +2281,45 @@
     "fr-FR": "Ultra rapide et léger",
     "ko-KR": "초경량 고속 등급",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(8838-8847)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(21300-21309)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(43163-43172)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(9248-9257)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(21533-21542)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(49237-49246)"
     ],
     "$id": 20575
   },
-  "精简快速": {
-    "en-US": "Simple and fast",
-    "es-ES": "Sencillo y rápido",
-    "ar-EG": "بسيطة وسريعة",
-    "pt-PT": "Simples e rápido",
-    "ru-RU": "Просто и быстро",
-    "ja-JP": "シンプルかつ高速",
-    "de-DE": "Einfach und schnell",
-    "fr-FR": "Simple et rapide",
-    "ko-KR": "간단하고 빠릅니다.",
+  "流畅极速搜索": {
+    "en-US": "Smooth and fast search",
+    "es-ES": "Búsqueda fluida y rápida",
+    "ar-EG": "بحث سلس وسريع",
+    "pt-PT": "Pesquisa suave e rápida",
+    "ru-RU": "Плавный и быстрый поиск",
+    "ja-JP": "スムーズかつ高速な検索",
+    "de-DE": "Reibungslose und schnelle Suche",
+    "fr-FR": "Recherche fluide et rapide",
+    "ko-KR": "부드럽고 빠른 검색",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(8983-8991)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(35062-35070)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(9343-9353)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(37794-37804)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(39811-39821)"
     ],
-    "$id": 21929
+    "$id": 22140
   },
-  "标准精细": {
-    "en-US": "Standard fine",
-    "es-ES": "Multa estándar",
-    "ar-EG": "غرامة قياسية",
-    "pt-PT": "Multa padrão",
-    "ru-RU": "Стандартный штраф",
-    "ja-JP": "標準罰金",
-    "de-DE": "Standardmäßig in Ordnung",
-    "fr-FR": "Amende standard",
-    "ko-KR": "표준 벌금",
+  "高清精细搜索": {
+    "en-US": "HD fine search",
+    "es-ES": "Búsqueda fina HD",
+    "ar-EG": "بحث دقيق عالي الدقة",
+    "pt-PT": "Pesquisa fina em HD",
+    "ru-RU": "HD точный поиск",
+    "ja-JP": "HDファインサーチ",
+    "de-DE": "HD-Feinsuche",
+    "fr-FR": "Recherche fine HD",
+    "ko-KR": "HD 미세 검색",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(8995-9003)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(35103-35111)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(9357-9367)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(37839-37849)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(42810-42820)"
     ],
-    "$id": 21932
+    "$id": 22141
   },
   "基础AI引擎配置": {
     "en-US": "Base AI Engine Configuration",
@@ -2330,7 +2332,7 @@
     "fr-FR": "Configuration du moteur IA de base",
     "ko-KR": "기본 AI 엔진 구성",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(10567-10579)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(10924-10936)"
     ],
     "$id": 20576
   },
@@ -2345,7 +2347,7 @@
     "fr-FR": "Configurer le mode d'analyse, intégrant l'engrenage du modèle, la dimension vectorielle MRL et les paramètres de l'image vidéo",
     "ko-KR": "분석 모드, 내장 모델 기어, MRL 벡터 치수 및 비디오 프레임 매개변수 구성",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(10654-10687)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(11011-11044)"
     ],
     "$id": 21934
   },
@@ -2360,7 +2362,7 @@
     "fr-FR": "Sélectionnez le mode d'analyse",
     "ko-KR": "분석 모드 선택",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(11220-11230)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(11577-11587)"
     ],
     "$id": 20578
   },
@@ -2375,7 +2377,7 @@
     "fr-FR": "Sélectionnez différents modes en fonction de vos besoins ; l'analyse exhaustive est la plus longue mais offre la plus grande précision ; l'analyse standard est la plus rapide. Les analyses renforcée et exhaustive nécessitent l'activation du moteur IA avancé.",
     "ko-KR": "요구에 따라 다른 모드를 선택하세요. 전체 분석은 시간이 가장 오래 걸리지만 정확도가 가장 높습니다. 표준 분석은 가장 빠릅니다. 향상된 분석과 전체 분석에는 고급 AI 엔진 활성화가 필요합니다.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(11295-11370)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(11652-11727)"
     ],
     "$id": 20579
   },
@@ -2390,7 +2392,7 @@
     "fr-FR": "Ultra-rapide",
     "ko-KR": "초고속",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(12270-12276)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(12611-12617)"
     ],
     "$id": 20580
   },
@@ -2405,7 +2407,7 @@
     "fr-FR": "Analyse standard",
     "ko-KR": "표준 분석",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(12886-12894)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(13227-13235)"
     ],
     "$id": 20581
   },
@@ -2420,7 +2422,7 @@
     "fr-FR": "Récupération rapide des étiquettes de fichiers, des noms de fichiers intelligents et des résumés grâce au moteur IA de base",
     "ko-KR": "기본 AI 엔진을 기반으로 파일 태그, 스마트 파일 이름 및 요약을 고속으로 가져옵니다",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(13044-13073)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(13385-13414)"
     ],
     "$id": 20582
   },
@@ -2435,7 +2437,7 @@
     "fr-FR": "Par défaut",
     "ko-KR": "기본값",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(14086-14092)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(14411-14417)",
       "src/renderer/components/settings/tts-settings.tsx(19016-19022)"
     ],
     "$id": 20583
@@ -2451,7 +2453,7 @@
     "fr-FR": "Analyse renforcée",
     "ko-KR": "향상된 분석",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(14798-14806)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(15103-15111)"
     ],
     "$id": 20584
   },
@@ -2466,7 +2468,7 @@
     "fr-FR": "[Analyse standard] + Moteur d'IA avancé pour peaufiner les noms et descriptions de fichiers intelligents et les étiquettes supplémentaires",
     "ko-KR": "[표준 분석]+고급 인공 지능 엔진은 스마트 파일 이름과 설명 및 보충 라벨을 연마합니다",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(15063-15097)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(15368-15402)"
     ],
     "$id": 21480
   },
@@ -2481,13 +2483,13 @@
     "fr-FR": "Recommandé",
     "ko-KR": "권장",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(16760-16766)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(26829-26835)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(28528-28534)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(30219-30225)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(36430-36436)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(38012-38018)",
-      "src/renderer/components/settings/content-extraction-settings.tsx(26255-26261)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(17049-17055)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(26731-26737)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(29251-29257)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(31760-31766)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(38857-38863)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(41854-41860)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(24177-24183)",
       "src/renderer/components/settings/tts-settings.tsx(18751-18757)",
       "src/renderer/components/settings/tts-settings.tsx(31724-31730)"
     ],
@@ -2504,7 +2506,7 @@
     "fr-FR": "Analyse exhaustive",
     "ko-KR": "전체 분석",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(17460-17468)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(17729-17737)"
     ],
     "$id": 20587
   },
@@ -2519,7 +2521,7 @@
     "fr-FR": "【Analyse renforcée】+ analyse IA complète, incluant le score de qualité et descriptions détaillées du contenu des images, de l'audio et de la vidéo, etc.",
     "ko-KR": "[향상된 분석] + 전체 AI 분석으로, 품질 점수 및 이미지, 오디오, 비디오 콘텐츠의 자세한 설명 등을 포함합니다",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(17725-17786)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(17994-18055)"
     ],
     "$id": 20588
   },
@@ -2534,7 +2536,7 @@
     "fr-FR": "Recherche sémantique et mode de compréhension intelligente",
     "ko-KR": "의미 기반 검색 및 지능형 이해 모드",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(19104-19119)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(19373-19388)"
     ],
     "$id": 20589
   },
@@ -2549,7 +2551,7 @@
     "fr-FR": "Définit la profondeur d'analyse pour la recherche de fichiers, audio et vidéo. Le mode standard toutes modalités permet une compréhension approfondie des images et des dialogues audio/vidéo ; le mode rapide et léger économise la batterie, la mémoire et réduit la chauffe.",
     "ko-KR": "파일 및 오디오/비디오 검색의 이해 깊이를 결정합니다. 전 모드 표준 프로필은 이미지 및 오디오/비디오 대화의 심층 파악을 지원하며, 초경량 초고속 프로필은 전력 및 메모리를 절약하고 발열을 낮춥니다.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(19188-19266)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(19457-19535)"
     ],
     "$id": 20590
   },
@@ -2564,7 +2566,7 @@
     "fr-FR": "Réglages matériels recommandés",
     "ko-KR": "하드웨어 권장 설정 적용",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(19738-19750)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(20007-20019)"
     ],
     "$id": 20591
   },
@@ -2579,7 +2581,7 @@
     "fr-FR": "Hyper économie d'énergie · Analyse express",
     "ko-KR": "초절전 · 초고속 분석",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(20652-20666)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(20905-20919)"
     ],
     "$id": 20592
   },
@@ -2594,8 +2596,13 @@
     "fr-FR": "Recommandation matériel",
     "ko-KR": "하드웨어 권장 사항",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(21586-21594)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(23738-23746)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(21819-21827)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(23935-23943)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(27893-27901)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(30413-30421)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(32922-32930)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(40128-40136)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(43128-43136)"
     ],
     "$id": 20593
   },
@@ -2610,7 +2617,7 @@
     "fr-FR": "【Avantages】Analyse ultra-rapide, occupation mémoire très faible (< 80 Mo), économie d'énergie et absence de surchauffe de l'appareil.",
     "ko-KR": "[장점] 분석이 빠르고, 메모리 사용량이 매우 낮으며(< 80MB), 절전 효과가 있고, 본체에 발열이 없습니다.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(21783-21820)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(22016-22053)"
     ],
     "$id": 20594
   },
@@ -2625,7 +2632,7 @@
     "fr-FR": "【Limites】Prend uniquement en charge la recherche de texte et d'images de base, sans compréhension approfondie du contenu vidéo et des dialogues.",
     "ko-KR": "【제한 사항】텍스트 및 기본 이미지 검색만 지원하며, 비디오 내용과 대화의 심층적인 이해가 불가능합니다.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(21852-21887)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(22085-22120)"
     ],
     "$id": 20595
   },
@@ -2640,7 +2647,7 @@
     "fr-FR": "【Idéal pour】PC portables fins avec 8 Go de mémoire, bureautique de base au quotidien ou utilisation sur batterie.",
     "ko-KR": "【적합 대상】8GB 메모리를 갖춘 슬림 노트북, 일상적인 기본 업무 또는 배터리 전원 사용 환경.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(21919-21951)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(22152-22184)"
     ],
     "$id": 20596
   },
@@ -2655,7 +2662,7 @@
     "fr-FR": "Comprehension approfondie · Multimédia audiovidéo complet",
     "ko-KR": "심도 깊은 이해 · 오디오/비디오 올인원",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(22797-22813)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(23014-23030)"
     ],
     "$id": 20597
   },
@@ -2670,7 +2677,7 @@
     "fr-FR": "【Avantage】Comprend les détails des images complexes et les dialogues audiovidéo ; une simple requête permet de localiser instantanément un extrait vidéo en quelques secondes.",
     "ko-KR": "【강점】복잡한 화면의 디테일과 오디오/비디오 대화를 분석하여, 문구 한 줄로 영상 클립을 즉시 정확히 찾아냅니다.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(23935-23974)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(24132-24171)"
     ],
     "$id": 20598
   },
@@ -2685,7 +2692,7 @@
     "fr-FR": "【Inconvénient】L'analyse consomme une certaine puissance de calcul et de mémoire (environ 300~500 Mo).",
     "ko-KR": "【대가】분석 시 일부 계산 능력과 메모리가 필요합니다(약 300~500MB).",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(24006-24041)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(24203-24238)"
     ],
     "$id": 20599
   },
@@ -2700,7 +2707,7 @@
     "fr-FR": "【Convient à】Ordinateurs dotés d'au moins 16 Go de RAM, pour une expérience de recherche et d'organisation intelligente haut de gamme.",
     "ko-KR": "【적합 대상】16GB 이상의 메모리를 갖춘 PC, 궁극적인 검색과 스마트 정리 경험을 추구하는 사용자.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(24073-24108)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(24270-24305)"
     ],
     "$id": 20600
   },
@@ -2715,7 +2722,7 @@
     "fr-FR": "Précision de l'analyse des caractéristiques",
     "ko-KR": "특성 분석 정밀도",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(24654-24664)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(24851-24861)"
     ],
     "$id": 20601
   },
@@ -2730,7 +2737,7 @@
     "fr-FR": "Définit le niveau de détail pour l'extraction des caractéristiques de chaque fichier. Plus la précision est élevée, plus les recherches par mots flous ou phrases longues seront exactes ; plus elle est basse, plus les fichiers d'index occuperont peu d'espace disque.",
     "ko-KR": "각 파일에서 추출하는 특성의 세밀한 정도를 결정합니다. 정밀도가 높을수록 모호한 단어와 긴 문장 검색이 더욱 정확해지며, 정밀도가 낮을수록 인덱스 파일이 차지하는 디스크 공간이 적습니다.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(24763-24843)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(24960-25040)"
     ],
     "$id": 20602
   },
@@ -2745,7 +2752,7 @@
     "fr-FR": "Recommandation de matériel : {level} ({dim} dimensions)",
     "ko-KR": "하드웨어 권장사항: {level}({dim}차원)",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(25077-25101)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(25274-25298)"
     ],
     "$id": 20603
   },
@@ -2760,7 +2767,7 @@
     "fr-FR": "Précision",
     "ko-KR": "정밀 등급",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(25236-25243)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(25433-25440)"
     ],
     "$id": 20604
   },
@@ -2775,7 +2782,7 @@
     "fr-FR": "Standard",
     "ko-KR": "표준 등급",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(25350-25357)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(25547-25554)"
     ],
     "$id": 20605
   },
@@ -2790,24 +2797,40 @@
     "fr-FR": "Compact",
     "ko-KR": "컴팩트 등급",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(25392-25399)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(25589-25596)"
     ],
     "$id": 20606
   },
-  "紧凑省盘档（256维）": {
-    "en-US": "Space-Saving Compact Tier (256 dimensions)",
-    "es-ES": "Compact space-saving tier (256 dimensions)",
-    "ar-EG": "المستوى المدمج الموفر للمساحة (256 بُعدًا)",
-    "pt-PT": "Nível compacto de poupança de disco (256 dim)",
-    "ru-RU": "Компактный уровень с минимальным дисковым пространством (256 измерений)",
-    "ja-JP": "ストレージ節約型コンパクト設定（256次元）",
-    "de-DE": "Kompakte Datenträger-Einsparungs-Ebene (256 Dimensionen)",
-    "fr-FR": "Compact & Économique (256 dimensions)",
-    "ko-KR": "컴팩트 디스크 절약형 등급(256차원)",
+  "超省磁盘": {
+    "en-US": "Super disk saving",
+    "es-ES": "Súper ahorro de disco",
+    "ar-EG": "توفير القرص الفائق",
+    "pt-PT": "Super economia de disco",
+    "ru-RU": "Супер экономия диска",
+    "ja-JP": "スーパーディスク保存",
+    "de-DE": "Super Festplattenspeicherung",
+    "fr-FR": "Super économie de disque",
+    "ko-KR": "슈퍼디스크 절약",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(26538-26553)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(26972-26980)"
     ],
-    "$id": 20607
+    "$id": 22142
+  },
+  "紧凑省盘档": {
+    "en-US": "Compact Storage-Saving Tier",
+    "es-ES": "Nivel compacto de ahorro de espacio",
+    "ar-EG": "المستوى المدمج الموفّر للمساحة",
+    "pt-PT": "Nível compacto de poupança de espaço",
+    "ru-RU": "Компактный экономный уровень",
+    "ja-JP": "コンパクト省ストレージモード",
+    "de-DE": "Kompakte Speichersparstufe",
+    "fr-FR": "Niveau compact, économie de stockage",
+    "ko-KR": "컴팩트 저장공간 절약형",
+    "$files": [
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(27584-27593)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(50891-50900)"
+    ],
+    "$id": 20635
   },
   "【优势】极省磁盘，每文件仅约 1KB 索引，省 67% 存储空间。": {
     "en-US": "[Advantages] Extrememly saves disk space, using only ~1KB of index per file, reducing storage by 67%.",
@@ -2820,7 +2843,7 @@
     "fr-FR": "【Avantage】Très économe en espace disque, environ 1 Ko d'index par fichier, économie de 67 % de l'espace de stockage.",
     "ko-KR": "[장점] 디스크 공간 극대화 절약, 파일당 인덱스 약 1KB로 저장 공간 67% 절감.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(27067-27104)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(28120-28157)"
     ],
     "$id": 20608
   },
@@ -2835,7 +2858,7 @@
     "fr-FR": "【Coût】Diminution légère de la distinction des descriptions très complexes et subtiles (précision d'environ 95 %).",
     "ko-KR": "[비용] 극도로 복잡한 미세한 설명에 대한 식별력이 약간 감소(약 95% 정확률).",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(27144-27180)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(28195-28231)"
     ],
     "$id": 20609
   },
@@ -2850,24 +2873,40 @@
     "fr-FR": "【Convient à】Appareils dotés de 8 Go de mémoire ou à l'espace disque limité.",
     "ko-KR": "[추천] 디스크 공간이 부족하거나 8GB 메모리 장치.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(27220-27245)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(28269-28294)"
     ],
     "$id": 20610
   },
-  "标准平衡档（512维）": {
-    "en-US": "Standard Balanced Tier (512 dimensions)",
-    "es-ES": "Standard balanced tier (512 dimensions)",
-    "ar-EG": "المستوى القياسي المتوازن (512 بُعدًا)",
-    "pt-PT": "Nível padrão de equilíbrio (512 dim)",
-    "ru-RU": "Стандартно-сбалансированный уровень (512 измерений)",
-    "ja-JP": "標準バランス設定（512次元）",
-    "de-DE": "Standard-Ausgewogenheits-Ebene (512 Dimensionen)",
-    "fr-FR": "Équilibre standard (512 dimensions)",
-    "ko-KR": "표준 균형형 등급(512차원)",
+  "黄金平衡": {
+    "en-US": "Golden balance",
+    "es-ES": "Equilibrio dorado",
+    "ar-EG": "التوازن الذهبي",
+    "pt-PT": "Equilíbrio de ouro",
+    "ru-RU": "золотой баланс",
+    "ja-JP": "黄金のバランス",
+    "de-DE": "Goldenes Gleichgewicht",
+    "fr-FR": "équilibre doré",
+    "ko-KR": "황금 균형",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(28234-28249)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(29492-29500)"
     ],
-    "$id": 20611
+    "$id": 22143
+  },
+  "标准平衡档": {
+    "en-US": "Standard Balanced Tier",
+    "es-ES": "Nivel equilibrado estándar",
+    "ar-EG": "المستوى القياسي المتوازن",
+    "pt-PT": "Nível de equilíbrio padrão",
+    "ru-RU": "Стандартный сбалансированный уровень",
+    "ja-JP": "スタンダードバランスモード",
+    "de-DE": "Standard-Ausgewogenheitsstufe",
+    "fr-FR": "Niveau équilibré standard",
+    "ko-KR": "표준 균형형",
+    "$files": [
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(30104-30113)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(50849-50858)"
+    ],
+    "$id": 20634
   },
   "【优势】速度与精度的黄金平衡，保留 98.5% 以上细节辨识能力。": {
     "en-US": "[Advantages] Golden balance of speed and precision, retaining over 98.5% detail recognition capability.",
@@ -2880,7 +2919,7 @@
     "fr-FR": "【Avantage】Équilibre idéal entre vitesse et précision, préservant une capacité de distinction des détails supérieure à 98,5 %.",
     "ko-KR": "[장점] 속도와 정밀도의 최적 균형, 세부 식별 능력 98.5% 이상 유지.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(28766-28803)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(30640-30677)"
     ],
     "$id": 20612
   },
@@ -2895,7 +2934,7 @@
     "fr-FR": "【Coût】Environ 2 Ko d'espace d'index par fichier.",
     "ko-KR": "【비용】파일당 약 2KB의 인덱스 공간.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(28843-28865)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(30715-30737)"
     ],
     "$id": 20613
   },
@@ -2910,24 +2949,40 @@
     "fr-FR": "【Recommandation】Recommandé pour les PC standard de 8 Go à 16 Go.",
     "ko-KR": "【적합】8GB ~ 16GB의 주류 PC 사용자에게 우선 권장.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(28905-28933)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(30775-30803)"
     ],
     "$id": 20614
   },
-  "旗舰精准档（768维）": {
-    "en-US": "Flagship Precision Mode (768 dimensions)",
-    "es-ES": "Nivel de precisión insignia (768 dimensiones)",
-    "ar-EG": "الحزمة الدقيقة الرائدة (768 بُعد)",
-    "pt-PT": "Nível de precisão de topo (768 dimensões)",
-    "ru-RU": "Флагманский точный режим (768 измерений)",
-    "ja-JP": "フラッグシップ高精度プラン（768 次元）",
-    "de-DE": "Flaggschiff-Präzisionsstufe (768 Dimensionen)",
-    "fr-FR": "Mode de précision Premium (768 dimensions)",
-    "ko-KR": "플래그십 정밀 모드 (768차원)",
+  "旗舰高精": {
+    "en-US": "Flagship high precision",
+    "es-ES": "Alta precisión emblemática",
+    "ar-EG": "الرائد دقة عالية",
+    "pt-PT": "Alta precisão emblemática",
+    "ru-RU": "Флагманская высокая точность",
+    "ja-JP": "フラッグシップ高精度",
+    "de-DE": "Flaggschiff mit hoher Präzision",
+    "fr-FR": "Haute précision phare",
+    "ko-KR": "플래그십 고정밀",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(29922-29937)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(32001-32009)"
     ],
-    "$id": 20615
+    "$id": 22144
+  },
+  "旗舰精准档": {
+    "en-US": "Flagship High-Precision Tier",
+    "es-ES": "Nivel de precisión estándar",
+    "ar-EG": "المستوى الدقيق الرائد",
+    "pt-PT": "Nível de precisão de ponta",
+    "ru-RU": "Флагманский точный уровень",
+    "ja-JP": "フラッグシップ精密モード",
+    "de-DE": "Flaggschiff-Präzisionsstufe",
+    "fr-FR": "Niveau de précision phare",
+    "ko-KR": "플래그십 정밀형",
+    "$files": [
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(32613-32622)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(50753-50762)"
+    ],
+    "$id": 20633
   },
   "【优势】满血最高精度，对模糊长句和音画视频内容细节匹配最佳。": {
     "en-US": "【Advantages】Maximum precision with full specifications; best detailed matching for vague long sentences and audio-visual video content.",
@@ -2940,7 +2995,7 @@
     "fr-FR": "【Avantage】Précision maximale, meilleur correspondance pour les détails de contenus vidéo et de phrases longues floues.",
     "ko-KR": "【장점】최대 정밀도를 제공하며, 모호한 긴 문구와 영상/비디오 콘텐츠의 세부 사항 일치에 최적화됨.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(30457-30491)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(33149-33183)"
     ],
     "$id": 20616
   },
@@ -2955,7 +3010,7 @@
     "fr-FR": "【Coût】Environ 3 Ko d'espace d'index par fichier, nécessite légèrement plus de mémoire lors de l'analyse.",
     "ko-KR": "【비용】파일당 약 3KB의 인덱스 공간, 분석 시 소량의 추가 메모리 사용.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(30531-30562)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(33221-33252)"
     ],
     "$id": 20617
   },
@@ -2970,54 +3025,39 @@
     "fr-FR": "【Recommandation】Recommandé pour les PC haute performance de 16 Go / 32 Go ou plus.",
     "ko-KR": "【적합】16GB / 32GB 이상의 고성능 PC 사용자에게 권장.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(30602-30633)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(33290-33321)"
     ],
     "$id": 20618
   },
-  "视频取帧间隔": {
-    "en-US": "Video frame interval",
-    "es-ES": "Intervalo de fotograma de vídeo",
-    "ar-EG": "الفاصل الزمني لإطار الفيديو",
-    "pt-PT": "Intervalo de quadro de vídeo",
-    "ru-RU": "Интервал видеокадра",
-    "ja-JP": "ビデオフレーム間隔",
-    "de-DE": "Videobildintervall",
-    "fr-FR": "Intervalle d'image vidéo",
-    "ko-KR": "비디오 프레임 간격",
+  "语音识别时长": {
+    "en-US": "Voice recognition duration",
+    "es-ES": "Duración del reconocimiento de voz",
+    "ar-EG": "مدة التعرف على الصوت",
+    "pt-PT": "Duração do reconhecimento de voz",
+    "ru-RU": "Продолжительность распознавания голоса",
+    "ja-JP": "音声認識時間",
+    "de-DE": "Dauer der Spracherkennung",
+    "fr-FR": "Durée de la reconnaissance vocale",
+    "ko-KR": "음성인식 시간",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(31147-31157)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(33814-33824)"
     ],
-    "$id": 21987
+    "$id": 22145
   },
-  "每隔几秒从视频里取一帧画面来分析。间隔越短，越不容易漏掉一闪而过的画面，但分析更慢；间隔越长，分析越快，但可能错过快速变化的内容。已分析过的旧视频不会自动重算，修改后需在文件列表中右键「重新分析」才会生效。": {
-    "en-US": "Take a frame from the video every few seconds for analysis. The shorter the interval, the less likely it is to miss fleeting images, but the analysis will be slower; the longer the interval, the faster the analysis, but fast-changing content may be missed. Old videos that have been analyzed will not be automatically recalculated. After modification, you need to right-click \"Reanalyze\" in the file list to take effect.",
-    "es-ES": "Tome un fotograma del vídeo cada pocos segundos para analizarlo. Cuanto más corto sea el intervalo, menos probable será que se pierdan imágenes fugaces, pero el análisis será más lento; cuanto más largo sea el intervalo, más rápido será el análisis, pero es posible que se pase por alto el contenido que cambia rápidamente. Los vídeos antiguos que hayan sido analizados no se volverán a calcular automáticamente. Después de la modificación, debe hacer clic derecho en \"Reanalizar\" en la lista de archivos para que surta efecto.",
-    "ar-EG": "خذ إطارًا من الفيديو كل بضع ثوانٍ لتحليله. كلما كان الفاصل الزمني أقصر، قل احتمال تفويت الصور العابرة، ولكن التحليل سيكون أبطأ؛ كلما زاد الفاصل الزمني، زادت سرعة التحليل، ولكن قد يتم تفويت المحتوى سريع التغير. لن يتم إعادة حساب مقاطع الفيديو القديمة التي تم تحليلها تلقائيًا. بعد التعديل، تحتاج إلى النقر بزر الماوس الأيمن فوق \"إعادة التحليل\" في قائمة الملفات لتصبح نافذة المفعول.",
-    "pt-PT": "Tire um quadro do vídeo a cada poucos segundos para análise. Quanto menor o intervalo, menor a probabilidade de perder imagens fugazes, mas a análise será mais lenta; quanto maior o intervalo, mais rápida será a análise, mas o conteúdo que muda rapidamente pode ser perdido. Vídeos antigos que foram analisados ​​não serão recalculados automaticamente. Após a modificação, você precisa clicar com o botão direito em \"Reanalisar\" na lista de arquivos para ter efeito.",
-    "ru-RU": "Каждые несколько секунд снимайте кадр из видео для анализа. Чем короче интервал, тем меньше вероятность пропустить мимолетные изображения, но анализ будет медленнее; чем длиннее интервал, тем быстрее анализ, но быстро меняющийся контент может быть пропущен. Старые видео, прошедшие анализ, не будут автоматически пересчитываться. После внесения изменений необходимо щелкнуть правой кнопкой мыши «Повторно проанализировать» в списке файлов, чтобы изменения вступили в силу.",
-    "ja-JP": "分析のためにビデオから数秒ごとにフレームを取得します。間隔が短いほど、一瞬の画像を見逃す可能性は低くなりますが、分析は遅くなります。間隔が長いほど分析は速くなりますが、急速に変化するコンテンツが見逃される可能性があります。分析された古いビデオは自動的に再計算されません。変更後、ファイルリストで「再解析」を右クリックして有効にする必要があります。",
-    "de-DE": "Nehmen Sie zur Analyse alle paar Sekunden ein Bild aus dem Video auf. Je kürzer das Intervall, desto geringer ist die Wahrscheinlichkeit, dass flüchtige Bilder übersehen werden, aber die Analyse wird langsamer; Je länger das Intervall, desto schneller die Analyse, aber sich schnell ändernde Inhalte können übersehen werden. Alte Videos, die analysiert wurden, werden nicht automatisch neu berechnet. Nach der Änderung müssen Sie in der Dateiliste mit der rechten Maustaste auf „Erneut analysieren“ klicken, damit sie wirksam wird.",
-    "fr-FR": "Prenez une image de la vidéo toutes les quelques secondes pour analyse. Plus l'intervalle est court, moins il est probable que des images fugaces manquent, mais l'analyse sera plus lente ; plus l'intervalle est long, plus l'analyse est rapide, mais le contenu qui évolue rapidement peut passer inaperçu. Les anciennes vidéos analysées ne seront pas automatiquement recalculées. Après modification, vous devez faire un clic droit sur \"Réanalyser\" dans la liste des fichiers pour prendre effet.",
-    "ko-KR": "분석을 위해 몇 초마다 비디오에서 프레임을 가져옵니다. 간격이 짧을수록 순간적인 이미지를 놓칠 가능성은 줄어들지만 분석 속도는 느려집니다. 간격이 길수록 분석 속도가 빨라지지만 빠르게 변화하는 콘텐츠가 누락될 수 있습니다. 분석된 오래된 동영상은 자동으로 다시 계산되지 않습니다. 수정 후 파일 목록에서 \"재분석\"을 마우스 오른쪽 버튼으로 클릭해야 적용됩니다.",
+  "每个音视频文件最多识别前 N 秒语音，用于生成文件标签。语音识别与画面采样共用同一份约 90 秒的分析预算（单文件总超时 2 分钟，其余留给基本信息提取与 AI 分析）：识别越长，标签越准，但能采样的画面越少，设为 120 秒以上会明显压缩长视频的画面覆盖。纯音频文件不受此项限制，会自动用满预算。已分析过的旧文件不会自动重算，修改后需右键「重新分析」才会生效。": {
+    "en-US": "Each audio and video file recognizes up to the first N seconds of speech and is used to generate file tags. Speech recognition and image sampling share the same analysis budget of about 90 seconds (the total timeout for a single file is 2 minutes, and the rest is left for basic information extraction and AI analysis): the longer the recognition, the more accurate the label, but the fewer images that can be sampled. Setting it to more than 120 seconds will significantly compress the image coverage of long videos. Pure audio files are not subject to this restriction and will automatically use up the budget. Old files that have been analyzed will not be automatically recalculated. After modification, you need to right-click and \"Reanalyze\" to take effect.",
+    "es-ES": "Cada archivo de audio y vídeo reconoce hasta los primeros N segundos de voz y se utiliza para generar etiquetas de archivos. El reconocimiento de voz y el muestreo de imágenes comparten el mismo presupuesto de análisis de aproximadamente 90 segundos (el tiempo de espera total para un solo archivo es de 2 minutos, y el resto se deja para la extracción de información básica y el análisis de IA): cuanto más largo sea el reconocimiento, más precisa será la etiqueta, pero menos imágenes se podrán muestrear. Configurarlo en más de 120 segundos comprimirá significativamente la cobertura de la imagen de videos largos. Los archivos de audio puro no están sujetos a esta restricción y consumirán automáticamente el presupuesto. Los archivos antiguos que hayan sido analizados no se volverán a calcular automáticamente. Después de la modificación, debe hacer clic derecho y \"Volver a analizar\" para que surta efecto.",
+    "ar-EG": "يتعرف كل ملف صوت وفيديو على ما يصل إلى أول N ثانية من الكلام ويستخدم لإنشاء علامات الملف. يشترك التعرف على الكلام وأخذ عينات الصور في نفس ميزانية التحليل التي تبلغ حوالي 90 ثانية (إجمالي المهلة لملف واحد هو دقيقتين، ويتم ترك الباقي لاستخراج المعلومات الأساسية وتحليل الذكاء الاصطناعي): كلما طالت مدة التعرف، زادت دقة التسمية، ولكن قل عدد الصور التي يمكن أخذ عينات منها. سيؤدي ضبطه على أكثر من 120 ثانية إلى ضغط تغطية الصورة لمقاطع الفيديو الطويلة بشكل كبير. لا تخضع الملفات الصوتية النقية لهذا القيد وستستهلك الميزانية تلقائيًا. لن يتم إعادة حساب الملفات القديمة التي تم تحليلها تلقائيًا. بعد التعديل، تحتاج إلى النقر بزر الماوس الأيمن ثم \"إعادة التحليل\" ليصبح ساري المفعول.",
+    "pt-PT": "Cada arquivo de áudio e vídeo reconhece até os primeiros N segundos de fala e é usado para gerar tags de arquivo. O reconhecimento de fala e a amostragem de imagens compartilham o mesmo orçamento de análise de cerca de 90 segundos (o tempo limite total para um único arquivo é de 2 minutos e o restante é deixado para extração de informações básicas e análise de IA): quanto mais longo o reconhecimento, mais preciso será o rótulo, mas menos imagens poderão ser amostradas. Configurá-lo para mais de 120 segundos comprimirá significativamente a cobertura da imagem de vídeos longos. Arquivos de áudio puro não estão sujeitos a esta restrição e consumirão automaticamente o orçamento. Arquivos antigos que foram analisados ​​não serão recalculados automaticamente. Após a modificação, você precisa clicar com o botão direito e \"Reanalisar\" para ter efeito.",
+    "ru-RU": "Каждый аудио- и видеофайл распознает до первых N секунд речи и используется для генерации тегов файлов. Распознавание речи и выборка изображений используют один и тот же бюджет анализа, составляющий около 90 секунд (общее время ожидания для одного файла составляет 2 минуты, а остальное остается для основного извлечения информации и анализа ИИ): чем дольше распознавание, тем точнее метка, но тем меньше изображений можно выбрать. Установка значения более 120 секунд значительно сожмет охват изображения в длинных видеороликах. На чистые аудиофайлы это ограничение не распространяется, и на них автоматически расходуется бюджет. Старые файлы, которые были проанализированы, не будут автоматически пересчитаны. После внесения изменений вам нужно щелкнуть правой кнопкой мыши и «Повторно проанализировать», чтобы изменения вступили в силу.",
+    "ja-JP": "各オーディオ ファイルとビデオ ファイルは、音声の最初の N 秒までを認識し、ファイル タグの生成に使用されます。音声認識と画像サンプリングは、同じ約 90 秒の分析時間を共有します (1 つのファイルの合計タイムアウトは 2 分で、残りは基本情報の抽出と AI 分析に残ります)。認識が長いほどラベルの精度は高くなりますが、サンプリングできる画像の数は少なくなります。 120 秒以上に設定すると、長いビデオの画像範囲が大幅に圧縮されます。純粋なオーディオ ファイルにはこの制限は適用されないため、自動的に予算が使い果たされます。分析された古いファイルは自動的に再計算されません。変更を有効にするには、変更後、右クリックして「再分析」する必要があります。",
+    "de-DE": "Jede Audio- und Videodatei erkennt bis zu den ersten N Sekunden der Sprache und wird zur Generierung von Datei-Tags verwendet. Spracherkennung und Bilderfassung nutzen das gleiche Analysebudget von etwa 90 Sekunden (die Gesamtzeitüberschreitung für eine einzelne Datei beträgt 2 Minuten, der Rest bleibt für die Extraktion grundlegender Informationen und die KI-Analyse übrig): Je länger die Erkennung, desto genauer die Beschriftung, aber desto weniger Bilder können erfasst werden. Wenn Sie ihn auf mehr als 120 Sekunden einstellen, wird die Bildabdeckung langer Videos erheblich komprimiert. Reine Audiodateien unterliegen dieser Einschränkung nicht und verbrauchen automatisch das Budget. Alte Dateien, die analysiert wurden, werden nicht automatisch neu berechnet. Nach der Änderung müssen Sie mit der rechten Maustaste klicken und „Neu analysieren“ wählen, damit sie wirksam wird.",
+    "fr-FR": "Chaque fichier audio et vidéo reconnaît jusqu'aux N premières secondes de parole et est utilisé pour générer des balises de fichier. La reconnaissance vocale et l'échantillonnage d'images partagent le même budget d'analyse d'environ 90 secondes (le délai d'attente total pour un seul fichier est de 2 minutes, le reste étant réservé à l'extraction d'informations de base et à l'analyse de l'IA) : plus la reconnaissance est longue, plus l'étiquette est précise, mais moins il y a d'images pouvant être échantillonnées. Le régler à plus de 120 secondes compressera considérablement la couverture d’image des longues vidéos. Les fichiers audio purs ne sont pas soumis à cette restriction et épuiseront automatiquement le budget. Les anciens fichiers analysés ne seront pas automatiquement recalculés. Après modification, vous devez faire un clic droit et \"Réanalyser\" pour prendre effet.",
+    "ko-KR": "각 오디오 및 비디오 파일은 음성의 처음 N초까지 인식하고 파일 태그를 생성하는 데 사용됩니다. 음성인식과 이미지 샘플링은 약 90초라는 동일한 분석 예산을 공유합니다.(단일 파일의 총 시간 초과는 2분이고 나머지는 기본 정보 추출 및 AI 분석을 위해 남습니다.) 인식 시간이 길어질수록 레이블은 더 정확해지지만 샘플링할 수 있는 이미지는 줄어듭니다. 120초 이상으로 설정하면 긴 동영상의 이미지 범위가 크게 압축됩니다. 순수 오디오 파일에는 이 제한이 적용되지 않으며 자동으로 예산을 소모하게 됩니다. 분석된 이전 파일은 자동으로 다시 계산되지 않습니다. 수정 후에는 마우스 오른쪽 버튼을 클릭하고 \"재분석\"을 해야 적용됩니다.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(31256-31389)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(33923-34134)"
     ],
-    "$id": 21988
-  },
-  "恢复硬件推荐（{sec}秒）": {
-    "en-US": "Hardware recommendation restored ({sec} seconds)",
-    "es-ES": "Restaurar la recomendación del hardware ({sec} s)",
-    "ar-EG": "استعادة الإعدادات الموصى بها للعُتاد ({sec} ثانية)",
-    "pt-PT": "Recomendação de restauração de hardware ({sec} s)",
-    "ru-RU": "Восстановление аппаратных рекомендаций ({sec} сек)",
-    "ja-JP": "ハードウェアの推奨値を復元する（{sec}秒）",
-    "de-DE": "Hardware-Empfehlung wiederherstellen ({sec} Sekunden)",
-    "fr-FR": "Rétablir la configuration matérielle recommandée ({sec} s)",
-    "ko-KR": "하드웨어 권장값 복구({sec}초)",
-    "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(31984-32002)"
-    ],
-    "$id": 20621
+    "$id": 22146
   },
   "秒": {
     "en-US": "Seconds",
@@ -3030,39 +3070,39 @@
     "fr-FR": "Secondes",
     "ko-KR": "초",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(32289-32294)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(34437-34442)"
     ],
     "$id": 20622
   },
-  "【取帧密（如 2 秒）】每 2 秒取一帧，转场和快速动作不容易漏掉，但长视频分析更慢；": {
-    "en-US": "[Get frame density (such as 2 seconds)] Take one frame every 2 seconds. Transitions and fast actions are not easily missed, but long video analysis is slower;",
-    "es-ES": "[Obtener densidad de fotogramas (por ejemplo, 2 segundos)] Tome un fotograma cada 2 segundos. Las transiciones y las acciones rápidas no se pasan por alto fácilmente, pero los análisis de vídeo largos son más lentos;",
-    "ar-EG": "[احصل على كثافة الإطار (مثل ثانيتين)] التقط إطارًا واحدًا كل ثانيتين. لا يمكن تفويت التحولات والإجراءات السريعة بسهولة، ولكن تحليل الفيديو الطويل يكون أبطأ؛",
-    "pt-PT": "[Obter densidade de quadros (como 2 segundos)] Tire um quadro a cada 2 segundos. Transições e ações rápidas não são facilmente perdidas, mas análises longas de vídeos são mais lentas;",
-    "ru-RU": "[Получить плотность кадров (например, 2 секунды)] Снимайте один кадр каждые 2 секунды. Переходы и быстрые действия сложно пропустить, но длительный анализ видео выполняется медленнее;",
-    "ja-JP": "［フレーム密度の取得（2秒など）］ 2秒ごとに1フレームを取得します。トランジションや速いアクションは見逃されにくいですが、長いビデオの分析は遅くなります。",
-    "de-DE": "[Bilddichte abrufen (z. B. 2 Sekunden)] Nehmen Sie alle 2 Sekunden ein Bild auf. Übergänge und schnelle Aktionen werden nicht so leicht übersehen, aber lange Videoanalysen sind langsamer;",
-    "fr-FR": "[Obtenir la densité d'image (par exemple 2 secondes)] Prenez une image toutes les 2 secondes. Les transitions et les actions rapides ne sont pas faciles à manquer, mais l'analyse vidéo longue est plus lente ;",
-    "ko-KR": "[프레임 밀도 가져오기(예: 2초)] 2초마다 한 프레임씩 가져옵니다. 전환과 빠른 동작은 쉽게 놓칠 수 없지만 긴 비디오 분석은 속도가 느립니다.",
+  "【短（如 30 秒）】足以打出题材与主题标签，把更多预算留给画面采样。": {
+    "en-US": "[Short (such as 30 seconds)] is enough to type out the subject matter and topic tags, leaving more budget for picture sampling.",
+    "es-ES": "[Corto (por ejemplo, 30 segundos)] es suficiente para escribir el tema y las etiquetas del tema, lo que deja más presupuesto para el muestreo de imágenes.",
+    "ar-EG": "[قصير (مثل 30 ثانية)] يكفي لكتابة الموضوع وعلامات الموضوع، مما يترك ميزانية أكبر لأخذ عينات من الصور.",
+    "pt-PT": "[Curto (como 30 segundos)] é suficiente para digitar o assunto e as tags do tópico, deixando mais orçamento para amostragem de imagens.",
+    "ru-RU": "[Коротко (например, 30 секунд)] достаточно, чтобы ввести тему и теги темы, оставляя больше бюджета на выборку изображений.",
+    "ja-JP": "[短い (30 秒など)] は、主題とトピックのタグを入力するのに十分であり、画像のサンプリングにより多くの予算を残します。",
+    "de-DE": "[Kurz (z. B. 30 Sekunden)] reicht aus, um die Themen- und Themen-Tags einzugeben, sodass mehr Budget für die Bildauswahl übrig bleibt.",
+    "fr-FR": "[Court (par exemple 30 secondes)] suffit pour saisir le sujet et les balises de sujet, laissant plus de budget pour l'échantillonnage d'images.",
+    "ko-KR": "[짧음(예: 30초)]이면 주제와 주제 태그를 입력하기에 충분하므로 사진 샘플링에 더 많은 예산이 소요됩니다.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(33656-33703)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(35832-35871)"
     ],
-    "$id": 21989
+    "$id": 22147
   },
-  "【取帧疏（如 15 秒）】每 15 秒取一帧，视频分析更快更省电，但一闪而过的画面可能取不到。": {
-    "en-US": "[Fetching frames sparsely (such as 15 seconds)] Taking one frame every 15 seconds, video analysis is faster and saves power, but the flashing pictures may not be obtained.",
-    "es-ES": "[Obtener fotogramas escasamente (por ejemplo, 15 segundos)] Al tomar un fotograma cada 15 segundos, el análisis de vídeo es más rápido y ahorra energía, pero es posible que no se obtengan las imágenes parpadeantes.",
-    "ar-EG": "[جلب الإطارات بشكل متناثر (مثل 15 ثانية)] عند التقاط إطار واحد كل 15 ثانية، يكون تحليل الفيديو أسرع ويوفر الطاقة، ولكن قد لا يتم الحصول على الصور الوامضة.",
-    "pt-PT": "[Busca de quadros esparsamente (como 15 segundos)] Tirando um quadro a cada 15 segundos, a análise de vídeo é mais rápida e economiza energia, mas as imagens piscantes podem não ser obtidas.",
-    "ru-RU": "[Редкая выборка кадров (например, 15 секунд)] При съемке одного кадра каждые 15 секунд анализ видео выполняется быстрее и экономит электроэнергию, но мигающие изображения могут быть не получены.",
-    "ja-JP": "【まばらにフレームを取得する（15 秒など）】 15 秒ごとに 1 フレームを取得すると、ビデオ解析が高速になり、電力が節約されますが、点滅する画像が取得できない場合があります。",
-    "de-DE": "[Bilder sparsam abrufen (z. B. 15 Sekunden)] Wenn alle 15 Sekunden ein Bild aufgenommen wird, ist die Videoanalyse schneller und spart Strom, aber die blinkenden Bilder werden möglicherweise nicht erhalten.",
-    "fr-FR": "[Récupération d'images clairsemées (par exemple 15 secondes)] En prenant une image toutes les 15 secondes, l'analyse vidéo est plus rapide et économise de l'énergie, mais les images clignotantes peuvent ne pas être obtenues.",
-    "ko-KR": "[간단하게 프레임 가져오기(예: 15초)] 15초마다 한 프레임씩 가져오면 영상 분석이 더 빠르고 전력도 절약되지만 깜박이는 사진을 얻지 못할 수 있습니다.",
+  "【长（如 120 秒）】语音标签更准，但同一文件可采样的画面会变少。": {
+    "en-US": "[Long (e.g. 120 seconds)] Voice tags are more accurate, but the same file can sample fewer images.",
+    "es-ES": "[Larga (por ejemplo, 120 segundos)] Las etiquetas de voz son más precisas, pero el mismo archivo puede muestrear menos imágenes.",
+    "ar-EG": "[طويل (على سبيل المثال، 120 ثانية)] تعتبر العلامات الصوتية أكثر دقة، ولكن يمكن للملف نفسه أن يأخذ عينات أقل من الصور.",
+    "pt-PT": "[Longas (por exemplo, 120 segundos)] As marcas vocais são mais precisas, mas o mesmo arquivo pode amostrar menos imagens.",
+    "ru-RU": "[Длинный (например, 120 секунд)] Голосовые метки более точны, но из одного и того же файла можно выбрать меньше изображений.",
+    "ja-JP": "[長い (例: 120 秒)] 音声タグはより正確ですが、同じファイルでサンプルできる画像の数は少なくなります。",
+    "de-DE": "[Lang (z. B. 120 Sekunden)] Sprachbefehle sind genauer, aber mit derselben Datei können weniger Bilder abgetastet werden.",
+    "fr-FR": "[Long (par exemple 120 secondes)] Les balises vocales sont plus précises, mais le même fichier peut échantillonner moins d'images.",
+    "ko-KR": "[길게(예: 120초)] 음성 태그가 더 정확하지만 동일한 파일에서 샘플링할 수 있는 이미지 수가 더 적습니다.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(33737-33788)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(35905-35943)"
     ],
-    "$id": 21990
+    "$id": 22148
   },
   "视频画面精细度": {
     "en-US": "Video picture fineness",
@@ -3075,24 +3115,54 @@
     "fr-FR": "Finesse de l'image vidéo",
     "ko-KR": "비디오 사진 정밀도",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(34183-34194)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(36338-36349)"
     ],
     "$id": 21991
   },
-  "决定每一帧画面保留多少细节。标准精细看得更清，远处小物体和相近画面更容易区分，但视频分析更慢；精简快速速度约为前者的 2~3 倍，但细节和相近画面可能分不清。已分析过的旧视频不会自动重算，修改后需在文件列表中右键「重新分析」才会生效。": {
-    "en-US": "Determines how much detail is retained in each frame. Standard Fine can see more clearly, and it is easier to distinguish between small distant objects and similar images, but video analysis is slower; Streamline Fast is about 2 to 3 times faster than the former, but details and similar images may not be distinguishable. Old videos that have been analyzed will not be automatically recalculated. After modification, you need to right-click \"Reanalyze\" in the file list to take effect.",
-    "es-ES": "Determina cuántos detalles se retienen en cada fotograma. Standard Fine puede ver con mayor claridad y es más fácil distinguir entre pequeños objetos distantes e imágenes similares, pero el análisis de video es más lento; Streamline Fast es entre 2 y 3 veces más rápido que el primero, pero es posible que no se distingan los detalles ni las imágenes similares. Los vídeos antiguos que hayan sido analizados no se volverán a calcular automáticamente. Después de la modificación, debe hacer clic derecho en \"Reanalizar\" en la lista de archivos para que surta efecto.",
-    "ar-EG": "يحدد مقدار التفاصيل التي يتم الاحتفاظ بها في كل إطار. يمكن أن يرى Standard Fine بشكل أكثر وضوحًا، ومن الأسهل التمييز بين الأشياء الصغيرة البعيدة والصور المشابهة، لكن تحليل الفيديو أبطأ؛ يعد Streamline Fast أسرع بحوالي 2 إلى 3 مرات من السابق، ولكن التفاصيل والصور المشابهة قد لا يمكن تمييزها. لن يتم إعادة حساب مقاطع الفيديو القديمة التي تم تحليلها تلقائيًا. بعد التعديل، تحتاج إلى النقر بزر الماوس الأيمن فوق \"إعادة التحليل\" في قائمة الملفات لتصبح نافذة المفعول.",
-    "pt-PT": "Determina quantos detalhes são retidos em cada quadro. O Standard Fine pode ver com mais clareza e é mais fácil distinguir entre pequenos objetos distantes e imagens semelhantes, mas a análise de vídeo é mais lenta; Streamline Fast é cerca de 2 a 3 vezes mais rápido que o anterior, mas detalhes e imagens semelhantes podem não ser distinguíveis. Vídeos antigos que foram analisados ​​não serão recalculados automaticamente. Após a modificação, você precisa clicar com o botão direito em \"Reanalisar\" na lista de arquivos para ter efeito.",
-    "ru-RU": "Определяет, сколько деталей сохраняется в каждом кадре. Standard Fine позволяет видеть более четко, и легче различать небольшие удаленные объекты и похожие изображения, но анализ видео происходит медленнее; Streamline Fast работает примерно в 2–3 раза быстрее, чем предыдущий, но детали и похожие изображения могут быть неразличимы. Старые видео, прошедшие анализ, не будут автоматически пересчитываться. После внесения изменений необходимо щелкнуть правой кнопкой мыши «Повторно проанализировать» в списке файлов, чтобы изменения вступили в силу.",
-    "ja-JP": "各フレームにどの程度の詳細を保持するかを決定します。 Standard Fine はより鮮明に見ることができ、遠くにある小さな物体と同様の画像を区別しやすくなりますが、ビデオ分析は遅くなります。 Streamline Fast は前者に比べて約 2 ～ 3 倍高速ですが、詳細や類似した画像が区別できない場合があります。分析された古いビデオは自動的に再計算されません。変更後、ファイルリストで「再解析」を右クリックして有効にする必要があります。",
-    "de-DE": "Bestimmt, wie viele Details in jedem Frame erhalten bleiben. Mit „Standard Fine“ können Sie klarer sehen und es ist einfacher, zwischen kleinen entfernten Objekten und ähnlichen Bildern zu unterscheiden, aber die Videoanalyse ist langsamer; Streamline Fast ist etwa zwei- bis dreimal schneller als ersteres, Details und ähnliche Bilder sind jedoch möglicherweise nicht erkennbar. Alte Videos, die analysiert wurden, werden nicht automatisch neu berechnet. Nach der Änderung müssen Sie in der Dateiliste mit der rechten Maustaste auf „Erneut analysieren“ klicken, damit sie wirksam wird.",
-    "fr-FR": "Détermine la quantité de détails conservés dans chaque image. Standard Fine permet de voir plus clairement et il est plus facile de distinguer les petits objets distants et les images similaires, mais l'analyse vidéo est plus lente ; Streamline Fast est environ 2 à 3 fois plus rapide que le premier, mais les détails et les images similaires peuvent ne pas être distingués. Les anciennes vidéos analysées ne seront pas automatiquement recalculées. Après modification, vous devez faire un clic droit sur \"Réanalyser\" dans la liste des fichiers pour prendre effet.",
-    "ko-KR": "각 프레임에서 얼마나 많은 디테일이 유지되는지 결정합니다. Standard Fine은 더 명확하게 볼 수 있고 멀리 있는 작은 물체와 유사한 이미지를 쉽게 구별할 수 있지만 비디오 분석은 더 느립니다. Streamline Fast는 기존보다 2~3배 정도 빠르지만, 디테일이나 유사한 이미지가 구분이 되지 않을 수 있습니다. 분석된 오래된 동영상은 자동으로 다시 계산되지 않습니다. 수정 후 파일 목록에서 \"재분석\"을 마우스 오른쪽 버튼으로 클릭해야 적용됩니다.",
+  "决定视频画面的识别精细度与分析速度。高清精细搜索看得更清，区分更准，但分析较慢；流畅极速搜索处理更快，适合长片与配置较低的电脑。已分析过的旧视频不会自动重算，修改后需在文件列表中右键「重新分析」才会生效。": {
+    "en-US": "Determines the recognition precision and analysis speed of video images. HD fine search can see more clearly and distinguish more accurately, but the analysis is slower; smooth and fast search processing is faster, suitable for long films and computers with lower configurations. Old videos that have been analyzed will not be automatically recalculated. After modification, you need to right-click \"Reanalyze\" in the file list to take effect.",
+    "es-ES": "Determina la precisión del reconocimiento y la velocidad de análisis de imágenes de vídeo. La búsqueda fina en HD puede ver con mayor claridad y distinguir con mayor precisión, pero el análisis es más lento; El procesamiento de búsqueda fluido y rápido es más rápido, adecuado para películas largas y computadoras con configuraciones más bajas. Los vídeos antiguos que hayan sido analizados no se volverán a calcular automáticamente. Después de la modificación, debe hacer clic derecho en \"Reanalizar\" en la lista de archivos para que surta efecto.",
+    "ar-EG": "يحدد دقة التعرف وسرعة تحليل صور الفيديو. يمكن للبحث الدقيق عالي الدقة الرؤية بشكل أكثر وضوحًا والتمييز بدقة أكبر، لكن التحليل أبطأ؛ تعد معالجة البحث السلسة والسريعة أسرع ومناسبة للأفلام الطويلة وأجهزة الكمبيوتر ذات التكوينات الأقل. لن يتم إعادة حساب مقاطع الفيديو القديمة التي تم تحليلها تلقائيًا. بعد التعديل، تحتاج إلى النقر بزر الماوس الأيمن فوق \"إعادة التحليل\" في قائمة الملفات لتصبح نافذة المفعول.",
+    "pt-PT": "Determina a precisão do reconhecimento e a velocidade de análise das imagens de vídeo. A pesquisa fina em HD pode ver com mais clareza e distinguir com mais precisão, mas a análise é mais lenta; o processamento de pesquisa suave e rápido é mais rápido, adequado para filmes longos e computadores com configurações mais baixas. Vídeos antigos que foram analisados ​​não serão recalculados automaticamente. Após a modificação, você precisa clicar com o botão direito em \"Reanalisar\" na lista de arquivos para ter efeito.",
+    "ru-RU": "Определяет точность распознавания и скорость анализа видеоизображений. Тонкий поиск HD позволяет видеть более четко и различать точнее, но анализ выполняется медленнее; плавный и быстрый поиск, обработка быстрее, подходит для длинных фильмов и компьютеров с более низкими конфигурациями. Старые видео, прошедшие анализ, не будут автоматически пересчитываться. После внесения изменений вам необходимо щелкнуть правой кнопкой мыши «Повторно проанализировать» в списке файлов, чтобы изменения вступили в силу.",
+    "ja-JP": "ビデオ画像の認識精度と分析速度を決定します。 HD ファイン検索はより鮮明に表示し、より正確に区別できますが、分析は遅くなります。スムーズで高速な検索処理が高速化され、長編映画や低構成のコンピュータに適しています。分析された古いビデオは自動的に再計算されません。変更後、ファイルリストで「再解析」を右クリックして有効にする必要があります。",
+    "de-DE": "Bestimmt die Erkennungsgenauigkeit und Analysegeschwindigkeit von Videobildern. Die HD-Feinsuche kann klarer sehen und genauer unterscheiden, die Analyse ist jedoch langsamer. Die reibungslose und schnelle Suchverarbeitung ist schneller und eignet sich für lange Filme und Computer mit niedrigeren Konfigurationen. Alte Videos, die analysiert wurden, werden nicht automatisch neu berechnet. Nach der Änderung müssen Sie in der Dateiliste mit der rechten Maustaste auf „Erneut analysieren“ klicken, damit sie wirksam wird.",
+    "fr-FR": "Détermine la précision de reconnaissance et la vitesse d’analyse des images vidéo. La recherche fine HD permet de voir plus clairement et de distinguer plus précisément, mais l'analyse est plus lente ; le traitement de recherche fluide et rapide est plus rapide, adapté aux longs films et aux ordinateurs avec des configurations inférieures. Les anciennes vidéos analysées ne seront pas automatiquement recalculées. Après modification, vous devez faire un clic droit sur \"Réanalyser\" dans la liste des fichiers pour prendre effet.",
+    "ko-KR": "영상 이미지의 인식 정밀도와 분석 속도를 결정합니다. HD 정밀 검색은 더 명확하게 보고 더 정확하게 구별할 수 있지만 분석 속도는 더 느립니다. 부드럽고 빠른 검색 처리가 더 빠르며 장편 영화와 낮은 구성의 컴퓨터에 적합합니다. 분석된 오래된 동영상은 자동으로 다시 계산되지 않습니다. 수정 후 파일 목록에서 \"재분석\"을 마우스 오른쪽 버튼으로 클릭해야 적용됩니다.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(34293-34440)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(36448-36580)"
     ],
-    "$id": 21992
+    "$id": 22149
+  },
+  "当前预估最多可完整检索约": {
+    "en-US": "The current estimate is that a complete retrieval of up to approx.",
+    "es-ES": "La estimación actual es que una recuperación completa de hasta aprox.",
+    "ar-EG": "التقدير الحالي هو أن الاسترداد الكامل يصل إلى حوالي.",
+    "pt-PT": "A estimativa atual é que uma recuperação completa de até aprox.",
+    "ru-RU": "По текущим оценкам, полное извлечение прибл.",
+    "ja-JP": "現在の推定では、完全に回収できるのは最大約 1 個です。",
+    "de-DE": "Die aktuelle Schätzung geht davon aus, dass eine vollständige Rückholung bis zu ca.",
+    "fr-FR": "L'estimation actuelle est qu'une récupération complète allant jusqu'à env.",
+    "ko-KR": "현재 추정치는 최대 약까지 완전히 검색되는 것입니다.",
+    "$files": [
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(36885-36901)"
+    ],
+    "$id": 22150
+  },
+  "分钟视频": {
+    "en-US": "Minute video",
+    "es-ES": "Vídeo de un minuto",
+    "ar-EG": "فيديو دقيقة",
+    "pt-PT": "Minuto de vídeo",
+    "ru-RU": "минутное видео",
+    "ja-JP": "分のビデオ",
+    "de-DE": "Minutenvideo",
+    "fr-FR": "Vidéo d'une minute",
+    "ko-KR": "분 영상",
+    "$files": [
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(37189-37197)"
+    ],
+    "$id": 22151
   },
   "恢复硬件推荐（{level}）": {
     "en-US": "Recovery hardware recommendations ({level})",
@@ -3105,129 +3175,191 @@
     "fr-FR": "Recommandations sur le matériel de récupération ({level})",
     "ko-KR": "복구 하드웨어 권장 사항({level})",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(34901-34920)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(37627-37646)"
     ],
     "$id": 21993
   },
-  "标准精细（140）": {
-    "en-US": "Standard Fine (140)",
-    "es-ES": "Multa estándar (140)",
-    "ar-EG": "ستاندرد فاين (140)",
-    "pt-PT": "Multa Padrão (140)",
-    "ru-RU": "Стандартный штраф (140)",
-    "ja-JP": "標準細目(140)",
-    "de-DE": "Standard fein (140)",
-    "fr-FR": "Amende standard (140)",
-    "ko-KR": "스탠다드 파인 (140)",
+  "流畅极速": {
+    "en-US": "Smooth and extremely fast",
+    "es-ES": "Suave y extremadamente rápido",
+    "ar-EG": "سلس وسريع للغاية",
+    "pt-PT": "Suave e extremamente rápido",
+    "ru-RU": "Плавно и очень быстро",
+    "ja-JP": "スムーズかつ非常に高速",
+    "de-DE": "Reibungslos und extrem schnell",
+    "fr-FR": "Fluide et extrêmement rapide",
+    "ko-KR": "부드럽고 매우 빠릅니다.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(36138-36151)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(39098-39106)"
     ],
-    "$id": 21994
+    "$id": 22152
   },
-  "【优势】看得更清，远处小物体、相近画面更容易区分。": {
-    "en-US": "[Advantages] See more clearly, and it is easier to distinguish small objects in the distance and similar images.",
-    "es-ES": "[Ventajas] Vea más claramente y es más fácil distinguir objetos pequeños en la distancia e imágenes similares.",
-    "ar-EG": "[المميزات] رؤية أكثر وضوحًا، ومن الأسهل التمييز بين الأشياء الصغيرة في المسافة والصور المشابهة.",
-    "pt-PT": "[Vantagens] Veja com mais clareza e é mais fácil distinguir pequenos objetos à distância e imagens semelhantes.",
-    "ru-RU": "[Преимущества] Видите более четко, легче различать мелкие объекты на расстоянии и похожие изображения.",
-    "ja-JP": "【メリット】 より鮮明に見え、遠くの小さな物体や類似した画像を区別しやすくなります。",
-    "de-DE": "[Vorteile] Sehen Sie klarer und es ist einfacher, kleine Objekte in der Ferne und ähnliche Bilder zu unterscheiden.",
-    "fr-FR": "[Avantages] Voyez plus clairement et il est plus facile de distinguer les petits objets au loin et les images similaires.",
-    "ko-KR": "[장점] 더 선명하게 보이고, 멀리 있는 작은 물체와 비슷한 이미지를 더 쉽게 구분할 수 있습니다.",
+  "【可搜索时长】最多分析约": {
+    "en-US": "[Searchable duration] Maximum analysis time is approx.",
+    "es-ES": "[Duración de la búsqueda] El tiempo máximo de análisis es de aprox.",
+    "ar-EG": "[مدة قابلة للبحث] الحد الأقصى لوقت التحليل تقريبًا.",
+    "pt-PT": "[Duração pesquisável] O tempo máximo de análise é de aprox.",
+    "ru-RU": "[Продолжительность поиска] Максимальное время анализа составляет приблиз.",
+    "ja-JP": "【検索可能時間】最大解析時間は約1時間です。",
+    "de-DE": "[Durchsuchbare Dauer] Die maximale Analysezeit beträgt ca.",
+    "fr-FR": "[Durée consultable] La durée maximale d'analyse est d'env.",
+    "ko-KR": "[검색 가능 시간] 최대 분석 시간은 약 1시간입니다.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(36658-36687)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(40442-40458)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(43442-43458)"
     ],
-    "$id": 21995
+    "$id": 22153
   },
-  "【代价】视频分析更慢，耗时约是精简快速的 2~3 倍。": {
-    "en-US": "[Cost] Video analysis is slower, taking about 2 to 3 times as long as streamlining and fast.",
-    "es-ES": "[Costo] El análisis de vídeo es más lento y tarda entre 2 y 3 veces más que la optimización y es rápido.",
-    "ar-EG": "[التكلفة] تحليل الفيديو أبطأ، ويستغرق حوالي 2 إلى 3 أضعاف الوقت الذي يستغرقه التبسيط والسرعة.",
-    "pt-PT": "[Custo] A análise de vídeo é mais lenta, demorando cerca de 2 a 3 vezes mais do que a simplificação e a rapidez.",
-    "ru-RU": "[Стоимость] Анализ видео медленнее и занимает примерно в 2–3 раза больше времени, чем оптимизация и скорость.",
-    "ja-JP": "[コスト] ビデオ分析は遅く、効率化と高速化の約 2 ～ 3 倍の時間がかかります。",
-    "de-DE": "[Kosten] Die Videoanalyse ist langsamer und dauert etwa zwei- bis dreimal so lange wie die Optimierung und Schnelligkeit.",
-    "fr-FR": "[Coût] L'analyse vidéo est plus lente, prenant environ 2 à 3 fois plus de temps que la rationalisation et la rapidité.",
-    "ko-KR": "[비용] 영상 분석은 속도가 느리며, 합리화 및 빠른 분석에 비해 약 2~3배의 시간이 소요됩니다.",
+  "分钟视频内容": {
+    "en-US": "Minutes of video content",
+    "es-ES": "Minutos de contenido de video",
+    "ar-EG": "دقائق من محتوى الفيديو",
+    "pt-PT": "Minutos de conteúdo de vídeo",
+    "ru-RU": "минут видеоконтента",
+    "ja-JP": "数分のビデオコンテンツ",
+    "de-DE": "Minuten Videoinhalt",
+    "fr-FR": "Minutes de contenu vidéo",
+    "ko-KR": "분의 비디오 콘텐츠",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(36725-36756)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(40744-40754)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(43745-43755)"
     ],
-    "$id": 21996
+    "$id": 22154
   },
-  "【适合】追求视频搜索准确度、电脑性能充足时。": {
-    "en-US": "[Suitable] When you pursue video search accuracy and have sufficient computer performance.",
-    "es-ES": "[Adecuado] Cuando busca precisión en la búsqueda de videos y tiene suficiente rendimiento de computadora.",
-    "ar-EG": "[مناسب] عند متابعة دقة البحث عن الفيديو والحصول على أداء كافٍ للكمبيوتر.",
-    "pt-PT": "[Adequado] Quando você busca precisão na pesquisa de vídeo e tem desempenho de computador suficiente.",
-    "ru-RU": "[Подходит] Если вам нужна точность поиска видео и достаточная производительность компьютера.",
-    "ja-JP": "【最適】動画検索の精度を追求し、十分なパソコン性能を持っている場合。",
-    "de-DE": "[Geeignet] Wenn Sie eine präzise Videosuche anstreben und über eine ausreichende Computerleistung verfügen.",
-    "fr-FR": "[Convient] Lorsque vous recherchez la précision de la recherche vidéo et disposez de performances informatiques suffisantes.",
-    "ko-KR": "[적합] 영상 검색의 정확성을 추구하고 충분한 컴퓨터 성능을 갖춘 경우.",
+  "【处理速度】大幅减少分析耗时，省电流畅，不卡顿。": {
+    "en-US": "【Processing Speed】Significantly reduces analysis time, saves power and runs smoothly without lagging.",
+    "es-ES": "【Velocidad de procesamiento】 Reduce significativamente el tiempo de análisis, ahorra energía y funciona sin problemas y sin retrasos.",
+    "ar-EG": "【سرعة المعالجة 】 يقلل بشكل كبير من وقت التحليل، ويوفر الطاقة ويعمل بسلاسة دون تأخير.",
+    "pt-PT": "【Velocidade de processamento】Reduz significativamente o tempo de análise, economiza energia e funciona sem problemas, sem atrasos.",
+    "ru-RU": "【Скорость обработки】значительно сокращает время анализа, экономит электроэнергию и работает плавно, без задержек.",
+    "ja-JP": "【処理速度】分析時間を大幅に短縮し、電力を節約し、遅延なくスムーズに実行します。",
+    "de-DE": "【Verarbeitungsgeschwindigkeit】 Reduziert die Analysezeit erheblich, spart Strom und läuft reibungslos und ohne Verzögerungen.",
+    "fr-FR": "【Vitesse de traitement】 Réduit considérablement le temps d'analyse, économise de l'énergie et fonctionne correctement sans retard.",
+    "ko-KR": "【처리 속도】 분석 시간을 대폭 단축하고 전력을 절약하며 지연 없이 원활하게 실행됩니다.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(36794-36820)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(40823-40851)"
     ],
-    "$id": 21997
+    "$id": 22155
   },
-  "精简快速（70）": {
-    "en-US": "Streamlined and Fast (70)",
-    "es-ES": "Optimizado y rápido (70)",
-    "ar-EG": "مبسطة وسريعة (70)",
-    "pt-PT": "Simplificado e rápido (70)",
-    "ru-RU": "Оптимизированный и быстрый (70)",
-    "ja-JP": "合理化され高速 (70)",
-    "de-DE": "Optimiert und schnell (70)",
-    "fr-FR": "Simplifié et rapide (70)",
-    "ko-KR": "능률적이고 빠르다 (70)",
+  "【搜索精度】画面微小细节有所折损，但主体画面检索依然精准。": {
+    "en-US": "[Search Accuracy] The tiny details of the screen are compromised, but the search for the main screen is still accurate.",
+    "es-ES": "[Precisión de búsqueda] Los pequeños detalles de la pantalla se ven comprometidos, pero la búsqueda de la pantalla principal sigue siendo precisa.",
+    "ar-EG": "[دقة البحث] تم اختراق التفاصيل الصغيرة للشاشة، لكن البحث عن الشاشة الرئيسية لا يزال دقيقًا.",
+    "pt-PT": "[Precisão da pesquisa] Os pequenos detalhes da tela estão comprometidos, mas a pesquisa pela tela principal ainda é precisa.",
+    "ru-RU": "[Точность поиска] Мельчайшие детали экрана нарушены, но поиск на главном экране остается точным.",
+    "ja-JP": "[検索精度] 画面の細部は損なわれていますが、メイン画面の検索は依然として正確です。",
+    "de-DE": "[Suchgenauigkeit] Die winzigen Details des Bildschirms sind beeinträchtigt, aber die Suche nach dem Hauptbildschirm ist immer noch genau.",
+    "fr-FR": "[Précision de la recherche] Les petits détails de l'écran sont compromis, mais la recherche de l'écran principal reste précise.",
+    "ko-KR": "[검색 정확도] 화면의 작은 디테일은 손상되었으나, 메인 화면 검색은 여전히 ​​정확합니다.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(37725-37737)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(40889-40922)"
     ],
-    "$id": 21998
+    "$id": 22156
   },
-  "【优势】视频分析速度约为标准精细的 2~3 倍，省电省时。": {
-    "en-US": "[Advantages] Video analysis speed is about 2~3 times that of standard fine, saving power and time.",
-    "es-ES": "[Ventajas] La velocidad del análisis de vídeo es aproximadamente 2 o 3 veces mayor que la velocidad estándar, lo que ahorra energía y tiempo.",
-    "ar-EG": "[المزايا] تبلغ سرعة تحليل الفيديو حوالي 2 إلى 3 أضعاف السرعة القياسية، مما يوفر الطاقة والوقت.",
-    "pt-PT": "[Vantagens] A velocidade de análise de vídeo é cerca de 2 a 3 vezes maior que a do padrão, economizando energia e tempo.",
-    "ru-RU": "[Преимущества] Скорость анализа видео примерно в 2–3 раза выше стандартной, что позволяет экономить электроэнергию и время.",
-    "ja-JP": "【メリット】動画解析速度は標準ファインの約2～3倍で、電力と時間を節約できます。",
-    "de-DE": "[Vorteile] Die Geschwindigkeit der Videoanalyse beträgt etwa das Zwei- bis Dreifache der Standardgeschwindigkeit, wodurch Strom und Zeit gespart werden.",
-    "fr-FR": "[Avantages] La vitesse d'analyse vidéo est environ 2 à 3 fois supérieure à celle de l'analyse standard, ce qui permet d'économiser de l'énergie et du temps.",
-    "ko-KR": "[장점] 영상분석 속도는 표준 벌금의 약 2~3배로 전력 및 시간이 절약됩니다.",
+  "【适用场景】长视频快速建索引、老旧电脑或轻薄本办公。": {
+    "en-US": "[Applicable scenarios] Quickly index long videos, old computers or thin and light laptops for office use.",
+    "es-ES": "[Escenarios aplicables] Indexe rápidamente videos largos, computadoras viejas o computadoras portátiles delgadas y livianas para uso en la oficina.",
+    "ar-EG": "[سيناريوهات قابلة للتطبيق] يمكنك فهرسة مقاطع الفيديو الطويلة أو أجهزة الكمبيوتر القديمة أو أجهزة الكمبيوتر المحمولة الرفيعة والخفيفة بسرعة للاستخدام المكتبي.",
+    "pt-PT": "[Cenários aplicáveis] Indexe rapidamente vídeos longos, computadores antigos ou laptops finos e leves para uso no escritório.",
+    "ru-RU": "[Применимые сценарии] Быстро индексируйте длинные видео, старые компьютеры или тонкие и легкие ноутбуки для офисного использования.",
+    "ja-JP": "【適用可能なシナリオ】長いビデオ、古いコンピューター、またはオフィスで使用する薄型軽量のラップトップにすばやくインデックスを付けます。",
+    "de-DE": "[Anwendbare Szenarien] Indizieren Sie schnell lange Videos, alte Computer oder dünne und leichte Laptops für den Bürogebrauch.",
+    "fr-FR": "[Scénarios applicables] Indexez rapidement de longues vidéos, d'anciens ordinateurs ou des ordinateurs portables fins et légers pour une utilisation bureautique.",
+    "ko-KR": "[적용 가능한 시나리오] 긴 비디오, 오래된 컴퓨터 또는 사무실에서 사용하기 위한 얇고 가벼운 노트북을 빠르게 색인화합니다.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(38240-38273)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(40960-40990)"
     ],
-    "$id": 21999
+    "$id": 22157
   },
-  "【代价】画面细节和相近画面的区分能力会下降。": {
-    "en-US": "[Cost] The ability to distinguish picture details from similar pictures will be reduced.",
-    "es-ES": "[Costo] Se reducirá la capacidad de distinguir los detalles de la imagen de imágenes similares.",
-    "ar-EG": "[التكلفة] سيتم تقليل القدرة على تمييز تفاصيل الصورة عن الصور المشابهة.",
-    "pt-PT": "[Custo] A capacidade de distinguir detalhes de imagens de imagens semelhantes será reduzida.",
-    "ru-RU": "[Стоимость] Возможность отличать детали изображения от похожих изображений будет снижена.",
-    "ja-JP": "[コスト] 画像の詳細と類似した画像を区別する能力が低下します。",
-    "de-DE": "[Kosten] Die Fähigkeit, Bilddetails von ähnlichen Bildern zu unterscheiden, wird verringert.",
-    "fr-FR": "[Coût] La capacité à distinguer les détails de l'image des images similaires sera réduite.",
-    "ko-KR": "[비용] 유사한 사진과 세부적인 사진을 구별하는 능력이 저하됩니다.",
+  "高清精细": {
+    "en-US": "HD fine",
+    "es-ES": "HD bien",
+    "ar-EG": "HD بخير",
+    "pt-PT": "HD bem",
+    "ru-RU": "HD отлично",
+    "ja-JP": "HDファイン",
+    "de-DE": "HD in Ordnung",
+    "fr-FR": "HD bien",
+    "ko-KR": "HD 벌금",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(38311-38337)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(42095-42103)"
     ],
-    "$id": 22000
+    "$id": 22158
   },
-  "【适合】长视频快速建索引，或电脑性能有限、GPU/CPU 较忙时。": {
-    "en-US": "[Suitable] Quickly index long videos, or when the computer performance is limited and the GPU/CPU is busy.",
-    "es-ES": "[Adecuado] Indexe rápidamente vídeos largos o cuando el rendimiento de la computadora sea limitado y la GPU/CPU esté ocupada.",
-    "ar-EG": "[مناسب] يمكنك فهرسة مقاطع الفيديو الطويلة بسرعة، أو عندما يكون أداء الكمبيوتر محدودًا وتكون وحدة معالجة الرسومات/وحدة المعالجة المركزية مشغولة.",
-    "pt-PT": "[Adequado] Indexe rapidamente vídeos longos ou quando o desempenho do computador é limitado e a GPU/CPU está ocupada.",
-    "ru-RU": "[Подходит] Быстро индексируйте длинные видео или когда производительность компьютера ограничена, а графический процессор/процессор занят.",
-    "ja-JP": "[適しています] 長いビデオ、またはコンピューターのパフォーマンスが制限され、GPU/CPU がビジーな場合に、すばやくインデックスを作成します。",
-    "de-DE": "[Geeignet] Indexieren Sie schnell lange Videos oder wenn die Computerleistung begrenzt ist und die GPU/CPU ausgelastet ist.",
-    "fr-FR": "[Adapté] Indexez rapidement de longues vidéos, ou lorsque les performances de l'ordinateur sont limitées et que le GPU/CPU est occupé.",
-    "ko-KR": "[적합] 긴 비디오를 빠르게 색인화하거나 컴퓨터 성능이 제한되고 GPU/CPU가 사용량이 많은 경우.",
+  "【搜索精度】看得更清，远处微小物体与相近画面更易区分。": {
+    "en-US": "[Search Accuracy] See more clearly, and it is easier to distinguish between small distant objects and similar images.",
+    "es-ES": "[Precisión de búsqueda] Vea más claramente y es más fácil distinguir entre objetos pequeños distantes e imágenes similares.",
+    "ar-EG": "[دقة البحث] شاهد بشكل أكثر وضوحًا، ومن الأسهل التمييز بين الأشياء الصغيرة البعيدة والصور المشابهة.",
+    "pt-PT": "[Precisão de pesquisa] Veja com mais clareza e é mais fácil distinguir entre pequenos objetos distantes e imagens semelhantes.",
+    "ru-RU": "[Точность поиска] Видите более четко, и вам легче различать небольшие удаленные объекты и похожие изображения.",
+    "ja-JP": "【検索精度】よりはっきりと見え、遠くにある小さな物体と類似した画像を区別しやすくなります。",
+    "de-DE": "[Suchgenauigkeit] Sehen Sie klarer und es ist einfacher, zwischen kleinen entfernten Objekten und ähnlichen Bildern zu unterscheiden.",
+    "fr-FR": "[Précision de la recherche] Voyez plus clairement et il est plus facile de distinguer les petits objets éloignés des images similaires.",
+    "ko-KR": "[검색 정확도] 더 명확하게 보고, 멀리 있는 작은 물체와 유사한 이미지를 더 쉽게 구별할 수 있습니다.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(38375-38412)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(43824-43855)"
     ],
-    "$id": 22001
+    "$id": 22159
+  },
+  "【处理速度】视频分析耗时较长，对硬件算力要求较高。": {
+    "en-US": "[Processing speed] Video analysis takes a long time and requires high hardware computing power.",
+    "es-ES": "[Velocidad de procesamiento] El análisis de vídeo lleva mucho tiempo y requiere una gran potencia informática de hardware.",
+    "ar-EG": "[سرعة المعالجة] يستغرق تحليل الفيديو وقتًا طويلاً ويتطلب قوة حوسبة عالية للأجهزة.",
+    "pt-PT": "[Velocidade de processamento] A análise de vídeo leva muito tempo e requer alto poder de computação de hardware.",
+    "ru-RU": "[Скорость обработки] Анализ видео занимает много времени и требует высокой вычислительной мощности оборудования.",
+    "ja-JP": "【処理速度】ビデオ解析には時間がかかり、高いハードウェアの計算能力が必要です。",
+    "de-DE": "[Verarbeitungsgeschwindigkeit] Die Videoanalyse dauert lange und erfordert eine hohe Hardware-Rechenleistung.",
+    "fr-FR": "[Vitesse de traitement] L'analyse vidéo prend beaucoup de temps et nécessite une puissance de calcul matérielle élevée.",
+    "ko-KR": "[처리 속도] 영상 분석은 시간이 오래 걸리고 높은 하드웨어 컴퓨팅 성능이 필요합니다.",
+    "$files": [
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(43893-43922)"
+    ],
+    "$id": 22160
+  },
+  "【适用场景】追求极致检索准确度，且电脑性能充裕。": {
+    "en-US": "[Applicable Scenarios] Pursue the ultimate search accuracy and have sufficient computer performance.",
+    "es-ES": "[Escenarios aplicables] Busque la máxima precisión de búsqueda y tenga suficiente rendimiento de la computadora.",
+    "ar-EG": "[السيناريوهات القابلة للتطبيق] اتبع دقة البحث القصوى واحصل على أداء كافٍ للكمبيوتر.",
+    "pt-PT": "[Cenários aplicáveis] Busque a máxima precisão de pesquisa e tenha desempenho de computador suficiente.",
+    "ru-RU": "[Применимые сценарии] Обеспечьте максимальную точность поиска и достаточную производительность компьютера.",
+    "ja-JP": "【適用シーン】 究極の検索精度を追求し、十分なコンピュータ性能を備えていること。",
+    "de-DE": "[Anwendbare Szenarien] Streben Sie nach höchster Suchgenauigkeit und verfügen Sie über ausreichende Computerleistung.",
+    "fr-FR": "[Scénarios applicables] Recherchez la précision de recherche ultime et disposez de performances informatiques suffisantes.",
+    "ko-KR": "[적용 가능한 시나리오] 최고의 검색 정확도를 추구하고 충분한 컴퓨터 성능을 갖습니다.",
+    "$files": [
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(43960-43988)"
+    ],
+    "$id": 22161
+  },
+  "注：5 分钟以内视频（MP4/MOV）走极速压缩域选美（100% 完整覆盖）；超出预估时长的长视频将在安全边界截断，截断区间内所有镜头与关键画面 100% 完整捕获。预估时长随上方的语音识别时长（当前": {
+    "en-US": "Note: Videos within 5 minutes (MP4/MOV) are subject to the ultra-fast compression domain beauty pageant (100% complete coverage); long videos that exceed the estimated duration will be truncated at the safety boundary, and all shots and key images within the truncation interval will be 100% fully captured. The estimated duration depends on the speech recognition duration above (currently",
+    "es-ES": "Nota: Los vídeos de 5 minutos (MP4/MOV) están sujetos al concurso de belleza del dominio de compresión ultrarrápida (cobertura completa del 100 %); Los videos largos que excedan la duración estimada se truncarán en el límite de seguridad, y todas las tomas e imágenes clave dentro del intervalo de truncamiento se capturarán en su totalidad al 100 %. La duración estimada depende de la duración del reconocimiento de voz anterior (actualmente",
+    "ar-EG": "ملحوظة: مقاطع الفيديو التي لا تزيد مدتها عن 5 دقائق (MP4/MOV) تخضع لمسابقة ملكة جمال مجال الضغط فائق السرعة (تغطية كاملة بنسبة 100%)؛ سيتم اقتطاع مقاطع الفيديو الطويلة التي تتجاوز المدة المقدرة عند حدود الأمان، وسيتم التقاط جميع اللقطات والصور الرئيسية خلال الفاصل الزمني للاقتطاع بالكامل بنسبة 100%. تعتمد المدة المقدرة على مدة التعرف على الكلام أعلاه (حاليًا",
+    "pt-PT": "Observação: Vídeos de até 5 minutos (MP4/MOV) estão sujeitos ao concurso de beleza de domínio de compressão ultrarrápida (cobertura 100% completa); vídeos longos que excedam a duração estimada serão truncados no limite de segurança e todas as tomadas e imagens principais dentro do intervalo de truncamento serão 100% totalmente capturadas. A duração estimada depende da duração do reconhecimento de fala acima (atualmente",
+    "ru-RU": "Примечание. Видео продолжительностью 5 минут (MP4/MOV) подлежат конкурсу красоты в домене сверхбыстрого сжатия (100 % полное покрытие); Длинные видеоролики, продолжительность которых превышает расчетную, будут обрезаны на границе безопасности, а все кадры и ключевые изображения в пределах интервала усечения будут полностью записаны на 100 %. Предполагаемая продолжительность зависит от указанной выше продолжительности распознавания речи (в настоящее время",
+    "ja-JP": "注: 5 分以内のビデオ (MP4/MOV) は、超高速圧縮ドメインの美人コンテスト (100% 完全網羅) の対象となります。推定時間を超える長いビデオは安全境界で切り捨てられ、切り捨て間隔内のすべてのショットとキー画像は 100% 完全にキャプチャされます。推定持続時間は上記の音声認識持続時間によって異なります (現時点では",
+    "de-DE": "Hinweis: Videos innerhalb von 5 Minuten (MP4/MOV) unterliegen dem Schönheitswettbewerb der ultraschnellen Komprimierungsdomäne (100 % vollständige Abdeckung); Lange Videos, die die geschätzte Dauer überschreiten, werden an der Sicherheitsgrenze abgeschnitten und alle Aufnahmen und Schlüsselbilder innerhalb des Abschneideintervalls werden zu 100 % vollständig erfasst. Die geschätzte Dauer hängt von der oben genannten Spracherkennungsdauer ab (derzeit).",
+    "fr-FR": "Remarque : les vidéos d'une durée de 5 minutes (MP4/MOV) sont soumises au concours de beauté du domaine de compression ultra-rapide (couverture complète à 100 %) ; les longues vidéos qui dépassent la durée estimée seront tronquées au niveau de la limite de sécurité, et toutes les prises de vue et images clés dans l'intervalle de troncature seront entièrement capturées à 100 %. La durée estimée dépend de la durée de reconnaissance vocale ci-dessus (actuellement",
+    "ko-KR": "참고: 5분 이내의 동영상(MP4/MOV)에는 초고속 압축 도메인 미인대회(100% 전체 커버리지)가 적용됩니다. 예상 길이를 초과하는 긴 영상은 안전 경계선에서 잘리고, 잘림 간격 내의 모든 샷과 주요 이미지는 100% 완전히 캡처됩니다. 예상 지속 시간은 위의 음성 인식 지속 시간에 따라 달라집니다(현재",
+    "$files": [
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(44193-44297)"
+    ],
+    "$id": 22162
+  },
+  "）动态此消彼长。": {
+    "en-US": ") dynamics wax and wane.",
+    "es-ES": ") la dinámica aumenta y disminuye.",
+    "ar-EG": ") ديناميات الشمع والتضاءل.",
+    "pt-PT": ") a dinâmica aumenta e diminui.",
+    "ru-RU": ") Динамика то растет, то убывает.",
+    "ja-JP": ") ダイナミクスの盛衰。",
+    "de-DE": ") Dynamik nimmt zu und ab.",
+    "fr-FR": ") la dynamique croît et décroît.",
+    "ko-KR": ") 역학 왁스 및 약화.",
+    "$files": [
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(44530-44542)"
+    ],
+    "$id": 22163
   },
   "视觉语义搜索": {
     "en-US": "Visual semantic search",
@@ -3240,25 +3372,25 @@
     "fr-FR": "Recherche sémantique visuelle",
     "ko-KR": "시각적 의미 검색",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(39133-39143)",
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(40023-40033)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(45315-45325)",
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(45985-45995)"
     ],
     "$id": 22053
   },
-  "用自然语言描述画面（如「红色的跑车」「左边的沙发」）来搜索图片。仅在极速轻量档且界面语言为中文时生效；首次使用需要加载视觉模型，可能等待数秒。": {
-    "en-US": "Use natural language to describe the picture (such as \"red sports car\" and \"sofa on the left\") to search for pictures. It only takes effect when the ultra-fast and lightweight version is used and the interface language is Chinese; the first time you use it, you need to load the visual model, which may take several seconds.",
-    "es-ES": "Utilice lenguaje natural para describir la imagen (como \"auto deportivo rojo\" y \"sofá a la izquierda\") para buscar imágenes. Solo surte efecto cuando se utiliza la versión ultrarrápida y liviana y el idioma de la interfaz es chino; La primera vez que lo use, deberá cargar el modelo visual, lo que puede tardar varios segundos.",
-    "ar-EG": "استخدم اللغة الطبيعية لوصف الصورة (مثل \"سيارة رياضية حمراء\" و\"أريكة على اليسار\") للبحث عن الصور. ولا يسري مفعوله إلا عند استخدام الإصدار فائق السرعة وخفيف الوزن وتكون لغة الواجهة صينية؛ في المرة الأولى التي تستخدمه فيها، ستحتاج إلى تحميل النموذج المرئي، الأمر الذي قد يستغرق عدة ثوانٍ.",
-    "pt-PT": "Use linguagem natural para descrever a imagem (como “carro esportivo vermelho” e “sofá à esquerda”) para pesquisar fotos. Só entra em vigor quando a versão ultrarrápida e leve é ​​usada e o idioma da interface é o chinês; na primeira vez que você usá-lo, será necessário carregar o modelo visual, o que pode levar vários segundos.",
-    "ru-RU": "Используйте естественный язык для описания изображения (например, «красная спортивная машина» и «диван слева») для поиска изображений. Оно вступает в силу только в том случае, если используется сверхбыстрая и легкая версия и язык интерфейса — китайский; при первом использовании вам необходимо загрузить визуальную модель, что может занять несколько секунд.",
-    "ja-JP": "自然言語を使用して写真を説明し (「赤いスポーツカー」や「左側のソファ」など)、写真を検索します。これは、超高速軽量バージョンが使用され、インターフェース言語が中国語の場合にのみ有効です。初めて使用するときは、ビジュアル モデルをロードする必要があります。これには数秒かかる場合があります。",
-    "de-DE": "Beschreiben Sie das Bild in natürlicher Sprache (z. B. „roter Sportwagen“ und „Sofa links“), um nach Bildern zu suchen. Es wird nur wirksam, wenn die ultraschnelle und leichte Version verwendet wird und die Schnittstellensprache Chinesisch ist. Wenn Sie es zum ersten Mal verwenden, müssen Sie das visuelle Modell laden, was mehrere Sekunden dauern kann.",
-    "fr-FR": "Utilisez un langage naturel pour décrire l'image (comme « voiture de sport rouge » et « canapé à gauche ») pour rechercher des images. Il ne prend effet que lorsque la version ultra-rapide et légère est utilisée et que la langue de l'interface est le chinois ; la première fois que vous l'utilisez, vous devez charger le modèle visuel, ce qui peut prendre plusieurs secondes.",
-    "ko-KR": "자연어를 사용하여 그림을 설명합니다(예: \"빨간색 스포츠카\", \"왼쪽 소파\"). 초고속 경량 버전을 사용하고 인터페이스 언어가 중국어인 경우에만 적용됩니다. 처음 사용하는 경우 시각적 모델을 로드해야 하며 몇 초 정도 걸릴 수 있습니다.",
+  "用自然语言描述画面（如「红色的跑车」「左边的沙发」）来搜索图片。支持中文与多语言检索；首次使用需要加载视觉模型，可能等待数秒。": {
+    "en-US": "Use natural language to describe the picture (such as \"red sports car\" and \"sofa on the left\") to search for pictures. Supports Chinese and multi-language retrieval; the first time you use it, you need to load the visual model, which may take several seconds.",
+    "es-ES": "Utilice lenguaje natural para describir la imagen (como \"auto deportivo rojo\" y \"sofá a la izquierda\") para buscar imágenes. Admite recuperación en chino y en varios idiomas; La primera vez que lo use, deberá cargar el modelo visual, lo que puede tardar varios segundos.",
+    "ar-EG": "استخدم اللغة الطبيعية لوصف الصورة (مثل \"سيارة رياضية حمراء\" و\"أريكة على اليسار\") للبحث عن الصور. يدعم استرجاع اللغة الصينية ومتعددة اللغات؛ في المرة الأولى التي تستخدمه فيها، ستحتاج إلى تحميل النموذج المرئي، الأمر الذي قد يستغرق عدة ثوانٍ.",
+    "pt-PT": "Use linguagem natural para descrever a imagem (como “carro esportivo vermelho” e “sofá à esquerda”) para pesquisar fotos. Suporta recuperação em chinês e em vários idiomas; na primeira vez que você usá-lo, será necessário carregar o modelo visual, o que pode levar vários segundos.",
+    "ru-RU": "Используйте естественный язык для описания изображения (например, «красная спортивная машина» и «диван слева») для поиска изображений. Поддерживает поиск на китайском и нескольких языках; при первом использовании вам необходимо загрузить визуальную модель, что может занять несколько секунд.",
+    "ja-JP": "自然言語を使用して写真を説明し (「赤いスポーツカー」や「左側のソファ」など)、写真を検索します。中国語と多言語の検索をサポートします。初めて使用するときは、ビジュアル モデルをロードする必要があります。これには数秒かかる場合があります。",
+    "de-DE": "Beschreiben Sie das Bild in natürlicher Sprache (z. B. „roter Sportwagen“ und „Sofa links“), um nach Bildern zu suchen. Unterstützt Chinesisch und mehrsprachiges Abrufen; Wenn Sie es zum ersten Mal verwenden, müssen Sie das visuelle Modell laden, was mehrere Sekunden dauern kann.",
+    "fr-FR": "Utilisez un langage naturel pour décrire l'image (comme « voiture de sport rouge » et « canapé à gauche ») pour rechercher des images. Prend en charge la récupération chinoise et multilingue ; la première fois que vous l'utilisez, vous devez charger le modèle visuel, ce qui peut prendre plusieurs secondes.",
+    "ko-KR": "자연어를 사용하여 그림을 설명합니다(예: \"빨간색 스포츠카\", \"왼쪽 소파\"). 중국어 및 다국어 검색을 지원합니다. 처음 사용하는 경우 시각적 모델을 로드해야 하며 몇 초 정도 걸릴 수 있습니다.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(39204-39301)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(45390-45481)"
     ],
-    "$id": 22054
+    "$id": 22164
   },
   "开启后可用画面描述检索图片；低配设备可关闭以节省内存。": {
     "en-US": "After turning it on, you can use the screen description to retrieve pictures; low-end devices can turn it off to save memory.",
@@ -3271,24 +3403,9 @@
     "fr-FR": "Après l'avoir allumé, vous pouvez utiliser la description de l'écran pour récupérer des images ; les appareils bas de gamme peuvent le désactiver pour économiser de la mémoire.",
     "ko-KR": "전원을 켠 후 화면 설명을 사용하여 사진을 검색할 수 있습니다. 저사양 장치에서는 메모리를 절약하기 위해 이 기능을 끌 수 있습니다.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(39487-39518)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(45679-45710)"
     ],
     "$id": 22055
-  },
-  "当前为全模态标准档，该能力仅在极速轻量档下生效，开关设置会被保留。": {
-    "en-US": "Currently it is the full-mode standard gear. This ability only takes effect in the extreme speed and light gear, and the switch settings will be retained.",
-    "es-ES": "Actualmente es el equipo estándar de modo completo. Esta habilidad solo tiene efecto en velocidad extrema y marcha ligera, y la configuración del interruptor se conservará.",
-    "ar-EG": "حاليًا هو الترس القياسي للوضع الكامل. تسري هذه القدرة فقط في السرعة القصوى والعتاد الخفيف، وسيتم الاحتفاظ بإعدادات المفتاح.",
-    "pt-PT": "Atualmente é o equipamento padrão de modo completo. Esta habilidade só tem efeito em velocidades extremas e equipamentos leves, e as configurações do interruptor serão mantidas.",
-    "ru-RU": "В настоящее время это полнофункциональная стандартная передача. Эта способность действует только на экстремальной скорости и легком снаряжении, а настройки переключателя сохранятся.",
-    "ja-JP": "現在はフルモードの標準装備です。この機能は、極度のスピードと軽いギアでのみ有効であり、スイッチ設定は保持されます。",
-    "de-DE": "Derzeit ist es die Vollmodus-Standardausrüstung. Diese Fähigkeit wird nur bei extremer Geschwindigkeit und leichtem Gang wirksam und die Schaltereinstellungen bleiben erhalten.",
-    "fr-FR": "Actuellement, il s’agit de l’équipement standard en mode complet. Cette capacité ne prend effet que dans les vitesses extrêmes et les vitesses légères, et les réglages des commutateurs seront conservés.",
-    "ko-KR": "현재는 풀모드 표준기어입니다. 이 기능은 최고 속도 및 경량 기어에서만 적용되며 스위치 설정은 유지됩니다.",
-    "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(39709-39746)"
-    ],
-    "$id": 22056
   },
   "语义索引状态": {
     "en-US": "Semantic index status",
@@ -3301,7 +3418,7 @@
     "fr-FR": "Statut de l'index sémantique",
     "ko-KR": "의미론적 색인 상태",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(40328-40338)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(46304-46314)"
     ],
     "$id": 22057
   },
@@ -3316,7 +3433,7 @@
     "fr-FR": "La lecture de l’état de l’index a échoué. Vous pouvez réessayer plus tard ou reconstruire manuellement.",
     "ko-KR": "인덱스 상태 읽기에 실패했습니다. 나중에 다시 시도하거나 수동으로 다시 빌드할 수 있습니다.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(40502-40526)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(46486-46510)"
     ],
     "$id": 22058
   },
@@ -3331,7 +3448,7 @@
     "fr-FR": "{pending} éléments à reconstruire · {ready} éléments prêts · {failed} éléments en échec",
     "ko-KR": "재빌드할 항목 {pending}개 · {ready}개 항목 준비됨 · {failed}개 항목 실패",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(40586-40637)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(46574-46625)"
     ],
     "$id": 22059
   },
@@ -3346,7 +3463,7 @@
     "fr-FR": "Lecture de l'état de l'index...",
     "ko-KR": "인덱스 상태를 읽는 중...",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(40881-40894)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(46871-46884)"
     ],
     "$id": 22060
   },
@@ -3361,7 +3478,7 @@
     "fr-FR": "Dernière reconstruction : {reason}, {invalidated} éléments expirés, {requeued} éléments remis en file d'attente",
     "ko-KR": "마지막 재빌드: {reason}, 만료된 {invalidated}개 항목, 다시 대기열에 추가된 {requeued}개 항목",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(41110-41166)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(47108-47164)"
     ],
     "$id": 22061
   },
@@ -3376,7 +3493,7 @@
     "fr-FR": "En reconstruction…",
     "ko-KR": "재건축 중…",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(42380-42388)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(48436-48444)"
     ],
     "$id": 22062
   },
@@ -3391,7 +3508,7 @@
     "fr-FR": "Reconstruire l'index sémantique",
     "ko-KR": "의미론적 인덱스 재구축",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(42392-42402)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(48448-48458)"
     ],
     "$id": 22063
   },
@@ -3406,7 +3523,7 @@
     "fr-FR": "Confirmer le basculement en mode de compréhension intelligente ?",
     "ko-KR": "스마트 이해 모드로 전환할까요?",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(42791-42806)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(48865-48880)"
     ],
     "$id": 20625
   },
@@ -3421,7 +3538,7 @@
     "fr-FR": "Bientôt basculement dans le mode 【{profile}】. Après le basculement, le système redémarrera automatiquement le moteur d'IA.",
     "ko-KR": "곧 【{profile}】 모드로 전환됩니다. 전환 후 시스템이 자동으로 AI 엔진을 재시작합니다.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(42993-43055)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(49067-49129)"
     ],
     "$id": 20626
   },
@@ -3436,7 +3553,7 @@
     "fr-FR": "⚠️ Notes et mécanisme d'application :",
     "ko-KR": "⚠️ 주의사항 및 적용 방식:",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(43452-43469)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(49526-49543)"
     ],
     "$id": 20627
   },
@@ -3451,7 +3568,7 @@
     "fr-FR": "1. Fichiers nouvellement importés : adopteront immédiatement le nouveau mode pour une analyse approfondie des caractéristiques ;",
     "ko-KR": "1. 새로 가져온 파일: 즉시 자동으로 새 모드를 채택하여 심층 특징 분석을 수행합니다;",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(43499-43532)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(49573-49606)"
     ],
     "$id": 20628
   },
@@ -3466,7 +3583,7 @@
     "fr-FR": "2. Fichiers déjà analysés : les données historiques restent conservées en toute sécurité. Pour profiter des fonctionnalités de recherche du nouveau mode pour les anciens fichiers, il faut effectuer un clic droit dans la liste des fichiers et sélectionner « Réanalyser ».",
     "ko-KR": "2. 이미 분석된 기존 파일: 과거 데이터는 안전하게 유지됩니다. 기존 파일에 대해 새 모드의 검색 기능을 적용하려면 파일 목록에서 마우스 오른쪽 버튼을 클릭하여 '다시 분석'을 선택하십시오.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(43562-43624)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(49636-49698)"
     ],
     "$id": 20629
   },
@@ -3481,7 +3598,7 @@
     "fr-FR": "Appliquer immédiatement et redémarrer le moteur",
     "ko-KR": "즉시 적용 및 엔진 재시작",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(43927-43940)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(50001-50014)"
     ],
     "$id": 20630
   },
@@ -3496,7 +3613,7 @@
     "fr-FR": "Confirmer le basculement de la précision d'analyse des caractéristiques ?",
     "ko-KR": "기능 분석 정밀도를 전환할까요?",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(44286-44301)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(50360-50375)"
     ],
     "$id": 20631
   },
@@ -3511,54 +3628,9 @@
     "fr-FR": "La précision de l'analyse des caractéristiques sera prochainement ajustée à [{level} ({dim} dimensions)].",
     "ko-KR": "아래와 같이 특징 분석 정밀도를 [{level}({dim} 차원)]으로 조정합니다.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(44488-44545)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(50562-50619)"
     ],
     "$id": 20632
-  },
-  "旗舰精准档": {
-    "en-US": "Flagship High-Precision Tier",
-    "es-ES": "Nivel de precisión estándar",
-    "ar-EG": "المستوى الدقيق الرائد",
-    "pt-PT": "Nível de precisão de ponta",
-    "ru-RU": "Флагманский точный уровень",
-    "ja-JP": "フラッグシップ精密モード",
-    "de-DE": "Flaggschiff-Präzisionsstufe",
-    "fr-FR": "Niveau de précision phare",
-    "ko-KR": "플래그십 정밀형",
-    "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(44679-44688)"
-    ],
-    "$id": 20633
-  },
-  "标准平衡档": {
-    "en-US": "Standard Balanced Tier",
-    "es-ES": "Nivel equilibrado estándar",
-    "ar-EG": "المستوى القياسي المتوازن",
-    "pt-PT": "Nível de equilíbrio padrão",
-    "ru-RU": "Стандартный сбалансированный уровень",
-    "ja-JP": "スタンダードバランスモード",
-    "de-DE": "Standard-Ausgewogenheitsstufe",
-    "fr-FR": "Niveau équilibré standard",
-    "ko-KR": "표준 균형형",
-    "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(44775-44784)"
-    ],
-    "$id": 20634
-  },
-  "紧凑省盘档": {
-    "en-US": "Compact Storage-Saving Tier",
-    "es-ES": "Nivel compacto de ahorro de espacio",
-    "ar-EG": "المستوى المدمج الموفّر للمساحة",
-    "pt-PT": "Nível compacto de poupança de espaço",
-    "ru-RU": "Компактный экономный уровень",
-    "ja-JP": "コンパクト省ストレージモード",
-    "de-DE": "Kompakte Speichersparstufe",
-    "fr-FR": "Niveau compact, économie de stockage",
-    "ko-KR": "컴팩트 저장공간 절약형",
-    "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(44817-44826)"
-    ],
-    "$id": 20635
   },
   "⚠️ 生效机制说明：": {
     "en-US": "⚠️ Effect Mechanism:",
@@ -3571,7 +3643,7 @@
     "fr-FR": "⚠️ Explication du mécanisme de prise d'effet :",
     "ko-KR": "⚠️ 적용 메커니즘 설명:",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(45155-45169)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(51229-51243)"
     ],
     "$id": 20636
   },
@@ -3586,7 +3658,7 @@
     "fr-FR": "1. Fichiers nouvellement importés : l'index de caractéristiques sera généré directement avec la précision de {dim} dimensions ;",
     "ko-KR": "1. 새로 가져온 파일: {dim} 차원 정밀도로 특징 인덱스를 바로 생성합니다.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(45199-45234)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(51273-51308)"
     ],
     "$id": 20637
   },
@@ -3601,7 +3673,7 @@
     "fr-FR": "2. Fichiers précédemment analysés : les anciens index de caractéristiques ne seront pas endommagés, mais pour bénéficier de l'effet de correspondance de la précision actuelle lors des recherches, il faut exécuter « Réanalyser » dans la liste des fichiers.",
     "ko-KR": "2. 분석된 기존 파일: 기존 특징 인덱스는 손상되지 않지만, 검색 시 현재 정밀도의 매칭 효과를 누리려면 파일 목록에서 ‘다시 분석’을 실행해야 합니다.",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(45298-45358)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(51372-51432)"
     ],
     "$id": 20638
   },
@@ -3616,7 +3688,7 @@
     "fr-FR": "Confirmer l'ajustement de la précision",
     "ko-KR": "정밀도 조정 확인",
     "$files": [
-      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(45663-45673)"
+      "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(51737-51747)"
     ],
     "$id": 20639
   },
@@ -3797,24 +3869,24 @@
     "fr-FR": "Réglages d'extraction du contenu",
     "ko-KR": "내용 추출 설정",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(6844-6854)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(6022-6032)"
     ],
     "$id": 20640
   },
-  "控制文件与文档文本、OCR、音视频等内容提取范围及精度": {
-    "en-US": "Scope and accuracy of content extraction for control files and document text, OCR, audio/video, etc.",
-    "es-ES": "Ámbito y precisión de extracción para archivos de control y textos, OCR, audio y vídeo",
-    "ar-EG": "مدى استخراج النطاق والدقة لملفات التحكم ونصوص المستندات وOCR والفيديو والصوت",
-    "pt-PT": "Controlo dos limites e da precisão do âmbito de extração de texto, OCR, áudio-vídeo e outros conteúdos",
-    "ru-RU": "Область и точность извлечения из контрольных файлов и документации, текста, OCR, аудио- и видеофайлов",
-    "ja-JP": "設定ファイルとドキュメントテキスト、OCR、動画・音声などの内容抽出範囲および精度",
-    "de-DE": "Kontrolldatei und Dokumenttext, OCR, Audio/Video und andere Bereiche sowie die Genauigkeit der Inhalts extraktion",
-    "fr-FR": "Portée et précision de l'extraction de contenu pour les fichiers et les documents texte, l'OCR, les contenus audio et vidéo, etc.",
-    "ko-KR": "제어 파일 및 문서 텍스트, OCR, 오디오-비디오 등 콘텐츠 추출 범위 및 정밀도",
+  "控制文件与文档文本、图片OCR等内容提取范围及精度": {
+    "en-US": "Control the extraction range and accuracy of file and document text, image OCR and other content",
+    "es-ES": "Controle el rango de extracción y la precisión del texto de archivos y documentos, OCR de imágenes y otros contenidos",
+    "ar-EG": "التحكم في نطاق الاستخراج ودقة نصوص الملفات والمستند والتعرف الضوئي على الحروف للصور والمحتويات الأخرى",
+    "pt-PT": "Controle o intervalo de extração e a precisão do texto de arquivos e documentos, OCR de imagens e outros conteúdos",
+    "ru-RU": "Контролируйте диапазон извлечения и точность текста файлов и документов, оптического распознавания изображений и другого контента.",
+    "ja-JP": "ファイルやドキュメントのテキスト、画像 OCR、その他のコンテンツの抽出範囲と精度を制御します",
+    "de-DE": "Steuern Sie den Extraktionsbereich und die Genauigkeit von Datei- und Dokumenttext, Bild-OCR und anderen Inhalten",
+    "fr-FR": "Contrôlez la plage d'extraction et l'exactitude du texte des fichiers et des documents, de l'OCR des images et d'autres contenus.",
+    "ko-KR": "파일 및 문서 텍스트, 이미지 OCR 및 기타 콘텐츠의 추출 범위와 정확성을 제어합니다.",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(6929-6960)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(6107-6136)"
     ],
-    "$id": 20641
+    "$id": 22165
   },
   "文档与内容提取": {
     "en-US": "Document and content extraction",
@@ -3827,7 +3899,7 @@
     "fr-FR": "Extraction de documents et de contenu",
     "ko-KR": "문서 및 콘텐츠 추출",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(7346-7357)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(6522-6533)"
     ],
     "$id": 20642
   },
@@ -3842,7 +3914,7 @@
     "fr-FR": "Limite de taille maximale pour l'extraction de contenu (incluant l'OCR)",
     "ko-KR": "콘텐츠(OCR 포함) 추출 크기 상한",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(7749-7767)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(6925-6943)"
     ],
     "$id": 20643
   },
@@ -3857,7 +3929,7 @@
     "fr-FR": "Taille maximale d'extraction pour une métrique de texte individuelle (texte/document/OCR/HTML). Les contenus trop longs seront automatiquement tronqués. Autrement, une consommation excessive de stockage et une dégradation des performances en résulteraient.",
     "ko-KR": "단일 텍스트 지표(텍스트/문서/OCR/HTML)의 최대 추출 크기. 과도하게 긴 콘텐츠는 자동으로 잘립니다. 그렇지 않으면 저장 공간이 과다하게 차지되어 성능에 영향을 미칩니다.",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(7860-7945)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(7036-7121)"
     ],
     "$id": 20644
   },
@@ -3872,10 +3944,10 @@
     "fr-FR": "Illimitée",
     "ko-KR": "제한 없음",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(8296-8302)",
-      "src/renderer/components/settings/content-extraction-settings.tsx(11900-11906)",
-      "src/renderer/components/settings/content-extraction-settings.tsx(22012-22018)",
-      "src/renderer/components/settings/content-extraction-settings.tsx(24614-24620)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(7472-7478)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(11076-11082)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(19934-19940)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(22536-22542)"
     ],
     "$id": 20645
   },
@@ -3890,8 +3962,8 @@
     "fr-FR": "10 000",
     "ko-KR": "만",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(8997-9002)",
-      "src/renderer/components/settings/content-extraction-settings.tsx(9340-9345)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(8173-8178)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(8516-8521)"
     ],
     "$id": 20646
   },
@@ -3906,7 +3978,7 @@
     "fr-FR": "Équivaut à environ {zh} caractères ou {en} mots",
     "ko-KR": "약 {zh}자 또는 {en} 단어에 해당",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(9446-9470)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(8622-8646)"
     ],
     "$id": 20647
   },
@@ -3921,7 +3993,7 @@
     "fr-FR": "Activer la capture d'écran de couverture pour les documents Office",
     "ko-KR": "Office 문서 커버 스크린샷 활성화",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(12566-12584)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(11742-11760)"
     ],
     "$id": 20648
   },
@@ -3936,7 +4008,7 @@
     "fr-FR": "Permet l'exportation de la première page des documents Office en miniature de couverture, mais augmente considérablement le temps d'extraction du contenu Office ; les PDF ne sont pas affectés. Nécessite l'installation de LibreOffice.",
     "ko-KR": "Office 문서 첫 페이지를 커버 섬네일로 내보내는 기능을 지원하지만, Office 콘텐츠 추출 시간이 크게 증가하며, PDF에는 영향을 미치지 않습니다. LibreOffice 설치가 필요합니다.",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(12683-12777)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(11859-11953)"
     ],
     "$id": 20649
   },
@@ -3951,7 +4023,7 @@
     "fr-FR": "Activer, utiliser LibreOffice pour convertir la première page en vignette de couverture (très chronophage)",
     "ko-KR": "활성, LibreOffice를 호출하여 첫 페이지를 섬네일 커버로 변환(매우 오래 걸림)",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(12989-13024)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(12165-12200)"
     ],
     "$id": 20650
   },
@@ -3966,7 +4038,7 @@
     "fr-FR": "Désactiver, ignorer l’extraction de la couverture Office",
     "ko-KR": "비활성, Office 커버 이미지 추출 건너뛰기",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(13051-13071)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(12227-12247)"
     ],
     "$id": 20651
   },
@@ -3981,7 +4053,7 @@
     "fr-FR": "Installation du plugin : LibreOffice",
     "ko-KR": "플러그인 설치: LibreOffice",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(13970-13990)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(13146-13166)"
     ],
     "$id": 20652
   },
@@ -3996,7 +4068,7 @@
     "fr-FR": "Prise en charge de la conversion de page entière de fichiers Office et de l’extraction de la couverture",
     "ko-KR": "Office 파일 전체 페이지 변환 및 커버 이미지 추출 지원",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(14157-14181)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(13333-13357)"
     ],
     "$id": 20653
   },
@@ -4011,7 +4083,7 @@
     "fr-FR": "Cependant, cela augmente considérablement le temps d’extraction du contenu des fichiers Office ; les PDF ne sont pas affectés",
     "ko-KR": "그러나 Office 콘텐츠 추출에 소요되는 시간을 크게 증가시키며, PDF에는 영향 없음",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(14292-14322)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(13468-13498)"
     ],
     "$id": 20654
   },
@@ -4026,7 +4098,7 @@
     "fr-FR": "Replier le Tutoriel d’installation Windows 💡",
     "ko-KR": "수축 Windows 설치 가이드 💡",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(14988-15010)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(14164-14186)"
     ],
     "$id": 20655
   },
@@ -4041,7 +4113,7 @@
     "fr-FR": "Déplier le Tutoriel d’installation Windows et de configuration du PATH 💡",
     "ko-KR": "전개 Windows 설치 및 PATH 구성 가이드 💡",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(15047-15078)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(14223-14254)"
     ],
     "$id": 20656
   },
@@ -4056,7 +4128,7 @@
     "fr-FR": "Comment configurer :",
     "ko-KR": "설정 방법:",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(15763-15772)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(14939-14948)"
     ],
     "$id": 20657
   },
@@ -4071,7 +4143,7 @@
     "fr-FR": "Veuillez d'abord ajouter le chemin d'installation de LibreOffice à la variable d'environnement PATH du système",
     "ko-KR": "먼저 LibreOffice 설치 경로를 시스템의 PATH 환경 변수에 추가하세요.",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(15934-15975)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(15110-15151)"
     ],
     "$id": 20658
   },
@@ -4086,7 +4158,7 @@
     "fr-FR": "Emplacement par défaut :",
     "ko-KR": "기본 위치:",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(16059-16068)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(15235-15244)"
     ],
     "$id": 20659
   },
@@ -4101,7 +4173,7 @@
     "fr-FR": "Redémarrez l'application après configuration, puis cliquez à nouveau sur « Redétecter ».",
     "ko-KR": "설정 후 앱을 재시작하고 다시 '다시 감지'를 클릭하세요.",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(16152-16172)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(15328-15348)"
     ],
     "$id": 20660
   },
@@ -4116,7 +4188,7 @@
     "fr-FR": "Accéder au téléchargement",
     "ko-KR": "다운로드 페이지로 이동",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(16752-16760)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(15928-15936)"
     ],
     "$id": 20661
   },
@@ -4131,7 +4203,7 @@
     "fr-FR": "Installé",
     "ko-KR": "설치됨",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(17420-17427)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(16596-16603)"
     ],
     "$id": 20662
   },
@@ -4146,7 +4218,7 @@
     "fr-FR": "Non détecté",
     "ko-KR": "검출되지 않음",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(17869-17877)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(17045-17053)"
     ],
     "$id": 20663
   },
@@ -4161,54 +4233,9 @@
     "fr-FR": "Redétecter",
     "ko-KR": "다시 감지",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(18334-18342)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(17510-17518)"
     ],
     "$id": 20664
-  },
-  "音频分析截取时长": {
-    "en-US": "Audio analysis clip duration",
-    "es-ES": "Duración de la extracción para el análisis de audio",
-    "ar-EG": "مدة التقط التحليل الصوتي",
-    "pt-PT": "Duração de recorte para análise de áudio",
-    "ru-RU": "Длительность среза для аудиоанализа",
-    "ja-JP": "音声解析の切り出し時間",
-    "de-DE": "Länge des für die Audioanalyse eingeschnittenen Bereichs",
-    "fr-FR": "Durée de capture pour l'analyse audio",
-    "ko-KR": "오디오 분석 캡처 길이",
-    "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(18857-18869)"
-    ],
-    "$id": 20665
-  },
-  "截取音视频前N秒进行降噪与语音转录提取，最大值100秒，设置过大会增加耗时": {
-    "en-US": "Extract the first N seconds of the audio/video for noise reduction and speech transcription; the maximum value is 100 seconds. Setting it too large will increase processing time.",
-    "es-ES": "Extraer los primeros N segundos del audio o video para la reducción de ruido y transcripción de voz; el valor máximo es de 100 segundos; un valor demasiado alto aumentará el tiempo de procesamiento",
-    "ar-EG": "تُقطع N ثوانٍ الأولى من الفيديو/الصوت للمعالجة الضوضائية واستخراج النسخ الصوتية، بحد أقصى 100 ثانية؛ الإعداد الكبير يمدد وقت المعالجة",
-    "pt-PT": "Recorta os primeiros N segundos de áudio/vídeo para redução de ruído e transcrição de voz; o valor máximo é 100 segundos; valores elevados aumentam o tempo de processamento",
-    "ru-RU": "Брать первые N секунд аудио/видео для снижения шума и извлечения речевой транскрипции; максимальное значение — 100 секунд; чрезмерно большое значение увеличит время обработки.",
-    "ja-JP": "AVファイルの先頭N秒間を切り出してノイズ除去と音声文字起こしを抽出します。最大100秒です。設定値が大きすぎると処理時間が長くなります",
-    "de-DE": "Schnitt der ersten N Sekunden von Audio- und Videodateien zur Rauschunterdrückung und Extraktion der Sprachtranskription; max. 100 Sekunden, eine zu große Einstellung verlängert die Bearbeitungszeit",
-    "fr-FR": "Capturer les premiers N secondes de l'audio/vidéo pour la réduction de bruit et l'extraction de la transcription vocale, valeur maximale de 100 secondes ; un réglage trop élevé augmentera le temps de traitement",
-    "ko-KR": "오디오/비디오의 처음 N초를 캡처하여 노이즈 감소 및 음성 전사 추출을 수행합니다. 최대 100초이며, 값을 지나치게 크게 설정하면 소요 시간이 증가합니다.",
-    "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(18962-19003)"
-    ],
-    "$id": 20666
-  },
-  "截取音视频前N秒进行语音转录，超大会增加分析耗时甚至超时失败": {
-    "en-US": "Extract the first N seconds of the audio/video for speech transcription; setting it too large will increase analysis time and may cause timeouts or failures.",
-    "es-ES": "Extraer los primeros N segundos del audio o video para la transcripción de voz; un valor demasiado alto aumentará el tiempo de análisis e incluso puede provocar un fallo por tiempo agotado",
-    "ar-EG": "تُقطع N ثوانٍ الأولى من الفيديو/الصود للنسخ الصوتي؛ الإعداد الكبير جدًا يمدد وقت التحليل وقد يؤدي إلى فشل بسبب انتهاء المهلة",
-    "pt-PT": "Recorta os primeiros N segundos de áudio/vídeo para transcrição de voz; valores muito elevados podem aumentar o tempo de análise ou causar falha por tempo excedido",
-    "ru-RU": "Брать первые N секунд аудио/видео для речевой транскрипции; чрезмерно большое значение увеличит время анализа и может привести к превышению лимита времени.",
-    "ja-JP": "AVファイルの先頭N秒間を切り出して音声文字起こしを実行します。値が非常に大きいと解析に長時間を要したり、タイムアウトで失敗する可能性があります",
-    "de-DE": "Schnitt der ersten N Sekunden von Audio- und Videodateien für die Sprachtranskription; zu große Werte verlängern die Analysezeit und können zu einem Timeout-Fehler führen",
-    "fr-FR": "Capturer les premiers N secondes de l'audio/vidéo pour la transcription vocale ; un réglage excessivement élevé augmentera le temps d'analyse et pourrait entraîner un échec par dépassement de délai",
-    "ko-KR": "오디오/비디오의 처음 N초를 캡처하여 음성 전사를 수행합니다. 값을 지나치게 크게 설정하면 분석 소요 시간이 증가하거나 시간 초과로 실패할 수 있습니다.",
-    "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(19135-19169)"
-    ],
-    "$id": 20667
   },
   "OCR 识别与处理": {
     "en-US": "OCR Recognition and Processing",
@@ -4221,7 +4248,7 @@
     "fr-FR": "OCR : reconnaissance et traitement",
     "ko-KR": "OCR 인식 및 처리",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(20064-20077)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(17986-17999)"
     ],
     "$id": 20668
   },
@@ -4236,7 +4263,7 @@
     "fr-FR": "Activer la reconnaissance OCR intelligente des images",
     "ko-KR": "이미지 OCR 지능형 인식 활성화",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(20475-20490)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(18397-18412)"
     ],
     "$id": 20669
   },
@@ -4251,8 +4278,8 @@
     "fr-FR": "Perception intelligente de la présence de texte dans les images en quelques millisecondes ; si du texte est détecté, lancer la reconnaissance OCR",
     "ko-KR": "밀리초 수준의 지능형 감지로 이미지 내 텍스트 유무를 확인하고, 텍스트가 있으면 OCR 인식을 수행",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(20583-20612)",
-      "src/renderer/components/settings/content-extraction-settings.tsx(20744-20773)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(18505-18534)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(18666-18695)"
     ],
     "$id": 20670
   },
@@ -4267,7 +4294,7 @@
     "fr-FR": "Quantité de reconnaissance OCR des documents",
     "ko-KR": "문서 OCR 인식 수량",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(21569-21582)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(19491-19504)"
     ],
     "$id": 20671
   },
@@ -4282,7 +4309,7 @@
     "fr-FR": "Limite de quantité de reconnaissance OCR des documents (nombre d'images intégrées dans les documents Office / nombre de pages du document PDF)",
     "ko-KR": "문서 OCR 인식 수량 상한선(Office 문서 내장 이미지 수 / PDF 문서 페이지 수)",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(21675-21716)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(19597-19638)"
     ],
     "$id": 20672
   },
@@ -4297,7 +4324,7 @@
     "fr-FR": "Désactivé (0)",
     "ko-KR": "꺼짐 (0)",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(22096-22106)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(20018-20028)"
     ],
     "$id": 20673
   },
@@ -4312,7 +4339,7 @@
     "fr-FR": "éléments/page",
     "ko-KR": "항/페이지",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(22159-22166)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(20081-20088)"
     ],
     "$id": 20674
   },
@@ -4327,7 +4354,7 @@
     "fr-FR": "Précision de la reconnaissance OCR",
     "ko-KR": "OCR 인식 정확도",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(25084-25095)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(23006-23017)"
     ],
     "$id": 20675
   },
@@ -4342,7 +4369,7 @@
     "fr-FR": "Sélectionnez le niveau de précision de la reconnaissance de texte par OCR. OCR ultra-rapide convient à la plupart des scénarios ; OCR haute précision offre une reconnaissance plus exacte mais nécessite un peu plus de temps.",
     "ko-KR": "OCR 텍스트 인식의 정확도 레벨을 선택합니다. 초고속 OCR은 대부분의 시나리오에 적합하며, 고정밀 OCR은 더 정확하지만 소액의 시간이 더 소요됩니다.",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(25164-25235)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(23086-23157)"
     ],
     "$id": 20676
   },
@@ -4357,7 +4384,7 @@
     "fr-FR": "OCR ultra rapide",
     "ko-KR": "Lightning-Fast OCR",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(27065-27074)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(24987-24996)"
     ],
     "$id": 20677
   },
@@ -4372,7 +4399,7 @@
     "fr-FR": "Traitement d'une image en 1 à 2 secondes, adapté à la plupart des scénarios",
     "ko-KR": "Completions a single image within 1–2 seconds, suitable for most scenarios.",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(27240-27261)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(25162-25183)"
     ],
     "$id": 20678
   },
@@ -4387,7 +4414,7 @@
     "fr-FR": "OCR haute précision",
     "ko-KR": "High-accuracy OCR",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(28768-28778)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(26690-26700)"
     ],
     "$id": 20679
   },
@@ -4402,7 +4429,7 @@
     "fr-FR": "Traitement d'une image en 2 à 4 secondes, améliorant la précision de reconnaissance",
     "ko-KR": "Completions a single image within 2–4 seconds, improving recognition accuracy.",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(28944-28964)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(26866-26886)"
     ],
     "$id": 20680
   },
@@ -4417,7 +4444,7 @@
     "fr-FR": "Réutilisation des données lors de l'analyse",
     "ko-KR": "Reuse data when re-analyzing",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(29508-29521)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(27430-27443)"
     ],
     "$id": 20681
   },
@@ -4432,7 +4459,7 @@
     "fr-FR": "Si le fichier a été mis à jour, veuillez désactiver cette option ; sinon, si les informations de base du fichier existent déjà, l'acquisition de ces informations est ignorée. Les informations de base comprennent : le type de fichier, l'aperçu, les métadonnées et le contenu du fichier",
     "ko-KR": "If files have been updated, uncheck this option. Otherwise, any file's basic information already present will cause that information retrieval to be skipped. Basic information includes: file type, thumbnail, metadata, and file content.",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(29614-29703)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(27536-27625)"
     ],
     "$id": 20682
   },
@@ -4447,7 +4474,7 @@
     "fr-FR": "Accélération de l'analyse, les informations de l'étape standard d'analyse ne seront pas réacquises",
     "ko-KR": "Speeds up analysis without re-fetching information from the standard analysis stage.",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(29857-29881)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(27779-27803)"
     ],
     "$id": 20683
   },

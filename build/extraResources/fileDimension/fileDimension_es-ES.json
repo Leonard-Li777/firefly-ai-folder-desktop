@@ -141,7 +141,7 @@
         "Extensión de datos de la aplicación",
         "Atajo",
         "Lista de reproducción",
-        "Registro",
+        "Registro del sistema",
         "Documentación de ayuda"
       ],
       "description": "Segmentación de archivos de datos de aplicaciones.",
@@ -630,7 +630,7 @@
       "tags": [
         "Extensión de archivo del sistema",
         "Archivo de configuración",
-        "Registro",
+        "Registro de eventos",
         "Cache",
         "Archivos temporales",
         "Conducir"
@@ -666,7 +666,7 @@
       "tags": [
         "Libro separado",
         "Serializando",
-        "Terminado",
+        "Publicación finalizada",
         "Sin cortar",
         "Extra",
         "Presentado",
@@ -769,7 +769,7 @@
         "Extensión de imagen de disco",
         "Imagen del sistema",
         "Duplicación de datos",
-        "Imagen de disco"
+        "Imagen de disco óptico"
       ],
       "description": "Clasificación de uso de imágenes de disco",
       "applicableFileTypes": [
@@ -1382,7 +1382,7 @@
         "Suspenso",
         "Cuento de hadas",
         "Animación",
-        "Registro",
+        "Documental",
         "Naturaleza",
         "Humanidades",
         "Educación física",
@@ -3142,7 +3142,7 @@
       "name": "Contenido sensible",
       "level": 2,
       "tags": [
-        "Terrorismo",
+        "Violencia terrorista",
         "Relacionado con la política",
         "Infracción",
         "Pornografía",
@@ -4037,12 +4037,12 @@
         "Suegra erótica",
         "Padrastro madrastra erótico",
         "Suegro suegra erótica",
-        "Cuñada erótica",
+        "Erótica con la hermana menor de la esposa",
         "Tía y sobrino erotica",
-        "Tío y sobrino erotica",
-        "Tío y sobrino erotica",
+        "Erótica de tío paterno y sobrino",
+        "Erótica de tío materno y sobrino",
         "Primo suegros erotica",
-        "Cuñada erótica",
+        "Erótica con la esposa del hermano mayor",
         "Abuelo y nieto erotismo intergeneracional"
       ],
       "description": "Subdivisión de consanguinidad, antigüedad familiar y temas éticos tabú",
@@ -4247,8 +4247,8 @@
         "SM",
         "Esclava sexual",
         "Entrenamiento y sujeción",
-        "Sexo duro",
-        "Sexo duro",
+        "Sexo rudo",
+        "Coito salvaje",
         "Perversión Extrema",
         "Cera y látigo",
         "Perversión sexual fetichista"

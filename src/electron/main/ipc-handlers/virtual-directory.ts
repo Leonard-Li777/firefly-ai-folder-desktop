@@ -5,9 +5,7 @@ import {
   LogCategory,
   sanitizeDirectoryName,
   isTestEnvironment,
-  HAC_FEATURE_FLAGS,
-  buildSemanticText,
-  isSemanticTagGroup
+  HAC_FEATURE_FLAGS
 } from '@firefly/shared'
 import { userTierService } from '../../runtime-services/user-tier/user-tier-service'
 import { databaseService } from '../../runtime-services/database/database-service'
@@ -39,7 +37,12 @@ import {
   type FileMetaItem
 } from '@firefly/core-engine'
 import { OmniService } from '../../runtime-services/system/omni-service'
-import { omniClient, resolveQueryEncoderFilter } from '../../services/omni-client'
+import { omniClient } from '../../services/omni-client'
+import {
+  FileSemanticRepresentationService,
+  fileSemanticRepresentationService
+} from '../../runtime-services/filesystem/file-semantic-representation-service'
+import { canonicalTextService } from '../../runtime-services/analysis-queue-service/canonical-text-service'
 import { createCoreEngineAdapters } from '../../adapters'
 import fs from 'fs-extra'
 import path from 'node:path'
@@ -996,18 +999,6 @@ export function registerVirtualDirectoryIPCHandlers() {
       const injectedFileVectors: Record<number, number[]> = request.injectedFileVectors ? { ...request.injectedFileVectors } : {}
       const injectedPathVectors: Record<string, number[]> = request.injectedPathVectors ? { ...request.injectedPathVectors } : {}
       const injectedFileMeta: Record<number, FileMetaItem> = request.injectedFileMeta ? { ...request.injectedFileMeta } : {}
-      /** 工单 08（AC9）：fileId → 内容指纹（zvec 直读与 canonical 文本都按指纹定位） */
-      const fingerprintByFileId = new Map<number, string>()
-      /** 工单 08（AC9）：fileId → 阶段二固化的 canonical 语义文本 */
-      const canonicalTextByFileId = new Map<number, string>()
-      /**
-       * fileId → (tag_code → tag_group)。
-       * `buildSemanticText` 对缺 `tagGroup` 的标签是 fail-closed（直接丢弃），
-       * 只传 `{ code }` 会让兜底文本丢失**全部**标签证据；此处按行收集分组，
-       * 供下方 JIT 兜底拼装时补齐。
-       */
-      const tagGroupByFileId = new Map<number, Map<string, string>>()
-
       // 1. 从 SQLite 批量拉取全字段文件元数据 (若调用方未提供 injectedFileMeta)
       if (request.fileIds && request.fileIds.length > 0) {
         try {
@@ -1038,7 +1029,7 @@ export function registerVirtualDirectoryIPCHandlers() {
                 LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
                 LEFT JOIN file_tag_relations ftr ON ftr.file_fingerprint = wf.file_fingerprint
                 WHERE wf.id IN (${placeholders})
-                ORDER BY wf.id ASC, COALESCE(ftr.confidence, 0) DESC, ftr.tag_code ASC, ftr.via_parent_code ASC
+                ORDER BY wf.id ASC, COALESCE(ftr.confidence, 0) DESC, ftr.tag_code ASC
               `
                 )
                 .all(...chunk) as Array<{
@@ -1057,13 +1048,6 @@ export function registerVirtualDirectoryIPCHandlers() {
               }>
 
               for (const row of rows) {
-                // 工单 08：指纹与 canonical 文本按行填充，与 injectedFileMeta 同批建立
-                if (row.file_fingerprint) {
-                  fingerprintByFileId.set(row.file_id, row.file_fingerprint)
-                }
-                if (row.canonical_text && row.canonical_text.trim()) {
-                  canonicalTextByFileId.set(row.file_id, row.canonical_text.trim())
-                }
                 if (!injectedFileMeta[row.file_id]) {
                   injectedFileMeta[row.file_id] = {
                     smartName: row.smart_name || undefined,
@@ -1086,16 +1070,6 @@ export function registerVirtualDirectoryIPCHandlers() {
                 }
                 if (row.tag_code && !meta.tagCodes?.includes(row.tag_code)) {
                   meta.tagCodes?.push(row.tag_code)
-                }
-                // tag_group 与 tag_code 同批收集：JIT 兜底拼装语义文本时必须带上分组，
-                // 否则 buildSemanticText 的 fail-closed 会把标签整段丢弃
-                if (row.tag_code && row.tag_group) {
-                  let byCode = tagGroupByFileId.get(row.file_id)
-                  if (!byCode) {
-                    byCode = new Map<string, string>()
-                    tagGroupByFileId.set(row.file_id, byCode)
-                  }
-                  byCode.set(row.tag_code, row.tag_group)
                 }
                 if (row.code_path) {
                   const codeChain = row.code_path.split('/').filter(Boolean)
@@ -1142,17 +1116,7 @@ export function registerVirtualDirectoryIPCHandlers() {
           }
         }
 
-        // 2.2 文件向量提取（工单 08 AC9：zvec 直读优先 → canonical 文本 JIT 兜底 → 会话缓存）
-        //
-        // 优先级（与聚类链路同源，见 vector-semantic-text-unified-scheme §3.8）：
-        //   1) 调用方注入的向量（已由上层算好，不重复推理）
-        //   2) 会话级缓存（organizeSessionVectorCache，长度必须等于当前 activeDim）
-        //   3) zvec 直读 `getVectors(fps, activeDim)`，**且 encoder 必须属于当前档位白名单**——
-        //      gemma@512 与 classic CLIP@512 共槽，encoder=2 的 CLIP 向量按未命中处理
-        //   4) canonical 文本走 batchEmbedText；canonical 缺失时用 buildSemanticText(meta) JIT
-        //
-        // 硬约束：本函数只读 zvec，**任何分支都不得写回**（AC9 字节断言）。
-        const encoderWhitelist = new Set<number>(resolveQueryEncoderFilter(activeProfile))
+        // 2.2 文件向量提取（委托 FileSemanticRepresentationService，只读 zvec + 内存 JIT，严禁回写）
         const pendingFileIds: number[] = []
         for (const fId of request.fileIds) {
           if (injectedFileVectors[fId]) continue
@@ -1164,94 +1128,39 @@ export function registerVirtualDirectoryIPCHandlers() {
           pendingFileIds.push(fId)
         }
 
-        // 3) zvec 直读：仅对已分析、有指纹且缓存未命中的文件发起
-        const fpToFileIds = new Map<string, number[]>()
-        for (const fId of pendingFileIds) {
-          const fp = fingerprintByFileId.get(fId)
-          if (!fp) continue
-          const list = fpToFileIds.get(fp) || []
-          list.push(fId)
-          fpToFileIds.set(fp, list)
-        }
-        if (fpToFileIds.size > 0) {
-          try {
-            const fps = Array.from(fpToFileIds.keys())
-            const VECTOR_READ_CHUNK = 200
-            for (let i = 0; i < fps.length; i += VECTOR_READ_CHUNK) {
-              const slice = fps.slice(i, i + VECTOR_READ_CHUNK)
-              const resp = await omniClient.getVectors(slice, activeDim, 5000)
-              if (!resp || !Array.isArray(resp.vectors)) continue
-              for (const item of resp.vectors) {
-                // encoder 白名单校验：异空间向量按未命中处理，交由 canonical JIT 重建
-                if (!encoderWhitelist.has(item.encoderId)) continue
-                if (!item.vector || item.vector.length !== activeDim) continue
-                for (const fId of fpToFileIds.get(item.fileFingerprint) || []) {
-                  if (injectedFileVectors[fId]) continue
-                  injectedFileVectors[fId] = item.vector
-                  organizeSessionVectorCache.set(fId, item.vector)
-                }
+        if (pendingFileIds.length > 0) {
+          const db = databaseService.db
+          const semanticService = db
+            ? new FileSemanticRepresentationService({
+                db,
+                omniClient,
+                omniService: omni,
+                canonicalTextService
+              })
+            : fileSemanticRepresentationService
+
+          const evidences = await semanticService.getSemanticEvidences(pendingFileIds, {
+            requireVector: true,
+            readOnly: true,
+            embeddingProfile: activeProfile,
+            embeddingDim: activeDim,
+            onProgress: (currentStep, totalSteps, message) => {
+              try {
+                event.sender.send('virtual-directory/reorganize-progress', {
+                  currentStep,
+                  totalSteps,
+                  message
+                })
+              } catch {
+                /* webContents 可能已销毁，安全忽略 */
               }
             }
-          } catch (err: any) {
-            // zvec 直读失败不阻断：降级为 canonical 文本 JIT，但必须显式告警
-            logger.warn(
-              LogCategory.FILE_ORGANIZATION,
-              `[IPC] zvec 向量直读失败，降级至 canonical 文本 JIT: ${err?.message ?? err}`
-            )
-          }
-        }
+          })
 
-        // 4) canonical 文本 JIT：canonical_text → buildSemanticText(meta) → buildFilePrompt(meta)
-        const missingFileItems: { fileId: number; prompt: string }[] = []
-        for (const fId of pendingFileIds) {
-          if (injectedFileVectors[fId]) continue
-          const canonicalText = canonicalTextByFileId.get(fId)
-          const meta = injectedFileMeta[fId] || { rawName: `file_${fId}` }
-          const semanticText =
-            canonicalText ||
-            buildSemanticText({
-              displayName: meta.smartName,
-              rawName: meta.rawName,
-              description: meta.description,
-              tags: (meta.tagCodes || []).map(code => {
-                const group = tagGroupByFileId.get(fId)?.get(code)
-                // DB 的 tag_group 是自由字符串，必须收敛到 {fused,ai,user} 白名单，
-                // 否则 buildSemanticText 会按 fail-closed 丢弃该标签
-                return { code, tagGroup: isSemanticTagGroup(group) ? group : undefined }
-              })
-            })
-          // buildFilePrompt 仅作最后的退化兜底（语义文本为空时），**不**被改造为语义文本别名，
-          // 它在 LLM 提示词链路中的原始职责保持不变。
-          const prompt = semanticText || buildFilePrompt(meta)
-          missingFileItems.push({ fileId: fId, prompt })
-        }
-
-        if (missingFileItems.length > 0) {
-          const BATCH_SIZE = 200
-          const totalBatches = Math.ceil(missingFileItems.length / BATCH_SIZE)
-          for (let i = 0; i < missingFileItems.length; i += BATCH_SIZE) {
-            const slice = missingFileItems.slice(i, i + BATCH_SIZE)
-            const batchIdx = Math.floor(i / BATCH_SIZE) + 1
-            // 文件向量提取批次进度推送，让渲染进程进度条平滑推进
-            try {
-              event.sender.send('virtual-directory/reorganize-progress', {
-                currentStep: batchIdx,
-                totalSteps: totalBatches,
-                message: '正在提取文件特征向量 (' + batchIdx + '/' + totalBatches + ')...'
-              })
-            } catch { /* webContents 可能已销毁，安全忽略 */ }
-            const resp = await omni.batchEmbedText(
-              slice.map(s => s.prompt),
-              { profile: activeProfile, dim: activeDim, timeoutMs: 8000 }
-            )
-            if (resp && resp.vectors) {
-              for (let idx = 0; idx < slice.length; idx++) {
-                const vec = resp.vectors[idx]
-                if (vec) {
-                  injectedFileVectors[slice[idx].fileId] = vec
-                  organizeSessionVectorCache.set(slice[idx].fileId, vec)
-                }
-              }
+          for (const ev of evidences) {
+            if (ev.vector && (ev.vector.length === activeDim || isTestEnvironment())) {
+              injectedFileVectors[ev.fileId] = ev.vector
+              organizeSessionVectorCache.set(ev.fileId, ev.vector)
             }
           }
         }

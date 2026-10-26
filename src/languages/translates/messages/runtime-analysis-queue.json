@@ -133,7 +133,7 @@
     "de-DE": "Die KI arbeitet derzeit, etwa an der Analyse der Warteschlange. Bitte stoppen Sie und fordern Sie dann erneut an.",
     "fr-FR": "L'IA travaille actuellement, comme l'analyse de la file d'attente. Veuillez arrêter, puis demander à nouveau.",
     "ko-KR": "현재 대기열 분석 등 AI가 작동하고 있다. 중지한 후 다시 요청하세요.",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(41551-41580)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(41443-41472)"],
     "$id": 11304
   },
   "分析超时": {
@@ -146,7 +146,7 @@
     "de-DE": "Analyse-Timeout",
     "fr-FR": "Délai d'analyse",
     "ko-KR": "분석 시간 초과",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(43221-43229)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(43113-43121)"],
     "$id": 2976
   },
   "建议切换低显存需求的AI模型": {
@@ -160,9 +160,9 @@
     "fr-FR": "Il est recommandé de passer à un modèle d'IA avec de faibles besoins en mémoire",
     "ko-KR": "메모리 요구 사항이 낮은 AI 모델로 전환하는 것이 좋습니다.",
     "$files": [
-      "src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(43248-43266)",
+      "src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(43140-43158)",
       "src/electron/runtime-services/analysis-queue-service/directory-processor.ts(10606-10624)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(109565-109583)"
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(114410-114428)"
     ],
     "$id": 2977
   },
@@ -176,7 +176,7 @@
     "de-DE": "Gehen Sie zu den Einstellungen",
     "fr-FR": "Allez dans les paramètres",
     "ko-KR": "설정으로 이동",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(43411-43419)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(43303-43311)"],
     "$id": 4521
   },
   "配额已用尽：已分析 {count} 个私有目录文件，当前配额为 {quota} 个文件。可以通过邀请好友解锁更多额度。": {
@@ -191,7 +191,7 @@
     "ko-KR": "할당량 소진: 프라이빗 디렉토리 파일 {count} 개를 분석했으며, 현재 할당량은 {quota} 개 파일입니다. 친구 초대로 더 많은 한도를 해제할 수 있습니다.",
     "$files": [
       "src/electron/runtime-services/analysis-queue-service/directory-processor.ts(3448-3529)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(33269-33349)"
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(34722-34803)"
     ],
     "$id": 11053
   },
@@ -720,7 +720,7 @@
     "de-DE": "Es wird empfohlen, die Anzahl der PDF-Analyseseiten zu reduzieren oder die OCR-Funktion auszuschalten",
     "fr-FR": "Il est recommandé de réduire le nombre de pages d'analyse PDF ou de désactiver la fonction OCR",
     "ko-KR": "PDF 분석 페이지 수를 줄이거나 OCR 기능을 끄는 것이 좋습니다",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(109605-109632)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(114451-114478)"],
     "$id": 11054
   },
   "AI 服务未就绪": {
@@ -734,7 +734,7 @@
     "fr-FR": "Le service IA n'est pas prêt",
     "ko-KR": "AI 서비스가 준비되지 않았습니다",
     "$files": [
-      "src/electron/runtime-services/analysis-queue-service/file-processor/process-local-analysis.ts(5715-5727)",
+      "src/electron/runtime-services/analysis-queue-service/file-processor/process-local-analysis.ts(6912-6924)",
       "src/electron/runtime-services/analysis-queue-service/file-processor/process-quick-name-analysis.ts(1486-1498)"
     ],
     "$id": 8131
@@ -749,7 +749,7 @@
     "de-DE": "Zusammenfassung",
     "fr-FR": "Résumé",
     "ko-KR": "요약",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/process-local-analysis.ts(6315-6321)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/process-local-analysis.ts(7512-7518)"],
     "$id": 20481
   },
   "正文": {
@@ -762,7 +762,7 @@
     "de-DE": "Text",
     "fr-FR": "Corps",
     "ko-KR": "본문",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/process-local-analysis.ts(6431-6437)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/process-local-analysis.ts(7628-7634)"],
     "$id": 20482
   },
   "无法获取文件路径记录": {

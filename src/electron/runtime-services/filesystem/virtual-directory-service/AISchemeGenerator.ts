@@ -8,6 +8,11 @@ import {
   DirectoryReorganizeResult
 } from '@firefly/types'
 import {
+  FileSemanticRepresentationService,
+  fileSemanticRepresentationService,
+  type SemanticEvidence
+} from '../file-semantic-representation-service'
+import {
   LogCategory,
   logger,
   DIMENSION_CODES,
@@ -148,10 +153,21 @@ export interface AISchemeGeneratorOptions {
   jitVectorBudgetMs?: number
   /** JIT 同步补全文件数配额，缺省 2 */
   jitVectorMaxSyncCount?: number
+  /** 语义表示服务（单测隔离注入用） */
+  semanticRepresentationService?: FileSemanticRepresentationService
 }
 
 export class AISchemeGenerator {
   constructor(private provider: AISchemeProvider, private options?: AISchemeGeneratorOptions) {}
+
+  private getSemanticRepresentationService(): FileSemanticRepresentationService {
+    return (
+      this.options?.semanticRepresentationService ??
+      (this.provider.db
+        ? new FileSemanticRepresentationService({ db: this.provider.db })
+        : fileSemanticRepresentationService)
+    )
+  }
 
   /**
    * 基于端侧稠密向量与 Omni 约束层次聚类 (HAC) 生成目录整理方案 (Issue #633 / ADR-0056)
@@ -243,136 +259,18 @@ export class AISchemeGenerator {
         return null
       }
 
-      // 2. 批量聚合文件标签作为聚类关键词证据源 (ADR-0045 / ADR-0056)
-      const fpTagMap = new Map<string, string[]>()
-      // 工单 08（AC8）：结构化标签另存一份，供 canonical 缺失时 buildSemanticText 兜底。
-      // 与 fpTagMap 的差别：这里保留 tag_group（buildSemanticText 是 fail-closed 的，
-      // 缺分组一律丢弃），而 fpTagMap 只服务目录命名的纯词面。
-      const fpStructuredTagMap = new Map<string, SemanticTagInput[]>()
-      const uniqueFps = Array.from(
-        new Set(targetRows.map(r => r.file_fingerprint).filter(Boolean))
+      // 2. 批量解析候选文件的完整语义证据与聚类关键词 (FileSemanticRepresentationService)
+      const semanticService = this.getSemanticRepresentationService()
+      const evidences = await semanticService.getSemanticEvidences(
+        targetRows.map(r => r.id),
+        { requireVector: false }
       )
-      const chunkSize = 500
-      for (let i = 0; i < uniqueFps.length; i += chunkSize) {
-        const chunk = uniqueFps.slice(i, i + chunkSize)
-        const placeholders = chunk.map(() => '?').join(',')
-        try {
-          const tagRows = this.provider.db
-            .prepare(`
-              SELECT ftr.file_fingerprint, COALESCE(ft.name, ftr.tag_code) as tag_name, ftr.name_path, ftr.tag_group
-              FROM file_tag_relations ftr
-              LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
-              WHERE ftr.file_fingerprint IN (${placeholders})
-              ORDER BY ftr.file_fingerprint ASC, COALESCE(ftr.confidence, 0) DESC, ftr.tag_code ASC
-            `)
-            .all(...chunk) as Array<{
-            file_fingerprint: string
-            tag_name: string
-            name_path: string
-            tag_group: string
-          }>
-
-          for (const rel of tagRows) {
-            // 元数据事实标签（文件类型/来源/分级/归档状态等）不得作为主题词或嵌入证据
-            if (!HAC_SEMANTIC_TAG_GROUPS.has(rel.tag_group as TagProvenanceGroup)) {
-              continue
-            }
-            let list = fpTagMap.get(rel.file_fingerprint)
-            if (!list) {
-              list = []
-              fpTagMap.set(rel.file_fingerprint, list)
-            }
-            let structured = fpStructuredTagMap.get(rel.file_fingerprint)
-            if (!structured) {
-              structured = []
-              fpStructuredTagMap.set(rel.file_fingerprint, structured)
-            }
-            let name = rel.tag_name
-            if (name && name.includes('.')) {
-              name = getCanonicalConceptName(name) || (name.split('.').pop() || name)
-            }
-            if (name && isCandidateWordAdmissible(name).admissible && !list.includes(name)) {
-              list.push(name)
-              structured.push({ name, tagGroup: rel.tag_group as TagProvenanceGroup })
-            }
-            if (rel.name_path) {
-              const segs = rel.name_path.split('/').filter(Boolean)
-              const leafSeg = segs[segs.length - 1]
-              if (leafSeg && isCandidateWordAdmissible(leafSeg).admissible && !list.includes(leafSeg)) {
-                list.push(leafSeg)
-              }
-            }
-          }
-        } catch (err) {
-          logger.warn(LogCategory.FILE_ORGANIZATION, '[HAC智能聚类] 查询文件标签元数据失败:', err)
-        }
-      }
-
-      // 兼顾兼容与单测：从 row.exif 中补充提取元数据关键词
-      for (const row of targetRows) {
-        if (!row.file_fingerprint) continue
-        let list = fpTagMap.get(row.file_fingerprint)
-        if (!list) {
-          list = []
-          fpTagMap.set(row.file_fingerprint, list)
-        }
-        if (row.exif) {
-          try {
-            let meta: any = null
-            if (typeof row.exif === 'string') {
-              try { meta = JSON.parse(row.exif) } catch {}
-            }
-            if (!meta) {
-              try { meta = decompressJson<Record<string, any>>(row.exif) } catch {}
-            }
-            if (meta && Array.isArray(meta.keywords)) {
-              for (const kw of meta.keywords) {
-                if (typeof kw !== 'string') continue
-                const trimmed = kw.trim()
-                if (
-                  trimmed &&
-                  !list.includes(trimmed) &&
-                  isCandidateWordAdmissible(trimmed).admissible
-                ) {
-                  list.push(trimmed)
-                }
-              }
-            }
-          } catch {}
-        }
-        // 仅当文件既无标签关系又无 exif 关键词时，以文件名/智能命名切词兜底
-        if (list.length === 0) {
-          const rawName = row.smart_name || row.name || ''
-          const stem = path.parse(rawName).name
-          // 模板化命名的方括号前缀（如 [程序]）与自动追加的日期都是格式元数据，
-          // 直接参与命名会让所有文件坍缩到「程序/2026」这类无区分度目录
-          const baseName = stem
-            .replace(/[\[【][^\]】]*[\]】]/g, ' ')
-            .replace(/[_\-]?\d{4}[-_.]\d{1,2}[-_.]\d{1,2}\s*$/, '')
-            .trim()
-          const tokens = baseName.split(/[\s_\-\.\(\)\[\]【】_—·，,]+/).filter(Boolean)
-          for (const tok of tokens) {
-            if (
-              tok.length >= 2 &&
-              tok.length <= 15 &&
-              !/^\d+$/.test(tok) &&
-              isCandidateWordAdmissible(tok).admissible &&
-              !list.includes(tok)
-            ) {
-              list.push(tok)
-            }
-          }
-          if (list.length === 0) {
-            const fallbackToken = baseName.trim() || stem.trim() || rawName.trim()
-            // 兜底词同样必须通过受控候选词准入门禁，杜绝机械噪音词进入目录命名池
-            if (
-              fallbackToken.length >= 2 &&
-              fallbackToken.length <= 15 &&
-              isCandidateWordAdmissible(fallbackToken).admissible
-            ) {
-              list.push(fallbackToken)
-            }
-          }
+      const evidenceByFileId = new Map<number, SemanticEvidence>()
+      const fpTagMap = new Map<string, string[]>()
+      for (const ev of evidences) {
+        evidenceByFileId.set(ev.fileId, ev)
+        if (ev.fileFingerprint) {
+          fpTagMap.set(ev.fileFingerprint, ev.keywords)
         }
       }
 
@@ -393,37 +291,18 @@ export class AISchemeGenerator {
 
         if (!seenFp.has(row.file_fingerprint)) {
           seenFp.add(row.file_fingerprint)
-          const keywords = fpTagMap.get(row.file_fingerprint) || []
-          const smartName = (row.smart_name || '').trim()
-          const rawName = (row.name || '').trim()
-          const displayName = smartName || rawName
-          // 证据口径：主题词优先，杜绝模板骨架垫平相似度导致巨型簇坍缩（回归锁见
-          // pro/tests/unit/cluster-organize-canonical.test.ts 的坍缩用例）
-          const contentSnippet =
-            extractVisibleSnippet(row.ocr, 80) ||
-            extractVisibleSnippet(row.content, 80) ||
-            extractVisibleSnippet(row.asr, 80) ||
-            extractVisibleSnippet(row.lrc, 80)
-          // 工单 08（AC8）：canonical 文本是阶段二固化的唯一语义真相，优先直用；
-          // 仅在尚未固化（NULL / 空串）时用 buildSemanticText 同一公式 JIT 兜底，
-          // 且兜底文本只服务当次 HAC 距离矩阵，严禁回写 zvec。
-          const canonicalText = (row.canonical_text || '').trim()
-          const embeddingText =
-            canonicalText ||
-            buildClusterFallbackText({
-              displayName,
-              rawName,
-              tags: fpStructuredTagMap.get(row.file_fingerprint) || [],
-              description: row.description,
-              contentSnippet: contentSnippet || undefined
-            })
-          const fileCategory = getFileCategory(rawName || row.path)
+          const ev = evidenceByFileId.get(row.id)
+          const keywords = ev?.keywords || []
+          const rawCanonical = ev?.rawCanonicalText?.trim() || undefined
+          const embeddingText = ev?.canonicalText?.trim() || undefined
+          const fileCategory = ev?.fileCategory
+
           docs.push({
             fingerprint: row.file_fingerprint,
             embedding: [],
             keywords,
-            embeddingText: embeddingText || undefined,
-            canonicalText: canonicalText || undefined,
+            embeddingText,
+            canonicalText: rawCanonical,
             // 工单 08（AC8）：**固定 false**——zvec 命中时必须直读向量，不得被 JIT 文本绕开。
             // 无字图片（visual_only）保留阶段一视觉向量，同样走 zvec 直读而非 JIT。
             preferEmbeddingText: false,

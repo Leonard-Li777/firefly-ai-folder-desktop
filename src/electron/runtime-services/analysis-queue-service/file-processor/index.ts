@@ -438,6 +438,7 @@ export interface OmniVectorPersistenceParams {
     insertVideoChunks: (chunks: any[]) => void
   }
   samplingIntervalSeconds?: number
+  hasTextBody?: boolean
 }
 
 /**
@@ -453,6 +454,7 @@ export async function persistOmniVectors(params: OmniVectorPersistenceParams): P
     fileFingerprint,
     denseEmbedding,
     denseEmbeddingEncoderId,
+    hasTextBody,
     videoChunks,
     databaseService,
     samplingIntervalSeconds
@@ -480,8 +482,9 @@ export async function persistOmniVectors(params: OmniVectorPersistenceParams): P
       )
     } else {
       try {
+        const targetFp = hasTextBody ? `${fileFingerprint}:tc0` : fileFingerprint
         await databaseService.upsertFileVectorToOmni(
-          fileFingerprint,
+          targetFp,
           denseEmbedding,
           denseEmbeddingEncoderId
         )
@@ -2397,11 +2400,19 @@ export class FileProcessor {
       const effectiveInterval =
         anydocResult?.perception?.video_sampling_interval_seconds ?? 1.0
 
+      const hasTextBody = Boolean(
+        (typeof contentResult.content === 'string' && contentResult.content.trim().length > 0) ||
+        (typeof (contentResult as any).ocr === 'string' && (contentResult as any).ocr.trim().length > 0) ||
+        (typeof (contentResult as any).asr === 'string' && (contentResult as any).asr.trim().length > 0) ||
+        anydocResult?.perception?.text_tags?.length
+      )
+
       await persistOmniVectors({
         vectorSaved,
         fileFingerprint,
         denseEmbedding,
         denseEmbeddingEncoderId,
+        hasTextBody,
         videoChunks,
         databaseService,
         samplingIntervalSeconds: effectiveInterval
