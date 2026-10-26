@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useImperativeHandle } from 'react'
 import { VirtualDirectoryNode } from '@firefly/types'
+import { SENTINEL_NAMES } from '@firefly/shared'
 import { MaterialIcon, cn } from '../../../../lib/utils'
 import { Button } from '../../../ui/button'
 import { Badge } from '../../../ui/badge'
@@ -103,7 +104,8 @@ function pickDefaultVirtualDirectoryName(
     item =>
       item.fileCount > 0 &&
       item.name !== '其他' && // locale-invariant-ok: Omni 聚类兜底目录名哨兵
-      item.name !== t('其他文件')
+      item.name !== t('其他文件') &&
+      item.name !== SENTINEL_NAMES.UNCLASSIFIED
   )
   if (largest) {
     return t('{name} 整理', { name: largest.name })

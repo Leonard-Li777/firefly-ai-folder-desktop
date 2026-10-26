@@ -431,7 +431,8 @@ export interface OmniClusterGroup {
 
 export interface OmniClusterTreeResult {
   clusters: OmniClusterGroup[]
-  otherFiles: string[]
+  unclassifiedFiles?: string[]
+  otherFiles?: string[]
   durationMs: number
 }
 
@@ -2177,6 +2178,8 @@ export class OmniService {
       maxDepth?: number
       maxRootDirectories?: number
       maxSubdirectories?: number
+      similarityFloor?: number
+      similarityStep?: number
     },
     timeoutMs: number = 30000
   ): Promise<OmniClusterResponse | null> {

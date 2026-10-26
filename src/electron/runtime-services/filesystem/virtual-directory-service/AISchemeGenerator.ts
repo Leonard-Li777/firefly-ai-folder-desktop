@@ -12,6 +12,7 @@ import {
   logger,
   DIMENSION_CODES,
   CANONICAL_NAMES,
+  SENTINEL_NAMES,
   getCanonicalConceptName,
   isCandidateWordAdmissible,
   buildSemanticText,
@@ -22,7 +23,7 @@ import {
 import { sanitizeFolderName } from './utils'
 
 const FILE_QUALITY_NAME = CANONICAL_NAMES.FILE_QUALITY
-const DEFAULT_CLUSTER_FALLBACK_NAME = '其他' // locale-invariant-ok: 聚类默认目录名哨兵
+const DEFAULT_CLUSTER_FALLBACK_NAME = SENTINEL_NAMES.UNCLASSIFIED
 /** HAC 聚类默认余弦距离切分阈值（规格 §4.3 IPC 契约） */
 const HAC_DEFAULT_DISTANCE_THRESHOLD = 0.4
 /** HAC 聚类默认叶簇文件数上限（规格 §4.3 IPC 契约） */
@@ -538,10 +539,11 @@ export class AISchemeGenerator {
         return null
       }
 
-      const { clusters, otherFiles, durationMs } = clusterRes.result
+      const { clusters, unclassifiedFiles, otherFiles, durationMs } = clusterRes.result
+      const finalUnclassified = unclassifiedFiles || otherFiles || []
       logger.info(
         LogCategory.FILE_ORGANIZATION,
-        `[HAC智能聚类] 聚类计算成功: 生成簇数=${clusters.length}, 未归类=${otherFiles.length}, 耗时=${durationMs}ms`
+        `[HAC智能聚类] 聚类计算成功: 生成簇数=${clusters.length}, 未归类=${finalUnclassified.length}, 耗时=${durationMs}ms`
       )
 
       // 4. 将 OmniClusterTreeResult 转换为系统统一的 AIDirectoryStructure
@@ -638,14 +640,15 @@ export class AISchemeGenerator {
         leafNode.files = [...(leafNode.files || []), ...filesInCluster]
       }
 
-      // 未归入主要聚类簇的文件，集中归入「其他文件」
-      if (otherFiles && otherFiles.length > 0) {
-        const otherFilesList: any[] = []
-        for (const fp of otherFiles) {
+      // 未归入主要聚类簇的文件，集中归入「未归类」
+      const unclassifiedFps = clusterRes.result.unclassifiedFiles || clusterRes.result.otherFiles || []
+      if (unclassifiedFps && unclassifiedFps.length > 0) {
+        const unclassifiedList: any[] = []
+        for (const fp of unclassifiedFps) {
           const fInfos = fileMap.get(fp)
           if (fInfos && fInfos.length > 0) {
             for (const fInfo of fInfos) {
-              otherFilesList.push({
+              unclassifiedList.push({
                 id: fInfo.id,
                 fileId: fInfo.id,
                 name: fInfo.name,
@@ -656,14 +659,14 @@ export class AISchemeGenerator {
             }
           }
         }
-        if (otherFilesList.length > 0) {
-          dirMap.set('__other__', {
-            id: '__other__',
-            name: t('其他文件'),
+        if (unclassifiedList.length > 0) {
+          dirMap.set('__unclassified__', {
+            id: '__unclassified__',
+            name: SENTINEL_NAMES.UNCLASSIFIED,
             parent: '',
             subdirectories: [],
-            files: otherFilesList,
-            fileCount: otherFilesList.length
+            files: unclassifiedList,
+            fileCount: unclassifiedList.length
           })
         }
       }
