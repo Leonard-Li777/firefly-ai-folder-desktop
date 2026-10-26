@@ -71,3 +71,28 @@ describe('classifyAnalysisError：瞬态错误不得判为永久失败', () => {
     expect(result.allowTier1Fallback).toBe(false)
   })
 })
+
+/**
+ * 引擎暖机期文案（2026-10-26 实测）：链路上 status 常被压成纯文本，
+ * 必须靠文案兜住，否则「模型正在加载」会被误判为永久失败。
+ */
+describe('isTransientInfraError：引擎暖机期文案', () => {
+  it('萤核引擎反代 503 原文（status 丢失后仅剩文案）仍判瞬态', () => {
+    expect(
+      isTransientInfraError(new Error('文本文件AI分析失败: AI engine is starting, please try again'))
+    ).toBe(true)
+  })
+
+  it('llama-server「Loading model」503 原文判瞬态', () => {
+    expect(isTransientInfraError(new Error('多模态AI分析失败: Loading model'))).toBe(true)
+  })
+
+  it('中文「模型加载中」判瞬态', () => {
+    expect(isTransientInfraError(new Error('AI分析失败: 模型加载中，请稍后重试'))).toBe(true)
+  })
+
+  it('带 status=503 的对象错误（HTTP 层透传）判瞬态', () => {
+    const err = Object.assign(new Error('Service Unavailable'), { status: 503 })
+    expect(isTransientInfraError(err)).toBe(true)
+  })
+})

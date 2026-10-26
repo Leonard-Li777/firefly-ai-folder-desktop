@@ -86,6 +86,29 @@ function matchesElectronNetTransientCode(text: string | undefined): boolean {
   return ELECTRON_NET_TRANSIENT_CODES.some(code => text.includes(code))
 }
 
+/**
+ * 引擎暖机期文案（HTTP 503 语义，但常在链路上被压成纯文本，status 丢失）。
+ *
+ * 两类来源（2026-10-26 实测日志）：
+ *   - 萤核引擎反代：`{"error":{"message":"AI engine is starting, please try again","code":503}}`
+ *   - llama-server 直答：`{"error":{"message":"Loading model","type":"unavailable_error","code":503}}`
+ * 两者都是「模型尚未加载完成」的瞬态状态，恢复 pending 等待引擎就绪即可，
+ * 严禁判为永久 failed（历史缺陷：被归一化成「缺少choices字段」硬失败，
+ * 文件直接失败且渲染层滞留「引擎异常」，与「引擎状态良好」同屏矛盾）。
+ */
+const ENGINE_WARMUP_MESSAGES = [
+  'AI engine is starting',
+  'Loading model',
+  'model is loading',
+  '模型加载中'
+] as const
+
+/** 文本是否命中引擎暖机期文案 */
+function matchesEngineWarmupMessage(text: string | undefined): boolean {
+  if (!text) return false
+  return ENGINE_WARMUP_MESSAGES.some(msg => text.includes(msg))
+}
+
 /** 是否为基础设施未就绪等瞬态错误（不可静默降级为完成，必须等待就绪或重试） */
 export function isTransientInfraError(err: unknown): boolean {
   if (!err) return false
@@ -111,7 +134,7 @@ export function isTransientInfraError(err: unknown): boolean {
         : String(err)
   return (
     msg.includes('503') ||
-    msg.includes('AI engine is starting') ||
+    matchesEngineWarmupMessage(msg) ||
     msg.includes('AI 服务未就绪') ||
     msg.includes('AI服务未就绪') ||
     msg.includes('ECONNREFUSED') ||

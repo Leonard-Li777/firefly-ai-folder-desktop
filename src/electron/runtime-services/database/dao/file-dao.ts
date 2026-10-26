@@ -2308,8 +2308,8 @@ export class FileDao {
     if (!chunks || chunks.length === 0) return
     const deleteStmt = this.db.prepare(`DELETE FROM file_video_chunks WHERE file_fingerprint = ?`)
     const insertStmt = this.db.prepare(`
-      INSERT INTO file_video_chunks (file_fingerprint, chunk_index, start_sec, end_sec, sampling_interval_seconds)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO file_video_chunks (file_fingerprint, chunk_index, start_sec, end_sec, rep_pts_sec, meta, sampling_interval_seconds)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `)
     // 提取所有涉及的文件指纹
     const fingerprints = Array.from(new Set(chunks.map(c => c.fileFingerprint)))
@@ -2323,6 +2323,8 @@ export class FileDao {
           c.chunkIndex,
           c.startSec,
           c.endSec,
+          c.repPtsSec ?? null,
+          typeof c.meta === 'string' ? c.meta : JSON.stringify(c.meta || {}),
           c.samplingIntervalSeconds ?? 1.0
         )
       }
@@ -2334,25 +2336,41 @@ export class FileDao {
    */
   getVideoChunks(
     fileFingerprint: string
-  ): Array<{ id: number; fileFingerprint: string; chunkIndex: number; startSec: number; endSec: number; samplingIntervalSeconds: number; createdAt: string }> {
+  ): Array<{ id?: number; fileFingerprint: string; chunkIndex: number; startSec: number; endSec: number; repPtsSec: number; meta: Record<string, any>; samplingIntervalSeconds: number; createdAt?: string }> {
     if (!fileFingerprint) return []
     const rows = this.db
       .prepare(
-        `SELECT id, file_fingerprint as fileFingerprint, chunk_index as chunkIndex, start_sec as startSec, end_sec as endSec, sampling_interval_seconds as samplingIntervalSeconds, created_at as createdAt
+        `SELECT id, file_fingerprint as fileFingerprint, chunk_index as chunkIndex, start_sec as startSec, end_sec as endSec, COALESCE(rep_pts_sec, start_sec) as repPtsSec, meta, sampling_interval_seconds as samplingIntervalSeconds, created_at as createdAt
          FROM file_video_chunks
          WHERE file_fingerprint = ?
          ORDER BY chunk_index ASC`
       )
       .all(fileFingerprint) as Array<{
-      id: number
+      id?: number
       fileFingerprint: string
       chunkIndex: number
       startSec: number
       endSec: number
+      repPtsSec: number
+      meta: string | Record<string, any>
       samplingIntervalSeconds: number
-      createdAt: string
+      createdAt?: string
     }>
-    return rows
+    return rows.map(r => {
+      let parsedMeta: Record<string, any> = {}
+      if (r.meta) {
+        try {
+          parsedMeta = typeof r.meta === 'string' ? JSON.parse(r.meta) : r.meta
+        } catch {
+          parsedMeta = {}
+        }
+      }
+      return {
+        ...r,
+        repPtsSec: Number(r.repPtsSec ?? r.startSec),
+        meta: parsedMeta
+      }
+    })
   }
 
   /**

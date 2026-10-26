@@ -2299,7 +2299,7 @@ export class DatabaseService {
    */
   getVideoChunks(
     fileFingerprint: string
-  ): Array<{ id: number; fileFingerprint: string; chunkIndex: number; startSec: number; endSec: number; samplingIntervalSeconds: number; createdAt: string }> {
+  ): Array<{ id?: number; fileFingerprint: string; chunkIndex: number; startSec: number; endSec: number; repPtsSec: number; meta: Record<string, any>; samplingIntervalSeconds: number; createdAt?: string }> {
     this.ensureInitialized()
     return this.fileDao!.getVideoChunks(fileFingerprint)
   }

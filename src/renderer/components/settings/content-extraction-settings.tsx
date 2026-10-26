@@ -183,7 +183,7 @@ export const ContentExtractionSettings: React.FC = () => {
       <div>
         <h3 className="text-lg font-semibold mb-2">{t('内容萃取设置')}</h3>
         <p className="text-sm text-muted-foreground">
-          {t('控制文件与文档文本、OCR、音视频等内容提取范围及精度')}
+          {t('控制文件与文档文本、图片OCR等内容提取范围及精度')}
         </p>
       </div>
 

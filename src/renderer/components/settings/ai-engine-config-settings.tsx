@@ -18,6 +18,7 @@ import { CloudModelConfigSettings } from './cloud-model-config-settings'
 import { CloudErrorCard } from './cloud-error-card'
 import {
   deriveEngineBadge,
+  deriveEngineHealthState,
   isEngineServiceOnline,
   isEngineServiceReady,
   type EngineBadgeResult,
@@ -102,13 +103,18 @@ export const AIEngineConfigSettings: React.FC = () => {
   // 本地引擎异常判定（PRD-0045）：
   // 1. 若本地引擎已就绪运行（含推理中 processing），绝对不属于引擎异常；
   // 2. 若引擎明确上报 status === 'error' 或熔断器被触发开路（circuitState === 'open'），属于引擎异常；
-  // 3. 在引擎尚未就绪的前提下，AI 服务处于 ERROR 态才属于引擎异常。
+  // 3. 引擎**离线**（无任何状态快照）时，AI 服务处于 ERROR 态才属于引擎异常。
+  //
+  // 第 3 条必须限定「离线」：引擎在线（HTTP 快照可达）且自身未报 error 时，渲染层的 AI 服务 ERROR
+  // 只是某次请求失败后的滞留标记，而「引擎健康状况」同源于熔断器会得出「良好」，
+  // 两者并存即出现「引擎异常 + 引擎状态良好」自相矛盾（用户已两次报告）。
+  // 滞留错误仍在引擎就绪时由下方自愈 effect 与 engine-store 统一清除。
   const isEngineFailed =
     !isCloudMode &&
     !engineServiceReady &&
     (snapshot?.raw?.status === 'error' ||
       snapshot?.circuitState === 'open' ||
-      aiServiceStatus === AIServiceStatus.ERROR)
+      (!snapshot?.connected && aiServiceStatus === AIServiceStatus.ERROR))
 
   // 当本地引擎处于就绪态时，自动自愈清除陈旧的历史错误，避免状态滞留导致误报「引擎异常」
   useEffect(() => {
@@ -346,7 +352,11 @@ export const AIEngineConfigSettings: React.FC = () => {
   const statusBadge = buildBadge('local')
   // 在渲染期内构造文案表，语言切换时随 t 自动刷新；text 已完成翻译，直接渲染
   const circuitLabels = getCircuitLabels(t)
-  const circuit = snapshot ? (circuitLabels[snapshot.circuitState || 'closed'] ?? circuitLabels.closed) : null
+  // 健康状态与徽章同源派生（deriveEngineHealthState）：
+  // 引擎自报 error 时健康卡不再显示「引擎状态良好」，从根上杜绝与「引擎异常」徽章并存
+  const circuit = snapshot
+    ? (circuitLabels[deriveEngineHealthState(snapshot)] ?? circuitLabels.closed)
+    : null
 
   /** 萤核分支两态（PRD-0044）：已连接 = 引擎状态卡；未连接 = 提示卡 + 聚焦主按钮 */
   const isLocalBranch = isEnabled && !isCloudMode

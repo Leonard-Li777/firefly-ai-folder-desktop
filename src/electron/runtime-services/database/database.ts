@@ -347,6 +347,8 @@ export const GENESIS_V1_SCHEMA = `
     chunk_index INTEGER NOT NULL,
     start_sec REAL NOT NULL,
     end_sec REAL NOT NULL,
+    rep_pts_sec REAL,
+    meta TEXT NOT NULL DEFAULT '{}',
     sampling_interval_seconds REAL NOT NULL DEFAULT 1.0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (file_fingerprint) REFERENCES files(file_fingerprint) ON DELETE CASCADE,

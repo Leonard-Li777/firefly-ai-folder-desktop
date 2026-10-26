@@ -352,6 +352,8 @@ export interface HybridRankedCandidate {
     chunkIndex: number
     startSec: number
     endSec: number
+    repPtsSec?: number
+    seekSec?: number
     similarity?: number
   }
   /** 命中的多个视频时序切片（同视频多片段命中，抽帧预览 Grid 模式） */
@@ -359,6 +361,8 @@ export interface HybridRankedCandidate {
     chunkIndex: number
     startSec: number
     endSec: number
+    repPtsSec?: number
+    seekSec?: number
     similarity?: number
   }>
 }
@@ -406,35 +410,53 @@ export interface VideoChunkCandidateInterval {
   startSec: number
   endSec: number
   similarity: number
+  repPtsSec?: number
+  meta?: Record<string, any>
 }
 
-export function applyWingTrimming(
+export interface MergedShotInterval {
+  chunkIndex: number
+  startSec: number
+  endSec: number
+  repPtsSec: number
+  seekSec: number
+  similarity: number
+}
+
+/**
+ * 纯粹的物理镜头时序合并器 (Ticket 04: 防雪球上限 + 动态追踪 + 前摇计算)
+ */
+export function mergeContinuousShotIntervals(
   intervals: VideoChunkCandidateInterval[],
-  maxChunkIndex?: number
-): VideoChunkCandidateInterval[] {
+  maxMergedSpanSec: number = 20.0
+): MergedShotInterval[] {
   if (!intervals || intervals.length === 0) return []
 
-  const sorted = [...intervals].sort((a, b) => a.startSec - b.startSec || a.chunkIndex - b.chunkIndex)
-  // Ticket 09 (Spec §4.4)：分组跨度上限与候选切片自身窗口自适应联动，废除固定 12s 硬编码。
-  // 长视频自适应切片窗口可达 14s~60s，单个切片长度即可超过旧固定上限，
-  // 若仍用固定 12s 会把本应连续命中的重叠切片机械拆组，导致侧翼剥离静默失效。
-  // 联动公式：max(12.0, maxChunkLen * 2.5)，短窗口切片行为与旧版完全一致（下限 12.0 托底）。
-  const maxChunkLen = sorted.reduce((m, c) => Math.max(m, c.endSec - c.startSec), 0)
-  const maxChunkSpanSeconds = Math.max(12.0, maxChunkLen * 2.5)
+  const valid = intervals.filter(i => Number.isFinite(i.startSec) && Number.isFinite(i.endSec))
+  if (valid.length === 0) return []
+
+  const sorted = [...valid].sort((a, b) => a.startSec - b.startSec || a.chunkIndex - b.chunkIndex)
   const groups: VideoChunkCandidateInterval[][] = []
   let currentGroup: VideoChunkCandidateInterval[] = []
+  let currentMaxEnd = -Infinity
 
   for (const curr of sorted) {
     if (currentGroup.length === 0) {
       currentGroup.push(curr)
+      currentMaxEnd = curr.endSec
     } else {
-      const prev = currentGroup[currentGroup.length - 1]
-      const rawSpan = Math.max(curr.endSec, ...currentGroup.map(c => c.endSec)) - currentGroup[0].startSec
-      if (curr.startSec < prev.endSec - 0.2 && rawSpan <= maxChunkSpanSeconds) {
+      const currentStart = currentGroup[0].startSec
+      const potentialMaxEnd = Math.max(currentMaxEnd, curr.endSec)
+      const potentialSpan = potentialMaxEnd - currentStart
+
+      // 使用组内动态最大结束时间 currentMaxEnd 进行邻接判定，彻底免疫短切片穿插跳脱
+      if (curr.startSec <= currentMaxEnd + 3.0 && potentialSpan <= maxMergedSpanSec) {
         currentGroup.push(curr)
+        currentMaxEnd = potentialMaxEnd
       } else {
         groups.push(currentGroup)
         currentGroup = [curr]
+        currentMaxEnd = curr.endSec
       }
     }
   }
@@ -442,56 +464,32 @@ export function applyWingTrimming(
     groups.push(currentGroup)
   }
 
-  const mergedIntervals: VideoChunkCandidateInterval[] = []
+  return groups.map(group => {
+    // 选出该合并组内得分最高的切片作为主峰值切片
+    const bestChunk = group.reduce(
+      (best, c) => (c.similarity > best.similarity ? c : best),
+      group[0]
+    )
+    const startSec = group[0].startSec
+    const endSec = Math.max(...group.map(c => c.endSec))
+    const rawRepPts = bestChunk.repPtsSec ?? bestChunk.startSec
+    // 强制 clamp 代表帧在当前镜头区间内
+    const repPtsSec = Math.min(endSec, Math.max(startSec, rawRepPts))
 
-  for (const group of groups) {
-    if (group.length === 1) {
-      mergedIntervals.push({ ...group[0] })
-      continue
+    // 计算跳轴动作前摇，双向闭区间防御
+    const duration = endSec - startSec
+    const targetSeek = duration <= 5.0 ? startSec : Math.max(startSec, repPtsSec - 1.5)
+    const seekSec = Math.min(endSec, targetSeek)
+
+    return {
+      chunkIndex: bestChunk.chunkIndex,
+      startSec,
+      endSec,
+      repPtsSec,
+      seekSec,
+      similarity: bestChunk.similarity
     }
-
-    const rawStart = group[0].startSec
-    const rawEnd = Math.max(...group.map(c => c.endSec))
-    let trimmedStart = rawStart
-    let trimmedEnd = rawEnd
-
-    const isHead = group[0].chunkIndex === 0 || group[0].startSec <= 1.0
-    const isLeftPeak = group[0].similarity - group[1].similarity >= 0.05
-    if (!isHead && !isLeftPeak) {
-      trimmedStart = Math.max(group[0].startSec, group[1].startSec - 1.0)
-    }
-
-    const last = group.length - 1
-    const secondLast = group.length - 2
-    const isTail = maxChunkIndex !== undefined && group[last].chunkIndex === maxChunkIndex
-    const isRightPeak = group[last].similarity - group[secondLast].similarity >= 0.05
-    if (!isTail && !isRightPeak) {
-      trimmedEnd = Math.min(rawEnd, group[secondLast].endSec + 1.0)
-    }
-
-    if (trimmedEnd - trimmedStart < 2.0 || trimmedStart >= trimmedEnd) {
-      trimmedStart = rawStart
-      trimmedEnd = rawEnd
-    }
-
-    let bestSimilarity = -Infinity
-    let bestChunkIndex = group[0].chunkIndex
-    for (const c of group) {
-      if (c.similarity > bestSimilarity) {
-        bestSimilarity = c.similarity
-        bestChunkIndex = c.chunkIndex
-      }
-    }
-
-    mergedIntervals.push({
-      chunkIndex: bestChunkIndex,
-      startSec: trimmedStart,
-      endSec: trimmedEnd,
-      similarity: bestSimilarity
-    })
-  }
-
-  return mergedIntervals
+  })
 }
 
 export interface HybridRankPool {
@@ -903,12 +901,16 @@ interface VectorMatch {
     chunkIndex: number
     startSec: number
     endSec: number
+    repPtsSec?: number
+    seekSec?: number
     similarity?: number
   }
   matchedChunks?: Array<{
     chunkIndex: number
     startSec: number
     endSec: number
+    repPtsSec?: number
+    seekSec?: number
     similarity?: number
   }>
 }
@@ -2280,6 +2282,8 @@ export class HybridSearchArbiter {
           chunkIndex: number
           startSec: number
           endSec: number
+          repPtsSec: number
+          seekSec: number
           similarity: number
         }>
       }
@@ -2314,7 +2318,7 @@ export class HybridSearchArbiter {
 
       // 1. 预先批量查询所有命中切片视频的 file_video_chunks 元数据（获取各切片起止时间）
       const parentsWithAnyChunks = Array.from(parentAggMap.values()).filter(p => p.chunks.length > 0)
-      const chunkTimingMap = new Map<string, { startSec: number; endSec: number }>()
+      const chunkTimingMap = new Map<string, { startSec: number; endSec: number; repPtsSec: number; meta: Record<string, any> }>()
       const maxChunkIndexMap = new Map<string, number>()
 
       if (parentsWithAnyChunks.length > 0) {
@@ -2322,7 +2326,7 @@ export class HybridSearchArbiter {
           const placeholders = parentsWithAnyChunks.map(() => '?').join(',')
           const rows = this.db
             .prepare(
-              `SELECT file_fingerprint, chunk_index, start_sec, end_sec
+              `SELECT file_fingerprint, chunk_index, start_sec, end_sec, COALESCE(rep_pts_sec, start_sec) AS rep_pts_sec, meta
                FROM file_video_chunks
                WHERE file_fingerprint IN (${placeholders})`
             )
@@ -2331,6 +2335,8 @@ export class HybridSearchArbiter {
             chunk_index: number
             start_sec: number
             end_sec: number
+            rep_pts_sec: number
+            meta: string | Record<string, any>
           }>
 
           for (const r of rows) {
@@ -2338,9 +2344,19 @@ export class HybridSearchArbiter {
             if (r.chunk_index > curMax) {
               maxChunkIndexMap.set(r.file_fingerprint, r.chunk_index)
             }
+            let parsedMeta: Record<string, any> = {}
+            if (r.meta) {
+              try {
+                parsedMeta = typeof r.meta === 'string' ? JSON.parse(r.meta) : r.meta
+              } catch {
+                parsedMeta = {}
+              }
+            }
             chunkTimingMap.set(`${r.file_fingerprint}:c${r.chunk_index}`, {
               startSec: r.start_sec,
-              endSec: r.end_sec
+              endSec: r.end_sec,
+              repPtsSec: Number(r.rep_pts_sec ?? r.start_sec),
+              meta: parsedMeta
             })
           }
         } catch (err: unknown) {
@@ -2377,12 +2393,7 @@ export class HybridSearchArbiter {
           : []
 
         // 提取带有效 timing 的候选区间
-        const candidateIntervals: Array<{
-          chunkIndex: number
-          startSec: number
-          endSec: number
-          similarity: number
-        }> = []
+        const candidateIntervals: Array<VideoChunkCandidateInterval> = []
 
         for (const vc of validChunks) {
           const timing = chunkTimingMap.get(`${agg.parentFp}:c${vc.chunkIndex}`)
@@ -2391,17 +2402,18 @@ export class HybridSearchArbiter {
               chunkIndex: vc.chunkIndex,
               startSec: timing.startSec,
               endSec: timing.endSec,
-              similarity: vc.score
+              similarity: vc.score,
+              repPtsSec: timing.repPtsSec,
+              meta: timing.meta
             })
           }
         }
 
         if (candidateIntervals.length > 0) {
           // =========================================================================
-          // Phase 1：时序相邻对称加固版 Wing Trimming (侧翼剥离) 与受限合并 (Ticket 05)
+          // Phase 1：时序物理镜头连续合并 mergeContinuousShotIntervals (Ticket 04)
           // =========================================================================
-          const maxChunkIndex = maxChunkIndexMap.get(agg.parentFp)
-          const mergedIntervals = applyWingTrimming(candidateIntervals, maxChunkIndex)
+          const mergedIntervals = mergeContinuousShotIntervals(candidateIntervals)
 
           // =========================================================================
           // Phase 2：Top-Peak 动态门禁与相似度降序重排 (高置信度核心镜头置顶)
@@ -2508,15 +2520,24 @@ export class HybridSearchArbiter {
             chunkIndex: top.chunkIndex,
             startSec: top.startSec,
             endSec: top.endSec,
+            repPtsSec: top.repPtsSec,
+            seekSec: top.seekSec,
             similarity: top.similarity
           }
         } else if (p.bestChunkIndex !== undefined) {
           const timing = chunkTimingMap.get(`${p.parentFp}:c${p.bestChunkIndex}`)
           if (timing) {
+            const rawRepPts = timing.repPtsSec ?? timing.startSec
+            const repPtsSec = Math.min(timing.endSec, Math.max(timing.startSec, rawRepPts))
+            const duration = timing.endSec - timing.startSec
+            const targetSeek = duration <= 5.0 ? timing.startSec : Math.max(timing.startSec, repPtsSec - 1.5)
+            const seekSec = Math.min(timing.endSec, targetSeek)
             matchedChunk = {
               chunkIndex: p.bestChunkIndex,
               startSec: timing.startSec,
               endSec: timing.endSec,
+              repPtsSec,
+              seekSec,
               similarity: p.bestChunkScore ?? p.bestScore
             }
           }

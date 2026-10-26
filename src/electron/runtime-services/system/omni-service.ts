@@ -335,6 +335,8 @@ export interface OmniVideoChunkItem {
   chunk_index: number
   start_sec: number
   end_sec: number
+  rep_pts_sec?: number
+  meta?: Record<string, any>
   vector: number[]
   /** 切片向量的编码器出处（zvec v3 encoder_id），由 Omni 视觉层给出并原样透传 */
   encoder_id?: number

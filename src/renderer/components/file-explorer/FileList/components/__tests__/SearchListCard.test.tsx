@@ -404,9 +404,9 @@ describe('SearchListCard Component', () => {
       expect(videos[0].getAttribute('src')).toContain('#t=15')
       expect(videos[1].getAttribute('src')).toContain('#t=80')
 
-      // 验证渲染了时间戳
-      expect(screen.getByText('00:15')).toBeDefined()
-      expect(screen.getByText('01:20')).toBeDefined()
+      // 验证渲染了完整起止时间戳
+      expect(screen.getByText('00:15 - 00:45')).toBeDefined()
+      expect(screen.getByText('01:20 - 01:50')).toBeDefined()
     })
 
     it('hides timestamp badge by default with opacity-0 and reveals on hover', () => {
@@ -493,6 +493,58 @@ describe('SearchListCard Component', () => {
       // 但时间轴精准更新为第 2 个切片的时间 (startSec = 80)
       expect(usePreviewOverlayStore.getState().currentTime).toBe(80)
       expect(usePreviewOverlayStore.getState().highlightRange).toEqual([80, 110])
+    })
+
+    it('Ticket 05: dual-track seek and highlightRange decoupling with repPtsSec and seekSec', () => {
+      const dualTrackItem: FileType = {
+        id: 'vid-dual-track',
+        name: 'racing-action.mp4',
+        path: 'D:\\workspace\\videos\\racing-action.mp4',
+        category: 'video',
+        parentPath: 'D:\\workspace\\videos',
+        size: 1024 * 1024 * 80,
+        extension: 'mp4',
+        modifiedAt: new Date('2026-10-19T12:00:00Z'),
+        matchedChunks: [
+          {
+            chunkIndex: 0,
+            startSec: 10.0,
+            endSec: 25.0,
+            repPtsSec: 18.0,
+            seekSec: 16.5,
+            similarity: 0.95
+          }
+        ]
+      }
+
+      const { container } = render(
+        <SearchListCard
+          item={dualTrackItem}
+          safeItemName="racing-action.mp4"
+          formatFileSize={defaultFormatSize}
+          onItemClick={mockItemClick}
+          onContextMenu={mockContextMenu}
+          index={0}
+        />
+      )
+
+      // 缩略图封面严格使用 repPtsSec (18) 取帧
+      const video = container.querySelector('video')
+      expect(video).not.toBeNull()
+      expect(video!.getAttribute('src')).toContain('#t=18')
+
+      // 角标显示完整起止时间
+      expect(screen.getByText('00:10 - 00:25')).toBeDefined()
+
+      // 点击切片
+      const chunkEl = container.querySelector('.group\\/chunk')
+      expect(chunkEl).not.toBeNull()
+      fireEvent.click(chunkEl!)
+
+      // 验证双轨解耦：currentTime 严格为动作前摇 seekSec (16.5)，highlightRange 严格为完整物理区间 [10, 25] (左翼无吞噬)
+      const previewState = usePreviewOverlayStore.getState()
+      expect(previewState.currentTime).toBe(16.5)
+      expect(previewState.highlightRange).toEqual([10.0, 25.0])
     })
   })
 

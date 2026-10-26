@@ -128,6 +128,31 @@ export function isEngineServiceOnline(status?: string | null): boolean {
   return isEngineServiceReady(status) || status === 'starting'
 }
 
+/** 引擎健康状况（与熔断器三态同名，另把引擎自报 error 归一为 open） */
+export type EngineHealthState = 'closed' | 'half_open' | 'open'
+
+/**
+ * 引擎健康状况唯一派生 —— 与「引擎异常」徽章同源，杜绝「引擎异常 + 引擎状态良好」并存。
+ *
+ * 判定顺序：
+ *   1. 引擎自报就绪（ready / processing）⇒ `closed`：推理服务可服务是「健康」的最强证据，
+ *      此时若仍按熔断器残留的 open 展示「连续失败」，会与「已启动」徽章反向矛盾；
+ *   2. 引擎自报 `raw.status === 'error'` ⇒ `open`（Tier 2 不可用，由基础AI引擎兜底）；
+ *   3. 其余以主进程熔断器状态为准（closed / half_open / open）。
+ *
+ * **渲染层 AI 服务 ERROR 不参与本判定**：它是「某次请求失败」的滞留标记，与引擎进程是否健康
+ * 不是同一事实。历史缺陷：徽章读 AI 服务 ERROR、健康卡读熔断器，两套事实各自演进，
+ * 于是出现「引擎异常」与「引擎状态良好」同屏并存（用户两次报告）。
+ */
+export function deriveEngineHealthState(
+  snapshot?: { raw?: { status?: string } | null; circuitState?: string | null } | null
+): EngineHealthState {
+  if (isEngineServiceReady(snapshot?.raw?.status)) return 'closed'
+  if (snapshot?.raw?.status === 'error') return 'open'
+  const state = snapshot?.circuitState
+  return state === 'open' || state === 'half_open' ? state : 'closed'
+}
+
 /**
  * 派生引擎状态徽章。文案由调用方按 status 用 t(静态字面量) 包裹（t 只收静态字符串）；
  * 非选中态强制置灰色类（文案仍反映真实状态）。

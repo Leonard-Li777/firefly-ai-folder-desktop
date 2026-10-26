@@ -421,6 +421,9 @@ export interface OmniVectorPersistenceParams {
     startSec?: number
     end_sec?: number
     endSec?: number
+    rep_pts_sec?: number
+    repPtsSec?: number
+    meta?: Record<string, any>
     vector?: number[]
     /** 切片向量编码器出处（perceive 响应 `video_chunks[].encoder_id`） */
     encoder_id?: number
@@ -502,8 +505,14 @@ export async function persistOmniVectors(params: OmniVectorPersistenceParams): P
           chunkIndex: c.chunk_index ?? c.chunkIndex ?? 0,
           startSec: c.start_sec ?? c.startSec ?? 0,
           endSec: c.end_sec ?? c.endSec ?? 0,
+          repPtsSec: (c as any).rep_pts_sec ?? (c as any).repPtsSec ?? (c as any).start_sec ?? (c as any).startSec ?? 0,
+          meta: (c as any).meta || {},
           samplingIntervalSeconds: samplingIntervalSeconds ?? 1.0
         }))
+      )
+      logger.info(
+        LogCategory.ANALYSIS_QUEUE,
+        `[分析队列] 视频切片元数据落库完成: fp=${fileFingerprint}, 切片数=${videoChunks.length}`
       )
       // 态 1 (vectorSaved === true): 切片向量已在 Omni 内部批量写盘且浮点数组已被清空，彻底阻断切片向量回传
       // 态 3 (vectorSaved === undefined): 兼容旧版 Omni，若切片包含浮点数组，向 Omni 回传落盘

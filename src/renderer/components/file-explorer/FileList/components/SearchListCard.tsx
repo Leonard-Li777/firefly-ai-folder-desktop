@@ -66,13 +66,15 @@ const VideoChunkFrame: React.FC<{
     chunkIndex?: number
     startSec: number
     endSec: number
+    repPtsSec?: number
+    seekSec?: number
     similarity?: number
     score?: number
   }
   filePath: string
   category?: any
   frameHeight?: number
-  onPreviewSeek: (startSec: number, endSec: number) => void
+  onPreviewSeek: (seekSec: number, startSec: number, endSec: number) => void
   onItemSelect?: (e: React.MouseEvent) => void
 }> = ({ chunk, filePath, category, frameHeight = 38, onPreviewSeek, onItemSelect }) => {
   const [hasError, setHasError] = useState(false)
@@ -80,19 +82,16 @@ const VideoChunkFrame: React.FC<{
   const videoUrl = useMemo(() => {
     if (!filePath) return ''
     const base = toSafeFileUrl(filePath)
-    // 规避镜头切点处过渡黑帧或前序镜头残余，偏内侧取帧呈现镜头真实主体
-    const previewSec =
-      chunk.endSec > chunk.startSec
-        ? chunk.startSec + Math.min(0.5, (chunk.endSec - chunk.startSec) * 0.25)
-        : chunk.startSec
+    // 缩略图封面严格抽取目标最清晰的 repPtsSec 关键帧，彻底消除切镜黑屏
+    const previewSec = chunk.repPtsSec ?? chunk.startSec
     const safeTime = clampVideoTime(previewSec, 3600)
     return `${base}#t=${safeTime}`
-  }, [filePath, chunk.startSec, chunk.endSec])
+  }, [filePath, chunk.repPtsSec, chunk.startSec])
 
   // 虚拟行复用时重置错误状态
   useEffect(() => {
     setHasError(false)
-  }, [filePath, chunk.startSec])
+  }, [filePath, chunk.repPtsSec, chunk.startSec])
 
   const chunkPercent =
     typeof chunk.similarity === 'number'
@@ -109,7 +108,7 @@ const VideoChunkFrame: React.FC<{
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     onItemSelect?.(e)
-    onPreviewSeek(chunk.startSec, chunk.endSec)
+    onPreviewSeek(chunk.seekSec ?? chunk.startSec, chunk.startSec, chunk.endSec)
   }
 
   const handleDoubleClick = async (e: React.MouseEvent) => {
@@ -120,7 +119,7 @@ const VideoChunkFrame: React.FC<{
       const outcome = await window.electronAPI?.utils?.launchExternalDeepLink?.({
         filePath,
         category: cat || 'video',
-        seekSeconds: chunk.startSec
+        seekSeconds: chunk.seekSec ?? chunk.startSec
       })
       if (outcome?.fallbackToDefault) {
         toast.info(t('未检测到支持精准定位的外部应用，已按默认方式打开'))
@@ -161,7 +160,7 @@ const VideoChunkFrame: React.FC<{
 
       {/* 底部微型起止时间胶囊（平时隐藏，Hover 时浮现，保持预览画面纯净无遮挡） */}
       <div className="absolute bottom-0.5 right-0.5 rounded bg-black/85 font-mono text-white/90 backdrop-blur-xs flex items-center gap-0.5 px-1 py-0.2 text-[9px] shadow-xs border border-white/10 pointer-events-none opacity-0 group-hover/chunk:opacity-100 transition-opacity">
-        <span>{formatVideoTimestamp(chunk.startSec)}</span>
+        <span>{`${formatVideoTimestamp(chunk.startSec)} - ${formatVideoTimestamp(chunk.endSec)}`}</span>
         {chunkPercent !== null && (
           <span className="text-violet-300 font-semibold">{`${chunkPercent}%`}</span>
         )}
@@ -183,7 +182,7 @@ const AudioChunkChip: React.FC<{
   }
   filePath: string
   category?: any
-  onPreviewSeek: (startSec: number, endSec: number) => void
+  onPreviewSeek: (seekSec: number, startSec: number, endSec: number) => void
   onItemSelect?: (e: React.MouseEvent) => void
 }> = ({ chunk, filePath, category, onPreviewSeek, onItemSelect }) => {
   const chunkPercent =
@@ -200,7 +199,7 @@ const AudioChunkChip: React.FC<{
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     onItemSelect?.(e)
-    onPreviewSeek(chunk.startSec, chunk.endSec)
+    onPreviewSeek(chunk.startSec, chunk.startSec, chunk.endSec)
   }
 
   const handleDoubleClick = async (e: React.MouseEvent) => {
@@ -437,11 +436,11 @@ export const SearchListCard = React.memo(
         ? ''
         : safeItemName
 
-    /** 抽帧/音频切片跳轴定位 */
+    /** 抽帧/音频切片跳轴定位 (Ticket 05: seekSec 与 [startSec, endSec] 双轨独立传递) */
     const handlePreviewSeek = useCallback(
-      (startSec: number, endSec: number) => {
+      (seekSec: number, startSec: number, endSec: number) => {
         // 同步挂载到当前内存 item 实例上，保证 FileExplorerLayout 的响应式监听能读取到最新的切片跳转参数
-        ;(item as any).currentTime = startSec
+        ;(item as any).currentTime = seekSec
         ;(item as any).highlightRange = [startSec, endSec]
 
         const splitState = usePreviewOverlayStore.getState()
@@ -457,7 +456,7 @@ export const SearchListCard = React.memo(
           ext,
           effectivePageId,
           {
-            currentTime: startSec,
+            currentTime: seekSec,
             highlightRange: [startSec, endSec]
           }
         )

@@ -504,10 +504,25 @@ export function Footer() {
     }
   }
 
+  const isQueueAnalyzing = analyzing !== null
+
   // 本地模式下以 Tier 2 引擎真实运行态（engineSnapshot）为准驱动 Footer 状态
   // 注意：高级AI引擎未开启（isAdvancedAiEnabled 已在上方计算）时，Tier 2 引擎探活离线属预期，
   // 不应把状态强制覆盖为 STOPPED，直接回落展示基础AI引擎自身的状态（serviceStatus）。
   const effectiveStatus = useMemo(() => {
+    // 【队列分析优先】分析队列中存在 analyzing 项 ⇒ 整条分析流水线正在工作，Footer 必须显示「分析中」。
+    //
+    // 为什么不能只依赖下面两个 LLM 推理信号：
+    // 图像/视频的 GPU 感知与向量化由**独立的 firefly-omni 进程**承担（omniService.perceive），
+    // 该阶段既不改变 Tier 2 引擎的 status（恒为 ready），也不经过 LlamaIndexAIService.chat
+    // （serviceStatus 恒为 idle）。若只认 LLM 推理信号，Footer 会在整个 GPU 感知阶段
+    // 误显示绿色「AI 服务就绪」，而右侧队列按钮却已经在报「感知/解析」——同一栏自相矛盾。
+    //
+    // 队列状态是「分析是否在进行」的唯一权威事实源：它覆盖 CPU 提取、GPU 感知、LLM 命名全阶段，
+    // 而 serviceStatus / engine.raw.status 只是其中一个子阶段的信号。
+    if (isQueueAnalyzing) {
+      return AIServiceStatus.PROCESSING
+    }
     if (modelMode === 'local' && isAdvancedAiEnabled) {
       if (engineOnline === false) {
         return AIServiceStatus.STOPPED
@@ -531,7 +546,7 @@ export function Footer() {
       }
     }
     return serviceStatus
-  }, [modelMode, engineOnline, engineSnapshot, serviceStatus, isAdvancedAiEnabled])
+  }, [isQueueAnalyzing, modelMode, engineOnline, engineSnapshot, serviceStatus, isAdvancedAiEnabled])
 
   const aiServiceInfo = getFooterDisplay(effectiveStatus)
 
@@ -600,8 +615,12 @@ export function Footer() {
   }, [omniStatus, activeLanguage])
 
   // 最终展示状态：高级AI引擎禁用时以基础AI引擎（Omni）状态为准
+  // 例外：队列正在分析时不得被「Omni 服务就绪」覆盖——Omni 的 running 只表示进程存活，
+  // 不表示当前没有在分析，覆盖后同样会出现「分析中却显示就绪」的矛盾。
   const finalAiServiceInfo =
-    !isAdvancedAiEnabled && omniStatus !== null ? omniAiServiceInfo : effectiveAiServiceInfo
+    !isAdvancedAiEnabled && omniStatus !== null && !isQueueAnalyzing
+      ? omniAiServiceInfo
+      : effectiveAiServiceInfo
 
   // 注：PRD-0043 后"非最佳可用引擎"警告归属引擎应用（firefly-ai-engine）Footer 展示，
   // desktop 不再显示该警告（PRD-0049：BEST_ACCELERATION 记忆服务已清退）。
