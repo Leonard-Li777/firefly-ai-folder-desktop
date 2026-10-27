@@ -2170,6 +2170,42 @@ export class EngineBridgeService {
   }
 
   /**
+   * 判断当前引擎或主模型是否激活了 DSpark / 草稿投机采样加速
+   */
+  public isDSparkActive(): boolean {
+    const raw = this.lastRawStatus
+    if (!raw) {
+      return false
+    }
+
+    // 1. 优先读取引擎上报的真实自适应运行时参数
+    const rp = raw.runtime_params as any
+    if (rp) {
+      if (rp.effective_enable_draft === true || rp.enable_draft === true || rp.enableDraft === true) {
+        return true
+      }
+      if (rp.effective_enable_draft === false || rp.enable_draft === false || rp.enableDraft === false) {
+        return false
+      }
+    }
+
+    // 2. 其次匹配当前激活模型 ID、物理路径或展示名中的 spark / dspark / draft 标记
+    const modelCandidates = [
+      raw.current_model,
+      raw.current_model_name,
+      raw.model,
+      raw.active_language_model
+    ]
+    for (const m of modelCandidates) {
+      if (typeof m === 'string' && /(?:dspark|spark|draft)/i.test(m)) {
+        return true
+      }
+    }
+
+    return false
+  }
+
+  /**
    * 广播状态快照给本进程监听者与所有渲染窗口（tier2:status-changed）
    */
   public broadcastStatus(): void {

@@ -32,6 +32,7 @@ import {
   isSubPath,
   isPathEqual
 } from '@firefly/shared'
+import { engineBridgeService } from '../runtime-services/engine-bridge'
 import { ConfigOrchestrator } from '../config/config-orchestrator'
 import { databaseService } from '../runtime-services/database/database-service'
 import { audioConverter } from '../runtime-services/filesystem/audio-converter'
@@ -117,6 +118,8 @@ export class LlamaIndexAIAdapter implements IAIAdapter, ILlamaRuntimeAdapter {
     frequency_penalty?: number
     /** 存在惩罚。缺省不传时由下层沿用既有缺省值 0.3 */
     presence_penalty?: number
+    /** 是否启用 DSpark / 草稿投机采样加速 */
+    isDSpark?: boolean
   }): Promise<{
     success: boolean
     response?: any
@@ -400,7 +403,9 @@ export class LlamaIndexAIAdapter implements IAIAdapter, ILlamaRuntimeAdapter {
         }
       }
 
+      const isDSpark = request.isDSpark ?? (engineBridgeService.isDSparkActive?.() ?? false)
       const response = await service.chat(messages, false, {
+        isDSpark,
         temperature: request.temperature,
         maxTokens: request.maxTokens,
         response_format: request.response_format,

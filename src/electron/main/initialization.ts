@@ -933,7 +933,7 @@ export async function initializeFullServices(): Promise<void> {
       const queueBatchSize =
         ConfigOrchestrator.getInstance().getValue<number>('QUEUE_BATCH_SIZE') ?? 10
       const aiTemperature =
-        ConfigOrchestrator.getInstance().getValue<number>('MODEL_TEMPERATURE') ?? 0.7
+        ConfigOrchestrator.getInstance().getValue<number>('MODEL_TEMPERATURE') ?? 0.2
       const aiMaxTokens =
         ConfigOrchestrator.getInstance().getValue<number>('MODEL_MAX_TOKENS') ?? 2048
       const aiTimeout =
