@@ -896,9 +896,6 @@ export class TagTreeQuery {
         return fallbackName || code
       }
 
-      // 建立 tagNameCountMap 与 tagNameFilesMap，用于名称层面的关联兜底
-      const tagNameCountMap = new Map<string, number>()
-      const tagNameFilesMap = new Map<string, Set<string>>()
       // 建立动态子标签映射：parentCode -> Array<{ code, name, meta, count }>
       const dynamicTagsByParent = new Map<
         string,
@@ -912,24 +909,7 @@ export class TagTreeQuery {
 
       for (const t of tagRows) {
         const count = tagCountMap.get(t.code) || 0
-        const files = tagFilesMap.get(t.code)
         const resolvedName = aliasResolver(t.code, t.name)
-        if (files) {
-          if (resolvedName) {
-            if (!tagNameFilesMap.has(resolvedName)) tagNameFilesMap.set(resolvedName, new Set())
-            for (const f of files) tagNameFilesMap.get(resolvedName)!.add(f)
-          }
-          if (t.name && t.name !== resolvedName) {
-            if (!tagNameFilesMap.has(t.name)) tagNameFilesMap.set(t.name, new Set())
-            for (const f of files) tagNameFilesMap.get(t.name)!.add(f)
-          }
-        }
-        if (resolvedName) {
-          tagNameCountMap.set(resolvedName, tagNameFilesMap.get(resolvedName)?.size || count)
-        }
-        if (t.name && t.name !== resolvedName) {
-          tagNameCountMap.set(t.name, tagNameFilesMap.get(t.name)?.size || count)
-        }
         let parents: string[] = []
         try {
           parents = JSON.parse(t.parent_codes || '[]')
@@ -1210,16 +1190,10 @@ export class TagTreeQuery {
               const computeNodeSubtreeFiles = (node: OmniTaxonomyNode): Set<string> => {
                 const fileSet = new Set<string>()
 
-                // 1. 本节点自身命中文件（基于当前工作区与目录作用域的 tagFilesMap）
+                // 1. 本节点自身命中文件（基于当前工作区与目录作用域的 tagFilesMap，100% 遵从受控 Code）
                 const directFiles = tagFilesMap.get(node.code)
                 if (directFiles) {
                   for (const f of directFiles) fileSet.add(f)
-                }
-                if (node.name) {
-                  const byName = tagNameFilesMap.get(node.name)
-                  if (byName) {
-                    for (const f of byName) fileSet.add(f)
-                  }
                 }
 
                 // 2. 本地数据库中归属于当前 node.code 的动态扩展标签（含多级递归）
@@ -1266,14 +1240,7 @@ export class TagTreeQuery {
                         tagParentCountMap.get(`${code}::${parentCode}`) ??
                         tagCountMap.get(code) ??
                         0)
-                  if (
-                    subtreeFiles === undefined &&
-                    count === 0 &&
-                    child.name &&
-                    tagNameCountMap.has(child.name)
-                  ) {
-                    count = tagNameCountMap.get(child.name)!
-                  }
+
                   // 直通透传：优先采用 Omni 已物化的 codePath / namePath（spec §3.4.1），
                   // 仅在 Omni 未回填时按父链兜底拼接，杜绝「组装后打平再递归拼树」的双重损耗。
                   const currentCodePath = child.codePath || `${parentCodePath}/${child.code}`
