@@ -12,7 +12,7 @@ import { ChildProcess, spawn } from 'node:child_process'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
 import { app, BrowserWindow } from 'electron'
-import { ResourceLocator, logger, LogCategory, APP_PORTS, findAvailablePort } from '@firefly/shared'
+import { ResourceLocator, logger, LogCategory, APP_PORTS, findAvailablePort, isPathEqual } from '@firefly/shared'
 import { MagikaFileCategory } from '@firefly/types'
 import { resolveAnalysisTimeoutBudget } from './analysis-timeout-policy'
 
@@ -891,14 +891,69 @@ export class OmniService {
     }
 
     try {
-      // 探活检查：优先检查基准端口 38200 上是否已有外部或前序 Omni 服务正常响应，若有直接复用
-      this.actualPort = this.basePort
-      this.baseUrl = `http://127.0.0.1:${this.basePort}`
-      process.env.OMNI_ACTUAL_PORT = String(this.basePort)
+      // 获取业务主库 SQLite 绝对路径，用于 Worktree 隔离校验 (ADR-0035 & ADR-0038)
+      const { databaseService } = await import('../database/database-service')
+      const dbPath = databaseService.getDbPath()
+      const expectedVectorsDir = dbPath ? path.join(path.dirname(dbPath), 'vectors') : null
 
-      const isAliveBase = await this.checkHealth()
-      if (isAliveBase) {
-        logger.info(LogCategory.SYSTEM, `[OmniService] 检测到已在 ${this.basePort} 运行的 Omni 服务 (${this.baseUrl})，直接连接复用，并同步最新配置`)
+      const verifyOmniInstance = async (port: number): Promise<boolean> => {
+        try {
+          const res = await fetch(`http://127.0.0.1:${port}/api/v1/engine/status`, {
+            signal: AbortSignal.timeout(1000)
+          })
+          if (!res.ok) return false
+          const data = await res.json()
+          if (!data || data.status !== 'ok') return false
+
+          // 若当前处于开发或 Worktree 隔离环境，严格校验向量库与主库路径一致性，绝不盲目跨 Worktree 复用
+          if (expectedVectorsDir) {
+            if (!data.targetVectorsDir) {
+              logger.warn(
+                LogCategory.SYSTEM,
+                `[OmniService] 端口 ${port} 上的 Omni 未透出 targetVectorsDir（可能为遗留旧版本），当前期望 "${expectedVectorsDir}"，拒绝盲目复用`
+              )
+              return false
+            }
+            if (!isPathEqual(data.targetVectorsDir, expectedVectorsDir)) {
+              logger.warn(
+                LogCategory.SYSTEM,
+                `[OmniService] 端口 ${port} 上的 Omni 向量目录不匹配: 当前期望 "${expectedVectorsDir}", 远程服务绑定 "${data.targetVectorsDir}"，拒绝盲目复用`
+              )
+              return false
+            }
+          }
+          if (dbPath && data.masterDbPath) {
+            if (!isPathEqual(data.masterDbPath, dbPath)) {
+              logger.warn(
+                LogCategory.SYSTEM,
+                `[OmniService] 端口 ${port} 上的 Omni 主库路径不匹配: 当前期望 "${dbPath}", 远程服务绑定 "${data.masterDbPath}"，拒绝盲目复用`
+              )
+              return false
+            }
+          }
+          return true
+        } catch {
+          return false
+        }
+      }
+
+      // 探活检查：在冷门段 38200~38219 寻找属于当前 Worktree 的运行中 Omni 实例
+      let matchedPort: number | null = null
+      for (let p = this.basePort; p < this.basePort + APP_PORTS.MAX_ATTEMPTS; p++) {
+        if (await verifyOmniInstance(p)) {
+          matchedPort = p
+          break
+        }
+      }
+
+      if (matchedPort !== null) {
+        this.actualPort = matchedPort
+        this.baseUrl = `http://127.0.0.1:${matchedPort}`
+        process.env.OMNI_ACTUAL_PORT = String(matchedPort)
+        logger.info(
+          LogCategory.SYSTEM,
+          `[OmniService] 成功匹配并复用当前 Worktree 专属 Omni 服务 (Port: ${matchedPort}, ${this.baseUrl})，同步最新配置`
+        )
         this.restartAttempts = 0
         this.isStarting = false
         this.spawnedBinarySignature = this.binarySignature(exePath)
@@ -912,35 +967,19 @@ export class OmniService {
         return true
       }
 
-      // 若基准端口未通且存在旧的未退出子进程，先执行安全清理（仅终止物理进程，不重置 isStarting 标记）
+      // 若未找到属于当前 Worktree 的运行中实例，且存在旧的未退出子进程，先执行安全清理（仅终止物理进程，不重置 isStarting 标记）
       if (this.process && !this.process.killed) {
         this.killCurrentProcess()
         await new Promise(r => setTimeout(r, 300))
       }
       this.isStarting = true
 
-      // 寻找可用端口（支持冷门段 38200~38219 自动滑动）
+      // 寻找可用端口（支持冷门段 38200~38219 自动滑动，避让其他 Worktree 的 Omni 服务）
       const port = await findAvailablePort(this.basePort, APP_PORTS.MAX_ATTEMPTS)
       this.actualPort = port
       this.baseUrl = `http://127.0.0.1:${port}`
       // 将实际端口写入环境变量，供 DuplicateDetectionService 等跨服务读取
       process.env.OMNI_ACTUAL_PORT = String(port)
-
-      // 探活检查：如果该端口上已有外部 omni 服务正常响应，则直接复用
-      const isAlive = await this.checkHealth()
-      if (isAlive) {
-        logger.info(LogCategory.SYSTEM, `[OmniService] 检测到已在 ${port} 运行的 Omni 服务 (${this.baseUrl})，直接连接复用，并同步最新配置`)
-        this.restartAttempts = 0
-        this.isStarting = false
-        this.spawnedBinarySignature = this.binarySignature(exePath)
-        this.lastSpawnedAt = Date.now()
-        this.pendingUpdateSignature = null
-        this.pendingUpdateSince = 0
-        this.startDevBinaryWatch()
-        this.syncConfigFromDesktop().catch(() => {})
-        this.notifyReady()
-        return true
-      }
 
       logger.info(LogCategory.SYSTEM, `[OmniService] 正在拉起 firefly-omni 守护进程 (Port: ${port}): ${exePath}`)
       const isDevMode = !app?.isPackaged || process.env.NODE_ENV !== 'production'
@@ -956,9 +995,6 @@ export class OmniService {
         RUST_LOG: process.env.RUST_LOG || (isDevMode ? 'info,omni_vision=info,omni_server=info,omni_text=info' : 'warn')
       }
 
-      // 获取业务主库 SQLite 绝对路径与只读语义包路径，以两个独立参数透传给 Omni (ADR-0035 & ADR-0038)
-      const { databaseService } = await import('../database/database-service')
-      const dbPath = databaseService.getDbPath()
 
       const candidatePackPaths = [
         ResourceLocator.resolveResourcePath?.('semantic/semantic.pack'),
@@ -999,9 +1035,11 @@ export class OmniService {
       const spawnArgs = ['serve', '-a', `127.0.0.1:${port}`]
       if (dbPath) {
         spawnArgs.push('--db-path', dbPath)
+        env.OMNI_DB_PATH = dbPath
         logger.info(LogCategory.SYSTEM, `[OmniService] 🎯 业务主库路径 (--db-path): ${dbPath}`)
-        const vectorsDir = path.join(path.dirname(dbPath), 'vectors')
+        const vectorsDir = expectedVectorsDir || path.join(path.dirname(dbPath), 'vectors')
         spawnArgs.push('--vectors-path', vectorsDir)
+        env.OMNI_VECTORS_PATH = vectorsDir
         logger.info(LogCategory.SYSTEM, `[OmniService] 🎯 矢量数据隔离路径 (--vectors-path): ${vectorsDir}`)
       }
       if (packPath) {
@@ -1170,9 +1208,9 @@ export class OmniService {
 
       this.process = child
 
-      // 等待服务就绪探活 (最多 200 次 * 200ms = 40秒，容纳 71.6 万条多语言别名冷启动解密热载与 SenseVoice/MOSS-TTS 模型加载时间)
-      for (let i = 0; i < 200; i++) {
-        // 关键防御：若子进程在探活期间提前退出或被终止，立即中止等待，拒绝僵尸死等 40s 阻塞系统
+      // 等待服务就绪探活 (最多 400 次 * 200ms = 80秒，容纳 71.6 万条多语言别名冷启动解密热载与 SenseVoice/MOSS-TTS 多模型并发加载时间)
+      for (let i = 0; i < 400; i++) {
+        // 关键防御：若子进程在探活期间提前退出或被终止，立即中止等待，拒绝僵尸死等 80s 阻塞系统
         // 物理事实守卫：仅当子进程真正退出 (exitCode !== null) 或被显式 kill 时才判定为退出，杜绝状态位竞争引发的假性误杀
         if (child.exitCode !== null || child.killed) {
           logger.warn(
@@ -1203,7 +1241,7 @@ export class OmniService {
         }
       }
 
-      logger.error(LogCategory.SYSTEM, `[OmniService] firefly-omni 启动探活超时 (40s)，终止当前未就绪子进程`)
+      logger.error(LogCategory.SYSTEM, `[OmniService] firefly-omni 启动探活超时 (80s)，终止当前未就绪子进程`)
       this.stop()
       this.isStarting = false
       // 启动失败（探活超时），推送"未运行"状态
