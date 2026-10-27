@@ -269,9 +269,10 @@ export class OrganizeRealDirectoryService {
    */
   async getLightweightWorkspaceFiles(
     workspaceDirectoryPathOrId: string | number,
-    selectedFileIds?: number[]
+    selectedFileIds?: number[],
+    limit?: number
   ): Promise<LightweightFileItem[]> {
-    return this.databaseHelper.getLightweightWorkspaceFiles(workspaceDirectoryPathOrId, selectedFileIds)
+    return this.databaseHelper.getLightweightWorkspaceFiles(workspaceDirectoryPathOrId, selectedFileIds, limit)
   }
 
   /**

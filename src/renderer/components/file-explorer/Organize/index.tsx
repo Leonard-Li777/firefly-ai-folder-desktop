@@ -166,7 +166,8 @@ export const Organize: React.FC = () => {
     capacityExceededCount,
     showCapacityLimitDialog,
     setShowCapacityLimitDialog,
-    handleGoToAnalyzedPage
+    handleGoToAnalyzedPage,
+    handleLimitToFirst3000Files
   } = useOrganizeState()
 
   const isStandaloneStage = stage === 'batch-rename' || stage === 'batch-duplicate'
@@ -683,24 +684,34 @@ export const Organize: React.FC = () => {
         </div>
 
         {isCapacityExceeded && (
-          <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 flex items-center justify-between text-xs text-amber-600 dark:text-amber-400 shrink-0">
+          <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 flex items-center justify-between text-xs text-amber-600 dark:text-amber-400 shrink-0">
             <div className="flex items-center gap-2 min-w-0">
-              <MaterialIcon icon="warning" className="text-sm shrink-0" />
+              <MaterialIcon icon="dataset" className="text-base shrink-0 text-amber-500" />
               <span className="truncate">
-                {t('当前待整理文件数量（{count} 个）超出单次整理上限（3,000 个）。请前往「已分析」页面手动勾选目标文件。', {
+                {t('待整理文件较多（共 {count} 个，超出单批建议 3,000 个）。您可以仅整理前 3,000 个或前往手动筛选：', {
                   count: capacityExceededCount
                 })}
               </span>
             </div>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleGoToAnalyzedPage}
-              className="h-6 text-[11px] px-2 border-amber-500/30 hover:bg-amber-500/10 text-amber-600 dark:text-amber-400 shrink-0"
-            >
-              <MaterialIcon icon="checklist" className="mr-1 text-xs" />
-              {t('前往勾选')}
-            </Button>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                size="sm"
+                onClick={handleLimitToFirst3000Files}
+                className="h-6 text-[11px] px-2.5 bg-amber-500 hover:bg-amber-600 text-white font-medium shadow-xs"
+              >
+                <MaterialIcon icon="bolt" className="mr-1 text-xs" />
+                {t('仅整理前 3,000 个 (即刻开始)')}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleGoToAnalyzedPage}
+                className="h-6 text-[11px] px-2 border-amber-500/30 hover:bg-amber-500/10 text-amber-600 dark:text-amber-400"
+              >
+                <MaterialIcon icon="checklist" className="mr-1 text-xs" />
+                {t('前往手动筛选')}
+              </Button>
+            </div>
           </div>
         )}
 
@@ -1150,33 +1161,98 @@ export const Organize: React.FC = () => {
         onSuccess={handleRegenerateSaveAfterFirecoreConfirm}
       />
       <Dialog open={showCapacityLimitDialog} onOpenChange={setShowCapacityLimitDialog}>
-        <DialogContent className="sm:max-w-[460px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-destructive font-bold">
-              <MaterialIcon icon="error_outline" className="text-destructive text-xl" />
-              {t('待整理文件超出单次上限')}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="py-3 text-sm text-muted-foreground leading-relaxed">
-            {t(
-              '当前待整理文件共包含 {count} 个，超出单次批量整理最佳负荷（3,000 个）。为保障系统响应速度与 AI 归类质量，请前往「已分析」页面手动勾选目标文件后再发起整理。',
-              { count: capacityExceededCount }
-            )}
+        <DialogContent className="sm:max-w-[540px] p-0 overflow-hidden border border-border shadow-2xl rounded-2xl">
+          {/* 顶栏：暖色调柔和警示与规模量化 */}
+          <div className="px-6 pt-5 pb-4 border-b border-border bg-amber-500/5">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500 shrink-0 mt-0.5">
+                <MaterialIcon icon="dataset" className="text-2xl" />
+              </div>
+              <div className="flex-1">
+                <DialogTitle className="text-base font-semibold text-foreground flex items-center gap-2 flex-wrap">
+                  {t('待整理文件规模较大')}
+                  <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                    {t('共 {count} 个文件', { count: capacityExceededCount })}
+                  </span>
+                </DialogTitle>
+                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                  {t('为保障 AI 深度聚类质量与秒级响应，建议单次整理控制在 3,000 个文件以内。请选择适合本次整理的执行方案：')}
+                </p>
+              </div>
+            </div>
           </div>
-          <DialogFooter className="flex-row justify-end gap-2 pt-2">
-            <Button
-              variant="outline"
-              onClick={() => setShowCapacityLimitDialog(false)}
-              className="text-xs"
+
+          {/* 主体：两大核心策略卡片 */}
+          <div className="p-6 space-y-3">
+            {/* 卡片 1：无阻断推荐 - 仅整理前 3,000 个文件 */}
+            <div
+              onClick={handleLimitToFirst3000Files}
+              className="group relative border-2 border-primary/50 bg-primary/5 hover:bg-primary/10 hover:border-primary rounded-xl p-4 cursor-pointer transition-all duration-200 shadow-sm"
             >
-              {t('留在当前页')}
-            </Button>
-            <Button
+              <div className="absolute -top-2.5 right-4 bg-primary text-primary-foreground text-[11px] font-bold px-2 py-0.5 rounded-full shadow-sm flex items-center gap-0.5">
+                <MaterialIcon icon="bolt" className="text-xs" />
+                {t('推荐 · 即刻开始')}
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-primary/20 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                  <MaterialIcon icon="filter_3" className="text-lg" />
+                </div>
+                <div className="flex-1 pr-14">
+                  <div className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                    {t('仅整理前 3,000 个文件')}
+                    <span className="text-[11px] font-medium text-primary">({t('不阻塞流程')})</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                    {t('优先载入前 3,000 个文件进行 AI 聚类与分类推导。其余 {rest} 个文件安全保留原样，后续可继续分批整理。', {
+                      rest: Math.max(0, capacityExceededCount - 3000)
+                    })}
+                  </p>
+                  <div className="mt-2 flex items-center gap-1.5 text-xs text-primary font-medium">
+                    <MaterialIcon icon="check_circle" className="text-sm" />
+                    <span>{t('即刻进入整理流程，无需手动逐个挑选')}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 卡片 2：精细筛选 - 前往已分析页面自定义勾选 */}
+            <div
               onClick={handleGoToAnalyzedPage}
-              className="text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground"
+              className="group border border-border hover:border-primary/40 hover:bg-accent/40 rounded-xl p-4 cursor-pointer transition-all duration-200"
             >
-              <MaterialIcon icon="checklist" className="mr-1 text-sm" />
-              {t('前往「已分析」页面勾选')}
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-accent text-muted-foreground group-hover:text-foreground flex items-center justify-center shrink-0 mt-0.5 transition-colors">
+                  <MaterialIcon icon="checklist" className="text-lg" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm font-semibold text-foreground">
+                    {t('前往「已分析」页面手动筛选')}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                    {t('按维度标签、文件大类（如仅图片/文档）或指定子目录自由组合勾选想要整理的目标文件集合。')}
+                  </p>
+                  <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <MaterialIcon icon="tune" className="text-sm" />
+                    <span>{t('适合需要针对特定类别进行精细化归档的场景')}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 底栏 */}
+          <DialogFooter className="px-6 py-3.5 border-t border-border bg-muted/20 flex-row items-center justify-between sm:justify-between">
+            <span className="text-xs text-muted-foreground flex items-center gap-1">
+              <MaterialIcon icon="info" className="text-sm text-primary" />
+              {t('点击卡片即可直接确认执行')}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowCapacityLimitDialog(false)}
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              {t('暂不整理，留在当前页')}
             </Button>
           </DialogFooter>
         </DialogContent>

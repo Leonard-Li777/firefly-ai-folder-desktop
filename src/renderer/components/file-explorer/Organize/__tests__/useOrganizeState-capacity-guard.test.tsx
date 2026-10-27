@@ -186,4 +186,46 @@ describe('useOrganizeState 3,000 容量硬上限与找补截断验证', () => {
     expect(callArgs.files[0].id).toBe(1)
     expect(callArgs.files[199].id).toBe(200)
   })
+
+  it('超限弹窗中选择仅整理前 3,000 个文件 (handleLimitToFirst3000Files) 时，成功拉取 3,000 个并解除阻断', async () => {
+    ;(window as any).electronAPI.organizeRealDirectory.getAnalyzedCount.mockResolvedValue(5200)
+    ;(window as any).electronAPI.virtualDirectory.getAnalyzedCount.mockResolvedValue(5200)
+
+    const mock3000 = Array.from({ length: 3000 }, (_, i) => ({
+      id: i + 1,
+      path: `/workspace/file_${i + 1}.txt`,
+      name: `file_${i + 1}.txt`,
+      smartName: `file_${i + 1}`,
+      extension: 'txt',
+      isAnalyzed: true
+    }))
+    ;(window as any).electronAPI.organizeRealDirectory.getLightweightFiles.mockResolvedValue(mock3000)
+
+    const { result } = renderHook(() => useOrganizeState(), { wrapper })
+
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 50))
+    })
+
+    // 初始状态触发超限
+    expect(result.current.isCapacityExceeded).toBe(true)
+    expect(result.current.showCapacityLimitDialog).toBe(true)
+    expect(result.current.toOrganizeFiles.length).toBe(0)
+
+    // 用户在弹窗中选择“仅整理前 3,000 个文件”
+    await act(async () => {
+      await result.current.handleLimitToFirst3000Files()
+    })
+
+    // 验证解除阻断
+    expect((window as any).electronAPI.organizeRealDirectory.getLightweightFiles).toHaveBeenCalledWith(
+      '/workspace',
+      undefined,
+      3000
+    )
+    expect(result.current.toOrganizeFiles.length).toBe(3000)
+    expect(result.current.isCapacityExceeded).toBe(false)
+    expect(result.current.capacityExceededCount).toBe(0)
+    expect(result.current.showCapacityLimitDialog).toBe(false)
+  })
 })

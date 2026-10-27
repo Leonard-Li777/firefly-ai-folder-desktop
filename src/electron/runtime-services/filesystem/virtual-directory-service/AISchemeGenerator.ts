@@ -825,59 +825,179 @@ export class AISchemeGenerator {
     )
 
     const files: VirtualDirectoryFileInput[] = []
-    const directoryPaths = new Map<string, string>()
+    const seenMap = new Set<string>()
 
-    // 构建目录路径映射 (与 OrganizeRealDirectoryService 逻辑对齐，防环并统一正斜杠)
-    const buildPath = (dirId: string, visited = new Set<string>()): string => {
-      if (directoryPaths.has(dirId)) return directoryPaths.get(dirId)!
-      if (visited.has(dirId)) return ''
-      visited.add(dirId)
-      const dir = structure.directories.find(d => (d.id || d.name) === dirId)
-      if (!dir) return ''
-      const parentPath = dir.parent ? buildPath(dir.parent, visited) : ''
-      const safeDirName = sanitizeFolderName(dir.name || '', DEFAULT_CLUSTER_FALLBACK_NAME)
-      const joined = parentPath ? `${parentPath}/${safeDirName}` : safeDirName
-      const fullPath = joined.replace(/\\/g, '/').replace(/\/+/g, '/')
-      directoryPaths.set(dirId, fullPath)
-      return fullPath
+    const rawDirs = structure.directories || []
+    if (rawDirs.length === 0) {
+      await this.provider.replaceFiles(vd.id, files)
+      return vd
     }
 
-    for (const dir of structure.directories) {
-      const relativeDirPath = buildPath(dir.id || dir.name)
-      if (dir.files && Array.isArray(dir.files)) {
-        for (const file of dir.files) {
-          let fileId: number | undefined
-          let fileName: string | undefined
+    // 寻找保底锚点文件（用于空叶目录占位 .keep 记录）
+    let anchorFile: { fileId: number; fileFingerprint: string } | undefined
 
-          if (typeof file === 'object' && file && file.id) {
-            fileId = file.id
-            fileName = file.name || file.smartName || `file_${file.id}`
-          } else if (typeof file === 'string') {
-            const foundRow = this.provider.db
-              .prepare('SELECT id, file_fingerprint FROM workspace_files WHERE workspace_id = ? AND (name = ? OR path LIKE ?) LIMIT 1')
-              .get(workspaceId, file, `%/${file}`) as { id: number; file_fingerprint: string } | undefined
-            if (foundRow) {
-              fileId = foundRow.id
-              fileName = file
+    const findAnchor = (nodes: any[]) => {
+      for (const n of nodes || []) {
+        if (!n) continue
+        const nFiles = [
+          ...(Array.isArray(n.files) ? n.files : []),
+          ...(Array.isArray(n.rootFiles) ? n.rootFiles : [])
+        ]
+        for (const f of nFiles) {
+          if (typeof f === 'object' && f) {
+            const fid = f.id ?? f.fileId ?? f.file_id
+            const fp = f.fileFingerprint ?? f.file_fingerprint
+            if (fid && fp) {
+              anchorFile = { fileId: Number(fid), fileFingerprint: String(fp) }
+              return
             }
           }
+        }
+        if (Array.isArray(n.subdirectories) && n.subdirectories.length > 0) {
+          findAnchor(n.subdirectories)
+          if (anchorFile) return
+        }
+      }
+    }
+    findAnchor(rawDirs)
 
-          if (fileId) {
+    if (!anchorFile && this.provider.db) {
+      const row = this.provider.db
+        .prepare('SELECT id, file_fingerprint FROM workspace_files WHERE workspace_id = ? LIMIT 1')
+        .get(workspaceId) as { id: number; file_fingerprint: string } | undefined
+      if (row) {
+        anchorFile = { fileId: row.id, fileFingerprint: row.file_fingerprint }
+      }
+    }
+
+    // 判断是嵌套树结构 (Nested Tree) 还是扁平父子列表 (Flat List with parent pointers)
+    const isNestedTree = rawDirs.some(
+      d => Array.isArray((d as any).subdirectories) && (d as any).subdirectories.length > 0
+    )
+
+    let rootNodes: any[] = []
+    if (isNestedTree) {
+      rootNodes = rawDirs
+    } else {
+      // 检查是否存在通过 parent 字段关联的扁平结构 (旧 AI 规划输出)
+      const hasParentPointers = rawDirs.some(
+        d => Boolean(d.parent) && rawDirs.some(p => (p.id || p.name) === d.parent)
+      )
+      if (hasParentPointers) {
+        // 将扁平结构转为嵌套树以统一递归遍历
+        const nodeMap = new Map<string, any>()
+        for (const d of rawDirs) {
+          nodeMap.set(d.id || d.name, { ...d, subdirectories: [...((d as any).subdirectories || [])] })
+        }
+        for (const node of nodeMap.values()) {
+          if (!node.parent || !nodeMap.has(node.parent)) {
+            rootNodes.push(node)
+          } else {
+            const parent = nodeMap.get(node.parent)!
+            parent.subdirectories.push(node)
+          }
+        }
+      } else {
+        rootNodes = rawDirs
+      }
+    }
+
+    // 递归遍历树节点并解析各层级文件相对路径
+    const traverseNode = (node: any, currentPath: string) => {
+      if (!node) return
+      const rawName = node.name || node.id || ''
+      const safeDirName = sanitizeFolderName(rawName, DEFAULT_CLUSTER_FALLBACK_NAME).trim()
+      if (!safeDirName) return
+
+      const dirPath = currentPath ? `${currentPath}/${safeDirName}` : safeDirName
+      const normalizedDirPath = dirPath.replace(/\\/g, '/').replace(/\/+/g, '/')
+
+      const nodeFiles = [
+        ...(Array.isArray(node.files) ? node.files : []),
+        ...(Array.isArray(node.rootFiles) ? node.rootFiles : [])
+      ]
+
+      let validFilesCount = 0
+      for (const file of nodeFiles) {
+        let fileId: number | undefined
+        let fileName: string | undefined
+        let fileFingerprint: string | undefined
+
+        if (typeof file === 'object' && file) {
+          fileId = file.id ?? file.fileId ?? file.file_id
+          fileName =
+            file.name ||
+            file.smartName ||
+            file.smart_name ||
+            (file.originalPath ? path.basename(file.originalPath) : '') ||
+            (file.path ? path.basename(file.path) : '') ||
+            (fileId ? `file_${fileId}` : undefined)
+          fileFingerprint = file.fileFingerprint ?? file.file_fingerprint
+        } else if (typeof file === 'string') {
+          const foundRow = this.provider.db
+            ?.prepare(
+              'SELECT id, file_fingerprint FROM workspace_files WHERE workspace_id = ? AND (name = ? OR path LIKE ?) LIMIT 1'
+            )
+            .get(workspaceId, file, `%/${file}`) as
+            | { id: number; file_fingerprint: string }
+            | undefined
+          if (foundRow) {
+            fileId = foundRow.id
+            fileName = file
+            fileFingerprint = foundRow.file_fingerprint
+          }
+        }
+
+        if (fileId) {
+          if (!fileFingerprint && this.provider.db) {
             const dbFile = this.provider.db
               .prepare('SELECT file_fingerprint FROM workspace_files WHERE id = ?')
               .get(fileId) as { file_fingerprint: string } | undefined
             if (dbFile) {
-              const safeName = fileName || `file_${fileId}`
-              const rawRel = relativeDirPath ? `${relativeDirPath}/${safeName}` : safeName
+              fileFingerprint = dbFile.file_fingerprint
+            }
+          }
+
+          if (fileFingerprint) {
+            const safeName = fileName || `file_${fileId}`
+            const rawRel = normalizedDirPath ? `${normalizedDirPath}/${safeName}` : safeName
+            const finalRel = rawRel.replace(/\\/g, '/').replace(/\/+/g, '/')
+            const key = `${fileId}::${finalRel}`
+            if (!seenMap.has(key)) {
+              seenMap.add(key)
               files.push({
-                fileId,
-                fileFingerprint: dbFile.file_fingerprint,
-                relativePath: rawRel.replace(/\\/g, '/').replace(/\/+/g, '/')
+                fileId: Number(fileId),
+                fileFingerprint: String(fileFingerprint),
+                relativePath: finalRel
               })
+              validFilesCount++
             }
           }
         }
       }
+
+      const subdirs = Array.isArray(node.subdirectories) ? node.subdirectories : []
+      for (const sub of subdirs) {
+        traverseNode(sub, normalizedDirPath)
+      }
+
+      // 空叶目录生成 .keep 占位文件，确保虚拟目录快照呈现完整目录树
+      if (validFilesCount === 0 && subdirs.length === 0 && anchorFile) {
+        const keepRel = `${normalizedDirPath}/.keep`
+        const keepKey = `${anchorFile.fileId}::${keepRel}`
+        if (!seenMap.has(keepKey)) {
+          seenMap.add(keepKey)
+          files.push({
+            fileId: anchorFile.fileId,
+            fileFingerprint: anchorFile.fileFingerprint,
+            relativePath: keepRel
+          })
+        }
+      }
+    }
+
+    for (const root of rootNodes) {
+      traverseNode(root, '')
     }
 
     await this.provider.replaceFiles(vd.id, files)

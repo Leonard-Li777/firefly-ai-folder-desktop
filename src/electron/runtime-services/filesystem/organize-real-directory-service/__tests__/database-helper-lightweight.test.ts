@@ -115,4 +115,28 @@ describe('DatabaseHelper 轻量投影与极速统计回归测试 (ABI-safe Mock)
     expect(capturedSql).toContain('wf.id IN (SELECT value FROM json_each(?))')
     expect(capturedParams).toEqual([1, JSON.stringify([101, 102])])
   })
+
+  it('getLightweightWorkspaceFiles 传入 limit 时，正确在 SQL 中追加 LIMIT ? 并参数化绑定', async () => {
+    let capturedSql = ''
+    let capturedParams: any[] = []
+
+    const mockDb: any = {
+      prepare: vi.fn((sql: string) => {
+        capturedSql = sql
+        return {
+          all: (...params: any[]) => {
+            capturedParams = params
+            return [{ id: 1, path: 'D:\\test\\1.txt', name: '1.txt', smartName: null, extension: 'txt' }]
+          }
+        }
+      })
+    }
+
+    const helper = new DatabaseHelper(mockDb)
+    const files = await helper.getLightweightWorkspaceFiles(1, undefined, 3000)
+
+    expect(files).toHaveLength(1)
+    expect(capturedSql).toContain('ORDER BY wf.path ASC LIMIT ?')
+    expect(capturedParams).toEqual([1, 3000])
+  })
 })

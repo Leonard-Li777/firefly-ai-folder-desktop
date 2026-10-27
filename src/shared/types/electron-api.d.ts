@@ -736,7 +736,7 @@ declare global {
         ) => Promise<SavedVirtualDirectory[]>
         getSavedVirtualDirectoriesByPath: (workspaceDirectoryPath: string) => Promise<SavedVirtualDirectory[]>
         getAnalyzedFiles: (workspaceDirectoryPath: string, selectedFileIds?: number[]) => Promise<Array<{ id: number; path: string; name: string; smartName: string | null; extension: string | null }>>
-        getLightweightFiles: (workspaceDirectoryPath: string, selectedFileIds?: number[]) => Promise<Array<{ id: number; path: string; name: string; smartName: string | null; extension: string | null }>>
+        getLightweightFiles: (workspaceDirectoryPath: string, selectedFileIds?: number[], limit?: number) => Promise<Array<{ id: number; path: string; name: string; smartName: string | null; extension: string | null }>>
         getAnalyzedCount: (workspaceDirectoryPath: string) => Promise<number>
         matchPerspectivesAndStructures: (request: any) => Promise<any>
         calculateFilePathsCosine: (request: any) => Promise<any>

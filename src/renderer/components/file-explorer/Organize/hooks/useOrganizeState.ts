@@ -212,7 +212,7 @@ export function useOrganizeState() {
   const [capacityExceededCount, setCapacityExceededCount] = useState(0)
   const [showCapacityLimitDialog, setShowCapacityLimitDialog] = useState(false)
 
-  const handleGoToAnalyzedPage = useCallback(() => {
+    const handleGoToAnalyzedPage = useCallback(() => {
     setShowCapacityLimitDialog(false)
     navigate('/analyzed', {
       state: {
@@ -221,6 +221,49 @@ export function useOrganizeState() {
       }
     })
   }, [navigate, currentWorkspaceDirectory?.id])
+
+  const handleLimitToFirst3000Files = useCallback(async () => {
+    let workspace = currentWorkspaceDirectory
+    if (!workspace?.path) {
+      const currentDir = await window.electronAPI!.getCurrentWorkspaceDirectory()
+      if (currentDir) {
+        workspace = currentDir
+      }
+    }
+    if (!workspace?.path) return
+
+    setIsLoadingFiles(true)
+    setShowCapacityLimitDialog(false)
+    try {
+      const result = await window.electronAPI!.organizeRealDirectory.getLightweightFiles(
+        workspace.path,
+        undefined,
+        3000
+      )
+      const formatted = (result || []).map((f: any) => {
+        let ext = f.extension
+        if (!ext && f.path) {
+          const parts = f.path.split(/[\\/]/).pop()?.split('.')
+          if (parts && parts.length > 1) {
+            ext = parts.pop()?.toLowerCase()
+          }
+        }
+        return {
+          ...f,
+          extension: ext || ''
+        }
+      })
+      setAllWorkspaceFiles(formatted)
+      setIsCapacityExceeded(false)
+      setCapacityExceededCount(0)
+      toast.success(t('已载入前 3,000 个文件，其余文件保留原样待后续整理'))
+    } catch (err) {
+      logger.error(LogCategory.FILE_ORGANIZATION, '获取限制文件列表失败:', err)
+      toast.error(t('获取待整理文件列表失败，请查看日志确认'))
+    } finally {
+      setIsLoadingFiles(false)
+    }
+  }, [currentWorkspaceDirectory])
 
   const loadFilesToOrganize = useCallback(async () => {
     // 如果工作目录尚未恢复，先尝试从后端获取
@@ -3214,6 +3257,7 @@ export function useOrganizeState() {
     capacityExceededCount,
     showCapacityLimitDialog,
     setShowCapacityLimitDialog,
-    handleGoToAnalyzedPage
+        handleGoToAnalyzedPage,
+    handleLimitToFirst3000Files
   }
 }

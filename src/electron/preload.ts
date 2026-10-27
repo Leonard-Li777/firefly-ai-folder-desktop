@@ -1044,11 +1044,12 @@ const electronAPI = {
         workspaceDirectoryPath,
         selectedFileIds
       ),
-    getLightweightFiles: (workspaceDirectoryPath: string, selectedFileIds?: number[]) =>
+    getLightweightFiles: (workspaceDirectoryPath: string, selectedFileIds?: number[], limit?: number) =>
       ipcRenderer.invoke(
         'organize-real-directory/get-lightweight-files',
         workspaceDirectoryPath,
-        selectedFileIds
+        selectedFileIds,
+        limit
       ),
     getAnalyzedCount: (workspaceDirectoryPath: string) =>
       ipcRenderer.invoke('organize-real-directory/get-analyzed-count', workspaceDirectoryPath),

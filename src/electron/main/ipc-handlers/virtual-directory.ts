@@ -885,11 +885,12 @@ export function registerVirtualDirectoryIPCHandlers() {
 
   ipcMain.handle(
     'organize-real-directory/get-lightweight-files',
-    async (event, workspaceDirectoryPath: string, selectedFileIds?: number[]) => {
+    async (event, workspaceDirectoryPath: string, selectedFileIds?: number[], limit?: number) => {
       if (!organizeRealDirectoryService) throw new Error(t('整理真实目录服务未初始化'))
       return await organizeRealDirectoryService.getLightweightWorkspaceFiles(
         workspaceDirectoryPath,
-        selectedFileIds
+        selectedFileIds,
+        limit
       )
     }
   )

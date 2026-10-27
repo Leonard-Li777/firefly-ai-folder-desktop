@@ -200,7 +200,8 @@ export class DatabaseHelper {
    */
   async getLightweightWorkspaceFiles(
     workspaceDirectoryPathOrId: string | number,
-    selectedFileIds?: number[]
+    selectedFileIds?: number[],
+    limit?: number
   ): Promise<LightweightFileItem[]> {
     let workspaceId: number | undefined
     let workspacePath = ''
@@ -232,10 +233,10 @@ export class DatabaseHelper {
             AND wf.is_analyzed = 1
             AND (wf.status IS NULL OR wf.status = 1)
             AND wf.id IN (SELECT value FROM json_each(?))
-          ORDER BY wf.path ASC
+          ORDER BY wf.path ASC${limit && limit > 0 ? ' LIMIT ?' : ''}
         `
           )
-          .all(workspaceId, JSON.stringify(selectedFileIds)) as LightweightFileItem[]
+          .all(...(limit && limit > 0 ? [workspaceId, JSON.stringify(selectedFileIds), limit] : [workspaceId, JSON.stringify(selectedFileIds)])) as LightweightFileItem[]
       } else {
         const sep = path.sep
         const prefix = workspacePath.endsWith(sep) ? workspacePath : workspacePath + sep
@@ -254,10 +255,10 @@ export class DatabaseHelper {
             AND wf.is_analyzed = 1
             AND (wf.status IS NULL OR wf.status = 1)
             AND wf.id IN (SELECT value FROM json_each(?))
-          ORDER BY wf.path ASC
+          ORDER BY wf.path ASC${limit && limit > 0 ? ' LIMIT ?' : ''}
         `
           )
-          .all(`${prefix}%`, workspacePath, JSON.stringify(selectedFileIds)) as LightweightFileItem[]
+          .all(...(limit && limit > 0 ? [`${prefix}%`, workspacePath, JSON.stringify(selectedFileIds), limit] : [`${prefix}%`, workspacePath, JSON.stringify(selectedFileIds)])) as LightweightFileItem[]
       }
     }
 
@@ -276,10 +277,10 @@ export class DatabaseHelper {
         WHERE wf.workspace_id = ?
           AND wf.is_analyzed = 1
           AND (wf.status IS NULL OR wf.status = 1)
-        ORDER BY wf.path ASC
+        ORDER BY wf.path ASC${limit && limit > 0 ? ' LIMIT ?' : ''}
       `
         )
-        .all(workspaceId) as LightweightFileItem[]
+        .all(...(limit && limit > 0 ? [workspaceId, limit] : [workspaceId])) as LightweightFileItem[]
     } else {
       const sep = path.sep
       const prefix = workspacePath.endsWith(sep) ? workspacePath : workspacePath + sep
@@ -297,10 +298,10 @@ export class DatabaseHelper {
         WHERE (wf.path LIKE ? OR wf.path = ?)
           AND wf.is_analyzed = 1
           AND (wf.status IS NULL OR wf.status = 1)
-        ORDER BY wf.path ASC
+        ORDER BY wf.path ASC${limit && limit > 0 ? ' LIMIT ?' : ''}
       `
         )
-        .all(`${prefix}%`, workspacePath) as LightweightFileItem[]
+        .all(...(limit && limit > 0 ? [`${prefix}%`, workspacePath, limit] : [`${prefix}%`, workspacePath])) as LightweightFileItem[]
     }
   }
 
