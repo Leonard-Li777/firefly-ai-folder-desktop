@@ -268,7 +268,9 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
       () => [
         t('自然语言搜索文件...'),
         t('支持搜索文本、图片、音频、视频...'),
+        t('支持拼音和拼音首字母搜索...'),
         t('支持搜索未分析和已分析文件...'),
+        t('示例：红色跑车、hongsepaoche、hspc'),
         t('示例：上个月签署的采购合同 pdf'),
         t('示例：带红色印章的发票图片'),
         t('示例：周会录音或产品需求会议纪要'),
