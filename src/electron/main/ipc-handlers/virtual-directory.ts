@@ -16,7 +16,6 @@ import {
   organizeRealDirectoryService,
   reorganizePauseFlags,
   reorganizeEndFlags,
-  organizePlanAbortControllers,
   globalLlamaIndexService,
   directoryContextService,
   setDirectoryContextService,
@@ -577,6 +576,28 @@ export function registerVirtualDirectoryIPCHandlers() {
           message: t('AI 服务正在初始化中，请稍候再试')
         }
       }
+      // 容量断路器：LLM由文件推导目录模式单次上限 500 个文件（找补模式除外）
+      if (!options?.isRescue) {
+        let fileCount = options?.fileIds?.length ?? (options?.selectedFileIds?.length ?? (options?.files?.length ?? undefined))
+        if (fileCount === undefined) {
+          if (options?.workspaceDirectoryPath && organizeRealDirectoryService) {
+            fileCount = organizeRealDirectoryService.getWorkspaceAnalyzedFileCount(options.workspaceDirectoryPath)
+          } else if (virtualDirectoryId > 0 && virtualDirectoryService) {
+            fileCount = await virtualDirectoryService.getVirtualDirectoryFileCount(virtualDirectoryId)
+          }
+        }
+        if (fileCount !== undefined && fileCount > 500) {
+          logger.warn(LogCategory.MAIN, '[IPC] virtual-directory/reorganize: 文件数超限被拦截', { fileCount })
+          return {
+            success: false,
+            errorCode: 'ORGANIZE_CAPACITY_EXCEEDED',
+            limit: 500,
+            actual: fileCount,
+            message: t('当前待推导文件数（{count}）超出单次处理上限（500个），请在「已分析」页面勾选目标文件分批整理', { count: fileCount })
+          }
+        }
+      }
+
       reorganizePauseFlags.set(virtualDirectoryId, false)
       reorganizeEndFlags.set(virtualDirectoryId, false)
       return await virtualDirectoryService.reorganize(virtualDirectoryId, {
@@ -853,25 +874,33 @@ export function registerVirtualDirectoryIPCHandlers() {
   )
   ipcMain.handle(
     'organize-real-directory/get-analyzed-files',
-    async (event, workspaceDirectoryPath: string) => {
+    async (event, workspaceDirectoryPath: string, selectedFileIds?: number[]) => {
       if (!organizeRealDirectoryService) throw new Error(t('整理真实目录服务未初始化'))
-      return await organizeRealDirectoryService.getAnalyzedFiles(workspaceDirectoryPath)
+      return await organizeRealDirectoryService.getLightweightWorkspaceFiles(
+        workspaceDirectoryPath,
+        selectedFileIds
+      )
     }
   )
-  ipcMain.handle('organize-real-directory/quick-organize', async (event, params: any) => {
-    const license = await checkLicenseAndNotify(true)
-    if (license.status !== LicenseStatus.AUTHORIZED)
-      return {
-        success: false,
-        status: license.status,
-        message: license.error || t('授权校验失败，请联网或激活企业版后再执行此操作')
-      }
-    if (!organizeRealDirectoryService) throw new Error(t('整理真实目录服务未初始化'))
-    return await organizeRealDirectoryService.quickOrganize(
-      params.workspaceDirectoryPath,
-      params.aiGeneratedStructure as any
-    )
-  })
+
+  ipcMain.handle(
+    'organize-real-directory/get-lightweight-files',
+    async (event, workspaceDirectoryPath: string, selectedFileIds?: number[]) => {
+      if (!organizeRealDirectoryService) throw new Error(t('整理真实目录服务未初始化'))
+      return await organizeRealDirectoryService.getLightweightWorkspaceFiles(
+        workspaceDirectoryPath,
+        selectedFileIds
+      )
+    }
+  )
+
+  ipcMain.handle(
+    'organize-real-directory/get-analyzed-count',
+    async (event, workspaceDirectoryPath: string) => {
+      if (!organizeRealDirectoryService) throw new Error(t('整理真实目录服务未初始化'))
+      return organizeRealDirectoryService.getWorkspaceAnalyzedFileCount(workspaceDirectoryPath)
+    }
+  )
 
   /** 整理会话文件特征池化缓存 (避免搜索交互时反复扫 SQLite，容量 10 条工作区记录) */
   const fileTagsSessionCache = new Map<string, Record<number, Array<{ code: string; weight: number }>>>()
@@ -959,6 +988,24 @@ export function registerVirtualDirectoryIPCHandlers() {
         ConfigOrchestrator.getInstance().getValue<string>('AI_EMBEDDING_PROFILE') || 'classic_light'
       const mrlDim =
         ConfigOrchestrator.getInstance().getValue<number>('EMBEDDING_MRL_DIMENSION') || 512
+
+      // 容量断路器：单次批量整理硬上限 3,000 个文件
+      let candidateCount = request.fileIds?.length
+      if (candidateCount === undefined && request.workspaceId && organizeRealDirectoryService) {
+        candidateCount = organizeRealDirectoryService.getWorkspaceAnalyzedFileCount(request.workspaceId)
+      }
+      if (candidateCount !== undefined && candidateCount > 3000) {
+        logger.warn(LogCategory.FILE_ORGANIZATION, '[IPC] calculate-file-paths-cosine: 文件数超限被拦截', {
+          candidateCount
+        })
+        return {
+          success: false,
+          errorCode: 'ORGANIZE_CAPACITY_EXCEEDED',
+          limit: 3000,
+          actual: candidateCount,
+          message: t('当前待计算文件数（{count}）超出批量整理上限（3,000个），请在「已分析」页面勾选目标文件后发起整理', { count: candidateCount })
+        }
+      }
 
       let activeProfile: string = rawProfile
       let activeDim = 384
@@ -1217,6 +1264,29 @@ export function registerVirtualDirectoryIPCHandlers() {
         }
       }
 
+      // 容量断路器：单次批量整理硬上限 3,000 个文件
+      let fileCount = params.fileIds?.length
+      if (fileCount === undefined && organizeRealDirectoryService) {
+        fileCount = organizeRealDirectoryService.getWorkspaceAnalyzedFileCount(wsId)
+      }
+      if (fileCount !== undefined && fileCount > 3000) {
+        logger.warn(LogCategory.FILE_ORGANIZATION, '[IPC] smart-cluster-hac: 文件数超限被拦截', {
+          wsId,
+          fileCount
+        })
+        const msg = t('当前待整理文件数量（{count}）超出批量整理上限（3,000个），请在「已分析」页面勾选目标文件后发起整理', { count: fileCount })
+        return {
+          success: false,
+          errorCode: 'ORGANIZE_CAPACITY_EXCEEDED',
+          limit: 3000,
+          actual: fileCount,
+          message: msg,
+          summary: msg,
+          directories: [],
+          durationMs: 0
+        }
+      }
+
       const scheme = await virtualDirectoryService.generateHACClusterScheme(
         wsId,
         params.fileIds,
@@ -1247,115 +1317,6 @@ export function registerVirtualDirectoryIPCHandlers() {
         directories: scheme.directories || [],
         durationMs: Date.now() - startTime
       }
-    }
-  )
-
-  ipcMain.handle('organize-real-directory/generate-plan', async (event, params: any) => {
-    if (globalLlamaIndexService?.isSwitchingService()) {
-      logger.info(
-        LogCategory.MAIN,
-        '[IPC] organize-real-directory/generate-plan: 模型正在切换中，拒绝请求'
-      )
-      return {
-        success: false,
-        status: 'SERVICE_SWITCHING',
-        message: t('模型正在切换中，请等待')
-      }
-    }
-    const license = await checkLicenseAndNotify(true)
-    if (license.status !== LicenseStatus.AUTHORIZED)
-      return {
-        success: false,
-        status: license.status,
-        message: license.error || t('授权校验失败，请联网或激活企业版后再执行此操作')
-      }
-    if (globalLlamaIndexService) {
-      // 测试环境下跳过 AI 服务就绪等待（测试环境未初始化真实 AI 服务，
-      // 否则 waitForReady 会超时并返回 SERVICE_LOADING，导致 generatePlan 无法执行）
-      if (!isTestEnvironment()) {
-        try {
-          await globalLlamaIndexService.waitForReady(60000)
-        } catch (err) {
-          return {
-            success: false,
-            status: 'SERVICE_LOADING',
-            message: t('AI 服务正在初始化中，请稍候再试')
-          }
-        }
-      }
-    }
-    if (!organizeRealDirectoryService)
-      return { success: false, message: t('整理真实目录服务未初始化') }
-    const controller = new AbortController()
-    organizePlanAbortControllers.set(params.workspaceDirectoryPath, controller)
-    try {
-      const result = await organizeRealDirectoryService.generateOrganizePlan(
-        params.workspaceDirectoryPath,
-        {
-          ...params.options,
-          workspaceDirectoryPath: params.workspaceDirectoryPath,
-          language: ConfigOrchestrator.getInstance().getValue('DEFAULT_LANGUAGE') as string,
-          signal: controller.signal,
-          onProgress: (progress: any) => {
-            event.sender.send('organize-plan-progress', progress)
-          }
-        }
-      )
-      return result
-    } catch (error: any) {
-      logger.error(LogCategory.FILE_ORGANIZATION, '一键整理生成方案失败:', error)
-      return { success: false, message: t('未知错误') }
-    } finally {
-      organizePlanAbortControllers.delete(params.workspaceDirectoryPath)
-    }
-  })
-
-  ipcMain.handle(
-    'organize-real-directory/cancel-plan',
-    async (_event, workspaceDirectoryPath: string) => {
-      const controller = organizePlanAbortControllers.get(workspaceDirectoryPath)
-      if (controller) {
-        controller.abort()
-        organizePlanAbortControllers.delete(workspaceDirectoryPath)
-        return { success: true }
-      }
-      return { success: false, message: t('没有正在进行的任务') }
-    }
-  )
-
-  ipcMain.handle(
-    'organize-real-directory/pause-plan',
-    async (_event, workspaceDirectoryPath: string) => {
-      if (!organizeRealDirectoryService) return { success: false, message: t('服务未初始化') }
-      const quickOrganizeService = await (
-        organizeRealDirectoryService as any
-      ).getQuickOrganizeService()
-      quickOrganizeService.pause(workspaceDirectoryPath)
-      return { success: true }
-    }
-  )
-
-  ipcMain.handle(
-    'organize-real-directory/resume-plan',
-    async (_event, workspaceDirectoryPath: string) => {
-      if (!organizeRealDirectoryService) return { success: false, message: t('服务未初始化') }
-      const quickOrganizeService = await (
-        organizeRealDirectoryService as any
-      ).getQuickOrganizeService()
-      quickOrganizeService.resume(workspaceDirectoryPath)
-      return { success: true }
-    }
-  )
-
-  ipcMain.handle(
-    'organize-real-directory/end-plan',
-    async (_event, workspaceDirectoryPath: string) => {
-      if (!organizeRealDirectoryService) return { success: false, message: t('服务未初始化') }
-      const quickOrganizeService = await (
-        organizeRealDirectoryService as any
-      ).getQuickOrganizeService()
-      quickOrganizeService.end(workspaceDirectoryPath)
-      return { success: true }
     }
   )
 

@@ -86,13 +86,14 @@ const electronAPI = {
   searchWorkspaceFiles: (
     keyword: string,
     workspacePath: string,
-    options?: { stream?: boolean; seq?: number }
+    options?: { stream?: boolean; seq?: number; channel?: string }
   ): Promise<FileItem[]> =>
     ipcRenderer.invoke('search-workspace-files', keyword, workspacePath, options),
 
   onSearchProgress: (
     callback: (payload: {
       phase: 'phase1' | 'phase2' | 'phase3'
+      channel?: string
       seq: number
       items: FileItem[]
       total: number
@@ -105,6 +106,7 @@ const electronAPI = {
       _event: any,
       payload: {
         phase: 'phase1' | 'phase2' | 'phase3'
+        channel?: string
         seq: number
         items: FileItem[]
         total: number
@@ -1036,8 +1038,20 @@ const electronAPI = {
         'organize-real-directory/get-saved-virtual-directories',
         workspaceDirectoryPath
       ),
-    getAnalyzedFiles: (workspaceDirectoryPath: string) =>
-      ipcRenderer.invoke('organize-real-directory/get-analyzed-files', workspaceDirectoryPath),
+    getAnalyzedFiles: (workspaceDirectoryPath: string, selectedFileIds?: number[]) =>
+      ipcRenderer.invoke(
+        'organize-real-directory/get-analyzed-files',
+        workspaceDirectoryPath,
+        selectedFileIds
+      ),
+    getLightweightFiles: (workspaceDirectoryPath: string, selectedFileIds?: number[]) =>
+      ipcRenderer.invoke(
+        'organize-real-directory/get-lightweight-files',
+        workspaceDirectoryPath,
+        selectedFileIds
+      ),
+    getAnalyzedCount: (workspaceDirectoryPath: string) =>
+      ipcRenderer.invoke('organize-real-directory/get-analyzed-count', workspaceDirectoryPath),
     matchPerspectivesAndStructures: (request: any) =>
       ipcRenderer.invoke('organize-real-directory/match-perspectives-and-structures', request),
     calculateFilePathsCosine: (request: any) =>
@@ -1056,28 +1070,6 @@ const electronAPI = {
       clusteringMode?: 'precise' | 'balanced' | 'complete'
     }) =>
       ipcRenderer.invoke('organize-real-directory/smart-cluster-hac', params),
-    quickOrganize: (params: { workspaceDirectoryPath: string; aiGeneratedStructure: any }) =>
-      ipcRenderer.invoke('organize-real-directory/quick-organize', params),
-    // 一键整理 - 生成整理方案
-    generatePlan: (params: {
-      workspaceDirectoryPath: string
-      options?: {
-        batchSize?: number
-        temperature?: number
-        filePaths?: string[]
-        userInstruction?: string
-        previousStructure?: any
-      }
-      onProgress?: (progress: any) => void
-    }) => ipcRenderer.invoke('organize-real-directory/generate-plan', params),
-    cancelPlan: (workspaceDirectoryPath: string) =>
-      ipcRenderer.invoke('organize-real-directory/cancel-plan', workspaceDirectoryPath),
-    pausePlan: (workspaceDirectoryPath: string) =>
-      ipcRenderer.invoke('organize-real-directory/pause-plan', workspaceDirectoryPath),
-    resumePlan: (workspaceDirectoryPath: string) =>
-      ipcRenderer.invoke('organize-real-directory/resume-plan', workspaceDirectoryPath),
-    endPlan: (workspaceDirectoryPath: string) =>
-      ipcRenderer.invoke('organize-real-directory/end-plan', workspaceDirectoryPath),
     listSessions: (workspaceDirectoryPath: string) =>
       ipcRenderer.invoke('organize-real-directory/list-sessions', workspaceDirectoryPath),
     undoSession: (params: { workspaceDirectoryPath: string; sessionId: string }) =>

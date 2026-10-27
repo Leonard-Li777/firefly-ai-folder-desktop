@@ -207,6 +207,21 @@ export function useOrganizeState() {
   const [allWorkspaceFiles, setAllWorkspaceFiles] = useState<any[]>([])
   const [isLoadingFiles, setIsLoadingFiles] = useState(false)
 
+  // ─── 3,000 硬上限容量守卫 ──────────────────────────────────────────────────
+  const [isCapacityExceeded, setIsCapacityExceeded] = useState(false)
+  const [capacityExceededCount, setCapacityExceededCount] = useState(0)
+  const [showCapacityLimitDialog, setShowCapacityLimitDialog] = useState(false)
+
+  const handleGoToAnalyzedPage = useCallback(() => {
+    setShowCapacityLimitDialog(false)
+    navigate('/analyzed', {
+      state: {
+        workspaceId: currentWorkspaceDirectory?.id,
+        startInOrganizeMode: true
+      }
+    })
+  }, [navigate, currentWorkspaceDirectory?.id])
+
   const loadFilesToOrganize = useCallback(async () => {
     // 如果工作目录尚未恢复，先尝试从后端获取
     let workspace = currentWorkspaceDirectory
@@ -229,8 +244,34 @@ export function useOrganizeState() {
 
     setIsLoadingFiles(true)
     try {
-      const result = await window.electronAPI!.organizeRealDirectory.getAnalyzedFiles(
-        workspace.path
+      const selectedFileIdsFromState = location.state?.selectedFileIds as number[] | undefined
+
+      // 入场毫秒级探针 (Spec §2.1 & §2.3)：若未带入勾选，先进行轻量单值计数
+      if (!selectedFileIdsFromState || selectedFileIdsFromState.length === 0) {
+        const count =
+          (await window.electronAPI!.organizeRealDirectory.getAnalyzedCount?.(workspace.path)) ?? 0
+        if (count > 3000) {
+          logger.warn(
+            LogCategory.FILE_ORGANIZATION,
+            `[入场探针] 工作区文件数 (${count}) 超出上限 3,000，阻断全量拉取并弹窗分流`
+          )
+          setAllWorkspaceFiles([])
+          setIsCapacityExceeded(true)
+          setCapacityExceededCount(count)
+          setShowCapacityLimitDialog(true)
+          return
+        }
+      } else if (selectedFileIdsFromState.length > 3000) {
+        setAllWorkspaceFiles([])
+        setIsCapacityExceeded(true)
+        setCapacityExceededCount(selectedFileIdsFromState.length)
+        setShowCapacityLimitDialog(true)
+        return
+      }
+
+      const result = await window.electronAPI!.organizeRealDirectory.getLightweightFiles(
+        workspace.path,
+        selectedFileIdsFromState
       )
       const formatted = (result || []).map((f: any) => {
         let ext = f.extension
@@ -246,6 +287,8 @@ export function useOrganizeState() {
         }
       })
       setAllWorkspaceFiles(formatted)
+      setIsCapacityExceeded(false)
+      setCapacityExceededCount(0)
     } catch (err) {
       logger.error(LogCategory.FILE_ORGANIZATION, '获取工作区文件列表失败:', err)
       toast.error(t('获取待整理文件列表失败，请查看日志确认'))
@@ -399,6 +442,21 @@ export function useOrganizeState() {
     currentVDir,
     activeLanguage
   ])
+
+  // 监听待整理文件数量，超出 3,000 硬上限时触发阻断弹窗与引导
+  useEffect(() => {
+    if (!isLoadingFiles) {
+      if (toOrganizeFiles.length > 3000) {
+        setIsCapacityExceeded(true)
+        setCapacityExceededCount(toOrganizeFiles.length)
+        setShowCapacityLimitDialog(true)
+      } else if (toOrganizeFiles.length > 0 && isCapacityExceeded) {
+        setIsCapacityExceeded(false)
+        setCapacityExceededCount(0)
+        setShowCapacityLimitDialog(false)
+      }
+    }
+  }, [isLoadingFiles, toOrganizeFiles.length, isCapacityExceeded])
 
   // 处理在模式选择卡片点击选择已保存虚拟目录（增量整理）
   const handleSelectIncrementalVd = useCallback(
@@ -1735,6 +1793,12 @@ export function useOrganizeState() {
       }
     }
 
+    if (toOrganizeFiles.length > 3000) {
+      toast.error(t('待整理文件数量超出上限（3,000个），请前往「已分析」页面勾选文件后重试'))
+      setShowCapacityLimitDialog(true)
+      return
+    }
+
     if (batchCount > maxBatchWarnLimit) {
       setShowBatchLimitConfirm(true)
       return
@@ -2825,6 +2889,7 @@ export function useOrganizeState() {
   )
 
   const canForward = useMemo(() => {
+    if (isCapacityExceeded) return false
     if (stage === 'mode-select') {
       if (organizeMode === 'fine-organize') {
         return candidates.length > 0
@@ -2884,6 +2949,16 @@ export function useOrganizeState() {
         return
       }
 
+      // 找补截断守卫：每次最多截取 Top 200 个高潜未归类文件进行 LLM 找补，防止大循环
+      const filesToRescue = unclassifiedFiles.slice(0, 200)
+      if (unclassifiedFiles.length > 200) {
+        toast.info(
+          t('未归类文件较多（{total} 个），AI 将优先靶向找补前 200 个高潜文件', {
+            total: unclassifiedFiles.length
+          })
+        )
+      }
+
       if (force) {
         setHasRescueFailed(false)
         lastRescuedIdsRef.current.clear()
@@ -2912,7 +2987,7 @@ export function useOrganizeState() {
           workspaceDirectoryPath: currentWorkspaceDirectory?.path,
           mode: organizeMode,
           selectedTagsTree: convertTreeForBackend(activeTagsTree),
-          files: unclassifiedFiles,
+          files: filesToRescue,
           userInstruction: draft?.strategy,
           allowCreateNew: options.allowCreateNew,
           batchSize: useSettingsStore.getState().getConfigValue<number>('QUEUE_BATCH_SIZE') ?? 50,
@@ -3132,6 +3207,13 @@ export function useOrganizeState() {
     deleteTagGlobally,
     trashDuplicateFiles,
     isTrashingDuplicates,
-    loadFilesToOrganize
+    loadFilesToOrganize,
+
+    // 3,000 硬上限容量守卫
+    isCapacityExceeded,
+    capacityExceededCount,
+    showCapacityLimitDialog,
+    setShowCapacityLimitDialog,
+    handleGoToAnalyzedPage
   }
 }

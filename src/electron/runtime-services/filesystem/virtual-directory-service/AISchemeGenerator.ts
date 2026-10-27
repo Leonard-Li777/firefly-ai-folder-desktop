@@ -1178,18 +1178,19 @@ export class AISchemeGenerator {
           filesCount: filesToOrganize.length
         }
       )
+    } else if (options.files && options.files.length > 0) {
+      filesToOrganize = options.files
     } else if (options.selectedFileIds && options.selectedFileIds.length > 0) {
-      const placeholders = options.selectedFileIds.map(() => '?').join(',')
       const dbFiles = this.provider.db
         .prepare(
           `
-          SELECT wf.id, f.smart_name as name
+          SELECT wf.id, COALESCE(f.smart_name, wf.name) as name
           FROM workspace_files wf
                  JOIN files f ON wf.file_fingerprint = f.file_fingerprint
-          WHERE wf.id IN (${placeholders})
+          WHERE wf.id IN (SELECT value FROM json_each(?))
         `
         )
-        .all(...options.selectedFileIds) as any[]
+        .all(JSON.stringify(options.selectedFileIds)) as any[]
       filesToOrganize = dbFiles.map(f => ({ id: f.id, name: f.name }))
     } else if (options.workspaceDirectoryPath) {
       // 预览模式：从工作目录获取所有已分析文件
@@ -1233,7 +1234,6 @@ export class AISchemeGenerator {
       const batchSize = 500
       for (let i = 0; i < fileIds.length; i += batchSize) {
         const batchIds = fileIds.slice(i, i + batchSize)
-        const placeholders = batchIds.map(() => '?').join(',')
         try {
           const relations = this.provider.db
             .prepare(
@@ -1242,10 +1242,10 @@ export class AISchemeGenerator {
               FROM file_tag_relations ftr
                      LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
                      JOIN workspace_files wf ON wf.file_fingerprint = ftr.file_fingerprint
-              WHERE wf.id IN (${placeholders})
+              WHERE wf.id IN (SELECT value FROM json_each(?))
             `
             )
-            .all(...batchIds) as Array<{ file_id: number; tag_name: string }>
+            .all(JSON.stringify(batchIds)) as Array<{ file_id: number; tag_name: string }>
 
           for (const rel of relations) {
             if (!fileTagMap.has(rel.file_id)) {

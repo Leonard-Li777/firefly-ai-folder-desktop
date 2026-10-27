@@ -735,7 +735,9 @@ declare global {
           workspaceDirectoryPath: string
         ) => Promise<SavedVirtualDirectory[]>
         getSavedVirtualDirectoriesByPath: (workspaceDirectoryPath: string) => Promise<SavedVirtualDirectory[]>
-        getAnalyzedFiles: (workspaceDirectoryPath: string) => Promise<FileInfo[]>
+        getAnalyzedFiles: (workspaceDirectoryPath: string, selectedFileIds?: number[]) => Promise<Array<{ id: number; path: string; name: string; smartName: string | null; extension: string | null }>>
+        getLightweightFiles: (workspaceDirectoryPath: string, selectedFileIds?: number[]) => Promise<Array<{ id: number; path: string; name: string; smartName: string | null; extension: string | null }>>
+        getAnalyzedCount: (workspaceDirectoryPath: string) => Promise<number>
         matchPerspectivesAndStructures: (request: any) => Promise<any>
         calculateFilePathsCosine: (request: any) => Promise<any>
         smartClusterHac: (params: {
@@ -756,8 +758,6 @@ declare global {
           directories: any[]
           durationMs: number
         }>
-        quickOrganize: (params: QuickOrganizeParams) => Promise<OrganizePreviewResult>
-        generatePlan: (params: OrganizePlanParams) => Promise<AIGeneratedStructure>
         listSessions: (workspaceDirectoryPath: string) => Promise<OrganizeSession[]>
         undoSession: (params: UndoSessionParams) => Promise<{ success: boolean; message: string }>
         deleteSession: (

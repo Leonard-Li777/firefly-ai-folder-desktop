@@ -1,0 +1,189 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import React from 'react'
+import { renderHook, act } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
+import { useOrganizeState } from '../hooks/useOrganizeState'
+import { useOrganizeStore } from '../../../../stores/organize-store'
+import { useAnalyzedDirectoryStore } from '../../../../stores/analyzed-directory-store'
+
+const { mockT } = vi.hoisted(() => {
+  const tFn = (key: string, params?: any) => {
+    if (params && typeof params === 'object') {
+      let res = key
+      for (const k in params) {
+        res = res.replace(new RegExp('\\{' + k + '\\}', 'g'), params[k])
+      }
+      return res
+    }
+    return key
+  }
+  return { mockT: tFn }
+})
+
+const mockNavigate = vi.fn()
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom')
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate
+  }
+})
+
+vi.mock('@app/languages', () => ({
+  t: mockT,
+  $t: (key: string) => key,
+  Translate: ({ children }: any) => children,
+  i18nScope: { t: mockT, activeLanguage: 'zh-CN', defaultLanguage: 'zh-CN' },
+  default: { t: mockT, activeLanguage: 'zh-CN', defaultLanguage: 'zh-CN' }
+}))
+
+vi.mock('@voerkai18n/react', () => ({
+  useVoerkaI18n: () => ({ activeLanguage: 'zh-CN', t: mockT })
+}))
+
+vi.mock('../../../common/Toast', () => ({
+  toast: {
+    info: vi.fn(),
+    success: vi.fn(),
+    warning: vi.fn(),
+    error: vi.fn()
+  }
+}))
+
+describe('useOrganizeState 3,000 容量硬上限与找补截断验证', () => {
+  const wrapper = ({ children }: { children: React.ReactNode }) =>
+    React.createElement(MemoryRouter, null, children)
+
+  let mockReorganize: any
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    useOrganizeStore.setState({
+      finalTree: [],
+      draftTree: [],
+      stage: 'done'
+    })
+    mockReorganize = vi.fn().mockResolvedValue({ success: true, tree: [] })
+    ;(window as any).electronAPI = {
+      getCurrentWorkspaceDirectory: vi.fn().mockResolvedValue({ id: 1, path: '/workspace' }),
+      organizeRealDirectory: {
+        getAnalyzedFiles: vi.fn().mockResolvedValue([]),
+        getLightweightFiles: vi.fn().mockResolvedValue([]),
+        getAnalyzedCount: vi.fn().mockResolvedValue(0)
+      },
+      virtualDirectory: {
+        getAnalyzedCount: vi.fn().mockResolvedValue(0),
+        generateNameAndStrategyCandidates: vi.fn().mockResolvedValue({ candidates: [] }),
+        getDirectoryTree: vi.fn().mockResolvedValue({ tree: null }),
+        getWorkspaceDirectoryById: vi.fn().mockResolvedValue({ id: 1, path: '/workspace' }),
+        reorganize: mockReorganize,
+        list: vi.fn().mockResolvedValue([]),
+        onReorganizeProgress: vi.fn().mockReturnValue(() => {})
+      },
+      analyzedDirectory: {
+        getDimensionGroups: vi.fn().mockResolvedValue({ groups: [] }),
+        getDirectoryTree: vi.fn().mockResolvedValue({ tree: null }),
+        getHighFrequencyTags: vi.fn().mockResolvedValue({ tags: [] })
+      },
+      organizeBatch: {
+        applyTags: vi.fn(),
+        inspectControlledTags: vi.fn().mockResolvedValue({ success: true, results: [] }),
+        deleteTagGlobally: vi.fn().mockResolvedValue(true)
+      }
+    }
+  })
+
+  it('待整理文件超过 3,000 个时，触发容量超限守卫与弹窗，阻断前进', async () => {
+    // 模拟前置探针返回 3,005，触发门禁并不拉取文件对象（0 对象进内存）
+    ;(window as any).electronAPI.organizeRealDirectory.getAnalyzedCount.mockResolvedValue(3005)
+    ;(window as any).electronAPI.virtualDirectory.getAnalyzedCount.mockResolvedValue(3005)
+
+    const { result } = renderHook(() => useOrganizeState(), { wrapper })
+
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 50))
+    })
+
+    expect(result.current.toOrganizeFiles.length).toBe(0)
+    expect(result.current.isCapacityExceeded).toBe(true)
+    expect(result.current.capacityExceededCount).toBe(3005)
+    expect(result.current.showCapacityLimitDialog).toBe(true)
+    expect(result.current.canForward).toBe(false)
+  })
+
+  it('待整理文件 <= 3,000 个时，容量超限守卫不触发', async () => {
+    ;(window as any).electronAPI.organizeRealDirectory.getAnalyzedCount.mockResolvedValue(50)
+    ;(window as any).electronAPI.virtualDirectory.getAnalyzedCount.mockResolvedValue(50)
+    const mockFiles = Array.from({ length: 50 }, (_, i) => ({
+      id: i + 1,
+      path: `/workspace/file_${i + 1}.txt`,
+      name: `file_${i + 1}.txt`,
+      smartName: `file_${i + 1}`,
+      extension: 'txt',
+      isAnalyzed: true
+    }))
+    ;(window as any).electronAPI.organizeRealDirectory.getLightweightFiles.mockResolvedValue(mockFiles)
+
+    const { result } = renderHook(() => useOrganizeState(), { wrapper })
+
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 50))
+    })
+
+    expect(result.current.toOrganizeFiles.length).toBe(50)
+    expect(result.current.isCapacityExceeded).toBe(false)
+    expect(result.current.showCapacityLimitDialog).toBe(false)
+  })
+
+  it('点击 handleGoToAnalyzedPage 时，正确导航到已分析页面', async () => {
+    const { result } = renderHook(() => useOrganizeState(), { wrapper })
+
+    act(() => {
+      result.current.handleGoToAnalyzedPage()
+    })
+
+    expect(mockNavigate).toHaveBeenCalledWith('/analyzed', {
+      state: { startInOrganizeMode: true, workspaceId: 1 }
+    })
+    expect(result.current.showCapacityLimitDialog).toBe(false)
+  })
+
+  it('Done 阶段未归类找补 (handleRescue) 超出 200 个文件时，必须严格截断前 200 个传入后端', async () => {
+    useAnalyzedDirectoryStore.getState().setCurrentWorkspaceDirectory({
+      id: 1,
+      path: '/workspace',
+      name: 'workspace'
+    } as any)
+
+    // 构造一个包含 280 个未归类文件的 finalTree
+    const unclassified280 = Array.from({ length: 280 }, (_, i) => ({
+      id: i + 1,
+      name: `unclassified_${i + 1}.txt`,
+      path: `/workspace/unclassified_${i + 1}.txt`
+    }))
+
+    useOrganizeStore.setState({
+      finalTree: [
+        {
+          name: '未归类',
+          isUnclassified: true,
+          files: unclassified280
+        } as any
+      ]
+    })
+
+    const { result } = renderHook(() => useOrganizeState(), { wrapper })
+
+    await act(async () => {
+      await result.current.handleRescue()
+    })
+
+    expect(mockReorganize).toHaveBeenCalledTimes(1)
+    const callArgs = mockReorganize.mock.calls[0][1]
+    expect(callArgs.isRescue).toBe(true)
+    // 关键断言：传给后端的 files 数组必须被截断至 exactly 200
+    expect(callArgs.files).toHaveLength(200)
+    expect(callArgs.files[0].id).toBe(1)
+    expect(callArgs.files[199].id).toBe(200)
+  })
+})

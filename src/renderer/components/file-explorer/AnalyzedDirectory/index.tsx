@@ -21,7 +21,6 @@ import { DirectoryHeader } from '../DirectoryHeader'
 import { DirectoryManagementModals } from './components/DirectoryManagementModals'
 import { FileDetailsPanel } from '../FileDetailsPanel/index'
 import { NoWorkspaceDirectoryMessage } from '../../common/NoWorkspaceDirectoryMessage'
-import { OrganizeModals } from './components/OrganizeModals'
 import { QuotaWarningBar } from '../QuotaWarningBar'
 import { UtilityModals } from './components/UtilityModals'
 import { performanceTracker } from '../../../lib/performance-metrics'
@@ -229,37 +228,10 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
   )
 
   const {
-    handleQuickOrganize,
-    handleConfirmOrganize,
-    organizePreview,
-    aiGeneratedStructure,
-    fileMapForOrganize,
-    showConfirmOrganizeDialog,
-    setShowConfirmOrganizeDialog,
-    showOrganizeProgressDialog,
-    organizeProgress,
-    showOrganizeErrorDialog,
-    setShowOrganizeErrorDialog,
-    organizeResult,
-    setShowResultDialog,
-    showResultDialog,
-    showAIProgressDialog,
-    setShowAIProgressDialog,
-    aiBatchProgress,
     showEmptyFolderCleanupDialog,
     setShowEmptyFolderCleanupDialog,
     emptyFolderScanPath,
-    setEmptyFolderScanPath,
-    showConflictDialog,
-    setShowConflictDialog,
-    conflicts,
-    handleConflictResolve,
-    handleConflictCancel,
-    handleCancelAIOrganize,
-    handleDeleteNode,
-    onPauseToggle,
-    onEnd,
-    isPaused
+    setEmptyFolderScanPath
   } = organize
 
   /**
@@ -397,10 +369,7 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
     performanceTracker.logReport('Switch to Analyzed Directory')
   }, [])
 
-  const handleConfirmOrganizeAnalyzedDirectory = useCallback(async () => {
-    navigate('/organize')
-  }, [navigate])
-
+  
   const selectionStack = useMemo(() => {
     return selectedTags.map(t => `${t.dimensionId}::${t.parentTagValue || ''}::${t.tagValue}`)
   }, [selectedTags])
@@ -818,50 +787,7 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
         }}
       />
 
-      <OrganizeModals
-        currentWorkspaceDirectory={currentWorkspaceDirectory}
-        showConfirmOrganizeDialog={showConfirmOrganizeDialog}
-        setShowConfirmOrganizeDialog={setShowConfirmOrganizeDialog}
-        organizePreview={organizePreview}
-        aiGeneratedStructure={aiGeneratedStructure}
-        fileMapForOrganize={fileMapForOrganize}
-        handleConfirmOrganize={handleConfirmOrganize}
-        handleQuickOrganize={handleQuickOrganize}
-        handleConfirmOrganizeAnalyzedDirectory={handleConfirmOrganizeAnalyzedDirectory}
-        showOrganizeProgressDialog={showOrganizeProgressDialog}
-        organizeProgress={organizeProgress}
-        showOrganizeErrorDialog={showOrganizeErrorDialog}
-        setShowOrganizeErrorDialog={setShowOrganizeErrorDialog}
-        organizeResult={organizeResult}
-        showResultDialog={showResultDialog}
-        setShowResultDialog={setShowResultDialog}
-        showAIProgressDialog={showAIProgressDialog}
-        setShowAIProgressDialog={setShowAIProgressDialog}
-        aiBatchProgress={aiBatchProgress}
-        handleCancelAIOrganize={handleCancelAIOrganize}
-        showConflictDialog={showConflictDialog}
-        conflicts={conflicts}
-        handleConflictResolve={handleConflictResolve}
-        handleConflictCancel={handleConflictCancel}
-        onPauseToggle={onPauseToggle}
-        onEnd={onEnd}
-        isPaused={isPaused}
-        onDeleteNode={handleDeleteNode}
-        handleExportLog={async () => {
-          if (!organizeResult || !currentWorkspaceDirectory) return
-          const res = await window.electronAPI!.utils.showSaveDialog({
-            title: t('导出错误日志'),
-            defaultPath: 'errors.json'
-          })
-          if (!res.canceled && res.filePath)
-            await window.electronAPI!.utils.writeFile(
-              res.filePath,
-              JSON.stringify(organizeResult.errors)
-            )
-        }}
-      />
-
-      <UtilityModals
+            <UtilityModals
         currentWorkspaceDirectory={currentWorkspaceDirectory}
         selectedTags={selectedTags}
         dimensionGroups={dimensionGroups}

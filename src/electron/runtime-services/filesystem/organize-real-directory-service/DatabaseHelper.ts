@@ -15,6 +15,14 @@ import { t } from '@app/languages'
 import path from 'node:path'
 import { decompressJson } from '../../../utils/text-compressor'
 
+export interface LightweightFileItem {
+  id: number
+  path: string
+  name: string
+  smartName: string | null
+  extension: string | null
+}
+
 export class DatabaseHelper {
   constructor(private db: Database.Database) {}
 
@@ -186,189 +194,150 @@ export class DatabaseHelper {
     return files
   }
 
-  async getAnalyzedFiles(workspaceDirectoryPath: string): Promise<FileInfoForAI[]> {
-    try {
-      const sep = path.sep
-      const prefix = workspaceDirectoryPath.endsWith(sep)
-        ? workspaceDirectoryPath
-        : workspaceDirectoryPath + sep
+  /**
+   * 极速轻量查询工作区已分析文件（入场投影）
+   * 仅查询 id, path, name, smartName, extension，单条 SQL 毫秒级返回
+   */
+  async getLightweightWorkspaceFiles(
+    workspaceDirectoryPathOrId: string | number,
+    selectedFileIds?: number[]
+  ): Promise<LightweightFileItem[]> {
+    let workspaceId: number | undefined
+    let workspacePath = ''
 
-      const files = this.db
+    if (typeof workspaceDirectoryPathOrId === 'number') {
+      workspaceId = workspaceDirectoryPathOrId
+    } else {
+      workspacePath = workspaceDirectoryPathOrId
+      const row = this.db
+        .prepare('SELECT workspace_id FROM workspaces WHERE path = ?')
+        .get(workspacePath) as { workspace_id: number } | undefined
+      workspaceId = row?.workspace_id
+    }
+
+    if (selectedFileIds && selectedFileIds.length > 0) {
+      if (workspaceId !== undefined) {
+        return this.db
+          .prepare(
+            `
+          SELECT 
+            wf.id,
+            wf.path,
+            wf.name,
+            NULLIF(f.smart_name, wf.name) as smartName,
+            f.extension
+          FROM workspace_files wf
+          LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
+          WHERE wf.workspace_id = ?
+            AND wf.is_analyzed = 1
+            AND (wf.status IS NULL OR wf.status = 1)
+            AND wf.id IN (SELECT value FROM json_each(?))
+          ORDER BY wf.path ASC
+        `
+          )
+          .all(workspaceId, JSON.stringify(selectedFileIds)) as LightweightFileItem[]
+      } else {
+        const sep = path.sep
+        const prefix = workspacePath.endsWith(sep) ? workspacePath : workspacePath + sep
+        return this.db
+          .prepare(
+            `
+          SELECT 
+            wf.id,
+            wf.path,
+            wf.name,
+            NULLIF(f.smart_name, wf.name) as smartName,
+            f.extension
+          FROM workspace_files wf
+          LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
+          WHERE (wf.path LIKE ? OR wf.path = ?)
+            AND wf.is_analyzed = 1
+            AND (wf.status IS NULL OR wf.status = 1)
+            AND wf.id IN (SELECT value FROM json_each(?))
+          ORDER BY wf.path ASC
+        `
+          )
+          .all(`${prefix}%`, workspacePath, JSON.stringify(selectedFileIds)) as LightweightFileItem[]
+      }
+    }
+
+    if (workspaceId !== undefined) {
+      return this.db
         .prepare(
           `
-        SELECT
+        SELECT 
           wf.id,
-          wf.name,
-          f.smart_name as smartName,
-          f.raw_smart_name as rawSmartName,
           wf.path,
-          f.extension,
-          f.size,
-          f.author,
-          f.language,
-          wf.is_analyzed as isAnalyzed,
-          COALESCE(f.modified_at, wf.modified_at) as modifiedAt,
-          COALESCE(f.created_at, wf.created_at) as createdAt,
-          fc.exif,
-          fc.quality_score as qualityScore,
-          f.description
+          wf.name,
+          NULLIF(f.smart_name, wf.name) as smartName,
+          f.extension
         FROM workspace_files wf
-        INNER JOIN files f ON wf.file_fingerprint = f.file_fingerprint
-        LEFT JOIN file_contents fc ON wf.file_fingerprint = fc.file_fingerprint
-        WHERE wf.is_analyzed = 1
+        LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
+        WHERE wf.workspace_id = ?
+          AND wf.is_analyzed = 1
           AND (wf.status IS NULL OR wf.status = 1)
-          AND (wf.path LIKE ? OR wf.path = ?)
+        ORDER BY wf.path ASC
       `
         )
-        .all(`${prefix}%`, workspaceDirectoryPath) as any[]
-
-      logger.info(
-        LogCategory.FILE_ORGANIZATION,
-        `[一键整理] 查询到 ${files.length} 个已分析文件（包含所有子目录）`,
-        {
-          workspaceDirectoryPath,
-          prefix
-        }
-      )
-
-      const filesWithTags: FileInfoForAI[] = []
-
-      for (const file of files) {
-        // 创世 Baseline V1：维度信息由 file_tags_private 标签树与 ftr.via_parent_code 表达，
-        // 不再存在 file_dimensions 表与 dimension_id 列。
-        // 维度根节点视为维度容器；其余节点归属其经由父级或首个父级所在维度。
-        const dimensionTagsArray = this.db
-          .prepare(
-            `
-          SELECT
-            parent.name as dimensionName,
-            COALESCE(parent.code, NULLIF(ftr.via_parent_code, ''), ft.code) as dimension,
-            ft.name as tag,
-            ftr.tag_code,
-            ftr.via_parent_code,
-            json_extract(parent.meta, '$.applicableFileTypes') as applicableFileTypes
-          FROM file_tag_relations ftr
-          LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
-          LEFT JOIN file_tags_private parent ON parent.code = COALESCE(NULLIF(ftr.via_parent_code, ''), json_extract(ft.parent_codes, '$[0]'))
-          WHERE ftr.file_fingerprint = (SELECT file_fingerprint FROM workspace_files WHERE id = ?)
-            AND (ftr.via_parent_code != '' OR (ft.parent_codes IS NOT NULL AND ft.parent_codes != '[]'))
-        `
-          )
-          .all(file.id) as any[]
-
-        const contentTags = this.db
-          .prepare(
-            `
-          SELECT ft.name, ftr.tag_code
-          FROM file_tag_relations ftr
-          LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
-          WHERE ftr.file_fingerprint = (SELECT file_fingerprint FROM workspace_files WHERE id = ?)
-            AND (ftr.via_parent_code = '' AND (ft.parent_codes IS NULL OR ft.parent_codes = '[]'))
-        `
-          )
-          .all(file.id) as any[]
-
-        let parsedMeta: Record<string, any> = {}
-        if (file.exif) {
-          // exif 列是 BLOB（compressText 压缩），需用 decompressJson 解压
-          parsedMeta = decompressJson<Record<string, any>>(file.exif) ?? {}
-        }
-
-        const fileExt = path.extname(file.path || file.name || '').replace(/^\./, '')
-        let rawSmartName = (file as any).raw_smart_name || file.smartName || file.name || ''
-        if (fileExt) {
-          rawSmartName = rawSmartName.replace(new RegExp(`\\.${fileExt}$`, 'i'), '')
-        }
-        rawSmartName = rawSmartName.replace(/\.[a-zA-Z0-9]{1,10}$/i, '').trim()
-        if (!rawSmartName) {
-          rawSmartName = path.basename(
-            file.name || file.path || '',
-            path.extname(file.name || file.path || '')
-          )
-        }
-
-        const formattedDimensionTags: Array<{
-          dimension: string
-          tag: string
-          dimensionId?: number
-          dimensionCode?: string
-          dimensionName?: string
-          tagValue?: string
-        }> = []
-        for (const tItem of dimensionTagsArray) {
-          let applicableTypes: string[] | undefined = undefined
-          if (tItem.applicableFileTypes) {
-            try {
-              applicableTypes =
-                typeof tItem.applicableFileTypes === 'string'
-                  ? JSON.parse(tItem.applicableFileTypes)
-                  : tItem.applicableFileTypes
-            } catch {
-              applicableTypes = undefined
-            }
-          }
-
-          if (isDimensionApplicableToFile(applicableTypes, file.path || file.name)) {
-            const dimCode = tItem.dimension || tItem.via_parent_code || ''
-            const canonicalMeta = ROOT_DIMENSION_META[dimCode]
-            const dimName =
-              this.resolveTagName(dimCode, tItem.dimensionName) ||
-              canonicalMeta?.name ||
-              String(dimCode || '')
-            const tagVal = this.resolveTagName(tItem.tag_code, tItem.tag)
-            const dimId = canonicalMeta?.id
-            formattedDimensionTags.push({
-              dimension: dimName,
-              tag: tagVal,
-              dimensionId: dimId,
-              dimensionCode: dimCode,
-              dimensionName: dimName,
-              tagValue: tagVal
-            })
-          }
-        }
-
-        for (const ct of contentTags) {
-          const ctName = this.resolveTagName(ct.tag_code, ct.name)
-          if (ctName) {
-            formattedDimensionTags.push({
-              dimension: t('内容标签'),
-              tag: ctName,
-              dimensionId: 28,
-              dimensionCode: 'builtin.content_tags',
-              dimensionName: t('内容标签'),
-              tagValue: ctName
-            })
-          }
-        }
-
-        filesWithTags.push({
-          id: file.id,
-          name: file.name,
-          smartName: file.smartName,
-          rawSmartName,
-          path: file.path,
-          extension: file.extension || '',
-          size: file.size,
-          author: file.author,
-          language: file.language,
-          modifiedAt: file.modifiedAt,
-          createdAt: file.createdAt,
-          metadata: parsedMeta,
-          qualityScore: file.qualityScore,
-          tags: contentTags.map(t => t.name),
-          dimensionTags: formattedDimensionTags,
-          description: file.description
-        })
-      }
-
-      return filesWithTags
-    } catch (error: any) {
-      logger.error(LogCategory.FILE_ORGANIZATION, '获取已分析文件失败', {
-        error: error.message
-      })
-      throw error
+        .all(workspaceId) as LightweightFileItem[]
+    } else {
+      const sep = path.sep
+      const prefix = workspacePath.endsWith(sep) ? workspacePath : workspacePath + sep
+      return this.db
+        .prepare(
+          `
+        SELECT 
+          wf.id,
+          wf.path,
+          wf.name,
+          NULLIF(f.smart_name, wf.name) as smartName,
+          f.extension
+        FROM workspace_files wf
+        LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
+        WHERE (wf.path LIKE ? OR wf.path = ?)
+          AND wf.is_analyzed = 1
+          AND (wf.status IS NULL OR wf.status = 1)
+        ORDER BY wf.path ASC
+      `
+        )
+        .all(`${prefix}%`, workspacePath) as LightweightFileItem[]
     }
+  }
+
+  /**
+   * 极速统计工作区已分析文件总数（入场轻量计数器）
+   */
+  getWorkspaceAnalyzedFileCount(workspaceDirectoryPathOrId: string | number): number {
+    let workspaceId: number | undefined
+    let workspacePath = ''
+
+    if (typeof workspaceDirectoryPathOrId === 'number') {
+      workspaceId = workspaceDirectoryPathOrId
+    } else {
+      workspacePath = workspaceDirectoryPathOrId
+      const row = this.db
+        .prepare('SELECT workspace_id FROM workspaces WHERE path = ?')
+        .get(workspacePath) as { workspace_id: number } | undefined
+      workspaceId = row?.workspace_id
+    }
+
+    if (workspaceId !== undefined) {
+      const row = this.db
+        .prepare(
+          `SELECT COUNT(*) as count FROM workspace_files WHERE workspace_id = ? AND is_analyzed = 1 AND (status IS NULL OR status = 1)`
+        )
+        .get(workspaceId) as { count: number } | undefined
+      return row?.count ?? 0
+    }
+
+    const sep = path.sep
+    const prefix = workspacePath.endsWith(sep) ? workspacePath : workspacePath + sep
+    const row = this.db
+      .prepare(
+        `SELECT COUNT(*) as count FROM workspace_files WHERE (path LIKE ? OR path = ?) AND is_analyzed = 1 AND (status IS NULL OR status = 1)`
+      )
+      .get(`${prefix}%`, workspacePath) as { count: number } | undefined
+    return row?.count ?? 0
   }
 
   async getSavedVirtualDirectories(

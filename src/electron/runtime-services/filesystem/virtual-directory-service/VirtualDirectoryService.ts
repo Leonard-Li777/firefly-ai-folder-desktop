@@ -471,6 +471,18 @@ export class VirtualDirectoryService {
     })()
   }
 
+  async getVirtualDirectoryFileCount(virtualDirectoryId: number | string): Promise<number> {
+    try {
+      const row = this.db
+        .prepare('SELECT COUNT(*) as count FROM virtual_directory_files WHERE virtual_directory_id = ?')
+        .get(virtualDirectoryId) as { count: number } | undefined
+      return row?.count ?? 0
+    } catch (error) {
+      logger.error(LogCategory.VIRTUAL_DIRECTORY, 'Failed to get virtual directory file count:', error)
+      return 0
+    }
+  }
+
   async getVirtualDirectoryFiles(
     virtualDirectoryId: number | string,
     options?: { includeKeepFiles?: boolean }

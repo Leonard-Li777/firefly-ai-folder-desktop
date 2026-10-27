@@ -496,7 +496,15 @@ export function DoneView({
                                     icon={isRescuing && !isAutoRescuing ? 'sync' : 'auto_fix_high'}
                                     className={`text-xs ${isRescuing && !isAutoRescuing ? 'animate-spin' : ''}`}
                                   />
-                                  {isRescuing && !isAutoRescuing ? t('找补中...') : t('高级 AI 深度找补')}
+                                  {isRescuing && !isAutoRescuing
+                                    ? t('找补中...')
+                                    : unclassifiedFiles.length > 200
+                                      ? t('AI 优先找补前 200 个高潜文件 (共 {count} 个)', {
+                                          count: unclassifiedFiles.length
+                                        })
+                                      : t('高级 AI 深度找补 ({count} 个)', {
+                                          count: unclassifiedFiles.length
+                                        })}
                                 </Button>
                                 <Button
                                   variant="outline"
