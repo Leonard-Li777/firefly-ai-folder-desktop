@@ -16,6 +16,7 @@ import { checkIsUnit, getUnitTypeLabel, getUnitTheme, getUnitTooltip } from '../
 import { useFileQueueState } from '../../../../stores/analysis-queue-store'
 import { SystemFileIcon } from '../../../common/SystemFileIcon'
 import { HighlightText } from '../../../common/HighlightText'
+import { FileRowThumbnail } from './FileRowThumbnail'
 import { SearchListCard } from './SearchListCard'
 
 interface VirtualRowRendererInnerProps {
@@ -460,15 +461,9 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
                 {isUnit && unitTheme ? unitTheme.icon : 'folder'}
               </span>
             ) : (
-              <SystemFileIcon
-                path={fileItem?.path}
-                extension={fileItem?.extension}
-                className="w-5 h-5 object-contain mr-2 flex-shrink-0"
-                fallback={
-                  <span className="material-icons mr-2 text-xl flex-shrink-0 text-primary">
-                    description
-                  </span>
-                }
+              <FileRowThumbnail
+                fileItem={fileItem}
+                workspaceDirectoryPath={workspaceDirectoryPath}
               />
             )}
             <div className="flex flex-col min-w-0">

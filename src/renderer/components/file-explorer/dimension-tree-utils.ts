@@ -51,6 +51,77 @@ export function makeTagKey(
 }
 
 /**
+ * 构造维度子树与标签层级键 (Spec v4 §7 / PRD-0058)
+ * 供生产端 (dimension-tree-utils.ts) 与消费端 (DimensionTreeSidebar.tsx) 共用
+ *
+ * @param parentKey 父级标识（父维度 code/name 或 父标签 code/tagValue）
+ * @param tag 子标签对象或其字符串键
+ */
+/**
+ * 维度子树专用 Map (Spec v4 §7 / PRD-0058)
+ * 默认使用 dimensionNodeKey 层级键精确索引，并在调用方仅传入 tagValue/code 时安全降级后缀匹配
+ */
+export class DimensionChildTagsMap extends Map<string, DimensionTreeNode[]> {
+  private aliases = new Map<string, string>()
+
+  set(key: string, value: DimensionTreeNode[], alias?: string | string[]): this {
+    super.set(key, value)
+    if (alias) {
+      const aliasList = Array.isArray(alias) ? alias : [alias]
+      for (const a of aliasList) {
+        if (a && a !== key) {
+          this.aliases.set(a, key)
+        }
+      }
+    }
+    return this
+  }
+
+  get(key: string): DimensionTreeNode[] | undefined {
+    const direct = super.get(key)
+    if (direct !== undefined) return direct
+    const aliased = this.aliases.get(key)
+    if (aliased !== undefined) {
+      const fromAlias = super.get(aliased)
+      if (fromAlias !== undefined) return fromAlias
+    }
+    if (!key.includes('::')) {
+      for (const [k, v] of this.entries()) {
+        if (k.endsWith(`::${key}`) || v[0]?.name === key) {
+          return v
+        }
+      }
+    }
+    return undefined
+  }
+
+  has(key: string): boolean {
+    if (super.has(key)) return true
+    const aliased = this.aliases.get(key)
+    if (aliased !== undefined && super.has(aliased)) return true
+    if (!key.includes('::')) {
+      for (const [k, v] of this.entries()) {
+        if (k.endsWith(`::${key}`) || v[0]?.name === key) {
+          return true
+        }
+      }
+    }
+    return false
+  }
+}
+
+export const dimensionNodeKey = (
+  parentKey: string,
+  tag: { code?: string; tagValue?: string } | string
+): string => {
+  const tagKey = typeof tag === 'string' ? tag : (tag.code || tag.tagValue || '')
+  if (tagKey.startsWith(`${parentKey}::`)) {
+    return tagKey
+  }
+  return `${parentKey}::${tagKey}`
+}
+
+/**
  * 从 key 中解析出各部分
  */
 export function parseTagKey(key: string) {
@@ -410,8 +481,8 @@ export function nestGroupTags(
   tags: DimensionTag[],
   level: number,
   maxScaleDepth: number = 6
-): { directTags: DimensionTag[]; childTagsMap: Map<string, DimensionTreeNode[]> } {
-  const childTagsMap = new Map<string, DimensionTreeNode[]>()
+): { directTags: DimensionTag[]; childTagsMap: DimensionChildTagsMap } {
+  const childTagsMap = new DimensionChildTagsMap()
   if (!tags || tags.length === 0) {
     return { directTags: [], childTagsMap }
   }
@@ -569,11 +640,14 @@ export function nestGroupTags(
 
     if (directChildren.length === 0) return null
 
-    const subChildTagsMap = new Map<string, DimensionTreeNode[]>()
+    const subChildTagsMap = new DimensionChildTagsMap()
     directChildren.forEach((childTag) => {
       const grandSub = buildChildNode(childTag, currentVisualDepth + 1)
       if (grandSub) {
-        subChildTagsMap.set(childTag.tagValue, [grandSub])
+        const parentKey = parentTag.code || parentTag.tagValue
+        const key = dimensionNodeKey(parentKey, childTag)
+        const aliases = [childTag.tagValue, `${parentKey}::${childTag.tagValue}`]
+        subChildTagsMap.set(key, [grandSub], aliases)
       }
     })
 
@@ -593,7 +667,10 @@ export function nestGroupTags(
     // 直属标签所在层为 baseVisualDepth，其展开的子节点所在视觉深度为 baseVisualDepth + 1 (即 3)
     const subNode = buildChildNode(parentTag, baseVisualDepth + 1)
     if (subNode) {
-      childTagsMap.set(parentTag.tagValue, [subNode])
+      const parentKey = group.code || group.name
+      const key = dimensionNodeKey(parentKey, parentTag)
+      const aliases = [parentTag.tagValue, `${parentKey}::${parentTag.tagValue}`]
+      childTagsMap.set(key, [subNode], aliases)
     }
   })
 
@@ -761,8 +838,11 @@ export function buildDimensionTree(
             directTags.forEach(tag => {
               const externalChildren = recurse(group.id, tag.tagValue, lvl + 1)
               if (externalChildren.length > 0) {
-                const existing = childTagsMap.get(tag.tagValue) || []
-                childTagsMap.set(tag.tagValue, [...existing, ...externalChildren])
+                const parentKey = group.code || group.name
+                const key = dimensionNodeKey(parentKey, tag)
+                const aliases = [tag.tagValue, `${parentKey}::${tag.tagValue}`]
+                const existing = childTagsMap.get(key) || []
+                childTagsMap.set(key, [...existing, ...externalChildren], aliases)
               }
             })
           }
@@ -840,7 +920,7 @@ export function getVisibleAndHiddenTags(
 
   if (childTags instanceof Map) {
     hiddenTags.forEach(tag => {
-      const children = childTags!.get(tag.tagValue)
+      const children = childTags!.get(dimensionNodeKey(group.code || group.name, tag)) || childTags!.get(tag.tagValue)
       if (
         children &&
         children.some(child => {
@@ -1029,6 +1109,7 @@ export function getAllKeys(
     if (node.level === 0 && collapsedDimensionGroups?.has(node.id)) return
 
     const tagsToUse = resolveTagsToUse(node, parentTag)
+    const visitedChildKeys = new Set<string>()
     tagsToUse.forEach(tag => {
       if (tag.fileCount === 0) return
       const key = makeTagKey(
@@ -1041,13 +1122,27 @@ export function getAllKeys(
       )
       const currentChain = [...chain, tag.tagValue]
       keys.push({ key, ancestorChain: currentChain })
+
+      if (node.childTags) {
+        const nodeKey = dimensionNodeKey(node.code || node.name, tag)
+        const childNodes = node.childTags.get(nodeKey)
+        if (childNodes && childNodes.length > 0) {
+          visitedChildKeys.add(nodeKey)
+          keys.push(
+            ...getAllKeys(childNodes, tag.tagValue, currentChain, collapsedDimensionGroups)
+          )
+        }
+      }
     })
 
     if (node.childTags) {
-      for (const [childParentTag, childNodes] of node.childTags) {
-        keys.push(
-          ...getAllKeys(childNodes, childParentTag, [...chain, childParentTag], collapsedDimensionGroups)
-        )
+      for (const [childKey, childNodes] of node.childTags) {
+        if (!visitedChildKeys.has(childKey)) {
+          const fallbackTag = childKey.includes('::') ? childKey.split('::').pop()! : childKey
+          keys.push(
+            ...getAllKeys(childNodes, fallbackTag, [...chain, fallbackTag], collapsedDimensionGroups)
+          )
+        }
       }
     }
   })
