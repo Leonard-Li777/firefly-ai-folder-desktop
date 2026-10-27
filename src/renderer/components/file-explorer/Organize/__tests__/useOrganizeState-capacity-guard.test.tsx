@@ -54,7 +54,7 @@ vi.mock('../../../common/Toast', () => ({
 
 describe('useOrganizeState 3,000 容量硬上限与找补截断验证', () => {
   const wrapper = ({ children }: { children: React.ReactNode }) =>
-    React.createElement(MemoryRouter, null, children)
+    React.createElement(MemoryRouter, { initialEntries: ['/organize'] }, children)
 
   let mockReorganize: any
 
@@ -70,6 +70,11 @@ describe('useOrganizeState 3,000 容量硬上限与找补截断验证', () => {
         organizeCapacityLimit: 3000
       } as any
     })
+    useAnalyzedDirectoryStore.getState().setCurrentWorkspaceDirectory({
+      id: 1,
+      path: '/workspace',
+      name: 'workspace'
+    } as any)
     mockReorganize = vi.fn().mockResolvedValue({ success: true, tree: [] })
     ;(window as any).electronAPI = {
       getCurrentWorkspaceDirectory: vi.fn().mockResolvedValue({ id: 1, path: '/workspace' }),
@@ -284,5 +289,24 @@ describe('useOrganizeState 3,000 容量硬上限与找补截断验证', () => {
     expect(result.current.isCapacityExceeded).toBe(false)
     expect(result.current.capacityExceededCount).toBe(0)
     expect(result.current.showCapacityLimitDialog).toBe(false)
+  })
+
+  it('路由门禁：当处于已分析页面 (/analyzed-directory) 时，即使后台 KeepAlive 存活，也不拉取文件且弹窗恒为 false', async () => {
+    ;(window as any).electronAPI.organizeRealDirectory.getAnalyzedCount.mockResolvedValue(5000)
+
+    const analyzedWrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(MemoryRouter, { initialEntries: ['/analyzed-directory'] }, children)
+
+    const { result } = renderHook(() => useOrganizeState(), { wrapper: analyzedWrapper })
+
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 50))
+    })
+
+    // 严密断言：非 /organize 页面下绝不弹窗、不拉取文件
+    expect(result.current.showCapacityLimitDialog).toBe(false)
+    expect(result.current.isCapacityExceeded).toBe(false)
+    expect(result.current.toOrganizeFiles).toHaveLength(0)
+    expect((window as any).electronAPI.organizeRealDirectory.getLightweightFiles).not.toHaveBeenCalled()
   })
 })

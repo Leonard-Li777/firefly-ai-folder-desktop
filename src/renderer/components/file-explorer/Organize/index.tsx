@@ -1162,7 +1162,7 @@ export const Organize: React.FC = () => {
         metadata={{ vdirId: currentVDir?.id }}
         onSuccess={handleRegenerateSaveAfterFirecoreConfirm}
       />
-      <Dialog open={showCapacityLimitDialog} onOpenChange={setShowCapacityLimitDialog}>
+      <Dialog open={location.pathname === '/organize' && showCapacityLimitDialog} onOpenChange={setShowCapacityLimitDialog}>
         <DialogContent className="sm:max-w-[540px] p-0 overflow-hidden border border-border shadow-2xl rounded-2xl">
           {/* 顶栏：暖色调柔和警示与规模量化 */}
           <div className="px-6 pt-5 pb-4 border-b border-border bg-amber-500/5">

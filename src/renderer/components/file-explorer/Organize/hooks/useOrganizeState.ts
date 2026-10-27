@@ -270,6 +270,10 @@ export function useOrganizeState() {
   }, [currentWorkspaceDirectory, organizeCapacityLimit, t])
 
   const loadFilesToOrganize = useCallback(async () => {
+    // 门禁：仅在当前处于 /organize 页面时才加载待整理文件；避免 KeepAlive 存活时在其它页面被误触发
+    if (location.pathname !== '/organize') {
+      return
+    }
     // 如果工作目录尚未恢复，先尝试从后端获取
     let workspace = currentWorkspaceDirectory
     if (!workspace?.id || !workspace?.path) {
@@ -342,11 +346,15 @@ export function useOrganizeState() {
     } finally {
       setIsLoadingFiles(false)
     }
-  }, [currentWorkspaceDirectory])
+  }, [currentWorkspaceDirectory, location.pathname, location.state, organizeCapacityLimit])
 
   // 挂载时自动恢复工作目录并拉取已分析文件；工作区变化时重新拉取
   const hasResetFromStateRef = useRef(false)
   useEffect(() => {
+    if (location.pathname !== '/organize') {
+      setShowCapacityLimitDialog(false)
+      return
+    }
     loadFilesToOrganize()
 
     // 如果有勾选状态带入（从已分析页面跳转过来），彻底清除 Keep-Alive 旧状态并复位到选择整理模式
@@ -490,8 +498,12 @@ export function useOrganizeState() {
     activeLanguage
   ])
 
-  // 监听待整理文件数量，超出 3,000 硬上限时触发阻断弹窗与引导
+  // 监听待整理文件数量，超出容量上限时触发阻断弹窗与引导
   useEffect(() => {
+    if (location.pathname !== '/organize') {
+      setShowCapacityLimitDialog(false)
+      return
+    }
     if (!isLoadingFiles) {
       if (toOrganizeFiles.length > organizeCapacityLimit) {
         setIsCapacityExceeded(true)
@@ -503,7 +515,7 @@ export function useOrganizeState() {
         setShowCapacityLimitDialog(false)
       }
     }
-  }, [isLoadingFiles, toOrganizeFiles.length, isCapacityExceeded, organizeCapacityLimit])
+  }, [isLoadingFiles, toOrganizeFiles.length, isCapacityExceeded, organizeCapacityLimit, location.pathname])
 
   // 处理在模式选择卡片点击选择已保存虚拟目录（增量整理）
   const handleSelectIncrementalVd = useCallback(
