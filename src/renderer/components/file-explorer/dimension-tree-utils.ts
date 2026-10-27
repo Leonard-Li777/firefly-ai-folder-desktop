@@ -480,7 +480,7 @@ export function nestGroupTags(
   group: DimensionGroup,
   tags: DimensionTag[],
   level: number,
-  maxScaleDepth: number = 6
+  maxScaleDepth: number = 7
 ): { directTags: DimensionTag[]; childTagsMap: DimensionChildTagsMap } {
   const childTagsMap = new DimensionChildTagsMap()
   if (!tags || tags.length === 0) {
@@ -567,30 +567,20 @@ export function nestGroupTags(
   // 4. 当 baseVisualDepth >= maxScaleDepth 时 (例如 maxScaleDepth <= 2)：
   // 当前直属标签层已达最大允许视觉深度，所有更深层子孙标签全量穿透提升平铺到 directTags 中，且不再生成 childTagsMap
   if (baseVisualDepth >= maxScaleDepth) {
-    const allDescendants: DimensionTag[] = []
-    for (const pt of directTags) {
-      const descendants = collectDescendantTags(pt, index)
-      allDescendants.push(...descendants)
-    }
-    if (allDescendants.length > 0) {
-      const dummyContainer: DimensionTag = {
-        dimensionId: group.id,
-        dimensionCode: group.code,
-        dimensionName: group.name,
-        tagValue: group.name,
-        code: group.code,
-        level: baseVisualDepth,
-        fileCount: 0,
-        isMultiSelect: false
-      }
-      const liftedTags = aggregateLiftedTags(allDescendants, dummyContainer, baseVisualDepth)
-      const existingKeys = new Set(directTags.map(t => t.code || t.tagValue))
+    // 逐一直属标签作为提升容器聚合并平铺：同一深层标签若来自不同顶层容器
+    // （如「图片」与「视频」下各自的「无码」），必须各自保留一行并绑定所属容器，
+    // 严禁跨容器合并为单行或把容器降级为维度根（否则 liftCode 无法回溯容器子树）。
+    const containers = [...directTags]
+    for (const containerTag of containers) {
+      const descendants = collectDescendantTags(containerTag, index)
+      if (descendants.length === 0) continue
+
+      const liftedTags = aggregateLiftedTags(descendants, containerTag, baseVisualDepth)
       for (const lt of liftedTags) {
-        const key = lt.code || lt.tagValue
-        if (!existingKeys.has(key)) {
-          existingKeys.add(key)
-          directTags.push(lt)
-        }
+        const isContainerSelf = lt.code
+          ? lt.code === containerTag.code
+          : !containerTag.code && lt.tagValue === containerTag.tagValue
+        if (!isContainerSelf) directTags.push(lt)
       }
     }
     return { directTags, childTagsMap }
@@ -720,7 +710,7 @@ export function buildDimensionTree(
   parentId: number | null = null,
   parentTag: string | null = null,
   level = 0,
-  maxScaleDepth: number = 6
+  maxScaleDepth: number = 7
 ): DimensionTreeNode[] {
   // 预构建 parentId → groups 查找表和 hasChildren 集合，消除 O(n²)
   const map = new Map<number | null, DimensionGroup[]>()

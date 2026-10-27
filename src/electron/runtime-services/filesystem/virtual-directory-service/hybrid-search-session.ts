@@ -240,8 +240,11 @@ export class HybridSearchSession {
         const cand = candidateByFp.get(ref.fileFingerprint)
         const matchedChunk = cand?.matchedChunk
           ? {
+              chunkIndex: cand.matchedChunk.chunkIndex,
               startSec: cand.matchedChunk.startSec,
               endSec: cand.matchedChunk.endSec,
+              repPtsSec: cand.matchedChunk.repPtsSec,
+              seekSec: cand.matchedChunk.seekSec,
               similarity: cand.matchedChunk.similarity
             }
           : undefined
@@ -250,6 +253,8 @@ export class HybridSearchSession {
               chunkIndex: c.chunkIndex,
               startSec: c.startSec,
               endSec: c.endSec,
+              repPtsSec: c.repPtsSec,
+              seekSec: c.seekSec,
               similarity: c.similarity
             }))
           : undefined

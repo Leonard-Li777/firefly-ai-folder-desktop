@@ -1587,7 +1587,9 @@ export class TagTreeQuery {
                 pParents = JSON.parse(pRow.parent_codes || '[]')
               } catch {}
               const traced = traceAncestorGroup(pParents, visited)
-              if (traced) return traced
+              if (traced) {
+                return { targetGroup: traced.targetGroup, parentCode: p, level: traced.level + 1 }
+              }
             }
           }
           return undefined

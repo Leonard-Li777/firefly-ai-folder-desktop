@@ -4,7 +4,7 @@
  * 覆盖 AC11 中属于渲染层的部分：
  *  - 只追加、按 path 去重、已有项位置/顺序不变（列表快照）；
  *  - 过期 seq 直接丢弃；重复 phase3 同 seq 只处理一次；
- *  - 1500ms 熔断只作用 phase2，不得吞掉 phase3；
+ *  - 6000ms 安全熔断只作用 phase2，不得吞掉 phase3；
  *  - 热态（phase2 不带 clipPending）不展示加载提示、不产生二次刷新。
  */
 
@@ -35,7 +35,8 @@ vi.mock('@voerkai18n/react', () => ({
 
 vi.mock('@/renderer/components/file-explorer/FileExplorerLayout', () => ({
   FileExplorerLayout: (props: any) => (
-    <div data-testid="file-explorer-layout">
+    <div data-testid="file-explorer-layout" data-loading={String(props.isLoading)}>
+      {props.isLoading && props.files.length === 0 && <div data-testid="search-loading">正在搜索...</div>}
       <div data-testid="file-count">{props.files.length}</div>
       {props.files.map((f: any) => (
         <div key={f.path} data-path={f.path} data-testid="file-item">
@@ -251,7 +252,7 @@ describe('GlobalSearchOverlay phase3（冷态 CLIP 追加）', () => {
     expect(renderedPaths()).toEqual(['C:\\Work\\a.jpg'])
   })
 
-  it('1500ms 熔断只作用 phase2：phase3 迟到仍能追加', async () => {
+  it('6000ms 安全熔断只作用 phase2：phase3 迟到仍能追加', async () => {
     await mountAndStartSearch()
 
     act(() => {
@@ -266,7 +267,7 @@ describe('GlobalSearchOverlay phase3（冷态 CLIP 追加）', () => {
 
     // 熔断触发（呼吸条归位 idle）
     await act(async () => {
-      vi.advanceTimersByTime(1600)
+      vi.advanceTimersByTime(6100)
     })
     expect(screen.queryByText('深度语义对齐中...')).toBeNull()
 
@@ -338,5 +339,49 @@ describe('GlobalSearchOverlay phase3（冷态 CLIP 追加）', () => {
     })
     // 清空后浮层整体卸载，提示自然不存在
     expect(screen.queryByTestId('clip-cold-hint')).toBeNull()
+  })
+
+  it('Phase 2 结果为 0 且 clipPending=true 时，持续保持 Loading 态，直到 Phase 3 到达才收回 Loading', async () => {
+    await mountAndStartSearch()
+
+    // Phase 1 零命中
+    act(() => {
+      progressCallback?.({
+        phase: 'phase1',
+        seq: currentSeq,
+        items: [],
+        total: 0
+      })
+    })
+
+    // Phase 2 也是零命中，但带有 clipPending: true（视觉模型冷态加载中）
+    act(() => {
+      progressCallback?.({
+        phase: 'phase2',
+        seq: currentSeq,
+        items: [],
+        total: 0,
+        clipPending: true
+      })
+    })
+
+    // 验证：绝对不能展示「没有找到匹配的文件」假空态，应持续展示 Loading
+    expect(screen.queryByText('没有找到匹配的文件')).toBeNull()
+    expect(screen.getByTestId('search-loading')).toBeInTheDocument()
+
+    // Phase 3 迟到到达，送达视觉切片结果
+    act(() => {
+      progressCallback?.({
+        phase: 'phase3',
+        seq: currentSeq,
+        items: [item('C:\\Work\\car.mp4', 'car.mp4')],
+        total: 1
+      })
+    })
+
+    // 验证：Phase 3 到达后 Loading 结束，列表成功渲染结果
+    expect(screen.queryByTestId('search-loading')).toBeNull()
+    expect(screen.queryByText('没有找到匹配的文件')).toBeNull()
+    expect(renderedPaths()).toEqual(['C:\\Work\\car.mp4'])
   })
 })

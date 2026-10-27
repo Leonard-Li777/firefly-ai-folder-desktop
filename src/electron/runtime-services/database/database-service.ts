@@ -19,6 +19,7 @@ import {
   isControlledConcept,
   isControlledDimensionApplicableInDomain,
   getParentDimensionCodeOfTag,
+  CONTROLLED_CONCEPT_DETAILS,
   classifyDimensionMutexScope
 } from '@firefly/shared'
 import {
@@ -696,6 +697,12 @@ export class DatabaseService {
         DROP TABLE IF EXISTS omw_lexical_entries;
         DROP TABLE IF EXISTS omw_synsets;
         DROP TABLE IF EXISTS omw_languages;
+
+        -- 历史存量语言字段归一化为 BCP 47 规范格式（如 zh-CN, en-US）
+        UPDATE files SET language = 'zh-CN' WHERE language IN ('zh', 'zh_CN', 'zh-cn');
+        UPDATE files SET language = 'en-US' WHERE language IN ('en', 'en_US', 'en-us');
+        UPDATE files SET language = 'ja-JP' WHERE language IN ('ja', 'ja_JP', 'ja-jp');
+        UPDATE files SET language = 'ko-KR' WHERE language IN ('ko', 'ko_KR', 'ko-kr');
       `)
 
     } catch (error) {
@@ -1455,14 +1462,26 @@ export class DatabaseService {
 
     for (let i = 0; i < combinedAddTags.length; i++) {
       const item = combinedAddTags[i]
-      const dimCode =
+      let dimCode =
         item.viaParentCode ||
         item.dimensionCode ||
-        this.resolveDimensionCode((item as any).dimensionId, item.dimensionName) ||
-        concept('内容标签')
+        this.resolveDimensionCode((item as any).dimensionId, item.dimensionName)
 
       // 只有显式传入已完成鉴别且匹配父级的受控 code，或显式传入的私有 code 时，才跳过 Omni 预检
       const explicitTagCode = (item as any).tagCode
+
+      // 优先从受控本体反查规范父维度，阻断受控标签私自跌落内容标签伪分支
+      if (!dimCode || dimCode === concept('内容标签')) {
+        const autoParent =
+          (isControlledConcept(item.tagName)
+            ? (CONTROLLED_CONCEPT_DETAILS[item.tagName]?.parentName
+                ? concept(CONTROLLED_CONCEPT_DETAILS[item.tagName].parentName as any)
+                : undefined)
+            : undefined) ||
+          (explicitTagCode ? getParentDimensionCodeOfTag(explicitTagCode) : undefined)
+        dimCode = autoParent || dimCode || concept('内容标签')
+      }
+      const safeDimCode: string = dimCode || concept('内容标签')
 
       if (explicitTagCode) {
         // 已有受控或私有 tagCode
@@ -1475,7 +1494,7 @@ export class DatabaseService {
         const matchedParent = (item as any).matchedParent !== false
         resolvedAddTagItems.push({
           tagName: item.tagName,
-          dimCode,
+          dimCode: safeDimCode,
           tagCode: explicitTagCode,
           isControlled,
           matchedParent
@@ -1483,12 +1502,12 @@ export class DatabaseService {
       } else {
         uninspectedItems.push({
           tagName: item.tagName,
-          targetParentCode: dimCode,
+          targetParentCode: safeDimCode,
           originalIndex: resolvedAddTagItems.length
         })
         resolvedAddTagItems.push({
           tagName: item.tagName,
-          dimCode,
+          dimCode: safeDimCode,
           isControlled: false,
           matchedParent: false
         })

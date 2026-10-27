@@ -7,7 +7,9 @@ import {
   getVisibleAndHiddenTags,
   getSelectedTagsFromSet,
   getAllKeys,
-  migrateTagKeysAcrossScale
+  migrateTagKeysAcrossScale,
+  dimensionNodeKey,
+  DimensionChildTagsMap
 } from '../dimension-tree-utils'
 import { DimensionGroup, DimensionTag } from '@firefly/types'
 
@@ -1313,5 +1315,135 @@ describe('migrateTagKeysAcrossScale 跨刻度自愈与全覆盖不变式测试',
     const begSubs = transmitSubs![0].childTags?.get('拜托')
     expect(begSubs).toBeDefined()
     expect(begSubs![0].tags.some(t => t.tagValue === '要求' && t.code === 'omw.00754942.v')).toBe(true)
+  })
+
+  it('AC-8 (Spec G9 / PRD-0058): 跨容器同码不同父与同名不同码隔离性，dimensionNodeKey 杜绝覆盖与合并', () => {
+    // 1. 同码不同父：同一标签「漫画」(omw.06780678.n) 分别出现在「图片分类」与「电子书细分」下
+    // 分别挂接不同的外部子维度（画面风格 vs 题材），断言互不覆盖、各自精准查出
+    const mangaTagImg = {
+      dimensionId: 1,
+      dimensionCode: 'builtin.image',
+      dimensionName: '图片分类',
+      tagValue: '漫画',
+      code: 'omw.06780678.n',
+      fileCount: 10,
+      isMultiSelect: false
+    }
+    const mangaTagEbook = {
+      dimensionId: 2,
+      dimensionCode: 'builtin.e_book_segmentation',
+      dimensionName: '电子书细分',
+      tagValue: '漫画',
+      code: 'omw.06780678.n',
+      fileCount: 5,
+      isMultiSelect: false
+    }
+
+    const multiDomainGroups: DimensionGroup[] = [
+      {
+        id: 1,
+        name: '图片分类',
+        code: 'builtin.image',
+        level: 0,
+        tags: [mangaTagImg],
+        isMultiSelect: false
+      },
+      {
+        id: 2,
+        name: '电子书细分',
+        code: 'builtin.e_book_segmentation',
+        level: 0,
+        tags: [mangaTagEbook],
+        isMultiSelect: false
+      },
+      {
+        id: 121,
+        name: '画面风格',
+        code: 'builtin.art_style',
+        level: 1,
+        parentDimensionIds: [1],
+        triggerConditions: [
+          { parentDimension: '图片分类', triggerTags: ['漫画'] }
+        ],
+        tags: [
+          {
+            dimensionId: 121,
+            dimensionCode: 'builtin.art_style',
+            dimensionName: '画面风格',
+            tagValue: '黑白',
+            code: 'omw.monochrome',
+            fileCount: 10,
+            isMultiSelect: false
+          }
+        ],
+        isMultiSelect: false
+      },
+      {
+        id: 122,
+        name: '题材',
+        code: 'builtin.theme',
+        level: 1,
+        parentDimensionIds: [2],
+        triggerConditions: [
+          { parentDimension: '电子书细分', triggerTags: ['漫画'] }
+        ],
+        tags: [
+          {
+            dimensionId: 122,
+            dimensionCode: 'builtin.theme',
+            dimensionName: '题材',
+            tagValue: '热血',
+            code: 'omw.action',
+            fileCount: 5,
+            isMultiSelect: false
+          }
+        ],
+        isMultiSelect: false
+      }
+    ]
+
+    const tree = buildDimensionTree(multiDomainGroups, null, null, 0, 4)
+    expect(tree.length).toBe(2)
+
+    const imgRoot = tree.find(n => n.name === '图片分类')!
+    expect(imgRoot).toBeDefined()
+    expect(imgRoot.childTags).toBeDefined()
+    // 图片分类下的漫画触发的是「画面风格」
+    const imgMangaChildren = imgRoot.childTags!.get(dimensionNodeKey(imgRoot.code || imgRoot.name, mangaTagImg))
+    expect(imgMangaChildren).toBeDefined()
+    expect(imgMangaChildren!.length).toBe(1)
+    expect(imgMangaChildren![0].name).toBe('画面风格')
+
+    const ebookRoot = tree.find(n => n.name === '电子书细分')!
+    expect(ebookRoot).toBeDefined()
+    expect(ebookRoot.childTags).toBeDefined()
+    // 电子书细分下的漫画触发的是「题材」
+    const ebookMangaChildren = ebookRoot.childTags!.get(dimensionNodeKey(ebookRoot.code || ebookRoot.name, mangaTagEbook))
+    expect(ebookMangaChildren).toBeDefined()
+    expect(ebookMangaChildren!.length).toBe(1)
+    expect(ebookMangaChildren![0].name).toBe('题材')
+
+    // 核心断言：同码不同父互不覆盖、互不窜挂
+    expect(imgRoot.childTags!.get(dimensionNodeKey(ebookRoot.code || ebookRoot.name, mangaTagEbook))).toBeUndefined()
+    expect(ebookRoot.childTags!.get(dimensionNodeKey(imgRoot.code || imgRoot.name, mangaTagImg))).toBeUndefined()
+
+    // 2. 同名不同码：同容器下两个展示名均为「小说」但机器码分别为 omw.06367879.n 与 omw.03833065.n
+    const novelA = { tagValue: '小说', code: 'omw.06367879.n' }
+    const novelB = { tagValue: '小说', code: 'omw.03833065.n' }
+    const parentKey = 'builtin.e_book_segmentation'
+    const keyA = dimensionNodeKey(parentKey, novelA)
+    const keyB = dimensionNodeKey(parentKey, novelB)
+
+    expect(keyA).toBe('builtin.e_book_segmentation::omw.06367879.n')
+    expect(keyB).toBe('builtin.e_book_segmentation::omw.03833065.n')
+    expect(keyA).not.toBe(keyB)
+
+    // 在 DimensionChildTagsMap 中各存各的，互不覆盖
+    const childMap = new DimensionChildTagsMap()
+    childMap.set(keyA, [{ id: 101, name: '题材A', tags: [] } as any])
+    childMap.set(keyB, [{ id: 102, name: '题材B', tags: [] } as any])
+
+    expect(childMap.get(keyA)![0].name).toBe('题材A')
+    expect(childMap.get(keyB)![0].name).toBe('题材B')
   })
 })

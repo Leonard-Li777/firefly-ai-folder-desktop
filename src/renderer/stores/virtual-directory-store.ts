@@ -222,9 +222,24 @@ function codesToSelectedTags(
   return result
 }
 
+const CURRENT_WORKSPACE_KEY = 'firefly_current_workspace_directory'
+
+function getInitialWorkspaceDirectory(): WorkspaceDirectory | null {
+  try {
+    const saved = localStorage.getItem(CURRENT_WORKSPACE_KEY)
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      if (parsed && typeof parsed.path === 'string' && parsed.path.trim()) {
+        return parsed
+      }
+    }
+  } catch (e) {}
+  return null
+}
+
 export const useVirtualDirectoryStore = create<VirtualDirectoryStore>((set, get) => ({
-  // Initial state
-  currentWorkspaceDirectory: null,
+  // Initial state（从 localStorage 同步获取首帧目录，消除热更新与挂载时的异步空窗）
+  currentWorkspaceDirectory: getInitialWorkspaceDirectory(),
   workspaceDirectories: [],
   dimensionGroups: [],
   tagTopology: new Map<string, TagTopologyNode>(),
@@ -247,6 +262,13 @@ export const useVirtualDirectoryStore = create<VirtualDirectoryStore>((set, get)
 
   // Current workspace directory
   setCurrentWorkspaceDirectory: directory => {
+    try {
+      if (directory) {
+        localStorage.setItem(CURRENT_WORKSPACE_KEY, JSON.stringify(directory))
+      } else {
+        localStorage.removeItem(CURRENT_WORKSPACE_KEY)
+      }
+    } catch (e) {}
     set({
       currentWorkspaceDirectory: directory,
       selectedTags: [],

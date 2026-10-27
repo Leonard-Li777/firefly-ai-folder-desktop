@@ -159,7 +159,14 @@ export const Organize: React.FC = () => {
     deleteTagGlobally,
     trashDuplicateFiles,
     isTrashingDuplicates,
-    loadFilesToOrganize
+    loadFilesToOrganize,
+
+    // 3,000 容量硬上限守卫
+    isCapacityExceeded,
+    capacityExceededCount,
+    showCapacityLimitDialog,
+    setShowCapacityLimitDialog,
+    handleGoToAnalyzedPage
   } = useOrganizeState()
 
   const isStandaloneStage = stage === 'batch-rename' || stage === 'batch-duplicate'
@@ -675,6 +682,28 @@ export const Organize: React.FC = () => {
           </div>
         </div>
 
+        {isCapacityExceeded && (
+          <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 flex items-center justify-between text-xs text-amber-600 dark:text-amber-400 shrink-0">
+            <div className="flex items-center gap-2 min-w-0">
+              <MaterialIcon icon="warning" className="text-sm shrink-0" />
+              <span className="truncate">
+                {t('当前待整理文件数量（{count} 个）超出单次整理上限（3,000 个）。请前往「已分析」页面手动勾选目标文件。', {
+                  count: capacityExceededCount
+                })}
+              </span>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleGoToAnalyzedPage}
+              className="h-6 text-[11px] px-2 border-amber-500/30 hover:bg-amber-500/10 text-amber-600 dark:text-amber-400 shrink-0"
+            >
+              <MaterialIcon icon="checklist" className="mr-1 text-xs" />
+              {t('前往勾选')}
+            </Button>
+          </div>
+        )}
+
         <div className="flex-1 flex overflow-hidden relative">
           {/* 左侧常驻批量功能导航侧边栏 */}
           <OrganizeSidebar
@@ -1120,6 +1149,39 @@ export const Organize: React.FC = () => {
         metadata={{ vdirId: currentVDir?.id }}
         onSuccess={handleRegenerateSaveAfterFirecoreConfirm}
       />
+      <Dialog open={showCapacityLimitDialog} onOpenChange={setShowCapacityLimitDialog}>
+        <DialogContent className="sm:max-w-[460px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive font-bold">
+              <MaterialIcon icon="error_outline" className="text-destructive text-xl" />
+              {t('待整理文件超出单次上限')}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-3 text-sm text-muted-foreground leading-relaxed">
+            {t(
+              '当前待整理文件共包含 {count} 个，超出单次批量整理最佳负荷（3,000 个）。为保障系统响应速度与 AI 归类质量，请前往「已分析」页面手动勾选目标文件后再发起整理。',
+              { count: capacityExceededCount }
+            )}
+          </div>
+          <DialogFooter className="flex-row justify-end gap-2 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowCapacityLimitDialog(false)}
+              className="text-xs"
+            >
+              {t('留在当前页')}
+            </Button>
+            <Button
+              onClick={handleGoToAnalyzedPage}
+              className="text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              <MaterialIcon icon="checklist" className="mr-1 text-sm" />
+              {t('前往「已分析」页面勾选')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={showBatchLimitConfirm} onOpenChange={setShowBatchLimitConfirm}>
         <DialogContent className="sm:max-w-[440px]">
           <DialogHeader>

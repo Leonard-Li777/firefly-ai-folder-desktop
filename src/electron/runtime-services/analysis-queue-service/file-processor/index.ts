@@ -29,7 +29,8 @@ import {
   isTrustworthyMaterializedCodePath,
   getCanonicalConceptName,
   resolveRuntimeMaterializedPath,
-  CONTROLLED_CONCEPTS
+  CONTROLLED_CONCEPTS,
+  normalizeLangCode
 } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import {
@@ -3263,7 +3264,7 @@ export class FileProcessor {
         fileData.type || 'unknown',
         fileData.category ? JSON.stringify(fileData.category) : null,
         fileData.author || '',
-        fileData.language || 'zh-CN',
+        normalizeLangCode(fileData.language),
         now,
         now,
         now

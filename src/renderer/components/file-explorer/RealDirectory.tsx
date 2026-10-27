@@ -252,6 +252,8 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
     if (!window.electronAPI?.onSearchProgress) return
 
     const unsubscribe = window.electronAPI.onSearchProgress(payload => {
+      // 通道守卫：仅消费本真实目录通道或未指定通道的推流，隔离全域搜索浮层推流
+      if (payload.channel && payload.channel !== 'real-directory') return
       // 丢弃旧序号过时推流，杜绝乱序竞态
       if (payload.seq !== searchSeqRef.current) return
 
@@ -361,7 +363,7 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
         const results = await window.electronAPI!.searchWorkspaceFiles(
           keyword,
           currentWorkspaceDirectory.path,
-          { stream: true, seq: currentSeq }
+          { stream: true, seq: currentSeq, channel: 'real-directory' }
         )
         // 校验序号，防止过时请求覆盖
         if (currentSeq === searchSeqRef.current) {

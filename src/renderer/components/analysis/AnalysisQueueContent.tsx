@@ -846,10 +846,10 @@ export function AnalysisQueueContent({
 
       {/* 动态列宽表头与虚拟文件列表区 - 最小化状态下隐藏 */}
       {!isSplitMinimized && (
-        <div className="flex-1 p-2 min-h-0 overflow-hidden flex flex-col">
+        <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
           <div
             ref={tableContainerRef}
-            className="w-full h-full border border-border/60 rounded-lg bg-card/40 flex flex-col overflow-hidden"
+            className="w-full h-full bg-card/40 flex flex-col overflow-hidden"
           >
             {/* 列头表头 (支持相邻列宽度拖拽) */}
             <div

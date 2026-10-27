@@ -24,6 +24,16 @@ interface GlobalSearchOverlayProps {
  */
 const CLIP_COLD_HINT_TIMEOUT_MS = 6000
 
+/**
+ * 语义分析（Phase 2）安全超时熔断阈值。
+ * 与冷态 CLIP 视觉模型超时（`CLIP_COLD_HINT_TIMEOUT_MS = 6000`）及后端口径对齐：
+ * 冷态或热更新后，倒排 Trie 树装配（~650ms）+ 分词 + 768d 语义向量计算 + 段落对齐
+ * 总耗时约 1.5s ~ 2.5s。旧值 1500ms 过于激进脆弱，会导致冷态/热更新后首次纯语义搜索
+ * 100% 触发超时熔断，过早退出分析态并呈现「没有文件」假空态。
+ * 放宽至 6000ms（防死锁兜底），既为冷态预留充足计算窗口，又防止死锁时呼吸条无限挂起。
+ */
+export const SEMANTIC_SEARCH_TIMEOUT_MS = 6000
+
 export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
   workspaceDirectory
 }) => {
@@ -69,6 +79,8 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
   const handledPhase2SeqRef = useRef<number>(-1)
   /** 工单 13：phase3 独立序号守卫 —— **不得复用** handledPhase2SeqRef，否则两者互相吞并 */
   const handledPhase3SeqRef = useRef<number>(-1)
+  /** 标识当前是否在等待冷态 Phase 3 视觉切片（此时当前结果仍为 0，需持续保持 Loading，防假空态闪烁） */
+  const isWaitingPhase3Ref = useRef<boolean>(false)
   const searchDebounceTimerRef = useRef<NodeJS.Timeout | null>(null)
   const semanticTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const clipHintTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -190,6 +202,8 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
     if (!window.electronAPI?.onSearchProgress) return
 
     const unsubscribe = window.electronAPI.onSearchProgress(payload => {
+      // 通道守卫：仅消费本全局搜索浮层或未指定通道的推流，隔离其他局部搜索
+      if (payload.channel && payload.channel !== 'global-overlay') return
       // 仅当前活跃序号允许写回，丢弃过期旧请求推流
       if (payload.seq !== searchSeqRef.current) return
 
@@ -197,16 +211,21 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
         // 若 Phase 2 已率先到达或处理，丢弃延迟的 Phase 1，防止全量置换被旧首屏覆盖
         if (handledPhase2SeqRef.current === payload.seq) return
 
+        const hasItems = (payload.items?.length || 0) > 0
+
         // Phase 1: 毫秒级字面先行上屏
         setSearchResults(payload.items || [])
         setSearchPhase('phase1_done_analyzing_semantic')
-        setIsLoading(false)
+        // 若 Phase 1 命中字面结果，收回全屏 Loading 呈现先行结果；
+        // 若 Phase 1 零命中（如纯语义词、描述短语），保持 isLoading=true，展示深度语义检索 Loading，
+        // 绝不可过早退出加载态而呈现「没有找到匹配的文件」虚假空态！
+        setIsLoading(!hasItems)
 
         if (payload.tokens && payload.tokens.length > 0) {
           useSearchStore.getState().setSearchTokens(payload.tokens)
         }
 
-        // 挂载 1500ms 安全超时熔断，防止 Omni 死锁导致呼吸条挂起
+        // 挂载安全超时熔断（与冷态 6000ms 对齐），防止 Omni 死锁导致呼吸条挂起
         if (semanticTimeoutRef.current) {
           clearTimeout(semanticTimeoutRef.current)
         }
@@ -214,11 +233,12 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
           if (searchSeqRef.current === payload.seq) {
             logger.warn(
               LogCategory.RENDERER,
-              '[GlobalSearchOverlay] Phase 2 语义分析超时熔断(1500ms)，恢复空闲态'
+              `[GlobalSearchOverlay] Phase 2 语义分析超时熔断(${SEMANTIC_SEARCH_TIMEOUT_MS}ms)，恢复空闲态`
             )
             setSearchPhase('idle')
+            setIsLoading(false)
           }
-        }, 1500)
+        }, SEMANTIC_SEARCH_TIMEOUT_MS)
       } else if (payload.phase === 'phase2') {
         // 对称幂等保护：若已处理该序号的 Phase 2（例如 Promise 先行返回），直接短路
         if (handledPhase2SeqRef.current === payload.seq) return
@@ -229,7 +249,19 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
         }
         handlePhase2Replace(payload.items || [])
         setSearchPhase('idle')
-        setIsLoading(false)
+
+        const incomingItemsCount = (payload.items || []).length
+        const hasPendingClip = Boolean(payload.clipPending)
+
+        // 若当前结果为空且视觉模型仍在后台调度加载中（clipPending），最终结果尚未返回！
+        // 必须持续保持 isLoading=true，绝不能提前退出 loading 导致用户看到假空态！
+        if (incomingItemsCount === 0 && hasPendingClip) {
+          isWaitingPhase3Ref.current = true
+          setIsLoading(true)
+        } else {
+          isWaitingPhase3Ref.current = false
+          setIsLoading(false)
+        }
 
         if (payload.tokens && payload.tokens.length > 0) {
           useSearchStore.getState().setSearchTokens(payload.tokens)
@@ -240,12 +272,16 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
           clearTimeout(clipHintTimeoutRef.current)
           clipHintTimeoutRef.current = null
         }
-        if (payload.clipPending) {
+        if (hasPendingClip) {
           setIsClipColdLoading(true)
           clipHintTimeoutRef.current = setTimeout(() => {
             if (searchSeqRef.current === payload.seq) {
               // 超时静默收提示：搜索界面不弹错误，用户只是看不到额外追加项
               setIsClipColdLoading(false)
+              if (isWaitingPhase3Ref.current) {
+                isWaitingPhase3Ref.current = false
+                setIsLoading(false)
+              }
             }
           }, CLIP_COLD_HINT_TIMEOUT_MS)
         } else {
@@ -261,7 +297,9 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
           clipHintTimeoutRef.current = null
         }
         setIsClipColdLoading(false)
-        // 只追加，不重排/不清空/不改 searchPhase；1500ms 熔断早已把呼吸条归位，此处不受影响
+        isWaitingPhase3Ref.current = false
+        // Phase 3 视觉切片送达，最终结果已全量就绪，收回加载态！
+        setIsLoading(false)
         appendPhase3Items(payload.items || [])
       }
     })
@@ -290,6 +328,7 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
     if (!keyword) {
       searchSeqRef.current++
       setSearchResults([])
+      isWaitingPhase3Ref.current = false
       setIsLoading(false)
       setSearchPhase('idle')
       // 工单 13：清空搜索词时一并收掉冷态提示，避免残留
@@ -304,6 +343,7 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
     if (!workspaceDirectory?.path) {
       searchSeqRef.current++
       setSearchResults([])
+      isWaitingPhase3Ref.current = false
       setIsLoading(false)
       setSearchPhase('idle')
       if (clipHintTimeoutRef.current) {
@@ -322,7 +362,7 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
         const results = await window.electronAPI!.searchWorkspaceFiles(
           keyword,
           workspaceDirectory.path,
-          { stream: true, seq: currentSeq }
+          { stream: true, seq: currentSeq, channel: 'global-overlay' }
         )
 
         // 仅最新一次请求允许写回 State，防止慢响应覆盖快响应
@@ -333,7 +373,10 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
             handlePhase2Replace(results || [])
           }
           setSearchPhase('idle')
-          setIsLoading(false)
+          // 若仍在等待冷态 Phase 3 追加（当前结果仍为 0），持续保持 loading 直到 Phase 3 或超时
+          if (!isWaitingPhase3Ref.current) {
+            setIsLoading(false)
+          }
 
           const tokens = (results as any)?.tokens || []
           if (tokens.length > 0) {
@@ -352,10 +395,14 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
         if (currentSeq === searchSeqRef.current) {
           setSearchResults([])
           setSearchPhase('idle')
+          isWaitingPhase3Ref.current = false
+          setIsLoading(false)
         }
       } finally {
         if (currentSeq === searchSeqRef.current) {
-          setIsLoading(false)
+          if (!isWaitingPhase3Ref.current) {
+            setIsLoading(false)
+          }
         }
       }
     }, 250)

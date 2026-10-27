@@ -12,6 +12,7 @@ import {
   type TagProvenanceGroup
 } from '@firefly/shared'
 import { databaseService } from '../database/database-service'
+import { parseCreatedYear, inferQualityLevel } from '../database/dao/canonical-dao'
 import { omniClient, resolveQueryEncoderFilter } from '../../services/omni-client'
 import { omniService } from '../system/omni-service'
 import { canonicalTextService } from '../analysis-queue-service/canonical-text-service'
@@ -164,6 +165,10 @@ export class FileSemanticRepresentationService implements IFileSemanticRepresent
       description: string | null
       canonical_text: string | null
       canonical_vector_state: string | null
+      author?: string | null
+      language?: string | null
+      created_at?: string | number | null
+      quality_score?: number | null
       content: Buffer | string | null
       ocr: Buffer | string | null
       asr: Buffer | string | null
@@ -186,6 +191,13 @@ export class FileSemanticRepresentationService implements IFileSemanticRepresent
     const wfCols = new Set(
       (db.prepare("PRAGMA table_info(workspace_files)").all() as Array<{ name: string }>).map(c => c.name)
     )
+    const contentsCols = hasContentsTable
+      ? new Set(
+          (db.prepare("PRAGMA table_info(file_contents)").all() as Array<{ name: string }>).map(
+            c => c.name
+          )
+        )
+      : new Set<string>()
     const stateColExpr = filesCols.has('canonical_vector_state')
       ? 'f.canonical_vector_state'
       : 'NULL AS canonical_vector_state'
@@ -195,6 +207,12 @@ export class FileSemanticRepresentationService implements IFileSemanticRepresent
     const canonTextColExpr = filesCols.has('canonical_text')
       ? 'f.canonical_text'
       : 'NULL AS canonical_text'
+    const authorColExpr = filesCols.has('author') ? 'f.author' : 'NULL AS author'
+    const langColExpr = filesCols.has('language') ? 'f.language' : 'NULL AS language'
+    const createdAtColExpr = filesCols.has('created_at') ? 'f.created_at' : 'NULL AS created_at'
+    const qualityScoreColExpr = contentsCols.has('quality_score')
+      ? 'fc.quality_score'
+      : 'NULL AS quality_score'
 
     // 1. 批量读取物理文件与主库基础元数据
     for (let i = 0; i < uniqueFileIds.length; i += dbChunkSize) {
@@ -212,6 +230,10 @@ export class FileSemanticRepresentationService implements IFileSemanticRepresent
             ${descColExpr},
             ${canonTextColExpr},
             ${stateColExpr},
+            ${authorColExpr},
+            ${langColExpr},
+            ${createdAtColExpr},
+            ${qualityScoreColExpr},
             ${
               hasContentsTable
                 ? 'fc.content, fc.ocr, fc.asr, fc.lrc'
@@ -387,7 +409,11 @@ export class FileSemanticRepresentationService implements IFileSemanticRepresent
             ocr: extractContentText(row.ocr),
             asr: extractContentText(row.asr),
             lrc: extractContentText(row.lrc)
-          }
+          },
+          createdYear: parseCreatedYear(row.created_at),
+          author: row.author ? String(row.author).trim() || undefined : undefined,
+          language: row.language ? String(row.language).trim() || undefined : undefined,
+          qualityLevel: inferQualityLevel(row.quality_score)
         })
       }
 

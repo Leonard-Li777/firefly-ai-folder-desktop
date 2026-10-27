@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-10-25T07:50:25.289Z",
+  "generatedAt": "2026-10-26T21:54:07.177Z",
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources"
@@ -174,6 +174,16 @@
         "sha256": "3cb751f7e27d9c0768687487335d67bee3dd9694b6825e50ee439ade7cb6bd04",
         "size": 8282676,
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/sherpa-onnx-runtime-1.13.8-win32-x64.zip"
+      }
+    },
+    "moss-tts": {
+      "version": "1.0.0",
+      "source": "shared",
+      "asset": {
+        "name": "moss-tts-1.0.0.zip",
+        "sha256": "4374fe73fd27e9544674037890e773826727b959c6a63313989d787a263b7069",
+        "size": 240822786,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/moss-tts-1.0.0.zip"
       }
     }
   },

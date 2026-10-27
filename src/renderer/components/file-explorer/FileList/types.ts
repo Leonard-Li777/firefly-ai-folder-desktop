@@ -24,6 +24,8 @@ export interface FileType extends BaseFileType {
     chunkIndex?: number
     startSec: number
     endSec: number
+    repPtsSec?: number
+    seekSec?: number
     score?: number
     similarity?: number
   }
@@ -32,6 +34,8 @@ export interface FileType extends BaseFileType {
     chunkIndex?: number
     startSec: number
     endSec: number
+    repPtsSec?: number
+    seekSec?: number
     score?: number
     similarity?: number
   }>

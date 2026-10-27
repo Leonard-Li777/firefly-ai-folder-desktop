@@ -7,6 +7,7 @@ import { FilePreviewPanel } from '../FilePreviewPanel'
 import { SplitPreviewPanel } from '../SplitPreviewPanel'
 import { SplitPane } from '../../common/SplitPane'
 import { EmptyState } from '../../common/EmptyState'
+import { Loading } from '../../common/Loading'
 import { PAGE_IDS } from '../../../constants/page-ids'
 import { t } from '@app/languages'
 import { useSettingsStore } from '../../../stores/settings-store'
@@ -375,7 +376,15 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
                 {/* 文件列表区域 */}
                 <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
                   {isLoading && displayFiles.length === 0 && directories.length === 0 ? (
-                    <EmptyState isLoading={true} title={isRealDirectory ? t('正在搜索...') : t('加载文件中...')} />
+                    <Loading
+                      type={currentViewMode === 'search-list' || pageId === PAGE_IDS.SEARCH_OVERLAY ? 'search' : 'file-list'}
+                      title={currentViewMode === 'search-list' || pageId === PAGE_IDS.SEARCH_OVERLAY ? t('正在搜索...') : t('正在加载文件...')}
+                      description={
+                        currentViewMode === 'search-list' || pageId === PAGE_IDS.SEARCH_OVERLAY
+                          ? t('正在检索文件名、标签与深度多模态语义内容...')
+                          : t('正在读取目录内容与文件元数据...')
+                      }
+                    />
                   ) : displayFiles.length === 0 &&
                     directories.length === 0 &&
                     (pageId === PAGE_IDS.ANALYZED_DIRECTORY ||

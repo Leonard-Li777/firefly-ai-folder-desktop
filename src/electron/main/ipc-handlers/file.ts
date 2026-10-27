@@ -54,8 +54,8 @@ export function registerFileIPCHandlers() {
     await databaseService.addFile(file)
   })
 
-  // 维护渲染进程 WebContents ID 到活跃搜索序号的映射，用于发射前丢弃过期推流
-  const activeSearchSeqBySender = new Map<number, number>()
+  // 维护渲染进程 WebContents ID + 通道标识 到活跃搜索序号的映射，用于发射前丢弃过期推流（防多通道相互踩踏）
+  const activeSearchSeqBySender = new Map<string, number>()
 
   ipcMain.handle(
     'search-workspace-files',
@@ -63,19 +63,21 @@ export function registerFileIPCHandlers() {
       event,
       keyword: string,
       workspacePath: string,
-      options?: { stream?: boolean; seq?: number }
+      options?: { stream?: boolean; seq?: number; channel?: string }
     ) => {
       // 真实目录搜索统一走数据库"文件全信息搜索"：
       // FTS 全字段（文件名/智能名/描述/内容/标签等）+ path/type/author/language/category LIKE，
       // 并包含未分析文件（通过基础字段兼容命中）
+      const channel = options?.channel || 'default'
+      const senderKey = `${event.sender.id}:${channel}`
       const searchSeq = options?.seq ?? 0
       if (options?.stream && options?.seq !== undefined) {
-        if (!activeSearchSeqBySender.has(event.sender.id)) {
+        if (!activeSearchSeqBySender.has(senderKey)) {
           event.sender.once('destroyed', () => {
-            activeSearchSeqBySender.delete(event.sender.id)
+            activeSearchSeqBySender.delete(senderKey)
           })
         }
-        activeSearchSeqBySender.set(event.sender.id, options.seq)
+        activeSearchSeqBySender.set(senderKey, options.seq)
       }
 
       const onProgress = options?.stream
@@ -83,12 +85,12 @@ export function registerFileIPCHandlers() {
             phase: 'phase1' | 'phase2' | 'phase3',
             response: FilteredFilesResponse & { clipPending?: boolean }
           ) => {
-            // 发射前背压丢弃守卫：校验当前请求序号是否已被新请求取代
-            const currentActiveSeq = activeSearchSeqBySender.get(event.sender.id)
+            // 发射前背压丢弃守卫：校验当前通道的请求序号是否已被新请求取代
+            const currentActiveSeq = activeSearchSeqBySender.get(senderKey)
             if (options?.seq !== undefined && currentActiveSeq !== undefined && searchSeq < currentActiveSeq) {
               logger.debug(
                 LogCategory.VIRTUAL_DIRECTORY,
-                `[Search] 丢弃已过期的搜索任务推流: seq=${searchSeq}, active=${currentActiveSeq}, phase=${phase}`
+                `[Search] 丢弃已过期的搜索任务推流: channel=${channel}, seq=${searchSeq}, active=${currentActiveSeq}, phase=${phase}`
               )
               return
             }
@@ -104,6 +106,7 @@ export function registerFileIPCHandlers() {
 
             event.sender.send('search-workspace-files-progress', {
               phase,
+              channel,
               seq: searchSeq,
               items: mappedItems,
               total: response.total,

@@ -16,7 +16,11 @@ import {
   CANONICAL_NAMES,
   concept,
   isTrustworthyMaterializedCodePath,
-  resolveRuntimeMaterializedPath
+  resolveRuntimeMaterializedPath,
+  normalizeLangCode,
+  isControlledConcept,
+  CONTROLLED_CONCEPT_DETAILS,
+  getParentDimensionCodeOfTag
 } from '@firefly/shared'
 import { t } from '@app/languages'
 
@@ -176,7 +180,7 @@ export async function saveCloudResult(
       groupingReason: data.grouping_reason || data.groupingReason || null,
       groupingConfidence: data.grouping_confidence || data.groupingConfidence || null,
       author: data.author || null,
-      language: data.language || null,
+      language: data.language ? normalizeLangCode(data.language) : null,
       analysisStats:
         typeof analysisStats === 'string' ? analysisStats : JSON.stringify(analysisStats || null),
       metadata:
@@ -218,7 +222,7 @@ export async function saveCloudResult(
         fileType,
         data.file_group || null,
         data.author || null,
-        data.language || null,
+        data.language ? normalizeLangCode(data.language) : null,
         isHit,
         lastHitAt,
         fileData.syncStatus,
@@ -361,7 +365,16 @@ export async function saveCloudResult(
             // 严禁再读已废除的 `dimension_id`，也严禁退读 `parent_codes[0]` 二次猜测。
             const viaParent =
               typeof tag.via_parent_code === 'string' ? tag.via_parent_code.trim() : ''
-            const localDimCode = viaParent || CONTENT_DIM_CODE
+            let localDimCode = viaParent
+            // 若经由父为空或被填成内容标签，但该词本身是受控标签：优先反查受控父维度自愈回正
+            if (!localDimCode || localDimCode === CONTENT_DIM_CODE) {
+              const autoParent = isControlledConcept(cleanName)
+                ? (CONTROLLED_CONCEPT_DETAILS[cleanName]?.parentName
+                    ? concept(CONTROLLED_CONCEPT_DETAILS[cleanName].parentName as any)
+                    : undefined)
+                : (tagCode ? getParentDimensionCodeOfTag(tagCode) : undefined)
+              localDimCode = autoParent || localDimCode || CONTENT_DIM_CODE
+            }
 
             const isControlled = Boolean(
               tagCode &&

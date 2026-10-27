@@ -143,6 +143,7 @@ export async function alignTagSemantics(
 }
 export {
   isTagAdmissible,
+  normalizeLangCode,
   type TagAdmissibilityInput,
   type TagAdmissibilityVerdict
 } from '@firefly/shared'

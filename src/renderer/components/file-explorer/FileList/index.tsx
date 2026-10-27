@@ -22,6 +22,7 @@ import { ContextMenu } from '../../common/ContextMenu'
 import { SelectionBox } from './components/SelectionBox'
 import { VirtualRowRenderer } from './components/VirtualRowRenderer'
 import { EmptyState } from '../../common/EmptyState'
+import { Loading } from '../../common/Loading'
 import { t } from '@app/languages'
 import { toast } from '../../common/Toast'
 import { useAnalysisQueueStore } from '../../../stores/analysis-queue-store'
@@ -663,12 +664,36 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     return items.every(item => item.path && selectedPathsSet.has(normalizeForCache(item.path)))
   }, [items, selectedPathsSet, normalizeForCache])
 
+  const renderLoadingOverlay = () => {
+    if (!loading) return null
+    return (
+      <div className="absolute inset-0 bg-background/50 backdrop-blur-[1.5px] flex items-center justify-center z-30 pointer-events-none animate-in fade-in duration-200">
+        <div className="px-5 py-2.5 rounded-full bg-card/95 border border-primary/25 shadow-xl flex items-center gap-2.5 text-xs font-medium text-foreground backdrop-blur-md">
+          <span className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
+          <span>{viewMode === 'search-list' ? t('正在搜索匹配文件...') : t('正在刷新文件列表...')}</span>
+        </div>
+      </div>
+    )
+  }
+
   // 加载态提前返回必须放在本组件最后一个 Hook（isAllSelected）之后：
   // 任何 return 之前的 Hook 若随 loading 增减调用次数，会触发 "Rendered fewer hooks than expected"。
-  if (loading) {
+  if (loading && items.length === 0) {
     return (
-      <div className="file-list-loading">
-        <div className="loading-spinner">{t('加载中...')}</div>
+      <div
+        className="w-full h-full flex flex-col items-center justify-center relative file-list-loading animate-fade-in"
+        ref={containerRef}
+        key="loading-view"
+      >
+        <Loading
+          type={viewMode === 'search-list' ? 'search' : 'file-list'}
+          title={viewMode === 'search-list' ? t('正在搜索...') : t('正在加载文件...')}
+          description={
+            viewMode === 'search-list'
+              ? t('正在检索文件名、标签与深度多模态语义内容...')
+              : t('正在读取目录内容与文件元数据...')
+          }
+        />
       </div>
     )
   }
@@ -700,6 +725,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
         }}
       >
         <SelectionBox viewMode={viewMode} scrollOffset={scrollOffset} containerRef={containerRef} />
+      {renderLoadingOverlay()}
         {contextMenu && (
           <ContextMenu
             x={contextMenu.x}
@@ -757,11 +783,17 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
                 {VirtualRowRenderer}
               </ListComponent>
             )
+          ) : searchListItems.length === 0 ? (
+            <EmptyState
+              icon="search_off"
+              title={t('没有找到匹配的文件')}
+              description={t('未检索到符合条件的文件，请尝试更换关键词')}
+            />
           ) : (
             <EmptyState
-              icon={loading ? 'search' : 'search_off'}
-              title={loading ? t('正在搜索...') : t('没有找到匹配的文件')}
-              isLoading={loading}
+              icon="search"
+              title={t('正在准备搜索列表...')}
+              isLoading={true}
             />
           )}
         </div>
@@ -791,6 +823,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
         }}
       >
         <SelectionBox viewMode={viewMode} scrollOffset={scrollOffset} containerRef={containerRef} />
+        {renderLoadingOverlay()}
         {contextMenu && (
           <ContextMenu
             x={contextMenu.x}
@@ -1064,6 +1097,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
         }}
       >
         <SelectionBox viewMode={viewMode} scrollOffset={scrollOffset} containerRef={containerRef} />
+        {renderLoadingOverlay()}
 
         {contextMenu && (
           <ContextMenu
@@ -1191,6 +1225,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
           />
         )}
         <SelectionBox viewMode={viewMode} scrollOffset={scrollOffset} containerRef={containerRef} />
+        {renderLoadingOverlay()}
         {reactWindowAvailable &&
         GridComponent &&
         containerSize.width > 0 &&
@@ -1253,6 +1288,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
       }}
     >
       <SelectionBox viewMode={viewMode} scrollOffset={scrollOffset} containerRef={containerRef} />
+        {renderLoadingOverlay()}
       <div
         className="flex-1 overflow-x-auto overflow-y-auto scrollbar-thin"
         onScroll={e => handleScroll(e)}
