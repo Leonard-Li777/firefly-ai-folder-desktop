@@ -995,16 +995,18 @@ export function registerVirtualDirectoryIPCHandlers() {
       if (candidateCount === undefined && request.workspaceId && organizeRealDirectoryService) {
         candidateCount = organizeRealDirectoryService.getWorkspaceAnalyzedFileCount(request.workspaceId)
       }
-      if (candidateCount !== undefined && candidateCount > 3000) {
+      const capacityLimit = ConfigOrchestrator.getInstance().getValue<number>('ORGANIZE_CAPACITY_LIMIT') ?? 3000
+      if (candidateCount !== undefined && candidateCount > capacityLimit) {
         logger.warn(LogCategory.FILE_ORGANIZATION, '[IPC] calculate-file-paths-cosine: 文件数超限被拦截', {
-          candidateCount
+          candidateCount,
+          limit: capacityLimit
         })
         return {
           success: false,
           errorCode: 'ORGANIZE_CAPACITY_EXCEEDED',
-          limit: 3000,
+          limit: capacityLimit,
           actual: candidateCount,
-          message: t('当前待计算文件数（{count}）超出批量整理上限（3,000个），请在「已分析」页面勾选目标文件后发起整理', { count: candidateCount })
+          message: t('当前待计算文件数（{count}）超出批量整理上限（{limit}个），请在「已分析」页面勾选目标文件后发起整理', { count: candidateCount, limit: capacityLimit.toLocaleString() })
         }
       }
 
@@ -1270,16 +1272,18 @@ export function registerVirtualDirectoryIPCHandlers() {
       if (fileCount === undefined && organizeRealDirectoryService) {
         fileCount = organizeRealDirectoryService.getWorkspaceAnalyzedFileCount(wsId)
       }
-      if (fileCount !== undefined && fileCount > 3000) {
+      const capacityLimit = ConfigOrchestrator.getInstance().getValue<number>('ORGANIZE_CAPACITY_LIMIT') ?? 3000
+      if (fileCount !== undefined && fileCount > capacityLimit) {
         logger.warn(LogCategory.FILE_ORGANIZATION, '[IPC] smart-cluster-hac: 文件数超限被拦截', {
           wsId,
-          fileCount
+          fileCount,
+          limit: capacityLimit
         })
-        const msg = t('当前待整理文件数量（{count}）超出批量整理上限（3,000个），请在「已分析」页面勾选目标文件后发起整理', { count: fileCount })
+        const msg = t('当前待整理文件数量（{count}）超出批量整理上限（{limit}个），请在「已分析」页面勾选目标文件后发起整理', { count: fileCount, limit: capacityLimit.toLocaleString() })
         return {
           success: false,
           errorCode: 'ORGANIZE_CAPACITY_EXCEEDED',
-          limit: 3000,
+          limit: capacityLimit,
           actual: fileCount,
           message: msg,
           summary: msg,

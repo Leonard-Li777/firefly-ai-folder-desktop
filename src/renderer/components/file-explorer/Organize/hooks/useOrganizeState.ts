@@ -13,7 +13,7 @@ import { toast } from '../../../common/Toast'
 import { useAnalyzedDirectoryStore } from '../../../../stores/analyzed-directory-store'
 import { useVirtualDirectoryStore } from '../../../../stores/virtual-directory-store'
 import { useTierStore } from '../../../../stores/tier-store'
-import { useSettingsStore } from '../../../../stores/settings-store'
+import { useSettingsStore, useConfigValue } from '../../../../stores/settings-store'
 import { useOrganizeStore } from '../../../../stores/organize-store'
 
 const UNCLASSIFIED_NAME = SENTINEL_NAMES.UNCLASSIFIED
@@ -207,7 +207,11 @@ export function useOrganizeState() {
   const [allWorkspaceFiles, setAllWorkspaceFiles] = useState<any[]>([])
   const [isLoadingFiles, setIsLoadingFiles] = useState(false)
 
-  // ─── 3,000 硬上限容量守卫 ──────────────────────────────────────────────────
+  // ─── 配置中心：单次整理容量上限（默认 3,000）──────────────────────────────────
+  const organizeCapacityLimit =
+    useConfigValue<number>('ORGANIZE_CAPACITY_LIMIT') ??
+    useSettingsStore.getState().getConfigValue<number>('ORGANIZE_CAPACITY_LIMIT') ??
+    3000
   const [isCapacityExceeded, setIsCapacityExceeded] = useState(false)
   const [capacityExceededCount, setCapacityExceededCount] = useState(0)
   const [showCapacityLimitDialog, setShowCapacityLimitDialog] = useState(false)
@@ -238,7 +242,7 @@ export function useOrganizeState() {
       const result = await window.electronAPI!.organizeRealDirectory.getLightweightFiles(
         workspace.path,
         undefined,
-        3000
+        organizeCapacityLimit
       )
       const formatted = (result || []).map((f: any) => {
         let ext = f.extension
@@ -256,14 +260,14 @@ export function useOrganizeState() {
       setAllWorkspaceFiles(formatted)
       setIsCapacityExceeded(false)
       setCapacityExceededCount(0)
-      toast.success(t('已载入前 3,000 个文件，其余文件保留原样待后续整理'))
+      toast.success(t('已载入前 {count} 个文件，其余文件保留原样待后续整理', { count: organizeCapacityLimit.toLocaleString() }))
     } catch (err) {
       logger.error(LogCategory.FILE_ORGANIZATION, '获取限制文件列表失败:', err)
       toast.error(t('获取待整理文件列表失败，请查看日志确认'))
     } finally {
       setIsLoadingFiles(false)
     }
-  }, [currentWorkspaceDirectory])
+  }, [currentWorkspaceDirectory, organizeCapacityLimit, t])
 
   const loadFilesToOrganize = useCallback(async () => {
     // 如果工作目录尚未恢复，先尝试从后端获取
@@ -293,10 +297,10 @@ export function useOrganizeState() {
       if (!selectedFileIdsFromState || selectedFileIdsFromState.length === 0) {
         const count =
           (await window.electronAPI!.organizeRealDirectory.getAnalyzedCount?.(workspace.path)) ?? 0
-        if (count > 3000) {
+        if (count > organizeCapacityLimit) {
           logger.warn(
             LogCategory.FILE_ORGANIZATION,
-            `[入场探针] 工作区文件数 (${count}) 超出上限 3,000，阻断全量拉取并弹窗分流`
+            `[入场探针] 工作区文件数 (${count}) 超出上限 ${organizeCapacityLimit}，阻断全量拉取并弹窗分流`
           )
           setAllWorkspaceFiles([])
           setIsCapacityExceeded(true)
@@ -304,7 +308,7 @@ export function useOrganizeState() {
           setShowCapacityLimitDialog(true)
           return
         }
-      } else if (selectedFileIdsFromState.length > 3000) {
+      } else if (selectedFileIdsFromState.length > organizeCapacityLimit) {
         setAllWorkspaceFiles([])
         setIsCapacityExceeded(true)
         setCapacityExceededCount(selectedFileIdsFromState.length)
@@ -489,7 +493,7 @@ export function useOrganizeState() {
   // 监听待整理文件数量，超出 3,000 硬上限时触发阻断弹窗与引导
   useEffect(() => {
     if (!isLoadingFiles) {
-      if (toOrganizeFiles.length > 3000) {
+      if (toOrganizeFiles.length > organizeCapacityLimit) {
         setIsCapacityExceeded(true)
         setCapacityExceededCount(toOrganizeFiles.length)
         setShowCapacityLimitDialog(true)
@@ -499,7 +503,7 @@ export function useOrganizeState() {
         setShowCapacityLimitDialog(false)
       }
     }
-  }, [isLoadingFiles, toOrganizeFiles.length, isCapacityExceeded])
+  }, [isLoadingFiles, toOrganizeFiles.length, isCapacityExceeded, organizeCapacityLimit])
 
   // 处理在模式选择卡片点击选择已保存虚拟目录（增量整理）
   const handleSelectIncrementalVd = useCallback(
@@ -1836,8 +1840,8 @@ export function useOrganizeState() {
       }
     }
 
-    if (toOrganizeFiles.length > 3000) {
-      toast.error(t('待整理文件数量超出上限（3,000个），请前往「已分析」页面勾选文件后重试'))
+    if (toOrganizeFiles.length > organizeCapacityLimit) {
+      toast.error(t('待整理文件数量超出上限（{limit}个），请前往「已分析」页面勾选文件后重试', { limit: organizeCapacityLimit.toLocaleString() }))
       setShowCapacityLimitDialog(true)
       return
     }
@@ -3252,7 +3256,8 @@ export function useOrganizeState() {
     isTrashingDuplicates,
     loadFilesToOrganize,
 
-    // 3,000 硬上限容量守卫
+    // 容量守卫
+    organizeCapacityLimit,
     isCapacityExceeded,
     capacityExceededCount,
     showCapacityLimitDialog,

@@ -6,6 +6,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { useOrganizeState } from '../hooks/useOrganizeState'
 import { useOrganizeStore } from '../../../../stores/organize-store'
 import { useAnalyzedDirectoryStore } from '../../../../stores/analyzed-directory-store'
+import { useSettingsStore } from '../../../../stores/settings-store'
 
 const { mockT } = vi.hoisted(() => {
   const tFn = (key: string, params?: any) => {
@@ -63,6 +64,11 @@ describe('useOrganizeState 3,000 容量硬上限与找补截断验证', () => {
       finalTree: [],
       draftTree: [],
       stage: 'done'
+    })
+    useSettingsStore.setState({
+      config: {
+        organizeCapacityLimit: 3000
+      } as any
     })
     mockReorganize = vi.fn().mockResolvedValue({ success: true, tree: [] })
     ;(window as any).electronAPI = {
@@ -225,6 +231,56 @@ describe('useOrganizeState 3,000 容量硬上限与找补截断验证', () => {
       3000
     )
     expect(result.current.toOrganizeFiles.length).toBe(3000)
+    expect(result.current.isCapacityExceeded).toBe(false)
+    expect(result.current.capacityExceededCount).toBe(0)
+    expect(result.current.showCapacityLimitDialog).toBe(false)
+  })
+
+  it('配置中心常量生效：当配置为 10 (测试场景) 且文件为 15 时触发阻断，点击仅整理前批次拉取 10 个解除阻断', async () => {
+    useSettingsStore.setState({
+      config: {
+        ...useSettingsStore.getState().config,
+        organizeCapacityLimit: 10
+      } as any
+    })
+
+    ;(window as any).electronAPI.organizeRealDirectory.getAnalyzedCount.mockResolvedValue(15)
+    ;(window as any).electronAPI.virtualDirectory.getAnalyzedCount.mockResolvedValue(15)
+
+    const mock10 = Array.from({ length: 10 }, (_, i) => ({
+      id: i + 1,
+      path: `/workspace/file_${i + 1}.txt`,
+      name: `file_${i + 1}.txt`,
+      smartName: `file_${i + 1}`,
+      extension: 'txt',
+      isAnalyzed: true
+    }))
+    ;(window as any).electronAPI.organizeRealDirectory.getLightweightFiles.mockResolvedValue(mock10)
+
+    const { result } = renderHook(() => useOrganizeState(), { wrapper })
+
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 50))
+    })
+
+    // 验证当前动态读取的容量上限为 10
+    expect(result.current.organizeCapacityLimit).toBe(10)
+    expect(result.current.isCapacityExceeded).toBe(true)
+    expect(result.current.capacityExceededCount).toBe(15)
+    expect(result.current.showCapacityLimitDialog).toBe(true)
+
+    // 用户在弹窗中选择仅整理前 10 个文件
+    await act(async () => {
+      await result.current.handleLimitToFirst3000Files()
+    })
+
+    // 验证调用参数下推为 10
+    expect((window as any).electronAPI.organizeRealDirectory.getLightweightFiles).toHaveBeenCalledWith(
+      '/workspace',
+      undefined,
+      10
+    )
+    expect(result.current.toOrganizeFiles.length).toBe(10)
     expect(result.current.isCapacityExceeded).toBe(false)
     expect(result.current.capacityExceededCount).toBe(0)
     expect(result.current.showCapacityLimitDialog).toBe(false)

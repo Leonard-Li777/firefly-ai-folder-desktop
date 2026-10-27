@@ -162,6 +162,7 @@ export const Organize: React.FC = () => {
     loadFilesToOrganize,
 
     // 3,000 容量硬上限守卫
+    organizeCapacityLimit,
     isCapacityExceeded,
     capacityExceededCount,
     showCapacityLimitDialog,
@@ -688,8 +689,9 @@ export const Organize: React.FC = () => {
             <div className="flex items-center gap-2 min-w-0">
               <MaterialIcon icon="dataset" className="text-base shrink-0 text-amber-500" />
               <span className="truncate">
-                {t('待整理文件较多（共 {count} 个，超出单批建议 3,000 个）。您可以仅整理前 3,000 个或前往手动筛选：', {
-                  count: capacityExceededCount
+                {t('待整理文件较多（共 {count} 个，超出单批建议 {limit} 个）。您可以仅整理前 {limit} 个或前往手动筛选：', {
+                  count: capacityExceededCount.toLocaleString(),
+                  limit: organizeCapacityLimit.toLocaleString()
                 })}
               </span>
             </div>
@@ -700,7 +702,7 @@ export const Organize: React.FC = () => {
                 className="h-6 text-[11px] px-2.5 bg-amber-500 hover:bg-amber-600 text-white font-medium shadow-xs"
               >
                 <MaterialIcon icon="bolt" className="mr-1 text-xs" />
-                {t('仅整理前 3,000 个 (即刻开始)')}
+                {t('仅整理前 {limit} 个 (即刻开始)', { limit: organizeCapacityLimit.toLocaleString() })}
               </Button>
               <Button
                 size="sm"
@@ -1176,7 +1178,9 @@ export const Organize: React.FC = () => {
                   </span>
                 </DialogTitle>
                 <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                  {t('为保障 AI 深度聚类质量与秒级响应，建议单次整理控制在 3,000 个文件以内。请选择适合本次整理的执行方案：')}
+                  {t('为保障 AI 深度聚类质量与秒级响应，建议单次整理控制在 {limit} 个文件以内。请选择适合本次整理的执行方案：', {
+                    limit: organizeCapacityLimit.toLocaleString()
+                  })}
                 </p>
               </div>
             </div>
@@ -1199,12 +1203,13 @@ export const Organize: React.FC = () => {
                 </div>
                 <div className="flex-1 pr-14">
                   <div className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-                    {t('仅整理前 3,000 个文件')}
+                    {t('仅整理前 {limit} 个文件', { limit: organizeCapacityLimit.toLocaleString() })}
                     <span className="text-[11px] font-medium text-primary">({t('不阻塞流程')})</span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                    {t('优先载入前 3,000 个文件进行 AI 聚类与分类推导。其余 {rest} 个文件安全保留原样，后续可继续分批整理。', {
-                      rest: Math.max(0, capacityExceededCount - 3000)
+                    {t('优先载入前 {limit} 个文件进行 AI 聚类与分类推导。其余 {rest} 个文件安全保留原样，后续可继续分批整理。', {
+                      limit: organizeCapacityLimit.toLocaleString(),
+                      rest: Math.max(0, capacityExceededCount - organizeCapacityLimit).toLocaleString()
                     })}
                   </p>
                   <div className="mt-2 flex items-center gap-1.5 text-xs text-primary font-medium">
