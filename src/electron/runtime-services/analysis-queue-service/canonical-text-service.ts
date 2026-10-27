@@ -194,14 +194,21 @@ export class CanonicalTextService {
         rawName: source.rawName ?? undefined,
         description: source.description ?? undefined,
         tags: source.tags as SemanticTagInput[],
-        contents: source.contents
+        contents: source.contents,
+        createdYear: source.createdYear,
+        author: source.author,
+        language: source.language,
+        qualityLevel: source.qualityLevel
       })
 
       if (!text) {
+        // 空串短路保护：若当前已是 skipped 且新文本仍为空，直接短路返回，消除无意义的 SQLite UPDATE
+        if (record.canonicalVectorState === 'skipped' && !record.canonicalText) {
+          return 'skipped'
+        }
         // 空串或仅机器流水号：无有效语义，不嵌入
         dao.writeCanonicalRecord(fileFingerprint, {
           text: '',
-          ver: SEMANTIC_TEXT_VERSION,
           hash: null,
           state: 'skipped'
         })
@@ -225,7 +232,6 @@ export class CanonicalTextService {
       // 崩溃可恢复：先落 pending 再嵌入
       dao.writeCanonicalRecord(fileFingerprint, {
         text,
-        ver: SEMANTIC_TEXT_VERSION,
         hash,
         state: 'pending'
       })

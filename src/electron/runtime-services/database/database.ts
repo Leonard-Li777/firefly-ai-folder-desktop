@@ -103,10 +103,9 @@ export const GENESIS_V1_SCHEMA = `
     last_hit_at DATETIME,                        -- 最后一次缓存命中时间
     sync_status INTEGER NOT NULL DEFAULT 0,      -- 同步状态: 0-待同步, 1-同步中, 2-已同步
     meta TEXT NOT NULL DEFAULT '{}',              -- 弹性元数据 (JSON)
-    -- canonical 语义文本四列（vector-semantic-text-unified-scheme §3.2，应用未上线直接进创世基线，禁止 ALTER TABLE）
+    -- canonical 语义文本三列（vector-semantic-text-unified-scheme §3.2，应用未上线直接进创世基线，禁止 ALTER TABLE）
     -- 本地派生数据，不参与云端同步（AC12）；canonical_text 亦不写入 files_fts
     canonical_text TEXT,                         -- 统一语义文本（embedding 唯一输入）；NULL=未计算
-    canonical_text_ver INTEGER NOT NULL DEFAULT 0, -- 语义文本公式版本（SEMANTIC_TEXT_VERSION）
     canonical_text_hash TEXT,                    -- sha256(profile|dim|ver|text)；skipped 行为 NULL
     canonical_vector_state TEXT,                 -- pending/ready/visual_only/skipped/failed；NULL=未计算
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 文件在文件系统中的创建时间

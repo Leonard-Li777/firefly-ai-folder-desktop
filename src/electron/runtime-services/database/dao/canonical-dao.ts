@@ -12,10 +12,9 @@ import { decompressText } from '../../../utils/text-compressor'
  */
 export type CanonicalVectorState = 'pending' | 'ready' | 'visual_only' | 'skipped' | 'failed'
 
-/** files 表 canonical 四列读出的单行记录 */
+/** files 表 canonical 三列读出的单行记录 */
 export interface CanonicalRecord {
   canonicalText: string | null
-  canonicalTextVer: number
   canonicalTextHash: string | null
   canonicalVectorState: CanonicalVectorState | null
 }
@@ -36,6 +35,14 @@ export interface CanonicalSourceData {
   tags: SemanticTagInput[]
   /** 正文候选（content/ocr/asr/lrc 已解压为明文） */
   contents: { content: string; ocr: string; asr: string; lrc: string }
+  /** 文件创建年份（从 files.created_at 提取） */
+  createdYear?: number | null
+  /** AI提取的作者信息（files.author） */
+  author?: string | null
+  /** 文件自身语言（files.language） */
+  language?: string | null
+  /** 画质等级（从 file_contents.quality_score 推断） */
+  qualityLevel?: 'low' | 'medium' | 'high' | 'excellent' | null
 }
 
 /** 按 canonical_vector_state 批量查询的入参（供回填 / 切换失效使用） */
@@ -51,7 +58,7 @@ export interface CanonicalStateQuery {
 }
 
 /**
- * canonical 语义文本四列 DAO（工单 04）。
+ * canonical 语义文本三列 DAO（工单 04）。
  *
  * 职责边界：只做 SQL 读写与压缩 BLOB 解压，不感知档位/哈希/嵌入；
  * 状态机流转与 single-flight 由 canonical-text-service 负责。
@@ -59,18 +66,17 @@ export interface CanonicalStateQuery {
 export class CanonicalDao {
   constructor(private db: Database) {}
 
-  /** 读取 canonical 四列；files 行不存在时返回 null */
+  /** 读取 canonical 三列；files 行不存在时返回 null */
   getCanonicalRecord(fileFingerprint: string): CanonicalRecord | null {
     if (!fileFingerprint) return null
     const row = this.db
       .prepare(
-        `SELECT canonical_text, canonical_text_ver, canonical_text_hash, canonical_vector_state
+        `SELECT canonical_text, canonical_text_hash, canonical_vector_state
          FROM files WHERE file_fingerprint = ?`
       )
       .get(fileFingerprint) as
       | {
           canonical_text: string | null
-          canonical_text_ver: number
           canonical_text_hash: string | null
           canonical_vector_state: string | null
         }
@@ -78,27 +84,26 @@ export class CanonicalDao {
     if (!row) return null
     return {
       canonicalText: row.canonical_text,
-      canonicalTextVer: row.canonical_text_ver,
       canonicalTextHash: row.canonical_text_hash,
       canonicalVectorState: (row.canonical_vector_state as CanonicalVectorState | null) ?? null
     }
   }
 
   /**
-   * 写入 canonical 四列（pending / skipped 等整行固化均走此入口）。
+   * 写入 canonical 三列（pending / skipped 等整行固化均走此入口）。
    * 使用 COALESCE 语义外的直接赋值：调用方给 null 即如实置 NULL（如 skipped 的 hash）。
    */
   writeCanonicalRecord(
     fileFingerprint: string,
-    record: { text: string | null; ver: number; hash: string | null; state: CanonicalVectorState }
+    record: { text: string | null; hash: string | null; state: CanonicalVectorState }
   ): void {
     this.db
       .prepare(
         `UPDATE files
-         SET canonical_text = ?, canonical_text_ver = ?, canonical_text_hash = ?, canonical_vector_state = ?
+         SET canonical_text = ?, canonical_text_hash = ?, canonical_vector_state = ?
          WHERE file_fingerprint = ?`
       )
-      .run(record.text, record.ver, record.hash, record.state, fileFingerprint)
+      .run(record.text, record.hash, record.state, fileFingerprint)
   }
 
   /** 只推进状态位（ready / visual_only / failed），不动已固化的文本与哈希 */
@@ -375,13 +380,17 @@ export class CanonicalDao {
       description: null,
       fileGroup: null,
       tags: [],
-      contents: { content: '', ocr: '', asr: '', lrc: '' }
+      contents: { content: '', ocr: '', asr: '', lrc: '' },
+      createdYear: null,
+      author: null,
+      language: null,
+      qualityLevel: null
     }
     if (!fileFingerprint) return empty
 
     const row = this.db
       .prepare(
-        `SELECT f.smart_name, f.description, f.file_group,
+        `SELECT f.smart_name, f.description, f.file_group, f.author, f.language, f.created_at,
                 (SELECT wf.name FROM workspace_files wf
                  WHERE wf.file_fingerprint = f.file_fingerprint
                  ORDER BY wf.is_analyzed DESC, wf.last_analyzed_at DESC, wf.id DESC
@@ -395,16 +404,35 @@ export class CanonicalDao {
           description: string | null
           file_group: string | null
           raw_name: string | null
+          author: string | null
+          language: string | null
+          created_at: string | number | null
         }
       | undefined
     if (!row) return empty
 
+    // 探测 file_contents 是否有 quality_score 列（兼容轻量单测的最小 schema）
+    const contentsCols = new Set(
+      (this.db.prepare("PRAGMA table_info(file_contents)").all() as Array<{ name: string }>).map(
+        c => c.name
+      )
+    )
+    const qualityColExpr = contentsCols.has('quality_score')
+      ? 'quality_score'
+      : 'NULL AS quality_score'
+
     const contentsRow = this.db
       .prepare(
-        `SELECT content, ocr, asr, lrc FROM file_contents WHERE file_fingerprint = ?`
+        `SELECT content, ocr, asr, lrc, ${qualityColExpr} FROM file_contents WHERE file_fingerprint = ?`
       )
       .get(fileFingerprint) as
-      | { content: Buffer | string | null; ocr: Buffer | string | null; asr: Buffer | string | null; lrc: Buffer | string | null }
+      | {
+          content: Buffer | string | null
+          ocr: Buffer | string | null
+          asr: Buffer | string | null
+          lrc: Buffer | string | null
+          quality_score: number | null
+        }
       | undefined
 
     let tags: SemanticTagInput[] = []
@@ -446,7 +474,11 @@ export class CanonicalDao {
         ocr: decompressText(contentsRow?.ocr ?? null),
         asr: decompressText(contentsRow?.asr ?? null),
         lrc: decompressText(contentsRow?.lrc ?? null)
-      }
+      },
+      createdYear: parseCreatedYear(row.created_at),
+      author: row.author ? String(row.author).trim() || null : null,
+      language: row.language ? String(row.language).trim() || null : null,
+      qualityLevel: inferQualityLevel(contentsRow?.quality_score)
     }
   }
 }
@@ -466,4 +498,33 @@ function parseFileGroup(fileGroup: string | null): string | null {
     }
   }
   return fileGroup
+}
+
+
+/** 解析文件创建年份（仅支持 1970-2099 年合法范围） */
+export function parseCreatedYear(createdAt: any): number | null {
+  if (!createdAt) return null
+  if (typeof createdAt === 'number') {
+    const d = new Date(createdAt > 1e11 ? createdAt : createdAt * 1000)
+    const y = d.getFullYear()
+    return y >= 1970 && y <= 2099 ? y : null
+  }
+  const s = String(createdAt).trim()
+  const match = s.match(/^(\d{4})/)
+  if (match) {
+    const y = parseInt(match[1], 10)
+    return y >= 1970 && y <= 2099 ? y : null
+  }
+  return null
+}
+
+/** 从质量分数推断画质等级（low / medium / high / excellent） */
+export function inferQualityLevel(
+  score: number | null | undefined
+): 'low' | 'medium' | 'high' | 'excellent' | null {
+  if (typeof score !== 'number' || isNaN(score)) return null
+  if (score >= 9.0) return 'excellent'
+  if (score >= 7.5) return 'high'
+  if (score >= 5.0) return 'medium'
+  return 'low'
 }
