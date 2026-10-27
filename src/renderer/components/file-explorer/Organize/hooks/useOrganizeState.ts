@@ -239,9 +239,14 @@ export function useOrganizeState() {
     setIsLoadingFiles(true)
     setShowCapacityLimitDialog(false)
     try {
+      const workspaceTarget = currentWorkspaceDirectory?.id ?? workspace.path
+      const fileIdsToLoad =
+        selectedFileIdsFromState && selectedFileIdsFromState.length > 0
+          ? selectedFileIdsFromState.slice(0, organizeCapacityLimit)
+          : undefined
       const result = await window.electronAPI!.organizeRealDirectory.getLightweightFiles(
-        workspace.path,
-        undefined,
+        workspaceTarget as any,
+        fileIdsToLoad,
         organizeCapacityLimit
       )
       const formatted = (result || []).map((f: any) => {
@@ -254,20 +259,31 @@ export function useOrganizeState() {
         }
         return {
           ...f,
+          is_analyzed: f.is_analyzed ?? 1,
+          isAnalyzed: f.isAnalyzed ?? true,
           extension: ext || ''
         }
       })
       setAllWorkspaceFiles(formatted)
       setIsCapacityExceeded(false)
       setCapacityExceededCount(0)
-      toast.success(t('已载入前 {count} 个文件，其余文件保留原样待后续整理', { count: organizeCapacityLimit.toLocaleString() }))
+      toast.success(
+        t('已载入前 {count} 个文件，其余文件保留原样待后续整理', {
+          count: formatted.length.toLocaleString()
+        })
+      )
     } catch (err) {
       logger.error(LogCategory.FILE_ORGANIZATION, '获取限制文件列表失败:', err)
       toast.error(t('获取待整理文件列表失败，请查看日志确认'))
     } finally {
       setIsLoadingFiles(false)
     }
-  }, [currentWorkspaceDirectory, organizeCapacityLimit, t])
+  }, [
+    currentWorkspaceDirectory,
+    organizeCapacityLimit,
+    selectedFileIdsFromState,
+    t
+  ])
 
   const loadFilesToOrganize = useCallback(async () => {
     // 门禁：仅在当前处于 /organize 页面时才加载待整理文件；避免 KeepAlive 存活时在其它页面被误触发

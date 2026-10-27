@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { MaterialIcon, cn } from '../../../lib/utils'
 import React, { useRef, useMemo, useState, useCallback, useEffect } from 'react'
 import { WorkspaceDirectory } from '@firefly/types'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 
 import { Button } from '../../ui/button'
 import { Checkbox } from '../../ui/checkbox'
@@ -48,6 +48,7 @@ import { pathsToDirectoryNodes } from './utils/treeFromPaths'
 export const Organize: React.FC = () => {
   useVoerkaI18n(i18nScope)
   const navigate = useNavigate()
+  const location = useLocation()
   const { setAnalyzedDirectoryKeyword } = useSearchStore()
 
   const config = useSettingsStore(s => s.config)
