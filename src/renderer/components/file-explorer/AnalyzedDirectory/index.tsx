@@ -252,14 +252,7 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
     }
   }, [])
 
-  // 清除路由状态，避免刷新页面时仍然保持整理模式
-  useEffect(() => {
-    if (location.state?.startInOrganizeMode) {
-      clearRouteUserState()
-    }
-  }, [clearRouteUserState, location.state])
-
-  // 监听路由状态变化，当从虚拟目录传入 startInOrganizeMode 时进入整理模式
+  // 监听路由状态变化，当传入 startInOrganizeMode 时进入整理模式并清理单次路由载荷
   useEffect(() => {
     if (location.state?.startInOrganizeMode) {
       setIsOrganizeMode(true)

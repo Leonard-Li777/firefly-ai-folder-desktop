@@ -214,7 +214,7 @@ export function useOrganizeState() {
 
     const handleGoToAnalyzedPage = useCallback(() => {
     setShowCapacityLimitDialog(false)
-    navigate('/analyzed', {
+    navigate('/analyzed-directory', {
       state: {
         workspaceId: currentWorkspaceDirectory?.id,
         startInOrganizeMode: true

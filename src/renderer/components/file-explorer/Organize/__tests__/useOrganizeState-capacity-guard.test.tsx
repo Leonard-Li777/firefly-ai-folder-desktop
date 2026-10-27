@@ -1,3 +1,4 @@
+/** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import React from 'react'
 import { renderHook, act } from '@testing-library/react'
@@ -142,7 +143,7 @@ describe('useOrganizeState 3,000 容量硬上限与找补截断验证', () => {
       result.current.handleGoToAnalyzedPage()
     })
 
-    expect(mockNavigate).toHaveBeenCalledWith('/analyzed', {
+    expect(mockNavigate).toHaveBeenCalledWith('/analyzed-directory', {
       state: { startInOrganizeMode: true, workspaceId: 1 }
     })
     expect(result.current.showCapacityLimitDialog).toBe(false)
