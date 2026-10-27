@@ -320,8 +320,9 @@ export function useOrganizeState() {
         return
       }
 
+      const workspaceTarget = currentWorkspaceDirectory?.id ?? workspace.path
       const result = await window.electronAPI!.organizeRealDirectory.getLightweightFiles(
-        workspace.path,
+        workspaceTarget as any,
         selectedFileIdsFromState
       )
       const formatted = (result || []).map((f: any) => {
@@ -334,6 +335,8 @@ export function useOrganizeState() {
         }
         return {
           ...f,
+          is_analyzed: f.is_analyzed ?? 1,
+          isAnalyzed: f.isAnalyzed ?? true,
           extension: ext || ''
         }
       })
@@ -348,11 +351,15 @@ export function useOrganizeState() {
     }
   }, [currentWorkspaceDirectory, location.pathname, location.state, organizeCapacityLimit])
 
+  // 草稿或增量整理初始入场树（用于锁定前次已归类文件过滤基线，避免 AI 分批推理过程中左侧文件减少）
+  const [initialDraftTree, setInitialDraftTree] = useState<VirtualDirectoryNode[]>([])
+
   // 挂载时自动恢复工作目录并拉取已分析文件；工作区变化时重新拉取
-  const hasResetFromStateRef = useRef(false)
+  const lastHandledStateKeyRef = useRef<string | null>(null)
   useEffect(() => {
     if (location.pathname !== '/organize') {
       setShowCapacityLimitDialog(false)
+      lastHandledStateKeyRef.current = null
       return
     }
     loadFilesToOrganize()
@@ -365,18 +372,25 @@ export function useOrganizeState() {
         selectedFileIdsFromState.length > 0) ||
       ((location.state as any)?.selectedFilePaths?.length ?? 0) > 0
 
-    if (hasSelectionState && !hasResetFromStateRef.current) {
-      hasResetFromStateRef.current = true
+    const currentStateKey = hasSelectionState
+      ? `${(selectedFileIdsFromState || []).join(',')}|${((location.state as any)?.selectedFilePaths || []).join(',')}`
+      : null
+
+    if (hasSelectionState && lastHandledStateKeyRef.current !== currentStateKey) {
+      lastHandledStateKeyRef.current = currentStateKey
       console.log(
         '[Organize State] 从已分析页面带入勾选文件，重置 Keep-Alive 状态，文件数:',
         selectedFileIdsFromState?.length
       )
+      // 彻底复位 organizeStore 全局状态（清除残留的 incremental-organize 模式，防止空增量列表截断待整理文件）
+      useOrganizeStore.getState().resetOrganizeState()
       setStage(location.state?.initialStage || 'root-mode-select')
       setIncrementalVdId(null)
       setIncrementalFiles([])
       setCurrentVDir(null)
       setFinalTree([])
       setDraftTree([])
+      setInitialDraftTree([])
       isSavedRef.current = false
       // 注意：不在此处调用 window.history.replaceState({}, '')，
       // 否则会抹掉 react-router 写入的 location.state，导致 selectedFileIdsFromState 丢失
@@ -388,9 +402,6 @@ export function useOrganizeState() {
     location.pathname,
     location.state
   ])
-
-  // 草稿或增量整理初始入场树（用于锁定前次已归类文件过滤基线，避免 AI 分批推理过程中左侧文件减少）
-  const [initialDraftTree, setInitialDraftTree] = useState<VirtualDirectoryNode[]>([])
 
   // 计算当前要整理的待整理文件列表（锁定本次任务需要整理的文件全集）
   const toOrganizeFiles = useMemo(() => {

@@ -309,4 +309,44 @@ describe('useOrganizeState 3,000 容量硬上限与找补截断验证', () => {
     expect(result.current.toOrganizeFiles).toHaveLength(0)
     expect((window as any).electronAPI.organizeRealDirectory.getLightweightFiles).not.toHaveBeenCalled()
   })
+  it('从已分析页面携带勾选文件进入 /organize 时，正确带入文件并复位旧模式', async () => {
+    useOrganizeStore.getState().setOrganizeMode('incremental-organize')
+
+    const mockSelectedFiles = [
+      { id: 101, path: 'D:\\test\\a.txt', name: 'a.txt', extension: 'txt', is_analyzed: 1, isAnalyzed: true },
+      { id: 102, path: 'D:\\test\\b.txt', name: 'b.txt', extension: 'txt', is_analyzed: 1, isAnalyzed: true }
+    ]
+    ;(window as any).electronAPI.organizeRealDirectory.getLightweightFiles.mockResolvedValue(mockSelectedFiles)
+
+    const selectedWrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(
+        MemoryRouter,
+        {
+          initialEntries: [
+            {
+              pathname: '/organize',
+              state: {
+                selectedFileIds: [101, 102],
+                selectedFilePaths: ['D:\\test\\a.txt', 'D:\\test\\b.txt'],
+                initialStage: 'root-mode-select'
+              }
+            }
+          ]
+        },
+        children
+      )
+
+    const { result } = renderHook(() => useOrganizeState(), { wrapper: selectedWrapper })
+
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 50))
+    })
+
+    // 验证旧模式被成功清除且勾选文件正确带入
+    expect(useOrganizeStore.getState().organizeMode).toBeUndefined()
+    expect(result.current.toOrganizeFiles).toHaveLength(2)
+    expect(result.current.toOrganizeFiles[0].id).toBe(101)
+    expect(result.current.toOrganizeFiles[1].id).toBe(102)
+    expect(result.current.showCapacityLimitDialog).toBe(false)
+  })
 })

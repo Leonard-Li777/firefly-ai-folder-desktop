@@ -196,7 +196,7 @@ export class DatabaseHelper {
 
   /**
    * 极速轻量查询工作区已分析文件（入场投影）
-   * 仅查询 id, path, name, smartName, extension，单条 SQL 毫秒级返回
+   * 仅查询 id, path, name, smartName, extension, is_analyzed，单条 SQL 毫秒级返回
    */
   async getLightweightWorkspaceFiles(
     workspaceDirectoryPathOrId: string | number,
@@ -209,56 +209,71 @@ export class DatabaseHelper {
     if (typeof workspaceDirectoryPathOrId === 'number') {
       workspaceId = workspaceDirectoryPathOrId
     } else {
-      workspacePath = workspaceDirectoryPathOrId
+      workspacePath = workspaceDirectoryPathOrId || ''
       const row = this.db
         .prepare('SELECT workspace_id FROM workspaces WHERE path = ?')
         .get(workspacePath) as { workspace_id: number } | undefined
       workspaceId = row?.workspace_id
+
+      if (workspaceId === undefined && workspacePath) {
+        const dirRow = this.db
+          .prepare('SELECT workspace_id FROM workspace_directories WHERE path = ?')
+          .get(workspacePath) as { workspace_id: number } | undefined
+        workspaceId = dirRow?.workspace_id
+      }
     }
 
     if (selectedFileIds && selectedFileIds.length > 0) {
-      if (workspaceId !== undefined) {
-        return this.db
-          .prepare(
-            `
-          SELECT 
-            wf.id,
-            wf.path,
-            wf.name,
-            NULLIF(f.smart_name, wf.name) as smartName,
-            f.extension
-          FROM workspace_files wf
-          LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
-          WHERE wf.workspace_id = ?
-            AND wf.is_analyzed = 1
-            AND (wf.status IS NULL OR wf.status = 1)
-            AND wf.id IN (SELECT value FROM json_each(?))
-          ORDER BY wf.path ASC${limit && limit > 0 ? ' LIMIT ?' : ''}
-        `
-          )
-          .all(...(limit && limit > 0 ? [workspaceId, JSON.stringify(selectedFileIds), limit] : [workspaceId, JSON.stringify(selectedFileIds)])) as LightweightFileItem[]
-      } else {
-        const sep = path.sep
-        const prefix = workspacePath.endsWith(sep) ? workspacePath : workspacePath + sep
-        return this.db
-          .prepare(
-            `
-          SELECT 
-            wf.id,
-            wf.path,
-            wf.name,
-            NULLIF(f.smart_name, wf.name) as smartName,
-            f.extension
-          FROM workspace_files wf
-          LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
-          WHERE (wf.path LIKE ? OR wf.path = ?)
-            AND wf.is_analyzed = 1
-            AND (wf.status IS NULL OR wf.status = 1)
-            AND wf.id IN (SELECT value FROM json_each(?))
-          ORDER BY wf.path ASC${limit && limit > 0 ? ' LIMIT ?' : ''}
-        `
-          )
-          .all(...(limit && limit > 0 ? [`${prefix}%`, workspacePath, JSON.stringify(selectedFileIds), limit] : [`${prefix}%`, workspacePath, JSON.stringify(selectedFileIds)])) as LightweightFileItem[]
+      const cleanIds = selectedFileIds
+        .map(id => Number(id))
+        .filter(id => !Number.isNaN(id))
+
+      if (cleanIds.length > 0) {
+        if (workspaceId !== undefined) {
+          return this.db
+            .prepare(
+              `
+            SELECT 
+              wf.id,
+              wf.path,
+              wf.name,
+              NULLIF(f.smart_name, wf.name) as smartName,
+              f.extension,
+              wf.is_analyzed as isAnalyzed,
+              wf.is_analyzed
+            FROM workspace_files wf
+            LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
+            WHERE wf.workspace_id = ?
+              AND wf.is_analyzed = 1
+              AND (wf.status IS NULL OR wf.status = 1)
+              AND wf.id IN (SELECT CAST(value AS INTEGER) FROM json_each(?))
+            ORDER BY wf.path ASC${limit && limit > 0 ? ' LIMIT ?' : ''}
+          `
+            )
+            .all(...(limit && limit > 0 ? [workspaceId, JSON.stringify(cleanIds), limit] : [workspaceId, JSON.stringify(cleanIds)])) as LightweightFileItem[]
+        } else {
+          // workspaceId 无法从路径匹配时，直接基于全局唯一主键 cleanIds 查询，避免反斜杠 LIKE 导致查空
+          return this.db
+            .prepare(
+              `
+            SELECT 
+              wf.id,
+              wf.path,
+              wf.name,
+              NULLIF(f.smart_name, wf.name) as smartName,
+              f.extension,
+              wf.is_analyzed as isAnalyzed,
+              wf.is_analyzed
+            FROM workspace_files wf
+            LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
+            WHERE wf.is_analyzed = 1
+              AND (wf.status IS NULL OR wf.status = 1)
+              AND wf.id IN (SELECT CAST(value AS INTEGER) FROM json_each(?))
+            ORDER BY wf.path ASC${limit && limit > 0 ? ' LIMIT ?' : ''}
+          `
+            )
+            .all(...(limit && limit > 0 ? [JSON.stringify(cleanIds), limit] : [JSON.stringify(cleanIds)])) as LightweightFileItem[]
+        }
       }
     }
 
@@ -271,7 +286,9 @@ export class DatabaseHelper {
           wf.path,
           wf.name,
           NULLIF(f.smart_name, wf.name) as smartName,
-          f.extension
+          f.extension,
+          wf.is_analyzed as isAnalyzed,
+          wf.is_analyzed
         FROM workspace_files wf
         LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
         WHERE wf.workspace_id = ?
@@ -292,7 +309,9 @@ export class DatabaseHelper {
           wf.path,
           wf.name,
           NULLIF(f.smart_name, wf.name) as smartName,
-          f.extension
+          f.extension,
+          wf.is_analyzed as isAnalyzed,
+          wf.is_analyzed
         FROM workspace_files wf
         LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
         WHERE (wf.path LIKE ? OR wf.path = ?)
@@ -315,11 +334,18 @@ export class DatabaseHelper {
     if (typeof workspaceDirectoryPathOrId === 'number') {
       workspaceId = workspaceDirectoryPathOrId
     } else {
-      workspacePath = workspaceDirectoryPathOrId
+      workspacePath = workspaceDirectoryPathOrId || ''
       const row = this.db
         .prepare('SELECT workspace_id FROM workspaces WHERE path = ?')
         .get(workspacePath) as { workspace_id: number } | undefined
       workspaceId = row?.workspace_id
+
+      if (workspaceId === undefined && workspacePath) {
+        const dirRow = this.db
+          .prepare('SELECT workspace_id FROM workspace_directories WHERE path = ?')
+          .get(workspacePath) as { workspace_id: number } | undefined
+        workspaceId = dirRow?.workspace_id
+      }
     }
 
     if (workspaceId !== undefined) {

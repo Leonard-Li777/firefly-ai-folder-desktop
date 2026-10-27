@@ -111,9 +111,35 @@ describe('DatabaseHelper 轻量投影与极速统计回归测试 (ABI-safe Mock)
     const files = await helper.getLightweightWorkspaceFiles(1, [101, 102])
 
     expect(files).toHaveLength(1)
-    // 关键架构不变量验证：规避巨型 IN (?, ?, ...)，严格使用 json_each(?)
-    expect(capturedSql).toContain('wf.id IN (SELECT value FROM json_each(?))')
+    // 关键架构不变量验证：规避巨型 IN (?, ?, ...)，严格使用 json_each(?) 与 CAST 转整
+    expect(capturedSql).toContain('wf.id IN (SELECT CAST(value AS INTEGER) FROM json_each(?))')
     expect(capturedParams).toEqual([1, JSON.stringify([101, 102])])
+  })
+
+  it('getLightweightWorkspaceFiles 传入未收录工作区路径但在 selectedFileIds 存在时，安全基于主键兜底返回且规避反斜杠 LIKE 查空', async () => {
+    let capturedSql = ''
+    let capturedParams: any[] = []
+
+    const mockDb: any = {
+      prepare: vi.fn((sql: string) => {
+        capturedSql = sql
+        return {
+          get: () => undefined, // workspaces & workspace_directories 均未查出
+          all: (...params: any[]) => {
+            capturedParams = params
+            return [{ id: 101, path: 'D:\\test\\101.txt', name: '101.txt', smartName: '文件101', extension: 'txt' }]
+          }
+        }
+      })
+    }
+
+    const helper = new DatabaseHelper(mockDb)
+    const files = await helper.getLightweightWorkspaceFiles('D:\\not_found_path', [101])
+
+    expect(files).toHaveLength(1)
+    expect(capturedSql).toContain('wf.id IN (SELECT CAST(value AS INTEGER) FROM json_each(?))')
+    expect(capturedSql).not.toContain('LIKE')
+    expect(capturedParams).toEqual([JSON.stringify([101])])
   })
 
   it('getLightweightWorkspaceFiles 传入 limit 时，正确在 SQL 中追加 LIMIT ? 并参数化绑定', async () => {
