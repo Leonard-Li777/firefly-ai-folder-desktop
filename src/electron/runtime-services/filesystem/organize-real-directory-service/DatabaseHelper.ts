@@ -21,6 +21,12 @@ export interface LightweightFileItem {
   name: string
   smartName: string | null
   extension: string | null
+  /** 文件已拥有的标签维度列表（用于批量标签页 tagFileCounts 统计） */
+  dimensionTags?: Array<{
+    dimensionId: number | null
+    dimensionCode: string | null
+    tagValue: string
+  }>
 }
 
 export class DatabaseHelper {
@@ -196,7 +202,8 @@ export class DatabaseHelper {
 
   /**
    * 极速轻量查询工作区已分析文件（入场投影）
-   * 仅查询 id, path, name, smartName, extension, is_analyzed，单条 SQL 毫秒级返回
+   * 查询 id, path, name, smartName, extension, is_analyzed，并附加 dimensionTags（标签列表）
+   * dimensionTags 用于批量标签页 tagFileCounts 计数，不含此字段则所有计数均为 0
    */
   async getLightweightWorkspaceFiles(
     workspaceDirectoryPathOrId: string | number,
@@ -223,6 +230,8 @@ export class DatabaseHelper {
       }
     }
 
+    let files: LightweightFileItem[] = []
+
     if (selectedFileIds && selectedFileIds.length > 0) {
       const cleanIds = selectedFileIds
         .map(id => Number(id))
@@ -230,7 +239,7 @@ export class DatabaseHelper {
 
       if (cleanIds.length > 0) {
         if (workspaceId !== undefined) {
-          return this.db
+          files = this.db
             .prepare(
               `
             SELECT 
@@ -253,7 +262,7 @@ export class DatabaseHelper {
             .all(...(limit && limit > 0 ? [workspaceId, JSON.stringify(cleanIds), limit] : [workspaceId, JSON.stringify(cleanIds)])) as LightweightFileItem[]
         } else {
           // workspaceId 无法从路径匹配时，直接基于全局唯一主键 cleanIds 查询，避免反斜杠 LIKE 导致查空
-          return this.db
+          files = this.db
             .prepare(
               `
             SELECT 
@@ -275,10 +284,8 @@ export class DatabaseHelper {
             .all(...(limit && limit > 0 ? [JSON.stringify(cleanIds), limit] : [JSON.stringify(cleanIds)])) as LightweightFileItem[]
         }
       }
-    }
-
-    if (workspaceId !== undefined) {
-      return this.db
+    } else if (workspaceId !== undefined) {
+      files = this.db
         .prepare(
           `
         SELECT 
@@ -301,7 +308,7 @@ export class DatabaseHelper {
     } else {
       const sep = path.sep
       const prefix = workspacePath.endsWith(sep) ? workspacePath : workspacePath + sep
-      return this.db
+      files = this.db
         .prepare(
           `
         SELECT 
@@ -321,6 +328,80 @@ export class DatabaseHelper {
       `
         )
         .all(...(limit && limit > 0 ? [`${prefix}%`, workspacePath, limit] : [`${prefix}%`, workspacePath])) as LightweightFileItem[]
+    }
+
+    // 附加 dimensionTags：批量读取这批文件的标签，用于批量标签页 tagFileCounts 计数
+    // 不含此字段则前端 tagFileCounts 全为 0，所有标签计数徽章无法正常显示
+    if (files.length > 0) {
+      this.appendDimensionTagsToFiles(files)
+    }
+
+    return files
+  }
+
+  /**
+   * 批量附加 dimensionTags 到轻量文件列表（一次 SQL，避免 N+1）
+   * 通过 file_tag_relations JOIN workspace_files 关联 file.id → file_fingerprint → 标签
+   */
+  private appendDimensionTagsToFiles(files: LightweightFileItem[]): void {
+    const fileIds = files.map(f => f.id)
+    if (fileIds.length === 0) return
+
+    try {
+      // 一次性批量查：file id → (tag_code, via_parent_code, tag_name)
+      // via_parent_code 即维度归属 code（空字符串表示根节点自身即父），tag_name 为本地展示名
+      const tagRows = this.db
+        .prepare(
+          `
+          SELECT
+            wf.id AS file_id,
+            ftr.tag_code,
+            ftr.via_parent_code,
+            ft.name AS tag_name
+          FROM workspace_files wf
+          INNER JOIN files f ON wf.file_fingerprint = f.file_fingerprint
+          INNER JOIN file_tag_relations ftr ON ftr.file_fingerprint = f.file_fingerprint
+          LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
+          WHERE wf.id IN (SELECT CAST(value AS INTEGER) FROM json_each(?))
+        `
+        )
+        .all(JSON.stringify(fileIds)) as Array<{
+          file_id: number
+          tag_code: string
+          via_parent_code: string
+          tag_name: string | null
+        }>
+
+      // 按 file_id 分组，构建 dimensionTags
+      const tagsByFileId = new Map<number, Array<{ dimensionId: null; dimensionCode: string | null; tagValue: string }>>()
+      for (const row of tagRows) {
+        if (!tagsByFileId.has(row.file_id)) {
+          tagsByFileId.set(row.file_id, [])
+        }
+        const displayName = row.tag_name || this.resolveTagName(row.tag_code)
+        if (displayName) {
+          tagsByFileId.get(row.file_id)!.push({
+            dimensionId: null,
+            dimensionCode: row.via_parent_code || row.tag_code || null,
+            tagValue: displayName
+          })
+        }
+      }
+
+      // 将 dimensionTags 附加到对应的文件对象
+      for (const file of files) {
+        file.dimensionTags = tagsByFileId.get(file.id) || []
+      }
+    } catch (err) {
+      logger.warn(
+        LogCategory.FILE_ORGANIZATION,
+        '[DatabaseHelper] 批量附加 dimensionTags 失败，fileCount 将回退为 0:',
+        err
+      )
+      // 降级：确保字段存在但为空数组，不影响主流程
+      for (const file of files) {
+        if (!file.dimensionTags) file.dimensionTags = []
+      }
     }
   }
 

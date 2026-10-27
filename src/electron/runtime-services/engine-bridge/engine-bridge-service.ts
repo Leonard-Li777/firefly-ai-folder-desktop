@@ -49,6 +49,27 @@ const STATUS_TIMEOUT_MS = 1500
 const OPEN_UI_TIMEOUT_MS = 3000
 const SHUTDOWN_TIMEOUT_MS = 3000
 /**
+ * 引擎模型列表端点（`/api/models`）超时（毫秒）。
+ *
+ * 必须与 `STATUS_TIMEOUT_MS` 拆开：`/api/engine/status` 是纯内存读取（实测 4ms），
+ * 而 `/api/models` 是**磁盘扫描型**端点 —— 引擎侧 `list_models` 每次请求都要递归
+ * `read_dir` 整个模型目录并逐 gguf `metadata`（36 个模型实测约 140ms，是探活的 30+ 倍），
+ * 且同步跑在 async handler 里、还持有与 `/api/engine/status` 共用的 config 锁。
+ * 沿用 1500ms 会让「视频分析 / ORT DML Session 构建 / warmup 定标」等 CPU 尖峰期的
+ * 请求必然假超时（实测单日 24 次），故单独给 5s 预算。
+ */
+const MODELS_TIMEOUT_MS = 5_000
+/**
+ * 模型计数成功刷新后的缓存有效期（毫秒）。
+ *
+ * `/api/models` 的结果只在模型下载 / 删除 / 外部拷入时变化，属典型「读多写极少」，
+ * 无需跟随 5s 探活心跳每次全盘扫描；60s 内复用上次结果可把扫描频率压掉 90% 以上。
+ * 失败时改走 `MODELS_RETRY_MS` 短重试，避免「唯一一次失败即长期缺省」。
+ */
+const MODELS_REFRESH_TTL_MS = 60_000
+/** 模型计数刷新失败后的重试间隔（毫秒）；短于 TTL 以保留自愈能力，长于探活间隔避免每拍重试 */
+const MODELS_RETRY_MS = 15_000
+/**
  * AI 服务启停动作超时（毫秒）。
  *
  * 必须**大于引擎侧的冷启动就绪预算**（firefly-ai-engine `engine/mod.rs` 的
@@ -212,6 +233,10 @@ export class EngineBridgeService {
   private modelMetaCache: { lang: string; models: any[]; fetchedAt: number } | null = null
   /** 模型计数刷新进行中的 Promise（并发调用共享同一刷新，await 可等待真正完成） */
   private modelCountPromise: Promise<void> | null = null
+  /** 最近一次模型计数刷新尝试的完成时刻（0 = 从未尝试；心跳节流判据，见 shouldRefreshModelCount） */
+  private lastModelCountFetchAt = 0
+  /** 最近一次模型计数刷新是否成功（决定下一轮用 TTL 还是短重试间隔） */
+  private lastModelCountFetchOk = false
   /**
    * 本服务已拉起二进制的签名（mtimeMs:size）。
    * 非 null 表示「本服务托管过引擎」，用于开发态感知 `engine:deploy:watch` 的重编译覆盖。
@@ -997,8 +1022,11 @@ export class EngineBridgeService {
     if (hadError || modelChanged || langSlotChanged || embSlotChanged || statusChanged || wasOffline) {
       this.broadcastStatus()
     }
-    // PRD-0044：探活成功后异步刷新已安装模型计数，不阻塞探活关键路径
-    void this.refreshModelCount()
+    // PRD-0044：探活成功后异步刷新已安装模型计数，不阻塞探活关键路径。
+    // 该端点每次请求都要引擎侧全盘扫描，故按 TTL 节流，不跟随 5s 心跳无脑重扫（见 shouldRefreshModelCount）
+    if (this.shouldRefreshModelCount()) {
+      void this.refreshModelCount()
+    }
     // 异步刷新当前引擎适配类型（Footer「兼容模式」标记依据），不阻塞探活关键路径
     void this.refreshBackendMatchType()
     // 异步对齐思考模式（引擎 UI 变更后 desktop 请求级/Footer 需感知），不阻塞探活关键路径
@@ -1137,10 +1165,26 @@ export class EngineBridgeService {
   }
 
   /**
+   * 心跳节流判定：本次探活后是否真的需要刷新模型计数。
+   *
+   * `/api/models` 是磁盘扫描端点（引擎侧每次请求递归扫全目录），而模型集合只在
+   * 下载完成 / 删除 / 外部拷入时变化 —— 跟随 5s 心跳无脑重扫既浪费 I/O，又会在
+   * CPU 尖峰期与 `/api/engine/status` 抢引擎侧 config 锁，把探活一起拖慢。
+   * 成功走 TTL（60s）、失败走短重试（15s）：既砍掉绝大部分扫描，又保留
+   * 「引擎刚就绪那次失败」的自愈能力（若只在状态跳变时拉一次，首拉失败即长期缺省）。
+   */
+  private shouldRefreshModelCount(): boolean {
+    if (this.modelCountPromise) return false
+    const elapsed = Date.now() - this.lastModelCountFetchAt
+    return elapsed >= (this.lastModelCountFetchOk ? MODELS_REFRESH_TTL_MS : MODELS_RETRY_MS)
+  }
+
+  /**
    * 从引擎 /api/models 汇总已安装模型数量与可用模型总数并更新缓存（PRD-0044 状态卡增项）。
    * 分子：已安装模型数（合计所有已下载就绪的语言模型、Embedding 向量模型及本地自定义模型）
    * 分母：总可用模型数（合计所有官方推荐语言模型 31 个 + Embedding 向量模型 2 个 = 33 个，加上本地未在推荐库中的自定义模型）
    * 并发去重；数量变化时补播一次状态，让渲染层无需等下个轮询周期。
+   * 本方法自身不做节流（显式调用即视为强制刷新），节流只在探活心跳入口 `applyStatus` 处判定。
    */
   private async refreshModelCount(): Promise<void> {
     // 并发去重：进行中的刷新被共享，await 可等待真正完成（避免 applyStatus 触发的刷新与显式 await 竞态）
@@ -1154,6 +1198,9 @@ export class EngineBridgeService {
   }
 
   private async doRefreshModelCount(): Promise<void> {
+    const startedAt = Date.now()
+    // 本轮是否真正拿到了引擎的模型列表（决定下一轮心跳走 TTL 还是短重试）
+    let ok = false
     try {
       const prevPair = this.resolveDisplayModelPair()
       // 预热引擎模型元数据目录（model_*.json 权威落点在 engine，desktop 一律经引擎查询）
@@ -1161,7 +1208,7 @@ export class EngineBridgeService {
 
       const res = await fetch(`${this.baseUrl}${ENGINE_MODELS_PATH}`, {
         method: 'GET',
-        signal: AbortSignal.timeout(STATUS_TIMEOUT_MS)
+        signal: AbortSignal.timeout(MODELS_TIMEOUT_MS)
       })
       if (res.ok) {
         const list = (await res.json()) as Array<{
@@ -1271,10 +1318,26 @@ export class EngineBridgeService {
         ) {
           this.broadcastStatus()
         }
+        ok = true
+      } else {
+        // 非 2xx 同属降级（引擎契约变更/路由缺失），显式上报，不静默保留旧值
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[EngineBridge] 拉取引擎模型列表失败 endpoint=${ENGINE_MODELS_PATH} status=${res.status} elapsedMs=${Date.now() - startedAt} timeoutBudgetMs=${MODELS_TIMEOUT_MS} fallback=retained_cached_count cached=${this.lastModelCount ?? 'null'}`
+        )
       }
     } catch (err) {
-      // 计数为展示增项，失败不影响桥接主链路；记 debug 便于排查
-      logger.debug(LogCategory.SYSTEM, '[EngineBridge] 拉取引擎模型列表失败（模型计数缺省）:', err)
+      // 计数为展示增项，失败不影响桥接主链路；但必须显式上报失败原因与保留的兜底值
+      // （AGENTS.md §2.9 禁止静默降级：原实现只记 debug，导致该端点长期超时无人察觉）
+      const reason = err instanceof Error ? `${err.name}: ${err.message}` : String(err)
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[EngineBridge] 拉取引擎模型列表失败 endpoint=${ENGINE_MODELS_PATH} elapsedMs=${Date.now() - startedAt} timeoutBudgetMs=${MODELS_TIMEOUT_MS} fallback=retained_cached_count cached=${this.lastModelCount ?? 'null'} error=${reason}`
+      )
+    } finally {
+      // 记录本轮结果供心跳节流判定：成功走长 TTL，失败走短重试（保留自愈能力）
+      this.lastModelCountFetchAt = Date.now()
+      this.lastModelCountFetchOk = ok
     }
   }
 
@@ -2268,6 +2331,9 @@ export class EngineBridgeService {
     this.firstDownloadedModel = null
     this.lastKnownModel = null
     this.modelCountPromise = null
+    // 重置节流状态：下次拉起引擎后必须立即重扫，不能沿用停止前的 TTL 窗口
+    this.lastModelCountFetchAt = 0
+    this.lastModelCountFetchOk = false
     this.circuitBreaker.reset()
   }
 }
