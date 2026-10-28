@@ -384,4 +384,52 @@ describe('GlobalSearchOverlay phase3（冷态 CLIP 追加）', () => {
     expect(screen.queryByText('没有找到匹配的文件')).toBeNull()
     expect(renderedPaths()).toEqual(['C:\\Work\\car.mp4'])
   })
+
+  it('Promise 先于 Phase 2 resolve 且返回 0 条但带 clipPending: true 时，持续保持 Loading 态，严禁提前退出 Loading', async () => {
+    // 模拟 searchWorkspaceFiles Promise 立即 resolve 并返回包含 clipPending 的 0 结果
+    const emptyResultsWithClipPending: any = []
+    emptyResultsWithClipPending.clipPending = true
+    vi.mocked(window.electronAPI!.searchWorkspaceFiles).mockResolvedValueOnce(emptyResultsWithClipPending)
+
+    await mountAndStartSearch()
+
+    // 等待 Promise resolve
+    await act(async () => {
+      vi.advanceTimersByTime(300)
+    })
+
+    // 验证：虽然 Promise 已经 resolve 且 items 为空，但因为 clipPending=true，绝不能提前解除 Loading 呈现假空态
+    expect(screen.queryByText('没有找到匹配的文件')).toBeNull()
+    expect(screen.getByTestId('search-loading')).toBeInTheDocument()
+
+    // 稍后流式 Phase 2 到达
+    act(() => {
+      progressCallback?.({
+        phase: 'phase2',
+        seq: currentSeq,
+        items: [],
+        total: 0,
+        clipPending: true
+      })
+    })
+
+    // 依然维持 Loading
+    expect(screen.queryByText('没有找到匹配的文件')).toBeNull()
+    expect(screen.getByTestId('search-loading')).toBeInTheDocument()
+
+    // Phase 3 送达
+    act(() => {
+      progressCallback?.({
+        phase: 'phase3',
+        seq: currentSeq,
+        items: [item('C:\\Work\\red_car.mp4', 'red_car.mp4')],
+        total: 1
+      })
+    })
+
+    // Loading 收回，展示结果
+    expect(screen.queryByTestId('search-loading')).toBeNull()
+    expect(screen.queryByText('没有找到匹配的文件')).toBeNull()
+    expect(renderedPaths()).toEqual(['C:\\Work\\red_car.mp4'])
+  })
 })

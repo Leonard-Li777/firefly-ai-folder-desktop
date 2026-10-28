@@ -44,6 +44,8 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
 
   const [searchResults, setSearchResults] = useState<FileItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  /** 已完成终态结算（数据已置换上屏或请求明确结束）的搜索序号 */
+  const [settledSeq, setSettledSeq] = useState<number>(-1)
   const [activeItem, setActiveItem] = useState<FileItem | null>(null)
   const [selectedFiles, setSelectedFiles] = useState<FileItem[]>([])
   const [showDetailsPanel, setShowDetailsPanel] = useState(true)
@@ -87,6 +89,14 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
   const previousActivePageIdRef = useRef<string | null>(null)
   const overlayContainerRef = useRef<HTMLDivElement>(null)
 
+  const isSearchSettled = settledSeq === searchSeqRef.current
+  /**
+   * 核心推导（派生加载态）：
+   * 搜索激活且当前请求序号尚未终态结算（!isSearchSettled），或者显式标记 isLoading，恒为 loading 态！
+   * 彻底杜绝组件初次挂载时的首帧 Render Lag、中间过渡帧或任何客户端超时误关暴露假空态。
+   */
+  const effectiveIsLoading = isSearchActive ? (!isSearchSettled || isLoading) : false
+
   // 1. 浮层激活与退出时的预览单例状态保护 (State Preservation)
   useEffect(() => {
     if (isSearchActive) {
@@ -116,11 +126,20 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
       setActiveItem(null)
       setSelectedFiles([])
       setIsLoading(false)
+      setSettledSeq(-1)
       setSearchPhase('idle')
+      handledPhase2SeqRef.current = -1
+      handledPhase3SeqRef.current = -1
+      isWaitingPhase3Ref.current = false
       if (semanticTimeoutRef.current) {
         clearTimeout(semanticTimeoutRef.current)
         semanticTimeoutRef.current = null
       }
+      if (clipHintTimeoutRef.current) {
+        clearTimeout(clipHintTimeoutRef.current)
+        clipHintTimeoutRef.current = null
+      }
+      setIsClipColdLoading(false)
     }
   }, [isSearchActive])
 
@@ -233,38 +252,28 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
           if (searchSeqRef.current === payload.seq) {
             logger.warn(
               LogCategory.RENDERER,
-              `[GlobalSearchOverlay] Phase 2 语义分析超时熔断(${SEMANTIC_SEARCH_TIMEOUT_MS}ms)，恢复空闲态`
+              `[GlobalSearchOverlay] Phase 2 语义分析呼吸条超时(${SEMANTIC_SEARCH_TIMEOUT_MS}ms)，恢复空闲徽标`
             )
             setSearchPhase('idle')
-            setIsLoading(false)
           }
         }, SEMANTIC_SEARCH_TIMEOUT_MS)
       } else if (payload.phase === 'phase2') {
-        // 对称幂等保护：若已处理该序号的 Phase 2（例如 Promise 先行返回），直接短路
-        if (handledPhase2SeqRef.current === payload.seq) return
-        handledPhase2SeqRef.current = payload.seq
+        const incomingItemsCount = (payload.items || []).length
+        const hasPendingClip = Boolean(payload.clipPending)
+
+        // 收到 Phase 2 意味着语义分析已就绪，立即清除超时熔断定时器，防止 6000ms 误杀
         if (semanticTimeoutRef.current) {
           clearTimeout(semanticTimeoutRef.current)
           semanticTimeoutRef.current = null
         }
-        handlePhase2Replace(payload.items || [])
-        setSearchPhase('idle')
-
-        const incomingItemsCount = (payload.items || []).length
-        const hasPendingClip = Boolean(payload.clipPending)
 
         // 若当前结果为空且视觉模型仍在后台调度加载中（clipPending），最终结果尚未返回！
-        // 必须持续保持 isLoading=true，绝不能提前退出 loading 导致用户看到假空态！
+        // 无论 Promise 是否先行返回，必须持续保持 isLoading=true，绝不能提前退出 loading 导致用户看到假空态！
         if (incomingItemsCount === 0 && hasPendingClip) {
           isWaitingPhase3Ref.current = true
           setIsLoading(true)
-        } else {
+        } else if (!hasPendingClip) {
           isWaitingPhase3Ref.current = false
-          setIsLoading(false)
-        }
-
-        if (payload.tokens && payload.tokens.length > 0) {
-          useSearchStore.getState().setSearchTokens(payload.tokens)
         }
 
         // 工单 13：冷态视觉模型首次加载 → 轻量提示；phase3 到达或超时即收
@@ -281,11 +290,29 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
               if (isWaitingPhase3Ref.current) {
                 isWaitingPhase3Ref.current = false
                 setIsLoading(false)
+                setSettledSeq(payload.seq)
               }
             }
           }, CLIP_COLD_HINT_TIMEOUT_MS)
         } else {
           setIsClipColdLoading(false)
+        }
+
+        // 对称幂等保护：若已处理该序号的 Phase 2（例如 Promise 先行返回且置换了结果），跳过重复置换
+        if (handledPhase2SeqRef.current !== payload.seq) {
+          handledPhase2SeqRef.current = payload.seq
+          handlePhase2Replace(payload.items || [])
+        }
+        setSearchPhase('idle')
+
+        // 数据已置换上屏，若不等待 Phase 3，收回 Loading 态并标记终态结算
+        if (!hasPendingClip || incomingItemsCount > 0) {
+          setIsLoading(false)
+          setSettledSeq(payload.seq)
+        }
+
+        if (payload.tokens && payload.tokens.length > 0) {
+          useSearchStore.getState().setSearchTokens(payload.tokens)
         }
       } else if (payload.phase === 'phase3') {
         // 工单 13：冷态 CLIP 追加。**独立序号守卫**（handledPhase3SeqRef），
@@ -298,9 +325,12 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
         }
         setIsClipColdLoading(false)
         isWaitingPhase3Ref.current = false
-        // Phase 3 视觉切片送达，最终结果已全量就绪，收回加载态！
+        // 先把 Phase 3 的视觉切片追加到结果中，再退出 Loading 并标记终态结算，确保用户看到的是数据上屏而非空态闪烁
+        if (payload.items && payload.items.length > 0) {
+          appendPhase3Items(payload.items)
+        }
         setIsLoading(false)
-        appendPhase3Items(payload.items || [])
+        setSettledSeq(payload.seq)
       }
     })
 
@@ -326,9 +356,12 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
 
     const keyword = globalSearchKeyword.trim()
     if (!keyword) {
-      searchSeqRef.current++
+      const nextSeq = ++searchSeqRef.current
+      setSettledSeq(nextSeq)
       setSearchResults([])
       isWaitingPhase3Ref.current = false
+      handledPhase2SeqRef.current = -1
+      handledPhase3SeqRef.current = -1
       setIsLoading(false)
       setSearchPhase('idle')
       // 工单 13：清空搜索词时一并收掉冷态提示，避免残留
@@ -341,7 +374,8 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
     }
 
     if (!workspaceDirectory?.path) {
-      searchSeqRef.current++
+      const nextSeq = ++searchSeqRef.current
+      setSettledSeq(nextSeq)
       setSearchResults([])
       isWaitingPhase3Ref.current = false
       setIsLoading(false)
@@ -358,8 +392,9 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
     const currentSeq = ++searchSeqRef.current
 
     searchDebounceTimerRef.current = setTimeout(async () => {
+      let results: any = null
       try {
-        const results = await window.electronAPI!.searchWorkspaceFiles(
+        results = await window.electronAPI!.searchWorkspaceFiles(
           keyword,
           workspaceDirectory.path,
           { stream: true, seq: currentSeq, channel: 'global-overlay' }
@@ -367,15 +402,43 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
 
         // 仅最新一次请求允许写回 State，防止慢响应覆盖快响应
         if (currentSeq === searchSeqRef.current) {
+          const hasPendingClip = Boolean((results as any)?.clipPending)
+          const itemsCount = results?.length || 0
+
+          // 无论 Promise 是否先行返回，立即解除 Phase 2 熔断定时器
+          if (semanticTimeoutRef.current) {
+            clearTimeout(semanticTimeoutRef.current)
+            semanticTimeoutRef.current = null
+          }
+
           // 若流式 Phase 2 已先行处理，跳过重复置换与视口抖动
           if (handledPhase2SeqRef.current !== currentSeq) {
             handledPhase2SeqRef.current = currentSeq
             handlePhase2Replace(results || [])
           }
           setSearchPhase('idle')
-          // 若仍在等待冷态 Phase 3 追加（当前结果仍为 0），持续保持 loading 直到 Phase 3 或超时
-          if (!isWaitingPhase3Ref.current) {
+
+          // 若返回 0 结果但声明冷态视觉模型调度中（clipPending），保持 loading 持续等待 Phase 3
+          if (hasPendingClip && itemsCount === 0) {
+            isWaitingPhase3Ref.current = true
+            setIsLoading(true)
+            setIsClipColdLoading(true)
+            if (clipHintTimeoutRef.current) {
+              clearTimeout(clipHintTimeoutRef.current)
+            }
+            clipHintTimeoutRef.current = setTimeout(() => {
+              if (searchSeqRef.current === currentSeq) {
+                setIsClipColdLoading(false)
+                if (isWaitingPhase3Ref.current) {
+                  isWaitingPhase3Ref.current = false
+                  setIsLoading(false)
+                  setSettledSeq(currentSeq)
+                }
+              }
+            }, CLIP_COLD_HINT_TIMEOUT_MS)
+          } else if (!isWaitingPhase3Ref.current) {
             setIsLoading(false)
+            setSettledSeq(currentSeq)
           }
 
           const tokens = (results as any)?.tokens || []
@@ -397,11 +460,14 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
           setSearchPhase('idle')
           isWaitingPhase3Ref.current = false
           setIsLoading(false)
+          setSettledSeq(currentSeq)
         }
       } finally {
         if (currentSeq === searchSeqRef.current) {
-          if (!isWaitingPhase3Ref.current) {
+          // 只要在等待冷态 Phase 3，绝不允许在 finally 中提前收回 Loading 导致假空态！
+          if (!isWaitingPhase3Ref.current && !(results as any)?.clipPending) {
             setIsLoading(false)
+            setSettledSeq(currentSeq)
           }
         }
       }
@@ -511,7 +577,7 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
             isRealDirectory={true}
             showsmartName={true}
             showAnalysisStatus={true}
-            isLoading={isLoading}
+            isLoading={effectiveIsLoading}
             workspaceDirectoryPath={workspaceDirectory?.path}
             workspaceDirectoryType={workspaceDirectory?.type}
             renderToolbar={layoutContext => (
