@@ -45,6 +45,8 @@ interface VirtualDirectoryStore {
 
   // Dimension groups and tags
   dimensionGroups: DimensionGroup[]
+  pathCountMap?: Record<string, number>
+  setPathCountMap: (map?: Record<string, number>) => void
   setDimensionGroups: (groups: DimensionGroup[]) => void
   /** 获取经三级动态权重排序后的顶层主干维度组 */
   getSortedTopLevelGroups: () => DimensionGroup[]
@@ -242,6 +244,8 @@ export const useVirtualDirectoryStore = create<VirtualDirectoryStore>((set, get)
   currentWorkspaceDirectory: getInitialWorkspaceDirectory(),
   workspaceDirectories: [],
   dimensionGroups: [],
+  pathCountMap: undefined,
+  setPathCountMap: map => set({ pathCountMap: map }),
   tagTopology: new Map<string, TagTopologyNode>(),
   selectedTagCodes: new Set<string>(),
   selectionStack: [],

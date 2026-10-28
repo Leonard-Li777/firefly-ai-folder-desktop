@@ -57,6 +57,7 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
     s => s.setCurrentWorkspaceDirectory
   )
   const dimensionGroups = useAnalyzedDirectoryStore(s => s.dimensionGroups)
+  const pathCountMap = useAnalyzedDirectoryStore(s => s.pathCountMap)
   const selectedTags = useAnalyzedDirectoryStore(s => s.selectedTags)
   const setSelectedTags = useAnalyzedDirectoryStore(s => s.setSelectedTags)
   const addSelectedTag = useAnalyzedDirectoryStore(s => s.addSelectedTag)
@@ -589,6 +590,7 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
                       ) : (
                         <DimensionTreeSidebar
                           dimensionGroups={dimensionGroups}
+                          pathCountMap={pathCountMap}
                           showEmptyTags={showEmptyTags}
                           isExportMode={isMultiSelectMode}
                           showSelectAll={isMultiSelectMode}

@@ -79,6 +79,7 @@ function collectDefaultCollapsedTagKeys(
 
 export interface DimensionTreeSidebarProps {
   dimensionGroups: DimensionGroup[]
+  pathCountMap?: Record<string, number>
   showEmptyTags?: boolean
   panDimensionIds?: number[]
   isExportMode?: boolean
@@ -110,7 +111,8 @@ interface DimensionTreeNodeProps {
     parentTagValue?: string,
     viaParentCode?: string,
     isLifted?: boolean,
-    codePath?: string
+    codePath?: string,
+    hostScopeCode?: string
   ) => boolean
   toggleTagSelection: (
     dimensionId: number,
@@ -208,7 +210,8 @@ const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
                 parentTagValue,
                 tag.viaParentCode || undefined,
                 tag.isLifted === true,
-                tag.codePath
+                tag.codePath,
+                tag.hostScopeCode
               )
               const isDisabled = tag.fileCount === 0
               const tagNodeKey = dimensionNodeKey(node.code || node.name, tag)
@@ -270,7 +273,8 @@ const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
                               currentChain,
                               tag.viaParentCode || undefined,
                               tag.isLifted === true,
-                              tag.codePath
+                              tag.codePath,
+                              tag.hostScopeCode
                             )
                           }
                         }}
@@ -287,7 +291,8 @@ const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
                               currentChain,
                               tag.viaParentCode || undefined,
                               tag.isLifted === true,
-                              tag.codePath
+                              tag.codePath,
+                              tag.hostScopeCode
                             )
                           }
                           className="w-3.5 h-3.5 rounded border border-border/80 accent-primary cursor-pointer shrink-0"
@@ -332,7 +337,8 @@ const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
                             viaParentCode: tag.viaParentCode || undefined,
                             level: tag.level,
                             parentTagValue,
-                            ancestorChain: currentChain
+                            ancestorChain: currentChain,
+                            hostScopeCode: tag.hostScopeCode
                           })
                         }
                       }}
@@ -591,6 +597,7 @@ DimensionTreeRow.displayName = 'DimensionTreeRow'
 
 export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
   dimensionGroups,
+  pathCountMap,
   showEmptyTags = false,
   panDimensionIds = EMPTY_PAN_DIMENSION_IDS,
   isExportMode = false,
@@ -914,21 +921,19 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
         const key = makeTagKey(dimensionId, tagValue, parentTagValue, viaParentCode, isLifted, codePath, hostScopeCode)
         return selectedTags.has(key)
       } else {
-        const curParent = currentTag ? currentTag.viaParentCode : undefined
-        // 若两端均物化了 codePath，优先按 codePath 严格匹配，杜绝多父跨分支同名误高亮
-        const pathMatches =
-          !codePath || !currentTag?.codePath || currentTag.codePath === codePath
-        const liftMatches =
-          isLifted === undefined ||
-          (currentTag?.isLifted === true) === isLifted
+        if (!currentTag) return false
+        if (currentTag.dimensionId !== dimensionId || currentTag.tagValue !== tagValue) return false
+        if (isLifted !== undefined && (currentTag.isLifted === true) !== isLifted) return false
+        // 宿主严格比对（同空或同值，杜绝空值宽容短路）
+        if ((currentTag.hostScopeCode ?? '') !== (hostScopeCode ?? '')) return false
+        // 若双方均有 codePath，以 codePath 严格等值作为绝对准绳
+        if (codePath && currentTag.codePath) {
+          return currentTag.codePath === codePath
+        }
+        const curParent = currentTag.viaParentCode
         return (
-          currentTag !== null &&
-          currentTag.dimensionId === dimensionId &&
-          currentTag.tagValue === tagValue &&
           currentTag.parentTagValue === parentTagValue &&
-          (!viaParentCode || !curParent || curParent === viaParentCode) &&
-          pathMatches &&
-          liftMatches
+          (!viaParentCode || !curParent || curParent === viaParentCode)
         )
       }
     },
@@ -1012,6 +1017,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       level: number
       parentTagValue?: string
       ancestorChain?: string[]
+      hostScopeCode?: string
     }) => {
       const effectiveViaParent = tag.viaParentCode
       if (isExportMode) {
@@ -1022,7 +1028,8 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
           tag.ancestorChain,
           effectiveViaParent,
           tag.isLifted === true,
-          tag.codePath
+          tag.codePath,
+          tag.hostScopeCode
         )
       } else {
         const newTag: SelectedTag = {
@@ -1037,7 +1044,8 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
           viaParentCode: effectiveViaParent,
           level: tag.level,
           parentTagValue: tag.parentTagValue,
-          ancestorChain: tag.ancestorChain
+          ancestorChain: tag.ancestorChain,
+          hostScopeCode: tag.hostScopeCode
         }
 
         setCurrentTag(prev => {
@@ -1049,6 +1057,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
             prev.parentTagValue === tag.parentTagValue &&
             prevViaParent === effectiveViaParent &&
             (prev.codePath ?? '') === (tag.codePath ?? '') &&
+            (prev.hostScopeCode ?? '') === (tag.hostScopeCode ?? '') &&
             (prev.isLifted === true) === (tag.isLifted === true)
 
           return isSame ? null : newTag
@@ -1071,12 +1080,12 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
 
   // 3. 递归构建维度树（严格过滤在当前 showEmptyTags 模式下无有效子标签的根级组，且响应 maxScaleDepth 刻度穿透提升）
   const visibleGroups = useMemo(() => {
-    const rawTree = buildDimensionTree(dimensionGroups, null, null, 0, maxScaleDepth)
+    const rawTree = buildDimensionTree(dimensionGroups, null, null, 0, maxScaleDepth, pathCountMap)
     return rawTree.filter(group => {
       const { tagsToShow } = handleVisibleAndHiddenTags(group, group.childTags)
       return tagsToShow && tagsToShow.length > 0
     })
-  }, [dimensionGroups, handleVisibleAndHiddenTags, maxScaleDepth])
+  }, [dimensionGroups, handleVisibleAndHiddenTags, maxScaleDepth, pathCountMap])
 
   // 4. 单一收口的自愈与合法性同步管道（响应 maxScaleDepth 投影伸缩，遵循全覆盖不变式与物理死标签自愈）
   useEffect(() => {

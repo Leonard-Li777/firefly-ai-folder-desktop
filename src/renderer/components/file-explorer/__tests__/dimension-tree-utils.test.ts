@@ -1446,4 +1446,358 @@ describe('migrateTagKeysAcrossScale 跨刻度自愈与全覆盖不变式测试',
     expect(childMap.get(keyA)![0].name).toBe('题材A')
     expect(childMap.get(keyB)![0].name).toBe('题材B')
   })
-})
+
+  it('重现用户 Bug：多选模式下，文档下的德语和电子书下的德语被联动勾选', () => {
+    const fileTypeGroups = [
+      {
+        id: 1,
+        name: '文件类型',
+        code: 'builtin.file_type',
+        level: 0,
+        tags: [
+          {
+            dimensionId: 1,
+            dimensionCode: 'builtin.file_type',
+            dimensionName: '文件类型',
+            tagValue: '文档',
+            code: 'omw.document',
+            fileCount: 15,
+            isMultiSelect: false
+          },
+          {
+            dimensionId: 1,
+            dimensionCode: 'builtin.file_type',
+            dimensionName: '文件类型',
+            tagValue: '电子书',
+            code: 'omw.ebook',
+            fileCount: 12,
+            isMultiSelect: false
+          }
+        ],
+        isMultiSelect: false
+      },
+      {
+        id: 11,
+        name: '语言细分',
+        code: 'builtin.language_segmentation',
+        level: 1,
+        parentDimensionIds: [1],
+        triggerConditions: [
+          { parentDimension: '文件类型', triggerTags: ['文档', '电子书'] }
+        ],
+        tags: [
+          {
+            dimensionId: 11,
+            dimensionCode: 'builtin.language_segmentation',
+            dimensionName: '语言细分',
+            tagValue: '德语',
+            code: 'omw.german',
+            fileCount: 5,
+            viaParentCode: 'builtin.language_segmentation',
+            isMultiSelect: false
+          }
+        ],
+        isMultiSelect: false
+      }
+    ];
+
+    const tree = buildDimensionTree(fileTypeGroups, null, null, 0, 3);
+    const docLangDim = tree[0].childTags.get('文档')[0];
+    const ebookLangDim = tree[0].childTags.get('电子书')[0];
+
+    const docGerman = docLangDim.tags.find(t => t.tagValue === '德语');
+    const ebookGerman = ebookLangDim.tags.find(t => t.tagValue === '德语');
+
+    const docKey = makeTagKey(
+      docGerman.dimensionId,
+      docGerman.tagValue,
+      '文档',
+      docGerman.viaParentCode,
+      docGerman.isLifted === true,
+      docGerman.codePath
+    );
+
+    const ebookKey = makeTagKey(
+      ebookGerman.dimensionId,
+      ebookGerman.tagValue,
+      '电子书',
+      ebookGerman.viaParentCode,
+      ebookGerman.isLifted === true,
+      ebookGerman.codePath
+    );
+
+    console.log('Doc German Key:', docKey);
+    console.log('Ebook German Key:', ebookKey);
+
+    expect(docKey).not.toBe(ebookKey);
+  });
+
+  it('多选模式受控宿主码消歧：使用 hostScopeCode (如 omw.document) 免疫多语言切换，且正确透传至 SelectedTag', () => {
+    const docKey = makeTagKey(
+      11,
+      '德语',
+      '文档',
+      'builtin.language_segmentation',
+      false,
+      undefined,
+      'omw.document'
+    )
+    const ebookKey = makeTagKey(
+      11,
+      '德语',
+      '电子书',
+      'builtin.language_segmentation',
+      false,
+      undefined,
+      'omw.ebook'
+    )
+
+    expect(docKey).toBe('11::parentCode:builtin.language_segmentation@omw.document::德语')
+    expect(ebookKey).toBe('11::parentCode:builtin.language_segmentation@omw.ebook::德语')
+    expect(docKey).not.toBe(ebookKey)
+
+    const parsed = parseTagKey(docKey)
+    expect(parsed.hostScopeCode).toBe('omw.document')
+    expect(parsed.parentTagValue).toBe('omw.document')
+
+    const dummyGroups: DimensionGroup[] = [
+      {
+        id: 11,
+        name: '语言细分',
+        code: 'builtin.language_segmentation',
+        level: 1,
+        tags: [
+          {
+            dimensionId: 11,
+            tagValue: '德语',
+            code: 'omw.german',
+            viaParentCode: 'builtin.language_segmentation',
+            fileCount: 3
+          }
+        ]
+      }
+    ]
+
+    const selectedList = getSelectedTagsFromSet(new Set([docKey]), dummyGroups)
+    expect(selectedList.length).toBe(1)
+    expect(selectedList[0].tagValue).toBe('德语')
+    expect(selectedList[0].hostScopeCode).toBe('omw.document')
+  })
+});
+
+describe('PRD-0058 / Branch Dimension Node Isolation & Count SSOT - 跨分支同名叶子节点隔离与徽标计数一致性测试', () => {
+  it('AC-1 & AC-3: buildDimensionTree 补齐中间维度码，并通过 pathCountMap 回填各分支独立精确计数', () => {
+    // 构造文件类型根维度组（文档 vs 电子书）
+    const fileTypeGroup: DimensionGroup = {
+      id: 1,
+      name: '文件类型',
+      code: 'builtin.file_type',
+      level: 0,
+      tags: [
+        {
+          dimensionId: 1,
+          dimensionCode: 'builtin.file_type',
+          dimensionName: '文件类型',
+          tagValue: '文档',
+          code: 'builtin.document',
+          codePath: '/builtin.file_type/builtin.document',
+          namePath: '/文件类型/文档',
+          level: 1,
+          fileCount: 1
+        },
+        {
+          dimensionId: 1,
+          dimensionCode: 'builtin.file_type',
+          dimensionName: '文件类型',
+          tagValue: '电子书',
+          code: 'builtin.e_book',
+          codePath: '/builtin.file_type/builtin.e_book',
+          namePath: '/文件类型/电子书',
+          level: 1,
+          fileCount: 1
+        }
+      ]
+    }
+
+    // 构造外部细分维度组（语言细分 -> 英文，全局 count 为 3）
+    const langGroup: DimensionGroup = {
+      id: 11,
+      name: '语言细分',
+      code: 'builtin.language_segmentation',
+      level: 1,
+      parentDimensionIds: [1],
+      tags: [
+        {
+          dimensionId: 11,
+          dimensionCode: 'builtin.language_segmentation',
+          dimensionName: '语言细分',
+          tagValue: '英文',
+          code: 'omw.06912865.n',
+          viaParentCode: 'builtin.language_segmentation',
+          level: 1,
+          fileCount: 3 // 后端全局粗汇总值
+        }
+      ]
+    }
+
+    // 后端下发的各分支前缀精准命中计数映射（SSOT）
+    const pathCountMap: Record<string, number> = {
+      '/builtin.file_type/builtin.document': 1,
+      '/builtin.file_type/builtin.document/builtin.language_segmentation': 1,
+      '/builtin.file_type/builtin.document/builtin.language_segmentation/omw.06912865.n': 1,
+      '/builtin.file_type/builtin.e_book': 1,
+      '/builtin.file_type/builtin.e_book/builtin.language_segmentation': 1,
+      '/builtin.file_type/builtin.e_book/builtin.language_segmentation/omw.06912865.n': 1
+    }
+
+    const tree = buildDimensionTree([fileTypeGroup, langGroup], null, null, 0, 7, pathCountMap)
+    expect(tree.length).toBe(1)
+    const ftNode = tree[0]
+    expect(ftNode.childTags).toBeDefined()
+
+    // 1. 文档分支下的语言细分
+    const docChildren = ftNode.childTags!.get('builtin.file_type::builtin.document')
+    expect(docChildren).toBeDefined()
+    expect(docChildren!.length).toBe(1)
+    const docLangDim = docChildren![0]
+    expect(docLangDim.tags.length).toBe(1)
+    const docEnglish = docLangDim.tags[0]
+    expect(docEnglish.codePath).toBe('/builtin.file_type/builtin.document/builtin.language_segmentation/omw.06912865.n')
+    expect(docEnglish.namePath).toBe('/文件类型/文档/语言细分/英文')
+    expect(docEnglish.hostScopeCode).toBe('builtin.document')
+    // 关键断言：徽标计数不再是全局污染的 3，而是通过 pathCountMap 精准回填的 1！
+    expect(docEnglish.fileCount).toBe(1)
+
+    // 2. 电子书分支下的语言细分
+    const ebookChildren = ftNode.childTags!.get('builtin.file_type::builtin.e_book')
+    expect(ebookChildren).toBeDefined()
+    expect(ebookChildren!.length).toBe(1)
+    const ebookLangDim = ebookChildren![0]
+    expect(ebookLangDim.tags.length).toBe(1)
+    const ebookEnglish = ebookLangDim.tags[0]
+    expect(ebookEnglish.codePath).toBe('/builtin.file_type/builtin.e_book/builtin.language_segmentation/omw.06912865.n')
+    expect(ebookEnglish.namePath).toBe('/文件类型/电子书/语言细分/英文')
+    expect(ebookEnglish.hostScopeCode).toBe('builtin.e_book')
+    // 关键断言：电子书分支下的徽标也是精准的 1！
+    expect(ebookEnglish.fileCount).toBe(1)
+
+    // 3. 两分支下的节点互斥消歧断言
+    expect(docEnglish.codePath).not.toBe(ebookEnglish.codePath)
+    expect(docEnglish.hostScopeCode).not.toBe(ebookEnglish.hostScopeCode)
+
+    const docKey = makeTagKey(
+      docEnglish.dimensionId,
+      docEnglish.tagValue,
+      undefined,
+      docEnglish.viaParentCode || undefined,
+      false,
+      docEnglish.codePath,
+      docEnglish.hostScopeCode
+    )
+    const ebookKey = makeTagKey(
+      ebookEnglish.dimensionId,
+      ebookEnglish.tagValue,
+      undefined,
+      ebookEnglish.viaParentCode || undefined,
+      false,
+      ebookEnglish.codePath,
+      ebookEnglish.hostScopeCode
+    )
+    expect(docKey).not.toBe(ebookKey)
+    expect(docKey).toContain(docEnglish.codePath!)
+    expect(ebookKey).toContain(ebookEnglish.codePath!)
+  })
+
+  it('ISS-03 & 细节 1: 提升行 makeTagKey 保留 hostScopeCode 且 parseTagKey 逆向提取对称', () => {
+    // 提升行无 codePath 时生成 key
+    const liftedKey = makeTagKey(
+      11,
+      '英文',
+      undefined,
+      'builtin.language_segmentation',
+      true, // isLifted
+      undefined,
+      'builtin.document' // hostScopeCode
+    )
+    expect(liftedKey).toBe('11::liftCode:builtin.language_segmentation@builtin.document::英文')
+
+    const parsed = parseTagKey(liftedKey)
+    expect(parsed.dimensionId).toBe(11)
+    expect(parsed.isLifted).toBe(true)
+    expect(parsed.viaParentCode).toBe('builtin.language_segmentation')
+    expect(parsed.hostScopeCode).toBe('builtin.document')
+    expect(parsed.tagValue).toBe('英文')
+  })
+
+  it('ISS-03 & 细节 2: 刻度收缩提升聚合行取父分支前缀去重并集计数', () => {
+    const fileTypeGroup: DimensionGroup = {
+      id: 1,
+      name: '文件类型',
+      code: 'builtin.file_type',
+      level: 0,
+      tags: [
+        {
+          dimensionId: 1,
+          dimensionCode: 'builtin.file_type',
+          dimensionName: '文件类型',
+          tagValue: '文档',
+          code: 'builtin.document',
+          codePath: '/builtin.file_type/builtin.document',
+          namePath: '/文件类型/文档',
+          level: 1,
+          fileCount: 2
+        }
+      ]
+    }
+
+    const langGroup: DimensionGroup = {
+      id: 11,
+      name: '语言细分',
+      code: 'builtin.language_segmentation',
+      level: 1,
+      parentDimensionIds: [1],
+      tags: [
+        {
+          dimensionId: 11,
+          dimensionCode: 'builtin.language_segmentation',
+          dimensionName: '语言细分',
+          tagValue: '英文',
+          code: 'omw.06912865.n',
+          viaParentCode: 'builtin.language_segmentation',
+          level: 1,
+          fileCount: 2
+        },
+        {
+          dimensionId: 11,
+          dimensionCode: 'builtin.language_segmentation',
+          dimensionName: '语言细分',
+          tagValue: '中文',
+          code: 'omw.06912866.n',
+          viaParentCode: 'builtin.language_segmentation',
+          level: 1,
+          fileCount: 2
+        }
+      ]
+    }
+
+    // 假设同一个文件同时有中英文，父分支去重后只有 2 个文件（而非 2+2=4）
+    const pathCountMap: Record<string, number> = {
+      '/builtin.file_type/builtin.document': 2,
+      '/builtin.file_type/builtin.document/builtin.language_segmentation': 2,
+      '/builtin.file_type/builtin.document/builtin.language_segmentation/omw.06912865.n': 2,
+      '/builtin.file_type/builtin.document/builtin.language_segmentation/omw.06912866.n': 2
+    }
+
+    // 设置 maxScaleDepth = 2，强制外部子维度提升平铺
+    const tree = buildDimensionTree([fileTypeGroup, langGroup], null, null, 0, 2, pathCountMap)
+    expect(tree.length).toBe(1)
+    const ftNode = tree[0]
+    // 提升后的标签直接平铺在 tags 中
+    const liftedDimTag = ftNode.tags.find(t => t.tagValue === '语言细分')
+    expect(liftedDimTag).toBeDefined()
+    expect(liftedDimTag!.isLifted).toBe(true)
+    expect(liftedDimTag!.codePath).toBe('/builtin.file_type/builtin.document/builtin.language_segmentation')
+    // 关键断言：提升聚合行的计数取父分支去重后的 2（而非累加的 4）！
+    expect(liftedDimTag!.fileCount).toBe(2)
+  })
+});

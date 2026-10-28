@@ -19,6 +19,8 @@ interface AnalyzedDirectoryStore {
 
   // Dimension groups and tags
   dimensionGroups: DimensionGroup[]
+  pathCountMap?: Record<string, number>
+  setPathCountMap: (map?: Record<string, number>) => void
   setDimensionGroups: (groups: DimensionGroup[]) => void
 
   // Selected tags for filtering
@@ -98,6 +100,8 @@ export const useAnalyzedDirectoryStore = create<AnalyzedDirectoryStore>((set, ge
   currentWorkspaceDirectory: null,
   workspaceDirectories: [],
   dimensionGroups: [],
+  pathCountMap: undefined,
+  setPathCountMap: map => set({ pathCountMap: map }),
   selectedTags: [],
   filteredFiles: [],
   totalFilesCount: 0,

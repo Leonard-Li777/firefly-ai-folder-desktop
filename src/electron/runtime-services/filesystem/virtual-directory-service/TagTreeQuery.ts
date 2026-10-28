@@ -43,6 +43,16 @@ import {
 import { HybridSearchSession } from './hybrid-search-session'
 import { PinyinQueryPlanner } from './pinyin-query-expander'
 
+/**
+ * 轻量物化代码路径归一化函数（确保以单斜杠开头、无尾部斜杠、去除多余双斜杠）
+ */
+export function normalizeCodePath(p: string): string {
+  if (!p) return ''
+  const trimmed = p.trim().replace(/\\/g, '/')
+  const segments = trimmed.split('/').filter(Boolean)
+  return segments.length > 0 ? `/${segments.join('/')}` : ''
+}
+
 export interface FilterFilesParams {
   selectedTags?: SelectedTag[]
   sortBy?: VirtualDirectoryFilter['sortBy']
@@ -781,11 +791,7 @@ export class TagTreeQuery {
           }
           if (clauses.length > 0) {
             filteredFingerprintsSql += `
-              AND wf.file_fingerprint IN (
-                SELECT ftr.file_fingerprint
-                FROM file_tag_relations ftr
-                WHERE ${clauses.join(' OR ')}
-              )
+              AND ${this.buildUnionFingerprintsCondition(clauses)}
             `
           }
         } else {
@@ -827,6 +833,9 @@ export class TagTreeQuery {
       const tagCountMap = new Map<string, number>()
       const tagParentCountMap = new Map<string, number>()
       const tagChainsMap = new Map<string, Array<{ name_path: string; code_path: string }>>()
+      // 路径前缀文件计数索引池（保障左侧树徽标与右侧 FileList SSOT 绝对一致）
+      const pathFilesMap = new Map<string, Set<string>>()
+      const pathCountMap: Record<string, number> = {}
 
       for (const row of relationRows) {
         if (!tagFilesMap.has(row.tag_code)) {
@@ -851,6 +860,21 @@ export class TagTreeQuery {
             code_path: rowCodePath
           })
         }
+
+        const normRowPath = normalizeCodePath(row.code_path || '')
+        if (normRowPath) {
+          const segs = normRowPath.split('/').filter(Boolean)
+          let curPrefix = ''
+          for (const seg of segs) {
+            curPrefix += `/${seg}`
+            let fSet = pathFilesMap.get(curPrefix)
+            if (!fSet) {
+              fSet = new Set<string>()
+              pathFilesMap.set(curPrefix, fSet)
+            }
+            fSet.add(row.file_fingerprint)
+          }
+        }
       }
 
       for (const [code, fSet] of tagFilesMap.entries()) {
@@ -858,6 +882,9 @@ export class TagTreeQuery {
       }
       for (const [key, fSet] of tagParentFilesMap.entries()) {
         tagParentCountMap.set(key, fSet.size)
+      }
+      for (const [p, fSet] of pathFilesMap.entries()) {
+        pathCountMap[p] = fSet.size
       }
 
       // 5. 按照维度归类本地动态标签并组织树形结构
@@ -1245,6 +1272,10 @@ export class TagTreeQuery {
                   // 仅在 Omni 未回填时按父链兜底拼接，杜绝「组装后打平再递归拼树」的双重损耗。
                   const currentCodePath = child.codePath || `${parentCodePath}/${child.code}`
                   const currentNamePath = child.namePath || `${parentNamePath}/${child.name}`
+                  const normOmniPath = normalizeCodePath(currentCodePath)
+                  if (normOmniPath && pathCountMap[normOmniPath] !== undefined) {
+                    count = pathCountMap[normOmniPath]
+                  }
                   tags.push({
                     dimensionId: id,
                     dimensionCode: root.code,
@@ -2381,6 +2412,7 @@ export class TagTreeQuery {
 
       return {
         groups: validGroups,
+        pathCountMap,
         performance: {
           dbQueryTime: Math.round(dbQueryTime * 100) / 100,
           totalTime: Math.round((performance.now() - startTime) * 100) / 100
@@ -2607,11 +2639,7 @@ export class TagTreeQuery {
           if (clause) clauses.push(clause)
         }
         if (clauses.length > 0) {
-          whereClauses.push(`wf.file_fingerprint IN (
-            SELECT ftr.file_fingerprint
-            FROM file_tag_relations ftr
-            WHERE ${clauses.join(' OR ')}
-          )`)
+          whereClauses.push(this.buildUnionFingerprintsCondition(clauses))
         }
       } else {
         // intersection
@@ -2689,21 +2717,12 @@ export class TagTreeQuery {
   private buildTagFilterSubClause(tag: SelectedTag, params: any[]): string | null {
     const rawPaths = this.resolveTagCodePaths(tag)
     if (rawPaths.length > 0) {
-      // 排他性物化路径穿透：自愈后前缀精准命中 + 尾部链后缀容错（兼容存量伪根前缀）
+      // 排他性物化路径穿透：严格左前缀排他命中（消除跨介质 tail 后缀误召回与全表扫描）
       const pathClauses = rawPaths
         .map(path => {
-          // 尾部链 = 去掉首段（根段）后的剩余 chain；单段路径无尾部链，跳过后缀容错
-          const segs = path.split('/').filter(Boolean)
-          const hasTail = segs.length > 1
-          const tail = hasTail ? segs.slice(1).join('/') : ''
-          const clause = `(ftr.code_path = ? OR ftr.code_path LIKE (? || '/%') ESCAPE '\\')`
-          if (!hasTail) {
-            params.push(path, escapeLike(path))
-            return clause
-          }
-          params.push(path, escapeLike(path))
-          params.push(escapeLike(tail), escapeLike(tail))
-          return `${clause} OR ftr.code_path LIKE ('%/' || ?) ESCAPE '\\' OR ftr.code_path LIKE ('%/' || ? || '/%') ESCAPE '\\'`
+          const normPath = normalizeCodePath(path)
+          params.push(normPath, escapeLike(normPath))
+          return `(ftr.code_path = ? OR ftr.code_path LIKE (? || '/%') ESCAPE '\\')`
         })
         .join(' OR ')
       return `(${pathClauses})`
@@ -2714,7 +2733,57 @@ export class TagTreeQuery {
     if (codes.length === 0) return null
     const placeholders = codes.map(() => '?').join(',')
     params.push(...codes)
-    return `ftr.tag_code IN (${placeholders})`
+    const baseTagClause = `ftr.tag_code IN (${placeholders})`
+
+    // 当标签携带宿主父级受控作用域（如外部细分维度挂载于文档/电子书）时，
+    // 追加宿主共现约束，杜绝跨父类同名同Code叶子跨介质误召回（彻底保障 AC-4 树徽标与列表一致性）
+    if (tag.hostScopeCode) {
+      params.push(tag.hostScopeCode, escapeLike(tag.hostScopeCode))
+      return `(${baseTagClause} AND ftr.file_fingerprint IN (
+        SELECT ftr_host.file_fingerprint FROM file_tag_relations ftr_host
+        WHERE ftr_host.tag_code = ? OR ftr_host.code_path LIKE ('%/' || ? || '/%') ESCAPE '\\'
+      ))`
+    }
+
+    return baseTagClause
+  }
+
+  /**
+   * 将大批量的标签穿透子句组装为安全的 IN (SELECT ...) 过滤条件。
+   *
+   * 痛点与机理：
+   * 当 union 模式下选中的标签较多（如用户点击「全选」，维度树通常有数百至上千个节点）时，
+   * 直接通过 `${clauses.join(' OR ')}` 拼接会导致 SQLite AST 解析树深度超过 SQLITE_MAX_EXPR_DEPTH（1000），
+   * 触发 `SqliteError: Expression tree is too large (maximum depth 1000)`，
+   * 导致异常捕获后静默降级为 0 个文件，右侧 FileList 空白。
+   *
+   * 治理策略：
+   * 按照安全阈值（每批 30 个条件）分块，通过 UNION 复合查询连接各批子查询。
+   * SQLite 对 UNION compound SELECT 是扁平解析，深度不累加，且各块内表达式树深度均 < 120。
+   * 严格保证了参数占位符顺序与过滤语义的 100% 一致（AC-4）。
+   */
+  private buildUnionFingerprintsCondition(clauses: string[]): string {
+    const CHUNK_SIZE = 30
+    if (clauses.length <= CHUNK_SIZE) {
+      return `wf.file_fingerprint IN (
+        SELECT ftr.file_fingerprint
+        FROM file_tag_relations ftr
+        WHERE ${clauses.join(' OR ')}
+      )`
+    }
+
+    const subSelects: string[] = []
+    for (let i = 0; i < clauses.length; i += CHUNK_SIZE) {
+      const chunk = clauses.slice(i, i + CHUNK_SIZE)
+      subSelects.push(`
+        SELECT ftr.file_fingerprint
+        FROM file_tag_relations ftr
+        WHERE ${chunk.join(' OR ')}
+      `)
+    }
+    return `wf.file_fingerprint IN (
+      ${subSelects.join(' UNION ')}
+    )`
   }
 
   /**

@@ -76,6 +76,7 @@ export const useAnalyzedDirectoryState = (
     setCurrentWorkspaceDirectory,
     dimensionGroups,
     setDimensionGroups,
+    setPathCountMap,
     selectedTags,
     filteredFiles,
     setFilteredFiles,
@@ -410,6 +411,7 @@ export const useAnalyzedDirectoryState = (
       }
 
       setDimensionGroups(groups)
+      setPathCountMap(response.pathCountMap)
       setAnalyzedFilesCount(count)
     } catch (error) {
       if (seq !== dimensionLoadSeqRef.current) return

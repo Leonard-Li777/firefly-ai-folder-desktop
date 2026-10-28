@@ -37,6 +37,7 @@ export const useVirtualDirectory = () => {
   >('grid')
   const [vdirSidebarTab, setVdirSidebarTab] = useState<'directory' | 'dimensions'>('directory')
   const [dimensionGroups, setDimensionGroups] = useState<DimensionGroup[]>([])
+  const [pathCountMap, setPathCountMap] = useState<Record<string, number> | undefined>(undefined)
   const [selectedTags, setSelectedTags] = useState<SelectedTag[]>([])
   const [isDimensionLoading, setIsDimensionLoading] = useState(false)
   const [filteredFilesByTags, setFilteredFilesByTags] = useState<any[]>([])
@@ -219,6 +220,7 @@ export const useVirtualDirectory = () => {
         removeEmptyTags: false
       })
       setDimensionGroups(res.groups)
+      setPathCountMap(res.pathCountMap)
     } catch (e) {
       logger.error(LogCategory.VIRTUAL_DIRECTORY, '获取虚拟目录维度组失败:', e)
     } finally {
