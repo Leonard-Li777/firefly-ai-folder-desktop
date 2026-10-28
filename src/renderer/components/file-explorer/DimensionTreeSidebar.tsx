@@ -576,7 +576,8 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
                   viaParentCode: tag.viaParentCode || undefined,
                   level: tag.level,
                   parentTagValue: row.parentTagValue,
-                  ancestorChain: row.ancestorChain
+                  ancestorChain: row.ancestorChain,
+                  hostScopeCode: row.hostScopeCode || tag.hostScopeCode
                 })
               }
             }}
@@ -1080,12 +1081,12 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
 
   // 3. 递归构建维度树（严格过滤在当前 showEmptyTags 模式下无有效子标签的根级组，且响应 maxScaleDepth 刻度穿透提升）
   const visibleGroups = useMemo(() => {
-    const rawTree = buildDimensionTree(dimensionGroups, null, null, 0, maxScaleDepth, pathCountMap)
+    const rawTree = buildDimensionTree(dimensionGroups, null, null, 0, maxScaleDepth, pathCountMap, !showEmptyTags)
     return rawTree.filter(group => {
       const { tagsToShow } = handleVisibleAndHiddenTags(group, group.childTags)
       return tagsToShow && tagsToShow.length > 0
     })
-  }, [dimensionGroups, handleVisibleAndHiddenTags, maxScaleDepth, pathCountMap])
+  }, [dimensionGroups, handleVisibleAndHiddenTags, maxScaleDepth, pathCountMap, showEmptyTags])
 
   // 4. 单一收口的自愈与合法性同步管道（响应 maxScaleDepth 投影伸缩，遵循全覆盖不变式与物理死标签自愈）
   useEffect(() => {

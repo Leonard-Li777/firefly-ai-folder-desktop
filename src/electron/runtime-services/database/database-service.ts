@@ -22,7 +22,10 @@ import {
   CONTROLLED_CONCEPT_DETAILS,
   classifyDimensionMutexScope,
   resolveMediaDomain,
-  getFileCategory
+  getFileCategory,
+  CONTROLLED_CODE_TO_CANONICAL_NAME,
+  DIMENSION_CODES,
+  type TagProvenanceGroup
 } from '@firefly/shared'
 import {
   findTagCodeTwoStage,
@@ -175,6 +178,45 @@ export class DatabaseService {
     } catch {}
 
     return null
+  }
+
+  /**
+   * 判定批量打标标签的出处来源分组 tag_group (ADR-0045)
+   * 铁律：
+   * 1. 只有在受控本体三级分层（OMW > HowNet > Builtin）中找不到、作为私有标签在 file_tags_private
+   *    注册或生成的自定义标签，才归入 'user'（用户标签）；
+   * 2. 属于三级受控体系的标签，绝不归入 'user'；
+   *    - 若挂载在内容标签/语义维度（builtin.content_tags），归入 'fused'；
+   *    - 若挂载在其它物理事实/元数据维度（安全等级、处理状态、文件来源、文件质量、各类细分扩展名等），归入 'fact'。
+   */
+  private resolveBatchTagProvenanceGroup(
+    tagCode: string,
+    viaParentCode?: string,
+    isControlled?: boolean
+  ): TagProvenanceGroup {
+    const isExplicitPrivate =
+      isControlled === false ||
+      tagCode.startsWith('_ext.') ||
+      tagCode.startsWith('custom.')
+
+    const inControlledDict =
+      Boolean(CONTROLLED_CODE_TO_CANONICAL_NAME[tagCode]) ||
+      tagCode.startsWith('omw.') ||
+      tagCode.startsWith('hownet.')
+
+    if (isExplicitPrivate && !inControlledDict) {
+      return 'user'
+    }
+
+    if (
+      viaParentCode === concept('内容标签') ||
+      viaParentCode === 'builtin.content_tags' ||
+      viaParentCode === DIMENSION_CODES.CONTENT_TAGS
+    ) {
+      return 'fused'
+    }
+
+    return 'fact'
   }
 
   /** 迁移完成后执行的回调列表 */
@@ -1485,19 +1527,30 @@ export class DatabaseService {
       }
       const safeDimCode: string = dimCode || concept('内容标签')
 
-      if (explicitTagCode) {
+      // 权威受控反查与伪代码净化：仅当显式传入了 tagCode 且包含非 ASCII 中文字符（如 builtin.security_level.内部）时，才净化为权威受控码
+      let safeExplicitTagCode = explicitTagCode
+      if (safeExplicitTagCode && /[^ -]/.test(safeExplicitTagCode)) {
+        if (item.tagName && isControlledConcept(item.tagName)) {
+          safeExplicitTagCode = concept(item.tagName)
+        } else if (isControlledConcept(safeExplicitTagCode)) {
+          safeExplicitTagCode = concept(safeExplicitTagCode as any)
+        }
+      }
+
+      if (safeExplicitTagCode) {
         // 已有受控或私有 tagCode
         const isControlled =
-          !explicitTagCode.startsWith('_ext.') &&
-          !explicitTagCode.startsWith('custom.') &&
-          (explicitTagCode.startsWith('omw.') ||
-            explicitTagCode.startsWith('hownet.') ||
-            explicitTagCode.startsWith('builtin.'))
+          !safeExplicitTagCode.startsWith('_ext.') &&
+          !safeExplicitTagCode.startsWith('custom.') &&
+          (safeExplicitTagCode.startsWith('omw.') ||
+            safeExplicitTagCode.startsWith('hownet.') ||
+            safeExplicitTagCode.startsWith('builtin.') ||
+            Boolean(CONTROLLED_CODE_TO_CANONICAL_NAME[safeExplicitTagCode]))
         const matchedParent = (item as any).matchedParent !== false
         resolvedAddTagItems.push({
           tagName: item.tagName,
           dimCode: safeDimCode,
-          tagCode: explicitTagCode,
+          tagCode: safeExplicitTagCode,
           isControlled,
           matchedParent
         })
@@ -1652,7 +1705,8 @@ export class DatabaseService {
             const itemCodes: string[] = []
             if (item.tagCode) {
               itemCodes.push(item.tagCode)
-            } else if (item.tagName) {
+            }
+            if (item.tagName) {
               const tagName = String(item.tagName).trim()
               if (tagName) {
                 // 1. 受控概念字典优先解析
@@ -1668,7 +1722,14 @@ export class DatabaseService {
                   itemCodes.push(controlled)
                 }
 
-                // 2. 别名表与私有表解析 (统一委托给 resolveTagCode)
+                // 2. 反查所有具有相同规范展示名的历史/异名受控码（如 omw.01704761.a 对应 公开）
+                for (const [code, canonName] of Object.entries(CONTROLLED_CODE_TO_CANONICAL_NAME)) {
+                  if (canonName === tagName) {
+                    itemCodes.push(code)
+                  }
+                }
+
+                // 3. 别名表与私有表解析 (统一委托给 resolveTagCode)
                 const resolved = this.resolveTagCode(tagName, dimCode)
                 if (resolved) {
                   itemCodes.push(resolved)
@@ -1685,6 +1746,11 @@ export class DatabaseService {
                     }
                   }
                 } catch {}
+
+                // 4. 清理可能存在的历史同名伪受控码（如 builtin.security_level.内部）
+                if (dimCode) {
+                  itemCodes.push(`${dimCode}.${tagName}`)
+                }
 
                 itemCodes.push(tagName)
               }
@@ -1709,12 +1775,26 @@ export class DatabaseService {
         }
 
         // 3. 遍历文件应用或解绑
-        const allAddTagItems: Array<{ tagCode: string; viaParentCode: string; tagName?: string }> = []
+        const allAddTagItems: Array<{
+          tagCode: string
+          viaParentCode: string
+          tagName?: string
+          tagGroup: TagProvenanceGroup
+        }> = []
         for (const [key, code] of createdTagMap.entries()) {
           const parts = key.split(':')
           const dimCode = parts[0] || ''
           const tagName = parts.slice(1).join(':')
-          allAddTagItems.push({ tagCode: code, viaParentCode: dimCode, tagName })
+          const resolvedItem = resolvedAddTagItems.find(
+            r => r.dimCode === dimCode && r.tagName === tagName
+          )
+          const isControlled = resolvedItem?.isControlled ?? (
+            !code.startsWith('_ext.') &&
+            !code.startsWith('custom.') &&
+            (isControlledConcept(tagName) || Boolean(CONTROLLED_CODE_TO_CANONICAL_NAME[code]))
+          )
+          const tagGroup = this.resolveBatchTagProvenanceGroup(code, dimCode, isControlled)
+          allAddTagItems.push({ tagCode: code, viaParentCode: dimCode, tagName, tagGroup })
         }
         for (const code of operation.addTagCodes || []) {
           const found = this._db!.prepare('SELECT code, name, parent_codes FROM file_tags_private WHERE code = ?').get(code) as { code: string; name?: string; parent_codes?: string } | undefined
@@ -1727,10 +1807,17 @@ export class DatabaseService {
               }
             } catch {}
           }
+          const tagName = found?.name || getCanonicalConceptName(code) || code
+          const isControlled =
+            !code.startsWith('_ext.') &&
+            !code.startsWith('custom.') &&
+            (Boolean(CONTROLLED_CODE_TO_CANONICAL_NAME[code]) || Boolean(tagName && isControlledConcept(tagName)))
+          const tagGroup = this.resolveBatchTagProvenanceGroup(code, viaParentCode, isControlled)
           allAddTagItems.push({
             tagCode: code,
             viaParentCode,
-            tagName: found?.name || getCanonicalConceptName(code) || code
+            tagName,
+            tagGroup
           })
         }
 
@@ -1750,7 +1837,7 @@ export class DatabaseService {
         const materializedMap = new Map<string, { codePath: string; namePath: string; depth: number }>()
 
         const insertStmt = this._db!.prepare(
-          "INSERT OR REPLACE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, code_path, name_path, depth, tag_group, source, confidence, sync_status, created_at) VALUES (?, ?, ?, ?, ?, ?, 'user', 'user', 1.0, 0, CURRENT_TIMESTAMP)"
+          "INSERT OR REPLACE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, code_path, name_path, depth, tag_group, source, confidence, sync_status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, 'user', 1.0, 0, CURRENT_TIMESTAMP)"
         )
 
         // 预编译指纹与路径查询语句（杜绝循环内重复 prepare）
@@ -1871,7 +1958,12 @@ export class DatabaseService {
               return materialized
             }
 
-            const insertItem = (tagCode: string, viaParentCode: string, tagName?: string) => {
+            const insertItem = (
+              tagCode: string,
+              viaParentCode: string,
+              tagName?: string,
+              tagGroup?: TagProvenanceGroup
+            ) => {
               const name = tagName || getCanonicalConceptName(tagCode) || tagCode
               const materialized = materializeOf(tagCode, viaParentCode, name)
               if (!materialized.codePath) {
@@ -1881,11 +1973,26 @@ export class DatabaseService {
                 )
                 return
               }
-              insertStmt.run(fp, tagCode, viaParentCode, materialized.codePath, materialized.namePath, materialized.depth)
+              const effectiveGroup =
+                tagGroup || this.resolveBatchTagProvenanceGroup(tagCode, viaParentCode)
+              insertStmt.run(
+                fp,
+                tagCode,
+                viaParentCode,
+                materialized.codePath,
+                materialized.namePath,
+                materialized.depth,
+                effectiveGroup
+              )
             }
 
             // 步骤 2：过滤（全媒体排他门禁 + 准入闸）。被拦者不参与胜出裁决，也就不会造成覆盖删除。
-            const survivors: Array<{ tagCode: string; viaParentCode: string; tagName?: string }> = []
+            const survivors: Array<{
+              tagCode: string
+              viaParentCode: string
+              tagName?: string
+              tagGroup: TagProvenanceGroup
+            }> = []
             for (const item of allAddTagItems) {
               // 全媒体领域排他门控铁律：非适格介质严禁挂载专有维度与标签
               if (!isDimensionApplicableForFile(item.viaParentCode, item.tagCode, fileCtx)) {
@@ -1901,7 +2008,7 @@ export class DatabaseService {
               const tagName = item.tagName || getCanonicalConceptName(item.tagCode) || item.tagCode
               const verdict = isTagAdmissible({
                 name: tagName,
-                tagGroup: 'user'
+                tagGroup: item.tagGroup
               })
               if (verdict.outcome === 'rejected') {
                 logger.debug(
@@ -1917,7 +2024,10 @@ export class DatabaseService {
             // 步骤 3+4：按 (effectiveParent, tagCode) 去重（保留末位）后按父级分组。
             // 去重是必需的（规格 §4.2）：createdTagMap 以 `${dim}:${tagName}` 为键，不同别名可映射到
             // 同一 code；addTagCodes 也会与 addTags 重复。不去重会出现「同一 code 既 kept 又 skipped」。
-            const candidateGroups = new Map<string, Array<{ tagCode: string; tagName?: string }>>()
+            const candidateGroups = new Map<
+              string,
+              Array<{ tagCode: string; tagName?: string; tagGroup: TagProvenanceGroup }>
+            >()
             for (const item of survivors) {
               let group = candidateGroups.get(item.viaParentCode)
               if (!group) {
@@ -1927,7 +2037,11 @@ export class DatabaseService {
               // 先移除同 code 旧位次再压入，保证组内顺序即「末位胜出」顺序
               const dupIdx = group.findIndex(c => c.tagCode === item.tagCode)
               if (dupIdx >= 0) group.splice(dupIdx, 1)
-              group.push({ tagCode: item.tagCode, tagName: item.tagName })
+              group.push({
+                tagCode: item.tagCode,
+                tagName: item.tagName,
+                tagGroup: item.tagGroup
+              })
             }
 
             // ────────── S2 阶段 B：落库（规格 §4.1 步骤 7-8；铁律：先 INSERT winner，后 DELETE 兄弟） ──────────
@@ -1936,7 +2050,7 @@ export class DatabaseService {
 
               if (mode !== 'single' || candidates.length === 0) {
                 // 8. multi / rule / unknown(显式多选) / 无父级：按原逻辑逐条 INSERT，绝不做覆盖删除
-                for (const c of candidates) insertItem(c.tagCode, parentCode, c.tagName)
+                for (const c of candidates) insertItem(c.tagCode, parentCode, c.tagName, c.tagGroup)
                 continue
               }
 
@@ -1948,7 +2062,7 @@ export class DatabaseService {
               const skipOverrideDelete = explicitRemoveCodes.has(winner.tagCode)
 
               // 7a. 先 INSERT winner：失败即抛（本文件记 failedCount），此刻未发生任何删除 ⇒ 维度未被修改
-              insertItem(winner.tagCode, parentCode, winner.tagName)
+              insertItem(winner.tagCode, parentCode, winner.tagName, winner.tagGroup)
 
               let deletedTagCodes: string[] = []
               if (!skipOverrideDelete) {

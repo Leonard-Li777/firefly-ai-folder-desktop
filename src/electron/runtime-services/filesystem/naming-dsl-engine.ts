@@ -37,32 +37,37 @@ export interface FileRenameContext {
 }
 
 interface HydratedFileCacheItem {
-  hydrated: boolean
+  hydrated?: boolean
   qualityScore?: number
   metadata: Record<string, any>
 }
 
 // 内存 LRU 缓存，最多保留 2000 个文件的轻量更名标量元数据
 const MAX_NAMING_CACHE_SIZE = 2000
-const namingHydrationCache = new Map<number, HydratedFileCacheItem>()
+const namingHydrationCache = new Map<string, HydratedFileCacheItem>()
 
-function getHydrationFromCache(fileId: number): HydratedFileCacheItem | undefined {
-  const item = namingHydrationCache.get(fileId)
+function makeNamingCacheKey(f: FileRenameContext): string {
+  const mtime = f.modifiedAt ? new Date(f.modifiedAt).getTime() : 0
+  return `${f.id}_${f.size ?? 0}_${mtime}`
+}
+
+function getHydrationFromCache(cacheKey: string): HydratedFileCacheItem | undefined {
+  const item = namingHydrationCache.get(cacheKey)
   if (item) {
-    namingHydrationCache.delete(fileId)
-    namingHydrationCache.set(fileId, item)
+    namingHydrationCache.delete(cacheKey)
+    namingHydrationCache.set(cacheKey, item)
   }
   return item
 }
 
-function setHydrationToCache(fileId: number, data: HydratedFileCacheItem): void {
+function setHydrationToCache(cacheKey: string, data: HydratedFileCacheItem): void {
   if (namingHydrationCache.size >= MAX_NAMING_CACHE_SIZE) {
     const firstKey = namingHydrationCache.keys().next().value
     if (firstKey !== undefined) {
       namingHydrationCache.delete(firstKey)
     }
   }
-  namingHydrationCache.set(fileId, data)
+  namingHydrationCache.set(cacheKey, data)
 }
 
 /**
@@ -390,10 +395,7 @@ export class NamingDSLEngine {
           const dims = [
             item.dimensionName,
             item.dimension,
-            item.name,
-            item.dimensionCode,
-            item.rootDimensionCode,
-            ...(Array.isArray(item.pathCodes) ? item.pathCodes : [])
+            item.dimensionCode
           ].filter(Boolean)
 
           for (const d of dims) {
@@ -409,11 +411,8 @@ export class NamingDSLEngine {
           const tagVal = tItem.tagValue || (tItem as any).value || (tItem as any).tag || (tItem as any).tagName
           const dims = [
             tItem.dimensionName,
-            (tItem as any).name,
             (tItem as any).dimension,
-            (tItem as any).dimensionCode,
-            (tItem as any).rootDimensionCode,
-            ...(Array.isArray((tItem as any).pathCodes) ? (tItem as any).pathCodes : [])
+            (tItem as any).dimensionCode
           ].filter(Boolean)
 
           for (const d of dims) {
@@ -514,6 +513,14 @@ export class NamingDSLEngine {
       // 1) 直接精确匹配
       if (dimTagsMap[dimKey]) {
         return dimTagsMap[dimKey]
+      }
+      if (dimKey === '语言' || dimKey === 'Language' || dimKey === 'builtin.language') {
+        const subLang =
+          dimTagsMap['语言细分'] ||
+          dimTagsMap['builtin.language_segmentation'] ||
+          dimTagsMap['builtin.language_subdivision'] ||
+          dimTagsMap[concept('语言细分')]
+        if (subLang) return subLang
       }
       const lowerKey = dimKey.toLowerCase()
       if (dimTagsMap[lowerKey]) {
@@ -939,6 +946,10 @@ export class NamingDSLEngine {
       metaObj.language ||
       metaObj['语言'] ||
       dimTagsMap['语言'] ||
+      dimTagsMap['语言细分'] ||
+      dimTagsMap['builtin.language_segmentation'] ||
+      dimTagsMap['builtin.language_subdivision'] ||
+      dimTagsMap[concept('语言细分')] ||
       dimTagsMap['Language'] ||
       ''
     rendered = rendered.replace(/\{LANG\}/g, langVal)
@@ -1098,16 +1109,14 @@ export class NamingDSLEngine {
     const missingIds: number[] = []
     for (const f of files) {
       if (!f || !f.id) continue
-      const cached = getHydrationFromCache(f.id)
+      const cacheKey = makeNamingCacheKey(f)
+      const cached = getHydrationFromCache(cacheKey)
       if (cached) {
         if (f.qualityScore === undefined && cached.qualityScore !== undefined) {
           f.qualityScore = cached.qualityScore
         }
         if (cached.metadata && Object.keys(cached.metadata).length > 0) {
           f.metadata = { ...(cached.metadata || {}), ...(f.metadata || {}) }
-        }
-        if (cached.hydrated) {
-          continue
         }
       }
 
@@ -1123,18 +1132,9 @@ export class NamingDSLEngine {
       return files
     }
 
-    // 获取可用数据库连接
-    let db = customDb
-    if (!db) {
-      try {
-        const { databaseService } = require('../database/database-service')
-        db = databaseService?.db
-      } catch {
-        // ignore
-      }
-    }
-
-    if (!db) {
+    // [ISS-03] 获取可用数据库连接并加固 open 状态校验
+    const db = customDb
+    if (!db || db.open === false || typeof db.prepare !== 'function') {
       return files
     }
 
@@ -1143,13 +1143,13 @@ export class NamingDSLEngine {
       for (let i = 0; i < missingIds.length; i += BATCH_SIZE) {
         const batchIds = missingIds.slice(i, i + BATCH_SIZE)
         const placeholders = batchIds.map(() => '?').join(',')
+        // [ISS-07] 动态裁剪投影列：仅在需要 {META:*} 时才查询并反序列化大尺寸 exif BLOB
+        const selectCols = needsMeta
+          ? 'wf.id, fc.quality_score as qualityScore, fc.exif, fc.meta as contentMeta, f.meta as fileMeta'
+          : 'wf.id, fc.quality_score as qualityScore'
         const sql = `
           SELECT 
-            wf.id,
-            fc.quality_score as qualityScore,
-            fc.exif,
-            fc.meta as contentMeta,
-            f.meta as fileMeta
+            ${selectCols}
           FROM workspace_files wf
           LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
           LEFT JOIN file_contents fc ON wf.file_fingerprint = fc.file_fingerprint
@@ -1171,48 +1171,59 @@ export class NamingDSLEngine {
         const batchIdSet = new Set(batchIds)
         for (const f of files) {
           if (!batchIdSet.has(f.id)) continue
+          const cacheKey = makeNamingCacheKey(f)
           const row = rowMap.get(f.id)
           if (!row) {
-            setHydrationToCache(f.id, {
-              hydrated: true,
+            setHydrationToCache(cacheKey, {
+
+  
               metadata: {}
             })
             continue
           }
 
-          let fileMetaObj: Record<string, any> = {}
-          try {
-            if (row.fileMeta) fileMetaObj = JSON.parse(row.fileMeta)
-          } catch {
-            fileMetaObj = {}
-          }
+          let pickedMeta: Record<string, any> = {}
+          if (needsMeta) {
+            let fileMetaObj: Record<string, any> = {}
+            try {
+              if (row.fileMeta) fileMetaObj = JSON.parse(row.fileMeta)
+            } catch {
+              fileMetaObj = {}
+            }
 
-          let contentMetaObj: Record<string, any> = {}
-          try {
-            if (row.contentMeta) contentMetaObj = JSON.parse(row.contentMeta)
-          } catch {
-            contentMetaObj = {}
-          }
+            let contentMetaObj: Record<string, any> = {}
+            try {
+              if (row.contentMeta) contentMetaObj = JSON.parse(row.contentMeta)
+            } catch {
+              contentMetaObj = {}
+            }
 
-          const rawExif = decompressJson<Record<string, any>>(row.exif) || {}
-          const mergedRawMeta = { ...fileMetaObj, ...contentMetaObj }
-          const pickedMeta = pickNamingMetadata(mergedRawMeta, rawExif)
+            const rawExif = decompressJson<Record<string, any>>(row.exif) || {}
+            const mergedRawMeta = { ...fileMetaObj, ...contentMetaObj }
+            pickedMeta = pickNamingMetadata(mergedRawMeta, rawExif)
+          }
 
           const qScore =
             row.qualityScore !== undefined && row.qualityScore !== null
               ? row.qualityScore
               : undefined
 
-          setHydrationToCache(f.id, {
-            hydrated: true,
-            qualityScore: qScore,
-            metadata: pickedMeta
+          const prevCached = getHydrationFromCache(cacheKey)
+          const mergedQ = qScore !== undefined ? qScore : prevCached?.qualityScore
+          const mergedMeta = { ...(prevCached?.metadata || {}), ...pickedMeta }
+
+          setHydrationToCache(cacheKey, {
+
+            qualityScore: mergedQ,
+            metadata: mergedMeta
           })
 
           if (f.qualityScore === undefined && qScore !== undefined) {
             f.qualityScore = qScore
           }
-          f.metadata = { ...pickedMeta, ...(f.metadata || {}) }
+          if (needsMeta) {
+            f.metadata = { ...pickedMeta, ...(f.metadata || {}) }
+          }
         }
       }
     } catch (err) {
@@ -1393,14 +1404,15 @@ export class NamingDSLEngine {
    */
   public static async executeBatchRename(
     template: string,
-    files: FileRenameContext[]
+    files: FileRenameContext[],
+    customDb?: any
   ): Promise<BatchRenameResult> {
     // 过滤只针对已分析文件执行更名
     const targetFiles = (files || []).filter(
       f => (f as any).is_analyzed !== 0 && f.isAnalyzed !== false
     )
-    NamingDSLEngine.hydrateFilesIfNeeded(template, targetFiles)
-    const previewList = NamingDSLEngine.generatePreview(template, targetFiles)
+    NamingDSLEngine.hydrateFilesIfNeeded(template, targetFiles, customDb)
+    const previewList = NamingDSLEngine.generatePreview(template, targetFiles, customDb)
     let successCount = 0
     let failedCount = 0
     const items: BatchRenameResult['items'] = []

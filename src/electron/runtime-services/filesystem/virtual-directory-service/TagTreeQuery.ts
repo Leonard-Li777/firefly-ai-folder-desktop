@@ -26,7 +26,9 @@ import {
   classifyDimensionMutexScope,
   getParentDimensionCodeOfTag,
   ROOT_DIMENSION_META,
-  TOP_ROOT_CODES
+  TOP_ROOT_CODES,
+  isMultiHostDimension,
+  isControlledConcept
 } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { ConfigDbManager } from '../../config/config-db-manager'
@@ -2266,7 +2268,9 @@ export class TagTreeQuery {
               if (!trimmed || existingValues.has(trimmed.toLowerCase())) continue
               if (trimmed === targetGroup.name.trim()) continue
 
-              const tagCode = `${targetGroup.code || `dim.${targetGroup.id}`}.${trimmed}`
+              // 权威受控码优先：若预置标签收录于受控词典，直接使用权威受控码，严禁私造伪代码
+              const controlledCode = isControlledConcept(trimmed) ? concept(trimmed) : undefined
+              const tagCode = controlledCode || `${targetGroup.code || `dim.${targetGroup.id}`}.${trimmed}`
               const resolvedTagName = aliasResolver(tagCode, trimmed)
               targetGroup.tags.push({
                 dimensionId: targetGroup.id,
@@ -2276,7 +2280,7 @@ export class TagTreeQuery {
                 fileCount: 0,
                 level: 1,
                 code: tagCode,
-                codePath: `/${targetGroup.code || `dim.${targetGroup.id}`}/${trimmed}`,
+                codePath: `/${targetGroup.code || `dim.${targetGroup.id}`}/${tagCode}`,
                 namePath: `/${targetGroup.name}/${resolvedTagName}`,
                 viaParentCode: targetGroup.code || '',
                 isMultiSelect: targetGroup.isMultiSelect ?? false,
@@ -2726,6 +2730,22 @@ export class TagTreeQuery {
         })
         .join(' OR ')
       return `(${pathClauses})`
+    }
+
+    // Fail-Closed 铁律：跨介质多宿主维度若既无 codePath 又无受控 hostScopeCode，绝对禁止全库泛查！
+    // 必须在 params.push 之前拦截并直接返回 '1 = 0'，杜绝 SQL 占位符与绑定参数数量失配 (AGENTS.md §2.9)
+    if (!tag.hostScopeCode) {
+      const isMultiHostDim = isMultiHostDimension(
+        (tag as any).dimensionCode || (tag as any).dimensionName,
+        tag.dimensionId
+      )
+      if (isMultiHostDim) {
+        logger.warn(
+          LogCategory.VIRTUAL_DIRECTORY,
+          `[TagTreeQuery] 拦截到无路径无宿主的多宿主维度泛查: ${(tag as any).tagValue}`
+        )
+        return '1 = 0'
+      }
     }
 
     // 降级分支：物化路径缺失时，回退受控 code 精确匹配（含本地/Omni 子孙展开）

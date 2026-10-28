@@ -730,13 +730,111 @@ export function nestGroupTags(
 /**
  * 递归构建维度树（支持基于 triggerTags 的细粒度层级与顶层主干开放准入，以及 maxScaleDepth 穿透提升）
  */
+/**
+ * 递归分支特化整棵维度子树 (Spec v2.0 §3.3 / TASK-01)
+ *
+ * 核心职责：
+ * 1. 递归遍历深层维度与标签，为每个 childTag 注入真实的物理物化路径 branchCodePath（如 /builtin.file_type/.../builtin.theme/omw.06368628.n）；
+ * 2. 注入受控 hostScopeCode（顶层介质大类受控码，如 hownet.000000207706.n 电子书）；
+ * 3. 绝缘幽灵计数：严格查表 pathCountMap[branchCodePath] ?? 0，未命中时强制为 0，绝对严禁回退借用全局 childTag.fileCount；
+ * 4. 环路与深度熔断：通过 visitedDimCodes 检测同链维度重复，超过 12 层或检测到环路立即断开 childTags；
+ * 5. 零计数短路剪枝：在 removeEmptyTags: true 且当前 branchFileCount === 0 时，跳过深层递归，降低内存分配开销；
+ * 6. 精确在当前 childTag 作用域内按 dimensionNodeKey 提取并特化其下属 childTags。
+ */
+export function specializeDimensionSubtree(
+  node: DimensionTreeNode,
+  parentCodePath: string,
+  parentNamePath: string,
+  hostScopeCode: string,
+  pathCountMap?: Record<string, number>,
+  visitedDimCodes: ReadonlySet<string> = new Set(),
+  depth = 0,
+  removeEmptyTags = false
+): DimensionTreeNode {
+  const segDimCode = node.code || `dim.${node.id}`
+
+  // 环路与深度熔断保护 (ISS-03)
+  if (depth > 12 || visitedDimCodes.has(segDimCode)) {
+    return { ...node, childTags: undefined }
+  }
+  const nextVisited = new Set(visitedDimCodes).add(segDimCode)
+  const nextChildTags = new DimensionChildTagsMap()
+
+  const specializedTags = (node.tags || []).map(childTag => {
+    // 空节点 codePath 派生强保底 (ISS-04)
+    const tagCodeSeg = childTag.code || childTag.tagValue
+    const branchCodePath = parentCodePath
+      ? normalizeCodePath(`${parentCodePath}/${segDimCode}/${tagCodeSeg}`)
+      : childTag.codePath
+    const branchNamePath = parentNamePath
+      ? `${parentNamePath}/${node.name}/${childTag.tagValue}`
+      : childTag.namePath
+
+    // 绝缘幽灵计数回退：未命中分支强制为 0 (PLAN-SEC-02 / ISS-08)
+    const branchFileCount =
+      branchCodePath && pathCountMap ? (pathCountMap[branchCodePath] ?? 0) : childTag.fileCount
+
+    // 短路剪枝：开启隐藏空标签且当前分支计数为 0 时跳过深层递归 (ISS-03)
+    const shouldPruneSubTree = removeEmptyTags && branchFileCount === 0
+
+    // 精确在当前 childTag 作用域内匹配并递归其挂载的 childTags (ISS-02)
+    if (!shouldPruneSubTree && node.childTags) {
+      const parentKey = node.code || node.name
+      const nodeKey = dimensionNodeKey(parentKey, childTag)
+      const subNodes = node.childTags.get(nodeKey) || node.childTags.get(childTag.tagValue)
+
+      if (subNodes && subNodes.length > 0) {
+        const specializedSubNodes = subNodes
+          .map(sub =>
+            specializeDimensionSubtree(
+              sub,
+              branchCodePath || '',
+              branchNamePath || '',
+              hostScopeCode,
+              pathCountMap,
+              nextVisited,
+              depth + 1,
+              removeEmptyTags
+            )
+          )
+          .filter(sub => {
+            if (!removeEmptyTags) return true
+            const hasTags = sub.tags && sub.tags.some(t => t.fileCount > 0)
+            const hasChild = sub.childTags && sub.childTags.size > 0
+            return Boolean(hasTags || hasChild)
+          })
+
+        if (specializedSubNodes.length > 0) {
+          const aliases = [childTag.tagValue, `${parentKey}::${childTag.tagValue}`]
+          nextChildTags.set(nodeKey, specializedSubNodes, aliases)
+        }
+      }
+    }
+
+    return {
+      ...childTag,
+      codePath: branchCodePath,
+      namePath: branchNamePath,
+      fileCount: branchFileCount,
+      hostScopeCode
+    }
+  })
+
+  return {
+    ...node,
+    tags: specializedTags,
+    childTags: nextChildTags.size > 0 ? nextChildTags : undefined
+  }
+}
+
 export function buildDimensionTree(
   dimensionGroups: DimensionGroup[],
   parentId: number | null = null,
   parentTag: string | null = null,
   level = 0,
   maxScaleDepth: number = 7,
-  pathCountMap?: Record<string, number>
+  pathCountMap?: Record<string, number>,
+  removeEmptyTags = false
 ): DimensionTreeNode[] {
   // 预构建 parentId → groups 查找表和 hasChildren 集合，消除 O(n²)
   const map = new Map<number | null, DimensionGroup[]>()
@@ -788,6 +886,18 @@ export function buildDimensionTree(
         // 1. 拆解该维度组内部标签的父子多级关系 (viaParentCode / level / maxScaleDepth)
         const { directTags, childTagsMap } = nestGroupTags(group, group.tags || [], lvl, maxScaleDepth)
 
+        if (lvl === 0 && pathCountMap) {
+          for (const t of directTags) {
+            const rootPath = t.codePath || (t.code ? normalizeCodePath(`/${group.code || group.id}/${t.code}`) : '')
+            if (rootPath) {
+              t.codePath = rootPath
+              if (pathCountMap[rootPath] !== undefined) {
+                t.fileCount = pathCountMap[rootPath]
+              }
+            }
+          }
+        }
+
         // 2. 关联外部细分维度组 (基于 triggerConditions / parentDimensionIds)
         const hasChildren = childrenSet.has(group.id)
         const baseVisualDepth = lvl + 2
@@ -796,38 +906,49 @@ export function buildDimensionTree(
           if (baseVisualDepth >= maxScaleDepth) {
             // 当前层已达最大允许视觉深度 (如 maxScaleDepth <= 2)：
             // 外部细分维度及其标签严禁挂在深层 childTagsMap，必须穿透提升平铺在当前直属 directTags 列表中
-            const seenKeys = new Set(directTags.map(t => t.code || t.tagValue))
             const initialDirectTags = [...directTags]
+            const liftedDimTagsMap = new Map<string, DimensionTag>()
+            const liftedLeafTagsMap = new Map<string, DimensionTag>()
 
             initialDirectTags.forEach(tag => {
               const externalChildren = recurse(group.id, tag.tagValue, lvl + 1, tag)
               if (externalChildren.length > 0) {
                 const parentCodePath = tag.codePath || (tag.code ? `/${group.code || group.id}/${tag.code}` : '')
                 const parentNamePath = tag.namePath || `/${group.name}/${tag.tagValue}`
-                const hostScopeCode = tag.code || tag.tagValue
+                const hostScopeCode = tag.hostScopeCode || tag.code || tag.tagValue
 
                 // 递归收集外部子维度及其深层所有标签
-                function collectExtTreeTags(nodes: DimensionTreeNode[]) {
+                function collectExtTreeTags(
+                  nodes: DimensionTreeNode[],
+                  curParentCodePath: string,
+                  curParentNamePath: string
+                ) {
                   for (const extNode of nodes) {
                     const segDimCode = extNode.code || `dim.${extNode.id}`
-                    const parentBranchPrefix = parentCodePath ? normalizeCodePath(`${parentCodePath}/${segDimCode}`) : ''
+                    const parentBranchPrefix = curParentCodePath
+                      ? normalizeCodePath(`${curParentCodePath}/${segDimCode}`)
+                      : ''
+
                     // 2.1 外部子维度自身提升为标签项 (如 '语言细分')
-                    const extDimKey = extNode.code || `${group.code || group.id}.${extNode.name}`
-                    if (!seenKeys.has(extDimKey) && !seenKeys.has(extNode.name)) {
-                      seenKeys.add(extDimKey)
-                      seenKeys.add(extNode.name)
-                      const liftGroupCount =
-                        parentBranchPrefix && pathCountMap && pathCountMap[parentBranchPrefix] !== undefined
-                          ? pathCountMap[parentBranchPrefix]
+                    const extDimKey = `${group.code || group.id}::${extNode.code || extNode.id}`
+                    const existingDim = liftedDimTagsMap.get(extDimKey)
+                    const liftGroupCount =
+                      parentBranchPrefix && pathCountMap && pathCountMap[parentBranchPrefix] !== undefined
+                        ? pathCountMap[parentBranchPrefix]
+                        : pathCountMap
+                          ? 0
                           : (extNode.tags || []).reduce((sum, t) => sum + (t.fileCount || 0), 0)
-                      directTags.push({
+
+                    if (!existingDim) {
+                      liftedDimTagsMap.set(extDimKey, {
                         dimensionId: extNode.id,
                         dimensionCode: extNode.code || `builtin.dim.${extNode.id}`,
                         dimensionName: extNode.name,
                         tagValue: extNode.name,
-                        code: extDimKey,
+                        code: extNode.code || `${group.code || group.id}.${extNode.name}`,
                         codePath: parentBranchPrefix || undefined,
-                        namePath: parentNamePath ? `${parentNamePath}/${extNode.name}` : undefined,
+                        codePaths: parentBranchPrefix ? [parentBranchPrefix] : undefined,
+                        namePath: curParentNamePath ? `${curParentNamePath}/${extNode.name}` : undefined,
                         viaParentCode: group.code || group.name,
                         hostScopeCode,
                         level: baseVisualDepth,
@@ -835,49 +956,81 @@ export function buildDimensionTree(
                         isMultiSelect: extNode.isMultiSelect ?? false,
                         isLifted: true
                       })
+                    } else {
+                      if (parentBranchPrefix && !(existingDim.codePaths || []).includes(parentBranchPrefix)) {
+                        existingDim.codePaths = [...(existingDim.codePaths || []), parentBranchPrefix]
+                        existingDim.fileCount = (existingDim.codePaths || []).reduce(
+                          (sum, p) => sum + (pathCountMap?.[p] ?? 0),
+                          0
+                        )
+                      }
                     }
 
                     // 2.2 外部子维度包含的标签提升为直属标签 (如 '中文')
                     for (const extTag of extNode.tags || []) {
-                      const tagKey = extTag.code || extTag.tagValue
-                      if (!seenKeys.has(tagKey)) {
-                        seenKeys.add(tagKey)
-                        const branchCodePath = parentCodePath && extTag.code
-                          ? normalizeCodePath(`${parentCodePath}/${segDimCode}/${extTag.code}`)
-                          : extTag.codePath
-                        const branchNamePath = parentNamePath
-                          ? `${parentNamePath}/${extNode.name}/${extTag.tagValue}`
-                          : extTag.namePath
-                        const branchFileCount =
+                      const tagCodeSeg = extTag.code || extTag.tagValue
+                      const branchCodePath = curParentCodePath
+                        ? normalizeCodePath(`${curParentCodePath}/${segDimCode}/${tagCodeSeg}`)
+                        : extTag.codePath
+                      const branchNamePath = curParentNamePath
+                        ? `${curParentNamePath}/${extNode.name}/${extTag.tagValue}`
+                        : extTag.namePath
+
+                      const liftTagKey = `${group.code || group.id}::${extNode.code || extNode.id}::${tagCodeSeg}`
+                      const existingTag = liftedLeafTagsMap.get(liftTagKey)
+
+                      if (!existingTag) {
+                        const initCount =
                           branchCodePath && pathCountMap && pathCountMap[branchCodePath] !== undefined
                             ? pathCountMap[branchCodePath]
-                            : extTag.fileCount
+                            : pathCountMap
+                              ? 0
+                              : extTag.fileCount
 
-                        directTags.push({
+                        liftedLeafTagsMap.set(liftTagKey, {
                           ...extTag,
                           codePath: branchCodePath,
+                          codePaths: branchCodePath ? [branchCodePath] : [],
                           namePath: branchNamePath,
                           viaParentCode: group.code || group.name,
                           hostScopeCode,
                           level: baseVisualDepth,
-                          fileCount: branchFileCount,
+                          fileCount: initCount,
                           isLifted: true
                         })
+                      } else {
+                        if (branchCodePath && !(existingTag.codePaths || []).includes(branchCodePath)) {
+                          existingTag.codePaths = [...(existingTag.codePaths || []), branchCodePath]
+                          existingTag.fileCount = (existingTag.codePaths || []).reduce(
+                            (sum, p) => sum + (pathCountMap?.[p] ?? 0),
+                            0
+                          )
+                        }
                       }
-                    }
 
-                    // 2.3 若外部维度下还有 childTags，递归收集
-                    if (extNode.childTags) {
-                      for (const subNodes of extNode.childTags.values()) {
-                        collectExtTreeTags(subNodes)
+                      // 2.3 若外部维度标签下还有 childTags，递归收集
+                      if (extNode.childTags) {
+                        const parentKey = extNode.code || extNode.name
+                        const nodeKey = dimensionNodeKey(parentKey, extTag)
+                        const subNodes = extNode.childTags.get(nodeKey) || extNode.childTags.get(extTag.tagValue)
+                        if (subNodes && subNodes.length > 0) {
+                          collectExtTreeTags(subNodes, branchCodePath || '', branchNamePath || '')
+                        }
                       }
                     }
                   }
                 }
 
-                collectExtTreeTags(externalChildren)
+                collectExtTreeTags(externalChildren, parentCodePath, parentNamePath)
               }
             })
+
+            for (const lt of liftedDimTagsMap.values()) {
+              directTags.push(lt)
+            }
+            for (const lt of liftedLeafTagsMap.values()) {
+              directTags.push(lt)
+            }
           } else {
             // 当前层未达最大深度：正常挂载到 childTagsMap 中
             directTags.forEach(tag => {
@@ -888,40 +1041,33 @@ export function buildDimensionTree(
                 const aliases = [tag.tagValue, `${parentKey}::${tag.tagValue}`]
                 const parentCodePath = tag.codePath || (tag.code ? `/${group.code || group.id}/${tag.code}` : '')
                 const parentNamePath = tag.namePath || `/${group.name}/${tag.tagValue}`
-                const hostScopeCode = tag.code || tag.tagValue
+                const hostScopeCode = tag.hostScopeCode || tag.code || tag.tagValue
 
-                // 分支特化深拷贝：为外部子维度及其 tags 派生物化路径、宿主与真实计数 (SSOT)
-                const specializedChildren: DimensionTreeNode[] = externalChildren.map(childDim => {
-                  const segDimCode = childDim.code || `dim.${childDim.id}`
-                  const specializedTags = (childDim.tags || []).map(childTag => {
-                    const branchCodePath = parentCodePath && childTag.code
-                      ? normalizeCodePath(`${parentCodePath}/${segDimCode}/${childTag.code}`)
-                      : childTag.codePath
-                    const branchNamePath = parentNamePath
-                      ? `${parentNamePath}/${childDim.name}/${childTag.tagValue}`
-                      : childTag.namePath
-                    const branchFileCount =
-                      branchCodePath && pathCountMap && pathCountMap[branchCodePath] !== undefined
-                        ? pathCountMap[branchCodePath]
-                        : childTag.fileCount
-
-                    return {
-                      ...childTag,
-                      codePath: branchCodePath,
-                      namePath: branchNamePath,
-                      fileCount: branchFileCount,
-                      hostScopeCode
-                    }
+                // 分支特化深拷贝：为外部子维度及其深层子树整树派生物化路径、宿主与真实计数 (SSOT)
+                const specializedChildren: DimensionTreeNode[] = externalChildren
+                  .map(childDim =>
+                    specializeDimensionSubtree(
+                      childDim,
+                      parentCodePath,
+                      parentNamePath,
+                      hostScopeCode,
+                      pathCountMap,
+                      new Set([group.code || `dim.${group.id}`]),
+                      0,
+                      removeEmptyTags
+                    )
+                  )
+                  .filter(childDim => {
+                    if (!removeEmptyTags) return true
+                    const hasTags = childDim.tags && childDim.tags.some(t => t.fileCount > 0)
+                    const hasChild = childDim.childTags && childDim.childTags.size > 0
+                    return Boolean(hasTags || hasChild)
                   })
 
-                  return {
-                    ...childDim,
-                    tags: specializedTags
-                  }
-                })
-
-                const existing = childTagsMap.get(key) || []
-                childTagsMap.set(key, [...existing, ...specializedChildren], aliases)
+                if (specializedChildren.length > 0) {
+                  const existing = childTagsMap.get(key) || []
+                  childTagsMap.set(key, [...existing, ...specializedChildren], aliases)
+                }
               }
             })
           }
@@ -1003,14 +1149,23 @@ export function getVisibleAndHiddenTags(
       if (
         children &&
         children.some(child => {
-          let childTagsToInspect = child.tags
-          if (child.contextualTags && child.contextualTags[tag.tagValue]) {
-            const isL3Ext = /扩展名|Extension/i.test(child.name)
-            if (!isL3Ext) {
-              childTagsToInspect = child.contextualTags[tag.tagValue]
+          function hasAnyPositiveDescendant(node: DimensionTreeNode): boolean {
+            let tagsToInspect = node.tags
+            if (node.contextualTags && node.contextualTags[tag.tagValue]) {
+              const isL3Ext = /扩展名|Extension/i.test(node.name)
+              if (!isL3Ext) {
+                tagsToInspect = node.contextualTags[tag.tagValue]
+              }
             }
+            if (tagsToInspect && tagsToInspect.some(t => t.fileCount > 0)) return true
+            if (node.childTags instanceof Map) {
+              for (const subList of node.childTags.values()) {
+                if (subList.some(hasAnyPositiveDescendant)) return true
+              }
+            }
+            return false
           }
-          return childTagsToInspect && childTagsToInspect.some(t => t.fileCount > 0)
+          return hasAnyPositiveDescendant(child)
         })
       ) {
         visibleTags.push(tag)
