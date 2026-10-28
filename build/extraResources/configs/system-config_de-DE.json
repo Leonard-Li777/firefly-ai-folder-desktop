@@ -1,26 +1,30 @@
 {
   "nextVersion": {
-    "version": "3.5.0",
+    "version": "4.0.0",
     "releaseNotes": [
-      "[Batch-Umbenennung] Unterstützt die Batch-Umbenennung intelligenter Dateinamen nach Abschluss der Analyse",
-      "[Batch-Tags] Unterstützt das stapelweise Hinzufügen und Löschen von Tags zu Dateien nach Abschluss der Analyse",
-      "[Stapelbereinigung] Scannen, um Duplikate zu entfernen, Namens- und Erweiterungsfehler zu identifizieren sowie zu optimieren und zu korrigieren",
-      "[Vererbung von Analyseregeln] Analysestrategien für die Verzeichnisprofilierung, intelligente Dateinamenregeln und zusätzliche Attribute unterstützen die Vererbung",
-      "[Neue Modelle] Qwen3.8, Ornith-1.5 und andere aktuelle Community-Highscore-Modelle sowie einige veraltete Modelle wurden entfernt",
-      "[Eingebautes Modell] Wechseln Sie zum Hochgeschwindigkeitsmodell LFM2.5-1.2B und führen Sie eine Analyse in 2 Sekunden durch",
-      "【DSpark-Beschleunigung】 Das integrierte Modell unterstützt die Beschleunigung des spekulativen dspark-Sampling-Modells",
-      "[Verzeichnisstrukturgenerierung] Unterstützt das Kopieren von Eingabeaufforderungswörtern mit einem Klick an eine externe KI wie Doubao, um eine hochwertige Dateiverzeichnisstruktur zu erhalten",
-      "[Unterstützter Standort] Überprüfen Sie Ortsnameninformationen basierend auf Dateimetadatenkoordinaten und fügen Sie Tags hinzu",
-      "[Vereinfachte Konfiguration] Durch die Extraktion von Dateiinformationen wird die Konfigurationsdatei vereinfacht und Dateiinformationen werden intelligenter und effizienter abgerufen.",
-      "[UI-Leistung] Entfernen Sie alle UI-Animationen, die die GPU belegen",
-      "[Stabile Architektur] Entfernen Sie mögliche inkompatible Optimierungen, die in V3.4 für verschiedene Hardwareumgebungen eingeführt wurden"
+      "[Rekonstruktion der KI-Engine] Die integrierte Basis-KI-Engine ist sofort einsatzbereit, und Sie können optional erweiterte KI-Engines (Ying-Kern/Cloud) aktivieren, um die Analyse bei Bedarf zu verbessern.",
+      "[Freundlich für Low-End-Computer] Es kann auch ohne unabhängige Grafikkarten und wenig Speicher reibungslos ausgeführt werden. Es baut die Hochgeschwindigkeits-KI-Infrastruktur mit CPU-Inferenz als Kern neu auf.",
+      "[Unabhängige erweiterte KI-Engine] Die Firefly-KI-Engine kann unabhängig vom Hauptprogramm ausgeführt werden und bietet KI-Funktionen für andere Anwendungen von Drittanbietern als Firefly",
+      "[Videosuche] Bilder, Audios und Videos können in natürlicher Sprache genau abgerufen werden, und die Suche nach Semantik, Bildern und Sprachinhalten wird unterstützt.",
+      "[Speech to Text ASR] Gespräche und Podcast-Inhalte in Videos und Audios werden schnell in Text umgewandelt, um sie einfach abzurufen und zu archivieren.",
+      "[Sprachsynthese TTS] Text-zu-Sprache mit einem Klick, integrierte mehr als 50 Töne, unterstützt das Klonen benutzerdefinierter Töne in 3 Sekunden und kann Romane und Dokumente direkt anhören",
+      "[Datei-Label-Upgrade] Neu hinzugefügte, umfangreichere Fakten-Label-Typen, die Labels sind genauer und erklärbarer",
+      "[Spezielle Optimierung von Multimedia-Materialien] Für Designer und Self-Media-Ersteller werden spezielle Verbesserungen für die Organisation von Bildern, Audio- und Videomaterialien vorgenommen.",
+      "[NSFW-Spezialoptimierung] Genauere Erkennung, Segmentierung und Verbesserung sensibler Inhalte wie Pornografie, Gewalt, Terrorismus, Politik, Verstöße, Beleidigungen und Blut in Bildern, Videos und Audios",
+      "[Multimodus-Stapelsortierung] Fünf Modi: Identitätsentwurf, intelligentes Clustering, externe KI-generierte Verzeichnisstruktur, Verzeichnisbaumableitung aus Dateien und benutzerdefinierter Verzeichnisbaum. Erstellen Sie Verzeichnisse und klassifizieren Sie Tausende von Dateien in Sekundenschnelle.",
+      "[Identitätsentwurf (empfohlen)] Wählen Sie eine Identität aus der Branchen- und Lebensrollendatenbank aus, und nach vier Stufen der Feinabstimmung stimmen Client und Seite innerhalb von Millisekunden mit der hochwertigen Verzeichnisstruktur überein.",
+      "[Intelligentes Clustering] Endseitiges unüberwachtes Clustering (HAC), gibt den kompilierten Verzeichnisbaum direkt in Millisekunden aus und unterstützt sofortige Inline-Feinabstimmung",
+      "[Von externer KI generierte Verzeichnisstruktur] Kopieren Sie die Eingabeaufforderungswörter mit einem Klick in eine externe KI wie Doubao, ChatGPT, Kimi usw. und fügen Sie die Ergebnisse ein, um eine Vorschau anzuzeigen und sie in Echtzeit zu organisieren",
+      "[Verzeichnisbäume aus Dateien ableiten] Mit Hilfe einer fortschrittlichen KI-Engine werden drei Sätze vollständiger Verzeichnisbaumkandidaten direkt aus lokalen oder Cloud-Großmodellen bereitgestellt und können durch Auswahl klassifiziert werden.",
+      "[Benutzerdefinierter Verzeichnisbaum] Fügen Sie die Markdown-Verzeichnisstruktur ein oder schreiben Sie sie handschriftlich, zeigen Sie in Echtzeit eine Vorschau der linken und rechten Spalten an und erstellen Sie bei Bedarf eine exklusive Organisationslösung",
+      "[Umfassende Optimierung der Benutzeroberfläche] Organisieren Sie die Informationsstruktur wie die Einstellungsseite neu, fügen Sie einen neuen Anleitungs- und Hilfeeingang hinzu und gestalten Sie die Bedienung intuitiver"
     ],
     "forceUpdate": false
   },
   "lastUpdated": "2026-08-31T13:31:00.000Z",
   "latestNews": [
     {
-      "text": "V3.5 Chargenumbenennung, Chargenkennzeichnung und Chargenreinigung hinzugefügt"
+      "text": "V4 Große Einführung, KI-Video- und Audiosuche, Sprachsynthese, stärkere KI-Engine usw."
     },
     {
       "text": "MiniCPM5-2B kostengünstiger König, 2G Videospeicher, super smart",

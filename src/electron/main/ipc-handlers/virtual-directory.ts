@@ -984,19 +984,19 @@ export function registerVirtualDirectoryIPCHandlers() {
 
   ipcMain.handle(
     'organize-real-directory/calculate-file-paths-cosine',
-    async (event, request: CalculateFilePathsCosineRequest) => {
+    async (event, request: CalculateFilePathsCosineRequest & { force?: boolean }) => {
       const rawProfile =
         ConfigOrchestrator.getInstance().getValue<string>('AI_EMBEDDING_PROFILE') || 'classic_light'
       const mrlDim =
         ConfigOrchestrator.getInstance().getValue<number>('EMBEDDING_MRL_DIMENSION') || 512
 
-      // 容量断路器：单次批量整理硬上限 3,000 个文件
+      // 容量断路器：单次批量整理硬上限 3,000 个文件（支持 force: true 强行穿透）
       let candidateCount = request.fileIds?.length
       if (candidateCount === undefined && request.workspaceId && organizeRealDirectoryService) {
         candidateCount = organizeRealDirectoryService.getWorkspaceAnalyzedFileCount(request.workspaceId)
       }
       const capacityLimit = ConfigOrchestrator.getInstance().getValue<number>('ORGANIZE_CAPACITY_LIMIT') ?? 3000
-      if (candidateCount !== undefined && candidateCount > capacityLimit) {
+      if (!request.force && candidateCount !== undefined && candidateCount > capacityLimit) {
         logger.warn(LogCategory.FILE_ORGANIZATION, '[IPC] calculate-file-paths-cosine: 文件数超限被拦截', {
           candidateCount,
           limit: capacityLimit
@@ -1008,6 +1008,12 @@ export function registerVirtualDirectoryIPCHandlers() {
           actual: candidateCount,
           message: t('当前待计算文件数（{count}）超出批量整理上限（{limit}个），请在「已分析」页面勾选目标文件后发起整理', { count: candidateCount, limit: capacityLimit.toLocaleString() })
         }
+      }
+      if (request.force && candidateCount !== undefined && candidateCount > capacityLimit) {
+        logger.warn(LogCategory.FILE_ORGANIZATION, '[IPC] calculate-file-paths-cosine: 用户确认风险，强制穿透容量限制计算余弦打分', {
+          candidateCount,
+          limit: capacityLimit
+        })
       }
 
       let activeProfile: string = rawProfile
@@ -1247,6 +1253,7 @@ export function registerVirtualDirectoryIPCHandlers() {
         maxSubdirectories?: number
         similarityThreshold?: number
         clusteringMode?: 'precise' | 'balanced' | 'complete'
+        force?: boolean
       }
     ) => {
       const startTime = Date.now()
@@ -1267,13 +1274,13 @@ export function registerVirtualDirectoryIPCHandlers() {
         }
       }
 
-      // 容量断路器：单次批量整理硬上限 3,000 个文件
+      // 容量断路器：单次批量整理硬上限 3,000 个文件（支持 force: true 强行穿透）
       let fileCount = params.fileIds?.length
       if (fileCount === undefined && organizeRealDirectoryService) {
         fileCount = organizeRealDirectoryService.getWorkspaceAnalyzedFileCount(wsId)
       }
       const capacityLimit = ConfigOrchestrator.getInstance().getValue<number>('ORGANIZE_CAPACITY_LIMIT') ?? 3000
-      if (fileCount !== undefined && fileCount > capacityLimit) {
+      if (!params.force && fileCount !== undefined && fileCount > capacityLimit) {
         logger.warn(LogCategory.FILE_ORGANIZATION, '[IPC] smart-cluster-hac: 文件数超限被拦截', {
           wsId,
           fileCount,
@@ -1290,6 +1297,13 @@ export function registerVirtualDirectoryIPCHandlers() {
           directories: [],
           durationMs: 0
         }
+      }
+      if (params.force && fileCount !== undefined && fileCount > capacityLimit) {
+        logger.warn(LogCategory.FILE_ORGANIZATION, '[IPC] smart-cluster-hac: 用户确认风险，强制穿透容量限制执行智能聚类', {
+          wsId,
+          fileCount,
+          limit: capacityLimit
+        })
       }
 
       const scheme = await virtualDirectoryService.generateHACClusterScheme(
@@ -1506,11 +1520,11 @@ export function registerVirtualDirectoryIPCHandlers() {
 
   // ─── 批量重命名 IPC 处理程序 ─────────────────────────────────────────────
   ipcMain.handle('batch-rename:preview', async (event, template: string, files: any[]) => {
-    return NamingDSLEngine.generatePreview(template, files)
+    return NamingDSLEngine.generatePreview(template, files, databaseService.db)
   })
 
   ipcMain.handle('batch-rename:execute', async (event, template: string, files: any[]) => {
-    return await NamingDSLEngine.executeBatchRename(template, files)
+    return await NamingDSLEngine.executeBatchRename(template, files, databaseService.db)
   })
 
   ipcMain.handle('batch-rename:random-template', async () => {

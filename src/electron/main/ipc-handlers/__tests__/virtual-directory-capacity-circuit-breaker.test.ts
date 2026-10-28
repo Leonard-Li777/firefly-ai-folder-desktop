@@ -10,18 +10,20 @@ const ipcSource = fs.readFileSync(
 )
 
 describe('虚拟目录与批量整理 IPC 容量断路器源码契约测试', () => {
-  it('smart-cluster-hac 必须包含容量断路器拦截并动态读取配置中心 ORGANIZE_CAPACITY_LIMIT', () => {
+  it('smart-cluster-hac 必须包含容量断路器拦截并动态读取配置中心 ORGANIZE_CAPACITY_LIMIT，并支持 force 穿透', () => {
     expect(ipcSource).toMatch(/ipcMain\.handle\(\s*['"]organize-real-directory\/smart-cluster-hac['"]/)
     expect(ipcSource).toContain("getValue<number>('ORGANIZE_CAPACITY_LIMIT')")
-    expect(ipcSource).toContain('fileCount > capacityLimit')
+    expect(ipcSource).toContain('!params.force && fileCount !== undefined && fileCount > capacityLimit')
     expect(ipcSource).toContain("errorCode: 'ORGANIZE_CAPACITY_EXCEEDED'")
+    expect(ipcSource).toContain('params.force && fileCount !== undefined && fileCount > capacityLimit')
   })
 
-  it('calculate-file-paths-cosine 必须包含容量断路器拦截并动态读取配置中心 ORGANIZE_CAPACITY_LIMIT', () => {
+  it('calculate-file-paths-cosine 必须包含容量断路器拦截并动态读取配置中心 ORGANIZE_CAPACITY_LIMIT，并支持 force 穿透', () => {
     expect(ipcSource).toMatch(/ipcMain\.handle\(\s*['"]organize-real-directory\/calculate-file-paths-cosine['"]/)
     expect(ipcSource).toContain("getValue<number>('ORGANIZE_CAPACITY_LIMIT')")
-    expect(ipcSource).toContain('candidateCount > capacityLimit')
+    expect(ipcSource).toContain('!request.force && candidateCount !== undefined && candidateCount > capacityLimit')
     expect(ipcSource).toContain("errorCode: 'ORGANIZE_CAPACITY_EXCEEDED'")
+    expect(ipcSource).toContain('request.force && candidateCount !== undefined && candidateCount > capacityLimit')
   })
 
   it('virtual-directory/reorganize 必须包含非找补模式 > 500 文件容量断路器拦截', () => {

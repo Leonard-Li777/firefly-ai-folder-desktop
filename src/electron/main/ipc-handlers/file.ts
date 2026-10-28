@@ -137,6 +137,10 @@ export function registerFileIPCHandlers() {
         }))
         // 将提取的分词结果附加到数组属性上，兼容原有数组类型
         ;(items as any).tokens = result.tokens ?? []
+        // 工单 13/流式防假空态：透传 clipPending 标记给 invoke 调用方
+        if ((result as any).clipPending) {
+          ;(items as any).clipPending = true
+        }
         return items
       } catch (error) {
         logger.error(LogCategory.MAIN, '全信息搜索工作区文件失败:', error)

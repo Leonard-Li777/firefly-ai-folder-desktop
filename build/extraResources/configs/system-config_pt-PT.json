@@ -1,26 +1,30 @@
 {
   "nextVersion": {
-    "version": "3.5.0",
+    "version": "4.0.0",
     "releaseNotes": [
-      "[Renomear em lote] Suporta renomeação em lote de nomes de arquivos inteligentes após a conclusão da análise",
-      "[Tags em lote] Suporta adição e exclusão de tags em arquivos em lotes após a conclusão da análise",
-      "[Limpeza em lote] Digitalize para remover duplicatas, identificar erros de nomenclatura, erros de extensão e otimizar e corrigir",
-      "[Herança de regras de análise] Estratégias de análise de perfil de diretório, regras inteligentes de nome de arquivo e atributos adicionais suportam herança",
-      "[Novos modelos] Qwen3.8, Ornith-1.5 e outros modelos mais recentes de alta pontuação da comunidade, e alguns modelos desatualizados foram removidos",
-      "[Modelo integrado] Mude para o modelo de alta velocidade LFM2.5-1.2B, conclua uma análise em 2 segundos",
-      "[Aceleração DSpark] O modelo incorporado suporta a aceleração do modelo de amostragem especulativa DSpark",
-      "[Geração de estrutura de diretório] Suporta cópia de palavras de prompt com um clique para IA externa, como Doubao, para obter estrutura de diretório de arquivo de alta qualidade",
-      "[Local de suporte] Verifique as informações do nome do local com base nas coordenadas dos metadados do arquivo e adicione tags",
-      "[Configuração simplificada] A extração de informações do arquivo simplifica o arquivo de configuração e obtém informações do arquivo de forma mais inteligente e eficiente.",
-      "[Desempenho da UI] Remova todas as animações da UI que ocupam a GPU",
-      "[Arquitetura estável] Remova possíveis otimizações incompatíveis introduzidas na V3.4 para vários ambientes de hardware"
+      "[Reconstrução do mecanismo de IA] O mecanismo de IA básico integrado está pronto para uso e você pode opcionalmente ativar mecanismos de IA avançados (núcleo/nuvem Ying) para aprimorar a análise sob demanda.",
+      "[Amigável para computadores de baixo custo] Ele pode funcionar perfeitamente mesmo sem placas gráficas independentes e pouca memória. Ele reconstrói a infraestrutura de IA de alta velocidade com inferência de CPU como núcleo.",
+      "[Mecanismo de IA avançado independente] O mecanismo de IA Firefly pode ser executado independentemente do programa principal, fornecendo recursos de IA para aplicativos de terceiros além do Firefly",
+      "[Pesquisa de vídeo] Imagens, áudios e vídeos podem ser recuperados com precisão por linguagem natural, e a pesquisa por semântica, imagens e conteúdo de voz é suportada.",
+      "[Fala para texto ASR] Conversas e conteúdo de podcast em vídeos e áudios são rapidamente convertidos em texto para fácil recuperação e arquivamento.",
+      "[TTS de síntese de fala] Conversão de texto para fala com um clique, mais de 50 tons integrados, suporta clonagem de tons personalizados de 3 segundos e pode ouvir romances e documentos diretamente",
+      "[Atualização de rótulo de arquivo] Tipos de rótulos de fatos mais ricos recém-adicionados, os rótulos são mais precisos e explicáveis",
+      "[Otimização especial de materiais multimídia] Para designers e criadores de mídia própria, melhorias especiais são feitas para a organização de materiais de imagens, áudio e vídeo.",
+      "[Otimização especial NSFW] Detecção, segmentação e aprimoramento mais precisos de conteúdo sensível, como pornografia, violência, terrorismo, política, violações, insultos e sangue em fotos, vídeos e áudios",
+      "[Classificação de lote multimodo] Cinco modos: modelo de identidade, cluster inteligente, estrutura de diretório gerada por IA externa, derivação de árvore de diretório de arquivos e árvore de diretório personalizada. Gere diretórios e classifique milhares de arquivos em segundos.",
+      "[Identity Blueprint (Recommended)] Selecione uma identidade do banco de dados do setor e da função vitalícia e, após quatro estágios de ajuste fino, o cliente e o lado corresponderão à estrutura de diretório de alta qualidade em milissegundos.",
+      "[Clustering inteligente] Clustering não supervisionado (HAC) no lado final, gera diretamente a árvore de diretórios compilada em milissegundos e suporta ajuste fino instantâneo em linha",
+      "[Estrutura de diretório gerada por IA externa] Um clique para copiar as palavras de prompt para IA externa, como Doubao, ChatGPT, Kimi, etc., e colar os resultados para visualizá-los e organizá-los em tempo real",
+      "[Derivar árvores de diretórios de arquivos] Com a ajuda de um mecanismo de IA avançado, 3 conjuntos de candidatos completos a árvores de diretórios são fornecidos diretamente de grandes modelos locais ou de nuvem e podem ser classificados selecionando-os.",
+      "[Árvore de diretórios personalizada] Cole ou escreva à mão a estrutura de diretórios Markdown, visualize as colunas esquerda e direita em tempo real e crie uma solução de organização exclusiva sob demanda",
+      "[Otimização aprofundada da IU] Reorganize a estrutura de informações, como a página de configurações, adicione uma nova orientação e entrada de ajuda e torne a operação mais intuitiva"
     ],
     "forceUpdate": false
   },
   "lastUpdated": "2026-08-31T13:31:00.000Z",
   "latestNews": [
     {
-      "text": "V3.5 Adicionada renomeação de lote, rotulagem de lote e limpeza de lote"
+      "text": "V4 Lançamento importante, pesquisa de vídeo e áudio de IA, síntese de fala, mecanismo de IA mais forte, etc."
     },
     {
       "text": "Rei eficaz na redução de custos de MiniCPM5-2B, memória 2G video, esperta super",

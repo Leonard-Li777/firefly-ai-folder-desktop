@@ -12,7 +12,8 @@ import {
   LogCategory,
   ResourceLocator,
   getMimeTypeByExtension,
-  getSiteDomain
+  getSiteDomain,
+  isDecodableImage
 } from '@firefly/shared'
 import { SystemIdentityService } from '../../runtime-services/system/system-identity-service'
 import { LicenseService, LicenseStatus } from '../../runtime-services/system/license-service'
@@ -191,6 +192,10 @@ export function registerMiscIPCHandlers() {
 
       const { thumbnailService } =
         await import('../../runtime-services/filesystem/thumbnail-service')
+      // 仅对可解码图片转码；dwg/dxf 等 CAD 矢量与 RAW 格式图像解码器无法读取，直接返回失败
+      if (!isDecodableImage(filePath)) {
+        return { success: false, error: t('不支持的图片格式') }
+      }
       const result = await thumbnailService.getOrGenerateOriginalTranscodedImage(
         filePath,
         workspaceFile.file_fingerprint,
