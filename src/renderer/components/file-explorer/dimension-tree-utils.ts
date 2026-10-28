@@ -466,20 +466,35 @@ function collectDescendantTags(startTag: DimensionTag, index: TagParentIndex): D
 function aggregateLiftedTags(
   descendants: DimensionTag[],
   containerTag: DimensionTag,
-  containerLevel: number
+  containerLevel: number,
+  pathCountMap?: Record<string, number>,
+  removeEmptyTags = false
 ): DimensionTag[] {
   const liftedTags: DimensionTag[] = []
   const liftedByCode = new Map<string, DimensionTag>()
   const liftedByName = new Map<string, DimensionTag>()
+  const effectiveHost = containerTag.hostScopeCode || containerTag.code || containerTag.tagValue
+
   for (const d of descendants) {
     const existing =
       (d.code ? liftedByCode.get(d.code) : undefined) ||
       (d.tagValue ? liftedByName.get(d.tagValue) : undefined)
     if (!existing) {
+      let initCount = d.fileCount
+      if (d.codePath && pathCountMap) {
+        if (pathCountMap[d.codePath] !== undefined) {
+          initCount = pathCountMap[d.codePath]
+        } else if (Object.keys(pathCountMap).length > 0) {
+          initCount = 0
+        }
+      }
+
       const merged: DimensionTag = {
         ...d,
         viaParentCode: containerTag.code || containerTag.tagValue,
+        hostScopeCode: effectiveHost,
         level: containerLevel,
+        fileCount: initCount,
         codePaths: d.codePath ? [d.codePath] : [],
         isLifted: true
       }
@@ -488,12 +503,23 @@ function aggregateLiftedTags(
       if (d.tagValue) liftedByName.set(d.tagValue, merged)
       continue
     }
-    existing.fileCount = Math.max(existing.fileCount, d.fileCount)
     if (d.codePath && !(existing.codePaths || []).includes(d.codePath)) {
       existing.codePaths = [...(existing.codePaths || []), d.codePath]
     }
+    if (pathCountMap) {
+      existing.fileCount = (existing.codePaths || []).reduce(
+        (sum, p) => sum + (pathCountMap[p] ?? 0),
+        0
+      )
+    } else {
+      existing.fileCount = Math.max(existing.fileCount, d.fileCount)
+    }
     if (d.code && !liftedByCode.has(d.code)) liftedByCode.set(d.code, existing)
     if (d.tagValue && !liftedByName.has(d.tagValue)) liftedByName.set(d.tagValue, existing)
+  }
+
+  if (removeEmptyTags) {
+    return liftedTags.filter(t => t.fileCount > 0)
   }
   return liftedTags
 }
@@ -505,7 +531,9 @@ export function nestGroupTags(
   group: DimensionGroup,
   tags: DimensionTag[],
   level: number,
-  maxScaleDepth: number = 7
+  maxScaleDepth: number = 7,
+  pathCountMap?: Record<string, number>,
+  removeEmptyTags = false
 ): { directTags: DimensionTag[]; childTagsMap: DimensionChildTagsMap } {
   const childTagsMap = new DimensionChildTagsMap()
   if (!tags || tags.length === 0) {
@@ -600,7 +628,7 @@ export function nestGroupTags(
       const descendants = collectDescendantTags(containerTag, index)
       if (descendants.length === 0) continue
 
-      const liftedTags = aggregateLiftedTags(descendants, containerTag, baseVisualDepth)
+      const liftedTags = aggregateLiftedTags(descendants, containerTag, baseVisualDepth, pathCountMap, removeEmptyTags)
       for (const lt of liftedTags) {
         const isContainerSelf = lt.code
           ? lt.code === containerTag.code
@@ -621,7 +649,9 @@ export function nestGroupTags(
       if (descendants.length === 0) return null
 
       // 跨分支同名/同 Code 提升聚合 (ADR-0034 §4 / M-4)，聚合口径见 aggregateLiftedTags 注释
-      const liftedTags: DimensionTag[] = aggregateLiftedTags(descendants, parentTag, currentVisualDepth)
+      const liftedTags: DimensionTag[] = aggregateLiftedTags(descendants, parentTag, currentVisualDepth, pathCountMap, removeEmptyTags)
+
+      if (removeEmptyTags && liftedTags.length === 0) return null
 
       return {
         id: group.id * 10000 + currentVisualDepth * 100 + (parentTag.order || 1),
@@ -655,23 +685,69 @@ export function nestGroupTags(
 
     if (directChildren.length === 0) return null
 
+    const specializedChildren: DimensionTag[] = []
     const subChildTagsMap = new DimensionChildTagsMap()
-    directChildren.forEach((childTag) => {
-      const grandSub = buildChildNode(childTag, currentVisualDepth + 1)
+
+    const parentCodePath = parentTag.codePath || (parentTag.code ? normalizeCodePath(`/${group.code || group.id}/${parentTag.code}`) : '')
+    const parentNamePath = parentTag.namePath || `/${group.name}/${parentTag.tagValue}`
+    const effectiveHost = parentTag.hostScopeCode || (parentTag.level === 1 ? parentTag.code : undefined) || parentTag.tagValue
+
+    for (const childTag of directChildren) {
+      const tagCodeSeg = childTag.code || childTag.tagValue
+      const branchCodePath = parentCodePath
+        ? normalizeCodePath(`${parentCodePath}/${tagCodeSeg}`)
+        : childTag.codePath
+      const branchNamePath = parentNamePath
+        ? `${parentNamePath}/${childTag.tagValue}`
+        : childTag.namePath
+
+      let branchFileCount = childTag.fileCount
+      if (branchCodePath && pathCountMap) {
+        if (pathCountMap[branchCodePath] !== undefined) {
+          branchFileCount = pathCountMap[branchCodePath]
+        } else if (Object.keys(pathCountMap).length > 0) {
+          branchFileCount = 0
+        }
+      }
+
+      const specializedChild: DimensionTag = {
+        ...childTag,
+        codePath: branchCodePath,
+        namePath: branchNamePath,
+        hostScopeCode: effectiveHost,
+        fileCount: branchFileCount
+      }
+
+      const grandSub = buildChildNode(specializedChild, currentVisualDepth + 1)
+      const hasGrandDescendants = Boolean(
+        grandSub &&
+        ((grandSub.tags && grandSub.tags.length > 0) || (grandSub.childTags && grandSub.childTags.size > 0))
+      )
+
+      if (removeEmptyTags && branchFileCount === 0 && !hasGrandDescendants) {
+        continue
+      }
+
+      specializedChildren.push(specializedChild)
+
       if (grandSub) {
         const parentKey = parentTag.code || parentTag.tagValue
-        const key = dimensionNodeKey(parentKey, childTag)
-        const aliases = [childTag.tagValue, `${parentKey}::${childTag.tagValue}`]
+        const key = dimensionNodeKey(parentKey, specializedChild)
+        const aliases = [specializedChild.tagValue, `${parentKey}::${specializedChild.tagValue}`]
         subChildTagsMap.set(key, [grandSub], aliases)
       }
-    })
+    }
+
+    if (removeEmptyTags && specializedChildren.length === 0) {
+      return null
+    }
 
     return {
       id: group.id * 10000 + currentVisualDepth * 100 + (parentTag.order || 1),
       name: parentTag.tagValue,
       code: parentTag.code || `${group.code || group.id}.${parentTag.tagValue}`,
       level: currentVisualDepth - 1,
-      tags: directChildren,
+      tags: specializedChildren,
       childTags: subChildTagsMap.size > 0 ? subChildTagsMap : undefined,
       isMultiSelect: parentTag.isMultiSelect ?? false,
       metadata: group.metadata
@@ -679,6 +755,12 @@ export function nestGroupTags(
   }
 
   directTags.forEach(parentTag => {
+    if (level === 0 && !parentTag.hostScopeCode) {
+      parentTag.hostScopeCode = parentTag.code || parentTag.tagValue
+    }
+    if (!parentTag.codePath && parentTag.code) {
+      parentTag.codePath = normalizeCodePath(`/${group.code || group.id}/${parentTag.code}`)
+    }
     // 直属标签所在层为 baseVisualDepth，其展开的子节点所在视觉深度为 baseVisualDepth + 1 (即 3)
     const subNode = buildChildNode(parentTag, baseVisualDepth + 1)
     if (subNode) {
@@ -692,6 +774,7 @@ export function nestGroupTags(
   // 跨层级同标签单一出现守卫（深层具象胜出，Spec v2.0 模块三）：
   // 若某标签在深层子树中已经存在（例如 Level 5 链条中的「要求」），则从顶层直属标签 directTags 中滤除，
   // 杜绝同一维度下同名/同 Code 标签在根下一级与深层分支同时重复呈现
+  let finalDirectTags = directTags
   if (childTagsMap.size > 0) {
     const deepTagKeys = new Set<string>()
     function collectDeepKeys(node: DimensionTreeNode) {
@@ -720,11 +803,11 @@ export function nestGroupTags(
       return !hasDeep
     })
     if (filteredDirectTags.length > 0 || directTags.length === 0) {
-      return { directTags: filteredDirectTags, childTagsMap }
+      finalDirectTags = filteredDirectTags
     }
   }
 
-  return { directTags, childTagsMap }
+  return { directTags: finalDirectTags, childTagsMap }
 }
 
 /**
@@ -820,9 +903,18 @@ export function specializeDimensionSubtree(
     }
   })
 
+  const finalTags = removeEmptyTags
+    ? specializedTags.filter(t => {
+        if (t.fileCount > 0) return true
+        const parentKey = node.code || node.name
+        const nodeKey = dimensionNodeKey(parentKey, t)
+        return nextChildTags.has(nodeKey) || nextChildTags.has(t.tagValue)
+      })
+    : specializedTags
+
   return {
     ...node,
-    tags: specializedTags,
+    tags: finalTags,
     childTags: nextChildTags.size > 0 ? nextChildTags : undefined
   }
 }
@@ -884,16 +976,26 @@ export function buildDimensionTree(
     return currentLevelGroups
       .map(group => {
         // 1. 拆解该维度组内部标签的父子多级关系 (viaParentCode / level / maxScaleDepth)
-        const { directTags, childTagsMap } = nestGroupTags(group, group.tags || [], lvl, maxScaleDepth)
+        const { directTags, childTagsMap } = nestGroupTags(
+          group,
+          group.tags || [],
+          lvl,
+          maxScaleDepth,
+          pathCountMap,
+          removeEmptyTags
+        )
 
-        if (lvl === 0 && pathCountMap) {
+        if (lvl === 0) {
           for (const t of directTags) {
             const rootPath = t.codePath || (t.code ? normalizeCodePath(`/${group.code || group.id}/${t.code}`) : '')
             if (rootPath) {
               t.codePath = rootPath
-              if (pathCountMap[rootPath] !== undefined) {
+              if (pathCountMap && pathCountMap[rootPath] !== undefined) {
                 t.fileCount = pathCountMap[rootPath]
               }
+            }
+            if (!t.hostScopeCode) {
+              t.hostScopeCode = t.code || t.tagValue
             }
           }
         }

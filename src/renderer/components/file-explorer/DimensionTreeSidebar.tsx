@@ -322,7 +322,8 @@ const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
                             currentChain,
                             tag.viaParentCode || undefined,
                             tag.isLifted === true,
-                            tag.codePath
+                            tag.codePath,
+                            tag.hostScopeCode
                           )
                         } else {
                           handleTagClick({
@@ -1329,6 +1330,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       }
 
       tagsToShow.forEach((tag, index) => {
+        const effectiveHostScopeCode = tag.hostScopeCode || hostScopeCode
         const isSelected = isTagSelected(
           tag.dimensionId,
           tag.tagValue,
@@ -1336,7 +1338,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
           tag.viaParentCode ?? undefined,
           tag.isLifted === true,
           tag.codePath,
-          hostScopeCode
+          effectiveHostScopeCode
         )
         const isDisabled = tag.fileCount === 0
         const tagNodeKey = dimensionNodeKey(node.code || node.name, tag)
@@ -1387,7 +1389,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
           tagKey: tagNodeKey,
           parentTagValue,
           ancestorChain: currentChain,
-          hostScopeCode,
+          hostScopeCode: effectiveHostScopeCode,
           isSelected,
           isDisabled: effectiveTag.fileCount === 0,
           hasChildDimensions,
@@ -1398,7 +1400,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
 
         if (hasChildDimensions && isTagExpanded) {
           childDimensions.forEach(childNode => {
-            const nextHostCode = tag.code || hostScopeCode || tag.tagValue
+            const nextHostCode = tag.hostScopeCode || (depth === 0 ? tag.code : hostScopeCode) || tag.code || tag.tagValue
             traverse(childNode, tag.tagValue, currentChain, depth + 1, nextHostCode)
           })
         }

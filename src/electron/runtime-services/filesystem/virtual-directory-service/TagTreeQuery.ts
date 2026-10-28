@@ -28,8 +28,10 @@ import {
   ROOT_DIMENSION_META,
   TOP_ROOT_CODES,
   isMultiHostDimension,
-  isControlledConcept
+  isControlledConcept,
+  CONTROLLED_CODE_TO_CANONICAL_NAME
 } from '@firefly/shared'
+import { DeterministicCodeGenerator } from '@firefly/core-engine'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { ConfigDbManager } from '../../config/config-db-manager'
 import { loadIgnoreRules, shouldIgnoreFile } from '../../analysis/analysis-ignore-service'
@@ -1070,17 +1072,31 @@ export class TagTreeQuery {
           }
 
           assignedCodes.add(child.code)
-          const childCodePath =
-            tagChainsMap.get(child.code)?.[0]?.code_path || `/${dimCode}/${child.code}`
+          const branchPrefix = `/${dimCode}/${child.code}`
+          const matchedChain = tagChainsMap.get(child.code)?.find(c => c.code_path.startsWith(`/${dimCode}/`))
+          const childCodePath = matchedChain?.code_path || branchPrefix
           const childNamePath =
-            tagChainsMap.get(child.code)?.[0]?.name_path ||
+            matchedChain?.name_path ||
             `/${aliasResolver(root.code, root.name)}/${aliasResolver(child.code, child.name)}`
+
+          let childCount = aggregatedCount
+          const normChildPath = normalizeCodePath(childCodePath)
+          if (normChildPath && pathCountMap[normChildPath] !== undefined) {
+            childCount = pathCountMap[normChildPath]
+          } else if (Object.keys(pathCountMap).length > 0) {
+            childCount = 0
+          }
+
+          if (removeEmptyTags && !includeAllPresetTags && childCount === 0) {
+            continue
+          }
+
           dimensionTags.push({
             dimensionId: canonicalId,
             dimensionCode: dimCode,
             dimensionName: aliasResolver(root.code, root.name),
             tagValue: aliasResolver(child.code, child.name),
-            fileCount: aggregatedCount,
+            fileCount: childCount,
             level: 1,
             code: child.code,
             codePath: childCodePath,
@@ -1096,18 +1112,31 @@ export class TagTreeQuery {
           for (const sub of children) {
             if (dimensionTags.some(t => t.code === sub.code || t.tagValue === sub.name)) continue
             assignedCodes.add(sub.code)
-            const subCodePath =
-              tagChainsMap.get(sub.code)?.[0]?.code_path ||
-              `/${dimCode}/${parentCodeKey}/${sub.code}`
+            const branchPrefix = `/${dimCode}/${parentCodeKey}/${sub.code}`
+            const matchedChain = tagChainsMap.get(sub.code)?.find(c => c.code_path.startsWith(`/${dimCode}/`))
+            const subCodePath = matchedChain?.code_path || branchPrefix
             const subNamePath =
-              tagChainsMap.get(sub.code)?.[0]?.name_path ||
+              matchedChain?.name_path ||
               `/${aliasResolver(root.code, root.name)}/${sub.name}`
+
+            let subCount = sub.count
+            const normSubPath = normalizeCodePath(subCodePath)
+            if (normSubPath && pathCountMap[normSubPath] !== undefined) {
+              subCount = pathCountMap[normSubPath]
+            } else if (Object.keys(pathCountMap).length > 0) {
+              subCount = 0
+            }
+
+            if (removeEmptyTags && !includeAllPresetTags && subCount === 0) {
+              continue
+            }
+
             dimensionTags.push({
               dimensionId: canonicalId,
               dimensionCode: dimCode,
               dimensionName: aliasResolver(root.code, root.name),
               tagValue: sub.name,
-              fileCount: sub.count,
+              fileCount: subCount,
               level: curLevel,
               code: sub.code,
               codePath: subCodePath,
@@ -1275,8 +1304,13 @@ export class TagTreeQuery {
                   const currentCodePath = child.codePath || `${parentCodePath}/${child.code}`
                   const currentNamePath = child.namePath || `${parentNamePath}/${child.name}`
                   const normOmniPath = normalizeCodePath(currentCodePath)
-                  if (normOmniPath && pathCountMap[normOmniPath] !== undefined) {
-                    count = pathCountMap[normOmniPath]
+                  if (normOmniPath) {
+                    if (pathCountMap[normOmniPath] !== undefined) {
+                      count = pathCountMap[normOmniPath]
+                    } else if (Object.keys(pathCountMap).length > 0) {
+                      // 路径前缀索引池已建立，未命中说明此物理路径下 0 文件命中 (杜绝跨分支/跨介质虚假计数继承)
+                      count = 0
+                    }
                   }
                   tags.push({
                     dimensionId: id,
@@ -1311,16 +1345,29 @@ export class TagTreeQuery {
                       continue
                     }
                     assignedCodes.add(dyn.code)
-                    const dynCodePath =
-                      tagChainsMap.get(dyn.code)?.[0]?.code_path || `${curCodePath}/${dyn.code}`
-                    const dynNamePath =
-                      tagChainsMap.get(dyn.code)?.[0]?.name_path || `${curNamePath}/${dyn.name}`
+                    const branchPrefix = `${curCodePath}/${dyn.code}`
+                    const matchedChain = tagChainsMap.get(dyn.code)?.find(c => c.code_path.startsWith(curCodePath))
+                    const dynCodePath = matchedChain?.code_path || branchPrefix
+                    const dynNamePath = matchedChain?.name_path || `${curNamePath}/${dyn.name}`
+
+                    let dynCount = dyn.count
+                    const normDynPath = normalizeCodePath(dynCodePath)
+                    if (normDynPath && pathCountMap[normDynPath] !== undefined) {
+                      dynCount = pathCountMap[normDynPath]
+                    } else if (Object.keys(pathCountMap).length > 0) {
+                      dynCount = 0
+                    }
+
+                    if (removeEmptyTags && !includeAllPresetTags && dynCount === 0) {
+                      continue
+                    }
+
                     tags.push({
                       dimensionId: id,
                       dimensionCode: root.code,
                       dimensionName: aliasResolver(root.code, root.name),
                       tagValue: dyn.name,
-                      fileCount: dyn.count,
+                      fileCount: dynCount,
                       level: curLevel,
                       code: dyn.code,
                       codePath: dynCodePath,
@@ -1631,7 +1678,7 @@ export class TagTreeQuery {
           let matchedSameName: { group: DimensionGroup; tag: DimensionTag } | null = null
           for (const g of finalGroups) {
             if (g.code === CONTENT_TAGS_CODE) continue
-            const foundTag = g.tags.find(tg => tg.tagValue === resolvedName)
+            const foundTag = g.tags.find(tg => tg.code === t.code || tg.tagValue === resolvedName)
             if (foundTag) {
               matchedSameName = { group: g, tag: foundTag }
               break
@@ -1641,7 +1688,13 @@ export class TagTreeQuery {
             const { group, tag } = matchedSameName
             assignedCodes.add(t.code)
             tagToGroupMap.set(t.code, group)
-            tag.fileCount = Math.max(tag.fileCount, count)
+            if (tag.codePath && pathCountMap[tag.codePath] !== undefined) {
+              tag.fileCount = pathCountMap[tag.codePath]
+            } else if (Object.keys(pathCountMap).length > 0) {
+              tag.fileCount = 0
+            } else {
+              tag.fileCount = Math.max(tag.fileCount, count)
+            }
             continue
           }
 
@@ -1659,28 +1712,54 @@ export class TagTreeQuery {
             assignedCodes.add(t.code)
             tagToGroupMap.set(t.code, targetGroup)
             tagLevelMap.set(t.code, effectiveLevel)
-            const rawCodePath = tagChainsMap.get(t.code)?.[0]?.code_path
-            const rawNamePath = tagChainsMap.get(t.code)?.[0]?.name_path
+
+            // 路径判定：在 tagChainsMap 中查找真正以 targetGroup 与 effectiveParent 为前缀的匹配路径
+            // 严禁盲借 [0]，杜绝将音频等异类物理路径借给其他维度分支
+            const chains = tagChainsMap.get(t.code) || []
+            const targetGroupPrefix = `/${targetGroup.code}/`
+            const matchedChain = chains.find(c => {
+              if (!c.code_path.startsWith(targetGroupPrefix)) return false
+              if (effectiveParent !== targetGroup.code && !c.code_path.includes(`/${effectiveParent}/`)) return false
+              return true
+            })
+
             const geoCode = concept('地理位置')
             const geoName = targetGroup.name
-            const tCodePath =
-              rawCodePath && rawCodePath.includes(targetGroup.code || '')
-                ? (targetGroup.code === geoCode && rawCodePath.includes(`/${geoCode}/`)
-                    ? rawCodePath.substring(rawCodePath.indexOf(`/${geoCode}/`))
-                    : rawCodePath)
-                : `/${targetGroup.code}/${effectiveParent === targetGroup.code ? t.code : `${effectiveParent}/${t.code}`}`
-            const tNamePath =
-              rawNamePath && rawNamePath.includes(targetGroup.name)
-                ? (targetGroup.code === geoCode && rawNamePath.includes(`/${geoName}/`)
-                    ? rawNamePath.substring(rawNamePath.indexOf(`/${geoName}/`))
-                    : rawNamePath)
-                : `/${targetGroup.name}/${effectiveParent === targetGroup.code ? resolvedName : `${aliasResolver(effectiveParent, effectiveParent)}/${resolvedName}`}`
+            let tCodePath = ''
+            let tNamePath = ''
+
+            if (matchedChain) {
+              tCodePath =
+                targetGroup.code === geoCode && matchedChain.code_path.includes(`/${geoCode}/`)
+                  ? matchedChain.code_path.substring(matchedChain.code_path.indexOf(`/${geoCode}/`))
+                  : matchedChain.code_path
+              tNamePath =
+                targetGroup.code === geoCode && matchedChain.name_path.includes(`/${geoName}/`)
+                  ? matchedChain.name_path.substring(matchedChain.name_path.indexOf(`/${geoName}/`))
+                  : matchedChain.name_path
+            } else {
+              tCodePath = `/${targetGroup.code}/${effectiveParent === targetGroup.code ? t.code : `${effectiveParent}/${t.code}`}`
+              tNamePath = `/${targetGroup.name}/${effectiveParent === targetGroup.code ? resolvedName : `${aliasResolver(effectiveParent, effectiveParent)}/${resolvedName}`}`
+            }
+
+            const normTPath = normalizeCodePath(tCodePath)
+            let branchCount = count
+            if (normTPath && pathCountMap[normTPath] !== undefined) {
+              branchCount = pathCountMap[normTPath]
+            } else if (Object.keys(pathCountMap).length > 0) {
+              branchCount = 0
+            }
+
+            if (removeEmptyTags && !includeAllPresetTags && branchCount === 0) {
+              continue
+            }
+
             targetGroup.tags.push({
               dimensionId: targetGroup.id,
               dimensionCode: targetGroup.code || '',
               dimensionName: targetGroup.name,
               tagValue: resolvedName,
-              fileCount: count,
+              fileCount: branchCount,
               level: effectiveLevel,
               code: t.code,
               codePath: tCodePath,
@@ -1706,18 +1785,32 @@ export class TagTreeQuery {
             assignedCodes.add(t.code)
             tagToGroupMap.set(t.code, targetGroup)
             tagLevelMap.set(t.code, nextLvl)
-            const tCodePath =
-              tagChainsMap.get(t.code)?.[0]?.code_path ||
-              `/${targetGroup.code}/${parentTag.code || parentTag.tagValue}/${t.code}`
-            const tNamePath =
-              tagChainsMap.get(t.code)?.[0]?.name_path ||
-              `/${targetGroup.name}/${parentTag.tagValue}/${resolvedName}`
+
+            const parentCodePath = parentTag.codePath || `/${targetGroup.code}/${parentTag.code || parentTag.tagValue}`
+            const parentNamePath = parentTag.namePath || `/${targetGroup.name}/${parentTag.tagValue}`
+            const branchPrefix = `${parentCodePath}/${t.code}`
+            const matchedChain = tagChainsMap.get(t.code)?.find(c => c.code_path.startsWith(parentCodePath))
+            const tCodePath = matchedChain?.code_path || branchPrefix
+            const tNamePath = matchedChain?.name_path || `${parentNamePath}/${resolvedName}`
+
+            const normTPath = normalizeCodePath(tCodePath)
+            let stemCount = count
+            if (normTPath && pathCountMap[normTPath] !== undefined) {
+              stemCount = pathCountMap[normTPath]
+            } else if (Object.keys(pathCountMap).length > 0) {
+              stemCount = 0
+            }
+
+            if (removeEmptyTags && !includeAllPresetTags && stemCount === 0) {
+              continue
+            }
+
             targetGroup.tags.push({
               dimensionId: targetGroup.id,
               dimensionCode: targetGroup.code || '',
               dimensionName: targetGroup.name,
               tagValue: resolvedName,
-              fileCount: count,
+              fileCount: stemCount,
               level: nextLvl,
               code: t.code,
               codePath: tCodePath,
@@ -2060,10 +2153,10 @@ export class TagTreeQuery {
           const count = node.files.size
           if (removeEmptyTags && !includeAllPresetTags && count === 0) continue
 
-          const cCodePath =
-            tagChainsMap.get(node.code)?.[0]?.code_path || `/builtin.content_tags/${node.code}`
-          const cNamePath =
-            tagChainsMap.get(node.code)?.[0]?.name_path || `/${contentTagDisplayName}/${node.name}`
+          const branchPrefix = `/builtin.content_tags/${node.code}`
+          const matchedChain = tagChainsMap.get(node.code)?.find(c => c.code_path.startsWith('/builtin.content_tags/'))
+          const cCodePath = matchedChain?.code_path || branchPrefix
+          const cNamePath = matchedChain?.name_path || `/${contentTagDisplayName}/${node.name}`
           contentDimTags.push({
             dimensionId: contentTagsDimId,
             dimensionCode: CONTENT_TAGS_CODE,
@@ -2268,9 +2361,29 @@ export class TagTreeQuery {
               if (!trimmed || existingValues.has(trimmed.toLowerCase())) continue
               if (trimmed === targetGroup.name.trim()) continue
 
-              // 权威受控码优先：若预置标签收录于受控词典，直接使用权威受控码，严禁私造伪代码
-              const controlledCode = isControlledConcept(trimmed) ? concept(trimmed) : undefined
-              const tagCode = controlledCode || `${targetGroup.code || `dim.${targetGroup.id}`}.${trimmed}`
+              // 权威受控码优先：若预置标签收录于受控词典，直接使用权威受控码；若未收录，走标准扩展派生码，严禁私造伪代码
+              let tagCode: string | undefined
+              if (isControlledConcept(trimmed)) {
+                tagCode = concept(trimmed)
+              } else {
+                for (const [c, canon] of Object.entries(CONTROLLED_CODE_TO_CANONICAL_NAME)) {
+                  if (canon.toLowerCase() === trimmed.toLowerCase()) {
+                    tagCode = c
+                    break
+                  }
+                }
+                if (!tagCode) {
+                  for (const [c, disp] of Object.entries(aliasMap)) {
+                    if (disp.toLowerCase() === trimmed.toLowerCase()) {
+                      tagCode = c
+                      break
+                    }
+                  }
+                }
+                if (!tagCode) {
+                  tagCode = DeterministicCodeGenerator.generate(trimmed, locale || 'zh-CN')
+                }
+              }
               const resolvedTagName = aliasResolver(tagCode, trimmed)
               targetGroup.tags.push({
                 dimensionId: targetGroup.id,
