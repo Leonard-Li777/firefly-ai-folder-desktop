@@ -7,6 +7,7 @@ import { Checkbox } from '../ui/checkbox'
 import { DirectoryHeader } from './DirectoryHeader'
 import { FileDetailsPanel } from './FileDetailsPanel/index'
 import { FileList } from './FileList'
+import { runBatchAnalyze } from './batch-analyze'
 import { useSearchViewAutoSwitch } from './FileList/hooks/useSearchViewAutoSwitch'
 import { FileExplorerLayout } from './FileExplorerLayout'
 import { Breadcrumbs } from './Breadcrumbs'
@@ -244,10 +245,22 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
   // 跨目录搜索状态
   const [workspaceSearchResults, setWorkspaceSearchResults] = useState<FileType[]>([])
   const [isSearchingAllDirs, setIsSearchingAllDirs] = useState(false)
+  /** 已完成终态结算的跨目录搜索序号 */
+  const [settledSearchSeq, setSettledSearchSeq] = useState<number>(-1)
   const searchDebounceRef = useRef<NodeJS.Timeout | null>(null)
   const searchSeqRef = useRef<number>(0)
+  const isWaitingPhase3Ref = useRef(false)
+  const handledPhase2SeqRef = useRef<number>(-1)
+  const handledPhase3SeqRef = useRef<number>(-1)
+  const clipTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  /** 冷态视觉模型首次加载兜底超时阈值（与 desktop 侧 CLIP_TEXT_TIMEOUT_COLD_MS 6000ms 对齐） */
+  const CLIP_COLD_TIMEOUT_MS = 6000
 
-  // 监听后端两阶段渐进式搜索推流：Phase 1 毫秒级字面命中秒级上屏，Phase 2 语义向量平滑更新
+  const isRealSearchActive = Boolean(realDirectoryKeyword.trim())
+  const isRealSearchSettled = settledSearchSeq === searchSeqRef.current
+  const effectiveIsSearchingAllDirs = isRealSearchActive ? (!isRealSearchSettled || isSearchingAllDirs) : false
+
+  // 监听后端两阶段渐进式搜索推流：Phase 1 毫秒级字面命中秒级上屏，Phase 2 语义向量平滑更新，Phase 3 冷态追加
   useEffect(() => {
     if (!window.electronAPI?.onSearchProgress) return
 
@@ -258,19 +271,63 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
       if (payload.seq !== searchSeqRef.current) return
 
       if (payload.phase === 'phase1') {
+        if (handledPhase2SeqRef.current === payload.seq) return
         setWorkspaceSearchResults(payload.items as any)
       } else if (payload.phase === 'phase2') {
+        const incomingItemsCount = (payload.items || []).length
+        const hasPendingClip = Boolean(payload.clipPending)
+
+        if (incomingItemsCount === 0 && hasPendingClip) {
+          isWaitingPhase3Ref.current = true
+          setIsSearchingAllDirs(true)
+          if (clipTimeoutRef.current) clearTimeout(clipTimeoutRef.current)
+          clipTimeoutRef.current = setTimeout(() => {
+            if (searchSeqRef.current === payload.seq) {
+              if (isWaitingPhase3Ref.current) {
+                isWaitingPhase3Ref.current = false
+                setIsSearchingAllDirs(false)
+                setSettledSearchSeq(payload.seq)
+              }
+            }
+          }, CLIP_COLD_TIMEOUT_MS)
+        } else if (!hasPendingClip) {
+          isWaitingPhase3Ref.current = false
+          if (clipTimeoutRef.current) {
+            clearTimeout(clipTimeoutRef.current)
+            clipTimeoutRef.current = null
+          }
+        }
+
+        if (handledPhase2SeqRef.current === payload.seq) return
+        handledPhase2SeqRef.current = payload.seq
+
         setWorkspaceSearchResults(payload.items as any)
+        if (!hasPendingClip || incomingItemsCount > 0) {
+          setIsSearchingAllDirs(false)
+          setSettledSearchSeq(payload.seq)
+        }
       } else if (payload.phase === 'phase3') {
+        if (handledPhase3SeqRef.current === payload.seq) return
+        handledPhase3SeqRef.current = payload.seq
+        if (clipTimeoutRef.current) {
+          clearTimeout(clipTimeoutRef.current)
+          clipTimeoutRef.current = null
+        }
+        isWaitingPhase3Ref.current = false
+
         // 工单 13：冷态 CLIP 追加 —— 只把列表里没有的 path 补到尾部。
-        // 不重排、不清空：已有项的下标与相对顺序必须保持不变（用户滚动/悬停位置不跳变）。
-        setWorkspaceSearchResults(prev => {
-          const incoming = (payload.items || []) as any[]
-          if (!incoming.length) return prev
-          const existingPaths = new Set(prev.map(item => item?.path).filter(Boolean))
-          const fresh = incoming.filter(item => item?.path && !existingPaths.has(item.path))
-          return fresh.length ? ([...prev, ...fresh] as any) : prev
-        })
+        // 先把数据追加到列表，确保数据已上屏，再收回 Loading 态，杜绝空态闪烁
+        if (payload.items && payload.items.length > 0) {
+          setWorkspaceSearchResults(prev => {
+            const incoming = (payload.items || []) as any[]
+            if (!incoming.length) return prev
+            const existingPaths = new Set(prev.map(item => item?.path).filter(Boolean))
+            const fresh = incoming.filter(item => item?.path && !existingPaths.has(item.path))
+            return fresh.length ? ([...prev, ...fresh] as any) : prev
+          })
+        }
+        setIsSearchingAllDirs(false)
+        setSettledSearchSeq(payload.seq)
       }
     })
 
@@ -278,12 +335,14 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
       if (typeof unsubscribe === 'function') {
         unsubscribe()
       }
+      if (clipTimeoutRef.current) {
+        clearTimeout(clipTimeoutRef.current)
+        clipTimeoutRef.current = null
+      }
     }
   }, [])
 
   const toggleQueue = useAnalysisQueueStore(s => s.toggleQueue)
-  const addItems = useAnalysisQueueStore(s => s.addItems)
-  const start = useAnalysisQueueStore(s => s.start)
 
   // 用于强制刷新缩略图缓存的 Key
   const [refreshKey, setRefreshKey] = useState(Date.now())
@@ -347,41 +406,80 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
     }
 
     if (!realDirectoryKeyword.trim() || !currentWorkspaceDirectory?.path) {
+      const nextSeq = ++searchSeqRef.current
+      setSettledSearchSeq(nextSeq)
       setWorkspaceSearchResults([])
+      isWaitingPhase3Ref.current = false
+      handledPhase2SeqRef.current = -1
+      handledPhase3SeqRef.current = -1
+      if (clipTimeoutRef.current) {
+        clearTimeout(clipTimeoutRef.current)
+        clipTimeoutRef.current = null
+      }
       setIsSearchingAllDirs(false)
       return
     }
 
     const keyword = realDirectoryKeyword.trim()
-    // 文件系统搜索无长度限制，直接触发跨目录搜索
-
     setIsSearchingAllDirs(true)
+    const currentSeq = ++searchSeqRef.current
 
     searchDebounceRef.current = setTimeout(async () => {
-      const currentSeq = ++searchSeqRef.current
+      let results: any = null
       try {
-        const results = await window.electronAPI!.searchWorkspaceFiles(
+        results = await window.electronAPI!.searchWorkspaceFiles(
           keyword,
           currentWorkspaceDirectory.path,
           { stream: true, seq: currentSeq, channel: 'real-directory' }
         )
         // 校验序号，防止过时请求覆盖
         if (currentSeq === searchSeqRef.current) {
-          setWorkspaceSearchResults(results as any)
+          const hasPendingClip = Boolean((results as any)?.clipPending)
+          const itemsCount = results?.length || 0
+
+          if (handledPhase2SeqRef.current !== currentSeq) {
+            handledPhase2SeqRef.current = currentSeq
+            setWorkspaceSearchResults(results as any)
+          }
+
+          if (hasPendingClip && itemsCount === 0) {
+            isWaitingPhase3Ref.current = true
+            setIsSearchingAllDirs(true)
+            if (clipTimeoutRef.current) clearTimeout(clipTimeoutRef.current)
+            clipTimeoutRef.current = setTimeout(() => {
+              if (searchSeqRef.current === currentSeq) {
+                if (isWaitingPhase3Ref.current) {
+                  isWaitingPhase3Ref.current = false
+                  setIsSearchingAllDirs(false)
+                  setSettledSearchSeq(currentSeq)
+                }
+              }
+            }, CLIP_COLD_TIMEOUT_MS)
+          } else if (!isWaitingPhase3Ref.current) {
+            setIsSearchingAllDirs(false)
+            setSettledSearchSeq(currentSeq)
+          }
         }
       } catch (error) {
         if (currentSeq === searchSeqRef.current) {
           logger.error(LogCategory.RENDERER, '跨目录搜索失败:', error)
           setWorkspaceSearchResults([])
+          isWaitingPhase3Ref.current = false
+          setIsSearchingAllDirs(false)
+          setSettledSearchSeq(currentSeq)
         }
       } finally {
         if (currentSeq === searchSeqRef.current) {
-          setIsSearchingAllDirs(false)
+          if (!isWaitingPhase3Ref.current && !(results as any)?.clipPending) {
+            setIsSearchingAllDirs(false)
+            setSettledSearchSeq(currentSeq)
+          }
         }
       }
     }, 300)
 
     return () => {
+      searchSeqRef.current++
       if (searchDebounceRef.current) {
         clearTimeout(searchDebounceRef.current)
       }
@@ -400,13 +498,13 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
     }
 
     // 跨目录搜索已结束且无结果
-    if (!isSearchingAllDirs) {
+    if (!effectiveIsSearchingAllDirs) {
       return { files: [], directories: [] }
     }
 
     // 搜索刚发起且无结果上屏前，展示空列表等待 Phase 1 毫秒级推送，避免展示当前目录无关文件造成闪烁
     return { files: [], directories: [] }
-  }, [files, directories, realDirectoryKeyword, workspaceSearchResults, isSearchingAllDirs])
+  }, [files, directories, realDirectoryKeyword, workspaceSearchResults, effectiveIsSearchingAllDirs])
 
   const isAllSelected = useMemo(() => {
     const totalItems = filteredData.files.length + filteredData.directories.length
@@ -925,97 +1023,13 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
   }, [currentPath, currentWorkspaceDirectory, selectedItem, setSelectedItem])
 
   const handleBatchAnalyzeAction = useCallback(async () => {
-    try {
-      const { selectedFiles } = useFileExplorerStore.getState()
-
-      // 检查是否有选中文件
-      if (selectedFiles.length === 0) {
-        toast.warning(
-          t('请先【全选】或【框选】您要分析的文件。小技巧：可以利用搜索过滤内容，再使用【全选】')
-        )
-        return
-      }
-
-      // 使用 Map 去重，避免同一个文件被添加多次
-      const uniqueFiles = new Map<string, any>()
-      selectedFiles.forEach((f: any) => {
-        if (f?.path && !uniqueFiles.has(f.path)) {
-          uniqueFiles.set(f.path, f)
-        }
-      })
-
-      const filesToAdd: Array<{
-        path: string
-        name: string
-        size: number
-        type: string
-        expand?: boolean
-      }> = Array.from(uniqueFiles.values())
-        .map((f: any) => ({
-          path: f?.path,
-          name: f?.name,
-          size: f?.isDirectory ? 0 : f?.size || 0,
-          type: f?.isDirectory ? 'folder' : f?.extension || 'file'
-        }))
-        .filter(i => !!i.path)
-
-      // 检查当前所在目录是否已分析；若尚未分析，自动将当前目录作为首项前置加入队列，优先完成目录画像分析
-      const targetDir = currentPath || currentWorkspaceDirectory?.path
-      if (targetDir && typeof window.electronAPI?.getDirectoryAnalysisResult === 'function') {
-        try {
-          const dirRes = await window.electronAPI.getDirectoryAnalysisResult(targetDir)
-          const isDirAnalyzed =
-            dirRes?.isAnalyzed ||
-            (dirRes?.contextAnalysis && Object.keys(dirRes.contextAnalysis).length > 0)
-          if (!isDirAnalyzed) {
-            const dirName = targetDir.split(/[/\\]/).filter(Boolean).pop() || ''
-            const { isPathEqual } = window.electronAPI!.utils || {
-              isPathEqual: (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
-            }
-            const hasDirAlready = filesToAdd.some(f => isPathEqual(f.path, targetDir))
-            if (!hasDirAlready) {
-              filesToAdd.unshift({
-                path: targetDir,
-                name: dirName,
-                size: 0,
-                type: 'folder',
-                expand: false // 仅分析目录画像，不重复展开未选中的文件
-              })
-            }
-          }
-        } catch (e) {
-          logger.warn(LogCategory.RENDERER, '检查当前目录分析状态失败:', e)
-        }
-      }
-
-      if (filesToAdd.length > 0) {
-        await addItems(filesToAdd)
-        await start()
-        // 强制以 split 面板形式打开队列，确保用户点击「队列：x/x」时能正常切换
-        // 注意：必须同时把 viewMode 置为 'split'，否则 window 模式下队列面板不会渲染
-        useAnalysisQueueStore.setState({
-          viewMode: 'split',
-          isSplitOpen: true,
-          showModal: false,
-          isSplitMinimized: false
-        })
-        window.electronAPI?.setQueueViewMode?.({ mode: 'split', isSplitOpen: true })
-      }
-    } catch (error: any) {
-      // 提取实际错误消息，去掉 IPC 调用前缀
-      let errorMsg = error?.message || t('未知错误')
-      const match = errorMsg.match(/Error invoking remote method '[^']+':\s*(.*)/)
-      if (match && match[1]) {
-        errorMsg = match[1]
-      }
-
-      if (errorMsg.includes('配额')) { // locale-invariant-ok: 外部异常文本匹配 (D型)
-        toast.error(errorMsg)
-      } else if (errorMsg) {
-        toast.error(t('分析失败：{error}', { error: errorMsg }))
-      }
-    }
-  }, [addItems, start])
+    const { selectedFiles } = useFileExplorerStore.getState()
+    // 执行路径统一收敛到 runBatchAnalyze，与 FileList 右键菜单的「批量重新分析」共用同一实现
+    await runBatchAnalyze({
+      files: selectedFiles,
+      currentPath: currentPath || currentWorkspaceDirectory?.path
+    })
+  }, [currentPath, currentWorkspaceDirectory?.path])
 
   // 使用 useCallback 缓存工具栏渲染逻辑，避免父级重渲染时引起工具栏内的 SearchBar 和组件频繁重绘
   const renderToolbar = useCallback(
@@ -1332,7 +1346,7 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
               <FileExplorerLayout
                 files={filteredData.files}
                 directories={filteredData.directories}
-                isLoading={isSearchingAllDirs}
+                isLoading={effectiveIsSearchingAllDirs}
                 selectedFiles={selectedFiles}
                 activeItem={selectedItem}
                 onFileSelect={handleFileSelect}

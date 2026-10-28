@@ -373,7 +373,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     useFileListContextMenu({
       selectedFiles,
       onFileSelect: stableOnFileSelect,
-      pageId
+      currentPath
     })
 
   useEffect(() => {
@@ -783,6 +783,14 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
                 {VirtualRowRenderer}
               </ListComponent>
             )
+          ) : loading ? (
+            <div className="w-full h-full flex flex-col items-center justify-center relative file-list-loading animate-fade-in">
+              <Loading
+                type="search"
+                title={t('正在搜索...')}
+                description={t('正在检索文件名、标签与深度多模态语义内容...')}
+              />
+            </div>
           ) : searchListItems.length === 0 ? (
             <EmptyState
               icon="search_off"
