@@ -319,4 +319,81 @@ describe('TagTreeQuery - 路径归一化与排他前缀查询测试 (SSOT)', () 
     expect(docEnglish!.codePath).toBe('/builtin.file_type/builtin.document/builtin.language_segmentation/omw.06912865.n')
     expect(ebookEnglish!.codePath).toBe('/builtin.file_type/hownet.000000207706.n/builtin.language_segmentation/omw.06912865.n')
   })
+
+  it('AC-6 / P0-3: 某分支剪枝 (removeEmptyTags: true) 不得提前认领 assignedCodes 导致在有效命中分支中消失', async () => {
+    vi.mocked(omniClient.getTaxonomyTree).mockResolvedValue(null as any)
+
+    // 模拟场景：
+    // 标签 "omw.shared_tag" 同时属于两个维度：'builtin.theme' 和 'builtin.style'；
+    // 在 'builtin.theme' 下该标签没有文件 (count = 0)；
+    // 但在 'builtin.style' 下真实有 1 个文件命中！
+    const mockDb: any = {
+      name: ':memory:',
+      function: vi.fn(),
+      prepare: vi.fn((sql: string) => {
+        if (sql.includes('FROM file_tags_private')) {
+          return {
+            all: () => [
+              {
+                id: 1,
+                code: 'builtin.theme',
+                name: '题材',
+                parent_codes: '[]',
+                level: 0,
+                meta: '{}'
+              },
+              {
+                id: 2,
+                code: 'builtin.style',
+                name: '风格',
+                parent_codes: '[]',
+                level: 0,
+                meta: '{}'
+              },
+              {
+                id: 101,
+                code: 'omw.shared_tag',
+                name: '共享标签',
+                parent_codes: JSON.stringify(['builtin.theme', 'builtin.style']),
+                level: 1,
+                meta: '{}'
+              }
+            ]
+          }
+        }
+        if (sql.includes('FROM file_tag_relations')) {
+          return {
+            all: () => [
+              // 该文件仅在风格维度拥有该标签
+              {
+                tag_code: 'omw.shared_tag',
+                via_parent_code: 'builtin.style',
+                file_fingerprint: 'fp_style_1',
+                code_path: '/builtin.style/omw.shared_tag'
+              }
+            ]
+          }
+        }
+        return { all: () => [], get: () => null }
+      })
+    }
+
+    const query = new TagTreeQuery(mockDb)
+    // 开启剪枝
+    const res = await query.getDimensionGroups({ removeEmptyTags: true, language: 'zh-CN' })
+
+    // 在题材分支下，由于 count 为 0，该标签被安全剪枝，整组也因全空被安全剔除
+    const themeGroup = res.groups.find(g => g.code === 'builtin.theme')
+    const themeTag = themeGroup?.tags.find(t => t.code === 'omw.shared_tag')
+    expect(themeTag).toBeUndefined()
+
+    // 关键断言 P0-3：在风格分支下，该标签必须正常产出（因为真实有 1 个文件命中），
+    // 绝不能因为在题材分支被剪枝就提前被 assignedCodes 霸占导致在有效分支失踪！
+    const styleGroup = res.groups.find(g => g.code === 'builtin.style')
+    expect(styleGroup).toBeDefined()
+    const styleTag = styleGroup!.tags.find(t => t.code === 'omw.shared_tag')
+    expect(styleTag).toBeDefined()
+    expect(styleTag!.fileCount).toBe(1)
+    expect(styleTag!.codePath).toBe('/builtin.style/omw.shared_tag')
+  })
 })

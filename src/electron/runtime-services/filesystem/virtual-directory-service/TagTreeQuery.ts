@@ -890,6 +890,7 @@ export class TagTreeQuery {
       for (const [p, fSet] of pathFilesMap.entries()) {
         pathCountMap[p] = fSet.size
       }
+      const hasPathIndex = Object.keys(pathCountMap).length > 0
 
       // 5. 按照维度归类本地动态标签并组织树形结构
       const groups: DimensionGroup[] = []
@@ -1071,7 +1072,6 @@ export class TagTreeQuery {
             continue
           }
 
-          assignedCodes.add(child.code)
           const branchPrefix = `/${dimCode}/${child.code}`
           const matchedChain = tagChainsMap.get(child.code)?.find(c => c.code_path.startsWith(`/${dimCode}/`))
           const childCodePath = matchedChain?.code_path || branchPrefix
@@ -1083,7 +1083,7 @@ export class TagTreeQuery {
           const normChildPath = normalizeCodePath(childCodePath)
           if (normChildPath && pathCountMap[normChildPath] !== undefined) {
             childCount = pathCountMap[normChildPath]
-          } else if (Object.keys(pathCountMap).length > 0) {
+          } else if (hasPathIndex) {
             childCount = 0
           }
 
@@ -1091,6 +1091,7 @@ export class TagTreeQuery {
             continue
           }
 
+          assignedCodes.add(child.code)
           dimensionTags.push({
             dimensionId: canonicalId,
             dimensionCode: dimCode,
@@ -1111,7 +1112,6 @@ export class TagTreeQuery {
           const children = dynamicTagsByParent.get(parentCodeKey) || []
           for (const sub of children) {
             if (dimensionTags.some(t => t.code === sub.code || t.tagValue === sub.name)) continue
-            assignedCodes.add(sub.code)
             const branchPrefix = `/${dimCode}/${parentCodeKey}/${sub.code}`
             const matchedChain = tagChainsMap.get(sub.code)?.find(c => c.code_path.startsWith(`/${dimCode}/`))
             const subCodePath = matchedChain?.code_path || branchPrefix
@@ -1123,7 +1123,7 @@ export class TagTreeQuery {
             const normSubPath = normalizeCodePath(subCodePath)
             if (normSubPath && pathCountMap[normSubPath] !== undefined) {
               subCount = pathCountMap[normSubPath]
-            } else if (Object.keys(pathCountMap).length > 0) {
+            } else if (hasPathIndex) {
               subCount = 0
             }
 
@@ -1131,6 +1131,7 @@ export class TagTreeQuery {
               continue
             }
 
+            assignedCodes.add(sub.code)
             dimensionTags.push({
               dimensionId: canonicalId,
               dimensionCode: dimCode,
@@ -1307,7 +1308,7 @@ export class TagTreeQuery {
                   if (normOmniPath) {
                     if (pathCountMap[normOmniPath] !== undefined) {
                       count = pathCountMap[normOmniPath]
-                    } else if (Object.keys(pathCountMap).length > 0) {
+                    } else if (hasPathIndex) {
                       // 路径前缀索引池已建立，未命中说明此物理路径下 0 文件命中 (杜绝跨分支/跨介质虚假计数继承)
                       count = 0
                     }
@@ -1344,7 +1345,6 @@ export class TagTreeQuery {
                       assignedCodes.add(dyn.code) // 同名已认领，避免落入孤儿池
                       continue
                     }
-                    assignedCodes.add(dyn.code)
                     const branchPrefix = `${curCodePath}/${dyn.code}`
                     const matchedChain = tagChainsMap.get(dyn.code)?.find(c => c.code_path.startsWith(curCodePath))
                     const dynCodePath = matchedChain?.code_path || branchPrefix
@@ -1354,7 +1354,7 @@ export class TagTreeQuery {
                     const normDynPath = normalizeCodePath(dynCodePath)
                     if (normDynPath && pathCountMap[normDynPath] !== undefined) {
                       dynCount = pathCountMap[normDynPath]
-                    } else if (Object.keys(pathCountMap).length > 0) {
+                    } else if (hasPathIndex) {
                       dynCount = 0
                     }
 
@@ -1362,6 +1362,7 @@ export class TagTreeQuery {
                       continue
                     }
 
+                    assignedCodes.add(dyn.code)
                     tags.push({
                       dimensionId: id,
                       dimensionCode: root.code,
@@ -1690,7 +1691,7 @@ export class TagTreeQuery {
             tagToGroupMap.set(t.code, group)
             if (tag.codePath && pathCountMap[tag.codePath] !== undefined) {
               tag.fileCount = pathCountMap[tag.codePath]
-            } else if (Object.keys(pathCountMap).length > 0) {
+            } else if (hasPathIndex) {
               tag.fileCount = 0
             } else {
               tag.fileCount = Math.max(tag.fileCount, count)
@@ -1709,9 +1710,6 @@ export class TagTreeQuery {
           const traced = traceAncestorGroup(candidateParents)
           if (traced) {
             const { targetGroup, parentCode: effectiveParent, level: effectiveLevel } = traced
-            assignedCodes.add(t.code)
-            tagToGroupMap.set(t.code, targetGroup)
-            tagLevelMap.set(t.code, effectiveLevel)
 
             // 路径判定：在 tagChainsMap 中查找真正以 targetGroup 与 effectiveParent 为前缀的匹配路径
             // 严禁盲借 [0]，杜绝将音频等异类物理路径借给其他维度分支
@@ -1746,13 +1744,17 @@ export class TagTreeQuery {
             let branchCount = count
             if (normTPath && pathCountMap[normTPath] !== undefined) {
               branchCount = pathCountMap[normTPath]
-            } else if (Object.keys(pathCountMap).length > 0) {
+            } else if (hasPathIndex) {
               branchCount = 0
             }
 
             if (removeEmptyTags && !includeAllPresetTags && branchCount === 0) {
               continue
             }
+
+            assignedCodes.add(t.code)
+            tagToGroupMap.set(t.code, targetGroup)
+            tagLevelMap.set(t.code, effectiveLevel)
 
             targetGroup.tags.push({
               dimensionId: targetGroup.id,
@@ -1782,9 +1784,6 @@ export class TagTreeQuery {
           if (claimedByStem) {
             const { targetGroup, parentTag } = claimedByStem
             const nextLvl = (parentTag.level || 1) + 1
-            assignedCodes.add(t.code)
-            tagToGroupMap.set(t.code, targetGroup)
-            tagLevelMap.set(t.code, nextLvl)
 
             const parentCodePath = parentTag.codePath || `/${targetGroup.code}/${parentTag.code || parentTag.tagValue}`
             const parentNamePath = parentTag.namePath || `/${targetGroup.name}/${parentTag.tagValue}`
@@ -1797,13 +1796,17 @@ export class TagTreeQuery {
             let stemCount = count
             if (normTPath && pathCountMap[normTPath] !== undefined) {
               stemCount = pathCountMap[normTPath]
-            } else if (Object.keys(pathCountMap).length > 0) {
+            } else if (hasPathIndex) {
               stemCount = 0
             }
 
             if (removeEmptyTags && !includeAllPresetTags && stemCount === 0) {
               continue
             }
+
+            assignedCodes.add(t.code)
+            tagToGroupMap.set(t.code, targetGroup)
+            tagLevelMap.set(t.code, nextLvl)
 
             targetGroup.tags.push({
               dimensionId: targetGroup.id,
@@ -2849,13 +2852,13 @@ export class TagTreeQuery {
     // 必须在 params.push 之前拦截并直接返回 '1 = 0'，杜绝 SQL 占位符与绑定参数数量失配 (AGENTS.md §2.9)
     if (!tag.hostScopeCode) {
       const isMultiHostDim = isMultiHostDimension(
-        (tag as any).dimensionCode || (tag as any).dimensionName,
+        (tag as { dimensionCode?: string }).dimensionCode || tag.dimensionName,
         tag.dimensionId
       )
       if (isMultiHostDim) {
         logger.warn(
           LogCategory.VIRTUAL_DIRECTORY,
-          `[TagTreeQuery] 拦截到无路径无宿主的多宿主维度泛查: ${(tag as any).tagValue}`
+          `[TagTreeQuery] 拦截到无路径无宿主的多宿主维度泛查: ${tag.tagValue}`
         )
         return '1 = 0'
       }

@@ -2107,4 +2107,146 @@ describe('PRD-0058 / Branch Dimension Node Isolation & Count SSOT - 跨分支同
     const novelPrunedSub = ebookPrunedSub![0].childTags?.get('builtin.ebook_subdivision::omw.03833065.n')
     expect(novelPrunedSub).toBeUndefined()
   })
+
+  it('P0-2: 跨宿主兄弟分支隔离：图片提升行绝不能收集影视下的子孙标签物化路径', () => {
+    // 构造场景：图片和影视下都有「打码程度 -> 无码」子树，但属于不同宿主
+    const fileTypeGroup: DimensionGroup = {
+      id: 1,
+      name: '文件类型',
+      code: 'builtin.file_type',
+      level: 0,
+      tags: [
+        {
+          dimensionId: 1,
+          dimensionCode: 'builtin.file_type',
+          dimensionName: '文件类型',
+          tagValue: '图片',
+          code: 'omw.image',
+          codePath: '/builtin.file_type/omw.image',
+          level: 1,
+          fileCount: 3,
+          viaParentCode: 'builtin.file_type'
+        },
+        {
+          dimensionId: 1,
+          dimensionCode: 'builtin.file_type',
+          dimensionName: '文件类型',
+          tagValue: '打码程度',
+          code: 'builtin.censor',
+          codePath: '/builtin.file_type/omw.image/builtin.censor',
+          level: 2,
+          fileCount: 3,
+          viaParentCode: 'omw.image'
+        },
+        {
+          dimensionId: 1,
+          dimensionCode: 'builtin.file_type',
+          dimensionName: '文件类型',
+          tagValue: '无码',
+          code: 'omw.none',
+          codePath: '/builtin.file_type/omw.image/builtin.censor/omw.none',
+          level: 3,
+          fileCount: 3,
+          viaParentCode: 'builtin.censor'
+        },
+        {
+          dimensionId: 1,
+          dimensionCode: 'builtin.file_type',
+          dimensionName: '文件类型',
+          tagValue: '影视',
+          code: 'omw.video',
+          codePath: '/builtin.file_type/omw.video',
+          level: 1,
+          fileCount: 100,
+          viaParentCode: 'builtin.file_type'
+        },
+        {
+          dimensionId: 1,
+          dimensionCode: 'builtin.file_type',
+          dimensionName: '文件类型',
+          tagValue: '打码程度',
+          code: 'builtin.censor',
+          codePath: '/builtin.file_type/omw.video/builtin.censor',
+          level: 2,
+          fileCount: 100,
+          viaParentCode: 'omw.video'
+        },
+        {
+          dimensionId: 1,
+          dimensionCode: 'builtin.file_type',
+          dimensionName: '文件类型',
+          tagValue: '无码',
+          code: 'omw.none',
+          codePath: '/builtin.file_type/omw.video/builtin.censor/omw.none',
+          level: 3,
+          fileCount: 100,
+          viaParentCode: 'builtin.censor'
+        }
+      ]
+    }
+
+    const pathCountMap: Record<string, number> = {
+      '/builtin.file_type/omw.image': 3,
+      '/builtin.file_type/omw.image/builtin.censor': 3,
+      '/builtin.file_type/omw.image/builtin.censor/omw.none': 3,
+      '/builtin.file_type/omw.video': 100,
+      '/builtin.file_type/omw.video/builtin.censor': 100,
+      '/builtin.file_type/omw.video/builtin.censor/omw.none': 100
+    }
+
+    // 当刻度折叠为 2 时，打码程度及无码穿透提升至各自主容器（图片与影视）
+    const tree = buildDimensionTree([fileTypeGroup], null, null, 0, 2, pathCountMap, false)
+    expect(tree.length).toBe(1)
+
+    // 找到图片容器下的提升行
+    const imageContainerTags = tree[0].tags.filter(t => t.viaParentCode === 'omw.image')
+    const imgNoneTag = imageContainerTags.find(t => t.tagValue === '无码')
+    expect(imgNoneTag).toBeDefined()
+    // 关键断言 P0-2：图片的提升行「无码」只包含图片自身的物化路径，绝不能把影视路径混进来！
+    expect(imgNoneTag!.codePaths).toEqual(['/builtin.file_type/omw.image/builtin.censor/omw.none'])
+    // 关键断言 P0-1：计数严格为图片的 3，绝不能相加成 103！
+    expect(imgNoneTag!.fileCount).toBe(3)
+    // 关键断言 P1-2：hostScopeCode 必须为 omw.image，绝不能是展示名 "图片"！
+    expect(imgNoneTag!.hostScopeCode).toBe('omw.image')
+
+    // 找到影视容器下的提升行
+    const videoContainerTags = tree[0].tags.filter(t => t.viaParentCode === 'omw.video')
+    const vidNoneTag = videoContainerTags.find(t => t.tagValue === '无码')
+    expect(vidNoneTag).toBeDefined()
+    expect(vidNoneTag!.codePaths).toEqual(['/builtin.file_type/omw.video/builtin.censor/omw.none'])
+    expect(vidNoneTag!.fileCount).toBe(100)
+    expect(vidNoneTag!.hostScopeCode).toBe('omw.video')
+  })
+
+  it('P1-5 & P1-2: 根级与子级 fail-closed 归零对称性且 hostScopeCode 杜绝展示名污染', () => {
+    const group: DimensionGroup = {
+      id: 2,
+      name: '自定义维度',
+      code: 'builtin.custom',
+      level: 0,
+      tags: [
+        {
+          dimensionId: 2,
+          dimensionCode: 'builtin.custom',
+          dimensionName: '自定义维度',
+          tagValue: '幽灵根标签',
+          code: 'omw.ghost',
+          level: 1,
+          fileCount: 99
+        }
+      ]
+    }
+    // pathCountMap 存在键，但没有该根标签的路径
+    const pathCountMap: Record<string, number> = {
+      '/builtin.custom/other': 5
+    }
+
+    const tree = buildDimensionTree([group], null, null, 0, 7, pathCountMap, false)
+    expect(tree.length).toBe(1)
+    const ghostTag = tree[0].tags[0]
+    // 关键断言 P1-5：根级标签在路径索引未命中时，必须同子级一样 fail-closed 归零，不可保留虚高 99！
+    expect(ghostTag.fileCount).toBe(0)
+    // 关键断言 P1-2：hostScopeCode 必须为受控码 omw.ghost，绝不能回退为中文展示名 "幽灵根标签"！
+    expect(ghostTag.hostScopeCode).toBe('omw.ghost')
+  })
 });
