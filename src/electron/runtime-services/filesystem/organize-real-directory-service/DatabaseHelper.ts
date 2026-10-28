@@ -20,12 +20,23 @@ export interface LightweightFileItem {
   path: string
   name: string
   smartName: string | null
+  rawSmartName?: string | null
   extension: string | null
+  size?: number
+  author?: string | null
+  qualityScore?: number | null
+  isAnalyzed?: boolean
+  is_analyzed?: number
   /** 文件已拥有的标签维度列表（用于批量标签页 tagFileCounts 统计） */
   dimensionTags?: Array<{
     dimensionId: number | null
     dimensionCode: string | null
+    rootDimensionCode?: string | null
+    pathCodes?: string[]
+    dimensionName?: string
     tagValue: string
+    tag?: string
+    tagName?: string
   }>
 }
 
@@ -247,7 +258,10 @@ export class DatabaseHelper {
               wf.path,
               wf.name,
               NULLIF(f.smart_name, wf.name) as smartName,
+              f.raw_smart_name as rawSmartName,
               f.extension,
+              f.size,
+              f.author,
               wf.is_analyzed as isAnalyzed,
               wf.is_analyzed
             FROM workspace_files wf
@@ -270,7 +284,10 @@ export class DatabaseHelper {
               wf.path,
               wf.name,
               NULLIF(f.smart_name, wf.name) as smartName,
+              f.raw_smart_name as rawSmartName,
               f.extension,
+              f.size,
+              f.author,
               wf.is_analyzed as isAnalyzed,
               wf.is_analyzed
             FROM workspace_files wf
@@ -293,7 +310,10 @@ export class DatabaseHelper {
           wf.path,
           wf.name,
           NULLIF(f.smart_name, wf.name) as smartName,
+          f.raw_smart_name as rawSmartName,
           f.extension,
+          f.size,
+          f.author,
           wf.is_analyzed as isAnalyzed,
           wf.is_analyzed
         FROM workspace_files wf
@@ -316,7 +336,10 @@ export class DatabaseHelper {
           wf.path,
           wf.name,
           NULLIF(f.smart_name, wf.name) as smartName,
+          f.raw_smart_name as rawSmartName,
           f.extension,
+          f.size,
+          f.author,
           wf.is_analyzed as isAnalyzed,
           wf.is_analyzed
         FROM workspace_files wf
@@ -348,7 +371,7 @@ export class DatabaseHelper {
     if (fileIds.length === 0) return
 
     try {
-      // 一次性批量查：file id → (tag_code, via_parent_code, tag_name)
+      // 一次性批量查：file id → (tag_code, via_parent_code, code_path, tag_name)
       // via_parent_code 即维度归属 code（空字符串表示根节点自身即父），tag_name 为本地展示名
       const tagRows = this.db
         .prepare(
@@ -357,33 +380,56 @@ export class DatabaseHelper {
             wf.id AS file_id,
             ftr.tag_code,
             ftr.via_parent_code,
+            ftr.code_path,
             ft.name AS tag_name
           FROM workspace_files wf
           INNER JOIN files f ON wf.file_fingerprint = f.file_fingerprint
           INNER JOIN file_tag_relations ftr ON ftr.file_fingerprint = f.file_fingerprint
           LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
           WHERE wf.id IN (SELECT CAST(value AS INTEGER) FROM json_each(?))
+          ORDER BY ftr.depth ASC, ftr.created_at ASC
         `
         )
         .all(JSON.stringify(fileIds)) as Array<{
           file_id: number
           tag_code: string
           via_parent_code: string
+          code_path: string
           tag_name: string | null
         }>
 
       // 按 file_id 分组，构建 dimensionTags
-      const tagsByFileId = new Map<number, Array<{ dimensionId: null; dimensionCode: string | null; tagValue: string }>>()
+      const tagsByFileId = new Map<number, Array<{
+        dimensionId: number | null
+        dimensionCode: string | null
+        rootDimensionCode?: string | null
+        pathCodes?: string[]
+        dimensionName?: string
+        tagValue: string
+        tag: string
+        tagName: string
+      }>>()
       for (const row of tagRows) {
         if (!tagsByFileId.has(row.file_id)) {
           tagsByFileId.set(row.file_id, [])
         }
         const displayName = row.tag_name || this.resolveTagName(row.tag_code)
         if (displayName) {
+          const pathCodes = row.code_path ? row.code_path.split('/').filter(Boolean) : []
+          const rootDimCode = pathCodes[0] || row.via_parent_code || row.tag_code || null
+          const canonicalDimName =
+            (rootDimCode ? getCanonicalConceptName(rootDimCode) : '') ||
+            (row.via_parent_code ? getCanonicalConceptName(row.via_parent_code) : '') ||
+            ''
           tagsByFileId.get(row.file_id)!.push({
             dimensionId: null,
-            dimensionCode: row.via_parent_code || row.tag_code || null,
-            tagValue: displayName
+            dimensionCode: row.via_parent_code || rootDimCode || null,
+            rootDimensionCode: rootDimCode,
+            pathCodes,
+            dimensionName: canonicalDimName,
+            tagValue: displayName,
+            tag: displayName,
+            tagName: displayName
           })
         }
       }

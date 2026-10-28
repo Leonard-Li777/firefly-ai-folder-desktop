@@ -513,7 +513,7 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
     // 2. 统计该文件底层数据库中拥有的有效业务标签总数（排除扩展名标签）
     if (file) {
       if (Array.isArray(file.dimensionTags)) {
-        totalTagsCount += file.dimensionTags.filter(t => t && t.tag && !isExtensionTriggerTagName(t.tag)).length
+        totalTagsCount += file.dimensionTags.filter((t: any) => t && (t.tag || t.tagValue || t.name) && !isExtensionTriggerTagName(t.tag || t.tagValue || t.name)).length
       }
       if (Array.isArray(file.tags)) {
         totalTagsCount += file.tags.filter(t => t && typeof t === 'string' && t.trim()).length

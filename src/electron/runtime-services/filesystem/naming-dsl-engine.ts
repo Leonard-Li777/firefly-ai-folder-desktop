@@ -1,7 +1,15 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { BatchRenamePreviewItem, BatchRenameResult } from '@firefly/types'
-import { LogCategory, logger, isExtensionTriggerTagName } from '@firefly/shared'
+import {
+  LogCategory,
+  logger,
+  isExtensionTriggerTagName,
+  isControlledConcept,
+  concept,
+  getCanonicalConceptName
+} from '@firefly/shared'
+import { decompressJson } from '../../utils/text-compressor'
 import { t } from '@app/languages'
 
 // #624：彻底删除 DEFAULT_DIMENSION_TYPE_RESTRICTIONS 本地化限制字典
@@ -22,10 +30,124 @@ export interface FileRenameContext {
   createdAt?: string | Date
   qualityScore?: number
   tags?: any[]
-  dimensionTags?: Record<string, string>
+  dimensionTags?: Record<string, string> | any[]
   metadata?: Record<string, any>
   author?: string
   language?: string
+}
+
+interface HydratedFileCacheItem {
+  hydrated: boolean
+  qualityScore?: number
+  metadata: Record<string, any>
+}
+
+// 内存 LRU 缓存，最多保留 2000 个文件的轻量更名标量元数据
+const MAX_NAMING_CACHE_SIZE = 2000
+const namingHydrationCache = new Map<number, HydratedFileCacheItem>()
+
+function getHydrationFromCache(fileId: number): HydratedFileCacheItem | undefined {
+  const item = namingHydrationCache.get(fileId)
+  if (item) {
+    namingHydrationCache.delete(fileId)
+    namingHydrationCache.set(fileId, item)
+  }
+  return item
+}
+
+function setHydrationToCache(fileId: number, data: HydratedFileCacheItem): void {
+  if (namingHydrationCache.size >= MAX_NAMING_CACHE_SIZE) {
+    const firstKey = namingHydrationCache.keys().next().value
+    if (firstKey !== undefined) {
+      namingHydrationCache.delete(firstKey)
+    }
+  }
+  namingHydrationCache.set(fileId, data)
+}
+
+/**
+ * 提取批量更名 DSL 模板所需的轻量级元数据标量字段
+ * 严格防范大对象常驻内存，只保留分辨率、时长、页数、编码等渲染所需键
+ */
+function pickNamingMetadata(
+  rawMeta: Record<string, any> = {},
+  rawExif: Record<string, any> = {}
+): Record<string, any> {
+  const merged = { ...rawMeta, ...rawExif }
+  const result: Record<string, any> = {}
+
+  const isValidValue = (v: any) => {
+    if (v === undefined || v === null) return false
+    if (typeof v === 'string' && v.trim() === '') return false
+    return true
+  }
+
+  // 1. 分辨率 / 宽高相关
+  const resKeys = [
+    'ImageWidth', 'imageWidth', 'image_width', 'SourceImageWidth', 'ExifImageWidth',
+    'VideoWidth', 'videoWidth', 'video_width', 'width', 'Width', '宽度',
+    'ImageHeight', 'imageHeight', 'image_height', 'SourceImageHeight', 'ExifImageHeight',
+    'VideoHeight', 'videoHeight', 'video_height', 'height', 'Height', '高度',
+    'ImageSize', 'imageSize', 'image_size', 'Resolution', 'resolution', '分辨率'
+  ]
+  for (const k of resKeys) {
+    if (isValidValue(merged[k])) {
+      result[k] = merged[k]
+    }
+  }
+
+  // 2. 时长相关
+  const durKeys = [
+    'Duration', 'duration', 'durationText', 'duration_seconds', 'durationSeconds',
+    'duration_ms', 'durationMs', 'Duration_ms', 'DurationMs', 'TrackDuration',
+    'track_duration', 'MediaDuration', 'media_duration', 'PlayTime', 'play_time',
+    'AudioDuration', 'VideoDuration', 'Length', 'length', '时长'
+  ]
+  for (const k of durKeys) {
+    if (isValidValue(merged[k])) {
+      result[k] = merged[k]
+    }
+  }
+
+  // 3. 页数相关
+  const pageKeys = [
+    'PageCount', 'pageCount', 'Pages', 'pages', 'page_count', 'pages_count',
+    'NumberOfPages', 'number_of_pages', 'SlideCount', 'slide_count',
+    'SheetCount', 'sheet_count', '页数'
+  ]
+  for (const k of pageKeys) {
+    if (isValidValue(merged[k])) {
+      result[k] = merged[k]
+    }
+  }
+
+  // 4. 编码格式相关
+  const codecKeys = [
+    'CompressorID', 'CompressorName', 'VideoCodec', 'videoCodec', 'video_codec',
+    'AudioCodec', 'audioCodec', 'audio_codec', 'AudioFormat', 'audio_format',
+    'CodecID', 'codecID', 'codec_id', 'Codec', 'codec', 'FourCC', 'fourcc',
+    'VideoFormat', 'video_format', 'Compressor', 'Format', 'format',
+    'Compression', 'compression', '编码', '编码格式'
+  ]
+  for (const k of codecKeys) {
+    if (isValidValue(merged[k])) {
+      result[k] = merged[k]
+    }
+  }
+
+  // 5. 常见标量（作者、修改/创建时间等）
+  const commonKeys = [
+    'author', 'Author', '作者', 'artist', 'Artist', '创作者',
+    'title', 'Title', 'make', 'Make', 'model', 'Model',
+    'date_taken', 'shooting_time', 'create_date', 'creation_time', 'modify_date'
+  ]
+  for (const k of commonKeys) {
+    if (isValidValue(merged[k])) {
+      result[k] = merged[k]
+    }
+  }
+
+  return result
 }
 
 const getPresetList = (): Array<{
@@ -205,10 +327,10 @@ export class NamingDSLEngine {
 
     const rawDimTagsMap: Record<string, string[]> = {}
     // #624：直接信任前置已入库的 file_tag_relations，不再做文件类型二次校验
-    const addTagToDimension = (dim: string, val: any) => {
-      if (!dim || val === undefined || val === null) return
-      const cleanDim = String(dim).trim()
-      if (!cleanDim) return
+    const registerDimensionValue = (rawKey: string, val: any) => {
+      if (!rawKey || val === undefined || val === null) return
+      const cleanKey = String(rawKey).trim()
+      if (!cleanKey) return
 
       let candidateTags: string[] = []
       if (Array.isArray(val)) {
@@ -220,10 +342,37 @@ export class NamingDSLEngine {
           .filter(Boolean)
       }
 
-      if (!rawDimTagsMap[cleanDim]) {
-        rawDimTagsMap[cleanDim] = []
+      if (candidateTags.length === 0) return
+
+      const addKey = (k: string) => {
+        if (!k) return
+        if (!rawDimTagsMap[k]) rawDimTagsMap[k] = []
+        rawDimTagsMap[k].push(...candidateTags)
       }
-      rawDimTagsMap[cleanDim].push(...candidateTags)
+
+      // 注册原始键
+      addKey(cleanKey)
+      addKey(cleanKey.toLowerCase())
+
+      // 若原始键是受控概念（或权威 code），双向扩展规范名与 code，严禁使用 t()
+      if (cleanKey.startsWith('builtin.') || cleanKey.startsWith('omw.') || cleanKey.startsWith('hownet.')) {
+        const canonical = getCanonicalConceptName(cleanKey)
+        if (canonical) {
+          addKey(canonical)
+          addKey(canonical.toLowerCase())
+        }
+      } else if (isControlledConcept(cleanKey)) {
+        const code = concept(cleanKey as any)
+        if (code) {
+          addKey(code)
+          addKey(code.toLowerCase())
+          const canonical = getCanonicalConceptName(code)
+          if (canonical) {
+            addKey(canonical)
+            addKey(canonical.toLowerCase())
+          }
+        }
+      }
     }
 
     if (
@@ -232,14 +381,24 @@ export class NamingDSLEngine {
       !Array.isArray(context.dimensionTags)
     ) {
       for (const [dim, val] of Object.entries(context.dimensionTags)) {
-        addTagToDimension(dim, val)
+        registerDimensionValue(dim, val)
       }
     } else if (Array.isArray(context.dimensionTags)) {
       for (const item of context.dimensionTags) {
         if (item && typeof item === 'object') {
-          const dim = item.dimensionName || item.dimension || item.name
-          const val = item.tagName || item.tag || item.value
-          addTagToDimension(dim, val)
+          const val = item.tagName || item.tag || item.value || item.tagValue
+          const dims = [
+            item.dimensionName,
+            item.dimension,
+            item.name,
+            item.dimensionCode,
+            item.rootDimensionCode,
+            ...(Array.isArray(item.pathCodes) ? item.pathCodes : [])
+          ].filter(Boolean)
+
+          for (const d of dims) {
+            registerDimensionValue(d, val)
+          }
         }
       }
     }
@@ -247,18 +406,29 @@ export class NamingDSLEngine {
     if (Array.isArray(context.tags)) {
       for (const tItem of context.tags) {
         if (tItem && typeof tItem === 'object') {
-          const dimName = tItem.dimensionName || (tItem as any).name || (tItem as any).dimension
-          const tagVal = tItem.tagValue || (tItem as any).value || (tItem as any).tag
-          addTagToDimension(dimName, tagVal)
+          const tagVal = tItem.tagValue || (tItem as any).value || (tItem as any).tag || (tItem as any).tagName
+          const dims = [
+            tItem.dimensionName,
+            (tItem as any).name,
+            (tItem as any).dimension,
+            (tItem as any).dimensionCode,
+            (tItem as any).rootDimensionCode,
+            ...(Array.isArray((tItem as any).pathCodes) ? (tItem as any).pathCodes : [])
+          ].filter(Boolean)
+
+          for (const d of dims) {
+            registerDimensionValue(d, tagVal)
+          }
         } else if (typeof tItem === 'string' && tItem.trim()) {
-          addTagToDimension(t('内容标签'), tItem)
+          registerDimensionValue('内容标签', tItem)
+          registerDimensionValue('builtin.content_tags', tItem)
         }
       }
     }
 
     if ((context as any).dimensions && typeof (context as any).dimensions === 'object') {
       for (const [dim, val] of Object.entries((context as any).dimensions)) {
-        addTagToDimension(dim, val)
+        registerDimensionValue(dim, val)
       }
     }
 
@@ -339,8 +509,9 @@ export class NamingDSLEngine {
     // 支持标准化 tag_code（如 dimension.media_type.image、image.screenshot）与本地化维度名双通道绑定
     rendered = rendered.replace(/\{TAG:([^}]+)\}/g, (_, dimName) => {
       const dimKey = String(dimName).trim()
+      if (!dimKey) return ''
 
-      // 优先：精确匹配 tag_code 或维度名
+      // 1) 直接精确匹配
       if (dimTagsMap[dimKey]) {
         return dimTagsMap[dimKey]
       }
@@ -349,7 +520,25 @@ export class NamingDSLEngine {
         return dimTagsMap[lowerKey]
       }
 
-      // 次优：遍历维度映射表进行不区分大小写匹配
+      // 2) 受控概念解析归一（中文名 -> code，或 code -> canonicalName）
+      let code: string | undefined
+      if (dimKey.startsWith('builtin.') || dimKey.startsWith('omw.') || dimKey.startsWith('hownet.')) {
+        code = dimKey
+      } else if (isControlledConcept(dimKey)) {
+        code = concept(dimKey as any)
+      }
+
+      if (code) {
+        if (dimTagsMap[code]) return dimTagsMap[code]
+        if (dimTagsMap[code.toLowerCase()]) return dimTagsMap[code.toLowerCase()]
+        const canonical = getCanonicalConceptName(code)
+        if (canonical) {
+          if (dimTagsMap[canonical]) return dimTagsMap[canonical]
+          if (dimTagsMap[canonical.toLowerCase()]) return dimTagsMap[canonical.toLowerCase()]
+        }
+      }
+
+      // 3) 遍历不区分大小写兜底
       for (const [k, v] of Object.entries(dimTagsMap)) {
         if (k.toLowerCase() === lowerKey) {
           return v
@@ -734,12 +923,11 @@ export class NamingDSLEngine {
       context.author ||
       (context as any).author_name ||
       metaObj.author ||
-      metaObj[t('作者')] ||
       metaObj['作者'] ||
-      dimTagsMap[t('作者')] ||
       dimTagsMap['作者'] ||
+      dimTagsMap[concept('作者')] ||
+      dimTagsMap['builtin.author'] ||
       dimTagsMap['Author'] ||
-      dimTagsMap[t('创作者')] ||
       dimTagsMap['创作者'] ||
       ''
     rendered = rendered.replace(/\{AUTHOR\}/g, authorVal)
@@ -749,9 +937,7 @@ export class NamingDSLEngine {
       context.language ||
       (context as any).lang ||
       metaObj.language ||
-      metaObj[t('语言')] ||
       metaObj['语言'] ||
-      dimTagsMap[t('语言')] ||
       dimTagsMap['语言'] ||
       dimTagsMap['Language'] ||
       ''
@@ -889,12 +1075,163 @@ export class NamingDSLEngine {
   }
 
   /**
+   * 按需同步水合文件元数据与质量评分（仅当模板包含 {META:...} 或 {QUALITY_SCORE} 时触发）
+   * 采用微秒级 better-sqlite3 同步查询 + LRU 缓存 + 精准标量字段提取，零 OOM 隐患
+   */
+  public static hydrateFilesIfNeeded(
+    template: string,
+    files: FileRenameContext[],
+    customDb?: any
+  ): FileRenameContext[] {
+    if (!template || !files || files.length === 0) {
+      return files
+    }
+
+    const needsMeta = /\{META:/i.test(template)
+    const needsQuality = /\{QUALITY_SCORE\}/i.test(template)
+
+    if (!needsMeta && !needsQuality) {
+      return files
+    }
+
+    // 寻找需要查询的水合缺失文件 ID
+    const missingIds: number[] = []
+    for (const f of files) {
+      if (!f || !f.id) continue
+      const cached = getHydrationFromCache(f.id)
+      if (cached) {
+        if (f.qualityScore === undefined && cached.qualityScore !== undefined) {
+          f.qualityScore = cached.qualityScore
+        }
+        if (cached.metadata && Object.keys(cached.metadata).length > 0) {
+          f.metadata = { ...(cached.metadata || {}), ...(f.metadata || {}) }
+        }
+        if (cached.hydrated) {
+          continue
+        }
+      }
+
+      const lackQuality = needsQuality && (f.qualityScore === undefined || f.qualityScore === null)
+      const lackMeta = needsMeta && (!f.metadata || Object.keys(f.metadata).length === 0)
+
+      if (lackQuality || lackMeta) {
+        missingIds.push(f.id)
+      }
+    }
+
+    if (missingIds.length === 0) {
+      return files
+    }
+
+    // 获取可用数据库连接
+    let db = customDb
+    if (!db) {
+      try {
+        const { databaseService } = require('../database/database-service')
+        db = databaseService?.db
+      } catch {
+        // ignore
+      }
+    }
+
+    if (!db) {
+      return files
+    }
+
+    try {
+      const BATCH_SIZE = 500
+      for (let i = 0; i < missingIds.length; i += BATCH_SIZE) {
+        const batchIds = missingIds.slice(i, i + BATCH_SIZE)
+        const placeholders = batchIds.map(() => '?').join(',')
+        const sql = `
+          SELECT 
+            wf.id,
+            fc.quality_score as qualityScore,
+            fc.exif,
+            fc.meta as contentMeta,
+            f.meta as fileMeta
+          FROM workspace_files wf
+          LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
+          LEFT JOIN file_contents fc ON wf.file_fingerprint = fc.file_fingerprint
+          WHERE wf.id IN (${placeholders})
+        `
+        const rows = db.prepare(sql).all(...batchIds) as Array<{
+          id: number
+          qualityScore?: number
+          exif?: Buffer | string
+          contentMeta?: string
+          fileMeta?: string
+        }>
+
+        const rowMap = new Map<number, typeof rows[0]>()
+        for (const row of rows) {
+          rowMap.set(row.id, row)
+        }
+
+        const batchIdSet = new Set(batchIds)
+        for (const f of files) {
+          if (!batchIdSet.has(f.id)) continue
+          const row = rowMap.get(f.id)
+          if (!row) {
+            setHydrationToCache(f.id, {
+              hydrated: true,
+              metadata: {}
+            })
+            continue
+          }
+
+          let fileMetaObj: Record<string, any> = {}
+          try {
+            if (row.fileMeta) fileMetaObj = JSON.parse(row.fileMeta)
+          } catch {
+            fileMetaObj = {}
+          }
+
+          let contentMetaObj: Record<string, any> = {}
+          try {
+            if (row.contentMeta) contentMetaObj = JSON.parse(row.contentMeta)
+          } catch {
+            contentMetaObj = {}
+          }
+
+          const rawExif = decompressJson<Record<string, any>>(row.exif) || {}
+          const mergedRawMeta = { ...fileMetaObj, ...contentMetaObj }
+          const pickedMeta = pickNamingMetadata(mergedRawMeta, rawExif)
+
+          const qScore =
+            row.qualityScore !== undefined && row.qualityScore !== null
+              ? row.qualityScore
+              : undefined
+
+          setHydrationToCache(f.id, {
+            hydrated: true,
+            qualityScore: qScore,
+            metadata: pickedMeta
+          })
+
+          if (f.qualityScore === undefined && qScore !== undefined) {
+            f.qualityScore = qScore
+          }
+          f.metadata = { ...pickedMeta, ...(f.metadata || {}) }
+        }
+      }
+    } catch (err) {
+      logger.warn(LogCategory.FILE_ORGANIZATION, '按需水合更名元数据失败:', err)
+    }
+
+    return files
+  }
+
+  /**
    * 批量计算重命名预览列表（包含结构化语法高亮片段 segments）
    */
   public static generatePreview(
     template: string,
-    files: FileRenameContext[]
+    files: FileRenameContext[],
+    customDb?: any
   ): BatchRenamePreviewItem[] {
+    // 1. 若模板包含 {META:...} 或 {QUALITY_SCORE}，按需同步水合
+    NamingDSLEngine.hydrateFilesIfNeeded(template, files, customDb)
     const tokenRegex = /(\[[^\]]+\]|\([^\)]+\)|<[^>]+>|\{[^}]+\}|[^\s_{}\[\]\(\)<>\-]+|[\s_\-])/g
     const pieces = (template || '').match(tokenRegex) || []
 
@@ -1062,6 +1399,7 @@ export class NamingDSLEngine {
     const targetFiles = (files || []).filter(
       f => (f as any).is_analyzed !== 0 && f.isAnalyzed !== false
     )
+    NamingDSLEngine.hydrateFilesIfNeeded(template, targetFiles)
     const previewList = NamingDSLEngine.generatePreview(template, targetFiles)
     let successCount = 0
     let failedCount = 0
