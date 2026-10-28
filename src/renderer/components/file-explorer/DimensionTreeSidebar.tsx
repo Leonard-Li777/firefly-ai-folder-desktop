@@ -119,7 +119,8 @@ interface DimensionTreeNodeProps {
     ancestorChain?: string[],
     viaParentCode?: string,
     isLifted?: boolean,
-    codePath?: string
+    codePath?: string,
+    hostScopeCode?: string
   ) => void
   getVisibleAndHiddenTags: (
     group: any,
@@ -378,7 +379,8 @@ interface DimensionTreeRowProps {
     /** 是否为穿透提升聚合行（key 打 liftCode 标记，ADR-0034 §4 / M-4） */
     isLifted?: boolean,
     /** 分支消歧锚：完整物化代码路径（多父维度同名叶子跨分支必传） */
-    codePath?: string
+    codePath?: string,
+    hostScopeCode?: string
   ) => void
   handleTagClickInternal: (tag: any) => void
 }
@@ -501,7 +503,8 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
                     row.ancestorChain,
                     tag.viaParentCode || undefined,
                     tag.isLifted === true,
-                    tag.codePath
+                    tag.codePath,
+                    row.hostScopeCode
                   )
                 }
               }}
@@ -518,7 +521,8 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
                     row.ancestorChain,
                     tag.viaParentCode || undefined,
                     tag.isLifted === true,
-                    tag.codePath
+                    tag.codePath,
+                    row.hostScopeCode
                   )
                 }
                 className="w-3.5 h-3.5 rounded border border-border/80 accent-primary cursor-pointer shrink-0"
@@ -549,7 +553,8 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
                   row.ancestorChain,
                   tag.viaParentCode || undefined,
                   tag.isLifted === true,
-                  tag.codePath
+                  tag.codePath,
+                  row.hostScopeCode
                 )
               } else {
                 handleTagClickInternal({
@@ -900,12 +905,13 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       parentTagValue?: string,
       viaParentCode?: string,
       isLifted?: boolean,
-      codePath?: string
+      codePath?: string,
+      hostScopeCode?: string
     ): boolean => {
       if (isExportMode) {
         // 聚合行与直系实例行可能同父 code，key 必须带 liftCode 标记区分 (ADR-0034 §4 / M-4)；
-        // 多父维度同名叶子跨分支（文档/电子书下的语言细分）必须带 codePath 消歧，杜绝串选
-        const key = makeTagKey(dimensionId, tagValue, parentTagValue, viaParentCode, isLifted, codePath)
+        // 多父维度同名叶子跨分支优先带受控 hostScopeCode / codePath 消歧，杜绝跨语言/跨分支串选
+        const key = makeTagKey(dimensionId, tagValue, parentTagValue, viaParentCode, isLifted, codePath, hostScopeCode)
         return selectedTags.has(key)
       } else {
         const curParent = currentTag ? currentTag.viaParentCode : undefined
@@ -937,11 +943,11 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       ancestorChain?: string[],
       viaParentCode?: string,
       isLifted?: boolean,
-      codePath?: string
+      codePath?: string,
+      hostScopeCode?: string
     ) => {
-      // 第 4 段 codePath 分支消歧：多父维度（语言细分等）同名叶子在文档/电子书等
-      // 分支下四元组全同，仅 codePath 不同；不带消歧段会跨分支共享勾选态
-      const key = makeTagKey(dimensionId, tagValue, parentTagValue, viaParentCode, isLifted, codePath)
+      // 受控 hostScopeCode / codePath 分支消歧：多父受控维度同名叶子隔离，杜绝跨父类联动
+      const key = makeTagKey(dimensionId, tagValue, parentTagValue, viaParentCode, isLifted, codePath, hostScopeCode)
 
       const isRemoving = selectedTags.has(key)
       const nextSelected = new Set(selectedTags)
@@ -1284,7 +1290,8 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       node: DimensionTreeNode,
       parentTagValue?: string,
       ancestorChain?: string[],
-      depth: number = 0
+      depth: number = 0,
+      hostScopeCode?: string
     ) {
       const isCollapsed = collapsedDimensionGroups.has(node.id)
       const isTopLevel = node.level === 0
@@ -1318,7 +1325,8 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
           parentTagValue,
           tag.viaParentCode ?? undefined,
           tag.isLifted === true,
-          tag.codePath
+          tag.codePath,
+          hostScopeCode
         )
         const isDisabled = tag.fileCount === 0
         const tagNodeKey = dimensionNodeKey(node.code || node.name, tag)
@@ -1369,6 +1377,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
           tagKey: tagNodeKey,
           parentTagValue,
           ancestorChain: currentChain,
+          hostScopeCode,
           isSelected,
           isDisabled: effectiveTag.fileCount === 0,
           hasChildDimensions,
@@ -1379,7 +1388,8 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
 
         if (hasChildDimensions && isTagExpanded) {
           childDimensions.forEach(childNode => {
-            traverse(childNode, tag.tagValue, currentChain, depth + 1)
+            const nextHostCode = tag.code || hostScopeCode || tag.tagValue
+            traverse(childNode, tag.tagValue, currentChain, depth + 1, nextHostCode)
           })
         }
       })

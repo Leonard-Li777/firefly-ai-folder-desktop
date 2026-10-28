@@ -20,7 +20,9 @@ import {
   isControlledDimensionApplicableInDomain,
   getParentDimensionCodeOfTag,
   CONTROLLED_CONCEPT_DETAILS,
-  classifyDimensionMutexScope
+  classifyDimensionMutexScope,
+  resolveMediaDomain,
+  getFileCategory
 } from '@firefly/shared'
 import {
   findTagCodeTwoStage,
@@ -1732,33 +1734,20 @@ export class DatabaseService {
           })
         }
 
-        // 全媒体领域排他门控铁律：非视觉介质（音频/文档/代码/压缩包）严禁挂载视觉专有维度与标签
-        const isVisualExclusiveDimension = (dimCode: string, tagCode: string, targetPath: string): boolean => {
-          const ctx = { filePath: targetPath }
+        // 全媒体领域排他门控铁律：非适格介质严禁挂载专有维度与标签
+        const isDimensionApplicableForFile = (dimCode: string, tagCode: string, ctx: any): boolean => {
           const effectiveDim = dimCode || getParentDimensionCodeOfTag(tagCode)
           if (effectiveDim && !isControlledDimensionApplicableInDomain(effectiveDim, ctx)) {
-            return true
+            return false
           }
-          return false
+          if (tagCode && !isControlledDimensionApplicableInDomain(tagCode, ctx)) {
+            return false
+          }
+          return true
         }
 
-        // 提前预计算当前批次待添加标签的物化路径三元组 (O(M) 缓存，杜绝热循环内部 O(N*M) 重复 SQL 查询)
+        // 按领域分片缓存当前批次物化路径三元组 (O(M*Domains) 缓存，杜绝热循环内部重复计算与跨领域串色)
         const materializedMap = new Map<string, { codePath: string; namePath: string; depth: number }>()
-        for (const item of allAddTagItems) {
-          const tagName = item.tagName || getCanonicalConceptName(item.tagCode) || item.tagCode
-          const key = `${item.viaParentCode}:${item.tagCode}`
-          if (!materializedMap.has(key)) {
-            materializedMap.set(
-              key,
-              resolveRuntimeMaterializedPath({
-                db: this._db!,
-                tagCode: item.tagCode,
-                viaParentCode: item.viaParentCode,
-                tagName
-              })
-            )
-          }
-        }
 
         const insertStmt = this._db!.prepare(
           "INSERT OR REPLACE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, code_path, name_path, depth, tag_group, source, confidence, sync_status, created_at) VALUES (?, ?, ?, ?, ?, ?, 'user', 'user', 1.0, 0, CURRENT_TIMESTAMP)"
@@ -1770,7 +1759,7 @@ export class DatabaseService {
         // id / path 仅存在于 workspace_files（database.ts:133-153）。better-sqlite3 的 prepare
         // 是即时编译，引用不存在的列会在此处（逐文件 try/catch 之外）抛错并让整批事务回滚。
         const selectWfByIdStmt = this._db!.prepare('SELECT file_fingerprint, path FROM workspace_files WHERE id = ?')
-        const selectFilesByFpStmt = this._db!.prepare('SELECT file_fingerprint FROM files WHERE file_fingerprint = ?')
+        const selectFilesByFpStmt = this._db!.prepare('SELECT file_fingerprint, extension, file_group FROM files WHERE file_fingerprint = ?')
         const selectWfByPathStmt = this._db!.prepare('SELECT file_fingerprint, path FROM workspace_files WHERE path = ?')
 
         // 预编译精准删除语句（杜绝循环内重复 prepare，对齐 Spec §3.6 性能铁律）
@@ -1852,27 +1841,57 @@ export class DatabaseService {
             // ────────── S2 阶段 A：候选过滤 / 去重 / 分组 / 裁决（规格 §4.1 步骤 2-6） ──────────
             // 门禁依赖 filePath，故过滤与分组必须逐文件进行（时效性：filePath 是本文件解析结果）。
             // ADR-0045：本路径为用户手动批量打标，来源分组固定落 'user'，source 固定落 'user'。
-            const materializeOf = (tagCode: string, viaParentCode: string, tagName: string) =>
-              materializedMap.get(`${viaParentCode}:${tagCode}`) || {
-                codePath: `/${viaParentCode || 'content_tags'}/${tagCode}`,
-                namePath: `/${viaParentCode || '内容标签'}/${tagName}`,
-                depth: viaParentCode ? 2 : 1
+            let fileCategory: string | undefined = filePath ? getFileCategory(filePath) : undefined
+            let fileExtension: string | undefined = filePath ? path.extname(filePath) : undefined
+            if (!fileCategory && fp) {
+              try {
+                const fRow = selectFilesByFpStmt.get(fp) as { extension?: string; file_group?: string } | undefined
+                if (fRow) {
+                  fileCategory = fRow.file_group
+                  fileExtension = fRow.extension
+                }
+              } catch {}
+            }
+            const fileCtx = { filePath, category: fileCategory, fileCategory, extension: fileExtension }
+            const fileDomain = resolveMediaDomain(fileCtx)
+
+            const materializeOf = (tagCode: string, viaParentCode: string, tagName: string) => {
+              const cacheKey = `${fileDomain}:${viaParentCode}:${tagCode}`
+              let materialized = materializedMap.get(cacheKey)
+              if (!materialized) {
+                materialized = resolveRuntimeMaterializedPath({
+                  db: this._db!,
+                  tagCode,
+                  viaParentCode,
+                  tagName,
+                  context: fileCtx
+                })
+                materializedMap.set(cacheKey, materialized)
               }
+              return materialized
+            }
 
             const insertItem = (tagCode: string, viaParentCode: string, tagName?: string) => {
               const name = tagName || getCanonicalConceptName(tagCode) || tagCode
               const materialized = materializeOf(tagCode, viaParentCode, name)
+              if (!materialized.codePath) {
+                logger.warn(
+                  LogCategory.DATABASE_SERVICE,
+                  `[batchApplyTags] 标签不符合媒体领域门控，跳过写入: ${tagCode} (${viaParentCode})`
+                )
+                return
+              }
               insertStmt.run(fp, tagCode, viaParentCode, materialized.codePath, materialized.namePath, materialized.depth)
             }
 
             // 步骤 2：过滤（全媒体排他门禁 + 准入闸）。被拦者不参与胜出裁决，也就不会造成覆盖删除。
             const survivors: Array<{ tagCode: string; viaParentCode: string; tagName?: string }> = []
             for (const item of allAddTagItems) {
-              // 全媒体领域排他门控铁律：非视觉介质（音频/文档/代码/压缩包）严禁挂载视觉专有维度与标签
-              if (filePath && isVisualExclusiveDimension(item.viaParentCode, item.tagCode, filePath)) {
+              // 全媒体领域排他门控铁律：非适格介质严禁挂载专有维度与标签
+              if (!isDimensionApplicableForFile(item.viaParentCode, item.tagCode, fileCtx)) {
                 logger.debug(
                   LogCategory.DATABASE_SERVICE,
-                  `[batchApplyTags] 全媒体排他门禁拦截: 跳过向非视觉介质挂载视觉专有标签 (${filePath} -> ${item.tagCode})`
+                  `[batchApplyTags] 全媒体排他门禁拦截: 跳过向非适格介质挂载专有标签 (${filePath || fp} -> ${item.tagCode})`
                 )
                 continue
               }

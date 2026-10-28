@@ -4,6 +4,7 @@ import {
   LogCategory,
   logger,
   FileCategory,
+  getFileCategory,
   isCategory,
   sanitizeFilename,
   cleanSmartName,
@@ -54,6 +55,13 @@ export async function saveCloudResult(
     const rawType = item.type || path.extname(filePath).toLowerCase() || ''
     let fileType = rawType ? (rawType.startsWith('.') ? rawType : `.${rawType}`) : ''
     const stats = fs.statSync(filePath)
+    const fileCategory = getFileCategory(filePath)
+    const topologyContext = {
+      category: fileCategory,
+      fileCategory,
+      filePath,
+      extension: fileType
+    }
 
     // 使用 Magika 检测文件类型
     const magikaCategory = await magikaService.identifyFile(filePath)
@@ -389,29 +397,27 @@ export async function saveCloudResult(
               // 受控概念指南 §1.4 写侧根对齐仲裁：载荷伪 content_tags 包装链 / 半截短路径一律丢弃，
               // 整体回退 resolveRuntimeMaterializedPath 按受控拓扑重新补全根链（杜绝 /content_tags/摄影照片细分/... 入库）。
               // 三元组（code_path/name_path/depth）必须同源，任一缺失即整体重物化，避免链段错位。
-              let codePath = ''
-              let namePath = ''
-              let depth = typeof tag.depth === 'number' && tag.depth > 0 ? tag.depth : 0
-              const payloadPathTrustworthy = isTrustworthyMaterializedCodePath(tag.code_path, viaParent)
-              if (payloadPathTrustworthy && typeof tag.name_path === 'string' && tag.name_path) {
-                codePath = (tag.code_path as string).trim()
-                namePath = tag.name_path
-              } else {
-                const materialized = resolveRuntimeMaterializedPath({
-                  db,
-                  tagCode,
-                  viaParentCode: viaParent,
-                  tagName: cleanName
-                })
-                codePath = materialized.codePath
-                namePath = materialized.namePath
-                if (depth <= 0) depth = materialized.depth
+              const materialized = resolveRuntimeMaterializedPath({
+                db,
+                tagCode,
+                viaParentCode: viaParent,
+                tagName: cleanName,
+                existingCodePath: typeof tag.code_path === 'string' ? tag.code_path : undefined,
+                existingNamePath: typeof tag.name_path === 'string' ? tag.name_path : undefined,
+                context: topologyContext
+              })
+
+              if (!materialized.codePath) {
                 logger.warn(
                   LogCategory.FILE_ANALYSIS,
-                  `[物化路径仲裁] 载荷物化三元组不可信（伪包装/半截路径/缺 name_path），已按受控拓扑重物化: tag=${tagCode}, via=${viaParent}, 新链=${codePath}`
+                  `[saveCloudResult] 受控标签不符合媒体领域门控，已拦截丢弃: tag=${tagCode}, via=${viaParent}, file=${filePath}`
                 )
+                continue
               }
-              if (depth <= 0) depth = 2
+
+              const codePath = materialized.codePath
+              const namePath = materialized.namePath
+              const depth = typeof tag.depth === 'number' && tag.depth > 0 ? tag.depth : (materialized.depth || 2)
               const confidence = typeof tag.confidence === 'number' ? tag.confidence : 1.0
 
               db.prepare(
@@ -434,37 +440,33 @@ export async function saveCloudResult(
                 // ADR-0045 票据 04：显式传入云端返回的原始分组（缺失/非法为 ''），
                 // 不再依赖 insertTagToDb 的 'fact' 缺省——那会把 AI / 融合标签错标成物理事实。
                 // 父码走显式 viaParentCode 参（第 6 参），不借道遗留 _dimensionId 槽。
-                insertTagToDb(db, fileFingerprint, cleanName, undefined, 0, localDimCode, cloudGroup)
+                insertTagToDb(db, fileFingerprint, cleanName, undefined, 0, localDimCode, cloudGroup, '', '', 1, topologyContext)
               } catch {
                 // 兜底：按离线确定性编码派生合法 code 并建立自然主键关联
                 const finalTagCode = tagCode || DeterministicCodeGenerator.generateUnique(cleanName, 'zh-CN', {
                   lookupExistingName: DeterministicCodeGenerator.createDbLookup(db)
                 })
-                // 受控概念指南 §1.4 写侧根对齐仲裁：与受控分支同口径——载荷伪 content_tags 包装链 /
-                // 半截短路径一律丢弃，三元组整体交由 resolveRuntimeMaterializedPath 按受控拓扑重物化
-                let codePath = ''
-                let namePath = ''
-                let depth = typeof tag.depth === 'number' && tag.depth > 0 ? tag.depth : 0
-                const payloadPathTrustworthy = isTrustworthyMaterializedCodePath(tag.code_path, viaParent)
-                if (payloadPathTrustworthy && typeof tag.name_path === 'string' && tag.name_path) {
-                  codePath = (tag.code_path as string).trim()
-                  namePath = tag.name_path
-                } else {
-                  const materialized = resolveRuntimeMaterializedPath({
-                    db,
-                    tagCode: finalTagCode,
-                    viaParentCode: viaParent,
-                    tagName: cleanName
-                  })
-                  codePath = materialized.codePath
-                  namePath = materialized.namePath
-                  if (depth <= 0) depth = materialized.depth
+                const materialized = resolveRuntimeMaterializedPath({
+                  db,
+                  tagCode: finalTagCode,
+                  viaParentCode: viaParent,
+                  tagName: cleanName,
+                  existingCodePath: typeof tag.code_path === 'string' ? tag.code_path : undefined,
+                  existingNamePath: typeof tag.name_path === 'string' ? tag.name_path : undefined,
+                  context: topologyContext
+                })
+
+                if (!materialized.codePath) {
                   logger.warn(
                     LogCategory.FILE_ANALYSIS,
-                    `[物化路径仲裁] 载荷物化三元组不可信（伪包装/半截路径/缺 name_path），已按受控拓扑重物化: tag=${finalTagCode}, via=${viaParent}, 新链=${codePath}`
+                    `[saveCloudResult] 私有标签不符合媒体领域门控，已拦截丢弃: tag=${finalTagCode}, via=${viaParent}, file=${filePath}`
                   )
+                  continue
                 }
-                if (depth <= 0) depth = 2
+
+                const codePath = materialized.codePath
+                const namePath = materialized.namePath
+                const depth = typeof tag.depth === 'number' && tag.depth > 0 ? tag.depth : (materialized.depth || 2)
                 const confidence = typeof tag.confidence === 'number' ? tag.confidence : 1.0
 
                 db.prepare(

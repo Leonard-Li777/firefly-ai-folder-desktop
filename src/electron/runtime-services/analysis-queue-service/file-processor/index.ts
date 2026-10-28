@@ -3331,28 +3331,34 @@ export class FileProcessor {
             const relNamePath = typeof rel.name_path === 'string' && rel.name_path.trim() ? rel.name_path.trim() : ''
             const relDepth = typeof rel.depth === 'number' && rel.depth > 0 ? rel.depth : 0
 
-            let finalCodePath = relCodePath
-            let finalNamePath = relNamePath
-            let finalDepth = relDepth
-
-            // 受控概念指南 §1.4 写侧根对齐仲裁：夹具声明的伪 content_tags 包装链 / 半截短路径
-            // 一律丢弃并重新仲裁，杜绝 /content_tags/摄影照片细分/... 类历史伪链再次入库
-            if (finalCodePath && !isTrustworthyMaterializedCodePath(finalCodePath, viaParentCode)) {
-              finalCodePath = ''
-              finalNamePath = ''
+            const fileCat = getFileCategory(filePath)
+            const topologyContext = {
+              category: fileCat,
+              fileCategory: fileCat,
+              filePath
             }
 
-            if (!finalCodePath || !finalNamePath) {
-              const materialized = resolveRuntimeMaterializedPath({
-                db,
-                tagCode,
-                viaParentCode,
-                tagName: tag.name
-              })
-              finalCodePath = finalCodePath || materialized.codePath
-              finalNamePath = finalNamePath || materialized.namePath
-              finalDepth = finalDepth || materialized.depth
+            const materialized = resolveRuntimeMaterializedPath({
+              db,
+              tagCode,
+              viaParentCode,
+              tagName: tag.name,
+              existingCodePath: relCodePath,
+              existingNamePath: relNamePath,
+              context: topologyContext
+            })
+
+            if (!materialized.codePath) {
+              logger.warn(
+                LogCategory.ANALYSIS_QUEUE,
+                `[file-processor] 夹具标签不符合媒体领域门控，已拦截丢弃: tag=${tagCode}, via=${viaParentCode}, file=${filePath}`
+              )
+              continue
             }
+
+            const finalCodePath = materialized.codePath
+            const finalNamePath = materialized.namePath
+            const finalDepth = relDepth > 0 ? relDepth : (materialized.depth || 2)
 
             db.prepare(
               `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, code_path, name_path, depth, tag_group, confidence, sync_status) VALUES (?, ?, ?, ?, ?, ?, ?, 1.0, 0)`
