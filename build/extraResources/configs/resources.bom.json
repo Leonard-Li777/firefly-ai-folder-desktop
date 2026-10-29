@@ -217,6 +217,16 @@
         "size": 240822786,
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/moss-tts-1.0.0.zip"
       }
+    },
+    "ram-assets": {
+      "version": "1.0.0",
+      "source": "shared",
+      "asset": {
+        "name": "ram-assets-1.0.0.zip",
+        "sha256": "885a7fe3db7125ab9b2380aaca32b33e6d97bb93f69e3b12d20562edc555e393",
+        "size": 5779538,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/ram-assets-1.0.0.zip"
+      }
     }
   },
   "engines": {
