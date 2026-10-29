@@ -223,8 +223,8 @@
       "source": "shared",
       "asset": {
         "name": "ram-assets-1.0.0.zip",
-        "sha256": "885a7fe3db7125ab9b2380aaca32b33e6d97bb93f69e3b12d20562edc555e393",
-        "size": 5779538,
+        "sha256": "aa6f5f47391a9ee30d3cfcb42029b449fb03496d8161ee9102cb2f5df6c1859b",
+        "size": 8972400,
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/ram-assets-1.0.0.zip"
       }
     }
