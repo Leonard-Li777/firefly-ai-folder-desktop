@@ -13,6 +13,7 @@ import { MiniViewDisplaySettingsPopover } from '../common/MiniViewDisplaySetting
 import { LogCategory, logger } from '@firefly/shared'
 import { toast } from '../common/Toast'
 import { useConfigStore } from '../../stores/config-store'
+import { makeTagKey } from './dimension-tree-utils'
 
 interface DimensionFileListPanelProps {
   // Data source config
@@ -476,9 +477,24 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
                   </span>
                 ) : (
                   <div className="flex items-center space-x-1.5 overflow-x-auto no-scrollbar">
-                    {selectedTags.slice(0, 15).map(tag => (
-                      <span
-                        key={`${tag.dimensionId}::${tag.parentTagValue || ''}::${tag.tagValue}`}
+                    {(() => {
+                      const seen = new Set<string>()
+                      return selectedTags.slice(0, 15).map((tag, idx) => {
+                        const rawKey =
+                          makeTagKey(
+                            tag.dimensionId,
+                            tag.tagValue,
+                            tag.parentTagValue,
+                            tag.viaParentCode,
+                            tag.isLifted,
+                            tag.codePath,
+                            tag.hostScopeCode
+                          ) || `${tag.dimensionId}::${tag.parentTagValue || ''}::${tag.tagValue}`
+                        const itemKey = seen.has(rawKey) ? `${rawKey}__dup_${idx}` : rawKey
+                        seen.add(rawKey)
+                        return (
+                          <span
+                            key={itemKey}
                         className="bg-primary/10 border border-primary/30 rounded-md px-2 py-0.5 flex items-center flex-shrink-0 text-primary text-xs font-medium"
                       >
                         <span className="text-[10px] opacity-60 mr-1">{tag.dimensionName}:</span>
@@ -492,7 +508,9 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
                           <MaterialIcon icon="close" className="text-[12px]" />
                         </button>
                       </span>
-                    ))}
+                    )
+                      })
+                    })()}
                     {selectedTags.length > 15 && (
                       <span className="bg-primary/15 text-primary text-xs font-bold px-2 py-0.5 rounded-md flex-shrink-0">
                         +{selectedTags.length - 15}

@@ -847,9 +847,9 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
                   {t('此操作将永久删除所选标签并清理所有文件的关联关系，不可撤销。')}
                 </p>
                 <div className="max-h-32 overflow-y-auto p-2 bg-muted/50 rounded border border-border/40 text-xs flex flex-wrap gap-1.5 mt-2">
-                  {selectedTags.map(tag => (
+                  {selectedTags.map((tag, idx) => (
                     <span
-                      key={`${tag.dimensionId}-${tag.tagValue}`}
+                      key={`${tag.dimensionId}-${tag.tagValue}-${tag.codePath || tag.code || idx}`}
                       className="px-1.5 py-0.5 bg-background rounded border border-border/60 text-foreground text-[11px]"
                     >
                       {tag.tagValue}
