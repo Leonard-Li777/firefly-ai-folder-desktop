@@ -131,8 +131,8 @@ let isHotSwitchInProgress = false
 export const TTS_BUFFER_WATERMARK = {
   /** 最小就绪分句数（长文本预蓄 2 句） */
   MIN_BUFFERED_CHUNKS: 2,
-  /** 最小声学安全时长（秒，累积音频时长达到 10.0 秒即可放行，足以覆盖下一句 15s 生成） */
-  MIN_BUFFERED_DURATION_SEC: 10.0,
+  /** 最小声学安全时长（秒，累积音频时长达到 15.0 秒即可放行，足以覆盖后续 1.35x RTF 下的稳定连续播放） */
+  MIN_BUFFERED_DURATION_SEC: 15.0,
   /** 单句合成超时熔断时间（毫秒，适配当前 15~25s 真实生成耗时，防止提前泄流） */
   CHUNK_SYNTHESIZE_TIMEOUT_MS: 30000
 }
@@ -1451,12 +1451,11 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
           })
           totalBufferedDuration += audioBuffer.duration
 
-          // 水线判定：条件 A（达标 2 句）或 条件 B（单句超长 >= 4.0s）或 条件 C（末尾自愈：所有剩余分句已蓄满）
-          const satisfiesCount = readyBufferList.length >= Math.min(TTS_BUFFER_WATERMARK.MIN_BUFFERED_CHUNKS, remainingChunksCount)
+          // 水线判定：条件 A（达标声学安全时长 >= 15.0s）或 条件 B（末尾自愈：所有剩余分句已蓄满，短文本 1~2 句直接放行）
           const satisfiesDuration = totalBufferedDuration >= TTS_BUFFER_WATERMARK.MIN_BUFFERED_DURATION_SEC
           const satisfiesAllRemaining = readyBufferList.length >= remainingChunksCount
 
-          if (satisfiesCount || satisfiesDuration || satisfiesAllRemaining) {
+          if (satisfiesDuration || satisfiesAllRemaining) {
             isWatermarkSatisfied = true
             flushPrebufferedChunks(readyBufferList, ctx)
             readyBufferList.length = 0
@@ -1810,12 +1809,11 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
           })
           totalBufferedDuration += audioBuffer.duration
 
-          // 水线判定：条件 A（达标 2 句）或 条件 B（单句超长 >= 4.0s）或 条件 C（末尾自愈：所有剩余分句已蓄满）
-          const satisfiesCount = readyBufferList.length >= Math.min(TTS_BUFFER_WATERMARK.MIN_BUFFERED_CHUNKS, remainingChunksCount)
+          // 水线判定：条件 A（达标声学安全时长 >= 15.0s）或 条件 B（末尾自愈：所有剩余分句已蓄满，短文本 1~2 句直接放行）
           const satisfiesDuration = totalBufferedDuration >= TTS_BUFFER_WATERMARK.MIN_BUFFERED_DURATION_SEC
           const satisfiesAllRemaining = readyBufferList.length >= remainingChunksCount
 
-          if (satisfiesCount || satisfiesDuration || satisfiesAllRemaining) {
+          if (satisfiesDuration || satisfiesAllRemaining) {
             isWatermarkSatisfied = true
             flushPrebufferedChunks(readyBufferList, ctx)
             readyBufferList.length = 0
