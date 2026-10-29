@@ -849,7 +849,7 @@ declare global {
 
       // 离线语音合成 (TTS)
       tts: {
-        synthesizeChunk: (text: string, voiceId: string | number, speed: number, sessionId?: number, sid?: number) => Promise<ArrayBuffer | null>
+        synthesizeChunk: (text: string, voiceId: string | number, speed: number, sessionId?: number, sid?: number) => Promise<{ buffer: ArrayBuffer; hitCap: boolean; steps: number } | null>
         abortSession: (sessionId: number) => Promise<void>
         listVoices: () => Promise<any[]>
         analyzeVoiceFile: (filePath: string) => Promise<{

@@ -1284,7 +1284,7 @@ const electronAPI = {
 
   // 离线语音合成 (TTS)
   tts: {
-    synthesizeChunk: (text: string, voiceId: string | number, speed: number, sessionId?: number, sid?: number): Promise<ArrayBuffer | null> =>
+    synthesizeChunk: (text: string, voiceId: string | number, speed: number, sessionId?: number, sid?: number): Promise<{ buffer: ArrayBuffer; hitCap: boolean; steps: number } | null> =>
       ipcRenderer.invoke('tts:synthesize-chunk', text, voiceId, speed, sessionId, sid),
     abortSession: (sessionId: number): Promise<void> =>
       ipcRenderer.invoke('tts:abort-session', sessionId),

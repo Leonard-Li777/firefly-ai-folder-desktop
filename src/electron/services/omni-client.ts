@@ -217,6 +217,12 @@ const DEFAULT_TIMEOUT_MS = 8000
 /**
  * OmniClient：Desktop 侧对 Omni 语义/向量 HTTP 契约的唯一入口
  */
+export interface TTSChunkResult {
+  buffer: ArrayBuffer
+  hitCap: boolean
+  steps: number
+}
+
 export class OmniClient {
   private static instance: OmniClient
 
@@ -713,7 +719,7 @@ export class OmniClient {
     speed: number,
     sid?: number,
     signal?: AbortSignal
-  ): Promise<ArrayBuffer | null> {
+  ): Promise<TTSChunkResult | null> {
     try {
       await omniService.ensureRunning()
       const payload: Record<string, any> = {
@@ -736,7 +742,16 @@ export class OmniClient {
         logger.warn(LogCategory.MAIN, `[OmniClient] TTS 合成失败 HTTP ${res.status}`)
         return null
       }
-      return await res.arrayBuffer()
+      const hitCap = res.headers.get('X-Moss-Hit-Cap') === 'true'
+      const steps = parseInt(res.headers.get('X-Moss-Steps') || '0', 10)
+      if (hitCap) {
+        logger.warn(
+          LogCategory.MAIN,
+          `[OmniClient] ⚠️ TTS 分句触发 375 帧上限截断 (hitCap=true, steps=${steps}): "${text.slice(0, 30)}..."`
+        )
+      }
+      const buffer = await res.arrayBuffer()
+      return { buffer, hitCap, steps }
     } catch (err: unknown) {
       if ((err as any)?.name === 'AbortError') {
         logger.debug(LogCategory.MAIN, '[OmniClient] TTS 合成请求已中止')

@@ -652,13 +652,19 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
         }
       }
       if (!baseBuffer) {
-        baseBuffer = await window.electronAPI.tts.synthesizeChunk(
+        const synthRes = await window.electronAPI.tts.synthesizeChunk(
           chunkText,
           targetVoiceId,
           1.0,
           switchId,
           targetSid
         )
+        if (synthRes) {
+          if (synthRes.hitCap) {
+            toast.warning(t('音频片段过长已自动截断'))
+          }
+          baseBuffer = synthRes.buffer
+        }
       }
 
       // 检查任务版本号：若已被覆盖，直接丢弃
@@ -804,13 +810,19 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
           }
         }
         if (!nextBaseBuffer) {
-          nextBaseBuffer = await window.electronAPI.tts.synthesizeChunk(
+          const synthRes = await window.electronAPI.tts.synthesizeChunk(
             nextChunkText,
             targetVoiceId,
             1.0,
             newSessionId,
             targetSid
           )
+          if (synthRes) {
+            if (synthRes.hitCap) {
+              toast.warning(t('音频片段过长已自动截断'))
+            }
+            nextBaseBuffer = synthRes.buffer
+          }
         }
 
         if (activeSessionId !== newSessionId) return
@@ -1306,6 +1318,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
             chosenSid
           )
 
+          let synthRes: { buffer: ArrayBuffer; hitCap: boolean; steps: number } | null = null
           // 若起播门禁尚未放行且蓄水池已具备首句，在等待后续分句时注入 8000ms 超时门禁探测
           if (!isWatermarkSatisfied && readyBufferList.length > 0) {
             let timer: ReturnType<typeof setTimeout> | undefined
@@ -1323,15 +1336,21 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
                 readyBufferList.length = 0
                 totalBufferedDuration = 0
                 // 后台继续等待该分句真实合成完毕，绝不跳过该句
-                baseBuffer = await synthPromise
+                synthRes = await synthPromise
               } else {
-                baseBuffer = raceResult
+                synthRes = raceResult
               }
             } finally {
               if (timer) clearTimeout(timer)
             }
           } else {
-            baseBuffer = await synthPromise
+            synthRes = await synthPromise
+          }
+          if (synthRes) {
+            if (synthRes.hitCap) {
+              toast.warning(t('音频片段过长已自动截断'))
+            }
+            baseBuffer = synthRes.buffer
           }
         }
 
@@ -1510,13 +1529,16 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
       for (let i = 0; i < currentCleanedChunks.length; i++) {
         let chunkData = cachedChunksMap.get(i)
         if (!chunkData) {
-          const buf = await window.electronAPI.tts.synthesizeChunk(
+          const synthRes = await window.electronAPI.tts.synthesizeChunk(
             currentCleanedChunks[i],
             voiceId,
             1.0
           )
-          if (buf) {
-            chunkData = new Uint8Array(buf)
+          if (synthRes) {
+            if (synthRes.hitCap) {
+              toast.warning(t('音频片段过长已自动截断'))
+            }
+            chunkData = new Uint8Array(synthRes.buffer)
             cachedChunksMap.set(i, chunkData)
           }
         }
@@ -1677,6 +1699,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
             sid
           )
 
+          let synthRes: { buffer: ArrayBuffer; hitCap: boolean; steps: number } | null = null
           // 若起播门禁尚未放行且蓄水池已具备首句，注入 8000ms 超时门禁探测
           if (!isWatermarkSatisfied && readyBufferList.length > 0) {
             let timer: ReturnType<typeof setTimeout> | undefined
@@ -1692,15 +1715,21 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
                 flushPrebufferedChunks(readyBufferList, ctx)
                 readyBufferList.length = 0
                 totalBufferedDuration = 0
-                baseBuffer = await synthPromise
+                synthRes = await synthPromise
               } else {
-                baseBuffer = raceResult
+                synthRes = raceResult
               }
             } finally {
               if (timer) clearTimeout(timer)
             }
           } else {
-            baseBuffer = await synthPromise
+            synthRes = await synthPromise
+          }
+          if (synthRes) {
+            if (synthRes.hitCap) {
+              toast.warning(t('音频片段过长已自动截断'))
+            }
+            baseBuffer = synthRes.buffer
           }
         }
 
