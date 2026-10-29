@@ -373,7 +373,7 @@ const SmartClusteringViewInner = (
     }
   }
 
-  
+
   const handleModeChange = (mode: ClusteringMode) => {
     if (mode === clusteringMode) return
     if (isTreeDirty) {
@@ -720,84 +720,8 @@ const SmartClusteringViewInner = (
               </button>
             </div>
           </div>
-
-
-          {/* 1. 目录层级深度 (1..=10) */}
-          <div className="space-y-1">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">{t('目录层级深度')}</span>
-              <Badge variant="outline" className="text-[11px] h-5 px-1.5 font-mono">
-                {getMaxDepthLabel(maxDepth)}
-              </Badge>
-            </div>
-            <input
-              type="range"
-              min={1}
-              max={10}
-              step={1}
-              value={maxDepth}
-              disabled={isGenerating}
-              onChange={e => handleSliderChange(setMaxDepth, 'maxDepth', Number(e.target.value))}
-              className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-            />
-            <div className="flex justify-between text-[10px] text-muted-foreground/60 px-0.5">
-              <span>1</span>
-              <span>3 ({t('默认')})</span>
-              <span>10</span>
-            </div>
-          </div>
-
-          {/* 2. 根目录数上限 (1..=100) */}
-          <div className="space-y-1">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">{t('根目录数上限')}</span>
-              <Badge variant="outline" className="text-[11px] h-5 px-1.5 font-mono">
-                {getRootDirectoryLabel(maxRootDirectories)}
-              </Badge>
-            </div>
-            <input
-              type="range"
-              min={1}
-              max={100}
-              step={1}
-              value={maxRootDirectories}
-              disabled={isGenerating}
-              onChange={e => handleSliderChange(setMaxRootDirectories, 'maxRootDirectories', Number(e.target.value))}
-              className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-            />
-            <div className="flex justify-between text-[10px] text-muted-foreground/60 px-0.5">
-              <span>1</span>
-              <span>5 ({t('默认')})</span>
-              <span>100</span>
-            </div>
-          </div>
-
-          {/* 3. 子目录数上限 (0..=100) */}
-          <div className="space-y-1">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">{t('子目录数上限')}</span>
-              <Badge variant="outline" className="text-[11px] h-5 px-1.5 font-mono">
-                {getSubdirectoryLabel(maxSubdirectories)}
-              </Badge>
-            </div>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              step={1}
-              value={maxSubdirectories}
-              disabled={isGenerating}
-              onChange={e => handleSliderChange(setMaxSubdirectories, 'maxSubdirectories', Number(e.target.value))}
-              className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-            />
-            <div className="flex justify-between text-[10px] text-muted-foreground/60 px-0.5">
-              <span>{t('仅一级')}</span>
-              <span>5 ({t('默认')})</span>
-              <span>100</span>
-            </div>
-          </div>
-
-          {/* 4. 相似度阈值 (0%..=100%) */}
+          
+          {/* 0. 相似度阈值 (0%..=100%) */}
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">{t('相似度基准')}</span>
@@ -822,6 +746,83 @@ const SmartClusteringViewInner = (
             </div>
           </div>
         </div>
+
+        {/* 1. 目录层级深度 (1..=10) */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">{t('目录层级深度')}</span>
+            <Badge variant="outline" className="text-[11px] h-5 px-1.5 font-mono">
+              {getMaxDepthLabel(maxDepth)}
+            </Badge>
+          </div>
+          <input
+            type="range"
+            min={1}
+            max={10}
+            step={1}
+            value={maxDepth}
+            disabled={isGenerating}
+            onChange={e => handleSliderChange(setMaxDepth, 'maxDepth', Number(e.target.value))}
+            className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+          />
+          <div className="flex justify-between text-[10px] text-muted-foreground/60 px-0.5">
+            <span>1</span>
+            <span>3 ({t('默认')})</span>
+            <span>10</span>
+          </div>
+        </div>
+
+        {/* 2. 根目录数上限 (1..=100) */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">{t('根目录数上限')}</span>
+            <Badge variant="outline" className="text-[11px] h-5 px-1.5 font-mono">
+              {getRootDirectoryLabel(maxRootDirectories)}
+            </Badge>
+          </div>
+          <input
+            type="range"
+            min={1}
+            max={100}
+            step={1}
+            value={maxRootDirectories}
+            disabled={isGenerating}
+            onChange={e => handleSliderChange(setMaxRootDirectories, 'maxRootDirectories', Number(e.target.value))}
+            className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+          />
+          <div className="flex justify-between text-[10px] text-muted-foreground/60 px-0.5">
+            <span>1</span>
+            <span>5 ({t('默认')})</span>
+            <span>100</span>
+          </div>
+        </div>
+
+        {/* 3. 子目录数上限 (0..=100) */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">{t('子目录数上限')}</span>
+            <Badge variant="outline" className="text-[11px] h-5 px-1.5 font-mono">
+              {getSubdirectoryLabel(maxSubdirectories)}
+            </Badge>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={1}
+            value={maxSubdirectories}
+            disabled={isGenerating}
+            onChange={e => handleSliderChange(setMaxSubdirectories, 'maxSubdirectories', Number(e.target.value))}
+            className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+          />
+          <div className="flex justify-between text-[10px] text-muted-foreground/60 px-0.5">
+            <span>{t('仅一级')}</span>
+            <span>5 ({t('默认')})</span>
+            <span>100</span>
+          </div>
+        </div>
+
+
 
         {/* 脏状态保护指示器 */}
         {isTreeDirty && (
