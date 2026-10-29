@@ -78,7 +78,9 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
     setSpeed,
     locateAudio,
     exportAudio,
-    seekSentence
+    seekSentence,
+    bufferedDuration,
+    targetBufferDuration
   } = useTTSAudioStore()
 
   // 挂载时拉取最新音色库（包含自定义克隆音色）
@@ -236,7 +238,20 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
           type="button"
           onClick={handleTogglePlay}
           disabled={!text || !text.trim() || isLoading}
-          title={isPlaying ? t('暂停朗读') : isPaused ? t('继续朗读') : t('语音朗读')}
+          title={
+            isLoading
+              ? bufferedDuration >= 1.0
+                ? t('正在缓冲语音，已就绪 {current}s / {target}s...', {
+                    current: Math.min(Math.round(bufferedDuration), Math.round(targetBufferDuration)),
+                    target: Math.round(targetBufferDuration)
+                  })
+                : t('正在准备语音，请稍候...')
+              : isPlaying
+                ? t('暂停朗读')
+                : isPaused
+                  ? t('继续朗读')
+                  : t('语音朗读')
+          }
           className={cn(
             'flex items-center gap-1 px-2 py-1 text-foreground hover:bg-muted/60 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer',
             isPlaying && 'text-primary font-medium'
@@ -252,13 +267,17 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
 
           {!compact && (
             <span className="text-[11px] whitespace-nowrap">
-              {(isPlaying || isPaused) && totalSentences > 0
-                ? `${currentSentenceIndex + 1}/${totalSentences}`
-                : isPlaying
-                  ? t('播放中')
-                  : isPaused
-                    ? t('暂停')
-                    : t('朗读')}
+              {isLoading
+                ? bufferedDuration >= 1.0
+                  ? `${Math.min(Math.round(bufferedDuration), Math.round(targetBufferDuration))}s/${Math.round(targetBufferDuration)}s`
+                  : t('准备中...')
+                : (isPlaying || isPaused) && totalSentences > 0
+                  ? `${currentSentenceIndex + 1}/${totalSentences}`
+                  : isPlaying
+                    ? t('播放中')
+                    : isPaused
+                      ? t('暂停')
+                      : t('朗读')}
             </span>
           )}
         </button>
