@@ -664,18 +664,6 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     return items.every(item => item.path && selectedPathsSet.has(normalizeForCache(item.path)))
   }, [items, selectedPathsSet, normalizeForCache])
 
-  const renderLoadingOverlay = () => {
-    if (!loading) return null
-    return (
-      <div className="absolute inset-0 bg-background/50 backdrop-blur-[1.5px] flex items-center justify-center z-30 pointer-events-none animate-in fade-in duration-200">
-        <div className="px-5 py-2.5 rounded-full bg-card/95 border border-primary/25 shadow-xl flex items-center gap-2.5 text-xs font-medium text-foreground backdrop-blur-md">
-          <span className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
-          <span>{viewMode === 'search-list' ? t('正在搜索匹配文件...') : t('正在刷新文件列表...')}</span>
-        </div>
-      </div>
-    )
-  }
-
   // 加载态提前返回必须放在本组件最后一个 Hook（isAllSelected）之后：
   // 任何 return 之前的 Hook 若随 loading 增减调用次数，会触发 "Rendered fewer hooks than expected"。
   if (loading && items.length === 0) {
@@ -725,8 +713,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
         }}
       >
         <SelectionBox viewMode={viewMode} scrollOffset={scrollOffset} containerRef={containerRef} />
-      {renderLoadingOverlay()}
-        {contextMenu && (
+      {contextMenu && (
           <ContextMenu
             x={contextMenu.x}
             y={contextMenu.y}
@@ -831,7 +818,6 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
         }}
       >
         <SelectionBox viewMode={viewMode} scrollOffset={scrollOffset} containerRef={containerRef} />
-        {renderLoadingOverlay()}
         {contextMenu && (
           <ContextMenu
             x={contextMenu.x}
@@ -1105,8 +1091,6 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
         }}
       >
         <SelectionBox viewMode={viewMode} scrollOffset={scrollOffset} containerRef={containerRef} />
-        {renderLoadingOverlay()}
-
         {contextMenu && (
           <ContextMenu
             x={contextMenu.x}
@@ -1233,7 +1217,6 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
           />
         )}
         <SelectionBox viewMode={viewMode} scrollOffset={scrollOffset} containerRef={containerRef} />
-        {renderLoadingOverlay()}
         {reactWindowAvailable &&
         GridComponent &&
         containerSize.width > 0 &&
@@ -1296,8 +1279,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
       }}
     >
       <SelectionBox viewMode={viewMode} scrollOffset={scrollOffset} containerRef={containerRef} />
-        {renderLoadingOverlay()}
-      <div
+        <div
         className="flex-1 overflow-x-auto overflow-y-auto scrollbar-thin"
         onScroll={e => handleScroll(e)}
       >

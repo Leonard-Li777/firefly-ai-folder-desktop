@@ -281,3 +281,26 @@ html:lang(fr) :where(label.form-label) {
   font-weight: 500;
   color: hsl(var(--muted-foreground));
 }
+
+
+/* ==========================================================================
+   7. 通栏 Loading 进度条动画 (Full-width Indeterminate Loading Bar)
+   ========================================================================== */
+
+@keyframes indeterminate-bar {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(25%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-indeterminate-bar {
+  width: 100%;
+  will-change: transform;
+  animation: indeterminate-bar 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}

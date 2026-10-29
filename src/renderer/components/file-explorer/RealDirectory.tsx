@@ -1331,6 +1331,7 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
         onAddWorkspaceDirectory={handleAddWorkspaceDirectory}
         dropdownRef={dropdownRef}
         onSearch={handleSearch}
+        isLoading={effectiveIsSearchingAllDirs}
       />
 
       {currentWorkspaceDirectory ? (

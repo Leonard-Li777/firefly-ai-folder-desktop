@@ -475,6 +475,7 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
             }
           }}
           dropdownRef={dropdownRef}
+          isLoading={isLoading || isDimensionLoading}
           onSearch={kw => {
             if (selectedTags.length > 0) clearSelectedTags()
             setAnalyzedDirectoryKeyword(kw)

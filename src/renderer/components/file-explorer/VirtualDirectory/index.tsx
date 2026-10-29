@@ -160,6 +160,7 @@ export const VirtualDirectory: React.FC = () => {
             }
           }}
           dropdownRef={dropdownRef}
+          isLoading={isDimensionLoading}
           onSearch={kw => {
             setVirtualDirectoryKeyword(kw)
           }}

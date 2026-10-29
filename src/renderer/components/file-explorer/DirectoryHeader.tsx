@@ -32,6 +32,7 @@ interface DirectoryHeaderProps {
   dropdownRef: React.RefObject<HTMLDivElement | null>
   onSearch: (keyword: string) => void // 搜索回调
   exportTooltipVisible?: boolean
+  isLoading?: boolean
 }
 
 export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
@@ -45,7 +46,8 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
     onAddWorkspaceDirectory,
     dropdownRef,
     onSearch,
-    exportTooltipVisible = false
+    exportTooltipVisible = false,
+    isLoading = false
   }) => {
     const navigate = useNavigate()
     const location = useLocation()
@@ -1051,6 +1053,15 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
           </div>
         </div>
 
+        {/* 通栏 Loading 条 (处于 DirectoryHeader 底边，贯穿整个视口宽度) */}
+        {isLoading && (
+          <div
+            data-testid="directory-header-loading-bar"
+            className="absolute bottom-0 inset-x-0 h-[2px] z-[120] overflow-hidden pointer-events-none bg-primary/10"
+          >
+            <div className="h-full w-full bg-gradient-to-r from-transparent via-primary to-transparent animate-indeterminate-bar" />
+          </div>
+        )}
       </header>
     )
   }

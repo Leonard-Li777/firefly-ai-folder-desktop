@@ -530,13 +530,15 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
       )}
       style={{ top: 'var(--app-header-height, 53px)' }}
     >
-      {/* 顶部微型语义呼吸条 (Phase 1 -> Phase 2 状态机: 1.5px 紫罗兰色脉冲渐变微条) */}
+      {/* 顶部通栏 Loading 条 (处于 DirectoryHeader 紧下方: 当处于搜索中或 Phase 2 深度对齐中全宽流动) */}
       <div
         className={cn(
-          'absolute top-0 inset-x-0 h-[1.5px] z-50 pointer-events-none transition-opacity duration-300 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-indigo-500',
-          searchPhase === 'phase1_done_analyzing_semantic' ? 'opacity-100 animate-pulse' : 'opacity-0'
+          'absolute top-0 inset-x-0 h-[2px] z-50 pointer-events-none transition-opacity duration-300 overflow-hidden bg-primary/10',
+          (isLoading || searchPhase === 'phase1_done_analyzing_semantic') ? 'opacity-100' : 'opacity-0'
         )}
-      />
+      >
+        <div className="h-full w-full bg-gradient-to-r from-transparent via-primary to-transparent animate-indeterminate-bar" />
+      </div>
 
       {/* 工单 13：冷态视觉模型首次加载提示（搜索框下方轻量条，不遮挡列表、不弹错误） */}
       {isClipColdLoading && (
