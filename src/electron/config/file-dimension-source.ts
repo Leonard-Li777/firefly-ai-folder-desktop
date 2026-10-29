@@ -1005,38 +1005,6 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
               ]
           }
           ],
-        tagImplications: [
-            {
-            sourceTag: t('自然景观'),
-            targetDimension: t('文件用途'),
-            targetTag: t('旅行记录')
-          },
-            {
-            sourceTag: t('城市建筑'),
-            targetDimension: t('文件用途'),
-            targetTag: t('旅行记录')
-          },
-            {
-            sourceTag: t('人文活动'),
-            targetDimension: t('文件用途'),
-            targetTag: t('旅行记录')
-          },
-            {
-            sourceTag: t('各地美食'),
-            targetDimension: t('文件用途'),
-            targetTag: t('旅行记录')
-          },
-            {
-            sourceTag: t('历史遗迹'),
-            targetDimension: t('文件用途'),
-            targetTag: t('旅行记录')
-          },
-            {
-            sourceTag: t('户外活动'),
-            targetDimension: t('文件用途'),
-            targetTag: t('旅行记录')
-          }
-          ],
         metadata: {
           flag: {
             isRequiresAI: false,

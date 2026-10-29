@@ -125,9 +125,7 @@
     "de-DE": "Teamsitze und Berechtigungsverteilung",
     "fr-FR": "Sièges d’équipe et répartition des autorisations",
     "ko-KR": "팀석 및 권한배분",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(4585-4598)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(4585-4598)"],
     "$id": 11486
   },
   "多席位授权分发": {
@@ -140,9 +138,7 @@
     "de-DE": "Verteilung von Mehrplatzlizenzen",
     "fr-FR": "Distribution des autorisations multi-postes",
     "ko-KR": "다중 라이선스 할당",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(5190-5201)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(5190-5201)"],
     "$id": 11487
   },
   "无限文件分析额度": {
@@ -172,9 +168,7 @@
     "de-DE": "Vorrangiger Kanal für technischen Support",
     "fr-FR": "Canal d'assistance technique prioritaire",
     "ko-KR": "우선 기술 지원 채널",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(5245-5257)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(5245-5257)"],
     "$id": 11488
   },
   "Pro 专业版": {
@@ -336,9 +330,7 @@
     "de-DE": "Extrem schnelle verzeichnisunbegrenzte Dateianalyse",
     "fr-FR": "Analyse de fichiers illimitée de répertoire extrêmement rapide",
     "ko-KR": "매우 빠른 디렉터리 무제한 파일 분석",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(6655-6669)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(6655-6669)"],
     "$id": 11489
   },
   "私有目录有限文件分析": {
@@ -351,9 +343,7 @@
     "de-DE": "Eingeschränkte Dateianalyse privater Verzeichnisse",
     "fr-FR": "Analyse limitée des fichiers des répertoires privés",
     "ko-KR": "개인 디렉토리에 대한 제한된 파일 분석",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(6685-6699)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(6685-6699)"],
     "$id": 11490
   },
   "有限极速/私有/虚拟目录槽位": {
@@ -366,9 +356,7 @@
     "de-DE": "Begrenzte Anzahl an Hochgeschwindigkeits-/privaten/virtuellen Verzeichnispunkten",
     "fr-FR": "Nombre limité / Privé / Emplacements de répertoires virtuels",
     "ko-KR": "제한된 고속/전용/가상 디렉토리 슬롯",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(6715-6733)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(6715-6733)"],
     "$id": 11491
   },
   "有限导出": {
@@ -381,9 +369,7 @@
     "de-DE": "Begrenzter Export",
     "fr-FR": "Exportation limitée",
     "ko-KR": "제한된 수출",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(6749-6757)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(6749-6757)"],
     "$id": 11492
   },
   "收集萤火获取等同Pro的权益": {
@@ -396,9 +382,7 @@
     "de-DE": "Sammle Glühwürmchen, um Vorteile zu erhalten, die denen von Pro entsprechen",
     "fr-FR": "Collectez des lucioles pour obtenir des avantages équivalents à Pro",
     "ko-KR": "반딧불을 모아 Pro와 동등한 혜택을 받으세요",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(6773-6791)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(6773-6791)"],
     "$id": 11493
   },
   "年付周期": {
@@ -411,9 +395,7 @@
     "de-DE": "Jährlicher Zahlungszyklus",
     "fr-FR": "Fréquence de paiement annuelle",
     "ko-KR": "연간 납부 주기",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(7600-7608)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(7600-7608)"],
     "$id": 11494
   },
   "半年付周期": {
@@ -426,9 +408,7 @@
     "de-DE": "Halbjährlicher Zahlungsrhythmus",
     "fr-FR": "Paiement semestriel",
     "ko-KR": "반년 단위 납부 주기",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(7705-7714)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(7705-7714)"],
     "$id": 11495
   },
   "季付周期": {
@@ -441,9 +421,7 @@
     "de-DE": "Quartalszahlungszyklus",
     "fr-FR": "Fréquence de paiement trimestrielle",
     "ko-KR": "분기별 지불 주기",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(7806-7814)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(7806-7814)"],
     "$id": 11496
   },
   "月付周期": {
@@ -456,9 +434,7 @@
     "de-DE": "Monatlicher Zahlungszyklus",
     "fr-FR": "Fréquence de paiement mensuel",
     "ko-KR": "월별 납부 주기",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(7855-7863)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(7855-7863)"],
     "$id": 11497
   },
   "周期授权": {
@@ -471,9 +447,7 @@
     "de-DE": "Periodische Lizenzierung",
     "fr-FR": "Autorisation périodique",
     "ko-KR": "주기별 라이선스",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(7877-7885)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(7877-7885)"],
     "$id": 11498
   },
   "Firefly Enterprise 企业版": {
@@ -519,9 +493,7 @@
     "de-DE": "Weitergeltung von Ansprüchen",
     "fr-FR": "Maintien des droits et avantages",
     "ko-KR": "연속 보장 권리",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(12966-12976)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(12966-12976)"],
     "$id": 11501
   },
   "账户与订阅中心": {
@@ -534,9 +506,7 @@
     "de-DE": "Konto- und Abonnementcenter",
     "fr-FR": "Centre de gestion des comptes et des abonnements",
     "ko-KR": "계정 및 구독 센터",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(13900-13911)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(13900-13911)"],
     "$id": 11502
   },
   "管理您的多方案会员权益、独立计费周期与自动续费状态": {
@@ -549,9 +519,7 @@
     "de-DE": "Verwalten Sie Ihre Mitgliedschaftsvorteile für mehrere Tarife, individuelle Abrechnungszeiträume und den Status der automatischen Verlängerung",
     "fr-FR": "Gérez vos avantages d'abonnement multi-formules, vos cycles de facturation indépendants et le statut de renouvellement automatique",
     "ko-KR": "여러 요금제별 회원 혜택, 개별 청구 주기 및 자동 갱신 상태 관리",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(14071-14100)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(14071-14100)"],
     "$id": 11503
   },
   "执行中": {
@@ -564,9 +532,7 @@
     "de-DE": "Wird ausgeführt",
     "fr-FR": "En cours d'exécution",
     "ko-KR": "실행 중",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(18238-18245)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(18238-18245)"],
     "$id": 11504
   },
   "已退款": {
@@ -595,9 +561,7 @@
     "de-DE": "Im Ruhezustand",
     "fr-FR": "En veille",
     "ko-KR": "휴면 중",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(19080-19087)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(19080-19087)"],
     "$id": 11506
   },
   "有效期至：": {
@@ -610,9 +574,7 @@
     "de-DE": "Gültig bis:",
     "fr-FR": "Valable jusqu'au :",
     "ko-KR": "유효 기간:",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(19833-19842)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(19833-19842)"],
     "$id": 11507
   },
   "永久有效": {
@@ -625,9 +587,7 @@
     "de-DE": "Unbegrenzt gültig",
     "fr-FR": "Valable indéfiniment",
     "ko-KR": "영구적으로 유효함",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(20038-20046)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(20038-20046)"],
     "$id": 11508
   },
   "款项已原路退回，方案权益已终止": {
@@ -640,9 +600,7 @@
     "de-DE": "Der Betrag wurde auf dem ursprünglichen Zahlungsweg zurückerstattet, und die Ansprüche aus dem Programm sind erloschen.",
     "fr-FR": "Le montant a été remboursé par le même moyen de paiement et les avantages liés au contrat ont pris fin.",
     "ko-KR": "금액은 원래 결제 수단으로 환불되었으며, 상품의 혜택은 종료되었습니다.",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(20417-20436)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(20417-20436)"],
     "$id": 11509
   },
   "权益已完整封存保留，待执行计划到期后起算": {
@@ -655,9 +613,7 @@
     "de-DE": "Die Ansprüche wurden vollständig gesichert und werden nach Ablauf des Vollstreckungsplans geltend gemacht.",
     "fr-FR": "Les droits ont été intégralement gelés et conservés ; leur délai de validité commencera à courir à l'expiration du plan d'exécution.",
     "ko-KR": "권리는 완전히 보존되어 있으며, 집행 계획의 만료 시점이 지나면 그 시점부터 기산됩니다.",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(20754-20778)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(20754-20778)"],
     "$id": 11510
   },
   "订阅已终结": {
@@ -670,9 +626,7 @@
     "de-DE": "Das Abonnement ist abgelaufen.",
     "fr-FR": "L'abonnement a pris fin",
     "ko-KR": "구독이 종료되었습니다.",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(21308-21317)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(21308-21317)"],
     "$id": 11511
   },
   "自动续订中": {
@@ -685,9 +639,7 @@
     "de-DE": "Automatische Verlängerung läuft",
     "fr-FR": "Renouvellement automatique en cours",
     "ko-KR": "자동 갱신 중",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(21640-21649)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(21640-21649)"],
     "$id": 11512
   },
   "已关闭自动续费": {
@@ -700,9 +652,7 @@
     "de-DE": "Die automatische Verlängerung wurde deaktiviert.",
     "fr-FR": "Le renouvellement automatique a été désactivé",
     "ko-KR": "자동 갱신이 해제되었습니다.",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(21948-21959)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(21948-21959)"],
     "$id": 11513
   },
   "免费版方案": {
@@ -715,9 +665,7 @@
     "de-DE": "Kostenloses Angebot",
     "fr-FR": "Formule gratuite",
     "ko-KR": "무료 버전 플랜",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(23137-23146)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(23137-23146)"],
     "$id": 11514
   },
   "基础服务": {
@@ -730,9 +678,7 @@
     "de-DE": "Grundlegende Dienste",
     "fr-FR": "Services de base",
     "ko-KR": "기본 서비스",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(23346-23354)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(23346-23354)"],
     "$id": 11515
   },
   "当前正在使用基础版服务，您可以通过升级 Pro 或 Enterprise 解锁全功能与无限文件处理。": {
@@ -745,9 +691,7 @@
     "de-DE": "Derzeit nutzen Sie die Basisversion des Dienstes. Durch ein Upgrade auf die Pro- oder Enterprise-Version können Sie den vollen Funktionsumfang sowie die unbegrenzte Dateiverarbeitung freischalten.",
     "fr-FR": "Vous utilisez actuellement la version de base du service. Vous pouvez débloquer l'ensemble des fonctionnalités et le traitement illimité de fichiers en passant à la version Pro ou Enterprise.",
     "ko-KR": "현재 기본 버전의 서비스를 이용 중입니다. Pro 또는 Enterprise로 업그레이드하시면 모든 기능과 무제한 파일 처리를 이용하실 수 있습니다.",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(23491-23545)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(23491-23545)"],
     "$id": 11516
   },
   "设备标识码：": {
@@ -760,9 +704,7 @@
     "de-DE": "Gerätekennnummer:",
     "fr-FR": "Code d'identification de l'équipement :",
     "ko-KR": "장비 식별 번호:",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(24551-24561)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(24551-24561)"],
     "$id": 11517
   },
   "设备已受安全授权保护": {
@@ -775,9 +717,7 @@
     "de-DE": "Das Gerät ist durch eine Sicherheitsautorisierung geschützt.",
     "fr-FR": "L'appareil est protégé par une autorisation de sécurité",
     "ko-KR": "이 장비는 보안 권한으로 보호되고 있습니다.",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(25001-25015)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(25001-25015)"],
     "$id": 11518
   },
   "复制设备识别码": {
@@ -790,9 +730,7 @@
     "de-DE": "Gerätekennung kopieren",
     "fr-FR": "Copier le code d'identification de l'appareil",
     "ko-KR": "장치 식별 코드 복사",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(25702-25713)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(25702-25713)"],
     "$id": 11519
   },
   "自主账单与自动续费服务 (Customer Portal)": {
@@ -805,9 +743,7 @@
     "de-DE": "Selbstverwaltungsrechnungen und automatische Verlängerung (Kundenportal)",
     "fr-FR": "Service de facturation en ligne et de renouvellement automatique (Portail client)",
     "ko-KR": "사용자 지정 청구서 및 자동 갱신 서비스 (고객 포털)",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(26614-26647)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(26614-26647)"],
     "$id": 11520
   },
   "您可以通过 Creem 国际客户门户随时下载往期发票收据、更新支付信用卡或关闭下期自动续费。关闭后当前计费周期内所有会员权益不受影响。": {
@@ -820,9 +756,7 @@
     "de-DE": "Über das internationale Kundenportal von Creem können Sie jederzeit frühere Rechnungen und Quittungen herunterladen, die für die Zahlung verwendete Kreditkarte aktualisieren oder die automatische Verlängerung für den nächsten Abrechnungszeitraum deaktivieren. Nach der Deaktivierung bleiben alle Mitgliedervorteile für den laufenden Abrechnungszeitraum unbeeinträchtigt.",
     "fr-FR": "Vous pouvez à tout moment, via le portail client international de Creem, télécharger vos factures et reçus antérieurs, mettre à jour votre carte de crédit ou désactiver le renouvellement automatique pour la prochaine période. La désactivation n'aura aucune incidence sur les avantages liés à votre abonnement pour la période de facturation en cours.",
     "ko-KR": "Creem 국제 고객 포털을 통해 언제든지 과거 청구서 및 영수증을 다운로드하거나, 결제용 신용카드를 업데이트하거나, 다음 기간의 자동 갱신을 해지할 수 있습니다. 자동 갱신을 해지하더라도 현재 청구 주기 내의 모든 회원 혜택에는 영향을 미치지 않습니다.",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(26854-26951)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(26854-26951)"],
     "$id": 11521
   },
   "前往国际结算门户管理账单与续订": {
@@ -835,9 +769,7 @@
     "de-DE": "Zum Portal für internationale Abrechnungen, um Rechnungen zu verwalten und zu verlängern",
     "fr-FR": "Accéder au portail de paiement international pour gérer vos factures et vos renouvellements",
     "ko-KR": "국제 결제 포털로 이동하여 청구서 관리 및 갱신하기",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(27613-27632)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(27613-27632)"],
     "$id": 11522
   },
   "从云端立即刷新最新订阅状态": {
@@ -850,9 +782,7 @@
     "de-DE": "Den aktuellen Abonnementstatus sofort aus der Cloud abrufen",
     "fr-FR": "Actualiser immédiatement l'état des abonnements depuis le cloud",
     "ko-KR": "클라우드에서 최신 구독 상태를 즉시 갱신합니다.",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(28184-28201)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(28184-28201)"],
     "$id": 11523
   },
   "同步中...": {
@@ -865,9 +795,7 @@
     "de-DE": "Wird synchronisiert...",
     "fr-FR": "Synchronisation en cours...",
     "ko-KR": "동기화 중...",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(28366-28376)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(28366-28376)"],
     "$id": 11524
   },
   "刷新状态": {
@@ -880,9 +808,7 @@
     "de-DE": "Status aktualisieren",
     "fr-FR": "Actualiser l'état",
     "ko-KR": "상태 새로고침",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(28380-28388)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(28380-28388)"],
     "$id": 11525
   },
   "固定周期授权保障": {
@@ -895,9 +821,7 @@
     "de-DE": "Garantie für die Lizenzierung in festen Zyklen",
     "fr-FR": "Garantie d'autorisation à fréquence fixe",
     "ko-KR": "정기적인 라이선스 보장",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(28772-28784)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(28772-28784)"],
     "$id": 11526
   },
   "当前授权为无绑卡固定周期模式，绝无任何自动扣费与扣款风险。授权到期后系统将平滑降级为免费版，不会产生任何额外账单，如需延期请联系客服。": {
@@ -910,9 +834,7 @@
     "de-DE": "Die aktuelle Autorisierung erfolgt im Modus „ohne Kartenbindung mit festem Abrechnungszeitraum“, sodass keinerlei Risiko einer automatischen Abbuchung oder eines Zahlungsabzugs besteht. Nach Ablauf der Autorisierung wird das System nahtlos auf die kostenlose Version zurückgestuft, ohne dass zusätzliche Kosten anfallen. Wenn Sie die Laufzeit verlängern möchten, wenden Sie sich bitte an den Kundenservice.",
     "fr-FR": "L'autorisation actuelle correspond à un mode à durée fixe sans carte bancaire associée ; il n'y a absolument aucun risque de prélèvement automatique. À l'expiration de l'autorisation, le système passera en douceur à la version gratuite, sans générer de facturation supplémentaire. Si vous souhaitez prolonger votre abonnement, veuillez contacter le service client.",
     "ko-KR": "현재 권한은 카드 미연동 고정 주기 방식으로 설정되어 있으며, 어떠한 자동 결제나 출금 위험도 전혀 없습니다. 권한 만료 후 시스템은 무료로 원활하게 전환되며, 추가 요금이 발생하지 않습니다. 기간 연장을 원하시면 고객센터로 문의해 주십시오.",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(28915-29006)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(28915-29006)"],
     "$id": 11527
   },
   "售后支持：": {
@@ -925,9 +847,7 @@
     "de-DE": "Kundendienst:",
     "fr-FR": "Assistance après-vente :",
     "ko-KR": "사후 지원:",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(29510-29519)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(29510-29519)"],
     "$id": 11528
   },
   "复制客服邮箱": {
@@ -940,9 +860,7 @@
     "de-DE": "E-Mail-Adresse des Kundendienstes kopieren",
     "fr-FR": "Copier l'adresse e-mail du service client",
     "ko-KR": "고객센터 이메일 주소 복사",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(29977-29987)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(29977-29987)"],
     "$id": 11529
   },
   "隐私政策": {
@@ -955,9 +873,7 @@
     "de-DE": "Datenschutzrichtlinie",
     "fr-FR": "Politique de confidentialité",
     "ko-KR": "개인 정보 보호 정책",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(31236-31244)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(31236-31244)"],
     "$id": 9533
   },
   "服务条款与权益须知": {
@@ -970,9 +886,7 @@
     "de-DE": "Nutzungsbedingungen und Hinweise zu Ihren Rechten",
     "fr-FR": "Conditions générales d'utilisation et informations relatives aux droits des utilisateurs",
     "ko-KR": "이용 약관 및 권리 안내",
-    "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(31532-31545)"
-    ],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(31532-31545)"],
     "$id": 11530
   },
   "企业版专属": {
@@ -985,9 +899,7 @@
     "de-DE": "Exklusiv für die Unternehmensversion",
     "fr-FR": "Exclusivité à la version Entreprise",
     "ko-KR": "기업용 전용",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeDialog.tsx(1859-1868)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeDialog.tsx(1859-1868)"],
     "$id": 11531
   },
   "兑换授权激活码": {
@@ -1000,9 +912,7 @@
     "de-DE": "Aktivierungscode einlösen",
     "fr-FR": "Échanger un code d'activation",
     "ko-KR": "인증 코드 교환",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeDialog.tsx(2038-2049)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeDialog.tsx(2038-2049)"],
     "$id": 11532
   },
   "在官网购买离线企业授权后，在此输入专属授权码，即时在本地离线校验激活": {
@@ -1015,9 +925,7 @@
     "de-DE": "Nachdem Sie auf der offiziellen Website eine Offline-Unternehmenslizenz erworben haben, geben Sie hier den individuellen Lizenzcode ein, um die Aktivierung sofort lokal offline zu überprüfen.",
     "fr-FR": "Après avoir acheté une licence d'entreprise hors ligne sur le site officiel, saisissez ici votre code d'autorisation unique pour procéder immédiatement à la validation et à l'activation hors ligne sur votre ordinateur.",
     "ko-KR": "공식 웹사이트에서 오프라인 기업용 라이선스를 구매한 후, 여기에 전용 라이선스 코드를 입력하면 즉시 로컬에서 오프라인 검증을 통해 활성화됩니다.",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeDialog.tsx(2224-2262)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeDialog.tsx(2224-2262)"],
     "$id": 11533
   },
   "标识码已复制到剪贴板": {
@@ -1030,9 +938,7 @@
     "de-DE": "Identifikationscode in die Zwischenablage kopiert",
     "fr-FR": "Code d'identification copié dans le presse-papiers",
     "ko-KR": "식별 코드가 클립보드에 복사되었습니다.",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(1675-1689)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(1675-1689)"],
     "$id": 10873
   },
   "我的设备标识码": {
@@ -1045,9 +951,7 @@
     "de-DE": "Meine Gerätekennung",
     "fr-FR": "Identifiant de mon appareil",
     "ko-KR": "내 기기 식별 번호",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(2375-2386)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(2375-2386)"],
     "$id": 11534
   },
   "前往官网升级 Pro 版": {
@@ -1060,9 +964,7 @@
     "de-DE": "Zur offiziellen Website, um auf die Pro-Version zu aktualisieren",
     "fr-FR": "Rendez-vous sur le site officiel pour passer à la version Pro",
     "ko-KR": "공식 웹사이트에서 Pro 버전으로 업그레이드하기",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(2857-2873)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(2857-2873)"],
     "$id": 11535
   },
   "已复制": {
@@ -1075,9 +977,7 @@
     "de-DE": "Kopiert",
     "fr-FR": "Copié",
     "ko-KR": "복사됨",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(3733-3740)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(3733-3740)"],
     "$id": 10942
   },
   "复制": {
@@ -1090,9 +990,7 @@
     "de-DE": "Kopieren",
     "fr-FR": "Copier",
     "ko-KR": "복사",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(3876-3882)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(3876-3882)"],
     "$id": 10876
   },
   "您可在官网定价中心选购 Pro 专业版，系统将根据此标识码自动绑定当前设备即刻生效开通。": {
@@ -1105,9 +1003,7 @@
     "de-DE": "Sie können die Pro-Version im Preiscenter auf der offiziellen Website erwerben. Das System wird das aktuelle Gerät anhand dieser Kennung automatisch zuweisen, sodass die Aktivierung sofort in Kraft tritt.",
     "fr-FR": "Vous pouvez acheter la version Pro sur la page « Tarifs » du site officiel ; le système associera automatiquement cet identifiant à votre appareil actuel et l'activation prendra effet immédiatement.",
     "ko-KR": "공식 웹사이트의 가격 정책 센터에서 Pro 버전을 구매하시면, 시스템이 해당 식별 코드를 기반으로 현재 기기에 자동으로 연동하여 즉시 활성화됩니다.",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(4222-4286)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(4222-4286)"],
     "$id": 11536
   },
   "已过期": {
@@ -1136,9 +1032,7 @@
     "de-DE": "{years}Jahr-{months}Monat-{days}Tag {hours}:{minutes}:{seconds}",
     "fr-FR": "{years}année-{months}mois-{days}jour {hours} :{minutes} :{seconds}",
     "ko-KR": "{years}년-{months}월-{days}일 {hours}:{minutes}:{seconds}",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(7355-7413)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(7355-7413)"],
     "$id": 8205
   },
   "设备标识码已复制到剪贴板": {
@@ -1151,9 +1045,7 @@
     "de-DE": "Die Gerätekennung wurde in die Zwischenablage kopiert.",
     "fr-FR": "Le code d'identification de l'appareil a été copié dans le presse-papiers",
     "ko-KR": "기기 식별 코드가 클립보드에 복사되었습니다.",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(10406-10422)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(10406-10422)"],
     "$id": 11537
   },
   "离线购买链接已复制到剪贴板": {
@@ -1166,9 +1058,7 @@
     "de-DE": "Der Link zum Offline-Kauf wurde in die Zwischenablage kopiert",
     "fr-FR": "Le lien d'achat hors ligne a été copié dans le presse-papiers",
     "ko-KR": "오프라인 구매 링크가 클립보드에 복사되었습니다.",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(10739-10756)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(10739-10756)"],
     "$id": 11538
   },
   "企业版授权激活成功！": {
@@ -1181,9 +1071,7 @@
     "de-DE": "Aktivierung der Enterprise-Versionslizenz erfolgreich!",
     "fr-FR": "Activation de la licence de la version Entreprise réussie !",
     "ko-KR": "Enterprise 버전 라이선스 활성화에 성공했습니다!",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(11355-11369)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(11355-11369)"],
     "$id": 10879
   },
   "激活失败，请检查授权码与当前设备是否匹配": {
@@ -1196,9 +1084,7 @@
     "de-DE": "Die Aktivierung ist fehlgeschlagen. Bitte überprüfen Sie, ob der Autorisierungscode mit dem aktuellen Gerät übereinstimmt.",
     "fr-FR": "Échec de l'activation. Veuillez vérifier que le code d'autorisation correspond bien à l'appareil actuel.",
     "ko-KR": "활성화에 실패했습니다. 인증 코드와 현재 기기가 일치하는지 확인해 주세요.",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(11512-11536)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(11512-11536)"],
     "$id": 11539
   },
   "激活过程中发生错误，请稍后重试": {
@@ -1211,9 +1097,7 @@
     "de-DE": "Bei der Aktivierung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
     "fr-FR": "Une erreur s'est produite lors de l'activation. Veuillez réessayer plus tard.",
     "ko-KR": "활성화 과정에서 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(11583-11602)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(11583-11602)"],
     "$id": 11540
   },
   "正在同步本地离线授权状态...": {
@@ -1226,9 +1110,7 @@
     "de-DE": "Der lokale Offline-Autorisierungsstatus wird gerade synchronisiert...",
     "fr-FR": "Synchronisation en cours de l'état de l'autorisation hors ligne locale...",
     "ko-KR": "로컬 오프라인 인증 상태를 동기화 중입니다...",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(11971-11990)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(11971-11990)"],
     "$id": 11541
   },
   "欢迎使用企业版": {
@@ -1241,9 +1123,7 @@
     "de-DE": "Willkommen bei der Enterprise Edition",
     "fr-FR": "Bienvenue dans l'édition Entreprise",
     "ko-KR": "엔터프라이즈 에디션에 오신 것을 환영합니다",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(13231-13242)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(13231-13242)"],
     "$id": 10883
   },
   "授权验证成功，所有离线企业级高级功能已全面解锁": {
@@ -1256,9 +1136,7 @@
     "de-DE": "Die Autorisierung wurde erfolgreich überprüft. Alle erweiterten Offline-Funktionen für Unternehmen sind nun vollständig freigeschaltet.",
     "fr-FR": "La vérification de l'autorisation a réussi. Toutes les fonctionnalités avancées hors ligne destinées aux entreprises sont désormais entièrement débloquées.",
     "ko-KR": "인증에 성공했습니다. 모든 오프라인 엔터프라이즈급 고급 기능이 완전히 해제되었습니다.",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(13345-13372)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(13345-13372)"],
     "$id": 11542
   },
   "授权有效期至：{date}": {
@@ -1271,9 +1149,7 @@
     "de-DE": "Die Autorisierung ist gültig bis: {date}",
     "fr-FR": "L'autorisation est valable jusqu'au : {date}",
     "ko-KR": "승인은 다음 날짜까지 유효합니다: {date}",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(13712-13729)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(13712-13729)"],
     "$id": 10885
   },
   "剩余时间：{time}": {
@@ -1286,9 +1162,7 @@
     "de-DE": "Übrige Zeit:{time}",
     "fr-FR": "Temps restant:{time}",
     "ko-KR": "남은 시간:{time}",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(14174-14189)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(14174-14189)"],
     "$id": 10886
   },
   "窗口将在数秒后自动完成激活闭环": {
@@ -1301,9 +1175,7 @@
     "de-DE": "Das Fenster wird in wenigen Sekunden automatisch den Aktivierungszyklus abschließen.",
     "fr-FR": "La fenêtre achèvera automatiquement la boucle fermée d'activation dans quelques secondes.",
     "ko-KR": "창은 몇 초 후에 자동으로 활성화 루프를 완료할 것입니다.",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(14481-14500)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(14481-14500)"],
     "$id": 11543
   },
   "第一步：在官网购买离线企业授权，获取授权码": {
@@ -1316,9 +1188,7 @@
     "de-DE": "Schritt 1: Kaufen Sie auf der offiziellen Website eine Offline-Unternehmenslizenz und erhalten Sie den Lizenzschlüssel.",
     "fr-FR": "Première étape : acheter une licence d'entreprise hors ligne sur le site officiel et obtenir le code d'activation",
     "ko-KR": "1단계: 공식 웹사이트에서 오프라인 기업용 라이선스를 구매하고 라이선스 코드를 받기",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(15607-15632)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(15607-15632)"],
     "$id": 11544
   },
   "前往官网购买离线企业授权": {
@@ -1331,9 +1201,7 @@
     "de-DE": "Besuchen Sie die offizielle Website, um eine Offline-Unternehmenslizenz zu erwerben",
     "fr-FR": "Rendez-vous sur le site officiel pour acheter une licence d'entreprise hors ligne",
     "ko-KR": "공식 웹사이트에서 오프라인 기업용 라이선스를 구매하세요",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(16255-16271)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(16255-16271)"],
     "$id": 11545
   },
   "已复制链接": {
@@ -1346,9 +1214,7 @@
     "de-DE": "Link wurde kopiert",
     "fr-FR": "Le lien a été copié",
     "ko-KR": "링크를 복사했습니다.",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(17504-17513)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(17504-17513)"],
     "$id": 11546
   },
   "一键复制链接": {
@@ -1361,9 +1227,7 @@
     "de-DE": "Link mit einem Klick kopieren",
     "fr-FR": "Copier le lien en un clic",
     "ko-KR": "한 번의 클릭으로 링크 복사하기",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(17673-17683)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(17673-17683)"],
     "$id": 11547
   },
   "当前设备处于离线状态": {
@@ -1376,9 +1240,7 @@
     "de-DE": "Das Gerät ist derzeit offline.",
     "fr-FR": "L'appareil est actuellement hors ligne.",
     "ko-KR": "현재 장치가 오프라인 상태입니다.",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(18229-18243)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(18229-18243)"],
     "$id": 11548
   },
   "无法直接打开网页": {
@@ -1391,9 +1253,7 @@
     "de-DE": "Die Webseite lässt sich nicht direkt öffnen.",
     "fr-FR": "Impossible d'ouvrir directement la page Web",
     "ko-KR": "웹페이지를 직접 열 수 없습니다",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(18379-18391)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(18379-18391)"],
     "$id": 11549
   },
   "请点击上方按钮一键复制购买链接，发送到能上网的电脑或手机浏览器打开购买。该链接已内嵌本机设备标识，支付后即可生成对应专属授权码。": {
@@ -1406,9 +1266,7 @@
     "de-DE": "Bitte klicken Sie auf die Schaltfläche oben, um den Kauf-Link mit einem Klick zu kopieren, und senden Sie ihn an einen Computer oder einen mobilen Browser mit Internetverbindung, um den Kauf abzuschließen. Der Link enthält bereits die Geräte-ID Ihres Geräts; nach der Zahlung wird der entsprechende individuelle Autorisierungscode generiert.",
     "fr-FR": "Cliquez sur le bouton ci-dessus pour copier le lien d'achat en un seul clic, puis envoyez-le vers un ordinateur ou un navigateur mobile connecté à Internet pour l'ouvrir et effectuer l'achat. Ce lien contient l'identifiant de votre appareil ; une fois le paiement effectué, un code d'autorisation unique sera généré.",
     "ko-KR": "상단의 버튼을 클릭하여 구매 링크를 한 번에 복사한 후, 인터넷에 연결된 컴퓨터나 휴대폰 브라우저로 전송하여 열어 구매해 주세요. 이 링크에는 기기 식별 정보가 내장되어 있어, 결제 후 해당 기기에 대한 전용 인증 코드가 생성됩니다.",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(18485-18575)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(18485-18575)"],
     "$id": 11550
   },
   "第二步：输入离线授权码": {
@@ -1421,9 +1279,7 @@
     "de-DE": "Schritt 2: Offline-Autorisierungscode eingeben",
     "fr-FR": "Deuxième étape : saisir le code d'autorisation hors ligne",
     "ko-KR": "2단계: 오프라인 인증 코드 입력",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(19383-19398)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(19383-19398)"],
     "$id": 11551
   },
   "清空输入": {
@@ -1436,9 +1292,7 @@
     "de-DE": "Eingabe löschen",
     "fr-FR": "Effacer le contenu du champ de saisie",
     "ko-KR": "입력 내용 지우기",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(19785-19793)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(19785-19793)"],
     "$id": 11552
   },
   "在此粘贴离线授权码...": {
@@ -1451,9 +1305,7 @@
     "de-DE": "Fügen Sie hier den Offline-Autorisierungscode ein...",
     "fr-FR": "Collez le code d'autorisation hors ligne ici...",
     "ko-KR": "여기에 오프라인 인증 코드를 붙여넣으세요...",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(20007-20023)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(20007-20023)"],
     "$id": 11553
   },
   "已输入 {count} 个字符": {
@@ -1466,9 +1318,7 @@
     "de-DE": "Es wurden {count} Zeichen eingegeben",
     "fr-FR": "{count} caractères ont été saisis",
     "ko-KR": "{count} 자를 입력했습니다.",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(21111-21130)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(21111-21130)"],
     "$id": 11554
   },
   "离线授权码为长格式安全密文": {
@@ -1481,9 +1331,7 @@
     "de-DE": "Der Offline-Autorisierungscode ist ein sicherer, verschlüsselter Text im Langformat.",
     "fr-FR": "Le code d'autorisation hors ligne est un texte chiffré sécurisé au format long",
     "ko-KR": "오프라인 인증 코드는 긴 형식의 보안 암호문입니다.",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(21278-21295)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(21278-21295)"],
     "$id": 11555
   },
   "验证中...": {
@@ -1496,9 +1344,7 @@
     "de-DE": "Wird überprüft...",
     "fr-FR": "Vérification en cours...",
     "ko-KR": "확인 중...",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(21635-21645)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(21635-21645)"],
     "$id": 11556
   },
   "立即激活": {
@@ -1511,9 +1357,7 @@
     "de-DE": "Jetzt aktivieren",
     "fr-FR": "Activer maintenant",
     "ko-KR": "지금 활성화",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(22081-22089)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(22081-22089)"],
     "$id": 11557
   },
   "授权验证未通过": {
@@ -1526,9 +1370,7 @@
     "de-DE": "Die Autorisierungsprüfung ist fehlgeschlagen",
     "fr-FR": "La vérification de l'autorisation a échoué",
     "ko-KR": "인증에 실패했습니다.",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(22751-22762)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(22751-22762)"],
     "$id": 11558
   },
   "纯本地离线验签": {
@@ -1541,9 +1383,7 @@
     "de-DE": "Rein lokale Offline-Signaturprüfung",
     "fr-FR": "Vérification des signatures hors ligne, entièrement locale",
     "ko-KR": "완전한 로컬 오프라인 서명 검증",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(23400-23411)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(23400-23411)"],
     "$id": 11559
   },
   "硬件设备指纹绑定": {
@@ -1556,9 +1396,7 @@
     "de-DE": "Hardware-Geräte-Fingerabdruck-Zuordnung",
     "fr-FR": "Liaison d'empreintes digitales aux périphériques matériels",
     "ko-KR": "하드웨어 기기 지문 등록",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(23629-23641)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(23629-23641)"],
     "$id": 11560
   },
   "永久或周期灵活授权": {
@@ -1571,9 +1409,7 @@
     "de-DE": "Dauerhafte oder zeitlich flexible Lizenzierung",
     "fr-FR": "Licence permanente ou à durée flexible",
     "ko-KR": "영구 또는 주기별 유연한 라이선스",
-    "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(23857-23870)"
-    ],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(23857-23870)"],
     "$id": 11561
   },
   "我发现一个超好用的开源免费AI工具\"萤核智能文件夹\"，一键整理乱七八糟的桌面、下载目录等、自然语言秒搜图文音视频内容，视频甚至可以定位到具体时间区间，AI自动分类/重命名/标签/描述/缩略图/归档/清理！利用本地AI能力保障隐私，无需显卡，低内存轻薄本也能高质量跑AI，创新虚拟目录整理技术保障文件安全，快来试试看吧！": {
@@ -1586,9 +1422,7 @@
     "de-DE": "Ich habe ein super einfach zu bedienendes, kostenloses Open-Source-KI-Tool „Firefly AI Folder“ gefunden, das den unordentlichen Desktop, das Download-Verzeichnis usw. mit einem Klick aufräumen, in Sekundenschnelle nach Bild-, Text-, Audio- und Videoinhalten in natürlicher Sprache suchen kann, und das Video kann sogar in einem bestimmten Zeitintervall positioniert werden, und die KI kategorisiert/umbenennt/markiert/beschreibt/Miniaturansichten/archiviert/bereinigt automatisch! Nutzen Sie lokale KI-Funktionen, um den Datenschutz zu gewährleisten. Es ist keine Grafikkarte erforderlich. Dünne und leichte Notebooks mit wenig Speicher können KI in hoher Qualität ausführen. Die innovative Technologie zur Organisation virtueller Verzeichnisse sorgt für Dateisicherheit. Kommen Sie und probieren Sie es aus!",
     "fr-FR": "J'ai trouvé un outil d'IA gratuit open source très facile à utiliser \"Firefly AI Folder\", qui peut trier le bureau en désordre, le répertoire de téléchargement, etc. en un seul clic, rechercher du contenu image, texte, audio et vidéo en langage naturel en quelques secondes, et la vidéo peut même être positionnée sur un intervalle de temps spécifique, et l'IA catégorise/renomme/tags/décrit/vignettes/archives/nettoie automatiquement ! Utilisez les capacités d’IA locales pour garantir la confidentialité. Aucune carte graphique n'est requise. Les ordinateurs portables fins et légers à faible mémoire peuvent exécuter une IA de haute qualité. La technologie innovante d’organisation de répertoires virtuels garantit la sécurité des fichiers. Venez essayer!",
     "ko-KR": "사용하기 매우 쉬운 무료 오픈 소스 AI 도구인 \"Firefly AI Folder\"를 찾았습니다. 이 도구는 한 번의 클릭으로 지저분한 데스크탑, 다운로드 디렉토리 등을 정리하고, 자연어로 이미지, 텍스트, 오디오 및 비디오 콘텐츠를 몇 초 만에 검색하고, 비디오를 특정 시간 간격으로 배치할 수도 있으며, AI가 자동으로 분류/이름 바꾸기/태그/설명/썸네일/보관/정리합니다! 개인정보 보호를 위해 로컬 AI 기능을 활용하세요. 그래픽 카드가 필요하지 않습니다. 저용량 얇고 가벼운 노트북으로 AI를 고품질로 실행할 수 있습니다. 혁신적인 가상 디렉터리 구성 기술로 파일 보안을 보장합니다. 와서 한번 시도해 보세요!",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(3977-4140)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(3977-4140)"],
     "$id": 22247
   },
   "邀请链接已复制": {
@@ -1601,9 +1435,7 @@
     "de-DE": "Einladungslink wurde kopiert",
     "fr-FR": "Lien d'invitation copié",
     "ko-KR": "초대 링크가 복사되었습니다",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(4280-4291)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(4280-4291)"],
     "$id": 10919
   },
   "复制失败": {
@@ -1616,9 +1448,7 @@
     "de-DE": "Kopieren fehlgeschlagen",
     "fr-FR": "Échec de la copie",
     "ko-KR": "복사 실패",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(4435-4443)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(4435-4443)"],
     "$id": 10920
   },
   "请输入有效的 16 位邀请码": {
@@ -1631,9 +1461,7 @@
     "de-DE": "Bitte geben Sie einen gültigen 16-stelligen Einladungscode ein",
     "fr-FR": "Veuillez saisir un code d'invitation valide à 16 chiffres",
     "ko-KR": "유효한 16자리 초대 코드를 입력하세요.",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(4704-4722)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(4704-4722)"],
     "$id": 10921
   },
   "兑换成功！已增加 {amount} 个文件分析额度": {
@@ -1646,9 +1474,7 @@
     "de-DE": "Erfolgreich eingelöst! Das Kontingent für die Dateianalyse wurde um {amount} Dateien erhöht",
     "fr-FR": "Échange réussi ! {amount} crédits d'analyse de fichiers ont été ajoutés",
     "ko-KR": "교환 성공! 파일 분석 한도가 {amount} 개 증가했습니다",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(4907-4936)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(4907-4936)"],
     "$id": 10922
   },
   "兑换失败: {error}": {
@@ -1661,9 +1487,7 @@
     "de-DE": "Einlösung fehlgeschlagen: {error}",
     "fr-FR": "Échec de l'échange : {error}",
     "ko-KR": "교환 실패: {error}",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(5033-5050)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(5033-5050)"],
     "$id": 10923
   },
   "未知错误": {
@@ -1676,9 +1500,7 @@
     "de-DE": "Unbekannter Fehler",
     "fr-FR": "Erreur inconnue",
     "ko-KR": "알 수 없는 오류",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(5077-5085)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(5077-5085)"],
     "$id": 10924
   },
   "兑换请求失败": {
@@ -1691,9 +1513,7 @@
     "de-DE": "Einlösungsanfrage fehlgeschlagen",
     "fr-FR": "L'échange a échoué",
     "ko-KR": "교환 요청 실패",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(5134-5144)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(5134-5144)"],
     "$id": 10925
   },
   "已解锁私有目录无限额度": {
@@ -1706,9 +1526,7 @@
     "de-DE": "Unbegrenztes Kontingent an privaten Verzeichnissen freigeschaltet",
     "fr-FR": "Quota illimité débloqué de répertoires privés",
     "ko-KR": "개인 디렉토리의 무제한 할당량 잠금 해제",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(5674-5689)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(5674-5689)"],
     "$id": 11451
   },
   "解锁失败": {
@@ -1721,9 +1539,7 @@
     "de-DE": "Entsperren fehlgeschlagen",
     "fr-FR": "Échec du déverrouillage",
     "ko-KR": "잠금해제 실패",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(5747-5755)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(5747-5755)"],
     "$id": 11452
   },
   "解锁请求失败": {
@@ -1736,9 +1552,7 @@
     "de-DE": "Die Entsperranforderung ist fehlgeschlagen",
     "fr-FR": "La demande de déverrouillage a échoué",
     "ko-KR": "잠금해제 요청 실패",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(5801-5811)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(5801-5811)"],
     "$id": 11454
   },
   "萤火规则": {
@@ -1751,9 +1565,7 @@
     "de-DE": "Firecores-Regeln",
     "fr-FR": "Règles du Firecores",
     "ko-KR": "파이어빈 규칙",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(6101-6109)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(6101-6109)"],
     "$id": 10926
   },
   "收集萤火": {
@@ -1818,9 +1630,7 @@
     "de-DE": "Freunde einladen, beide Seiten gewinnen · 3 Freunde freischalten, um ein unbegrenztes Limit zu erhalten",
     "fr-FR": "Invitez des amis, vous en profitez tous les deux · Débloquez une limite illimitée en invitant 3 amis",
     "ko-KR": "친구 초대 시, 양쪽 모두에게 혜택 · 친구 3명을 초대하면 무제한 한도 해금",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(9235-9261)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(9235-9261)"],
     "$id": 11563
   },
   "已解锁无限额度": {
@@ -1849,9 +1659,7 @@
     "de-DE": "Pro 100 Glühwürmchen-Stufen",
     "fr-FR": "Tous les 100 points d'avancement « Luciole »",
     "ko-KR": "100 반딧불이마다 진화",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(9963-9975)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(9963-9975)"],
     "$id": 11565
   },
   "每邀请1人即赠 {firecores} 萤火 + {bonus} 额度，集齐 300 萤火可永久兑换无限额度": {
@@ -1864,9 +1672,7 @@
     "de-DE": "Für jede eingeladene Person erhalten Sie {firecores} Glühwürmchen + {bonus} Guthaben. Wenn Sie 300 Glühwürmchen gesammelt haben, können Sie diese dauerhaft gegen unbegrenztes Guthaben einlösen.",
     "fr-FR": "Pour chaque personne invitée, vous recevez {firecores} lucioles + {bonus} de crédit. Une fois que vous aurez accumulé 300 lucioles, vous pourrez les échanger contre un crédit illimité à vie.",
     "ko-KR": "1명을 초대할 때마다 {firecores} 반딧불이 + {bonus} 한도를 드립니다. 반딧불이 300개를 모으면 무제한 한도로 영구 교환할 수 있습니다.",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(10196-10254)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(10196-10254)"],
     "$id": 11566
   },
   "当前拥有": {
@@ -1879,9 +1685,7 @@
     "de-DE": "Derzeit im Besitz von",
     "fr-FR": "Possède actuellement",
     "ko-KR": "현재 보유 중인",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(10943-10951)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(10943-10951)"],
     "$id": 11567
   },
   "萤火": {
@@ -1918,9 +1722,7 @@
     "de-DE": "Unbegrenzte Möglichkeiten erschließen",
     "fr-FR": "Débloquer l'infini",
     "ko-KR": "무한 해금",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(13693-13701)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(13693-13701)"],
     "$id": 11568
   },
   "第1位好友": {
@@ -1933,9 +1735,7 @@
     "de-DE": "Bester Freund Nr. 1",
     "fr-FR": "1er ami",
     "ko-KR": "1번째 친구",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(14981-14990)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(14981-14990)"],
     "$id": 11569
   },
   "已达成": {
@@ -1964,9 +1764,7 @@
     "de-DE": "Es werden 100 Glühwürmchen benötigt.",
     "fr-FR": "Il faut 100 lucioles",
     "ko-KR": "100개의 반딧불이 필요합니다",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(15501-15514)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(15501-15514)"],
     "$id": 11571
   },
   "您获萤火": {
@@ -2011,9 +1809,7 @@
     "de-DE": "Der zweite beste Freund",
     "fr-FR": "2e ami",
     "ko-KR": "두 번째 친구",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(17571-17580)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(17571-17580)"],
     "$id": 11573
   },
   "累计 200 萤火": {
@@ -2026,9 +1822,7 @@
     "de-DE": "Insgesamt 200 Glühwürmchen",
     "fr-FR": "Total : 200 lucioles",
     "ko-KR": "누적 200 반딧불이",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(18113-18126)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(18113-18126)"],
     "$id": 11574
   },
   "累计": {
@@ -2057,9 +1851,7 @@
     "de-DE": "Der dritte Freund",
     "fr-FR": "3e ami",
     "ko-KR": "3번째 친구",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(20546-20555)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(20546-20555)"],
     "$id": 11576
   },
   "终极大奖": {
@@ -2072,9 +1864,7 @@
     "de-DE": "Der Hauptpreis",
     "fr-FR": "Le gros lot",
     "ko-KR": "최종 대박",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(20900-20908)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(20900-20908)"],
     "$id": 11577
   },
   "需 300 萤火": {
@@ -2087,9 +1877,7 @@
     "de-DE": "300 Glühwürmchen erforderlich",
     "fr-FR": "Il faut 300 lucioles",
     "ko-KR": "300개의 반딧불이 필요",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(21206-21218)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(21206-21218)"],
     "$id": 11578
   },
   "消耗 {cost} 萤火，永久解锁私有目录无限分析额度": {
@@ -2102,9 +1890,7 @@
     "de-DE": "Verbrauchen {cost} Firefly, schalte das unbegrenzte Analysekontingent des privaten Verzeichnisses dauerhaft frei",
     "fr-FR": "Consommez {cost} Firefly, débloquez définitivement le quota d'analyse illimité du répertoire privé",
     "ko-KR": "영구적으로 개인 디렉토리의 무제한 분석 할당량의 잠금을 해제,{cost}반딧불을 소비",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(22156-22187)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(22156-22187)"],
     "$id": 11462
   },
   "萤火不足，还需 {needed} 萤火": {
@@ -2117,9 +1903,7 @@
     "de-DE": "Unzureichender Glühwürmchen, du brauchst noch {needed} Glühwürmchen",
     "fr-FR": "Luciole insuffisante, vous avez encore besoin de {needed} luciole",
     "ko-KR": "불충분 한 반딧불,당신은 여전히{needed}반딧불이 필요합니다",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(22323-22346)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(22323-22346)"],
     "$id": 11463
   },
   "处理中...": {
@@ -2148,9 +1932,7 @@
     "de-DE": "Unbegrenzter Betrag einlösen ({cost} Firefly)",
     "fr-FR": "Échangez un montant illimité ({cost} Firefly)",
     "ko-KR": "무제한 사용({cost}반딧불)",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(23252-23273)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(23252-23273)"],
     "$id": 11470
   },
   "还需 {needed} 萤火可兑换": {
@@ -2163,9 +1945,7 @@
     "de-DE": "Brauche auch {needed} Firefly kann ausgetauscht werden",
     "fr-FR": "Aussi besoin de {needed} Firefly peut être échangé",
     "ko-KR": "또한 필요{needed}반딧불 교환 할 수 있습니다",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(23339-23360)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(23339-23360)"],
     "$id": 11471
   },
   "好友亦享专属福利": {
@@ -2178,9 +1958,7 @@
     "de-DE": "Auch Freunde profitieren von exklusiven Vorteilen",
     "fr-FR": "Vos amis bénéficient également d'avantages exclusifs",
     "ko-KR": "친구도 전용 혜택을 누리세요",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(24488-24500)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(24488-24500)"],
     "$id": 11580
   },
   "双方均有奖": {
@@ -2193,9 +1971,7 @@
     "de-DE": "Beide Seiten erhalten einen Preis",
     "fr-FR": "Des récompenses pour les deux parties",
     "ko-KR": "양측 모두에게 상이 주어집니다",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(24703-24712)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(24703-24712)"],
     "$id": 11581
   },
   "好友使用您的邀请码或链接，好友立得 ": {
@@ -2208,9 +1984,7 @@
     "de-DE": "Wenn ein Freund Ihren Einladungscode oder Link nutzt, erhält dieser sofort ",
     "fr-FR": "Lorsqu'un ami utilise votre code d'invitation ou votre lien, il reçoit immédiatement ",
     "ko-KR": "친구가 귀하의 초대 코드나 링크를 사용하면, 친구는 즉시 ",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(24881-24903)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(24881-24903)"],
     "$id": 11582
   },
   "，且双方立即各获 ": {
@@ -2223,9 +1997,7 @@
     "de-DE": ", und beide Seiten erhielten sofort jeweils ",
     "fr-FR": ", et les deux parties ont immédiatement reçu chacune ",
     "ko-KR": ", 또한 양측은 즉시 각각 ",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(25085-25098)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(25085-25098)"],
     "$id": 11583
   },
   "私有目录文件分析额度": {
@@ -2238,9 +2010,7 @@
     "de-DE": "Kontingent für die Analyse von Dateien in privaten Verzeichnissen",
     "fr-FR": "Quota d'analyse des fichiers des répertoires privés",
     "ko-KR": "비공개 디렉터리 파일 분석 할당량",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(25201-25215)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(25201-25215)"],
     "$id": 11584
   },
   "分享您的专属邀请链接": {
@@ -2253,9 +2023,7 @@
     "de-DE": "Teilen Sie Ihren exklusiven Einladungslink",
     "fr-FR": "Partagez votre lien d'invitation exclusif",
     "ko-KR": "독점 초대 링크를 공유하세요",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(26281-26295)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(26281-26295)"],
     "$id": 10948
   },
   "可直接复制上方文案发送给好友": {
@@ -2268,9 +2036,7 @@
     "de-DE": "Sie können den obigen Text direkt kopieren und an Ihre Freunde senden.",
     "fr-FR": "Vous pouvez copier directement le texte ci-dessus et l'envoyer à vos amis.",
     "ko-KR": "위의 문구를 그대로 복사하여 친구에게 보낼 수 있습니다.",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(26447-26465)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(26447-26465)"],
     "$id": 11585
   },
   "已复制全文": {
@@ -2283,9 +2049,7 @@
     "de-DE": "Der gesamte Text wurde kopiert",
     "fr-FR": "Le texte a été copié dans son intégralité",
     "ko-KR": "전체 내용을 복사했습니다.",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(27039-27048)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(27039-27048)"],
     "$id": 11586
   },
   "复制推荐语与链接": {
@@ -2298,9 +2062,7 @@
     "de-DE": "Empfehlungstext und Link kopieren",
     "fr-FR": "Copier le texte de présentation et le lien",
     "ko-KR": "추천 문구와 링크 복사하기",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(27234-27246)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(27234-27246)"],
     "$id": 11587
   },
   "我有邀请码 / 邀请链接": {
@@ -2313,9 +2075,7 @@
     "de-DE": "Ich habe einen Einladungscode/Einladungslink",
     "fr-FR": "J'ai un code d'invitation/un lien d'invitation",
     "ko-KR": "초대 코드/초대 링크가 있습니다",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(27929-27945)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(27929-27945)"],
     "$id": 10952
   },
   "在此输入 16 位邀请码或链接": {
@@ -2328,9 +2088,7 @@
     "de-DE": "Geben Sie hier den 16-stelligen Einladungscode oder den Link ein",
     "fr-FR": "Saisissez ici un code d'invitation ou un lien à 16 caractères",
     "ko-KR": "여기에 16자리 초대 코드 또는 링크 입력",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(28123-28142)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(28123-28142)"],
     "$id": 10953
   },
   "立即领取": {
@@ -2343,9 +2101,7 @@
     "de-DE": "Sofort abrufen",
     "fr-FR": "Réclamer maintenant",
     "ko-KR": "즉시 받기",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(28862-28870)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(28862-28870)"],
     "$id": 10954
   },
   "如果您知道他人的邀请码或链接，输入后双方均可立即获取 {bonus} 个分析额度奖励，您还能获得 {firecores} 萤火。": {
@@ -2358,9 +2114,7 @@
     "de-DE": "Wenn Sie den Einladungscode oder Link einer anderen Person kennen, können beide Parteien nach der Eingabe sofort {bonus} Analyseguthabenprämien erhalten, und Sie können auch {firecores} Glühwürmchen erhalten.",
     "fr-FR": "Si vous connaissez le code d'invitation ou le lien de quelqu'un d'autre, après l'avoir saisi, les deux parties peuvent immédiatement obtenir {bonus} récompenses en crédits d'analyse, et vous pouvez également obtenir {firecores} lucioles.",
     "ko-KR": "다른 사람의 초대 코드나 링크를 알고 있는 경우, 이를 입력한 후 양측 모두 즉시 {bonus} 분석 크레딧 보상을 받을 수 있고, 귀하도 {firecores} 반딧불을 얻을 수 있습니다.",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(29041-29135)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(29041-29135)"],
     "$id": 8251
   },
   "需要更多萤火？支持按需随心充值": {
@@ -2373,9 +2127,7 @@
     "de-DE": "Brauchst du mehr „Glühwürmchen“? Lade dein Guthaben ganz nach Bedarf auf.",
     "fr-FR": "Besoin de plus de « lucioles » ? Rechargez à la demande, quand vous le souhaitez",
     "ko-KR": "더 많은 반딧불이 필요하신가요? 필요에 따라 자유롭게 충전할 수 있습니다.",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(30459-30478)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(30459-30478)"],
     "$id": 11588
   },
   "永久有效 · 即买即用": {
@@ -2388,9 +2140,7 @@
     "de-DE": "Unbegrenzt gültig · Sofort einsatzbereit",
     "fr-FR": "Valable à vie · Prêt à l'emploi dès l'achat",
     "ko-KR": "영구적으로 유효 · 구매 즉시 사용 가능",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(30717-30732)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(30717-30732)"],
     "$id": 11589
   },
   "无需订阅即可按需选购萤火点数加油包，支持随时兑换槽位与更多高阶功能。": {
@@ -2403,9 +2153,7 @@
     "de-DE": "Sie können „Firefly“-Punkte-Aufladepakete ohne Abonnement nach Bedarf erwerben, um jederzeit Speicherplätze einzulösen und weitere erweiterte Funktionen zu nutzen.",
     "fr-FR": "Achetez des packs de points Firefly à la demande, sans abonnement, pour débloquer des emplacements de stockage et accéder à davantage de fonctionnalités avancées à tout moment.",
     "ko-KR": "구독 없이도 필요에 따라 ‘반딧불 포인트’ 충전 패키지를 구매할 수 있으며, 언제든지 슬롯을 교환하고 더 많은 고급 기능을 이용할 수 있습니다.",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(30917-30955)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(30917-30955)"],
     "$id": 11590
   },
   "前往购买萤火": {
@@ -2418,9 +2166,7 @@
     "de-DE": "Zum Kauf von „Glühwürmchen“",
     "fr-FR": "Acheter « Luciole »",
     "ko-KR": "‘반딧불이’ 구매하기",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(31488-31498)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(31488-31498)"],
     "$id": 11591
   },
   "操作类型": {
@@ -2433,9 +2179,7 @@
     "de-DE": "Operationstyp",
     "fr-FR": "Type d'opération",
     "ko-KR": "작업 유형",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(32125-32133)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(32125-32133)"],
     "$id": 10956
   },
   "专业版": {
@@ -2464,9 +2208,7 @@
     "de-DE": "Dauerhaft",
     "fr-FR": "Permanent",
     "ko-KR": "영구적인",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(32988-32994)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(32988-32994)"],
     "$id": 10960
   },
   "免费": {
@@ -2496,9 +2238,7 @@
     "de-DE": "Der Konsum von Yingdu folgt dem Prinzip „Zuerst abziehen, später verwenden“. Einige Funktionen sind nach der Freischaltung dauerhaft gültig",
     "fr-FR": "La consommation de Yingdu suit le principe « déduire d'abord, utiliser plus tard ». Certaines fonctions sont valables en permanence après avoir été déverrouillées",
     "ko-KR": "잉두(Yingdu)의 소비는 \"선 공제 후 사용\" 원칙을 따릅니다. 일부 기능은 잠금 해제 후에도 영구적으로 유효합니다.",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(35220-35254)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(35220-35254)"],
     "$id": 10963
   },
   "已完成": {
@@ -2511,9 +2251,7 @@
     "de-DE": "Vollendet",
     "fr-FR": "Complété",
     "ko-KR": "완전한",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(37738-37745)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(37738-37745)"],
     "$id": 10964
   },
   "待同步": {
@@ -2526,9 +2264,7 @@
     "de-DE": "Zu synchronisieren",
     "fr-FR": "A synchroniser",
     "ko-KR": "동기화 예정",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(37786-37793)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(37786-37793)"],
     "$id": 10965
   },
   "失败": {
@@ -2541,9 +2277,7 @@
     "de-DE": "Scheitern",
     "fr-FR": "Échouer",
     "ko-KR": "실패하다",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(37833-37839)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(37833-37839)"],
     "$id": 10966
   },
   "同步中": {
@@ -2556,9 +2290,7 @@
     "de-DE": "Synchronisieren",
     "fr-FR": "Synchronisation",
     "ko-KR": "동기화 중",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(37880-37887)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(37880-37887)"],
     "$id": 10967
   },
   "开通/续费会员": {
@@ -2571,9 +2303,7 @@
     "de-DE": "Mitgliedschaft abschließen/verlängern",
     "fr-FR": "Souscrire/Renouveler un abonnement",
     "ko-KR": "회원 가입/갱신",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(38046-38057)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38046-38057)"],
     "$id": 11592
   },
   "充值萤火点数": {
@@ -2586,9 +2316,7 @@
     "de-DE": "Glühwürmchen-Punkte aufladen",
     "fr-FR": "Recharger des points « Luciole »",
     "ko-KR": "반딧불 포인트 충전",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(38109-38119)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38109-38119)"],
     "$id": 11593
   },
   "在线购买": {
@@ -2601,9 +2329,7 @@
     "de-DE": "Online kaufen",
     "fr-FR": "Acheter en ligne",
     "ko-KR": "온라인 구매",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(38167-38175)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38167-38175)"],
     "$id": 11594
   },
   "支付入账": {
@@ -2616,9 +2342,7 @@
     "de-DE": "Zahlung verbucht",
     "fr-FR": "Crédit du paiement",
     "ko-KR": "결제 입금",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(38223-38231)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38223-38231)"],
     "$id": 11595
   },
   "首次使用，欢迎赠送": {
@@ -2631,9 +2355,7 @@
     "de-DE": "Bei der ersten Verwendung können Sie gerne Münzen erhalten",
     "fr-FR": "Première utilisation, bienvenue pour recevoir des pièces",
     "ko-KR": "처음 사용하시면 코인을 받으실 수 있습니다.",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(38278-38291)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38278-38291)"],
     "$id": 10968
   },
   "邀请奖励": {
@@ -2646,9 +2368,7 @@
     "de-DE": "Einladungsbelohnungen",
     "fr-FR": "Récompenses d'invitation",
     "ko-KR": "초대 보상",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(38340-38348)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38340-38348)"],
     "$id": 10969
   },
   "被邀请奖励": {
@@ -2661,9 +2381,7 @@
     "de-DE": "Belohnungen für die Einladung",
     "fr-FR": "Récompenses pour avoir été invité",
     "ko-KR": "초대에 대한 보상",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(38400-38409)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38400-38409)"],
     "$id": 10970
   },
   "解锁私有目录无限分析额度": {
@@ -2676,9 +2394,7 @@
     "de-DE": "Schalten Sie unbegrenzte Analysekontingente für private Verzeichnisse frei",
     "fr-FR": "Débloquez un quota d'analyse illimité pour les répertoires privés",
     "ko-KR": "개인 디렉터리에 대한 무제한 분석 할당량 잠금 해제",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(38464-38480)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38464-38480)"],
     "$id": 10971
   },
   "购买私有目录": {
@@ -2691,9 +2407,7 @@
     "de-DE": "Kaufen Sie ein privates Verzeichnis",
     "fr-FR": "Acheter un annuaire privé",
     "ko-KR": "개인 디렉토리 구매",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(38542-38552)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38542-38552)"],
     "$id": 10972
   },
   "购买极速目录": {
@@ -2706,9 +2420,7 @@
     "de-DE": "Speed-Katalog kaufen",
     "fr-FR": "Acheter le catalogue Speed ​​​​",
     "ko-KR": "속도 카탈로그 구매",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(38613-38623)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38613-38623)"],
     "$id": 10973
   },
   "购买虚拟目录": {
@@ -2721,9 +2433,7 @@
     "de-DE": "Kaufen Sie einen virtuellen Katalog",
     "fr-FR": "Acheter un catalogue virtuel",
     "ko-KR": "가상 카탈로그 구매",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(38678-38688)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38678-38688)"],
     "$id": 10974
   },
   "开通虚拟目录访问权限": {
@@ -2736,9 +2446,7 @@
     "de-DE": "Aktivieren Sie Zugriffsberechtigungen für virtuelle Verzeichnisse",
     "fr-FR": "Activer les autorisations d'accès au répertoire virtuel",
     "ko-KR": "가상 디렉터리 액세스 권한 활성화",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(38739-38753)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38739-38753)"],
     "$id": 10975
   },
   "导出虚拟目录": {
@@ -2751,9 +2459,7 @@
     "de-DE": "Virtuelles Verzeichnis exportieren",
     "fr-FR": "Exporter le répertoire virtuel",
     "ko-KR": "가상 디렉터리 내보내기",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(38804-38814)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38804-38814)"],
     "$id": 10976
   },
   "导出真实目录": {
@@ -2766,9 +2472,7 @@
     "de-DE": "Echtes Verzeichnis exportieren",
     "fr-FR": "Exporter le répertoire réel",
     "ko-KR": "실제 디렉터리 내보내기",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(38865-38875)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38865-38875)"],
     "$id": 10977
   },
   "下载文件": {
@@ -2781,9 +2485,7 @@
     "de-DE": "Datei herunterladen",
     "fr-FR": "Télécharger le fichier",
     "ko-KR": "파일 다운로드",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(38928-38936)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38928-38936)"],
     "$id": 10978
   },
   "云解压": {
@@ -2796,9 +2498,7 @@
     "de-DE": "Wolkendekomprimierung",
     "fr-FR": "Décompression des nuages",
     "ko-KR": "클라우드 감압",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(38992-38999)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38992-38999)"],
     "$id": 10979
   },
   "获取密码": {
@@ -2811,9 +2511,7 @@
     "de-DE": "Passwort erhalten",
     "fr-FR": "Obtenir le mot de passe",
     "ko-KR": "비밀번호 얻기",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(39051-39059)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(39051-39059)"],
     "$id": 10980
   },
   "重新生成虚拟目录": {
@@ -2826,9 +2524,7 @@
     "de-DE": "Virtuelles Verzeichnis neu generieren",
     "fr-FR": "Régénérer le répertoire virtuel",
     "ko-KR": "가상 디렉터리 재생성",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(39114-39126)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(39114-39126)"],
     "$id": 10981
   },
   "上传收益": {
@@ -2841,9 +2537,7 @@
     "de-DE": "Einnahmen hochladen",
     "fr-FR": "Revenus importés",
     "ko-KR": "수익 업로드",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(39171-39179)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(39171-39179)"],
     "$id": 10982
   },
   "萤火充值退款": {
@@ -2888,9 +2582,7 @@
     "de-DE": "Administratoranpassungen",
     "fr-FR": "Ajustements de l'administrateur",
     "ko-KR": "관리자 조정",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(39348-39357)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(39348-39357)"],
     "$id": 10983
   },
   "年付": {
@@ -2903,9 +2595,7 @@
     "de-DE": "Jährliche Zahlung",
     "fr-FR": "Paiement annuel",
     "ko-KR": "연간 지불",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(39578-39584)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(39578-39584)"],
     "$id": 11598
   },
   "年": {
@@ -2918,9 +2608,7 @@
     "de-DE": "Jahr",
     "fr-FR": "Année",
     "ko-KR": "년도",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(39604-39609)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(39604-39609)"],
     "$id": 11004
   },
   "季付": {
@@ -2933,9 +2621,7 @@
     "de-DE": "Vierteljährliche Zahlung",
     "fr-FR": "Paiement trimestriel",
     "ko-KR": "분기별 지불",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(39693-39699)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(39693-39699)"],
     "$id": 11599
   },
   "个月": {
@@ -2965,9 +2651,7 @@
     "de-DE": "Wird halbjährlich bezahlt",
     "fr-FR": "Payé semestriellement",
     "ko-KR": "반년마다 지급",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(39817-39824)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(39817-39824)"],
     "$id": 11600
   },
   "月付": {
@@ -2980,9 +2664,7 @@
     "de-DE": "Monatliche Zahlung",
     "fr-FR": "Paiement mensuel",
     "ko-KR": "월별 결제",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(39881-39887)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(39881-39887)"],
     "$id": 11601
   },
   "正在加载收支流水...": {
@@ -2995,9 +2677,7 @@
     "de-DE": "Einnahmen- und Ausgabenrechnung wird geladen...",
     "fr-FR": "Chargement de l'état des revenus et dépenses...",
     "ko-KR": "수입 및 지출 명세서 로드 중...",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(40227-40242)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(40227-40242)"],
     "$id": 10984
   },
   "开通企业版": {
@@ -3010,9 +2690,7 @@
     "de-DE": "Aktivieren Sie die Enterprise Edition",
     "fr-FR": "Activer l'édition Entreprise",
     "ko-KR": "엔터프라이즈 에디션 활성화",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(45078-45087)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(45078-45087)"],
     "$id": 10899
   },
   "开通 Pro 专业版": {
@@ -3025,9 +2703,7 @@
     "de-DE": "Aktivieren Sie die Pro Professional Edition",
     "fr-FR": "Activer l'édition Pro Professional",
     "ko-KR": "Pro Professional Edition 활성화",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(45122-45136)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(45122-45136)"],
     "$id": 11006
   },
   "有效期至: {date}": {
@@ -3056,9 +2732,7 @@
     "de-DE": "Punkte gutschreiben",
     "fr-FR": "Crédit des points",
     "ko-KR": "포인트 적립",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(48305-48313)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(48305-48313)"],
     "$id": 11603
   },
   "退款金额": {
@@ -3071,9 +2745,7 @@
     "de-DE": "Rückerstattungsbetrag",
     "fr-FR": "Montant du remboursement",
     "ko-KR": "환불 금액",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(49296-49304)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(49296-49304)"],
     "$id": 11604
   },
   "扣减时长": {
@@ -3086,9 +2758,7 @@
     "de-DE": "Abzugsdauer",
     "fr-FR": "Durée déduite",
     "ko-KR": "공제 기간",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(50063-50071)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(50063-50071)"],
     "$id": 11605
   },
   "扣减点数": {
@@ -3101,9 +2771,7 @@
     "de-DE": "Abzugspunkte",
     "fr-FR": "Points de pénalité",
     "ko-KR": "감점",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(50941-50949)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(50941-50949)"],
     "$id": 11606
   },
   "订单号已复制": {
@@ -3116,9 +2784,7 @@
     "de-DE": "Die Bestellnummer wurde kopiert",
     "fr-FR": "Le numéro de commande a été copié",
     "ko-KR": "주문 번호가 복사되었습니다.",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(51415-51425)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(51415-51425)"],
     "$id": 11607
   },
   "点击复制订单号: {orderId}": {
@@ -3131,9 +2797,7 @@
     "de-DE": "Zum Kopieren der Bestellnummer hier klicken: {orderId}",
     "fr-FR": "Cliquez ici pour copier le numéro de commande : {orderId}",
     "ko-KR": "주문 번호를 클릭하여 복사하세요: {orderId}",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(51500-51522)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(51500-51522)"],
     "$id": 11608
   },
   "订单": {
@@ -3146,9 +2810,7 @@
     "de-DE": "Bestellung",
     "fr-FR": "Commande",
     "ko-KR": "주문",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(51794-51800)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(51794-51800)"],
     "$id": 11609
   },
   "萤火余额": {
@@ -3177,9 +2839,7 @@
     "de-DE": "Inkrafttreten der Mitgliedervorteile",
     "fr-FR": "Entrée en vigueur des avantages réservés aux membres",
     "ko-KR": "회원 혜택 적용",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(53087-53097)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(53087-53097)"],
     "$id": 11610
   },
   "暂无收支记录": {
@@ -3192,9 +2852,7 @@
     "de-DE": "Es liegen noch keine Einnahmen- und Ausgabennachweise vor",
     "fr-FR": "Aucun relevé de revenus et de dépenses pour l'instant",
     "ko-KR": "아직 수입, 지출 내역이 없습니다.",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(54803-54813)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(54803-54813)"],
     "$id": 10988
   },
   "您还没有萤火相关的收入或支出记录": {
@@ -3207,9 +2865,7 @@
     "de-DE": "Sie haben keine Einnahmen- oder Ausgabenunterlagen im Zusammenhang mit Firecores",
     "fr-FR": "Vous n'avez aucun enregistrement de revenus ou de dépenses liés à Firecores",
     "ko-KR": "잉두와 관련된 수입, 지출 기록이 없습니다.",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(54842-54862)"
-    ],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(54842-54862)"],
     "$id": 10989
   },
   "兑换成功": {
@@ -3238,9 +2894,7 @@
     "de-DE": "Der Vorgang kann nicht abgeschlossen werden. Bitte versuchen Sie es später erneut",
     "fr-FR": "L'opération ne peut pas être terminée, veuillez réessayer plus tard",
     "ko-KR": "작업을 완료할 수 없습니다. 나중에 다시 시도해 주세요.",
-    "$files": [
-      "src/renderer/components/tier/PaymentFlowDialog.tsx(2251-2267)"
-    ],
+    "$files": ["src/renderer/components/tier/PaymentFlowDialog.tsx(2251-2267)"],
     "$id": 10907
   },
   "无法处理您的请求": {
@@ -3253,9 +2907,7 @@
     "de-DE": "Ihre Anfrage konnte nicht bearbeitet werden",
     "fr-FR": "Impossible de traiter votre demande",
     "ko-KR": "요청을 처리할 수 없습니다.",
-    "$files": [
-      "src/renderer/components/tier/PaymentFlowDialog.tsx(2368-2380)"
-    ],
+    "$files": ["src/renderer/components/tier/PaymentFlowDialog.tsx(2368-2380)"],
     "$id": 10908
   },
   "萤火消费确认": {
@@ -3268,9 +2920,7 @@
     "de-DE": "Bestätigung des Firecores-Verbrauchs",
     "fr-FR": "Confirmation de consommation de Firecores",
     "ko-KR": "잉두 소비 확인",
-    "$files": [
-      "src/renderer/components/tier/PaymentFlowDialog.tsx(3165-3175)"
-    ],
+    "$files": ["src/renderer/components/tier/PaymentFlowDialog.tsx(3165-3175)"],
     "$id": 10909
   },
   "即将执行": {
@@ -3283,9 +2933,7 @@
     "de-DE": "Steht kurz vor der Hinrichtung",
     "fr-FR": "Sur le point d'être exécuté",
     "ko-KR": "곧 처형될 예정",
-    "$files": [
-      "src/renderer/components/tier/PaymentFlowDialog.tsx(3637-3645)"
-    ],
+    "$files": ["src/renderer/components/tier/PaymentFlowDialog.tsx(3637-3645)"],
     "$id": 10911
   },
   "当前余额": {
@@ -3314,9 +2962,7 @@
     "de-DE": "Nach Abzug",
     "fr-FR": "Après déduction",
     "ko-KR": "공제 후",
-    "$files": [
-      "src/renderer/components/tier/PaymentFlowDialog.tsx(5212-5219)"
-    ],
+    "$files": ["src/renderer/components/tier/PaymentFlowDialog.tsx(5212-5219)"],
     "$id": 10913
   },
   "确认支付": {
@@ -3329,9 +2975,7 @@
     "de-DE": "Bestätigen Sie die Zahlung",
     "fr-FR": "Confirmer le paiement",
     "ko-KR": "결제 확인",
-    "$files": [
-      "src/renderer/components/tier/PaymentFlowDialog.tsx(6189-6197)"
-    ],
+    "$files": ["src/renderer/components/tier/PaymentFlowDialog.tsx(6189-6197)"],
     "$id": 10990
   },
   "升级帐户": {
@@ -3377,9 +3021,7 @@
     "de-DE": "Unzureichendes Gleichgewicht von Firecores",
     "fr-FR": "Solde insuffisant de Firecores",
     "ko-KR": "잉도우(Firecores)의 잔액 부족",
-    "$files": [
-      "src/renderer/components/tier/PaymentFlowDialog.tsx(7369-7379)"
-    ],
+    "$files": ["src/renderer/components/tier/PaymentFlowDialog.tsx(7369-7379)"],
     "$id": 10993
   },
   "您的萤火不足以完成此操作": {
@@ -3392,9 +3034,7 @@
     "de-DE": "Sie haben nicht genügend Firecores, um diesen Vorgang abzuschließen",
     "fr-FR": "Vous n'avez pas assez de Fire Beans pour terminer cette opération",
     "ko-KR": "이 작업을 완료하는 데 Firecores이 충분하지 않습니다.",
-    "$files": [
-      "src/renderer/components/tier/PaymentFlowDialog.tsx(7429-7445)"
-    ],
+    "$files": ["src/renderer/components/tier/PaymentFlowDialog.tsx(7429-7445)"],
     "$id": 10994
   },
   "萤火不足": {
@@ -3407,9 +3047,7 @@
     "de-DE": "Nicht genug Firecores",
     "fr-FR": "Pas assez de grains de feu",
     "ko-KR": "Firecores이 부족해요",
-    "$files": [
-      "src/renderer/components/tier/PaymentFlowDialog.tsx(7764-7772)"
-    ],
+    "$files": ["src/renderer/components/tier/PaymentFlowDialog.tsx(7764-7772)"],
     "$id": 10995
   },
   "需要": {
@@ -3422,9 +3060,7 @@
     "de-DE": "Brauchen",
     "fr-FR": "Besoin",
     "ko-KR": "필요",
-    "$files": [
-      "src/renderer/components/tier/PaymentFlowDialog.tsx(7892-7898)"
-    ],
+    "$files": ["src/renderer/components/tier/PaymentFlowDialog.tsx(7892-7898)"],
     "$id": 10996
   },
   "基础版": {
@@ -3437,9 +3073,7 @@
     "de-DE": "Basisversion",
     "fr-FR": "Version de base",
     "ko-KR": "기본 버전",
-    "$files": [
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(1924-1931)"
-    ],
+    "$files": ["src/renderer/components/tier/UpgradeAccountDialog.tsx(1924-1931)"],
     "$id": 11011
   },
   "{count} 个极速目录槽位": {
@@ -3452,9 +3086,7 @@
     "de-DE": "{count} schnelle Verzeichnisslots",
     "fr-FR": "{count} emplacements de répertoire rapides",
     "ko-KR": "{count} 빠른 디렉터리 슬롯",
-    "$files": [
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(2018-2037)"
-    ],
+    "$files": ["src/renderer/components/tier/UpgradeAccountDialog.tsx(2018-2037)"],
     "$id": 11013
   },
   "{count} 个私有目录槽位": {
@@ -3467,9 +3099,7 @@
     "de-DE": "{count} private Verzeichnisslots",
     "fr-FR": "{count} emplacements de répertoire privé",
     "ko-KR": "{count} 개인 디렉터리 슬롯",
-    "$files": [
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(2094-2113)"
-    ],
+    "$files": ["src/renderer/components/tier/UpgradeAccountDialog.tsx(2094-2113)"],
     "$id": 11014
   },
   "每目录 {count} 个虚拟目录槽位": {
@@ -3482,9 +3112,7 @@
     "de-DE": "{count} virtuelle Verzeichnisslots pro Verzeichnis",
     "fr-FR": "{count} emplacements de répertoire virtuel par répertoire",
     "ko-KR": "디렉터리당 {count}개의 가상 디렉터리 슬롯",
-    "$files": [
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(2171-2194)"
-    ],
+    "$files": ["src/renderer/components/tier/UpgradeAccountDialog.tsx(2171-2194)"],
     "$id": 11015
   },
   "极速目录无限文件分析额度": {
@@ -3497,9 +3125,7 @@
     "de-DE": "Unbegrenztes Dateianalysekontingent für Extreme Speed ​​​​Directory",
     "fr-FR": "Quota d'analyse de fichiers illimité pour Extreme Speed ​​​​Directory",
     "ko-KR": "Extreme Speed ​​​​Directory에 대한 무제한 파일 분석 할당량",
-    "$files": [
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(2245-2261)"
-    ],
+    "$files": ["src/renderer/components/tier/UpgradeAccountDialog.tsx(2245-2261)"],
     "$id": 11016
   },
   "私有目录共享 {count} 个文件基础分析额度": {
@@ -3512,9 +3138,7 @@
     "de-DE": "Basisanalysekontingent für private Verzeichnisfreigabe {count} Dateien",
     "fr-FR": "Partage de répertoire privé {count} quota d'analyse de base des fichiers",
     "ko-KR": "비공개 디렉터리 공유 {count} 파일 기본 분석 할당량",
-    "$files": [
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(2273-2301)"
-    ],
+    "$files": ["src/renderer/components/tier/UpgradeAccountDialog.tsx(2273-2301)"],
     "$id": 11017
   },
   "赠送 {count} 萤火，体验各项功能": {
@@ -3527,9 +3151,7 @@
     "de-DE": "Verschenken Sie {count} Firecores, um verschiedene Funktionen zu erleben",
     "fr-FR": "Offrez {count} Firecores en cadeau pour découvrir diverses fonctions",
     "ko-KR": "다양한 기능을 경험하려면 Firecores {count}개를 선물로 주세요.",
-    "$files": [
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(2353-2377)"
-    ],
+    "$files": ["src/renderer/components/tier/UpgradeAccountDialog.tsx(2353-2377)"],
     "$id": 11018
   },
   "不断通过萤火兑换等同Pro的权益": {
@@ -3542,9 +3164,7 @@
     "de-DE": "Lösen Sie über Firecores kontinuierlich Vorteile ein, die denen von Pro entsprechen",
     "fr-FR": "Échangez en continu des avantages équivalents à Pro via Firecores",
     "ko-KR": "Firecores를 통해 Pro와 동등한 혜택을 지속적으로 사용하세요.",
-    "$files": [
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(2437-2457)"
-    ],
+    "$files": ["src/renderer/components/tier/UpgradeAccountDialog.tsx(2437-2457)"],
     "$id": 11019
   },
   "当前计划": {
@@ -3574,9 +3194,7 @@
     "de-DE": "Ab {price}/Monat, auf Produktivität ausgelegt",
     "fr-FR": "Dès {price}/mois, conçu pour la productivité",
     "ko-KR": "월 {price}부터, 생산성을 위해 구축됨",
-    "$files": [
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(2764-2787)"
-    ],
+    "$files": ["src/renderer/components/tier/UpgradeAccountDialog.tsx(2764-2787)"],
     "$id": 11070
   },
   "立即升级": {
@@ -3589,9 +3207,7 @@
     "de-DE": "Jetzt upgraden",
     "fr-FR": "Mettre à niveau maintenant",
     "ko-KR": "지금 업그레이드",
-    "$files": [
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(3106-3114)"
-    ],
+    "$files": ["src/renderer/components/tier/UpgradeAccountDialog.tsx(3106-3114)"],
     "$id": 11030
   },
   "仅需 {price}/年，最高标准的隐私需求": {
@@ -3604,9 +3220,7 @@
     "de-DE": "Nur {price}/Jahr, höchste Datenschutzstandards erforderlich",
     "fr-FR": "Seulement {price}/an, normes de confidentialité les plus élevées requises",
     "ko-KR": "연간 {price}만, 최고 수준의 개인 정보 보호가 필요합니다.",
-    "$files": [
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(3400-3426)"
-    ],
+    "$files": ["src/renderer/components/tier/UpgradeAccountDialog.tsx(3400-3426)"],
     "$id": 11031
   },
   "联系升级": {
@@ -3619,9 +3233,7 @@
     "de-DE": "Kontakt-Upgrade",
     "fr-FR": "Contacter la mise à niveau",
     "ko-KR": "업그레이드 문의",
-    "$files": [
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(3729-3737)"
-    ],
+    "$files": ["src/renderer/components/tier/UpgradeAccountDialog.tsx(3729-3737)"],
     "$id": 11037
   },
   "升级您的帐户": {
@@ -3634,9 +3246,7 @@
     "de-DE": "Aktualisieren Sie Ihr Konto",
     "fr-FR": "Mettez à niveau votre compte",
     "ko-KR": "계정을 업그레이드하세요",
-    "$files": [
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(4597-4607)"
-    ],
+    "$files": ["src/renderer/components/tier/UpgradeAccountDialog.tsx(4597-4607)"],
     "$id": 11038
   },
   "选择最适合您的版本，释放 AI 文件管理的全部潜力": {
@@ -3649,9 +3259,7 @@
     "de-DE": "Wählen Sie die Version, die für Sie am besten geeignet ist, und nutzen Sie das volle Potenzial der KI-Dateiverwaltung",
     "fr-FR": "Choisissez la version qui vous convient le mieux et libérez tout le potentiel de la gestion de fichiers AI",
     "ko-KR": "귀하에게 가장 적합한 버전을 선택하고 AI 파일 관리의 잠재력을 최대한 활용하세요",
-    "$files": [
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(4722-4751)"
-    ],
+    "$files": ["src/renderer/components/tier/UpgradeAccountDialog.tsx(4722-4751)"],
     "$id": 11039
   },
   "最受欢迎": {
@@ -3664,9 +3272,7 @@
     "de-DE": "Am beliebtesten",
     "fr-FR": "Le plus populaire",
     "ko-KR": "가장 인기있는",
-    "$files": [
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(5600-5608)"
-    ],
+    "$files": ["src/renderer/components/tier/UpgradeAccountDialog.tsx(5600-5608)"],
     "$id": 10901
   },
   "充值萤火": {
@@ -3695,9 +3301,7 @@
     "de-DE": "Auf die Enterprise-Version upgraden",
     "fr-FR": "Passer à la version Entreprise",
     "ko-KR": "엔터프라이즈 버전으로 업그레이드",
-    "$files": [
-      "src/renderer/components/tier/UserAvatarMenu.tsx(7571-7580)"
-    ],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(7571-7580)"],
     "$id": 11611
   },
   "管理订阅与权益": {
@@ -3710,9 +3314,7 @@
     "de-DE": "Abonnements und Berechtigungen verwalten",
     "fr-FR": "Gérer les abonnements et les avantages",
     "ko-KR": "구독 및 혜택 관리",
-    "$files": [
-      "src/renderer/components/tier/UserAvatarMenu.tsx(13137-13148)"
-    ],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(13137-13148)"],
     "$id": 11612
   },
   "管理订阅": {
@@ -3725,9 +3327,7 @@
     "de-DE": "Abonnements verwalten",
     "fr-FR": "Gérer les abonnements",
     "ko-KR": "구독 관리",
-    "$files": [
-      "src/renderer/components/tier/UserAvatarMenu.tsx(13208-13216)"
-    ],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(13208-13216)"],
     "$id": 11613
   },
   "有效期至": {
@@ -3740,9 +3340,7 @@
     "de-DE": "Gültig bis",
     "fr-FR": "Valable jusqu'au",
     "ko-KR": "유효기간",
-    "$files": [
-      "src/renderer/components/tier/UserAvatarMenu.tsx(14021-14029)"
-    ],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(14021-14029)"],
     "$id": 11043
   },
   "即将到期": {
@@ -3755,9 +3353,7 @@
     "de-DE": "Läuft bald ab",
     "fr-FR": "Expiration prochaine",
     "ko-KR": "만료 예정",
-    "$files": [
-      "src/renderer/components/tier/UserAvatarMenu.tsx(14762-14770)"
-    ],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(14762-14770)"],
     "$id": 11614
   },
   "企业版到期后自动接续 Pro 版": {
@@ -3770,9 +3366,7 @@
     "de-DE": "Nach Ablauf der Enterprise-Version wird automatisch auf die Pro-Version umgestellt",
     "fr-FR": "À l'expiration de la version Entreprise, la version Pro prendra automatiquement le relais",
     "ko-KR": "기업용 버전의 유효기간이 만료되면 자동으로 Pro 버전으로 갱신됩니다.",
-    "$files": [
-      "src/renderer/components/tier/UserAvatarMenu.tsx(15048-15068)"
-    ],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(15048-15068)"],
     "$id": 11615
   },
   "接续 Pro": {
@@ -3785,9 +3379,7 @@
     "de-DE": "Fortsetzung Pro",
     "fr-FR": "Suite de Pro",
     "ko-KR": "Pro 이어서",
-    "$files": [
-      "src/renderer/components/tier/UserAvatarMenu.tsx(15104-15114)"
-    ],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(15104-15114)"],
     "$id": 11616
   },
   "已激活永久有效": {
@@ -3800,9 +3392,7 @@
     "de-DE": "Aktiviert und dauerhaft gültig",
     "fr-FR": "Activé, valable à vie",
     "ko-KR": "활성화됨, 영구적으로 유효함",
-    "$files": [
-      "src/renderer/components/tier/UserAvatarMenu.tsx(15366-15377)"
-    ],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(15366-15377)"],
     "$id": 11617
   },
   "点击查看收支流水": {
@@ -3815,9 +3405,7 @@
     "de-DE": "Klicken Sie hier, um die Einnahmen- und Ausgabenrechnung anzuzeigen",
     "fr-FR": "Cliquez pour consulter l'état des revenus et dépenses",
     "ko-KR": "클릭하시면 수입지출내역서를 보실 수 있습니다",
-    "$files": [
-      "src/renderer/components/tier/UserAvatarMenu.tsx(16086-16098)"
-    ],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(16086-16098)"],
     "$id": 11041
   },
   "兑换激活码": {
@@ -3830,9 +3418,7 @@
     "de-DE": "Aktivierungscode einlösen",
     "fr-FR": "Échanger un code d'activation",
     "ko-KR": "활성화 코드 교환",
-    "$files": [
-      "src/renderer/components/tier/UserAvatarMenu.tsx(20494-20503)"
-    ],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(20494-20503)"],
     "$id": 11618
   },
   "设置": {
@@ -3845,9 +3431,7 @@
     "de-DE": "Aufstellen",
     "fr-FR": "Installation",
     "ko-KR": "설정",
-    "$files": [
-      "src/renderer/components/tier/UserAvatarMenu.tsx(21554-21560)"
-    ],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(21554-21560)"],
     "$id": 11044
   },
   "分析队列": {
@@ -3860,9 +3444,7 @@
     "de-DE": "Analysewarteschlange",
     "fr-FR": "File d'attente d'analyse",
     "ko-KR": "분석 대기열",
-    "$files": [
-      "src/renderer/components/tier/UserAvatarMenu.tsx(22472-22480)"
-    ],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(22472-22480)"],
     "$id": 7874
   },
   "与本地AI私密聊天": {
@@ -3875,9 +3457,7 @@
     "de-DE": "Chatten Sie privat mit lokaler KI",
     "fr-FR": "Discutez en privé avec l'IA locale",
     "ko-KR": "로컬 AI와 비공개 채팅",
-    "$files": [
-      "src/renderer/components/tier/UserAvatarMenu.tsx(23738-23751)"
-    ],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(23738-23751)"],
     "$id": 7987
   },
   "重置布局": {
@@ -3890,9 +3470,7 @@
     "de-DE": "Layout zurücksetzen",
     "fr-FR": "Réinitialiser la mise en page",
     "ko-KR": "레이아웃 재설정",
-    "$files": [
-      "src/renderer/components/tier/UserAvatarMenu.tsx(25501-25509)"
-    ],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(25501-25509)"],
     "$id": 11045
   },
   "Telegram 官方频道": {
@@ -3905,9 +3483,7 @@
     "de-DE": "Offizieller Telegram-Kanal",
     "fr-FR": "Chaîne officielle de Telegram",
     "ko-KR": "텔레그램 공식 채널",
-    "$files": [
-      "src/renderer/components/tier/UserAvatarMenu.tsx(26648-26665)"
-    ],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(26648-26665)"],
     "$id": 9544
   },
   "知乎萤核圈子": {
@@ -3920,9 +3496,7 @@
     "de-DE": "Zhihu Feuerkernkreis",
     "fr-FR": "Cercle de noyau de feu de Zhihu",
     "ko-KR": "Zhihu 파이어 코어 서클",
-    "$files": [
-      "src/renderer/components/tier/UserAvatarMenu.tsx(27851-27861)"
-    ],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(27851-27861)"],
     "$id": 11046
   },
   "扫码加微信群": {
@@ -3951,9 +3525,7 @@
     "de-DE": "Über Firefly",
     "fr-FR": "À propos de Firefly",
     "ko-KR": "‘잉허’에 대하여",
-    "$files": [
-      "src/renderer/components/tier/UserAvatarMenu.tsx(29865-29873)"
-    ],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(29865-29873)"],
     "$id": 11619
   },
   "微信二维码": {
@@ -3966,9 +3538,7 @@
     "de-DE": "WeChat QR-Code",
     "fr-FR": "Code QR WeChat",
     "ko-KR": "위챗 QR 코드",
-    "$files": [
-      "src/renderer/components/tier/WechatQRDialog.tsx(1318-1327)"
-    ],
+    "$files": ["src/renderer/components/tier/WechatQRDialog.tsx(1318-1327)"],
     "$id": 7732
   },
   "加微信并留言：萤核，拉你进微信群交流": {
@@ -3981,9 +3551,7 @@
     "de-DE": "Fügen Sie WeChat hinzu und hinterlassen Sie eine Nachricht: Firefly lädt Sie zur Kommunikation in die WeChat-Gruppe ein",
     "fr-FR": "Ajoutez WeChat et laissez un message : Firefly vous invitera au groupe WeChat pour communiquer",
     "ko-KR": "WeChat을 추가하고 메시지를 남겨주세요: Firefly가 귀하를 WeChat 그룹에 초대하여 소통할 것입니다.",
-    "$files": [
-      "src/renderer/components/tier/WechatQRDialog.tsx(1629-1651)"
-    ],
+    "$files": ["src/renderer/components/tier/WechatQRDialog.tsx(1629-1651)"],
     "$id": 11049
   },
   "严禁广告或发邀请码": {
@@ -3996,9 +3564,7 @@
     "de-DE": "Werbung oder das Versenden von Einladungscodes ist strengstens untersagt",
     "fr-FR": "La publicité ou l'envoi de codes d'invitation sont strictement interdits",
     "ko-KR": "광고 또는 초대 코드 전송은 엄격히 금지됩니다.",
-    "$files": [
-      "src/renderer/components/tier/WechatQRDialog.tsx(1718-1731)"
-    ],
+    "$files": ["src/renderer/components/tier/WechatQRDialog.tsx(1718-1731)"],
     "$id": 11050
   }
 }

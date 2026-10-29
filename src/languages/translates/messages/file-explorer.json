@@ -107,7 +107,7 @@
     "de-DE": "Alle analysierten Dateien",
     "fr-FR": "Tous les fichiers analysés",
     "ko-KR": "모든 분석된 파일\r",
-    "$files": ["src/renderer/components/file-explorer/DimensionFileListPanel.tsx(15573-15584)"],
+    "$files": ["src/renderer/components/file-explorer/DimensionFileListPanel.tsx(16142-16153)"],
     "$id": 4111
   },
   "请在左侧勾选标签...": {
@@ -120,7 +120,7 @@
     "de-DE": "Bitte überprüfen Sie das Etikett auf der linken Seite...",
     "fr-FR": "Veuillez vérifier l'étiquette à gauche...",
     "ko-KR": "왼쪽 라벨을 확인해주세요.",
-    "$files": ["src/renderer/components/file-explorer/DimensionFileListPanel.tsx(16779-16794)"],
+    "$files": ["src/renderer/components/file-explorer/DimensionFileListPanel.tsx(17348-17363)"],
     "$id": 4303
   },
   "全选": {
@@ -134,8 +134,8 @@
     "fr-FR": "Tout sélectionner",
     "ko-KR": "전체 선택",
     "$files": [
-      "src/renderer/components/file-explorer/DimensionFileListPanel.tsx(19229-19235)",
-      "src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(42338-42344)",
+      "src/renderer/components/file-explorer/DimensionFileListPanel.tsx(20545-20551)",
+      "src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(43666-43672)",
       "src/renderer/components/file-explorer/RealDirectory.tsx(44405-44411)"
     ],
     "$id": 3290
@@ -150,7 +150,7 @@
     "de-DE": "Stapelsortierung ({count})",
     "fr-FR": "Tri par lots ({count})",
     "ko-KR": "일괄 정렬({count})",
-    "$files": ["src/renderer/components/file-explorer/DimensionFileListPanel.tsx(19717-19735)"],
+    "$files": ["src/renderer/components/file-explorer/DimensionFileListPanel.tsx(21033-21051)"],
     "$id": 9897
   },
   "批量整理": {
@@ -164,8 +164,8 @@
     "fr-FR": "Tri par lots",
     "ko-KR": "일괄 정렬",
     "$files": [
-      "src/renderer/components/file-explorer/DimensionFileListPanel.tsx(19797-19805)",
-      "src/renderer/components/file-explorer/DimensionFileListPanel.tsx(20317-20325)"
+      "src/renderer/components/file-explorer/DimensionFileListPanel.tsx(21113-21121)",
+      "src/renderer/components/file-explorer/DimensionFileListPanel.tsx(21633-21641)"
     ],
     "$id": 9899
   },
@@ -179,7 +179,7 @@
     "de-DE": "Geladene {loaded} / Gesamtzahl {total} Dateien",
     "fr-FR": "Fichiers {loaded} / Total {total} chargés",
     "ko-KR": "로드 된{loaded}/총{total}파일",
-    "$files": ["src/renderer/components/file-explorer/DimensionFileListPanel.tsx(20918-20950)"],
+    "$files": ["src/renderer/components/file-explorer/DimensionFileListPanel.tsx(22234-22266)"],
     "$id": 11640
   },
   "{count} 个文件": {
@@ -193,7 +193,7 @@
     "fr-FR": "{count} fichiers",
     "ko-KR": "{count}개 파일",
     "$files": [
-      "src/renderer/components/file-explorer/DimensionFileListPanel.tsx(21090-21105)",
+      "src/renderer/components/file-explorer/DimensionFileListPanel.tsx(22406-22421)",
       "src/renderer/components/file-explorer/RealDirectory.tsx(53013-53028)"
     ],
     "$id": 10333
@@ -208,7 +208,7 @@
     "de-DE": "Seite {current} / {total}",
     "fr-FR": "Page {current} / {total}",
     "ko-KR": "페이지__/__",
-    "$files": ["src/renderer/components/file-explorer/DimensionFileListPanel.tsx(21444-21471)"],
+    "$files": ["src/renderer/components/file-explorer/DimensionFileListPanel.tsx(22760-22787)"],
     "$id": 11641
   },
   "已选中 {count} 个文件": {
@@ -221,7 +221,7 @@
     "de-DE": "Ausgewählte {count} Dateien",
     "fr-FR": "Fichiers {count} sélectionnés",
     "ko-KR": "선택한{count}파일",
-    "$files": ["src/renderer/components/file-explorer/DimensionFileListPanel.tsx(22097-22116)"],
+    "$files": ["src/renderer/components/file-explorer/DimensionFileListPanel.tsx(23413-23432)"],
     "$id": 11642
   },
   "层级深度": {
@@ -234,7 +234,7 @@
     "de-DE": "Hierarchietiefe",
     "fr-FR": "Profondeur de la hiérarchie",
     "ko-KR": "계층 구조 깊이",
-    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(41003-41011)"],
+    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(42331-42339)"],
     "$id": 20147
   },
   "拖动调整标签树显示深度 (2~10 级)": {
@@ -247,7 +247,7 @@
     "de-DE": "Ziehen Sie, um die Anzeigetiefe des Etikettenbaums anzupassen (Stufe 2 ~ 10)",
     "fr-FR": "Faites glisser pour ajuster la profondeur d'affichage de l'arborescence des étiquettes (niveau 2~10)",
     "ko-KR": "드래그하여 레이블 트리의 표시 깊이를 조정합니다(레벨 2~10).",
-    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(41609-41633)"],
+    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(42937-42961)"],
     "$id": 21228
   },
   "反选": {
@@ -260,7 +260,7 @@
     "de-DE": "Gegenwahl",
     "fr-FR": "Contre-élection",
     "ko-KR": "역선거",
-    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(42870-42876)"],
+    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(44198-44204)"],
     "$id": 7517
   },
   "并集": {
@@ -273,7 +273,7 @@
     "de-DE": "Union",
     "fr-FR": "Union",
     "ko-KR": "노동 조합",
-    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(43433-43439)"],
+    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(44761-44767)"],
     "$id": 7808
   },
   "交集": {
@@ -286,7 +286,7 @@
     "de-DE": "Überschneidung",
     "fr-FR": "Intersection",
     "ko-KR": "교차로",
-    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(43896-43902)"],
+    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(45224-45230)"],
     "$id": 7809
   },
   "目录树": {

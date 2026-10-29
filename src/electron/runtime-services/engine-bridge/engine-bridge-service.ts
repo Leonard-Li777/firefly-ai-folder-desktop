@@ -102,6 +102,14 @@ const READY_WAIT_LIMIT_MS = 40_000
 const STABLE_RUN_RESET_MS = 60_000
 /** 状态轮询间隔（毫秒） */
 const POLL_INTERVAL_MS = 5_000
+/**
+ * 轮询判定离线所需的连续失败次数（迟滞阈值）。
+ * 单次探活超时（STATUS_TIMEOUT_MS=1.5s）在引擎忙时（/api/models 持有共享 config 锁、
+ * 模型加载、系统卡顿）会瞬时发生，若一次失败立即清 lastRawStatus，Footer 会在
+ * 「AI 服务就绪」与「高级AI引擎未运行」之间交替闪烁。连续 3 次失败（约 15~20s）
+ * 才判定真离线；期间任一次成功即复位。
+ */
+const OFFLINE_CONFIRM_FAILURES = 3
 
 /**
  * 引擎在 desktop 集成目录中的相对目录名（ADR-0033 1:1 镜像）
@@ -135,6 +143,18 @@ export interface Tier2EngineStatus {
   vram_mb?: number
   gpu_mem_mb?: number
   error?: string
+  /**
+   * 引擎实际生效的运行时参数（来自 EngineStatus.runtime_params）。
+   * `ctx_size` 为 llama-server 真实 `--ctx-size`，是上下文预算的唯一上限来源。
+   */
+  runtime_params?: {
+    n_gpu_layers?: number
+    threads?: number
+    ctx_size?: number
+    batch_size?: number
+    ubatch_size?: number
+    [key: string]: any
+  } | null
   [key: string]: any
 }
 
@@ -194,6 +214,8 @@ export class EngineBridgeService {
   private pollTimer: NodeJS.Timeout | null = null
   /** 轮询探活单飞标志，避免全端口探测耗时超过轮询间隔时发生并发重入 */
   private pollInFlight = false
+  /** 轮询连续探活失败计数，达到 OFFLINE_CONFIRM_FAILURES 才判定离线（见该常量说明） */
+  private consecutiveProbeFailures = 0
   /** 服务停止代际计数，每次 stop() 递增以拦截在途异步探活回写已停止状态 */
   private stopEpoch = 0
   private lastRawStatus: Tier2EngineStatus | null = null
@@ -2155,6 +2177,7 @@ export class EngineBridgeService {
       clearInterval(this.pollTimer)
     }
     this.pollInFlight = false
+    this.consecutiveProbeFailures = 0
     const timer = setInterval(async () => {
       if (this.pollInFlight || this.isStarting) {
         return
@@ -2168,7 +2191,13 @@ export class EngineBridgeService {
           return
         }
         if (!status && !this.isStarting) {
-          this.lastRawStatus = null
+          // 连续失败迟滞：单次瞬时超时不立即判离线，避免 Footer「就绪/未运行」交替抖动
+          this.consecutiveProbeFailures++
+          if (this.consecutiveProbeFailures >= OFFLINE_CONFIRM_FAILURES) {
+            this.lastRawStatus = null
+          }
+        } else {
+          this.consecutiveProbeFailures = 0
         }
         this.broadcastStatus()
       } catch (err) {
@@ -2192,6 +2221,7 @@ export class EngineBridgeService {
       this.pollTimer = null
     }
     this.pollInFlight = false
+    this.consecutiveProbeFailures = 0
   }
 
   /**
@@ -2230,6 +2260,26 @@ export class EngineBridgeService {
       updatedAt: raw ? Date.now() : null,
       raw
     }
+  }
+
+  /**
+   * 引擎实际加载的上下文窗口（tokens），即 llama-server 真正的 `--ctx-size`
+   *
+   * 这是**唯一可信的上下文预算上限**：模型目录里的 `recommendedConfig.numCtx`
+   * 只是静态推荐值，引擎侧 `ParamBuilder` 会按显存/内存预算把它夹到实际可加载的值
+   * （事故：推荐 8192，实际 2048，桌面端按 8192 规划提示词 → 引擎 400
+   *  `request (2469 tokens) exceeds the available context size (2048 tokens)`）。
+   *
+   * 引擎未启动、未加载模型或旧版本未上报 `runtime_params` 时返回 null，
+   * 调用方应保持既有兜底行为（不得凭空放大预算）。
+   */
+  public getRuntimeContextSize(): number | null {
+    const runtimeParams = this.lastRawStatus?.runtime_params as { ctx_size?: unknown } | undefined
+    const ctxSize = runtimeParams?.ctx_size
+    if (typeof ctxSize !== 'number' || !Number.isFinite(ctxSize) || ctxSize <= 0) {
+      return null
+    }
+    return Math.floor(ctxSize)
   }
 
   /**

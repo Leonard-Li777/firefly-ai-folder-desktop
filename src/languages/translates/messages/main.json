@@ -9,9 +9,7 @@
     "de-DE": "AI-Engine-Prüfung abgeschlossen",
     "fr-FR": "Vérification du moteur IA terminée",
     "ko-KR": "AI 엔진 검사 완료",
-    "$files": [
-      "src/electron/main/ipc-handlers/ai-service.ts(3608-3621)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(3608-3621)"],
     "$id": 19416
   },
   "AI服务初始化失败：无法创建实例": {
@@ -24,9 +22,7 @@
     "de-DE": "Die Initialisierung des AI-Dienstes ist fehlgeschlagen: Instanz kann nicht erstellt werden",
     "fr-FR": "Échec de l'initialisation du service AI : impossible de créer une instance",
     "ko-KR": "AI 서비스 초기화 실패: 인스턴스를 생성할 수 없습니다.",
-    "$files": [
-      "src/electron/main/ipc-handlers/ai-service.ts(4006-4026)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(4006-4026)"],
     "$id": 7670
   },
   "LlamaIndex AI服务初始化成功": {
@@ -39,9 +35,7 @@
     "de-DE": "Initialisierung des LlamaIndex AI-Dienstes erfolgreich",
     "fr-FR": "Initialisation réussie du service LlamaIndex AI",
     "ko-KR": "LlamaIndex AI 서비스 초기화 성공",
-    "$files": [
-      "src/electron/main/ipc-handlers/ai-service.ts(5542-5566)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(5542-5566)"],
     "$id": 10173
   },
   "AI服务未创建": {
@@ -54,9 +48,7 @@
     "de-DE": "AI-Dienst nicht erstellt",
     "fr-FR": "Service IA non créé",
     "ko-KR": "AI 서비스가 생성되지 않았습니다.",
-    "$files": [
-      "src/electron/main/ipc-handlers/ai-service.ts(8177-8188)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(8177-8188)"],
     "$id": 10175
   },
   "模型切换通知已处理": {
@@ -69,9 +61,7 @@
     "de-DE": "Modellwechselbenachrichtigung verarbeitet",
     "fr-FR": "Notification de changement de modèle traitée",
     "ko-KR": "모델 전환 알림 처리됨",
-    "$files": [
-      "src/electron/main/ipc-handlers/ai-service.ts(9204-9217)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(9204-9217)"],
     "$id": 10176
   },
   "处理失败": {
@@ -84,9 +74,7 @@
     "de-DE": "Die Verarbeitung ist fehlgeschlagen",
     "fr-FR": "Échec du traitement",
     "ko-KR": "처리 실패",
-    "$files": [
-      "src/electron/main/ipc-handlers/ai-service.ts(9349-9357)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(9349-9357)"],
     "$id": 10177
   },
   "AI服务初始化成功": {
@@ -99,9 +87,7 @@
     "de-DE": "Initialisierung des KI-Dienstes erfolgreich",
     "fr-FR": "Initialisation du service IA réussie",
     "ko-KR": "AI 서비스 초기화 성공",
-    "$files": [
-      "src/electron/main/ipc-handlers/ai-service.ts(14962-14975)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(14962-14975)"],
     "$id": 10178
   },
   "模型正在切换中，请等待": {
@@ -133,9 +119,7 @@
     "de-DE": "Die KI arbeitet derzeit, etwa an der Analyse der Warteschlange. Bitte stoppen Sie und fordern Sie dann erneut an.",
     "fr-FR": "L'IA travaille actuellement, comme l'analyse de la file d'attente. Veuillez arrêter, puis demander à nouveau.",
     "ko-KR": "현재 대기열 분석 등 AI가 작동하고 있다. 중지한 후 다시 요청하세요.",
-    "$files": [
-      "src/electron/main/ipc-handlers/ai-service.ts(18037-18066)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(18037-18066)"],
     "$id": 11303
   },
   "AI 服务正在初始化中，请稍候再试": {
@@ -166,9 +150,7 @@
     "de-DE": "Unzureichende Berechtigungen, gehen Sie bitte zu macOS \"Systemeinstellungen-> Datenschutz und Sicherheit-> Dateien und Ordner\", um dieser Anwendung Zugriff auf dieses Verzeichnis zu gewähren: {dirPath}",
     "fr-FR": "Autorisations insuffisantes, veuillez vous rendre sur macOS \"Paramètres système - > Confidentialité et sécurité - > Fichiers et dossiers\" pour accorder à cette application l'accès à ce répertoire: {dirPath}",
     "ko-KR": "이 디렉토리에이 응용 프로그램에 액세스 권한을 부여하려면\"시스템 설정->개인 정보 및 보안->파일 및 폴더\"로 이동하십시오.{dirPath}",
-    "$files": [
-      "src/electron/main/ipc-handlers/directory-error.ts(351-428)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/directory-error.ts(351-428)"],
     "$id": 21855
   },
   "权限不足，无法访问目录: {dirPath}": {
@@ -181,9 +163,7 @@
     "de-DE": "Unzureichende Berechtigungen für den Zugriff auf das Verzeichnis: {dirPath}",
     "fr-FR": "Permissions insuffisantes pour accéder au répertoire : {dirPath}",
     "ko-KR": "권한이 부족하여 디렉터리에 접근할 수 없습니다: {dirPath}",
-    "$files": [
-      "src/electron/main/ipc-handlers/directory-error.ts(475-501)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/directory-error.ts(475-501)"],
     "$id": 8125
   },
   "目录不存在: {dirPath}": {
@@ -196,9 +176,7 @@
     "de-DE": "Das Verzeichnis existiert nicht: {dirPath}",
     "fr-FR": "Le répertoire n'existe pas : {dirPath}",
     "ko-KR": "디렉터리가 존재하지 않습니다: {dirPath}",
-    "$files": [
-      "src/electron/main/ipc-handlers/directory-error.ts(563-583)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/directory-error.ts(563-583)"],
     "$id": 8126
   },
   "无法读取目录: {dirPath} ({errorDetail})": {
@@ -211,9 +189,7 @@
     "de-DE": "Verzeichnis kann nicht gelesen werden: {dirPath} ({errorDetail})",
     "fr-FR": "Impossible de lire le répertoire : {dirPath} ({errorDetail})",
     "ko-KR": "디렉터리를 읽을 수 없습니다: {dirPath} ({errorDetail})",
-    "$files": [
-      "src/electron/main/ipc-handlers/directory-error.ts(611-648)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/directory-error.ts(611-648)"],
     "$id": 8127
   },
   "缺少目标后端参数": {
@@ -226,9 +202,7 @@
     "de-DE": "Ziel-Backend-Parameter fehlen",
     "fr-FR": "Paramètres du backend cible manquants",
     "ko-KR": "대상 백엔드 매개변수 누락",
-    "$files": [
-      "src/electron/main/ipc-handlers/engine-bridge.ts(2978-2990)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/engine-bridge.ts(2978-2990)"],
     "$id": 19377
   },
   "未在工作空间找到该文件信息": {
@@ -241,9 +215,7 @@
     "de-DE": "Die Dateiinformationen wurden im Arbeitsbereich nicht gefunden",
     "fr-FR": "Les informations du fichier sont introuvables dans l'espace de travail",
     "ko-KR": "작업공간에서 파일정보를 찾을 수 없습니다",
-    "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(7126-7143)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(7126-7143)"],
     "$id": 7671
   },
   "未找到所属的工作区目录": {
@@ -256,9 +228,7 @@
     "de-DE": "Das entsprechende Arbeitsbereichsverzeichnis wurde nicht gefunden",
     "fr-FR": "Le répertoire de l'espace de travail correspondant est introuvable",
     "ko-KR": "해당 작업공간 디렉터리를 찾을 수 없습니다.",
-    "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(7304-7319)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(7304-7319)"],
     "$id": 7672
   },
   "不支持的图片格式": {
@@ -271,9 +241,7 @@
     "de-DE": "Nicht unterstütztes Bildformat",
     "fr-FR": "Format d'image non pris en charge",
     "ko-KR": "지원되지 않는 이미지 형식",
-    "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(7590-7602)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(7590-7602)"],
     "$id": 22246
   },
   "未知错误": {
@@ -286,9 +254,7 @@
     "de-DE": "Unbekannter Fehler",
     "fr-FR": "Erreur inconnue",
     "ko-KR": "알 수 없는 오류",
-    "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(13728-13736)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(13728-13736)"],
     "$id": 10180
   },
   "文件清理服务未初始化": {
@@ -333,9 +299,7 @@
     "de-DE": "Netzwerkverbindung fehlgeschlagen",
     "fr-FR": "La connexion réseau a échoué",
     "ko-KR": "네트워크 연결 실패",
-    "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(15823-15833)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(15823-15833)"],
     "$id": 10181
   },
   "仅允许 http: 和 https: 协议": {
@@ -348,9 +312,7 @@
     "de-DE": "Es sind nur die Protokolle http: und https: zulässig",
     "fr-FR": "Seuls les protocoles http: et https: sont autorisés",
     "ko-KR": "http: 및 https: 프로토콜만 허용됩니다.",
-    "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(22540-22565)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(22540-22565)"],
     "$id": 10182
   },
   "无效的 URL": {
@@ -363,9 +325,7 @@
     "de-DE": "Ungültige URL",
     "fr-FR": "URL invalide",
     "ko-KR": "잘못된 URL",
-    "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(22696-22707)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(22696-22707)"],
     "$id": 10183
   },
   "核心引擎未初始化": {
@@ -449,9 +409,7 @@
     "de-DE": "Virtuelles Verzeichnis existiert nicht",
     "fr-FR": "Le répertoire virtuel n'existe pas",
     "ko-KR": "가상 디렉터리가 존재하지 않습니다.",
-    "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(11963-11974)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(11963-11974)"],
     "$id": 7508
   },
   "工作目录不存在": {
@@ -464,9 +422,7 @@
     "de-DE": "Arbeitsverzeichnis existiert nicht",
     "fr-FR": "Le répertoire de travail n'existe pas",
     "ko-KR": "작업 디렉토리가 존재하지 않습니다",
-    "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(12132-12143)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(12132-12143)"],
     "$id": 7509
   },
   "真实目录服务未初始化": {
@@ -479,9 +435,7 @@
     "de-DE": "Echter Verzeichnisdienst nicht initialisiert",
     "fr-FR": "Service d'annuaire réel non initialisé",
     "ko-KR": "실제 디렉터리 서비스가 초기화되지 않았습니다.",
-    "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(13399-13413)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(13399-13413)"],
     "$id": 7510
   },
   "当前待推导文件数（{count}）超出单次处理上限（500个），请在「已分析」页面勾选目标文件分批整理": {
@@ -494,9 +448,7 @@
     "de-DE": "Die aktuelle Anzahl der abzuleitenden Dateien ({count}) überschreitet das Einzelverarbeitungslimit (500). Bitte überprüfen Sie die Zieldateien auf der Seite „Analysiert“, um sie stapelweise zu sortieren.",
     "fr-FR": "Le nombre actuel de fichiers à déduire ({count}) dépasse la limite de traitement unique (500). Veuillez vérifier les fichiers cibles sur la page « Analysés » pour les trier par lots.",
     "ko-KR": "현재 추론할 파일 수({count})가 단일 처리 제한(500)을 초과합니다. 일괄적으로 정렬하려면 \"분석됨\" 페이지에서 대상 파일을 확인하세요.",
-    "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(21094-21149)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(21094-21149)"],
     "$id": 22190
   },
   "未设置工作目录": {
@@ -509,9 +461,7 @@
     "de-DE": "Kein Arbeitsverzeichnis festgelegt",
     "fr-FR": "Aucun répertoire de travail défini",
     "ko-KR": "작업 디렉터리가 설정되지 않았습니다.",
-    "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(27655-27666)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(27655-27666)"],
     "$id": 7679
   },
   "授权校验失败，请联网或激活企业版后再执行此操作": {
@@ -524,9 +474,7 @@
     "de-DE": "Die Autorisierungsüberprüfung ist fehlgeschlagen. Bitte stellen Sie eine Verbindung zum Internet her oder aktivieren Sie die Enterprise-Version, bevor Sie diesen Vorgang ausführen.",
     "fr-FR": "La vérification de l'autorisation a échoué. Veuillez vous connecter à Internet ou activer la version entreprise avant d'effectuer cette opération.",
     "ko-KR": "승인 확인에 실패했습니다. 이 작업을 수행하기 전에 인터넷에 연결하거나 기업 버전을 활성화하십시오.",
-    "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(28079-28106)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(28079-28106)"],
     "$id": 10185
   },
   "整理真实目录服务未初始化": {
@@ -578,9 +526,7 @@
     "de-DE": "Die aktuelle Anzahl der zu berechnenden Dateien ({count}) überschreitet das Batch-Sortierlimit ({limit}). Bitte wählen Sie auf der Seite „Analysiert“ die Zieldatei aus und starten Sie die Sortierung.",
     "fr-FR": "Le nombre actuel de fichiers à calculer ({count}) dépasse la limite de tri par lots ({limit}). Veuillez sélectionner le fichier cible sur la page « Analysé » et lancer le tri.",
     "ko-KR": "현재 계산할 파일 수({count})가 일괄 정렬 제한({limit})을 초과합니다. \"분석됨\" 페이지에서 대상 파일을 선택하고 정렬을 시작하십시오.",
-    "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(38098-38158)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(38098-38158)"],
     "$id": 22191
   },
   "缺少工作区 ID": {
@@ -593,9 +539,7 @@
     "de-DE": "Fehlende Arbeitsbereich-ID",
     "fr-FR": "ID d'espace de travail manquant",
     "ko-KR": "누락 된 작업 공간 아이디",
-    "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(48159-48171)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(48159-48171)"],
     "$id": 21563
   },
   "当前待整理文件数量（{count}）超出批量整理上限（{limit}个），请在「已分析」页面勾选目标文件后发起整理": {
@@ -608,9 +552,7 @@
     "de-DE": "Die aktuelle Anzahl der zu sortierenden Dateien ({count}) überschreitet das Batch-Sortierlimit ({limit}). Bitte wählen Sie auf der Seite „Analysiert“ die Zieldateien aus und starten Sie die Sortierung.",
     "fr-FR": "Le nombre actuel de fichiers à trier ({count}) dépasse la limite de tri par lots ({limit}). Veuillez sélectionner les fichiers cibles sur la page « Analysés » et lancer le tri.",
     "ko-KR": "현재 정렬할 파일 수({count})가 일괄 정렬 제한({limit})을 초과합니다. \"분석됨\" 페이지에서 대상 파일을 선택하고 정렬을 시작하십시오.",
-    "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(48910-48971)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(48910-48971)"],
     "$id": 22192
   },
   "智能聚类执行失败或有效向量文件数不足": {
@@ -623,9 +565,7 @@
     "de-DE": "Die Ausführung des intelligenten Clusters ist fehlgeschlagen oder die Anzahl der gültigen Vektordateien ist unzureichend",
     "fr-FR": "L'exécution du clustering intelligent a échoué ou le nombre de fichiers vectoriels valides est insuffisant",
     "ko-KR": "지능형 클러스터링 실행 실패 또는 유효한 벡터 파일 수가 부족합니다",
-    "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(50221-50243)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(50221-50243)"],
     "$id": 21564
   },
   "目录上下文服务未初始化": {

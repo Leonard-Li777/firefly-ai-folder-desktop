@@ -1055,6 +1055,25 @@ export class OmniService {
           '[OmniService] 未解析到 omni-geo 地理数据集（geo/geonames-compact.json），逆地理编码将以 available:false 软降级'
         )
       }
+      // PP-OCRv6 字符识别与检测模型路径显式下发，确保子进程在任意 CWD 下均可 100% 稳定就绪
+      const candidatePpocrDirs = [
+        ResourceLocator.resolveResourcePath?.('models/PP-OCRv6'),
+        path.join(process.cwd(), 'apps/desktop/build/extraResources/models/PP-OCRv6'),
+        path.join(process.cwd(), 'build/extraResources/models/PP-OCRv6'),
+        path.join(binDir, '../../models/PP-OCRv6')
+      ]
+      let ppocrDir: string | null = null
+      for (const cand of candidatePpocrDirs) {
+        if (cand && fs.existsSync(cand) && (fs.existsSync(path.join(cand, 'PP-OCRv6_det_tiny.onnx')) || fs.existsSync(path.join(cand, 'PP-OCRv6_det_small.onnx')))) {
+          ppocrDir = cand
+          break
+        }
+      }
+      if (ppocrDir) {
+        env.OMNI_PPOCR_MODEL_PATH = ppocrDir
+        logger.info(LogCategory.SYSTEM, `[OmniService] 🔤 PP-OCRv6 模型目录 (OMNI_PPOCR_MODEL_PATH): ${ppocrDir}`)
+      }
+
       // MOSS-TTS 48kHz 原生离线语音合成模型与预置音色库路径下发
       const candidateMossDirs = [
         ResourceLocator.resolveResourcePath?.('models/audio/moss'),
