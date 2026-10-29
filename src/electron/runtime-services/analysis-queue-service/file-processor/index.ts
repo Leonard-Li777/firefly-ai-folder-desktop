@@ -31,7 +31,8 @@ import {
   getCanonicalConceptName,
   resolveRuntimeMaterializedPath,
   CONTROLLED_CONCEPTS,
-  normalizeLangCode
+  normalizeLangCode,
+  safeTruncateUtf8Bytes
 } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import {
@@ -3398,31 +3399,7 @@ export function getFallbackLyrics(metadata: any): string | null {
 }
 
 /**
- * UTF-8 字节/字符边界安全截断，防止将多字节字符(如汉字/Emoji)截断在半中间导致末尾出现乱码字符 (\uFFFD)
+ * `safeTruncateUtf8Bytes` 已上移至 `@firefly/shared`，供 Electron 主进程各处（文件处理器、云端同步 Worker）
+ * 共享同一字节边界截断实现，避免两份实现漂移。此处保留再导出，兼容既有对本模块的引用。
  */
-export function safeTruncateUtf8Bytes(str: string, maxBytes: number): string {
-  if (!str || maxBytes <= 0) return ''
-  const buf = Buffer.from(str, 'utf8')
-  if (buf.length <= maxBytes) return str
-
-  // 1. 如果 maxBytes 恰好落在 UTF-8 续字节 (0x80 ~ 0xBF) 中间，向左回退到当前字符的起始首字节
-  let validBytes = maxBytes
-  while (validBytes > 0 && (buf[validBytes] & 0xc0) === 0x80) {
-    validBytes--
-  }
-
-  // 2. 检查首字节所需的总字节长度，如果完整字符的结束位置超出了 maxBytes，则连同首字节一起扣除
-  if (validBytes > 0) {
-    const firstByte = buf[validBytes - 1]
-    let charLength = 1
-    if ((firstByte & 0xe0) === 0xc0) charLength = 2
-    else if ((firstByte & 0xf0) === 0xe0) charLength = 3
-    else if ((firstByte & 0xf8) === 0xf0) charLength = 4
-
-    if (validBytes - 1 + charLength > maxBytes) {
-      validBytes = validBytes - 1
-    }
-  }
-
-  return buf.subarray(0, validBytes).toString('utf8')
-}
+export { safeTruncateUtf8Bytes }

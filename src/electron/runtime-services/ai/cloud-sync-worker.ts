@@ -1,4 +1,4 @@
-import { LogCategory, logger, sanitizeObject, toUTCString } from '@firefly/shared'
+import { LogCategory, logger, safeTruncateUtf8Bytes, sanitizeObject, toUTCString } from '@firefly/shared'
 import { net, powerMonitor } from 'electron'
 
 import { cloudAnalysisService } from '@firefly/server'
@@ -369,14 +369,17 @@ export class CloudSyncWorker {
       //    - 本地 files 表使用 is_hit (布尔值)：仅需标识文件是否命中云端标准库
       //    - 云端 zh_cn_files 表使用 hit_count (计数器)：需要统计文件被命中的总次数，用于数据分析
       //    - 这是故意的设计差异，不是 Bug。本地只需标识状态，云端需要聚合统计。
-      const maxTextLength =
+      // MAX_TEXT_LENGTH 以 UTF-8 「字节」为口径：同样 30000 的上限，中文约 90 KB、英文约 30 KB，
+      // 按字符截断会让云端单行体积随语言漂移 3 倍；而 TOAST 阈值与存储/传输成本都是字节域。
+      const maxTextBytes =
         ConfigOrchestrator.getInstance().getValue<number>('MAX_TEXT_LENGTH') ?? 30000
 
       const cloudFiles = pendingFiles.map(f => {
         // 本地大文本字段为压缩 BLOB，上行同步前需透明解压还原为明文
         const plainContent = decompressText(f.content)
-        const cloudContent =
-          plainContent.length > maxTextLength ? plainContent.substring(0, maxTextLength) : plainContent
+        const cloudContent = safeTruncateUtf8Bytes(plainContent, maxTextBytes)
+        // OCR 全文是单行膨胀的唯一失控入口（数百页 PDF 的 OCR 可达数 MB），与大文本同口径截断
+        const cloudOcr = safeTruncateUtf8Bytes(decompressText(f.ocr), maxTextBytes) || null
 
         // ADR-0054：本地 SQLite 与云端双端零向量对齐（向量仅驻留端侧 zvec），
         // 上行云端时防御性剥离可能残留的任何向量字段
@@ -404,7 +407,7 @@ export class CloudSyncWorker {
           author: f.author,
           description: f.description,
           content: cloudContent,
-          ocr: decompressText(f.ocr) || null,
+          ocr: cloudOcr,
           lrc: decompressText(f.lrc) || null,
           language: f.language,
           quality_score: this.ensureReal(f.quality_score, 0),
