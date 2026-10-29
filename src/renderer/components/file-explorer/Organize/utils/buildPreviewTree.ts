@@ -229,8 +229,16 @@ export function buildPreviewTree(
       }
     }
 
-    // 兜底分配：若未匹配且当前为单选根节点场景（即过滤结果本身全归属于该选中标签）
-    if (assignedNodes.size === 0 && candidateKeys.size === 0 && rootNodes.length > 0) {
+    // 兜底分配：若倒排索引未命中且文件无有效标签，当为单选根节点场景或仅有一个叶子目录时，确保过滤文件全量入桶
+    if (assignedNodes.size === 0 && candidateKeys.size === 0 && rootNodes.length === 1) {
+      const target =
+        rootNodes[0].subdirectories && rootNodes[0].subdirectories.length === 1
+          ? rootNodes[0].subdirectories[0]
+          : rootNodes[0]
+      target.files.push(fileRef)
+      target.fileCount++
+      target.totalSize += file.size || 0
+    } else if (assignedNodes.size === 0 && candidateKeys.size === 0 && rootNodes.length > 0) {
       for (const node of rootNodes) {
         node.files.push(fileRef)
         node.fileCount++

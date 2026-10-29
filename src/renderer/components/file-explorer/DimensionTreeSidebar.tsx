@@ -722,7 +722,13 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       }
 
       if (onSelectionChangeRef.current) {
-        onSelectionChangeRef.current(nextSelected, 'toggle', nextParentMap)
+        const visibleKeys = !showEmptyTags && visibleGroups.length > 0
+          ? new Set(getAllKeys(visibleGroups).map(i => i.key))
+          : null
+        const safeSelected = visibleKeys
+          ? new Set(Array.from(nextSelected).filter(k => visibleKeys.has(k)))
+          : nextSelected
+        onSelectionChangeRef.current(safeSelected, 'toggle', nextParentMap)
       }
     },
     [selectedTags, selectionStack, parentTagMap, storageKey]
@@ -835,30 +841,66 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       masterDimensionGroups: dimensionGroups
     })
 
-    if (result.hasChanged) {
-      setSelectedTags(result.migratedSelected)
-      setSelectionStack(result.migratedStack)
-      setParentTagMap(result.migratedParentMap)
+    let finalSelected = result.migratedSelected
+    let finalStack = result.migratedStack
+    let finalParentMap = result.migratedParentMap
+    let hasChanged = result.hasChanged
+
+    // 幽灵标签拦截：当 showEmptyTags 为 false 时，剔除在当前可见树中完全不可见的空标签
+    // 严防历史 localStorage 残留（如当前无文件的 "英文" 节点）污染交集查询与导出预览
+    if (!showEmptyTags && visibleGroups.length > 0) {
+      const visibleKeys = new Set(getAllKeys(visibleGroups).map(i => i.key))
+      const prunedSelected = new Set<string>()
+      const prunedStack: string[] = []
+      const prunedParentMap = new Map<string, string[]>()
+
+      for (const k of finalSelected) {
+        if (visibleKeys.has(k)) {
+          prunedSelected.add(k)
+        } else {
+          hasChanged = true
+        }
+      }
+      for (const k of finalStack) {
+        if (visibleKeys.has(k)) {
+          prunedStack.push(k)
+        }
+      }
+      for (const [k, v] of finalParentMap) {
+        if (visibleKeys.has(k)) {
+          prunedParentMap.set(k, v)
+        }
+      }
+
+      finalSelected = prunedSelected
+      finalStack = prunedStack
+      finalParentMap = prunedParentMap
+    }
+
+    if (hasChanged) {
+      setSelectedTags(finalSelected)
+      setSelectionStack(finalStack)
+      setParentTagMap(finalParentMap)
 
       if (storageKey) {
         try {
           localStorage.setItem(
             `${storageKey}_selectedTags`,
-            JSON.stringify(Array.from(result.migratedSelected))
+            JSON.stringify(Array.from(finalSelected))
           )
-          localStorage.setItem(`${storageKey}_selectionStack`, JSON.stringify(result.migratedStack))
+          localStorage.setItem(`${storageKey}_selectionStack`, JSON.stringify(finalStack))
           localStorage.setItem(
             `${storageKey}_parentTagMap`,
-            JSON.stringify(Array.from(result.migratedParentMap.entries()))
+            JSON.stringify(Array.from(finalParentMap.entries()))
           )
         } catch {}
       }
 
       if (onSelectionChangeRef.current && isExportMode) {
-        onSelectionChangeRef.current(result.migratedSelected, 'toggle', result.migratedParentMap)
+        onSelectionChangeRef.current(finalSelected, 'toggle', finalParentMap)
       }
     }
-  }, [visibleGroups, dimensionGroups, maxScaleDepth, isExportMode, storageKey])
+  }, [visibleGroups, dimensionGroups, maxScaleDepth, isExportMode, storageKey, showEmptyTags])
 
   const handleSelectAll = useCallback(() => {
     const allItems = getAllKeys(visibleGroups, undefined, [], collapsedDimensionGroups)

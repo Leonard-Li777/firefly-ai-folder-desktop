@@ -20,11 +20,29 @@ interface ExportPreviewPanelProps {
   isLoading?: boolean
 }
 
-const TreeNode: React.FC<{ node: VirtualDirectoryNode; level: number }> = ({ node, level }) => {
-  // 默认只展开顶层节点 (level < 1)，深层按需展开，避免一次性在 DOM 树中渲染上万个文件节点
-  const [isExpanded, setIsExpanded] = useState(level < 1)
+const TreeNode: React.FC<{
+  node: VirtualDirectoryNode
+  level: number
+  expandAll?: boolean | null
+}> = ({ node, level, expandAll }) => {
+  // 默认展开前 3 级节点或包含文件的节点，深层目录也可通过 expandAll 一键展开，避免一次性在 DOM 树中渲染上万个文件节点
+  const [isExpanded, setIsExpanded] = useState(() => level < 3 || (node.files && node.files.length > 0))
   const hasChildren = node.subdirectories && node.subdirectories.length > 0
   const hasFiles = node.files && node.files.length > 0
+
+  // 当外部强制展开/折叠全部时响应
+  React.useEffect(() => {
+    if (expandAll !== null && expandAll !== undefined) {
+      setIsExpanded(expandAll)
+    }
+  }, [expandAll])
+
+  // 当异步文件数据加载到位时，若当前节点包含文件，自动展开以直观呈现预览内容
+  React.useEffect(() => {
+    if (hasFiles) {
+      setIsExpanded(true)
+    }
+  }, [hasFiles])
   // 订阅式读取：改用 getState() 快照会导致「列表设置」改动后本视图不重渲染
   const swapFileNameDisplay =
     useSettingsStore(s => s.getConfigValue<boolean>('SWAP_FILE_NAME_DISPLAY')) ?? false
@@ -35,7 +53,7 @@ const TreeNode: React.FC<{ node: VirtualDirectoryNode; level: number }> = ({ nod
       <div>
         {hasChildren &&
           node.subdirectories.map((child, idx) => (
-            <TreeNode key={`${child.name}-${idx}`} node={child} level={level + 1} />
+            <TreeNode key={`${child.name}-${idx}`} node={child} level={level + 1} expandAll={expandAll} />
           ))}
       </div>
     )
@@ -91,7 +109,7 @@ const TreeNode: React.FC<{ node: VirtualDirectoryNode; level: number }> = ({ nod
         <div className="relative">
           {hasChildren &&
             node.subdirectories.map((child, idx) => (
-              <TreeNode key={`${child.name}-${idx}`} node={child} level={level + 1} />
+              <TreeNode key={`${child.name}-${idx}`} node={child} level={level + 1} expandAll={expandAll} />
             ))}
           {hasFiles && (
             <>
@@ -164,6 +182,7 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
   isTooManyTags,
   isLoading
 }) => {
+  const [expandAll, setExpandAll] = useState<boolean | null>(null)
   if (!hasSelectedTags) {
     return (
       <div className="h-full flex flex-col bg-background/50 border-l border-border/50">
@@ -209,9 +228,23 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
           <MaterialIcon icon="folder_zip" className="text-sm text-primary" />
           {t('导出预览')}
         </span>
-        <span className="text-[10px] font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded-full font-mono">
-          {t('{count} 个文件', { count: totalFileCount })}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            className="text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted/60 px-1.5 py-0.5 rounded transition-colors flex items-center gap-0.5"
+            onClick={() => setExpandAll(prev => (prev === true ? false : true))}
+            title={expandAll ? t('全部折叠') : t('全部展开')}
+          >
+            <MaterialIcon
+              icon={expandAll ? 'unfold_less' : 'unfold_more'}
+              className="text-xs"
+            />
+            {expandAll ? t('全部折叠') : t('全部展开')}
+          </button>
+          <span className="text-[10px] font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded-full font-mono">
+            {t('{count} 个文件', { count: totalFileCount })}
+          </span>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-3 py-3 custom-scrollbar">
@@ -223,7 +256,7 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
         ) : (
           <div className="space-y-0.5">
             {previewTree.map((node, idx) => (
-              <TreeNode key={`${node.name}-${idx}`} node={node} level={0} />
+              <TreeNode key={`${node.name}-${idx}`} node={node} level={0} expandAll={expandAll} />
             ))}
           </div>
         )}

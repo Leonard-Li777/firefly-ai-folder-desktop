@@ -3911,6 +3911,16 @@ export class TagTreeQuery {
                     displayName = getCanonicalConceptName(item.code) || item.code
                   }
                   if (displayName) tags.push(displayName)
+                  // 沿物化路径注入全链路祖先层级名（如 "/文件类型/图片/摄影照片" 注入 "图片"），
+                  // 确保按父维度筛选时文件能够精准命中预览树节点
+                  if (item.name_path) {
+                    const parts = item.name_path.split('/').filter(Boolean)
+                    for (const p of parts) {
+                      if (p && !tags.includes(p)) {
+                        tags.push(p)
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -4006,6 +4016,7 @@ export class TagTreeQuery {
           author: file.author || undefined,
           language: file.language || undefined,
           tags: Array.isArray(tags) ? tags : [],
+          tagCodes: Array.isArray(tagCodes) ? tagCodes : [],
           fusedTags: Array.isArray(fusedTags) ? fusedTags : []
         }
       })

@@ -252,6 +252,18 @@ export const useVirtualDirectory = () => {
     setSelectedTags([])
   }, [selectedId])
 
+  // 跨模式重置：从普通虚拟目录模式进入导出模式时，彻底清空旧选中态，防止历史残留污染导出预览
+  const prevIsExportModeRef = useRef(isExportMode)
+  useEffect(() => {
+    if (prevIsExportModeRef.current !== isExportMode) {
+      prevIsExportModeRef.current = isExportMode
+      if (isExportMode) {
+        setSelectedTags([])
+        setFilteredFilesByTags([])
+      }
+    }
+  }, [isExportMode])
+
   const loadFilteredFilesByTags = useCallback(async () => {
     if (!selectedTags || selectedTags.length === 0) {
       setFilteredFilesByTags([])
