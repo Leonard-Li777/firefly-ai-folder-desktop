@@ -585,31 +585,15 @@ export const Organize: React.FC = () => {
                 >
                   {isSavedVDirOrganize ? t('本页面自动保存') : t('本页面自动保存草稿')}
                 </span>
-                <div className="flex items-center border border-primary/20 bg-primary/5 rounded-xl overflow-hidden shrink-0">
-                  <Button
-                    size="sm"
-                    onClick={handleStartOrganize}
-                    className="rounded-l-lg rounded-r-none text-xs gap-1.5 bg-primary hover:bg-primary/90 px-4 font-bold shadow-md shadow-primary/10 transition-all hover:scale-[1.01] active:scale-[0.98] h-8 shrink-0"
-                    title={t('开始整理')}
-                  >
-                    <MaterialIcon icon="play_circle" className="text-sm shrink-0" />
-                    <span className="truncate">{t('开始整理')}</span>
-                  </Button>
-                  <label
-                    className="flex items-center gap-2 text-xs font-semibold text-primary cursor-pointer select-none px-3 py-1.5 hover:bg-primary/10 transition-colors h-8 shrink min-w-0 max-w-[130px] sm:max-w-[180px]"
-                    title={t('整理过程中允许AI新增目录')}
-                  >
-                    <Checkbox
-                      id="allow-create-new"
-                      checked={options.allowCreateNew}
-                      onCheckedChange={checked =>
-                        setOptions({ ...options, allowCreateNew: !!checked })
-                      }
-                      className="border-primary/60 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground w-3.5 h-3.5 rounded-sm shrink-0"
-                    />
-                    <span className="truncate min-w-0">{t('整理过程中允许AI新增目录')}</span>
-                  </label>
-                </div>
+                <Button
+                  size="sm"
+                  onClick={handleStartOrganize}
+                  className="rounded-xl text-xs gap-1.5 bg-primary hover:bg-primary/90 px-4 font-bold shadow-md shadow-primary/10 transition-all hover:scale-[1.01] active:scale-[0.98] h-8 shrink-0"
+                  title={t('开始整理')}
+                >
+                  <MaterialIcon icon="play_circle" className="text-sm shrink-0" />
+                  <span className="truncate">{t('开始整理')}</span>
+                </Button>
               </div>
             )}
 

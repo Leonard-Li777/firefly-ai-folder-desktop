@@ -184,11 +184,24 @@ describe('DoneView Component & Filtering logic', () => {
     // 2. 验证旧的“文件去重”checkbox 已彻底移除
     expect(queryByText('文件去重')).toBeNull()
 
-    // 3. 验证高级 AI 深度找补按钮
+    // 3. 验证高级 AI 深度找补与自动找补并列按钮，以及允许 AI 新增目录
     const rescueBtn = getByText(/高级 AI 深度找补/)
     expect(rescueBtn).toBeInTheDocument()
     rescueBtn.click()
     expect(onRescue).toHaveBeenCalledWith(true)
+
+    // 4. 验证“允许 AI 新增目录”在未归类控制栏中渲染
+    expect(getByText(/允许 AI 新增目录/)).toBeInTheDocument()
+
+    // 5. 验证并列的“自动找补”按钮渲染与交互
+    const autoRescueBtn = getByText(/自动找补/)
+    expect(autoRescueBtn).toBeInTheDocument()
+
+    // 6. 验证 PlanSidebar 策略侧栏在完成阶段已彻底移除
+    expect(queryByText('plan-sidebar')).toBeNull()
+
+    // 7. 验证底部拖动归类提示文案渲染
+    expect(getByText(/提示：可直接拖动文件到左侧目录或同级文件旁边完成归类/)).toBeInTheDocument()
   })
 
   it('当 rawMatches 预置有效时，拖拽滑块应成功触发纯内存重塑 handleReshape 并更新 finalTree', () => {

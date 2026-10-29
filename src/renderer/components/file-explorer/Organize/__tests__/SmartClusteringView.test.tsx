@@ -22,6 +22,16 @@ vi.mock('@app/languages', () => ({
   default: { t: (s: string) => s, activeLanguage: 'zh-CN', defaultLanguage: 'zh-CN' }
 }))
 
+const mockToastInfo = vi.fn()
+vi.mock('../../../common/Toast', () => ({
+  toast: {
+    info: (...args: any[]) => mockToastInfo(...args),
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn()
+  }
+}))
+
 describe('SmartClusteringView Component', () => {
   const mockSmartClusterHac = vi.fn()
   const mockSaveVirtualDirectory = vi.fn()
@@ -381,7 +391,7 @@ describe('SmartClusteringView Component', () => {
     }, { timeout: 2000 })
   })
 
-  it('在目录树脏状态下调整滑块触发覆盖确认弹窗，点击取消应回滚滑块状态', async () => {
+  it('在目录树手动微调后调整滑块，全自动静默融合重聚类并保留微调提示栏 (裁决项1A)', async () => {
     render(
       <SmartClusteringView
         workspaceId={1}
@@ -394,8 +404,6 @@ describe('SmartClusteringView Component', () => {
       expect(screen.getByText('2026年度财务')).toBeInTheDocument()
     })
 
-    // 重命名节点触发 isTreeDirty
-    const renameInputs = screen.queryAllByRole('textbox')
     // 通过拖拽或内联操作使树变脏
     const targetRow = screen.getByText('设计稿素材').closest('[draggable="true"]')!
     fireEvent.drop(targetRow, {
@@ -405,24 +413,16 @@ describe('SmartClusteringView Component', () => {
       }
     })
 
-    // 此时树已脏
+    // 此时树包含手动微调，应展示保留提示栏
+    await waitFor(() => {
+      expect(screen.getByText(/已手动微调目录树，重新聚类将自动融合保留修改/)).toBeInTheDocument()
+    })
+
+    // 拖动滑块直接生效，无需确认弹窗打断
     const rangeInputs = screen.getAllByRole('slider')
-    // 拖动第 1 个滑块到 7
     fireEvent.change(rangeInputs[0], { target: { value: '7' } })
-
-    // 应弹出覆盖确认弹窗
-    await waitFor(() => {
-      expect(screen.getByText('覆盖微调确认')).toBeInTheDocument()
-    })
-
-    // 点击取消
-    const cancelBtn = screen.getByText('取消')
-    fireEvent.click(cancelBtn)
-
-    // 滑块值应回滚为 3
-    await waitFor(() => {
-      expect(rangeInputs[0]).toHaveValue('3')
-    })
+    expect(rangeInputs[0]).toHaveValue('7')
+    expect(screen.queryByText('覆盖微调确认')).toBeNull()
   })
 
   it('点击聚类策略胶囊控件应切换模式并重新触发聚类', async () => {
@@ -481,7 +481,7 @@ describe('SmartClusteringView Component', () => {
     })
   })
 
-  it('在目录树脏状态下点击聚类策略胶囊应触发覆盖确认弹窗，点击取消应回滚模式', async () => {
+  it('在目录树手动微调后支持在提示栏点击清空微调，重置脏状态与微调记录', async () => {
     render(
       <SmartClusteringView
         workspaceId={1}
@@ -503,23 +503,13 @@ describe('SmartClusteringView Component', () => {
       }
     })
 
-    // 点击【全量收纳】
-    const completeBtn = screen.getByRole('radio', { name: /全量收纳/ })
-    fireEvent.click(completeBtn)
+    // 提示栏应出现【清空微调】按钮
+    const clearBtn = await screen.findByText('清空微调')
+    fireEvent.click(clearBtn)
 
-    // 应弹出覆盖确认弹窗
+    // 提示栏消失
     await waitFor(() => {
-      expect(screen.getByText('覆盖微调确认')).toBeInTheDocument()
-    })
-
-    // 点击取消覆盖
-    const cancelBtn = screen.getByText('取消')
-    fireEvent.click(cancelBtn)
-
-    // 弹窗关闭，模式仍保持 balanced (推荐)
-    await waitFor(() => {
-      const balancedBtn = screen.getByRole('radio', { name: /平衡推荐/ })
-      expect(balancedBtn).toHaveAttribute('aria-checked', 'true')
+      expect(screen.queryByText(/已手动微调目录树/)).toBeNull()
     })
   })
 
@@ -579,5 +569,179 @@ describe('SmartClusteringView Component', () => {
     expect(callArgs.maxSubdirectories).toBe(8)
     expect(callArgs.maxDepth).toBe(3)
     expect(callArgs.clusteringMode).toBe('balanced')
+  })
+  it('点击新建根目录成功添加到目录树，当目录数量超过滑块上限时自动调整滑块并给出 Toast 提示', async () => {
+    mockToastInfo.mockClear()
+    render(
+      <SmartClusteringView
+        workspaceId={1}
+        workspaceDirectoryPath="/test/workspace"
+        onSaveVirtualDirectory={mockSaveVirtualDirectory}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('2026年度财务')).toBeInTheDocument()
+    })
+
+    // 点击【新建根目录】
+    const newRootBtn = screen.getByText('新建根目录')
+    fireEvent.click(newRootBtn)
+
+    // 输入框出现
+    const addInput = await screen.findByPlaceholderText('按 Enter 确认创建')
+    fireEvent.change(addInput, { target: { value: '自定义根目录1' } })
+    fireEvent.keyDown(addInput, { key: 'Enter' })
+
+    // 目录树应成功展示新根目录
+    await waitFor(() => {
+      expect(screen.getByText('自定义根目录1')).toBeInTheDocument()
+    })
+
+    // 默认 sampleNodes 为 2 个，加 1 个为 3 个，未超 maxRootDirectories(5)。
+    // 继续加到第 6 个触发超额自适应与 toast 校验
+    for (let i = 2; i <= 4; i++) {
+      fireEvent.click(screen.getByText('新建根目录'))
+      const input = await screen.findByPlaceholderText('按 Enter 确认创建')
+      fireEvent.change(input, { target: { value: `自定义根目录${i}` } })
+      fireEvent.keyDown(input, { key: 'Enter' })
+      await waitFor(() => {
+        expect(screen.getByText(`自定义根目录${i}`)).toBeInTheDocument()
+      })
+    }
+
+    // 此时已有 2(初始) + 4 = 6 个根目录，超过了默认 5
+    expect(mockToastInfo).toHaveBeenCalledWith('已自动调整滑块目录数量以适应新增加的目录')
+    // 根目录滑块上限应已自适应提升至 6
+    const sliders = screen.getAllByRole('slider')
+    // sliders[1] 是根目录数上限
+    expect(sliders[1]).toHaveValue('6')
+  })
+
+  it('新建子目录时若子目录数量超过 maxSubdirectories 上限，自动调大滑块并给出 Toast 提示', async () => {
+    mockToastInfo.mockClear()
+    render(
+      <SmartClusteringView
+        workspaceId={1}
+        workspaceDirectoryPath="/test/workspace"
+        onSaveVirtualDirectory={mockSaveVirtualDirectory}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('2026年度财务')).toBeInTheDocument()
+    })
+
+    // 将子目录数滑块 (sliders[2]) 调节为 0
+    const sliders = screen.getAllByRole('slider')
+    fireEvent.change(sliders[2], { target: { value: '0' } })
+
+    // 在 2026年度财务 下添加子目录
+    // 找到该节点的行或添加子目录按钮
+    const parentRow = screen.getByText('2026年度财务').closest('[draggable="true"]')!
+    const addSubdirBtn = parentRow.querySelector('[title*="新建子目录"]') || parentRow.querySelector('[title*="添加"]')
+    if (addSubdirBtn) {
+      fireEvent.click(addSubdirBtn)
+      const input = await screen.findByPlaceholderText('按 Enter 确认创建')
+      fireEvent.change(input, { target: { value: 'Q1专项目录' } })
+      fireEvent.keyDown(input, { key: 'Enter' })
+
+      await waitFor(() => {
+        expect(screen.getByText('Q1专项目录')).toBeInTheDocument()
+      })
+
+      // 超出 0，自动调大到 1 并给出 Toast
+      expect(mockToastInfo).toHaveBeenCalledWith('已自动调整滑块目录数量以适应新增加的目录')
+      expect(sliders[2]).toHaveValue('1')
+    }
+  })
+
+  it('无论用户增删改目录，当重新聚类计算时均保留并应用用户的修改成果', async () => {
+    render(
+      <SmartClusteringView
+        workspaceId={1}
+        workspaceDirectoryPath="/test/workspace"
+        onSaveVirtualDirectory={mockSaveVirtualDirectory}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('2026年度财务')).toBeInTheDocument()
+    })
+
+    // 1. 增：添加自定义根目录
+    fireEvent.click(screen.getByText('新建根目录'))
+    const addInput = await screen.findByPlaceholderText('按 Enter 确认创建')
+    fireEvent.change(addInput, { target: { value: '用户自定义项目' } })
+    fireEvent.keyDown(addInput, { key: 'Enter' })
+    await waitFor(() => {
+      expect(screen.getByText('用户自定义项目')).toBeInTheDocument()
+    })
+
+    // 2. 删：删除设计稿素材
+    const designRow = screen.getByText('设计稿素材').closest('[draggable="true"]')!
+    const deleteBtn = designRow.querySelector('[title*="删除"]')
+    if (deleteBtn) {
+      fireEvent.click(deleteBtn)
+      await waitFor(() => {
+        expect(screen.queryByText('设计稿素材')).toBeNull()
+      })
+    }
+
+    // 3. 改：重命名 2026年度财务 -> 2026年度财务总账
+    const financeRow = screen.getByText('2026年度财务').closest('[draggable="true"]')!
+    const renameBtn = financeRow.querySelector('[title*="重命名"]')
+    if (renameBtn) {
+      fireEvent.click(renameBtn)
+      const editInput = financeRow.querySelector('input[type="text"]') as HTMLInputElement
+      if (editInput) {
+        fireEvent.change(editInput, { target: { value: '2026年度财务总账' } })
+        fireEvent.keyDown(editInput, { key: 'Enter' })
+        await waitFor(() => {
+          expect(screen.getByText('2026年度财务总账')).toBeInTheDocument()
+        })
+      }
+    }
+
+    // 重新聚类返回新的计算结果（包含原 2026年度财务 与 设计稿素材）
+    mockSmartClusterHac.mockResolvedValueOnce({
+      success: true,
+      directories: [
+        {
+          name: '2026年度财务',
+          parent: null,
+          fileCount: 1,
+          totalSize: 50,
+          files: [{ id: 10, name: '新财务表.xlsx', size: 50 }],
+          subdirectories: []
+        },
+        {
+          name: '设计稿素材',
+          parent: null,
+          fileCount: 1,
+          totalSize: 30,
+          files: [{ id: 20, name: '新设计稿.psd', size: 30 }],
+          subdirectories: []
+        }
+      ],
+      durationMs: 50,
+      summary: '第二次聚类'
+    })
+
+    // 点击重新生成聚类（全自动静默融合，无需确认弹窗）
+    const regenBtn = screen.getByText('重新生成聚类')
+    fireEvent.click(regenBtn)
+
+    // 验证聚类重算时应用用户的修改成果：
+    // - 新增的「用户自定义项目」保持存在
+    // - 被删除的「设计稿素材」不复活，其名下文件收拢至未归类节点
+    // - 重命名的「2026年度财务」保持「2026年度财务总账」
+    await waitFor(() => {
+      expect(screen.getByText('用户自定义项目')).toBeInTheDocument()
+      expect(screen.getByText('2026年度财务总账')).toBeInTheDocument()
+      expect(screen.queryByText('设计稿素材')).toBeNull()
+      expect(screen.getByText('未归类')).toBeInTheDocument()
+      expect(screen.getByText('新设计稿.psd')).toBeInTheDocument()
+    })
   })
 });

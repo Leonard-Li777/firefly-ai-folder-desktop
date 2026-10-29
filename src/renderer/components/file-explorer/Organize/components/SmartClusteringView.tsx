@@ -7,16 +7,16 @@ import { Badge } from '../../../ui/badge'
 import { Textarea } from '../../../ui/textarea'
 import { VDirTree } from './VDirTree'
 import { t } from '@app/languages'
+import { toast } from '../../../common/Toast'
+import { isUnclassifiedNodeName } from '../utils/helpers'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from '../../../ui/alert-dialog'
+  reconcileClusteringWithUserEdits,
+  UserAddedDirectoryItem,
+  UserMovedFileItem,
+  getNodeKey,
+  getFileUniqueId
+} from '../utils/reconcile-clustering'
+
 import { useOrganizeStore } from '../../../../stores/organize-store'
 
 /**
@@ -162,9 +162,13 @@ const SmartClusteringViewInner = (
   const [errorMsg, setErrorMsg] = useState<string>('')
   const [isSaving, setIsSaving] = useState<boolean>(false)
 
-  // 脏状态防覆盖弹窗状态
-  const [showDirtyDialog, setShowDirtyDialog] = useState<boolean>(false)
-  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
+// 自动融合模式：已移除侵入式弹窗
+
+  // 用户手动微调记忆（增、删、改），供聚类重算时融合保留
+  const userAddedDirsRef = React.useRef<UserAddedDirectoryItem[]>([])
+  const userDeletedDirsRef = React.useRef<Set<string>>(new Set())
+  const userRenamedDirsRef = React.useRef<Map<string, string>>(new Map())
+  const userMovedFilesRef = React.useRef<Map<string, UserMovedFileItem>>(new Map())
 
   const isFirstMount = React.useRef(true)
   const currentRequestIdRef = React.useRef<number>(0)
@@ -242,10 +246,61 @@ const SmartClusteringViewInner = (
           setSummary('')
           setDurationMs(0)
         } else {
-          setTree(res.directories || [])
+          const rawDirs = res.directories || []
+          const mergedTree = reconcileClusteringWithUserEdits(rawDirs, {
+            addedNodes: userAddedDirsRef.current,
+            deletedNodeKeys: userDeletedDirsRef.current,
+            renamedNodes: userRenamedDirsRef.current,
+            pinnedFiles: userMovedFilesRef.current
+          })
+
+          // 后置滑块同步：若因自定义节点或子目录提升为根导致实际数量超出滑块设定，静默向上对齐
+          const businessRoots = mergedTree.filter(
+            n => !(n as any).isUnclassified && !isUnclassifiedNodeName(n.name)
+          ).length
+          if (businessRoots > maxRootDirectoriesRef.current) {
+            const clamped = Math.min(100, businessRoots)
+            setMaxRootDirectories(clamped)
+            maxRootDirectoriesRef.current = clamped
+            lastCommittedParamsRef.current.maxRootDirectories = clamped
+          }
+
+          let maxSub = 0
+          let maxD = 1
+          const checkTreeBounds = (nodes: VirtualDirectoryNode[], depth = 1) => {
+            if (depth > maxD) maxD = depth
+            for (const n of nodes) {
+              const subs = (n.subdirectories || []).filter(
+                s => !(s as any).isUnclassified && !isUnclassifiedNodeName(s.name)
+              )
+              if (subs.length > maxSub) maxSub = subs.length
+              if (subs.length > 0) checkTreeBounds(subs, depth + 1)
+            }
+          }
+          checkTreeBounds(mergedTree, 1)
+
+          if (maxSub > maxSubdirectoriesRef.current) {
+            const clamped = Math.min(100, maxSub)
+            setMaxSubdirectories(clamped)
+            maxSubdirectoriesRef.current = clamped
+            lastCommittedParamsRef.current.maxSubdirectories = clamped
+          }
+          if (maxD > maxDepthRef.current) {
+            const clamped = Math.min(10, maxD)
+            setMaxDepth(clamped)
+            maxDepthRef.current = clamped
+            lastCommittedParamsRef.current.maxDepth = clamped
+          }
+
+          setTree(mergedTree)
           setSummary(res.summary || '')
           setDurationMs(res.durationMs || 0)
-          setIsTreeDirty(false)
+          const hasCustomizations =
+            userAddedDirsRef.current.length > 0 ||
+            userDeletedDirsRef.current.size > 0 ||
+            userRenamedDirsRef.current.size > 0 ||
+            userMovedFilesRef.current.size > 0
+          setIsTreeDirty(hasCustomizations)
         }
       } catch (err: any) {
         if (requestId === currentRequestIdRef.current) {
@@ -297,13 +352,10 @@ const SmartClusteringViewInner = (
     }
   }, [workspaceKey, executeClustering])
 
-  // 聚类参数防抖联动 (400ms)
+  // 聚类参数防抖联动 (400ms)（全自动静默融合模式：无需拦截 isTreeDirty）
   useEffect(() => {
     if (isFirstMount.current) {
       isFirstMount.current = false
-      return
-    }
-    if (isTreeDirty) {
       return
     }
     const timer = setTimeout(() => {
@@ -334,22 +386,13 @@ const SmartClusteringViewInner = (
       }
     }, 400)
     return () => clearTimeout(timer)
-  }, [prompt, maxDepth, maxRootDirectories, maxSubdirectories, similarityThreshold, clusteringMode, isTreeDirty, executeClustering])
+  }, [prompt, maxDepth, maxRootDirectories, maxSubdirectories, similarityThreshold, clusteringMode, executeClustering])
 
-  // 用户请求触发聚类（带脏状态拦截）
+  // 用户请求触发聚类（全自动静默融合，保留用户修改）
   const handleRequestClustering = (targetPrompt: string) => {
-    if (isTreeDirty) {
-      setPendingAction(() => () => {
-        setPrompt(targetPrompt)
-        lastCommittedParamsRef.current.prompt = targetPrompt.trim()
-        executeClustering(targetPrompt)
-      })
-      setShowDirtyDialog(true)
-    } else {
-      setPrompt(targetPrompt)
-      lastCommittedParamsRef.current.prompt = targetPrompt.trim()
-      executeClustering(targetPrompt)
-    }
+    setPrompt(targetPrompt)
+    lastCommittedParamsRef.current.prompt = targetPrompt.trim()
+    executeClustering(targetPrompt)
   }
 
   const handleSliderChange = (
@@ -359,71 +402,111 @@ const SmartClusteringViewInner = (
   ) => {
     // 标记用户已手动调节过滑块，后续不再被自适应默认值重置
     hasUserModifiedSlidersRef.current = true
-    if (isTreeDirty) {
-      setPendingAction(() => () => {
-        setter(val)
-        lastCommittedParamsRef.current[name] = val
-        executeClustering(prompt, {
-          [name]: name === 'similarityThreshold' ? val / 100 : val
-        })
-      })
-      setShowDirtyDialog(true)
-    } else {
-      setter(val)
-    }
+    setter(val)
   }
-
 
   const handleModeChange = (mode: ClusteringMode) => {
     if (mode === clusteringMode) return
-    if (isTreeDirty) {
-      setPendingAction(() => () => {
-        setClusteringMode(mode)
-        lastCommittedParamsRef.current.clusteringMode = mode
-        executeClustering(prompt, { clusteringMode: mode })
-      })
-      setShowDirtyDialog(true)
-    } else {
-      setClusteringMode(mode)
-      lastCommittedParamsRef.current.clusteringMode = mode
-      executeClustering(prompt, { clusteringMode: mode })
-    }
+    setClusteringMode(mode)
+    lastCommittedParamsRef.current.clusteringMode = mode
+    executeClustering(prompt, { clusteringMode: mode })
   }
 
-  const handleCancelDirtyOverwrite = () => {
-    setShowDirtyDialog(false)
-    setPendingAction(null)
-    // 立即回滚 4 个滑块到最近一次稳定状态
-    const last = lastCommittedParamsRef.current
-    setMaxDepth(last.maxDepth)
-    setMaxRootDirectories(last.maxRootDirectories)
-    setMaxSubdirectories(last.maxSubdirectories)
-    setSimilarityThreshold(last.similarityThreshold)
-    setClusteringMode(last.clusteringMode)
-  }
-
-  const handleConfirmDirtyOverwrite = () => {
-    setShowDirtyDialog(false)
+  // 清空手动微调账本
+  const handleClearCustomizations = useCallback(() => {
+    userAddedDirsRef.current = []
+    userDeletedDirsRef.current.clear()
+    userRenamedDirsRef.current.clear()
+    userMovedFilesRef.current.clear()
     setIsTreeDirty(false)
-    if (pendingAction) {
-      pendingAction()
-      setPendingAction(null)
-    }
-  }
-
-  // 辅助函数：计算节点的路径唯一 key
-  const getNodeKey = (node: any): string => {
-    if (node.id) return String(node.id)
-    return node.parent ? `${node.parent}/${node.name}` : node.name
-  }
+    executeClustering(prompt)
+    toast.info(t('已清空手动微调'))
+  }, [executeClustering, prompt])
 
   // 目录树内联节点微调回调（变更即置 isTreeDirty = true）
   const handleRenameNode = useCallback((nodeKey: string, newName: string) => {
+    const trimmed = newName.trim()
+    if (!trimmed) return
+
+    if (trimmed.includes('/') || trimmed.includes('\\')) {
+      toast.warning(t('目录名称不能包含斜杠字符'))
+      return
+    }
+
+    // 1. 如果该节点是用户自定义新建的目录
+    const addedItemIndex = userAddedDirsRef.current.findIndex(item => {
+      const itemKey = item.parentKey ? `${item.parentKey}/${item.name}` : item.name
+      return itemKey === nodeKey
+    })
+
+    if (addedItemIndex !== -1) {
+      const addedItem = userAddedDirsRef.current[addedItemIndex]
+      const oldItemKey = addedItem.parentKey ? `${addedItem.parentKey}/${addedItem.name}` : addedItem.name
+      const newItemKey = addedItem.parentKey ? `${addedItem.parentKey}/${trimmed}` : trimmed
+
+      // 更新自身
+      addedItem.name = trimmed
+      addedItem.node.name = trimmed
+
+      // 级联更新子节点的 parentKey
+      for (const item of userAddedDirsRef.current) {
+        if (item.parentKey === oldItemKey) {
+          item.parentKey = newItemKey
+        } else if (item.parentKey.startsWith(`${oldItemKey}/`)) {
+          item.parentKey = item.parentKey.replace(oldItemKey, newItemKey)
+        }
+      }
+
+      // 级联更新 pinnedFiles 的目标节点 key
+      for (const [fId, pItem] of userMovedFilesRef.current.entries()) {
+        if (pItem.targetNodeKey === oldItemKey) {
+          userMovedFilesRef.current.set(fId, { ...pItem, targetNodeKey: newItemKey })
+        } else if (pItem.targetNodeKey.startsWith(`${oldItemKey}/`)) {
+          userMovedFilesRef.current.set(fId, {
+            ...pItem,
+            targetNodeKey: pItem.targetNodeKey.replace(oldItemKey, newItemKey)
+          })
+        }
+      }
+    } else {
+      // 2. 如果是 AI 聚类生成的目录，做反向溯源与键名归一化（支持连续重命名）
+      let rawKey = nodeKey
+      for (const [orig, mapped] of userRenamedDirsRef.current.entries()) {
+        if (mapped === nodeKey || orig === nodeKey) {
+          rawKey = orig
+          break
+        }
+      }
+
+      userRenamedDirsRef.current.set(rawKey, trimmed)
+
+      // 级联更新 pinnedFiles 的目标节点 key
+      for (const [fId, pItem] of userMovedFilesRef.current.entries()) {
+        if (pItem.targetNodeKey === nodeKey) {
+          userMovedFilesRef.current.set(fId, { ...pItem, targetNodeKey: trimmed })
+        } else if (pItem.targetNodeKey.startsWith(`${nodeKey}/`)) {
+          userMovedFilesRef.current.set(fId, {
+            ...pItem,
+            targetNodeKey: pItem.targetNodeKey.replace(nodeKey, trimmed)
+          })
+        }
+      }
+
+      // 级联更新 addedNodes 中挂载在此目录下的子目录的 parentKey
+      for (const item of userAddedDirsRef.current) {
+        if (item.parentKey === nodeKey) {
+          item.parentKey = trimmed
+        } else if (item.parentKey.startsWith(`${nodeKey}/`)) {
+          item.parentKey = item.parentKey.replace(nodeKey, trimmed)
+        }
+      }
+    }
+
     const updateNodes = (nodes: VirtualDirectoryNode[]): VirtualDirectoryNode[] => {
       return nodes.map(node => {
         const curKey = getNodeKey(node)
         if (curKey === nodeKey) {
-          return { ...node, name: newName }
+          return { ...node, name: trimmed }
         }
         if (node.subdirectories && node.subdirectories.length > 0) {
           return { ...node, subdirectories: updateNodes(node.subdirectories) }
@@ -436,6 +519,38 @@ const SmartClusteringViewInner = (
   }, [])
 
   const handleDeleteNode = useCallback((nodeKey: string) => {
+    // 1. 判断是否属于用户自定义新建的目录
+    const isAddedNode = userAddedDirsRef.current.some(item => {
+      const itemKey = item.parentKey ? `${item.parentKey}/${item.name}` : item.name
+      return itemKey === nodeKey || itemKey.startsWith(`${nodeKey}/`)
+    })
+
+    if (isAddedNode) {
+      // 自定义目录直接从 addedNodes 移除，不进入 deletedNodeKeys 黑名单（防误杀同名 AI 簇）
+      userAddedDirsRef.current = userAddedDirsRef.current.filter(item => {
+        const itemKey = item.parentKey ? `${item.parentKey}/${item.name}` : item.name
+        return itemKey !== nodeKey && !itemKey.startsWith(`${nodeKey}/`)
+      })
+    } else {
+      // 只有 AI 簇被删除时才加入黑名单
+      userDeletedDirsRef.current.add(nodeKey)
+    }
+
+    // 2. 清理重命名映射
+    userRenamedDirsRef.current.delete(nodeKey)
+    for (const [origKey, val] of userRenamedDirsRef.current.entries()) {
+      if (val === nodeKey || origKey === nodeKey || origKey.startsWith(`${nodeKey}/`)) {
+        userRenamedDirsRef.current.delete(origKey)
+      }
+    }
+
+    // 3. 级联清理指向该目录及其子树的所有 pinnedFiles 记录
+    for (const [fId, item] of userMovedFilesRef.current.entries()) {
+      if (item.targetNodeKey === nodeKey || item.targetNodeKey.startsWith(`${nodeKey}/`)) {
+        userMovedFilesRef.current.delete(fId)
+      }
+    }
+
     const filterNodes = (nodes: VirtualDirectoryNode[]): VirtualDirectoryNode[] => {
       return nodes
         .filter(node => getNodeKey(node) !== nodeKey)
@@ -451,18 +566,121 @@ const SmartClusteringViewInner = (
   }, [])
 
   const handleAddSubdir = useCallback((parentKey: string, subdirName: string) => {
+    const trimmed = subdirName.trim()
+    if (!trimmed) return
+
+    if (trimmed.includes('/') || trimmed.includes('\\')) {
+      toast.warning(t('目录名称不能包含斜杠字符'))
+      return
+    }
+
+    let adjustedSlider = false
+
+    const isSentinel = (node: VirtualDirectoryNode) =>
+      !!(node as any).isUnclassified || isUnclassifiedNodeName(node.name)
+
+    if (!parentKey) {
+      // 1. 新建根目录：计算有效业务根目录数（排除未归类等哨兵节点）
+      const currentBusinessRoots = tree.filter(n => !isSentinel(n)).length
+      if (currentBusinessRoots >= 100) {
+        toast.warning(t('已达到最大目录数量上限'))
+        return
+      }
+
+      const newRootsCount = currentBusinessRoots + 1
+      if (newRootsCount > maxRootDirectoriesRef.current) {
+        const nextVal = Math.min(100, newRootsCount)
+        setMaxRootDirectories(nextVal)
+        maxRootDirectoriesRef.current = nextVal
+        lastCommittedParamsRef.current.maxRootDirectories = nextVal
+        adjustedSlider = true
+      }
+
+      const newRoot: VirtualDirectoryNode = {
+        name: trimmed,
+        parent: null,
+        fileCount: 0,
+        totalSize: 0,
+        files: [],
+        subdirectories: []
+      }
+
+      userAddedDirsRef.current.push({
+        parentKey: '',
+        name: trimmed,
+        node: newRoot
+      })
+
+      setTree(prev => [...prev, newRoot])
+      setIsTreeDirty(true)
+
+      if (adjustedSlider) {
+        toast.info(t('已自动调整滑块目录数量以适应新增加的目录'))
+      }
+      return
+    }
+
+    // 2. 新建子目录
+    let currentSubCount = 0
+    const findParentSubCount = (nodes: VirtualDirectoryNode[]) => {
+      for (const node of nodes) {
+        const curKey = getNodeKey(node)
+        if (curKey === parentKey) {
+          currentSubCount = (node.subdirectories || []).filter(s => !isSentinel(s)).length
+          return
+        }
+        if (node.subdirectories && node.subdirectories.length > 0) {
+          findParentSubCount(node.subdirectories)
+        }
+      }
+    }
+    findParentSubCount(tree)
+
+    const targetDepth = parentKey.split('/').length + 1
+    if (targetDepth > 10) {
+      toast.warning(t('已达到最大目录层级上限'))
+      return
+    }
+    if (currentSubCount >= 100) {
+      toast.warning(t('已达到最大目录数量上限'))
+      return
+    }
+
+    const newSubCount = currentSubCount + 1
+    if (newSubCount > maxSubdirectoriesRef.current) {
+      const nextVal = Math.min(100, newSubCount)
+      setMaxSubdirectories(nextVal)
+      maxSubdirectoriesRef.current = nextVal
+      lastCommittedParamsRef.current.maxSubdirectories = nextVal
+      adjustedSlider = true
+    }
+
+    if (targetDepth > maxDepthRef.current) {
+      const nextDepth = Math.min(10, targetDepth)
+      setMaxDepth(nextDepth)
+      maxDepthRef.current = nextDepth
+      lastCommittedParamsRef.current.maxDepth = nextDepth
+    }
+
+    const newSub: VirtualDirectoryNode = {
+      name: trimmed,
+      parent: parentKey,
+      fileCount: 0,
+      totalSize: 0,
+      files: [],
+      subdirectories: []
+    }
+
+    userAddedDirsRef.current.push({
+      parentKey,
+      name: trimmed,
+      node: newSub
+    })
+
     const insertSubdir = (nodes: VirtualDirectoryNode[]): VirtualDirectoryNode[] => {
       return nodes.map(node => {
         const curKey = getNodeKey(node)
         if (curKey === parentKey) {
-          const newSub: VirtualDirectoryNode = {
-            name: subdirName,
-            parent: curKey,
-            fileCount: 0,
-            totalSize: 0,
-            files: [],
-            subdirectories: []
-          }
           return {
             ...node,
             subdirectories: [...(node.subdirectories || []), newSub]
@@ -474,11 +692,24 @@ const SmartClusteringViewInner = (
         return node
       })
     }
+
     setTree(prev => insertSubdir(prev))
     setIsTreeDirty(true)
-  }, [])
+
+    if (adjustedSlider) {
+      toast.info(t('已自动调整滑块目录数量以适应新增加的目录'))
+    }
+  }, [tree])
 
   const handleMoveNodeOrFile = useCallback((source: any, targetNodeKey: string) => {
+    if (source.type === 'file' && source.file) {
+      const fId = getFileUniqueId(source.file)
+      userMovedFilesRef.current.set(fId, {
+        file: source.file,
+        targetNodeKey
+      })
+    }
+
     setTree(prev => {
       let targetFile: any = null
 
@@ -526,6 +757,31 @@ const SmartClusteringViewInner = (
       return recomputeFileCounts(addFileToTarget(removeFromAll(prev)))
     })
     setIsTreeDirty(true)
+  }, [])
+
+  // 解锁被用户手动固定的文件，交还 AI 重新聚类
+  const handleUnpinFile = useCallback((file: any) => {
+    const fId = getFileUniqueId(file)
+    userMovedFilesRef.current.delete(fId)
+
+    const updatePinnedInTree = (nodes: VirtualDirectoryNode[]): VirtualDirectoryNode[] => {
+      return nodes.map(node => ({
+        ...node,
+        files: (node.files || []).map(f =>
+          getFileUniqueId(f) === fId ? { ...f, isPinned: false } : f
+        ),
+        subdirectories: node.subdirectories ? updatePinnedInTree(node.subdirectories) : []
+      }))
+    }
+    setTree(prev => updatePinnedInTree(prev))
+
+    const hasCustomizations =
+      userAddedDirsRef.current.length > 0 ||
+      userDeletedDirsRef.current.size > 0 ||
+      userRenamedDirsRef.current.size > 0 ||
+      userMovedFilesRef.current.size > 0
+    setIsTreeDirty(hasCustomizations)
+    toast.success(t('已解锁文件，下次重新聚类时将交还 AI 自动整理'))
   }, [])
 
   // 保存为虚拟目录
@@ -721,33 +977,7 @@ const SmartClusteringViewInner = (
             </div>
           </div>
           
-          {/* 0. 相似度阈值 (0%..=100%) */}
-          <div className="space-y-1">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">{t('相似度基准')}</span>
-              <Badge variant="outline" className="text-[11px] h-5 px-1.5 font-mono">
-                {getSimilarityLabel(similarityThreshold)}
-              </Badge>
-            </div>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              step={5}
-              value={similarityThreshold}
-              disabled={isGenerating}
-              onChange={e => handleSliderChange(setSimilarityThreshold, 'similarityThreshold', Number(e.target.value))}
-              className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-            />
-            <div className="flex justify-between text-[10px] text-muted-foreground/60 px-0.5">
-              <span>0% ({t('松散')})</span>
-              <span>60% ({t('标准')})</span>
-              <span>100% ({t('精细')})</span>
-            </div>
-          </div>
-        </div>
-
-        {/* 1. 目录层级深度 (1..=10) */}
+          {/* 1. 目录层级深度 (1..=10) */}
         <div className="space-y-1">
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground">{t('目录层级深度')}</span>
@@ -822,13 +1052,45 @@ const SmartClusteringViewInner = (
           </div>
         </div>
 
+        {/* 4. 相似度基准 (0%..=100%) */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">{t('相似度基准')}</span>
+            <Badge variant="outline" className="text-[11px] h-5 px-1.5 font-mono">
+              {getSimilarityLabel(similarityThreshold)}
+            </Badge>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={5}
+            value={similarityThreshold}
+            disabled={isGenerating}
+            onChange={e => handleSliderChange(setSimilarityThreshold, 'similarityThreshold', Number(e.target.value))}
+            className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+          />
+          <div className="flex justify-between text-[10px] text-muted-foreground/60 px-0.5">
+            <span>0% ({t('松散')})</span>
+            <span>60% ({t('标准')})</span>
+            <span>100% ({t('精细')})</span>
+          </div>
+        </div>
+        </div>
 
-
-        {/* 脏状态保护指示器 */}
+{/* 脏状态与手动微调保留提示栏 */}
         {isTreeDirty && (
-          <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs flex items-center gap-2">
-            <MaterialIcon icon="edit_note" className="text-sm shrink-0" />
-            <span>{t('已手动微调目录树，重新聚类将提示覆盖确认。')}</span>
+          <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <MaterialIcon icon="edit_note" className="text-sm shrink-0" />
+              <span className="truncate">{t('已手动微调目录树，重新聚类将自动融合保留修改。')}</span>
+            </div>
+            <button
+              onClick={handleClearCustomizations}
+              className="text-[11px] underline hover:text-amber-700 dark:hover:text-amber-300 shrink-0 cursor-pointer"
+            >
+              {t('清空微调')}
+            </button>
           </div>
         )}
       </div>
@@ -886,6 +1148,7 @@ const SmartClusteringViewInner = (
                 onDeleteNode={handleDeleteNode}
                 onAddSubdir={handleAddSubdir}
                 onMoveNodeOrFile={handleMoveNodeOrFile}
+                onUnpinFile={handleUnpinFile}
               />
             </div>
           ) : (
@@ -897,33 +1160,7 @@ const SmartClusteringViewInner = (
         </div>
       </div>
 
-      {/* ─── 脏状态防覆盖确认对话框 (Dirty Overwrite Dialog) ─── */}
-      <AlertDialog open={showDirtyDialog} onOpenChange={setShowDirtyDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <MaterialIcon icon="warning" className="text-amber-500" />
-              <span>{t('覆盖微调确认')}</span>
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {t(
-                '检测到您已手动微调过当前目录树（如重命名或移动文件）。重新聚类将基于新提示词覆盖所有手动调整成果，是否继续？'
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleCancelDirtyOverwrite}>
-              {t('取消')}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmDirtyOverwrite}
-              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-            >
-              {t('覆盖并重新聚类')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+
     </div>
   )
 }

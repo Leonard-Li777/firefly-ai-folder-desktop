@@ -2,7 +2,6 @@ import React from 'react'
 import { VirtualDirectoryNode } from '@firefly/types'
 import { OrganizeMode, OrganizeOptions } from '../types'
 import { SplitPane } from '../../../common/SplitPane'
-import { PlanSidebar } from './PlanSidebar'
 import { MaterialIcon } from '../../../../lib/utils'
 import { FileTypeIcon, extractFileExtension } from '../../../common/FileTypeIcon'
 import i18nScope, { t } from '@app/languages'
@@ -372,245 +371,58 @@ export function DoneView({
   )
 
   return (
-    <SplitPane
-      direction="horizontal"
-      storageKey="organize-done"
-      className="flex-1"
-      sections={[
-        {
-          id: 'plan-sidebar',
-          type: 'pixel' as const,
-          defaultSize: 300,
-          minSize: 200,
-          content: <PlanSidebar draft={draft} candidate={candidate} />
-        },
-        {
-          id: 'done-content',
-          type: 'flex' as const,
-          defaultSize: 1,
-          minSize: 300,
-          content: (
-            <div className="h-full flex flex-col overflow-hidden">
-              <div className="px-4 py-2 border-b bg-emerald-50/30 dark:bg-emerald-900/5 flex-shrink-0">
-                <div className="flex items-center gap-4 flex-wrap">
-                  <div className="flex items-center gap-2 text-xs font-medium text-emerald-700 dark:text-emerald-400">
-                    <MaterialIcon icon="check_circle" className="text-emerald-500 text-sm" />
-                    <span>
-                      {isIncremental
-                        ? showPreviousClassified
-                          ? t('整理完成，全量共 {count} 个文件已归类', {
-                              count: totalClassifiedCount
-                            })
-                          : t('整理完成，新增 {current} 个，共计 {total} 个文件已归类', {
-                              total: totalClassifiedCount,
-                              current: currentBatchClassifiedCount
-                            })
-                        : t('整理完成，共 {count} 个文件已归类', { count: classifiedCount })}
-                    </span>
-                    {unmatchedCount > 0 && (
-                      <span className="text-muted-foreground ml-2 border-l pl-2 border-muted-foreground/20">
-                        {t('其中 {unmatched} 个文件未归类', { unmatched: unmatchedCount })}
-                      </span>
-                    )}
-                  </div>
+    <div className="h-full flex flex-col overflow-hidden">
+      <div className="px-4 py-2 border-b bg-emerald-50/30 dark:bg-emerald-900/5 flex-shrink-0">
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-2 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+            <MaterialIcon icon="check_circle" className="text-emerald-500 text-sm" />
+            <span>
+              {isIncremental
+                ? showPreviousClassified
+                  ? t('整理完成，全量共 {count} 个文件已归类', {
+                      count: totalClassifiedCount
+                    })
+                  : t('整理完成，新增 {current} 个，共计 {total} 个文件已归类', {
+                      total: totalClassifiedCount,
+                      current: currentBatchClassifiedCount
+                    })
+                : t('整理完成，共 {count} 个文件已归类', { count: classifiedCount })}
+            </span>
+            {unmatchedCount > 0 && (
+              <span className="text-muted-foreground ml-2 border-l pl-2 border-muted-foreground/20">
+                {t('其中 {unmatched} 个文件未归类', { unmatched: unmatchedCount })}
+              </span>
+            )}
+          </div>
 
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={onReorganize}
-                      className="h-8 text-xs gap-1"
-                    >
-                      <MaterialIcon icon="refresh" className="text-sm" />
-                      {t('重新整理')}
-                    </Button>
-                  </div>
-                </div>
-              </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onReorganize}
+              className="h-8 text-xs gap-1"
+            >
+              <MaterialIcon icon="refresh" className="text-sm" />
+              {t('重新整理')}
+            </Button>
+          </div>
+        </div>
+      </div>
 
-              <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-                {showUnclassified ? (
-                  <SplitPane
-                    direction="horizontal"
-                    storageKey="organize-done-trees"
-                    className="flex-1"
-                    sections={[
-                      {
-                        id: 'classified-tree',
-                        type: 'flex' as const,
-                        defaultSize: 1,
-                        minSize: 200,
-                        content: (
-                          <div className="h-full flex flex-col overflow-hidden p-4">
-                            <div className="flex-1 overflow-auto">
-                              <VDirTree
-                                nodes={classifiedTree}
-                                onDeleteNode={onDeleteNode}
-                                onRenameNode={onRenameNode}
-                                onAddSubdir={onAddSubdir}
-                                onMoveNodeOrFile={handleMoveNodeOrFile}
-                                highFrequencyTags={highFrequencyTags}
-                                currentVDirId={currentVDir?.id}
-                                extraHeaderAction={
-                                  isIncremental ? (
-                                    <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors select-none">
-                                      <Checkbox
-                                        checked={showPreviousClassified}
-                                        onCheckedChange={checked =>
-                                          setShowPreviousClassified(!!checked)
-                                        }
-                                      />
-                                      <span>{t('显示前次已归类文件')}</span>
-                                    </label>
-                                  ) : undefined
-                                }
-                              />
-                            </div>
-                            {renderRules()}
-                          </div>
-                        )
-                      },
-                      {
-                        id: 'unclassified-list',
-                        type: 'pixel' as const,
-                        defaultSize: 300,
-                        minSize: 200,
-                        content: (
-                          <div className="h-full flex flex-col overflow-hidden p-4 border-l border-border bg-muted/10">
-                            <div className="mb-2 flex items-center justify-between flex-wrap gap-2">
-                              <div className="text-xs font-semibold text-muted-foreground flex items-center gap-1 shrink-0 whitespace-nowrap">
-                                <MaterialIcon
-                                  icon="help_outline"
-                                  className="text-xs text-yellow-500"
-                                />
-                                <span>
-                                  {t('未归类文件 ({count})', { count: unclassifiedFiles.length })}
-                                </span>
-                                {hasRescueFailed && (
-                                  <span className="text-[10px] text-amber-600 dark:text-amber-400 flex items-center gap-0.5 select-none bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 whitespace-nowrap shrink-0">
-                                    <MaterialIcon icon="info" className="text-[12px]" />
-                                    {t('已尝试找补')}
-                                  </span>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => onRescue(true)}
-                                  disabled={isRescuing || isAutoRescuing}
-                                  className="h-6 px-2 text-[10px] gap-0.5 whitespace-nowrap shrink-0"
-                                >
-                                  <MaterialIcon
-                                    icon={isRescuing && !isAutoRescuing ? 'sync' : 'auto_fix_high'}
-                                    className={`text-xs ${isRescuing && !isAutoRescuing ? 'animate-spin' : ''}`}
-                                  />
-                                  {isRescuing && !isAutoRescuing
-                                    ? t('找补中...')
-                                    : unclassifiedFiles.length > 200
-                                      ? t('AI 优先找补前 200 个高潜文件 (共 {count} 个)', {
-                                          count: unclassifiedFiles.length
-                                        })
-                                      : t('高级 AI 深度找补 ({count} 个)', {
-                                          count: unclassifiedFiles.length
-                                        })}
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={onAutoRescue}
-                                  disabled={isRescuing || isAutoRescuing}
-                                  className="h-6 px-2 text-[10px] gap-0.5 whitespace-nowrap shrink-0"
-                                >
-                                  <MaterialIcon
-                                    icon={isAutoRescuing ? 'sync' : 'auto_mode'}
-                                    className={`text-xs ${isAutoRescuing ? 'animate-spin' : ''}`}
-                                  />
-                                  {isAutoRescuing ? t('自动找补中...') : t('自动找补')}
-                                </Button>
-                              </div>
-                            </div>
-
-                            {/* 找补批次进度条 Banner */}
-                            {(isRescuing || isAutoRescuing) && (
-                              <div className="bg-primary/10 border-b border-primary/20 px-3 py-2 space-y-1.5 animate-in fade-in duration-200 mb-2 rounded-md">
-                                <div className="flex items-center justify-between text-[11px] font-semibold text-foreground">
-                                  <span className="flex items-center gap-1.5">
-                                    <MaterialIcon
-                                      icon="sync"
-                                      className="text-primary text-xs animate-spin shrink-0"
-                                    />
-                                    <span>
-                                      {progressInfo?.message || t('正在执行 AI 找补归类...')}
-                                    </span>
-                                  </span>
-                                  <span className="tabular-nums text-primary font-bold text-[10px]">
-                                    {t('第 {current} / {total} 批次', {
-                                      current: progressInfo?.current || 1,
-                                      total: progressInfo?.total || 1
-                                    })}
-                                  </span>
-                                </div>
-                                <div className="w-full h-1.5 bg-primary/20 rounded-full overflow-hidden">
-                                  <div
-                                    className="h-full bg-primary rounded-full transition-all duration-300 ease-out"
-                                    style={{
-                                      width: `${Math.min(
-                                        100,
-                                        Math.max(
-                                          10,
-                                          ((progressInfo?.current || 1) /
-                                            (progressInfo?.total || 1)) *
-                                            100
-                                        )
-                                      )}%`
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            )}
-
-                            <div className="flex-1 overflow-y-auto space-y-1">
-                              {unclassifiedFiles.map((file, idx) => (
-                                <div
-                                  key={`unclassified-${file.fileId || file.id || idx}`}
-                                  draggable
-                                  onDragStart={e => {
-                                    e.stopPropagation()
-                                    const data = { type: 'file', file }
-                                    e.dataTransfer.setData('application/json', JSON.stringify(data))
-                                    e.dataTransfer.effectAllowed = 'move'
-                                  }}
-                                  className="flex items-center py-1.5 px-2 text-sm text-muted-foreground hover:bg-accent/50 rounded group cursor-grab active:cursor-grabbing select-none"
-                                >
-                                  <FileTypeIcon
-                                    path={file.originalPath}
-                                    extension={extractFileExtension(file.originalPath || file.name)}
-                                    className="w-4 h-4 object-contain mr-2 shrink-0"
-                                    fallbackClassName="text-sm text-muted-foreground/60"
-                                  />
-                                  <span
-                                    className="truncate flex-1"
-                                    title={
-                                      swapFileNameDisplay
-                                        ? file.name || file.smartName || ''
-                                        : file.smartName || file.name
-                                    }
-                                  >
-                                    {swapFileNameDisplay
-                                      ? file.name || file.smartName || ''
-                                      : file.smartName || file.name}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )
-                      }
-                    ]}
-                  />
-                ) : (
-                  <div className="flex-1 flex flex-col overflow-hidden p-4">
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+        {showUnclassified ? (
+          <SplitPane
+            direction="horizontal"
+            storageKey="organize-done-50-50-trees"
+            className="flex-1"
+            sections={[
+              {
+                id: 'classified-tree',
+                type: 'flex' as const,
+                defaultSize: 1,
+                minSize: 300,
+                content: (
+                  <div className="h-full flex flex-col overflow-hidden p-4">
                     <div className="flex-1 overflow-auto">
                       <VDirTree
                         nodes={classifiedTree}
@@ -620,16 +432,229 @@ export function DoneView({
                         onMoveNodeOrFile={handleMoveNodeOrFile}
                         highFrequencyTags={highFrequencyTags}
                         currentVDirId={currentVDir?.id}
+                        extraHeaderAction={
+                          isIncremental ? (
+                            <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors select-none">
+                              <Checkbox
+                                checked={showPreviousClassified}
+                                onCheckedChange={checked =>
+                                  setShowPreviousClassified(!!checked)
+                                }
+                              />
+                              <span>{t('显示前次已归类文件')}</span>
+                            </label>
+                          ) : undefined
+                        }
                       />
                     </div>
                     {renderRules()}
                   </div>
-                )}
-              </div>
+                )
+              },
+              {
+                id: 'unclassified-list',
+                type: 'flex' as const,
+                defaultSize: 1,
+                minSize: 300,
+                content: (
+                  <div className="h-full flex flex-col overflow-hidden p-4 border-l border-border bg-muted/10">
+                    <div className="mb-3 flex items-center justify-between flex-wrap gap-2.5 pb-2.5 border-b border-border/60">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <div className="text-xs font-semibold text-foreground flex items-center gap-1.5 shrink-0 whitespace-nowrap">
+                          <MaterialIcon
+                            icon="help_outline"
+                            className="text-sm text-yellow-500"
+                          />
+                          <span>
+                            {t('未归类文件 ({count})', { count: unclassifiedFiles.length })}
+                          </span>
+                          {hasRescueFailed && (
+                            <span className="text-[10px] text-amber-600 dark:text-amber-400 flex items-center gap-0.5 select-none bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 whitespace-nowrap shrink-0">
+                              <MaterialIcon icon="info" className="text-[12px]" />
+                              {t('已尝试找补')}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* 允许 AI 新增目录 复选框（大白话） */}
+                        <label
+                          className="flex items-center gap-1.5 text-xs text-foreground cursor-pointer select-none font-medium pl-3 border-l border-border/60"
+                          title={t('预置目录不合适时，由 AI 自动创建新分类目录收纳文件')}
+                        >
+                          <Checkbox
+                            checked={options.allowCreateNew}
+                            onCheckedChange={checked =>
+                              setOptions(prev => ({ ...prev, allowCreateNew: !!checked }))
+                            }
+                            disabled={isRescuing || isAutoRescuing}
+                            className="w-3.5 h-3.5 rounded shrink-0"
+                          />
+                          <span className="shrink-0">{t('允许 AI 新增目录')}</span>
+                          <span className="text-[11px] text-muted-foreground hidden xl:inline">
+                            ({t('预置目录不合适时自动新建')})
+                          </span>
+                        </label>
+                      </div>
+
+                      {/* 并列双找补按钮 */}
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => onRescue(true)}
+                          disabled={isRescuing || isAutoRescuing}
+                          className="h-7 px-3 text-xs gap-1 font-semibold whitespace-nowrap shrink-0 shadow-sm"
+                        >
+                          <MaterialIcon
+                            icon={isRescuing && !isAutoRescuing ? 'sync' : 'auto_fix_high'}
+                            className={`text-sm ${isRescuing && !isAutoRescuing ? 'animate-spin' : ''}`}
+                          />
+                          <span>
+                            {isRescuing && !isAutoRescuing
+                              ? t('找补中...')
+                              : unclassifiedFiles.length > 200
+                                ? t('AI 优先找补前 200 个 (共 {count} 个)', {
+                                    count: unclassifiedFiles.length
+                                  })
+                                : t('高级 AI 深度找补 ({count} 个)', {
+                                    count: unclassifiedFiles.length
+                                  })}
+                          </span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={onAutoRescue}
+                          disabled={isRescuing || isAutoRescuing}
+                          className="h-7 px-3 text-xs gap-1 font-semibold whitespace-nowrap shrink-0 border-primary/30 text-primary hover:bg-primary/5"
+                        >
+                          <MaterialIcon
+                            icon={isAutoRescuing ? 'sync' : 'autorenew'}
+                            className={`text-sm ${isAutoRescuing ? 'animate-spin' : ''}`}
+                          />
+                          <span>{isAutoRescuing ? t('自动找补中...') : t('自动找补')}</span>
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* 找补批次进度条 Banner */}
+                    {(isRescuing || isAutoRescuing) && (
+                      <div className="bg-primary/10 border border-primary/20 px-3 py-2 space-y-1.5 animate-in fade-in duration-200 mb-3 rounded-lg">
+                        <div className="flex items-center justify-between text-xs font-semibold text-foreground">
+                          <span className="flex items-center gap-1.5">
+                            <MaterialIcon
+                              icon="sync"
+                              className="text-primary text-sm animate-spin shrink-0"
+                            />
+                            <span>
+                              {progressInfo?.message || t('正在执行 AI 找补归类...')}
+                            </span>
+                          </span>
+                          <span className="tabular-nums text-primary font-bold text-xs">
+                            {t('第 {current} / {total} 批次', {
+                              current: progressInfo?.current || 1,
+                              total: progressInfo?.total || 1
+                            })}
+                          </span>
+                        </div>
+                        <div className="w-full h-1.5 bg-primary/20 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-primary rounded-full transition-all duration-300 ease-out"
+                            style={{
+                              width: `${Math.min(
+                                100,
+                                Math.max(
+                                  10,
+                                  ((progressInfo?.current || 1) /
+                                    (progressInfo?.total || 1)) *
+                                    100
+                                )
+                              )}%`
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex-1 overflow-y-auto space-y-1">
+                      {unclassifiedFiles.map((file, idx) => (
+                        <div
+                          key={`unclassified-${file.fileId || file.id || idx}`}
+                          draggable
+                          onDragStart={e => {
+                            e.stopPropagation()
+                            const data = { type: 'file', file }
+                            e.dataTransfer.setData('application/json', JSON.stringify(data))
+                            e.dataTransfer.effectAllowed = 'move'
+                          }}
+                          className="flex items-center py-1.5 px-2 text-sm text-muted-foreground hover:bg-accent/50 rounded group cursor-grab active:cursor-grabbing select-none"
+                        >
+                          <FileTypeIcon
+                            path={file.originalPath}
+                            extension={extractFileExtension(file.originalPath || file.name)}
+                            className="w-4 h-4 object-contain mr-2 shrink-0"
+                            fallbackClassName="text-sm text-muted-foreground/60"
+                          />
+                          <span
+                            className="truncate flex-1"
+                            title={
+                              (swapFileNameDisplay
+                                ? file.name || file.smartName || ''
+                                : file.smartName || file.name) +
+                              ' · ' +
+                              t('可拖动到左侧目录或同级文件旁边完成归类')
+                            }
+                          >
+                            {swapFileNameDisplay
+                              ? file.name || file.smartName || ''
+                              : file.smartName || file.name}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* 底部拖拽操作提示：告知用户可直接拖动待归类文件到左侧目录或同级文件旁边 */}
+                    <div className="pt-2.5 mt-2 border-t border-border/60 flex items-center justify-between text-xs text-muted-foreground select-none shrink-0 bg-muted/20 -mx-4 -mb-4 px-4 py-2.5 rounded-b-xl">
+                      <span className="flex items-center gap-1.5 text-foreground/80 font-medium">
+                        <MaterialIcon icon="drag_indicator" className="text-base text-primary shrink-0" />
+                        <span>{t('提示：可直接拖动文件到左侧目录或同级文件旁边完成归类')}</span>
+                      </span>
+                    </div>
+                  </div>
+                )
+              }
+            ]}
+          />
+        ) : (
+          <div className="h-full flex flex-col overflow-hidden p-4">
+            <div className="flex-1 overflow-auto">
+              <VDirTree
+                nodes={classifiedTree}
+                onDeleteNode={onDeleteNode}
+                onRenameNode={onRenameNode}
+                onAddSubdir={onAddSubdir}
+                onMoveNodeOrFile={handleMoveNodeOrFile}
+                highFrequencyTags={highFrequencyTags}
+                currentVDirId={currentVDir?.id}
+                extraHeaderAction={
+                  isIncremental ? (
+                    <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors select-none">
+                      <Checkbox
+                        checked={showPreviousClassified}
+                        onCheckedChange={checked =>
+                          setShowPreviousClassified(!!checked)
+                        }
+                      />
+                      <span>{t('显示前次已归类文件')}</span>
+                    </label>
+                  ) : undefined
+                }
+              />
             </div>
-          )
-        }
-      ]}
-    />
+            {renderRules()}
+          </div>
+        )}
+      </div>
+    </div>
   )
 }

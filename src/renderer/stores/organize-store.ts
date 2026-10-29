@@ -119,7 +119,7 @@ interface OrganizeStoreState {
 }
 
 const initialOptions: OrganizeOptions = {
-  allowCreateNew: false,
+  allowCreateNew: true,
   skipEmptyDirs: false,
   deduplicateFiles: true,
   flattenToRoot: false

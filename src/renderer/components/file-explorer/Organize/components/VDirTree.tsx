@@ -16,6 +16,7 @@ export function VDirTree({
   onRenameNode,
   onAddSubdir,
   onMoveNodeOrFile,
+  onUnpinFile,
   allowEdit = true,
   extraHeaderAction,
   organizeMode,
@@ -28,6 +29,7 @@ export function VDirTree({
   onRenameNode?: (nodeKey: string, newName: string) => void
   onAddSubdir?: (parentKey: string, subdirName: string) => void
   onMoveNodeOrFile?: (draggedData: any, targetNodeKey: string) => void
+  onUnpinFile?: (file: any) => void
   allowEdit?: boolean
   extraHeaderAction?: React.ReactNode
   organizeMode?: string
@@ -114,7 +116,13 @@ export function VDirTree({
     const walk = (nodes: any[], pKey = '') => {
       for (const n of nodes || []) {
         if (!n || n.isFile || n.isAddingPlaceholder) continue
-        const curKey = dirKey(n)
+        const curKey = n.id
+          ? String(n.id)
+          : pKey
+            ? `${pKey}/${n.name}`
+            : n.parentKey
+              ? `${n.parentKey}/${n.name}`
+              : n.name
         keys.add(curKey)
         if (n.subdirectories && n.subdirectories.length > 0) {
           walk(n.subdirectories, curKey)
@@ -125,11 +133,58 @@ export function VDirTree({
     return keys
   }, [])
 
-  // 当 nodes 变更且为 expand-all 模式时，自动初始化展开所有层级，确保文件立刻可见
+  const isInitializedRef = useRef(false)
+  const prevTreeStructureKeyRef = useRef<string>('')
+
+  // 仅在首次加载或底层树结构整体切换（如重新整理、切换方案）时初始化展开；
+  // 树内文件增删/微调时，严格保留既有展开状态，防止展开的目录自动收起。
   useEffect(() => {
-    if (nodes && nodes.length > 0 && expandMode === 'expand-all') {
-      const allKeys = getAllDirKeys(nodes)
-      setInternalExpandedKeys(allKeys)
+    if (!nodes || nodes.length === 0) return
+
+    // 树结构特征指纹（仅取所有目录名称路径组合，忽略内部文件变动）
+    const getStructureFingerprint = (list: any[], p = ''): string => {
+      return (list || [])
+        .filter(n => n && !n.isFile && !n.isAddingPlaceholder)
+        .map(n => {
+          const k = p ? `${p}/${n.name}` : n.name
+          const sub = n.subdirectories ? getStructureFingerprint(n.subdirectories, k) : ''
+          return sub ? `${k}[${sub}]` : k
+        })
+        .join(';')
+    }
+
+    const currentFingerprint = getStructureFingerprint(nodes)
+    const isNewStructure = currentFingerprint !== prevTreeStructureKeyRef.current
+    prevTreeStructureKeyRef.current = currentFingerprint
+
+    const allKeys = getAllDirKeys(nodes)
+
+    if (!isInitializedRef.current) {
+      isInitializedRef.current = true
+      if (expandMode === 'expand-all') {
+        setInternalExpandedKeys(allKeys)
+      }
+    } else if (isNewStructure) {
+      // 树结构发生新增目录或切换方案时
+      setInternalExpandedKeys(prev => {
+        let hasOverlap = false
+        for (const k of prev) {
+          if (allKeys.has(k)) {
+            hasOverlap = true
+            break
+          }
+        }
+        if (!hasOverlap && expandMode === 'expand-all') {
+          return allKeys
+        }
+        const next = new Set(prev)
+        if (expandMode === 'expand-all') {
+          for (const k of allKeys) {
+            next.add(k)
+          }
+        }
+        return next
+      })
     }
   }, [nodes, expandMode, getAllDirKeys])
 
@@ -288,6 +343,7 @@ export function VDirTree({
             const files = uniqueRawFiles.map((f: any) => ({
               ...f,
               isFile: true,
+              isPinned: !!f.isPinned,
               _rawName: f.name,
               _rawSmartName: f.smartName,
               name: f.smartName || f.name || '',
@@ -382,9 +438,29 @@ export function VDirTree({
 
             // 3. 常规节点展示
             if (node.isFile) {
-              return swapFileNameDisplay
+              const displayName = swapFileNameDisplay
                 ? node._rawName || node._rawSmartName || ''
                 : node._rawSmartName || node._rawName || ''
+              return (
+                <div
+                  className="flex items-center gap-1.5 min-w-0 flex-1"
+                  title={t('支持将其他文件拖放到此文件旁边，共同归入该目录')}
+                >
+                  <span className="truncate">{displayName}</span>
+                  {node.isPinned && (
+                    <span
+                      className="cursor-pointer text-[11px] hover:scale-125 transition-transform text-primary shrink-0 select-none ml-1"
+                      title={t('用户手动锁定归类，点击可解锁交还 AI 自动整理')}
+                      onClick={e => {
+                        e.stopPropagation()
+                        onUnpinFile?.(node)
+                      }}
+                    >
+                      📌
+                    </span>
+                  )}
+                </div>
+              )
             }
 
             const isUnclassified = isUnclassifiedNode(node)
@@ -505,11 +581,14 @@ export function VDirTree({
           }}
           canDrop={(targetNode: any) => {
             if (
-              targetNode.isFile ||
               targetNode.isAddingPlaceholder ||
               isUnclassifiedNode(targetNode)
             )
               return false
+            // 支持拖动到同级文件旁边，共同归入该文件所在的父目录
+            if (targetNode.isFile) {
+              return allowEdit && !!targetNode.parentKey
+            }
             return allowEdit
           }}
           onDragStart={(node: any, event: React.DragEvent) => {
@@ -521,11 +600,37 @@ export function VDirTree({
             event.dataTransfer.effectAllowed = 'move'
           }}
           onDrop={(targetNode: any, event: React.DragEvent) => {
-            const targetKey = dirKey(targetNode)
+            // 若拖放到文件上，则以该文件的父目录作为归类目标路径
+            const targetKey = targetNode.isFile ? targetNode.parentKey : dirKey(targetNode)
+            if (!targetKey) return
+
+            // 保持并确保目标目录及其所有祖先目录处于展开状态，绝不自动收起
+            setInternalExpandedKeys(prev => {
+              const next = new Set(prev)
+              const parts = targetKey.split('/')
+              let cur = ''
+              for (const p of parts) {
+                cur = cur ? `${cur}/${p}` : p
+                next.add(cur)
+              }
+              return next
+            })
             try {
               const json = event.dataTransfer.getData('application/json')
               if (json) {
                 const data = JSON.parse(json)
+                // 拖拽文件到自身时忽略，避免冗余重排
+                if (data.type === 'file' && targetNode.isFile) {
+                  const draggedFileId = data.file?.id ?? data.file?.fileId
+                  const targetFileId = targetNode.id ?? targetNode.fileId
+                  if (
+                    draggedFileId != null &&
+                    targetFileId != null &&
+                    String(draggedFileId) === String(targetFileId)
+                  ) {
+                    return
+                  }
+                }
                 onMoveNodeOrFile?.(data, targetKey)
               }
             } catch (e) {

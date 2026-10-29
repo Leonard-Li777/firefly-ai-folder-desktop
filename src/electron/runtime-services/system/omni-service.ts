@@ -1163,7 +1163,7 @@ export class OmniService {
         const str = stripAnsi(data).trim()
         if (str && !isCzkawkaDump(str)) {
           // 若子进程输出为 INFO 级别或包含多模态关键业务日志，以 info 输出至控制台；其余以 debug 输出
-          const isInfoMsg = str.includes('INFO') || str.includes('[普遍语法造句') || str.includes('[双锚点融合') || str.includes('[OmniServer]') || str.includes('[prune_and_rank_tags]') || str.includes('[落选') || str.includes('[胜出')
+          const isInfoMsg = str.includes('INFO') || str.includes('[普遍语法造句') || str.includes('[双锚点融合') || str.includes('[OmniServer]') || str.includes('[prune_and_rank_tags]') || str.includes('[落选') || str.includes('[胜出') || str.includes('[MossTtsPerf]')
           if (isInfoMsg) {
             logger.info(LogCategory.SYSTEM, `[Omni] ${str}`)
           } else {

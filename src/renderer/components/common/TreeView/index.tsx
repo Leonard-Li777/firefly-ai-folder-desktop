@@ -70,6 +70,7 @@ export function TreeView<TNode>({
   const expandedKeys = propsExpandedKeys || internalExpandedKeys
 
   const lastKeysStrRef = React.useRef<string>('')
+  const hasInitializedControlledRef = React.useRef(false)
 
   // 当 nodes 变化时，根据 expandMode 初始化展开状态
   useEffect(() => {
@@ -87,8 +88,12 @@ export function TreeView<TNode>({
     const initialKeys = computeExpandKeys(nodes, getChildren, getKey, expandMode)
 
     if (propsExpandedKeys !== undefined) {
-      // 受控模式：通过 onExpandedChange 通知父组件
-      onExpandedChange?.(initialKeys)
+
+      // 受控模式：仅在首次挂载且父组件传入空集合时触发初始化通知，绝不强制覆盖父组件已维护的展开状态
+      if (!hasInitializedControlledRef.current && propsExpandedKeys.size === 0) {
+        hasInitializedControlledRef.current = true
+        onExpandedChange?.(initialKeys)
+      }
     } else {
       // 非受控模式：直接设置内部状态
       setInternalExpandedKeys(initialKeys)
