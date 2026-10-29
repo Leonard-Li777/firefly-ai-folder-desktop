@@ -212,6 +212,18 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
     }
   }, [totalFilesCount, loadFilteredFiles])
 
+  // 选区有效投影自愈状态机 (Spec §3.2.6 & ISS-01)
+  // 过滤条件变更时自动收敛选区，严禁将不可见孤儿文件下推至后续批量动作
+  useEffect(() => {
+    if (!selectedFiles || selectedFiles.length === 0) return
+    const visiblePathSet = new Set(filteredFiles.map(f => f.path).filter(Boolean))
+    const hasOrphans = selectedFiles.some(f => !visiblePathSet.has(f.path))
+    if (hasOrphans) {
+      const reconciled = selectedFiles.filter(f => visiblePathSet.has(f.path))
+      setSelectedFiles(reconciled)
+    }
+  }, [filteredFiles, selectedFiles, setSelectedFiles])
+
   const handleSortChange = useCallback((newSortBy: string, newSortOrder: 'asc' | 'desc') => {
     setSortBy(newSortBy === 'modified' ? 'modified' : (newSortBy as any))
     setSortOrder(newSortOrder)

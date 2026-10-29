@@ -133,6 +133,8 @@ export function buildPreviewTree(
           fileCount: 0,
           totalSize: 0
         }
+        // 绑定标签元数据供倒排索引多重映射 (ADR-0058 / 受控码+展示名对齐)
+        ;(node as any)._tagMeta = tag
         nodes.push(node)
       }
     }
@@ -143,15 +145,45 @@ export function buildPreviewTree(
   const rootNodes = buildNodes(allLevelDimIds)
 
   // 3. 倒排索引桶分发算法 (O(N + M) 线性算法)
-  // 建立 tag -> node[] 的哈希索引，替代原有 O(N*M) 的双重嵌套笛卡尔积遍历
+  // 建立 tag (展示名/受控码/物化路径) -> node[] 的哈希索引，替代原有脆弱的单一名称比对
   const tagToNodesMap = new Map<string, VirtualDirectoryNode[]>()
+
+  function registerNodeIndex(key: string | undefined | null, targetNode: VirtualDirectoryNode) {
+    if (!key || typeof key !== 'string') return
+    const trimmed = key.trim()
+    if (!trimmed) return
+    if (!tagToNodesMap.has(trimmed)) {
+      tagToNodesMap.set(trimmed, [])
+    }
+    const list = tagToNodesMap.get(trimmed)!
+    if (!list.includes(targetNode)) {
+      list.push(targetNode)
+    }
+  }
 
   function indexNodes(nodes: VirtualDirectoryNode[]) {
     for (const node of nodes) {
-      if (!tagToNodesMap.has(node.name)) {
-        tagToNodesMap.set(node.name, [])
+      registerNodeIndex(node.name, node)
+      const tagMeta = (node as any)._tagMeta as SelectedTag | undefined
+      if (tagMeta) {
+        registerNodeIndex(tagMeta.tagValue, node)
+        registerNodeIndex(tagMeta.code, node)
+        registerNodeIndex(tagMeta.codePath, node)
+        registerNodeIndex(tagMeta.namePath, node)
+        if (Array.isArray(tagMeta.codePaths)) {
+          tagMeta.codePaths.forEach(p => registerNodeIndex(p, node))
+        }
+        // 若在维度组中存在同组配置，也把组内对应标签信息并入索引
+        const grp = dimGroupsById.get(Number(tagMeta.dimensionId))
+        const matchedDimTag = grp?.tags?.find(
+          t => t.tagValue === tagMeta.tagValue || (tagMeta.code && t.code === tagMeta.code)
+        )
+        if (matchedDimTag) {
+          registerNodeIndex(matchedDimTag.code, node)
+          registerNodeIndex(matchedDimTag.codePath, node)
+          registerNodeIndex(matchedDimTag.namePath, node)
+        }
       }
-      tagToNodesMap.get(node.name)!.push(node)
       if (node.subdirectories && node.subdirectories.length > 0) {
         indexNodes(node.subdirectories)
       }
@@ -159,36 +191,70 @@ export function buildPreviewTree(
   }
   indexNodes(rootNodes)
 
-  // 单次遍历文件列表（O(M)），实现秒级 Hash 桶分配
+  // 单次遍历文件列表（O(M)），实现秒级 Hash 桶分配与节点内去重
   for (const file of allFiles) {
     if (file.isDirectory) continue
     const fileRef = createFileRef(file)
 
-    if (file.tags && Array.isArray(file.tags) && file.tags.length > 0) {
-      for (const tagItem of file.tags) {
-        const tagVal =
-          typeof tagItem === 'string'
-            ? tagItem
-            : tagItem?.tagValue || tagItem?.name || tagItem?.value
-        if (!tagVal) continue
+    const candidateKeys = new Set<string>()
+    if (file.tags && Array.isArray(file.tags)) {
+      for (const t of file.tags) {
+        const val = typeof t === 'string' ? t : t?.tagValue || t?.name || t?.value
+        if (val && typeof val === 'string') candidateKeys.add(val.trim())
+      }
+    }
+    if (file.tagCodes && Array.isArray(file.tagCodes)) {
+      for (const c of file.tagCodes) {
+        if (c && typeof c === 'string') candidateKeys.add(c.trim())
+      }
+    }
+    if (file.fusedTags && Array.isArray(file.fusedTags)) {
+      for (const ft of file.fusedTags) {
+        if (ft && typeof ft === 'string') candidateKeys.add(ft.trim())
+      }
+    }
 
-        const targetNodes = tagToNodesMap.get(tagVal)
-        if (targetNodes) {
-          for (const node of targetNodes) {
+    const assignedNodes = new Set<VirtualDirectoryNode>()
+    for (const key of candidateKeys) {
+      const targetNodes = tagToNodesMap.get(key)
+      if (targetNodes) {
+        for (const node of targetNodes) {
+          if (!assignedNodes.has(node)) {
+            assignedNodes.add(node)
             node.files.push(fileRef)
             node.fileCount++
             node.totalSize += file.size || 0
           }
         }
       }
-    } else {
-      // 兜底分配：给所有的根节点分配
+    }
+
+    // 兜底分配：若未匹配且当前为单选根节点场景（即过滤结果本身全归属于该选中标签）
+    if (assignedNodes.size === 0 && candidateKeys.size === 0 && rootNodes.length > 0) {
       for (const node of rootNodes) {
         node.files.push(fileRef)
         node.fileCount++
         node.totalSize += file.size || 0
       }
     }
+  }
+
+  // 自底向上聚合父子目录的累计文件数与大小，保证父级目录徽标清晰反映整体规模
+  function aggregateNodeCounts(n: VirtualDirectoryNode): { count: number; size: number } {
+    let count = n.files.length
+    let size = n.files.reduce((sum, f) => sum + (f.size || 0), 0)
+    for (const sub of n.subdirectories || []) {
+      const subRes = aggregateNodeCounts(sub)
+      count += subRes.count
+      size += subRes.size
+    }
+    n.fileCount = count
+    n.totalSize = size
+    return { count, size }
+  }
+
+  for (const root of rootNodes) {
+    aggregateNodeCounts(root)
   }
 
   function createFileRef(file: any) {

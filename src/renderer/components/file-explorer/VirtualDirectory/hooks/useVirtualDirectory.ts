@@ -212,11 +212,12 @@ export const useVirtualDirectory = () => {
   }, [selectedId])
 
   const loadVdirDimensions = useCallback(async () => {
-    if (!selectedId) return
+    if (!selectedId && !currentWorkspaceDirectory?.path) return
     setIsDimensionLoading(true)
     try {
       const res = await window.electronAPI.analyzedDirectory.getDimensionGroups({
-        virtualDirectoryId: selectedId,
+        virtualDirectoryId: selectedId || undefined,
+        workspaceDirectoryPath: !selectedId ? currentWorkspaceDirectory?.path : undefined,
         removeEmptyTags: false
       })
       setDimensionGroups(res.groups)
@@ -226,13 +227,13 @@ export const useVirtualDirectory = () => {
     } finally {
       setIsDimensionLoading(false)
     }
-  }, [selectedId])
+  }, [selectedId, currentWorkspaceDirectory?.path])
 
   useEffect(() => {
-    if (selectedId && vdirSidebarTab === 'dimensions') {
+    if ((selectedId || currentWorkspaceDirectory?.path) && vdirSidebarTab === 'dimensions') {
       loadVdirDimensions()
     }
-  }, [selectedId, vdirSidebarTab, loadVdirDimensions])
+  }, [selectedId, currentWorkspaceDirectory?.path, vdirSidebarTab, loadVdirDimensions])
 
   useEffect(() => {
     const handleVDirUpdate = (e: any) => {
@@ -262,6 +263,7 @@ export const useVirtualDirectory = () => {
         selectedTags,
         sortBy: 'name',
         sortOrder: 'asc',
+        workspaceDirectoryPath: currentWorkspaceDirectory?.path,
         virtualDirectoryId: selectedId || undefined,
         searchKeyword: virtualDirectoryKeyword,
         unionMode
@@ -284,6 +286,7 @@ export const useVirtualDirectory = () => {
             qualityScore: f.qualityScore,
             description: f.description,
             tags: f.tags,
+            tagCodes: f.tagCodes,
             author: f.author,
             language: f.language,
             analyzedAt: f.analyzedAt
@@ -295,7 +298,7 @@ export const useVirtualDirectory = () => {
     } finally {
       setIsFilteredFilesLoading(false)
     }
-  }, [selectedId, selectedTags, unionMode, virtualDirectoryKeyword])
+  }, [selectedId, selectedTags, unionMode, virtualDirectoryKeyword, currentWorkspaceDirectory?.path])
 
   useEffect(() => {
     const handleTagsChanged = () => {
@@ -569,8 +572,12 @@ export const useVirtualDirectory = () => {
     if (filteredFilesByTags && filteredFilesByTags.length > 0) {
       return filteredFilesByTags
     }
+    // 分类维度模式下，严禁回退到 treeData 产生的虚拟目录物理文件夹名，防止标签命名空间污染
+    if (vdirSidebarTab === 'dimensions') {
+      return []
+    }
     return allFiles
-  }, [filteredFilesByTags, allFiles])
+  }, [filteredFilesByTags, allFiles, vdirSidebarTab])
 
   const {
     options: exportPreviewOptions,

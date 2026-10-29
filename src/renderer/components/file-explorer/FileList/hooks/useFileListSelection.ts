@@ -40,6 +40,7 @@ interface UseFileListSelectionProps {
   getSelectedFiles?: () => FileType[]
   activeItem?: FileType | DirectoryItem | null
   onFileSelect: (files: (FileType | DirectoryItem | string)[], isFromCheckbox?: boolean) => void
+  onSelectionIdsChange?: (ids: ReadonlySet<number>, meta?: { isAllSelected?: boolean }) => void
   viewMode: string
   containerSize: { width: number; height: number }
   scrollOffset: number
@@ -59,6 +60,7 @@ export const useFileListSelection = ({
   getSelectedFiles,
   activeItem,
   onFileSelect,
+  onSelectionIdsChange,
   viewMode,
   containerSize,
   scrollOffset,
@@ -88,6 +90,7 @@ export const useFileListSelection = ({
   const propsRef = useRef({
     items,
     onFileSelect,
+    onSelectionIdsChange,
     scrollOffset,
     viewMode,
     getLatestSelectedFiles,
@@ -102,6 +105,7 @@ export const useFileListSelection = ({
     propsRef.current = {
       items,
       onFileSelect,
+      onSelectionIdsChange,
       scrollOffset,
       viewMode,
       getLatestSelectedFiles,
@@ -114,6 +118,7 @@ export const useFileListSelection = ({
   }, [
     items,
     onFileSelect,
+    onSelectionIdsChange,
     scrollOffset,
     viewMode,
     getLatestSelectedFiles,
@@ -123,6 +128,29 @@ export const useFileListSelection = ({
     gridCardWidth,
     gridShowFullFileName
   ])
+
+  const emitSelection = useCallback(
+    (
+      files: (FileType | DirectoryItem | string)[],
+      isFromCheckbox?: boolean,
+      isAllSelected?: boolean
+    ) => {
+      propsRef.current.onFileSelect(files, isFromCheckbox)
+      if (propsRef.current.onSelectionIdsChange) {
+        const idSet = new Set<number>()
+        for (const f of files) {
+          if (typeof f === 'object' && f !== null) {
+            const rawId = Number((f as any).id)
+            if (!Number.isNaN(rawId)) idSet.add(rawId)
+          } else if (typeof f === 'number') {
+            idSet.add(f)
+          }
+        }
+        propsRef.current.onSelectionIdsChange(idSet, { isAllSelected })
+      }
+    },
+    []
+  )
 
   const calculateDragSelection = useCallback(
     (currentDragEnd: { x: number; y: number }) => {
@@ -367,10 +395,10 @@ export const useFileListSelection = ({
                 combinedSelection.push(newItem as FileType)
               }
             })
-            propsRef.current.onFileSelect(combinedSelection, true)
+            emitSelection(combinedSelection, true)
           }
         } else {
-          propsRef.current.onFileSelect(newlySelectedItems, true)
+          emitSelection(newlySelectedItems, true)
         }
       }
 
@@ -413,7 +441,7 @@ export const useFileListSelection = ({
         } else {
           finalSelection = rangeItems
         }
-        currentOnFileSelect(finalSelection, true)
+        emitSelection(finalSelection, true)
       } else if (isCtrlOrMeta) {
         const currentSelected = getCurrentSelection()
         const isSelected = currentSelected.some(f => isPathEqual(f.path, item.path))
@@ -425,10 +453,10 @@ export const useFileListSelection = ({
           newSelected = [...currentSelected, item as FileType]
         }
 
-        currentOnFileSelect(newSelected, true)
+        emitSelection(newSelected, true)
         lastSelectedIndexRef.current = index
       } else {
-        currentOnFileSelect([item], false)
+        emitSelection([item], false)
         lastSelectedIndexRef.current = index
       }
     },
@@ -503,9 +531,9 @@ export const useFileListSelection = ({
             selectedKeys.add(key)
           }
         }
-        currentOnFileSelect(merged, true)
+        emitSelection(merged, true, true)
       } else if (e.key === 'Escape') {
-        currentOnFileSelect([], true)
+        emitSelection([], true, false)
       } else if (e.key === 'Backspace') {
         e.preventDefault()
         currentOnBack?.()
@@ -549,7 +577,7 @@ export const useFileListSelection = ({
             }
 
             if (activeIndex === -1) {
-              currentOnFileSelect([currentItems[0]], false)
+              emitSelection([currentItems[0]], false)
               lastSelectedIndexRef.current = 0
               scrollToIndex(0)
               return
@@ -597,7 +625,7 @@ export const useFileListSelection = ({
 
             const nextItem = currentItems[nextIndex]
             if (nextItem) {
-              currentOnFileSelect([nextItem], false)
+              emitSelection([nextItem], false)
               lastSelectedIndexRef.current = nextIndex
               scrollToIndex(nextIndex)
               tryTriggerSplitPreview(nextItem, pageId)
@@ -619,7 +647,7 @@ export const useFileListSelection = ({
             }
             const nextItem = currentItems[nextIndex]
             if (nextItem) {
-              currentOnFileSelect([nextItem], false)
+              emitSelection([nextItem], false)
               lastSelectedIndexRef.current = nextIndex
               scrollToIndex(nextIndex)
               tryTriggerSplitPreview(nextItem, pageId)
@@ -639,7 +667,7 @@ export const useFileListSelection = ({
             }
             const nextItem = currentItems[nextIndex]
             if (nextItem) {
-              currentOnFileSelect([nextItem], false)
+              emitSelection([nextItem], false)
               lastSelectedIndexRef.current = nextIndex
               scrollToIndex(nextIndex)
               tryTriggerSplitPreview(nextItem, pageId)
