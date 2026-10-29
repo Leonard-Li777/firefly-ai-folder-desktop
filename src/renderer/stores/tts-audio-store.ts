@@ -127,14 +127,14 @@ let progressTimer: ReturnType<typeof setInterval> | null = null
 let isAllChunksScheduled = false
 let isHotSwitchInProgress = false
 
-/** 预缓冲水线配置常数 */
+/** 预缓冲水线配置常数 (P1: 自适应蓄水池门禁以消除 RTF>1 欠载断流) */
 export const TTS_BUFFER_WATERMARK = {
-  /** 最小就绪分句数（常规至少预留 2 句） */
+  /** 最小就绪分句数（长文本预蓄 2 句） */
   MIN_BUFFERED_CHUNKS: 2,
-  /** 最小声学安全时长（秒，累积音频时长达到 4.0 秒即可破格起播，单句超长时不强制等第二句） */
-  MIN_BUFFERED_DURATION_SEC: 4.0,
-  /** 单句合成超时熔断时间（毫秒，用于放行首句起播门禁） */
-  CHUNK_SYNTHESIZE_TIMEOUT_MS: 8000
+  /** 最小声学安全时长（秒，累积音频时长达到 10.0 秒即可放行，足以覆盖下一句 15s 生成） */
+  MIN_BUFFERED_DURATION_SEC: 10.0,
+  /** 单句合成超时熔断时间（毫秒，适配当前 15~25s 真实生成耗时，防止提前泄流） */
+  CHUNK_SYNTHESIZE_TIMEOUT_MS: 30000
 }
 
 /** 预缓冲就绪节点结构（存储已完成 WSOLA 派生且已 decodeAudioData 的纯内存 AudioBuffer） */
@@ -145,6 +145,36 @@ export interface PrebufferedChunkItem {
 }
 
 /**
+ * 为 BufferSource 挂载 GainNode 并施加 15ms 首尾平滑等功率交叉淡化，杜绝直流爆音与声学断气
+ */
+function createCrossfadedSource(
+  ctx: AudioContext,
+  audioBuffer: AudioBuffer,
+  startAt: number
+): { source: AudioBufferSourceNode; gainNode: GainNode } {
+  const source = ctx.createBufferSource()
+  source.buffer = audioBuffer
+  source.playbackRate.value = 1.0
+
+  const gainNode = ctx.createGain()
+  const duration = audioBuffer.duration
+  const FADE_DUR = Math.min(0.015, duration * 0.1)
+
+  // 头部淡入 (0.001 -> 1.0)
+  gainNode.gain.setValueAtTime(0.001, startAt)
+  gainNode.gain.exponentialRampToValueAtTime(1.0, startAt + FADE_DUR)
+
+  // 尾部淡出 (1.0 -> 0.001)
+  const fadeOutStart = Math.max(startAt + FADE_DUR, startAt + duration - FADE_DUR)
+  gainNode.gain.setValueAtTime(1.0, fadeOutStart)
+  gainNode.gain.exponentialRampToValueAtTime(0.001, startAt + duration)
+
+  source.connect(gainNode)
+  gainNode.connect(ctx.destination)
+  return { source, gainNode }
+}
+
+/**
  * 将蓄水池中的预缓冲分句原子批量压入 Web Audio 硬件时间轴
  */
 function flushPrebufferedChunks(list: PrebufferedChunkItem[], ctx: AudioContext): void {
@@ -152,10 +182,7 @@ function flushPrebufferedChunks(list: PrebufferedChunkItem[], ctx: AudioContext)
   let chainTime = Math.max(ctx.currentTime + 0.05, nextStartTime)
 
   for (const item of list) {
-    const source = ctx.createBufferSource()
-    source.buffer = item.buffer
-    source.playbackRate.value = 1.0
-    source.connect(ctx.destination)
+    const { source } = createCrossfadedSource(ctx, item.buffer, chainTime)
     source.start(chainTime)
 
     const duration = item.buffer.duration
@@ -1436,12 +1463,9 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
             totalBufferedDuration = 0
           }
         } else {
-          // 已放行起播状态：就绪即链式排程追加到硬件时间轴
+          // 已放行起播状态：就绪即链式排程追加到硬件时间轴（挂载交叉淡化）
           const startAt = Math.max(ctx.currentTime + 0.05, nextStartTime)
-          const source = ctx.createBufferSource()
-          source.buffer = audioBuffer
-          source.playbackRate.value = 1.0
-          source.connect(ctx.destination)
+          const { source } = createCrossfadedSource(ctx, audioBuffer, startAt)
           source.start(startAt)
 
           const effectiveDuration = audioBuffer.duration
@@ -1798,12 +1822,9 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
             totalBufferedDuration = 0
           }
         } else {
-          // 已起播：就绪即链式排程追加
+          // 已起播：就绪即链式排程追加（挂载交叉淡化）
           const nextStartAt = Math.max(ctx.currentTime + 0.05, nextStartTime)
-          const nextSource = ctx.createBufferSource()
-          nextSource.buffer = audioBuffer
-          nextSource.playbackRate.value = 1.0
-          nextSource.connect(ctx.destination)
+          const { source: nextSource } = createCrossfadedSource(ctx, audioBuffer, nextStartAt)
           nextSource.start(nextStartAt)
 
           const nextEndAt = nextStartAt + audioBuffer.duration
