@@ -91,7 +91,8 @@ describe('SmartClusteringView Component', () => {
       maxRootDirectories: 5,
       maxSubdirectories: 5,
       similarityThreshold: 0.6,
-      clusteringMode: 'balanced'
+      clusteringMode: 'balanced',
+        force: false
     })
 
     // 等待渲染完成
@@ -127,7 +128,8 @@ describe('SmartClusteringView Component', () => {
         maxRootDirectories: 5,
         maxSubdirectories: 5,
         similarityThreshold: 0.6,
-        clusteringMode: 'balanced'
+        clusteringMode: 'balanced',
+        force: false
       })
     })
   })
@@ -373,7 +375,8 @@ describe('SmartClusteringView Component', () => {
         maxRootDirectories: 5,
         maxSubdirectories: 5,
         similarityThreshold: 0.6,
-        clusteringMode: 'balanced'
+        clusteringMode: 'balanced',
+        force: false
       })
     }, { timeout: 2000 })
   })
@@ -453,7 +456,8 @@ describe('SmartClusteringView Component', () => {
         maxRootDirectories: 5,
         maxSubdirectories: 5,
         similarityThreshold: 0.6,
-        clusteringMode: 'precise'
+        clusteringMode: 'precise',
+        force: false
       })
     })
 
@@ -471,7 +475,8 @@ describe('SmartClusteringView Component', () => {
         maxRootDirectories: 5,
         maxSubdirectories: 5,
         similarityThreshold: 0.6,
-        clusteringMode: 'complete'
+        clusteringMode: 'complete',
+        force: false
       })
     })
   })

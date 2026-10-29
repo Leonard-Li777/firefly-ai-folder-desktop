@@ -1069,6 +1069,7 @@ const electronAPI = {
       maxSubdirectories?: number
       similarityThreshold?: number
       clusteringMode?: 'precise' | 'balanced' | 'complete'
+      force?: boolean
     }) =>
       ipcRenderer.invoke('organize-real-directory/smart-cluster-hac', params),
     listSessions: (workspaceDirectoryPath: string) =>

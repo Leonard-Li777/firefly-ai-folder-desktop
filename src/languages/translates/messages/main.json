@@ -103,10 +103,9 @@
     "$files": [
       "src/electron/main/ipc-handlers/ai-service.ts(15768-15783)",
       "src/electron/main/ipc-handlers/ai-service.ts(17667-17682)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(14540-14555)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(18549-18564)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(50253-50268)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(54011-54026)"
+      "src/electron/main/ipc-handlers/virtual-directory.ts(15149-15164)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(19270-19285)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(50181-50196)"
     ],
     "$id": 7900
   },
@@ -135,10 +134,9 @@
     "ko-KR": "AI 서비스를 초기화 중입니다. 나중에 다시 시도해 주세요.",
     "$files": [
       "src/electron/main/ipc-handlers/ai-service.ts(18413-18434)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(18966-18987)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(19311-19332)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(50922-50943)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(54417-54438)"
+      "src/electron/main/ipc-handlers/virtual-directory.ts(19699-19720)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(20054-20075)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(50600-50621)"
     ],
     "$id": 10179
   },
@@ -243,10 +241,7 @@
     "de-DE": "Unbekannter Fehler",
     "fr-FR": "Erreur inconnue",
     "ko-KR": "알 수 없는 오류",
-    "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(13538-13546)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(51864-51872)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(13538-13546)"],
     "$id": 10180
   },
   "文件清理服务未初始化": {
@@ -367,27 +362,27 @@
     "fr-FR": "Service d'annuaire virtuel non initialisé",
     "ko-KR": "가상 디렉터리 서비스가 초기화되지 않았습니다.",
     "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(7493-7507)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(16699-16713)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(17211-17225)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(17604-17618)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(21050-21064)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(21846-21860)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(22201-22215)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(22468-22482)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(22703-22717)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(22979-22993)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(23292-23306)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(23618-23632)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(23920-23934)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(24175-24189)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(24424-24438)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(24689-24703)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(24977-24991)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(25229-25243)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(25462-25476)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(26150-26164)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(48583-48597)"
+      "src/electron/main/ipc-handlers/virtual-directory.ts(7898-7912)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(17365-17379)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(17895-17909)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(18298-18312)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(22952-22966)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(23774-23788)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(24139-24153)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(24411-24425)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(24651-24665)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(24933-24947)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(25253-25267)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(25589-25603)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(25899-25913)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(26161-26175)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(26415-26429)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(26684-26698)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(26978-26992)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(27235-27249)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(27472-27486)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(28175-28189)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(47450-47464)"
     ],
     "$id": 7678
   },
@@ -401,7 +396,7 @@
     "de-DE": "Virtuelles Verzeichnis existiert nicht",
     "fr-FR": "Le répertoire virtuel n'existe pas",
     "ko-KR": "가상 디렉터리가 존재하지 않습니다.",
-    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(11443-11454)"],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(11963-11974)"],
     "$id": 7508
   },
   "工作目录不存在": {
@@ -414,7 +409,7 @@
     "de-DE": "Arbeitsverzeichnis existiert nicht",
     "fr-FR": "Le répertoire de travail n'existe pas",
     "ko-KR": "작업 디렉토리가 존재하지 않습니다",
-    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(11610-11621)"],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(12132-12143)"],
     "$id": 7509
   },
   "真实目录服务未初始化": {
@@ -427,8 +422,21 @@
     "de-DE": "Echter Verzeichnisdienst nicht initialisiert",
     "fr-FR": "Service d'annuaire réel non initialisé",
     "ko-KR": "실제 디렉터리 서비스가 초기화되지 않았습니다.",
-    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(12850-12864)"],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(13399-13413)"],
     "$id": 7510
+  },
+  "当前待推导文件数（{count}）超出单次处理上限（500个），请在「已分析」页面勾选目标文件分批整理": {
+    "en-US": "The current number of files to be deduced ({count}) exceeds the single processing limit (500). Please check the target files on the \"Analyzed\" page to sort them in batches.",
+    "es-ES": "La cantidad actual de archivos a deducir ({count}) excede el límite de procesamiento único (500). Verifique los archivos de destino en la página \"Analizado\" para ordenarlos en lotes.",
+    "ar-EG": "العدد الحالي للملفات التي سيتم استنتاجها ({count}) يتجاوز حد المعالجة الفردي (500). يرجى التحقق من الملفات المستهدفة في صفحة \"التحليل\" لفرزها على دفعات.",
+    "pt-PT": "O número atual de arquivos a serem deduzidos ({count}) excede o limite de processamento único (500). Verifique os arquivos de destino na página \"Analisados\" para classificá-los em lotes.",
+    "ru-RU": "Текущее количество файлов, подлежащих выводу ({count}), превышает предел одной обработки (500). Пожалуйста, проверьте целевые файлы на странице «Проанализировано», чтобы отсортировать их по группам.",
+    "ja-JP": "現在推定対象のファイル数 ({count}) が 1 回の処理制限 (500) を超えています。 「解析済み」ページで対象ファイルを確認し、一括で並べ替えてください。",
+    "de-DE": "Die aktuelle Anzahl der abzuleitenden Dateien ({count}) überschreitet das Einzelverarbeitungslimit (500). Bitte überprüfen Sie die Zieldateien auf der Seite „Analysiert“, um sie stapelweise zu sortieren.",
+    "fr-FR": "Le nombre actuel de fichiers à déduire ({count}) dépasse la limite de traitement unique (500). Veuillez vérifier les fichiers cibles sur la page « Analysés » pour les trier par lots.",
+    "ko-KR": "현재 추론할 파일 수({count})가 단일 처리 제한(500)을 초과합니다. 일괄적으로 정렬하려면 \"분석됨\" 페이지에서 대상 파일을 확인하세요.",
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(21094-21149)"],
+    "$id": 22190
   },
   "未设置工作目录": {
     "en-US": "No working directory set",
@@ -440,7 +448,7 @@
     "de-DE": "Kein Arbeitsverzeichnis festgelegt",
     "fr-FR": "Aucun répertoire de travail défini",
     "ko-KR": "작업 디렉터리가 설정되지 않았습니다.",
-    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(25642-25653)"],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(27655-27666)"],
     "$id": 7679
   },
   "授权校验失败，请联网或激活企业版后再执行此操作": {
@@ -453,11 +461,7 @@
     "de-DE": "Die Autorisierungsüberprüfung ist fehlgeschlagen. Bitte stellen Sie eine Verbindung zum Internet her oder aktivieren Sie die Enterprise-Version, bevor Sie diesen Vorgang ausführen.",
     "fr-FR": "La vérification de l'autorisation a échoué. Veuillez vous connecter à Internet ou activer la version entreprise avant d'effectuer cette opération.",
     "ko-KR": "승인 확인에 실패했습니다. 이 작업을 수행하기 전에 인터넷에 연결하거나 기업 버전을 활성화하십시오.",
-    "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(26057-26084)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(30899-30926)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(50496-50523)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(28079-28106)"],
     "$id": 10185
   },
   "整理真实目录服务未初始化": {
@@ -471,15 +475,15 @@
     "fr-FR": "Assembler un service d'annuaire réel non initialisé",
     "ko-KR": "실제 디렉터리 서비스 대조가 초기화되지 않았습니다.",
     "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(26753-26769)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(28015-28031)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(29231-29247)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(29550-29566)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(29850-29866)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(30170-30186)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(30478-30494)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(30991-31007)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(51060-51076)"
+      "src/electron/main/ipc-handlers/virtual-directory.ts(28799-28815)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(30094-30110)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(31338-31354)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(31664-31680)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(31970-31986)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(32297-32313)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(32640-32656)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(33050-33066)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(33429-33445)"
     ],
     "$id": 10186
   },
@@ -494,10 +498,23 @@
     "fr-FR": "Pas assez de grains de feu",
     "ko-KR": "Firecores이 부족해요",
     "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(27444-27452)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(28885-28893)"
+      "src/electron/main/ipc-handlers/virtual-directory.ts(29503-29511)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(30981-30989)"
     ],
     "$id": 10184
+  },
+  "当前待计算文件数（{count}）超出批量整理上限（{limit}个），请在「已分析」页面勾选目标文件后发起整理": {
+    "en-US": "The current number of files to be calculated ({count}) exceeds the batch sorting limit ({limit}). Please select the target file on the \"Analyzed\" page and initiate sorting.",
+    "es-ES": "La cantidad actual de archivos que se calcularán ({count}) excede el límite de clasificación por lotes ({limit}). Seleccione el archivo de destino en la página \"Analizado\" e inicie la clasificación.",
+    "ar-EG": "العدد الحالي للملفات المطلوب حسابها ({count}) يتجاوز حد فرز الدُفعات ({limit}). الرجاء تحديد الملف الهدف في صفحة \"التحليل\" وبدء الفرز.",
+    "pt-PT": "O número atual de arquivos a serem calculados ({count}) excede o limite de classificação em lote ({limit}). Selecione o arquivo de destino na página \"Analisado\" e inicie a classificação.",
+    "ru-RU": "Текущее количество вычисляемых файлов ({count}) превышает предел пакетной сортировки ({limit}). Пожалуйста, выберите целевой файл на странице «Проанализировано» и начните сортировку.",
+    "ja-JP": "現在計算対象のファイル数 ({count}) がバッチ並べ替え制限 ({limit}) を超えています。 「分析済み」ページで対象ファイルを選択し、ソートを開始してください。",
+    "de-DE": "Die aktuelle Anzahl der zu berechnenden Dateien ({count}) überschreitet das Batch-Sortierlimit ({limit}). Bitte wählen Sie auf der Seite „Analysiert“ die Zieldatei aus und starten Sie die Sortierung.",
+    "fr-FR": "Le nombre actuel de fichiers à calculer ({count}) dépasse la limite de tri par lots ({limit}). Veuillez sélectionner le fichier cible sur la page « Analysé » et lancer le tri.",
+    "ko-KR": "현재 계산할 파일 수({count})가 일괄 정렬 제한({limit})을 초과합니다. \"분석됨\" 페이지에서 대상 파일을 선택하고 정렬을 시작하십시오.",
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(38037-38097)"],
+    "$id": 22191
   },
   "缺少工作区 ID": {
     "en-US": "Missing workspace ID",
@@ -509,8 +526,21 @@
     "de-DE": "Fehlende Arbeitsbereich-ID",
     "fr-FR": "ID d'espace de travail manquant",
     "ko-KR": "누락 된 작업 공간 아이디",
-    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(48907-48919)"],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(47785-47797)"],
     "$id": 21563
+  },
+  "当前待整理文件数量（{count}）超出批量整理上限（{limit}个），请在「已分析」页面勾选目标文件后发起整理": {
+    "en-US": "The current number of files to be sorted ({count}) exceeds the batch sorting limit ({limit}). Please select the target files on the \"Analyzed\" page and initiate sorting.",
+    "es-ES": "La cantidad actual de archivos que se ordenarán ({count}) excede el límite de clasificación por lotes ({limit}). Seleccione los archivos de destino en la página \"Analizado\" e inicie la clasificación.",
+    "ar-EG": "العدد الحالي للملفات المطلوب فرزها ({count}) يتجاوز حد فرز الدُفعات ({limit}). الرجاء تحديد الملفات المستهدفة في صفحة \"التحليل\" وبدء الفرز.",
+    "pt-PT": "O número atual de arquivos a serem classificados ({count}) excede o limite de classificação em lote ({limit}). Selecione os arquivos de destino na página \"Analisados\" e inicie a classificação.",
+    "ru-RU": "Текущее количество файлов, подлежащих сортировке ({count}), превышает предел пакетной сортировки ({limit}). Пожалуйста, выберите целевые файлы на странице «Проанализировано» и начните сортировку.",
+    "ja-JP": "現在並べ替えるファイル数 ({count}) がバッチ並べ替え制限 ({limit}) を超えています。 「分析済み」ページで対象ファイルを選択し、並べ替えを開始してください。",
+    "de-DE": "Die aktuelle Anzahl der zu sortierenden Dateien ({count}) überschreitet das Batch-Sortierlimit ({limit}). Bitte wählen Sie auf der Seite „Analysiert“ die Zieldateien aus und starten Sie die Sortierung.",
+    "fr-FR": "Le nombre actuel de fichiers à trier ({count}) dépasse la limite de tri par lots ({limit}). Veuillez sélectionner les fichiers cibles sur la page « Analysés » et lancer le tri.",
+    "ko-KR": "현재 정렬할 파일 수({count})가 일괄 정렬 제한({limit})을 초과합니다. \"분석됨\" 페이지에서 대상 파일을 선택하고 정렬을 시작하십시오.",
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(48498-48559)"],
+    "$id": 22192
   },
   "智能聚类执行失败或有效向量文件数不足": {
     "en-US": "Intelligent clustering execution failed or the number of valid vector files is insufficient",
@@ -522,38 +552,8 @@
     "de-DE": "Die Ausführung des intelligenten Clusters ist fehlgeschlagen oder die Anzahl der gültigen Vektordateien ist unzureichend",
     "fr-FR": "L'exécution du clustering intelligent a échoué ou le nombre de fichiers vectoriels valides est insuffisant",
     "ko-KR": "지능형 클러스터링 실행 실패 또는 유효한 벡터 파일 수가 부족합니다",
-    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(49596-49618)"],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(49530-49552)"],
     "$id": 21564
-  },
-  "没有正在进行的任务": {
-    "en-US": "No tasks in progress",
-    "es-ES": "No hay tareas en progreso",
-    "ar-EG": "لا توجد مهام قيد التقدم",
-    "pt-PT": "Nenhuma tarefa em andamento",
-    "ru-RU": "Нет незавершенных задач",
-    "ja-JP": "進行中のタスクはありません",
-    "de-DE": "Keine Aufgaben in Bearbeitung",
-    "fr-FR": "Aucune tâche en cours",
-    "ko-KR": "진행 중인 작업이 없습니다.",
-    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(52376-52389)"],
-    "$id": 10187
-  },
-  "服务未初始化": {
-    "en-US": "Service not initialized",
-    "es-ES": "Servicio no inicializado",
-    "ar-EG": "لم تتم تهيئة الخدمة",
-    "pt-PT": "Serviço não inicializado",
-    "ru-RU": "Служба не инициализирована",
-    "ja-JP": "サービスが初期化されていません",
-    "de-DE": "Dienst nicht initialisiert",
-    "fr-FR": "Service non initialisé",
-    "ko-KR": "서비스가 초기화되지 않았습니다.",
-    "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(52595-52605)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(53021-53031)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(53445-53455)"
-    ],
-    "$id": 10188
   },
   "目录上下文服务未初始化": {
     "en-US": "Directory context service not initialized",
@@ -566,10 +566,10 @@
     "fr-FR": "Service de contexte d'annuaire non initialisé",
     "ko-KR": "디렉터리 컨텍스트 서비스가 초기화되지 않았습니다.",
     "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(55027-55042)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(58343-58358)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(59424-59439)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(60691-60706)"
+      "src/electron/main/ipc-handlers/virtual-directory.ts(51227-51242)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(54625-54640)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(55735-55750)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(57030-57045)"
     ],
     "$id": 7680
   },

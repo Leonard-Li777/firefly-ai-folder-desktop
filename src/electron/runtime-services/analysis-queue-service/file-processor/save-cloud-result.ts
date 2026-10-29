@@ -6,6 +6,7 @@ import {
   FileCategory,
   getFileCategory,
   isCategory,
+  isDecodableImage,
   sanitizeFilename,
   cleanSmartName,
   sanitizeAITagValue,
@@ -92,7 +93,8 @@ export async function saveCloudResult(
             thumbnailRelativePath = thumbnailResult.relativePath
 
           // 检查是否是非浏览器原生支持的特殊图片格式，若是则提前转码原尺寸 WebP
-          if (isCategory(filePath, FileCategory.IMAGE)) {
+          // 注意：仅对可解码图片（排除 dwg/dxf 等 CAD 矢量与 RAW 格式，图像解码器无法读取）
+          if (isCategory(filePath, FileCategory.IMAGE) && isDecodableImage(filePath)) {
             const ext = path.extname(filePath).toLowerCase()
             const nativeImageExtensions = [
               '.jpg',

@@ -194,17 +194,18 @@ export class DatabaseService {
     viaParentCode?: string,
     isControlled?: boolean
   ): TagProvenanceGroup {
-    const isExplicitPrivate =
-      isControlled === false ||
-      tagCode.startsWith('_ext.') ||
-      tagCode.startsWith('custom.')
-
-    const inControlledDict =
+    const isAuthoritativeControlled =
       Boolean(CONTROLLED_CODE_TO_CANONICAL_NAME[tagCode]) ||
       tagCode.startsWith('omw.') ||
       tagCode.startsWith('hownet.')
 
-    if (isExplicitPrivate && !inControlledDict) {
+    // 只要不是显式认定的权威受控码（或调用方已明确声明 isControlled === false，或以 _ext./custom. 开头），一律稳稳归入 'user'
+    if (
+      isControlled === false ||
+      !isAuthoritativeControlled ||
+      tagCode.startsWith('_ext.') ||
+      tagCode.startsWith('custom.')
+    ) {
       return 'user'
     }
 
@@ -1527,13 +1528,31 @@ export class DatabaseService {
       }
       const safeDimCode: string = dimCode || concept('内容标签')
 
-      // 权威受控反查与伪代码净化：仅当显式传入了 tagCode 且包含非 ASCII 中文字符（如 builtin.security_level.内部）时，才净化为权威受控码
+            // 权威受控反查与伪代码净化：凡是以 builtin. 或 dim. 开头但不在权威受控字典中，或包含非 ASCII 字符的，一律判定为非法拼接伪码
       let safeExplicitTagCode = explicitTagCode
-      if (safeExplicitTagCode && /[^ -]/.test(safeExplicitTagCode)) {
-        if (item.tagName && isControlledConcept(item.tagName)) {
-          safeExplicitTagCode = concept(item.tagName)
-        } else if (isControlledConcept(safeExplicitTagCode)) {
-          safeExplicitTagCode = concept(safeExplicitTagCode as any)
+      const isBogusControlledCode =
+        Boolean(safeExplicitTagCode) &&
+        ((safeExplicitTagCode.startsWith('builtin.') ||
+          safeExplicitTagCode.startsWith('dim.') ||
+          /[^\u0020-\u007E]/.test(safeExplicitTagCode)) &&
+          !CONTROLLED_CODE_TO_CANONICAL_NAME[safeExplicitTagCode])
+
+      if (isBogusControlledCode) {
+        // 提取尾段真实词面（如从 "builtin.security_level.内部" 提取 "内部"）
+        const tailLemma = safeExplicitTagCode.split('.').pop() || ''
+        const candidateName = item.tagName || tailLemma
+        if (isControlledConcept(candidateName)) {
+          safeExplicitTagCode = concept(candidateName)
+        } else {
+          // 查找规范展示名别名反查
+          let foundControlledCode: string | undefined
+          for (const [code, canonName] of Object.entries(CONTROLLED_CODE_TO_CANONICAL_NAME)) {
+            if (canonName.toLowerCase() === candidateName.toLowerCase()) {
+              foundControlledCode = code
+              break
+            }
+          }
+          safeExplicitTagCode = foundControlledCode
         }
       }
 
@@ -1877,10 +1896,10 @@ export class DatabaseService {
         // S2 互斥收拢语句（规格 §4.1 阶段 B / §4.3）：与 insertStmt 一同在事务开头预编译，循环内只 run/get。
         // 覆盖删除必须写成「tag_code <> winner」而不是「清空该作用域」——否则 INSERT winner 失败时维度已被清空（P0-A）。
         const selectSiblingsStmt = this._db!.prepare(
-          'SELECT tag_code FROM file_tag_relations WHERE file_fingerprint = ? AND via_parent_code = ? AND tag_code <> ?'
+          'SELECT tag_code FROM file_tag_relations WHERE file_fingerprint = ? AND (via_parent_code = ? OR code_path LIKE (\'%/\' || ? || \'/\') OR tag_code LIKE (? || \'.%\')) AND tag_code <> ?'
         )
         const overrideDeleteStmt = this._db!.prepare(
-          'DELETE FROM file_tag_relations WHERE file_fingerprint = ? AND via_parent_code = ? AND tag_code <> ?'
+          'DELETE FROM file_tag_relations WHERE file_fingerprint = ? AND (via_parent_code = ? OR code_path LIKE (\'%/\' || ? || \'/\') OR tag_code LIKE (? || \'.%\')) AND tag_code <> ?'
         )
 
         // S2 显式移除集合（覆盖删除豁免判定用，规格 §4.4 第三行）：
@@ -2067,14 +2086,14 @@ export class DatabaseService {
               let deletedTagCodes: string[] = []
               if (!skipOverrideDelete) {
                 // 7b. 覆盖前 SELECT 既有兄弟（不含 winner 自身）
-                const siblingRows = selectSiblingsStmt.all(fp, parentCode, winner.tagCode) as Array<{
+                const siblingRows = selectSiblingsStmt.all(fp, parentCode, parentCode, parentCode, winner.tagCode) as Array<{
                   tag_code: string
                 }>
                 deletedTagCodes = siblingRows.map(r => r.tag_code).filter(Boolean)
 
                 if (deletedTagCodes.length > 0) {
                   // 7c. 删除既有兄弟；`tag_code <> winner` 保证刚写入的 winner 不被自己删掉
-                  overrideDeleteStmt.run(fp, parentCode, winner.tagCode)
+                  overrideDeleteStmt.run(fp, parentCode, parentCode, parentCode, winner.tagCode)
                   // 7d. 只有真实删除过既有兄弟才计入 overriddenCount（回答「有没有覆盖旧值」）
                   overriddenCount++
                 }

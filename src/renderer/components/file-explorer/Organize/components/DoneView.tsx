@@ -16,7 +16,7 @@ import {
   recalculateNodeFileCounts,
   getAllFileKeys,
   isUnclassifiedNodeName,
-  extractFilesFromTree
+  filterEmptyDirectoryNodes
 } from '../utils/helpers'
 import { useSettingsStore } from '../../../../stores/settings-store'
 import { useOrganizeStore } from '../../../../stores/organize-store'
@@ -111,13 +111,11 @@ export function DoneView({
         }
       })
       .filter(n => {
-        // 如果 options.skipEmptyDirs 启用，但节点有子目录，保留；
-        // 如果节点既无文件也无子目录，但在草稿/大纲阶段或节点带有名称，保留其结构
+        // 若启用 options.skipEmptyDirs（不生成空目录），仅保留包含文件或子目录的有效节点
         if (options?.skipEmptyDirs) {
           const hasFiles = (n.files || []).length > 0
           const hasSubs = (n.subdirectories || []).length > 0
-          // 保留包含子目录或文件的节点，保留非空名称的大纲节点
-          return hasFiles || hasSubs || Boolean(n.name)
+          return hasFiles || hasSubs
         }
         return true
       })
@@ -247,11 +245,11 @@ export function DoneView({
       setUnmatchedCount(res.unclassifiedCount)
 
       if (currentVDir?.id && res.tree.length > 0) {
-        const finalFiles = extractFilesFromTree(res.tree)
-        window.electronAPI?.virtualDirectory.replaceFiles(currentVDir.id, finalFiles).catch(err => {
-          logger.warn(LogCategory.FILE_ORGANIZATION, '滑块重塑落库失败:', err)
-        })
-        window.electronAPI?.virtualDirectory.syncIncrementalDirectoryTree(currentVDir.id, res.tree).then(() => {
+        // 单一事实源原子落库：由 syncIncrementalDirectoryTree 统一提取全量文件与空目录 .keep 占位，严格遵守 options.skipEmptyDirs
+        const treeToSync = options?.skipEmptyDirs
+          ? filterEmptyDirectoryNodes(res.tree)
+          : res.tree
+        window.electronAPI?.virtualDirectory.syncIncrementalDirectoryTree(currentVDir.id, treeToSync).then(() => {
           window.dispatchEvent(new CustomEvent('vdir:updated', { detail: { vdirId: currentVDir.id } }))
           window.dispatchEvent(new CustomEvent('vdir:incremental-updated', { detail: { vdirId: currentVDir.id } }))
         }).catch(err => {
@@ -259,7 +257,7 @@ export function DoneView({
         })
       }
     },
-    [draftTree, tree, rawMatches, filesMap, userPinnedFileMap, setFinalTree, setUnmatchedCount, currentVDir?.id]
+    [draftTree, tree, rawMatches, filesMap, userPinnedFileMap, setFinalTree, setUnmatchedCount, currentVDir?.id, options?.skipEmptyDirs]
   )
 
   // 拦截文件微调事件，记录用户手动固定的路径映射 (Pinned 保护)
@@ -354,7 +352,18 @@ export function DoneView({
         <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors select-none">
           <Checkbox
             checked={options.skipEmptyDirs}
-            onCheckedChange={checked => setOptions(prev => ({ ...prev, skipEmptyDirs: !!checked }))}
+            onCheckedChange={checked => {
+              const nextVal = !!checked
+              setOptions(prev => ({ ...prev, skipEmptyDirs: nextVal }))
+              if (currentVDir?.id && tree.length > 0) {
+                const treeToSync = nextVal ? filterEmptyDirectoryNodes(tree) : tree
+                window.electronAPI?.virtualDirectory.syncIncrementalDirectoryTree(currentVDir.id, treeToSync).then(() => {
+                  window.dispatchEvent(new CustomEvent('vdir:updated', { detail: { vdirId: currentVDir.id } }))
+                }).catch(err => {
+                  logger.warn(LogCategory.FILE_ORGANIZATION, '同步空目录开关状态失败:', err)
+                })
+              }
+            }}
           />
           <span>{t('不生成空目录')}</span>
         </label>

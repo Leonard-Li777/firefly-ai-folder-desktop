@@ -417,10 +417,11 @@ export class DatabaseHelper {
         if (displayName) {
           const pathCodes = row.code_path ? row.code_path.split('/').filter(Boolean) : []
           const rootDimCode = pathCodes[0] || row.via_parent_code || row.tag_code || null
-          const canonicalDimName =
-            (rootDimCode ? getCanonicalConceptName(rootDimCode) : '') ||
-            (row.via_parent_code ? getCanonicalConceptName(row.via_parent_code) : '') ||
-            ''
+          // 标签直属维度必须优先取 via_parent_code，严禁将视觉等细分维度全部错误回溯到首段根维度（文件类型）
+          // [ISS-01] 坚决剔除 row.tag_code 与 tagDimName，严禁让标签值自身反客为主充当维度名与维度码
+          const viaParentDimName = row.via_parent_code ? getCanonicalConceptName(row.via_parent_code) : ''
+          const rootDimName = rootDimCode ? getCanonicalConceptName(rootDimCode) : ''
+          const canonicalDimName = viaParentDimName || rootDimName || ''
           tagsByFileId.get(row.file_id)!.push({
             dimensionId: null,
             dimensionCode: row.via_parent_code || rootDimCode || null,

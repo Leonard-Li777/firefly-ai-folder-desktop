@@ -1153,3 +1153,32 @@ export function extractCandidatePathsFromTree(
   return Array.from(new Set(paths))
 }
 
+/**
+ * 递归过滤整棵树中所有既无真实物理文件也无任何有效子目录的纯空目录节点
+ * （保留带有文件的节点，以及包含非空子目录的父目录节点）
+ */
+export function filterEmptyDirectoryNodes(nodes: VirtualDirectoryNode[]): VirtualDirectoryNode[] {
+  if (!Array.isArray(nodes)) return []
+  const result: VirtualDirectoryNode[] = []
+
+  for (const node of nodes) {
+    if (!node) continue
+    const filteredSubs = filterEmptyDirectoryNodes(node.subdirectories || [])
+    const hasFiles = Array.isArray(node.files) && node.files.length > 0
+    const hasSubs = filteredSubs.length > 0
+
+    if (hasFiles || hasSubs) {
+      let count = node.files ? node.files.length : 0
+      for (const sub of filteredSubs) {
+        count += sub.fileCount
+      }
+      result.push({
+        ...node,
+        subdirectories: filteredSubs,
+        fileCount: count
+      })
+    }
+  }
+
+  return result
+}

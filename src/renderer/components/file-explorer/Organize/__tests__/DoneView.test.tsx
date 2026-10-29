@@ -185,7 +185,7 @@ describe('DoneView Component & Filtering logic', () => {
     expect(queryByText('文件去重')).toBeNull()
 
     // 3. 验证高级 AI 深度找补按钮
-    const rescueBtn = getByText('高级 AI 深度找补')
+    const rescueBtn = getByText(/高级 AI 深度找补/)
     expect(rescueBtn).toBeInTheDocument()
     rescueBtn.click()
     expect(onRescue).toHaveBeenCalledWith(true)

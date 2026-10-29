@@ -759,7 +759,12 @@ export class VirtualDirectoryService {
           traverseForInputs(node.subdirectories, dirPath)
         }
 
-        if (!hasFiles && !hasSubs && anyFile) {
+        const isUnclassNode =
+          nodeName === UNCLASSIFIED_NAME ||
+          nodeName === '未归类' ||
+          Boolean((node as any).isUnclassified)
+
+        if (!hasFiles && !hasSubs && anyFile && !isUnclassNode) {
           const relPath = `${dirPath}/.keep`
           const key = `${anyFile.fileId}::${relPath}`
           if (!seenMap.has(key)) {

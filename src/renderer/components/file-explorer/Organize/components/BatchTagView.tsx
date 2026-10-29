@@ -1990,10 +1990,11 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
         CONTROLLED_DIMENSION_ROOT_CODES[dimId] ||
         (dimName && isControlledConcept(dimName) ? concept(dimName) : undefined)
       const matchedTag = (group?.tags || []).find(t => t.tagValue === tagValue)
+      const controlledCode = isControlledConcept(tagValue) ? concept(tagValue) : undefined
       const tagCode =
+        controlledCode ||
         (matchedTag as any)?.tagCode ||
-        (matchedTag as any)?.code ||
-        (isControlledConcept(tagValue) ? concept(tagValue) : undefined)
+        (matchedTag as any)?.code
 
       if (state === 'add_all') {
         addTags.push({
@@ -2032,10 +2033,11 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
           CONTROLLED_DIMENSION_ROOT_CODES[dimId] ||
           (dimName && isControlledConcept(dimName) ? concept(dimName) : undefined)
         const matchedTag = (group?.tags || []).find(t => t.tagValue === tagValue)
+        const controlledCode = isControlledConcept(tagValue) ? concept(tagValue) : undefined
         const tagCode =
+          controlledCode ||
           (matchedTag as any)?.tagCode ||
-          (matchedTag as any)?.code ||
-          (isControlledConcept(tagValue) ? concept(tagValue) : undefined)
+          (matchedTag as any)?.code
         removeTags.push({
           dimensionId: dimId,
           dimensionCode: dimCode,

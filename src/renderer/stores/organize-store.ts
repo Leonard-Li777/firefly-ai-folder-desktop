@@ -110,6 +110,11 @@ interface OrganizeStoreState {
   ) => void
   setThresholdScore: (y: number) => void
   setMaxCandidatesPerFile: (n: number) => void
+  // ─── 批量整理容量切片与穿透门禁 ───────────────────────────────────
+  organizeFileLimitOverride: number | null
+  bypassCapacityLimit: boolean
+  setOrganizeFileLimitOverride: (limit: number | null) => void
+  setBypassCapacityLimit: (bypass: boolean) => void
   resetOrganizeState: () => void
 }
 
@@ -144,6 +149,10 @@ export const useOrganizeStore = create<OrganizeStoreState>(set => ({
   userPinnedFileMap: new Map(),
   thresholdScore: 0.4,
   maxCandidatesPerFile: 1,
+  organizeFileLimitOverride: null,
+  bypassCapacityLimit: false,
+  setOrganizeFileLimitOverride: organizeFileLimitOverride => set({ organizeFileLimitOverride }),
+  setBypassCapacityLimit: bypassCapacityLimit => set({ bypassCapacityLimit }),
 
   setStage: stage =>
     set(state => {
@@ -172,10 +181,18 @@ export const useOrganizeStore = create<OrganizeStoreState>(set => ({
         ? prevVisited
         : [...prevVisited, stage]
 
+      const isReturningHome = stage === 'root-mode-select'
+
       return {
         stage,
         activeBranch: branch,
-        visitedStages: newVisited
+        visitedStages: newVisited,
+        ...(isReturningHome
+          ? {
+              organizeFileLimitOverride: null,
+              bypassCapacityLimit: false
+            }
+          : {})
       }
     }),
 
@@ -255,6 +272,8 @@ export const useOrganizeStore = create<OrganizeStoreState>(set => ({
       filesMap: {},
       userPinnedFileMap: new Map(),
       thresholdScore: 0.4,
-      maxCandidatesPerFile: 1
+      maxCandidatesPerFile: 1,
+      organizeFileLimitOverride: null,
+      bypassCapacityLimit: false
     })
 }))

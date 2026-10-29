@@ -162,17 +162,38 @@ export const Organize: React.FC = () => {
     isTrashingDuplicates,
     loadFilesToOrganize,
 
-    // 3,000 容量硬上限守卫
+    // 容量守卫与门禁穿透
     organizeCapacityLimit,
     isCapacityExceeded,
     capacityExceededCount,
     showCapacityLimitDialog,
     setShowCapacityLimitDialog,
     handleGoToAnalyzedPage,
-    handleLimitToFirst3000Files
+    handleLimitToFirst3000Files,
+    handleBypassLimitAndOrganizeAll,
+    handleAttemptEnterModeSelect,
+    bypassCapacityLimit,
+    organizeFileLimitOverride,
+    rawToOrganizeCount
   } = useOrganizeState()
 
+  const handleSidebarSelectStage = useCallback(
+    (targetStage: any) => {
+      if (targetStage === 'mode-select') {
+        handleAttemptEnterModeSelect('mode-select')
+      } else {
+        setStage(targetStage)
+      }
+    },
+    [handleAttemptEnterModeSelect, setStage]
+  )
+
   const isStandaloneStage = stage === 'batch-rename' || stage === 'batch-duplicate'
+  const isMainOrganizeStage =
+    stage !== 'root-mode-select' &&
+    stage !== 'batch-rename' &&
+    stage !== 'batch-tag' &&
+    stage !== 'batch-duplicate'
 
   const [inspectedFile, setInspectedFile] = useState<any | null>(null)
   const [duplicateSelectedCount, setDuplicateSelectedCount] = useState<number>(0)
@@ -560,9 +581,9 @@ export const Organize: React.FC = () => {
               <div className="flex items-center gap-3 shrink-0 min-w-0">
                 <span
                   className="text-xs text-muted-foreground font-medium px-2.5 py-1 bg-muted/30 rounded-md select-none shrink-0 truncate"
-                  title={t('本页面自动保存')}
+                  title={isSavedVDirOrganize ? t('本页面自动保存') : t('本页面自动保存草稿')}
                 >
-                  {t('本页面自动保存')}
+                  {isSavedVDirOrganize ? t('本页面自动保存') : t('本页面自动保存草稿')}
                 </span>
                 <div className="flex items-center border border-primary/20 bg-primary/5 rounded-xl overflow-hidden shrink-0">
                   <Button
@@ -637,14 +658,7 @@ export const Organize: React.FC = () => {
 
             {stage === 'done' && (
               <>
-                {Boolean(currentVDir?.source === 'draft' || draft?.source === 'draft') ? (
-                  <span
-                    className="text-xs text-muted-foreground font-medium px-2 py-1 bg-muted/30 rounded-md select-none shrink-0 truncate"
-                    title={t('本页面自动保存')}
-                  >
-                    {t('本页面自动保存')}
-                  </span>
-                ) : isSavedVDirOrganize ? (
+                {isSavedVDirOrganize ? (
                   <Button
                     variant="link"
                     size="sm"
@@ -663,7 +677,14 @@ export const Organize: React.FC = () => {
                       {t('本页面自动保存，你可随时切换虚拟目录页面查看结果')}
                     </span>
                   </Button>
-                ) : null}
+                ) : (
+                  <span
+                    className="text-xs text-muted-foreground font-medium px-2 py-1 bg-muted/30 rounded-md select-none shrink-0 truncate"
+                    title={t('本页面自动保存草稿')}
+                  >
+                    {t('本页面自动保存草稿')}
+                  </span>
+                )}
               </>
             )}
 
@@ -685,31 +706,58 @@ export const Organize: React.FC = () => {
           </div>
         </div>
 
-        {isCapacityExceeded && (
-          <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 flex items-center justify-between text-xs text-amber-600 dark:text-amber-400 shrink-0">
+        {/* 容量超限横幅：仅在批量整理工作台各阶段中按需显示，不在主页或卫星工具中显示 */}
+        {isMainOrganizeStage && rawToOrganizeCount > organizeCapacityLimit && (
+          <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 flex items-center justify-between text-xs text-amber-600 dark:text-amber-400 shrink-0 gap-3">
             <div className="flex items-center gap-2 min-w-0">
               <MaterialIcon icon="dataset" className="text-base shrink-0 text-amber-500" />
               <span className="truncate">
-                {t('待整理文件较多（共 {count} 个，超出单批建议 {limit} 个）。您可以仅整理前 {limit} 个或前往手动筛选：', {
-                  count: capacityExceededCount.toLocaleString(),
-                  limit: organizeCapacityLimit.toLocaleString()
-                })}
+                {organizeFileLimitOverride !== null
+                  ? t('已截取前 {limit} 个文件整理（原共 {count} 个，超出单批建议 {limit} 个）。其余文件保留在原目录：', {
+                      limit: organizeFileLimitOverride.toLocaleString(),
+                      count: rawToOrganizeCount.toLocaleString()
+                    })
+                  : bypassCapacityLimit
+                    ? t('当前为全量整理模式（共 {count} 个，超出单批建议 {limit} 个）。单次大规模计算将显著增加 AI 耗时与内存：', {
+                        count: rawToOrganizeCount.toLocaleString(),
+                        limit: organizeCapacityLimit.toLocaleString()
+                      })
+                    : t('待整理文件较多（共 {count} 个，超出单批建议 {limit} 个）。您可以仅整理前 {limit} 个或前往手动筛选：', {
+                        count: rawToOrganizeCount.toLocaleString(),
+                        limit: organizeCapacityLimit.toLocaleString()
+                      })}
               </span>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <Button
-                size="sm"
-                onClick={handleLimitToFirst3000Files}
-                className="h-6 text-[11px] px-2.5 bg-amber-500 hover:bg-amber-600 text-white font-medium shadow-xs"
-              >
-                <MaterialIcon icon="bolt" className="mr-1 text-xs" />
-                {t('仅整理前 {limit} 个 (即刻开始)', { limit: organizeCapacityLimit.toLocaleString() })}
-              </Button>
+            <div className="flex items-center gap-3 shrink-0">
+              {/* 当处于切片状态（前 N 个）时：展示次要弱化操作“我了解风险，仍要整理全部文件”，供用户按需展开全量 */}
+              {organizeFileLimitOverride !== null ? (
+                <Button
+                  variant="link"
+                  size="sm"
+                  onClick={handleBypassLimitAndOrganizeAll}
+                  className="text-xs text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400 p-0 h-auto underline-offset-4 hover:underline shrink-0"
+                  title={t('单次超大规模计算将显著增加内存占用与 AI 响应耗时（O(N²) 复杂度），且目录聚类颗粒度可能变宽')}
+                >
+                  {t('我了解风险，仍要整理全部 {count} 个文件', { count: rawToOrganizeCount.toLocaleString() })}
+                </Button>
+              ) : (
+                /* 当处于全量整理时：展示主要推荐操作“仅整理前 N 个 (即刻开始)”，供用户一键降级为安全模式 */
+                <Button
+                  size="sm"
+                  onClick={handleLimitToFirst3000Files}
+                  className="h-6 text-[11px] px-2.5 bg-amber-500 hover:bg-amber-600 text-white font-medium shadow-xs shrink-0"
+                >
+                  <MaterialIcon icon="bolt" className="mr-1 text-xs" />
+                  {t('仅整理前 {limit} 个 (即刻开始)', { limit: organizeCapacityLimit.toLocaleString() })}
+                </Button>
+              )}
+
+              {/* 辅助操作：前往手动筛选 */}
               <Button
                 size="sm"
                 variant="outline"
                 onClick={handleGoToAnalyzedPage}
-                className="h-6 text-[11px] px-2 border-amber-500/30 hover:bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                className="h-6 text-[11px] px-2 border-amber-500/30 hover:bg-amber-500/10 text-amber-600 dark:text-amber-400 shrink-0"
               >
                 <MaterialIcon icon="checklist" className="mr-1 text-xs" />
                 {t('前往手动筛选')}
@@ -722,7 +770,7 @@ export const Organize: React.FC = () => {
           {/* 左侧常驻批量功能导航侧边栏 */}
           <OrganizeSidebar
             currentStage={stage}
-            onSelectStage={setStage}
+            onSelectStage={handleSidebarSelectStage}
           />
 
           {isStandaloneStage ? (
@@ -876,8 +924,8 @@ export const Organize: React.FC = () => {
                         <>
                           {stage === 'root-mode-select' && (
                             <RootModeSelectView
-                              onSelectStage={setStage}
-                              totalFilesCount={toOrganizeFiles.length}
+                              onSelectStage={handleAttemptEnterModeSelect}
+                              totalFilesCount={rawToOrganizeCount}
                             />
                           )}
 
@@ -1246,12 +1294,17 @@ export const Organize: React.FC = () => {
             </div>
           </div>
 
-          {/* 底栏 */}
-          <DialogFooter className="px-6 py-3.5 border-t border-border bg-muted/20 flex-row items-center justify-between sm:justify-between">
-            <span className="text-xs text-muted-foreground flex items-center gap-1">
-              <MaterialIcon icon="info" className="text-sm text-primary" />
-              {t('点击卡片即可直接确认执行')}
-            </span>
+          {/* 底栏：次要操作与全量整理链接 */}
+          <DialogFooter className="px-6 py-3.5 border-t border-border bg-muted/20 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <Button
+              variant="link"
+              size="sm"
+              onClick={handleBypassLimitAndOrganizeAll}
+              className="text-xs text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400 p-0 h-auto underline-offset-4 hover:underline"
+              title={t('单次超大规模计算将显著增加内存占用与 AI 响应耗时（O(N²) 复杂度），且目录聚类颗粒度可能变宽')}
+            >
+              {t('我了解风险，仍要整理全部 {count} 个文件', { count: capacityExceededCount.toLocaleString() })}
+            </Button>
             <Button
               variant="ghost"
               size="sm"

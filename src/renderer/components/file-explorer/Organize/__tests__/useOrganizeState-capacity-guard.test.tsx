@@ -52,7 +52,7 @@ vi.mock('../../../common/Toast', () => ({
   }
 }))
 
-describe('useOrganizeState 3,000 容量硬上限与找补截断验证', () => {
+describe('useOrganizeState 批量整理容量门禁与切片穿透验证', () => {
   const wrapper = ({ children }: { children: React.ReactNode }) =>
     React.createElement(MemoryRouter, { initialEntries: ['/organize'] }, children)
 
@@ -61,9 +61,11 @@ describe('useOrganizeState 3,000 容量硬上限与找补截断验证', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     useOrganizeStore.setState({
+      stage: 'root-mode-select',
+      organizeFileLimitOverride: null,
+      bypassCapacityLimit: false,
       finalTree: [],
-      draftTree: [],
-      stage: 'done'
+      draftTree: []
     })
     useSettingsStore.setState({
       config: {
@@ -81,7 +83,8 @@ describe('useOrganizeState 3,000 容量硬上限与找补截断验证', () => {
       organizeRealDirectory: {
         getAnalyzedFiles: vi.fn().mockResolvedValue([]),
         getLightweightFiles: vi.fn().mockResolvedValue([]),
-        getAnalyzedCount: vi.fn().mockResolvedValue(0)
+        getAnalyzedCount: vi.fn().mockResolvedValue(0),
+        calculateFilePathsCosine: vi.fn().mockResolvedValue({ success: true, matches: {} })
       },
       virtualDirectory: {
         getAnalyzedCount: vi.fn().mockResolvedValue(0),
@@ -105,10 +108,15 @@ describe('useOrganizeState 3,000 容量硬上限与找补截断验证', () => {
     }
   })
 
-  it('待整理文件超过 3,000 个时，触发容量超限守卫与弹窗，阻断前进', async () => {
-    // 模拟前置探针返回 3,005，触发门禁并不拉取文件对象（0 对象进内存）
-    ;(window as any).electronAPI.organizeRealDirectory.getAnalyzedCount.mockResolvedValue(3005)
-    ;(window as any).electronAPI.virtualDirectory.getAnalyzedCount.mockResolvedValue(3005)
+  it('待整理文件超过 3,000 个时，入场全量拉取且首页不弹窗；点击批量整理入口时触发拦截并弹窗', async () => {
+    const mock3005 = Array.from({ length: 3005 }, (_, i) => ({
+      id: i + 1,
+      path: `/workspace/file_${i + 1}.txt`,
+      name: `file_${i + 1}.txt`,
+      extension: 'txt',
+      isAnalyzed: true
+    }))
+    ;(window as any).electronAPI.organizeRealDirectory.getLightweightFiles.mockResolvedValue(mock3005)
 
     const { result } = renderHook(() => useOrganizeState(), { wrapper })
 
@@ -116,25 +124,32 @@ describe('useOrganizeState 3,000 容量硬上限与找补截断验证', () => {
       await new Promise(resolve => setTimeout(resolve, 50))
     })
 
-    expect(result.current.toOrganizeFiles.length).toBe(0)
+    // 入场后在 root-mode-select 首页：全量供给 3005 个，不弹窗！
+    expect(result.current.rawToOrganizeCount).toBe(3005)
+    expect(result.current.toOrganizeFiles.length).toBe(3005)
+    expect(result.current.showCapacityLimitDialog).toBe(false)
+
+    // 用户在首页点击“批量整理”尝试进入 mode-select
+    act(() => {
+      result.current.handleAttemptEnterModeSelect('mode-select')
+    })
+
+    // 触发超限拦截并弹窗，阻止直接切换 stage
+    expect(result.current.showCapacityLimitDialog).toBe(true)
     expect(result.current.isCapacityExceeded).toBe(true)
     expect(result.current.capacityExceededCount).toBe(3005)
-    expect(result.current.showCapacityLimitDialog).toBe(true)
-    expect(result.current.canForward).toBe(false)
+    expect(useOrganizeStore.getState().stage).toBe('root-mode-select')
   })
 
-  it('待整理文件 <= 3,000 个时，容量超限守卫不触发', async () => {
-    ;(window as any).electronAPI.organizeRealDirectory.getAnalyzedCount.mockResolvedValue(50)
-    ;(window as any).electronAPI.virtualDirectory.getAnalyzedCount.mockResolvedValue(50)
-    const mockFiles = Array.from({ length: 50 }, (_, i) => ({
+  it('待整理文件 <= 3,000 个时，点击批量整理入口直接放行切换到 mode-select', async () => {
+    const mock50 = Array.from({ length: 50 }, (_, i) => ({
       id: i + 1,
       path: `/workspace/file_${i + 1}.txt`,
       name: `file_${i + 1}.txt`,
-      smartName: `file_${i + 1}`,
       extension: 'txt',
       isAnalyzed: true
     }))
-    ;(window as any).electronAPI.organizeRealDirectory.getLightweightFiles.mockResolvedValue(mockFiles)
+    ;(window as any).electronAPI.organizeRealDirectory.getLightweightFiles.mockResolvedValue(mock50)
 
     const { result } = renderHook(() => useOrganizeState(), { wrapper })
 
@@ -143,8 +158,14 @@ describe('useOrganizeState 3,000 容量硬上限与找补截断验证', () => {
     })
 
     expect(result.current.toOrganizeFiles.length).toBe(50)
-    expect(result.current.isCapacityExceeded).toBe(false)
     expect(result.current.showCapacityLimitDialog).toBe(false)
+
+    act(() => {
+      result.current.handleAttemptEnterModeSelect('mode-select')
+    })
+
+    expect(result.current.showCapacityLimitDialog).toBe(false)
+    expect(useOrganizeStore.getState().stage).toBe('mode-select')
   })
 
   it('点击 handleGoToAnalyzedPage 时，正确导航到已分析页面', async () => {
@@ -161,13 +182,8 @@ describe('useOrganizeState 3,000 容量硬上限与找补截断验证', () => {
   })
 
   it('Done 阶段未归类找补 (handleRescue) 超出 200 个文件时，必须严格截断前 200 个传入后端', async () => {
-    useAnalyzedDirectoryStore.getState().setCurrentWorkspaceDirectory({
-      id: 1,
-      path: '/workspace',
-      name: 'workspace'
-    } as any)
+    useOrganizeStore.setState({ stage: 'done' })
 
-    // 构造一个包含 280 个未归类文件的 finalTree
     const unclassified280 = Array.from({ length: 280 }, (_, i) => ({
       id: i + 1,
       name: `unclassified_${i + 1}.txt`,
@@ -193,25 +209,20 @@ describe('useOrganizeState 3,000 容量硬上限与找补截断验证', () => {
     expect(mockReorganize).toHaveBeenCalledTimes(1)
     const callArgs = mockReorganize.mock.calls[0][1]
     expect(callArgs.isRescue).toBe(true)
-    // 关键断言：传给后端的 files 数组必须被截断至 exactly 200
     expect(callArgs.files).toHaveLength(200)
     expect(callArgs.files[0].id).toBe(1)
     expect(callArgs.files[199].id).toBe(200)
   })
 
-  it('超限弹窗中选择仅整理前 3,000 个文件 (handleLimitToFirst3000Files) 时，成功拉取 3,000 个并解除阻断', async () => {
-    ;(window as any).electronAPI.organizeRealDirectory.getAnalyzedCount.mockResolvedValue(5200)
-    ;(window as any).electronAPI.virtualDirectory.getAnalyzedCount.mockResolvedValue(5200)
-
-    const mock3000 = Array.from({ length: 3000 }, (_, i) => ({
+  it('超限弹窗中选择仅整理前 3,000 个文件时，整理主流程切片为 3,000，但切回首页保留全量', async () => {
+    const mock5200 = Array.from({ length: 5200 }, (_, i) => ({
       id: i + 1,
       path: `/workspace/file_${i + 1}.txt`,
       name: `file_${i + 1}.txt`,
-      smartName: `file_${i + 1}`,
       extension: 'txt',
       isAnalyzed: true
     }))
-    ;(window as any).electronAPI.organizeRealDirectory.getLightweightFiles.mockResolvedValue(mock3000)
+    ;(window as any).electronAPI.organizeRealDirectory.getLightweightFiles.mockResolvedValue(mock5200)
 
     const { result } = renderHook(() => useOrganizeState(), { wrapper })
 
@@ -219,29 +230,64 @@ describe('useOrganizeState 3,000 容量硬上限与找补截断验证', () => {
       await new Promise(resolve => setTimeout(resolve, 50))
     })
 
-    // 初始状态触发超限
-    expect(result.current.isCapacityExceeded).toBe(true)
+    // 点击批量整理触发拦截
+    act(() => {
+      result.current.handleAttemptEnterModeSelect('mode-select')
+    })
     expect(result.current.showCapacityLimitDialog).toBe(true)
-    expect(result.current.toOrganizeFiles.length).toBe(0)
 
     // 用户在弹窗中选择“仅整理前 3,000 个文件”
-    await act(async () => {
-      await result.current.handleLimitToFirst3000Files()
+    act(() => {
+      result.current.handleLimitToFirst3000Files()
     })
 
-    // 验证解除阻断（优先使用工作区 ID 绑定）
-    expect((window as any).electronAPI.organizeRealDirectory.getLightweightFiles).toHaveBeenCalledWith(
-      1,
-      undefined,
-      3000
-    )
+    // 验证：进入 mode-select，且待整理文件切片为 3000
+    expect(useOrganizeStore.getState().stage).toBe('mode-select')
     expect(result.current.toOrganizeFiles.length).toBe(3000)
+    expect(result.current.showCapacityLimitDialog).toBe(false)
     expect(result.current.isCapacityExceeded).toBe(false)
-    expect(result.current.capacityExceededCount).toBe(0)
+
+    // 关键验证：若切回 root-mode-select 首页或卫星模式，仍能访问全部 5200 个文件！
+    act(() => {
+      useOrganizeStore.getState().setStage('root-mode-select')
+    })
+    expect(result.current.toOrganizeFiles.length).toBe(5200)
+  })
+
+  it('超限弹窗中选择「我了解风险，仍要整理全部文件」时，设置 bypass 并带全量文件进入 mode-select', async () => {
+    const mock5200 = Array.from({ length: 5200 }, (_, i) => ({
+      id: i + 1,
+      path: `/workspace/file_${i + 1}.txt`,
+      name: `file_${i + 1}.txt`,
+      extension: 'txt',
+      isAnalyzed: true
+    }))
+    ;(window as any).electronAPI.organizeRealDirectory.getLightweightFiles.mockResolvedValue(mock5200)
+
+    const { result } = renderHook(() => useOrganizeState(), { wrapper })
+
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 50))
+    })
+
+    act(() => {
+      result.current.handleAttemptEnterModeSelect('mode-select')
+    })
+    expect(result.current.showCapacityLimitDialog).toBe(true)
+
+    // 用户选择底部次要链接：我了解风险，仍要整理全部文件
+    act(() => {
+      result.current.handleBypassLimitAndOrganizeAll()
+    })
+
+    // 验证：成功进入 mode-select，toOrganizeFiles 为全量 5200 个，且 bypassCapacityLimit 标记已激活
+    expect(useOrganizeStore.getState().stage).toBe('mode-select')
+    expect(result.current.toOrganizeFiles.length).toBe(5200)
+    expect(result.current.bypassCapacityLimit).toBe(true)
     expect(result.current.showCapacityLimitDialog).toBe(false)
   })
 
-  it('配置中心常量生效：当配置为 10 (测试场景) 且文件为 15 时触发阻断，点击仅整理前批次拉取 10 个解除阻断', async () => {
+  it('配置中心常量生效：当配置为 10 且文件为 15 时，点击批量整理触发拦截', async () => {
     useSettingsStore.setState({
       config: {
         ...useSettingsStore.getState().config,
@@ -249,18 +295,14 @@ describe('useOrganizeState 3,000 容量硬上限与找补截断验证', () => {
       } as any
     })
 
-    ;(window as any).electronAPI.organizeRealDirectory.getAnalyzedCount.mockResolvedValue(15)
-    ;(window as any).electronAPI.virtualDirectory.getAnalyzedCount.mockResolvedValue(15)
-
-    const mock10 = Array.from({ length: 10 }, (_, i) => ({
+    const mock15 = Array.from({ length: 15 }, (_, i) => ({
       id: i + 1,
       path: `/workspace/file_${i + 1}.txt`,
       name: `file_${i + 1}.txt`,
-      smartName: `file_${i + 1}`,
       extension: 'txt',
       isAnalyzed: true
     }))
-    ;(window as any).electronAPI.organizeRealDirectory.getLightweightFiles.mockResolvedValue(mock10)
+    ;(window as any).electronAPI.organizeRealDirectory.getLightweightFiles.mockResolvedValue(mock15)
 
     const { result } = renderHook(() => useOrganizeState(), { wrapper })
 
@@ -268,32 +310,27 @@ describe('useOrganizeState 3,000 容量硬上限与找补截断验证', () => {
       await new Promise(resolve => setTimeout(resolve, 50))
     })
 
-    // 验证当前动态读取的容量上限为 10
     expect(result.current.organizeCapacityLimit).toBe(10)
-    expect(result.current.isCapacityExceeded).toBe(true)
-    expect(result.current.capacityExceededCount).toBe(15)
-    expect(result.current.showCapacityLimitDialog).toBe(true)
+    expect(result.current.toOrganizeFiles.length).toBe(15)
+    expect(result.current.showCapacityLimitDialog).toBe(false)
 
-    // 用户在弹窗中选择仅整理前 10 个文件
-    await act(async () => {
-      await result.current.handleLimitToFirst3000Files()
+    // 点击批量整理
+    act(() => {
+      result.current.handleAttemptEnterModeSelect('mode-select')
     })
 
-    // 验证调用参数下推为 10（优先使用工作区 ID 绑定）
-    expect((window as any).electronAPI.organizeRealDirectory.getLightweightFiles).toHaveBeenCalledWith(
-      1,
-      undefined,
-      10
-    )
+    expect(result.current.showCapacityLimitDialog).toBe(true)
+    expect(result.current.capacityExceededCount).toBe(15)
+
+    // 选择前 10 个
+    act(() => {
+      result.current.handleLimitToFirst3000Files()
+    })
+    expect(useOrganizeStore.getState().stage).toBe('mode-select')
     expect(result.current.toOrganizeFiles.length).toBe(10)
-    expect(result.current.isCapacityExceeded).toBe(false)
-    expect(result.current.capacityExceededCount).toBe(0)
-    expect(result.current.showCapacityLimitDialog).toBe(false)
   })
 
-  it('路由门禁：当处于已分析页面 (/analyzed-directory) 时，即使后台 KeepAlive 存活，也不拉取文件且弹窗恒为 false', async () => {
-    ;(window as any).electronAPI.organizeRealDirectory.getAnalyzedCount.mockResolvedValue(5000)
-
+  it('路由门禁：当处于已分析页面 (/analyzed-directory) 时，即使后台 KeepAlive 存活，也不弹窗', async () => {
     const analyzedWrapper = ({ children }: { children: React.ReactNode }) =>
       React.createElement(MemoryRouter, { initialEntries: ['/analyzed-directory'] }, children)
 
@@ -303,54 +340,11 @@ describe('useOrganizeState 3,000 容量硬上限与找补截断验证', () => {
       await new Promise(resolve => setTimeout(resolve, 50))
     })
 
-    // 严密断言：非 /organize 页面下绝不弹窗、不拉取文件
     expect(result.current.showCapacityLimitDialog).toBe(false)
     expect(result.current.isCapacityExceeded).toBe(false)
-    expect(result.current.toOrganizeFiles).toHaveLength(0)
-    expect((window as any).electronAPI.organizeRealDirectory.getLightweightFiles).not.toHaveBeenCalled()
-  })
-  it('从已分析页面携带勾选文件进入 /organize 时，正确带入文件并复位旧模式', async () => {
-    useOrganizeStore.getState().setOrganizeMode('incremental-organize')
-
-    const mockSelectedFiles = [
-      { id: 101, path: 'D:\\test\\a.txt', name: 'a.txt', extension: 'txt', is_analyzed: 1, isAnalyzed: true },
-      { id: 102, path: 'D:\\test\\b.txt', name: 'b.txt', extension: 'txt', is_analyzed: 1, isAnalyzed: true }
-    ]
-    ;(window as any).electronAPI.organizeRealDirectory.getLightweightFiles.mockResolvedValue(mockSelectedFiles)
-
-    const selectedWrapper = ({ children }: { children: React.ReactNode }) =>
-      React.createElement(
-        MemoryRouter,
-        {
-          initialEntries: [
-            {
-              pathname: '/organize',
-              state: {
-                selectedFileIds: [101, 102],
-                selectedFilePaths: ['D:\\test\\a.txt', 'D:\\test\\b.txt'],
-                initialStage: 'root-mode-select'
-              }
-            }
-          ]
-        },
-        children
-      )
-
-    const { result } = renderHook(() => useOrganizeState(), { wrapper: selectedWrapper })
-
-    await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 50))
-    })
-
-    // 验证旧模式被成功清除且勾选文件正确带入
-    expect(useOrganizeStore.getState().organizeMode).toBeUndefined()
-    expect(result.current.toOrganizeFiles).toHaveLength(2)
-    expect(result.current.toOrganizeFiles[0].id).toBe(101)
-    expect(result.current.toOrganizeFiles[1].id).toBe(102)
-    expect(result.current.showCapacityLimitDialog).toBe(false)
   })
 
-  it('从已分析页面携带超过容量上限的文件勾选进入 /organize 时，触发超限弹窗，点击仅整理前批次切取对应数量', async () => {
+  it('从已分析页面携带超过容量上限的文件勾选进入 /organize 时，首页正常供给全量，点击批量整理触发拦截', async () => {
     useSettingsStore.setState({
       config: {
         ...useSettingsStore.getState().config,
@@ -359,7 +353,7 @@ describe('useOrganizeState 3,000 容量硬上限与找补截断验证', () => {
     })
 
     const selectedIds = Array.from({ length: 15 }, (_, i) => 200 + i)
-    const mockLoaded10 = selectedIds.slice(0, 10).map(id => ({
+    const mock15 = selectedIds.map(id => ({
       id,
       path: `D:\\test\\file_${id}.txt`,
       name: `file_${id}.txt`,
@@ -367,7 +361,7 @@ describe('useOrganizeState 3,000 容量硬上限与找补截断验证', () => {
       is_analyzed: 1,
       isAnalyzed: true
     }))
-    ;(window as any).electronAPI.organizeRealDirectory.getLightweightFiles.mockResolvedValue(mockLoaded10)
+    ;(window as any).electronAPI.organizeRealDirectory.getLightweightFiles.mockResolvedValue(mock15)
 
     const overLimitWrapper = ({ children }: { children: React.ReactNode }) =>
       React.createElement(
@@ -393,26 +387,92 @@ describe('useOrganizeState 3,000 容量硬上限与找补截断验证', () => {
       await new Promise(resolve => setTimeout(resolve, 50))
     })
 
-    // 验证触发超限弹窗且待整理文件阻断为 0
-    expect(result.current.isCapacityExceeded).toBe(true)
-    expect(result.current.capacityExceededCount).toBe(15)
-    expect(result.current.showCapacityLimitDialog).toBe(true)
-    expect(result.current.toOrganizeFiles).toHaveLength(0)
+    // 首页供给全部 15 个勾选文件，不弹窗！
+    expect(result.current.toOrganizeFiles).toHaveLength(15)
+    expect(result.current.showCapacityLimitDialog).toBe(false)
 
-    // 用户在弹窗中点击“仅整理前 10 个文件”
-    await act(async () => {
-      await result.current.handleLimitToFirst3000Files()
+    // 用户点击批量整理
+    act(() => {
+      result.current.handleAttemptEnterModeSelect('mode-select')
+    })
+    expect(result.current.showCapacityLimitDialog).toBe(true)
+    expect(result.current.capacityExceededCount).toBe(15)
+
+    // 用户在弹窗中选择“仅整理前 10 个”
+    act(() => {
+      result.current.handleLimitToFirst3000Files()
     })
 
-    // 验证向后端传递的为切取后的前 10 个 ID 与限制数 10
-    expect((window as any).electronAPI.organizeRealDirectory.getLightweightFiles).toHaveBeenCalledWith(
-      1,
-      selectedIds.slice(0, 10),
-      10
-    )
+    // 验证：整理流程截断为前 10 个
+    expect(useOrganizeStore.getState().stage).toBe('mode-select')
     expect(result.current.toOrganizeFiles).toHaveLength(10)
-    expect(result.current.isCapacityExceeded).toBe(false)
-    expect(result.current.capacityExceededCount).toBe(0)
+    expect(result.current.toOrganizeFiles[0].id).toBe(200)
+    expect(result.current.toOrganizeFiles[9].id).toBe(209)
+  })
+
+  it('超限时（文件数 15 > 上限 10），点击批量更名、批量标签、批量清理等卫星模式，直接放行且绝对不弹窗', async () => {
+    useSettingsStore.setState({
+      config: {
+        ...useSettingsStore.getState().config,
+        organizeCapacityLimit: 10
+      } as any
+    })
+
+    const mock15 = Array.from({ length: 15 }, (_, i) => ({
+      id: i + 1,
+      path: `/workspace/file_${i + 1}.txt`,
+      name: `/workspace/file_${i + 1}.txt`,
+      extension: 'txt',
+      isAnalyzed: true
+    }))
+    ;(window as any).electronAPI.organizeRealDirectory.getLightweightFiles.mockResolvedValue(mock15)
+
+    const { result } = renderHook(() => useOrganizeState(), { wrapper })
+
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 50))
+    })
+
+    expect(result.current.toOrganizeFiles.length).toBe(15)
     expect(result.current.showCapacityLimitDialog).toBe(false)
+
+    // 1. 点击批量更名 (batch-rename)
+    act(() => {
+      result.current.handleAttemptEnterModeSelect('batch-rename')
+    })
+    expect(useOrganizeStore.getState().stage).toBe('batch-rename')
+    expect(result.current.showCapacityLimitDialog).toBe(false)
+    expect(result.current.toOrganizeFiles.length).toBe(15)
+
+    // 2. 点击批量标签 (batch-tag)
+    act(() => {
+      result.current.handleAttemptEnterModeSelect('batch-tag')
+    })
+    expect(useOrganizeStore.getState().stage).toBe('batch-tag')
+    expect(result.current.showCapacityLimitDialog).toBe(false)
+    expect(result.current.toOrganizeFiles.length).toBe(15)
+
+    // 3. 点击批量清理 (batch-duplicate)
+    act(() => {
+      result.current.handleAttemptEnterModeSelect('batch-duplicate')
+    })
+    expect(useOrganizeStore.getState().stage).toBe('batch-duplicate')
+    expect(result.current.showCapacityLimitDialog).toBe(false)
+    expect(result.current.toOrganizeFiles.length).toBe(15)
+
+    // 4. 返回整理首页 (root-mode-select)
+    act(() => {
+      result.current.handleAttemptEnterModeSelect('root-mode-select')
+    })
+    expect(useOrganizeStore.getState().stage).toBe('root-mode-select')
+    expect(result.current.showCapacityLimitDialog).toBe(false)
+    expect(result.current.toOrganizeFiles.length).toBe(15)
+
+    // 5. 只有点击批量整理 (mode-select) 时才被拦截并弹窗！
+    act(() => {
+      result.current.handleAttemptEnterModeSelect('mode-select')
+    })
+    expect(result.current.showCapacityLimitDialog).toBe(true)
+    expect(result.current.capacityExceededCount).toBe(15)
   })
 })

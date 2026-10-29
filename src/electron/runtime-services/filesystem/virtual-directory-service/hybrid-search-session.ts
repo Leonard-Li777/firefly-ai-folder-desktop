@@ -285,7 +285,7 @@ export class HybridSearchSession {
     params: FilterFilesParams,
     keyword: string,
     where: { whereClauses: string[]; queryParams: unknown[] }
-  ): Promise<FilteredFilesResponse> {
+  ): Promise<FilteredFilesResponse & { clipPending?: boolean }> {
     const startTime = performance.now()
     let dbQueryTime = 0
     try {
@@ -410,7 +410,7 @@ export class HybridSearchSession {
         )
       }
 
-      return finalResponse
+      return pool.pendingClip ? { ...finalResponse, clipPending: true } : finalResponse
     } catch (err: unknown) {
       logger.error(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchSession] 混合检索分页失败，回退常规检索:', err)
       return this.collaborators.fallbackPaged({ ...params, searchKeyword: undefined })

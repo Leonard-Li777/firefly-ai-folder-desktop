@@ -17,6 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from '../../../ui/alert-dialog'
+import { useOrganizeStore } from '../../../../stores/organize-store'
 
 /**
  * 智能聚类视图命令式句柄。
@@ -226,7 +227,8 @@ const SmartClusteringViewInner = (
           maxRootDirectories: effectiveRoots,
           maxSubdirectories: effectiveSubdirs,
           similarityThreshold: effectiveSim,
-          clusteringMode: effectiveMode
+          clusteringMode: effectiveMode,
+          force: useOrganizeStore.getState().bypassCapacityLimit
         })
 
         // 若请求已过时（用户后续输入已触发新请求），丢弃该次响应

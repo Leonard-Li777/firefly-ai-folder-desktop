@@ -824,7 +824,7 @@
     "de-DE": "Dateiname",
     "fr-FR": "Nom du fichier",
     "ko-KR": "파일명",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(29469-29476)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(29430-29437)"],
     "$id": 3877
   },
   "处理进度": {
@@ -837,7 +837,7 @@
     "de-DE": "Bearbeitungsfortschritt",
     "fr-FR": "Progression du traitement",
     "ko-KR": "처리 진행 상황",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(29813-29821)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(29774-29782)"],
     "$id": 7971
   },
   "状态": {
@@ -850,7 +850,7 @@
     "de-DE": "Status",
     "fr-FR": "Statut",
     "ko-KR": "상태",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(30177-30183)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(30138-30144)"],
     "$id": 3879
   },
   "失败/跳过原因": {
@@ -863,7 +863,7 @@
     "de-DE": "Fehler-/Übersprungsgrund",
     "fr-FR": "Raison de l'échec/du saut",
     "ko-KR": "실패/건너뛰기 이유",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(30535-30546)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(30496-30507)"],
     "$id": 7805
   },
   "缓存/耗时": {
@@ -876,7 +876,7 @@
     "de-DE": "Cache / Laufzeit",
     "fr-FR": "Cache / Temps écoulé",
     "ko-KR": "캐시/소요 시간",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(30914-30923)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(30875-30884)"],
     "$id": 3416
   },
   "最小单元": {
@@ -889,7 +889,7 @@
     "de-DE": "Mindesteinheit",
     "fr-FR": "Unité minimale",
     "ko-KR": "최소 단위",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(31262-31270)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(31223-31231)"],
     "$id": 6232
   },
   "操作": {
@@ -902,7 +902,7 @@
     "de-DE": "Aktionen",
     "fr-FR": "Opérations",
     "ko-KR": "작업",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(31635-31641)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(31596-31602)"],
     "$id": 3881
   },
   "智能文件名扩展名确认": {

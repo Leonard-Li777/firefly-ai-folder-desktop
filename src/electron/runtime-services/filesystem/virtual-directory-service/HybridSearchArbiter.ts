@@ -1324,13 +1324,31 @@ export class HybridSearchArbiter {
     const vectorPromise = pinyinHit
       ? Promise.resolve(null)
       : this.queryVectorCandidates(keyword, queryEmbedding, whereClauses, queryParams, poolSize)
+
+    // 工单 12：CLIP 第 5 路前置预检。**必须满足真实开启且非熔断条件**才发起；
+    // 不满足前置条件（如 profile 档位不符、开关关闭、非中文或拼音命中）时严禁产生假 pendingClip。
+    const orchestrator = ConfigOrchestrator.getInstance()
+    const currentEmbeddingProfile = await omniService.getEmbeddingProfile()
+    const clipEnabled =
+      orchestrator.getValue<boolean>('AI_CLIP_TEXT_SEARCH_ENABLED') ?? true
+    const currentLang = orchestrator.getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
+    const clipPre = evaluateClipChannelPrecondition({
+      profile: currentEmbeddingProfile,
+      enabled: clipEnabled,
+      lang: currentLang
+    })
+    const shouldRunClip =
+      !pinyinHit &&
+      !this.clipBreaker.isOpen &&
+      Boolean(this.networkSignals) &&
+      clipPre.run
+
     // 工单 12：CLIP 第 5 路。**热态才并入 phase2**；冷态照常发起但不等待，
     // 避免 6000ms 冷启动预算把首屏拖垮（phase3 由工单 13 消费该结果）。
-    // 拼音命中时同样跳过（拼音串无语义可编码）。
-    const clipWarmAtStart = this.isClipWarm()
-    const clipPromise = pinyinHit
-      ? Promise.resolve(null)
-      : this.queryClipVectorCandidates(keyword, whereClauses, queryParams, poolSize)
+    const clipWarmAtStart = shouldRunClip ? this.isClipWarm() : false
+    const clipPromise = shouldRunClip
+      ? this.queryClipVectorCandidates(keyword, whereClauses, queryParams, poolSize)
+      : null
 
     // 拼音路校验回填（设计文档 §5.3；二轮 review 红线：Top-30 限量，主线程阻塞压在 10ms 内）。
     // 跨音节假阳性（anxiao 对 kehuanxiaoshuo）在此按音节边界硬约束判负，其拼音贡献在
@@ -1377,12 +1395,12 @@ export class HybridSearchArbiter {
     if (pinyinHit) {
       // 拼音索引命中：向量/CLIP 两路本轮未启动（策略性跳过，非故障）——不计 failures
       vectorResult = null
-    } else if (clipWarmAtStart) {
+    } else if (shouldRunClip && clipWarmAtStart && clipPromise) {
       const [v, c] = await Promise.all([vectorPromise, clipPromise])
       vectorResult = v
       clipResult = c
       clipJoined = true
-    } else {
+    } else if (shouldRunClip && clipPromise) {
       void clipPromise.catch((err: unknown) => {
         const msg = err instanceof Error ? err.message : String(err)
         logger.warn(
@@ -1391,6 +1409,8 @@ export class HybridSearchArbiter {
           msg
         )
       })
+      vectorResult = await vectorPromise
+    } else {
       vectorResult = await vectorPromise
     }
     if (vectorResult === null && !pinyinHit) failures.vector = true
@@ -1445,8 +1465,9 @@ export class HybridSearchArbiter {
       unanalyzedHits,
       failures,
       total: p2.candidates.length + unanalyzedHits.length,
-      // 工单 13：冷态把第 5 路的 promise 交出去做 phase3；热态结果为 undefined（已并入 phase2）
-      pendingClip: clipJoined ? undefined : clipPromise
+      // 工单 13：仅当冷态发起且未并入 phase2 时，才交出 pendingClip Promise；
+      // 热态（clipJoined）或未启用/跳过时必须为 undefined，严禁传出假 Promise
+      pendingClip: shouldRunClip && !clipJoined && clipPromise ? clipPromise : undefined
     }
   }
 

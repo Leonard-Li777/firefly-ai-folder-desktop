@@ -215,7 +215,9 @@ export const GENESIS_V1_SCHEMA = `
     updated_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     meta               TEXT NOT NULL DEFAULT '{}',    -- JSON 元数据
     PRIMARY KEY (file_fingerprint, tag_code, via_parent_code),
-    FOREIGN KEY (file_fingerprint) REFERENCES files(file_fingerprint) ON DELETE CASCADE
+    FOREIGN KEY (file_fingerprint) REFERENCES files(file_fingerprint) ON DELETE CASCADE,
+    CHECK (tag_code NOT GLOB '*[^ -~]*' AND tag_code != ''),
+    CHECK (tag_group IN ('fact', 'fused', 'visual', 'ai', 'user', ''))
   );
 
   -- 10. 独立文件常量配置表 (file_constants)

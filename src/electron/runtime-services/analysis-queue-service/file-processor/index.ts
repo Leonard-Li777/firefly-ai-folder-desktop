@@ -14,6 +14,7 @@ import {
   getFileCategory,
   isCategory,
   BROWSER_NATIVE_IMAGE_EXTS,
+  isDecodableImage,
   isTestEnvironment,
   shouldSkipAIServiceInTest,
   applyMarkitdownBenchmark,
@@ -2029,8 +2030,8 @@ export class FileProcessor {
             return path.relative(rootWorkspaceDir.path, filePath)
           }
 
-          if (isImage) {
-            // 非原生图片：原尺寸转码 WebP
+          // 仅对 Sharp/NativeImage 可解码的图片格式做原尺寸转码；dwg/dxf/RAW 等 CAD 矢量与相机 RAW 格式无法被图像解码器读取，交给下方通用兜底路径
+          if (isImage && isDecodableImage(effectiveVirtualPath)) {
             try {
               const thumbResult = await thumbnailService.getOrGenerateOriginalTranscodedImage(
                 filePath,
