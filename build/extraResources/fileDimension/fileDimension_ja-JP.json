@@ -977,38 +977,6 @@
           ]
         }
       ],
-      "tagImplications": [
-        {
-          "sourceTag": "自然の風景",
-          "targetDimension": "ファイルの用途",
-          "targetTag": "旅行の記録"
-        },
-        {
-          "sourceTag": "都市建築",
-          "targetDimension": "ファイルの用途",
-          "targetTag": "旅行の記録"
-        },
-        {
-          "sourceTag": "人間味あふれる活動",
-          "targetDimension": "ファイルの用途",
-          "targetTag": "旅行の記録"
-        },
-        {
-          "sourceTag": "世界の料理",
-          "targetDimension": "ファイルの用途",
-          "targetTag": "旅行の記録"
-        },
-        {
-          "sourceTag": "史跡",
-          "targetDimension": "ファイルの用途",
-          "targetTag": "旅行の記録"
-        },
-        {
-          "sourceTag": "アウトドアアクティビティ",
-          "targetDimension": "ファイルの用途",
-          "targetTag": "旅行の記録"
-        }
-      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,

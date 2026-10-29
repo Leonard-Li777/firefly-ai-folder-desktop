@@ -977,38 +977,6 @@
           ]
         }
       ],
-      "tagImplications": [
-        {
-          "sourceTag": "المناظر الطبيعية",
-          "targetDimension": "الغرض من الملف",
-          "targetTag": "سجلات السفر"
-        },
-        {
-          "sourceTag": "العمارة الحضرية",
-          "targetDimension": "الغرض من الملف",
-          "targetTag": "سجلات السفر"
-        },
-        {
-          "sourceTag": "الأنشطة الإنسانية",
-          "targetDimension": "الغرض من الملف",
-          "targetTag": "سجلات السفر"
-        },
-        {
-          "sourceTag": "مطبخ عالمي",
-          "targetDimension": "الغرض من الملف",
-          "targetTag": "سجلات السفر"
-        },
-        {
-          "sourceTag": "المواقع التاريخية",
-          "targetDimension": "الغرض من الملف",
-          "targetTag": "سجلات السفر"
-        },
-        {
-          "sourceTag": "الأنشطة في الهواء الطلق",
-          "targetDimension": "الغرض من الملف",
-          "targetTag": "سجلات السفر"
-        }
-      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,

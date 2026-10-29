@@ -977,38 +977,6 @@
           ]
         }
       ],
-      "tagImplications": [
-        {
-          "sourceTag": "Natural Landscape",
-          "targetDimension": "File Purpose",
-          "targetTag": "Travel Records"
-        },
-        {
-          "sourceTag": "Urban Architecture",
-          "targetDimension": "File Purpose",
-          "targetTag": "Travel Records"
-        },
-        {
-          "sourceTag": "Humanistic activities",
-          "targetDimension": "File Purpose",
-          "targetTag": "Travel Records"
-        },
-        {
-          "sourceTag": "World Cuisine",
-          "targetDimension": "File Purpose",
-          "targetTag": "Travel Records"
-        },
-        {
-          "sourceTag": "Historical Sites",
-          "targetDimension": "File Purpose",
-          "targetTag": "Travel Records"
-        },
-        {
-          "sourceTag": "Outdoor Activities",
-          "targetDimension": "File Purpose",
-          "targetTag": "Travel Records"
-        }
-      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,

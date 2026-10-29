@@ -977,38 +977,6 @@
           ]
         }
       ],
-      "tagImplications": [
-        {
-          "sourceTag": "자연 경관",
-          "targetDimension": "파일 용도",
-          "targetTag": "여행 기록"
-        },
-        {
-          "sourceTag": "도시 건축",
-          "targetDimension": "파일 용도",
-          "targetTag": "여행 기록"
-        },
-        {
-          "sourceTag": "인문학적 활동",
-          "targetDimension": "파일 용도",
-          "targetTag": "여행 기록"
-        },
-        {
-          "sourceTag": "세계 요리",
-          "targetDimension": "파일 용도",
-          "targetTag": "여행 기록"
-        },
-        {
-          "sourceTag": "유적지",
-          "targetDimension": "파일 용도",
-          "targetTag": "여행 기록"
-        },
-        {
-          "sourceTag": "야외 활동",
-          "targetDimension": "파일 용도",
-          "targetTag": "여행 기록"
-        }
-      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,

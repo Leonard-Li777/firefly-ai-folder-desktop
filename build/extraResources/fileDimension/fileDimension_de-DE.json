@@ -977,38 +977,6 @@
           ]
         }
       ],
-      "tagImplications": [
-        {
-          "sourceTag": "Natürliche Landschaft",
-          "targetDimension": "Verwendungszweck der Datei",
-          "targetTag": "Reiseaufzeichnungen"
-        },
-        {
-          "sourceTag": "Stadtarchitektur",
-          "targetDimension": "Verwendungszweck der Datei",
-          "targetTag": "Reiseaufzeichnungen"
-        },
-        {
-          "sourceTag": "Humanistische Aktivitäten",
-          "targetDimension": "Verwendungszweck der Datei",
-          "targetTag": "Reiseaufzeichnungen"
-        },
-        {
-          "sourceTag": "Weltküche",
-          "targetDimension": "Verwendungszweck der Datei",
-          "targetTag": "Reiseaufzeichnungen"
-        },
-        {
-          "sourceTag": "Historische Stätten",
-          "targetDimension": "Verwendungszweck der Datei",
-          "targetTag": "Reiseaufzeichnungen"
-        },
-        {
-          "sourceTag": "Outdoor-Aktivitäten",
-          "targetDimension": "Verwendungszweck der Datei",
-          "targetTag": "Reiseaufzeichnungen"
-        }
-      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,

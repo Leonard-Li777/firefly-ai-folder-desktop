@@ -977,38 +977,6 @@
           ]
         }
       ],
-      "tagImplications": [
-        {
-          "sourceTag": "Paisaje natural",
-          "targetDimension": "Propósito del archivo",
-          "targetTag": "Registros de viaje"
-        },
-        {
-          "sourceTag": "Arquitectura urbana",
-          "targetDimension": "Propósito del archivo",
-          "targetTag": "Registros de viaje"
-        },
-        {
-          "sourceTag": "Actividades humanísticas",
-          "targetDimension": "Propósito del archivo",
-          "targetTag": "Registros de viaje"
-        },
-        {
-          "sourceTag": "Gastronomía Mundial",
-          "targetDimension": "Propósito del archivo",
-          "targetTag": "Registros de viaje"
-        },
-        {
-          "sourceTag": "Lugares históricos",
-          "targetDimension": "Propósito del archivo",
-          "targetTag": "Registros de viaje"
-        },
-        {
-          "sourceTag": "Actividades al aire libre",
-          "targetDimension": "Propósito del archivo",
-          "targetTag": "Registros de viaje"
-        }
-      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,

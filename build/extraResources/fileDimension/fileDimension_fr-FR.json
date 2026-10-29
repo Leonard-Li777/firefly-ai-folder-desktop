@@ -977,38 +977,6 @@
           ]
         }
       ],
-      "tagImplications": [
-        {
-          "sourceTag": "Paysage naturel",
-          "targetDimension": "Utilisation du fichier",
-          "targetTag": "Souvenirs de voyage"
-        },
-        {
-          "sourceTag": "Architecture urbaine",
-          "targetDimension": "Utilisation du fichier",
-          "targetTag": "Souvenirs de voyage"
-        },
-        {
-          "sourceTag": "Activités humanistes",
-          "targetDimension": "Utilisation du fichier",
-          "targetTag": "Souvenirs de voyage"
-        },
-        {
-          "sourceTag": "Cuisine du Monde",
-          "targetDimension": "Utilisation du fichier",
-          "targetTag": "Souvenirs de voyage"
-        },
-        {
-          "sourceTag": "Sites historiques",
-          "targetDimension": "Utilisation du fichier",
-          "targetTag": "Souvenirs de voyage"
-        },
-        {
-          "sourceTag": "Activités de plein air",
-          "targetDimension": "Utilisation du fichier",
-          "targetTag": "Souvenirs de voyage"
-        }
-      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
