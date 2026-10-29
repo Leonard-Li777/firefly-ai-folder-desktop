@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updatedAt": "2026-10-26",
+  "updatedAt": "2026-10-29",
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources",
@@ -41,7 +41,7 @@
       "version": "1.0.0"
     },
     "chinese-clip": {
-      "version": "INT8-v2"
+      "version": "INT8-v3"
     },
     "mobile-clip": {
       "version": "INT8"

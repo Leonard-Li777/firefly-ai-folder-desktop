@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-10-26T21:54:07.177Z",
+  "generatedAt": "2026-10-29T03:50:49.311Z",
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources"
@@ -117,14 +117,46 @@
       }
     },
     "chinese-clip": {
-      "version": "INT8-v2",
+      "version": "INT8-v3",
       "source": "shared",
       "asset": {
-        "name": "chinese-clip-int8-v2.zip",
-        "sha256": "7dd258bd556bde3f99980655ba15fdc92f162b7fb9bf3078f95b79af0e0cdb36",
-        "size": 203157415,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/chinese-clip-int8-v2.zip"
-      }
+        "name": "chinese-clip-int8-v3.zip",
+        "sha256": "67a5e4a0d0985085a3ad9e153efa5d4817af3851b6c4c7c8933b5c0a83ca3093",
+        "size": 212925967,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/chinese-clip-int8-v3.zip"
+      },
+      "files": [
+        {
+          "name": "cn_clip_text.onnx",
+          "size": 153221930,
+          "sha256": "dcde5ef0a62c052b3418587e118978cb61f57ca77d77e49638dd5af21e0a20db"
+        },
+        {
+          "name": "cn_clip_vocab.txt",
+          "size": 109540,
+          "sha256": "45bbac6b341c319adc98a532532882e91a9cefc0329aa57bac9ae761c27b291c"
+        },
+        {
+          "name": "tags_visual_gemma_512.bin",
+          "size": 307200,
+          "sha256": "b71efdcbf333dead0210c8ce7c2ad677cce5be2c548e7a168706c5ec79f55149"
+        },
+        {
+          "name": "tags_visual_gemma_512.meta.json",
+          "size": 5016,
+          "sha256": "78b22ae8763dd7c23ae3fe686a049464cd5398479987bf852fff7ecc56731f1a"
+        },
+        {
+          "name": "omw_concepts_gemma_512.bin",
+          "size": 21131264,
+          "sha256": "f464f96580fcbbc7589bc134171087f2070ca3419dd659a57d366a4844573938"
+        },
+        {
+          "name": "omw_concepts_gemma_512.meta.json",
+          "size": 1151708,
+          "sha256": "7280a2184675533b28135e6cd80d8ca71c2db32a928b6ff04d390b5c71483155"
+        }
+      ]
     },
     "mobile-clip": {
       "version": "INT8",
