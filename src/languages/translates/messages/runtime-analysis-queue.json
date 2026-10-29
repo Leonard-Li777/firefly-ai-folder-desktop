@@ -162,7 +162,7 @@
     "$files": [
       "src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(42316-42334)",
       "src/electron/runtime-services/analysis-queue-service/directory-processor.ts(10606-10624)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(114540-114558)"
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(117718-117736)"
     ],
     "$id": 2977
   },
@@ -191,7 +191,7 @@
     "ko-KR": "할당량 소진: 프라이빗 디렉토리 파일 {count} 개를 분석했으며, 현재 할당량은 {quota} 개 파일입니다. 친구 초대로 더 많은 한도를 해제할 수 있습니다.",
     "$files": [
       "src/electron/runtime-services/analysis-queue-service/directory-processor.ts(3448-3529)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(34036-34116)"
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(35091-35172)"
     ],
     "$id": 11053
   },
@@ -662,7 +662,7 @@
     "ko-KR": "데이터베이스가 초기화되지 않았습니다",
     "$files": [
       "src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(540-551)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/save-cloud-result.ts(1592-1603)",
+      "src/electron/runtime-services/analysis-queue-service/file-processor/save-cloud-result.ts(1633-1644)",
       "src/electron/runtime-services/analysis-queue-service/file-processor/save-local-cache-result.ts(1510-1521)"
     ],
     "$id": 8130
@@ -720,7 +720,7 @@
     "de-DE": "Es wird empfohlen, die Anzahl der PDF-Analyseseiten zu reduzieren oder die OCR-Funktion auszuschalten",
     "fr-FR": "Il est recommandé de réduire le nombre de pages d'analyse PDF ou de désactiver la fonction OCR",
     "ko-KR": "PDF 분석 페이지 수를 줄이거나 OCR 기능을 끄는 것이 좋습니다",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(114580-114607)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(117759-117786)"],
     "$id": 11054
   },
   "AI 服务未就绪": {
