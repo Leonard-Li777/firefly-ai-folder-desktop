@@ -846,7 +846,15 @@ export function useOrganizeState() {
 
           setDraftTree(initialTree)
           setFinalTree(initialTree)
-          setIncrementalFiles(freshPendingFiles)
+          // 仅「增量整理」模式（isIncrementalMode）才需要通过 incrementalFiles 标记本批待整理文件，
+          // 供 DoneView 的 filterPendingFilesOnly 精准过滤展示本批新归类文件；
+          // 「继续整理」入场时不应设置 incrementalFiles，让 toOrganizeSet.size === 0 分支生效，
+          // 从而在 DoneView 展示全量已归类文件，正确呈现整理进度全貌。
+          if (isIncrementalMode) {
+            setIncrementalFiles(freshPendingFiles)
+          } else {
+            setIncrementalFiles([])
+          }
 
           // 增量/继续整理初始化：自动实时落盘写库并触发全局同步事件
           try {
@@ -1014,7 +1022,7 @@ export function useOrganizeState() {
     setHasRescueFailed(false)
     setCurrentVDir(null)
     setOptions({
-      allowCreateNew: false,
+      allowCreateNew: true,
       skipEmptyDirs: false,
       deduplicateFiles: true,
       flattenToRoot: false
