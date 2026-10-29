@@ -770,7 +770,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
                 {VirtualRowRenderer}
               </ListComponent>
             )
-          ) : loading ? (
+          ) : loading && searchListItems.length === 0 ? (
             <div className="w-full h-full flex flex-col items-center justify-center relative file-list-loading animate-fade-in">
               <Loading
                 type="search"
