@@ -43,6 +43,10 @@ export interface TTSAudioState {
   speed: number
   /** 当前音频落盘缓存的绝对路径 */
   currentCachePath: string | null
+  /** 当前正在播放关联的物理文件绝对路径（若有，原生路径无损记录） */
+  currentFilePath: string | null
+  /** 当前播放上下文的显示标题/文件名原文本（若有 filePath 提取 basename，否则记录 raw text） */
+  currentTitle: string | null
   /** 错误信息 */
   errorMessage: string | null
   /** 全量可用音色列表（包含预置与用户克隆音色） */
@@ -136,9 +140,9 @@ export const TTS_BUFFER_WATERMARK = {
   /** 最小就绪分句数（长文本预蓄 2 句） */
   MIN_BUFFERED_CHUNKS: 2,
   /** 最小声学安全时长（秒，累积音频时长达到 15.0 秒即可放行，足以覆盖后续 1.35x RTF 下的稳定连续播放） */
-  MIN_BUFFERED_DURATION_SEC: 15.0,
+  MIN_BUFFERED_DURATION_SEC: 3.5,
   /** 单句合成超时熔断时间（毫秒，适配当前 15~25s 真实生成耗时，防止提前泄流） */
-  CHUNK_SYNTHESIZE_TIMEOUT_MS: 30000
+  CHUNK_SYNTHESIZE_TIMEOUT_MS: 15000
 }
 
 /** 预缓冲就绪节点结构（存储已完成 WSOLA 派生且已 decodeAudioData 的纯内存 AudioBuffer） */
@@ -937,6 +941,9 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
   currentVoiceId: DEFAULT_VOICE_ID,
   speed: 1.0,
   currentCachePath: null,
+  // 播放源信息：状态接口已声明为必填（string | null），初始态二者尚未指向任何文件
+  currentFilePath: null,
+  currentTitle: null,
   errorMessage: null,
   allVoices: PRESET_VOICES,
   bufferedDuration: 0,
@@ -1055,6 +1062,8 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
       status: 'idle',
       playingText: '',
       playingTextId: '',
+      currentFilePath: null,
+      currentTitle: null,
       currentSentenceIndex: 0,
       totalSentences: 0,
       errorMessage: null,
@@ -1139,12 +1148,21 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     }
 
     if (chunks.length === 0) {
-      set({ status: 'idle', errorMessage: '没有可朗读的有效文本内容' })
+      set({ status: 'idle', currentFilePath: null, currentTitle: null, errorMessage: '没有可朗读的有效文本内容' })
       return
     }
 
     currentCleanedChunks = chunks
     cachedChunksMap.clear()
+
+    // 派生当前播放标题与路径
+    const activeFilePath = options?.filePath || null
+    let activeTitle = ''
+    if (activeFilePath) {
+      activeTitle = activeFilePath.split(/[\\/]/).pop() || ''
+    } else if (text && text.trim()) {
+      activeTitle = text.trim().replace(/\s+/g, ' ')
+    }
 
     // 解析发音人显示名称与本地磁盘缓存目标路径（传入 text，纯文本/试听例句变化时指纹实时变化）
     const isAudition = options?.textId?.startsWith('audition-') || options?.fieldName === 'audition'
@@ -1190,6 +1208,8 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     set({
       playingText: text,
       playingTextId: targetTextId,
+      currentFilePath: activeFilePath,
+      currentTitle: activeTitle || null,
       status: 'loading',
       currentSentenceIndex: 0,
       totalSentences: chunks.length,
@@ -1402,6 +1422,8 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
             // 首句合成失败，说明底层服务不可用或网络异常，立即终止并提示用户
             set({
               status: 'error',
+              currentFilePath: null,
+              currentTitle: null,
               errorMessage: '语音合成失败，请检查服务连接状态'
             })
             stopProgressMonitor()
@@ -1464,10 +1486,11 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
           set({ bufferedDuration: totalBufferedDuration })
 
           // 水线判定：条件 A（达标声学安全时长 >= 15.0s）或 条件 B（末尾自愈：所有剩余分句已蓄满，短文本 1~2 句直接放行）
+          const satisfiesCount = readyBufferList.length >= Math.min(TTS_BUFFER_WATERMARK.MIN_BUFFERED_CHUNKS, remainingChunksCount)
           const satisfiesDuration = totalBufferedDuration >= TTS_BUFFER_WATERMARK.MIN_BUFFERED_DURATION_SEC
           const satisfiesAllRemaining = readyBufferList.length >= remainingChunksCount
 
-          if (satisfiesDuration || satisfiesAllRemaining) {
+          if (satisfiesCount || satisfiesDuration || satisfiesAllRemaining) {
             isWatermarkSatisfied = true
             flushPrebufferedChunks(readyBufferList, ctx)
             readyBufferList.length = 0
@@ -1506,6 +1529,8 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
       if (scheduledSources.length === 0 && activeSessionId === thisSessionId) {
         set({
           status: 'error',
+          currentFilePath: null,
+          currentTitle: null,
           errorMessage: '语音合成未能生成有效音频'
         })
         stopProgressMonitor()
@@ -1516,6 +1541,8 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         console.error('[TTS] 播放调度异常:', err)
         set({
           status: 'error',
+          currentFilePath: null,
+          currentTitle: null,
           errorMessage: err instanceof Error ? err.message : '语音合成失败'
         })
         stopProgressMonitor()
@@ -1829,10 +1856,11 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
           set({ bufferedDuration: totalBufferedDuration })
 
           // 水线判定：条件 A（达标声学安全时长 >= 15.0s）或 条件 B（末尾自愈：所有剩余分句已蓄满，短文本 1~2 句直接放行）
+          const satisfiesCount = readyBufferList.length >= Math.min(TTS_BUFFER_WATERMARK.MIN_BUFFERED_CHUNKS, remainingChunksCount)
           const satisfiesDuration = totalBufferedDuration >= TTS_BUFFER_WATERMARK.MIN_BUFFERED_DURATION_SEC
           const satisfiesAllRemaining = readyBufferList.length >= remainingChunksCount
 
-          if (satisfiesDuration || satisfiesAllRemaining) {
+          if (satisfiesCount || satisfiesDuration || satisfiesAllRemaining) {
             isWatermarkSatisfied = true
             flushPrebufferedChunks(readyBufferList, ctx)
             readyBufferList.length = 0

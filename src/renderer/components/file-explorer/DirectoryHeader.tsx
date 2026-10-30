@@ -20,6 +20,8 @@ import { Stepper, Step } from '../common/Stepper'
 import { Button } from '../ui/button'
 
 import { PaymentFlowDialog } from '../tier/PaymentFlowDialog'
+import { ResourceContentionBanner } from './ResourceContentionBanner'
+import { GlobalTTSPlaybackBar } from './GlobalTTSPlaybackBar'
 
 interface DirectoryHeaderProps {
   currentWorkspaceDirectory: WorkspaceDirectory | null
@@ -493,6 +495,9 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
 
             {/* Controls Group */}
             <div className="flex items-center space-x-3 flex-shrink-0">
+              {/* 全局 TTS 播放控制条：紧邻用户头像左侧 */}
+              <GlobalTTSPlaybackBar />
+
               {/* User Avatar Menu */}
               <div data-no-drag className="no-drag flex-shrink-0" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
                 <UserAvatarMenu onOpenChange={setIsUserMenuOpen} />
@@ -1052,6 +1057,9 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
             )}
           </div>
         </div>
+
+        {/* 算力争抢横幅（处于 DirectoryHeader 底边）：仅在界面卡顿且分析队列在跑时出现 */}
+        <ResourceContentionBanner />
 
         {/* 通栏 Loading 条 (处于 DirectoryHeader 底边，贯穿整个视口宽度) */}
         {isLoading && (
