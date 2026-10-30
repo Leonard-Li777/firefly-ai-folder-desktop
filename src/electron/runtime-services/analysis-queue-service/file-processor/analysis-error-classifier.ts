@@ -89,15 +89,20 @@ function matchesElectronNetTransientCode(text: string | undefined): boolean {
 /**
  * 引擎暖机期文案（HTTP 503 语义，但常在链路上被压成纯文本，status 丢失）。
  *
- * 两类来源（2026-10-26 实测日志）：
- *   - 萤核引擎反代：`{"error":{"message":"AI engine is starting, please try again","code":503}}`
+ * 来源（2026-10-26 / 2026-10-30 实测日志）：
+ *   - 萤核引擎反代，模型加载中：`{"error":{"message":"AI engine is starting, please try again","code":503}}`
+ *   - 萤核引擎反代，推理服务从未启动：`{"error":{"message":"AI engine service is not started","code":"engine_service_stopped"}}`
  *   - llama-server 直答：`{"error":{"message":"Loading model","type":"unavailable_error","code":503}}`
- * 两者都是「模型尚未加载完成」的瞬态状态，恢复 pending 等待引擎就绪即可，
+ * 三者都是「引擎暂时不可用、稍后恢复」的瞬态状态，恢复 pending 等待引擎就绪即可，
  * 严禁判为永久 failed（历史缺陷：被归一化成「缺少choices字段」硬失败，
  * 文件直接失败且渲染层滞留「引擎异常」，与「引擎状态良好」同屏矛盾）。
+ *
+ * **注意**：`AI engine failed to start`（HTTP 500 / `engine_failed`）**不得**加入本表。
+ * 引擎启动失败是确定性错误，必须上浮为永久 failed，否则会无限 pending 重试、故障永不上浮。
  */
 const ENGINE_WARMUP_MESSAGES = [
   'AI engine is starting',
+  'AI engine service is not started',
   'Loading model',
   'model is loading',
   '模型加载中'

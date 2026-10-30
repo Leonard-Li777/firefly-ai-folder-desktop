@@ -22,6 +22,7 @@ import { ResourceLocator, logger, LogCategory, APP_PORTS } from '@firefly/shared
 import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
 import { Tier2CircuitBreaker, Tier2CircuitState } from './tier2-circuit-breaker'
 import { CRASH_HEAL_MAX_ATTEMPTS, decideCrashHeal } from './crash-heal-policy'
+import { isServiceUsableStatus, shouldTriggerServiceStartAt } from './service-start-policy'
 
 /** Tier 2 引擎基准端口（与本地 AI 服务端口收敛一致：38400） */
 export const TIER2_ENGINE_PORT = APP_PORTS.LLAMA_LOCAL_SERVER
@@ -142,6 +143,15 @@ export interface Tier2EngineStatus {
   loaded_models?: string[]
   vram_mb?: number
   gpu_mem_mb?: number
+  /**
+   * 引擎进程状态（EngineStatus.status，见 firefly-ai-engine `engine/mod.rs`）。
+   *
+   * 与 `running` 布尔字段的区别：`running` 只表示「宿主进程活着」，
+   * 而 `status` 区分「推理服务是否真的可用」。宿主进程重启后 HTTP 立刻可响应，
+   * 但推理服务仍是 `stopped` —— 这正是 2026-10-30 事故中 87 分钟 503 的根因，
+   * 故必须显式声明为联合类型，禁止用 `any` 兜底（拼错字面量会静默失效）。
+   */
+  status?: 'starting' | 'ready' | 'processing' | 'error' | 'stopped'
   error?: string
   /**
    * 引擎实际生效的运行时参数（来自 EngineStatus.runtime_params）。
@@ -164,6 +174,13 @@ export interface Tier2EngineStatus {
 export interface EngineBridgeSnapshot {
   /** 引擎是否在线（端口可探活） */
   connected: boolean
+  /**
+   * 宿主进程是否由本服务托管（`this.process !== null`）。
+   *
+   * 与 `connected` 的区别：外部手动启动的引擎同样 `connected === true`，但它没有
+   * exit 处理器，被杀后既无崩溃自愈也无重新拉起。验收脚本用它排除该场景。
+   */
+  managed: boolean
   /** 熔断状态 */
   circuitState: Tier2CircuitState
   /** 引擎二进制是否可用（本地是否已部署 firefly-ai-engine） */
@@ -211,6 +228,28 @@ export class EngineBridgeService {
   private activePort: number = TIER2_ENGINE_PORT
   private isStarting = false
   private startPromise: Promise<boolean> | null = null
+  /**
+   * 推理服务启动请求的在途表（key = `mode|modelId`）。
+   *
+   * 同一意图的并发调用共享同一个 Promise；**不同意图不得合并** —— 隐式触发是
+   * `startService()`（无 mode，引擎侧回退到语言模型），若与
+   * `ensureMode('embedding')` 的 `startService({mode:'embedding'})` 合并，
+   * `mode` 会被静默丢弃（静默降级），随后 `waitForServiceReady('embedding')` 必然超时。
+   */
+  private startServiceInFlight = new Map<string, Promise<{ ok: boolean; error?: string }>>()
+  /**
+   * 推理服务启动的串行链：不同意图**排队执行**，绝不并发下发。
+   *
+   * 并发下发会让引擎侧 `start_engine_service` 在 `Starting` 态直接覆写 `active_model`
+   * 后调用 `start_service`，而后者因 `Starting` 早返回成功 ⇒ 返回「启动成功」但
+   * 实际加载的仍是上一个模型（`active_model` 与 `running_model` 从此不一致）。
+   *
+   * 链上必须吞掉前序 Reject（`then(undefined, undefined)`），否则一次启动失败会毒化
+   * 整条链，后续所有启动请求永久拒绝。
+   */
+  private startServiceChain: Promise<unknown> = Promise.resolve()
+  /** 最近一次「隐式触发」启动的时刻（0 = 从未触发）；见 `service-start-policy.ts` */
+  private lastImplicitStartAt = 0
   private pollTimer: NodeJS.Timeout | null = null
   /** 轮询探活单飞标志，避免全端口探测耗时超过轮询间隔时发生并发重入 */
   private pollInFlight = false
@@ -1408,6 +1447,72 @@ export class EngineBridgeService {
   }
 
   /**
+   * 推理服务是否可用（`ready` / `processing` / `starting`）。
+   *
+   * **严禁**用「`/api/engine/status` 可响应」替代本判定：宿主进程重启后 HTTP 立刻
+   * 可响应，但推理服务仍是 `stopped`（`target_port` 为 `None`），此时所有 `/v1/*`
+   * 请求都会被反代拒绝为 503 —— 这正是 2026-10-30 持续 87 分钟的事故形态。
+   */
+  private isServiceUsable(status: Tier2EngineStatus | null): boolean {
+    return isServiceUsableStatus(status?.status)
+  }
+
+  /**
+   * 是否应隐式触发一次 `startService()`。
+   *
+   * 判定逻辑见模块级纯函数 `shouldTriggerServiceStartAt`（单测直接覆盖该纯函数）。
+   */
+  private shouldTriggerServiceStart(
+    status: Tier2EngineStatus | null,
+    options?: { explicit?: boolean }
+  ): boolean {
+    return shouldTriggerServiceStartAt({
+      status: status?.status,
+      now: Date.now(),
+      lastImplicitStartAt: this.lastImplicitStartAt,
+      explicit: options?.explicit === true
+    })
+  }
+
+  /**
+   * 收口：宿主在线但推理服务未启动时，触发一次启动（不等待就绪）。
+   *
+   * 三处调用点（`ensureRunning` 命中分支、`doStart` 的探活命中与 spawn 之后）必须
+   * 共用本方法，避免「清单与实际可达路径不一致」。
+   *
+   * **必须把调用方刚探到的 `status` 传进来**，不得只读 `this.lastRawStatus`：
+   * `lastRawStatus` 可能被 `applyOffline()` 置空（宿主在探活与收口之间退出），
+   * 此时按 `undefined` 判定会静默放弃触发 —— 与事故同源的「拿不到真实状态就当作没事」。
+   *
+   * 不 `await`：引擎侧启动最长持锁 `LLAMA_READY_TIMEOUT_SECS`（120s），同步等待会让
+   * `engine-bridge/start` IPC 与启动流程阻塞。就绪状态由轮询广播。
+   *
+   * **已知行为变更（2026-10-30 裁定，非缺陷）**：用户在单次会话内手动「停止服务」后，
+   * 只要 desktop 重启（宿主重新拉起）或后续 `ensureRunning()` 再次命中 `stopped`，
+   * 推理服务会被重新启动 —— 即「stop 不跨会话持久」。刻意取舍：会话内 Stop 通常是
+   * 为临时释放显存，而整个客户端重启后恢复 AI 可用符合多数用户直觉预期；为此引入
+   * 持久化 `user_stopped` 状态机会显著增加状态机复杂度（见 Spec Out of Scope §6）。
+   */
+  private triggerServiceStartIfNeeded(
+    explicit: boolean,
+    status?: Tier2EngineStatus | null
+  ): void {
+    const effective = status ?? this.lastRawStatus
+    if (!this.shouldTriggerServiceStart(effective, { explicit })) {
+      return
+    }
+    this.lastImplicitStartAt = Date.now()
+    const detail = effective?.status ?? 'unknown'
+    logger.warn(
+      LogCategory.SYSTEM,
+      `[EngineBridge] 宿主在线但推理服务未就绪（status=${detail}），触发启动推理服务`
+    )
+    void this.startService().catch((err: unknown) => {
+      logger.warn(LogCategory.SYSTEM, '[EngineBridge] 触发启动推理服务失败:', err)
+    })
+  }
+
+  /**
    * 确保引擎在线：在线则直接复用；离线则尝试静默拉起（受熔断器保护）
    * @param options.force 显式启动（用户点击）时跳过熔断冷却，避免「点了没反应」
    */
@@ -1415,6 +1520,9 @@ export class EngineBridgeService {
     if (options?.force) {
       // 显式启动视为用户意图，复位熔断器重新放行
       this.circuitBreaker.reset()
+      // 同时清零隐式启动节流窗口：否则隐式启动失败后 30s 内用户点「启动」会被节流挡住，
+      // 且因返回 true 而表现为「点了没反应」
+      this.lastImplicitStartAt = 0
     } else {
       if (this.circuitBreaker.getState() === 'open') {
         logger.warn(
@@ -1436,10 +1544,37 @@ export class EngineBridgeService {
     if (this.circuitBreaker.canExecute()) {
       const status = await this.healthCheck()
       if (status) {
-        logger.info(LogCategory.SYSTEM, `[EngineBridge] 复用已运行的 Tier 2 引擎 (${this.baseUrl})`)
         if (this.isDevMode()) {
           this.startDevBinaryWatch()
         }
+        // 「HTTP 可响应」≠「推理服务可用」：必须按 status 分层判定
+        if (this.isServiceUsable(status)) {
+          logger.info(LogCategory.SYSTEM, `[EngineBridge] 复用已运行的 Tier 2 引擎 (${this.baseUrl})`)
+          this.broadcastStatus()
+          return true
+        }
+        const explicit = options?.force === true
+        if (this.shouldTriggerServiceStart(status, { explicit })) {
+          this.triggerServiceStartIfNeeded(explicit, status)
+          this.broadcastStatus()
+          return true
+        }
+        if (status.status === 'error') {
+          // 启动失败已落库：返回 false 让上层诚实降级到 Tier 1，严禁谎报「引擎在线」
+          const detail = status.last_error || status.error || ''
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[EngineBridge] 引擎宿主在线但推理服务启动失败（status=error），交由 Tier 1 兜底${
+              detail ? `：${detail}` : ''
+            }`
+          )
+          this.broadcastStatus()
+          return false
+        }
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[EngineBridge] 引擎宿主在线但推理服务未就绪（status=${status.status ?? 'unknown'}），节流窗口内不重复触发`
+        )
         this.broadcastStatus()
         return true
       }
@@ -1455,6 +1590,11 @@ export class EngineBridgeService {
     if (this.process && !this.process.killed) {
       const status = await this.healthCheck()
       if (status) {
+        // 宿主在线 ≠ 推理服务可用：此处不得直接 return true，否则「有进程但模型没起」
+        // 会被当作启动成功，调用方继续发请求即撞 503（2026-10-30 事故形态）
+        if (!this.isServiceUsable(status)) {
+          this.triggerServiceStartIfNeeded(true, status)
+        }
         return true
       }
     }
@@ -1486,11 +1626,17 @@ export class EngineBridgeService {
       // 拉起前再探活一次，仍存在则直接复用
       const alive = await this.healthCheck()
       if (alive) {
+        // 复用的是「已存在但推理服务未启动」的宿主时，同样必须收口
+        if (!this.isServiceUsable(alive)) {
+          this.triggerServiceStartIfNeeded(true, alive)
+        }
         this.isStarting = false
         this.broadcastStatus()
         return true
       }
 
+      // 即将拉起新宿主：清零隐式启动节流窗口（新进程 ⇒ 新窗口）
+      this.lastImplicitStartAt = 0
       logger.info(LogCategory.SYSTEM, `[EngineBridge] 静默拉起 Tier 2 引擎: ${exePath}`)
       // ENGINE_PORT 仅作前向兼容提示：引擎当前从自身 %APPDATA%/com.firefly.ai-engine/config.json
       // 的 base_port 取基准端口，并在被占用时于 38400~38419 内顺延；
@@ -1563,6 +1709,10 @@ export class EngineBridgeService {
         } catch {}
         this.process = null
         this.applyOffline()
+        // 宿主已死：在途的启动请求必然失败（连接被拒 / abort），清空在途表避免残留
+        // 最长 130s（SERVICE_ACTION_TIMEOUT_MS）挡住新进程拉起后的下一次启动。
+        // 串行链本身无需重置：旧请求会快速 settle 后自然排空。
+        this.startServiceInFlight.clear()
         // 非预期退出（非主动停止 / 非热部署）时自愈一次。
         // 2026-10-22 事故：引擎以 0xC0000005 崩溃后无人拉起，分析队列 166 个文件
         // 全部连接被拒，直到用户手动点开引擎面板才恢复。
@@ -1588,6 +1738,11 @@ export class EngineBridgeService {
       if (finalAlive || alreadyUp) {
         // 引擎已真正起来：稳定运行满 STABLE_RUN_RESET_MS 后归还崩溃自愈配额
         this.armStableReset()
+        // 【核心收口】waitForReady 只保证 `/api/engine/status` 可响应，新宿主的推理服务
+        // 仍是 `stopped`（target_port 为 None）。此处必须显式触发一次启动，否则
+        // 「宿主起来了但模型从未启动」，所有 /v1/* 请求恒被反代拒绝为 503
+        // —— 2026-10-30 事故即为此形态，持续 87 分钟直到用户手动打开引擎面板。
+        this.triggerServiceStartIfNeeded(true)
       }
       return finalAlive || alreadyUp
     } catch (err) {
@@ -1903,8 +2058,45 @@ export class EngineBridgeService {
   /**
    * 启动引擎侧 AI 推理服务（llama.cpp 子进程），不退出引擎应用本身
    * 对应引擎端 POST /api/engine/start
+   *
+   * 并发语义（两层，缺一不可）：
+   * - **同意图合并**：同一 `mode|modelId` 的并发调用共享同一个 Promise，避免重复下发；
+   * - **跨意图串行**：不同意图排队执行，绝不并发。并发会让引擎侧 `start_engine_service`
+   *   在 `Starting` 态直接覆写 `active_model` 后调用 `start_service`，而后者因 `Starting`
+   *   早返回成功 ⇒ 返回「启动成功」但实际加载的仍是上一个模型，随后
+   *   `waitForServiceReady` 必然超时。
    */
   public async startService(options?: { mode?: 'language' | 'embedding'; modelId?: string }): Promise<{ ok: boolean; error?: string }> {
+    const key = `${options?.mode ?? 'auto'}|${options?.modelId ?? ''}`
+
+    const existing = this.startServiceInFlight.get(key)
+    if (existing) {
+      return existing
+    }
+
+    const task = this.startServiceChain.then(() => this.doStartService(options))
+    // 链上吞掉 Reject：否则一次启动失败会毒化整条串行链，后续请求永久拒绝
+    this.startServiceChain = task.then(
+      () => undefined,
+      () => undefined
+    )
+    this.startServiceInFlight.set(key, task)
+    void task
+      .finally(() => {
+        // 身份校验：旧 Promise settle 晚于 clear 时不得误删新条目
+        if (this.startServiceInFlight.get(key) === task) {
+          this.startServiceInFlight.delete(key)
+        }
+      })
+      .catch(() => {})
+    return task
+  }
+
+  /** `startService` 的实际实现；错误由调用方统一处理 */
+  private async doStartService(options?: {
+    mode?: 'language' | 'embedding'
+    modelId?: string
+  }): Promise<{ ok: boolean; error?: string }> {
     // 启动前对齐思考模式：CLI 启动参数以引擎 config.json 为准，先拉回桌面保证请求级一致；
     // 若桌面配置与引擎不一致且桌面是用户刚改过的，setThinkingMode 路径会在配置变更时已推送。
     await this.syncThinkingModeFromEngine()
@@ -1985,7 +2177,10 @@ export class EngineBridgeService {
           return { ok: true }
         }
 
-        if (status.status === 'error' || status.status === 'failed') {
+        // 引擎契约（firefly-ai-engine `engine/mod.rs` EngineStatus.status）只产出
+        // starting/ready/processing/error/stopped，没有 'failed' 这一档；
+        // 原写法比对了一个不存在的取值，TS 会判定为无重叠比较而报错，故移除。
+        if (status.status === 'error') {
           const errMsg = status.last_error || status.error || '引擎服务运行报错'
           logger.warn(LogCategory.SYSTEM, `[EngineBridge] 引擎服务报告错误: ${errMsg}`)
           return { ok: false, error: errMsg }
@@ -2153,6 +2348,9 @@ export class EngineBridgeService {
     // 主动 kill 标记：抑制窗口内到达的 exit 事件不得触发崩溃自愈。
     // 覆盖「用户停止服务 / 切换引擎 / 退出应用 / 二进制热部署」四类主动退出。
     this.lastSelfKillAt = Date.now()
+    // 宿主即将消失：清空在途启动表，避免旧请求残留挡住新进程拉起后的下一次启动。
+    // 串行链本身不重置——旧请求会因连接被拒快速 settle 后自然排空。
+    this.startServiceInFlight.clear()
     if (!proc || proc.killed) {
       return
     }
@@ -2240,6 +2438,9 @@ export class EngineBridgeService {
     const raw = this.lastRawStatus
     return {
       connected: !!raw,
+      // 托管标记：外部手动启动的引擎同样 connected，但它没有 exit 处理器，
+      // 被杀后既无崩溃自愈也无重新拉起，验收脚本需据此排除该场景
+      managed: this.process !== null,
       circuitState: this.circuitBreaker.getState(),
       available: this.resolveEngineExecutable() !== null,
       exePath: this.resolveEngineExecutable(),
