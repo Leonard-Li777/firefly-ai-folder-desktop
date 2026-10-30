@@ -9,7 +9,8 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
 import { MaterialIcon, cn } from '../../lib/utils'
 import { t } from '@app/languages'
-import { useTTSAudioStore, getCurrentTTSChunks } from '../../stores/tts-audio-store'
+import { useTTSAudioStore } from '../../stores/tts-audio-store'
+import { triggerTTSFlyAnimation } from '../../lib/tts-fly-animation'
 import { useConfigStore } from '../../stores/config-store'
 import { useSettingsStore } from '../../stores/settings-store'
 import { SettingsCategory } from '@firefly/types'
@@ -35,6 +36,8 @@ export interface TTSActionGroupProps {
   fieldName?: string
   /** 导出时的默认文件名 */
   defaultFileName?: string
+  /** 自定义显示标题（如智能文件名，未传入时自动从 filePath/smart_name 派生） */
+  title?: string
   /** 是否为 LRC 歌词格式（自动剥离时间戳） */
   isLrc?: boolean
   /** 容器额外样式类 */
@@ -52,6 +55,7 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
   fileFingerprint,
   fieldName,
   defaultFileName,
+  title,
   isLrc = false,
   className,
   compact = false
@@ -78,7 +82,6 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
     setSpeed,
     locateAudio,
     exportAudio,
-    seekSentence,
     bufferedDuration,
     targetBufferDuration
   } = useTTSAudioStore()
@@ -93,11 +96,6 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
   const [showSpeedMenu, setShowSpeedMenu] = useState(false)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
 
-  // 片段刻度进度条交互状态
-  const [isHoveringSlider, setIsHoveringSlider] = useState(false)
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragIndex, setDragIndex] = useState<number | null>(null)
-  const [hoverIndex, setHoverIndex] = useState<number | null>(null)
 
   const voiceRef = useRef<HTMLDivElement>(null)
   const speedRef = useRef<HTMLDivElement>(null)
@@ -131,20 +129,6 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
   const isPaused = isThisActive && status === 'paused'
   const isExporting = isThisActive && status === 'exporting'
 
-  // 当前刻度预览索引（拖动优先于悬浮，悬浮优先于当前播放句）
-  const previewIndex = isDragging && dragIndex !== null
-    ? dragIndex
-    : hoverIndex !== null
-      ? hoverIndex
-      : currentSentenceIndex
-
-  // 实时分句数据源供 Tooltip 气泡预览分句文本
-  const currentChunks = useMemo(() => {
-    if (isThisActive) {
-      return getCurrentTTSChunks()
-    }
-    return []
-  }, [isThisActive, status, currentSentenceIndex])
 
   // 解析收藏音色列表（以用户配置的收藏音色为准，严格清洗历史纯数字旧配置并去重防御）
   const favoriteVoices = useMemo(() => {
@@ -170,9 +154,23 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
     return result.length > 0 ? result : [allVoices[0] || PRESET_VOICES[0]]
   }, [(config as any)?.ttsFavoriteVoices, allVoices])
 
+  // 解析生效发音人：正在播放当前文本时跟随全局 currentVoiceId，否则优先从用户配置的默认音色兜底
   const activeVoice = useMemo(() => {
-    return getVoiceById(currentVoiceId || DEFAULT_VOICE_ID, allVoices)
-  }, [currentVoiceId, allVoices])
+    if (isThisActive && currentVoiceId) {
+      return getVoiceById(currentVoiceId, allVoices)
+    }
+    const configVoice = (config as any)?.ttsDefaultVoiceSid || (config as any)?.ttsDefaultVoiceId
+    const fallbackId = currentVoiceId || (configVoice ? (isNaN(Number(configVoice)) ? String(configVoice) : getVoiceById(Number(configVoice), allVoices)?.id) : undefined) || DEFAULT_VOICE_ID
+    return getVoiceById(fallbackId, allVoices)
+  }, [isThisActive, currentVoiceId, (config as any)?.ttsDefaultVoiceSid, (config as any)?.ttsDefaultVoiceId, allVoices])
+
+  // 解析生效语速：正在播放当前文本时跟随全局 speed，否则优先从用户配置的默认语速兜底
+  const activeSpeed = useMemo(() => {
+    if (isThisActive && speed) {
+      return speed
+    }
+    return (config as any)?.ttsSpeed ?? speed ?? 1.0
+  }, [isThisActive, speed, (config as any)?.ttsSpeed])
 
   // 若功能在设置中全局关闭，不渲染
   if (!ttsEnabled) {
@@ -189,16 +187,21 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
     } else if (isPaused) {
       await resume()
     } else {
+      // 触发飞入顶部全局播放栏的视角引导动画
+      const btn = e.currentTarget as HTMLElement
+      triggerTTSFlyAnimation(btn)
+
       await play(text, {
         textId,
         filePath,
         fileFingerprint,
         fieldName,
         displayName: activeVoice.displayName,
+        title,
         isLrc,
         voiceId: activeVoice.id,
         sid: activeVoice.sid,
-        speed
+        speed: activeSpeed
       })
     }
   }
@@ -282,71 +285,6 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
           )}
         </button>
 
-        {/* 1.5 片段刻度进度条 (当分句数大于1且处于播放/暂停时展示) */}
-        {isThisActive && (isPlaying || isPaused) && totalSentences > 1 && (
-          <div
-            className="relative flex items-center px-2 py-1 group/slider"
-            onMouseEnter={() => setIsHoveringSlider(true)}
-            onMouseLeave={() => {
-              if (!isDragging) {
-                setIsHoveringSlider(false)
-                setHoverIndex(null)
-              }
-            }}
-          >
-            <input
-              type="range"
-              min={0}
-              max={totalSentences - 1}
-              step={1}
-              value={isDragging && dragIndex !== null ? dragIndex : currentSentenceIndex}
-              onMouseDown={() => setIsDragging(true)}
-              onTouchStart={() => setIsDragging(true)}
-              onInput={(e) => {
-                const val = Number((e.target as HTMLInputElement).value)
-                setDragIndex(val)
-                setHoverIndex(val)
-              }}
-              onChange={(e) => {
-                const val = Number((e.target as HTMLInputElement).value)
-                setDragIndex(val)
-                setIsDragging(false)
-                setIsHoveringSlider(false)
-                seekSentence(val).catch(() => {})
-              }}
-              onMouseUp={() => {
-                if (isDragging && dragIndex !== null) {
-                  setIsDragging(false)
-                  setIsHoveringSlider(false)
-                  seekSentence(dragIndex).catch(() => {})
-                }
-              }}
-              onTouchEnd={() => {
-                if (isDragging && dragIndex !== null) {
-                  setIsDragging(false)
-                  setIsHoveringSlider(false)
-                  seekSentence(dragIndex).catch(() => {})
-                }
-              }}
-              title={t('拖动切换朗读片段')}
-              className="w-16 sm:w-24 md:w-32 h-1.5 bg-muted/80 rounded-lg appearance-none cursor-pointer accent-primary focus:outline-none"
-            />
-
-            {/* 刻度悬浮/拖动预览 Tooltip 浮层 */}
-            {(isHoveringSlider || isDragging) && (
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 min-w-[200px] max-w-[280px] p-2.5 bg-popover/95 border border-border text-popover-foreground text-xs rounded-md shadow-xl pointer-events-none backdrop-blur-xs animate-in fade-in zoom-in-95 duration-150">
-                <div className="flex items-center justify-between font-medium text-[11px] text-primary pb-1 mb-1.5 border-b border-border/50">
-                  <span>{t('片段')} {previewIndex + 1} / {totalSentences}</span>
-                  <span className="text-[10px] text-muted-foreground font-normal">{t('拖动即播')}</span>
-                </div>
-                <div className="text-[11px] text-muted-foreground line-clamp-3 leading-relaxed break-all">
-                  {currentChunks[previewIndex] || t('正在准备分句...')}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
         {/* 2. 收藏音色下拉菜单 */}
         <div className="relative" ref={voiceRef}>
           <button
@@ -420,7 +358,7 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
             title={t('调节朗读语速')}
             className="flex items-center gap-0.5 px-1.5 py-1 text-[11px] font-mono text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
           >
-            <span>{speed.toFixed(2).replace(/\.?0+$/, '')}x</span>
+            <span>{activeSpeed.toFixed(2).replace(/\.?0+$/, '')}x</span>
             <MaterialIcon icon="arrow_drop_down" className="text-[12px] opacity-70" />
           </button>
 
@@ -437,7 +375,7 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
                   }}
                   className={cn(
                     'w-full px-2 py-1 text-center font-mono rounded-sm hover:bg-accent cursor-pointer',
-                    speed === val && 'text-primary font-bold bg-primary/10'
+                    activeSpeed === val && 'text-primary font-bold bg-primary/10'
                   )}
                 >
                   {val}x

@@ -304,3 +304,29 @@ html:lang(fr) :where(label.form-label) {
   will-change: transform;
   animation: indeterminate-bar 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
+
+/* ==========================================================================
+   TTS 局部播放飞入全局控制条时的目标脉冲光晕引导动效
+   ========================================================================== */
+@keyframes tts-bar-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(var(--primary-rgb, 99, 102, 241), 0.7);
+  }
+  30% {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 8px rgba(var(--primary-rgb, 99, 102, 241), 0.35);
+  }
+  60% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 14px rgba(var(--primary-rgb, 99, 102, 241), 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(var(--primary-rgb, 99, 102, 241), 0);
+  }
+}
+
+.tts-bar-pulse-highlight {
+  animation: tts-bar-pulse 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
+}
