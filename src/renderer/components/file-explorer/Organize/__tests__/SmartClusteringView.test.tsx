@@ -367,12 +367,12 @@ describe('SmartClusteringView Component', () => {
     expect(screen.getByText('子目录数上限')).toBeInTheDocument()
     expect(screen.getByText('相似度基准')).toBeInTheDocument()
 
-    // 获取所有 range inputs
+    // 获取所有 range inputs（顺序：相似度基准、目录层级深度、根目录数上限、子目录数上限）
     const rangeInputs = screen.getAllByRole('slider')
     expect(rangeInputs.length).toBe(4)
 
     // 修改目录层级为 5
-    fireEvent.change(rangeInputs[0], { target: { value: '5' } })
+    fireEvent.change(rangeInputs[1], { target: { value: '5' } })
 
     // 等待 400ms 防抖
     await waitFor(() => {
@@ -420,8 +420,8 @@ describe('SmartClusteringView Component', () => {
 
     // 拖动滑块直接生效，无需确认弹窗打断
     const rangeInputs = screen.getAllByRole('slider')
-    fireEvent.change(rangeInputs[0], { target: { value: '7' } })
-    expect(rangeInputs[0]).toHaveValue('7')
+    fireEvent.change(rangeInputs[1], { target: { value: '7' } })
+    expect(rangeInputs[1]).toHaveValue('7')
     expect(screen.queryByText('覆盖微调确认')).toBeNull()
   })
 
@@ -614,8 +614,8 @@ describe('SmartClusteringView Component', () => {
     expect(mockToastInfo).toHaveBeenCalledWith('已自动调整滑块目录数量以适应新增加的目录')
     // 根目录滑块上限应已自适应提升至 6
     const sliders = screen.getAllByRole('slider')
-    // sliders[1] 是根目录数上限
-    expect(sliders[1]).toHaveValue('6')
+    // sliders[0]=相似度基准, sliders[1]=目录层级深度, sliders[2]=根目录数上限
+    expect(sliders[2]).toHaveValue('6')
   })
 
   it('新建子目录时若子目录数量超过 maxSubdirectories 上限，自动调大滑块并给出 Toast 提示', async () => {
@@ -632,9 +632,9 @@ describe('SmartClusteringView Component', () => {
       expect(screen.getByText('2026年度财务')).toBeInTheDocument()
     })
 
-    // 将子目录数滑块 (sliders[2]) 调节为 0
+    // 将子目录数滑块 (sliders[3]) 调节为 0
     const sliders = screen.getAllByRole('slider')
-    fireEvent.change(sliders[2], { target: { value: '0' } })
+    fireEvent.change(sliders[3], { target: { value: '0' } })
 
     // 在 2026年度财务 下添加子目录
     // 找到该节点的行或添加子目录按钮
@@ -652,7 +652,7 @@ describe('SmartClusteringView Component', () => {
 
       // 超出 0，自动调大到 1 并给出 Toast
       expect(mockToastInfo).toHaveBeenCalledWith('已自动调整滑块目录数量以适应新增加的目录')
-      expect(sliders[2]).toHaveValue('1')
+      expect(sliders[3]).toHaveValue('1')
     }
   })
 

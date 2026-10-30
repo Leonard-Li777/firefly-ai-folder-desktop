@@ -47,6 +47,8 @@ export interface TTSAudioState {
   currentFilePath: string | null
   /** 当前播放上下文的显示标题/文件名原文本（若有 filePath 提取 basename，否则记录 raw text） */
   currentTitle: string | null
+  /** 当前播放关联文件的真实文件名（workspace_files.name，非 smart_name，用于 hover 二级信息展示） */
+  currentRealName: string | null
   /** 错误信息 */
   errorMessage: string | null
   /** 全量可用音色列表（包含预置与用户克隆音色） */
@@ -67,6 +69,7 @@ export interface TTSAudioState {
       fileFingerprint?: string
       fieldName?: string
       displayName?: string
+      title?: string
       sid?: number
       voiceId?: string
       speed?: number
@@ -944,6 +947,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
   // 播放源信息：状态接口已声明为必填（string | null），初始态二者尚未指向任何文件
   currentFilePath: null,
   currentTitle: null,
+  currentRealName: null,
   errorMessage: null,
   allVoices: PRESET_VOICES,
   bufferedDuration: 0,
@@ -1064,6 +1068,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
       playingTextId: '',
       currentFilePath: null,
       currentTitle: null,
+      currentRealName: null,
       currentSentenceIndex: 0,
       totalSentences: 0,
       errorMessage: null,
@@ -1148,20 +1153,39 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     }
 
     if (chunks.length === 0) {
-      set({ status: 'idle', currentFilePath: null, currentTitle: null, errorMessage: '没有可朗读的有效文本内容' })
+      set({ status: 'idle', currentFilePath: null, currentTitle: null, currentRealName: null, errorMessage: '没有可朗读的有效文本内容' })
       return
     }
 
     currentCleanedChunks = chunks
     cachedChunksMap.clear()
 
-    // 派生当前播放标题与路径
+    // 派生当前播放标题与路径（优先 options.title，若有 filePath 优先取 smart_name，降级取 basename）
     const activeFilePath = options?.filePath || null
-    let activeTitle = ''
-    if (activeFilePath) {
-      activeTitle = activeFilePath.split(/[\\/]/).pop() || ''
-    } else if (text && text.trim()) {
-      activeTitle = text.trim().replace(/\s+/g, ' ')
+    let activeTitle = options?.title ? options.title.trim() : ''
+    if (!activeTitle) {
+      if (activeFilePath) {
+        // 先以物理文件名兜底
+        activeTitle = activeFilePath.split(/[\\/]/).pop() || ''
+        // 若存在分析结果接口，尝试异步拉取 smart_name 进一步精准更新
+        if (window.electronAPI?.getFileAnalysisResult) {
+          window.electronAPI.getFileAnalysisResult(activeFilePath)
+            .then(res => {
+              if (res && (res.smartName?.trim() || res.name)) {
+                const current = useTTSAudioStore.getState()
+                if (current.currentFilePath === activeFilePath && current.status !== 'idle') {
+                  useTTSAudioStore.setState({
+                    ...(res.smartName?.trim() ? { currentTitle: res.smartName.trim() } : {}),
+                    currentRealName: res.name || null
+                  })
+                }
+              }
+            })
+            .catch(() => {})
+        }
+      } else if (text && text.trim()) {
+        activeTitle = text.trim().replace(/\s+/g, ' ')
+      }
     }
 
     // 解析发音人显示名称与本地磁盘缓存目标路径（传入 text，纯文本/试听例句变化时指纹实时变化）
@@ -1210,6 +1234,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
       playingTextId: targetTextId,
       currentFilePath: activeFilePath,
       currentTitle: activeTitle || null,
+      currentRealName: null,
       status: 'loading',
       currentSentenceIndex: 0,
       totalSentences: chunks.length,
@@ -1424,6 +1449,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
               status: 'error',
               currentFilePath: null,
               currentTitle: null,
+              currentRealName: null,
               errorMessage: '语音合成失败，请检查服务连接状态'
             })
             stopProgressMonitor()
@@ -1531,6 +1557,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
           status: 'error',
           currentFilePath: null,
           currentTitle: null,
+          currentRealName: null,
           errorMessage: '语音合成未能生成有效音频'
         })
         stopProgressMonitor()
@@ -1543,6 +1570,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
           status: 'error',
           currentFilePath: null,
           currentTitle: null,
+          currentRealName: null,
           errorMessage: err instanceof Error ? err.message : '语音合成失败'
         })
         stopProgressMonitor()
@@ -1896,10 +1924,55 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
   }
 }))
 
-// 渲染进程启动时自动异步预热拉取全量音色（含自定义音色）
+// 渲染进程启动时自动异步预热拉取全量音色（含自定义音色）与同步设置配置默认值
 if (typeof window !== 'undefined') {
   setTimeout(() => {
     useTTSAudioStore.getState().refreshVoices().catch(() => {})
   }, 0)
+
+  // 监听并同步设置中心（SettingsStore）中的默认音色与倍率配置
+  // 当应用初始化、配置首次载入或在设置页面修改时，若 TTS 当前处于 idle 闲置状态，自动对齐
+  const syncFromConfig = (config: any) => {
+    if (!config) return
+    const state = useTTSAudioStore.getState()
+    if (state.status === 'idle') {
+      const targetSpeed = typeof config.ttsSpeed === 'number' ? config.ttsSpeed : 1.0
+      const rawVoice = config.ttsDefaultVoiceSid || config.ttsDefaultVoiceId
+      let targetVoiceId = DEFAULT_VOICE_ID
+      if (rawVoice !== undefined && rawVoice !== null) {
+        if (isNaN(Number(rawVoice))) {
+          targetVoiceId = String(rawVoice)
+        } else {
+          const matched = getVoiceById(Number(rawVoice), state.allVoices)
+          if (matched?.id) targetVoiceId = matched.id
+        }
+      }
+      const matched = getVoiceById(targetVoiceId, state.allVoices)
+      const targetSid = matched?.sid ?? 63
+
+      const needsSpeedUpdate = Math.abs(state.speed - targetSpeed) >= 0.01
+      const needsVoiceUpdate = state.currentVoiceId !== targetVoiceId || state.currentSid !== targetSid
+
+      if (needsSpeedUpdate || needsVoiceUpdate) {
+        useTTSAudioStore.setState({
+          speed: targetSpeed,
+          currentVoiceId: targetVoiceId,
+          currentSid: targetSid
+        })
+      }
+    }
+  }
+
+  // 1. 尝试使用当前已有快照同步
+  try {
+    syncFromConfig(useSettingsStore.getState().config)
+  } catch {}
+
+  // 2. 订阅 settings-store 的 config 变化
+  try {
+    useSettingsStore.subscribe(state => {
+      syncFromConfig(state.config)
+    })
+  } catch {}
 }
 

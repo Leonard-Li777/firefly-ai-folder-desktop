@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { AnalysisQueueItem } from '@firefly/types/types'
 import { Button } from '../ui/button'
+import { HintBanner, HintBannerLink } from '../ui/hint-banner'
 import { SettingsCategory } from '@firefly/types'
 import { cn } from '../../lib/utils'
 import { formatDuration } from '@firefly/shared'
@@ -18,7 +19,8 @@ import {
   Play,
   X,
   Minus,
-  Square
+  Square,
+  Cpu
 } from 'lucide-react'
 import * as ReactWindowModule from 'react-window'
 
@@ -40,6 +42,10 @@ interface ColumnWidths {
   unit: number
   actions: number
 }
+
+// 算力提示横幅文案：正文与 title（截断时的悬浮全量）共用同一来源
+const CPU_HINT_TEXT =
+  '文件分析运行期间会持续占用 CPU，若搜索、语音合成、文件整理、文件清理出现卡顿，可暂停分析队列把算力让给当前操作'
 
 const DEFAULT_COL_WIDTHS: ColumnWidths = {
   index: 44,
@@ -555,6 +561,26 @@ export function AnalysisQueueContent({
     return (s.getConfigValue<string>('ANALYSIS_MODE') as string) ?? 'full'
   })
 
+  // 算力提示横幅的「知道了」记忆：关闭后不再打扰（存量数据清空后才会重新出现）
+  const [isCpuHintDismissed, setIsCpuHintDismissed] = useState(() => {
+    try {
+      return localStorage.getItem('analysis_queue_cpu_hint_dismissed') === '1'
+    } catch {
+      return false
+    }
+  })
+
+  const handleDismissCpuHint = () => {
+    setIsCpuHintDismissed(true)
+    try {
+      localStorage.setItem('analysis_queue_cpu_hint_dismissed', '1')
+    } catch {}
+  }
+
+  // 右上角 X 只是「本次先收起来」，不写 localStorage：
+  // 与「知道了」形成区分——前者是暂时闭眼，后者才是以后都别再提示。
+  const [isCpuHintHidden, setIsCpuHintHidden] = useState(false)
+
   const [colWidths, setColWidths] = useState<ColumnWidths>(() => {
     const saved = localStorage.getItem('queue_col_widths')
     if (saved) {
@@ -847,6 +873,19 @@ export function AnalysisQueueContent({
       {/* 动态列宽表头与虚拟文件列表区 - 最小化状态下隐藏 */}
       {!isSplitMinimized && (
         <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+          {/* 算力冲突提示：队列运行期间持续占用 CPU，其它操作会明显变慢，
+              这条提示只做解释与指路（暂停按钮就在上方），不拦截任何操作 */}
+          {running && !isCpuHintDismissed && !isCpuHintHidden && (
+            <HintBanner
+              icon={<Cpu className="w-3.5 h-3.5" />}
+              title={t(CPU_HINT_TEXT)}
+              className="shrink-0 border-b border-amber-500/20"
+              actions={<HintBannerLink onClick={handleDismissCpuHint}>{t('知道了')}</HintBannerLink>}
+              onClose={() => setIsCpuHintHidden(true)}
+            >
+              {t(CPU_HINT_TEXT)}
+            </HintBanner>
+          )}
           <div
             ref={tableContainerRef}
             className="w-full h-full bg-card/40 flex flex-col overflow-hidden"

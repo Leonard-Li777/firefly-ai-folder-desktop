@@ -42,6 +42,7 @@ import { OrganizingView } from './components/OrganizingView'
 import { DoneView } from './components/DoneView'
 import { SplitPane } from '../../common/SplitPane'
 import { OrganizeMode } from './types'
+import { HintBanner } from '../../ui/hint-banner'
 import { isUnclassifiedNodeName } from './utils/helpers'
 import { pathsToDirectoryNodes } from './utils/treeFromPaths'
 
@@ -198,6 +199,8 @@ export const Organize: React.FC = () => {
   const [inspectedFile, setInspectedFile] = useState<any | null>(null)
   const [duplicateSelectedCount, setDuplicateSelectedCount] = useState<number>(0)
   const [isDuplicateProcessing, setIsDuplicateProcessing] = useState<boolean>(false)
+  // 容量超限横幅的本次关闭状态（仅内存，不持久化：下次超限仍需提醒）
+  const [isCapacityBannerHidden, setIsCapacityBannerHidden] = useState<boolean>(false)
 
   // 智能聚类「保存为虚拟目录」主操作按钮已统一迁至面包屑栏右侧：
   // 动作经 ref 句柄命令式触发（保留视图内提示词优先/默认名兜底与防重复保存逻辑），
@@ -691,30 +694,15 @@ export const Organize: React.FC = () => {
         </div>
 
         {/* 容量超限横幅：仅在批量整理工作台各阶段中按需显示，不在主页或卫星工具中显示 */}
-        {isMainOrganizeStage && rawToOrganizeCount > organizeCapacityLimit && (
-          <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 flex items-center justify-between text-xs text-amber-600 dark:text-amber-400 shrink-0 gap-3">
-            <div className="flex items-center gap-2 min-w-0">
-              <MaterialIcon icon="dataset" className="text-base shrink-0 text-amber-500" />
-              <span className="truncate">
-                {organizeFileLimitOverride !== null
-                  ? t('已截取前 {limit} 个文件整理（原共 {count} 个，超出单批建议 {limit} 个）。其余文件保留在原目录：', {
-                      limit: organizeFileLimitOverride.toLocaleString(),
-                      count: rawToOrganizeCount.toLocaleString()
-                    })
-                  : bypassCapacityLimit
-                    ? t('当前为全量整理模式（共 {count} 个，超出单批建议 {limit} 个）。单次大规模计算将显著增加 AI 耗时与内存：', {
-                        count: rawToOrganizeCount.toLocaleString(),
-                        limit: organizeCapacityLimit.toLocaleString()
-                      })
-                    : t('待整理文件较多（共 {count} 个，超出单批建议 {limit} 个）。您可以仅整理前 {limit} 个或前往手动筛选：', {
-                        count: rawToOrganizeCount.toLocaleString(),
-                        limit: organizeCapacityLimit.toLocaleString()
-                      })}
-              </span>
-            </div>
-            <div className="flex items-center gap-3 shrink-0">
-              {/* 当处于切片状态（前 N 个）时：展示次要弱化操作“我了解风险，仍要整理全部文件”，供用户按需展开全量 */}
-              {organizeFileLimitOverride !== null ? (
+        {isMainOrganizeStage && rawToOrganizeCount > organizeCapacityLimit && !isCapacityBannerHidden && (
+          <HintBanner
+            icon={<MaterialIcon icon="dataset" className="text-base text-amber-500" />}
+            className="shrink-0 py-2.5 border-b border-amber-500/20 text-amber-600 dark:text-amber-400"
+            onClose={() => setIsCapacityBannerHidden(true)}
+            actions={
+              <div className="flex items-center gap-3">
+                {/* 当处于切片状态（前 N 个）时：展示次要弱化操作“我了解风险，仍要整理全部文件”，供用户按需展开全量 */}
+                {organizeFileLimitOverride !== null ? (
                 <Button
                   variant="link"
                   size="sm"
@@ -746,8 +734,24 @@ export const Organize: React.FC = () => {
                 <MaterialIcon icon="checklist" className="mr-1 text-xs" />
                 {t('前往手动筛选')}
               </Button>
-            </div>
-          </div>
+              </div>
+            }
+          >
+            {organizeFileLimitOverride !== null
+              ? t('已截取前 {limit} 个文件整理（原共 {count} 个，超出单批建议 {limit} 个）。其余文件保留在原目录：', {
+                  limit: organizeFileLimitOverride.toLocaleString(),
+                  count: rawToOrganizeCount.toLocaleString()
+                })
+              : bypassCapacityLimit
+                ? t('当前为全量整理模式（共 {count} 个，超出单批建议 {limit} 个）。单次大规模计算将显著增加 AI 耗时与内存：', {
+                    count: rawToOrganizeCount.toLocaleString(),
+                    limit: organizeCapacityLimit.toLocaleString()
+                  })
+                : t('待整理文件较多（共 {count} 个，超出单批建议 {limit} 个）。您可以仅整理前 {limit} 个或前往手动筛选：', {
+                    count: rawToOrganizeCount.toLocaleString(),
+                    limit: organizeCapacityLimit.toLocaleString()
+                  })}
+          </HintBanner>
         )}
 
         <div className="flex-1 flex overflow-hidden relative">

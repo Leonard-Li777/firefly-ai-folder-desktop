@@ -17,7 +17,9 @@ describe('GlobalTTSPlaybackBar (全局 TTS 播放控制条)', () => {
       currentTitle: null,
       currentFilePath: null,
       playingText: '',
-      playingTextId: ''
+      playingTextId: '',
+      currentSentenceIndex: 0,
+      totalSentences: 0
     })
   })
 
@@ -100,6 +102,28 @@ describe('GlobalTTSPlaybackBar (全局 TTS 播放控制条)', () => {
     expect(stopSpy).toHaveBeenCalledTimes(1)
     rerender(<GlobalTTSPlaybackBar />)
     expect(screen.queryByTestId('global-tts-playback-bar')).toBeNull()
+  })
+
+  it('AC 5: 当多于 1 个分句时渲染进度条滑块与句子进度，支持拖拽跳转', () => {
+    const seekSpy = vi.fn().mockResolvedValue(undefined)
+    useTTSAudioStore.setState({
+      status: 'playing',
+      currentTitle: '多句文章.md',
+      totalSentences: 5,
+      currentSentenceIndex: 1,
+      seekSentence: seekSpy
+    })
+
+    render(<GlobalTTSPlaybackBar />)
+    expect(screen.getByTestId('global-tts-sentence-count')).toBeDefined()
+    expect(screen.getByText('2/5')).toBeDefined()
+
+    const slider = screen.getByTestId('global-tts-progress-slider') as HTMLInputElement
+    expect(slider).toBeDefined()
+    expect(slider.value).toBe('1')
+
+    fireEvent.change(slider, { target: { value: '3' } })
+    expect(seekSpy).toHaveBeenCalledWith(3)
   })
 
   it('AC 6: 根节点与内部按钮均带有 WebkitAppRegion: no-drag 与 data-no-drag', () => {

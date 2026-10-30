@@ -817,31 +817,9 @@ const SmartClusteringViewInner = (
       {/* ─── 左栏：通俗直白意图输入、微调滑块与示例词 (Left Control Panel) ─── */}
       <div className="w-full md:w-88 lg:w-96 border-b md:border-b-0 md:border-r border-border/60 bg-muted/20 flex flex-col shrink-0 p-5 space-y-5 overflow-y-auto">
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 flex items-center gap-1">
-              <MaterialIcon icon="hub" className="text-xs" />
-              {t('智能聚类')}
-            </span>
-            {onBack && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onBack}
-                className="h-7 text-xs text-muted-foreground hover:text-foreground"
-              >
-                <MaterialIcon icon="arrow_back" className="text-xs mr-1" />
-                {t('返回')}
-              </Button>
-            )}
-          </div>
           <h3 className="text-lg font-bold text-foreground tracking-tight">
-            {t('无监督语义聚类')}
+            {t('智能聚类')}
           </h3>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            {t(
-              '无需复杂选择，输入您期望的整理目标或主题，AI 将基于文件内容特征自动聚类并生成结构。'
-            )}
-          </p>
         </div>
 
         {/* 提示词输入区域 */}
@@ -870,8 +848,8 @@ const SmartClusteringViewInner = (
                 handleRequestClustering(prompt)
               }
             }}
-            placeholder={t('如：按年份和财务归类、项目文档归档... (输入自动聚类或回车立即聚类)')}
-            className="min-h-[80px] text-xs resize-none bg-background focus-visible:ring-1"
+            placeholder={t('如：按年份和财务归类、项目文档归档... ')}
+            className="min-h-[40px] text-xs resize-none bg-background focus-visible:ring-1"
           />
           <Button
             onClick={() => handleRequestClustering(prompt)}
@@ -976,8 +954,33 @@ const SmartClusteringViewInner = (
               </button>
             </div>
           </div>
-          
-          {/* 1. 目录层级深度 (1..=10) */}
+
+          {/* 1. 相似度基准 (0%..=100%) */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">{t('相似度基准')}</span>
+            <Badge variant="outline" className="text-[11px] h-5 px-1.5 font-mono">
+              {getSimilarityLabel(similarityThreshold)}
+            </Badge>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={5}
+            value={similarityThreshold}
+            disabled={isGenerating}
+            onChange={e => handleSliderChange(setSimilarityThreshold, 'similarityThreshold', Number(e.target.value))}
+            className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+          />
+          <div className="flex justify-between text-[10px] text-muted-foreground/60 px-0.5">
+            <span>0% ({t('松散')})</span>
+            <span>60% ({t('标准')})</span>
+            <span>100% ({t('精细')})</span>
+          </div>
+        </div>
+
+          {/* 2. 目录层级深度 (1..=10) */}
         <div className="space-y-1">
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground">{t('目录层级深度')}</span>
@@ -1002,7 +1005,7 @@ const SmartClusteringViewInner = (
           </div>
         </div>
 
-        {/* 2. 根目录数上限 (1..=100) */}
+        {/* 3. 根目录数上限 (1..=100) */}
         <div className="space-y-1">
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground">{t('根目录数上限')}</span>
@@ -1027,7 +1030,7 @@ const SmartClusteringViewInner = (
           </div>
         </div>
 
-        {/* 3. 子目录数上限 (0..=100) */}
+        {/* 4. 子目录数上限 (0..=100) */}
         <div className="space-y-1">
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground">{t('子目录数上限')}</span>
@@ -1049,31 +1052,6 @@ const SmartClusteringViewInner = (
             <span>{t('仅一级')}</span>
             <span>5 ({t('默认')})</span>
             <span>100</span>
-          </div>
-        </div>
-
-        {/* 4. 相似度基准 (0%..=100%) */}
-        <div className="space-y-1">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">{t('相似度基准')}</span>
-            <Badge variant="outline" className="text-[11px] h-5 px-1.5 font-mono">
-              {getSimilarityLabel(similarityThreshold)}
-            </Badge>
-          </div>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={5}
-            value={similarityThreshold}
-            disabled={isGenerating}
-            onChange={e => handleSliderChange(setSimilarityThreshold, 'similarityThreshold', Number(e.target.value))}
-            className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-          />
-          <div className="flex justify-between text-[10px] text-muted-foreground/60 px-0.5">
-            <span>0% ({t('松散')})</span>
-            <span>60% ({t('标准')})</span>
-            <span>100% ({t('精细')})</span>
           </div>
         </div>
         </div>
