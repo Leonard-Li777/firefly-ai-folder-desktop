@@ -666,7 +666,7 @@
       "tags": [
         "Separates Buch",
         "Serialisierung",
-        "Vollendet",
+        "Serie abgeschlossen",
         "Ungeschnitten",
         "Extra",
         "Hervorgehoben",
@@ -975,38 +975,6 @@
           "triggerTags": [
             "Reiseaufzeichnungen"
           ]
-        }
-      ],
-      "tagImplications": [
-        {
-          "sourceTag": "Natürliche Landschaft",
-          "targetDimension": "Verwendungszweck der Datei",
-          "targetTag": "Reiseaufzeichnungen"
-        },
-        {
-          "sourceTag": "Stadtarchitektur",
-          "targetDimension": "Verwendungszweck der Datei",
-          "targetTag": "Reiseaufzeichnungen"
-        },
-        {
-          "sourceTag": "Humanistische Aktivitäten",
-          "targetDimension": "Verwendungszweck der Datei",
-          "targetTag": "Reiseaufzeichnungen"
-        },
-        {
-          "sourceTag": "Weltküche",
-          "targetDimension": "Verwendungszweck der Datei",
-          "targetTag": "Reiseaufzeichnungen"
-        },
-        {
-          "sourceTag": "Historische Stätten",
-          "targetDimension": "Verwendungszweck der Datei",
-          "targetTag": "Reiseaufzeichnungen"
-        },
-        {
-          "sourceTag": "Outdoor-Aktivitäten",
-          "targetDimension": "Verwendungszweck der Datei",
-          "targetTag": "Reiseaufzeichnungen"
         }
       ],
       "metadata": {
@@ -2978,7 +2946,7 @@
         "Unschärfe",
         "Zittern",
         "Defokussiert",
-        "Bewegungsunschärfe",
+        "Verwacklung",
         "Schlechte Bildkomposition",
         "Starke Farbabweichung",
         "Falsche Richtung",
@@ -3107,7 +3075,7 @@
         "Gewerbeschein",
         "Meldebescheinigung",
         "Abschlusszeugnis",
-        "Abschlusszeugnis",
+        "Diplomurkunde",
         "Arbeitsausweis",
         "Heiratsurkunde",
         "Sozialversicherungskarte"
@@ -4037,12 +4005,12 @@
         "Schwiegermutter Erotik",
         "Stiefvater Stiefmutter Erotik",
         "Schwiegervater Schwiegermutter Erotik",
-        "Schwägerin Erotik",
+        "Erotik mit der jüngeren Schwester der Ehefrau",
         "Tante und Neffe Erotik",
-        "Onkel und Neffe Erotik",
-        "Onkel und Neffe Erotik",
+        "Erotik zwischen Onkel väterlicherseits und Neffe",
+        "Erotik zwischen Onkel mütterlicherseits und Neffe",
         "Schwiegercousine Erotik",
-        "Schwägerin Erotik",
+        "Erotik mit der Frau des älteren Bruders",
         "Großvater und Enkel generationsübergreifende Erotik"
       ],
       "description": "Unterteilung der Themen Blutsverwandtschaft, Familienalter und tabuisierte Ethik",
@@ -4247,8 +4215,8 @@
         "SM",
         "Sexsklavin",
         "Training und Fesselung",
-        "Harter Sex",
-        "Harter Sex",
+        "Rauer Sex",
+        "Wilder Beischlaf",
         "Hardcore-Perversion",
         "Wax Play & Peitsche",
         "Fetischistische sexuelle Neigung"

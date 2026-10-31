@@ -2,11 +2,19 @@ import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
 import { ipcMain, app, shell, BrowserWindow, clipboard } from 'electron'
+import { resolveAppRegion } from '../worktree-env'
 import { iconExtractorClient } from '../icon-extractor-client'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { databaseService } from '../../runtime-services/database/database-service'
 import { analysisQueueService } from '../../runtime-services/analysis-queue-service'
-import { logger, LogCategory, ResourceLocator, getMimeTypeByExtension } from '@firefly/shared'
+import {
+  logger,
+  LogCategory,
+  ResourceLocator,
+  getMimeTypeByExtension,
+  getSiteDomain,
+  isDecodableImage
+} from '@firefly/shared'
 import { SystemIdentityService } from '../../runtime-services/system/system-identity-service'
 import { LicenseService, LicenseStatus } from '../../runtime-services/system/license-service'
 import { cloudAnalysisService } from '@firefly/server'
@@ -184,6 +192,10 @@ export function registerMiscIPCHandlers() {
 
       const { thumbnailService } =
         await import('../../runtime-services/filesystem/thumbnail-service')
+      // 仅对可解码图片转码；dwg/dxf 等 CAD 矢量与 RAW 格式图像解码器无法读取，直接返回失败
+      if (!isDecodableImage(filePath)) {
+        return { success: false, error: t('不支持的图片格式') }
+      }
       const result = await thumbnailService.getOrGenerateOriginalTranscodedImage(
         filePath,
         workspaceFile.file_fingerprint,
@@ -675,7 +687,8 @@ export function registerMiscIPCHandlers() {
     logger.error(LogCategory.RENDERER, '渲染进程出错:', errorInfo)
   })
   ipcMain.on('open-download-page', () => {
-    shell.openExternal('https://aifolder.iocn.cn/download').catch(e => {
+    // 下载页跟随当前客户端区域域名（区域表唯一事实源：@firefly/shared 的 SITE_DOMAINS）
+    shell.openExternal(`${getSiteDomain(resolveAppRegion())}/download`).catch(e => {
       logger.warn(LogCategory.MAIN, '[IPC] 打开下载页面失败:', e)
     })
   })

@@ -77,11 +77,18 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   },
 
   // 清除全局搜索
+  // 顶部搜索框是唯一入口，它同时驱动「全域浮层关键词」与「当前页面本地搜索关键词」
+  // （真实目录 / 已分析 / 虚拟目录，见 DirectoryHeader 的 setGlobalSearchKeyword + onSearch 双写）。
+  // 因此退出搜索必须把这几路关键词一并复位：否则浮层虽关闭，底层页面仍会滞留在
+  // search-list 视图并继续显示上一轮搜索结果，而非该目录的正常文件列表。
   clearGlobalSearch: () => {
     set({
       globalSearchKeyword: '',
       searchTokens: [],
-      isSearchOverlayOpen: false
+      isSearchOverlayOpen: false,
+      realDirectoryKeyword: '',
+      analyzedDirectoryKeyword: '',
+      virtualDirectoryKeyword: ''
     })
   },
 

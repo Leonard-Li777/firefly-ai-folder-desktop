@@ -101,24 +101,42 @@
         "period_unit": "month",
         "period_count": 1,
         "prices": [
-          { "currency": "CNY", "amount": 2000 },
-          { "currency": "USD", "amount": 590 }
+          {
+            "currency": "CNY",
+            "amount": 2000
+          },
+          {
+            "currency": "USD",
+            "amount": 590
+          }
         ]
       },
       "quarterly": {
         "period_unit": "month",
         "period_count": 3,
         "prices": [
-          { "currency": "CNY", "amount": 4500 },
-          { "currency": "USD", "amount": 1290 }
+          {
+            "currency": "CNY",
+            "amount": 4500
+          },
+          {
+            "currency": "USD",
+            "amount": 1290
+          }
         ]
       },
       "yearly": {
         "period_unit": "month",
         "period_count": 12,
         "prices": [
-          { "currency": "CNY", "amount": 15000 },
-          { "currency": "USD", "amount": 4200 }
+          {
+            "currency": "CNY",
+            "amount": 15000
+          },
+          {
+            "currency": "USD",
+            "amount": 4200
+          }
         ]
       }
     },
@@ -127,16 +145,28 @@
         "period_unit": "month",
         "period_count": 6,
         "prices": [
-          { "currency": "CNY", "amount": 27000 },
-          { "currency": "USD", "amount": 7500 }
+          {
+            "currency": "CNY",
+            "amount": 27000
+          },
+          {
+            "currency": "USD",
+            "amount": 7500
+          }
         ]
       },
       "yearly": {
         "period_unit": "month",
         "period_count": 12,
         "prices": [
-          { "currency": "CNY", "amount": 48000 },
-          { "currency": "USD", "amount": 13200 }
+          {
+            "currency": "CNY",
+            "amount": 48000
+          },
+          {
+            "currency": "USD",
+            "amount": 13200
+          }
         ]
       }
     },
@@ -144,29 +174,53 @@
       {
         "firecores": 20,
         "prices": [
-          { "currency": "CNY", "amount": 500 },
-          { "currency": "USD", "amount": 150 }
+          {
+            "currency": "CNY",
+            "amount": 500
+          },
+          {
+            "currency": "USD",
+            "amount": 150
+          }
         ]
       },
       {
         "firecores": 45,
         "prices": [
-          { "currency": "CNY", "amount": 1000 },
-          { "currency": "USD", "amount": 290 }
+          {
+            "currency": "CNY",
+            "amount": 1000
+          },
+          {
+            "currency": "USD",
+            "amount": 290
+          }
         ]
       },
       {
         "firecores": 150,
         "prices": [
-          { "currency": "CNY", "amount": 3000 },
-          { "currency": "USD", "amount": 850 }
+          {
+            "currency": "CNY",
+            "amount": 3000
+          },
+          {
+            "currency": "USD",
+            "amount": 850
+          }
         ]
       },
       {
         "firecores": 280,
         "prices": [
-          { "currency": "CNY", "amount": 5000 },
-          { "currency": "USD", "amount": 1390 }
+          {
+            "currency": "CNY",
+            "amount": 5000
+          },
+          {
+            "currency": "USD",
+            "amount": 1390
+          }
         ]
       }
     ]
@@ -202,5 +256,18 @@
     "base_days": 90,
     "extra_days_per_hit": 30,
     "schedule": "0 3 * * 0"
+  },
+  "CONSUME_PRICING": {
+    "spend_unlock_analysis": 300,
+    "spend_extra_private_dir_slot": 200,
+    "spend_extra_speedy_dir_slot": 100,
+    "spend_extra_vdir_slot": 100,
+    "spend_access_vdir": 50,
+    "spend_export_vdir": 5,
+    "spend_export_rdir": 10,
+    "spend_download_file": 5,
+    "spend_cloud_decompress": 2,
+    "spend_get_password": 5,
+    "spend_regenerate_vdir": 20
   }
 }

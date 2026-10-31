@@ -11,11 +11,12 @@ import { getPreviewRouteType, getExtFromSmartName } from '../../../../lib/previe
 import { usePreviewOverlayStore } from '../../../../stores/preview-overlay-store'
 import { useDragSelectStore } from '../../../../stores/drag-select-store'
 import { renderAnalysisStatus } from './RowRenderer'
-import { PageId } from '../../../../constants/page-ids'
+import { PageId, PAGE_IDS } from '../../../../constants/page-ids'
 import { checkIsUnit, getUnitTypeLabel, getUnitTheme, getUnitTooltip } from '../utils'
 import { useFileQueueState } from '../../../../stores/analysis-queue-store'
 import { SystemFileIcon } from '../../../common/SystemFileIcon'
 import { HighlightText } from '../../../common/HighlightText'
+import { FileRowThumbnail } from './FileRowThumbnail'
 import { SearchListCard } from './SearchListCard'
 
 interface VirtualRowRendererInnerProps {
@@ -51,6 +52,10 @@ interface VirtualRowRendererInnerProps {
   /** 搜索卡片双击打开回调（可选；缺省时由 Inner 回退预览/系统打开） */
   onFileDoubleClick?: (file: FileType) => void
   containerWidth?: number
+  /** 当前工作区目录路径（用于卡片缩略图拼接绝对物理路径） */
+  workspaceDirectoryPath?: string | null
+  /** 搜索列表动态行高（88~240px，默认 104px） */
+  searchListRowHeight?: number
 }
 
 const areEqual = (
@@ -63,6 +68,8 @@ const areEqual = (
     prevProps.isActive !== nextProps.isActive ||
     prevProps.index !== nextProps.index ||
     prevProps.itemPath !== nextProps.itemPath ||
+    prevProps.workspaceDirectoryPath !== nextProps.workspaceDirectoryPath ||
+    prevProps.searchListRowHeight !== nextProps.searchListRowHeight ||
     prevProps.showsmartName !== nextProps.showsmartName ||
     prevProps.swapFileNameDisplay !== nextProps.swapFileNameDisplay ||
     prevProps.totalWidth !== nextProps.totalWidth ||
@@ -80,6 +87,10 @@ const areEqual = (
     prevProps.fileItem?.isUnanalyzed !== nextProps.fileItem?.isUnanalyzed ||
     prevProps.fileItem?.matchedChunk !== nextProps.fileItem?.matchedChunk ||
     prevProps.fileItem?.matchedChunks !== nextProps.fileItem?.matchedChunks ||
+    prevProps.fileItem?.multimodalContent !== nextProps.fileItem?.multimodalContent ||
+    prevProps.fileItem?.thumbnailPath !== nextProps.fileItem?.thumbnailPath ||
+    prevProps.fileItem?.tags !== nextProps.fileItem?.tags ||
+    prevProps.fileItem?.fusedTags !== nextProps.fileItem?.fusedTags ||
     prevProps.fileItem?.virtualRowKey !== nextProps.fileItem?.virtualRowKey ||
     prevProps.fileItem?.chunkRowIndex !== nextProps.fileItem?.chunkRowIndex ||
     prevProps.onFileSelect !== nextProps.onFileSelect ||
@@ -135,7 +146,9 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
     selectionEnabled,
     pageId,
     viewMode,
-    onFileDoubleClick
+    onFileDoubleClick,
+    workspaceDirectoryPath,
+    searchListRowHeight
   } = props
 
   const selectedFilesRef = useRef(selectedFiles)
@@ -214,20 +227,25 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
         ''
       const routeType = getPreviewRouteType(ext)
       if (routeType !== 'unsupported') {
-        usePreviewOverlayStore
-          .getState()
-          .openPreview(
-            fileItem.path,
-            fileItem.smartName || fileItem.name || '',
-            ext,
-            pageId,
-            {
-              currentTime: fileItem.matchedChunk?.startSec,
-              highlightRange: fileItem.matchedChunk
-                ? [fileItem.matchedChunk.startSec, fileItem.matchedChunk.endSec]
-                : undefined
-            }
-          )
+        const splitState = usePreviewOverlayStore.getState()
+        const effectivePageId = pageId || splitState.activePageId || PAGE_IDS.REAL_DIRECTORY
+        const targetCurrentTime =
+          (fileItem as any).currentTime ?? fileItem.matchedChunk?.startSec
+        const targetHighlightRange =
+          (fileItem as any).highlightRange ??
+          (fileItem.matchedChunk
+            ? [fileItem.matchedChunk.startSec, fileItem.matchedChunk.endSec]
+            : undefined)
+        splitState.openPreview(
+          fileItem.path,
+          fileItem.smartName || fileItem.name || '',
+          ext,
+          effectivePageId,
+          {
+            currentTime: targetCurrentTime,
+            highlightRange: targetHighlightRange
+          }
+        )
       } else {
         window.electronAPI!.utils.openFileWithDefaultApp(fileItem.path).catch((error: Error) => {
           logger.error(LogCategory.RENDERER, '打开文件失败:', error)
@@ -245,7 +263,8 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
       if (!fileItem.path) return
 
       const splitState = usePreviewOverlayStore.getState()
-      const pageMode = pageId ? (splitState.pageStates[pageId]?.mode ?? 'split') : undefined
+      const effectivePageId = pageId || splitState.activePageId || PAGE_IDS.REAL_DIRECTORY
+      const pageMode = splitState.pageStates[effectivePageId]?.mode ?? 'split'
       if (pageMode !== 'split') {
         return
       }
@@ -257,16 +276,21 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
         ''
       const routeType = getPreviewRouteType(ext)
       if (routeType !== 'unsupported') {
+        const targetCurrentTime =
+          (fileItem as any).currentTime ?? fileItem.matchedChunk?.startSec
+        const targetHighlightRange =
+          (fileItem as any).highlightRange ??
+          (fileItem.matchedChunk
+            ? [fileItem.matchedChunk.startSec, fileItem.matchedChunk.endSec]
+            : undefined)
         splitState.openPreview(
           fileItem.path,
           fileItem.smartName || fileItem.name || '',
           ext,
-          pageId,
+          effectivePageId,
           {
-            currentTime: fileItem.matchedChunk?.startSec,
-            highlightRange: fileItem.matchedChunk
-              ? [fileItem.matchedChunk.startSec, fileItem.matchedChunk.endSec]
-              : undefined
+            currentTime: targetCurrentTime,
+            highlightRange: targetHighlightRange
           }
         )
       }
@@ -285,6 +309,9 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
           isActive={Boolean(isActive)}
           index={index}
           pageId={pageId}
+          workspaceDirectoryPath={workspaceDirectoryPath}
+          cardHeight={searchListRowHeight}
+          swapFileNameDisplay={swapFileNameDisplay}
         />
       </div>
     )
@@ -434,15 +461,9 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
                 {isUnit && unitTheme ? unitTheme.icon : 'folder'}
               </span>
             ) : (
-              <SystemFileIcon
-                path={fileItem?.path}
-                extension={fileItem?.extension}
-                className="w-5 h-5 object-contain mr-2 flex-shrink-0"
-                fallback={
-                  <span className="material-icons mr-2 text-xl flex-shrink-0 text-primary">
-                    description
-                  </span>
-                }
+              <FileRowThumbnail
+                fileItem={fileItem}
+                workspaceDirectoryPath={workspaceDirectoryPath}
               />
             )}
             <div className="flex flex-col min-w-0">
@@ -684,6 +705,10 @@ const areVirtualRowPropsEqual = (prevProps: RowRendererProps, nextProps: RowRend
   if (prevFile?.matchType !== nextFile?.matchType) return false
   if (prevFile?.similarity !== nextFile?.similarity) return false
   if (prevFile?.isUnanalyzed !== nextFile?.isUnanalyzed) return false
+  if (prevFile?.multimodalContent !== nextFile?.multimodalContent) return false
+  if (prevFile?.thumbnailPath !== nextFile?.thumbnailPath) return false
+  if (prevFile?.tags !== nextFile?.tags) return false
+  if (prevFile?.fusedTags !== nextFile?.fusedTags) return false
   if (
     prevFile?.matchedChunk?.startSec !== nextFile?.matchedChunk?.startSec ||
     prevFile?.matchedChunk?.endSec !== nextFile?.matchedChunk?.endSec ||
@@ -735,12 +760,14 @@ const areVirtualRowPropsEqual = (prevProps: RowRendererProps, nextProps: RowRend
     if (prevIsSelected !== nextIsSelected) return false
   }
 
+  if (prevData.workspaceDirectoryPath !== nextData.workspaceDirectoryPath) return false
   if (prevData.refreshKey !== nextData.refreshKey) return false
   if (prevData.viewMode !== nextData.viewMode) return false
   if (prevData.showsmartName !== nextData.showsmartName) return false
   if (prevData.swapFileNameDisplay !== nextData.swapFileNameDisplay) return false
   if (prevData.totalWidth !== nextData.totalWidth) return false
   if (prevData.listRowHeight !== nextData.listRowHeight) return false
+  if (prevData.searchListRowHeight !== nextData.searchListRowHeight) return false
   if (prevData.listFontSize !== nextData.listFontSize) return false
   if (prevData.selectionEnabled !== nextData.selectionEnabled) return false
   if (prevData.containerWidth !== nextData.containerWidth) return false
@@ -779,7 +806,8 @@ export const VirtualRowRenderer = React.memo(({ index, style, data }: RowRendere
     selectionEnabled,
     pageId,
     viewMode,
-    onFileDoubleClick
+    onFileDoubleClick,
+    workspaceDirectoryPath
   } = data
   const swapFileNameDisplay = swapFileNameDisplayRaw ?? false
 
@@ -847,6 +875,8 @@ export const VirtualRowRenderer = React.memo(({ index, style, data }: RowRendere
         viewMode={data.viewMode}
         onFileDoubleClick={onFileDoubleClick}
         containerWidth={data.containerWidth}
+        workspaceDirectoryPath={workspaceDirectoryPath}
+        searchListRowHeight={data.searchListRowHeight}
       />
     </div>
   )

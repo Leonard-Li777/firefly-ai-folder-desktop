@@ -67,6 +67,17 @@ export class AIServiceManager {
       return true
     }
 
+    // 崩溃自愈配额已耗尽且引擎仍离线：立即判不可用，不再逐个文件空等 120s。
+    // 166 个文件各自等满 120s 会累计成数小时，而 CPU 阶段（stage 1/2）产物已落库，
+    // 交由文件级 failed 处理即可，不阻塞队列推进。
+    if (engineBridgeService?.isCrashHealExhaustedAndOffline?.()) {
+      logger.warn(
+        LogCategory.ANALYSIS_QUEUE,
+        '[分析队列] 引擎崩溃自愈已耗尽且仍离线，跳过就绪等待（CPU 阶段产物不受影响）'
+      )
+      return false
+    }
+
     // 检查底层本地引擎桥接状态：若底层正在启动中（如正在加载模型），绝不能视为已就绪
     const engineSnap = engineBridgeService?.getSnapshot?.()
     const isEngineStarting = engineSnap && engineSnap.available && engineSnap.raw?.status === 'starting'
@@ -169,6 +180,22 @@ export class AIServiceManager {
       // 如果在此期间用户手动暂停了队列，停止等待
       if (!this.isRunning()) {
         this.notifyFrontend('info', t('分析已暂停'), false, 'waiting-for-ai', 3000)
+        return false
+      }
+
+      // 等待期间崩溃自愈被判定耗尽（引擎救不回来）：立即放弃，避免空等满 120s
+      if (engineBridgeService?.isCrashHealExhaustedAndOffline?.()) {
+        logger.warn(
+          LogCategory.ANALYSIS_QUEUE,
+          '[分析队列] 等待期间引擎崩溃自愈已耗尽，停止等待（CPU 阶段产物不受影响）'
+        )
+        this.notifyFrontend(
+          'error',
+          t('AI引擎启动失败，请检查配置后重试'),
+          false,
+          'waiting-for-ai',
+          5000
+        )
         return false
       }
 

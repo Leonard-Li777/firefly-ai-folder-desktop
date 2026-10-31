@@ -17,6 +17,8 @@ import {
   CANONICAL_NAMES,
   resolveRootDimension,
   resolveSubdimensionRoot,
+  resolveControlledParent,
+  getParentDimensionCodeOfTag,
   TOP_ROOT_CODES,
   ROOT_DIMENSION_META,
   CONTROLLED_SUBDIMENSION_PARENTS_GENERATED,
@@ -83,7 +85,10 @@ export const isSensitiveDimension = (g: DimensionGroup): boolean => {
     ) {
       return true
     }
-    curCode = CONTROLLED_SUBDIMENSION_PARENTS_GENERATED[curCode]?.parentCode
+    curCode =
+      CONTROLLED_SUBDIMENSION_PARENTS_GENERATED[curCode]?.parentCode ||
+      getParentDimensionCodeOfTag(curCode) ||
+      resolveControlledParent(curCode)
   }
 
   return false
@@ -1985,10 +1990,11 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
         CONTROLLED_DIMENSION_ROOT_CODES[dimId] ||
         (dimName && isControlledConcept(dimName) ? concept(dimName) : undefined)
       const matchedTag = (group?.tags || []).find(t => t.tagValue === tagValue)
+      const controlledCode = isControlledConcept(tagValue) ? concept(tagValue) : undefined
       const tagCode =
+        controlledCode ||
         (matchedTag as any)?.tagCode ||
-        (matchedTag as any)?.code ||
-        (isControlledConcept(tagValue) ? concept(tagValue) : undefined)
+        (matchedTag as any)?.code
 
       if (state === 'add_all') {
         addTags.push({
@@ -2027,10 +2033,11 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
           CONTROLLED_DIMENSION_ROOT_CODES[dimId] ||
           (dimName && isControlledConcept(dimName) ? concept(dimName) : undefined)
         const matchedTag = (group?.tags || []).find(t => t.tagValue === tagValue)
+        const controlledCode = isControlledConcept(tagValue) ? concept(tagValue) : undefined
         const tagCode =
+          controlledCode ||
           (matchedTag as any)?.tagCode ||
-          (matchedTag as any)?.code ||
-          (isControlledConcept(tagValue) ? concept(tagValue) : undefined)
+          (matchedTag as any)?.code
         removeTags.push({
           dimensionId: dimId,
           dimensionCode: dimCode,

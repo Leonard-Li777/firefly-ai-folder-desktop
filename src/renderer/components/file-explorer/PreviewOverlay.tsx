@@ -21,13 +21,21 @@ export const PreviewOverlay: React.FC = () => {
   const highlightRange = usePreviewOverlayStore(s => s.highlightRange)
   const activePageId = usePreviewOverlayStore(s => s.activePageId)
   const closePreview = usePreviewOverlayStore(s => s.closePreview)
+  const getPagePreviewFile = usePreviewOverlayStore(s => s.getPagePreviewFile)
+
+  const pageFile = activePageId ? getPagePreviewFile(activePageId) : null
+  const effectiveFilePath = pageFile?.filePath || filePath
+  const effectiveFileName = pageFile?.fileName || fileName
+  const effectiveExtension = pageFile?.extension || extension
+  const effectiveCurrentTime = pageFile?.currentTime ?? currentTime
+  const effectiveHighlightRange = pageFile?.highlightRange ?? highlightRange
   const containerRef = useRef<HTMLDivElement>(null)
 
   const { showRawText, setShowRawText, rawTextContent, isTextLoading, isTextCapable, showSwitch } =
-    usePreviewContent({ filePath, fileName, extension })
+    usePreviewContent({ filePath: effectiveFilePath, fileName: effectiveFileName, extension: effectiveExtension })
 
-  const { multimodalContent } = useFileMultimodalContent(filePath)
-  const isPrivate = useIsPrivateFile({ filePath })
+  const { multimodalContent } = useFileMultimodalContent(effectiveFilePath)
+  const isPrivate = useIsPrivateFile({ filePath: effectiveFilePath })
 
   // 处理 ESC 键关闭预览（支持 iframe 内部按 ESC）
   const handleKeyDown = useCallback(
@@ -104,7 +112,9 @@ export const PreviewOverlay: React.FC = () => {
     >
       <PreviewToolbar
         pageId={activePageId}
-        fileName={fileName}
+        filePath={effectiveFilePath}
+        fileName={effectiveFileName}
+
         showSwitch={showSwitch}
         showRawText={showRawText}
         onToggleRawText={setShowRawText}
@@ -115,16 +125,17 @@ export const PreviewOverlay: React.FC = () => {
 
       <div className="flex-1 relative h-full overflow-hidden">
         <PreviewContent
-          filePath={filePath}
-          fileName={fileName}
-          extension={extension}
+          filePath={effectiveFilePath}
+  
+          fileName={effectiveFileName}
+          extension={effectiveExtension}
           showRawText={showRawText}
           rawTextContent={rawTextContent}
           isTextLoading={isTextLoading}
           isTextCapable={isTextCapable}
           multimodalContent={multimodalContent}
-          currentTime={currentTime}
-          highlightRange={highlightRange}
+          currentTime={effectiveCurrentTime}
+          highlightRange={effectiveHighlightRange}
           isPrivate={isPrivate}
         />
       </div>

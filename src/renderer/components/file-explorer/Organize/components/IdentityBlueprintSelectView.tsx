@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { MaterialIcon, cn } from '../../../../lib/utils'
 import { Button } from '../../../ui/button'
 import { Badge } from '../../../ui/badge'
@@ -25,6 +25,7 @@ export interface RecommendedIdentityItem {
 export interface RecommendedStructureItem {
   templateId: string
   name: string
+  templateType?: 'classification' | 'workflow'
   targetIdentities: string[]
   paths: string[]
   score: number
@@ -103,9 +104,20 @@ const StructureCard: React.FC<{
         {/* 目录结构名（虚拟目录名） */}
         <div className="flex items-center gap-2 min-w-0">
           <MaterialIcon icon="folder_special" className="text-primary text-base shrink-0" />
-          <h4 className="text-sm font-bold text-foreground truncate" title={struct.name}>
+          <h4 className="text-sm font-bold text-foreground truncate flex-1 min-w-0" title={struct.name}>
             {struct.name}
           </h4>
+          <Badge
+            variant="outline"
+            className={cn(
+              'text-[10px] px-1.5 py-0 h-4.5 font-medium shrink-0',
+              struct.templateType === 'classification'
+                ? 'border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10'
+                : 'border-border/60 text-muted-foreground bg-muted/40'
+            )}
+          >
+            {struct.templateType === 'classification' ? t('资产分类') : t('工作流')}
+          </Badge>
         </div>
 
         {/* 真实的目录结构树 */}
@@ -160,9 +172,16 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
   const [expandedDomains, setExpandedDomains] = useState<Set<string>>(new Set())
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
 
+  // 单调递增请求序列防护与防抖计时器 (防乱序与丢弃无感知)
+  const searchSeqRef = useRef<number>(0)
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const isFirstRenderRef = useRef<boolean>(true)
+  const hasInitializedTreeRef = useRef<boolean>(false)
+
   // 执行身份与结构协同推荐
   const executeMatching = useCallback(
     async (userPrompt: string) => {
+      const currentSeq = ++searchSeqRef.current
       setIsLoading(true)
       try {
         const res = await window.electronAPI.organizeRealDirectory.matchPerspectivesAndStructures({
@@ -172,7 +191,7 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
           language: (activeLanguage as any) || 'zh-CN'
         })
 
-        if (res) {
+        if (currentSeq === searchSeqRef.current && res) {
           const idents: RecommendedIdentityItem[] =
             res.allIdentities && res.allIdentities.length > 0
               ? res.allIdentities
@@ -184,27 +203,52 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
           setRecommendedIdentities(idents)
           setRecommendedStructures(structs)
 
-          // 默认展开所有领域，使全量分类与结构一览无余；同时展开 Top-1 推荐分类
-          if (idents.length > 0) {
+          // 仅在初始加载或清空搜索时默认展开
+          if (!userPrompt.trim() && idents.length > 0 && !hasInitializedTreeRef.current) {
+            hasInitializedTreeRef.current = true
             const allDomains = new Set(idents.map(i => i.domainId))
             setExpandedDomains(allDomains)
             const top1 = idents[0]
-            setExpandedCategories(new Set([top1.categoryId]))
+            if (top1) {
+              setExpandedCategories(new Set([top1.categoryId]))
+            }
           }
         }
       } catch (err) {
-        console.error('Failed to match perspectives and structures:', err)
+        if (currentSeq === searchSeqRef.current) {
+          console.error('Failed to match perspectives and structures:', err)
+        }
       } finally {
-        setIsLoading(false)
+        if (currentSeq === searchSeqRef.current) {
+          setIsLoading(false)
+        }
       }
     },
     [workspaceId, fileIds, activeLanguage]
   )
 
-  // 首启触发初始匹配
+  // 首启与防抖触发匹配
   useEffect(() => {
-    executeMatching('')
-  }, [executeMatching])
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
+    // 仅组件第一次挂载时立即执行一次，后续输入严格 300ms 防抖
+    if (isFirstRenderRef.current) {
+      isFirstRenderRef.current = false
+      executeMatching('')
+      return
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      executeMatching(prompt)
+    }, 300)
+
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+      }
+    }
+  }, [prompt, executeMatching])
 
   // 实时搜索关键词
   const searchKeyword = prompt.trim().toLowerCase()
@@ -270,24 +314,15 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
     }))
   }, [filteredIdentities])
 
-  // 搜索态下自动展开所有命中结果所在的领域与分类，清空时重置为初始状态
+  // 搜索态下自动展开所有命中结果所在的领域与分类 (Union 并集模式，保护手动折叠)
   useEffect(() => {
-    if (searchKeyword) {
-      if (filteredIdentities.length > 0) {
-        const matchedDomainIds = new Set(filteredIdentities.map(i => i.domainId))
-        const matchedCatIds = new Set(filteredIdentities.map(i => i.categoryId))
-        setExpandedDomains(matchedDomainIds)
-        setExpandedCategories(matchedCatIds)
-      }
-    } else if (recommendedIdentities.length > 0) {
-      const allDomains = new Set(recommendedIdentities.map(i => i.domainId))
-      setExpandedDomains(allDomains)
-      const top1 = recommendedIdentities[0]
-      if (top1) {
-        setExpandedCategories(new Set([top1.categoryId]))
-      }
+    if (searchKeyword && filteredIdentities.length > 0) {
+      const matchedDomainIds = new Set(filteredIdentities.map(i => i.domainId))
+      const matchedCatIds = new Set(filteredIdentities.map(i => i.categoryId))
+      setExpandedDomains(prev => new Set([...prev, ...matchedDomainIds]))
+      setExpandedCategories(prev => new Set([...prev, ...matchedCatIds]))
     }
-  }, [searchKeyword, filteredIdentities, recommendedIdentities])
+  }, [searchKeyword, filteredIdentities])
 
   // 切换勾选身份
   const handleToggleIdentity = (id: string) => {
@@ -346,29 +381,39 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
     }
   }
 
-  // 过滤或协同提升右侧结构卡片
+  // 0ms 纯内存分层置顶重排 (Zero-IPC Tiered Sort)
   const displayStructures = useMemo(() => {
-    // 优先采用勾选的身份，若无勾选但在搜索中命中身份，则优先提升命中身份的模板
-    let effectiveTargetIds = selectedIdentityIds
-    if (effectiveTargetIds.length === 0 && searchKeyword && filteredIdentities.length > 0) {
-      effectiveTargetIds = filteredIdentities.map(i => i.identityId)
-    }
-
-    if (effectiveTargetIds.length === 0) {
+    // 1. 无勾选身份时：搜索态或全局推荐态，直接按后端算法相似度降序展示
+    if (selectedIdentityIds.length === 0) {
       return recommendedStructures
     }
 
-    // 若勾选了具体身份或搜索命中了身份，优先将契合的模板排在前列
-    const set = new Set(effectiveTargetIds)
-    const sorted = [...recommendedStructures].sort((a, b) => {
-      const aHit = a.targetIdentities.some(tid => set.has(tid))
-      const bHit = b.targetIdentities.some(tid => set.has(tid))
-      if (aHit && !bHit) return -1
-      if (!aHit && bHit) return 1
+    // 2. 有勾选身份时：按 Tier 1 (首选分类版) -> Tier 2 (次选工作流版) -> Tier 3 (其他) 绝对置顶
+    const selectedSet = new Set(selectedIdentityIds)
+    const selectedIdents = recommendedIdentities.filter(i => selectedSet.has(i.identityId))
+
+    const tier1Ids = new Set<string>() // 首选专属分类模板
+    const tier2Ids = new Set<string>() // 次选工作流模板
+
+    for (const ident of selectedIdents) {
+      const assocs = ident.associatedTemplateIds || []
+      if (assocs.length > 0) {
+        tier1Ids.add(assocs[0])
+        for (let i = 1; i < assocs.length; i++) {
+          tier2Ids.add(assocs[i])
+        }
+      }
+    }
+
+    return [...recommendedStructures].sort((a, b) => {
+      const aTier = tier1Ids.has(a.templateId) ? 1 : tier2Ids.has(a.templateId) ? 2 : 3
+      const bTier = tier1Ids.has(b.templateId) ? 1 : tier2Ids.has(b.templateId) ? 2 : 3
+      if (aTier !== bTier) {
+        return aTier - bTier
+      }
       return b.score - a.score
     })
-    return sorted
-  }, [selectedIdentityIds, searchKeyword, filteredIdentities, recommendedStructures])
+  }, [selectedIdentityIds, recommendedStructures, recommendedIdentities])
 
   return (
     <div className="flex-1 flex flex-col h-full w-full overflow-hidden bg-background">
@@ -409,9 +454,19 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
             />
             <Input
               value={prompt}
-              onChange={e => setPrompt(e.target.value)}
+              onChange={e => {
+                const val = e.target.value
+                setPrompt(val)
+                // 输入时立即取消左侧身份选择，切回双侧独立意图匹配模式
+                if (selectedIdentityIds.length > 0) {
+                  setSelectedIdentityIds([])
+                }
+              }}
               onKeyDown={e => {
                 if (e.key === 'Enter') {
+                  if (debounceTimerRef.current) {
+                    clearTimeout(debounceTimerRef.current)
+                  }
                   executeMatching(prompt)
                 }
               }}
@@ -422,6 +477,9 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
               <button
                 type="button"
                 onClick={() => {
+                  if (debounceTimerRef.current) {
+                    clearTimeout(debounceTimerRef.current)
+                  }
                   setPrompt('')
                   executeMatching('')
                 }}

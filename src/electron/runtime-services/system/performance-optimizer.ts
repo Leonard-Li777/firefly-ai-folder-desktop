@@ -260,25 +260,39 @@ export class PerformanceOptimizer extends EventEmitter {
     this.optimizationStrategies = [
       {
         name: 'reduce-concurrency',
-        description: '降低并发数以减少延迟',
-        trigger: metrics =>
-          metrics.requestLatency > this.performanceThresholds.maxLatency &&
-          // 边界余量守卫：已处于最小并发数时无需触发，避免策略空跑
-          this.currentConcurrency > this.concurrencyOptimizationConfig.minConcurrency,
+        description: '降低并发数以减少延迟及释放内存',
+        trigger: metrics => {
+          const heapUsed = process.memoryUsage().heapUsed
+          // 堆内存高压应急降频：当堆内存超过 2GB 或系统内存超过 80% 时强制降低并发
+          const memoryPressure =
+            heapUsed > 2 * 1024 * 1024 * 1024 ||
+            metrics.memoryUsage > this.performanceThresholds.maxMemoryUsage
+          return (
+            (metrics.requestLatency > this.performanceThresholds.maxLatency || memoryPressure) &&
+            this.currentConcurrency > this.concurrencyOptimizationConfig.minConcurrency
+          )
+        },
         action: async () => this.reduceConcurrency(),
         priority: 1,
-        cooldown: 30000,
+        cooldown: 15000, // 15秒冷却，防高频自激振荡
         lastExecuted: 0,
         enabled: true
       },
       {
         name: 'increase-concurrency',
         description: '增加并发数以提高吞吐量',
-        trigger: metrics =>
-          metrics.throughput < this.performanceThresholds.minThroughput &&
-          metrics.requestLatency < this.performanceThresholds.maxLatency * 0.5 &&
-          // 边界余量守卫：已达到最大并发数时无需触发，避免策略空跑
-          this.currentConcurrency < this.concurrencyOptimizationConfig.maxConcurrency,
+        trigger: metrics => {
+          const heapUsed = process.memoryUsage().heapUsed
+          // 内存硬顶线守卫：堆内存超过 1.5GB 时严禁增加并发，防止将 V8 推向 OOM
+          if (heapUsed > 1.5 * 1024 * 1024 * 1024 || metrics.memoryUsage > 0.6) {
+            return false
+          }
+          return (
+            metrics.throughput < this.performanceThresholds.minThroughput &&
+            metrics.requestLatency < this.performanceThresholds.maxLatency * 0.5 &&
+            this.currentConcurrency < this.concurrencyOptimizationConfig.maxConcurrency
+          )
+        },
         action: async () => this.increaseConcurrency(),
         priority: 2,
         cooldown: 30000,

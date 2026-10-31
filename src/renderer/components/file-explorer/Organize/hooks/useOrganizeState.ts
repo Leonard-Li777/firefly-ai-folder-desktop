@@ -13,7 +13,7 @@ import { toast } from '../../../common/Toast'
 import { useAnalyzedDirectoryStore } from '../../../../stores/analyzed-directory-store'
 import { useVirtualDirectoryStore } from '../../../../stores/virtual-directory-store'
 import { useTierStore } from '../../../../stores/tier-store'
-import { useSettingsStore } from '../../../../stores/settings-store'
+import { useSettingsStore, useConfigValue } from '../../../../stores/settings-store'
 import { useOrganizeStore } from '../../../../stores/organize-store'
 
 const UNCLASSIFIED_NAME = SENTINEL_NAMES.UNCLASSIFIED
@@ -37,7 +37,8 @@ import {
   countRealFiles,
   getAllFileKeys,
   isUnclassifiedNodeName,
-  extractCandidatePathsFromTree
+  extractCandidatePathsFromTree,
+  filterEmptyDirectoryNodes
 } from '../utils/helpers'
 import { reshapeDirectoryTree } from '../utils/reshape-directory-tree'
 
@@ -207,7 +208,24 @@ export function useOrganizeState() {
   const [allWorkspaceFiles, setAllWorkspaceFiles] = useState<any[]>([])
   const [isLoadingFiles, setIsLoadingFiles] = useState(false)
 
+  // ─── 配置中心：单次整理容量上限（默认 3,000）与切片/穿透控制 ──────────────────
+  const organizeCapacityLimit =
+    useConfigValue<number>('ORGANIZE_CAPACITY_LIMIT') ??
+    useSettingsStore.getState().getConfigValue<number>('ORGANIZE_CAPACITY_LIMIT') ??
+    3000
+  const organizeFileLimitOverride = useOrganizeStore(s => s.organizeFileLimitOverride)
+  const setOrganizeFileLimitOverride = useOrganizeStore(s => s.setOrganizeFileLimitOverride)
+  const bypassCapacityLimit = useOrganizeStore(s => s.bypassCapacityLimit)
+  const setBypassCapacityLimit = useOrganizeStore(s => s.setBypassCapacityLimit)
+  const [isCapacityExceeded, setIsCapacityExceeded] = useState(false)
+  const [capacityExceededCount, setCapacityExceededCount] = useState(0)
+  const [showCapacityLimitDialog, setShowCapacityLimitDialog] = useState(false)
+
   const loadFilesToOrganize = useCallback(async () => {
+    // 门禁：仅在当前处于 /organize 页面时才加载待整理文件；避免 KeepAlive 存活时在其它页面被误触发
+    if (location.pathname !== '/organize') {
+      return
+    }
     // 如果工作目录尚未恢复，先尝试从后端获取
     let workspace = currentWorkspaceDirectory
     if (!workspace?.id || !workspace?.path) {
@@ -229,8 +247,13 @@ export function useOrganizeState() {
 
     setIsLoadingFiles(true)
     try {
-      const result = await window.electronAPI!.organizeRealDirectory.getAnalyzedFiles(
-        workspace.path
+      const selectedFileIdsFromState = location.state?.selectedFileIds as number[] | undefined
+
+      // 全量拉取目标轻量文件，保证首页与批量更名/标签/查重工具均可无阻断使用全量数据
+      const workspaceTarget = currentWorkspaceDirectory?.id ?? workspace.path
+      const result = await window.electronAPI!.organizeRealDirectory.getLightweightFiles(
+        workspaceTarget as any,
+        selectedFileIdsFromState
       )
       const formatted = (result || []).map((f: any) => {
         let ext = f.extension
@@ -242,6 +265,8 @@ export function useOrganizeState() {
         }
         return {
           ...f,
+          is_analyzed: f.is_analyzed ?? 1,
+          isAnalyzed: f.isAnalyzed ?? true,
           extension: ext || ''
         }
       })
@@ -252,11 +277,19 @@ export function useOrganizeState() {
     } finally {
       setIsLoadingFiles(false)
     }
-  }, [currentWorkspaceDirectory])
+  }, [currentWorkspaceDirectory, location.pathname, location.state, t])
+
+  // 草稿或增量整理初始入场树（用于锁定前次已归类文件过滤基线，避免 AI 分批推理过程中左侧文件减少）
+  const [initialDraftTree, setInitialDraftTree] = useState<VirtualDirectoryNode[]>([])
 
   // 挂载时自动恢复工作目录并拉取已分析文件；工作区变化时重新拉取
-  const hasResetFromStateRef = useRef(false)
+  const lastHandledStateKeyRef = useRef<string | null>(null)
   useEffect(() => {
+    if (location.pathname !== '/organize') {
+      setShowCapacityLimitDialog(false)
+      lastHandledStateKeyRef.current = null
+      return
+    }
     loadFilesToOrganize()
 
     // 如果有勾选状态带入（从已分析页面跳转过来），彻底清除 Keep-Alive 旧状态并复位到选择整理模式
@@ -267,18 +300,37 @@ export function useOrganizeState() {
         selectedFileIdsFromState.length > 0) ||
       ((location.state as any)?.selectedFilePaths?.length ?? 0) > 0
 
-    if (hasSelectionState && !hasResetFromStateRef.current) {
-      hasResetFromStateRef.current = true
+    const currentStateKey = hasSelectionState
+      ? `${(selectedFileIdsFromState || []).join(',')}|${((location.state as any)?.selectedFilePaths || []).join(',')}`
+      : null
+
+    if (hasSelectionState && lastHandledStateKeyRef.current !== currentStateKey) {
+      lastHandledStateKeyRef.current = currentStateKey
       console.log(
         '[Organize State] 从已分析页面带入勾选文件，重置 Keep-Alive 状态，文件数:',
         selectedFileIdsFromState?.length
       )
-      setStage(location.state?.initialStage || 'root-mode-select')
+      // 彻底复位 organizeStore 全局状态（清除残留的 incremental-organize 模式，防止空增量列表截断待整理文件）
+      useOrganizeStore.getState().resetOrganizeState()
+      const requestedStage = location.state?.initialStage || 'root-mode-select'
+      if (
+        requestedStage === 'mode-select' &&
+        selectedFileIdsFromState &&
+        selectedFileIdsFromState.length > organizeCapacityLimit
+      ) {
+        setStage('root-mode-select')
+        setIsCapacityExceeded(true)
+        setCapacityExceededCount(selectedFileIdsFromState.length)
+        setShowCapacityLimitDialog(true)
+      } else {
+        setStage(requestedStage)
+      }
       setIncrementalVdId(null)
       setIncrementalFiles([])
       setCurrentVDir(null)
       setFinalTree([])
       setDraftTree([])
+      setInitialDraftTree([])
       isSavedRef.current = false
       // 注意：不在此处调用 window.history.replaceState({}, '')，
       // 否则会抹掉 react-router 写入的 location.state，导致 selectedFileIdsFromState 丢失
@@ -291,23 +343,19 @@ export function useOrganizeState() {
     location.state
   ])
 
-  // 草稿或增量整理初始入场树（用于锁定前次已归类文件过滤基线，避免 AI 分批推理过程中左侧文件减少）
-  const [initialDraftTree, setInitialDraftTree] = useState<VirtualDirectoryNode[]>([])
-
-  // 计算当前要整理的待整理文件列表（锁定本次任务需要整理的文件全集）
-  const toOrganizeFiles = useMemo(() => {
+  // 计算全量候选待整理文件集合（未做容量切片限制前的基准集合）
+  const rawToOrganizeFiles = useMemo(() => {
     // 0. 如果属于增量整理/已有虚拟目录 (incremental-organize)，直接以增量筛选出的待整理列表为准（若为 [] 说明前次已全量归类完毕）
     if (organizeMode === 'incremental-organize' && Array.isArray(incrementalFiles)) {
       return incrementalFiles
     }
 
     const action = searchParams.get('action')
+    // 前置分析门禁 (规格 §5.3)：批量整理只接纳已完成 AI 语义分析的文件，
+    // 未分析文件须先走分析队列；此处严禁回退到全量文件，否则会绕过门禁。
     let baseFiles = (allWorkspaceFiles || []).filter(
       f => (f as any).is_analyzed !== 0 && f.isAnalyzed !== false
     )
-    if (baseFiles.length === 0 && (allWorkspaceFiles || []).length > 0) {
-      baseFiles = allWorkspaceFiles
-    }
 
     // 1. 如果是从已分析页面勾选带入的（按 id 匹配，缺失时回退 path 匹配，兼容两种数据源）
     if (
@@ -400,6 +448,118 @@ export function useOrganizeState() {
     currentVDir,
     activeLanguage
   ])
+
+  const rawToOrganizeCount = rawToOrganizeFiles.length
+
+  // 计算当前阶段真正生效的待整理文件列表：
+  // 仅在批量整理主流程且设置了前批次限制（organizeFileLimitOverride）且未 bypass 时切片；
+  // 首页、批量更名、批量标签、批量查重始终保持全量供给。
+  const toOrganizeFiles = useMemo(() => {
+    const isMainOrganizeStage =
+      stage !== 'root-mode-select' &&
+      stage !== 'batch-rename' &&
+      stage !== 'batch-tag' &&
+      stage !== 'batch-duplicate'
+
+    if (isMainOrganizeStage && organizeFileLimitOverride !== null && !bypassCapacityLimit) {
+      return rawToOrganizeFiles.slice(0, organizeFileLimitOverride)
+    }
+    return rawToOrganizeFiles
+  }, [rawToOrganizeFiles, stage, organizeFileLimitOverride, bypassCapacityLimit])
+
+  // 监听路由离开 /organize 页面时清理弹窗，避免幽灵穿透
+  useEffect(() => {
+    if (location.pathname !== '/organize') {
+      setShowCapacityLimitDialog(false)
+    }
+  }, [location.pathname])
+
+  // 返回整理首页时自动复位超限警告标记
+  useEffect(() => {
+    if (stage === 'root-mode-select') {
+      setIsCapacityExceeded(false)
+    }
+  }, [stage])
+
+  // ─── 批量整理入口容量门禁拦截与分流控制 ──────────────────────────────────
+  const handleAttemptEnterModeSelect = useCallback(
+    (targetStage: Stage = 'mode-select') => {
+      // 1. 如果目标阶段不是批量整理主流程（例如 batch-rename, batch-tag, batch-duplicate, root-mode-select），
+      // 属于前置卫星工具或首页，不需要受容量限制阻断，直接无条件放行切换！
+      const isMainOrganizeStage =
+        targetStage !== 'root-mode-select' &&
+        targetStage !== 'batch-rename' &&
+        targetStage !== 'batch-tag' &&
+        targetStage !== 'batch-duplicate'
+
+      if (!isMainOrganizeStage) {
+        setStage(targetStage)
+        return
+      }
+
+      const currentBypass = useOrganizeStore.getState().bypassCapacityLimit
+      const currentOverride = useOrganizeStore.getState().organizeFileLimitOverride
+
+      // 若用户已确认风险 (bypass) 或已设定切片前批次，直接放行进入
+      if (currentBypass || currentOverride !== null) {
+        setStage(targetStage)
+        return
+      }
+
+      // 仅在尝试进入批量整理主流程时校验容量
+      if (rawToOrganizeCount > organizeCapacityLimit) {
+        logger.info(
+          LogCategory.FILE_ORGANIZATION,
+          `[整理门禁] 待整理文件数 (${rawToOrganizeCount}) 超出上限 ${organizeCapacityLimit}，拦截进入批量整理主流程并弹窗`
+        )
+        setIsCapacityExceeded(true)
+        setCapacityExceededCount(rawToOrganizeCount)
+        setShowCapacityLimitDialog(true)
+        return
+      }
+
+      setIsCapacityExceeded(false)
+      setCapacityExceededCount(0)
+      setStage(targetStage)
+    },
+    [organizeCapacityLimit, rawToOrganizeCount, setStage]
+  )
+
+  const handleGoToAnalyzedPage = useCallback(() => {
+    setShowCapacityLimitDialog(false)
+    navigate('/analyzed-directory', {
+      state: {
+        workspaceId: currentWorkspaceDirectory?.id,
+        startInOrganizeMode: true
+      }
+    })
+  }, [navigate, currentWorkspaceDirectory?.id])
+
+  const handleLimitToFirst3000Files = useCallback(() => {
+    setOrganizeFileLimitOverride(organizeCapacityLimit)
+    setBypassCapacityLimit(false)
+    setIsCapacityExceeded(false)
+    setShowCapacityLimitDialog(false)
+    setStage('mode-select')
+    toast.success(
+      t('已载入前 {count} 个文件，其余文件保留原样待后续整理', {
+        count: Math.min(rawToOrganizeCount, organizeCapacityLimit).toLocaleString()
+      })
+    )
+  }, [organizeCapacityLimit, rawToOrganizeCount, setOrganizeFileLimitOverride, setBypassCapacityLimit, setStage, t])
+
+  const handleBypassLimitAndOrganizeAll = useCallback(() => {
+    setBypassCapacityLimit(true)
+    setOrganizeFileLimitOverride(null)
+    setIsCapacityExceeded(false)
+    setShowCapacityLimitDialog(false)
+    setStage('mode-select')
+    toast.info(
+      t('已解除容量限制，本次将整理全部 {count} 个文件', {
+        count: rawToOrganizeCount.toLocaleString()
+      })
+    )
+  }, [rawToOrganizeCount, setBypassCapacityLimit, setOrganizeFileLimitOverride, setStage, t])
 
   // 处理在模式选择卡片点击选择已保存虚拟目录（增量整理）
   const handleSelectIncrementalVd = useCallback(
@@ -686,7 +846,15 @@ export function useOrganizeState() {
 
           setDraftTree(initialTree)
           setFinalTree(initialTree)
-          setIncrementalFiles(freshPendingFiles)
+          // 仅「增量整理」模式（isIncrementalMode）才需要通过 incrementalFiles 标记本批待整理文件，
+          // 供 DoneView 的 filterPendingFilesOnly 精准过滤展示本批新归类文件；
+          // 「继续整理」入场时不应设置 incrementalFiles，让 toOrganizeSet.size === 0 分支生效，
+          // 从而在 DoneView 展示全量已归类文件，正确呈现整理进度全貌。
+          if (isIncrementalMode) {
+            setIncrementalFiles(freshPendingFiles)
+          } else {
+            setIncrementalFiles([])
+          }
 
           // 增量/继续整理初始化：自动实时落盘写库并触发全局同步事件
           try {
@@ -854,7 +1022,7 @@ export function useOrganizeState() {
     setHasRescueFailed(false)
     setCurrentVDir(null)
     setOptions({
-      allowCreateNew: false,
+      allowCreateNew: true,
       skipEmptyDirs: false,
       deduplicateFiles: true,
       flattenToRoot: false
@@ -1406,23 +1574,15 @@ export function useOrganizeState() {
 
           // 无论何种整理模式，只要带有草稿/虚拟目录 ID (vdirId)，每完成一个批次的归类结果均实时落盘写入 SQLite
           if (vdirId) {
-            const files = extractFilesFromTree(mergedPreview)
-            if (files.length > 0) {
-              window
-                .electronAPI!.virtualDirectory.syncIncrementalDirectoryTree(vdirId, mergedPreview)
-                .catch(() => {})
-              window
-                .electronAPI!.virtualDirectory.replaceFiles(vdirId, files)
-                .then(() => {
-                  window.dispatchEvent(new CustomEvent('vdir:updated', { detail: { vdirId } }))
-                  window.dispatchEvent(
-                    new CustomEvent('vdir:incremental-updated', { detail: { vdirId } })
-                  )
-                })
-                .catch(err => {
-                  logger.warn(LogCategory.FILE_ORGANIZATION, '实时保存整理批次结果失败:', err)
-                })
-            }
+            window
+              .electronAPI!.virtualDirectory.syncIncrementalDirectoryTree(vdirId, mergedPreview)
+              .then(() => {
+                window.dispatchEvent(new CustomEvent('vdir:updated', { detail: { vdirId } }))
+                window.dispatchEvent(new CustomEvent('vdir:incremental-updated', { detail: { vdirId } }))
+              })
+              .catch(err => {
+                logger.warn(LogCategory.FILE_ORGANIZATION, '实时保存整理批次结果失败:', err)
+              })
           }
         }
       }
@@ -1527,7 +1687,8 @@ export function useOrganizeState() {
           workspaceId: currentWorkspaceDirectory.id,
           fileIds,
           candidatePaths,
-          floorThreshold: 0.05  // 支持用户将及格线降低至 5%，后端绝对底限与前端 slider min 同步
+          floorThreshold: 0.05,  // 支持用户将及格线降低至 5%，后端绝对底限与前端 slider min 同步
+          force: useOrganizeStore.getState().bypassCapacityLimit
         })
 
         let rawMatches = cosineRes?.matches
@@ -1562,18 +1723,17 @@ export function useOrganizeState() {
         setUnmatchedCount(reshaped.unclassifiedCount)
 
         if (vdirId) {
-          const finalFiles = extractFilesFromTree(reshaped.tree)
-          if (finalFiles.length > 0) {
-            try {
-              await window.electronAPI!.virtualDirectory.replaceFiles(vdirId, finalFiles)
-            } catch (err) {
-              logger.warn(LogCategory.FILE_ORGANIZATION, '整理终局结果落库失败:', err)
-            }
+          const treeToSync = options.skipEmptyDirs
+            ? filterEmptyDirectoryNodes(reshaped.tree)
+            : reshaped.tree
+          try {
+            await window.electronAPI!.virtualDirectory.syncIncrementalDirectoryTree(
+              vdirId,
+              treeToSync
+            )
+          } catch (err) {
+            logger.warn(LogCategory.FILE_ORGANIZATION, '整理终局结果落库失败:', err)
           }
-          await window.electronAPI!.virtualDirectory.syncIncrementalDirectoryTree(
-            vdirId,
-            reshaped.tree
-          )
           window.dispatchEvent(new CustomEvent('vdir:updated', { detail: { vdirId } }))
         }
 
@@ -1632,22 +1792,16 @@ export function useOrganizeState() {
       if (vdirId) {
         isSavedRef.current = true
 
+        const treeToSync = options.skipEmptyDirs
+          ? filterEmptyDirectoryNodes(targetFinalTree)
+          : targetFinalTree
         try {
           await window.electronAPI!.virtualDirectory.syncIncrementalDirectoryTree(
             vdirId,
-            targetFinalTree
+            treeToSync
           )
         } catch (err) {
           logger.warn(LogCategory.FILE_ORGANIZATION, '整理树写盘失败:', err)
-        }
-
-        const finalFiles = extractFilesFromTree(targetFinalTree)
-        if (finalFiles.length > 0) {
-          try {
-            await window.electronAPI!.virtualDirectory.replaceFiles(vdirId, finalFiles)
-          } catch (err) {
-            logger.warn(LogCategory.FILE_ORGANIZATION, '整理终局结果落库失败:', err)
-          }
         }
 
         window
@@ -1736,6 +1890,12 @@ export function useOrganizeState() {
       }
     }
 
+    if (!bypassCapacityLimit && toOrganizeFiles.length > organizeCapacityLimit) {
+      toast.error(t('待整理文件数量超出上限（{limit}个），请前往「已分析」页面勾选文件后重试', { limit: organizeCapacityLimit.toLocaleString() }))
+      setShowCapacityLimitDialog(true)
+      return
+    }
+
     if (batchCount > maxBatchWarnLimit) {
       setShowBatchLimitConfirm(true)
       return
@@ -1753,7 +1913,9 @@ export function useOrganizeState() {
     organizeMode,
     dimensionGroups,
     regenerateFiles,
-    executeStartOrganize
+    executeStartOrganize,
+    bypassCapacityLimit,
+    organizeCapacityLimit
   ])
 
   const handleSelectFilesToOrganize = useCallback(() => {
@@ -1857,27 +2019,7 @@ export function useOrganizeState() {
 
     // 在目录结构预览阶段（stage === 'structure'），树节点仅为层级大纲且未挂载文件，绝不能应用 skipEmptyDirs 过滤
     if (options.skipEmptyDirs && stage !== 'structure') {
-      const filterEmpty = (nodes: VirtualDirectoryNode[]): VirtualDirectoryNode[] => {
-        const result: VirtualDirectoryNode[] = []
-        for (const node of nodes) {
-          const filteredSubs = filterEmpty(node.subdirectories || [])
-          const hasFiles = node.files && node.files.length > 0
-          const hasSubs = filteredSubs.length > 0
-          if (hasFiles || hasSubs) {
-            let count = node.files ? node.files.length : 0
-            for (const sub of filteredSubs) {
-              count += sub.fileCount
-            }
-            result.push({
-              ...node,
-              subdirectories: filteredSubs,
-              fileCount: count
-            })
-          }
-        }
-        return result
-      }
-      processedTree = filterEmpty(processedTree)
+      processedTree = filterEmptyDirectoryNodes(processedTree)
     } else {
       const updateCounts = (nodes: VirtualDirectoryNode[]): VirtualDirectoryNode[] => {
         return nodes.map(node => {
@@ -1918,14 +2060,8 @@ export function useOrganizeState() {
       return
     }
     try {
-      const fallbackFile = toOrganizeFiles[0]
-        ? {
-            fileId: Number(toOrganizeFiles[0].id ?? toOrganizeFiles[0].fileId),
-            fileFingerprint: toOrganizeFiles[0].fileFingerprint
-          }
-        : undefined
-      const files = exportTreeToFiles(displayTree, fallbackFile)
-      await window.electronAPI!.virtualDirectory.replaceFiles(currentVDir.id, files)
+      // 单一事实源原子落库：由 syncIncrementalDirectoryTree 统一提取全量文件与空目录 .keep 占位，杜绝双写竞态冲刷
+      await window.electronAPI!.virtualDirectory.syncIncrementalDirectoryTree(currentVDir.id, displayTree)
       const targetSource =
         draft?.source && draft.source !== 'draft' ? draft.source : 'ai-reorganized'
       await window.electronAPI!.virtualDirectory.updateMeta(currentVDir.id, {
@@ -1961,14 +2097,8 @@ export function useOrganizeState() {
   const handleRegenerateSaveAfterFirecoreConfirm = useCallback(async () => {
     if (!currentVDir?.id || displayTree.length === 0) return
     try {
-      const fallbackFile = toOrganizeFiles[0]
-        ? {
-            fileId: Number(toOrganizeFiles[0].id ?? toOrganizeFiles[0].fileId),
-            fileFingerprint: toOrganizeFiles[0].fileFingerprint
-          }
-        : undefined
-      const files = exportTreeToFiles(displayTree, fallbackFile)
-      await window.electronAPI!.virtualDirectory.replaceFiles(currentVDir.id, files)
+      // 单一事实源原子落库：由 syncIncrementalDirectoryTree 统一提取全量文件与空目录 .keep 占位，杜绝双写竞态冲刷
+      await window.electronAPI!.virtualDirectory.syncIncrementalDirectoryTree(currentVDir.id, displayTree)
       const targetSource =
         draft?.source && draft.source !== 'draft' ? draft.source : 'ai-reorganized'
       await window.electronAPI!.virtualDirectory.updateMeta(currentVDir.id, {
@@ -2826,6 +2956,7 @@ export function useOrganizeState() {
   )
 
   const canForward = useMemo(() => {
+    if (isCapacityExceeded) return false
     if (stage === 'mode-select') {
       if (organizeMode === 'fine-organize') {
         return candidates.length > 0
@@ -2885,6 +3016,16 @@ export function useOrganizeState() {
         return
       }
 
+      // 找补截断守卫：每次最多截取 Top 200 个高潜未归类文件进行 LLM 找补，防止大循环
+      const filesToRescue = unclassifiedFiles.slice(0, 200)
+      if (unclassifiedFiles.length > 200) {
+        toast.info(
+          t('未归类文件较多（{total} 个），AI 将优先靶向找补前 200 个高潜文件', {
+            total: unclassifiedFiles.length
+          })
+        )
+      }
+
       if (force) {
         setHasRescueFailed(false)
         lastRescuedIdsRef.current.clear()
@@ -2913,7 +3054,7 @@ export function useOrganizeState() {
           workspaceDirectoryPath: currentWorkspaceDirectory?.path,
           mode: organizeMode,
           selectedTagsTree: convertTreeForBackend(activeTagsTree),
-          files: unclassifiedFiles,
+          files: filesToRescue,
           userInstruction: draft?.strategy,
           allowCreateNew: options.allowCreateNew,
           batchSize: useSettingsStore.getState().getConfigValue<number>('QUEUE_BATCH_SIZE') ?? 50,
@@ -3133,6 +3274,20 @@ export function useOrganizeState() {
     deleteTagGlobally,
     trashDuplicateFiles,
     isTrashingDuplicates,
-    loadFilesToOrganize
+    loadFilesToOrganize,
+
+    // 容量守卫与门禁穿透
+    organizeCapacityLimit,
+    isCapacityExceeded,
+    capacityExceededCount,
+    showCapacityLimitDialog,
+    setShowCapacityLimitDialog,
+    handleGoToAnalyzedPage,
+    handleLimitToFirst3000Files,
+    handleBypassLimitAndOrganizeAll,
+    handleAttemptEnterModeSelect,
+    bypassCapacityLimit,
+    organizeFileLimitOverride,
+    rawToOrganizeCount
   }
 }

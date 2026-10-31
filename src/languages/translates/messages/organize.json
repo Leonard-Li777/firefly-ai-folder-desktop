@@ -938,7 +938,7 @@
       "src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(13379-13385)",
       "src/renderer/components/organize/OrganizeErrorDialog.tsx(3065-3071)",
       "src/renderer/components/organize/OrganizeResultDialog.tsx(8835-8841)",
-      "src/renderer/components/organize/UndoHistoryDialog.tsx(9619-9625)"
+      "src/renderer/components/organize/UndoHistoryDialog.tsx(9623-9629)"
     ],
     "$id": 4189
   },
@@ -1849,7 +1849,7 @@
     "de-DE": "Gesichert\r",
     "fr-FR": "Sauvegardé",
     "ko-KR": "백업 완료",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(5941-5948)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(5945-5952)"],
     "$id": 4257
   },
   "移动了 {count}": {
@@ -1862,7 +1862,7 @@
     "de-DE": "{count} verschoben\r",
     "fr-FR": "{count} éléments déplacés",
     "ko-KR": "{count}개 이동됨",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(6345-6360)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(6349-6364)"],
     "$id": 4258
   },
   "备份位置: {backup_name}": {
@@ -1875,7 +1875,7 @@
     "de-DE": "Sicherungsort: {backup_name}\r",
     "fr-FR": "Emplacement de sauvegarde : {backup_name}",
     "ko-KR": "백업 위치: {backup_name}",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(6858-6881)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(6862-6885)"],
     "$id": 4259
   },
   "撤销中...": {
@@ -1888,7 +1888,7 @@
     "de-DE": "Wird rückgängig gemacht...\r",
     "fr-FR": "Annulation en cours...",
     "ko-KR": "복원 중...",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(8152-8162)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(8156-8166)"],
     "$id": 4260
   },
   "撤销": {
@@ -1901,7 +1901,7 @@
     "de-DE": "Rückgängig machen\r",
     "fr-FR": "Annuler",
     "ko-KR": "복원",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(8370-8376)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(8374-8380)"],
     "$id": 4261
   },
   "删除记录": {
@@ -1914,7 +1914,7 @@
     "de-DE": "Datensatz löschen\r",
     "fr-FR": "Supprimer l'enregistrement",
     "ko-KR": "기록 삭제",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(8866-8874)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(8870-8878)"],
     "$id": 4262
   },
   "撤销操作将恢复文件到整理前的位置": {
@@ -1927,7 +1927,7 @@
     "de-DE": "Der Rückgängig-Vorgang stellt die Dateien an die ursprünglichen Positionen vor der Organisation wieder her",
     "fr-FR": "L'opération d'annulation restaurera les fichiers à leur emplacement d'origine avant l'organisation",
     "ko-KR": "복원 작업을 통해 파일이 정리 전 위치로 복구됩니다.",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(9401-9421)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(9405-9425)"],
     "$id": 4263
   }
 }

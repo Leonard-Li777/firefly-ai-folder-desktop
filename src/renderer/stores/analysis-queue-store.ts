@@ -31,7 +31,9 @@ interface AnalysisQueueState {
   clearAll: () => Promise<void>
   deleteItem: (id: number) => Promise<void>
   start: () => Promise<void>
-  pause: () => Promise<void>
+  // 传参可显式指定要暂停的工作目录（默认取当前工作目录）；
+  // 队列可能跑在别的工作目录上，此时必须按快照里的 activeRunningWorkspaceId 暂停
+  pause: (workspaceId?: number) => Promise<void>
   reconciliationFiles: Array<{
     fileFingerprint: string
     path: string

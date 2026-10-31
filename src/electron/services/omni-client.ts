@@ -47,10 +47,53 @@ export interface OmniTagAliasRow {
 /** 多语言别名响应：Vec<TagAliasRow>（对齐 Rust Vec<TagAliasRow>，Slice 7） */
 export type OmniTaxonomyAliasesResponse = OmniTagAliasRow[]
 
+/**
+ * zvec v3 编码器身份（对齐 apps/omni/crates/omni-core/src/lib.rs `pub mod encoder_id`
+ * 与方案 §3.5）：0=Unknown/Legacy, 1=Bekko, 2=ChineseCLIP, 3=MobileCLIP, 4=Gemma。
+ * 写入时必须携带向量真实出处，禁止按档位或界面语言猜测。
+ */
+export const ENCODER_ID = {
+  UNKNOWN: 0,
+  BEKKO: 1,
+  CHINESE_CLIP: 2,
+  MOBILE_CLIP: 3,
+  GEMMA: 4
+} as const
+
+/**
+ * 查询侧编码器白名单（方案 §3.5 查询通路表，与引擎 `encoder_id::CLASSIC_384_ALLOWED` 对齐）：
+ * classic_light 384 槽只有 Bekko，放行 UNKNOWN 仅为 v2 旧记录过渡。
+ */
+export const ENCODER_FILTER_CLASSIC_384: readonly number[] = [ENCODER_ID.UNKNOWN, ENCODER_ID.BEKKO]
+
+/**
+ * 查询侧编码器白名单：gemma_unified 的 256/512/768 槽。
+ * 512 槽与 classic CLIP 共用，v2 记录无法区分编码器，故严格只放行 GEMMA。
+ */
+export const ENCODER_FILTER_GEMMA: readonly number[] = [ENCODER_ID.GEMMA]
+
+/** 预留：CLIP 文本通道（工单 12），只与 ChineseCLIP 图像塔配对，当前无调用点 */
+export const ENCODER_FILTER_CHINESE_CLIP: readonly number[] = [ENCODER_ID.CHINESE_CLIP]
+
+/** 预留：MobileCLIP 诊断（非 zh 界面不启用检索），当前全仓无调用点 */
+export const ENCODER_FILTER_MOBILE_CLIP: readonly number[] = [ENCODER_ID.MOBILE_CLIP]
+
+/**
+ * 按当前生效嵌入档位解析查询白名单：classic_light → [0, 1]；gemma_unified → [4]。
+ * 不提供「缺省不过滤」语义：档位缺失或未知时按 classic_light 处理。
+ */
+export function resolveQueryEncoderFilter(profile: string | null | undefined): number[] {
+  return (profile || '').toLowerCase().includes('gemma')
+    ? [...ENCODER_FILTER_GEMMA]
+    : [...ENCODER_FILTER_CLASSIC_384]
+}
+
 /** 向量写入条目 */
 export interface OmniVectorUpsertItem {
   fileFingerprint: string
   vector: number[]
+  /** zvec v3 编码器身份（ENCODER_ID），必填：缺失即被 Omni 以 400 encoder_id_required 拒绝 */
+  encoderId: number
 }
 
 export interface OmniVectorUpsertResponse {
@@ -63,6 +106,8 @@ export interface OmniVectorMatchItem {
   fileFingerprint: string
   score: number
   rank: number
+  /** 命中记录的 zvec v3 编码器身份 */
+  encoderId: number
 }
 
 export interface OmniVectorSearchResponse {
@@ -81,6 +126,8 @@ export interface OmniVectorDeleteResponse {
 export interface OmniVectorGetItem {
   fileFingerprint: string
   vector: number[]
+  /** 该向量落盘时携带的 zvec v3 编码器身份，供探活/白名单判定 */
+  encoderId: number
 }
 
 export interface OmniVectorGetResponse {
@@ -124,11 +171,58 @@ export interface OmniMatchPassagesResponse {
   durationMs: number
 }
 
+/**
+ * `/health.clipText` 五字段探活结果（工单 10 引擎侧契约）。
+ *
+ * `available` 由引擎聚合（图像塔 = chinese_clip && 文本塔就绪 && 词表就绪 &&
+ * 首次编码未验证为 false）；desktop 只做消费，不再自行推导。
+ */
+export interface OmniClipTextHealth {
+  available: boolean
+  /** 当前激活图像塔标签，只有 `chinese_clip` / `mobileclip` 才可能与对应文本塔同空间 */
+  imageEncoder: string | null
+  textModelReady: boolean
+  vocabReady: boolean
+  /** 三态：null = 尚未做过首次编码验证 */
+  textOutputVerified: boolean | null
+  chineseClip?: OmniClipTextHealth
+  mobileClip?: OmniClipTextHealth
+}
+
+/**
+ * CLIP 文本编码结果（工单 12）。
+ *
+ * **必须保留 `error`/`status`**：429 `busy` 与超时/传输错误在调用方有截然不同的处理
+ * （busy 不清空热态时间戳、不计入熔断），若沿用 `request()` 的 null 语义就无从区分。
+ */
+export interface OmniEmbedClipTextResult {
+  ok: boolean
+  /** 引擎业务码或 desktop 侧合成码（`transport` / `timeout` / `bad_shape`） */
+  error?: string
+  status?: number
+  vector?: number[]
+  dim?: number
+  encoderId?: number
+  /** 首次调用是否触发模型加载：**仅用于埋点/UI，不参与超时预算** */
+  coldStart?: boolean
+  loadMs?: number
+  encodeMs?: number
+}
+
+/** 探活缓存 TTL：5 分钟（工单 12 AC1） */
+const CLIP_TEXT_HEALTH_TTL_MS = 5 * 60 * 1000
+
 const DEFAULT_TIMEOUT_MS = 8000
 
 /**
  * OmniClient：Desktop 侧对 Omni 语义/向量 HTTP 契约的唯一入口
  */
+export interface TTSChunkResult {
+  buffer: ArrayBuffer
+  hitCap: boolean
+  steps: number
+}
+
 export class OmniClient {
   private static instance: OmniClient
 
@@ -152,11 +246,14 @@ export class OmniClient {
     path: string,
     init?: RequestInit,
     timeoutMs: number = DEFAULT_TIMEOUT_MS,
-    retries: number = 2
+    retries: number = 2,
+    options?: { bypassEnsureRunning?: boolean }
   ): Promise<T | null> {
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
-        await omniService.ensureRunning()
+        if (!options?.bypassEnsureRunning) {
+          await omniService.ensureRunning()
+        }
         const res = await fetch(`${this.getBaseUrl()}${path}`, {
           ...init,
           headers: {
@@ -225,6 +322,32 @@ export class OmniClient {
 
     const fetchPromise = (async () => {
       try {
+        // 冷启动不得阻塞调用方（已分析目录 / 虚拟目录左侧「分类维度」面板首屏会 await 本方法）：
+        // 原实现经 request() 内的 omniService.ensureRunning() 同步等待引擎 spawn 后的探活轮询
+        // （最长 200×200ms = 40s），叠加请求本身 3×8s 超时重试，会让面板长时间停在"加载中"。
+        // 此处改为：探活不通 ⇒ 触发后台预热并立即降级（返回历史缓存或 null），
+        // 引擎就绪后由渲染进程监听 omni:status-changed 主动重取，用户无感补齐受控维度树。
+        //
+        // 注意：探活必须放在 IIFE 内部（而非创建 fetchPromise 之前）——否则 await 会打开
+        // 并发窗口，使下面的 inFlight 登记失去原子性，Singleflight 合并随之失效。
+        if (!(await omniService.checkHealth())) {
+          void omniService.start().catch((err: unknown) => {
+            logger.warn(LogCategory.DIMENSION_SERVICE, '[OmniClient] Omni 引擎后台预热失败:', err)
+          })
+          if (cached) {
+            logger.warn(
+              LogCategory.DIMENSION_SERVICE,
+              '[OmniClient] Omni 引擎未就绪，taxonomy 树降级使用历史缓存（已触发后台预热）'
+            )
+            return cached.data
+          }
+          logger.warn(
+            LogCategory.DIMENSION_SERVICE,
+            '[OmniClient] Omni 引擎未就绪，taxonomy 树本次降级为空树（已触发后台预热，就绪后自动重取）'
+          )
+          return null
+        }
+
         const params = new URLSearchParams({ locale })
         if (root) params.set('root', root)
         if (dbPath) {
@@ -280,7 +403,8 @@ export class OmniClient {
 
   /**
    * 向量批量写入/更新：POST /api/v1/vector/upsert
-   * AI 分析提取 dense embedding 后由 Desktop 调用，向量由 Omni zvec 托管
+   * AI 分析提取 dense embedding 后由 Desktop 调用，向量由 Omni zvec 托管。
+   * `encoderId` 必填：Omni 侧缺省即 400 `encoder_id_required`，禁止由本层补默认值。
    */
   async upsertVectors(
     items: OmniVectorUpsertItem[],
@@ -290,7 +414,8 @@ export class OmniClient {
     const payload = {
       items: items.map(item => ({
         fileFingerprint: item.fileFingerprint,
-        vector: item.vector
+        vector: item.vector,
+        encoderId: item.encoderId
       }))
     }
     return this.request<OmniVectorUpsertResponse>('/api/v1/vector/upsert', {
@@ -299,28 +424,51 @@ export class OmniClient {
     }, timeoutMs)
   }
 
-  /** 便捷写入单文件向量 */
-  async upsertVector(fileFingerprint: string, vector: number[]): Promise<OmniVectorUpsertResponse | null> {
-    return this.upsertVectors([{ fileFingerprint, vector }])
+  /** 便捷写入单文件向量（`encoderId` 必填，语义同 upsertVectors） */
+  async upsertVector(
+    fileFingerprint: string,
+    vector: number[],
+    encoderId: number
+  ): Promise<OmniVectorUpsertResponse | null> {
+    return this.upsertVectors([{ fileFingerprint, vector, encoderId }])
   }
 
   /**
    * 以向量搜文件：POST /api/v1/vector/search
-   * 以文搜图、搜文档、相似文件推荐统一入口
+   * 以文搜图、搜文档、相似文件推荐统一入口。
+   * `options.encoderFilter` 必填（无默认值、无「缺省不过滤」兜底）：Omni 侧缺省或空数组即
+   * 400 `encoder_filter_required`；白名单由 `resolveQueryEncoderFilter` 按当前档位给出。
    */
   async searchVectors(
     vector: number[],
-    topK = 10,
-    threshold?: number
+    topK: number,
+    options: {
+      encoderFilter: number[]
+      threshold?: number
+      /**
+       * 单次请求预算（毫秒）。缺省沿用 `DEFAULT_TIMEOUT_MS`。
+       * CLIP 第 5 路必须显式传冷/热态预算，否则 phase2 会被这条链路拖到
+       * `timeoutMs × (retries + 1) + 退避` 的量级，与「热态 ≤800ms」的契约冲突。
+       */
+      timeoutMs?: number
+      /** 重试次数。CLIP 路传 0：预算已按冷/热态给定，重试会成倍放大首屏等待。 */
+      retries?: number
+    }
   ): Promise<OmniVectorSearchResponse | null> {
-    return this.request<OmniVectorSearchResponse>('/api/v1/vector/search', {
-      method: 'POST',
-      body: JSON.stringify({
-        vector,
-        topK,
-        threshold
-      })
-    })
+    return this.request<OmniVectorSearchResponse>(
+      '/api/v1/vector/search',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          vector,
+          topK,
+          threshold: options.threshold,
+          encoderFilter: options.encoderFilter
+        })
+      },
+      options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+      options.retries ?? 2
+    )
   }
 
   /**
@@ -348,6 +496,159 @@ export class OmniClient {
   }
 
   /**
+   * CLIP 文本塔探活：GET /health → `clipText` 五字段（工单 12 AC1）。
+   *
+   * 5 分钟缓存：探活本身要打一次 HTTP，若每次查询都探活会把首屏延迟抬高一个量级；
+   * 缓存按**成功响应**写入，失败不缓存（引擎热启动完成后应立即恢复）。
+   */
+  private _clipTextHealthCacheMap: Map<string, { data: OmniClipTextHealth; time: number }> = new Map()
+  private _clipTextHealthInFlightMap: Map<string, Promise<OmniClipTextHealth | null>> = new Map()
+
+  async getClipTextHealth(options?: {
+    lang?: string | null
+    forceRefresh?: boolean
+  }): Promise<OmniClipTextHealth | null> {
+    const langKey = (options?.lang || '').toLowerCase().startsWith('zh') ? 'zh' : 'en'
+    const now = Date.now()
+    const cached = this._clipTextHealthCacheMap.get(langKey)
+    if (
+      !options?.forceRefresh &&
+      cached &&
+      now - cached.time < CLIP_TEXT_HEALTH_TTL_MS
+    ) {
+      return cached.data
+    }
+    // Singleflight：并发查询按语言键共用同一次探活
+    const inFlight = this._clipTextHealthInFlightMap.get(langKey)
+    if (inFlight) return inFlight
+
+    const task = (async () => {
+      try {
+        await omniService.ensureRunning()
+        const query = options?.lang ? `?lang=${encodeURIComponent(options.lang)}` : ''
+        const res = await fetch(`${this.getBaseUrl()}/health${query}`, {
+          signal: AbortSignal.timeout(2000)
+        })
+        if (!res.ok) {
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[omni-client] CLIP 文本探活响应异常 (HTTP ${res.status})，本轮按不可用处理`
+          )
+          return null
+        }
+        const data = (await res.json()) as { clipText?: Partial<OmniClipTextHealth> }
+        const raw = data?.clipText
+        if (!raw || typeof raw !== 'object') {
+          logger.warn(
+            LogCategory.SYSTEM,
+            '[omni-client] CLIP 文本探活响应缺少 clipText 载荷，本轮按不可用处理'
+          )
+          return null
+        }
+        const health: OmniClipTextHealth = {
+          available: raw.available === true,
+          imageEncoder: typeof raw.imageEncoder === 'string' ? raw.imageEncoder : null,
+          textModelReady: raw.textModelReady === true,
+          vocabReady: raw.vocabReady === true,
+          textOutputVerified:
+            raw.textOutputVerified === true
+              ? true
+              : raw.textOutputVerified === false
+                ? false
+                : null,
+          chineseClip: raw.chineseClip as OmniClipTextHealth | undefined,
+          mobileClip: raw.mobileClip as OmniClipTextHealth | undefined
+        }
+        this._clipTextHealthCacheMap.set(langKey, { data: health, time: Date.now() })
+        return health
+      } catch (err) {
+        // AGENTS §2.9：检索链路的降级必须留痕，禁止静默吞异常。
+        // 频次天然受 CLIP_TEXT_HEALTH_TTL_MS（5 分钟缓存）限制，不会把热路刷成告警风暴。
+        logger.warn(
+          LogCategory.SYSTEM,
+          '[omni-client] CLIP 文本探活失败，本轮按不可用处理:',
+          err instanceof Error ? err.message : String(err)
+        )
+        return null
+      } finally {
+        this._clipTextHealthInFlightMap.delete(langKey)
+      }
+    })()
+    this._clipTextHealthInFlightMap.set(langKey, task)
+    return task
+  }
+
+  /** 清空 CLIP 文本探活缓存（档位切换/引擎重启后调用） */
+  clearClipTextHealthCache(): void {
+    this._clipTextHealthCacheMap.clear()
+    this._clipTextHealthInFlightMap.clear()
+  }
+
+  /**
+   * CLIP 文本塔编码：POST /api/v1/vector/embed-clip-text（工单 12）。
+   *
+   * 与 `request()` 的区别（**不可合并**）：
+   * - 不重试：超时预算由调用方按冷/热态给定，重试会成倍放大首屏等待；
+   * - 不吞状态码：429 `busy` 与 503 必须可区分（前者不计熔断失败、不清空热态时间戳）；
+   * - 超时由 `AbortSignal.timeout` 施加，`coldStart` 只回传给埋点，不参与预算判定。
+   *
+   * `encoderId` 留痕（R4-5，ADR-0054）：本接口与向量检索侧的 `encoderId` 是引擎硬编码常量，
+   * 不是「这个向量确实来自当前模型」的身份证明；跨嵌入空间唯一真实防护是
+   * `getClipTextHealth().imageEncoder === 'chinese_clip'` 门禁。不要因为拿到 `encoderId` 就认为
+   * 空间一致已被保证（也不要因此新增字段解析）。
+   */
+  async embedClipText(
+    text: string,
+    options: { lang?: string; timeoutMs: number }
+  ): Promise<OmniEmbedClipTextResult> {
+    const payload = (text ?? '').trim()
+    if (!payload) return { ok: false, error: 'empty_text', status: 422 }
+    try {
+      await omniService.ensureRunning()
+      const reqBody: { text: string; lang?: string } = { text: payload }
+      if (options?.lang) {
+        reqBody.lang = options.lang
+      }
+      const res = await fetch(`${this.getBaseUrl()}/api/v1/vector/embed-clip-text`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reqBody),
+        signal: AbortSignal.timeout(options.timeoutMs)
+      })
+      let body: any = null
+      try {
+        body = await res.json()
+      } catch {
+        body = null
+      }
+      if (!res.ok) {
+        return {
+          ok: false,
+          status: res.status,
+          error: typeof body?.error === 'string' ? body.error : `http_${res.status}`
+        }
+      }
+      if (!body || !Array.isArray(body.vector) || body.vector.length === 0) {
+        return { ok: false, status: res.status, error: 'bad_shape' }
+      }
+      return {
+        ok: true,
+        status: res.status,
+        vector: body.vector as number[],
+        dim: typeof body.dim === 'number' ? body.dim : body.vector.length,
+        encoderId: typeof body.encoderId === 'number' ? body.encoderId : undefined,
+        coldStart: body.coldStart === true,
+        loadMs: typeof body.loadMs === 'number' ? body.loadMs : undefined,
+        encodeMs: typeof body.encodeMs === 'number' ? body.encodeMs : undefined
+      }
+    } catch (err: unknown) {
+      const name = err instanceof Error ? err.name : ''
+      const error = name === 'TimeoutError' || name === 'AbortError' ? 'timeout' : 'transport'
+      return { ok: false, error }
+    }
+  }
+
+  /**
    * 真实目录快速文件名检索：GET /api/v1/search/fs?dir={dir}&q={q}&limit={limit}
    * 由 Omni 内在 walker 直接扫描磁盘目录返回实时命中（含未 AI 分析文件），
    * 结果中带 fileFingerprint 的项即为已分析文件，可与向量/FTS 候选去重
@@ -357,23 +658,44 @@ export class OmniClient {
     query: string,
     limit = 100
   ): Promise<OmniSearchFsResponse | null> {
+    // 关键防御：若 Omni 尚未完全就绪（未拉起/拉起中/崩溃恢复中），绝不死等 40s，立即返回 null 走本地 FTS5 毫秒级兜底并静默预热
+    if (!omniService.isReady()) {
+      void omniService.ensureRunning().catch(() => {})
+      return null
+    }
     const params = new URLSearchParams({ dir: dir, q: query, limit: String(limit) })
-    return this.request<OmniSearchFsResponse>(`/api/v1/search/fs?${params.toString()}`)
+    return this.request<OmniSearchFsResponse>(
+      `/api/v1/search/fs?${params.toString()}`,
+      undefined,
+      1500,
+      0,
+      { bypassEnsureRunning: true }
+    )
   }
 
   /**
    * 段落级语义对齐：POST /api/v1/vector/match-passages
    * 将查询向量与候选文件的前置分段列表对齐，返回每文件最契合段落与相似度，
-   * 用于对无字面命中候选生成语义召回摘要
+   * 用于对无字面命中候选生成语义召回摘要。
+   *
+   * `profile`/`dim` 必须随当前嵌入档位传入：gemma_unified 下由 Omni 端 EmbeddingGemma
+   * 文本塔编码（与库内 gemma 槽位同空间）；缺省按 classic_light（bekko-a8m 384d）处理。
+   * 严禁在 gemma 档位下省略 profile——那会让 Omni 端回退加载 bekko-a8m。
    */
   async matchPassages(
     query: string,
-    items: OmniMatchPassagesItem[]
+    items: OmniMatchPassagesItem[],
+    options?: { profile?: string; dim?: number }
   ): Promise<OmniMatchPassagesResponse | null> {
     if (!items.length) return { matches: [], durationMs: 0 }
     return this.request<OmniMatchPassagesResponse>('/api/v1/vector/match-passages', {
       method: 'POST',
-      body: JSON.stringify({ query, items })
+      body: JSON.stringify({
+        query,
+        items,
+        profile: options?.profile,
+        dim: options?.dim
+      })
     })
   }
 
@@ -397,7 +719,7 @@ export class OmniClient {
     speed: number,
     sid?: number,
     signal?: AbortSignal
-  ): Promise<ArrayBuffer | null> {
+  ): Promise<TTSChunkResult | null> {
     try {
       await omniService.ensureRunning()
       const payload: Record<string, any> = {
@@ -420,7 +742,16 @@ export class OmniClient {
         logger.warn(LogCategory.MAIN, `[OmniClient] TTS 合成失败 HTTP ${res.status}`)
         return null
       }
-      return await res.arrayBuffer()
+      const hitCap = res.headers.get('X-Moss-Hit-Cap') === 'true'
+      const steps = parseInt(res.headers.get('X-Moss-Steps') || '0', 10)
+      if (hitCap) {
+        logger.warn(
+          LogCategory.MAIN,
+          `[OmniClient] ⚠️ TTS 分句触发 375 帧上限截断 (hitCap=true, steps=${steps}): "${text.slice(0, 30)}..."`
+        )
+      }
+      const buffer = await res.arrayBuffer()
+      return { buffer, hitCap, steps }
     } catch (err: unknown) {
       if ((err as any)?.name === 'AbortError') {
         logger.debug(LogCategory.MAIN, '[OmniClient] TTS 合成请求已中止')

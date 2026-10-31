@@ -14,12 +14,14 @@ import {
   getFileCategory,
   isCategory,
   BROWSER_NATIVE_IMAGE_EXTS,
+  isDecodableImage,
   isTestEnvironment,
   shouldSkipAIServiceInTest,
   applyMarkitdownBenchmark,
   extractMarkitdownBenchmark,
   calculateFileFingerprint,
   cleanSmartName,
+  isSmartNameCopied,
   createSecretHmac,
   toBase62,
   isGibberishOcrText,
@@ -28,7 +30,9 @@ import {
   isTrustworthyMaterializedCodePath,
   getCanonicalConceptName,
   resolveRuntimeMaterializedPath,
-  CONTROLLED_CONCEPTS
+  CONTROLLED_CONCEPTS,
+  normalizeLangCode,
+  safeTruncateUtf8Bytes
 } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import {
@@ -50,13 +54,12 @@ import {
   DimensionAnalyzer,
   TextFileProcessor,
   extractPureLyrics,
+  hasSubstantiveContent,
   type FileInfoInput
 } from '@firefly/core-engine'
 import {
   executeProPreflight,
-  executeProTagReconciliation,
-  executeProVisualTagging,
-  executeProTextTagging
+  executeProTagReconciliation
 } from '@pro'
 import { omniService } from '../../system/omni-service'
 import { omniClient } from '../../../services/omni-client'
@@ -77,6 +80,17 @@ import { processQuickNameAnalysis } from './process-quick-name-analysis'
 import { saveLocalAnalysisResult } from './save-local-cache-result'
 import { resolveFileDescription } from './resolve-file-description'
 import { NamingDSLEngine } from '../../filesystem/naming-dsl-engine'
+// 工单 05：五条 completed 终态统一接入 canonical 语义文本/向量固化
+import { solidifyCanonicalForTerminal } from '../canonical-text-service'
+
+/**
+ * CPU 阶段耗时登记表（item.id → 毫秒）
+ *
+ * 并行流水线里 CPU 提取与 GPU 推理是**两次** processFile 调用，各自新建 PerformanceTimer
+ * （计时起点是各自阶段开始）。AI 阶段要按「单文件总预算 − 已用」收紧超时，就必须补上
+ * CPU 阶段（含视频向量 + ASR）已经花掉的时间，否则单文件最坏耗时会是两段各自的上限之和。
+ */
+const cpuPhaseElapsedMs = new Map<number, number>()
 
 /**
  * @firecrawl/anydoc 支持的文档格式扩展名（小写）
@@ -246,6 +260,338 @@ export function getFileAnalysisStateFromDB(
  * 文件处理类
  * 处理单个文件的分析、缓存匹配和落库
  */
+
+/**
+ * 基础数据完整性校验结果
+ */
+export interface BasicDataCompletenessResult {
+  isComplete: boolean
+  missingReasons: string[]
+}
+
+/**
+ * 检查文件核心基础数据与向量数据的健全性（用于决定重新分析时是否安全复用并跳过 CPU 阶段）
+ * 涵盖：全量/切片向量探活、文本内容/摘要、图片/文档 OCR、音频 ASR/LRC 等
+ */
+export async function checkBasicDataCompleteness(
+  db: any,
+  workspaceId: number,
+  filePath: string,
+  fingerprint?: string
+): Promise<BasicDataCompletenessResult> {
+  const missingReasons: string[] = []
+  if (!fingerprint) {
+    return { isComplete: false, missingReasons: ['no_fingerprint'] }
+  }
+
+  const category = getFileCategory(filePath)
+
+  // 1. 物理向量探活 (Omni zvec)
+  const profile = ConfigOrchestrator.getInstance().getValue<string>('AI_EMBEDDING_PROFILE') || 'gemma_unified'
+  const targetDim =
+    profile === 'gemma_unified' || profile.includes('gemma')
+      ? (ConfigOrchestrator.getInstance().getValue<number>('EMBEDDING_MRL_DIMENSION') ?? 512)
+      : 384
+
+  if (category === FileCategory.VIDEO) {
+    // 视频：检查切片记录与切片向量
+    try {
+      const chunkRows = db
+        .prepare(
+          'SELECT chunk_index, sampling_interval_seconds, start_sec, end_sec FROM file_video_chunks WHERE file_fingerprint = ? ORDER BY chunk_index ASC'
+        )
+        .all(fingerprint) as Array<{ chunk_index?: number; sampling_interval_seconds?: number; start_sec?: number; end_sec?: number }>
+
+      if (!chunkRows || chunkRows.length === 0) {
+        missingReasons.push('missing_video_chunks')
+      } else {
+        // 抽帧间隔已由引擎按预算自决（设置页已移除该项），不再与配置比对；
+        // 只保留「切片跨度是否与其自身记录的间隔吻合」的缓存升级防护。
+        const firstChunk = chunkRows[0]
+        const recordedInterval = firstChunk.sampling_interval_seconds ?? 1.0
+        // 真实镜头切片（sampling_interval_seconds <= 0）：起止由自然镜头边界自决，跳过滑动窗口 span 过期判定
+        const isShotBased = recordedInterval <= 0
+        // 旧 8s 切片缓存自动升级防护（Ticket 04 & Spec §4.3）：
+        // 检查首切片跨度是否与新公式 Math.min(16, Math.max(4, interval * 2)) 吻合
+        const expectedSpan = Math.min(16, Math.max(4, recordedInterval * 2))
+        const firstSpan = (firstChunk.end_sec ?? 0) - (firstChunk.start_sec ?? 0)
+        // 兼容 Omni 原生标准 4.0s 切片跨度（stsz选美默认），避免标准切片被误判过期触发无休止重跑
+        const isSpanOutdated =
+          !isShotBased &&
+          chunkRows.length > 1 &&
+          Math.abs(firstSpan - expectedSpan) >= 0.5 &&
+          Math.abs(firstSpan - 4.0) >= 0.5
+        if (isSpanOutdated) {
+          missingReasons.push(`video_chunk_span_outdated_${firstSpan}_vs_${expectedSpan}`)
+        } else {
+          const probeFp = `${fingerprint}:c${firstChunk.chunk_index ?? 0}`
+          try {
+            const probeRes = await omniClient.getVectors([probeFp], targetDim, 3000)
+            if (!probeRes?.vectors || probeRes.vectors.length === 0) {
+              missingReasons.push('missing_video_chunk_vectors')
+            }
+          } catch {
+            missingReasons.push('video_vector_probe_error')
+          }
+        }
+      }
+    } catch {
+      missingReasons.push('query_video_chunks_error')
+    }
+  } else {
+    // 非视频文件（文档、图片、音频、代码等）：探活主文件物理向量
+    try {
+      const probeRes = await omniClient.getVectors([fingerprint], targetDim, 3000)
+      if (!probeRes?.vectors || probeRes.vectors.length === 0) {
+        missingReasons.push('missing_file_vector')
+      }
+    } catch {
+      missingReasons.push('file_vector_probe_error')
+    }
+  }
+
+  // 2. 查询 file_contents 表中的内容提取数据
+  let contentRow: {
+    content?: Buffer | string
+    ocr?: Buffer | string
+    lrc?: Buffer | string
+    asr?: Buffer | string
+    exif?: Buffer | string
+  } | undefined
+
+  try {
+    contentRow = db
+      .prepare('SELECT content, ocr, lrc, asr, exif FROM file_contents WHERE file_fingerprint = ?')
+      .get(fingerprint)
+  } catch {
+    missingReasons.push('query_file_contents_error')
+  }
+
+  // 解压文本字段安全判定
+  const hasContent = contentRow?.content ? decompressText(contentRow.content as any).trim().length > 0 : false
+  const hasOcr = contentRow?.ocr ? decompressText(contentRow.ocr as any).trim().length > 0 : false
+  const hasLrc = contentRow?.lrc ? decompressText(contentRow.lrc as any).trim().length > 0 : false
+  const hasAsr = contentRow?.asr ? decompressText(contentRow.asr as any).trim().length > 0 : false
+
+  // 3. 针对不同类型文件的基础数据健全性检查
+  if (category === FileCategory.DOCUMENT || category === FileCategory.TEXT || category === FileCategory.CODE) {
+    // 文档/代码/纯文本：必须存在内容/摘要
+    if (!hasContent) {
+      missingReasons.push('missing_document_content')
+    }
+  } else if (category === FileCategory.IMAGE) {
+    // 图片：
+    // a) 检查缩略图
+    try {
+      const wsRow = db
+        .prepare('SELECT thumbnail_path FROM workspace_files WHERE workspace_id = ? AND path = ?')
+        .get(workspaceId, filePath) as { thumbnail_path?: string } | undefined
+      if (!wsRow?.thumbnail_path) {
+        missingReasons.push('missing_thumbnail')
+      }
+    } catch {
+      missingReasons.push('thumbnail_check_error')
+    }
+
+    // b) 检查 OCR：如果配置启用了图片 OCR (ENABLE_IMAGE_OCR)，且图片未曾提取过 OCR/Content
+    const enableImageOcr = ConfigOrchestrator.getInstance().getValue<boolean>('ENABLE_IMAGE_OCR') ?? true
+    if (enableImageOcr && !hasOcr && !hasContent) {
+      missingReasons.push('missing_image_ocr')
+    }
+  } else if (category === FileCategory.AUDIO) {
+    // 音频：应检查是否有歌词 (lrc) 或 ASR 语音转录 (asr) 或内容 (content)
+    if (!hasLrc && !hasAsr && !hasContent) {
+      missingReasons.push('missing_audio_transcript_or_lyrics')
+    }
+  }
+
+  return {
+    isComplete: missingReasons.length === 0,
+    missingReasons
+  }
+}
+
+/**
+ * Omni 向量与切片持久化参数 (Ticket 04)
+ */
+export interface OmniVectorPersistenceParams {
+  vectorSaved: boolean | undefined
+  fileFingerprint?: string
+  denseEmbedding?: number[]
+  /**
+   * 主向量编码器出处（perceive 响应 `embedding_encoder_id`，zvec v3 encoder_id）。
+   * 态 3 回传时原样透传；缺失即跳过回传并 warn，禁止按档位/语言猜测。
+   */
+  denseEmbeddingEncoderId?: number | null
+  videoChunks?: Array<{
+    chunk_index?: number
+    chunkIndex?: number
+    start_sec?: number
+    startSec?: number
+    end_sec?: number
+    endSec?: number
+    rep_pts_sec?: number
+    repPtsSec?: number
+    meta?: Record<string, any>
+    vector?: number[]
+    /** 切片向量编码器出处（perceive 响应 `video_chunks[].encoder_id`） */
+    encoder_id?: number
+    encoderId?: number
+    asr_text?: string
+  }>
+  databaseService: {
+    upsertFileVectorToOmni: (fp: string, vec: number[], encoderId: number) => Promise<any>
+    upsertFileVectorsToOmni: (
+      items: Array<{ fileFingerprint: string; vector: number[]; encoderId: number }>
+    ) => Promise<any>
+    insertVideoChunks: (chunks: any[]) => void
+  }
+  samplingIntervalSeconds?: number
+  hasTextBody?: boolean
+}
+
+/**
+ * Ticket 04: Omni 内部就地持久化三态判定与向量回传状态机
+ *
+ * 1. 态 1 (vector_saved === true): Omni 内部已单次原子批量落盘，彻底阻断主向量与切片向量二次回传，写向 Omni 的向量数严格为 0；
+ * 2. 态 2 (vector_saved === false): Omni 内部批量写盘失败，抛出错误触发分析队列重试机制，严禁假性成功导致后续探活死循环；
+ * 3. 态 3 (vector_saved === undefined): 兼容旧版 Omni，保留原有主向量与切片向量回传落盘兜底逻辑。
+ */
+export async function persistOmniVectors(params: OmniVectorPersistenceParams): Promise<void> {
+  const {
+    vectorSaved,
+    fileFingerprint,
+    denseEmbedding,
+    denseEmbeddingEncoderId,
+    hasTextBody,
+    videoChunks,
+    databaseService,
+    samplingIntervalSeconds
+  } = params
+
+  if (vectorSaved === false) {
+    // 态 2: Omni 内部写盘失败，抛出错误触发分析队列重试机制，严禁假性成功导致后续探活死循环
+    throw new Error(`[OmniService] Omni 内部批量向量落盘失败: fp=${fileFingerprint}`)
+  }
+
+  // 态 1 (vectorSaved === true): 已在 Omni 内部完成原子批量落盘，彻底阻断主向量回传
+  // 态 3 (vectorSaved === undefined): 兼容旧版 Omni，保留原有主向量回传兜底
+  if (
+    vectorSaved === undefined &&
+    fileFingerprint &&
+    !fileFingerprint.startsWith('temp_') &&
+    Array.isArray(denseEmbedding) &&
+    denseEmbedding.length > 0
+  ) {
+    // 编码器出处必须来自 perceive 响应，禁止按当前档位或语言猜测（方案 §3.5）
+    if (typeof denseEmbeddingEncoderId !== 'number') {
+      logger.warn(
+        LogCategory.ANALYSIS_QUEUE,
+        `[分析队列] 态 3 主向量缺少编码器出处（perceive 响应无 embedding_encoder_id），已跳过回传: fp=${fileFingerprint}`
+      )
+    } else {
+      try {
+        const targetFp = hasTextBody ? `${fileFingerprint}:tc0` : fileFingerprint
+        await databaseService.upsertFileVectorToOmni(
+          targetFp,
+          denseEmbedding,
+          denseEmbeddingEncoderId
+        )
+      } catch (vecErr) {
+        logger.debug(LogCategory.ANALYSIS_QUEUE, '[分析队列] Omni 向量 upsert 失败(非致命):', vecErr)
+      }
+    }
+  }
+
+  // 视频时序切片元数据落库与切片向量写入 Omni zvec (${fileFingerprint}:c${chunk_index})
+  if (
+    fileFingerprint &&
+    !fileFingerprint.startsWith('temp_') &&
+    Array.isArray(videoChunks) &&
+    videoChunks.length > 0
+  ) {
+    try {
+      databaseService.insertVideoChunks(
+        videoChunks.map(c => ({
+          fileFingerprint,
+          chunkIndex: c.chunk_index ?? c.chunkIndex ?? 0,
+          startSec: c.start_sec ?? c.startSec ?? 0,
+          endSec: c.end_sec ?? c.endSec ?? 0,
+          repPtsSec: (c as any).rep_pts_sec ?? (c as any).repPtsSec ?? (c as any).start_sec ?? (c as any).startSec ?? 0,
+          meta: (c as any).meta || {},
+          samplingIntervalSeconds: samplingIntervalSeconds ?? 1.0
+        }))
+      )
+      logger.info(
+        LogCategory.ANALYSIS_QUEUE,
+        `[分析队列] 视频切片元数据落库完成: fp=${fileFingerprint}, 切片数=${videoChunks.length}`
+      )
+      // 态 1 (vectorSaved === true): 切片向量已在 Omni 内部批量写盘且浮点数组已被清空，彻底阻断切片向量回传
+      // 态 3 (vectorSaved === undefined): 兼容旧版 Omni，若切片包含浮点数组，向 Omni 回传落盘
+      if (vectorSaved === undefined) {
+        const chunkVectors: Array<{ fileFingerprint: string; vector: number[]; encoderId: number }> = []
+        for (const c of videoChunks) {
+          if (Array.isArray(c.vector) && c.vector.length > 0) {
+            const idx = c.chunk_index ?? c.chunkIndex ?? 0
+            // 切片编码器出处逐条取自 perceive 响应，缺失的切片跳过回传并 warn（禁止猜值）
+            const chunkEncoderId = c.encoder_id ?? c.encoderId
+            if (typeof chunkEncoderId !== 'number') {
+              logger.warn(
+                LogCategory.ANALYSIS_QUEUE,
+                `[分析队列] 态 3 切片向量缺少编码器出处（perceive 响应 video_chunks[].encoder_id），已跳过该切片: fp=${fileFingerprint}:c${idx}`
+              )
+              continue
+            }
+            chunkVectors.push({
+              fileFingerprint: `${fileFingerprint}:c${idx}`,
+              vector: c.vector,
+              encoderId: chunkEncoderId
+            })
+          }
+        }
+        if (chunkVectors.length > 0) {
+          await databaseService.upsertFileVectorsToOmni(chunkVectors)
+        }
+      }
+      logger.info(
+        LogCategory.ANALYSIS_QUEUE,
+        `[分析队列] 视频时序切片持久化完成: fp=${fileFingerprint}, chunksCount=${videoChunks.length}, vectorSaved=${vectorSaved}`
+      )
+    } catch (chunkErr) {
+      logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 视频切片写入失败(非致命):', chunkErr)
+    }
+  }
+}
+
+/**
+ * Ticket 03 裁定项 3 治理：重分析前清理旧切片物理向量
+ * 当音视频重分析时，若数据库中已存在旧切片（可能切片数较多，例如 106 片），
+ * 在重新分析前调用 Omni deleteVectors 清空，防止抽帧步长增大或切片缩容时残留无法对齐的孤儿向量。
+ */
+export async function cleanupOrphanedVideoChunks(
+  db: any,
+  fileFingerprint: string,
+  omniClientInstance: { deleteVectors: (fps: string[]) => Promise<any> }
+): Promise<string[]> {
+  if (!fileFingerprint || fileFingerprint.startsWith('temp_')) return []
+  try {
+    const oldChunks = db
+      .prepare('SELECT chunk_index FROM file_video_chunks WHERE file_fingerprint = ?')
+      .all(fileFingerprint) as Array<{ chunk_index: number }>
+    if (!oldChunks || oldChunks.length === 0) return []
+    const oldChunkFps = oldChunks.map(c => `${fileFingerprint}:c${c.chunk_index}`)
+    await omniClientInstance.deleteVectors(oldChunkFps)
+    logger.info(
+      LogCategory.ANALYSIS_QUEUE,
+      `[FileProcessor] 重分析前已清理 ${oldChunkFps.length} 条旧切片向量: ${fileFingerprint}`
+    )
+    return oldChunkFps
+  } catch (cleanupErr) {
+    logger.warn(LogCategory.ANALYSIS_QUEUE, '[FileProcessor] 清理旧切片向量异常(非致命):', cleanupErr)
+    return []
+  }
+}
+
 export class FileProcessor {
   private mockData: any = null
   private selectWorkspaceFileStmt: any = null
@@ -333,12 +679,18 @@ export class FileProcessor {
     thumbnailPath?: string
     metadata?: any
     content?: string
+    ocr?: string
+    lrc?: string
+    asr?: string
   } {
     const result: {
       category?: any
       thumbnailPath?: string
       metadata?: any
       content?: string
+      ocr?: string
+      lrc?: string
+      asr?: string
     } = {}
 
     try {
@@ -369,10 +721,10 @@ export class FileProcessor {
         result.thumbnailPath = wsFileRow.thumbnail_path
       }
 
-      // 3. 获取 metadata 和 content (file_contents 表)
+      // 3. 获取 metadata, content, ocr, lrc, asr (file_contents 表)
       const contentRow = db
-        .prepare('SELECT exif, content FROM file_contents WHERE file_fingerprint = ?')
-        .get(fingerprint) as { exif?: string; content?: string } | undefined
+        .prepare('SELECT exif, content, ocr, lrc, asr FROM file_contents WHERE file_fingerprint = ?')
+        .get(fingerprint) as { exif?: string; content?: string; ocr?: string; lrc?: string; asr?: string } | undefined
 
       if (contentRow) {
         if (contentRow.exif) {
@@ -390,6 +742,15 @@ export class FileProcessor {
         if (contentRow.content) {
           // content 列是 BLOB（compressText 压缩），需解压还原为字符串
           result.content = decompressText(contentRow.content as unknown as Buffer | string)
+        }
+        if (contentRow.ocr) {
+          result.ocr = decompressText(contentRow.ocr as unknown as Buffer | string)
+        }
+        if (contentRow.lrc) {
+          result.lrc = decompressText(contentRow.lrc as unknown as Buffer | string)
+        }
+        if (contentRow.asr) {
+          result.asr = decompressText(contentRow.asr as unknown as Buffer | string)
         }
       }
     } catch (error) {
@@ -553,77 +914,49 @@ export class FileProcessor {
       analysisMode = resolveAnalysisMode()
 
       if (phase === 'all') {
-        // 串行分支与并行分支保持一致：只要文件已处于 Stage >= 2（CPU 提取已完成）即跳过 CPU 阶段，
-        // 除非“强制重新分析 + 复用关闭 + 之前已分析完成（is_analyzed=true）”才必须重新提取
+        // 串行分支与并行分支保持一致：只要文件已处于 Stage >= 2（CPU 提取已完成）
         let alreadyAnalyzed = false
+        let existingFp: string | undefined
         try {
           const wfRow = db
-            .prepare(`SELECT is_analyzed FROM workspace_files WHERE workspace_id = ? AND path = ?`)
-            .get(currentWorkspaceId, filePath) as { is_analyzed?: number } | undefined
+            .prepare(`SELECT is_analyzed, file_fingerprint FROM workspace_files WHERE workspace_id = ? AND path = ?`)
+            .get(currentWorkspaceId, filePath) as { is_analyzed?: number; file_fingerprint?: string } | undefined
           alreadyAnalyzed = wfRow?.is_analyzed === 1
+          existingFp = wfRow?.file_fingerprint
         } catch {
           // 忽略查询异常，视为未完成过分析
         }
-        const isVideo = getFileCategory(filePath) === FileCategory.VIDEO
-        let hasMissingVideoChunks = false
-        if (isVideo) {
-          try {
-            const wf = db
-              .prepare(
-                'SELECT file_fingerprint FROM workspace_files WHERE workspace_id = ? AND path = ?'
-              )
-              .get(currentWorkspaceId, filePath) as { file_fingerprint?: string } | undefined
-            if (!wf?.file_fingerprint) {
-              hasMissingVideoChunks = true
-            } else {
-              const chunkRow = db
-                .prepare('SELECT chunk_index, sampling_interval_seconds FROM file_video_chunks WHERE file_fingerprint = ? LIMIT 1')
-                .get(wf.file_fingerprint) as { chunk_index?: number; sampling_interval_seconds?: number } | undefined
-              if (!chunkRow) {
-                hasMissingVideoChunks = true
-              } else {
-                const currentInterval =
-                  ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 1.0
-                const recordedInterval = chunkRow.sampling_interval_seconds ?? 1.0
-                if (Math.abs(recordedInterval - currentInterval) > 0.1) {
-                  logger.info(
-                    LogCategory.ANALYSIS_QUEUE,
-                    `[串行队列] 视频切片抽帧间隔变更 (历史 ${recordedInterval}s vs 当前 ${currentInterval}s)，需重新提取: ${filePath}`
-                  )
-                  hasMissingVideoChunks = true
-                } else {
-                  // 物理向量探活：检验切片向量是否真实存在于 Omni 物理存储中（防用户清理向量或切片向量损坏）
-                  const probeFp = `${wf.file_fingerprint}:c${chunkRow.chunk_index ?? 0}`
-                  const profile = ConfigOrchestrator.getInstance().getValue<string>('AI_EMBEDDING_PROFILE') || 'gemma_unified'
-                  const targetDim =
-                    profile === 'gemma_unified' || profile.includes('gemma')
-                      ? (ConfigOrchestrator.getInstance().getValue<number>('EMBEDDING_MRL_DIMENSION') ?? 512)
-                      : 384
-                  try {
-                    const probeRes = await omniClient.getVectors([probeFp], targetDim, 3000)
-                    if (!probeRes?.vectors || probeRes.vectors.length === 0) {
-                      logger.info(
-                        LogCategory.ANALYSIS_QUEUE,
-                        `[串行队列] 视频切片物理向量缺失 (${probeFp}, dim=${targetDim})，需重新提取: ${filePath}`
-                      )
-                      hasMissingVideoChunks = true
-                    }
-                  } catch (probeErr) {
-                    logger.warn(LogCategory.ANALYSIS_QUEUE, '[串行队列] 物理向量探活异常，保守重新提取:', probeErr)
-                    hasMissingVideoChunks = true
-                  }
-                }
-              }
-            }
-          } catch {
-            hasMissingVideoChunks = true
+
+        let forcedReextract = false
+        if (!reuseBasicAnalysisData) {
+          // 用户配置关闭复用：重新分析或已分析均强制重跑 CPU 提取
+          forcedReextract = item.forceReanalyze === true || alreadyAnalyzed
+        } else {
+          // 用户配置开启复用：严格检查核心数据（向量、OCR、LRC、内容摘要、切片等）是否齐全
+          const completeness = await checkBasicDataCompleteness(
+            db,
+            currentWorkspaceId,
+            filePath,
+            existingFp
+          )
+          if (!completeness.isComplete) {
+            // 数据有残缺（如向量未落盘、缺少 OCR 等），即使用户开启复用，也必须进入 CPU 提取补全
+            forcedReextract = true
+            logger.info(
+              LogCategory.ANALYSIS_QUEUE,
+              `[串行队列] 文件基础数据不完整 (${completeness.missingReasons.join(', ')})，触发 CPU 阶段重新提取: ${item.name}`
+            )
+          } else {
+            // 数据健全存在（向量在、切片在、OCR在、摘要在）：复用并跳过 CPU 提取
+            forcedReextract = false
+            logger.info(
+              LogCategory.ANALYSIS_QUEUE,
+              `[串行队列] 文件基础数据健全存在（向量、OCR/LRC/摘要均完备），执行复用并跳过 CPU 提取: ${item.name}`
+            )
           }
         }
 
-        const forcedReextract =
-          item.forceReanalyze === true &&
-          (!reuseBasicAnalysisData && alreadyAnalyzed)
-        if (initialStage >= 2 && !forcedReextract && !hasMissingVideoChunks) {
+        if (initialStage >= 2 && !forcedReextract) {
           if (isAiStageEnabled(analysisMode)) {
             // quick_name / full 模式：跳过 CPU 提取，直接进入 GPU AI 阶段（stage3/4）。
             // 注意：AI 阶段入口会自行校验并撤销「以当前模式衡量尚未达标」的残留 is_analyzed 标记。
@@ -889,18 +1222,6 @@ export class FileProcessor {
         }
 
         const effectiveMimeType = existingBasicData.category?.mime_type || getMimeType(enhancedInfo.fileType)
-        const visualTags = await executeProVisualTagging({
-          filePath,
-          mimeType: effectiveMimeType,
-          language
-        })
-        const textTags = await executeProTextTagging({
-          filePath,
-          content: existingBasicData.content,
-          fileName: item.name,
-          mimeType: effectiveMimeType,
-          language
-        })
 
         // 补捞 Stage 2 已持久化的标签，确保 GPU 阶段裁决时 Stage 2 标签不被冲掉，实现无损合并去重
         let existingTagRows: Array<any> = []
@@ -943,7 +1264,11 @@ export class FileProcessor {
           winning_hypothesis: baseMetadata?.winning_hypothesis,
           smart_name: baseMetadata?.smart_name,
           binary_info: baseMetadata?.binary_info,
-          author: baseMetadata?.author
+          author: baseMetadata?.author,
+          visual_tags: baseMetadata?.visual_tags,
+          fused_tags: baseMetadata?.fused_tags,
+          text_tags: baseMetadata?.text_tags,
+          fact_tags: baseMetadata?.fact_tags
         }
 
         const preflightContext = executeProPreflight({
@@ -955,9 +1280,7 @@ export class FileProcessor {
           contentPreview: existingBasicData.content ? existingBasicData.content.slice(0, 1000) : undefined,
           metadata: baseMetadata,
           omniPerception: restoredOmniPerception,
-          stats: currentStats,
-          visualTags,
-          textTags
+          stats: currentStats
         })
 
         if (Array.isArray(existingTagRows) && existingTagRows.length > 0) {
@@ -1063,6 +1386,9 @@ export class FileProcessor {
 
         let processResult: any
         let dimResult: any
+        // CPU 阶段已用时长（并行流水线下由上一次 processFile 登记）；读后即删，避免长期驻留
+        const elapsedBeforeAiMs = cpuPhaseElapsedMs.get(item.id) ?? 0
+        cpuPhaseElapsedMs.delete(item.id)
 
         if (analysisMode === 'quick_name') {
           const quickRes = await processQuickNameAnalysis(
@@ -1103,7 +1429,9 @@ export class FileProcessor {
               magikaCategory: existingBasicData.category || null,
               isSpeedy,
               initialStage,
-              forceReanalyze: item.forceReanalyze === true
+              forceReanalyze: item.forceReanalyze === true,
+              // 并行流水线：本次 timer 从 GPU 阶段起算，需补上 CPU 阶段（含视频向量 + ASR）耗时
+              elapsedBeforeAiMs
             },
             this.updateItemStatus.bind(this)
           ).catch(err => {
@@ -1128,14 +1456,52 @@ export class FileProcessor {
 
         this.updateItemStatus(item.id, 'analyzing', 98)
 
-        const rawCoreSmartName = dimResult?.smartName || enhancedInfo.smartName || ''
-        // 核心名来源：stage3 高级AI引擎语言模型命名 → 'ai'；Omni 5W 造句 → 'machine'；
-        // 二者皆无（回退到原始文件名）→ null
-        const coreNameSource: SmartNameSource | null = dimResult?.smartName
-          ? 'ai'
-          : enhancedInfo.smartName
-            ? 'machine'
-            : null
+        // AI 智能名占位符模板回吐防护（缺陷实证 2026-10-20：.lnk 文件被端侧模型
+        // 按提示词「【形态】主体」模板逐字命名为"[形态]主体(n)"）。
+        // 本地 AI 链路历史未过 cleanSmartName 失败检测（云端 save-cloud-result 一直有），
+        // 此处统一补齐：命中失败特征（[领域]/【形态】/主体(n) 等）即视为 AI 未产出
+        // 可用核心名，回落机器命名或原文件名，coreNameSource 同步降级保证口径真实。
+        const originalStemName = path.basename(filePath, path.extname(filePath))
+        const aiSmartNameCleaned = dimResult?.smartName
+          ? cleanSmartName(dimResult.smartName, path.basename(filePath))
+              .replace(/\.[a-zA-Z0-9]{1,10}$/i, '')
+              .trim()
+          : ''
+        // cleanSmartName 命中失败特征时回退为原文件名；与原名一致即视为无可用 AI 核心名
+        const hasUsableAiSmartName = Boolean(aiSmartNameCleaned) && aiSmartNameCleaned !== originalStemName
+        const hasSubstantive = hasSubstantiveContent(fileInfo.content)
+        const isCopied = isSmartNameCopied(aiSmartNameCleaned, originalStemName)
+        const hasValid5W = Boolean(enhancedInfo.smartName) && enhancedInfo.smartName !== originalStemName
+
+        let rawCoreSmartName = ''
+        let coreNameSource: SmartNameSource | null = null
+
+        if (!isCopied && hasUsableAiSmartName) {
+          // 优选：大模型完成实质地道提炼
+          rawCoreSmartName = aiSmartNameCleaned
+          coreNameSource = 'ai'
+        } else if (hasSubstantive && hasValid5W) {
+          // 次优：有正文但大模型偷懒照抄，拦截回落 CPU 5W 机械名
+          logger.info(LogCategory.ANALYSIS_QUEUE, '[智能命名仲裁] 检测到大模型偷懒照抄原名，回落采纳 CPU 5W 机械名', {
+            aiSmartNameCleaned,
+            originalStemName,
+            fallback5W: enhancedInfo.smartName
+          })
+          rawCoreSmartName = enhancedInfo.smartName
+          coreNameSource = 'machine'
+        } else if (aiSmartNameCleaned) {
+          // 兜底 1: 正文不足但 AI 给出了规范化包装（若照抄原名则来源为 null）
+          rawCoreSmartName = aiSmartNameCleaned
+          coreNameSource = isCopied ? null : 'ai'
+        } else if (hasValid5W) {
+          // 兜底 2: 无可用 AI 产出，回落 CPU 5W 机械名
+          rawCoreSmartName = enhancedInfo.smartName
+          coreNameSource = 'machine'
+        } else {
+          // 兜底 3: 全无，保留原文件名
+          rawCoreSmartName = originalStemName
+          coreNameSource = null
+        }
         const origExt = path.extname(filePath).replace(/^\./, '')
         // rawSmartName 不需要带扩展名
         let coreSmartName = rawCoreSmartName
@@ -1251,6 +1617,10 @@ export class FileProcessor {
         })
 
         databaseService.syncFTSTags(fileFingerprint)
+
+        // 工单 05 终态 A（GPU 复用）：标签落库 + FTS 同步后固化 canonical 语义文本/向量。
+        // canonical 失败不阻断 completed（服务内部写 failed + warn）。
+        await solidifyCanonicalForTerminal('gpu_reuse', fileFingerprint)
 
         // 从数据库捞取合并后的全量 analysisStats（包含 CPU 阶段 1/2 + GPU 阶段 3/4）推送给前端 UI
         let finalMergedStats: any = null
@@ -1585,11 +1955,14 @@ export class FileProcessor {
       const isAudioOrVideo =
         extractFileCategory === FileCategory.AUDIO || extractFileCategory === FileCategory.VIDEO
       const isVideo = extractFileCategory === FileCategory.VIDEO
+      // 语音识别时长：参与 Omni 侧 90s 向量预算求解（ASR 成本 = min(A, 可分析时长)·r）
       const audioAnalysisDuration = isAudioOrVideo
         ? (ConfigOrchestrator.getInstance().getValue<number>('AUDIO_ANALYSIS_DURATION') ?? 30)
         : undefined
-      const videoFrameIntervalSeconds = isVideo
-        ? (ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 1.0)
+      // 抽帧间隔已从设置页移除：由引擎按预算自决（内部下限 1.0s，长视频自动放大），不再读配置
+      const videoFrameIntervalSeconds = undefined
+      const videoSoftTokenBudget = isVideo
+        ? (ConfigOrchestrator.getInstance().getValue<number>('VIDEO_SOFT_TOKEN_BUDGET') ?? 140)
         : undefined
 
       // 0. 统一调用 Omni 原生引擎进行端到端内容与元数据提取（覆盖文档、图片、纯文本、代码、音视频、字体等所有格式并输出真实 Benchmark）
@@ -1603,6 +1976,11 @@ export class FileProcessor {
         ? await thumbnailService.hasThumbnail(rootWorkspaceDir.path, fileFingerprint)
         : { exists: false, relativePath: '', absolutePath: '' }
 
+      // 针对音视频文件，在重新提取分析前精确清理 Omni 中的旧切片向量 (Ticket 03 裁定项 3 治理)
+      if (isAudioOrVideo) {
+        await cleanupOrphanedVideoChunks(db, fileFingerprint, omniClient)
+      }
+
       const anydocStartTime = Date.now()
       const anydocResult: AnydocResult = await anydocService
         .perceive(filePath, {
@@ -1611,10 +1989,13 @@ export class FileProcessor {
           enableAudioTranscript: isAudioOrVideo ? true : undefined,
           audioAnalysisDuration: audioAnalysisDuration,
           videoFrameIntervalSeconds: videoFrameIntervalSeconds,
+          videoSoftTokenBudget: videoSoftTokenBudget,
           // 显式激活 Tier 1 端侧纯 CPU 文本特征与 384d 向量提取 (Issue #631)
           enableTextAnalysis: true,
           // 若磁盘已存在缩略图，通知 Omni 无需生成缩略图封面
-          generateThumbnail: !existingThumbCheck.exists
+          generateThumbnail: !existingThumbCheck.exists,
+          // 传递文件指纹以激活 Omni 内部就地批量向量写入 (Ticket 04)
+          fileFingerprint
         })
         .catch(err => {
           logger.warn(LogCategory.ANALYSIS_QUEUE, `[Omni/anydoc] 提取失败: ${err.message}`)
@@ -1650,8 +2031,8 @@ export class FileProcessor {
             return path.relative(rootWorkspaceDir.path, filePath)
           }
 
-          if (isImage) {
-            // 非原生图片：原尺寸转码 WebP
+          // 仅对 Sharp/NativeImage 可解码的图片格式做原尺寸转码；dwg/dxf/RAW 等 CAD 矢量与相机 RAW 格式无法被图像解码器读取，交给下方通用兜底路径
+          if (isImage && isDecodableImage(effectiveVirtualPath)) {
             try {
               const thumbResult = await thumbnailService.getOrGenerateOriginalTranscodedImage(
                 filePath,
@@ -1914,6 +2295,12 @@ export class FileProcessor {
         if (p.security_level) contentResult.metadata.security_level = p.security_level
         if (p.winning_hypothesis) contentResult.metadata.winning_hypothesis = p.winning_hypothesis
         if (p.smart_name) contentResult.metadata.smart_name = p.smart_name
+        if (p.video_analysis_duration_sec !== undefined) {
+          contentResult.metadata.video_analysis_duration_sec = p.video_analysis_duration_sec
+        }
+        if (p.video_truncated !== undefined) {
+          contentResult.metadata.video_truncated = p.video_truncated
+        }
       }
 
       logger.info(
@@ -1921,15 +2308,34 @@ export class FileProcessor {
         `[FileProcessor] 阶段2内容与元数据提取完成: file=${item.name} combinedContentLen=${combinedContent.length} (metadataKeys=${Object.keys(contentResult.metadata || {}).length})`
       )
 
-      // 处理缩略图路径
-      if (thumbPath) {
-        thumbnailRelativePath = thumbPath
-      } else if (
-        generatedThumbnailOutPath &&
-        fs.existsSync(generatedThumbnailOutPath) &&
-        rootWorkspaceDir
-      ) {
-        thumbnailRelativePath = path.relative(rootWorkspaceDir.path, generatedThumbnailOutPath)
+      // Omni 原生代表帧封面直出 (Ticket 05)：当存在 cover_webp_base64 时，直接原子落盘至 .thumbnail/${fileFingerprint}.webp 并作为权威封面
+      if (anydocResult?.perception?.cover_webp_base64 && rootWorkspaceDir && fileFingerprint) {
+        try {
+          const thumbDir = await thumbnailService.ensureThumbnailDirectory(rootWorkspaceDir.path)
+          const webpPath = path.join(thumbDir, `${fileFingerprint}.webp`)
+          const buf = Buffer.from(anydocResult.perception.cover_webp_base64, 'base64')
+          await fs.promises.writeFile(webpPath, buf)
+          thumbnailRelativePath = path.relative(rootWorkspaceDir.path, webpPath)
+          logger.info(
+            LogCategory.ANALYSIS_QUEUE,
+            `[FileProcessor] Omni 原生代表帧封面已落盘: ${thumbnailRelativePath}`
+          )
+        } catch (err) {
+          logger.warn(LogCategory.ANALYSIS_QUEUE, '[FileProcessor] Omni 代表帧封面落盘失败:', err)
+        }
+      }
+
+      // 处理缩略图路径 (若无 Omni 直出封面则走兜底)
+      if (!thumbnailRelativePath) {
+        if (thumbPath) {
+          thumbnailRelativePath = thumbPath
+        } else if (
+          generatedThumbnailOutPath &&
+          fs.existsSync(generatedThumbnailOutPath) &&
+          rootWorkspaceDir
+        ) {
+          thumbnailRelativePath = path.relative(rootWorkspaceDir.path, generatedThumbnailOutPath)
+        }
       }
 
       // 封面降级：当无 markitdownserver 封面时正确降级为 anydoc 最大图片（根据 width * height 选出尺寸最大者）
@@ -1969,18 +2375,6 @@ export class FileProcessor {
       const stats = currentStats || fs.statSync(filePath)
 
       const effectiveMimeType = magikaCategory?.mime_type || getMimeType(enhancedFileType)
-      const visualTags = await executeProVisualTagging({
-        filePath,
-        mimeType: effectiveMimeType,
-        language
-      })
-      const textTags = await executeProTextTagging({
-        filePath,
-        content: contentResult.content,
-        fileName: item.name,
-        mimeType: effectiveMimeType,
-        language
-      })
 
       // 运行 CPU 阶段预计算特征流水线 (PreflightFeaturePipeline, ADR 0030)
       const preflightContext = executeProPreflight({
@@ -1992,9 +2386,7 @@ export class FileProcessor {
         contentPreview: contentResult.content ? contentResult.content.slice(0, 1000) : undefined,
         metadata: contentResult.metadata,
         stats,
-        omniPerception: anydocResult?.perception,
-        visualTags,
-        textTags
+        omniPerception: anydocResult?.perception
       })
 
 
@@ -2018,60 +2410,47 @@ export class FileProcessor {
       if (anydocResult?.perception?.author && !contentResult.metadata.author) {
         contentResult.metadata.author = anydocResult.perception.author
       }
+      if (anydocResult?.perception?.video_analysis_duration_sec !== undefined) {
+        contentResult.metadata.video_analysis_duration_sec = anydocResult.perception.video_analysis_duration_sec
+      }
+      if (anydocResult?.perception?.video_truncated !== undefined) {
+        contentResult.metadata.video_truncated = anydocResult.perception.video_truncated
+      }
 
       if (!fileFingerprint || fileFingerprint.startsWith('temp_')) {
         fileFingerprint = await calculateFileFingerprint(filePath)
       }
 
-      // ADR-0038 / ADR-0054：分析产出 384d dense 向量后写入 Omni zvec（废除 SQLite file_vectors 与 exif 冗余）
+      // Ticket 04: Omni 内部就地持久化状态机三态判定与落库 (委托给 persistOmniVectors)
+      const vectorSaved = anydocResult?.perception?.vector_saved
       const denseEmbedding =
         (contentResult.metadata?.embedding_dense as number[] | undefined) ||
         (contentResult.metadata?.embeddingDense as number[] | undefined) ||
-        ((anydocResult?.perception as any)?.embedding_dense as number[] | undefined)
-      if (fileFingerprint && !fileFingerprint.startsWith('temp_') && Array.isArray(denseEmbedding) && denseEmbedding.length > 0) {
-        try {
-          const { databaseService } = await import('../../database/database-service')
-          void databaseService.upsertFileVectorToOmni(fileFingerprint, denseEmbedding)
-        } catch (vecErr) {
-          logger.debug(LogCategory.ANALYSIS_QUEUE, '[分析队列] Omni 向量 upsert 失败(非致命):', vecErr)
-        }
-      }
+        anydocResult?.perception?.embedding_dense
+      const videoChunks = anydocResult?.perception?.video_chunks
+      // 主向量编码器出处：仅取 perceive 响应原值，缺失即由 persistOmniVectors 跳过回传并 warn
+      const denseEmbeddingEncoderId = anydocResult?.perception?.embedding_encoder_id
+      // 生效采样间隔必须取引擎回传值（抽帧间隔已不由用户配置）；缺失时退回 1.0
+      const effectiveInterval =
+        anydocResult?.perception?.video_sampling_interval_seconds ?? 1.0
 
-      // 视频时序切片元数据落库与切片向量写入 Omni zvec (${fileFingerprint}:c${chunk_index})
-      const videoChunks = (anydocResult?.perception as any)?.video_chunks as Array<{
-        chunk_index: number
-        start_sec: number
-        end_sec: number
-        vector: number[]
-        asr_text?: string
-      }> | undefined
-      if (fileFingerprint && !fileFingerprint.startsWith('temp_') && Array.isArray(videoChunks) && videoChunks.length > 0) {
-        try {
-          const { databaseService } = await import('../../database/database-service')
-          const currentInterval =
-            ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 1.0
-          databaseService.insertVideoChunks(
-            videoChunks.map(c => ({
-              fileFingerprint,
-              chunkIndex: c.chunk_index,
-              startSec: c.start_sec,
-              endSec: c.end_sec,
-              samplingIntervalSeconds: currentInterval
-            }))
-          )
-          for (const c of videoChunks) {
-            if (Array.isArray(c.vector) && c.vector.length > 0) {
-              void databaseService.upsertFileVectorToOmni(`${fileFingerprint}:c${c.chunk_index}`, c.vector)
-            }
-          }
-          logger.info(
-            LogCategory.ANALYSIS_QUEUE,
-            `[分析队列] 视频时序切片持久化完成: fp=${fileFingerprint}, chunksCount=${videoChunks.length}`
-          )
-        } catch (chunkErr) {
-          logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 视频切片写入失败(非致命):', chunkErr)
-        }
-      }
+      const hasTextBody = Boolean(
+        (typeof contentResult.content === 'string' && contentResult.content.trim().length > 0) ||
+        (typeof (contentResult as any).ocr === 'string' && (contentResult as any).ocr.trim().length > 0) ||
+        (typeof (contentResult as any).asr === 'string' && (contentResult as any).asr.trim().length > 0) ||
+        anydocResult?.perception?.text_tags?.length
+      )
+
+      await persistOmniVectors({
+        vectorSaved,
+        fileFingerprint,
+        denseEmbedding,
+        denseEmbeddingEncoderId,
+        hasTextBody,
+        videoChunks,
+        databaseService,
+        samplingIntervalSeconds: effectiveInterval
+      })
 
       // ADR-0054：本地 SQLite 零向量原则，写入 zvec 后立即从 metadata 剥离向量字段，杜绝污染 file_contents.exif
       if (contentResult.metadata && typeof contentResult.metadata === 'object') {
@@ -2190,7 +2569,7 @@ export class FileProcessor {
       // 背景（2026-10-14 定性）：CPU 阶段结束时 Omni 感知的 fact_tags / fused_tags / visual_tags
       // 已全部就绪（预检管线日志可证），但 full / quick_name 模式的标签落库点历史上只存在于
       // **AI 阶段之后**（executeProTagReconciliation 在 processLocalAnalysis 成功返回后调用）。
-      // 一旦 AI 阶段失败并被 Tier 1 静默降级（如质量评分返回「缺少choices字段」），
+      // 一旦 AI 阶段超时失败并被 Tier 1 静默降级（如超大 PDF 推理超时），
       // 该落库点被整段跳过，导致：
       //   - file_tag_relations 全表为空（标签在内存里算完即丢弃，日志有、面板无）；
       //   - workspace_files.is_analyzed 保持 0，属性面板按 is_analyzed 门控连「无标签」提示都不渲染。
@@ -2201,7 +2580,7 @@ export class FileProcessor {
           // 强制重新分析时清空该文件的旧标签关联：一次性动作，必须落在 CPU 阶段「落库之前」。
           // 绝不可放在 AI（GPU）阶段 —— 并行流水线的 CPU 与 GPU 是两次独立 processFile 调用且
           // 共享同一 item，forceReanalyze 在 GPU 阶段仍为 true，若在 GPU 阶段清空，会把 CPU 阶段
-          // 刚落库的新标签全部删除；随后 AI 阶段一旦失败并被 Tier 1 静默降级（不再重新落库），
+          // 刚落库的新标签全部删除；随后 AI 阶段一旦超时失败并被 Tier 1 静默降级（不再重新落库），
           // 标签将永久丢失，表现为「日志里标签齐全、属性面板一个标签都不显示」。
           if (item.forceReanalyze === true) {
             try {
@@ -2235,6 +2614,8 @@ export class FileProcessor {
       }
 
       if (phase === 'cpu') {
+        // 登记 CPU 阶段耗时，供后续 GPU 阶段的 AI 超时按「单文件总预算 − 已用」收紧
+        cpuPhaseElapsedMs.set(item.id, timer.getTotalDuration())
         try {
           const cpuTimerStats = await this.collectAnalysisStats(timer)
           const cpuStatsWithBenchmark = applyMarkitdownBenchmark(cpuTimerStats, markitdownBenchmark, stage1Benchmark)
@@ -2290,9 +2671,13 @@ export class FileProcessor {
             saveCpuError
           )
         }
-        this.updateItemStatus(item.id, 'pending', 50, undefined, {
-          analysisStage: cpuCompletionStage
-        })
+        // 关键防护：仅在任务未被完成时置为 pending 等待 GPU；
+        // 若 GPU 消费者已完成本任务（或已在分析中），严禁覆盖已完成状态引发重析死循环
+        if (item.status !== 'completed') {
+          this.updateItemStatus(item.id, 'pending', 50, undefined, {
+            analysisStage: cpuCompletionStage
+          })
+        }
         return
       }
 
@@ -2384,6 +2769,9 @@ export class FileProcessor {
         })
 
         databaseService.syncFTSTags(fileFingerprint)
+
+        // 工单 05 终态 B（simple 模式）：标签落库 + FTS 同步后固化 canonical 语义文本/向量
+        await solidifyCanonicalForTerminal('simple', fileFingerprint)
 
         // 最终统计收集
         const analysisStats = await this.collectAnalysisStats(timer)
@@ -2503,13 +2891,57 @@ export class FileProcessor {
 
       this.updateItemStatus(item.id, 'analyzing', 98)
 
+      // AI 智能名占位符模板回吐防护（与 GPU 复用分支同口径，缺陷实证 2026-10-20：
+      // 端侧模型把提示词「【形态】主体」模板逐字回吐成"[形态]主体(n)"）。
+      // 命中 cleanSmartName 失败检测（[领域]/【形态】/主体(n) 等）即视为 AI 未产出
+      // 可用核心名，回落机器命名或原文件名，核心名来源同步降级。
+      const originalStemNameMain = path.basename(filePath, path.extname(filePath))
+      const aiSmartNameCleanedMain = dimResult?.smartName
+        ? cleanSmartName(dimResult.smartName, path.basename(filePath))
+            .replace(/\.[a-zA-Z0-9]{1,10}$/i, '')
+            .trim()
+        : ''
+      const hasUsableAiSmartNameMain =
+        Boolean(aiSmartNameCleanedMain) && aiSmartNameCleanedMain !== originalStemNameMain
+      const hasSubstantiveMain = hasSubstantiveContent(fileInfo.content)
+      const isCopiedMain = isSmartNameCopied(aiSmartNameCleanedMain, originalStemNameMain)
+      const hasValid5WMain = Boolean(enhancedSmartName) && cpuNameIsMachine
+
+      let finalTargetSmartName = ''
+      let finalTargetSmartNameSource: SmartNameSource | null = null
+
+      if (!isCopiedMain && hasUsableAiSmartNameMain) {
+        finalTargetSmartName = aiSmartNameCleanedMain
+        finalTargetSmartNameSource = 'ai'
+      } else if (hasSubstantiveMain && hasValid5WMain) {
+        logger.info(LogCategory.ANALYSIS_QUEUE, '[智能命名仲裁] 主流程大模型偷懒照抄原名，回落采纳 CPU 5W 机械名', {
+          aiSmartNameCleanedMain,
+          originalStemNameMain,
+          fallback5W: enhancedSmartName
+        })
+        finalTargetSmartName = enhancedSmartName
+        finalTargetSmartNameSource = 'machine'
+      } else if (aiSmartNameCleanedMain) {
+        // 兜底 1: 正文不足但 AI 给出了规范化包装（若照抄原名则来源为 null）
+        finalTargetSmartName = aiSmartNameCleanedMain
+        finalTargetSmartNameSource = isCopiedMain ? null : 'ai'
+      } else if (hasValid5WMain) {
+        // 兜底 2: 无可用 AI 产出，回落 CPU 5W 机械名
+        finalTargetSmartName = enhancedSmartName
+        finalTargetSmartNameSource = 'machine'
+      } else {
+        // 兜底 3: 全无，保留原文件名
+        finalTargetSmartName = originalStemNameMain
+        finalTargetSmartNameSource = null
+      }
+
       // ========== 保存本地分析结果 ==========
       const { workspaceFile } = await saveLocalAnalysisResult(
         item,
         fileFingerprint,
         processResult,
         magikaCategory,
-        dimResult?.smartName || enhancedSmartName,
+        finalTargetSmartName,
         enhancedFileType,
         thumbnailRelativePath || undefined,
         currentWorkspaceId,
@@ -2522,9 +2954,7 @@ export class FileProcessor {
         analysisMode === 'quick_name' ? 3 : 4,
         cpuSkipped,
         stage1Benchmark,
-        // 核心名来源：stage3 LLM 命名为 'ai'，否则回退 Omni 5W 造句 'machine'，再否则原名 null。
-        // 本主流程 AI 分支不套用目录命名模板（模板套用仅发生在 GPU 复用分支），故模板来源为 null。
-        dimResult?.smartName ? 'ai' : cpuNameIsMachine ? 'machine' : null,
+        finalTargetSmartNameSource,
         null
       )
 
@@ -2542,6 +2972,9 @@ export class FileProcessor {
       })
 
       databaseService.syncFTSTags(fileFingerprint)
+
+      // 工单 05 终态 C（主流程）：标签落库 + FTS 同步后固化 canonical 语义文本/向量
+      await solidifyCanonicalForTerminal('main_flow', fileFingerprint)
 
       // 从数据库捞取合并后的全量 analysisStats（包含 CPU 阶段 1/2 + GPU 阶段 3/4）推送给前端 UI
       let finalMergedStats: any = null
@@ -2604,9 +3037,13 @@ export class FileProcessor {
           throw error
         }
 
-        // slice-3 双层仲裁：仅真正的推理阶段（inference）失败（如超时、显存不足等），
-        // 若 Tier 1 已产出可读命名，则降级为 completed (analysisStage 2)。
-        // Tier 2 故障不再演化为用户可见的失败项，全部由 Tier 1（Omni）兜底。
+        // slice-3 双层仲裁：仅推理阶段（inference）**超时类**失败（如超大 PDF 推理超时），
+        // 若 Tier 1 已产出可读命名，则降级为 completed (analysisStage 2) —— 这是规格 sanction 的
+        // 唯一静默降级类（「Tier 2 超时或崩溃」，崩溃走上方瞬态重试路径）。
+        // 其余推理阶段失败（AI 接口契约违规：缺 choices / 空响应 / 结果解析失败等系统性故障）
+        // 一律落到下方 failed 终态并带上错误原因，由队列「失败/跳过原因」列 surfaced 给用户，
+        // 严禁静默降级为 completed（AGENTS.md §2.9；2026-10-20 用户报告回归护栏：
+        // analysis-error-classifier.test.ts + file-processor-stage2-persistence.test.ts）。
         if (allowTier1Fallback && tier1FallbackName) {
           logger.info(
             LogCategory.ANALYSIS_QUEUE,
@@ -2630,6 +3067,14 @@ export class FileProcessor {
               markAnalyzedError
             )
           }
+          // 工单 05 终态 E（Tier-1 命名兜底）：CPU 阶段标签已即时落库，
+          // 本路径同样必须固化 canonical 语义文本/向量（无 AI 标签也不得漏固化）。
+          // 注意：本分支位于 catch 内，try 中的 fileFingerprint 已出作用域，
+          // 故按路径反查指纹（查不到时固化入口自行按 missing 收敛，不阻断 completed）。
+          const tier1Fingerprint = filePath
+            ? databaseService.getFileFingerprintByPath(filePath)
+            : null
+          await solidifyCanonicalForTerminal('tier1_fallback', tier1Fingerprint ?? '')
           this.updateItemStatus(item.id, 'completed', 100, undefined, {
             analysisStage: 2
           })
@@ -2821,7 +3266,7 @@ export class FileProcessor {
         fileData.type || 'unknown',
         fileData.category ? JSON.stringify(fileData.category) : null,
         fileData.author || '',
-        fileData.language || 'zh-CN',
+        normalizeLangCode(fileData.language),
         now,
         now,
         now
@@ -2888,28 +3333,34 @@ export class FileProcessor {
             const relNamePath = typeof rel.name_path === 'string' && rel.name_path.trim() ? rel.name_path.trim() : ''
             const relDepth = typeof rel.depth === 'number' && rel.depth > 0 ? rel.depth : 0
 
-            let finalCodePath = relCodePath
-            let finalNamePath = relNamePath
-            let finalDepth = relDepth
-
-            // 受控概念指南 §1.4 写侧根对齐仲裁：夹具声明的伪 content_tags 包装链 / 半截短路径
-            // 一律丢弃并重新仲裁，杜绝 /content_tags/摄影照片细分/... 类历史伪链再次入库
-            if (finalCodePath && !isTrustworthyMaterializedCodePath(finalCodePath, viaParentCode)) {
-              finalCodePath = ''
-              finalNamePath = ''
+            const fileCat = getFileCategory(filePath)
+            const topologyContext = {
+              category: fileCat,
+              fileCategory: fileCat,
+              filePath
             }
 
-            if (!finalCodePath || !finalNamePath) {
-              const materialized = resolveRuntimeMaterializedPath({
-                db,
-                tagCode,
-                viaParentCode,
-                tagName: tag.name
-              })
-              finalCodePath = finalCodePath || materialized.codePath
-              finalNamePath = finalNamePath || materialized.namePath
-              finalDepth = finalDepth || materialized.depth
+            const materialized = resolveRuntimeMaterializedPath({
+              db,
+              tagCode,
+              viaParentCode,
+              tagName: tag.name,
+              existingCodePath: relCodePath,
+              existingNamePath: relNamePath,
+              context: topologyContext
+            })
+
+            if (!materialized.codePath) {
+              logger.warn(
+                LogCategory.ANALYSIS_QUEUE,
+                `[file-processor] 夹具标签不符合媒体领域门控，已拦截丢弃: tag=${tagCode}, via=${viaParentCode}, file=${filePath}`
+              )
+              continue
             }
+
+            const finalCodePath = materialized.codePath
+            const finalNamePath = materialized.namePath
+            const finalDepth = relDepth > 0 ? relDepth : (materialized.depth || 2)
 
             db.prepare(
               `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, code_path, name_path, depth, tag_group, confidence, sync_status) VALUES (?, ?, ?, ?, ?, ?, ?, 1.0, 0)`
@@ -2948,31 +3399,7 @@ export function getFallbackLyrics(metadata: any): string | null {
 }
 
 /**
- * UTF-8 字节/字符边界安全截断，防止将多字节字符(如汉字/Emoji)截断在半中间导致末尾出现乱码字符 (\uFFFD)
+ * `safeTruncateUtf8Bytes` 已上移至 `@firefly/shared`，供 Electron 主进程各处（文件处理器、云端同步 Worker）
+ * 共享同一字节边界截断实现，避免两份实现漂移。此处保留再导出，兼容既有对本模块的引用。
  */
-export function safeTruncateUtf8Bytes(str: string, maxBytes: number): string {
-  if (!str || maxBytes <= 0) return ''
-  const buf = Buffer.from(str, 'utf8')
-  if (buf.length <= maxBytes) return str
-
-  // 1. 如果 maxBytes 恰好落在 UTF-8 续字节 (0x80 ~ 0xBF) 中间，向左回退到当前字符的起始首字节
-  let validBytes = maxBytes
-  while (validBytes > 0 && (buf[validBytes] & 0xc0) === 0x80) {
-    validBytes--
-  }
-
-  // 2. 检查首字节所需的总字节长度，如果完整字符的结束位置超出了 maxBytes，则连同首字节一起扣除
-  if (validBytes > 0) {
-    const firstByte = buf[validBytes - 1]
-    let charLength = 1
-    if ((firstByte & 0xe0) === 0xc0) charLength = 2
-    else if ((firstByte & 0xf0) === 0xe0) charLength = 3
-    else if ((firstByte & 0xf8) === 0xf0) charLength = 4
-
-    if (validBytes - 1 + charLength > maxBytes) {
-      validBytes = validBytes - 1
-    }
-  }
-
-  return buf.subarray(0, validBytes).toString('utf8')
-}
+export { safeTruncateUtf8Bytes }

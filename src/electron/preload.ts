@@ -86,27 +86,32 @@ const electronAPI = {
   searchWorkspaceFiles: (
     keyword: string,
     workspacePath: string,
-    options?: { stream?: boolean; seq?: number }
+    options?: { stream?: boolean; seq?: number; channel?: string }
   ): Promise<FileItem[]> =>
     ipcRenderer.invoke('search-workspace-files', keyword, workspacePath, options),
 
   onSearchProgress: (
     callback: (payload: {
-      phase: 'phase1' | 'phase2'
+      phase: 'phase1' | 'phase2' | 'phase3'
+      channel?: string
       seq: number
       items: FileItem[]
       total: number
       tokens?: string[]
+      /** 工单 13：冷态视觉模型首次加载中（仅 phase2 携带），phase3 到达或超时后应隐藏提示 */
+      clipPending?: boolean
     }) => void
   ) => {
     const handler = (
       _event: any,
       payload: {
-        phase: 'phase1' | 'phase2'
+        phase: 'phase1' | 'phase2' | 'phase3'
+        channel?: string
         seq: number
         items: FileItem[]
         total: number
         tokens?: string[]
+        clipPending?: boolean
       }
     ) => callback(payload)
     ipcRenderer.on('search-workspace-files-progress', handler)
@@ -318,6 +323,22 @@ const electronAPI = {
     ipcRenderer.invoke('analysis-queue/check-stage4-files', filePaths),
   checkAlreadyAnalyzedFiles: (filePaths: string[]): Promise<any[]> =>
     ipcRenderer.invoke('analysis-queue/check-already-analyzed-files', filePaths),
+  /**
+   * 工单 13：canonical 语义索引重建计数（工单 06 只暴露服务方法，设置页在此接入）。
+   * 返回 pending/ready/visualOnly/skipped/failed/uncomputed 与最近一次维护摘要。
+   */
+  getCanonicalRebuildCounts: (): Promise<{
+    pending: number
+    ready: number
+    visualOnly: number
+    skipped: number
+    failed: number
+    uncomputed: number
+    lastMaintenance: { reason: string; at: number; invalidated: number; requeued: number } | null
+  }> => ipcRenderer.invoke('analysis-queue/canonical-rebuild-counts'),
+  /** 工单 13：手动触发一次 canonical 语义索引重建 */
+  runCanonicalMaintenance: (reason?: string): Promise<{ success: boolean }> =>
+    ipcRenderer.invoke('analysis-queue/run-canonical-maintenance', reason),
   onAnalysisQueueUpdated: (callback: (payload: any) => void) => {
     const handler = (_event: any, payload: any) => callback(payload)
     ipcRenderer.on('analysis-queue-updated', handler)
@@ -623,7 +644,9 @@ const electronAPI = {
   setCurrentWorkspaceDirectory: (path: string): Promise<void> =>
     ipcRenderer.invoke('set-current-workspace-directory', path),
 
-  deleteWorkspaceDirectory: (path: string): Promise<{ success: boolean; error?: string }> =>
+  deleteWorkspaceDirectory: (
+    path: string
+  ): Promise<{ success: boolean; error?: string; warning?: string }> =>
     ipcRenderer.invoke('delete-workspace-directory', path),
 
   resetWorkspaceDirectory: (directoryPath: string): Promise<void> =>
@@ -1015,36 +1038,40 @@ const electronAPI = {
         'organize-real-directory/get-saved-virtual-directories',
         workspaceDirectoryPath
       ),
-    getAnalyzedFiles: (workspaceDirectoryPath: string) =>
-      ipcRenderer.invoke('organize-real-directory/get-analyzed-files', workspaceDirectoryPath),
+    getAnalyzedFiles: (workspaceDirectoryPath: string, selectedFileIds?: number[]) =>
+      ipcRenderer.invoke(
+        'organize-real-directory/get-analyzed-files',
+        workspaceDirectoryPath,
+        selectedFileIds
+      ),
+    getLightweightFiles: (workspaceDirectoryPath: string, selectedFileIds?: number[], limit?: number) =>
+      ipcRenderer.invoke(
+        'organize-real-directory/get-lightweight-files',
+        workspaceDirectoryPath,
+        selectedFileIds,
+        limit
+      ),
+    getAnalyzedCount: (workspaceDirectoryPath: string) =>
+      ipcRenderer.invoke('organize-real-directory/get-analyzed-count', workspaceDirectoryPath),
     matchPerspectivesAndStructures: (request: any) =>
       ipcRenderer.invoke('organize-real-directory/match-perspectives-and-structures', request),
     calculateFilePathsCosine: (request: any) =>
       ipcRenderer.invoke('organize-real-directory/calculate-file-paths-cosine', request),
-    smartClusterHac: (params: any) =>
+    smartClusterHac: (params: {
+      workspaceId?: number
+      workspaceDirectoryPath?: string
+      fileIds?: number[]
+      prompt?: string
+      distanceThreshold?: number
+      maxLeafSize?: number
+      maxDepth?: number
+      maxRootDirectories?: number
+      maxSubdirectories?: number
+      similarityThreshold?: number
+      clusteringMode?: 'precise' | 'balanced' | 'complete'
+      force?: boolean
+    }) =>
       ipcRenderer.invoke('organize-real-directory/smart-cluster-hac', params),
-    quickOrganize: (params: { workspaceDirectoryPath: string; aiGeneratedStructure: any }) =>
-      ipcRenderer.invoke('organize-real-directory/quick-organize', params),
-    // 一键整理 - 生成整理方案
-    generatePlan: (params: {
-      workspaceDirectoryPath: string
-      options?: {
-        batchSize?: number
-        temperature?: number
-        filePaths?: string[]
-        userInstruction?: string
-        previousStructure?: any
-      }
-      onProgress?: (progress: any) => void
-    }) => ipcRenderer.invoke('organize-real-directory/generate-plan', params),
-    cancelPlan: (workspaceDirectoryPath: string) =>
-      ipcRenderer.invoke('organize-real-directory/cancel-plan', workspaceDirectoryPath),
-    pausePlan: (workspaceDirectoryPath: string) =>
-      ipcRenderer.invoke('organize-real-directory/pause-plan', workspaceDirectoryPath),
-    resumePlan: (workspaceDirectoryPath: string) =>
-      ipcRenderer.invoke('organize-real-directory/resume-plan', workspaceDirectoryPath),
-    endPlan: (workspaceDirectoryPath: string) =>
-      ipcRenderer.invoke('organize-real-directory/end-plan', workspaceDirectoryPath),
     listSessions: (workspaceDirectoryPath: string) =>
       ipcRenderer.invoke('organize-real-directory/list-sessions', workspaceDirectoryPath),
     undoSession: (params: { workspaceDirectoryPath: string; sessionId: string }) =>
@@ -1257,7 +1284,7 @@ const electronAPI = {
 
   // 离线语音合成 (TTS)
   tts: {
-    synthesizeChunk: (text: string, voiceId: string | number, speed: number, sessionId?: number, sid?: number): Promise<ArrayBuffer | null> =>
+    synthesizeChunk: (text: string, voiceId: string | number, speed: number, sessionId?: number, sid?: number): Promise<{ buffer: ArrayBuffer; hitCap: boolean; steps: number } | null> =>
       ipcRenderer.invoke('tts:synthesize-chunk', text, voiceId, speed, sessionId, sid),
     abortSession: (sessionId: number): Promise<void> =>
       ipcRenderer.invoke('tts:abort-session', sessionId),

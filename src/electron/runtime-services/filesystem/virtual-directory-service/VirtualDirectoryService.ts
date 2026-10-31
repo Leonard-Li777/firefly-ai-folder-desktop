@@ -24,6 +24,7 @@ import { IconManager, FOLDER_ICONS, EXCLUDED_FOLDER_ICONS } from './IconManager'
 import { TreeBuilder } from './TreeBuilder'
 import { Exporter } from './Exporter'
 import { AISchemeGenerator } from './AISchemeGenerator'
+import { ClusteringMode } from '../../system/omni-service'
 import { PreviewTreeExporter } from './PreviewTreeExporter'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 
@@ -470,6 +471,18 @@ export class VirtualDirectoryService {
     })()
   }
 
+  async getVirtualDirectoryFileCount(virtualDirectoryId: number | string): Promise<number> {
+    try {
+      const row = this.db
+        .prepare('SELECT COUNT(*) as count FROM virtual_directory_files WHERE virtual_directory_id = ?')
+        .get(virtualDirectoryId) as { count: number } | undefined
+      return row?.count ?? 0
+    } catch (error) {
+      logger.error(LogCategory.VIRTUAL_DIRECTORY, 'Failed to get virtual directory file count:', error)
+      return 0
+    }
+  }
+
   async getVirtualDirectoryFiles(
     virtualDirectoryId: number | string,
     options?: { includeKeepFiles?: boolean }
@@ -746,7 +759,12 @@ export class VirtualDirectoryService {
           traverseForInputs(node.subdirectories, dirPath)
         }
 
-        if (!hasFiles && !hasSubs && anyFile) {
+        const isUnclassNode =
+          nodeName === UNCLASSIFIED_NAME ||
+          nodeName === '未归类' ||
+          Boolean((node as any).isUnclassified)
+
+        if (!hasFiles && !hasSubs && anyFile && !isUnclassNode) {
           const relPath = `${dirPath}/.keep`
           const key = `${anyFile.fileId}::${relPath}`
           if (!seenMap.has(key)) {
@@ -938,7 +956,18 @@ export class VirtualDirectoryService {
   async generateHACClusterScheme(
     workspaceId: number,
     selectedFileIds?: number[],
-    userPrompt?: string
+    userPrompt?: string,
+    options?: {
+      distanceThreshold?: number
+      maxLeafSize?: number
+      maxDepth?: number
+      maxRootDirectories?: number
+      maxSubdirectories?: number
+      similarityThreshold?: number
+      embeddingProfile?: string
+      embeddingDim?: number
+      clusteringMode?: ClusteringMode
+    }
   ): Promise<AIDirectoryStructure | null> {
     this.ensureInitialized()
     // 功能开关降级：向量数据源迁移期间禁用，避免无向量时恒降级返回 null
@@ -946,7 +975,8 @@ export class VirtualDirectoryService {
     return this._aiSchemeGenerator!.generateHACClusterScheme(
       workspaceId,
       selectedFileIds,
-      userPrompt
+      userPrompt,
+      options
     )
   }
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Button } from '../ui/button'
 import { MaterialIcon } from '../../lib/utils'
 import { openExternalLink } from '../../lib/external-link'
+import { getOfficialSiteDomain } from '../../lib/marketing-link'
 import { t } from '@app/languages'
 
 export interface UpdateStatePayload {
@@ -173,7 +174,7 @@ export const UpdateNotification: React.FC = () => {
             <Button
               variant="outline"
               className="w-full sm:w-auto"
-              onClick={() => openExternalLink('https://aifolder.iocn.cn')}
+              onClick={() => openExternalLink(getOfficialSiteDomain())}
             >
               <MaterialIcon icon="open_in_new" className="mr-2" />
               {t('官网手动下载')}

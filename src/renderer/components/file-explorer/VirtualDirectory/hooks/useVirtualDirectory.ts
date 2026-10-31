@@ -37,6 +37,7 @@ export const useVirtualDirectory = () => {
   >('grid')
   const [vdirSidebarTab, setVdirSidebarTab] = useState<'directory' | 'dimensions'>('directory')
   const [dimensionGroups, setDimensionGroups] = useState<DimensionGroup[]>([])
+  const [pathCountMap, setPathCountMap] = useState<Record<string, number> | undefined>(undefined)
   const [selectedTags, setSelectedTags] = useState<SelectedTag[]>([])
   const [isDimensionLoading, setIsDimensionLoading] = useState(false)
   const [filteredFilesByTags, setFilteredFilesByTags] = useState<any[]>([])
@@ -211,26 +212,28 @@ export const useVirtualDirectory = () => {
   }, [selectedId])
 
   const loadVdirDimensions = useCallback(async () => {
-    if (!selectedId) return
+    if (!selectedId && !currentWorkspaceDirectory?.path) return
     setIsDimensionLoading(true)
     try {
       const res = await window.electronAPI.analyzedDirectory.getDimensionGroups({
-        virtualDirectoryId: selectedId,
+        virtualDirectoryId: selectedId || undefined,
+        workspaceDirectoryPath: !selectedId ? currentWorkspaceDirectory?.path : undefined,
         removeEmptyTags: false
       })
       setDimensionGroups(res.groups)
+      setPathCountMap(res.pathCountMap)
     } catch (e) {
       logger.error(LogCategory.VIRTUAL_DIRECTORY, '获取虚拟目录维度组失败:', e)
     } finally {
       setIsDimensionLoading(false)
     }
-  }, [selectedId])
+  }, [selectedId, currentWorkspaceDirectory?.path])
 
   useEffect(() => {
-    if (selectedId && vdirSidebarTab === 'dimensions') {
+    if ((selectedId || currentWorkspaceDirectory?.path) && vdirSidebarTab === 'dimensions') {
       loadVdirDimensions()
     }
-  }, [selectedId, vdirSidebarTab, loadVdirDimensions])
+  }, [selectedId, currentWorkspaceDirectory?.path, vdirSidebarTab, loadVdirDimensions])
 
   useEffect(() => {
     const handleVDirUpdate = (e: any) => {
@@ -249,6 +252,18 @@ export const useVirtualDirectory = () => {
     setSelectedTags([])
   }, [selectedId])
 
+  // 跨模式重置：从普通虚拟目录模式进入导出模式时，彻底清空旧选中态，防止历史残留污染导出预览
+  const prevIsExportModeRef = useRef(isExportMode)
+  useEffect(() => {
+    if (prevIsExportModeRef.current !== isExportMode) {
+      prevIsExportModeRef.current = isExportMode
+      if (isExportMode) {
+        setSelectedTags([])
+        setFilteredFilesByTags([])
+      }
+    }
+  }, [isExportMode])
+
   const loadFilteredFilesByTags = useCallback(async () => {
     if (!selectedTags || selectedTags.length === 0) {
       setFilteredFilesByTags([])
@@ -260,6 +275,7 @@ export const useVirtualDirectory = () => {
         selectedTags,
         sortBy: 'name',
         sortOrder: 'asc',
+        workspaceDirectoryPath: currentWorkspaceDirectory?.path,
         virtualDirectoryId: selectedId || undefined,
         searchKeyword: virtualDirectoryKeyword,
         unionMode
@@ -282,6 +298,7 @@ export const useVirtualDirectory = () => {
             qualityScore: f.qualityScore,
             description: f.description,
             tags: f.tags,
+            tagCodes: f.tagCodes,
             author: f.author,
             language: f.language,
             analyzedAt: f.analyzedAt
@@ -293,7 +310,7 @@ export const useVirtualDirectory = () => {
     } finally {
       setIsFilteredFilesLoading(false)
     }
-  }, [selectedId, selectedTags, unionMode, virtualDirectoryKeyword])
+  }, [selectedId, selectedTags, unionMode, virtualDirectoryKeyword, currentWorkspaceDirectory?.path])
 
   useEffect(() => {
     const handleTagsChanged = () => {
@@ -567,8 +584,12 @@ export const useVirtualDirectory = () => {
     if (filteredFilesByTags && filteredFilesByTags.length > 0) {
       return filteredFilesByTags
     }
+    // 分类维度模式下，严禁回退到 treeData 产生的虚拟目录物理文件夹名，防止标签命名空间污染
+    if (vdirSidebarTab === 'dimensions') {
+      return []
+    }
     return allFiles
-  }, [filteredFilesByTags, allFiles])
+  }, [filteredFilesByTags, allFiles, vdirSidebarTab])
 
   const {
     options: exportPreviewOptions,

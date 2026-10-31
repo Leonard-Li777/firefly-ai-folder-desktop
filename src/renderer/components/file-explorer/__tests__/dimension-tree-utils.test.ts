@@ -7,7 +7,9 @@ import {
   getVisibleAndHiddenTags,
   getSelectedTagsFromSet,
   getAllKeys,
-  migrateTagKeysAcrossScale
+  migrateTagKeysAcrossScale,
+  dimensionNodeKey,
+  DimensionChildTagsMap
 } from '../dimension-tree-utils'
 import { DimensionGroup, DimensionTag } from '@firefly/types'
 
@@ -1314,4 +1316,937 @@ describe('migrateTagKeysAcrossScale 跨刻度自愈与全覆盖不变式测试',
     expect(begSubs).toBeDefined()
     expect(begSubs![0].tags.some(t => t.tagValue === '要求' && t.code === 'omw.00754942.v')).toBe(true)
   })
-})
+
+  it('AC-8 (Spec G9 / PRD-0058): 跨容器同码不同父与同名不同码隔离性，dimensionNodeKey 杜绝覆盖与合并', () => {
+    // 1. 同码不同父：同一标签「漫画」(omw.06780678.n) 分别出现在「图片分类」与「电子书细分」下
+    // 分别挂接不同的外部子维度（画面风格 vs 题材），断言互不覆盖、各自精准查出
+    const mangaTagImg = {
+      dimensionId: 1,
+      dimensionCode: 'builtin.image',
+      dimensionName: '图片分类',
+      tagValue: '漫画',
+      code: 'omw.06780678.n',
+      fileCount: 10,
+      isMultiSelect: false
+    }
+    const mangaTagEbook = {
+      dimensionId: 2,
+      dimensionCode: 'builtin.e_book_segmentation',
+      dimensionName: '电子书细分',
+      tagValue: '漫画',
+      code: 'omw.06780678.n',
+      fileCount: 5,
+      isMultiSelect: false
+    }
+
+    const multiDomainGroups: DimensionGroup[] = [
+      {
+        id: 1,
+        name: '图片分类',
+        code: 'builtin.image',
+        level: 0,
+        tags: [mangaTagImg],
+        isMultiSelect: false
+      },
+      {
+        id: 2,
+        name: '电子书细分',
+        code: 'builtin.e_book_segmentation',
+        level: 0,
+        tags: [mangaTagEbook],
+        isMultiSelect: false
+      },
+      {
+        id: 121,
+        name: '画面风格',
+        code: 'builtin.art_style',
+        level: 1,
+        parentDimensionIds: [1],
+        triggerConditions: [
+          { parentDimension: '图片分类', triggerTags: ['漫画'] }
+        ],
+        tags: [
+          {
+            dimensionId: 121,
+            dimensionCode: 'builtin.art_style',
+            dimensionName: '画面风格',
+            tagValue: '黑白',
+            code: 'omw.monochrome',
+            fileCount: 10,
+            isMultiSelect: false
+          }
+        ],
+        isMultiSelect: false
+      },
+      {
+        id: 122,
+        name: '题材',
+        code: 'builtin.theme',
+        level: 1,
+        parentDimensionIds: [2],
+        triggerConditions: [
+          { parentDimension: '电子书细分', triggerTags: ['漫画'] }
+        ],
+        tags: [
+          {
+            dimensionId: 122,
+            dimensionCode: 'builtin.theme',
+            dimensionName: '题材',
+            tagValue: '热血',
+            code: 'omw.action',
+            fileCount: 5,
+            isMultiSelect: false
+          }
+        ],
+        isMultiSelect: false
+      }
+    ]
+
+    const tree = buildDimensionTree(multiDomainGroups, null, null, 0, 4)
+    expect(tree.length).toBe(2)
+
+    const imgRoot = tree.find(n => n.name === '图片分类')!
+    expect(imgRoot).toBeDefined()
+    expect(imgRoot.childTags).toBeDefined()
+    // 图片分类下的漫画触发的是「画面风格」
+    const imgMangaChildren = imgRoot.childTags!.get(dimensionNodeKey(imgRoot.code || imgRoot.name, mangaTagImg))
+    expect(imgMangaChildren).toBeDefined()
+    expect(imgMangaChildren!.length).toBe(1)
+    expect(imgMangaChildren![0].name).toBe('画面风格')
+
+    const ebookRoot = tree.find(n => n.name === '电子书细分')!
+    expect(ebookRoot).toBeDefined()
+    expect(ebookRoot.childTags).toBeDefined()
+    // 电子书细分下的漫画触发的是「题材」
+    const ebookMangaChildren = ebookRoot.childTags!.get(dimensionNodeKey(ebookRoot.code || ebookRoot.name, mangaTagEbook))
+    expect(ebookMangaChildren).toBeDefined()
+    expect(ebookMangaChildren!.length).toBe(1)
+    expect(ebookMangaChildren![0].name).toBe('题材')
+
+    // 核心断言：同码不同父互不覆盖、互不窜挂
+    expect(imgRoot.childTags!.get(dimensionNodeKey(ebookRoot.code || ebookRoot.name, mangaTagEbook))).toBeUndefined()
+    expect(ebookRoot.childTags!.get(dimensionNodeKey(imgRoot.code || imgRoot.name, mangaTagImg))).toBeUndefined()
+
+    // 2. 同名不同码：同容器下两个展示名均为「小说」但机器码分别为 omw.06367879.n 与 omw.03833065.n
+    const novelA = { tagValue: '小说', code: 'omw.06367879.n' }
+    const novelB = { tagValue: '小说', code: 'omw.03833065.n' }
+    const parentKey = 'builtin.e_book_segmentation'
+    const keyA = dimensionNodeKey(parentKey, novelA)
+    const keyB = dimensionNodeKey(parentKey, novelB)
+
+    expect(keyA).toBe('builtin.e_book_segmentation::omw.06367879.n')
+    expect(keyB).toBe('builtin.e_book_segmentation::omw.03833065.n')
+    expect(keyA).not.toBe(keyB)
+
+    // 在 DimensionChildTagsMap 中各存各的，互不覆盖
+    const childMap = new DimensionChildTagsMap()
+    childMap.set(keyA, [{ id: 101, name: '题材A', tags: [] } as any])
+    childMap.set(keyB, [{ id: 102, name: '题材B', tags: [] } as any])
+
+    expect(childMap.get(keyA)![0].name).toBe('题材A')
+    expect(childMap.get(keyB)![0].name).toBe('题材B')
+  })
+
+  it('重现用户 Bug：多选模式下，文档下的德语和电子书下的德语被联动勾选', () => {
+    const fileTypeGroups = [
+      {
+        id: 1,
+        name: '文件类型',
+        code: 'builtin.file_type',
+        level: 0,
+        tags: [
+          {
+            dimensionId: 1,
+            dimensionCode: 'builtin.file_type',
+            dimensionName: '文件类型',
+            tagValue: '文档',
+            code: 'omw.document',
+            fileCount: 15,
+            isMultiSelect: false
+          },
+          {
+            dimensionId: 1,
+            dimensionCode: 'builtin.file_type',
+            dimensionName: '文件类型',
+            tagValue: '电子书',
+            code: 'omw.ebook',
+            fileCount: 12,
+            isMultiSelect: false
+          }
+        ],
+        isMultiSelect: false
+      },
+      {
+        id: 11,
+        name: '语言细分',
+        code: 'builtin.language_segmentation',
+        level: 1,
+        parentDimensionIds: [1],
+        triggerConditions: [
+          { parentDimension: '文件类型', triggerTags: ['文档', '电子书'] }
+        ],
+        tags: [
+          {
+            dimensionId: 11,
+            dimensionCode: 'builtin.language_segmentation',
+            dimensionName: '语言细分',
+            tagValue: '德语',
+            code: 'omw.german',
+            fileCount: 5,
+            viaParentCode: 'builtin.language_segmentation',
+            isMultiSelect: false
+          }
+        ],
+        isMultiSelect: false
+      }
+    ];
+
+    const tree = buildDimensionTree(fileTypeGroups, null, null, 0, 3);
+    const docLangDim = tree[0].childTags.get('文档')[0];
+    const ebookLangDim = tree[0].childTags.get('电子书')[0];
+
+    const docGerman = docLangDim.tags.find(t => t.tagValue === '德语');
+    const ebookGerman = ebookLangDim.tags.find(t => t.tagValue === '德语');
+
+    const docKey = makeTagKey(
+      docGerman.dimensionId,
+      docGerman.tagValue,
+      '文档',
+      docGerman.viaParentCode,
+      docGerman.isLifted === true,
+      docGerman.codePath
+    );
+
+    const ebookKey = makeTagKey(
+      ebookGerman.dimensionId,
+      ebookGerman.tagValue,
+      '电子书',
+      ebookGerman.viaParentCode,
+      ebookGerman.isLifted === true,
+      ebookGerman.codePath
+    );
+
+    console.log('Doc German Key:', docKey);
+    console.log('Ebook German Key:', ebookKey);
+
+    expect(docKey).not.toBe(ebookKey);
+  });
+
+  it('多选模式受控宿主码消歧：使用 hostScopeCode (如 omw.document) 免疫多语言切换，且正确透传至 SelectedTag', () => {
+    const docKey = makeTagKey(
+      11,
+      '德语',
+      '文档',
+      'builtin.language_segmentation',
+      false,
+      undefined,
+      'omw.document'
+    )
+    const ebookKey = makeTagKey(
+      11,
+      '德语',
+      '电子书',
+      'builtin.language_segmentation',
+      false,
+      undefined,
+      'omw.ebook'
+    )
+
+    expect(docKey).toBe('11::parentCode:builtin.language_segmentation@omw.document::德语')
+    expect(ebookKey).toBe('11::parentCode:builtin.language_segmentation@omw.ebook::德语')
+    expect(docKey).not.toBe(ebookKey)
+
+    const parsed = parseTagKey(docKey)
+    expect(parsed.hostScopeCode).toBe('omw.document')
+    expect(parsed.parentTagValue).toBe('omw.document')
+
+    const dummyGroups: DimensionGroup[] = [
+      {
+        id: 11,
+        name: '语言细分',
+        code: 'builtin.language_segmentation',
+        level: 1,
+        tags: [
+          {
+            dimensionId: 11,
+            tagValue: '德语',
+            code: 'omw.german',
+            viaParentCode: 'builtin.language_segmentation',
+            fileCount: 3
+          }
+        ]
+      }
+    ]
+
+    const selectedList = getSelectedTagsFromSet(new Set([docKey]), dummyGroups)
+    expect(selectedList.length).toBe(1)
+    expect(selectedList[0].tagValue).toBe('德语')
+    expect(selectedList[0].hostScopeCode).toBe('omw.document')
+  })
+});
+
+describe('PRD-0058 / Branch Dimension Node Isolation & Count SSOT - 跨分支同名叶子节点隔离与徽标计数一致性测试', () => {
+  it('AC-1 & AC-3: buildDimensionTree 补齐中间维度码，并通过 pathCountMap 回填各分支独立精确计数', () => {
+    // 构造文件类型根维度组（文档 vs 电子书）
+    const fileTypeGroup: DimensionGroup = {
+      id: 1,
+      name: '文件类型',
+      code: 'builtin.file_type',
+      level: 0,
+      tags: [
+        {
+          dimensionId: 1,
+          dimensionCode: 'builtin.file_type',
+          dimensionName: '文件类型',
+          tagValue: '文档',
+          code: 'builtin.document',
+          codePath: '/builtin.file_type/builtin.document',
+          namePath: '/文件类型/文档',
+          level: 1,
+          fileCount: 1
+        },
+        {
+          dimensionId: 1,
+          dimensionCode: 'builtin.file_type',
+          dimensionName: '文件类型',
+          tagValue: '电子书',
+          code: 'builtin.e_book',
+          codePath: '/builtin.file_type/builtin.e_book',
+          namePath: '/文件类型/电子书',
+          level: 1,
+          fileCount: 1
+        }
+      ]
+    }
+
+    // 构造外部细分维度组（语言细分 -> 英文，全局 count 为 3）
+    const langGroup: DimensionGroup = {
+      id: 11,
+      name: '语言细分',
+      code: 'builtin.language_segmentation',
+      level: 1,
+      parentDimensionIds: [1],
+      tags: [
+        {
+          dimensionId: 11,
+          dimensionCode: 'builtin.language_segmentation',
+          dimensionName: '语言细分',
+          tagValue: '英文',
+          code: 'omw.06912865.n',
+          viaParentCode: 'builtin.language_segmentation',
+          level: 1,
+          fileCount: 3 // 后端全局粗汇总值
+        }
+      ]
+    }
+
+    // 后端下发的各分支前缀精准命中计数映射（SSOT）
+    const pathCountMap: Record<string, number> = {
+      '/builtin.file_type/builtin.document': 1,
+      '/builtin.file_type/builtin.document/builtin.language_segmentation': 1,
+      '/builtin.file_type/builtin.document/builtin.language_segmentation/omw.06912865.n': 1,
+      '/builtin.file_type/builtin.e_book': 1,
+      '/builtin.file_type/builtin.e_book/builtin.language_segmentation': 1,
+      '/builtin.file_type/builtin.e_book/builtin.language_segmentation/omw.06912865.n': 1
+    }
+
+    const tree = buildDimensionTree([fileTypeGroup, langGroup], null, null, 0, 7, pathCountMap)
+    expect(tree.length).toBe(1)
+    const ftNode = tree[0]
+    expect(ftNode.childTags).toBeDefined()
+
+    // 1. 文档分支下的语言细分
+    const docChildren = ftNode.childTags!.get('builtin.file_type::builtin.document')
+    expect(docChildren).toBeDefined()
+    expect(docChildren!.length).toBe(1)
+    const docLangDim = docChildren![0]
+    expect(docLangDim.tags.length).toBe(1)
+    const docEnglish = docLangDim.tags[0]
+    expect(docEnglish.codePath).toBe('/builtin.file_type/builtin.document/builtin.language_segmentation/omw.06912865.n')
+    expect(docEnglish.namePath).toBe('/文件类型/文档/语言细分/英文')
+    expect(docEnglish.hostScopeCode).toBe('builtin.document')
+    // 关键断言：徽标计数不再是全局污染的 3，而是通过 pathCountMap 精准回填的 1！
+    expect(docEnglish.fileCount).toBe(1)
+
+    // 2. 电子书分支下的语言细分
+    const ebookChildren = ftNode.childTags!.get('builtin.file_type::builtin.e_book')
+    expect(ebookChildren).toBeDefined()
+    expect(ebookChildren!.length).toBe(1)
+    const ebookLangDim = ebookChildren![0]
+    expect(ebookLangDim.tags.length).toBe(1)
+    const ebookEnglish = ebookLangDim.tags[0]
+    expect(ebookEnglish.codePath).toBe('/builtin.file_type/builtin.e_book/builtin.language_segmentation/omw.06912865.n')
+    expect(ebookEnglish.namePath).toBe('/文件类型/电子书/语言细分/英文')
+    expect(ebookEnglish.hostScopeCode).toBe('builtin.e_book')
+    // 关键断言：电子书分支下的徽标也是精准的 1！
+    expect(ebookEnglish.fileCount).toBe(1)
+
+    // 3. 两分支下的节点互斥消歧断言
+    expect(docEnglish.codePath).not.toBe(ebookEnglish.codePath)
+    expect(docEnglish.hostScopeCode).not.toBe(ebookEnglish.hostScopeCode)
+
+    const docKey = makeTagKey(
+      docEnglish.dimensionId,
+      docEnglish.tagValue,
+      undefined,
+      docEnglish.viaParentCode || undefined,
+      false,
+      docEnglish.codePath,
+      docEnglish.hostScopeCode
+    )
+    const ebookKey = makeTagKey(
+      ebookEnglish.dimensionId,
+      ebookEnglish.tagValue,
+      undefined,
+      ebookEnglish.viaParentCode || undefined,
+      false,
+      ebookEnglish.codePath,
+      ebookEnglish.hostScopeCode
+    )
+    expect(docKey).not.toBe(ebookKey)
+    expect(docKey).toContain(docEnglish.codePath!)
+    expect(ebookKey).toContain(ebookEnglish.codePath!)
+  })
+
+  it('ISS-03 & 细节 1: 提升行 makeTagKey 保留 hostScopeCode 且 parseTagKey 逆向提取对称', () => {
+    // 提升行无 codePath 时生成 key
+    const liftedKey = makeTagKey(
+      11,
+      '英文',
+      undefined,
+      'builtin.language_segmentation',
+      true, // isLifted
+      undefined,
+      'builtin.document' // hostScopeCode
+    )
+    expect(liftedKey).toBe('11::liftCode:builtin.language_segmentation@builtin.document::英文')
+
+    const parsed = parseTagKey(liftedKey)
+    expect(parsed.dimensionId).toBe(11)
+    expect(parsed.isLifted).toBe(true)
+    expect(parsed.viaParentCode).toBe('builtin.language_segmentation')
+    expect(parsed.hostScopeCode).toBe('builtin.document')
+    expect(parsed.tagValue).toBe('英文')
+  })
+
+  it('ISS-03 & 细节 2: 刻度收缩提升聚合行取父分支前缀去重并集计数', () => {
+    const fileTypeGroup: DimensionGroup = {
+      id: 1,
+      name: '文件类型',
+      code: 'builtin.file_type',
+      level: 0,
+      tags: [
+        {
+          dimensionId: 1,
+          dimensionCode: 'builtin.file_type',
+          dimensionName: '文件类型',
+          tagValue: '文档',
+          code: 'builtin.document',
+          codePath: '/builtin.file_type/builtin.document',
+          namePath: '/文件类型/文档',
+          level: 1,
+          fileCount: 2
+        }
+      ]
+    }
+
+    const langGroup: DimensionGroup = {
+      id: 11,
+      name: '语言细分',
+      code: 'builtin.language_segmentation',
+      level: 1,
+      parentDimensionIds: [1],
+      tags: [
+        {
+          dimensionId: 11,
+          dimensionCode: 'builtin.language_segmentation',
+          dimensionName: '语言细分',
+          tagValue: '英文',
+          code: 'omw.06912865.n',
+          viaParentCode: 'builtin.language_segmentation',
+          level: 1,
+          fileCount: 2
+        },
+        {
+          dimensionId: 11,
+          dimensionCode: 'builtin.language_segmentation',
+          dimensionName: '语言细分',
+          tagValue: '中文',
+          code: 'omw.06912866.n',
+          viaParentCode: 'builtin.language_segmentation',
+          level: 1,
+          fileCount: 2
+        }
+      ]
+    }
+
+    // 假设同一个文件同时有中英文，父分支去重后只有 2 个文件（而非 2+2=4）
+    const pathCountMap: Record<string, number> = {
+      '/builtin.file_type/builtin.document': 2,
+      '/builtin.file_type/builtin.document/builtin.language_segmentation': 2,
+      '/builtin.file_type/builtin.document/builtin.language_segmentation/omw.06912865.n': 2,
+      '/builtin.file_type/builtin.document/builtin.language_segmentation/omw.06912866.n': 2
+    }
+
+    // 设置 maxScaleDepth = 2，强制外部子维度提升平铺
+    const tree = buildDimensionTree([fileTypeGroup, langGroup], null, null, 0, 2, pathCountMap)
+    expect(tree.length).toBe(1)
+    const ftNode = tree[0]
+    // 提升后的标签直接平铺在 tags 中
+    const liftedDimTag = ftNode.tags.find(t => t.tagValue === '语言细分')
+    expect(liftedDimTag).toBeDefined()
+    expect(liftedDimTag!.isLifted).toBe(true)
+    expect(liftedDimTag!.codePath).toBe('/builtin.file_type/builtin.document/builtin.language_segmentation')
+    // 关键断言：提升聚合行的计数取父分支去重后的 2（而非累加的 4）！
+    expect(liftedDimTag!.fileCount).toBe(2)
+  })
+
+  it('AC-1 & AC-2: 5层深层嵌套树整树特化、幽灵计数断流与完整5段物化路径注入', () => {
+    // 构造深层嵌套组：文件类型 -> 电子书细分 -> 题材
+    const fileTypeGroup: DimensionGroup = {
+      id: 1,
+      name: '文件类型',
+      code: 'builtin.file_type',
+      level: 0,
+      tags: [
+        {
+          dimensionId: 1,
+          dimensionCode: 'builtin.file_type',
+          dimensionName: '文件类型',
+          tagValue: '电子书',
+          code: 'hownet.000000207706.n',
+          codePath: '/builtin.file_type/hownet.000000207706.n',
+          namePath: '/文件类型/电子书',
+          level: 1,
+          fileCount: 1
+        }
+      ]
+    }
+
+    const ebookSubGroup: DimensionGroup = {
+      id: 24,
+      name: '电子书细分',
+      code: 'builtin.e_book_segmentation',
+      level: 1,
+      parentDimensionIds: [1],
+      triggerConditions: [
+        {
+          parentDimension: '文件类型',
+          triggerTags: ['电子书']
+        }
+      ],
+      tags: [
+        {
+          dimensionId: 24,
+          dimensionCode: 'builtin.e_book_segmentation',
+          dimensionName: '电子书细分',
+          tagValue: '小说',
+          code: 'omw.03833065.n',
+          viaParentCode: 'builtin.e_book_segmentation',
+          level: 1,
+          fileCount: 1
+        }
+      ]
+    }
+
+    const themeGroup: DimensionGroup = {
+      id: 25,
+      name: '题材',
+      code: 'builtin.theme',
+      level: 2,
+      parentDimensionIds: [24],
+      triggerConditions: [
+        {
+          parentDimension: '电子书细分',
+          triggerTags: ['小说']
+        }
+      ],
+      tags: [
+        {
+          dimensionId: 25,
+          dimensionCode: 'builtin.theme',
+          dimensionName: '题材',
+          tagValue: '科幻',
+          code: 'omw.06368628.n',
+          viaParentCode: 'builtin.theme',
+          level: 1,
+          fileCount: 11 // 全库粗粒度汇总值（来自全库11个音频wav文件）
+        }
+      ]
+    }
+
+    // 事实源：电子书小说下无科幻，全库只有音频科幻
+    const pathCountMap: Record<string, number> = {
+      '/builtin.file_type/hownet.000000207706.n': 1,
+      '/builtin.file_type/hownet.000000207706.n/builtin.e_book_segmentation': 1,
+      '/builtin.file_type/hownet.000000207706.n/builtin.e_book_segmentation/omw.03833065.n': 1,
+      // 注意：电子书小说题材科幻在此无记录，真实计数为 0
+      '/builtin.file_type/omw.05056386.n/builtin.audio_segmentation/omw.00543233.n/builtin.theme/omw.06368628.n': 11
+    }
+
+    // 1. 默认展示空标签或未开启剪枝时：深层特化注入完整 5 段路径，且 fileCount 严格断流为 0
+    const tree = buildDimensionTree([fileTypeGroup, ebookSubGroup, themeGroup], null, null, 0, 7, pathCountMap, false)
+    expect(tree.length).toBe(1)
+    const ftNode = tree[0]
+    expect(ftNode.childTags).toBeDefined()
+
+    // 获取电子书下的电子书细分子树
+    const ebookChildren = ftNode.childTags!.get('builtin.file_type::hownet.000000207706.n')
+    expect(ebookChildren).toBeDefined()
+    expect(ebookChildren!.length).toBeGreaterThan(0)
+    const ebookSubNode = ebookChildren![0]
+
+    // 小说节点
+    const novelTag = ebookSubNode.tags.find(t => t.tagValue === '小说')
+    expect(novelTag).toBeDefined()
+    expect(novelTag!.codePath).toBe('/builtin.file_type/hownet.000000207706.n/builtin.e_book_segmentation/omw.03833065.n')
+    expect(novelTag!.fileCount).toBe(1)
+
+    // 小说下的题材子树
+    expect(ebookSubNode.childTags).toBeDefined()
+    const themeChildren = ebookSubNode.childTags!.get('builtin.e_book_segmentation::omw.03833065.n')
+    expect(themeChildren).toBeDefined()
+    const themeNode = themeChildren![0]
+
+    // 科幻标签
+    const sciFiTag = themeNode.tags.find(t => t.tagValue === '科幻')
+    expect(sciFiTag).toBeDefined()
+    // 关键断言：绝不回退至全局的 11，必须严格断流为 0
+    expect(sciFiTag!.fileCount).toBe(0)
+    // 关键断言：必须完整具备 5 段物理物化路径与受控宿主码
+    expect(sciFiTag!.codePath).toBe(
+      '/builtin.file_type/hownet.000000207706.n/builtin.e_book_segmentation/omw.03833065.n/builtin.theme/omw.06368628.n'
+    )
+    expect(sciFiTag!.hostScopeCode).toBe('hownet.000000207706.n')
+
+    // 2. 开启剪枝 (removeEmptyTags: true) 时：零计数深层节点被短路剪枝
+    const prunedTree = buildDimensionTree([fileTypeGroup, ebookSubGroup, themeGroup], null, null, 0, 7, pathCountMap, true)
+    const prunedEbookChildren = prunedTree[0].childTags?.get('builtin.file_type::hownet.000000207706.n')
+    if (prunedEbookChildren && prunedEbookChildren[0]?.childTags) {
+      const prunedTheme = prunedEbookChildren[0].childTags.get('builtin.e_book_segmentation::omw.03833065.n')
+      // 题材子树由于科幻为 0，不应挂载任何有效子节点
+      expect(prunedTheme).toBeUndefined()
+    }
+  })
+
+  it('AC-3 & [ISS-08]: 刻度折叠提升行对同宿主多分支同名标签累加求和，绝非等于父大类总数', () => {
+    // 电子书大类下有小说(2本科幻)与漫画(3本科幻)，电子书大类总共 100 本书
+    const fileTypeGroup: DimensionGroup = {
+      id: 1,
+      name: '文件类型',
+      code: 'builtin.file_type',
+      level: 0,
+      tags: [
+        {
+          dimensionId: 1,
+          dimensionCode: 'builtin.file_type',
+          dimensionName: '文件类型',
+          tagValue: '电子书',
+          code: 'hownet.000000207706.n',
+          codePath: '/builtin.file_type/hownet.000000207706.n',
+          namePath: '/文件类型/电子书',
+          level: 1,
+          fileCount: 100
+        }
+      ]
+    }
+
+    const themeGroup: DimensionGroup = {
+      id: 25,
+      name: '题材',
+      code: 'builtin.theme',
+      level: 1,
+      parentDimensionIds: [1],
+      triggerConditions: [
+        {
+          parentDimension: '文件类型',
+          triggerTags: ['电子书']
+        }
+      ],
+      tags: [
+        {
+          dimensionId: 25,
+          dimensionCode: 'builtin.theme',
+          dimensionName: '题材',
+          tagValue: '科幻',
+          code: 'omw.06368628.n',
+          viaParentCode: 'builtin.theme',
+          level: 1,
+          fileCount: 5
+        }
+      ]
+    }
+
+    const pathCountMap: Record<string, number> = {
+      '/builtin.file_type/hownet.000000207706.n': 100, // 电子书大类总数
+      '/builtin.file_type/hownet.000000207706.n/builtin.theme': 5,
+      '/builtin.file_type/hownet.000000207706.n/builtin.theme/omw.06368628.n': 5
+    }
+
+    // 浅刻度折叠提升 (maxScaleDepth = 2)
+    const tree = buildDimensionTree([fileTypeGroup, themeGroup], null, null, 0, 2, pathCountMap)
+    expect(tree.length).toBe(1)
+    const ftNode = tree[0]
+
+    const sciFiLifted = ftNode.tags.find(t => t.tagValue === '科幻')
+    expect(sciFiLifted).toBeDefined()
+    expect(sciFiLifted!.isLifted).toBe(true)
+    // 关键断言 [ISS-08]：徽标必须是 5，绝不能虚标为大类总数 100！
+    expect(sciFiLifted!.fileCount).toBe(5)
+    expect(sciFiLifted!.fileCount).not.toBe(100)
+    expect(sciFiLifted!.codePaths).toBeDefined()
+    expect(sciFiLifted!.codePaths).toContain('/builtin.file_type/hownet.000000207706.n/builtin.theme/omw.06368628.n')
+  })
+
+  it('组内层级深层特化与剪枝：电子书小说题材下的科幻即便携带音频错误路径，也必须特化纠偏并绝缘幽灵计数，开启剪枝时彻底剔除', () => {
+    // 模拟组内扁平标签（包含电子书小说分支，且科幻标签携带了错误的音频 codePath 与 11 的计数）
+    const fileTypeGroup: DimensionGroup = {
+      id: 1,
+      name: '文件类型',
+      code: 'builtin.file_type',
+      level: 0,
+      tags: [
+        {
+          dimensionId: 1,
+          dimensionCode: 'builtin.file_type',
+          dimensionName: '文件类型',
+          tagValue: '电子书',
+          code: 'hownet.000000207706.n',
+          codePath: '/builtin.file_type/hownet.000000207706.n',
+          namePath: '/文件类型/电子书',
+          level: 1,
+          fileCount: 1,
+          viaParentCode: 'builtin.file_type'
+        },
+        {
+          dimensionId: 1,
+          dimensionCode: 'builtin.file_type',
+          dimensionName: '文件类型',
+          tagValue: '电子书细分',
+          code: 'builtin.ebook_subdivision',
+          level: 2,
+          fileCount: 1,
+          viaParentCode: 'hownet.000000207706.n'
+        },
+        {
+          dimensionId: 1,
+          dimensionCode: 'builtin.file_type',
+          dimensionName: '文件类型',
+          tagValue: '小说',
+          code: 'omw.03833065.n',
+          level: 3,
+          fileCount: 1,
+          viaParentCode: 'builtin.ebook_subdivision'
+        },
+        {
+          dimensionId: 1,
+          dimensionCode: 'builtin.file_type',
+          dimensionName: '文件类型',
+          tagValue: '题材',
+          code: 'builtin.theme',
+          level: 4,
+          fileCount: 1,
+          viaParentCode: 'omw.03833065.n'
+        },
+        {
+          dimensionId: 1,
+          dimensionCode: 'builtin.file_type',
+          dimensionName: '文件类型',
+          tagValue: '科幻',
+          code: 'omw.06368628.n',
+          // 模拟从后端盲借到的音频脏路径与虚高计数
+          codePath: '/builtin.file_type/omw.00543233.n/builtin.theme/omw.06368628.n',
+          level: 5,
+          fileCount: 11,
+          viaParentCode: 'builtin.theme'
+        }
+      ]
+    }
+
+    const pathCountMap: Record<string, number> = {
+      '/builtin.file_type/hownet.000000207706.n': 1,
+      '/builtin.file_type/hownet.000000207706.n/builtin.ebook_subdivision': 1,
+      '/builtin.file_type/hownet.000000207706.n/builtin.ebook_subdivision/omw.03833065.n': 1,
+      '/builtin.file_type/hownet.000000207706.n/builtin.ebook_subdivision/omw.03833065.n/builtin.theme': 0,
+      // 注意：该分支下科幻计数为 0（无 key），音频科幻不在电子书分支下
+      '/builtin.file_type/omw.00543233.n/builtin.theme/omw.06368628.n': 11
+    }
+
+    // 1. 未开启剪枝：科幻标签必须特化纠偏为电子书路径，且计数强制归 0，宿主对齐电子书
+    const treeNoPrune = buildDimensionTree([fileTypeGroup], null, null, 0, 7, pathCountMap, false)
+    expect(treeNoPrune.length).toBe(1)
+    const ebookChild = treeNoPrune[0].childTags?.get('builtin.file_type::hownet.000000207706.n')
+    expect(ebookChild).toBeDefined()
+    const ebookSub = ebookChild![0].childTags?.get('hownet.000000207706.n::builtin.ebook_subdivision')
+    expect(ebookSub).toBeDefined()
+    const novelSub = ebookSub![0].childTags?.get('builtin.ebook_subdivision::omw.03833065.n')
+    expect(novelSub).toBeDefined()
+    const themeSub = novelSub![0].childTags?.get('omw.03833065.n::builtin.theme')
+    expect(themeSub).toBeDefined()
+
+    const sciFiNode = themeSub![0].tags.find(t => t.tagValue === '科幻')
+    expect(sciFiNode).toBeDefined()
+    // 关键断言：绝对不能是 11，必须断流为 0！
+    expect(sciFiNode!.fileCount).toBe(0)
+    // 关键断言：物化路径必须沿父链纠偏为电子书路径，绝不能包含音频 omw.00543233.n！
+    expect(sciFiNode!.codePath).toBe(
+      '/builtin.file_type/hownet.000000207706.n/builtin.ebook_subdivision/omw.03833065.n/builtin.theme/omw.06368628.n'
+    )
+    expect(sciFiNode!.hostScopeCode).toBe('hownet.000000207706.n')
+
+    // 2. 开启剪枝 (removeEmptyTags: true)：由于科幻为 0，题材子树全空，题材及其下标签被彻底剪枝！
+    const treePrune = buildDimensionTree([fileTypeGroup], null, null, 0, 7, pathCountMap, true)
+    const ebookPrunedChild = treePrune[0].childTags?.get('builtin.file_type::hownet.000000207706.n')
+    expect(ebookPrunedChild).toBeDefined()
+    const ebookPrunedSub = ebookPrunedChild![0].childTags?.get('hownet.000000207706.n::builtin.ebook_subdivision')
+    expect(ebookPrunedSub).toBeDefined()
+    const novelPrunedTag = ebookPrunedSub![0].tags.find(t => t.code === 'omw.03833065.n')
+    expect(novelPrunedTag).toBeDefined()
+    expect(novelPrunedTag!.fileCount).toBe(1)
+    // 题材节点下没有有效文件，整棵空子树被安全剪枝，小说节点下无更深子树
+    const novelPrunedSub = ebookPrunedSub![0].childTags?.get('builtin.ebook_subdivision::omw.03833065.n')
+    expect(novelPrunedSub).toBeUndefined()
+  })
+
+  it('P0-2: 跨宿主兄弟分支隔离：图片提升行绝不能收集影视下的子孙标签物化路径', () => {
+    // 构造场景：图片和影视下都有「打码程度 -> 无码」子树，但属于不同宿主
+    const fileTypeGroup: DimensionGroup = {
+      id: 1,
+      name: '文件类型',
+      code: 'builtin.file_type',
+      level: 0,
+      tags: [
+        {
+          dimensionId: 1,
+          dimensionCode: 'builtin.file_type',
+          dimensionName: '文件类型',
+          tagValue: '图片',
+          code: 'omw.image',
+          codePath: '/builtin.file_type/omw.image',
+          level: 1,
+          fileCount: 3,
+          viaParentCode: 'builtin.file_type'
+        },
+        {
+          dimensionId: 1,
+          dimensionCode: 'builtin.file_type',
+          dimensionName: '文件类型',
+          tagValue: '打码程度',
+          code: 'builtin.censor',
+          codePath: '/builtin.file_type/omw.image/builtin.censor',
+          level: 2,
+          fileCount: 3,
+          viaParentCode: 'omw.image'
+        },
+        {
+          dimensionId: 1,
+          dimensionCode: 'builtin.file_type',
+          dimensionName: '文件类型',
+          tagValue: '无码',
+          code: 'omw.none',
+          codePath: '/builtin.file_type/omw.image/builtin.censor/omw.none',
+          level: 3,
+          fileCount: 3,
+          viaParentCode: 'builtin.censor'
+        },
+        {
+          dimensionId: 1,
+          dimensionCode: 'builtin.file_type',
+          dimensionName: '文件类型',
+          tagValue: '影视',
+          code: 'omw.video',
+          codePath: '/builtin.file_type/omw.video',
+          level: 1,
+          fileCount: 100,
+          viaParentCode: 'builtin.file_type'
+        },
+        {
+          dimensionId: 1,
+          dimensionCode: 'builtin.file_type',
+          dimensionName: '文件类型',
+          tagValue: '打码程度',
+          code: 'builtin.censor',
+          codePath: '/builtin.file_type/omw.video/builtin.censor',
+          level: 2,
+          fileCount: 100,
+          viaParentCode: 'omw.video'
+        },
+        {
+          dimensionId: 1,
+          dimensionCode: 'builtin.file_type',
+          dimensionName: '文件类型',
+          tagValue: '无码',
+          code: 'omw.none',
+          codePath: '/builtin.file_type/omw.video/builtin.censor/omw.none',
+          level: 3,
+          fileCount: 100,
+          viaParentCode: 'builtin.censor'
+        }
+      ]
+    }
+
+    const pathCountMap: Record<string, number> = {
+      '/builtin.file_type/omw.image': 3,
+      '/builtin.file_type/omw.image/builtin.censor': 3,
+      '/builtin.file_type/omw.image/builtin.censor/omw.none': 3,
+      '/builtin.file_type/omw.video': 100,
+      '/builtin.file_type/omw.video/builtin.censor': 100,
+      '/builtin.file_type/omw.video/builtin.censor/omw.none': 100
+    }
+
+    // 当刻度折叠为 2 时，打码程度及无码穿透提升至各自主容器（图片与影视）
+    const tree = buildDimensionTree([fileTypeGroup], null, null, 0, 2, pathCountMap, false)
+    expect(tree.length).toBe(1)
+
+    // 找到图片容器下的提升行
+    const imageContainerTags = tree[0].tags.filter(t => t.viaParentCode === 'omw.image')
+    const imgNoneTag = imageContainerTags.find(t => t.tagValue === '无码')
+    expect(imgNoneTag).toBeDefined()
+    // 关键断言 P0-2：图片的提升行「无码」只包含图片自身的物化路径，绝不能把影视路径混进来！
+    expect(imgNoneTag!.codePaths).toEqual(['/builtin.file_type/omw.image/builtin.censor/omw.none'])
+    // 关键断言 P0-1：计数严格为图片的 3，绝不能相加成 103！
+    expect(imgNoneTag!.fileCount).toBe(3)
+    // 关键断言 P1-2：hostScopeCode 必须为 omw.image，绝不能是展示名 "图片"！
+    expect(imgNoneTag!.hostScopeCode).toBe('omw.image')
+
+    // 找到影视容器下的提升行
+    const videoContainerTags = tree[0].tags.filter(t => t.viaParentCode === 'omw.video')
+    const vidNoneTag = videoContainerTags.find(t => t.tagValue === '无码')
+    expect(vidNoneTag).toBeDefined()
+    expect(vidNoneTag!.codePaths).toEqual(['/builtin.file_type/omw.video/builtin.censor/omw.none'])
+    expect(vidNoneTag!.fileCount).toBe(100)
+    expect(vidNoneTag!.hostScopeCode).toBe('omw.video')
+  })
+
+  it('P1-5 & P1-2: 根级与子级 fail-closed 归零对称性且 hostScopeCode 杜绝展示名污染', () => {
+    const group: DimensionGroup = {
+      id: 2,
+      name: '自定义维度',
+      code: 'builtin.custom',
+      level: 0,
+      tags: [
+        {
+          dimensionId: 2,
+          dimensionCode: 'builtin.custom',
+          dimensionName: '自定义维度',
+          tagValue: '幽灵根标签',
+          code: 'omw.ghost',
+          level: 1,
+          fileCount: 99
+        }
+      ]
+    }
+    // pathCountMap 存在键，但没有该根标签的路径
+    const pathCountMap: Record<string, number> = {
+      '/builtin.custom/other': 5
+    }
+
+    const tree = buildDimensionTree([group], null, null, 0, 7, pathCountMap, false)
+    expect(tree.length).toBe(1)
+    const ghostTag = tree[0].tags[0]
+    // 关键断言 P1-5：根级标签在路径索引未命中时，必须同子级一样 fail-closed 归零，不可保留虚高 99！
+    expect(ghostTag.fileCount).toBe(0)
+    // 关键断言 P1-2：hostScopeCode 必须为受控码 omw.ghost，绝不能回退为中文展示名 "幽灵根标签"！
+    expect(ghostTag.hostScopeCode).toBe('omw.ghost')
+  })
+});

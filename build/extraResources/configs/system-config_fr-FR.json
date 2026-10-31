@@ -1,26 +1,30 @@
 {
   "nextVersion": {
-    "version": "3.5.0",
+    "version": "4.0.0",
     "releaseNotes": [
-      "[Renommer par lots] Prend en charge le renommage par lots des noms de fichiers intelligents une fois l'analyse terminée",
-      "[Batch Tags] Prend en charge l'ajout et la suppression de balises dans les fichiers par lots une fois l'analyse terminée",
-      "[Nettoyage par lots] Analysez pour supprimer les doublons, identifier les erreurs de dénomination, les erreurs d'extension, puis optimiser et corriger",
-      "[Héritage des règles d'analyse] Les stratégies d'analyse de profilage d'annuaire, les règles de nom de fichier intelligentes et les attributs supplémentaires prennent en charge l'héritage",
-      "[Nouveaux modèles] Qwen3.8, Ornith-1.5 et d'autres derniers modèles communautaires à haut score, ainsi que certains modèles obsolètes ont été supprimés.",
-      "[Modèle intégré] Passez au modèle haute vitesse LFM2.5-1.2B, effectuez une analyse en 2 secondes",
-      "【Accélération DSpark】 Le modèle intégré prend en charge l'accélération du modèle d'échantillonnage spéculatif DSpark",
-      "[Génération de structure de répertoire] Prend en charge la copie en un clic des mots d'invite vers une IA externe telle que Doubao pour obtenir une structure de répertoire de fichiers de haute qualité",
-      "[Emplacement du support] Vérifiez les informations sur le nom du lieu en fonction des coordonnées des métadonnées du fichier et ajoutez des balises",
-      "[Configuration simplifiée] L'extraction des informations sur les fichiers simplifie le fichier de configuration et obtient les informations sur les fichiers de manière plus intelligente et efficace.",
-      "[Performances de l'interface utilisateur] Supprimez toutes les animations de l'interface utilisateur qui occupent le GPU",
-      "[Architecture stable] Supprimez les éventuelles optimisations incompatibles introduites dans la V3.4 pour divers environnements matériels"
+      "[Reconstruction du moteur IA] Le moteur IA de base intégré est prêt à l'emploi et vous pouvez éventuellement activer des moteurs IA avancés (cœur Ying/cloud) pour améliorer l'analyse à la demande.",
+      "[Convivial pour les ordinateurs bas de gamme] Il peut fonctionner sans problème même sans cartes graphiques indépendantes et sans mémoire faible. Il reconstruit l'infrastructure d'IA à grande vitesse avec l'inférence CPU comme noyau.",
+      "[Moteur AI avancé indépendant] Le moteur Firefly AI ​​peut fonctionner indépendamment du programme principal, fournissant des capacités d'IA pour les applications tierces autres que Firefly",
+      "[Recherche vidéo] Les images, les audios et les vidéos peuvent être récupérés avec précision par langage naturel, et la recherche par sémantique, images et contenu vocal est prise en charge.",
+      "[Speech to Text ASR] Les conversations et le contenu des podcasts dans les vidéos et les audios sont rapidement convertis en texte pour une récupération et un archivage faciles.",
+      "[Synthèse vocale TTS] Synthèse vocale en un clic, plus de 50 tonalités intégrées, prend en charge le clonage de tonalité personnalisé de 3 secondes et peut écouter directement des romans et des documents",
+      "[Mise à niveau des étiquettes de fichiers] Nouveaux types d'étiquettes de faits plus riches, les étiquettes sont plus précises et explicables",
+      "[Optimisation spéciale du matériel multimédia] Pour les concepteurs et les créateurs auto-médias, des améliorations spéciales sont apportées à l'organisation des images, du matériel audio et vidéo.",
+      "[Optimisation spéciale NSFW] Détection, segmentation et amélioration plus précises des contenus sensibles tels que la pornographie, la violence, le terrorisme, la politique, les violations, les insultes et le sang dans les images, vidéos et audios.",
+      "[Tri par lots multimode] Cinq modes : plan d'identité, clustering intelligent, structure de répertoires générée par l'IA externe, dérivation d'arborescence de répertoires à partir de fichiers et arborescence de répertoires personnalisée. Générez des répertoires et classez des milliers de fichiers en quelques secondes.",
+      "[Modèle d'identité (recommandé)] Sélectionnez une identité dans la base de données de l'industrie et des rôles de vie, et après quatre étapes de réglage fin, le client et le côté correspondront à la structure de répertoires de haute qualité en millisecondes.",
+      "[Clustering intelligent] Le clustering non supervisé (HAC) côté extrémité génère directement l'arborescence de répertoires compilée en millisecondes et prend en charge un réglage précis en ligne instantané.",
+      "[Structure de répertoire générée par l'IA externe] Un clic pour copier les mots d'invite vers une IA externe telle que Doubao, ChatGPT, Kimi, etc., et collez les résultats pour les prévisualiser et les organiser en temps réel",
+      "[Dérivation d'arborescences de répertoires à partir de fichiers] À l'aide d'un moteur d'IA avancé, 3 ensembles complets d'arborescences de répertoires candidates sont directement fournies à partir de grands modèles locaux ou cloud, et elles peuvent être classées en les sélectionnant.",
+      "[Arborescence de répertoires personnalisée] Collez ou écrivez manuellement la structure du répertoire Markdown, prévisualisez les colonnes de gauche et de droite en temps réel et créez une solution d'organisation exclusive à la demande",
+      "[Optimisation approfondie de l'interface utilisateur] Réorganisez la structure des informations telle que la page des paramètres, ajoutez une nouvelle entrée de guidage et d'aide et rendez l'opération plus intuitive"
     ],
     "forceUpdate": false
   },
   "lastUpdated": "2026-08-31T13:31:00.000Z",
   "latestNews": [
     {
-      "text": "V3.5 Ajout du renommage des lots, de l'étiquetage des lots et du nettoyage des lots"
+      "text": "V4 Lancement majeur, recherche vidéo et audio IA, synthèse vocale, moteur IA plus puissant, etc."
     },
     {
       "text": "MiniCPM5-2B roi rentable, mémoire vidéo 2G, super intelligent",

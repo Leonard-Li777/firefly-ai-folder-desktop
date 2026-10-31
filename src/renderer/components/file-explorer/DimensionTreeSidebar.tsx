@@ -5,6 +5,7 @@ import { DimensionTreeNode } from './AnalyzedDirectory/types'
 import { Checkbox } from '../ui/checkbox'
 import { t } from '@app/languages'
 import {
+  dimensionNodeKey,
   makeTagKey,
   parseTagKey,
   buildDimensionTree,
@@ -22,8 +23,63 @@ import {
  */
 const EMPTY_PAN_DIMENSION_IDS: number[] = []
 
+/**
+ * 默认展开标签层级数：仅自动展开前 5 级标签，第 6 级及更深默认折叠，需用户手动点击展开。
+ * 与 maxScaleDepth（默认 7）解耦：maxScaleDepth 决定树构建上限，此常量仅决定初始展开面。
+ */
+const DEFAULT_EXPANDED_TAG_LEVELS = 5
+
+/**
+ * 收集默认需要折叠的标签 key（第 6 级及更深的父标签）。
+ * 仅统计确实存在可见子级的节点，避免为叶子节点渲染无意义的展开箭头。
+ */
+function collectDefaultCollapsedTagKeys(
+  groups: DimensionTreeNode[],
+  handleVisibleAndHiddenTags: (
+    group: DimensionGroup,
+    childTags?: Map<string, DimensionTreeNode[]>
+  ) => { tagsToShow: DimensionTag[] }
+): Set<string> {
+  const collapsedKeys = new Set<string>()
+
+  const walk = (node: DimensionTreeNode, parentTagValue: string | undefined, depth: number) => {
+    const tagsToUse = resolveTagsToUse(node, parentTagValue)
+    const { tagsToShow } = handleVisibleAndHiddenTags(
+      { ...node, tags: tagsToUse },
+      node.childTags
+    )
+
+    tagsToShow.forEach(tag => {
+      const tagNodeKey = dimensionNodeKey(node.code || node.name, tag)
+      const childDimensions = node.childTags?.get(tagNodeKey)
+      if (!childDimensions || childDimensions.length === 0) return
+
+      const hasVisibleChild = childDimensions.some(childNode => {
+        const childTagsToUse = resolveTagsToUse(childNode, tag.tagValue)
+        const { tagsToShow: childTagsToShow } = handleVisibleAndHiddenTags(
+          { ...childNode, tags: childTagsToUse },
+          childNode.childTags
+        )
+        return childTagsToShow.length > 0
+      })
+      if (!hasVisibleChild) return
+
+      // depth 为 0-based 标签层级：depth=4 即第 5 级，其子级为第 6 级，需默认折叠
+      if (depth + 1 >= DEFAULT_EXPANDED_TAG_LEVELS) {
+        collapsedKeys.add(tagNodeKey)
+      } else {
+        childDimensions.forEach(childNode => walk(childNode, tag.tagValue, depth + 1))
+      }
+    })
+  }
+
+  groups.forEach(group => walk(group, undefined, 0))
+  return collapsedKeys
+}
+
 export interface DimensionTreeSidebarProps {
   dimensionGroups: DimensionGroup[]
+  pathCountMap?: Record<string, number>
   showEmptyTags?: boolean
   panDimensionIds?: number[]
   isExportMode?: boolean
@@ -41,271 +97,6 @@ export interface DimensionTreeSidebarProps {
   initialUnionMode?: UnionMode
 }
 
-// 内部树节点渲染组件
-interface DimensionTreeNodeProps {
-  node: DimensionTreeNode
-  parentTagValue?: string
-  ancestorChain?: string[]
-  isExportMode: boolean
-  collapsedDimensionGroups: Set<number>
-  toggleDimensionGroupCollapsed: (groupId: number) => void
-  isTagSelected: (
-    dimensionId: number,
-    tagValue: string,
-    parentTagValue?: string,
-    viaParentCode?: string,
-    isLifted?: boolean,
-    codePath?: string
-  ) => boolean
-  toggleTagSelection: (
-    dimensionId: number,
-    tagValue: string,
-    parentTagValue?: string,
-    ancestorChain?: string[],
-    viaParentCode?: string,
-    isLifted?: boolean,
-    codePath?: string
-  ) => void
-  getVisibleAndHiddenTags: (
-    group: any,
-    childTags?: Map<string, DimensionTreeNode[]>
-  ) => { tagsToShow: DimensionTag[] }
-  handleTagClick: (tag: any) => void
-  renderRecursive: (
-    node: DimensionTreeNode,
-    parentTagValue?: string,
-    ancestorChain?: string[]
-  ) => React.ReactNode
-}
-
-const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
-  ({
-    node,
-    parentTagValue,
-    ancestorChain,
-    isExportMode,
-    collapsedDimensionGroups,
-    toggleDimensionGroupCollapsed,
-    isTagSelected,
-    toggleTagSelection,
-    getVisibleAndHiddenTags,
-    handleTagClick,
-    renderRecursive
-  }) => {
-    const [collapsedTags, setCollapsedTags] = useState<Set<string>>(() => new Set())
-
-    const toggleTagCollapse = useCallback((tagValue: string) => {
-      setCollapsedTags(prev => {
-        const next = new Set(prev)
-        if (next.has(tagValue)) {
-          next.delete(tagValue)
-        } else {
-          next.add(tagValue)
-        }
-        return next
-      })
-    }, [])
-
-    let tagsToUse = node.tags
-    if (parentTagValue && node.contextualTags && node.contextualTags[parentTagValue]) {
-      const isL3Ext = /扩展名|Extension/i.test(node.name)
-      if (!isL3Ext) {
-        tagsToUse = node.contextualTags[parentTagValue]
-      }
-    }
-
-    const { tagsToShow } = getVisibleAndHiddenTags({ ...node, tags: tagsToUse }, node.childTags)
-    const isCollapsed = collapsedDimensionGroups.has(node.id)
-    const isTopLevel = node.level === 0
-
-    // 对于根级，如果其下没有子标签，则根级数据不应输出，也不应展示
-    if (isTopLevel && tagsToShow.length === 0) {
-      return null
-    }
-
-    return (
-      <div key={`${node.id}-${parentTagValue || 'root'}`} className="dimension-group relative">
-        {isTopLevel && (
-          <div className="flex items-center justify-between mb-1 relative z-10">
-            <h3
-              className="text-sm font-semibold text-foreground/90 dark:text-foreground/90 hover:text-primary dark:hover:text-primary cursor-pointer transition-colors flex items-center flex-1 py-1"
-              onClick={() => toggleDimensionGroupCollapsed(node.id)}
-            >
-              <div className="w-4 h-4 flex items-center justify-center mr-1">
-                <MaterialIcon
-                  icon={isCollapsed ? 'chevron_right' : 'expand_more'}
-                  className="text-base text-muted-foreground"
-                />
-              </div>
-              {node.name}
-            </h3>
-          </div>
-        )}
-
-        {!isCollapsed && (
-          <div className={cn('relative', isTopLevel ? 'ml-5 mt-1' : 'ml-3')}>
-            {tagsToShow.map((tag: DimensionTag, index: number) => {
-              const isSelected = isTagSelected(
-                tag.dimensionId,
-                tag.tagValue,
-                parentTagValue,
-                tag.viaParentCode || undefined,
-                tag.isLifted === true,
-                tag.codePath
-              )
-              const isDisabled = tag.fileCount === 0
-              const childDimensions = node.childTags?.get(tag.tagValue)
-              const hasChildDimensions = childDimensions && childDimensions.length > 0
-              const isLastTagInThisDim = index === tagsToShow.length - 1
-              const isTagCollapsed = collapsedTags.has(tag.tagValue)
-              const currentChain = ancestorChain ? [...ancestorChain, tag.tagValue] : [tag.tagValue]
-
-              return (
-                <div
-                  key={`${tag.dimensionId}-${tag.tagValue}-${index}`}
-                  className="flex flex-col relative"
-                >
-                  {!isExportMode && (
-                    <div
-                      className={cn(
-                        'absolute border-l border-b border-border/20 pointer-events-none z-0',
-                        isTopLevel && index === 0 ? 'top-[-4px]' : 'top-0'
-                      )}
-                      style={{
-                        left: isTopLevel ? '-12px' : '-8px',
-                        width: isTopLevel ? '12px' : '8px',
-                        height: '15px'
-                      }}
-                    />
-                  )}
-
-                  <div className="flex items-center group min-h-[30px] relative">
-                    {hasChildDimensions && (
-                      <button
-                        className="p-0.5 hover:bg-accent dark:hover:bg-accent/40 rounded-sm text-muted-foreground hover:text-foreground transition-colors mr-0.5 shrink-0 flex items-center justify-center cursor-pointer z-10 w-4.5 h-4.5"
-                        onClick={e => {
-                          e.stopPropagation()
-                          toggleTagCollapse(tag.tagValue)
-                        }}
-                      >
-                        <MaterialIcon
-                          icon="keyboard_arrow_right"
-                          className={cn(
-                            'text-sm transition-transform duration-200',
-                            !isTagCollapsed && 'transform rotate-90'
-                          )}
-                        />
-                      </button>
-                    )}
-                    {!hasChildDimensions && <div className="w-5 shrink-0" />}
-
-                    {isExportMode && (
-                      <div
-                        className="p-1 cursor-pointer hover:bg-accent/40 rounded-sm flex-shrink-0 flex items-center mr-1"
-                        onClick={e => {
-                          e.stopPropagation()
-                          if (!isDisabled) {
-                            toggleTagSelection(
-                              tag.dimensionId,
-                              tag.tagValue,
-                              parentTagValue,
-                              currentChain,
-                              tag.viaParentCode || undefined,
-                              tag.isLifted === true,
-                              tag.codePath
-                            )
-                          }
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          disabled={isDisabled}
-                          onChange={() =>
-                            toggleTagSelection(
-                              tag.dimensionId,
-                              tag.tagValue,
-                              parentTagValue,
-                              currentChain,
-                              tag.viaParentCode || undefined,
-                              tag.isLifted === true,
-                              tag.codePath
-                            )
-                          }
-                          className="w-3.5 h-3.5 rounded border border-border/80 accent-primary cursor-pointer shrink-0"
-                          onClick={e => e.stopPropagation()}
-                        />
-                      </div>
-                    )}
-
-                    <button
-                      data-selected={isSelected ? 'true' : 'false'}
-                      className={cn(
-                        'flex-1 text-xs px-1.5 py-1.5 flex items-center rounded-sm overflow-hidden border-l-2 gap-1 duration-0 select-none',
-                        isSelected
-                          ? 'bg-primary/10 text-primary font-medium border-primary'
-                          : 'text-foreground/80 hover:bg-accent hover:text-accent-foreground border-transparent',
-                        isDisabled
-                          ? 'text-muted-foreground/45 cursor-not-allowed hover:bg-transparent hover:text-muted-foreground/45'
-                          : 'cursor-pointer'
-                      )}
-                      onClick={() => {
-                        if (isDisabled) return
-                        if (isExportMode) {
-                          toggleTagSelection(
-                            tag.dimensionId,
-                            tag.tagValue,
-                            parentTagValue,
-                            currentChain,
-                            tag.viaParentCode || undefined,
-                            tag.isLifted === true,
-                            tag.codePath
-                          )
-                        } else {
-                          handleTagClick({
-                            dimensionId: tag.dimensionId,
-                            dimensionName: tag.dimensionName,
-                            tagValue: tag.tagValue,
-                            code: tag.code,
-                            codePath: tag.codePath,
-                            namePath: tag.namePath,
-                            codePaths: tag.codePaths,
-                            isLifted: tag.isLifted === true,
-                            viaParentCode: tag.viaParentCode || undefined,
-                            level: tag.level,
-                            parentTagValue,
-                            ancestorChain: currentChain
-                          })
-                        }
-                      }}
-                      disabled={isDisabled}
-                    >
-                      <span className="flex-1 text-left truncate text-current">{tag.tagValue}</span>
-                      <span className="text-[10px] ml-1 shrink-0 opacity-55 text-current">
-                        ({tag.fileCount})
-                      </span>
-                    </button>
-                  </div>
-
-                  {hasChildDimensions && !isTagCollapsed && (
-                    <div className="relative">
-                      {childDimensions!.map(childNode =>
-                        renderRecursive(childNode, tag.tagValue, currentChain)
-                      )}
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        )}
-        {isTopLevel && (
-          <div className="border-t border-border/40 dark:border-border/30 my-3 mx-[-16px]"></div>
-        )}
-      </div>
-    )
-  }
-)
 // 单独提取的树节点渲染行组件，使用 React.memo 进行细粒度隔离
 interface DimensionTreeRowProps {
   row: any
@@ -321,7 +112,8 @@ interface DimensionTreeRowProps {
     /** 是否为穿透提升聚合行（key 打 liftCode 标记，ADR-0034 §4 / M-4） */
     isLifted?: boolean,
     /** 分支消歧锚：完整物化代码路径（多父维度同名叶子跨分支必传） */
-    codePath?: string
+    codePath?: string,
+    hostScopeCode?: string
   ) => void
   handleTagClickInternal: (tag: any) => void
 }
@@ -415,7 +207,7 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
                 className="p-0.5 hover:bg-accent rounded-sm text-muted-foreground hover:text-foreground transition-colors shrink-0 flex items-center justify-center cursor-pointer w-4.5 h-4.5"
                 onClick={e => {
                   e.stopPropagation()
-                  toggleTagExpand(tag.tagValue)
+                  toggleTagExpand(row.tagKey || tag.tagValue)
                 }}
               >
                 <MaterialIcon
@@ -444,7 +236,8 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
                     row.ancestorChain,
                     tag.viaParentCode || undefined,
                     tag.isLifted === true,
-                    tag.codePath
+                    tag.codePath,
+                    row.hostScopeCode
                   )
                 }
               }}
@@ -461,7 +254,8 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
                     row.ancestorChain,
                     tag.viaParentCode || undefined,
                     tag.isLifted === true,
-                    tag.codePath
+                    tag.codePath,
+                    row.hostScopeCode
                   )
                 }
                 className="w-3.5 h-3.5 rounded border border-border/80 accent-primary cursor-pointer shrink-0"
@@ -492,7 +286,8 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
                   row.ancestorChain,
                   tag.viaParentCode || undefined,
                   tag.isLifted === true,
-                  tag.codePath
+                  tag.codePath,
+                  row.hostScopeCode
                 )
               } else {
                 handleTagClickInternal({
@@ -508,7 +303,8 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
                   viaParentCode: tag.viaParentCode || undefined,
                   level: tag.level,
                   parentTagValue: row.parentTagValue,
-                  ancestorChain: row.ancestorChain
+                  ancestorChain: row.ancestorChain,
+                  hostScopeCode: row.hostScopeCode || tag.hostScopeCode
                 })
               }
             }}
@@ -529,6 +325,7 @@ DimensionTreeRow.displayName = 'DimensionTreeRow'
 
 export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
   dimensionGroups,
+  pathCountMap,
   showEmptyTags = false,
   panDimensionIds = EMPTY_PAN_DIMENSION_IDS,
   isExportMode = false,
@@ -603,7 +400,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
   // 记录是否已完成初次挂载与外部持久化注入 (B-2 修复)
   const isInitializedRef = useRef(false)
 
-  // 标签树层级深度刻度状态 (2~10 刻度，ADR-0034 §4 推荐默认 6 级，最小 2 级)
+  // 标签树层级深度刻度状态 (2~10 刻度，ADR-0034 §4 推荐默认 7 级，最小 2 级)
   const [maxScaleDepth, setMaxScaleDepth] = useState<number>(() => {
     if (storageKey) {
       try {
@@ -614,7 +411,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
         }
       } catch {}
     }
-    return 6
+    return 7
   })
 
   useEffect(() => {
@@ -843,29 +640,28 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       parentTagValue?: string,
       viaParentCode?: string,
       isLifted?: boolean,
-      codePath?: string
+      codePath?: string,
+      hostScopeCode?: string
     ): boolean => {
       if (isExportMode) {
         // 聚合行与直系实例行可能同父 code，key 必须带 liftCode 标记区分 (ADR-0034 §4 / M-4)；
-        // 多父维度同名叶子跨分支（文档/电子书下的语言细分）必须带 codePath 消歧，杜绝串选
-        const key = makeTagKey(dimensionId, tagValue, parentTagValue, viaParentCode, isLifted, codePath)
+        // 多父维度同名叶子跨分支优先带受控 hostScopeCode / codePath 消歧，杜绝跨语言/跨分支串选
+        const key = makeTagKey(dimensionId, tagValue, parentTagValue, viaParentCode, isLifted, codePath, hostScopeCode)
         return selectedTags.has(key)
       } else {
-        const curParent = currentTag ? currentTag.viaParentCode : undefined
-        // 若两端均物化了 codePath，优先按 codePath 严格匹配，杜绝多父跨分支同名误高亮
-        const pathMatches =
-          !codePath || !currentTag?.codePath || currentTag.codePath === codePath
-        const liftMatches =
-          isLifted === undefined ||
-          (currentTag?.isLifted === true) === isLifted
+        if (!currentTag) return false
+        if (currentTag.dimensionId !== dimensionId || currentTag.tagValue !== tagValue) return false
+        if (isLifted !== undefined && (currentTag.isLifted === true) !== isLifted) return false
+        // 宿主严格比对（同空或同值，杜绝空值宽容短路）
+        if ((currentTag.hostScopeCode ?? '') !== (hostScopeCode ?? '')) return false
+        // 若双方均有 codePath，以 codePath 严格等值作为绝对准绳
+        if (codePath && currentTag.codePath) {
+          return currentTag.codePath === codePath
+        }
+        const curParent = currentTag.viaParentCode
         return (
-          currentTag !== null &&
-          currentTag.dimensionId === dimensionId &&
-          currentTag.tagValue === tagValue &&
           currentTag.parentTagValue === parentTagValue &&
-          (!viaParentCode || !curParent || curParent === viaParentCode) &&
-          pathMatches &&
-          liftMatches
+          (!viaParentCode || !curParent || curParent === viaParentCode)
         )
       }
     },
@@ -880,11 +676,11 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       ancestorChain?: string[],
       viaParentCode?: string,
       isLifted?: boolean,
-      codePath?: string
+      codePath?: string,
+      hostScopeCode?: string
     ) => {
-      // 第 4 段 codePath 分支消歧：多父维度（语言细分等）同名叶子在文档/电子书等
-      // 分支下四元组全同，仅 codePath 不同；不带消歧段会跨分支共享勾选态
-      const key = makeTagKey(dimensionId, tagValue, parentTagValue, viaParentCode, isLifted, codePath)
+      // 受控 hostScopeCode / codePath 分支消歧：多父受控维度同名叶子隔离，杜绝跨父类联动
+      const key = makeTagKey(dimensionId, tagValue, parentTagValue, viaParentCode, isLifted, codePath, hostScopeCode)
 
       const isRemoving = selectedTags.has(key)
       const nextSelected = new Set(selectedTags)
@@ -926,7 +722,13 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       }
 
       if (onSelectionChangeRef.current) {
-        onSelectionChangeRef.current(nextSelected, 'toggle', nextParentMap)
+        const visibleKeys = !showEmptyTags && visibleGroups.length > 0
+          ? new Set(getAllKeys(visibleGroups).map(i => i.key))
+          : null
+        const safeSelected = visibleKeys
+          ? new Set(Array.from(nextSelected).filter(k => visibleKeys.has(k)))
+          : nextSelected
+        onSelectionChangeRef.current(safeSelected, 'toggle', nextParentMap)
       }
     },
     [selectedTags, selectionStack, parentTagMap, storageKey]
@@ -949,6 +751,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       level: number
       parentTagValue?: string
       ancestorChain?: string[]
+      hostScopeCode?: string
     }) => {
       const effectiveViaParent = tag.viaParentCode
       if (isExportMode) {
@@ -959,7 +762,8 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
           tag.ancestorChain,
           effectiveViaParent,
           tag.isLifted === true,
-          tag.codePath
+          tag.codePath,
+          tag.hostScopeCode
         )
       } else {
         const newTag: SelectedTag = {
@@ -974,7 +778,8 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
           viaParentCode: effectiveViaParent,
           level: tag.level,
           parentTagValue: tag.parentTagValue,
-          ancestorChain: tag.ancestorChain
+          ancestorChain: tag.ancestorChain,
+          hostScopeCode: tag.hostScopeCode
         }
 
         setCurrentTag(prev => {
@@ -986,6 +791,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
             prev.parentTagValue === tag.parentTagValue &&
             prevViaParent === effectiveViaParent &&
             (prev.codePath ?? '') === (tag.codePath ?? '') &&
+            (prev.hostScopeCode ?? '') === (tag.hostScopeCode ?? '') &&
             (prev.isLifted === true) === (tag.isLifted === true)
 
           return isSame ? null : newTag
@@ -1008,12 +814,12 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
 
   // 3. 递归构建维度树（严格过滤在当前 showEmptyTags 模式下无有效子标签的根级组，且响应 maxScaleDepth 刻度穿透提升）
   const visibleGroups = useMemo(() => {
-    const rawTree = buildDimensionTree(dimensionGroups, null, null, 0, maxScaleDepth)
+    const rawTree = buildDimensionTree(dimensionGroups, null, null, 0, maxScaleDepth, pathCountMap, !showEmptyTags)
     return rawTree.filter(group => {
       const { tagsToShow } = handleVisibleAndHiddenTags(group, group.childTags)
       return tagsToShow && tagsToShow.length > 0
     })
-  }, [dimensionGroups, handleVisibleAndHiddenTags, maxScaleDepth])
+  }, [dimensionGroups, handleVisibleAndHiddenTags, maxScaleDepth, pathCountMap, showEmptyTags])
 
   // 4. 单一收口的自愈与合法性同步管道（响应 maxScaleDepth 投影伸缩，遵循全覆盖不变式与物理死标签自愈）
   useEffect(() => {
@@ -1035,30 +841,66 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       masterDimensionGroups: dimensionGroups
     })
 
-    if (result.hasChanged) {
-      setSelectedTags(result.migratedSelected)
-      setSelectionStack(result.migratedStack)
-      setParentTagMap(result.migratedParentMap)
+    let finalSelected = result.migratedSelected
+    let finalStack = result.migratedStack
+    let finalParentMap = result.migratedParentMap
+    let hasChanged = result.hasChanged
+
+    // 幽灵标签拦截：当 showEmptyTags 为 false 时，剔除在当前可见树中完全不可见的空标签
+    // 严防历史 localStorage 残留（如当前无文件的 "英文" 节点）污染交集查询与导出预览
+    if (!showEmptyTags && visibleGroups.length > 0) {
+      const visibleKeys = new Set(getAllKeys(visibleGroups).map(i => i.key))
+      const prunedSelected = new Set<string>()
+      const prunedStack: string[] = []
+      const prunedParentMap = new Map<string, string[]>()
+
+      for (const k of finalSelected) {
+        if (visibleKeys.has(k)) {
+          prunedSelected.add(k)
+        } else {
+          hasChanged = true
+        }
+      }
+      for (const k of finalStack) {
+        if (visibleKeys.has(k)) {
+          prunedStack.push(k)
+        }
+      }
+      for (const [k, v] of finalParentMap) {
+        if (visibleKeys.has(k)) {
+          prunedParentMap.set(k, v)
+        }
+      }
+
+      finalSelected = prunedSelected
+      finalStack = prunedStack
+      finalParentMap = prunedParentMap
+    }
+
+    if (hasChanged) {
+      setSelectedTags(finalSelected)
+      setSelectionStack(finalStack)
+      setParentTagMap(finalParentMap)
 
       if (storageKey) {
         try {
           localStorage.setItem(
             `${storageKey}_selectedTags`,
-            JSON.stringify(Array.from(result.migratedSelected))
+            JSON.stringify(Array.from(finalSelected))
           )
-          localStorage.setItem(`${storageKey}_selectionStack`, JSON.stringify(result.migratedStack))
+          localStorage.setItem(`${storageKey}_selectionStack`, JSON.stringify(finalStack))
           localStorage.setItem(
             `${storageKey}_parentTagMap`,
-            JSON.stringify(Array.from(result.migratedParentMap.entries()))
+            JSON.stringify(Array.from(finalParentMap.entries()))
           )
         } catch {}
       }
 
       if (onSelectionChangeRef.current && isExportMode) {
-        onSelectionChangeRef.current(result.migratedSelected, 'toggle', result.migratedParentMap)
+        onSelectionChangeRef.current(finalSelected, 'toggle', finalParentMap)
       }
     }
-  }, [visibleGroups, dimensionGroups, maxScaleDepth, isExportMode, storageKey])
+  }, [visibleGroups, dimensionGroups, maxScaleDepth, isExportMode, storageKey, showEmptyTags])
 
   const handleSelectAll = useCallback(() => {
     const allItems = getAllKeys(visibleGroups, undefined, [], collapsedDimensionGroups)
@@ -1137,12 +979,54 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
   }, [visibleGroups, selectedTags, storageKey, collapsedDimensionGroups])
 
 
-  const [collapsedTags, setCollapsedTags] = useState<Set<string>>(() => new Set())
+  // 默认展开 5 级：预计算第 6 级及更深的父标签 key
+  const defaultCollapsedTagKeys = useMemo(
+    () => collectDefaultCollapsedTagKeys(visibleGroups, handleVisibleAndHiddenTags),
+    [visibleGroups, handleVisibleAndHiddenTags]
+  )
+  // 记录用户手动展开过的节点，避免树/刻度重投影时被默认折叠策略再次收回
+  const userExpandedTagKeysRef = useRef<Set<string>>(new Set())
+  const [collapsedTags, setCollapsedTags] = useState<Set<string>>(
+    () => new Set(defaultCollapsedTagKeys)
+  )
+
+  // 树数据或 maxScaleDepth 变化时补齐默认折叠项；用户已手动展开的节点保持展开
+  useEffect(() => {
+    setCollapsedTags(prev => {
+      let changed = false
+      const next = new Set(prev)
+      defaultCollapsedTagKeys.forEach(key => {
+        if (userExpandedTagKeysRef.current.has(key)) {
+          if (next.delete(key)) changed = true
+        } else if (!next.has(key)) {
+          next.add(key)
+          changed = true
+        }
+      })
+      return changed ? next : prev
+    })
+  }, [defaultCollapsedTagKeys])
+
+  // 工作区切换时重置用户展开覆盖记录
+  const lastExpansionWorkspaceRef = useRef(workspacePath)
+  useEffect(() => {
+    if (lastExpansionWorkspaceRef.current !== workspacePath) {
+      lastExpansionWorkspaceRef.current = workspacePath
+      userExpandedTagKeysRef.current = new Set()
+      setCollapsedTags(new Set())
+    }
+  }, [workspacePath])
+
   const toggleTagExpand = useCallback((tagValue: string) => {
     setCollapsedTags(prev => {
       const next = new Set(prev)
-      if (next.has(tagValue)) next.delete(tagValue)
-      else next.add(tagValue)
+      if (next.has(tagValue)) {
+        next.delete(tagValue)
+        userExpandedTagKeysRef.current.add(tagValue)
+      } else {
+        next.add(tagValue)
+        userExpandedTagKeysRef.current.delete(tagValue)
+      }
       return next
     })
   }, [])
@@ -1185,7 +1069,8 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       node: DimensionTreeNode,
       parentTagValue?: string,
       ancestorChain?: string[],
-      depth: number = 0
+      depth: number = 0,
+      hostScopeCode?: string
     ) {
       const isCollapsed = collapsedDimensionGroups.has(node.id)
       const isTopLevel = node.level === 0
@@ -1213,16 +1098,19 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       }
 
       tagsToShow.forEach((tag, index) => {
+        const effectiveHostScopeCode = tag.hostScopeCode || hostScopeCode
         const isSelected = isTagSelected(
           tag.dimensionId,
           tag.tagValue,
           parentTagValue,
           tag.viaParentCode ?? undefined,
           tag.isLifted === true,
-          tag.codePath
+          tag.codePath,
+          effectiveHostScopeCode
         )
         const isDisabled = tag.fileCount === 0
-        const childDimensions = node.childTags?.get(tag.tagValue)
+        const tagNodeKey = dimensionNodeKey(node.code || node.name, tag)
+        const childDimensions = node.childTags?.get(tagNodeKey)
         const hasChildDimensions =
           !!childDimensions &&
           childDimensions.some(childNode => {
@@ -1244,7 +1132,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
             return childTagsToShow && childTagsToShow.length > 0
           })
 
-        const isTagExpanded = !collapsedTags.has(tag.tagValue)
+        const isTagExpanded = !collapsedTags.has(tagNodeKey)
         const currentChain = ancestorChain ? [...ancestorChain, tag.tagValue] : [tag.tagValue]
 
         const effectiveTag = tag
@@ -1266,8 +1154,10 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
           type: 'tag',
           node,
           tag: effectiveTag,
+          tagKey: tagNodeKey,
           parentTagValue,
           ancestorChain: currentChain,
+          hostScopeCode: effectiveHostScopeCode,
           isSelected,
           isDisabled: effectiveTag.fileCount === 0,
           hasChildDimensions,
@@ -1278,7 +1168,8 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
 
         if (hasChildDimensions && isTagExpanded) {
           childDimensions.forEach(childNode => {
-            traverse(childNode, tag.tagValue, currentChain, depth + 1)
+            const nextHostCode = tag.hostScopeCode || (depth === 0 ? tag.code : hostScopeCode) || tag.code || undefined
+            traverse(childNode, tag.tagValue, currentChain, depth + 1, nextHostCode)
           })
         }
       })

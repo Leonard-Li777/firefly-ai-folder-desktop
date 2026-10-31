@@ -70,6 +70,7 @@ describe('IdentityBlueprintSelectView Component', () => {
     {
       templateId: 'tpl_ui_design',
       name: 'UI/UX 设计全生命周期模板',
+      templateType: 'workflow',
       targetIdentities: ['ui_designer'],
       paths: ['01_需求与调研/用户访谈', '02_设计资产/设计规范', '03_交付成果/高保真原型'],
       score: 0.94,
@@ -79,6 +80,7 @@ describe('IdentityBlueprintSelectView Component', () => {
     {
       templateId: 'tpl_finance_accounting',
       name: '标准财务会计归档模板',
+      templateType: 'classification',
       targetIdentities: ['accountant'],
       paths: ['01_原始凭证/发票收据', '02_月度报表/资产负债表'],
       score: 0.83,
@@ -328,5 +330,76 @@ describe('IdentityBlueprintSelectView Component', () => {
 
     // 不包含原平铺路径字符串作为纯文本
     expect(screen.queryByText('01_需求与调研/用户访谈')).not.toBeInTheDocument()
+  })
+  it('目录结构卡片正确渲染【资产分类】金色微标与【工作流】灰色微标', async () => {
+    render(
+      <IdentityBlueprintSelectView
+        workspaceId={1}
+        workspaceDirectoryPath="/test/workspace"
+        onSelectStructure={mockSelectStructure}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('工作流')).toBeInTheDocument()
+      expect(screen.getByText('资产分类')).toBeInTheDocument()
+    })
+  })
+
+  it('用户勾选身份后在搜索框键入字符应立即清空已选身份，切回双侧独立意图匹配', async () => {
+    render(
+      <IdentityBlueprintSelectView
+        workspaceId={1}
+        workspaceDirectoryPath="/test/workspace"
+        onSelectStructure={mockSelectStructure}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('UI设计师')).toBeInTheDocument()
+    })
+
+    // 勾选 UI设计师
+    const checkbox = screen.getAllByRole('checkbox')[0]
+    fireEvent.click(checkbox)
+
+    await waitFor(() => {
+      expect(checkbox).toBeChecked()
+    })
+
+    // 在搜索框输入新文字
+    const searchInput = screen.getByPlaceholderText(/搜索身份或输入诉求/i)
+    fireEvent.change(searchInput, { target: { value: '财务凭证' } })
+
+    // 验证已选身份立即被清空并切回智能推荐态
+    await waitFor(() => {
+      expect(screen.getByText(/已选身份 \(0\)/i)).toBeInTheDocument()
+      expect(screen.getByText(/暂未勾选/i)).toBeInTheDocument()
+    })
+  })
+
+  it('点击清空搜索按钮可重置输入框并即时发起清空匹配', async () => {
+    render(
+      <IdentityBlueprintSelectView
+        workspaceId={1}
+        workspaceDirectoryPath="/test/workspace"
+        onSelectStructure={mockSelectStructure}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('UI设计师')).toBeInTheDocument()
+    })
+
+    const searchInput = screen.getByPlaceholderText(/搜索身份或输入诉求/i)
+    fireEvent.change(searchInput, { target: { value: '设计' } })
+
+    // 找到清空按钮并点击
+    const closeIcon = await screen.findByText('close')
+    fireEvent.click(closeIcon.closest('button')!)
+
+    await waitFor(() => {
+      expect(searchInput).toHaveValue('')
+    })
   })
 });

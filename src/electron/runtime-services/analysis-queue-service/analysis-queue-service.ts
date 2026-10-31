@@ -12,7 +12,16 @@ import {
   FileProcessorService
 } from '@firefly/core-engine'
 import type { EnqueueInput, IErrorRecoveryConfig } from './types'
-import { LogCategory, logger, PerformanceTimer, isCpuBackend, FileCategory, getFileCategory } from '@firefly/shared'
+import {
+  LogCategory,
+  logger,
+  PerformanceTimer,
+  isCpuBackend,
+  FileCategory,
+  getFileCategory,
+  isPathEqual,
+  isSubPath
+} from '@firefly/shared'
 import { loggingService } from '../system/logging-service'
 import { systemHealthService } from '../system'
 import { loadIgnoreRules } from '../analysis/analysis-ignore-service'
@@ -38,11 +47,15 @@ import { databaseService } from '../database/database-service'
 import { AIServiceManager } from './ai-service-manager'
 import { AnalysisStatsCollector } from './analysis-stats-collector'
 import { DirectoryProcessor } from './directory-processor'
-import { FileProcessor, getFileStageFromDB, getFileAnalysisStateFromDB } from './file-processor'
+import { FileProcessor, getFileStageFromDB, getFileAnalysisStateFromDB, checkBasicDataCompleteness } from './file-processor'
 import path from 'node:path'
 import { engineBridgeService } from '../engine-bridge'
 import { isRenameProtectedExtension } from '../../utils/extension-rename-whitelist'
 import { isTransientInfraError } from './file-processor/analysis-error-classifier'
+import {
+  canonicalMaintenanceService,
+  installCanonicalMaintenanceListener
+} from './canonical-maintenance-service'
 
 /**
  * 等待 CPU 提取阶段就绪的上限。
@@ -214,6 +227,9 @@ export class AnalysisQueueService {
   private wakeUpResolver?: () => void
   private wakeUpPromise?: Promise<void>
 
+  /** 工单 06：canonical 档位切换维护监听的取消订阅句柄 */
+  private canonicalMaintenanceUnsubscribe?: () => void
+
   constructor() {
     this.errorHandler = new ErrorHandler()
 
@@ -336,6 +352,7 @@ export class AnalysisQueueService {
       this.isInitialized = adaptersReady
       if (adaptersReady) {
         logger.info(LogCategory.ANALYSIS_QUEUE, '[分析队列] 服务初始化完成')
+        this.installCanonicalMaintenance()
       } else {
         logger.warn(
           LogCategory.ANALYSIS_QUEUE,
@@ -346,6 +363,44 @@ export class AnalysisQueueService {
     this.initializePromise = initPromise
 
     await initPromise
+  }
+
+  /**
+   * 工单 06：注册档位/维度变更监听，并启动一次「启动后有界回填」。
+   *
+   * - 监听只复用 `ConfigOrchestrator.onValueChange`（与 omni-service 热重启并列），不造第二套；
+   * - 启动后回填只扫 `NULL/pending/failed`，队列忙碌即暂停，可断点续跑；
+   * - 全部失败只 warn，绝不阻断分析队列初始化。
+   */
+  private installCanonicalMaintenance(): void {
+    try {
+      this.canonicalMaintenanceUnsubscribe = installCanonicalMaintenanceListener(
+        canonicalMaintenanceService
+      )
+    } catch (err: any) {
+      logger.warn(
+        LogCategory.ANALYSIS_QUEUE,
+        `[CanonicalMaintenance] 监听注册失败（不影响分析队列）: ${err?.message ?? err}`
+      )
+    }
+    // 启动后回填：先探空 ready 行（向量被删除但 state 未失效的场景），再有界回填
+    void (async () => {
+      try {
+        await canonicalMaintenanceService.probeReadyRowsForMissingVectors()
+        const solidified = await canonicalMaintenanceService.runBackfill()
+        if (solidified > 0) {
+          logger.info(
+            LogCategory.ANALYSIS_QUEUE,
+            `[CanonicalMaintenance] 启动后有界回填完成：固化 ${solidified} 个 canonical 向量`
+          )
+        }
+      } catch (err: any) {
+        logger.warn(
+          LogCategory.ANALYSIS_QUEUE,
+          `[CanonicalMaintenance] 启动后回填异常（不影响分析队列）: ${err?.message ?? err}`
+        )
+      }
+    })()
   }
 
   private reinitFromAdapters(adapters: any): void {
@@ -544,14 +599,12 @@ export class AnalysisQueueService {
                 .prepare('SELECT file_fingerprint FROM workspace_files WHERE workspace_id = ? AND path = ?')
                 .get(item.workspaceId, item.path) as { file_fingerprint?: string } | undefined
               if (!wf?.file_fingerprint) return true
+              // 抽帧间隔已由引擎按 90s 向量预算自决（设置页已移除该项），不再与配置比对；
+              // 此处只判断切片记录是否缺失
               const chunkRow = db
-                .prepare('SELECT sampling_interval_seconds FROM file_video_chunks WHERE file_fingerprint = ? LIMIT 1')
-                .get(wf.file_fingerprint) as { sampling_interval_seconds?: number } | undefined
-              if (!chunkRow) return true
-              const currentInterval =
-                ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 1.0
-              const recordedInterval = chunkRow.sampling_interval_seconds ?? 1.0
-              return Math.abs(recordedInterval - currentInterval) > 0.1
+                .prepare('SELECT 1 AS ok FROM file_video_chunks WHERE file_fingerprint = ? LIMIT 1')
+                .get(wf.file_fingerprint) as { ok?: number } | undefined
+              return !chunkRow
             } catch {
               return true
             }
@@ -604,13 +657,38 @@ export class AnalysisQueueService {
                   ConfigOrchestrator.getInstance().getValue<boolean>('REUSE_BASIC_ANALYSIS_DATA') ??
                   true
 
-                // 只要文件已处于 Stage >= 2（CPU 提取已完成），一律跳过 CPU 阶段：
-                // - 暂停/恢复：无论是否开启数据复用，都不应重复执行 Stage 2 提取
-                // - 强制重新分析 + 复用开启：可跳过、复用已有提取数据
-                // - 强制重新分析 + 复用关闭 + 之前已分析完成（is_analyzed=true）：不能跳过，必须重新提取
-                // - 视频文件若缺失时序切片（file_video_chunks），严禁跳过 CPU 提取
-                shouldSkipCpu =
-                  isAlreadyStage2(item) && !hasMissingVideoChunks(item) && !isForcedReextract(item)
+              if (isAlreadyStage2(item)) {
+                if (!reuseBasicAnalysisData) {
+                  // 用户配置关闭复用：重新分析或已分析均强制重跑 CPU 提取
+                  shouldSkipCpu =
+                    item.forceReanalyze !== true &&
+                    !getFileAnalysisStateFromDB(databaseService.db!, item.workspaceId!, item.path).isAnalyzed
+                } else {
+                  // 用户配置开启复用：必须严格检查向量、切片、OCR、LRC、正文等数据是否健全
+                  const wf = databaseService.db!
+                    .prepare('SELECT file_fingerprint FROM workspace_files WHERE workspace_id = ? AND path = ?')
+                    .get(item.workspaceId!, item.path) as { file_fingerprint?: string } | undefined
+                  const completeness = await checkBasicDataCompleteness(
+                    databaseService.db!,
+                    item.workspaceId!,
+                    item.path,
+                    wf?.file_fingerprint
+                  )
+                  if (completeness.isComplete) {
+                    shouldSkipCpu = true
+                    logger.debug(
+                      LogCategory.ANALYSIS_QUEUE,
+                      `[并行队列:CPU通道] 基础数据齐全健全（向量、OCR/LRC/摘要均完备），跳过 CPU 提取: ${item.name}`
+                    )
+                  } else {
+                    shouldSkipCpu = false
+                    logger.info(
+                      LogCategory.ANALYSIS_QUEUE,
+                      `[并行队列:CPU通道] 基础数据不完整 (${completeness.missingReasons.join(', ')})，执行 CPU 提取补全: ${item.name}`
+                    )
+                  }
+                }
+              }
               } catch (preErr) {
                 // 阶段判定本身异常（配置未初始化 / DB 查询失败）时不能直接放弃该文件，
                 // 否则它会永远停在 pending 且不发出通知 —— 退化为「照常提取」最安全。
@@ -704,9 +782,11 @@ export class AnalysisQueueService {
                   LogCategory.ANALYSIS_QUEUE,
                   `[并行队列:GPU通道] 等待 CPU 提取阶段就绪: ${item.name} (id: ${item.id})`
                 )
+                // 若 CPU 提取被跳过（cpuSkippedIds 包含），无需等待通知直接放行；
+                // 若 CPU 提取正在执行，必须严格等待 CPU 通知（禁止凭旧 isAlreadyStage2 抢跑）
                 await notifier.waitForStage2(
                   item.id,
-                  () => isAlreadyStage2(item),
+                  () => cpuSkippedIds.has(item.id),
                   signal,
                   this.stage2WaitTimeoutMs
                 )
@@ -819,6 +899,11 @@ export class AnalysisQueueService {
                     100,
                     err instanceof Error ? err.message : String(err)
                   )
+                }
+              } finally {
+                if (this.current?.id === item.id) {
+                  this.current = undefined
+                  this.emitUpdate()
                 }
               }
             }
@@ -1000,6 +1085,37 @@ export class AnalysisQueueService {
     this.queueManager.deleteItemsByDirectory(directoryPath)
   }
 
+  /**
+   * 中止并移除属于指定工作目录的全部队列任务（含正在处理的当前任务）。
+   *
+   * 与 `deleteItemsByDirectory` 的区别：后者只摘掉排队中的条目，对「正在处理」的
+   * 任务不发声，而这个任务往往正握着 `.VirtualDirectory/.thumbnail` 的写入句柄。
+   * 删除工作目录前必须先调用本方法，否则随后的 `fs.rm` 会撞 EBUSY，
+   * 或者刚删掉就被在途的缩略图任务重新创建出来。
+   */
+  async abortAndDeleteItemsByDirectory(directoryPath: string): Promise<void> {
+    await this.ensureInitialized()
+
+    const belongsToDirectory = (filePath?: string): boolean => {
+      if (!filePath) return false
+      return isPathEqual(filePath, directoryPath) || isSubPath(directoryPath, filePath)
+    }
+
+    if (this.current && belongsToDirectory(this.current.path)) {
+      logger.info(
+        LogCategory.ANALYSIS_QUEUE,
+        '[分析队列] 删除工作目录前中止在途任务，释放 .VirtualDirectory 句柄:',
+        this.current.path
+      )
+      if (this.currentAbortController) {
+        this.currentAbortController.abort()
+        this.currentAbortController = null
+      }
+    }
+
+    this.queueManager.deleteItemsByDirectory(directoryPath)
+  }
+
   async clearPending(): Promise<void> {
     await this.ensureInitialized()
     if (this.currentAbortController) {
@@ -1040,6 +1156,23 @@ export class AnalysisQueueService {
     return this.errorHandler.shouldRetry(errorType as any, retryCount)
   }
 
+  /**
+   * 工单 06：canonical 重建计数（供设置页展示，方案 §3.10「禁止静默空召回」）。
+   * UI 接入属工单 13，此处只暴露数据出口。
+   */
+  public getCanonicalRebuildCounts(): ReturnType<
+    typeof canonicalMaintenanceService.getRebuildCounts
+  > {
+    return canonicalMaintenanceService.getRebuildCounts()
+  }
+
+  /**
+   * 工单 06：手动触发一次 canonical 维护（「重建语义索引」入口，UI 由工单 13 接入）。
+   */
+  public async runCanonicalMaintenance(reason = 'manual'): Promise<void> {
+    await canonicalMaintenanceService.runMaintenance(reason)
+  }
+
   getMaxRetries(): number {
     return this.errorHandler.getErrorRecoveryConfig().maxRetries
   }
@@ -1063,7 +1196,10 @@ export class AnalysisQueueService {
         ? this.runningWorkspaceStack[this.runningWorkspaceStack.length - 1]
         : undefined
 
-    const currentAnalyzingItem = this.current ? { ...this.current } : undefined
+    const currentAnalyzingItem =
+      this.current && this.current.status === 'analyzing'
+        ? { ...this.current }
+        : undefined
 
     const snapshot = this.queueManager.getSnapshot(this.current?.id, workspaceId)
     const isWorkspaceRunning =
@@ -1113,7 +1249,10 @@ export class AnalysisQueueService {
   }
 
   /**
-   * 检测队列中是否存在待处理的任务（pending 状态）
+   * 检测队列中是否存在待处理的任务（pending / analyzing）。
+   *
+   * `analyzing` 必须计入：canonical 回填以此判断「队列忙碌即暂停」，
+   * 若只认 pending，正在跑的分析（且恰好暂无 pending）期间回填会与本地模型抢同一路嵌入。
    */
   public hasPendingItems(): boolean {
     if (!this.queueManager) {
@@ -1122,7 +1261,7 @@ export class AnalysisQueueService {
     const snapshot = this.queueManager.getSnapshot()
     return (
       Array.isArray(snapshot?.items) &&
-      snapshot.items.some(i => i.status === 'pending')
+      snapshot.items.some(i => i.status === 'pending' || i.status === 'analyzing')
     )
   }
 

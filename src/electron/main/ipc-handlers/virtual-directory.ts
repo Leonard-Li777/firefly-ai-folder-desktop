@@ -1,6 +1,12 @@
 import { ipcMain } from 'electron'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
-import { logger, LogCategory, sanitizeDirectoryName, isTestEnvironment, HAC_FEATURE_FLAGS } from '@firefly/shared'
+import {
+  logger,
+  LogCategory,
+  sanitizeDirectoryName,
+  isTestEnvironment,
+  HAC_FEATURE_FLAGS
+} from '@firefly/shared'
 import { userTierService } from '../../runtime-services/user-tier/user-tier-service'
 import { databaseService } from '../../runtime-services/database/database-service'
 import { analysisQueueService } from '../../runtime-services/analysis-queue-service'
@@ -10,7 +16,6 @@ import {
   organizeRealDirectoryService,
   reorganizePauseFlags,
   reorganizeEndFlags,
-  organizePlanAbortControllers,
   globalLlamaIndexService,
   directoryContextService,
   setDirectoryContextService,
@@ -31,11 +36,18 @@ import {
   type FileMetaItem
 } from '@firefly/core-engine'
 import { OmniService } from '../../runtime-services/system/omni-service'
+import { omniClient } from '../../services/omni-client'
+import {
+  FileSemanticRepresentationService,
+  fileSemanticRepresentationService
+} from '../../runtime-services/filesystem/file-semantic-representation-service'
+import { canonicalTextService } from '../../runtime-services/analysis-queue-service/canonical-text-service'
 import { createCoreEngineAdapters } from '../../adapters'
 import fs from 'fs-extra'
 import path from 'node:path'
 import { VIRTUAL_DIRECTORY_ROOT } from '../../runtime-services/filesystem/virtual-directory-service/utils'
 import { NamingDSLEngine } from '../../runtime-services/filesystem/naming-dsl-engine'
+import { isGemmaMrlDim, resolveGemmaDim } from '../../utils/embedding-dim'
 
 /** 批量整理会话级文本特征向量缓存 (fileId -> number[])，防投毒且杜绝重复推理 */
 const organizeSessionVectorCache = new Map<number, number[]>()
@@ -564,6 +576,28 @@ export function registerVirtualDirectoryIPCHandlers() {
           message: t('AI 服务正在初始化中，请稍候再试')
         }
       }
+      // 容量断路器：LLM由文件推导目录模式单次上限 500 个文件（找补模式除外）
+      if (!options?.isRescue) {
+        let fileCount = options?.fileIds?.length ?? (options?.selectedFileIds?.length ?? (options?.files?.length ?? undefined))
+        if (fileCount === undefined) {
+          if (options?.workspaceDirectoryPath && organizeRealDirectoryService) {
+            fileCount = organizeRealDirectoryService.getWorkspaceAnalyzedFileCount(options.workspaceDirectoryPath)
+          } else if (virtualDirectoryId > 0 && virtualDirectoryService) {
+            fileCount = await virtualDirectoryService.getVirtualDirectoryFileCount(virtualDirectoryId)
+          }
+        }
+        if (fileCount !== undefined && fileCount > 500) {
+          logger.warn(LogCategory.MAIN, '[IPC] virtual-directory/reorganize: 文件数超限被拦截', { fileCount })
+          return {
+            success: false,
+            errorCode: 'ORGANIZE_CAPACITY_EXCEEDED',
+            limit: 500,
+            actual: fileCount,
+            message: t('当前待推导文件数（{count}）超出单次处理上限（500个），请在「已分析」页面勾选目标文件分批整理', { count: fileCount })
+          }
+        }
+      }
+
       reorganizePauseFlags.set(virtualDirectoryId, false)
       reorganizeEndFlags.set(virtualDirectoryId, false)
       return await virtualDirectoryService.reorganize(virtualDirectoryId, {
@@ -840,25 +874,37 @@ export function registerVirtualDirectoryIPCHandlers() {
   )
   ipcMain.handle(
     'organize-real-directory/get-analyzed-files',
-    async (event, workspaceDirectoryPath: string) => {
+    async (event, workspaceDirectoryPath: string, selectedFileIds?: number[]) => {
       if (!organizeRealDirectoryService) throw new Error(t('整理真实目录服务未初始化'))
-      return await organizeRealDirectoryService.getAnalyzedFiles(workspaceDirectoryPath)
+      return await organizeRealDirectoryService.getLightweightWorkspaceFiles(
+        workspaceDirectoryPath,
+        selectedFileIds
+      )
     }
   )
-  ipcMain.handle('organize-real-directory/quick-organize', async (event, params: any) => {
-    const license = await checkLicenseAndNotify(true)
-    if (license.status !== LicenseStatus.AUTHORIZED)
-      return {
-        success: false,
-        status: license.status,
-        message: license.error || t('授权校验失败，请联网或激活企业版后再执行此操作')
-      }
-    if (!organizeRealDirectoryService) throw new Error(t('整理真实目录服务未初始化'))
-    return await organizeRealDirectoryService.quickOrganize(
-      params.workspaceDirectoryPath,
-      params.aiGeneratedStructure as any
-    )
-  })
+
+  ipcMain.handle(
+    'organize-real-directory/get-lightweight-files',
+    async (event, workspaceDirectoryPath: string, selectedFileIds?: number[], limit?: number) => {
+      if (!organizeRealDirectoryService) throw new Error(t('整理真实目录服务未初始化'))
+      return await organizeRealDirectoryService.getLightweightWorkspaceFiles(
+        workspaceDirectoryPath,
+        selectedFileIds,
+        limit
+      )
+    }
+  )
+
+  ipcMain.handle(
+    'organize-real-directory/get-analyzed-count',
+    async (event, workspaceDirectoryPath: string) => {
+      if (!organizeRealDirectoryService) throw new Error(t('整理真实目录服务未初始化'))
+      return organizeRealDirectoryService.getWorkspaceAnalyzedFileCount(workspaceDirectoryPath)
+    }
+  )
+
+  /** 整理会话文件特征池化缓存 (避免搜索交互时反复扫 SQLite，容量 10 条工作区记录) */
+  const fileTagsSessionCache = new Map<string, Record<number, Array<{ code: string; weight: number }>>>()
 
   ipcMain.handle(
     'organize-real-directory/match-perspectives-and-structures',
@@ -868,39 +914,58 @@ export function registerVirtualDirectoryIPCHandlers() {
       const activeProfile: 'bekko_384' | 'gemma_512' =
         request.aiProfile || (rawProfile === 'gemma_unified' ? 'gemma_512' : 'bekko_384')
 
-      let fileTags = request.injectedFileTags
-      if (!fileTags && request.fileIds && request.fileIds.length > 0) {
+      let fileTags: Record<number, Array<{ code: string; weight: number }>> | undefined =
+        request.injectedFileTags as Record<number, Array<{ code: string; weight: number }>> | undefined
+      const cacheKey =
+        request.fileIds && request.fileIds.length > 0
+          ? `${request.workspaceId || 0}:${request.fileIds.length}:${request.fileIds[0]}:${request.fileIds[request.fileIds.length - 1]}`
+          : ''
+
+      if (!fileTags && cacheKey && fileTagsSessionCache.has(cacheKey)) {
+        fileTags = fileTagsSessionCache.get(cacheKey)
+      } else if (!fileTags && request.fileIds && request.fileIds.length > 0) {
         fileTags = {}
         try {
           const db = databaseService.db
           if (db) {
-            const placeholders = request.fileIds.map(() => '?').join(',')
-            const rows = db
-              .prepare(
-                `
-              SELECT
-                wf.id AS file_id,
-                ftr.tag_code AS code,
-                ftr.confidence AS weight
-              FROM file_tag_relations ftr
-              INNER JOIN workspace_files wf ON ftr.file_fingerprint = wf.file_fingerprint
-              WHERE wf.id IN (${placeholders})
-            `
-              )
-              .all(...request.fileIds) as Array<{
-              file_id: number
-              code: string
-              weight: number | null
-            }>
+            const chunkSize = 500
+            for (let i = 0; i < request.fileIds.length; i += chunkSize) {
+              const chunk = request.fileIds.slice(i, i + chunkSize)
+              const placeholders = chunk.map(() => '?').join(',')
+              const rows = db
+                .prepare(
+                  `
+                SELECT
+                  wf.id AS file_id,
+                  ftr.tag_code AS code,
+                  ftr.confidence AS weight
+                FROM file_tag_relations ftr
+                INNER JOIN workspace_files wf ON ftr.file_fingerprint = wf.file_fingerprint
+                WHERE wf.id IN (${placeholders})
+              `
+                )
+                .all(...chunk) as Array<{
+                file_id: number
+                code: string
+                weight: number | null
+              }>
 
-            for (const row of rows) {
-              if (!fileTags[row.file_id]) {
-                fileTags[row.file_id] = []
+              for (const row of rows) {
+                if (!fileTags[row.file_id]) {
+                  fileTags[row.file_id] = []
+                }
+                fileTags[row.file_id].push({
+                  code: row.code,
+                  weight: typeof row.weight === 'number' ? row.weight : 1.0
+                })
               }
-              fileTags[row.file_id].push({
-                code: row.code,
-                weight: typeof row.weight === 'number' ? row.weight : 1.0
-              })
+            }
+            if (cacheKey) {
+              if (fileTagsSessionCache.size >= 10) {
+                const firstKey = fileTagsSessionCache.keys().next().value
+                if (firstKey) fileTagsSessionCache.delete(firstKey)
+              }
+              fileTagsSessionCache.set(cacheKey, fileTags)
             }
           }
         } catch (err) {
@@ -919,21 +984,58 @@ export function registerVirtualDirectoryIPCHandlers() {
 
   ipcMain.handle(
     'organize-real-directory/calculate-file-paths-cosine',
-    async (event, request: CalculateFilePathsCosineRequest) => {
+    async (event, request: CalculateFilePathsCosineRequest & { force?: boolean }) => {
       const rawProfile =
         ConfigOrchestrator.getInstance().getValue<string>('AI_EMBEDDING_PROFILE') || 'classic_light'
       const mrlDim =
         ConfigOrchestrator.getInstance().getValue<number>('EMBEDDING_MRL_DIMENSION') || 512
 
+      // 容量断路器：单次批量整理硬上限 3,000 个文件（支持 force: true 强行穿透）
+      let candidateCount = request.fileIds?.length
+      if (candidateCount === undefined && request.workspaceId && organizeRealDirectoryService) {
+        candidateCount = organizeRealDirectoryService.getWorkspaceAnalyzedFileCount(request.workspaceId)
+      }
+      const capacityLimit = ConfigOrchestrator.getInstance().getValue<number>('ORGANIZE_CAPACITY_LIMIT') ?? 3000
+      if (!request.force && candidateCount !== undefined && candidateCount > capacityLimit) {
+        logger.warn(LogCategory.FILE_ORGANIZATION, '[IPC] calculate-file-paths-cosine: 文件数超限被拦截', {
+          candidateCount,
+          limit: capacityLimit
+        })
+        return {
+          success: false,
+          errorCode: 'ORGANIZE_CAPACITY_EXCEEDED',
+          limit: capacityLimit,
+          actual: candidateCount,
+          message: t('当前待计算文件数（{count}）超出批量整理上限（{limit}个），请在「已分析」页面勾选目标文件后发起整理', { count: candidateCount, limit: capacityLimit.toLocaleString() })
+        }
+      }
+      if (request.force && candidateCount !== undefined && candidateCount > capacityLimit) {
+        logger.warn(LogCategory.FILE_ORGANIZATION, '[IPC] calculate-file-paths-cosine: 用户确认风险，强制穿透容量限制计算余弦打分', {
+          candidateCount,
+          limit: capacityLimit
+        })
+      }
+
       let activeProfile: string = rawProfile
       let activeDim = 384
+
+      // 维度契约（方案 §3.4）：gemma_unified 只允许 256/512/768，1024 不是合法槽位。
+      // 维度一律以配置的 EMBEDDING_MRL_DIMENSION 为准（非法值回退 512 并告警），
+      // 禁止再用 aiProfile 字符串嗅探出 1024 这种非法维度。
+      const gemmaActive = request.aiProfile
+        ? request.aiProfile.includes('gemma')
+        : rawProfile === 'gemma_unified'
+      if (gemmaActive && !isGemmaMrlDim(mrlDim)) {
+        logger.warn(
+          LogCategory.FILE_ORGANIZATION,
+          `[IPC] EMBEDDING_MRL_DIMENSION=${mrlDim} 不是合法 MRL 槽位 (256/512/768)，已回退 512`
+        )
+      }
 
       if (request.aiProfile) {
         if (request.aiProfile.includes('gemma')) {
           activeProfile = 'gemma_unified'
-          if (request.aiProfile.includes('256')) activeDim = 256
-          else if (request.aiProfile.includes('1024')) activeDim = 1024
-          else activeDim = 512
+          activeDim = resolveGemmaDim(request.aiProfile, mrlDim)
         } else {
           activeProfile = 'classic_light'
           activeDim = 384
@@ -941,7 +1043,7 @@ export function registerVirtualDirectoryIPCHandlers() {
       } else {
         if (rawProfile === 'gemma_unified') {
           activeProfile = 'gemma_unified'
-          activeDim = mrlDim
+          activeDim = resolveGemmaDim(rawProfile, mrlDim)
         } else {
           activeProfile = 'classic_light'
           activeDim = 384
@@ -953,7 +1055,6 @@ export function registerVirtualDirectoryIPCHandlers() {
       const injectedFileVectors: Record<number, number[]> = request.injectedFileVectors ? { ...request.injectedFileVectors } : {}
       const injectedPathVectors: Record<string, number[]> = request.injectedPathVectors ? { ...request.injectedPathVectors } : {}
       const injectedFileMeta: Record<number, FileMetaItem> = request.injectedFileMeta ? { ...request.injectedFileMeta } : {}
-
       // 1. 从 SQLite 批量拉取全字段文件元数据 (若调用方未提供 injectedFileMeta)
       if (request.fileIds && request.fileIds.length > 0) {
         try {
@@ -970,27 +1071,34 @@ export function registerVirtualDirectoryIPCHandlers() {
                 SELECT
                   wf.id AS file_id,
                   wf.name AS raw_name,
+                  wf.file_fingerprint AS file_fingerprint,
                   f.extension AS extension,
                   f.file_group AS file_group,
                   f.smart_name AS smart_name,
                   f.description AS description,
+                  f.canonical_text AS canonical_text,
                   ftr.tag_code AS tag_code,
+                  ftr.tag_group AS tag_group,
                   ftr.name_path AS name_path,
                   ftr.code_path AS code_path
                 FROM workspace_files wf
                 LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
                 LEFT JOIN file_tag_relations ftr ON ftr.file_fingerprint = wf.file_fingerprint
                 WHERE wf.id IN (${placeholders})
+                ORDER BY wf.id ASC, COALESCE(ftr.confidence, 0) DESC, ftr.tag_code ASC
               `
                 )
                 .all(...chunk) as Array<{
                 file_id: number
                 raw_name: string | null
+                file_fingerprint: string | null
                 extension: string | null
                 file_group: string | null
                 smart_name: string | null
                 description: string | null
+                canonical_text: string | null
                 tag_code: string | null
+                tag_group: string | null
                 name_path: string | null
                 code_path: string | null
               }>
@@ -1064,8 +1172,8 @@ export function registerVirtualDirectoryIPCHandlers() {
           }
         }
 
-        // 2.2 文件向量提取 (会话内存缓存优先)
-        const missingFileItems: { fileId: number; prompt: string }[] = []
+        // 2.2 文件向量提取（委托 FileSemanticRepresentationService，只读 zvec + 内存 JIT，严禁回写）
+        const pendingFileIds: number[] = []
         for (const fId of request.fileIds) {
           if (injectedFileVectors[fId]) continue
           const cached = organizeSessionVectorCache.get(fId)
@@ -1073,37 +1181,42 @@ export function registerVirtualDirectoryIPCHandlers() {
             injectedFileVectors[fId] = cached
             continue
           }
-          const meta = injectedFileMeta[fId] || { rawName: `file_${fId}` }
-          const prompt = buildFilePrompt(meta)
-          missingFileItems.push({ fileId: fId, prompt })
+          pendingFileIds.push(fId)
         }
 
-        if (missingFileItems.length > 0) {
-          const BATCH_SIZE = 200
-          const totalBatches = Math.ceil(missingFileItems.length / BATCH_SIZE)
-          for (let i = 0; i < missingFileItems.length; i += BATCH_SIZE) {
-            const slice = missingFileItems.slice(i, i + BATCH_SIZE)
-            const batchIdx = Math.floor(i / BATCH_SIZE) + 1
-            // 文件向量提取批次进度推送，让渲染进程进度条平滑推进
-            try {
-              event.sender.send('virtual-directory/reorganize-progress', {
-                currentStep: batchIdx,
-                totalSteps: totalBatches,
-                message: '正在提取文件特征向量 (' + batchIdx + '/' + totalBatches + ')...'
+        if (pendingFileIds.length > 0) {
+          const db = databaseService.db
+          const semanticService = db
+            ? new FileSemanticRepresentationService({
+                db,
+                omniClient,
+                omniService: omni,
+                canonicalTextService
               })
-            } catch { /* webContents 可能已销毁，安全忽略 */ }
-            const resp = await omni.batchEmbedText(
-              slice.map(s => s.prompt),
-              { profile: activeProfile, dim: activeDim, timeoutMs: 8000 }
-            )
-            if (resp && resp.vectors) {
-              for (let idx = 0; idx < slice.length; idx++) {
-                const vec = resp.vectors[idx]
-                if (vec) {
-                  injectedFileVectors[slice[idx].fileId] = vec
-                  organizeSessionVectorCache.set(slice[idx].fileId, vec)
-                }
+            : fileSemanticRepresentationService
+
+          const evidences = await semanticService.getSemanticEvidences(pendingFileIds, {
+            requireVector: true,
+            readOnly: true,
+            embeddingProfile: activeProfile,
+            embeddingDim: activeDim,
+            onProgress: (currentStep, totalSteps, message) => {
+              try {
+                event.sender.send('virtual-directory/reorganize-progress', {
+                  currentStep,
+                  totalSteps,
+                  message
+                })
+              } catch {
+                /* webContents 可能已销毁，安全忽略 */
               }
+            }
+          })
+
+          for (const ev of evidences) {
+            if (ev.vector && (ev.vector.length === activeDim || isTestEnvironment())) {
+              injectedFileVectors[ev.fileId] = ev.vector
+              organizeSessionVectorCache.set(ev.fileId, ev.vector)
             }
           }
         }
@@ -1135,6 +1248,12 @@ export function registerVirtualDirectoryIPCHandlers() {
         prompt?: string
         distanceThreshold?: number
         maxLeafSize?: number
+        maxDepth?: number
+        maxRootDirectories?: number
+        maxSubdirectories?: number
+        similarityThreshold?: number
+        clusteringMode?: 'precise' | 'balanced' | 'complete'
+        force?: boolean
       }
     ) => {
       const startTime = Date.now()
@@ -1155,10 +1274,51 @@ export function registerVirtualDirectoryIPCHandlers() {
         }
       }
 
+      // 容量断路器：单次批量整理硬上限 3,000 个文件（支持 force: true 强行穿透）
+      let fileCount = params.fileIds?.length
+      if (fileCount === undefined && organizeRealDirectoryService) {
+        fileCount = organizeRealDirectoryService.getWorkspaceAnalyzedFileCount(wsId)
+      }
+      const capacityLimit = ConfigOrchestrator.getInstance().getValue<number>('ORGANIZE_CAPACITY_LIMIT') ?? 3000
+      if (!params.force && fileCount !== undefined && fileCount > capacityLimit) {
+        logger.warn(LogCategory.FILE_ORGANIZATION, '[IPC] smart-cluster-hac: 文件数超限被拦截', {
+          wsId,
+          fileCount,
+          limit: capacityLimit
+        })
+        const msg = t('当前待整理文件数量（{count}）超出批量整理上限（{limit}个），请在「已分析」页面勾选目标文件后发起整理', { count: fileCount, limit: capacityLimit.toLocaleString() })
+        return {
+          success: false,
+          errorCode: 'ORGANIZE_CAPACITY_EXCEEDED',
+          limit: capacityLimit,
+          actual: fileCount,
+          message: msg,
+          summary: msg,
+          directories: [],
+          durationMs: 0
+        }
+      }
+      if (params.force && fileCount !== undefined && fileCount > capacityLimit) {
+        logger.warn(LogCategory.FILE_ORGANIZATION, '[IPC] smart-cluster-hac: 用户确认风险，强制穿透容量限制执行智能聚类', {
+          wsId,
+          fileCount,
+          limit: capacityLimit
+        })
+      }
+
       const scheme = await virtualDirectoryService.generateHACClusterScheme(
         wsId,
         params.fileIds,
-        params.prompt
+        params.prompt,
+        {
+          distanceThreshold: params.distanceThreshold,
+          maxLeafSize: params.maxLeafSize,
+          maxDepth: params.maxDepth,
+          maxRootDirectories: params.maxRootDirectories,
+          maxSubdirectories: params.maxSubdirectories,
+          similarityThreshold: params.similarityThreshold,
+          clusteringMode: params.clusteringMode
+        }
       )
 
       if (!scheme) {
@@ -1176,115 +1336,6 @@ export function registerVirtualDirectoryIPCHandlers() {
         directories: scheme.directories || [],
         durationMs: Date.now() - startTime
       }
-    }
-  )
-
-  ipcMain.handle('organize-real-directory/generate-plan', async (event, params: any) => {
-    if (globalLlamaIndexService?.isSwitchingService()) {
-      logger.info(
-        LogCategory.MAIN,
-        '[IPC] organize-real-directory/generate-plan: 模型正在切换中，拒绝请求'
-      )
-      return {
-        success: false,
-        status: 'SERVICE_SWITCHING',
-        message: t('模型正在切换中，请等待')
-      }
-    }
-    const license = await checkLicenseAndNotify(true)
-    if (license.status !== LicenseStatus.AUTHORIZED)
-      return {
-        success: false,
-        status: license.status,
-        message: license.error || t('授权校验失败，请联网或激活企业版后再执行此操作')
-      }
-    if (globalLlamaIndexService) {
-      // 测试环境下跳过 AI 服务就绪等待（测试环境未初始化真实 AI 服务，
-      // 否则 waitForReady 会超时并返回 SERVICE_LOADING，导致 generatePlan 无法执行）
-      if (!isTestEnvironment()) {
-        try {
-          await globalLlamaIndexService.waitForReady(60000)
-        } catch (err) {
-          return {
-            success: false,
-            status: 'SERVICE_LOADING',
-            message: t('AI 服务正在初始化中，请稍候再试')
-          }
-        }
-      }
-    }
-    if (!organizeRealDirectoryService)
-      return { success: false, message: t('整理真实目录服务未初始化') }
-    const controller = new AbortController()
-    organizePlanAbortControllers.set(params.workspaceDirectoryPath, controller)
-    try {
-      const result = await organizeRealDirectoryService.generateOrganizePlan(
-        params.workspaceDirectoryPath,
-        {
-          ...params.options,
-          workspaceDirectoryPath: params.workspaceDirectoryPath,
-          language: ConfigOrchestrator.getInstance().getValue('DEFAULT_LANGUAGE') as string,
-          signal: controller.signal,
-          onProgress: (progress: any) => {
-            event.sender.send('organize-plan-progress', progress)
-          }
-        }
-      )
-      return result
-    } catch (error: any) {
-      logger.error(LogCategory.FILE_ORGANIZATION, '一键整理生成方案失败:', error)
-      return { success: false, message: t('未知错误') }
-    } finally {
-      organizePlanAbortControllers.delete(params.workspaceDirectoryPath)
-    }
-  })
-
-  ipcMain.handle(
-    'organize-real-directory/cancel-plan',
-    async (_event, workspaceDirectoryPath: string) => {
-      const controller = organizePlanAbortControllers.get(workspaceDirectoryPath)
-      if (controller) {
-        controller.abort()
-        organizePlanAbortControllers.delete(workspaceDirectoryPath)
-        return { success: true }
-      }
-      return { success: false, message: t('没有正在进行的任务') }
-    }
-  )
-
-  ipcMain.handle(
-    'organize-real-directory/pause-plan',
-    async (_event, workspaceDirectoryPath: string) => {
-      if (!organizeRealDirectoryService) return { success: false, message: t('服务未初始化') }
-      const quickOrganizeService = await (
-        organizeRealDirectoryService as any
-      ).getQuickOrganizeService()
-      quickOrganizeService.pause(workspaceDirectoryPath)
-      return { success: true }
-    }
-  )
-
-  ipcMain.handle(
-    'organize-real-directory/resume-plan',
-    async (_event, workspaceDirectoryPath: string) => {
-      if (!organizeRealDirectoryService) return { success: false, message: t('服务未初始化') }
-      const quickOrganizeService = await (
-        organizeRealDirectoryService as any
-      ).getQuickOrganizeService()
-      quickOrganizeService.resume(workspaceDirectoryPath)
-      return { success: true }
-    }
-  )
-
-  ipcMain.handle(
-    'organize-real-directory/end-plan',
-    async (_event, workspaceDirectoryPath: string) => {
-      if (!organizeRealDirectoryService) return { success: false, message: t('服务未初始化') }
-      const quickOrganizeService = await (
-        organizeRealDirectoryService as any
-      ).getQuickOrganizeService()
-      quickOrganizeService.end(workspaceDirectoryPath)
-      return { success: true }
     }
   )
 
@@ -1469,11 +1520,11 @@ export function registerVirtualDirectoryIPCHandlers() {
 
   // ─── 批量重命名 IPC 处理程序 ─────────────────────────────────────────────
   ipcMain.handle('batch-rename:preview', async (event, template: string, files: any[]) => {
-    return NamingDSLEngine.generatePreview(template, files)
+    return NamingDSLEngine.generatePreview(template, files, databaseService.db)
   })
 
   ipcMain.handle('batch-rename:execute', async (event, template: string, files: any[]) => {
-    return await NamingDSLEngine.executeBatchRename(template, files)
+    return await NamingDSLEngine.executeBatchRename(template, files, databaseService.db)
   })
 
   ipcMain.handle('batch-rename:random-template', async () => {

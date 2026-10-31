@@ -22,7 +22,7 @@
     "de-DE": "Keine gespeicherten virtuellen Verzeichnisse vorhanden",
     "fr-FR": "Aucun répertoire virtuel sauvegardé pour le moment",
     "ko-KR": "저장된 가상 디렉토리가 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/index.tsx(6167-6181)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/index.tsx(6209-6223)"],
     "$id": 8753
   },
   "请前往已分析页面勾选文件后点击立即整理": {
@@ -35,7 +35,7 @@
     "de-DE": "Bitte gehen Sie zur analysierten Seite, wählen Sie die Dateien aus und klicken Sie auf Jetzt organisieren",
     "fr-FR": "Veuillez vous rendre sur la page analysée, sélectionner les fichiers et cliquer sur Organiser maintenant",
     "ko-KR": "분석된 페이지로 이동하여 파일을 선택하고 지금 구성을 클릭하세요.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/index.tsx(6208-6231)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/index.tsx(6250-6273)"],
     "$id": 8754
   },
   "创建虚拟目录": {
@@ -49,7 +49,7 @@
     "fr-FR": "Créer un répertoire virtuel",
     "ko-KR": "가상 디렉터리 만들기",
     "$files": [
-      "src/renderer/components/file-explorer/VirtualDirectory/index.tsx(6584-6594)",
+      "src/renderer/components/file-explorer/VirtualDirectory/index.tsx(6626-6636)",
       "src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(10623-10633)"
     ],
     "$id": 8755
@@ -64,7 +64,7 @@
     "de-DE": "Überprüfen Sie mindestens eine Datei",
     "fr-FR": "Vérifiez au moins un fichier",
     "ko-KR": "하나 이상의 파일을 확인하십시오.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/index.tsx(15918-15930)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/index.tsx(16744-16756)"],
     "$id": 11478
   },
   "重命名虚拟目录": {
@@ -301,7 +301,7 @@
     "de-DE": "Warten auf {{count}} Dateien",
     "fr-FR": "Et {{count}} autres fichiers",
     "ko-KR": "등 {{count}}개 파일",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(4818-4837)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(5283-5302)"],
     "$id": 8782
   },
   "不勾选：": {
@@ -314,7 +314,7 @@
     "de-DE": "Nicht markiert:",
     "fr-FR": "Non coché :",
     "ko-KR": "선택 해제됨:",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(5723-5731)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(6188-6196)"],
     "$id": 8783
   },
   "勾选后：": {
@@ -327,7 +327,7 @@
     "de-DE": "Nach der Überprüfung:",
     "fr-FR": "Après vérification :",
     "ko-KR": "확인한 후:",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(6059-6067)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(6524-6532)"],
     "$id": 8784
   },
   "请从左侧勾选标签以预览导出结构": {
@@ -340,7 +340,7 @@
     "de-DE": "Bitte überprüfen Sie die Tags auf der linken Seite, um eine Vorschau der Exportstruktur anzuzeigen",
     "fr-FR": "Veuillez vérifier les balises à gauche pour prévisualiser la structure d'exportation",
     "ko-KR": "내보내기 구조를 미리 보려면 왼쪽의 태그를 확인하세요.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(6695-6714)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(7228-7247)"],
     "$id": 8785
   },
   "加载预览中...": {
@@ -353,7 +353,7 @@
     "de-DE": "Vorschau wird geladen...",
     "fr-FR": "Chargement de l'aperçu...",
     "ko-KR": "미리보기 로드 중...",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(7143-7155)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(7676-7688)"],
     "$id": 8786
   },
   "标签过多": {
@@ -366,7 +366,7 @@
     "de-DE": "Zu viele Tags",
     "fr-FR": "Trop de balises",
     "ko-KR": "태그가 너무 많습니다.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(7683-7691)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(8216-8224)"],
     "$id": 8787
   },
   "当前选中的标签过多，无法预览所有组合。请减少标签数量，或直接导出。": {
@@ -379,7 +379,7 @@
     "de-DE": "Derzeit sind zu viele Tags ausgewählt und es können nicht alle Kombinationen in der Vorschau angezeigt werden. Bitte reduzieren Sie die Anzahl der Tags oder exportieren Sie direkt.",
     "fr-FR": "Il y a trop de balises actuellement sélectionnées et toutes les combinaisons ne peuvent pas être prévisualisées. Veuillez réduire le nombre de balises ou exporter directement.",
     "ko-KR": "현재 선택한 태그가 너무 많아 모든 조합을 미리 볼 수 없습니다. 태그 수를 줄이거나 직접 내보내십시오.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(7808-7845)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(8341-8378)"],
     "$id": 8788
   },
   "导出预览": {
@@ -392,8 +392,40 @@
     "de-DE": "Vorschau exportieren",
     "fr-FR": "Aperçu de l'exportation",
     "ko-KR": "미리보기 내보내기",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(8315-8323)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(8848-8856)"],
     "$id": 8789
+  },
+  "全部折叠": {
+    "en-US": "Collapse All",
+    "es-ES": "Colapsar todo",
+    "ar-EG": "طي الكل",
+    "pt-PT": "Recolher tudo",
+    "ru-RU": "Свернуть всё",
+    "ja-JP": "すべて折りたたむ",
+    "de-DE": "Alle einklappen",
+    "fr-FR": "Tout réduire",
+    "ko-KR": "모두 접기",
+    "$files": [
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(9254-9262)",
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(9458-9466)"
+    ],
+    "$id": 22283
+  },
+  "全部展开": {
+    "en-US": "Expand All",
+    "es-ES": "Expandir todo",
+    "ar-EG": "توسيع الكل",
+    "pt-PT": "Expandir tudo",
+    "ru-RU": "Развернуть всё",
+    "ja-JP": "すべて展開",
+    "de-DE": "Alle ausklappen",
+    "fr-FR": "Tout développer",
+    "ko-KR": "모두 펼치기",
+    "$files": [
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(9266-9274)",
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(9470-9478)"
+    ],
+    "$id": 22284
   },
   "{count} 个文件": {
     "en-US": "{count} files",
@@ -406,7 +438,7 @@
     "fr-FR": "{count} fichiers",
     "ko-KR": "{count}개 파일",
     "$files": [
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(8471-8486)",
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(9634-9649)",
       "src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryFileList.tsx(7644-7659)"
     ],
     "$id": 8790
@@ -421,7 +453,7 @@
     "de-DE": "Keine passenden Dateien",
     "fr-FR": "Aucun fichier correspondant",
     "ko-KR": "일치하는 파일이 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(8899-8908)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10080-10089)"],
     "$id": 8791
   },
   "文件去重": {
@@ -435,8 +467,8 @@
     "fr-FR": "Déduplication de fichiers",
     "ko-KR": "파일 중복 제거",
     "$files": [
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(9476-9484)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(9565-9573)"
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10679-10687)",
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10768-10776)"
     ],
     "$id": 8792
   },
@@ -451,12 +483,12 @@
     "fr-FR": "Image",
     "ko-KR": "그림",
     "$files": [
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(9614-9620)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(9697-9703)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10095-10101)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10191-10197)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10689-10695)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11520-11526)"
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10817-10823)",
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10900-10906)",
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11298-11304)",
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11394-11400)",
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11892-11898)",
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(12723-12729)"
     ],
     "$id": 8793
   },
@@ -471,8 +503,8 @@
     "fr-FR": "Couleur chaude",
     "ko-KR": "따뜻한 색",
     "$files": [
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(9638-9644)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(9721-9727)"
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10841-10847)",
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10924-10930)"
     ],
     "$id": 8794
   },
@@ -486,7 +518,7 @@
     "de-DE": "Duplikate wurden entfernt",
     "fr-FR": "Les doublons ont été supprimés",
     "ko-KR": "중복된 내용이 삭제되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(9744-9751)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10947-10954)"],
     "$id": 8795
   },
   "不显示空目录": {
@@ -500,8 +532,8 @@
     "fr-FR": "Ne pas afficher les répertoires vides",
     "ko-KR": "빈 디렉토리를 표시하지 않음",
     "$files": [
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(9953-9963)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10044-10054)"
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11156-11166)",
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11247-11257)"
     ],
     "$id": 8796
   },
@@ -516,9 +548,9 @@
     "fr-FR": "Fichiers",
     "ko-KR": "파일",
     "$files": [
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10109-10116)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10142-10149)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10205-10212)"
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11312-11319)",
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11345-11352)",
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11408-11415)"
     ],
     "$id": 8797
   },
@@ -532,7 +564,7 @@
     "de-DE": "Nicht kategorisiert",
     "fr-FR": "Non classé",
     "ko-KR": "분류되지 않음",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10127-10134)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11330-11337)"],
     "$id": 8798
   },
   "平铺目录": {
@@ -546,8 +578,8 @@
     "fr-FR": "Répertoire des tuiles",
     "ko-KR": "타일 ​​디렉토리",
     "$files": [
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10486-10494)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10620-10628)"
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11689-11697)",
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11823-11831)"
     ],
     "$id": 8799
   },
@@ -562,8 +594,8 @@
     "fr-FR": "Bandes dessinées",
     "ko-KR": "만화",
     "$files": [
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10729-10735)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11531-11537)"
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11932-11938)",
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(12734-12740)"
     ],
     "$id": 8800
   },
@@ -578,9 +610,9 @@
     "fr-FR": "Complété",
     "ko-KR": "완전한",
     "$files": [
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10773-10780)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10989-10996)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11542-11549)"
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11976-11983)",
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(12192-12199)",
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(12745-12752)"
     ],
     "$id": 8801
   },
@@ -595,12 +627,12 @@
     "fr-FR": "Fichier",
     "ko-KR": "파일",
     "$files": [
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10789-10795)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10849-10855)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10904-10910)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11005-11011)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11057-11063)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11108-11114)"
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11992-11998)",
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(12052-12058)",
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(12107-12113)",
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(12208-12214)",
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(12260-12266)",
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(12311-12317)"
     ],
     "$id": 8802
   },
@@ -615,8 +647,8 @@
     "fr-FR": "Sérialisation",
     "ko-KR": "연재 중",
     "$files": [
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10833-10840)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11041-11048)"
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(12036-12043)",
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(12244-12251)"
     ],
     "$id": 8803
   },
@@ -631,8 +663,8 @@
     "fr-FR": "Illustration",
     "ko-KR": "삽화",
     "$files": [
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10889-10895)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11093-11099)"
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(12092-12098)",
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(12296-12302)"
     ],
     "$id": 8804
   },
@@ -647,8 +679,8 @@
     "fr-FR": "Fichiers de tuiles",
     "ko-KR": "타일 ​​파일",
     "$files": [
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11331-11339)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11471-11479)"
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(12534-12542)",
+      "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(12674-12682)"
     ],
     "$id": 8805
   },
@@ -1069,7 +1101,7 @@
     "de-DE": "Unterverzeichnis {count}",
     "fr-FR": "{count} sous-répertoire",
     "ko-KR": "{count} 하위 디렉터리",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(15354-15370)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(15387-15403)"],
     "$id": 8763
   },
   "{count} 个维度组": {
@@ -1082,7 +1114,7 @@
     "de-DE": "{count} Dimensionsgruppen",
     "fr-FR": "{count} groupes de dimensions",
     "ko-KR": "{count} 차원 그룹",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(15417-15433)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(15450-15466)"],
     "$id": 8764
   },
   "展开侧边栏": {
@@ -1283,7 +1315,7 @@
     "de-DE": "Der Name darf nicht leer sein",
     "fr-FR": "Le nom ne peut pas être vide",
     "ko-KR": "이름은 비워둘 수 없습니다",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(13268-13278)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(14149-14159)"],
     "$id": 8848
   },
   "名称包含非法字符": {
@@ -1296,7 +1328,7 @@
     "de-DE": "Der Name enthält ungültige Zeichen",
     "fr-FR": "Le nom contient des caractères illicites",
     "ko-KR": "이름에 잘못된 문자가 포함되었습니다",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(13408-13420)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(14289-14301)"],
     "$id": 8849
   },
   "重命名成功": {
@@ -1309,7 +1341,7 @@
     "de-DE": "Umbenennen erfolgreich",
     "fr-FR": "Renommer avec succès",
     "ko-KR": "이름 변경 성공",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(13728-13737)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(14609-14618)"],
     "$id": 8850
   },
   "重命名失败": {
@@ -1322,7 +1354,7 @@
     "de-DE": "Umbenennen fehlgeschlagen",
     "fr-FR": "Échec du changement de nom",
     "ko-KR": "이름 바꾸기 실패",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(13827-13836)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(14708-14717)"],
     "$id": 8851
   },
   "删除成功": {
@@ -1335,7 +1367,7 @@
     "de-DE": "Erfolgreich löschen",
     "fr-FR": "Suppression réussie",
     "ko-KR": "삭제가 완료되었습니다",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(14092-14100)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(14973-14981)"],
     "$id": 8852
   },
   "删除失败": {
@@ -1348,7 +1380,7 @@
     "de-DE": "Das Löschen ist fehlgeschlagen",
     "fr-FR": "Échec de la suppression",
     "ko-KR": "삭제 실패",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(14358-14366)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(15239-15247)"],
     "$id": 8853
   },
   "正在跳转到整理页面...": {
@@ -1361,7 +1393,7 @@
     "de-DE": "Weiterleitung zur Organisationsseite...",
     "fr-FR": "Redirection vers la page de l'organisation...",
     "ko-KR": "조직 페이지로 리디렉션 중...",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(14524-14540)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(15405-15421)"],
     "$id": 8854
   },
   "全部文件": {

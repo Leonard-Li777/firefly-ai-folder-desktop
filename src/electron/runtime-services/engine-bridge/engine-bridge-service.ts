@@ -21,6 +21,8 @@ import { app, BrowserWindow } from 'electron'
 import { ResourceLocator, logger, LogCategory, APP_PORTS } from '@firefly/shared'
 import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
 import { Tier2CircuitBreaker, Tier2CircuitState } from './tier2-circuit-breaker'
+import { CRASH_HEAL_MAX_ATTEMPTS, decideCrashHeal } from './crash-heal-policy'
+import { isServiceUsableStatus, shouldTriggerServiceStartAt } from './service-start-policy'
 
 /** Tier 2 引擎基准端口（与本地 AI 服务端口收敛一致：38400） */
 export const TIER2_ENGINE_PORT = APP_PORTS.LLAMA_LOCAL_SERVER
@@ -48,6 +50,27 @@ const STATUS_TIMEOUT_MS = 1500
 const OPEN_UI_TIMEOUT_MS = 3000
 const SHUTDOWN_TIMEOUT_MS = 3000
 /**
+ * 引擎模型列表端点（`/api/models`）超时（毫秒）。
+ *
+ * 必须与 `STATUS_TIMEOUT_MS` 拆开：`/api/engine/status` 是纯内存读取（实测 4ms），
+ * 而 `/api/models` 是**磁盘扫描型**端点 —— 引擎侧 `list_models` 每次请求都要递归
+ * `read_dir` 整个模型目录并逐 gguf `metadata`（36 个模型实测约 140ms，是探活的 30+ 倍），
+ * 且同步跑在 async handler 里、还持有与 `/api/engine/status` 共用的 config 锁。
+ * 沿用 1500ms 会让「视频分析 / ORT DML Session 构建 / warmup 定标」等 CPU 尖峰期的
+ * 请求必然假超时（实测单日 24 次），故单独给 5s 预算。
+ */
+const MODELS_TIMEOUT_MS = 5_000
+/**
+ * 模型计数成功刷新后的缓存有效期（毫秒）。
+ *
+ * `/api/models` 的结果只在模型下载 / 删除 / 外部拷入时变化，属典型「读多写极少」，
+ * 无需跟随 5s 探活心跳每次全盘扫描；60s 内复用上次结果可把扫描频率压掉 90% 以上。
+ * 失败时改走 `MODELS_RETRY_MS` 短重试，避免「唯一一次失败即长期缺省」。
+ */
+const MODELS_REFRESH_TTL_MS = 60_000
+/** 模型计数刷新失败后的重试间隔（毫秒）；短于 TTL 以保留自愈能力，长于探活间隔避免每拍重试 */
+const MODELS_RETRY_MS = 15_000
+/**
  * AI 服务启停动作超时（毫秒）。
  *
  * 必须**大于引擎侧的冷启动就绪预算**（firefly-ai-engine `engine/mod.rs` 的
@@ -70,8 +93,24 @@ const PORT_RELEASE_WAIT_MS = 8_000
 
 /** 引擎拉起后的就绪等待上限（毫秒）；冷启动含硬件探测，放宽到 40s 避免假超时 */
 const READY_WAIT_LIMIT_MS = 40_000
+
+/**
+ * 引擎连续稳定运行该时长后，归还崩溃自愈配额。
+ *
+ * 与「治愈一次」配合，防止「崩 → 自愈 → 10 秒后又崩」被无限循环拉起来：
+ * 只有真正稳定存活满 1 分钟，才算这次自愈成功、下次崩溃仍有 1 次机会。
+ */
+const STABLE_RUN_RESET_MS = 60_000
 /** 状态轮询间隔（毫秒） */
 const POLL_INTERVAL_MS = 5_000
+/**
+ * 轮询判定离线所需的连续失败次数（迟滞阈值）。
+ * 单次探活超时（STATUS_TIMEOUT_MS=1.5s）在引擎忙时（/api/models 持有共享 config 锁、
+ * 模型加载、系统卡顿）会瞬时发生，若一次失败立即清 lastRawStatus，Footer 会在
+ * 「AI 服务就绪」与「高级AI引擎未运行」之间交替闪烁。连续 3 次失败（约 15~20s）
+ * 才判定真离线；期间任一次成功即复位。
+ */
+const OFFLINE_CONFIRM_FAILURES = 3
 
 /**
  * 引擎在 desktop 集成目录中的相对目录名（ADR-0033 1:1 镜像）
@@ -104,7 +143,28 @@ export interface Tier2EngineStatus {
   loaded_models?: string[]
   vram_mb?: number
   gpu_mem_mb?: number
+  /**
+   * 引擎进程状态（EngineStatus.status，见 firefly-ai-engine `engine/mod.rs`）。
+   *
+   * 与 `running` 布尔字段的区别：`running` 只表示「宿主进程活着」，
+   * 而 `status` 区分「推理服务是否真的可用」。宿主进程重启后 HTTP 立刻可响应，
+   * 但推理服务仍是 `stopped` —— 这正是 2026-10-30 事故中 87 分钟 503 的根因，
+   * 故必须显式声明为联合类型，禁止用 `any` 兜底（拼错字面量会静默失效）。
+   */
+  status?: 'starting' | 'ready' | 'processing' | 'error' | 'stopped'
   error?: string
+  /**
+   * 引擎实际生效的运行时参数（来自 EngineStatus.runtime_params）。
+   * `ctx_size` 为 llama-server 真实 `--ctx-size`，是上下文预算的唯一上限来源。
+   */
+  runtime_params?: {
+    n_gpu_layers?: number
+    threads?: number
+    ctx_size?: number
+    batch_size?: number
+    ubatch_size?: number
+    [key: string]: any
+  } | null
   [key: string]: any
 }
 
@@ -114,6 +174,13 @@ export interface Tier2EngineStatus {
 export interface EngineBridgeSnapshot {
   /** 引擎是否在线（端口可探活） */
   connected: boolean
+  /**
+   * 宿主进程是否由本服务托管（`this.process !== null`）。
+   *
+   * 与 `connected` 的区别：外部手动启动的引擎同样 `connected === true`，但它没有
+   * exit 处理器，被杀后既无崩溃自愈也无重新拉起。验收脚本用它排除该场景。
+   */
+  managed: boolean
   /** 熔断状态 */
   circuitState: Tier2CircuitState
   /** 引擎二进制是否可用（本地是否已部署 firefly-ai-engine） */
@@ -161,9 +228,33 @@ export class EngineBridgeService {
   private activePort: number = TIER2_ENGINE_PORT
   private isStarting = false
   private startPromise: Promise<boolean> | null = null
+  /**
+   * 推理服务启动请求的在途表（key = `mode|modelId`）。
+   *
+   * 同一意图的并发调用共享同一个 Promise；**不同意图不得合并** —— 隐式触发是
+   * `startService()`（无 mode，引擎侧回退到语言模型），若与
+   * `ensureMode('embedding')` 的 `startService({mode:'embedding'})` 合并，
+   * `mode` 会被静默丢弃（静默降级），随后 `waitForServiceReady('embedding')` 必然超时。
+   */
+  private startServiceInFlight = new Map<string, Promise<{ ok: boolean; error?: string }>>()
+  /**
+   * 推理服务启动的串行链：不同意图**排队执行**，绝不并发下发。
+   *
+   * 并发下发会让引擎侧 `start_engine_service` 在 `Starting` 态直接覆写 `active_model`
+   * 后调用 `start_service`，而后者因 `Starting` 早返回成功 ⇒ 返回「启动成功」但
+   * 实际加载的仍是上一个模型（`active_model` 与 `running_model` 从此不一致）。
+   *
+   * 链上必须吞掉前序 Reject（`then(undefined, undefined)`），否则一次启动失败会毒化
+   * 整条链，后续所有启动请求永久拒绝。
+   */
+  private startServiceChain: Promise<unknown> = Promise.resolve()
+  /** 最近一次「隐式触发」启动的时刻（0 = 从未触发）；见 `service-start-policy.ts` */
+  private lastImplicitStartAt = 0
   private pollTimer: NodeJS.Timeout | null = null
   /** 轮询探活单飞标志，避免全端口探测耗时超过轮询间隔时发生并发重入 */
   private pollInFlight = false
+  /** 轮询连续探活失败计数，达到 OFFLINE_CONFIRM_FAILURES 才判定离线（见该常量说明） */
+  private consecutiveProbeFailures = 0
   /** 服务停止代际计数，每次 stop() 递增以拦截在途异步探活回写已停止状态 */
   private stopEpoch = 0
   private lastRawStatus: Tier2EngineStatus | null = null
@@ -203,6 +294,10 @@ export class EngineBridgeService {
   private modelMetaCache: { lang: string; models: any[]; fetchedAt: number } | null = null
   /** 模型计数刷新进行中的 Promise（并发调用共享同一刷新，await 可等待真正完成） */
   private modelCountPromise: Promise<void> | null = null
+  /** 最近一次模型计数刷新尝试的完成时刻（0 = 从未尝试；心跳节流判据，见 shouldRefreshModelCount） */
+  private lastModelCountFetchAt = 0
+  /** 最近一次模型计数刷新是否成功（决定下一轮用 TTL 还是短重试间隔） */
+  private lastModelCountFetchOk = false
   /**
    * 本服务已拉起二进制的签名（mtimeMs:size）。
    * 非 null 表示「本服务托管过引擎」，用于开发态感知 `engine:deploy:watch` 的重编译覆盖。
@@ -216,6 +311,24 @@ export class EngineBridgeService {
   private pendingUpdateSince = 0
   /** 开发态二进制热更新轮询定时器 */
   private devBinaryWatchTimer: NodeJS.Timeout | null = null
+  /**
+   * 已确认有新二进制、但因引擎正在处理分析请求而推迟的重启。
+   * 待引擎回到 ready 后由 applyStatus 触发一次补检，避免在分析中途强杀引擎。
+   */
+  private deferredBinaryRestart = false
+  /**
+   * 最近一次「我方主动 kill 子进程」的时间戳。
+   * 用户停止服务 / 切换引擎 / 退出应用 / 二进制热部署都会走 `killOwnProcess()`，
+   * 这些退出不得触发崩溃自愈（否则表现为「点了停止又自己起来」）。
+   * 用时间戳而非布尔标志：exit 事件异步到达，布尔标志容易残留并吞掉下一次真崩溃。
+   */
+  private lastSelfKillAt = 0
+  /** 本崩溃窗口内已消耗的自愈次数（稳定运行满 STABLE_RUN_RESET_MS 后清零） */
+  private autoHealAttempts = 0
+  /** 崩溃自愈定时器 */
+  private autoHealTimer: NodeJS.Timeout | null = null
+  /** 稳定运行重置计时器：到点归还自愈配额 */
+  private stableResetTimer: NodeJS.Timeout | null = null
   private eventStreamAbortController: AbortController | null = null
   private listeners = new Set<(snapshot: EngineBridgeSnapshot) => void>()
   readonly circuitBreaker = new Tier2CircuitBreaker()
@@ -223,6 +336,21 @@ export class EngineBridgeService {
   /** 当前是否正处于拉起启动流程中 */
   public isStartingNow(): boolean {
     return this.isStarting
+  }
+
+  /**
+   * 崩溃自愈配额已耗尽、且引擎仍未恢复（无进程、无状态快照）。
+   *
+   * 供分析队列做「快速失败」短路：引擎已判定救不回来时，后续文件不应再逐个
+   * 空等 `waitForAIServiceReady` 的 120s 预算（166 个文件会累计成数小时），
+   * 直接按既有 failed 路径处理即可 —— CPU 阶段（stage 1/2）产物早已落库，不受影响。
+   *
+   * 一旦引擎被任何路径拉起（`lastRawStatus` 恢复非空），本判定自动失效。
+   */
+  public isCrashHealExhaustedAndOffline(): boolean {
+    return (
+      this.autoHealAttempts >= CRASH_HEAL_MAX_ATTEMPTS && !this.process && !this.lastRawStatus
+    )
   }
 
   private constructor() {
@@ -813,6 +941,20 @@ export class EngineBridgeService {
       return
     }
 
+    // 分析进行中不得重启：此刻回收进程会让正在分析的文件整批失败，
+    // 且会被上层错误处理误判为「引擎异常」再次重启（放大成连环重启）。
+    // 保留 pending 状态，等引擎回到 ready 后由 applyStatus 触发补检。
+    if (this.lastRawStatus?.status === 'processing') {
+      if (!this.deferredBinaryRestart) {
+        logger.info(
+          LogCategory.SYSTEM,
+          '[EngineBridge] 检测到引擎二进制更新，但引擎正在处理分析请求，推迟到空闲后重启'
+        )
+      }
+      this.deferredBinaryRestart = true
+      return
+    }
+
     const previous = this.spawnedBinarySignature
     this.spawnedBinarySignature = signature
     this.pendingUpdateSignature = null
@@ -941,14 +1083,29 @@ export class EngineBridgeService {
     if (hadError || modelChanged || langSlotChanged || embSlotChanged || statusChanged || wasOffline) {
       this.broadcastStatus()
     }
-    // PRD-0044：探活成功后异步刷新已安装模型计数，不阻塞探活关键路径
-    void this.refreshModelCount()
+    // PRD-0044：探活成功后异步刷新已安装模型计数，不阻塞探活关键路径。
+    // 该端点每次请求都要引擎侧全盘扫描，故按 TTL 节流，不跟随 5s 心跳无脑重扫（见 shouldRefreshModelCount）
+    if (this.shouldRefreshModelCount()) {
+      void this.refreshModelCount()
+    }
     // 异步刷新当前引擎适配类型（Footer「兼容模式」标记依据），不阻塞探活关键路径
     void this.refreshBackendMatchType()
     // 异步对齐思考模式（引擎 UI 变更后 desktop 请求级/Footer 需感知），不阻塞探活关键路径
     void this.syncThinkingModeFromEngine()
     // 确保已连接 SSE 实时状态流（用于毫秒级捕获引擎 API 开始/完成状态）
     this.ensureEventStream()
+
+    // 因分析进行中被推迟的二进制热更新：引擎回到空闲（ready）后补一次检测并重启
+    if (this.deferredBinaryRestart && data.status === 'ready') {
+      this.deferredBinaryRestart = false
+      logger.info(
+        LogCategory.SYSTEM,
+        '[EngineBridge] 引擎已空闲，开始应用推迟的二进制更新（重启加载新版本）'
+      )
+      setTimeout(() => {
+        void this.checkBinaryUpdated()
+      }, 800)
+    }
   }
 
   /**
@@ -1069,10 +1226,26 @@ export class EngineBridgeService {
   }
 
   /**
+   * 心跳节流判定：本次探活后是否真的需要刷新模型计数。
+   *
+   * `/api/models` 是磁盘扫描端点（引擎侧每次请求递归扫全目录），而模型集合只在
+   * 下载完成 / 删除 / 外部拷入时变化 —— 跟随 5s 心跳无脑重扫既浪费 I/O，又会在
+   * CPU 尖峰期与 `/api/engine/status` 抢引擎侧 config 锁，把探活一起拖慢。
+   * 成功走 TTL（60s）、失败走短重试（15s）：既砍掉绝大部分扫描，又保留
+   * 「引擎刚就绪那次失败」的自愈能力（若只在状态跳变时拉一次，首拉失败即长期缺省）。
+   */
+  private shouldRefreshModelCount(): boolean {
+    if (this.modelCountPromise) return false
+    const elapsed = Date.now() - this.lastModelCountFetchAt
+    return elapsed >= (this.lastModelCountFetchOk ? MODELS_REFRESH_TTL_MS : MODELS_RETRY_MS)
+  }
+
+  /**
    * 从引擎 /api/models 汇总已安装模型数量与可用模型总数并更新缓存（PRD-0044 状态卡增项）。
    * 分子：已安装模型数（合计所有已下载就绪的语言模型、Embedding 向量模型及本地自定义模型）
    * 分母：总可用模型数（合计所有官方推荐语言模型 31 个 + Embedding 向量模型 2 个 = 33 个，加上本地未在推荐库中的自定义模型）
    * 并发去重；数量变化时补播一次状态，让渲染层无需等下个轮询周期。
+   * 本方法自身不做节流（显式调用即视为强制刷新），节流只在探活心跳入口 `applyStatus` 处判定。
    */
   private async refreshModelCount(): Promise<void> {
     // 并发去重：进行中的刷新被共享，await 可等待真正完成（避免 applyStatus 触发的刷新与显式 await 竞态）
@@ -1086,6 +1259,9 @@ export class EngineBridgeService {
   }
 
   private async doRefreshModelCount(): Promise<void> {
+    const startedAt = Date.now()
+    // 本轮是否真正拿到了引擎的模型列表（决定下一轮心跳走 TTL 还是短重试）
+    let ok = false
     try {
       const prevPair = this.resolveDisplayModelPair()
       // 预热引擎模型元数据目录（model_*.json 权威落点在 engine，desktop 一律经引擎查询）
@@ -1093,7 +1269,7 @@ export class EngineBridgeService {
 
       const res = await fetch(`${this.baseUrl}${ENGINE_MODELS_PATH}`, {
         method: 'GET',
-        signal: AbortSignal.timeout(STATUS_TIMEOUT_MS)
+        signal: AbortSignal.timeout(MODELS_TIMEOUT_MS)
       })
       if (res.ok) {
         const list = (await res.json()) as Array<{
@@ -1203,10 +1379,26 @@ export class EngineBridgeService {
         ) {
           this.broadcastStatus()
         }
+        ok = true
+      } else {
+        // 非 2xx 同属降级（引擎契约变更/路由缺失），显式上报，不静默保留旧值
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[EngineBridge] 拉取引擎模型列表失败 endpoint=${ENGINE_MODELS_PATH} status=${res.status} elapsedMs=${Date.now() - startedAt} timeoutBudgetMs=${MODELS_TIMEOUT_MS} fallback=retained_cached_count cached=${this.lastModelCount ?? 'null'}`
+        )
       }
     } catch (err) {
-      // 计数为展示增项，失败不影响桥接主链路；记 debug 便于排查
-      logger.debug(LogCategory.SYSTEM, '[EngineBridge] 拉取引擎模型列表失败（模型计数缺省）:', err)
+      // 计数为展示增项，失败不影响桥接主链路；但必须显式上报失败原因与保留的兜底值
+      // （AGENTS.md §2.9 禁止静默降级：原实现只记 debug，导致该端点长期超时无人察觉）
+      const reason = err instanceof Error ? `${err.name}: ${err.message}` : String(err)
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[EngineBridge] 拉取引擎模型列表失败 endpoint=${ENGINE_MODELS_PATH} elapsedMs=${Date.now() - startedAt} timeoutBudgetMs=${MODELS_TIMEOUT_MS} fallback=retained_cached_count cached=${this.lastModelCount ?? 'null'} error=${reason}`
+      )
+    } finally {
+      // 记录本轮结果供心跳节流判定：成功走长 TTL，失败走短重试（保留自愈能力）
+      this.lastModelCountFetchAt = Date.now()
+      this.lastModelCountFetchOk = ok
     }
   }
 
@@ -1255,6 +1447,72 @@ export class EngineBridgeService {
   }
 
   /**
+   * 推理服务是否可用（`ready` / `processing` / `starting`）。
+   *
+   * **严禁**用「`/api/engine/status` 可响应」替代本判定：宿主进程重启后 HTTP 立刻
+   * 可响应，但推理服务仍是 `stopped`（`target_port` 为 `None`），此时所有 `/v1/*`
+   * 请求都会被反代拒绝为 503 —— 这正是 2026-10-30 持续 87 分钟的事故形态。
+   */
+  private isServiceUsable(status: Tier2EngineStatus | null): boolean {
+    return isServiceUsableStatus(status?.status)
+  }
+
+  /**
+   * 是否应隐式触发一次 `startService()`。
+   *
+   * 判定逻辑见模块级纯函数 `shouldTriggerServiceStartAt`（单测直接覆盖该纯函数）。
+   */
+  private shouldTriggerServiceStart(
+    status: Tier2EngineStatus | null,
+    options?: { explicit?: boolean }
+  ): boolean {
+    return shouldTriggerServiceStartAt({
+      status: status?.status,
+      now: Date.now(),
+      lastImplicitStartAt: this.lastImplicitStartAt,
+      explicit: options?.explicit === true
+    })
+  }
+
+  /**
+   * 收口：宿主在线但推理服务未启动时，触发一次启动（不等待就绪）。
+   *
+   * 三处调用点（`ensureRunning` 命中分支、`doStart` 的探活命中与 spawn 之后）必须
+   * 共用本方法，避免「清单与实际可达路径不一致」。
+   *
+   * **必须把调用方刚探到的 `status` 传进来**，不得只读 `this.lastRawStatus`：
+   * `lastRawStatus` 可能被 `applyOffline()` 置空（宿主在探活与收口之间退出），
+   * 此时按 `undefined` 判定会静默放弃触发 —— 与事故同源的「拿不到真实状态就当作没事」。
+   *
+   * 不 `await`：引擎侧启动最长持锁 `LLAMA_READY_TIMEOUT_SECS`（120s），同步等待会让
+   * `engine-bridge/start` IPC 与启动流程阻塞。就绪状态由轮询广播。
+   *
+   * **已知行为变更（2026-10-30 裁定，非缺陷）**：用户在单次会话内手动「停止服务」后，
+   * 只要 desktop 重启（宿主重新拉起）或后续 `ensureRunning()` 再次命中 `stopped`，
+   * 推理服务会被重新启动 —— 即「stop 不跨会话持久」。刻意取舍：会话内 Stop 通常是
+   * 为临时释放显存，而整个客户端重启后恢复 AI 可用符合多数用户直觉预期；为此引入
+   * 持久化 `user_stopped` 状态机会显著增加状态机复杂度（见 Spec Out of Scope §6）。
+   */
+  private triggerServiceStartIfNeeded(
+    explicit: boolean,
+    status?: Tier2EngineStatus | null
+  ): void {
+    const effective = status ?? this.lastRawStatus
+    if (!this.shouldTriggerServiceStart(effective, { explicit })) {
+      return
+    }
+    this.lastImplicitStartAt = Date.now()
+    const detail = effective?.status ?? 'unknown'
+    logger.warn(
+      LogCategory.SYSTEM,
+      `[EngineBridge] 宿主在线但推理服务未就绪（status=${detail}），触发启动推理服务`
+    )
+    void this.startService().catch((err: unknown) => {
+      logger.warn(LogCategory.SYSTEM, '[EngineBridge] 触发启动推理服务失败:', err)
+    })
+  }
+
+  /**
    * 确保引擎在线：在线则直接复用；离线则尝试静默拉起（受熔断器保护）
    * @param options.force 显式启动（用户点击）时跳过熔断冷却，避免「点了没反应」
    */
@@ -1262,6 +1520,9 @@ export class EngineBridgeService {
     if (options?.force) {
       // 显式启动视为用户意图，复位熔断器重新放行
       this.circuitBreaker.reset()
+      // 同时清零隐式启动节流窗口：否则隐式启动失败后 30s 内用户点「启动」会被节流挡住，
+      // 且因返回 true 而表现为「点了没反应」
+      this.lastImplicitStartAt = 0
     } else {
       if (this.circuitBreaker.getState() === 'open') {
         logger.warn(
@@ -1283,10 +1544,37 @@ export class EngineBridgeService {
     if (this.circuitBreaker.canExecute()) {
       const status = await this.healthCheck()
       if (status) {
-        logger.info(LogCategory.SYSTEM, `[EngineBridge] 复用已运行的 Tier 2 引擎 (${this.baseUrl})`)
         if (this.isDevMode()) {
           this.startDevBinaryWatch()
         }
+        // 「HTTP 可响应」≠「推理服务可用」：必须按 status 分层判定
+        if (this.isServiceUsable(status)) {
+          logger.info(LogCategory.SYSTEM, `[EngineBridge] 复用已运行的 Tier 2 引擎 (${this.baseUrl})`)
+          this.broadcastStatus()
+          return true
+        }
+        const explicit = options?.force === true
+        if (this.shouldTriggerServiceStart(status, { explicit })) {
+          this.triggerServiceStartIfNeeded(explicit, status)
+          this.broadcastStatus()
+          return true
+        }
+        if (status.status === 'error') {
+          // 启动失败已落库：返回 false 让上层诚实降级到 Tier 1，严禁谎报「引擎在线」
+          const detail = status.last_error || status.error || ''
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[EngineBridge] 引擎宿主在线但推理服务启动失败（status=error），交由 Tier 1 兜底${
+              detail ? `：${detail}` : ''
+            }`
+          )
+          this.broadcastStatus()
+          return false
+        }
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[EngineBridge] 引擎宿主在线但推理服务未就绪（status=${status.status ?? 'unknown'}），节流窗口内不重复触发`
+        )
         this.broadcastStatus()
         return true
       }
@@ -1302,6 +1590,11 @@ export class EngineBridgeService {
     if (this.process && !this.process.killed) {
       const status = await this.healthCheck()
       if (status) {
+        // 宿主在线 ≠ 推理服务可用：此处不得直接 return true，否则「有进程但模型没起」
+        // 会被当作启动成功，调用方继续发请求即撞 503（2026-10-30 事故形态）
+        if (!this.isServiceUsable(status)) {
+          this.triggerServiceStartIfNeeded(true, status)
+        }
         return true
       }
     }
@@ -1333,23 +1626,35 @@ export class EngineBridgeService {
       // 拉起前再探活一次，仍存在则直接复用
       const alive = await this.healthCheck()
       if (alive) {
+        // 复用的是「已存在但推理服务未启动」的宿主时，同样必须收口
+        if (!this.isServiceUsable(alive)) {
+          this.triggerServiceStartIfNeeded(true, alive)
+        }
         this.isStarting = false
         this.broadcastStatus()
         return true
       }
 
+      // 即将拉起新宿主：清零隐式启动节流窗口（新进程 ⇒ 新窗口）
+      this.lastImplicitStartAt = 0
       logger.info(LogCategory.SYSTEM, `[EngineBridge] 静默拉起 Tier 2 引擎: ${exePath}`)
       // ENGINE_PORT 仅作前向兼容提示：引擎当前从自身 %APPDATA%/com.firefly.ai-engine/config.json
       // 的 base_port 取基准端口，并在被占用时于 38400~38419 内顺延；
       // desktop 侧由 healthCheck 的滑动区间探测兜底，不依赖该环境变量。
       const env = {
         ...process.env,
-        ENGINE_PORT: String(TIER2_ENGINE_PORT)
+        ENGINE_PORT: String(TIER2_ENGINE_PORT),
+        // 宿主生命周期守护：以管道方式提供 stdin（见下方 stdio），桌面端进程一旦消失
+        // （正常退出 / 崩溃 / 任务管理器强杀），管道写端由内核关闭，引擎读到 EOF 后
+        // 主动退出并带走 llama-server。与 firefly-omni 的 OMNI_WATCH_STDIN 同一约定。
+        ENGINE_WATCH_STDIN: '1'
       }
       // windowsHide: 抑制 Windows 控制台窗口闪烁（debug 构建的引擎为控制台子系统）
+      // stdio[0] 必须保留 'pipe'：'ignore' 会让引擎拿到 NUL 设备句柄而永远读不到 EOF，
+      // 宿主被强杀后引擎无法感知自身已成孤儿，正是此前「desktop 已结束但引擎仍在跑」的根因。
       const child = spawn(exePath, ['--silent', '--tray'], {
         detached: true,
-        stdio: 'ignore',
+        stdio: ['pipe', 'ignore', 'ignore'],
         windowsHide: true,
         env
       })
@@ -1376,16 +1681,42 @@ export class EngineBridgeService {
         this.broadcastStatus()
       })
       child.once('exit', (code, signal) => {
-        logger.warn(
-          LogCategory.SYSTEM,
-          `[EngineBridge] 引擎子进程已退出 (code=${code}, signal=${signal})`
-        )
+        // 区分「开发态二进制热部署的预期内退出」与真正的崩溃：
+        // 部署脚本替换 exe 前会先强杀进程（退出码 -1），若按崩溃记录会让用户看到「引擎异常」，
+        // 并在分析中途触发上层错误恢复（再次重启），放大成连环重启。
+        const exePathNow = this.resolveEngineExecutable()
+        const sigNow = exePathNow ? this.binarySignature(exePathNow) : null
+        const deploying =
+          this.deferredBinaryRestart ||
+          this.pendingUpdateSignature !== null ||
+          (sigNow !== null &&
+            this.spawnedBinarySignature !== null &&
+            sigNow !== this.spawnedBinarySignature)
+        if (deploying) {
+          logger.info(
+            LogCategory.SYSTEM,
+            `[EngineBridge] 引擎因二进制更新退出 (code=${code})，随后自动加载新版本`
+          )
+        } else {
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[EngineBridge] 引擎子进程已退出 (code=${code}, signal=${signal})`
+          )
+        }
         try {
           const { processReaper } = require('../../main/process-reaper')
           processReaper.unregisterChild(child.pid)
         } catch {}
         this.process = null
         this.applyOffline()
+        // 宿主已死：在途的启动请求必然失败（连接被拒 / abort），清空在途表避免残留
+        // 最长 130s（SERVICE_ACTION_TIMEOUT_MS）挡住新进程拉起后的下一次启动。
+        // 串行链本身无需重置：旧请求会快速 settle 后自然排空。
+        this.startServiceInFlight.clear()
+        // 非预期退出（非主动停止 / 非热部署）时自愈一次。
+        // 2026-10-22 事故：引擎以 0xC0000005 崩溃后无人拉起，分析队列 166 个文件
+        // 全部连接被拒，直到用户手动点开引擎面板才恢复。
+        void this.scheduleCrashHeal(deploying, code)
       })
 
       // 等待引擎就绪（轮询 /api/engine/status）
@@ -1404,6 +1735,15 @@ export class EngineBridgeService {
         this.lastError = null
       }
       this.broadcastStatus()
+      if (finalAlive || alreadyUp) {
+        // 引擎已真正起来：稳定运行满 STABLE_RUN_RESET_MS 后归还崩溃自愈配额
+        this.armStableReset()
+        // 【核心收口】waitForReady 只保证 `/api/engine/status` 可响应，新宿主的推理服务
+        // 仍是 `stopped`（target_port 为 None）。此处必须显式触发一次启动，否则
+        // 「宿主起来了但模型从未启动」，所有 /v1/* 请求恒被反代拒绝为 503
+        // —— 2026-10-30 事故即为此形态，持续 87 分钟直到用户手动打开引擎面板。
+        this.triggerServiceStartIfNeeded(true)
+      }
       return finalAlive || alreadyUp
     } catch (err) {
       this.isStarting = false
@@ -1575,6 +1915,16 @@ export class EngineBridgeService {
    * 请求引擎优雅退出（不影响引擎管理面板自启），随后清理自己拉起的进程
    */
   public async shutdown(): Promise<{ ok: boolean }> {
+    // 用户显式停用引擎：撤销待执行的崩溃自愈，避免 8s 后被自己重新拉起
+    if (this.autoHealTimer) {
+      clearTimeout(this.autoHealTimer)
+      this.autoHealTimer = null
+    }
+    if (this.stableResetTimer) {
+      clearTimeout(this.stableResetTimer)
+      this.stableResetTimer = null
+    }
+    this.autoHealAttempts = 0
     const tryPorts = [this.activePort]
     if (this.activePort !== TIER2_ENGINE_PORT) {
       tryPorts.push(TIER2_ENGINE_PORT)
@@ -1703,8 +2053,45 @@ export class EngineBridgeService {
   /**
    * 启动引擎侧 AI 推理服务（llama.cpp 子进程），不退出引擎应用本身
    * 对应引擎端 POST /api/engine/start
+   *
+   * 并发语义（两层，缺一不可）：
+   * - **同意图合并**：同一 `mode|modelId` 的并发调用共享同一个 Promise，避免重复下发；
+   * - **跨意图串行**：不同意图排队执行，绝不并发。并发会让引擎侧 `start_engine_service`
+   *   在 `Starting` 态直接覆写 `active_model` 后调用 `start_service`，而后者因 `Starting`
+   *   早返回成功 ⇒ 返回「启动成功」但实际加载的仍是上一个模型，随后
+   *   `waitForServiceReady` 必然超时。
    */
   public async startService(options?: { mode?: 'language' | 'embedding'; modelId?: string }): Promise<{ ok: boolean; error?: string }> {
+    const key = `${options?.mode ?? 'auto'}|${options?.modelId ?? ''}`
+
+    const existing = this.startServiceInFlight.get(key)
+    if (existing) {
+      return existing
+    }
+
+    const task = this.startServiceChain.then(() => this.doStartService(options))
+    // 链上吞掉 Reject：否则一次启动失败会毒化整条串行链，后续请求永久拒绝
+    this.startServiceChain = task.then(
+      () => undefined,
+      () => undefined
+    )
+    this.startServiceInFlight.set(key, task)
+    void task
+      .finally(() => {
+        // 身份校验：旧 Promise settle 晚于 clear 时不得误删新条目
+        if (this.startServiceInFlight.get(key) === task) {
+          this.startServiceInFlight.delete(key)
+        }
+      })
+      .catch(() => {})
+    return task
+  }
+
+  /** `startService` 的实际实现；错误由调用方统一处理 */
+  private async doStartService(options?: {
+    mode?: 'language' | 'embedding'
+    modelId?: string
+  }): Promise<{ ok: boolean; error?: string }> {
     // 启动前对齐思考模式：CLI 启动参数以引擎 config.json 为准，先拉回桌面保证请求级一致；
     // 若桌面配置与引擎不一致且桌面是用户刚改过的，setThinkingMode 路径会在配置变更时已推送。
     await this.syncThinkingModeFromEngine()
@@ -1785,7 +2172,10 @@ export class EngineBridgeService {
           return { ok: true }
         }
 
-        if (status.status === 'error' || status.status === 'failed') {
+        // 引擎契约（firefly-ai-engine `engine/mod.rs` EngineStatus.status）只产出
+        // starting/ready/processing/error/stopped，没有 'failed' 这一档；
+        // 原写法比对了一个不存在的取值，TS 会判定为无重叠比较而报错，故移除。
+        if (status.status === 'error') {
           const errMsg = status.last_error || status.error || '引擎服务运行报错'
           logger.warn(LogCategory.SYSTEM, `[EngineBridge] 引擎服务报告错误: ${errMsg}`)
           return { ok: false, error: errMsg }
@@ -1852,11 +2242,110 @@ export class EngineBridgeService {
   }
 
   /**
+   * 引擎非预期退出后的自愈调度（2026-10-22 事故修复）
+   *
+   * 策略见 `crash-heal-policy.ts`：只治愈一次、留出间隔让崩溃残留条件（显存/端口/句柄）
+   * 释放，主动 kill / 热部署 / 引擎已禁用一律不自愈。
+   * **自愈失败不重试** —— 队列按既有 failed 路径处理，CPU 阶段（stage 1/2）产物不受影响。
+   */
+  private async scheduleCrashHeal(deploying: boolean, exitCode: number | null): Promise<void> {
+    // 已有待执行的自愈：同一次崩溃的重复 exit 事件不重复安排
+    if (this.autoHealTimer) {
+      return
+    }
+
+    let shouldRun = false
+    try {
+      shouldRun = await this.shouldEngineRun()
+    } catch {
+      // 配置读取失败按「不应运行」处理：宁可不起，也不要在云端/禁用模式下擅自拉起本地引擎
+      shouldRun = false
+    }
+
+    const decision = decideCrashHeal({
+      msSinceSelfKill: this.lastSelfKillAt > 0 ? Date.now() - this.lastSelfKillAt : null,
+      deploying,
+      attempts: this.autoHealAttempts,
+      shouldRun
+    })
+
+    if (!decision.heal) {
+      logger.info(
+        LogCategory.SYSTEM,
+        `[EngineBridge] 引擎退出后不自愈（${decision.reason}，code=${exitCode}）`
+      )
+      return
+    }
+
+    this.autoHealAttempts = decision.nextAttempts
+    logger.warn(
+      LogCategory.SYSTEM,
+      `[EngineBridge] 引擎非预期退出 (code=${exitCode})，${decision.delayMs}ms 后自动治愈一次`
+    )
+
+    this.autoHealTimer = setTimeout(() => {
+      this.autoHealTimer = null
+      void this.runCrashHeal()
+    }, decision.delayMs)
+    // 不因自愈定时器阻止应用退出
+    this.autoHealTimer.unref?.()
+  }
+
+  /** 执行一次崩溃自愈（force 拉起会复位熔断器，避免冷却期把恢复路径拦住） */
+  private async runCrashHeal(): Promise<void> {
+    try {
+      // 延迟窗口内用户可能已停用高级引擎或切到云端：执行前必须重新确认意图。
+      // ensureRunning({force:true}) 会跳过 shouldEngineRun 检查，故这里必须自己拦一道。
+      if (!(await this.shouldEngineRun())) {
+        logger.info(
+          LogCategory.SYSTEM,
+          '[EngineBridge] 崩溃自愈取消：当前已停用高级AI引擎或切至云端模式'
+        )
+        return
+      }
+      const ok = await this.ensureRunning({ force: true })
+      if (ok) {
+        logger.info(LogCategory.SYSTEM, '[EngineBridge] 崩溃自愈成功，引擎已重新拉起')
+      } else {
+        logger.warn(
+          LogCategory.SYSTEM,
+          '[EngineBridge] 崩溃自愈失败，本次不再重试；分析队列按既有失败路径处理（CPU 阶段产物不受影响）'
+        )
+      }
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[EngineBridge] 崩溃自愈异常，本次不再重试:', err)
+    } finally {
+      this.broadcastStatus()
+    }
+  }
+
+  /**
+   * 引擎稳定运行满 STABLE_RUN_RESET_MS 后归还自愈配额。
+   * 只有真正存活满 1 分钟才算这次自愈成功，防止「崩→重启→再崩」被无限循环拉起。
+   */
+  private armStableReset(): void {
+    if (this.stableResetTimer) {
+      clearTimeout(this.stableResetTimer)
+    }
+    this.stableResetTimer = setTimeout(() => {
+      this.stableResetTimer = null
+      this.autoHealAttempts = 0
+    }, STABLE_RUN_RESET_MS)
+    this.stableResetTimer.unref?.()
+  }
+
+  /**
    * 强制清理由本服务拉起的子进程（taskkill 兜底，Unix 走 SIGKILL）
    */
   private killOwnProcess(): void {
     const proc = this.process
     this.process = null
+    // 主动 kill 标记：抑制窗口内到达的 exit 事件不得触发崩溃自愈。
+    // 覆盖「用户停止服务 / 切换引擎 / 退出应用 / 二进制热部署」四类主动退出。
+    this.lastSelfKillAt = Date.now()
+    // 宿主即将消失：清空在途启动表，避免旧请求残留挡住新进程拉起后的下一次启动。
+    // 串行链本身不重置——旧请求会因连接被拒快速 settle 后自然排空。
+    this.startServiceInFlight.clear()
     if (!proc || proc.killed) {
       return
     }
@@ -1881,6 +2370,7 @@ export class EngineBridgeService {
       clearInterval(this.pollTimer)
     }
     this.pollInFlight = false
+    this.consecutiveProbeFailures = 0
     const timer = setInterval(async () => {
       if (this.pollInFlight || this.isStarting) {
         return
@@ -1894,7 +2384,13 @@ export class EngineBridgeService {
           return
         }
         if (!status && !this.isStarting) {
-          this.lastRawStatus = null
+          // 连续失败迟滞：单次瞬时超时不立即判离线，避免 Footer「就绪/未运行」交替抖动
+          this.consecutiveProbeFailures++
+          if (this.consecutiveProbeFailures >= OFFLINE_CONFIRM_FAILURES) {
+            this.lastRawStatus = null
+          }
+        } else {
+          this.consecutiveProbeFailures = 0
         }
         this.broadcastStatus()
       } catch (err) {
@@ -1918,6 +2414,7 @@ export class EngineBridgeService {
       this.pollTimer = null
     }
     this.pollInFlight = false
+    this.consecutiveProbeFailures = 0
   }
 
   /**
@@ -1936,6 +2433,9 @@ export class EngineBridgeService {
     const raw = this.lastRawStatus
     return {
       connected: !!raw,
+      // 托管标记：外部手动启动的引擎同样 connected，但它没有 exit 处理器，
+      // 被杀后既无崩溃自愈也无重新拉起，验收脚本需据此排除该场景
+      managed: this.process !== null,
       circuitState: this.circuitBreaker.getState(),
       available: this.resolveEngineExecutable() !== null,
       exePath: this.resolveEngineExecutable(),
@@ -1956,6 +2456,62 @@ export class EngineBridgeService {
       updatedAt: raw ? Date.now() : null,
       raw
     }
+  }
+
+  /**
+   * 引擎实际加载的上下文窗口（tokens），即 llama-server 真正的 `--ctx-size`
+   *
+   * 这是**唯一可信的上下文预算上限**：模型目录里的 `recommendedConfig.numCtx`
+   * 只是静态推荐值，引擎侧 `ParamBuilder` 会按显存/内存预算把它夹到实际可加载的值
+   * （事故：推荐 8192，实际 2048，桌面端按 8192 规划提示词 → 引擎 400
+   *  `request (2469 tokens) exceeds the available context size (2048 tokens)`）。
+   *
+   * 引擎未启动、未加载模型或旧版本未上报 `runtime_params` 时返回 null，
+   * 调用方应保持既有兜底行为（不得凭空放大预算）。
+   */
+  public getRuntimeContextSize(): number | null {
+    const runtimeParams = this.lastRawStatus?.runtime_params as { ctx_size?: unknown } | undefined
+    const ctxSize = runtimeParams?.ctx_size
+    if (typeof ctxSize !== 'number' || !Number.isFinite(ctxSize) || ctxSize <= 0) {
+      return null
+    }
+    return Math.floor(ctxSize)
+  }
+
+  /**
+   * 判断当前引擎或主模型是否激活了 DSpark / 草稿投机采样加速
+   */
+  public isDSparkActive(): boolean {
+    const raw = this.lastRawStatus
+    if (!raw) {
+      return false
+    }
+
+    // 1. 优先读取引擎上报的真实自适应运行时参数
+    const rp = raw.runtime_params as any
+    if (rp) {
+      if (rp.effective_enable_draft === true || rp.enable_draft === true || rp.enableDraft === true) {
+        return true
+      }
+      if (rp.effective_enable_draft === false || rp.enable_draft === false || rp.enableDraft === false) {
+        return false
+      }
+    }
+
+    // 2. 其次匹配当前激活模型 ID、物理路径或展示名中的 spark / dspark / draft 标记
+    const modelCandidates = [
+      raw.current_model,
+      raw.current_model_name,
+      raw.model,
+      raw.active_language_model
+    ]
+    for (const m of modelCandidates) {
+      if (typeof m === 'string' && /(?:dspark|spark|draft)/i.test(m)) {
+        return true
+      }
+    }
+
+    return false
   }
 
   /**
@@ -1989,6 +2545,16 @@ export class EngineBridgeService {
    */
   public stop(): void {
     this.stopEpoch++
+    // 主动停止：撤销待执行的崩溃自愈与配额重置，避免「停用后又被自己拉起来」
+    if (this.autoHealTimer) {
+      clearTimeout(this.autoHealTimer)
+      this.autoHealTimer = null
+    }
+    if (this.stableResetTimer) {
+      clearTimeout(this.stableResetTimer)
+      this.stableResetTimer = null
+    }
+    this.autoHealAttempts = 0
     if (this.eventStreamAbortController) {
       this.eventStreamAbortController.abort()
       this.eventStreamAbortController = null
@@ -2011,6 +2577,9 @@ export class EngineBridgeService {
     this.firstDownloadedModel = null
     this.lastKnownModel = null
     this.modelCountPromise = null
+    // 重置节流状态：下次拉起引擎后必须立即重扫，不能沿用停止前的 TTL 窗口
+    this.lastModelCountFetchAt = 0
+    this.lastModelCountFetchOk = false
     this.circuitBreaker.reset()
   }
 }

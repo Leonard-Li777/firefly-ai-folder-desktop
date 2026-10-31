@@ -103,6 +103,11 @@ export const GENESIS_V1_SCHEMA = `
     last_hit_at DATETIME,                        -- 最后一次缓存命中时间
     sync_status INTEGER NOT NULL DEFAULT 0,      -- 同步状态: 0-待同步, 1-同步中, 2-已同步
     meta TEXT NOT NULL DEFAULT '{}',              -- 弹性元数据 (JSON)
+    -- canonical 语义文本三列（vector-semantic-text-unified-scheme §3.2，应用未上线直接进创世基线，禁止 ALTER TABLE）
+    -- 本地派生数据，不参与云端同步（AC12）；canonical_text 亦不写入 files_fts
+    canonical_text TEXT,                         -- 统一语义文本（embedding 唯一输入）；NULL=未计算
+    canonical_text_hash TEXT,                    -- sha256(profile|dim|ver|text)；skipped 行为 NULL
+    canonical_vector_state TEXT,                 -- pending/ready/visual_only/skipped/failed；NULL=未计算
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 文件在文件系统中的创建时间
     modified_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 文件在文件系统中的修改时间
     accessed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP -- 文件在文件系统中的最后访问时间
@@ -210,7 +215,9 @@ export const GENESIS_V1_SCHEMA = `
     updated_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     meta               TEXT NOT NULL DEFAULT '{}',    -- JSON 元数据
     PRIMARY KEY (file_fingerprint, tag_code, via_parent_code),
-    FOREIGN KEY (file_fingerprint) REFERENCES files(file_fingerprint) ON DELETE CASCADE
+    FOREIGN KEY (file_fingerprint) REFERENCES files(file_fingerprint) ON DELETE CASCADE,
+    CHECK (tag_code NOT GLOB '*[^ -~]*' AND tag_code != ''),
+    CHECK (tag_group IN ('fact', 'fused', 'visual', 'ai', 'user', ''))
   );
 
   -- 10. 独立文件常量配置表 (file_constants)
@@ -341,6 +348,8 @@ export const GENESIS_V1_SCHEMA = `
     chunk_index INTEGER NOT NULL,
     start_sec REAL NOT NULL,
     end_sec REAL NOT NULL,
+    rep_pts_sec REAL,
+    meta TEXT NOT NULL DEFAULT '{}',
     sampling_interval_seconds REAL NOT NULL DEFAULT 1.0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (file_fingerprint) REFERENCES files(file_fingerprint) ON DELETE CASCADE,
@@ -364,6 +373,21 @@ export const GENESIS_V1_SCHEMA = `
     tokenize='trigram'                           -- 使用 trigram 分词支持多语言模糊搜索
   );
 
+  -- 17.5 拼音正排索引（短字段；设计文档 docs/specs/pinyin-forward-index-redesign-spec.md §4.1）
+  -- 索引侧把 name/smart_name/description/tags 的中文段转拼音串（全拼+首字母，多音字全变体），
+  -- 查询侧纯字母输入直接 MATCH——不依赖任何封闭词表，索引里有什么中文就能搜什么。
+  -- 字段范围决策：仅短字段（正文拼音检索的投入产出比不成立，见设计文档 §7.2 / §11）。
+  -- src_hash 列利用 FTS5 原生 UNINDEXED 能力做陈旧检测，取代独立 meta 表（二轮 review 裁决）。
+  CREATE VIRTUAL TABLE IF NOT EXISTS files_pinyin_fts USING fts5(
+    file_fingerprint UNINDEXED,                  -- 关联键（不建全文索引）
+    name_py,                                     -- 物理文件名拼音串（空格分隔 token，首尾补空格）
+    smart_name_py,                               -- 智能名称拼音串
+    description_py,                              -- 描述拼音串
+    tags_py,                                     -- 标签聚合文本拼音串
+    src_hash UNINDEXED,                          -- sha256(name|smartName|description|tags)，reconciler 陈旧检测
+    tokenize='trigram'                           -- 与 files_fts 同构：>=3 字符串子串匹配
+  );
+
   -- 18. 高频索引
   CREATE INDEX IF NOT EXISTS idx_files_group ON files(file_group);
   CREATE INDEX IF NOT EXISTS idx_files_extension ON files(extension);
@@ -374,6 +398,7 @@ export const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_workspace_files_path ON workspace_files(path);
   CREATE INDEX IF NOT EXISTS idx_workspace_files_path_nocase ON workspace_files(path COLLATE NOCASE);
   CREATE INDEX IF NOT EXISTS idx_workspace_files_status ON workspace_files(status);
+  CREATE INDEX IF NOT EXISTS idx_workspace_files_lightweight ON workspace_files(workspace_id, is_analyzed, path);
   CREATE INDEX IF NOT EXISTS idx_workspace_directories_workspace_id ON workspace_directories(workspace_id);
   CREATE INDEX IF NOT EXISTS idx_workspace_directories_path ON workspace_directories(path COLLATE NOCASE);
   CREATE INDEX IF NOT EXISTS idx_file_tags_private_name ON file_tags_private(name);
@@ -399,6 +424,7 @@ export const GENESIS_V1_SCHEMA = `
   DROP TRIGGER IF EXISTS trg_files_fts_delete;
   DROP TRIGGER IF EXISTS trg_workspace_files_fts_insert;
   DROP TRIGGER IF EXISTS trg_file_contents_fts_upsert;
+  DROP TRIGGER IF EXISTS trg_files_pinyin_fts_delete;
 
   CREATE TRIGGER trg_files_fts_insert AFTER INSERT ON files BEGIN
     INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags)
@@ -429,6 +455,14 @@ export const GENESIS_V1_SCHEMA = `
 
   CREATE TRIGGER trg_files_fts_delete AFTER DELETE ON files BEGIN
     DELETE FROM files_fts WHERE rowid = old.rowid;
+  END;
+
+  -- 拼音索引删除一致性（纯 SQL 方向）：files 删除即清拼音行，防孤儿行被搜索召回。
+  -- 写入/更新方向由 JS 计算拼音（pinyin-text.ts），走 FileDao write-through + reconciler，无法用触发器表达。
+  -- rowid 对齐（R1 盲审 A-H1）：拼音行 rowid = files.rowid，删除/寻址走 rowid（O(log n)）；
+  -- 按 file_fingerprint（UNINDEXED 列）删除对 FTS5 是全表扫描，批量删除 M 个文件 = M 次全表扫描。
+  CREATE TRIGGER trg_files_pinyin_fts_delete AFTER DELETE ON files BEGIN
+    DELETE FROM files_pinyin_fts WHERE rowid = old.rowid;
   END;
 
   CREATE TRIGGER trg_file_contents_fts_upsert AFTER INSERT ON file_contents BEGIN
@@ -520,6 +554,7 @@ export const migrations: IMigrationConfig[] = [
       DROP TABLE IF EXISTS workspace_directories;
       DROP TABLE IF EXISTS workspaces;
       DROP TABLE IF EXISTS files_fts;
+      DROP TABLE IF EXISTS files_pinyin_fts;
     `
   }
 ]
@@ -545,12 +580,12 @@ export function localeToTableSuffix(locale: string): string {
 /**
  * 分表兜底语言：白名单外 locale 一律回退，防止非法值拼入表名（Fix-09）
  */
-const TAG_ALIASES_FALLBACK_LOCALE = 'zh-CN'
+const TAG_ALIASES_FALLBACK_LOCALE = 'en-US'
 
 /**
  * 生成某个语言的分表名（与 Omni 语义包 tag_aliases_{lang} 一一对应）
  * 安全入口：locale 必须命中 SUPPORTED_LANGUAGES_KEY 白名单（与构建期语言清单同源），
- * 非白名单值回退 zh-CN 并记 warn，杜绝任意字符串拼入表名。
+ * 非白名单值回退 en-US 并记 warn，杜绝任意字符串拼入表名。
  * @param locale 如 zh-CN
  */
 export function resolveTagAliasesLangTable(locale: string): string {

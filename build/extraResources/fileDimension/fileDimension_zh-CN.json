@@ -977,38 +977,6 @@
           ]
         }
       ],
-      "tagImplications": [
-        {
-          "sourceTag": "自然景观",
-          "targetDimension": "文件用途",
-          "targetTag": "旅行记录"
-        },
-        {
-          "sourceTag": "城市建筑",
-          "targetDimension": "文件用途",
-          "targetTag": "旅行记录"
-        },
-        {
-          "sourceTag": "人文活动",
-          "targetDimension": "文件用途",
-          "targetTag": "旅行记录"
-        },
-        {
-          "sourceTag": "各地美食",
-          "targetDimension": "文件用途",
-          "targetTag": "旅行记录"
-        },
-        {
-          "sourceTag": "历史遗迹",
-          "targetDimension": "文件用途",
-          "targetTag": "旅行记录"
-        },
-        {
-          "sourceTag": "户外活动",
-          "targetDimension": "文件用途",
-          "targetTag": "旅行记录"
-        }
-      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,

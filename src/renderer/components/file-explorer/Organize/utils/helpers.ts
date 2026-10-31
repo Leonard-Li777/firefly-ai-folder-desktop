@@ -295,9 +295,33 @@ export function getPerspectiveIcon(perspective: string): string {
   return 'insights'
 }
 
+/**
+ * 剥离目录名开头的占位符前缀（如 `{目录}架构图解` → `架构图解`）。
+ *
+ * 端侧小模型常把提示词里的占位符当作文本模板原样回吐，产出「{目录}子目录」这类前缀粘连；
+ * 若不剥离，微调目录结构时所有目录名都会带上「目录」前缀。
+ * 仅剥离「括号包裹」与「冒号分隔」两种明确占位形态，避免误伤「目录服务规范」这类合法名称。
+ */
+export function stripPlaceholderPrefix(name: string): string {
+  if (!name) return name
+  let current = name.trim()
+  // 允许连续多段剥离，覆盖「{目录}{目录}架构图解」之类的重复回吐
+  for (let i = 0; i < 3; i++) {
+    const stripped = current
+      .replace(/^[{[【（(]\s*(?:目录|文件夹|directory|folder)\s*[}\]】）)]\s*[:：\-—]*\s*/i, '')
+      .replace(/^\s*(?:目录|文件夹|directory|folder)\s*[:：]\s*/i, '')
+      .trim()
+    if (!stripped || stripped === current) break
+    current = stripped
+  }
+  return current
+}
+
 /** 清洗目录名：先移除非法特殊字符，再校验目录名长度（正常范围 1-40 字），保留正常范围的目录名 */
 export function sanitizeDirectoryName(name: string): string {
   if (!name) return UNCLASSIFIED_NAME
+  // 0. 先剥离模型回吐的占位符前缀（{目录}xxx → xxx），避免「目录」二字混入真实目录名
+  name = stripPlaceholderPrefix(name)
   // 1. 先去掉非法特殊字符（使用 Unicode 属性转义 \p{L} 匹配所有语言字母，\p{N} 匹配数字）
   let cleaned = name.replace(/[^\p{L}\p{N}\s.\-_（）()【】\[\]]/gu, '').trim()
 
@@ -751,6 +775,9 @@ export function parseStrategyToTree(
         .trim()
     }
 
+    // 剥离模型回吐的占位符前缀（{目录}架构图解 → 架构图解），否则微调目录结构时目录名会带「目录」前缀
+    content = stripPlaceholderPrefix(content)
+
     if (
       !content ||
       isPlaceholderDirectoryName(content) ||
@@ -1126,3 +1153,32 @@ export function extractCandidatePathsFromTree(
   return Array.from(new Set(paths))
 }
 
+/**
+ * 递归过滤整棵树中所有既无真实物理文件也无任何有效子目录的纯空目录节点
+ * （保留带有文件的节点，以及包含非空子目录的父目录节点）
+ */
+export function filterEmptyDirectoryNodes(nodes: VirtualDirectoryNode[]): VirtualDirectoryNode[] {
+  if (!Array.isArray(nodes)) return []
+  const result: VirtualDirectoryNode[] = []
+
+  for (const node of nodes) {
+    if (!node) continue
+    const filteredSubs = filterEmptyDirectoryNodes(node.subdirectories || [])
+    const hasFiles = Array.isArray(node.files) && node.files.length > 0
+    const hasSubs = filteredSubs.length > 0
+
+    if (hasFiles || hasSubs) {
+      let count = node.files ? node.files.length : 0
+      for (const sub of filteredSubs) {
+        count += sub.fileCount
+      }
+      result.push({
+        ...node,
+        subdirectories: filteredSubs,
+        fileCount: count
+      })
+    }
+  }
+
+  return result
+}

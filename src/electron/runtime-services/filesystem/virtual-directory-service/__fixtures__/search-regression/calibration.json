@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "source": "docs/adr/0039-hybrid-search-and-everything-fast-walk-architecture.md 附录 B（2026-10-23 文本嵌入空间修正）",
+  "measuredAt": "2026-10-23",
+  "embeddingSpace": "gemma 内容 token 均值池化（排除 <bos>/<eos>）；旧空间为全 1 attention_mask 的 <bos>/<eos> 均值池化",
+  "minGenericVectorScore": {
+    "old": 0.58,
+    "new": 0.3,
+    "rationale": "旧空间把无关文本余弦抬到 0.6~0.9，0.58 形同虚设；新空间真命中 top-1 约 0.30~0.55、无关概念 p90≈0.21/p99≈0.40，故 0.58→0.30。假阳性主要由 TEMPORAL_CHUNK_MIN_PROMINENCE 显著性门禁拦截。"
+  },
+  "lnkNegatives": {
+    "sampleSize": 66,
+    "measuredQueries": [
+      "跑车"
+    ],
+    "coverage": "仅单 query 实测；queries.json 全量 10 条 query 的 vecScore 测量待真实嵌入模型就位后补齐（见 pendingRealSnapshot）",
+    "oldSpace": {
+      "atOrAboveOldThreshold": 66,
+      "max": 0.845,
+      "note": "工具.lnk vecScore≈0.845 曾位居第 2，压过真实语义候选"
+    },
+    "newSpace": {
+      "atOrAboveNewThreshold": 0,
+      "max": 0.275,
+      "threshold": 0.3
+    },
+    "pendingRealSnapshot": true
+  },
+  "documentMrr": {
+    "documents": 10,
+    "queries": 10,
+    "oldSpace": 1.0,
+    "newSpace": 1.0,
+    "gate": 0.05,
+    "note": "绝对分整体下移但真命中排序不回退；旧基线为 1.000 时不允许回退",
+    "pendingRealSnapshot": true
+  },
+  "longDocumentRecallAt10": {
+    "bodyLengthThresholdChars": 2048,
+    "oldBaseline": null,
+    "newBaseline": null,
+    "maxDropRatio": 0.1,
+    "bodyPrefixCodePoints": 256,
+    "note": "旧基线未测量：缺 ≥2048 字授权长文档资产。按验收口径先建立基线，不得编造对比数字；正文前缀 256→512 的触发条件（下降 >10%）未满足前不改 shared 构建器。",
+    "pendingRealSnapshot": true
+  }
+}

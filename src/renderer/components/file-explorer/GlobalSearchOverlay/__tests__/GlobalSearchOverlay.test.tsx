@@ -25,13 +25,15 @@ vi.mock('@voerkai18n/react', () => ({
 
 vi.mock('@/renderer/components/file-explorer/FileExplorerLayout', () => ({
   FileExplorerLayout: (props: any) => (
-    <div data-testid="file-explorer-layout">
+    <div data-testid="file-explorer-layout" data-loading={String(props.isLoading)}>
+      {props.isLoading && props.files.length === 0 && <div data-testid="search-loading">正在搜索...</div>}
       <div data-testid="file-count">{props.files.length}</div>
       {props.files.map((f: any) => (
         <div key={f.path} data-path={f.path} data-testid="file-item">
           {f.name}
         </div>
       ))}
+      {props.renderToolbar && props.renderToolbar({ viewMode: props.viewMode, setViewMode: props.onViewModeChange, gridCardWidth: 120, setGridCardWidth: vi.fn(), files: props.files })}
       {props.renderFooter && props.renderFooter({ files: props.files })}
     </div>
   )
@@ -39,13 +41,15 @@ vi.mock('@/renderer/components/file-explorer/FileExplorerLayout', () => ({
 
 vi.mock('../FileExplorerLayout', () => ({
   FileExplorerLayout: (props: any) => (
-    <div data-testid="file-explorer-layout">
+    <div data-testid="file-explorer-layout" data-loading={String(props.isLoading)}>
+      {props.isLoading && props.files.length === 0 && <div data-testid="search-loading">正在搜索...</div>}
       <div data-testid="file-count">{props.files.length}</div>
       {props.files.map((f: any) => (
         <div key={f.path} data-path={f.path} data-testid="file-item">
           {f.name}
         </div>
       ))}
+      {props.renderToolbar && props.renderToolbar({ viewMode: props.viewMode, setViewMode: props.onViewModeChange, gridCardWidth: 120, setGridCardWidth: vi.fn(), files: props.files })}
       {props.renderFooter && props.renderFooter({ files: props.files })}
     </div>
   )
@@ -212,7 +216,7 @@ describe('GlobalSearchOverlay (Issue 03 / 双阶段流式上屏与呼吸微条)'
     expect(screen.queryByText('深度语义对齐中...')).toBeNull()
   })
 
-  it('1500ms 安全熔断：若 Phase 2 超时未返回，呼吸条状态机自动平滑归位至 idle', async () => {
+  it('安全熔断：若 Phase 2 超过 6000ms 未返回，呼吸条状态机自动平滑归位至 idle', async () => {
     render(<GlobalSearchOverlay workspaceDirectory={mockWorkspace} />)
 
     act(() => {
@@ -236,13 +240,24 @@ describe('GlobalSearchOverlay (Issue 03 / 双阶段流式上屏与呼吸微条)'
     })
     expect(screen.getByText('深度语义对齐中...')).toBeInTheDocument()
 
-    // 快进 1500ms 触发安全超时熔断
+    // 快进 6000ms 触发安全超时熔断
     await act(async () => {
-      vi.advanceTimersByTime(1550)
+      vi.advanceTimersByTime(6100)
     })
 
     // 验证呼吸徽章已安全归位 idle，未无限期挂起
     expect(screen.queryByText('深度语义对齐中...')).toBeNull()
+  })
+
+  it('在 Toolbar 中正确展示搜索统计信息与视图设置组件', () => {
+    render(<GlobalSearchOverlay workspaceDirectory={mockWorkspace} />)
+
+    act(() => {
+      useSearchStore.setState({ globalSearchKeyword: 'invoice' })
+    })
+
+    expect(screen.getByText('"invoice"')).toBeInTheDocument()
+    expect(screen.getByText(/全域搜索:/)).toBeInTheDocument()
   })
 
   it('按 ESC 键或点击退出按钮立即关闭浮层并清理搜索', () => {
@@ -258,5 +273,51 @@ describe('GlobalSearchOverlay (Issue 03 / 双阶段流式上屏与呼吸微条)'
     fireEvent.keyDown(window, { key: 'Escape' })
 
     expect(useSearchStore.getState().globalSearchKeyword).toBe('')
+  })
+
+  it('纯语义词检索：Phase 1 命中 0 项时保持 Loading 态，绝不提前呈现没有文件的假空态，直到 Phase 2 给出结果', async () => {
+    render(<GlobalSearchOverlay workspaceDirectory={mockWorkspace} />)
+
+    act(() => {
+      useSearchStore.setState({ globalSearchKeyword: '红色跑车' })
+    })
+    await act(async () => {
+      vi.advanceTimersByTime(260)
+    })
+
+    const calls = (window.electronAPI!.searchWorkspaceFiles as any).mock.calls
+    const currentSeq = calls[calls.length - 1][2].seq
+
+    // 模拟 Phase 1 零命中推送（纯语义词，文件名/标签无匹配）
+    act(() => {
+      progressCallback?.({
+        phase: 'phase1',
+        seq: currentSeq,
+        items: [],
+        total: 0
+      })
+    })
+
+    // 验证：此时绝对不能展示「没有找到匹配的文件」假空态，而应展示正在搜索的 Loading 与呼吸提示
+    expect(screen.queryByText('没有找到匹配的文件')).toBeNull()
+    expect(screen.getByText('正在搜索...')).toBeInTheDocument()
+    expect(screen.getByText('深度语义对齐中...')).toBeInTheDocument()
+
+    // 模拟 Phase 2 经过深度向量与视频切片分析后返回 1 个文件
+    act(() => {
+      progressCallback?.({
+        phase: 'phase2',
+        seq: currentSeq,
+        items: [
+          { id: '1', path: 'C:\\Work\\car.mp4', name: 'car.mp4', matchType: 'semantic' } as any
+        ],
+        total: 1
+      })
+    })
+
+    // 验证：Phase 2 到达后 Loading 结束，正常展示检索卡片
+    expect(screen.queryByText('正在搜索...')).toBeNull()
+    expect(screen.queryByText('没有找到匹配的文件')).toBeNull()
+    expect(screen.getByText('car.mp4')).toBeInTheDocument()
   })
 })

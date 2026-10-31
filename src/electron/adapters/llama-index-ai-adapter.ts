@@ -32,6 +32,8 @@ import {
   isSubPath,
   isPathEqual
 } from '@firefly/shared'
+import { engineBridgeService } from '../runtime-services/engine-bridge'
+import { DEFAULT_IMAGE_MAX_EDGE, pickImageMaxEdge } from './image-budget'
 import { ConfigOrchestrator } from '../config/config-orchestrator'
 import { databaseService } from '../runtime-services/database/database-service'
 import { audioConverter } from '../runtime-services/filesystem/audio-converter'
@@ -117,6 +119,8 @@ export class LlamaIndexAIAdapter implements IAIAdapter, ILlamaRuntimeAdapter {
     frequency_penalty?: number
     /** 存在惩罚。缺省不传时由下层沿用既有缺省值 0.3 */
     presence_penalty?: number
+    /** 是否启用 DSpark / 草稿投机采样加速 */
+    isDSpark?: boolean
   }): Promise<{
     success: boolean
     response?: any
@@ -161,6 +165,19 @@ export class LlamaIndexAIAdapter implements IAIAdapter, ILlamaRuntimeAdapter {
           ) {
             let buffer: Buffer
 
+            // 图片最长边必须随引擎**真实**上下文窗口收敛：视觉 token 与像素面积成正比，
+            // 固定 800px 在 2048 窗口的引擎上单张图即可吃掉大半窗口，请求会被 llama-server
+            // 以 `exceeds the available context size` 拒绝（2026-10-29 事故）。
+            const runtimeCtx = engineBridgeService.getRuntimeContextSize?.() ?? null
+            const maxImageEdge = pickImageMaxEdge(runtimeCtx)
+            if (maxImageEdge < DEFAULT_IMAGE_MAX_EDGE) {
+              logger.warn(
+                LogCategory.AI_SERVICE,
+                `[LlamaIndexAIAdapter] 引擎上下文窗口较小 (${runtimeCtx ?? 'unknown'})，` +
+                  `图片最长边由 ${DEFAULT_IMAGE_MAX_EDGE}px 收敛到 ${maxImageEdge}px 以适配窗口`
+              )
+            }
+
             try {
               const normalizedPath = path.resolve(request.filePath)
               const image = nativeImage.createFromPath(normalizedPath)
@@ -174,18 +191,18 @@ export class LlamaIndexAIAdapter implements IAIAdapter, ILlamaRuntimeAdapter {
               // 统一转换为 JPEG 格式以确保模型兼容性
               // 如果尺寸过大，则进行缩放
               if (
-                (width > 800 || height > 800) &&
+                (width > maxImageEdge || height > maxImageEdge) &&
                 typeof (nativeImage as any).createThumbnailFromPath === 'function'
               ) {
                 const resizedImage = await (nativeImage as any).createThumbnailFromPath(
                   normalizedPath,
-                  { width: 800, height: 800 }
+                  { width: maxImageEdge, height: maxImageEdge }
                 )
                 buffer = resizedImage.toJPEG(80)
-              } else if (width > 800 || height > 800) {
+              } else if (width > maxImageEdge || height > maxImageEdge) {
                 // 使用 sharp 调整大图尺寸并转换
                 buffer = await sharp(normalizedPath)
-                  .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
+                  .resize(maxImageEdge, maxImageEdge, { fit: 'inside', withoutEnlargement: true })
                   .jpeg({ quality: 80 })
                   .toBuffer()
               } else {
@@ -201,7 +218,7 @@ export class LlamaIndexAIAdapter implements IAIAdapter, ILlamaRuntimeAdapter {
               )
               const normalizedPath = path.resolve(request.filePath)
               buffer = await sharp(normalizedPath)
-                .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
+                .resize(maxImageEdge, maxImageEdge, { fit: 'inside', withoutEnlargement: true })
                 .jpeg({ quality: 80 })
                 .toBuffer()
             }
@@ -400,7 +417,9 @@ export class LlamaIndexAIAdapter implements IAIAdapter, ILlamaRuntimeAdapter {
         }
       }
 
+      const isDSpark = request.isDSpark ?? (engineBridgeService.isDSparkActive?.() ?? false)
       const response = await service.chat(messages, false, {
+        isDSpark,
         temperature: request.temperature,
         maxTokens: request.maxTokens,
         response_format: request.response_format,

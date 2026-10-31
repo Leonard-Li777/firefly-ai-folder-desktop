@@ -1,4 +1,5 @@
 import Database from 'better-sqlite3'
+import fs from 'node:fs'
 import path from 'node:path'
 import {
   DimensionFlags,
@@ -25,13 +26,18 @@ import {
   classifyDimensionMutexScope,
   getParentDimensionCodeOfTag,
   ROOT_DIMENSION_META,
-  TOP_ROOT_CODES
+  TOP_ROOT_CODES,
+  isMultiHostDimension,
+  isControlledConcept,
+  CONTROLLED_CODE_TO_CANONICAL_NAME
 } from '@firefly/shared'
+import { DeterministicCodeGenerator } from '@firefly/core-engine'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { ConfigDbManager } from '../../config/config-db-manager'
 import { loadIgnoreRules, shouldIgnoreFile } from '../../analysis/analysis-ignore-service'
 import { decompressText } from '../../../utils/text-compressor'
 import { omniClient } from '../../../services/omni-client'
+import { omniService } from '../../system/omni-service'
 import type { OmniTaxonomyNode } from '../../../services/omni-client'
 import {
   HybridRankedCandidate,
@@ -40,7 +46,29 @@ import {
   splitPassages
 } from './HybridSearchArbiter'
 import { HybridSearchSession } from './hybrid-search-session'
-import { PinyinQueryExpander } from './pinyin-query-expander'
+import { PinyinQueryPlanner } from './pinyin-query-expander'
+
+/**
+ * 轻量物化代码路径归一化函数（确保以单斜杠开头、无尾部斜杠、去除多余双斜杠）
+ */
+/**
+ * Windows 原生路径转义辅助函数 (Spec §3.1.2)
+ * 使用 | 作为转义符，原样保留原生反斜杠 \，杜绝 ESCAPE '\' 时末尾反斜杠转义通配符引发的漏查漏洞
+ */
+export function escapeLikePrefixWindows(prefix: string): string {
+  if (!prefix) return ''
+  return prefix
+    .replace(/\|/g, '||')
+    .replace(/%/g, '|%')
+    .replace(/_/g, '|_')
+}
+
+export function normalizeCodePath(p: string): string {
+  if (!p) return ''
+  const trimmed = p.trim().replace(/\\/g, '/')
+  const segments = trimmed.split('/').filter(Boolean)
+  return segments.length > 0 ? `/${segments.join('/')}` : ''
+}
 
 export interface FilterFilesParams {
   selectedTags?: SelectedTag[]
@@ -55,7 +83,17 @@ export interface FilterFilesParams {
   virtualDirectoryId?: number
   unionMode?: 'union' | 'intersection'
   includeUnanalyzed?: boolean
-  onProgress?: (phase: 'phase1' | 'phase2', response: FilteredFilesResponse) => void
+  /**
+   * 流式检索进度回调。
+   *
+   * 工单 13：新增 `phase3` —— 冷态 CLIP 第 5 路结果在 phase2 之后异步追加，
+   * 语义是「往已渲染列表尾部补新项」，不是又一次全量置换。
+   * `clipPending` 仅在 phase2 出现，表示冷态视觉模型正在首次加载（UI 据此展示轻量提示）。
+   */
+  onProgress?: (
+    phase: 'phase1' | 'phase2' | 'phase3',
+    response: FilteredFilesResponse & { clipPending?: boolean }
+  ) => void
 }
 
 /** 混合检索分页引用：已分析候选 / 未分析 FS 命中 */
@@ -346,6 +384,7 @@ export class TagTreeQuery {
   }
 
   private _ftsAvailable: boolean | null = null
+  private _pinyinAvailable: boolean | null = null
   private isFtsAvailable(): boolean {
     if (this._ftsAvailable !== null) return this._ftsAvailable
     try {
@@ -363,6 +402,29 @@ export class TagTreeQuery {
       this._ftsAvailable = false
     }
     return this._ftsAvailable
+  }
+
+  /**
+   * 拼音正排索引表可用性探针（与 isFtsAvailable 同构）：
+   * files_pinyin_fts 缺失（旧库未迁移 / 局部 schema）时跳过拼音子查询，
+   * 避免整条 SQL 抛错被静默降级为空集。
+   */
+  private isPinyinAvailable(): boolean {
+    if (this._pinyinAvailable !== null) return this._pinyinAvailable
+    try {
+      const row = this.db
+        .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='files_pinyin_fts'")
+        .get()
+      this._pinyinAvailable = !!row
+    } catch (err) {
+      logger.debug(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[TagTreeQuery] files_pinyin_fts 探针失败，按拼音索引不可用处理:',
+        err
+      )
+      // 瞬时错误（如 db 锁）不缓存 false：否则拼音子查询会被永久静默跳过（R1 盲审 B-S2）
+    }
+    return this._pinyinAvailable ?? false
   }
 
   /**
@@ -612,6 +674,170 @@ export class TagTreeQuery {
    * 获取维度组导航树（含命中文件计数）
    * ADR-0038 / Issue #682：受控分类树由 Omni taxonomy/tree 提供，本地仅保留 expanded/user 动态标签
    */
+  /**
+   * 基于 Omni 树快速装配前端所需的 DimensionGroupsResponse (Spec §3.1.2)
+   * 完全在内存中完成映射，无 SQLite 全量扫描与笛卡尔积，耗时 < 5ms
+   */
+  private buildResponseFromOmniTree(
+    rootNodes: OmniTaxonomyNode[],
+    totalNodes: number,
+    opts: GetDimensionGroupsOptions,
+    locale: string,
+    startTime: number
+  ): DimensionGroupsResponse {
+    const pathCountMap: Record<string, number> = {}
+
+    // 1. 递归提取全量物化路径的去重文件计数
+    const extractPathCounts = (node: OmniTaxonomyNode) => {
+      if (node.codePath) {
+        const norm = normalizeCodePath(node.codePath)
+        if (norm) {
+          pathCountMap[norm] = node.fileCount ?? 0
+        }
+      }
+      for (const child of node.children || []) {
+        extractPathCounts(child)
+      }
+    }
+    for (const root of rootNodes) {
+      extractPathCounts(root)
+    }
+
+    // 2. 本地权威配置管理器（解析 flag，如 isPanDimension, isFileTypeDimension 等）
+    const authorityDimsData = this.resolveAuthorityDimensions()
+    const authorityDimByCode = authorityDimsData.byCode
+    const authorityDimById = authorityDimsData.byId
+
+    const usedNumericIds = new Set<number>()
+    const groups: DimensionGroup[] = []
+
+    for (let rootIdx = 0; rootIdx < rootNodes.length; rootIdx++) {
+      const root = rootNodes[rootIdx]
+      const authority =
+        authorityDimByCode.get(root.code) ||
+        (ROOT_DIMENSION_META[root.code]?.id !== undefined
+          ? authorityDimById.get(ROOT_DIMENSION_META[root.code].id)
+          : undefined)
+      const canonicalId = authority?.id ?? ROOT_DIMENSION_META[root.code]?.id
+      const id =
+        canonicalId !== undefined && !usedNumericIds.has(canonicalId)
+          ? canonicalId
+          : 10000 + rootIdx
+      usedNumericIds.add(id)
+
+      const tags: DimensionTag[] = []
+
+      const collectTags = (
+        node: OmniTaxonomyNode,
+        parentCode: string,
+        level: number,
+        parentCodePath: string,
+        parentNamePath: string
+      ) => {
+        for (const child of node.children || []) {
+          const currentCodePath = child.codePath || `${parentCodePath}/${child.code}`
+          const currentNamePath = child.namePath || `${parentNamePath}/${child.name}`
+          const normOmniPath = normalizeCodePath(currentCodePath)
+          const count = normOmniPath && pathCountMap[normOmniPath] !== undefined
+            ? pathCountMap[normOmniPath]
+            : (child.fileCount ?? 0)
+
+          if (opts.removeEmptyTags && !opts.includeAllPresetTags && count === 0) {
+            collectTags(child, child.code, level + 1, currentCodePath, currentNamePath)
+            continue
+          }
+
+          tags.push({
+            dimensionId: id,
+            dimensionCode: root.code,
+            dimensionName: root.name,
+            tagValue: child.name,
+            fileCount: count,
+            level,
+            code: child.code,
+            codePath: currentCodePath,
+            namePath: currentNamePath,
+            viaParentCode: parentCode || root.code,
+            isMultiSelect: false,
+            order: child.sortOrder,
+            meta: { sort_order: child.sortOrder, order: child.sortOrder, fromControlledTree: true }
+          })
+
+          collectTags(child, child.code, level + 1, currentCodePath, currentNamePath)
+        }
+      }
+
+      collectTags(root, root.code, 1, `/${root.code}`, `/${root.name}`)
+
+      const dimFlag = authority?.flag
+      const isMulti = dimFlag?.isMultiSelect ?? false
+
+      groups.push({
+        id,
+        name: root.name,
+        level: 1,
+        tags,
+        code: root.code,
+        order: root.sortOrder || rootIdx + 1,
+        isMultiSelect: isMulti,
+        metadata: {
+          source: root.source || 'builtin',
+          order: root.sortOrder || rootIdx + 1,
+          isMultiSelect: isMulti,
+          ...(dimFlag ? { flag: dimFlag } : {})
+        },
+        meta: {
+          source: root.source || 'builtin',
+          order: root.sortOrder || rootIdx + 1,
+          isMultiSelect: isMulti,
+          ...(dimFlag ? { flag: dimFlag } : {})
+        }
+      })
+    }
+
+    const CODE_SENSITIVE = concept('敏感内容')
+    const CODE_EROTIC = concept('色情分级')
+    const CODE_CONTENT_RATING = concept('内容分级')
+    const isSensitiveDimension = (g: any): boolean => {
+      const code = g.code || ''
+      const id = Number(g.id)
+      if (
+        code === CODE_SENSITIVE ||
+        code === CODE_EROTIC ||
+        code === CODE_CONTENT_RATING ||
+        (code && (resolveSubdimensionRoot(code) === CODE_CONTENT_RATING || resolveSubdimensionRoot(code) === CODE_SENSITIVE))
+      ) {
+        return true
+      }
+      if (id === 130 || id === 123 || id === 162) return true
+      if (id >= 131 && id <= 134) return true
+      if (id >= 150 && id <= 161) return true
+      return false
+    }
+
+    const validGroups = groups.filter(g => {
+      if (isSensitiveDimension(g)) {
+        const hasFileHit = Array.isArray(g.tags) && g.tags.some(t => (t.fileCount || 0) > 0)
+        if (!hasFileHit) return false
+      }
+      if (g.tags && g.tags.length > 0) return true
+      const isPan =
+        (typeof g.metadata === 'object' && g.metadata !== null ? (g.metadata as any).flag?.isPanDimension : false) === true ||
+        (g.metadata as any)?.isPanDimension === true
+      if (opts.includeAllPresetTags && isPan) return true
+      return false
+    })
+
+    return {
+      groups: validGroups,
+      pathCountMap,
+      performance: {
+        dbQueryTime: 0,
+        totalTime: Math.round((performance.now() - startTime) * 100) / 100
+      }
+    }
+  }
+
   async getDimensionGroups(
     options?: GetDimensionGroupsOptions | string,
     language?: string
@@ -630,6 +856,36 @@ export class TagTreeQuery {
       unionMode = 'intersection',
       includeAllPresetTags = false
     } = opts
+
+    const useOmniFastPath =
+      opts.virtualDirectoryId === undefined &&
+      (!selectedTags || selectedTags.length === 0) &&
+      (typeof omniService?.isReady === 'function' && omniService.isReady())
+
+    if (useOmniFastPath) {
+      try {
+        const dbPath = (this.db as any).name || (this.db as any).filename
+        const treeRes = await omniClient.getTaxonomyTree(opts.language || language || 'zh-CN', undefined, dbPath, {
+          workspaceId: opts.workspaceId,
+          directoryPrefix: workspaceDirectoryPath
+        })
+        if (treeRes?.rootNodes && treeRes.rootNodes.length > 0) {
+          return this.buildResponseFromOmniTree(
+            treeRes.rootNodes,
+            treeRes.totalNodes,
+            opts,
+            opts.language || language || 'zh-CN',
+            startTime
+          )
+        }
+      } catch (err) {
+        logger.warn(
+          LogCategory.VIRTUAL_DIRECTORY,
+          '[TagTreeQuery] Omni 快速通道失败，平滑降级至 SQLite CTE:',
+          err
+        )
+      }
+    }
 
     try {
       const locale = opts.language || language || 'zh-CN'
@@ -723,8 +979,9 @@ export class TagTreeQuery {
         const prefix = workspaceDirectoryPath.endsWith(sep)
           ? workspaceDirectoryPath
           : workspaceDirectoryPath + sep
-        baseWhere += ' AND (wf.path LIKE ? OR wf.path = ?)'
-        baseParams.push(`${prefix}%`, workspaceDirectoryPath)
+        const escapedPrefix = escapeLikePrefixWindows(prefix)
+        baseWhere += " AND (wf.path = ? OR wf.path LIKE ? || '%' ESCAPE '|')"
+        baseParams.push(workspaceDirectoryPath, escapedPrefix)
       }
 
       // 如果有 selectedTags，筛选出在当前标签过滤下仍有效的文件指纹
@@ -746,11 +1003,7 @@ export class TagTreeQuery {
           }
           if (clauses.length > 0) {
             filteredFingerprintsSql += `
-              AND wf.file_fingerprint IN (
-                SELECT ftr.file_fingerprint
-                FROM file_tag_relations ftr
-                WHERE ${clauses.join(' OR ')}
-              )
+              AND ${this.buildUnionFingerprintsCondition(clauses)}
             `
           }
         } else {
@@ -770,60 +1023,136 @@ export class TagTreeQuery {
         }
       }
 
-      // 4. 统计在有效文件集合下，每个 (tag_code, via_parent_code) 的文件命中集（V4 联合统计）
-      const countQuery = `
-        SELECT ftr.tag_code, ftr.via_parent_code, ftr.file_fingerprint, ftr.code_path, ftr.name_path, ftr.depth
-        FROM file_tag_relations ftr
-        WHERE ftr.file_fingerprint IN (${filteredFingerprintsSql})
-      `
+      // 4. 高性能单向流递归 CTE (Spec §3.1.3: 有界深度熔断与内存聚合，占位符严格同源)
+      try {
+        this.db.pragma('temp_store = MEMORY')
+        this.db.pragma('cache_size = -65536')
+      } catch {}
+
       const countStartTime = performance.now()
-      const relationRows = this.db.prepare(countQuery).all(...filteredFingerprintsParams) as Array<{
+
+      // A. 聚合前缀路径计数 (直出 pathCountMap，中间行永不入 Node.js 内存)
+      const prefixCountSql = `
+        WITH RECURSIVE
+        target_pairs AS (
+          SELECT DISTINCT wf.id AS file_id, ftr.code_path
+          FROM workspace_files wf
+          JOIN file_tag_relations ftr ON ftr.file_fingerprint = wf.file_fingerprint
+          WHERE wf.file_fingerprint IN (${filteredFingerprintsSql})
+            AND ftr.code_path IS NOT NULL
+            AND ftr.code_path LIKE '/%'
+        ),
+        split_prefixes(file_id, prefix_code_path, rest_path, curr_depth) AS (
+          SELECT
+            file_id,
+            '/' || substr(code_path, 2, instr(substr(code_path, 2) || '/', '/') - 1) AS prefix_code_path,
+            CASE
+              WHEN instr(substr(code_path, 2), '/') > 0
+              THEN substr(code_path, instr(substr(code_path, 2), '/') + 2)
+              ELSE ''
+            END AS rest_path,
+            1 AS curr_depth
+          FROM target_pairs
+
+          UNION ALL
+
+          SELECT
+            file_id,
+            prefix_code_path || '/' || substr(rest_path, 1, instr(rest_path || '/', '/') - 1),
+            CASE
+              WHEN instr(rest_path, '/') > 0
+              THEN substr(rest_path, instr(rest_path, '/') + 1)
+              ELSE ''
+            END,
+            curr_depth + 1
+          FROM split_prefixes
+          WHERE rest_path != ''
+            AND rest_path IS NOT NULL
+            AND curr_depth < 12
+        )
+        SELECT prefix_code_path, COUNT(DISTINCT file_id) AS file_count
+        FROM split_prefixes
+        GROUP BY prefix_code_path
+      `
+      const prefixRows = this.db.prepare(prefixCountSql).all(...filteredFingerprintsParams) as Array<{
+        prefix_code_path: string
+        file_count: number
+      }>
+
+      // B. 聚合标签本身命中计数
+      const tagCountSql = `
+        SELECT ftr.tag_code, COUNT(DISTINCT wf.id) AS file_count
+        FROM file_tag_relations ftr
+        JOIN workspace_files wf ON wf.file_fingerprint = ftr.file_fingerprint
+        WHERE ftr.file_fingerprint IN (${filteredFingerprintsSql})
+        GROUP BY ftr.tag_code
+      `
+      const tagCountRows = this.db.prepare(tagCountSql).all(...filteredFingerprintsParams) as Array<{
+        tag_code: string
+        file_count: number
+      }>
+
+      // C. 聚合 tag::via_parent 命中计数
+      const tagParentCountSql = `
+        SELECT ftr.tag_code, ftr.via_parent_code, COUNT(DISTINCT wf.id) AS file_count
+        FROM file_tag_relations ftr
+        JOIN workspace_files wf ON wf.file_fingerprint = ftr.file_fingerprint
+        WHERE ftr.file_fingerprint IN (${filteredFingerprintsSql})
+          AND ftr.via_parent_code IS NOT NULL
+        GROUP BY ftr.tag_code, ftr.via_parent_code
+      `
+      const tagParentRows = this.db.prepare(tagParentCountSql).all(...filteredFingerprintsParams) as Array<{
         tag_code: string
         via_parent_code: string
-        file_fingerprint: string
-        code_path?: string
-        name_path?: string
-        depth?: number
+        file_count: number
       }>
+
+      // D. 提取去重后的标签物化路径对照 (几十到几百行，轻量传输)
+      const tagChainsSql = `
+        SELECT DISTINCT ftr.tag_code, ftr.code_path, ftr.name_path
+        FROM file_tag_relations ftr
+        WHERE ftr.file_fingerprint IN (${filteredFingerprintsSql})
+          AND ((ftr.code_path IS NOT NULL AND ftr.code_path != '') OR (ftr.name_path IS NOT NULL AND ftr.name_path != ''))
+      `
+      const chainRows = this.db.prepare(tagChainsSql).all(...filteredFingerprintsParams) as Array<{
+        tag_code: string
+        code_path: string
+        name_path: string
+      }>
+
       dbQueryTime += performance.now() - countStartTime
 
-      const tagFilesMap = new Map<string, Set<string>>()
-      const tagParentFilesMap = new Map<string, Set<string>>()
       const tagCountMap = new Map<string, number>()
       const tagParentCountMap = new Map<string, number>()
+      const tagFilesMap = new Map<string, Set<string>>()
       const tagChainsMap = new Map<string, Array<{ name_path: string; code_path: string }>>()
+      const pathCountMap: Record<string, number> = {}
 
-      for (const row of relationRows) {
-        if (!tagFilesMap.has(row.tag_code)) {
-          tagFilesMap.set(row.tag_code, new Set())
-        }
-        tagFilesMap.get(row.tag_code)!.add(row.file_fingerprint)
-
-        const parentKey = `${row.tag_code}::${row.via_parent_code}`
-        if (!tagParentFilesMap.has(parentKey)) {
-          tagParentFilesMap.set(parentKey, new Set())
-        }
-        tagParentFilesMap.get(parentKey)!.add(row.file_fingerprint)
-
-        const rowCodePath = row.code_path || ''
-        const rowNamePath = row.name_path || ''
-        if (rowCodePath || rowNamePath) {
-          if (!tagChainsMap.has(row.tag_code)) {
-            tagChainsMap.set(row.tag_code, [])
-          }
-          tagChainsMap.get(row.tag_code)!.push({
-            name_path: rowNamePath,
-            code_path: rowCodePath
-          })
+      for (const r of prefixRows) {
+        const norm = normalizeCodePath(r.prefix_code_path)
+        if (norm) {
+          pathCountMap[norm] = r.file_count
         }
       }
 
-      for (const [code, fSet] of tagFilesMap.entries()) {
-        tagCountMap.set(code, fSet.size)
+      for (const r of tagCountRows) {
+        tagCountMap.set(r.tag_code, r.file_count)
       }
-      for (const [key, fSet] of tagParentFilesMap.entries()) {
-        tagParentCountMap.set(key, fSet.size)
+
+      for (const r of tagParentRows) {
+        tagParentCountMap.set(`${r.tag_code}::${r.via_parent_code}`, r.file_count)
       }
+
+      for (const r of chainRows) {
+        if (!tagChainsMap.has(r.tag_code)) {
+          tagChainsMap.set(r.tag_code, [])
+        }
+        tagChainsMap.get(r.tag_code)!.push({
+          name_path: r.name_path || '',
+          code_path: r.code_path || ''
+        })
+      }
+      const hasPathIndex = Object.keys(pathCountMap).length > 0
 
       // 5. 按照维度归类本地动态标签并组织树形结构
       const groups: DimensionGroup[] = []
@@ -861,9 +1190,6 @@ export class TagTreeQuery {
         return fallbackName || code
       }
 
-      // 建立 tagNameCountMap 与 tagNameFilesMap，用于名称层面的关联兜底
-      const tagNameCountMap = new Map<string, number>()
-      const tagNameFilesMap = new Map<string, Set<string>>()
       // 建立动态子标签映射：parentCode -> Array<{ code, name, meta, count }>
       const dynamicTagsByParent = new Map<
         string,
@@ -877,24 +1203,7 @@ export class TagTreeQuery {
 
       for (const t of tagRows) {
         const count = tagCountMap.get(t.code) || 0
-        const files = tagFilesMap.get(t.code)
         const resolvedName = aliasResolver(t.code, t.name)
-        if (files) {
-          if (resolvedName) {
-            if (!tagNameFilesMap.has(resolvedName)) tagNameFilesMap.set(resolvedName, new Set())
-            for (const f of files) tagNameFilesMap.get(resolvedName)!.add(f)
-          }
-          if (t.name && t.name !== resolvedName) {
-            if (!tagNameFilesMap.has(t.name)) tagNameFilesMap.set(t.name, new Set())
-            for (const f of files) tagNameFilesMap.get(t.name)!.add(f)
-          }
-        }
-        if (resolvedName) {
-          tagNameCountMap.set(resolvedName, tagNameFilesMap.get(resolvedName)?.size || count)
-        }
-        if (t.name && t.name !== resolvedName) {
-          tagNameCountMap.set(t.name, tagNameFilesMap.get(t.name)?.size || count)
-        }
         let parents: string[] = []
         try {
           parents = JSON.parse(t.parent_codes || '[]')
@@ -1025,18 +1334,32 @@ export class TagTreeQuery {
             continue
           }
 
-          assignedCodes.add(child.code)
-          const childCodePath =
-            tagChainsMap.get(child.code)?.[0]?.code_path || `/${dimCode}/${child.code}`
+          const branchPrefix = `/${dimCode}/${child.code}`
+          const matchedChain = tagChainsMap.get(child.code)?.find(c => c.code_path.startsWith(`/${dimCode}/`))
+          const childCodePath = matchedChain?.code_path || branchPrefix
           const childNamePath =
-            tagChainsMap.get(child.code)?.[0]?.name_path ||
+            matchedChain?.name_path ||
             `/${aliasResolver(root.code, root.name)}/${aliasResolver(child.code, child.name)}`
+
+          let childCount = aggregatedCount
+          const normChildPath = normalizeCodePath(childCodePath)
+          if (normChildPath && pathCountMap[normChildPath] !== undefined) {
+            childCount = pathCountMap[normChildPath]
+          } else if (hasPathIndex) {
+            childCount = 0
+          }
+
+          if (removeEmptyTags && !includeAllPresetTags && childCount === 0) {
+            continue
+          }
+
+          assignedCodes.add(child.code)
           dimensionTags.push({
             dimensionId: canonicalId,
             dimensionCode: dimCode,
             dimensionName: aliasResolver(root.code, root.name),
             tagValue: aliasResolver(child.code, child.name),
-            fileCount: aggregatedCount,
+            fileCount: childCount,
             level: 1,
             code: child.code,
             codePath: childCodePath,
@@ -1051,19 +1374,32 @@ export class TagTreeQuery {
           const children = dynamicTagsByParent.get(parentCodeKey) || []
           for (const sub of children) {
             if (dimensionTags.some(t => t.code === sub.code || t.tagValue === sub.name)) continue
-            assignedCodes.add(sub.code)
-            const subCodePath =
-              tagChainsMap.get(sub.code)?.[0]?.code_path ||
-              `/${dimCode}/${parentCodeKey}/${sub.code}`
+            const branchPrefix = `/${dimCode}/${parentCodeKey}/${sub.code}`
+            const matchedChain = tagChainsMap.get(sub.code)?.find(c => c.code_path.startsWith(`/${dimCode}/`))
+            const subCodePath = matchedChain?.code_path || branchPrefix
             const subNamePath =
-              tagChainsMap.get(sub.code)?.[0]?.name_path ||
+              matchedChain?.name_path ||
               `/${aliasResolver(root.code, root.name)}/${sub.name}`
+
+            let subCount = sub.count
+            const normSubPath = normalizeCodePath(subCodePath)
+            if (normSubPath && pathCountMap[normSubPath] !== undefined) {
+              subCount = pathCountMap[normSubPath]
+            } else if (hasPathIndex) {
+              subCount = 0
+            }
+
+            if (removeEmptyTags && !includeAllPresetTags && subCount === 0) {
+              continue
+            }
+
+            assignedCodes.add(sub.code)
             dimensionTags.push({
               dimensionId: canonicalId,
               dimensionCode: dimCode,
               dimensionName: aliasResolver(root.code, root.name),
               tagValue: sub.name,
-              fileCount: sub.count,
+              fileCount: subCount,
               level: curLevel,
               code: sub.code,
               codePath: subCodePath,
@@ -1175,16 +1511,10 @@ export class TagTreeQuery {
               const computeNodeSubtreeFiles = (node: OmniTaxonomyNode): Set<string> => {
                 const fileSet = new Set<string>()
 
-                // 1. 本节点自身命中文件（基于当前工作区与目录作用域的 tagFilesMap）
+                // 1. 本节点自身命中文件（基于当前工作区与目录作用域的 tagFilesMap，100% 遵从受控 Code）
                 const directFiles = tagFilesMap.get(node.code)
                 if (directFiles) {
                   for (const f of directFiles) fileSet.add(f)
-                }
-                if (node.name) {
-                  const byName = tagNameFilesMap.get(node.name)
-                  if (byName) {
-                    for (const f of byName) fileSet.add(f)
-                  }
                 }
 
                 // 2. 本地数据库中归属于当前 node.code 的动态扩展标签（含多级递归）
@@ -1231,18 +1561,20 @@ export class TagTreeQuery {
                         tagParentCountMap.get(`${code}::${parentCode}`) ??
                         tagCountMap.get(code) ??
                         0)
-                  if (
-                    subtreeFiles === undefined &&
-                    count === 0 &&
-                    child.name &&
-                    tagNameCountMap.has(child.name)
-                  ) {
-                    count = tagNameCountMap.get(child.name)!
-                  }
+
                   // 直通透传：优先采用 Omni 已物化的 codePath / namePath（spec §3.4.1），
                   // 仅在 Omni 未回填时按父链兜底拼接，杜绝「组装后打平再递归拼树」的双重损耗。
                   const currentCodePath = child.codePath || `${parentCodePath}/${child.code}`
                   const currentNamePath = child.namePath || `${parentNamePath}/${child.name}`
+                  const normOmniPath = normalizeCodePath(currentCodePath)
+                  if (normOmniPath) {
+                    if (pathCountMap[normOmniPath] !== undefined) {
+                      count = pathCountMap[normOmniPath]
+                    } else if (hasPathIndex) {
+                      // 路径前缀索引池已建立，未命中说明此物理路径下 0 文件命中 (杜绝跨分支/跨介质虚假计数继承)
+                      count = 0
+                    }
+                  }
                   tags.push({
                     dimensionId: id,
                     dimensionCode: root.code,
@@ -1275,17 +1607,30 @@ export class TagTreeQuery {
                       assignedCodes.add(dyn.code) // 同名已认领，避免落入孤儿池
                       continue
                     }
+                    const branchPrefix = `${curCodePath}/${dyn.code}`
+                    const matchedChain = tagChainsMap.get(dyn.code)?.find(c => c.code_path.startsWith(curCodePath))
+                    const dynCodePath = matchedChain?.code_path || branchPrefix
+                    const dynNamePath = matchedChain?.name_path || `${curNamePath}/${dyn.name}`
+
+                    let dynCount = dyn.count
+                    const normDynPath = normalizeCodePath(dynCodePath)
+                    if (normDynPath && pathCountMap[normDynPath] !== undefined) {
+                      dynCount = pathCountMap[normDynPath]
+                    } else if (hasPathIndex) {
+                      dynCount = 0
+                    }
+
+                    if (removeEmptyTags && !includeAllPresetTags && dynCount === 0) {
+                      continue
+                    }
+
                     assignedCodes.add(dyn.code)
-                    const dynCodePath =
-                      tagChainsMap.get(dyn.code)?.[0]?.code_path || `${curCodePath}/${dyn.code}`
-                    const dynNamePath =
-                      tagChainsMap.get(dyn.code)?.[0]?.name_path || `${curNamePath}/${dyn.name}`
                     tags.push({
                       dimensionId: id,
                       dimensionCode: root.code,
                       dimensionName: aliasResolver(root.code, root.name),
                       tagValue: dyn.name,
-                      fileCount: dyn.count,
+                      fileCount: dynCount,
                       level: curLevel,
                       code: dyn.code,
                       codePath: dynCodePath,
@@ -1552,7 +1897,9 @@ export class TagTreeQuery {
                 pParents = JSON.parse(pRow.parent_codes || '[]')
               } catch {}
               const traced = traceAncestorGroup(pParents, visited)
-              if (traced) return traced
+              if (traced) {
+                return { targetGroup: traced.targetGroup, parentCode: p, level: traced.level + 1 }
+              }
             }
           }
           return undefined
@@ -1594,7 +1941,7 @@ export class TagTreeQuery {
           let matchedSameName: { group: DimensionGroup; tag: DimensionTag } | null = null
           for (const g of finalGroups) {
             if (g.code === CONTENT_TAGS_CODE) continue
-            const foundTag = g.tags.find(tg => tg.tagValue === resolvedName)
+            const foundTag = g.tags.find(tg => tg.code === t.code || tg.tagValue === resolvedName)
             if (foundTag) {
               matchedSameName = { group: g, tag: foundTag }
               break
@@ -1604,7 +1951,13 @@ export class TagTreeQuery {
             const { group, tag } = matchedSameName
             assignedCodes.add(t.code)
             tagToGroupMap.set(t.code, group)
-            tag.fileCount = Math.max(tag.fileCount, count)
+            if (tag.codePath && pathCountMap[tag.codePath] !== undefined) {
+              tag.fileCount = pathCountMap[tag.codePath]
+            } else if (hasPathIndex) {
+              tag.fileCount = 0
+            } else {
+              tag.fileCount = Math.max(tag.fileCount, count)
+            }
             continue
           }
 
@@ -1619,31 +1972,58 @@ export class TagTreeQuery {
           const traced = traceAncestorGroup(candidateParents)
           if (traced) {
             const { targetGroup, parentCode: effectiveParent, level: effectiveLevel } = traced
+
+            // 路径判定：在 tagChainsMap 中查找真正以 targetGroup 与 effectiveParent 为前缀的匹配路径
+            // 严禁盲借 [0]，杜绝将音频等异类物理路径借给其他维度分支
+            const chains = tagChainsMap.get(t.code) || []
+            const targetGroupPrefix = `/${targetGroup.code}/`
+            const matchedChain = chains.find(c => {
+              if (!c.code_path.startsWith(targetGroupPrefix)) return false
+              if (effectiveParent !== targetGroup.code && !c.code_path.includes(`/${effectiveParent}/`)) return false
+              return true
+            })
+
+            const geoCode = concept('地理位置')
+            const geoName = targetGroup.name
+            let tCodePath = ''
+            let tNamePath = ''
+
+            if (matchedChain) {
+              tCodePath =
+                targetGroup.code === geoCode && matchedChain.code_path.includes(`/${geoCode}/`)
+                  ? matchedChain.code_path.substring(matchedChain.code_path.indexOf(`/${geoCode}/`))
+                  : matchedChain.code_path
+              tNamePath =
+                targetGroup.code === geoCode && matchedChain.name_path.includes(`/${geoName}/`)
+                  ? matchedChain.name_path.substring(matchedChain.name_path.indexOf(`/${geoName}/`))
+                  : matchedChain.name_path
+            } else {
+              tCodePath = `/${targetGroup.code}/${effectiveParent === targetGroup.code ? t.code : `${effectiveParent}/${t.code}`}`
+              tNamePath = `/${targetGroup.name}/${effectiveParent === targetGroup.code ? resolvedName : `${aliasResolver(effectiveParent, effectiveParent)}/${resolvedName}`}`
+            }
+
+            const normTPath = normalizeCodePath(tCodePath)
+            let branchCount = count
+            if (normTPath && pathCountMap[normTPath] !== undefined) {
+              branchCount = pathCountMap[normTPath]
+            } else if (hasPathIndex) {
+              branchCount = 0
+            }
+
+            if (removeEmptyTags && !includeAllPresetTags && branchCount === 0) {
+              continue
+            }
+
             assignedCodes.add(t.code)
             tagToGroupMap.set(t.code, targetGroup)
             tagLevelMap.set(t.code, effectiveLevel)
-            const rawCodePath = tagChainsMap.get(t.code)?.[0]?.code_path
-            const rawNamePath = tagChainsMap.get(t.code)?.[0]?.name_path
-            const geoCode = concept('地理位置')
-            const geoName = targetGroup.name
-            const tCodePath =
-              rawCodePath && rawCodePath.includes(targetGroup.code || '')
-                ? (targetGroup.code === geoCode && rawCodePath.includes(`/${geoCode}/`)
-                    ? rawCodePath.substring(rawCodePath.indexOf(`/${geoCode}/`))
-                    : rawCodePath)
-                : `/${targetGroup.code}/${effectiveParent === targetGroup.code ? t.code : `${effectiveParent}/${t.code}`}`
-            const tNamePath =
-              rawNamePath && rawNamePath.includes(targetGroup.name)
-                ? (targetGroup.code === geoCode && rawNamePath.includes(`/${geoName}/`)
-                    ? rawNamePath.substring(rawNamePath.indexOf(`/${geoName}/`))
-                    : rawNamePath)
-                : `/${targetGroup.name}/${effectiveParent === targetGroup.code ? resolvedName : `${aliasResolver(effectiveParent, effectiveParent)}/${resolvedName}`}`
+
             targetGroup.tags.push({
               dimensionId: targetGroup.id,
               dimensionCode: targetGroup.code || '',
               dimensionName: targetGroup.name,
               tagValue: resolvedName,
-              fileCount: count,
+              fileCount: branchCount,
               level: effectiveLevel,
               code: t.code,
               codePath: tCodePath,
@@ -1666,21 +2046,36 @@ export class TagTreeQuery {
           if (claimedByStem) {
             const { targetGroup, parentTag } = claimedByStem
             const nextLvl = (parentTag.level || 1) + 1
+
+            const parentCodePath = parentTag.codePath || `/${targetGroup.code}/${parentTag.code || parentTag.tagValue}`
+            const parentNamePath = parentTag.namePath || `/${targetGroup.name}/${parentTag.tagValue}`
+            const branchPrefix = `${parentCodePath}/${t.code}`
+            const matchedChain = tagChainsMap.get(t.code)?.find(c => c.code_path.startsWith(parentCodePath))
+            const tCodePath = matchedChain?.code_path || branchPrefix
+            const tNamePath = matchedChain?.name_path || `${parentNamePath}/${resolvedName}`
+
+            const normTPath = normalizeCodePath(tCodePath)
+            let stemCount = count
+            if (normTPath && pathCountMap[normTPath] !== undefined) {
+              stemCount = pathCountMap[normTPath]
+            } else if (hasPathIndex) {
+              stemCount = 0
+            }
+
+            if (removeEmptyTags && !includeAllPresetTags && stemCount === 0) {
+              continue
+            }
+
             assignedCodes.add(t.code)
             tagToGroupMap.set(t.code, targetGroup)
             tagLevelMap.set(t.code, nextLvl)
-            const tCodePath =
-              tagChainsMap.get(t.code)?.[0]?.code_path ||
-              `/${targetGroup.code}/${parentTag.code || parentTag.tagValue}/${t.code}`
-            const tNamePath =
-              tagChainsMap.get(t.code)?.[0]?.name_path ||
-              `/${targetGroup.name}/${parentTag.tagValue}/${resolvedName}`
+
             targetGroup.tags.push({
               dimensionId: targetGroup.id,
               dimensionCode: targetGroup.code || '',
               dimensionName: targetGroup.name,
               tagValue: resolvedName,
-              fileCount: count,
+              fileCount: stemCount,
               level: nextLvl,
               code: t.code,
               codePath: tCodePath,
@@ -2023,10 +2418,10 @@ export class TagTreeQuery {
           const count = node.files.size
           if (removeEmptyTags && !includeAllPresetTags && count === 0) continue
 
-          const cCodePath =
-            tagChainsMap.get(node.code)?.[0]?.code_path || `/builtin.content_tags/${node.code}`
-          const cNamePath =
-            tagChainsMap.get(node.code)?.[0]?.name_path || `/${contentTagDisplayName}/${node.name}`
+          const branchPrefix = `/builtin.content_tags/${node.code}`
+          const matchedChain = tagChainsMap.get(node.code)?.find(c => c.code_path.startsWith('/builtin.content_tags/'))
+          const cCodePath = matchedChain?.code_path || branchPrefix
+          const cNamePath = matchedChain?.name_path || `/${contentTagDisplayName}/${node.name}`
           contentDimTags.push({
             dimensionId: contentTagsDimId,
             dimensionCode: CONTENT_TAGS_CODE,
@@ -2231,7 +2626,29 @@ export class TagTreeQuery {
               if (!trimmed || existingValues.has(trimmed.toLowerCase())) continue
               if (trimmed === targetGroup.name.trim()) continue
 
-              const tagCode = `${targetGroup.code || `dim.${targetGroup.id}`}.${trimmed}`
+              // 权威受控码优先：若预置标签收录于受控词典，直接使用权威受控码；若未收录，走标准扩展派生码，严禁私造伪代码
+              let tagCode: string | undefined
+              if (isControlledConcept(trimmed)) {
+                tagCode = concept(trimmed)
+              } else {
+                for (const [c, canon] of Object.entries(CONTROLLED_CODE_TO_CANONICAL_NAME)) {
+                  if (canon.toLowerCase() === trimmed.toLowerCase()) {
+                    tagCode = c
+                    break
+                  }
+                }
+                if (!tagCode) {
+                  for (const [c, disp] of Object.entries(aliasMap)) {
+                    if (disp.toLowerCase() === trimmed.toLowerCase()) {
+                      tagCode = c
+                      break
+                    }
+                  }
+                }
+                if (!tagCode) {
+                  tagCode = DeterministicCodeGenerator.generate(trimmed, locale || 'zh-CN')
+                }
+              }
               const resolvedTagName = aliasResolver(tagCode, trimmed)
               targetGroup.tags.push({
                 dimensionId: targetGroup.id,
@@ -2241,7 +2658,7 @@ export class TagTreeQuery {
                 fileCount: 0,
                 level: 1,
                 code: tagCode,
-                codePath: `/${targetGroup.code || `dim.${targetGroup.id}`}/${trimmed}`,
+                codePath: `/${targetGroup.code || `dim.${targetGroup.id}`}/${tagCode}`,
                 namePath: `/${targetGroup.name}/${resolvedTagName}`,
                 viaParentCode: targetGroup.code || '',
                 isMultiSelect: targetGroup.isMultiSelect ?? false,
@@ -2377,6 +2794,7 @@ export class TagTreeQuery {
 
       return {
         groups: validGroups,
+        pathCountMap,
         performance: {
           dbQueryTime: Math.round(dbQueryTime * 100) / 100,
           totalTime: Math.round((performance.now() - startTime) * 100) / 100
@@ -2515,15 +2933,21 @@ export class TagTreeQuery {
 
     if (searchKeyword && searchKeyword.trim()) {
       const trimmed = searchKeyword.trim()
-      const expanded = PinyinQueryExpander.getInstance().expand(trimmed)
-      const patterns = expanded.likePatterns
+      // 正排索引架构：查询分类由 PinyinQueryPlanner 承担（删封闭词库逆向展开）
+      const plan = PinyinQueryPlanner.getInstance().plan(trimmed)
+      // LIKE 通配符转义（人工裁定项②，10-18 既存）：用户查询里的 `%`/`_`/`\` 必须按字面量
+      // 匹配，否则 `50%` 会退化成「含 50 的任意后缀」把全库捞回（node:sqlite 实测：无 ESCAPE
+      // 时模式 `a%b` 匹配含 `a\b`/`axb`/`a_b`/`a%b` 的全部行）。与 code_path 段同一口径
+      // （:88 escapeLike + 子句 ESCAPE '\\'）。
+      const patterns = plan.isPinyin
+        ? Array.from(new Set([`%${escapeLike(plan.rawKeyword)}%`]))
+        : [`%${escapeLike(trimmed)}%`]
       const ftsAvailable = this.isFtsAvailable()
 
       let ftsClause = ''
       let sanitizedQuery = ''
       if (ftsAvailable) {
-        const rawTerms = [trimmed, ...(expanded.isExpanded ? expanded.chineseCandidates : [])]
-        const safeTerms = rawTerms
+        const safeTerms = [trimmed]
           .map(w => {
             const cleaned = w.replace(/[*^()"\\-]/g, ' ').trim()
             return cleaned.length >= 3 ? `"${cleaned}"` : ''
@@ -2540,23 +2964,39 @@ export class TagTreeQuery {
         }
       }
 
+      // 拼音第 6 路：纯字母查询并入 files_pinyin_fts 子查询（设计文档 §5.2）；
+      // 表不可用（旧库/局部 schema）时跳过，与 ftsClause 同样降级到 LIKE 路
+      let pinyinClause = ''
+      let pinyinMatchExpr = ''
+      if (plan.isPinyin && this.isPinyinAvailable()) {
+        pinyinMatchExpr = plan.pinyinTokens
+          .map(t => (t.length >= 3 ? `"${t}"` : `" ${t} "`))
+          .join(' OR ')
+        pinyinClause = `(wf.file_fingerprint IS NOT NULL AND wf.file_fingerprint IN (
+             SELECT f.file_fingerprint
+             FROM files_pinyin_fts
+             JOIN files f ON f.rowid = files_pinyin_fts.rowid
+             WHERE files_pinyin_fts MATCH ?
+           )) OR `
+      }
+
       const patternClauses: string[] = []
       const likeParams: any[] = []
       for (const pattern of patterns) {
         patternClauses.push(`(
-          wf.name LIKE ?
-          OR f.smart_name LIKE ?
-          OR f.description LIKE ?
-          OR wf.path LIKE ?
-          OR f.extension LIKE ?
-          OR f.author LIKE ?
-          OR f.language LIKE ?
-          OR f.file_group LIKE ?
+          wf.name LIKE ? ESCAPE '\\'
+          OR f.smart_name LIKE ? ESCAPE '\\'
+          OR f.description LIKE ? ESCAPE '\\'
+          OR wf.path LIKE ? ESCAPE '\\'
+          OR f.extension LIKE ? ESCAPE '\\'
+          OR f.author LIKE ? ESCAPE '\\'
+          OR f.language LIKE ? ESCAPE '\\'
+          OR f.file_group LIKE ? ESCAPE '\\'
           OR wf.file_fingerprint IN (
             SELECT ftr.file_fingerprint
             FROM file_tag_relations ftr
             LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
-            WHERE ft.name LIKE ? OR ftr.name_path LIKE ?
+            WHERE ft.name LIKE ? ESCAPE '\\' OR ftr.name_path LIKE ? ESCAPE '\\'
           )
         )`)
         for (let i = 0; i < 10; i++) {
@@ -2564,13 +3004,12 @@ export class TagTreeQuery {
         }
       }
 
-      whereClauses.push(`(${ftsClause}${patternClauses.join(' OR ')})`)
+      whereClauses.push(`(${ftsClause}${pinyinClause}${patternClauses.join(' OR ')})`)
 
-      if (ftsClause) {
-        queryParams.push(sanitizedQuery, ...likeParams)
-      } else {
-        queryParams.push(...likeParams)
-      }
+      // 占位符顺序必须与 SQL 文本同序：fts MATCH → pinyin MATCH → LIKE 模式们
+      if (ftsClause) queryParams.push(sanitizedQuery)
+      if (pinyinClause) queryParams.push(pinyinMatchExpr)
+      queryParams.push(...likeParams)
     }
 
     if (selectedTags.length > 0) {
@@ -2582,11 +3021,7 @@ export class TagTreeQuery {
           if (clause) clauses.push(clause)
         }
         if (clauses.length > 0) {
-          whereClauses.push(`wf.file_fingerprint IN (
-            SELECT ftr.file_fingerprint
-            FROM file_tag_relations ftr
-            WHERE ${clauses.join(' OR ')}
-          )`)
+          whereClauses.push(this.buildUnionFingerprintsCondition(clauses))
         }
       } else {
         // intersection
@@ -2664,24 +3099,31 @@ export class TagTreeQuery {
   private buildTagFilterSubClause(tag: SelectedTag, params: any[]): string | null {
     const rawPaths = this.resolveTagCodePaths(tag)
     if (rawPaths.length > 0) {
-      // 排他性物化路径穿透：自愈后前缀精准命中 + 尾部链后缀容错（兼容存量伪根前缀）
+      // 排他性物化路径穿透：严格左前缀排他命中（消除跨介质 tail 后缀误召回与全表扫描）
       const pathClauses = rawPaths
         .map(path => {
-          // 尾部链 = 去掉首段（根段）后的剩余 chain；单段路径无尾部链，跳过后缀容错
-          const segs = path.split('/').filter(Boolean)
-          const hasTail = segs.length > 1
-          const tail = hasTail ? segs.slice(1).join('/') : ''
-          const clause = `(ftr.code_path = ? OR ftr.code_path LIKE (? || '/%') ESCAPE '\\')`
-          if (!hasTail) {
-            params.push(path, escapeLike(path))
-            return clause
-          }
-          params.push(path, escapeLike(path))
-          params.push(escapeLike(tail), escapeLike(tail))
-          return `${clause} OR ftr.code_path LIKE ('%/' || ?) ESCAPE '\\' OR ftr.code_path LIKE ('%/' || ? || '/%') ESCAPE '\\'`
+          const normPath = normalizeCodePath(path)
+          params.push(normPath, escapeLike(normPath))
+          return `(ftr.code_path = ? OR ftr.code_path LIKE (? || '/%') ESCAPE '\\')`
         })
         .join(' OR ')
       return `(${pathClauses})`
+    }
+
+    // Fail-Closed 铁律：跨介质多宿主维度若既无 codePath 又无受控 hostScopeCode，绝对禁止全库泛查！
+    // 必须在 params.push 之前拦截并直接返回 '1 = 0'，杜绝 SQL 占位符与绑定参数数量失配 (AGENTS.md §2.9)
+    if (!tag.hostScopeCode) {
+      const isMultiHostDim = isMultiHostDimension(
+        (tag as { dimensionCode?: string }).dimensionCode || tag.dimensionName,
+        tag.dimensionId
+      )
+      if (isMultiHostDim) {
+        logger.warn(
+          LogCategory.VIRTUAL_DIRECTORY,
+          `[TagTreeQuery] 拦截到无路径无宿主的多宿主维度泛查: ${tag.tagValue}`
+        )
+        return '1 = 0'
+      }
     }
 
     // 降级分支：物化路径缺失时，回退受控 code 精确匹配（含本地/Omni 子孙展开）
@@ -2689,7 +3131,57 @@ export class TagTreeQuery {
     if (codes.length === 0) return null
     const placeholders = codes.map(() => '?').join(',')
     params.push(...codes)
-    return `ftr.tag_code IN (${placeholders})`
+    const baseTagClause = `ftr.tag_code IN (${placeholders})`
+
+    // 当标签携带宿主父级受控作用域（如外部细分维度挂载于文档/电子书）时，
+    // 追加宿主共现约束，杜绝跨父类同名同Code叶子跨介质误召回（彻底保障 AC-4 树徽标与列表一致性）
+    if (tag.hostScopeCode) {
+      params.push(tag.hostScopeCode, escapeLike(tag.hostScopeCode))
+      return `(${baseTagClause} AND ftr.file_fingerprint IN (
+        SELECT ftr_host.file_fingerprint FROM file_tag_relations ftr_host
+        WHERE ftr_host.tag_code = ? OR ftr_host.code_path LIKE ('%/' || ? || '/%') ESCAPE '\\'
+      ))`
+    }
+
+    return baseTagClause
+  }
+
+  /**
+   * 将大批量的标签穿透子句组装为安全的 IN (SELECT ...) 过滤条件。
+   *
+   * 痛点与机理：
+   * 当 union 模式下选中的标签较多（如用户点击「全选」，维度树通常有数百至上千个节点）时，
+   * 直接通过 `${clauses.join(' OR ')}` 拼接会导致 SQLite AST 解析树深度超过 SQLITE_MAX_EXPR_DEPTH（1000），
+   * 触发 `SqliteError: Expression tree is too large (maximum depth 1000)`，
+   * 导致异常捕获后静默降级为 0 个文件，右侧 FileList 空白。
+   *
+   * 治理策略：
+   * 按照安全阈值（每批 30 个条件）分块，通过 UNION 复合查询连接各批子查询。
+   * SQLite 对 UNION compound SELECT 是扁平解析，深度不累加，且各块内表达式树深度均 < 120。
+   * 严格保证了参数占位符顺序与过滤语义的 100% 一致（AC-4）。
+   */
+  private buildUnionFingerprintsCondition(clauses: string[]): string {
+    const CHUNK_SIZE = 30
+    if (clauses.length <= CHUNK_SIZE) {
+      return `wf.file_fingerprint IN (
+        SELECT ftr.file_fingerprint
+        FROM file_tag_relations ftr
+        WHERE ${clauses.join(' OR ')}
+      )`
+    }
+
+    const subSelects: string[] = []
+    for (let i = 0; i < clauses.length; i += CHUNK_SIZE) {
+      const chunk = clauses.slice(i, i + CHUNK_SIZE)
+      subSelects.push(`
+        SELECT ftr.file_fingerprint
+        FROM file_tag_relations ftr
+        WHERE ${chunk.join(' OR ')}
+      `)
+    }
+    return `wf.file_fingerprint IN (
+      ${subSelects.join(' UNION ')}
+    )`
   }
 
   /**
@@ -2700,8 +3192,11 @@ export class TagTreeQuery {
     let dbQueryTime = 0
 
     try {
-      // 确保全量父→子邻接图（含本地 file_tags 与 Omni 受控分类树）已构建
-      await this.ensureFullChildrenMap()
+      // 仅当包含已选标签且需要递归展开父子邻接关系时，才异步确保邻接图加载，
+      // 避免纯关键词全域搜索或无标签筛选时无脑请求 Omni taxonomy/tree 导致首屏阻塞 2.5s！
+      if (params.selectedTags && params.selectedTags.length > 0) {
+        await this.ensureFullChildrenMap()
+      }
 
       const {
         sortBy = 'name',
@@ -2789,11 +3284,29 @@ export class TagTreeQuery {
           f.description as description,
           fc.multimodal_content,
           (
-            SELECT json_group_array(COALESCE(ft.name, ftr.tag_code))
+            SELECT json_group_array(
+              json_object(
+                'code', ftr.tag_code,
+                'name', ft.name,
+                'name_path', ftr.name_path
+              )
+            )
             FROM file_tag_relations ftr
             LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
             WHERE ftr.file_fingerprint = wf.file_fingerprint
-          ) as dimension_tags
+          ) as dimension_tags,
+          (
+            SELECT json_group_array(
+              json_object(
+                'code', ftr.tag_code,
+                'name', ft.name,
+                'name_path', ftr.name_path
+              )
+            )
+            FROM file_tag_relations ftr
+            LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
+            WHERE ftr.file_fingerprint = wf.file_fingerprint AND ftr.tag_group = 'fused'
+          ) as fused_tags
         FROM workspace_files wf
         LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
         LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
@@ -2854,9 +3367,9 @@ export class TagTreeQuery {
       }
     >()
 
-    const expanded = PinyinQueryExpander.getInstance().expand(keyword)
-    const extraHighlightTokens = expanded.isExpanded ? expanded.chineseCandidates : undefined
-    const pinyinCandidate = expanded.isExpanded ? expanded.chineseCandidates[0] : undefined
+    // 正排索引架构：中文高亮词与 matchedPinyinCandidate 来自 arbiter 的拼音校验回填
+    // （candidate.matchedPinyinText，音节边界对齐；假阳性已在回填阶段丢弃）。
+    // 逐候选取词——不同候选可能命中不同中文词（缩写歧义场景）。
 
     // 字面候选直接高亮
     const semanticBatch: Array<{ fileFingerprint: string; text: string }> = []
@@ -2864,6 +3377,8 @@ export class TagTreeQuery {
       const cand = candidateByFp.get(ref.fileFingerprint)
       const text = contentsByFp.get(ref.fileFingerprint) ?? ''
       const desc = descriptionsByFp?.get(ref.fileFingerprint) ?? ''
+      const pinyinCandidate = cand?.matchedPinyinText
+      const extraHighlightTokens = pinyinCandidate ? [pinyinCandidate] : undefined
       if (cand?.hasLiteral) {
         // 优先在正文中提取高亮
         const highlight = extractSnippet(text, keyword, {
@@ -2914,9 +3429,13 @@ export class TagTreeQuery {
           }
         }
       }
-      // 若正文为空但描述非空，语义对齐可使用描述文本作为语义输入
+      // 若正文为空但描述非空，语义对齐可使用描述文本作为语义输入；
+      // 两者皆空的文件（如未分析或无文本产出的视频）严禁进入语义批次——
+      // 空文本对齐必然无命中，会被兜底盖上无相似度的 'semantic'，产生假「语义召回」徽标
       const semanticText = text.trim() ? text : desc
-      semanticBatch.push({ fileFingerprint: ref.fileFingerprint, text: semanticText })
+      if (semanticText.trim()) {
+        semanticBatch.push({ fileFingerprint: ref.fileFingerprint, text: semanticText })
+      }
     }
 
     // 无字面命中 → 段落级语义对齐
@@ -2925,10 +3444,12 @@ export class TagTreeQuery {
       for (const b of semanticBatch) {
         alignItems.push({ fileFingerprint: b.fileFingerprint, passages: splitPassages(b.text) })
       }
-      const alignQuery =
-        expanded.isExpanded && expanded.semanticTextForVector
-          ? expanded.semanticTextForVector
-          : keyword
+      // 语义对齐查询：优先用拼音校验回填的中文词（如 khxs → 科幻小说）——
+      // 纯拼音串本身无语义，直接送对齐会被分词器切成碎片 token
+      const firstPinyinText = semanticBatch
+        .map(b => candidateByFp.get(b.fileFingerprint)?.matchedPinyinText)
+        .find((v): v is string => !!v)
+      const alignQuery = firstPinyinText ?? keyword
       const alignMap = await this.hybridArbiter.alignPassages(
         alignQuery,
         alignItems.map(a => ({ fileFingerprint: a.fileFingerprint, passages: a.passages }))
@@ -2941,19 +3462,21 @@ export class TagTreeQuery {
             snippet: match.bestPassage,
             matchType: 'semantic',
             similarity: Math.round(match.similarity * 100) / 100,
-            matchedPinyinCandidate: pinyinCandidate
+            matchedPinyinCandidate: cand?.matchedPinyinText
           })
         } else {
           // 语义对齐缺失/失败 → 语义首段摘要 + 向量相似度
           const highlight = extractSnippet(b.text, keyword, {
             escapeHtml: false,
-            extraHighlightTokens
+            extraHighlightTokens: cand?.matchedPinyinText
+              ? [cand.matchedPinyinText]
+              : undefined
           })
           result.set(b.fileFingerprint, {
             snippet: highlight.snippet || undefined,
             matchType: 'semantic',
             similarity: cand?.vecScore,
-            matchedPinyinCandidate: pinyinCandidate
+            matchedPinyinCandidate: cand?.matchedPinyinText
           })
         }
       }
@@ -2990,11 +3513,29 @@ export class TagTreeQuery {
         f.description as description,
         fc.multimodal_content,
         (
-          SELECT json_group_array(COALESCE(ft.name, ftr.tag_code))
-          FROM file_tag_relations ftr
-          LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
-          WHERE ftr.file_fingerprint = wf.file_fingerprint
-        ) as dimension_tags
+            SELECT json_group_array(
+              json_object(
+                'code', ftr.tag_code,
+                'name', ft.name,
+                'name_path', ftr.name_path
+              )
+            )
+            FROM file_tag_relations ftr
+            LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
+            WHERE ftr.file_fingerprint = wf.file_fingerprint
+          ) as dimension_tags,
+          (
+            SELECT json_group_array(
+              json_object(
+                'code', ftr.tag_code,
+                'name', ft.name,
+                'name_path', ftr.name_path
+              )
+            )
+            FROM file_tag_relations ftr
+            LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
+            WHERE ftr.file_fingerprint = wf.file_fingerprint AND ftr.tag_group = 'fused'
+          ) as fused_tags
       FROM workspace_files wf
       LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
       LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
@@ -3219,11 +3760,29 @@ export class TagTreeQuery {
           f.description as description,
           fc.multimodal_content,
           (
-            SELECT json_group_array(COALESCE(ft.name, ftr.tag_code))
+            SELECT json_group_array(
+              json_object(
+                'code', ftr.tag_code,
+                'name', ft.name,
+                'name_path', ftr.name_path
+              )
+            )
             FROM file_tag_relations ftr
             LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
             WHERE ftr.file_fingerprint = wf.file_fingerprint
-          ) as dimension_tags
+          ) as dimension_tags,
+          (
+            SELECT json_group_array(
+              json_object(
+                'code', ftr.tag_code,
+                'name', ft.name,
+                'name_path', ftr.name_path
+              )
+            )
+            FROM file_tag_relations ftr
+            LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
+            WHERE ftr.file_fingerprint = wf.file_fingerprint AND ftr.tag_group = 'fused'
+          ) as fused_tags
         FROM workspace_files wf
         LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
         LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
@@ -3327,12 +3886,44 @@ export class TagTreeQuery {
         }
 
         let tags: string[] = []
+        let tagCodes: string[] = []
         if (file.dimension_tags) {
           try {
-            tags =
+            const rawList =
               typeof file.dimension_tags === 'string'
                 ? JSON.parse(file.dimension_tags)
                 : file.dimension_tags
+            if (Array.isArray(rawList)) {
+              for (const item of rawList) {
+                if (!item) continue
+                if (typeof item === 'string') {
+                  tagCodes.push(item)
+                  const canon = getCanonicalConceptName(item)
+                  tags.push(canon || item)
+                } else {
+                  if (item.code) tagCodes.push(item.code)
+                  let displayName = item.name
+                  if (!displayName && item.name_path) {
+                    const parts = item.name_path.split('/').filter(Boolean)
+                    if (parts.length > 0) displayName = parts[parts.length - 1]
+                  }
+                  if (!displayName && item.code) {
+                    displayName = getCanonicalConceptName(item.code) || item.code
+                  }
+                  if (displayName) tags.push(displayName)
+                  // 沿物化路径注入全链路祖先层级名（如 "/文件类型/图片/摄影照片" 注入 "图片"），
+                  // 确保按父维度筛选时文件能够精准命中预览树节点
+                  if (item.name_path) {
+                    const parts = item.name_path.split('/').filter(Boolean)
+                    for (const p of parts) {
+                      if (p && !tags.includes(p)) {
+                        tags.push(p)
+                      }
+                    }
+                  }
+                }
+              }
+            }
           } catch (err) {
             // 标签 JSON 脏数据属可容忍降级：该文件按无标签展示
             logger.debug(
@@ -3343,14 +3934,35 @@ export class TagTreeQuery {
           }
         }
 
-        if (Array.isArray(tags) && tags.length > 0) {
-          tags = tags.map(t => {
-            if (t && (t.startsWith('builtin.') || t.startsWith('omw.') || t.startsWith('hownet.'))) {
-              const canonical = getCanonicalConceptName(t)
-              return canonical || (t.split('.').pop() || t)
+        let fusedTags: string[] = []
+        if (file.fused_tags) {
+          try {
+            const rawFused =
+              typeof file.fused_tags === 'string'
+                ? JSON.parse(file.fused_tags)
+                : file.fused_tags
+            if (Array.isArray(rawFused)) {
+              for (const item of rawFused) {
+                if (!item) continue
+                if (typeof item === 'string') {
+                  const canon = getCanonicalConceptName(item)
+                  fusedTags.push(canon || item)
+                } else {
+                  let displayName = item.name
+                  if (!displayName && item.name_path) {
+                    const parts = item.name_path.split('/').filter(Boolean)
+                    if (parts.length > 0) displayName = parts[parts.length - 1]
+                  }
+                  if (!displayName && item.code) {
+                    displayName = getCanonicalConceptName(item.code) || item.code
+                  }
+                  if (displayName) fusedTags.push(displayName)
+                }
+              }
             }
-            return t
-          })
+          } catch {
+            fusedTags = []
+          }
         }
 
         return {
@@ -3378,16 +3990,38 @@ export class TagTreeQuery {
             : undefined,
           qualityScore: file.quality_score || undefined,
           description: file.description || undefined,
-          thumbnailPath: file.thumbnail_path || undefined,
+          thumbnailPath: (() => {
+            let resolved = file.thumbnail_path || undefined
+            if (resolved && !path.isAbsolute(resolved)) {
+              if (workspaceDirectoryPath) {
+                resolved = path.join(workspaceDirectoryPath, resolved)
+              } else if (file.path) {
+                let curDir = path.dirname(file.path)
+                while (curDir && curDir !== path.dirname(curDir)) {
+                  const testThumb = path.join(curDir, resolved)
+                  if (fs.existsSync(testThumb)) {
+                    resolved = testThumb
+                    break
+                  }
+                  curDir = path.dirname(curDir)
+                }
+              }
+            }
+            return resolved
+          })(),
           multimodalContent: file.multimodal_content
             ? decompressText(file.multimodal_content) || undefined
             : undefined,
           relativePathPrefix: relativePathPrefix || undefined,
           author: file.author || undefined,
           language: file.language || undefined,
-          tags: Array.isArray(tags) ? tags : []
+          tags: Array.isArray(tags) ? tags : [],
+          tagCodes: Array.isArray(tagCodes) ? tagCodes : [],
+          fusedTags: Array.isArray(fusedTags) ? fusedTags : []
         }
       })
       .filter((item): item is NonNullable<typeof item> => item !== null)
   }
 }
+
+

@@ -4,6 +4,7 @@ import { Button } from '../ui/button'
 import { MaterialIcon } from '../../lib/utils'
 import React from 'react'
 import { openExternalLink } from '../../lib/external-link'
+import { getOfficialSiteDomain } from '../../lib/marketing-link'
 import { t } from '@app/languages'
 
 interface AboutDialogProps {
@@ -106,7 +107,7 @@ export const AboutDialog: React.FC<AboutDialogProps> = ({ open, onOpenChange }) 
             <Button
               variant="outline"
               size="sm"
-              onClick={() => openExternalLink('https://aifolder.iocn.cn')}
+              onClick={() => openExternalLink(getOfficialSiteDomain())}
             >
               <MaterialIcon icon="language" className="mr-2" />
               {t('官网')}

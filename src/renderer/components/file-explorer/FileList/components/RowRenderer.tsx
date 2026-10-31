@@ -13,6 +13,7 @@ import { useDragSelectStore } from '../../../../stores/drag-select-store'
 import { checkIsUnit, getUnitTypeLabel, getUnitTheme, getUnitTooltip } from '../utils'
 import { SystemFileIcon } from '../../../common/SystemFileIcon'
 import { HighlightText } from '../../../common/HighlightText'
+import { FileRowThumbnail } from './FileRowThumbnail'
 
 interface RowRendererProps {
   index: number
@@ -576,15 +577,10 @@ export const RowRenderer = React.memo(({ index, style, data }: RowRendererProps)
             style={{ width: data.columnWidths.name }}
           >
             <div className="flex items-start">
-              <SystemFileIcon
-                path={fileItem.path}
-                extension={fileItem.extension}
-                className="w-5 h-5 object-contain mr-2 flex-shrink-0"
-                fallback={
-                  <span className="material-icons text-primary mr-2 text-xl flex-shrink-0">
-                    description
-                  </span>
-                }
+              <FileRowThumbnail
+                fileItem={fileItem}
+                workspaceDirectoryPath={data.workspaceDirectoryPath}
+                refreshKey={data.refreshKey}
               />
               <div className="flex flex-col min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">

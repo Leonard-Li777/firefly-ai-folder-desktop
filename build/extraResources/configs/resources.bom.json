@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-10-24T04:22:28.422Z",
+  "generatedAt": "2026-10-29T03:50:49.311Z",
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources"
@@ -81,7 +81,7 @@
       "source": "shared",
       "asset": {
         "name": "sensevoice-onnx-int8.zip",
-        "sha256": "3a1a137071c80200748ddbe323628e36d10b58382150d9ac1ba04907a8030c14",
+        "sha256": "a5cd6e2836c3916e18efb2ee81bd6fd536c92bf957fd29a524b8a7e82c6cdceb",
         "size": 160304482,
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/sensevoice-onnx-int8.zip"
       }
@@ -91,7 +91,7 @@
       "source": "shared",
       "asset": {
         "name": "silero-vad-1.0.0.zip",
-        "sha256": "a40394c96b744161c603ed969f38886335d60ddf8672ff6cf7fb09c26726eca2",
+        "sha256": "3e0855fdf917dc71a1422c4fadb6c67a7b215d3baade8c729f51e9e3b87b58df",
         "size": 508216,
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/silero-vad-1.0.0.zip"
       }
@@ -101,7 +101,7 @@
       "source": "shared",
       "asset": {
         "name": "gtcrn-1.0.0.zip",
-        "sha256": "23b0bd2f1b4120ea4437de5380e8dbb12066b91a6bd00606f70b39076fb9b7a6",
+        "sha256": "1aa9b1dbc30d08f17a2315153a8e5e6fb56ba3e0cd6572d9a1bf59357390bec0",
         "size": 128180,
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/gtcrn-1.0.0.zip"
       }
@@ -117,13 +117,13 @@
       }
     },
     "chinese-clip": {
-      "version": "INT8-v2",
+      "version": "INT8-v3",
       "source": "shared",
       "asset": {
-        "name": "chinese-clip-int8-v2.zip",
-        "sha256": "7dd258bd556bde3f99980655ba15fdc92f162b7fb9bf3078f95b79af0e0cdb36",
-        "size": 203157415,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/chinese-clip-int8-v2.zip"
+        "name": "chinese-clip-int8-v3.zip",
+        "sha256": "67a5e4a0d0985085a3ad9e153efa5d4817af3851b6c4c7c8933b5c0a83ca3093",
+        "size": 212925967,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/chinese-clip-int8-v3.zip"
       },
       "files": [
         {
@@ -135,6 +135,26 @@
           "name": "cn_clip_vocab.txt",
           "size": 109540,
           "sha256": "45bbac6b341c319adc98a532532882e91a9cefc0329aa57bac9ae761c27b291c"
+        },
+        {
+          "name": "tags_visual_gemma_512.bin",
+          "size": 307200,
+          "sha256": "b71efdcbf333dead0210c8ce7c2ad677cce5be2c548e7a168706c5ec79f55149"
+        },
+        {
+          "name": "tags_visual_gemma_512.meta.json",
+          "size": 5016,
+          "sha256": "78b22ae8763dd7c23ae3fe686a049464cd5398479987bf852fff7ecc56731f1a"
+        },
+        {
+          "name": "omw_concepts_gemma_512.bin",
+          "size": 21131264,
+          "sha256": "f464f96580fcbbc7589bc134171087f2070ca3419dd659a57d366a4844573938"
+        },
+        {
+          "name": "omw_concepts_gemma_512.meta.json",
+          "size": 1151708,
+          "sha256": "7280a2184675533b28135e6cd80d8ca71c2db32a928b6ff04d390b5c71483155"
         }
       ]
     },
@@ -143,8 +163,8 @@
       "source": "shared",
       "asset": {
         "name": "mobile-clip-int8.zip",
-        "sha256": "415e84d2f86a78ea34aedd971eb1baa5e44c1f530f442a77fd823e31eec707ad",
-        "size": 10556419,
+        "sha256": "a236176147ad695655d2d54c810f925d574620689299b713484018b7dd8a910c",
+        "size": 57910236,
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/mobile-clip-int8.zip"
       }
     },
@@ -153,7 +173,7 @@
       "source": "shared",
       "asset": {
         "name": "nsfw-tiny-1.0.0.zip",
-        "sha256": "ad6542687e942650a2b51e2e16c28983b54128ac68343574ccbb98ce07c4c002",
+        "sha256": "013884f9bb69f53b76eb3d4f7af9f8251582261716cd7d4d1ee3f8738330f086",
         "size": 2145177,
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/nsfw-tiny-1.0.0.zip"
       }
@@ -168,14 +188,14 @@
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/embeddinggemma-2-onnx-1.0.0.zip"
       }
     },
-    "kokoro-multi-lang": {
-      "version": "1.1.0",
+    "bekko-a8m": {
+      "version": "1.0.0",
       "source": "shared",
       "asset": {
-        "name": "kokoro-multi-lang-1.1.0.zip",
-        "sha256": "e03a14c1bb971f25c141d677f226249757dd75c21e0f8757397b3e60043049a6",
-        "size": 235887428,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/kokoro-multi-lang-1.1.0.zip"
+        "name": "bekko-a8m-1.0.0.zip",
+        "sha256": "315c4cba94333207522ae6e12c5de234199d1c4fc11740b05ac32aebd3e82d13",
+        "size": 106269288,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/bekko-a8m-1.0.0.zip"
       }
     },
     "sherpa-onnx-runtime": {
@@ -186,6 +206,26 @@
         "sha256": "3cb751f7e27d9c0768687487335d67bee3dd9694b6825e50ee439ade7cb6bd04",
         "size": 8282676,
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/sherpa-onnx-runtime-1.13.8-win32-x64.zip"
+      }
+    },
+    "moss-tts": {
+      "version": "1.0.0",
+      "source": "shared",
+      "asset": {
+        "name": "moss-tts-1.0.0.zip",
+        "sha256": "4374fe73fd27e9544674037890e773826727b959c6a63313989d787a263b7069",
+        "size": 240822786,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/moss-tts-1.0.0.zip"
+      }
+    },
+    "ram-assets": {
+      "version": "1.0.0",
+      "source": "shared",
+      "asset": {
+        "name": "ram-assets-1.0.0.zip",
+        "sha256": "aa6f5f47391a9ee30d3cfcb42029b449fb03496d8161ee9102cb2f5df6c1859b",
+        "size": 8972400,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/ram-assets-1.0.0.zip"
       }
     }
   },

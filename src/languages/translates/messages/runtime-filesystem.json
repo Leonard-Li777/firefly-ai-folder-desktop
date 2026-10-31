@@ -9,7 +9,7 @@
     "de-DE": "FFmpeg ist nicht bereit (System FFmpeg nicht erkannt), Audio kann nicht konvertiert werden",
     "fr-FR": "FFmpeg n'est pas prêt (système FFmpeg non détecté), impossible de convertir l'audio",
     "ko-KR": "FFmpeg가 준비되지 않았으며(시스템 FFmpeg가 감지되지 않음) 오디오를 변환할 수 없습니다.",
-    "$files": ["src/electron/runtime-services/filesystem/audio-converter.ts(2650-2686)"],
+    "$files": ["src/electron/runtime-services/filesystem/audio-converter.ts(2615-2651)"],
     "$id": 9445
   },
   "数据库连接未初始化": {
@@ -273,8 +273,8 @@
     "fr-FR": "Type de fichier",
     "ko-KR": "파일 형식",
     "$files": [
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(984-992)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1050-1058)"
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(4925-4933)",
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(4991-4999)"
     ],
     "$id": 10673
   },
@@ -289,12 +289,12 @@
     "fr-FR": "Noms de fichiers intelligents",
     "ko-KR": "스마트 파일 이름",
     "$files": [
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(999-1008)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1177-1186)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1315-1324)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1454-1463)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1567-1576)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1889-1898)"
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(4940-4949)",
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5118-5127)",
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5256-5265)",
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5395-5404)",
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5508-5517)",
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5830-5839)"
     ],
     "$id": 10674
   },
@@ -308,7 +308,7 @@
     "de-DE": "Datum",
     "fr-FR": "Date",
     "ko-KR": "날짜",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1015-1021)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(4956-4962)"],
     "$id": 10675
   },
   "文件类型前置，后接智能文件名与修改日期": {
@@ -321,7 +321,7 @@
     "de-DE": "Der Dateityp wird vorangestellt, gefolgt vom Namen der Smart-Datei und dem Änderungsdatum.",
     "fr-FR": "Le type de fichier est précédé du préfixe, suivi du nom du fichier intelligent et de la date de modification.",
     "ko-KR": "파일 형식 앞에는 스마트 파일 이름과 수정 날짜가 옵니다.",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1112-1135)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5053-5076)"],
     "$id": 10676
   },
   "修改日期": {
@@ -334,7 +334,7 @@
     "de-DE": "Änderungsdatum",
     "fr-FR": "Date de modification",
     "ko-KR": "수정일",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1162-1170)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5103-5111)"],
     "$id": 10677
   },
   "日期前缀，便于按时间排序": {
@@ -347,7 +347,7 @@
     "de-DE": "Datumspräfix zur Erleichterung der Sortierung nach Zeit",
     "fr-FR": "Préfixe de date pour faciliter le tri par heure",
     "ko-KR": "시간별로 쉽게 정렬할 수 있는 날짜 접두사",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1257-1273)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5198-5214)"],
     "$id": 10678
   },
   "题材维度": {
@@ -360,7 +360,7 @@
     "de-DE": "Themendimension",
     "fr-FR": "Dimension thématique",
     "ko-KR": "테마 차원",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1300-1308)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5241-5249)"],
     "$id": 10679
   },
   "题材": {
@@ -374,8 +374,8 @@
     "fr-FR": "Thème",
     "ko-KR": "주제",
     "$files": [
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1353-1359)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(2061-2067)"
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5294-5300)",
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(6002-6008)"
     ],
     "$id": 10680
   },
@@ -389,7 +389,7 @@
     "de-DE": "Betreff-Tags werden vorangestellt, um die Klassifizierungsattribute zu verstärken",
     "fr-FR": "Les balises de sujet sont placées devant pour renforcer les attributs de classification",
     "ko-KR": "분류 속성을 강화하기 위해 제목 태그를 앞에 배치합니다.",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1397-1414)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5338-5355)"],
     "$id": 10681
   },
   "作者": {
@@ -402,11 +402,7 @@
     "de-DE": "Autor",
     "fr-FR": "Auteur",
     "ko-KR": "작가",
-    "$files": [
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1441-1447)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(24462-24468)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(24516-24522)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5382-5388)"],
     "$id": 10682
   },
   "作者或创作者前置": {
@@ -419,7 +415,7 @@
     "de-DE": "Präfix des Autors oder Erstellers",
     "fr-FR": "Préfixe d'auteur ou de créateur",
     "ko-KR": "작성자 또는 작성자 접두어",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1528-1540)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5469-5481)"],
     "$id": 10683
   },
   "分辨率": {
@@ -433,10 +429,10 @@
     "fr-FR": "Résolution",
     "ko-KR": "해결",
     "$files": [
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1583-1590)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1646-1653)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(11904-11911)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(14132-14139)"
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5524-5531)",
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5587-5594)",
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(18212-18219)",
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(20440-20447)"
     ],
     "$id": 10684
   },
@@ -451,8 +447,8 @@
     "fr-FR": "Numéro de série",
     "ko-KR": "일련번호",
     "$files": [
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1597-1603)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1759-1765)"
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5538-5544)",
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5700-5706)"
     ],
     "$id": 10685
   },
@@ -466,7 +462,7 @@
     "de-DE": "Multimodale medienspezifische Benennung",
     "fr-FR": "Dénomination spécifique aux médias multimodaux",
     "ko-KR": "다중 모드 미디어별 이름 지정",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1689-1702)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5630-5643)"],
     "$id": 10686
   },
   "创建日期": {
@@ -479,7 +475,7 @@
     "de-DE": "Erstellungsdatum",
     "fr-FR": "Date de création",
     "ko-KR": "생성일",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1729-1737)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5670-5678)"],
     "$id": 10687
   },
   "原文件名": {
@@ -492,7 +488,7 @@
     "de-DE": "Originaldateiname",
     "fr-FR": "Nom de fichier d'origine",
     "ko-KR": "원본 파일명",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1744-1752)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5685-5693)"],
     "$id": 10688
   },
   "保留原文件名与三位序号": {
@@ -505,7 +501,7 @@
     "de-DE": "Behalten Sie den ursprünglichen Dateinamen und die dreistellige Seriennummer bei",
     "fr-FR": "Conservez le nom de fichier d'origine et le numéro de série à trois chiffres",
     "ko-KR": "원본 파일명과 3자리 일련번호를 유지하세요.",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1847-1862)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5788-5803)"],
     "$id": 10689
   },
   "质量分": {
@@ -518,7 +514,7 @@
     "de-DE": "Qualitätspunkte",
     "fr-FR": "Points de qualité",
     "ko-KR": "품질 포인트",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1905-1912)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5846-5853)"],
     "$id": 10690
   },
   "标记 AI 质量评分": {
@@ -531,7 +527,7 @@
     "de-DE": "Kennzeichnen Sie den KI-Qualitätsfaktor",
     "fr-FR": "Signaler le niveau de qualité de l'IA",
     "ko-KR": "AI 품질평가점수 신고",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1985-1999)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5926-5940)"],
     "$id": 10691
   },
   "全维度属性组合": {
@@ -544,7 +540,7 @@
     "de-DE": "Volldimensionale Attributkombination",
     "fr-FR": "Combinaison d'attributs pleine dimension",
     "ko-KR": "전체 차원 속성 조합",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(2023-2034)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5964-5975)"],
     "$id": 10692
   },
   "题材、名称、日期与序号复合命名": {
@@ -557,24 +553,8 @@
     "de-DE": "Zusammengesetzte Benennung aus Betreff, Name, Datum und Seriennummer",
     "fr-FR": "Dénomination composée du sujet, du nom, de la date et du numéro de série",
     "ko-KR": "주체, 이름, 날짜, 일련번호를 복합적으로 명명하는 것",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(2133-2152)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(6074-6093)"],
     "$id": 10693
-  },
-  "内容标签": {
-    "en-US": "Content tags",
-    "es-ES": "Etiquetas de contenido",
-    "ar-EG": "علامات المحتوى",
-    "pt-PT": "Tags de conteúdo",
-    "ru-RU": "теги контента",
-    "ja-JP": "コンテンツタグ",
-    "de-DE": "Inhalts-Tags",
-    "fr-FR": "Balises de contenu",
-    "ko-KR": "콘텐츠 태그",
-    "$files": [
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(8141-8149)",
-      "src/electron/runtime-services/filesystem/organize-real-directory-service/DatabaseHelper.ts(11613-11621)"
-    ],
-    "$id": 10694
   },
   "时长": {
     "en-US": "Duration",
@@ -587,8 +567,8 @@
     "fr-FR": "Durée",
     "ko-KR": "지속",
     "$files": [
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(11955-11961)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(15327-15333)"
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(18263-18269)",
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(21635-21641)"
     ],
     "$id": 10695
   },
@@ -603,8 +583,8 @@
     "fr-FR": "Nombre de pages",
     "ko-KR": "페이지 수",
     "$files": [
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(12007-12013)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(18562-18568)"
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(18315-18321)",
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(24870-24876)"
     ],
     "$id": 10696
   },
@@ -619,8 +599,8 @@
     "fr-FR": "Codage",
     "ko-KR": "코딩",
     "$files": [
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(12059-12065)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(20832-20838)"
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(18367-18373)",
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(27140-27146)"
     ],
     "$id": 10697
   },
@@ -635,8 +615,8 @@
     "fr-FR": "Format d'encodage",
     "ko-KR": "인코딩 형식",
     "$files": [
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(12117-12125)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(20891-20899)"
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(18425-18433)",
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(27199-27207)"
     ],
     "$id": 10698
   },
@@ -650,7 +630,7 @@
     "de-DE": "Breite",
     "fr-FR": "Largeur",
     "ko-KR": "너비",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(12754-12760)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(19062-19068)"],
     "$id": 10699
   },
   "高度": {
@@ -663,7 +643,7 @@
     "de-DE": "Hoch",
     "fr-FR": "Haut",
     "ko-KR": "높은",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(13171-13177)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(19479-19485)"],
     "$id": 10700
   },
   "{hh}时{mm}分{ss}秒": {
@@ -676,7 +656,7 @@
     "de-DE": "{hh}Stunden{mm}Minuten{ss}Sekunden",
     "fr-FR": "{hh}heures{mm}minutes{ss}secondes",
     "ko-KR": "{hh}시간{mm}분{ss}초",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(17614-17633)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(23922-23941)"],
     "$id": 10701
   },
   "{mm}分{ss}秒": {
@@ -689,37 +669,8 @@
     "de-DE": "{mm}Minuten{ss}Sekunden",
     "fr-FR": "{mm}minutes{ss}secondes",
     "ko-KR": "{mm}분{ss}초",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(17686-17700)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(23994-24008)"],
     "$id": 10702
-  },
-  "创作者": {
-    "en-US": "Creator",
-    "es-ES": "Creador",
-    "ar-EG": "الخالق",
-    "pt-PT": "Criador",
-    "ru-RU": "Создатель",
-    "ja-JP": "クリエイター",
-    "de-DE": "Schöpfer",
-    "fr-FR": "Créateur",
-    "ko-KR": "창조자",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(24604-24611)"],
-    "$id": 10703
-  },
-  "语言": {
-    "en-US": "Language",
-    "es-ES": "Idioma",
-    "ar-EG": "لغة",
-    "pt-PT": "Linguagem",
-    "ru-RU": "язык",
-    "ja-JP": "言語",
-    "de-DE": "Sprache",
-    "fr-FR": "Langue",
-    "ko-KR": "언어",
-    "$files": [
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(24856-24862)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(24910-24916)"
-    ],
-    "$id": 10704
   },
   "生成新文件名异常": {
     "en-US": "Generate new filename exception",
@@ -732,8 +683,8 @@
     "fr-FR": "Générer une nouvelle exception de nom de fichier",
     "ko-KR": "새 파일 이름 예외 생성",
     "$files": [
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(34916-34928)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(35970-35982)"
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(46314-46326)",
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(47474-47486)"
     ],
     "$id": 10705
   },
@@ -747,7 +698,7 @@
     "de-DE": "Ausnahme für intelligente Dateinamen aktualisieren",
     "fr-FR": "Mettre à jour l'exception de nom de fichier intelligent",
     "ko-KR": "스마트 파일 이름 예외 업데이트",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(37078-37091)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(48582-48595)"],
     "$id": 10706
   },
   "完成": {
@@ -828,58 +779,6 @@
     "$files": ["src/electron/runtime-services/filesystem/thumbnail-service.ts(15661-15683)"],
     "$id": 11056
   },
-  "找不到对应的工作空间: {path}": {
-    "en-US": "The corresponding workspace cannot be found: {path}",
-    "es-ES": "No se puede encontrar el espacio de trabajo correspondiente: {path}",
-    "ar-EG": "لا يمكن العثور على مساحة العمل المقابلة: {path}",
-    "pt-PT": "O espaço de trabalho correspondente não foi encontrado: {path}",
-    "ru-RU": "Соответствующее рабочее пространство не найдено: {path}",
-    "ja-JP": "対応するワークスペースが見つかりません: {path}",
-    "de-DE": "Der entsprechende Arbeitsbereich kann nicht gefunden werden: {path}",
-    "fr-FR": "L'espace de travail correspondant est introuvable : {path}",
-    "ko-KR": "해당 작업공간을 찾을 수 없습니다: {path}",
-    "$files": ["src/electron/runtime-services/filesystem/organize-real-directory-service/index.ts(13206-13228)"],
-    "$id": 4382
-  },
-  "选中的文件中没有AI分析过的文件，请先进行AI分析": {
-    "en-US": "None of the selected files have been analyzed by AI; please perform AI analysis first.  ",
-    "es-ES": "No hay archivos analizados por IA en los archivos seleccionados; realice primero el análisis de IA.",
-    "ar-EG": "لا توجد ملفات تم تحليلها بواسطة الذكاء الاصطناعي في الملفات المحددة، يرجى إجراء تحليل الذكاء الاصطناعي أولاً",
-    "pt-PT": "Não há ficheiros analisados por IA nos ficheiros selecionados, por favor, realize primeiro a análise por IA",
-    "ru-RU": "В выбранных файлах нет файлов, проанализированных ИИ, сначала выполните анализ ИИ",
-    "ja-JP": "選択されたファイルにはAI分析済みのファイルが含まれていません。先にAI分析を行ってください",
-    "de-DE": "In den ausgewählten Dateien befinden sich keine von KI analysierten Dateien. Bitte führen Sie zunächst eine KI-Analyse durch.",
-    "fr-FR": "Aucun fichier sélectionné n'a été analysé par l'IA, veuillez d'abord effectuer une analyse IA",
-    "ko-KR": "선택한 파일 중 AI 분석이 완료된 파일이 없습니다. 먼저 AI 분석을 진행해 주세요.",
-    "$files": ["src/electron/runtime-services/filesystem/organize-real-directory-service/PlanGenerator.ts(3144-3173)"],
-    "$id": 3421
-  },
-  "当前没有AI分析过的文件，请先在真实目录中勾选文件进行AI分析": {
-    "en-US": "There are currently no files analyzed by AI; please select files in the actual directory first for AI analysis.",
-    "es-ES": "Actualmente no hay archivos analizados por IA; seleccione primero archivos en el directorio real para realizar el análisis de IA.",
-    "ar-EG": "لا توجد ملفات تم تحليلها بواسطة الذكاء الاصطناعي حالياً، يرجى أولاً تحديد الملفات في الدليل الحقيقي لإجراء تحليل الذكاء الاصطناعي",
-    "pt-PT": "Não há atualmente ficheiros analisados por IA, por favor, selecione primeiro os ficheiros no diretório real para realizar a análise por IA",
-    "ru-RU": "В настоящее время нет файлов, проанализированных ИИ, сначала отметьте файлы в реальном каталоге для анализа ИИ",
-    "ja-JP": "現在、AI分析済みのファイルはありません。先に実ディレクトリでファイルを選択し、AI分析を行ってください",
-    "de-DE": "Derzeit liegen keine von KI analysierten Dateien vor. Bitte wählen Sie zunächst Dateien im echten Verzeichnis aus, um eine KI-Analyse durchzuführen.",
-    "fr-FR": "Aucun fichier analysé par l'IA n'est disponible pour le moment, veuillez d'abord sélectionner des fichiers dans le répertoire réel pour une analyse IA",
-    "ko-KR": "현재 AI 분석이 완료된 파일이 없습니다. 실제 디렉터리에서 파일을 선택하여 AI 분석을 먼저 진행해 주세요.",
-    "$files": ["src/electron/runtime-services/filesystem/organize-real-directory-service/PlanGenerator.ts(3190-3225)"],
-    "$id": 3422
-  },
-  "其他文件": {
-    "en-US": "Other file",
-    "es-ES": "Otros ficheros",
-    "ar-EG": "ملفات أخرى\r",
-    "pt-PT": "Outros ficheiros",
-    "ru-RU": "Другой файл",
-    "ja-JP": "その他の文書",
-    "de-DE": "Andere Datei",
-    "fr-FR": "Autre fichier",
-    "ko-KR": "기타 파일",
-    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(14387-14395)"],
-    "$id": 19963
-  },
   "端侧 HAC 智能聚类完成，共识别出 {count} 个主题目录 (耗时 {ms}ms)": {
     "en-US": "Intelligent clustering of end-side HAC is completed, and {count} topic catalogs are determined by consensus (time-consuming {ms}ms)",
     "es-ES": "Se completa la agrupación inteligente de HAC en el extremo y los {count} catálogos de temas se determinan por consenso ({ms} ms que requiere mucho tiempo)",
@@ -890,8 +789,21 @@
     "de-DE": "Intelligentes Clustering von endseitigem HAC ist abgeschlossen und {count} Themenkataloge werden im Konsens festgelegt (zeitaufwändige {ms} ms)",
     "fr-FR": "Le clustering intelligent des HAC côté terminal est terminé et les {count} catalogues de sujets sont déterminés par consensus ({ms} ms chronophages)",
     "ko-KR": "엔드사이드 해크의 지능형 클러스터링이 완료되고{count}주제 카탈로그는 합의에 의해 결정됩니다(시간이 많이 걸리는{ms}밀리초).",
-    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(15695-15743)"],
+    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(22195-22243)"],
     "$id": 19964
+  },
+  "智能聚类整理": {
+    "en-US": "Intelligent clustering and sorting",
+    "es-ES": "Agrupación y clasificación inteligentes",
+    "ar-EG": "التجميع والفرز الذكي",
+    "pt-PT": "Clustering e classificação inteligentes",
+    "ru-RU": "Интеллектуальная кластеризация и сортировка",
+    "ja-JP": "インテリジェントなクラスタリングとソート",
+    "de-DE": "Intelligentes Clustering und Sortieren",
+    "fr-FR": "Regroupement et tri intelligents",
+    "ko-KR": "지능형 클러스터링 및 정렬",
+    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(30453-30463)"],
+    "$id": 21920
   },
   "核心引擎未初始化，请等待初始化完成后再试": {
     "en-US": "Core engine not initialized, please wait for initialization to complete and try again",
@@ -904,8 +816,8 @@
     "fr-FR": "Le moteur principal n'a pas été initialisé, veuillez attendre la fin de l'initialisation et réessayer.",
     "ko-KR": "핵심 엔진이 초기화되지 않았습니다. 초기화가 완료된 후 다시 시도해 주세요.",
     "$files": [
-      "src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(28863-28887)",
-      "src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(29729-29753)"
+      "src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(46134-46158)",
+      "src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(47000-47024)"
     ],
     "$id": 8077
   },
@@ -932,7 +844,7 @@
     "de-DE": "Virtuelles Verzeichnis kann nicht erstellt werden: Der Name \"{name}\" und alle abgeleiteten Namen sind bereits vergeben",
     "fr-FR": "Impossible de créer un répertoire virtuel: le nom \"{name}\" et tous ses noms dérivés sont déjà utilisés",
     "ko-KR": "가상 디렉터리를 생성할 수 없습니다: 이름 \"{name}\" 및 모든 파생 이름이 이미 사용 중입니다",
-    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/VirtualDirectoryService.ts(11059-11095)"],
+    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/VirtualDirectoryService.ts(11118-11154)"],
     "$id": 8137
   },
   "虚拟目录不存在": {
@@ -945,7 +857,7 @@
     "de-DE": "Virtuelles Verzeichnis nicht vorhanden",
     "fr-FR": "Le répertoire virtuel n'existe pas",
     "ko-KR": "가상 디렉터리가 존재하지 않습니다",
-    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/VirtualDirectoryService.ts(11262-11273)"],
+    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/VirtualDirectoryService.ts(11321-11332)"],
     "$id": 8138
   },
   "无法更新名称：名称\"{name}\"已被占用": {
@@ -958,7 +870,7 @@
     "de-DE": "Name kann nicht aktualisiert werden: Der Name \"{name}\" ist bereits vergeben",
     "fr-FR": "Impossible de mettre à jour le nom : le nom \"{name}\" est déjà utilisé",
     "ko-KR": "이름을 업데이트할 수 없습니다: 이름 \"{name}\"이(가) 이미 사용 중입니다",
-    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/VirtualDirectoryService.ts(12113-12138)"],
+    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/VirtualDirectoryService.ts(12172-12197)"],
     "$id": 8139
   }
 }

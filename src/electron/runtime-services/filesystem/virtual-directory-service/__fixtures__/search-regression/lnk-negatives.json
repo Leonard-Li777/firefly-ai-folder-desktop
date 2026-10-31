@@ -1,0 +1,530 @@
+[
+  {
+    "id": "lnk-neg-01",
+    "name": "Visual Studio Code.lnk",
+    "rawName": "Visual Studio Code",
+    "description": "VS Code 代码编辑器",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-02",
+    "name": "Sublime Text.lnk",
+    "rawName": "Sublime Text",
+    "description": "轻量文本编辑器",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-03",
+    "name": "Notepad++.lnk",
+    "rawName": "Notepad++",
+    "description": "记事本增强",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-04",
+    "name": "Typora.lnk",
+    "rawName": "Typora",
+    "description": "Markdown 编辑器",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-05",
+    "name": "Xshell.lnk",
+    "rawName": "Xshell",
+    "description": "终端模拟器",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-06",
+    "name": "Xftp.lnk",
+    "rawName": "Xftp",
+    "description": "文件传输工具",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-07",
+    "name": "Everything.lnk",
+    "rawName": "Everything",
+    "description": "文件名秒搜",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-08",
+    "name": "Snipaste.lnk",
+    "rawName": "Snipaste",
+    "description": "截图贴图",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-09",
+    "name": "PicGo.lnk",
+    "rawName": "PicGo",
+    "description": "图床工具",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-10",
+    "name": "Postman.lnk",
+    "rawName": "Postman",
+    "description": "接口调试",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-11",
+    "name": "DBeaver.lnk",
+    "rawName": "DBeaver",
+    "description": "数据库客户端",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-12",
+    "name": "Navicat Premium.lnk",
+    "rawName": "Navicat Premium",
+    "description": "数据库管理",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-13",
+    "name": "RedisDesktopManager.lnk",
+    "rawName": "RedisDesktopManager",
+    "description": "Redis 客户端",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-14",
+    "name": "Another Redis Desktop Manager.lnk",
+    "rawName": "Another Redis Desktop Manager",
+    "description": "Redis 客户端",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-15",
+    "name": "FinalShell.lnk",
+    "rawName": "FinalShell",
+    "description": "SSH 工具",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-16",
+    "name": "MobaXterm.lnk",
+    "rawName": "MobaXterm",
+    "description": "远程计算工具",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-17",
+    "name": "WinSCP.lnk",
+    "rawName": "WinSCP",
+    "description": "SFTP 客户端",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-18",
+    "name": "Bandizip.lnk",
+    "rawName": "Bandizip",
+    "description": "压缩解压",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-19",
+    "name": "此电脑.lnk",
+    "rawName": "此电脑",
+    "description": "系统文件夹",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-20",
+    "name": "回收站.lnk",
+    "rawName": "回收站",
+    "description": "系统文件夹",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-21",
+    "name": "控制面板.lnk",
+    "rawName": "控制面板",
+    "description": "系统设置",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-22",
+    "name": "用户文件夹.lnk",
+    "rawName": "用户文件夹",
+    "description": "系统文件夹",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-23",
+    "name": "下载.lnk",
+    "rawName": "下载",
+    "description": "系统文件夹",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-24",
+    "name": "文档.lnk",
+    "rawName": "文档",
+    "description": "系统文件夹",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-25",
+    "name": "图片.lnk",
+    "rawName": "图片",
+    "description": "系统文件夹",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-26",
+    "name": "音乐.lnk",
+    "rawName": "音乐",
+    "description": "系统文件夹",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-27",
+    "name": "视频.lnk",
+    "rawName": "视频",
+    "description": "系统文件夹",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-28",
+    "name": "桌面.lnk",
+    "rawName": "桌面",
+    "description": "系统文件夹",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-29",
+    "name": "网络.lnk",
+    "rawName": "网络",
+    "description": "系统文件夹",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-30",
+    "name": "管理工具.lnk",
+    "rawName": "管理工具",
+    "description": "系统文件夹",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-31",
+    "name": "命令提示符.lnk",
+    "rawName": "命令提示符",
+    "description": "系统工具",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-32",
+    "name": "Windows PowerShell.lnk",
+    "rawName": "Windows PowerShell",
+    "description": "系统工具",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-33",
+    "name": "任务管理器.lnk",
+    "rawName": "任务管理器",
+    "description": "系统工具",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-34",
+    "name": "注册表编辑器.lnk",
+    "rawName": "注册表编辑器",
+    "description": "系统工具",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-35",
+    "name": "微信.lnk",
+    "rawName": "微信",
+    "description": "即时通讯",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-36",
+    "name": "企业微信.lnk",
+    "rawName": "企业微信",
+    "description": "企业即时通讯",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-37",
+    "name": "QQ.lnk",
+    "rawName": "QQ",
+    "description": "即时通讯",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-38",
+    "name": "钉钉.lnk",
+    "rawName": "钉钉",
+    "description": "协同办公",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-39",
+    "name": "飞书.lnk",
+    "rawName": "飞书",
+    "description": "协同办公",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-40",
+    "name": "腾讯会议.lnk",
+    "rawName": "腾讯会议",
+    "description": "视频会议",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-41",
+    "name": "Zoom.lnk",
+    "rawName": "Zoom",
+    "description": "视频会议",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-42",
+    "name": "Chrome.lnk",
+    "rawName": "Chrome",
+    "description": "浏览器",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-43",
+    "name": "Edge.lnk",
+    "rawName": "Edge",
+    "description": "浏览器",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-44",
+    "name": "Firefox.lnk",
+    "rawName": "Firefox",
+    "description": "浏览器",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-45",
+    "name": "Steam.lnk",
+    "rawName": "Steam",
+    "description": "游戏平台",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-46",
+    "name": "Epic Games Launcher.lnk",
+    "rawName": "Epic Games Launcher",
+    "description": "游戏平台",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-47",
+    "name": "Battle.net.lnk",
+    "rawName": "Battle.net",
+    "description": "游戏平台",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-48",
+    "name": "WeGame.lnk",
+    "rawName": "WeGame",
+    "description": "游戏平台",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-49",
+    "name": "网易云音乐.lnk",
+    "rawName": "网易云音乐",
+    "description": "音乐播放器",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-50",
+    "name": "PotPlayer.lnk",
+    "rawName": "PotPlayer",
+    "description": "视频播放器",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-51",
+    "name": "Word.lnk",
+    "rawName": "Word",
+    "description": "文字处理",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-52",
+    "name": "Excel.lnk",
+    "rawName": "Excel",
+    "description": "电子表格",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-53",
+    "name": "PowerPoint.lnk",
+    "rawName": "PowerPoint",
+    "description": "演示文稿",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-54",
+    "name": "Outlook.lnk",
+    "rawName": "Outlook",
+    "description": "邮件客户端",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-55",
+    "name": "OneNote.lnk",
+    "rawName": "OneNote",
+    "description": "笔记",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-56",
+    "name": "Access.lnk",
+    "rawName": "Access",
+    "description": "数据库",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-57",
+    "name": "Project.lnk",
+    "rawName": "Project",
+    "description": "项目管理",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-58",
+    "name": "Visio.lnk",
+    "rawName": "Visio",
+    "description": "图表绘制",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-59",
+    "name": "WPS 文字.lnk",
+    "rawName": "WPS 文字",
+    "description": "文字处理",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-60",
+    "name": "WPS 表格.lnk",
+    "rawName": "WPS 表格",
+    "description": "电子表格",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-61",
+    "name": "WPS 演示.lnk",
+    "rawName": "WPS 演示",
+    "description": "演示文稿",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-62",
+    "name": "Adobe Acrobat.lnk",
+    "rawName": "Adobe Acrobat",
+    "description": "PDF 阅读器",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-63",
+    "name": "Adobe Photoshop.lnk",
+    "rawName": "Adobe Photoshop",
+    "description": "图像处理",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-64",
+    "name": "Adobe Illustrator.lnk",
+    "rawName": "Adobe Illustrator",
+    "description": "矢量绘图",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-65",
+    "name": "Adobe Premiere Pro.lnk",
+    "rawName": "Adobe Premiere Pro",
+    "description": "视频剪辑",
+    "content": "",
+    "ocr": ""
+  },
+  {
+    "id": "lnk-neg-66",
+    "name": "Foxit PDF Reader.lnk",
+    "rawName": "Foxit PDF Reader",
+    "description": "PDF 阅读器",
+    "content": "",
+    "ocr": ""
+  }
+]

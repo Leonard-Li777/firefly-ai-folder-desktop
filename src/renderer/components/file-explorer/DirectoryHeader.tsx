@@ -20,6 +20,8 @@ import { Stepper, Step } from '../common/Stepper'
 import { Button } from '../ui/button'
 
 import { PaymentFlowDialog } from '../tier/PaymentFlowDialog'
+import { ResourceContentionBanner } from './ResourceContentionBanner'
+import { GlobalTTSPlaybackBar } from './GlobalTTSPlaybackBar'
 
 interface DirectoryHeaderProps {
   currentWorkspaceDirectory: WorkspaceDirectory | null
@@ -32,6 +34,7 @@ interface DirectoryHeaderProps {
   dropdownRef: React.RefObject<HTMLDivElement | null>
   onSearch: (keyword: string) => void // 搜索回调
   exportTooltipVisible?: boolean
+  isLoading?: boolean
 }
 
 export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
@@ -45,7 +48,8 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
     onAddWorkspaceDirectory,
     dropdownRef,
     onSearch,
-    exportTooltipVisible = false
+    exportTooltipVisible = false,
+    isLoading = false
   }) => {
     const navigate = useNavigate()
     const location = useLocation()
@@ -268,7 +272,9 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
       () => [
         t('自然语言搜索文件...'),
         t('支持搜索文本、图片、音频、视频...'),
+        t('支持拼音和拼音首字母搜索...'),
         t('支持搜索未分析和已分析文件...'),
+        t('示例：红色跑车、hongsepaoche、hspc'),
         t('示例：上个月签署的采购合同 pdf'),
         t('示例：带红色印章的发票图片'),
         t('示例：周会录音或产品需求会议纪要'),
@@ -489,6 +495,9 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
 
             {/* Controls Group */}
             <div className="flex items-center space-x-3 flex-shrink-0">
+              {/* 全局 TTS 播放控制条：紧邻用户头像左侧 */}
+              <GlobalTTSPlaybackBar />
+
               {/* User Avatar Menu */}
               <div data-no-drag className="no-drag flex-shrink-0" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
                 <UserAvatarMenu onOpenChange={setIsUserMenuOpen} />
@@ -855,8 +864,10 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                   setLocalSearchInput(val)
                   setShowHistoryPopover(true)
                   setActiveSuggestionIndex(-1)
-                  if (!isComposingRef.current) {
+                  const isNativeComposing = (e.nativeEvent as any)?.isComposing ?? isComposingRef.current
+                  if (!isNativeComposing) {
                     setGlobalSearchKeyword(val)
+                    onSearch?.(val)
                   }
                 }}
                 onKeyDown={e => {
@@ -881,6 +892,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                       setLocalSearchInput(chosen)
                       setGlobalSearchKeyword(chosen)
                       addSearchHistory(chosen, 'global')
+                      onSearch?.(chosen)
                       setShowHistoryPopover(false)
                       setActiveSuggestionIndex(-1)
                       return
@@ -888,8 +900,17 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                   }
 
                   if (e.key === 'Enter') {
-                    if (localSearchInput.trim()) {
-                      addSearchHistory(localSearchInput.trim(), 'global')
+                    // 若处于输入法组词中，交由 compositionend 处理，避免截断拼音
+                    if ((e.nativeEvent as any)?.isComposing || isComposingRef.current) {
+                      return
+                    }
+                    e.preventDefault()
+                    const finalKeyword = (searchInputRef.current?.value ?? localSearchInput).trim()
+                    if (finalKeyword) {
+                      setLocalSearchInput(finalKeyword)
+                      setGlobalSearchKeyword(finalKeyword)
+                      addSearchHistory(finalKeyword, 'global')
+                      onSearch?.(finalKeyword)
                     }
                     setShowHistoryPopover(false)
                     setActiveSuggestionIndex(-1)
@@ -910,12 +931,25 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                 }}
                 onCompositionEnd={e => {
                   isComposingRef.current = false
-                  const val = e.currentTarget.value
+                  // 健壮获取上屏文本：优先 DOM 真实值，兜底 event 目标值
+                  const val = searchInputRef.current?.value ?? (e.target as HTMLInputElement)?.value ?? e.currentTarget.value
+                  setLocalSearchInput(val)
                   setGlobalSearchKeyword(val)
+                  onSearch?.(val)
+                }}
+                onBlur={() => {
+                  if (isComposingRef.current) {
+                    isComposingRef.current = false
+                    const val = searchInputRef.current?.value ?? localSearchInput
+                    setLocalSearchInput(val)
+                    setGlobalSearchKeyword(val)
+                    onSearch?.(val)
+                  }
                 }}
                 placeholder={SEARCH_PLACEHOLDERS[currentPlaceholderIndex]}
                 className={cn(
-                  'w-full h-9 rounded-full pl-8.5 pr-8 text-xs transition-all duration-200 ease-out select-text',
+                  'w-full h-9 rounded-full pl-8.5 text-xs transition-all duration-200 ease-out select-text',
+                  localSearchInput ? 'pr-26' : 'pr-8',
                   'bg-background/90 dark:bg-background/60',
                   // 默认无边框：仅在聚焦或已输入搜索文本时高亮显示边框
                   'border border-transparent',
@@ -929,6 +963,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
               />
               {localSearchInput ? (
                 <button
+                  type="button"
                   onClick={() => {
                     setLocalSearchInput('')
                     clearGlobalSearch()
@@ -936,10 +971,16 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                     setActiveSuggestionIndex(-1)
                     searchInputRef.current?.focus()
                   }}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full flex items-center justify-center text-muted-foreground/60 hover:text-foreground hover:bg-muted transition-colors cursor-pointer z-10"
-                  title={t('清除搜索')}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 h-6 px-2 rounded-full flex items-center gap-1 bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground text-[11px] font-medium transition-all duration-150 cursor-pointer border border-border/50 hover:border-border active:scale-95 z-10 shadow-2xs"
+                  title={t('退出搜索 (ESC)')}
                 >
-                  <MaterialIcon icon="close" className="text-[13px]" />
+                  <MaterialIcon icon="close" className="text-xs shrink-0" />
+                  <span className="hidden sm:inline leading-none whitespace-nowrap">
+                    {t('退出搜索')}
+                  </span>
+                  <kbd className="text-[9px] font-mono leading-none text-muted-foreground/80 bg-background/80 dark:bg-black/30 px-1 py-0.5 rounded border border-border/40 ml-0.5 shrink-0">
+                    ESC
+                  </kbd>
                 </button>
               ) : (
                 <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono text-muted-foreground/40 bg-muted/40 dark:bg-white/[0.06] px-1.5 py-0.5 rounded border border-border/30 select-none pointer-events-none hidden sm:inline-flex z-10">
@@ -978,6 +1019,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                         setLocalSearchInput(suggestion)
                         setGlobalSearchKeyword(suggestion)
                         addSearchHistory(suggestion, 'global')
+                        onSearch?.(suggestion)
                         setShowHistoryPopover(false)
                         setActiveSuggestionIndex(-1)
                         searchInputRef.current?.focus()
@@ -1016,6 +1058,18 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
           </div>
         </div>
 
+        {/* 算力争抢横幅（处于 DirectoryHeader 底边）：仅在界面卡顿且分析队列在跑时出现 */}
+        <ResourceContentionBanner />
+
+        {/* 通栏 Loading 条 (处于 DirectoryHeader 底边，贯穿整个视口宽度) */}
+        {isLoading && (
+          <div
+            data-testid="directory-header-loading-bar"
+            className="absolute bottom-0 inset-x-0 h-[2px] z-[120] overflow-hidden pointer-events-none bg-primary/10"
+          >
+            <div className="h-full w-full bg-gradient-to-r from-transparent via-primary to-transparent animate-indeterminate-bar" />
+          </div>
+        )}
       </header>
     )
   }

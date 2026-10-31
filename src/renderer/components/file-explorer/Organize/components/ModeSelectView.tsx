@@ -72,7 +72,7 @@ export function ModeSelectView({
                     </div>
                     <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/15 px-2 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1 shadow-2xs shrink-0">
                       <MaterialIcon icon="star" className="text-[11px] text-amber-500" />
-                      {t('推荐 (Recommended)')}
+                      {t('推荐')}
                     </span>
                   </div>
 

@@ -13,6 +13,7 @@ import path from 'node:path'
 import { t } from '@app/languages'
 import { analysisQueueService } from '../analysis-queue-service'
 import { fileWatcherService } from '../filesystem/file-watcher-service'
+import { cleanupVirtualDirectoryOnDelete } from '../filesystem/virtual-directory-cleanup'
 import { omniClient } from '../../services/omni-client'
 
 /** 校验忽略规则类型 */
@@ -68,21 +69,6 @@ async function saveIgnoreRulesToConfig(rules: IIgnoreRule[]): Promise<void> {
   } catch (error) {
     logger.error(LogCategory.SETTING, '保存忽略规则到统一配置失败:', error)
     throw error
-  }
-}
-
-/**
- * 删除工作目录时彻底删除 .VirtualDirectory 文件夹
- */
-export async function cleanupVirtualDirectoryOnDelete(directoryPath: string): Promise<void> {
-  const virtualDirPath = path.join(directoryPath, '.VirtualDirectory')
-  if (fs.existsSync(virtualDirPath)) {
-    try {
-      await fs.promises.rm(virtualDirPath, { recursive: true, force: true })
-      logger.info(LogCategory.SETTING, '删除工作目录：已彻底删除 .VirtualDirectory 文件夹:', virtualDirPath)
-    } catch (fsError) {
-      logger.warn(LogCategory.SETTING, '删除工作目录：删除 .VirtualDirectory 失败:', { virtualDirPath, fsError })
-    }
   }
 }
 
@@ -202,13 +188,26 @@ export function registerSettingsIPCHandlers(): void {
         await fileWatcherService.stopWatching(workspaceId)
       }
 
-      // 步骤 1: 彻底物理删除工作目录下的 .VirtualDirectory 文件夹
-      await cleanupVirtualDirectoryOnDelete(directoryPath)
+      // 步骤 1: 先中止并清空该目录的分析任务。
+      //
+      // 顺序不可颠倒：在途的缩略图 / 文件处理任务正握着 .VirtualDirectory/.thumbnail 的
+      // 写入句柄，若先删物理目录，fs.rm 会撞 EBUSY（errno -4082）；即便侥幸删掉，
+      // 也会被在途任务原样重建出来（曾在日志中复现：删后 4 分钟目录重新出现）。
+      try {
+        if (analysisQueueService) {
+          await analysisQueueService.abortAndDeleteItemsByDirectory(directoryPath)
+        }
+      } catch (queueError) {
+        logger.error(LogCategory.SETTING, '删除工作目录：中止分析任务失败:', queueError)
+      }
 
-      // 步骤 2: 从数据库删除记录
+      // 步骤 2: 彻底物理删除工作目录下的 .VirtualDirectory 文件夹（失败必须回传，禁止静默）
+      const virtualDirectoryCleaned = await cleanupVirtualDirectoryOnDelete(directoryPath)
+
+      // 步骤 3: 从数据库删除记录
       await databaseService.deleteWorkspaceDirectory(directoryPath)
 
-      // 步骤 2.1: 验证删除是否真正生效，防止静默失败导致前端误报成功
+      // 步骤 3.1: 验证删除是否真正生效，防止静默失败导致前端误报成功
       const stillExists = await databaseService.getWorkspaceDirectoryByPath(directoryPath)
       if (stillExists) {
         logger.warn(LogCategory.SETTING, '删除工作目录失败：数据库记录仍存在', {
@@ -218,21 +217,21 @@ export function registerSettingsIPCHandlers(): void {
         return { success: false, error: t('删除工作目录失败，请重试') }
       }
 
-      // 步骤 3: 删除队列中的相关文件
-      try {
-        if (analysisQueueService) {
-          await analysisQueueService.deleteItemsByDirectory(directoryPath)
-        }
-      } catch (queueError) {
-        logger.error(LogCategory.SETTING, '清理分析队列失败:', queueError)
-      }
-
       // 步骤 4: 通知渲染进程刷新
       BrowserWindow.getAllWindows().forEach(win => {
         if (!win.isDestroyed()) {
           win.webContents.send('workspace-directories-updated')
         }
       })
+
+      // 数据库记录已删除，主流程算成功；但缓存目录残留必须回传，
+      // 由前端明确提示用户，绝不能让「已删除」掩盖磁盘上的脏数据。
+      if (!virtualDirectoryCleaned) {
+        return {
+          success: true,
+          warning: t('工作目录已移除，但缓存目录 .VirtualDirectory 删除失败（可能被占用），请稍后手动删除')
+        }
+      }
 
       return { success: true }
     } catch (error) {

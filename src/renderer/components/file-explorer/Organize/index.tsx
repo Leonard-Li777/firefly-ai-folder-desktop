@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { MaterialIcon, cn } from '../../../lib/utils'
 import React, { useRef, useMemo, useState, useCallback, useEffect } from 'react'
 import { WorkspaceDirectory } from '@firefly/types'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 
 import { Button } from '../../ui/button'
 import { Checkbox } from '../../ui/checkbox'
@@ -11,7 +11,7 @@ import { EditStrategyDialog } from './components/EditStrategyDialog'
 import { EmptyState } from '../../common/EmptyState'
 import { FileList } from '../FileList'
 import { FileExplorerLayout } from '../FileExplorerLayout'
-import { CustomTreeView } from './components/CustomTreeView'
+import { CustomTreeView, CustomTreeViewHandle } from './components/CustomTreeView'
 import { PersistentTooltip } from '../../common/PersistentTooltip'
 import { CardSizePopover } from '../../common/CardSizePopover'
 import { MiniViewDisplaySettingsPopover } from '../../common/MiniViewDisplaySettingsPopover'
@@ -42,12 +42,14 @@ import { OrganizingView } from './components/OrganizingView'
 import { DoneView } from './components/DoneView'
 import { SplitPane } from '../../common/SplitPane'
 import { OrganizeMode } from './types'
+import { HintBanner } from '../../ui/hint-banner'
 import { isUnclassifiedNodeName } from './utils/helpers'
 import { pathsToDirectoryNodes } from './utils/treeFromPaths'
 
 export const Organize: React.FC = () => {
   useVoerkaI18n(i18nScope)
   const navigate = useNavigate()
+  const location = useLocation()
   const { setAnalyzedDirectoryKeyword } = useSearchStore()
 
   const config = useSettingsStore(s => s.config)
@@ -159,23 +161,65 @@ export const Organize: React.FC = () => {
     deleteTagGlobally,
     trashDuplicateFiles,
     isTrashingDuplicates,
-    loadFilesToOrganize
+    loadFilesToOrganize,
+
+    // 容量守卫与门禁穿透
+    organizeCapacityLimit,
+    isCapacityExceeded,
+    capacityExceededCount,
+    showCapacityLimitDialog,
+    setShowCapacityLimitDialog,
+    handleGoToAnalyzedPage,
+    handleLimitToFirst3000Files,
+    handleBypassLimitAndOrganizeAll,
+    handleAttemptEnterModeSelect,
+    bypassCapacityLimit,
+    organizeFileLimitOverride,
+    rawToOrganizeCount
   } = useOrganizeState()
 
+  const handleSidebarSelectStage = useCallback(
+    (targetStage: any) => {
+      if (targetStage === 'mode-select') {
+        handleAttemptEnterModeSelect('mode-select')
+      } else {
+        setStage(targetStage)
+      }
+    },
+    [handleAttemptEnterModeSelect, setStage]
+  )
+
   const isStandaloneStage = stage === 'batch-rename' || stage === 'batch-duplicate'
+  const isMainOrganizeStage =
+    stage !== 'root-mode-select' &&
+    stage !== 'batch-rename' &&
+    stage !== 'batch-tag' &&
+    stage !== 'batch-duplicate'
 
   const [inspectedFile, setInspectedFile] = useState<any | null>(null)
   const [duplicateSelectedCount, setDuplicateSelectedCount] = useState<number>(0)
   const [isDuplicateProcessing, setIsDuplicateProcessing] = useState<boolean>(false)
+  // 容量超限横幅的本次关闭状态（仅内存，不持久化：下次超限仍需提醒）
+  const [isCapacityBannerHidden, setIsCapacityBannerHidden] = useState<boolean>(false)
 
   // 智能聚类「保存为虚拟目录」主操作按钮已统一迁至面包屑栏右侧：
   // 动作经 ref 句柄命令式触发（保留视图内提示词优先/默认名兜底与防重复保存逻辑），
   // 可用态/保存中态由视图经 onSaveStateChange 上报后同步按钮禁用与文案
   const smartClusteringRef = useRef<SmartClusteringViewHandle>(null)
+  const toOrganizeFileIds = useMemo(
+    () => toOrganizeFiles.map(f => f.id),
+    [toOrganizeFiles]
+  )
   const [smartClusterSaveState, setSmartClusterSaveState] = useState<{
     canSave: boolean
     isSaving: boolean
   }>({ canSave: false, isSaving: false })
+
+  // 自定义目录树（含外部 AI 导入）「下一步：微调目录结构」主操作按钮已统一迁至面包屑栏右侧：
+  // 动作经 ref 句柄命令式触发（保留视图内命名提取/草稿保存逻辑），
+  // 可用态由视图经 onCanSubmitChange 上报后同步按钮禁用
+  const customTreeRef = useRef<CustomTreeViewHandle>(null)
+  const [customTreeCanSubmit, setCustomTreeCanSubmit] = useState<boolean>(false)
 
   // 始终持有最新 inspectedFile 的引用，用于“点击已选中文件则取消选中”的可靠判断，
   // 避免依赖 FileExplorerLayout 受控 selectedIds 同步的竞态延迟
@@ -523,39 +567,36 @@ export const Organize: React.FC = () => {
               </Button>
             )}
 
+            {stage === 'custom-tree' && (
+              <Button
+                size="sm"
+                onClick={() => customTreeRef.current?.submit()}
+                disabled={!customTreeCanSubmit}
+                className="text-xs gap-1.5 bg-primary hover:bg-primary/90 px-4 font-bold shadow-md shadow-primary/10 h-8 shrink-0"
+                title={t('下一步：微调目录结构')}
+              >
+                <MaterialIcon icon="arrow_forward" className="text-sm shrink-0" />
+                <span className="truncate">{t('下一步：微调目录结构')}</span>
+              </Button>
+            )}
+
             {stage === 'structure' && (
               <div className="flex items-center gap-3 shrink-0 min-w-0">
                 <span
                   className="text-xs text-muted-foreground font-medium px-2.5 py-1 bg-muted/30 rounded-md select-none shrink-0 truncate"
-                  title={t('本页面自动保存')}
+                  title={isSavedVDirOrganize ? t('本页面自动保存') : t('本页面自动保存草稿')}
                 >
-                  {t('本页面自动保存')}
+                  {isSavedVDirOrganize ? t('本页面自动保存') : t('本页面自动保存草稿')}
                 </span>
-                <div className="flex items-center border border-primary/20 bg-primary/5 rounded-xl overflow-hidden shrink-0">
-                  <Button
-                    size="sm"
-                    onClick={handleStartOrganize}
-                    className="rounded-l-lg rounded-r-none text-xs gap-1.5 bg-primary hover:bg-primary/90 px-4 font-bold shadow-md shadow-primary/10 transition-all hover:scale-[1.01] active:scale-[0.98] h-8 shrink-0"
-                    title={t('开始整理')}
-                  >
-                    <MaterialIcon icon="play_circle" className="text-sm shrink-0" />
-                    <span className="truncate">{t('开始整理')}</span>
-                  </Button>
-                  <label
-                    className="flex items-center gap-2 text-xs font-semibold text-primary cursor-pointer select-none px-3 py-1.5 hover:bg-primary/10 transition-colors h-8 shrink min-w-0 max-w-[130px] sm:max-w-[180px]"
-                    title={t('整理过程中允许AI新增目录')}
-                  >
-                    <Checkbox
-                      id="allow-create-new"
-                      checked={options.allowCreateNew}
-                      onCheckedChange={checked =>
-                        setOptions({ ...options, allowCreateNew: !!checked })
-                      }
-                      className="border-primary/60 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground w-3.5 h-3.5 rounded-sm shrink-0"
-                    />
-                    <span className="truncate min-w-0">{t('整理过程中允许AI新增目录')}</span>
-                  </label>
-                </div>
+                <Button
+                  size="sm"
+                  onClick={handleStartOrganize}
+                  className="rounded-xl text-xs gap-1.5 bg-primary hover:bg-primary/90 px-4 font-bold shadow-md shadow-primary/10 transition-all hover:scale-[1.01] active:scale-[0.98] h-8 shrink-0"
+                  title={t('开始整理')}
+                >
+                  <MaterialIcon icon="play_circle" className="text-sm shrink-0" />
+                  <span className="truncate">{t('开始整理')}</span>
+                </Button>
               </div>
             )}
 
@@ -604,14 +645,7 @@ export const Organize: React.FC = () => {
 
             {stage === 'done' && (
               <>
-                {Boolean(currentVDir?.source === 'draft' || draft?.source === 'draft') ? (
-                  <span
-                    className="text-xs text-muted-foreground font-medium px-2 py-1 bg-muted/30 rounded-md select-none shrink-0 truncate"
-                    title={t('本页面自动保存')}
-                  >
-                    {t('本页面自动保存')}
-                  </span>
-                ) : isSavedVDirOrganize ? (
+                {isSavedVDirOrganize ? (
                   <Button
                     variant="link"
                     size="sm"
@@ -630,7 +664,14 @@ export const Organize: React.FC = () => {
                       {t('本页面自动保存，你可随时切换虚拟目录页面查看结果')}
                     </span>
                   </Button>
-                ) : null}
+                ) : (
+                  <span
+                    className="text-xs text-muted-foreground font-medium px-2 py-1 bg-muted/30 rounded-md select-none shrink-0 truncate"
+                    title={t('本页面自动保存草稿')}
+                  >
+                    {t('本页面自动保存草稿')}
+                  </span>
+                )}
               </>
             )}
 
@@ -652,11 +693,72 @@ export const Organize: React.FC = () => {
           </div>
         </div>
 
+        {/* 容量超限横幅：仅在批量整理工作台各阶段中按需显示，不在主页或卫星工具中显示 */}
+        {isMainOrganizeStage && rawToOrganizeCount > organizeCapacityLimit && !isCapacityBannerHidden && (
+          <HintBanner
+            icon={<MaterialIcon icon="dataset" className="text-base text-amber-500" />}
+            className="shrink-0 py-2.5 border-b border-amber-500/20 text-amber-600 dark:text-amber-400"
+            onClose={() => setIsCapacityBannerHidden(true)}
+            actions={
+              <div className="flex items-center gap-3">
+                {/* 当处于切片状态（前 N 个）时：展示次要弱化操作“我了解风险，仍要整理全部文件”，供用户按需展开全量 */}
+                {organizeFileLimitOverride !== null ? (
+                <Button
+                  variant="link"
+                  size="sm"
+                  onClick={handleBypassLimitAndOrganizeAll}
+                  className="text-xs text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400 p-0 h-auto underline-offset-4 hover:underline shrink-0"
+                  title={t('单次超大规模计算将显著增加内存占用与 AI 响应耗时（O(N²) 复杂度），且目录聚类颗粒度可能变宽')}
+                >
+                  {t('我了解风险，仍要整理全部 {count} 个文件', { count: rawToOrganizeCount.toLocaleString() })}
+                </Button>
+              ) : (
+                /* 当处于全量整理时：展示主要推荐操作“仅整理前 N 个 (即刻开始)”，供用户一键降级为安全模式 */
+                <Button
+                  size="sm"
+                  onClick={handleLimitToFirst3000Files}
+                  className="h-6 text-[11px] px-2.5 bg-amber-500 hover:bg-amber-600 text-white font-medium shadow-xs shrink-0"
+                >
+                  <MaterialIcon icon="bolt" className="mr-1 text-xs" />
+                  {t('仅整理前 {limit} 个 (即刻开始)', { limit: organizeCapacityLimit.toLocaleString() })}
+                </Button>
+              )}
+
+              {/* 辅助操作：前往手动筛选 */}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleGoToAnalyzedPage}
+                className="h-6 text-[11px] px-2 border-amber-500/30 hover:bg-amber-500/10 text-amber-600 dark:text-amber-400 shrink-0"
+              >
+                <MaterialIcon icon="checklist" className="mr-1 text-xs" />
+                {t('前往手动筛选')}
+              </Button>
+              </div>
+            }
+          >
+            {organizeFileLimitOverride !== null
+              ? t('已截取前 {limit} 个文件整理（原共 {count} 个，超出单批建议 {limit} 个）。其余文件保留在原目录：', {
+                  limit: organizeFileLimitOverride.toLocaleString(),
+                  count: rawToOrganizeCount.toLocaleString()
+                })
+              : bypassCapacityLimit
+                ? t('当前为全量整理模式（共 {count} 个，超出单批建议 {limit} 个）。单次大规模计算将显著增加 AI 耗时与内存：', {
+                    count: rawToOrganizeCount.toLocaleString(),
+                    limit: organizeCapacityLimit.toLocaleString()
+                  })
+                : t('待整理文件较多（共 {count} 个，超出单批建议 {limit} 个）。您可以仅整理前 {limit} 个或前往手动筛选：', {
+                    count: rawToOrganizeCount.toLocaleString(),
+                    limit: organizeCapacityLimit.toLocaleString()
+                  })}
+          </HintBanner>
+        )}
+
         <div className="flex-1 flex overflow-hidden relative">
           {/* 左侧常驻批量功能导航侧边栏 */}
           <OrganizeSidebar
             currentStage={stage}
-            onSelectStage={setStage}
+            onSelectStage={handleSidebarSelectStage}
           />
 
           {isStandaloneStage ? (
@@ -810,8 +912,8 @@ export const Organize: React.FC = () => {
                         <>
                           {stage === 'root-mode-select' && (
                             <RootModeSelectView
-                              onSelectStage={setStage}
-                              totalFilesCount={toOrganizeFiles.length}
+                              onSelectStage={handleAttemptEnterModeSelect}
+                              totalFilesCount={rawToOrganizeCount}
                             />
                           )}
 
@@ -844,7 +946,7 @@ export const Organize: React.FC = () => {
                               ref={smartClusteringRef}
                               workspaceId={currentWorkspaceDirectory?.id}
                               workspaceDirectoryPath={currentWorkspaceDirectory?.path || ''}
-                              fileIds={toOrganizeFiles.map(f => f.id)}
+                              fileIds={toOrganizeFileIds}
                               onSaveVirtualDirectory={handleSaveSmartClusteringVDir}
                               onSaveStateChange={setSmartClusterSaveState}
                               onBack={() => setStage('mode-select')}
@@ -862,11 +964,13 @@ export const Organize: React.FC = () => {
 
                           {stage === 'custom-tree' && (
                             <CustomTreeView
+                              ref={customTreeRef}
                               initialName={initialVDirInfo?.name || draft?.name}
                               initialStrategy={initialVDirInfo?.strategy || draft?.strategy}
                               workspaceDirectoryPath={currentWorkspaceDirectory?.path || ''}
                               isExternalAi={draft?.source === 'external-ai' || organizeMode === 'external-ai'}
                               onBack={handleBack}
+                              onCanSubmitChange={setCustomTreeCanSubmit}
                               onSubmit={(name, strategy, tree) => {
                                 handleCustomSubmit(name, strategy, tree)
                               }}
@@ -878,7 +982,7 @@ export const Organize: React.FC = () => {
                               <IdentityBlueprintSelectView
                                 workspaceId={currentWorkspaceDirectory?.id}
                                 workspaceDirectoryPath={currentWorkspaceDirectory?.path || ''}
-                                fileIds={toOrganizeFiles.map(f => f.id)}
+                                fileIds={toOrganizeFileIds}
                                 onSelectStructure={handleSelectIdentityStructure}
                                 onBack={() => setStage('mode-select')}
                               />
@@ -1095,6 +1199,112 @@ export const Organize: React.FC = () => {
         metadata={{ vdirId: currentVDir?.id }}
         onSuccess={handleRegenerateSaveAfterFirecoreConfirm}
       />
+      <Dialog open={location.pathname === '/organize' && showCapacityLimitDialog} onOpenChange={setShowCapacityLimitDialog}>
+        <DialogContent className="sm:max-w-[540px] p-0 overflow-hidden border border-border shadow-2xl rounded-2xl">
+          {/* 顶栏：暖色调柔和警示与规模量化 */}
+          <div className="px-6 pt-5 pb-4 border-b border-border bg-amber-500/5">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500 shrink-0 mt-0.5">
+                <MaterialIcon icon="dataset" className="text-2xl" />
+              </div>
+              <div className="flex-1">
+                <DialogTitle className="text-base font-semibold text-foreground flex items-center gap-2 flex-wrap">
+                  {t('待整理文件规模较大')}
+                  <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                    {t('共 {count} 个文件', { count: capacityExceededCount })}
+                  </span>
+                </DialogTitle>
+                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                  {t('为保障 AI 深度聚类质量与秒级响应，建议单次整理控制在 {limit} 个文件以内。请选择适合本次整理的执行方案：', {
+                    limit: organizeCapacityLimit.toLocaleString()
+                  })}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 主体：两大核心策略卡片 */}
+          <div className="p-6 space-y-3">
+            {/* 卡片 1：无阻断推荐 - 仅整理前 3,000 个文件 */}
+            <div
+              onClick={handleLimitToFirst3000Files}
+              className="group relative border-2 border-primary/50 bg-primary/5 hover:bg-primary/10 hover:border-primary rounded-xl p-4 cursor-pointer transition-all duration-200 shadow-sm"
+            >
+              <div className="absolute -top-2.5 right-4 bg-primary text-primary-foreground text-[11px] font-bold px-2 py-0.5 rounded-full shadow-sm flex items-center gap-0.5">
+                <MaterialIcon icon="bolt" className="text-xs" />
+                {t('推荐 · 即刻开始')}
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-primary/20 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                  <MaterialIcon icon="filter_3" className="text-lg" />
+                </div>
+                <div className="flex-1 pr-14">
+                  <div className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                    {t('仅整理前 {limit} 个文件', { limit: organizeCapacityLimit.toLocaleString() })}
+                    <span className="text-[11px] font-medium text-primary">({t('不阻塞流程')})</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                    {t('优先载入前 {limit} 个文件进行 AI 聚类与分类推导。其余 {rest} 个文件安全保留原样，后续可继续分批整理。', {
+                      limit: organizeCapacityLimit.toLocaleString(),
+                      rest: Math.max(0, capacityExceededCount - organizeCapacityLimit).toLocaleString()
+                    })}
+                  </p>
+                  <div className="mt-2 flex items-center gap-1.5 text-xs text-primary font-medium">
+                    <MaterialIcon icon="check_circle" className="text-sm" />
+                    <span>{t('即刻进入整理流程，无需手动逐个挑选')}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 卡片 2：精细筛选 - 前往已分析页面自定义勾选 */}
+            <div
+              onClick={handleGoToAnalyzedPage}
+              className="group border border-border hover:border-primary/40 hover:bg-accent/40 rounded-xl p-4 cursor-pointer transition-all duration-200"
+            >
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-accent text-muted-foreground group-hover:text-foreground flex items-center justify-center shrink-0 mt-0.5 transition-colors">
+                  <MaterialIcon icon="checklist" className="text-lg" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm font-semibold text-foreground">
+                    {t('前往「已分析」页面手动筛选')}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                    {t('按维度标签、文件大类（如仅图片/文档）或指定子目录自由组合勾选想要整理的目标文件集合。')}
+                  </p>
+                  <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <MaterialIcon icon="tune" className="text-sm" />
+                    <span>{t('适合需要针对特定类别进行精细化归档的场景')}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 底栏：次要操作与全量整理链接 */}
+          <DialogFooter className="px-6 py-3.5 border-t border-border bg-muted/20 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <Button
+              variant="link"
+              size="sm"
+              onClick={handleBypassLimitAndOrganizeAll}
+              className="text-xs text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400 p-0 h-auto underline-offset-4 hover:underline"
+              title={t('单次超大规模计算将显著增加内存占用与 AI 响应耗时（O(N²) 复杂度），且目录聚类颗粒度可能变宽')}
+            >
+              {t('我了解风险，仍要整理全部 {count} 个文件', { count: capacityExceededCount.toLocaleString() })}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowCapacityLimitDialog(false)}
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              {t('暂不整理，留在当前页')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={showBatchLimitConfirm} onOpenChange={setShowBatchLimitConfirm}>
         <DialogContent className="sm:max-w-[440px]">
           <DialogHeader>

@@ -281,6 +281,11 @@ const FileDetailsPanelComponent: React.FC<any> = ({
       const virtIdx = itemPath.indexOf('.VirtualDirectory')
       if (virtIdx > 0) {
         finalWorkspaceDirectoryPath = itemPath.substring(0, virtIdx).replace(/[\\/]+$/, '')
+      } else {
+        const lastSep = Math.max(itemPath.lastIndexOf('/'), itemPath.lastIndexOf('\\'))
+        if (lastSep > 0) {
+          finalWorkspaceDirectoryPath = itemPath.substring(0, lastSep)
+        }
       }
     }
 

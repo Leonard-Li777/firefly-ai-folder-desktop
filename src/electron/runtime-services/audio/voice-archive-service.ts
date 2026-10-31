@@ -108,8 +108,13 @@ export class VoiceArchiveService {
     try {
       const baseDir = ResourceLocator.getBaseResourceDir()
       const candidates = [
+        process.env.OMNI_MOSS_VOICES_PATH || '',
         path.join(baseDir, 'models/audio/moss/preset_voices.bin'),
-        path.join(process.cwd(), 'apps/desktop/build/extraResources/models/audio/moss/preset_voices.bin')
+        path.join(process.cwd(), 'apps/desktop/build/extraResources/models/audio/moss/preset_voices.bin'),
+        path.join(
+          process.env.USERPROFILE || process.env.HOME || '',
+          '.cache/moss_tts_test/test_voices.bin'
+        )
       ]
 
       let presetBinPath: string | null = null

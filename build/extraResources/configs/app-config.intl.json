@@ -283,5 +283,18 @@
     "base_days": 90,
     "extra_days_per_hit": 30,
     "schedule": "0 3 * * 0"
+  },
+  "CONSUME_PRICING": {
+    "spend_unlock_analysis": 300,
+    "spend_extra_private_dir_slot": 200,
+    "spend_extra_speedy_dir_slot": 100,
+    "spend_extra_vdir_slot": 100,
+    "spend_access_vdir": 50,
+    "spend_export_vdir": 5,
+    "spend_export_rdir": 10,
+    "spend_download_file": 5,
+    "spend_cloud_decompress": 2,
+    "spend_get_password": 5,
+    "spend_regenerate_vdir": 20
   }
 }

@@ -444,11 +444,13 @@ declare global {
       ) => Promise<FileItem[]>
       onSearchProgress: (
         callback: (payload: {
-          phase: 'phase1' | 'phase2'
+          phase: 'phase1' | 'phase2' | 'phase3'
           seq: number
           items: FileItem[]
           total: number
           tokens?: string[]
+          /** 工单 13：冷态视觉模型首次加载中（仅 phase2 携带） */
+          clipPending?: boolean
         }) => void
       ) => () => void
       tokenizeText: (text: string) => Promise<string[]>
@@ -512,6 +514,23 @@ declare global {
         }>
       >
       batchFixExtensions: (fixes: Array<{ fileFingerprint: string; chosenExtension: string | null }>) => Promise<{ success: boolean; count: number }>
+      /** 工单 13：canonical 语义索引重建计数（设置页展示「重建中 / 待重建」） */
+      getCanonicalRebuildCounts: () => Promise<{
+        pending: number
+        ready: number
+        visualOnly: number
+        skipped: number
+        failed: number
+        uncomputed: number
+        lastMaintenance: {
+          reason: string
+          at: number
+          invalidated: number
+          requeued: number
+        } | null
+      }>
+      /** 工单 13：手动触发一次 canonical 语义索引重建 */
+      runCanonicalMaintenance: (reason?: string) => Promise<{ success: boolean }>
       onAnalysisQueueUpdated: (callback: (payload: AnalysisQueue) => void) => () => void
       onDirectoryContextUpdated: (callback: (payload: { directoryPath: string; contextAnalysis: any }) => void) => () => void
       onModelStatusChanged: (callback: (payload: ModelStatusChange) => void) => () => void
@@ -526,6 +545,7 @@ declare global {
         profile: 'classic_light' | 'gemma_unified'
         mrlDimension: 256 | 512 | 768
         videoFrameIntervalSeconds: number
+        videoSoftTokenBudget: number
       }>
       // PRD-0044（S5）：onModelMigrationProgress 声明随「内置模型迁移链」清退删除
 
@@ -577,7 +597,9 @@ declare global {
       getAllWorkspaceDirectories: () => Promise<WorkspaceDirectory[]>
       getCurrentWorkspaceDirectory: () => Promise<WorkspaceDirectory | null>
       setCurrentWorkspaceDirectory: (path: string | null) => Promise<void>
-      deleteWorkspaceDirectory: (path: string) => Promise<{ success: boolean; error?: string }>
+      deleteWorkspaceDirectory: (
+        path: string
+      ) => Promise<{ success: boolean; error?: string; warning?: string }>
       resetWorkspaceDirectory: (directoryPath: string) => Promise<void>
       rescanWorkspaceDirectory: (
         workspaceId: number
@@ -713,12 +735,29 @@ declare global {
           workspaceDirectoryPath: string
         ) => Promise<SavedVirtualDirectory[]>
         getSavedVirtualDirectoriesByPath: (workspaceDirectoryPath: string) => Promise<SavedVirtualDirectory[]>
-        getAnalyzedFiles: (workspaceDirectoryPath: string) => Promise<FileInfo[]>
+        getAnalyzedFiles: (workspaceDirectoryPath: string, selectedFileIds?: number[]) => Promise<Array<{ id: number; path: string; name: string; smartName: string | null; extension: string | null }>>
+        getLightweightFiles: (workspaceDirectoryPath: string, selectedFileIds?: number[], limit?: number) => Promise<Array<{ id: number; path: string; name: string; smartName: string | null; extension: string | null }>>
+        getAnalyzedCount: (workspaceDirectoryPath: string) => Promise<number>
         matchPerspectivesAndStructures: (request: any) => Promise<any>
         calculateFilePathsCosine: (request: any) => Promise<any>
-        smartClusterHac: (params: any) => Promise<any>
-        quickOrganize: (params: QuickOrganizeParams) => Promise<OrganizePreviewResult>
-        generatePlan: (params: OrganizePlanParams) => Promise<AIGeneratedStructure>
+        smartClusterHac: (params: {
+          workspaceId?: number
+          workspaceDirectoryPath?: string
+          fileIds?: number[]
+          prompt?: string
+          distanceThreshold?: number
+          maxLeafSize?: number
+          maxDepth?: number
+          maxRootDirectories?: number
+          maxSubdirectories?: number
+          similarityThreshold?: number
+          clusteringMode?: 'precise' | 'balanced' | 'complete'
+        }) => Promise<{
+          success: boolean
+          summary: string
+          directories: any[]
+          durationMs: number
+        }>
         listSessions: (workspaceDirectoryPath: string) => Promise<OrganizeSession[]>
         undoSession: (params: UndoSessionParams) => Promise<{ success: boolean; message: string }>
         deleteSession: (
@@ -810,7 +849,7 @@ declare global {
 
       // 离线语音合成 (TTS)
       tts: {
-        synthesizeChunk: (text: string, voiceId: string | number, speed: number, sessionId?: number, sid?: number) => Promise<ArrayBuffer | null>
+        synthesizeChunk: (text: string, voiceId: string | number, speed: number, sessionId?: number, sid?: number) => Promise<{ buffer: ArrayBuffer; hitCap: boolean; steps: number } | null>
         abortSession: (sessionId: number) => Promise<void>
         listVoices: () => Promise<any[]>
         analyzeVoiceFile: (filePath: string) => Promise<{

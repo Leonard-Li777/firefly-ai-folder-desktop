@@ -5,11 +5,13 @@ import {
   HelpCircle,
   Layers,
   Lock,
+  RefreshCw,
   Sparkles
 } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { Button } from '../ui/button'
 import { Card } from '../ui/card'
+import { Switch } from '../ui/switch'
 import {
   AlertDialog,
   AlertDialogContent,
@@ -54,6 +56,33 @@ const HelpTooltip: React.FC<{ content: string }> = ({ content }) => {
 /**
  * 基础AI引擎配置组件
  */
+/**
+ * 基于 90s 向量分析硬预算与当前语音识别时长，动态计算给定画面精细度档位下的单视频最长可检索时长（分钟）
+ *
+ * 计算公式严格与底层核心引擎 perceive.rs 的 solve_video_analysis_budget_with_asr 保持同源：
+ * - 向量预算总额：90s，预留固定开销 5s => 可用 85s
+ * - ASR 实时率：0.112（分块 ASR 实测值）
+ * - 跳帧解码速率：0.01（100x 极速）
+ * - 候选间隔上限：60s
+ * - 单帧编码成本：48 档为 0.787s，140 档为 1.996s
+ */
+const estimateMaxVideoDurationMins = (softTokenBudget: number, asrDurationSec: number): number => {
+  const available = 85.0 // 90s - 5s
+  const safeAsrDuration = Math.max(10, Math.min(300, asrDurationSec || 30))
+  // ASR 耗时封顶防御：不超过 90% 可用预算
+  const asrCap = Math.min(safeAsrDuration, (available * 0.9) / 0.112)
+  const asrCost = asrCap * 0.112
+  const visAvailable = Math.max(1.0, available - asrCost)
+
+  const frameCost = softTokenBudget <= 48 ? 0.787 : 1.996
+  const maxInterval = 60.0
+  const skipDecodeRate = 0.01
+  const costPerSec = skipDecodeRate + frameCost / maxInterval
+
+  const maxDurationSec = visAvailable / costPerSec
+  return Math.round(maxDurationSec / 60)
+}
+
 export const BasicAIEngineConfigSettings: React.FC = () => {
   const config = useSettingsStore(s => s.config)
   const getConfigValue = useSettingsStore(s => s.getConfigValue)
@@ -73,21 +102,70 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
     getConfigValue<'classic_light' | 'gemma_unified'>('AI_EMBEDDING_PROFILE') ?? 'classic_light'
   const [pendingProfile, setPendingProfile] = useState<'classic_light' | 'gemma_unified' | null>(null)
   const [pendingDimension, setPendingDimension] = useState<256 | 512 | 768 | null>(null)
+  // 「应用硬件推荐设置」在档位不一致时需先弹确认框，确认后必须补齐画面精细度，
+  // 否则一键应用只改档位、视频档位被静默跳过（与手动点档位卡片的行为区分开）
+  const [pendingVideoRecommendation, setPendingVideoRecommendation] = useState(false)
 
   // MRL 多维度弹性降维 (256 | 512 | 768)
   const mrlDimension =
     getConfigValue<256 | 512 | 768>('EMBEDDING_MRL_DIMENSION') ?? 512
 
-  // 视频切片抽帧间隔（秒）
-  const [localVideoInterval, setLocalVideoInterval] = useState<number>(
-    getConfigValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 5.0
+  // 语音识别时长（秒）：作为「向量化 + ASR」90s 预算里的 ASR 上限参与求解
+  // （ASR 成本是 min(A, 视频可分析时长)·r，不是 D·r）。默认 30s，与既有行为一致。
+  const [localAudioAsrDuration, setLocalAudioAsrDuration] = useState<number>(
+    getConfigValue<number>('AUDIO_ANALYSIS_DURATION') ?? 30
   )
+
+  // 视频画面精细度（每帧视觉软 token 预算：140=高清精细，48=流畅极速）
+  const [localVideoSoftTokenBudget, setLocalVideoSoftTokenBudget] = useState<number>(
+    getConfigValue<number>('VIDEO_SOFT_TOKEN_BUDGET') ?? 140
+  )
+
+  // ── 工单 13：视觉语义搜索开关与语义索引重建状态 ──────────────────────────────
+  // 开关默认 true（后端门禁还会校验档位/语言/文本塔可用性，此处只是用户意图）
+  const clipTextEnabled = getConfigValue<boolean>('AI_CLIP_TEXT_SEARCH_ENABLED') ?? true
+  const [rebuildCounts, setRebuildCounts] = useState<{
+    pending: number
+    ready: number
+    visualOnly: number
+    skipped: number
+    failed: number
+    uncomputed: number
+    lastMaintenance: { reason: string; at: number; invalidated: number; requeued: number } | null
+  } | null>(null)
+  /** 读取失败只在设置页内联提示一次（不弹全局 toast，避免每次进设置页都打扰） */
+  const [rebuildError, setRebuildError] = useState<string | null>(null)
+  const [isRebuilding, setIsRebuilding] = useState(false)
+  const rebuildLoadedRef = React.useRef(false)
+
+  useEffect(() => {
+    if (rebuildLoadedRef.current) return
+    rebuildLoadedRef.current = true
+    let cancelled = false
+    window.electronAPI
+      ?.getCanonicalRebuildCounts?.()
+      .then(counts => {
+        if (cancelled) return
+        if (counts) {
+          setRebuildCounts(counts)
+          setRebuildError(null)
+        }
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return
+        setRebuildError(err instanceof Error ? err.message : String(err))
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   // 硬件自适应推荐状态
   const [recommendedSettings, setRecommendedSettings] = useState<{
     profile: 'classic_light' | 'gemma_unified'
     mrlDimension: 256 | 512 | 768
     videoFrameIntervalSeconds: number
+    videoSoftTokenBudget: number
   } | null>(null)
   const recommendationCheckedRef = React.useRef(false)
 
@@ -106,14 +184,14 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
             if (rec.mrlDimension) {
               updateConfigValue('EMBEDDING_MRL_DIMENSION', rec.mrlDimension)
             }
-            if (rec.videoFrameIntervalSeconds) {
-              updateConfigValue('VIDEO_FRAME_INTERVAL_SECONDS', rec.videoFrameIntervalSeconds)
-              setLocalVideoInterval(rec.videoFrameIntervalSeconds)
+            if (rec.videoSoftTokenBudget) {
+              updateConfigValue('VIDEO_SOFT_TOKEN_BUDGET', rec.videoSoftTokenBudget)
+              setLocalVideoSoftTokenBudget(rec.videoSoftTokenBudget)
             }
           }
         }
       })
-      .catch(() => {})
+      .catch(() => { })
   }, [])
 
   const handleConfirmProfileSwitch = async () => {
@@ -124,6 +202,16 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
     if (target === 'gemma_unified' && recommendedSettings?.mrlDimension) {
       await updateConfigValue('EMBEDDING_MRL_DIMENSION', recommendedSettings.mrlDimension)
     }
+    // 由「应用硬件推荐设置」触发的档位切换：确认后补齐硬件推荐的画面精细度，
+    // 保证一键应用语义完整（手动点档位卡片不触发本分支）；逐字段守卫防推荐数据缺项时写入 undefined
+    if (pendingVideoRecommendation && recommendedSettings) {
+      const rec = recommendedSettings
+      if (rec.videoSoftTokenBudget) {
+        await updateConfigValue('VIDEO_SOFT_TOKEN_BUDGET', rec.videoSoftTokenBudget)
+        setLocalVideoSoftTokenBudget(rec.videoSoftTokenBudget)
+      }
+    }
+    setPendingVideoRecommendation(false)
     captureEvent('切换嵌入模型档位', { profile: target })
     toast.success(
       t('已切换搜索与理解模式并重启，新导入的文件将使用新模式分析')
@@ -145,41 +233,68 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
     if (!recommendedSettings) return
     if (embeddingProfile !== recommendedSettings.profile) {
       setPendingProfile(recommendedSettings.profile)
+      setPendingVideoRecommendation(true)
       return
     }
-    await updateConfigValue('EMBEDDING_MRL_DIMENSION', recommendedSettings.mrlDimension)
-    await updateConfigValue('VIDEO_FRAME_INTERVAL_SECONDS', recommendedSettings.videoFrameIntervalSeconds)
-    setLocalVideoInterval(recommendedSettings.videoFrameIntervalSeconds)
+    const rec = recommendedSettings
+    // 逐字段守卫：推荐数据缺项时不把 undefined 写进配置
+    if (rec.mrlDimension) {
+      await updateConfigValue('EMBEDDING_MRL_DIMENSION', rec.mrlDimension)
+    }
+    if (rec.videoSoftTokenBudget) {
+      await updateConfigValue('VIDEO_SOFT_TOKEN_BUDGET', rec.videoSoftTokenBudget)
+      setLocalVideoSoftTokenBudget(rec.videoSoftTokenBudget)
+    }
     toast.success(
-      t('已同步硬件推荐配置（{profile} · {dim}维 · {interval}秒抽帧）', {
-        profile: recommendedSettings.profile === 'gemma_unified' ? t('全模态标准档') : t('极速轻量档'),
-        dim: recommendedSettings.mrlDimension,
-        interval: recommendedSettings.videoFrameIntervalSeconds
+      t('已同步硬件推荐配置（{profile} · {dim}维 · 画面{detail}）', {
+        profile: rec.profile === 'gemma_unified' ? t('全模态标准档') : t('极速轻量档'),
+        dim: rec.mrlDimension,
+        detail: rec.videoSoftTokenBudget === 48 ? t('流畅极速搜索') : t('高清精细搜索')
       })
     )
   }
 
-  // 视频切片抽帧间隔防抖同步
+  // 语音识别时长防抖同步（挂载快照守卫：只有偏离挂载初值的用户实际改动才写配置，
+  // 避免晚到 hydration 或 StrictMode 重挂载造成误写）
+  const initialAudioAsrDurationRef = React.useRef(localAudioAsrDuration)
   useEffect(() => {
+    if (localAudioAsrDuration === initialAudioAsrDurationRef.current) return
     const handler = setTimeout(() => {
-      const currentConfigValue = getConfigValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 5.0
-      if (localVideoInterval !== currentConfigValue) {
-        updateConfigValue('VIDEO_FRAME_INTERVAL_SECONDS', localVideoInterval)
-        captureEvent('更新视频切片抽帧间隔', {
-          intervalSeconds: localVideoInterval
+      const currentConfigValue = getConfigValue<number>('AUDIO_ANALYSIS_DURATION') ?? 30
+      if (localAudioAsrDuration !== currentConfigValue) {
+        updateConfigValue('AUDIO_ANALYSIS_DURATION', localAudioAsrDuration)
+        captureEvent('更新语音识别时长', {
+          durationSeconds: localAudioAsrDuration
         })
       }
     }, 500)
 
     return () => clearTimeout(handler)
-  }, [localVideoInterval])
+  }, [localAudioAsrDuration])
+
+  // 视频画面精细度防抖同步（守卫逻辑同上）
+  const initialVideoSoftTokenBudgetRef = React.useRef(localVideoSoftTokenBudget)
+  useEffect(() => {
+    if (localVideoSoftTokenBudget === initialVideoSoftTokenBudgetRef.current) return
+    const handler = setTimeout(() => {
+      const currentConfigValue = getConfigValue<number>('VIDEO_SOFT_TOKEN_BUDGET') ?? 140
+      if (localVideoSoftTokenBudget !== currentConfigValue) {
+        updateConfigValue('VIDEO_SOFT_TOKEN_BUDGET', localVideoSoftTokenBudget)
+        captureEvent('更新视频画面精细度', {
+          softTokenBudget: localVideoSoftTokenBudget
+        })
+      }
+    }, 500)
+
+    return () => clearTimeout(handler)
+  }, [localVideoSoftTokenBudget])
 
   return (
     <div className="p-6 space-y-6">
       <div>
         <h3 className="text-lg font-semibold mb-2">{t('基础AI引擎配置')}</h3>
         <p className="text-sm text-muted-foreground">
-          {t('配置分析模式、嵌入模型档位、MRL 向量维度与视频切片抽帧参数')}
+          {t('配置分析模式、嵌入模型档位、MRL 向量维度与视频取帧参数')}
         </p>
       </div>
 
@@ -208,11 +323,10 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                 updateConfigValue('ANALYSIS_MODE', 'simple')
                 captureEvent('切换分析模式', { mode: 'simple' })
               }}
-              className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                analysisMode === 'simple'
+              className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 cursor-pointer transition-all ${analysisMode === 'simple'
                   ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20'
                   : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
-              }`}
+                }`}
             >
               <div className="absolute top-0 right-0 text-[11px] font-semibold bg-muted text-muted-foreground px-2.5 py-0.5 rounded-bl-md">
                 {t('极速')}
@@ -242,13 +356,12 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                 updateConfigValue('ANALYSIS_MODE', 'quick_name')
                 captureEvent('切换分析模式', { mode: 'quick_name' })
               }}
-              className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 transition-all ${
-                !isAdvancedAiEnabled
+              className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 transition-all ${!isAdvancedAiEnabled
                   ? 'border-border bg-muted/20 opacity-60 cursor-not-allowed'
                   : analysisMode === 'quick_name'
                     ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20 cursor-pointer'
                     : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30 cursor-pointer'
-              }`}
+                }`}
             >
               <div className="absolute top-0 right-0 text-[11px] font-semibold bg-muted text-muted-foreground px-2.5 py-0.5 rounded-bl-md">
                 {t('默认')}
@@ -261,9 +374,8 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
               )}
               <div className="flex items-center justify-between pr-8">
                 <span
-                  className={`font-semibold text-sm ${
-                    isAdvancedAiEnabled && analysisMode === 'quick_name' ? 'text-primary' : ''
-                  }`}
+                  className={`font-semibold text-sm ${isAdvancedAiEnabled && analysisMode === 'quick_name' ? 'text-primary' : ''
+                    }`}
                 >
                   {t('增强分析')}
                 </span>
@@ -296,13 +408,12 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                 updateConfigValue('ANALYSIS_MODE', 'full')
                 captureEvent('切换分析模式', { mode: 'full' })
               }}
-              className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 transition-all ${
-                !isAdvancedAiEnabled
+              className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 transition-all ${!isAdvancedAiEnabled
                   ? 'border-border bg-muted/20 opacity-60 cursor-not-allowed'
                   : analysisMode === 'full'
                     ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20 cursor-pointer'
                     : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30 cursor-pointer'
-              }`}
+                }`}
             >
               <div className="absolute top-0 right-0 text-[11px] font-semibold bg-green-500 text-white px-2.5 py-0.5 rounded-bl-md shadow-sm dark:bg-green-600">
                 {t('推荐')}
@@ -315,9 +426,8 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
               )}
               <div className="flex items-center justify-between pr-8">
                 <span
-                  className={`font-semibold text-sm ${
-                    isAdvancedAiEnabled && analysisMode === 'full' ? 'text-primary' : ''
-                  }`}
+                  className={`font-semibold text-sm ${isAdvancedAiEnabled && analysisMode === 'full' ? 'text-primary' : ''
+                    }`}
                 >
                   {t('全面分析')}
                 </span>
@@ -387,11 +497,10 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                   setPendingProfile('classic_light')
                 }
               }}
-              className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                embeddingProfile === 'classic_light'
+              className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 cursor-pointer transition-all ${embeddingProfile === 'classic_light'
                   ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20'
                   : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
-              }`}
+                }`}
             >
               <div className="absolute top-0 right-0 text-[11px] font-semibold bg-muted text-muted-foreground px-2.5 py-0.5 rounded-bl-md">
                 {t('超省电 · 极速分析')}
@@ -403,9 +512,8 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
               )}
               <div className="flex items-center gap-2 pr-8">
                 <span
-                  className={`font-semibold text-sm ${
-                    embeddingProfile === 'classic_light' ? 'text-primary' : ''
-                  }`}
+                  className={`font-semibold text-sm ${embeddingProfile === 'classic_light' ? 'text-primary' : ''
+                    }`}
                 >
                   {t('极速轻量档')}
                 </span>
@@ -429,11 +537,10 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                   setPendingProfile('gemma_unified')
                 }
               }}
-              className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                embeddingProfile === 'gemma_unified'
+              className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 cursor-pointer transition-all ${embeddingProfile === 'gemma_unified'
                   ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20'
                   : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
-              }`}
+                }`}
             >
               <div className="absolute top-0 right-0 text-[11px] font-semibold bg-green-500 text-white px-2.5 py-0.5 rounded-bl-md shadow-sm dark:bg-green-600">
                 {t('深度理解 · 音视频全能')}
@@ -445,9 +552,8 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
               )}
               <div className="flex items-center gap-2 pr-8">
                 <span
-                  className={`font-semibold text-sm ${
-                    embeddingProfile === 'gemma_unified' ? 'text-primary' : ''
-                  }`}
+                  className={`font-semibold text-sm ${embeddingProfile === 'gemma_unified' ? 'text-primary' : ''
+                    }`}
                 >
                   {t('全模态标准档')}
                 </span>
@@ -496,7 +602,7 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {/* 紧凑档 256 */}
                   <div
                     onClick={() => {
@@ -504,28 +610,39 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                         setPendingDimension(256)
                       }
                     }}
-                    className={`relative p-3 rounded-lg border-2 cursor-pointer transition-all flex flex-col justify-between ${
-                      mrlDimension === 256
+                    className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 cursor-pointer transition-all ${mrlDimension === 256
                         ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20'
                         : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
-                    }`}
+                      }`}
                   >
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className={`text-xs font-semibold ${mrlDimension === 256 ? 'text-primary' : ''}`}>
-                          {t('紧凑省盘档（256维）')}
+                    {recommendedSettings?.mrlDimension === 256 ? (
+                      <div className="absolute top-0 right-0 text-[11px] font-semibold bg-green-500 text-white px-2.5 py-0.5 rounded-bl-md shadow-sm dark:bg-green-600">
+                        {t('推荐')}
+                      </div>
+                    ) : (
+                      <div className="absolute top-0 right-0 text-[11px] font-semibold bg-muted text-muted-foreground px-2.5 py-0.5 rounded-bl-md">
+                        {t('超省磁盘')}
+                      </div>
+                    )}
+                    {mrlDimension === 256 && (
+                      <div className="absolute bottom-2.5 right-2.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-sm">
+                        <Check className="h-3 w-3 text-primary-foreground stroke-[2.5]" />
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 pr-14">
+                      <span className={`font-semibold text-sm ${mrlDimension === 256 ? 'text-primary' : ''}`}>
+                        {t('紧凑省盘档')}
+                      </span>
+                      {recommendedSettings?.mrlDimension === 256 && (
+                        <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">
+                          {t('硬件推荐')}
                         </span>
-                        {recommendedSettings?.mrlDimension === 256 && (
-                          <span className="text-[9px] font-medium px-1 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                            {t('推荐')}
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-[11px] text-muted-foreground mt-1.5 leading-snug space-y-1">
-                        <div>{t('【优势】极省磁盘，每文件仅约 1KB 索引，省 67% 存储空间。')}</div>
-                        <div>{t('【代价】对极复杂细微描述的辨识度略有降低（约 95% 准确率）。')}</div>
-                        <div>{t('【适合】磁盘空间紧张或 8GB 内存设备。')}</div>
-                      </div>
+                      )}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-2 leading-relaxed space-y-1">
+                      <div>{t('【优势】极省磁盘，每文件仅约 1KB 索引，省 67% 存储空间。')}</div>
+                      <div>{t('【代价】对极复杂细微描述的辨识度略有降低（约 95% 准确率）。')}</div>
+                      <div>{t('【适合】磁盘空间紧张或 8GB 内存设备。')}</div>
                     </div>
                   </div>
 
@@ -536,28 +653,39 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                         setPendingDimension(512)
                       }
                     }}
-                    className={`relative p-3 rounded-lg border-2 cursor-pointer transition-all flex flex-col justify-between ${
-                      mrlDimension === 512
+                    className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 cursor-pointer transition-all ${mrlDimension === 512
                         ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20'
                         : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
-                    }`}
+                      }`}
                   >
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className={`text-xs font-semibold ${mrlDimension === 512 ? 'text-primary' : ''}`}>
-                          {t('标准平衡档（512维）')}
+                    {recommendedSettings?.mrlDimension === 512 ? (
+                      <div className="absolute top-0 right-0 text-[11px] font-semibold bg-green-500 text-white px-2.5 py-0.5 rounded-bl-md shadow-sm dark:bg-green-600">
+                        {t('推荐')}
+                      </div>
+                    ) : (
+                      <div className="absolute top-0 right-0 text-[11px] font-semibold bg-muted text-muted-foreground px-2.5 py-0.5 rounded-bl-md">
+                        {t('黄金平衡')}
+                      </div>
+                    )}
+                    {mrlDimension === 512 && (
+                      <div className="absolute bottom-2.5 right-2.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-sm">
+                        <Check className="h-3 w-3 text-primary-foreground stroke-[2.5]" />
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 pr-14">
+                      <span className={`font-semibold text-sm ${mrlDimension === 512 ? 'text-primary' : ''}`}>
+                        {t('标准平衡档')}
+                      </span>
+                      {recommendedSettings?.mrlDimension === 512 && (
+                        <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">
+                          {t('硬件推荐')}
                         </span>
-                        {recommendedSettings?.mrlDimension === 512 && (
-                          <span className="text-[9px] font-medium px-1 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400">
-                            {t('推荐')}
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-[11px] text-muted-foreground mt-1.5 leading-snug space-y-1">
-                        <div>{t('【优势】速度与精度的黄金平衡，保留 98.5% 以上细节辨识能力。')}</div>
-                        <div>{t('【代价】每文件约 2KB 索引空间。')}</div>
-                        <div>{t('【适合】8GB ~ 16GB 主流电脑首选推荐。')}</div>
-                      </div>
+                      )}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-2 leading-relaxed space-y-1">
+                      <div>{t('【优势】速度与精度的黄金平衡，保留 98.5% 以上细节辨识能力。')}</div>
+                      <div>{t('【代价】每文件约 2KB 索引空间。')}</div>
+                      <div>{t('【适合】8GB ~ 16GB 主流电脑首选推荐。')}</div>
                     </div>
                   </div>
 
@@ -568,86 +696,86 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                         setPendingDimension(768)
                       }
                     }}
-                    className={`relative p-3 rounded-lg border-2 cursor-pointer transition-all flex flex-col justify-between ${
-                      mrlDimension === 768
+                    className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 cursor-pointer transition-all ${mrlDimension === 768
                         ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20'
                         : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
-                    }`}
+                      }`}
                   >
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className={`text-xs font-semibold ${mrlDimension === 768 ? 'text-primary' : ''}`}>
-                          {t('旗舰精准档（768维）')}
+                    {recommendedSettings?.mrlDimension === 768 ? (
+                      <div className="absolute top-0 right-0 text-[11px] font-semibold bg-green-500 text-white px-2.5 py-0.5 rounded-bl-md shadow-sm dark:bg-green-600">
+                        {t('推荐')}
+                      </div>
+                    ) : (
+                      <div className="absolute top-0 right-0 text-[11px] font-semibold bg-muted text-muted-foreground px-2.5 py-0.5 rounded-bl-md">
+                        {t('旗舰高精')}
+                      </div>
+                    )}
+                    {mrlDimension === 768 && (
+                      <div className="absolute bottom-2.5 right-2.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-sm">
+                        <Check className="h-3 w-3 text-primary-foreground stroke-[2.5]" />
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 pr-14">
+                      <span className={`font-semibold text-sm ${mrlDimension === 768 ? 'text-primary' : ''}`}>
+                        {t('旗舰精准档')}
+                      </span>
+                      {recommendedSettings?.mrlDimension === 768 && (
+                        <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">
+                          {t('硬件推荐')}
                         </span>
-                        {recommendedSettings?.mrlDimension === 768 && (
-                          <span className="text-[9px] font-medium px-1 py-0.5 rounded bg-purple-500/10 text-purple-600 dark:text-purple-400">
-                            {t('推荐')}
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-[11px] text-muted-foreground mt-1.5 leading-snug space-y-1">
-                        <div>{t('【优势】满血最高精度，对模糊长句和音画视频内容细节匹配最佳。')}</div>
-                        <div>{t('【代价】每文件约 3KB 索引空间，分析时需稍多内存。')}</div>
-                        <div>{t('【适合】16GB / 32GB 及以上高性能电脑推荐。')}</div>
-                      </div>
+                      )}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-2 leading-relaxed space-y-1">
+                      <div>{t('【优势】满血最高精度，对模糊长句和音画视频内容细节匹配最佳。')}</div>
+                      <div>{t('【代价】每文件约 3KB 索引空间，分析时需稍多内存。')}</div>
+                      <div>{t('【适合】16GB / 32GB 及以上高性能电脑推荐。')}</div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* 视频分析抽帧间隔滑块 */}
+              {/* 语音识别时长（参与 90s 向量化预算求解） */}
               <div className="space-y-2 pt-2 border-t border-border/40">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
-                    <Label htmlFor="video-interval-slider" className="text-sm font-medium text-foreground">
-                      {t('视频内容定位精度（抽帧间隔）')}
+                    <Label htmlFor="audio-asr-duration" className="text-sm font-medium text-foreground">
+                      {t('语音识别时长')}
                     </Label>
                     <HelpTooltip
                       content={t(
-                        '分析长视频时每隔几秒截取一次画面。间隔越短，越能精确按秒定位到视频画面片段；间隔越长，视频分析越省电快速。'
+                        '每个音视频文件最多识别前 N 秒语音，用于生成文件标签。语音识别与画面采样共用同一份约 90 秒的分析预算（单文件总超时 2 分钟，其余留给基本信息提取与 AI 分析）：识别越长，标签越准，但能采样的画面越少，设为 120 秒以上会明显压缩长视频的画面覆盖。纯音频文件不受此项限制，会自动用满预算。已分析过的旧文件不会自动重算，修改后需右键「重新分析」才会生效。'
                       )}
                     />
                   </div>
                   <div className="flex items-center gap-2">
-                    {recommendedSettings?.videoFrameIntervalSeconds && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setLocalVideoInterval(recommendedSettings.videoFrameIntervalSeconds)
-                        }}
-                        className="text-[11px] text-primary hover:underline transition-colors"
-                      >
-                        {t('恢复硬件推荐（{sec}秒）', { sec: recommendedSettings.videoFrameIntervalSeconds })}
-                      </button>
-                    )}
-                    <span className="text-xs font-mono font-medium text-foreground bg-muted px-2 py-0.5 rounded">
-                      {localVideoInterval.toFixed(1)} {t('秒')}
-                    </span>
+                    <code className="text-xs font-mono font-semibold text-foreground bg-muted px-2 py-0.5 rounded">
+                      {localAudioAsrDuration} {t('秒')}
+                    </code>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3">
                   <input
-                    id="video-interval-slider"
+                    id="audio-asr-duration"
                     type="range"
-                    min={1}
-                    max={30}
-                    step={1}
-                    value={localVideoInterval}
-                    onChange={e => setLocalVideoInterval(parseFloat(e.target.value))}
+                    min={10}
+                    max={300}
+                    step={10}
+                    value={localAudioAsrDuration}
+                    onChange={e => setLocalAudioAsrDuration(parseInt(e.target.value, 10))}
                     className="w-full accent-primary cursor-pointer"
                   />
-                  <div className="w-20 shrink-0">
+                  <div className="w-24 shrink-0">
                     <Input
                       type="number"
-                      min={1}
-                      max={30}
-                      step={1}
-                      value={localVideoInterval}
+                      min={10}
+                      max={300}
+                      step={10}
+                      value={localAudioAsrDuration}
                       onChange={e => {
-                        const val = parseFloat(e.target.value)
-                        if (!isNaN(val)) {
-                          setLocalVideoInterval(Math.max(1, Math.min(30, val)))
+                        const val = parseInt(e.target.value, 10)
+                        if (!Number.isNaN(val)) {
+                          setLocalAudioAsrDuration(Math.max(10, Math.min(300, val)))
                         }
                       }}
                       className="h-8 text-xs text-right"
@@ -655,8 +783,155 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                   </div>
                 </div>
                 <div className="text-[11px] text-muted-foreground leading-relaxed space-y-1">
-                  <div>{t('【较短间隔（如 2.0 秒）】能精确定位视频中每一处画面细节，但长视频分析时间较长；')}</div>
-                  <div>{t('【较长间隔（如 15.0 秒）】快速提取视频大意，极速省电，适合轻薄本。')}</div>
+                  <div>{t('【短（如 30 秒）】足以打出题材与主题标签，把更多预算留给画面采样。')}</div>
+                  <div>{t('【长（如 120 秒）】语音标签更准，但同一文件可采样的画面会变少。')}</div>
+                </div>
+              </div>
+
+              {/* 视频画面精细度 */}
+              <div className="space-y-2 pt-2 border-t border-border/40">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Label className="text-sm font-medium text-foreground">
+                      {t('视频画面精细度')}
+                    </Label>
+                    <HelpTooltip
+                      content={t(
+                        '决定视频画面的识别精细度与分析速度。高清精细搜索看得更清，区分更准，但分析较慢；流畅极速搜索处理更快，适合长片与配置较低的电脑。已分析过的旧视频不会自动重算，修改后需在文件列表中右键「重新分析」才会生效。'
+                      )}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-medium text-primary bg-primary/10 px-2.5 py-0.5 rounded-full inline-flex items-center">
+                      {t('当前预估最多可完整检索约')}
+                      <code className="font-mono font-bold px-1.5 py-0.2 mx-1 rounded bg-primary/20 text-primary text-xs">
+                        {estimateMaxVideoDurationMins(localVideoSoftTokenBudget, localAudioAsrDuration)}
+                      </code>
+                      {t('分钟视频')}
+                    </span>
+                    {recommendedSettings?.videoSoftTokenBudget && (
+                      <button
+                        type="button"
+                        onClick={() => setLocalVideoSoftTokenBudget(recommendedSettings.videoSoftTokenBudget)}
+                        className="text-[11px] text-primary hover:underline transition-colors"
+                      >
+                        {t('恢复硬件推荐（{level}）', {
+                          level:
+                            recommendedSettings.videoSoftTokenBudget === 48
+                              ? t('流畅极速搜索')
+                              : t('高清精细搜索')
+                        })}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {/* 流畅极速搜索 48 */}
+                  <div
+                    onClick={() => setLocalVideoSoftTokenBudget(48)}
+                    className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 cursor-pointer transition-all ${localVideoSoftTokenBudget === 48
+                        ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20'
+                        : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
+                      }`}
+                  >
+                    {recommendedSettings?.videoSoftTokenBudget === 48 ? (
+                      <div className="absolute top-0 right-0 text-[11px] font-semibold bg-green-500 text-white px-2.5 py-0.5 rounded-bl-md shadow-sm dark:bg-green-600">
+                        {t('推荐')}
+                      </div>
+                    ) : (
+                      <div className="absolute top-0 right-0 text-[11px] font-semibold bg-muted text-muted-foreground px-2.5 py-0.5 rounded-bl-md">
+                        {t('流畅极速')}
+                      </div>
+                    )}
+                    {localVideoSoftTokenBudget === 48 && (
+                      <div className="absolute bottom-2.5 right-2.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-sm">
+                        <Check className="h-3 w-3 text-primary-foreground stroke-[2.5]" />
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 pr-14">
+                      <span
+                        className={`font-semibold text-sm ${localVideoSoftTokenBudget === 48 ? 'text-primary' : ''
+                          }`}
+                      >
+                        {t('流畅极速搜索')}
+                      </span>
+                      {recommendedSettings?.videoSoftTokenBudget === 48 && (
+                        <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">
+                          {t('硬件推荐')}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-2 leading-relaxed space-y-1">
+                      <div className="text-primary font-medium flex items-center">
+                        <span>{t('【可搜索时长】最多分析约')}</span>
+                        <code className="font-mono font-bold px-1.5 py-0.5 mx-1 rounded bg-primary/15 text-primary text-xs">
+                          {estimateMaxVideoDurationMins(48, localAudioAsrDuration)}
+                        </code>
+                        <span>{t('分钟视频内容')}</span>
+                      </div>
+                      <div>{t('【处理速度】大幅减少分析耗时，省电流畅，不卡顿。')}</div>
+                      <div>{t('【搜索精度】画面微小细节有所折损，但主体画面检索依然精准。')}</div>
+                      <div>{t('【适用场景】长视频快速建索引、老旧电脑或轻薄本办公。')}</div>
+                    </div>
+                  </div>
+
+                  {/* 高清精细搜索 140 */}
+                  <div
+                    onClick={() => setLocalVideoSoftTokenBudget(140)}
+                    className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 cursor-pointer transition-all ${localVideoSoftTokenBudget === 140
+                        ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20'
+                        : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
+                      }`}
+                  >
+                    {recommendedSettings?.videoSoftTokenBudget === 140 ? (
+                      <div className="absolute top-0 right-0 text-[11px] font-semibold bg-green-500 text-white px-2.5 py-0.5 rounded-bl-md shadow-sm dark:bg-green-600">
+                        {t('推荐')}
+                      </div>
+                    ) : (
+                      <div className="absolute top-0 right-0 text-[11px] font-semibold bg-muted text-muted-foreground px-2.5 py-0.5 rounded-bl-md">
+                        {t('高清精细')}
+                      </div>
+                    )}
+                    {localVideoSoftTokenBudget === 140 && (
+                      <div className="absolute bottom-2.5 right-2.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-sm">
+                        <Check className="h-3 w-3 text-primary-foreground stroke-[2.5]" />
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 pr-14">
+                      <span
+                        className={`font-semibold text-sm ${localVideoSoftTokenBudget === 140 ? 'text-primary' : ''
+                          }`}
+                      >
+                        {t('高清精细搜索')}
+                      </span>
+                      {recommendedSettings?.videoSoftTokenBudget === 140 && (
+                        <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">
+                          {t('硬件推荐')}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-2 leading-relaxed space-y-1">
+                      <div className="text-primary font-medium flex items-center">
+                        <span>{t('【可搜索时长】最多分析约')}</span>
+                        <code className="font-mono font-bold px-1.5 py-0.5 mx-1 rounded bg-primary/15 text-primary text-xs">
+                          {estimateMaxVideoDurationMins(140, localAudioAsrDuration)}
+                        </code>
+                        <span>{t('分钟视频内容')}</span>
+                      </div>
+                      <div>{t('【搜索精度】看得更清，远处微小物体与相近画面更易区分。')}</div>
+                      <div>{t('【处理速度】视频分析耗时较长，对硬件算力要求较高。')}</div>
+                      <div>{t('【适用场景】追求极致检索准确度，且电脑性能充裕。')}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-[11px] text-muted-foreground leading-relaxed pt-1">
+                  <span>{t('注：5 分钟以内视频（MP4/MOV）走极速压缩域选美（100% 完整覆盖）；超出预估时长的长视频将在安全边界截断，截断区间内所有镜头与关键画面 100% 完整捕获。预估时长随上方的语音识别时长（当前')}</span>
+                  <code className="font-mono font-semibold px-1 py-0.5 mx-1 rounded bg-muted text-foreground text-[11px]">
+                    {localAudioAsrDuration}s
+                  </code>
+                  <span>{t('）动态此消彼长。')}</span>
                 </div>
               </div>
             </div>
@@ -664,8 +939,102 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
         </div>
       </Card>
 
+      {/*
+        工单 13：视觉语义搜索（Chinese-CLIP / MobileCLIP 文本塔）开关与索引重建入口。
+        - 仅在极速轻量档开启时显示，全模态标准档隐藏；
+        - 支持中文（Chinese-CLIP）与多语言（MobileCLIP）；
+        - 重建计数来自工单 06 的 canonical 维护服务，失败只在设置页提示一次（不弹全局 toast）。
+      */}
+      {embeddingProfile === 'classic_light' && (
+        <Card className="p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-violet-500 flex-shrink-0" />
+                <Label className="text-sm font-medium text-foreground">
+                  {t('视觉语义搜索')}
+                  <HelpTooltip
+                    content={t(
+                      '用自然语言描述画面（如「红色的跑车」「左边的沙发」）来搜索图片。支持中文与多语言检索；首次使用需要加载视觉模型，可能等待数秒。'
+                    )}
+                  />
+                </Label>
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-1.5 leading-snug">
+                {t('开启后可用画面描述检索图片；低配设备可关闭以节省内存。')}
+              </p>
+            </div>
+            <Switch
+              checked={clipTextEnabled}
+              onCheckedChange={checked => {
+                void updateConfigValue('AI_CLIP_TEXT_SEARCH_ENABLED', checked)
+              }}
+              aria-label={t('视觉语义搜索')}
+            />
+          </div>
+
+          <div className="mt-4 pt-4 border-t border-border/60">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <Label className="text-sm font-medium text-foreground">
+                  {t('语义索引状态')}
+                </Label>
+                <p className="text-[11px] text-muted-foreground mt-1.5 leading-snug">
+                  {rebuildError
+                    ? t('索引状态读取失败，可稍后重试或手动重建。')
+                    : rebuildCounts
+                      ? t('待重建 {pending} 项 · 已就绪 {ready} 项 · 失败 {failed} 项', {
+                        pending: rebuildCounts.pending + rebuildCounts.uncomputed,
+                        ready: rebuildCounts.ready,
+                        failed: rebuildCounts.failed
+                      })
+                      : t('正在读取索引状态…')}
+                </p>
+                {!rebuildError && rebuildCounts && rebuildCounts.lastMaintenance && (
+                  <p className="text-[11px] text-muted-foreground/80 mt-1 leading-snug">
+                    {t('最近一次重建：{reason}，失效 {invalidated} 项，重新入队 {requeued} 项', {
+                      reason: rebuildCounts.lastMaintenance.reason,
+                      invalidated: rebuildCounts.lastMaintenance.invalidated,
+                      requeued: rebuildCounts.lastMaintenance.requeued
+                    })}
+                  </p>
+                )}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isRebuilding}
+                onClick={async () => {
+                  setIsRebuilding(true)
+                  try {
+                    await window.electronAPI?.runCanonicalMaintenance?.('settings_manual')
+                    const counts = await window.electronAPI?.getCanonicalRebuildCounts?.()
+                    if (counts) {
+                      setRebuildCounts(counts)
+                      setRebuildError(null)
+                    }
+                  } catch (err) {
+                    setRebuildError(err instanceof Error ? err.message : String(err))
+                  } finally {
+                    setIsRebuilding(false)
+                  }
+                }}
+              >
+                <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isRebuilding ? 'animate-spin' : ''}`} />
+                {isRebuilding ? t('重建中…') : t('重建语义索引')}
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* 模式切换确认弹窗 */}
-      <AlertDialog open={!!pendingProfile} onOpenChange={open => !open && setPendingProfile(null)}>
+      <AlertDialog open={!!pendingProfile} onOpenChange={open => {
+        if (!open) {
+          setPendingProfile(null)
+          setPendingVideoRecommendation(false)
+        }
+      }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('确认切换智能理解模式？')}</AlertDialogTitle>

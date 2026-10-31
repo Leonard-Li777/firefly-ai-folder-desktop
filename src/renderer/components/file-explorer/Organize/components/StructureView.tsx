@@ -40,17 +40,30 @@ export function StructureView({
 }) {
   const [deleteTargetKey, setDeleteTargetKey] = React.useState<string | null>(null)
 
-  // 在目录预览 Stage (StructureView) 中，只展示纯目录树结构，严格移除所有文件节点
+  // 在目录预览 Stage (StructureView) 中，只展示纯目录树结构，严格移除所有文件节点。
+  // 增量整理模式（organizeMode === 'incremental-organize'）例外：保留每个节点的 fileCount，
+  // 让用户在「增量整理」入场时能看到各目录当前已归类的文件计数；但 files 数组仍清空，避免
+  // 整理中途 UI 展示过多细节。fileCount 从 node.files 长度加上子目录 fileCount 累加推导。
   const pureDirectoryTree = useMemo(() => {
-    const filterDirectoriesOnly = (nodes: VirtualDirectoryNode[]): VirtualDirectoryNode[] => {
-      return (nodes || []).map(node => ({
-        ...node,
-        files: [], // 强制清空文件，保证预览 Stage 只展示纯目录
-        subdirectories: filterDirectoriesOnly(node.subdirectories || [])
-      }))
+    const isIncrementalMode = organizeMode === ('incremental-organize' as OrganizeMode)
+    const buildNode = (nodes: VirtualDirectoryNode[]): VirtualDirectoryNode[] => {
+      return (nodes || []).map(node => {
+        const updatedSubs = buildNode(node.subdirectories || [])
+        const subFileCount = updatedSubs.reduce((sum, s) => sum + (s.fileCount || 0), 0)
+        return {
+          ...node,
+          files: [], // 强制清空文件列表，预览阶段只展示目录结构
+          // 增量整理模式保留文件计数（来自快照数据），方便用户核验已归类数量；
+          // 其余模式置 0（结构纯大纲，无需计数）
+          fileCount: isIncrementalMode
+            ? (node.files ? node.files.length : 0) + subFileCount
+            : 0,
+          subdirectories: updatedSubs
+        }
+      })
     }
-    return filterDirectoriesOnly(tree)
-  }, [tree])
+    return buildNode(tree)
+  }, [tree, organizeMode])
 
   const handleDeleteRequest = (nodeKey: string) => {
     if (isIncremental) {
@@ -84,9 +97,11 @@ export function StructureView({
           sections={[
             {
               id: 'plan-sidebar',
-              type: 'flex' as const,
-              defaultSize: 320,
-              minSize: 260,
+              // 与自动归类 stage (OrganizingView) 保持一致：方案侧栏固定像素宽，
+              // 确保「目录树预览」区块默认占据扣除侧栏后的全部剩余空间
+              type: 'pixel' as const,
+              defaultSize: 300,
+              minSize: 200,
               content: <PlanSidebar draft={draft} candidate={candidate} />
             },
             {

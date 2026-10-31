@@ -384,6 +384,37 @@
       "什么样",
       "多少钱"
     ],
+    "naming_pool": {
+      "comment": "目录/主题词命名池专属收紧判据（仅 TS 候选词闸 isCandidateWordAdmissible 消费，不改变标签写入闸准入面）。来源：2026-10-21 智能聚类取证，工作区 1 的 59 份文件语义标签近乎为空，命名池实际由智能命名兜底切词构成，而智能命名本身是描述句（黑色箱体带金属轴与蓝色标识 / 桌面下的小丸工具箱 / 在线剪辑软件功能描述），凭 β=3.0 提示词提振直接把整簇压成窄口径目录名。",
+      "compound_connectors": [
+        "以及",
+        "或者",
+        "与",
+        "和",
+        "及",
+        "或"
+      ],
+      "compound_min_side_chars": 2,
+      "attributive_patterns": [
+        "中的",
+        "下的",
+        "里的",
+        "内的",
+        "上方的",
+        "旁边的"
+      ],
+      "meta_narrative_suffixes": [
+        "描述",
+        "说明",
+        "概述",
+        "概览",
+        "概览图",
+        "图示",
+        "一览",
+        "总结",
+        "简介"
+      ]
+    },
     "reserved_words": [
       "extends",
       "properties",
@@ -568,7 +599,11 @@
         "目的",
         "现象",
         "东西",
-        "事情"
+        "事情",
+        "无内容",
+        "未知主体",
+        "文件主体",
+        "链接主体"
       ],
       "en": [
         "habit",
@@ -595,7 +630,8 @@
       "banned_sememe_source": "R-G2-06 语义要素含 FuncWord|功能词 或 punc|标点 即拒（HowNet 义原）。",
       "dimension_source": "R-G2-07 source = 'dimension' 或命中受控维度根即拒（PRD-0051 受控维度与标签互斥律）。",
       "banned_lexfile_source": "R-G2-08 adv.all 与 adj.pert 词类域即拒（PWN/OMW 关系形容词与全量副词剪枝）。",
-      "shell_nouns_source": "R-G2-11 抽象空洞壳名词独立成标拦截（习惯/情况/问题/意义/目的等），禁止独立作为文件标签，但允许作为二元复合词中心语（如生活习惯/网络问题）。"
+      "shell_nouns_source": "R-G2-11 抽象空洞壳名词独立成标拦截（习惯/情况/问题/意义/目的等），禁止独立作为文件标签，但允许作为二元复合词中心语（如生活习惯/网络问题）。无内容/未知主体/文件主体/链接主体 为端侧小模型对无可见内容文件与 .lnk 快捷方式的命名占位话术（2026-10-21 聚类取证实测），同属禁止独立成标的空洞壳词。",
+      "naming_pool_source": "命名池收紧判据（g1.naming_pool）由 TS 侧 isNonAtomicNamingPhrase 消费，Rust 标签写入闸不读取该字段，故不进入 builtin_default_matches_asset 同源守护面。"
     }
   }
 }

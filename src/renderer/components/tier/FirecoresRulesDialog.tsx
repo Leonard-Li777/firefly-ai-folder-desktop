@@ -104,7 +104,7 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
 
   if (!open) return null
   const inviteLink = getInviteLink(machineId)
-  const text = `${t('我发现一个超好用的开源免费AI工具"萤核智能文件夹"，一键整理乱七八糟的桌面、下载目录等，AI自动分类/重命名/标签/描述/缩略图/归档/清理！利用本地AI能力保障隐私，创新虚拟目录整理技术保障文件安全！ 使用邀请码解锁更多高级权益')}\n${inviteLink}`
+  const text = `${t('我发现一个超好用的开源免费AI工具"萤核智能文件夹"，一键整理乱七八糟的桌面、下载目录等、自然语言秒搜图文音视频内容，视频甚至可以定位到具体时间区间，AI自动分类/重命名/标签/描述/缩略图/归档/清理！利用本地AI能力保障隐私，无需显卡，低内存轻薄本也能高质量跑AI，创新虚拟目录整理技术保障文件安全，快来试试看吧！')}\n${inviteLink}`
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(text)

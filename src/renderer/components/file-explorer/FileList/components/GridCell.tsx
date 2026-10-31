@@ -12,6 +12,7 @@ import { useDragSelectStore } from '../../../../stores/drag-select-store'
 import { PageId } from '../../../../constants/page-ids'
 import { checkIsUnit, getUnitTypeLabel, getUnitTheme, getUnitTooltip } from '../utils'
 import { SystemFileIcon } from '../../../common/SystemFileIcon'
+import { useVirtualDirectoryStore } from '../../../../stores/virtual-directory-store'
 
 interface GridCellInnerProps {
   item: any
@@ -397,7 +398,15 @@ export const GridCellInner = React.memo((props: GridCellInnerProps) => {
               const virtIdx = itemPath.indexOf('.VirtualDirectory')
               if (virtIdx > 0) {
                 finalWorkspaceDirectoryPath = itemPath.substring(0, virtIdx).replace(/[\\/]+$/, '')
+              } else {
+                const lastSep = Math.max(itemPath.lastIndexOf('/'), itemPath.lastIndexOf('\\'))
+                if (lastSep > 0) {
+                  finalWorkspaceDirectoryPath = itemPath.substring(0, lastSep)
+                }
               }
+            }
+            if (!finalWorkspaceDirectoryPath) {
+              finalWorkspaceDirectoryPath = useVirtualDirectoryStore.getState().currentWorkspaceDirectory?.path || ''
             }
 
             const isAbs =
@@ -728,8 +737,9 @@ export const GridCell = React.memo((props: GridCellProps) => {
   const fileItem = !isDirectory ? (item as FileType) : null
   const showThumbnail = !!(
     fileItem &&
-    typeof isImageFile === 'function' &&
-    (isImageFile(fileItem.extension) || isImageFile(fileItem.path) || isImageFile(fileItem.name))
+    (Boolean(fileItem.thumbnailPath) ||
+      (typeof isImageFile === 'function' &&
+        (isImageFile(fileItem.extension) || isImageFile(fileItem.path) || isImageFile(fileItem.name))))
   )
   const safeItemName = item.name || t('未知文件')
 

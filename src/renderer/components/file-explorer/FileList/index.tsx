@@ -12,7 +12,7 @@ import { LogCategory, logger } from '@firefly/shared'
 import { MaterialIcon, cn } from '../../../lib/utils'
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { RowRenderer, renderAnalysisStatus } from './components/RowRenderer'
-import { formatDate, isImageFile, flattenItemsWithVideoChunks } from './utils'
+import { formatDate, isImageFile } from './utils'
 import { formatFileSize, getFileIcon } from '../FileItem'
 
 import { AnalysisStatus } from '@firefly/types'
@@ -22,6 +22,7 @@ import { ContextMenu } from '../../common/ContextMenu'
 import { SelectionBox } from './components/SelectionBox'
 import { VirtualRowRenderer } from './components/VirtualRowRenderer'
 import { EmptyState } from '../../common/EmptyState'
+import { Loading } from '../../common/Loading'
 import { t } from '@app/languages'
 import { toast } from '../../common/Toast'
 import { useAnalysisQueueStore } from '../../../stores/analysis-queue-store'
@@ -113,8 +114,13 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     [forceShowAllFields, rawShouldShowField]
   )
 
-  const sortBy = propSortBy || useFileExplorerStore(s => s.sortBy)
-  const sortOrder = propSortOrder || useFileExplorerStore(s => s.sortOrder)
+  // Hooks 顺序铁律：zustand selector 必须无条件调用。
+  // 严禁写成 `propSortBy || useFileExplorerStore(...)` 的短路形式——propSortBy 由「空」变「有值」
+  // 时 selector 少调用一次，会抛 "Rendered fewer hooks than expected"，整棵 FileList 被 ErrorBoundary 重建。
+  const storeSortBy = useFileExplorerStore(s => s.sortBy)
+  const storeSortOrder = useFileExplorerStore(s => s.sortOrder)
+  const sortBy = propSortBy || storeSortBy
+  const sortOrder = propSortOrder || storeSortOrder
 
   const getFileAnalysisStatusNonReactive = useCallback(
     (file: FileType): AnalysisStatus | undefined => {
@@ -228,15 +234,9 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     isRealDirectory
   ])
 
-  // 搜索列表模式专属条目：若视频命中片段较多（一行放不下，> 4 个），自动排到第二行（占两个文件行展示，Spec §3.6.2）
-  const searchListItems = useMemo(() => {
-    if (viewMode !== 'search-list') return items
-    return flattenItemsWithVideoChunks(items, 4)
-  }, [items, viewMode])
-
-  const effectiveItems = useMemo(() => {
-    return viewMode === 'search-list' ? searchListItems : items
-  }, [viewMode, searchListItems, items])
+  // 搜索列表模式下 1:1 对齐物理文件，无需展平多行，卡片第三行以横向画廊呈现多切片
+  const searchListItems = items
+  const effectiveItems = items
 
   const columnCount = useMemo(() => {
     // 增加安全边距（约 48px）用于处理滚动条和容器内边距，使布局更宽松
@@ -373,7 +373,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     useFileListContextMenu({
       selectedFiles,
       onFileSelect: stableOnFileSelect,
-      pageId
+      currentPath
     })
 
   useEffect(() => {
@@ -394,6 +394,9 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     setReactWindowAvailable(true)
   }, [])
 
+  // 依赖必须包含 loading：loading 早返回分支会卸载带 ref 的测量容器，
+  // 若不随 loading 重新执行，ResizeObserver 将永久观测已脱离文档的旧节点（尺寸 0×0），
+  // 导致 containerSize 卡死为 0 → 有结果仍渲染「没有找到匹配的文件」空态。
   useLayoutEffect(() => {
     if (containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect()
@@ -406,10 +409,11 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
         })
       }
     }
-  }, [viewMode])
+  }, [viewMode, loading])
 
   useEffect(() => {
-    if (!containerRef.current) return
+    const el = containerRef.current
+    if (!el) return
     const observer = new ResizeObserver(entries => {
       const entry = entries[0]
       if (!entry) return
@@ -420,9 +424,9 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
         return { width, height }
       })
     })
-    observer.observe(containerRef.current)
+    observer.observe(el)
     return () => observer.disconnect()
-  }, [viewMode])
+  }, [viewMode, loading])
 
   useEffect(() => {
     if (listRef.current) {
@@ -624,14 +628,6 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     }
   }, [viewMode, reactWindowAvailable, totalWidth])
 
-  if (loading) {
-    return (
-      <div className="file-list-loading">
-        <div className="loading-spinner">{t('加载中...')}</div>
-      </div>
-    )
-  }
-
   const getSortIcon = (column: string) => {
     if (sortBy !== column) return null
     return sortOrder === 'asc' ? (
@@ -668,9 +664,35 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     return items.every(item => item.path && selectedPathsSet.has(normalizeForCache(item.path)))
   }, [items, selectedPathsSet, normalizeForCache])
 
+  // 加载态提前返回必须放在本组件最后一个 Hook（isAllSelected）之后：
+  // 任何 return 之前的 Hook 若随 loading 增减调用次数，会触发 "Rendered fewer hooks than expected"。
+  if (loading && items.length === 0) {
+    return (
+      <div
+        className="w-full h-full flex flex-col items-center justify-center relative file-list-loading animate-fade-in"
+        ref={containerRef}
+        key="loading-view"
+      >
+        <Loading
+          type={viewMode === 'search-list' ? 'search' : 'file-list'}
+          title={viewMode === 'search-list' ? t('正在搜索...') : t('正在加载文件...')}
+          description={
+            viewMode === 'search-list'
+              ? t('正在检索文件名、标签与深度多模态语义内容...')
+              : t('正在读取目录内容与文件元数据...')
+          }
+        />
+      </div>
+    )
+  }
+
   // 搜索列表模式：专属搜索卡片视图，挂载于 VirtualRowRenderer 之下，支持万级结果虚拟滚动与触底翻页
   if (viewMode === 'search-list') {
     const listHeight = containerSize.height > 0 ? containerSize.height : 0
+    // 搜索列表动态行高：由 gridCardWidth 控制（88~220px），缺省 104px
+    const effectiveSearchListRowHeight = Math.round(
+      Math.max(88, Math.min(220, gridCardWidth || SEARCH_LIST_ROW_HEIGHT))
+    )
 
     return (
       <div
@@ -691,7 +713,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
         }}
       >
         <SelectionBox viewMode={viewMode} scrollOffset={scrollOffset} containerRef={containerRef} />
-        {contextMenu && (
+      {contextMenu && (
           <ContextMenu
             x={contextMenu.x}
             y={contextMenu.y}
@@ -703,20 +725,24 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
         <div className="flex-1 overflow-hidden" ref={listWrapperRef}>
           {reactWindowAvailable && ListComponent && listHeight > 0 && searchListItems.length > 0 ? (
             isReactWindowV2 ? (
+              // 注意：react-window v2 的 List 没有 rowKey（v1 的 itemKey 在 v2 也无等价物），
+              // 其 ListProps = Omit<HTMLAttributes<HTMLDivElement>> & {...} 且带 ...rest 展开，
+              // 任何多余 prop 都会漏到根 div 上并触发 "React does not recognize the `rowKey` prop"。
+              // v2 的行 key 由内部按 index 决定，行组件须保持无状态依赖（VirtualRowRenderer 已满足）。
               <ListComponent
                 height={listHeight}
                 rowCount={searchListItems.length}
-                rowHeight={SEARCH_LIST_ROW_HEIGHT}
+                rowHeight={effectiveSearchListRowHeight}
                 width={containerSize.width || '100%'}
                 className="scrollbar-thin overflow-x-hidden"
                 listRef={listRef}
-                rowKey={(index: number) => (searchListItems[index] as any)?.virtualRowKey || searchListItems[index]?.path || index}
                 rowProps={{
                   data: {
                     ...itemData,
                     items: searchListItems,
                     viewMode: 'search-list',
-                    containerWidth: containerSize.width
+                    containerWidth: containerSize.width,
+                    searchListRowHeight: effectiveSearchListRowHeight
                   }
                 }}
                 rowComponent={VirtualRowRenderer}
@@ -726,7 +752,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
               <ListComponent
                 height={listHeight}
                 itemCount={searchListItems.length}
-                itemSize={SEARCH_LIST_ROW_HEIGHT}
+                itemSize={effectiveSearchListRowHeight}
                 width={containerSize.width || '100%'}
                 className="scrollbar-thin overflow-x-hidden"
                 ref={listRef}
@@ -736,18 +762,33 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
                   ...itemData,
                   items: searchListItems,
                   viewMode: 'search-list',
-                  containerWidth: containerSize.width
+                  containerWidth: containerSize.width,
+                  searchListRowHeight: effectiveSearchListRowHeight
                 }}
                 onScroll={onListScroll}
               >
                 {VirtualRowRenderer}
               </ListComponent>
             )
+          ) : loading && searchListItems.length === 0 ? (
+            <div className="w-full h-full flex flex-col items-center justify-center relative file-list-loading animate-fade-in">
+              <Loading
+                type="search"
+                title={t('正在搜索...')}
+                description={t('正在检索文件名、标签与深度多模态语义内容...')}
+              />
+            </div>
+          ) : searchListItems.length === 0 ? (
+            <EmptyState
+              icon="search_off"
+              title={t('没有找到匹配的文件')}
+              description={t('未检索到符合条件的文件，请尝试更换关键词')}
+            />
           ) : (
             <EmptyState
-              icon={loading ? 'search' : 'search_off'}
-              title={loading ? t('正在搜索...') : t('没有找到匹配的文件')}
-              isLoading={loading}
+              icon="search"
+              title={t('正在准备搜索列表...')}
+              isLoading={true}
             />
           )}
         </div>
@@ -1050,7 +1091,6 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
         }}
       >
         <SelectionBox viewMode={viewMode} scrollOffset={scrollOffset} containerRef={containerRef} />
-
         {contextMenu && (
           <ContextMenu
             x={contextMenu.x}
@@ -1085,9 +1125,11 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
                       const fileItem = !isDirectory ? (item as FileType) : null
                       const showThumbnail = !!(
                         fileItem &&
-                        (isImageFile(fileItem.extension) ||
-                          isImageFile(fileItem.path) ||
-                          isImageFile(fileItem.name))
+                        (Boolean(fileItem.thumbnailPath) ||
+                          (typeof isImageFile === 'function' &&
+                            (isImageFile(fileItem.extension) ||
+                              isImageFile(fileItem.path) ||
+                              isImageFile(fileItem.name))))
                       )
                       const safeItemName = item.name || t('未知文件')
 
@@ -1237,7 +1279,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
       }}
     >
       <SelectionBox viewMode={viewMode} scrollOffset={scrollOffset} containerRef={containerRef} />
-      <div
+        <div
         className="flex-1 overflow-x-auto overflow-y-auto scrollbar-thin"
         onScroll={e => handleScroll(e)}
       >

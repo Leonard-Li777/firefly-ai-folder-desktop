@@ -87,6 +87,7 @@ export default defineConfig({
     }
   },
   resolve: {
+    preserveSymlinks: true,
     extensions: ['.ts', '.tsx', '.mjs', '.js', '.jsx', '.json'],
     alias: {
       '@': resolve(__dirname, 'src'),

@@ -1,9 +1,11 @@
 import { VirtualDirectoryNode, VirtualDirectoryFileInput } from '@firefly/types'
+import { SENTINEL_NAMES } from '@firefly/shared'
 import { useSettingsStore } from '../../../../stores/settings-store'
 
 export function exportTreeToFiles(
   tree: VirtualDirectoryNode[],
-  fallbackFile?: { fileId: number; fileFingerprint?: string }
+  fallbackFile?: { fileId: number; fileFingerprint?: string },
+  skipEmptyDirs = false
 ): VirtualDirectoryFileInput[] {
   const result: VirtualDirectoryFileInput[] = []
   const getConfigValue = useSettingsStore.getState().getConfigValue
@@ -60,8 +62,14 @@ export function exportTreeToFiles(
       }
     }
 
-    // 如果该节点既没有文件也没有子目录（纯空目录），且存在可用的 fileId 锚点，为该空目录写一条 .keep 占位映射
-    if (!hasFiles && !hasSubs && anyFile) {
+    // 如果该节点既没有文件也没有子目录（纯空目录），且存在可用的 fileId 锚点，为该空目录写一条 .keep 占位映射（忽略未归类节点）
+    const isUnclassNode =
+      node.name === SENTINEL_NAMES.UNCLASSIFIED ||
+      node.name === '未归类' ||
+      Boolean((node as any).isUnclassified) ||
+      Boolean((node as any).unclassified)
+
+    if (!skipEmptyDirs && !hasFiles && !hasSubs && anyFile && !isUnclassNode) {
       result.push({
         fileId: anyFile.fileId,
         fileFingerprint: anyFile.fileFingerprint,

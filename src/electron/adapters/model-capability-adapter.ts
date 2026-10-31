@@ -487,6 +487,29 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
     modelCapabilityDetector.clearCache()
   }
 
+  /**
+   * 把「模型目录推荐值」夹到引擎真实加载的上下文窗口
+   *
+   * 事故背景（2026-10-29）：`recommendedConfig.numCtx` 是静态推荐值（本机为 8192），
+   * 引擎 `ParamBuilder` 按显存/内存预算实际只加载了 2048，桌面端却按 8192 规划全部
+   * 提示词预算，最终请求 2469 tokens 被 llama-server 以 400 拒绝。上下文预算必须
+   * 以引擎运行时窗口为天花板，否则下游（正文截断、图片边长、输出上限）全部失真。
+   *
+   * 引擎未启动 / 未上报 `runtime_params` 时保持原推荐值，不凭空放大也不回溯退化。
+   *
+   * @param metadataLimit 由模型目录元数据推导出的推荐上限
+   */
+  private clampToEngineRuntimeContext(metadataLimit: number): number {
+    const runtimeCtx = engineBridgeService.getRuntimeContextSize?.() ?? null
+    if (!runtimeCtx || runtimeCtx <= 0) return metadataLimit
+    if (metadataLimit <= runtimeCtx) return metadataLimit
+    logger.info(
+      LogCategory.MODEL_CAPABILITY_ADAPTER,
+      `引擎实际上下文窗口小于推荐值，预算已下调: ${runtimeCtx} (推荐: ${metadataLimit})`
+    )
+    return runtimeCtx
+  }
+
   async getContextLength(): Promise<number> {
     try {
       const capabilities = await this.getCapabilities()
@@ -509,10 +532,10 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
 
       // 本地模式：需要更保守的限制（PRD-0044：模型身份读引擎桥接快照）
       const modelId = engineBridgeService.getSnapshot().model || ''
-      if (!modelId) return 4096
+      if (!modelId) return this.clampToEngineRuntimeContext(4096)
 
       const modelConfig = this.resolveLocalModelConfig()
-      if (!modelConfig) return 4096
+      if (!modelConfig) return this.clampToEngineRuntimeContext(4096)
 
       // 解析模型参数大小
       const paramSizeB = parseParameterSize(modelConfig.parameterSize)
@@ -527,7 +550,7 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
           LogCategory.MODEL_CAPABILITY_ADAPTER,
           `使用推荐上下文限制: ${actualLimit} (推荐: ${recommendedCtx}, 模型限制: ${sizeLimits.maxCtx})`
         )
-        return actualLimit
+        return this.clampToEngineRuntimeContext(actualLimit)
       }
 
       // 否则根据官方值和安全系数计算
@@ -542,7 +565,7 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
         `计算上下文限制: ${calculatedLimit} (官方: ${officialContext}, 安全系数: ${sizeLimits.ctxSafetyFactor})`
       )
 
-      return calculatedLimit
+      return this.clampToEngineRuntimeContext(calculatedLimit)
     } catch (error) {
       logger.error(LogCategory.MODEL_CAPABILITY_ADAPTER, '获取实际上下文限制失败:', error)
       return 4096

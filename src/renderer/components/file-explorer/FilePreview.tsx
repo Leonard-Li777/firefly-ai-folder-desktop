@@ -12,6 +12,7 @@ import {
 } from '../../lib/video-preview-utils'
 import { TTSActionGroup } from '../common/TTSActionGroup'
 import { useIsPrivateFile } from './hooks/useIsPrivateFile'
+import { usePreviewOverlayStore, setCurrentVideoPlaybackTime, getCurrentVideoPlaybackTime } from '../../stores/preview-overlay-store'
 
 interface FilePreviewProps {
   filePath: string
@@ -58,6 +59,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     setVideoDuration(0)
   }, [filePath])
 
+
   const jumpToTime = (targetTime: number) => {
     if (!videoRef.current) return
     const duration = videoRef.current.duration
@@ -65,6 +67,21 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     videoRef.current.currentTime = safeTime
     // 保持系统原声输出
     videoRef.current.muted = false
+  }
+
+  const handleCanPlay = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    const v = e.currentTarget
+    if (typeof currentTime === 'number' && Number.isFinite(currentTime) && currentTime > 0) {
+      if (Math.abs(v.currentTime - currentTime) > 0.3) {
+        const duration = Number.isFinite(v.duration) && v.duration > 0 ? v.duration : videoDuration
+        v.currentTime = clampVideoTime(currentTime, duration)
+      }
+    }
+  }
+
+  const handleTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    const v = e.currentTarget
+    setCurrentVideoPlaybackTime(v.currentTime)
   }
 
   const handleVideoLoadedMetadata = (e: React.SyntheticEvent<HTMLVideoElement>) => {
@@ -85,6 +102,32 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
       jumpToTime(currentTime)
     }
   }, [currentTime, category])
+
+  // 组件卸载或切文件时，将当前播放进度回写至 Store，确保分栏与全屏无缝接力
+  useEffect(() => {
+    return () => {
+      const liveTime = getCurrentVideoPlaybackTime()
+      if (
+        category === FileCategory.VIDEO &&
+        typeof liveTime === 'number' &&
+        Number.isFinite(liveTime) &&
+        liveTime > 0
+      ) {
+        usePreviewOverlayStore.setState(prev => ({
+          currentTime: liveTime,
+          pageStates: prev.activePageId
+            ? {
+                ...prev.pageStates,
+                [prev.activePageId]: {
+                  ...prev.pageStates[prev.activePageId],
+                  currentTime: liveTime
+                }
+              }
+            : prev.pageStates
+        }))
+      }
+    }
+  }, [filePath, category])
 
   useEffect(() => {
     if (category !== FileCategory.UNKNOWN) {
@@ -140,7 +183,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   }
 
   const fileUrl = React.useMemo(() => {
-    const raw = window.electronAPI?.utils
+    const raw = typeof window.electronAPI?.utils?.normalizeForCache === 'function'
       ? window.electronAPI.utils.normalizeForCache(filePath)
       : filePath
     // 转为 file:// URL，编码非 ASCII 字符
@@ -153,8 +196,13 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
         return /^[\x00-\x7F]*$/.test(seg) ? seg : encodeURIComponent(seg)
       })
       .join('/')
-    return `file://${encoded.startsWith('/') ? '' : '/'}${encoded}`
-  }, [filePath])
+    const base = `file://${encoded.startsWith('/') ? '' : '/'}${encoded}`
+    if (typeof currentTime === 'number' && Number.isFinite(currentTime) && currentTime > 0) {
+      return `${base}#t=${currentTime}`
+    }
+    return base
+  }, [filePath, currentTime])
+
 
   const fileExt = filePath.split('.').pop()?.toUpperCase() || 'UNKNOWN'
 
@@ -281,6 +329,8 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                 src={fileUrl}
                 controls
                 onLoadedMetadata={handleVideoLoadedMetadata}
+                onCanPlay={handleCanPlay}
+                onTimeUpdate={handleTimeUpdate}
                 className="max-w-full max-h-[70vh] shadow-lg rounded"
               >
                 {t('您的浏览器不支持视频播放')}

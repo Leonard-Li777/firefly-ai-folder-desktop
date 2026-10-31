@@ -4,7 +4,9 @@ import {
   LogCategory,
   logger,
   FileCategory,
+  getFileCategory,
   isCategory,
+  isDecodableImage,
   sanitizeFilename,
   cleanSmartName,
   sanitizeAITagValue,
@@ -16,18 +18,24 @@ import {
   CANONICAL_NAMES,
   concept,
   isTrustworthyMaterializedCodePath,
-  resolveRuntimeMaterializedPath
+  resolveRuntimeMaterializedPath,
+  normalizeLangCode,
+  isControlledConcept,
+  CONTROLLED_CONCEPT_DETAILS,
+  getParentDimensionCodeOfTag
 } from '@firefly/shared'
 import { t } from '@app/languages'
 
 const CONTENT_TAGS_NAME = CANONICAL_NAMES.CONTENT_TAGS
-import { DeterministicCodeGenerator } from '@firefly/core-engine'
+import { DeterministicCodeGenerator, stripXmlWrapperTags } from '@firefly/core-engine'
 import { databaseService } from '../../database/database-service'
 import { magikaService } from '../../system/magika-service'
 import { thumbnailService } from '../../filesystem/thumbnail-service'
 import fs from 'node:fs'
 import path from 'node:path'
 import { compressText, compressJson } from '../../../utils/text-compressor'
+// 工单 05 终态 D（缓存命中）：与 file-processor 五终态共用同一 canonical 固化入口
+import { solidifyCanonicalForTerminal } from '../canonical-text-service'
 
 /**
  * 保存云端分析结果到数据库
@@ -48,6 +56,13 @@ export async function saveCloudResult(
     const rawType = item.type || path.extname(filePath).toLowerCase() || ''
     let fileType = rawType ? (rawType.startsWith('.') ? rawType : `.${rawType}`) : ''
     const stats = fs.statSync(filePath)
+    const fileCategory = getFileCategory(filePath)
+    const topologyContext = {
+      category: fileCategory,
+      fileCategory,
+      filePath,
+      extension: fileType
+    }
 
     // 使用 Magika 检测文件类型
     const magikaCategory = await magikaService.identifyFile(filePath)
@@ -78,7 +93,8 @@ export async function saveCloudResult(
             thumbnailRelativePath = thumbnailResult.relativePath
 
           // 检查是否是非浏览器原生支持的特殊图片格式，若是则提前转码原尺寸 WebP
-          if (isCategory(filePath, FileCategory.IMAGE)) {
+          // 注意：仅对可解码图片（排除 dwg/dxf 等 CAD 矢量与 RAW 格式，图像解码器无法读取）
+          if (isCategory(filePath, FileCategory.IMAGE) && isDecodableImage(filePath)) {
             const ext = path.extname(filePath).toLowerCase()
             const nativeImageExtensions = [
               '.jpg',
@@ -130,7 +146,9 @@ export async function saveCloudResult(
     )
     const description = data.description || data.summary || null
     const content = data.content || data.textContent || null
-    const multimodalContent = data.multimodal_content || data.multimodalContent || null
+    // 云端多模态描述同样可能携带小模型输出的 XML 包装标记（<response><description> 等），落库前统一清洗
+    const multimodalContent =
+      stripXmlWrapperTags(data.multimodal_content || data.multimodalContent) || null
     const qualityScore = data.quality_score || data.qualityScore || null
     let analysisStats = data.analysis_stats || data.analysisStats || null
 
@@ -172,7 +190,7 @@ export async function saveCloudResult(
       groupingReason: data.grouping_reason || data.groupingReason || null,
       groupingConfidence: data.grouping_confidence || data.groupingConfidence || null,
       author: data.author || null,
-      language: data.language || null,
+      language: data.language ? normalizeLangCode(data.language) : null,
       analysisStats:
         typeof analysisStats === 'string' ? analysisStats : JSON.stringify(analysisStats || null),
       metadata:
@@ -214,7 +232,7 @@ export async function saveCloudResult(
         fileType,
         data.file_group || null,
         data.author || null,
-        data.language || null,
+        data.language ? normalizeLangCode(data.language) : null,
         isHit,
         lastHitAt,
         fileData.syncStatus,
@@ -357,7 +375,16 @@ export async function saveCloudResult(
             // 严禁再读已废除的 `dimension_id`，也严禁退读 `parent_codes[0]` 二次猜测。
             const viaParent =
               typeof tag.via_parent_code === 'string' ? tag.via_parent_code.trim() : ''
-            const localDimCode = viaParent || CONTENT_DIM_CODE
+            let localDimCode = viaParent
+            // 若经由父为空或被填成内容标签，但该词本身是受控标签：优先反查受控父维度自愈回正
+            if (!localDimCode || localDimCode === CONTENT_DIM_CODE) {
+              const autoParent = isControlledConcept(cleanName)
+                ? (CONTROLLED_CONCEPT_DETAILS[cleanName]?.parentName
+                    ? concept(CONTROLLED_CONCEPT_DETAILS[cleanName].parentName as any)
+                    : undefined)
+                : (tagCode ? getParentDimensionCodeOfTag(tagCode) : undefined)
+              localDimCode = autoParent || localDimCode || CONTENT_DIM_CODE
+            }
 
             const isControlled = Boolean(
               tagCode &&
@@ -372,29 +399,27 @@ export async function saveCloudResult(
               // 受控概念指南 §1.4 写侧根对齐仲裁：载荷伪 content_tags 包装链 / 半截短路径一律丢弃，
               // 整体回退 resolveRuntimeMaterializedPath 按受控拓扑重新补全根链（杜绝 /content_tags/摄影照片细分/... 入库）。
               // 三元组（code_path/name_path/depth）必须同源，任一缺失即整体重物化，避免链段错位。
-              let codePath = ''
-              let namePath = ''
-              let depth = typeof tag.depth === 'number' && tag.depth > 0 ? tag.depth : 0
-              const payloadPathTrustworthy = isTrustworthyMaterializedCodePath(tag.code_path, viaParent)
-              if (payloadPathTrustworthy && typeof tag.name_path === 'string' && tag.name_path) {
-                codePath = (tag.code_path as string).trim()
-                namePath = tag.name_path
-              } else {
-                const materialized = resolveRuntimeMaterializedPath({
-                  db,
-                  tagCode,
-                  viaParentCode: viaParent,
-                  tagName: cleanName
-                })
-                codePath = materialized.codePath
-                namePath = materialized.namePath
-                if (depth <= 0) depth = materialized.depth
+              const materialized = resolveRuntimeMaterializedPath({
+                db,
+                tagCode,
+                viaParentCode: viaParent,
+                tagName: cleanName,
+                existingCodePath: typeof tag.code_path === 'string' ? tag.code_path : undefined,
+                existingNamePath: typeof tag.name_path === 'string' ? tag.name_path : undefined,
+                context: topologyContext
+              })
+
+              if (!materialized.codePath) {
                 logger.warn(
                   LogCategory.FILE_ANALYSIS,
-                  `[物化路径仲裁] 载荷物化三元组不可信（伪包装/半截路径/缺 name_path），已按受控拓扑重物化: tag=${tagCode}, via=${viaParent}, 新链=${codePath}`
+                  `[saveCloudResult] 受控标签不符合媒体领域门控，已拦截丢弃: tag=${tagCode}, via=${viaParent}, file=${filePath}`
                 )
+                continue
               }
-              if (depth <= 0) depth = 2
+
+              const codePath = materialized.codePath
+              const namePath = materialized.namePath
+              const depth = typeof tag.depth === 'number' && tag.depth > 0 ? tag.depth : (materialized.depth || 2)
               const confidence = typeof tag.confidence === 'number' ? tag.confidence : 1.0
 
               db.prepare(
@@ -417,37 +442,33 @@ export async function saveCloudResult(
                 // ADR-0045 票据 04：显式传入云端返回的原始分组（缺失/非法为 ''），
                 // 不再依赖 insertTagToDb 的 'fact' 缺省——那会把 AI / 融合标签错标成物理事实。
                 // 父码走显式 viaParentCode 参（第 6 参），不借道遗留 _dimensionId 槽。
-                insertTagToDb(db, fileFingerprint, cleanName, undefined, 0, localDimCode, cloudGroup)
+                insertTagToDb(db, fileFingerprint, cleanName, undefined, 0, localDimCode, cloudGroup, '', '', 1, topologyContext)
               } catch {
                 // 兜底：按离线确定性编码派生合法 code 并建立自然主键关联
                 const finalTagCode = tagCode || DeterministicCodeGenerator.generateUnique(cleanName, 'zh-CN', {
                   lookupExistingName: DeterministicCodeGenerator.createDbLookup(db)
                 })
-                // 受控概念指南 §1.4 写侧根对齐仲裁：与受控分支同口径——载荷伪 content_tags 包装链 /
-                // 半截短路径一律丢弃，三元组整体交由 resolveRuntimeMaterializedPath 按受控拓扑重物化
-                let codePath = ''
-                let namePath = ''
-                let depth = typeof tag.depth === 'number' && tag.depth > 0 ? tag.depth : 0
-                const payloadPathTrustworthy = isTrustworthyMaterializedCodePath(tag.code_path, viaParent)
-                if (payloadPathTrustworthy && typeof tag.name_path === 'string' && tag.name_path) {
-                  codePath = (tag.code_path as string).trim()
-                  namePath = tag.name_path
-                } else {
-                  const materialized = resolveRuntimeMaterializedPath({
-                    db,
-                    tagCode: finalTagCode,
-                    viaParentCode: viaParent,
-                    tagName: cleanName
-                  })
-                  codePath = materialized.codePath
-                  namePath = materialized.namePath
-                  if (depth <= 0) depth = materialized.depth
+                const materialized = resolveRuntimeMaterializedPath({
+                  db,
+                  tagCode: finalTagCode,
+                  viaParentCode: viaParent,
+                  tagName: cleanName,
+                  existingCodePath: typeof tag.code_path === 'string' ? tag.code_path : undefined,
+                  existingNamePath: typeof tag.name_path === 'string' ? tag.name_path : undefined,
+                  context: topologyContext
+                })
+
+                if (!materialized.codePath) {
                   logger.warn(
                     LogCategory.FILE_ANALYSIS,
-                    `[物化路径仲裁] 载荷物化三元组不可信（伪包装/半截路径/缺 name_path），已按受控拓扑重物化: tag=${finalTagCode}, via=${viaParent}, 新链=${codePath}`
+                    `[saveCloudResult] 私有标签不符合媒体领域门控，已拦截丢弃: tag=${finalTagCode}, via=${viaParent}, file=${filePath}`
                   )
+                  continue
                 }
-                if (depth <= 0) depth = 2
+
+                const codePath = materialized.codePath
+                const namePath = materialized.namePath
+                const depth = typeof tag.depth === 'number' && tag.depth > 0 ? tag.depth : (materialized.depth || 2)
                 const confidence = typeof tag.confidence === 'number' ? tag.confidence : 1.0
 
                 db.prepare(
@@ -489,6 +510,9 @@ export async function saveCloudResult(
 
     runTransaction()
     databaseService.syncFTSTags(fileFingerprint)
+    // 工单 05 终态 D（缓存命中）：本地缓存与云端缓存共用本入口，标签落库 + FTS 同步后
+    // 固化 canonical 语义文本/向量；canonical 失败不阻断 completed。
+    await solidifyCanonicalForTerminal('cache_hit', fileFingerprint)
   } catch (error) {
     logger.error(LogCategory.ANALYSIS_QUEUE, '[AI分析] 保存云端结果失败:', error)
     throw error

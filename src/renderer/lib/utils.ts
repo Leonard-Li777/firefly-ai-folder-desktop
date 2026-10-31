@@ -1,4 +1,5 @@
 import { PriceEntry } from '@firefly/types'
+import { getAppRegion } from './app-region'
 export { cn } from '@firefly/shared'
 
 export { MaterialIcon } from '../components/common/MaterialIcon'
@@ -8,8 +9,7 @@ export { MaterialIcon } from '../components/common/MaterialIcon'
  */
 export function getLocalPrice(prices: PriceEntry[]): PriceEntry | null {
   if (prices.length === 0) return null
-  const region = (window as any)?.__APP_REGION__ || (window as any)?.electronAPI?.getAppRegion?.() || 'intl'
-  const currency = String(region).toLowerCase() === 'cn' ? 'CNY' : 'USD'
+  const currency = getAppRegion() === 'cn' ? 'CNY' : 'USD'
   return prices.find(p => p.currency === currency) ?? prices[0]
 }
 

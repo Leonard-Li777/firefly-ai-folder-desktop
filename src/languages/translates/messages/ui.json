@@ -12,6 +12,22 @@
     "$files": ["src/renderer/components/ui/dialog.tsx(2393-2399)"],
     "$id": 5981
   },
+  "关闭提示": {
+    "en-US": "Close prompt",
+    "es-ES": "Cerrar mensaje",
+    "ar-EG": "إغلاق المطالبة",
+    "pt-PT": "Fechar prompt",
+    "ru-RU": "Закрыть подсказку",
+    "ja-JP": "プロンプトを閉じる",
+    "de-DE": "Eingabeaufforderung schließen",
+    "fr-FR": "Fermer l'invite",
+    "ko-KR": "프롬프트 닫기",
+    "$files": [
+      "src/renderer/components/ui/hint-banner.tsx(1869-1877)",
+      "src/renderer/components/ui/hint-banner.tsx(1916-1924)"
+    ],
+    "$id": 22315
+  },
   "useTheme must be used within a ThemeProvider": {
     "en-US": "The useTheme hook must be used within a ThemeProvider",
     "es-ES": "UseTheme debe usarse dentro de un ThemeProvider",

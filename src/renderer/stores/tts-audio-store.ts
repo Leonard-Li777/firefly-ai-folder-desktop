@@ -43,10 +43,20 @@ export interface TTSAudioState {
   speed: number
   /** 当前音频落盘缓存的绝对路径 */
   currentCachePath: string | null
+  /** 当前正在播放关联的物理文件绝对路径（若有，原生路径无损记录） */
+  currentFilePath: string | null
+  /** 当前播放上下文的显示标题/文件名原文本（若有 filePath 提取 basename，否则记录 raw text） */
+  currentTitle: string | null
+  /** 当前播放关联文件的真实文件名（workspace_files.name，非 smart_name，用于 hover 二级信息展示） */
+  currentRealName: string | null
   /** 错误信息 */
   errorMessage: string | null
   /** 全量可用音色列表（包含预置与用户克隆音色） */
   allVoices: VoiceMeta[]
+  /** 当前已预缓冲的音频时长（秒，用于向 UI 实时反馈蓄水池水线进度） */
+  bufferedDuration: number
+  /** 当前目标安全蓄水时长（秒，默认 15.0） */
+  targetBufferDuration: number
   /** 刷新并拉取全量音色库（含自定义音色） */
   refreshVoices: () => Promise<VoiceMeta[]>
 
@@ -59,6 +69,7 @@ export interface TTSAudioState {
       fileFingerprint?: string
       fieldName?: string
       displayName?: string
+      title?: string
       sid?: number
       voiceId?: string
       speed?: number
@@ -127,14 +138,14 @@ let progressTimer: ReturnType<typeof setInterval> | null = null
 let isAllChunksScheduled = false
 let isHotSwitchInProgress = false
 
-/** 预缓冲水线配置常数 */
+/** 预缓冲水线配置常数 (P1: 自适应蓄水池门禁以消除 RTF>1 欠载断流) */
 export const TTS_BUFFER_WATERMARK = {
-  /** 最小就绪分句数（常规至少预留 2 句） */
+  /** 最小就绪分句数（长文本预蓄 2 句） */
   MIN_BUFFERED_CHUNKS: 2,
-  /** 最小声学安全时长（秒，累积音频时长达到 4.0 秒即可破格起播，单句超长时不强制等第二句） */
-  MIN_BUFFERED_DURATION_SEC: 4.0,
-  /** 单句合成超时熔断时间（毫秒，用于放行首句起播门禁） */
-  CHUNK_SYNTHESIZE_TIMEOUT_MS: 8000
+  /** 最小声学安全时长（秒，累积音频时长达到 15.0 秒即可放行，足以覆盖后续 1.35x RTF 下的稳定连续播放） */
+  MIN_BUFFERED_DURATION_SEC: 3.5,
+  /** 单句合成超时熔断时间（毫秒，适配当前 15~25s 真实生成耗时，防止提前泄流） */
+  CHUNK_SYNTHESIZE_TIMEOUT_MS: 15000
 }
 
 /** 预缓冲就绪节点结构（存储已完成 WSOLA 派生且已 decodeAudioData 的纯内存 AudioBuffer） */
@@ -145,6 +156,36 @@ export interface PrebufferedChunkItem {
 }
 
 /**
+ * 为 BufferSource 挂载 GainNode 并施加 15ms 首尾平滑等功率交叉淡化，杜绝直流爆音与声学断气
+ */
+function createCrossfadedSource(
+  ctx: AudioContext,
+  audioBuffer: AudioBuffer,
+  startAt: number
+): { source: AudioBufferSourceNode; gainNode: GainNode } {
+  const source = ctx.createBufferSource()
+  source.buffer = audioBuffer
+  source.playbackRate.value = 1.0
+
+  const gainNode = ctx.createGain()
+  const duration = audioBuffer.duration
+  const FADE_DUR = Math.min(0.015, duration * 0.1)
+
+  // 头部淡入 (0.001 -> 1.0)
+  gainNode.gain.setValueAtTime(0.001, startAt)
+  gainNode.gain.exponentialRampToValueAtTime(1.0, startAt + FADE_DUR)
+
+  // 尾部淡出 (1.0 -> 0.001)
+  const fadeOutStart = Math.max(startAt + FADE_DUR, startAt + duration - FADE_DUR)
+  gainNode.gain.setValueAtTime(1.0, fadeOutStart)
+  gainNode.gain.exponentialRampToValueAtTime(0.001, startAt + duration)
+
+  source.connect(gainNode)
+  gainNode.connect(ctx.destination)
+  return { source, gainNode }
+}
+
+/**
  * 将蓄水池中的预缓冲分句原子批量压入 Web Audio 硬件时间轴
  */
 function flushPrebufferedChunks(list: PrebufferedChunkItem[], ctx: AudioContext): void {
@@ -152,10 +193,7 @@ function flushPrebufferedChunks(list: PrebufferedChunkItem[], ctx: AudioContext)
   let chainTime = Math.max(ctx.currentTime + 0.05, nextStartTime)
 
   for (const item of list) {
-    const source = ctx.createBufferSource()
-    source.buffer = item.buffer
-    source.playbackRate.value = 1.0
-    source.connect(ctx.destination)
+    const { source } = createCrossfadedSource(ctx, item.buffer, chainTime)
     source.start(chainTime)
 
     const duration = item.buffer.duration
@@ -171,7 +209,7 @@ function flushPrebufferedChunks(list: PrebufferedChunkItem[], ctx: AudioContext)
   }
 
   nextStartTime = chainTime
-  useTTSAudioStore.setState({ status: 'playing' })
+  useTTSAudioStore.setState({ status: 'playing', bufferedDuration: 0 })
   ensureProgressMonitor()
 }
 
@@ -599,7 +637,8 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
                 currentCachePath: targetCachePath,
                 speed: targetSpeed,
                 currentVoiceId: targetVoiceId,
-                currentSid: targetSid
+                currentSid: targetSid,
+                bufferedDuration: 0
               })
 
               ensureProgressMonitor()
@@ -652,13 +691,19 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
         }
       }
       if (!baseBuffer) {
-        baseBuffer = await window.electronAPI.tts.synthesizeChunk(
+        const synthRes = await window.electronAPI.tts.synthesizeChunk(
           chunkText,
           targetVoiceId,
           1.0,
           switchId,
           targetSid
         )
+        if (synthRes) {
+          if (synthRes.hitCap) {
+            toast.warning(t('音频片段过长已自动截断'))
+          }
+          baseBuffer = synthRes.buffer
+        }
       }
 
       // 检查任务版本号：若已被覆盖，直接丢弃
@@ -743,7 +788,8 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
         currentCachePath: targetCachePath,
         speed: targetSpeed,
         currentVoiceId: targetVoiceId,
-        currentSid: targetSid
+        currentSid: targetSid,
+        bufferedDuration: 0
       })
 
       ensureProgressMonitor()
@@ -804,13 +850,19 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
           }
         }
         if (!nextBaseBuffer) {
-          nextBaseBuffer = await window.electronAPI.tts.synthesizeChunk(
+          const synthRes = await window.electronAPI.tts.synthesizeChunk(
             nextChunkText,
             targetVoiceId,
             1.0,
             newSessionId,
             targetSid
           )
+          if (synthRes) {
+            if (synthRes.hitCap) {
+              toast.warning(t('音频片段过长已自动截断'))
+            }
+            nextBaseBuffer = synthRes.buffer
+          }
         }
 
         if (activeSessionId !== newSessionId) return
@@ -892,8 +944,14 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
   currentVoiceId: DEFAULT_VOICE_ID,
   speed: 1.0,
   currentCachePath: null,
+  // 播放源信息：状态接口已声明为必填（string | null），初始态二者尚未指向任何文件
+  currentFilePath: null,
+  currentTitle: null,
+  currentRealName: null,
   errorMessage: null,
   allVoices: PRESET_VOICES,
+  bufferedDuration: 0,
+  targetBufferDuration: TTS_BUFFER_WATERMARK.MIN_BUFFERED_DURATION_SEC,
 
   refreshVoices: async () => {
     try {
@@ -1008,9 +1066,13 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
       status: 'idle',
       playingText: '',
       playingTextId: '',
+      currentFilePath: null,
+      currentTitle: null,
+      currentRealName: null,
       currentSentenceIndex: 0,
       totalSentences: 0,
-      errorMessage: null
+      errorMessage: null,
+      bufferedDuration: 0
     })
   },
 
@@ -1091,12 +1153,43 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     }
 
     if (chunks.length === 0) {
-      set({ status: 'idle', errorMessage: '没有可朗读的有效文本内容' })
+      set({ status: 'idle', currentFilePath: null, currentTitle: null, currentRealName: null, errorMessage: '没有可朗读的有效文本内容' })
       return
     }
 
     currentCleanedChunks = chunks
     cachedChunksMap.clear()
+
+    // 派生当前播放标题与路径（优先 options.title，若有 filePath 并行预取 smart_name，降级取 basename）
+    const activeFilePath = options?.filePath || null
+    let activeTitle = options?.title ? options.title.trim() : ''
+    let activeRealName: string | null = null
+    let smartNamePromise: Promise<{ title: string; realName: string | null }> | null = null
+    if (!activeTitle) {
+      if (activeFilePath) {
+        // 先以物理文件名兜底
+        activeTitle = activeFilePath.split(/[\\/]/).pop() || ''
+        // 并行预取智能文件名（与下方 getCachePath IPC 并行发起，set() 前汇合原子上屏，
+        // 杜绝 fire-and-forget 回查在 set() 前 resolve 时被 currentFilePath 尚为 null 的守卫静默丢弃，
+        // 导致播放条永久显示物理 basename 的竞态缺陷）
+        if (window.electronAPI?.getFileAnalysisResult) {
+          smartNamePromise = window.electronAPI
+            .getFileAnalysisResult(activeFilePath)
+            .then(res => ({
+              // smart_name 优先作为展示名，未收录时降级物理文件名
+              title: res?.smartName?.trim() || activeTitle,
+              realName: res?.name || null
+            }))
+            .catch(err => {
+              // 显式上报降级原因，严禁静默吞异常（§2.9 禁止静默降级）
+              console.warn('[TTS] 预取智能文件名失败，降级物理文件名:', err)
+              return { title: activeTitle, realName: null }
+            })
+        }
+      } else if (text && text.trim()) {
+        activeTitle = text.trim().replace(/\s+/g, ' ')
+      }
+    }
 
     // 解析发音人显示名称与本地磁盘缓存目标路径（传入 text，纯文本/试听例句变化时指纹实时变化）
     const isAudition = options?.textId?.startsWith('audition-') || options?.fieldName === 'audition'
@@ -1139,9 +1232,21 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
       }
     }
 
+    // 汇合智能文件名预取结果（与 getCachePath 并行发起，此处原子上屏）：
+    // 会话守卫防止 await 期间切歌/停止后，本旧会话结果覆盖新会话标题
+    if (smartNamePromise) {
+      const smartResult = await smartNamePromise
+      if (activeSessionId !== thisSessionId) return
+      activeTitle = smartResult.title
+      activeRealName = smartResult.realName
+    }
+
     set({
       playingText: text,
       playingTextId: targetTextId,
+      currentFilePath: activeFilePath,
+      currentTitle: activeTitle || null,
+      currentRealName: activeRealName,
       status: 'loading',
       currentSentenceIndex: 0,
       totalSentences: chunks.length,
@@ -1149,7 +1254,9 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
       currentVoiceId: chosenVoiceId,
       speed: chosenSpeed,
       currentCachePath: targetCachePath,
-      errorMessage: null
+      errorMessage: null,
+      bufferedDuration: 0,
+      targetBufferDuration: TTS_BUFFER_WATERMARK.MIN_BUFFERED_DURATION_SEC
     })
 
     const ctx = getOrCreateAudioContext()
@@ -1306,6 +1413,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
             chosenSid
           )
 
+          let synthRes: { buffer: ArrayBuffer; hitCap: boolean; steps: number } | null = null
           // 若起播门禁尚未放行且蓄水池已具备首句，在等待后续分句时注入 8000ms 超时门禁探测
           if (!isWatermarkSatisfied && readyBufferList.length > 0) {
             let timer: ReturnType<typeof setTimeout> | undefined
@@ -1323,15 +1431,21 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
                 readyBufferList.length = 0
                 totalBufferedDuration = 0
                 // 后台继续等待该分句真实合成完毕，绝不跳过该句
-                baseBuffer = await synthPromise
+                synthRes = await synthPromise
               } else {
-                baseBuffer = raceResult
+                synthRes = raceResult
               }
             } finally {
               if (timer) clearTimeout(timer)
             }
           } else {
-            baseBuffer = await synthPromise
+            synthRes = await synthPromise
+          }
+          if (synthRes) {
+            if (synthRes.hitCap) {
+              toast.warning(t('音频片段过长已自动截断'))
+            }
+            baseBuffer = synthRes.buffer
           }
         }
 
@@ -1345,6 +1459,9 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
             // 首句合成失败，说明底层服务不可用或网络异常，立即终止并提示用户
             set({
               status: 'error',
+              currentFilePath: null,
+              currentTitle: null,
+              currentRealName: null,
               errorMessage: '语音合成失败，请检查服务连接状态'
             })
             stopProgressMonitor()
@@ -1404,8 +1521,9 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
             baseBuffer
           })
           totalBufferedDuration += audioBuffer.duration
+          set({ bufferedDuration: totalBufferedDuration })
 
-          // 水线判定：条件 A（达标 2 句）或 条件 B（单句超长 >= 4.0s）或 条件 C（末尾自愈：所有剩余分句已蓄满）
+          // 水线判定：条件 A（达标声学安全时长 >= 15.0s）或 条件 B（末尾自愈：所有剩余分句已蓄满，短文本 1~2 句直接放行）
           const satisfiesCount = readyBufferList.length >= Math.min(TTS_BUFFER_WATERMARK.MIN_BUFFERED_CHUNKS, remainingChunksCount)
           const satisfiesDuration = totalBufferedDuration >= TTS_BUFFER_WATERMARK.MIN_BUFFERED_DURATION_SEC
           const satisfiesAllRemaining = readyBufferList.length >= remainingChunksCount
@@ -1415,14 +1533,12 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
             flushPrebufferedChunks(readyBufferList, ctx)
             readyBufferList.length = 0
             totalBufferedDuration = 0
+            set({ bufferedDuration: 0 })
           }
         } else {
-          // 已放行起播状态：就绪即链式排程追加到硬件时间轴
+          // 已放行起播状态：就绪即链式排程追加到硬件时间轴（挂载交叉淡化）
           const startAt = Math.max(ctx.currentTime + 0.05, nextStartTime)
-          const source = ctx.createBufferSource()
-          source.buffer = audioBuffer
-          source.playbackRate.value = 1.0
-          source.connect(ctx.destination)
+          const { source } = createCrossfadedSource(ctx, audioBuffer, startAt)
           source.start(startAt)
 
           const effectiveDuration = audioBuffer.duration
@@ -1451,6 +1567,9 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
       if (scheduledSources.length === 0 && activeSessionId === thisSessionId) {
         set({
           status: 'error',
+          currentFilePath: null,
+          currentTitle: null,
+          currentRealName: null,
           errorMessage: '语音合成未能生成有效音频'
         })
         stopProgressMonitor()
@@ -1461,6 +1580,9 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         console.error('[TTS] 播放调度异常:', err)
         set({
           status: 'error',
+          currentFilePath: null,
+          currentTitle: null,
+          currentRealName: null,
           errorMessage: err instanceof Error ? err.message : '语音合成失败'
         })
         stopProgressMonitor()
@@ -1510,13 +1632,16 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
       for (let i = 0; i < currentCleanedChunks.length; i++) {
         let chunkData = cachedChunksMap.get(i)
         if (!chunkData) {
-          const buf = await window.electronAPI.tts.synthesizeChunk(
+          const synthRes = await window.electronAPI.tts.synthesizeChunk(
             currentCleanedChunks[i],
             voiceId,
             1.0
           )
-          if (buf) {
-            chunkData = new Uint8Array(buf)
+          if (synthRes) {
+            if (synthRes.hitCap) {
+              toast.warning(t('音频片段过长已自动截断'))
+            }
+            chunkData = new Uint8Array(synthRes.buffer)
             cachedChunksMap.set(i, chunkData)
           }
         }
@@ -1633,7 +1758,12 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     nextStartTime = 0
     isAllChunksScheduled = false
     toast.info(t('该片段正在合成中，请稍候...'), 3000, 'tts-seek-loading')
-    set({ currentSentenceIndex: clampedIndex, status: 'loading' })
+    set({
+      currentSentenceIndex: clampedIndex,
+      status: 'loading',
+      bufferedDuration: 0,
+      targetBufferDuration: TTS_BUFFER_WATERMARK.MIN_BUFFERED_DURATION_SEC
+    })
 
     const readyBufferList: PrebufferedChunkItem[] = []
     let totalBufferedDuration = 0
@@ -1677,6 +1807,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
             sid
           )
 
+          let synthRes: { buffer: ArrayBuffer; hitCap: boolean; steps: number } | null = null
           // 若起播门禁尚未放行且蓄水池已具备首句，注入 8000ms 超时门禁探测
           if (!isWatermarkSatisfied && readyBufferList.length > 0) {
             let timer: ReturnType<typeof setTimeout> | undefined
@@ -1692,15 +1823,21 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
                 flushPrebufferedChunks(readyBufferList, ctx)
                 readyBufferList.length = 0
                 totalBufferedDuration = 0
-                baseBuffer = await synthPromise
+                synthRes = await synthPromise
               } else {
-                baseBuffer = raceResult
+                synthRes = raceResult
               }
             } finally {
               if (timer) clearTimeout(timer)
             }
           } else {
-            baseBuffer = await synthPromise
+            synthRes = await synthPromise
+          }
+          if (synthRes) {
+            if (synthRes.hitCap) {
+              toast.warning(t('音频片段过长已自动截断'))
+            }
+            baseBuffer = synthRes.buffer
           }
         }
 
@@ -1708,7 +1845,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         if (!baseBuffer || baseBuffer.byteLength === 0) {
           if (scheduledSources.length === 0 && readyBufferList.length === 0) {
             toast.error(t('该片段合成失败，请稍后重试'), 3500, 'tts-seek-loading')
-            set({ status: 'idle' })
+            set({ status: 'idle', bufferedDuration: 0 })
             return
           }
           continue
@@ -1756,8 +1893,9 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
             baseBuffer
           })
           totalBufferedDuration += audioBuffer.duration
+          set({ bufferedDuration: totalBufferedDuration })
 
-          // 水线判定：条件 A（达标 2 句）或 条件 B（单句超长 >= 4.0s）或 条件 C（末尾自愈：所有剩余分句已蓄满）
+          // 水线判定：条件 A（达标声学安全时长 >= 15.0s）或 条件 B（末尾自愈：所有剩余分句已蓄满，短文本 1~2 句直接放行）
           const satisfiesCount = readyBufferList.length >= Math.min(TTS_BUFFER_WATERMARK.MIN_BUFFERED_CHUNKS, remainingChunksCount)
           const satisfiesDuration = totalBufferedDuration >= TTS_BUFFER_WATERMARK.MIN_BUFFERED_DURATION_SEC
           const satisfiesAllRemaining = readyBufferList.length >= remainingChunksCount
@@ -1767,14 +1905,12 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
             flushPrebufferedChunks(readyBufferList, ctx)
             readyBufferList.length = 0
             totalBufferedDuration = 0
+            set({ bufferedDuration: 0 })
           }
         } else {
-          // 已起播：就绪即链式排程追加
+          // 已起播：就绪即链式排程追加（挂载交叉淡化）
           const nextStartAt = Math.max(ctx.currentTime + 0.05, nextStartTime)
-          const nextSource = ctx.createBufferSource()
-          nextSource.buffer = audioBuffer
-          nextSource.playbackRate.value = 1.0
-          nextSource.connect(ctx.destination)
+          const { source: nextSource } = createCrossfadedSource(ctx, audioBuffer, nextStartAt)
           nextSource.start(nextStartAt)
 
           const nextEndAt = nextStartAt + audioBuffer.duration
@@ -1800,10 +1936,55 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
   }
 }))
 
-// 渲染进程启动时自动异步预热拉取全量音色（含自定义音色）
+// 渲染进程启动时自动异步预热拉取全量音色（含自定义音色）与同步设置配置默认值
 if (typeof window !== 'undefined') {
   setTimeout(() => {
     useTTSAudioStore.getState().refreshVoices().catch(() => {})
   }, 0)
+
+  // 监听并同步设置中心（SettingsStore）中的默认音色与倍率配置
+  // 当应用初始化、配置首次载入或在设置页面修改时，若 TTS 当前处于 idle 闲置状态，自动对齐
+  const syncFromConfig = (config: any) => {
+    if (!config) return
+    const state = useTTSAudioStore.getState()
+    if (state.status === 'idle') {
+      const targetSpeed = typeof config.ttsSpeed === 'number' ? config.ttsSpeed : 1.0
+      const rawVoice = config.ttsDefaultVoiceSid || config.ttsDefaultVoiceId
+      let targetVoiceId = DEFAULT_VOICE_ID
+      if (rawVoice !== undefined && rawVoice !== null) {
+        if (isNaN(Number(rawVoice))) {
+          targetVoiceId = String(rawVoice)
+        } else {
+          const matched = getVoiceById(Number(rawVoice), state.allVoices)
+          if (matched?.id) targetVoiceId = matched.id
+        }
+      }
+      const matched = getVoiceById(targetVoiceId, state.allVoices)
+      const targetSid = matched?.sid ?? 63
+
+      const needsSpeedUpdate = Math.abs(state.speed - targetSpeed) >= 0.01
+      const needsVoiceUpdate = state.currentVoiceId !== targetVoiceId || state.currentSid !== targetSid
+
+      if (needsSpeedUpdate || needsVoiceUpdate) {
+        useTTSAudioStore.setState({
+          speed: targetSpeed,
+          currentVoiceId: targetVoiceId,
+          currentSid: targetSid
+        })
+      }
+    }
+  }
+
+  // 1. 尝试使用当前已有快照同步
+  try {
+    syncFromConfig(useSettingsStore.getState().config)
+  } catch {}
+
+  // 2. 订阅 settings-store 的 config 变化
+  try {
+    useSettingsStore.subscribe(state => {
+      syncFromConfig(state.config)
+    })
+  } catch {}
 }
 

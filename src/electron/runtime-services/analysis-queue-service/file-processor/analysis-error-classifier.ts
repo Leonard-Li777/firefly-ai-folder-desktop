@@ -59,6 +59,61 @@ export function isTimeoutError(err: unknown): boolean {
   )
 }
 
+/**
+ * Electron `net` 模块连接层失败码白名单。
+ *
+ * `net.request` / `net.fetch` 的连接失败以 `net::ERR_xxx` 形式出现在 message 中，
+ * 与 Node 层 `ECONNREFUSED` / `ECONNRESET` 是**两套互不包含的文案**
+ * （`ERR_CONNECTION_REFUSED` 与 `ECONNREFUSED` 没有公共子串），必须分别覆盖。
+ *
+ * 漏判后果（2026-10-22 事故）：引擎进程退出后端口无监听，队列 166 个文件在 18 秒内
+ * 全部以 `文本文件AI分析失败: net::ERR_CONNECTION_REFUSED` 失败并被判为永久 failed ——
+ * 既不恢复 pending，也不等待引擎就绪后重试，用户侧只看到「引擎发生错误」。
+ * 连接被拒绝/重置/关闭/中止均属「基础设施尚未就绪或正在重启」的瞬态状态，
+ * 唯一正确处理是回到 pending 等待引擎恢复。
+ */
+const ELECTRON_NET_TRANSIENT_CODES = [
+  'ERR_CONNECTION_REFUSED',
+  'ERR_CONNECTION_RESET',
+  'ERR_CONNECTION_CLOSED',
+  'ERR_CONNECTION_ABORTED',
+  'ERR_CONNECTION_FAILED'
+] as const
+
+/** 文本是否命中 Electron net 连接层失败码 */
+function matchesElectronNetTransientCode(text: string | undefined): boolean {
+  if (!text) return false
+  return ELECTRON_NET_TRANSIENT_CODES.some(code => text.includes(code))
+}
+
+/**
+ * 引擎暖机期文案（HTTP 503 语义，但常在链路上被压成纯文本，status 丢失）。
+ *
+ * 来源（2026-10-26 / 2026-10-30 实测日志）：
+ *   - 萤核引擎反代，模型加载中：`{"error":{"message":"AI engine is starting, please try again","code":503}}`
+ *   - 萤核引擎反代，推理服务从未启动：`{"error":{"message":"AI engine service is not started","code":"engine_service_stopped"}}`
+ *   - llama-server 直答：`{"error":{"message":"Loading model","type":"unavailable_error","code":503}}`
+ * 三者都是「引擎暂时不可用、稍后恢复」的瞬态状态，恢复 pending 等待引擎就绪即可，
+ * 严禁判为永久 failed（历史缺陷：被归一化成「缺少choices字段」硬失败，
+ * 文件直接失败且渲染层滞留「引擎异常」，与「引擎状态良好」同屏矛盾）。
+ *
+ * **注意**：`AI engine failed to start`（HTTP 500 / `engine_failed`）**不得**加入本表。
+ * 引擎启动失败是确定性错误，必须上浮为永久 failed，否则会无限 pending 重试、故障永不上浮。
+ */
+const ENGINE_WARMUP_MESSAGES = [
+  'AI engine is starting',
+  'AI engine service is not started',
+  'Loading model',
+  'model is loading',
+  '模型加载中'
+] as const
+
+/** 文本是否命中引擎暖机期文案 */
+function matchesEngineWarmupMessage(text: string | undefined): boolean {
+  if (!text) return false
+  return ENGINE_WARMUP_MESSAGES.some(msg => text.includes(msg))
+}
+
 /** 是否为基础设施未就绪等瞬态错误（不可静默降级为完成，必须等待就绪或重试） */
 export function isTransientInfraError(err: unknown): boolean {
   if (!err) return false
@@ -68,20 +123,29 @@ export function isTransientInfraError(err: unknown): boolean {
       e.status === 503 ||
       e.statusCode === 503 ||
       e.code === 'ECONNREFUSED' ||
-      e.code === 'ECONNRESET'
+      e.code === 'ECONNRESET' ||
+      matchesElectronNetTransientCode(e.code)
     ) {
       return true
     }
   }
-  const msg = err instanceof Error ? err.message : String(err)
+  // 非 Error 实例的对象也可能携带 message（如跨进程 IPC 透传的错误快照），
+  // 直接 String(err) 会退化成 "[object Object]" 而丢失判据
+  const msg =
+    err instanceof Error
+      ? err.message
+      : typeof (err as { message?: unknown })?.message === 'string'
+        ? (err as { message: string }).message
+        : String(err)
   return (
     msg.includes('503') ||
-    msg.includes('AI engine is starting') ||
+    matchesEngineWarmupMessage(msg) ||
     msg.includes('AI 服务未就绪') ||
     msg.includes('AI服务未就绪') ||
     msg.includes('ECONNREFUSED') ||
     msg.includes('服务器未运行') ||
-    msg.includes('服务尚未初始化')
+    msg.includes('服务尚未初始化') ||
+    matchesElectronNetTransientCode(msg)
   )
 }
 
@@ -93,7 +157,22 @@ export interface AnalysisErrorClassification {
   isTransient: boolean
   /** 来源阶段（未打标为 undefined） */
   errorPhase: AnalysisErrorPhase | undefined
-  /** 是否允许 Tier 1 命名兜底静默降级 —— 仅非瞬态错误且处于推理阶段（inference）失败才允许 */
+  /**
+   * 是否允许 Tier 1 命名兜底静默降级 —— 仅推理阶段（inference）的**超时类**失败才允许。
+   *
+   * 口径依据（slice-3 双层仲裁规格，issue-tier2-slice-3）：Tier 1 静默熔断保底仅 sanction
+   * 「Tier 2 超时（默认 10s）或崩溃」：
+   * - 超时：单文件推理过慢（如超大 PDF），Tier 1 命名仍可交付，降级为 completed (stage 2)；
+   * - 崩溃：引擎进程崩溃在传输层表现为连接类瞬态错误，走 isTransientInfraError 的
+   *   pending 等待重试路径，不经过本降级。
+   *
+   * 严禁降级的其余推理阶段失败（必须 surfaced 为 failed + 错误原因）：
+   * - AI 接口契约违规：「AI响应格式异常：缺少choices字段」「收到空响应」「响应无效」
+   *   「结果解析失败」等 —— 表明 Tier 2 服务端已无法产出有效推理结果，属系统性故障，
+   *   逐文件必然复发。若静默降级，用户会在「全部 completed、无任何错误提示」的状态下
+   *   丢失整个 AI 阶段产出，正是 AGENTS.md §2.9 禁止的静默降级（2026-10-20 用户报告：
+   *   GPU 阶段 AI 接口错误未标记失败、队列无错误原因，反而标记已完成）。
+   */
   allowTier1Fallback: boolean
 }
 
@@ -108,9 +187,12 @@ export function classifyAnalysisError(err: unknown): AnalysisErrorClassification
     isTimeout,
     isTransient,
     errorPhase,
-    // 关键底线：瞬态基础设施未就绪（如 503/启动中/网络拒绝等）绝对禁止静默降级为 Stage 2 完成，
-    // 只有真正的模型推理语义失败才可由 Tier 1 兜底
-    allowTier1Fallback: errorPhase === 'inference' && !isTransient
+    // 关键底线 1：瞬态基础设施未就绪（如 503/启动中/网络拒绝等）绝对禁止静默降级为 Stage 2 完成，
+    //   必须恢复 pending 等待引擎就绪后重试；
+    // 关键底线 2：AI 接口契约违规类错误（响应格式异常/空响应/解析失败等）同上严禁降级，
+    //   它们是逐文件复发的系统性故障，必须 surfaced 为 failed + 错误原因；
+    // 仅 slice-3 规格 sanction 的「Tier 2 超时」类允许 Tier 1 兜底（崩溃走瞬态重试路径）。
+    allowTier1Fallback: errorPhase === 'inference' && isTimeout && !isTransient
   }
 }
 

@@ -1,5 +1,11 @@
-import React, { useState, useCallback, useMemo } from 'react'
-import { formatDateTimeShort, logger, LogCategory } from '@firefly/shared'
+import React, { useState, useCallback, useMemo, useEffect } from 'react'
+import {
+  formatDateTimeShort,
+  logger,
+  LogCategory,
+  isCategory,
+  FileCategory
+} from '@firefly/shared'
 import { MaterialIcon, cn } from '../../../../lib/utils'
 import { t } from '@app/languages'
 import { toast } from '../../../common/Toast'
@@ -9,12 +15,16 @@ import { FileType } from '../types'
 import { formatVideoTimestamp, clampVideoTime } from '../../../../lib/video-preview-utils'
 import { getExtFromSmartName } from '../../../../lib/preview-utils'
 import { usePreviewOverlayStore } from '../../../../stores/preview-overlay-store'
-import { PageId } from '../../../../constants/page-ids'
+import { PageId, PAGE_IDS } from '../../../../constants/page-ids'
+import { useSearchStore } from '../../../../stores/search-store'
+import { getOrganizedSearchTags, OrganizedTagItem } from './search-list-tag-utils'
+import { useSettingsStore } from '../../../../stores/settings-store'
+import { useVirtualDirectoryStore } from '../../../../stores/virtual-directory-store'
 
 /**
- * 搜索列表模式专用行高（卡片式排版，较普通列表行更高）
+ * 搜索列表模式专用行高（三行式多模态卡片排版，规格书定高 104px）
  */
-export const SEARCH_LIST_ROW_HEIGHT = 96
+export const SEARCH_LIST_ROW_HEIGHT = 104
 
 /**
  * XSS 安全转义：将 snippet 中的 HTML 特殊字符转义后，仅放行受信任的 <mark> 高亮标签，
@@ -33,28 +43,56 @@ export const sanitizeSnippetHtml = (snippet?: string): string => {
 }
 
 /**
- * 视频切片微型帧卡片（标准 16:9 画幅，Hover 提示起止时间，点击跳轴预览，双击外部定位播放）
+ * 转换本地路径为安全的 Chromium file:/// 协议 URL
+ * 编码非 ASCII 字符以及 #、?、% 等特殊 URL 关键字符，防止被截断或解析错乱
+ */
+export function toSafeFileUrl(filePath: string): string {
+  if (!filePath) return ''
+  const unified = filePath.replace(/\\/g, '/').replace(/\/+/g, '/')
+  const segments = unified.split('/')
+  const encoded = segments
+    .map((seg, i) => {
+      if (i === 0 && /^[a-zA-Z]:$/.test(seg)) return seg
+      return encodeURIComponent(seg)
+    })
+    .join('/')
+  return `file://${encoded.startsWith('/') ? '' : '/'}${encoded}`
+}
+
+/**
+ * 视频切片微型抽帧帧卡片（标准 16:9 画幅，时间锚定抽帧缩图预览，Hover 提示完整起止时间与相似度）
  */
 const VideoChunkFrame: React.FC<{
   chunk: {
     chunkIndex?: number
     startSec: number
     endSec: number
+    repPtsSec?: number
+    seekSec?: number
     similarity?: number
     score?: number
   }
   filePath: string
   category?: any
-  onPreviewSeek: (startSec: number, endSec: number) => void
-}> = ({ chunk, filePath, category, onPreviewSeek }) => {
+  frameHeight?: number
+  onPreviewSeek: (seekSec: number, startSec: number, endSec: number) => void
+  onItemSelect?: (e: React.MouseEvent) => void
+}> = ({ chunk, filePath, category, frameHeight = 38, onPreviewSeek, onItemSelect }) => {
   const [hasError, setHasError] = useState(false)
 
   const videoUrl = useMemo(() => {
     if (!filePath) return ''
-    const norm = filePath.replace(/\\/g, '/')
-    const clean = norm.startsWith('/') ? norm : `/${norm}`
-    return `file://${clean}#t=${clampVideoTime(chunk.startSec, 3600)}`
-  }, [filePath, chunk.startSec])
+    const base = toSafeFileUrl(filePath)
+    // 缩略图封面严格抽取目标最清晰的 repPtsSec 关键帧，彻底消除切镜黑屏
+    const previewSec = chunk.repPtsSec ?? chunk.startSec
+    const safeTime = clampVideoTime(previewSec, 3600)
+    return `${base}#t=${safeTime}`
+  }, [filePath, chunk.repPtsSec, chunk.startSec])
+
+  // 虚拟行复用时重置错误状态
+  useEffect(() => {
+    setHasError(false)
+  }, [filePath, chunk.repPtsSec, chunk.startSec])
 
   const chunkPercent =
     typeof chunk.similarity === 'number'
@@ -63,14 +101,15 @@ const VideoChunkFrame: React.FC<{
         ? Math.round(Math.min(1, Math.max(0, chunk.score)) * 100)
         : null
 
-  // 悬浮到单帧上显示精准时间与相似度信息
+  // 悬浮到单帧上显示精准起止时间与相似度
   const frameTooltip = `${formatVideoTimestamp(chunk.startSec)} - ${formatVideoTimestamp(chunk.endSec)}${
     chunkPercent !== null ? ` (${t('相似度')}: ${chunkPercent}%)` : ''
   }\n${t('单击跳轴预览，双击外部播放器打开')}`
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation()
-    onPreviewSeek(chunk.startSec, chunk.endSec)
+    onItemSelect?.(e)
+    onPreviewSeek(chunk.seekSec ?? chunk.startSec, chunk.startSec, chunk.endSec)
   }
 
   const handleDoubleClick = async (e: React.MouseEvent) => {
@@ -78,10 +117,10 @@ const VideoChunkFrame: React.FC<{
     try {
       const rawCat = category
       const cat = typeof rawCat === 'object' && rawCat !== null ? rawCat.label : rawCat
-      const outcome = await window.electronAPI!.utils.launchExternalDeepLink({
+      const outcome = await window.electronAPI?.utils?.launchExternalDeepLink?.({
         filePath,
         category: cat || 'video',
-        seekSeconds: chunk.startSec
+        seekSeconds: chunk.seekSec ?? chunk.startSec
       })
       if (outcome?.fallbackToDefault) {
         toast.info(t('未检测到支持精准定位的外部应用，已按默认方式打开'))
@@ -92,13 +131,16 @@ const VideoChunkFrame: React.FC<{
     }
   }
 
+  const frameWidth = Math.round(frameHeight * (16 / 9))
   return (
     <div
-      className="relative shrink-0 overflow-hidden bg-black/60 rounded-md border border-border/60 hover:border-primary/90 hover:ring-1 hover:ring-primary/80 transition-all cursor-pointer group/chunk select-none h-[76px] w-[135px]"
+      style={{ height: `${frameHeight}px`, width: `${frameWidth}px` }}
+      className="relative shrink-0 overflow-hidden bg-black/70 rounded border border-border/60 hover:border-primary/90 hover:ring-1 hover:ring-primary/80 transition-all cursor-pointer group/chunk select-none flex items-center justify-center"
       title={frameTooltip}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
     >
+      {/* 视频指定时间点抽帧缩略图，破损时平滑回退占位图标 */}
       {!hasError && videoUrl ? (
         <video
           src={videoUrl}
@@ -109,24 +151,98 @@ const VideoChunkFrame: React.FC<{
           onError={() => setHasError(true)}
         />
       ) : (
-        <div className="w-full h-full flex items-center justify-center bg-muted/40 text-muted-foreground/60">
-          <MaterialIcon icon="movie" className="text-xl" />
-        </div>
+        <MaterialIcon icon="movie" className="text-muted-foreground/50 text-base" />
       )}
 
-      {/* Hover 遮罩与跳轴小播放图标 */}
-      <div className="absolute inset-0 bg-black/25 opacity-0 group-hover/chunk:opacity-100 flex items-center justify-center transition-opacity">
-        <MaterialIcon icon="play_arrow" className="text-white drop-shadow text-xl" />
+      {/* Hover 遮罩与跳轴播放图标 */}
+      <div className="absolute inset-0 bg-black/35 opacity-0 group-hover/chunk:opacity-100 flex items-center justify-center transition-opacity">
+        <MaterialIcon icon="play_arrow" className="text-white drop-shadow text-base" />
       </div>
 
-      {/* 底部时间胶囊 */}
-      <div className="absolute bottom-1 left-1 rounded bg-black/80 font-mono text-white/90 backdrop-blur-xs flex items-center gap-1 px-1.5 py-0.5 text-[10px] shadow-xs border border-white/10 pointer-events-none">
-        <MaterialIcon icon="schedule" className="text-[10px] text-blue-400" />
+      {/* 底部微型起止时间胶囊（平时隐藏，Hover 时浮现，保持预览画面纯净无遮挡） */}
+      <div className="absolute bottom-0.5 right-0.5 rounded bg-black/85 font-mono text-white/90 backdrop-blur-xs flex items-center gap-0.5 px-1 py-0.2 text-[9px] shadow-xs border border-white/10 pointer-events-none opacity-0 group-hover/chunk:opacity-100 transition-opacity">
         <span>{`${formatVideoTimestamp(chunk.startSec)} - ${formatVideoTimestamp(chunk.endSec)}`}</span>
         {chunkPercent !== null && (
-          <span className="text-violet-300 ml-0.5 font-semibold text-[9px]">{`${chunkPercent}%`}</span>
+          <span className="text-violet-300 font-semibold">{`${chunkPercent}%`}</span>
         )}
       </div>
+    </div>
+  )
+}
+
+/**
+ * 音频切片轻量 ASR 摘要芯片卡（免内联 Audio 上下文，点击联动侧边栏跳轴预览）
+ */
+const AudioChunkChip: React.FC<{
+  chunk: {
+    startSec: number
+    endSec: number
+    similarity?: number
+    score?: number
+    text?: string
+  }
+  filePath: string
+  category?: any
+  onPreviewSeek: (seekSec: number, startSec: number, endSec: number) => void
+  onItemSelect?: (e: React.MouseEvent) => void
+}> = ({ chunk, filePath, category, onPreviewSeek, onItemSelect }) => {
+  const chunkPercent =
+    typeof chunk.similarity === 'number'
+      ? Math.round(Math.min(1, Math.max(0, chunk.similarity)) * 100)
+      : typeof chunk.score === 'number'
+        ? Math.round(Math.min(1, Math.max(0, chunk.score)) * 100)
+        : null
+
+  const chipTooltip = `${formatVideoTimestamp(chunk.startSec)} - ${formatVideoTimestamp(chunk.endSec)}${
+    chunkPercent !== null ? ` (${t('相似度')}: ${chunkPercent}%)` : ''
+  }${chunk.text ? `\nASR: ${chunk.text}` : ''}\n${t('单击跳轴试听，双击外部播放器打开')}`
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onItemSelect?.(e)
+    onPreviewSeek(chunk.startSec, chunk.startSec, chunk.endSec)
+  }
+
+  const handleDoubleClick = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    try {
+      const rawCat = category
+      const cat = typeof rawCat === 'object' && rawCat !== null ? rawCat.label : rawCat
+      const outcome = await window.electronAPI?.utils?.launchExternalDeepLink?.({
+        filePath,
+        category: cat || 'audio',
+        seekSeconds: chunk.startSec
+      })
+      if (outcome?.fallbackToDefault) {
+        toast.info(t('未检测到支持精准定位的外部应用，已按默认方式打开'))
+      }
+    } catch (err: unknown) {
+      logger.error(LogCategory.RENDERER, '外部音频深链定位打开失败:', err)
+      toast.error(t('打开文件失败'))
+    }
+  }
+
+  return (
+    <div
+      className="h-[34px] px-2 py-0.5 rounded border border-border/60 bg-muted/30 hover:border-primary/80 hover:bg-muted/50 transition-all flex items-center gap-1.5 shrink-0 max-w-[260px] cursor-pointer select-none group/audio"
+      title={chipTooltip}
+      onClick={handleClick}
+      onDoubleClick={handleDoubleClick}
+    >
+      <MaterialIcon icon="graphic_eq" className="text-xs text-primary shrink-0 group-hover/audio:scale-110 transition-transform" />
+      <span className="font-mono text-[10px] text-muted-foreground/90 shrink-0">
+        {`${formatVideoTimestamp(chunk.startSec)} - ${formatVideoTimestamp(chunk.endSec)}`}
+      </span>
+      {chunkPercent !== null && (
+        <span className="text-violet-600 dark:text-violet-300 font-semibold text-[9px] shrink-0">
+          {`${chunkPercent}%`}
+        </span>
+      )}
+      {chunk.text && (
+        <span className="text-[11px] text-foreground/80 truncate">
+          {chunk.text}
+        </span>
+      )}
     </div>
   )
 }
@@ -143,13 +259,24 @@ interface SearchListCardProps {
   isActive?: boolean
   index: number
   pageId?: PageId
+  /** 显式传入搜索关键词（用于单测或外部指定，缺省自动从 search-store 订阅） */
+  searchKeyword?: string
+  /** 显式传入搜索分词列表（用于单测或外部指定，缺省自动从 search-store 订阅） */
+  searchTokens?: string[]
+  /** 工作目录绝对路径（用于将缩略图相对路径转换为真实物理路径） */
+  workspaceDirectoryPath?: string | null
+  /** 卡片动态行高（88~220px，默认 104px） */
+  cardHeight?: number
+  /** 是否主副文件名互换显示（true: 真实文件名为主，智能名为辅；false: 智能名为主，真实名为辅） */
+  swapFileNameDisplay?: boolean
 }
 
 /**
- * 搜索列表模式专属卡片：
- * - 抽帧预览模式 (Frame Preview Grid)：当命中视频多时序切片时，完全切换为 Grid 抽帧预览模式，
- *   高度严格锁死 SEARCH_LIST_ROW_HEIGHT (96px)，整行 hover 显示文件详细信息，单帧 hover 显示时间与相似度；
- * - 普通图文行模式：文件图标 + 文件名/路径/正文描述 + 召回 label/时间/大小。
+ * 搜索列表模式专属卡片（三行式多模态卡片架构，定高 104px）：
+ * - 左侧：64×64px 媒体区（图片优先渲染真实缩略图，其他展示系统文件图标）
+ * - 右侧第一行：主文件名 + 双层 Flex 右侧度量（国际化自适应召回徽标 + 确定宽度日期/大小列）
+ * - 右侧第二行：真实文件名（Hover 浮现绝对物理路径） + 标签序列（溢出自动截断）
+ * - 右侧第三行：类型化专有内容（文本高亮摘要 / 图片多模态描述 / 视频微缩抽帧序列 / 音频 ASR 命名芯片）
  */
 export const SearchListCard = React.memo(
   ({
@@ -162,11 +289,126 @@ export const SearchListCard = React.memo(
     isSelected,
     isActive,
     index,
-    pageId
+    pageId,
+    searchKeyword: propKeyword,
+    searchTokens: propTokens,
+    workspaceDirectoryPath,
+    cardHeight,
+    swapFileNameDisplay
   }: SearchListCardProps) => {
     const [isQueueSubmitting, setIsQueueSubmitting] = useState(false)
+    const [useFallbackImg, setUseFallbackImg] = useState(false)
+    const [imgError, setImgError] = useState(false)
+
+    const storeGlobalKeyword = useSearchStore(s => s.globalSearchKeyword)
+    const storeRealKeyword = useSearchStore(s => s.realDirectoryKeyword)
+    const storeAnalyzedKeyword = useSearchStore(s => s.analyzedDirectoryKeyword)
+    const storeVirtualKeyword = useSearchStore(s => s.virtualDirectoryKeyword)
+    const storeTokens = useSearchStore(s => s.searchTokens)
+
+    const effectiveKeyword =
+      propKeyword !== undefined
+        ? propKeyword
+        : (storeGlobalKeyword || storeAnalyzedKeyword || storeVirtualKeyword || storeRealKeyword || '')
+    const effectiveTokens =
+      propTokens && propTokens.length > 0 ? propTokens : storeTokens
+
+    // 标签微胶囊三级梯队编排与泛化过滤（关键词优先 > 融合标签次之 > 其它标签确定性随机；过滤全年龄/已归档）
+    const organizedTags = useMemo<OrganizedTagItem[]>(() => {
+      return getOrganizedSearchTags({
+        tags: item.tags,
+        fusedTags: item.fusedTags,
+        searchTokens: effectiveTokens,
+        searchKeyword: effectiveKeyword,
+        seed: item.path || item.fileFingerprint || item.id || ''
+      })
+    }, [item.tags, item.fusedTags, effectiveTokens, effectiveKeyword, item.path, item.fileFingerprint, item.id])
+
+    // 虚拟行复用保护：路径变更时重置图片加载错误状态，防状态穿透
+    useEffect(() => {
+      setUseFallbackImg(false)
+      setImgError(false)
+    }, [item.path, item.thumbnailPath])
+
     const isUnanalyzed = Boolean(item.isUnanalyzed || item.matchType === 'unanalyzed')
     const hasMatchedChunks = Boolean(item.matchedChunks && item.matchedChunks.length > 0)
+
+    // 强类型媒体分类判定（对齐 PRD-0058，严禁自然语言硬编码比对；覆盖扩展名与路径全场景）
+    const isImage = Boolean(
+      (item.extension && isCategory(item.extension, FileCategory.IMAGE)) ||
+      (item.path && isCategory(item.path, FileCategory.IMAGE)) ||
+      (item.name && isCategory(item.name, FileCategory.IMAGE)) ||
+      (safeItemName && isCategory(safeItemName, FileCategory.IMAGE))
+    )
+    const isVideo = Boolean(
+      (item.extension && isCategory(item.extension, FileCategory.VIDEO)) ||
+      (item.path && isCategory(item.path, FileCategory.VIDEO)) ||
+      (item.name && isCategory(item.name, FileCategory.VIDEO)) ||
+      (safeItemName && isCategory(safeItemName, FileCategory.VIDEO))
+    )
+    const isAudio = Boolean(
+      (item.extension && isCategory(item.extension, FileCategory.AUDIO)) ||
+      (item.path && isCategory(item.path, FileCategory.AUDIO)) ||
+      (item.name && isCategory(item.name, FileCategory.AUDIO)) ||
+      (safeItemName && isCategory(safeItemName, FileCategory.AUDIO))
+    )
+
+    // Windows 安全 file:/// 协议与双层图片加载（缩略图优先 + 原始图片平滑回退，防幽灵破损图标）
+    const { primaryImageUrl, fallbackImageUrl } = useMemo(() => {
+      // 只要具备缩略图，或属于图片媒体，均放行解析图片 URL（视频抽帧/PDF封面/图片等统一展现）
+      if (!isImage && !item.thumbnailPath) return { primaryImageUrl: '', fallbackImageUrl: '' }
+
+      const originalUrl = isImage && item.path ? toSafeFileUrl(item.path) : ''
+      let thumbUrl = ''
+
+      if (item.thumbnailPath) {
+        const thumbPath = item.thumbnailPath
+        const isAbs =
+          /^[a-zA-Z]:[\\/]/.test(thumbPath) ||
+          thumbPath.startsWith('/') ||
+          thumbPath.startsWith('\\')
+
+        if (isAbs) {
+          thumbUrl = toSafeFileUrl(thumbPath)
+        } else {
+          let wsDir = workspaceDirectoryPath || (item as any).workspaceDirectoryPath || ''
+          if (!wsDir && item.path) {
+            const virtIdx = item.path.indexOf('.VirtualDirectory')
+            if (virtIdx > 0) {
+              wsDir = item.path.substring(0, virtIdx).replace(/[\\/]+$/, '')
+            } else {
+              const lastSep = Math.max(item.path.lastIndexOf('/'), item.path.lastIndexOf('\\'))
+              if (lastSep > 0) {
+                wsDir = item.path.substring(0, lastSep)
+              }
+            }
+          }
+          if (!wsDir) {
+            wsDir = useVirtualDirectoryStore.getState().currentWorkspaceDirectory?.path || ''
+          }
+          if (wsDir) {
+            const cleanWs = wsDir.replace(/[\\/]+$/, '')
+            const cleanThumb = thumbPath.replace(/^[\\/]+/, '')
+            thumbUrl = toSafeFileUrl(`${cleanWs}/${cleanThumb}`)
+          }
+        }
+      }
+
+      return {
+        primaryImageUrl: thumbUrl || originalUrl,
+        fallbackImageUrl: thumbUrl && originalUrl ? originalUrl : ''
+      }
+    }, [isImage, item.path, item.thumbnailPath, workspaceDirectoryPath, (item as any).workspaceDirectoryPath])
+
+    const activeImageUrl = !useFallbackImg ? primaryImageUrl : fallbackImageUrl
+
+    const handleImageLoadError = useCallback(() => {
+      if (!useFallbackImg && fallbackImageUrl) {
+        setUseFallbackImg(true)
+      } else {
+        setImgError(true)
+      }
+    }, [useFallbackImg, fallbackImageUrl])
 
     // 仅基于有效语义召回时才打上标签，其他情况不打标签；
     // 若相似度经计算为 0% 或负值，属于无相关性噪点，不应展示“语义召回 0%”
@@ -184,33 +426,52 @@ export const SearchListCard = React.memo(
       ? `${t('语义召回')} ${rawPercent}%`
       : t('语义召回')
 
-    const primaryName = item.smartName || safeItemName
-    const secondaryName = item.smartName && item.smartName !== safeItemName ? safeItemName : ''
+    const storeSwap =
+      useSettingsStore(s => s.getConfigValue<boolean>('SWAP_FILE_NAME_DISPLAY')) ?? false
+    const effectiveSwap = swapFileNameDisplay ?? storeSwap
+    const isSwapped = Boolean(effectiveSwap)
+    const hasDiffSmartName = Boolean(item.smartName) && item.smartName !== safeItemName
 
-    /** 抽帧预览跳轴定位 */
+    // 主文件名 (Row 1): 真实名为主时取 safeItemName，智能名为主时取 item.smartName || safeItemName
+    const primaryName = isSwapped
+      ? safeItemName
+      : item.smartName || safeItemName
+
+    // 辅文件名 (Row 2): 真实名为主时取 item.smartName (若存在不同)，智能名为主时取 safeItemName
+    const secondaryName = hasDiffSmartName
+      ? isSwapped
+        ? item.smartName || ''
+        : safeItemName
+      : isSwapped
+        ? ''
+        : safeItemName
+
+    /** 抽帧/音频切片跳轴定位 (Ticket 05: seekSec 与 [startSec, endSec] 双轨独立传递) */
     const handlePreviewSeek = useCallback(
-      (startSec: number, endSec: number) => {
+      (seekSec: number, startSec: number, endSec: number) => {
+        // 同步挂载到当前内存 item 实例上，保证 FileExplorerLayout 的响应式监听能读取到最新的切片跳转参数
+        ;(item as any).currentTime = seekSec
+        ;(item as any).highlightRange = [startSec, endSec]
+
         const splitState = usePreviewOverlayStore.getState()
-        const pageMode = pageId ? (splitState.pageStates[pageId]?.mode ?? 'split') : undefined
-        if (pageMode === 'split') {
-          const ext =
-            item.extension ||
-            getExtFromSmartName(item.smartName || item.name || '') ||
-            item.path.split('.').pop() ||
-            ''
-          splitState.openPreview(
-            item.path,
-            item.smartName || item.name || '',
-            ext,
-            pageId,
-            {
-              currentTime: startSec,
-              highlightRange: [startSec, endSec]
-            }
-          )
-        }
+        const effectivePageId = pageId || splitState.activePageId || PAGE_IDS.REAL_DIRECTORY
+        const ext =
+          item.extension ||
+          getExtFromSmartName(item.smartName || item.name || '') ||
+          item.path.split('.').pop() ||
+          ''
+        splitState.openPreview(
+          item.path,
+          item.smartName || item.name || '',
+          ext,
+          effectivePageId,
+          {
+            currentTime: seekSec,
+            highlightRange: [startSec, endSec]
+          }
+        )
       },
-      [item.path, item.name, item.smartName, item.extension, pageId]
+      [item, pageId]
     )
 
     /** “立即分析”：将该文件插队至分析队列并给用户提示 */
@@ -253,209 +514,276 @@ export const SearchListCard = React.memo(
 
     const isRowActive = Boolean(isSelected || isActive)
 
-    if (hasMatchedChunks) {
-      const rowTooltip = [
-        `${t('文件名')}: ${primaryName}${secondaryName ? ` (${secondaryName})` : ''}`,
-        item.path ? `${t('完整路径')}: ${item.path}` : null,
-        item.size ? `${t('文件大小')}: ${formatFileSize(item.size)}` : null,
-        item.modifiedAt ? `${t('修改时间')}: ${formatDateTimeShort(item.modifiedAt)}` : null,
-        hasValidSimilarity ? `${t('整体匹配度')}: ${rawPercent}%` : null,
-        (item as any).totalChunkRows && (item as any).totalChunkRows > 1
-          ? `${t('时序片段 (第 {current}/{total} 行)', { current: ((item as any).chunkRowIndex ?? 0) + 1, total: (item as any).totalChunkRows })}`
-          : `${t('命中时序片段数')}: ${item.matchedChunks!.length}`
-      ]
-        .filter(Boolean)
-        .join('\n')
+    /** 切片点击选中守护：若当前卡片尚未被激活才触发 onItemClick，避免触发父级单选 toggle 取消选择 */
+    const handleChunkSelect = useCallback(
+      (e: React.MouseEvent) => {
+        if (!isRowActive) {
+          onItemClick(index, e)
+        }
+      },
+      [isRowActive, onItemClick, index]
+    )
 
-      const isFirstOfMulti = (item as any).chunkRowIndex === 0 && ((item as any).totalChunkRows ?? 1) > 1
-      const isLastOfMulti =
-        (item as any).chunkRowIndex !== undefined &&
-        (item as any).chunkRowIndex === ((item as any).totalChunkRows ?? 1) - 1 &&
-        ((item as any).totalChunkRows ?? 1) > 1
+    // 视频切片合集（兼容多切片 matchedChunks 与单切片 matchedChunk）
+    const videoChunks = useMemo(() => {
+      if (hasMatchedChunks) return item.matchedChunks!
+      if (item.matchedChunk) return [item.matchedChunk]
+      return []
+    }, [hasMatchedChunks, item.matchedChunks, item.matchedChunk])
 
-      return (
-        <div
-          className={cn(
-            'w-full h-full px-4 py-2 flex items-center border-border/30 select-none transition-colors duration-150',
-            'search-list-card overflow-hidden',
-            // 若为同一文件的多行拆分，中间无缝拼接为一体大卡片
-            isFirstOfMulti
-              ? 'border-b-transparent'
-              : isLastOfMulti
-                ? 'border-t-transparent border-b'
-                : 'border-b',
-            isRowActive
-              ? 'bg-primary/10 dark:bg-primary/20 border-l-[3px] border-l-primary pl-[13px]'
-              : 'hover:bg-accent/40 dark:hover:bg-accent/30'
-          )}
-          data-index={index}
-          data-path={item.path}
-          title={rowTooltip}
-          onClick={e => onItemClick(index, e)}
-          onDoubleClick={() => onDoubleClick?.()}
-          onContextMenu={e => onContextMenu(e, item)}
-        >
-          {/* 全宽抽帧预览 Grid：无左侧图标，无右侧信息条，全部宽度纯粹留给抽帧预览 */}
-          <div className="w-full h-full flex items-center gap-3 overflow-x-auto no-scrollbar py-0.5">
-            {item.matchedChunks!.map((chunk, cIdx) => (
-              <VideoChunkFrame
-                key={cIdx}
-                chunk={chunk}
-                filePath={item.path}
-                category={(item as any).category}
-                onPreviewSeek={handlePreviewSeek}
-              />
-            ))}
-          </div>
-        </div>
-      )
-    }
+    // 音频切片合集（兼容多切片 matchedChunks 与单切片 matchedChunk）
+    const audioChunks = useMemo(() => {
+      if (hasMatchedChunks) return item.matchedChunks!
+      if (item.matchedChunk) return [item.matchedChunk]
+      return []
+    }, [hasMatchedChunks, item.matchedChunks, item.matchedChunk])
 
-    // ==========================================
-    // 普通图文行模式 (默认)
-    // ==========================================
+    const effectiveCardHeight = cardHeight && cardHeight >= 80 ? Math.min(220, cardHeight) : 104
+    // 左侧缩略图尺寸随行高弹性放大（行高 104 时为 64px，最大 140px）
+    const mediaSize = Math.max(56, Math.min(140, Math.round(effectiveCardHeight * 0.65)))
+    // 视频抽帧高度：按 16:9 比例等比变大变清晰（基准 38px，最大 80px）
+    const chunkFrameHeight = Math.max(34, Math.min(80, Math.round((effectiveCardHeight - 60) * 0.7)))
+
+    // 图片多模态描述内容
+    const imageDesc = item.multimodalContent || item.description || ''
+
     return (
       <div
         className={cn(
-          'w-full h-full px-4 py-2 flex items-start gap-3 border-b border-border/30 select-none transition-colors duration-150',
+          'w-full box-border px-4 py-2 flex items-center gap-3 border-b border-border/30 select-none transition-colors duration-150',
           'search-list-card overflow-hidden',
           isUnanalyzed && 'bg-amber-500/[0.02] dark:bg-amber-950/10',
           isRowActive
             ? 'bg-primary/10 dark:bg-primary/20 border-l-[3px] border-l-primary pl-[13px]'
             : 'hover:bg-accent/40 dark:hover:bg-accent/30'
         )}
+        style={{ height: `${effectiveCardHeight}px` }}
         data-index={index}
         data-path={item.path}
         onClick={e => onItemClick(index, e)}
         onDoubleClick={() => onDoubleClick?.()}
         onContextMenu={e => onContextMenu(e, item)}
       >
-        {/* 左侧：文件图标 */}
-        <div className="shrink-0 flex items-center justify-center pt-1">
-          <SystemFileIcon
-            path={item.path}
-            extension={item.extension}
-            className="w-7 h-7 object-contain flex-shrink-0"
-            fallback={
-              <MaterialIcon icon="description" className="text-2xl flex-shrink-0 text-primary" />
-            }
-          />
-        </div>
-
-        {/* 中间：智能文件名、真实路径、描述与切片（自适应宽度，溢出截断） */}
-        <div className="flex-1 min-w-0 flex flex-col justify-center gap-1 overflow-hidden">
-          {/* 1. 文件名 */}
-          <div className="flex items-center gap-1.5 min-w-0">
-            <HighlightText
-              text={primaryName}
-              className="text-[13px] font-semibold text-foreground tracking-tight truncate max-w-full"
-              title={primaryName}
+        {/* ======================================================== */}
+        {/* 左侧：64×64px 媒体缩略图 / 系统分类图标区 */}
+        {/* ======================================================== */}
+        <div
+          style={{ width: `${mediaSize}px`, height: `${mediaSize}px` }}
+          className="shrink-0 flex items-center justify-center overflow-hidden rounded-md border border-border/40 bg-muted/20"
+        >
+          {activeImageUrl && !imgError ? (
+            <img
+              src={activeImageUrl}
+              alt={safeItemName}
+              loading="lazy"
+              className="w-full h-full object-cover transition-transform duration-200 hover:scale-105"
+              onError={handleImageLoadError}
             />
-            {secondaryName && (
-              <span
-                className="text-[11px] text-muted-foreground/70 truncate shrink min-w-0"
-                title={t('原始文件名: {name}', { name: secondaryName })}
-              >
-                (<HighlightText text={secondaryName} />)
-              </span>
-            )}
-          </div>
-
-          {/* 2. 文件真实路径 */}
-          {item.path && (
-            <div
-              className="text-[11px] font-mono text-muted-foreground/75 truncate"
-              title={item.path}
-            >
-              <HighlightText text={item.path} title={item.path} />
-            </div>
+          ) : (
+            <SystemFileIcon
+              path={item.path}
+              extension={item.extension}
+              iconSize="normal"
+              className="w-8 h-8 object-contain"
+              fallback={
+                <MaterialIcon
+                  icon={isAudio ? 'audio_file' : isVideo ? 'movie' : isImage ? 'image' : 'description'}
+                  className="text-2xl text-primary"
+                />
+              }
+            />
           )}
-
-          {/* 3. 文件描述 / 正文切片 / 未分析提示（非废话，有内容才显示） */}
-          {isUnanalyzed ? (
-            <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 min-w-0 truncate">
-              <span className="truncate">{t('尚未进行 AI 深度分析，命中文件名')}</span>
-              <button
-                type="button"
-                disabled={isQueueSubmitting}
-                className="shrink-0 inline-flex items-center gap-0.5 text-[11px] font-medium text-amber-700 dark:text-amber-300 hover:underline cursor-pointer disabled:opacity-50"
-                onClick={handleAnalyzeNow}
-              >
-                <MaterialIcon icon="bolt" className="text-xs" />
-                <span>{isQueueSubmitting ? t('已提交') : t('立即分析')}</span>
-              </button>
-            </div>
-          ) : item.snippet ? (
-            <p
-              className="text-xs text-foreground/80 leading-relaxed line-clamp-2 [&_mark]:bg-amber-300/60 [&_mark]:dark:bg-amber-400/30 [&_mark]:text-amber-950 [&_mark]:dark:text-amber-100 [&_mark]:font-semibold [&_mark]:rounded-sm [&_mark]:px-0.5 overflow-hidden"
-              dangerouslySetInnerHTML={{ __html: sanitizeSnippetHtml(item.snippet) }}
-            />
-          ) : item.description ? (
-            <p className="text-xs text-foreground/75 leading-relaxed line-clamp-2 truncate">
-              <HighlightText text={item.description} />
-            </p>
-          ) : null}
         </div>
 
-        {/* 右侧：召回 label（仅语义召回展示）、修改时间和文件大小 */}
-        <div className="shrink-0 flex flex-col items-end justify-between self-stretch text-xs pl-2 text-right">
-          {/* 召回 label：拼音展开、语义召回或视频匹配 */}
-          <div className="flex items-center gap-1 justify-end min-h-[20px]">
-            {item.matchedPinyinCandidate && (
+        {/* ======================================================== */}
+        {/* 右侧：高度定准 87px，严格三行式信息流 */}
+        {/* ======================================================== */}
+        <div
+          style={{ height: `${effectiveCardHeight - 16}px` }}
+          className="flex-1 min-w-0 flex flex-col justify-between overflow-hidden"
+        >
+          {/* ------------------------------------------------------ */}
+          {/* 第一行 (Row 1, 22px)：主文件名 + 双层 Flex 绝对右对齐度量列 */}
+          {/* ------------------------------------------------------ */}
+          <div className="flex items-center justify-between min-w-0 h-[22px]">
+            {/* 左侧：智能文件名 / 原文件名 */}
+            <div className="flex items-center gap-1.5 min-w-0 flex-1 mr-2">
+              <HighlightText
+                text={primaryName}
+                className="text-[13px] font-semibold text-foreground tracking-tight truncate max-w-full"
+                title={item.path ? `${primaryName}\n${item.path}` : primaryName}
+              />
+            </div>
+
+            {/* 右侧：双层 Flex 度量区（国际化自适应召回徽标 + 确定宽度时间与大小列） */}
+            <div className="flex items-center gap-2 shrink-0 ml-2">
+              {/* 1. 语义召回与展开徽标（随国际化语言长度自适应展开，无多余空隙） */}
+              <div className="flex items-center gap-1 shrink-0">
+                {item.matchedPinyinCandidate && (
+                  <span
+                    className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded border text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/70 border-purple-200 dark:border-purple-800 shrink-0 whitespace-nowrap"
+                    title={t('拼音展开: {cand}', { cand: item.matchedPinyinCandidate })}
+                  >
+                    <MaterialIcon icon="translate" className="text-[11px]" />
+                    <span className="truncate max-w-[90px]">{item.matchedPinyinCandidate}</span>
+                  </span>
+                )}
+                {isSemantic && (
+                  <span
+                    className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded border text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-950/70 border-violet-200 dark:border-violet-800 shrink-0 whitespace-nowrap"
+                    title={t('向量语义召回')}
+                  >
+                    <MaterialIcon icon="psychology" className="text-[11px]" />
+                    <span>{semanticLabel}</span>
+                  </span>
+                )}
+              </div>
+
+              {/* 2. 确定宽度度量列 (时间固定 78px 靠左，大小固定 70px 靠右，纵向对齐) */}
+              <div className="flex items-center shrink-0 gap-2 font-mono text-[11px]">
+                <span
+                  className="w-[70px] text-left text-muted-foreground/75 truncate shrink-0"
+                  title={item.modifiedAt ? formatDateTimeShort(item.modifiedAt) : undefined}
+                >
+                  {item.modifiedAt ? formatDateTimeShort(item.modifiedAt) : '-'}
+                </span>
+                <span className="w-[50px] text-right text-foreground/80 font-medium shrink-0">
+                  {formatFileSize(item.size)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* ------------------------------------------------------ */}
+          {/* 第二行 (Row 2, 20px)：真实文件名 (Hover 显路径) + 标签序列 */}
+          {/* ------------------------------------------------------ */}
+          <div className="flex items-center gap-2 min-w-0 h-[20px]">
+            {secondaryName ? (
               <span
-                className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded border text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/70 border-purple-200 dark:border-purple-800 shrink-0"
-                title={t('拼音展开: {cand}', { cand: item.matchedPinyinCandidate })}
+                className="text-[11px] font-mono text-muted-foreground/80 max-w-[240px] truncate shrink-0 cursor-default hover:text-foreground transition-colors"
+                title={item.path}
               >
-                <MaterialIcon icon="translate" className="text-[11px]" />
-                <span>{item.matchedPinyinCandidate}</span>
+                <HighlightText text={secondaryName} />
               </span>
-            )}
-            {isSemantic && (
-              <span
-                className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded border text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-950/70 border-violet-200 dark:border-violet-800 shrink-0"
-                title={t('向量语义召回')}
+            ) : null}
+
+            {/* 标签微胶囊序列（三级梯队排序：关键词命中 > 融合标签 > 其它随机；过滤全年龄/已归档） */}
+            {organizedTags.length > 0 && (
+              <div
+                className="flex items-center gap-1 overflow-hidden shrink min-w-0"
+                title={organizedTags.map(t => `#${t.name}`).join(' ')}
               >
-                <MaterialIcon icon="psychology" className="text-[11px]" />
-                <span>{semanticLabel}</span>
-              </span>
-            )}
-            {item.matchedChunk && (
-              <span
-                className="inline-flex items-center gap-1 text-[10px] font-mono font-medium px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 shrink-0 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/80 transition-colors"
-                title={t('在外部应用中精准定位打开')}
-                onClick={async (e) => {
-                  e.stopPropagation()
-                  try {
-                    const rawCat = (item as any).category
-                    const cat = typeof rawCat === 'object' && rawCat !== null ? rawCat.label : rawCat
-                    const outcome = await window.electronAPI!.utils.launchExternalDeepLink({
-                      filePath: item.path,
-                      category: cat || '',
-                      seekSeconds: item.matchedChunk!.startSec
-                    })
-                    if (outcome.fallbackToDefault) {
-                      toast.info(t('未检测到支持精准定位的外部应用，已按默认方式打开'))
-                    }
-                  } catch (error: any) {
-                    logger.error(LogCategory.RENDERER, '外部深链定位打开失败:', error)
-                    toast.error(t('打开文件失败'))
-                  }
-                }}
-              >
-                <MaterialIcon icon="schedule" className="text-[11px]" />
-                <span>{`${formatVideoTimestamp(item.matchedChunk.startSec)} - ${formatVideoTimestamp(item.matchedChunk.endSec)}`}</span>
-              </span>
+                {organizedTags.map((tagItem, tIdx) => (
+                  <span
+                    key={`${tagItem.name}-${tIdx}`}
+                    className={cn(
+                      'inline-flex items-center text-[10px] px-1.5 py-0.2 rounded border shrink-0 truncate max-w-[120px]',
+                      tagItem.isKeywordMatch
+                        ? 'bg-primary/15 text-primary border-primary/35 font-medium'
+                        : tagItem.isFused
+                          ? 'bg-secondary/80 text-secondary-foreground border-border/50'
+                          : 'bg-secondary/45 text-muted-foreground/90 border-border/30'
+                    )}
+                  >
+                    #{tagItem.name}
+                  </span>
+                ))}
+              </div>
             )}
           </div>
 
-          {/* 修改时间与文件大小 */}
-          <div className="flex flex-col items-end gap-0.5 text-muted-foreground/75 mt-auto">
-            <span className="text-[11px]">
-              {item.modifiedAt ? formatDateTimeShort(item.modifiedAt) : '-'}
-            </span>
-            <span className="text-[11px] font-mono font-medium">
-              {formatFileSize(item.size)}
-            </span>
+          {/* ------------------------------------------------------ */}
+          {/* 第三行 (Row 3, 42px)：类型化专有内容（文本/图片/视频/音频） */}
+          {/* ------------------------------------------------------ */}
+          <div className="w-full flex-1 min-h-0 flex items-center min-w-0 overflow-hidden">
+            {/* 分支 1: 视频微缩抽帧序列 */}
+            {isVideo && videoChunks.length > 0 ? (
+              <div className="w-full h-full flex items-center gap-2 overflow-x-auto overflow-y-hidden no-scrollbar py-0.5">
+                {videoChunks.map((chunk, cIdx) => (
+                  <VideoChunkFrame
+                    key={cIdx}
+                    chunk={chunk}
+                    filePath={item.path}
+                    category={(item as any).category}
+                    frameHeight={chunkFrameHeight}
+                    onPreviewSeek={handlePreviewSeek}
+                    onItemSelect={handleChunkSelect}
+                  />
+                ))}
+              </div>
+            ) : isAudio && audioChunks.length > 0 ? (
+              /* 分支 2: 音频时序 ASR 命名切片芯片序列 */
+              <div className="w-full h-full flex items-center gap-2 overflow-x-auto overflow-y-hidden no-scrollbar py-0.5">
+                {audioChunks.map((chunk, cIdx) => (
+                  <AudioChunkChip
+                    key={cIdx}
+                    chunk={{
+                      ...chunk,
+                      text: (chunk as any).text || item.snippet || item.description
+                    }}
+                    filePath={item.path}
+                    category={(item as any).category}
+                    onPreviewSeek={handlePreviewSeek}
+                    onItemSelect={handleChunkSelect}
+                  />
+                ))}
+              </div>
+            ) : isImage && imageDesc ? (
+              /* 分支 3: 图片多模态 AI 描述 */
+              <div
+                className={cn(
+                  'text-xs text-foreground/80 overflow-hidden leading-relaxed break-words w-full',
+                  effectiveCardHeight > 170 ? 'line-clamp-6' : effectiveCardHeight > 135 ? 'line-clamp-4' : 'line-clamp-2'
+                )}
+                title={imageDesc}
+              >
+                <span className="inline-flex items-center gap-1 text-primary font-medium mr-1.5 select-none">
+                  <MaterialIcon icon="auto_awesome" className="text-xs text-violet-500" />
+                  {t('AI描述')}:
+                </span>
+                <HighlightText text={imageDesc} />
+              </div>
+            ) : isUnanalyzed ? (
+              /* 分支 4: 未分析状态提示与立即分析按钮 */
+              <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 min-w-0 truncate">
+                <span className="truncate">{t('尚未进行 AI 深度分析，命中文件名')}</span>
+                <button
+                  type="button"
+                  disabled={isQueueSubmitting}
+                  className="shrink-0 inline-flex items-center gap-0.5 text-[11px] font-medium text-amber-700 dark:text-amber-300 hover:underline cursor-pointer disabled:opacity-50"
+                  onClick={handleAnalyzeNow}
+                >
+                  <MaterialIcon icon="bolt" className="text-xs" />
+                  <span>{isQueueSubmitting ? t('已提交') : t('立即分析')}</span>
+                </button>
+              </div>
+            ) : item.snippet ? (
+              /* 分支 5: 文本富高亮摘要 */
+              <p
+                className={cn(
+                  'text-xs text-foreground/80 leading-snug [&_mark]:bg-amber-300/60 [&_mark]:dark:bg-amber-400/30 [&_mark]:text-amber-950 [&_mark]:dark:text-amber-100 [&_mark]:font-semibold [&_mark]:rounded-sm [&_mark]:px-0.5 overflow-hidden',
+                  effectiveCardHeight > 170 ? 'line-clamp-6' : effectiveCardHeight > 135 ? 'line-clamp-4' : 'line-clamp-2'
+                )}
+                title={item.snippet.replace(/<[^>]+>/g, '')}
+                dangerouslySetInnerHTML={{ __html: sanitizeSnippetHtml(item.snippet) }}
+              />
+            ) : item.description ? (
+              /* 分支 6: 普通文件描述 */
+              <p
+                className={cn(
+                  'text-xs text-foreground/75 leading-snug overflow-hidden',
+                  effectiveCardHeight > 170 ? 'line-clamp-6' : effectiveCardHeight > 135 ? 'line-clamp-4' : 'line-clamp-2'
+                )}
+                title={item.description}
+              >
+                <HighlightText text={item.description} />
+              </p>
+            ) : (
+              /* 分支 7: 兜底路径/格式提示 */
+              <span className="text-[11px] text-muted-foreground/60 italic">
+                {t('无额外上下文信息')}
+              </span>
+            )}
           </div>
         </div>
       </div>

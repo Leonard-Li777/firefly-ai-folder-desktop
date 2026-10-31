@@ -54,6 +54,17 @@ interface PreviewOverlayState {
   } | null
 }
 
+/** 正在播放的视频全局活跃播放进度单例（秒），用于分栏/全屏/外部应用无缝秒级接力，不触发重绘 */
+let currentVideoPlaybackTime: number | undefined = undefined
+
+export function setCurrentVideoPlaybackTime(time: number | undefined): void {
+  currentVideoPlaybackTime = time
+}
+
+export function getCurrentVideoPlaybackTime(): number | undefined {
+  return currentVideoPlaybackTime
+}
+
 function getStorageKey(pageId: string): string {
   return `preview-mode-${pageId}`
 }
@@ -117,6 +128,7 @@ export const usePreviewOverlayStore = create<PreviewOverlayState>((set, get) => 
     const state = get()
     const currentTime = options?.currentTime
     const highlightRange = options?.highlightRange
+    setCurrentVideoPlaybackTime(currentTime)
 
     // 优先读取显式设置的 state.previewMode（供单元测试/单页控制），否则按 pageStates/storage 规则
     const pageMode =
@@ -195,6 +207,7 @@ export const usePreviewOverlayStore = create<PreviewOverlayState>((set, get) => 
   },
 
   closePreview: pageId => {
+    setCurrentVideoPlaybackTime(undefined)
     const state = get()
     if (pageId && state.activePageId && state.activePageId !== pageId) return
     const targetPageId = pageId || state.activePageId
@@ -263,6 +276,7 @@ export const usePreviewOverlayStore = create<PreviewOverlayState>((set, get) => 
 
   /** 清空预览内容但不改变页面模式（用于单击不可预览文件时回到提示页面） */
   clearPreview: pageId => {
+    setCurrentVideoPlaybackTime(undefined)
     const state = get()
     if (pageId && state.activePageId !== pageId && !state.filePath) return
     if (
@@ -309,21 +323,67 @@ export const usePreviewOverlayStore = create<PreviewOverlayState>((set, get) => 
     const newMode: PagePreviewMode = currentMode === 'fullscreen' ? 'split' : 'fullscreen'
     savePagePreviewMode(targetPageId, newMode)
 
-    if (newMode === 'fullscreen' && state.filePath && state.activePageId === targetPageId) {
+    const targetPageState = targetPageId ? state.pageStates[targetPageId] : undefined
+    const effectiveFilePath = targetPageState?.filePath || state.filePath
+    const effectiveFileName = targetPageState?.fileName || state.fileName
+    const effectiveExtension = targetPageState?.extension || state.extension
+    const liveTime = getCurrentVideoPlaybackTime()
+    const effectiveCurrentTime = liveTime ?? targetPageState?.currentTime ?? state.currentTime
+    const effectiveHighlightRange = targetPageState?.highlightRange ?? state.highlightRange
+
+    if (newMode === 'fullscreen' && effectiveFilePath) {
       set({
         previewMode: newMode,
+        activePageId: targetPageId || state.activePageId,
+        filePath: effectiveFilePath,
+        fileName: effectiveFileName,
+        extension: effectiveExtension,
+        currentTime: effectiveCurrentTime,
+        highlightRange: effectiveHighlightRange,
+        isOpen: true,
         ...(targetPageId
-          ? { pageStates: { ...state.pageStates, [targetPageId]: { mode: newMode } } }
-          : {}),
-        isOpen: true
+          ? {
+              pageStates: {
+                ...state.pageStates,
+                [targetPageId]: {
+                  ...state.pageStates[targetPageId],
+                  mode: newMode,
+                  filePath: effectiveFilePath,
+                  fileName: effectiveFileName,
+                  extension: effectiveExtension,
+                  currentTime: effectiveCurrentTime,
+                  highlightRange: effectiveHighlightRange
+                }
+              }
+            }
+          : {})
       })
-    } else if (newMode === 'split' && state.filePath && state.activePageId === targetPageId) {
+    } else if (newMode === 'split') {
       set({
         previewMode: newMode,
+        activePageId: targetPageId || state.activePageId,
+        filePath: effectiveFilePath,
+        fileName: effectiveFileName,
+        extension: effectiveExtension,
+        currentTime: effectiveCurrentTime,
+        highlightRange: effectiveHighlightRange,
+        isOpen: false,
         ...(targetPageId
-          ? { pageStates: { ...state.pageStates, [targetPageId]: { mode: newMode } } }
-          : {}),
-        isOpen: false
+          ? {
+              pageStates: {
+                ...state.pageStates,
+                [targetPageId]: {
+                  ...state.pageStates[targetPageId],
+                  mode: newMode,
+                  filePath: effectiveFilePath,
+                  fileName: effectiveFileName,
+                  extension: effectiveExtension,
+                  currentTime: effectiveCurrentTime,
+                  highlightRange: effectiveHighlightRange
+                }
+              }
+            }
+          : {})
       })
     } else {
       set({

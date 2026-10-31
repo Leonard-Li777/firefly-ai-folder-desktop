@@ -254,3 +254,79 @@ html:lang(es) :where(label.form-label),
 html:lang(fr) :where(label.form-label) {
   font-size: calc(1em - 0.5px);
 }
+
+
+/* ==========================================================================
+   6. 文件列表与搜索加载态美化兜底 (FileList & Search Loading Fallback)
+   ========================================================================== */
+
+.file-list-loading {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 220px !important;
+  user-select: none;
+}
+
+.loading-spinner {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+}
+
+
+/* ==========================================================================
+   7. 通栏 Loading 进度条动画 (Full-width Indeterminate Loading Bar)
+   ========================================================================== */
+
+@keyframes indeterminate-bar {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(25%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-indeterminate-bar {
+  width: 100%;
+  will-change: transform;
+  animation: indeterminate-bar 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* ==========================================================================
+   TTS 局部播放飞入全局控制条时的目标脉冲光晕引导动效
+   ========================================================================== */
+@keyframes tts-bar-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(var(--primary-rgb, 99, 102, 241), 0.7);
+  }
+  30% {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 8px rgba(var(--primary-rgb, 99, 102, 241), 0.35);
+  }
+  60% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 14px rgba(var(--primary-rgb, 99, 102, 241), 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(var(--primary-rgb, 99, 102, 241), 0);
+  }
+}
+
+.tts-bar-pulse-highlight {
+  animation: tts-bar-pulse 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
+}

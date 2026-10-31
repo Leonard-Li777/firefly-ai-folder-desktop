@@ -21,7 +21,6 @@ import { DirectoryHeader } from '../DirectoryHeader'
 import { DirectoryManagementModals } from './components/DirectoryManagementModals'
 import { FileDetailsPanel } from '../FileDetailsPanel/index'
 import { NoWorkspaceDirectoryMessage } from '../../common/NoWorkspaceDirectoryMessage'
-import { OrganizeModals } from './components/OrganizeModals'
 import { QuotaWarningBar } from '../QuotaWarningBar'
 import { UtilityModals } from './components/UtilityModals'
 import { performanceTracker } from '../../../lib/performance-metrics'
@@ -58,6 +57,7 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
     s => s.setCurrentWorkspaceDirectory
   )
   const dimensionGroups = useAnalyzedDirectoryStore(s => s.dimensionGroups)
+  const pathCountMap = useAnalyzedDirectoryStore(s => s.pathCountMap)
   const selectedTags = useAnalyzedDirectoryStore(s => s.selectedTags)
   const setSelectedTags = useAnalyzedDirectoryStore(s => s.setSelectedTags)
   const addSelectedTag = useAnalyzedDirectoryStore(s => s.addSelectedTag)
@@ -229,37 +229,10 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
   )
 
   const {
-    handleQuickOrganize,
-    handleConfirmOrganize,
-    organizePreview,
-    aiGeneratedStructure,
-    fileMapForOrganize,
-    showConfirmOrganizeDialog,
-    setShowConfirmOrganizeDialog,
-    showOrganizeProgressDialog,
-    organizeProgress,
-    showOrganizeErrorDialog,
-    setShowOrganizeErrorDialog,
-    organizeResult,
-    setShowResultDialog,
-    showResultDialog,
-    showAIProgressDialog,
-    setShowAIProgressDialog,
-    aiBatchProgress,
     showEmptyFolderCleanupDialog,
     setShowEmptyFolderCleanupDialog,
     emptyFolderScanPath,
-    setEmptyFolderScanPath,
-    showConflictDialog,
-    setShowConflictDialog,
-    conflicts,
-    handleConflictResolve,
-    handleConflictCancel,
-    handleCancelAIOrganize,
-    handleDeleteNode,
-    onPauseToggle,
-    onEnd,
-    isPaused
+    setEmptyFolderScanPath
   } = organize
 
   /**
@@ -280,14 +253,7 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
     }
   }, [])
 
-  // 清除路由状态，避免刷新页面时仍然保持整理模式
-  useEffect(() => {
-    if (location.state?.startInOrganizeMode) {
-      clearRouteUserState()
-    }
-  }, [clearRouteUserState, location.state])
-
-  // 监听路由状态变化，当从虚拟目录传入 startInOrganizeMode 时进入整理模式
+  // 监听路由状态变化，当传入 startInOrganizeMode 时进入整理模式并清理单次路由载荷
   useEffect(() => {
     if (location.state?.startInOrganizeMode) {
       setIsOrganizeMode(true)
@@ -397,10 +363,7 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
     performanceTracker.logReport('Switch to Analyzed Directory')
   }, [])
 
-  const handleConfirmOrganizeAnalyzedDirectory = useCallback(async () => {
-    navigate('/organize')
-  }, [navigate])
-
+  
   const selectionStack = useMemo(() => {
     return selectedTags.map(t => `${t.dimensionId}::${t.parentTagValue || ''}::${t.tagValue}`)
   }, [selectedTags])
@@ -512,6 +475,7 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
             }
           }}
           dropdownRef={dropdownRef}
+          isLoading={isLoading || isDimensionLoading}
           onSearch={kw => {
             if (selectedTags.length > 0) clearSelectedTags()
             setAnalyzedDirectoryKeyword(kw)
@@ -610,7 +574,14 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
                       </div>
                     </div>
                     <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                      {isDimensionLoading && dimensionGroups.length === 0 ? (
+                      {/*
+                        已确认「零已分析文件」（analyzedFilesCount === 0）时不再进入加载分支：
+                        此时维度树必然为空，若仍按 isDimensionLoading 转圈，会因主进程等待 Omni
+                        引擎冷启动（探活最长 40s）而长时间停在"加载中"。直接落到"暂无数据"。
+                      */}
+                      {isDimensionLoading &&
+                      dimensionGroups.length === 0 &&
+                      analyzedFilesCount !== 0 ? (
                         <div className="text-center py-8">
                           <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-primary mb-2"></div>
                           <p>{t('加载中...')}</p>
@@ -620,6 +591,7 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
                       ) : (
                         <DimensionTreeSidebar
                           dimensionGroups={dimensionGroups}
+                          pathCountMap={pathCountMap}
                           showEmptyTags={showEmptyTags}
                           isExportMode={isMultiSelectMode}
                           showSelectAll={isMultiSelectMode}
@@ -811,50 +783,7 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
         }}
       />
 
-      <OrganizeModals
-        currentWorkspaceDirectory={currentWorkspaceDirectory}
-        showConfirmOrganizeDialog={showConfirmOrganizeDialog}
-        setShowConfirmOrganizeDialog={setShowConfirmOrganizeDialog}
-        organizePreview={organizePreview}
-        aiGeneratedStructure={aiGeneratedStructure}
-        fileMapForOrganize={fileMapForOrganize}
-        handleConfirmOrganize={handleConfirmOrganize}
-        handleQuickOrganize={handleQuickOrganize}
-        handleConfirmOrganizeAnalyzedDirectory={handleConfirmOrganizeAnalyzedDirectory}
-        showOrganizeProgressDialog={showOrganizeProgressDialog}
-        organizeProgress={organizeProgress}
-        showOrganizeErrorDialog={showOrganizeErrorDialog}
-        setShowOrganizeErrorDialog={setShowOrganizeErrorDialog}
-        organizeResult={organizeResult}
-        showResultDialog={showResultDialog}
-        setShowResultDialog={setShowResultDialog}
-        showAIProgressDialog={showAIProgressDialog}
-        setShowAIProgressDialog={setShowAIProgressDialog}
-        aiBatchProgress={aiBatchProgress}
-        handleCancelAIOrganize={handleCancelAIOrganize}
-        showConflictDialog={showConflictDialog}
-        conflicts={conflicts}
-        handleConflictResolve={handleConflictResolve}
-        handleConflictCancel={handleConflictCancel}
-        onPauseToggle={onPauseToggle}
-        onEnd={onEnd}
-        isPaused={isPaused}
-        onDeleteNode={handleDeleteNode}
-        handleExportLog={async () => {
-          if (!organizeResult || !currentWorkspaceDirectory) return
-          const res = await window.electronAPI!.utils.showSaveDialog({
-            title: t('导出错误日志'),
-            defaultPath: 'errors.json'
-          })
-          if (!res.canceled && res.filePath)
-            await window.electronAPI!.utils.writeFile(
-              res.filePath,
-              JSON.stringify(organizeResult.errors)
-            )
-        }}
-      />
-
-      <UtilityModals
+            <UtilityModals
         currentWorkspaceDirectory={currentWorkspaceDirectory}
         selectedTags={selectedTags}
         dimensionGroups={dimensionGroups}
@@ -918,9 +847,9 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
                   {t('此操作将永久删除所选标签并清理所有文件的关联关系，不可撤销。')}
                 </p>
                 <div className="max-h-32 overflow-y-auto p-2 bg-muted/50 rounded border border-border/40 text-xs flex flex-wrap gap-1.5 mt-2">
-                  {selectedTags.map(tag => (
+                  {selectedTags.map((tag, idx) => (
                     <span
-                      key={`${tag.dimensionId}-${tag.tagValue}`}
+                      key={`${tag.dimensionId}-${tag.tagValue}-${tag.codePath || tag.code || idx}`}
                       className="px-1.5 py-0.5 bg-background rounded border border-border/60 text-foreground text-[11px]"
                     >
                       {tag.tagValue}

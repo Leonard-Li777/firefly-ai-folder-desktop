@@ -19,7 +19,13 @@ import {
   isControlledConcept,
   isControlledDimensionApplicableInDomain,
   getParentDimensionCodeOfTag,
-  classifyDimensionMutexScope
+  CONTROLLED_CONCEPT_DETAILS,
+  classifyDimensionMutexScope,
+  resolveMediaDomain,
+  getFileCategory,
+  CONTROLLED_CODE_TO_CANONICAL_NAME,
+  DIMENSION_CODES,
+  type TagProvenanceGroup
 } from '@firefly/shared'
 import {
   findTagCodeTwoStage,
@@ -174,6 +180,46 @@ export class DatabaseService {
     return null
   }
 
+  /**
+   * 判定批量打标标签的出处来源分组 tag_group (ADR-0045)
+   * 铁律：
+   * 1. 只有在受控本体三级分层（OMW > HowNet > Builtin）中找不到、作为私有标签在 file_tags_private
+   *    注册或生成的自定义标签，才归入 'user'（用户标签）；
+   * 2. 属于三级受控体系的标签，绝不归入 'user'；
+   *    - 若挂载在内容标签/语义维度（builtin.content_tags），归入 'fused'；
+   *    - 若挂载在其它物理事实/元数据维度（安全等级、处理状态、文件来源、文件质量、各类细分扩展名等），归入 'fact'。
+   */
+  private resolveBatchTagProvenanceGroup(
+    tagCode: string,
+    viaParentCode?: string,
+    isControlled?: boolean
+  ): TagProvenanceGroup {
+    const isAuthoritativeControlled =
+      Boolean(CONTROLLED_CODE_TO_CANONICAL_NAME[tagCode]) ||
+      tagCode.startsWith('omw.') ||
+      tagCode.startsWith('hownet.')
+
+    // 只要不是显式认定的权威受控码（或调用方已明确声明 isControlled === false，或以 _ext./custom. 开头），一律稳稳归入 'user'
+    if (
+      isControlled === false ||
+      !isAuthoritativeControlled ||
+      tagCode.startsWith('_ext.') ||
+      tagCode.startsWith('custom.')
+    ) {
+      return 'user'
+    }
+
+    if (
+      viaParentCode === concept('内容标签') ||
+      viaParentCode === 'builtin.content_tags' ||
+      viaParentCode === DIMENSION_CODES.CONTENT_TAGS
+    ) {
+      return 'fused'
+    }
+
+    return 'fact'
+  }
+
   /** 迁移完成后执行的回调列表 */
   private postMigrationCallbacks: Array<(db: Database.Database, language: LanguageCode) => void> =
     []
@@ -293,6 +339,17 @@ export class DatabaseService {
         this.ensureCompatibilityTables()
 
         this.cleanupOrphanQueueItems()
+
+        // 拼音正排索引启动回填（设计文档 §4.4）：幂等 hash 闸门扫描，新鲜行零成本跳过；
+        // 未完成部分由行内游标续扫（周期 reconciler 接入后从断点继续）；
+        // optimize 由回填内部按需触发（确有写入或未完成时才付段合并成本）
+        try {
+          this.fileDao.syncPinyinIndexBackfill(3_000)
+        } catch (pinyinError) {
+          logger.warn(LogCategory.DATABASE_SERVICE, '拼音索引启动回填失败（不影响启动）', {
+            error: pinyinError
+          })
+        }
 
         // 执行迁移后回调（如：从本地 JSON 加载初始配置）
         for (const cb of this.postMigrationCallbacks) {
@@ -685,6 +742,12 @@ export class DatabaseService {
         DROP TABLE IF EXISTS omw_lexical_entries;
         DROP TABLE IF EXISTS omw_synsets;
         DROP TABLE IF EXISTS omw_languages;
+
+        -- 历史存量语言字段归一化为 BCP 47 规范格式（如 zh-CN, en-US）
+        UPDATE files SET language = 'zh-CN' WHERE language IN ('zh', 'zh_CN', 'zh-cn');
+        UPDATE files SET language = 'en-US' WHERE language IN ('en', 'en_US', 'en-us');
+        UPDATE files SET language = 'ja-JP' WHERE language IN ('ja', 'ja_JP', 'ja-jp');
+        UPDATE files SET language = 'ko-KR' WHERE language IN ('ko', 'ko_KR', 'ko-kr');
       `)
 
     } catch (error) {
@@ -1444,40 +1507,81 @@ export class DatabaseService {
 
     for (let i = 0; i < combinedAddTags.length; i++) {
       const item = combinedAddTags[i]
-      const dimCode =
+      let dimCode =
         item.viaParentCode ||
         item.dimensionCode ||
-        this.resolveDimensionCode((item as any).dimensionId, item.dimensionName) ||
-        concept('内容标签')
+        this.resolveDimensionCode((item as any).dimensionId, item.dimensionName)
 
       // 只有显式传入已完成鉴别且匹配父级的受控 code，或显式传入的私有 code 时，才跳过 Omni 预检
       const explicitTagCode = (item as any).tagCode
 
-      if (explicitTagCode) {
+      // 优先从受控本体反查规范父维度，阻断受控标签私自跌落内容标签伪分支
+      if (!dimCode || dimCode === concept('内容标签')) {
+        const autoParent =
+          (isControlledConcept(item.tagName)
+            ? (CONTROLLED_CONCEPT_DETAILS[item.tagName]?.parentName
+                ? concept(CONTROLLED_CONCEPT_DETAILS[item.tagName].parentName as any)
+                : undefined)
+            : undefined) ||
+          (explicitTagCode ? getParentDimensionCodeOfTag(explicitTagCode) : undefined)
+        dimCode = autoParent || dimCode || concept('内容标签')
+      }
+      const safeDimCode: string = dimCode || concept('内容标签')
+
+            // 权威受控反查与伪代码净化：凡是以 builtin. 或 dim. 开头但不在权威受控字典中，或包含非 ASCII 字符的，一律判定为非法拼接伪码
+      let safeExplicitTagCode = explicitTagCode
+      const isBogusControlledCode =
+        Boolean(safeExplicitTagCode) &&
+        ((safeExplicitTagCode.startsWith('builtin.') ||
+          safeExplicitTagCode.startsWith('dim.') ||
+          /[^\u0020-\u007E]/.test(safeExplicitTagCode)) &&
+          !CONTROLLED_CODE_TO_CANONICAL_NAME[safeExplicitTagCode])
+
+      if (isBogusControlledCode) {
+        // 提取尾段真实词面（如从 "builtin.security_level.内部" 提取 "内部"）
+        const tailLemma = safeExplicitTagCode.split('.').pop() || ''
+        const candidateName = item.tagName || tailLemma
+        if (isControlledConcept(candidateName)) {
+          safeExplicitTagCode = concept(candidateName)
+        } else {
+          // 查找规范展示名别名反查
+          let foundControlledCode: string | undefined
+          for (const [code, canonName] of Object.entries(CONTROLLED_CODE_TO_CANONICAL_NAME)) {
+            if (canonName.toLowerCase() === candidateName.toLowerCase()) {
+              foundControlledCode = code
+              break
+            }
+          }
+          safeExplicitTagCode = foundControlledCode
+        }
+      }
+
+      if (safeExplicitTagCode) {
         // 已有受控或私有 tagCode
         const isControlled =
-          !explicitTagCode.startsWith('_ext.') &&
-          !explicitTagCode.startsWith('custom.') &&
-          (explicitTagCode.startsWith('omw.') ||
-            explicitTagCode.startsWith('hownet.') ||
-            explicitTagCode.startsWith('builtin.'))
+          !safeExplicitTagCode.startsWith('_ext.') &&
+          !safeExplicitTagCode.startsWith('custom.') &&
+          (safeExplicitTagCode.startsWith('omw.') ||
+            safeExplicitTagCode.startsWith('hownet.') ||
+            safeExplicitTagCode.startsWith('builtin.') ||
+            Boolean(CONTROLLED_CODE_TO_CANONICAL_NAME[safeExplicitTagCode]))
         const matchedParent = (item as any).matchedParent !== false
         resolvedAddTagItems.push({
           tagName: item.tagName,
-          dimCode,
-          tagCode: explicitTagCode,
+          dimCode: safeDimCode,
+          tagCode: safeExplicitTagCode,
           isControlled,
           matchedParent
         })
       } else {
         uninspectedItems.push({
           tagName: item.tagName,
-          targetParentCode: dimCode,
+          targetParentCode: safeDimCode,
           originalIndex: resolvedAddTagItems.length
         })
         resolvedAddTagItems.push({
           tagName: item.tagName,
-          dimCode,
+          dimCode: safeDimCode,
           isControlled: false,
           matchedParent: false
         })
@@ -1620,7 +1724,8 @@ export class DatabaseService {
             const itemCodes: string[] = []
             if (item.tagCode) {
               itemCodes.push(item.tagCode)
-            } else if (item.tagName) {
+            }
+            if (item.tagName) {
               const tagName = String(item.tagName).trim()
               if (tagName) {
                 // 1. 受控概念字典优先解析
@@ -1636,7 +1741,14 @@ export class DatabaseService {
                   itemCodes.push(controlled)
                 }
 
-                // 2. 别名表与私有表解析 (统一委托给 resolveTagCode)
+                // 2. 反查所有具有相同规范展示名的历史/异名受控码（如 omw.01704761.a 对应 公开）
+                for (const [code, canonName] of Object.entries(CONTROLLED_CODE_TO_CANONICAL_NAME)) {
+                  if (canonName === tagName) {
+                    itemCodes.push(code)
+                  }
+                }
+
+                // 3. 别名表与私有表解析 (统一委托给 resolveTagCode)
                 const resolved = this.resolveTagCode(tagName, dimCode)
                 if (resolved) {
                   itemCodes.push(resolved)
@@ -1653,6 +1765,11 @@ export class DatabaseService {
                     }
                   }
                 } catch {}
+
+                // 4. 清理可能存在的历史同名伪受控码（如 builtin.security_level.内部）
+                if (dimCode) {
+                  itemCodes.push(`${dimCode}.${tagName}`)
+                }
 
                 itemCodes.push(tagName)
               }
@@ -1677,12 +1794,26 @@ export class DatabaseService {
         }
 
         // 3. 遍历文件应用或解绑
-        const allAddTagItems: Array<{ tagCode: string; viaParentCode: string; tagName?: string }> = []
+        const allAddTagItems: Array<{
+          tagCode: string
+          viaParentCode: string
+          tagName?: string
+          tagGroup: TagProvenanceGroup
+        }> = []
         for (const [key, code] of createdTagMap.entries()) {
           const parts = key.split(':')
           const dimCode = parts[0] || ''
           const tagName = parts.slice(1).join(':')
-          allAddTagItems.push({ tagCode: code, viaParentCode: dimCode, tagName })
+          const resolvedItem = resolvedAddTagItems.find(
+            r => r.dimCode === dimCode && r.tagName === tagName
+          )
+          const isControlled = resolvedItem?.isControlled ?? (
+            !code.startsWith('_ext.') &&
+            !code.startsWith('custom.') &&
+            (isControlledConcept(tagName) || Boolean(CONTROLLED_CODE_TO_CANONICAL_NAME[code]))
+          )
+          const tagGroup = this.resolveBatchTagProvenanceGroup(code, dimCode, isControlled)
+          allAddTagItems.push({ tagCode: code, viaParentCode: dimCode, tagName, tagGroup })
         }
         for (const code of operation.addTagCodes || []) {
           const found = this._db!.prepare('SELECT code, name, parent_codes FROM file_tags_private WHERE code = ?').get(code) as { code: string; name?: string; parent_codes?: string } | undefined
@@ -1695,43 +1826,37 @@ export class DatabaseService {
               }
             } catch {}
           }
+          const tagName = found?.name || getCanonicalConceptName(code) || code
+          const isControlled =
+            !code.startsWith('_ext.') &&
+            !code.startsWith('custom.') &&
+            (Boolean(CONTROLLED_CODE_TO_CANONICAL_NAME[code]) || Boolean(tagName && isControlledConcept(tagName)))
+          const tagGroup = this.resolveBatchTagProvenanceGroup(code, viaParentCode, isControlled)
           allAddTagItems.push({
             tagCode: code,
             viaParentCode,
-            tagName: found?.name || getCanonicalConceptName(code) || code
+            tagName,
+            tagGroup
           })
         }
 
-        // 全媒体领域排他门控铁律：非视觉介质（音频/文档/代码/压缩包）严禁挂载视觉专有维度与标签
-        const isVisualExclusiveDimension = (dimCode: string, tagCode: string, targetPath: string): boolean => {
-          const ctx = { filePath: targetPath }
+        // 全媒体领域排他门控铁律：非适格介质严禁挂载专有维度与标签
+        const isDimensionApplicableForFile = (dimCode: string, tagCode: string, ctx: any): boolean => {
           const effectiveDim = dimCode || getParentDimensionCodeOfTag(tagCode)
           if (effectiveDim && !isControlledDimensionApplicableInDomain(effectiveDim, ctx)) {
-            return true
+            return false
           }
-          return false
+          if (tagCode && !isControlledDimensionApplicableInDomain(tagCode, ctx)) {
+            return false
+          }
+          return true
         }
 
-        // 提前预计算当前批次待添加标签的物化路径三元组 (O(M) 缓存，杜绝热循环内部 O(N*M) 重复 SQL 查询)
+        // 按领域分片缓存当前批次物化路径三元组 (O(M*Domains) 缓存，杜绝热循环内部重复计算与跨领域串色)
         const materializedMap = new Map<string, { codePath: string; namePath: string; depth: number }>()
-        for (const item of allAddTagItems) {
-          const tagName = item.tagName || getCanonicalConceptName(item.tagCode) || item.tagCode
-          const key = `${item.viaParentCode}:${item.tagCode}`
-          if (!materializedMap.has(key)) {
-            materializedMap.set(
-              key,
-              resolveRuntimeMaterializedPath({
-                db: this._db!,
-                tagCode: item.tagCode,
-                viaParentCode: item.viaParentCode,
-                tagName
-              })
-            )
-          }
-        }
 
         const insertStmt = this._db!.prepare(
-          "INSERT OR REPLACE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, code_path, name_path, depth, tag_group, source, confidence, sync_status, created_at) VALUES (?, ?, ?, ?, ?, ?, 'user', 'user', 1.0, 0, CURRENT_TIMESTAMP)"
+          "INSERT OR REPLACE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, code_path, name_path, depth, tag_group, source, confidence, sync_status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, 'user', 1.0, 0, CURRENT_TIMESTAMP)"
         )
 
         // 预编译指纹与路径查询语句（杜绝循环内重复 prepare）
@@ -1740,7 +1865,7 @@ export class DatabaseService {
         // id / path 仅存在于 workspace_files（database.ts:133-153）。better-sqlite3 的 prepare
         // 是即时编译，引用不存在的列会在此处（逐文件 try/catch 之外）抛错并让整批事务回滚。
         const selectWfByIdStmt = this._db!.prepare('SELECT file_fingerprint, path FROM workspace_files WHERE id = ?')
-        const selectFilesByFpStmt = this._db!.prepare('SELECT file_fingerprint FROM files WHERE file_fingerprint = ?')
+        const selectFilesByFpStmt = this._db!.prepare('SELECT file_fingerprint, extension, file_group FROM files WHERE file_fingerprint = ?')
         const selectWfByPathStmt = this._db!.prepare('SELECT file_fingerprint, path FROM workspace_files WHERE path = ?')
 
         // 预编译精准删除语句（杜绝循环内重复 prepare，对齐 Spec §3.6 性能铁律）
@@ -1771,10 +1896,10 @@ export class DatabaseService {
         // S2 互斥收拢语句（规格 §4.1 阶段 B / §4.3）：与 insertStmt 一同在事务开头预编译，循环内只 run/get。
         // 覆盖删除必须写成「tag_code <> winner」而不是「清空该作用域」——否则 INSERT winner 失败时维度已被清空（P0-A）。
         const selectSiblingsStmt = this._db!.prepare(
-          'SELECT tag_code FROM file_tag_relations WHERE file_fingerprint = ? AND via_parent_code = ? AND tag_code <> ?'
+          'SELECT tag_code FROM file_tag_relations WHERE file_fingerprint = ? AND (via_parent_code = ? OR code_path LIKE (\'%/\' || ? || \'/\') OR tag_code LIKE (? || \'.%\')) AND tag_code <> ?'
         )
         const overrideDeleteStmt = this._db!.prepare(
-          'DELETE FROM file_tag_relations WHERE file_fingerprint = ? AND via_parent_code = ? AND tag_code <> ?'
+          'DELETE FROM file_tag_relations WHERE file_fingerprint = ? AND (via_parent_code = ? OR code_path LIKE (\'%/\' || ? || \'/\') OR tag_code LIKE (? || \'.%\')) AND tag_code <> ?'
         )
 
         // S2 显式移除集合（覆盖删除豁免判定用，规格 §4.4 第三行）：
@@ -1822,27 +1947,77 @@ export class DatabaseService {
             // ────────── S2 阶段 A：候选过滤 / 去重 / 分组 / 裁决（规格 §4.1 步骤 2-6） ──────────
             // 门禁依赖 filePath，故过滤与分组必须逐文件进行（时效性：filePath 是本文件解析结果）。
             // ADR-0045：本路径为用户手动批量打标，来源分组固定落 'user'，source 固定落 'user'。
-            const materializeOf = (tagCode: string, viaParentCode: string, tagName: string) =>
-              materializedMap.get(`${viaParentCode}:${tagCode}`) || {
-                codePath: `/${viaParentCode || 'content_tags'}/${tagCode}`,
-                namePath: `/${viaParentCode || '内容标签'}/${tagName}`,
-                depth: viaParentCode ? 2 : 1
-              }
+            let fileCategory: string | undefined = filePath ? getFileCategory(filePath) : undefined
+            let fileExtension: string | undefined = filePath ? path.extname(filePath) : undefined
+            if (!fileCategory && fp) {
+              try {
+                const fRow = selectFilesByFpStmt.get(fp) as { extension?: string; file_group?: string } | undefined
+                if (fRow) {
+                  fileCategory = fRow.file_group
+                  fileExtension = fRow.extension
+                }
+              } catch {}
+            }
+            const fileCtx = { filePath, category: fileCategory, fileCategory, extension: fileExtension }
+            const fileDomain = resolveMediaDomain(fileCtx)
 
-            const insertItem = (tagCode: string, viaParentCode: string, tagName?: string) => {
+            const materializeOf = (tagCode: string, viaParentCode: string, tagName: string) => {
+              const cacheKey = `${fileDomain}:${viaParentCode}:${tagCode}`
+              let materialized = materializedMap.get(cacheKey)
+              if (!materialized) {
+                materialized = resolveRuntimeMaterializedPath({
+                  db: this._db!,
+                  tagCode,
+                  viaParentCode,
+                  tagName,
+                  context: fileCtx
+                })
+                materializedMap.set(cacheKey, materialized)
+              }
+              return materialized
+            }
+
+            const insertItem = (
+              tagCode: string,
+              viaParentCode: string,
+              tagName?: string,
+              tagGroup?: TagProvenanceGroup
+            ) => {
               const name = tagName || getCanonicalConceptName(tagCode) || tagCode
               const materialized = materializeOf(tagCode, viaParentCode, name)
-              insertStmt.run(fp, tagCode, viaParentCode, materialized.codePath, materialized.namePath, materialized.depth)
+              if (!materialized.codePath) {
+                logger.warn(
+                  LogCategory.DATABASE_SERVICE,
+                  `[batchApplyTags] 标签不符合媒体领域门控，跳过写入: ${tagCode} (${viaParentCode})`
+                )
+                return
+              }
+              const effectiveGroup =
+                tagGroup || this.resolveBatchTagProvenanceGroup(tagCode, viaParentCode)
+              insertStmt.run(
+                fp,
+                tagCode,
+                viaParentCode,
+                materialized.codePath,
+                materialized.namePath,
+                materialized.depth,
+                effectiveGroup
+              )
             }
 
             // 步骤 2：过滤（全媒体排他门禁 + 准入闸）。被拦者不参与胜出裁决，也就不会造成覆盖删除。
-            const survivors: Array<{ tagCode: string; viaParentCode: string; tagName?: string }> = []
+            const survivors: Array<{
+              tagCode: string
+              viaParentCode: string
+              tagName?: string
+              tagGroup: TagProvenanceGroup
+            }> = []
             for (const item of allAddTagItems) {
-              // 全媒体领域排他门控铁律：非视觉介质（音频/文档/代码/压缩包）严禁挂载视觉专有维度与标签
-              if (filePath && isVisualExclusiveDimension(item.viaParentCode, item.tagCode, filePath)) {
+              // 全媒体领域排他门控铁律：非适格介质严禁挂载专有维度与标签
+              if (!isDimensionApplicableForFile(item.viaParentCode, item.tagCode, fileCtx)) {
                 logger.debug(
                   LogCategory.DATABASE_SERVICE,
-                  `[batchApplyTags] 全媒体排他门禁拦截: 跳过向非视觉介质挂载视觉专有标签 (${filePath} -> ${item.tagCode})`
+                  `[batchApplyTags] 全媒体排他门禁拦截: 跳过向非适格介质挂载专有标签 (${filePath || fp} -> ${item.tagCode})`
                 )
                 continue
               }
@@ -1852,7 +2027,7 @@ export class DatabaseService {
               const tagName = item.tagName || getCanonicalConceptName(item.tagCode) || item.tagCode
               const verdict = isTagAdmissible({
                 name: tagName,
-                tagGroup: 'user'
+                tagGroup: item.tagGroup
               })
               if (verdict.outcome === 'rejected') {
                 logger.debug(
@@ -1868,7 +2043,10 @@ export class DatabaseService {
             // 步骤 3+4：按 (effectiveParent, tagCode) 去重（保留末位）后按父级分组。
             // 去重是必需的（规格 §4.2）：createdTagMap 以 `${dim}:${tagName}` 为键，不同别名可映射到
             // 同一 code；addTagCodes 也会与 addTags 重复。不去重会出现「同一 code 既 kept 又 skipped」。
-            const candidateGroups = new Map<string, Array<{ tagCode: string; tagName?: string }>>()
+            const candidateGroups = new Map<
+              string,
+              Array<{ tagCode: string; tagName?: string; tagGroup: TagProvenanceGroup }>
+            >()
             for (const item of survivors) {
               let group = candidateGroups.get(item.viaParentCode)
               if (!group) {
@@ -1878,7 +2056,11 @@ export class DatabaseService {
               // 先移除同 code 旧位次再压入，保证组内顺序即「末位胜出」顺序
               const dupIdx = group.findIndex(c => c.tagCode === item.tagCode)
               if (dupIdx >= 0) group.splice(dupIdx, 1)
-              group.push({ tagCode: item.tagCode, tagName: item.tagName })
+              group.push({
+                tagCode: item.tagCode,
+                tagName: item.tagName,
+                tagGroup: item.tagGroup
+              })
             }
 
             // ────────── S2 阶段 B：落库（规格 §4.1 步骤 7-8；铁律：先 INSERT winner，后 DELETE 兄弟） ──────────
@@ -1887,7 +2069,7 @@ export class DatabaseService {
 
               if (mode !== 'single' || candidates.length === 0) {
                 // 8. multi / rule / unknown(显式多选) / 无父级：按原逻辑逐条 INSERT，绝不做覆盖删除
-                for (const c of candidates) insertItem(c.tagCode, parentCode, c.tagName)
+                for (const c of candidates) insertItem(c.tagCode, parentCode, c.tagName, c.tagGroup)
                 continue
               }
 
@@ -1899,19 +2081,19 @@ export class DatabaseService {
               const skipOverrideDelete = explicitRemoveCodes.has(winner.tagCode)
 
               // 7a. 先 INSERT winner：失败即抛（本文件记 failedCount），此刻未发生任何删除 ⇒ 维度未被修改
-              insertItem(winner.tagCode, parentCode, winner.tagName)
+              insertItem(winner.tagCode, parentCode, winner.tagName, winner.tagGroup)
 
               let deletedTagCodes: string[] = []
               if (!skipOverrideDelete) {
                 // 7b. 覆盖前 SELECT 既有兄弟（不含 winner 自身）
-                const siblingRows = selectSiblingsStmt.all(fp, parentCode, winner.tagCode) as Array<{
+                const siblingRows = selectSiblingsStmt.all(fp, parentCode, parentCode, parentCode, winner.tagCode) as Array<{
                   tag_code: string
                 }>
                 deletedTagCodes = siblingRows.map(r => r.tag_code).filter(Boolean)
 
                 if (deletedTagCodes.length > 0) {
                   // 7c. 删除既有兄弟；`tag_code <> winner` 保证刚写入的 winner 不被自己删掉
-                  overrideDeleteStmt.run(fp, parentCode, winner.tagCode)
+                  overrideDeleteStmt.run(fp, parentCode, parentCode, parentCode, winner.tagCode)
                   // 7d. 只有真实删除过既有兄弟才计入 overriddenCount（回答「有没有覆盖旧值」）
                   overriddenCount++
                 }
@@ -2239,15 +2421,39 @@ export class DatabaseService {
 
   /**
    * AI 分析完成后将 dense 向量写入 Omni zvec（替代旧 file_vectors BLOB 堆表）
+   * `encoderId` 必填：向量真实编码器出处（zvec v3 encoder_id），由调用方从 perceive 响应原样透传，
+   * 禁止本层按档位或语言补默认值。
    */
   public async upsertFileVectorToOmni(
     fileFingerprint: string,
-    embedding: number[] | Float32Array | null | undefined
+    embedding: number[] | Float32Array | null | undefined,
+    encoderId: number
   ): Promise<boolean> {
     if (!fileFingerprint || !embedding) return false
     const vector = embedding instanceof Float32Array ? Array.from(embedding) : embedding
     if (!Array.isArray(vector) || vector.length === 0) return false
-    const res = await omniClient.upsertVector(fileFingerprint, vector)
+    const res = await omniClient.upsertVector(fileFingerprint, vector, encoderId)
+    return !!res?.success
+  }
+
+  /**
+   * 批量将切片或文件 dense 向量写入 Omni zvec
+   * 每个条目必须携带自己的 `encoderId`（视频切片与主向量可能不同源），禁止本层统一猜测。
+   */
+  public async upsertFileVectorsToOmni(
+    items: Array<{ fileFingerprint: string; vector: number[] | Float32Array; encoderId: number }>
+  ): Promise<boolean> {
+    if (!items || items.length === 0) return true
+    const validItems: Array<{ fileFingerprint: string; vector: number[]; encoderId: number }> = []
+    for (const item of items) {
+      if (!item.fileFingerprint || !item.vector) continue
+      const v = item.vector instanceof Float32Array ? Array.from(item.vector) : item.vector
+      if (Array.isArray(v) && v.length > 0) {
+        validItems.push({ fileFingerprint: item.fileFingerprint, vector: v, encoderId: item.encoderId })
+      }
+    }
+    if (validItems.length === 0) return true
+    const res = await omniClient.upsertVectors(validItems)
     return !!res?.success
   }
 
@@ -2264,7 +2470,7 @@ export class DatabaseService {
    */
   getVideoChunks(
     fileFingerprint: string
-  ): Array<{ id: number; fileFingerprint: string; chunkIndex: number; startSec: number; endSec: number; samplingIntervalSeconds: number; createdAt: string }> {
+  ): Array<{ id?: number; fileFingerprint: string; chunkIndex: number; startSec: number; endSec: number; repPtsSec: number; meta: Record<string, any>; samplingIntervalSeconds: number; createdAt?: string }> {
     this.ensureInitialized()
     return this.fileDao!.getVideoChunks(fileFingerprint)
   }

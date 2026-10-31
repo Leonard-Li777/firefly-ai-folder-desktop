@@ -11,7 +11,7 @@
 import * as fs from 'fs'
 import { ipcMain, dialog, BrowserWindow } from 'electron'
 import { logger, LogCategory } from '@firefly/shared'
-import { omniClient } from '../../services/omni-client'
+import { omniClient, TTSChunkResult } from '../../services/omni-client'
 import { ttsWavCacheService, TTSWavMetadata } from '../../runtime-services/filesystem/tts-wav-cache-service'
 import { voiceArchiveService } from '../../runtime-services/audio/voice-archive-service'
 
@@ -29,7 +29,7 @@ export function registerTTSIPCHandlers(): void {
       speed: number,
       sessionId?: number,
       sid?: number
-    ): Promise<ArrayBuffer | null> => {
+    ): Promise<TTSChunkResult | null> => {
       let controller: AbortController | undefined
 
       if (sessionId !== undefined) {
