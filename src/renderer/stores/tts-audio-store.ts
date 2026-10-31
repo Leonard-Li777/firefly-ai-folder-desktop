@@ -1160,28 +1160,31 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     currentCleanedChunks = chunks
     cachedChunksMap.clear()
 
-    // 派生当前播放标题与路径（优先 options.title，若有 filePath 优先取 smart_name，降级取 basename）
+    // 派生当前播放标题与路径（优先 options.title，若有 filePath 并行预取 smart_name，降级取 basename）
     const activeFilePath = options?.filePath || null
     let activeTitle = options?.title ? options.title.trim() : ''
+    let activeRealName: string | null = null
+    let smartNamePromise: Promise<{ title: string; realName: string | null }> | null = null
     if (!activeTitle) {
       if (activeFilePath) {
         // 先以物理文件名兜底
         activeTitle = activeFilePath.split(/[\\/]/).pop() || ''
-        // 若存在分析结果接口，尝试异步拉取 smart_name 进一步精准更新
+        // 并行预取智能文件名（与下方 getCachePath IPC 并行发起，set() 前汇合原子上屏，
+        // 杜绝 fire-and-forget 回查在 set() 前 resolve 时被 currentFilePath 尚为 null 的守卫静默丢弃，
+        // 导致播放条永久显示物理 basename 的竞态缺陷）
         if (window.electronAPI?.getFileAnalysisResult) {
-          window.electronAPI.getFileAnalysisResult(activeFilePath)
-            .then(res => {
-              if (res && (res.smartName?.trim() || res.name)) {
-                const current = useTTSAudioStore.getState()
-                if (current.currentFilePath === activeFilePath && current.status !== 'idle') {
-                  useTTSAudioStore.setState({
-                    ...(res.smartName?.trim() ? { currentTitle: res.smartName.trim() } : {}),
-                    currentRealName: res.name || null
-                  })
-                }
-              }
+          smartNamePromise = window.electronAPI
+            .getFileAnalysisResult(activeFilePath)
+            .then(res => ({
+              // smart_name 优先作为展示名，未收录时降级物理文件名
+              title: res?.smartName?.trim() || activeTitle,
+              realName: res?.name || null
+            }))
+            .catch(err => {
+              // 显式上报降级原因，严禁静默吞异常（§2.9 禁止静默降级）
+              console.warn('[TTS] 预取智能文件名失败，降级物理文件名:', err)
+              return { title: activeTitle, realName: null }
             })
-            .catch(() => {})
         }
       } else if (text && text.trim()) {
         activeTitle = text.trim().replace(/\s+/g, ' ')
@@ -1229,12 +1232,21 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
       }
     }
 
+    // 汇合智能文件名预取结果（与 getCachePath 并行发起，此处原子上屏）：
+    // 会话守卫防止 await 期间切歌/停止后，本旧会话结果覆盖新会话标题
+    if (smartNamePromise) {
+      const smartResult = await smartNamePromise
+      if (activeSessionId !== thisSessionId) return
+      activeTitle = smartResult.title
+      activeRealName = smartResult.realName
+    }
+
     set({
       playingText: text,
       playingTextId: targetTextId,
       currentFilePath: activeFilePath,
       currentTitle: activeTitle || null,
-      currentRealName: null,
+      currentRealName: activeRealName,
       status: 'loading',
       currentSentenceIndex: 0,
       totalSentences: chunks.length,
