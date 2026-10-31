@@ -121,7 +121,8 @@ export class AudioConverter {
         `[AudioConverter] 开始转换音频(降噪并截断时长 ${DURATION_LIMIT}s): ${inputPath} -> ${outputPath}`
       )
 
-      execFile(ffmpegPath, args, (error, stdout, stderr) => {
+      // windowsHide: ffmpeg 为控制台程序，缺省会在每次转换时闪出控制台窗口
+      execFile(ffmpegPath, args, { windowsHide: true }, (error, stdout, stderr) => {
         if (error) {
           logger.error(
             LogCategory.FILE_PROCESSOR,

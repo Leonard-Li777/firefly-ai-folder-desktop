@@ -140,7 +140,7 @@ export class TTSWavCacheService {
         // 设置为隐藏目录（仅Windows，保持内部缓存目录静默隐藏）
         if (process.platform === 'win32') {
           try {
-            await execFileAsync('attrib', ['+h', ttsDirPath])
+            await execFileAsync('attrib', ['+h', ttsDirPath], { windowsHide: true })
           } catch (error) {
             logger.warn(LogCategory.FILE_PROCESSOR, `[TTS缓存服务] 设置隐藏属性失败:`, error)
           }

@@ -1359,7 +1359,7 @@ export class EngineBridgeService {
       // 登记进全局精准进程回收器
       try {
         const { processReaper } = require('../../main/process-reaper')
-        processReaper.registerChild(child.pid, 'firefly-ai-engine')
+        processReaper.registerChild(child.pid, 'firefly-ai-engine', path.basename(exePath), exePath)
       } catch {}
 
       // 记录本次拉起的二进制签名，并开启热更新监听：
@@ -1591,16 +1591,11 @@ export class EngineBridgeService {
       }
     }
     this.killOwnProcess()
-    // Windows 环境下保底确保 firefly-ai-engine.exe 进程完全清理
-    if (process.platform === 'win32') {
-      try {
-        const { spawnSync } = require('node:child_process')
-        spawnSync('taskkill', ['/F', '/T', '/IM', 'firefly-ai-engine.exe'], {
-          windowsHide: true,
-          stdio: 'ignore'
-        })
-      } catch {}
-    }
+    // 注意：这里曾经有一段 `taskkill /F /T /IM firefly-ai-engine.exe` 的兜底。
+    // 它按镜像名击杀本机**所有**同名引擎，包括其他 worktree 实例正在使用的，
+    // 与「杜绝跨 worktree 误杀」直接冲突，且绕过了 ProcessReaper 的 PID 身份校验。
+    // killOwnProcess() 已经按本实例持有的 pid 做 /T /F，足够覆盖自拉起场景；
+    // 若引擎是外部复用（非本实例拉起），本就不该由这里强杀。
     // 引擎已请求退出，端口复位到基准值，下次拉起按默认端口协商
     this.activePort = TIER2_ENGINE_PORT
     this.applyOffline()

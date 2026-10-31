@@ -43,16 +43,19 @@ import { deepLinkManager } from './deep-link'
 // （见文件顶部第一条 import 的说明），此处仅输出启动实例信息。
 loggingService.info(LogCategory.STARTUP, `[Worktree] 启动实例: ${worktreeInfo.appName}, 数据目录: ${worktreeInfo.userDataDir}`)
 
-// 2. 启动前清理历史遗留的僵尸子进程
-processReaper.cleanupStaleProcesses()
-
-// 3. 检查单实例锁，避免重复打开多个应用实例
+// 2. 检查单实例锁，避免重复打开多个应用实例
 const gotSingleInstanceLock = app.requestSingleInstanceLock()
 if (!gotSingleInstanceLock) {
   console.log(`[App] 检测到已有实例正在运行 (${worktreeInfo.appName})，本实例直接退出。`)
   app.quit()
   process.exit(0)
 }
+
+// 3. 启动前清理历史遗留的僵尸子进程
+// 必须放在单实例锁判定之后：runtime-pids.json 记录的是本实例的子进程 PID，
+// 而登记发生在 spawn 之后（进程存活期间就会写入）。若已有实例正在运行，
+// 文件里的 PID 就是它的活子进程 —— 提前清理会把正在运行的实例的引擎直接杀掉。
+processReaper.cleanupStaleProcesses()
 
 // 记录本 Worktree 实例活跃状态
 touchActiveWorktree(worktreeInfo.worktreeName)
@@ -191,7 +194,7 @@ if (debuggingPortArg) {
   const isPortFreeSync = (port: number): boolean => {
     try {
       if (process.platform === 'win32') {
-        const out = require('child_process').execSync('netstat -ano -p tcp', { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] })
+        const out = require('child_process').execSync('netstat -ano -p tcp', { encoding: 'utf8', windowsHide: true, stdio: ['pipe', 'pipe', 'ignore'] })
         const regex = new RegExp(`:${port}\\s+`)
         return !regex.test(out)
       } else {

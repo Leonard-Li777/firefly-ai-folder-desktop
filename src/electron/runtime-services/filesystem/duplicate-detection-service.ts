@@ -1114,7 +1114,11 @@ export class DuplicateDetectionService {
                   try { fs.unlinkSync(outFilePath) } catch {}
                 }
                 fs.copyFileSync(filePath, outFilePath)
-                const res = cp.spawnSync(exifToolPath, ['-all=', '-overwrite_original', outFilePath], { encoding: 'utf-8' })
+                // windowsHide: exiftool 为控制台程序，逐文件调用时缺省会反复闪出控制台窗口
+                const res = cp.spawnSync(exifToolPath, ['-all=', '-overwrite_original', outFilePath], {
+                  encoding: 'utf-8',
+                  windowsHide: true
+                })
                 if (res.status === 0 && fs.existsSync(outFilePath)) {
                   cleanExifSucceeded = true
                 }

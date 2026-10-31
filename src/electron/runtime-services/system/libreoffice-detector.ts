@@ -96,7 +96,8 @@ export class LibreOfficeDetector {
         if (libreOfficePath) break
         try {
           const { stdout } = await execFileAsync('reg', ['query', key, '/v', 'InstallPath'], {
-            timeout: 5000
+            timeout: 5000,
+            windowsHide: true
           })
           if (stdout) {
             const match = stdout.match(/InstallPath\s+REG_SZ\s+(.*)/i)
@@ -132,7 +133,10 @@ export class LibreOfficeDetector {
       // 方法3：检查 PATH 中是否存在
       if (!libreOfficePath) {
         try {
-          const { stdout } = await execFileAsync('where', ['soffice'], { timeout: 2000 })
+          const { stdout } = await execFileAsync('where', ['soffice'], {
+            timeout: 2000,
+            windowsHide: true
+          })
           const sofficePaths = stdout
             .trim()
             .split(/\r?\n/)

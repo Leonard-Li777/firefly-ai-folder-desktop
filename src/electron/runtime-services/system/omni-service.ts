@@ -11,9 +11,10 @@
 import { ChildProcess, spawn } from 'node:child_process'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, dialog, shell } from 'electron'
 import { ResourceLocator, logger, LogCategory, APP_PORTS, findAvailablePort } from '@firefly/shared'
 import { MagikaFileCategory } from '@firefly/types'
+import { t } from '@app/languages'
 
 /**
  * 基础AI引擎（Omni）运行状态快照，主动推送至渲染进程（omni:status-changed）
@@ -463,6 +464,23 @@ export class OmniService {
   private lastCoverDurationMs?: number
   private coverDurationMap = new Map<string, number>()
   private readyCallbacks: (() => void | Promise<void>)[] = []
+  /**
+   * 二进制缺失只完整上报一次。
+   * 缺失后每个文件分析都会走到 doStart()，若每次都打完整诊断会造成日志刷屏，
+   * 掩盖真正的问题（历史：线上用户日志被 fetch failed 淹没，无人发现 omni 根本不存在）。
+   */
+  private missingBinaryReported = false
+  /**
+   * 二进制缺失后的重试冷却截止时间。
+   * 缺失期间每次文件分析都会走 doStart()，而 resolveOmniExecutable 在直接路径未命中时
+   * 会递归扫描 resources/bin；加冷却既省掉每文件一次的目录扫描，又保证用户修复安装后
+   * 最迟 1 分钟内自动恢复（无需重启应用）。
+   */
+  private missingBinaryRetryAt = 0
+  /** 二进制缺失的用户提示是否已投递（窗口尚未创建时不置位，等下一次机会再投递） */
+  private binaryMissingNotified = false
+  /** 是否已挂上「应用就绪后补投缺失提示」的一次性回调 */
+  private binaryMissingNotifyDeferred = false
 
   /** 开发态二进制热更新检测周期 (毫秒) */
   private static readonly DEV_BINARY_WATCH_INTERVAL_MS = 3_000
@@ -705,6 +723,16 @@ export class OmniService {
       return
     }
 
+    // 从未记录过基准签名（服务还没成功拉起过）时，首次观测到的产物就是基准本身，
+    // 不存在「更新」可言。若继续走下方的防抖分支，稳定 3 秒后会把 null → sig
+    // 误判成一次产物变更，触发一次毫无意义的 restart。
+    if (this.spawnedBinarySignature === null) {
+      this.spawnedBinarySignature = signature
+      this.pendingUpdateSignature = null
+      this.pendingUpdateSince = 0
+      return
+    }
+
     // 首次检测到签名变更：进入待定状态，防抖保护
     if (this.pendingUpdateSignature !== signature) {
       this.pendingUpdateSignature = signature
@@ -740,7 +768,13 @@ export class OmniService {
     const root = process.cwd()
 
     // 1. 生产或已部署环境：通过 ResourceLocator 检索
-    const bin = ResourceLocator.resolveBin('omni/firefly-omni') || ResourceLocator.resolveBin('firefly-omni')
+    // useShortPath: false —— 禁止转 8.3 短名。默认 true 时，路径含空格或非 ASCII 字符
+    // （Program Files、中文用户名）会把文件名也转成 FIREFLY~1.EXE，导致 ProcessReaper
+    // 登记的可执行名与 tasklist 返回的长名永远不匹配，身份校验恒失败、孤儿永不回收。
+    // engine-bridge 侧同样显式关闭，两者必须一致。
+    const bin =
+      ResourceLocator.resolveBin('omni/firefly-omni', { useShortPath: false }) ||
+      ResourceLocator.resolveBin('firefly-omni', { useShortPath: false })
     if (bin && fs.existsSync(bin)) {
       return bin
     }
@@ -777,6 +811,209 @@ export class OmniService {
   }
 
   /**
+   * 输出 firefly-omni 检索现场，用于「二进制缺失」时的一次性定位。
+   *
+   * 线上实证（2026-10-23）：用户机上 firefly-omni.exe 不存在，导致每个文件分析都
+   * POST /api/extract 失败并刷 "fetch failed"，但旧实现只有一句 warn、且不带任何路径信息，
+   * 无法区分「装包没带上」「路径解析错」「被杀软隔离」三种情况。
+   */
+  private describeBinarySearch(): string {
+    const isWin = process.platform === 'win32'
+    const exeName = isWin ? 'firefly-omni.exe' : 'firefly-omni'
+    const lines: string[] = []
+
+    let baseDir = '(未知)'
+    try {
+      baseDir = ResourceLocator.getBaseResourceDir()
+    } catch (err: any) {
+      // 诊断函数自身不能静默降级：解析失败本身就可能是根因（路径解析错）
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[OmniService] 资源根目录解析失败，无法给出精确的组件路径: ${err?.message || err}`
+      )
+    }
+    lines.push(`资源根目录=${baseDir}`)
+    // 与 Electron 实际提供的目录做对照，才能区分「装包没带上」与「路径解析错」
+    lines.push(`resourcesPath=${process.resourcesPath || '(未知)'}`)
+    // 诊断函数本身绝不允许抛错：它是在故障路径上被调用的，抛错会把根因日志一起吃掉
+    let appPath = '(未知)'
+    try {
+      appPath = typeof app.getAppPath === 'function' ? app.getAppPath() : '(不可用)'
+    } catch {}
+    lines.push(`appPath=${appPath}`)
+
+    if (baseDir === '(未知)') {
+      lines.push('资源根目录解析失败，无法枚举 bin 目录（疑似路径解析异常，而非组件缺失）')
+    } else {
+      try {
+        const binDir = path.join(baseDir, 'bin')
+        const omniDir = path.join(binDir, 'omni')
+        lines.push(`bin目录存在=${fs.existsSync(binDir)}`)
+        lines.push(`bin/omni目录存在=${fs.existsSync(omniDir)}`)
+        if (fs.existsSync(omniDir)) {
+          // 目录在但 exe 不在，是「被杀软隔离」最典型的表现
+          const siblings = fs.readdirSync(omniDir).slice(0, 20).join(', ')
+          lines.push(`bin/omni目录内容=[${siblings || '空'}]`)
+        }
+      } catch (err: any) {
+        lines.push(`目录枚举失败=${err?.message || err}`)
+      }
+    }
+
+    lines.push(`候选文件=${exeName} 均不存在`)
+    lines.push(
+      '常见原因：① 杀毒软件把 firefly-omni.exe 隔离/删除（未签名二进制 + 遍历磁盘行为，误杀率最高）' +
+        '；② 安装包不完整或更新中断；③ 安装目录被手动清理。建议先执行「修复安装」，并把安装目录加入杀软白名单。'
+    )
+    return lines.join(' | ')
+  }
+
+  /**
+   * 记录一次「首调失败 → 触发自愈」。
+   *
+   * omni 已知不可用（二进制缺失冷却期内）时降级为 debug：
+   * 此时分析队列的每个文件都会命中一次，warn 级别会把真正的根因日志彻底淹没
+   * （线上实证：用户日志被上千条 fetch failed 覆盖，没人发现 omni 根本不存在）。
+   */
+  private logSelfHealAttempt(message: string, level: 'warn' | 'debug' = 'warn'): void {
+    const binaryMissing = this.missingBinaryRetryAt > Date.now()
+    if (binaryMissing || level === 'debug') {
+      logger.debug(LogCategory.SYSTEM, message)
+    } else {
+      logger.warn(LogCategory.SYSTEM, message)
+    }
+  }
+
+  /**
+   * 二进制缺失时向用户弹出原生提示框（一次性）。
+   *
+   * 为什么用原生 dialog 而不是渲染进程的 toast：
+   *   - 该故障的伴生现象就是界面白屏 / 渲染进程崩溃，此时渲染进程的通知根本没有机会被渲染；
+   *   - 提示必须把完整文件路径展示出来。注意 Windows 原生 MessageBox 的 detail 文本不可选中，
+   *     所以真正的兜底是「打开组件目录」按钮 —— 用户点一下就能直接进到 bin/omni 加白名单。
+   *
+   * 按用户决策：只提示 + 给出完整路径 + 引导加白名单，**不自动下载**该组件。
+   */
+  private notifyBinaryMissing(): void {
+    if (this.binaryMissingNotified) return
+    // app.isReady 在单测（electron 被部分 mock）与极早期启动时可能不可用，不可直接调用
+    try {
+      if (typeof app.isReady === 'function' && !app.isReady()) {
+        // 应用尚未就绪时不能丢掉这次提示：挂一次 whenReady 回调。
+        // 否则冷却期内 doStart 会短路返回，用户要等 60 秒才可能看到提示。
+        if (!this.binaryMissingNotifyDeferred && typeof app.whenReady === 'function') {
+          this.binaryMissingNotifyDeferred = true
+          void app
+            .whenReady()
+            .then(() => this.notifyBinaryMissing())
+            .catch(() => {})
+        }
+        return
+      }
+    } catch {}
+
+    const isWin = process.platform === 'win32'
+    const exeName = isWin ? 'firefly-omni.exe' : 'firefly-omni'
+
+    let baseDir = ''
+    try {
+      baseDir = ResourceLocator.getBaseResourceDir()
+    } catch (err: any) {
+      // 不能静默：解析失败会直接导致下面给出的路径无效，且原因判定会跑偏
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[OmniService] 组件缺失提示：资源根目录解析失败: ${err?.message || err}`
+      )
+    }
+    const omniDir = baseDir ? path.join(baseDir, 'bin', 'omni') : ''
+    const exePath = omniDir ? path.join(omniDir, exeName) : exeName
+
+    // 目录还在、只有可执行文件消失 => 杀毒软件隔离的典型表现；
+    // 整个目录都不在 => 更可能是安装不完整。
+    // 用三态区分「查不到」与「查失败」：枚举失败时若当成 false，会把故障误归因为
+    // 「组件目录整体缺失」，引导用户去做完全无关的操作。
+    let dirState: 'exists' | 'missing' | 'unknown' = 'unknown'
+    if (omniDir) {
+      try {
+        dirState = fs.existsSync(omniDir) ? 'exists' : 'missing'
+      } catch (err: any) {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[OmniService] 组件缺失提示：无法判断组件目录是否存在: ${err?.message || err}`
+        )
+      }
+    }
+
+    let reasonText: string
+    if (!baseDir) {
+      reasonText = t('资源根目录解析失败，无法定位组件路径，这通常不是杀毒软件导致的问题。')
+    } else if (dirState === 'exists') {
+      reasonText = t('组件目录存在，但可执行文件已消失，最常见的原因是杀毒软件将其隔离。')
+    } else if (dirState === 'missing') {
+      reasonText = t('组件目录整体缺失，通常是安装不完整或安装目录被清理。')
+    } else {
+      reasonText = t('无法判断组件目录状态（枚举失败），请手动检查下面的路径是否存在。')
+    }
+
+    const detail = [
+      reasonText,
+      '',
+      t('缺失的文件：'),
+      exePath,
+      '',
+      t('建议按以下顺序处理：'),
+      t('1. 打开杀毒软件的「隔离区 / 恢复区」，找到 firefly-omni.exe 并恢复；'),
+      t('2. 将上面的组件目录加入杀毒软件白名单（信任区）；'),
+      t('3. 若文件已无法恢复，请重新安装或修复安装本应用。'),
+      '',
+      t('本应用不会自动下载该组件。修复后无需重启，约 1 分钟内会自动恢复。')
+    ].join('\n')
+
+    this.binaryMissingNotified = true
+    // dialog / shell 在单测里可能被 mock 掉，调用本身也可能同步抛错，统一兜住
+    try {
+      const shown = dialog.showMessageBox({
+        type: 'warning',
+        title: t('基础AI引擎组件缺失'),
+        message: t('基础AI引擎组件缺失，文件分析能力受限'),
+        detail,
+        buttons: [t('打开组件目录'), t('知道了')],
+        defaultId: 0,
+        cancelId: 1,
+        noLink: true
+      })
+      void shown
+        .then(result => {
+          if (result.response !== 0) return
+          const target = dirState === 'exists' && omniDir ? omniDir : baseDir
+          if (!target) return
+          void shell.openPath(target).then(errMsg => {
+            if (errMsg) {
+              logger.warn(
+                LogCategory.SYSTEM,
+                `[OmniService] 打开组件目录失败: ${errMsg} (${target})`
+              )
+            }
+          })
+        })
+        .catch(err => {
+          // 弹窗失败则复位，等下一次拉起尝试时重新提示
+          this.binaryMissingNotified = false
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[OmniService] 组件缺失提示框弹出失败: ${err?.message || err}`
+          )
+        })
+    } catch (err: any) {
+      this.binaryMissingNotified = false
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[OmniService] 组件缺失提示框不可用，已跳过弹窗: ${err?.message || err}`
+      )
+    }
+  }
+
+  /**
    * 启动并守护 firefly-omni 子进程（支持并发 Promise 合并）
    */
   public async start(): Promise<boolean> {
@@ -803,12 +1040,38 @@ export class OmniService {
 
   private async doStart(): Promise<boolean> {
     this.isStarting = true
-    const exePath = this.resolveOmniExecutable()
-    if (!exePath) {
-      logger.warn(LogCategory.SYSTEM, '[OmniService] 未找到 firefly-omni 可执行二进制文件，跳过子进程托管')
+
+    // 二进制缺失冷却期内直接短路，避免每次文件分析都重扫资源目录
+    if (this.missingBinaryRetryAt > Date.now()) {
       this.isStarting = false
       return false
     }
+
+    const exePath = this.resolveOmniExecutable()
+    if (!exePath) {
+      // 二进制缺失是「基础AI引擎整体不可用」的硬故障，不是可忽略的降级：
+      // 后续每个文件的 POST /api/extract 都会 ECONNREFUSED，并以 fetch failed 刷屏。
+      // 因此这里升级为 error，并一次性输出可定位的诊断信息（含杀软隔离的排查提示）。
+      this.missingBinaryRetryAt = Date.now() + 60_000
+      if (!this.missingBinaryReported) {
+        this.missingBinaryReported = true
+        logger.error(
+          LogCategory.SYSTEM,
+          `[OmniService] ❌ 未找到 firefly-omni 可执行二进制文件，基础AI引擎无法启动，分析能力将降级。${this.describeBinarySearch()}`
+        )
+      } else {
+        logger.debug(LogCategory.SYSTEM, '[OmniService] firefly-omni 二进制仍缺失，跳过本次拉起')
+      }
+      broadcastOmniStatus({ running: false, version: null })
+      this.notifyBinaryMissing()
+      this.isStarting = false
+      return false
+    }
+    // 二进制重新出现（如用户修复安装 / 从杀软隔离区恢复）后复位上报与冷却状态
+    this.missingBinaryReported = false
+    this.missingBinaryRetryAt = 0
+    this.binaryMissingNotified = false
+    this.binaryMissingNotifyDeferred = false
 
     try {
       // 探活检查：优先检查基准端口 38200 上是否已有外部或前序 Omni 服务正常响应，若有直接复用
@@ -972,7 +1235,7 @@ export class OmniService {
       // 登记进全局精准进程回收器
       try {
         const { processReaper } = require('../../main/process-reaper')
-        processReaper.registerChild(child.pid, 'firefly-omni')
+        processReaper.registerChild(child.pid, 'firefly-omni', path.basename(exePath), exePath)
       } catch {}
 
       const isCzkawkaDump = (str: string): boolean => {
@@ -1013,6 +1276,12 @@ export class OmniService {
 
       child.on('error', err => {
         logger.error(LogCategory.SYSTEM, '[OmniService] 子进程启动失败:', err)
+        // spawn 失败（ENOENT / EACCES，典型如杀软拦截）不会触发 exit，
+        // child.exitCode 恒为 null；这里主动摘除引用，让探活循环的 detached 判据
+        // 立即中止，而不是盲等满 40 秒。
+        if (this.process === child) {
+          this.process = null
+        }
       })
 
       child.on('exit', async (code, signal) => {
@@ -1043,6 +1312,20 @@ export class OmniService {
       // 等待服务就绪探活 (最多 200 次 * 200ms = 40秒，容纳 71.6 万条多语言别名冷启动解密热载与 SenseVoice/MOSS-TTS 模型加载时间)
       for (let i = 0; i < 200; i++) {
         await new Promise(r => setTimeout(r, 200))
+        // 子进程已在探活期间退出（如启动即 panic / 依赖缺失）时立即中止等待。
+        // 死掉的进程不可能再监听端口，盲等满 40 秒只会把一次快速失败拖成用户可感知的卡顿。
+        // 两种判据都认：exitCode 已落定，或 exit 回调已把 this.process 摘除（this.process !== child）。
+        const exitedCode = child.exitCode
+        const detached = this.process !== child
+        if ((exitedCode !== null && exitedCode !== undefined) || detached) {
+          logger.error(
+            LogCategory.SYSTEM,
+            `[OmniService] firefly-omni 在探活期间退出 (code=${exitedCode ?? 'null'}, signal=${child.signalCode ?? 'null'})，中止等待`
+          )
+          this.isStarting = false
+          this.pushStatus().catch(() => {})
+          return false
+        }
         if (await this.checkHealth()) {
           logger.info(LogCategory.SYSTEM, `[OmniService] firefly-omni 服务就绪并在 ${this.baseUrl} 正常监听`)
           this.restartAttempts = 0
@@ -1095,7 +1378,8 @@ export class OmniService {
         if (process.platform === 'win32' && pid) {
           try {
             const { execSync } = require('node:child_process')
-            execSync(`taskkill /pid ${pid} /T /F`, { stdio: 'ignore' })
+            // windowsHide: taskkill 为控制台程序，缺省会闪出 conhost 控制台窗口
+            execSync(`taskkill /pid ${pid} /T /F`, { stdio: 'ignore', windowsHide: true })
           } catch {}
         }
         this.process.kill('SIGKILL')
@@ -1317,8 +1601,7 @@ export class OmniService {
     try {
       return await doFetch()
     } catch (err: any) {
-      logger.warn(
-        LogCategory.SYSTEM,
+      this.logSelfHealAttempt(
         `[OmniService] <<< POST /api/extract 首次调用异常 (${filePath}): 耗时: ${Date.now() - tStart}ms, 错误: ${err.message}，尝试自愈拉起并重试...`
       )
       // 若出现网络错误（如进程被外部杀死重构中），触发自愈并重试一次
@@ -1752,8 +2035,7 @@ export class OmniService {
     try {
       return await doFetch()
     } catch (err: any) {
-      logger.warn(
-        LogCategory.SYSTEM,
+      this.logSelfHealAttempt(
         `[OmniService] <<< POST /api/perceive 首次调用异常 (${filePath}): 耗时: ${Date.now() - tStart}ms, 错误: ${err.message}，尝试自愈拉起并重试...`
       )
       const restarted = await this.start()

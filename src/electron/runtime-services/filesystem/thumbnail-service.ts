@@ -150,7 +150,7 @@ export class ThumbnailService {
         // 设置为隐藏目录（仅Windows）
         if (process.platform === 'win32') {
           try {
-            await execFileAsync('attrib', ['+h', thumbnailDirPath])
+            await execFileAsync('attrib', ['+h', thumbnailDirPath], { windowsHide: true })
             logger.info(
               LogCategory.FILE_PROCESSOR,
               `[缩略图服务] 已将目录设置为隐藏: ${thumbnailDirPath}`

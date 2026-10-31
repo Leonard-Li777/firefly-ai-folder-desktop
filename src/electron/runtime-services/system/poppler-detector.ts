@@ -43,7 +43,7 @@ export class PopplerDetector {
     // 2. 尝试从系统全局 PATH 中探测
     try {
       const cmd = process.platform === 'win32' ? 'where' : 'which'
-      const { stdout } = await execFile(cmd, ['pdftoppm'])
+      const { stdout } = await execFile(cmd, ['pdftoppm'], { windowsHide: true })
       const sysPath = stdout.trim().split(/\r?\n/)[0]
       if (sysPath && existsSync(sysPath)) {
         this.cachedInfo = { installed: true, path: sysPath }

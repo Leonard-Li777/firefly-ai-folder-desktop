@@ -44,7 +44,36 @@ import { engineBridgeService } from '../engine-bridge'
 import { isRenameProtectedExtension } from '../../utils/extension-rename-whitelist'
 import { isTransientInfraError } from './file-processor/analysis-error-classifier'
 
-class StageNotifier {
+/**
+ * 等待 CPU 提取阶段就绪的上限。
+ *
+ * 为什么必须有上限：GPU 消费者靠 `notify(itemId)` 唤醒，而 CPU 生产者在
+ * 「任务已被移除」「循环被意外打断」「单文件提取永久挂死」等情况下可能**一次都不发通知**。
+ * 旧实现是纯事件等待、没有任何兜底，一旦漏发，`waitForStage2` 就永久 pending，
+ * `Promise.all([runCPUProducer(), runGPUConsumer()])` 永不收敛，`isProcessingLoopActive`
+ * 永远为 true —— 整个分析队列卡死，界面上表现为「一直显示分析中、进度不动」，
+ * 日志则停在 `[并行队列:GPU通道] 等待 CPU 提取阶段就绪` 之后再无下文。
+ *
+ * 取值要够长：单个超大视频/压缩包的 CPU 提取可能需要十几分钟，超时太短会把
+ * 「慢」误判成「失败」，导致重复提取与重复 GPU 分析。
+ */
+const STAGE2_WAIT_TIMEOUT_MS = 30 * 60 * 1000
+
+/** CPU 提取阶段等待超时（区别于用户主动中止，调用方需要分别处理） */
+export class Stage2TimeoutError extends Error {
+  constructor(
+    readonly itemId: number,
+    readonly timeoutMs: number
+  ) {
+    super(
+      `等待 CPU 提取阶段超时（${Math.round(timeoutMs / 60000)} 分钟）: itemId=${itemId}`
+    )
+    this.name = 'Stage2TimeoutError'
+  }
+}
+
+/** 导出仅为单测可覆盖超时分支，生产代码不应直接 new */
+export class StageNotifier {
   private resolvers = new Map<number, () => void>()
   private completedSet = new Set<number>()
 
@@ -57,22 +86,83 @@ class StageNotifier {
     }
   }
 
-  waitForStage2(itemId: number, checkStage: () => boolean, signal?: AbortSignal): Promise<void> {
-    if (this.completedSet.has(itemId) || checkStage()) {
+  /**
+   * 等待指定任务进入 Stage 2（CPU 提取完成）。
+   *
+   * 超时后**先复核一次** `checkStage()`：如果 CPU 数据其实已经落库（只是通知丢了），
+   * 就按「已就绪」放行；确实没有数据才抛 `Stage2TimeoutError`，由调用方把任务退回
+   * pending 等下一轮，而不是标记失败 —— 超时说明「不知道」，不等于「错了」。
+   */
+  waitForStage2(
+    itemId: number,
+    checkStage: () => boolean,
+    signal?: AbortSignal,
+    timeoutMs: number = STAGE2_WAIT_TIMEOUT_MS
+  ): Promise<void> {
+    if (this.completedSet.has(itemId)) {
+      return Promise.resolve()
+    }
+    // 首次复核必须自己兜住异常：checkStage 内部会查库，DB 未初始化 / 已关闭时会抛。
+    // 若让它冒出去，调用方（GPU 消费者）会把一次 DB 抖动当成「分析失败」并标记 failed，
+    // 而真实语义只是「现在还不知道 CPU 提取完没完」—— 按未就绪继续等，交给超时兜底。
+    let readyNow = false
+    try {
+      readyNow = checkStage()
+    } catch {
+      readyNow = false
+    }
+    if (readyNow) {
       return Promise.resolve()
     }
     return new Promise<void>((resolve, reject) => {
-      const onAbort = () => {
+      let settled = false
+      let timer: NodeJS.Timeout | null = null
+
+      const cleanup = () => {
+        if (timer) {
+          clearTimeout(timer)
+          timer = null
+        }
         this.resolvers.delete(itemId)
+        signal?.removeEventListener('abort', onAbort)
+      }
+
+      const onAbort = () => {
+        if (settled) return
+        settled = true
+        cleanup()
         reject(new Error('Aborted'))
       }
+
       if (signal?.aborted) {
         return onAbort()
       }
       signal?.addEventListener('abort', onAbort)
 
+      timer = setTimeout(() => {
+        if (settled) return
+        settled = true
+        cleanup()
+        // 通知可能只是丢了：数据在就直接放行，避免无谓地把任务退回 pending
+        let ready = false
+        try {
+          ready = checkStage()
+        } catch {
+          ready = false
+        }
+        if (ready) {
+          resolve()
+          return
+        }
+        reject(new Stage2TimeoutError(itemId, timeoutMs))
+      }, timeoutMs)
+      // 不让兜底计时器把进程吊住（退出应用时不应等这 30 分钟）
+      timer.unref?.()
+
       this.resolvers.set(itemId, () => {
-        signal?.removeEventListener('abort', onAbort)
+        if (settled) return
+        settled = true
+        cleanup()
         resolve()
       })
     })
@@ -100,6 +190,10 @@ export class AnalysisQueueService {
   private current?: AnalysisQueueItem
   private isInitialized = false
   private initializePromise?: Promise<void>
+  /**
+   * GPU 通道等待 CPU 提取的就绪超时。默认 30 分钟，单测会把它改小以覆盖超时分支。
+   */
+  private stage2WaitTimeoutMs: number = STAGE2_WAIT_TIMEOUT_MS
 
   private ignoreRules: IIgnoreRule[] = []
   private errorRecoveryConfig: IErrorRecoveryConfig = {
@@ -486,24 +580,46 @@ export class AnalysisQueueService {
           const runCPUProducer = async () => {
             for (const item of pendingItems) {
               if (signal.aborted || !this.running) break
-              if (!this.queueManager.hasItem(item.id)) continue
+              if (!this.queueManager.hasItem(item.id)) {
+                // 任务已被移除（用户删除 / 取消）：仍然必须发出就绪通知。
+                // GPU 消费者此时可能已经通过了它自己的 hasItem 检查、正等在这条通知上，
+                // 漏发就会永久挂起（30 分钟超时只是最后一道防线，不能当作正常路径）。
+                logger.debug(
+                  LogCategory.ANALYSIS_QUEUE,
+                  `[并行队列:CPU通道] 队列中已无此任务，跳过 CPU 提取: ${item.name}`
+                )
+                notifier.notify(item.id)
+                continue
+              }
 
               if (item.itemType === 'directory') {
                 notifier.notify(item.id)
                 continue
               }
 
-              const reuseBasicAnalysisData =
-                ConfigOrchestrator.getInstance().getValue<boolean>('REUSE_BASIC_ANALYSIS_DATA') ??
-                true
+              let reuseBasicAnalysisData = true
+              let shouldSkipCpu = false
+              try {
+                reuseBasicAnalysisData =
+                  ConfigOrchestrator.getInstance().getValue<boolean>('REUSE_BASIC_ANALYSIS_DATA') ??
+                  true
 
-              // 只要文件已处于 Stage >= 2（CPU 提取已完成），一律跳过 CPU 阶段：
-              // - 暂停/恢复：无论是否开启数据复用，都不应重复执行 Stage 2 提取
-              // - 强制重新分析 + 复用开启：可跳过、复用已有提取数据
-              // - 强制重新分析 + 复用关闭 + 之前已分析完成（is_analyzed=true）：不能跳过，必须重新提取
-              // - 视频文件若缺失时序切片（file_video_chunks），严禁跳过 CPU 提取
-              const shouldSkipCpu =
-                isAlreadyStage2(item) && !hasMissingVideoChunks(item) && !isForcedReextract(item)
+                // 只要文件已处于 Stage >= 2（CPU 提取已完成），一律跳过 CPU 阶段：
+                // - 暂停/恢复：无论是否开启数据复用，都不应重复执行 Stage 2 提取
+                // - 强制重新分析 + 复用开启：可跳过、复用已有提取数据
+                // - 强制重新分析 + 复用关闭 + 之前已分析完成（is_analyzed=true）：不能跳过，必须重新提取
+                // - 视频文件若缺失时序切片（file_video_chunks），严禁跳过 CPU 提取
+                shouldSkipCpu =
+                  isAlreadyStage2(item) && !hasMissingVideoChunks(item) && !isForcedReextract(item)
+              } catch (preErr) {
+                // 阶段判定本身异常（配置未初始化 / DB 查询失败）时不能直接放弃该文件，
+                // 否则它会永远停在 pending 且不发出通知 —— 退化为「照常提取」最安全。
+                logger.error(
+                  LogCategory.ANALYSIS_QUEUE,
+                  `[并行队列:CPU通道] 阶段判定异常，按「需要提取」处理: ${item.name}`,
+                  preErr
+                )
+              }
 
               if (shouldSkipCpu) {
                 logger.debug(
@@ -588,11 +704,26 @@ export class AnalysisQueueService {
                   LogCategory.ANALYSIS_QUEUE,
                   `[并行队列:GPU通道] 等待 CPU 提取阶段就绪: ${item.name} (id: ${item.id})`
                 )
-                await notifier.waitForStage2(item.id, () => isAlreadyStage2(item), signal)
+                await notifier.waitForStage2(
+                  item.id,
+                  () => isAlreadyStage2(item),
+                  signal,
+                  this.stage2WaitTimeoutMs
+                )
                 logger.info(
                   LogCategory.ANALYSIS_QUEUE,
                   `[并行队列:GPU通道] CPU 阶段已就绪，进入 GPU AI 分析: ${item.name}`
                 )
+
+                // 等待期间任务可能已被移除（用户删除 / 取消）：此时不应继续往下处理，
+                // 否则会对着一条已经不存在的队列项做 GPU 分析并把状态写回去。
+                if (!this.queueManager.hasItem(item.id)) {
+                  logger.debug(
+                    LogCategory.ANALYSIS_QUEUE,
+                    `[并行队列:GPU通道] 等待期间任务已被移除，跳过 GPU 分析: ${item.name}`
+                  )
+                  continue
+                }
 
                 if (item.status === 'failed') {
                   logger.warn(
@@ -616,7 +747,18 @@ export class AnalysisQueueService {
                 cloudSyncWorker.triggerSync(2000)
               } catch (err: any) {
                 const isAbort = err && (err.name === 'AbortError' || err.message === 'Aborted')
-                if (isAbort) {
+                const isStage2Timeout =
+                  err instanceof Stage2TimeoutError || err?.name === 'Stage2TimeoutError'
+                if (isStage2Timeout) {
+                  // 超时 = 「不知道 CPU 提取完了没有」，不等于失败：
+                  // 退回 pending 让下一轮重新调度，绝不标记 failed 丢掉用户的任务。
+                  logger.warn(
+                    LogCategory.ANALYSIS_QUEUE,
+                    `[并行队列:GPU通道] 等待 CPU 提取阶段超时，任务退回 pending 待下一轮调度: ${item.name}`,
+                    err
+                  )
+                  this.updateItemStatus(item.id, 'pending', 0)
+                } else if (isAbort) {
                   logger.info(LogCategory.ANALYSIS_QUEUE, `[并行队列:GPU通道] GPU 任务被中止: ${item.name}`)
                   this.updateItemStatus(item.id, 'pending', 0)
                 } else if (isTransientInfraError(err)) {
@@ -686,6 +828,10 @@ export class AnalysisQueueService {
             await Promise.all([runCPUProducer(), runGPUConsumer()])
           } catch (error) {
             logger.error(LogCategory.ANALYSIS_QUEUE, '[并行队列] 并行通道执行异常:', error)
+            // 任一通道抛出后 Promise.all 会立刻 settle，另一条通道却还在跑 ——
+            // 它会变成持有 signal 的游离 promise，继续往下处理队列项并写状态。
+            // 这里显式中止，让它按「被中止」正常退出。
+            this.currentAbortController?.abort()
           } finally {
             this.currentAbortController = null
             this.current = undefined

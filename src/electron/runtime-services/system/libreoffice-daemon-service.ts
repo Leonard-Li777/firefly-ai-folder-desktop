@@ -135,7 +135,16 @@ export class LibreOfficeDaemonService {
       // 登记进全局精准进程回收器
       try {
         const { processReaper } = require('../../main/process-reaper')
-        processReaper.registerChild(daemonProc.pid, 'LibreOffice-Daemon')
+        // 第三、四参数显式传入真实可执行文件名与完整路径。
+        // 注意：Windows 上拉起的是 soffice.exe（引导进程），真正的 soffice.bin 是它的子进程；
+        // taskkill /T 会连带结束整棵进程树，所以这里登记 soffice.exe 的 PID 是正确目标，
+        // 若登记成 soffice.bin 反而会因为拿不到 PID 而无法回收。
+        processReaper.registerChild(
+          daemonProc.pid,
+          'LibreOffice-Daemon',
+          require('node:path').basename(loInfo.path),
+          loInfo.path
+        )
       } catch {}
 
       // 允许 Electron 主进程退出时不受强行绑死
