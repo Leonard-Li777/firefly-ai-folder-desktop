@@ -356,6 +356,45 @@
     "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(37609-37617)"],
     "$id": 10714
   },
+  "加载工作目录失败": {
+    "en-US": "Failed to load working directory",
+    "es-ES": "No se pudo cargar el directorio de trabajo",
+    "ar-EG": "فشل تحميل دليل العمل",
+    "pt-PT": "Falha ao carregar o diretório de trabalho",
+    "ru-RU": "Не удалось загрузить рабочий каталог",
+    "ja-JP": "作業ディレクトリのロードに失敗しました",
+    "de-DE": "Das Arbeitsverzeichnis konnte nicht geladen werden",
+    "fr-FR": "Échec du chargement du répertoire de travail",
+    "ko-KR": "작업 디렉터리를 로드하지 못했습니다.",
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryState.ts(11757-11769)"],
+    "$id": 8367
+  },
+  "加载维度分组失败": {
+    "en-US": "Failed to load dimension grouping",
+    "es-ES": "No se pudo cargar la agrupación de dimensiones",
+    "ar-EG": "فشل تحميل تجميع الأبعاد",
+    "pt-PT": "Falha ao carregar o agrupamento de dimensões",
+    "ru-RU": "Не удалось загрузить группу измерений.",
+    "ja-JP": "ディメンションのグループ化のロードに失敗しました",
+    "de-DE": "Die Dimensionsgruppierung konnte nicht geladen werden",
+    "fr-FR": "Échec du chargement du regroupement de dimensions",
+    "ko-KR": "측정기준 그룹을 로드하지 못했습니다.",
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryState.ts(14365-14377)"],
+    "$id": 8368
+  },
+  "加载文件列表失败": {
+    "en-US": "Failed to load file list",
+    "es-ES": "No se pudo cargar la lista de archivos",
+    "ar-EG": "فشل تحميل قائمة الملفات",
+    "pt-PT": "Falha ao carregar a lista de arquivos",
+    "ru-RU": "Не удалось загрузить список файлов",
+    "ja-JP": "ファイルリストのロードに失敗しました",
+    "de-DE": "Dateiliste konnte nicht geladen werden",
+    "fr-FR": "Échec du chargement de la liste des fichiers",
+    "ko-KR": "파일 목록을 로드하지 못했습니다.",
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryState.ts(15820-15832)"],
+    "$id": 8369
+  },
   "管理保存的虚拟目录": {
     "en-US": "Manage saved virtual directories",
     "es-ES": "Gestionar directorios virtuales guardados",
@@ -446,44 +485,5 @@
     "ko-KR": "닫기",
     "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/components/DirectoryManagementModals.tsx(5602-5608)"],
     "$id": 8343
-  },
-  "加载工作目录失败": {
-    "en-US": "Failed to load working directory",
-    "es-ES": "No se pudo cargar el directorio de trabajo",
-    "ar-EG": "فشل تحميل دليل العمل",
-    "pt-PT": "Falha ao carregar o diretório de trabalho",
-    "ru-RU": "Не удалось загрузить рабочий каталог",
-    "ja-JP": "作業ディレクトリのロードに失敗しました",
-    "de-DE": "Das Arbeitsverzeichnis konnte nicht geladen werden",
-    "fr-FR": "Échec du chargement du répertoire de travail",
-    "ko-KR": "작업 디렉터리를 로드하지 못했습니다.",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryState.ts(11757-11769)"],
-    "$id": 8367
-  },
-  "加载维度分组失败": {
-    "en-US": "Failed to load dimension grouping",
-    "es-ES": "No se pudo cargar la agrupación de dimensiones",
-    "ar-EG": "فشل تحميل تجميع الأبعاد",
-    "pt-PT": "Falha ao carregar o agrupamento de dimensões",
-    "ru-RU": "Не удалось загрузить группу измерений.",
-    "ja-JP": "ディメンションのグループ化のロードに失敗しました",
-    "de-DE": "Die Dimensionsgruppierung konnte nicht geladen werden",
-    "fr-FR": "Échec du chargement du regroupement de dimensions",
-    "ko-KR": "측정기준 그룹을 로드하지 못했습니다.",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryState.ts(14365-14377)"],
-    "$id": 8368
-  },
-  "加载文件列表失败": {
-    "en-US": "Failed to load file list",
-    "es-ES": "No se pudo cargar la lista de archivos",
-    "ar-EG": "فشل تحميل قائمة الملفات",
-    "pt-PT": "Falha ao carregar a lista de arquivos",
-    "ru-RU": "Не удалось загрузить список файлов",
-    "ja-JP": "ファイルリストのロードに失敗しました",
-    "de-DE": "Dateiliste konnte nicht geladen werden",
-    "fr-FR": "Échec du chargement de la liste des fichiers",
-    "ko-KR": "파일 목록을 로드하지 못했습니다.",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryState.ts(15820-15832)"],
-    "$id": 8369
   }
 }

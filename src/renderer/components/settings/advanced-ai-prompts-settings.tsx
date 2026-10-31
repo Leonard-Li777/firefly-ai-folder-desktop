@@ -79,13 +79,13 @@ export const AdvancedAIPromptsSettings: React.FC = () => {
   const defaultPrompts = useMemo(
     () => ({
       qualityScore: t(
-        '示例：为喜剧故事多加分；为技术指标降低权重; 多模态内容描述着重人物关系, lrc翻译为{activeLanguage}',
+        '示例：为喜剧故事多加分；为技术指标降低权重; 多模态内容描述着重人物关系, 翻译为{activeLanguage}',
         {
           activeLanguage: SUPPORTED_LANGUAGES.find(lang => lang.code === activeLanguage)?.nativeName
         }
       ),
       tagGeneration: t(
-        '示例：智能文件名需要翻译成{activeLanguage}，格式：作者_内容描述。例如：乔治·马丁_冰与火之歌.pdf。标签最多生成20个，且每个不要超过2个字，至少从文件名提取一个标签，其它必须从此集合里提取：[开心,痛苦,愤恨,...]',
+        '示例：智能文件名需要翻译成{activeLanguage}。标签最多生成20个，且每个不要超过2个字，至少从文件名提取一个标签，其它必须从此集合里提取：[开心,痛苦,愤恨,...]',
         {
           activeLanguage: SUPPORTED_LANGUAGES.find(lang => lang.code === activeLanguage)?.nativeName
         }
@@ -220,7 +220,7 @@ export const AdvancedAIPromptsSettings: React.FC = () => {
           </div>
         </Card>
 
-        {/* 2. 标签与智能文件名生成提示词 */}
+        {/* 2. AI标签与智能文件名生成提示词 */}
         <Card className={`p-5 space-y-3 transition-opacity ${!isAdvancedAiEnabled ? 'opacity-80 bg-muted/10' : ''}`}>
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
