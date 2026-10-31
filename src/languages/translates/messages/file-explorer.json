@@ -42,19 +42,6 @@
     "$files": ["src/renderer/components/file-explorer/batch-analyze.ts(3609-3625)"],
     "$id": 3390
   },
-  "建议在 AI 深度分析前先执行【目录瘦身】，临时文件与重复项清理，可节省分析时间与算力。": {
-    "en-US": "It is recommended to perform [Directory Cleanup] before the in-depth AI analysis, and to clear temporary files and duplicates to save analysis time and computing power.",
-    "es-ES": "Se recomienda ejecutar [Reducción de directorio] antes del análisis profundo de IA. La limpieza de archivos temporales y elementos duplicados puede ahorrar tiempo y capacidad computacional en el análisis.",
-    "ar-EG": "يُنصح بتنفيذ [تقليص المجلد] قبل التحليل العميق بواسطة الذكاء الاصطناعي؛ حيث إن تنظيف الملفات المؤقتة والعناصر المكررة يوفر وقت التحليل والقدرة الحسابية.",
-    "pt-PT": "Recomenda-se executar a [Redução de Diretório] antes da análise profunda da IA, incluindo a limpeza de ficheiros temporários e itens duplicados, para poupar tempo de análise e capacidade de computação.",
-    "ru-RU": "Рекомендуется выполнить [Оптимизацию каталога], очистку временных файлов и дубликатов, прежде чем запускать углублённый AI-анализ, чтобы сэкономить время и вычислительные ресурсы.",
-    "ja-JP": "AI による詳細分析の前に【フォルダ最適化】を実行することをおすすめします。一時ファイルと重複項目を整理することで、分析時間と計算リソースを節約できます。",
-    "de-DE": "Es wird empfohlen, vor der KI-gestützten Tiefenanalyse die Option [Ordner schlank halten] auszuführen, um temporäre Dateien und Duplikate zu bereinigen. Dies spart Analysezeit und Rechenleistung.",
-    "fr-FR": "Il est recommandé d’exécuter [RÉDUCION DE DOSSIER] avant l’analyse approfondie par IA : le nettoyage des fichiers temporaires et des doublons permet de gagner du temps et de la puissance de calcul.",
-    "ko-KR": "AI 심층 분석 전 [디렉터리 슬림화] 및 임시 파일, 중복 항목 삭제를 통해 분석 시간과 컴퓨팅 리소스를 절약할 수 있습니다.",
-    "$files": ["src/renderer/components/file-explorer/CleanRecommendationBanner.tsx(1762-1810)"],
-    "$id": 11391
-  },
   "立即查看冗余文件": {
     "en-US": "View redundant files now",
     "es-ES": "Ver archivos redundantes ahora",
@@ -65,7 +52,7 @@
     "de-DE": "Redundante Dateien jetzt anzeigen",
     "fr-FR": "Afficher les fichiers redondants maintenant",
     "ko-KR": "지금 중복 파일 보기",
-    "$files": ["src/renderer/components/file-explorer/CleanRecommendationBanner.tsx(2363-2375)"],
+    "$files": ["src/renderer/components/file-explorer/CleanRecommendationBanner.tsx(2144-2156)"],
     "$id": 11445
   },
   "知道了": {
@@ -78,7 +65,7 @@
     "de-DE": "Verstanden",
     "fr-FR": "Compris",
     "ko-KR": "알겠습니다",
-    "$files": ["src/renderer/components/file-explorer/CleanRecommendationBanner.tsx(2677-2684)"],
+    "$files": ["src/renderer/components/file-explorer/CleanRecommendationBanner.tsx(2499-2506)"],
     "$id": 11393
   },
   "关闭提示": {
@@ -91,11 +78,21 @@
     "de-DE": "Eingabeaufforderung schließen",
     "fr-FR": "Fermer l'invite",
     "ko-KR": "프롬프트 닫기",
-    "$files": [
-      "src/renderer/components/file-explorer/CleanRecommendationBanner.tsx(3004-3012)",
-      "src/renderer/components/file-explorer/CleanRecommendationBanner.tsx(3036-3044)"
-    ],
+    "$files": ["src/renderer/components/file-explorer/CleanRecommendationBanner.tsx(2610-2618)"],
     "$id": 11446
+  },
+  "建议在 AI 深度分析前先执行【目录瘦身】，临时文件与重复项清理，可节省分析时间与算力。": {
+    "en-US": "It is recommended to perform [Directory Cleanup] before the in-depth AI analysis, and to clear temporary files and duplicates to save analysis time and computing power.",
+    "es-ES": "Se recomienda ejecutar [Reducción de directorio] antes del análisis profundo de IA. La limpieza de archivos temporales y elementos duplicados puede ahorrar tiempo y capacidad computacional en el análisis.",
+    "ar-EG": "يُنصح بتنفيذ [تقليص المجلد] قبل التحليل العميق بواسطة الذكاء الاصطناعي؛ حيث إن تنظيف الملفات المؤقتة والعناصر المكررة يوفر وقت التحليل والقدرة الحسابية.",
+    "pt-PT": "Recomenda-se executar a [Redução de Diretório] antes da análise profunda da IA, incluindo a limpeza de ficheiros temporários e itens duplicados, para poupar tempo de análise e capacidade de computação.",
+    "ru-RU": "Рекомендуется выполнить [Оптимизацию каталога], очистку временных файлов и дубликатов, прежде чем запускать углублённый AI-анализ, чтобы сэкономить время и вычислительные ресурсы.",
+    "ja-JP": "AI による詳細分析の前に【フォルダ最適化】を実行することをおすすめします。一時ファイルと重複項目を整理することで、分析時間と計算リソースを節約できます。",
+    "de-DE": "Es wird empfohlen, vor der KI-gestützten Tiefenanalyse die Option [Ordner schlank halten] auszuführen, um temporäre Dateien und Duplikate zu bereinigen. Dies spart Analysezeit und Rechenleistung.",
+    "fr-FR": "Il est recommandé d’exécuter [RÉDUCION DE DOSSIER] avant l’analyse approfondie par IA : le nettoyage des fichiers temporaires et des doublons permet de gagner du temps et de la puissance de calcul.",
+    "ko-KR": "AI 심층 분석 전 [디렉터리 슬림화] 및 임시 파일, 중복 항목 삭제를 통해 분석 시간과 컴퓨팅 리소스를 절약할 수 있습니다.",
+    "$files": ["src/renderer/components/file-explorer/CleanRecommendationBanner.tsx(2636-2684)"],
+    "$id": 11391
   },
   "所有已分析文件": {
     "en-US": "All analyzed files\r",
@@ -904,6 +901,175 @@
     "$files": ["src/renderer/components/file-explorer/FilePreviewPanel.tsx(6764-6776)"],
     "$id": 10256
   },
+  "文本朗读": {
+    "en-US": "Text read aloud",
+    "es-ES": "Texto leído en voz alta",
+    "ar-EG": "قراءة النص بصوت عال",
+    "pt-PT": "Texto lido em voz alta",
+    "ru-RU": "текст читать вслух",
+    "ja-JP": "テキストを読み上げる",
+    "de-DE": "Text laut vorlesen",
+    "fr-FR": "Texte lu à haute voix",
+    "ko-KR": "소리내어 읽은 텍스트",
+    "$files": ["src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(1509-1517)"],
+    "$id": 22301
+  },
+  "正在朗读": {
+    "en-US": "Reading aloud",
+    "es-ES": "Leer en voz alta",
+    "ar-EG": "القراءة بصوت عالٍ",
+    "pt-PT": "Lendo em voz alta",
+    "ru-RU": "Чтение вслух",
+    "ja-JP": "音読",
+    "de-DE": "Vorlesen",
+    "fr-FR": "Lire à haute voix",
+    "ko-KR": "큰 소리로 읽기",
+    "$files": ["src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(2975-2983)"],
+    "$id": 22302
+  },
+  "朗读已暂停": {
+    "en-US": "Read aloud paused",
+    "es-ES": "Leer en voz alta en pausa",
+    "ar-EG": "القراءة بصوت عالٍ متوقفة مؤقتًا",
+    "pt-PT": "Ler em voz alta pausado",
+    "ru-RU": "Чтение вслух приостановлено",
+    "ja-JP": "読み上げを一時停止しました",
+    "de-DE": "Vorlesen pausiert",
+    "fr-FR": "Lecture à voix haute en pause",
+    "ko-KR": "소리내어 읽기가 일시중지되었습니다.",
+    "$files": ["src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(2998-3007)"],
+    "$id": 22303
+  },
+  "正在加载语音": {
+    "en-US": "Loading voices",
+    "es-ES": "Cargando voces",
+    "ar-EG": "تحميل الأصوات",
+    "pt-PT": "Carregando vozes",
+    "ru-RU": "Загрузка голосов",
+    "ja-JP": "ボイスをロード中",
+    "de-DE": "Stimmen werden geladen",
+    "fr-FR": "Chargement des voix",
+    "ko-KR": "음성 로드 중",
+    "$files": ["src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(3011-3021)"],
+    "$id": 22304
+  },
+  "文件名": {
+    "en-US": "Filename",
+    "es-ES": "Nombre del archivo",
+    "ar-EG": "اسم الملف",
+    "pt-PT": "Nome do ficheiro",
+    "ru-RU": "Имя файла",
+    "ja-JP": "ファイル名",
+    "de-DE": "Dateiname",
+    "fr-FR": "Nom du fichier",
+    "ko-KR": "파일명",
+    "$files": ["src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(4335-4342)"],
+    "$id": 22305
+  },
+  "路径": {
+    "en-US": "Path",
+    "es-ES": "Camino",
+    "ar-EG": "طريق",
+    "pt-PT": "Caminho",
+    "ru-RU": "путь",
+    "ja-JP": "パス",
+    "de-DE": "Weg",
+    "fr-FR": "Chemin",
+    "ko-KR": "길",
+    "$files": ["src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(4594-4600)"],
+    "$id": 22306
+  },
+  "拖动切换朗读片段": {
+    "en-US": "Drag to switch the reading clip",
+    "es-ES": "Arrastre para cambiar el clip de lectura",
+    "ar-EG": "اسحب لتبديل مقطع القراءة",
+    "pt-PT": "Arraste para alternar o clipe de leitura",
+    "ru-RU": "Перетащите курсор, чтобы переключить режим чтения",
+    "ja-JP": "ドラッグして読み上げセグメントを切り替えます",
+    "de-DE": "Ziehen Sie, um den Leseclip zu wechseln",
+    "fr-FR": "Faites glisser pour changer le clip de lecture",
+    "ko-KR": "드래그하여 읽기 클립 전환",
+    "$files": ["src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(6492-6504)"],
+    "$id": 22307
+  },
+  "片段": {
+    "en-US": "Fragment",
+    "es-ES": "Fragmento",
+    "ar-EG": "شظية",
+    "pt-PT": "Fragmento",
+    "ru-RU": "фрагмент",
+    "ja-JP": "断片",
+    "de-DE": "Fragment",
+    "fr-FR": "Fragment",
+    "ko-KR": "조각",
+    "$files": ["src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(7194-7200)"],
+    "$id": 22308
+  },
+  "拖动即播": {
+    "en-US": "Drag and play",
+    "es-ES": "Arrastra y juega",
+    "ar-EG": "السحب واللعب",
+    "pt-PT": "Arrastar e jogar",
+    "ru-RU": "Перетаскивай и играй",
+    "ja-JP": "ドラッグアンドプレイ",
+    "de-DE": "Ziehen und spielen",
+    "fr-FR": "Glisser et jouer",
+    "ko-KR": "드래그 앤 플레이",
+    "$files": ["src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(7329-7337)"],
+    "$id": 22309
+  },
+  "正在准备分句...": {
+    "en-US": "Preparing a clause...",
+    "es-ES": "Preparando una cláusula...",
+    "ar-EG": "إعداد بند...",
+    "pt-PT": "Preparar uma cláusula...",
+    "ru-RU": "Готовлю предложение...",
+    "ja-JP": "文節を準備しています...",
+    "de-DE": "Vorbereitung einer Klausel...",
+    "fr-FR": "Préparer une clause...",
+    "ko-KR": "절 준비...",
+    "$files": ["src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(7521-7534)"],
+    "$id": 22310
+  },
+  "暂停": {
+    "en-US": "Pause",
+    "es-ES": "Pausar",
+    "ar-EG": "إيقاف مؤقت",
+    "pt-PT": "Pausar",
+    "ru-RU": "Приостановить",
+    "ja-JP": "一時停止",
+    "de-DE": "Pausieren",
+    "fr-FR": "Suspendre",
+    "ko-KR": "일시 중지",
+    "$files": ["src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(8433-8439)"],
+    "$id": 22311
+  },
+  "继续播放": {
+    "en-US": "Continue playing",
+    "es-ES": "Seguir jugando",
+    "ar-EG": "مواصلة اللعب",
+    "pt-PT": "Continuar jogando",
+    "ru-RU": "продолжать играть",
+    "ja-JP": "プレイを続ける",
+    "de-DE": "Weiterspielen",
+    "fr-FR": "Continuer à jouer",
+    "ko-KR": "계속 플레이하다",
+    "$files": ["src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(8443-8451)"],
+    "$id": 22312
+  },
+  "关闭朗读": {
+    "en-US": "Turn off read aloud",
+    "es-ES": "Desactivar leer en voz alta",
+    "ar-EG": "قم بإيقاف القراءة بصوت عالٍ",
+    "pt-PT": "Desligue a leitura em voz alta",
+    "ru-RU": "Отключить чтение вслух",
+    "ja-JP": "読み上げをオフにする",
+    "de-DE": "Schalten Sie das Vorlesen aus",
+    "fr-FR": "Désactiver la lecture à haute voix",
+    "ko-KR": "소리내어 읽기 끄기",
+    "$files": ["src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(9152-9160)"],
+    "$id": 22313
+  },
   "当前文件类型暂不支持预览": {
     "en-US": "The current file type does not support preview yet",
     "es-ES": "El tipo de archivo actual aún no admite la vista previa",
@@ -1482,6 +1648,19 @@
     "ko-KR": "키워드로 디렉토리 간 검색",
     "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(53536-53550)"],
     "$id": 11449
+  },
+  "暂停文件分析": {
+    "en-US": "Pause File Analysis",
+    "es-ES": "Pausar análisis de archivo",
+    "ar-EG": "إيقاف تحليل الملف مؤقتاً",
+    "pt-PT": "Pausar análise de ficheiros",
+    "ru-RU": "Приостановить анализ файла",
+    "ja-JP": "ファイル分析を一時停止する",
+    "de-DE": "Dateianalyse pausieren",
+    "fr-FR": "Mettre en pause l'analyse de fichiers",
+    "ko-KR": "파일 분석 일시정지",
+    "$files": ["src/renderer/components/file-explorer/ResourceContentionBanner.tsx(1819-1829)"],
+    "$id": 22314
   },
   "选择一个文件以预览": {
     "en-US": "Select a file to preview",
