@@ -529,6 +529,14 @@ const electronAPI = {
     copyFilesToClipboard: (filePaths: string[]) =>
       ipcRenderer.invoke('copy-files-to-clipboard', filePaths),
 
+    // 将文本安全写入剪贴板（走主进程 safeClipboard，规避窗口焦点检查与跨版本差异）
+    copyTextToClipboard: (text: string) =>
+      ipcRenderer.invoke('copy-text-to-clipboard', text),
+
+    // 从剪贴板读取文本
+    readTextFromClipboard: () =>
+      ipcRenderer.invoke('read-text-from-clipboard'),
+
     // 写入文件
     writeFile: (filePath: string, content: string) =>
       ipcRenderer.invoke('write-file', filePath, content),

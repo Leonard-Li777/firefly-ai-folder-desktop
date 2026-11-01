@@ -575,6 +575,10 @@ declare global {
         openFileWithDefaultApp: (filePath: string) => Promise<void>
         launchExternalDeepLink: (payload: DeepLinkTargetPayload) => Promise<LaunchOutcome>
         openPathInExplorer: (dirPath: string) => Promise<void>
+        copyFileToClipboard: (filePath: string) => Promise<{ success: boolean }>
+        copyFilesToClipboard: (filePaths: string[]) => Promise<{ success: boolean }>
+        copyTextToClipboard: (text: string) => Promise<{ success: boolean }>
+        readTextFromClipboard: () => Promise<string>
         writeFile: (filePath: string, content: string) => Promise<void>
         detectLibreOffice: () => Promise<LibreOfficeDetection>
         detectFfmpeg: () => Promise<any>

@@ -1,7 +1,8 @@
 import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
-import { ipcMain, app, shell, BrowserWindow, clipboard } from 'electron'
+import { ipcMain, app, shell, BrowserWindow } from 'electron'
+import { safeClipboard } from '../../utils/safe-clipboard'
 import { resolveAppRegion } from '../worktree-env'
 import { iconExtractorClient } from '../icon-extractor-client'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
@@ -60,7 +61,7 @@ export function registerMiscIPCHandlers() {
       logger.info(LogCategory.MAIN, '[Main] 复制文件到剪贴板:', filePath)
       const normalizedPath =
         process.platform === 'win32' ? path.win32.normalize(filePath) : filePath
-      clipboard.write({ filenames: [normalizedPath], text: normalizedPath } as any)
+      await safeClipboard.write({ filenames: [normalizedPath], text: normalizedPath } as any)
       return { success: true }
     } catch (error) {
       logger.error(LogCategory.MAIN, '[Main] 复制文件失败:', error)
@@ -74,11 +75,31 @@ export function registerMiscIPCHandlers() {
       if (!filePaths || filePaths.length === 0) return { success: false }
       const normalizedPaths =
         process.platform === 'win32' ? filePaths.map(p => path.win32.normalize(p)) : filePaths
-      clipboard.write({ filenames: normalizedPaths, text: normalizedPaths.join('\n') } as any)
+      await safeClipboard.write({ filenames: normalizedPaths, text: normalizedPaths.join('\n') } as any)
       return { success: true }
     } catch (error) {
       logger.error(LogCategory.MAIN, '[Main] 复制多个文件失败:', error)
       throw error
+    }
+  })
+
+  ipcMain.handle('copy-text-to-clipboard', async (event, text: string) => {
+    try {
+      const normalizedText = typeof text === 'string' ? text : String(text ?? '')
+      await safeClipboard.writeText(normalizedText)
+      return { success: true }
+    } catch (error) {
+      logger.error(LogCategory.MAIN, '[Main] 复制文本到剪贴板失败:', error)
+      return { success: false }
+    }
+  })
+
+  ipcMain.handle('read-text-from-clipboard', async () => {
+    try {
+      return await safeClipboard.readText()
+    } catch (error) {
+      logger.error(LogCategory.MAIN, '[Main] 读取剪贴板文本失败:', error)
+      return ''
     }
   })
 
