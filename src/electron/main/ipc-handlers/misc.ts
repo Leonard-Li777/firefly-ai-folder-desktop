@@ -61,7 +61,7 @@ export function registerMiscIPCHandlers() {
       logger.info(LogCategory.MAIN, '[Main] 复制文件到剪贴板:', filePath)
       const normalizedPath =
         process.platform === 'win32' ? path.win32.normalize(filePath) : filePath
-      await safeClipboard.write({ filenames: [normalizedPath], text: normalizedPath } as any)
+      await safeClipboard.writeFiles([normalizedPath])
       return { success: true }
     } catch (error) {
       logger.error(LogCategory.MAIN, '[Main] 复制文件失败:', error)
@@ -75,7 +75,7 @@ export function registerMiscIPCHandlers() {
       if (!filePaths || filePaths.length === 0) return { success: false }
       const normalizedPaths =
         process.platform === 'win32' ? filePaths.map(p => path.win32.normalize(p)) : filePaths
-      await safeClipboard.write({ filenames: normalizedPaths, text: normalizedPaths.join('\n') } as any)
+      await safeClipboard.writeFiles(normalizedPaths)
       return { success: true }
     } catch (error) {
       logger.error(LogCategory.MAIN, '[Main] 复制多个文件失败:', error)
