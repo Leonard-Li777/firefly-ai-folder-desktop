@@ -4,6 +4,56 @@ import { fileURLToPath } from 'url'
 import { existsSync } from 'fs'
 import react from '@vitejs/plugin-react'
 
+// --- 双保险物理门禁: 防止纯 Node 裸跑与无过滤词全量超时 ---
+const isIdeOrList = process.argv.some(
+  (arg) => arg.includes('--list') || arg.includes('vitest-vscode')
+)
+const isElectronNode = process.env.ELECTRON_RUN_AS_NODE === '1'
+const isFullTestAllowed =
+  process.env.CI === 'true' || process.env.FULL_TEST === '1' || process.env.ALLOW_FULL_TEST === '1'
+
+// 提取过滤目标参数 (过滤掉 'run', 'watch', flag 选项与 vitest 执行路径)
+const rawTargets = process.argv
+  .slice(2)
+  .filter(
+    (a) =>
+      !a.startsWith('-') &&
+      a !== 'run' &&
+      a !== 'watch' &&
+      !a.includes('vitest') &&
+      !a.includes('test-electron')
+  )
+const targetStr = rawTargets.length > 0 ? rawTargets.join(' ') : '<测试文件名或关键词>'
+
+// 保险 A: 严禁在纯 Node 环境裸跑 vitest (防 better-sqlite3 ABI 崩溃)
+if (!isElectronNode && !isIdeOrList) {
+  console.error('\n' + '='.repeat(80))
+  console.error('🚨 [Test Runner Gate] 严禁在纯 Node 环境下裸跑 Vitest！')
+  console.error('='.repeat(80))
+  console.error(
+    '❌ 致命问题: better-sqlite3 是针对 Electron ABI (NODE_MODULE_VERSION 146) 编译的原生模块。\n' +
+      '   纯 Node 环境下 dlopen 必抛 ERR_DLOPEN_FAILED 崩溃！'
+  )
+  console.error('\n🔧 请立即复制并改用以下合规命令:')
+  console.error(`   pnpm --filter desktop test:unit -- ${targetStr}`)
+  console.error('='.repeat(80) + '\n')
+  process.exit(1)
+}
+
+// 保险 B: 严禁无目标过滤词跑全量 Desktop 单元测试
+if (isElectronNode && !isFullTestAllowed && rawTargets.length === 0 && !isIdeOrList) {
+  console.error('\n' + '='.repeat(80))
+  console.error('🚨 [Test Runner Gate] 严禁不带过滤词全量运行 Desktop 单元测试！')
+  console.error('='.repeat(80))
+  console.error('⚠️  Desktop 包含数百个单元测试用例，串行跑全量耗时极长。')
+  console.error('\n💡 请提供具体的测试文件名或关键词:')
+  console.error('   pnpm --filter desktop test:unit -- <文件名或关键词>')
+  console.error('   例如: pnpm --filter desktop test:unit -- tag-display')
+  console.error('\nℹ️  如确需在本地执行完整回归，请显式声明: cross-env FULL_TEST=1 ...')
+  console.error('='.repeat(80) + '\n')
+  process.exit(1)
+}
+
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
