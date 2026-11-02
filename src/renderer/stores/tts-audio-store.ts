@@ -57,6 +57,8 @@ export interface TTSAudioState {
   bufferedDuration: number
   /** 当前目标安全蓄水时长（秒，默认 15.0） */
   targetBufferDuration: number
+  /** 当前是否有语音合成底层推理/分句合成正在进行中 */
+  isSynthesizing: boolean
   /** 刷新并拉取全量音色库（含自定义音色） */
   refreshVoices: () => Promise<VoiceMeta[]>
 
@@ -137,6 +139,34 @@ let currentCleanedChunks: string[] = []
 let progressTimer: ReturnType<typeof setInterval> | null = null
 let isAllChunksScheduled = false
 let isHotSwitchInProgress = false
+
+let activeSynthesizingCount = 0
+
+function updateSynthesizingCounter(delta: number) {
+  activeSynthesizingCount = Math.max(0, activeSynthesizingCount + delta)
+  const isSyn = activeSynthesizingCount > 0
+  if (useTTSAudioStore.getState().isSynthesizing !== isSyn) {
+    useTTSAudioStore.setState({ isSynthesizing: isSyn })
+  }
+}
+
+async function safeSynthesizeChunk(
+  text: string,
+  voiceId: string | number,
+  speed: number,
+  sessionId?: number,
+  sid?: number
+): Promise<{ buffer: ArrayBuffer; hitCap: boolean; steps: number } | null> {
+  if (!window.electronAPI?.tts?.synthesizeChunk) {
+    return null
+  }
+  updateSynthesizingCounter(1)
+  try {
+    return await window.electronAPI.tts.synthesizeChunk(text, voiceId, speed, sessionId, sid)
+  } finally {
+    updateSynthesizingCounter(-1)
+  }
+}
 
 /** 预缓冲水线配置常数 (P1: 自适应蓄水池门禁以消除 RTF>1 欠载断流) */
 export const TTS_BUFFER_WATERMARK = {
@@ -691,7 +721,7 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
         }
       }
       if (!baseBuffer) {
-        const synthRes = await window.electronAPI.tts.synthesizeChunk(
+        const synthRes = await safeSynthesizeChunk(
           chunkText,
           targetVoiceId,
           1.0,
@@ -850,7 +880,7 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
           }
         }
         if (!nextBaseBuffer) {
-          const synthRes = await window.electronAPI.tts.synthesizeChunk(
+          const synthRes = await safeSynthesizeChunk(
             nextChunkText,
             targetVoiceId,
             1.0,
@@ -952,6 +982,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
   allVoices: PRESET_VOICES,
   bufferedDuration: 0,
   targetBufferDuration: TTS_BUFFER_WATERMARK.MIN_BUFFERED_DURATION_SEC,
+  isSynthesizing: false,
 
   refreshVoices: async () => {
     try {
@@ -1050,6 +1081,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     stopProgressMonitor()
     clearScheduledSources()
     isAllChunksScheduled = false
+    activeSynthesizingCount = 0
     hotSwitchCounter++
     currentPlayOptions = undefined
     const sidToAbort = activeSessionId
@@ -1072,7 +1104,8 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
       currentSentenceIndex: 0,
       totalSentences: 0,
       errorMessage: null,
-      bufferedDuration: 0
+      bufferedDuration: 0,
+      isSynthesizing: false
     })
   },
 
@@ -1405,7 +1438,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
 
         if (!baseBuffer) {
           // 核心声学架构：底层请求 1.0x 基准母本合成，并通过纯 Rust WSOLA 极速算法派生任意目标倍速
-          const synthPromise = window.electronAPI.tts.synthesizeChunk(
+          const synthPromise = safeSynthesizeChunk(
             chunkText,
             chosenVoiceId,
             1.0,
@@ -1632,7 +1665,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
       for (let i = 0; i < currentCleanedChunks.length; i++) {
         let chunkData = cachedChunksMap.get(i)
         if (!chunkData) {
-          const synthRes = await window.electronAPI.tts.synthesizeChunk(
+          const synthRes = await safeSynthesizeChunk(
             currentCleanedChunks[i],
             voiceId,
             1.0
@@ -1799,7 +1832,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         }
 
         if (!baseBuffer) {
-          const synthPromise = window.electronAPI.tts.synthesizeChunk(
+          const synthPromise = safeSynthesizeChunk(
             chunkText,
             voiceId,
             1.0,
