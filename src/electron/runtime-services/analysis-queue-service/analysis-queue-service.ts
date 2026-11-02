@@ -1389,6 +1389,26 @@ export class AnalysisQueueService {
       logger.warn(LogCategory.MAIN, '[AnalysisQueue] 更新分析队列状态到数据库失败:', e)
     }
     this.emitUpdate()
+
+    if (status === 'completed' || status === 'failed') {
+      try {
+        const windows = BrowserWindow.getAllWindows()
+        if (windows && windows.length > 0) {
+          windows.forEach(win => {
+            if (!win.webContents.isDestroyed()) {
+              win.webContents.send('file-analysis-updated', {
+                filePath: item.path,
+                fileFingerprint: (item as any).fileFingerprint,
+                status,
+                source: 'queue'
+              })
+            }
+          })
+        }
+      } catch (broadcastErr) {
+        logger.debug(LogCategory.MAIN, '[AnalysisQueue] 广播 file-analysis-updated 失败(非致命):', broadcastErr)
+      }
+    }
   }
 
   private async notifyFrontend(

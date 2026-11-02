@@ -344,6 +344,24 @@ const electronAPI = {
     ipcRenderer.on('analysis-queue-updated', handler)
     return () => ipcRenderer.removeListener('analysis-queue-updated', handler)
   },
+  onFileAnalysisUpdated: (
+    callback: (payload: {
+      filePath?: string
+      fileFingerprint?: string
+      status?: string
+      source?: string
+    }) => void
+  ) => {
+    const handler = (_event: any, payload: any) => {
+      try {
+        window.dispatchEvent(new CustomEvent('smartname-updated', { detail: payload }))
+        window.dispatchEvent(new CustomEvent('files-updated', { detail: payload }))
+      } catch {}
+      callback(payload)
+    }
+    ipcRenderer.on('file-analysis-updated', handler)
+    return () => ipcRenderer.removeListener('file-analysis-updated', handler)
+  },
   onDirectoryContextUpdated: (
     callback: (payload: { directoryPath: string; contextAnalysis: any }) => void
   ) => {

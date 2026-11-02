@@ -18,6 +18,7 @@ export function useFileDetails(
   const [deleting, setDeleting] = useState(false)
   const lastSeenStatusRef = useRef<string | null>(null)
   const reanalyzeStartTimeRef = useRef<number>(0)
+  const lastSeenUpdatedAtRef = useRef<number>(0)
 
   // isDirectory 兼容两种对象：FileItem（有 isDirectory 字段）和虚拟目录树节点（有 isFile 字段）
   const isDirectory = item
@@ -132,6 +133,47 @@ export function useFileDetails(
     refreshAnalysis
   ])
 
+  // 监听单文件分析更新与异步返送打标落库（驱动右侧属性面板热刷新，无需切换文件）
+  useEffect(() => {
+    if (!window.electronAPI?.onFileAnalysisUpdated) return
+    const cleanup = window.electronAPI.onFileAnalysisUpdated(payload => {
+      const targetPath =
+        item?.path || (item as any)?.originalPath || currentDirectoryPath || workspaceDirectoryPath
+      if (!targetPath) return
+      const { isPathEqual } = window.electronAPI!.utils || {
+        isPathEqual: (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
+      }
+      const isTarget =
+        (payload?.filePath && isPathEqual(payload.filePath, targetPath)) ||
+        (payload?.fileFingerprint &&
+          (analysisResult?.fingerprint === payload.fileFingerprint ||
+            analysisResult?.fileFingerprint === payload.fileFingerprint))
+
+      if (isTarget) {
+        if (payload?.status === 'completed' || payload?.source === 'retag') {
+          setReanalyzing(false)
+          setQueueStatus(null)
+        }
+        refreshAnalysis()
+        if (onFileUpdated) {
+          onFileUpdated()
+        }
+      }
+    })
+    return () => {
+      cleanup()
+    }
+  }, [
+    item?.path,
+    (item as any)?.originalPath,
+    currentDirectoryPath,
+    workspaceDirectoryPath,
+    analysisResult?.fingerprint,
+    analysisResult?.fileFingerprint,
+    refreshAnalysis,
+    onFileUpdated
+  ])
+
   // 监听分析队列更新（支持单文件与目录画像队列项）
   useEffect(() => {
     const targetPath =
@@ -147,11 +189,16 @@ export function useFileDetails(
       )
 
       if (queueItem) {
+        const isStatusChange = lastSeenStatusRef.current !== queueItem.status
+        const isNewTimestamp =
+          queueItem.updatedAt && queueItem.updatedAt > lastSeenUpdatedAtRef.current
+
         if (
           (queueItem.status === 'completed' || queueItem.status === 'failed') &&
-          lastSeenStatusRef.current !== queueItem.status
+          (isStatusChange || isNewTimestamp)
         ) {
           lastSeenStatusRef.current = queueItem.status
+          lastSeenUpdatedAtRef.current = queueItem.updatedAt || Date.now()
 
           if (queueItem.status === 'completed') {
             if (Date.now() - queueItem.updatedAt < 5000) {
@@ -174,14 +221,15 @@ export function useFileDetails(
           setReanalyzing(true)
           setQueueStatus(queueItem.status)
           lastSeenStatusRef.current = queueItem.status
+          lastSeenUpdatedAtRef.current = queueItem.updatedAt || Date.now()
         }
       } else if (lastSeenStatusRef.current) {
-        const now = Date.now()
-        if (now - reanalyzeStartTimeRef.current > 2000) {
-          setReanalyzing(false)
-          setQueueStatus(null)
-          lastSeenStatusRef.current = null
-          refreshAnalysis()
+        setReanalyzing(false)
+        setQueueStatus(null)
+        lastSeenStatusRef.current = null
+        refreshAnalysis()
+        if (onFileUpdated) {
+          onFileUpdated()
         }
       }
     })
@@ -199,7 +247,7 @@ export function useFileDetails(
     refreshAnalysis
   ])
 
-  const handleReanalyze = async () => {
+    const handleReanalyze = async () => {
     if (!item || isDirectory) return
     try {
       lastSeenStatusRef.current = 'pending'

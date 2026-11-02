@@ -592,6 +592,46 @@ export async function cleanupOrphanedVideoChunks(
   }
 }
 
+
+function notifyFileAnalysisUpdated(
+  filePath: string,
+  fileFingerprint: string,
+  source: string,
+  status = 'completed'
+): void {
+  try {
+    const { BrowserWindow } = require('electron')
+    const windows = BrowserWindow.getAllWindows()
+    if (windows && windows.length > 0) {
+      windows.forEach((win: any) => {
+        if (!win.isDestroyed()) {
+          win.webContents.send('file-analysis-updated', {
+            filePath,
+            fileFingerprint,
+            source,
+            status
+          })
+        }
+      })
+    }
+  } catch (err) {
+    logger.debug(LogCategory.ANALYSIS_QUEUE, '[分析队列] 广播 file-analysis-updated 失败(非致命):', err)
+  }
+}
+
+function createRetagCompletedHandler(filePath: string, fileFingerprint: string) {
+  return (outcome: any) => {
+    if (outcome && outcome.tags && outcome.tags.length > 0) {
+      try {
+        databaseService.syncFTSTags(fileFingerprint)
+      } catch (err) {
+        logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 返送打标后同步 FTS 失败:', err)
+      }
+      notifyFileAnalysisUpdated(filePath, fileFingerprint, 'retag', 'completed')
+    }
+  }
+}
+
 export class FileProcessor {
   private mockData: any = null
   private selectWorkspaceFileStmt: any = null
@@ -1602,13 +1642,36 @@ export class FileProcessor {
             ? existingBasicData.category
             : existingBasicData.category?.group || null
 
+        // 若本次分析跳过了 CPU 阶段（复用已有基础数据），Omni 进程内存中的 anchor_cache 可能未曾填充或已过期。
+        // 在触发找补裁决器（返送打标）之前，轻量唤醒一次 Omni perceive，确保同源 Bekko 全局锚点就绪
+        if (cpuSkipped) {
+          try {
+            await omniService.perceive(filePath, {
+              fileFingerprint,
+              enableVisualTags: false,
+              enableGeoReverse: false,
+              enableTextAnalysis: true,
+              generateThumbnail: false
+            })
+          } catch (anchorWarmupErr) {
+            logger.warn(
+              LogCategory.ANALYSIS_QUEUE,
+              `[GPU阶段:复用] 预热 Omni 全局锚点失败（返送打标将安全降级）: ${filePath}`,
+              anchorWarmupErr
+            )
+          }
+        }
+
         // 运行找补裁决器：将 CPU 既定事实标签与 AI 推理标签合并，物理事实绝对覆盖，全量无损入库（打破 8 个上限限制）
         // resolveControlledCode：中文词形优先反查 Omni 语义包（omw.* > builtin.*），禁止无脑 _ext / 冒号 code
         executeProTagReconciliation({
           db,
           fileFingerprint,
+          filePath,
+          onRetagCompleted: createRetagCompletedHandler(filePath, fileFingerprint),
           preflightContext,
           dimResult,
+          multimodalContent: processResult?.multimodalContent,
           authors: (baseMetadata?.author ? [baseMetadata.author] : undefined) || baseMetadata?.authors || baseMetadata?.document?.authors,
           language: baseMetadata?.language,
           fileGroup: existingMagikaGroup,
@@ -2592,6 +2655,8 @@ export class FileProcessor {
           executeProTagReconciliation({
             db,
             fileFingerprint,
+            filePath,
+            onRetagCompleted: createRetagCompletedHandler(filePath, fileFingerprint),
             preflightContext,
             dimResult: null,
             authors: resolvedAuthor ? [resolvedAuthor] : undefined,
@@ -2759,6 +2824,8 @@ export class FileProcessor {
         executeProTagReconciliation({
           db,
           fileFingerprint,
+          filePath,
+          onRetagCompleted: createRetagCompletedHandler(filePath, fileFingerprint),
           preflightContext,
           dimResult: null,
           authors: (resolvedAuthor ? [resolvedAuthor] : undefined) || anydocResult?.metadata?.authors || anydocResult?.metadata?.document?.authors,
@@ -2962,8 +3029,11 @@ export class FileProcessor {
       executeProTagReconciliation({
         db,
         fileFingerprint,
+        filePath,
+        onRetagCompleted: createRetagCompletedHandler(filePath, fileFingerprint),
         preflightContext,
         dimResult,
+        multimodalContent: processResult?.multimodalContent,
         authors: (resolvedAuthor ? [resolvedAuthor] : undefined) || anydocResult?.metadata?.authors || anydocResult?.metadata?.document?.authors,
         language,
         fileGroup: magikaGroup,

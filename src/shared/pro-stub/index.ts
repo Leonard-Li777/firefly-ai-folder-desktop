@@ -57,11 +57,15 @@ export interface ProTagReconciliationParams {
     [key: string]: any
   } | null
   dimResult?: any
+  /** Stage 3 文件质量评分阶段获取的多模态内容描述 (multimodalContent) */
+  multimodalContent?: string | null
   syncStatus?: number
   authors?: string[]
   language?: string
   fileGroup?: string | { group?: string; label?: string } | any
   extension?: string
+  filePath?: string
+  onRetagCompleted?: (outcome: any) => void
 }
 
 export interface ProTagReconciliationResult {

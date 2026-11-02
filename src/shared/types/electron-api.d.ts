@@ -532,6 +532,14 @@ declare global {
       /** 工单 13：手动触发一次 canonical 语义索引重建 */
       runCanonicalMaintenance: (reason?: string) => Promise<{ success: boolean }>
       onAnalysisQueueUpdated: (callback: (payload: AnalysisQueue) => void) => () => void
+      onFileAnalysisUpdated: (
+        callback: (payload: {
+          filePath?: string
+          fileFingerprint?: string
+          status?: string
+          source?: string
+        }) => void
+      ) => () => void
       onDirectoryContextUpdated: (callback: (payload: { directoryPath: string; contextAnalysis: any }) => void) => () => void
       onModelStatusChanged: (callback: (payload: ModelStatusChange) => void) => () => void
       // PRD-0044（S5）：onModelNotDownloaded 声明随「内置模型下载链」清退删除
