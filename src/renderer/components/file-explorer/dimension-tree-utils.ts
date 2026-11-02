@@ -715,12 +715,28 @@ export function nestGroupTags(
 
     for (const childTag of directChildren) {
       const tagCodeSeg = childTag.code || childTag.tagValue
-      const branchCodePath = parentCodePath
-        ? normalizeCodePath(`${parentCodePath}/${tagCodeSeg}`)
-        : childTag.codePath
-      const branchNamePath = parentNamePath
-        ? `${parentNamePath}/${childTag.tagValue}`
-        : childTag.namePath
+      // 路径合法性与分支继承 (PRD-0058 / ISS-08)：
+      // 1. 若 childTag.codePath 已经合法地处于 parentCodePath 前缀下（可能因本体中间跳级或路径压缩含有更多段），
+      //    必须优先保留其权威路径，防止自拼路径丢失中间段而在 pathCountMap 中查空断流；
+      // 2. 若 childTag.codePath 缺失，或属于跨分支脏路径（不以 parentCodePath 为前缀），
+      //    则沿当前父分支重新物化纠偏为 parentCodePath + '/' + tagCodeSeg。
+      const isConsistentWithParent = Boolean(
+        parentCodePath &&
+        childTag.codePath &&
+        (childTag.codePath === parentCodePath || childTag.codePath.startsWith(parentCodePath + '/'))
+      )
+
+      const branchCodePath = isConsistentWithParent
+        ? childTag.codePath
+        : parentCodePath
+          ? normalizeCodePath(`${parentCodePath}/${tagCodeSeg}`)
+          : childTag.codePath
+
+      const branchNamePath = isConsistentWithParent && childTag.namePath
+        ? childTag.namePath
+        : parentNamePath
+          ? `${parentNamePath}/${childTag.tagValue}`
+          : childTag.namePath
 
       let branchFileCount = childTag.fileCount
       if (branchCodePath && pathCountMap) {

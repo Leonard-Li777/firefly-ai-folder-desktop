@@ -1,3 +1,4 @@
+import { getCanonicalConceptName } from '@firefly/shared'
 import { describe, it, expect } from 'vitest'
 import {
   nestGroupTags,
@@ -2249,4 +2250,166 @@ describe('PRD-0058 / Branch Dimension Node Isolation & Count SSOT - 跨分支同
     // 关键断言 P1-2：hostScopeCode 必须为受控码 omw.ghost，绝不能回退为中文展示名 "幽灵根标签"！
     expect(ghostTag.hostScopeCode).toBe('omw.ghost')
   })
-});
+
+  it('ISSUE-FIX: omw.00582388.n 词表纠偏，规范展示名必须为「行业」而非劣化单字「业」', () => {
+    const canonicalName = getCanonicalConceptName('omw.00582388.n')
+    expect(canonicalName).toBe('行业')
+  })
+
+  it('ISSUE-FIX (真实场景): 深度 7 时，万物 -> 行业 -> activity -> 手续 -> 方案 含有跳级段时权威 codePath 不被截断重拼，终叶标签方案稳定呈现', () => {
+    // 模拟后端返回的深层真实物化路径（中间包含本体跳级段 omw.00030358.n）
+    const pathWanwu = '/builtin.content_tags/omw.09466280.n'
+    const pathHangye = '/builtin.content_tags/omw.09466280.n/omw.00582388.n'
+    const pathActivity = '/builtin.content_tags/omw.09466280.n/omw.00582388.n/omw.00030358.n/omw.00407535.n'
+    const pathShouxu = '/builtin.content_tags/omw.09466280.n/omw.00582388.n/omw.00030358.n/omw.00407535.n/omw.01023820.n'
+    const pathFangAn = '/builtin.content_tags/omw.09466280.n/omw.00582388.n/omw.00030358.n/omw.00407535.n/omw.01023820.n/omw.05846932.n'
+
+    const pathCountMap: Record<string, number> = {
+      [pathWanwu]: 2,
+      [pathHangye]: 2,
+      [pathActivity]: 2,
+      [pathShouxu]: 1,
+      [pathFangAn]: 1
+    }
+
+    const testGroup = {
+      id: 28,
+      name: '内容标签',
+      code: 'builtin.content_tags',
+      level: 0,
+      tags: [
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '万物',
+          code: 'omw.09466280.n',
+          level: 1,
+          viaParentCode: 'builtin.content_tags',
+          fileCount: 2,
+          codePath: pathWanwu
+        },
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '行业',
+          code: 'omw.00582388.n',
+          level: 2,
+          viaParentCode: 'omw.09466280.n',
+          fileCount: 2,
+          codePath: pathHangye
+        },
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: 'activity',
+          code: 'omw.00407535.n',
+          level: 3,
+          viaParentCode: 'omw.00582388.n',
+          fileCount: 2,
+          codePath: pathActivity
+        },
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '手续',
+          code: 'omw.01023820.n',
+          level: 4,
+          viaParentCode: 'omw.00407535.n',
+          fileCount: 1,
+          codePath: pathShouxu
+        },
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '方案',
+          code: 'omw.05846932.n',
+          level: 5,
+          viaParentCode: 'omw.01023820.n',
+          fileCount: 1,
+          codePath: pathFangAn
+        }
+      ]
+    }
+
+    // 开启 removeEmptyTags 过滤，深度设为 7
+    const tree = buildDimensionTree([testGroup], null, null, 0, 7, pathCountMap, true)
+
+    // 1. 直属顶层标签万物稳定呈现
+    expect(tree[0].tags.some(t => t.tagValue === '万物')).toBe(true)
+
+    // 2. 深入检索子树：万物 -> 行业 -> activity -> 手续 -> 方案
+    const wanwuSub = tree[0].childTags?.get('builtin.content_tags::omw.09466280.n')
+    expect(wanwuSub).toBeDefined()
+    expect(wanwuSub![0].tags.some(t => t.tagValue === '行业')).toBe(true)
+
+    const hangyeSub = wanwuSub![0].childTags?.get('omw.09466280.n::omw.00582388.n')
+    expect(hangyeSub).toBeDefined()
+    expect(hangyeSub![0].tags.some(t => t.tagValue === 'activity')).toBe(true)
+
+    const activitySub = hangyeSub![0].childTags?.get('omw.00582388.n::omw.00407535.n')
+    expect(activitySub).toBeDefined()
+    expect(activitySub![0].tags.some(t => t.tagValue === '手续')).toBe(true)
+
+    const shouxuSub = activitySub![0].childTags?.get('omw.00407535.n::omw.01023820.n')
+    expect(shouxuSub).toBeDefined()
+    // 关键断言：终端业务叶子标签「方案」100% 存在，物化路径精准保留跳级段，计数为 1
+    const fanganTag = shouxuSub![0].tags.find(t => t.tagValue === '方案')
+    expect(fanganTag).toBeDefined()
+    expect(fanganTag!.fileCount).toBe(1)
+    expect(fanganTag!.codePath).toBe(pathFangAn)
+  })
+
+  it('ISSUE-FIX (刻度穿透提升): 当刻度收缩为 2 时，深层叶子标签方案穿透提升且带有 isLifted: true', () => {
+    const pathWanwu = '/builtin.content_tags/omw.09466280.n'
+    const pathFangAn = '/builtin.content_tags/omw.09466280.n/omw.00582388.n/omw.00030358.n/omw.00407535.n/omw.01023820.n/omw.05846932.n'
+
+    const pathCountMap: Record<string, number> = {
+      [pathWanwu]: 1,
+      [pathFangAn]: 1
+    }
+
+    const testGroup = {
+      id: 28,
+      name: '内容标签',
+      code: 'builtin.content_tags',
+      level: 0,
+      tags: [
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '万物',
+          code: 'omw.09466280.n',
+          level: 1,
+          viaParentCode: 'builtin.content_tags',
+          fileCount: 1,
+          codePath: pathWanwu
+        },
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '方案',
+          code: 'omw.05846932.n',
+          level: 5,
+          viaParentCode: 'omw.09466280.n',
+          fileCount: 1,
+          codePath: pathFangAn
+        }
+      ]
+    }
+
+    const tree = buildDimensionTree([testGroup], null, null, 0, 2, pathCountMap, true)
+    const directTags = tree[0].tags
+    const liftedFangan = directTags.find(t => t.tagValue === '方案')
+    expect(liftedFangan).toBeDefined()
+    expect(liftedFangan!.isLifted).toBe(true)
+    expect(liftedFangan!.fileCount).toBe(1)
+    expect(liftedFangan!.codePaths).toContain(pathFangAn)
+  })
+})
