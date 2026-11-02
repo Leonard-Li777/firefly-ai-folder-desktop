@@ -2,26 +2,26 @@
   "nextVersion": {
     "version": "4.0.0",
     "releaseNotes": [
-      "[Reconstrucción del motor de IA] El motor de IA básico incorporado está listo para usarse de inmediato y, opcionalmente, puede habilitar motores de IA avanzados (núcleo/nube de Ying) para mejorar el análisis bajo demanda.",
-      "[Apto para computadoras de gama baja] Puede funcionar sin problemas incluso sin tarjetas gráficas independientes y con poca memoria. Reconstruye la infraestructura de IA de alta velocidad con la inferencia de la CPU como núcleo.",
-      "[Motor de IA avanzado independiente] El motor de IA de Firefly puede ejecutarse independientemente del programa principal, proporcionando capacidades de IA para aplicaciones de terceros además de Firefly",
-      "[Búsqueda de video] Las imágenes, audios y videos se pueden recuperar con precisión mediante lenguaje natural, y se admite la búsqueda por semántica, imágenes y contenido de voz.",
-      "[ASR de voz a texto] Las conversaciones y el contenido de podcasts en videos y audios se convierten rápidamente en texto para recuperarlos y archivarlos fácilmente.",
-      "[Síntesis de voz TTS] Conversión de texto a voz con un solo clic, más de 50 tonos integrados, admite clonación de tonos personalizados de 3 segundos y puede escuchar directamente novelas y documentos",
-      "[Actualización de etiqueta de archivo] Tipos de etiquetas de hechos más completos recientemente agregados, las etiquetas son más precisas y explicables",
-      "[Optimización especial de materiales multimedia] Para diseñadores y creadores de medios propios, se realizan mejoras especiales para la organización de materiales de imágenes, audio y video.",
-      "[Optimización especial NSFW] Detección, segmentación y mejora más precisa de contenido sensible como pornografía, violencia, terrorismo, política, violaciones, insultos y sangre en imágenes, videos y audios",
-      "[Clasificación por lotes multimodo] Cinco modos: plano de identidad, agrupación en clústeres inteligente, estructura de directorios externa generada por IA, derivación de árbol de directorios a partir de archivos y árbol de directorios personalizado. Genera directorios y clasifica miles de archivos en segundos.",
-      "[Plan de identidad (recomendado)] Seleccione una identidad de la base de datos de roles de vida y de la industria y, después de cuatro etapas de ajuste fino, el cliente y el lado coincidirán con la estructura del directorio de alta calidad en milisegundos.",
-      "[Clúster inteligente] El clúster no supervisado (HAC) del lado final genera directamente el árbol de directorios compilado en milisegundos y admite ajustes instantáneos en línea",
-      "[Estructura de directorio generada por IA externa] Un clic para copiar las palabras solicitadas a una IA externa como Doubao, ChatGPT, Kimi, etc., y pegar los resultados para obtener una vista previa y organizarlos en tiempo real.",
-      "[Derivar árboles de directorios a partir de archivos] Con la ayuda del motor de IA avanzado, se obtienen directamente 3 conjuntos de candidatos a árboles de directorios completos a partir de modelos grandes locales o en la nube, y se pueden clasificar seleccionándolos.",
-      "[Árbol de directorio personalizado] Pegue o escriba a mano la estructura del directorio Markdown, obtenga una vista previa de las columnas izquierda y derecha en tiempo real y cree una solución de organización exclusiva a pedido",
-      "[Optimización de la interfaz de usuario en profundidad] Reorganice la estructura de la información, como la página de configuración, agregue una nueva guía y entrada de ayuda, y haga que la operación sea más intuitiva"
+      "[Reconstrucción del motor de IA] El motor de IA básico integrado está listo para usar desde el primer momento, con un motor de IA avanzado Firecore/nube opcional para mejorar el análisis bajo demanda.",
+      "[Compatible con computadoras de baja configuración] Reconstruya la arquitectura de IA de alta velocidad basada en la inferencia de la CPU, funcionando sin problemas en dispositivos con poca memoria sin tarjetas gráficas independientes",
+      "[Motor de IA Firecore independiente] Se puede ejecutar independientemente del programa principal para proporcionar capacidades de IA a aplicaciones de terceros",
+      "[Búsqueda semántica multimedia] Las imágenes, audios y videos admiten la recuperación del lenguaje natural y la búsqueda de contenido por semántica, imágenes y voces.",
+      "[ASR de voz a texto] Transcribe rápidamente conversaciones de audio y video a texto para recuperarlas y archivarlas fácilmente",
+      "[Síntesis de voz TTS] Texto a voz, más de 50 sonidos integrados, admite clonación de sonido de 3 segundos y lee novelas documentales en voz alta",
+      "[Actualización de etiquetas de archivos] Enriquezca los tipos de etiquetas de hechos, las etiquetas son más precisas e interpretables y el árbol de etiquetas admite 10 niveles de expansión",
+      "[Optimización del material del creador] Para diseñadores y medios propios, optimización especial de la clasificación de materiales de audio, vídeo e imágenes.",
+      "[Detección mejorada de contenido confidencial] Identifique segmentariamente contenido pornográfico, violento, terrorista, político, abusivo, sangriento y otros contenidos ilegales y sus subcategorías",
+      "[Cinco modos principales de clasificación por lotes] Plano de identidad / agrupación inteligente / directorio externo generado por IA / árbol de directorios de derivación de archivos / árbol de directorios personalizado, procesando miles de archivos en segundos",
+      "[Plan de identidad (recomendado)] Seleccione roles de la industria, optimización de cuatro etapas y clasifique todos los archivos en milisegundos en el lado del cliente",
+      "[Clúster inteligente] Clúster no supervisado de HAC final, genera árboles de directorios en milisegundos, clasifica todos los archivos en segundos y admite ajustes en tiempo real",
+      "[Directorio externo generado por IA] Copie las palabras clave a Doubao, Kimi, ChatGPT con un solo clic y obtenga una vista previa y organice los resultados en tiempo real",
+      "[Derivar árboles de directorios a partir de archivos] El motor de IA avanzado genera 3 conjuntos de candidatos de directorio a la vez y se selecciona la clasificación automática",
+      "[Árbol de directorios personalizado] Pegue el directorio Markdown, obtenga una vista previa de dos columnas en tiempo real y cree reglas de organización exclusivas",
+      "[Optimización de la interfaz de usuario en profundidad] Reconstruya la estructura de la página de configuración, agregue una nueva guía y entrada de ayuda y haga que la operación sea más intuitiva."
     ],
     "forceUpdate": false
   },
-  "lastUpdated": "2026-08-31T13:31:00.000Z",
+  "lastUpdated": "2026-11-01T08:00:00.000Z",
   "latestNews": [
     {
       "text": "V4 Lanzamiento importante, búsqueda de audio y vídeo con IA, síntesis de voz, motor de IA más potente, etc."

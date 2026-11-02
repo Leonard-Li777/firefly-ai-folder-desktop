@@ -2,26 +2,26 @@
   "nextVersion": {
     "version": "4.0.0",
     "releaseNotes": [
-      "[Reconstrução do mecanismo de IA] O mecanismo de IA básico integrado está pronto para uso e você pode opcionalmente ativar mecanismos de IA avançados (núcleo/nuvem Ying) para aprimorar a análise sob demanda.",
-      "[Amigável para computadores de baixo custo] Ele pode funcionar perfeitamente mesmo sem placas gráficas independentes e pouca memória. Ele reconstrói a infraestrutura de IA de alta velocidade com inferência de CPU como núcleo.",
-      "[Mecanismo de IA avançado independente] O mecanismo de IA Firefly pode ser executado independentemente do programa principal, fornecendo recursos de IA para aplicativos de terceiros além do Firefly",
-      "[Pesquisa de vídeo] Imagens, áudios e vídeos podem ser recuperados com precisão por linguagem natural, e a pesquisa por semântica, imagens e conteúdo de voz é suportada.",
-      "[Fala para texto ASR] Conversas e conteúdo de podcast em vídeos e áudios são rapidamente convertidos em texto para fácil recuperação e arquivamento.",
-      "[TTS de síntese de fala] Conversão de texto para fala com um clique, mais de 50 tons integrados, suporta clonagem de tons personalizados de 3 segundos e pode ouvir romances e documentos diretamente",
-      "[Atualização de rótulo de arquivo] Tipos de rótulos de fatos mais ricos recém-adicionados, os rótulos são mais precisos e explicáveis",
-      "[Otimização especial de materiais multimídia] Para designers e criadores de mídia própria, melhorias especiais são feitas para a organização de materiais de imagens, áudio e vídeo.",
-      "[Otimização especial NSFW] Detecção, segmentação e aprimoramento mais precisos de conteúdo sensível, como pornografia, violência, terrorismo, política, violações, insultos e sangue em fotos, vídeos e áudios",
-      "[Classificação de lote multimodo] Cinco modos: modelo de identidade, cluster inteligente, estrutura de diretório gerada por IA externa, derivação de árvore de diretório de arquivos e árvore de diretório personalizada. Gere diretórios e classifique milhares de arquivos em segundos.",
-      "[Identity Blueprint (Recommended)] Selecione uma identidade do banco de dados do setor e da função vitalícia e, após quatro estágios de ajuste fino, o cliente e o lado corresponderão à estrutura de diretório de alta qualidade em milissegundos.",
-      "[Clustering inteligente] Clustering não supervisionado (HAC) no lado final, gera diretamente a árvore de diretórios compilada em milissegundos e suporta ajuste fino instantâneo em linha",
-      "[Estrutura de diretório gerada por IA externa] Um clique para copiar as palavras de prompt para IA externa, como Doubao, ChatGPT, Kimi, etc., e colar os resultados para visualizá-los e organizá-los em tempo real",
-      "[Derivar árvores de diretórios de arquivos] Com a ajuda de um mecanismo de IA avançado, 3 conjuntos de candidatos completos a árvores de diretórios são fornecidos diretamente de grandes modelos locais ou de nuvem e podem ser classificados selecionando-os.",
-      "[Árvore de diretórios personalizada] Cole ou escreva à mão a estrutura de diretórios Markdown, visualize as colunas esquerda e direita em tempo real e crie uma solução de organização exclusiva sob demanda",
-      "[Otimização aprofundada da IU] Reorganize a estrutura de informações, como a página de configurações, adicione uma nova orientação e entrada de ajuda e torne a operação mais intuitiva"
+      "[Reconstrução do mecanismo de IA] O mecanismo de IA básico integrado está pronto para uso imediato, com mecanismo de IA avançado Firecore/nuvem opcional para aprimorar a análise sob demanda.",
+      "[Amigável ao computador de baixa configuração] Reconstrua a arquitetura de IA de alta velocidade com base na inferência da CPU, funcionando perfeitamente em dispositivos com pouca memória sem placas gráficas independentes",
+      "[Motor Firecore AI independente] Pode ser executado independentemente do programa principal para fornecer recursos de IA para aplicativos de terceiros",
+      "[Pesquisa Semântica Multimídia] Imagens, áudios e vídeos suportam recuperação de linguagem natural e pesquisam conteúdo por semântica, imagens e vozes",
+      "[Fala para texto ASR] Transcreva rapidamente conversas de áudio e vídeo em texto para fácil recuperação e arquivamento",
+      "[Speech Synthesis TTS] Conversão de texto para fala, mais de 50 sons integrados, suporta clonagem de som de 3 segundos e lê romances de documentos em voz alta",
+      "[Atualização de tag de arquivo] Enriqueça os tipos de tags de fatos, as tags são mais precisas e interpretáveis, e a árvore de tags suporta 10 níveis de expansão",
+      "[Otimização do material do criador] Para designers e auto-mídia, otimização especial da classificação do material de áudio, vídeo e imagem",
+      "[Detecção aprimorada de conteúdo sensível] Identifique segmentadamente conteúdo pornográfico, violento, terrorista, político, abusivo, sangrento e outros conteúdos ilegais e suas subcategorias",
+      "[Cinco modos principais de classificação de lote] Plano de identidade / clustering inteligente / diretório gerado por IA externa / árvore de diretório de derivação de arquivo / árvore de diretório personalizada, processando milhares de arquivos em segundos",
+      "[Identity Blueprint (recomendado)] Selecione funções do setor, otimização em quatro estágios e classifique todos os arquivos em milissegundos no lado do cliente",
+      "[Clustering inteligente] Clustering não supervisionado HAC final, gera árvores de diretórios em milissegundos, classifica todos os arquivos em segundos e suporta ajuste fino em tempo real",
+      "[Diretório externo gerado por IA] Copie palavras de prompt para Doubao, Kimi, ChatGPT com um clique e visualize e organize os resultados em tempo real",
+      "[Derivar árvores de diretórios de arquivos] O mecanismo avançado de IA gera 3 conjuntos de candidatos a diretório por vez e a classificação automática é selecionada",
+      "[Árvore de diretórios personalizada] Cole o diretório Markdown, visualize duas colunas em tempo real e crie regras de organização exclusivas",
+      "[Otimização detalhada da interface do usuário] Reconstrua a estrutura da página de configuração, adicione um novo guia e entrada de ajuda e torne a operação mais intuitiva."
     ],
     "forceUpdate": false
   },
-  "lastUpdated": "2026-08-31T13:31:00.000Z",
+  "lastUpdated": "2026-11-01T08:00:00.000Z",
   "latestNews": [
     {
       "text": "V4 Lançamento importante, pesquisa de vídeo e áudio de IA, síntese de fala, mecanismo de IA mais forte, etc."
