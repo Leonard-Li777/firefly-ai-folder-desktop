@@ -1,7 +1,7 @@
 {
   "TIER_CONSTANTS": {
     "prices": {
-      "spend_unlock_analysis": 300,
+      "spend_unlock_analysis": 400,
       "spend_extra_private_dir_slot": 200,
       "spend_extra_speedy_dir_slot": 100,
       "spend_extra_vdir_slot": 100,
@@ -25,7 +25,7 @@
         "sync_analysis_to_cloud": true,
         "telemetry": true,
         "training_data_collection": true,
-        "regenerate_vdir_cost": 10,
+        "regenerate_vdir_cost": 20,
         "export_vdir_cost": 5,
         "export_rdir_cost": 10
       },
@@ -89,9 +89,9 @@
       "spend_regenerate_vdir": true
     },
     "freeBaseQuota": 500,
-    "welcomeGrantFirecores": 45,
+    "welcomeGrantFirecores": 50,
     "inviteFirecoreReward": 100,
-    "inviteFirecoreRewardInvitee": 45,
+    "inviteFirecoreRewardInvitee": 50,
     "inviteQuotaBonus": 500,
     "accessWorkspaceCost": 20
   },
@@ -103,11 +103,11 @@
         "prices": [
           {
             "currency": "CNY",
-            "amount": 2000
+            "amount": 3500
           },
           {
             "currency": "USD",
-            "amount": 590
+            "amount": 999
           }
         ]
       },
@@ -117,11 +117,11 @@
         "prices": [
           {
             "currency": "CNY",
-            "amount": 4500
+            "amount": 5800
           },
           {
             "currency": "USD",
-            "amount": 1290
+            "amount": 1799
           }
         ]
       },
@@ -131,11 +131,25 @@
         "prices": [
           {
             "currency": "CNY",
-            "amount": 15000
+            "amount": 16800
           },
           {
             "currency": "USD",
-            "amount": 4200
+            "amount": 4999
+          }
+        ]
+      },
+      "lifetime": {
+        "period_unit": "lifetime",
+        "period_count": 1,
+        "prices": [
+          {
+            "currency": "CNY",
+            "amount": 39800
+          },
+          {
+            "currency": "USD",
+            "amount": 11999
           }
         ]
       }
@@ -172,28 +186,15 @@
     },
     "purchase_firecores": [
       {
-        "firecores": 20,
+        "firecores": 60,
         "prices": [
           {
             "currency": "CNY",
-            "amount": 500
+            "amount": 1800
           },
           {
             "currency": "USD",
-            "amount": 150
-          }
-        ]
-      },
-      {
-        "firecores": 45,
-        "prices": [
-          {
-            "currency": "CNY",
-            "amount": 1000
-          },
-          {
-            "currency": "USD",
-            "amount": 290
+            "amount": 499
           }
         ]
       },
@@ -202,24 +203,37 @@
         "prices": [
           {
             "currency": "CNY",
-            "amount": 3000
+            "amount": 3800
           },
           {
             "currency": "USD",
-            "amount": 850
+            "amount": 999
           }
         ]
       },
       {
-        "firecores": 280,
+        "firecores": 300,
         "prices": [
           {
             "currency": "CNY",
-            "amount": 5000
+            "amount": 6800
           },
           {
             "currency": "USD",
-            "amount": 1390
+            "amount": 1899
+          }
+        ]
+      },
+      {
+        "firecores": 500,
+        "prices": [
+          {
+            "currency": "CNY",
+            "amount": 10800
+          },
+          {
+            "currency": "USD",
+            "amount": 2999
           }
         ]
       }
@@ -246,7 +260,11 @@
         "firecores_20": "prod_2y4KfNT1wYbyzQlr1r7lSy",
         "firecores_45": "prod_3oJG3eiYrpC2oQGQ37Vzie",
         "firecores_150": "prod_3F9DT00VqsySoASAQYTia",
-        "firecores_280": "prod_7VsVyffjHFHR6DnKR4gUVK"
+        "firecores_280": "prod_7VsVyffjHFHR6DnKR4gUVK",
+        "pro_lifetime": "prod_pro_lifetime",
+        "firecores_60": "prod_firecores_60",
+        "firecores_300": "prod_firecores_300",
+        "firecores_500": "prod_firecores_500"
       },
       "test_products": {
         "pro_monthly": "prod_73m2zOpUrfVszCP7lFz2kw",
@@ -257,7 +275,11 @@
         "firecores_20": "prod_2YJ1HimU4bAQ4cpRqxEwNH",
         "firecores_45": "prod_5JyfPIGwgIrkL4SkfIHKej",
         "firecores_150": "prod_5owCT9VLONbTJX5M7lTbpK",
-        "firecores_280": "prod_5dvbtcmf0r8MYbL5X6GiFB"
+        "firecores_280": "prod_5dvbtcmf0r8MYbL5X6GiFB",
+        "pro_lifetime": "prod_test_pro_lifetime",
+        "firecores_60": "prod_test_firecores_60",
+        "firecores_300": "prod_test_firecores_300",
+        "firecores_500": "prod_test_firecores_500"
       }
     },
     "contact_info": {
@@ -285,7 +307,7 @@
     "schedule": "0 3 * * 0"
   },
   "CONSUME_PRICING": {
-    "spend_unlock_analysis": 300,
+    "spend_unlock_analysis": 400,
     "spend_extra_private_dir_slot": 200,
     "spend_extra_speedy_dir_slot": 100,
     "spend_extra_vdir_slot": 100,

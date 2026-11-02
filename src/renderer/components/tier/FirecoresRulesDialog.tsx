@@ -66,13 +66,13 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
 
   const inviteQuotaBonus = tierConstants?.inviteQuotaBonus || 500
   const inviteFirecoreReward = tierConstants?.inviteFirecoreReward || 100
-  const inviteFirecoreRewardInvitee = tierConstants?.inviteFirecoreRewardInvitee || 45
-  const unlockThreshold = tierConstants?.prices?.spend_unlock_analysis || 300
+  const inviteFirecoreRewardInvitee = tierConstants?.inviteFirecoreRewardInvitee || 50
+  const unlockThreshold = tierConstants?.prices?.spend_unlock_analysis || 400
 
   // 邀请人数统计（若后端无邀请人数，可由已获邀请奖励或萤火刻度推算展示）
   const invitedCount = Number(counters?.invite_count ?? counters?.invited_count ?? 0)
 
-  // 萤火进度与刻度（目标按 300 萤火计算，每 100 萤火一个大刻度）
+  // 萤火进度与刻度（目标按 400 萤火计算，每 100 萤火一个大刻度）
   const progressPercent = Math.min(100, Math.max(0, Math.round((firecores / unlockThreshold) * 100)))
   const neededFirecores = Math.max(0, unlockThreshold - firecores)
 
@@ -231,7 +231,7 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                       <div>
                         <div className="flex items-center gap-2">
                           <h3 className="text-base font-black tracking-tight text-foreground">
-                            {t('邀请好友，双方得奖 · 3位好友解锁无限额度')}
+                            {t('邀请好友，双方得奖 · 4位好友解锁无限额度')}
                           </h3>
                           {isUnlockedUnlimited ? (
                             <Badge className="bg-emerald-600/90 hover:bg-emerald-600 text-white text-[10px] px-2 py-0.2 shadow-sm font-bold">
@@ -246,7 +246,7 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground font-medium mt-0.5">
-                          {t('每邀请1人即赠 {firecores} 萤火 + {bonus} 额度，集齐 300 萤火可永久兑换无限额度', {
+                          {t('每邀请1人即赠 {firecores} 萤火 + {bonus} 额度，集齐 400 萤火可永久兑换无限额度', {
                             firecores: inviteFirecoreReward,
                             bonus: inviteQuotaBonus
                           })}
@@ -279,7 +279,7 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                       </div>
                     </div>
 
-                    {/* 进度刻度标记点 (0, 100, 200, 300 萤火) */}
+                    {/* 进度刻度标记点 (0, 100, 200, 300, 400 萤火) */}
                     <div className="relative w-full flex justify-between mt-2 text-[10px] text-muted-foreground font-mono font-medium select-none">
                       <div className="flex flex-col items-center">
                         <span className="w-1.5 h-1.5 rounded-full bg-border -mt-3.5 mb-1" />
@@ -294,14 +294,18 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                         <span className={cn(firecores >= 200 && 'text-amber-600 dark:text-amber-400 font-bold')}>200</span>
                       </div>
                       <div className="flex flex-col items-center">
-                        <span className={cn('w-1.5 h-1.5 rounded-full -mt-3.5 mb-1 transition-colors', firecores >= 300 ? 'bg-emerald-500 ring-2 ring-emerald-500/20' : 'bg-border')} />
-                        <span className={cn(firecores >= 300 && 'text-emerald-600 dark:text-emerald-400 font-bold')}>300 ({t('解锁无限')})</span>
+                        <span className={cn('w-1.5 h-1.5 rounded-full -mt-3.5 mb-1 transition-colors', firecores >= 300 ? 'bg-amber-500 ring-2 ring-amber-500/20' : 'bg-border')} />
+                        <span className={cn(firecores >= 300 && 'text-amber-600 dark:text-amber-400 font-bold')}>300</span>
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <span className={cn('w-1.5 h-1.5 rounded-full -mt-3.5 mb-1 transition-colors', firecores >= 400 ? 'bg-emerald-500 ring-2 ring-emerald-500/20' : 'bg-border')} />
+                        <span className={cn(firecores >= 400 && 'text-emerald-600 dark:text-emerald-400 font-bold')}>400 ({t('解锁无限')})</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* 3 阶段 Stepper 步骤卡片 */}
-                  <div className="relative grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {/* 4 阶段 Stepper 步骤卡片 */}
+                  <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                     {/* Step 1: 1位好友 / 100 萤火 */}
                     <div
                       className={cn(
@@ -392,11 +396,57 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                       </div>
                     </div>
 
-                    {/* Step 3: 3位好友 / 300 萤火 · 终极无限大奖 */}
+                    {/* Step 3: 3位好友 / 300 萤火 */}
+                    <div
+                      className={cn(
+                        'relative flex flex-col justify-between rounded-xl p-3.5 transition-all border backdrop-blur-sm',
+                        firecores >= 300
+                          ? 'bg-amber-500/[0.08] border-amber-500/40 shadow-sm'
+                          : firecores >= 200
+                            ? 'bg-background/80 border-primary/25 ring-1 ring-primary/20'
+                            : 'bg-background/60 border-border/70 opacity-90'
+                      )}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <span className={cn(
+                            'text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md flex items-center gap-1',
+                            firecores >= 300 ? 'bg-amber-500 text-white' : 'bg-muted text-muted-foreground'
+                          )}>
+                            <span>Step 3</span>
+                            <span>·</span>
+                            <span>{t('第3位好友')}</span>
+                          </span>
+                          {firecores >= 300 ? (
+                            <span className="flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              {t('已达成')}
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-muted-foreground font-medium">
+                              {t('累计 300 萤火')}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="space-y-1.5 my-1">
+                          <div className="flex items-center gap-2 text-sm font-black text-foreground">
+                            <Firecores className="w-4 h-4 text-amber-500 shrink-0" />
+                            <span>{t('累计')} +{inviteFirecoreReward * 3} {t('您获萤火')}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+                            <FolderPlus className="w-4 h-4 text-orange-500 shrink-0" />
+                            <span>{t('累计')} +{inviteQuotaBonus * 3} {t('双方各得额度')}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Step 4: 4位好友 / 400 萤火 · 终极无限大奖 */}
                     <div
                       className={cn(
                         'relative flex flex-col justify-between rounded-xl p-3.5 transition-all border backdrop-blur-sm overflow-hidden',
-                        firecores >= 300 || isUnlockedUnlimited
+                        firecores >= unlockThreshold || isUnlockedUnlimited
                           ? 'bg-gradient-to-br from-emerald-500/15 via-emerald-500/5 to-transparent border-emerald-500/50 shadow-md ring-1 ring-emerald-500/30'
                           : 'bg-gradient-to-br from-amber-500/[0.1] via-background to-card border-amber-500/40 shadow-xs'
                       )}
@@ -408,15 +458,15 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                         <div className="flex items-center justify-between gap-2 mb-2">
                           <span className={cn(
                             'text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md flex items-center gap-1 shadow-sm',
-                            firecores >= 300 || isUnlockedUnlimited
+                            firecores >= unlockThreshold || isUnlockedUnlimited
                               ? 'bg-emerald-600 text-white'
                               : 'bg-gradient-to-r from-amber-500 to-amber-600 text-white'
                           )}>
-                            <span>Step 3</span>
+                            <span>Step 4</span>
                             <span>·</span>
-                            <span>{t('第3位好友')}</span>
+                            <span>{t('第4位好友')}</span>
                           </span>
-                          {firecores >= 300 || isUnlockedUnlimited ? (
+                          {firecores >= unlockThreshold || isUnlockedUnlimited ? (
                             <span className="flex items-center gap-1 text-xs font-black text-emerald-600 dark:text-emerald-400">
                               <Unlock className="w-3.5 h-3.5" />
                               {t('终极大奖')}
@@ -424,7 +474,7 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                           ) : (
                             <span className="flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400">
                               <Lock className="w-3.5 h-3.5" />
-                              {t('需 300 萤火')}
+                              {t('需 {count} 萤火', { count: unlockThreshold })}
                             </span>
                           )}
                         </div>
@@ -436,33 +486,48 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                             {t('已解锁无限额度')}
                           </div>
                         ) : (
-                          <Button
-                            size="sm"
-                            onClick={handleUnlockUnlimited}
-                            disabled={!canAffordUnlock || isUnlocking}
-                            title={
-                              canAffordUnlock
-                                ? t('消耗 {cost} 萤火，永久解锁私有目录无限分析额度', {
-                                    cost: unlockThreshold
-                                  })
-                                : t('萤火不足，还需 {needed} 萤火', { needed: neededFirecores })
-                            }
-                            className={cn(
-                              'mt-5 w-full font-bold shadow-sm flex items-center justify-center gap-1.5 transition-all',
-                              canAffordUnlock
-                                ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white hover:scale-[1.02] active:scale-95'
-                                : 'opacity-50 cursor-not-allowed text-white bg-gradient-to-r from-amber-500 to-amber-600'
+                          <div className="mt-5 space-y-2">
+                            <Button
+                              size="sm"
+                              onClick={handleUnlockUnlimited}
+                              disabled={!canAffordUnlock || isUnlocking}
+                              title={
+                                canAffordUnlock
+                                  ? t('消耗 {cost} 萤火，永久解锁私有目录无限分析额度', {
+                                      cost: unlockThreshold
+                                    })
+                                  : t('仅差 {needed} 萤火，可继续邀请好友或购买最小萤火包补齐', { needed: neededFirecores })
+                              }
+                              className={cn(
+                                'w-full font-bold shadow-sm flex items-center justify-center gap-1.5 transition-all',
+                                canAffordUnlock
+                                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white hover:scale-[1.02] active:scale-95'
+                                  : 'opacity-50 cursor-not-allowed text-white bg-gradient-to-r from-amber-500 to-amber-600'
+                              )}
+                            >
+                              <Unlock className="w-3.5 h-3.5" />
+                              <span>
+                                {isUnlocking
+                                  ? t('处理中...')
+                                  : canAffordUnlock
+                                    ? t('兑换无限额度（{cost} 萤火）', { cost: unlockThreshold })
+                                    : t('还需 {needed} 萤火可兑换', { needed: neededFirecores })}
+                              </span>
+                            </Button>
+
+                            {!canAffordUnlock && (
+                              <div className="text-[11px] text-center text-muted-foreground flex items-center justify-center gap-1">
+                                <span>{t('仅差 {needed} 萤火，可邀请好友或', { needed: neededFirecores })}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => openMarketingPricingUrl('buy_firecores')}
+                                  className="text-amber-600 dark:text-amber-400 font-bold hover:underline inline-flex items-center"
+                                >
+                                  {t('购买最小萤火包补齐')}
+                                </button>
+                              </div>
                             )}
-                          >
-                            <Unlock className="w-3.5 h-3.5" />
-                            <span>
-                              {isUnlocking
-                                ? t('处理中...')
-                                : canAffordUnlock
-                                  ? t('兑换无限额度（{cost} 萤火）', { cost: unlockThreshold })
-                                  : t('还需 {needed} 萤火可兑换', { needed: neededFirecores })}
-                            </span>
-                          </Button>
+                          </div>
                         )}
                       </div>
                     </div>
