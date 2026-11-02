@@ -8,7 +8,10 @@ publicHoistPattern:
 blockExoticSubdeps: false
 
 patchedDependencies:
-  better-sqlite3@12.10.0: patches/better-sqlite3@12.10.0.patch
+  # better-sqlite3 已升级至 13.0.3（node-addon-api / N-API 重写，随包提供全平台
+  # 预编译产物，gypfile=false 不再本地编译），V8 External/SetNativeDataProperty
+  # 兼容补丁对 13.x 已无意义，故移除 12.10.0 的 patch 条目（否则 pnpm 报
+  # ERR_PNPM_UNUSED_PATCH 直接中断 install）。
   macos-alias@0.2.12: patches/macos-alias.patch
   '@voerkai18n/cli@3.0.22': patches/@voerkai18n+cli@3.0.22.patch
   '@voerkai18n/utils@3.0.22': patches/@voerkai18n__utils@3.0.22.patch
