@@ -1964,7 +1964,7 @@ export class FileProcessor {
 
       const extractPages = ConfigOrchestrator.getInstance().getValue<number>('EXTRACT_PAGES') ?? 2
       const maxDocOcrItems =
-        ConfigOrchestrator.getInstance().getValue<number>('MAX_DOCUMENT_OCR_ITEMS') ?? 0
+        ConfigOrchestrator.getInstance().getValue<number>('MAX_DOCUMENT_OCR_ITEMS') ?? 3
       const ocrModelSize =
         ConfigOrchestrator.getInstance().getValue<string>('OCR_MODEL_SIZE') ?? 'tiny'
       const maxContentSizeKb =

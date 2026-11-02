@@ -68,7 +68,7 @@ export const ContentExtractionSettings: React.FC = () => {
     getConfigValue<boolean>('ENABLE_OFFICE_COVER') ?? false
   )
   const [localMaxDocOcrItems, setLocalMaxDocOcrItems] = useState<number>(
-    getConfigValue<number>('MAX_DOCUMENT_OCR_ITEMS') ?? 0
+    getConfigValue<number>('MAX_DOCUMENT_OCR_ITEMS') ?? 3
   )
 
   /**
@@ -110,7 +110,7 @@ export const ContentExtractionSettings: React.FC = () => {
    */
   useEffect(() => {
     const handler = setTimeout(() => {
-      const currentConfigValue = getConfigValue<number>('MAX_DOCUMENT_OCR_ITEMS') ?? 0
+      const currentConfigValue = getConfigValue<number>('MAX_DOCUMENT_OCR_ITEMS') ?? 3
       if (localMaxDocOcrItems !== currentConfigValue) {
         updateConfigValue('MAX_DOCUMENT_OCR_ITEMS', localMaxDocOcrItems)
         captureEvent('更新文档OCR识别数量上限', {
@@ -143,7 +143,7 @@ export const ContentExtractionSettings: React.FC = () => {
       setLocalEnableOfficeCover(externalOfficeCover)
     }
 
-    const externalOcrItems = getConfigValue<number>('MAX_DOCUMENT_OCR_ITEMS') ?? 0
+    const externalOcrItems = getConfigValue<number>('MAX_DOCUMENT_OCR_ITEMS') ?? 3
     if (externalOcrItems !== localMaxDocOcrItems) {
       setLocalMaxDocOcrItems(externalOcrItems)
     }

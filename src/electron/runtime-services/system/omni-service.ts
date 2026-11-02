@@ -1398,7 +1398,7 @@ export class OmniService {
       const orchestrator = ConfigOrchestrator.getInstance()
       const enableImageOcr = orchestrator.getValue<boolean>('ENABLE_IMAGE_OCR') ?? true
       const enableOfficeCover = orchestrator.getValue<boolean>('ENABLE_OFFICE_COVER') ?? false
-      const maxDocOcrItems = orchestrator.getValue<number>('MAX_DOCUMENT_OCR_ITEMS') ?? 0
+      const maxDocOcrItems = orchestrator.getValue<number>('MAX_DOCUMENT_OCR_ITEMS') ?? 3
       const ocrModelSize = (orchestrator.getValue<string>('OCR_MODEL_SIZE') || 'tiny').toLowerCase()
       const maxContentSizeKb = orchestrator.getValue<number>('MAX_CONTENT_SIZE_KB') ?? 30
       const maxFileSizeMb = orchestrator.getValue<number>('MAX_FILE_SIZE') ?? 100
