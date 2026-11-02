@@ -1032,7 +1032,7 @@
     "de-DE": "Spaltenhöhe durch Ziehen ändern",
     "fr-FR": "Glisser pour modifier la hauteur des panneaux",
     "ko-KR": "컬럼 높이 드래그로 조정",
-    "$files": ["src/renderer/components/analysis/QueueSplitPanel.tsx(2038-2050)"],
+    "$files": ["src/renderer/components/analysis/QueueSplitPanel.tsx(1986-1998)"],
     "$id": 8148
   }
 }

@@ -9,7 +9,7 @@
     "de-DE": "KI analysiert und organisiert den Plan...\r",
     "fr-FR": "L'IA analyse et organise le plan...\r",
     "ko-KR": "AI가 정리 방안을 분석 중입니다...",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(1674-1691)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(1632-1649)"],
     "$id": 4132
   },
   "恢复": {
@@ -22,7 +22,7 @@
     "de-DE": "Genesen",
     "fr-FR": "Récupérer",
     "ko-KR": "다시 덮다",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(2168-2174)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(2115-2121)"],
     "$id": 10536
   },
   "暂停": {
@@ -35,7 +35,7 @@
     "de-DE": "Pause",
     "fr-FR": "Pause",
     "ko-KR": "정지시키다",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(2178-2184)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(2125-2131)"],
     "$id": 10537
   },
   "结束": {
@@ -48,7 +48,7 @@
     "de-DE": "Beenden",
     "fr-FR": "Finition",
     "ko-KR": "마치다",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(2570-2576)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(2506-2512)"],
     "$id": 10538
   },
   "取消": {
@@ -62,8 +62,8 @@
     "fr-FR": "Annuler\r",
     "ko-KR": "취소\r",
     "$files": [
-      "src/renderer/components/organize/AIOrganizeProgressDialog.tsx(2764-2770)",
-      "src/renderer/components/organize/ConfirmOrganizeDialog.tsx(6011-6017)",
+      "src/renderer/components/organize/AIOrganizeProgressDialog.tsx(2695-2701)",
+      "src/renderer/components/organize/ConfirmOrganizeDialog.tsx(5849-5855)",
       "src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(28276-28282)",
       "src/renderer/components/organize/UndoHistoryDialog.tsx(2438-2444)"
     ],
@@ -79,7 +79,7 @@
     "de-DE": "Stapel-Fortschritt:\r",
     "fr-FR": "Progression du lot :\r",
     "ko-KR": "배치 진행 상황：",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(3666-3675)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(3578-3587)"],
     "$id": 4133
   },
   "第 {currentBatch} / {totalBatches} 批": {
@@ -92,7 +92,7 @@
     "de-DE": "Stapel {currentBatch} / {totalBatches}\r",
     "fr-FR": "Lot {currentBatch} / {totalBatches}\r",
     "ko-KR": "{currentBatch} / {totalBatches} 배치",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(3721-3760)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(3631-3670)"],
     "$id": 4134
   },
   "文件进度：": {
@@ -105,7 +105,7 @@
     "de-DE": "Datei-Fortschritt:\r",
     "fr-FR": "Progression du fichier :\r",
     "ko-KR": "파일 진행 상황：",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(4038-4047)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(3943-3952)"],
     "$id": 4135
   },
   "{processedFiles}/{totalFiles} 个文件": {
@@ -118,7 +118,7 @@
     "de-DE": "{processedFiles}/{totalFiles} Dateien\r",
     "fr-FR": "{processedFiles}/{totalFiles} fichiers\r",
     "ko-KR": "{processedFiles}/{totalFiles} 개 파일",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(4077-4114)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(3981-4018)"],
     "$id": 4136
   },
   "已创建 {count} 个目录分类": {
@@ -131,7 +131,7 @@
     "de-DE": "{count} Verzeichniskategorien wurden erstellt\r",
     "fr-FR": "{count} répertoires classés ont été créés\r",
     "ko-KR": "{count} 개 디렉터리 분류 생성됨",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(4784-4805)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(4675-4696)"],
     "$id": 4137
   },
   "隐藏预览": {
@@ -144,7 +144,7 @@
     "de-DE": "Vorschau ausblenden\r",
     "fr-FR": "Masquer l'aperçu\r",
     "ko-KR": "미리보기 숨기기",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(5285-5293)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(5166-5174)"],
     "$id": 4138
   },
   "显示预览": {
@@ -157,7 +157,7 @@
     "de-DE": "Vorschau anzeigen\r",
     "fr-FR": "Afficher l'aperçu\r",
     "ko-KR": "미리보기 표시",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(5297-5305)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(5178-5186)"],
     "$id": 4139
   },
   "当前目录结构预览": {
@@ -170,7 +170,7 @@
     "de-DE": "Aktuelle Verzeichnisstruktur-Vorschau\r",
     "fr-FR": "Aperçu de la structure du répertoire actuel\r",
     "ko-KR": "현재 디렉터리 구조 미리보기",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(5859-5871)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(5724-5736)"],
     "$id": 4140
   },
   "(持续更新中...)": {
@@ -183,7 +183,7 @@
     "de-DE": "(läuft aktuell weiter...)\r",
     "fr-FR": "(Mise à jour en cours...)\r",
     "ko-KR": "(지속적으로 업데이트 중...)",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(6011-6025)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(5873-5887)"],
     "$id": 4141
   },
   "AI正在处理更多文件，请稍候...": {
@@ -196,7 +196,7 @@
     "de-DE": "KI verarbeitet weitere Dateien, bitte warten...",
     "fr-FR": "L'IA traite davantage de fichiers, veuillez patienter...",
     "ko-KR": "AI가 추가 파일을 처리 중입니다. 잠시만 기다려 주십시오...",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(6746-6767)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(6589-6610)"],
     "$id": 4142
   },
   "正在生成目录结构...": {
@@ -209,7 +209,7 @@
     "de-DE": "Verzeichnisstruktur wird generiert...\r",
     "fr-FR": "Génération de la structure du répertoire en cours...",
     "ko-KR": "디렉토리 구조를 생성하는 중입니다...",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(7010-7025)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(6846-6861)"],
     "$id": 3269
   },
   "取消分析": {
@@ -222,7 +222,7 @@
     "de-DE": "Analyse abbrechen\r",
     "fr-FR": "Annuler l'analyse\r",
     "ko-KR": "분석 취소\r",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(7234-7242)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(7063-7071)"],
     "$id": 4144
   },
   "整理真实目录": {
@@ -236,8 +236,8 @@
     "fr-FR": "Organiser le répertoire réel\r",
     "ko-KR": "실제 디렉터리 정리\r",
     "$files": [
-      "src/renderer/components/organize/ConfirmOrganizeDialog.tsx(2669-2679)",
-      "src/renderer/components/organize/ConfirmOrganizeDialog.tsx(7281-7291)"
+      "src/renderer/components/organize/ConfirmOrganizeDialog.tsx(2588-2598)",
+      "src/renderer/components/organize/ConfirmOrganizeDialog.tsx(7080-7090)"
     ],
     "$id": 4145
   },
@@ -251,7 +251,7 @@
     "de-DE": "Falls Sie mit dem Ergebnis nicht zufrieden sind? Bitte versuchen Sie:\r",
     "fr-FR": "Si vous n'êtes pas satisfait du résultat ? Veuillez essayer :",
     "ko-KR": "결과에 만족하지 않으시나요? 다음 방법을 시도해보세요:",
-    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(3144-3161)"],
+    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(3055-3072)"],
     "$id": 3270
   },
   "导出虚拟目录功能": {
@@ -264,7 +264,7 @@
     "de-DE": "Virtuelle Verzeichnisfunktion generieren\r",
     "fr-FR": "Fonction de génération de répertoire virtuel",
     "ko-KR": "가상 디렉토리 생성 기능",
-    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(3608-3620)"],
+    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(3509-3521)"],
     "$id": 3271
   },
   "在虚拟目录页面左侧标签目录树中切换整理模式，勾选标签，点击导出虚拟目录按钮，定制化的生成你需要的目录结构，且不影响真实目录的文件结构": {
@@ -277,7 +277,7 @@
     "de-DE": "Wechseln Sie den Organisationsmodus in der Registerkarte „Verzeichnisbaum“ auf der linken Seite der virtuellen Verzeichnisseite, überprüfen Sie die Registerkarte und klicken Sie auf die Schaltfläche „Virtuelles Verzeichnis exportieren“, um die gewünschte Verzeichnisstruktur anzupassen, ohne die Dateistruktur des realen Verzeichnisses zu beeinträchtigen.",
     "fr-FR": "Changez le mode d'organisation dans l'arborescence des onglets sur le côté gauche de la page du répertoire virtuel, vérifiez l'onglet et cliquez sur le bouton Exporter le répertoire virtuel pour personnaliser la structure de répertoires dont vous avez besoin sans affecter la structure de fichiers du répertoire réel.",
     "ko-KR": "가상 디렉터리 페이지 왼쪽의 탭 디렉터리 트리에서 구성 모드를 전환하고 탭을 확인한 후 가상 디렉터리 내보내기 버튼을 클릭하면 실제 디렉터리의 파일 구조에 영향을 주지 않고 필요한 디렉터리 구조를 사용자 지정할 수 있습니다.",
-    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(3881-3977)"],
+    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(3778-3873)"],
     "$id": 4616
   },
   "或者": {
@@ -290,7 +290,7 @@
     "de-DE": "Oder\r",
     "fr-FR": "Ou",
     "ko-KR": "또는",
-    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(4119-4125)"],
+    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(4010-4016)"],
     "$id": 3273
   },
   "提示词引导AI整理": {
@@ -303,7 +303,7 @@
     "de-DE": "KI-Organisation durch Eingabeaufforderungen\r",
     "fr-FR": "Conseils pour guider l'IA à organiser",
     "ko-KR": "프롬프트로 AI 정리 유도",
-    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(4505-4518)"],
+    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(4387-4400)"],
     "$id": 3274
   },
   "例如：目录名最多4个字": {
@@ -316,7 +316,7 @@
     "de-DE": "Beispiel: Verzeichnisnamen maximal 4 Zeichen\r",
     "fr-FR": "Par exemple : nom du répertoire maximum 4 caractères",
     "ko-KR": "예: 디렉토리명은 최대 4자",
-    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(4729-4744)"],
+    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(4603-4618)"],
     "$id": 3275
   },
   "重新整理": {
@@ -329,7 +329,7 @@
     "de-DE": "Neu organisieren\r",
     "fr-FR": "Réorganiser",
     "ko-KR": "다시 정리",
-    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(5149-5157)"],
+    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(5015-5023)"],
     "$id": 3276
   },
   "整理预览：": {
@@ -342,7 +342,7 @@
     "de-DE": "Organisierungs-Vorschau:\r",
     "fr-FR": "Aperçu de l'organisation :",
     "ko-KR": "정리 미리보기:\r",
-    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(5338-5347)"],
+    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(5196-5205)"],
     "$id": 4147
   },
   "{fileCount} 个文件将被移动到新位置": {
@@ -355,7 +355,7 @@
     "de-DE": "{fileCount} Dateien werden an neue Positionen verschoben\r",
     "fr-FR": "{fileCount} fichiers seront déplacés vers de nouveaux emplacements\r",
     "ko-KR": "{fileCount}개의 파일이 새 위치로 이동됩니다\r",
-    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(5409-5436)"],
+    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(5265-5292)"],
     "$id": 4149
   },
   "导出虚拟目录": {
@@ -368,7 +368,7 @@
     "de-DE": "Virtuelles Verzeichnis erstellen",
     "fr-FR": "Créer un répertoire virtuel",
     "ko-KR": "가상 디렉터리 생성",
-    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(6877-6887)"],
+    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(6689-6699)"],
     "$id": 4146
   },
   "存为已分析视角": {
@@ -381,7 +381,7 @@
     "de-DE": "Als analysierte Perspektive speichern",
     "fr-FR": "Enregistrer comme perspective analysée",
     "ko-KR": "분석된 관점으로 저장",
-    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(7066-7077)"],
+    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(6872-6883)"],
     "$id": 10539
   },
   "此操作将改变真实目录的文件结构，操作不可撤销！": {
@@ -394,7 +394,7 @@
     "de-DE": "Dieser Vorgang wird die Dateistruktur der echten Verzeichnisse verändern, der Vorgang ist unumkehrbar!",
     "fr-FR": "Cette opération modifiera la structure des fichiers du répertoire réel, l'opération est irréversible !",
     "ko-KR": "이 작업은 실제 디렉토리의 파일 구조를 변경하며, 작업 취소가 불가능합니다!",
-    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(7876-7903)"],
+    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(7668-7695)"],
     "$id": 3277
   },
   "文件冲突": {
@@ -407,7 +407,7 @@
     "de-DE": "Dateikonflikt\r",
     "fr-FR": "Conflit de fichiers\r",
     "ko-KR": "파일 충돌\r",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(1684-1692)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(1640-1648)"],
     "$id": 4152
   },
   "检测到 {count} 个文件冲突。请选择如何处理这些冲突。": {
@@ -420,7 +420,7 @@
     "de-DE": "{count} Dateikonflikte gefunden. Bitte wählen Sie, wie mit diesen Konflikten umgegangen werden soll.\r",
     "fr-FR": "{count} conflits de fichiers détectés. Veuillez choisir comment gérer ces conflits.\r",
     "ko-KR": "{count}개의 파일 충돌이 감지되었습니다. 충돌 처리 방법을 선택해주세요.\r",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(1938-1972)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(1889-1923)"],
     "$id": 4153
   },
   "冲突文件列表：": {
@@ -433,7 +433,7 @@
     "de-DE": "Liste der Konfliktdateien:\r",
     "fr-FR": "Liste des fichiers en conflit :\r",
     "ko-KR": "충돌 파일 목록:\r",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(2156-2167)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(2102-2113)"],
     "$id": 4154
   },
   "现有文件：": {
@@ -446,7 +446,7 @@
     "de-DE": "Vorhandene Dateien:\r",
     "fr-FR": "Fichier existant :\r",
     "ko-KR": "기존 파일:\r",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(3293-3302)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(3217-3226)"],
     "$id": 4155
   },
   "新文件：": {
@@ -459,7 +459,7 @@
     "de-DE": "Neue Dateien:\r",
     "fr-FR": "Nouveau fichier :\r",
     "ko-KR": "새 파일:\r",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(3809-3817)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(3726-3734)"],
     "$id": 4156
   },
   "还有 {count} 个冲突文件未显示...": {
@@ -472,7 +472,7 @@
     "de-DE": "Weitere {count} Konfliktdateien werden nicht angezeigt...",
     "fr-FR": "{count} autres fichiers en conflit ne sont pas affichés...",
     "ko-KR": "표시되지 않은 충돌 파일이 {count}개 더 있습니다...",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(4372-4398)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(4276-4302)"],
     "$id": 4157
   },
   "选择处理方式：": {
@@ -485,7 +485,7 @@
     "de-DE": "Auswahl der Bearbeitungsweise:",
     "fr-FR": "Sélectionner le mode de traitement :",
     "ko-KR": "처리 방식 선택:",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(4658-4669)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(4554-4565)"],
     "$id": 4158
   },
   "重命名": {
@@ -498,7 +498,7 @@
     "de-DE": "Umbenennen",
     "fr-FR": "Renommer",
     "ko-KR": "이름 변경",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(5279-5286)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(5163-5170)"],
     "$id": 4159
   },
   "自动为新文件重命名，保留现有文件": {
@@ -511,7 +511,7 @@
     "de-DE": "Neue Datei automatisch umbenennen und bestehende Datei beibehalten",
     "fr-FR": "Renommer automatiquement le nouveau fichier, conserver le fichier existant",
     "ko-KR": "새 파일 자동 이름 변경, 기존 파일 보존",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(5384-5404)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(5266-5286)"],
     "$id": 4160
   },
   "添加序号 (file (1).txt)": {
@@ -524,7 +524,7 @@
     "de-DE": "Nummerierung hinzufügen (file (1).txt)",
     "fr-FR": "Ajouter un numéro (file (1).txt)",
     "ko-KR": "순차 번호 추가 (file (1).txt)",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(6083-6106)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(5951-5974)"],
     "$id": 4161
   },
   "添加时间戳 (file_20250120.txt)": {
@@ -537,7 +537,7 @@
     "de-DE": "Zeitstempel hinzufügen (file_20250120.txt)",
     "fr-FR": "Ajouter un horodatage (file_20250120.txt)",
     "ko-KR": "타임스탬프 추가 (file_20250120.txt)",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(6718-6747)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(6573-6602)"],
     "$id": 4162
   },
   "添加来源目录名 (file_OldFolder.txt)": {
@@ -550,7 +550,7 @@
     "de-DE": "Quellordnername hinzufügen (file_OldFolder.txt)",
     "fr-FR": "Ajouter le nom du répertoire source (file_OldFolder.txt)",
     "ko-KR": "소스 디렉토리 이름 추가 (file_OldFolder.txt)",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(7353-7385)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(7195-7227)"],
     "$id": 4163
   },
   "跳过": {
@@ -563,7 +563,7 @@
     "de-DE": "Überspringen",
     "fr-FR": "Ignorer",
     "ko-KR": "건너뛰기",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(8110-8116)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(7934-7940)"],
     "$id": 4164
   },
   "保留现有文件，不移动新文件": {
@@ -576,7 +576,7 @@
     "de-DE": "Bestehende Datei beibehalten, neue Datei nicht verschieben",
     "fr-FR": "Conserver le fichier existant, ne pas déplacer le nouveau fichier",
     "ko-KR": "기존 파일 보존, 새 파일 이동 안 함",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(8214-8231)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(8036-8053)"],
     "$id": 4165
   },
   "覆盖": {
@@ -589,7 +589,7 @@
     "de-DE": "Überschreiben",
     "fr-FR": "Remplacer",
     "ko-KR": "덮어쓰기",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(8935-8941)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(8742-8748)"],
     "$id": 4166
   },
   "删除现有文件，使用新文件替换（危险操作）": {
@@ -602,7 +602,7 @@
     "de-DE": "Bestehende Datei löschen und durch neue Datei ersetzen (gefährliche Aktion)",
     "fr-FR": "Supprimer le fichier existant et le remplacer par le nouveau fichier (opération dangereuse)",
     "ko-KR": "기존 파일 삭제, 새 파일로 대체 (위험 작업)",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(9048-9072)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(8853-8877)"],
     "$id": 4167
   },
   "应用于所有 {count} 个冲突文件": {
@@ -615,7 +615,7 @@
     "de-DE": "An alle {count} Konfliktdateien anwenden",
     "fr-FR": "S'appliquer à tous les {count} fichiers en conflit",
     "ko-KR": "모든 {count}개의 충돌 파일에 적용",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(9595-9618)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(9385-9408)"],
     "$id": 4168
   },
   "取消整理": {
@@ -629,8 +629,8 @@
     "fr-FR": "Annuler l'organisation",
     "ko-KR": "정리 취소",
     "$files": [
-      "src/renderer/components/organize/ConflictResolutionDialog.tsx(9983-9991)",
-      "src/renderer/components/organize/OrganizeProgressDialog.tsx(2812-2820)"
+      "src/renderer/components/organize/ConflictResolutionDialog.tsx(9763-9771)",
+      "src/renderer/components/organize/OrganizeProgressDialog.tsx(2742-2750)"
     ],
     "$id": 4169
   },
@@ -644,7 +644,7 @@
     "de-DE": "Bestätigen und fortfahren",
     "fr-FR": "Confirmer et continuer",
     "ko-KR": "확인 및 계속",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(10200-10209)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(9974-9983)"],
     "$id": 4170
   },
   "暂无目录结构预览": {
@@ -937,7 +937,7 @@
       "src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(12168-12174)",
       "src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(13379-13385)",
       "src/renderer/components/organize/OrganizeErrorDialog.tsx(3065-3071)",
-      "src/renderer/components/organize/OrganizeResultDialog.tsx(8835-8841)",
+      "src/renderer/components/organize/OrganizeResultDialog.tsx(8625-8631)",
       "src/renderer/components/organize/UndoHistoryDialog.tsx(9623-9629)"
     ],
     "$id": 4189
@@ -1329,7 +1329,7 @@
     "de-DE": "Ungefähr {seconds} Sekunden",
     "fr-FR": "Environ {seconds} secondes",
     "ko-KR": "약 {seconds} 초",
-    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(647-664)"],
+    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(621-638)"],
     "$id": 4217
   },
   "约 {minutes} 分钟": {
@@ -1342,7 +1342,7 @@
     "de-DE": "Ungefähr {minutes} Minuten",
     "fr-FR": "Environ {minutes} minutes",
     "ko-KR": "약 {minutes} 분",
-    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(756-774)"],
+    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(728-746)"],
     "$id": 4218
   },
   "整理进度": {
@@ -1355,7 +1355,7 @@
     "de-DE": "Fortschritt der Organisation",
     "fr-FR": "Progression du tri",
     "ko-KR": "정리 진행 상황",
-    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(1076-1084)"],
+    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(1042-1050)"],
     "$id": 4219
   },
   "正在处理：": {
@@ -1368,7 +1368,7 @@
     "de-DE": "Wird verarbeitet:",
     "fr-FR": "En cours de traitement :",
     "ko-KR": "처리 중:",
-    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(1832-1841)"],
+    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(1784-1793)"],
     "$id": 4220
   },
   "准备中...": {
@@ -1381,7 +1381,7 @@
     "de-DE": "Vorbereitung läuft...",
     "fr-FR": "En préparation...",
     "ko-KR": "준비 중...",
-    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(1950-1960)"],
+    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(1900-1910)"],
     "$id": 4221
   },
   "已完成：": {
@@ -1394,7 +1394,7 @@
     "de-DE": "Abgeschlossen:",
     "fr-FR": "Terminé :",
     "ko-KR": "완료됨:",
-    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(2124-2132)"],
+    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(2070-2078)"],
     "$id": 4222
   },
   "{processedCount} / {totalCount} 文件": {
@@ -1407,7 +1407,7 @@
     "de-DE": "{processedCount} / {totalCount} Dateien",
     "fr-FR": "{processedCount} / {totalCount} fichiers",
     "ko-KR": "{processedCount} / {totalCount} 파일",
-    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(2162-2200)"],
+    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(2107-2145)"],
     "$id": 4223
   },
   "预计剩余：": {
@@ -1420,7 +1420,7 @@
     "de-DE": "Voraussichtliche Restzeit:",
     "fr-FR": "Temps restant estimé :",
     "ko-KR": "예상 잔여:",
-    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(2430-2439)"],
+    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(2371-2380)"],
     "$id": 4224
   },
   "{ms} 毫秒": {
@@ -1433,7 +1433,7 @@
     "de-DE": "{ms} Millisekunden",
     "fr-FR": "{ms} millisecondes",
     "ko-KR": "{ms} 밀리초",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(786-797)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(757-768)"],
     "$id": 4225
   },
   "{seconds} 秒": {
@@ -1446,7 +1446,7 @@
     "de-DE": "{seconds} Sekunden",
     "fr-FR": "{seconds} secondes",
     "ko-KR": "{seconds} 초",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(835-850)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(805-820)"],
     "$id": 4226
   },
   "{minutes} 分钟": {
@@ -1459,7 +1459,7 @@
     "de-DE": "{minutes} Minuten",
     "fr-FR": "{minutes} minutes",
     "ko-KR": "{minutes} 분",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(901-917)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(870-886)"],
     "$id": 4227
   },
   "整理完成": {
@@ -1472,7 +1472,7 @@
     "de-DE": "Organisation abgeschlossen",
     "fr-FR": "Tri terminé",
     "ko-KR": "정리 완료",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(1577-1585)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(1533-1541)"],
     "$id": 4228
   },
   "所有文件已成功整理": {
@@ -1485,7 +1485,7 @@
     "de-DE": "Alle Dateien wurden erfolgreich organisiert",
     "fr-FR": "Tous les fichiers ont été triés avec succès",
     "ko-KR": "모든 파일이 성공적으로 정리됨",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(1699-1712)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(1653-1666)"],
     "$id": 4229
   },
   "整理完成，部分文件失败": {
@@ -1498,7 +1498,7 @@
     "de-DE": "Organisation abgeschlossen, einige Dateien fehlgeschlagen",
     "fr-FR": "Tri terminé, certains fichiers ont échoué",
     "ko-KR": "정리 완료, 일부 파일 실패",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(1716-1731)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(1670-1685)"],
     "$id": 4230
   },
   "成功率": {
@@ -1511,7 +1511,7 @@
     "de-DE": "Erfolgsrate",
     "fr-FR": "Taux de réussite",
     "ko-KR": "성공률",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(1961-1968)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(1907-1914)"],
     "$id": 4231
   },
   "总文件数": {
@@ -1524,7 +1524,7 @@
     "de-DE": "Gesamtzahl der Dateien",
     "fr-FR": "Nombre total de fichiers",
     "ko-KR": "총 파일 수",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(2808-2816)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(2736-2744)"],
     "$id": 4232
   },
   "成功移动": {
@@ -1537,7 +1537,7 @@
     "de-DE": "Erfolgreich verschoben",
     "fr-FR": "Déplacés avec succès",
     "ko-KR": "성공적으로 이동됨",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(3414-3422)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(3330-3338)"],
     "$id": 4233
   },
   "创建目录": {
@@ -1550,7 +1550,7 @@
     "de-DE": "Verzeichnis erstellen",
     "fr-FR": "Créer un répertoire",
     "ko-KR": "디렉토리 생성",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(4030-4038)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(3934-3942)"],
     "$id": 4234
   },
   "失败文件": {
@@ -1563,7 +1563,7 @@
     "de-DE": "Fehlerhafte Dateien",
     "fr-FR": "Fichiers échoués",
     "ko-KR": "실패한 파일",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(4995-5003)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(4874-4882)"],
     "$id": 4235
   },
   "耗时：": {
@@ -1576,7 +1576,7 @@
     "de-DE": "Verstrichene Zeit:",
     "fr-FR": "Temps écoulé :",
     "ko-KR": "소요 시간:",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(6048-6055)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(5900-5907)"],
     "$id": 4236
   },
   "平均速度：": {
@@ -1589,7 +1589,7 @@
     "de-DE": "Durchschnittsgeschwindigkeit:",
     "fr-FR": "Vitesse moyenne :",
     "ko-KR": "평균 속도:",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(6433-6442)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(6278-6287)"],
     "$id": 4237
   },
   "{speed} 文件/秒": {
@@ -1602,7 +1602,7 @@
     "de-DE": "{speed} Dateien/Sekunde",
     "fr-FR": "{speed} fichiers/seconde",
     "ko-KR": "{speed} 파일/초",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(6590-6606)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(6432-6448)"],
     "$id": 4238
   },
   "失败文件列表": {
@@ -1615,7 +1615,7 @@
     "de-DE": "Liste der fehlerhaften Dateien",
     "fr-FR": "Liste des fichiers échoués",
     "ko-KR": "실패한 파일 목록",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(7133-7143)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(6961-6971)"],
     "$id": 4239
   },
   "还有 {count} 个错误...": {
@@ -1628,7 +1628,7 @@
     "de-DE": "Noch {count} Fehler...",
     "fr-FR": "Encore {count} erreurs...",
     "ko-KR": "{count}개의 오류 더 있음...",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(8000-8021)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(7812-7833)"],
     "$id": 4240
   },
   "导出日志": {
@@ -1641,7 +1641,7 @@
     "de-DE": "Protokolle exportieren",
     "fr-FR": "Exporter les journaux",
     "ko-KR": "로그 내보내기",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(8447-8455)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(8247-8255)"],
     "$id": 4241
   },
   "打开目录": {
@@ -1654,7 +1654,7 @@
     "de-DE": "Verzeichnis öffnen",
     "fr-FR": "Ouvrir le répertoire",
     "ko-KR": "디렉토리 열기",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(8717-8725)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(8511-8519)"],
     "$id": 4242
   },
   "加载历史记录失败: {error_message}": {

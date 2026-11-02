@@ -133,7 +133,7 @@
     "de-DE": "Die KI arbeitet derzeit, etwa an der Analyse der Warteschlange. Bitte stoppen Sie und fordern Sie dann erneut an.",
     "fr-FR": "L'IA travaille actuellement, comme l'analyse de la file d'attente. Veuillez arrêter, puis demander à nouveau.",
     "ko-KR": "현재 대기열 분석 등 AI가 작동하고 있다. 중지한 후 다시 요청하세요.",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(40674-40703)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(46454-46483)"],
     "$id": 11304
   },
   "分析超时": {
@@ -146,7 +146,7 @@
     "de-DE": "Analyse-Timeout",
     "fr-FR": "Délai d'analyse",
     "ko-KR": "분석 시간 초과",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(42289-42297)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(48124-48132)"],
     "$id": 2976
   },
   "建议切换低显存需求的AI模型": {
@@ -160,9 +160,9 @@
     "fr-FR": "Il est recommandé de passer à un modèle d'IA avec de faibles besoins en mémoire",
     "ko-KR": "메모리 요구 사항이 낮은 AI 모델로 전환하는 것이 좋습니다.",
     "$files": [
-      "src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(42316-42334)",
-      "src/electron/runtime-services/analysis-queue-service/directory-processor.ts(10606-10624)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(117718-117736)"
+      "src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(48151-48169)",
+      "src/electron/runtime-services/analysis-queue-service/directory-processor.ts(10321-10339)",
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(118414-118432)"
     ],
     "$id": 2977
   },
@@ -176,7 +176,7 @@
     "de-DE": "Gehen Sie zu den Einstellungen",
     "fr-FR": "Allez dans les paramètres",
     "ko-KR": "설정으로 이동",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(42474-42482)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(48314-48322)"],
     "$id": 4521
   },
   "配额已用尽：已分析 {count} 个私有目录文件，当前配额为 {quota} 个文件。可以通过邀请好友解锁更多额度。": {
@@ -190,7 +190,7 @@
     "fr-FR": "Quota épuisé : {count} fichiers de répertoires privés ont été analysés, le quota actuel est de {quota} fichiers. Vous pouvez inviter des amis pour débloquer plus de quota.",
     "ko-KR": "할당량 소진: 프라이빗 디렉토리 파일 {count} 개를 분석했으며, 현재 할당량은 {quota} 개 파일입니다. 친구 초대로 더 많은 한도를 해제할 수 있습니다.",
     "$files": [
-      "src/electron/runtime-services/analysis-queue-service/directory-processor.ts(3448-3529)",
+      "src/electron/runtime-services/analysis-queue-service/directory-processor.ts(3352-3432)",
       "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(35091-35172)"
     ],
     "$id": 11053
@@ -205,7 +205,7 @@
     "de-DE": "Überprüfen Sie, ob die Datei vorhanden ist oder verschoben wurde",
     "fr-FR": "Vérifier si le fichier existe ou s'il a été déplacé",
     "ko-KR": "파일이 존재하는지 또는 이동되었는지 확인",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(2707-2724)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(2617-2634)"],
     "$id": 5837
   },
   "检查文件访问权限": {
@@ -218,7 +218,7 @@
     "de-DE": "Überprüfen Sie die Dateizugriffsberechtigung",
     "fr-FR": "Vérifier les autorisations d'accès au fichier",
     "ko-KR": "파일 접근 권한 확인",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(2791-2803)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(2699-2711)"],
     "$id": 5838
   },
   "等待文件解锁后重试": {
@@ -231,7 +231,7 @@
     "de-DE": "Warten Sie, bis die Datei entsperrt ist, und versuchen Sie es erneut",
     "fr-FR": "Attendre que le fichier soit déverrouillé avant de réessayer",
     "ko-KR": "파일 잠금 해제 대기 후 재시도",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(2864-2877)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(2770-2783)"],
     "$id": 5839
   },
   "跳过不支持的文件格式": {
@@ -244,7 +244,7 @@
     "de-DE": "Überspringen Sie nicht unterstützte Dateiformate",
     "fr-FR": "Ignorer les formats de fichier non pris en charge",
     "ko-KR": "지원되지 않는 파일 형식 생략",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(2945-2959)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(2849-2863)"],
     "$id": 5840
   },
   "文件可能已损坏，建议跳过": {
@@ -257,7 +257,7 @@
     "de-DE": "Die Datei ist möglicherweise beschädigt, es wird empfohlen, sie zu überspringen",
     "fr-FR": "Le fichier est peut-être corrompu, il est recommandé de le sauter",
     "ko-KR": "파일이 손상되었을 수 있으므로 생략하는 것을 권장합니다",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(3023-3039)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(2925-2941)"],
     "$id": 5841
   },
   "增加处理超时时间或跳过大文件": {
@@ -270,7 +270,7 @@
     "de-DE": "Vergrößerung der Bearbeitungs-Timeout oder Überspringen großer Dateien",
     "fr-FR": "Augmenter le délai d'expiration du traitement ou ignorer les fichiers volumineux",
     "ko-KR": "처리 시간 초과를 늘리거나 큰 파일 건너뛰기",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(3107-3125)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(3007-3025)"],
     "$id": 5842
   },
   "等待AI模型加载完成": {
@@ -283,7 +283,7 @@
     "de-DE": "Warten, bis das AI-Modell vollständig geladen ist",
     "fr-FR": "Attendre que le modèle AI termine son chargement",
     "ko-KR": "AI 모델 로딩 완료 대기 중",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(3191-3205)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(3089-3103)"],
     "$id": 5843
   },
   "检查AI服务状态或增加超时时间，建议切换云端模型或服务商": {
@@ -296,7 +296,7 @@
     "de-DE": "Überprüfen Sie den AI-Dienststatus oder erhöhen Sie das Timeout. Es empfiehlt sich, das Cloud-Modell oder den Dienstanbieter zu wechseln.",
     "fr-FR": "Vérifiez l'état du service AI ou augmentez le délai d'attente. Il est recommandé de changer de modèle de cloud ou de fournisseur de services.",
     "ko-KR": "AI 서비스 상태를 확인하거나 타임아웃을 늘려보세요. 클라우드 모델이나 서비스 제공업체를 전환하는 것이 좋습니다.",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(3435-3467)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(3328-3360)"],
     "$id": 4390
   },
   "检查AI服务状态或增加超时时间，建议切换低显存需求的AI模型": {
@@ -309,7 +309,7 @@
     "de-DE": "Überprüfen Sie den AI-Dienststatus oder erhöhen Sie das Timeout. Es empfiehlt sich, auf ein KI-Modell mit geringem Speicherbedarf umzusteigen.",
     "fr-FR": "Vérifiez l'état du service AI ou augmentez le délai d'attente. Il est recommandé de passer à un modèle d'IA avec de faibles besoins en mémoire.",
     "ko-KR": "AI 서비스 상태를 확인하거나 타임아웃을 늘려보세요. 메모리 요구 사항이 낮은 AI 모델로 전환하는 것이 좋습니다.",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(3496-3530)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(3387-3421)"],
     "$id": 2975
   },
   "检查数据库连接状态": {
@@ -322,7 +322,7 @@
     "de-DE": "Überprüfung des Datenbankverbindungsstatus",
     "fr-FR": "Vérifier l'état de la connexion à la base de données",
     "ko-KR": "데이터베이스 연결 상태 확인",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(3603-3616)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(3491-3504)"],
     "$id": 5845
   },
   "检查系统状态并重试": {
@@ -335,7 +335,7 @@
     "de-DE": "Überprüfung des Systemstatus und erneuter Versuch",
     "fr-FR": "Vérifier l'état du système et réessayer",
     "ko-KR": "시스템 상태 확인 및 재시도",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(3650-3663)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(3536-3549)"],
     "$id": 5846
   },
   "文件不存在": {
@@ -348,7 +348,7 @@
     "de-DE": "Datei existiert nicht",
     "fr-FR": "Le fichier n'existe pas",
     "ko-KR": "파일이 존재하지 않음",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(4052-4061)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(3922-3931)"],
     "$id": 5847
   },
   "权限被拒绝": {
@@ -361,7 +361,7 @@
     "de-DE": "Zugriff verweigert",
     "fr-FR": "Permission refusée",
     "ko-KR": "권한이 거부됨",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(4290-4299)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(4152-4161)"],
     "$id": 5848
   },
   "文件被锁定": {
@@ -374,7 +374,7 @@
     "de-DE": "Datei ist gesperrt",
     "fr-FR": "Le fichier est verrouillé",
     "ko-KR": "파일이 잠겨 있음",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(4527-4536)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(4381-4390)"],
     "$id": 5849
   },
   "超时": {
@@ -387,7 +387,7 @@
     "de-DE": "Zeitüberschreitung",
     "fr-FR": "Délai dépassé",
     "ko-KR": "시간 초과",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(4686-4692)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(4532-4538)"],
     "$id": 5850
   },
   "不支持": {
@@ -400,7 +400,7 @@
     "de-DE": "Nicht unterstützt",
     "fr-FR": "Non pris en charge",
     "ko-KR": "지원되지 않음",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(5341-5348)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(5169-5176)"],
     "$id": 5852
   },
   "格式不支持": {
@@ -413,7 +413,7 @@
     "de-DE": "Format wird nicht unterstützt",
     "fr-FR": "Format non pris en charge",
     "ko-KR": "지원되지 않는 형식",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(5423-5432)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(5249-5258)"],
     "$id": 5853
   },
   "损坏": {
@@ -426,7 +426,7 @@
     "de-DE": "Beschädigt",
     "fr-FR": "Corrompu",
     "ko-KR": "손상됨",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(5652-5658)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(5470-5476)"],
     "$id": 5854
   },
   "格式错误": {
@@ -439,7 +439,7 @@
     "de-DE": "Falsches Format",
     "fr-FR": "Format incorrect",
     "ko-KR": "형식 오류",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(5728-5736)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(5544-5552)"],
     "$id": 5855
   },
   "未加载": {
@@ -452,7 +452,7 @@
     "de-DE": "Nicht geladen",
     "fr-FR": "Non chargé",
     "ko-KR": "로드되지 않음",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(5924-5931)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(5732-5739)"],
     "$id": 5856
   },
   "ai服务": {
@@ -465,7 +465,7 @@
     "de-DE": "AI-Service",
     "fr-FR": "Service AI",
     "ko-KR": "ai 서비스",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(6075-6083)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(5877-5885)"],
     "$id": 5857
   },
   "模型错误": {
@@ -478,7 +478,7 @@
     "de-DE": "Modellfehler",
     "fr-FR": "Erreur de modèle",
     "ko-KR": "모델 오류",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(6155-6163)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(5955-5963)"],
     "$id": 5858
   },
   "分类失败": {
@@ -491,7 +491,7 @@
     "de-DE": "Klassifizierungsfehler",
     "fr-FR": "Échec de la classification",
     "ko-KR": "분류 실패",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(6302-6310)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(6098-6106)"],
     "$id": 5859
   },
   "数据库": {
@@ -504,7 +504,7 @@
     "de-DE": "Datenbank",
     "fr-FR": "Base de données",
     "ko-KR": "데이터베이스",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(6469-6476)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(6258-6265)"],
     "$id": 5860
   },
   "网络": {
@@ -517,7 +517,7 @@
     "de-DE": "Netzwerk",
     "fr-FR": "Réseau",
     "ko-KR": "네트워크",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(6781-6787)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(6558-6564)"],
     "$id": 5861
   },
   "连接": {
@@ -530,7 +530,7 @@
     "de-DE": "Verbindung",
     "fr-FR": "Connexion",
     "ko-KR": "연결",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(6817-6823)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(6593-6599)"],
     "$id": 5862
   },
   "内存不足": {
@@ -543,7 +543,7 @@
     "de-DE": "Nicht genügend Speicher",
     "fr-FR": "Mémoire insuffisante",
     "ko-KR": "메모리 부족",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(6987-6995)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(6755-6763)"],
     "$id": 5863
   },
   "资源耗尽": {
@@ -556,7 +556,7 @@
     "de-DE": "Ressourcen erschöpft",
     "fr-FR": "Ressources épuisées",
     "ko-KR": "리소스 소진",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(7074-7082)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(6840-6848)"],
     "$id": 5864
   },
   " (已重试 {retryCount} 次)": {
@@ -569,7 +569,7 @@
     "de-DE": " (Erneut versucht: {retryCount} mal)",
     "fr-FR": " (Réessai {retryCount} fois)",
     "ko-KR": " (재시도 {retryCount}회 완료)",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(12048-12073)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(11635-11660)"],
     "$id": 5865
   },
   " - 建议检查系统状态": {
@@ -582,7 +582,7 @@
     "de-DE": " - Es wird empfohlen, den Systemstatus zu überprüfen",
     "fr-FR": " - Il est recommandé de vérifier l'état du système",
     "ko-KR": " - 시스템 상태 점검 권장",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(12225-12240)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(11804-11819)"],
     "$id": 5866
   },
   " - 可能需要人工干预": {
@@ -595,7 +595,7 @@
     "de-DE": "- Manuelle Eingabe erforderlich",
     "fr-FR": "- Une intervention manuelle pourrait être nécessaire",
     "ko-KR": "- 수동 개입이 필요할 수 있음",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(12304-12319)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(11880-11895)"],
     "$id": 5867
   },
   " - 系统将自动重试": {
@@ -608,7 +608,7 @@
     "de-DE": "- Das System wird automatisch erneut versuchen",
     "fr-FR": "- Le système réessayera automatiquement",
     "ko-KR": "- 시스템이 자동으로 다시 시도함",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(12385-12399)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(11958-11972)"],
     "$id": 5868
   },
   " - 将跳过此文件": {
@@ -621,7 +621,7 @@
     "de-DE": "- Diese Datei wird übersprungen",
     "fr-FR": "- Ce fichier sera ignoré",
     "ko-KR": "- 이 파일은 건너뜀",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(12462-12475)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(12032-12045)"],
     "$id": 5869
   },
   " - 大文件处理，建议增加超时时间": {
@@ -634,7 +634,7 @@
     "de-DE": "- Bearbeitung großer Dateien, es wird empfohlen, die Zeitüberschreitung zu verlängern",
     "fr-FR": "- Traitement de fichiers volumineux, il est recommandé d'augmenter le délai d'expiration",
     "ko-KR": "- 대용량 파일 처리, 타임아웃 시간 증가 권장",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(12774-12795)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(12333-12354)"],
     "$id": 5870
   },
   "数据库未连接，无法清空待处理项目": {
@@ -720,7 +720,7 @@
     "de-DE": "Es wird empfohlen, die Anzahl der PDF-Analyseseiten zu reduzieren oder die OCR-Funktion auszuschalten",
     "fr-FR": "Il est recommandé de réduire le nombre de pages d'analyse PDF ou de désactiver la fonction OCR",
     "ko-KR": "PDF 분석 페이지 수를 줄이거나 OCR 기능을 끄는 것이 좋습니다",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(117759-117786)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(118455-118482)"],
     "$id": 11054
   },
   "AI 服务未就绪": {

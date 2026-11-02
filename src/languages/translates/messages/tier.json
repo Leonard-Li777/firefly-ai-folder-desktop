@@ -11,10 +11,10 @@
     "ko-KR": "엔터프라이즈 에디션",
     "$files": [
       "src/renderer/components/tier/AccountManagementDialog.tsx(3768-3775)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(32358-32365)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(35765-35772)",
       "src/renderer/components/tier/UpgradeAccountDialog.tsx(3314-3321)",
       "src/renderer/components/tier/UserAvatarMenu.tsx(2701-2708)",
-      "src/renderer/components/tier/UserTierBadge.tsx(943-950)"
+      "src/renderer/components/tier/UserTierBadge.tsx(920-927)"
     ],
     "$id": 10959
   },
@@ -298,9 +298,9 @@
     "ko-KR": "무료 버전",
     "$files": [
       "src/renderer/components/tier/AccountManagementDialog.tsx(6143-6150)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(32193-32200)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(35602-35609)",
       "src/renderer/components/tier/UserAvatarMenu.tsx(4203-4210)",
-      "src/renderer/components/tier/UserTierBadge.tsx(1286-1293)"
+      "src/renderer/components/tier/UserTierBadge.tsx(1253-1260)"
     ],
     "$id": 10957
   },
@@ -547,7 +547,7 @@
     "ko-KR": "환불 완료됨",
     "$files": [
       "src/renderer/components/tier/AccountManagementDialog.tsx(18676-18683)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(46245-46252)"
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(49317-49324)"
     ],
     "$id": 11505
   },
@@ -1422,7 +1422,7 @@
     "de-DE": "Ich habe ein super einfach zu bedienendes, kostenloses Open-Source-KI-Tool „Firefly AI Folder“ gefunden, das den unordentlichen Desktop, das Download-Verzeichnis usw. mit einem Klick aufräumen, in Sekundenschnelle nach Bild-, Text-, Audio- und Videoinhalten in natürlicher Sprache suchen kann, und das Video kann sogar in einem bestimmten Zeitintervall positioniert werden, und die KI kategorisiert/umbenennt/markiert/beschreibt/Miniaturansichten/archiviert/bereinigt automatisch! Nutzen Sie lokale KI-Funktionen, um den Datenschutz zu gewährleisten. Es ist keine Grafikkarte erforderlich. Dünne und leichte Notebooks mit wenig Speicher können KI in hoher Qualität ausführen. Die innovative Technologie zur Organisation virtueller Verzeichnisse sorgt für Dateisicherheit. Kommen Sie und probieren Sie es aus!",
     "fr-FR": "J'ai trouvé un outil d'IA gratuit open source très facile à utiliser \"Firefly AI Folder\", qui peut trier le bureau en désordre, le répertoire de téléchargement, etc. en un seul clic, rechercher du contenu image, texte, audio et vidéo en langage naturel en quelques secondes, et la vidéo peut même être positionnée sur un intervalle de temps spécifique, et l'IA catégorise/renomme/tags/décrit/vignettes/archives/nettoie automatiquement ! Utilisez les capacités d’IA locales pour garantir la confidentialité. Aucune carte graphique n'est requise. Les ordinateurs portables fins et légers à faible mémoire peuvent exécuter une IA de haute qualité. La technologie innovante d’organisation de répertoires virtuels garantit la sécurité des fichiers. Venez essayer!",
     "ko-KR": "사용하기 매우 쉬운 무료 오픈 소스 AI 도구인 \"Firefly AI Folder\"를 찾았습니다. 이 도구는 한 번의 클릭으로 지저분한 데스크탑, 다운로드 디렉토리 등을 정리하고, 자연어로 이미지, 텍스트, 오디오 및 비디오 콘텐츠를 몇 초 만에 검색하고, 비디오를 특정 시간 간격으로 배치할 수도 있으며, AI가 자동으로 분류/이름 바꾸기/태그/설명/썸네일/보관/정리합니다! 개인정보 보호를 위해 로컬 AI 기능을 활용하세요. 그래픽 카드가 필요하지 않습니다. 저용량 얇고 가벼운 노트북으로 AI를 고품질로 실행할 수 있습니다. 혁신적인 가상 디렉터리 구성 기술로 파일 보안을 보장합니다. 와서 한번 시도해 보세요!",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(3977-4140)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(3871-4034)"],
     "$id": 22247
   },
   "邀请链接已复制": {
@@ -1435,7 +1435,7 @@
     "de-DE": "Einladungslink wurde kopiert",
     "fr-FR": "Lien d'invitation copié",
     "ko-KR": "초대 링크가 복사되었습니다",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(4280-4291)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(4170-4181)"],
     "$id": 10919
   },
   "复制失败": {
@@ -1448,7 +1448,7 @@
     "de-DE": "Kopieren fehlgeschlagen",
     "fr-FR": "Échec de la copie",
     "ko-KR": "복사 실패",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(4435-4443)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(4320-4328)"],
     "$id": 10920
   },
   "请输入有效的 16 位邀请码": {
@@ -1461,7 +1461,7 @@
     "de-DE": "Bitte geben Sie einen gültigen 16-stelligen Einladungscode ein",
     "fr-FR": "Veuillez saisir un code d'invitation valide à 16 chiffres",
     "ko-KR": "유효한 16자리 초대 코드를 입력하세요.",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(4704-4722)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(4579-4597)"],
     "$id": 10921
   },
   "兑换成功！已增加 {amount} 个文件分析额度": {
@@ -1474,7 +1474,7 @@
     "de-DE": "Erfolgreich eingelöst! Das Kontingent für die Dateianalyse wurde um {amount} Dateien erhöht",
     "fr-FR": "Échange réussi ! {amount} crédits d'analyse de fichiers ont été ajoutés",
     "ko-KR": "교환 성공! 파일 분석 한도가 {amount} 개 증가했습니다",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(4907-4936)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(4775-4804)"],
     "$id": 10922
   },
   "兑换失败: {error}": {
@@ -1487,7 +1487,7 @@
     "de-DE": "Einlösung fehlgeschlagen: {error}",
     "fr-FR": "Échec de l'échange : {error}",
     "ko-KR": "교환 실패: {error}",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(5033-5050)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(4898-4915)"],
     "$id": 10923
   },
   "未知错误": {
@@ -1500,7 +1500,7 @@
     "de-DE": "Unbekannter Fehler",
     "fr-FR": "Erreur inconnue",
     "ko-KR": "알 수 없는 오류",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(5077-5085)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(4942-4950)"],
     "$id": 10924
   },
   "兑换请求失败": {
@@ -1513,7 +1513,7 @@
     "de-DE": "Einlösungsanfrage fehlgeschlagen",
     "fr-FR": "L'échange a échoué",
     "ko-KR": "교환 요청 실패",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(5134-5144)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(4996-5006)"],
     "$id": 10925
   },
   "已解锁私有目录无限额度": {
@@ -1526,7 +1526,7 @@
     "de-DE": "Unbegrenztes Kontingent an privaten Verzeichnissen freigeschaltet",
     "fr-FR": "Quota illimité débloqué de répertoires privés",
     "ko-KR": "개인 디렉토리의 무제한 할당량 잠금 해제",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(5674-5689)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(5516-5531)"],
     "$id": 11451
   },
   "解锁失败": {
@@ -1539,7 +1539,7 @@
     "de-DE": "Entsperren fehlgeschlagen",
     "fr-FR": "Échec du déverrouillage",
     "ko-KR": "잠금해제 실패",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(5747-5755)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(5587-5595)"],
     "$id": 11452
   },
   "解锁请求失败": {
@@ -1552,7 +1552,7 @@
     "de-DE": "Die Entsperranforderung ist fehlgeschlagen",
     "fr-FR": "La demande de déverrouillage a échoué",
     "ko-KR": "잠금해제 요청 실패",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(5801-5811)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(5638-5648)"],
     "$id": 11454
   },
   "萤火规则": {
@@ -1565,7 +1565,7 @@
     "de-DE": "Firecores-Regeln",
     "fr-FR": "Règles du Firecores",
     "ko-KR": "파이어빈 규칙",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(6101-6109)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(5926-5934)"],
     "$id": 10926
   },
   "收集萤火": {
@@ -1579,8 +1579,8 @@
     "fr-FR": "Obtenez des Firecores",
     "ko-KR": "Firecores을 얻으세요",
     "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(6535-6543)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(6848-6856)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(6349-6357)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(6657-6665)",
       "src/renderer/components/tier/PaymentFlowDialog.tsx(6524-6532)",
       "src/renderer/components/tier/PaymentFlowDialog.tsx(8245-8253)",
       "src/renderer/components/tier/UserAvatarMenu.tsx(19775-19783)"
@@ -1598,8 +1598,8 @@
     "fr-FR": "Flux de revenus et de dépenses",
     "ko-KR": "수입과 지출의 흐름",
     "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(7003-7011)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(7327-7335)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(6807-6815)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(7126-7134)",
       "src/renderer/components/tier/UserAvatarMenu.tsx(17687-17695)"
     ],
     "$id": 10930
@@ -1615,23 +1615,23 @@
     "fr-FR": "Règles de consommation",
     "ko-KR": "소비 규칙",
     "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(7476-7484)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(7803-7811)"
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(7270-7278)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(7592-7600)"
     ],
     "$id": 10931
   },
-  "邀请好友，双方得奖 · 3位好友解锁无限额度": {
-    "en-US": "Invite Friends, Both Get Rewards · Unlock Unlimited Credit by Inviting 3 Friends",
-    "es-ES": "Invita a tus amigos y ambos ganaréis premios · Si invitas a 3 amigos, desbloquearás un límite ilimitado",
-    "ar-EG": "ادعُ أصدقاءك، واحصلوا جميعًا على جوائز · ادعُ 3 أصدقاء لفتح حد ائتماني غير محدود",
-    "pt-PT": "Convide amigos e ambos ganham prémios · Desbloqueie um limite ilimitado ao convidar 3 amigos",
-    "ru-RU": "Пригласите друзей — и вы, и они получат призы · Пригласите 3 друзей, чтобы разблокировать неограниченный лимит",
-    "ja-JP": "友達を招待して、双方に特典 · 3人の友達を招待すると、利用限度額が無制限に",
-    "de-DE": "Freunde einladen, beide Seiten gewinnen · 3 Freunde freischalten, um ein unbegrenztes Limit zu erhalten",
-    "fr-FR": "Invitez des amis, vous en profitez tous les deux · Débloquez une limite illimitée en invitant 3 amis",
-    "ko-KR": "친구 초대 시, 양쪽 모두에게 혜택 · 친구 3명을 초대하면 무제한 한도 해금",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(9235-9261)"],
-    "$id": 11563
+  "邀请好友，双方得奖 · 4位好友解锁无限额度": {
+    "en-US": "Invite friends and win prizes for both parties · Unlimited quota for 4 friends",
+    "es-ES": "Invita amigos y gana premios para ambas partes · Cupo ilimitado para 4 amigos",
+    "ar-EG": "قم بدعوة الأصدقاء واربح جوائز لكلا الطرفين · حصة غير محدودة لأربعة أصدقاء",
+    "pt-PT": "Convide amigos e ganhe prêmios para ambas as partes · Cota ilimitada para 4 amigos",
+    "ru-RU": "Приглашайте друзей и выигрывайте призы для обеих сторон · Неограниченная квота на 4 друзей",
+    "ja-JP": "友達を招待して双方に賞品を獲得・友達 4 人分の無制限の割り当て",
+    "de-DE": "Freunde einladen und Preise für beide Seiten gewinnen · Unbegrenztes Kontingent für 4 Freunde",
+    "fr-FR": "Invitez des amis et gagnez des prix pour les deux parties · Quota illimité pour 4 amis",
+    "ko-KR": "친구를 초대하고 양측 모두 상품을 받으세요. · 친구 4명까지 무제한 할당량",
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(9002-9028)"],
+    "$id": 22355
   },
   "已解锁无限额度": {
     "en-US": "Unlimited credit limit unlocked",
@@ -1644,8 +1644,8 @@
     "fr-FR": "Limite illimitée débloquée",
     "ko-KR": "무제한 한도 잠금 해제됨",
     "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(9591-9602)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(21751-21762)"
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(9353-9364)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(24399-24410)"
     ],
     "$id": 11564
   },
@@ -1659,21 +1659,21 @@
     "de-DE": "Pro 100 Glühwürmchen-Stufen",
     "fr-FR": "Tous les 100 points d'avancement « Luciole »",
     "ko-KR": "100 반딧불이마다 진화",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(9963-9975)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(9720-9732)"],
     "$id": 11565
   },
-  "每邀请1人即赠 {firecores} 萤火 + {bonus} 额度，集齐 300 萤火可永久兑换无限额度": {
-    "en-US": "For every person you invite, you’ll receive {firecores} Fireflies + {bonus} credit. Collect 300 Fireflies to permanently redeem unlimited credit.",
-    "es-ES": "Por cada persona que invites, recibirás {firecores} luciérnagas + {bonus} de crédito; si acumulas 300 luciérnagas, podrás canjearlas por crédito ilimitado de forma permanente.",
-    "ar-EG": "مقابل كل شخص تدعوه، تحصل على {firecores} «يونغ هو» + {bonus} رصيد؛ وعند جمع 300 «يونغ هو»، يمكنك استبدالها بشكل دائم برصيد غير محدود",
-    "pt-PT": "Por cada pessoa convidada, recebe {firecores} Fogo-fátuo + {bonus} crédito; ao reunir 300 Fogo-fátuo, pode trocar por crédito ilimitado para sempre",
-    "ru-RU": "За каждого приглашённого человека вы получаете {firecores} «Светлячков» + {bonus} лимит; собрав 300 «Светлячков», вы можете навсегда обменять их на неограниченный лимит",
-    "ja-JP": "1人を招待するごとに、{firecores} ホタル + {bonus} 利用枠をプレゼント。300 ホタルを集めると、無制限の利用枠と永久に交換できます。",
-    "de-DE": "Für jede eingeladene Person erhalten Sie {firecores} Glühwürmchen + {bonus} Guthaben. Wenn Sie 300 Glühwürmchen gesammelt haben, können Sie diese dauerhaft gegen unbegrenztes Guthaben einlösen.",
-    "fr-FR": "Pour chaque personne invitée, vous recevez {firecores} lucioles + {bonus} de crédit. Une fois que vous aurez accumulé 300 lucioles, vous pourrez les échanger contre un crédit illimité à vie.",
-    "ko-KR": "1명을 초대할 때마다 {firecores} 반딧불이 + {bonus} 한도를 드립니다. 반딧불이 300개를 모으면 무제한 한도로 영구 교환할 수 있습니다.",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(10196-10254)"],
-    "$id": 11566
+  "每邀请1人即赠 {firecores} 萤火 + {bonus} 额度，集齐 400 萤火可永久兑换无限额度": {
+    "en-US": "Every time you invite one person, you will get {firecores} Fireflies + {bonus} quota. Collect 400 Fireflies and you can permanently exchange them for unlimited quota.",
+    "es-ES": "Cada vez que invites a una persona, obtendrás {firecores} Luciérnagas + {bonus} cuota. Recoge 400 luciérnagas y podrás canjearlas permanentemente por una cuota ilimitada.",
+    "ar-EG": "في كل مرة تقوم فيها بدعوة شخص واحد، سوف تحصل على حصة {firecores} Fireflies + {bonus}. اجمع 400 يراعة ويمكنك استبدالها بشكل دائم بحصة غير محدودة.",
+    "pt-PT": "Cada vez que você convidar uma pessoa, você receberá cota de {firecores} Vaga-lumes + {bonus}. Colete 400 vaga-lumes e você poderá trocá-los permanentemente por uma cota ilimitada.",
+    "ru-RU": "Каждый раз, когда вы приглашаете одного человека, вы получаете квоту {firecores} Fireflies + {bonus}. Соберите 400 светлячков, и вы сможете навсегда обменять их на неограниченную квоту.",
+    "ja-JP": "1 人を招待するたびに、{firecores} 個のホタルと {bonus} 個の割り当てを獲得できます。 400 個のホタルを集めると、永久に無制限の割り当てと交換できます。",
+    "de-DE": "Jedes Mal, wenn Sie eine Person einladen, erhalten Sie {firecores} Fireflies + {bonus} Kontingent. Sammeln Sie 400 Glühwürmchen und Sie können sie dauerhaft gegen ein unbegrenztes Kontingent eintauschen.",
+    "fr-FR": "Chaque fois que vous invitez une personne, vous obtiendrez un quota de {firecores} lucioles + {bonus}. Collectez 400 lucioles et vous pourrez les échanger en permanence contre un quota illimité.",
+    "ko-KR": "한 사람을 초대할 때마다 {firecores} Fireflies + {bonus} 할당량을 받게 됩니다. 반딧불 400개를 모으면 영구적으로 무제한 할당량으로 교환할 수 있습니다.",
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(9948-10006)"],
+    "$id": 22356
   },
   "当前拥有": {
     "en-US": "Currently owns",
@@ -1685,7 +1685,7 @@
     "de-DE": "Derzeit im Besitz von",
     "fr-FR": "Possède actuellement",
     "ko-KR": "현재 보유 중인",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(10943-10951)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(10683-10691)"],
     "$id": 11567
   },
   "萤火": {
@@ -1699,15 +1699,15 @@
     "fr-FR": "Firecores",
     "ko-KR": "Firecores",
     "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(11232-11238)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(25041-25047)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(33350-33356)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(33825-33831)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(34467-34473)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(48441-48447)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(50971-50977)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(53269-53275)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(54006-54012)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(10968-10974)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(28585-28591)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(36738-36744)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(37204-37210)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(37834-37840)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(51475-51481)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(53963-53969)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(56219-56225)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(56940-56946)",
       "src/renderer/components/tier/PaymentFlowDialog.tsx(4218-4224)"
     ],
     "$id": 10961
@@ -1722,7 +1722,7 @@
     "de-DE": "Unbegrenzte Möglichkeiten erschließen",
     "fr-FR": "Débloquer l'infini",
     "ko-KR": "무한 해금",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(13693-13701)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(13802-13810)"],
     "$id": 11568
   },
   "第1位好友": {
@@ -1735,7 +1735,7 @@
     "de-DE": "Bester Freund Nr. 1",
     "fr-FR": "1er ami",
     "ko-KR": "1번째 친구",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(14981-14990)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(15081-15090)"],
     "$id": 11569
   },
   "已达成": {
@@ -1749,8 +1749,9 @@
     "fr-FR": "Conclu",
     "ko-KR": "합의됨",
     "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(15295-15302)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(17907-17914)"
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(15390-15397)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(17956-17963)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(20550-20557)"
     ],
     "$id": 11570
   },
@@ -1764,7 +1765,7 @@
     "de-DE": "Es werden 100 Glühwürmchen benötigt.",
     "fr-FR": "Il faut 100 lucioles",
     "ko-KR": "100개의 반딧불이 필요합니다",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(15501-15514)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(15592-15605)"],
     "$id": 11571
   },
   "您获萤火": {
@@ -1778,8 +1779,9 @@
     "fr-FR": "Vous obtenez des Firecores",
     "ko-KR": "당신은 Firecores을 얻습니다",
     "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(15929-15937)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(18555-18563)"
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(16012-16020)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(18592-18600)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(21186-21194)"
     ],
     "$id": 10945
   },
@@ -1794,8 +1796,9 @@
     "fr-FR": "Chacune des deux parties a obtenu un quota",
     "ko-KR": "양측이 각각 할당량을 배정받았다",
     "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(16239-16249)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(18879-18889)"
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(16318-16328)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(18912-18922)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(21506-21516)"
     ],
     "$id": 11572
   },
@@ -1809,7 +1812,7 @@
     "de-DE": "Der zweite beste Freund",
     "fr-FR": "2e ami",
     "ko-KR": "두 번째 친구",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(17571-17580)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(17625-17634)"],
     "$id": 11573
   },
   "累计 200 萤火": {
@@ -1822,7 +1825,7 @@
     "de-DE": "Insgesamt 200 Glühwürmchen",
     "fr-FR": "Total : 200 lucioles",
     "ko-KR": "누적 200 반딧불이",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(18113-18126)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(18158-18171)"],
     "$id": 11574
   },
   "累计": {
@@ -1836,10 +1839,38 @@
     "fr-FR": "Cumulé",
     "ko-KR": "누적",
     "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(18517-18523)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(18845-18851)"
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(18554-18560)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(18878-18884)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(21148-21154)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(21472-21478)"
     ],
     "$id": 11575
+  },
+  "第4位好友": {
+    "en-US": "4th friend",
+    "es-ES": "4to amigo",
+    "ar-EG": "الصديق الرابع",
+    "pt-PT": "4º amigo",
+    "ru-RU": "четвертый друг",
+    "ja-JP": "4人目の友達",
+    "de-DE": "4. Freund",
+    "fr-FR": "4ème ami",
+    "ko-KR": "네 번째 친구",
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(20219-20228)"],
+    "$id": 22357
+  },
+  "累计 300 萤火": {
+    "en-US": "A total of 300 fireflies",
+    "es-ES": "Un total de 300 luciérnagas.",
+    "ar-EG": "ما مجموعه 300 اليراعات",
+    "pt-PT": "Um total de 300 vaga-lumes",
+    "ru-RU": "Всего 300 светлячков.",
+    "ja-JP": "合計300匹のホタル",
+    "de-DE": "Insgesamt 300 Glühwürmchen",
+    "fr-FR": "Un total de 300 lucioles",
+    "ko-KR": "총 300마리의 반딧불",
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(20752-20765)"],
+    "$id": 22358
   },
   "第3位好友": {
     "en-US": "3rd Friend",
@@ -1851,7 +1882,7 @@
     "de-DE": "Der dritte Freund",
     "fr-FR": "3e ami",
     "ko-KR": "3번째 친구",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(20546-20555)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(23169-23178)"],
     "$id": 11576
   },
   "终极大奖": {
@@ -1864,21 +1895,21 @@
     "de-DE": "Der Hauptpreis",
     "fr-FR": "Le gros lot",
     "ko-KR": "최종 대박",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(20900-20908)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(23530-23538)"],
     "$id": 11577
   },
-  "需 300 萤火": {
-    "en-US": "300 fireflies required",
-    "es-ES": "Se necesitan 300 luciérnagas",
-    "ar-EG": "يلزم 300 فراشة مضيئة",
-    "pt-PT": "São necessárias 300 pirilampos",
-    "ru-RU": "Требуется 300 светлячков",
-    "ja-JP": "300 ホタルが必要",
-    "de-DE": "300 Glühwürmchen erforderlich",
-    "fr-FR": "Il faut 300 lucioles",
-    "ko-KR": "300개의 반딧불이 필요",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(21206-21218)"],
-    "$id": 11578
+  "需 {count} 萤火": {
+    "en-US": "Requires {count} firefly",
+    "es-ES": "Requiere {count} luciérnaga",
+    "ar-EG": "يتطلب {count} اليراع",
+    "pt-PT": "Requer {count} vaga-lume",
+    "ru-RU": "Требуется {count} светлячок",
+    "ja-JP": "{count} ホタルが必要です",
+    "de-DE": "Benötigt {count} Glühwürmchen",
+    "fr-FR": "Nécessite {count} luciole",
+    "ko-KR": "{count} 반딧불 필요",
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(23831-23847)"],
+    "$id": 22359
   },
   "消耗 {cost} 萤火，永久解锁私有目录无限分析额度": {
     "en-US": "Consume {cost} Firefly, permanently unlock the unlimited analysis quota of the private directory",
@@ -1890,21 +1921,21 @@
     "de-DE": "Verbrauchen {cost} Firefly, schalte das unbegrenzte Analysekontingent des privaten Verzeichnisses dauerhaft frei",
     "fr-FR": "Consommez {cost} Firefly, débloquez définitivement le quota d'analyse illimité du répertoire privé",
     "ko-KR": "영구적으로 개인 디렉토리의 무제한 분석 할당량의 잠금을 해제,{cost}반딧불을 소비",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(22156-22187)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(24868-24899)"],
     "$id": 11462
   },
-  "萤火不足，还需 {needed} 萤火": {
-    "en-US": "Insufficient firefly, you still need {needed} firefly",
-    "es-ES": "Firefly insuficiente, aún necesitas {needed} firefly",
-    "ar-EG": "اليراع غير كافية ، ما زلت بحاجة {needed} اليراع",
-    "pt-PT": "Vaga-lume insuficiente, você ainda precisa de {needed} vaga-lume",
-    "ru-RU": "Недостаточно светлячка, вам все равно нужен {needed} светлячок",
-    "ja-JP": "不十分なホタル、あなたはまだ{needed}ホタルが必要です",
-    "de-DE": "Unzureichender Glühwürmchen, du brauchst noch {needed} Glühwürmchen",
-    "fr-FR": "Luciole insuffisante, vous avez encore besoin de {needed} luciole",
-    "ko-KR": "불충분 한 반딧불,당신은 여전히{needed}반딧불이 필요합니다",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(22323-22346)"],
-    "$id": 11463
+  "仅差 {needed} 萤火，可继续邀请好友或购买最小萤火包补齐": {
+    "en-US": "There is only {needed} Fireflies missing. You can continue to invite friends or purchase the minimum Fireflies package to make up the difference.",
+    "es-ES": "Sólo faltan {needed} luciérnagas. Puedes continuar invitando amigos o comprar el paquete mínimo de Fireflies para compensar la diferencia.",
+    "ar-EG": "لا يوجد سوى {needed} يراعات مفقودة. يمكنك الاستمرار في دعوة الأصدقاء أو شراء الحد الأدنى من باقة Fireflies لتعويض الفارق.",
+    "pt-PT": "Faltam apenas {needed} vaga-lumes. Você pode continuar convidando amigos ou adquirir o pacote mínimo Fireflies para compensar a diferença.",
+    "ru-RU": "Не хватает только {needed} Светлячков. Вы можете продолжать приглашать друзей или приобрести минимальный пакет Fireflies, чтобы компенсировать разницу.",
+    "ja-JP": "欠けているのは {needed} 個のホタルだけです。引き続き友人を招待することも、最小限の Fireflies パッケージを購入して差額を補うこともできます。",
+    "de-DE": "Es fehlen nur {needed} Glühwürmchen. Sie können weiterhin Freunde einladen oder das Mindestpaket von Fireflies erwerben, um die Differenz auszugleichen.",
+    "fr-FR": "Il ne manque que {needed} lucioles. Vous pouvez continuer à inviter des amis ou acheter le forfait Fireflies minimum pour combler la différence.",
+    "ko-KR": "{needed}개의 반딧불이만 누락되었습니다. 계속해서 친구를 초대하거나 최소 반딧불 패키지를 구매하여 차액을 보충할 수 있습니다.",
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(25038-25074)"],
+    "$id": 22360
   },
   "处理中...": {
     "en-US": "Processing...",
@@ -1917,7 +1948,7 @@
     "fr-FR": "Traitement...",
     "ko-KR": "처리 중...",
     "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(23152-23162)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(25887-25897)",
       "src/renderer/components/tier/PaymentFlowDialog.tsx(6175-6185)"
     ],
     "$id": 10916
@@ -1932,7 +1963,7 @@
     "de-DE": "Unbegrenzter Betrag einlösen ({cost} Firefly)",
     "fr-FR": "Échangez un montant illimité ({cost} Firefly)",
     "ko-KR": "무제한 사용({cost}반딧불)",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(23252-23273)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(25989-26010)"],
     "$id": 11470
   },
   "还需 {needed} 萤火可兑换": {
@@ -1945,8 +1976,34 @@
     "de-DE": "Brauche auch {needed} Firefly kann ausgetauscht werden",
     "fr-FR": "Aussi besoin de {needed} Firefly peut être échangé",
     "ko-KR": "또한 필요{needed}반딧불 교환 할 수 있습니다",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(23339-23360)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(26077-26098)"],
     "$id": 11471
+  },
+  "仅差 {needed} 萤火，可邀请好友或": {
+    "en-US": "Only {needed} firefly is missing, you can invite friends or",
+    "es-ES": "Sólo falta {needed} luciérnaga, puedes invitar a amigos o",
+    "ar-EG": "فقط {needed} اليراع مفقود، يمكنك دعوة الأصدقاء أو",
+    "pt-PT": "Falta apenas {needed} firefly, você pode convidar amigos ou",
+    "ru-RU": "Не хватает только {needed} Firefly, вы можете пригласить друзей или",
+    "ja-JP": "{needed} ファイアフライだけが欠落しています。友達を招待するか、",
+    "de-DE": "Es fehlt nur {needed} firefly, du kannst Freunde einladen oder",
+    "fr-FR": "Il ne manque que {needed} luciole, vous pouvez inviter des amis ou",
+    "ko-KR": "{needed} 반딧불만 없습니다. 친구를 초대하거나",
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(26430-26455)"],
+    "$id": 22361
+  },
+  "购买最小萤火包补齐": {
+    "en-US": "Purchase the smallest firefly package to complete the package",
+    "es-ES": "Compra el paquete de luciérnagas más pequeño para completar el paquete.",
+    "ar-EG": "قم بشراء أصغر حزمة يراعة لإكمال الحزمة",
+    "pt-PT": "Compre o menor pacote de vaga-lume para completar o pacote",
+    "ru-RU": "Купите самый маленький пакет Firefly, чтобы завершить пакет.",
+    "ja-JP": "パッケージを完成させるには、最小の firefly パッケージを購入してください",
+    "de-DE": "Kaufen Sie das kleinste Firefly-Paket, um das Paket zu vervollständigen",
+    "fr-FR": "Achetez le plus petit package luciole pour compléter le package",
+    "ko-KR": "가장 작은 반딧불 패키지를 구매하여 패키지를 완성하세요.",
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(26874-26887)"],
+    "$id": 22362
   },
   "好友亦享专属福利": {
     "en-US": "Friends Can Also Enjoy Exclusive Benefits",
@@ -1958,7 +2015,7 @@
     "de-DE": "Auch Freunde profitieren von exklusiven Vorteilen",
     "fr-FR": "Vos amis bénéficient également d'avantages exclusifs",
     "ko-KR": "친구도 전용 혜택을 누리세요",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(24488-24500)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(28040-28052)"],
     "$id": 11580
   },
   "双方均有奖": {
@@ -1971,7 +2028,7 @@
     "de-DE": "Beide Seiten erhalten einen Preis",
     "fr-FR": "Des récompenses pour les deux parties",
     "ko-KR": "양측 모두에게 상이 주어집니다",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(24703-24712)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(28252-28261)"],
     "$id": 11581
   },
   "好友使用您的邀请码或链接，好友立得 ": {
@@ -1984,7 +2041,7 @@
     "de-DE": "Wenn ein Freund Ihren Einladungscode oder Link nutzt, erhält dieser sofort ",
     "fr-FR": "Lorsqu'un ami utilise votre code d'invitation ou votre lien, il reçoit immédiatement ",
     "ko-KR": "친구가 귀하의 초대 코드나 링크를 사용하면, 친구는 즉시 ",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(24881-24903)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(28426-28448)"],
     "$id": 11582
   },
   "，且双方立即各获 ": {
@@ -1997,7 +2054,7 @@
     "de-DE": ", und beide Seiten erhielten sofort jeweils ",
     "fr-FR": ", et les deux parties ont immédiatement reçu chacune ",
     "ko-KR": ", 또한 양측은 즉시 각각 ",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(25085-25098)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(28628-28641)"],
     "$id": 11583
   },
   "私有目录文件分析额度": {
@@ -2010,7 +2067,7 @@
     "de-DE": "Kontingent für die Analyse von Dateien in privaten Verzeichnissen",
     "fr-FR": "Quota d'analyse des fichiers des répertoires privés",
     "ko-KR": "비공개 디렉터리 파일 분석 할당량",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(25201-25215)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(28743-28757)"],
     "$id": 11584
   },
   "分享您的专属邀请链接": {
@@ -2023,7 +2080,7 @@
     "de-DE": "Teilen Sie Ihren exklusiven Einladungslink",
     "fr-FR": "Partagez votre lien d'invitation exclusif",
     "ko-KR": "독점 초대 링크를 공유하세요",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(26281-26295)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(29802-29816)"],
     "$id": 10948
   },
   "可直接复制上方文案发送给好友": {
@@ -2036,7 +2093,7 @@
     "de-DE": "Sie können den obigen Text direkt kopieren und an Ihre Freunde senden.",
     "fr-FR": "Vous pouvez copier directement le texte ci-dessus et l'envoyer à vos amis.",
     "ko-KR": "위의 문구를 그대로 복사하여 친구에게 보낼 수 있습니다.",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(26447-26465)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(29965-29983)"],
     "$id": 11585
   },
   "已复制全文": {
@@ -2049,7 +2106,7 @@
     "de-DE": "Der gesamte Text wurde kopiert",
     "fr-FR": "Le texte a été copié dans son intégralité",
     "ko-KR": "전체 내용을 복사했습니다.",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(27039-27048)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(30544-30553)"],
     "$id": 11586
   },
   "复制推荐语与链接": {
@@ -2062,7 +2119,7 @@
     "de-DE": "Empfehlungstext und Link kopieren",
     "fr-FR": "Copier le texte de présentation et le lien",
     "ko-KR": "추천 문구와 링크 복사하기",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(27234-27246)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(30734-30746)"],
     "$id": 11587
   },
   "我有邀请码 / 邀请链接": {
@@ -2075,7 +2132,7 @@
     "de-DE": "Ich habe einen Einladungscode/Einladungslink",
     "fr-FR": "J'ai un code d'invitation/un lien d'invitation",
     "ko-KR": "초대 코드/초대 링크가 있습니다",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(27929-27945)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(31413-31429)"],
     "$id": 10952
   },
   "在此输入 16 位邀请码或链接": {
@@ -2088,7 +2145,7 @@
     "de-DE": "Geben Sie hier den 16-stelligen Einladungscode oder den Link ein",
     "fr-FR": "Saisissez ici un code d'invitation ou un lien à 16 caractères",
     "ko-KR": "여기에 16자리 초대 코드 또는 링크 입력",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(28123-28142)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(31602-31621)"],
     "$id": 10953
   },
   "立即领取": {
@@ -2101,7 +2158,7 @@
     "de-DE": "Sofort abrufen",
     "fr-FR": "Réclamer maintenant",
     "ko-KR": "즉시 받기",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(28862-28870)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(32327-32335)"],
     "$id": 10954
   },
   "如果您知道他人的邀请码或链接，输入后双方均可立即获取 {bonus} 个分析额度奖励，您还能获得 {firecores} 萤火。": {
@@ -2114,7 +2171,7 @@
     "de-DE": "Wenn Sie den Einladungscode oder Link einer anderen Person kennen, können beide Parteien nach der Eingabe sofort {bonus} Analyseguthabenprämien erhalten, und Sie können auch {firecores} Glühwürmchen erhalten.",
     "fr-FR": "Si vous connaissez le code d'invitation ou le lien de quelqu'un d'autre, après l'avoir saisi, les deux parties peuvent immédiatement obtenir {bonus} récompenses en crédits d'analyse, et vous pouvez également obtenir {firecores} lucioles.",
     "ko-KR": "다른 사람의 초대 코드나 링크를 알고 있는 경우, 이를 입력한 후 양측 모두 즉시 {bonus} 분석 크레딧 보상을 받을 수 있고, 귀하도 {firecores} 반딧불을 얻을 수 있습니다.",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(29041-29135)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(32502-32595)"],
     "$id": 8251
   },
   "需要更多萤火？支持按需随心充值": {
@@ -2127,7 +2184,7 @@
     "de-DE": "Brauchst du mehr „Glühwürmchen“? Lade dein Guthaben ganz nach Bedarf auf.",
     "fr-FR": "Besoin de plus de « lucioles » ? Rechargez à la demande, quand vous le souhaitez",
     "ko-KR": "더 많은 반딧불이 필요하신가요? 필요에 따라 자유롭게 충전할 수 있습니다.",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(30459-30478)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(33900-33919)"],
     "$id": 11588
   },
   "永久有效 · 即买即用": {
@@ -2140,7 +2197,7 @@
     "de-DE": "Unbegrenzt gültig · Sofort einsatzbereit",
     "fr-FR": "Valable à vie · Prêt à l'emploi dès l'achat",
     "ko-KR": "영구적으로 유효 · 구매 즉시 사용 가능",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(30717-30732)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(34155-34170)"],
     "$id": 11589
   },
   "无需订阅即可按需选购萤火点数加油包，支持随时兑换槽位与更多高阶功能。": {
@@ -2153,7 +2210,7 @@
     "de-DE": "Sie können „Firefly“-Punkte-Aufladepakete ohne Abonnement nach Bedarf erwerben, um jederzeit Speicherplätze einzulösen und weitere erweiterte Funktionen zu nutzen.",
     "fr-FR": "Achetez des packs de points Firefly à la demande, sans abonnement, pour débloquer des emplacements de stockage et accéder à davantage de fonctionnalités avancées à tout moment.",
     "ko-KR": "구독 없이도 필요에 따라 ‘반딧불 포인트’ 충전 패키지를 구매할 수 있으며, 언제든지 슬롯을 교환하고 더 많은 고급 기능을 이용할 수 있습니다.",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(30917-30955)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(34351-34389)"],
     "$id": 11590
   },
   "前往购买萤火": {
@@ -2166,7 +2223,7 @@
     "de-DE": "Zum Kauf von „Glühwürmchen“",
     "fr-FR": "Acheter « Luciole »",
     "ko-KR": "‘반딧불이’ 구매하기",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(31488-31498)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(34912-34922)"],
     "$id": 11591
   },
   "操作类型": {
@@ -2179,7 +2236,7 @@
     "de-DE": "Operationstyp",
     "fr-FR": "Type d'opération",
     "ko-KR": "작업 유형",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(32125-32133)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(35535-35543)"],
     "$id": 10956
   },
   "专业版": {
@@ -2193,8 +2250,8 @@
     "fr-FR": "Version professionnelle",
     "ko-KR": "프로페셔널 버전",
     "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(32275-32282)",
-      "src/renderer/components/tier/UserTierBadge.tsx(1120-1127)"
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(35683-35690)",
+      "src/renderer/components/tier/UserTierBadge.tsx(1092-1099)"
     ],
     "$id": 10958
   },
@@ -2208,7 +2265,7 @@
     "de-DE": "Dauerhaft",
     "fr-FR": "Permanent",
     "ko-KR": "영구적인",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(32988-32994)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(36384-36390)"],
     "$id": 10960
   },
   "免费": {
@@ -2222,9 +2279,9 @@
     "fr-FR": "Gratuit",
     "ko-KR": "무료",
     "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(33510-33516)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(34099-34105)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(34741-34747)"
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(36895-36901)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(37473-37479)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(38103-38109)"
     ],
     "$id": 10962
   },
@@ -2238,7 +2295,7 @@
     "de-DE": "Der Konsum von Yingdu folgt dem Prinzip „Zuerst abziehen, später verwenden“. Einige Funktionen sind nach der Freischaltung dauerhaft gültig",
     "fr-FR": "La consommation de Yingdu suit le principe « déduire d'abord, utiliser plus tard ». Certaines fonctions sont valables en permanence après avoir été déverrouillées",
     "ko-KR": "잉두(Yingdu)의 소비는 \"선 공제 후 사용\" 원칙을 따릅니다. 일부 기능은 잠금 해제 후에도 영구적으로 유효합니다.",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(35220-35254)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38570-38604)"],
     "$id": 10963
   },
   "已完成": {
@@ -2251,7 +2308,7 @@
     "de-DE": "Vollendet",
     "fr-FR": "Complété",
     "ko-KR": "완전한",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(37738-37745)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(41012-41019)"],
     "$id": 10964
   },
   "待同步": {
@@ -2264,7 +2321,7 @@
     "de-DE": "Zu synchronisieren",
     "fr-FR": "A synchroniser",
     "ko-KR": "동기화 예정",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(37786-37793)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(41058-41065)"],
     "$id": 10965
   },
   "失败": {
@@ -2277,7 +2334,7 @@
     "de-DE": "Scheitern",
     "fr-FR": "Échouer",
     "ko-KR": "실패하다",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(37833-37839)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(41103-41109)"],
     "$id": 10966
   },
   "同步中": {
@@ -2290,7 +2347,7 @@
     "de-DE": "Synchronisieren",
     "fr-FR": "Synchronisation",
     "ko-KR": "동기화 중",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(37880-37887)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(41148-41155)"],
     "$id": 10967
   },
   "开通/续费会员": {
@@ -2303,7 +2360,7 @@
     "de-DE": "Mitgliedschaft abschließen/verlängern",
     "fr-FR": "Souscrire/Renouveler un abonnement",
     "ko-KR": "회원 가입/갱신",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38046-38057)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(41305-41316)"],
     "$id": 11592
   },
   "充值萤火点数": {
@@ -2316,7 +2373,7 @@
     "de-DE": "Glühwürmchen-Punkte aufladen",
     "fr-FR": "Recharger des points « Luciole »",
     "ko-KR": "반딧불 포인트 충전",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38109-38119)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(41366-41376)"],
     "$id": 11593
   },
   "在线购买": {
@@ -2329,7 +2386,7 @@
     "de-DE": "Online kaufen",
     "fr-FR": "Acheter en ligne",
     "ko-KR": "온라인 구매",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38167-38175)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(41422-41430)"],
     "$id": 11594
   },
   "支付入账": {
@@ -2342,7 +2399,7 @@
     "de-DE": "Zahlung verbucht",
     "fr-FR": "Crédit du paiement",
     "ko-KR": "결제 입금",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38223-38231)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(41476-41484)"],
     "$id": 11595
   },
   "首次使用，欢迎赠送": {
@@ -2355,7 +2412,7 @@
     "de-DE": "Bei der ersten Verwendung können Sie gerne Münzen erhalten",
     "fr-FR": "Première utilisation, bienvenue pour recevoir des pièces",
     "ko-KR": "처음 사용하시면 코인을 받으실 수 있습니다.",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38278-38291)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(41529-41542)"],
     "$id": 10968
   },
   "邀请奖励": {
@@ -2368,7 +2425,7 @@
     "de-DE": "Einladungsbelohnungen",
     "fr-FR": "Récompenses d'invitation",
     "ko-KR": "초대 보상",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38340-38348)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(41589-41597)"],
     "$id": 10969
   },
   "被邀请奖励": {
@@ -2381,7 +2438,7 @@
     "de-DE": "Belohnungen für die Einladung",
     "fr-FR": "Récompenses pour avoir été invité",
     "ko-KR": "초대에 대한 보상",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38400-38409)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(41647-41656)"],
     "$id": 10970
   },
   "解锁私有目录无限分析额度": {
@@ -2394,7 +2451,7 @@
     "de-DE": "Schalten Sie unbegrenzte Analysekontingente für private Verzeichnisse frei",
     "fr-FR": "Débloquez un quota d'analyse illimité pour les répertoires privés",
     "ko-KR": "개인 디렉터리에 대한 무제한 분석 할당량 잠금 해제",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38464-38480)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(41709-41725)"],
     "$id": 10971
   },
   "购买私有目录": {
@@ -2407,7 +2464,7 @@
     "de-DE": "Kaufen Sie ein privates Verzeichnis",
     "fr-FR": "Acheter un annuaire privé",
     "ko-KR": "개인 디렉토리 구매",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38542-38552)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(41785-41795)"],
     "$id": 10972
   },
   "购买极速目录": {
@@ -2420,7 +2477,7 @@
     "de-DE": "Speed-Katalog kaufen",
     "fr-FR": "Acheter le catalogue Speed ​​​​",
     "ko-KR": "속도 카탈로그 구매",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38613-38623)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(41854-41864)"],
     "$id": 10973
   },
   "购买虚拟目录": {
@@ -2433,7 +2490,7 @@
     "de-DE": "Kaufen Sie einen virtuellen Katalog",
     "fr-FR": "Acheter un catalogue virtuel",
     "ko-KR": "가상 카탈로그 구매",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38678-38688)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(41917-41927)"],
     "$id": 10974
   },
   "开通虚拟目录访问权限": {
@@ -2446,7 +2503,7 @@
     "de-DE": "Aktivieren Sie Zugriffsberechtigungen für virtuelle Verzeichnisse",
     "fr-FR": "Activer les autorisations d'accès au répertoire virtuel",
     "ko-KR": "가상 디렉터리 액세스 권한 활성화",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38739-38753)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(41976-41990)"],
     "$id": 10975
   },
   "导出虚拟目录": {
@@ -2459,7 +2516,7 @@
     "de-DE": "Virtuelles Verzeichnis exportieren",
     "fr-FR": "Exporter le répertoire virtuel",
     "ko-KR": "가상 디렉터리 내보내기",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38804-38814)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(42039-42049)"],
     "$id": 10976
   },
   "导出真实目录": {
@@ -2472,7 +2529,7 @@
     "de-DE": "Echtes Verzeichnis exportieren",
     "fr-FR": "Exporter le répertoire réel",
     "ko-KR": "실제 디렉터리 내보내기",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38865-38875)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(42098-42108)"],
     "$id": 10977
   },
   "下载文件": {
@@ -2485,7 +2542,7 @@
     "de-DE": "Datei herunterladen",
     "fr-FR": "Télécharger le fichier",
     "ko-KR": "파일 다운로드",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38928-38936)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(42159-42167)"],
     "$id": 10978
   },
   "云解压": {
@@ -2498,7 +2555,7 @@
     "de-DE": "Wolkendekomprimierung",
     "fr-FR": "Décompression des nuages",
     "ko-KR": "클라우드 감압",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(38992-38999)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(42221-42228)"],
     "$id": 10979
   },
   "获取密码": {
@@ -2511,7 +2568,7 @@
     "de-DE": "Passwort erhalten",
     "fr-FR": "Obtenir le mot de passe",
     "ko-KR": "비밀번호 얻기",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(39051-39059)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(42278-42286)"],
     "$id": 10980
   },
   "重新生成虚拟目录": {
@@ -2524,7 +2581,7 @@
     "de-DE": "Virtuelles Verzeichnis neu generieren",
     "fr-FR": "Régénérer le répertoire virtuel",
     "ko-KR": "가상 디렉터리 재생성",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(39114-39126)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(42339-42351)"],
     "$id": 10981
   },
   "上传收益": {
@@ -2537,7 +2594,7 @@
     "de-DE": "Einnahmen hochladen",
     "fr-FR": "Revenus importés",
     "ko-KR": "수익 업로드",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(39171-39179)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(42394-42402)"],
     "$id": 10982
   },
   "萤火充值退款": {
@@ -2551,8 +2608,8 @@
     "fr-FR": "Recharge et remboursement sur Yinghuo",
     "ko-KR": "Yinghuo 충전 환불",
     "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(39229-39239)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(45220-45230)"
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(42450-42460)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(48310-48320)"
     ],
     "$id": 11596
   },
@@ -2567,8 +2624,8 @@
     "fr-FR": "Remboursement d'un abonnement",
     "ko-KR": "회원 구독 환불",
     "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(39292-39302)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(45321-45331)"
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(42511-42521)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(48409-48419)"
     ],
     "$id": 11597
   },
@@ -2582,7 +2639,7 @@
     "de-DE": "Administratoranpassungen",
     "fr-FR": "Ajustements de l'administrateur",
     "ko-KR": "관리자 조정",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(39348-39357)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(42565-42574)"],
     "$id": 10983
   },
   "年付": {
@@ -2595,7 +2652,7 @@
     "de-DE": "Jährliche Zahlung",
     "fr-FR": "Paiement annuel",
     "ko-KR": "연간 지불",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(39578-39584)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(42786-42792)"],
     "$id": 11598
   },
   "年": {
@@ -2608,7 +2665,7 @@
     "de-DE": "Jahr",
     "fr-FR": "Année",
     "ko-KR": "년도",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(39604-39609)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(42812-42817)"],
     "$id": 11004
   },
   "季付": {
@@ -2621,7 +2678,7 @@
     "de-DE": "Vierteljährliche Zahlung",
     "fr-FR": "Paiement trimestriel",
     "ko-KR": "분기별 지불",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(39693-39699)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(42898-42904)"],
     "$id": 11599
   },
   "个月": {
@@ -2635,9 +2692,9 @@
     "fr-FR": "Mois",
     "ko-KR": "개월",
     "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(39723-39729)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(39848-39854)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(39907-39913)"
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(42928-42934)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(43050-43056)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(43107-43113)"
     ],
     "$id": 8210
   },
@@ -2651,7 +2708,7 @@
     "de-DE": "Wird halbjährlich bezahlt",
     "fr-FR": "Payé semestriellement",
     "ko-KR": "반년마다 지급",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(39817-39824)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(43019-43026)"],
     "$id": 11600
   },
   "月付": {
@@ -2664,7 +2721,7 @@
     "de-DE": "Monatliche Zahlung",
     "fr-FR": "Paiement mensuel",
     "ko-KR": "월별 결제",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(39881-39887)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(43081-43087)"],
     "$id": 11601
   },
   "正在加载收支流水...": {
@@ -2677,7 +2734,7 @@
     "de-DE": "Einnahmen- und Ausgabenrechnung wird geladen...",
     "fr-FR": "Chargement de l'état des revenus et dépenses...",
     "ko-KR": "수입 및 지출 명세서 로드 중...",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(40227-40242)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(43419-43434)"],
     "$id": 10984
   },
   "开通企业版": {
@@ -2690,7 +2747,7 @@
     "de-DE": "Aktivieren Sie die Enterprise Edition",
     "fr-FR": "Activer l'édition Entreprise",
     "ko-KR": "엔터프라이즈 에디션 활성화",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(45078-45087)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(48171-48180)"],
     "$id": 10899
   },
   "开通 Pro 专业版": {
@@ -2703,7 +2760,7 @@
     "de-DE": "Aktivieren Sie die Pro Professional Edition",
     "fr-FR": "Activer l'édition Pro Professional",
     "ko-KR": "Pro Professional Edition 활성화",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(45122-45136)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(48214-48228)"],
     "$id": 11006
   },
   "有效期至: {date}": {
@@ -2717,8 +2774,8 @@
     "fr-FR": "Valable jusqu'au : {date}",
     "ko-KR": "유효 기간: {date}",
     "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(47890-47906)",
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(50431-50447)"
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(50936-50952)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(53432-53448)"
     ],
     "$id": 11602
   },
@@ -2732,7 +2789,7 @@
     "de-DE": "Punkte gutschreiben",
     "fr-FR": "Crédit des points",
     "ko-KR": "포인트 적립",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(48305-48313)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(51341-51349)"],
     "$id": 11603
   },
   "退款金额": {
@@ -2745,7 +2802,7 @@
     "de-DE": "Rückerstattungsbetrag",
     "fr-FR": "Montant du remboursement",
     "ko-KR": "환불 금액",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(49296-49304)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(52313-52321)"],
     "$id": 11604
   },
   "扣减时长": {
@@ -2758,7 +2815,7 @@
     "de-DE": "Abzugsdauer",
     "fr-FR": "Durée déduite",
     "ko-KR": "공제 기간",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(50063-50071)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(53068-53076)"],
     "$id": 11605
   },
   "扣减点数": {
@@ -2771,7 +2828,7 @@
     "de-DE": "Abzugspunkte",
     "fr-FR": "Points de pénalité",
     "ko-KR": "감점",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(50941-50949)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(53933-53941)"],
     "$id": 11606
   },
   "订单号已复制": {
@@ -2784,7 +2841,7 @@
     "de-DE": "Die Bestellnummer wurde kopiert",
     "fr-FR": "Le numéro de commande a été copié",
     "ko-KR": "주문 번호가 복사되었습니다.",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(51415-51425)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(54396-54406)"],
     "$id": 11607
   },
   "点击复制订单号: {orderId}": {
@@ -2797,7 +2854,7 @@
     "de-DE": "Zum Kopieren der Bestellnummer hier klicken: {orderId}",
     "fr-FR": "Cliquez ici pour copier le numéro de commande : {orderId}",
     "ko-KR": "주문 번호를 클릭하여 복사하세요: {orderId}",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(51500-51522)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(54479-54501)"],
     "$id": 11608
   },
   "订单": {
@@ -2810,7 +2867,7 @@
     "de-DE": "Bestellung",
     "fr-FR": "Commande",
     "ko-KR": "주문",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(51794-51800)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(54770-54776)"],
     "$id": 11609
   },
   "萤火余额": {
@@ -2824,7 +2881,7 @@
     "fr-FR": "Balance Firecores",
     "ko-KR": "잉도우 균형",
     "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(52400-52408)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(55365-55373)",
       "src/renderer/components/tier/UserAvatarMenu.tsx(16728-16736)"
     ],
     "$id": 11042
@@ -2839,7 +2896,7 @@
     "de-DE": "Inkrafttreten der Mitgliedervorteile",
     "fr-FR": "Entrée en vigueur des avantages réservés aux membres",
     "ko-KR": "회원 혜택 적용",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(53087-53097)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(56040-56050)"],
     "$id": 11610
   },
   "暂无收支记录": {
@@ -2852,7 +2909,7 @@
     "de-DE": "Es liegen noch keine Einnahmen- und Ausgabennachweise vor",
     "fr-FR": "Aucun relevé de revenus et de dépenses pour l'instant",
     "ko-KR": "아직 수입, 지출 내역이 없습니다.",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(54803-54813)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(57714-57724)"],
     "$id": 10988
   },
   "您还没有萤火相关的收入或支出记录": {
@@ -2865,7 +2922,7 @@
     "de-DE": "Sie haben keine Einnahmen- oder Ausgabenunterlagen im Zusammenhang mit Firecores",
     "fr-FR": "Vous n'avez aucun enregistrement de revenus ou de dépenses liés à Firecores",
     "ko-KR": "잉두와 관련된 수입, 지출 기록이 없습니다.",
-    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(54842-54862)"],
+    "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(57752-57772)"],
     "$id": 10989
   },
   "兑换成功": {
@@ -3511,7 +3568,7 @@
     "ko-KR": "WeChat 그룹에 가입하려면 QR 코드를 스캔하세요.",
     "$files": [
       "src/renderer/components/tier/UserAvatarMenu.tsx(28964-28974)",
-      "src/renderer/components/tier/WechatQRDialog.tsx(1106-1116)"
+      "src/renderer/components/tier/WechatQRDialog.tsx(1074-1084)"
     ],
     "$id": 11047
   },
@@ -3538,7 +3595,7 @@
     "de-DE": "WeChat QR-Code",
     "fr-FR": "Code QR WeChat",
     "ko-KR": "위챗 QR 코드",
-    "$files": ["src/renderer/components/tier/WechatQRDialog.tsx(1318-1327)"],
+    "$files": ["src/renderer/components/tier/WechatQRDialog.tsx(1280-1289)"],
     "$id": 7732
   },
   "加微信并留言：萤核，拉你进微信群交流": {
@@ -3551,7 +3608,7 @@
     "de-DE": "Fügen Sie WeChat hinzu und hinterlassen Sie eine Nachricht: Firefly lädt Sie zur Kommunikation in die WeChat-Gruppe ein",
     "fr-FR": "Ajoutez WeChat et laissez un message : Firefly vous invitera au groupe WeChat pour communiquer",
     "ko-KR": "WeChat을 추가하고 메시지를 남겨주세요: Firefly가 귀하를 WeChat 그룹에 초대하여 소통할 것입니다.",
-    "$files": ["src/renderer/components/tier/WechatQRDialog.tsx(1629-1651)"],
+    "$files": ["src/renderer/components/tier/WechatQRDialog.tsx(1585-1607)"],
     "$id": 11049
   },
   "严禁广告或发邀请码": {
@@ -3564,7 +3621,7 @@
     "de-DE": "Werbung oder das Versenden von Einladungscodes ist strengstens untersagt",
     "fr-FR": "La publicité ou l'envoi de codes d'invitation sont strictement interdits",
     "ko-KR": "광고 또는 초대 코드 전송은 엄격히 금지됩니다.",
-    "$files": ["src/renderer/components/tier/WechatQRDialog.tsx(1718-1731)"],
+    "$files": ["src/renderer/components/tier/WechatQRDialog.tsx(1672-1685)"],
     "$id": 11050
   }
 }

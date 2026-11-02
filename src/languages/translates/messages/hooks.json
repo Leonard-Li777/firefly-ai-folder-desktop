@@ -9,7 +9,7 @@
     "de-DE": "Qualitätsbewertung",
     "fr-FR": "Score de qualité",
     "ko-KR": "품질 평가 점수",
-    "$files": ["src/renderer/hooks/useFileDisplaySettings.ts(783-791)"],
+    "$files": ["src/renderer/hooks/useFileDisplaySettings.ts(753-761)"],
     "$id": 5438
   },
   "描述": {
@@ -22,7 +22,7 @@
     "de-DE": "Beschreibung",
     "fr-FR": "Description",
     "ko-KR": "설명",
-    "$files": ["src/renderer/hooks/useFileDisplaySettings.ts(814-820)"],
+    "$files": ["src/renderer/hooks/useFileDisplaySettings.ts(783-789)"],
     "$id": 5439
   },
   "标签": {
@@ -35,7 +35,7 @@
     "de-DE": "Label",
     "fr-FR": "Étiquette",
     "ko-KR": "라벨",
-    "$files": ["src/renderer/hooks/useFileDisplaySettings.ts(836-842)"],
+    "$files": ["src/renderer/hooks/useFileDisplaySettings.ts(804-810)"],
     "$id": 8966
   },
   "作者": {
@@ -48,7 +48,7 @@
     "de-DE": "Autor",
     "fr-FR": "Auteur",
     "ko-KR": "작성자",
-    "$files": ["src/renderer/hooks/useFileDisplaySettings.ts(860-866)"],
+    "$files": ["src/renderer/hooks/useFileDisplaySettings.ts(827-833)"],
     "$id": 5441
   },
   "语言": {
@@ -61,7 +61,7 @@
     "de-DE": "Sprache",
     "fr-FR": "Langue",
     "ko-KR": "언어",
-    "$files": ["src/renderer/hooks/useFileDisplaySettings.ts(886-892)"],
+    "$files": ["src/renderer/hooks/useFileDisplaySettings.ts(852-858)"],
     "$id": 5442
   },
   "分析日期": {
@@ -74,7 +74,7 @@
     "de-DE": "Analysedatum",
     "fr-FR": "Date d'analyse",
     "ko-KR": "분석일자",
-    "$files": ["src/renderer/hooks/useFileDisplaySettings.ts(914-922)"],
+    "$files": ["src/renderer/hooks/useFileDisplaySettings.ts(879-887)"],
     "$id": 8870
   },
   "API 不可用": {
@@ -87,7 +87,7 @@
     "de-DE": "API ist nicht verfügbar",
     "fr-FR": "L'API n'est pas disponible",
     "ko-KR": "API를 사용할 수 없습니다.",
-    "$files": ["src/renderer/hooks/useInvitation.ts(3721-3732)"],
+    "$files": ["src/renderer/hooks/useInvitation.ts(3615-3626)"],
     "$id": 8871
   }
 }

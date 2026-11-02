@@ -23,9 +23,9 @@
     "fr-FR": "LibreOffice n'a pas été détecté. Veuillez l'installer dans le chemin par défaut ou vous assurer qu'il se trouve dans le PATH système.",
     "ko-KR": "LibreOffice 가 감지되지 않았습니다. 기본 경로에 설치하거나 시스템 PATH 에 포함되어 있는지 확인하십시오.",
     "$files": [
-      "src/electron/runtime-services/system/libreoffice-detector.ts(5897-5942)",
-      "src/electron/runtime-services/system/libreoffice-detector.ts(8536-8581)",
-      "src/electron/runtime-services/system/libreoffice-detector.ts(12616-12661)"
+      "src/electron/runtime-services/system/libreoffice-detector.ts(5985-6030)",
+      "src/electron/runtime-services/system/libreoffice-detector.ts(8624-8669)",
+      "src/electron/runtime-services/system/libreoffice-detector.ts(12704-12749)"
     ],
     "$id": 3261
   },
@@ -107,7 +107,7 @@
     "de-DE": "Nicht unterstützter Ressourcentyp: {type}",
     "fr-FR": "Type de ressource non pris en charge : {type}",
     "ko-KR": "지원하지 않는 리소스 유형: {type}",
-    "$files": ["src/electron/runtime-services/system/resource-manager.ts(13229-13249)"],
+    "$files": ["src/electron/runtime-services/system/resource-manager.ts(12745-12765)"],
     "$id": 8142
   },
   "资源清理正在进行中": {
@@ -120,7 +120,7 @@
     "de-DE": "Ressourcenbereinigung läuft",
     "fr-FR": "Nettoyage des ressources en cours",
     "ko-KR": "리소스 정리 진행 중",
-    "$files": ["src/electron/runtime-services/system/resource-manager.ts(14462-14475)"],
+    "$files": ["src/electron/runtime-services/system/resource-manager.ts(13927-13940)"],
     "$id": 8143
   },
   "资源清理过于频繁，请稍后再试": {
@@ -133,7 +133,7 @@
     "de-DE": "Ressourcenbereinigung erfolgt zu häufig, bitte versuchen Sie es später erneut",
     "fr-FR": "Le nettoyage des ressources est trop fréquent, veuillez réessayer plus tard.",
     "ko-KR": "리소스 정리가 너무 빈번합니다. 나중에 다시 시도해 주세요.",
-    "$files": ["src/electron/runtime-services/system/resource-manager.ts(14617-14635)"],
+    "$files": ["src/electron/runtime-services/system/resource-manager.ts(14076-14094)"],
     "$id": 8144
   },
   "资源类型 {type} 的统计信息不存在": {
@@ -146,7 +146,7 @@
     "de-DE": "Keine Statistiken für Ressourcentyp {type} vorhanden",
     "fr-FR": "Les statistiques pour le type de ressource {type} n'existent pas",
     "ko-KR": "리소스 유형 {type}의 통계 정보가 존재하지 않습니다.",
-    "$files": ["src/electron/runtime-services/system/resource-manager.ts(18294-18318)"],
+    "$files": ["src/electron/runtime-services/system/resource-manager.ts(17636-17660)"],
     "$id": 8145
   }
 }

@@ -50,7 +50,7 @@
     "ko-KR": "가상 디렉터리 만들기",
     "$files": [
       "src/renderer/components/file-explorer/VirtualDirectory/index.tsx(6626-6636)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(10623-10633)"
+      "src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(10384-10394)"
     ],
     "$id": 8755
   },
@@ -144,7 +144,7 @@
     "ko-KR": "삭제",
     "$files": [
       "src/renderer/components/file-explorer/VirtualDirectory/components/DirectoryManagementModals.tsx(2987-2993)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(9909-9915)"
+      "src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(9693-9699)"
     ],
     "$id": 8770
   },
@@ -158,7 +158,7 @@
     "de-DE": "Export abgeschlossen",
     "fr-FR": "Exportation terminée",
     "ko-KR": "내보내기 완료",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportFailedDialog.tsx(1643-1651)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportFailedDialog.tsx(1592-1600)"],
     "$id": 8771
   },
   "成功导出 {count} 个文件，{failed} 个文件失败": {
@@ -171,7 +171,7 @@
     "de-DE": "{count} Dateien erfolgreich exportiert, {failed} Dateien fehlgeschlagen",
     "fr-FR": "{count} fichiers ont été exportés avec succès, {failed} fichiers ont échoué",
     "ko-KR": "{count} 파일을 성공적으로 내보냈고, {failed} 파일을 실패했습니다.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportFailedDialog.tsx(1734-1769)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportFailedDialog.tsx(1681-1716)"],
     "$id": 8772
   },
   "成功": {
@@ -184,7 +184,7 @@
     "de-DE": "Erfolg",
     "fr-FR": "Succès",
     "ko-KR": "성공",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportFailedDialog.tsx(2209-2215)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportFailedDialog.tsx(2145-2151)"],
     "$id": 8773
   },
   "失败": {
@@ -197,7 +197,7 @@
     "de-DE": "Fehlgeschlagen",
     "fr-FR": "Échec",
     "ko-KR": "실패",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportFailedDialog.tsx(2533-2539)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportFailedDialog.tsx(2465-2471)"],
     "$id": 8774
   },
   "失败文件列表": {
@@ -210,7 +210,7 @@
     "de-DE": "Liste der fehlgeschlagenen Dateien",
     "fr-FR": "Liste des fichiers ayant échoué",
     "ko-KR": "실패한 파일 목록",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportFailedDialog.tsx(2997-3007)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportFailedDialog.tsx(2917-2927)"],
     "$id": 8775
   },
   "还有 {count} 个文件...": {
@@ -223,7 +223,7 @@
     "de-DE": "{count} weitere Dateien...",
     "fr-FR": "{count} plus de fichiers...",
     "ko-KR": "{count}개의 추가 파일...",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportFailedDialog.tsx(4039-4060)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportFailedDialog.tsx(3940-3961)"],
     "$id": 8776
   },
   "失败文件可能是因为文件类型不支持创建链接（如 .lnk 快捷方式），或文件已被移动/删除。": {
@@ -236,7 +236,7 @@
     "de-DE": "Fehlgeschlagene Dateien können darauf zurückzuführen sein, dass der Dateityp das Erstellen von Links (z. B. .lnk-Verknüpfungen) nicht unterstützt oder die Datei verschoben/gelöscht wurde.",
     "fr-FR": "Les fichiers ayant échoué peuvent être dus au fait que le type de fichier ne prend pas en charge la création de liens (tels que les raccourcis .lnk) ou que le fichier a été déplacé/supprimé.",
     "ko-KR": "실패한 파일은 해당 파일 형식이 링크 생성(예: .lnk 바로가기)을 지원하지 않거나 파일이 이동/삭제되었기 때문일 수 있습니다.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportFailedDialog.tsx(4569-4636)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportFailedDialog.tsx(4458-4524)"],
     "$id": 8777
   },
   "正在重试...": {
@@ -249,7 +249,7 @@
     "de-DE": "Versuche es noch einmal...",
     "fr-FR": "J'essaye à nouveau...",
     "ko-KR": "다시 시도 중...",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportFailedDialog.tsx(5176-5187)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportFailedDialog.tsx(5050-5061)"],
     "$id": 8778
   },
   "拷贝模式重试": {
@@ -262,7 +262,7 @@
     "de-DE": "Wiederholung des Kopiermodus",
     "fr-FR": "Nouvelle tentative en mode copie",
     "ko-KR": "복사 모드 재시도",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportFailedDialog.tsx(5365-5375)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportFailedDialog.tsx(5234-5244)"],
     "$id": 8779
   },
   "失败文件通过复制重试，此模式会占用空间": {
@@ -275,7 +275,7 @@
     "de-DE": "Fehlerhafte Dateien werden durch Kopieren erneut versucht. Dieser Modus beansprucht Speicherplatz",
     "fr-FR": "Les fichiers en échec sont réessayés par copie, ce mode prend de la place",
     "ko-KR": "실패한 파일은 복사를 통해 다시 시도됩니다. 이 모드는 공간을 차지합니다.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportFailedDialog.tsx(5729-5752)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportFailedDialog.tsx(5591-5614)"],
     "$id": 8780
   },
   "我知道了": {
@@ -288,7 +288,7 @@
     "de-DE": "Ich verstehe",
     "fr-FR": "Je vois",
     "ko-KR": "알겠어요",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportFailedDialog.tsx(6034-6042)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/ExportFailedDialog.tsx(5889-5897)"],
     "$id": 8781
   },
   "等 {{count}} 个文件": {
@@ -804,7 +804,7 @@
     "$files": [
       "src/renderer/components/file-explorer/VirtualDirectory/components/ExportSelector.tsx(3983-3989)",
       "src/renderer/components/file-explorer/VirtualDirectory/components/ExportSelector.tsx(5979-5985)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(9261-9267)"
+      "src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(9058-9064)"
     ],
     "$id": 8816
   },
@@ -862,7 +862,7 @@
     "ko-KR": "가상 디렉터리를 내보내는 중...",
     "$files": [
       "src/renderer/components/file-explorer/VirtualDirectory/components/OrganizeModals.tsx(2397-2412)",
-      "src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(2390-2405)"
+      "src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(2323-2338)"
     ],
     "$id": 8820
   },
@@ -878,7 +878,7 @@
     "ko-KR": "{count} 파일을 성공적으로 내보냈습니다.",
     "$files": [
       "src/renderer/components/file-explorer/VirtualDirectory/components/OrganizeModals.tsx(3080-3100)",
-      "src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(2587-2607)"
+      "src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(2516-2536)"
     ],
     "$id": 8821
   },
@@ -895,8 +895,8 @@
     "$files": [
       "src/renderer/components/file-explorer/VirtualDirectory/components/OrganizeModals.tsx(3649-3657)",
       "src/renderer/components/file-explorer/VirtualDirectory/components/OrganizeModals.tsx(5638-5646)",
-      "src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(4311-4319)",
-      "src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(5467-5475)"
+      "src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(4196-4204)",
+      "src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(5320-5328)"
     ],
     "$id": 8822
   },
@@ -912,7 +912,7 @@
     "ko-KR": "실제 디렉터리로 내보내는 중...",
     "$files": [
       "src/renderer/components/file-explorer/VirtualDirectory/components/OrganizeModals.tsx(4026-4042)",
-      "src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(3903-3919)"
+      "src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(3797-3813)"
     ],
     "$id": 8823
   },
@@ -928,7 +928,7 @@
     "ko-KR": "내보내기 성공",
     "$files": [
       "src/renderer/components/file-explorer/VirtualDirectory/components/OrganizeModals.tsx(4825-4833)",
-      "src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(4801-4809)"
+      "src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(4672-4680)"
     ],
     "$id": 8824
   },
@@ -1127,7 +1127,7 @@
     "de-DE": "Seitenleiste erweitern",
     "fr-FR": "Développer la barre latérale",
     "ko-KR": "사이드바 확장",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(1759-1768)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(1712-1721)"],
     "$id": 8832
   },
   "收起侧边栏": {
@@ -1140,7 +1140,7 @@
     "de-DE": "Seitenleiste einklappen",
     "fr-FR": "Réduire la barre latérale",
     "ko-KR": "사이드바 접기",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(1772-1781)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(1725-1734)"],
     "$id": 8833
   },
   "已超出虚拟目录插槽限制": {
@@ -1153,7 +1153,7 @@
     "de-DE": "Limit des virtuellen Verzeichnissteckplatzes überschritten",
     "fr-FR": "Limite d'emplacement de répertoire virtuel dépassée",
     "ko-KR": "가상 디렉터리 슬롯 제한이 초과되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(3885-3900)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(3789-3804)"],
     "$id": 8834
   },
   "继续整理": {
@@ -1166,7 +1166,7 @@
     "de-DE": "Organisieren Sie weiter",
     "fr-FR": "Continuer à organiser",
     "ko-KR": "계속해서 정리하세요",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(7191-7199)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(7027-7035)"],
     "$id": 8835
   },
   "增量整理": {
@@ -1179,7 +1179,7 @@
     "de-DE": "Inkrementelle Endbearbeitung",
     "fr-FR": "Finition incrémentale",
     "ko-KR": "증분 마무리",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(7764-7772)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(7590-7598)"],
     "$id": 8836
   },
   "重命名": {
@@ -1192,7 +1192,7 @@
     "de-DE": "Umbenennen",
     "fr-FR": "Renommer",
     "ko-KR": "이름 변경",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(8273-8280)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(8089-8096)"],
     "$id": 8837
   },
   "重新生成": {
@@ -1205,7 +1205,7 @@
     "de-DE": "Regenerieren",
     "fr-FR": "Régénérer",
     "ko-KR": "재생성",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(8953-8961)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(8754-8762)"],
     "$id": 8838
   },
   "新虚拟目录": {
@@ -1219,8 +1219,8 @@
     "fr-FR": "Nouveau répertoire virtuel",
     "ko-KR": "새 가상 디렉터리",
     "$files": [
-      "src/renderer/components/file-explorer/VirtualDirectory/utils/vdir-naming-utils.ts(296-305)",
-      "src/renderer/components/file-explorer/VirtualDirectory/utils/vdir-naming-utils.ts(705-714)"
+      "src/renderer/components/file-explorer/VirtualDirectory/utils/vdir-naming-utils.ts(289-298)",
+      "src/renderer/components/file-explorer/VirtualDirectory/utils/vdir-naming-utils.ts(688-697)"
     ],
     "$id": 8856
   },
@@ -1234,7 +1234,7 @@
     "de-DE": "Erneuter Versuch im Kopiermodus...",
     "fr-FR": "Nouvelle tentative via le mode copie...",
     "ko-KR": "복사 모드를 통해 다시 시도하는 중...",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(1544-1561)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(1506-1523)"],
     "$id": 8839
   },
   "所有失败文件已通过拷贝模式成功导出": {
@@ -1247,7 +1247,7 @@
     "de-DE": "Alle fehlgeschlagenen Dateien wurden erfolgreich über den Kopiermodus exportiert",
     "fr-FR": "Tous les fichiers ayant échoué ont été exportés avec succès via le mode copie",
     "ko-KR": "실패한 모든 파일을 복사 모드를 통해 성공적으로 내보냈습니다.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(1815-1836)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(1770-1791)"],
     "$id": 8841
   },
   "拷贝模式重试完成，仍有 {count} 个文件失败": {
@@ -1260,7 +1260,7 @@
     "de-DE": "Wiederholungsversuch im Kopiermodus abgeschlossen, {count} Dateien sind immer noch fehlgeschlagen",
     "fr-FR": "Nouvelle tentative en mode copie terminée, {count} fichiers ont toujours échoué",
     "ko-KR": "복사 모드 재시도가 완료되었지만 {count}개 파일이 여전히 실패했습니다.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(1896-1925)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(1848-1877)"],
     "$id": 8844
   },
   "重试失败": {
@@ -1273,7 +1273,7 @@
     "de-DE": "Wiederholungsversuch fehlgeschlagen",
     "fr-FR": "La nouvelle tentative a échoué",
     "ko-KR": "재시도 실패",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(2103-2111)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(2049-2057)"],
     "$id": 8845
   },
   "请先开通虚拟目录访问权限": {
@@ -1287,8 +1287,8 @@
     "fr-FR": "Veuillez d'abord activer l'autorisation d'accès au répertoire virtuel",
     "ko-KR": "먼저 가상 디렉터리 액세스 권한을 활성화하세요.",
     "$files": [
-      "src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(2278-2294)",
-      "src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(3793-3809)"
+      "src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(2215-2231)",
+      "src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(3692-3708)"
     ],
     "$id": 8846
   },
@@ -1302,7 +1302,7 @@
     "de-DE": "Einige Dateien konnten nicht exportiert werden",
     "fr-FR": "Certains fichiers n'ont pas pu être exportés",
     "ko-KR": "일부 파일을 내보내지 못했습니다.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(3561-3573)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useExportLogic.ts(3468-3480)"],
     "$id": 8847
   },
   "名称不能为空": {
@@ -1406,7 +1406,7 @@
     "de-DE": "Alle Dateien",
     "fr-FR": "Tous les fichiers",
     "ko-KR": "모든 파일",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualNavigation.ts(1715-1723)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualNavigation.ts(1665-1673)"],
     "$id": 8855
   }
 }

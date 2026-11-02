@@ -78,8 +78,8 @@
       "src/renderer/components/file-explorer/Organize/index.tsx(14082-14088)",
       "src/renderer/components/file-explorer/Organize/index.tsx(14234-14240)",
       "src/renderer/components/file-explorer/Organize/components/IdentityBlueprintSelectView.tsx(15314-15320)",
-      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(3233-3239)",
-      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(3469-3475)"
+      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(3128-3134)",
+      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(3360-3366)"
     ],
     "$id": 8551
   },
@@ -376,8 +376,8 @@
     "$files": [
       "src/renderer/components/file-explorer/Organize/index.tsx(23254-23262)",
       "src/renderer/components/file-explorer/Organize/index.tsx(23415-23423)",
-      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(12815-12823)",
-      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(13077-13085)"
+      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(12507-12515)",
+      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(12765-12773)"
     ],
     "$id": 8560
   },
@@ -430,8 +430,8 @@
       "src/renderer/components/file-explorer/Organize/index.tsx(24652-24660)",
       "src/renderer/components/file-explorer/Organize/index.tsx(24809-24817)",
       "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(15954-15962)",
-      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(12302-12310)",
-      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(12600-12608)"
+      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(12006-12014)",
+      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(12300-12308)"
     ],
     "$id": 8564
   },
@@ -708,7 +708,7 @@
     "$files": [
       "src/renderer/components/file-explorer/Organize/index.tsx(48263-48271)",
       "src/renderer/components/file-explorer/Organize/index.tsx(58720-58728)",
-      "src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(2418-2426)"
+      "src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(2482-2490)"
     ],
     "$id": 8576
   },
@@ -767,8 +767,8 @@
       "src/renderer/components/file-explorer/Organize/index.tsx(58226-58232)",
       "src/renderer/components/file-explorer/Organize/components/EditStrategyDialog.tsx(1775-1781)",
       "src/renderer/components/file-explorer/Organize/components/StructureView.tsx(7536-7542)",
-      "src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(13485-13491)",
-      "src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(15077-15083)"
+      "src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(13541-13547)",
+      "src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(15133-15139)"
     ],
     "$id": 8580
   },
@@ -826,7 +826,7 @@
     "ko-KR": "복원 예제",
     "$files": [
       "src/renderer/components/file-explorer/Organize/index.tsx(50836-50844)",
-      "src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(12961-12969)"
+      "src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(13359-13367)"
     ],
     "$id": 8584
   },
@@ -3467,7 +3467,7 @@
     "ko-KR": "삭제",
     "$files": [
       "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(84498-84504)",
-      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(8181-8187)"
+      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(7984-7990)"
     ],
     "$id": 8664
   },
@@ -4893,7 +4893,7 @@
     "ko-KR": "확장하다",
     "$files": [
       "src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(33766-33772)",
-      "src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(6478-6484)"
+      "src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(6637-6643)"
     ],
     "$id": 22091
   },
@@ -5348,8 +5348,8 @@
     "$files": [
       "src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(96802-96810)",
       "src/renderer/components/file-explorer/Organize/components/IdentityBlueprintSelectView.tsx(21473-21481)",
-      "src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(9968-9976)",
-      "src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(10054-10062)"
+      "src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(10024-10032)",
+      "src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(10110-10118)"
     ],
     "$id": 22104
   },
@@ -5379,8 +5379,8 @@
     "$files": [
       "src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(97482-97490)",
       "src/renderer/components/file-explorer/Organize/components/IdentityBlueprintSelectView.tsx(21461-21469)",
-      "src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(9956-9964)",
-      "src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(10042-10050)"
+      "src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(10012-10020)",
+      "src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(10098-10106)"
     ],
     "$id": 22106
   },
@@ -5433,7 +5433,7 @@
     "de-DE": "KI-Empfehlung",
     "fr-FR": "Recommandation IA",
     "ko-KR": "AI 추천",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(2949-2958)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(3034-3043)"],
     "$id": 8594
   },
   "完整目录结构树": {
@@ -5447,8 +5447,8 @@
     "fr-FR": "Arborescence complète de la structure des répertoires",
     "ko-KR": "전체 디렉토리 구조 트리",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(4454-4465)",
-      "src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(16027-16038)"
+      "src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(4570-4581)",
+      "src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(16408-16419)"
     ],
     "$id": 21870
   },
@@ -5463,9 +5463,9 @@
     "fr-FR": "Répertoires",
     "ko-KR": "디렉토리",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(4645-4652)",
+      "src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(4765-4772)",
       "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(12221-12228)",
-      "src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(18365-18372)"
+      "src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(18678-18685)"
     ],
     "$id": 8645
   },
@@ -5479,7 +5479,7 @@
     "de-DE": "Die Generierung ist fehlgeschlagen, bitte klicken Sie auf neu generieren",
     "fr-FR": "La génération a échoué, veuillez cliquer sur régénérer",
     "ko-KR": "생성 실패,다시 생성을 클릭하십시오",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(5232-5248)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(5366-5382)"],
     "$id": 21871
   },
   "目录树策略已复制到剪贴板": {
@@ -5492,7 +5492,7 @@
     "de-DE": "Die Verzeichnisbaumrichtlinie wurde in die Zwischenablage kopiert",
     "fr-FR": "La stratégie d'arborescence de répertoires a été copiée dans le presse-papiers",
     "ko-KR": "디렉터리 트리 정책이 클립보드에 복사되었습니다",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(5618-5634)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(5763-5779)"],
     "$id": 21872
   },
   "复制目录树文本": {
@@ -5505,7 +5505,7 @@
     "de-DE": "Kopieren Sie den Verzeichnisbaumtext",
     "fr-FR": "Copiez le texte de l'arborescence des répertoires",
     "ko-KR": "디렉토리 트리 텍스트 복사",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(5932-5943)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(6080-6091)"],
     "$id": 21873
   },
   "复制": {
@@ -5518,7 +5518,7 @@
     "de-DE": "Kopieren",
     "fr-FR": "Copier",
     "ko-KR": "복사",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(6049-6055)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(6200-6206)"],
     "$id": 21874
   },
   "采用此目录结构": {
@@ -5532,8 +5532,8 @@
     "fr-FR": "Adoptez cette structure de répertoires",
     "ko-KR": "이 디렉토리 구조를 채택하십시오",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(7232-7243)",
-      "src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(18679-18690)"
+      "src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(7414-7425)",
+      "src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(19113-19124)"
     ],
     "$id": 21875
   },
@@ -5547,7 +5547,7 @@
     "de-DE": "KI feingranulare Planung, direkte Auswahl der Verzeichnisstruktur",
     "fr-FR": "Planification fine de l'IA, sélection directe de la structure des répertoires",
     "ko-KR": "인공 지능 세분화 된 계획,디렉토리 구조의 직접 선택",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(8607-8624)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(8838-8855)"],
     "$id": 21876
   },
   "由文件推导目录树": {
@@ -5561,8 +5561,8 @@
     "fr-FR": "Dériver une arborescence de répertoires à partir d'un fichier",
     "ko-KR": "파일에서 디렉터리 트리 파생",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(8813-8825)",
-      "src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(11100-11112)"
+      "src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(9046-9058)",
+      "src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(11293-11305)"
     ],
     "$id": 21810
   },
@@ -5576,7 +5576,7 @@
     "de-DE": "Tiefe semantische Planung dauert lange (es hat {seconds} Sekunden gedauert). Reagiert das lokale Modell langsam, kann es auf externe KI-Planung umgestellt werden.",
     "fr-FR": "La planification sémantique approfondie prend beaucoup de temps (elle a pris {seconds} secondes). Si le modèle local répond lentement, il peut être basculé vers une planification IA externe.",
     "ko-KR": "깊은 의미 론적 계획은 오랜 시간이 걸립니다({seconds}초가 걸렸습니다). 로컬 모델이 느리게 반응하면 외부 인공지능 계획으로 전환할 수 있습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(9275-9329)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(9515-9569)"],
     "$id": 21877
   },
   "切换为外部 AI 规划": {
@@ -5590,8 +5590,8 @@
     "fr-FR": "Passer à la planification externe de l'IA",
     "ko-KR": "외부 인공지능 계획으로 전환",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(9622-9637)",
-      "src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(13769-13784)"
+      "src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(9869-9884)",
+      "src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(14103-14118)"
     ],
     "$id": 21878
   },
@@ -5605,7 +5605,7 @@
     "de-DE": "AI hat tief geplant, 3 Sätze vollständiger hierarchischer Verzeichnisstrukturbäume zu generieren, Klicken Sie, um direkt zu übernehmen und die Feinabstimmung einzugeben, Sie müssen nicht zweimal warten",
     "fr-FR": "AI a profondément prévu de générer 3 ensembles d'arborescences de structure de répertoires hiérarchiques complètes, cliquez pour adopter directement et entrez dans le réglage fin, pas besoin d'attendre deux fois",
     "ko-KR": "인공 지능 깊이,완전한 계층 디렉토리 구조 트리의 3 세트를 생성 직접 채택하고 미세 조정,두 번 기다릴 필요를 입력 클릭 할 계획했다",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(9784-9830)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(10038-10084)"],
     "$id": 21879
   },
   "推荐方案生成失败": {
@@ -5618,7 +5618,7 @@
     "de-DE": "Die Erstellung des empfohlenen Plans ist fehlgeschlagen",
     "fr-FR": "Échec de la génération du plan recommandé",
     "ko-KR": "권장 계획 생성 실패",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(12629-12641)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(12943-12955)"],
     "$id": 8598
   },
   "未获取到推荐的整理方案。这可能是因为本地大模型繁忙或算力不足。": {
@@ -5631,7 +5631,7 @@
     "de-DE": "Der empfohlene Fertigstellungsplan wurde nicht erhalten.Dies kann daran liegen, dass das lokale große Modell ausgelastet ist oder die Rechenleistung nicht ausreicht.",
     "fr-FR": "Le plan de finition recommandé n'a pas été obtenu.Cela peut être dû au fait que le grand modèle local est occupé ou que la puissance de calcul est insuffisante.",
     "ko-KR": "권장된 마무리 계획은 얻어지지 않았습니다.로컬 대형 모델이 사용 중이거나 컴퓨팅 성능이 부족하기 때문일 수 있습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(12765-12800)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(13082-13117)"],
     "$id": 21880
   },
   "重新生成方案": {
@@ -5644,7 +5644,7 @@
     "de-DE": "Plan neu generieren",
     "fr-FR": "Plan de régénération",
     "ko-KR": "계획 재생성",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(13241-13251)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(13566-13576)"],
     "$id": 8600
   },
   "建议使用“高中生”级别以上的模型才能获取较好效果；每个方案均自带推荐虚拟目录名与完整层级树": {
@@ -5657,7 +5657,7 @@
     "de-DE": "Es wird empfohlen, ein Modell über dem Niveau \"Gymnasiast\" zu verwenden, um bessere Ergebnisse zu erzielen. Jeder Plan enthält einen empfohlenen virtuellen Verzeichnisnamen und einen vollständigen hierarchischen Baum.",
     "fr-FR": "Il est recommandé d'utiliser un modèle au-dessus du niveau “lycéen” pour obtenir de meilleurs résultats; chaque plan est livré avec un nom de répertoire virtuel recommandé et une arborescence hiérarchique complète.",
     "ko-KR": "더 나은 결과를 얻기 위해\"고등학생\"수준 이상의 모델을 사용하는 것이 좋습니다.각 계획에는 권장 가상 디렉토리 이름과 완전한 계층 트리가 제공됩니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(14122-14184)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(14467-14530)"],
     "$id": 21881
   },
   "整理策略已复制到剪贴板": {
@@ -5670,7 +5670,7 @@
     "de-DE": "Die Organisationsstrategie wurde in die Zwischenablage kopiert",
     "fr-FR": "La stratégie d'organisation a été copiée dans le presse-papiers",
     "ko-KR": "구성 전략이 클립보드에 복사되었습니다",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(16335-16350)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(16722-16737)"],
     "$id": 11467
   },
   "复制策略": {
@@ -5683,7 +5683,7 @@
     "de-DE": "Replikationsstrategie",
     "fr-FR": "Stratégie de réplication",
     "ko-KR": "복제 전략",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(16664-16672)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(17056-17064)"],
     "$id": 11469
   },
   "推荐理由与理念": {
@@ -5696,7 +5696,7 @@
     "de-DE": "Gründe und Ideen für die Empfehlung",
     "fr-FR": "Raisons et idées de recommandation",
     "ko-KR": "추천 이유 및 아이디어",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(17444-17455)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(17851-17862)"],
     "$id": 21882
   },
   "关闭": {
@@ -5709,7 +5709,7 @@
     "de-DE": "Schließen",
     "fr-FR": "Fermer",
     "ko-KR": "닫기",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(18260-18266)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(18685-18691)"],
     "$id": 8604
   },
   "整理方案": {
@@ -5722,7 +5722,7 @@
     "de-DE": "Fertigstellungsplan",
     "fr-FR": "Plan de finition",
     "ko-KR": "마무리 계획",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(4296-4304)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(4448-4456)"],
     "$id": 21930
   },
   "自定义整理方案": {
@@ -5736,8 +5736,8 @@
     "fr-FR": "Plan de finition sur mesure",
     "ko-KR": "주문 끝마무리 계획",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(4314-4325)",
-      "src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(8194-8205)"
+      "src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(4467-4478)",
+      "src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(8479-8490)"
     ],
     "$id": 21931
   },
@@ -5751,7 +5751,7 @@
     "de-DE": "Importieren Sie eine externe, von der KI generierte Verzeichnisstruktur",
     "fr-FR": "Importer une structure de répertoires externe générée par l'IA",
     "ko-KR": "외부 AI 생성 디렉터리 구조 가져오기",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(9567-9586)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(9893-9912)"],
     "$id": 21811
   },
   "自定义目录树": {
@@ -5765,10 +5765,10 @@
     "fr-FR": "Arborescence de répertoires personnalisée",
     "ko-KR": "사용자 정의 디렉토리 트리",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(9590-9600)",
-      "src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(13465-13475)",
-      "src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(3589-3599)",
-      "src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(3757-3767)"
+      "src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(9916-9926)",
+      "src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(13691-13701)",
+      "src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(3683-3693)",
+      "src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(3858-3868)"
     ],
     "$id": 21812
   },
@@ -5782,7 +5782,7 @@
     "de-DE": "Externe KI-Generierung",
     "fr-FR": "Génération d'IA externe",
     "ko-KR": "외부 인공지능 생성",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(10021-10031)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(10357-10367)"],
     "$id": 21933
   },
   "所见即所得 · 实时解析": {
@@ -5795,7 +5795,7 @@
     "de-DE": "Was Sie sehen, ist was Sie bekommen · Echtzeitanalyse",
     "fr-FR": "Ce que vous voyez est ce que vous obtenez · Analyse en temps réel",
     "ko-KR": "보이는 대로 얻는다 · 실시간 분석",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(10035-10051)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(10371-10387)"],
     "$id": 21813
   },
   "粘贴外部大模型生成的 Markdown 目录树，右侧将实时解析；首行支持附带【虚拟目录名称：xxxx】自动识别": {
@@ -5808,7 +5808,7 @@
     "de-DE": "Fügen Sie den vom externen großen Modell generierten Markdown-Verzeichnisbaum ein. Die rechte Seite wird in Echtzeit analysiert. Die erste Zeile unterstützt die automatische Erkennung mit [Name des virtuellen Verzeichnisses: xxxx]",
     "fr-FR": "Collez l'arborescence de répertoires Markdown générée par le grand modèle externe, et le côté droit sera analysé en temps réel ; la première ligne prend en charge la reconnaissance automatique avec [nom du répertoire virtuel : xxxx]",
     "ko-KR": "외부 대형 모델에서 생성된 Markdown 디렉터리 트리를 붙여넣으면 오른쪽이 실시간으로 구문 분석됩니다. 첫 번째 줄은 [가상 디렉터리 이름: xxxx]를 사용한 자동 인식을 지원합니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(10193-10252)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(10534-10593)"],
     "$id": 21814
   },
   "自由书写或粘贴 Markdown 格式目录树，右侧将实时解析预览，满意后进入微调": {
@@ -5821,7 +5821,7 @@
     "de-DE": "Schreiben oder fügen Sie den Verzeichnisbaum frei im Markdown-Format ein. Die rechte Seite wird in Echtzeit analysiert und in der Vorschau angezeigt. Sobald Sie zufrieden sind, beginnen Sie mit der Feinabstimmung.",
     "fr-FR": "Écrivez ou collez librement l’arborescence des répertoires au format Markdown. Le côté droit sera analysé et prévisualisé en temps réel. Une fois satisfait, passez au réglage fin.",
     "ko-KR": "디렉토리 트리를 마크다운 형식으로 자유롭게 쓰거나 붙여넣으세요. 오른쪽은 실시간으로 구문 분석되고 미리보기됩니다. 만족스러우면 미세 조정을 입력합니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(10270-10314)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(10612-10656)"],
     "$id": 21815
   },
   "返回外部AI引导": {
@@ -5834,7 +5834,7 @@
     "de-DE": "Kehren Sie zur externen KI-Anleitung zurück",
     "fr-FR": "Revenir aux conseils externes sur l'IA",
     "ko-KR": "외부 AI 안내로 돌아가기",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(10611-10623)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(10964-10976)"],
     "$id": 21816
   },
   "返回模式选择": {
@@ -5848,8 +5848,8 @@
     "fr-FR": "Sélection du mode de retour",
     "ko-KR": "반환 모드 선택",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(10627-10637)",
-      "src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(4710-4720)"
+      "src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(10980-10990)",
+      "src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(4858-4868)"
     ],
     "$id": 21888
   },
@@ -5863,7 +5863,7 @@
     "de-DE": "Name des virtuellen Verzeichnisses",
     "fr-FR": "Nom du répertoire virtuel",
     "ko-KR": "가상 디렉터리 이름",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(11327-11336)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(11693-11702)"],
     "$id": 8655
   },
   "将作为最终物理文件夹的名字": {
@@ -5876,7 +5876,7 @@
     "de-DE": "Wird als Name des endgültigen physischen Ordners verwendet",
     "fr-FR": "Sera utilisé comme nom du dossier physique final",
     "ko-KR": "최종 물리적 폴더의 이름으로 사용됩니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(11545-11562)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(11915-11932)"],
     "$id": 21817
   },
   "例：办公文员视角、行政综合、研发项目": {
@@ -5889,7 +5889,7 @@
     "de-DE": "Beispiel: Bürokaufmannsperspektive, administrative Integration, F&E-Projekte",
     "fr-FR": "Exemple: Perspective de commis de bureau, intégration administrative, projets de R & D",
     "ko-KR": "예:사무원 관점,행정 통합,연구 개발 프로젝트",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(11756-11778)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(12132-12154)"],
     "$id": 22074
   },
   "整理策略与 Markdown 目录树": {
@@ -5902,7 +5902,7 @@
     "de-DE": "Organisationsstrategie und Markdown-Verzeichnisbaum",
     "fr-FR": "Stratégie d'organisation et arborescence de répertoires Markdown",
     "ko-KR": "구성 전략 및 Markdown 디렉터리 트리",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(12435-12457)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(12821-12843)"],
     "$id": 21818
   },
   "清空": {
@@ -5916,7 +5916,7 @@
     "fr-FR": "Effacer",
     "ko-KR": "지우기",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(13410-13416)",
+      "src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(13818-13824)",
       "src/renderer/components/file-explorer/Organize/components/SmartClusteringView.tsx(30170-30176)"
     ],
     "$id": 21532
@@ -5931,7 +5931,7 @@
     "de-DE": "Bitte fügen Sie den von der externen KI generierten Verzeichnisbaum direkt ein. Die erste Zeile kann geschrieben werden: Name des virtuellen Verzeichnisses: xxxx\\n- Ordner 1\\n - Unterordner A\\n- Ordner 2",
     "fr-FR": "Veuillez coller directement l'arborescence des répertoires générée par l'IA externe. La première ligne peut s'écrire : Nom du répertoire virtuel : xxxx\\n- Dossier 1\\n - Sous-dossier A\\n- Dossier 2",
     "ko-KR": "외부 AI가 생성한 디렉토리 트리를 직접 붙여넣어주세요. 첫 번째 줄은 다음과 같이 쓸 수 있습니다. 가상 디렉터리 이름: xxxx\\n- 폴더 1\\n - 하위 폴더 A\\n- 폴더 2",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(13858-13921)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(14277-14340)"],
     "$id": 21819
   },
   "请直接输入或粘贴目录树结构（支持标准 Markdown 列表 - 或 * 与缩进）：\\n- 顶级目录1\\n  - 子目录A\\n- 顶级目录2": {
@@ -5944,7 +5944,7 @@
     "de-DE": "Bitte geben Sie die Verzeichnisbaumstruktur direkt ein oder fügen Sie sie ein (unterstützt Standard-Markdown-Liste – oder * und Einrückung): \\n- Verzeichnis der obersten Ebene 1\\n - Unterverzeichnis A\\n- Verzeichnis der obersten Ebene 2",
     "fr-FR": "Veuillez saisir ou coller directement l'arborescence des répertoires (prend en charge la liste Markdown standard - ou * et l'indentation) : \\n- Répertoire de niveau supérieur 1\\n - Sous-répertoire A\\n- Répertoire de niveau supérieur 2",
     "ko-KR": "디렉터리 트리 구조를 직접 입력하거나 붙여넣으세요(표준 Markdown 목록 또는 * 및 들여쓰기 지원). \\n- 최상위 디렉터리 1\\n - 하위 디렉터리 A\\n- 최상위 디렉터리 2",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(13947-14021)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(14367-14441)"],
     "$id": 21820
   },
   "支持 Markdown 列表（- 目录名）、制表符/空格层级缩进，以及树形符号（├ └ │）": {
@@ -5957,7 +5957,7 @@
     "de-DE": "Unterstützt Markdown-Listen (- Verzeichnisnamen), Einrückungen auf Tabulator-/Leerzeichenebene und Baumsymbole (├ └ │)",
     "fr-FR": "Prend en charge les listes Markdown (- noms de répertoires), l'indentation au niveau des tabulations/espaces et les symboles d'arborescence (├ └ │)",
     "ko-KR": "마크다운 목록(- 디렉터리 이름), 탭/공간 수준 들여쓰기 및 트리 기호(├ └ │) 지원",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(14377-14427)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(14804-14854)"],
     "$id": 21821
   },
   "实时目录树预览": {
@@ -5970,7 +5970,7 @@
     "de-DE": "Live-Vorschau des Verzeichnisbaums",
     "fr-FR": "Aperçu de l'arborescence des répertoires en direct",
     "ko-KR": "라이브 디렉토리 트리 미리보기",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(15034-15045)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(15473-15484)"],
     "$id": 21822
   },
   "共 {count} 个目录": {
@@ -5983,7 +5983,7 @@
     "de-DE": "Insgesamt {count} Verzeichnisse",
     "fr-FR": "Total de {count} répertoires",
     "ko-KR": "총 {count} 디렉터리",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(15273-15290)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(15716-15733)"],
     "$id": 21823
   },
   "解析就绪，可随时进入微调": {
@@ -5996,7 +5996,7 @@
     "de-DE": "Die Analyse ist fertig und Sie können jederzeit in die Feinabstimmung einsteigen.",
     "fr-FR": "L'analyse est prête et vous pouvez procéder à des réglages fins à tout moment.",
     "ko-KR": "분석이 준비되었으며 언제든지 미세 조정을 시작할 수 있습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(15498-15514)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(15948-15964)"],
     "$id": 21824
   },
   "等待输入有效目录格式": {
@@ -6009,7 +6009,7 @@
     "de-DE": "Warten auf die Eingabe eines gültigen Verzeichnisformats",
     "fr-FR": "En attente de la saisie d'un format de répertoire valide",
     "ko-KR": "유효한 디렉터리 형식이 입력될 때까지 기다리는 중",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(15534-15548)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(15985-15999)"],
     "$id": 21825
   },
   "暂无解析生成的目录结构": {
@@ -6022,7 +6022,7 @@
     "de-DE": "Derzeit ist keine analysierte Verzeichnisstruktur generiert.",
     "fr-FR": "Aucune structure de répertoire analysée n'est actuellement générée.",
     "ko-KR": "현재 생성된 구문 분석된 디렉터리 구조가 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(16519-16534)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(16988-17003)"],
     "$id": 21826
   },
   "请在左侧输入 Markdown 列表格式的目录树结构（如 - 一级目录），右侧将实时渲染树形大纲。": {
@@ -6035,7 +6035,7 @@
     "de-DE": "Bitte geben Sie links die Verzeichnisbaumstruktur im Markdown-Listenformat ein (z. B. Verzeichnis der ersten Ebene). Die Baumstruktur wird rechts in Echtzeit gerendert.",
     "fr-FR": "Veuillez saisir l'arborescence des répertoires au format de liste Markdown (par exemple - répertoire de premier niveau) à gauche, et le contour de l'arborescence sera rendu en temps réel à droite.",
     "ko-KR": "왼쪽에 마크다운 목록 형식(예: 1단계 디렉터리)으로 디렉터리 트리 구조를 입력하면 오른쪽에 트리 개요가 실시간으로 렌더링됩니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(16675-16728)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(17147-17200)"],
     "$id": 21827
   },
   "已完成实时语法解析": {
@@ -6048,7 +6048,7 @@
     "de-DE": "Echtzeit-Syntaxanalyse abgeschlossen",
     "fr-FR": "Analyse syntaxique en temps réel terminée",
     "ko-KR": "실시간 구문 분석 완료",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(17314-17327)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(17802-17815)"],
     "$id": 21828
   },
   "请输入至少一个有效目录后继续": {
@@ -6061,7 +6061,7 @@
     "de-DE": "Bitte geben Sie mindestens ein gültiges Verzeichnis ein, um fortzufahren",
     "fr-FR": "Veuillez saisir au moins un répertoire valide pour continuer",
     "ko-KR": "계속하려면 유효한 디렉터리를 하나 이상 입력하세요.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(17349-17367)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/CustomTreeView.tsx(17838-17856)"],
     "$id": 21829
   },
   "及格线阈值": {
@@ -6141,8 +6141,8 @@
     "ko-KR": "빈 디렉터리를 만들지 마세요.",
     "$files": [
       "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(14348-14358)",
-      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(10373-10383)",
-      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(10872-10882)"
+      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(10121-10131)",
+      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(10611-10621)"
     ],
     "$id": 8607
   },
@@ -6422,7 +6422,7 @@
     "ko-KR": "정리 전략",
     "$files": [
       "src/renderer/components/file-explorer/Organize/components/EditStrategyDialog.tsx(1318-1326)",
-      "src/renderer/components/file-explorer/Organize/components/PlanSidebar.tsx(1630-1638)"
+      "src/renderer/components/file-explorer/Organize/components/PlanSidebar.tsx(1583-1591)"
     ],
     "$id": 8602
   },
@@ -6462,7 +6462,7 @@
     "de-DE": "Die Eingabeaufforderung konnte nicht generiert werden, bitte erneut versuchen.",
     "fr-FR": "Échec de la génération du prompt, veuillez réessayer",
     "ko-KR": "프롬프트 생성에 실패했습니다. 다시 시도해 주세요.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(3080-3095)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(3180-3195)"],
     "$id": 11381
   },
   "提示词已复制到剪贴板，可直接粘贴到外部 AI": {
@@ -6475,7 +6475,7 @@
     "de-DE": "Das Aufforderungswort wurde in die Zwischenablage kopiert und kann direkt in eine externe KI eingefügt werden",
     "fr-FR": "Le mot d'invite a été copié dans le presse-papiers et peut être collé directement sur une IA externe",
     "ko-KR": "프롬프트 단어는 클립 보드에 복사 된 외부 인공 지능에 직접 붙여 넣을 수 있습니다",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(3420-3446)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(3535-3561)"],
     "$id": 21883
   },
   "复制失败，请手动全选复制": {
@@ -6488,7 +6488,7 @@
     "de-DE": "Replikation fehlgeschlagen, bitte wählen Sie alle Replikationen manuell aus",
     "fr-FR": "La réplication a échoué, veuillez sélectionner manuellement toutes les réplications",
     "ko-KR": "모든 복제를 수동으로 선택하십시오",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(3528-3544)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(3646-3662)"],
     "$id": 21884
   },
   "外部 AI 生成目录结构": {
@@ -6501,7 +6501,7 @@
     "de-DE": "Externe KI generiert Verzeichnisstruktur",
     "fr-FR": "L'IA externe génère une structure de répertoires",
     "ko-KR": "외부 인공 지능은 디렉토리 구조를 생성합니다",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(4070-4086)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(4201-4217)"],
     "$id": 21885
   },
   "借力外部大模型": {
@@ -6514,7 +6514,7 @@
     "de-DE": "Nutzen Sie das externe große Modell",
     "fr-FR": "Tirez parti du grand modèle externe",
     "ko-KR": "외부 대형 모델 활용",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(4261-4272)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(4394-4405)"],
     "$id": 21886
   },
   "无需消耗本地硬件算力，将当前文件特征提示词发送给外部大模型规划，生成后一键导入": {
@@ -6527,7 +6527,7 @@
     "de-DE": "Keine Notwendigkeit, lokale Hardware-Rechenleistung zu verbrauchen, senden Sie das aktuelle Datei-Feature-Aufforderungswort an eine externe große Modellplanung, und importieren Sie es mit einem Klick nach der Generierung.",
     "fr-FR": "Pas besoin de consommer de la puissance de calcul matérielle locale, envoyez le mot d'invite de fonctionnalité de fichier actuel à une planification de modèle externe de grande taille et importez-le en un clic après la génération.",
     "ko-KR": "로컬 하드웨어 컴퓨팅 파워를 소비 할 필요가 외부 대형 모델 계획에 현재 파일 기능 프롬프트 단어를 보내고,생성 후 한 번의 클릭으로 가져올 수 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(4385-4428)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(4522-4565)"],
     "$id": 21887
   },
   "当前文件画像提示词": {
@@ -6540,7 +6540,7 @@
     "de-DE": "Word für aktuelles Dateiporträt auffordern",
     "fr-FR": "Mot d'invite pour le portrait du fichier actuel",
     "ko-KR": "현재 파일 초상화에 대한 프롬프트 단어",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(5410-5423)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(5570-5583)"],
     "$id": 21889
   },
   "个待整理文件": {
@@ -6553,7 +6553,7 @@
     "de-DE": "Auszusortierende Dateien",
     "fr-FR": "Fichiers à trier",
     "ko-KR": "정렬 할 파일",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(5596-5606)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(5759-5769)"],
     "$id": 21890
   },
   "已复制": {
@@ -6566,7 +6566,7 @@
     "de-DE": "Kopiert",
     "fr-FR": "Copié",
     "ko-KR": "복사됨",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(6221-6228)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(6400-6407)"],
     "$id": 21891
   },
   "一键复制提示词": {
@@ -6579,7 +6579,7 @@
     "de-DE": "Kopieren Sie Aufforderungswörter mit einem Klick",
     "fr-FR": "Copiez les mots d'invite en un clic",
     "ko-KR": "한 번의 클릭으로 프롬프트 단어를 복사",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(6232-6243)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(6411-6422)"],
     "$id": 21892
   },
   "正在分析文件特征并装配提示词...": {
@@ -6592,7 +6592,7 @@
     "de-DE": "Analysieren der Eigenschaften der Datei und Zusammenstellen der Aufforderungswörter...",
     "fr-FR": "Analyser les caractéristiques du fichier et assembler les mots d'invite...",
     "ko-KR": "파일의 특성을 분석하고 프롬프트 단어를 조립...",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(6699-6720)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(6886-6907)"],
     "$id": 21893
   },
   "提示词加载中...": {
@@ -6605,7 +6605,7 @@
     "de-DE": "Das Eingabeaufforderungswort wird geladen...",
     "fr-FR": "Le mot d'invite est en cours de chargement...",
     "ko-KR": "프롬프트 단어가 로드 중입니다...",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(7043-7056)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(7237-7250)"],
     "$id": 21894
   },
   "提示词中已明确约束外部 AI 首行输出【虚拟目录名称：xxxx】，导入时将自动识别。": {
@@ -6618,7 +6618,7 @@
     "de-DE": "Das Eingabeaufforderungswort hat die Ausgabe der ersten Zeile der externen KI [Name des virtuellen Verzeichnisses: xxxx] deutlich eingeschränkt, die beim Import automatisch erkannt wird.",
     "fr-FR": "Le mot d'invite a clairement restreint la sortie de la première ligne de l'IA externe [nom du répertoire virtuel: xxxx], qui sera automatiquement reconnue lors de l'importation.",
     "ko-KR": "프롬프트 단어는 외부 인공지능의 첫 번째 줄의 출력을 명확하게 제한했습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(7203-7249)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(7402-7448)"],
     "$id": 21895
   },
   "操作流程 (极简4步)": {
@@ -6631,7 +6631,7 @@
     "de-DE": "Operationsprozess (minimalistische 4 Schritte)",
     "fr-FR": "Processus d'opération (minimaliste 4 étapes)",
     "ko-KR": "가동 과정(최소한 4 단계)",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(7788-7803)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(7997-8012)"],
     "$id": 21896
   },
   "复制定制提示词": {
@@ -6644,7 +6644,7 @@
     "de-DE": "Benutzerdefinierte Eingabeaufforderungswörter kopieren",
     "fr-FR": "Copier des mots d'invite personnalisés",
     "ko-KR": "사용자 정의 프롬프트 단어 복사",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(7967-7978)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(8183-8194)"],
     "$id": 21897
   },
   "点击左侧上方【一键复制提示词】按钮，内容已自动写入剪贴板。": {
@@ -6657,7 +6657,7 @@
     "de-DE": "Klicken Sie oben links auf die Schaltfläche [Ein-Klick-Kopieraufforderungswort], und der Inhalt wurde automatisch in die Zwischenablage geschrieben.",
     "fr-FR": "Cliquez sur le bouton [Mot d'invite de copie en un clic] en haut à gauche, et le contenu a été automatiquement écrit dans le presse-papiers.",
     "ko-KR": "왼쪽 상단의[원클릭 프롬프트 단어 복사]버튼을 클릭하면 콘텐츠가 자동으로 클립보드에 기록됩니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(8005-8038)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(8222-8255)"],
     "$id": 21898
   },
   "发送给外部 AI": {
@@ -6670,7 +6670,7 @@
     "de-DE": "An externe KI senden",
     "fr-FR": "Envoyer à l'IA externe",
     "ko-KR": "외부 인공 지능으로 보내기",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(8129-8141)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(8350-8362)"],
     "$id": 21899
   },
   "打开常用的外部大模型对话窗口，直接粘贴并发送给 AI。": {
@@ -6683,7 +6683,7 @@
     "de-DE": "Öffnen Sie das häufig verwendete Dialogfenster für externe große Modelle, fügen Sie es direkt ein und senden Sie es an AI.",
     "fr-FR": "Ouvrez la fenêtre de dialogue de grand modèle externe couramment utilisée, collez-la directement et envoyez-la à l'IA.",
     "ko-KR": "일반적으로 사용되는 외부 대형 모델 대화 창을 열고 직접 붙여 넣고 인공 지능으로 보냅니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(8168-8199)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(8390-8421)"],
     "$id": 21900
   },
   "等待外部 AI 规划生成": {
@@ -6696,7 +6696,7 @@
     "de-DE": "Warten Sie, bis der externe KI-Plan generiert wurde",
     "fr-FR": "Attendez que le plan d'IA externe soit généré",
     "ko-KR": "외부 인공 지능 계획이 생성 될 때까지 기다립니다",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(8290-8306)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(8516-8532)"],
     "$id": 21901
   },
   "AI 将规划出 3 组带有虚拟目录名和完整层级的 Markdown 目录树。": {
@@ -6709,7 +6709,7 @@
     "de-DE": "AI plant 3 Sätze von Markdown-Verzeichnisbäumen mit virtuellen Verzeichnisnamen und vollständigen Ebenen.",
     "fr-FR": "L'IA planifiera 3 ensembles d'arborescences de répertoires Markdown avec des noms de répertoires virtuels et des niveaux complets.",
     "ko-KR": "인공 지능은 가상 디렉토리 이름과 완전한 수준으로 3 세트의 마크 다운 디렉토리 트리를 계획 할 것입니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(8333-8375)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(8560-8602)"],
     "$id": 21902
   },
   "导入并极速智能归类": {
@@ -6722,7 +6722,7 @@
     "de-DE": "Importieren und klassifizieren Sie schnell und intelligent",
     "fr-FR": "Importez et classez rapidement et intelligemment",
     "ko-KR": "신속하고 지능적으로 가져 오기 및 분류",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(8466-8479)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(8697-8710)"],
     "$id": 21903
   },
   "复制满意方案的代码块，点击右上角【已生成，下一步】导入完成秒级归类。": {
@@ -6735,7 +6735,7 @@
     "de-DE": "Kopieren Sie den Codeblock der zufriedenstellenden Lösung, klicken Sie oben rechts auf [Generiert, Weiter], um die Klassifizierung zu importieren und in Sekundenschnelle abzuschließen.",
     "fr-FR": "Copiez le bloc de code de la solution satisfaisante, cliquez sur [Généré, Suivant] dans le coin supérieur droit pour importer et terminer la classification en quelques secondes.",
     "ko-KR": "만족스러운 솔루션의 코드 블록을 복사하고, 오른쪽 상단의 [생성, 다음]을 클릭하여 가져오고 몇 초 만에 분류를 완료합니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(8506-8544)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(8738-8776)"],
     "$id": 21831
   },
   "常用外部 AI 快捷入口": {
@@ -6748,7 +6748,7 @@
     "de-DE": "Häufig verwendete externe KI-Schnelleingabe",
     "fr-FR": "Saisie rapide d'IA externe couramment utilisée",
     "ko-KR": "일반적으로 사용되는 외부 인공 지능 빠른 입력",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(9686-9702)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(9941-9957)"],
     "$id": 21905
   },
   "点击在默认浏览器打开": {
@@ -6761,7 +6761,7 @@
     "de-DE": "Klicken Sie, um im Standardbrowser zu öffnen",
     "fr-FR": "Cliquez pour ouvrir dans le navigateur par défaut",
     "ko-KR": "기본 브라우저에서 열려면 클릭합니다",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(9799-9813)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ExternalAiGuideView.tsx(10056-10070)"],
     "$id": 21906
   },
   "资产分类": {
@@ -7076,7 +7076,7 @@
     "de-DE": "Sortiermodus auswählen",
     "fr-FR": "Sélectionnez le mode de tri",
     "ko-KR": "정렬 모드 선택",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(1446-1456)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(1486-1496)"],
     "$id": 8625
   },
   "根据文件特征与整理诉求选择适合的路径，高效构建清晰有序的目录体系": {
@@ -7089,7 +7089,7 @@
     "de-DE": "Wählen Sie den geeigneten Pfad basierend auf Dateimerkmalen und Organisationsanforderungen und erstellen Sie effizient ein klares und geordnetes Verzeichnissystem.",
     "fr-FR": "Choisissez le chemin approprié en fonction des caractéristiques des fichiers et des exigences de l'organisation, et créez efficacement un système de répertoires clair et ordonné.",
     "ko-KR": "파일 특성 및 조직 요구 사항에 따라 적절한 경로를 선택하고 명확하고 질서 있는 디렉토리 시스템을 효율적으로 구축하십시오.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(1544-1580)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(1587-1623)"],
     "$id": 21832
   },
   "新建整理": {
@@ -7102,7 +7102,7 @@
     "de-DE": "Neue Organisation",
     "fr-FR": "Nouvelle organisation",
     "ko-KR": "새로운 조직",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(2100-2108)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(2154-2162)"],
     "$id": 8550
   },
   "从零开始构建全新的虚拟目录": {
@@ -7115,7 +7115,7 @@
     "de-DE": "Erstellen Sie ein neues virtuelles Verzeichnis von Grund auf",
     "fr-FR": "Créer un nouveau répertoire virtuel à partir de zéro",
     "ko-KR": "처음부터 새 가상 디렉터리 구축",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(2218-2235)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(2275-2292)"],
     "$id": 8626
   },
   "推荐": {
@@ -7128,7 +7128,7 @@
     "de-DE": "Empfehlen",
     "fr-FR": "Recommander",
     "ko-KR": "추천하다",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(3735-3741)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(3809-3815)"],
     "$id": 22169
   },
   "身份蓝图": {
@@ -7142,8 +7142,8 @@
     "fr-FR": "Plan d'identité",
     "ko-KR": "신원 청사진",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(4019-4027)",
-      "src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(3911-3919)"
+      "src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(4099-4107)",
+      "src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(4018-4026)"
     ],
     "$id": 21519
   },
@@ -7157,7 +7157,7 @@
     "de-DE": "Basierend auf der maßgeblichen Karriere- und Lebensrollendatenbank empfiehlt es genau angepasste Standardverzeichnisstrukturen und mehrere Kandidatenpfade.",
     "fr-FR": "Basé sur la base de données de carrière et de rôles de vie faisant autorité, il recommande avec précision des structures de répertoires standard personnalisées et de multiples parcours de candidats.",
     "ko-KR": "권위 있는 경력 및 생활 역할 데이터베이스를 기반으로 맞춤형 표준 디렉토리 구조와 다양한 후보자 경로를 정확하게 추천합니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(4179-4218)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(4262-4301)"],
     "$id": 21833
   },
   "借力外部AI": {
@@ -7170,7 +7170,7 @@
     "de-DE": "Nutzen Sie externe KI",
     "fr-FR": "Tirer parti de l'IA externe",
     "ko-KR": "외부 인공지능 활용",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(5659-5669)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(5760-5770)"],
     "$id": 21922
   },
   "外部AI生成目录结构": {
@@ -7183,7 +7183,7 @@
     "de-DE": "Externe KI generiert Verzeichnisstruktur",
     "fr-FR": "L'IA externe génère une structure de répertoires",
     "ko-KR": "외부 인공 지능은 디렉토리 구조를 생성합니다",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(5945-5959)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(6052-6066)"],
     "$id": 21923
   },
   "一键复制当前文件画像提示词至豆包/ChatGPT/Kimi规划目录，支持极速导入。": {
@@ -7196,7 +7196,7 @@
     "de-DE": "Kopieren Sie die Eingabeaufforderungswörter des aktuellen Dateiporträts mit einem Klick in das Planungsverzeichnis Doubao/ChatGPT/Kimi, was einen extrem schnellen Import unterstützt.",
     "fr-FR": "Copiez les mots d'invite du portrait de fichier actuel dans le répertoire de planification Doubao/ChatGPT/Kimi en un seul clic, prenant en charge une importation extrêmement rapide.",
     "ko-KR": "한 번의 클릭으로 현재 파일 초상화 프롬프트 단어를 Doubao/ChatGPT/Kimi 계획 디렉토리에 복사하여 매우 빠른 가져오기를 지원합니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(6111-6156)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(6221-6266)"],
     "$id": 21834
   },
   "极速直出": {
@@ -7209,7 +7209,7 @@
     "de-DE": "Fahren Sie mit extremer Geschwindigkeit geradeaus",
     "fr-FR": "Allez tout droit à une vitesse extrême",
     "ko-KR": "극단적 인 속도로 바로 밖으로 이동",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(7573-7581)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(7701-7709)"],
     "$id": 21510
   },
   "智能聚类": {
@@ -7223,9 +7223,9 @@
     "fr-FR": "Clustering intelligent",
     "ko-KR": "지능형 클러스터링",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(7857-7865)",
+      "src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(7991-7999)",
       "src/renderer/components/file-explorer/Organize/components/SmartClusteringView.tsx(29558-29566)",
-      "src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(2678-2686)"
+      "src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(2747-2755)"
     ],
     "$id": 21511
   },
@@ -7239,7 +7239,7 @@
     "de-DE": "Natives, unbeaufsichtigtes hierarchisches Clustering auf der Geräteseite, sofortige Diagrammausgabe auf Millisekundenebene und Unterstützung für schnelle Wortführung in natürlicher Sprache und Inline-Feinabstimmung.",
     "fr-FR": "Clustering hiérarchique natif non supervisé côté appareil, sortie graphique instantanée au niveau de la milliseconde et prise en charge du guidage par mot d'invite en langage naturel et du réglage fin en ligne.",
     "ko-KR": "장치 측의 기본 비지도 계층적 클러스터링, 밀리초 수준의 인스턴트 그래프 출력, 자연어 프롬프트 단어 안내 및 인라인 미세 조정 지원.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(8017-8058)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(8154-8195)"],
     "$id": 21835
   },
   "由文件推导目录树需要高级AI引擎支持，请前往“设置 -> AI引擎配置”开启": {
@@ -7252,7 +7252,7 @@
     "de-DE": "Das Ableiten von Verzeichnisbäumen aus Dateien erfordert erweiterte KI-Engine-Unterstützung. Bitte gehen Sie zu „Einstellungen -> AI Engine-Konfiguration“, um es zu aktivieren.",
     "fr-FR": "La dérivation d'arborescences de répertoires à partir de fichiers nécessite une prise en charge avancée du moteur d'IA. Veuillez aller dans « Paramètres -> Configuration du moteur AI » pour l'activer.",
     "ko-KR": "파일에서 디렉터리 트리를 파생하려면 고급 AI 엔진 지원이 필요합니다. 활성화하려면 \"설정 -> AI 엔진 구성\"으로 이동하세요.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(8332-8374)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(8479-8521)"],
     "$id": 21836
   },
   "需高级AI引擎": {
@@ -7265,7 +7265,7 @@
     "de-DE": "Erfordert erweiterte KI-Engine",
     "fr-FR": "Nécessite un moteur d'IA avancé",
     "ko-KR": "고급 인공 지능 엔진이 필요합니다",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(10207-10218)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(10381-10392)"],
     "$id": 21913
   },
   "需开启高级AI引擎": {
@@ -7278,7 +7278,7 @@
     "de-DE": "Advanced AI engine required",
     "fr-FR": "Veuillez activer le moteur IA avancé",
     "ko-KR": "고급 AI 엔진을 활성화해야 합니다",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(10558-10571)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(10737-10750)"],
     "$id": 21914
   },
   "由大模型端到端深度规划 3 套最终完整的层级目录树方案，无需繁琐步骤直接比选。": {
@@ -7291,7 +7291,7 @@
     "de-DE": "Drei Sätze endgültiger, vollständiger hierarchischer Verzeichnisbaumlösungen werden anhand des großen Modells umfassend geplant und können ohne langwierige Schritte direkt verglichen und ausgewählt werden.",
     "fr-FR": "3 ensembles de solutions finales complètes d'arborescence de répertoires hiérarchiques sont planifiés de bout en bout en profondeur à partir du grand modèle, et peuvent être directement comparés et sélectionnés sans étapes fastidieuses.",
     "ko-KR": "최종 완전한 계층적 디렉토리 트리 솔루션 3개 세트는 대규모 모델에서 엔드투엔드 심층적으로 계획되어 있으며 지루한 단계 없이 직접 비교하고 선택할 수 있습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(11264-11307)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(11460-11503)"],
     "$id": 21837
   },
   "建议使用“高中生”级别以上的模型才能获取较好效果": {
@@ -7304,7 +7304,7 @@
     "de-DE": "Es wird empfohlen, Modelle über dem Niveau \"Gymnasiast\" zu verwenden, um bessere Ergebnisse zu erzielen",
     "fr-FR": "Il est recommandé d'utiliser des modèles au-dessus du niveau “lycéen \" pour obtenir de meilleurs résultats",
     "ko-KR": "더 나은 결과를 얻으려면\"고등학생\"수준 이상의 모델을 사용하는 것이 좋습니다",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(11656-11684)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(11857-11885)"],
     "$id": 21917
   },
   "灵活自由": {
@@ -7317,7 +7317,7 @@
     "de-DE": "Flexibilität und Freiheit",
     "fr-FR": "Flexibilité et liberté",
     "ko-KR": "유연성과 자유로움",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(13175-13183)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(13395-13403)"],
     "$id": 21838
   },
   "直接手写或粘贴 Markdown 格式目录大纲，右侧实时语法解析，端侧秒级向量归类。": {
@@ -7330,7 +7330,7 @@
     "de-DE": "Schreiben Sie die Gliederung des Inhaltsverzeichnisses direkt per Hand oder fügen Sie sie im Markdown-Format ein, rechts finden Sie eine Echtzeit-Syntaxanalyse und am Ende eine sekundenschnelle Vektorkategorisierung.",
     "fr-FR": "Écrivez ou collez directement à la main le plan de la table des matières au format Markdown, analyse syntaxique en temps réel à droite et catégorisation vectorielle en secondes à la fin.",
     "ko-KR": "마크다운 형식으로 목차 개요를 직접 손으로 쓰거나 붙여넣고, 오른쪽에는 실시간 구문 분석이, 마지막에는 몇 초 만에 벡터 분류가 가능합니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(13627-13673)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(13856-13902)"],
     "$id": 21839
   },
   "修改/更新": {
@@ -7343,7 +7343,7 @@
     "de-DE": "Ändern/aktualisieren",
     "fr-FR": "Modifier/mettre à jour",
     "ko-KR": "수정/업데이트",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(14376-14385)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(14619-14628)"],
     "$id": 8641
   },
   "修改与追加已有草稿和虚拟目录": {
@@ -7356,7 +7356,7 @@
     "de-DE": "Vorhandene Entwürfe und virtuelle Verzeichnisse ändern und anhängen",
     "fr-FR": "Modifier et ajouter des brouillons et des répertoires virtuels existants",
     "ko-KR": "기존 초안 및 가상 디렉터리 수정 및 추가",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(14501-14519)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(14747-14765)"],
     "$id": 8642
   },
   "草稿": {
@@ -7369,7 +7369,7 @@
     "de-DE": "Entwurf",
     "fr-FR": "Brouillon",
     "ko-KR": "초안",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(17675-17681)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(17976-17982)"],
     "$id": 8643
   },
   "未保存草稿 · 点击恢复": {
@@ -7382,7 +7382,7 @@
     "de-DE": "Nicht gespeicherter Entwurf · Klicken Sie zum Wiederherstellen",
     "fr-FR": "Brouillon non enregistré · Cliquez pour restaurer",
     "ko-KR": "저장되지 않은 초안 · 복원하려면 클릭하세요.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(17844-17860)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(18148-18164)"],
     "$id": 8644
   },
   "未归类": {
@@ -7396,7 +7396,7 @@
     "fr-FR": "Non classé",
     "ko-KR": "분류되지 않음",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(18551-18558)",
+      "src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(18868-18875)",
       "src/renderer/components/file-explorer/Organize/utils/helpers.ts(3486-3493)"
     ],
     "$id": 8605
@@ -7411,7 +7411,7 @@
     "de-DE": "Stück",
     "fr-FR": "Pièces",
     "ko-KR": "개",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(18806-18811)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(19127-19132)"],
     "$id": 8646
   },
   "共": {
@@ -7424,7 +7424,7 @@
     "de-DE": "Gemeinsam",
     "fr-FR": "Commun",
     "ko-KR": "흔한",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(18990-18995)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(19315-19320)"],
     "$id": 8647
   },
   "个文件": {
@@ -7438,8 +7438,8 @@
     "fr-FR": "Fichiers",
     "ko-KR": "파일",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(19216-19223)",
-      "src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(19028-19035)"
+      "src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(19545-19552)",
+      "src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(19084-19091)"
     ],
     "$id": 8648
   },
@@ -7453,7 +7453,7 @@
     "de-DE": "Entwurf löschen",
     "fr-FR": "Supprimer le brouillon",
     "ko-KR": "초안 삭제",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(19530-19538)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(19869-19877)"],
     "$id": 8649
   },
   "暂无已保存的虚拟目录": {
@@ -7466,7 +7466,7 @@
     "de-DE": "Keine gespeicherten virtuellen Verzeichnisse vorhanden",
     "fr-FR": "Aucun répertoire virtuel sauvegardé pour le moment",
     "ko-KR": "저장된 가상 디렉토리가 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(21153-21167)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(21519-21533)"],
     "$id": 8650
   },
   "增量整理用于在已有虚拟目录的基础上追加新文件。您当前工作区尚未保存任何虚拟目录，请先从上方选择适合的整理模式完成并保存虚拟目录。": {
@@ -7479,7 +7479,7 @@
     "de-DE": "Die inkrementelle Defragmentierung wird verwendet, um neue Dateien an vorhandene virtuelle Verzeichnisse anzuhängen. Ihr aktueller Arbeitsbereich hat keine virtuellen Verzeichnisse gespeichert. Bitte wählen Sie oben den entsprechenden Organisationsmodus aus, um die virtuellen Verzeichnisse zu vervollständigen und zu speichern.",
     "fr-FR": "La défragmentation incrémentielle est utilisée pour ajouter de nouveaux fichiers aux répertoires virtuels existants. Votre espace de travail actuel n'a enregistré aucun répertoire virtuel. Veuillez sélectionner le mode d'organisation approprié ci-dessus pour compléter et enregistrer les répertoires virtuels.",
     "ko-KR": "증분 조각 모음은 기존 가상 디렉터리에 새 파일을 추가하는 데 사용됩니다. 현재 작업공간에는 가상 디렉터리가 저장되지 않았습니다. 가상 디렉터리를 완료하고 저장하려면 위에서 적절한 조직 모드를 선택하세요.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(21293-21382)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(21661-21751)"],
     "$id": 21840
   },
   "整理首页": {
@@ -7494,7 +7494,7 @@
     "ko-KR": "홈 화면 정리",
     "$files": [
       "src/renderer/components/file-explorer/Organize/components/OrganizeSidebar.tsx(1428-1436)",
-      "src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(1840-1848)"
+      "src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(1893-1901)"
     ],
     "$id": 20702
   },
@@ -7553,7 +7553,7 @@
     "$files": [
       "src/renderer/components/file-explorer/Organize/components/OrganizeSidebar.tsx(2019-2027)",
       "src/renderer/components/file-explorer/Organize/components/RootModeSelectView.tsx(560-568)",
-      "src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(2031-2039)"
+      "src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(2089-2097)"
     ],
     "$id": 10024
   },
@@ -7583,7 +7583,7 @@
     "$files": [
       "src/renderer/components/file-explorer/Organize/components/OrganizeSidebar.tsx(2290-2298)",
       "src/renderer/components/file-explorer/Organize/components/RootModeSelectView.tsx(1013-1021)",
-      "src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(2174-2182)"
+      "src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(2234-2242)"
     ],
     "$id": 10027
   },
@@ -7718,8 +7718,8 @@
     "fr-FR": "Créer un répertoire virtuel",
     "ko-KR": "가상 디렉터리 만들기",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(3979-3989)",
-      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(4259-4269)"
+      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(3858-3868)",
+      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(4133-4143)"
     ],
     "$id": 8660
   },
@@ -7733,7 +7733,7 @@
     "de-DE": "Virtuelles Verzeichnis unter dem aktuellen Arbeitsbereich",
     "fr-FR": "Répertoire virtuel sous l'espace de travail actuel",
     "ko-KR": "현재 작업공간 아래의 가상 디렉터리",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(4949-4965)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(4811-4827)"],
     "$id": 8661
   },
   "暂无虚拟目录": {
@@ -7746,7 +7746,7 @@
     "de-DE": "Noch kein virtuelles Verzeichnis",
     "fr-FR": "Pas encore de répertoire virtuel",
     "ko-KR": "아직 가상 디렉터리가 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(5237-5247)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(5094-5104)"],
     "$id": 8662
   },
   "重命名": {
@@ -7759,7 +7759,7 @@
     "de-DE": "Umbenennen",
     "fr-FR": "Renommer",
     "ko-KR": "이름 변경",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(7633-7640)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(7446-7453)"],
     "$id": 8663
   },
   "创建新虚拟目录": {
@@ -7772,7 +7772,7 @@
     "de-DE": "Erstellen Sie ein neues virtuelles Verzeichnis",
     "fr-FR": "Créer un nouveau répertoire virtuel",
     "ko-KR": "새 가상 디렉터리 만들기",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(9014-9025)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(8798-8809)"],
     "$id": 8665
   },
   "修改策略": {
@@ -7785,7 +7785,7 @@
     "de-DE": "Strategie ändern",
     "fr-FR": "Modifier la stratégie",
     "ko-KR": "전략 수정",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(9419-9427)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(9191-9199)"],
     "$id": 8666
   },
   "AI可自由创建目录": {
@@ -7799,8 +7799,8 @@
     "fr-FR": "L'IA peut créer librement des répertoires",
     "ko-KR": "AI는 디렉토리를 자유롭게 생성할 수 있습니다.",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(9782-9795)",
-      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(10292-10305)"
+      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(9542-9555)",
+      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(10043-10056)"
     ],
     "$id": 8667
   },
@@ -7815,8 +7815,8 @@
     "fr-FR": "Déduplication de fichiers",
     "ko-KR": "파일 중복 제거",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(10950-10958)",
-      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(11439-11447)"
+      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(10686-10694)",
+      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(11166-11174)"
     ],
     "$id": 8608
   },
@@ -7831,8 +7831,8 @@
     "fr-FR": "Mosaïque vers un répertoire virtuel",
     "ko-KR": "가상 디렉터리에 타일",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(11515-11526)",
-      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(12001-12012)"
+      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(11239-11250)",
+      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(11716-11727)"
     ],
     "$id": 8668
   },
@@ -7847,8 +7847,8 @@
     "fr-FR": "Enregistrer le répertoire virtuel",
     "ko-KR": "가상 디렉터리 저장",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(13285-13295)",
-      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(13842-13852)"
+      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(12966-12976)",
+      "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(13517-13527)"
     ],
     "$id": 8669
   },
@@ -7901,7 +7901,7 @@
     "de-DE": "Unbenanntes Schema",
     "fr-FR": "Schéma sans nom",
     "ko-KR": "이름 없는 구성표",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/PlanSidebar.tsx(1320-1329)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/PlanSidebar.tsx(1280-1289)"],
     "$id": 8673
   },
   "推荐理由": {
@@ -7914,7 +7914,7 @@
     "de-DE": "Gründe für die Empfehlung",
     "fr-FR": "Raisons de la recommandation",
     "ko-KR": "추천 이유",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/PlanSidebar.tsx(2219-2227)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/PlanSidebar.tsx(2158-2166)"],
     "$id": 8603
   },
   "预处理 · 命名": {
@@ -8885,7 +8885,7 @@
     "de-DE": "Überprüfung der Stapelduplizierung",
     "fr-FR": "Contrôle de duplication par lots",
     "ko-KR": "일괄 중복 확인",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(2309-2317)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(2371-2379)"],
     "$id": 10030
   },
   "模式选择": {
@@ -8899,8 +8899,8 @@
     "fr-FR": "Sélection du mode",
     "ko-KR": "모드 선택",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(2602-2610)",
-      "src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(4149-4157)"
+      "src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(2670-2678)",
+      "src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(4263-4271)"
     ],
     "$id": 21547
   },
@@ -8914,7 +8914,7 @@
     "de-DE": "Externe KI-Anleitung",
     "fr-FR": "Conseils externes sur l'IA",
     "ko-KR": "외부 인공지능 안내",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(3259-3269)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(3341-3351)"],
     "$id": 22077
   },
   "选择方案": {
@@ -8927,7 +8927,7 @@
     "de-DE": "Optionen",
     "fr-FR": "Possibilités",
     "ko-KR": "옵션",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(3923-3931)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(4030-4038)"],
     "$id": 8675
   },
   "目录微调": {
@@ -8940,7 +8940,7 @@
     "de-DE": "Katalog-Feinabstimmung",
     "fr-FR": "Mise au point du catalogue",
     "ko-KR": "카탈로그 미세 조정",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(4246-4254)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(4362-4370)"],
     "$id": 21548
   },
   "自动归类": {
@@ -8953,7 +8953,7 @@
     "de-DE": "Automatische Klassifizierung",
     "fr-FR": "Classification automatique",
     "ko-KR": "자동 분류",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(4314-4322)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(4431-4439)"],
     "$id": 21549
   },
   "完成": {
@@ -8966,7 +8966,7 @@
     "de-DE": "Beenden",
     "fr-FR": "Finition",
     "ko-KR": "마치다",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(4378-4384)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(4496-4502)"],
     "$id": 8678
   },
   "返回整理首页，查看功能概览并切换其他路径": {
@@ -8979,7 +8979,7 @@
     "de-DE": "Zurück zur Sortierungsstartseite, um Funktionsübersicht anzuzeigen und andere Pfade zu wechseln",
     "fr-FR": "Retour à l'écran d'accueil du tri pour consulter l'aperçu des fonctionnalités et changer de chemin",
     "ko-KR": "정리 홈으로 돌아가서 기능 개요를 확인하고 다른 경로로 전환",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(6515-6539)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(6695-6719)"],
     "$id": 20732
   },
   "目录树预览": {
@@ -9083,7 +9083,7 @@
     "de-DE": "Erstellen Sie ein neues Stammverzeichnis",
     "fr-FR": "Créer un nouveau répertoire racine",
     "ko-KR": "새 루트 디렉터리 생성",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(9258-9267)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(9314-9323)"],
     "$id": 8687
   },
   "按 Enter 确认创建": {
@@ -9096,7 +9096,7 @@
     "de-DE": "Drücken Sie die Eingabetaste, um die Erstellung zu bestätigen",
     "fr-FR": "Appuyez sur Entrée pour confirmer la création",
     "ko-KR": "Enter를 눌러 생성을 확인하세요.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(12784-12800)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(12840-12856)"],
     "$id": 8688
   },
   "确认": {
@@ -9109,7 +9109,7 @@
     "de-DE": "Bestätigen",
     "fr-FR": "Confirmer",
     "ko-KR": "확인하다",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(13172-13178)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(13228-13234)"],
     "$id": 8689
   },
   "保存": {
@@ -9122,7 +9122,7 @@
     "de-DE": "Speichern",
     "fr-FR": "Sauvegarder",
     "ko-KR": "저장",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(14765-14771)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(14821-14827)"],
     "$id": 8690
   },
   "支持将其他文件拖放到此文件旁边，共同归入该目录": {
@@ -9135,7 +9135,7 @@
     "de-DE": "Unterstützt das Ziehen und Ablegen anderer Dateien neben dieser Datei, um gemeinsam zu diesem Verzeichnis zu gehören",
     "fr-FR": "Prend en charge le glisser-déposer d'autres fichiers à côté de ce fichier pour appartenir conjointement à ce répertoire",
     "ko-KR": "이 파일 옆에 다른 파일을 드래그 앤 드롭하여 이 디렉토리에 공동으로 속하도록 지원",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(15624-15651)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(15680-15707)"],
     "$id": 22275
   },
   "用户手动锁定归类，点击可解锁交还 AI 自动整理": {
@@ -9148,7 +9148,7 @@
     "de-DE": "Der Benutzer sperrt die Klassifizierung manuell und klickt, um sie zu entsperren und zur automatischen KI-Sortierung zurückzugeben.",
     "fr-FR": "L'utilisateur verrouille manuellement la classification et clique pour la déverrouiller et la renvoyer au tri automatique AI.",
     "ko-KR": "사용자는 분류를 수동으로 잠그고 클릭하여 잠금을 해제하고 AI 자동 정렬로 되돌립니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(15974-16002)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(16030-16058)"],
     "$id": 22276
   },
   "待分类文件汇总目录": {
@@ -9161,7 +9161,7 @@
     "de-DE": "Zusammenfassendes Verzeichnis der zu klassifizierenden Dateien",
     "fr-FR": "Répertoire récapitulatif des fichiers à classer",
     "ko-KR": "분류할 파일의 요약 디렉터리",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(16581-16594)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(16637-16650)"],
     "$id": 8691
   },
   "高频标签": {
@@ -9174,7 +9174,7 @@
     "de-DE": "Hochfrequenz-Tag",
     "fr-FR": "Étiquette haute fréquence",
     "ko-KR": "고주파 태그",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(16611-16619)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(16667-16675)"],
     "$id": 8692
   },
   "待分类": {
@@ -9187,7 +9187,7 @@
     "de-DE": "Zu klassifizieren",
     "fr-FR": "Être classé",
     "ko-KR": "분류됨",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(17334-17341)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(17390-17397)"],
     "$id": 8693
   },
   "插入子目录": {
@@ -9200,7 +9200,7 @@
     "de-DE": "Unterverzeichnis einfügen",
     "fr-FR": "Insérer un sous-répertoire",
     "ko-KR": "하위 디렉터리 삽입",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(20035-20044)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(20091-20100)"],
     "$id": 8694
   },
   "重命名目录": {
@@ -9213,7 +9213,7 @@
     "de-DE": "Verzeichnis umbenennen",
     "fr-FR": "Renommer le répertoire",
     "ko-KR": "디렉터리 이름 바꾸기",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(20692-20701)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(20748-20757)"],
     "$id": 8695
   },
   "删除目录": {
@@ -9226,73 +9226,8 @@
     "de-DE": "Verzeichnis löschen",
     "fr-FR": "Supprimer le répertoire",
     "ko-KR": "디렉토리 삭제",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(21304-21312)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(21360-21368)"],
     "$id": 8696
-  },
-  "未知": {
-    "en-US": "Unknown",
-    "es-ES": "Desconocido",
-    "ar-EG": "غير معروف",
-    "pt-PT": "Desconhecido",
-    "ru-RU": "Неизвестно",
-    "ja-JP": "不明",
-    "de-DE": "Unbekannt",
-    "fr-FR": "Inconnu",
-    "ko-KR": "알 수 없음",
-    "$files": ["src/renderer/components/file-explorer/Organize/utils/helpers.ts(12195-12201)"],
-    "$id": 20733
-  },
-  "目录": {
-    "en-US": "Directory  ",
-    "es-ES": "Directorio  ",
-    "ar-EG": "دليل  ",
-    "pt-PT": "Diretório",
-    "ru-RU": "Каталог  ",
-    "ja-JP": "ディレクトリ  ",
-    "de-DE": "Verzeichnis",
-    "fr-FR": "Répertoire  ",
-    "ko-KR": "디렉터리  ",
-    "$files": ["src/renderer/components/file-explorer/Organize/utils/helpers.ts(22326-22332)"],
-    "$id": 21841
-  },
-  "文件夹": {
-    "en-US": "Folder",
-    "es-ES": "Carpeta",
-    "ar-EG": "مجلد\r",
-    "pt-PT": "Pasta",
-    "ru-RU": "Папка",
-    "ja-JP": "フォルダ",
-    "de-DE": "Ordner",
-    "fr-FR": "Dossier",
-    "ko-KR": "폴더",
-    "$files": ["src/renderer/components/file-explorer/Organize/utils/helpers.ts(22446-22453)"],
-    "$id": 21842
-  },
-  "项目核心": {
-    "en-US": "Project core",
-    "es-ES": "Núcleo del proyecto",
-    "ar-EG": "جوهر المشروع",
-    "pt-PT": "Núcleo do projeto",
-    "ru-RU": "Ядро проекта",
-    "ja-JP": "プロジェクトのコア",
-    "de-DE": "Projektkern",
-    "fr-FR": "Noyau du projet",
-    "ko-KR": "프로젝트 핵심",
-    "$files": ["src/renderer/components/file-explorer/Organize/utils/helpers.ts(35912-35920)"],
-    "$id": 8698
-  },
-  "核心项目": {
-    "en-US": "Core projects",
-    "es-ES": "Proyectos centrales",
-    "ar-EG": "المشاريع الأساسية",
-    "pt-PT": "Projetos principais",
-    "ru-RU": "основные проекты",
-    "ja-JP": "コアプロジェクト",
-    "de-DE": "Kernprojekte",
-    "fr-FR": "Projets de base",
-    "ko-KR": "핵심 프로젝트",
-    "$files": ["src/renderer/components/file-explorer/Organize/utils/helpers.ts(35979-35987)"],
-    "$id": 8699
   },
   "获取待整理文件列表失败，请查看日志确认": {
     "en-US": "Failed to obtain the list of files to be sorted, please check the log for confirmation.",
@@ -9974,5 +9909,70 @@
     "ko-KR": "자동 검색이 완료되고 모든 파일이 분류되었습니다!",
     "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(115047-115067)"],
     "$id": 8731
+  },
+  "未知": {
+    "en-US": "Unknown",
+    "es-ES": "Desconocido",
+    "ar-EG": "غير معروف",
+    "pt-PT": "Desconhecido",
+    "ru-RU": "Неизвестно",
+    "ja-JP": "不明",
+    "de-DE": "Unbekannt",
+    "fr-FR": "Inconnu",
+    "ko-KR": "알 수 없음",
+    "$files": ["src/renderer/components/file-explorer/Organize/utils/helpers.ts(12195-12201)"],
+    "$id": 20733
+  },
+  "目录": {
+    "en-US": "Directory  ",
+    "es-ES": "Directorio  ",
+    "ar-EG": "دليل  ",
+    "pt-PT": "Diretório",
+    "ru-RU": "Каталог  ",
+    "ja-JP": "ディレクトリ  ",
+    "de-DE": "Verzeichnis",
+    "fr-FR": "Répertoire  ",
+    "ko-KR": "디렉터리  ",
+    "$files": ["src/renderer/components/file-explorer/Organize/utils/helpers.ts(22326-22332)"],
+    "$id": 21841
+  },
+  "文件夹": {
+    "en-US": "Folder",
+    "es-ES": "Carpeta",
+    "ar-EG": "مجلد\r",
+    "pt-PT": "Pasta",
+    "ru-RU": "Папка",
+    "ja-JP": "フォルダ",
+    "de-DE": "Ordner",
+    "fr-FR": "Dossier",
+    "ko-KR": "폴더",
+    "$files": ["src/renderer/components/file-explorer/Organize/utils/helpers.ts(22446-22453)"],
+    "$id": 21842
+  },
+  "项目核心": {
+    "en-US": "Project core",
+    "es-ES": "Núcleo del proyecto",
+    "ar-EG": "جوهر المشروع",
+    "pt-PT": "Núcleo do projeto",
+    "ru-RU": "Ядро проекта",
+    "ja-JP": "プロジェクトのコア",
+    "de-DE": "Projektkern",
+    "fr-FR": "Noyau du projet",
+    "ko-KR": "프로젝트 핵심",
+    "$files": ["src/renderer/components/file-explorer/Organize/utils/helpers.ts(35912-35920)"],
+    "$id": 8698
+  },
+  "核心项目": {
+    "en-US": "Core projects",
+    "es-ES": "Proyectos centrales",
+    "ar-EG": "المشاريع الأساسية",
+    "pt-PT": "Projetos principais",
+    "ru-RU": "основные проекты",
+    "ja-JP": "コアプロジェクト",
+    "de-DE": "Kernprojekte",
+    "fr-FR": "Projets de base",
+    "ko-KR": "핵심 프로젝트",
+    "$files": ["src/renderer/components/file-explorer/Organize/utils/helpers.ts(35979-35987)"],
+    "$id": 8699
   }
 }

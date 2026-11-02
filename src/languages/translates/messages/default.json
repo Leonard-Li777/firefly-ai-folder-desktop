@@ -100,7 +100,7 @@
     "de-DE": "Firefly Core Smart Folder muss auf Ihren Ordner \"Downloads\" zugreifen, um Dateien zu organisieren und abzurufen.",
     "fr-FR": "Firefly Core Smart Folder doit accéder à votre dossier \"Téléchargements\" pour organiser et récupérer les fichiers.",
     "ko-KR": "반딧불 코어 스마트 폴더는\"다운로드\"폴더에 액세스하여 파일을 구성하고 검색해야합니다.",
-    "$files": ["src/electron/constants/mac-permissions.ts(433-466)"],
+    "$files": ["src/electron/constants/mac-permissions.ts(446-479)"],
     "$id": 21849
   },
   "萤核智能文件夹需要访问您的“桌面”文件夹以整理和检索文件。": {
@@ -113,7 +113,7 @@
     "de-DE": "Firefly Core Smart Folders benötigt Zugriff auf Ihren \"Desktop\" -Ordner, um Dateien zu organisieren und abzurufen.",
     "fr-FR": "Firefly Core Smart Folders nécessite l'accès à votre dossier \"Bureau\" pour organiser et récupérer les fichiers.",
     "ko-KR": "반딧불 코어 스마트 폴더는 파일을 구성하고 검색 할\"바탕 화면\"폴더에 액세스해야합니다.",
-    "$files": ["src/electron/constants/mac-permissions.ts(506-539)"],
+    "$files": ["src/electron/constants/mac-permissions.ts(520-553)"],
     "$id": 21850
   },
   "萤核智能文件夹需要访问您的“文稿”文件夹以整理和检索文件。": {
@@ -126,7 +126,7 @@
     "de-DE": "Firefly Core Smart Folders benötigt Zugriff auf Ihren Ordner \"Dokumente\", um Dateien zu organisieren und abzurufen.",
     "fr-FR": "Firefly Core Smart Folders nécessite l'accès à votre dossier \"Documents\" pour organiser et récupérer les fichiers.",
     "ko-KR": "반딧불 코어 스마트 폴더는 파일을 구성하고 검색하기 위해\"문서\"폴더에 액세스해야합니다.",
-    "$files": ["src/electron/constants/mac-permissions.ts(581-614)"],
+    "$files": ["src/electron/constants/mac-permissions.ts(596-629)"],
     "$id": 21851
   },
   "萤核智能文件夹需要访问外接存储设备以整理和检索文件。": {
@@ -139,7 +139,7 @@
     "de-DE": "Firefly Core Smart Folders benötigt Zugriff auf externe Speichergeräte, um Dateien zu organisieren und abzurufen.",
     "fr-FR": "Les dossiers intelligents Firefly Core nécessitent l'accès à des périphériques de stockage externes pour organiser et récupérer des fichiers.",
     "ko-KR": "반딧불 코어 스마트 폴더는 파일을 구성하고 검색 할 외부 저장 장치에 액세스해야합니다.",
-    "$files": ["src/electron/constants/mac-permissions.ts(657-687)"],
+    "$files": ["src/electron/constants/mac-permissions.ts(673-703)"],
     "$id": 21852
   },
   "萤核智能文件夹需要访问网络共享卷以整理和检索文件。": {
@@ -152,7 +152,7 @@
     "de-DE": "Firefly Core Smart Folders benötigt Zugriff auf freigegebene Netzwerkvolumes, um Dateien zu organisieren und abzurufen.",
     "fr-FR": "Les dossiers intelligents Firefly Core nécessitent un accès aux volumes partagés du réseau pour organiser et récupérer les fichiers.",
     "ko-KR": "반딧불 코어 스마트 폴더는 파일을 구성하고 검색하기 위해 네트워크 공유 볼륨에 액세스해야합니다.",
-    "$files": ["src/electron/constants/mac-permissions.ts(728-757)"],
+    "$files": ["src/electron/constants/mac-permissions.ts(745-774)"],
     "$id": 21853
   },
   "接口不存在": {
@@ -580,19 +580,6 @@
     "$files": ["src/electron/runtime-services/database/database-service.ts(45736-45752)"],
     "$id": 7660
   },
-  "配额已用尽：已分析 {count} 个私有目录文件，当前配额为 {quota} 个文件。可以通过邀请好友解锁更多额度。": {
-    "en-US": "Quota exhausted: {count} private directory files analyzed, current quota is {quota} files. You can unlock more credits by inviting friends.",
-    "es-ES": "Cuota agotada: {count} archivos del directorio privado analizados, la cuota actual es {quota} archivos. Puedes desbloquear más créditos invitando a amigos.",
-    "ar-EG": "تم استنفاد الحصة: {count} من ملفات الدليل الخاص التي تم تحليلها، والحصة الحالية هي {quota} من الملفات. يمكنك فتح المزيد من الاعتمادات عن طريق دعوة الأصدقاء.",
-    "pt-PT": "Cota esgotada: {count} arquivos de diretório privado analisados, a cota atual é de {quota} arquivos. Você pode desbloquear mais créditos convidando amigos.",
-    "ru-RU": "Квота исчерпана: проанализировано {count} файлов частного каталога, текущая квота — {quota} файлов. Вы можете разблокировать больше кредитов, пригласив друзей.",
-    "ja-JP": "クォータが枯渇しました: {count} 個のプライベート ディレクトリ ファイルが分析されました。現在のクォータは {quota} ファイルです。友達を招待すると、より多くのクレジットのロックを解除できます。",
-    "de-DE": "Kontingent erschöpft: {count} private Verzeichnisdateien analysiert, aktuelles Kontingent beträgt {quota} Dateien. Sie können weitere Credits freischalten, indem Sie Freunde einladen.",
-    "fr-FR": "Quota épuisé : {count} fichiers du répertoire privé analysés, le quota actuel est de {quota} fichiers. Vous pouvez débloquer plus de crédits en invitant des amis.",
-    "ko-KR": "할당량 소진: {count}개의 개인 디렉터리 파일이 분석되었으며, 현재 할당량은 {quota}개 파일입니다. 친구를 초대하면 더 많은 크레딧을 잠금 해제할 수 있습니다.",
-    "$files": ["src/electron/runtime-services/invitation/invitation-service.ts(6038-6113)"],
-    "$id": 7662
-  },
   "正在处理中，请等待当前任务完成": {
     "en-US": "Processing, please wait for the current task to be completed",
     "es-ES": "Procesando, espere a que se complete la tarea actual",
@@ -603,8 +590,21 @@
     "de-DE": "Wird verarbeitet. Bitte warten Sie, bis die aktuelle Aufgabe abgeschlossen ist",
     "fr-FR": "Traitement en cours, veuillez attendre que la tâche en cours soit terminée",
     "ko-KR": "처리 중입니다. 현재 작업이 완료될 때까지 기다려 주세요.",
-    "$files": ["src/electron/runtime-services/integration/file-scanner-integration.ts(3383-3402)"],
+    "$files": ["src/electron/runtime-services/integration/file-scanner-integration.ts(3263-3282)"],
     "$id": 7661
+  },
+  "配额已用尽：已分析 {count} 个私有目录文件，当前配额为 {quota} 个文件。可以通过邀请好友解锁更多额度。": {
+    "en-US": "Quota exhausted: {count} private directory files analyzed, current quota is {quota} files. You can unlock more credits by inviting friends.",
+    "es-ES": "Cuota agotada: {count} archivos del directorio privado analizados, la cuota actual es {quota} archivos. Puedes desbloquear más créditos invitando a amigos.",
+    "ar-EG": "تم استنفاد الحصة: {count} من ملفات الدليل الخاص التي تم تحليلها، والحصة الحالية هي {quota} من الملفات. يمكنك فتح المزيد من الاعتمادات عن طريق دعوة الأصدقاء.",
+    "pt-PT": "Cota esgotada: {count} arquivos de diretório privado analisados, a cota atual é de {quota} arquivos. Você pode desbloquear mais créditos convidando amigos.",
+    "ru-RU": "Квота исчерпана: проанализировано {count} файлов частного каталога, текущая квота — {quota} файлов. Вы можете разблокировать больше кредитов, пригласив друзей.",
+    "ja-JP": "クォータが枯渇しました: {count} 個のプライベート ディレクトリ ファイルが分析されました。現在のクォータは {quota} ファイルです。友達を招待すると、より多くのクレジットのロックを解除できます。",
+    "de-DE": "Kontingent erschöpft: {count} private Verzeichnisdateien analysiert, aktuelles Kontingent beträgt {quota} Dateien. Sie können weitere Credits freischalten, indem Sie Freunde einladen.",
+    "fr-FR": "Quota épuisé : {count} fichiers du répertoire privé analysés, le quota actuel est de {quota} fichiers. Vous pouvez débloquer plus de crédits en invitant des amis.",
+    "ko-KR": "할당량 소진: {count}개의 개인 디렉터리 파일이 분석되었으며, 현재 할당량은 {quota}개 파일입니다. 친구를 초대하면 더 많은 크레딧을 잠금 해제할 수 있습니다.",
+    "$files": ["src/electron/runtime-services/invitation/invitation-service.ts(5865-5939)"],
+    "$id": 7662
   },
   "云端执行失败": {
     "en-US": "Cloud execution failed",
@@ -617,8 +617,8 @@
     "fr-FR": "L'exécution du cloud a échoué",
     "ko-KR": "클라우드 실행 실패",
     "$files": [
-      "src/electron/runtime-services/user-tier/user-tier-service.ts(8589-8599)",
-      "src/electron/runtime-services/user-tier/user-tier-service.ts(10782-10792)"
+      "src/electron/runtime-services/user-tier/user-tier-service.ts(8343-8353)",
+      "src/electron/runtime-services/user-tier/user-tier-service.ts(10472-10482)"
     ],
     "$id": 7663
   },

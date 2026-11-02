@@ -9,7 +9,7 @@
     "de-DE": "Willkommen - Erste Einrichtung",
     "fr-FR": "Bienvenue - Configuration initiale",
     "ko-KR": "어서오세요 - 초기 설정",
-    "$files": ["src/renderer/components/welcome/WelcomeStep1.tsx(2090-2105)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep1.tsx(2034-2049)"],
     "$id": 4599
   },
   "请选择您偏好的语言以继续": {
@@ -22,7 +22,7 @@
     "de-DE": "Bitte wählen Sie Ihre bevorzugte Sprache, um fortzufahren",
     "fr-FR": "Veuillez sélectionner la langue de votre choix pour continuer",
     "ko-KR": "계속 진행하기 위해 사용자 선호 언어를 선택하십시오.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep1.tsx(2172-2188)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep1.tsx(2115-2131)"],
     "$id": 4600
   },
   "语言选择": {
@@ -35,7 +35,7 @@
     "de-DE": "Sprachauswahl",
     "fr-FR": "Sélection de la langue",
     "ko-KR": "언어 선택",
-    "$files": ["src/renderer/components/welcome/WelcomeStep1.tsx(2619-2627)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep1.tsx(2552-2560)"],
     "$id": 4595
   },
   "继续": {
@@ -48,7 +48,7 @@
     "de-DE": "Weiter\r",
     "fr-FR": "Continuer\r",
     "ko-KR": "계속",
-    "$files": ["src/renderer/components/welcome/WelcomeStep1.tsx(4993-4999)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep1.tsx(4878-4884)"],
     "$id": 4583
   },
   "萤核智能文件夹": {
