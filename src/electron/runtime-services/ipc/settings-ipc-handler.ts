@@ -15,6 +15,7 @@ import { t } from '@app/languages'
 import { analysisQueueService } from '../analysis-queue-service'
 import { fileWatcherService } from '../filesystem/file-watcher-service'
 import { cleanupVirtualDirectoryOnDelete } from '../filesystem/virtual-directory-cleanup'
+export { cleanupVirtualDirectoryOnDelete }
 import { thumbnailService } from '../filesystem/thumbnail-service'
 import { omniClient } from '../../services/omni-client'
 

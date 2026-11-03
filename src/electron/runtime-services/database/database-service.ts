@@ -937,11 +937,11 @@ export class DatabaseService {
     // 1.2 [RV-03] 跨工作区孤儿文件过滤
     // 独占孤儿指纹 = 仅被当前重置目录集引用，未被其他工作区目录共享的指纹。
     // 共享文件（被其他工作区引用）只重置 workspace_files.is_analyzed，不清除全局摘要与向量。
+    // 使用子查询匹配目录集，杜绝在 IN 子句中重复解构大量 dirIds 突破 SQLite 变量上限
     const orphanFingerprintsSet = new Set<string>()
     for (let i = 0; i < allFingerprints.length; i += batchSize) {
       const batch = allFingerprints.slice(i, i + batchSize)
       const fpPlaceholders = batch.map(() => '?').join(',')
-      const dirPlaceholders = dirIds.map(() => '?').join(',')
       const orphanRows = this._db
         .prepare(
           `SELECT DISTINCT wf1.file_fingerprint
@@ -950,10 +950,12 @@ export class DatabaseService {
              AND NOT EXISTS (
                SELECT 1 FROM workspace_files wf2
                WHERE wf2.file_fingerprint = wf1.file_fingerprint
-                 AND wf2.directory_id NOT IN (${dirPlaceholders})
+                 AND wf2.directory_id NOT IN (
+                   SELECT id FROM workspace_directories WHERE path = ? OR path LIKE ?
+                 )
              )`
         )
-        .all(...batch, ...dirIds) as { file_fingerprint: string }[]
+        .all(...batch, directoryPath, likePattern) as { file_fingerprint: string }[]
       for (const r of orphanRows) {
         orphanFingerprintsSet.add(r.file_fingerprint)
       }
@@ -1039,8 +1041,9 @@ export class DatabaseService {
           ).run(...batch)
 
           // [RV-03] 清理 file_video_segments：防止切片 completed 状态残留导致重置后调度器跳过重新分析
+          // 注：file_video_segments 创世 DDL 外键列名为 file_id (REFERENCES files(file_fingerprint))
           this._db!.prepare(
-            `DELETE FROM file_video_segments WHERE file_fingerprint IN (${placeholders})`
+            `DELETE FROM file_video_segments WHERE file_id IN (${placeholders})`
           ).run(...batch)
 
           // 清理视频分块记录，确保再次分析时切片重新计算
