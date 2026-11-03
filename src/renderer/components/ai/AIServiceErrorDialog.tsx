@@ -196,7 +196,7 @@ export const AIServiceErrorDialog: React.FC<IAIServiceErrorDialogProps> = ({
    */
   const handleSwitchToSimple = useCallback(() => {
     useSettingsStore.getState().updateConfigValue('ANALYSIS_MODE', 'simple')
-    useSettingsStore.getState().openSettings(SettingsCategory.BASIC_AI_ENGINE_CONFIG)
+    useSettingsStore.getState().openSettings(SettingsCategory.WORKSPACE_CONFIG)
     onClose()
   }, [onClose])
 

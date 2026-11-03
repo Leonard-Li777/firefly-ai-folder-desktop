@@ -491,7 +491,7 @@ const DirectoryProfileSectionComponent: React.FC<{
                         </div>
                         <button
                           type="button"
-                          onClick={() => openSettings(SettingsCategory.BASIC_AI_ENGINE_CONFIG)}
+                          onClick={() => openSettings(SettingsCategory.WORKSPACE_CONFIG)}
                           className="text-amber-700 dark:text-amber-300 hover:text-amber-800 dark:hover:text-amber-200 hover:underline font-medium inline-flex items-center gap-0.5 flex-shrink-0 cursor-pointer"
                         >
                           <span>{t('切换分析模式')}</span>
@@ -1065,7 +1065,7 @@ const DirectoryProfileSectionComponent: React.FC<{
                               </div>
                               <button
                                 type="button"
-                                onClick={() => openSettings(SettingsCategory.BASIC_AI_ENGINE_CONFIG)}
+                                onClick={() => openSettings(SettingsCategory.WORKSPACE_CONFIG)}
                                 className="text-amber-700 dark:text-amber-300 hover:text-amber-800 dark:hover:text-amber-200 hover:underline font-medium inline-flex items-center gap-0.5 flex-shrink-0 cursor-pointer"
                               >
                                 <span>{t('切换分析模式')}</span>

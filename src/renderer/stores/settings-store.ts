@@ -106,7 +106,7 @@ export const settingsCategories = (): ISettingsCategoryInfo[] => [
     id: SettingsCategory.BASIC_AI_ENGINE_CONFIG,
     name: t('基础AI引擎配置'),
     icon: 'tune',
-    description: t('分析模式、嵌入模型与向量维度、视频切片抽帧')
+    description: t('视觉语义搜索、多模态索引维护与工作区策略总览')
   },
   // PRD-0044：模型管理（AI_MODEL）分类清退，与 AI引擎配置 合并为唯一「高级AI引擎配置」tab
   {
