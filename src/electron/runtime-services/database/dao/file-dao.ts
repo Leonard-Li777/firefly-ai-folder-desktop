@@ -56,6 +56,8 @@ function dimensionForCode(code: string, viaParentCode?: string | null): string {
   return code
 }
 
+export const MAX_SEGMENT_ATTEMPTS = 3
+
 export class FileDao {
   private dimensionsCache: any[] | null = null
   private ftsSearchStmtWithWorkspace: Statement | null = null
@@ -2380,5 +2382,211 @@ export class FileDao {
     if (!fileFingerprint) return
     this.db.prepare(`DELETE FROM file_video_chunks WHERE file_fingerprint = ?`).run(fileFingerprint)
   }
-}
 
+  /**
+   * 记录视频片段调度任务为 pending (Phase 2 流式流水线 / ISS-37)
+   */
+  upsertVideoSegment(segment: {
+    id: string
+    fileId: string
+    segmentIndex: number
+    startPtsSec: number
+    endPtsSec: number
+    paramsHash: string
+    status?: 'locked' | 'pending'
+  }): void {
+    const now = Date.now()
+    const initialStatus = segment.status || 'pending'
+    this.db
+      .prepare(
+        `INSERT INTO file_video_segments (
+           id, file_id, segment_index, start_pts_sec, end_pts_sec,
+           status, attempt_count, params_hash, created_at, updated_at
+         ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?)
+         ON CONFLICT(file_id, segment_index) DO UPDATE SET
+           start_pts_sec = excluded.start_pts_sec,
+           end_pts_sec = excluded.end_pts_sec,
+           params_hash = excluded.params_hash,
+           updated_at = excluded.updated_at`
+      )
+      .run(
+        segment.id,
+        segment.fileId,
+        segment.segmentIndex,
+        segment.startPtsSec,
+        segment.endPtsSec,
+        initialStatus,
+        segment.paramsHash,
+        now,
+        now
+      )
+  }
+
+  /**
+   * 派发视频片段执行：原子累加 attempt_count 并标记 processing，超限置 failed (ISS-25 / ISS-37)
+   */
+  markVideoSegmentProcessing(fileId: string, segmentIndex: number): boolean {
+    const row = this.db
+      .prepare('SELECT attempt_count FROM file_video_segments WHERE file_id = ? AND segment_index = ?')
+      .get(fileId, segmentIndex) as { attempt_count: number } | undefined
+
+    if (!row) return false
+    const nextAttempts = (row.attempt_count || 0) + 1
+    const now = Date.now()
+
+    if (nextAttempts > MAX_SEGMENT_ATTEMPTS) {
+      this.db
+        .prepare(
+          `UPDATE file_video_segments
+           SET status = 'failed', attempt_count = ?, error_message = 'Max retry attempts exceeded (poison pill guard)', updated_at = ?
+           WHERE file_id = ? AND segment_index = ?`
+        )
+        .run(nextAttempts, now, fileId, segmentIndex)
+      return false
+    }
+
+    this.db
+      .prepare(
+        `UPDATE file_video_segments
+         SET status = 'processing', attempt_count = ?, updated_at = ?
+         WHERE file_id = ? AND segment_index = ?`
+      )
+      .run(nextAttempts, now, fileId, segmentIndex)
+    return true
+  }
+
+  /**
+   * 标记视频片段分析完成 (ISS-37)
+   */
+  markVideoSegmentCompleted(
+    fileId: string,
+    segmentIndex: number,
+    stats: { frameCount: number; visualEmbeddedCount: number; asrTranscriptChars: number }
+  ): void {
+    const now = Date.now()
+    this.db
+      .prepare(
+        `UPDATE file_video_segments
+         SET status = 'completed',
+             frame_count = ?,
+             visual_embedded_count = ?,
+             asr_transcript_chars = ?,
+             error_message = NULL,
+             updated_at = ?
+         WHERE file_id = ? AND segment_index = ?`
+      )
+      .run(
+        stats.frameCount,
+        stats.visualEmbeddedCount,
+        stats.asrTranscriptChars,
+        now,
+        fileId,
+        segmentIndex
+      )
+  }
+
+  /**
+   * 系统启动时重置残留的 processing 状态，保护崩溃后任务安全恢复 (ISS-25 / ISS-37)
+   */
+  /**
+   * 获取指定文件的所有切片记录，按序号升序排列 (ISS-49)
+   */
+  getVideoSegments(fileId: string): Array<{
+    id: string
+    file_id: string
+    segment_index: number
+    start_pts_sec: number
+    end_pts_sec: number
+    frame_count: number
+    visual_embedded_count: number
+    asr_transcript_chars: number
+    status: 'locked' | 'pending' | 'processing' | 'completed' | 'failed'
+    attempt_count: number
+    params_hash: string
+  }> {
+    return this.db
+      .prepare('SELECT * FROM file_video_segments WHERE file_id = ? ORDER BY segment_index ASC')
+      .all(fileId) as any[]
+  }
+
+  /**
+   * 升级为 Pro 时，批量解锁被锁定的切片 (locked -> pending) (ISS-66)
+   */
+  unlockVideoSegments(): number {
+    const now = Date.now()
+    const result = this.db
+      .prepare(
+        `UPDATE file_video_segments
+         SET status = 'pending', updated_at = ?
+         WHERE status = 'locked'`
+      )
+      .run(now)
+    return result.changes
+  }
+
+  /**
+   * 中途会员失效或回落时，重新将 pending 切片置为 locked (ISS-66)
+   */
+  lockPendingVideoSegments(fileId?: string): number {
+    const now = Date.now()
+    if (fileId) {
+      const result = this.db
+        .prepare(
+          `UPDATE file_video_segments
+           SET status = 'locked', updated_at = ?
+           WHERE file_id = ? AND status = 'pending'`
+        )
+        .run(now, fileId)
+      return result.changes
+    }
+    const result = this.db
+      .prepare(
+        `UPDATE file_video_segments
+         SET status = 'locked', updated_at = ?
+         WHERE status = 'pending' AND segment_index > 0`
+      )
+      .run(now)
+    return result.changes
+  }
+
+  resetDanglingVideoSegmentsOnStartup(): void {
+    const now = Date.now()
+    this.db
+      .prepare(
+        `UPDATE file_video_segments
+         SET status = 'failed', error_message = 'Aborted by daemon restart after max attempts', updated_at = ?
+         WHERE status = 'processing' AND attempt_count >= ${MAX_SEGMENT_ATTEMPTS}`
+      )
+      .run(now)
+
+    this.db
+      .prepare(
+        `UPDATE file_video_segments
+         SET status = 'pending', updated_at = ?
+         WHERE status = 'processing'`
+      )
+      .run(now)
+  }
+
+  /**
+   * 查找存在未完成切片（pending 状态）且在工作区中的视频文件 (ISS-60)
+   */
+  getIncompleteVideoFiles(): Array<{
+    fileFingerprint: string
+    workspaceId: string
+    path: string
+    name: string
+    size: number
+    extension: string
+  }> {
+    return this.db
+      .prepare(
+        `SELECT DISTINCT s.file_id AS fileFingerprint, wf.workspace_id AS workspaceId, wf.path, wf.name, f.size, f.extension
+         FROM file_video_segments s
+         JOIN workspace_files wf ON s.file_id = wf.file_fingerprint
+         JOIN files f ON s.file_id = f.file_fingerprint
+         WHERE s.status = 'pending'`
+      )
+      .all() as any[]
+  }
+}

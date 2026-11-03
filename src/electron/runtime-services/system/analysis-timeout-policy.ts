@@ -144,7 +144,21 @@ export function resolveAnalysisTimeoutBudget(
   mimeType?: string | null
 ): AnalysisTimeoutBudget {
   const kind = detectAnalysisFileKind(filePath, isMediaHint, mimeType)
-  const totalMs = Math.max(0, baseMs) + KIND_EXTRA_TIMEOUT_MS[kind]
+  let totalMs = Math.max(0, baseMs) + KIND_EXTRA_TIMEOUT_MS[kind]
+
+  // 视频分析动态看门狗水位上浮：若用户配置了高配额抓图，自动同步撑大总超时与 CPU 上限 (Spec §9)
+  if (kind === 'video') {
+    try {
+      const mod = require('../../config/config-orchestrator') as typeof import('../../config/config-orchestrator')
+      const quota = mod.ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_QUOTA_MAX' as any) ?? 60
+      const tokens = mod.ConfigOrchestrator.getInstance().getValue<number>('VIDEO_SOFT_TOKEN_BUDGET') ?? 140
+      const asrSec = mod.ConfigOrchestrator.getInstance().getValue<number>('VIDEO_ASR_DURATION' as any) ?? 60
+      const { computeDynamicVideoTimeoutMs } = require('@firefly/shared')
+      totalMs = computeDynamicVideoTimeoutMs(quota, tokens, asrSec, totalMs)
+    } catch {
+      // 单测或未初始化时回落基线
+    }
+  }
   const desired = AI_STAGE_RESERVE_MS[kind]
   // 优先满足 AI 保底；预算不够时退到「至少给 CPU 段留 1s」
   const aiReserveMs = Math.max(

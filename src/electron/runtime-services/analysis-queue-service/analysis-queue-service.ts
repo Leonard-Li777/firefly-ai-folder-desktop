@@ -346,6 +346,14 @@ export class AnalysisQueueService {
 
       await this.queueManager.loadFromDB()
       await this.queueManager.validateQueueConsistency()
+      // 启动时清理残留的 processing 状态，保护崩溃后任务安全恢复 (ISS-25 / ISS-37)
+      if (db) {
+        try {
+          databaseService.resetDanglingVideoSegmentsOnStartup()
+        } catch (error) {
+          logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 启动重置视频切片状态失败:', error)
+        }
+      }
 
       // 仅当适配器就绪时才视为完成初始化；否则保留未初始化态，
       // 让后续 ensureInitialized() 能重新走一遍装配（引擎后续拉起时即可恢复）。
@@ -1171,6 +1179,52 @@ export class AnalysisQueueService {
    */
   public async runCanonicalMaintenance(reason = 'manual'): Promise<void> {
     await canonicalMaintenanceService.runMaintenance(reason)
+  }
+
+  /**
+   * 恢复与重新入队存在未完成切片的视频（例如会员升级为 Pro 后唤醒待续作长视频，ISS-60）
+   */
+  public async requeueIncompleteVideos(): Promise<number> {
+    // 1. 系统崩溃或残留重置：先将 processing 切片恢复为 pending (超限熔断为 failed) (ISS-75)
+    databaseService.resetDanglingVideoSegmentsOnStartup()
+
+    // 2. 批量解锁因免费限制而锁定的切片 (locked -> pending, ISS-66 / ISS-75)
+    const unlockedCount = databaseService.unlockVideoSegments()
+    if (unlockedCount > 0) {
+      logger.info(
+        LogCategory.ANALYSIS_QUEUE,
+        `[分析队列] 会员升级 Pro，成功解锁 ${unlockedCount} 个待续作视频切片`
+      )
+    }
+
+    // 2. 查询包含 pending 切片的视频文件 (DISTINCT 指纹去重，防多工作区重复入队)
+    const incompleteVideos = databaseService.getIncompleteVideoFiles()
+    if (!incompleteVideos || incompleteVideos.length === 0) {
+      return 0
+    }
+
+    // 按 fileFingerprint 去重
+    const uniqueMap = new Map<string, typeof incompleteVideos[0]>()
+    for (const v of incompleteVideos) {
+      if (!uniqueMap.has(v.fileFingerprint)) {
+        uniqueMap.set(v.fileFingerprint, v)
+      }
+    }
+    const deduplicated = Array.from(uniqueMap.values())
+
+    logger.info(
+      LogCategory.ANALYSIS_QUEUE,
+      `[分析队列] 发现 ${deduplicated.length} 个未完成长视频，执行升级后自动断点续作入队`
+    )
+    const inputs: EnqueueInput[] = deduplicated.map(v => ({
+      path: v.path,
+      name: v.name || path.basename(v.path),
+      size: v.size || 0,
+      type: v.extension || path.extname(v.path).toLowerCase() || 'video',
+      workspaceId: Number(v.workspaceId) || undefined
+    }))
+    await this.addItems(inputs, true)
+    return deduplicated.length
   }
 
   getMaxRetries(): number {

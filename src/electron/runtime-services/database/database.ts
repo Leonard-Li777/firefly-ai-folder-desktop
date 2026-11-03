@@ -356,6 +356,29 @@ export const GENESIS_V1_SCHEMA = `
     UNIQUE(file_fingerprint, chunk_index)
   );
 
+  -- 16.6 视频宏观时间片段切片分析作业调度表 (Genesis V1 创世基线 / Phase 2 流式流水线与覆盖契约)
+  CREATE TABLE IF NOT EXISTS file_video_segments (
+    id TEXT PRIMARY KEY,
+    file_id TEXT NOT NULL,
+    segment_index INTEGER NOT NULL,
+    start_pts_sec REAL NOT NULL,
+    end_pts_sec REAL NOT NULL,
+    frame_count INTEGER NOT NULL DEFAULT 0,
+    visual_embedded_count INTEGER NOT NULL DEFAULT 0,
+    asr_transcript_chars INTEGER NOT NULL DEFAULT 0,
+    status TEXT NOT NULL CHECK(status IN ('locked', 'pending', 'processing', 'completed', 'failed')),
+    attempt_count INTEGER NOT NULL DEFAULT 0,
+    params_hash TEXT NOT NULL,
+    error_message TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    UNIQUE(file_id, segment_index),
+    FOREIGN KEY (file_id) REFERENCES files(file_fingerprint) ON DELETE CASCADE
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_video_segments_file_seq 
+  ON file_video_segments(file_id, segment_index);
+
 
   -- 17. FTS5 全文搜索虚拟表（标准独立存储表）
   -- 避免 contentless 模式在多表异步写入/更新时发生 token 不匹配导致 SQLITE_CORRUPT_VTAB (database disk image is malformed)
@@ -392,6 +415,8 @@ export const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_files_group ON files(file_group);
   CREATE INDEX IF NOT EXISTS idx_files_extension ON files(extension);
   CREATE INDEX IF NOT EXISTS idx_workspace_files_workspace_id ON workspace_files(workspace_id);
+  CREATE INDEX IF NOT EXISTS idx_workspace_files_ws_fp ON workspace_files(workspace_id, file_fingerprint);
+  CREATE INDEX IF NOT EXISTS idx_workspace_files_fp_ws ON workspace_files(file_fingerprint, workspace_id);
   CREATE INDEX IF NOT EXISTS idx_workspace_files_dir_id ON workspace_files(directory_id);
   CREATE INDEX IF NOT EXISTS idx_workspace_files_fingerprint ON workspace_files(file_fingerprint);
   CREATE INDEX IF NOT EXISTS idx_workspace_files_fingerprint_analyzed ON workspace_files(file_fingerprint, is_analyzed);
@@ -786,3 +811,28 @@ export function registerDatabaseFunctions(db: any): void {
     // 忽略重复注册异常
   }
 }
+
+/**
+ * 视频切片作业创世 DDL 常量，供单元测试与系统创世单源复用 (ISS-79)
+ */
+export const GENESIS_FILE_VIDEO_SEGMENTS_DDL = `
+  CREATE TABLE IF NOT EXISTS file_video_segments (
+    id TEXT PRIMARY KEY,
+    file_id TEXT NOT NULL,
+    segment_index INTEGER NOT NULL,
+    start_pts_sec REAL NOT NULL,
+    end_pts_sec REAL NOT NULL,
+    frame_count INTEGER NOT NULL DEFAULT 0,
+    visual_embedded_count INTEGER NOT NULL DEFAULT 0,
+    asr_transcript_chars INTEGER NOT NULL DEFAULT 0,
+    status TEXT NOT NULL CHECK(status IN ('locked', 'pending', 'processing', 'completed', 'failed')),
+    attempt_count INTEGER NOT NULL DEFAULT 0,
+    params_hash TEXT NOT NULL,
+    error_message TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    UNIQUE(file_id, segment_index),
+    FOREIGN KEY (file_id) REFERENCES files(file_fingerprint) ON DELETE CASCADE
+  );
+  CREATE INDEX IF NOT EXISTS idx_video_segments_file_seq ON file_video_segments(file_id, segment_index);
+`

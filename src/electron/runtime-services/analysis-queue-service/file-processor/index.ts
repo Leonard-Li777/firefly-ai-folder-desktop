@@ -4,12 +4,15 @@ import {
   MagikaFileCategory as MagikaCategory,
   MarkitdownBenchmark,
   SmartNameSource,
-  Stage1Benchmark
+  Stage1Benchmark,
+  UserTier
 } from '@firefly/types'
 import {
   LogCategory,
   logger,
   PerformanceTimer,
+  computeVideoVisualParamsHash,
+  shouldReuseVideoSegment,
   FileCategory,
   getFileCategory,
   isCategory,
@@ -46,6 +49,7 @@ import {
 } from '../../../config/analysis-mode'
 import { databaseService } from '../../database/database-service'
 import { quotaChecker } from '../../user-tier/quota-checker-proxy'
+import { userTierService } from '../../user-tier/user-tier-service'
 import { magikaService } from '../../system/magika-service'
 import {
   fileAnalysisService,
@@ -571,19 +575,35 @@ export async function persistOmniVectors(params: OmniVectorPersistenceParams): P
 export async function cleanupOrphanedVideoChunks(
   db: any,
   fileFingerprint: string,
-  omniClientInstance: { deleteVectors: (fps: string[]) => Promise<any> }
+  omniClientInstance: { deleteVectors: (fps: string[]) => Promise<any> },
+  startSec?: number,
+  endSec?: number
 ): Promise<string[]> {
   if (!fileFingerprint || fileFingerprint.startsWith('temp_')) return []
   try {
-    const oldChunks = db
-      .prepare('SELECT chunk_index FROM file_video_chunks WHERE file_fingerprint = ?')
-      .all(fileFingerprint) as Array<{ chunk_index: number }>
+    let query = 'SELECT chunk_index FROM file_video_chunks WHERE file_fingerprint = ?'
+    const params: any[] = [fileFingerprint]
+    if (startSec !== undefined && endSec !== undefined) {
+      query += ' AND start_sec >= ? AND start_sec < ?'
+      params.push(startSec, endSec)
+    }
+    const oldChunks = db.prepare(query).all(...params) as Array<{ chunk_index: number }>
     if (!oldChunks || oldChunks.length === 0) return []
     const oldChunkFps = oldChunks.map(c => `${fileFingerprint}:c${c.chunk_index}`)
     await omniClientInstance.deleteVectors(oldChunkFps)
+
+    // 同步从本地 SQLite file_video_chunks 中移除清理掉的旧切片元数据
+    let deleteQuery = 'DELETE FROM file_video_chunks WHERE file_fingerprint = ?'
+    const deleteParams: any[] = [fileFingerprint]
+    if (startSec !== undefined && endSec !== undefined) {
+      deleteQuery += ' AND start_sec >= ? AND start_sec < ?'
+      deleteParams.push(startSec, endSec)
+    }
+    db.prepare(deleteQuery).run(...deleteParams)
+
     logger.info(
       LogCategory.ANALYSIS_QUEUE,
-      `[FileProcessor] 重分析前已清理 ${oldChunkFps.length} 条旧切片向量: ${fileFingerprint}`
+      `[FileProcessor] 已精确清理 [${startSec ?? 0}s ~ ${endSec ?? 'all'}s] 范围内的 ${oldChunkFps.length} 条旧切片向量: ${fileFingerprint}`
     )
     return oldChunkFps
   } catch (cleanupErr) {
@@ -2019,7 +2039,10 @@ export class FileProcessor {
         extractFileCategory === FileCategory.AUDIO || extractFileCategory === FileCategory.VIDEO
       const isVideo = extractFileCategory === FileCategory.VIDEO
       // 语音识别时长：参与 Omni 侧 90s 向量预算求解（ASR 成本 = min(A, 可分析时长)·r）
-      const audioAnalysisDuration = isAudioOrVideo
+      // 视频文件与纯音频解耦：视频优先读取专属 VIDEO_ASR_DURATION，纯音频读取全局 AUDIO_ANALYSIS_DURATION
+      const audioAnalysisDuration = isVideo
+        ? (ConfigOrchestrator.getInstance().getValue<number>('VIDEO_ASR_DURATION') ?? 60)
+        : isAudioOrVideo
         ? (ConfigOrchestrator.getInstance().getValue<number>('AUDIO_ANALYSIS_DURATION') ?? 30)
         : undefined
       // 抽帧间隔已从设置页移除：由引擎按预算自决（内部下限 1.0s，长视频自动放大），不再读配置
@@ -2027,6 +2050,16 @@ export class FileProcessor {
       const videoSoftTokenBudget = isVideo
         ? (ConfigOrchestrator.getInstance().getValue<number>('VIDEO_SOFT_TOKEN_BUDGET') ?? 140)
         : undefined
+      let isFreeUser = false
+      try {
+        const tierProfile = await userTierService.getProfile()
+        isFreeUser = tierProfile.tier === UserTier.FREE
+      } catch {
+        // 未就绪或异常时默认受限
+        isFreeUser = true
+      }
+      // 免费会员封顶前 300 秒视界（ISS-01 / ISS-42），Pro 用户为 undefined 全片分析
+      const videoMaxAnalyzeSec = isVideo && isFreeUser ? 300 : undefined
 
       // 0. 统一调用 Omni 原生引擎进行端到端内容与元数据提取（覆盖文档、图片、纯文本、代码、音视频、字体等所有格式并输出真实 Benchmark）
       //
@@ -2039,31 +2072,175 @@ export class FileProcessor {
         ? await thumbnailService.hasThumbnail(rootWorkspaceDir.path, fileFingerprint)
         : { exists: false, relativePath: '', absolutePath: '' }
 
-      // 针对音视频文件，在重新提取分析前精确清理 Omni 中的旧切片向量 (Ticket 03 裁定项 3 治理)
-      if (isAudioOrVideo) {
-        await cleanupOrphanedVideoChunks(db, fileFingerprint, omniClient)
-      }
+      // 旧切片清理改为在提取成功后按窗口区间事务性替换，防止崩溃丢数据与跨窗口误删 (ISS-74)
+
+      const existingSegments = isVideo ? databaseService.getVideoSegments(fileFingerprint) : []
+      const existingSegMap = new Map(existingSegments.map(s => [s.segment_index, s]))
 
       const anydocStartTime = Date.now()
-      const anydocResult: AnydocResult = await anydocService
-        .perceive(filePath, {
-          language,
-          // 音视频文件启用 SenseVoice 语音转录，并传递配置的截取时长
-          enableAudioTranscript: isAudioOrVideo ? true : undefined,
-          audioAnalysisDuration: audioAnalysisDuration,
-          videoFrameIntervalSeconds: videoFrameIntervalSeconds,
-          videoSoftTokenBudget: videoSoftTokenBudget,
-          // 显式激活 Tier 1 端侧纯 CPU 文本特征与 384d 向量提取 (Issue #631)
-          enableTextAnalysis: true,
-          // 若磁盘已存在缩略图，通知 Omni 无需生成缩略图封面
-          generateThumbnail: !existingThumbCheck.exists,
-          // 传递文件指纹以激活 Omni 内部就地批量向量写入 (Ticket 04)
-          fileFingerprint
-        })
-        .catch(err => {
-          logger.warn(LogCategory.ANALYSIS_QUEUE, `[Omni/anydoc] 提取失败: ${err.message}`)
-          return { content: '', assets: [], metadata: undefined, benchmark: undefined }
-        })
+      let anydocResult: AnydocResult = { content: '', assets: [], metadata: undefined, benchmark: undefined }
+
+      const videoFrameQuotaMax = isVideo
+        ? (ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_QUOTA_MAX' as any) ?? 60)
+        : 60
+      const videoCutSensitivity = isVideo
+        ? (ConfigOrchestrator.getInstance().getValue<any>('VIDEO_CUT_SENSITIVITY' as any) ?? 'medium')
+        : 'medium'
+      // 严格仅受画面提取与表征参数影响，杜绝纯音频 Key 误污染视频切片指纹 (ISS-65)
+      const paramsHash = computeVideoVisualParamsHash(
+        videoFrameQuotaMax,
+        videoSoftTokenBudget ?? 140,
+        videoCutSensitivity
+      )
+
+      // 0 号切片处理 (名义 0 ~ 300s，支持降档不失效与升级重提取，ISS-65)
+      const seg0 = existingSegMap.get(0)
+      const seg0Completed = seg0?.status === 'completed' && shouldReuseVideoSegment(seg0.params_hash, paramsHash)
+      if (isVideo && !seg0Completed) {
+        try {
+          databaseService.upsertVideoSegment({
+            id: `${fileFingerprint}_seg_0`,
+            fileId: fileFingerprint,
+            segmentIndex: 0,
+            startPtsSec: 0,
+            endPtsSec: 300,
+            paramsHash,
+            status: 'pending'
+          })
+          databaseService.markVideoSegmentProcessing(fileFingerprint, 0)
+        } catch (e) {
+          logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 0号视频片段登记失败:', e)
+        }
+      }
+
+      if (!seg0Completed) {
+        anydocResult = await anydocService
+          .perceive(filePath, {
+            language,
+            // 音视频文件在 0 号切片启用 SenseVoice 语音转录，并传递配置的截取时长
+            enableAudioTranscript: isAudioOrVideo ? true : undefined,
+            audioAnalysisDuration: audioAnalysisDuration,
+            videoFrameIntervalSeconds: videoFrameIntervalSeconds,
+            videoSoftTokenBudget: videoSoftTokenBudget,
+            videoAnalyzeStartSec: 0,
+            videoMaxAnalyzeSec: isFreeUser ? 300 : undefined,
+            enableTextAnalysis: true,
+            generateThumbnail: !existingThumbCheck.exists,
+            fileFingerprint
+          })
+          .catch(err => {
+            logger.warn(LogCategory.ANALYSIS_QUEUE, `[Omni/anydoc] 0号切片提取失败: ${err.message}`)
+            return { content: '', assets: [], metadata: undefined, benchmark: undefined }
+          })
+
+        if (isVideo) {
+          try {
+            // 仅在提取成功后精确清理 0~300s 窗口范围的旧向量 (ISS-74)
+            await cleanupOrphanedVideoChunks(db, fileFingerprint, omniClient, 0, 300)
+            databaseService.markVideoSegmentCompleted(fileFingerprint, 0, {
+              frameCount: anydocResult.perception?.video_chunks?.length || 0,
+              visualEmbeddedCount: anydocResult.perception?.video_chunks?.length || 0,
+              asrTranscriptChars: (anydocResult.audioTranscript || '').length
+            })
+          } catch (e) {
+            logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 0号视频片段完成更新失败:', e)
+          }
+        }
+      }
+
+      // 视频切片流水线与断点续作调度 (ISS-48 / ISS-49 / ISS-50 / ISS-60)
+      if (isVideo) {
+        const probedDuration = (anydocResult.metadata as any)?.duration || 0
+        if (probedDuration > 300) {
+          const chunkSpan = 300
+          const numChunks = Math.ceil(probedDuration / chunkSpan)
+
+          // 1. 批量登记后续切片：免费用户标记为 locked (门禁锁定)，Pro 用户标记为 pending (ISS-66)
+          for (let k = 1; k < numChunks; k++) {
+            if (!existingSegMap.has(k)) {
+              databaseService.upsertVideoSegment({
+                id: `${fileFingerprint}_seg_${k}`,
+                fileId: fileFingerprint,
+                segmentIndex: k,
+                startPtsSec: k * chunkSpan,
+                endPtsSec: Math.min((k + 1) * chunkSpan, probedDuration),
+                paramsHash,
+                status: isFreeUser ? 'locked' : 'pending'
+              })
+            }
+          }
+
+          // 免费用户封顶首个 300s 切片，后续切片以 locked 锁死，升级 Pro 时解锁续作 (ISS-66)
+          if (isFreeUser) {
+            logger.info(
+              LogCategory.ANALYSIS_QUEUE,
+              `[分析队列] 免费会员视频视界封顶 300s，后续 ${numChunks - 1} 个切片标记为 locked 等待升级 Pro 解锁: ${filePath}`
+            )
+          } else {
+            // 2. Pro 用户逐个切片流式派发（跳过已 completed 且可沿用的切片，降档不失效，ISS-65）
+            for (let k = 1; k < numChunks; k++) {
+              // 派发前读取本地缓存的用户等级（三态设计：明确确认 FREE 才锁定，未知态保持排队不误锁，ISS-76）
+              const cachedTierData = userTierService.getCachedData()
+              if (cachedTierData && cachedTierData.tier === UserTier.FREE) {
+                logger.info(
+                  LogCategory.ANALYSIS_QUEUE,
+                  `[分析队列] 确认当前为免费用户，后续切片锁定为 locked: ${filePath}`
+                )
+                databaseService.lockPendingVideoSegments(fileFingerprint)
+                break
+              }
+
+              const segK = existingSegMap.get(k)
+              if (segK?.status === 'completed' && shouldReuseVideoSegment(segK.params_hash, paramsHash)) {
+                continue
+              }
+              this.throwIfAborted(signal)
+              const chunkStart = k * chunkSpan
+              const chunkEnd = Math.min((k + 1) * chunkSpan, probedDuration)
+
+              const canProceed = databaseService.markVideoSegmentProcessing(fileFingerprint, k)
+              if (!canProceed) {
+                logger.warn(LogCategory.ANALYSIS_QUEUE, `[分析队列] 片段 ${k} 重试超限熔断，跳过`)
+                continue
+              }
+
+              try {
+                const chunkResult = await anydocService.perceive(filePath, {
+                  language,
+                  enableAudioTranscript: false, // 后续切片不重复执行 ASR (ISS-50)
+                  videoFrameIntervalSeconds: videoFrameIntervalSeconds,
+                  videoSoftTokenBudget: videoSoftTokenBudget,
+                  videoAnalyzeStartSec: chunkStart,
+                  videoMaxAnalyzeSec: chunkEnd,
+                  enableTextAnalysis: false,
+                  generateThumbnail: false,
+                  fileFingerprint
+                })
+
+                const chunkFrames = chunkResult.perception?.video_chunks || []
+                if (anydocResult.perception?.video_chunks && chunkFrames.length > 0) {
+                  anydocResult.perception.video_chunks.push(...chunkFrames)
+                }
+
+                // 仅在当前片段提取成功后，精确清理该片段 [chunkStart, chunkEnd) 区间内的旧切片向量 (ISS-74)
+                await cleanupOrphanedVideoChunks(db, fileFingerprint, omniClient, chunkStart, chunkEnd)
+
+                databaseService.markVideoSegmentCompleted(fileFingerprint, k, {
+                  frameCount: chunkFrames.length,
+                  visualEmbeddedCount: chunkFrames.length,
+                  asrTranscriptChars: 0
+                })
+
+                // 协程让出 50ms，释放 Node 事件循环 (ISS-48 / AC 13.2.2)
+                await new Promise(resolve => setTimeout(resolve, 50))
+              } catch (err: any) {
+                logger.warn(LogCategory.ANALYSIS_QUEUE, `[分析队列] 片段 ${k} 分析异常: ${err.message}`)
+              }
+            }
+          }
+        }
+      }
+
       const anydocDurationMs = Date.now() - anydocStartTime
 
       const anydocTextBytes = Buffer.byteLength(

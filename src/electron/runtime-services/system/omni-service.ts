@@ -122,6 +122,10 @@ export interface OmniPerceptionOptions {
   videoFrameQuotaMax?: number
   /** 镜头切换捕捉敏锐度 ('low' | 'medium' | 'high'，默认 'medium') */
   videoCutSensitivity?: string
+  /** 视频分析视界上限（秒，例如免费用户前 300 秒，缺省为 undefined 全片分析）(ISS-01 / ISS-32) */
+  videoMaxAnalyzeSec?: number
+  /** 视频分析起始时间（秒，用于长视频按 300s 切片独立派发，缺省为 undefined 从头分析）(ISS-48) */
+  videoAnalyzeStartSec?: number
   /** 文件指纹，用于感知完成后在 Omni 内部就地批量落盘向量（Ticket 02 / 04） */
   fileFingerprint?: string
 }
@@ -2016,7 +2020,9 @@ export class OmniService {
         this.getConfigValue<number>('VIDEO_FRAME_QUOTA_MAX'),
       video_cut_sensitivity:
         options?.videoCutSensitivity ??
-        this.getConfigValue<string>('VIDEO_CUT_SENSITIVITY')
+        this.getConfigValue<string>('VIDEO_CUT_SENSITIVITY'),
+      video_max_analyze_sec: options?.videoMaxAnalyzeSec,
+      video_analyze_start_sec: options?.videoAnalyzeStartSec
     }
     logger.debug(
       LogCategory.SYSTEM,

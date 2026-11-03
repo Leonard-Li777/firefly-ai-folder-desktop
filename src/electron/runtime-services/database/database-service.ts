@@ -906,75 +906,94 @@ export class DatabaseService {
       ? `${directoryPath}%`
       : `${directoryPath}${sep}%`
 
+    // 1. 先一次性提取受影响的目录 ID 和文件指纹列表，避免在多个 UPDATE / DELETE 子句中做重复子查询
+    const dirRows = this._db
+      .prepare(`SELECT id FROM workspace_directories WHERE path = ? OR path LIKE ?`)
+      .all(directoryPath, likePattern) as { id: number }[]
+    const dirIds = dirRows.map(r => r.id)
+
+    if (dirIds.length === 0) return
+
+    // 分批提取文件指纹，防止深层工程目录下 dirIds 突破 SQLite 变量上限
+    const batchSize = 500
+    const fingerprintsSet = new Set<string>()
+    for (let i = 0; i < dirIds.length; i += batchSize) {
+      const batch = dirIds.slice(i, i + batchSize)
+      const placeholders = batch.map(() => '?').join(',')
+      const fpRows = this._db
+        .prepare(`SELECT DISTINCT file_fingerprint FROM workspace_files WHERE directory_id IN (${placeholders}) AND file_fingerprint IS NOT NULL`)
+        .all(...batch) as { file_fingerprint: string }[]
+      for (const r of fpRows) {
+        fingerprintsSet.add(r.file_fingerprint)
+      }
+    }
+    const fingerprints = Array.from(fingerprintsSet)
+
+    // 2. 事务内批量重置
     this._db.transaction(() => {
-      this._db!.prepare(
-        `UPDATE workspace_directories SET is_analyzed = 0, context_analysis = NULL, last_analyzed_at = NULL WHERE path = ? OR path LIKE ?`
-      ).run(directoryPath, likePattern)
-      this._db!.prepare(
-        `UPDATE workspace_files SET is_analyzed = 0, last_analyzed_at = NULL, analysis_error = NULL WHERE directory_id IN (SELECT id FROM workspace_directories WHERE path = ? OR path LIKE ?)`
-      ).run(directoryPath, likePattern)
+      for (let i = 0; i < dirIds.length; i += batchSize) {
+        const batch = dirIds.slice(i, i + batchSize)
+        const placeholders = batch.map(() => '?').join(',')
 
-      // 创世 Baseline V1：files 表无 category 列（V4 规范化后由 extension/file_group 承载，
-      // magika 类型识别改由标签树表达），故此处仅清空 AI 分析产物字段。
-      this._db!.prepare(
-        `
-        UPDATE files
-        SET description = NULL,
-            author = NULL,
-            language = NULL,
-            is_hit = 0,
-            last_hit_at = NULL,
-            smart_name_source = NULL,
-            smart_name_template_source = NULL,
-            smart_name = (SELECT name FROM workspace_files wf WHERE wf.file_fingerprint = files.file_fingerprint LIMIT 1)
-        WHERE file_fingerprint IN (
-          SELECT file_fingerprint
-          FROM workspace_files
-          WHERE directory_id IN (SELECT id FROM workspace_directories WHERE path = ? OR path LIKE ?)
-        )
-      `
-      ).run(directoryPath, likePattern)
+        this._db!.prepare(
+          `UPDATE workspace_directories SET is_analyzed = 0, context_analysis = NULL, last_analyzed_at = NULL WHERE id IN (${placeholders})`
+        ).run(...batch)
 
-      this._db!.prepare(
-        `
-        UPDATE file_contents
-        SET content = NULL,
-            multimodal_content = NULL,
-            lrc = NULL,
-            exif = NULL,
-            analysis_stats = NULL,
-            quality_score = NULL,
-            quality_confidence = NULL,
-            quality_criteria = NULL,
-            quality_reasoning = NULL,
-            grouping_reason = NULL,
-            grouping_confidence = NULL
-        WHERE file_fingerprint IN (
-          SELECT file_fingerprint
-          FROM workspace_files
-          WHERE directory_id IN (SELECT id FROM workspace_directories WHERE path = ? OR path LIKE ?)
-        )
-      `
-      ).run(directoryPath, likePattern)
+        this._db!.prepare(
+          `UPDATE workspace_files SET is_analyzed = 0, last_analyzed_at = NULL, analysis_error = NULL WHERE directory_id IN (${placeholders})`
+        ).run(...batch)
+      }
 
-      this._db!.prepare(
-        `
-        DELETE FROM file_tag_relations
-        WHERE file_fingerprint IN (
-          SELECT file_fingerprint
-          FROM workspace_files
-          WHERE directory_id IN (SELECT id FROM workspace_directories WHERE path = ? OR path LIKE ?)
-        )
-      `
-      ).run(directoryPath, likePattern)
+      if (fingerprints.length > 0) {
+        const batchSize = 500
+        for (let i = 0; i < fingerprints.length; i += batchSize) {
+          const batch = fingerprints.slice(i, i + batchSize)
+          const placeholders = batch.map(() => '?').join(',')
 
-      this._db!.prepare(
-        `
-        DELETE FROM analysis_queue 
-        WHERE (item_type = 'directory' AND item_id IN (SELECT id FROM workspace_directories WHERE path = ? OR path LIKE ?))
-           OR (item_type = 'file' AND item_id IN (SELECT id FROM workspace_files WHERE directory_id IN (SELECT id FROM workspace_directories WHERE path = ? OR path LIKE ?)))
-      `
-      ).run(directoryPath, likePattern, directoryPath, likePattern)
+          this._db!.prepare(
+            `UPDATE files
+              SET description = NULL,
+                  author = NULL,
+                  language = NULL,
+                  is_hit = 0,
+                  last_hit_at = NULL,
+                  smart_name_source = NULL,
+                  smart_name_template_source = NULL,
+                  smart_name = (SELECT name FROM workspace_files wf WHERE wf.file_fingerprint = files.file_fingerprint LIMIT 1)
+              WHERE file_fingerprint IN (${placeholders})`
+          ).run(...batch)
+
+          this._db!.prepare(
+            `UPDATE file_contents
+              SET content = NULL,
+                  multimodal_content = NULL,
+                  lrc = NULL,
+                  exif = NULL,
+                  analysis_stats = NULL,
+                  quality_score = NULL,
+                  quality_confidence = NULL,
+                  quality_criteria = NULL,
+                  quality_reasoning = NULL,
+                  grouping_reason = NULL,
+                  grouping_confidence = NULL
+              WHERE file_fingerprint IN (${placeholders})`
+          ).run(...batch)
+
+          this._db!.prepare(
+            `DELETE FROM file_tag_relations WHERE file_fingerprint IN (${placeholders})`
+          ).run(...batch)
+        }
+      }
+
+      for (let i = 0; i < dirIds.length; i += batchSize) {
+        const batch = dirIds.slice(i, i + batchSize)
+        const placeholders = batch.map(() => '?').join(',')
+        this._db!.prepare(
+          `DELETE FROM analysis_queue 
+            WHERE (item_type = 'directory' AND item_id IN (${placeholders}))
+               OR (item_type = 'file' AND item_id IN (SELECT id FROM workspace_files WHERE directory_id IN (${placeholders})))`
+        ).run(...batch, ...batch)
+      }
     })()
   }
 
@@ -2481,6 +2500,47 @@ export class DatabaseService {
   deleteVideoChunks(fileFingerprint: string): void {
     this.ensureInitialized()
     this.fileDao!.deleteVideoChunks(fileFingerprint)
+  }
+
+  /**
+   * 启动时清理残留的 processing 状态，保护崩溃后任务安全恢复 (ISS-25 / ISS-37)
+   */
+  getVideoSegments(fileId: string) {
+    return this.fileDao.getVideoSegments(fileId)
+  }
+
+  getIncompleteVideoFiles() {
+    return this.fileDao.getIncompleteVideoFiles()
+  }
+
+  unlockVideoSegments(): number {
+    return this.fileDao?.unlockVideoSegments() ?? 0
+  }
+
+  lockPendingVideoSegments(fileId?: string): number {
+    return this.fileDao?.lockPendingVideoSegments(fileId) ?? 0
+  }
+
+  resetDanglingVideoSegmentsOnStartup(): void {
+    if (this.fileDao) {
+      this.fileDao.resetDanglingVideoSegmentsOnStartup()
+    }
+  }
+
+  upsertVideoSegment(segment: Parameters<FileDao['upsertVideoSegment']>[0]): void {
+    this.fileDao?.upsertVideoSegment(segment)
+  }
+
+  markVideoSegmentProcessing(fileId: string, segmentIndex: number): boolean {
+    return this.fileDao?.markVideoSegmentProcessing(fileId, segmentIndex) ?? false
+  }
+
+  markVideoSegmentCompleted(
+    fileId: string,
+    segmentIndex: number,
+    stats: { frameCount: number; visualEmbeddedCount: number; asrTranscriptChars: number }
+  ): void {
+    this.fileDao?.markVideoSegmentCompleted(fileId, segmentIndex, stats)
   }
 
   /**

@@ -9,7 +9,7 @@ import {
   ResourceLocator,
   APP_PORTS
 } from '@firefly/shared'
-import { AIErrorType, AIServiceStatus, StartupPhase } from '@firefly/types'
+import { AIErrorType, AIServiceStatus, StartupPhase, UserTier } from '@firefly/types'
 import type { AICapabilities, LanguageCode } from '@firefly/types'
 import { databaseService } from '../runtime-services/database/database-service'
 import { cloudAnalysisService, WORKSPACE_CONSTANTS } from '@firefly/server'
@@ -997,6 +997,16 @@ export async function initializeFullServices(): Promise<void> {
     } catch (error) {
       logger.error(LogCategory.MAIN, '[analysis-queue] 分析队列服务初始化失败:', error)
     }
+
+    // 应用启动时，若用户是 Pro/VIP 会员，自动唤醒待续作长视频 (ISS-66)
+    try {
+      const tierData = userTierService.getCachedData()
+      if (tierData?.tier && tierData.tier !== UserTier.FREE) {
+        analysisQueueService.requeueIncompleteVideos().catch(err => {
+          logger.warn(LogCategory.ANALYSIS_QUEUE, '[analysis-queue] 启动时唤醒待续作长视频失败:', err)
+        })
+      }
+    } catch {}
 
     // 队列初始化完成后，若存在待办任务且处于可用模式，自动启动分析队列循环
     try {

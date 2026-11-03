@@ -145,7 +145,7 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
     (getConfigValue<string>('VIDEO_CUT_SENSITIVITY' as any) as VideoCutSensitivity) ?? 'medium'
   )
   const [videoAsrCap, setVideoAsrCap] = useState<number>(
-    getConfigValue<number>('VIDEO_ASR_DURATION' as any) ?? 60
+    getConfigValue<number>('VIDEO_ASR_DURATION') ?? 60
   )
   const [isProPanelOpen, setIsProPanelOpen] = useState(false)
   const tier = useTierStore(s => s.tier)
@@ -169,7 +169,7 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
     await updateConfigValue('VIDEO_FRAME_QUOTA_MAX' as any, preset.quotaMax)
     await updateConfigValue('VIDEO_CUT_SENSITIVITY' as any, preset.cutSensitivity)
     await updateConfigValue('VIDEO_SOFT_TOKEN_BUDGET', preset.softTokenBudget)
-    await updateConfigValue('VIDEO_ASR_DURATION' as any, preset.asrDurationSec)
+    await updateConfigValue('VIDEO_ASR_DURATION', preset.asrDurationSec)
     captureEvent('切换视频分析预设档位', { profile })
   }
 
@@ -200,7 +200,7 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
     const asr = params.asrCap ?? params.asrDurationSec
     if (asr !== undefined) {
       setVideoAsrCap(asr)
-      await updateConfigValue('VIDEO_ASR_DURATION' as any, asr)
+      await updateConfigValue('VIDEO_ASR_DURATION', asr)
     }
     captureEvent('自定义视频分析高级参数', params)
   }
@@ -975,25 +975,25 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                         </li>
                         <li className="flex items-center gap-1.5">
                           <Check className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0 stroke-[2.5]" />
-                          <span>{t('精准捕捉 1.6 秒跑车特写')}</span>
+                          <span>{t('瞬态特写捕捉 (防转场覆盖吞噬)')}</span>
                         </li>
                       </ul>
                     </div>
                   </div>
                 </div>
 
-                {/* 实时整理分析耗时预估图形化卡片（外层常驻可见，以 2 小时长视频为绝对标尺测算） */}
+                {/* 实时整理分析耗时预估图形化卡片（外层常驻可见，以每 5 分钟片段为绝对标尺测算，对齐 ISS-23） */}
                 {(() => {
                   const est = estimateVideoAnalysisDurationSec(
                     videoQuotaMax,
                     localVideoSoftTokenBudget,
                     videoAsrCap,
-                    false
+                    false,
+                    300
                   )
                   const totalMins = (est.totalSec / 60).toFixed(1)
-                  // 以 2 小时 (7200s) 长视频深度分析的 200s 上限为 100% 绝对量程标尺
-                  const fillWidthPct = Math.min(100, Math.max(5, Math.round((est.totalSec / 200) * 100)))
-                  const speedMultiplier = Math.round(7200 / Math.max(1, est.totalSec))
+                  // 以 5 分钟 (300s) 实时线为 100% 绝对量程标尺 (ISS-23: 彻底消除硬编码 200s 与虚假倍率)
+                  const fillWidthPct = Math.min(100, Math.max(3, Math.round((est.perChunkSec / 300) * 100)))
 
                   return (
                     <div className="p-4 rounded-xl bg-card border border-border shadow-xs space-y-3">
@@ -1006,7 +1006,7 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                                 {t('单视频首次整理耗时预估')}
                               </span>
                               <span className="text-[10px] px-2 py-0.2 rounded-full font-medium bg-primary/10 text-primary border border-primary/20">
-                                {t('以标准 2 小时长视频测算')}
+                                {t('以每 5 分钟视频分析基准测算')}
                               </span>
                             </div>
                             <p className="text-[11px] text-muted-foreground mt-0.5">
@@ -1025,26 +1025,26 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                           )}
                           {est.speedTier === 'blazing' && (
                             <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                              ⚡ {t('极速飞快 (约 {speed}x 处理)', { speed: speedMultiplier })}
+                              ⚡ {t('极速飞快 (约 {speed}x 实时处理)', { speed: est.speedMultiplier })}
                             </span>
                           )}
                           {est.speedTier === 'balanced' && (
                             <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
-                              ⚖️ {t('平衡适中 (约 {speed}x 处理)', { speed: speedMultiplier })}
+                              ⚖️ {t('平衡适中 (约 {speed}x 实时处理)', { speed: est.speedMultiplier })}
                             </span>
                           )}
                           {est.speedTier === 'deep' && (
                             <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
-                              🔍 {t('深度精细 (约 {speed}x 处理)', { speed: speedMultiplier })}
+                              🔍 {t('深度精细 (约 {speed}x 实时处理)', { speed: est.speedMultiplier })}
                             </span>
                           )}
                         </div>
                       </div>
 
-                      {/* 全局绝对标尺刻度轨道（满格为 200 秒量程上限，极速模式仅占极小一截） */}
+                      {/* 全局绝对标尺刻度轨道（满格为 300 秒实时线量程，极速模式仅占极小一截） */}
                       <div className="space-y-1.5">
                         <div className="h-3 w-full bg-muted/60 rounded-full overflow-hidden flex relative p-0.5 border border-border/40">
-                          {/* 动态填充条：总宽按 (totalSec / 200s) * 100% 决定 */}
+                          {/* 动态填充条：总宽按 (perChunkSec / 300s) * 100% 决定 */}
                           <div
                             style={{ width: `${fillWidthPct}%` }}
                             className="h-full rounded-full overflow-hidden flex gap-0.5 transition-all duration-300"
@@ -1065,6 +1065,14 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                               title={t('基础解包与索引')}
                             />
                           </div>
+                        </div>
+
+                        {/* 实时线与刻度标尺 */}
+                        <div className="flex items-center justify-between text-[10px] text-muted-foreground/70 px-0.5 font-mono">
+                          <span>0s</span>
+                          <span>60s</span>
+                          <span>150s</span>
+                          <span className="text-primary/80 font-medium">300s ({t('实时线')})</span>
                         </div>
 
                         {/* 细分耗时图例与百分比 */}
@@ -1095,17 +1103,25 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* 免费会员超额提示与 Pro 升级引导 */}
-                      {isFreeUser && (videoProfile === 'deep_footage' || videoQuotaMax > 60 || est.totalSec > 40) && (
+                      {/* 纯 CPU 深度档慢于实时播放时的贴心提示 (ISS-50) */}
+                      {est.perChunkSec >= 300 && (
+                        <div className="p-2.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-xs text-purple-700 dark:text-purple-300 flex items-center gap-2">
+                          <span>💡</span>
+                          <span>{t('这个档位在没有独立显卡的电脑上，整理会比视频本身更慢，适合放在后台慢慢整理；配备独立显卡时可获得数倍流畅提速。')}</span>
+                        </div>
+                      )}
+
+                      {/* 免费会员权益中性说明与 Pro 升级引导 (ISS-01 / ISS-54) */}
+                      {isFreeUser && (
                         <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/25 flex items-center justify-between gap-3 flex-wrap transition-all">
                           <div className="flex items-center gap-2.5 min-w-0 flex-1">
                             <Crown className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
                             <div className="text-xs leading-relaxed">
                               <span className="font-bold text-amber-700 dark:text-amber-300">
-                                {t('此配置超过了免费档前 5 分钟视频的分析额度')}
+                                {t('免费版每个视频分析精彩前 5 分钟')}
                               </span>
                               <span className="text-muted-foreground ml-1">
-                                {t('（免费版仅深度分析单视频的前 5 分钟，超出部分跳过）。请升级会员取消限制，可分析单视频长达 2 小时以上。')}
+                                {t('（长视频仅分析前 300 秒）。升级 Pro 会员可解锁整部视频全量分析，支持单视频长达 2 小时以上。')}
                               </span>
                             </div>
                           </div>
@@ -1314,7 +1330,7 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                           className="w-full accent-primary cursor-pointer"
                         />
                         <p className="text-[11px] text-muted-foreground">
-                          {t('仅约束视频内嵌音轨的语音识别时长（不影响纯音频音乐或播客）。识别越久台词标签越全，分析耗时稍长。')}
+                          {t('仅提取视频开头前 N 秒的音轨台词（不影响纯音频）。识别越长台词标签越全，分析耗时稍长。')}
                         </p>
                       </div>
 

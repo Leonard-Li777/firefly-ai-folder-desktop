@@ -607,6 +607,16 @@ export class UserTierService {
 
     // 同步后检测等级是否降级到免费/过期，通知前端触发授权弹层
     const currentData = this.getDataManager().getData()
+    if (currentData.tier !== UserTier.FREE) {
+      // 用户具备 Pro/VIP 权益，异步唤醒待续作长视频切片重新入队 (ISS-60)
+      import('../analysis-queue-service')
+        .then(({ analysisQueueService }) => {
+          analysisQueueService.requeueIncompleteVideos().catch(err => {
+            logger.warn(LogCategory.ANALYSIS_QUEUE, '[UserTierService] 唤醒待续作长视频失败:', err)
+          })
+        })
+        .catch(() => {})
+    }
     if (currentData.tier === UserTier.FREE) {
       const { LicenseService, LicenseStatus } = await import('../system/license-service')
       const licenseResult = await LicenseService.getInstance().checkLicenseStatus(true)
