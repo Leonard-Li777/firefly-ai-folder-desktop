@@ -23,6 +23,7 @@ import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
 import { Tier2CircuitBreaker, Tier2CircuitState } from './tier2-circuit-breaker'
 import { CRASH_HEAL_MAX_ATTEMPTS, decideCrashHeal } from './crash-heal-policy'
 import { isServiceUsableStatus, shouldTriggerServiceStartAt } from './service-start-policy'
+import { isLocalDevRuntime } from '../../main/worktree-env'
 
 /** Tier 2 引擎基准端口（与本地 AI 服务端口收敛一致：38400） */
 export const TIER2_ENGINE_PORT = APP_PORTS.LLAMA_LOCAL_SERVER
@@ -483,7 +484,7 @@ export class EngineBridgeService {
 
   /** 是否开发态（未打包或非 production） */
   private isDevMode(): boolean {
-    return !app?.isPackaged || process.env.NODE_ENV !== 'production'
+    return isLocalDevRuntime()
   }
 
   /**
@@ -2431,14 +2432,15 @@ export class EngineBridgeService {
    */
   public getSnapshot(): EngineBridgeSnapshot {
     const raw = this.lastRawStatus
+    const exePath = this.resolveEngineExecutable()
     return {
       connected: !!raw,
       // 托管标记：外部手动启动的引擎同样 connected，但它没有 exit 处理器，
       // 被杀后既无崩溃自愈也无重新拉起，验收脚本需据此排除该场景
       managed: this.process !== null,
       circuitState: this.circuitBreaker.getState(),
-      available: this.resolveEngineExecutable() !== null,
-      exePath: this.resolveEngineExecutable(),
+      available: exePath !== null,
+      exePath,
       devMode: this.isDevMode(),
       port: this.activePort,
       version: raw?.version || this.versionCache || null,

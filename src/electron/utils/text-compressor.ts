@@ -12,6 +12,7 @@
 
 import { deflateSync, inflateSync } from 'node:zlib'
 import { app } from 'electron'
+import { isLocalDevRuntime } from '../main/worktree-env'
 
 /** 编码格式标识 */
 export const enum CompressionFormat {
@@ -40,10 +41,8 @@ export function isCompressionDisabled(): boolean {
   if (process.env.NODE_ENV === 'test' || process.env.VITEST === 'true') {
     return false
   }
-  // 开发模式：未打包或 NODE_ENV !== 'production'
-  const isPackaged = typeof app !== 'undefined' && app ? app.isPackaged : false
-  const isDev = !isPackaged || process.env.NODE_ENV !== 'production'
-  return isDev
+  // 开发模式判定（单点事实源：已打包或测试态绝不视为开发模式）
+  return isLocalDevRuntime()
 }
 
 /**

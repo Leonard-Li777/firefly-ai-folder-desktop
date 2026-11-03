@@ -276,3 +276,27 @@ export function initWorktreeEnvironment(): WorktreeEnvInfo {
 
   return cachedInfo
 }
+
+/**
+ * 判定当前运行时是否属于本地开发热更环境 (SSOT)
+ * 规则（一票否决制）：
+ * 1. 若 app 存在且已打包 (app.isPackaged)，绝非开发环境；
+ * 2. 若处于单测或集成测试态 (process.env.NODE_ENV === 'test' || process.env.VITEST || process.env.IS_INTEGRATION_TEST === 'true')，
+ *    绝非本地热更开发环境（防止测试跑死/定时器悬挂）；
+ * 3. 若 process.env.NODE_ENV === 'production'，绝非开发环境；
+ * 4. 其余情况均视为本地开发环境（允许监听二进制热更新并自动重启）。
+ */
+export function isLocalDevRuntime(): boolean {
+  if (typeof app !== 'undefined' && app?.isPackaged) {
+    return false
+  }
+  if (
+    process.env.NODE_ENV === 'production' ||
+    process.env.NODE_ENV === 'test' ||
+    !!process.env.VITEST ||
+    process.env.IS_INTEGRATION_TEST === 'true'
+  ) {
+    return false
+  }
+  return true
+}

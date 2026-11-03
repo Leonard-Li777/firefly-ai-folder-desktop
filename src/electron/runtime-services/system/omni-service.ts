@@ -11,10 +11,11 @@
 import { ChildProcess, spawn } from 'node:child_process'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, dialog, shell } from 'electron'
 import { ResourceLocator, logger, LogCategory, APP_PORTS, findAvailablePort, isPathEqual } from '@firefly/shared'
 import { MagikaFileCategory } from '@firefly/types'
 import { resolveAnalysisTimeoutBudget } from './analysis-timeout-policy'
+import { isLocalDevRuntime } from '../../main/worktree-env'
 
 /**
  * 基础AI引擎（Omni）运行状态快照，主动推送至渲染进程（omni:status-changed）
@@ -117,6 +118,10 @@ export interface OmniPerceptionOptions {
   videoFrameIntervalSeconds?: number
   /** 视频画面精细度（每帧视觉软 token 预算，140=标准精细，70=精简快速），默认 140 */
   videoSoftTokenBudget?: number
+  /** 单视频最大抓图数量配额（8~240 帧，默认 60） */
+  videoFrameQuotaMax?: number
+  /** 镜头切换捕捉敏锐度 ('low' | 'medium' | 'high'，默认 'medium') */
+  videoCutSensitivity?: string
   /** 文件指纹，用于感知完成后在 Omni 内部就地批量落盘向量（Ticket 02 / 04） */
   fileFingerprint?: string
 }
@@ -520,6 +525,10 @@ export class OmniService {
   private lastCoverDurationMs?: number
   private coverDurationMap = new Map<string, number>()
   private readyCallbacks: (() => void | Promise<void>)[] = []
+  private missingBinaryReported = false
+  private missingBinaryRetryAt = 0
+  private binaryMissingNotified = false
+  private binaryMissingNotifyDeferred = false
 
   /** 开发态二进制热更新检测周期 (毫秒) */
   private static readonly DEV_BINARY_WATCH_INTERVAL_MS = 3_000
@@ -582,7 +591,9 @@ export class OmniService {
       process.once('SIGTERM', cleanExit)
 
       // 开发模式下开机常驻监听 Omni 原生二进制热更新（感知 omni-build-to-desktop.js --watch 的重编译与部署）
-      this.startDevBinaryWatch()
+      if (isLocalDevRuntime()) {
+        this.startDevBinaryWatch()
+      }
       if (process.platform === 'win32') {
         process.once('message', (msg: any) => {
           if (msg === 'shutdown') {
@@ -726,8 +737,19 @@ export class OmniService {
    * 这里周期比对签名，发现变化且持续稳定后自动重启 Omni 引擎。
    * 生产环境不启动该监听（打包产物不会被就地覆盖）。
    */
+
+  /** 安全惰性获取 ConfigOrchestrator 中的配置值，避免顶层同步导入 electron-conf 破坏单测 */
+  private getConfigValue<T>(key: string): T | undefined {
+    try {
+      const req = typeof require !== 'undefined' ? require : eval('require')
+      return req('../../config/config-orchestrator')?.ConfigOrchestrator?.getInstance?.()?.getValue?.(key)
+    } catch {
+      return undefined
+    }
+  }
+
   public startDevBinaryWatch(intervalMs: number = OmniService.DEV_BINARY_WATCH_INTERVAL_MS): void {
-    const isDev = !app?.isPackaged || process.env.NODE_ENV !== 'production'
+    const isDev = isLocalDevRuntime()
     if (this.devBinaryWatchTimer || !isDev) {
       return
     }
@@ -816,7 +838,7 @@ export class OmniService {
   public resolveOmniExecutable(): string | null {
     const isWin = process.platform === 'win32'
     const exeName = isWin ? 'firefly-omni.exe' : 'firefly-omni'
-    const isDev = !app?.isPackaged || process.env.NODE_ENV !== 'production'
+    const isDev = isLocalDevRuntime()
     const root = process.cwd()
 
     // 1. 生产或已部署环境：通过 ResourceLocator 检索
@@ -859,6 +881,131 @@ export class OmniService {
   /**
    * 启动并守护 firefly-omni 子进程（支持并发 Promise 合并）
    */
+
+  private describeBinarySearch(): string {
+    const isWin = process.platform === 'win32'
+    const exeName = isWin ? 'firefly-omni.exe' : 'firefly-omni'
+    const lines: string[] = []
+
+    let baseDir = '(未知)'
+    try {
+      baseDir = ResourceLocator.getBaseResourceDir()
+    } catch (err: any) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[OmniService] 资源根目录解析失败，无法给出精确的组件路径: ${err?.message || err}`
+      )
+    }
+    lines.push(`资源根目录=${baseDir}`)
+    lines.push(`resourcesPath=${(process as any).resourcesPath || '(未知)'}`)
+    let appPath = '(未知)'
+    try {
+      appPath = typeof app.getAppPath === 'function' ? app.getAppPath() : '(不可用)'
+    } catch {}
+    lines.push(`appPath=${appPath}`)
+
+    if (baseDir === '(未知)') {
+      lines.push('资源根目录解析失败，无法枚举 bin 目录（疑似路径解析异常，而非组件缺失）')
+    } else {
+      try {
+        const binDir = path.join(baseDir, 'bin')
+        const omniDir = path.join(binDir, 'omni')
+        lines.push(`bin目录存在=${fs.existsSync(binDir)}`)
+        lines.push(`bin/omni目录存在=${fs.existsSync(omniDir)}`)
+        if (fs.existsSync(omniDir)) {
+          const siblings = fs.readdirSync(omniDir).slice(0, 20).join(', ')
+          lines.push(`bin/omni目录内容=[${siblings || '空'}]`)
+        }
+      } catch (err: any) {
+        lines.push(`目录枚举失败=${err?.message || err}`)
+      }
+    }
+
+    lines.push(`候选文件=${exeName} 均不存在`)
+    lines.push(
+      '常见原因：① 杀毒软件把 firefly-omni.exe 隔离/删除；② 安装包不完整或更新中断；③ 安装目录被手动清理。'
+    )
+    return lines.join(' | ')
+  }
+
+  private notifyBinaryMissing(): void {
+    if (this.binaryMissingNotified) return
+    try {
+      if (typeof app.isReady === 'function' && !app.isReady()) {
+        if (!this.binaryMissingNotifyDeferred && typeof app.whenReady === 'function') {
+          this.binaryMissingNotifyDeferred = true
+          void app.whenReady().then(() => this.notifyBinaryMissing()).catch(() => {})
+        }
+        return
+      }
+    } catch {}
+
+    const isWin = process.platform === 'win32'
+    const exeName = isWin ? 'firefly-omni.exe' : 'firefly-omni'
+
+    let baseDir = ''
+    try {
+      baseDir = ResourceLocator.getBaseResourceDir()
+    } catch (err: any) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[OmniService] 组件缺失提示：资源根目录解析失败: ${err?.message || err}`
+      )
+    }
+    const omniDir = baseDir ? path.join(baseDir, 'bin', 'omni') : ''
+    const exePath = omniDir ? path.join(omniDir, exeName) : exeName
+
+    let dirState: 'exists' | 'missing' | 'unknown' = 'unknown'
+    if (omniDir) {
+      try {
+        dirState = fs.existsSync(omniDir) ? 'exists' : 'missing'
+      } catch (err: any) {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[OmniService] 组件缺失提示：无法判断组件目录是否存在: ${err?.message || err}`
+        )
+      }
+    }
+
+    const detail = [
+      '基础AI引擎组件缺失，文件分析能力受限',
+      '',
+      '缺失的文件：',
+      exePath,
+      '',
+      '建议按以下顺序处理：',
+      '1. 打开杀毒软件的「隔离区 / 恢复区」，找到 firefly-omni.exe 并恢复；',
+      '2. 将上面的组件目录加入杀毒软件白名单（信任区）；',
+      '3. 若文件已无法恢复，请重新安装或修复安装本应用。',
+      '',
+      '本应用不会自动下载该组件。修复后无需重启，约 1 分钟内会自动恢复。'
+    ].join('\n')
+
+    this.binaryMissingNotified = true
+    try {
+      const shown = dialog?.showMessageBox({
+        type: 'warning',
+        title: '基础AI引擎组件缺失',
+        message: '基础AI引擎组件缺失，文件分析能力受限',
+        detail,
+        buttons: ['打开组件目录', '知道了'],
+        defaultId: 0,
+        cancelId: 1,
+        noLink: true
+      })
+      void shown?.then?.((result: any) => {
+        if (result?.response !== 0) return
+        const target = dirState === 'exists' && omniDir ? omniDir : baseDir
+        if (!target) return
+        void shell?.openPath?.(target)
+      })?.catch?.(() => {
+        this.binaryMissingNotified = false
+      })
+    } catch (err: any) {
+      this.binaryMissingNotified = false
+    }
+  }
+
   public async start(): Promise<boolean> {
     if (this.process && !this.process.killed) {
       if (await this.checkHealth()) {
@@ -883,12 +1030,34 @@ export class OmniService {
 
   private async doStart(): Promise<boolean> {
     this.isStarting = true
-    const exePath = this.resolveOmniExecutable()
-    if (!exePath) {
-      logger.warn(LogCategory.SYSTEM, '[OmniService] 未找到 firefly-omni 可执行二进制文件，跳过子进程托管')
+    // 缺失冷却检查：避免每个文件都触发一次 resolveOmniExecutable 的遍历
+    if (this.missingBinaryRetryAt > Date.now()) {
+      logger.debug(LogCategory.SYSTEM, '[OmniService] firefly-omni 二进制仍处于缺失冷却期，跳过本次拉起')
       this.isStarting = false
       return false
     }
+
+    const exePath = this.resolveOmniExecutable()
+    if (!exePath) {
+      this.missingBinaryRetryAt = Date.now() + 60_000
+      if (!this.missingBinaryReported) {
+        this.missingBinaryReported = true
+        logger.error(
+          LogCategory.SYSTEM,
+          `[OmniService] ❌ 未找到 firefly-omni 可执行二进制文件，基础AI引擎无法启动，分析能力将降级。${this.describeBinarySearch()}`
+        )
+      } else {
+        logger.debug(LogCategory.SYSTEM, '[OmniService] firefly-omni 二进制仍缺失，跳过本次拉起')
+      }
+      this.notifyBinaryMissing()
+      this.isStarting = false
+      return false
+    }
+    // 二进制重新出现（如用户修复安装 / 从杀软隔离区恢复）后复位上报与冷却状态
+    this.missingBinaryReported = false
+    this.missingBinaryRetryAt = 0
+    this.binaryMissingNotified = false
+    this.binaryMissingNotifyDeferred = false
 
     try {
       // 获取业务主库 SQLite 绝对路径，用于 Worktree 隔离校验 (ADR-0035 & ADR-0038)
@@ -982,7 +1151,7 @@ export class OmniService {
       process.env.OMNI_ACTUAL_PORT = String(port)
 
       logger.info(LogCategory.SYSTEM, `[OmniService] 正在拉起 firefly-omni 守护进程 (Port: ${port}): ${exePath}`)
-      const isDevMode = !app?.isPackaged || process.env.NODE_ENV !== 'production'
+      const isDevMode = isLocalDevRuntime()
       const binDir = path.dirname(exePath)
       const existingPath = process.env.PATH || ''
       const injectedPath = [binDir, existingPath].filter(Boolean).join(path.delimiter)
@@ -1231,7 +1400,7 @@ export class OmniService {
       for (let i = 0; i < 400; i++) {
         // 关键防御：若子进程在探活期间提前退出或被终止，立即中止等待，拒绝僵尸死等 80s 阻塞系统
         // 物理事实守卫：仅当子进程真正退出 (exitCode !== null) 或被显式 kill 时才判定为退出，杜绝状态位竞争引发的假性误杀
-        if (child.exitCode !== null || child.killed) {
+        if (child.exitCode !== null || child.killed || this.process !== child) {
           logger.warn(
             LogCategory.SYSTEM,
             `[OmniService] firefly-omni 子进程在就绪前异常退出 (exitCode=${child.exitCode}, killed=${child.killed})，中止启动探活`
@@ -1841,7 +2010,13 @@ export class OmniService {
       audio_analysis_duration: options?.audioAnalysisDuration,
       generate_thumbnail: options?.generateThumbnail ?? options?.enableCover,
       video_frame_interval_seconds: options?.videoFrameIntervalSeconds,
-      video_soft_token_budget: options?.videoSoftTokenBudget
+      video_soft_token_budget: options?.videoSoftTokenBudget,
+      video_frame_quota_max:
+        options?.videoFrameQuotaMax ??
+        this.getConfigValue<number>('VIDEO_FRAME_QUOTA_MAX'),
+      video_cut_sensitivity:
+        options?.videoCutSensitivity ??
+        this.getConfigValue<string>('VIDEO_CUT_SENSITIVITY')
     }
     logger.debug(
       LogCategory.SYSTEM,
