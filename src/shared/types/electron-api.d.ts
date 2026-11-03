@@ -6,7 +6,7 @@
  * 与 preload.ts 中的实际实现保持同步
  */
 
-import { AppConfig, WorkspaceDirectory } from '@yonuc/types'
+import { AppConfig, WorkspaceDirectory, WorkspaceConfigIntent } from '@yonuc/types'
 // PRD-0044（S5）：IModelRecommendation / IModelSummary 导入随模型管理与推荐 IPC 清退删除
 import type { ConfigKey } from '@yonuc/types/config-types'
 import { FileInfo } from '@yonuc/core-engine'
@@ -416,7 +416,12 @@ declare global {
       isPackaged: boolean
 
       // 系统日志
-      onLogForwarded: (callback: (payload: { category: LogCategory, level: string, message: string, data?: any, origin: 'backend' | 'frontend' }) => void) => () => void
+      onLogForwarded: (callback: (payload: { category: LogCategory, level: string, message: string, data?: any, origin: 'backend' | 'frontend', origin_ts?: number, trace_id?: string }) => void) => () => void
+      onLogBatchForwarded?: (callback: (payloads: Array<{ category: LogCategory, level: string, message: string, data?: any, origin: 'backend' | 'frontend', origin_ts?: number, trace_id?: string }>) => void) => () => void
+
+      // PostHog 诊断与会话绑定
+      getRunId?: () => Promise<string>
+      bindPostHogSession?: (sessionId: string) => Promise<void>
 
       // 深度链接（URL Scheme）
       onDeepLink?: (
@@ -578,6 +583,25 @@ declare global {
           options: DialogOptions
         ) => Promise<{ canceled: boolean; filePath?: string }>
         showMessageBox: (options: MessageBoxOptions) => Promise<MessageBoxReturnValue>
+        // 校验目录是否可写（通过实际创建临时文件检测）
+        checkDirectoryWritable: (
+          dirPath: string
+        ) => Promise<{ writable: boolean; error?: string }>
+        // 探测工作目录画像（扩展名分布与推荐意图）
+        probeDirectoryProfile: (dirPath: string) => Promise<{
+          detectedIntent: WorkspaceConfigIntent
+          confidence: number
+          stats: {
+            totalSampled: number
+            docCount: number
+            imageCount: number
+            videoCount: number
+            otherCount: number
+            topExtensions: Array<{ ext: string; count: number }>
+            durationMs: number
+            hitTimeBudget: boolean
+          }
+        }>
         getUserHomePath: () => Promise<string>
         joinPath: (basePath: string, relativePath: string) => Promise<string>
         openFileWithDefaultApp: (filePath: string) => Promise<void>

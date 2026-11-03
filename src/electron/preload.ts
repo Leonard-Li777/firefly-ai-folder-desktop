@@ -44,6 +44,8 @@ const electronAPI = {
       message: string
       data?: any
       origin: 'backend' | 'frontend'
+      origin_ts?: number
+      trace_id?: string
     }) => void
   ) => {
     const handler = (_event: any, payload: any) => callback(payload)
@@ -59,6 +61,8 @@ const electronAPI = {
         message: string
         data?: any
         origin: 'backend' | 'frontend'
+        origin_ts?: number
+        trace_id?: string
       }>
     ) => void
   ) => {
@@ -66,6 +70,11 @@ const electronAPI = {
     ipcRenderer.on('system:log-forward-batch', handler)
     return () => ipcRenderer.removeListener('system:log-forward-batch', handler)
   },
+
+  // PostHog 诊断与会话绑定
+  getRunId: (): Promise<string> => ipcRenderer.invoke('system:get-run-id'),
+  bindPostHogSession: (sessionId: string): Promise<void> =>
+    ipcRenderer.invoke('system:bind-posthog-session', sessionId),
 
   // 系统诊断日志
   writeDiagnosticLog: (
@@ -518,6 +527,10 @@ const electronAPI = {
     // 校验目录是否可写（通过实际创建临时文件检测）
     checkDirectoryWritable: (dirPath: string) =>
       ipcRenderer.invoke('check-directory-writable', dirPath),
+
+    // 探测工作目录画像（扩展名分布与推荐意图）
+    probeDirectoryProfile: (dirPath: string) =>
+      ipcRenderer.invoke('probe-directory-profile', dirPath),
 
     getUserHomePath: () => ipcRenderer.invoke('get-user-home-path'),
 

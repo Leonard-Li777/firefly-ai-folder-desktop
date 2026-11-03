@@ -46,6 +46,48 @@ export function registerFileIPCHandlers() {
     }
   })
 
+  // 探测工作目录画像（扩展名分布与推荐意图）
+  ipcMain.handle('probe-directory-profile', async (_event, dirPath: string) => {
+    if (typeof dirPath !== 'string' || !dirPath.trim()) {
+      return {
+        detectedIntent: 'fast_archive',
+        confidence: 0,
+        stats: {
+          totalSampled: 0,
+          docCount: 0,
+          imageCount: 0,
+          videoCount: 0,
+          otherCount: 0,
+          topExtensions: [],
+          durationMs: 0,
+          hitTimeBudget: false
+        }
+      }
+    }
+    try {
+      const { directoryProfilerService } = await import(
+        '../../runtime-services/filesystem/directory-profiler-service'
+      )
+      return await directoryProfilerService.probeProfile(dirPath)
+    } catch (error) {
+      logger.warn(LogCategory.MAIN, `嗅探目录画像失败: ${dirPath}`, error)
+      return {
+        detectedIntent: 'fast_archive',
+        confidence: 0,
+        stats: {
+          totalSampled: 0,
+          docCount: 0,
+          imageCount: 0,
+          videoCount: 0,
+          otherCount: 0,
+          topExtensions: [],
+          durationMs: 0,
+          hitTimeBudget: false
+        }
+      }
+    }
+  })
+
   ipcMain.handle('get-all-files', async () => {
     return await databaseService.getAllFiles()
   })
