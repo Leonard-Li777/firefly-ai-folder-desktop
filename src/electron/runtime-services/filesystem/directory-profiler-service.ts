@@ -15,6 +15,8 @@ import { LogCategory, logger } from '@firefly/shared'
 
 /**
  * 常见黑名单目录名称 (小写比较，无条件跳过)
+ * [RV-05] 补充 Monorepo 大型工程缓存：target-runs（Rust 热编译缓存）、
+ * .worktrees（Git 多 worktree 根目录）、dist-electron（Electron 构建产物）
  */
 export const IGNORED_DIRECTORY_NAMES = new Set([
   '.git',
@@ -28,7 +30,9 @@ export const IGNORED_DIRECTORY_NAMES = new Set([
   'venv',
   '.cargo',
   'target',
+  'target-runs',
   'dist',
+  'dist-electron',
   'build',
   'out',
   '.next',
@@ -37,7 +41,8 @@ export const IGNORED_DIRECTORY_NAMES = new Set([
   '.idea',
   '.vscode',
   '.trash',
-  '.ds_store'
+  '.ds_store',
+  '.worktrees'
 ])
 
 /**

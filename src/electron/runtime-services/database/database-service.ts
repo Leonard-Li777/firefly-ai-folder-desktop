@@ -908,7 +908,7 @@ export class DatabaseService {
       ? `${directoryPath}%`
       : `${directoryPath}${sep}%`
 
-    // 1. 先一次性提取受影响的目录 ID 和文件指纹列表，避免在多个 UPDATE / DELETE 子句中做重复子查询
+    // 1. 先一次性提取受影响的目录 ID 列表
     const dirRows = this._db
       .prepare(`SELECT id FROM workspace_directories WHERE path = ? OR path LIKE ?`)
       .all(directoryPath, likePattern) as { id: number }[]
@@ -916,26 +916,55 @@ export class DatabaseService {
 
     if (dirIds.length === 0) return []
 
-    // 分批提取文件指纹，防止深层工程目录下 dirIds 突破 SQLite 变量上限
     const batchSize = 500
-    const fingerprintsSet = new Set<string>()
+
+    // 1.1 提取当前重置目录集内的全量文件指纹
+    const allFingerprintsSet = new Set<string>()
     for (let i = 0; i < dirIds.length; i += batchSize) {
       const batch = dirIds.slice(i, i + batchSize)
       const placeholders = batch.map(() => '?').join(',')
       const fpRows = this._db
-        .prepare(`SELECT DISTINCT file_fingerprint FROM workspace_files WHERE directory_id IN (${placeholders}) AND file_fingerprint IS NOT NULL`)
+        .prepare(
+          `SELECT DISTINCT file_fingerprint FROM workspace_files WHERE directory_id IN (${placeholders}) AND file_fingerprint IS NOT NULL`
+        )
         .all(...batch) as { file_fingerprint: string }[]
       for (const r of fpRows) {
-        fingerprintsSet.add(r.file_fingerprint)
+        allFingerprintsSet.add(r.file_fingerprint)
       }
     }
-    const fingerprints = Array.from(fingerprintsSet)
+    const allFingerprints = Array.from(allFingerprintsSet)
 
-    // 1.1 收集切片指纹 (视频分块等在 Omni 向量数据库中以 ${file_fingerprint}:c${chunk_index} 存储)
-    const allFingerprintsToDelete: string[] = [...fingerprints]
-    if (fingerprints.length > 0) {
-      for (let i = 0; i < fingerprints.length; i += batchSize) {
-        const batch = fingerprints.slice(i, i + batchSize)
+    // 1.2 [RV-03] 跨工作区孤儿文件过滤
+    // 独占孤儿指纹 = 仅被当前重置目录集引用，未被其他工作区目录共享的指纹。
+    // 共享文件（被其他工作区引用）只重置 workspace_files.is_analyzed，不清除全局摘要与向量。
+    const orphanFingerprintsSet = new Set<string>()
+    for (let i = 0; i < allFingerprints.length; i += batchSize) {
+      const batch = allFingerprints.slice(i, i + batchSize)
+      const fpPlaceholders = batch.map(() => '?').join(',')
+      const dirPlaceholders = dirIds.map(() => '?').join(',')
+      const orphanRows = this._db
+        .prepare(
+          `SELECT DISTINCT wf1.file_fingerprint
+           FROM workspace_files wf1
+           WHERE wf1.file_fingerprint IN (${fpPlaceholders})
+             AND NOT EXISTS (
+               SELECT 1 FROM workspace_files wf2
+               WHERE wf2.file_fingerprint = wf1.file_fingerprint
+                 AND wf2.directory_id NOT IN (${dirPlaceholders})
+             )`
+        )
+        .all(...batch, ...dirIds) as { file_fingerprint: string }[]
+      for (const r of orphanRows) {
+        orphanFingerprintsSet.add(r.file_fingerprint)
+      }
+    }
+    const orphanFingerprints = Array.from(orphanFingerprintsSet)
+
+    // 1.3 收集独占孤儿切片指纹（Omni 向量库中以 ${fp}:c${chunkIndex} 存储）
+    const orphanFingerprintsToDelete: string[] = [...orphanFingerprints]
+    if (orphanFingerprints.length > 0) {
+      for (let i = 0; i < orphanFingerprints.length; i += batchSize) {
+        const batch = orphanFingerprints.slice(i, i + batchSize)
         const placeholders = batch.map(() => '?').join(',')
         try {
           const chunkRows = this._db
@@ -944,16 +973,17 @@ export class DatabaseService {
             )
             .all(...batch) as Array<{ file_fingerprint: string; chunk_index: number }>
           for (const row of chunkRows) {
-            allFingerprintsToDelete.push(`${row.file_fingerprint}:c${row.chunk_index}`)
+            orphanFingerprintsToDelete.push(`${row.file_fingerprint}:c${row.chunk_index}`)
           }
         } catch (chunkErr) {
-          logger.warn(LogCategory.DATABASE_SERVICE, '重置目录查询切片指纹失败:', chunkErr)
+          logger.warn(LogCategory.DATABASE_SERVICE, '重置目录查询孤儿切片指纹失败:', chunkErr)
         }
       }
     }
 
     // 2. 事务内批量重置
     this._db.transaction(() => {
+      // 2.1 全量重置：目录与文件的分析状态（含共享文件，只重置 workspace 层标记）
       for (let i = 0; i < dirIds.length; i += batchSize) {
         const batch = dirIds.slice(i, i + batchSize)
         const placeholders = batch.map(() => '?').join(',')
@@ -967,10 +997,10 @@ export class DatabaseService {
         ).run(...batch)
       }
 
-      if (fingerprints.length > 0) {
-        const batchSize = 500
-        for (let i = 0; i < fingerprints.length; i += batchSize) {
-          const batch = fingerprints.slice(i, i + batchSize)
+      // 2.2 仅对独占孤儿文件：清除全局摘要与索引数据，防止跨工作区误伤
+      if (orphanFingerprints.length > 0) {
+        for (let i = 0; i < orphanFingerprints.length; i += batchSize) {
+          const batch = orphanFingerprints.slice(i, i + batchSize)
           const placeholders = batch.map(() => '?').join(',')
 
           this._db!.prepare(
@@ -1008,7 +1038,12 @@ export class DatabaseService {
             `DELETE FROM file_tag_relations WHERE file_fingerprint IN (${placeholders})`
           ).run(...batch)
 
-          // 清理切片与私有标签记录，确保再次分析时切片重新计算
+          // [RV-03] 清理 file_video_segments：防止切片 completed 状态残留导致重置后调度器跳过重新分析
+          this._db!.prepare(
+            `DELETE FROM file_video_segments WHERE file_fingerprint IN (${placeholders})`
+          ).run(...batch)
+
+          // 清理视频分块记录，确保再次分析时切片重新计算
           this._db!.prepare(
             `DELETE FROM file_video_chunks WHERE file_fingerprint IN (${placeholders})`
           ).run(...batch)
@@ -1023,6 +1058,7 @@ export class DatabaseService {
         }
       }
 
+      // 2.3 清理分析队列中属于当前重置目录的条目
       for (let i = 0; i < dirIds.length; i += batchSize) {
         const batch = dirIds.slice(i, i + batchSize)
         const placeholders = batch.map(() => '?').join(',')
@@ -1034,7 +1070,8 @@ export class DatabaseService {
       }
     })()
 
-    return allFingerprintsToDelete
+    // 仅返回独占孤儿指纹供 Phase 2 删除 Omni 向量（共享文件向量不得删除）
+    return orphanFingerprintsToDelete
   }
 
   // --- DAO Methods ---

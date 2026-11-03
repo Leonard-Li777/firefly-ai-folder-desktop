@@ -6,9 +6,11 @@ import {
   TechnicalEngineParameters,
   parseWorkspaceConfig,
   isWorkspaceConfigReady,
-  HardwareInfo
+  HardwareInfo,
+  UserTier
 } from '@firefly/types'
 import { mapIntentToParameters } from '@firefly/shared'
+import { useTierStore } from '../../stores/tier-store'
 import { Card } from '../ui/card'
 import { Button } from '../ui/button'
 import { Label } from '../ui/label'
@@ -100,6 +102,10 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
 
   // 动态意图卡片列表
   const intentCards = useMemo(() => getIntentCards(), [])
+
+  // RV-04: 用户会员层级检测（中性告知长视频体验范围与续作机制）
+  const tier = useTierStore(s => s.tier)
+  const isFreeTier = tier === UserTier.FREE
 
   // 当前激活配置解析
   const parsedConfig = useMemo<WorkspaceConfig>(() => {
@@ -377,6 +383,14 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
             )
           })}
         </div>
+
+        {/* RV-04: 影视剪辑素材场景 Free/Pro 权益中性告知 */}
+        {isFreeTier && selectedIntent === 'footage_studio' && (
+          <div className="flex items-center gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/20 text-xs text-muted-foreground mt-2">
+            <Sparkles className="w-3.5 h-3.5 text-primary shrink-0" />
+            <span>{t('当前体验首个 5 分钟切片分析，升级 Pro 可流式续作自动处理全片')}</span>
+          </div>
+        )}
       </div>
 
       {/* 高级专家微调 (折叠面板) */}
