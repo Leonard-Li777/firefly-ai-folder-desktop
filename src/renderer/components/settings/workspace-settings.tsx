@@ -13,7 +13,10 @@ import {
   AlertDialogTitle
 } from '../ui/alert-dialog'
 import { useSettingsStore } from '../../stores/settings-store'
-import { WorkspaceDirectory } from '@firefly/types'
+import { WorkspaceDirectory, HardwareInfo } from '@firefly/types'
+import { WorkspaceConfigPanel } from './WorkspaceConfigPanel'
+import { MaterialIcon, cn } from '../../lib/utils'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import {
   Trash2,
   RefreshCw,
@@ -54,6 +57,19 @@ export const MonitoringSettings: React.FC = () => {
   const [emptyFolderCleanupPath, setEmptyFolderCleanupPath] = useState<string>('')
   const [showRescanPreviewDialog, setShowRescanPreviewDialog] = useState(false)
   const [scanningWorkspaceId, setScanningWorkspaceId] = useState<number | null>(null)
+  const targetWorkspaceId = useSettingsStore(s => s.targetWorkspaceId)
+  const [expandedWorkspaceId, setExpandedWorkspaceId] = useState<number | null>(null)
+  const [hardwareInfo, setHardwareInfo] = useState<HardwareInfo | null>(null)
+
+  useEffect(() => {
+    window.electronAPI?.getHardwareInfo?.().then(hw => setHardwareInfo(hw)).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (targetWorkspaceId) {
+      setExpandedWorkspaceId(targetWorkspaceId)
+    }
+  }, [targetWorkspaceId])
 
   /**
    * 加载工作目录列表
@@ -387,7 +403,15 @@ export const MonitoringSettings: React.FC = () => {
                 const status = getDirectoryStatus(directory)
 
                 return (
-                  <div key={directory.id} className="border rounded-lg p-4">
+                  <div
+                    key={directory.id}
+                    className={cn(
+                      'border rounded-xl p-4 transition-all duration-200',
+                      expandedWorkspaceId === directory.id
+                        ? 'border-primary/50 bg-primary/[0.02] dark:bg-primary/[0.04] shadow-sm ring-1 ring-primary/20'
+                        : 'border-border hover:border-border/80'
+                    )}
+                  >
                     <div className="flex items-start justify-between">
                       <div className="flex-1 space-y-2">
                         <div className="flex items-center gap-2">
@@ -471,6 +495,26 @@ export const MonitoringSettings: React.FC = () => {
                       <div className="flex items-center gap-2 ml-4">
                         <Button
                           size="sm"
+                          variant={expandedWorkspaceId === directory.id ? 'default' : 'outline'}
+                          onClick={() =>
+                            setExpandedWorkspaceId(
+                              expandedWorkspaceId === directory.id ? null : (directory.id ?? null)
+                            )
+                          }
+                          className="flex items-center gap-1.5 font-medium"
+                          title={t('配置该工作区AI策略与场景模式')}
+                        >
+                          <MaterialIcon icon="tune" className="text-sm" />
+                          <span>{t('配置策略')}</span>
+                          {expandedWorkspaceId === directory.id ? (
+                            <ChevronUp className="w-3.5 h-3.5 ml-0.5" />
+                          ) : (
+                            <ChevronDown className="w-3.5 h-3.5 ml-0.5" />
+                          )}
+                        </Button>
+
+                        <Button
+                          size="sm"
                           variant="outline"
                           onClick={() => handleRescanDirectory(directory)}
                           disabled={isLoading || scanningWorkspaceId !== null}
@@ -533,6 +577,17 @@ export const MonitoringSettings: React.FC = () => {
                         </Button>
                       </div>
                     </div>
+
+                    {expandedWorkspaceId === directory.id && (
+                      <div className="mt-4 pt-4 border-t border-border/60">
+                        <WorkspaceConfigPanel
+                          workspace={directory}
+                          hardwareInfo={hardwareInfo}
+                          onConfigSaved={loadWorkspaceDirectories}
+                          onResetRequested={() => handleResetDirectory(directory)}
+                        />
+                      </div>
+                    )}
                   </div>
                 )
               })}

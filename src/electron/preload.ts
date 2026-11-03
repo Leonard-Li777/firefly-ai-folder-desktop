@@ -691,6 +691,12 @@ const electronAPI = {
   resetWorkspaceDirectory: (directoryPath: string): Promise<void> =>
     ipcRenderer.invoke('reset-workspace-directory', directoryPath),
 
+  getWorkspaceConfig: (workspaceId: number) =>
+    ipcRenderer.invoke('get-workspace-config', workspaceId),
+  updateWorkspaceConfig: (workspaceId: number, config: any) =>
+    ipcRenderer.invoke('update-workspace-config', workspaceId, config),
+
+
   rescanWorkspaceDirectory: (workspaceId: number): Promise<any> =>
     ipcRenderer.invoke('rescanWorkspaceDirectory', workspaceId),
 

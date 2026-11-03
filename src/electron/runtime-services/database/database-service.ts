@@ -900,7 +900,7 @@ export class DatabaseService {
     return Number(result.lastInsertRowid)
   }
 
-  async resetWorkspaceDirectoryAnalysis(directoryPath: string): Promise<void> {
+  async resetWorkspaceDirectoryAnalysis(directoryPath: string): Promise<string[]> {
     if (!this._db) throw new Error('数据库未初始化')
 
     const sep = path.sep
@@ -914,7 +914,7 @@ export class DatabaseService {
       .all(directoryPath, likePattern) as { id: number }[]
     const dirIds = dirRows.map(r => r.id)
 
-    if (dirIds.length === 0) return
+    if (dirIds.length === 0) return []
 
     // 分批提取文件指纹，防止深层工程目录下 dirIds 突破 SQLite 变量上限
     const batchSize = 500
@@ -930,6 +930,27 @@ export class DatabaseService {
       }
     }
     const fingerprints = Array.from(fingerprintsSet)
+
+    // 1.1 收集切片指纹 (视频分块等在 Omni 向量数据库中以 ${file_fingerprint}:c${chunk_index} 存储)
+    const allFingerprintsToDelete: string[] = [...fingerprints]
+    if (fingerprints.length > 0) {
+      for (let i = 0; i < fingerprints.length; i += batchSize) {
+        const batch = fingerprints.slice(i, i + batchSize)
+        const placeholders = batch.map(() => '?').join(',')
+        try {
+          const chunkRows = this._db
+            .prepare(
+              `SELECT file_fingerprint, chunk_index FROM file_video_chunks WHERE file_fingerprint IN (${placeholders})`
+            )
+            .all(...batch) as Array<{ file_fingerprint: string; chunk_index: number }>
+          for (const row of chunkRows) {
+            allFingerprintsToDelete.push(`${row.file_fingerprint}:c${row.chunk_index}`)
+          }
+        } catch (chunkErr) {
+          logger.warn(LogCategory.DATABASE_SERVICE, '重置目录查询切片指纹失败:', chunkErr)
+        }
+      }
+    }
 
     // 2. 事务内批量重置
     this._db.transaction(() => {
@@ -959,6 +980,8 @@ export class DatabaseService {
                   language = NULL,
                   is_hit = 0,
                   last_hit_at = NULL,
+                  canonical_vector_state = NULL,
+                  canonical_text_hash = NULL,
                   smart_name_source = NULL,
                   smart_name_template_source = NULL,
                   smart_name = (SELECT name FROM workspace_files wf WHERE wf.file_fingerprint = files.file_fingerprint LIMIT 1)
@@ -984,6 +1007,19 @@ export class DatabaseService {
           this._db!.prepare(
             `DELETE FROM file_tag_relations WHERE file_fingerprint IN (${placeholders})`
           ).run(...batch)
+
+          // 清理切片与私有标签记录，确保再次分析时切片重新计算
+          this._db!.prepare(
+            `DELETE FROM file_video_chunks WHERE file_fingerprint IN (${placeholders})`
+          ).run(...batch)
+
+          try {
+            this._db!.prepare(
+              `DELETE FROM file_tags_private WHERE file_fingerprint IN (${placeholders})`
+            ).run(...batch)
+          } catch {
+            // 忽略非必选私有标签表异常
+          }
         }
       }
 
@@ -997,6 +1033,8 @@ export class DatabaseService {
         ).run(...batch, ...batch)
       }
     })()
+
+    return allFingerprintsToDelete
   }
 
   // --- DAO Methods ---

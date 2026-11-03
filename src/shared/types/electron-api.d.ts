@@ -6,7 +6,7 @@
  * 与 preload.ts 中的实际实现保持同步
  */
 
-import { AppConfig, WorkspaceDirectory, WorkspaceConfigIntent } from '@yonuc/types'
+import { AppConfig, WorkspaceDirectory, WorkspaceConfigIntent, WorkspaceConfig } from '@yonuc/types'
 // PRD-0044（S5）：IModelRecommendation / IModelSummary 导入随模型管理与推荐 IPC 清退删除
 import type { ConfigKey } from '@yonuc/types/config-types'
 import { FileInfo } from '@yonuc/core-engine'
@@ -637,6 +637,11 @@ declare global {
         path: string
       ) => Promise<{ success: boolean; error?: string; warning?: string }>
       resetWorkspaceDirectory: (directoryPath: string) => Promise<void>
+      getWorkspaceConfig: (workspaceId: number) => Promise<WorkspaceConfig>
+      updateWorkspaceConfig: (
+        workspaceId: number,
+        config: WorkspaceConfig
+      ) => Promise<{ success: boolean; error?: string }>
       rescanWorkspaceDirectory: (
         workspaceId: number
       ) => Promise<{ success: boolean; message: string }>

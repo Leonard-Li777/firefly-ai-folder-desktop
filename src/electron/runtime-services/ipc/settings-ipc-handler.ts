@@ -8,12 +8,14 @@ import { databaseService } from '../database/database-service'
 import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
 import { loadIgnoreRules, getSystemIgnoreRules } from '../analysis/analysis-ignore-service'
 import type { IIgnoreRule } from '@firefly/types/settings-types'
+import type { WorkspaceConfig } from '@firefly/types'
 import fs from 'node:fs'
 import path from 'node:path'
 import { t } from '@app/languages'
 import { analysisQueueService } from '../analysis-queue-service'
 import { fileWatcherService } from '../filesystem/file-watcher-service'
 import { cleanupVirtualDirectoryOnDelete } from '../filesystem/virtual-directory-cleanup'
+import { thumbnailService } from '../filesystem/thumbnail-service'
 import { omniClient } from '../../services/omni-client'
 
 /** 校验忽略规则类型 */
@@ -201,6 +203,13 @@ export function registerSettingsIPCHandlers(): void {
         logger.error(LogCategory.SETTING, '删除工作目录：中止分析任务失败:', queueError)
       }
 
+      // 步骤 1.1: 释放 Sharp 缩略图引擎持有的文件句柄与内存缓存，规避 Windows EBUSY (-4082) 占用
+      try {
+        thumbnailService.releaseSharpMemory()
+      } catch (sharpErr) {
+        logger.warn(LogCategory.SETTING, '删除工作目录：释放 Sharp 句柄异常:', sharpErr)
+      }
+
       // 步骤 2: 彻底物理删除工作目录下的 .VirtualDirectory 文件夹（失败必须回传，禁止静默）
       const virtualDirectoryCleaned = await cleanupVirtualDirectoryOnDelete(directoryPath)
 
@@ -253,8 +262,34 @@ export function registerSettingsIPCHandlers(): void {
       }
 
       if (directoryPath) {
-        await databaseService.resetWorkspaceDirectoryAnalysis(directoryPath)
+        // 步骤 0: 中止该目录下在途分析任务并释放队列句柄，规避 Windows EBUSY 与脏数据死灰复燃
+        try {
+          await analysisQueueService.abortAndDeleteItemsByDirectory(directoryPath)
+        } catch (queueErr) {
+          logger.warn(LogCategory.SETTING, '重置工作目录：中止分析任务异常:', queueErr)
+        }
+
+        // 步骤 0.1: 释放 Sharp 缩略图引擎句柄与内存，规避 Windows 文件占用
+        try {
+          thumbnailService.releaseSharpMemory()
+        } catch (sharpErr) {
+          logger.warn(LogCategory.SETTING, '重置工作目录：释放 Sharp 句柄异常:', sharpErr)
+        }
+
+        // Phase 1: SQLite 事务内清空数据并提交
+        const resetFingerprints = await databaseService.resetWorkspaceDirectoryAnalysis(directoryPath)
         omniClient.clearTaxonomyTreeCache()
+
+        // Phase 2: 严格在 SQLite 事务提交后，在事务外部异步清理 Omni 向量索引 (包含主指纹与分块切片指纹)
+        if (resetFingerprints && resetFingerprints.length > 0) {
+          omniClient.deleteVectors(resetFingerprints).catch(err => {
+            logger.warn(
+              LogCategory.DATABASE_SERVICE,
+              '重置工作区级联清理 Omni 向量失败（将在下一次重启时自愈）',
+              { count: resetFingerprints.length, err }
+            )
+          })
+        }
 
         // 清理工作目录下的 .VirtualDirectory（严格保留 .tts 与 .thumbnail 缓存供后续复用）
         await cleanupVirtualDirectoryOnReset(directoryPath)
@@ -330,6 +365,42 @@ export function registerSettingsIPCHandlers(): void {
   )
 
   // 重置 AI 分析数据库
+
+  // 获取工作区专有配置 (已就绪强类型或待配置对象)
+  ipcMain.handle('get-workspace-config', async (_event, workspaceId: number) => {
+    try {
+      return await databaseService.getWorkspaceConfig(workspaceId)
+    } catch (error) {
+      logger.error(LogCategory.SETTING, `获取工作区配置失败: ${workspaceId}`, error)
+      throw error
+    }
+  })
+
+  // 更新工作区专有配置 (设置就绪门闩与全量AI处理策略)
+  ipcMain.handle(
+    'update-workspace-config',
+    async (_event, workspaceId: number, config: WorkspaceConfig) => {
+      try {
+        const success = await databaseService.updateWorkspaceConfig(workspaceId, config)
+        if (success) {
+          BrowserWindow.getAllWindows().forEach(win => {
+            if (!win.isDestroyed()) {
+              win.webContents.send('workspace-directories-updated')
+            }
+          })
+          // 若更新为已就绪 (ready)，主动唤醒分析队列处理栈，解除静默挂起
+          if (config && config.status === 'ready') {
+            void analysisQueueService.start(workspaceId)
+          }
+        }
+        return { success }
+      } catch (error) {
+        logger.error(LogCategory.SETTING, `更新工作区配置失败: ${workspaceId}`, error)
+        return { success: false, error: (error as any)?.message || String(error) }
+      }
+    }
+  )
+
   ipcMain.handle('resetAnalysisDatabase', async () => {
     try {
       logger.info(LogCategory.SETTING, '重置 AI 分析数据库...')
