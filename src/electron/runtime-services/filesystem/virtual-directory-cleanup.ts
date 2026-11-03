@@ -14,7 +14,7 @@ import { logger, LogCategory } from '@firefly/shared'
  * Windows 上文件句柄的释放往往滞后于任务中止信号，首次 `fs.rm` 撞 EBUSY（errno -4082）
  * 是常态，必须退避重试而不是一次性放弃。
  */
-const VIRTUAL_DIR_DELETE_RETRY_DELAYS_MS = [150, 400, 900, 1500]
+const VIRTUAL_DIR_DELETE_RETRY_DELAYS_MS = [150, 400, 800]
 
 /**
  * 删除工作目录时彻底删除 `.VirtualDirectory` 文件夹。

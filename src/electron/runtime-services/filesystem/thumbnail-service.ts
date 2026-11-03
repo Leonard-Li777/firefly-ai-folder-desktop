@@ -95,7 +95,7 @@ export class ThumbnailService {
   /**
    * 释放临时解码内存
    */
-  private releaseSharpMemory(): void {
+  public releaseSharpMemory(): void {
     try {
       sharp.cache(false)
       sharp.cache({ memory: 32, files: 20, items: 100 })
