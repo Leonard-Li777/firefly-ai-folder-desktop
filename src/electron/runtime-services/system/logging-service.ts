@@ -1,8 +1,14 @@
+import * as crypto from 'crypto'
 import * as path from 'path'
 import * as fs from 'fs'
 import { platformAdapter } from '@firefly/electron-llamaIndex-service'
 import { LogLevel, LogEntry, AppError, ErrorType } from '@firefly/types'
-import { LogCategory, LogCategoryColors, maskSensitiveInfo, isE2ETestEnvironment } from '@firefly/shared'
+import {
+  LogCategory,
+  LogCategoryColors,
+  maskSensitiveInfo,
+  isE2ETestEnvironment
+} from '@firefly/shared'
 
 /**
  * 日志服务类
@@ -10,6 +16,28 @@ import { LogCategory, LogCategoryColors, maskSensitiveInfo, isE2ETestEnvironment
 export class LoggingService {
   private static instance: LoggingService
   private logEntries: LogEntry[] = []
+  private runId: string = crypto.randomUUID()
+  private currentSessionId: string | null = null
+  private logSequence: number = 0
+
+  public getRunId(): string {
+    return this.runId
+  }
+
+  public bindSessionId(sessionId: string): void {
+    if (this.currentSessionId !== sessionId) {
+      this.currentSessionId = sessionId
+      this.info(LogCategory.SYSTEM, `[PostHog Session Bind] run=${this.runId} session=${sessionId}`)
+    }
+  }
+
+  public getLogSequence(): number {
+    return ++this.logSequence
+  }
+
+  public getCurrentSessionId(): string | null {
+    return this.currentSessionId
+  }
   private config: {
     level: LogLevel
     maxFileSize: number
@@ -25,7 +53,8 @@ export class LoggingService {
     let initialLevel = LogLevel.INFO
     const envLogLevel = process.env.LOG_LEVEL?.toLowerCase()
     const isE2E = isE2ETestEnvironment() || process.env.IS_E2E_TEST === 'true'
-    const isDebugMode = isE2E || !!(envLogLevel && (envLogLevel.includes('debug') || envLogLevel.includes('all')))
+    const isDebugMode =
+      isE2E || !!(envLogLevel && (envLogLevel.includes('debug') || envLogLevel.includes('all')))
 
     if (isDebugMode) {
       initialLevel = LogLevel.DEBUG

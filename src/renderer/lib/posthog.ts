@@ -142,6 +142,17 @@ export const initPostHog = async () => {
     autocapture: true,
     // 依据硬件检测结果精准设置录屏开关：低配老核显直接禁用，高性能设备直接开启
     disable_session_recording: !enableRecording,
+    // 关键：顶层控制台录制开关，确保控制台日志按时间轴精准同步到录像中
+    enable_recording_console_log: true,
+    // 网络请求防抖与批处理配置
+    request_queue_config: {
+      flush_interval_ms: 3000
+    },
+    // 客户端速率限制，留出余量保证录像和日志平稳上报
+    rate_limiting: {
+      events_per_second: 10,
+      events_burst_limit: 50
+    },
     session_recording: {
       // 会话采样率：录制 100% 的会话
       sampleRate: 1,
@@ -164,21 +175,39 @@ export const initPostHog = async () => {
     // 自动捕获页面浏览
     capture_pageview: 'history_change',
     // 持久化标识
-    persistence: 'localStorage+cookie',
-    // 在发送前修改事件数据
-    // before_send: event => {
-    //   // 注入环境标记，确保即便手动 capture 漏掉也会补上
-    //   if (event?.properties) {
-    //     event.properties['运行环境'] = __IS_PROD__ ? '生产环境' : '开发环境'
-    //   }
-    //   return event
-    // }
+    persistence: 'localStorage+cookie'
   })
 
-  // 4. 注册全局属性，确保每个事件都带上环境标识
+  // 4. 注册全局属性，确保每个事件都带上环境标识与运行实例 ID (run_id)
+  let runId = 'unknown'
+  try {
+    runId = (await window.electronAPI?.getRunId?.()) || 'unknown'
+  } catch {}
+
   posthog.register({
-    运行环境: __IS_PROD__ ? '生产环境' : '开发环境'
+    运行环境: __IS_PROD__ ? '生产环境' : '开发环境',
+    run_id: runId
   })
+
+  // 4.1 冷启动双保险绑定 + 动态订阅 Session ID 变更通知主进程
+  try {
+    // 冷启动首次同步，避免监听挂载前错过首跳 session_id
+    const initialSessionId =
+      typeof posthog.get_session_id === 'function' ? posthog.get_session_id() : ''
+    if (initialSessionId) {
+      window.electronAPI?.bindPostHogSession?.(initialSessionId)
+    }
+
+    if (typeof posthog.onSessionId === 'function') {
+      posthog.onSessionId((newSessionId: string) => {
+        if (newSessionId) {
+          window.electronAPI?.bindPostHogSession?.(newSessionId)
+        }
+      })
+    }
+  } catch (err) {
+    console.warn('PostHog Session 绑定异常:', err)
+  }
 
   // 5. 动态监控服务器连通性，离线时停止 PostHog 以免产生大量网络报错
   const checkConnection = async () => {

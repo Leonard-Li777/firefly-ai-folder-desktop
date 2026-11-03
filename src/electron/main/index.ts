@@ -29,7 +29,13 @@ if (process.platform === 'darwin') {
 // 后续逻辑...
 import { app, BrowserWindow, net, dialog, shell } from 'electron'
 import * as path from 'node:path'
-import { logger, LogCategory, ErrorNormalizer, APP_PORTS, getWorktreeDebugPortBase } from '@firefly/shared'
+import {
+  logger,
+  LogCategory,
+  ErrorNormalizer,
+  APP_PORTS,
+  getWorktreeDebugPortBase
+} from '@firefly/shared'
 import { loggingService } from '../runtime-services/system/logging-service'
 // 逆地理编码适配器注册：将 omniService 能力注入 core-engine（模块求值即注册，须早于任何维度分析）
 import '../runtime-services/system/geo-adapter'
@@ -41,7 +47,10 @@ import { deepLinkManager } from './deep-link'
 
 // 1. Worktree 实例环境与 userData 隔离已在 worktree-bootstrap 模块求值阶段完成
 // （见文件顶部第一条 import 的说明），此处仅输出启动实例信息。
-loggingService.info(LogCategory.STARTUP, `[Worktree] 启动实例: ${worktreeInfo.appName}, 数据目录: ${worktreeInfo.userDataDir}`)
+loggingService.info(
+  LogCategory.STARTUP,
+  `[Worktree] 启动实例: ${worktreeInfo.appName}, 数据目录: ${worktreeInfo.userDataDir}`
+)
 
 // 2. 检查单实例锁，避免重复打开多个应用实例
 const gotSingleInstanceLock = app.requestSingleInstanceLock()
@@ -167,7 +176,10 @@ app.on('open-url', (event, url) => {
       loggingService.info(LogCategory.DATABASE, '[Migration] 双应用数据隔离与继承迁移完成')
       // 验证迁移结果
       const newFiles = fs.readdirSync(newDir)
-      loggingService.info(LogCategory.DATABASE, `[Migration] 新目录文件列表: ${newFiles.join(', ')}`)
+      loggingService.info(
+        LogCategory.DATABASE,
+        `[Migration] 新目录文件列表: ${newFiles.join(', ')}`
+      )
     } else {
       loggingService.info(
         LogCategory.DATABASE,
@@ -178,7 +190,6 @@ app.on('open-url', (event, url) => {
     loggingService.error(LogCategory.DATABASE, '[Migration] 初始化新版数据目录失败:', err)
   }
 })()
- 
 
 // 为不同平台或命令行指定的参数设置远程调试端口，每个 Worktree 独立专属滑动段
 const debuggingPortArg = process.argv.find(arg => arg.includes('--remote-debugging-port'))
@@ -194,11 +205,18 @@ if (debuggingPortArg) {
   const isPortFreeSync = (port: number): boolean => {
     try {
       if (process.platform === 'win32') {
-        const out = require('child_process').execSync('netstat -ano -p tcp', { encoding: 'utf8', windowsHide: true, stdio: ['pipe', 'pipe', 'ignore'] })
+        const out = require('child_process').execSync('netstat -ano -p tcp', {
+          encoding: 'utf8',
+          windowsHide: true,
+          stdio: ['pipe', 'pipe', 'ignore']
+        })
         const regex = new RegExp(`:${port}\\s+`)
         return !regex.test(out)
       } else {
-        const out = require('child_process').execSync(`lsof -i :${port}`, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] })
+        const out = require('child_process').execSync(`lsof -i :${port}`, {
+          encoding: 'utf8',
+          stdio: ['pipe', 'pipe', 'ignore']
+        })
         return !out || out.trim().length === 0
       }
     } catch {
@@ -380,10 +398,26 @@ import { omniClient } from '../services/omni-client'
 import { LanguageCode } from '@firefly/types'
 
 // =================================================================
-// 日志处理逻辑 (含 IPC 节流)
+// 日志处理逻辑 (含脱水单行化、时间戳对齐与全局令牌桶)
 // =================================================================
 let logBatch: any[] = []
 let logThrottleTimer: NodeJS.Timeout | null = null
+
+// 全局令牌桶：每秒 10 个 token，最大突发 30
+let tokenBucket = 30
+const TOKEN_MAX = 30
+const TOKEN_REFILL_RATE = 10 // 每秒恢复 10 个
+let lastRefillTime = Date.now()
+let droppedInfoCount = 0
+
+const refillTokens = () => {
+  const now = Date.now()
+  const elapsed = (now - lastRefillTime) / 1000
+  if (elapsed > 0) {
+    tokenBucket = Math.min(TOKEN_MAX, tokenBucket + elapsed * TOKEN_REFILL_RATE)
+    lastRefillTime = now
+  }
+}
 
 const flushLogs = () => {
   if (logBatch.length === 0) return
@@ -402,10 +436,15 @@ const flushLogs = () => {
 logger.on(
   'log',
   ({ category, level, args }: { category: LogCategory; level: string; args: any[] }) => {
-    // 将所有 args 合并为一条完整消息，对象格式化为带换行缩进的 JSON
+    const originTs = Date.now()
+    const seq = loggingService.getLogSequence()
+    const currentSession = loggingService.getCurrentSessionId()
+
+    // 提取消息与结构化摘要
     let foundStack: string | undefined
     const parts: string[] = []
-    let extractedData: any = undefined
+    let extractedTraceId: string | undefined
+    let extractedCode: string | undefined
 
     for (const arg of args) {
       if (typeof arg === 'object' && arg !== null) {
@@ -415,21 +454,19 @@ logger.on(
         } else if (arg instanceof Date) {
           parts.push(arg.toISOString())
         } else {
-          const prettyJson = JSON.stringify(arg, null, 2)
-          const beautifiedJson = prettyJson
-            .split('\n')
-            .map(line => {
-              const indentMatch = line.match(/^(\s*)/)
-              const indent = indentMatch ? indentMatch[1] : ''
-              if (line.includes('\\n')) {
-                return line.replace(/\\n/g, '\n' + indent + '  ')
-              }
-              return line
-            })
-            .join('\n')
-          parts.push(beautifiedJson)
-          if (extractedData === undefined) {
-            extractedData = arg
+          // 提取可能带有的 trace_id / code 诊断字段
+          if (arg.trace_id || arg.traceId || arg.trace) {
+            extractedTraceId = String(arg.trace_id || arg.traceId || arg.trace)
+          }
+          if (arg.code) {
+            extractedCode = String(arg.code)
+          }
+          try {
+            const rawJson = JSON.stringify(arg)
+            // 软截断为紧凑摘要
+            parts.push(rawJson.length > 80 ? rawJson.slice(0, 80) + '...' : rawJson)
+          } catch {
+            parts.push('[Object]')
           }
         }
       } else {
@@ -437,7 +474,7 @@ logger.on(
       }
     }
 
-    const message = parts.join(' ')
+    const rawMessage = parts.join(' ')
 
     const isDebugOrE2E =
       process.env.IS_E2E_TEST === 'true' ||
@@ -448,52 +485,92 @@ logger.on(
       if (category === LogCategory.HTTP_CLIENT) {
         if (level === 'debug') return
         if (level === 'info') {
-          const upperMsg = message.toUpperCase()
+          const upperMsg = rawMessage.toUpperCase()
           if (upperMsg.includes('[DEBUG]') || upperMsg.includes('[INFO]')) return
         }
       }
 
       if (category === LogCategory.ANALYSIS_QUEUE) {
-        if ((level === 'debug' || level === 'info') && message.includes('发送状态更新')) return
+        if ((level === 'debug' || level === 'info') && rawMessage.includes('发送状态更新')) return
       }
     }
 
+    // 本地持久化保持原样写入 app.log
     switch (level) {
       case 'info':
-        loggingService.info(category, message)
+        loggingService.info(category, rawMessage)
         break
       case 'warn':
-        loggingService.warn(category, message)
+        loggingService.warn(category, rawMessage)
         break
       case 'error':
         if (category === LogCategory.ERROR) return
-        loggingService.error(category, message, undefined, foundStack)
+        loggingService.error(category, rawMessage, undefined, foundStack)
         break
       case 'debug':
-        loggingService.debug(category, message)
+        loggingService.debug(category, rawMessage)
         break
       default:
-        loggingService.info(category, message)
+        loggingService.info(category, rawMessage)
     }
 
+    // 向渲染进程轻轨派发：严格单行纯文本、零 Object、白名单保留
     if (category !== LogCategory.RENDERER) {
+      const isUrgent = level === 'warn' || level === 'error'
+
+      // 生产环境在非 debug 模式下屏蔽 debug/trace
+      if (!isDebugOrE2E && (level === 'debug' || level === 'trace')) {
+        return
+      }
+
+      // INFO 级别受全局令牌桶流控
+      if (!isDebugOrE2E && level === 'info') {
+        refillTokens()
+        if (tokenBucket >= 1) {
+          tokenBucket -= 1
+        } else {
+          droppedInfoCount += 1
+          return
+        }
+      }
+
+      // 构造绝对时间戳与单调序号前缀: [HH:mm:ss.SSS #0001]
+      const d = new Date(originTs)
+      const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}.${String(d.getMilliseconds()).padStart(3, '0')}`
+      const seqStr = `#${String(seq).padStart(4, '0')}`
+
+      // 组装格式化单行纯文本（安全软截断 ≤200 字符）
+      let cleanMsg = rawMessage.replace(/[\r\n]+/g, ' ')
+      if (cleanMsg.length > 120) {
+        cleanMsg = cleanMsg.slice(0, 120) + '...'
+      }
+
+      const metaParts: string[] = []
+      if (extractedCode) metaParts.push(`code=${extractedCode}`)
+      if (extractedTraceId) metaParts.push(`trace=${extractedTraceId}`)
+      const metaSuffix = metaParts.length > 0 ? ` (${metaParts.join(', ')})` : ''
+
+      const singleLineMessage = `[${timeStr} ${seqStr}] [${category}] [${level.toUpperCase()}] ${cleanMsg}${metaSuffix}`
+
       logBatch.push({
         category,
         level,
-        message,
-        data: extractedData,
+        message: singleLineMessage,
         origin: 'backend',
-        timestamp: Date.now()
+        origin_ts: originTs,
+        trace_id: extractedTraceId,
+        session_id: currentSession
       })
 
-      if (logBatch.length >= 100) {
+      // WARN/ERROR 前沿紧急冲刷；普通批次 50ms 窗口防抖合并
+      if (isUrgent || logBatch.length >= 30) {
         if (logThrottleTimer) {
           clearTimeout(logThrottleTimer)
           logThrottleTimer = null
         }
         flushLogs()
       } else if (!logThrottleTimer) {
-        logThrottleTimer = setTimeout(flushLogs, 100)
+        logThrottleTimer = setTimeout(flushLogs, 50)
       }
     }
   }
@@ -601,7 +678,11 @@ ConfigOrchestrator.getInstance().onValueChange<string>(
               `[LanguageSwitch] 已按 ${newLanguage} 重建物化展示路径 name_path: 更新 ${rebuildResult.updatedCount} 行 (涉及 ${rebuildResult.distinctPathsCount} 条路径)`
             )
           } catch (rebuildErr) {
-            logger.error(LogCategory.MAIN, '[LanguageSwitch] 重建物化路径 name_path 失败:', rebuildErr)
+            logger.error(
+              LogCategory.MAIN,
+              '[LanguageSwitch] 重建物化路径 name_path 失败:',
+              rebuildErr
+            )
           }
         }
 
@@ -627,7 +708,6 @@ ConfigOrchestrator.getInstance().onValueChange<string>(
         omniService.reconnect(databaseService.getDbPath()).catch(err => {
           logger.warn(LogCategory.MAIN, 'Omni 语言切换热重连失败:', err)
         })
-
 
         BrowserWindow.getAllWindows().forEach(win => {
           win.webContents.send('database-switched', { language: newLanguage })
@@ -906,7 +986,11 @@ app.on('activate', () => {
 })
 
 process.on('uncaughtException', err => {
-  if ((err as any)?.code === 'EPIPE' || (err as any)?.code === 'ERR_STREAM_DESTROYED' || String(err?.message || '').includes('EPIPE')) {
+  if (
+    (err as any)?.code === 'EPIPE' ||
+    (err as any)?.code === 'ERR_STREAM_DESTROYED' ||
+    String(err?.message || '').includes('EPIPE')
+  ) {
     return
   }
   logger.error(LogCategory.MAIN, '[uncaughtException]', err)
@@ -917,7 +1001,11 @@ process.on('uncaughtException', err => {
   }
 })
 process.on('unhandledRejection', reason => {
-  if ((reason as any)?.code === 'EPIPE' || (reason as any)?.code === 'ERR_STREAM_DESTROYED' || String((reason as any)?.message || '').includes('EPIPE')) {
+  if (
+    (reason as any)?.code === 'EPIPE' ||
+    (reason as any)?.code === 'ERR_STREAM_DESTROYED' ||
+    String((reason as any)?.message || '').includes('EPIPE')
+  ) {
     return
   }
   logger.error(LogCategory.MAIN, '[unhandledRejection]', reason)
@@ -939,4 +1027,3 @@ const handleProcessTermination = () => {
 }
 process.on('SIGINT', handleProcessTermination)
 process.on('SIGTERM', handleProcessTermination)
-

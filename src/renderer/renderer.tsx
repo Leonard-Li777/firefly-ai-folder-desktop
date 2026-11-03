@@ -102,42 +102,100 @@ const LOG_ORIGIN_ICONS: Record<string, string> = {
   frontend: '🖥️'
 }
 
-// 监听后端转发的日志并显示在控制台（message 已包含完整格式化内容）
+// PostHog 结构化日志直采与每日配额熔断管理 (≤50条/天)
+const getDailyCaptureCount = (): { count: number; date: string } => {
+  try {
+    const today = new Date().toISOString().slice(0, 10)
+    const stored = localStorage.getItem('ph_daily_app_log_quota')
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      if (parsed.date === today) return parsed
+    }
+    return { count: 0, date: today }
+  } catch {
+    return { count: 0, date: '' }
+  }
+}
+
+const incrementDailyCaptureCount = (): boolean => {
+  try {
+    const today = new Date().toISOString().slice(0, 10)
+    const current = getDailyCaptureCount()
+    if (current.count >= 50) return false
+    localStorage.setItem(
+      'ph_daily_app_log_quota',
+      JSON.stringify({ count: current.count + 1, date: today })
+    )
+    return true
+  } catch {
+    return false
+  }
+}
+
+// 调度队列：分帧摊平处理，防后台最小化挂起
+const logQueue: any[] = []
+let isProcessingQueue = false
+
+const processLogItem = (payload: any) => {
+  const { category, level, message, origin, origin_ts, trace_id } = payload
+  const icon = LOG_ORIGIN_ICONS[origin] || '🖥️'
+  const dynamicConsole = window.console as any
+
+  // 出口白名单：严格仅限 info / warn / error，杜绝 console.trace
+  const safeLevel = level === 'error' ? 'error' : level === 'warn' ? 'warn' : 'info'
+  const consoleMethod = dynamicConsole[safeLevel] || dynamicConsole['log'] || console.log
+
+  // 严格单参数纯文本调用，消灭 rrweb 深克隆大对象
+  const formattedLine = message.startsWith('[') ? message : `${icon}[${category}] ${message}`
+  consoleMethod(formattedLine)
+
+  // 致命 ERROR 结构化直采上报（受单日 50 条硬配额保护）
+  if (level === 'error') {
+    if (incrementDailyCaptureCount()) {
+      import('./lib/posthog')
+        .then(({ captureEvent }) => {
+          captureEvent('app_log', {
+            log_level: 'error',
+            category,
+            message: formattedLine,
+            origin_ts: origin_ts || Date.now(),
+            trace_id
+          })
+        })
+        .catch(() => {})
+    }
+  }
+}
+
+const scheduleProcessQueue = () => {
+  if (isProcessingQueue || logQueue.length === 0) return
+  isProcessingQueue = true
+
+  // 每次处理最多 15 条，避免长任务阻塞 UI
+  const chunk = logQueue.splice(0, 15)
+  for (const item of chunk) {
+    processLogItem(item)
+  }
+
+  isProcessingQueue = false
+  if (logQueue.length > 0) {
+    // 使用 setTimeout(..., 16) 保证在后台/失焦时仍能持续排空，不依赖 rAF
+    setTimeout(scheduleProcessQueue, 16)
+  }
+}
+
+// 监听后端转发的日志并显示在控制台
 if (window.electronAPI?.onLogForwarded) {
   window.electronAPI.onLogForwarded(payload => {
-    const { category, level, message, data, origin } = payload
-    const icon = LOG_ORIGIN_ICONS[origin] || '🖥️'
-    const prefix = `${icon}[${category}]`
-
-    // 极其关键：在生产环境下使用动态属性访问 console，防止 Terser 优化删除
-    // 使用 window.console 确保引用的是全局对象
-    const dynamicConsole = window.console as any
-    const consoleMethod =
-      dynamicConsole[level] || dynamicConsole['log'] || dynamicConsole.info || console.log
-
-    if (data !== undefined && data !== null) {
-      consoleMethod(prefix, message, data)
-    } else {
-      consoleMethod(prefix, message)
-    }
+    logQueue.push(payload)
+    scheduleProcessQueue()
   })
 }
 
 if (window.electronAPI?.onLogBatchForwarded) {
   window.electronAPI.onLogBatchForwarded(payloads => {
-    payloads.forEach(payload => {
-      const { category, level, message, data, origin } = payload
-      const icon = LOG_ORIGIN_ICONS[origin] || '🖥️'
-      const prefix = `${icon}[${category}]`
-      const dynamicConsole = window.console as any
-      const consoleMethod =
-        dynamicConsole[level] || dynamicConsole['log'] || dynamicConsole.info || console.log
-      if (data !== undefined && data !== null) {
-        consoleMethod(prefix, message, data)
-      } else {
-        consoleMethod(prefix, message)
-      }
-    })
+    logQueue.push(...payloads)
+    scheduleProcessQueue()
   })
 }
 

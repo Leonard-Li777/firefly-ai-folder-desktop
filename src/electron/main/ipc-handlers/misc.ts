@@ -1,3 +1,4 @@
+import { loggingService } from '../../runtime-services/system/logging-service'
 import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
@@ -33,6 +34,13 @@ import {
 } from '../../runtime-services/system/external-app-launcher'
 
 export function registerMiscIPCHandlers() {
+  ipcMain.handle('system:get-run-id', async () => {
+    return loggingService.getRunId()
+  })
+
+  ipcMain.handle('system:bind-posthog-session', async (_event, sessionId: string) => {
+    loggingService.bindSessionId(sessionId)
+  })
   ipcMain.handle('app:relaunch', async () => {
     logger.info(LogCategory.IPC, '准备重启应用...')
     const windows = BrowserWindow.getAllWindows()
@@ -183,8 +191,6 @@ export function registerMiscIPCHandlers() {
       return { success: false, error: String(error) }
     }
   })
-
-
 
   // 预览即时图片转码
   ipcMain.handle('preview/get-temp-image', async (event, filePath: string) => {
@@ -434,12 +440,8 @@ export function registerMiscIPCHandlers() {
   ipcMain.handle('license/get-invitation-code', async () =>
     LicenseService.getInstance().getInvitationCode()
   )
-  ipcMain.handle('license/get-ident-code', async () =>
-    LicenseService.getInstance().getIdentCode()
-  )
-  ipcMain.handle('license/get-base64-code', async () =>
-    LicenseService.getInstance().getIdentCode()
-  )
+  ipcMain.handle('license/get-ident-code', async () => LicenseService.getInstance().getIdentCode())
+  ipcMain.handle('license/get-base64-code', async () => LicenseService.getInstance().getIdentCode())
   ipcMain.handle('license/activate', async (_event, licenseCode: string) =>
     LicenseService.getInstance().activate(licenseCode)
   )
@@ -482,44 +484,47 @@ export function registerMiscIPCHandlers() {
     if (result) throw new Error(result)
     return { success: true }
   })
-  ipcMain.handle('system:launch-external-deeplink', async (_event, payload: DeepLinkTargetPayload) => {
-    if (
-      !payload ||
-      typeof payload !== 'object' ||
-      typeof payload.filePath !== 'string' ||
-      !payload.filePath.trim()
-    ) {
-      return {
-        success: false,
-        appUsed: 'system_default',
-        fallbackToDefault: false,
-        error: 'Invalid deep link payload: filePath is required and must be a non-empty string'
+  ipcMain.handle(
+    'system:launch-external-deeplink',
+    async (_event, payload: DeepLinkTargetPayload) => {
+      if (
+        !payload ||
+        typeof payload !== 'object' ||
+        typeof payload.filePath !== 'string' ||
+        !payload.filePath.trim()
+      ) {
+        return {
+          success: false,
+          appUsed: 'system_default',
+          fallbackToDefault: false,
+          error: 'Invalid deep link payload: filePath is required and must be a non-empty string'
+        }
       }
+      const sanitizedPayload: DeepLinkTargetPayload = {
+        filePath: payload.filePath.trim(),
+        category: payload.category,
+        seekSeconds:
+          typeof payload.seekSeconds === 'number' &&
+          Number.isFinite(payload.seekSeconds) &&
+          payload.seekSeconds >= 0
+            ? payload.seekSeconds
+            : undefined,
+        pageNumber:
+          typeof payload.pageNumber === 'number' &&
+          Number.isFinite(payload.pageNumber) &&
+          payload.pageNumber >= 1
+            ? Math.floor(payload.pageNumber)
+            : undefined,
+        lineNumber:
+          typeof payload.lineNumber === 'number' &&
+          Number.isFinite(payload.lineNumber) &&
+          payload.lineNumber >= 1
+            ? Math.floor(payload.lineNumber)
+            : undefined
+      }
+      return await externalAppLauncher.launch(sanitizedPayload)
     }
-    const sanitizedPayload: DeepLinkTargetPayload = {
-      filePath: payload.filePath.trim(),
-      category: payload.category,
-      seekSeconds:
-        typeof payload.seekSeconds === 'number' &&
-        Number.isFinite(payload.seekSeconds) &&
-        payload.seekSeconds >= 0
-          ? payload.seekSeconds
-          : undefined,
-      pageNumber:
-        typeof payload.pageNumber === 'number' &&
-        Number.isFinite(payload.pageNumber) &&
-        payload.pageNumber >= 1
-          ? Math.floor(payload.pageNumber)
-          : undefined,
-      lineNumber:
-        typeof payload.lineNumber === 'number' &&
-        Number.isFinite(payload.lineNumber) &&
-        payload.lineNumber >= 1
-          ? Math.floor(payload.lineNumber)
-          : undefined
-    }
-    return await externalAppLauncher.launch(sanitizedPayload)
-  })
+  )
   ipcMain.handle('open-path-in-explorer', async (event, dirPath: string) => {
     const result = await shell.openPath(dirPath)
     if (result) throw new Error(result)
@@ -687,22 +692,25 @@ export function registerMiscIPCHandlers() {
     return { running, version }
   })
 
-  ipcMain.handle('system:write-diagnostic-log', async (event, filename: string, content: string) => {
-    try {
-      const { platformAdapter } = await import('@firefly/electron-llamaIndex-service')
-      const logsDir = path.join(platformAdapter.getAppDataPath(), 'logs')
-      if (!fs.existsSync(logsDir)) {
-        fs.mkdirSync(logsDir, { recursive: true })
+  ipcMain.handle(
+    'system:write-diagnostic-log',
+    async (event, filename: string, content: string) => {
+      try {
+        const { platformAdapter } = await import('@firefly/electron-llamaIndex-service')
+        const logsDir = path.join(platformAdapter.getAppDataPath(), 'logs')
+        if (!fs.existsSync(logsDir)) {
+          fs.mkdirSync(logsDir, { recursive: true })
+        }
+        const targetPath = path.join(logsDir, filename)
+        fs.writeFileSync(targetPath, content, 'utf8')
+        logger.info(LogCategory.MAIN, `[Diagnostic] DOM 变动诊断报告已成功写入本地: ${targetPath}`)
+        return { success: true, path: targetPath }
+      } catch (err: any) {
+        logger.error(LogCategory.MAIN, `[Diagnostic] 写入诊断报告失败:`, err)
+        return { success: false, error: err.message }
       }
-      const targetPath = path.join(logsDir, filename)
-      fs.writeFileSync(targetPath, content, 'utf8')
-      logger.info(LogCategory.MAIN, `[Diagnostic] DOM 变动诊断报告已成功写入本地: ${targetPath}`)
-      return { success: true, path: targetPath }
-    } catch (err: any) {
-      logger.error(LogCategory.MAIN, `[Diagnostic] 写入诊断报告失败:`, err)
-      return { success: false, error: err.message }
     }
-  })
+  )
 
   ipcMain.on('renderer-error', (event, errorInfo) => {
     logger.error(LogCategory.RENDERER, '渲染进程出错:', errorInfo)
@@ -717,7 +725,11 @@ export function registerMiscIPCHandlers() {
   // 本地推理引擎已外置为 Tier 2 独立应用（firefly-ai-engine），
   // 引擎状态由 engine-bridge IPC（engine-bridge/*）暴露给渲染层。
 
-  if (!app.isPackaged || process.env.IS_INTEGRATION_TEST === 'true' || process.env.IS_E2E_TEST === 'true') {
+  if (
+    !app.isPackaged ||
+    process.env.IS_INTEGRATION_TEST === 'true' ||
+    process.env.IS_E2E_TEST === 'true'
+  ) {
     logger.info(LogCategory.MAIN, '[IPC] 注册数据库直连 IPC 处理程序 (开发/测试模式)')
     ipcMain.handle('database/execute-get', async (event, sql: string, params: any[]) => {
       const db = databaseService.db
