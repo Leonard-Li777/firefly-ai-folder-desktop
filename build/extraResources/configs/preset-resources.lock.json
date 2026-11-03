@@ -49,6 +49,9 @@
     "nsfw-tiny": {
       "version": "1.0.0"
     },
+    "nsfw-l3": {
+      "version": "1.0.0"
+    },
     "embeddinggemma-2-onnx": {
       "version": "1.0.0"
     },
