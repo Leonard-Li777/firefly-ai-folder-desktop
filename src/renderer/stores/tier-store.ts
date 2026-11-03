@@ -173,6 +173,11 @@ export const useTierStore = create<TierState>()(
       window.electronAPI.userTier.onTransactionFailed?.(data => {
         toast.error(t('交易失败，已归还扣币，原因：{reason}', { reason: data.message }))
       })
+      window.electronAPI.userTier.removeDeviceUnbound?.()
+      window.electronAPI.userTier.onDeviceUnbound?.(() => {
+        get().fetchProfile()
+        toast.warning(t('当前设备已被账号解绑，已切换为免费版'))
+      })
     }
   }))
 )

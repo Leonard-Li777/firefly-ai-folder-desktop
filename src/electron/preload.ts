@@ -667,6 +667,12 @@ const electronAPI = {
     },
     removeTransactionFailed: () => {
       ipcRenderer.removeAllListeners('userTier/transactionFailed')
+    },
+    onDeviceUnbound: (callback: () => void) => {
+      ipcRenderer.on('userTier/deviceUnbound', () => callback())
+    },
+    removeDeviceUnbound: () => {
+      ipcRenderer.removeAllListeners('userTier/deviceUnbound')
     }
   },
 
