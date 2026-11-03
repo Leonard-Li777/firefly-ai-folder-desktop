@@ -61,7 +61,12 @@ interface ISettingsState {
   originalConfig: AppConfig | null
   ignoreRules: IIgnoreRule[]
   validationResult: ISettingsValidationResult | null
-  openSettings: (category?: SettingsCategory) => Promise<void>
+  targetWorkspaceId: number | null
+  setTargetWorkspaceId: (workspaceId: number | null) => void
+  openSettings: (
+    category?: SettingsCategory,
+    options?: { workspaceId?: number; targetTab?: string }
+  ) => Promise<void>
   closeSettings: () => void
   setCurrentCategory: (category: SettingsCategory) => void
   updateConfig: (updates: Partial<AppConfig>, options?: { internal?: boolean }) => void
@@ -92,10 +97,10 @@ interface ISettingsState {
  */
 export const settingsCategories = (): ISettingsCategoryInfo[] => [
   {
-    id: SettingsCategory.MONITORING,
+    id: SettingsCategory.WORKSPACE_CONFIG,
     name: t('工作区'),
     icon: 'folder_open',
-    description: t('目录管理和自动监听')
+    description: t('工作区配置、分析深度与目录管理')
   },
   {
     id: SettingsCategory.BASIC_AI_ENGINE_CONFIG,
@@ -161,7 +166,9 @@ export const useSettingsStore = create<ISettingsState>()(
   subscribeWithSelector((set, get) => {
     return {
       isOpen: false,
-      currentCategory: SettingsCategory.MONITORING,
+      currentCategory: SettingsCategory.WORKSPACE_CONFIG,
+      targetWorkspaceId: null,
+      setTargetWorkspaceId: (targetWorkspaceId: number | null) => set({ targetWorkspaceId }),
       isLoading: false,
       error: null,
       config: {} as AppConfig,
@@ -170,9 +177,12 @@ export const useSettingsStore = create<ISettingsState>()(
       ignoreRules: [],
       validationResult: null,
 
-      openSettings: async (category = SettingsCategory.MONITORING) => {
+      openSettings: async (
+        category = SettingsCategory.WORKSPACE_CONFIG,
+        options?: { workspaceId?: number; targetTab?: string }
+      ) => {
         // 兼容旧 ANALYSIS 分类跳转，自动重定向到内容萃取设置
-        const targetCategory =
+        let targetCategory =
           category === SettingsCategory.ANALYSIS
             ? SettingsCategory.CONTENT_EXTRACTION
             : category
@@ -180,6 +190,7 @@ export const useSettingsStore = create<ISettingsState>()(
         set({
           isOpen: true,
           currentCategory: targetCategory,
+          targetWorkspaceId: options?.workspaceId ?? null,
           error: null
         })
 
@@ -205,6 +216,7 @@ export const useSettingsStore = create<ISettingsState>()(
       closeSettings: async () => {
         set({
           isOpen: false,
+          targetWorkspaceId: null,
           error: null,
           validationResult: null
         })
@@ -220,7 +232,7 @@ export const useSettingsStore = create<ISettingsState>()(
       },
 
       setCurrentCategory: category => {
-        const targetCategory =
+        let targetCategory =
           category === SettingsCategory.ANALYSIS
             ? SettingsCategory.CONTENT_EXTRACTION
             : category

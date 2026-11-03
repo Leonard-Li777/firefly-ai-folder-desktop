@@ -152,7 +152,7 @@ export const RestrictedFeatureOverlay: React.FC<RestrictedFeatureOverlayProps> =
         {/* 卡片三：管理工作目录 - 仅在开通工作目录时显示（SPEEDY/PRIVATE），激活虚拟目录时不显示 */}
         {type !== 'VDIR' && (
           <div
-            onClick={() => openSettings(SettingsCategory.MONITORING)}
+            onClick={() => openSettings(SettingsCategory.WORKSPACE_CONFIG)}
             className="group flex flex-col p-8 rounded-2xl border-2 border-border/80 bg-card hover:border-blue-500/50 hover:shadow-md transition-all duration-200 cursor-pointer w-80 text-left relative overflow-hidden"
           >
             <h4 className="font-bold text-base mb-3 text-foreground group-hover:text-blue-500 transition-colors">

@@ -55,7 +55,7 @@ const CATEGORY_COMPONENTS: Array<{
   { category: SettingsCategory.ANALYSIS_IGNORE_RULES, Component: MemoizedAnalysisIgnoreRulesSettings },
   // 保持旧 ANALYSIS 兼容映射
   { category: SettingsCategory.ANALYSIS, Component: MemoizedContentExtractionSettings },
-  { category: SettingsCategory.MONITORING, Component: MemoizedMonitoringSettings },
+  { category: SettingsCategory.WORKSPACE_CONFIG, Component: MemoizedMonitoringSettings },
   { category: SettingsCategory.TTS, Component: MemoizedTTSSettings }
 ]
 

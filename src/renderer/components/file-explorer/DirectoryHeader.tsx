@@ -618,6 +618,63 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                     : 'opacity-0 -translate-y-2 scale-95 pointer-events-none'
                 )}
               >
+                {/* 置顶首项：工作区配置与管理 */}
+                <div className="p-2 border-b border-border/60 dark:border-border/40 bg-muted/20 dark:bg-white/[0.02]">
+                  <button
+                    className={cn(
+                      'w-full flex items-center justify-between p-2.5 rounded-lg border transition-all duration-200 cursor-pointer group text-left',
+                      currentWorkspaceDirectory
+                        ? 'bg-primary/5 hover:bg-primary/10 border-primary/25 hover:border-primary/45 text-primary dark:bg-primary/10 dark:hover:bg-primary/15'
+                        : 'bg-muted/40 border-border/40 text-muted-foreground hover:bg-muted/60'
+                    )}
+                    onClick={() => {
+                      onToggleDirectoryDropdown(false)
+                      useSettingsStore.getState().openSettings(SettingsCategory.WORKSPACE_CONFIG, {
+                        workspaceId: currentWorkspaceDirectory?.id
+                      })
+                    }}
+                    title={
+                      currentWorkspaceDirectory
+                        ? t('配置当前工作区AI策略与目录管理: {name}', { name: currentWorkspaceDirectory.name })
+                        : t('工作区配置与管理')
+                    }
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div
+                        className={cn(
+                          'w-7 h-7 rounded-md flex items-center justify-center shrink-0 transition-transform group-hover:scale-105',
+                          currentWorkspaceDirectory
+                            ? 'bg-primary/15 text-primary dark:bg-primary/25'
+                            : 'bg-muted text-muted-foreground'
+                        )}
+                      >
+                        <MaterialIcon icon="tune" className="text-base" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-bold truncate flex items-center gap-1.5">
+                          <span className={currentWorkspaceDirectory ? 'text-foreground' : 'text-muted-foreground'}>
+                            {t('工作区配置与管理')}
+                          </span>
+                          {currentWorkspaceDirectory && (
+                            <span className="text-[10px] text-primary font-medium px-1.5 py-0.5 rounded-full bg-primary/10 truncate max-w-[100px]">
+                              {currentWorkspaceDirectory.name}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground/80 truncate mt-0.5">
+                          {currentWorkspaceDirectory
+                            ? t('自适应场景、分析深度与目录设置')
+                            : t('点击管理或添加工作目录')}
+                        </div>
+                      </div>
+                    </div>
+                    <MaterialIcon
+                      icon="chevron_right"
+                      className="text-base opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0 text-current ml-1"
+                    />
+                  </button>
+                </div>
+
                 <div className="max-h-60 overflow-y-auto">
                   {workspaceDirectories.length === 0 ? (
                     <div className="p-4 text-center text-sm text-muted-foreground">
@@ -803,18 +860,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                     </button>
                   </div>
                 </div>
-                <div className="p-2 border-t border-border/60 dark:border-border/40">
-                  <button
-                    className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors cursor-pointer"
-                    onClick={() => {
-                      onToggleDirectoryDropdown(false)
-                      useSettingsStore.getState().openSettings(SettingsCategory.MONITORING)
-                    }}
-                  >
-                    <MaterialIcon icon="settings" className="text-[15px]" />
-                    <span>{t('工作目录管理')}</span>
-                  </button>
-                </div>
+
               </div>
             </div>
 

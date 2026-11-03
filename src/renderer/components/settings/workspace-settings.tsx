@@ -23,7 +23,8 @@ import {
   HardDrive,
   Search,
   Eraser,
-  FolderX
+  FolderX,
+  Loader2
 } from 'lucide-react'
 import { toast } from '../common/Toast'
 import { EmptyFolderCleanupDialog } from '../organize/EmptyFolderCleanupDialog'
@@ -43,6 +44,8 @@ export const MonitoringSettings: React.FC = () => {
   const error = useSettingsStore(s => s.error)
   const [workspaceDirectories, setWorkspaceDirectories] = useState<WorkspaceDirectory[]>([])
   const [loadingDirectories, setLoadingDirectories] = useState(true)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isResetting, setIsResetting] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showResetDialog, setShowResetDialog] = useState(false)
   const [currentDirectory, setCurrentDirectory] = useState<WorkspaceDirectory | null>(null)
@@ -104,9 +107,9 @@ export const MonitoringSettings: React.FC = () => {
    * 确认删除工作目录
    */
   const handleConfirmDelete = async () => {
-    if (!currentDirectory) return
+    if (!currentDirectory || isDeleting) return
 
-    setShowDeleteDialog(false)
+    setIsDeleting(true)
 
     try {
       console.log(`开始删除目录: ${currentDirectory.name}`)
@@ -149,13 +152,15 @@ export const MonitoringSettings: React.FC = () => {
       } else {
         toast.success(t('工作目录 "{}" 已删除', [currentDirectory.name]))
       }
+      setShowDeleteDialog(false)
+      setCurrentDirectory(null)
     } catch (error) {
       console.error('删除工作目录失败:', error)
       toast.error(
         t('删除工作目录失败: {}', [error instanceof Error ? error.message : t('未知错误')])
       )
     } finally {
-      setCurrentDirectory(null)
+      setIsDeleting(false)
     }
   }
 
@@ -171,9 +176,9 @@ export const MonitoringSettings: React.FC = () => {
    * 确认重置工作目录
    */
   const handleConfirmReset = async () => {
-    if (!currentDirectory) return
+    if (!currentDirectory || isResetting) return
 
-    setShowResetDialog(false)
+    setIsResetting(true)
 
     try {
       console.log(`开始重置目录: ${currentDirectory.name}`)
@@ -202,11 +207,13 @@ export const MonitoringSettings: React.FC = () => {
 
       // 显示成功消息
       toast.success(t('目录 "{}" 已重置为未分析状态', [currentDirectory.name]))
+      setShowResetDialog(false)
+      setCurrentDirectory(null)
     } catch (error) {
       console.error('重置工作目录失败:', error)
       toast.error(t('重置目录失败: {}', [error instanceof Error ? error.message : t('未知错误')]))
     } finally {
-      setCurrentDirectory(null)
+      setIsResetting(false)
     }
   }
 
@@ -601,7 +608,7 @@ export const MonitoringSettings: React.FC = () => {
       </Card>
 
       {/* 删除确认对话框 */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <AlertDialog open={showDeleteDialog} onOpenChange={open => { if (!isDeleting) setShowDeleteDialog(open) }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('移除工作目录')}</AlertDialogTitle>
@@ -614,26 +621,37 @@ export const MonitoringSettings: React.FC = () => {
                       '此操作将完全移除工作目录，包括文件信息、分析结果、标签等。真实目录不会删除'
                     )}
                   </p>
-                  <p className="mt-2 text-destructive font-medium">{t('此操作不可逆！')}</p>
+                  {isDeleting ? (
+                    <p className="mt-2 text-primary flex items-center gap-1.5 font-medium">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      {t('正在清理工作区数据与物理缓存，请稍候...')}
+                    </p>
+                  ) : (
+                    <p className="mt-2 text-destructive font-medium">{t('此操作不可逆！')}</p>
+                  )}
                 </div>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel asChild>
-              <Button variant="outline">{t('取消')}</Button>
-            </AlertDialogCancel>
-            <AlertDialogAction asChild>
-              <Button variant="destructive" className='text-destructive-foreground' onClick={handleConfirmDelete}>
-                {t('移除')}
-              </Button>
-            </AlertDialogAction>
+            <Button variant="outline" disabled={isDeleting} onClick={() => setShowDeleteDialog(false)}>
+              {t('取消')}
+            </Button>
+            <Button
+              variant="destructive"
+              className="text-destructive-foreground flex items-center gap-1.5"
+              disabled={isDeleting}
+              onClick={handleConfirmDelete}
+            >
+              {isDeleting && <Loader2 className="h-4 w-4 animate-spin" />}
+              {isDeleting ? t('正在移除...') : t('移除')}
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       {/* 重置确认对话框 */}
-      <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+      <AlertDialog open={showResetDialog} onOpenChange={open => { if (!isResetting) setShowResetDialog(open) }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('重置工作目录')}</AlertDialogTitle>
@@ -646,20 +664,31 @@ export const MonitoringSettings: React.FC = () => {
                       '此操作将删除该目录的所有AI分析结果和标签，但保留原始文件。目录将重置为未分析状态。'
                     )}
                   </p>
-                  <p className="mt-2 text-destructive font-medium">{t('此操作不可逆！')}</p>
+                  {isResetting ? (
+                    <p className="mt-2 text-primary flex items-center gap-1.5 font-medium">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      {t('正在重置分析数据与索引，请稍候...')}
+                    </p>
+                  ) : (
+                    <p className="mt-2 text-destructive font-medium">{t('此操作不可逆！')}</p>
+                  )}
                 </div>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel asChild>
-              <Button variant="outline">{t('取消')}</Button>
-            </AlertDialogCancel>
-            <AlertDialogAction asChild>
-              <Button variant="destructive" className='text-destructive-frontground' onClick={handleConfirmReset}>
-                {t('重置')}
-              </Button>
-            </AlertDialogAction>
+            <Button variant="outline" disabled={isResetting} onClick={() => setShowResetDialog(false)}>
+              {t('取消')}
+            </Button>
+            <Button
+              variant="destructive"
+              className="text-destructive-foreground flex items-center gap-1.5"
+              disabled={isResetting}
+              onClick={handleConfirmReset}
+            >
+              {isResetting && <Loader2 className="h-4 w-4 animate-spin" />}
+              {isResetting ? t('正在重置...') : t('重置')}
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -691,3 +720,5 @@ export const MonitoringSettings: React.FC = () => {
     </div>
   )
 }
+
+export const WorkspaceSettings = MonitoringSettings

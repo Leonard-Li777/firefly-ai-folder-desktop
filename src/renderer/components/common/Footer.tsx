@@ -1,4 +1,4 @@
-import { AIServiceStatus, HardwareInfo, SettingsCategory } from '@firefly/types'
+import { AIServiceStatus, HardwareInfo, SettingsCategory, parseWorkspaceConfig } from '@firefly/types'
 import {
   Dialog,
   DialogContent,
@@ -155,6 +155,15 @@ export function Footer() {
 
   const workspaceDirectories = useVirtualDirectoryStore(s => s.workspaceDirectories)
   const currentWorkspaceDirectory = useVirtualDirectoryStore(s => s.currentWorkspaceDirectory)
+  const displayAnalysisMode = useMemo(() => {
+    if (currentWorkspaceDirectory?.workspace_config) {
+      const parsed = parseWorkspaceConfig(currentWorkspaceDirectory.workspace_config)
+      if (parsed.status === 'ready') {
+        return parsed.overrides?.analysisMode ?? parsed.derivedSnapshot.analysisMode
+      }
+    }
+    return config?.analysisMode ?? 'quick_name'
+  }, [currentWorkspaceDirectory?.workspace_config, config?.analysisMode])
   const setCurrentWorkspaceDirectory = useVirtualDirectoryStore(s => s.setCurrentWorkspaceDirectory)
 
   const runningWorkspace = useMemo(() => {
@@ -866,22 +875,32 @@ export function Footer() {
         </button>
         <span className="text-xs text-muted-foreground/30 mx-1.5">|</span>
         <button
-          onClick={() => openSettings(SettingsCategory.BASIC_AI_ENGINE_CONFIG)}
+          onClick={() =>
+            openSettings(SettingsCategory.WORKSPACE_CONFIG, {
+              workspaceId: currentWorkspaceDirectory?.id
+            })
+          }
           className="text-xs text-muted-foreground opacity-60 hover:opacity-100 cursor-pointer transition-opacity"
-          title={t('点击打开基础AI引擎配置')}
+          title={
+            currentWorkspaceDirectory
+              ? t('点击配置当前工作区AI策略与分析模式: {name}', {
+                  name: currentWorkspaceDirectory.name
+                })
+              : t('点击打开工作区配置')
+          }
         >
           <span
             className={`font-bold px-1.5 py-0.5 rounded ${
-              config?.analysisMode === 'simple'
+              displayAnalysisMode === 'simple'
                 ? 'text-orange-500 bg-orange-500/10'
-                : config?.analysisMode === 'quick_name'
+                : displayAnalysisMode === 'quick_name'
                   ? 'text-blue-500 bg-blue-500/10'
                   : 'text-green-500 bg-green-500/10'
             }`}
           >
-            {config?.analysisMode === 'simple'
+            {displayAnalysisMode === 'simple'
               ? t('标准分析')
-              : config?.analysisMode === 'quick_name'
+              : displayAnalysisMode === 'quick_name'
                 ? t('增强分析')
                 : t('全面分析')}
           </span>
