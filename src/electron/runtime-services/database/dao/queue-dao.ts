@@ -65,7 +65,12 @@ export class QueueDao {
         LEFT JOIN workspace_files wf ON (q.item_type = 'file' AND q.item_id = wf.id)
         LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
         LEFT JOIN workspace_directories wd ON (q.item_type = 'directory' AND q.item_id = wd.id)
+        LEFT JOIN workspaces ws ON ws.workspace_id = COALESCE(wf.workspace_id, wd.workspace_id)
         WHERE ${where}
+          AND ws.workspace_id IS NOT NULL
+          AND ws.is_active = 1
+          AND json_valid(ws.workspace_config) = 1
+          AND json_extract(ws.workspace_config, '$.status') = 'ready'
         ORDER BY ${PREEMPTIVE_ORDER_BY}
         LIMIT 1
       `

@@ -316,6 +316,16 @@ export class QueueManager {
         continue
       }
 
+      // RV-01 调度门闩前置校验：工作区配置若未就绪 (status !== 'ready')，拦截入队
+      const isReady = await databaseService.isWorkspaceConfigReady(resolvedWorkspaceId)
+      if (!isReady) {
+        logger.warn(
+          LogCategory.ANALYSIS_QUEUE,
+          `[分析队列门闩] 工作区 ${resolvedWorkspaceId} 配置尚未就绪 (status=pending)，拦截入队: ${nativePath}`
+        )
+        continue
+      }
+
       resolvedInputs.push({
         ...file,
         nativePath,

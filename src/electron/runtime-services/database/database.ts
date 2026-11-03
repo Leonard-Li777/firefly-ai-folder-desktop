@@ -65,9 +65,10 @@ export const GENESIS_V1_SCHEMA = `
     name TEXT NOT NULL,                           -- 工作区显示名称
     type TEXT NOT NULL DEFAULT 'SPEEDY',          -- 目录类型: 'SPEEDY' | 'PRIVATE'
     is_active BOOLEAN NOT NULL DEFAULT 1,         -- 是否为当前激活的工作区
-    auto_watch BOOLEAN NOT NULL DEFAULT 0,        -- 是否自动监听文件系统变化
+    auto_watch BOOLEAN NOT NULL DEFAULT 0,        -- 是否自动监听文件系统变化 (单一真相源)
     last_scan_at DATETIME,                        -- 最后一次完整扫描的时间
-    meta TEXT NOT NULL DEFAULT '{}',              -- 弹性元数据 (JSON)
+    workspace_config TEXT NOT NULL DEFAULT '{"schemaVersion":1,"status":"pending"}' CHECK (json_valid(workspace_config) = 1 AND json_extract(workspace_config, '$.status') IN ('pending', 'ready')), -- 工作区专有配置 JSON (就绪门闩与全量AI处理策略)
+    meta TEXT NOT NULL DEFAULT '{}',              -- 弹性运行时元数据 (JSON，仅限扫描统计缓存、UI状态等，不存策略配置)
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP -- 创建时间
   );
 

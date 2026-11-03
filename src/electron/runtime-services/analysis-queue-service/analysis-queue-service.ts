@@ -517,6 +517,20 @@ export class AnalysisQueueService {
       try {
         const activeWorkspaceId = this.runningWorkspaceStack[this.runningWorkspaceStack.length - 1]
 
+        // TASK-01 动态刹车：若当前工作区尚未确认配置 (pending)，立即阻断消费并挂起
+        if (activeWorkspaceId != null) {
+          const isConfigReady = await databaseService.isWorkspaceConfigReady(activeWorkspaceId)
+          if (!isConfigReady) {
+            logger.warn(
+              LogCategory.ANALYSIS_QUEUE,
+              `[分析队列动态刹车] 工作区 ${activeWorkspaceId} 尚未就绪 (status: pending)，挂起调度并弹出运行栈`
+            )
+            this.runningWorkspaceStack.pop()
+            this.emitUpdate()
+            continue
+          }
+        }
+
         const config = ConfigOrchestrator.getInstance()
         const aiServiceMode = config.getValue<string>('AI_SERVICE_MODE') ?? 'local'
         // PRD-0049：当前引擎唯一真相 = 萤核AI引擎桥接快照 backend

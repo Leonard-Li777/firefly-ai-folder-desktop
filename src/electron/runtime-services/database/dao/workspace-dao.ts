@@ -1,5 +1,5 @@
 import type { Database } from 'better-sqlite3'
-import { WorkspaceDirectory } from '@firefly/types'
+import { WorkspaceDirectory, parseWorkspaceConfig, serializeWorkspaceConfig, isWorkspaceConfigReady, type WorkspaceConfig } from '@firefly/types'
 import { LogCategory, logger, isSubPath, isPathEqual, stripTrailingSlash } from '@firefly/shared'
 import { t } from '@app/languages'
 import * as path from 'node:path'
@@ -10,12 +10,14 @@ export class WorkspaceDao {
     const rows = this.db.prepare('SELECT * FROM workspaces ORDER BY created_at ASC').all() as any[]
     return rows.map(row => ({
       id: row.workspace_id,
+      workspace_id: row.workspace_id,
       path: row.path,
       name: row.name,
       type: row.type as 'SPEEDY' | 'PRIVATE',
       recursive: true, // 为了兼容前端旧版类型
       isActive: Boolean(row.is_active),
       autoWatch: Boolean(row.auto_watch),
+      workspace_config: parseWorkspaceConfig(row.workspace_config),
       lastScanAt: null,
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.created_at)
@@ -57,6 +59,7 @@ export class WorkspaceDao {
         isActive: Boolean(row.is_active),
         autoWatch: Boolean(row.auto_watch),
         lastScanAt: null,
+        workspace_config: row.workspace_config ? parseWorkspaceConfig(row.workspace_config) : undefined,
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.created_at),
         totalCount,
@@ -71,12 +74,14 @@ export class WorkspaceDao {
     if (!row) return null
     return {
       id: row.workspace_id,
+      workspace_id: row.workspace_id,
       path: row.path,
       name: row.name,
       type: row.type as 'SPEEDY' | 'PRIVATE',
       recursive: true,
       isActive: Boolean(row.is_active),
       autoWatch: Boolean(row.auto_watch),
+      workspace_config: parseWorkspaceConfig(row.workspace_config),
       lastScanAt: null,
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.created_at)
@@ -88,12 +93,14 @@ export class WorkspaceDao {
     if (!row) return null
     return {
       id: row.workspace_id,
+      workspace_id: row.workspace_id,
       path: row.path,
       name: row.name,
       type: row.type as 'SPEEDY' | 'PRIVATE',
       recursive: true,
       isActive: Boolean(row.is_active),
       autoWatch: Boolean(row.auto_watch),
+      workspace_config: parseWorkspaceConfig(row.workspace_config),
       lastScanAt: null,
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.created_at)
@@ -165,7 +172,7 @@ export class WorkspaceDao {
     const result = this.db
       .prepare(
         `
-      INSERT OR REPLACE INTO workspaces 
+      INSERT INTO workspaces 
       (path, name, type, is_active, auto_watch, created_at)
       VALUES (?, ?, ?, ?, ?, ?)
     `
@@ -300,93 +307,79 @@ export class WorkspaceDao {
       workspaceId
     })
 
+    // 1. 在事务开始前，通过单次集合子查询提取该工作区独占的孤儿指纹（不再被任何其他工作区引用）
+    // 依赖 (workspace_id, file_fingerprint) 复合索引，毫秒级完成差集计算
+    const orphanFingerprints: string[] = this.db
+      .prepare(
+        `SELECT DISTINCT wf.file_fingerprint
+         FROM workspace_files wf
+         WHERE wf.workspace_id = ?
+           AND wf.file_fingerprint IS NOT NULL
+           AND NOT EXISTS (
+             SELECT 1 FROM workspace_files other
+             WHERE other.file_fingerprint = wf.file_fingerprint
+               AND other.workspace_id != ?
+           )`
+      )
+      .all(workspaceId, workspaceId)
+      .map((r: any) => r.file_fingerprint)
+
+    // 收集所有需要通知 Omni 向量引擎物理清理的指纹（主指纹 + 视频切片指纹）
     const allFingerprintsToDelete: string[] = []
+    if (orphanFingerprints.length > 0) {
+      allFingerprintsToDelete.push(...orphanFingerprints)
+      // 分批查出孤儿切片指纹
+      const batchSize = 500
+      for (let i = 0; i < orphanFingerprints.length; i += batchSize) {
+        const batch = orphanFingerprints.slice(i, i + batchSize)
+        const placeholders = batch.map(() => '?').join(',')
+        try {
+          const chunkRows = this.db
+            .prepare(
+              `SELECT file_fingerprint, chunk_index FROM file_video_chunks WHERE file_fingerprint IN (${placeholders})`
+            )
+            .all(...batch) as Array<{ file_fingerprint: string; chunk_index: number }>
+          const chunkFingerprints = chunkRows.map(r => `${r.file_fingerprint}:c${r.chunk_index}`)
+          allFingerprintsToDelete.push(...chunkFingerprints)
+        } catch (chunkErr) {
+          logger.warn(LogCategory.DATABASE_SERVICE, '查询孤儿切片指纹失败:', chunkErr)
+        }
+      }
+    }
 
+    // 2. 单次事务原子物理清除数据库记录
     this.db.transaction(() => {
-      // 1. 获取该工作区下的所有 workspace_files ID（用于后续清理孤儿文件）
-      const workspaceFileIds = this.db
-        .prepare(`SELECT id FROM workspace_files WHERE workspace_id = ?`)
-        .all(workspaceId)
-        .map((r: any) => r.id)
-
-      // 2. 获取该工作区下的所有 workspace_files 的 file_fingerprint
-      const fingerprints = this.db
+      // 2.1 清理分析队列（直接基于集合子查询）
+      this.db
         .prepare(
-          `SELECT DISTINCT file_fingerprint FROM workspace_files WHERE workspace_id = ? AND file_fingerprint IS NOT NULL`
+          `DELETE FROM analysis_queue WHERE item_type = 'file' AND item_id IN (
+             SELECT id FROM workspace_files WHERE workspace_id = ?
+           )`
         )
-        .all(workspaceId)
-        .map((r: any) => r.file_fingerprint)
+        .run(workspaceId)
 
-      // 3. 清理分析队列（使用索引优化的 IN 查询）
-      if (workspaceFileIds.length > 0) {
-        // 分批删除，避免 IN 子句过长
+      // 2.2 清理孤儿 files 主表（级联触发 file_contents, file_tag_relations, file_video_chunks）
+      if (orphanFingerprints.length > 0) {
         const batchSize = 500
-        for (let i = 0; i < workspaceFileIds.length; i += batchSize) {
-          const batch = workspaceFileIds.slice(i, i + batchSize)
+        for (let i = 0; i < orphanFingerprints.length; i += batchSize) {
+          const batch = orphanFingerprints.slice(i, i + batchSize)
           const placeholders = batch.map(() => '?').join(',')
           this.db
-            .prepare(
-              `DELETE FROM analysis_queue WHERE item_type = 'file' AND item_id IN (${placeholders})`
-            )
+            .prepare(`DELETE FROM files WHERE file_fingerprint IN (${placeholders})`)
             .run(...batch)
         }
       }
 
-      // 4. 删除该工作区的 workspace_files
+      // 2.3 删除工作区相关记录
       this.db.prepare(`DELETE FROM workspace_files WHERE workspace_id = ?`).run(workspaceId)
-
-      // 5. 删除该工作区的 workspace_directories
       this.db.prepare(`DELETE FROM workspace_directories WHERE workspace_id = ?`).run(workspaceId)
-
-      // 6. 删除该工作区的 virtual_directories
       this.db.prepare(`DELETE FROM virtual_directories WHERE workspace_id = ?`).run(workspaceId)
-
-      // 7. 删除工作区记录
       this.db.prepare(`DELETE FROM workspaces WHERE workspace_id = ?`).run(workspaceId)
-
-      // 8. 清理孤儿文件记录（只清理当前工作区涉及的指纹）
-      if (fingerprints.length > 0) {
-        const batchSize = 500
-        for (let i = 0; i < fingerprints.length; i += batchSize) {
-          const batch = fingerprints.slice(i, i + batchSize)
-          const placeholders = batch.map(() => '?').join(',')
-          // 检查这些指纹是否还被其他工作区引用
-          const stillReferenced = this.db
-            .prepare(
-              `SELECT DISTINCT file_fingerprint FROM workspace_files WHERE file_fingerprint IN (${placeholders})`
-            )
-            .all(...batch)
-            .map((r: any) => r.file_fingerprint)
-          const orphans = batch.filter(fp => !stillReferenced.includes(fp))
-          if (orphans.length > 0) {
-            const orphanPlaceholders = orphans.map(() => '?').join(',')
-
-            // (a) 从 file_video_chunks 中查出孤儿文件的全部切片元数据并组装受控指纹
-            try {
-              const chunkRows = this.db
-                .prepare(
-                  `SELECT file_fingerprint, chunk_index FROM file_video_chunks WHERE file_fingerprint IN (${orphanPlaceholders})`
-                )
-                .all(...orphans) as Array<{ file_fingerprint: string; chunk_index: number }>
-
-              const chunkFingerprints = chunkRows.map(r => `${r.file_fingerprint}:c${r.chunk_index}`)
-              allFingerprintsToDelete.push(...orphans, ...chunkFingerprints)
-            } catch (chunkErr) {
-              logger.warn(LogCategory.DATABASE_SERVICE, '查询孤儿切片指纹失败:', chunkErr)
-              allFingerprintsToDelete.push(...orphans)
-            }
-
-            // (b) file_contents, file_tag_relations, file_video_chunks 会通过外键级联删除
-            this.db
-              .prepare(`DELETE FROM files WHERE file_fingerprint IN (${orphanPlaceholders})`)
-              .run(...orphans)
-          }
-        }
-      }
 
       logger.info(LogCategory.DATABASE_SERVICE, `工作区及其关联文件已彻底清空`, {
         workspaceId,
-        path: directoryPath
+        path: directoryPath,
+        orphanCount: orphanFingerprints.length
       })
     })()
 
@@ -473,5 +466,34 @@ export class WorkspaceDao {
         status
       })
     }
+  }
+  /**
+   * 获取工作区专有配置 (已解析强类型)
+   */
+  async getConfig(workspaceId: number): Promise<WorkspaceConfig> {
+    const row = this.db.prepare('SELECT workspace_config FROM workspaces WHERE workspace_id = ?').get(workspaceId) as any
+    return parseWorkspaceConfig(row?.workspace_config)
+  }
+
+  /**
+   * 更新工作区专有配置
+   */
+  async updateConfig(workspaceId: number, config: WorkspaceConfig): Promise<boolean> {
+    if (config.status === 'ready' && !isWorkspaceConfigReady(config)) {
+      throw new Error('[WorkspaceDao] 拒绝写入非法 ready 配置: 缺少必要技术参数快照或 intent')
+    }
+    const serialized = serializeWorkspaceConfig(config)
+    const result = this.db
+      .prepare('UPDATE workspaces SET workspace_config = ? WHERE workspace_id = ?')
+      .run(serialized, workspaceId)
+    return result.changes > 0
+  }
+
+  /**
+   * 检查工作区是否已配置就绪 (调度前置门闩硬校验)
+   */
+  async isConfigReady(workspaceId: number): Promise<boolean> {
+    const config = await this.getConfig(workspaceId)
+    return isWorkspaceConfigReady(config)
   }
 }

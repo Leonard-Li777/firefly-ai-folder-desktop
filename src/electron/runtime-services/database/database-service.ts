@@ -1,10 +1,12 @@
-import type {
-  FileInfo,
-  LanguageCode,
-  WorkspaceDirectory,
-  Unit,
-  UnitCreationData,
-  VideoChunkRecord
+import {
+  type FileInfo,
+  type LanguageCode,
+  type WorkspaceDirectory,
+  type Unit,
+  type UnitCreationData,
+  type VideoChunkRecord,
+  type WorkspaceConfig,
+  parseWorkspaceConfig
 } from '@firefly/types'
 import {
   LogCategory,
@@ -1174,6 +1176,33 @@ export class DatabaseService {
   async getWorkspaceIdByPath(p: string) {
     if (!this.workspaceDao) return null
     return (await this.workspaceDao.findRoot(p))?.id || null
+  }
+
+  /**
+   * 获取工作区专有配置 (已就绪强类型或待配置对象)
+   */
+  async getWorkspaceConfig(workspaceId: number): Promise<WorkspaceConfig> {
+    await this.ensureInitialized()
+    if (!this.workspaceDao) return parseWorkspaceConfig(null)
+    return this.workspaceDao.getConfig(workspaceId)
+  }
+
+  /**
+   * 更新工作区专有配置
+   */
+  async updateWorkspaceConfig(workspaceId: number, config: WorkspaceConfig): Promise<boolean> {
+    await this.ensureInitialized()
+    if (!this.workspaceDao) return false
+    return this.workspaceDao.updateConfig(workspaceId, config)
+  }
+
+  /**
+   * 检查工作区是否已配置就绪 (调度前置门闩硬校验)
+   */
+  async isWorkspaceConfigReady(workspaceId: number): Promise<boolean> {
+    await this.ensureInitialized()
+    if (!this.workspaceDao) return false
+    return this.workspaceDao.isConfigReady(workspaceId)
   }
 
   // --- Tag & Unit Methods ---
