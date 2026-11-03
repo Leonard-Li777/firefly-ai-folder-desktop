@@ -103,9 +103,9 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
   // 动态意图卡片列表
   const intentCards = useMemo(() => getIntentCards(), [])
 
-  // RV-04: 用户会员层级检测（中性告知长视频体验范围与续作机制）
+  // RV-04: 用户会员层级检测（中性告知长视频体验范围与续作机制，带冷启动默认 FREE 兜底）
   const tier = useTierStore(s => s.tier)
-  const isFreeTier = tier === UserTier.FREE
+  const isFreeTier = (tier ?? UserTier.FREE) === UserTier.FREE
 
   // 当前激活配置解析
   const parsedConfig = useMemo<WorkspaceConfig>(() => {
