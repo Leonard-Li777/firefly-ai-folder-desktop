@@ -76,6 +76,11 @@ export class UserTierService {
             win.webContents.send('userTier/transactionFailed', { message })
           )
         },
+        onDeviceUnbound: () => {
+          BrowserWindow.getAllWindows().forEach(win =>
+            win.webContents.send('userTier/deviceUnbound')
+          )
+        },
         checkIntervalMs: -1 // 不启动定时同步，仅消费/查流水/启动时手动触发
       })
     }
