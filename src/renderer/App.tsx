@@ -41,8 +41,10 @@ import { useAnalyzedDirectoryStore } from './stores/analyzed-directory-store'
 import { useVirtualDirectoryStore } from './stores/virtual-directory-store'
 import { useTierStore } from './stores/tier-store'
 import { FirecoresRulesDialog } from './components/tier/FirecoresRulesDialog'
+import { UpgradeAccountDialog } from './components/tier/UpgradeAccountDialog'
 import { DeviceBindModal } from './components/tier/DeviceBindModal'
 import { UpdateNotification } from './components/update/UpdateNotification'
+import { CrossRegionNoticeBanner } from './components/common/CrossRegionNoticeBanner'
 // PRD-0044（S5 提前摘除）：模型激活确认对话框删除，AlertDialog/buttonVariants 导入随之下线
 
 type StartupPhase = 'determining' | 'setup' | 'config' | 'licensing' | 'initializing' | 'ready'
@@ -51,7 +53,15 @@ const App: React.FC = () => {
   // Initialize invitation system
   useInvitation()
 
-  const { isRulesOpen, rulesDefaultTab, openRulesDialog, closeRulesDialog } = useTierStore()
+  const {
+    isRulesOpen,
+    rulesDefaultTab,
+    openRulesDialog,
+    closeRulesDialog,
+    isUpgradeOpen,
+    openUpgradeDialog,
+    closeUpgradeDialog
+  } = useTierStore()
   const currentWorkspaceDirectory = useVirtualDirectoryStore(s => s.currentWorkspaceDirectory)
 
   const location = useLocation()
@@ -732,6 +742,7 @@ const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <div className="app h-screen flex flex-col overflow-hidden">
+        <CrossRegionNoticeBanner />
         {showLicenseOverlay && (
           <LicenseGateway
             status={licenseInfo?.status as any}
@@ -828,6 +839,10 @@ const App: React.FC = () => {
           open={isRulesOpen}
           onOpenChange={open => (open ? openRulesDialog() : closeRulesDialog())}
           defaultTab={rulesDefaultTab}
+        />
+        <UpgradeAccountDialog
+          open={isUpgradeOpen}
+          onOpenChange={open => (open ? openUpgradeDialog() : closeUpgradeDialog())}
         />
         <UpdateNotification />
         <DeviceBindModal open={isDeviceBindOpen} onOpenChange={setIsDeviceBindOpen} />

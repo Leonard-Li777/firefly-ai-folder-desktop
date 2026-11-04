@@ -23,6 +23,7 @@ declare global {
     __IS_DEV__: boolean
     __IS_PROD__: boolean
     __APP_REGION__?: 'cn' | 'intl'
+    __HAS_CROSS_REGION_DATA__?: boolean
     electronAPI: ElectronAPI
     electronLLM: any
     electronAi: any

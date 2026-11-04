@@ -374,14 +374,13 @@ jobs:
 
           echo "🎉 macOS (${{ matrix.arch }}) 构建产物全部通过安装与启动验证，准备执行发布！"
 
-
       - name: Generate Channel Update Manifest (macOS)
         shell: bash
         env:
           BUILD_REGION: ${{ github.event.inputs.build_region || 'CN' }}
         run: |
           echo "📝 生成自动更新渠道清单..."
-          node pro/scripts/run.js generate-channel-manifest.js
+          node pro/scripts/run.js generate-channel-manifest.js --assert-isolation
 
       - name: Publish to Cloudflare R2
         shell: bash
@@ -403,7 +402,7 @@ jobs:
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE" || true
           git config --global --add safe.directory /__w/firefly-ai-folder-desktop/firefly-ai-folder-desktop || true
-          
+
           # 计算 Release Tag：如果是 refs/tags/v* 触发，使用 GITHUB_REF_NAME；如果是分支（如 master），回退使用 package.json 的版本号 vX.Y.Z
           if [[ "$GITHUB_REF_NAME" == v* ]]; then
             TAG="$GITHUB_REF_NAME"
@@ -700,14 +699,14 @@ jobs:
           Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
           Write-Host "🎉 Windows 构建产物校验成功，准备执行后续发布！"
 
-
       - name: Generate Channel Update Manifest (Windows)
         shell: bash
         env:
           BUILD_REGION: ${{ github.event.inputs.build_region || 'CN' }}
         run: |
           echo "📝 生成包含 blockMapSize 的自动更新渠道清单与在线引导器 INI..."
-          node pro/scripts/run.js generate-channel-manifest.js
+          node pro/scripts/run.js generate-channel-manifest.js --assert-isolation
+          node pro/scripts/run.js verify-blockmap-gate.js
 
       - name: Setup Inno Setup & Build Stubs
         shell: pwsh
@@ -787,7 +786,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE" || true
-          
+
           # 计算 Release Tag：如果是 refs/tags/v* 触发，使用 GITHUB_REF_NAME；如果是分支（如 master），回退使用 package.json 的版本号 vX.Y.Z
           if [[ "$GITHUB_REF_NAME" == v* ]]; then
             TAG="$GITHUB_REF_NAME"
@@ -1103,14 +1102,13 @@ jobs:
             echo "⚠️ 未找到 omni 引擎二进制，跳过 omni 可用性验证"
           fi
 
-
       - name: Generate Channel Update Manifest (Linux)
         shell: bash
         env:
           BUILD_REGION: ${{ github.event.inputs.build_region || 'CN' }}
         run: |
           echo "📝 生成自动更新渠道清单..."
-          node pro/scripts/run.js generate-channel-manifest.js
+          node pro/scripts/run.js generate-channel-manifest.js --assert-isolation
 
       - name: Publish to Cloudflare R2
         shell: bash
@@ -1133,7 +1131,7 @@ jobs:
           git config --global --add safe.directory "$GITHUB_WORKSPACE" || true
           git config --global --add safe.directory /__w/firefly-ai-folder-desktop/firefly-ai-folder-desktop || true
           git config --global --add safe.directory '*' || true
-          
+
           # 计算 Release Tag：如果是 refs/tags/v* 触发，使用 GITHUB_REF_NAME；如果是分支（如 master），回退使用 package.json 的版本号 vX.Y.Z
           if [[ "$GITHUB_REF_NAME" == v* ]]; then
             TAG="$GITHUB_REF_NAME"
@@ -1226,4 +1224,3 @@ jobs:
             } catch (error) {
               core.setFailed(`❌ 触发 E2E 测试工作流失败: ${error.message}`);
             }
-

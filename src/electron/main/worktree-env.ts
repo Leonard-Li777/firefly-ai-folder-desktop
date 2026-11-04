@@ -8,6 +8,8 @@ export interface WorktreeEnvInfo {
   isProd: boolean
   appName: string
   userDataDir: string
+  hasPeerData?: boolean
+  peerRegion?: 'cn' | 'intl'
 }
 
 let cachedInfo: WorktreeEnvInfo | null = null
@@ -77,7 +79,11 @@ export function detectWorktreeName(): string {
   // 2. 开发环境下若外部未带 worktree 参数启动，尝试路由到最近活跃的开发实例
   if (!app.isPackaged && process.env.NODE_ENV !== 'production') {
     try {
-      const activeFile = path.join(app.getPath('appData'), 'firefly-ai-folder', 'active-worktrees.json')
+      const activeFile = path.join(
+        app.getPath('appData'),
+        'firefly-ai-folder',
+        'active-worktrees.json'
+      )
       if (fs.existsSync(activeFile)) {
         const raw = fs.readFileSync(activeFile, 'utf-8')
         const activeMap = JSON.parse(raw)
@@ -90,7 +96,9 @@ export function detectWorktreeName(): string {
           }
         }
         if (latestWorktree) {
-          console.log(`🎯 [Worktree] 外部无参数唤起，自动回退到最近活跃 Worktree: ${latestWorktree}`)
+          console.log(
+            `🎯 [Worktree] 外部无参数唤起，自动回退到最近活跃 Worktree: ${latestWorktree}`
+          )
           return latestWorktree
         }
       }
@@ -174,7 +182,14 @@ function getAppMajorVersion(): string {
  * 3. 终极兜底：直接从 GitHub Release 下载母包裸跑或缺少配置时，严格默认国际版 ('intl')
  */
 export function resolveAppRegion(): 'cn' | 'intl' {
-  // 1. 优先读取主程序安装目录下的 app_env.json (由引导安装器写入)
+  // 1. 优先读取编译期注入的常量 (打包在 asar 内，物理免误删、免杀软清理)
+  if (typeof __BUILD_REGION__ !== 'undefined' && __BUILD_REGION__) {
+    const r = String(__BUILD_REGION__).trim().toLowerCase()
+    if (r === 'cn') return 'cn'
+    if (r === 'intl' || r === 'global') return 'intl'
+  }
+
+  // 2. 兼容存量引导安装器写入的 app_env.json
   try {
     const resourcesDir = process.resourcesPath || (app ? app.getAppPath() : '')
     if (resourcesDir) {
@@ -226,7 +241,9 @@ export function initWorktreeEnvironment(): WorktreeEnvInfo {
     }
   } catch {}
 
-  const rawEnv = (process.env.APP_ENV || (isProd ? 'production' : 'development')).trim().toLowerCase()
+  const rawEnv = (process.env.APP_ENV || (isProd ? 'production' : 'development'))
+    .trim()
+    .toLowerCase()
   let appEnv = 'development'
   if (rawEnv.includes('prod')) appEnv = 'production'
   else if (rawEnv.includes('can') || rawEnv.includes('gray')) appEnv = 'canary'
@@ -234,6 +251,7 @@ export function initWorktreeEnvironment(): WorktreeEnvInfo {
 
   const worktreeName = detectWorktreeName()
   const majorVersion = getAppMajorVersion()
+  const isMainWorktree = !worktreeName || worktreeName === 'main' || worktreeName === 'master'
 
   // 打包模式默认使用正式目录名（不带分支后缀），保证已发布用户的数据目录不受影响；
   // 但若显式设置了 WORKTREE_NAME 环境变量（多 Worktree 并发测试打包产物时由启动脚本注入），
@@ -243,13 +261,19 @@ export function initWorktreeEnvironment(): WorktreeEnvInfo {
   // 目录命名仅在「打包模式」下省略环境段；生产但非打包（NODE_ENV=production / 深链接 env=prod）
   // 必须带 _production 环境段，与开发/灰度同构：firefly-ai-folder_v4_[cn|intl]_[env]_[worktree]
   // 打包模式: firefly-ai-folder_v4_[cn|intl]（显式 WORKTREE_NAME 时仅追加分支后缀，不带环境段）
+  // 全局统一铁律：如果是主分支（main / master），坚决不追加 _main / _master 后缀！
   const useBareName = app.isPackaged
+  const hasIsolatedWorktree = !isMainWorktree
   const appName =
-    useBareName && !explicitWorktree
+    useBareName && (!explicitWorktree || isMainWorktree)
       ? `firefly-ai-folder_${majorVersion}_${region}`
       : useBareName
-        ? `firefly-ai-folder_${majorVersion}_${region}_${worktreeName}`
-        : `firefly-ai-folder_${majorVersion}_${region}_${appEnv}_${worktreeName}`
+        ? hasIsolatedWorktree
+          ? `firefly-ai-folder_${majorVersion}_${region}_${worktreeName}`
+          : `firefly-ai-folder_${majorVersion}_${region}`
+        : hasIsolatedWorktree
+          ? `firefly-ai-folder_${majorVersion}_${region}_${appEnv}_${worktreeName}`
+          : `firefly-ai-folder_${majorVersion}_${region}_${appEnv}`
 
   app.setName(appName)
 
@@ -264,17 +288,55 @@ export function initWorktreeEnvironment(): WorktreeEnvInfo {
   }
 
   process.env.APP_NAME = appName
-  process.env.WORKTREE_NAME = worktreeName
+  if (!isMainWorktree) {
+    process.env.WORKTREE_NAME = worktreeName
+  } else {
+    delete process.env.WORKTREE_NAME
+  }
+
+  const peerCheck = checkPeerRegionDataPresence(region, appDataDir)
 
   cachedInfo = {
     worktreeName,
     region,
     isProd,
     appName,
-    userDataDir
+    userDataDir,
+    hasPeerData: peerCheck.hasPeerData,
+    peerRegion: peerCheck.peerRegion
   }
 
   return cachedInfo
+}
+
+/**
+ * 获取当前已初始化的 Worktree 实例环境信息
+ */
+export function getWorktreeInfo(): WorktreeEnvInfo | null {
+  return cachedInfo
+}
+
+/**
+ * 检查是否存在对侧区域的历史本地数据目录 (P1 / ISS-04 跨区域覆盖安装感知)
+ * 例如当前是 cn，检测是否存在 intl 目录且包含主数据库 firefly-ai-folder.db
+ */
+export function checkPeerRegionDataPresence(
+  currentRegion: 'cn' | 'intl',
+  appDataDir?: string
+): { hasPeerData: boolean; peerRegion: 'cn' | 'intl' } {
+  const peerRegion: 'cn' | 'intl' = currentRegion === 'cn' ? 'intl' : 'cn'
+  const baseDir =
+    appDataDir ||
+    (typeof app !== 'undefined' && typeof app.getPath === 'function' ? app.getPath('appData') : '')
+  if (!baseDir) {
+    return { hasPeerData: false, peerRegion }
+  }
+  const majorVersion = getAppMajorVersion()
+  const peerAppName = `firefly-ai-folder_${majorVersion}_${peerRegion}`
+  const peerDir = path.join(baseDir, peerAppName)
+  const peerDbPath = path.join(peerDir, 'firefly-ai-folder.db')
+  const hasPeerData = fs.existsSync(peerDbPath)
+  return { hasPeerData, peerRegion }
 }
 
 /**
@@ -299,4 +361,8 @@ export function isLocalDevRuntime(): boolean {
     return false
   }
   return true
+}
+
+export function _resetCachedInfoForTesting(): void {
+  cachedInfo = null
 }

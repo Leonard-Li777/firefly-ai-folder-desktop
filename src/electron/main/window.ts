@@ -6,7 +6,7 @@ import * as os from 'os'
 import { pathToFileURL } from 'url'
 import { ConfigOrchestrator } from '../config/config-orchestrator'
 import { trayService } from '../runtime-services/system/tray-service'
-import { resolveAppRegion } from './worktree-env'
+import { resolveAppRegion, getWorktreeInfo } from './worktree-env'
 import { t } from '@app/languages'
 
 const getSplashHtml = (imagePath: string) => `
@@ -280,7 +280,11 @@ const installRendererCrashGuards = (win: BrowserWindow, label: string): void => 
 
   wc.on('preload-error', (_event, preloadPath, error) => {
     // preload 抛错会让 window.electronAPI 整体缺失，界面表现为空白或启动阶段卡死
-    logger.error(LogCategory.MAIN, `[CrashGuard] ${label} preload 脚本执行失败: ${preloadPath}`, error)
+    logger.error(
+      LogCategory.MAIN,
+      `[CrashGuard] ${label} preload 脚本执行失败: ${preloadPath}`,
+      error
+    )
   })
 
   wc.on('did-finish-load', () => {
@@ -378,6 +382,8 @@ export const createWindow = () => {
       additionalArguments: [
         `--is-packaged=${app.isPackaged}`,
         `--app-region=${appRegion}`,
+        `--has-peer-data=${getWorktreeInfo()?.hasPeerData ? 'true' : 'false'}`,
+        `--peer-region=${getWorktreeInfo()?.peerRegion || (appRegion === 'cn' ? 'intl' : 'cn')}`,
         ...(process.env.IS_INTEGRATION_TEST === 'true' ? ['--integration-test=true'] : [])
       ]
     }
@@ -476,11 +482,9 @@ export const createWindow = () => {
       const html = buildCrashFallbackHtml(
         t('应用界面资源缺失（index.html 未找到），无法加载界面。请重新安装或修复安装本应用。')
       )
-      mainWindow
-        .loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(html)}`)
-        .catch(err => {
-          logger.error(LogCategory.MAIN, '[createWindow] 界面资源缺失兜底页加载失败:', err)
-        })
+      mainWindow.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(html)}`).catch(err => {
+        logger.error(LogCategory.MAIN, '[createWindow] 界面资源缺失兜底页加载失败:', err)
+      })
     }
   }
 

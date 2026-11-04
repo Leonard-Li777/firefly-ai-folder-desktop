@@ -28,13 +28,28 @@ import type {
 const isPackaged = process.argv.includes('--is-packaged=true')
 const regionArg = process.argv.find(arg => arg.startsWith('--app-region='))
 const appRegion: 'cn' | 'intl' = regionArg ? (regionArg.split('=')[1] as any) : 'intl'
+const peerDataArg = process.argv.find(arg => arg.startsWith('--has-peer-data='))
+const hasPeerData: boolean = peerDataArg ? peerDataArg.split('=')[1] === 'true' : false
+const peerRegionArg = process.argv.find(arg => arg.startsWith('--peer-region='))
+const peerRegion: 'cn' | 'intl' = (
+  peerRegionArg ? peerRegionArg.split('=')[1] : appRegion === 'cn' ? 'intl' : 'cn'
+) as any
 
 const electronAPI = {
   // 应用是否已打包
   isPackaged,
 
   // 获取当前区域 ('cn' | 'intl')
-  getAppRegion: (): 'cn' | 'intl' => appRegion,
+  getAppRegion: (): 'cn' | 'intl' => appRegion, // 跨区域历史数据检测状态 (P1 / ISS-04)
+  getCrossRegionStatus: (): {
+    hasPeerData: boolean
+    peerRegion: 'cn' | 'intl'
+    currentRegion: 'cn' | 'intl'
+  } => ({
+    hasPeerData,
+    peerRegion,
+    currentRegion: appRegion
+  }),
 
   // 系统日志
   onLogForwarded: (
@@ -1450,6 +1465,7 @@ export type ElectronAPI = typeof electronAPI
 
 // 暴露API到渲染进程
 contextBridge.exposeInMainWorld('__APP_REGION__', appRegion)
+contextBridge.exposeInMainWorld('__HAS_CROSS_REGION_DATA__', hasPeerData)
 contextBridge.exposeInMainWorld('electronAPI', electronAPI)
 
 // 暴露 AI 功能到渲染进程

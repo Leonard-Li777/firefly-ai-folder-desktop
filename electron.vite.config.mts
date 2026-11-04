@@ -282,9 +282,7 @@ export default defineConfig(({ command, mode }) => {
     }
     return 'main'
   }
-  const buildEnvLabel = ['development', 'canary', 'production'].includes(mode)
-    ? mode
-    : env.APP_ENV
+  const buildEnvLabel = ['development', 'canary', 'production'].includes(mode) ? mode : env.APP_ENV
   const regionLabel = (process.env.BUILD_REGION || 'CN').toUpperCase()
   const __BUILD_LABEL__ = `${regionLabel} - ${buildEnvLabel} - ${detectWorktreeBranch()}`
 
@@ -458,7 +456,11 @@ export default defineConfig(({ command, mode }) => {
         __IS_PROD__: JSON.stringify(isProd),
         __AI_ENGINE__: JSON.stringify(process.env.AI_ENGINE || env.AI_ENGINE || 'llama.cpp'),
         __APP_VERSION__: JSON.stringify(pkg.version),
-        __BUILD_REGION__: JSON.stringify(process.env.BUILD_REGION || 'CN'),
+        // P0 (ISS-03): 仅在 main 进程注入 __BUILD_REGION__，未定义时注入 undefined 标识符避免 ReferenceError
+        __BUILD_REGION__: (() => {
+          const raw = (process.env.BUILD_REGION || env.BUILD_REGION || '').trim().toUpperCase()
+          return raw === 'CN' || raw === 'INTL' ? JSON.stringify(raw) : 'undefined'
+        })(),
         __BUILD_LABEL__: JSON.stringify(__BUILD_LABEL__),
         'process.env.APP_ENV': JSON.stringify(env.APP_ENV || mode),
         'process.env.AI_ENGINE': JSON.stringify(
@@ -566,8 +568,7 @@ export default defineConfig(({ command, mode }) => {
           output: {
             // main 入口固定输出 main.js（package.json 的 main 字段依赖此文件名），
             // 其余入口按入口名输出，保证 worker 产物文件名与 fork() 路径可预测
-            entryFileNames: (chunkInfo) =>
-              chunkInfo.name === 'main' ? 'main.js' : '[name].js',
+            entryFileNames: chunkInfo => (chunkInfo.name === 'main' ? 'main.js' : '[name].js'),
             manualChunks(id): string | void {
               if (!isProd) return
               if (
@@ -625,10 +626,8 @@ export default defineConfig(({ command, mode }) => {
         __IS_DEV__: JSON.stringify(!isProd),
         __IS_PROD__: JSON.stringify(isProd),
         __APP_VERSION__: JSON.stringify(pkg.version),
-        __BUILD_REGION__: JSON.stringify(process.env.BUILD_REGION || 'CN'),
         __BUILD_LABEL__: JSON.stringify(__BUILD_LABEL__),
-        'process.env.APP_ENV': JSON.stringify(env.APP_ENV || mode),
-        'process.env.BUILD_REGION': JSON.stringify(process.env.BUILD_REGION || 'CN')
+        'process.env.APP_ENV': JSON.stringify(env.APP_ENV || mode)
       },
       resolve: {
         extensions: SOURCE_EXTENSIONS,
@@ -776,9 +775,8 @@ export default defineConfig(({ command, mode }) => {
         __IS_PROD__: JSON.stringify(isProd),
         __AI_ENGINE__: JSON.stringify(process.env.AI_ENGINE || env.AI_ENGINE || 'llama.cpp'),
         __APP_VERSION__: JSON.stringify(pkg.version),
-        __BUILD_REGION__: JSON.stringify(process.env.BUILD_REGION || 'CN'),
         __BUILD_LABEL__: JSON.stringify(__BUILD_LABEL__),
-        'process.env.BUILD_REGION': JSON.stringify(process.env.BUILD_REGION || 'CN'),
+
         'process.env.APP_ENV': JSON.stringify(env.APP_ENV || mode),
         'process.env.AI_ENGINE': JSON.stringify(
           process.env.AI_ENGINE || env.AI_ENGINE || 'llama.cpp'
