@@ -65,7 +65,7 @@ interface DirectoryProfileResult {
  * 1. 直白阐明目标：专为当前所选工作目录自动配置 AI 分析策略；
  * 2. 强烈突出目录文件特征扫描画像（分布百分比、扩展名占比、诊断结论），让用户明确知晓“为什么推荐该策略”；
  * 3. 场景卡片强化视觉感知（发光徽章、匹配契合度、专属调优收益）；
- * 4. “深度自定义设置”重构为直观醒目的「我想要更个性化的设置」，双通道分流清晰明朗。
+ * 4. “深度自定义设置”重构为直观醒目的「跳过，直接个性化的设置」，双通道分流清晰明朗。
  */
 export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
   workspace,
@@ -230,6 +230,8 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
         if (res.success) {
           if (flowMode === 'complete') {
             toast.success(t('工作区已配置完成，AI 智能分析已启动！'))
+          } else {
+            toast.success(t('已应用推荐策略，正在为您打开 AI 引擎配置页面'))
           }
           onFinish(flowMode, readyConfig)
         } else {
@@ -500,40 +502,48 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
         )}
       </div>
 
-      {/* 底部双通道流转操作栏：主按钮高亮 + 深度自定义清晰可见 */}
+      {/* 底部双通道流转操作栏：主按钮高亮（应用推荐并查看详细配置） + 快捷通道 */}
       <div className="pt-3.5 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
-        {/* 个性化入口：文案更直接，不再隐晦弱化 */}
-        <div className="w-full sm:w-auto">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={isSaving}
-            onClick={() => submitConfig('customize')}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 text-xs font-semibold border-border/80 hover:border-primary/50 hover:bg-muted/60 transition-all py-2"
-          >
-            <Sliders className="w-3.5 h-3.5 text-primary" />
-            <span>{t('我想要更个性化的设置')}</span>
-            <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
-          </Button>
+        <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+          <Sliders className="w-3.5 h-3.5 text-primary shrink-0" />
+          <span>
+            {t('应用推荐后将自动载入算力与分析参数，并在 AI 引擎配置页面中供您核对与微调。')}
+          </span>
         </div>
 
-        {/* 主出口：完成并开始分析 */}
-        <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+        <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+          {/* 快捷通道：直接完成并启动分析 (关闭弹窗) */}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={isSaving}
+            onClick={() => submitConfig('complete')}
+            className="text-xs text-muted-foreground hover:text-foreground"
+          >
+            <span>{t('直接启动分析')}</span>
+          </Button>
+
+          {/* 主出口：应用推荐并查看详细配置（保存并定位到AI引擎配置页面） */}
           <Button
             type="button"
             variant="default"
             size="default"
             disabled={isSaving}
-            onClick={() => submitConfig('complete')}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 text-xs font-bold px-6 shadow-md shadow-primary/20 bg-primary text-primary-foreground hover:bg-primary/90 h-9 transition-all"
+            onClick={() => submitConfig('customize')}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 text-xs font-bold px-5 shadow-md shadow-primary/20 bg-primary text-primary-foreground hover:bg-primary/90 h-9 transition-all"
           >
             {isSaving ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
             ) : (
               <Sparkles className="w-3.5 h-3.5 fill-current" />
             )}
-            <span>{t('应用推荐设置并开始分析')}</span>
+            <span>
+              {isRecommended(selectedIntent)
+                ? t('应用推荐并查看详细配置')
+                : t('应用所选并查看详细配置')}
+            </span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </Button>
         </div>
       </div>
