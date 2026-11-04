@@ -191,6 +191,7 @@
     "posthog-node": "5.28.11",
     "prebuild-install": "7.1.3",
     "process": "0.11.10",
+    "qrcode": "^1.5.4",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "react-markdown": "10.1.0",
@@ -226,6 +227,7 @@
     "@testing-library/react": "16.3.1",
     "@types/canvas-confetti": "1.9.0",
     "@types/fs-extra": "11.0.4",
+    "@types/qrcode": "^1.5.6",
     "@types/unzipper": "0.10.11",
     "@vitejs/plugin-react": "5.1.2",
     "@vitest/coverage-v8": "3.2.4",
@@ -274,9 +276,7 @@
       "target": [
         {
           "target": "nsis",
-          "arch": [
-            "x64"
-          ]
+          "arch": ["x64"]
         }
       ]
     },
