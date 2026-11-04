@@ -183,8 +183,8 @@ export const WorkspaceSettingsDialog: React.FC = () => {
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && closeSettings()}>
       <DialogContent className="max-w-5xl w-[88vw] h-[82vh] flex flex-col p-0 bg-background dark:bg-card text-foreground border-4 border-border rounded-2xl shadow-2xl transform-gpu [contain:content]">
-        {/* 顶部 Header：工作区选择与状态概览 */}
-        <DialogHeader className="px-6 py-3.5 border-b flex-shrink-0 flex flex-row items-center justify-between gap-4">
+        {/* 顶部 Header：工作区选择与状态概览 (pr-16 预留右上角绝对定位关闭按钮空间，杜绝重叠) */}
+        <DialogHeader className="pl-6 pr-14 sm:pr-16 py-3.5 border-b flex-shrink-0 flex flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
               <MaterialIcon icon="folder_special" className="text-xl" />
