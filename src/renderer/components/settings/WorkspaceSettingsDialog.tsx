@@ -5,22 +5,10 @@ import {
   parseWorkspaceConfig,
   HardwareInfo
 } from '@firefly/types'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle
-} from '../ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog'
 import { Button } from '../ui/button'
 import { Label } from '../ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '../ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 import { useSettingsStore } from '../../stores/settings-store'
 import { useVirtualDirectoryStore } from '../../stores/virtual-directory-store'
 import { MaterialIcon, cn } from '../../lib/utils'
@@ -38,11 +26,12 @@ import {
 } from 'lucide-react'
 
 import { WorkspaceSetupWizard } from './workspace/WorkspaceSetupWizard'
-import { TaskEngineSettings } from './workspace/TaskEngineSettings'
+import { BasicAIEngineTab } from './workspace/BasicAIEngineTab'
+import { ContentExtractionTab } from './workspace/ContentExtractionTab'
 import { WorkspaceIgnoreRulesTab } from './workspace/WorkspaceIgnoreRulesTab'
 import { WorkspaceMaintenanceTab } from './workspace/WorkspaceMaintenanceTab'
 
-type WorkspaceTabId = 'task_engine' | 'ignore_rules' | 'maintenance'
+type WorkspaceTabId = 'basic_ai_engine' | 'content_extraction' | 'ignore_rules' | 'maintenance'
 
 interface WorkspaceTabInfo {
   id: WorkspaceTabId
@@ -51,7 +40,8 @@ interface WorkspaceTabInfo {
   description: string
 }
 
-const MemoizedTaskEngineSettings = memo(TaskEngineSettings)
+const MemoizedBasicAIEngineTab = memo(BasicAIEngineTab)
+const MemoizedContentExtractionTab = memo(ContentExtractionTab)
 const MemoizedWorkspaceIgnoreRulesTab = memo(WorkspaceIgnoreRulesTab)
 const MemoizedWorkspaceMaintenanceTab = memo(WorkspaceMaintenanceTab)
 
@@ -82,11 +72,11 @@ export const WorkspaceSettingsDialog: React.FC = () => {
 
   // 当前正在查看与编辑的工作区 ID
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<number | null>(null)
-  const [activeTab, setActiveTab] = useState<WorkspaceTabId>('task_engine')
+  const [activeTab, setActiveTab] = useState<WorkspaceTabId>('basic_ai_engine')
   const [isManualWizardMode, setIsManualWizardMode] = useState<boolean>(false)
   const [hardwareInfo, setHardwareInfo] = useState<HardwareInfo | null>(null)
   const [visitedTabs, setVisitedTabs] = useState<Set<WorkspaceTabId>>(
-    () => new Set(['task_engine'])
+    () => new Set(['basic_ai_engine'])
   )
 
   // 1. 初始化或同步选中的工作区 ID
@@ -153,14 +143,20 @@ export const WorkspaceSettingsDialog: React.FC = () => {
     }
   }
 
-  // 3-Tab 定义
+  // 4-Tab 完整还原定义 (基础AI引擎、文件内容萃取、忽略规则、目录维护)
   const tabs: WorkspaceTabInfo[] = useMemo(
     () => [
       {
-        id: 'task_engine',
-        name: t('AI分析与多媒体策略'),
+        id: 'basic_ai_engine',
+        name: t('基础AI引擎'),
         icon: 'tune',
-        description: t('抽帧、ASR、OCR及向量底座只读看板')
+        description: t('分析模式、视频抽帧与向量底座看板')
+      },
+      {
+        id: 'content_extraction',
+        name: t('文件内容萃取'),
+        icon: 'boxes',
+        description: t('正文提取、OCR精度与Office封面')
       },
       {
         id: 'ignore_rules',
@@ -192,9 +188,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
 
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <DialogTitle className="text-lg font-bold">
-                  {t('工作目录设置')}
-                </DialogTitle>
+                <DialogTitle className="text-lg font-bold">{t('工作目录设置')}</DialogTitle>
 
                 {/* 状态徽标 */}
                 {activeWorkspace && (
@@ -273,15 +267,15 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                   if (mode === 'complete') {
                     closeSettings()
                   } else {
-                    // 切入深度自定义 3-Tab
+                    // 切入深度自定义 4-Tab 模式
                     setIsManualWizardMode(false)
-                    setActiveTab('task_engine')
+                    setActiveTab('basic_ai_engine')
                   }
                 }}
               />
             </div>
           ) : (
-            /* 2. 常态 3-Tab 高级设置视图 */
+            /* 2. 常态 4-Tab 高级设置视图 */
             <>
               {/* 左侧导航栏 */}
               <div className="w-56 border-r flex flex-col flex-shrink-0 bg-muted/10">
@@ -295,7 +289,8 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                         className={cn(
                           'w-full justify-start text-left h-auto p-2.5 whitespace-break-spaces transition-all duration-200',
                           isActive && 'bg-primary text-primary-foreground shadow-sm scale-[1.01]',
-                          !isActive && 'hover:bg-muted/60 text-muted-foreground hover:text-foreground'
+                          !isActive &&
+                            'hover:bg-muted/60 text-muted-foreground hover:text-foreground'
                         )}
                         onClick={() => setActiveTab(tab.id)}
                       >
@@ -338,14 +333,29 @@ export const WorkspaceSettingsDialog: React.FC = () => {
 
               {/* 右侧 Tab 内容区 (Keep-Alive 保活) */}
               <div className="flex-1 flex flex-col overflow-hidden bg-background">
-                {visitedTabs.has('task_engine') && (
+                {visitedTabs.has('basic_ai_engine') && (
                   <div
                     className={cn(
                       'flex-1 flex flex-col overflow-hidden',
-                      activeTab !== 'task_engine' && 'hidden'
+                      activeTab !== 'basic_ai_engine' && 'hidden'
                     )}
                   >
-                    <MemoizedTaskEngineSettings
+                    <MemoizedBasicAIEngineTab
+                      workspace={activeWorkspace}
+                      hardwareInfo={hardwareInfo}
+                      onConfigSaved={refreshWorkspaceData}
+                    />
+                  </div>
+                )}
+
+                {visitedTabs.has('content_extraction') && (
+                  <div
+                    className={cn(
+                      'flex-1 flex flex-col overflow-hidden',
+                      activeTab !== 'content_extraction' && 'hidden'
+                    )}
+                  >
+                    <MemoizedContentExtractionTab
                       workspace={activeWorkspace}
                       hardwareInfo={hardwareInfo}
                       onConfigSaved={refreshWorkspaceData}
