@@ -23,7 +23,7 @@ import { AboutDialog } from '../settings/about-dialog'
 import { UpgradeAccountDialog } from './UpgradeAccountDialog'
 import { AccountManagementDialog } from './AccountManagementDialog'
 import { ActivationCodeDialog } from './ActivationCodeDialog'
-import { UserTier, formatDateOnly } from '@firefly/shared'
+import { UserTier, formatDateOnly, formatSubscriptionExpiry } from '@firefly/shared'
 import { SettingsCategory } from '@firefly/types'
 import { toast } from '../common/Toast'
 import { isEngineServiceReady } from '../../lib/engine-status-badge'
@@ -109,7 +109,8 @@ export const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({ onOpenChange }) 
           bgClass: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
           textClass: 'text-amber-600 dark:text-amber-400',
           borderClass: 'border-amber-500/30',
-          badgeClass: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-amber-500/20',
+          badgeClass:
+            'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-amber-500/20',
           ringClass: 'ring-1 ring-amber-500/30 hover:ring-amber-500/50',
           arrowClass: 'text-amber-500/70'
         }
@@ -148,8 +149,8 @@ export const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({ onOpenChange }) 
     tier === UserTier.ENTERPRISE &&
     Boolean(
       proExpiresAt &&
-        new Date(proExpiresAt).getTime() > Date.now() &&
-        proPeriod?.status !== 'refunded'
+      new Date(proExpiresAt).getTime() > Date.now() &&
+      proPeriod?.status !== 'refunded'
     )
 
   useEffect(() => {
@@ -277,13 +278,15 @@ export const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({ onOpenChange }) 
               className={cn(
                 'fixed z-[100] w-[352px] max-w-[calc(100vw-24px)] bg-card/98 text-card-foreground border border-border/80 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200 no-drag ring-1 ring-black/5 dark:ring-white/10'
               )}
-              style={{
-                top: menuPosition.top,
-                right: menuPosition.right,
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-                WebkitAppRegion: 'no-drag'
-              } as React.CSSProperties}
+              style={
+                {
+                  top: menuPosition.top,
+                  right: menuPosition.right,
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)',
+                  WebkitAppRegion: 'no-drag'
+                } as React.CSSProperties
+              }
             >
               {/* 层级一 & 二：会员身份资产复合卡片 */}
               <div className="p-3.5 pb-2.5 relative">
@@ -351,8 +354,10 @@ export const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({ onOpenChange }) 
                       {subscription?.expires_at ? (
                         <div className="flex items-center gap-1 text-[11px] leading-none min-w-0">
                           <span className="text-muted-foreground/80 shrink-0">{t('有效期至')}</span>
-                          <span className={cn('tabular-nums font-semibold truncate', expiryTextClass)}>
-                            {formatDateOnly(subscription.expires_at)}
+                          <span
+                            className={cn('tabular-nums font-semibold truncate', expiryTextClass)}
+                          >
+                            {formatSubscriptionExpiry(subscription.expires_at, subscription.plan)}
                           </span>
                           {isExpired && (
                             <span className="text-[10px] px-1.5 py-0.2 rounded bg-red-500/10 text-red-500 font-bold shrink-0">
@@ -365,7 +370,10 @@ export const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({ onOpenChange }) 
                             </span>
                           )}
                           {hasProReserve && (
-                            <span className="text-[10px] px-1.5 py-0.2 rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 font-bold shrink-0" title={t('企业版到期后自动接续 Pro 版')}>
+                            <span
+                              className="text-[10px] px-1.5 py-0.2 rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 font-bold shrink-0"
+                              title={t('企业版到期后自动接续 Pro 版')}
+                            >
                               {t('接续 Pro')}
                             </span>
                           )}
@@ -407,9 +415,7 @@ export const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({ onOpenChange }) 
                       {/* 显式流水明细入口：右侧胶囊，空间充裕且自然展开 */}
                       <div className="inline-flex shrink-0 max-w-[150px] items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground group-hover:text-foreground bg-background/60 group-hover:bg-accent/80 border border-border/50 group-hover:border-border transition-all select-none shadow-2xs">
                         <ReceiptText className="w-3.5 h-3.5 text-amber-500/80 group-hover:text-amber-500 transition-colors shrink-0" />
-                        <span className="text-[11px] font-medium truncate">
-                          {t('收支流水')}
-                        </span>
+                        <span className="text-[11px] font-medium truncate">{t('收支流水')}</span>
                         <ChevronRight className="w-3 h-3 text-muted-foreground/60 group-hover:text-foreground group-hover:translate-x-0.5 transition-all shrink-0" />
                       </div>
                     </button>
@@ -647,13 +653,9 @@ export const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({ onOpenChange }) 
         open={isAccountManagementOpen}
         onOpenChange={setIsAccountManagementOpen}
       />
-      <ActivationCodeDialog
-        open={isActivationCodeOpen}
-        onOpenChange={setIsActivationCodeOpen}
-      />
+      <ActivationCodeDialog open={isActivationCodeOpen} onOpenChange={setIsActivationCodeOpen} />
       <AboutDialog open={isAboutOpen} onOpenChange={setIsAboutOpen} />
       <WechatQRDialog open={isWechatQROpen} onOpenChange={setIsWechatQROpen} />
     </div>
   )
 }
-

@@ -94,12 +94,9 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
     paymentInfo?.cancellation_portal?.url ||
     (isCreemBilling ? 'https://www.creem.io/portal' : `${siteDomain}/${legalLang}/pricing`)
   const supportEmail =
-    paymentInfo?.support_email ||
-    (isCreemBilling ? 'support@aifolder.net' : 'support@iocn.cn')
-  const privacyUrl =
-    paymentInfo?.legal_urls?.privacy_policy || `${siteDomain}/${legalLang}/privacy`
-  const termsUrl =
-    paymentInfo?.legal_urls?.terms_of_service || `${siteDomain}/${legalLang}/terms`
+    paymentInfo?.support_email || (isCreemBilling ? 'support@aifolder.net' : 'support@iocn.cn')
+  const privacyUrl = paymentInfo?.legal_urls?.privacy_policy || `${siteDomain}/${legalLang}/privacy`
+  const termsUrl = paymentInfo?.legal_urls?.terms_of_service || `${siteDomain}/${legalLang}/terms`
 
   const copyToClipboard = (text: string, key: string) => {
     try {
@@ -139,7 +136,8 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
           icon: <ShieldCheck className="w-6 h-6 text-emerald-500" />,
           glowClass: 'bg-emerald-500/25',
           ringClass: 'ring-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-          badgeClass: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
+          badgeClass:
+            'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
           cardBgClass:
             'bg-gradient-to-br from-emerald-500/[0.12] via-teal-500/[0.04] to-transparent border-emerald-500/30',
           accentText: 'text-emerald-600 dark:text-emerald-400',
@@ -208,9 +206,12 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
   // 辅助函数：根据 plan 字符串解析周期标签
   const getPeriodLabel = (planStr: string) => {
     const s = planStr.toLowerCase()
+    if (s.includes('lifetime') || s.includes('forever')) return t('终身会员')
     if (s.includes('yearly') || s.includes('annual')) return t('年付周期')
-    if (s.includes('half_year') || s.includes('semi_annual') || s.includes('6_month')) return t('半年付周期')
-    if (s.includes('quarterly') || s.includes('3_month') || s.includes('season')) return t('季付周期')
+    if (s.includes('half_year') || s.includes('semi_annual') || s.includes('6_month'))
+      return t('半年付周期')
+    if (s.includes('quarterly') || s.includes('3_month') || s.includes('season'))
+      return t('季付周期')
     if (s.includes('monthly')) return t('月付周期')
     return t('周期授权')
   }
@@ -230,7 +231,9 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
   const subscriptionRows: FormattedSubItem[] = []
 
   // 1. 获取所有在 channelSubs 中登记的条目（包括 active、canceled、refunded 等）
-  const allChannelEntries = Object.entries(channelSubs).filter(([_, item]: [string, any]) => Boolean(item))
+  const allChannelEntries = Object.entries(channelSubs).filter(([_, item]: [string, any]) =>
+    Boolean(item)
+  )
 
   // 判定条目是否已被退款（支持 status === 'refunded' 或含有 refunded_at 标记）
   const isItemRefunded = (item: any, planIdStr?: string) => {
@@ -239,13 +242,16 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
     if (subscription?.status === 'refunded') return true
     // 若特定 planId 在 channelSubs 或 tier_periods 中标记为退款
     const keyPlan = String(item?.plan || item?.product_id || planIdStr || '').toLowerCase()
-    if (keyPlan.includes('enterprise') && tierPeriods?.enterprise?.status === 'refunded') return true
+    if (keyPlan.includes('enterprise') && tierPeriods?.enterprise?.status === 'refunded')
+      return true
     if (keyPlan.includes('pro') && tierPeriods?.pro?.status === 'refunded') return true
     return false
   }
 
   // 过滤出未退款的有效订阅渠道
-  const activeChannelEntries = allChannelEntries.filter(([_, item]: [string, any]) => !isItemRefunded(item))
+  const activeChannelEntries = allChannelEntries.filter(
+    ([_, item]: [string, any]) => !isItemRefunded(item)
+  )
 
   // 查找是否有未退款的 Enterprise 方案和 Pro 方案
   const validEnterpriseEntry = activeChannelEntries.find(([_, item]: [string, any]) => {
@@ -279,9 +285,14 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
     const isEnterprise = executingTier === 'enterprise'
     const execChannel = executingChannelEntry ? executingChannelEntry[1] : null
     const execKey = executingChannelEntry ? executingChannelEntry[0] : ''
-    const cardId = execChannel?.sub_id ? `sub_${execChannel.sub_id}` : (execKey ? `sub_${execKey}` : 'current_executing')
+    const cardId = execChannel?.sub_id
+      ? `sub_${execChannel.sub_id}`
+      : execKey
+        ? `sub_${execKey}`
+        : 'current_executing'
 
-    const mainPlanId = execChannel?.plan || subscription?.plan_id || (isEnterprise ? 'enterprise' : 'pro')
+    const mainPlanId =
+      execChannel?.plan || subscription?.plan_id || (isEnterprise ? 'enterprise' : 'pro')
     const isExecChannelCanceled = execChannel?.status === 'canceled'
 
     subscriptionRows.push({
@@ -292,7 +303,9 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
       status: isExecChannelCanceled ? 'canceled' : 'active',
       periodLabel: getPeriodLabel(mainPlanId),
       expiresAt: subscription?.expires_at || null,
-      isAutoRenew: execChannel ? execChannel.status === 'active' : (subscription?.auto_renew ?? false)
+      isAutoRenew: execChannel
+        ? execChannel.status === 'active'
+        : (subscription?.auto_renew ?? false)
     })
     existingCardIds.add(cardId)
   }
@@ -313,7 +326,7 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
       name: isEnt ? t('Firefly Enterprise 企业版') : t('Firefly Pro 专业版'),
       tier: itemTier,
       isCurrentExecuting: false,
-      status: refunded ? 'refunded' : (item.status || 'active'),
+      status: refunded ? 'refunded' : item.status || 'active',
       periodLabel: getPeriodLabel(planStr),
       expiresAt: null, // 非执行中（休眠或已退款）绝对不显示到期时间
       isAutoRenew: !refunded && item.status === 'active'
@@ -327,7 +340,9 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
     executingTier === 'enterprise' &&
     proPeriod &&
     proPeriod.status !== 'refunded' &&
-    !subscriptionRows.some(r => !r.isCurrentExecuting && r.tier === 'pro' && r.status !== 'refunded')
+    !subscriptionRows.some(
+      r => !r.isCurrentExecuting && r.tier === 'pro' && r.status !== 'refunded'
+    )
   ) {
     const proPlanId = String(proPeriod.plan_id || '')
     subscriptionRows.push({
@@ -372,7 +387,7 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
           {/* ── 订阅方案通栏卡片列表（每个订阅一个独立的通栏卡片） ── */}
           <div className="space-y-3">
             {subscriptionRows.length > 0 ? (
-              subscriptionRows.map((row) => {
+              subscriptionRows.map(row => {
                 const isEnterprise = row.tier === 'enterprise'
                 const tierTheme = getTierTheme(isEnterprise ? UserTier.ENTERPRISE : UserTier.PRO)
 
@@ -530,7 +545,9 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {t('当前正在使用基础版服务，您可以通过升级 Pro 或 Enterprise 解锁全功能与无限文件处理。')}
+                  {t(
+                    '当前正在使用基础版服务，您可以通过升级 Pro 或 Enterprise 解锁全功能与无限文件处理。'
+                  )}
                 </p>
                 <div className="flex items-center gap-1.5 flex-wrap pt-1">
                   {theme.features.slice(0, 4).map((feat, idx) => (
@@ -625,7 +642,9 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
                   className="h-10 px-3 flex items-center justify-center gap-1.5 font-bold text-xs rounded-xl border border-border/60 bg-background/80 hover:bg-accent text-foreground transition-all duration-200 shadow-2xs hover:shadow-sm cursor-pointer shrink-0"
                   title={t('从云端立即刷新最新订阅状态')}
                 >
-                  <RefreshCw className={cn('w-3.5 h-3.5 text-primary', isSyncing && 'animate-spin')} />
+                  <RefreshCw
+                    className={cn('w-3.5 h-3.5 text-primary', isSyncing && 'animate-spin')}
+                  />
                   <span>{isSyncing ? t('同步中...') : t('刷新状态')}</span>
                 </Button>
               </div>
@@ -648,9 +667,7 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
           <div className="p-3 bg-muted/20 rounded-2xl border border-border/40 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs text-muted-foreground">
             <div className="flex items-center gap-2 min-w-0">
               <Mail className="w-3.5 h-3.5 text-primary shrink-0" />
-              <span className="text-[11px] font-medium shrink-0">
-                {t('售后支持：')}
-              </span>
+              <span className="text-[11px] font-medium shrink-0">{t('售后支持：')}</span>
               <div className="shrink-0">
                 <EmailSvg email={supportEmail} color="#3b82f6" fontSize={12} />
               </div>
@@ -703,4 +720,3 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
     </Dialog>
   )
 }
-
