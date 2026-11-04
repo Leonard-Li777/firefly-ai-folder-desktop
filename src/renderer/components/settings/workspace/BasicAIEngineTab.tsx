@@ -58,8 +58,21 @@ import { cn } from '../../../lib/utils'
 export interface BasicAIEngineTabProps {
   workspace: WorkspaceDirectory
   hardwareInfo?: HardwareInfo | null
+  isActive?: boolean
   onConfigSaved?: () => void
 }
+
+/** 属于基础AI引擎 Tab 专管的参数键列表 (与文件内容萃取隔离，防跨Tab全量抹杀) */
+const BASIC_AI_KEYS: (keyof TechnicalEngineParameters)[] = [
+  'analysisMode',
+  'embeddingProfile',
+  'mrlDimension',
+  'videoCutSensitivity',
+  'videoSoftTokenBudget',
+  'videoQuotaMax',
+  'videoAsrDurationSec',
+  'audioAnalysisDurationSec'
+]
 
 /**
  * 辅助悬浮气泡组件
@@ -88,11 +101,15 @@ const HelpTooltip: React.FC<{ content: string }> = ({ content }) => {
 export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
   workspace,
   hardwareInfo,
+  isActive = true,
   onConfigSaved
 }) => {
   const config = useSettingsStore(s => s.config)
   const getConfigValue = useSettingsStore(s => s.getConfigValue)
-  const isDev = process.env.NODE_ENV === 'development'
+  const isDev = Boolean(
+    (import.meta as any)?.env?.DEV ??
+    (typeof window !== 'undefined' && window.electronAPI?.isPackaged === false)
+  )
 
   const tier = useTierStore(s => s.tier)
   const isFreeUser = (tier ?? UserTier.FREE) === UserTier.FREE
@@ -176,6 +193,17 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
     [workspace.id, currentIntent, baseDerived, parsedConfig, onConfigSaved]
   )
 
+  // 切 Tab (isActive 变为 false) 或卸载时立即 flush 未落盘数据，杜绝并发覆盖竞态
+  useEffect(() => {
+    if (!isActive && pendingOverridesRef.current !== null) {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+      }
+      persistConfig(pendingOverridesRef.current)
+      pendingOverridesRef.current = null
+    }
+  }, [isActive, persistConfig])
+
   useEffect(() => {
     return () => {
       if (debounceTimerRef.current) {
@@ -214,14 +242,24 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
     })
   }
 
+  // 检查当前 Tab 是否存在个性化覆盖项 (仅针对 BASIC_AI_KEYS)
+  const hasBasicAiOverrides = useMemo(() => {
+    return BASIC_AI_KEYS.some(k => overrides[k] !== undefined)
+  }, [overrides])
+
+  // 重置为当前意图预设基线 (仅剔除基础AI引擎管理的键，完整保留内容萃取等其他Tab的overrides)
   const handleResetToPreset = () => {
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current)
     }
-    pendingOverridesRef.current = null
-    setOverrides({})
-    persistConfig({})
-    toast.success(t('已恢复当前场景推荐的基线参数'))
+    const next = { ...overrides }
+    for (const k of BASIC_AI_KEYS) {
+      delete next[k]
+    }
+    pendingOverridesRef.current = next
+    setOverrides(next)
+    persistConfig(next)
+    toast.success(t('已恢复当前场景的基础引擎推荐参数'))
   }
 
   // 高级AI引擎是否开启
@@ -428,8 +466,8 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
             </span>
           )}
 
-          {/* 恢复场景预设按钮 */}
-          {Object.keys(overrides).length > 0 && (
+          {/* 恢复场景预设按钮 (仅在存在本Tab微调项时展示) */}
+          {hasBasicAiOverrides && (
             <Button
               type="button"
               variant="outline"

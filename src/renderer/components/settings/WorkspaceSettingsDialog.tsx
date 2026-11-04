@@ -155,7 +155,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
       {
         id: 'content_extraction',
         name: t('文件内容萃取'),
-        icon: 'boxes',
+        icon: 'document_scanner',
         description: t('正文提取、OCR精度与Office封面')
       },
       {
@@ -343,6 +343,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                     <MemoizedBasicAIEngineTab
                       workspace={activeWorkspace}
                       hardwareInfo={hardwareInfo}
+                      isActive={activeTab === 'basic_ai_engine'}
                       onConfigSaved={refreshWorkspaceData}
                     />
                   </div>
@@ -358,6 +359,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                     <MemoizedContentExtractionTab
                       workspace={activeWorkspace}
                       hardwareInfo={hardwareInfo}
+                      isActive={activeTab === 'content_extraction'}
                       onConfigSaved={refreshWorkspaceData}
                     />
                   </div>

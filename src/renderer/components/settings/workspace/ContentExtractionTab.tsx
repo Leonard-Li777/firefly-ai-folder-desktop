@@ -12,8 +12,7 @@ import { Card } from '../../ui/card'
 import { Button } from '../../ui/button'
 import { Switch } from '../../ui/switch'
 import { Label } from '../../ui/label'
-import { Input } from '../../ui/input'
-import { MaterialIcon, cn } from '../../../lib/utils'
+import { cn } from '../../../lib/utils'
 import { toast } from '../../common/Toast'
 import { t } from '@app/languages'
 import { openExternalLink } from '../../../lib/external-link'
@@ -33,8 +32,21 @@ import {
 export interface ContentExtractionTabProps {
   workspace: WorkspaceDirectory
   hardwareInfo?: HardwareInfo | null
+  isActive?: boolean
   onConfigSaved?: () => void
 }
+
+/** 属于文件内容萃取 Tab 专管的参数键列表 (与基础AI引擎隔离，防跨Tab全量抹杀) */
+const CONTENT_EXTRACTION_KEYS: (keyof TechnicalEngineParameters)[] = [
+  'maxContentSizeKb',
+  'extractPages',
+  'maxDocumentOcrItems',
+  'enableOfficeCover',
+  'reuseBasicAnalysisData',
+  'clipTextEnabled',
+  'enableImageOcr',
+  'ocrModelSize'
+]
 
 /**
  * 辅助悬浮气泡组件
@@ -63,6 +75,7 @@ const HelpTooltip: React.FC<{ content: string }> = ({ content }) => {
 export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
   workspace,
   hardwareInfo,
+  isActive = true,
   onConfigSaved
 }) => {
   const [isSaving, setIsSaving] = useState(false)
@@ -153,6 +166,17 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
     [workspace.id, currentIntent, baseDerived, parsedConfig, onConfigSaved]
   )
 
+  // 切 Tab (isActive 变为 false) 或卸载时立即 flush 未落盘数据，杜绝并发覆盖竞态
+  useEffect(() => {
+    if (!isActive && pendingOverridesRef.current !== null) {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+      }
+      persistConfig(pendingOverridesRef.current)
+      pendingOverridesRef.current = null
+    }
+  }, [isActive, persistConfig])
+
   // 组件卸载或弹窗关闭时：无条件立即写盘
   useEffect(() => {
     return () => {
@@ -193,15 +217,24 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
     })
   }
 
-  // 重置为当前意图预设基线 (立即写盘并提示)
+  // 检查当前 Tab 是否存在个性化覆盖项 (仅针对 CONTENT_EXTRACTION_KEYS)
+  const hasContentOverrides = useMemo(() => {
+    return CONTENT_EXTRACTION_KEYS.some(k => overrides[k] !== undefined)
+  }, [overrides])
+
+  // 重置为当前意图预设基线 (仅剔除内容萃取管理的键，完整保留基础AI引擎等其他Tab的overrides)
   const handleResetToPreset = () => {
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current)
     }
-    pendingOverridesRef.current = null
-    setOverrides({})
-    persistConfig({})
-    toast.success(t('已恢复当前场景推荐的基线参数'))
+    const next = { ...overrides }
+    for (const k of CONTENT_EXTRACTION_KEYS) {
+      delete next[k]
+    }
+    pendingOverridesRef.current = next
+    setOverrides(next)
+    persistConfig(next)
+    toast.success(t('已恢复当前场景的文件内容萃取推荐参数'))
   }
 
   // 检测 LibreOffice 状态
@@ -269,8 +302,8 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
             </span>
           )}
 
-          {/* 恢复场景预设按钮 */}
-          {Object.keys(overrides).length > 0 && (
+          {/* 恢复场景预设按钮 (仅在存在本Tab微调项时展示) */}
+          {hasContentOverrides && (
             <Button
               type="button"
               variant="outline"
@@ -342,7 +375,7 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
             </div>
 
             {(() => {
-              const ticks = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, -1]
+              const ticks = [10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100, -1]
               const normalizedValue = currentMaxContentSizeKb === 0 ? -1 : currentMaxContentSizeKb
               const currentIndex =
                 ticks.indexOf(normalizedValue) !== -1 ? ticks.indexOf(normalizedValue) : 2
@@ -422,7 +455,10 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
                 size="sm"
                 className="h-7 text-xs px-2.5 shrink-0"
                 onClick={() =>
-                  handleParamChange('extractPages', currentExtractPages === -1 ? 2 : -1)
+                  handleParamChange(
+                    'extractPages',
+                    currentExtractPages === -1 ? (baseDerived.extractPages ?? 2) : -1
+                  )
                 }
               >
                 {t('全本不限')}
