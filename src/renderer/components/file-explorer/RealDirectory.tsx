@@ -258,7 +258,9 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
 
   const isRealSearchActive = Boolean(realDirectoryKeyword.trim())
   const isRealSearchSettled = settledSearchSeq === searchSeqRef.current
-  const effectiveIsSearchingAllDirs = isRealSearchActive ? (!isRealSearchSettled || isSearchingAllDirs) : false
+  const effectiveIsSearchingAllDirs = isRealSearchActive
+    ? !isRealSearchSettled || isSearchingAllDirs
+    : false
 
   // 监听后端两阶段渐进式搜索推流：Phase 1 毫秒级字面命中秒级上屏，Phase 2 语义向量平滑更新，Phase 3 冷态追加
   useEffect(() => {
@@ -504,7 +506,13 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
 
     // 搜索刚发起且无结果上屏前，展示空列表等待 Phase 1 毫秒级推送，避免展示当前目录无关文件造成闪烁
     return { files: [], directories: [] }
-  }, [files, directories, realDirectoryKeyword, workspaceSearchResults, effectiveIsSearchingAllDirs])
+  }, [
+    files,
+    directories,
+    realDirectoryKeyword,
+    workspaceSearchResults,
+    effectiveIsSearchingAllDirs
+  ])
 
   const isAllSelected = useMemo(() => {
     const totalItems = filteredData.files.length + filteredData.directories.length
@@ -584,7 +592,15 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
     } catch (error) {
       logger.error(LogCategory.RENDERER, '读取目录失败:', error)
       let rawMessage = error instanceof Error ? error.message : String(error)
-      rawMessage = rawMessage.replace(/^(Error:\s*)?Error invoking remote method '[^']+':\s*(Error:\s*)?/, '')
+      const marker = "': Error: "
+      const markerIdx = rawMessage.indexOf(marker)
+      if (markerIdx !== -1) {
+        rawMessage = rawMessage.slice(markerIdx + marker.length)
+      } else {
+        rawMessage = rawMessage
+          .replace(/^Error:\s*/, '')
+          .replace(/^Error invoking remote method '[^']{1,100}':\s*/, '')
+      }
       const message = rawMessage.trim() || t('未知错误')
       toast.error(t('读取目录失败: {message}', { message }))
       // 读取失败时清空文件和目录
@@ -841,6 +857,12 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
             logger.warn(LogCategory.RENDERER, '列表中未找到新添加的目录，尝试使用原始对象选中')
             await handleSelectWorkspaceDirectory(newDirectory)
           }
+
+          // 7. 新建工作目录主动弹出配置向导
+          const targetDir = officialDirectory || newDirectory
+          if (targetDir?.id) {
+            useSettingsStore.getState().openWorkspaceSettings({ workspaceId: targetDir.id })
+          }
         }
       } catch (error: any) {
         logger.error(LogCategory.RENDERER, '添加工作目录失败:', error)
@@ -1016,7 +1038,15 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
     } catch (error) {
       logger.error(LogCategory.RENDERER, '刷新文件列表失败:', error)
       let rawMessage = error instanceof Error ? error.message : String(error)
-      rawMessage = rawMessage.replace(/^(Error:\s*)?Error invoking remote method '[^']+':\s*(Error:\s*)?/, '')
+      const marker = "': Error: "
+      const markerIdx = rawMessage.indexOf(marker)
+      if (markerIdx !== -1) {
+        rawMessage = rawMessage.slice(markerIdx + marker.length)
+      } else {
+        rawMessage = rawMessage
+          .replace(/^Error:\s*/, '')
+          .replace(/^Error invoking remote method '[^']{1,100}':\s*/, '')
+      }
       const message = rawMessage.trim() || t('未知错误')
       toast.error(t('刷新文件列表失败: {message}', { message }))
     }
@@ -1091,21 +1121,13 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
             className="h-8 w-8 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors flex-shrink-0 rounded-md cursor-pointer"
             onClick={() => {
               if (currentPath) {
-                window
-                  .electronAPI!.utils.openPathInExplorer(currentPath)
-                  .catch((error: any) => {
-                    logger.error(
-                      LogCategory.RENDERER,
-                      '无法在资源管理器中打开目录:',
-                      error
-                    )
-                    const message =
-                      error?.message?.replace(
-                        /^Error invoking remote method.*?: Error: /,
-                        ''
-                      ) || String(error)
-                    toast.error(t('无法打开目录: {message}', { message }))
-                  })
+                window.electronAPI!.utils.openPathInExplorer(currentPath).catch((error: any) => {
+                  logger.error(LogCategory.RENDERER, '无法在资源管理器中打开目录:', error)
+                  const message =
+                    error?.message?.replace(/^Error invoking remote method.*?: Error: /, '') ||
+                    String(error)
+                  toast.error(t('无法打开目录: {message}', { message }))
+                })
               }
             }}
             title={t('在系统文件浏览器中打开')}
@@ -1251,13 +1273,11 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
                     <span className="font-semibold text-xs">
                       {!snapshot.running
                         ? t('队列已暂停 ({length}/{snapshotLength})', {
-                            length: snapshot.items.filter(i => i.status === 'completed')
-                              .length,
+                            length: snapshot.items.filter(i => i.status === 'completed').length,
                             snapshotLength: snapshot.items.length
                           })
                         : t('队列 ({length}/{snapshotLength})', {
-                            length: snapshot.items.filter(i => i.status === 'completed')
-                              .length,
+                            length: snapshot.items.filter(i => i.status === 'completed').length,
                             snapshotLength: snapshot.items.length
                           })}
                     </span>
@@ -1395,9 +1415,7 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
                       <>
                         <span className="mx-2 text-border">|</span>
                         <span className="text-primary/80">
-                          {isSearchingAllDirs
-                            ? t('搜索中...')
-                            : t('已按关键词跨目录搜索')}
+                          {isSearchingAllDirs ? t('搜索中...') : t('已按关键词跨目录搜索')}
                         </span>
                       </>
                     )}

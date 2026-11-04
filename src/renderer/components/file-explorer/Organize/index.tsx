@@ -206,10 +206,7 @@ export const Organize: React.FC = () => {
   // 动作经 ref 句柄命令式触发（保留视图内提示词优先/默认名兜底与防重复保存逻辑），
   // 可用态/保存中态由视图经 onSaveStateChange 上报后同步按钮禁用与文案
   const smartClusteringRef = useRef<SmartClusteringViewHandle>(null)
-  const toOrganizeFileIds = useMemo(
-    () => toOrganizeFiles.map(f => f.id),
-    [toOrganizeFiles]
-  )
+  const toOrganizeFileIds = useMemo(() => toOrganizeFiles.map(f => f.id), [toOrganizeFiles])
   const [smartClusterSaveState, setSmartClusterSaveState] = useState<{
     canSave: boolean
     isSaving: boolean
@@ -245,8 +242,6 @@ export const Organize: React.FC = () => {
       organizeMode !== 'fast-organize' &&
       organizeMode !== 'fine-organize')
 
-
-
   const hasClassifiedInTree = useMemo(() => {
     const tree = finalTree?.length ? finalTree : draftTree
     if (!Array.isArray(tree) || tree.length === 0) return false
@@ -254,8 +249,7 @@ export const Organize: React.FC = () => {
 
     const checkNode = (nodes: any[]): boolean => {
       for (const node of nodes) {
-        const isUnclass =
-          isUnclassifiedNodeName(node.name) || node.name === UNCLASSIFIED_ALIAS
+        const isUnclass = isUnclassifiedNodeName(node.name) || node.name === UNCLASSIFIED_ALIAS
         if (
           !isUnclass &&
           ((node.files && node.files.length > 0) || (node.fileCount && node.fileCount > 0))
@@ -283,9 +277,7 @@ export const Organize: React.FC = () => {
           summary: t('端侧 HAC 智能聚类生成'),
           directories: tree
         })
-        window.dispatchEvent(
-          new CustomEvent('vdir:updated', { detail: { vdirId: vd?.id } })
-        )
+        window.dispatchEvent(new CustomEvent('vdir:updated', { detail: { vdirId: vd?.id } }))
         toast.success(t('已保存虚拟目录：{name}', { name: vd?.name || name }))
         await loadVirtualDirectories()
         resetOrganizeState()
@@ -370,6 +362,9 @@ export const Organize: React.FC = () => {
                 const store = useAnalyzedDirectoryStore.getState()
                 await store.setCurrentWorkspaceDirectory(target)
                 navigate('/real-directory')
+                if (target?.id) {
+                  useSettingsStore.getState().openWorkspaceSettings({ workspaceId: target.id })
+                }
               } catch (e: any) {
                 toast.error(e?.message || t('添加工作目录失败'))
               }
@@ -412,7 +407,9 @@ export const Organize: React.FC = () => {
               stage={stage}
               onSelectStage={setStage}
               hasCandidates={candidates?.length > 0}
-              hasStructure={displayTree?.length > 0 || draftTree?.length > 0 || finalTree?.length > 0}
+              hasStructure={
+                displayTree?.length > 0 || draftTree?.length > 0 || finalTree?.length > 0
+              }
               hasDone={finalTree?.length > 0}
             />
           </div>
@@ -470,12 +467,17 @@ export const Organize: React.FC = () => {
                     const btn = document.getElementById('btn-trash-duplicates-trigger')
                     if (btn) btn.click()
                   }}
-                  disabled={isTrashingDuplicates || isDuplicateProcessing || duplicateSelectedCount === 0}
+                  disabled={
+                    isTrashingDuplicates || isDuplicateProcessing || duplicateSelectedCount === 0
+                  }
                   className="text-xs gap-1.5 px-4 font-bold shadow-md shadow-primary/10 h-8 shrink-0"
                 >
                   <MaterialIcon
                     icon={isTrashingDuplicates || isDuplicateProcessing ? 'sync' : 'auto_fix_high'}
-                    className={cn('text-sm', (isTrashingDuplicates || isDuplicateProcessing) && 'animate-spin')}
+                    className={cn(
+                      'text-sm',
+                      (isTrashingDuplicates || isDuplicateProcessing) && 'animate-spin'
+                    )}
                   />
                   <span>
                     {isTrashingDuplicates || isDuplicateProcessing
@@ -694,72 +696,86 @@ export const Organize: React.FC = () => {
         </div>
 
         {/* 容量超限横幅：仅在批量整理工作台各阶段中按需显示，不在主页或卫星工具中显示 */}
-        {isMainOrganizeStage && rawToOrganizeCount > organizeCapacityLimit && !isCapacityBannerHidden && (
-          <HintBanner
-            icon={<MaterialIcon icon="dataset" className="text-base text-amber-500" />}
-            className="shrink-0 py-2.5 border-b border-amber-500/20 text-amber-600 dark:text-amber-400"
-            onClose={() => setIsCapacityBannerHidden(true)}
-            actions={
-              <div className="flex items-center gap-3">
-                {/* 当处于切片状态（前 N 个）时：展示次要弱化操作“我了解风险，仍要整理全部文件”，供用户按需展开全量 */}
-                {organizeFileLimitOverride !== null ? (
-                <Button
-                  variant="link"
-                  size="sm"
-                  onClick={handleBypassLimitAndOrganizeAll}
-                  className="text-xs text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400 p-0 h-auto underline-offset-4 hover:underline shrink-0"
-                  title={t('单次超大规模计算将显著增加内存占用与 AI 响应耗时（O(N²) 复杂度），且目录聚类颗粒度可能变宽')}
-                >
-                  {t('我了解风险，仍要整理全部 {count} 个文件', { count: rawToOrganizeCount.toLocaleString() })}
-                </Button>
-              ) : (
-                /* 当处于全量整理时：展示主要推荐操作“仅整理前 N 个 (即刻开始)”，供用户一键降级为安全模式 */
-                <Button
-                  size="sm"
-                  onClick={handleLimitToFirst3000Files}
-                  className="h-6 text-[11px] px-2.5 bg-amber-500 hover:bg-amber-600 text-white font-medium shadow-xs shrink-0"
-                >
-                  <MaterialIcon icon="bolt" className="mr-1 text-xs" />
-                  {t('仅整理前 {limit} 个 (即刻开始)', { limit: organizeCapacityLimit.toLocaleString() })}
-                </Button>
-              )}
+        {isMainOrganizeStage &&
+          rawToOrganizeCount > organizeCapacityLimit &&
+          !isCapacityBannerHidden && (
+            <HintBanner
+              icon={<MaterialIcon icon="dataset" className="text-base text-amber-500" />}
+              className="shrink-0 py-2.5 border-b border-amber-500/20 text-amber-600 dark:text-amber-400"
+              onClose={() => setIsCapacityBannerHidden(true)}
+              actions={
+                <div className="flex items-center gap-3">
+                  {/* 当处于切片状态（前 N 个）时：展示次要弱化操作“我了解风险，仍要整理全部文件”，供用户按需展开全量 */}
+                  {organizeFileLimitOverride !== null ? (
+                    <Button
+                      variant="link"
+                      size="sm"
+                      onClick={handleBypassLimitAndOrganizeAll}
+                      className="text-xs text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400 p-0 h-auto underline-offset-4 hover:underline shrink-0"
+                      title={t(
+                        '单次超大规模计算将显著增加内存占用与 AI 响应耗时（O(N²) 复杂度），且目录聚类颗粒度可能变宽'
+                      )}
+                    >
+                      {t('我了解风险，仍要整理全部 {count} 个文件', {
+                        count: rawToOrganizeCount.toLocaleString()
+                      })}
+                    </Button>
+                  ) : (
+                    /* 当处于全量整理时：展示主要推荐操作“仅整理前 N 个 (即刻开始)”，供用户一键降级为安全模式 */
+                    <Button
+                      size="sm"
+                      onClick={handleLimitToFirst3000Files}
+                      className="h-6 text-[11px] px-2.5 bg-amber-500 hover:bg-amber-600 text-white font-medium shadow-xs shrink-0"
+                    >
+                      <MaterialIcon icon="bolt" className="mr-1 text-xs" />
+                      {t('仅整理前 {limit} 个 (即刻开始)', {
+                        limit: organizeCapacityLimit.toLocaleString()
+                      })}
+                    </Button>
+                  )}
 
-              {/* 辅助操作：前往手动筛选 */}
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleGoToAnalyzedPage}
-                className="h-6 text-[11px] px-2 border-amber-500/30 hover:bg-amber-500/10 text-amber-600 dark:text-amber-400 shrink-0"
-              >
-                <MaterialIcon icon="checklist" className="mr-1 text-xs" />
-                {t('前往手动筛选')}
-              </Button>
-              </div>
-            }
-          >
-            {organizeFileLimitOverride !== null
-              ? t('已截取前 {limit} 个文件整理（原共 {count} 个，超出单批建议 {limit} 个）。其余文件保留在原目录：', {
-                  limit: organizeFileLimitOverride.toLocaleString(),
-                  count: rawToOrganizeCount.toLocaleString()
-                })
-              : bypassCapacityLimit
-                ? t('当前为全量整理模式（共 {count} 个，超出单批建议 {limit} 个）。单次大规模计算将显著增加 AI 耗时与内存：', {
-                    count: rawToOrganizeCount.toLocaleString(),
-                    limit: organizeCapacityLimit.toLocaleString()
-                  })
-                : t('待整理文件较多（共 {count} 个，超出单批建议 {limit} 个）。您可以仅整理前 {limit} 个或前往手动筛选：', {
-                    count: rawToOrganizeCount.toLocaleString(),
-                    limit: organizeCapacityLimit.toLocaleString()
-                  })}
-          </HintBanner>
-        )}
+                  {/* 辅助操作：前往手动筛选 */}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleGoToAnalyzedPage}
+                    className="h-6 text-[11px] px-2 border-amber-500/30 hover:bg-amber-500/10 text-amber-600 dark:text-amber-400 shrink-0"
+                  >
+                    <MaterialIcon icon="checklist" className="mr-1 text-xs" />
+                    {t('前往手动筛选')}
+                  </Button>
+                </div>
+              }
+            >
+              {organizeFileLimitOverride !== null
+                ? t(
+                    '已截取前 {limit} 个文件整理（原共 {count} 个，超出单批建议 {limit} 个）。其余文件保留在原目录：',
+                    {
+                      limit: organizeFileLimitOverride.toLocaleString(),
+                      count: rawToOrganizeCount.toLocaleString()
+                    }
+                  )
+                : bypassCapacityLimit
+                  ? t(
+                      '当前为全量整理模式（共 {count} 个，超出单批建议 {limit} 个）。单次大规模计算将显著增加 AI 耗时与内存：',
+                      {
+                        count: rawToOrganizeCount.toLocaleString(),
+                        limit: organizeCapacityLimit.toLocaleString()
+                      }
+                    )
+                  : t(
+                      '待整理文件较多（共 {count} 个，超出单批建议 {limit} 个）。您可以仅整理前 {limit} 个或前往手动筛选：',
+                      {
+                        count: rawToOrganizeCount.toLocaleString(),
+                        limit: organizeCapacityLimit.toLocaleString()
+                      }
+                    )}
+            </HintBanner>
+          )}
 
         <div className="flex-1 flex overflow-hidden relative">
           {/* 左侧常驻批量功能导航侧边栏 */}
-          <OrganizeSidebar
-            currentStage={stage}
-            onSelectStage={handleSidebarSelectStage}
-          />
+          <OrganizeSidebar currentStage={stage} onSelectStage={handleSidebarSelectStage} />
 
           {isStandaloneStage ? (
             <div className="flex-1 flex flex-col overflow-hidden bg-background">
@@ -799,7 +815,9 @@ export const Organize: React.FC = () => {
                       files={toOrganizeFiles}
                       selectionEnabled={false}
                       activeItem={inspectedFile}
-                      selectedFileIds={inspectedFile ? [inspectedFile.path || inspectedFile.id] : []}
+                      selectedFileIds={
+                        inspectedFile ? [inspectedFile.path || inspectedFile.id] : []
+                      }
                       onFileSelect={item => {
                         const single = Array.isArray(item) ? item[0] : item
                         // 以最新 inspectedFile（ref，点击前的真实选中状态）作为权威判断：
@@ -808,7 +826,8 @@ export const Organize: React.FC = () => {
                           ? inspectedFileRef.current[0]
                           : inspectedFileRef.current
                         const prevId = cur?.id ?? cur?.fileId ?? cur?.path
-                        const nextId = (single as any)?.id ?? (single as any)?.fileId ?? (single as any)?.path
+                        const nextId =
+                          (single as any)?.id ?? (single as any)?.fileId ?? (single as any)?.path
                         if (prevId && nextId && prevId === nextId) {
                           setInspectedFile(null)
                         } else {
@@ -819,7 +838,8 @@ export const Organize: React.FC = () => {
                         const single = Array.isArray(items) && items.length > 0 ? items[0] : null
                         setInspectedFile((prev: any) => {
                           const prevId = prev?.id || prev?.fileId || prev?.path
-                          const nextId = (single as any)?.id || (single as any)?.fileId || (single as any)?.path
+                          const nextId =
+                            (single as any)?.id || (single as any)?.fileId || (single as any)?.path
                           if (prevId && nextId && prevId === nextId) return prev
                           return single ? (single as any) : null
                         })
@@ -843,14 +863,14 @@ export const Organize: React.FC = () => {
                                 (incrementalVdId || currentVDir?.id || draft?.source === 'draft') &&
                                 hasClassifiedInTree
                               ) && (
-                                  <span
-                                    className="text-amber-600 dark:text-amber-400 flex items-center gap-1 text-xs font-medium shrink min-w-0 truncate"
-                                    title={t('已过滤前次已整理文件')}
-                                  >
-                                    <MaterialIcon icon="filter_alt" className="text-sm shrink-0" />
-                                    <span className="truncate">{t('已过滤前次已整理文件')}</span>
-                                  </span>
-                                )}
+                                <span
+                                  className="text-amber-600 dark:text-amber-400 flex items-center gap-1 text-xs font-medium shrink min-w-0 truncate"
+                                  title={t('已过滤前次已整理文件')}
+                                >
+                                  <MaterialIcon icon="filter_alt" className="text-sm shrink-0" />
+                                  <span className="truncate">{t('已过滤前次已整理文件')}</span>
+                                </span>
+                              )}
                             </div>
                             {/* 视图模式与显示设置 Mini 下拉弹窗 */}
                             <div className="shrink-0">
@@ -888,12 +908,12 @@ export const Organize: React.FC = () => {
                   content: (
                     <div className="h-full overflow-hidden flex flex-col">
                       {toOrganizeFiles.length === 0 &&
-                        stage === 'mode-select' &&
-                        !isSavedVDirOrganize &&
-                        !incrementalVdId &&
-                        !currentVDir?.id &&
-                        displayTree.length === 0 &&
-                        virtualDirectories.length === 0 ? (
+                      stage === 'mode-select' &&
+                      !isSavedVDirOrganize &&
+                      !incrementalVdId &&
+                      !currentVDir?.id &&
+                      displayTree.length === 0 &&
+                      virtualDirectories.length === 0 ? (
                         <EmptyState
                           icon="folder_off"
                           title={t('暂无待整理文件')}
@@ -968,7 +988,9 @@ export const Organize: React.FC = () => {
                               initialName={initialVDirInfo?.name || draft?.name}
                               initialStrategy={initialVDirInfo?.strategy || draft?.strategy}
                               workspaceDirectoryPath={currentWorkspaceDirectory?.path || ''}
-                              isExternalAi={draft?.source === 'external-ai' || organizeMode === 'external-ai'}
+                              isExternalAi={
+                                draft?.source === 'external-ai' || organizeMode === 'external-ai'
+                              }
                               onBack={handleBack}
                               onCanSubmitChange={setCustomTreeCanSubmit}
                               onSubmit={(name, strategy, tree) => {
@@ -977,8 +999,8 @@ export const Organize: React.FC = () => {
                             />
                           )}
 
-                          {stage === 'candidates' && (
-                            organizeMode === 'identity-blueprint' ? (
+                          {stage === 'candidates' &&
+                            (organizeMode === 'identity-blueprint' ? (
                               <IdentityBlueprintSelectView
                                 workspaceId={currentWorkspaceDirectory?.id}
                                 workspaceDirectoryPath={currentWorkspaceDirectory?.path || ''}
@@ -996,8 +1018,7 @@ export const Organize: React.FC = () => {
                                 onRegenerate={generateCandidates}
                                 onSwitchToExternalAi={handleSwitchToExternalAi}
                               />
-                            )
-                          )}
+                            ))}
 
                           {stage === 'structure' && (
                             <StructureView
@@ -1077,8 +1098,6 @@ export const Organize: React.FC = () => {
             />
           )}
         </div>
-
-
 
         {showEditStrategy && (
           <EditStrategyDialog
@@ -1199,7 +1218,10 @@ export const Organize: React.FC = () => {
         metadata={{ vdirId: currentVDir?.id }}
         onSuccess={handleRegenerateSaveAfterFirecoreConfirm}
       />
-      <Dialog open={location.pathname === '/organize' && showCapacityLimitDialog} onOpenChange={setShowCapacityLimitDialog}>
+      <Dialog
+        open={location.pathname === '/organize' && showCapacityLimitDialog}
+        onOpenChange={setShowCapacityLimitDialog}
+      >
         <DialogContent className="sm:max-w-[540px] p-0 overflow-hidden border border-border shadow-2xl rounded-2xl">
           {/* 顶栏：暖色调柔和警示与规模量化 */}
           <div className="px-6 pt-5 pb-4 border-b border-border bg-amber-500/5">
@@ -1215,9 +1237,12 @@ export const Organize: React.FC = () => {
                   </span>
                 </DialogTitle>
                 <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                  {t('为保障 AI 深度聚类质量与秒级响应，建议单次整理控制在 {limit} 个文件以内。请选择适合本次整理的执行方案：', {
-                    limit: organizeCapacityLimit.toLocaleString()
-                  })}
+                  {t(
+                    '为保障 AI 深度聚类质量与秒级响应，建议单次整理控制在 {limit} 个文件以内。请选择适合本次整理的执行方案：',
+                    {
+                      limit: organizeCapacityLimit.toLocaleString()
+                    }
+                  )}
                 </p>
               </div>
             </div>
@@ -1240,14 +1265,24 @@ export const Organize: React.FC = () => {
                 </div>
                 <div className="flex-1 pr-14">
                   <div className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-                    {t('仅整理前 {limit} 个文件', { limit: organizeCapacityLimit.toLocaleString() })}
-                    <span className="text-[11px] font-medium text-primary">({t('不阻塞流程')})</span>
+                    {t('仅整理前 {limit} 个文件', {
+                      limit: organizeCapacityLimit.toLocaleString()
+                    })}
+                    <span className="text-[11px] font-medium text-primary">
+                      ({t('不阻塞流程')})
+                    </span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                    {t('优先载入前 {limit} 个文件进行 AI 聚类与分类推导。其余 {rest} 个文件安全保留原样，后续可继续分批整理。', {
-                      limit: organizeCapacityLimit.toLocaleString(),
-                      rest: Math.max(0, capacityExceededCount - organizeCapacityLimit).toLocaleString()
-                    })}
+                    {t(
+                      '优先载入前 {limit} 个文件进行 AI 聚类与分类推导。其余 {rest} 个文件安全保留原样，后续可继续分批整理。',
+                      {
+                        limit: organizeCapacityLimit.toLocaleString(),
+                        rest: Math.max(
+                          0,
+                          capacityExceededCount - organizeCapacityLimit
+                        ).toLocaleString()
+                      }
+                    )}
                   </p>
                   <div className="mt-2 flex items-center gap-1.5 text-xs text-primary font-medium">
                     <MaterialIcon icon="check_circle" className="text-sm" />
@@ -1271,7 +1306,9 @@ export const Organize: React.FC = () => {
                     {t('前往「已分析」页面手动筛选')}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                    {t('按维度标签、文件大类（如仅图片/文档）或指定子目录自由组合勾选想要整理的目标文件集合。')}
+                    {t(
+                      '按维度标签、文件大类（如仅图片/文档）或指定子目录自由组合勾选想要整理的目标文件集合。'
+                    )}
                   </p>
                   <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
                     <MaterialIcon icon="tune" className="text-sm" />
@@ -1289,9 +1326,13 @@ export const Organize: React.FC = () => {
               size="sm"
               onClick={handleBypassLimitAndOrganizeAll}
               className="text-xs text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400 p-0 h-auto underline-offset-4 hover:underline"
-              title={t('单次超大规模计算将显著增加内存占用与 AI 响应耗时（O(N²) 复杂度），且目录聚类颗粒度可能变宽')}
+              title={t(
+                '单次超大规模计算将显著增加内存占用与 AI 响应耗时（O(N²) 复杂度），且目录聚类颗粒度可能变宽'
+              )}
             >
-              {t('我了解风险，仍要整理全部 {count} 个文件', { count: capacityExceededCount.toLocaleString() })}
+              {t('我了解风险，仍要整理全部 {count} 个文件', {
+                count: capacityExceededCount.toLocaleString()
+              })}
             </Button>
             <Button
               variant="ghost"

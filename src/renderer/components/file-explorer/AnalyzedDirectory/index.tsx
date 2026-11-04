@@ -74,7 +74,6 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
 
   const { setAnalyzedDirectoryKeyword } = useSearchStore()
 
-
   // Manage local states - isOrganizeMode: true = 整理模式, false = 浏览模式(默认)
   const [isOrganizeMode, setIsOrganizeMode] = useState(() => {
     // 从路由状态中读取初始模式（从虚拟目录点击+创建时传入）
@@ -363,7 +362,6 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
     performanceTracker.logReport('Switch to Analyzed Directory')
   }, [])
 
-  
   const selectionStack = useMemo(() => {
     return selectedTags.map(t => `${t.dimensionId}::${t.parentTagValue || ''}::${t.tagValue}`)
   }, [selectedTags])
@@ -469,6 +467,9 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
                 await window.electronAPI!.setCurrentWorkspaceDirectory(target.path)
                 setCurrentWorkspaceDirectory(target)
                 navigate('/real-directory')
+                if (target?.id) {
+                  useSettingsStore.getState().openWorkspaceSettings({ workspaceId: target.id })
+                }
               } catch (e: any) {
                 toast.error(e?.message || t('添加工作目录失败'))
               }
@@ -738,6 +739,12 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
                   updatedAt: new Date()
                 })
                 loadWorkspaceDirectories()
+                const { isPathEqual } = window.electronAPI!.utils
+                const allDirs = await window.electronAPI!.getAllWorkspaceDirectories()
+                const official = allDirs.find(d => isPathEqual(d.path, p))
+                if (official?.id) {
+                  useSettingsStore.getState().openWorkspaceSettings({ workspaceId: official.id })
+                }
               } catch (e: any) {
                 toast.error(e?.message || t('添加工作目录失败'))
               }
@@ -783,7 +790,7 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
         }}
       />
 
-            <UtilityModals
+      <UtilityModals
         currentWorkspaceDirectory={currentWorkspaceDirectory}
         selectedTags={selectedTags}
         dimensionGroups={dimensionGroups}

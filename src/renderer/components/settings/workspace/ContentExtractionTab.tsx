@@ -43,7 +43,6 @@ const CONTENT_EXTRACTION_KEYS: (keyof TechnicalEngineParameters)[] = [
   'maxDocumentOcrItems',
   'enableOfficeCover',
   'reuseBasicAnalysisData',
-  'clipTextEnabled',
   'enableImageOcr',
   'ocrModelSize'
 ]

@@ -71,7 +71,8 @@ const BASIC_AI_KEYS: (keyof TechnicalEngineParameters)[] = [
   'videoSoftTokenBudget',
   'videoQuotaMax',
   'videoAsrDurationSec',
-  'audioAnalysisDurationSec'
+  'audioAnalysisDurationSec',
+  'clipTextEnabled'
 ]
 
 /**

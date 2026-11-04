@@ -24,6 +24,7 @@ import i18nScope, { t } from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
 import { toast } from '../../common/Toast'
 import { useTierStore } from '../../../stores/tier-store'
+import { useSettingsStore } from '../../../stores/settings-store'
 import { WorkspaceDirectory } from '@firefly/types'
 
 export const VirtualDirectory: React.FC = () => {
@@ -154,6 +155,9 @@ export const VirtualDirectory: React.FC = () => {
                 await window.electronAPI!.setCurrentWorkspaceDirectory(target.path)
                 setCurrentWorkspaceDirectory(target)
                 navigate('/real-directory')
+                if (target?.id) {
+                  useSettingsStore.getState().openWorkspaceSettings({ workspaceId: target.id })
+                }
               } catch (e: any) {
                 toast.error(e?.message || t('添加工作目录失败'))
               }
@@ -336,7 +340,9 @@ export const VirtualDirectory: React.FC = () => {
                                       )
                                     )
                                   } else {
-                                    setSelectedTags(prev => prev.filter(t => t.dimensionId !== dimId))
+                                    setSelectedTags(prev =>
+                                      prev.filter(t => t.dimensionId !== dimId)
+                                    )
                                   }
                                 }}
                                 toggleTagSelection={(dimId, val, parentVal, codePath) => {
@@ -362,7 +368,9 @@ export const VirtualDirectory: React.FC = () => {
                                       const group = dimensionGroups.find(g => g.id === dimId)
                                       // 多父同名叶子：优先按 codePath 精确定位分支实例，避免取到兄弟分支的 level
                                       const tagDef = group?.tags.find(
-                                        t => t.tagValue === val && (!codePath || !t.codePath || t.codePath === codePath)
+                                        t =>
+                                          t.tagValue === val &&
+                                          (!codePath || !t.codePath || t.codePath === codePath)
                                       )
                                       return [
                                         ...prev,
