@@ -718,7 +718,10 @@ export class DatabaseService {
       const userVersion = this._db.pragma('user_version', { simple: true }) as number
 
       if (userVersion === 0) {
-        logger.info(LogCategory.DATABASE_SERVICE, t('全新安装，准备执行架构初始化 (Genesis Baseline V1)...'))
+        logger.info(
+          LogCategory.DATABASE_SERVICE,
+          t('全新安装，准备执行架构初始化 (Genesis Baseline V1)...')
+        )
       }
     } catch (error) {
       logger.error(LogCategory.DATABASE_SERVICE, t('创建数据表失败'), { error })
@@ -751,7 +754,6 @@ export class DatabaseService {
         UPDATE files SET language = 'ja-JP' WHERE language IN ('ja', 'ja_JP', 'ja-jp');
         UPDATE files SET language = 'ko-KR' WHERE language IN ('ko', 'ko_KR', 'ko-kr');
       `)
-
     } catch (error) {
       logger.warn(LogCategory.DATABASE_SERVICE, '确保兼容表结构自愈失败:', error)
     }
@@ -1598,9 +1600,13 @@ export class DatabaseService {
       )
       return true
     } catch (error) {
-      logger.error(LogCategory.DATABASE_SERVICE, `全局删除标签失败: dimId=${dimensionId}, tagName=${tagName}`, {
-        error
-      })
+      logger.error(
+        LogCategory.DATABASE_SERVICE,
+        `全局删除标签失败: dimId=${dimensionId}, tagName=${tagName}`,
+        {
+          error
+        }
+      )
       return false
     }
   }
@@ -1608,7 +1614,9 @@ export class DatabaseService {
   /**
    * 批量应用/解除维度标签
    */
-  async batchApplyTags(operation: import('@firefly/types').BatchTagOperation): Promise<import('@firefly/types').BatchTagResult> {
+  async batchApplyTags(
+    operation: import('@firefly/types').BatchTagOperation
+  ): Promise<import('@firefly/types').BatchTagResult> {
     if (!this._db || !operation.fileIds || operation.fileIds.length === 0) {
       return { successCount: 0, failedCount: 0, updatedFileIds: [], overriddenCount: 0 }
     }
@@ -1629,7 +1637,11 @@ export class DatabaseService {
 
     const resolvedAddTagItems: ResolvedAddTagItem[] = []
     const combinedAddTags = [...(operation.addTags || []), ...(operation.newTags || [])]
-    const uninspectedItems: Array<{ tagName: string; targetParentCode: string; originalIndex: number }> = []
+    const uninspectedItems: Array<{
+      tagName: string
+      targetParentCode: string
+      originalIndex: number
+    }> = []
 
     for (let i = 0; i < combinedAddTags.length; i++) {
       const item = combinedAddTags[i]
@@ -1645,23 +1657,23 @@ export class DatabaseService {
       if (!dimCode || dimCode === concept('内容标签')) {
         const autoParent =
           (isControlledConcept(item.tagName)
-            ? (CONTROLLED_CONCEPT_DETAILS[item.tagName]?.parentName
-                ? concept(CONTROLLED_CONCEPT_DETAILS[item.tagName].parentName as any)
-                : undefined)
+            ? CONTROLLED_CONCEPT_DETAILS[item.tagName]?.parentName
+              ? concept(CONTROLLED_CONCEPT_DETAILS[item.tagName].parentName as any)
+              : undefined
             : undefined) ||
           (explicitTagCode ? getParentDimensionCodeOfTag(explicitTagCode) : undefined)
         dimCode = autoParent || dimCode || concept('内容标签')
       }
       const safeDimCode: string = dimCode || concept('内容标签')
 
-            // 权威受控反查与伪代码净化：凡是以 builtin. 或 dim. 开头但不在权威受控字典中，或包含非 ASCII 字符的，一律判定为非法拼接伪码
+      // 权威受控反查与伪代码净化：凡是以 builtin. 或 dim. 开头但不在权威受控字典中，或包含非 ASCII 字符的，一律判定为非法拼接伪码
       let safeExplicitTagCode = explicitTagCode
       const isBogusControlledCode =
         Boolean(safeExplicitTagCode) &&
-        ((safeExplicitTagCode.startsWith('builtin.') ||
+        (safeExplicitTagCode.startsWith('builtin.') ||
           safeExplicitTagCode.startsWith('dim.') ||
           /[^\u0020-\u007E]/.test(safeExplicitTagCode)) &&
-          !CONTROLLED_CODE_TO_CANONICAL_NAME[safeExplicitTagCode])
+        !CONTROLLED_CODE_TO_CANONICAL_NAME[safeExplicitTagCode]
 
       if (isBogusControlledCode) {
         // 提取尾段真实词面（如从 "builtin.security_level.内部" 提取 "内部"）
@@ -1722,7 +1734,10 @@ export class DatabaseService {
 
         if (shouldInspect) {
           const inspectResp = await omniService.inspectControlledTags(
-            uninspectedItems.map(u => ({ tagName: u.tagName, targetParentCode: u.targetParentCode })),
+            uninspectedItems.map(u => ({
+              tagName: u.tagName,
+              targetParentCode: u.targetParentCode
+            })),
             this.currentLanguage,
             1500
           )
@@ -1826,7 +1841,12 @@ export class DatabaseService {
                 code,
                 item.tagName,
                 JSON.stringify([dimCode]),
-                JSON.stringify({ isLeaf: true, isSystem: false, isMultiSelect: true, syncStatus: 0 })
+                JSON.stringify({
+                  isLeaf: true,
+                  isSystem: false,
+                  isMultiSelect: true,
+                  syncStatus: 0
+                })
               )
             }
             createdTagMap.set(`${dimCode}:${item.tagName}`, code)
@@ -1933,16 +1953,18 @@ export class DatabaseService {
           const resolvedItem = resolvedAddTagItems.find(
             r => r.dimCode === dimCode && r.tagName === tagName
           )
-          const isControlled = resolvedItem?.isControlled ?? (
-            !code.startsWith('_ext.') &&
-            !code.startsWith('custom.') &&
-            (isControlledConcept(tagName) || Boolean(CONTROLLED_CODE_TO_CANONICAL_NAME[code]))
-          )
+          const isControlled =
+            resolvedItem?.isControlled ??
+            (!code.startsWith('_ext.') &&
+              !code.startsWith('custom.') &&
+              (isControlledConcept(tagName) || Boolean(CONTROLLED_CODE_TO_CANONICAL_NAME[code])))
           const tagGroup = this.resolveBatchTagProvenanceGroup(code, dimCode, isControlled)
           allAddTagItems.push({ tagCode: code, viaParentCode: dimCode, tagName, tagGroup })
         }
         for (const code of operation.addTagCodes || []) {
-          const found = this._db!.prepare('SELECT code, name, parent_codes FROM file_tags_private WHERE code = ?').get(code) as { code: string; name?: string; parent_codes?: string } | undefined
+          const found = this._db!.prepare(
+            'SELECT code, name, parent_codes FROM file_tags_private WHERE code = ?'
+          ).get(code) as { code: string; name?: string; parent_codes?: string } | undefined
           let viaParentCode = ''
           if (found?.parent_codes) {
             try {
@@ -1956,7 +1978,8 @@ export class DatabaseService {
           const isControlled =
             !code.startsWith('_ext.') &&
             !code.startsWith('custom.') &&
-            (Boolean(CONTROLLED_CODE_TO_CANONICAL_NAME[code]) || Boolean(tagName && isControlledConcept(tagName)))
+            (Boolean(CONTROLLED_CODE_TO_CANONICAL_NAME[code]) ||
+              Boolean(tagName && isControlledConcept(tagName)))
           const tagGroup = this.resolveBatchTagProvenanceGroup(code, viaParentCode, isControlled)
           allAddTagItems.push({
             tagCode: code,
@@ -1967,7 +1990,11 @@ export class DatabaseService {
         }
 
         // 全媒体领域排他门控铁律：非适格介质严禁挂载专有维度与标签
-        const isDimensionApplicableForFile = (dimCode: string, tagCode: string, ctx: any): boolean => {
+        const isDimensionApplicableForFile = (
+          dimCode: string,
+          tagCode: string,
+          ctx: any
+        ): boolean => {
           const effectiveDim = dimCode || getParentDimensionCodeOfTag(tagCode)
           if (effectiveDim && !isControlledDimensionApplicableInDomain(effectiveDim, ctx)) {
             return false
@@ -1979,7 +2006,10 @@ export class DatabaseService {
         }
 
         // 按领域分片缓存当前批次物化路径三元组 (O(M*Domains) 缓存，杜绝热循环内部重复计算与跨领域串色)
-        const materializedMap = new Map<string, { codePath: string; namePath: string; depth: number }>()
+        const materializedMap = new Map<
+          string,
+          { codePath: string; namePath: string; depth: number }
+        >()
 
         const insertStmt = this._db!.prepare(
           "INSERT OR REPLACE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, code_path, name_path, depth, tag_group, source, confidence, sync_status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, 'user', 1.0, 0, CURRENT_TIMESTAMP)"
@@ -1990,9 +2020,15 @@ export class DatabaseService {
         // files 表主键只有 file_fingerprint，既无 id 也无 path（database.ts:90-109）；
         // id / path 仅存在于 workspace_files（database.ts:133-153）。better-sqlite3 的 prepare
         // 是即时编译，引用不存在的列会在此处（逐文件 try/catch 之外）抛错并让整批事务回滚。
-        const selectWfByIdStmt = this._db!.prepare('SELECT file_fingerprint, path FROM workspace_files WHERE id = ?')
-        const selectFilesByFpStmt = this._db!.prepare('SELECT file_fingerprint, extension, file_group FROM files WHERE file_fingerprint = ?')
-        const selectWfByPathStmt = this._db!.prepare('SELECT file_fingerprint, path FROM workspace_files WHERE path = ?')
+        const selectWfByIdStmt = this._db!.prepare(
+          'SELECT file_fingerprint, path FROM workspace_files WHERE id = ?'
+        )
+        const selectFilesByFpStmt = this._db!.prepare(
+          'SELECT file_fingerprint, extension, file_group FROM files WHERE file_fingerprint = ?'
+        )
+        const selectWfByPathStmt = this._db!.prepare(
+          'SELECT file_fingerprint, path FROM workspace_files WHERE path = ?'
+        )
 
         // 预编译精准删除语句（杜绝循环内重复 prepare，对齐 Spec §3.6 性能铁律）
         const dimDeleteStmts: Array<{ stmt: any; dimCode: string; params: string[] }> = []
@@ -2022,10 +2058,10 @@ export class DatabaseService {
         // S2 互斥收拢语句（规格 §4.1 阶段 B / §4.3）：与 insertStmt 一同在事务开头预编译，循环内只 run/get。
         // 覆盖删除必须写成「tag_code <> winner」而不是「清空该作用域」——否则 INSERT winner 失败时维度已被清空（P0-A）。
         const selectSiblingsStmt = this._db!.prepare(
-          'SELECT tag_code FROM file_tag_relations WHERE file_fingerprint = ? AND (via_parent_code = ? OR code_path LIKE (\'%/\' || ? || \'/\') OR tag_code LIKE (? || \'.%\')) AND tag_code <> ?'
+          "SELECT tag_code FROM file_tag_relations WHERE file_fingerprint = ? AND (via_parent_code = ? OR code_path LIKE ('%/' || ? || '/') OR tag_code LIKE (? || '.%')) AND tag_code <> ?"
         )
         const overrideDeleteStmt = this._db!.prepare(
-          'DELETE FROM file_tag_relations WHERE file_fingerprint = ? AND (via_parent_code = ? OR code_path LIKE (\'%/\' || ? || \'/\') OR tag_code LIKE (? || \'.%\')) AND tag_code <> ?'
+          "DELETE FROM file_tag_relations WHERE file_fingerprint = ? AND (via_parent_code = ? OR code_path LIKE ('%/' || ? || '/') OR tag_code LIKE (? || '.%')) AND tag_code <> ?"
         )
 
         // S2 显式移除集合（覆盖删除豁免判定用，规格 §4.4 第三行）：
@@ -2045,19 +2081,25 @@ export class DatabaseService {
             let filePath: string | undefined
 
             // 1. 优先从 workspace_files 按 id 查询指纹与路径（前端文件列表的主标识通常为 workspace_files.id）
-            const wfRow = selectWfByIdStmt.get(fileId) as { file_fingerprint: string; path?: string } | undefined
+            const wfRow = selectWfByIdStmt.get(fileId) as
+              | { file_fingerprint: string; path?: string }
+              | undefined
 
             if (wfRow?.file_fingerprint) {
               fp = wfRow.file_fingerprint
               filePath = wfRow.path
             } else {
               // 2. 尝试作为 file_fingerprint 字符串本身查询（files 表无 path，只能取指纹）
-              const fpRow = selectFilesByFpStmt.get(fileId) as { file_fingerprint: string } | undefined
+              const fpRow = selectFilesByFpStmt.get(fileId) as
+                | { file_fingerprint: string }
+                | undefined
               if (fpRow?.file_fingerprint) {
                 fp = fpRow.file_fingerprint
               } else {
                 // 3. 尝试作为 workspace_files 路径查询（UI 侧 fileIds 可能退化为 f.path）
-                const pathRow = selectWfByPathStmt.get(fileId) as { file_fingerprint: string; path?: string } | undefined
+                const pathRow = selectWfByPathStmt.get(fileId) as
+                  | { file_fingerprint: string; path?: string }
+                  | undefined
                 if (pathRow?.file_fingerprint) {
                   fp = pathRow.file_fingerprint
                   filePath = pathRow.path
@@ -2077,14 +2119,21 @@ export class DatabaseService {
             let fileExtension: string | undefined = filePath ? path.extname(filePath) : undefined
             if (!fileCategory && fp) {
               try {
-                const fRow = selectFilesByFpStmt.get(fp) as { extension?: string; file_group?: string } | undefined
+                const fRow = selectFilesByFpStmt.get(fp) as
+                  | { extension?: string; file_group?: string }
+                  | undefined
                 if (fRow) {
                   fileCategory = fRow.file_group
                   fileExtension = fRow.extension
                 }
               } catch {}
             }
-            const fileCtx = { filePath, category: fileCategory, fileCategory, extension: fileExtension }
+            const fileCtx = {
+              filePath,
+              category: fileCategory,
+              fileCategory,
+              extension: fileExtension
+            }
             const fileDomain = resolveMediaDomain(fileCtx)
 
             const materializeOf = (tagCode: string, viaParentCode: string, tagName: string) => {
@@ -2212,7 +2261,13 @@ export class DatabaseService {
               let deletedTagCodes: string[] = []
               if (!skipOverrideDelete) {
                 // 7b. 覆盖前 SELECT 既有兄弟（不含 winner 自身）
-                const siblingRows = selectSiblingsStmt.all(fp, parentCode, parentCode, parentCode, winner.tagCode) as Array<{
+                const siblingRows = selectSiblingsStmt.all(
+                  fp,
+                  parentCode,
+                  parentCode,
+                  parentCode,
+                  winner.tagCode
+                ) as Array<{
                   tag_code: string
                 }>
                 deletedTagCodes = siblingRows.map(r => r.tag_code).filter(Boolean)
@@ -2231,7 +2286,10 @@ export class DatabaseService {
               }
 
               // 明细：收录所有发生过裁决的作用域（含「仅跳过」），这样 skippedTagCodes 才有承载对象
-              if (overrides.length < 100 && (skippedTagCodes.length > 0 || deletedTagCodes.length > 0)) {
+              if (
+                overrides.length < 100 &&
+                (skippedTagCodes.length > 0 || deletedTagCodes.length > 0)
+              ) {
                 overrides.push({
                   fileId,
                   parentCode,
@@ -2424,7 +2482,11 @@ export class DatabaseService {
       // 0) 中文环境下优先 AOT 受控权威词条（仅针对受控代码：omw.*, hownet.*, builtin.*）
       if (isZh) {
         for (const code of distinctCodes) {
-          if (code.startsWith('builtin.') || code.startsWith('omw.') || code.startsWith('hownet.')) {
+          if (
+            code.startsWith('builtin.') ||
+            code.startsWith('omw.') ||
+            code.startsWith('hownet.')
+          ) {
             const canonical = getCanonicalConceptName(code)
             if (canonical) {
               result[code] = canonical
@@ -2478,7 +2540,10 @@ export class DatabaseService {
 
       // 3) 仍未命中的受控标签，优先 AOT 概念字典兜底，再提取可读 slug
       for (const code of distinctCodes) {
-        if (result[code] === code && (code.startsWith('builtin.') || code.startsWith('omw.') || code.startsWith('hownet.'))) {
+        if (
+          result[code] === code &&
+          (code.startsWith('builtin.') || code.startsWith('omw.') || code.startsWith('hownet.'))
+        ) {
           const canonical = getCanonicalConceptName(code)
           if (canonical) {
             result[code] = canonical
@@ -2544,7 +2609,6 @@ export class DatabaseService {
     }
   }
 
-
   /**
    * AI 分析完成后将 dense 向量写入 Omni zvec（替代旧 file_vectors BLOB 堆表）
    * `encoderId` 必填：向量真实编码器出处（zvec v3 encoder_id），由调用方从 perceive 响应原样透传，
@@ -2575,7 +2639,11 @@ export class DatabaseService {
       if (!item.fileFingerprint || !item.vector) continue
       const v = item.vector instanceof Float32Array ? Array.from(item.vector) : item.vector
       if (Array.isArray(v) && v.length > 0) {
-        validItems.push({ fileFingerprint: item.fileFingerprint, vector: v, encoderId: item.encoderId })
+        validItems.push({
+          fileFingerprint: item.fileFingerprint,
+          vector: v,
+          encoderId: item.encoderId
+        })
       }
     }
     if (validItems.length === 0) return true
@@ -2594,9 +2662,17 @@ export class DatabaseService {
   /**
    * 按指纹获取视频时序切片记录
    */
-  getVideoChunks(
+  getVideoChunks(fileFingerprint: string): Array<{
+    id?: number
     fileFingerprint: string
-  ): Array<{ id?: number; fileFingerprint: string; chunkIndex: number; startSec: number; endSec: number; repPtsSec: number; meta: Record<string, any>; samplingIntervalSeconds: number; createdAt?: string }> {
+    chunkIndex: number
+    startSec: number
+    endSec: number
+    repPtsSec: number
+    meta: Record<string, any>
+    samplingIntervalSeconds: number
+    createdAt?: string
+  }> {
     this.ensureInitialized()
     return this.fileDao!.getVideoChunks(fileFingerprint)
   }
@@ -2642,6 +2718,18 @@ export class DatabaseService {
     return this.fileDao?.markVideoSegmentProcessing(fileId, segmentIndex) ?? false
   }
 
+  markVideoSegmentFailedOrPending(fileId: string, segmentIndex: number, errorMsg: string): void {
+    this.fileDao?.markVideoSegmentFailedOrPending(fileId, segmentIndex, errorMsg)
+  }
+
+  rollbackVideoSegmentProcessing(fileId: string, segmentIndex: number): void {
+    this.fileDao?.rollbackVideoSegmentProcessing(fileId, segmentIndex)
+  }
+
+  getVideoCoverageStatsBatch(fileIds: string[]) {
+    return this.fileDao?.getVideoCoverageStatsBatch(fileIds) ?? new Map()
+  }
+
   markVideoSegmentCompleted(
     fileId: string,
     segmentIndex: number,
@@ -2660,7 +2748,6 @@ export class DatabaseService {
     return rebuildNamePaths(this._db, targetLocale)
   }
 }
-
 
 /** @deprecated 向量已由 Omni zvec 托管，类型保留仅为兼容外部引用 */
 export interface FileVectorRecord {

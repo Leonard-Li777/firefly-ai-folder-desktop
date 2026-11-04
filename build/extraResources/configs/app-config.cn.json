@@ -27,7 +27,8 @@
         "training_data_collection": true,
         "regenerate_vdir_cost": 20,
         "export_vdir_cost": 5,
-        "export_rdir_cost": 10
+        "export_rdir_cost": 10,
+        "video_max_duration_seconds": 300
       },
       "pro": {
         "analysis_quota_total": 999999999,
@@ -42,7 +43,8 @@
         "training_data_collection": true,
         "regenerate_vdir_cost": 0,
         "export_vdir_cost": 0,
-        "export_rdir_cost": 0
+        "export_rdir_cost": 0,
+        "video_max_duration_seconds": 999999999
       },
       "agent": {
         "analysis_quota_total": 999999999,
@@ -57,7 +59,8 @@
         "training_data_collection": true,
         "regenerate_vdir_cost": 0,
         "export_vdir_cost": 0,
-        "export_rdir_cost": 0
+        "export_rdir_cost": 0,
+        "video_max_duration_seconds": 999999999
       },
       "enterprise": {
         "analysis_quota_total": 999999999,
@@ -72,7 +75,8 @@
         "training_data_collection": false,
         "regenerate_vdir_cost": 0,
         "export_vdir_cost": 0,
-        "export_rdir_cost": 0
+        "export_rdir_cost": 0,
+        "video_max_duration_seconds": 999999999
       }
     },
     "firecoreCloudFirstConfirm": {

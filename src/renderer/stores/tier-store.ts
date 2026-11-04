@@ -14,9 +14,12 @@ interface TierState {
   isLoading: boolean
   consumptionDetails: any[]
   subscription?: UserSubscription
+  isUpgradeOpen: boolean
   isRulesOpen: boolean
   rulesDefaultTab: string | undefined
 
+  openUpgradeDialog: () => void
+  closeUpgradeDialog: () => void
   openRulesDialog: (tab?: string) => void
   closeRulesDialog: () => void
   fetchProfile: () => Promise<void>
@@ -42,6 +45,7 @@ export const useTierStore = create<TierState>()(
     counters: {},
     computed_limits: {
       analysis_quota_total: 0,
+      video_max_duration_seconds: 300,
       speedy_dir_slot_limit: 0,
       private_dir_slot_limit: 0,
       vdir_slot_limit: 0,
@@ -55,6 +59,13 @@ export const useTierStore = create<TierState>()(
     isLoading: false,
     consumptionDetails: [],
     subscription: undefined,
+    isUpgradeOpen: false,
+    openUpgradeDialog: () => {
+      set({ isUpgradeOpen: true })
+    },
+    closeUpgradeDialog: () => {
+      set({ isUpgradeOpen: false })
+    },
     isRulesOpen: false,
     rulesDefaultTab: undefined,
 

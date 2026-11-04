@@ -32,6 +32,7 @@ import { useFileListContextMenu } from './hooks/useFileListContextMenu'
 import { useFileListScroll } from './hooks/useFileListScroll'
 import { useFileListSelection } from './hooks/useFileListSelection'
 import { useSearchStore } from '../../../stores/search-store'
+import { useTierStore } from '../../../stores/tier-store'
 import { useDragSelectStore } from '../../../stores/drag-select-store'
 
 // 静态导入 react-window 兼容 CJS/ESM 与 v1/v2 规范
@@ -224,15 +225,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     })
 
     return allItems
-  }, [
-    directories,
-    files,
-    currentPath,
-    disableClientSort,
-    sortBy,
-    sortOrder,
-    isRealDirectory
-  ])
+  }, [directories, files, currentPath, disableClientSort, sortBy, sortOrder, isRealDirectory])
 
   // 搜索列表模式下 1:1 对齐物理文件，无需展平多行，卡片第三行以横向画廊呈现多切片
   const searchListItems = items
@@ -713,7 +706,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
         }}
       >
         <SelectionBox viewMode={viewMode} scrollOffset={scrollOffset} containerRef={containerRef} />
-      {contextMenu && (
+        {contextMenu && (
           <ContextMenu
             x={contextMenu.x}
             y={contextMenu.y}
@@ -757,7 +750,11 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
                 className="scrollbar-thin overflow-x-hidden"
                 ref={listRef}
                 outerRef={activeOuterRef}
-                itemKey={(index: number) => (searchListItems[index] as any)?.virtualRowKey || searchListItems[index]?.path || index}
+                itemKey={(index: number) =>
+                  (searchListItems[index] as any)?.virtualRowKey ||
+                  searchListItems[index]?.path ||
+                  index
+                }
                 itemData={{
                   ...itemData,
                   items: searchListItems,
@@ -785,11 +782,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
               description={t('未检索到符合条件的文件，请尝试更换关键词')}
             />
           ) : (
-            <EmptyState
-              icon="search"
-              title={t('正在准备搜索列表...')}
-              isLoading={true}
-            />
+            <EmptyState icon="search" title={t('正在准备搜索列表...')} isLoading={true} />
           )}
         </div>
       </div>
@@ -849,9 +842,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
                     if (!checked) {
                       // 取消全选：仅剔除当前 items 中的文件，保留其它页已选中项
                       const visibleKeys = new Set(
-                        items
-                          .filter(it => !!it.path)
-                          .map(it => normalizeForCache(it.path!))
+                        items.filter(it => !!it.path).map(it => normalizeForCache(it.path!))
                       )
                       onFileSelect(
                         selectedFiles.filter(
@@ -1279,7 +1270,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
       }}
     >
       <SelectionBox viewMode={viewMode} scrollOffset={scrollOffset} containerRef={containerRef} />
-        <div
+      <div
         className="flex-1 overflow-x-auto overflow-y-auto scrollbar-thin"
         onScroll={e => handleScroll(e)}
       >
@@ -1314,9 +1305,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
                     } else {
                       // 取消全选：仅剔除当前 items 中的文件，保留其它页已选中项
                       const visibleKeys = new Set(
-                        items
-                          .filter(it => !!it.path)
-                          .map(it => normalizeForCache(it.path!))
+                        items.filter(it => !!it.path).map(it => normalizeForCache(it.path!))
                       )
                       onFileSelect(
                         selectedFiles.filter(

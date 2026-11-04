@@ -357,7 +357,7 @@ export const GENESIS_V1_SCHEMA = `
     UNIQUE(file_fingerprint, chunk_index)
   );
 
-  -- 16.6 视频宏观时间片段切片分析作业调度表 (Genesis V1 创世基线 / Phase 2 流式流水线与覆盖契约)
+  -- 16.6 视频宏观时间片段切片分析作业调度表 (Genesis V1 创世基线 - 读时派生升维版)
   CREATE TABLE IF NOT EXISTS file_video_segments (
     id TEXT PRIMARY KEY,
     file_id TEXT NOT NULL,
@@ -367,7 +367,7 @@ export const GENESIS_V1_SCHEMA = `
     frame_count INTEGER NOT NULL DEFAULT 0,
     visual_embedded_count INTEGER NOT NULL DEFAULT 0,
     asr_transcript_chars INTEGER NOT NULL DEFAULT 0,
-    status TEXT NOT NULL CHECK(status IN ('locked', 'pending', 'processing', 'completed', 'failed')),
+    status TEXT NOT NULL CHECK(status IN ('pending', 'processing', 'completed', 'failed')),
     attempt_count INTEGER NOT NULL DEFAULT 0,
     params_hash TEXT NOT NULL,
     error_message TEXT,
@@ -379,6 +379,12 @@ export const GENESIS_V1_SCHEMA = `
 
   CREATE INDEX IF NOT EXISTS idx_video_segments_file_seq 
   ON file_video_segments(file_id, segment_index);
+
+  CREATE INDEX IF NOT EXISTS idx_fvs_file_status 
+  ON file_video_segments(file_id, status);
+
+  CREATE INDEX IF NOT EXISTS idx_fvs_status_start 
+  ON file_video_segments(status, start_pts_sec);
 
 
   -- 17. FTS5 全文搜索虚拟表（标准独立存储表）
@@ -826,7 +832,7 @@ export const GENESIS_FILE_VIDEO_SEGMENTS_DDL = `
     frame_count INTEGER NOT NULL DEFAULT 0,
     visual_embedded_count INTEGER NOT NULL DEFAULT 0,
     asr_transcript_chars INTEGER NOT NULL DEFAULT 0,
-    status TEXT NOT NULL CHECK(status IN ('locked', 'pending', 'processing', 'completed', 'failed')),
+    status TEXT NOT NULL CHECK(status IN ('pending', 'processing', 'completed', 'failed')),
     attempt_count INTEGER NOT NULL DEFAULT 0,
     params_hash TEXT NOT NULL,
     error_message TEXT,
@@ -836,4 +842,6 @@ export const GENESIS_FILE_VIDEO_SEGMENTS_DDL = `
     FOREIGN KEY (file_id) REFERENCES files(file_fingerprint) ON DELETE CASCADE
   );
   CREATE INDEX IF NOT EXISTS idx_video_segments_file_seq ON file_video_segments(file_id, segment_index);
+  CREATE INDEX IF NOT EXISTS idx_fvs_file_status ON file_video_segments(file_id, status);
+  CREATE INDEX IF NOT EXISTS idx_fvs_status_start ON file_video_segments(status, start_pts_sec);
 `

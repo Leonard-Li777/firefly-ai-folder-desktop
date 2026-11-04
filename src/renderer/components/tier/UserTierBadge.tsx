@@ -9,9 +9,9 @@ import { FirecoresRulesDialog } from './FirecoresRulesDialog'
 import { UpgradeAccountDialog } from './UpgradeAccountDialog'
 
 export const UserTierBadge: React.FC<{ className?: string }> = ({ className }) => {
-  const { tier, firecores, fetchProfile, isLoading } = useTierStore()
+  const { tier, firecores, fetchProfile, isLoading, openUpgradeDialog } = useTierStore()
   const [isConsumptionOpen, setIsConsumptionOpen] = React.useState(false)
-  const [isUpgradeOpen, setIsUpgradeOpen] = React.useState(false)
+  // isUpgradeOpen 由全局 useTierStore 与 App 托管
 
   useEffect(() => {
     fetchProfile()
@@ -47,7 +47,7 @@ export const UserTierBadge: React.FC<{ className?: string }> = ({ className }) =
             'px-2 py-0.5 font-bold shadow-sm cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1',
             tierInfo.className
           )}
-          onClick={() => setIsUpgradeOpen(true)}
+          onClick={() => openUpgradeDialog()}
         >
           {tierInfo.label}
           <ChevronDown className="w-3 h-3 opacity-50" />
@@ -68,7 +68,6 @@ export const UserTierBadge: React.FC<{ className?: string }> = ({ className }) =
         onOpenChange={setIsConsumptionOpen}
         defaultTab="consumption"
       />
-      <UpgradeAccountDialog open={isUpgradeOpen} onOpenChange={setIsUpgradeOpen} />
     </>
   )
 }

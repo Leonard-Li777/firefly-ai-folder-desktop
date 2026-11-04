@@ -27,10 +27,7 @@ import {
   compressJson,
   decompressJson
 } from '../../../utils/text-compressor'
-import {
-  buildPinyinIndexRow,
-  computePinyinSrcHash
-} from '../../utils/pinyin-text'
+import { buildPinyinIndexRow, computePinyinSrcHash } from '../../utils/pinyin-text'
 
 /**
  * 从受控标签 code 提取可读 slug 作为展示名兜底（builtin.* / omw.* / dim.xxx）
@@ -65,6 +62,11 @@ export interface VideoCoverageStats {
   completed_duration_sec: number
   has_failed_segments: boolean
   is_fully_covered: boolean
+  fileId?: string
+  coveredDurationSec: number
+  totalDurationSec: number
+  isFullyCovered: boolean
+  hasFailedSegments: boolean
 }
 
 export class FileDao {
@@ -89,8 +91,7 @@ export class FileDao {
    */
   private resolveDisplayName(code: string, ftName: string | null): string {
     if (!code) return ftName || ''
-    const locale =
-      ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
+    const locale = ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
     const isZh = locale.toLowerCase().startsWith('zh')
 
     // 1. 中文环境下，凡命中 AOT 受控权威概念字典 (Canonical Concept) 的受控代码，
@@ -376,15 +377,15 @@ export class FileDao {
     // （FileDetailsPanel 依赖 dimension === 1/2 生成虚拟路径，ai-skill-api-service 将其作为对外契约透传）。
     // 跨组与组内双重去重（以物理事实绝对覆盖律保证：user > fact > fused > visual > ai）
     // 保证同一名称或同一 code 在全局视图中唯一呈现，且事实标签绝对优先于视觉/融合/AI标签
-    const groupTagRawMap = new Map<string, Array<{ id: string; name: string; confidence: number }>>()
+    const groupTagRawMap = new Map<
+      string,
+      Array<{ id: string; name: string; confidence: number }>
+    >()
     for (const tag of tags) {
       const group = typeof tag.tag_group === 'string' ? tag.tag_group : ''
       if (!isTagProvenanceGroup(group)) {
         if (group) {
-          logger.debug(
-            LogCategory.DATABASE_SERVICE,
-            `标签来源分组非法，已跳过分组视图: ${group}`
-          )
+          logger.debug(LogCategory.DATABASE_SERVICE, `标签来源分组非法，已跳过分组视图: ${group}`)
         }
         continue
       }
@@ -399,7 +400,10 @@ export class FileDao {
     const SEEN_PRIORITY_ORDER: TagProvenanceGroup[] = ['user', 'fact', 'fused', 'visual', 'ai']
     const seenGlobalTagNames = new Set<string>()
     const seenGlobalTagCodes = new Set<string>()
-    const deduplicatedGroupTagMap = new Map<string, Array<{ id: string; name: string; confidence: number }>>()
+    const deduplicatedGroupTagMap = new Map<
+      string,
+      Array<{ id: string; name: string; confidence: number }>
+    >()
 
     for (const group of SEEN_PRIORITY_ORDER) {
       const rawTags = groupTagRawMap.get(group) || []
@@ -430,17 +434,18 @@ export class FileDao {
       tags: deduplicatedGroupTagMap.get(group) || []
     }))
 
-    const parsedFileGroup = fileData.file_group ? (
-      (() => {
-        try {
-          return typeof fileData.file_group === 'string' && (fileData.file_group.startsWith('{') || fileData.file_group.startsWith('['))
-            ? JSON.parse(fileData.file_group)
-            : fileData.file_group
-        } catch {
-          return fileData.file_group
-        }
-      })()
-    ) : null
+    const parsedFileGroup = fileData.file_group
+      ? (() => {
+          try {
+            return typeof fileData.file_group === 'string' &&
+              (fileData.file_group.startsWith('{') || fileData.file_group.startsWith('['))
+              ? JSON.parse(fileData.file_group)
+              : fileData.file_group
+          } catch {
+            return fileData.file_group
+          }
+        })()
+      : null
     const parsedStats = (() => {
       if (!fileData.analysis_stats) return undefined
       try {
@@ -466,7 +471,10 @@ export class FileDao {
       rawSmartName: fileData.raw_smart_name ?? undefined,
       size: fileData.size,
       extension: fileData.extension,
-      fileGroup: typeof parsedFileGroup === 'object' && parsedFileGroup ? parsedFileGroup.group : parsedFileGroup,
+      fileGroup:
+        typeof parsedFileGroup === 'object' && parsedFileGroup
+          ? parsedFileGroup.group
+          : parsedFileGroup,
       mimeType: parsedFileGroup?.mime_type ?? 'application/octet-stream',
       createdAt: workspaceFile.created_at,
       modifiedAt: workspaceFile.modified_at,
@@ -758,7 +766,9 @@ export class FileDao {
         if (oldContentRow?.exif) {
           try {
             // exif 列是 BLOB（compressText 压缩），需先解压再 JSON.parse
-            const oldMeta = JSON.parse(decompressText(oldContentRow.exif as unknown as Buffer | string))
+            const oldMeta = JSON.parse(
+              decompressText(oldContentRow.exif as unknown as Buffer | string)
+            )
             if (oldMeta && typeof oldMeta === 'object' && Object.keys(oldMeta).length > 0) {
               finalMetadata = {
                 ...oldMeta,
@@ -770,16 +780,36 @@ export class FileDao {
         if (finalMetadata && typeof finalMetadata === 'object') {
           // 如果包含由 Omni 服务返回的命名空间嵌套容器，将其内部字段展开提升至顶层
           const flattened: Record<string, any> = {
-            ...(finalMetadata.exiftool && typeof finalMetadata.exiftool === 'object' ? finalMetadata.exiftool : {}),
-            ...(finalMetadata.document && typeof finalMetadata.document === 'object' ? finalMetadata.document : {}),
-            ...(finalMetadata.image && typeof finalMetadata.image === 'object' ? finalMetadata.image : {}),
-            ...(finalMetadata.image?.exif && typeof finalMetadata.image.exif === 'object' ? finalMetadata.image.exif : {}),
-            ...(finalMetadata.audio && typeof finalMetadata.audio === 'object' ? finalMetadata.audio : {}),
-            ...(finalMetadata.video && typeof finalMetadata.video === 'object' ? finalMetadata.video : {}),
-            ...(finalMetadata.font && typeof finalMetadata.font === 'object' ? finalMetadata.font : {}),
-            ...(finalMetadata.archive && typeof finalMetadata.archive === 'object' ? finalMetadata.archive : {}),
-            ...(finalMetadata.database && typeof finalMetadata.database === 'object' ? finalMetadata.database : {}),
-            ...(finalMetadata.model && typeof finalMetadata.model === 'object' ? finalMetadata.model : {}),
+            ...(finalMetadata.exiftool && typeof finalMetadata.exiftool === 'object'
+              ? finalMetadata.exiftool
+              : {}),
+            ...(finalMetadata.document && typeof finalMetadata.document === 'object'
+              ? finalMetadata.document
+              : {}),
+            ...(finalMetadata.image && typeof finalMetadata.image === 'object'
+              ? finalMetadata.image
+              : {}),
+            ...(finalMetadata.image?.exif && typeof finalMetadata.image.exif === 'object'
+              ? finalMetadata.image.exif
+              : {}),
+            ...(finalMetadata.audio && typeof finalMetadata.audio === 'object'
+              ? finalMetadata.audio
+              : {}),
+            ...(finalMetadata.video && typeof finalMetadata.video === 'object'
+              ? finalMetadata.video
+              : {}),
+            ...(finalMetadata.font && typeof finalMetadata.font === 'object'
+              ? finalMetadata.font
+              : {}),
+            ...(finalMetadata.archive && typeof finalMetadata.archive === 'object'
+              ? finalMetadata.archive
+              : {}),
+            ...(finalMetadata.database && typeof finalMetadata.database === 'object'
+              ? finalMetadata.database
+              : {}),
+            ...(finalMetadata.model && typeof finalMetadata.model === 'object'
+              ? finalMetadata.model
+              : {}),
             ...finalMetadata
           }
           finalMetadata = flattened
@@ -928,8 +958,7 @@ export class FileDao {
               accelerator: finalFresh.accelerator || finalArchive?.accelerator,
               durationMs: (finalArchive?.durationMs || 0) + (finalFresh.durationMs || 0),
               phases: mergedArchivePhases,
-              stage1Breakdown:
-                Object.keys(mergedStage1).length > 0 ? mergedStage1 : undefined,
+              stage1Breakdown: Object.keys(mergedStage1).length > 0 ? mergedStage1 : undefined,
               contentExtractionBreakdown:
                 Object.keys(mergedBreakdown).length > 0 ? mergedBreakdown : undefined,
               model: finalFresh.model || finalArchive?.model
@@ -959,8 +988,7 @@ export class FileDao {
                   accelerator: finalFresh.accelerator || finalArchive?.accelerator,
                   durationMs: (finalArchive?.durationMs || 0) + (finalFresh.durationMs || 0),
                   phases: mergedArchivePhases,
-                  stage1Breakdown:
-                    Object.keys(mergedStage1).length > 0 ? mergedStage1 : undefined,
+                  stage1Breakdown: Object.keys(mergedStage1).length > 0 ? mergedStage1 : undefined,
                   contentExtractionBreakdown:
                     Object.keys(mergedBreakdown).length > 0 ? mergedBreakdown : undefined,
                   model: finalFresh.model || finalArchive?.model
@@ -990,8 +1018,7 @@ export class FileDao {
                   accelerator: incomingFresh.accelerator || finalFresh.accelerator,
                   durationMs: freshSumMs,
                   phases: mergedFreshPhases,
-                  stage1Breakdown:
-                    Object.keys(mergedStage1).length > 0 ? mergedStage1 : undefined,
+                  stage1Breakdown: Object.keys(mergedStage1).length > 0 ? mergedStage1 : undefined,
                   contentExtractionBreakdown:
                     Object.keys(mergedBreakdown).length > 0 ? mergedBreakdown : undefined,
                   model: incomingFresh.model || finalFresh.model
@@ -1021,8 +1048,7 @@ export class FileDao {
             accelerator: finalFresh.accelerator || finalArchive?.accelerator,
             durationMs: Math.max(finalArchive?.durationMs || 0, finalFresh.durationMs || 0),
             phases: mergedArchivePhases,
-            stage1Breakdown:
-              Object.keys(mergedStage1).length > 0 ? mergedStage1 : undefined,
+            stage1Breakdown: Object.keys(mergedStage1).length > 0 ? mergedStage1 : undefined,
             contentExtractionBreakdown:
               Object.keys(mergedBreakdown).length > 0 ? mergedBreakdown : undefined,
             model: finalFresh.model || finalArchive?.model
@@ -1229,7 +1255,15 @@ export class FileDao {
         WHERE (wf.name LIKE ? OR f.smart_name LIKE ? OR f.description LIKE ? OR decompress_text(fc.content) LIKE ? OR decompress_text(fc.multimodal_content) LIKE ? OR decompress_text(fc.lrc) LIKE ? OR decompress_text(fc.asr) LIKE ?)
       `
       const likeQuery = `%${trimmedQuery}%`
-      const params: any[] = [likeQuery, likeQuery, likeQuery, likeQuery, likeQuery, likeQuery, likeQuery]
+      const params: any[] = [
+        likeQuery,
+        likeQuery,
+        likeQuery,
+        likeQuery,
+        likeQuery,
+        likeQuery,
+        likeQuery
+      ]
 
       if (workspaceId) {
         sql += ` AND wf.workspace_id = ?`
@@ -1279,7 +1313,15 @@ export class FileDao {
         WHERE (wf.name LIKE ? OR f.smart_name LIKE ? OR f.description LIKE ? OR decompress_text(fc.content) LIKE ? OR decompress_text(fc.multimodal_content) LIKE ? OR decompress_text(fc.lrc) LIKE ? OR decompress_text(fc.asr) LIKE ?)
       `
       const likeQuery = `%${trimmedQuery}%`
-      const params: any[] = [likeQuery, likeQuery, likeQuery, likeQuery, likeQuery, likeQuery, likeQuery]
+      const params: any[] = [
+        likeQuery,
+        likeQuery,
+        likeQuery,
+        likeQuery,
+        likeQuery,
+        likeQuery,
+        likeQuery
+      ]
 
       if (virtualDirectoryId) {
         sql += ` AND vdf.virtual_directory_id = ?`
@@ -2203,9 +2245,7 @@ export class FileDao {
         }
         this.pinyinScanCursor = rows[rows.length - 1].rid
 
-        const hashStmt = this.db.prepare(
-          `SELECT src_hash FROM files_pinyin_fts WHERE rowid = ?`
-        )
+        const hashStmt = this.db.prepare(`SELECT src_hash FROM files_pinyin_fts WHERE rowid = ?`)
         // 人工裁定项①：标签文本一次窗口一次 SQL 批量预取；批量失败回退逐行（绝不静默按空串处理）
         const tagsBatch = this.collectTagsTextBatch(rows.map(r => r.file_fingerprint))
         for (const r of rows) {
@@ -2261,9 +2301,8 @@ export class FileDao {
     let total = 0
     try {
       const filesCount =
-        (
-          this.db.prepare(`SELECT COUNT(*) AS n FROM files`).get() as { n: number } | undefined
-        )?.n ?? 0
+        (this.db.prepare(`SELECT COUNT(*) AS n FROM files`).get() as { n: number } | undefined)
+          ?.n ?? 0
       if (this.countPinyinIndexRows() >= filesCount) return 0
 
       let consecutiveFailures = 0
@@ -2279,10 +2318,7 @@ export class FileDao {
         if (this.pinyinScanCursor === 0) break
       }
       if (total > 0) {
-        logger.info(
-          LogCategory.DATABASE_SERVICE,
-          `[FileDao] 拼音索引启动回填完成：${total} 行`
-        )
+        logger.info(LogCategory.DATABASE_SERVICE, `[FileDao] 拼音索引启动回填完成：${total} 行`)
       }
       if (this.pinyinScanCursor !== 0) {
         logger.warn(
@@ -2345,9 +2381,17 @@ export class FileDao {
   /**
    * 按文件指纹获取全部时序切片，按切片索引升序排序
    */
-  getVideoChunks(
+  getVideoChunks(fileFingerprint: string): Array<{
+    id?: number
     fileFingerprint: string
-  ): Array<{ id?: number; fileFingerprint: string; chunkIndex: number; startSec: number; endSec: number; repPtsSec: number; meta: Record<string, any>; samplingIntervalSeconds: number; createdAt?: string }> {
+    chunkIndex: number
+    startSec: number
+    endSec: number
+    repPtsSec: number
+    meta: Record<string, any>
+    samplingIntervalSeconds: number
+    createdAt?: string
+  }> {
     if (!fileFingerprint) return []
     const rows = this.db
       .prepare(
@@ -2456,10 +2500,17 @@ export class FileDao {
 
     // 若未更新成功，检查是否由于重试超限触发毒药熔断
     const row = this.db
-      .prepare('SELECT status, attempt_count FROM file_video_segments WHERE file_id = ? AND segment_index = ?')
+      .prepare(
+        'SELECT status, attempt_count FROM file_video_segments WHERE file_id = ? AND segment_index = ?'
+      )
       .get(fileId, segmentIndex) as { status: string; attempt_count: number } | undefined
 
-    if (row && row.attempt_count >= MAX_SEGMENT_ATTEMPTS && row.status !== 'completed' && row.status !== 'failed') {
+    if (
+      row &&
+      row.attempt_count >= MAX_SEGMENT_ATTEMPTS &&
+      row.status !== 'completed' &&
+      row.status !== 'failed'
+    ) {
       this.db
         .prepare(
           `UPDATE file_video_segments
@@ -2580,21 +2631,26 @@ export class FileDao {
          GROUP BY file_id`
       )
       .all(...fileIds) as Array<{
-        file_id: string
-        total_duration_sec: number
-        completed_duration_sec: number
-        has_failed: number
-        all_completed: number
-        total_segments: number
-      }>
+      file_id: string
+      total_duration_sec: number
+      completed_duration_sec: number
+      has_failed: number
+      all_completed: number
+      total_segments: number
+    }>
 
     for (const r of rows) {
       map.set(r.file_id, {
         file_id: r.file_id,
+        fileId: r.file_id,
         total_duration_sec: r.total_duration_sec,
+        totalDurationSec: r.total_duration_sec,
         completed_duration_sec: r.completed_duration_sec,
+        coveredDurationSec: r.completed_duration_sec,
         has_failed_segments: r.has_failed === 1,
-        is_fully_covered: r.total_segments > 0 && r.all_completed === 1
+        hasFailedSegments: r.has_failed === 1,
+        is_fully_covered: r.total_segments > 0 && r.all_completed === 1,
+        isFullyCovered: r.total_segments > 0 && r.all_completed === 1
       })
     }
     return map

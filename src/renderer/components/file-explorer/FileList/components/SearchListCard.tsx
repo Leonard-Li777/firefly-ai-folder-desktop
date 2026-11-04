@@ -1,11 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react'
-import {
-  formatDateTimeShort,
-  logger,
-  LogCategory,
-  isCategory,
-  FileCategory
-} from '@firefly/shared'
+import { formatDateTimeShort, logger, LogCategory, isCategory, FileCategory } from '@firefly/shared'
 import { MaterialIcon, cn } from '../../../../lib/utils'
 import { t } from '@app/languages'
 import { toast } from '../../../common/Toast'
@@ -20,6 +14,7 @@ import { useSearchStore } from '../../../../stores/search-store'
 import { getOrganizedSearchTags, OrganizedTagItem } from './search-list-tag-utils'
 import { useSettingsStore } from '../../../../stores/settings-store'
 import { useVirtualDirectoryStore } from '../../../../stores/virtual-directory-store'
+import { useTierStore } from '../../../../stores/tier-store'
 
 /**
  * 搜索列表模式专用行高（三行式多模态卡片排版，规格书定高 104px）
@@ -229,7 +224,10 @@ const AudioChunkChip: React.FC<{
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
     >
-      <MaterialIcon icon="graphic_eq" className="text-xs text-primary shrink-0 group-hover/audio:scale-110 transition-transform" />
+      <MaterialIcon
+        icon="graphic_eq"
+        className="text-xs text-primary shrink-0 group-hover/audio:scale-110 transition-transform"
+      />
       <span className="font-mono text-[10px] text-muted-foreground/90 shrink-0">
         {`${formatVideoTimestamp(chunk.startSec)} - ${formatVideoTimestamp(chunk.endSec)}`}
       </span>
@@ -238,11 +236,7 @@ const AudioChunkChip: React.FC<{
           {`${chunkPercent}%`}
         </span>
       )}
-      {chunk.text && (
-        <span className="text-[11px] text-foreground/80 truncate">
-          {chunk.text}
-        </span>
-      )}
+      {chunk.text && <span className="text-[11px] text-foreground/80 truncate">{chunk.text}</span>}
     </div>
   )
 }
@@ -309,9 +303,12 @@ export const SearchListCard = React.memo(
     const effectiveKeyword =
       propKeyword !== undefined
         ? propKeyword
-        : (storeGlobalKeyword || storeAnalyzedKeyword || storeVirtualKeyword || storeRealKeyword || '')
-    const effectiveTokens =
-      propTokens && propTokens.length > 0 ? propTokens : storeTokens
+        : storeGlobalKeyword ||
+          storeAnalyzedKeyword ||
+          storeVirtualKeyword ||
+          storeRealKeyword ||
+          ''
+    const effectiveTokens = propTokens && propTokens.length > 0 ? propTokens : storeTokens
 
     // 标签微胶囊三级梯队编排与泛化过滤（关键词优先 > 融合标签次之 > 其它标签确定性随机；过滤全年龄/已归档）
     const organizedTags = useMemo<OrganizedTagItem[]>(() => {
@@ -322,7 +319,15 @@ export const SearchListCard = React.memo(
         searchKeyword: effectiveKeyword,
         seed: item.path || item.fileFingerprint || item.id || ''
       })
-    }, [item.tags, item.fusedTags, effectiveTokens, effectiveKeyword, item.path, item.fileFingerprint, item.id])
+    }, [
+      item.tags,
+      item.fusedTags,
+      effectiveTokens,
+      effectiveKeyword,
+      item.path,
+      item.fileFingerprint,
+      item.id
+    ])
 
     // 虚拟行复用保护：路径变更时重置图片加载错误状态，防状态穿透
     useEffect(() => {
@@ -398,7 +403,13 @@ export const SearchListCard = React.memo(
         primaryImageUrl: thumbUrl || originalUrl,
         fallbackImageUrl: thumbUrl && originalUrl ? originalUrl : ''
       }
-    }, [isImage, item.path, item.thumbnailPath, workspaceDirectoryPath, (item as any).workspaceDirectoryPath])
+    }, [
+      isImage,
+      item.path,
+      item.thumbnailPath,
+      workspaceDirectoryPath,
+      (item as any).workspaceDirectoryPath
+    ])
 
     const activeImageUrl = !useFallbackImg ? primaryImageUrl : fallbackImageUrl
 
@@ -419,12 +430,9 @@ export const SearchListCard = React.memo(
 
     const hasValidSimilarity = typeof rawPercent === 'number' && rawPercent > 0
     const isSemantic =
-      hasValidSimilarity ||
-      (item.matchType === 'semantic' && typeof item.similarity !== 'number')
+      hasValidSimilarity || (item.matchType === 'semantic' && typeof item.similarity !== 'number')
 
-    const semanticLabel = hasValidSimilarity
-      ? `${t('语义召回')} ${rawPercent}%`
-      : t('语义召回')
+    const semanticLabel = hasValidSimilarity ? `${t('语义召回')} ${rawPercent}%` : t('语义召回')
 
     const storeSwap =
       useSettingsStore(s => s.getConfigValue<boolean>('SWAP_FILE_NAME_DISPLAY')) ?? false
@@ -433,9 +441,7 @@ export const SearchListCard = React.memo(
     const hasDiffSmartName = Boolean(item.smartName) && item.smartName !== safeItemName
 
     // 主文件名 (Row 1): 真实名为主时取 safeItemName，智能名为主时取 item.smartName || safeItemName
-    const primaryName = isSwapped
-      ? safeItemName
-      : item.smartName || safeItemName
+    const primaryName = isSwapped ? safeItemName : item.smartName || safeItemName
 
     // 辅文件名 (Row 2): 真实名为主时取 item.smartName (若存在不同)，智能名为主时取 safeItemName
     const secondaryName = hasDiffSmartName
@@ -460,57 +466,54 @@ export const SearchListCard = React.memo(
           getExtFromSmartName(item.smartName || item.name || '') ||
           item.path.split('.').pop() ||
           ''
-        splitState.openPreview(
-          item.path,
-          item.smartName || item.name || '',
-          ext,
-          effectivePageId,
-          {
-            currentTime: seekSec,
-            highlightRange: [startSec, endSec]
-          }
-        )
+        splitState.openPreview(item.path, item.smartName || item.name || '', ext, effectivePageId, {
+          currentTime: seekSec,
+          highlightRange: [startSec, endSec]
+        })
       },
       [item, pageId]
     )
 
     /** “立即分析”：将该文件插队至分析队列并给用户提示 */
-    const handleAnalyzeNow = useCallback((e: React.MouseEvent) => {
-      e.stopPropagation()
-      if (!item.path || isQueueSubmitting) return
-      const addFn = window.electronAPI?.addToAnalysisQueue
-      if (typeof addFn !== 'function') {
-        toast.error(t('加入分析队列失败: {message}', { message: 'IPC unavailable' }))
-        return
-      }
+    const handleAnalyzeNow = useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation()
+        if (!item.path || isQueueSubmitting) return
+        const addFn = window.electronAPI?.addToAnalysisQueue
+        if (typeof addFn !== 'function') {
+          toast.error(t('加入分析队列失败: {message}', { message: 'IPC unavailable' }))
+          return
+        }
 
-      setIsQueueSubmitting(true)
-      Promise.resolve(
-        addFn(
-          [
-            {
-              path: item.path,
-              name: item.name || primaryName,
-              size: item.size || 0,
-              type: item.extension || ''
-            }
-          ],
-          false
+        setIsQueueSubmitting(true)
+        Promise.resolve(
+          addFn(
+            [
+              {
+                path: item.path,
+                name: item.name || primaryName,
+                size: item.size || 0,
+                type: item.extension || ''
+              }
+            ],
+            false
+          )
         )
-      )
-        .then(() => {
-          toast.success(t('已加入分析队列'))
-        })
-        .catch((err: unknown) => {
-          setIsQueueSubmitting(false)
-          logger.error(LogCategory.RENDERER, '加入分析队列失败:', err)
-          const message =
-            err instanceof Error
-              ? err.message.replace(/^Error invoking remote method.*?: Error: /, '')
-              : String(err)
-          toast.error(t('加入分析队列失败: {message}', { message }))
-        })
-    }, [item.path, item.name, item.size, item.extension, primaryName, isQueueSubmitting])
+          .then(() => {
+            toast.success(t('已加入分析队列'))
+          })
+          .catch((err: unknown) => {
+            setIsQueueSubmitting(false)
+            logger.error(LogCategory.RENDERER, '加入分析队列失败:', err)
+            const message =
+              err instanceof Error
+                ? err.message.replace(/^Error invoking remote method.*?: Error: /, '')
+                : String(err)
+            toast.error(t('加入分析队列失败: {message}', { message }))
+          })
+      },
+      [item.path, item.name, item.size, item.extension, primaryName, isQueueSubmitting]
+    )
 
     const isRowActive = Boolean(isSelected || isActive)
 
@@ -542,7 +545,10 @@ export const SearchListCard = React.memo(
     // 左侧缩略图尺寸随行高弹性放大（行高 104 时为 64px，最大 140px）
     const mediaSize = Math.max(56, Math.min(140, Math.round(effectiveCardHeight * 0.65)))
     // 视频抽帧高度：按 16:9 比例等比变大变清晰（基准 38px，最大 80px）
-    const chunkFrameHeight = Math.max(34, Math.min(80, Math.round((effectiveCardHeight - 60) * 0.7)))
+    const chunkFrameHeight = Math.max(
+      34,
+      Math.min(80, Math.round((effectiveCardHeight - 60) * 0.7))
+    )
 
     // 图片多模态描述内容
     const imageDesc = item.multimodalContent || item.description || ''
@@ -587,7 +593,9 @@ export const SearchListCard = React.memo(
               className="w-8 h-8 object-contain"
               fallback={
                 <MaterialIcon
-                  icon={isAudio ? 'audio_file' : isVideo ? 'movie' : isImage ? 'image' : 'description'}
+                  icon={
+                    isAudio ? 'audio_file' : isVideo ? 'movie' : isImage ? 'image' : 'description'
+                  }
                   className="text-2xl text-primary"
                 />
               }
@@ -619,6 +627,27 @@ export const SearchListCard = React.memo(
             <div className="flex items-center gap-2 shrink-0 ml-2">
               {/* 1. 语义召回与展开徽标（随国际化语言长度自适应展开，无多余空隙） */}
               <div className="flex items-center gap-1 shrink-0">
+                {/* 视频覆盖度胶囊微标 (FIN-05 / FIN-06) */}
+                {isVideo &&
+                  item.videoCoverage &&
+                  item.videoCoverage.totalDurationSec > 0 &&
+                  !item.videoCoverage.isFullyCovered && (
+                    <span
+                      className="inline-flex items-center gap-1 text-[10px] font-mono font-medium px-1.5 py-0.5 rounded border border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 cursor-pointer transition-colors shrink-0 whitespace-nowrap shadow-xs"
+                      title={t('免费版仅整理前 5 分钟，升级 Pro 解锁完整 {total} 分钟', {
+                        total: Math.max(1, Math.round(item.videoCoverage.totalDurationSec / 60))
+                      })}
+                      onClick={e => {
+                        e.stopPropagation()
+                        useTierStore.getState().openUpgradeDialog()
+                      }}
+                    >
+                      <MaterialIcon icon="lock" className="text-amber-500 text-[11px]" />
+                      <span>
+                        {`${formatVideoTimestamp(item.videoCoverage.coveredDurationSec)} / ${formatVideoTimestamp(item.videoCoverage.totalDurationSec)}`}
+                      </span>
+                    </span>
+                  )}
                 {item.matchedPinyinCandidate && (
                   <span
                     className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded border text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/70 border-purple-200 dark:border-purple-800 shrink-0 whitespace-nowrap"
@@ -733,7 +762,11 @@ export const SearchListCard = React.memo(
               <div
                 className={cn(
                   'text-xs text-foreground/80 overflow-hidden leading-relaxed break-words w-full',
-                  effectiveCardHeight > 170 ? 'line-clamp-6' : effectiveCardHeight > 135 ? 'line-clamp-4' : 'line-clamp-2'
+                  effectiveCardHeight > 170
+                    ? 'line-clamp-6'
+                    : effectiveCardHeight > 135
+                      ? 'line-clamp-4'
+                      : 'line-clamp-2'
                 )}
                 title={imageDesc}
               >
@@ -762,7 +795,11 @@ export const SearchListCard = React.memo(
               <p
                 className={cn(
                   'text-xs text-foreground/80 leading-snug [&_mark]:bg-amber-300/60 [&_mark]:dark:bg-amber-400/30 [&_mark]:text-amber-950 [&_mark]:dark:text-amber-100 [&_mark]:font-semibold [&_mark]:rounded-sm [&_mark]:px-0.5 overflow-hidden',
-                  effectiveCardHeight > 170 ? 'line-clamp-6' : effectiveCardHeight > 135 ? 'line-clamp-4' : 'line-clamp-2'
+                  effectiveCardHeight > 170
+                    ? 'line-clamp-6'
+                    : effectiveCardHeight > 135
+                      ? 'line-clamp-4'
+                      : 'line-clamp-2'
                 )}
                 title={item.snippet.replace(/<[^>]+>/g, '')}
                 dangerouslySetInnerHTML={{ __html: sanitizeSnippetHtml(item.snippet) }}
@@ -772,7 +809,11 @@ export const SearchListCard = React.memo(
               <p
                 className={cn(
                   'text-xs text-foreground/75 leading-snug overflow-hidden',
-                  effectiveCardHeight > 170 ? 'line-clamp-6' : effectiveCardHeight > 135 ? 'line-clamp-4' : 'line-clamp-2'
+                  effectiveCardHeight > 170
+                    ? 'line-clamp-6'
+                    : effectiveCardHeight > 135
+                      ? 'line-clamp-4'
+                      : 'line-clamp-2'
                 )}
                 title={item.description}
               >

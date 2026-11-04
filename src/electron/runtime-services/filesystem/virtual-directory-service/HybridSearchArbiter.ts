@@ -34,7 +34,6 @@ import {
 import {
   omniClient,
   resolveQueryEncoderFilter,
-
   OmniMatchPassagesItem,
   OmniPassageMatch,
   OmniSearchFsItem,
@@ -47,6 +46,7 @@ import { calculateFzfScore } from './pinyin-fzf'
 import { PinyinQueryPlanner, type PinyinQueryPlan } from './pinyin-query-expander'
 import { verifyTextPinyin, type PinyinMatchType } from '../../utils/pinyin-text'
 import { FileDao } from '../../database/dao/file-dao'
+import { userTierService } from '../../user-tier/user-tier-service'
 
 /** RRF 平滑常量 K（避免 top-rank 分数悬殊、稳定融合放缩） */
 export const HYBRID_SEARCH_RRF_K = 60
@@ -92,7 +92,7 @@ export const TEMPORAL_CHUNK_MIN_PROMINENCE = 0.015
  *
  * 回归夹具：66 负样本 vecScore 最大值必须 < 本值（AC7 硬门槛，见 search-regression-ac7 测试）。
  */
-export const MIN_GENERIC_VECTOR_SCORE = 0.30
+export const MIN_GENERIC_VECTOR_SCORE = 0.3
 
 /**
  * CLIP 文本第 5 路准入分（已按 B2 数据集完成实测标定）。
@@ -205,7 +205,8 @@ export function evaluateClipChannelPrecondition(input: {
   enabled: boolean
   lang: string | null | undefined
 }): { run: boolean; reason?: string } {
-  if ((input.profile || '') !== 'classic_light') return { run: false, reason: 'profile_not_classic_light' }
+  if ((input.profile || '') !== 'classic_light')
+    return { run: false, reason: 'profile_not_classic_light' }
   if (!input.enabled) return { run: false, reason: 'disabled_by_config' }
   // classic_light 现已支持双模态文本检索：zh 走 Chinese-CLIP，非 zh 走 MobileCLIP
   return { run: true }
@@ -291,7 +292,9 @@ export function cleanClipTextQuery(keyword: string): string {
 }
 
 /** BM25 完整 10 列列权（第 0 列为 file_fingerprint UNINDEXED 赋 0.0，随后 9 列对齐 files_fts 架构：name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags） */
-export const HYBRID_BM25_COLUMN_WEIGHTS = [0.0, 4.0, 4.0, 3.0, 3.0, 3.5, 3.5, 3.0, 3.5, 3.5] as const
+export const HYBRID_BM25_COLUMN_WEIGHTS = [
+  0.0, 4.0, 4.0, 3.0, 3.0, 3.5, 3.5, 3.0, 3.5, 3.5
+] as const
 
 /**
  * 中文双字短词倒排点查快道的高置信度采纳阈值（Ticket 09 / Spec §4.8）：
@@ -625,7 +628,8 @@ export function sanitizeFtsQuery(query: string): string {
 export function cleanSearchQueryEntities(text: string): string {
   if (!text) return text
   // 1. 中文常见数词+量词前缀剥离
-  const quantifierRegex = /^[一两三四五六七八九十几]+[个只辆张部条架顶本套根群首座栋双把台副所顶间支件块面扇道头匹段幅尾]\s*/
+  const quantifierRegex =
+    /^[一两三四五六七八九十几]+[个只辆张部条架顶本套根群首座栋双把台副所顶间支件块面扇道头匹段幅尾]\s*/
   let cleaned = text.replace(quantifierRegex, '').trim()
   // 2. 国际化英文常见冠词/数词前缀剥离 (a, an, the, one)
   cleaned = cleaned.replace(/^(?:a|an|the|one)\s+/i, '').trim()
@@ -662,7 +666,14 @@ export function weightedRrfScore(
     /** 拼音正排索引第 6 路的 rank（缺失即该路不参与，完全退化为五路行为） */
     pinyinRank?: number
   },
-  weights: { fts: number; vector: number; name: number; exact?: number; clip?: number; pinyin?: number } = HYBRID_SEARCH_WEIGHTS,
+  weights: {
+    fts: number
+    vector: number
+    name: number
+    exact?: number
+    clip?: number
+    pinyin?: number
+  } = HYBRID_SEARCH_WEIGHTS,
   k: number = HYBRID_SEARCH_RRF_K
 ): number {
   const wExact = weights.exact ?? HYBRID_SEARCH_WEIGHTS.exact
@@ -690,14 +701,13 @@ export function weightedRrfScore(
   // 一旦进打分就会与 vecScore 的量纲混算（两者是不同嵌入空间的余弦）。
   const clipContrib = wClip * rrfScore(opts.clipRank, k)
 
-  const rawScore = (
+  const rawScore =
     ftsContrib +
     vecContrib +
     nameContrib +
     clipContrib +
     wPinyin * rrfScore(opts.pinyinRank, k) +
     wExact * rrfScore(opts.exactRank, k)
-  )
 
   if (opts.maxScoreCap !== undefined && Number.isFinite(opts.maxScoreCap)) {
     return Math.min(rawScore, opts.maxScoreCap)
@@ -717,8 +727,7 @@ export function computeNameBoost(
 ): number {
   const q = (query || '').trim().toLowerCase()
   if (!q) return 0
-  const candidates = [name, smartName]
-    .filter((s): s is string => !!s && typeof s === 'string')
+  const candidates = [name, smartName].filter((s): s is string => !!s && typeof s === 'string')
   if (candidates.length === 0) return 0
 
   // 1. 全串完全包含 / fzf 边界加权 / 拼音首字母匹配
@@ -772,7 +781,11 @@ export function computeNameBoost(
 /**
  * 统一顺序分页切片（纯函数）：返回当前页条目与全池总数
  */
-export function slicePage<T>(pool: T[], limit: number, offset: number): { items: T[]; total: number } {
+export function slicePage<T>(
+  pool: T[],
+  limit: number,
+  offset: number
+): { items: T[]; total: number } {
   const safeLimit = Math.max(0, Number.isFinite(limit) ? Math.floor(limit) : 0)
   const safeOffset = Math.max(0, Number.isFinite(offset) ? Math.floor(offset) : 0)
   return {
@@ -881,7 +894,8 @@ export class EndpointCircuitBreaker {
   recordFailure(): void {
     this.consecutiveFailures += 1
     if (this.consecutiveFailures >= this.threshold) {
-      const factor = Number.isFinite(this.backoffFactor) && this.backoffFactor > 0 ? this.backoffFactor : 1
+      const factor =
+        Number.isFinite(this.backoffFactor) && this.backoffFactor > 0 ? this.backoffFactor : 1
       this.openUntil = this.now() + this.cooldownMs * Math.pow(factor, this.openCount)
       this.openCount += 1
     }
@@ -920,10 +934,7 @@ interface VectorMatch {
  * unref 是承重件——arbiter 为长生命周期对象且无销毁时点，若定时器引用事件循环，
  * 进程退出会被无限期挂住（人工裁定项③的生命周期要求）。
  */
-const defaultPinyinReconcileTimerFactory = (
-  cb: () => void,
-  ms: number
-): { clear: () => void } => {
+const defaultPinyinReconcileTimerFactory = (cb: () => void, ms: number): { clear: () => void } => {
   const handle = setInterval(cb, ms)
   ;(handle as { unref?: () => void }).unref?.()
   return { clear: () => clearInterval(handle) }
@@ -963,10 +974,7 @@ export class HybridSearchArbiter {
        */
       enablePinyinReconcileTimer?: boolean
       /** 测试注入：假定时器工厂（生产用 setInterval，句柄 unref 防常驻） */
-      pinyinReconcileTimerFactory?: (
-        cb: () => void,
-        ms: number
-      ) => { clear: () => void }
+      pinyinReconcileTimerFactory?: (cb: () => void, ms: number) => { clear: () => void }
     }
   ) {
     this.vectorBreaker = options?.vectorBreaker ?? new EndpointCircuitBreaker()
@@ -1027,12 +1035,15 @@ export class HybridSearchArbiter {
     keyword: string
     ftsRankMap: Map<string, number>
     exactRankMap: Map<string, number>
-    vecRankMap: Map<string, {
-      rank: number
-      score: number
-      matchedChunk?: VectorMatch['matchedChunk']
-      matchedChunks?: VectorMatch['matchedChunks']
-    }>
+    vecRankMap: Map<
+      string,
+      {
+        rank: number
+        score: number
+        matchedChunk?: VectorMatch['matchedChunk']
+        matchedChunks?: VectorMatch['matchedChunks']
+      }
+    >
     /** 工单 12：CLIP 文本第 5 路候选（fingerprint → rank/score） */
     clipRankMap?: Map<string, { rank: number; score: number }>
     /** 拼音正排索引第 6 路候选（fingerprint → bm25 排名） */
@@ -1134,18 +1145,21 @@ export class HybridSearchArbiter {
         // 校验回填命中词：仅音节边界对齐的候选有回填词（假阳性/超限额候选的拼音贡献已在上面剥离）
         matchedPinyinText: pinyinVerifyMap?.get(fp)?.matchedText,
         nameBoost,
-        score: weightedRrfScore({
-          ftsRank,
-          vecRank: vec?.rank,
-          nameBoost,
-          exactRank,
-          vecScore: vec?.score,
-          vectorDamping,
-          ftsDamping,
-          maxScoreCap,
-          clipRank: hasClip ? clip!.rank : undefined,
-          pinyinRank
-        }, HYBRID_SEARCH_WEIGHTS_WITH_PINYIN),
+        score: weightedRrfScore(
+          {
+            ftsRank,
+            vecRank: vec?.rank,
+            nameBoost,
+            exactRank,
+            vecScore: vec?.score,
+            vectorDamping,
+            ftsDamping,
+            maxScoreCap,
+            clipRank: hasClip ? clip!.rank : undefined,
+            pinyinRank
+          },
+          HYBRID_SEARCH_WEIGHTS_WITH_PINYIN
+        ),
         hasLiteral,
         matchedChunk: vec?.matchedChunk,
         matchedChunks: vec?.matchedChunks
@@ -1159,8 +1173,14 @@ export class HybridSearchArbiter {
       if (exactDiff !== 0) return exactDiff
       const nameDiff = b.nameBoost - a.nameBoost
       if (nameDiff !== 0) return nameDiff
-      const aMin = Math.min(a.ftsRank ?? Number.MAX_SAFE_INTEGER, a.vecRank ?? Number.MAX_SAFE_INTEGER)
-      const bMin = Math.min(b.ftsRank ?? Number.MAX_SAFE_INTEGER, b.vecRank ?? Number.MAX_SAFE_INTEGER)
+      const aMin = Math.min(
+        a.ftsRank ?? Number.MAX_SAFE_INTEGER,
+        a.vecRank ?? Number.MAX_SAFE_INTEGER
+      )
+      const bMin = Math.min(
+        b.ftsRank ?? Number.MAX_SAFE_INTEGER,
+        b.vecRank ?? Number.MAX_SAFE_INTEGER
+      )
       if (aMin !== bMin) return aMin - bMin
       return a.fileFingerprint.localeCompare(b.fileFingerprint)
     })
@@ -1230,7 +1250,11 @@ export class HybridSearchArbiter {
       this.getFileDao().syncPinyinIndexDirty(300)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
-      logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchArbiter] 拼音索引 reconciler tick 失败:', msg)
+      logger.warn(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[HybridSearchArbiter] 拼音索引 reconciler tick 失败:',
+        msg
+      )
     }
   }
 
@@ -1329,8 +1353,7 @@ export class HybridSearchArbiter {
     // 不满足前置条件（如 profile 档位不符、开关关闭、非中文或拼音命中）时严禁产生假 pendingClip。
     const orchestrator = ConfigOrchestrator.getInstance()
     const currentEmbeddingProfile = await omniService.getEmbeddingProfile()
-    const clipEnabled =
-      orchestrator.getValue<boolean>('AI_CLIP_TEXT_SEARCH_ENABLED') ?? true
+    const clipEnabled = orchestrator.getValue<boolean>('AI_CLIP_TEXT_SEARCH_ENABLED') ?? true
     const currentLang = orchestrator.getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
     const clipPre = evaluateClipChannelPrecondition({
       profile: currentEmbeddingProfile,
@@ -1338,10 +1361,7 @@ export class HybridSearchArbiter {
       lang: currentLang
     })
     const shouldRunClip =
-      !pinyinHit &&
-      !this.clipBreaker.isOpen &&
-      Boolean(this.networkSignals) &&
-      clipPre.run
+      !pinyinHit && !this.clipBreaker.isOpen && Boolean(this.networkSignals) && clipPre.run
 
     // 工单 12：CLIP 第 5 路。**热态才并入 phase2**；冷态照常发起但不等待，
     // 避免 6000ms 冷启动预算把首屏拖垮（phase3 由工单 13 消费该结果）。
@@ -1553,7 +1573,8 @@ export class HybridSearchArbiter {
         if (ftsTable) {
           const phraseQuery = sanitizeFtsQuery(formatExactPhraseQuery(id))
           const rows = this.db
-            .prepare(`
+            .prepare(
+              `
               SELECT f.file_fingerprint AS file_fingerprint
               FROM files_fts
               JOIN files f ON f.rowid = files_fts.rowid
@@ -1562,7 +1583,8 @@ export class HybridSearchArbiter {
                 ${extraWhere}
               ORDER BY bm25(files_fts, ${HYBRID_BM25_COLUMN_WEIGHTS.join(', ')}) ASC
               LIMIT ?
-            `)
+            `
+            )
             .all(phraseQuery, ...queryParams, poolSize) as Array<{ file_fingerprint: string }>
           for (const r of rows) {
             if (!seen.has(r.file_fingerprint)) {
@@ -1574,15 +1596,19 @@ export class HybridSearchArbiter {
 
         const escapedId = `%${id.replace(/([%_\\])/g, '\\$1')}%`
         const nameRows = this.db
-          .prepare(`
+          .prepare(
+            `
             SELECT wf.file_fingerprint AS file_fingerprint
             FROM workspace_files wf
             LEFT JOIN files f ON f.file_fingerprint = wf.file_fingerprint
             WHERE (wf.name LIKE ? ESCAPE '\\' OR f.smart_name LIKE ? ESCAPE '\\')
               ${extraWhere}
             LIMIT ?
-          `)
-          .all(escapedId, escapedId, ...queryParams, poolSize) as Array<{ file_fingerprint: string }>
+          `
+          )
+          .all(escapedId, escapedId, ...queryParams, poolSize) as Array<{
+          file_fingerprint: string
+        }>
         for (const r of nameRows) {
           if (!seen.has(r.file_fingerprint)) {
             seen.add(r.file_fingerprint)
@@ -1593,7 +1619,11 @@ export class HybridSearchArbiter {
       return results.slice(0, poolSize)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
-      logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchArbiter] 精确标识符候选查询失败: ', msg)
+      logger.warn(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[HybridSearchArbiter] 精确标识符候选查询失败: ',
+        msg
+      )
       return []
     }
   }
@@ -1692,9 +1722,9 @@ export class HybridSearchArbiter {
     shortHanWorkspaceId?: number
   ): string[] | null {
     try {
-      const ftsCols = this.db
-        .prepare("PRAGMA table_info(files_fts)")
-        .all() as Array<{ name: string }>
+      const ftsCols = this.db.prepare('PRAGMA table_info(files_fts)').all() as Array<{
+        name: string
+      }>
       if (!ftsCols || ftsCols.length === 0) return []
 
       const indexedCols = ftsCols.filter(c => c.name !== 'file_fingerprint').map(c => c.name)
@@ -1718,7 +1748,8 @@ export class HybridSearchArbiter {
               return cleaned.length >= 3 ? `"${cleaned}"` : ''
             })
             .filter(Boolean)
-          const safeQuery = safeTerms.length > 0 ? safeTerms.join(' OR ') : sanitizeFtsQuery(trimmed)
+          const safeQuery =
+            safeTerms.length > 0 ? safeTerms.join(' OR ') : sanitizeFtsQuery(trimmed)
           if (safeQuery) {
             // FTS5 bm25 严格按虚拟表物理声明列顺序（从 0 开始）赋值，包含 UNINDEXED 列
             // 第 0 列 file_fingerprint UNINDEXED 必须赋予 0.0 占位，避免后续列权向左整体错位！
@@ -1726,7 +1757,8 @@ export class HybridSearchArbiter {
               c.name === 'file_fingerprint' ? 0.0 : (DEFAULT_COLUMN_WEIGHT_MAP[c.name] ?? 1.0)
             )
             rows = this.db
-              .prepare(`
+              .prepare(
+                `
                 SELECT f.file_fingerprint AS file_fingerprint
                 FROM files_fts
                 JOIN files f ON f.rowid = files_fts.rowid
@@ -1735,12 +1767,17 @@ export class HybridSearchArbiter {
                   ${extraWhere}
                 ORDER BY bm25(files_fts, ${weights.join(', ')}) ASC
                 LIMIT ?
-              `)
+              `
+              )
               .all(safeQuery, ...queryParams, poolSize) as Array<{ file_fingerprint: string }>
           }
         } catch (err: unknown) {
           const msg = err instanceof Error ? err.message : String(err)
-          logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchArbiter] FTS MATCH 异常，降级进入多列 LIKE 召回: ', msg)
+          logger.warn(
+            LogCategory.VIRTUAL_DIRECTORY,
+            '[HybridSearchArbiter] FTS MATCH 异常，降级进入多列 LIKE 召回: ',
+            msg
+          )
         }
       }
 
@@ -1789,7 +1826,9 @@ export class HybridSearchArbiter {
           const likeConditions: string[] = []
           const likeParams: any[] = []
           for (const token of safeTokens) {
-            const colLikes = targetSearchCols.map(c => `files_fts.${c} LIKE ? ESCAPE '\\'`).join(' OR ')
+            const colLikes = targetSearchCols
+              .map(c => `files_fts.${c} LIKE ? ESCAPE '\\'`)
+              .join(' OR ')
             likeConditions.push(`(${colLikes})`)
             const p = `%${token.replace(/([%_\\])/g, '\\$1')}%`
             for (let i = 0; i < targetSearchCols.length; i++) {
@@ -1835,12 +1874,11 @@ export class HybridSearchArbiter {
           if (colSet.has('description')) orderParams.push(exactNameParam)
           if (colSet.has('lrc')) orderParams.push(exactNameParam)
 
-          rows = this.db.prepare(fallbackSql).all(
-            ...likeParams,
-            ...queryParams,
-            ...orderParams,
-            poolSize
-          ) as Array<{ file_fingerprint: string }>
+          rows = this.db
+            .prepare(fallbackSql)
+            .all(...likeParams, ...queryParams, ...orderParams, poolSize) as Array<{
+            file_fingerprint: string
+          }>
         }
       }
 
@@ -1884,9 +1922,7 @@ export class HybridSearchArbiter {
     if (!plan.isPinyin || plan.pinyinTokens.length === 0) return []
     try {
       const tableExists = this.db
-        .prepare(
-          `SELECT name FROM sqlite_master WHERE type='table' AND name='files_pinyin_fts'`
-        )
+        .prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='files_pinyin_fts'`)
         .get()
       if (!tableExists) return []
 
@@ -1921,7 +1957,11 @@ export class HybridSearchArbiter {
       return rows.map(r => r.file_fingerprint)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
-      logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchArbiter] 拼音索引检索失败，降级: ', msg)
+      logger.warn(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[HybridSearchArbiter] 拼音索引检索失败，降级: ',
+        msg
+      )
       return []
     }
   }
@@ -2031,8 +2071,7 @@ export class HybridSearchArbiter {
       // ---- 门禁（六种不满足场景一律零请求）----
       const orchestrator = ConfigOrchestrator.getInstance()
       const profile = await omniService.getEmbeddingProfile()
-      const enabled =
-        orchestrator.getValue<boolean>('AI_CLIP_TEXT_SEARCH_ENABLED') ?? true
+      const enabled = orchestrator.getValue<boolean>('AI_CLIP_TEXT_SEARCH_ENABLED') ?? true
       const lang = orchestrator.getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
 
       // 第一段：零成本前置。**必须在探活之前**——档位/开关/语言不满足时连 /health 都不该发。
@@ -2067,11 +2106,9 @@ export class HybridSearchArbiter {
       // 预算按态取值，与响应里的 `coldStart` 无关：后者只做埋点，不参与判定。
       const warm = this.isClipWarm()
       const warmBudgetMs =
-        orchestrator.getValue<number>('AI_CLIP_TEXT_TIMEOUT_WARM_MS') ||
-        CLIP_TEXT_TIMEOUT_WARM_MS
+        orchestrator.getValue<number>('AI_CLIP_TEXT_TIMEOUT_WARM_MS') || CLIP_TEXT_TIMEOUT_WARM_MS
       const coldBudgetMs =
-        orchestrator.getValue<number>('AI_CLIP_TEXT_TIMEOUT_COLD_MS') ||
-        CLIP_TEXT_TIMEOUT_COLD_MS
+        orchestrator.getValue<number>('AI_CLIP_TEXT_TIMEOUT_COLD_MS') || CLIP_TEXT_TIMEOUT_COLD_MS
       const budget = warm ? warmBudgetMs : coldBudgetMs
 
       // 发起前捕获纪元：若飞行中出现 Omni 重启（`invalidateClipTextWarmState()`），
@@ -2178,7 +2215,11 @@ export class HybridSearchArbiter {
       this.clipBreaker.recordFailure()
       this.lastClipSuccessAt = 0
       const msg = err instanceof Error ? err.message : String(err)
-      logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchArbiter] CLIP 第 5 路异常，降级: ', msg)
+      logger.warn(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[HybridSearchArbiter] CLIP 第 5 路异常，降级: ',
+        msg
+      )
       return null
     }
   }
@@ -2289,11 +2330,7 @@ export class HybridSearchArbiter {
       })
 
       const uniqueParentFps = Array.from(new Set(parsedMatches.map(p => p.parentFp)))
-      const allowed = this.filterMembersFromBase(
-        uniqueParentFps,
-        whereClauses,
-        queryParams
-      )
+      const allowed = this.filterMembersFromBase(uniqueParentFps, whereClauses, queryParams)
 
       // 2. 按 parentFp 聚合并保留最高相似度得分与优选切片索引
       interface ParentAgg {
@@ -2343,8 +2380,13 @@ export class HybridSearchArbiter {
       }
 
       // 1. 预先批量查询所有命中切片视频的 file_video_chunks 元数据（获取各切片起止时间）
-      const parentsWithAnyChunks = Array.from(parentAggMap.values()).filter(p => p.chunks.length > 0)
-      const chunkTimingMap = new Map<string, { startSec: number; endSec: number; repPtsSec: number; meta: Record<string, any> }>()
+      const parentsWithAnyChunks = Array.from(parentAggMap.values()).filter(
+        p => p.chunks.length > 0
+      )
+      const chunkTimingMap = new Map<
+        string,
+        { startSec: number; endSec: number; repPtsSec: number; meta: Record<string, any> }
+      >()
       const maxChunkIndexMap = new Map<string, number>()
 
       if (parentsWithAnyChunks.length > 0) {
@@ -2365,7 +2407,17 @@ export class HybridSearchArbiter {
             meta: string | Record<string, any>
           }>
 
+          const userLimits = userTierService.getCachedData()?.computed_limits
+          const videoLimitSec =
+            typeof userLimits?.video_max_duration_seconds === 'number'
+              ? userLimits.video_max_duration_seconds
+              : 300
+
           for (const r of rows) {
+            // 降级后读时限额过滤 (修正 2): 若切片起点已超出当前用户权益上限，读时不可见
+            if (r.start_sec >= videoLimitSec) {
+              continue
+            }
             const curMax = maxChunkIndexMap.get(r.file_fingerprint) ?? -1
             if (r.chunk_index > curMax) {
               maxChunkIndexMap.set(r.file_fingerprint, r.chunk_index)
@@ -2387,7 +2439,11 @@ export class HybridSearchArbiter {
           }
         } catch (err: unknown) {
           const msg = err instanceof Error ? err.message : String(err)
-          logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchArbiter] 查询 file_video_chunks 失败: ', msg)
+          logger.warn(
+            LogCategory.VIRTUAL_DIRECTORY,
+            '[HybridSearchArbiter] 查询 file_video_chunks 失败: ',
+            msg
+          )
         }
       }
 
@@ -2406,24 +2462,28 @@ export class HybridSearchArbiter {
 
         // 核心门禁 1：若视频全片切片得分平铺（peakProminence < TEMPORAL_CHUNK_MIN_PROMINENCE），
         // 证明没有任何切片能够突出于全局背景基线，属于纯背景噪声，彻底阻断跳轴与切片下发！
-        const hasSignificantPeak = agg.chunks.length <= 2 || peakProminence >= TEMPORAL_CHUNK_MIN_PROMINENCE
+        const hasSignificantPeak =
+          agg.chunks.length <= 2 || peakProminence >= TEMPORAL_CHUNK_MIN_PROMINENCE
 
         // 高光波峰切片集合（用于甄别伴生背景噪声 vs 独立离散高光）
-        const highPeakChunks = agg.chunks.filter(c => c.score >= maxScore - 0.020)
+        const highPeakChunks = agg.chunks.filter(c => c.score >= maxScore - 0.02)
 
         const validChunks = hasSignificantPeak
           ? agg.chunks.filter(c => {
               if (c.score < TEMPORAL_CHUNK_MIN_CONFIDENCE) return false
 
               // 1. 本身即为高光核心或处于波峰容差内（收紧至 0.030，允许同镜头平滑过渡，阻断断崖）
-              if (c.score >= maxScore - 0.030) return true
+              if (c.score >= maxScore - 0.03) return true
 
               // 2. 检查是否紧邻高光波峰（间距 <= 3.0s）
               const isAdjacentToHighPeak = highPeakChunks.some(peak => {
                 const cTiming = chunkTimingMap.get(`${agg.parentFp}:c${c.chunkIndex}`)
                 const pTiming = chunkTimingMap.get(`${agg.parentFp}:c${peak.chunkIndex}`)
                 if (!cTiming || !pTiming) return false
-                const gap = Math.max(0, Math.max(cTiming.startSec - pTiming.endSec, pTiming.startSec - cTiming.endSec))
+                const gap = Math.max(
+                  0,
+                  Math.max(cTiming.startSec - pTiming.endSec, pTiming.startSec - cTiming.endSec)
+                )
                 return gap <= 3.0
               })
 
@@ -2462,7 +2522,7 @@ export class HybridSearchArbiter {
           // =========================================================================
           // Phase 2：Top-Peak 动态门禁与相似度降序重排 (高置信度核心镜头置顶)
           // =========================================================================
-          const PEAK_MARGIN = 0.020 // 收紧至 0.020，杜绝与峰值相差过大的背景切片混入
+          const PEAK_MARGIN = 0.02 // 收紧至 0.020，杜绝与峰值相差过大的背景切片混入
           const minConfidence = TEMPORAL_CHUNK_MIN_CONFIDENCE
 
           // 找到当前视频合并后时段的最高峰值分
@@ -2482,7 +2542,10 @@ export class HybridSearchArbiter {
               const isAdjacentToPeak = mergedIntervals.some(peak => {
                 if (peak.similarity < maxScore - PEAK_MARGIN) return false
                 // 无向区间间隙：计算真实时间差值，前后均支持
-                const gap = Math.max(0, Math.max(chunk.startSec - peak.endSec, peak.startSec - chunk.endSec))
+                const gap = Math.max(
+                  0,
+                  Math.max(chunk.startSec - peak.endSec, peak.startSec - chunk.endSec)
+                )
                 return gap <= 3.0 // 收紧至 3.0s，只有紧邻高光波峰的同镜头延伸片段才予保全
               })
               if (isAdjacentToPeak) return true
@@ -2574,7 +2637,8 @@ export class HybridSearchArbiter {
             const rawRepPts = timing.repPtsSec ?? timing.startSec
             const repPtsSec = Math.min(timing.endSec, Math.max(timing.startSec, rawRepPts))
             const duration = timing.endSec - timing.startSec
-            const targetSeek = duration <= 5.0 ? timing.startSec : Math.max(timing.startSec, repPtsSec - 1.5)
+            const targetSeek =
+              duration <= 5.0 ? timing.startSec : Math.max(timing.startSec, repPtsSec - 1.5)
             const seekSec = Math.min(timing.endSec, targetSeek)
             matchedChunk = {
               chunkIndex: p.bestChunkIndex,
@@ -2597,7 +2661,11 @@ export class HybridSearchArbiter {
       return out
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
-      logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchArbiter] 向量检索失败，降级为 FTS+文件名: ', msg)
+      logger.warn(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[HybridSearchArbiter] 向量检索失败，降级为 FTS+文件名: ',
+        msg
+      )
       return null
     }
   }
@@ -2625,7 +2693,11 @@ export class HybridSearchArbiter {
       return resp.items.slice(0, poolSize)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
-      logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchArbiter] FS 快速文件名检索失败: ', msg)
+      logger.warn(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[HybridSearchArbiter] FS 快速文件名检索失败: ',
+        msg
+      )
       return null
     }
   }
@@ -2652,7 +2724,11 @@ export class HybridSearchArbiter {
       return new Set(rows.map(r => r.file_fingerprint))
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
-      logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchArbiter] 向量候选基础过滤失败，放行全部: ', msg)
+      logger.warn(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[HybridSearchArbiter] 向量候选基础过滤失败，放行全部: ',
+        msg
+      )
       // 过滤失败时放行全部，主查询的分页 WHERE 仍会兜底过滤
       return new Set(fingerprints)
     }

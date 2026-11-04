@@ -147,7 +147,7 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
             微信扫码登录 · 绑定当前设备
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            请使用微信扫描专属小程序码，在小程序确认绑定后即可使用完整功能并同步权益
+            请使用微信扫描专属小程序码，可以6台设备上共享权益
           </DialogDescription>
         </DialogHeader>
 

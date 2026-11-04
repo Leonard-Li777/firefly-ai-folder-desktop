@@ -1,7 +1,4 @@
-import {
-  FileItem,
-  FilteredFilesResponse
-} from '@firefly/types'
+import { FileItem, FilteredFilesResponse } from '@firefly/types'
 import { LogCategory, logger, normalizeForCache, tokenize, isUsefulToken } from '@firefly/shared'
 import { omniClient } from '../../../services/omni-client'
 import {
@@ -65,9 +62,16 @@ export interface HybridSearchCollaborators {
     >
   >
   /** 由 FS 未分析命中合成 FileItem */
-  synthesizeUnanalyzedItem(ref: Extract<HybridPageRef, { kind: 'unanalyzed' }>, workspaceDirectoryPath?: string): FileItem
+  synthesizeUnanalyzedItem(
+    ref: Extract<HybridPageRef, { kind: 'unanalyzed' }>,
+    workspaceDirectoryPath?: string
+  ): FileItem
   /** 回退路径：去除搜索词的常规分页查询 */
   fallbackPaged(params: FilterFilesParams): Promise<FilteredFilesResponse>
+  /** 批量查询视频覆盖度统计 (FIN-05 / FIN-06) */
+  fetchVideoCoverageBatch?(
+    fileFingerprints: string[]
+  ): Map<string, import('@firefly/types').VideoCoverageStats>
 }
 
 /**
@@ -215,6 +219,22 @@ export class HybridSearchSession {
       dbQueryTime += performance.now() - contentStart
     }
 
+    // 批量预查当前页视频覆盖度统计 (FIN-05 / FIN-06)
+    const videoFingerprints = analyzedRefs
+      .filter(ref => {
+        const base = baseItems.get(ref.fileFingerprint)
+        if (!base) return false
+        const ext = (base.extension || '').toLowerCase()
+        return (
+          ['mp4', 'mkv', 'mov', 'avi', 'flv', 'webm', 'wmv'].includes(ext) ||
+          (base as any).category === 'video'
+        )
+      })
+      .map(ref => ref.fileFingerprint)
+    const coverageMap = this.collaborators.fetchVideoCoverageBatch
+      ? this.collaborators.fetchVideoCoverageBatch(videoFingerprints)
+      : new Map<string, import('@firefly/types').VideoCoverageStats>()
+
     const items: FileItem[] = []
     for (const ref of pageRefs) {
       if (ref.kind === 'analyzed') {
@@ -248,16 +268,17 @@ export class HybridSearchSession {
               similarity: cand.matchedChunk.similarity
             }
           : undefined
-        const matchedChunks = cand?.matchedChunks && cand.matchedChunks.length > 0
-          ? cand.matchedChunks.map(c => ({
-              chunkIndex: c.chunkIndex,
-              startSec: c.startSec,
-              endSec: c.endSec,
-              repPtsSec: c.repPtsSec,
-              seekSec: c.seekSec,
-              similarity: c.similarity
-            }))
-          : undefined
+        const matchedChunks =
+          cand?.matchedChunks && cand.matchedChunks.length > 0
+            ? cand.matchedChunks.map(c => ({
+                chunkIndex: c.chunkIndex,
+                startSec: c.startSec,
+                endSec: c.endSec,
+                repPtsSec: c.repPtsSec,
+                seekSec: c.seekSec,
+                similarity: c.similarity
+              }))
+            : undefined
         items.push({
           ...base,
           snippet: e?.snippet,
@@ -291,8 +312,12 @@ export class HybridSearchSession {
     try {
       const workspaceDirectoryPath = params.workspaceDirectoryPath
 
-      const limit = params.limit !== undefined ? Math.max(0, params.limit) : Math.max(1, params.pageSize ?? 100)
-      const offset = params.offset !== undefined ? Math.max(0, params.offset) : Math.max(0, ((params.page ?? 1) - 1) * limit)
+      const limit =
+        params.limit !== undefined ? Math.max(0, params.limit) : Math.max(1, params.pageSize ?? 100)
+      const offset =
+        params.offset !== undefined
+          ? Math.max(0, params.offset)
+          : Math.max(0, ((params.page ?? 1) - 1) * limit)
 
       // 字段覆盖补充候选源（LIKE 兜底）提前查询
       const fieldCoverageRefs = this.collaborators.fetchFieldCoverageRefs(params)
@@ -329,7 +354,11 @@ export class HybridSearchSession {
                 }
               })
             } catch (p1Err) {
-              logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchSession] Phase 1 推流异常:', p1Err)
+              logger.warn(
+                LogCategory.VIRTUAL_DIRECTORY,
+                '[HybridSearchSession] Phase 1 推流异常:',
+                p1Err
+              )
             }
           }
         : undefined
@@ -412,7 +441,11 @@ export class HybridSearchSession {
 
       return pool.pendingClip ? { ...finalResponse, clipPending: true } : finalResponse
     } catch (err: unknown) {
-      logger.error(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchSession] 混合检索分页失败，回退常规检索:', err)
+      logger.error(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[HybridSearchSession] 混合检索分页失败，回退常规检索:',
+        err
+      )
       return this.collaborators.fallbackPaged({ ...params, searchKeyword: undefined })
     }
   }
@@ -479,7 +512,11 @@ export class HybridSearchSession {
         }
       })
     } catch (err: unknown) {
-      logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchSession] phase3 追加失败（忽略，不影响已渲染列表）:', err)
+      logger.warn(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[HybridSearchSession] phase3 追加失败（忽略，不影响已渲染列表）:',
+        err
+      )
     }
   }
 }
