@@ -127,8 +127,7 @@ const electronAPI = {
     return () => ipcRenderer.removeListener('search-workspace-files-progress', handler)
   },
 
-  tokenizeText: (text: string): Promise<string[]> =>
-    ipcRenderer.invoke('tokenize-text', text),
+  tokenizeText: (text: string): Promise<string[]> => ipcRenderer.invoke('tokenize-text', text),
 
   // AI分类
   classifyFile: (
@@ -278,7 +277,8 @@ const electronAPI = {
     switchBackend: (backend: string): Promise<{ ok: boolean; error?: string }> =>
       ipcRenderer.invoke('engine-bridge/switch-backend', backend),
     onStatusChanged: (callback: (payload: EngineBridgeSnapshot) => void) => {
-      const handler = (_event: Electron.IpcRendererEvent, payload: EngineBridgeSnapshot) => callback(payload)
+      const handler = (_event: Electron.IpcRendererEvent, payload: EngineBridgeSnapshot) =>
+        callback(payload)
       ipcRenderer.on('tier2:status-changed', handler)
       return () => ipcRenderer.removeListener('tier2:status-changed', handler)
     }
@@ -348,6 +348,11 @@ const electronAPI = {
   /** 工单 13：手动触发一次 canonical 语义索引重建 */
   runCanonicalMaintenance: (reason?: string): Promise<{ success: boolean }> =>
     ipcRenderer.invoke('analysis-queue/run-canonical-maintenance', reason),
+  onAnalysisQueueLatchBrake: (callback: (payload: { workspaceId: number }) => void) => {
+    const handler = (_event: any, payload: any) => callback(payload)
+    ipcRenderer.on('analysis-queue/latch-brake', handler)
+    return () => ipcRenderer.removeListener('analysis-queue/latch-brake', handler)
+  },
   onAnalysisQueueUpdated: (callback: (payload: any) => void) => {
     const handler = (_event: any, payload: any) => callback(payload)
     ipcRenderer.on('analysis-queue-updated', handler)
@@ -561,12 +566,10 @@ const electronAPI = {
       ipcRenderer.invoke('copy-files-to-clipboard', filePaths),
 
     // 将文本安全写入剪贴板（走主进程 safeClipboard，规避窗口焦点检查与跨版本差异）
-    copyTextToClipboard: (text: string) =>
-      ipcRenderer.invoke('copy-text-to-clipboard', text),
+    copyTextToClipboard: (text: string) => ipcRenderer.invoke('copy-text-to-clipboard', text),
 
     // 从剪贴板读取文本
-    readTextFromClipboard: () =>
-      ipcRenderer.invoke('read-text-from-clipboard'),
+    readTextFromClipboard: () => ipcRenderer.invoke('read-text-from-clipboard'),
 
     // 写入文件
     writeFile: (filePath: string, content: string) =>
@@ -676,6 +679,11 @@ const electronAPI = {
     }
   },
 
+  deviceBind: {
+    getStatus: (): Promise<any> => ipcRenderer.invoke('deviceBind/getStatus'),
+    createCode: (): Promise<any> => ipcRenderer.invoke('deviceBind/createCode')
+  },
+
   // 工作目录管理
   addWorkspaceDirectory: (directory: WorkspaceDirectory): Promise<void> =>
     ipcRenderer.invoke('add-workspace-directory', directory),
@@ -701,7 +709,6 @@ const electronAPI = {
     ipcRenderer.invoke('get-workspace-config', workspaceId),
   updateWorkspaceConfig: (workspaceId: number, config: any) =>
     ipcRenderer.invoke('update-workspace-config', workspaceId, config),
-
 
   rescanWorkspaceDirectory: (workspaceId: number): Promise<any> =>
     ipcRenderer.invoke('rescanWorkspaceDirectory', workspaceId),
@@ -751,16 +758,13 @@ const electronAPI = {
       ipcRenderer.invoke('batch-rename:preview', template, files),
     executeRename: (template: string, files: any[]): Promise<any> =>
       ipcRenderer.invoke('batch-rename:execute', template, files),
-    getRandomTemplate: (): Promise<string> =>
-      ipcRenderer.invoke('batch-rename:random-template'),
-    applyTags: (operation: any): Promise<any> =>
-      ipcRenderer.invoke('batch-tag:apply', operation),
+    getRandomTemplate: (): Promise<string> => ipcRenderer.invoke('batch-rename:random-template'),
+    applyTags: (operation: any): Promise<any> => ipcRenderer.invoke('batch-tag:apply', operation),
     inspectControlledTags: (items: any[], language?: string): Promise<any> =>
       ipcRenderer.invoke('batch-tag:inspect-controlled-tags', items, language),
     deleteTagGlobally: (dimensionId: number, tagName: string): Promise<boolean> =>
       ipcRenderer.invoke('delete-tag-globally', dimensionId, tagName),
-    scanDuplicates: (options: any): Promise<any[]> =>
-      ipcRenderer.invoke('duplicate:scan', options),
+    scanDuplicates: (options: any): Promise<any[]> => ipcRenderer.invoke('duplicate:scan', options),
     onScanProgress: (callback: (data: any) => void): (() => void) => {
       const handler = (_: any, data: any) => callback(data)
       ipcRenderer.on('duplicate:scan-progress', handler)
@@ -772,7 +776,8 @@ const electronAPI = {
       action: any,
       fileTargets: Array<string | { path: string; newName?: string }>,
       workspaceDirectoryPath?: string
-    ): Promise<any> => ipcRenderer.invoke('duplicate:execute-fix', action, fileTargets, workspaceDirectoryPath),
+    ): Promise<any> =>
+      ipcRenderer.invoke('duplicate:execute-fix', action, fileTargets, workspaceDirectoryPath),
     applyKeepRule: (groups: any[], rule: string): Promise<any[]> =>
       ipcRenderer.invoke('duplicate:apply-keep-rule', groups, rule),
     getEffectiveDirectoryConfig: (dirPath: string): Promise<any> =>
@@ -880,8 +885,7 @@ const electronAPI = {
       workspaceId: number,
       name: string,
       structure: { summary: string; directories: any[] }
-    ) =>
-      ipcRenderer.invoke('virtual-directory/save-from-plan', workspaceId, name, structure),
+    ) => ipcRenderer.invoke('virtual-directory/save-from-plan', workspaceId, name, structure),
     checkIsLimitPredict: () => ipcRenderer.invoke('virtual-directory/check-is-limit-predict'),
     generateExternalDirectoryPlanPrompt: (params: {
       fileCount: number | string
@@ -1095,7 +1099,11 @@ const electronAPI = {
         workspaceDirectoryPath,
         selectedFileIds
       ),
-    getLightweightFiles: (workspaceDirectoryPath: string, selectedFileIds?: number[], limit?: number) =>
+    getLightweightFiles: (
+      workspaceDirectoryPath: string,
+      selectedFileIds?: number[],
+      limit?: number
+    ) =>
       ipcRenderer.invoke(
         'organize-real-directory/get-lightweight-files',
         workspaceDirectoryPath,
@@ -1121,8 +1129,7 @@ const electronAPI = {
       similarityThreshold?: number
       clusteringMode?: 'precise' | 'balanced' | 'complete'
       force?: boolean
-    }) =>
-      ipcRenderer.invoke('organize-real-directory/smart-cluster-hac', params),
+    }) => ipcRenderer.invoke('organize-real-directory/smart-cluster-hac', params),
     listSessions: (workspaceDirectoryPath: string) =>
       ipcRenderer.invoke('organize-real-directory/list-sessions', workspaceDirectoryPath),
     undoSession: (params: { workspaceDirectoryPath: string; sessionId: string }) =>
@@ -1335,20 +1342,26 @@ const electronAPI = {
 
   // 离线语音合成 (TTS)
   tts: {
-    synthesizeChunk: (text: string, voiceId: string | number, speed: number, sessionId?: number, sid?: number): Promise<{ buffer: ArrayBuffer; hitCap: boolean; steps: number } | null> =>
+    synthesizeChunk: (
+      text: string,
+      voiceId: string | number,
+      speed: number,
+      sessionId?: number,
+      sid?: number
+    ): Promise<{ buffer: ArrayBuffer; hitCap: boolean; steps: number } | null> =>
       ipcRenderer.invoke('tts:synthesize-chunk', text, voiceId, speed, sessionId, sid),
     abortSession: (sessionId: number): Promise<void> =>
       ipcRenderer.invoke('tts:abort-session', sessionId),
-    listVoices: (): Promise<any[]> =>
-      ipcRenderer.invoke('tts:list-voices'),
-    analyzeVoiceFile: (filePath: string): Promise<{
+    listVoices: (): Promise<any[]> => ipcRenderer.invoke('tts:list-voices'),
+    analyzeVoiceFile: (
+      filePath: string
+    ): Promise<{
       tempVoiceId: string
       lang: string
       emotion: string
       suggestedName: string
       durationSec: number
-    }> =>
-      ipcRenderer.invoke('tts:analyze-voice-file', filePath),
+    }> => ipcRenderer.invoke('tts:analyze-voice-file', filePath),
     saveCustomVoice: (params: {
       tempVoiceId: string
       displayName: string
@@ -1370,8 +1383,7 @@ const electronAPI = {
       sid?: number
       voiceId?: string | number
       speed?: number
-    }): Promise<string | null> =>
-      ipcRenderer.invoke('tts:get-cache-path', params),
+    }): Promise<string | null> => ipcRenderer.invoke('tts:get-cache-path', params),
     readWavMetadata: (wavPath: string): Promise<any> =>
       ipcRenderer.invoke('tts:read-wav-metadata', wavPath),
     readWavFile: (wavPath: string): Promise<ArrayBuffer | null> =>
@@ -1387,8 +1399,7 @@ const electronAPI = {
       speed: number
       fileFingerprint?: string
       fieldName?: string
-    }): Promise<boolean> =>
-      ipcRenderer.invoke('tts:append-wav-chunk', params),
+    }): Promise<boolean> => ipcRenderer.invoke('tts:append-wav-chunk', params),
     locateWavFile: (wavPath: string): Promise<boolean> =>
       ipcRenderer.invoke('tts:locate-wav-file', wavPath),
     scaleWav: (wavBuffer: ArrayBuffer, speed: number): Promise<ArrayBuffer | null> =>
@@ -1421,8 +1432,7 @@ const electronAPI = {
       chunkData: Uint8Array | Buffer
       duration?: number
       chunkText?: string
-    }): Promise<boolean> =>
-      ipcRenderer.invoke('tts:save-chunk', params),
+    }): Promise<boolean> => ipcRenderer.invoke('tts:save-chunk', params),
     readChunk: (params: {
       filePath?: string
       fileFingerprint?: string
@@ -1431,8 +1441,7 @@ const electronAPI = {
       voiceId: string | number
       chunkIndex: number
       chunkText?: string
-    }): Promise<ArrayBuffer | null> =>
-      ipcRenderer.invoke('tts:read-chunk', params)
+    }): Promise<ArrayBuffer | null> => ipcRenderer.invoke('tts:read-chunk', params)
   }
 }
 
