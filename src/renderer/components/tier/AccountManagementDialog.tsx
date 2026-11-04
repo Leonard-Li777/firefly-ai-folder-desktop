@@ -160,6 +160,7 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
             'bg-gradient-to-br from-amber-500/[0.12] via-orange-500/[0.04] to-transparent border-amber-500/30',
           accentText: 'text-amber-600 dark:text-amber-400',
           features: [
+            t('长视频全量深度分析（支持 2 小时以上超长片，免费版限前 5 分钟）'),
             t('无限文件分析额度'),
             t('无限极速目录槽位'),
             t('无限私有目录槽位'),
