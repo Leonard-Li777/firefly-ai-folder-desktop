@@ -180,11 +180,6 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
               <Sparkles className="w-5 h-5 text-primary" />
               <span>{t('配置工作目录分析策略')}</span>
             </h3>
-            <p className="text-xs text-muted-foreground mt-1">
-              {t('为「{name}」选择最贴合的文件整理场景，系统将自动自适应算力与分析深度。', {
-                name: workspace.name
-              })}
-            </p>
           </div>
 
           {/* 嗅探状态与采样信息 */}
@@ -215,7 +210,9 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
       <div className="flex-1 overflow-y-auto space-y-3 pr-1">
         <div className="flex items-center justify-between">
           <Label className="text-sm font-semibold text-foreground">
-            {t('选择整理场景 (4 种预设模式)')}
+            {t('为「{name}」选择最贴合的文件整理场景，系统将自动自适应算力与分析深度。', {
+                name: workspace.name
+              })}
           </Label>
           {profileResult && profileResult.confidence > 0 && (
             <span className="text-xs text-primary font-medium flex items-center gap-1">

@@ -1,9 +1,6 @@
 import React, { useState, useMemo } from 'react'
-import {
-  WorkspaceDirectory,
-  WorkspaceConfig,
-  parseWorkspaceConfig
-} from '@firefly/types'
+import { WorkspaceDirectory, WorkspaceConfig, parseWorkspaceConfig } from '@firefly/types'
+import { getIntentDisplayName } from '../WorkspaceConfigPanel'
 import { Card } from '../../ui/card'
 import { Button } from '../../ui/button'
 import { Switch } from '../../ui/switch'
@@ -78,7 +75,9 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
 
   // 差异扫描预览弹窗
   const [showRescanDialog, setShowRescanDialog] = useState(false)
-  const [rescanData, setRescanData] = useState<{ newFiles: any[]; modifiedFiles: any[] } | null>(null)
+  const [rescanData, setRescanData] = useState<{ newFiles: any[]; modifiedFiles: any[] } | null>(
+    null
+  )
 
   // 空文件夹清理弹窗
   const [showEmptyFolderDialog, setShowEmptyFolderDialog] = useState(false)
@@ -204,9 +203,7 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
           // 容错
         }
 
-        toast.success(
-          t('工作区分析数据已安全重置，被其他目录共享的文件已依法完整保留。')
-        )
+        toast.success(t('工作区分析数据已安全重置，被其他目录共享的文件已依法完整保留。'))
         setShowResetDialog(false)
         onConfigSaved?.()
       } else {
@@ -297,8 +294,8 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
           <div className="flex items-center gap-2">
             <Layers className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
             <span>{t('场景意图: ')}</span>
-            <span className="font-semibold text-foreground font-mono">
-              {isReady ? parsedConfig.intent : t('未指定')}
+            <span className="font-semibold text-foreground">
+              {isReady ? getIntentDisplayName(parsedConfig.intent) : t('未指定')}
             </span>
           </div>
 
@@ -320,7 +317,10 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
           </div>
           <div className="space-y-0.5 min-w-0">
             <div className="flex items-center gap-2">
-              <Label htmlFor="auto-watch-switch" className="text-sm font-bold text-foreground cursor-pointer">
+              <Label
+                htmlFor="auto-watch-switch"
+                className="text-sm font-bold text-foreground cursor-pointer"
+              >
                 {t('自动监听文件变动 (Auto Watch)')}
               </Label>
               {autoWatch && (
@@ -330,13 +330,17 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
               )}
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              {t('实时感知当前目录下新增、修改与删除的文件。开启后新文件将自动同步并加入 AI 智能分析队列。')}
+              {t(
+                '实时感知当前目录下新增、修改与删除的文件。开启后新文件将自动同步并加入 AI 智能分析队列。'
+              )}
             </p>
           </div>
         </div>
 
         <div className="shrink-0 flex items-center gap-2 pl-2">
-          {isTogglingWatch && <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />}
+          {isTogglingWatch && (
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
+          )}
           <Switch
             id="auto-watch-switch"
             checked={autoWatch}
@@ -353,11 +357,11 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
             <RefreshCw className={cn('w-4 h-4', isScanning && 'animate-spin')} />
           </div>
           <div className="space-y-0.5 min-w-0">
-            <h4 className="text-sm font-bold text-foreground">
-              {t('重新扫描与变动检测')}
-            </h4>
+            <h4 className="text-sm font-bold text-foreground">{t('重新扫描与变动检测')}</h4>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              {t('对物理磁盘文件进行全量比对，检查是否有脱机添加的新文件或改动，并可选择将其推入分析队列。')}
+              {t(
+                '对物理磁盘文件进行全量比对，检查是否有脱机添加的新文件或改动，并可选择将其推入分析队列。'
+              )}
             </p>
           </div>
         </div>
@@ -386,9 +390,7 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
             <FolderX className="w-4 h-4" />
           </div>
           <div className="space-y-0.5 min-w-0">
-            <h4 className="text-sm font-bold text-foreground">
-              {t('扫描并清理空文件夹')}
-            </h4>
+            <h4 className="text-sm font-bold text-foreground">{t('扫描并清理空文件夹')}</h4>
             <p className="text-xs text-muted-foreground leading-relaxed">
               {t('递归扫描当前目录因整理或删除后遗留的空文件夹，支持查看详情并一键批量清理。')}
             </p>
@@ -419,11 +421,11 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
             <Sparkles className="w-4 h-4" />
           </div>
           <div className="space-y-0.5 min-w-0">
-            <h4 className="text-sm font-bold text-foreground">
-              {t('重新运行场景设置向导')}
-            </h4>
+            <h4 className="text-sm font-bold text-foreground">{t('重新运行场景设置向导')}</h4>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              {t('重新启动极简向导，由系统再次探测目录内容并提供「极速整理/创意图库/影视素材/桌面杂乱」预设推荐。')}
+              {t(
+                '重新启动极简向导，由系统再次探测目录内容并提供「极速整理/创意图库/影视素材/桌面杂乱」预设推荐。'
+              )}
             </p>
           </div>
         </div>
@@ -447,11 +449,11 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
             <RotateCcw className="w-4 h-4" />
           </div>
           <div className="space-y-0.5 min-w-0">
-            <h4 className="text-sm font-bold text-destructive">
-              {t('安全重置目录分析数据')}
-            </h4>
+            <h4 className="text-sm font-bold text-destructive">{t('安全重置目录分析数据')}</h4>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              {t('清空当前目录所有文件的 AI 标签、分镜缓存与文本索引。受跨工作区孤儿保护机制守护，共享文件绝不误伤。')}
+              {t(
+                '清空当前目录所有文件的 AI 标签、分镜缓存与文本索引。受跨工作区孤儿保护机制守护，共享文件绝不误伤。'
+              )}
             </p>
           </div>
         </div>
@@ -475,11 +477,11 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
             <Trash2 className="w-4 h-4" />
           </div>
           <div className="space-y-0.5 min-w-0">
-            <h4 className="text-sm font-bold text-destructive">
-              {t('从应用中移除工作目录')}
-            </h4>
+            <h4 className="text-sm font-bold text-destructive">{t('从应用中移除工作目录')}</h4>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              {t('解除此目录在应用内的绑定并清空其索引记录。此操作完全不会影响或删除物理磁盘上的真实文件。')}
+              {t(
+                '解除此目录在应用内的绑定并清空其索引记录。此操作完全不会影响或删除物理磁盘上的真实文件。'
+              )}
             </p>
           </div>
         </div>
@@ -509,7 +511,9 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
             <AlertDialogDescription asChild>
               <div className="text-xs leading-relaxed space-y-2 text-muted-foreground">
                 <p>
-                  {t('此操作将清空当前目录下所有文件的 AI 分析成果与分镜缓存，但不会删除物理磁盘上的真实文件。')}
+                  {t(
+                    '此操作将清空当前目录下所有文件的 AI 分析成果与分镜缓存，但不会删除物理磁盘上的真实文件。'
+                  )}
                 </p>
                 <div className="p-2.5 rounded-lg bg-muted text-muted-foreground flex items-center gap-2 border border-border/50">
                   <ShieldCheck className="h-4 w-4 text-green-500 shrink-0" />
@@ -549,9 +553,7 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="text-xs leading-relaxed space-y-2 text-muted-foreground">
-                <p>
-                  {t('确定要从应用中移除此工作目录吗？相关的文件索引与分析数据将被清理。')}
-                </p>
+                <p>{t('确定要从应用中移除此工作目录吗？相关的文件索引与分析数据将被清理。')}</p>
                 <div className="p-2.5 rounded-lg bg-green-500/10 text-green-700 dark:text-green-300 flex items-center gap-2 border border-green-500/20">
                   <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600" />
                   <span>{t('安全保障：物理磁盘上的文件和文件夹 100% 完好无损。')}</span>

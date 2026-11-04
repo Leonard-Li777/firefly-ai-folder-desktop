@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import {
   WorkspaceDirectory,
   WorkspaceConfig,
@@ -10,6 +10,7 @@ import {
 } from '@firefly/types'
 import { mapIntentToParameters } from '@firefly/shared'
 import { useTierStore } from '../../../stores/tier-store'
+import { getIntentDisplayName } from '../WorkspaceConfigPanel'
 import { Card } from '../../ui/card'
 import { Button } from '../../ui/button'
 import { Switch } from '../../ui/switch'
@@ -28,7 +29,7 @@ import {
   Film,
   Music,
   CheckCircle2,
-  Save,
+  Check,
   RotateCcw,
   Loader2,
   Info
@@ -105,13 +106,60 @@ export const TaskEngineSettings: React.FC<TaskEngineSettingsProps> = ({
     }
   }, [baseDerived, overrides])
 
-  // 检查是否有未保存的修改
-  const hasChanges = useMemo(() => {
-    const savedOverrides = (isReady && parsedConfig.overrides) || {}
-    return JSON.stringify(overrides) !== JSON.stringify(savedOverrides)
-  }, [isReady, parsedConfig, overrides])
+  // 待持久化数据引用与防抖计时器 (实现用户修改即保存，关闭弹层时兜底立即写盘)
+  const pendingOverridesRef = useRef<Partial<TechnicalEngineParameters> | null>(null)
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
 
-  // 修改单个参数
+  // 核心写盘方法
+  const persistConfig = useCallback(
+    async (targetOverrides: Partial<TechnicalEngineParameters>) => {
+      if (!workspace.id) return
+      setIsSaving(true)
+      try {
+        const hasAnyOverride = Object.keys(targetOverrides).length > 0
+        const updatedConfig: WorkspaceConfig = {
+          schemaVersion: 1,
+          status: 'ready',
+          intent: currentIntent,
+          policyVersion: 1,
+          derivedSnapshot: baseDerived,
+          overrides: hasAnyOverride ? targetOverrides : undefined,
+          customIgnoreRules:
+            parsedConfig.status === 'ready' ? parsedConfig.customIgnoreRules : undefined,
+          configuredAt: Date.now()
+        }
+
+        if (window.electronAPI?.updateWorkspaceConfig) {
+          const res = await window.electronAPI.updateWorkspaceConfig(workspace.id, updatedConfig)
+          if (res.success) {
+            onConfigSaved?.()
+          } else {
+            toast.error(res.error || t('保存失败'))
+          }
+        }
+      } catch (err: any) {
+        console.error('[TaskEngineSettings] 自动保存微调策略异常:', err)
+      } finally {
+        setIsSaving(false)
+      }
+    },
+    [workspace.id, currentIntent, baseDerived, parsedConfig, onConfigSaved]
+  )
+
+  // 组件卸载、切目录或关闭弹窗时：如果存在未落盘的修改，无条件立即写盘
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+      }
+      if (pendingOverridesRef.current !== null) {
+        persistConfig(pendingOverridesRef.current)
+        pendingOverridesRef.current = null
+      }
+    }
+  }, [persistConfig])
+
+  // 修改单个参数 (用户修改即保存，500ms 防抖自动落盘)
   const handleParamChange = <K extends keyof TechnicalEngineParameters>(
     key: K,
     val: TechnicalEngineParameters[K]
@@ -122,47 +170,32 @@ export const TaskEngineSettings: React.FC<TaskEngineSettingsProps> = ({
       if (val === baseDerived[key]) {
         delete next[key]
       }
+      pendingOverridesRef.current = next
+
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+      }
+      debounceTimerRef.current = setTimeout(() => {
+        if (pendingOverridesRef.current !== null) {
+          const toSave = pendingOverridesRef.current
+          pendingOverridesRef.current = null
+          persistConfig(toSave)
+        }
+      }, 500)
+
       return next
     })
   }
 
-  // 重置为当前意图预设基线
+  // 重置为当前意图预设基线 (立即写盘并提示)
   const handleResetToPreset = () => {
-    setOverrides({})
-    toast.success(t('已恢复当前场景推荐的基线参数'))
-  }
-
-  // 保存微调参数
-  const handleSave = async () => {
-    if (!workspace.id) return
-    setIsSaving(true)
-    try {
-      const hasAnyOverride = Object.keys(overrides).length > 0
-      const updatedConfig: WorkspaceConfig = {
-        schemaVersion: 1,
-        status: 'ready',
-        intent: currentIntent,
-        policyVersion: 1,
-        derivedSnapshot: baseDerived,
-        overrides: hasAnyOverride ? overrides : undefined,
-        customIgnoreRules: isReady ? parsedConfig.customIgnoreRules : undefined,
-        configuredAt: Date.now()
-      }
-
-      if (window.electronAPI?.updateWorkspaceConfig) {
-        const res = await window.electronAPI.updateWorkspaceConfig(workspace.id, updatedConfig)
-        if (res.success) {
-          toast.success(t('AI 分析策略微调已保存'))
-          onConfigSaved?.()
-        } else {
-          toast.error(res.error || t('保存失败'))
-        }
-      }
-    } catch (err: any) {
-      toast.error(err?.message || t('保存微调策略异常'))
-    } finally {
-      setIsSaving(false)
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
     }
+    pendingOverridesRef.current = null
+    setOverrides({})
+    persistConfig({})
+    toast.success(t('已恢复当前场景推荐的基线参数'))
   }
 
   return (
@@ -175,41 +208,40 @@ export const TaskEngineSettings: React.FC<TaskEngineSettingsProps> = ({
             <span>{t('AI 分析与多媒体策略')}</span>
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {t('当前工作目录生效场景: {intent}。在此可针对抽帧、ASR、OCR及长文本提取上限进行精细定制。', {
-              intent: currentIntent
+            {t('当前工作目录生效场景: {intent}。修改参数将自动保存生效。', {
+              intent: getIntentDisplayName(currentIntent)
             })}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {/* 自动保存状态指示 */}
+          {isSaving ? (
+            <span className="text-xs text-muted-foreground flex items-center gap-1.5 animate-pulse">
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+              <span>{t('正在自动保存...')}</span>
+            </span>
+          ) : (
+            <span className="text-xs text-muted-foreground/80 flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+              <span>{t('已自动保存')}</span>
+            </span>
+          )}
+
+          {/* 恢复场景预设按钮 */}
           {Object.keys(overrides).length > 0 && (
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={handleResetToPreset}
               className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1.5 h-8"
+              title={t('清除所有微调项，恢复为场景推荐默认值')}
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>{t('恢复场景预设')}</span>
             </Button>
           )}
-
-          <Button
-            type="button"
-            variant="default"
-            size="sm"
-            disabled={isSaving || !hasChanges}
-            onClick={handleSave}
-            className="text-xs font-semibold flex items-center gap-1.5 h-8 px-3.5 shadow-sm"
-          >
-            {isSaving ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <Save className="w-3.5 h-3.5" />
-            )}
-            <span>{t('保存微调策略')}</span>
-          </Button>
         </div>
       </div>
 
@@ -325,7 +357,11 @@ export const TaskEngineSettings: React.FC<TaskEngineSettingsProps> = ({
                 </Button>
               ))}
             </div>
-            <ParamHelp text={t('控制画面变动触发镜头切片的门限。快剪视频建议选高敏锐，课堂讲座建议选低敏锐。')} />
+            <ParamHelp
+              text={t(
+                '控制画面变动触发镜头切片的门限。快剪视频建议选高敏锐，课堂讲座建议选低敏锐。'
+              )}
+            />
           </div>
 
           {/* 画面识别精细度软预算 */}
@@ -344,7 +380,9 @@ export const TaskEngineSettings: React.FC<TaskEngineSettingsProps> = ({
                 <Button
                   key={b.budget}
                   type="button"
-                  variant={effectiveParams.videoSoftTokenBudget === b.budget ? 'default' : 'outline'}
+                  variant={
+                    effectiveParams.videoSoftTokenBudget === b.budget ? 'default' : 'outline'
+                  }
                   size="sm"
                   onClick={() => handleParamChange('videoSoftTokenBudget', b.budget)}
                   className="text-xs h-8"
@@ -414,7 +452,9 @@ export const TaskEngineSettings: React.FC<TaskEngineSettingsProps> = ({
               onChange={e => handleParamChange('audioAnalysisDurationSec', Number(e.target.value))}
               className="accent-primary cursor-pointer h-2"
             />
-            <ParamHelp text={t('对 MP3/FLAC 等纯音频文件前 N 秒进行离线语音转写提取语义标签 (0~180s)。')} />
+            <ParamHelp
+              text={t('对 MP3/FLAC 等纯音频文件前 N 秒进行离线语音转写提取语义标签 (0~180s)。')}
+            />
           </div>
 
           {/* 文本与文档内容提取上限 */}
@@ -437,7 +477,9 @@ export const TaskEngineSettings: React.FC<TaskEngineSettingsProps> = ({
               onChange={e => handleParamChange('maxContentSizeKb', Number(e.target.value))}
               className="h-8 text-xs font-mono"
             />
-            <ParamHelp text={t('约束单文档 (PDF/TXT/Word/Markdown) 提取并送入向量索引的正文字符上限 (KB)。')} />
+            <ParamHelp
+              text={t('约束单文档 (PDF/TXT/Word/Markdown) 提取并送入向量索引的正文字符上限 (KB)。')}
+            />
           </div>
 
           {/* 图片 OCR 开关与模型尺寸 */}
@@ -445,7 +487,9 @@ export const TaskEngineSettings: React.FC<TaskEngineSettingsProps> = ({
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label className="text-xs font-bold">{t('图片文字识别 (OCR)')}</Label>
-                <ParamHelp text={t('自动识别图片中的文字并建立全文检索索引，适合截图、发票和设计稿。')} />
+                <ParamHelp
+                  text={t('自动识别图片中的文字并建立全文检索索引，适合截图、发票和设计稿。')}
+                />
               </div>
               <Switch
                 checked={effectiveParams.enableImageOcr}
@@ -484,7 +528,9 @@ export const TaskEngineSettings: React.FC<TaskEngineSettingsProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Lock className="w-4 h-4 text-amber-500" />
-            <h4 className="font-bold text-xs text-foreground">{t('多模态嵌入与向量流形底座 (系统硬件锁定)')}</h4>
+            <h4 className="font-bold text-xs text-foreground">
+              {t('多模态嵌入与向量流形底座 (系统硬件锁定)')}
+            </h4>
           </div>
           <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium">
             {t('全局唯一实例')}
@@ -503,7 +549,9 @@ export const TaskEngineSettings: React.FC<TaskEngineSettingsProps> = ({
               <Cpu className="w-4 h-4 text-primary shrink-0" />
               <div>
                 <div className="text-xs font-semibold">{t('嵌入多模态画像')}</div>
-                <div className="text-[10px] text-muted-foreground font-mono">{effectiveParams.embeddingProfile}</div>
+                <div className="text-[10px] text-muted-foreground font-mono">
+                  {effectiveParams.embeddingProfile}
+                </div>
               </div>
             </div>
             <Lock className="w-3.5 h-3.5 text-muted-foreground" />
@@ -514,7 +562,9 @@ export const TaskEngineSettings: React.FC<TaskEngineSettingsProps> = ({
               <Layers className="w-4 h-4 text-primary shrink-0" />
               <div>
                 <div className="text-xs font-semibold">{t('MRL 向量维度')}</div>
-                <div className="text-[10px] text-muted-foreground font-mono">{effectiveParams.mrlDimension} Dim</div>
+                <div className="text-[10px] text-muted-foreground font-mono">
+                  {effectiveParams.mrlDimension} Dim
+                </div>
               </div>
             </div>
             <Lock className="w-3.5 h-3.5 text-muted-foreground" />
