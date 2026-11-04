@@ -6,11 +6,7 @@ import { Badge } from '../../../ui/badge'
 import { Checkbox } from '../../../ui/checkbox'
 import { Switch } from '../../../ui/switch'
 import { Input } from '../../../ui/input'
-import {
-  DuplicateGroup,
-  DuplicateFileItem,
-  DuplicateDetectionStrategy
-} from '@firefly/types'
+import { DuplicateGroup, DuplicateFileItem, DuplicateDetectionStrategy } from '@firefly/types'
 import { toast } from '../../../common/Toast'
 import { SplitPane } from '../../../common/SplitPane'
 import { FileTypeIcon, extractFileExtension } from '../../../common/FileTypeIcon'
@@ -19,6 +15,7 @@ import { PAGE_IDS } from '../../../../constants/page-ids'
 import { usePreviewOverlayStore } from '../../../../stores/preview-overlay-store'
 import { ContextMenu, ContextMenuItem } from '../../../common/ContextMenu'
 import { useAnalysisQueueStore } from '../../../../stores/analysis-queue-store'
+import { notifyEnqueueResult } from '../../../../utils/enqueue-notifier'
 import { LogCategory, logger } from '@firefly/shared'
 
 interface BatchDuplicateViewProps {
@@ -141,7 +138,6 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
     }
   }, [ffprobeAvailable])
 
-
   // 将批量处理执行状态即时同步给顶栏操作按钮
   useEffect(() => {
     if (onProcessingStateChange) {
@@ -218,11 +214,13 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
           minSimilarity: sim,
           strategies: currentStrategies as DuplicateDetectionStrategy[]
         })
-        const normalizedGroups: DuplicateGroup[] = (groups || []).map((g: DuplicateGroup, idx: number) => ({
-          ...g,
-          groupId: g.groupId || `${g.strategy}_${idx}`,
-          files: (g.files || []).map((f: DuplicateFileItem) => ({ ...f }))
-        }))
+        const normalizedGroups: DuplicateGroup[] = (groups || []).map(
+          (g: DuplicateGroup, idx: number) => ({
+            ...g,
+            groupId: g.groupId || `${g.strategy}_${idx}`,
+            files: (g.files || []).map((f: DuplicateFileItem) => ({ ...f }))
+          })
+        )
         setDuplicateGroups(normalizedGroups)
         const finalCount = localMaxScanned || localMaxTotal || streamingScannedCount || 0
         setScannedCount(finalCount)
@@ -276,7 +274,10 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
     setRecommendRule(rule)
     if (window.electronAPI?.organizeBatch?.applyKeepRule) {
       try {
-        const calculated = await window.electronAPI.organizeBatch.applyKeepRule(duplicateGroups, rule)
+        const calculated = await window.electronAPI.organizeBatch.applyKeepRule(
+          duplicateGroups,
+          rule
+        )
         if (calculated && Array.isArray(calculated)) {
           setDuplicateGroups(calculated)
           return
@@ -418,8 +419,7 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
     (file: DuplicateFileItem): string | null => {
       const ext = extractFileExtension(file.path) || extractFileExtension(file.name)
       const isImg = IMAGE_EXTENSIONS.has(ext)
-      const normalize =
-        window.electronAPI?.utils?.normalizeForCache || ((p: string) => p)
+      const normalize = window.electronAPI?.utils?.normalizeForCache || ((p: string) => p)
 
       // 1. 如果有明确缩略图路径
       if (file.thumbnailPath) {
@@ -491,9 +491,7 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
     const ext = extractFileExtension(file.path) || extractFileExtension(file.name)
     const meta = fileMetaMap.get(file.path)
     const displayTitle = meta?.smartName || file.name
-    usePreviewOverlayStore
-      .getState()
-      .openPreview(file.path, displayTitle, ext, PAGE_IDS.ORGANIZE)
+    usePreviewOverlayStore.getState().openPreview(file.path, displayTitle, ext, PAGE_IDS.ORGANIZE)
   }
 
   // 右键菜单状态（对齐 FileList 组件）
@@ -503,19 +501,16 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
     file: DuplicateFileItem
   } | null>(null)
 
-  const handleContextMenu = useCallback(
-    (e: React.MouseEvent, file: DuplicateFileItem) => {
-      e.preventDefault()
-      e.stopPropagation()
-      handleSelectFileForPreview(file)
-      setContextMenu({
-        x: e.clientX,
-        y: e.clientY,
-        file
-      })
-    },
-    []
-  )
+  const handleContextMenu = useCallback((e: React.MouseEvent, file: DuplicateFileItem) => {
+    e.preventDefault()
+    e.stopPropagation()
+    handleSelectFileForPreview(file)
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      file
+    })
+  }, [])
 
   const { addItems } = useAnalysisQueueStore()
 
@@ -528,9 +523,11 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
     const displayTitle = meta?.smartName || file.name
 
     const queueItems = useAnalysisQueueStore.getState().snapshot.items
-    const isPathEqual = window.electronAPI?.utils?.isPathEqual || ((p1: string, p2: string) => p1 === p2)
+    const isPathEqual =
+      window.electronAPI?.utils?.isPathEqual || ((p1: string, p2: string) => p1 === p2)
     const queueItem = queueItems.find(q => isPathEqual(q.path, file.path))
-    const isAnalyzingOrPending = queueItem?.status === 'analyzing' || queueItem?.status === 'pending'
+    const isAnalyzingOrPending =
+      queueItem?.status === 'analyzing' || queueItem?.status === 'pending'
     const isAnalyzed = Boolean(file.qualityScore !== undefined || meta?.isAnalyzed)
 
     return [
@@ -575,15 +572,18 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
             disabled: isAnalyzingOrPending,
             onClick: async () => {
               try {
-                await addItems([
-                  {
-                    path: file.path,
-                    name: file.name,
-                    size: file.size || 0,
-                    type: ext
-                  }
-                ], true)
-                toast.success(t('已加入分析队列'))
+                const res = await addItems(
+                  [
+                    {
+                      path: file.path,
+                      name: file.name,
+                      size: file.size || 0,
+                      type: ext
+                    }
+                  ],
+                  true
+                )
+                notifyEnqueueResult(res)
               } catch (error) {
                 logger.error(LogCategory.RENDERER, '加入分析队列失败:', error)
                 toast.error(t('操作失败'))
@@ -596,15 +596,18 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
             disabled: isAnalyzingOrPending,
             onClick: async () => {
               try {
-                await addItems([
-                  {
-                    path: file.path,
-                    name: file.name,
-                    size: file.size || 0,
-                    type: ext
-                  }
-                ], false)
-                toast.success(t('已加入分析队列'))
+                const res = await addItems(
+                  [
+                    {
+                      path: file.path,
+                      name: file.name,
+                      size: file.size || 0,
+                      type: ext
+                    }
+                  ],
+                  false
+                )
+                notifyEnqueueResult(res)
               } catch (error) {
                 logger.error(LogCategory.RENDERER, '加入分析队列失败:', error)
                 toast.error(t('操作失败'))
@@ -646,7 +649,10 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
   }, [contextMenu, fileMetaMap, addItems])
 
   // 单个组内：全选删除 / 全保留 / 反选 (仅在当前组生效)
-  const handleToggleGroupAction = (targetGroup: DuplicateGroup, action: 'keep_all' | 'trash_all' | 'invert') => {
+  const handleToggleGroupAction = (
+    targetGroup: DuplicateGroup,
+    action: 'keep_all' | 'trash_all' | 'invert'
+  ) => {
     setDuplicateGroups(prev => {
       return prev.map(group => {
         const isTargetGroup =
@@ -710,64 +716,106 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
     const isVideoOpt = group.strategy === 'video_optimizer'
     const isExifClean = group.strategy === 'exif_remover'
     const loadingToastId = isVideoOpt
-      ? toast.loading(t('正在对 {count} 个视频进行高效能优化转码，首个完成后将自动定位...', { count: targetPaths.length }))
+      ? toast.loading(
+          t('正在对 {count} 个视频进行高效能优化转码，首个完成后将自动定位...', {
+            count: targetPaths.length
+          })
+        )
       : isExifClean
-      ? toast.loading(t('正在处理 {count} 个图片的 Exif 隐私信息清除，首个完成后将自动定位...', { count: targetPaths.length }))
-      : null
+        ? toast.loading(
+            t('正在处理 {count} 个图片的 Exif 隐私信息清除，首个完成后将自动定位...', {
+              count: targetPaths.length
+            })
+          )
+        : null
 
     try {
       if (group.strategy === 'video_optimizer') {
-        const res = await window.electronAPI?.organizeBatch?.executeStrategyFix('optimize', targetPaths, workspaceDirectoryPath)
+        const res = await window.electronAPI?.organizeBatch?.executeStrategyFix(
+          'optimize',
+          targetPaths,
+          workspaceDirectoryPath
+        )
         if (loadingToastId) toast.dismiss(loadingToastId)
         if (res?.errors && res.errors.length > 0 && res.successCount === 0) {
           toast.error(t('视频优化转码失败: {err}', { err: res.errors[0]?.error || '' }))
           return
         }
-        toast.success(t('已完成 {count} 个视频的高效能转码优化并导出至目录', { count: res?.successCount || targetPaths.length }))
+        toast.success(
+          t('已完成 {count} 个视频的高效能转码优化并导出至目录', {
+            count: res?.successCount || targetPaths.length
+          })
+        )
       } else if (group.strategy === 'exif_remover') {
-        const res = await window.electronAPI?.organizeBatch?.executeStrategyFix('clean_exif', targetPaths, workspaceDirectoryPath)
+        const res = await window.electronAPI?.organizeBatch?.executeStrategyFix(
+          'clean_exif',
+          targetPaths,
+          workspaceDirectoryPath
+        )
         if (loadingToastId) toast.dismiss(loadingToastId)
         if (res?.errors && res.errors.length > 0 && res.successCount === 0) {
           toast.error(t('Exif 隐私信息擦除失败: {err}', { err: res.errors[0]?.error || '' }))
           return
         }
-        toast.success(t('已成功生成 {count} 个无 Exif 隐私信息的图片副本至目录', { count: res?.successCount || targetPaths.length }))
+        toast.success(
+          t('已成功生成 {count} 个无 Exif 隐私信息的图片副本至目录', {
+            count: res?.successCount || targetPaths.length
+          })
+        )
       } else if (group.strategy === 'bad_names') {
         const badNameTargets = group.files
           .filter(f => f.selectedForDelete && f.path)
           .map(f => ({ path: f.path, newName: f.fingerprint || undefined }))
-        const res = await window.electronAPI?.organizeBatch?.executeStrategyFix('rename_bad_name', badNameTargets, workspaceDirectoryPath)
-        toast.success(t('已成功按推荐名更名 {count} 个异常文件名', { count: res?.successCount || targetPaths.length }))
+        const res = await window.electronAPI?.organizeBatch?.executeStrategyFix(
+          'rename_bad_name',
+          badNameTargets,
+          workspaceDirectoryPath
+        )
+        toast.success(
+          t('已成功按推荐名更名 {count} 个异常文件名', {
+            count: res?.successCount || targetPaths.length
+          })
+        )
       } else if (group.strategy === 'bad_extensions') {
-        const res = await window.electronAPI?.organizeBatch?.executeStrategyFix('fix_extension', targetPaths, workspaceDirectoryPath)
-        toast.success(t('已成功修正 {count} 个文件的错误扩展名', { count: res?.successCount || targetPaths.length }))
+        const res = await window.electronAPI?.organizeBatch?.executeStrategyFix(
+          'fix_extension',
+          targetPaths,
+          workspaceDirectoryPath
+        )
+        toast.success(
+          t('已成功修正 {count} 个文件的错误扩展名', {
+            count: res?.successCount || targetPaths.length
+          })
+        )
       } else {
         await onExecuteTrash(targetPaths)
       }
 
       // 操作成功后从当前状态中移除已被处理的文件或组
       setDuplicateGroups(prev => {
-        const nextGroups = prev.map(g => {
-          if (g.groupId === group.groupId || prev.indexOf(g) === gIdx) {
-            const remainingFiles = g.files.filter(f => !targetPaths.includes(f.path))
-            return { ...g, files: remainingFiles }
-          }
-          return g
-        }).filter(g => {
-          const isStandalone = [
-            'empty_files',
-            'empty_folders',
-            'big_files',
-            'temporary_files',
-            'invalid_symlinks',
-            'broken_files',
-            'bad_extensions',
-            'bad_names',
-            'exif_remover',
-            'video_optimizer'
-          ].includes(g.strategy)
-          return isStandalone ? g.files.length > 0 : g.files.length > 1
-        })
+        const nextGroups = prev
+          .map(g => {
+            if (g.groupId === group.groupId || prev.indexOf(g) === gIdx) {
+              const remainingFiles = g.files.filter(f => !targetPaths.includes(f.path))
+              return { ...g, files: remainingFiles }
+            }
+            return g
+          })
+          .filter(g => {
+            const isStandalone = [
+              'empty_files',
+              'empty_folders',
+              'big_files',
+              'temporary_files',
+              'invalid_symlinks',
+              'broken_files',
+              'bad_extensions',
+              'bad_names',
+              'exif_remover',
+              'video_optimizer'
+            ].includes(g.strategy)
+            return isStandalone ? g.files.length > 0 : g.files.length > 1
+          })
         return nextGroups
       })
 
@@ -809,35 +857,85 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
   }, [duplicateGroups, formatBytes])
 
   // 策略分类列表
-  const STRATEGY_CATEGORIES = useMemo<StrategyCategory[]>(() => [
-    { key: 'multimodal', name: t('多模态与内容查重'), icon: 'fingerprint' },
-    { key: 'cleanup', name: t('目录与空项清理'), icon: 'folder_delete' },
-    { key: 'anomaly', name: t('异常与失效文件'), icon: 'report_problem' },
-    { key: 'optimize', name: t('优化转换与隐私'), icon: 'tune' }
-  ], [])
+  const STRATEGY_CATEGORIES = useMemo<StrategyCategory[]>(
+    () => [
+      { key: 'multimodal', name: t('多模态与内容查重'), icon: 'fingerprint' },
+      { key: 'cleanup', name: t('目录与空项清理'), icon: 'folder_delete' },
+      { key: 'anomaly', name: t('异常与失效文件'), icon: 'report_problem' },
+      { key: 'optimize', name: t('优化转换与隐私'), icon: 'tune' }
+    ],
+    []
+  )
 
   // 16 大核心策略定义表 (按分类组织)
-  const STRATEGY_DEFINITIONS = useMemo<StrategyDefinition[]>(() => [
-    { key: 'exact_hash', label: t('精确内容一致'), icon: 'fingerprint', category: 'multimodal' },
-    { key: 'image_phash', label: t('相似图片'), icon: 'image', category: 'multimodal' },
-    { key: 'audio_hash', label: t('相似音乐'), icon: 'audiotrack', category: 'multimodal' },
-    { key: 'video_phash', label: t('相似视频'), icon: 'videocam', category: 'multimodal', warning: t('查找耗时较长'), description: t('需安装外部 ffprobe 依赖'), disabled: !ffprobeAvailable },
-    { key: 'text_simhash', label: t('文档语义相似'), icon: 'article', category: 'multimodal', disabled: true },
-    { key: 'filename_heuristic', label: t('副本衍生文件'), icon: 'copy_all', category: 'multimodal', disabled: true },
+  const STRATEGY_DEFINITIONS = useMemo<StrategyDefinition[]>(
+    () => [
+      { key: 'exact_hash', label: t('精确内容一致'), icon: 'fingerprint', category: 'multimodal' },
+      { key: 'image_phash', label: t('相似图片'), icon: 'image', category: 'multimodal' },
+      { key: 'audio_hash', label: t('相似音乐'), icon: 'audiotrack', category: 'multimodal' },
+      {
+        key: 'video_phash',
+        label: t('相似视频'),
+        icon: 'videocam',
+        category: 'multimodal',
+        warning: t('查找耗时较长'),
+        description: t('需安装外部 ffprobe 依赖'),
+        disabled: !ffprobeAvailable
+      },
+      {
+        key: 'text_simhash',
+        label: t('文档语义相似'),
+        icon: 'article',
+        category: 'multimodal',
+        disabled: true
+      },
+      {
+        key: 'filename_heuristic',
+        label: t('副本衍生文件'),
+        icon: 'copy_all',
+        category: 'multimodal',
+        disabled: true
+      },
 
-    { key: 'empty_folders', label: t('空文件夹'), icon: 'folder_open', category: 'cleanup' },
-    { key: 'big_files', label: t('超大文件'), icon: 'save', category: 'cleanup', description: t('发现单文件体积大于或等于 10MB 的超大文件') },
-    { key: 'empty_files', label: t('空文件'), icon: 'insert_drive_file', category: 'cleanup' },
-    { key: 'temporary_files', label: t('临时缓存'), icon: 'auto_delete', category: 'cleanup' },
+      { key: 'empty_folders', label: t('空文件夹'), icon: 'folder_open', category: 'cleanup' },
+      {
+        key: 'big_files',
+        label: t('超大文件'),
+        icon: 'save',
+        category: 'cleanup',
+        description: t('发现单文件体积大于或等于 10MB 的超大文件')
+      },
+      { key: 'empty_files', label: t('空文件'), icon: 'insert_drive_file', category: 'cleanup' },
+      { key: 'temporary_files', label: t('临时缓存'), icon: 'auto_delete', category: 'cleanup' },
 
-    { key: 'invalid_symlinks', label: t('断裂软链接'), icon: 'link_off', category: 'anomaly' },
-    { key: 'broken_files', label: t('损坏文件'), icon: 'broken_image', category: 'anomaly' },
-    { key: 'bad_extensions', label: t('错误扩展名'), icon: 'extension_off', category: 'anomaly' },
-    { key: 'bad_names', label: t('异常文件名'), icon: 'edit_attributes', category: 'anomaly' },
+      { key: 'invalid_symlinks', label: t('断裂软链接'), icon: 'link_off', category: 'anomaly' },
+      { key: 'broken_files', label: t('损坏文件'), icon: 'broken_image', category: 'anomaly' },
+      { key: 'bad_extensions', label: t('错误扩展名'), icon: 'extension_off', category: 'anomaly' },
+      { key: 'bad_names', label: t('异常文件名'), icon: 'edit_attributes', category: 'anomaly' },
 
-    { key: 'exif_remover', label: t('Exif隐私清理'), icon: 'privacy_tip', category: 'optimize', description: t('扫描图片中携带的 Exif 元数据（如 GPS 定位、拍摄器材、时间等隐私），清理后将另存为无隐私副本至 .VirtualDirectory/.cleaned_exif 目录，完全保留原文件。') },
-    { key: 'video_optimizer', label: t('视频优化转换'), icon: 'smart_display', category: 'optimize', warning: t('优化过程耗时较长'), description: t('采用 AV1/HEVC 高能效编码转码压缩视频，优化后将另存为高清轻量副本至 .VirtualDirectory/.video_optimizer 目录，完全保留原文件。'), disabled: !ffprobeAvailable }
-  ], [ffprobeAvailable])
+      {
+        key: 'exif_remover',
+        label: t('Exif隐私清理'),
+        icon: 'privacy_tip',
+        category: 'optimize',
+        description: t(
+          '扫描图片中携带的 Exif 元数据（如 GPS 定位、拍摄器材、时间等隐私），清理后将另存为无隐私副本至 .VirtualDirectory/.cleaned_exif 目录，完全保留原文件。'
+        )
+      },
+      {
+        key: 'video_optimizer',
+        label: t('视频优化转换'),
+        icon: 'smart_display',
+        category: 'optimize',
+        warning: t('优化过程耗时较长'),
+        description: t(
+          '采用 AV1/HEVC 高能效编码转码压缩视频，优化后将另存为高清轻量副本至 .VirtualDirectory/.video_optimizer 目录，完全保留原文件。'
+        ),
+        disabled: !ffprobeAvailable
+      }
+    ],
+    [ffprobeAvailable]
+  )
 
   // 过滤后的组 (支持策略筛选和关键词搜索)
   const filteredGroups = useMemo(() => {
@@ -1162,7 +1260,9 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                       </div>
                       <div>
                         <div className="text-xs font-bold text-foreground">{t('清理分析统计')}</div>
-                        <div className="text-[10px] text-muted-foreground">{t('智能查重与冗余分析')}</div>
+                        <div className="text-[10px] text-muted-foreground">
+                          {t('智能查重与冗余分析')}
+                        </div>
                       </div>
                     </div>
                     <Button
@@ -1172,28 +1272,40 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                       disabled={isScanning}
                       className="h-7 text-xs gap-1 rounded-lg border-primary/30 text-primary hover:bg-primary/10 transition-all active:scale-95 shadow-2xs"
                     >
-                      <MaterialIcon icon="refresh" className={cn('text-sm', isScanning && 'animate-spin')} />
+                      <MaterialIcon
+                        icon="refresh"
+                        className={cn('text-sm', isScanning && 'animate-spin')}
+                      />
                       <span>{isScanning ? t('扫描中...') : t('重新扫描')}</span>
                     </Button>
                   </div>
 
-                      {/* 空间与文件统计看板 */}
+                  {/* 空间与文件统计看板 */}
                   <div className="grid grid-cols-3 gap-2">
                     <div className="p-2.5 rounded-xl border border-border/50 bg-background/80 flex flex-col justify-between shadow-2xs">
-                      <div className="text-[10px] text-muted-foreground font-medium">{t('已扫描文件')}</div>
+                      <div className="text-[10px] text-muted-foreground font-medium">
+                        {t('已扫描文件')}
+                      </div>
                       <div className="text-base font-extrabold text-foreground tabular-nums tracking-tight mt-1">
                         {scannedCount}
                       </div>
                     </div>
                     <div className="p-2.5 rounded-xl border border-border/50 bg-background/80 flex flex-col justify-between shadow-2xs">
-                      <div className="text-[10px] text-muted-foreground font-medium">{t('冗余组数')}</div>
+                      <div className="text-[10px] text-muted-foreground font-medium">
+                        {t('冗余组数')}
+                      </div>
                       <div className="text-base font-extrabold text-foreground tabular-nums tracking-tight mt-1">
                         {statistics.totalGroups}
                       </div>
                     </div>
                     <div className="p-2.5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-950/20 flex flex-col justify-between shadow-2xs">
-                      <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">{t('可释放空间')}</div>
-                      <div className="text-base font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums tracking-tight mt-1 truncate" title={statistics.freedBytes}>
+                      <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                        {t('可释放空间')}
+                      </div>
+                      <div
+                        className="text-base font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums tracking-tight mt-1 truncate"
+                        title={statistics.freedBytes}
+                      >
                         {statistics.freedBytes}
                       </div>
                     </div>
@@ -1257,24 +1369,24 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                     onClick={() => setActiveStrategyFilter('all')}
                     className={cn(
                       'w-full flex items-center justify-between py-1 text-sm font-bold transition-all duration-150 shadow-2xs cursor-pointer select-none',
-                      activeStrategyFilter === 'all'
-                        ? 'text-primary'
-                        : 'text-foreground'
+                      activeStrategyFilter === 'all' ? 'text-primary' : 'text-foreground'
                     )}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <div className="flex flex-col">
                         <span className="truncate">{t('显示所有检出的结果')}</span>
                       </div>
-                                            <Badge
+                      <Badge
                         variant="secondary"
                         className="text-xs px-2 py-0.5 h-5 font-mono font-bold rounded-md bg-muted text-foreground"
                       >
                         {duplicateGroups.length}
                       </Badge>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0" onClick={e => e.stopPropagation()}>
-
+                    <div
+                      className="flex items-center gap-2 shrink-0"
+                      onClick={e => e.stopPropagation()}
+                    >
                       <Switch
                         checked={activeStrategyFilter === 'all'}
                         onCheckedChange={checked => {
@@ -1282,7 +1394,8 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                             setActiveStrategyFilter('all')
                           } else {
                             // 若关闭全选，默认落到第一个有结果的策略或首个策略
-                            const firstStrat = duplicateGroups[0]?.strategy || STRATEGY_DEFINITIONS[0]?.key || 'all'
+                            const firstStrat =
+                              duplicateGroups[0]?.strategy || STRATEGY_DEFINITIONS[0]?.key || 'all'
                             setActiveStrategyFilter(firstStrat)
                           }
                         }}
@@ -1294,17 +1407,20 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-2.5 space-y-2.5">
-
-
                   {STRATEGY_CATEGORIES.map(category => {
-                    const catStrategies = STRATEGY_DEFINITIONS.filter(s => s.category === category.key)
+                    const catStrategies = STRATEGY_DEFINITIONS.filter(
+                      s => s.category === category.key
+                    )
                     const isCollapsed = collapsedCategories[category.key]
                     const catCount = duplicateGroups.filter(g =>
                       catStrategies.some(s => s.key === g.strategy)
                     ).length
 
                     return (
-                      <div key={category.key} className="rounded-xl border border-border/60 bg-card/40 overflow-hidden shadow-2xs">
+                      <div
+                        key={category.key}
+                        className="rounded-xl border border-border/60 bg-card/40 overflow-hidden shadow-2xs"
+                      >
                         <div
                           onClick={() => toggleCategoryCollapse(category.key)}
                           className="px-3 py-2 bg-muted/40 flex items-center justify-between cursor-pointer hover:bg-muted/70 transition-colors select-none"
@@ -1317,7 +1433,10 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                             <span>{category.name}</span>
                           </div>
                           {catCount > 0 && (
-                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 font-mono font-bold bg-primary/10 text-primary">
+                            <Badge
+                              variant="secondary"
+                              className="text-[10px] px-1.5 py-0 h-4 font-mono font-bold bg-primary/10 text-primary"
+                            >
                               {catCount}
                             </Badge>
                           )}
@@ -1326,7 +1445,9 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                         {!isCollapsed && (
                           <div className="p-2 space-y-1.5">
                             {catStrategies.map(strat => {
-                              const count = duplicateGroups.filter(g => g.strategy === strat.key).length
+                              const count = duplicateGroups.filter(
+                                g => g.strategy === strat.key
+                              ).length
                               const isActive = activeStrategyFilter === strat.key
                               const isEnabled = enabledStrategies.includes(strat.key)
                               const isDisabled = strat.disabled === true
@@ -1339,12 +1460,15 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                                     isActive
                                       ? 'bg-primary/10 text-primary border-primary/40 font-bold shadow-2xs'
                                       : 'text-foreground hover:bg-accent/60 hover:text-foreground border-transparent bg-background/50',
-                                    isDisabled && 'opacity-40 cursor-not-allowed hover:bg-transparent hover:text-muted-foreground'
+                                    isDisabled &&
+                                      'opacity-40 cursor-not-allowed hover:bg-transparent hover:text-muted-foreground'
                                   )}
                                 >
                                   <div
                                     className="flex items-center gap-2.5 cursor-pointer flex-1 min-w-0"
-                                    onClick={() => !isDisabled && setActiveStrategyFilter(strat.key)}
+                                    onClick={() =>
+                                      !isDisabled && setActiveStrategyFilter(strat.key)
+                                    }
                                   >
                                     <Checkbox
                                       checked={isEnabled}
@@ -1353,8 +1477,16 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                                       onClick={e => e.stopPropagation()}
                                       className="h-4 w-4 rounded-md data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                                     />
-                                    <MaterialIcon icon={strat.icon} className="text-base text-primary/80 flex-shrink-0" />
-                                    <span className="truncate text-xs md:text-sm tracking-tight" title={strat.description}>{strat.label}</span>
+                                    <MaterialIcon
+                                      icon={strat.icon}
+                                      className="text-base text-primary/80 flex-shrink-0"
+                                    />
+                                    <span
+                                      className="truncate text-xs md:text-sm tracking-tight"
+                                      title={strat.description}
+                                    >
+                                      {strat.label}
+                                    </span>
                                     {strat.description && (
                                       <MaterialIcon
                                         icon="help_outline"
@@ -1366,12 +1498,18 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
 
                                   <div className="flex items-center gap-1.5 flex-shrink-0">
                                     {strat.warning && (
-                                      <Badge variant="outline" className="text-[11px] px-1.5 py-0 h-4 font-medium text-amber-600 border-amber-600/30 bg-amber-500/5">
+                                      <Badge
+                                        variant="outline"
+                                        className="text-[11px] px-1.5 py-0 h-4 font-medium text-amber-600 border-amber-600/30 bg-amber-500/5"
+                                      >
                                         {strat.warning}
                                       </Badge>
                                     )}
                                     {isDisabled && (
-                                      <Badge variant="outline" className="text-[11px] px-1.5 py-0 h-4 text-muted-foreground border-border/40">
+                                      <Badge
+                                        variant="outline"
+                                        className="text-[11px] px-1.5 py-0 h-4 text-muted-foreground border-border/40"
+                                      >
                                         {t('即将推出')}
                                       </Badge>
                                     )}
@@ -1380,7 +1518,9 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                                         variant={isActive ? 'default' : 'secondary'}
                                         className={cn(
                                           'text-xs px-2 py-0.5 h-4.5 font-mono font-bold',
-                                          isActive ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
+                                          isActive
+                                            ? 'bg-primary text-primary-foreground'
+                                            : 'bg-muted text-foreground'
                                         )}
                                       >
                                         {count}
@@ -1418,7 +1558,9 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                       onChange={e => handleApplyRule(e.target.value as RecommendRule)}
                       className="text-xs font-semibold h-7.5 rounded-lg border border-border bg-background px-2.5 focus:ring-1 focus:ring-primary outline-hidden shadow-2xs cursor-pointer"
                     >
-                      <option value="highest_resolution">{t('★ 最高分辨率优先 (多模态推荐)')}</option>
+                      <option value="highest_resolution">
+                        {t('★ 最高分辨率优先 (多模态推荐)')}
+                      </option>
                       <option value="highest_quality">{t('★ 最佳 AI 质量评分优先')}</option>
                       <option value="newest_modified">{t('🕒 最新修改时间优先')}</option>
                       <option value="oldest_created">{t('📅 最早创建时间优先 (保留母本)')}</option>
@@ -1458,7 +1600,10 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                         className="h-7.5 text-xs font-semibold px-2.5 gap-1.5 rounded-lg border-border hover:bg-accent/60 cursor-pointer shadow-2xs"
                         title={t('取消所有选中项，全部标记为保留')}
                       >
-                        <MaterialIcon icon="done_all" className="text-sm text-emerald-600 dark:text-emerald-400" />
+                        <MaterialIcon
+                          icon="done_all"
+                          className="text-sm text-emerald-600 dark:text-emerald-400"
+                        />
                         <span>{t('全保留')}</span>
                       </Button>
                       <Button
@@ -1502,11 +1647,14 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                             </div>
                             <div className="text-[11px] text-muted-foreground">
                               {streamingScannedCount > 0
-                                ? t('已扫描 {scanned} / {total} 个文件，已流式发现 {found} 个待处理组', {
-                                    scanned: streamingScannedCount,
-                                    total: streamingTotalCount || files.length,
-                                    found: duplicateGroups.length
-                                  })
+                                ? t(
+                                    '已扫描 {scanned} / {total} 个文件，已流式发现 {found} 个待处理组',
+                                    {
+                                      scanned: streamingScannedCount,
+                                      total: streamingTotalCount || files.length,
+                                      found: duplicateGroups.length
+                                    }
+                                  )
                                 : t('正在对 {count} 个文件进行多模态哈希比对与启发式规则分析...', {
                                     count: files.length
                                   })}
@@ -1549,7 +1697,10 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                         {/* 图标容器 */}
                         <div className="relative">
                           <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 border border-primary/25 flex items-center justify-center text-primary shadow-inner shadow-primary/10">
-                            <MaterialIcon icon="cleaning_services" className="text-4xl drop-shadow-xs" />
+                            <MaterialIcon
+                              icon="cleaning_services"
+                              className="text-4xl drop-shadow-xs"
+                            />
                           </div>
                           <span className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-background border border-primary/30 flex items-center justify-center shadow-xs text-primary">
                             <MaterialIcon icon="auto_awesome" className="text-sm" />
@@ -1562,7 +1713,9 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                             {t('尚未开始分析此工作区')}
                           </h3>
                           <p className="text-xs text-muted-foreground leading-relaxed">
-                            {t('深度检测当前工作区内的重复文件、图像相似副本、大文件及异常文件，并提供一键智能瘦身方案')}
+                            {t(
+                              '深度检测当前工作区内的重复文件、图像相似副本、大文件及异常文件，并提供一键智能瘦身方案'
+                            )}
                           </p>
                         </div>
 
@@ -1577,7 +1730,10 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                             {t('视觉感知相似度')}
                           </span>
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-muted/60 text-muted-foreground border border-border/40">
-                            <MaterialIcon icon="report_problem" className="text-xs text-amber-500" />
+                            <MaterialIcon
+                              icon="report_problem"
+                              className="text-xs text-amber-500"
+                            />
                             {t('异常与断链排查')}
                           </span>
                         </div>
@@ -1596,13 +1752,17 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                     </div>
                   ) : filteredGroups.length === 0 ? (
                     <div className="h-72 flex flex-col items-center justify-center text-muted-foreground space-y-3">
-                      <div className={cn(
-                        "w-14 h-14 rounded-2xl flex items-center justify-center shadow-xs",
-                        isScanning ? "bg-primary/10 text-primary" : "bg-emerald-500/10 text-emerald-500"
-                      )}>
+                      <div
+                        className={cn(
+                          'w-14 h-14 rounded-2xl flex items-center justify-center shadow-xs',
+                          isScanning
+                            ? 'bg-primary/10 text-primary'
+                            : 'bg-emerald-500/10 text-emerald-500'
+                        )}
+                      >
                         <MaterialIcon
-                          icon={isScanning ? "search" : "verified"}
-                          className={cn("text-3xl", isScanning && "animate-pulse")}
+                          icon={isScanning ? 'search' : 'verified'}
+                          className={cn('text-3xl', isScanning && 'animate-pulse')}
                         />
                       </div>
                       <div className="text-center space-y-1">
@@ -1619,7 +1779,10 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                             : searchKeyword
                               ? t('没有找到与搜索关键词匹配的重复文件组')
                               : activeStrategyFilter !== 'all' && duplicateGroups.length > 0
-                                ? t('其他策略分类中发现了 {count} 个待处理组，点击下方按钮可查看全部', { count: duplicateGroups.length })
+                                ? t(
+                                    '其他策略分类中发现了 {count} 个待处理组，点击下方按钮可查看全部',
+                                    { count: duplicateGroups.length }
+                                  )
                                 : t('当前工作区文件非常整洁，无冗余副本或多余碎片')}
                         </div>
                         {activeStrategyFilter !== 'all' && duplicateGroups.length > 0 && (
@@ -1631,7 +1794,11 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                               className="text-xs gap-1.5 rounded-lg border-primary/40 text-primary hover:bg-primary/10"
                             >
                               <MaterialIcon icon="dashboard" className="text-sm" />
-                              <span>{t('查看全部 {count} 个发现结果', { count: duplicateGroups.length })}</span>
+                              <span>
+                                {t('查看全部 {count} 个发现结果', {
+                                  count: duplicateGroups.length
+                                })}
+                              </span>
                             </Button>
                           </div>
                         )}
@@ -1643,7 +1810,8 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                       const maxGroupSize = Math.max(...group.files.map(f => f.size || 0))
                       const bestScore = Math.max(...group.files.map(f => f.qualityScore || 0))
                       const groupSelectedCount = group.files.filter(f => f.selectedForDelete).length
-                      const isTrashingThisGroup = trashingGroupId === (group.groupId || String(gIdx))
+                      const isTrashingThisGroup =
+                        trashingGroupId === (group.groupId || String(gIdx))
 
                       return (
                         <div
@@ -1652,7 +1820,10 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                         >
                           <div className="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-border/40">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <Badge variant="secondary" className="font-bold text-xs gap-1.5 px-2.5 py-1 rounded-lg">
+                              <Badge
+                                variant="secondary"
+                                className="font-bold text-xs gap-1.5 px-2.5 py-1 rounded-lg"
+                              >
                                 <MaterialIcon
                                   icon={
                                     group.strategy === 'invalid_symlinks' ||
@@ -1665,9 +1836,9 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                                   className={cn(
                                     'text-xs',
                                     group.strategy === 'invalid_symlinks' ||
-                                    group.strategy === 'broken_files' ||
-                                    group.strategy === 'bad_extensions' ||
-                                    group.strategy === 'bad_names'
+                                      group.strategy === 'broken_files' ||
+                                      group.strategy === 'bad_extensions' ||
+                                      group.strategy === 'bad_names'
                                       ? 'text-amber-500'
                                       : 'text-primary'
                                   )}
@@ -1676,9 +1847,11 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                                   ? t('100% 精确一致')
                                   : group.strategy === 'image_phash'
                                     ? t('视觉相似图片')
-                                    : group.strategy === 'audio_hash' || group.strategy === 'audio_match'
+                                    : group.strategy === 'audio_hash' ||
+                                        group.strategy === 'audio_match'
                                       ? t('相似音乐')
-                                      : group.strategy === 'video_phash' || group.strategy === 'video_keyframes'
+                                      : group.strategy === 'video_phash' ||
+                                          group.strategy === 'video_keyframes'
                                         ? t('相似视频')
                                         : group.strategy === 'empty_folders'
                                           ? t('空文件夹')
@@ -1703,96 +1876,96 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                                                             : group.strategy === 'text_simhash'
                                                               ? t('文档语义相似')
                                                               : t('副本衍生文件')}
-                                                               {/* 专属指标徽章 (根据策略动态呈现贴切文案：相似度、置信度、可优化度等) */}
-                              {(() => {
-                                const strat = group.strategy
-                                const percent = Math.round(group.similarityPercentage || 100)
+                                {/* 专属指标徽章 (根据策略动态呈现贴切文案：相似度、置信度、可优化度等) */}
+                                {(() => {
+                                  const strat = group.strategy
+                                  const percent = Math.round(group.similarityPercentage || 100)
 
-                                if (strat === 'exact_hash') {
+                                  if (strat === 'exact_hash') {
+                                    return (
+                                      <span className="text-xs text-emerald-600 dark:text-emerald-400 font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
+                                        {t('精确一致 100%')}
+                                      </span>
+                                    )
+                                  }
+                                  if (strat === 'broken_files') {
+                                    return (
+                                      <span className="text-xs text-destructive font-mono font-bold px-2 py-0.5 rounded-md bg-destructive/10 border border-destructive/20">
+                                        {t('损坏置信度 100%')}
+                                      </span>
+                                    )
+                                  }
+                                  if (strat === 'invalid_symlinks') {
+                                    return (
+                                      <span className="text-xs text-amber-600 dark:text-amber-400 font-mono font-bold px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20">
+                                        {t('断裂失效 100%')}
+                                      </span>
+                                    )
+                                  }
+                                  if (strat === 'bad_extensions') {
+                                    return (
+                                      <span className="text-xs text-indigo-600 dark:text-indigo-400 font-mono font-bold px-2 py-0.5 rounded-md bg-indigo-500/10 border border-indigo-500/20">
+                                        {t('格式置信度 100%')}
+                                      </span>
+                                    )
+                                  }
+                                  if (strat === 'bad_names') {
+                                    return (
+                                      <span className="text-xs text-amber-600 dark:text-amber-400 font-mono font-bold px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20">
+                                        {t('命名合规度 100%')}
+                                      </span>
+                                    )
+                                  }
+                                  if (strat === 'video_optimizer') {
+                                    return (
+                                      <span className="text-xs text-primary font-mono font-bold px-2 py-0.5 rounded-md bg-primary/10 border border-primary/20">
+                                        {t('优化空间 {percent}%', { percent })}
+                                      </span>
+                                    )
+                                  }
+                                  if (strat === 'exif_remover') {
+                                    return (
+                                      <span className="text-xs text-emerald-600 dark:text-emerald-400 font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
+                                        {t('隐私敏感度 100%')}
+                                      </span>
+                                    )
+                                  }
+                                  if (strat === 'empty_files') {
+                                    return (
+                                      <span className="text-xs text-muted-foreground font-mono font-bold px-2 py-0.5 rounded-md bg-muted/60 border border-border/40">
+                                        {t('0 字节空文件')}
+                                      </span>
+                                    )
+                                  }
+                                  if (strat === 'empty_folders') {
+                                    return (
+                                      <span className="text-xs text-muted-foreground font-mono font-bold px-2 py-0.5 rounded-md bg-muted/60 border border-border/40">
+                                        {t('空文件夹')}
+                                      </span>
+                                    )
+                                  }
+                                  if (strat === 'temporary_files') {
+                                    return (
+                                      <span className="text-xs text-muted-foreground font-mono font-bold px-2 py-0.5 rounded-md bg-muted/60 border border-border/40">
+                                        {t('临时缓存')}
+                                      </span>
+                                    )
+                                  }
+                                  if (strat === 'big_files') {
+                                    return (
+                                      <span className="text-xs text-amber-600 dark:text-amber-400 font-mono font-bold px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20">
+                                        {t('大文件排序')}
+                                      </span>
+                                    )
+                                  }
+
+                                  // 默认多模态查重（图片、音乐、视频、文档相似度）
                                   return (
                                     <span className="text-xs text-emerald-600 dark:text-emerald-400 font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
-                                      {t('精确一致 100%')}
+                                      {t('相似度 {percent}%', { percent })}
                                     </span>
                                   )
-                                }
-                                if (strat === 'broken_files') {
-                                  return (
-                                    <span className="text-xs text-destructive font-mono font-bold px-2 py-0.5 rounded-md bg-destructive/10 border border-destructive/20">
-                                      {t('损坏置信度 100%')}
-                                    </span>
-                                  )
-                                }
-                                if (strat === 'invalid_symlinks') {
-                                  return (
-                                    <span className="text-xs text-amber-600 dark:text-amber-400 font-mono font-bold px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20">
-                                      {t('断裂失效 100%')}
-                                    </span>
-                                  )
-                                }
-                                if (strat === 'bad_extensions') {
-                                  return (
-                                    <span className="text-xs text-indigo-600 dark:text-indigo-400 font-mono font-bold px-2 py-0.5 rounded-md bg-indigo-500/10 border border-indigo-500/20">
-                                      {t('格式置信度 100%')}
-                                    </span>
-                                  )
-                                }
-                                if (strat === 'bad_names') {
-                                  return (
-                                    <span className="text-xs text-amber-600 dark:text-amber-400 font-mono font-bold px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20">
-                                      {t('命名合规度 100%')}
-                                    </span>
-                                  )
-                                }
-                                if (strat === 'video_optimizer') {
-                                  return (
-                                    <span className="text-xs text-primary font-mono font-bold px-2 py-0.5 rounded-md bg-primary/10 border border-primary/20">
-                                      {t('优化空间 {percent}%', { percent })}
-                                    </span>
-                                  )
-                                }
-                                if (strat === 'exif_remover') {
-                                  return (
-                                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
-                                      {t('隐私敏感度 100%')}
-                                    </span>
-                                  )
-                                }
-                                if (strat === 'empty_files') {
-                                  return (
-                                    <span className="text-xs text-muted-foreground font-mono font-bold px-2 py-0.5 rounded-md bg-muted/60 border border-border/40">
-                                      {t('0 字节空文件')}
-                                    </span>
-                                  )
-                                }
-                                if (strat === 'empty_folders') {
-                                  return (
-                                    <span className="text-xs text-muted-foreground font-mono font-bold px-2 py-0.5 rounded-md bg-muted/60 border border-border/40">
-                                      {t('空文件夹')}
-                                    </span>
-                                  )
-                                }
-                                if (strat === 'temporary_files') {
-                                  return (
-                                    <span className="text-xs text-muted-foreground font-mono font-bold px-2 py-0.5 rounded-md bg-muted/60 border border-border/40">
-                                      {t('临时缓存')}
-                                    </span>
-                                  )
-                                }
-                                if (strat === 'big_files') {
-                                  return (
-                                    <span className="text-xs text-amber-600 dark:text-amber-400 font-mono font-bold px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20">
-                                      {t('大文件排序')}
-                                    </span>
-                                  )
-                                }
-
-                                // 默认多模态查重（图片、音乐、视频、文档相似度）
-                                return (
-                                  <span className="text-xs text-emerald-600 dark:text-emerald-400 font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
-                                    {t('相似度 {percent}%', { percent })}
-                                  </span>
-                                )
-                              })()}
+                                })()}
                               </Badge>
                             </div>
 
@@ -1819,8 +1992,6 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                                   {t('反选')}
                                 </Button>
                               </div>
-
-                             
 
                               {/* 本组专属：执行操作按钮 (针对特殊策略显示 优化/清理/更名/修正，普通查重显示 删除) */}
                               {(() => {
@@ -1866,22 +2037,25 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                                     size="sm"
                                     variant="secondary"
                                     onClick={() => handleExecuteGroupAction(group, gIdx)}
-                                    disabled={isTrashingThisGroup || isTrashing || groupSelectedCount === 0}
+                                    disabled={
+                                      isTrashingThisGroup || isTrashing || groupSelectedCount === 0
+                                    }
                                     className={cn(
                                       'h-6.5 px-2.5 text-xs font-bold gap-1 rounded-lg transition-all cursor-pointer shadow-2xs',
                                       actionVariantClass
                                     )}
-                                    title={t('对本组选中的文件执行{action}', { action: actionLabel })}
+                                    title={t('对本组选中的文件执行{action}', {
+                                      action: actionLabel
+                                    })}
                                   >
                                     <MaterialIcon
                                       icon={isTrashingThisGroup ? 'sync' : actionIcon}
-                                      className={cn('text-xs', isTrashingThisGroup && 'animate-spin')}
+                                      className={cn(
+                                        'text-xs',
+                                        isTrashingThisGroup && 'animate-spin'
+                                      )}
                                     />
-                                    <span>
-                                      {isTrashingThisGroup
-                                        ? t('处理中...')
-                                        : countText}
-                                    </span>
+                                    <span>{isTrashingThisGroup ? t('处理中...') : countText}</span>
                                   </Button>
                                 )
                               })()}
@@ -1897,68 +2071,198 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                                 const meta = fileMetaMap.get(file.path)
                                 const isMaxSize = file.size === maxGroupSize && maxGroupSize > 0
                                 const thumbUrl = getFileThumbnailUrl(file)
-                                const ext = extractFileExtension(file.path) || extractFileExtension(file.name)
+                                const ext =
+                                  extractFileExtension(file.path) || extractFileExtension(file.name)
 
-                                  const isVideoOpt = group.strategy === 'video_optimizer'
-                                  const isExif = group.strategy === 'exif_remover'
-                                  const isBadNames = group.strategy === 'bad_names'
-                                  const isBadExt = group.strategy === 'bad_extensions'
-                                  const isFixStrategy = isVideoOpt || isExif || isBadNames || isBadExt
+                                const isVideoOpt = group.strategy === 'video_optimizer'
+                                const isExif = group.strategy === 'exif_remover'
+                                const isBadNames = group.strategy === 'bad_names'
+                                const isBadExt = group.strategy === 'bad_extensions'
+                                const isFixStrategy = isVideoOpt || isExif || isBadNames || isBadExt
 
-                                  let selectedClass = 'border-destructive/60 bg-destructive/10 ring-1 ring-destructive/30 shadow-xs'
-                                  if (isVideoOpt) {
-                                    selectedClass = 'border-primary/60 bg-primary/10 ring-1 ring-primary/30 shadow-xs'
-                                  } else if (isExif) {
-                                    selectedClass = 'border-emerald-500/60 bg-emerald-500/10 ring-1 ring-emerald-500/30 shadow-xs'
-                                  } else if (isBadNames) {
-                                    selectedClass = 'border-amber-500/60 bg-amber-500/10 ring-1 ring-amber-500/30 shadow-xs'
-                                  } else if (isBadExt) {
-                                    selectedClass = 'border-indigo-500/60 bg-indigo-500/10 ring-1 ring-indigo-500/30 shadow-xs'
-                                  }
+                                let selectedClass =
+                                  'border-destructive/60 bg-destructive/10 ring-1 ring-destructive/30 shadow-xs'
+                                if (isVideoOpt) {
+                                  selectedClass =
+                                    'border-primary/60 bg-primary/10 ring-1 ring-primary/30 shadow-xs'
+                                } else if (isExif) {
+                                  selectedClass =
+                                    'border-emerald-500/60 bg-emerald-500/10 ring-1 ring-emerald-500/30 shadow-xs'
+                                } else if (isBadNames) {
+                                  selectedClass =
+                                    'border-amber-500/60 bg-amber-500/10 ring-1 ring-amber-500/30 shadow-xs'
+                                } else if (isBadExt) {
+                                  selectedClass =
+                                    'border-indigo-500/60 bg-indigo-500/10 ring-1 ring-indigo-500/30 shadow-xs'
+                                }
 
-                                  return (
+                                return (
+                                  <div
+                                    key={file.fileId || fIdx}
+                                    onClick={() => handleSelectFileForPreview(file)}
+                                    onContextMenu={e => handleContextMenu(e, file)}
+                                    className={cn(
+                                      'group relative rounded-xl border p-2.5 cursor-pointer transition-all duration-150 select-none flex flex-col justify-between',
+                                      'bg-background hover:shadow-md hover:border-primary/50',
+                                      isSelectedForDelete
+                                        ? selectedClass
+                                        : 'border-border/60 bg-background',
+                                      isPreviewing && 'ring-2 ring-primary border-primary'
+                                    )}
+                                    title={`${file.name}\n${t('大小: {size}', { size: formatBytes(file.size) })}\n${file.resolution ? `${t('分辨率: {res}', { res: file.resolution })}\n` : ''}${t('路径: {path}', { path: file.path })}`}
+                                  >
+                                    {/* 顶部大 Checkbox 悬浮/固定于右上角 */}
                                     <div
-                                      key={file.fileId || fIdx}
-                                      onClick={() => handleSelectFileForPreview(file)}
-                                      onContextMenu={(e) => handleContextMenu(e, file)}
-                                      className={cn(
-                                        'group relative rounded-xl border p-2.5 cursor-pointer transition-all duration-150 select-none flex flex-col justify-between',
-                                        'bg-background hover:shadow-md hover:border-primary/50',
-                                        isSelectedForDelete ? selectedClass : 'border-border/60 bg-background',
-                                        isPreviewing && 'ring-2 ring-primary border-primary'
-                                      )}
-                                      title={`${file.name}\n${t('大小: {size}', { size: formatBytes(file.size) })}\n${file.resolution ? `${t('分辨率: {res}', { res: file.resolution })}\n` : ''}${t('路径: {path}', { path: file.path })}`}
+                                      className="absolute top-0 right-0 z-20 shadow-xs cursor-pointer select-none"
+                                      onClick={e => {
+                                        e.stopPropagation()
+                                        handleToggleFileSelection(group, file.path)
+                                      }}
                                     >
-                                      {/* 顶部大 Checkbox 悬浮/固定于右上角 */}
-                                      <div
-                                        className="absolute top-0 right-0 z-20 shadow-xs cursor-pointer select-none"
-                                        onClick={e => {
+                                      <input
+                                        type="checkbox"
+                                        checked={isSelectedForDelete}
+                                        onChange={e => {
                                           e.stopPropagation()
-                                          handleToggleFileSelection(group, file.path)
+                                          handleToggleFileSelection(
+                                            group,
+                                            file.path,
+                                            e.target.checked
+                                          )
                                         }}
-                                      >
-                                        <input
-                                          type="checkbox"
-                                          checked={isSelectedForDelete}
-                                          onChange={e => {
-                                            e.stopPropagation()
-                                            handleToggleFileSelection(group, file.path, e.target.checked)
+                                        onClick={e => e.stopPropagation()}
+                                        className="h-5 w-5 rounded-md border-2 border-primary text-destructive accent-destructive cursor-pointer"
+                                        title={t('勾选此文件')}
+                                      />
+                                    </div>
+
+                                    {/* 图片缩略图预览容器 */}
+                                    <div className="w-full aspect-square rounded-lg overflow-hidden bg-muted/30 flex items-center justify-center relative mb-2 border border-border/30">
+                                      {thumbUrl ? (
+                                        <img
+                                          src={thumbUrl}
+                                          alt={file.name}
+                                          loading="lazy"
+                                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                          onError={e => {
+                                            ;(e.target as HTMLElement).style.display = 'none'
                                           }}
-                                          onClick={e => e.stopPropagation()}
-                                          className="h-5 w-5 rounded-md border-2 border-primary text-destructive accent-destructive cursor-pointer"
-                                          title={t('勾选此文件')}
                                         />
+                                      ) : (
+                                        <FileTypeIcon
+                                          path={file.path}
+                                          extension={ext}
+                                          className="w-12 h-12 object-contain"
+                                        />
+                                      )}
+
+                                      {/* 图片规格角标 */}
+                                      {file.resolution && (
+                                        <div className="absolute bottom-1 right-1 px-1 py-0.2 rounded bg-black/60 text-white text-[9px] font-mono">
+                                          {file.resolution}
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* 文件名信息 (真实文件名 + 智能文件名) */}
+                                    <div className="space-y-1 min-w-0">
+                                      <div
+                                        className={cn(
+                                          'text-xs font-semibold truncate',
+                                          isSelectedForDelete && !isFixStrategy
+                                            ? 'text-muted-foreground line-through opacity-80'
+                                            : 'text-foreground'
+                                        )}
+                                        title={file.name}
+                                      >
+                                        {file.name}
                                       </div>
 
-                                      {/* 图片缩略图预览容器 */}
-                                      <div className="w-full aspect-square rounded-lg overflow-hidden bg-muted/30 flex items-center justify-center relative mb-2 border border-border/30">
+                                      {meta?.smartName && meta.smartName !== file.name && (
+                                        <div
+                                          className="text-[11px] text-primary truncate font-medium flex items-center gap-1"
+                                          title={t('智能命名: {name}', { name: meta.smartName })}
+                                        >
+                                          <MaterialIcon
+                                            icon="auto_awesome"
+                                            className="text-[10px] shrink-0"
+                                          />
+                                          <span className="truncate">{meta.smartName}</span>
+                                        </div>
+                                      )}
+
+                                      <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono pt-1">
+                                        <span>{formatBytes(file.size)}</span>
+                                        {isMaxSize && group.files.length > 1 && (
+                                          <span className="text-[9px] px-1 py-0 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold">
+                                            {t('最大')}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          ) : (
+                            /* 2. 文档列表展示模式 (左侧图标/缩略图，右侧文件信息) */
+                            <div className="space-y-2">
+                              {group.files.map((file, fIdx) => {
+                                const isSelectedForDelete = !!file.selectedForDelete
+                                const isPreviewing = previewingPath === file.path
+                                const meta = fileMetaMap.get(file.path)
+                                const ext =
+                                  extractFileExtension(file.path) || extractFileExtension(file.name)
+                                const isMaxSize = file.size === maxGroupSize && maxGroupSize > 0
+                                const isBestScore = file.qualityScore === bestScore && bestScore > 0
+                                const thumbUrl = getFileThumbnailUrl(file)
+
+                                const isVideoOpt = group.strategy === 'video_optimizer'
+                                const isExif = group.strategy === 'exif_remover'
+                                const isBadNames = group.strategy === 'bad_names'
+                                const isBadExt = group.strategy === 'bad_extensions'
+                                const isFixStrategy = isVideoOpt || isExif || isBadNames || isBadExt
+
+                                let selectedClass =
+                                  'border-destructive/60 bg-destructive/10 ring-1 ring-destructive/30 shadow-xs'
+                                if (isVideoOpt) {
+                                  selectedClass =
+                                    'border-primary/60 bg-primary/10 ring-1 ring-primary/30 shadow-xs'
+                                } else if (isExif) {
+                                  selectedClass =
+                                    'border-emerald-500/60 bg-emerald-500/10 ring-1 ring-emerald-500/30 shadow-xs'
+                                } else if (isBadNames) {
+                                  selectedClass =
+                                    'border-amber-500/60 bg-amber-500/10 ring-1 ring-amber-500/30 shadow-xs'
+                                } else if (isBadExt) {
+                                  selectedClass =
+                                    'border-indigo-500/60 bg-indigo-500/10 ring-1 ring-indigo-500/30 shadow-xs'
+                                }
+
+                                return (
+                                  <div
+                                    key={file.fileId || fIdx}
+                                    onClick={() => handleSelectFileForPreview(file)}
+                                    onContextMenu={e => handleContextMenu(e, file)}
+                                    className={cn(
+                                      'flex items-center justify-between p-3 rounded-xl border transition-all duration-150 cursor-pointer select-none gap-3.5',
+                                      'bg-background hover:bg-accent/40',
+                                      isSelectedForDelete
+                                        ? selectedClass
+                                        : 'border-border/60 bg-background',
+                                      isPreviewing && 'ring-2 ring-primary border-primary'
+                                    )}
+                                  >
+                                    {/* 左侧：文件图标/缩略图 + 文件名/路径信息 */}
+                                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                                      <div className="w-10 h-10 rounded-lg bg-muted/40 flex items-center justify-center shrink-0 border border-border/40 overflow-hidden">
                                         {thumbUrl ? (
                                           <img
                                             src={thumbUrl}
                                             alt={file.name}
                                             loading="lazy"
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                            onError={(e) => {
+                                            className="w-full h-full object-cover"
+                                            onError={e => {
                                               ;(e.target as HTMLElement).style.display = 'none'
                                             }}
                                           />
@@ -1966,190 +2270,126 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                                           <FileTypeIcon
                                             path={file.path}
                                             extension={ext}
-                                            className="w-12 h-12 object-contain"
+                                            className="w-7 h-7 object-contain"
                                           />
                                         )}
-
-                                        {/* 图片规格角标 */}
-                                        {file.resolution && (
-                                          <div className="absolute bottom-1 right-1 px-1 py-0.2 rounded bg-black/60 text-white text-[9px] font-mono">
-                                            {file.resolution}
-                                          </div>
-                                        )}
                                       </div>
 
-                                      {/* 文件名信息 (真实文件名 + 智能文件名) */}
-                                      <div className="space-y-1 min-w-0">
-                                        <div
-                                          className={cn(
-                                            'text-xs font-semibold truncate',
-                                            isSelectedForDelete && !isFixStrategy ? 'text-muted-foreground line-through opacity-80' : 'text-foreground'
-                                          )}
-                                          title={file.name}
-                                        >
-                                          {file.name}
-                                        </div>
-
-                                        {meta?.smartName && meta.smartName !== file.name && (
-                                          <div
-                                            className="text-[11px] text-primary truncate font-medium flex items-center gap-1"
-                                            title={t('智能命名: {name}', { name: meta.smartName })}
+                                      <div className="min-w-0 flex-1 space-y-1">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                          <span
+                                            className={cn(
+                                              'text-xs font-bold truncate max-w-[280px] sm:max-w-[420px]',
+                                              isSelectedForDelete && !isFixStrategy
+                                                ? 'text-muted-foreground line-through opacity-80'
+                                                : 'text-foreground'
+                                            )}
+                                            title={file.name}
                                           >
-                                            <MaterialIcon icon="auto_awesome" className="text-[10px] shrink-0" />
-                                            <span className="truncate">{meta.smartName}</span>
-                                          </div>
-                                        )}
-
-                                        <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono pt-1">
-                                          <span>{formatBytes(file.size)}</span>
-                                          {isMaxSize && group.files.length > 1 && (
-                                            <span className="text-[9px] px-1 py-0 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold">
-                                              {t('最大')}
-                                            </span>
-                                          )}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )
-                                })}
-                              </div>
-                            ) : (
-                              /* 2. 文档列表展示模式 (左侧图标/缩略图，右侧文件信息) */
-                              <div className="space-y-2">
-                                {group.files.map((file, fIdx) => {
-                                  const isSelectedForDelete = !!file.selectedForDelete
-                                  const isPreviewing = previewingPath === file.path
-                                  const meta = fileMetaMap.get(file.path)
-                                  const ext = extractFileExtension(file.path) || extractFileExtension(file.name)
-                                  const isMaxSize = file.size === maxGroupSize && maxGroupSize > 0
-                                  const isBestScore = file.qualityScore === bestScore && bestScore > 0
-                                  const thumbUrl = getFileThumbnailUrl(file)
-
-                                  const isVideoOpt = group.strategy === 'video_optimizer'
-                                  const isExif = group.strategy === 'exif_remover'
-                                  const isBadNames = group.strategy === 'bad_names'
-                                  const isBadExt = group.strategy === 'bad_extensions'
-                                  const isFixStrategy = isVideoOpt || isExif || isBadNames || isBadExt
-
-                                  let selectedClass = 'border-destructive/60 bg-destructive/10 ring-1 ring-destructive/30 shadow-xs'
-                                  if (isVideoOpt) {
-                                    selectedClass = 'border-primary/60 bg-primary/10 ring-1 ring-primary/30 shadow-xs'
-                                  } else if (isExif) {
-                                    selectedClass = 'border-emerald-500/60 bg-emerald-500/10 ring-1 ring-emerald-500/30 shadow-xs'
-                                  } else if (isBadNames) {
-                                    selectedClass = 'border-amber-500/60 bg-amber-500/10 ring-1 ring-amber-500/30 shadow-xs'
-                                  } else if (isBadExt) {
-                                    selectedClass = 'border-indigo-500/60 bg-indigo-500/10 ring-1 ring-indigo-500/30 shadow-xs'
-                                  }
-
-                                  return (
-                                    <div
-                                      key={file.fileId || fIdx}
-                                      onClick={() => handleSelectFileForPreview(file)}
-                                      onContextMenu={(e) => handleContextMenu(e, file)}
-                                      className={cn(
-                                        'flex items-center justify-between p-3 rounded-xl border transition-all duration-150 cursor-pointer select-none gap-3.5',
-                                        'bg-background hover:bg-accent/40',
-                                        isSelectedForDelete ? selectedClass : 'border-border/60 bg-background',
-                                        isPreviewing && 'ring-2 ring-primary border-primary'
-                                      )}
-                                    >
-                                      {/* 左侧：文件图标/缩略图 + 文件名/路径信息 */}
-                                      <div className="flex items-center gap-3 min-w-0 flex-1">
-                                        <div className="w-10 h-10 rounded-lg bg-muted/40 flex items-center justify-center shrink-0 border border-border/40 overflow-hidden">
-                                          {thumbUrl ? (
-                                            <img
-                                              src={thumbUrl}
-                                              alt={file.name}
-                                              loading="lazy"
-                                              className="w-full h-full object-cover"
-                                              onError={(e) => {
-                                                ;(e.target as HTMLElement).style.display = 'none'
-                                              }}
-                                            />
-                                          ) : (
-                                            <FileTypeIcon
-                                              path={file.path}
-                                              extension={ext}
-                                              className="w-7 h-7 object-contain"
-                                            />
-                                          )}
-                                        </div>
-
-                                        <div className="min-w-0 flex-1 space-y-1">
-                                          <div className="flex items-center gap-2 flex-wrap">
-                                            <span
-                                              className={cn(
-                                                'text-xs font-bold truncate max-w-[280px] sm:max-w-[420px]',
-                                                isSelectedForDelete && !isFixStrategy
-                                                  ? 'text-muted-foreground line-through opacity-80'
-                                                  : 'text-foreground'
-                                              )}
-                                              title={file.name}
-                                            >
-                                              {file.name}
-                                            </span>
+                                            {file.name}
+                                          </span>
 
                                           {/* 针对异常文件策略的特有字段重点高亮呈现 */}
                                           {group.strategy === 'bad_names' && file.fingerprint && (
                                             <span
                                               className="text-[11px] px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1 border border-emerald-500/20"
-                                              title={t('建议更名: {name}', { name: file.fingerprint })}
+                                              title={t('建议更名: {name}', {
+                                                name: file.fingerprint
+                                              })}
                                             >
-                                              <MaterialIcon icon="drive_file_rename_outline" className="text-xs shrink-0" />
-                                              <span>{t('推荐更名: {name}', { name: file.fingerprint })}</span>
+                                              <MaterialIcon
+                                                icon="drive_file_rename_outline"
+                                                className="text-xs shrink-0"
+                                              />
+                                              <span>
+                                                {t('推荐更名: {name}', { name: file.fingerprint })}
+                                              </span>
                                             </span>
                                           )}
 
-                                          {group.strategy === 'bad_extensions' && file.fingerprint && (
-                                            <span
-                                              className="text-[11px] px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1 border border-amber-500/20"
-                                              title={t('真实格式应为: {ext}', { ext: file.fingerprint })}
-                                            >
-                                              <MaterialIcon icon="extension" className="text-xs shrink-0" />
-                                              <span>{t('实际格式: {ext}', { ext: file.fingerprint })}</span>
-                                            </span>
-                                          )}
+                                          {group.strategy === 'bad_extensions' &&
+                                            file.fingerprint && (
+                                              <span
+                                                className="text-[11px] px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1 border border-amber-500/20"
+                                                title={t('真实格式应为: {ext}', {
+                                                  ext: file.fingerprint
+                                                })}
+                                              >
+                                                <MaterialIcon
+                                                  icon="extension"
+                                                  className="text-xs shrink-0"
+                                                />
+                                                <span>
+                                                  {t('实际格式: {ext}', { ext: file.fingerprint })}
+                                                </span>
+                                              </span>
+                                            )}
 
-                                          {group.strategy === 'broken_files' && file.fingerprint && (
-                                            <span
-                                              className="text-[11px] px-2 py-0.5 rounded-md bg-destructive/10 text-destructive font-medium flex items-center gap-1 border border-destructive/20"
-                                              title={file.fingerprint}
-                                            >
-                                              <MaterialIcon icon="error" className="text-xs shrink-0" />
-                                              <span className="truncate max-w-[220px]">{file.fingerprint}</span>
-                                            </span>
-                                          )}
+                                          {group.strategy === 'broken_files' &&
+                                            file.fingerprint && (
+                                              <span
+                                                className="text-[11px] px-2 py-0.5 rounded-md bg-destructive/10 text-destructive font-medium flex items-center gap-1 border border-destructive/20"
+                                                title={file.fingerprint}
+                                              >
+                                                <MaterialIcon
+                                                  icon="error"
+                                                  className="text-xs shrink-0"
+                                                />
+                                                <span className="truncate max-w-[220px]">
+                                                  {file.fingerprint}
+                                                </span>
+                                              </span>
+                                            )}
 
-                                          {group.strategy === 'invalid_symlinks' && file.fingerprint && (
-                                            <span
-                                              className="text-[11px] px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1 border border-amber-500/20"
-                                              title={file.fingerprint}
-                                            >
-                                              <MaterialIcon icon="link_off" className="text-xs shrink-0" />
-                                              <span className="truncate max-w-[240px]">{file.fingerprint}</span>
-                                            </span>
-                                          )}
+                                          {group.strategy === 'invalid_symlinks' &&
+                                            file.fingerprint && (
+                                              <span
+                                                className="text-[11px] px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1 border border-amber-500/20"
+                                                title={file.fingerprint}
+                                              >
+                                                <MaterialIcon
+                                                  icon="link_off"
+                                                  className="text-xs shrink-0"
+                                                />
+                                                <span className="truncate max-w-[240px]">
+                                                  {file.fingerprint}
+                                                </span>
+                                              </span>
+                                            )}
 
-                                          {group.strategy === 'video_optimizer' && file.fingerprint && (
-                                            <span
-                                              className="text-[11px] px-2 py-0.5 rounded-md bg-primary/10 text-primary font-medium flex items-center gap-1 border border-primary/20"
-                                              title={file.fingerprint}
-                                            >
-                                              <MaterialIcon icon="smart_display" className="text-xs shrink-0" />
-                                              <span className="truncate max-w-[220px]">{file.fingerprint}</span>
-                                            </span>
-                                          )}
+                                          {group.strategy === 'video_optimizer' &&
+                                            file.fingerprint && (
+                                              <span
+                                                className="text-[11px] px-2 py-0.5 rounded-md bg-primary/10 text-primary font-medium flex items-center gap-1 border border-primary/20"
+                                                title={file.fingerprint}
+                                              >
+                                                <MaterialIcon
+                                                  icon="smart_display"
+                                                  className="text-xs shrink-0"
+                                                />
+                                                <span className="truncate max-w-[220px]">
+                                                  {file.fingerprint}
+                                                </span>
+                                              </span>
+                                            )}
                                         </div>
 
-                                        {meta?.smartName && meta.smartName !== file.name && group.strategy !== 'bad_names' && (
-                                          <div className="text-xs text-primary font-semibold truncate flex items-center gap-1.5">
-                                            <MaterialIcon icon="auto_awesome" className="text-xs shrink-0" />
-                                            <span className="truncate">{meta.smartName}</span>
-                                          </div>
-                                        )}
+                                        {meta?.smartName &&
+                                          meta.smartName !== file.name &&
+                                          group.strategy !== 'bad_names' && (
+                                            <div className="text-xs text-primary font-semibold truncate flex items-center gap-1.5">
+                                              <MaterialIcon
+                                                icon="auto_awesome"
+                                                className="text-xs shrink-0"
+                                              />
+                                              <span className="truncate">{meta.smartName}</span>
+                                            </div>
+                                          )}
 
-                                        <div className="text-[10px] text-muted-foreground/80 font-mono truncate" title={file.path}>
+                                        <div
+                                          className="text-[10px] text-muted-foreground/80 font-mono truncate"
+                                          title={file.path}
+                                        >
                                           {file.path}
                                         </div>
                                       </div>
@@ -2159,7 +2399,9 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                                     <div className="flex items-center gap-4 text-xs font-mono text-muted-foreground shrink-0">
                                       <div className="text-right">
                                         <div className="flex items-center justify-end gap-1.5">
-                                          <span className="font-bold text-foreground">{formatBytes(file.size)}</span>
+                                          <span className="font-bold text-foreground">
+                                            {formatBytes(file.size)}
+                                          </span>
                                           {isMaxSize && group.files.length > 1 && (
                                             <span className="text-[9px] px-1 py-0 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold">
                                               {t('最大')}
@@ -2173,19 +2415,22 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                                         )}
                                       </div>
 
-                                      {file.qualityScore !== undefined && file.qualityScore !== null && (
-                                        <div className="text-right hidden sm:block">
-                                          <div className="text-[10px] text-muted-foreground">{t('质量分')}</div>
-                                          <div className="font-bold text-foreground flex items-center gap-1">
-                                            {file.qualityScore}
-                                            {isBestScore && (
-                                              <span className="text-[9px] px-1 py-0 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold">
-                                                {t('最优')}
-                                              </span>
-                                            )}
+                                      {file.qualityScore !== undefined &&
+                                        file.qualityScore !== null && (
+                                          <div className="text-right hidden sm:block">
+                                            <div className="text-[10px] text-muted-foreground">
+                                              {t('质量分')}
+                                            </div>
+                                            <div className="font-bold text-foreground flex items-center gap-1">
+                                              {file.qualityScore}
+                                              {isBestScore && (
+                                                <span className="text-[9px] px-1 py-0 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold">
+                                                  {t('最优')}
+                                                </span>
+                                              )}
+                                            </div>
                                           </div>
-                                        </div>
-                                      )}
+                                        )}
 
                                       {/* 列表尾部的大 Checkbox */}
                                       <div
@@ -2200,7 +2445,11 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                                           checked={isSelectedForDelete}
                                           onChange={e => {
                                             e.stopPropagation()
-                                            handleToggleFileSelection(group, file.path, e.target.checked)
+                                            handleToggleFileSelection(
+                                              group,
+                                              file.path,
+                                              e.target.checked
+                                            )
                                           }}
                                           onClick={e => e.stopPropagation()}
                                           className="h-5 w-5 rounded-md border-2 border-primary text-destructive accent-destructive cursor-pointer"
@@ -2258,5 +2507,3 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
     </div>
   )
 }
-
-

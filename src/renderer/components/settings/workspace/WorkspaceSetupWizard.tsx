@@ -398,7 +398,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
       </div>
 
       {/* 四大场景意图卡片网格 */}
-      <div className="flex-1 overflow-y-auto space-y-2.5 pr-1">
+      <div className="flex-1 overflow-y-auto space-y-2.5 p-1">
         <div className="flex items-center justify-between">
           <Label className="text-xs font-semibold text-foreground">
             {t('选择适用的场景模式（系统已为您推荐最契合选项，您也可以自主调整）：')}

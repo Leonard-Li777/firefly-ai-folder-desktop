@@ -10,6 +10,7 @@ import { useAnalysisQueueStore } from '../../../../stores/analysis-queue-store'
 import { usePreviewOverlayStore } from '../../../../stores/preview-overlay-store'
 import { useSearchStore } from '../../../../stores/search-store'
 import { runBatchAnalyze } from '../../batch-analyze'
+import { notifyEnqueueResult } from '../../../../utils/enqueue-notifier'
 
 interface UseFileListContextMenuProps {
   selectedFiles: FileType[]
@@ -287,8 +288,8 @@ export const useFileListContextMenu = ({
             disabled: isAnalyzingOrPending,
             onClick: async () => {
               try {
-                await useAnalysisQueueStore.getState().addItems(queueItems, true)
-                toast.success(t('已加入分析队列'))
+                const res = await useAnalysisQueueStore.getState().addItems(queueItems, true)
+                notifyEnqueueResult(res)
               } catch (error) {
                 logger.error(LogCategory.RENDERER, '加入分析队列失败:', error)
                 toast.error(t('操作失败'))
@@ -301,8 +302,8 @@ export const useFileListContextMenu = ({
             disabled: isAnalyzingOrPending,
             onClick: async () => {
               try {
-                await useAnalysisQueueStore.getState().addItems(queueItems, false)
-                toast.success(t('已加入分析队列'))
+                const res = await useAnalysisQueueStore.getState().addItems(queueItems, false)
+                notifyEnqueueResult(res)
               } catch (error) {
                 logger.error(LogCategory.RENDERER, '加入分析队列失败:', error)
                 toast.error(t('操作失败'))

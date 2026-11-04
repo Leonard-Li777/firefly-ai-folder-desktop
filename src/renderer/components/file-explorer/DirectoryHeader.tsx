@@ -21,6 +21,7 @@ import { Button } from '../ui/button'
 
 import { PaymentFlowDialog } from '../tier/PaymentFlowDialog'
 import { ResourceContentionBanner } from './ResourceContentionBanner'
+import { WorkspacePendingConfigBanner } from './WorkspacePendingConfigBanner'
 import { GlobalTTSPlaybackBar } from './GlobalTTSPlaybackBar'
 
 interface DirectoryHeaderProps {
@@ -67,9 +68,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
     const searchHistory = useSearchStore(state => state.searchHistory)
     const getSearchSuggestions = useSearchStore(state => state.getSearchSuggestions)
     const addSearchHistory = useSearchStore(state => state.addSearchHistory)
-    const removeSearchHistoryByKeyword = useSearchStore(
-      state => state.removeSearchHistoryByKeyword
-    )
+    const removeSearchHistoryByKeyword = useSearchStore(state => state.removeSearchHistoryByKeyword)
     const clearSearchHistory = useSearchStore(state => state.clearSearchHistory)
 
     const [localSearchInput, setLocalSearchInput] = useState(globalSearchKeyword)
@@ -465,7 +464,9 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                                   )}
                                 />
                                 <div className="min-w-0">
-                                  <div className={cn('text-xs font-medium', news.level && styles.text)}>
+                                  <div
+                                    className={cn('text-xs font-medium', news.level && styles.text)}
+                                  >
                                     {news.text}
                                   </div>
                                   {news.url && (
@@ -499,7 +500,11 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
               <GlobalTTSPlaybackBar />
 
               {/* User Avatar Menu */}
-              <div data-no-drag className="no-drag flex-shrink-0" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
+              <div
+                data-no-drag
+                className="no-drag flex-shrink-0"
+                style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+              >
                 <UserAvatarMenu onOpenChange={setIsUserMenuOpen} />
               </div>
 
@@ -533,7 +538,10 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                   className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-destructive hover:text-destructive-foreground transition-colors cursor-pointer"
                   title={t('关闭')}
                 >
-                  <MaterialIcon icon="close" className="text-muted-foreground text-lg leading-none" />
+                  <MaterialIcon
+                    icon="close"
+                    className="text-muted-foreground text-lg leading-none"
+                  />
                 </button>
               </div>
             </div>
@@ -635,7 +643,9 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                     }}
                     title={
                       currentWorkspaceDirectory
-                        ? t('配置当前工作区AI策略与目录管理: {name}', { name: currentWorkspaceDirectory.name })
+                        ? t('配置当前工作区AI策略与目录管理: {name}', {
+                            name: currentWorkspaceDirectory.name
+                          })
                         : t('工作区配置与管理')
                     }
                   >
@@ -652,7 +662,13 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="text-xs font-bold truncate flex items-center gap-1.5">
-                          <span className={currentWorkspaceDirectory ? 'text-foreground' : 'text-muted-foreground'}>
+                          <span
+                            className={
+                              currentWorkspaceDirectory
+                                ? 'text-foreground'
+                                : 'text-muted-foreground'
+                            }
+                          >
                             {t('工作区配置与管理')}
                           </span>
                           {currentWorkspaceDirectory && (
@@ -860,7 +876,6 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                     </button>
                   </div>
                 </div>
-
               </div>
             </div>
 
@@ -910,7 +925,8 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                   setLocalSearchInput(val)
                   setShowHistoryPopover(true)
                   setActiveSuggestionIndex(-1)
-                  const isNativeComposing = (e.nativeEvent as any)?.isComposing ?? isComposingRef.current
+                  const isNativeComposing =
+                    (e.nativeEvent as any)?.isComposing ?? isComposingRef.current
                   if (!isNativeComposing) {
                     setGlobalSearchKeyword(val)
                     onSearch?.(val)
@@ -978,7 +994,10 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                 onCompositionEnd={e => {
                   isComposingRef.current = false
                   // 健壮获取上屏文本：优先 DOM 真实值，兜底 event 目标值
-                  const val = searchInputRef.current?.value ?? (e.target as HTMLInputElement)?.value ?? e.currentTarget.value
+                  const val =
+                    searchInputRef.current?.value ??
+                    (e.target as HTMLInputElement)?.value ??
+                    e.currentTarget.value
                   setLocalSearchInput(val)
                   setGlobalSearchKeyword(val)
                   onSearch?.(val)

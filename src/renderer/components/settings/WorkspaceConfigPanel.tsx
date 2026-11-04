@@ -87,6 +87,26 @@ export function getIntentCards(): Array<{
   ]
 }
 
+/**
+ * 获取场景意图的本地化友好展示名 (严格遵守 AGENTS.md §2.3 Egress 阶段反查展示名铁律)
+ */
+export function getIntentDisplayName(intent?: WorkspaceConfigIntent | string | null): string {
+  switch (intent) {
+    case 'fast_archive':
+      return t('极速整理与文档')
+    case 'visual_gallery':
+      return t('创意图库与设计')
+    case 'footage_studio':
+      return t('影视与剪辑素材')
+    case 'chaotic_inbox':
+      return t('桌面与下载混合')
+    case 'custom':
+      return t('深度自定义')
+    default:
+      return t('未指定')
+  }
+}
+
 export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
   workspace,
   hardwareInfo,
@@ -180,7 +200,9 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
   // 推荐信息提示
   const isRecommended = useCallback(
     (intentId: WorkspaceConfigIntent) => {
-      return profileResult && profileResult.detectedIntent === intentId && profileResult.confidence > 0
+      return (
+        profileResult && profileResult.detectedIntent === intentId && profileResult.confidence > 0
+      )
     },
     [profileResult]
   )
@@ -277,12 +299,15 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
           ) : profileResult?.stats ? (
             <div className="flex items-center gap-1.5 text-muted-foreground bg-background/80 px-2.5 py-1 rounded-lg border border-border/40 shadow-xs">
               <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              <span>
-                {t('已采样 {count} 文件', { count: profileResult.stats.totalSampled })}
-              </span>
+              <span>{t('已采样 {count} 文件', { count: profileResult.stats.totalSampled })}</span>
               {profileResult.stats.topExtensions?.length > 0 && (
                 <span className="text-primary font-medium">
-                  ({profileResult.stats.topExtensions.slice(0, 3).map((e: any) => `${e.ext} ${e.count}`).join(', ')})
+                  (
+                  {profileResult.stats.topExtensions
+                    .slice(0, 3)
+                    .map((e: any) => `${e.ext} ${e.count}`)
+                    .join(', ')}
+                  )
                 </span>
               )}
             </div>
@@ -362,7 +387,9 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
                   </div>
                   <div>
                     <h5 className="font-bold text-sm leading-snug">{card.title}</h5>
-                    <p className="text-[11px] text-muted-foreground leading-tight">{card.subtitle}</p>
+                    <p className="text-[11px] text-muted-foreground leading-tight">
+                      {card.subtitle}
+                    </p>
                   </div>
                 </div>
 
@@ -435,16 +462,16 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
                   className="w-full p-2 rounded-lg border border-border bg-background text-foreground text-xs"
                 >
                   <option value="simple">{t('极速标准 (simple) - 基础标签与智能名')}</option>
-                  <option value="quick_name">{t('增强润色 (quick_name) - 推荐，平衡速度与深度')}</option>
+                  <option value="quick_name">
+                    {t('增强润色 (quick_name) - 推荐，平衡速度与深度')}
+                  </option>
                   <option value="full">{t('全面深度 (full) - 全多模态深度理解')}</option>
                 </select>
               </div>
 
               {/* 图像 OCR 开关与精度 */}
               <div>
-                <Label className="text-xs font-medium mb-1.5 block">
-                  {t('图片 OCR 识别')}
-                </Label>
+                <Label className="text-xs font-medium mb-1.5 block">{t('图片 OCR 识别')}</Label>
                 <div className="flex items-center gap-3 p-1.5 bg-background rounded-lg border border-border">
                   <label className="flex items-center gap-1.5 cursor-pointer">
                     <input
@@ -512,9 +539,7 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
               </div>
 
               <div>
-                <Label className="text-xs font-medium mb-1 block">
-                  {t('镜头切片敏锐度')}
-                </Label>
+                <Label className="text-xs font-medium mb-1 block">{t('镜头切片敏锐度')}</Label>
                 <select
                   value={effectiveParams.videoCutSensitivity}
                   onChange={e =>
@@ -589,9 +614,7 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
                   })}
                 </span>
               </div>
-              <span className="text-[11px] opacity-75">
-                {t('根据全机硬件自动锁定')}
-              </span>
+              <span className="text-[11px] opacity-75">{t('根据全机硬件自动锁定')}</span>
             </div>
           </div>
         )}

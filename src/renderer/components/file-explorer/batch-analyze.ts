@@ -2,6 +2,7 @@ import { LogCategory, logger } from '@firefly/shared'
 import { t } from '@app/languages'
 import { toast } from '../common/Toast'
 import { useAnalysisQueueStore } from '../../stores/analysis-queue-store'
+import { notifyEnqueueResult } from '../../utils/enqueue-notifier'
 
 /**
  * 批量分析入参。
@@ -91,7 +92,11 @@ export async function runBatchAnalyze({
 
     if (filesToAdd.length > 0) {
       const { addItems, start } = useAnalysisQueueStore.getState()
-      await addItems(filesToAdd)
+      const res = await addItems(filesToAdd)
+      if (res?.blockedCount > 0 && res?.addedCount === 0 && res?.updatedCount === 0) {
+        notifyEnqueueResult(res)
+        return
+      }
       await start()
       // 强制以 split 面板形式打开队列，确保用户点击「队列：x/x」时能正常切换
       // 注意：必须同时把 viewMode 置为 'split'，否则 window 模式下队列面板不会渲染
@@ -102,6 +107,9 @@ export async function runBatchAnalyze({
         isSplitMinimized: false
       })
       window.electronAPI?.setQueueViewMode?.({ mode: 'split', isSplitOpen: true })
+      if (res?.blockedCount > 0) {
+        notifyEnqueueResult(res)
+      }
     }
   } catch (error: any) {
     // 提取实际错误消息，去掉 IPC 调用前缀
@@ -111,7 +119,8 @@ export async function runBatchAnalyze({
       errorMsg = match[1]
     }
 
-    if (errorMsg.includes('配额')) { // locale-invariant-ok: 外部异常文本匹配 (D型)
+    if (errorMsg.includes('配额')) {
+      // locale-invariant-ok: 外部异常文本匹配 (D型)
       toast.error(errorMsg)
     } else if (errorMsg) {
       toast.error(t('分析失败：{error}', { error: errorMsg }))

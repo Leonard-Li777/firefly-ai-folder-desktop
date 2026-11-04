@@ -65,13 +65,11 @@ const App: React.FC = () => {
   const [hasMountedVirtual, setHasMountedVirtual] = useState(false)
   const [isDeviceBindOpen, setIsDeviceBindOpen] = useState(false)
 
-  // 首次启动时检测当前设备是否已绑定微信小程序账号
+  // 首次启动时检测当前设备是否已绑定微信小程序账号（未登录强制扫码绑定，不可跳过）
   useEffect(() => {
     let isMounted = true
     const checkBind = async () => {
       try {
-        const isDismissed = sessionStorage.getItem('firefly_bind_modal_dismissed') === '1'
-        if (isDismissed) return
         if (window.electronAPI?.deviceBind?.getStatus) {
           const res = await window.electronAPI.deviceBind.getStatus()
           if (isMounted && res?.success && !res.bound) {
@@ -129,7 +127,11 @@ const App: React.FC = () => {
       params?: Record<string, string>
     }) => {
       logger.info(LogCategory.RENDERER, '[DeepLink] 收到深链接请求:', payload)
-      if (payload.action === 'rules' || payload.action === 'consumption' || payload.action === 'transactions') {
+      if (
+        payload.action === 'rules' ||
+        payload.action === 'consumption' ||
+        payload.action === 'transactions'
+      ) {
         try {
           const tierStore = useTierStore.getState()
           // 优先从云端全量同步最新资产与流水记录（降级读本地缓存）
@@ -323,9 +325,13 @@ const App: React.FC = () => {
         // 引擎是否就绪由 startup 探活与桥接熔断把关；此处本地模式视为可继续。
         if (aiServiceMode === 'local') {
           hasDownloadedModel = true
-          logger.info(LogCategory.RENDERER, '本地模式：模型就绪态由萤核AI引擎独占，跳过桌面端模型检查:', {
-            aiEngine: config.aiEngine || 'llama.cpp'
-          })
+          logger.info(
+            LogCategory.RENDERER,
+            '本地模式：模型就绪态由萤核AI引擎独占，跳过桌面端模型检查:',
+            {
+              aiEngine: config.aiEngine || 'llama.cpp'
+            }
+          )
         } else if (aiServiceMode === 'cloud') {
           // 云端模式下，只要有选中的模型ID，就认为“已就绪”
           const cloudModelId = config.aiCloudSelectedModelId
@@ -794,7 +800,6 @@ const App: React.FC = () => {
               <VirtualDirectory />
             </div>
           )}
-
 
           {/* 全域搜索浮层 - GlobalSearchOverlay (单例挂载于 App 顶层) */}
           <GlobalSearchOverlay workspaceDirectory={currentWorkspaceDirectory} />

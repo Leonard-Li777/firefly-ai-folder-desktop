@@ -36,7 +36,11 @@ export const AboutDialog: React.FC<AboutDialogProps> = ({ open, onOpenChange }) 
       const state = await window.electronAPI.update.check(true)
       if (state.status === 'not-available') {
         setUpdateFeedback(t('当前已是最新版本'))
-      } else if (state.status === 'available' || state.status === 'downloading' || state.status === 'downloaded') {
+      } else if (
+        state.status === 'available' ||
+        state.status === 'downloading' ||
+        state.status === 'downloaded'
+      ) {
         setUpdateFeedback(t('发现新版本 v{version}', { version: state.latestVersion || '' }))
       } else if (state.status === 'error') {
         setUpdateFeedback(t('检查更新失败，请稍后重试'))
@@ -116,8 +120,8 @@ export const AboutDialog: React.FC<AboutDialogProps> = ({ open, onOpenChange }) 
 
           {/* 版权声明 */}
           <div className="bg-muted/30 rounded-lg p-4 text-sm text-muted-foreground space-y-2">
-            <p>{t('萤核智能文件夹由 萤核科技 开发并保留所有权利。')}</p>
-            <p>{t('Copyright © 2026 萤核科技. All rights reserved.')}</p>
+            <p>{t('萤核智能文件夹是一位软件极客的个人作品，欢迎交流使用心得和意见反馈。')}</p>
+            <p>{t('Copyright © 2026 萤核智能文件. All rights reserved.')}</p>
             <p>{t('本软件桌面端核心业务逻辑基于 CC BY-NC-SA 4.0 许可证开源发布。')}</p>
           </div>
 

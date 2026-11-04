@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { t } from '@app/languages'
 import { toast } from '../../../common/Toast'
 import { useAnalysisQueueStore } from '../../../../stores/analysis-queue-store'
+import { notifyEnqueueResult } from '../../../../utils/enqueue-notifier'
 
 export function useFileDetails(
   item: FileItem | DirectoryItem | undefined,
@@ -184,9 +185,7 @@ export function useFileDetails(
       const { isPathEqual } = window.electronAPI!.utils || {
         isPathEqual: (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
       }
-      const queueItem = snapshot?.items?.find(
-        (i: any) => i.path && isPathEqual(i.path, targetPath)
-      )
+      const queueItem = snapshot?.items?.find((i: any) => i.path && isPathEqual(i.path, targetPath))
 
       if (queueItem) {
         const isStatusChange = lastSeenStatusRef.current !== queueItem.status
@@ -247,7 +246,7 @@ export function useFileDetails(
     refreshAnalysis
   ])
 
-    const handleReanalyze = async () => {
+  const handleReanalyze = async () => {
     if (!item || isDirectory) return
     try {
       lastSeenStatusRef.current = 'pending'
