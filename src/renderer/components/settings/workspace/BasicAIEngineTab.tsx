@@ -1037,173 +1037,6 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
               </div>
             </div>
 
-            {/* 实时整理分析耗时预估图形化卡片（外层常驻可见，以每 5 分钟片段为绝对标尺测算，对齐 ISS-23） */}
-            {(() => {
-              const est = estimateVideoAnalysisDurationSec(
-                videoQuotaMax,
-                localVideoSoftTokenBudget,
-                videoAsrCap,
-                false,
-                300
-              )
-              const totalMins = (est.totalSec / 60).toFixed(1)
-              const fillWidthPct = Math.min(
-                100,
-                Math.max(3, Math.round((est.perChunkSec / 300) * 100))
-              )
-
-              return (
-                <div className="p-4 rounded-xl bg-card border border-border shadow-xs space-y-3">
-                  <div className="flex items-center justify-between flex-wrap gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">⚡</span>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-foreground">
-                            {t('单视频首次整理耗时预估')}
-                          </span>
-                          <span className="text-[10px] px-2 py-0.2 rounded-full font-medium bg-primary/10 text-primary border border-primary/20">
-                            {t('以每 5 分钟视频分析基准测算')}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">
-                          {t('耗时仅在首次整理时发生一次；搜索时均为毫秒级瞬发。')}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-extrabold font-mono text-primary">
-                        {est.minSec} ~ {est.maxSec} {t('秒')}
-                      </span>
-                      {est.totalSec >= 60 && (
-                        <span className="text-[11px] text-muted-foreground font-mono">
-                          ({t('约 {min} 分钟', { min: totalMins })})
-                        </span>
-                      )}
-                      {est.speedTier === 'blazing' && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                          ⚡ {t('极速飞快 (约 {speed}x 实时处理)', { speed: est.speedMultiplier })}
-                        </span>
-                      )}
-                      {est.speedTier === 'balanced' && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
-                          ⚖️ {t('平衡适中 (约 {speed}x 实时处理)', { speed: est.speedMultiplier })}
-                        </span>
-                      )}
-                      {est.speedTier === 'deep' && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
-                          🔍 {t('深度精细 (约 {speed}x 实时处理)', { speed: est.speedMultiplier })}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* 全局绝对标尺刻度轨道 */}
-                  <div className="space-y-1.5">
-                    <div className="h-3 w-full bg-muted/60 rounded-full overflow-hidden flex relative p-0.5 border border-border/40">
-                      <div
-                        style={{ width: `${fillWidthPct}%` }}
-                        className="h-full rounded-full overflow-hidden flex gap-0.5 transition-all duration-300"
-                      >
-                        <div
-                          style={{ width: `${est.visualPct}%` }}
-                          className="h-full bg-primary rounded-l-full transition-all duration-300"
-                          title={t('画面 AI 理解')}
-                        />
-                        <div
-                          style={{ width: `${est.asrPct}%` }}
-                          className="h-full bg-emerald-500 transition-all duration-300"
-                          title={t('台词语音识别')}
-                        />
-                        <div
-                          style={{ width: `${est.fixedPct}%` }}
-                          className="h-full bg-muted-foreground/30 rounded-r-full transition-all duration-300"
-                          title={t('基础解包与索引')}
-                        />
-                      </div>
-                    </div>
-
-                    {/* 实时线与刻度标尺 */}
-                    <div className="flex items-center justify-between text-[10px] text-muted-foreground/70 px-0.5 font-mono">
-                      <span>0s</span>
-                      <span>60s</span>
-                      <span>150s</span>
-                      <span className="text-primary/80 font-medium">300s ({t('实时线')})</span>
-                    </div>
-
-                    {/* 细分耗时图例与百分比 */}
-                    <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5 flex-wrap gap-2">
-                      <div className="flex items-center gap-3">
-                        <span className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-primary inline-block" />
-                          <span>
-                            {t('画面 AI 理解')}:{' '}
-                            <strong className="text-foreground">~{est.visualSec}s</strong> (
-                            {videoQuotaMax}
-                            {t('张')})
-                          </span>
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
-                          <span>
-                            {t('台词识别')}:{' '}
-                            <strong className="text-foreground">~{est.asrSec}s</strong> (
-                            {videoAsrCap}s{t('音轨')})
-                          </span>
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-muted-foreground/40 inline-block" />
-                          <span>
-                            {t('基础开销')}:{' '}
-                            <strong className="text-foreground">~{est.fixedSec}s</strong>
-                          </span>
-                        </span>
-                      </div>
-                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
-                        ⚡ {t('搜索时毫秒级瞬发响应')}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* 纯 CPU 深度档慢于实时播放时的贴心提示 */}
-                  {est.perChunkSec >= 300 && (
-                    <div className="p-2.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-xs text-purple-700 dark:text-purple-300 flex items-center gap-2">
-                      <span>💡</span>
-                      <span>
-                        {t(
-                          '这个档位在没有独立显卡的电脑上，整理会比视频本身更慢，适合放在后台慢慢整理；配备独立显卡时可获得数倍流畅提速。'
-                        )}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* 免费会员权益说明与 Pro 升级引导 */}
-                  {isFreeUser && (
-                    <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/25 flex items-center justify-between gap-3 flex-wrap transition-all">
-                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                        <Crown className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
-                        <div className="text-xs leading-relaxed">
-                          <p className="font-bold text-amber-700 dark:text-amber-300">
-                            {t('免费版每个视频分析精彩前 5 分钟。')}
-                          </p>
-                          <p className="text-muted-foreground">
-                            {t('升级 Pro 会员可解锁整部视频全量分析，支持单视频长达 2 小时以上。')}
-                          </p>
-                        </div>
-                      </div>
-                      <Button
-                        size="sm"
-                        onClick={() => setIsUpgradeOpen(true)}
-                        className="h-7 px-3 text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:opacity-90 transition-opacity shrink-0 shadow-xs"
-                      >
-                        {t('立即升级 Pro')}
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )
-            })()}
-
             {/* 折叠的高级微调面板 */}
             <div className="border border-border/60 rounded-xl overflow-hidden bg-card">
               <div
@@ -1392,6 +1225,173 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
                 </div>
               )}
             </div>
+
+            {/* 实时整理分析耗时预估图形化卡片（以每 5 分钟片段为绝对标尺测算，紧随参数调优之后呈现反馈） */}
+            {(() => {
+              const est = estimateVideoAnalysisDurationSec(
+                videoQuotaMax,
+                localVideoSoftTokenBudget,
+                videoAsrCap,
+                false,
+                300
+              )
+              const totalMins = (est.totalSec / 60).toFixed(1)
+              const fillWidthPct = Math.min(
+                100,
+                Math.max(3, Math.round((est.perChunkSec / 300) * 100))
+              )
+
+              return (
+                <div className="p-4 rounded-xl bg-card border border-border shadow-xs space-y-3">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">⚡</span>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-foreground">
+                            {t('单视频首次整理耗时预估')}
+                          </span>
+                          <span className="text-[10px] px-2 py-0.2 rounded-full font-medium bg-primary/10 text-primary border border-primary/20">
+                            {t('以每 5 分钟视频分析基准测算')}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          {t('耗时仅在首次整理时发生一次；搜索时均为毫秒级瞬发。')}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-extrabold font-mono text-primary">
+                        {est.minSec} ~ {est.maxSec} {t('秒')}
+                      </span>
+                      {est.totalSec >= 60 && (
+                        <span className="text-[11px] text-muted-foreground font-mono">
+                          ({t('约 {min} 分钟', { min: totalMins })})
+                        </span>
+                      )}
+                      {est.speedTier === 'blazing' && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                          ⚡ {t('极速飞快 (约 {speed}x 实时处理)', { speed: est.speedMultiplier })}
+                        </span>
+                      )}
+                      {est.speedTier === 'balanced' && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
+                          ⚖️ {t('平衡适中 (约 {speed}x 实时处理)', { speed: est.speedMultiplier })}
+                        </span>
+                      )}
+                      {est.speedTier === 'deep' && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                          🔍 {t('深度精细 (约 {speed}x 实时处理)', { speed: est.speedMultiplier })}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 全局绝对标尺刻度轨道 */}
+                  <div className="space-y-1.5">
+                    <div className="h-3 w-full bg-muted/60 rounded-full overflow-hidden flex relative p-0.5 border border-border/40">
+                      <div
+                        style={{ width: `${fillWidthPct}%` }}
+                        className="h-full rounded-full overflow-hidden flex gap-0.5 transition-all duration-300"
+                      >
+                        <div
+                          style={{ width: `${est.visualPct}%` }}
+                          className="h-full bg-primary rounded-l-full transition-all duration-300"
+                          title={t('画面 AI 理解')}
+                        />
+                        <div
+                          style={{ width: `${est.asrPct}%` }}
+                          className="h-full bg-emerald-500 transition-all duration-300"
+                          title={t('台词语音识别')}
+                        />
+                        <div
+                          style={{ width: `${est.fixedPct}%` }}
+                          className="h-full bg-muted-foreground/30 rounded-r-full transition-all duration-300"
+                          title={t('基础解包与索引')}
+                        />
+                      </div>
+                    </div>
+
+                    {/* 实时线与刻度标尺 */}
+                    <div className="flex items-center justify-between text-[10px] text-muted-foreground/70 px-0.5 font-mono">
+                      <span>0s</span>
+                      <span>60s</span>
+                      <span>150s</span>
+                      <span className="text-primary/80 font-medium">300s ({t('实时线')})</span>
+                    </div>
+
+                    {/* 细分耗时图例与百分比 */}
+                    <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5 flex-wrap gap-2">
+                      <div className="flex items-center gap-3">
+                        <span className="flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-primary inline-block" />
+                          <span>
+                            {t('画面 AI 理解')}:{' '}
+                            <strong className="text-foreground">~{est.visualSec}s</strong> (
+                            {videoQuotaMax}
+                            {t('张')})
+                          </span>
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+                          <span>
+                            {t('台词识别')}:{' '}
+                            <strong className="text-foreground">~{est.asrSec}s</strong> (
+                            {videoAsrCap}s{t('音轨')})
+                          </span>
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-muted-foreground/40 inline-block" />
+                          <span>
+                            {t('基础开销')}:{' '}
+                            <strong className="text-foreground">~{est.fixedSec}s</strong>
+                          </span>
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                        ⚡ {t('搜索时毫秒级瞬发响应')}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* 纯 CPU 深度档慢于实时播放时的贴心提示 */}
+                  {est.perChunkSec >= 300 && (
+                    <div className="p-2.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-xs text-purple-700 dark:text-purple-300 flex items-center gap-2">
+                      <span>💡</span>
+                      <span>
+                        {t(
+                          '这个档位在没有独立显卡的电脑上，整理会比视频本身更慢，适合放在后台慢慢整理；配备独立显卡时可获得数倍流畅提速。'
+                        )}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* 免费会员权益说明与 Pro 升级引导 */}
+                  {isFreeUser && (
+                    <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/25 flex items-center justify-between gap-3 flex-wrap transition-all">
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                        <Crown className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                        <div className="text-xs leading-relaxed">
+                          <p className="font-bold text-amber-700 dark:text-amber-300">
+                            {t('免费版每个视频分析精彩前 5 分钟。')}
+                          </p>
+                          <p className="text-muted-foreground">
+                            {t('升级 Pro 会员可解锁整部视频全量分析，支持单视频长达 2 小时以上。')}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => setIsUpgradeOpen(true)}
+                        className="h-7 px-3 text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:opacity-90 transition-opacity shrink-0 shadow-xs"
+                      >
+                        {t('立即升级 Pro')}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )
+            })()}
           </div>
         </Card>
       )}
