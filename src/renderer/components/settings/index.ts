@@ -3,6 +3,12 @@
  */
 
 export { SettingsDialog } from './settings-dialog'
+export { SystemSettingsDialog } from './SystemSettingsDialog'
+export { WorkspaceSettingsDialog } from './WorkspaceSettingsDialog'
+export { WorkspaceSetupWizard } from './workspace/WorkspaceSetupWizard'
+export { TaskEngineSettings } from './workspace/TaskEngineSettings'
+export { WorkspaceIgnoreRulesTab } from './workspace/WorkspaceIgnoreRulesTab'
+export { WorkspaceMaintenanceTab } from './workspace/WorkspaceMaintenanceTab'
 export { SettingsNavigation } from './settings-navigation'
 export { SettingsButton, SettingsIconButton } from './settings-button'
 
@@ -19,4 +25,3 @@ export { AnalysisIgnoreRulesSettings } from './analysis-ignore-rules-settings'
 export { AnalysisSettings } from './analysis-settings'
 export { MonitoringSettings, WorkspaceSettings } from './workspace-settings'
 export { TTSSettings } from './tts-settings'
-

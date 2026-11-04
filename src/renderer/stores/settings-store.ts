@@ -52,6 +52,8 @@ const configKeyToRendererFieldMap = CONFIG_KEY_TO_RENDERER_FIELD_MAP as Record<
  */
 interface ISettingsState {
   isOpen: boolean
+  isSystemSettingsOpen: boolean
+  isWorkspaceSettingsOpen: boolean
   currentCategory: SettingsCategory
   isLoading: boolean
   error: string | null
@@ -68,6 +70,10 @@ interface ISettingsState {
     options?: { workspaceId?: number; targetTab?: string }
   ) => Promise<void>
   closeSettings: () => void
+  openSystemSettings: (category?: SettingsCategory) => Promise<void>
+  closeSystemSettings: () => Promise<void>
+  openWorkspaceSettings: (options?: { workspaceId?: number; targetTab?: string }) => Promise<void>
+  closeWorkspaceSettings: () => Promise<void>
   setCurrentCategory: (category: SettingsCategory) => void
   updateConfig: (updates: Partial<AppConfig>, options?: { internal?: boolean }) => void
   saveSettings: () => Promise<void>
@@ -93,7 +99,37 @@ interface ISettingsState {
 }
 
 /**
- * 获取设置分类列表
+ * 系统设置专有分类列表 (严格限定为界面/显示、高级AI引擎、离线TTS、系统忽略规则 4 项)
+ */
+export const systemSettingsCategories = (): ISettingsCategoryInfo[] => [
+  {
+    id: SettingsCategory.INTERFACE,
+    name: t('界面与显示偏好'),
+    icon: 'palette',
+    description: t('外观、语言、主题及文件列表展示')
+  },
+  {
+    id: SettingsCategory.AI_ENGINE_CONFIG,
+    name: t('开启高级AI引擎'),
+    icon: 'settings_suggest',
+    description: t('高级推理引擎连接与思考模式')
+  },
+  {
+    id: SettingsCategory.TTS,
+    name: t('语音合成 (TTS)'),
+    icon: 'record_voice_over',
+    description: t('离线多发音人音色库、默认语速与收藏管理')
+  },
+  {
+    id: SettingsCategory.ANALYSIS_IGNORE_RULES,
+    name: t('AI分析忽略规则'),
+    icon: 'filter',
+    description: t('全系统通用文件与目录排除黑名单')
+  }
+]
+
+/**
+ * 获取设置分类列表 (向后兼容)
  */
 export const settingsCategories = (): ISettingsCategoryInfo[] => [
   {
@@ -166,7 +202,9 @@ export const useSettingsStore = create<ISettingsState>()(
   subscribeWithSelector((set, get) => {
     return {
       isOpen: false,
-      currentCategory: SettingsCategory.WORKSPACE_CONFIG,
+      isSystemSettingsOpen: false,
+      isWorkspaceSettingsOpen: false,
+      currentCategory: SettingsCategory.INTERFACE,
       targetWorkspaceId: null,
       setTargetWorkspaceId: (targetWorkspaceId: number | null) => set({ targetWorkspaceId }),
       isLoading: false,
@@ -177,20 +215,12 @@ export const useSettingsStore = create<ISettingsState>()(
       ignoreRules: [],
       validationResult: null,
 
-      openSettings: async (
-        category = SettingsCategory.WORKSPACE_CONFIG,
-        options?: { workspaceId?: number; targetTab?: string }
-      ) => {
-        // 兼容旧 ANALYSIS 分类跳转，自动重定向到内容萃取设置
-        let targetCategory =
-          category === SettingsCategory.ANALYSIS
-            ? SettingsCategory.CONTENT_EXTRACTION
-            : category
-        // 立即弹出设置对话框，杜绝 IPC 串行等待导致的界面卡顿与开窗延迟
+      // --- 系统设置弹窗独立操作 ---
+      openSystemSettings: async (category = SettingsCategory.INTERFACE) => {
         set({
+          isSystemSettingsOpen: true,
           isOpen: true,
-          currentCategory: targetCategory,
-          targetWorkspaceId: options?.workspaceId ?? null,
+          currentCategory: category,
           error: null
         })
 
@@ -203,32 +233,83 @@ export const useSettingsStore = create<ISettingsState>()(
               hasUnsavedChanges: false
             })
           }
-
-          // 核心修正：打开设置页面时挂起 AI 服务配置自动重载
           if (window.electronAPI?.aiService?.setConfigReloadSuspended) {
             await window.electronAPI.aiService.setConfigReloadSuspended(true)
           }
         } catch (error) {
-          console.error('加载最新配置失败:', error)
+          console.error('加载系统配置失败:', error)
         }
       },
 
-      closeSettings: async () => {
+      closeSystemSettings: async () => {
         set({
-          isOpen: false,
-          targetWorkspaceId: null,
+          isSystemSettingsOpen: false,
+          isOpen: get().isWorkspaceSettingsOpen,
           error: null,
           validationResult: null
         })
 
-        // 核心修正：关闭设置页面时恢复 AI 服务配置自动重载
-        if (window.electronAPI?.aiService?.setConfigReloadSuspended) {
+        if (!get().isWorkspaceSettingsOpen && window.electronAPI?.aiService?.setConfigReloadSuspended) {
           try {
             await window.electronAPI.aiService.setConfigReloadSuspended(false)
           } catch (error) {
             console.error('恢复配置重载失败:', error)
           }
         }
+      },
+
+      // --- 工作目录设置弹窗独立操作 ---
+      openWorkspaceSettings: async (options?: { workspaceId?: number; targetTab?: string }) => {
+        set({
+          isWorkspaceSettingsOpen: true,
+          isOpen: true,
+          targetWorkspaceId: options?.workspaceId ?? null,
+          error: null
+        })
+
+        try {
+          if (window.electronAPI?.aiService?.setConfigReloadSuspended) {
+            await window.electronAPI.aiService.setConfigReloadSuspended(true)
+          }
+        } catch (error) {
+          console.error('挂起配置重载失败:', error)
+        }
+      },
+
+      closeWorkspaceSettings: async () => {
+        set({
+          isWorkspaceSettingsOpen: false,
+          isOpen: get().isSystemSettingsOpen,
+          targetWorkspaceId: null,
+          error: null
+        })
+
+        if (!get().isSystemSettingsOpen && window.electronAPI?.aiService?.setConfigReloadSuspended) {
+          try {
+            await window.electronAPI.aiService.setConfigReloadSuspended(false)
+          } catch (error) {
+            console.error('恢复配置重载失败:', error)
+          }
+        }
+      },
+
+      // 向后兼容路由：根据分类或 workspaceId 自动分流到独立弹窗
+      openSettings: async (
+        category = SettingsCategory.INTERFACE,
+        options?: { workspaceId?: number; targetTab?: string }
+      ) => {
+        if (
+          category === SettingsCategory.WORKSPACE_CONFIG ||
+          category === SettingsCategory.BASIC_AI_ENGINE_CONFIG ||
+          options?.workspaceId != null
+        ) {
+          return get().openWorkspaceSettings(options)
+        }
+        return get().openSystemSettings(category)
+      },
+
+      closeSettings: async () => {
+        await Promise.all([get().closeSystemSettings(), get().closeWorkspaceSettings()])
       },
 
       setCurrentCategory: category => {

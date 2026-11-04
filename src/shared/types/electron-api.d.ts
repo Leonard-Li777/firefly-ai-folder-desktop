@@ -1,3 +1,9 @@
+export interface EnqueueResult {
+  addedCount: number
+  updatedCount: number
+  blockedCount: number
+  blockedWorkspaces: number[]
+}
 /**
  * Electron API 类型定义
  * 这个文件定义了渲染进程中可用的 electronAPI 接口

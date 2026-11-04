@@ -18,7 +18,7 @@ import { ErrorBoundary } from './components/common/ErrorBoundary'
 import { FileInfo, SettingsCategory } from '@firefly/types'
 import { Footer } from './components/common/Footer'
 import { RealDirectory } from './components/file-explorer/RealDirectory'
-import { SettingsDialog } from './components/settings'
+import { SystemSettingsDialog, WorkspaceSettingsDialog } from './components/settings'
 import { AnalyzedDirectory } from './components/file-explorer/AnalyzedDirectory/index'
 import { VirtualDirectory } from './components/file-explorer/VirtualDirectory/index'
 import { PreviewOverlay } from './components/file-explorer/PreviewOverlay'
@@ -41,6 +41,7 @@ import { useAnalyzedDirectoryStore } from './stores/analyzed-directory-store'
 import { useVirtualDirectoryStore } from './stores/virtual-directory-store'
 import { useTierStore } from './stores/tier-store'
 import { FirecoresRulesDialog } from './components/tier/FirecoresRulesDialog'
+import { DeviceBindModal } from './components/tier/DeviceBindModal'
 import { UpdateNotification } from './components/update/UpdateNotification'
 // PRD-0044（S5 提前摘除）：模型激活确认对话框删除，AlertDialog/buttonVariants 导入随之下线
 
@@ -62,6 +63,30 @@ const App: React.FC = () => {
   const [hasMountedAnalyzed, setHasMountedAnalyzed] = useState(false)
   const [hasMountedOrganize, setHasMountedOrganize] = useState(false)
   const [hasMountedVirtual, setHasMountedVirtual] = useState(false)
+  const [isDeviceBindOpen, setIsDeviceBindOpen] = useState(false)
+
+  // 首次启动时检测当前设备是否已绑定微信小程序账号
+  useEffect(() => {
+    let isMounted = true
+    const checkBind = async () => {
+      try {
+        const isDismissed = sessionStorage.getItem('firefly_bind_modal_dismissed') === '1'
+        if (isDismissed) return
+        if (window.electronAPI?.deviceBind?.getStatus) {
+          const res = await window.electronAPI.deviceBind.getStatus()
+          if (isMounted && res?.success && !res.bound) {
+            setIsDeviceBindOpen(true)
+          }
+        }
+      } catch (err) {
+        logger.warn(LogCategory.RENDERER, '[App] 初始检测设备绑定状态异常:', err)
+      }
+    }
+    checkBind()
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   useEffect(() => {
     if (currentPath === '/' || currentPath === '/real-directory') {
@@ -792,13 +817,15 @@ const App: React.FC = () => {
         <ExtensionReconciliationDialog />
         <AnalysisConfirmModal />
         <ToastContainer />
-        <SettingsDialog />
+        <SystemSettingsDialog />
+        <WorkspaceSettingsDialog />
         <FirecoresRulesDialog
           open={isRulesOpen}
           onOpenChange={open => (open ? openRulesDialog() : closeRulesDialog())}
           defaultTab={rulesDefaultTab}
         />
         <UpdateNotification />
+        <DeviceBindModal open={isDeviceBindOpen} onOpenChange={setIsDeviceBindOpen} />
 
         {/* AI服务错误对话框 */}
         <AIServiceErrorDialog

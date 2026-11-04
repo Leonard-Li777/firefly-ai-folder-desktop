@@ -40,7 +40,8 @@ import {
 } from '@app/electron/config/analysis-mode'
 import { DirectoryContextService } from '../filesystem/directory-context-service'
 import { ErrorHandler } from './error-handler'
-import { QueueManager, pickNextPending } from './queue-manager'
+import { QueueManager, pickNextPending, type EnqueueResult } from './queue-manager'
+export type { EnqueueResult }
 import { cloudSyncWorker } from '../ai/cloud-sync-worker'
 import { createCoreEngineAdapters } from '../../adapters'
 import { databaseService } from '../database/database-service'
@@ -252,7 +253,7 @@ export class AnalysisQueueService {
       }),
       (itemId, status, progress, error) => this.updateItemStatus(itemId, status, progress, error),
       () => this.pause(),
-      (inputs, forceReanalyze) => this.addItems(inputs, forceReanalyze),
+      async (inputs, forceReanalyze) => { await this.addItems(inputs, forceReanalyze); },
       adapters => this.reinitFromAdapters(adapters),
       dirPath => this.queueManager?.markDirectoryCompleted(dirPath)
     )
@@ -485,6 +486,15 @@ export class AnalysisQueueService {
 
   async start(workspaceId?: number): Promise<void> {
     if (workspaceId) {
+      const isReady = await databaseService.isWorkspaceConfigReady(workspaceId)
+      if (!isReady) {
+        logger.warn(
+          LogCategory.ANALYSIS_QUEUE,
+          `[分析队列动态刹车] 启动工作区 ${workspaceId} 尚未就绪 (status: pending)，立即拦截并通知`
+        )
+        this.notifyLatchBrake(workspaceId)
+        return
+      }
       // 指定了工作空间：抢占最高优先级，移至栈顶
       this.runningWorkspaceStack = this.runningWorkspaceStack.filter(id => id !== workspaceId)
       this.runningWorkspaceStack.push(workspaceId)
@@ -527,6 +537,7 @@ export class AnalysisQueueService {
             )
             this.runningWorkspaceStack.pop()
             this.emitUpdate()
+            this.notifyLatchBrake(activeWorkspaceId)
             continue
           }
         }
@@ -1068,20 +1079,22 @@ export class AnalysisQueueService {
     this.emitUpdate()
   }
 
-  async addItems(inputs: EnqueueInput[], forceReanalyze = false): Promise<void> {
+  async addItems(inputs: EnqueueInput[], forceReanalyze = false): Promise<EnqueueResult> {
     await this.ensureInitialized()
-    await this.queueManager.addItems(inputs, forceReanalyze)
+    const result = await this.queueManager.addItems(inputs, forceReanalyze)
     if (!this.isProcessingLoopActive && this.isInitialized) {
       void this.start()
     }
+    return result
   }
 
-  async addItemsResolved(inputs: EnqueueInput[], forceReanalyze = false): Promise<void> {
+  async addItemsResolved(inputs: EnqueueInput[], forceReanalyze = false): Promise<EnqueueResult> {
     await this.ensureInitialized()
-    await this.queueManager.addItemsResolved(inputs, forceReanalyze)
+    const result = await this.queueManager.addItemsResolved(inputs, forceReanalyze)
     if (!this.isProcessingLoopActive && this.isInitialized) {
       void this.start()
     }
+    return result
   }
 
   async deleteItem(id: number): Promise<void> {
@@ -1370,6 +1383,21 @@ export class AnalysisQueueService {
       'local-model-busy',
       5000
     )
+  }
+
+  private notifyLatchBrake(workspaceId: number): void {
+    const windows = BrowserWindow.getAllWindows()
+    if (windows && windows.length > 0) {
+      windows.forEach(win => {
+        if (!win.webContents.isDestroyed()) {
+          try {
+            win.webContents.send('analysis-queue/latch-brake', { workspaceId })
+          } catch (e) {
+            logger.warn(LogCategory.MAIN, '[AnalysisQueue] 发送动态刹车通知失败:', e)
+          }
+        }
+      })
+    }
   }
 
   private emitUpdate(): void {
