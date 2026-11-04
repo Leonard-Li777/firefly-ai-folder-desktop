@@ -58,6 +58,15 @@ function dimensionForCode(code: string, viaParentCode?: string | null): string {
 
 export const MAX_SEGMENT_ATTEMPTS = 3
 
+/** 视频全量分析切片覆盖度统计指标 (FIN-05 / FIN-06) */
+export interface VideoCoverageStats {
+  file_id: string
+  total_duration_sec: number
+  completed_duration_sec: number
+  has_failed_segments: boolean
+  is_fully_covered: boolean
+}
+
 export class FileDao {
   private dimensionsCache: any[] | null = null
   private ftsSearchStmtWithWorkspace: Statement | null = null
@@ -2393,7 +2402,7 @@ export class FileDao {
     startPtsSec: number
     endPtsSec: number
     paramsHash: string
-    status?: 'locked' | 'pending'
+    status?: 'pending' | 'processing' | 'completed' | 'failed'
   }): void {
     const now = Date.now()
     const initialStatus = segment.status || 'pending'
@@ -2423,36 +2432,79 @@ export class FileDao {
   }
 
   /**
-   * 派发视频片段执行：原子累加 attempt_count 并标记 processing，超限置 failed (ISS-25 / ISS-37)
+   * 派发视频片段执行：单条原子 CAS 认领并累加 attempt_count (FIN-02)
+   * 仅在状态为 pending 且 attempt_count < MAX_SEGMENT_ATTEMPTS 时成功认领
    */
   markVideoSegmentProcessing(fileId: string, segmentIndex: number): boolean {
-    const row = this.db
-      .prepare('SELECT attempt_count FROM file_video_segments WHERE file_id = ? AND segment_index = ?')
-      .get(fileId, segmentIndex) as { attempt_count: number } | undefined
-
-    if (!row) return false
-    const nextAttempts = (row.attempt_count || 0) + 1
     const now = Date.now()
+    const result = this.db
+      .prepare(
+        `UPDATE file_video_segments
+         SET status = 'processing',
+             attempt_count = attempt_count + 1,
+             updated_at = ?
+         WHERE file_id = ?
+           AND segment_index = ?
+           AND status = 'pending'
+           AND attempt_count < ${MAX_SEGMENT_ATTEMPTS}`
+      )
+      .run(now, fileId, segmentIndex)
 
-    if (nextAttempts > MAX_SEGMENT_ATTEMPTS) {
+    if (result.changes > 0) {
+      return true
+    }
+
+    // 若未更新成功，检查是否由于重试超限触发毒药熔断
+    const row = this.db
+      .prepare('SELECT status, attempt_count FROM file_video_segments WHERE file_id = ? AND segment_index = ?')
+      .get(fileId, segmentIndex) as { status: string; attempt_count: number } | undefined
+
+    if (row && row.attempt_count >= MAX_SEGMENT_ATTEMPTS && row.status !== 'completed' && row.status !== 'failed') {
       this.db
         .prepare(
           `UPDATE file_video_segments
-           SET status = 'failed', attempt_count = ?, error_message = 'Max retry attempts exceeded (poison pill guard)', updated_at = ?
+           SET status = 'failed',
+               error_message = 'Max retry attempts exceeded (poison pill guard)',
+               updated_at = ?
            WHERE file_id = ? AND segment_index = ?`
         )
-        .run(nextAttempts, now, fileId, segmentIndex)
-      return false
+        .run(now, fileId, segmentIndex)
     }
 
+    return false
+  }
+
+  /**
+   * 失败回写与毒药熔断闭环 (FIN-02)
+   * 异常时若 attempt_count >= 3 置为 failed 并记录错误，否则回退为 pending 供断点续作
+   */
+  markVideoSegmentFailedOrPending(fileId: string, segmentIndex: number, errorMsg: string): void {
+    const now = Date.now()
     this.db
       .prepare(
         `UPDATE file_video_segments
-         SET status = 'processing', attempt_count = ?, updated_at = ?
-         WHERE file_id = ? AND segment_index = ?`
+         SET status = CASE WHEN attempt_count >= ${MAX_SEGMENT_ATTEMPTS} THEN 'failed' ELSE 'pending' END,
+             error_message = ?,
+             updated_at = ?
+         WHERE file_id = ? AND segment_index = ? AND status = 'processing'`
       )
-      .run(nextAttempts, now, fileId, segmentIndex)
-    return true
+      .run(errorMsg, now, fileId, segmentIndex)
+  }
+
+  /**
+   * 正常休眠/合盖/优雅退出时的切片安全回滚，不消耗毒药重试配额 (FIN-09)
+   */
+  rollbackVideoSegmentProcessing(fileId: string, segmentIndex: number): void {
+    const now = Date.now()
+    this.db
+      .prepare(
+        `UPDATE file_video_segments
+         SET status = 'pending',
+             attempt_count = CASE WHEN attempt_count > 0 THEN attempt_count - 1 ELSE 0 END,
+             updated_at = ?
+         WHERE file_id = ? AND segment_index = ? AND status = 'processing'`
+      )
+      .run(now, fileId, segmentIndex)
   }
 
   /**
@@ -2486,9 +2538,6 @@ export class FileDao {
   }
 
   /**
-   * 系统启动时重置残留的 processing 状态，保护崩溃后任务安全恢复 (ISS-25 / ISS-37)
-   */
-  /**
    * 获取指定文件的所有切片记录，按序号升序排列 (ISS-49)
    */
   getVideoSegments(fileId: string): Array<{
@@ -2500,7 +2549,7 @@ export class FileDao {
     frame_count: number
     visual_embedded_count: number
     asr_transcript_chars: number
-    status: 'locked' | 'pending' | 'processing' | 'completed' | 'failed'
+    status: 'pending' | 'processing' | 'completed' | 'failed'
     attempt_count: number
     params_hash: string
   }> {
@@ -2510,43 +2559,59 @@ export class FileDao {
   }
 
   /**
-   * 升级为 Pro 时，批量解锁被锁定的切片 (locked -> pending) (ISS-66)
+   * 批量预查视频切片覆盖度，单次消除卡片 N+1 查询性能损耗 (FIN-05 / FIN-06)
    */
-  unlockVideoSegments(): number {
-    const now = Date.now()
-    const result = this.db
+  getVideoCoverageStatsBatch(fileIds: string[]): Map<string, VideoCoverageStats> {
+    const map = new Map<string, VideoCoverageStats>()
+    if (!fileIds || fileIds.length === 0) return map
+
+    const placeholders = fileIds.map(() => '?').join(',')
+    const rows = this.db
       .prepare(
-        `UPDATE file_video_segments
-         SET status = 'pending', updated_at = ?
-         WHERE status = 'locked'`
+        `SELECT 
+           file_id,
+           COALESCE(MAX(end_pts_sec), 0) AS total_duration_sec,
+           COALESCE(SUM(CASE WHEN status = 'completed' THEN (end_pts_sec - start_pts_sec) ELSE 0 END), 0) AS completed_duration_sec,
+           MAX(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS has_failed,
+           MIN(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS all_completed,
+           COUNT(*) AS total_segments
+         FROM file_video_segments
+         WHERE file_id IN (${placeholders})
+         GROUP BY file_id`
       )
-      .run(now)
-    return result.changes
+      .all(...fileIds) as Array<{
+        file_id: string
+        total_duration_sec: number
+        completed_duration_sec: number
+        has_failed: number
+        all_completed: number
+        total_segments: number
+      }>
+
+    for (const r of rows) {
+      map.set(r.file_id, {
+        file_id: r.file_id,
+        total_duration_sec: r.total_duration_sec,
+        completed_duration_sec: r.completed_duration_sec,
+        has_failed_segments: r.has_failed === 1,
+        is_fully_covered: r.total_segments > 0 && r.all_completed === 1
+      })
+    }
+    return map
   }
 
   /**
-   * 中途会员失效或回落时，重新将 pending 切片置为 locked (ISS-66)
+   * 读时派生升维保留接口：已废弃物理 locked 状态迁移 (FIN-01)
    */
-  lockPendingVideoSegments(fileId?: string): number {
-    const now = Date.now()
-    if (fileId) {
-      const result = this.db
-        .prepare(
-          `UPDATE file_video_segments
-           SET status = 'locked', updated_at = ?
-           WHERE file_id = ? AND status = 'pending'`
-        )
-        .run(now, fileId)
-      return result.changes
-    }
-    const result = this.db
-      .prepare(
-        `UPDATE file_video_segments
-         SET status = 'locked', updated_at = ?
-         WHERE status = 'pending' AND segment_index > 0`
-      )
-      .run(now)
-    return result.changes
+  unlockVideoSegments(): number {
+    return 0
+  }
+
+  /**
+   * 读时派生升维保留接口：已废弃物理 locked 状态迁移 (FIN-01)
+   */
+  lockPendingVideoSegments(_fileId?: string): number {
+    return 0
   }
 
   resetDanglingVideoSegmentsOnStartup(): void {

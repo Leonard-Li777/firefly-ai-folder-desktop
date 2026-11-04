@@ -23,7 +23,7 @@ export function registerAnalysisQueueIPCHandlers() {
       forceReanalyze?: boolean
     ) => {
       try {
-        await analysisQueueService.addItems(items, !!forceReanalyze)
+        return await analysisQueueService.addItems(items, !!forceReanalyze)
       } catch (error) {
         logger.error(LogCategory.MAIN, '[IPC] 添加分析队列项目失败:', error)
         throw error
@@ -38,7 +38,7 @@ export function registerAnalysisQueueIPCHandlers() {
       forceReanalyze?: boolean
     ) => {
       try {
-        await analysisQueueService.addItemsResolved(items, !!forceReanalyze)
+        return await analysisQueueService.addItemsResolved(items, !!forceReanalyze)
       } catch (error) {
         logger.error(LogCategory.MAIN, '[IPC] 添加解析分析队列项目失败:', error)
         throw error

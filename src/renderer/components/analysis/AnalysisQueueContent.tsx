@@ -8,6 +8,7 @@ import { formatDuration } from '@firefly/shared'
 import { t } from '@app/languages'
 import { getUnitTypeLabel } from '../file-explorer/FileList/utils'
 import { useAnalysisQueueStore } from '../../stores/analysis-queue-store'
+import { notifyEnqueueResult } from '../../utils/enqueue-notifier'
 import { useSettingsStore } from '../../stores/settings-store'
 import { useVirtualDirectoryStore } from '../../stores/virtual-directory-store'
 import {
@@ -150,7 +151,6 @@ export function getStageLabel(
   stage?: number,
   _taskType?: AnalysisQueueItem['taskType']
 ): string {
-
   if (status === 'analyzing') {
     const s = stage ?? 0
     switch (s) {
@@ -262,7 +262,9 @@ const QueueRowRenderer = React.memo(
           height: ROW_HEIGHT
         }}
       >
-        <div className="text-center font-mono text-muted-foreground/70 px-2 truncate">{index + 1}</div>
+        <div className="text-center font-mono text-muted-foreground/70 px-2 truncate">
+          {index + 1}
+        </div>
         <div className="truncate text-foreground font-medium pr-2" title={item.path}>
           {item.name}
         </div>
@@ -411,7 +413,9 @@ function VirtualList({
       const w = el.clientWidth || Math.round(el.getBoundingClientRect().width)
       const h = el.clientHeight || Math.round(el.getBoundingClientRect().height)
       if (w > 0 && h > 0) {
-        setContainerSize(prev => (prev.width === w && prev.height === h ? prev : { width: w, height: h }))
+        setContainerSize(prev =>
+          prev.width === w && prev.height === h ? prev : { width: w, height: h }
+        )
       }
     }
 
@@ -427,7 +431,9 @@ function VirtualList({
         const w = Math.round(entry.contentRect.width) || el.clientWidth
         const h = Math.round(entry.contentRect.height) || el.clientHeight
         if (w > 0 && h > 0) {
-          setContainerSize(prev => (prev.width === w && prev.height === h ? prev : { width: w, height: h }))
+          setContainerSize(prev =>
+            prev.width === w && prev.height === h ? prev : { width: w, height: h }
+          )
         }
       }
     })
@@ -600,9 +606,12 @@ export function AnalysisQueueContent({
   }, [])
 
   const handleRetryItem = React.useCallback(async (item: AnalysisQueueItem) => {
-    await useAnalysisQueueStore
+    const res = await useAnalysisQueueStore
       .getState()
       .addItems([{ path: item.path, name: item.name, size: item.size, type: item.type }], true)
+    if (res?.blockedCount > 0 && res?.addedCount === 0 && res?.updatedCount === 0) {
+      notifyEnqueueResult(res)
+    }
   }, [])
 
   const dragStartWidthsRef = useRef<{
@@ -642,8 +651,7 @@ export function AnalysisQueueContent({
           actions: Math.max(MIN_WIDTHS.actions, Math.round(prev.actions * ratio))
         }
         // 取整残差并入较宽的一列，避免 1~2px 溢出触发横向滚动条
-        const residual =
-          containerWidth - Object.values(updated).reduce((a, b) => a + b, 0)
+        const residual = containerWidth - Object.values(updated).reduce((a, b) => a + b, 0)
         if (residual !== 0) {
           const target = updated.name >= updated.reason ? 'name' : 'reason'
           updated[target] = Math.max(MIN_WIDTHS[target], updated[target] + residual)
@@ -792,7 +800,9 @@ export function AnalysisQueueContent({
             return (
               <span
                 className="text-xs text-primary/80 hover:text-primary cursor-pointer transition-colors hidden md:inline-block ml-1"
-                onClick={() => useSettingsStore.getState().openSettings(SettingsCategory.WORKSPACE_CONFIG)}
+                onClick={() =>
+                  useSettingsStore.getState().openSettings(SettingsCategory.WORKSPACE_CONFIG)
+                }
               >
                 {currentMode === 'simple' || currentMode === 'document'
                   ? t('结果简陋？切为【增强分析】或【全面分析】')
@@ -880,7 +890,9 @@ export function AnalysisQueueContent({
               icon={<Cpu className="w-3.5 h-3.5" />}
               title={t(CPU_HINT_TEXT)}
               className="shrink-0 border-b border-amber-500/20"
-              actions={<HintBannerLink onClick={handleDismissCpuHint}>{t('知道了')}</HintBannerLink>}
+              actions={
+                <HintBannerLink onClick={handleDismissCpuHint}>{t('知道了')}</HintBannerLink>
+              }
               onClose={() => setIsCpuHintHidden(true)}
             >
               {t(CPU_HINT_TEXT)}

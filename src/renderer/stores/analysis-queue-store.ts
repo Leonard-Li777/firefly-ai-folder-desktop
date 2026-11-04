@@ -6,6 +6,9 @@ import { captureEvent } from '../lib/posthog'
 import { useVirtualDirectoryStore } from './virtual-directory-store'
 import { useSettingsStore } from './settings-store'
 import { notifyCloudAnalyzeSuccess, notifyCloudAnalyzeFailure } from '../lib/cloud-engine-probe'
+import { toast } from '../components/common/Toast'
+import { t } from '@app/languages'
+import { SettingsCategory } from '@firefly/types'
 
 interface AnalysisQueueState {
   snapshot: AnalysisQueueSnapshot
@@ -25,7 +28,7 @@ interface AnalysisQueueState {
   addItems: (
     items: { path: string; name: string; size: number; type: string; expand?: boolean }[],
     forceReanalyze?: boolean
-  ) => Promise<void>
+  ) => Promise<any>
   retryFailed: () => Promise<void>
   clearPending: () => Promise<void>
   clearAll: () => Promise<void>
@@ -303,7 +306,7 @@ export const useAnalysisQueueStore: AnalysisQueueStoreInstance =
                 pendingForceReanalyze: !!forceReanalyze,
                 showConfirmModal: true
               })
-              return
+              return { addedCount: 0, updatedCount: 0, blockedCount: 0, blockedWorkspaces: [] }
             }
           }
         } catch (err) {
@@ -311,8 +314,9 @@ export const useAnalysisQueueStore: AnalysisQueueStoreInstance =
         }
       }
 
-      await window.electronAPI!.addToAnalysisQueue(items, forceReanalyze)
+      const res = await window.electronAPI!.addToAnalysisQueue(items, forceReanalyze)
       await get().refresh()
+      return res || { addedCount: 0, updatedCount: 0, blockedCount: 0, blockedWorkspaces: [] }
     },
 
     retryFailed: async () => {
@@ -384,6 +388,23 @@ if (!(typeof window !== 'undefined' && (window as any)[GLOBAL_INIT_KEY])) {
   if (typeof window !== 'undefined' && window.electronAPI) {
     let lastRunningState = false
 
+    // 监听分析队列动态刹车事件（当工作区处于 pending 时主动提示并引导配置）
+    window.electronAPI.onAnalysisQueueLatchBrake?.((payload: { workspaceId: number }) => {
+      toast.warning(
+        t('当前工作区尚未配置 AI 策略，分析已暂停。请先完成工作区配置。'),
+        6000,
+        `latch-brake-${payload.workspaceId}`,
+        {
+          label: t('前往配置'),
+          onClick: () => {
+            useSettingsStore.getState().openSettings(SettingsCategory.WORKSPACE_CONFIG, {
+              workspaceId: payload.workspaceId
+            })
+          }
+        }
+      )
+    })
+
     const unsub = window.electronAPI!.onAnalysisQueueUpdated((snap: any) => {
       const currentWs = useVirtualDirectoryStore.getState().currentWorkspaceDirectory
       const wsId = currentWs?.id
@@ -422,11 +443,14 @@ if (!(typeof window !== 'undefined' && (window as any)[GLOBAL_INIT_KEY])) {
           const failedItems = items.filter((i: any) => i.status === 'failed')
           if (failedItems.length > prevFailed) {
             const last = failedItems[failedItems.length - 1]
-            notifyCloudAnalyzeFailure(last?.error || last?.message || String(last?.status || 'failed'), {
-              provider: '',
-              model: '',
-              asActiveEngine: true
-            })
+            notifyCloudAnalyzeFailure(
+              last?.error || last?.message || String(last?.status || 'failed'),
+              {
+                provider: '',
+                model: '',
+                asActiveEngine: true
+              }
+            )
           }
         }
       } catch {

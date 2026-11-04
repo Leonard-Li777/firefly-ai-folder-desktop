@@ -18,9 +18,14 @@ import { shouldIgnoreFile } from '../analysis/analysis-ignore-service'
 import path from 'node:path'
 import fs from 'node:fs'
 
-export function pickNextPending(
-  items: AnalysisQueueItem[]
-): AnalysisQueueItem | undefined {
+export interface EnqueueResult {
+  addedCount: number
+  updatedCount: number
+  blockedCount: number
+  blockedWorkspaces: number[]
+}
+
+export function pickNextPending(items: AnalysisQueueItem[]): AnalysisQueueItem | undefined {
   let best: AnalysisQueueItem | undefined
   for (const item of items) {
     if (item.status !== 'pending') continue
@@ -122,34 +127,38 @@ export class QueueManager {
           const taskType: AnalysisTaskType = 'analysis'
           const analysisStage = parsedStats ? Number(parsedStats.analysis_stage ?? 0) : undefined
 
-            let parsedMeta: any = undefined
-            if (r.meta) {
-              try {
-                parsedMeta = typeof r.meta === 'string' ? JSON.parse(r.meta) : r.meta
-              } catch {}
-            }
+          let parsedMeta: any = undefined
+          if (r.meta) {
+            try {
+              parsedMeta = typeof r.meta === 'string' ? JSON.parse(r.meta) : r.meta
+            } catch {}
+          }
 
-            return {
-              id: r.id,
-              workspaceId: r.workspace_id,
-              path: filePath,
-              name: r.file_name,
-              size: r.size ?? 0,
-              type: fileExtension, // 文件扩展名，目录时为空
-              itemType: itemType, // 'file' 或 'directory'
-              taskType,
-              stage: analysisStage,
-              status: r.status as 'pending' | 'analyzing' | 'completed' | 'failed',
-              error: r.error ?? undefined,
-              addedAt: r.created_at ? new Date(r.created_at).getTime() : Date.now(),
-              updatedAt: r.updated_at ? new Date(r.updated_at).getTime() : Date.now(),
-              progress: r.progress ?? 0,
-              fromCache: !!r.is_hit,
-              // 重新分析标记：内存队列项在 addItems 时设置，载入时从 DB 列或 meta 中恢复
-              forceReanalyze: r.force_reanalyze === 1 || r.force_reanalyze === true || parsedMeta?.force_reanalyze === true || undefined,
-              analysisStats: parsedStats,
-              analysisStage
-            } as AnalysisQueueItem
+          return {
+            id: r.id,
+            workspaceId: r.workspace_id,
+            path: filePath,
+            name: r.file_name,
+            size: r.size ?? 0,
+            type: fileExtension, // 文件扩展名，目录时为空
+            itemType: itemType, // 'file' 或 'directory'
+            taskType,
+            stage: analysisStage,
+            status: r.status as 'pending' | 'analyzing' | 'completed' | 'failed',
+            error: r.error ?? undefined,
+            addedAt: r.created_at ? new Date(r.created_at).getTime() : Date.now(),
+            updatedAt: r.updated_at ? new Date(r.updated_at).getTime() : Date.now(),
+            progress: r.progress ?? 0,
+            fromCache: !!r.is_hit,
+            // 重新分析标记：内存队列项在 addItems 时设置，载入时从 DB 列或 meta 中恢复
+            forceReanalyze:
+              r.force_reanalyze === 1 ||
+              r.force_reanalyze === true ||
+              parsedMeta?.force_reanalyze === true ||
+              undefined,
+            analysisStats: parsedStats,
+            analysisStage
+          } as AnalysisQueueItem
         })
         .filter(item => item !== null) as AnalysisQueueItem[]
 
@@ -224,10 +233,10 @@ export class QueueManager {
    * 添加项目到队列
    * 流程：先确保目录/文件记录存在于数据库，再插入队列表
    */
-  async addItems(inputs: EnqueueInput[], forceReanalyze = false): Promise<void> {
+  async addItems(inputs: EnqueueInput[], forceReanalyze = false): Promise<EnqueueResult> {
     if (!this.isInitialized) {
       logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 服务未初始化，无法添加项目')
-      return
+      return { addedCount: 0, updatedCount: 0, blockedCount: 0, blockedWorkspaces: [] }
     }
 
     // 优先处理目录画像，使其先被分析，为后续子文件的分析提供上下文指导与规则约束
@@ -253,6 +262,8 @@ export class QueueManager {
     )
     let addedCount = 0
     let updatedCount = 0
+    let blockedCount = 0
+    const blockedWorkspaces: number[] = []
 
     // 第一步：确保所有目录/文件记录存在于数据库中（异步）并确定 workspaceId
     const resolvedInputs: any[] = []
@@ -323,6 +334,10 @@ export class QueueManager {
           LogCategory.ANALYSIS_QUEUE,
           `[分析队列门闩] 工作区 ${resolvedWorkspaceId} 配置尚未就绪 (status=pending)，拦截入队: ${nativePath}`
         )
+        blockedCount++
+        if (!blockedWorkspaces.includes(resolvedWorkspaceId)) {
+          blockedWorkspaces.push(resolvedWorkspaceId)
+        }
         continue
       }
 
@@ -357,19 +372,22 @@ export class QueueManager {
             exists.forceReanalyze = isExplicitForce
             updatedCount++
 
-            const reason = isExplicitForce
-              ? '用户强制重新分析'
-              : '失败重试'
+            const reason = isExplicitForce ? '用户强制重新分析' : '失败重试'
             logger.info(
               LogCategory.ANALYSIS_QUEUE,
               `[分析队列] 文件已在队列中 (原状态: ${oldStatus})，${reason}，重置为 pending: ${file.nativePath}`
             )
 
-            const existingDbRow = db?.prepare('SELECT id, meta FROM analysis_queue WHERE id = ?').get(exists.id) as any
+            const existingDbRow = db
+              ?.prepare('SELECT id, meta FROM analysis_queue WHERE id = ?')
+              .get(exists.id) as any
             if (existingDbRow) {
               let existingMeta: Record<string, any> = {}
               try {
-                existingMeta = typeof existingDbRow.meta === 'string' ? JSON.parse(existingDbRow.meta) : (existingDbRow.meta || {})
+                existingMeta =
+                  typeof existingDbRow.meta === 'string'
+                    ? JSON.parse(existingDbRow.meta)
+                    : existingDbRow.meta || {}
               } catch {}
               if (isExplicitForce) {
                 existingMeta.force_reanalyze = true
@@ -498,7 +516,7 @@ export class QueueManager {
     } catch (e) {
       logger.error(LogCategory.ANALYSIS_QUEUE, '[分析队列] 批量操作失败:', e)
       this.loadFromDB()
-      return
+      return { addedCount: 0, updatedCount: 0, blockedCount, blockedWorkspaces }
     }
 
     this.persist()
@@ -507,9 +525,16 @@ export class QueueManager {
     if (addedCount > 0 || updatedCount > 0) {
       this.wakeUp()
     }
+
+    return {
+      addedCount,
+      updatedCount,
+      blockedCount,
+      blockedWorkspaces
+    }
   }
 
-  async addItemsResolved(inputs: EnqueueInput[], forceReanalyze = false): Promise<void> {
+  async addItemsResolved(inputs: EnqueueInput[], forceReanalyze = false): Promise<EnqueueResult> {
     const flat: EnqueueInput[] = []
     for (const it of inputs) {
       if (it.type === 'folder') {
@@ -518,7 +543,7 @@ export class QueueManager {
         flat.push(it)
       }
     }
-    this.addItems(flat as EnqueueInput[], forceReanalyze)
+    return this.addItems(flat as EnqueueInput[], forceReanalyze)
   }
 
   retryFailed(): void {
