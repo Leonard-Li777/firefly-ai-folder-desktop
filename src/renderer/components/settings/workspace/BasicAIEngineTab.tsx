@@ -1038,38 +1038,98 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
             </div>
 
             {/* 折叠的高级微调面板 */}
-            <div className="border border-border/60 rounded-xl overflow-hidden bg-card">
+            <div
+              className={cn(
+                'border rounded-xl overflow-hidden bg-card transition-all duration-200',
+                isProPanelOpen
+                  ? 'border-primary/40 shadow-xs ring-1 ring-primary/10'
+                  : 'border-border/80 hover:border-primary/50 hover:bg-muted/10'
+              )}
+            >
               <div
                 onClick={() => setIsProPanelOpen(!isProPanelOpen)}
-                className="flex items-center justify-between p-3.5 bg-muted/30 cursor-pointer hover:bg-muted/60 transition-colors"
+                className="group flex items-center justify-between p-4 cursor-pointer select-none transition-colors"
               >
-                <div className="flex items-center gap-2">
-                  {isProPanelOpen ? (
-                    <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform" />
-                  )}
-                  <span className="text-xs font-bold text-foreground">{t('高级参数微调')}</span>
-                  {videoProfile === 'custom' && (
-                    <span className="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 font-semibold px-2 py-0.2 rounded-full">
-                      {t('已自定义')}
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground">
-                    {t('自由把控分析耗时与抓图敏锐度')}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={e => {
-                      e.stopPropagation()
-                      handleSelectVideoProfile('balanced_search')
-                    }}
-                    className="text-xs text-primary hover:underline cursor-pointer"
+                {/* 左侧：醒目图标 + 标题 + 当前关键值摘要 */}
+                <div className="flex items-center gap-3 min-w-0">
+                  <div
+                    className={cn(
+                      'w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors',
+                      isProPanelOpen
+                        ? 'bg-primary text-primary-foreground shadow-xs'
+                        : 'bg-primary/10 text-primary group-hover:bg-primary/20'
+                    )}
                   >
-                    {t('恢复档位默认')}
-                  </button>
+                    <Sliders className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
+                        {t('高级参数微调')}
+                      </span>
+                      {videoProfile === 'custom' ? (
+                        <span className="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 font-semibold px-2 py-0.5 rounded-full">
+                          {t('已自定义')}
+                        </span>
+                      ) : (
+                        <span className="text-[10px] bg-muted text-muted-foreground border border-border/60 font-medium px-2 py-0.5 rounded-full">
+                          {t('跟随档位推荐')}
+                        </span>
+                      )}
+                    </div>
+                    {/* 收起时显示当前参数摘要，展开时显示指引说明 */}
+                    <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2 flex-wrap">
+                      <span>
+                        {t('抓图 {quota} 张 · {sens} · 台词 {asr}s', {
+                          quota: videoQuotaMax,
+                          sens:
+                            videoCutSensitivity === 'low'
+                              ? t('常规')
+                              : videoCutSensitivity === 'medium'
+                                ? t('灵敏')
+                                : t('极高'),
+                          asr: videoAsrCap
+                        })}
+                      </span>
+                      <span className="text-muted-foreground/40 hidden sm:inline">|</span>
+                      <span className="text-[11px] text-muted-foreground/80 hidden sm:inline">
+                        {t('点击展开自由调优')}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 右侧：操作区与清晰醒目的展开/收起药丸胶囊 */}
+                <div className="flex items-center gap-3 shrink-0">
+                  {videoProfile === 'custom' && (
+                    <button
+                      type="button"
+                      onClick={e => {
+                        e.stopPropagation()
+                        handleSelectVideoProfile('balanced_search')
+                      }}
+                      className="text-xs text-muted-foreground hover:text-primary hover:underline flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      <RotateCcw className="h-3 w-3" />
+                      <span>{t('恢复默认')}</span>
+                    </button>
+                  )}
+                  {/* 显眼的展开/收起药丸胶囊 */}
+                  <div
+                    className={cn(
+                      'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all shadow-2xs',
+                      isProPanelOpen
+                        ? 'bg-muted/80 text-foreground border-border'
+                        : 'bg-primary/10 text-primary border-primary/20 group-hover:bg-primary group-hover:text-primary-foreground'
+                    )}
+                  >
+                    <span>{isProPanelOpen ? t('收起微调') : t('展开微调')}</span>
+                    {isProPanelOpen ? (
+                      <ChevronDown className="h-3.5 w-3.5" />
+                    ) : (
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    )}
+                  </div>
                 </div>
               </div>
 
