@@ -20,7 +20,7 @@ interface BindCodeData {
 }
 
 function formatErrorMessage(err?: string): string {
-  if (!err) return '生成绑定短码失败'
+  if (!err) return '生成微信登录码失败'
   if (err === 'RATE_LIMIT_EXCEEDED') return '操作过于频繁，请 1 分钟后再试'
   if (err === 'machine_id_missing') return '未检测到设备硬件标识'
   return err
@@ -42,7 +42,7 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
     }
   }, [])
 
-  // 获取绑定码与小程序码
+  // 获取绑定短凭据与微信官方小程序码
   const loadBindCode = useCallback(async () => {
     const currentRequestId = ++loadRequestIdRef.current
     setLoading(true)
@@ -65,16 +65,20 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
         throw new Error(formatErrorMessage(res.error))
       }
 
+      if (!res.imageDataUrl || !res.imageDataUrl.startsWith('data:image/')) {
+        throw new Error('微信二维码生成未完成，请点击重试')
+      }
+
       setBindData({
         code: res.code,
-        imageDataUrl: res.imageDataUrl || '',
+        imageDataUrl: res.imageDataUrl,
         deviceLabel: res.deviceLabel,
         platform: res.platform,
         machineIdTail: res.machineIdTail,
         expiresAt: res.expiresAt
       })
 
-      // 启动轮询检查设备是否被认领
+      // 启动轮询检查设备是否被微信小程序认领绑定
       pollTimerRef.current = setInterval(async () => {
         if (currentRequestId !== loadRequestIdRef.current || !open) {
           stopPolling()
@@ -120,18 +124,21 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
     }
   }, [open, loadBindCode, stopPolling])
 
-  const handleSkip = () => {
-    try {
-      sessionStorage.setItem('firefly_bind_modal_dismissed', '1')
-    } catch {
-      // ignore
-    }
-    onOpenChange(false)
-  }
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md p-6 bg-card text-card-foreground border-border/80 shadow-2xl">
+    <Dialog
+      open={open}
+      onOpenChange={nextOpen => {
+        // 强制登录守则：未绑定成功前严禁通过任何外部途径关闭
+        if (isSuccess && !nextOpen) {
+          onOpenChange(false)
+        }
+      }}
+    >
+      <DialogContent
+        className="sm:max-w-md p-6 bg-card text-card-foreground border-border/80 shadow-2xl [&>button:last-child]:hidden select-none"
+        onPointerDownOutside={e => e.preventDefault()}
+        onEscapeKeyDown={e => e.preventDefault()}
+      >
         <DialogHeader className="text-center sm:text-center space-y-1">
           <div className="mx-auto w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-1">
             <Smartphone className="w-6 h-6" />
@@ -140,17 +147,17 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
             微信扫码登录 · 绑定当前设备
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            扫码后在小程序确认，即可将当前电脑与微信账号绑定并同步权益
+            请使用微信扫描专属小程序码，在小程序确认绑定后即可使用完整功能并同步权益
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col items-center justify-center py-2 space-y-4">
           {/* 二维码展示区 */}
-          <div className="relative w-64 h-64 rounded-2xl border border-border/60 bg-muted/20 flex items-center justify-center overflow-hidden shadow-inner">
+          <div className="relative w-64 h-64 rounded-2xl border border-border/60 bg-white flex items-center justify-center overflow-hidden shadow-inner p-2">
             {loading && (
               <div className="flex flex-col items-center gap-2 text-muted-foreground text-xs">
                 <RefreshCw className="w-6 h-6 animate-spin text-primary" />
-                <span>正在生成专属小程序码...</span>
+                <span>正在生成微信专属二维码...</span>
               </div>
             )}
 
@@ -178,10 +185,10 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
             )}
 
             {!loading && !error && !isSuccess && bindData?.imageDataUrl && (
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center justify-center w-full h-full">
                 <img
                   src={bindData.imageDataUrl}
-                  alt="绑定小程序码"
+                  alt="微信扫码绑定"
                   className="w-56 h-56 object-contain"
                 />
               </div>
@@ -213,29 +220,22 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
           )}
         </div>
 
-        {/* 底部操作 */}
-        <div className="flex items-center justify-between pt-2 border-t border-border/40 text-xs">
+        {/* 底部操作与提示（不可跳过，仅可刷新或扫码完成） */}
+        <div className="flex flex-col items-center justify-center pt-3 border-t border-border/40 gap-2">
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className="text-xs text-muted-foreground hover:text-foreground h-8"
-            onClick={handleSkip}
-          >
-            暂不绑定，使用免费版
-          </Button>
-
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="text-xs text-muted-foreground hover:text-foreground h-8"
+            className="text-xs text-muted-foreground hover:text-foreground h-8 px-4"
             onClick={loadBindCode}
             disabled={loading}
           >
-            <RefreshCw className={`w-3 h-3 mr-1 ${loading ? 'animate-spin' : ''}`} />
-            刷新
+            <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
+            刷新二维码
           </Button>
+          <p className="text-[11px] text-muted-foreground text-center">
+            为保证权益安全与跨端同步，使用前请先绑定微信账号
+          </p>
         </div>
       </DialogContent>
     </Dialog>

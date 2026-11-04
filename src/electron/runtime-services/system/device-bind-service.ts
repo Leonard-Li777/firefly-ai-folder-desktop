@@ -1,6 +1,6 @@
 import os from 'os'
 import { WORKSPACE_CONSTANTS } from '@firefly/server'
-import { logger, LogCategory, getSharedSchemaName } from '@firefly/shared'
+import { logger, LogCategory, getSharedSchemaName, encodeMachineIdToBase64 } from '@firefly/shared'
 import { SystemIdentityService } from './system-identity-service'
 import { createSupabaseClient } from './supabase-client-factory'
 import { SupabaseClient } from '@supabase/supabase-js'
@@ -87,7 +87,7 @@ export class DeviceBindService {
   }
 
   /**
-   * 生成设备绑定短码并拉取小程序码图片
+   * 生成设备绑定短码并拉取微信官方带参小程序码图片 (同源对齐 marketing-home)
    */
   public async createDeviceBindCode(): Promise<DeviceBindCodeResult> {
     try {
@@ -104,58 +104,84 @@ export class DeviceBindService {
             ? 'windows'
             : 'linux'
       const deviceLabel = os.hostname()
+      const identCode = encodeMachineIdToBase64(machineId)
 
-      // 1. 调用云端 RPC 生成 8 位短码
-      const schema = getSharedSchemaName()
-      const { data, error } = await (client as any)
-        .schema(schema)
-        .rpc('rpc_create_device_bind_code', {
-          p_machine_id: machineId,
-          p_platform: platform,
-          p_device_label: deviceLabel
-        })
-
-      if (error || !data?.success) {
-        const errMsg = error?.message || data?.error || 'create_code_failed'
-        logger.warn(LogCategory.SYSTEM, '[DeviceBindService] 生成绑定短码失败:', errMsg)
-        return { success: false, error: errMsg }
-      }
-
-      const code = data.code as string
-      const expiresInSec = Number(data.expires_in_seconds) || 300
-      const calculatedExpiresAt = new Date(Date.now() + expiresInSec * 1000).toISOString()
+      let token = ''
+      let code = ''
+      let expiresAt = ''
       let imageDataUrl = ''
 
-      // 2. 调用 Edge Function wxpay-qrcode 获取小程序码 (带优雅 fallback)
+      // 1. 同源对齐 marketing-home：调用 Edge Function wxpay-entry (action: 'mint') 获取短凭据 token 与 8 位短码
       try {
-        const { data: qrData, error: qrErr } = await client.functions.invoke('wxpay-qrcode', {
-          body: { type: 'bind', code }
+        const { data: mintData, error: mintErr } = await client.functions.invoke('wxpay-entry', {
+          body: { action: 'mint', identCode }
         })
-        if (!qrErr && qrData?.imageDataUrl) {
-          imageDataUrl = qrData.imageDataUrl
+
+        if (!mintErr && mintData?.token) {
+          token = mintData.token
+          code = mintData.code || ''
+          expiresAt = mintData.expiresAt || ''
+        } else {
+          logger.warn(
+            LogCategory.SYSTEM,
+            '[DeviceBindService] wxpay-entry mint 失败:',
+            mintErr || mintData
+          )
         }
-      } catch (qrEx) {
-        logger.warn(LogCategory.SYSTEM, '[DeviceBindService] 拉取小程序码异常，降级显示短码:', qrEx)
+      } catch (mintEx) {
+        logger.warn(LogCategory.SYSTEM, '[DeviceBindService] 调用 wxpay-entry mint 异常:', mintEx)
       }
 
-      // 3. 若未获取到小程序码，生成内嵌 SVG 保底 (严格对齐品牌命名规范)
-      if (!imageDataUrl) {
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
-          <rect width="100%" height="100%" fill="#f8fafc" rx="16"/>
-          <rect x="15" y="15" width="270" height="270" fill="none" stroke="#e2e8f0" stroke-width="2" rx="12"/>
-          <text x="150" y="110" font-family="sans-serif" font-size="16" font-weight="bold" fill="#0f172a" text-anchor="middle">微信扫码或输入绑定码</text>
-          <text x="150" y="155" font-family="monospace" font-size="24" font-weight="bold" fill="#2563eb" text-anchor="middle">${code}</text>
-          <text x="150" y="200" font-family="sans-serif" font-size="12" fill="#64748b" text-anchor="middle">在微信小程序「Firefly AI Folder」输入短码</text>
-          <text x="150" y="225" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">即可完成桌面设备授权绑定</text>
-        </svg>`
-        imageDataUrl = `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`
+      // 2. 若获取到 token，调用 wxpay-qrcode 获取微信官方真实小程序码 (与官网价格页完全同源)
+      if (token) {
+        try {
+          const { data: qrData, error: qrErr } = await client.functions.invoke('wxpay-qrcode', {
+            body: { token }
+          })
+          if (!qrErr && qrData?.imageDataUrl) {
+            imageDataUrl = qrData.imageDataUrl
+          } else {
+            logger.warn(
+              LogCategory.SYSTEM,
+              '[DeviceBindService] wxpay-qrcode 换码失败:',
+              qrErr || qrData
+            )
+          }
+        } catch (qrEx) {
+          logger.warn(LogCategory.SYSTEM, '[DeviceBindService] 调用 wxpay-qrcode 异常:', qrEx)
+        }
+      }
+
+      // 3. 兜底方案：若 wxpay-entry 异常，尝试通过云端 RPC rpc_create_device_bind_code 作为备用生成口令
+      if (!code) {
+        try {
+          const schema = getSharedSchemaName()
+          const { data: rpcData, error: rpcErr } = await (client as any)
+            .schema(schema)
+            .rpc('rpc_create_device_bind_code', {
+              p_machine_id: machineId,
+              p_platform: platform,
+              p_device_label: deviceLabel
+            })
+          if (!rpcErr && rpcData?.success && rpcData?.code) {
+            code = rpcData.code
+            const expiresInSec = Number(rpcData.expires_in_seconds) || 300
+            expiresAt = new Date(Date.now() + expiresInSec * 1000).toISOString()
+          }
+        } catch (rpcEx) {
+          logger.warn(LogCategory.SYSTEM, '[DeviceBindService] 备用 RPC 生成短码失败:', rpcEx)
+        }
+      }
+
+      if (!code) {
+        return { success: false, error: '生成微信登录二维码失败，请检查网络连接' }
       }
 
       return {
         success: true,
         code,
         imageDataUrl,
-        expiresAt: data.expires_at || calculatedExpiresAt,
+        expiresAt: expiresAt || new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString(),
         deviceLabel,
         platform,
         machineIdTail: machineId.slice(-4)
