@@ -214,13 +214,14 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
       const existingCustomIgnoreRules =
         parsedConfig.status === 'ready' ? parsedConfig.customIgnoreRules : undefined
 
+      // 重新应用场景策略时清空旧的个性化微调 overrides，让新场景的推荐参数基线 100% 全面生效
       const readyConfig: WorkspaceConfig = {
         schemaVersion: 1,
         status: 'ready',
         intent: selectedIntent,
         policyVersion: 1,
         derivedSnapshot,
-        overrides: parsedConfig.status === 'ready' ? parsedConfig.overrides : undefined,
+        overrides: undefined,
         customIgnoreRules: existingCustomIgnoreRules,
         configuredAt: Date.now()
       }

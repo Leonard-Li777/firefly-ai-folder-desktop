@@ -284,6 +284,20 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
   })
   const [isProPanelOpen, setIsProPanelOpen] = useState(false)
 
+  // 当外部配置（如向导更新）改变时，自动同步校准 videoProfile 档位
+  useEffect(() => {
+    if (overrides.videoQuotaMax !== undefined) {
+      const matchedPreset = (['fast_archive', 'balanced_search', 'deep_footage'] as const).find(
+        p => VIDEO_ANALYSIS_PRESETS[p].quotaMax === effectiveParams.videoQuotaMax
+      )
+      setVideoProfile(matchedPreset ?? 'custom')
+    } else {
+      if (effectiveParams.videoQuotaMax <= 8) setVideoProfile('fast_archive')
+      else if (effectiveParams.videoQuotaMax >= 80) setVideoProfile('deep_footage')
+      else setVideoProfile('balanced_search')
+    }
+  }, [effectiveParams.videoQuotaMax, overrides.videoQuotaMax])
+
   const videoQuotaMax = effectiveParams.videoQuotaMax ?? 32
   const videoCutSensitivity = effectiveParams.videoCutSensitivity ?? 'medium'
   const localVideoSoftTokenBudget = effectiveParams.videoSoftTokenBudget ?? 48
@@ -443,12 +457,9 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
             <span>{t('基础AI引擎')}</span>
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {t(
-              '当前工作目录生效场景: {intent}。配置分析模式、嵌入模型档位、MRL 向量维度与视频取帧参数。',
-              {
-                intent: getIntentDisplayName(currentIntent)
-              }
-            )}
+            {t('当前工作目录生效场景: {intent}。配置分析模式、视频取帧参数。', {
+              intent: getIntentDisplayName(currentIntent)
+            })}
           </p>
         </div>
 
@@ -618,7 +629,7 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
                 )}
               </div>
               <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                {t('【增强分析】+ 全面AI分析，包含质量评分与详细图片、音频、视频内容描述等')}
+                {t('【增强分析】+ 全面AI分析，包含质量评分与详细图片、音频内容描述等以及更多标签')}
               </p>
               {!isAdvancedAiEnabled && (
                 <div className="flex items-center gap-1.5 mt-2.5 text-xs text-amber-600 dark:text-amber-400">
@@ -1052,9 +1063,7 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
                         </span>
                       </div>
                       <p className="text-[11px] text-muted-foreground mt-0.5">
-                        {t(
-                          '耗时仅在首次整理时发生一次；在全局搜索栏中搜索任意画面均为毫秒级瞬发。'
-                        )}
+                        {t('耗时仅在首次整理时发生一次；搜索时均为毫秒级瞬发。')}
                       </p>
                     </div>
                   </div>
@@ -1170,14 +1179,12 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
                       <Crown className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
                       <div className="text-xs leading-relaxed">
-                        <span className="font-bold text-amber-700 dark:text-amber-300">
-                          {t('免费版每个视频分析精彩前 5 分钟')}
-                        </span>
-                        <span className="text-muted-foreground ml-1">
-                          {t(
-                            '（长视频仅分析前 300 秒）。升级 Pro 会员可解锁整部视频全量分析，支持单视频长达 2 小时以上。'
-                          )}
-                        </span>
+                        <p className="font-bold text-amber-700 dark:text-amber-300">
+                          {t('免费版每个视频分析精彩前 5 分钟。')}
+                        </p>
+                        <p className="text-muted-foreground">
+                          {t('升级 Pro 会员可解锁整部视频全量分析，支持单视频长达 2 小时以上。')}
+                        </p>
                       </div>
                     </div>
                     <Button

@@ -136,6 +136,13 @@ export const WorkspaceSettingsDialog: React.FC = () => {
         const dirs = await window.electronAPI.getAllWorkspaceDirectories()
         if (dirs) {
           setWorkspaceDirectories(dirs)
+          // 若当前活跃工作区存在，同步刷新 store 中 currentWorkspaceDirectory
+          if (currentWorkspace?.id) {
+            const freshCurrent = dirs.find(d => d.id === currentWorkspace.id)
+            if (freshCurrent) {
+              useVirtualDirectoryStore.getState().setCurrentWorkspaceDirectory(freshCurrent)
+            }
+          }
         }
       }
     } catch (err) {
@@ -341,6 +348,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                     )}
                   >
                     <MemoizedBasicAIEngineTab
+                      key={`${activeWorkspace.id}-${activeWorkspace.workspace_config}`}
                       workspace={activeWorkspace}
                       hardwareInfo={hardwareInfo}
                       isActive={activeTab === 'basic_ai_engine'}
@@ -357,6 +365,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                     )}
                   >
                     <MemoizedContentExtractionTab
+                      key={`${activeWorkspace.id}-${activeWorkspace.workspace_config}`}
                       workspace={activeWorkspace}
                       hardwareInfo={hardwareInfo}
                       isActive={activeTab === 'content_extraction'}
