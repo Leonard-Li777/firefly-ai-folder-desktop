@@ -24,6 +24,9 @@ import { UpgradeAccountDialog } from './UpgradeAccountDialog'
 import { AccountManagementDialog } from './AccountManagementDialog'
 import { ActivationCodeDialog } from './ActivationCodeDialog'
 import { UserTier, formatDateOnly } from '@firefly/shared'
+import { SettingsCategory } from '@firefly/types'
+import { toast } from '../common/Toast'
+import { isEngineServiceReady } from '../../lib/engine-status-badge'
 import { WechatQRDialog } from './WechatQRDialog'
 import { cn } from '../../lib/utils'
 import { createPortal } from 'react-dom'
@@ -492,10 +495,38 @@ export const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({ onOpenChange }) 
                   className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98] cursor-pointer"
                   onClick={() =>
                     handleMenuClick(async () => {
+                      // 1. 校验是否开启高级AI引擎
+                      const aiServiceMode =
+                        useSettingsStore.getState().config?.aiServiceMode ??
+                        (await window.electronAPI?.getConfigValue<string>('AI_SERVICE_MODE')) ??
+                        'local'
+                      if (aiServiceMode === 'disabled') {
+                        toast.warning(t('高级AI引擎未开启，请先开启高级AI引擎'), 3000, undefined, {
+                          label: t('前往设置'),
+                          onClick: () => openSettings(SettingsCategory.AI_ENGINE_CONFIG)
+                        })
+                        return
+                      }
+
+                      // 2. 校验高级AI引擎是否已启动
+                      const snapshot = await window.electronAPI?.engineBridge?.getStatus?.()
+                      const status = snapshot?.raw?.status
+                      if (status === 'starting') {
+                        toast.info(t('高级AI引擎正在启动中，请稍后重试'))
+                        return
+                      }
+                      if (!isEngineServiceReady(status)) {
+                        toast.warning(t('高级AI引擎未启动，请先启动高级AI引擎'), 3000, undefined, {
+                          label: t('前往设置'),
+                          onClick: () => openSettings(SettingsCategory.AI_ENGINE_CONFIG)
+                        })
+                        return
+                      }
+
                       const runningPort = await window.electronAPI?.getLlamaServerPort?.()
                       const configPort =
                         await window.electronAPI?.getConfigValue<number>('AI_LOCAL_PORT')
-                      const port = runningPort || configPort || 38400
+                      const port = runningPort || snapshot?.port || configPort || 38400
                       openExternalLink(`http://localhost:${port}`)
                     })
                   }
