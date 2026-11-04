@@ -46,7 +46,7 @@
     "mobile-clip": {
       "version": "INT8"
     },
-    "nsfw-tiny": {
+    "nsfw-mobilenetv2": {
       "version": "1.0.0"
     },
     "nsfw-l3": {
