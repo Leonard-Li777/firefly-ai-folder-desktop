@@ -173,8 +173,8 @@
       "source": "shared",
       "asset": {
         "name": "nsfw-l3-1.0.0.zip",
-        "sha256": "84383b64d723d31ec3ab940522f866ff1979a24454269cd6336ee2fc98ff2ddf",
-        "size": 21966375,
+        "sha256": "272b4bbd5c702a9d53f7f94fbc11edbf9c26918184816209860d35f1aeffb3e2",
+        "size": 21962522,
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/nsfw-l3-1.0.0.zip"
       }
     },
