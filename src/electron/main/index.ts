@@ -27,7 +27,21 @@ if (process.platform === 'darwin') {
 }
 
 // 后续逻辑...
-import { app, BrowserWindow, net, dialog, shell } from 'electron'
+import { app, BrowserWindow, net, dialog, shell, protocol } from 'electron'
+
+// 注册自定义预览协议为特权方案（必须在 app.whenReady() 之前静态注册，全局仅一次）
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'ff-preview',
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      corsEnabled: true,
+      stream: true
+    }
+  }
+])
 import * as path from 'node:path'
 import {
   logger,

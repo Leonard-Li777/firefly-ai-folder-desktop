@@ -631,12 +631,16 @@ const electronAPI = {
     close: () => ipcRenderer.invoke('window-close')
   },
 
-  // 文件预览相关（预览窗口 + 临时图片转码 + 文本限流读取）
+  // 文件预览相关（预览窗口 + 临时图片转码 + 文本限流读取 + 会话级流式挂载）
   preview: {
     openNewWindow: (filePath: string) => ipcRenderer.invoke('preview/open-new-window', filePath),
     getTempImage: (filePath: string) => ipcRenderer.invoke('preview/get-temp-image', filePath),
     readTextLimit: (filePath: string, limit?: number) =>
-      ipcRenderer.invoke('preview/read-text-limit', filePath, limit)
+      ipcRenderer.invoke('preview/read-text-limit', filePath, limit),
+    mountSession: (sessionId: string, filePath: string): Promise<boolean> =>
+      ipcRenderer.invoke('preview:mount-session', sessionId, filePath),
+    unmountSession: (sessionId: string): Promise<boolean> =>
+      ipcRenderer.invoke('preview:unmount-session', sessionId)
   },
 
   // 用户等级和萤火
@@ -724,6 +728,10 @@ const electronAPI = {
     ipcRenderer.invoke('get-workspace-config', workspaceId),
   updateWorkspaceConfig: (workspaceId: number, config: any) =>
     ipcRenderer.invoke('update-workspace-config', workspaceId, config),
+  updateWorkspaceWhitelist: (workspaceId: number, patterns: string[]) =>
+    ipcRenderer.invoke('update-workspace-whitelist', workspaceId, patterns),
+  updateWorkspaceBoundWorkflow: (workspaceId: number, workflowId: string | null) =>
+    ipcRenderer.invoke('update-workspace-bound-workflow', workspaceId, workflowId),
 
   rescanWorkspaceDirectory: (workspaceId: number): Promise<any> =>
     ipcRenderer.invoke('rescanWorkspaceDirectory', workspaceId),

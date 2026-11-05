@@ -1,4 +1,6 @@
-export type PreviewRouteType = 'native' | 'flyfish' | 'unsupported'
+import { PreviewRouter } from './preview-router'
+import type { PreviewRouteType } from './preview-types'
+export type { PreviewRouteType } from './preview-types'
 
 /**
  * 从文件名或智能文件名中提取扩展名，无扩展名时返回空字符串
@@ -9,7 +11,7 @@ export function getExtFromSmartName(name: string): string {
   return dot > 0 && dot < name.length - 1 ? name.slice(dot + 1).toLowerCase() : ''
 }
 
-const NATIVE_EXTENSIONS = new Set([
+export const NATIVE_EXTENSIONS = new Set([
   'jpg',
   'jpeg',
   'png',
@@ -53,7 +55,7 @@ const NATIVE_EXTENSIONS = new Set([
   'gitignore'
 ])
 
-const FLYFISH_EXTENSIONS = new Set([
+export const FLYFISH_EXTENSIONS = new Set([
   // Word
   'docx',
   'docm',
@@ -267,6 +269,17 @@ const FLYFISH_EXTENSIONS = new Set([
 export function getPreviewRouteType(extension?: string): PreviewRouteType {
   const ext = (extension || '').toLowerCase().replace(/^\./, '')
   if (!ext) return 'unsupported'
+
+  // 优先委托 PreviewRouter 探测最高优先级候选者
+  const topCandidate = PreviewRouter.getInstance().peekTopCandidate(ext)
+  if (topCandidate) {
+    if (topCandidate.kind === 'builtin_react') return 'native'
+    if (topCandidate.kind === 'flyfish') return 'flyfish'
+    if (topCandidate.kind === 'external_iframe') return 'native'
+    if (topCandidate.kind === 'system_icon') return 'unsupported'
+  }
+
+  // 兜底回退静态集合判定
   if (NATIVE_EXTENSIONS.has(ext)) return 'native'
   if (FLYFISH_EXTENSIONS.has(ext)) return 'flyfish'
   return 'unsupported'

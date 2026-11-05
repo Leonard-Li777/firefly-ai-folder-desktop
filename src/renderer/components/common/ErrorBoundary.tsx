@@ -5,6 +5,8 @@ import { t } from '@app/languages'
 
 interface Props {
   children: ReactNode
+  fallback?: ReactNode | ((error: Error | null) => ReactNode)
+  onError?: (error: Error, errorInfo: ErrorInfo) => void
 }
 
 interface State {
@@ -35,10 +37,17 @@ export class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     logger.error(LogCategory.ERROR_HANDLING, '[Error Boundary] 捕获到错误:', error)
     logger.error(LogCategory.ERROR_HANDLING, '[Error Boundary] 错误信息:', errorInfo)
+    this.props.onError?.(error, errorInfo)
   }
 
   render() {
     if (this.state.hasError) {
+      if (typeof this.props.fallback === 'function') {
+        return this.props.fallback(this.state.error)
+      }
+      if (this.props.fallback) {
+        return this.props.fallback
+      }
       return (
         <div className="h-screen w-screen flex items-center justify-center bg-gray-50">
           <div className="text-center p-6 bg-white rounded-lg shadow-lg max-w-md">

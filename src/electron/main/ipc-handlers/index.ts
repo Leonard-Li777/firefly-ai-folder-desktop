@@ -11,6 +11,7 @@ import { registerEngineBridgeIPCHandlers } from './engine-bridge'
 import { registerUpdateIPCHandlers } from './update'
 import { registerTTSIPCHandlers } from './tts'
 import { registerDeviceBindIPCHandlers } from './device-bind'
+import { registerPreviewIPCHandlers } from './preview'
 import { syncedDirectories } from '../state'
 import { logger, LogCategory } from '@firefly/shared'
 
@@ -30,6 +31,7 @@ export async function setupIPCHandlers(): Promise<void> {
   registerUpdateIPCHandlers()
   registerTTSIPCHandlers()
   registerDeviceBindIPCHandlers()
+  registerPreviewIPCHandlers()
 
   if (syncedDirectoriesCleanupInterval) {
     clearInterval(syncedDirectoriesCleanupInterval)
