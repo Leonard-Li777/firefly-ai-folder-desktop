@@ -83,25 +83,42 @@ export function usePreviewSession(props: UsePreviewSessionProps): UsePreviewSess
   const activeSessionIdRef = useRef<string>(sessionId)
   const isFirstMountRef = useRef<boolean>(true)
 
-  // 构造当前 PreviewContext
-  const context: PreviewContext = {
-    filePath,
-    fileName,
-    extension: ext,
-    fileSize,
-    fileFingerprint: getFileFingerprint(filePath, fileSize),
-    requestId: `req_${generation}_${cursor}`,
-    generation,
-    signal: abortControllerRef.current.signal,
-    isPrivate,
-    workspaceDirectoryType,
-    multimodalContent,
-    currentTime,
-    highlightRange
-  }
+  // 构造基础 PreviewContext 发生器
+  const buildContext = useCallback(
+    (gen: number, cur: number, signal: AbortSignal): PreviewContext => ({
+      filePath,
+      fileName,
+      extension: ext,
+      fileSize,
+      fileFingerprint: getFileFingerprint(filePath, fileSize),
+      requestId: `req_${gen}_${cur}`,
+      generation: gen,
+      signal,
+      isPrivate,
+      workspaceDirectoryType,
+      multimodalContent,
+      currentTime,
+      highlightRange
+    }),
+    [
+      filePath,
+      fileName,
+      ext,
+      fileSize,
+      isPrivate,
+      workspaceDirectoryType,
+      multimodalContent,
+      currentTime,
+      highlightRange
+    ]
+  )
 
-  // 计算当前候选栈
-  const candidates = router.resolveCandidates(context)
+  // 固化当前会话的初始候选栈，避免因运行期熔断缩容导致 cursor 与 candidates 双重步进脱节跳过中间备选
+  const [candidates, setCandidates] = useState<PreviewCandidate[]>(() =>
+    router.resolveCandidates(buildContext(generation, 0, abortControllerRef.current.signal))
+  )
+
+  const context = buildContext(generation, cursor, abortControllerRef.current.signal)
   const currentCandidate = candidates[cursor] || candidates[0] || FALLBACK_ICON_CANDIDATE
 
   // 当文件路径或隐私属性改变时，初始化新 Session
@@ -127,6 +144,12 @@ export function usePreviewSession(props: UsePreviewSessionProps): UsePreviewSess
       ) {
         window.electronAPI.preview.unmountSession(oldSessionId).catch(() => {})
       }
+
+      // 重新解析新文件的新会话候选栈
+      const nextCandidates = router.resolveCandidates(
+        buildContext(currentGen, 0, nextAbortController.signal)
+      )
+      setCandidates(nextCandidates)
 
       activeSessionIdRef.current = currentSessionId
       setGeneration(currentGen)

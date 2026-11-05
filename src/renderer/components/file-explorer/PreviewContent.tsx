@@ -143,6 +143,7 @@ export const PreviewContent: React.FC<PreviewContentProps> = ({
         {fallbackNotice}
         <div className={cn('w-full flex-1', isPrivate && 'ph-no-capture')}>
           <ExternalIframeAdapter
+            key={`${session.sessionId}_${session.generation}_${currentCandidate.id}`}
             session={session}
             candidate={currentCandidate}
             context={context}

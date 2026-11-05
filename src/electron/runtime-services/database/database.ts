@@ -58,6 +58,19 @@ export const GENESIS_V1_SCHEMA = `
   DROP TABLE IF EXISTS omw_synsets;
   DROP TABLE IF EXISTS omw_languages;
 
+  -- 0.1 本地工作流定义表 (必须先于 workspaces 声明以满足外键依赖)
+  CREATE TABLE IF NOT EXISTS local_workflows (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    version TEXT NOT NULL DEFAULT '1.0.0',
+    persona TEXT NOT NULL,
+    summary TEXT,
+    is_builtin INTEGER NOT NULL DEFAULT 0,
+    manifest_json TEXT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
   -- 1. 用户根工作区配置表
   CREATE TABLE IF NOT EXISTS workspaces (
     workspace_id INTEGER PRIMARY KEY AUTOINCREMENT, -- 工作区唯一标识
@@ -69,7 +82,10 @@ export const GENESIS_V1_SCHEMA = `
     last_scan_at DATETIME,                        -- 最后一次完整扫描的时间
     workspace_config TEXT NOT NULL DEFAULT '{"schemaVersion":1,"status":"pending"}' CHECK (json_valid(workspace_config) = 1 AND json_extract(workspace_config, '$.status') IN ('pending', 'ready')), -- 工作区专有配置 JSON (就绪门闩与全量AI处理策略)
     meta TEXT NOT NULL DEFAULT '{}',              -- 弹性运行时元数据 (JSON，仅限扫描统计缓存、UI状态等，不存策略配置)
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP -- 创建时间
+    whitelist_patterns TEXT NOT NULL DEFAULT '[]' CHECK (json_valid(whitelist_patterns) = 1), -- 入场白名单扩展名集合 (JSON 字符串数组，如 [".cr3", ".arw"])
+    bound_workflow_id TEXT,                       -- 绑定的工作流 ID (解绑置空)
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    FOREIGN KEY (bound_workflow_id) REFERENCES local_workflows(id) ON DELETE SET NULL
   );
 
   -- 2. 目录状态表（记录工作区下的子目录实体）
@@ -82,9 +98,12 @@ export const GENESIS_V1_SCHEMA = `
     is_analyzed BOOLEAN NOT NULL DEFAULT 0,      -- 是否已完成目录级分析
     last_analyzed_at DATETIME,                   -- 最后分析时间
     meta TEXT NOT NULL DEFAULT '{}',              -- 弹性元数据 (JSON)
+    whitelist_patterns TEXT NOT NULL DEFAULT '[]' CHECK (json_valid(whitelist_patterns) = 1), -- 入场白名单扩展名集合 (JSON 字符串数组，如 [".cr3", ".arw"])
+    bound_workflow_id TEXT,                       -- 绑定的工作流 ID (解绑置空)
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 记录创建时间
     modified_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 记录最后修改时间
-    FOREIGN KEY (workspace_id) REFERENCES workspaces(workspace_id) ON DELETE CASCADE
+    FOREIGN KEY (workspace_id) REFERENCES workspaces(workspace_id) ON DELETE CASCADE,
+    FOREIGN KEY (bound_workflow_id) REFERENCES local_workflows(id) ON DELETE SET NULL
   );
 
   -- 3. 文件基础信息表（内容中心化，基于指纹去重，以 FileGroup file_group 分类）
@@ -386,6 +405,57 @@ export const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_fvs_status_start 
   ON file_video_segments(status, start_pts_sec);
 
+  -- 16.7 内置与可选功能模块化及物理资产下载底座 (Genesis V1 创世基线 - Issue 01a)
+  -- 1. 内置与可选模块注册表
+  CREATE TABLE IF NOT EXISTS builtin_modules (
+    id                TEXT PRIMARY KEY,              -- 模块唯一标识符 (如 'asr_engine', 'nsfw_detector')
+    kind              TEXT NOT NULL DEFAULT 'builtin-module'
+                      CHECK (kind IN ('builtin-module', 'third-party-plugin')),
+    version           TEXT NOT NULL,                 -- 当前安装/激活的版本号
+    category          TEXT NOT NULL                  -- 'ai-engine' | 'perception' | 'media' | 'tool'
+                      CHECK (category IN ('ai-engine', 'perception', 'media', 'tool', 'parser', 'vfs-archive')),
+    install_state     TEXT NOT NULL DEFAULT 'not_installed'
+                      CHECK (install_state IN ('not_installed', 'downloading', 'installed_inactive', 'active', 'error')),
+    selected_variant  TEXT,                          -- 用户选装的变体标识符 (如 'sensevoice-onnx')
+    install_path      TEXT,                          -- 物理安装路径 (相对于资源根目录)
+    installed_at      INTEGER,                       -- 首次安装成功时间戳 (Unix ms)
+    last_activated_at INTEGER,                       -- 最近一次激活时间戳 (Unix ms)
+    user_consent      INTEGER NOT NULL DEFAULT 0,    -- 是否通过敏感授权/隐私告知 (1: 是, 0: 否)
+    error_message     TEXT,                          -- 异常退出或校验失败原因
+    config_json       TEXT                           -- 模块专有持久化配置项 (JSON 字典)
+  );
+
+  -- 2. 物理资源下载实体表 (资源中心化 SSOT)
+  -- target_local_path: 解压后的最终物理安装根目录（如 {userData}/modules/_shared/<resource_id>/）
+  -- 临时下载 .part: {userData}/downloads/tmp/<resource_id>_<asset_name>.part
+  -- 解压临时过渡目录: {userData}/modules/_shared/<resource_id>.tmp-<uuid>/
+  CREATE TABLE IF NOT EXISTS resource_downloads (
+    resource_id       TEXT PRIMARY KEY,              -- 物理资产唯一 ID (对应 firefly-resources BOM 中的 key，如 'ffmpeg')
+    asset_name        TEXT NOT NULL,                 -- 归档压缩包文件名 (如 'ffmpeg-master-20260827-win32-x64.zip')
+    target_local_path TEXT NOT NULL,                 -- 解压后的最终物理安装目录
+    active_source_key TEXT NOT NULL DEFAULT 'auto',  -- 使用的网络源模式 ('cn' | 'global')
+    active_url        TEXT,                          -- 当前实际请求的下载 URL
+    expected_bytes    INTEGER NOT NULL,              -- 预期文件大小 (字节，BOM SSOT)
+    downloaded_bytes  INTEGER NOT NULL DEFAULT 0,    -- 仅作为 UI 进度投影 (真实断点以磁盘 .part 大小为准)
+    expected_sha256   TEXT NOT NULL,                 -- 权威 SHA-256 完整性摘要
+    download_state    TEXT NOT NULL DEFAULT 'pending'
+                      CHECK (download_state IN ('pending', 'downloading', 'paused', 'completed', 'failed')),
+    error_message     TEXT,                          -- 网络异常或 HTTP 状态码说明
+    created_at        INTEGER NOT NULL,              -- 任务创建时间戳
+    updated_at        INTEGER NOT NULL               -- 进度刷新时间戳
+  );
+
+  -- 3. 模块与物理资源多对多关联绑定表 (纯关系表)
+  -- 级联规则：模块卸载时仅级联删除本绑定表行 (ON DELETE CASCADE)；物理资产受 RESTRICT 保护，仅在引用计数为 0 时触发清理
+  CREATE TABLE IF NOT EXISTS module_resource_downloads (
+    module_id         TEXT NOT NULL REFERENCES builtin_modules(id) ON DELETE CASCADE,
+    resource_id       TEXT NOT NULL REFERENCES resource_downloads(resource_id) ON DELETE RESTRICT,
+    created_at        INTEGER NOT NULL,              -- 关联建立时间戳
+    PRIMARY KEY (module_id, resource_id)
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_mod_res_map_rid ON module_resource_downloads(resource_id);
+
 
   -- 17. FTS5 全文搜索虚拟表（标准独立存储表）
   -- 避免 contentless 模式在多表异步写入/更新时发生 token 不匹配导致 SQLITE_CORRUPT_VTAB (database disk image is malformed)
@@ -433,6 +503,9 @@ export const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_workspace_files_lightweight ON workspace_files(workspace_id, is_analyzed, path);
   CREATE INDEX IF NOT EXISTS idx_workspace_directories_workspace_id ON workspace_directories(workspace_id);
   CREATE INDEX IF NOT EXISTS idx_workspace_directories_path ON workspace_directories(path COLLATE NOCASE);
+  CREATE INDEX IF NOT EXISTS idx_workspaces_bound_wf ON workspaces(bound_workflow_id);
+  CREATE INDEX IF NOT EXISTS idx_workspace_directories_bound_wf ON workspace_directories(bound_workflow_id);
+  CREATE INDEX IF NOT EXISTS idx_local_workflows_persona ON local_workflows(persona);
   CREATE INDEX IF NOT EXISTS idx_file_tags_private_name ON file_tags_private(name);
   CREATE INDEX IF NOT EXISTS idx_file_tags_private_source ON file_tags_private(source);
 
@@ -585,6 +658,10 @@ export const migrations: IMigrationConfig[] = [
       DROP TABLE IF EXISTS files;
       DROP TABLE IF EXISTS workspace_directories;
       DROP TABLE IF EXISTS workspaces;
+      DROP TABLE IF EXISTS local_workflows;
+      DROP TABLE IF EXISTS module_resource_downloads;
+      DROP TABLE IF EXISTS resource_downloads;
+      DROP TABLE IF EXISTS builtin_modules;
       DROP TABLE IF EXISTS files_fts;
       DROP TABLE IF EXISTS files_pinyin_fts;
     `

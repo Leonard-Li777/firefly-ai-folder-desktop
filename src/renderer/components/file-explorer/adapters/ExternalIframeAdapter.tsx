@@ -37,13 +37,18 @@ export const ExternalIframeAdapter: React.FC<ExternalIframeAdapterProps> = ({
   const bootTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const heartbeatTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // 确保每次会话生成的凭据随机会话隔离
+  useEffect(() => {
+    channelSecretRef.current = `sec_${Math.random().toString(36).slice(2, 9)}`
+  }, [session.sessionId, session.generation])
+
   // 辅助函数：双轨强杀（软注销消息 + 硬卸载 about:blank 强释 WebGL 上下文）
   const killIframe = (immediate: boolean = false) => {
-    const iframe = iframeRef.current
-    if (!iframe) return
+    const targetIframe = iframeRef.current
+    if (!targetIframe) return
 
     try {
-      iframe.contentWindow?.postMessage(
+      targetIframe.contentWindow?.postMessage(
         {
           sessionId: session.sessionId,
           requestId: session.requestId,
@@ -57,15 +62,13 @@ export const ExternalIframeAdapter: React.FC<ExternalIframeAdapterProps> = ({
 
     if (immediate) {
       try {
-        iframe.src = 'about:blank'
+        targetIframe.src = 'about:blank'
       } catch {}
     } else {
-      // 留出 50ms 微时隙让插件事件循环响应 loseContext，随后强置 about:blank 彻底释放 GPU 上下文
+      // 留出 50ms 微时隙让插件事件循环响应 loseContext，随后直接对固化的 targetIframe 置 about:blank
       setTimeout(() => {
         try {
-          if (iframeRef.current) {
-            iframeRef.current.src = 'about:blank'
-          }
+          targetIframe.src = 'about:blank'
         } catch {}
       }, 50)
     }
