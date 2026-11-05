@@ -10,17 +10,24 @@ import {
   InFlightTask,
   IPluginUtilityProcess,
   NATIVE_CRASH_CODES,
+  PayloadTooLargeError,
   PluginManifest,
   TaskState,
   UtilityProcessFactory
 } from './plugin-types'
 import { PluginCircuitBreaker } from './plugin-circuit-breaker'
 import { PluginHostStateMachine } from './plugin-host-state-machine'
+import {
+  MAX_RPC_ENVELOPE_BYTES,
+  PluginReverseProxyGateway,
+  validateRpcEnvelope
+} from './plugin-ipc-guard'
 
 export interface PluginHostOptions {
   manifest: PluginManifest
   utilityProcessFactory?: UtilityProcessFactory
   circuitBreaker?: PluginCircuitBreaker
+  reverseProxyGateway?: PluginReverseProxyGateway
   /** 握手超时时间（毫秒），默认 20,000 (20s) */
   handshakeTimeoutMs?: number
   /** 自定义日志记录器 */
@@ -35,6 +42,7 @@ export class PluginHost {
   public readonly manifest: PluginManifest
   public readonly stateMachine: PluginHostStateMachine
   public readonly circuitBreaker: PluginCircuitBreaker
+  public readonly reverseProxyGateway: PluginReverseProxyGateway
 
   private readonly utilityProcessFactory?: UtilityProcessFactory
   private readonly handshakeTimeoutMs: number
@@ -67,6 +75,7 @@ export class PluginHost {
     this.manifest = options.manifest
     this.utilityProcessFactory = options.utilityProcessFactory
     this.circuitBreaker = options.circuitBreaker ?? new PluginCircuitBreaker()
+    this.reverseProxyGateway = options.reverseProxyGateway ?? new PluginReverseProxyGateway()
     this.stateMachine = new PluginHostStateMachine()
     this.handshakeTimeoutMs = options.handshakeTimeoutMs ?? 20_000
     this.logger = options.logger ?? console
@@ -289,6 +298,8 @@ export class PluginHost {
     // 2. 执行退出清理屏障原子三件事：
     // (1) 幂等 settleTask 拒绝在途任务
     if (currentTask) {
+      this.reverseProxyGateway.unregisterTask(currentTask.taskId)
+
       const exitOutcome: TaskState = isDegraded ? 'degraded' : 'crashed'
       const err = new Error(
         `Process exited unexpectedly with code ${rawCode} (${classification}). ${this.stderrBuffer ? `Stderr: ${this.stderrBuffer}` : ''}`
@@ -409,6 +420,48 @@ export class PluginHost {
       const timeoutSec = this.calculateTimeoutSec(input.fileSize)
       const timeoutMs = timeoutSec * 1000
 
+      let remainingDeadlineMs = timeoutMs
+      let lastStartedAt = Date.now()
+      let deadlineTimer: any = null
+
+      const startWatchdogTimer = (durationMs: number) => {
+        deadlineTimer = setTimeout(() => {
+          this.logger.error(
+            `[PluginHost:${this.manifest.id}] Task ${input.taskId} exceeded deadline ${timeoutMs}ms`
+          )
+          this.watchdogKilled = true
+          this.watchdogReason = 'timeout'
+          try {
+            if (this.stateMachine.canTransitionTo('TERMINATING')) {
+              this.stateMachine.transitionTo('TERMINATING', 'Watchdog timeout kill')
+            }
+            this.currentProcess?.kill()
+          } catch (_) {}
+        }, durationMs)
+      }
+
+      const pauseDeadline = () => {
+        if (deadlineTimer) {
+          clearTimeout(deadlineTimer)
+          deadlineTimer = null
+          const elapsed = Date.now() - lastStartedAt
+          remainingDeadlineMs = Math.max(0, remainingDeadlineMs - elapsed)
+          this.logger.info(
+            `[PluginHost:${this.manifest.id}] Paused deadline for task ${input.taskId}, remaining: ${remainingDeadlineMs}ms`
+          )
+        }
+      }
+
+      const resumeDeadline = () => {
+        if (!deadlineTimer && remainingDeadlineMs > 0) {
+          lastStartedAt = Date.now()
+          startWatchdogTimer(remainingDeadlineMs)
+          this.logger.info(
+            `[PluginHost:${this.manifest.id}] Resumed deadline for task ${input.taskId}, duration: ${remainingDeadlineMs}ms`
+          )
+        }
+      }
+
       const task: InFlightTask<TResult> = {
         taskId: input.taskId,
         processGeneration: currentGen,
@@ -416,6 +469,7 @@ export class PluginHost {
         fileSize: input.fileSize,
         fileFingerprint: input.fileFingerprint,
         resolve: val => {
+          this.reverseProxyGateway.unregisterTask(input.taskId)
           this.taskCount += 1
           this.circuitBreaker.recordSuccess()
           if (this.stateMachine.state === 'BUSY') {
@@ -424,30 +478,29 @@ export class PluginHost {
           resolve(val)
         },
         reject: reason => {
-          // 仅在非退出导致的失败时恢复 READY（退出流程已由 Barrier 统一接管）
+          this.reverseProxyGateway.unregisterTask(input.taskId)
           if (this.stateMachine.state === 'BUSY') {
             this.stateMachine.transitionTo('READY')
           }
           reject(reason)
         },
-        startedAt: Date.now(),
+        startedAt: lastStartedAt,
+        deadlineMs: timeoutMs,
+        remainingDeadlineMs,
+        pauseDeadline,
+        resumeDeadline,
         payload: input.payload
       }
 
-      // 设置看门狗定时器
-      task.deadlineTimer = setTimeout(() => {
-        this.logger.error(
-          `[PluginHost:${this.manifest.id}] Task ${input.taskId} exceeded deadline ${timeoutMs}ms`
-        )
-        this.watchdogKilled = true
-        this.watchdogReason = 'timeout'
-        try {
-          if (this.stateMachine.canTransitionTo('TERMINATING')) {
-            this.stateMachine.transitionTo('TERMINATING', 'Watchdog timeout kill')
-          }
-          this.currentProcess?.kill()
-        } catch (_) {}
-      }, timeoutMs)
+      startWatchdogTimer(timeoutMs)
+      task.deadlineTimer = deadlineTimer
+
+      this.reverseProxyGateway.registerTask({
+        taskId: input.taskId,
+        authorizedFilePath: input.filePath,
+        pauseDeadline,
+        resumeDeadline
+      })
 
       this.stateMachine.assignTask(task)
 
@@ -467,6 +520,7 @@ export class PluginHost {
         this.currentProcess.postMessage(envelope)
       } catch (postErr) {
         this.circuitBreaker.releaseHalfOpenProbe()
+        this.reverseProxyGateway.unregisterTask(input.taskId)
         this.stateMachine.settleTask('failed', postErr)
       }
     })
@@ -481,6 +535,7 @@ export class PluginHost {
     success: boolean
     result?: any
     error?: any
+    resultArtifactPath?: string
   }): boolean {
     if (!message || typeof message !== 'object') {
       return false
@@ -502,8 +557,19 @@ export class PluginHost {
       return false
     }
 
+    // 50KB UTF-8 字节硬门禁核验
+    const envelopeCheck = validateRpcEnvelope(message)
+    if (!envelopeCheck.valid) {
+      this.logger.error(
+        `[PluginHost:${this.manifest.id}] Response payload too large: ${envelopeCheck.byteLength}B > ${MAX_RPC_ENVELOPE_BYTES}B`
+      )
+      const largeErr = new PayloadTooLargeError(envelopeCheck.byteLength, MAX_RPC_ENVELOPE_BYTES)
+      this.stateMachine.settleTask('failed', largeErr)
+      return false
+    }
+
     if (message.success) {
-      this.stateMachine.settleTask('completed', undefined, message.result)
+      this.stateMachine.settleTask('completed', undefined, message.result ?? message)
     } else {
       // 业务错误时进程依旧健康，通信探活成功解除半开
       this.circuitBreaker.recordSuccess()

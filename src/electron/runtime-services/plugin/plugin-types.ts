@@ -58,6 +58,11 @@ export interface InFlightTask<TResult = any> {
   deadlineTimer?: any
   isRetry?: boolean
   payload?: any
+  deadlineMs?: number
+  remainingDeadlineMs?: number
+  pausedAt?: number
+  pauseDeadline?: () => void
+  resumeDeadline?: () => void
 }
 
 /**
@@ -196,4 +201,44 @@ export interface GcResult {
   totalFreedBytes: number
   lockedFilesSkipped: number
   errors: Array<{ file: string; error: any }>
+}
+
+// ==================== Issue 03: IPC 门禁与逆向凭证相关错误 ====================
+
+/**
+ * 响应体超过 50KB UTF-8 字节硬上限错误
+ */
+export class PayloadTooLargeError extends Error {
+  public readonly code = 'response_payload_too_large'
+  constructor(
+    public readonly byteLength: number,
+    public readonly limit: number
+  ) {
+    super(
+      `RPC response payload too large (${byteLength} bytes > limit ${limit} bytes) and missing resultArtifactPath`
+    )
+    this.name = 'PayloadTooLargeError'
+  }
+}
+
+/**
+ * 凭证查询频次超限错误（单任务最多 5 次）
+ */
+export class CredentialRateLimitError extends Error {
+  public readonly code = 'credential_rate_limit_exceeded'
+  constructor(message: string = 'Exceeded maximum 5 credential queries per task') {
+    super(message)
+    this.name = 'CredentialRateLimitError'
+  }
+}
+
+/**
+ * 未授权物理路径错误
+ */
+export class UnauthorizedPathError extends Error {
+  public readonly code = 'unauthorized_path_access'
+  constructor(message: string) {
+    super(message)
+    this.name = 'UnauthorizedPathError'
+  }
 }
