@@ -13,7 +13,10 @@ import {
   PayloadTooLargeError,
   PluginManifest,
   TaskState,
-  UtilityProcessFactory
+  UtilityProcessFactory,
+  FileTooLargeError,
+  MemoryLimitExceededError,
+  WatchdogReason
 } from './plugin-types'
 import { PluginCircuitBreaker } from './plugin-circuit-breaker'
 import { PluginHostStateMachine } from './plugin-host-state-machine'
@@ -22,12 +25,19 @@ import {
   PluginReverseProxyGateway,
   validateRpcEnvelope
 } from './plugin-ipc-guard'
+import {
+  calculateTaskTimeoutSec,
+  isFileSizeTooLarge,
+  PluginWatchdogGuard,
+  pluginWatchdogGuard
+} from './plugin-watchdog-guard'
 
 export interface PluginHostOptions {
   manifest: PluginManifest
   utilityProcessFactory?: UtilityProcessFactory
   circuitBreaker?: PluginCircuitBreaker
   reverseProxyGateway?: PluginReverseProxyGateway
+  watchdogGuard?: PluginWatchdogGuard
   /** 握手超时时间（毫秒），默认 20,000 (20s) */
   handshakeTimeoutMs?: number
   /** 自定义日志记录器 */
@@ -43,6 +53,7 @@ export class PluginHost {
   public readonly stateMachine: PluginHostStateMachine
   public readonly circuitBreaker: PluginCircuitBreaker
   public readonly reverseProxyGateway: PluginReverseProxyGateway
+  public readonly watchdogGuard?: PluginWatchdogGuard
 
   private readonly utilityProcessFactory?: UtilityProcessFactory
   private readonly handshakeTimeoutMs: number
@@ -62,11 +73,14 @@ export class PluginHost {
 
   /** 是否被看门狗主动终止 */
   private watchdogKilled: boolean = false
-  private watchdogReason: 'timeout' | 'mem_guard' | null = null
+  private watchdogReason: WatchdogReason | null = null
+  private memGuardError: MemoryLimitExceededError | null = null
 
   /** 显式回收意图标记，防止异步退出时被竞态误判 */
   private isRetiring: boolean = false
   private retirePromise: Promise<void> | null = null
+  /** 任务执行完毕后触发平滑回收标记 (2GB 正常内存阈值触发) */
+  private retireAfterCurrentTask: boolean = false
 
   /** 累计处理任务数（用于周期回收） */
   private taskCount: number = 0
@@ -79,6 +93,10 @@ export class PluginHost {
     this.stateMachine = new PluginHostStateMachine()
     this.handshakeTimeoutMs = options.handshakeTimeoutMs ?? 20_000
     this.logger = options.logger ?? console
+    this.watchdogGuard = options.watchdogGuard ?? pluginWatchdogGuard
+
+    // 自动接入看门狗与内存监控守护
+    this.watchdogGuard?.registerHost(this)
   }
 
   public get state() {
@@ -91,6 +109,10 @@ export class PluginHost {
 
   public get completedTaskCount() {
     return this.taskCount
+  }
+
+  public get pid(): number | undefined {
+    return this.currentProcess?.pid
   }
 
   /**
@@ -116,8 +138,10 @@ export class PluginHost {
     this.stderrBuffer = ''
     this.watchdogKilled = false
     this.watchdogReason = null
+    this.memGuardError = null
     this.isRetiring = false
     this.retirePromise = null
+    this.retireAfterCurrentTask = false
 
     this.spawnPromise = new Promise<void>((resolve, reject) => {
       let spawnReject: ((err: any) => void) | null = reject
@@ -272,10 +296,17 @@ export class PluginHost {
       shouldRetry = false
       isDegraded = false
     } else if (this.watchdogKilled) {
-      // 3. 看门狗终止
+      // 3. 看门狗终止 (超时 或 内存守卫 mem_guard)
       classification = 'WATCHDOG'
-      shouldRetry = true
-      isDegraded = false
+      if (this.watchdogReason === 'mem_guard') {
+        shouldRetry = false
+        isDegraded = true
+      } else {
+        // timeout 场景：若是重试任务则不可再重试，直接降级
+        const isRetryTask = !!this.stateMachine.currentTask?.isRetry
+        shouldRetry = !isRetryTask
+        isDegraded = isRetryTask
+      }
     } else if (
       unsignedCode === NATIVE_CRASH_CODES.STATUS_ACCESS_VIOLATION ||
       unsignedCode === NATIVE_CRASH_CODES.STATUS_STACK_OVERFLOW ||
@@ -301,12 +332,18 @@ export class PluginHost {
       this.reverseProxyGateway.unregisterTask(currentTask.taskId)
 
       const exitOutcome: TaskState = isDegraded ? 'degraded' : 'crashed'
-      const err = new Error(
-        `Process exited unexpectedly with code ${rawCode} (${classification}). ${this.stderrBuffer ? `Stderr: ${this.stderrBuffer}` : ''}`
-      )
+      let err: Error
+      if (this.watchdogReason === 'mem_guard' && this.memGuardError) {
+        err = this.memGuardError
+      } else {
+        err = new Error(
+          `Process exited unexpectedly with code ${rawCode} (${classification}). ${this.stderrBuffer ? `Stderr: ${this.stderrBuffer}` : ''}`
+        )
+      }
       ;(err as any).exitCode = rawCode
       ;(err as any).unsignedCode = unsignedCode
       ;(err as any).classification = classification
+      ;(err as any).watchdogReason = this.watchdogReason
       ;(err as any).stderr = this.stderrBuffer
       ;(err as any).isDegraded = isDegraded
       ;(err as any).taskOutcome = exitOutcome
@@ -367,7 +404,19 @@ export class PluginHost {
     fileSize: number
     fileFingerprint: string
     payload?: any
+    isRetry?: boolean
+    attempt?: number
   }): Promise<TResult> {
+    // 0. 大文件拦截 (>1GB 直接跳过深度解析，回退 Omni 基线，绝不判死) (AC 4)
+    if (isFileSizeTooLarge(input.fileSize)) {
+      this.logger.info(
+        `[PluginHost:${this.manifest.id}] File size ${input.fileSize}B > 1GB, skipping plugin analysis (too_large)`
+      )
+      const tooLargeErr = new FileTooLargeError(input.fileSize)
+      ;(tooLargeErr as any).taskOutcome = 'too_large'
+      throw tooLargeErr
+    }
+
     // 1. 检查文件级熔断
     if (
       this.circuitBreaker.isFileDegraded(
@@ -413,11 +462,27 @@ export class PluginHost {
     // 5. 跃迁至 BUSY
     this.stateMachine.transitionTo('BUSY', `Assigning task ${input.taskId}`)
 
+    const isRetry = Boolean(input.isRetry || (input.attempt && input.attempt > 1))
+    let effectivePayload = input.payload
+    if (isRetry) {
+      effectivePayload = {
+        ...effectivePayload,
+        options: {
+          ...(effectivePayload?.options || {}),
+          skipRendering: true
+        }
+      }
+    }
+
     return new Promise<TResult>((resolve, reject) => {
       const currentGen = this.stateMachine.processGeneration
 
-      // 动态计算超时时间
-      const timeoutSec = this.calculateTimeoutSec(input.fileSize)
+      // 动态计算超时时间（若为重试任务，超时预算自动放宽 1.5 倍）
+      const timeoutSec = calculateTaskTimeoutSec(
+        input.fileSize,
+        this.manifest.timeoutProfile,
+        isRetry
+      )
       const timeoutMs = timeoutSec * 1000
 
       let remainingDeadlineMs = timeoutMs
@@ -462,13 +527,48 @@ export class PluginHost {
         }
       }
 
+      const extendDeadline = (bonusMs: number) => {
+        if (deadlineTimer) {
+          clearTimeout(deadlineTimer)
+          deadlineTimer = null
+        }
+        const elapsed = Date.now() - lastStartedAt
+        remainingDeadlineMs = Math.max(0, remainingDeadlineMs - elapsed) + bonusMs
+        lastStartedAt = Date.now()
+        startWatchdogTimer(remainingDeadlineMs)
+        if (task) {
+          task.remainingDeadlineMs = remainingDeadlineMs
+          task.deadlineTimer = deadlineTimer
+        }
+        this.logger.info(
+          `[PluginHost:${this.manifest.id}] Extended deadline for task ${input.taskId} by ${bonusMs}ms (new total remaining: ${remainingDeadlineMs}ms)`
+        )
+      }
+
+      const checkRetireAfterTask = () => {
+        if (this.retireAfterCurrentTask) {
+          this.retireAfterCurrentTask = false
+          this.retire().catch(err => {
+            this.logger.error(
+              `[PluginHost:${this.manifest.id}] Auto-retire after task failed:`,
+              err
+            )
+          })
+        }
+      }
+
       const task: InFlightTask<TResult> = {
         taskId: input.taskId,
         processGeneration: currentGen,
         filePath: input.filePath,
         fileSize: input.fileSize,
         fileFingerprint: input.fileFingerprint,
+        isRetry,
         resolve: val => {
+          if (deadlineTimer) {
+            clearTimeout(deadlineTimer)
+            deadlineTimer = null
+          }
           this.reverseProxyGateway.unregisterTask(input.taskId)
           this.taskCount += 1
           this.circuitBreaker.recordSuccess()
@@ -476,20 +576,27 @@ export class PluginHost {
             this.stateMachine.transitionTo('READY')
           }
           resolve(val)
+          checkRetireAfterTask()
         },
         reject: reason => {
+          if (deadlineTimer) {
+            clearTimeout(deadlineTimer)
+            deadlineTimer = null
+          }
           this.reverseProxyGateway.unregisterTask(input.taskId)
           if (this.stateMachine.state === 'BUSY') {
             this.stateMachine.transitionTo('READY')
           }
           reject(reason)
+          checkRetireAfterTask()
         },
         startedAt: lastStartedAt,
         deadlineMs: timeoutMs,
         remainingDeadlineMs,
         pauseDeadline,
         resumeDeadline,
-        payload: input.payload
+        extendDeadline,
+        payload: effectivePayload
       }
 
       startWatchdogTimer(timeoutMs)
@@ -510,7 +617,7 @@ export class PluginHost {
         taskId: input.taskId,
         filePath: input.filePath,
         fileSize: input.fileSize,
-        payload: input.payload
+        payload: effectivePayload
       }
 
       try {
@@ -519,6 +626,10 @@ export class PluginHost {
         }
         this.currentProcess.postMessage(envelope)
       } catch (postErr) {
+        if (deadlineTimer) {
+          clearTimeout(deadlineTimer)
+          deadlineTimer = null
+        }
         this.circuitBreaker.releaseHalfOpenProbe()
         this.reverseProxyGateway.unregisterTask(input.taskId)
         this.stateMachine.settleTask('failed', postErr)
@@ -617,29 +728,65 @@ export class PluginHost {
   }
 
   /**
+   * 紧急内存硬杀 (AC 3: min(4GB, 25% RAM))
+   */
+  public terminateForMemoryGuard(workingSetBytes: number, limitBytes: number): void {
+    this.logger.error(
+      `[PluginHost:${this.manifest.id}] Terminating process due to mem_guard limit (${workingSetBytes}B >= ${limitBytes}B)`
+    )
+    this.watchdogKilled = true
+    this.watchdogReason = 'mem_guard'
+    this.memGuardError = new MemoryLimitExceededError(workingSetBytes, limitBytes)
+    try {
+      if (this.stateMachine.canTransitionTo('TERMINATING')) {
+        this.stateMachine.transitionTo('TERMINATING', 'mem_guard kill')
+      }
+      this.currentProcess?.kill()
+    } catch (_) {}
+  }
+
+  /**
+   * 正常内存平滑回收 (2GB 阈值)
+   */
+  public markRetiringDueToMemory(workingSetBytes: number): void {
+    this.logger.warn(
+      `[PluginHost:${this.manifest.id}] WorkingSet reached ${workingSetBytes}B >= 2GB, marking for retiring`
+    )
+    this.isRetiring = true
+    if (this.stateMachine.state === 'READY') {
+      this.retire().catch(err => {
+        this.logger.error(`[PluginHost:${this.manifest.id}] Retire error:`, err)
+      })
+    } else if (this.stateMachine.state === 'BUSY') {
+      this.retireAfterCurrentTask = true
+    }
+  }
+
+  /**
+   * 系统休眠唤醒补偿 (AC 2)
+   */
+  public compensateSystemResume(bonusCompensationMs = 15000): void {
+    const currentTask = this.stateMachine.currentTask
+    if (!currentTask || this.stateMachine.state !== 'BUSY') return
+
+    this.logger.info(
+      `[PluginHost:${this.manifest.id}] Compensating task ${currentTask.taskId} after sleep resume (+${bonusCompensationMs}ms)`
+    )
+    if (typeof currentTask.extendDeadline === 'function') {
+      currentTask.extendDeadline(bonusCompensationMs)
+    }
+  }
+
+  /**
    * 强制销毁
    */
   public dispose(): void {
+    this.watchdogGuard?.unregisterHost(this)
     this.clearHandshakeTimer()
     try {
       this.currentProcess?.kill()
     } catch (_) {}
     this.stateMachine.forceReset()
-  }
-
-  /**
-   * 动态超时公式计算
-   * TimeoutSec = Clamp(15 + FileSizeBytes / (1024 * 1024) * 0.5, 15, 180)
-   */
-  private calculateTimeoutSec(fileSizeBytes: number): number {
-    const profile = this.manifest.timeoutProfile
-    const baseSec = profile?.baseSec ?? 15
-    const perMbSec = profile?.perMbSec ?? 0.5
-    const maxSec = profile?.maxSec ?? 180
-
-    const mb = fileSizeBytes / (1024 * 1024)
-    const calculated = baseSec + mb * perMbSec
-    return Math.min(Math.max(calculated, baseSec), maxSec)
   }
 
   private clearHandshakeTimer(): void {

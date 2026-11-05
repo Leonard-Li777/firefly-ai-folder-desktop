@@ -63,6 +63,7 @@ export interface InFlightTask<TResult = any> {
   pausedAt?: number
   pauseDeadline?: () => void
   resumeDeadline?: () => void
+  extendDeadline?: (bonusMs: number) => void
 }
 
 /**
@@ -240,5 +241,61 @@ export class UnauthorizedPathError extends Error {
   constructor(message: string) {
     super(message)
     this.name = 'UnauthorizedPathError'
+  }
+}
+
+// ==================== Issue 04: 双看门狗与内存守卫契约 ====================
+
+/**
+ * 单文件体积超过 1GB 上限常量
+ */
+export const MAX_PLUGIN_FILE_SIZE_BYTES = 1024 * 1024 * 1024 // 1GB
+
+/**
+ * 正常平滑回收内存阈值常量 (2GB)
+ */
+export const NORMAL_MEMORY_RECYCLE_THRESHOLD_BYTES = 2 * 1024 * 1024 * 1024 // 2GB
+
+/**
+ * 紧急硬杀内存阈值常量 (4GB)
+ */
+export const EMERGENCY_MEMORY_KILL_THRESHOLD_BYTES = 4 * 1024 * 1024 * 1024 // 4GB
+
+/**
+ * 看门狗终止原因
+ */
+export type WatchdogReason = 'timeout' | 'mem_guard'
+
+/**
+ * 超大文件直接跳过错误 (AC 4)
+ */
+export class FileTooLargeError extends Error {
+  public readonly code = 'FILE_TOO_LARGE'
+  public readonly isDegraded = true
+  constructor(
+    public readonly fileSize: number,
+    public readonly maxAllowed: number = MAX_PLUGIN_FILE_SIZE_BYTES
+  ) {
+    super(
+      `File size (${fileSize} bytes) exceeds plugin threshold (${maxAllowed} bytes / 1GB). Skipped as too_large to fallback to Omni baseline.`
+    )
+    this.name = 'FileTooLargeError'
+  }
+}
+
+/**
+ * 内存守卫超限强杀错误 (AC 3)
+ */
+export class MemoryLimitExceededError extends Error {
+  public readonly code = 'MEMORY_LIMIT_EXCEEDED'
+  public readonly isDegraded = true
+  constructor(
+    public readonly workingSetBytes: number,
+    public readonly limitBytes: number
+  ) {
+    super(
+      `Plugin process working set memory (${workingSetBytes} bytes) exceeded emergency limit (${limitBytes} bytes). Terminated by mem_guard.`
+    )
+    this.name = 'MemoryLimitExceededError'
   }
 }
