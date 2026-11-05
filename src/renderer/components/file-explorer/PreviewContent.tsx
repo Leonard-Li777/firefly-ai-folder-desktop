@@ -96,10 +96,13 @@ export const PreviewContent: React.FC<PreviewContentProps> = ({
     session,
     context,
     currentCandidate,
+    isFallback,
+    fallbackFromCandidate,
     isLoading,
     onCandidateReady,
     onCandidateError,
-    onRetryNext
+    onRetryNext,
+    resetAndRetry
   } = usePreviewSession({
     filePath,
     fileName,
@@ -111,11 +114,33 @@ export const PreviewContent: React.FC<PreviewContentProps> = ({
     highlightRange
   })
 
+  // 降级提示横幅组件
+  const fallbackNotice = isFallback && (
+    <div className="w-full bg-amber-500/10 border-b border-amber-500/20 px-3 py-1 flex items-center justify-between text-xs text-amber-700 dark:text-amber-400 shrink-0 select-none z-10">
+      <div className="flex items-center gap-1.5 overflow-hidden text-ellipsis whitespace-nowrap">
+        <MaterialIcon icon="info" className="text-sm shrink-0" />
+        <span>
+          {fallbackFromCandidate
+            ? `${t('首选预览器不可用，已切换至')}: ${currentCandidate.name}`
+            : `${t('已切换至备用预览器')}: ${currentCandidate.name}`}
+        </span>
+      </div>
+      <button
+        type="button"
+        onClick={resetAndRetry}
+        className="shrink-0 px-2 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/30 text-[11px] font-medium transition-colors"
+      >
+        {t('重试首选')}
+      </button>
+    </div>
+  )
+
   // 3. 动态多级分派
   // 3.1 第三方插件沙箱适配器
   if (currentCandidate.kind === 'external_iframe') {
     return (
       <div className="w-full h-full relative overflow-hidden flex flex-col">
+        {fallbackNotice}
         <div className={cn('w-full flex-1', isPrivate && 'ph-no-capture')}>
           <ExternalIframeAdapter
             session={session}
@@ -160,25 +185,30 @@ export const PreviewContent: React.FC<PreviewContentProps> = ({
   // 3.2 内置专用 React 预览器 (带有 ErrorBoundary 容灾包裹)
   if (currentCandidate.kind === 'builtin_react') {
     return (
-      <ErrorBoundary
-        fallback={
-          <div className="flex items-center justify-center h-full text-muted-foreground text-xs">
-            {t('当前预览器渲染异常，正在尝试降级...')}
-          </div>
-        }
-        onError={() => onRetryNext()}
-      >
-        <FilePreview
-          filePath={filePath}
-          fileName={fileName}
-          extension={extension}
-          multimodalContent={multimodalContent}
-          currentTime={currentTime}
-          highlightRange={highlightRange}
-          isPrivate={isPrivate}
-          workspaceDirectoryType={workspaceDirectoryType}
-        />
-      </ErrorBoundary>
+      <div className="w-full h-full flex flex-col overflow-hidden">
+        {fallbackNotice}
+        <div className="w-full flex-1 overflow-hidden">
+          <ErrorBoundary
+            fallback={
+              <div className="flex items-center justify-center h-full text-muted-foreground text-xs">
+                {t('当前预览器渲染异常，正在尝试降级...')}
+              </div>
+            }
+            onError={() => onRetryNext()}
+          >
+            <FilePreview
+              filePath={filePath}
+              fileName={fileName}
+              extension={extension}
+              multimodalContent={multimodalContent}
+              currentTime={currentTime}
+              highlightRange={highlightRange}
+              isPrivate={isPrivate}
+              workspaceDirectoryType={workspaceDirectoryType}
+            />
+          </ErrorBoundary>
+        </div>
+      </div>
     )
   }
 
@@ -186,6 +216,7 @@ export const PreviewContent: React.FC<PreviewContentProps> = ({
   if (currentCandidate.kind === 'flyfish') {
     return (
       <div className="w-full h-full flex flex-col overflow-y-auto">
+        {fallbackNotice}
         <div className={cn('w-full flex-1 min-h-[300px]', isPrivate && 'ph-no-capture')}>
           <ErrorBoundary
             fallback={
@@ -267,14 +298,17 @@ export const PreviewContent: React.FC<PreviewContentProps> = ({
 
   // 3.5 系统图标与元数据保底
   return (
-    <div className="h-full flex flex-col items-center justify-start text-muted-foreground p-6 overflow-y-auto pt-8 select-none">
-      <MaterialIcon icon="visibility_off" className="text-5xl mb-3 opacity-20 shrink-0" />
-      <p className="text-sm font-medium mb-1 shrink-0">{t('当前文件类型暂不支持预览')}</p>
-      <p className="text-xs text-muted-foreground/70 mb-2 shrink-0">
-        {t('文件扩展名')}：{extension ? `${extension}` : t('无')}
-      </p>
-      <p className="text-xs text-muted-foreground/70 mb-5 shrink-0">{t('ESC关闭预览')}</p>
-      <SupportedFormats />
+    <div className="h-full w-full flex flex-col">
+      {fallbackNotice}
+      <div className="flex-1 flex flex-col items-center justify-start text-muted-foreground p-6 overflow-y-auto pt-8 select-none">
+        <MaterialIcon icon="visibility_off" className="text-5xl mb-3 opacity-20 shrink-0" />
+        <p className="text-sm font-medium mb-1 shrink-0">{t('当前文件类型暂不支持预览')}</p>
+        <p className="text-xs text-muted-foreground/70 mb-2 shrink-0">
+          {t('文件扩展名')}：{extension ? `${extension}` : t('无')}
+        </p>
+        <p className="text-xs text-muted-foreground/70 mb-5 shrink-0">{t('ESC关闭预览')}</p>
+        <SupportedFormats />
+      </div>
     </div>
   )
 }

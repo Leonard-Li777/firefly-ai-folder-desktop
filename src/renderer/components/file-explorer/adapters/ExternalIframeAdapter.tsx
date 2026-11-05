@@ -38,29 +38,42 @@ export const ExternalIframeAdapter: React.FC<ExternalIframeAdapterProps> = ({
   const heartbeatTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // 辅助函数：双轨强杀（软注销消息 + 硬卸载 about:blank 强释 WebGL 上下文）
-  const killIframe = () => {
-    if (iframeRef.current) {
+  const killIframe = (immediate: boolean = false) => {
+    const iframe = iframeRef.current
+    if (!iframe) return
+
+    try {
+      iframe.contentWindow?.postMessage(
+        {
+          sessionId: session.sessionId,
+          requestId: session.requestId,
+          generation: session.generation,
+          channelSecret: channelSecretRef.current,
+          type: 'PREVIEW_DISPOSE'
+        },
+        '*'
+      )
+    } catch {}
+
+    if (immediate) {
       try {
-        iframeRef.current.contentWindow?.postMessage(
-          {
-            sessionId: session.sessionId,
-            requestId: session.requestId,
-            generation: session.generation,
-            channelSecret: channelSecretRef.current,
-            type: 'PREVIEW_DISPOSE'
-          },
-          '*'
-        )
+        iframe.src = 'about:blank'
       } catch {}
-      try {
-        iframeRef.current.src = 'about:blank'
-      } catch {}
+    } else {
+      // 留出 50ms 微时隙让插件事件循环响应 loseContext，随后强置 about:blank 彻底释放 GPU 上下文
+      setTimeout(() => {
+        try {
+          if (iframeRef.current) {
+            iframeRef.current.src = 'about:blank'
+          }
+        } catch {}
+      }, 50)
     }
   }
 
   // 触发故障处理与降级
   const handleFailure = (reason: string, isCrashOrTimeout: boolean = true) => {
-    killIframe()
+    killIframe(true) // 故障场景立即强杀，阻断死循环
     // 记录三级熔断状态
     PreviewRouter.getInstance()
       .getCircuitBreaker()

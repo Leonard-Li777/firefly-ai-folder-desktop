@@ -30,11 +30,16 @@ export interface UsePreviewSessionReturn {
   session: PreviewSession
   context: PreviewContext
   currentCandidate: PreviewCandidate
+  candidates: PreviewCandidate[]
+  cursor: number
+  isFallback: boolean
+  fallbackFromCandidate: PreviewCandidate | null
   isLoading: boolean
   hasFailedCurrent: boolean
   onCandidateReady: () => void
   onCandidateError: (err?: Error) => void
   onRetryNext: () => void
+  resetAndRetry: () => void
 }
 
 const FALLBACK_ICON_CANDIDATE: PreviewCandidate = {
@@ -188,6 +193,17 @@ export function usePreviewSession(props: UsePreviewSessionProps): UsePreviewSess
     [currentCandidate.id, onRetryNext]
   )
 
+  const resetAndRetry = useCallback(() => {
+    // 恢复首选候选者的熔断状态并复位游标
+    const topCandidate = candidates[0]
+    if (topCandidate) {
+      router.getCircuitBreaker().resetPlugin(topCandidate.id)
+    }
+    setCursor(0)
+    setIsLoading(true)
+    setHasFailedCurrent(false)
+  }, [candidates, router])
+
   const session: PreviewSession = {
     sessionId,
     requestId: context.requestId,
@@ -202,10 +218,15 @@ export function usePreviewSession(props: UsePreviewSessionProps): UsePreviewSess
     session,
     context,
     currentCandidate,
+    candidates,
+    cursor,
+    isFallback: cursor > 0,
+    fallbackFromCandidate: cursor > 0 ? candidates[0] : null,
     isLoading,
     hasFailedCurrent,
     onCandidateReady,
     onCandidateError,
-    onRetryNext
+    onRetryNext,
+    resetAndRetry
   }
 }
