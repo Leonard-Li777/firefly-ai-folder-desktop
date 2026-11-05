@@ -120,3 +120,80 @@ export type UtilityProcessFactory = (
   args: string[],
   options?: any
 ) => IPluginUtilityProcess
+
+// ==================== Issue 02: 产物暂存与提交相关契约 ====================
+
+/**
+ * 路径越界/逃逸安全错误
+ */
+export class ArtifactSecurityError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'ArtifactSecurityError'
+  }
+}
+
+/**
+ * 产物文件魔数或格式校验失败错误
+ */
+export class ArtifactValidationError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'ArtifactValidationError'
+  }
+}
+
+/**
+ * 两阶段提交参数
+ */
+export interface CommitArtifactOptions {
+  taskId: string
+  attempt?: number
+  /** 插件回传的相对路径，如 'iso.webp' 或 'extracted_content.json' */
+  relativePath: string
+  /** 关联的主文件内容物理指纹 */
+  fileFingerprint: string
+  /** 插件版本号 */
+  pluginVersion: string
+  /** 视图或产物标识，如 'iso', 'thumb', 'extracted' */
+  viewName: string
+  /** 目标扩展名，默认由 relativePath 决定 */
+  targetExtension?: string
+  /** 预期校验的魔数，'webp' | 'json' | 'none' */
+  expectedMagic?: 'webp' | 'json' | 'none'
+}
+
+/**
+ * 数据库引用判定结果（支持返回数据库记录的最后访问时间戳）
+ */
+export interface ReferenceCheckResult {
+  referenced: boolean
+  lastAccessedAt?: number
+}
+
+/**
+ * 孤儿 GC 参数
+ */
+export interface OrphanGcOptions {
+  /** 判定指定文件名是否在数据库中被有效引用的探针，支持返回布尔值或带访问时间戳的判定结果 */
+  isReferenced: (
+    filename: string
+  ) => boolean | ReferenceCheckResult | Promise<boolean | ReferenceCheckResult>
+  /** 当缓存超额淘汰已引用文件时触发的反向解绑回调，防止数据库产生悬空死链引用 */
+  onEvicted?: (filename: string) => void | Promise<void>
+  /** 全局配额大小（字节），默认 2GB (2 * 1024 * 1024 * 1024) */
+  maxTotalBytes?: number
+  /** 测试控制时间 */
+  now?: number
+}
+
+/**
+ * 孤儿 GC 执行结果统计
+ */
+export interface GcResult {
+  deletedOrphans: number
+  deletedLru: number
+  totalFreedBytes: number
+  lockedFilesSkipped: number
+  errors: Array<{ file: string; error: any }>
+}
