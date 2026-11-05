@@ -1064,7 +1064,7 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
   // 使用 useCallback 缓存工具栏渲染逻辑，避免父级重渲染时引起工具栏内的 SearchBar 和组件频繁重绘
   const renderToolbar = useCallback(
     (layoutContext: any) => (
-      <div className="flex-shrink-0 border-b border-border px-3 py-1.5 flex flex-wrap items-center justify-between bg-card gap-y-2 gap-x-3 min-h-[44px]">
+      <div className="flex-shrink-0 border-b border-[var(--surface-band-border)] px-3 py-1.5 flex flex-wrap items-center justify-between bg-[var(--surface-toolbar)] surface-elev-1 gap-y-2 gap-x-3 min-h-[44px]">
         {/* 左侧：集成式导航胶囊与面包屑 */}
         <div className="flex items-center space-x-2 flex-1 min-w-0">
           <div className="inline-flex items-center rounded-lg border border-border/60 bg-muted/20 p-0.5 shadow-2xs">
@@ -1160,7 +1160,7 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
           {/* 全选 + 批量分析 + 队列进度 一体化分段操作胶囊 */}
           <div
             className={cn(
-              'flex items-stretch h-8 rounded-lg border shadow-2xs overflow-hidden transition-all duration-200 bg-background',
+              'flex items-stretch h-8 rounded-lg border shadow-2xs overflow-hidden transition-all duration-200 bg-[var(--surface-field)] dark:bg-background',
               selectedFiles.length > 0
                 ? 'border-primary/40 ring-1 ring-primary/20'
                 : 'border-border'

@@ -3,6 +3,11 @@ import { t } from '@app/languages'
 /**
  * 主题配色方案配置
  * 设计理念：经典蓝作为核心，搭配典雅、沉稳的辅助配色
+ *
+ * 亮/暗层次对齐原则（与暗色模式「深底 → 亮表面 → 更亮内嵌块」四级台阶对称）：
+ * --background 浅灰底 < --card/--popover 纯白表面，--muted/--secondary 为次级内嵌面，
+ * --accent 为交互悬停面，--border/--input 为最深的描边层；浮层另由 elevation 阴影托起。
+ * 亮色各层之间必须保持可感知的明度差，严禁再出现「背景/卡片/浮层同为纯白」导致的层次坍塌。
  */
 
 export type ColorScheme = 'blue' | 'purple' | 'green' | 'orange' | 'rose' | 'slate'
@@ -29,7 +34,7 @@ export const colorSchemes: () => Record<ColorScheme, ThemeColors> = () => {
       label: t('海洋蓝'),
       cssVars: {
         light: {
-          background: '210 40% 98%',
+          background: '214 30% 95%',
           foreground: '217 12% 15%',
           card: '0 0% 100%',
           'card-foreground': '222 47% 11%',
@@ -37,16 +42,16 @@ export const colorSchemes: () => Record<ColorScheme, ThemeColors> = () => {
           'popover-foreground': '222 47% 11%',
           primary: '217 91% 60%',
           'primary-foreground': '210 40% 98%',
-          secondary: '214 32% 91%',
+          secondary: '214 26% 91%',
           'secondary-foreground': '222 47% 11%',
-          muted: '214 32% 91%',
-          'muted-foreground': '217 12% 45%',
-          accent: '217 30% 94%',
+          muted: '214 26% 93%',
+          'muted-foreground': '217 14% 40%',
+          accent: '214 28% 89%',
           'accent-foreground': '217 12% 15%',
           destructive: '0 84% 60%',
           'destructive-foreground': '210 40% 98%',
-          border: '214 32% 91%',
-          input: '214 32% 91%',
+          border: '214 22% 86%',
+          input: '214 22% 86%',
           ring: '217 91% 60%'
         },
         dark: {
@@ -78,7 +83,7 @@ export const colorSchemes: () => Record<ColorScheme, ThemeColors> = () => {
       label: t('极光紫'),
       cssVars: {
         light: {
-          background: '252 30% 99%',
+          background: '252 22% 95%',
           foreground: '252 5% 15%',
           card: '0 0% 100%',
           'card-foreground': '252 5% 15%',
@@ -86,16 +91,16 @@ export const colorSchemes: () => Record<ColorScheme, ThemeColors> = () => {
           'popover-foreground': '252 5% 15%',
           primary: '258 90% 66%',
           'primary-foreground': '0 0% 100%',
-          secondary: '252 20% 94%',
+          secondary: '252 18% 91%',
           'secondary-foreground': '252 5% 15%',
-          muted: '252 20% 94%',
-          'muted-foreground': '252 5% 45%',
-          accent: '252 20% 94%',
+          muted: '252 18% 93%',
+          'muted-foreground': '252 6% 40%',
+          accent: '252 20% 89%',
           'accent-foreground': '252 5% 15%',
           destructive: '0 84% 60%',
           'destructive-foreground': '0 0% 100%',
-          border: '252 20% 90%',
-          input: '252 20% 90%',
+          border: '252 16% 86%',
+          input: '252 16% 86%',
           ring: '258 90% 66%'
         },
         dark: {
@@ -127,7 +132,7 @@ export const colorSchemes: () => Record<ColorScheme, ThemeColors> = () => {
       label: t('薄荷绿'),
       cssVars: {
         light: {
-          background: '160 20% 99%',
+          background: '160 16% 95%',
           foreground: '160 5% 15%',
           card: '0 0% 100%',
           'card-foreground': '160 5% 15%',
@@ -135,16 +140,16 @@ export const colorSchemes: () => Record<ColorScheme, ThemeColors> = () => {
           'popover-foreground': '160 5% 15%',
           primary: '160 84% 39%',
           'primary-foreground': '0 0% 100%',
-          secondary: '160 20% 94%',
+          secondary: '160 16% 91%',
           'secondary-foreground': '160 5% 15%',
-          muted: '160 20% 94%',
-          'muted-foreground': '160 5% 45%',
-          accent: '160 20% 94%',
+          muted: '160 16% 93%',
+          'muted-foreground': '160 6% 40%',
+          accent: '160 18% 89%',
           'accent-foreground': '160 5% 15%',
           destructive: '0 84% 60%',
           'destructive-foreground': '0 0% 100%',
-          border: '160 20% 90%',
-          input: '160 20% 90%',
+          border: '160 14% 86%',
+          input: '160 14% 86%',
           ring: '160 84% 39%'
         },
         dark: {
@@ -176,7 +181,7 @@ export const colorSchemes: () => Record<ColorScheme, ThemeColors> = () => {
       label: t('琥珀金'),
       cssVars: {
         light: {
-          background: '35 30% 99%',
+          background: '35 24% 95%',
           foreground: '35 5% 15%',
           card: '0 0% 100%',
           'card-foreground': '35 5% 15%',
@@ -184,16 +189,16 @@ export const colorSchemes: () => Record<ColorScheme, ThemeColors> = () => {
           'popover-foreground': '35 5% 15%',
           primary: '35 90% 50%',
           'primary-foreground': '0 0% 100%',
-          secondary: '35 20% 94%',
+          secondary: '35 20% 91%',
           'secondary-foreground': '35 5% 15%',
-          muted: '35 20% 94%',
-          'muted-foreground': '35 5% 45%',
-          accent: '35 20% 94%',
+          muted: '35 20% 93%',
+          'muted-foreground': '35 6% 40%',
+          accent: '35 22% 89%',
           'accent-foreground': '35 5% 15%',
           destructive: '0 84% 60%',
           'destructive-foreground': '0 0% 100%',
-          border: '35 20% 90%',
-          input: '35 20% 90%',
+          border: '35 18% 86%',
+          input: '35 18% 86%',
           ring: '35 90% 50%'
         },
         dark: {
@@ -225,7 +230,7 @@ export const colorSchemes: () => Record<ColorScheme, ThemeColors> = () => {
       label: t('珊瑚红'),
       cssVars: {
         light: {
-          background: '350 30% 99%',
+          background: '350 24% 95%',
           foreground: '350 5% 15%',
           card: '0 0% 100%',
           'card-foreground': '350 5% 15%',
@@ -233,16 +238,16 @@ export const colorSchemes: () => Record<ColorScheme, ThemeColors> = () => {
           'popover-foreground': '350 5% 15%',
           primary: '350 84% 55%',
           'primary-foreground': '0 0% 100%',
-          secondary: '350 20% 94%',
+          secondary: '350 20% 91%',
           'secondary-foreground': '350 5% 15%',
-          muted: '350 20% 94%',
-          'muted-foreground': '350 5% 45%',
-          accent: '350 20% 94%',
+          muted: '350 20% 93%',
+          'muted-foreground': '350 6% 40%',
+          accent: '350 22% 89%',
           'accent-foreground': '350 5% 15%',
           destructive: '0 84% 60%',
           'destructive-foreground': '0 0% 100%',
-          border: '350 20% 90%',
-          input: '350 20% 90%',
+          border: '350 18% 86%',
+          input: '350 18% 86%',
           ring: '350 84% 55%'
         },
         dark: {
@@ -274,7 +279,7 @@ export const colorSchemes: () => Record<ColorScheme, ThemeColors> = () => {
       label: t('极客灰'),
       cssVars: {
         light: {
-          background: '0 0% 100%',
+          background: '240 6% 95%',
           foreground: '240 5% 15%',
           card: '0 0% 100%',
           'card-foreground': '240 10% 3.9%',
@@ -282,16 +287,16 @@ export const colorSchemes: () => Record<ColorScheme, ThemeColors> = () => {
           'popover-foreground': '240 10% 3.9%',
           primary: '240 5.9% 10%',
           'primary-foreground': '0 0% 98%',
-          secondary: '240 4.8% 95.9%',
+          secondary: '240 5% 91%',
           'secondary-foreground': '240 5.9% 10%',
-          muted: '240 4.8% 95.9%',
-          'muted-foreground': '240 5% 45%',
-          accent: '240 20% 94%',
+          muted: '240 5% 93%',
+          'muted-foreground': '240 5% 40%',
+          accent: '240 6% 89%',
           'accent-foreground': '240 5% 15%',
           destructive: '0 84.2% 60.2%',
           'destructive-foreground': '0 0% 98%',
-          border: '240 5.9% 90%',
-          input: '240 5.9% 90%',
+          border: '240 6% 86%',
+          input: '240 6% 86%',
           ring: '240 5.9% 10%'
         },
         dark: {

@@ -20,7 +20,9 @@ export const RootModeSelectView: React.FC<RootModeSelectViewProps> = ({
       title: t('批量更名'),
       tag: t('预处理 · 命名'),
       icon: 'drive_file_rename_outline',
-      description: t('基于智能文件名、修改日期、维度标签与自增序号等 DSL 属性，一键批量重命名智能文件名。'),
+      description: t(
+        '基于智能文件名、修改日期、维度标签与自增序号等 DSL 属性，一键批量重命名智能文件名。'
+      ),
       accentColor: 'from-blue-500/10 via-indigo-500/5 to-transparent',
       hoverBorder: 'hover:border-blue-500/50 hover:shadow-blue-500/10',
       iconColor: 'text-blue-500 bg-blue-500/10',
@@ -47,7 +49,8 @@ export const RootModeSelectView: React.FC<RootModeSelectViewProps> = ({
       hoverBorder: 'hover:border-amber-500/50 hover:shadow-amber-500/10',
       iconColor: 'text-amber-500 bg-amber-500/10',
       badgeVariant: 'secondary' as const,
-      badgeClassName: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+      badgeClassName:
+        'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
     }
   ]
 
@@ -64,7 +67,9 @@ export const RootModeSelectView: React.FC<RootModeSelectViewProps> = ({
             {t('选择整理主流程或前置预处理')}
           </h2>
           <p className="text-sm text-muted-foreground max-w-xl mx-auto">
-            {t('推荐直接进入【批量整理】由 AI 为您构建目录体系；亦可在整理前选用卫星工具进行规范更名、补充打标或安全查重清理。')}
+            {t(
+              '推荐直接进入【批量整理】由 AI 为您构建目录体系；亦可在整理前选用卫星工具进行规范更名、补充打标或安全查重清理。'
+            )}
           </p>
         </div>
 
@@ -114,7 +119,9 @@ export const RootModeSelectView: React.FC<RootModeSelectViewProps> = ({
             </div>
 
             <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
-              {t('基于 AI 智能多维度分析或虚拟目录规则，将勾选文件智能归类并输出至物理目录或新建虚拟目录。无需繁琐前置操作，直接生成高效文件大纲。')}
+              {t(
+                '基于 AI 智能多维度分析或虚拟目录规则，将勾选文件智能归类并输出至物理目录或新建虚拟目录。无需繁琐前置操作，直接生成高效文件大纲。'
+              )}
             </p>
 
             {/* 核心特性胶囊 */}
@@ -127,7 +134,7 @@ export const RootModeSelectView: React.FC<RootModeSelectViewProps> = ({
               ].map((feat, idx) => (
                 <span
                   key={idx}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-background/80 dark:bg-zinc-800/80 border border-border/50 text-[11px] font-medium text-foreground/80 shadow-2xs"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-muted/70 dark:bg-zinc-800/80 border border-border/50 text-[11px] font-medium text-foreground/80 shadow-2xs"
                 >
                   <MaterialIcon icon={feat.icon} className="text-xs text-primary shrink-0" />
                   <span>{feat.text}</span>

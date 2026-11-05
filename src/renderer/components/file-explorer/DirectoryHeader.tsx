@@ -462,7 +462,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
 
         {/* 第一排：Logo + 标题 与 动态资讯 + 窗口控制 */}
         <div
-          className="flex items-center justify-between px-4 py-2 w-full gap-4 flex-nowrap relative z-[105]"
+          className="flex items-center justify-between px-4 py-2 w-full gap-4 flex-nowrap relative z-[105] bg-[var(--surface-titlebar)]"
           style={{ WebkitAppRegion: isAnyDropdownOpen ? 'no-drag' : 'drag' } as React.CSSProperties}
         >
           {/* Left Side: Logo and Title */}
@@ -636,7 +636,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
 
         {/* 第二排：拉通背景、无圆角的统一 Hub 与弹性宽度自适应搜索框 */}
         {/* 拖拽：本排不整体设 no-drag，条带空白处继承 header 的 drag；仅 Hub 与搜索框各自 no-drag */}
-        <div className="flex items-center w-full gap-6 px-4 py-1.5 border-t border-border/50 dark:border-white/[0.08] bg-muted/40 dark:bg-white/[0.03] shadow-[inset_0_1px_0_hsl(0_0%_100%/0.04)] relative z-[95]">
+        <div className="flex items-center w-full gap-6 px-4 py-1.5 border-t border-[var(--surface-band-border)] bg-[var(--surface-hub)] shadow-[inset_0_1px_0_hsl(0_0%_100%/0.55)] dark:shadow-[inset_0_1px_0_hsl(0_0%_100%/0.04)] relative z-[95]">
           {/* Hub 区域：工作目录选择器 + 步骤指示器（移除独立外层胶囊与圆角，与第二排背景融为一体） */}
           <div
             className="flex items-center flex-shrink-0 gap-1"
@@ -706,7 +706,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
               {/* Directory Dropdown */}
               <div
                 className={cn(
-                  'absolute top-full left-0 mt-2 w-[620px] max-w-[calc(100vw-32px)] bg-background dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-xl shadow-2xl z-[100] overflow-hidden origin-top transition-all duration-200 ease-out',
+                  'absolute top-full left-0 mt-2 w-[620px] max-w-[calc(100vw-32px)] bg-popover dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-xl surface-elev-3 z-[100] overflow-hidden origin-top transition-all duration-200 ease-out',
                   showDirectoryDropdown
                     ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto'
                     : 'opacity-0 -translate-y-2 scale-95 pointer-events-none'
@@ -714,7 +714,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
               >
                 <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-border/60 dark:divide-border/40">
                   {/* 左侧：切换工作区专区 */}
-                  <div className="w-full sm:w-[250px] flex-shrink-0 flex flex-col bg-muted/20 dark:bg-white/[0.02]">
+                  <div className="w-full sm:w-[250px] flex-shrink-0 flex flex-col bg-muted/50 dark:bg-white/[0.02]">
                     {/* 左栏标头 */}
                     <div className="flex items-center justify-between px-3 pt-3 pb-2">
                       <div className="flex items-center gap-1.5">
@@ -1057,7 +1057,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                   'absolute left-3 text-[17px] pointer-events-none transition-colors duration-200 z-10',
                   localSearchInput
                     ? 'text-primary'
-                    : 'text-muted-foreground/60 group-hover:text-muted-foreground'
+                    : 'text-muted-foreground/80 group-hover:text-foreground'
                 )}
               />
               <input
@@ -1163,11 +1163,12 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                 className={cn(
                   'w-full h-9 rounded-full pl-8.5 text-xs transition-all duration-200 ease-out select-text',
                   localSearchInput ? 'pr-26' : 'pr-8',
-                  'bg-background/90 dark:bg-background/60',
-                  // 默认无边框：仅在聚焦或已输入搜索文本时高亮显示边框
-                  'border border-transparent',
-                  'text-foreground placeholder:text-muted-foreground/60',
-                  'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/60 focus:bg-background focus:shadow-md',
+                  // 亮色用纯白表面 + 实色描边 + 分层阴影，从 Hub 灰带上浮起；
+                  // 暗色令牌沿用原有的半透明底与透明边，不改变暗色观感
+                  'bg-[var(--surface-field)] border border-[var(--surface-field-border)] surface-elev-1',
+                  // 默认即有可见边框；聚焦或已输入搜索文本时再切换为主色高亮
+                  'text-foreground placeholder:text-muted-foreground/90 dark:placeholder:text-muted-foreground/60',
+                  'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/60 focus:shadow-md',
                   // 已有搜索文本时常亮高亮（与聚焦态同款），便于一眼识别当前处于搜索状态
                   localSearchInput.trim().length > 0 &&
                     'border-primary/60 ring-2 ring-primary/20 shadow-md'
@@ -1196,7 +1197,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                   </kbd>
                 </button>
               ) : (
-                <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono text-muted-foreground/40 bg-muted/40 dark:bg-white/[0.06] px-1.5 py-0.5 rounded border border-border/30 select-none pointer-events-none hidden sm:inline-flex z-10">
+                <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono text-muted-foreground/70 dark:text-muted-foreground/40 bg-muted/70 dark:bg-white/[0.06] px-1.5 py-0.5 rounded border border-border/60 dark:border-border/30 select-none pointer-events-none hidden sm:inline-flex z-10">
                   Ctrl F
                 </kbd>
               )}

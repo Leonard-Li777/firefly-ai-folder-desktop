@@ -244,10 +244,7 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
             const targetHighlightRange =
               (item as any).highlightRange ??
               ((item as any).matchedChunk
-                ? [
-                    (item as any).matchedChunk.startSec,
-                    (item as any).matchedChunk.endSec
-                  ]
+                ? [(item as any).matchedChunk.startSec, (item as any).matchedChunk.endSec]
                 : undefined)
 
             if (
@@ -349,7 +346,8 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
     <div
       id={id}
       className={cn(
-        'flex flex-col h-full w-full overflow-hidden select-none bg-background',
+        // 列表内容区改用独立表面令牌：亮色为纯白卡片面（比灰面 Toolbar 更亮），暗色沿用原 --background
+        'flex flex-col h-full w-full overflow-hidden select-none bg-[var(--surface-list)]',
         className
       )}
     >
@@ -377,8 +375,16 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
                 <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
                   {isLoading && displayFiles.length === 0 && directories.length === 0 ? (
                     <Loading
-                      type={currentViewMode === 'search-list' || pageId === PAGE_IDS.SEARCH_OVERLAY ? 'search' : 'file-list'}
-                      title={currentViewMode === 'search-list' || pageId === PAGE_IDS.SEARCH_OVERLAY ? t('正在搜索...') : t('正在加载文件...')}
+                      type={
+                        currentViewMode === 'search-list' || pageId === PAGE_IDS.SEARCH_OVERLAY
+                          ? 'search'
+                          : 'file-list'
+                      }
+                      title={
+                        currentViewMode === 'search-list' || pageId === PAGE_IDS.SEARCH_OVERLAY
+                          ? t('正在搜索...')
+                          : t('正在加载文件...')
+                      }
                       description={
                         currentViewMode === 'search-list' || pageId === PAGE_IDS.SEARCH_OVERLAY
                           ? t('正在检索文件名、标签与深度多模态语义内容...')

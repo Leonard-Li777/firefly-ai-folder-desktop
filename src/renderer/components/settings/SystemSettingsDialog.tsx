@@ -34,7 +34,10 @@ const SYSTEM_CATEGORY_COMPONENTS: Array<{
   { category: SettingsCategory.INTERFACE, Component: MemoizedInterfaceSettings },
   { category: SettingsCategory.AI_ENGINE_CONFIG, Component: MemoizedAIEngineConfigSettings },
   { category: SettingsCategory.TTS, Component: MemoizedTTSSettings },
-  { category: SettingsCategory.ANALYSIS_IGNORE_RULES, Component: MemoizedAnalysisIgnoreRulesSettings }
+  {
+    category: SettingsCategory.ANALYSIS_IGNORE_RULES,
+    Component: MemoizedAnalysisIgnoreRulesSettings
+  }
 ]
 
 const ICON_MAP: Record<string, string> = {
@@ -84,7 +87,7 @@ export const SystemSettingsDialog: React.FC = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && closeSettings()}>
-      <DialogContent className="max-w-5xl w-[88vw] h-[82vh] flex flex-col p-0 bg-background dark:bg-card text-foreground border-4 border-border rounded-2xl shadow-2xl transform-gpu [contain:content]">
+      <DialogContent className="max-w-5xl w-[88vw] h-[82vh] flex flex-col p-0 bg-card text-foreground border-4 border-border rounded-2xl surface-elev-3 transform-gpu [contain:content]">
         <DialogHeader className="px-6 py-4 border-b flex-shrink-0 flex flex-row items-center justify-between">
           <div>
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
@@ -99,7 +102,7 @@ export const SystemSettingsDialog: React.FC = () => {
 
         <div className="flex flex-1 overflow-hidden">
           {/* 左侧系统设置导航 */}
-          <div className="w-56 border-r flex flex-col flex-shrink-0 bg-muted/10">
+          <div className="w-56 border-r flex flex-col flex-shrink-0 bg-muted/40">
             <nav className="p-3 space-y-1.5 overflow-y-auto">
               {validCategories.map(category => {
                 const isActive = activeCategory === category.id
@@ -115,7 +118,9 @@ export const SystemSettingsDialog: React.FC = () => {
                     onClick={() => setCurrentCategory(category.id as SettingsCategory)}
                   >
                     <div className="flex items-start gap-2.5">
-                      <span className="text-base shrink-0 mt-0.5">{ICON_MAP[category.icon] || '⚙️'}</span>
+                      <span className="text-base shrink-0 mt-0.5">
+                        {ICON_MAP[category.icon] || '⚙️'}
+                      </span>
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-xs leading-snug">{category.name}</div>
                         <div

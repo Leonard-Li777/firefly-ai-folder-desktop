@@ -4,7 +4,8 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(1 0 0);
+  /* 亮色层级：浅灰底 (95%) → 纯白表面 (100%) → 次级内嵌面 (93%) → 悬停面 (90%) → 描边 (86%) */
+  --background: oklch(0.955 0.008 250);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -12,16 +13,16 @@
   --popover-foreground: oklch(0.145 0 0);
   --primary: oklch(0.205 0 0);
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
+  --secondary: oklch(0.925 0.008 250);
   --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.92 0.01 240);
+  --muted: oklch(0.94 0.008 250);
+  --muted-foreground: oklch(0.42 0.02 250);
+  --accent: oklch(0.905 0.012 250);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
+  --border: oklch(0.865 0.012 250);
+  --input: oklch(0.865 0.012 250);
   --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -29,14 +30,39 @@
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
+  /* 侧栏略深于主背景，形成与暗色一致的左右分区 */
+  --sidebar: oklch(0.935 0.01 250);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent: oklch(0.9 0.012 250);
   --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-border: oklch(0.865 0.012 250);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* 表面描边：亮色用实色勾边，避免 10% 透明描边让白卡片融进浅灰底 */
+  --surface-border: var(--border);
+  /* 分层阴影：亮色靠投影托起纯白表面，与暗色的亮度台阶等价 */
+  --elevation-1: 0 1px 2px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.05);
+  --elevation-2: 0 4px 12px rgba(15, 23, 42, 0.1), 0 2px 4px rgba(15, 23, 42, 0.06);
+  --elevation-3: 0 18px 44px rgba(15, 23, 42, 0.18), 0 4px 12px rgba(15, 23, 42, 0.1);
+
+  /* 顶部条带四级亮度台阶：标题区最沉 → Hub 带 → Toolbar → 内容区最亮，
+     与暗色「深顶栏 → 亮卡片」的层次同构，避免顶部两排塌成同一个平面。
+     必须用 in srgb 混合：运行时变量是极低色度的 hsl()，在 in oklch 下混合会让
+     Chromium 把结果色相判为 none（等价于 0°/红方向），三层统一染成浅粉；
+     in srgb 按通道线性加权，既保留六套配色方案的色相，又不会凭空偏暖。 */
+  --surface-titlebar: color-mix(in srgb, var(--background) 88%, var(--foreground) 12%);
+  --surface-hub: color-mix(in srgb, var(--background) 96%, var(--foreground) 4%);
+  --surface-toolbar: color-mix(in srgb, var(--card) 25%, var(--background) 75%);
+  /* 输入/控件表面：纯白 + 实色描边，从 Hub 灰带上浮起，解决「搜索几乎看不见」 */
+  --surface-field: var(--card);
+  --surface-field-border: var(--input);
+  --surface-band-border: var(--border);
+  /* 文件列表内容区：亮色取纯白卡片面，作为「标题区 → Hub → Toolbar → 内容区」四级台阶的最亮层；
+     与灰面 Toolbar 拉开层次，同时避免列表区继承 95% 浅灰 --background 显得发闷。
+     暗色在下方 .dark 中沿用 --background，确保本次只调亮浅色、暗色零回归。 */
+  --surface-list: var(--card);
 }
 
 .dark {
@@ -72,6 +98,21 @@
   --sidebar-accent-foreground: oklch(0.96 0.02 250);
   --sidebar-border: oklch(0.22 0.05 250);
   --sidebar-ring: oklch(0.62 0.16 230);
+
+  /* 暗色层次主要来自亮度台阶；描边与阴影沿用原有强度，确保本次改动不影响暗色观感 */
+  --surface-border: color-mix(in oklch, var(--border) 10%, transparent);
+  --elevation-1: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --elevation-2: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --elevation-3: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+  /* 暗色同名令牌沿用改动前的取值，确保本次局部层次治理不改变暗色观感 */
+  --surface-titlebar: var(--background);
+  --surface-hub: color-mix(in srgb, var(--background) 97%, white 3%);
+  --surface-toolbar: var(--card);
+  --surface-field: color-mix(in srgb, var(--background) 60%, transparent);
+  --surface-field-border: transparent;
+  --surface-band-border: color-mix(in srgb, var(--border) 50%, transparent);
+  --surface-list: var(--background);
 }
 
 @theme inline {
@@ -120,6 +161,23 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* ==========================================================================
+   表面层级工具类 (Surface Elevation)
+   卡片 / 浮层 / 弹窗统一按层级引用主题变量：暗色靠亮度台阶分层，
+   亮色靠「纯白表面 + 实描边 + 分层阴影」分层，两者层次数量一致。
+   使用普通类而非 Tailwind 阴影工具类，避免切换主题时阴影写死不跟随。
+   ========================================================================== */
+/* :where() 保持零特异性，确保 focus:shadow-md / 选中态 shadow-md 等状态类能覆盖基础阴影 */
+:where(.surface-elev-1) {
+  box-shadow: var(--elevation-1);
+}
+:where(.surface-elev-2) {
+  box-shadow: var(--elevation-2);
+}
+:where(.surface-elev-3) {
+  box-shadow: var(--elevation-3);
 }
 
 /* ==========================================================================
@@ -172,7 +230,9 @@ html:lang(en)
         [class*='w-10']
       ):not([class*='size-']):not([class*='p-0']):not([class*='p-1']):not([class*='p-2']):not(
         [class*='rounded-full']
-      ):not(:has(.sr-only)):not([class*='material-icons']):not([class*='text-xs']):not([class*='h-7'])
+      ):not(:has(.sr-only)):not([class*='material-icons']):not([class*='text-xs']):not(
+        [class*='h-7']
+      )
   ),
 html:lang(de)
   :where(
@@ -180,7 +240,9 @@ html:lang(de)
         [class*='w-10']
       ):not([class*='size-']):not([class*='p-0']):not([class*='p-1']):not([class*='p-2']):not(
         [class*='rounded-full']
-      ):not(:has(.sr-only)):not([class*='material-icons']):not([class*='text-xs']):not([class*='h-7'])
+      ):not(:has(.sr-only)):not([class*='material-icons']):not([class*='text-xs']):not(
+        [class*='h-7']
+      )
   ),
 html:lang(es)
   :where(
@@ -188,7 +250,9 @@ html:lang(es)
         [class*='w-10']
       ):not([class*='size-']):not([class*='p-0']):not([class*='p-1']):not([class*='p-2']):not(
         [class*='rounded-full']
-      ):not(:has(.sr-only)):not([class*='material-icons']):not([class*='text-xs']):not([class*='h-7'])
+      ):not(:has(.sr-only)):not([class*='material-icons']):not([class*='text-xs']):not(
+        [class*='h-7']
+      )
   ),
 html:lang(fr)
   :where(
@@ -196,7 +260,9 @@ html:lang(fr)
         [class*='w-10']
       ):not([class*='size-']):not([class*='p-0']):not([class*='p-1']):not([class*='p-2']):not(
         [class*='rounded-full']
-      ):not(:has(.sr-only)):not([class*='material-icons']):not([class*='text-xs']):not([class*='h-7'])
+      ):not(:has(.sr-only)):not([class*='material-icons']):not([class*='text-xs']):not(
+        [class*='h-7']
+      )
   ),
 html:lang(en) :where(.btn),
 html:lang(de) :where(.btn),
@@ -223,12 +289,102 @@ html:lang(fr) :where(.btn) {
  * overflow-wrap: break-word，防止单个超长单词（如 URL、错误信息）撑破容器。
  * 注意：不对 pre/code/kbd 等代码容器生效，不影响 whitespace-nowrap 的声明。
  */
-html:lang(en) :where(p, span:not(.whitespace-nowrap), li, td, th, label:not(.form-label), dd, dt, caption, figcaption, blockquote, cite, small),
-html:lang(de) :where(p, span:not(.whitespace-nowrap), li, td, th, label:not(.form-label), dd, dt, caption, figcaption, blockquote, cite, small),
-html:lang(es) :where(p, span:not(.whitespace-nowrap), li, td, th, label:not(.form-label), dd, dt, caption, figcaption, blockquote, cite, small),
-html:lang(fr) :where(p, span:not(.whitespace-nowrap), li, td, th, label:not(.form-label), dd, dt, caption, figcaption, blockquote, cite, small),
-html:lang(pt) :where(p, span:not(.whitespace-nowrap), li, td, th, label:not(.form-label), dd, dt, caption, figcaption, blockquote, cite, small),
-html:lang(ru) :where(p, span:not(.whitespace-nowrap), li, td, th, label:not(.form-label), dd, dt, caption, figcaption, blockquote, cite, small) {
+html:lang(en)
+  :where(
+    p,
+    span:not(.whitespace-nowrap),
+    li,
+    td,
+    th,
+    label:not(.form-label),
+    dd,
+    dt,
+    caption,
+    figcaption,
+    blockquote,
+    cite,
+    small
+  ),
+html:lang(de)
+  :where(
+    p,
+    span:not(.whitespace-nowrap),
+    li,
+    td,
+    th,
+    label:not(.form-label),
+    dd,
+    dt,
+    caption,
+    figcaption,
+    blockquote,
+    cite,
+    small
+  ),
+html:lang(es)
+  :where(
+    p,
+    span:not(.whitespace-nowrap),
+    li,
+    td,
+    th,
+    label:not(.form-label),
+    dd,
+    dt,
+    caption,
+    figcaption,
+    blockquote,
+    cite,
+    small
+  ),
+html:lang(fr)
+  :where(
+    p,
+    span:not(.whitespace-nowrap),
+    li,
+    td,
+    th,
+    label:not(.form-label),
+    dd,
+    dt,
+    caption,
+    figcaption,
+    blockquote,
+    cite,
+    small
+  ),
+html:lang(pt)
+  :where(
+    p,
+    span:not(.whitespace-nowrap),
+    li,
+    td,
+    th,
+    label:not(.form-label),
+    dd,
+    dt,
+    caption,
+    figcaption,
+    blockquote,
+    cite,
+    small
+  ),
+html:lang(ru)
+  :where(
+    p,
+    span:not(.whitespace-nowrap),
+    li,
+    td,
+    th,
+    label:not(.form-label),
+    dd,
+    dt,
+    caption,
+    figcaption,
+    blockquote,
+    cite,
+    small
+  ) {
   overflow-wrap: break-word;
   word-break: break-word; /* Safari 兜底 */
 }
@@ -255,7 +411,6 @@ html:lang(fr) :where(label.form-label) {
   font-size: calc(1em - 0.5px);
 }
 
-
 /* ==========================================================================
    6. 文件列表与搜索加载态美化兜底 (FileList & Search Loading Fallback)
    ========================================================================== */
@@ -281,7 +436,6 @@ html:lang(fr) :where(label.form-label) {
   font-weight: 500;
   color: hsl(var(--muted-foreground));
 }
-
 
 /* ==========================================================================
    7. 通栏 Loading 进度条动画 (Full-width Indeterminate Loading Bar)

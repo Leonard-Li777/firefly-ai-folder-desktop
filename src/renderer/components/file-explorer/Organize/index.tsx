@@ -850,7 +850,7 @@ export const Organize: React.FC = () => {
                       showsmartName={true}
                       onViewModeChange={m => setViewMode(m as any)}
                       renderToolbar={ctx => (
-                        <div className="p-3 border-b flex flex-col gap-2 bg-muted/10 overflow-hidden">
+                        <div className="p-3 border-b flex flex-col gap-2 bg-[var(--surface-toolbar)] dark:bg-muted/10 surface-elev-1 dark:shadow-none overflow-hidden">
                           <div className="flex items-center justify-between gap-2 flex-nowrap min-w-0 overflow-hidden">
                             <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
                               <span
