@@ -1,7 +1,7 @@
 /**
  * 运行时服务公共 API
  * 提供数据库、文件系统、系统服务等平台集成服务
- * 
+ *
  * 注意：此包不依赖 Electron，所有 Electron 特定功能由调用方注入
  */
 
@@ -29,3 +29,5 @@ export * from './llama'
 export * from './invitation/invitation-service'
 export * from './ai-skill-api-service'
 
+// 插件沙箱与宿主管理服务
+export * from './plugin'
