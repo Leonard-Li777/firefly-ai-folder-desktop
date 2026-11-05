@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState, useMemo } from 'react'
 import { LatestNewsItem } from '@firefly/types/config-types'
 import { PersistentTooltip } from '../common/PersistentTooltip'
 import { UserAvatarMenu } from '../tier/UserAvatarMenu'
-import { WorkspaceDirectory } from '@firefly/types'
+import { WorkspaceDirectory, parseWorkspaceConfig, SettingsCategory } from '@firefly/types'
 import { logoIcon } from '../ui/icon'
 import { openExternalLink } from '../../lib/external-link'
 import i18nScope, { t } from '@app/languages'
@@ -15,7 +15,6 @@ import { useSearchStore } from '../../stores/search-store'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAnalyzedDirectoryStore } from '../../stores/analyzed-directory-store'
 import { useSettingsStore } from '../../stores/settings-store'
-import { SettingsCategory } from '@firefly/types'
 import { Stepper, Step } from '../common/Stepper'
 import { Button } from '../ui/button'
 
@@ -119,6 +118,93 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
 
     // 订阅语言变化，确保 useMemo 中缓存的翻译随语言切换更新
     const { activeLanguage } = useVoerkaI18n(i18nScope)
+
+    // 优先匹配 workspaceDirectories 中最新的目录实体，确保策略保存后即时刷新
+    const activeWorkspaceDir = useMemo(() => {
+      if (!currentWorkspaceDirectory) return null
+      const matched = workspaceDirectories.find(
+        d =>
+          (currentWorkspaceDirectory.id != null && d.id === currentWorkspaceDirectory.id) ||
+          (d.path && currentWorkspaceDirectory.path && d.path === currentWorkspaceDirectory.path)
+      )
+      return matched || currentWorkspaceDirectory
+    }, [currentWorkspaceDirectory, workspaceDirectories])
+
+    // 整理方式策略信息（大白话文案，禁止专业名词，闪电/对应图标）
+    const currentStrategyInfo = useMemo(() => {
+      if (!activeWorkspaceDir) {
+        return {
+          icon: 'folder_open',
+          title: t('未选择工作目录'),
+          desc: t('请先在左侧选择或新建一个工作目录。')
+        }
+      }
+
+      const parsedConfig = parseWorkspaceConfig(activeWorkspaceDir.workspace_config)
+
+      // 判断是否有自定义微调参数或忽略规则：只要微调了参数，优先显示为「自定义分析方式」
+      if (parsedConfig.status === 'ready') {
+        const hasOverrides = Boolean(
+          parsedConfig.overrides && Object.keys(parsedConfig.overrides).length > 0
+        )
+        const hasCustomIgnoreRules = Boolean(
+          parsedConfig.customIgnoreRules && parsedConfig.customIgnoreRules.length > 0
+        )
+        const isCustom = parsedConfig.intent === 'custom' || hasOverrides || hasCustomIgnoreRules
+
+        if (isCustom) {
+          return {
+            icon: 'tune',
+            title: t('自定义分析方式'),
+            desc: t('已根据你的偏好单独设置分析参数与文件规则。')
+          }
+        }
+      }
+
+      const intent =
+        parsedConfig.status === 'ready'
+          ? parsedConfig.intent
+          : (parsedConfig as { detectedIntent?: string }).detectedIntent
+
+      switch (intent) {
+        case 'fast_archive':
+          return {
+            icon: 'bolt',
+            title: t('极速整理与文档'),
+            desc: t('主要读取文字、资料和表格，分析迅速又省电，适合经常阅读和管理文档。')
+          }
+        case 'visual_gallery':
+          return {
+            icon: 'photo_library',
+            title: t('创意图库与设计'),
+            desc: t('看懂图片画面和主要颜色，找图搜图更方便，适合插画和设计素材。')
+          }
+        case 'footage_studio':
+          return {
+            icon: 'movie',
+            title: t('影视与剪辑素材'),
+            desc: t('自动识别视频对话并截取关键画面，方便剪辑找片段，适合长短视频。')
+          }
+        case 'chaotic_inbox':
+          return {
+            icon: 'inventory_2',
+            title: t('日常下载与杂乱文件'),
+            desc: t('自动理清各类杂乱文件，快速分类整理，找文件更轻松。')
+          }
+        case 'custom':
+          return {
+            icon: 'tune',
+            title: t('自定义分析方式'),
+            desc: t('按照你的偏好单独设置分析和文件过滤规则。')
+          }
+        default:
+          return {
+            icon: 'auto_awesome',
+            title: t('智能自适应分析'),
+            desc: t('根据文件夹中的文件类型自动匹配最合适的整理方式。')
+          }
+      }
+    }, [activeWorkspaceDir, activeLanguage])
 
     // 消息轮播相关
     const config = useConfigStore(state => state.config)
@@ -620,260 +706,322 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
               {/* Directory Dropdown */}
               <div
                 className={cn(
-                  'absolute top-full left-0 mt-2 w-80 bg-background dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-xl shadow-2xl z-[100] overflow-hidden origin-top transition-all duration-200 ease-out',
+                  'absolute top-full left-0 mt-2 w-[620px] max-w-[calc(100vw-32px)] bg-background dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-xl shadow-2xl z-[100] overflow-hidden origin-top transition-all duration-200 ease-out',
                   showDirectoryDropdown
                     ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto'
                     : 'opacity-0 -translate-y-2 scale-95 pointer-events-none'
                 )}
               >
-                {/* 置顶首项：工作区配置与管理 */}
-                <div className="p-2 border-b border-border/60 dark:border-border/40 bg-muted/20 dark:bg-white/[0.02]">
-                  <button
-                    className={cn(
-                      'w-full flex items-center justify-between p-2.5 rounded-lg border transition-all duration-200 cursor-pointer group text-left',
-                      currentWorkspaceDirectory
-                        ? 'bg-primary/5 hover:bg-primary/10 border-primary/25 hover:border-primary/45 text-primary dark:bg-primary/10 dark:hover:bg-primary/15'
-                        : 'bg-muted/40 border-border/40 text-muted-foreground hover:bg-muted/60'
-                    )}
-                    onClick={() => {
-                      onToggleDirectoryDropdown(false)
-                      useSettingsStore.getState().openSettings(SettingsCategory.WORKSPACE_CONFIG, {
-                        workspaceId: currentWorkspaceDirectory?.id
-                      })
-                    }}
-                    title={
-                      currentWorkspaceDirectory
-                        ? t('配置当前工作区AI策略与目录管理: {name}', {
-                            name: currentWorkspaceDirectory.name
-                          })
-                        : t('工作区配置与管理')
-                    }
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div
-                        className={cn(
-                          'w-7 h-7 rounded-md flex items-center justify-center shrink-0 transition-transform group-hover:scale-105',
-                          currentWorkspaceDirectory
-                            ? 'bg-primary/15 text-primary dark:bg-primary/25'
-                            : 'bg-muted text-muted-foreground'
-                        )}
-                      >
-                        <MaterialIcon icon="tune" className="text-base" />
+                <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-border/60 dark:divide-border/40">
+                  {/* 左侧：切换工作区专区 */}
+                  <div className="w-full sm:w-[250px] flex-shrink-0 flex flex-col bg-muted/20 dark:bg-white/[0.02]">
+                    {/* 左栏标头 */}
+                    <div className="flex items-center justify-between px-3 pt-3 pb-2">
+                      <div className="flex items-center gap-1.5">
+                        <MaterialIcon icon="sync_alt" className="text-xs text-primary" />
+                        <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">
+                          {t('切换工作区')}
+                        </span>
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="text-xs font-bold truncate flex items-center gap-1.5">
-                          <span
-                            className={
-                              currentWorkspaceDirectory
-                                ? 'text-foreground'
-                                : 'text-muted-foreground'
-                            }
-                          >
-                            {t('工作区配置与管理')}
-                          </span>
-                          {currentWorkspaceDirectory && (
-                            <span className="text-[10px] text-primary font-medium px-1.5 py-0.5 rounded-full bg-primary/10 truncate max-w-[100px]">
-                              {currentWorkspaceDirectory.name}
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-[10px] text-muted-foreground/80 truncate mt-0.5">
-                          {currentWorkspaceDirectory
-                            ? t('自适应场景、分析深度与目录设置')
-                            : t('点击管理或添加工作目录')}
-                        </div>
-                      </div>
+                      <span className="text-[10px] text-muted-foreground bg-muted dark:bg-zinc-800 px-1.5 py-0.5 rounded-full font-mono">
+                        {workspaceDirectories.length}
+                      </span>
                     </div>
-                    <MaterialIcon
-                      icon="chevron_right"
-                      className="text-base opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0 text-current ml-1"
-                    />
-                  </button>
-                </div>
 
-                <div className="max-h-60 overflow-y-auto">
-                  {workspaceDirectories.length === 0 ? (
-                    <div className="p-4 text-center text-sm text-muted-foreground">
-                      {t('暂无工作目录')}
-                    </div>
-                  ) : (
-                    (() => {
-                      let speedyCount = 0
-                      let privateCount = 0
-                      return workspaceDirectories.map(directory => {
-                        const isSpeedy = directory.type === 'SPEEDY'
-                        const isPrivate = directory.type === 'PRIVATE'
-                        let isExpired = false
-                        if (computed_limits) {
-                          if (isSpeedy) {
-                            if (speedyCount >= (computed_limits.speedy_dir_slot_limit ?? 3))
-                              isExpired = true
-                            speedyCount++
-                          }
-                          if (isPrivate) {
-                            if (privateCount >= (computed_limits.private_dir_slot_limit ?? 3))
-                              isExpired = true
-                            privateCount++
-                          }
-                        }
-
-                        const isSelectedDir =
-                          currentWorkspaceDirectory?.path && directory.path
-                            ? (
-                                window.electronAPI?.utils?.isPathEqual ||
-                                ((a: string, b: string) => a === b)
-                              )(currentWorkspaceDirectory.path, directory.path)
-                            : currentWorkspaceDirectory?.path === directory.path
-
-                        return (
-                          <div
-                            key={directory.path}
-                            className={cn(
-                              'w-full flex items-center space-x-3 px-3 py-2 text-sm text-left transition-colors cursor-pointer',
-                              isExpired
-                                ? 'opacity-40 hover:opacity-60 hover:bg-accent/50'
-                                : 'hover:bg-accent hover:text-accent-foreground',
-                              isSelectedDir ? 'bg-primary/10 text-primary' : 'text-foreground'
-                            )}
-                            onClick={() => onSelectWorkspaceDirectory(directory)}
-                            role="button"
-                            tabIndex={0}
-                            onKeyDown={e => {
-                              if (e.key === 'Enter') onSelectWorkspaceDirectory(directory)
-                            }}
-                            title={
-                              isExpired
-                                ? t('已超出目录插槽限制，点击可激活')
-                                : t('切换到工作目录: {path}', { path: directory.path })
-                            }
-                          >
-                            <MaterialIcon
-                              icon={
-                                isExpired
-                                  ? 'lock'
-                                  : directory.type === 'SPEEDY'
-                                    ? 'rocket_launch'
-                                    : directory.type === 'PRIVATE'
-                                      ? 'lock'
-                                      : 'folder'
+                    {/* 目录列表 */}
+                    <div className="flex-1 max-h-72 overflow-y-auto px-1.5 pb-2 space-y-0.5">
+                      {workspaceDirectories.length === 0 ? (
+                        <div className="p-4 text-center text-xs text-muted-foreground">
+                          {t('暂无工作目录')}
+                        </div>
+                      ) : (
+                        (() => {
+                          let speedyCount = 0
+                          let privateCount = 0
+                          return workspaceDirectories.map(directory => {
+                            const isSpeedy = directory.type === 'SPEEDY'
+                            const isPrivate = directory.type === 'PRIVATE'
+                            let isExpired = false
+                            if (computed_limits) {
+                              if (isSpeedy) {
+                                if (speedyCount >= (computed_limits.speedy_dir_slot_limit ?? 3))
+                                  isExpired = true
+                                speedyCount++
                               }
-                              className={cn(
-                                'text-sm',
-                                isSelectedDir && !isExpired
-                                  ? 'text-primary'
-                                  : 'text-muted-foreground'
-                              )}
-                            />
-                            <div className="flex-1 min-w-0">
-                              <div className="font-medium truncate flex items-center">
-                                {directory.name}
-                                {directory.type === 'SPEEDY' && (
-                                  <span className="text-xs text-muted-foreground ml-1">
-                                    {t('（极速）')}
-                                  </span>
+                              if (isPrivate) {
+                                if (privateCount >= (computed_limits.private_dir_slot_limit ?? 3))
+                                  isExpired = true
+                                privateCount++
+                              }
+                            }
+
+                            const isSelectedDir =
+                              currentWorkspaceDirectory?.path && directory.path
+                                ? (
+                                    window.electronAPI?.utils?.isPathEqual ||
+                                    ((a: string, b: string) => a === b)
+                                  )(currentWorkspaceDirectory.path, directory.path)
+                                : currentWorkspaceDirectory?.path === directory.path
+
+                            return (
+                              <div
+                                key={directory.path}
+                                className={cn(
+                                  'w-full flex items-center space-x-2.5 px-2.5 py-2 text-xs rounded-lg text-left transition-colors cursor-pointer',
+                                  isExpired
+                                    ? 'opacity-40 hover:opacity-60 hover:bg-accent/50'
+                                    : 'hover:bg-accent hover:text-accent-foreground',
+                                  isSelectedDir
+                                    ? 'bg-primary/10 text-primary font-medium'
+                                    : 'text-foreground'
                                 )}
-                                {directory.type === 'PRIVATE' && (
-                                  <span className="text-xs text-muted-foreground ml-1">
-                                    {t('（私有）')}
-                                  </span>
+                                onClick={() => onSelectWorkspaceDirectory(directory)}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={e => {
+                                  if (e.key === 'Enter') onSelectWorkspaceDirectory(directory)
+                                }}
+                                title={
+                                  isExpired
+                                    ? t('已超出目录插槽限制，点击可激活')
+                                    : t('切换到工作目录: {path}', { path: directory.path })
+                                }
+                              >
+                                <MaterialIcon
+                                  icon={
+                                    isExpired
+                                      ? 'lock'
+                                      : directory.type === 'SPEEDY'
+                                        ? 'rocket_launch'
+                                        : directory.type === 'PRIVATE'
+                                          ? 'lock'
+                                          : 'folder'
+                                  }
+                                  className={cn(
+                                    'text-sm shrink-0',
+                                    isSelectedDir && !isExpired
+                                      ? 'text-primary'
+                                      : 'text-muted-foreground'
+                                  )}
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <div className="truncate flex items-center">
+                                    <span className="truncate">{directory.name}</span>
+                                    {directory.type === 'SPEEDY' && (
+                                      <span className="text-[10px] text-muted-foreground ml-1 shrink-0">
+                                        {t('（极速）')}
+                                      </span>
+                                    )}
+                                    {directory.type === 'PRIVATE' && (
+                                      <span className="text-[10px] text-muted-foreground ml-1 shrink-0">
+                                        {t('（私有）')}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="text-[10px] text-muted-foreground truncate font-mono">
+                                    {directory.path}
+                                  </div>
+                                </div>
+                                {isExpired && (
+                                  <MaterialIcon
+                                    icon="lock"
+                                    className="text-muted-foreground text-xs shrink-0"
+                                  />
+                                )}
+                                {isSelectedDir && !isExpired && (
+                                  <MaterialIcon
+                                    icon="check"
+                                    className="text-primary text-sm shrink-0"
+                                  />
                                 )}
                               </div>
-                              <div className="text-xs text-muted-foreground truncate">
-                                {directory.path}
-                              </div>
-                            </div>
-                            {isExpired && (
-                              <MaterialIcon icon="lock" className="text-muted-foreground text-sm" />
+                            )
+                          })
+                        })()
+                      )}
+                    </div>
+
+                    {/* 左栏底部统计 */}
+                    <div className="px-3 py-2 border-t border-border/40 text-[10px] text-muted-foreground flex items-center justify-between">
+                      <span>
+                        {t('共 {count} 个工作目录', { count: workspaceDirectories.length })}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* 右侧：醒目的当前工作区策略配置与保持原样的新建按钮 */}
+                  <div className="w-full sm:w-[370px] flex-1 flex flex-col p-3.5 space-y-3.5 bg-background dark:bg-zinc-900">
+                    {/* 醒目的工作区配置卡片 */}
+                    <div className="rounded-xl border border-primary/25 dark:border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-3 shadow-sm hover:border-primary/45 transition-all">
+                      {/* 卡片顶栏：当前工作区标题 + 醒目的调整策略按钮 */}
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="flex h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                            {t('当前工作区设置')}
+                          </span>
+                        </div>
+                        <Button
+                          size="sm"
+                          className="h-7 px-2.5 text-xs font-semibold gap-1 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm cursor-pointer"
+                          onClick={() => {
+                            onToggleDirectoryDropdown(false)
+                            useSettingsStore
+                              .getState()
+                              .openSettings(SettingsCategory.WORKSPACE_CONFIG, {
+                                workspaceId: activeWorkspaceDir?.id
+                              })
+                          }}
+                          title={t('点击调整工作区场景意图、文件过滤与整理规则')}
+                        >
+                          <MaterialIcon icon="tune" className="text-xs" />
+                          <span>{t('调整策略')}</span>
+                        </Button>
+                      </div>
+
+                      {/* 当前工作区名称与路径 */}
+                      <div className="flex items-start gap-2.5 mb-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-primary/15 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                          <MaterialIcon
+                            icon={
+                              activeWorkspaceDir?.type === 'SPEEDY'
+                                ? 'rocket_launch'
+                                : activeWorkspaceDir?.type === 'PRIVATE'
+                                  ? 'lock'
+                                  : 'folder'
+                            }
+                            className="text-base"
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-bold text-xs text-foreground truncate">
+                              {activeWorkspaceDir?.name || t('未选择工作目录')}
+                            </span>
+                            {activeWorkspaceDir?.type === 'SPEEDY' && (
+                              <span className="text-[9px] px-1.5 py-0.2 rounded font-semibold shrink-0 bg-primary/20 text-primary">
+                                {t('极速')}
+                              </span>
                             )}
-                            {isSelectedDir && !isExpired && (
-                              <MaterialIcon icon="check" className="text-primary text-base" />
+                            {activeWorkspaceDir?.type === 'PRIVATE' && (
+                              <span className="text-[9px] px-1.5 py-0.2 rounded font-semibold shrink-0 bg-violet-500/20 text-violet-400 dark:text-violet-300">
+                                {t('私有')}
+                              </span>
                             )}
                           </div>
-                        )
-                      })
-                    })()
-                  )}
-                </div>
-                <div className="p-3 border-t border-border/60 dark:border-border/40 bg-gradient-to-b from-muted/30 to-muted/10 dark:from-background/40 dark:to-background/20">
-                  {/* 区块标题 */}
-                  <div className="px-1 mb-3 flex items-center gap-1.5">
-                    <div className="flex items-center justify-center w-4 h-4 rounded-full bg-primary/15 dark:bg-primary/20">
-                      <MaterialIcon icon="add" className="text-[10px] text-primary" />
-                    </div>
-                    <span className="text-[10px] font-bold text-muted-foreground/80 dark:text-muted-foreground/70 uppercase tracking-widest">
-                      {t('添加新工作目录')}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {/* 极速目录卡片 */}
-                    <button
-                      className={cn(
-                        'group relative flex flex-col items-center justify-center p-3.5 rounded-xl border transition-all duration-300 overflow-hidden',
-                        isEnterprise
-                          ? 'border-muted-foreground/10 text-muted-foreground/40 cursor-not-allowed opacity-40 bg-muted/20'
-                          : 'border-primary/25 dark:border-primary/20 text-primary cursor-pointer hover:border-primary/60 dark:hover:border-primary/50 hover:shadow-md hover:shadow-primary/10 dark:hover:shadow-primary/5 hover:-translate-y-0.5 active:translate-y-0 bg-gradient-to-br from-primary/8 to-primary/3 dark:from-primary/10 dark:to-primary/5 hover:from-primary/12 hover:to-primary/6 dark:hover:from-primary/15 dark:hover:to-primary/8'
-                      )}
-                      onClick={() => {
-                        if (isEnterprise) return
-                        onAddWorkspaceDirectory('SPEEDY')
-                      }}
-                      title={isEnterprise ? t('企业版暂不支持极速目录') : t('创建极速目录（推荐）')}
-                      disabled={isEnterprise}
-                    >
-                      {/* 光晕背景 */}
-                      {!isEnterprise && (
-                        <div className="absolute inset-0 bg-radial from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                      )}
-                      {/* 推荐角标 - 直接定位在button角落，依靠button的overflow-hidden裁切 */}
-                      {!isEnterprise && (
-                        <div className="absolute top-1 -right-3 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground text-[8px] font-black px-5 py-0.5 rotate-45 shadow-sm uppercase tracking-tighter pointer-events-none">
-                          ⭐
+                          <div
+                            className="text-[10px] text-muted-foreground truncate font-mono mt-0.5"
+                            title={activeWorkspaceDir?.path || ''}
+                          >
+                            {activeWorkspaceDir?.path || t('点击左侧列表选择工作目录')}
+                          </div>
                         </div>
-                      )}
-                      {/* 图标 */}
-                      <div className="relative z-10 flex items-center justify-center w-9 h-9 rounded-full bg-primary/10 dark:bg-primary/15 group-hover:bg-primary/20 dark:group-hover:bg-primary/25 transition-all duration-300 mb-2 group-hover:scale-110">
-                        <MaterialIcon
-                          icon="rocket_launch"
-                          className="text-lg text-primary group-hover:-rotate-12 transition-transform duration-500"
-                        />
                       </div>
-                      <span className="text-xs font-bold relative z-10 text-primary dark:text-primary">
-                        {t('极速目录')}
-                      </span>
-                      <p
-                        className="text-[9px] opacity-55 dark:opacity-50 text-center mt-1 leading-tight relative z-10 text-primary/80 dark:text-primary/70 w-full truncate"
-                        title={t('共享分析数据，极速分析')}
-                      >
-                        {t('共享分析数据，极速分析')}
-                      </p>
-                    </button>
-                    {/* 私有目录卡片 */}
-                    <button
-                      className="group relative flex flex-col items-center justify-center p-3.5 rounded-xl border border-border/60 dark:border-border/40 cursor-pointer overflow-hidden transition-all duration-300 bg-gradient-to-br from-muted/40 to-muted/20 dark:from-muted/20 dark:to-muted/10 hover:border-violet-400/40 dark:hover:border-violet-500/30 hover:shadow-md hover:shadow-violet-500/8 dark:hover:shadow-violet-500/5 hover:-translate-y-0.5 active:translate-y-0 hover:from-violet-50/60 hover:to-violet-50/20 dark:hover:from-violet-900/15 dark:hover:to-violet-900/8"
-                      onClick={() => {
-                        onAddWorkspaceDirectory('PRIVATE')
-                      }}
-                      title={t('创建私有目录')}
-                    >
-                      {/* 光晕背景 */}
-                      <div className="absolute inset-0 bg-radial from-violet-500/8 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                      {/* 图标 */}
-                      <div className="relative z-10 flex items-center justify-center w-9 h-9 rounded-full bg-muted/60 dark:bg-muted/30 group-hover:bg-violet-100/70 dark:group-hover:bg-violet-900/25 transition-all duration-300 mb-2 group-hover:scale-110">
-                        <MaterialIcon
-                          icon="lock"
-                          className="text-lg text-muted-foreground group-hover:text-violet-500 dark:group-hover:text-violet-400 transition-colors duration-300"
-                        />
+
+                      {/* 详细说明框：全大白话，仅保留图标，无专业术语，无重复的“更改 >” */}
+                      <div className="rounded-lg bg-background/80 dark:bg-black/30 border border-border/60 dark:border-border/40 p-2.5 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] text-muted-foreground font-medium">
+                            {t('整理方式：')}
+                          </span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center gap-1">
+                            <MaterialIcon icon={currentStrategyInfo.icon} className="text-xs" />
+                            <span>{currentStrategyInfo.title}</span>
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground leading-relaxed">
+                          {currentStrategyInfo.desc}
+                        </p>
                       </div>
-                      <span className="text-xs font-bold relative z-10 text-muted-foreground group-hover:text-foreground dark:group-hover:text-foreground transition-colors duration-300">
-                        {t('私有目录')}
-                      </span>
-                      <p
-                        className="text-[9px] opacity-50 text-center mt-1 leading-tight relative z-10 text-muted-foreground group-hover:opacity-65 transition-opacity duration-300 w-full truncate"
-                        title={t('分析数据不上云，数据私密')}
-                      >
-                        {t('分析数据不上云，数据私密')}
-                      </p>
-                    </button>
+                    </div>
+
+                    {/* 原汁原味的新建目录双卡片（保持样式、动效、角标不变） */}
+                    <div className="space-y-1.5">
+                      {/* 区块小标题 */}
+                      <div className="px-0.5 flex items-center gap-1.5">
+                        <div className="flex items-center justify-center w-3.5 h-3.5 rounded-full bg-primary/15 dark:bg-primary/20">
+                          <MaterialIcon icon="add" className="text-[10px] text-primary" />
+                        </div>
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                          {t('添加新工作目录')}
+                        </span>
+                      </div>
+
+                      {/* 卡片 Grid (完全保持原样) */}
+                      <div className="grid grid-cols-2 gap-2">
+                        {/* 极速目录卡片 */}
+                        <button
+                          className={cn(
+                            'group relative flex flex-col items-center justify-center p-3.5 rounded-xl border transition-all duration-300 overflow-hidden',
+                            isEnterprise
+                              ? 'border-muted-foreground/10 text-muted-foreground/40 cursor-not-allowed opacity-40 bg-muted/20'
+                              : 'border-primary/25 dark:border-primary/20 text-primary cursor-pointer hover:border-primary/60 dark:hover:border-primary/50 hover:shadow-md hover:shadow-primary/10 dark:hover:shadow-primary/5 hover:-translate-y-0.5 active:translate-y-0 bg-gradient-to-br from-primary/8 to-primary/3 dark:from-primary/10 dark:to-primary/5 hover:from-primary/12 hover:to-primary/6 dark:hover:from-primary/15 dark:hover:to-primary/8'
+                          )}
+                          onClick={() => {
+                            if (isEnterprise) return
+                            onAddWorkspaceDirectory('SPEEDY')
+                          }}
+                          title={
+                            isEnterprise ? t('企业版暂不支持极速目录') : t('创建极速目录（推荐）')
+                          }
+                          disabled={isEnterprise}
+                        >
+                          {/* 光晕背景 */}
+                          {!isEnterprise && (
+                            <div className="absolute inset-0 bg-radial from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                          )}
+                          {/* 推荐角标 - 直接定位在button角落，依靠button的overflow-hidden裁切 */}
+                          {!isEnterprise && (
+                            <div className="absolute top-1 -right-3 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground text-[8px] font-black px-5 py-0.5 rotate-45 shadow-sm uppercase tracking-tighter pointer-events-none">
+                              ⭐
+                            </div>
+                          )}
+                          {/* 图标 */}
+                          <div className="relative z-10 flex items-center justify-center w-9 h-9 rounded-full bg-primary/10 dark:bg-primary/15 group-hover:bg-primary/20 dark:group-hover:bg-primary/25 transition-all duration-300 mb-2 group-hover:scale-110">
+                            <MaterialIcon
+                              icon="rocket_launch"
+                              className="text-lg text-primary group-hover:-rotate-12 transition-transform duration-500"
+                            />
+                          </div>
+                          <span className="text-xs font-bold relative z-10 text-primary dark:text-primary">
+                            {t('极速目录')}
+                          </span>
+                          <p
+                            className="text-[9px] opacity-55 dark:opacity-50 text-center mt-1 leading-tight relative z-10 text-primary/80 dark:text-primary/70 w-full truncate"
+                            title={t('共享分析数据，极速分析')}
+                          >
+                            {t('共享分析数据，极速分析')}
+                          </p>
+                        </button>
+                        {/* 私有目录卡片 */}
+                        <button
+                          className="group relative flex flex-col items-center justify-center p-3.5 rounded-xl border border-border/60 dark:border-border/40 cursor-pointer overflow-hidden transition-all duration-300 bg-gradient-to-br from-muted/40 to-muted/20 dark:from-muted/20 dark:to-muted/10 hover:border-violet-400/40 dark:hover:border-violet-500/30 hover:shadow-md hover:shadow-violet-500/8 dark:hover:shadow-violet-500/5 hover:-translate-y-0.5 active:translate-y-0 hover:from-violet-50/60 hover:to-violet-50/20 dark:hover:from-violet-900/15 dark:hover:to-violet-900/8"
+                          onClick={() => {
+                            onAddWorkspaceDirectory('PRIVATE')
+                          }}
+                          title={t('创建私有目录')}
+                        >
+                          {/* 光晕背景 */}
+                          <div className="absolute inset-0 bg-radial from-violet-500/8 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                          {/* 图标 */}
+                          <div className="relative z-10 flex items-center justify-center w-9 h-9 rounded-full bg-muted/60 dark:bg-muted/30 group-hover:bg-violet-100/70 dark:group-hover:bg-violet-900/25 transition-all duration-300 mb-2 group-hover:scale-110">
+                            <MaterialIcon
+                              icon="lock"
+                              className="text-lg text-muted-foreground group-hover:text-violet-500 dark:group-hover:text-violet-400 transition-colors duration-300"
+                            />
+                          </div>
+                          <span className="text-xs font-bold relative z-10 text-muted-foreground group-hover:text-foreground dark:group-hover:text-foreground transition-colors duration-300">
+                            {t('私有目录')}
+                          </span>
+                          <p
+                            className="text-[9px] opacity-50 text-center mt-1 leading-tight relative z-10 text-muted-foreground group-hover:opacity-65 transition-opacity duration-300 w-full truncate"
+                            title={t('分析数据不上云，数据私密')}
+                          >
+                            {t('分析数据不上云，数据私密')}
+                          </p>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

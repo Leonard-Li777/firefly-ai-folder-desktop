@@ -62,7 +62,10 @@ export const MonitoringSettings: React.FC = () => {
   const [hardwareInfo, setHardwareInfo] = useState<HardwareInfo | null>(null)
 
   useEffect(() => {
-    window.electronAPI?.getHardwareInfo?.().then(hw => setHardwareInfo(hw)).catch(() => {})
+    window.electronAPI
+      ?.getHardwareInfo?.()
+      .then(hw => setHardwareInfo(hw))
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -84,6 +87,20 @@ export const MonitoringSettings: React.FC = () => {
         const directories = await window.electronAPI!.getAllWorkspaceDirectories()
         console.log('获取到工作目录:', directories)
         setWorkspaceDirectories(directories || [])
+        if (directories) {
+          useVirtualDirectoryStore.getState().setWorkspaceDirectories(directories)
+          const currentInStore = useVirtualDirectoryStore.getState().currentWorkspaceDirectory
+          if (currentInStore) {
+            const fresh = directories.find(
+              d =>
+                (currentInStore.id != null && d.id === currentInStore.id) ||
+                (d.path && currentInStore.path && d.path === currentInStore.path)
+            )
+            if (fresh) {
+              useVirtualDirectoryStore.getState().setCurrentWorkspaceDirectory(fresh)
+            }
+          }
+        }
       }
     } catch (error) {
       console.error('加载工作目录失败:', error)
@@ -103,6 +120,20 @@ export const MonitoringSettings: React.FC = () => {
       window.electronAPI!.getAllWorkspaceDirectories().then(directories => {
         console.log('刷新后获取到工作目录:', directories)
         setWorkspaceDirectories(directories || [])
+        if (directories) {
+          useVirtualDirectoryStore.getState().setWorkspaceDirectories(directories)
+          const currentInStore = useVirtualDirectoryStore.getState().currentWorkspaceDirectory
+          if (currentInStore) {
+            const fresh = directories.find(
+              d =>
+                (currentInStore.id != null && d.id === currentInStore.id) ||
+                (d.path && currentInStore.path && d.path === currentInStore.path)
+            )
+            if (fresh) {
+              useVirtualDirectoryStore.getState().setCurrentWorkspaceDirectory(fresh)
+            }
+          }
+        }
       })
     })
 
@@ -305,7 +336,8 @@ export const MonitoringSettings: React.FC = () => {
       }
 
       // 配额错误显示友好消息
-      if (errorMsg.includes('配额')) { // locale-invariant-ok: 外部异常文本匹配 (D型)
+      if (errorMsg.includes('配额')) {
+        // locale-invariant-ok: 外部异常文本匹配 (D型)
         toast.error(errorMsg)
       } else {
         console.error('加入分析队列失败:', error)
@@ -663,7 +695,12 @@ export const MonitoringSettings: React.FC = () => {
       </Card>
 
       {/* 删除确认对话框 */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={open => { if (!isDeleting) setShowDeleteDialog(open) }}>
+      <AlertDialog
+        open={showDeleteDialog}
+        onOpenChange={open => {
+          if (!isDeleting) setShowDeleteDialog(open)
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('移除工作目录')}</AlertDialogTitle>
@@ -689,7 +726,11 @@ export const MonitoringSettings: React.FC = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <Button variant="outline" disabled={isDeleting} onClick={() => setShowDeleteDialog(false)}>
+            <Button
+              variant="outline"
+              disabled={isDeleting}
+              onClick={() => setShowDeleteDialog(false)}
+            >
               {t('取消')}
             </Button>
             <Button
@@ -706,7 +747,12 @@ export const MonitoringSettings: React.FC = () => {
       </AlertDialog>
 
       {/* 重置确认对话框 */}
-      <AlertDialog open={showResetDialog} onOpenChange={open => { if (!isResetting) setShowResetDialog(open) }}>
+      <AlertDialog
+        open={showResetDialog}
+        onOpenChange={open => {
+          if (!isResetting) setShowResetDialog(open)
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('重置工作目录')}</AlertDialogTitle>
@@ -732,7 +778,11 @@ export const MonitoringSettings: React.FC = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <Button variant="outline" disabled={isResetting} onClick={() => setShowResetDialog(false)}>
+            <Button
+              variant="outline"
+              disabled={isResetting}
+              onClick={() => setShowResetDialog(false)}
+            >
               {t('取消')}
             </Button>
             <Button
