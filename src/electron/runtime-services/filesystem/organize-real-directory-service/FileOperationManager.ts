@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import Database from 'better-sqlite3'
 import { FileOperation, FileOrganizeResult } from '@firefly/types/organize-types'
-import { LogCategory, logger, isPathEqual } from '@firefly/shared'
+import { LogCategory, logger, isPathEqual, assertPathWithinRoot } from '@firefly/shared'
 
 const VIRTUAL_DIRECTORY_FOLDER = '.VirtualDirectory'
 
@@ -74,6 +74,18 @@ export class FileOperationManager {
       const inode = oldStats.ino
 
       if (actualOldPath !== operation.newPath) {
+        const { databaseService } = await import('../../database/database-service')
+        const rootDir = await databaseService.findRootWorkspaceDirectory(actualOldPath)
+        if (rootDir?.path) {
+          await assertPathWithinRoot(rootDir.path, actualOldPath)
+          await assertPathWithinRoot(rootDir.path, operation.newPath)
+        } else {
+          logger.warn(
+            LogCategory.FILE_ORGANIZATION,
+            `[一键整理] 未能解析到根工作区，无法执行网关断言: ${actualOldPath}`
+          )
+        }
+
         const targetDir = path.dirname(operation.newPath)
         if (!fs.existsSync(targetDir)) {
           fs.mkdirSync(targetDir, { recursive: true })

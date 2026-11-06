@@ -9,7 +9,13 @@ import type {
   AnalysisTaskType,
   IIgnoreRule
 } from '@firefly/types'
-import { LogCategory, logger, isPathEqual, isSubPath } from '@firefly/shared'
+import {
+  LogCategory,
+  logger,
+  isPathEqual,
+  isSubPath,
+  compileWhitelistExtSet
+} from '@firefly/shared'
 import { t } from '@app/languages'
 
 import type { EnqueueInput } from './types'
@@ -618,6 +624,49 @@ export class QueueManager {
         logger.error(LogCategory.ANALYSIS_QUEUE, '[分析队列] 数据库清空失败:', e)
       }
     }
+  }
+
+  cancelUnmatchedTasks(
+    workspaceId: number,
+    allowedExtensions: string[] | null | undefined,
+    directoryPrefix?: string
+  ): { cancelledCount: number } {
+    if (!this.isInitialized || !allowedExtensions || allowedExtensions.length === 0) {
+      return { cancelledCount: 0 }
+    }
+    const allowedSet = compileWhitelistExtSet(allowedExtensions)
+    if (!allowedSet || allowedSet.size === 0) {
+      return { cancelledCount: 0 }
+    }
+    const idsToRemove: number[] = []
+
+    this.queue = this.queue.filter(item => {
+      if (item.status === 'pending' && item.workspaceId === workspaceId) {
+        if (!directoryPrefix || isSubPath(directoryPrefix, item.path)) {
+          const ext = path.extname(item.path).toLowerCase()
+          if (!allowedSet.has(ext)) {
+            idsToRemove.push(item.id)
+            return false
+          }
+        }
+      }
+      return true
+    })
+
+    if (idsToRemove.length > 0) {
+      logger.info(
+        LogCategory.ANALYSIS_QUEUE,
+        `[分析队列] 根据白名单取消了 ${idsToRemove.length} 个不匹配的待分析任务 (工作区 ID: ${workspaceId})`
+      )
+      this.emitUpdate()
+      try {
+        databaseService.deleteAnalysisQueueItems(idsToRemove)
+      } catch (e: any) {
+        logger.error(LogCategory.ANALYSIS_QUEUE, '[分析队列] 从数据库删除已取消队列项失败:', e)
+      }
+    }
+
+    return { cancelledCount: idsToRemove.length }
   }
 
   clearAll(): void {

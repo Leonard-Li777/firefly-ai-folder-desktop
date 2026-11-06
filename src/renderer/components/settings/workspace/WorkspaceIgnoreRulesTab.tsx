@@ -338,16 +338,15 @@ export const WorkspaceIgnoreRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> = (
     await persistRules(next)
   }
 
-  const typeLabels: Record<IIgnoreRule['type'], string> = useMemo(
-    () => ({
-      file: t('特定文件名'),
-      directory: t('特定目录名'),
-      extension: t('文件扩展名'),
-      wildcard: t('通配符路径'),
-      regex: t('正则表达式')
-    }),
-    []
-  )
+  // 规则类型展示字典（直接在渲染体内构造，确保切换语言后即时刷新）
+  // 注意：useMemo(fn, []) 内含 t() 时，空依赖数组导致语言切换后值冻结，违反 AGENTS.md 铁律
+  const typeLabels: Record<IIgnoreRule['type'], string> = {
+    file: t('特定文件名'),
+    directory: t('特定目录名'),
+    extension: t('文件扩展名'),
+    wildcard: t('通配符路径'),
+    regex: t('正则表达式')
+  }
 
   // 计算百分比
   const inPct =

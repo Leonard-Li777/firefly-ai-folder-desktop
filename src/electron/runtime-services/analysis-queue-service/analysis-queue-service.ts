@@ -48,7 +48,12 @@ import { databaseService } from '../database/database-service'
 import { AIServiceManager } from './ai-service-manager'
 import { AnalysisStatsCollector } from './analysis-stats-collector'
 import { DirectoryProcessor } from './directory-processor'
-import { FileProcessor, getFileStageFromDB, getFileAnalysisStateFromDB, checkBasicDataCompleteness } from './file-processor'
+import {
+  FileProcessor,
+  getFileStageFromDB,
+  getFileAnalysisStateFromDB,
+  checkBasicDataCompleteness
+} from './file-processor'
 import path from 'node:path'
 import { engineBridgeService } from '../engine-bridge'
 import { isRenameProtectedExtension } from '../../utils/extension-rename-whitelist'
@@ -79,9 +84,7 @@ export class Stage2TimeoutError extends Error {
     readonly itemId: number,
     readonly timeoutMs: number
   ) {
-    super(
-      `等待 CPU 提取阶段超时（${Math.round(timeoutMs / 60000)} 分钟）: itemId=${itemId}`
-    )
+    super(`等待 CPU 提取阶段超时（${Math.round(timeoutMs / 60000)} 分钟）: itemId=${itemId}`)
     this.name = 'Stage2TimeoutError'
   }
 }
@@ -253,7 +256,9 @@ export class AnalysisQueueService {
       }),
       (itemId, status, progress, error) => this.updateItemStatus(itemId, status, progress, error),
       () => this.pause(),
-      async (inputs, forceReanalyze) => { await this.addItems(inputs, forceReanalyze); },
+      async (inputs, forceReanalyze) => {
+        await this.addItems(inputs, forceReanalyze)
+      },
       adapters => this.reinitFromAdapters(adapters),
       dirPath => this.queueManager?.markDirectoryCompleted(dirPath)
     )
@@ -557,16 +562,12 @@ export class AnalysisQueueService {
         const analysisMode = resolveAnalysisMode()
 
         const decisionSnapshot = this.queueManager.getSnapshot(undefined, activeWorkspaceId)
-        const hasAnalysisPending = decisionSnapshot.items.some(
-          i => i.status === 'pending'
-        )
+        const hasAnalysisPending = decisionSnapshot.items.some(i => i.status === 'pending')
         const useParallel = !isCpuEngine && isAiStageEnabled(analysisMode) && hasAnalysisPending
 
         if (useParallel) {
           const snapshot = decisionSnapshot
-          const pendingItems = snapshot.items.filter(
-            i => i.status === 'pending'
-          )
+          const pendingItems = snapshot.items.filter(i => i.status === 'pending')
 
           if (pendingItems.length === 0) {
             logger.info(
@@ -607,7 +608,11 @@ export class AnalysisQueueService {
           if (isAiStageEnabled(analysisMode)) {
             const modeRes = await engineBridgeService?.ensureMode?.('language')
             if (modeRes && !modeRes.ok) {
-              logger.warn(LogCategory.ANALYSIS_QUEUE, '[并行分析] 确保主语言模型就绪告警:', modeRes.error)
+              logger.warn(
+                LogCategory.ANALYSIS_QUEUE,
+                '[并行分析] 确保主语言模型就绪告警:',
+                modeRes.error
+              )
             }
           }
 
@@ -629,7 +634,9 @@ export class AnalysisQueueService {
             if (!db || !item.workspaceId) return false
             try {
               const wf = db
-                .prepare('SELECT file_fingerprint FROM workspace_files WHERE workspace_id = ? AND path = ?')
+                .prepare(
+                  'SELECT file_fingerprint FROM workspace_files WHERE workspace_id = ? AND path = ?'
+                )
                 .get(item.workspaceId, item.path) as { file_fingerprint?: string } | undefined
               if (!wf?.file_fingerprint) return true
               // 抽帧间隔已由引擎按 90s 向量预算自决（设置页已移除该项），不再与配置比对；
@@ -690,38 +697,43 @@ export class AnalysisQueueService {
                   ConfigOrchestrator.getInstance().getValue<boolean>('REUSE_BASIC_ANALYSIS_DATA') ??
                   true
 
-              if (isAlreadyStage2(item)) {
-                if (!reuseBasicAnalysisData) {
-                  // 用户配置关闭复用：重新分析或已分析均强制重跑 CPU 提取
-                  shouldSkipCpu =
-                    item.forceReanalyze !== true &&
-                    !getFileAnalysisStateFromDB(databaseService.db!, item.workspaceId!, item.path).isAnalyzed
-                } else {
-                  // 用户配置开启复用：必须严格检查向量、切片、OCR、LRC、正文等数据是否健全
-                  const wf = databaseService.db!
-                    .prepare('SELECT file_fingerprint FROM workspace_files WHERE workspace_id = ? AND path = ?')
-                    .get(item.workspaceId!, item.path) as { file_fingerprint?: string } | undefined
-                  const completeness = await checkBasicDataCompleteness(
-                    databaseService.db!,
-                    item.workspaceId!,
-                    item.path,
-                    wf?.file_fingerprint
-                  )
-                  if (completeness.isComplete) {
-                    shouldSkipCpu = true
-                    logger.debug(
-                      LogCategory.ANALYSIS_QUEUE,
-                      `[并行队列:CPU通道] 基础数据齐全健全（向量、OCR/LRC/摘要均完备），跳过 CPU 提取: ${item.name}`
-                    )
+                if (isAlreadyStage2(item)) {
+                  if (!reuseBasicAnalysisData) {
+                    // 用户配置关闭复用：重新分析或已分析均强制重跑 CPU 提取
+                    shouldSkipCpu =
+                      item.forceReanalyze !== true &&
+                      !getFileAnalysisStateFromDB(databaseService.db!, item.workspaceId!, item.path)
+                        .isAnalyzed
                   } else {
-                    shouldSkipCpu = false
-                    logger.info(
-                      LogCategory.ANALYSIS_QUEUE,
-                      `[并行队列:CPU通道] 基础数据不完整 (${completeness.missingReasons.join(', ')})，执行 CPU 提取补全: ${item.name}`
+                    // 用户配置开启复用：必须严格检查向量、切片、OCR、LRC、正文等数据是否健全
+                    const wf = databaseService
+                      .db!.prepare(
+                        'SELECT file_fingerprint FROM workspace_files WHERE workspace_id = ? AND path = ?'
+                      )
+                      .get(item.workspaceId!, item.path) as
+                      | { file_fingerprint?: string }
+                      | undefined
+                    const completeness = await checkBasicDataCompleteness(
+                      databaseService.db!,
+                      item.workspaceId!,
+                      item.path,
+                      wf?.file_fingerprint
                     )
+                    if (completeness.isComplete) {
+                      shouldSkipCpu = true
+                      logger.debug(
+                        LogCategory.ANALYSIS_QUEUE,
+                        `[并行队列:CPU通道] 基础数据齐全健全（向量、OCR/LRC/摘要均完备），跳过 CPU 提取: ${item.name}`
+                      )
+                    } else {
+                      shouldSkipCpu = false
+                      logger.info(
+                        LogCategory.ANALYSIS_QUEUE,
+                        `[并行队列:CPU通道] 基础数据不完整 (${completeness.missingReasons.join(', ')})，执行 CPU 提取补全: ${item.name}`
+                      )
+                    }
                   }
                 }
-              }
               } catch (preErr) {
                 // 阶段判定本身异常（配置未初始化 / DB 查询失败）时不能直接放弃该文件，
                 // 否则它会永远停在 pending 且不发出通知 —— 退化为「照常提取」最安全。
@@ -768,7 +780,10 @@ export class AnalysisQueueService {
 
                 this.updateItemStatus(item.id, 'analyzing', 10, undefined, { analysisStage: 2 })
                 await this.fileProcessor.processFile(item, signal, 'cpu')
-                logger.info(LogCategory.ANALYSIS_QUEUE, `[并行队列:CPU通道] CPU 提取完成并发出就绪通知: ${item.name} (id: ${item.id})`)
+                logger.info(
+                  LogCategory.ANALYSIS_QUEUE,
+                  `[并行队列:CPU通道] CPU 提取完成并发出就绪通知: ${item.name} (id: ${item.id})`
+                )
                 notifier.notify(item.id)
               } catch (err) {
                 logger.error(
@@ -794,11 +809,17 @@ export class AnalysisQueueService {
             )
             for (const item of pendingItems) {
               if (signal.aborted || !this.running) {
-                logger.info(LogCategory.ANALYSIS_QUEUE, `[并行队列:GPU通道] 收到中止或停止信号，退出 GPU 循环`)
+                logger.info(
+                  LogCategory.ANALYSIS_QUEUE,
+                  `[并行队列:GPU通道] 收到中止或停止信号，退出 GPU 循环`
+                )
                 break
               }
               if (!this.queueManager.hasItem(item.id)) {
-                logger.debug(LogCategory.ANALYSIS_QUEUE, `[并行队列:GPU通道] 队列中已无此任务: ${item.name}`)
+                logger.debug(
+                  LogCategory.ANALYSIS_QUEUE,
+                  `[并行队列:GPU通道] 队列中已无此任务: ${item.name}`
+                )
                 continue
               }
 
@@ -872,7 +893,10 @@ export class AnalysisQueueService {
                   )
                   this.updateItemStatus(item.id, 'pending', 0)
                 } else if (isAbort) {
-                  logger.info(LogCategory.ANALYSIS_QUEUE, `[并行队列:GPU通道] GPU 任务被中止: ${item.name}`)
+                  logger.info(
+                    LogCategory.ANALYSIS_QUEUE,
+                    `[并行队列:GPU通道] GPU 任务被中止: ${item.name}`
+                  )
                   this.updateItemStatus(item.id, 'pending', 0)
                 } else if (isTransientInfraError(err)) {
                   logger.warn(
@@ -889,7 +913,9 @@ export class AnalysisQueueService {
                         LogCategory.ANALYSIS_QUEUE,
                         `[并行队列:GPU通道] AI 引擎已恢复，重试 GPU AI 分析: ${item.name}`
                       )
-                      this.updateItemStatus(item.id, 'analyzing', 51, undefined, { analysisStage: 3 })
+                      this.updateItemStatus(item.id, 'analyzing', 51, undefined, {
+                        analysisStage: 3
+                      })
                       await this.fileProcessor.processFile(
                         item,
                         signal,
@@ -902,7 +928,9 @@ export class AnalysisQueueService {
                       )
                       cloudSyncWorker.triggerSync(2000)
                     } catch (retryErr: any) {
-                      const isRetryAbort = retryErr && (retryErr.name === 'AbortError' || retryErr.message === 'Aborted')
+                      const isRetryAbort =
+                        retryErr &&
+                        (retryErr.name === 'AbortError' || retryErr.message === 'Aborted')
                       if (isRetryAbort) {
                         this.updateItemStatus(item.id, 'pending', 0)
                       } else {
@@ -1015,7 +1043,11 @@ export class AnalysisQueueService {
           if (isAiStageEnabled()) {
             const modeRes = await engineBridgeService?.ensureMode?.('language')
             if (modeRes && !modeRes.ok) {
-              logger.warn(LogCategory.ANALYSIS_QUEUE, '[普通分析] 切换主语言模型告警:', modeRes.error)
+              logger.warn(
+                LogCategory.ANALYSIS_QUEUE,
+                '[普通分析] 切换主语言模型告警:',
+                modeRes.error
+              )
             }
           }
           if (next.itemType === 'directory') {
@@ -1163,6 +1195,15 @@ export class AnalysisQueueService {
     }
   }
 
+  async cancelUnmatchedTasks(
+    workspaceId: number,
+    allowedExtensions: string[] | null | undefined,
+    directoryPrefix?: string
+  ): Promise<{ cancelledCount: number }> {
+    await this.ensureInitialized()
+    return this.queueManager.cancelUnmatchedTasks(workspaceId, allowedExtensions, directoryPrefix)
+  }
+
   async clearAll(): Promise<void> {
     await this.ensureInitialized()
     if (this.currentAbortController) {
@@ -1231,7 +1272,7 @@ export class AnalysisQueueService {
     }
 
     // 按 fileFingerprint 去重
-    const uniqueMap = new Map<string, typeof incompleteVideos[0]>()
+    const uniqueMap = new Map<string, (typeof incompleteVideos)[0]>()
     for (const v of incompleteVideos) {
       if (!uniqueMap.has(v.fileFingerprint)) {
         uniqueMap.set(v.fileFingerprint, v)
@@ -1278,9 +1319,7 @@ export class AnalysisQueueService {
         : undefined
 
     const currentAnalyzingItem =
-      this.current && this.current.status === 'analyzing'
-        ? { ...this.current }
-        : undefined
+      this.current && this.current.status === 'analyzing' ? { ...this.current } : undefined
 
     const snapshot = this.queueManager.getSnapshot(this.current?.id, workspaceId)
     const isWorkspaceRunning =
@@ -1502,7 +1541,11 @@ export class AnalysisQueueService {
           })
         }
       } catch (broadcastErr) {
-        logger.debug(LogCategory.MAIN, '[AnalysisQueue] 广播 file-analysis-updated 失败(非致命):', broadcastErr)
+        logger.debug(
+          LogCategory.MAIN,
+          '[AnalysisQueue] 广播 file-analysis-updated 失败(非致命):',
+          broadcastErr
+        )
       }
     }
   }
@@ -1705,9 +1748,7 @@ export class AnalysisQueueService {
 
                 // 只有当 extensions 中不包含当前 extension 时才追加
                 if (
-                  !extensions.some(
-                    (e: string) => e.toLowerCase().replace(/^\./, '') === currentExt
-                  )
+                  !extensions.some((e: string) => e.toLowerCase().replace(/^\./, '') === currentExt)
                 ) {
                   // 保持格式一致：检查原 extensions 第一个元素的格式
                   const hasDot = extensions.length > 0 && extensions[0].startsWith('.')
@@ -1896,8 +1937,7 @@ export class AnalysisQueueService {
                   .split(',')
                   .map(
                     item =>
-                      resolvedNames[item] ||
-                      (item.includes('.') ? item.split('.').pop()! : item)
+                      resolvedNames[item] || (item.includes('.') ? item.split('.').pop()! : item)
                   )
               : undefined,
             isAnalyzed: analyzed,
