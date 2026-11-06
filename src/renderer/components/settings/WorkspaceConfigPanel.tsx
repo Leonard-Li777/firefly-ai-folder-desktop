@@ -14,6 +14,15 @@ import { useTierStore } from '../../stores/tier-store'
 import { Card } from '../ui/card'
 import { Button } from '../ui/button'
 import { Label } from '../ui/label'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel
+} from '../ui/alert-dialog'
 import { MaterialIcon, cn } from '../../lib/utils'
 import { toast } from '../common/Toast'
 import { t } from '@app/languages'
@@ -147,6 +156,44 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
     return {}
   })
 
+  // 切换场景/工作流意图二次确认弹窗状态 (方案 B: 参数分层与定案保护)
+  const [showSwitchConfirm, setShowSwitchConfirm] = useState(false)
+  const [pendingIntent, setPendingIntent] = useState<WorkspaceConfigIntent | null>(null)
+
+  const handleIntentCardSelect = (targetIntent: WorkspaceConfigIntent) => {
+    hasUserInteractedRef.current = true
+    if (targetIntent === selectedIntent) return
+    const hasCustomOverrides =
+      Object.keys(overrides).length > 0 ||
+      Boolean(parsedConfig.status === 'ready' && parsedConfig.customIgnoreRules?.length)
+    if (hasCustomOverrides) {
+      setPendingIntent(targetIntent)
+      setShowSwitchConfirm(true)
+    } else {
+      setSelectedIntent(targetIntent)
+      setOverrides({})
+    }
+  }
+
+  const handleConfirmPreserveOverrides = () => {
+    if (pendingIntent) {
+      setSelectedIntent(pendingIntent)
+      toast.success(t('已切换场景，已保留您的自定义高级参数'))
+    }
+    setShowSwitchConfirm(false)
+    setPendingIntent(null)
+  }
+
+  const handleConfirmResetOverrides = () => {
+    if (pendingIntent) {
+      setSelectedIntent(pendingIntent)
+      setOverrides({})
+      toast.success(t('已切换场景，高级参数已重置为默认值'))
+    }
+    setShowSwitchConfirm(false)
+    setPendingIntent(null)
+  }
+
   // 同步外部 workspace 变化
   useEffect(() => {
     const fresh = parseWorkspaceConfig(workspace.workspace_config)
@@ -234,6 +281,8 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
         policyVersion: 1,
         derivedSnapshot,
         overrides: hasOverrides ? overrides : undefined,
+        customIgnoreRules:
+          parsedConfig.status === 'ready' ? parsedConfig.customIgnoreRules : undefined,
         configuredAt: Date.now()
       }
 
@@ -345,18 +394,11 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
                 key={card.id}
                 role="button"
                 tabIndex={0}
-                onClick={() => {
-                  hasUserInteractedRef.current = true
-                  setSelectedIntent(card.id)
-                  // 切换意图时重置非显式覆盖项
-                  setOverrides({})
-                }}
+                onClick={() => handleIntentCardSelect(card.id)}
                 onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault()
-                    hasUserInteractedRef.current = true
-                    setSelectedIntent(card.id)
-                    setOverrides({})
+                    handleIntentCardSelect(card.id)
                   }
                 }}
                 className={cn(
@@ -652,6 +694,52 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
           </Button>
         </div>
       </div>
+
+      {/* 切换工作流/场景二次确认定案弹窗 (方案 B: 参数分层与定案保护) */}
+      <AlertDialog open={showSwitchConfirm} onOpenChange={setShowSwitchConfirm}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              <span>{t('切换工作流与技术参数确认')}</span>
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-xs leading-relaxed text-muted-foreground pt-1">
+              {t(
+                '切换工作流将更新底层模板规则与技术参数。检测到您曾自定义过【高级参数】，是否重置？'
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex flex-col sm:flex-col gap-2 pt-2">
+            <Button
+              type="button"
+              variant="default"
+              size="sm"
+              className="w-full text-xs font-semibold justify-center h-9"
+              onClick={handleConfirmPreserveOverrides}
+            >
+              {t('仅更新工作流模板，保留我的自定义设置(推荐)')}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full text-xs font-semibold justify-center h-9 border-destructive/40 text-destructive hover:bg-destructive/10"
+              onClick={handleConfirmResetOverrides}
+            >
+              {t('彻底重置为新工作流默认值')}
+            </Button>
+            <AlertDialogCancel
+              className="w-full text-xs h-8 mt-1"
+              onClick={() => {
+                setShowSwitchConfirm(false)
+                setPendingIntent(null)
+              }}
+            >
+              {t('取消')}
+            </AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

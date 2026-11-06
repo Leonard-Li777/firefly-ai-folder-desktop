@@ -514,6 +514,17 @@ export function registerSettingsIPCHandlers(): void {
       try {
         const success = await databaseService.updateWorkspaceBoundWorkflow(workspaceId, workflowId)
         if (success) {
+          if (workflowId === null) {
+            logger.info(
+              LogCategory.SETTING,
+              `[工作流解绑] 工作区 ${workspaceId} 已成功解除工作流绑定，白名单快照依法保留`
+            )
+          } else {
+            logger.info(
+              LogCategory.SETTING,
+              `[工作流绑定] 工作区 ${workspaceId} 已成功绑定工作流: ${workflowId}`
+            )
+          }
           BrowserWindow.getAllWindows().forEach(win => {
             if (!win.isDestroyed()) {
               win.webContents.send('workspace-directories-updated')

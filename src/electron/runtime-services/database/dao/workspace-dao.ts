@@ -580,6 +580,17 @@ export class WorkspaceDao {
     const result = this.db
       .prepare('UPDATE workspaces SET bound_workflow_id = ? WHERE workspace_id = ?')
       .run(workflowId, workspaceId)
+    try {
+      this.db
+        .prepare('UPDATE workspace_directories SET bound_workflow_id = ? WHERE workspace_id = ?')
+        .run(workflowId, workspaceId)
+    } catch (err) {
+      logger.warn(
+        LogCategory.DATABASE,
+        `同步更新子目录 bound_workflow_id 异常: ${workspaceId}`,
+        err
+      )
+    }
     return result.changes > 0
   }
 }

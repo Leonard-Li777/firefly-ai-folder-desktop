@@ -866,7 +866,13 @@ export class TagTreeQuery {
       includeAllPresetTags = false
     } = opts
 
+    // includeAllPresetTags 的契约是「回填全部受控预置维度与标签，含文件计数为 0 的标签」，
+    // 目前仅由下方 SQLite CTE 主路径的第 8 步（本地权威配置词表回填）实现。
+    // Omni 快速通道的 buildResponseFromOmniTree 只回传当前作用域内已命中的树节点，
+    // 不带预置词表，若在此提前返回，批量标签 / 维度管理页的 0 计数标签会整体消失。
+    // 故此类请求统一落回主路径，严禁为了性能绕过全量预置标签补全。
     const useOmniFastPath =
+      !includeAllPresetTags &&
       opts.virtualDirectoryId === undefined &&
       (!selectedTags || selectedTags.length === 0) &&
       typeof omniService?.isReady === 'function' &&

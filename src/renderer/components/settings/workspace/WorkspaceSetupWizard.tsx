@@ -20,6 +20,15 @@ import {
 import { useTierStore } from '../../../stores/tier-store'
 import { Button } from '../../ui/button'
 import { Label } from '../../ui/label'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel
+} from '../../ui/alert-dialog'
 import { MaterialIcon, cn } from '../../../lib/utils'
 import { toast } from '../../common/Toast'
 import { t } from '@app/languages'
@@ -522,8 +531,36 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     )
   }, [profileResult, selectedWorkflow])
 
-  // 统一提交就绪配置并绑定工作流
-  const submitConfig = async (flowMode: 'complete' | 'customize') => {
+  // 切换工作流确认弹窗状态 (方案 B: 参数分层与定案保护)
+  const [showSwitchConfirm, setShowSwitchConfirm] = useState(false)
+  const [pendingFlowMode, setPendingFlowMode] = useState<'complete' | 'customize'>('complete')
+
+  // 统一提交入口：若检测到曾自定义过高级参数，弹出方案 B 二次确认
+  const submitConfig = (flowMode: 'complete' | 'customize') => {
+    const hasCustomOverrides =
+      parsedConfig.status === 'ready' &&
+      ((parsedConfig.overrides && Object.keys(parsedConfig.overrides).length > 0) ||
+        (parsedConfig.customIgnoreRules && parsedConfig.customIgnoreRules.length > 0))
+    if (hasCustomOverrides) {
+      setPendingFlowMode(flowMode)
+      setShowSwitchConfirm(true)
+    } else {
+      doSubmitConfig(flowMode, false)
+    }
+  }
+
+  const handleConfirmPreserveOverrides = () => {
+    setShowSwitchConfirm(false)
+    doSubmitConfig(pendingFlowMode, true)
+  }
+
+  const handleConfirmResetOverrides = () => {
+    setShowSwitchConfirm(false)
+    doSubmitConfig(pendingFlowMode, false)
+  }
+
+  // 执行就绪配置持久化与工作流绑定
+  const doSubmitConfig = async (flowMode: 'complete' | 'customize', preserveOverrides: boolean) => {
     if (!workspace.id) {
       toast.error(t('工作区 ID 无效'))
       return
@@ -571,15 +608,21 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
       const existingCustomIgnoreRules =
         parsedConfig.status === 'ready' ? parsedConfig.customIgnoreRules : undefined
 
-      // 就绪配置对象 (清空旧 overrides 确保新工作流基线 100% 完整生效)
+      // 就绪配置对象 (根据用户二次确认决定是保留自定义 overrides 与规则还是彻底重置为新工作流基线)
       const readyConfig: WorkspaceConfig = {
         schemaVersion: 1,
         status: 'ready',
         intent: mapWorkflowToIntent(selectedWorkflow.id),
         policyVersion: 1,
         derivedSnapshot,
-        overrides: undefined,
-        customIgnoreRules: existingCustomIgnoreRules,
+        overrides:
+          preserveOverrides && parsedConfig.status === 'ready' && parsedConfig.overrides
+            ? parsedConfig.overrides
+            : undefined,
+        customIgnoreRules:
+          preserveOverrides && parsedConfig.status === 'ready'
+            ? parsedConfig.customIgnoreRules
+            : undefined,
         configuredAt: Date.now()
       }
 
@@ -593,13 +636,13 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
         await window.electronAPI.updateWorkspaceBoundWorkflow(workspace.id, selectedWorkflow.id)
       }
 
-      // 3. 若为白名单模式，同步持久化白名单扩展名
-      if (
-        selectedWorkflow.filter_mode === 'whitelist' &&
-        whitelistPatterns.length > 0 &&
-        window.electronAPI?.updateWorkspaceWhitelist
-      ) {
-        await window.electronAPI.updateWorkspaceWhitelist(workspace.id, whitelistPatterns)
+      // 3. 过滤规则同步持久化：白名单模式写入扩展名集合，黑名单模式清空白名单恢复全量入场
+      if (window.electronAPI?.updateWorkspaceWhitelist) {
+        if (selectedWorkflow.filter_mode === 'whitelist' && whitelistPatterns.length > 0) {
+          await window.electronAPI.updateWorkspaceWhitelist(workspace.id, whitelistPatterns)
+        } else {
+          await window.electronAPI.updateWorkspaceWhitelist(workspace.id, [])
+        }
       }
 
       if (flowMode === 'complete') {
@@ -1105,6 +1148,49 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
           </Button>
         </div>
       </div>
+
+      {/* 切换工作流二次确认定案弹窗 (方案 B: 参数分层与定案保护) */}
+      <AlertDialog open={showSwitchConfirm} onOpenChange={setShowSwitchConfirm}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              <span>{t('切换工作流与技术参数确认')}</span>
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-xs leading-relaxed text-muted-foreground pt-1">
+              {t(
+                '切换工作流将更新底层模板规则与技术参数。检测到您曾自定义过【高级参数】，是否重置？'
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex flex-col sm:flex-col gap-2 pt-2">
+            <Button
+              type="button"
+              variant="default"
+              size="sm"
+              className="w-full text-xs font-semibold justify-center h-9"
+              onClick={handleConfirmPreserveOverrides}
+            >
+              {t('仅更新工作流模板，保留我的自定义设置(推荐)')}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full text-xs font-semibold justify-center h-9 border-destructive/40 text-destructive hover:bg-destructive/10"
+              onClick={handleConfirmResetOverrides}
+            >
+              {t('彻底重置为新工作流默认值')}
+            </Button>
+            <AlertDialogCancel
+              className="w-full text-xs h-8 mt-1"
+              onClick={() => setShowSwitchConfirm(false)}
+            >
+              {t('取消')}
+            </AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

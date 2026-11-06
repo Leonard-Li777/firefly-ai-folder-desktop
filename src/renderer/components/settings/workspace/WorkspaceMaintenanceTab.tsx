@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { WorkspaceDirectory, WorkspaceConfig, parseWorkspaceConfig } from '@firefly/types'
+import { PRESET_BUILTIN_WORKFLOWS } from '@firefly/shared'
 import { getIntentDisplayName } from '../WorkspaceConfigPanel'
 import { Card } from '../../ui/card'
 import { Button } from '../../ui/button'
@@ -82,6 +83,30 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
   // 空文件夹清理弹窗
   const [showEmptyFolderDialog, setShowEmptyFolderDialog] = useState(false)
   const [isScanningEmptyFolders, setIsScanningEmptyFolders] = useState(false)
+
+  // 绑定的工作流实体与白名单快照
+  const boundWorkflow = useMemo(() => {
+    if (!workspace.bound_workflow_id) return null
+    return PRESET_BUILTIN_WORKFLOWS.find(w => w.id === workspace.bound_workflow_id) || null
+  }, [workspace.bound_workflow_id])
+
+  const whitelistPatterns = useMemo<string[]>(() => {
+    let raw = workspace.whitelist_patterns
+    if (typeof raw === 'string') {
+      try {
+        raw = JSON.parse(raw)
+      } catch {
+        raw = []
+      }
+    }
+    return Array.isArray(raw) ? raw : []
+  }, [workspace.whitelist_patterns])
+
+  // 解绑工作流与清空白名单弹窗状态
+  const [showUnbindDialog, setShowUnbindDialog] = useState(false)
+  const [isUnbinding, setIsUnbinding] = useState(false)
+  const [showClearWhitelistDialog, setShowClearWhitelistDialog] = useState(false)
+  const [isClearingWhitelist, setIsClearingWhitelist] = useState(false)
 
   // 本地监听开关状态
   const [autoWatch, setAutoWatch] = useState<boolean>(Boolean(workspace.autoWatch))
@@ -238,6 +263,80 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
     }
   }
 
+  // 7. 解除工作流绑定 (默认完整保留当前白名单快照，防非目标文件骤然涌入)
+  const handleUnbindWorkflow = async () => {
+    if (!workspace.id) return
+    setIsUnbinding(true)
+    try {
+      if (window.electronAPI?.updateWorkspaceBoundWorkflow) {
+        const res = await window.electronAPI.updateWorkspaceBoundWorkflow(workspace.id, null)
+        if (res?.success) {
+          // 同步更新前端 store 状态
+          const {
+            workspaceDirectories,
+            setWorkspaceDirectories,
+            currentWorkspaceDirectory,
+            setCurrentWorkspaceDirectory
+          } = useVirtualDirectoryStore.getState()
+          const fresh = workspaceDirectories.map(w =>
+            w.id === workspace.id ? { ...w, bound_workflow_id: null } : w
+          )
+          setWorkspaceDirectories(fresh)
+          if (currentWorkspaceDirectory?.id === workspace.id) {
+            setCurrentWorkspaceDirectory({ ...currentWorkspaceDirectory, bound_workflow_id: null })
+          }
+
+          toast.success(t('已解除工作流绑定，当前白名单快照已安全保留'))
+          setShowUnbindDialog(false)
+          onConfigSaved?.()
+        } else {
+          toast.error(res?.error || t('解除工作流绑定失败'))
+        }
+      }
+    } catch (err: any) {
+      toast.error(err?.message || t('解除工作流绑定异常'))
+    } finally {
+      setIsUnbinding(false)
+    }
+  }
+
+  // 8. 显式清空白名单并恢复全量模式
+  const handleClearWhitelist = async () => {
+    if (!workspace.id) return
+    setIsClearingWhitelist(true)
+    try {
+      if (window.electronAPI?.updateWorkspaceWhitelist) {
+        const res = await window.electronAPI.updateWorkspaceWhitelist(workspace.id, [])
+        if (res?.success) {
+          // 同步更新前端 store 状态
+          const {
+            workspaceDirectories,
+            setWorkspaceDirectories,
+            currentWorkspaceDirectory,
+            setCurrentWorkspaceDirectory
+          } = useVirtualDirectoryStore.getState()
+          const fresh = workspaceDirectories.map(w =>
+            w.id === workspace.id ? { ...w, whitelist_patterns: [] } : w
+          )
+          setWorkspaceDirectories(fresh)
+          if (currentWorkspaceDirectory?.id === workspace.id) {
+            setCurrentWorkspaceDirectory({ ...currentWorkspaceDirectory, whitelist_patterns: [] })
+          }
+
+          toast.success(t('白名单已清空，已恢复为标准全量入场模式'))
+          setShowClearWhitelistDialog(false)
+          onConfigSaved?.()
+        } else {
+          toast.error(res?.error || t('清空白名单失败'))
+        }
+      }
+    } catch (err: any) {
+      toast.error(err?.message || t('清空白名单异常'))
+    } finally {
+      setIsClearingWhitelist(false)
+    }
+  }
+
   return (
     <div className="p-6 space-y-4 max-w-4xl mx-auto overflow-y-auto max-h-full">
       {/* 头部说明 */}
@@ -290,19 +389,29 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border/40 text-[11px] text-muted-foreground">
-          <div className="flex items-center gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-border/40 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-2 min-w-0">
             <Layers className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
             <span>{t('场景意图: ')}</span>
-            <span className="font-semibold text-foreground">
+            <span className="font-semibold text-foreground truncate">
               {isReady ? getIntentDisplayName(parsedConfig.intent) : t('未指定')}
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <Sparkles className="w-3.5 h-3.5 shrink-0 text-primary" />
+            <span>{t('绑定工作流: ')}</span>
+            <span className="font-semibold text-foreground truncate">
+              {boundWorkflow
+                ? boundWorkflow.name
+                : workspace.bound_workflow_id || t('未绑定 (标准模式)')}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 min-w-0">
             <Calendar className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
             <span>{t('添加时间: ')}</span>
-            <span className="font-semibold text-foreground">
+            <span className="font-semibold text-foreground truncate">
               {workspace.createdAt ? new Date(workspace.createdAt).toLocaleString() : '-'}
             </span>
           </div>
@@ -442,6 +551,110 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
         </Button>
       </Card>
 
+      {/* 6. 条目 5: 工作流绑定与白名单快照保护 (Ticket 03: 非破坏性快照与独立清空) */}
+      <Card className="p-4 border-border/70 hover:border-border transition-colors space-y-3">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 mt-0.5">
+              <Layers className="w-4 h-4" />
+            </div>
+            <div className="space-y-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h4 className="text-sm font-bold text-foreground">
+                  {t('工作流绑定与白名单快照保护')}
+                </h4>
+                {workspace.bound_workflow_id ? (
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-600 dark:text-purple-400">
+                    {t('已绑定: {name}', {
+                      name: boundWorkflow ? boundWorkflow.name : workspace.bound_workflow_id
+                    })}
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                    {t('未绑定 (通用模式)')}
+                  </span>
+                )}
+                {whitelistPatterns.length > 0 && (
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400">
+                    {t('白名单快照生效中 ({count})', { count: whitelistPatterns.length })}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {workspace.bound_workflow_id
+                  ? t(
+                      '已绑定专属业务工作流。解除绑定后目录将恢复为通用模式，且自动保留白名单快照防止非目标文件涌入。'
+                    )
+                  : t(
+                      '当前目录未绑定专属工作流。若存在白名单快照，将继续作为安全保护生效，亦可随时清空恢复全量模式。'
+                    )}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+            {Boolean(workspace.bound_workflow_id) && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isUnbinding}
+                onClick={() => setShowUnbindDialog(true)}
+                className="text-xs font-semibold h-8 px-3 text-muted-foreground hover:text-foreground"
+              >
+                {isUnbinding ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : null}
+                <span>{t('解除工作流绑定')}</span>
+              </Button>
+            )}
+            {whitelistPatterns.length > 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isClearingWhitelist}
+                onClick={() => setShowClearWhitelistDialog(true)}
+                className="text-xs font-semibold h-8 px-3 border-amber-500/30 text-amber-600 hover:bg-amber-500/10 dark:text-amber-400"
+              >
+                {isClearingWhitelist ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : null}
+                <span>{t('清空白名单并恢复全量模式')}</span>
+              </Button>
+            )}
+            {!workspace.bound_workflow_id && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onRerunWizard}
+                className="text-xs font-semibold h-8 px-3 flex items-center gap-1.5"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>{t('前往绑定工作流')}</span>
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {whitelistPatterns.length > 0 && (
+          <div className="pt-2 border-t border-border/40 text-[11px] text-muted-foreground flex items-center gap-2 flex-wrap">
+            <ShieldCheck className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+            <span className="font-medium text-foreground">{t('生效中扩展名快照:')}</span>
+            <div className="flex items-center gap-1 flex-wrap font-mono text-[10px]">
+              {whitelistPatterns.slice(0, 8).map(ext => (
+                <span
+                  key={ext}
+                  className="px-1.5 py-0.5 rounded bg-muted/80 text-foreground border border-border/60"
+                >
+                  {ext}
+                </span>
+              ))}
+              {whitelistPatterns.length > 8 && (
+                <span className="text-muted-foreground">+{whitelistPatterns.length - 8}</span>
+              )}
+            </div>
+          </div>
+        )}
+      </Card>
+
       {/* 6. 条目 5: 两段式安全重置 AI 分析数据 */}
       <Card className="p-4 flex items-center justify-between gap-4 border-destructive/30 bg-destructive/5 dark:bg-destructive/10 hover:border-destructive/40 transition-colors">
         <div className="flex items-start gap-3 min-w-0">
@@ -578,6 +791,93 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
               )}
               <span>{t('确认移除')}</span>
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* 解除工作流绑定确认对话框 (非破坏性快照保护) */}
+      <AlertDialog open={showUnbindDialog} onOpenChange={setShowUnbindDialog}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Layers className="h-5 w-5 text-primary" />
+              <span>{t('确认解除工作流绑定？')}</span>
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="text-xs leading-relaxed space-y-2 text-muted-foreground">
+                <p>
+                  {t('解除工作流绑定后，该目录将切换为通用管理模式，不再受特定工作流规则统领。')}
+                </p>
+                <div className="p-2.5 rounded-lg bg-blue-500/10 text-blue-700 dark:text-blue-300 flex items-start gap-2 border border-blue-500/20">
+                  <ShieldCheck className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+                  <span>
+                    {t(
+                      '【快照安全保护】：为防止非目标垃圾文件骤然涌入分析队列，当前生效的白名单扩展名（共 {count} 项）将作为安全快照完整保留。',
+                      { count: whitelistPatterns.length }
+                    )}
+                  </span>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex flex-col sm:flex-row gap-2">
+            <AlertDialogCancel disabled={isUnbinding} className="text-xs">
+              {t('取消')}
+            </AlertDialogCancel>
+            <Button
+              type="button"
+              variant="default"
+              disabled={isUnbinding}
+              onClick={handleUnbindWorkflow}
+              className="text-xs font-semibold flex items-center gap-1.5"
+            >
+              {isUnbinding && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              <span>{t('解除绑定 (保留快照)')}</span>
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* 清空白名单并恢复全量模式确认对话框 */}
+      <AlertDialog open={showClearWhitelistDialog} onOpenChange={setShowClearWhitelistDialog}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+              <AlertTriangle className="h-5 w-5" />
+              <span>{t('确认清空白名单并恢复全量模式？')}</span>
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="text-xs leading-relaxed space-y-2 text-muted-foreground">
+                <p>
+                  {t(
+                    '清空白名单后，目录将恢复为标准全量入场模式。除系统与自定义排除规则拦截的项目外，所有新增与存量合法文件都将纳入扫描与 AI 分析队列。'
+                  )}
+                </p>
+                <div className="p-2.5 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300 flex items-start gap-2 border border-amber-500/20">
+                  <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                  <span>
+                    {t('此操作将清空当前已配置的 {count} 项扩展名放行白名单，并触发增量补扫。', {
+                      count: whitelistPatterns.length
+                    })}
+                  </span>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex flex-col sm:flex-row gap-2">
+            <AlertDialogCancel disabled={isClearingWhitelist} className="text-xs">
+              {t('取消')}
+            </AlertDialogCancel>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={isClearingWhitelist}
+              onClick={handleClearWhitelist}
+              className="text-xs font-semibold flex items-center gap-1.5"
+            >
+              {isClearingWhitelist && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              <span>{t('清空白名单并恢复全量')}</span>
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
