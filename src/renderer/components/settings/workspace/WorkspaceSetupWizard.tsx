@@ -12,7 +12,6 @@ import {
   TechnicalEngineParameters
 } from '@firefly/types'
 import {
-  PRESET_BUILTIN_WORKFLOWS,
   recommendWorkflowByProfile,
   DirectoryProfileStats,
   mapIntentToParameters
@@ -425,8 +424,8 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     }
   }, [profileResult])
 
-  // 官方与本地工作流列表（从 ConfigDbManager 数据中枢获取，默认降级 PRESET_BUILTIN_WORKFLOWS）
-  const [workflows, setWorkflows] = useState<any[]>(() => PRESET_BUILTIN_WORKFLOWS)
+  // 官方与本地工作流列表（从 ConfigDbManager 数据中枢获取）
+  const [workflows, setWorkflows] = useState<any[]>([])
 
   useEffect(() => {
     let isMounted = true

@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { WorkspaceDirectory, WorkspaceConfig, parseWorkspaceConfig } from '@firefly/types'
-import { PRESET_BUILTIN_WORKFLOWS } from '@firefly/shared'
 import { getIntentDisplayName } from '../WorkspaceConfigPanel'
 import { Card } from '../../ui/card'
 import { Button } from '../../ui/button'
@@ -84,8 +83,8 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
   const [showEmptyFolderDialog, setShowEmptyFolderDialog] = useState(false)
   const [isScanningEmptyFolders, setIsScanningEmptyFolders] = useState(false)
 
-  // 工作流列表（从 ConfigDbManager 数据中枢获取，默认降级 PRESET_BUILTIN_WORKFLOWS）
-  const [workflows, setWorkflows] = useState<any[]>(() => PRESET_BUILTIN_WORKFLOWS)
+  // 工作流列表（从 ConfigDbManager 数据中枢获取）
+  const [workflows, setWorkflows] = useState<any[]>([])
 
   useEffect(() => {
     let isMounted = true
