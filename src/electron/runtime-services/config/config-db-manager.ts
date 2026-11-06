@@ -23,7 +23,6 @@ import { BrowserWindow } from 'electron'
 import type Database from 'better-sqlite3'
 import { resolveAppRegion } from '../../main/worktree-env'
 import { LocalWorkflowDao, LocalWorkflowRecord } from '../database/dao/modular-resource-dao'
-import { LOCAL_WORKFLOW_CONFIG_SOURCE } from '../../config/local-workflow-source'
 // ADR-0038 / Issue #682 与主设计 §7/§8（Fix-03）：
 // 原 builtin identity / fileDimension 灌库链路（buildBuiltinTagIdentity / buildBuiltinImportPlan
 // / tag_aliases 单表 / file_tags source='builtin' 行）已随单体 tag_aliases 表一并废弃删除，
@@ -466,27 +465,26 @@ export class ConfigDbManager {
         configPath = this.getConfigFilePath('local_workflow_zh-CN.json')
       }
 
-      let workflows: any[] = []
-      if (fs.existsSync(configPath)) {
-        const raw = fs.readFileSync(configPath, 'utf-8')
-        try {
-          workflows = JSON.parse(raw)
-        } catch (e) {
-          logger.warn(
-            LogCategory.CONFIG,
-            'ConfigDbManager: 解析 local_workflow JSON 失败，回退源码配置:',
-            e
-          )
-        }
+      if (!fs.existsSync(configPath)) {
+        logger.error(
+          LogCategory.CONFIG,
+          `ConfigDbManager: 初始 local_workflow 配置文件不存在: ${configPath}`
+        )
+        return
       }
 
-      // 如果未找到 JSON 资源或解析为空，使用 LOCAL_WORKFLOW_CONFIG_SOURCE 作为强健保底
+      const raw = fs.readFileSync(configPath, 'utf-8')
+      let workflows: any[] = []
+      try {
+        workflows = JSON.parse(raw)
+      } catch (e) {
+        logger.error(LogCategory.CONFIG, 'ConfigDbManager: 解析 local_workflow JSON 失败:', e)
+        return
+      }
+
       if (!Array.isArray(workflows) || workflows.length === 0) {
-        logger.info(
-          LogCategory.CONFIG,
-          `ConfigDbManager: 使用 LOCAL_WORKFLOW_CONFIG_SOURCE 作为官方工作流保底数据源`
-        )
-        workflows = LOCAL_WORKFLOW_CONFIG_SOURCE()
+        logger.error(LogCategory.CONFIG, 'ConfigDbManager: local_workflow 配置格式非法或内容为空')
+        return
       }
 
       const dao = new LocalWorkflowDao(db)
