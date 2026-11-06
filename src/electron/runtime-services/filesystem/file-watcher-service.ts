@@ -1,17 +1,27 @@
 import chokidar from 'chokidar'
 import path from 'node:path'
 import fs from 'node:fs'
-import { logger, LogCategory, isSubPath, calculateFileFingerprint } from '@firefly/shared'
+import {
+  logger,
+  LogCategory,
+  isSubPath,
+  calculateFileFingerprint,
+  compileWhitelistExtSet,
+  shouldIngressFile
+} from '@firefly/shared'
 import { databaseService } from '../database/database-service'
 import { analysisQueueService } from '../analysis-queue-service'
 import { loadIgnoreRules, shouldIgnoreFile } from '../analysis/analysis-ignore-service'
 import type { IIgnoreRule } from '@firefly/types'
+
+export { shouldIngressFile }
 
 /**
  * 文件监听服务类
  */
 class FileWatcherService {
   private watchers: Map<number, ReturnType<typeof chokidar.watch>> = new Map()
+  private workspaceWhitelistCache: Map<number, ReadonlySet<string> | null> = new Map()
   private ignoreRules: IIgnoreRule[] = []
   private isInitialized = false
   private syncingPaths: Set<string> = new Set()
@@ -145,6 +155,17 @@ class FileWatcherService {
       }
 
       logger.info(LogCategory.FILE_WATCHER, `开始监听目录: ${directoryPath}`)
+      try {
+        const dirConfig = await databaseService.getWorkspaceDirectoryById(workspaceId)
+        if (dirConfig?.whitelist_patterns) {
+          this.workspaceWhitelistCache.set(
+            workspaceId,
+            compileWhitelistExtSet(dirConfig.whitelist_patterns)
+          )
+        }
+      } catch (err) {
+        logger.warn(LogCategory.FILE_WATCHER, `加载工作区 ID: ${workspaceId} 白名单配置失败:`, err)
+      }
 
       // 创建监听器
       const watcher = chokidar.watch(directoryPath, {
@@ -164,6 +185,10 @@ class FileWatcherService {
 
       // 监听新增文件事件
       watcher.on('add', async (filePath: string) => {
+        const allowedExts = this.workspaceWhitelistCache.get(workspaceId) ?? null
+        if (!shouldIngressFile(filePath, false, allowedExts, this.ignoreRules)) {
+          return
+        }
         await this.handleFileAdded(workspaceId, directoryPath, filePath, true)
       })
 
@@ -185,6 +210,10 @@ class FileWatcherService {
 
       // 监听文件修改事件
       watcher.on('change', async (filePath: string) => {
+        const allowedExts = this.workspaceWhitelistCache.get(workspaceId) ?? null
+        if (!shouldIngressFile(filePath, false, allowedExts, this.ignoreRules)) {
+          return
+        }
         await this.handleFileChanged(workspaceId, directoryPath, filePath, true)
       })
 
@@ -226,6 +255,7 @@ class FileWatcherService {
       if (watcher) {
         await watcher.close()
         this.watchers.delete(workspaceId)
+        this.workspaceWhitelistCache.delete(workspaceId)
         logger.info(LogCategory.FILE_WATCHER, `已停止监听目录 ID: ${workspaceId}`)
       }
     } catch (error) {
@@ -239,6 +269,15 @@ class FileWatcherService {
    * @param dirPath 目录路径
    * @param triggerAnalysis 是否触发新文件的分析
    */
+  getWorkspaceWhitelist(workspaceId: number): ReadonlySet<string> | null {
+    return this.workspaceWhitelistCache.get(workspaceId) ?? null
+  }
+
+  updateWorkspaceWhitelist(workspaceId: number, patterns: string[] | null | undefined): void {
+    this.workspaceWhitelistCache.set(workspaceId, compileWhitelistExtSet(patterns))
+    logger.info(LogCategory.FILE_WATCHER, `工作区 ID: ${workspaceId} 白名单已更新`)
+  }
+
   async syncDirectory(dirPath: string, triggerAnalysis = false): Promise<void> {
     if (!this.isInitialized) {
       this.ignoreRules = loadIgnoreRules()
@@ -267,6 +306,12 @@ class FileWatcherService {
       const workspace = await databaseService.findRootWorkspaceDirectory(dirPath)
       if (!workspace || !workspace.id) return
 
+      let allowedExts = this.workspaceWhitelistCache.get(workspace.id)
+      if (allowedExts === undefined && workspace.whitelist_patterns) {
+        allowedExts = compileWhitelistExtSet(workspace.whitelist_patterns)
+        this.workspaceWhitelistCache.set(workspace.id, allowedExts)
+      }
+
       // 2. 单层级扫描磁盘文件与子目录（不递归子目录——子目录延迟到用户进入时同步）
       const diskFileMap = new Map<string, fs.Stats>()
       const diskDirSet = new Set<string>()
@@ -279,6 +324,8 @@ class FileWatcherService {
         if (shouldIgnoreFile(fullPath, entry.name, this.ignoreRules)) continue
 
         if (entry.isFile()) {
+          // 门禁 B：白名单首行硬阻断，未准入文件彻底短路，绝对不触发 fs.statSync、落库与加入队列
+          if (!shouldIngressFile(fullPath, false, allowedExts, this.ignoreRules)) continue
           try {
             diskFileMap.set(fullPath, fs.statSync(fullPath))
           } catch (e) {
@@ -403,7 +450,23 @@ class FileWatcherService {
     autoWatchEnabled?: boolean,
     skipNotify?: boolean
   ): Promise<void> {
-    // 【防护1】检查是否正在处理此文件
+    // 【门禁0】白名单排他过滤短路丢弃 (Issue 12a AC 1)
+    let allowedExts = this.workspaceWhitelistCache.get(workspaceId)
+    if (allowedExts === undefined) {
+      try {
+        const ws = await databaseService.getWorkspaceDirectoryById(workspaceId)
+        if (ws?.whitelist_patterns) {
+          allowedExts = compileWhitelistExtSet(ws.whitelist_patterns)
+          this.workspaceWhitelistCache.set(workspaceId, allowedExts)
+        }
+      } catch {
+        // 容错降级
+      }
+    }
+    if (!shouldIngressFile(filePath, false, allowedExts, this.ignoreRules)) {
+      return
+    }
+
     if (this.processingFiles.has(filePath)) {
       logger.debug(LogCategory.FILE_WATCHER, `文件正在处理中，跳过添加: ${filePath}`)
       return
@@ -494,6 +557,23 @@ class FileWatcherService {
     autoWatchEnabled?: boolean,
     skipNotify?: boolean
   ): Promise<void> {
+    // 【门禁0】白名单排他过滤短路丢弃 (Issue 12a AC 1)
+    let allowedExts = this.workspaceWhitelistCache.get(workspaceId)
+    if (allowedExts === undefined) {
+      try {
+        const ws = await databaseService.getWorkspaceDirectoryById(workspaceId)
+        if (ws?.whitelist_patterns) {
+          allowedExts = compileWhitelistExtSet(ws.whitelist_patterns)
+          this.workspaceWhitelistCache.set(workspaceId, allowedExts)
+        }
+      } catch {
+        // 容错降级
+      }
+    }
+    if (!shouldIngressFile(filePath, false, allowedExts, this.ignoreRules)) {
+      return
+    }
+
     if (this.processingFiles.has(filePath)) {
       logger.debug(LogCategory.FILE_WATCHER, `文件正在处理中，跳过修改处理: ${filePath}`)
       return

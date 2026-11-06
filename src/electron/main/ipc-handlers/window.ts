@@ -40,7 +40,12 @@ export function registerWindowIPCHandlers() {
         contextIsolation: true,
         nodeIntegration: false,
         webSecurity: false,
-        additionalArguments: [`--is-packaged=${app.isPackaged}`, `--preview-path=${filePath}`]
+        sandbox: true,
+        additionalArguments: [
+          `--is-packaged=${app.isPackaged}`,
+          `--app-region=${process.env.APP_REGION || 'intl'}`,
+          `--preview-path=${filePath}`
+        ]
       }
     })
 

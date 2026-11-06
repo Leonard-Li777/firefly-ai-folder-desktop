@@ -42,6 +42,11 @@ protocol.registerSchemesAsPrivileged([
     }
   }
 ])
+
+// Linux 平台代码级追加 --no-sandbox 兼容国产系统与老旧内核 (Spec §2.2)
+if (process.platform === 'linux') {
+  app.commandLine.appendSwitch('no-sandbox')
+}
 import * as path from 'node:path'
 import {
   logger,
@@ -53,7 +58,10 @@ import {
 import { loggingService } from '../runtime-services/system/logging-service'
 // 逆地理编码适配器注册：将 omniService 能力注入 core-engine（模块求值即注册，须早于任何维度分析）
 import '../runtime-services/system/geo-adapter'
-import { touchActiveWorktree } from './worktree-env'
+import { touchActiveWorktree, resolveAppRegion } from './worktree-env'
+
+// 注入客户端全局应用级区域常量单例 (Spec §2.2 / §4.4)
+process.env.APP_REGION = resolveAppRegion()
 import { processReaper } from './process-reaper'
 import { iconExtractorClient } from './icon-extractor-client'
 import { createWindow, getMainWindow } from './window'

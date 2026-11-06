@@ -340,7 +340,8 @@ export const createWindow = () => {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      webSecurity: false
+      webSecurity: false,
+      sandbox: true
     }
   })
 
@@ -378,7 +379,7 @@ export const createWindow = () => {
       contextIsolation: true,
       nodeIntegration: false,
       webSecurity: false,
-      sandbox: false,
+      sandbox: true,
       additionalArguments: [
         `--is-packaged=${app.isPackaged}`,
         `--app-region=${appRegion}`,
@@ -529,7 +530,7 @@ export const createPreviewWindow = (params: { filePath: string; extension: strin
       contextIsolation: true,
       nodeIntegration: false,
       webSecurity: false,
-      sandbox: false,
+      sandbox: true,
       additionalArguments: [`--is-packaged=${app.isPackaged}`, `--app-region=${resolveAppRegion()}`]
     }
   })
@@ -603,7 +604,7 @@ export const createQueueWindow = (): BrowserWindow => {
       contextIsolation: true,
       nodeIntegration: false,
       webSecurity: false,
-      sandbox: false,
+      sandbox: true,
       additionalArguments: [`--is-packaged=${app.isPackaged}`, `--app-region=${resolveAppRegion()}`]
     }
   })

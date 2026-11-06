@@ -688,7 +688,11 @@ export default defineConfig(({ command, mode }) => {
           formats: ['cjs']
         },
         rollupOptions: {
-          external: ['electron']
+          external: ['electron'],
+          output: {
+            // 防御性冗余配置：强制将所有动态依赖内联至单文件，防止未来误引产生外部 chunk
+            inlineDynamicImports: true
+          }
         }
       }
     },
