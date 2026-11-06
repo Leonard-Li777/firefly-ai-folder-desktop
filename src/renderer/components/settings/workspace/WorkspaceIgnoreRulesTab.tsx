@@ -147,7 +147,10 @@ export const WorkspaceIgnoreRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> = (
   // 4. 白名单添加与预设处理
   const handleAddTag = (rawText: string) => {
     const trimmed = rawText.trim()
-    if (!trimmed) return
+    if (!trimmed) {
+      toast.info(t('请输入合法的扩展名，例如 .cr3 或 docx'))
+      return
+    }
     const parts = trimmed.split(/[,;\s]+/).filter(Boolean)
     const normalized = parts
       .map(p => {
@@ -156,7 +159,10 @@ export const WorkspaceIgnoreRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> = (
       })
       .filter(p => /^\.[a-z0-9_-]+$/i.test(p))
 
-    if (normalized.length === 0) return
+    if (normalized.length === 0) {
+      toast.info(t('请输入合法的扩展名，例如 .cr3 或 docx'))
+      return
+    }
 
     setWhitelistTags(prev => {
       const set = new Set(prev)
@@ -218,32 +224,30 @@ export const WorkspaceIgnoreRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> = (
     }
   }
 
-  // 预设分类扩展名库
-  const PRESET_GROUPS = useMemo(
-    () => [
-      {
-        name: t('常用文档'),
-        extensions: ['.docx', '.pdf', '.xlsx', '.pptx', '.txt', '.md']
-      },
-      {
-        name: t('摄影与RAW'),
-        extensions: ['.cr3', '.cr2', '.arw', '.nef', '.dng', '.jpg', '.png']
-      },
-      {
-        name: t('影视视频'),
-        extensions: ['.mp4', '.mov', '.mkv', '.avi']
-      },
-      {
-        name: t('音乐音频'),
-        extensions: ['.mp3', '.wav', '.flac', '.m4a']
-      },
-      {
-        name: t('设计工程'),
-        extensions: ['.psd', '.ai', '.blend', '.step', '.dwg']
-      }
-    ],
-    []
-  )
+  // 预设分类扩展名库 (动态获取，遵守 AGENTS.md §2.6 语言热切换铁律)
+  const getPresetGroups = () => [
+    {
+      name: t('常用文档'),
+      extensions: ['.docx', '.pdf', '.xlsx', '.pptx', '.txt', '.md']
+    },
+    {
+      name: t('摄影与RAW'),
+      extensions: ['.cr3', '.cr2', '.arw', '.nef', '.dng', '.jpg', '.png']
+    },
+    {
+      name: t('影视视频'),
+      extensions: ['.mp4', '.mov', '.mkv', '.avi']
+    },
+    {
+      name: t('音乐音频'),
+      extensions: ['.mp3', '.wav', '.flac', '.m4a']
+    },
+    {
+      name: t('设计工程'),
+      extensions: ['.psd', '.ai', '.blend', '.step', '.dwg']
+    }
+  ]
+  const presetGroups = getPresetGroups()
 
   // 5. 解析当前工作区黑名单配置
   const parsedConfig = useMemo<WorkspaceConfig>(() => {
@@ -350,8 +354,8 @@ export const WorkspaceIgnoreRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> = (
     impact.totalFiles > 0
       ? Math.min(100, Math.max(0, Math.round((impact.includedFiles / impact.totalFiles) * 100)))
       : mode === 'standard'
-      ? 100
-      : 0
+        ? 100
+        : 0
   const outPct = 100 - inPct
 
   return (
@@ -443,7 +447,9 @@ export const WorkspaceIgnoreRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> = (
                   <div className="text-xs font-bold text-foreground">
                     {t('标准模式 (全量入场)')}
                   </div>
-                  <div className="text-[10px] text-muted-foreground">{t('全量入场，受黑名单排除')}</div>
+                  <div className="text-[10px] text-muted-foreground">
+                    {t('全量入场，受黑名单排除')}
+                  </div>
                 </div>
               </div>
               <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary shrink-0">
@@ -451,7 +457,9 @@ export const WorkspaceIgnoreRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> = (
               </span>
             </div>
             <p className="text-[11px] text-muted-foreground leading-relaxed mt-1">
-              {t('目录中所有支持的文件类型均会进入 AI 索引与分析，仅排除下方黑名单中的文件或目录。')}
+              {t(
+                '目录中所有支持的文件类型均会进入 AI 索引与分析，仅排除下方黑名单中的文件或目录。'
+              )}
             </p>
           </div>
 
@@ -481,7 +489,9 @@ export const WorkspaceIgnoreRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> = (
                   <div className="text-xs font-bold text-foreground">
                     {t('排他白名单模式 (仅放行指定格式)')}
                   </div>
-                  <div className="text-[10px] text-muted-foreground">{t('精准过滤，仅目标格式进入')}</div>
+                  <div className="text-[10px] text-muted-foreground">
+                    {t('精准过滤，仅目标格式进入')}
+                  </div>
                 </div>
               </div>
               <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary shrink-0">
@@ -489,7 +499,9 @@ export const WorkspaceIgnoreRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> = (
               </span>
             </div>
             <p className="text-[11px] text-muted-foreground leading-relaxed mt-1">
-              {t('仅放行指定扩展名（如 RAW 底片、工程图纸或专有文档）进入 AI 队列，其余文件完全跳过。')}
+              {t(
+                '仅放行指定扩展名（如 RAW 底片、工程图纸或专有文档）进入 AI 队列，其余文件完全跳过。'
+              )}
             </p>
           </div>
         </div>
@@ -583,7 +595,7 @@ export const WorkspaceIgnoreRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> = (
               {t('常用类型快速选用')}
             </div>
             <div className="space-y-2">
-              {PRESET_GROUPS.map(group => (
+              {presetGroups.map(group => (
                 <div key={group.name} className="flex items-center gap-2 flex-wrap text-xs">
                   <span className="text-[11px] text-muted-foreground w-20 shrink-0">
                     {group.name}:
@@ -628,7 +640,9 @@ export const WorkspaceIgnoreRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> = (
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-primary" />
             <span className="text-xs font-bold text-foreground">{t('预期影响测算')}</span>
-            {isCalculatingImpact && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />}
+            {isCalculatingImpact && (
+              <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
+            )}
           </div>
           {impact.totalFiles > 0 && (
             <span className="text-[10px] text-muted-foreground font-mono">
@@ -652,14 +666,18 @@ export const WorkspaceIgnoreRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> = (
                     '当前为标准全量模式。检测到目录下共 {totalFiles} 个文件，全部将纳入 AI 深度分析（受下方专属黑名单约束）。',
                     { totalFiles: impact.totalFiles }
                   )
-                : t('当前为标准全量模式，目录下所有支持的文件均将纳入 AI 索引与分析（受下方黑名单约束）。')}
+                : t(
+                    '当前为标准全量模式，目录下所有支持的文件均将纳入 AI 索引与分析（受下方黑名单约束）。'
+                  )}
             </p>
           </div>
         ) : whitelistTags.length === 0 ? (
           <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
             <AlertTriangle className="w-4 h-4 shrink-0" />
             <span>
-              {t('白名单为空：若保存为空白名单，系统将安全回退为全量放行模式，避免全部文件被过滤。')}
+              {t(
+                '白名单为空：若保存为空白名单，系统将安全回退为全量放行模式，避免全部文件被过滤。'
+              )}
             </span>
           </div>
         ) : (
@@ -758,7 +776,9 @@ export const WorkspaceIgnoreRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> = (
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <Label className="text-[11px] text-muted-foreground mb-1 block">{t('匹配类型')}</Label>
+                <Label className="text-[11px] text-muted-foreground mb-1 block">
+                  {t('匹配类型')}
+                </Label>
                 <Select
                   value={newRule.type}
                   onValueChange={val => setNewRule(prev => ({ ...prev, type: val as any }))}
@@ -777,14 +797,16 @@ export const WorkspaceIgnoreRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> = (
               </div>
 
               <div className="sm:col-span-2">
-                <Label className="text-[11px] text-muted-foreground mb-1 block">{t('匹配值')}</Label>
+                <Label className="text-[11px] text-muted-foreground mb-1 block">
+                  {t('匹配值')}
+                </Label>
                 <Input
                   placeholder={
                     newRule.type === 'directory'
                       ? 'build, dist, test_data'
                       : newRule.type === 'extension'
-                      ? '.bak, .tmp'
-                      : t('输入要排除的名称或模式')
+                        ? '.bak, .tmp'
+                        : t('输入要排除的名称或模式')
                   }
                   value={newRule.value}
                   onChange={e => setNewRule(prev => ({ ...prev, value: e.target.value }))}
@@ -794,7 +816,9 @@ export const WorkspaceIgnoreRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> = (
             </div>
 
             <div>
-              <Label className="text-[11px] text-muted-foreground mb-1 block">{t('备注说明 (可选)')}</Label>
+              <Label className="text-[11px] text-muted-foreground mb-1 block">
+                {t('备注说明 (可选)')}
+              </Label>
               <Input
                 placeholder={t('例如：本地临时编译构建输出目录')}
                 value={newRule.description || ''}
@@ -833,7 +857,9 @@ export const WorkspaceIgnoreRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> = (
           <div className="p-4 text-center rounded-xl border border-dashed border-border/70 text-muted-foreground text-xs space-y-1">
             <p>{t('当前工作目录暂无专属排除规则，仅遵守下方系统全局基线。')}</p>
             <p className="text-[11px] text-muted-foreground/70">
-              {t('若该目录下有专用的临时构建、缓存或私人文件夹无需分析，可点击上方「添加排除项」。')}
+              {t(
+                '若该目录下有专用的临时构建、缓存或私人文件夹无需分析，可点击上方「添加排除项」。'
+              )}
             </p>
           </div>
         ) : (

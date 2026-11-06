@@ -239,7 +239,9 @@ export function registerSettingsIPCHandlers(): void {
       if (!virtualDirectoryCleaned) {
         return {
           success: true,
-          warning: t('工作目录已移除，但缓存目录 .VirtualDirectory 删除失败（可能被占用），请稍后手动删除')
+          warning: t(
+            '工作目录已移除，但缓存目录 .VirtualDirectory 删除失败（可能被占用），请稍后手动删除'
+          )
         }
       }
 
@@ -278,7 +280,8 @@ export function registerSettingsIPCHandlers(): void {
         }
 
         // Phase 1: SQLite 事务内清空数据并提交
-        const resetFingerprints = await databaseService.resetWorkspaceDirectoryAnalysis(directoryPath)
+        const resetFingerprints =
+          await databaseService.resetWorkspaceDirectoryAnalysis(directoryPath)
         omniClient.clearTaxonomyTreeCache()
 
         // Phase 2: 严格在 SQLite 事务提交后，在事务外部异步清理 Omni 向量索引 (包含主指纹与分块切片指纹)
@@ -397,6 +400,129 @@ export function registerSettingsIPCHandlers(): void {
         return { success }
       } catch (error) {
         logger.error(LogCategory.SETTING, `更新工作区配置失败: ${workspaceId}`, error)
+        return { success: false, error: (error as any)?.message || String(error) }
+      }
+    }
+  )
+
+  // 更新工作区白名单规则并联动取消队列中不匹配任务
+  ipcMain.handle(
+    'update-workspace-whitelist',
+    async (_event, workspaceId: number, patterns: string[]) => {
+      try {
+        const success = await databaseService.updateWorkspaceWhitelistPatterns(
+          workspaceId,
+          patterns
+        )
+        if (success) {
+          fileWatcherService.updateWorkspaceWhitelist(workspaceId, patterns)
+          await analysisQueueService.cancelUnmatchedTasks(workspaceId, patterns)
+
+          // 放宽白名单或重置白名单时，触发增量补扫
+          const workspace = await databaseService.getWorkspaceDirectoryById(workspaceId)
+          if (workspace?.path) {
+            fileWatcherService.syncDirectory(workspace.path, true).catch(err => {
+              logger.warn(LogCategory.SETTING, `白名单更新后增量同步失败: ${workspace.path}`, err)
+            })
+          }
+
+          BrowserWindow.getAllWindows().forEach(win => {
+            if (!win.isDestroyed()) {
+              win.webContents.send('workspace-directories-updated')
+            }
+          })
+        }
+        return { success }
+      } catch (error) {
+        logger.error(LogCategory.SETTING, `更新工作区白名单失败: ${workspaceId}`, error)
+        return { success: false, error: (error as any)?.message || String(error) }
+      }
+    }
+  )
+
+  // 预览工作区白名单规则变更的量化影响
+  ipcMain.handle(
+    'preview-workspace-whitelist-impact',
+    async (_event, workspaceId: number, patterns: string[]) => {
+      try {
+        const impact = await databaseService.calculateWhitelistImpact(workspaceId, patterns)
+        if (impact.totalFiles > 0) {
+          return { success: true, ...impact, isSampled: false }
+        }
+
+        // 数据库尚无文件记录，尝试通过画像探测器对物理磁盘进行采样推算
+        const workspace = await databaseService.getWorkspaceDirectoryById(workspaceId)
+        if (workspace?.path && fs.existsSync(workspace.path)) {
+          const { directoryProfilerService } =
+            await import('../filesystem/directory-profiler-service')
+          const profile = await directoryProfilerService.probeProfile(workspace.path)
+          const totalSampled = profile.stats?.totalSampled || 0
+          if (totalSampled > 0) {
+            const cleanPatterns = (patterns || [])
+              .map(p => (typeof p === 'string' ? p.trim().toLowerCase() : ''))
+              .filter(Boolean)
+              .map(p => (p.startsWith('.') ? p : `.${p}`))
+
+            if (cleanPatterns.length === 0) {
+              return {
+                success: true,
+                totalFiles: totalSampled,
+                includedFiles: totalSampled,
+                excludedFiles: 0,
+                isSampled: true
+              }
+            }
+
+            const extSet = new Set(cleanPatterns)
+            let included = 0
+            for (const item of profile.stats?.topExtensions || []) {
+              const ext = item.ext.startsWith('.')
+                ? item.ext.toLowerCase()
+                : `.${item.ext.toLowerCase()}`
+              if (extSet.has(ext)) {
+                included += item.count
+              }
+            }
+            return {
+              success: true,
+              totalFiles: totalSampled,
+              includedFiles: included,
+              excludedFiles: Math.max(0, totalSampled - included),
+              isSampled: true
+            }
+          }
+        }
+
+        return {
+          success: true,
+          totalFiles: 0,
+          includedFiles: 0,
+          excludedFiles: 0,
+          isSampled: false
+        }
+      } catch (error) {
+        logger.error(LogCategory.SETTING, `计算白名单影响失败: ${workspaceId}`, error)
+        return { success: false, error: (error as any)?.message || String(error) }
+      }
+    }
+  )
+
+  // 更新工作区绑定的工作流
+  ipcMain.handle(
+    'update-workspace-bound-workflow',
+    async (_event, workspaceId: number, workflowId: string | null) => {
+      try {
+        const success = await databaseService.updateWorkspaceBoundWorkflow(workspaceId, workflowId)
+        if (success) {
+          BrowserWindow.getAllWindows().forEach(win => {
+            if (!win.isDestroyed()) {
+              win.webContents.send('workspace-directories-updated')
+            }
+          })
+        }
+        return { success }
+      } catch (error) {
+        logger.error(LogCategory.SETTING, `更新工作区绑定工作流失败: ${workspaceId}`, error)
         return { success: false, error: (error as any)?.message || String(error) }
       }
     }

@@ -382,6 +382,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                     )}
                   >
                     <MemoizedWorkspaceIgnoreRulesTab
+                      key={activeWorkspace.id}
                       workspace={activeWorkspace}
                       onConfigSaved={refreshWorkspaceData}
                     />

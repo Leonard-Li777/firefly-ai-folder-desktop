@@ -6,6 +6,7 @@ import {
   type UnitCreationData,
   type VideoChunkRecord,
   type WorkspaceConfig,
+  type LocalWorkflowRecord,
   parseWorkspaceConfig
 } from '@firefly/types'
 import {
@@ -45,7 +46,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { t } from '@app/languages'
 
-import { WorkspaceDao, FileDao, TagUnitDao, QueueDao } from './dao'
+import { WorkspaceDao, FileDao, TagUnitDao, QueueDao, LocalWorkflowDao } from './dao'
 import type { AnalysisTaskType } from './dao'
 import { DeterministicCodeGenerator } from '@firefly/core-engine'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
@@ -65,6 +66,7 @@ export class DatabaseService {
   private fileDao!: FileDao
   private tagUnitDao!: TagUnitDao
   private queueDao!: QueueDao
+  private localWorkflowDao!: LocalWorkflowDao
 
   private initPromise: Promise<void> | null = null
 
@@ -323,6 +325,7 @@ export class DatabaseService {
         this.fileDao = new FileDao(this._db)
         this.tagUnitDao = new TagUnitDao(this._db)
         this.queueDao = new QueueDao(this._db)
+        this.localWorkflowDao = new LocalWorkflowDao(this._db)
 
         this._db.pragma(`journal_mode = ${config.pragma.journal_mode}`)
         this._db.pragma(`synchronous = ${config.pragma.synchronous}`)
@@ -330,6 +333,10 @@ export class DatabaseService {
         this._db.pragma(`mmap_size = ${config.pragma.mmap_size}`)
         this._db.pragma(`temp_store = ${config.pragma.temp_store}`)
         this._db.pragma(`foreign_keys = ${config.pragma.foreign_keys ? 'ON' : 'OFF'}`)
+        const fkStatus = this._db.pragma('foreign_keys', { simple: true })
+        if (config.pragma.foreign_keys && Number(fkStatus) !== 1) {
+          throw new Error(`SQLite 外键约束启用失败: PRAGMA foreign_keys = ${fkStatus}`)
+        }
         this._db.pragma(`busy_timeout = ${config.pragma.busy_timeout ?? 5000}`)
 
         if (config.migrations) {
@@ -1241,6 +1248,36 @@ export class DatabaseService {
     if (!this.workspaceDao) return
     return this.workspaceDao.updateLastScan(id)
   }
+  async updateWorkspaceWhitelistPatterns(
+    workspaceId: number,
+    patterns: string[]
+  ): Promise<boolean> {
+    await this.ensureInitialized()
+    if (!this.workspaceDao) return false
+    return this.workspaceDao.updateWhitelistPatterns(workspaceId, patterns)
+  }
+  async calculateWhitelistImpact(workspaceId: number, patterns: string[]) {
+    await this.ensureInitialized()
+    if (!this.workspaceDao) return { totalFiles: 0, includedFiles: 0, excludedFiles: 0 }
+    return this.workspaceDao.calculateWhitelistImpact(workspaceId, patterns)
+  }
+  async updateWorkspaceBoundWorkflow(
+    workspaceId: number,
+    workflowId: string | null
+  ): Promise<boolean> {
+    await this.ensureInitialized()
+    if (!this.workspaceDao) return false
+    return this.workspaceDao.updateBoundWorkflow(workspaceId, workflowId)
+  }
+  deleteAnalysisQueueItems(ids: number[]): void {
+    if (!this._db || ids.length === 0) return
+    const CHUNK_SIZE = 500
+    for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
+      const chunk = ids.slice(i, i + CHUNK_SIZE)
+      const placeholders = chunk.map(() => '?').join(',')
+      this._db.prepare(`DELETE FROM analysis_queue WHERE id IN (${placeholders})`).run(...chunk)
+    }
+  }
   async getWorkspaceDirectoryById(id: number) {
     if (!this.workspaceDao) return null
     return this.workspaceDao.getById(id)
@@ -1283,6 +1320,33 @@ export class DatabaseService {
     await this.ensureInitialized()
     if (!this.workspaceDao) return false
     return this.workspaceDao.isConfigReady(workspaceId)
+  }
+
+  // --- Local Workflow Methods ---
+  async getLocalWorkflowById(id: string): Promise<LocalWorkflowRecord | undefined> {
+    await this.ensureInitialized()
+    if (!this.localWorkflowDao) return undefined
+    return this.localWorkflowDao.getById(id)
+  }
+
+  async getAllLocalWorkflows(): Promise<LocalWorkflowRecord[]> {
+    await this.ensureInitialized()
+    if (!this.localWorkflowDao) return []
+    return this.localWorkflowDao.getAll()
+  }
+
+  async saveLocalWorkflow(
+    record: Omit<LocalWorkflowRecord, 'created_at' | 'modified_at'>
+  ): Promise<boolean> {
+    await this.ensureInitialized()
+    if (!this.localWorkflowDao) return false
+    return this.localWorkflowDao.upsert(record)
+  }
+
+  async deleteLocalWorkflow(id: string): Promise<boolean> {
+    await this.ensureInitialized()
+    if (!this.localWorkflowDao) return false
+    return this.localWorkflowDao.delete(id)
   }
 
   // --- Tag & Unit Methods ---

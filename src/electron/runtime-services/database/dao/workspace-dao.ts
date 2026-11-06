@@ -1,8 +1,24 @@
 import type { Database } from 'better-sqlite3'
-import { WorkspaceDirectory, parseWorkspaceConfig, serializeWorkspaceConfig, isWorkspaceConfigReady, type WorkspaceConfig } from '@firefly/types'
+import {
+  WorkspaceDirectory,
+  parseWorkspaceConfig,
+  serializeWorkspaceConfig,
+  isWorkspaceConfigReady,
+  type WorkspaceConfig
+} from '@firefly/types'
 import { LogCategory, logger, isSubPath, isPathEqual, stripTrailingSlash } from '@firefly/shared'
 import { t } from '@app/languages'
 import * as path from 'node:path'
+
+function safeParsePatterns(patternsJson: string | null | undefined): string[] {
+  if (!patternsJson) return []
+  try {
+    const parsed = JSON.parse(patternsJson)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
 
 export class WorkspaceDao {
   constructor(private db: Database) {}
@@ -20,7 +36,9 @@ export class WorkspaceDao {
       workspace_config: parseWorkspaceConfig(row.workspace_config),
       lastScanAt: null,
       createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.created_at)
+      updatedAt: new Date(row.created_at),
+      whitelist_patterns: safeParsePatterns(row.whitelist_patterns),
+      bound_workflow_id: row.bound_workflow_id ?? null
     }))
   }
 
@@ -59,9 +77,13 @@ export class WorkspaceDao {
         isActive: Boolean(row.is_active),
         autoWatch: Boolean(row.auto_watch),
         lastScanAt: null,
-        workspace_config: row.workspace_config ? parseWorkspaceConfig(row.workspace_config) : undefined,
+        workspace_config: row.workspace_config
+          ? parseWorkspaceConfig(row.workspace_config)
+          : undefined,
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.created_at),
+        whitelist_patterns: safeParsePatterns(row.whitelist_patterns),
+        bound_workflow_id: row.bound_workflow_id ?? null,
         totalCount,
         analyzedCount,
         pendingCount
@@ -84,7 +106,9 @@ export class WorkspaceDao {
       workspace_config: parseWorkspaceConfig(row.workspace_config),
       lastScanAt: null,
       createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.created_at)
+      updatedAt: new Date(row.created_at),
+      whitelist_patterns: safeParsePatterns(row.whitelist_patterns),
+      bound_workflow_id: row.bound_workflow_id ?? null
     }
   }
 
@@ -103,7 +127,9 @@ export class WorkspaceDao {
       workspace_config: parseWorkspaceConfig(row.workspace_config),
       lastScanAt: null,
       createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.created_at)
+      updatedAt: new Date(row.created_at),
+      whitelist_patterns: safeParsePatterns(row.whitelist_patterns),
+      bound_workflow_id: row.bound_workflow_id ?? null
     }
   }
 
@@ -120,7 +146,9 @@ export class WorkspaceDao {
         autoWatch: Boolean(row.auto_watch),
         lastScanAt: null,
         createdAt: new Date(row.created_at),
-        updatedAt: new Date(row.created_at)
+        updatedAt: new Date(row.created_at),
+        whitelist_patterns: safeParsePatterns(row.whitelist_patterns),
+        bound_workflow_id: row.bound_workflow_id ?? null
       }
     }
     const all = await this.getAll()
@@ -471,7 +499,9 @@ export class WorkspaceDao {
    * 获取工作区专有配置 (已解析强类型)
    */
   async getConfig(workspaceId: number): Promise<WorkspaceConfig> {
-    const row = this.db.prepare('SELECT workspace_config FROM workspaces WHERE workspace_id = ?').get(workspaceId) as any
+    const row = this.db
+      .prepare('SELECT workspace_config FROM workspaces WHERE workspace_id = ?')
+      .get(workspaceId) as any
     return parseWorkspaceConfig(row?.workspace_config)
   }
 
@@ -495,5 +525,61 @@ export class WorkspaceDao {
   async isConfigReady(workspaceId: number): Promise<boolean> {
     const config = await this.getConfig(workspaceId)
     return isWorkspaceConfigReady(config)
+  }
+
+  async updateWhitelistPatterns(workspaceId: number, patterns: string[]): Promise<boolean> {
+    const jsonStr = JSON.stringify(patterns || [])
+    const result = this.db
+      .prepare('UPDATE workspaces SET whitelist_patterns = ? WHERE workspace_id = ?')
+      .run(jsonStr, workspaceId)
+    return result.changes > 0
+  }
+
+  /**
+   * 测算白名单规则在当前工作区文件中的命中影响
+   */
+  async calculateWhitelistImpact(
+    workspaceId: number,
+    patterns: string[]
+  ): Promise<{ totalFiles: number; includedFiles: number; excludedFiles: number }> {
+    const rows = this.db
+      .prepare('SELECT name FROM workspace_files WHERE workspace_id = ?')
+      .all(workspaceId) as Array<{ name: string }>
+
+    const totalFiles = rows.length
+    if (totalFiles === 0) {
+      return { totalFiles: 0, includedFiles: 0, excludedFiles: 0 }
+    }
+
+    const cleanPatterns = (patterns || [])
+      .map(p => (typeof p === 'string' ? p.trim().toLowerCase() : ''))
+      .filter(Boolean)
+      .map(p => (p.startsWith('.') ? p : `.${p}`))
+
+    if (cleanPatterns.length === 0) {
+      return { totalFiles, includedFiles: totalFiles, excludedFiles: 0 }
+    }
+
+    const extSet = new Set(cleanPatterns)
+    let included = 0
+    for (const row of rows) {
+      const ext = path.extname(row.name || '').toLowerCase()
+      if (extSet.has(ext)) {
+        included++
+      }
+    }
+
+    return {
+      totalFiles,
+      includedFiles: included,
+      excludedFiles: totalFiles - included
+    }
+  }
+
+  async updateBoundWorkflow(workspaceId: number, workflowId: string | null): Promise<boolean> {
+    const result = this.db
+      .prepare('UPDATE workspaces SET bound_workflow_id = ? WHERE workspace_id = ?')
+      .run(workflowId, workspaceId)
+    return result.changes > 0
   }
 }

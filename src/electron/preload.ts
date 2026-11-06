@@ -6,11 +6,31 @@ import type {
   CloudModelConfig,
   ProviderModel,
   DirectoryItem,
-  FileItem
+  FileItem,
+  AppConfig,
+  FileInfo,
+  WorkspaceDirectory
 } from '@firefly/types'
-import { AppConfig, FileInfo, WorkspaceDirectory } from '@firefly/types'
-import { LogCategory, logger } from '@firefly/shared'
-import { contextBridge, ipcRenderer } from 'electron'
+import { LogCategory } from '../../pro/packages/shared/src/logger/log-category'
+import { contextBridge, ipcRenderer, webUtils } from 'electron'
+
+const logger = {
+  log: (category: LogCategory, message: string, data?: any) => {
+    if (__IS_DEV__) console.log(`[${category}] ${message}`, data !== undefined ? data : '')
+  },
+  warn: (category: LogCategory, message: string, data?: any) => {
+    if (__IS_DEV__) console.warn(`[${category}] ${message}`, data !== undefined ? data : '')
+    try {
+      ipcRenderer.send('log-forward', { category, level: 'warn', message, data })
+    } catch {}
+  },
+  error: (category: LogCategory, message: string, data?: any) => {
+    if (__IS_DEV__) console.error(`[${category}] ${message}`, data !== undefined ? data : '')
+    try {
+      ipcRenderer.send('log-forward', { category, level: 'error', message, data })
+    } catch {}
+  }
+}
 
 import type { ConfigKey } from '@firefly/types/config-types'
 // PRD-0044（S5）：IModelRecommendation 类型导入随 recommendModelsByHardware IPC 清退删除
@@ -24,16 +44,25 @@ import type {
 /**
  * 暴露给渲染进程的安全API
  */
-// 从 additionalArguments 读取打包状态（主进程传递）
+// 从 additionalArguments 与 process.env 双通道读取区域并执行白名单校验
 const isPackaged = process.argv.includes('--is-packaged=true')
-const regionArg = process.argv.find(arg => arg.startsWith('--app-region='))
-const appRegion: 'cn' | 'intl' = regionArg ? (regionArg.split('=')[1] as any) : 'intl'
+const resolveAppRegionFromEnvAndArgv = (): 'cn' | 'intl' => {
+  const argvMatch = process.argv.find(arg => arg.startsWith('--app-region='))
+  const fromArgv = argvMatch ? argvMatch.split('=')[1] : null
+  const fromEnv = typeof process.env !== 'undefined' ? process.env.APP_REGION : null
+  const candidate = (fromArgv || fromEnv || 'intl').trim().toLowerCase()
+  return candidate === 'cn' ? 'cn' : 'intl'
+}
+const appRegion: 'cn' | 'intl' = resolveAppRegionFromEnvAndArgv()
 const peerDataArg = process.argv.find(arg => arg.startsWith('--has-peer-data='))
 const hasPeerData: boolean = peerDataArg ? peerDataArg.split('=')[1] === 'true' : false
 const peerRegionArg = process.argv.find(arg => arg.startsWith('--peer-region='))
-const peerRegion: 'cn' | 'intl' = (
-  peerRegionArg ? peerRegionArg.split('=')[1] : appRegion === 'cn' ? 'intl' : 'cn'
-) as any
+const rawPeerRegion = peerRegionArg
+  ? peerRegionArg.split('=')[1]
+  : appRegion === 'cn'
+    ? 'intl'
+    : 'cn'
+const peerRegion: 'cn' | 'intl' = rawPeerRegion === 'cn' ? 'cn' : 'intl'
 
 const electronAPI = {
   // 应用是否已打包
@@ -512,6 +541,17 @@ const electronAPI = {
 
   // 工具函数
   utils: {
+    getPathForFile: (file: File): string => {
+      try {
+        return webUtils.getPathForFile(file)
+      } catch (err) {
+        if (__IS_DEV__) {
+          console.error('[Preload] webUtils.getPathForFile failed:', err)
+        }
+        return ''
+      }
+    },
+
     getPlatform: (): string => process.platform,
 
     normalizeForCache: (p: string) =>
@@ -730,6 +770,8 @@ const electronAPI = {
     ipcRenderer.invoke('update-workspace-config', workspaceId, config),
   updateWorkspaceWhitelist: (workspaceId: number, patterns: string[]) =>
     ipcRenderer.invoke('update-workspace-whitelist', workspaceId, patterns),
+  previewWorkspaceWhitelistImpact: (workspaceId: number, patterns: string[]) =>
+    ipcRenderer.invoke('preview-workspace-whitelist-impact', workspaceId, patterns),
   updateWorkspaceBoundWorkflow: (workspaceId: number, workflowId: string | null) =>
     ipcRenderer.invoke('update-workspace-bound-workflow', workspaceId, workflowId),
 
