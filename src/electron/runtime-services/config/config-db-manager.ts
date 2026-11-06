@@ -509,16 +509,7 @@ export class ConfigDbManager {
                 typeof item.preview_tree === 'object'
                   ? JSON.stringify(item.preview_tree)
                   : item.preview_tree,
-              icon_svg: item.icon_svg,
-              filter_mode: item.filter_mode,
-              filter_rules:
-                typeof item.filter_rules === 'object'
-                  ? JSON.stringify(item.filter_rules)
-                  : item.filter_rules,
-              engine_params_json:
-                typeof item.engine_params_json === 'object'
-                  ? JSON.stringify(item.engine_params_json)
-                  : item.engine_params_json
+              icon_svg: item.icon_svg
             } as any)
           } catch (err) {
             logger.error(LogCategory.CONFIG, `ConfigDbManager: 写入工作流失败 [${item.id}]:`, err)

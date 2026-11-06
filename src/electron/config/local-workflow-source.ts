@@ -21,62 +21,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = () => [
     ),
     source: 'official',
     status: 'published',
-    filter_mode: 'whitelist',
-    filter_rules: [
-      {
-        id: 'photography-raw-rule-1',
-        type: 'extension',
-        value: '.cr3',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'photography-raw-rule-2',
-        type: 'extension',
-        value: '.cr2',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'photography-raw-rule-3',
-        type: 'extension',
-        value: '.arw',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'photography-raw-rule-4',
-        type: 'extension',
-        value: '.nef',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'photography-raw-rule-5',
-        type: 'extension',
-        value: '.dng',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'photography-raw-rule-6',
-        type: 'extension',
-        value: '.raf',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'photography-raw-rule-7',
-        type: 'extension',
-        value: '.rw2',
-        isActive: true,
-        isSystem: false
-      }
-    ],
     naming_pattern: t('[拍摄场景]_[主题主体]'),
     naming_template: '[{TAG:设备型号}]{SMART_NAME}_{CRE:YYYYMMDD}',
-    engine_params_json:
-      '{"analysisMode":"full","embeddingProfile":"gemma_unified","mrlDimension":512,"videoQuotaMax":20,"videoCutSensitivity":"medium","videoSoftTokenBudget":48,"videoAsrDurationSec":0,"audioAnalysisDurationSec":0,"enableImageOcr":true,"ocrModelSize":"small","maxContentSizeKb":2048,"clipTextEnabled":true,"reuseBasicAnalysisData":true}',
     preset_directory_tree:
       '[{"name":"01_原始底片 (RAW)","subdirectories":[{"name":"商业委托项目"},{"name":"个人采风创作"}]},{"name":"02_精选评级 (Selects)"},{"name":"03_成片输出 (Export)"}]',
     preview_tree:
@@ -99,83 +45,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = () => [
     ),
     source: 'official',
     status: 'published',
-    filter_mode: 'whitelist',
-    filter_rules: [
-      {
-        id: 'video-production-rule-1',
-        type: 'extension',
-        value: '.mp4',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'video-production-rule-2',
-        type: 'extension',
-        value: '.mov',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'video-production-rule-3',
-        type: 'extension',
-        value: '.mkv',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'video-production-rule-4',
-        type: 'extension',
-        value: '.avi',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'video-production-rule-5',
-        type: 'extension',
-        value: '.m4v',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'video-production-rule-6',
-        type: 'extension',
-        value: '.wav',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'video-production-rule-7',
-        type: 'extension',
-        value: '.mp3',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'video-production-rule-8',
-        type: 'extension',
-        value: '.flac',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'video-production-rule-9',
-        type: 'extension',
-        value: '.lrc',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'video-production-rule-10',
-        type: 'extension',
-        value: '.srt',
-        isActive: true,
-        isSystem: false
-      }
-    ],
     naming_pattern: t('[场景机位]_[片段主题]_[人物动作]'),
     naming_template: '[{TAG:分辨率}]{SMART_NAME}_{TAG:景别}_{CRE:YYYYMMDD}',
-    engine_params_json:
-      '{"analysisMode":"full","embeddingProfile":"gemma_unified","mrlDimension":768,"videoQuotaMax":40,"videoCutSensitivity":"high","videoSoftTokenBudget":140,"videoAsrDurationSec":90,"audioAnalysisDurationSec":180,"enableImageOcr":true,"ocrModelSize":"small","maxContentSizeKb":2048,"clipTextEnabled":true,"reuseBasicAnalysisData":true}',
     preset_directory_tree:
       '[{"name":"01_机身原素材 (Footage)"},{"name":"02_音频与伴音 (Audio)","subdirectories":[{"name":"现场同期声"},{"name":"背景音乐BGM"}]},{"name":"03_成片输出 (Master)"}]',
     preview_tree:
@@ -198,56 +69,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = () => [
     ),
     source: 'official',
     status: 'published',
-    filter_mode: 'whitelist',
-    filter_rules: [
-      {
-        id: 'design-dev-rule-1',
-        type: 'extension',
-        value: '.sketch',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'design-dev-rule-2',
-        type: 'extension',
-        value: '.fig',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'design-dev-rule-3',
-        type: 'extension',
-        value: '.psd',
-        isActive: true,
-        isSystem: false
-      },
-      { id: 'design-dev-rule-4', type: 'extension', value: '.ai', isActive: true, isSystem: false },
-      {
-        id: 'design-dev-rule-5',
-        type: 'extension',
-        value: '.svg',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'design-dev-rule-6',
-        type: 'extension',
-        value: '.png',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'design-dev-rule-7',
-        type: 'extension',
-        value: '.webp',
-        isActive: true,
-        isSystem: false
-      }
-    ],
     naming_pattern: t('[业务模块]_[页面名称]_[状态变体]'),
     naming_template: '[{TAG:设计软件}]{SMART_NAME}_v{META:版本}',
-    engine_params_json:
-      '{"analysisMode":"quick_name","embeddingProfile":"classic_light","mrlDimension":256,"videoQuotaMax":5,"videoCutSensitivity":"low","videoSoftTokenBudget":48,"videoAsrDurationSec":0,"audioAnalysisDurationSec":0,"enableImageOcr":false,"ocrModelSize":"tiny","maxContentSizeKb":4096,"enableOfficeCover":false,"reuseBasicAnalysisData":true}',
     preset_directory_tree:
       '[{"name":"01_页面设计稿 (Pages)"},{"name":"02_组件库与符号 (Components)"},{"name":"03_矢量图标与插画 (Icons&Illus)"},{"name":"04_导出切图标注 (Exports)"}]',
     preview_tree:
@@ -270,23 +93,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = () => [
     ),
     source: 'official',
     status: 'published',
-    filter_mode: 'whitelist',
-    filter_rules: [
-      { id: '3d-cg-rule-1', type: 'extension', value: '.blend', isActive: true, isSystem: false },
-      { id: '3d-cg-rule-2', type: 'extension', value: '.c4d', isActive: true, isSystem: false },
-      { id: '3d-cg-rule-3', type: 'extension', value: '.max', isActive: true, isSystem: false },
-      { id: '3d-cg-rule-4', type: 'extension', value: '.obj', isActive: true, isSystem: false },
-      { id: '3d-cg-rule-5', type: 'extension', value: '.fbx', isActive: true, isSystem: false },
-      { id: '3d-cg-rule-6', type: 'extension', value: '.gltf', isActive: true, isSystem: false },
-      { id: '3d-cg-rule-7', type: 'extension', value: '.glb', isActive: true, isSystem: false },
-      { id: '3d-cg-rule-8', type: 'extension', value: '.hdr', isActive: true, isSystem: false },
-      { id: '3d-cg-rule-9', type: 'extension', value: '.exr', isActive: true, isSystem: false },
-      { id: '3d-cg-rule-10', type: 'extension', value: '.tif', isActive: true, isSystem: false }
-    ],
     naming_pattern: t('[资产分类]_[模型主体]_[面数档位]'),
     naming_template: '[{TAG:贴图类型}]{SMART_NAME}_{TAG:材质}',
-    engine_params_json:
-      '{"analysisMode":"quick_name","embeddingProfile":"classic_light","mrlDimension":256,"videoQuotaMax":5,"videoCutSensitivity":"low","videoSoftTokenBudget":48,"videoAsrDurationSec":0,"audioAnalysisDurationSec":0,"enableImageOcr":false,"ocrModelSize":"tiny","maxContentSizeKb":8192,"enableOfficeCover":false,"reuseBasicAnalysisData":true}',
     preset_directory_tree:
       '[{"name":"01_高低模工程 (Models)"},{"name":"02_材质与PBR贴图 (Textures)","subdirectories":[{"name":"BaseColor_固有色"},{"name":"Normal_法线"},{"name":"Roughness_粗糙度"}]},{"name":"03_环境光照HDR (HDRI)"}]',
     preview_tree:
@@ -309,48 +117,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = () => [
     ),
     source: 'official',
     status: 'published',
-    filter_mode: 'whitelist',
-    filter_rules: [
-      {
-        id: 'game-recording-rule-1',
-        type: 'extension',
-        value: '.mp4',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'game-recording-rule-2',
-        type: 'extension',
-        value: '.mkv',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'game-recording-rule-3',
-        type: 'extension',
-        value: '.avi',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'game-recording-rule-4',
-        type: 'extension',
-        value: '.png',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'game-recording-rule-5',
-        type: 'extension',
-        value: '.jpg',
-        isActive: true,
-        isSystem: false
-      }
-    ],
     naming_pattern: t('[游戏名称]_[高光时刻]_[地图战绩]'),
     naming_template: '[{TAG:游戏名}]{SMART_NAME}_{CRE:YYYYMMDD_HHmm}',
-    engine_params_json:
-      '{"analysisMode":"quick_name","embeddingProfile":"classic_light","mrlDimension":256,"videoQuotaMax":15,"videoCutSensitivity":"medium","videoSoftTokenBudget":48,"videoAsrDurationSec":30,"audioAnalysisDurationSec":0,"enableImageOcr":true,"ocrModelSize":"tiny","maxContentSizeKb":2048,"clipTextEnabled":true,"reuseBasicAnalysisData":true}',
     preset_directory_tree:
       '[{"name":"01_五杀与精彩高光 (Highlights)"},{"name":"02_整局通关录屏 (FullRecordings)"},{"name":"03_高清壁纸与截图 (Screenshots)"}]',
     preview_tree:
@@ -373,18 +141,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = () => [
     ),
     source: 'official',
     status: 'published',
-    filter_mode: 'whitelist',
-    filter_rules: [
-      { id: 'novel-rule-1', type: 'extension', value: '.txt', isActive: true, isSystem: false },
-      { id: 'novel-rule-2', type: 'extension', value: '.epub', isActive: true, isSystem: false },
-      { id: 'novel-rule-3', type: 'extension', value: '.mobi', isActive: true, isSystem: false },
-      { id: 'novel-rule-4', type: 'extension', value: '.azw3', isActive: true, isSystem: false },
-      { id: 'novel-rule-5', type: 'extension', value: '.pdf', isActive: true, isSystem: false }
-    ],
     naming_pattern: t('[作品书名]_[核心流派]_[字数卷册]'),
     naming_template: '《{SMART_NAME}》作者_{TAG:作者}_{TAG:完结状态}',
-    engine_params_json:
-      '{"analysisMode":"quick_name","embeddingProfile":"classic_light","mrlDimension":256,"videoQuotaMax":0,"videoCutSensitivity":"low","videoSoftTokenBudget":48,"videoAsrDurationSec":0,"audioAnalysisDurationSec":0,"enableImageOcr":false,"ocrModelSize":"tiny","maxContentSizeKb":4096,"enableOfficeCover":true,"reuseBasicAnalysisData":true}',
     preset_directory_tree:
       '[{"name":"玄幻修真与仙侠"},{"name":"科幻未来与无限流"},{"name":"都市职场与现实"},{"name":"出版图书与社科经典"}]',
     preview_tree:
@@ -407,69 +165,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = () => [
     ),
     source: 'official',
     status: 'published',
-    filter_mode: 'whitelist',
-    filter_rules: [
-      {
-        id: 'anime-comic-rule-1',
-        type: 'extension',
-        value: '.zip',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'anime-comic-rule-2',
-        type: 'extension',
-        value: '.rar',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'anime-comic-rule-3',
-        type: 'extension',
-        value: '.7z',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'anime-comic-rule-4',
-        type: 'extension',
-        value: '.cbz',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'anime-comic-rule-5',
-        type: 'extension',
-        value: '.cbr',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'anime-comic-rule-6',
-        type: 'extension',
-        value: '.pdf',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'anime-comic-rule-7',
-        type: 'extension',
-        value: '.jpg',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'anime-comic-rule-8',
-        type: 'extension',
-        value: '.png',
-        isActive: true,
-        isSystem: false
-      }
-    ],
     naming_pattern: t('[作品系列]_[分卷编号]_[核心画师]'),
     naming_template: '[{TAG:画师作者}]{SMART_NAME}_Vol.{META:卷号}',
-    engine_params_json:
-      '{"analysisMode":"quick_name","embeddingProfile":"classic_light","mrlDimension":256,"videoQuotaMax":0,"videoCutSensitivity":"low","videoSoftTokenBudget":48,"videoAsrDurationSec":0,"audioAnalysisDurationSec":0,"enableImageOcr":false,"ocrModelSize":"tiny","maxContentSizeKb":4096,"enableOfficeCover":false,"reuseBasicAnalysisData":true}',
     preset_directory_tree:
       '[{"name":"01_连载漫画单行本 (Manga)"},{"name":"02_名家个人画集 (Artbooks)"},{"name":"03_同人创作与插画集 (Doujin)"}]',
     preview_tree:
@@ -492,62 +189,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = () => [
     ),
     source: 'official',
     status: 'published',
-    filter_mode: 'whitelist',
-    filter_rules: [
-      {
-        id: 'movie-cinema-rule-1',
-        type: 'extension',
-        value: '.mkv',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'movie-cinema-rule-2',
-        type: 'extension',
-        value: '.mp4',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'movie-cinema-rule-3',
-        type: 'extension',
-        value: '.avi',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'movie-cinema-rule-4',
-        type: 'extension',
-        value: '.iso',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'movie-cinema-rule-5',
-        type: 'extension',
-        value: '.srt',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'movie-cinema-rule-6',
-        type: 'extension',
-        value: '.ass',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'movie-cinema-rule-7',
-        type: 'extension',
-        value: '.sub',
-        isActive: true,
-        isSystem: false
-      }
-    ],
     naming_pattern: t('[电影片名]_[上映年份]_[制式规格]'),
     naming_template: '{SMART_NAME}.{TAG:上映年份}.{TAG:分辨率}.{TAG:压制规格}',
-    engine_params_json:
-      '{"analysisMode":"quick_name","embeddingProfile":"classic_light","mrlDimension":256,"videoQuotaMax":20,"videoCutSensitivity":"medium","videoSoftTokenBudget":48,"videoAsrDurationSec":0,"audioAnalysisDurationSec":0,"enableImageOcr":false,"ocrModelSize":"tiny","maxContentSizeKb":2048,"clipTextEnabled":true,"reuseBasicAnalysisData":true}',
     preset_directory_tree:
       '[{"name":"院线电影精选 (Movies)"},{"name":"连续剧全集 (TV Series)","subdirectories":[{"name":"欧美热播剧"},{"name":"华语经典剧"},{"name":"日韩动漫剧"}]},{"name":"纪录片与科普 (Documentaries)"}]',
     preview_tree:
@@ -570,76 +213,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = () => [
     ),
     source: 'official',
     status: 'published',
-    filter_mode: 'whitelist',
-    filter_rules: [
-      {
-        id: 'music-lossless-rule-1',
-        type: 'extension',
-        value: '.flac',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'music-lossless-rule-2',
-        type: 'extension',
-        value: '.ape',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'music-lossless-rule-3',
-        type: 'extension',
-        value: '.wav',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'music-lossless-rule-4',
-        type: 'extension',
-        value: '.dsd',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'music-lossless-rule-5',
-        type: 'extension',
-        value: '.dff',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'music-lossless-rule-6',
-        type: 'extension',
-        value: '.mp3',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'music-lossless-rule-7',
-        type: 'extension',
-        value: '.m4a',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'music-lossless-rule-8',
-        type: 'extension',
-        value: '.cue',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'music-lossless-rule-9',
-        type: 'extension',
-        value: '.lrc',
-        isActive: true,
-        isSystem: false
-      }
-    ],
     naming_pattern: t('[音轨序号]_[曲目名称]_[演绎歌手]'),
     naming_template: '{TAG:音轨号} - {SMART_NAME} - {TAG:歌手}',
-    engine_params_json:
-      '{"analysisMode":"quick_name","embeddingProfile":"classic_light","mrlDimension":256,"videoQuotaMax":0,"videoCutSensitivity":"low","videoSoftTokenBudget":48,"videoAsrDurationSec":0,"audioAnalysisDurationSec":120,"enableImageOcr":false,"ocrModelSize":"tiny","maxContentSizeKb":4096,"enableOfficeCover":false,"reuseBasicAnalysisData":true}',
     preset_directory_tree:
       '[{"name":"01_无损音乐专辑 (Albums)"},{"name":"02_流行单曲精选 (Singles)"},{"name":"03_播客与有声书 (Podcasts)"}]',
     preview_tree:
@@ -662,83 +237,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = () => [
     ),
     source: 'official',
     status: 'published',
-    filter_mode: 'whitelist',
-    filter_rules: [
-      {
-        id: 'office-docs-rule-1',
-        type: 'extension',
-        value: '.docx',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'office-docs-rule-2',
-        type: 'extension',
-        value: '.doc',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'office-docs-rule-3',
-        type: 'extension',
-        value: '.xlsx',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'office-docs-rule-4',
-        type: 'extension',
-        value: '.xls',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'office-docs-rule-5',
-        type: 'extension',
-        value: '.pptx',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'office-docs-rule-6',
-        type: 'extension',
-        value: '.ppt',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'office-docs-rule-7',
-        type: 'extension',
-        value: '.pdf',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'office-docs-rule-8',
-        type: 'extension',
-        value: '.wps',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'office-docs-rule-9',
-        type: 'extension',
-        value: '.ofd',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'office-docs-rule-10',
-        type: 'extension',
-        value: '.md',
-        isActive: true,
-        isSystem: false
-      }
-    ],
     naming_pattern: t('[汇报主题]_[业务事项]_[拟写部门]'),
     naming_template: '[{TAG:部门}]{SMART_NAME}_{MOD:YYYYMMDD}',
-    engine_params_json:
-      '{"analysisMode":"quick_name","embeddingProfile":"classic_light","mrlDimension":256,"videoQuotaMax":0,"videoCutSensitivity":"low","videoSoftTokenBudget":48,"videoAsrDurationSec":0,"audioAnalysisDurationSec":0,"enableImageOcr":true,"ocrModelSize":"tiny","maxContentSizeKb":4096,"enableOfficeCover":true,"reuseBasicAnalysisData":true}',
     preset_directory_tree:
       '[{"name":"01_周报月报与总结 (Reports)"},{"name":"02_方案策划与立项 (Proposals)"},{"name":"03_汇报演示PPT (Presentations)"},{"name":"04_数据表格与统计 (Sheets)"}]',
     preview_tree:
@@ -761,69 +261,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = () => [
     ),
     source: 'official',
     status: 'published',
-    filter_mode: 'blacklist',
-    filter_rules: [
-      {
-        id: 'finance-contract-rule-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'finance-contract-rule-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'finance-contract-rule-3',
-        type: 'extension',
-        value: '.log',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'finance-contract-rule-4',
-        type: 'extension',
-        value: '.bak',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'finance-contract-rule-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'finance-contract-rule-6',
-        type: 'extension',
-        value: '.ds_store',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'finance-contract-rule-7',
-        type: 'file',
-        value: 'thumbs.db',
-        isActive: true,
-        isSystem: false
-      },
-      {
-        id: 'finance-contract-rule-8',
-        type: 'file',
-        value: 'desktop.ini',
-        isActive: true,
-        isSystem: false
-      }
-    ],
     naming_pattern: t('[签署双方]_[业务性质]_[标的要点]'),
     naming_template: '[{TAG:合同类型}]{SMART_NAME}_{MOD:YYYY-MM-DD}',
-    engine_params_json:
-      '{"analysisMode":"full","embeddingProfile":"gemma_unified","mrlDimension":768,"videoQuotaMax":8,"videoCutSensitivity":"low","videoSoftTokenBudget":48,"videoAsrDurationSec":0,"audioAnalysisDurationSec":0,"enableImageOcr":true,"ocrModelSize":"small","maxContentSizeKb":8192,"extractPages":10,"maxDocumentOcrItems":20,"enableOfficeCover":true,"reuseBasicAnalysisData":true}',
     preset_directory_tree:
       '[{"name":"收入类合同 (Sales)"},{"name":"支出采购类 (Procurement)","subdirectories":[{"name":"IT云服务与硬件"},{"name":"外包咨询与劳务"}]},{"name":"企业治理与用工 (HR)"},{"name":"财务税务发票 (Tax&Invoice)"}]',
     preview_tree:
