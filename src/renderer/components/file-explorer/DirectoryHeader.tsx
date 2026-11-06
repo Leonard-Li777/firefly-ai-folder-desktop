@@ -22,6 +22,8 @@ import { PaymentFlowDialog } from '../tier/PaymentFlowDialog'
 import { ResourceContentionBanner } from './ResourceContentionBanner'
 import { WorkspacePendingConfigBanner } from './WorkspacePendingConfigBanner'
 import { GlobalTTSPlaybackBar } from './GlobalTTSPlaybackBar'
+import { usePluginCenterStore } from '../../stores/plugin-center-store'
+import { PluginCenterOverlay } from '../plugin-center/PluginCenterOverlay'
 
 interface DirectoryHeaderProps {
   currentWorkspaceDirectory: WorkspaceDirectory | null
@@ -59,6 +61,10 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
     const { hasNewFiles, setHasNewFiles, newFilesCount } = useAnalyzedDirectoryStore()
     const { computed_limits } = useTierStore()
     const [licenseType, setLicenseType] = useState<string | null>(null)
+
+    // 插件中心全局覆盖弹层状态
+    const isPluginCenterOpen = usePluginCenterStore(s => s.isOverlayOpen)
+    const togglePluginCenter = usePluginCenterStore(s => s.toggleOverlay)
 
     // 全域搜索状态与输入控制
     const globalSearchKeyword = useSearchStore(state => state.globalSearchKeyword)
@@ -108,6 +114,10 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
             return
           }
           e.preventDefault()
+          // 规格说明书 §6.1：Ctrl+F 自动先关插件中心再打开搜索
+          if (usePluginCenterStore.getState().isOverlayOpen) {
+            usePluginCenterStore.getState().closeOverlay()
+          }
           searchInputRef.current?.focus()
           searchInputRef.current?.select()
         }
@@ -582,6 +592,35 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
 
             {/* Controls Group */}
             <div className="flex items-center space-x-3 flex-shrink-0">
+              {/* 插件中心全局入口按钮：排在 GlobalTTSPlaybackBar 左侧，紧邻用户头像区域 */}
+              <button
+                type="button"
+                data-no-drag
+                data-testid="plugin-center-toggle-btn"
+                data-plugin-center-toggle="true"
+                onClick={togglePluginCenter}
+                style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+                className={cn(
+                  'no-drag flex-shrink-0 h-8 px-3 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer flex items-center gap-1.5 border shadow-2xs select-none active:scale-95',
+                  isPluginCenterOpen
+                    ? 'bg-primary text-primary-foreground border-primary hover:bg-primary/90 shadow-sm'
+                    : 'bg-[var(--surface-field)] border-[var(--surface-field-border)] hover:bg-accent text-foreground'
+                )}
+                title={isPluginCenterOpen ? t('关闭插件中心') : t('插件中心')}
+              >
+                {isPluginCenterOpen ? (
+                  <>
+                    <MaterialIcon icon="close" className="text-xs shrink-0" />
+                    <span>{t('关闭插件中心')}</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="shrink-0 text-sm leading-none">🧩</span>
+                    <span>{t('插件中心')}</span>
+                  </>
+                )}
+              </button>
+
               {/* 全局 TTS 播放控制条：紧邻用户头像左侧 */}
               <GlobalTTSPlaybackBar />
 
@@ -1284,6 +1323,8 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
             <div className="h-full w-full bg-gradient-to-r from-transparent via-primary to-transparent animate-indeterminate-bar" />
           </div>
         )}
+        {/* 插件中心全局覆盖弹层 */}
+        <PluginCenterOverlay />
       </header>
     )
   }
