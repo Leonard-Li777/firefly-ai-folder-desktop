@@ -143,7 +143,7 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
 
   const initialIntent: WorkspaceConfigIntent = useMemo(() => {
     if (parsedConfig.status === 'ready') {
-      return parsedConfig.intent
+      return parsedConfig.intent || 'fast_archive'
     }
     return 'fast_archive'
   }, [parsedConfig])
@@ -198,7 +198,7 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
   useEffect(() => {
     const fresh = parseWorkspaceConfig(workspace.workspace_config)
     if (fresh.status === 'ready') {
-      setSelectedIntent(fresh.intent)
+      setSelectedIntent(fresh.intent || 'fast_archive')
       setOverrides(fresh.overrides ? { ...fresh.overrides } : {})
     } else {
       setSelectedIntent('fast_archive')
@@ -279,10 +279,17 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
         status: 'ready',
         intent: selectedIntent,
         policyVersion: 1,
+        baseAIConfig: derivedSnapshot,
         derivedSnapshot,
         overrides: hasOverrides ? overrides : undefined,
         customIgnoreRules:
-          parsedConfig.status === 'ready' ? parsedConfig.customIgnoreRules : undefined,
+          parsedConfig.status === 'ready' && parsedConfig.customIgnoreRules
+            ? parsedConfig.customIgnoreRules
+            : [],
+        customWhitelistRules:
+          parsedConfig.status === 'ready' && parsedConfig.customWhitelistRules
+            ? parsedConfig.customWhitelistRules
+            : [],
         configuredAt: Date.now()
       }
 

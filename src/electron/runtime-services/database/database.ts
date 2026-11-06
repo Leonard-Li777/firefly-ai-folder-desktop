@@ -71,14 +71,12 @@ export const GENESIS_V1_SCHEMA = `
     summary               TEXT,                                         -- 工作流功能简述与使用说明
     source                TEXT NOT NULL DEFAULT 'official'              -- 工作流来源：官方 | 用户自建 | 导入 | 社区 ('official' | 'user' | 'imported' | 'community')
                           CHECK (source IN ('official', 'user', 'imported', 'community')),
-    filter_mode           TEXT NOT NULL DEFAULT 'whitelist'             -- 文件过滤模式：白名单或黑名单二选一 ('whitelist' | 'blacklist')
-                          CHECK (filter_mode IN ('whitelist', 'blacklist')),
-    filter_rules          TEXT NOT NULL DEFAULT '[]'                    -- 统一过滤规则集合 (JSON of IFilterRule[], 支持文件/目录/扩展名/正则/通配符)
-                          CHECK (json_valid(filter_rules) = 1),
+    status                TEXT NOT NULL DEFAULT 'draft'                 -- 工作流流转状态：已发布 | 草稿 | 私有 | 审核中 | 驳回 | 下架 ('published' | 'draft' | 'private' | 'reviewing' | 'rejected' | 'delisted')
+                          CHECK (status IN ('published', 'draft', 'private', 'reviewing', 'rejected', 'delisted')),
+    workspace_config      TEXT NOT NULL                                 -- 工作空间配置 JSON (与 workspaces.workspace_config 100% 同构，内含 customIgnoreRules, customWhitelistRules, derivedSnapshot)
+                          CHECK (json_valid(workspace_config) = 1 AND json_extract(workspace_config, '$.status') IN ('pending', 'ready')),
     naming_pattern        TEXT,                                         -- 智能文件名格式：指导 AI 提炼核心语义名称的结构格式规范
     naming_template       TEXT,                                         -- 智能文件名附加属性模板：基于 NamingDSLEngine 的 DSL 装饰模板
-    engine_params_json    TEXT                                          -- 底层 AI 与分析引擎技术参数快照 (JSON，工作流预设的通用 AI 分析引擎模板参数，不可与 workspaces.workspace_config 运行时实例覆盖混淆)
-                          CHECK (engine_params_json IS NULL OR json_valid(engine_params_json) = 1),
     preset_directory_tree TEXT                                          -- 工作流预置目录树结构大纲 (纯目录树，用于批量整理模式 stage 结构微调)
                           CHECK (preset_directory_tree IS NULL OR json_valid(preset_directory_tree) = 1),
     preview_tree          TEXT                                          -- 工作流目录树带示例文件预览 (JSON 格式，用于在向导和选择器中直观展示最终整理效果)
@@ -96,6 +94,7 @@ export const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_local_workflows_user_id ON local_workflows(user_id);
   CREATE INDEX IF NOT EXISTS idx_local_workflows_category ON local_workflows(category);
   CREATE INDEX IF NOT EXISTS idx_local_workflows_source ON local_workflows(source);
+  CREATE INDEX IF NOT EXISTS idx_local_workflows_status ON local_workflows(status);
 
   -- 1. 用户根工作区配置表
   CREATE TABLE IF NOT EXISTS workspaces (
@@ -106,9 +105,8 @@ export const GENESIS_V1_SCHEMA = `
     is_active BOOLEAN NOT NULL DEFAULT 1,         -- 是否为当前激活的工作区
     auto_watch BOOLEAN NOT NULL DEFAULT 0,        -- 是否自动监听文件系统变化 (单一真相源)
     last_scan_at DATETIME,                        -- 最后一次完整扫描的时间
-    workspace_config TEXT NOT NULL DEFAULT '{"schemaVersion":1,"status":"pending"}' CHECK (json_valid(workspace_config) = 1 AND json_extract(workspace_config, '$.status') IN ('pending', 'ready')), -- 工作区专有配置 JSON (具体工作区实例运行时的就绪门闩与全量AI处理策略覆盖，不可与工作流模板 engine_params_json 混淆)
+    workspace_config TEXT NOT NULL DEFAULT '{"schemaVersion":1,"status":"pending"}' CHECK (json_valid(workspace_config) = 1 AND json_extract(workspace_config, '$.status') IN ('pending', 'ready')), -- 工作空间专有配置 JSON (与 local_workflows.workspace_config 100% 同构)
     meta TEXT NOT NULL DEFAULT '{}',              -- 弹性运行时元数据 (JSON，仅限扫描统计缓存、UI状态等，不存策略配置)
-    whitelist_patterns TEXT NOT NULL DEFAULT '[]' CHECK (json_valid(whitelist_patterns) = 1), -- 入场白名单扩展名集合 (JSON 字符串数组，如 [".cr3", ".arw"])
     bound_workflow_id TEXT,                       -- 绑定的工作流 ID (解绑置空)
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 创建时间
     FOREIGN KEY (bound_workflow_id) REFERENCES local_workflows(id) ON DELETE SET NULL
@@ -124,7 +122,6 @@ export const GENESIS_V1_SCHEMA = `
     is_analyzed BOOLEAN NOT NULL DEFAULT 0,      -- 是否已完成目录级分析
     last_analyzed_at DATETIME,                   -- 最后分析时间
     meta TEXT NOT NULL DEFAULT '{}',              -- 弹性元数据 (JSON)
-    whitelist_patterns TEXT NOT NULL DEFAULT '[]' CHECK (json_valid(whitelist_patterns) = 1), -- 入场白名单扩展名集合 (JSON 字符串数组，如 [".cr3", ".arw"])
     bound_workflow_id TEXT,                       -- 绑定的工作流 ID (解绑置空)
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 记录创建时间
     modified_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 记录最后修改时间
@@ -446,6 +443,8 @@ export const GENESIS_V1_SCHEMA = `
     author_name       TEXT,                          -- 第三方/社区开发者名称 (官方插件保持为 NULL，由前端 t('Firefly 官方') 动态国际化)
     availability      TEXT NOT NULL DEFAULT 'available'
                       CHECK (availability IN ('available', 'coming_soon', 'unavailable')),
+    firecore_cost     INTEGER NOT NULL DEFAULT 0     -- 开启/解锁此插件所需支付的萤火数量 (默认 0 代表免费)
+                      CHECK (firecore_cost >= 0),
     total_bytes       INTEGER NOT NULL DEFAULT 0,    -- 安装包与资源总体积 (字节)
     catalog_meta_json TEXT CHECK (catalog_meta_json IS NULL OR json_valid(catalog_meta_json) = 1), -- 市场展示元数据 (JSON)
     config_schema     TEXT CHECK (config_schema IS NULL OR json_valid(config_schema) = 1),         -- 插件配置项 Schema (JSON)

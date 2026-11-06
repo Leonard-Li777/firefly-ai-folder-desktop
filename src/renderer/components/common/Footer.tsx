@@ -1,4 +1,9 @@
-import { AIServiceStatus, HardwareInfo, SettingsCategory, parseWorkspaceConfig } from '@firefly/types'
+import {
+  AIServiceStatus,
+  HardwareInfo,
+  SettingsCategory,
+  parseWorkspaceConfig
+} from '@firefly/types'
 import {
   Dialog,
   DialogContent,
@@ -159,7 +164,11 @@ export function Footer() {
     if (currentWorkspaceDirectory?.workspace_config) {
       const parsed = parseWorkspaceConfig(currentWorkspaceDirectory.workspace_config)
       if (parsed.status === 'ready') {
-        return parsed.overrides?.analysisMode ?? parsed.derivedSnapshot.analysisMode
+        return (
+          parsed.overrides?.analysisMode ??
+          (parsed.baseAIConfig || parsed.derivedSnapshot)?.analysisMode ??
+          'quick_name'
+        )
       }
     }
     return config?.analysisMode ?? 'quick_name'
@@ -279,13 +288,11 @@ export function Footer() {
       const timer = setTimeout(() => {
         const currentSnap = useAnalysisQueueStore.getState().snapshot
         const currentAnalyzing =
-          currentSnap.currentAnalyzingItem && currentSnap.currentAnalyzingItem.status === 'analyzing'
+          currentSnap.currentAnalyzingItem &&
+          currentSnap.currentAnalyzingItem.status === 'analyzing'
             ? currentSnap.currentAnalyzingItem
             : null
-        if (
-          !currentAnalyzing &&
-          !currentSnap.items.find(i => i.status === 'analyzing')
-        ) {
+        if (!currentAnalyzing && !currentSnap.items.find(i => i.status === 'analyzing')) {
           setDisplayItem(null)
           lastIdRef.current = null
           setDisplayedProgress(0)
@@ -345,7 +352,14 @@ export function Footer() {
     // 如果 VRAM >= 4G 且当前选择的模型显存需求 <= 2G，显示推荐
     const totalVram = hardwareInfo.vramGB || 0
     return totalVram >= 4 && vramRequiredGB <= 2
-  }, [isAdvancedAiEnabled, hardwareInfo, modelMode, vramRequiredGB, totalSizeBytes, isModelTransitioning])
+  }, [
+    isAdvancedAiEnabled,
+    hardwareInfo,
+    modelMode,
+    vramRequiredGB,
+    totalSizeBytes,
+    isModelTransitioning
+  ])
 
   // 控制推荐提示的显示，每次启动时显示，超过1分钟自动隐藏
   const [showRecommendation, setShowRecommendation] = useState(false)
@@ -385,9 +399,11 @@ export function Footer() {
     const isCompatible = modelMode === 'local' && engineSnapshot?.backendMatchType === 'compatible'
     const modeName = modelMode === 'local' ? t('本地') : t('云端')
     const compatibleLabel = isCompatible ? t('兼容模式') + '-' : ''
-    const activeBackend = modelMode === 'local' ? (engineSnapshot?.backend || backend) : backend
-    const rawActiveModelName = modelMode === 'local' ? (engineSnapshot?.modelName || modelName) : modelName
-    const validModelName = rawActiveModelName && rawActiveModelName !== 'unknown' ? rawActiveModelName : null
+    const activeBackend = modelMode === 'local' ? engineSnapshot?.backend || backend : backend
+    const rawActiveModelName =
+      modelMode === 'local' ? engineSnapshot?.modelName || modelName : modelName
+    const validModelName =
+      rawActiveModelName && rawActiveModelName !== 'unknown' ? rawActiveModelName : null
     const backendLabel = modelMode === 'local' && activeBackend ? ` ${activeBackend}` : ''
     const header = `[${modeName}]${compatibleLabel}${backendLabel}`
     let modelInfo = header
@@ -451,9 +467,7 @@ export function Footer() {
         }
       case AIServiceStatus.STOPPED:
         return {
-          text: validModelName
-            ? t('{modelInfo} AI 服务未启动', { modelInfo })
-            : t('AI 服务未启动'),
+          text: validModelName ? t('{modelInfo} AI 服务未启动', { modelInfo }) : t('AI 服务未启动'),
           icon: 'stop_circle',
           color: 'text-gray-400'
         }
@@ -500,7 +514,13 @@ export function Footer() {
             ? lastError
             : (lastError as any)?.message ||
               (lastError as any)?.details ||
-              (error ? ErrorNormalizer.normalize(error, (error.code || (error as any).type) as any, 'Footer').message : '') ||
+              (error
+                ? ErrorNormalizer.normalize(
+                    error,
+                    (error.code || (error as any).type) as any,
+                    'Footer'
+                  ).message
+                : '') ||
               t('未知错误')
         return {
           text: t('{modelInfo} 服务异常: {error}', {
@@ -561,7 +581,14 @@ export function Footer() {
       }
     }
     return serviceStatus
-  }, [isQueueAnalyzing, modelMode, engineOnline, engineSnapshot, serviceStatus, isAdvancedAiEnabled])
+  }, [
+    isQueueAnalyzing,
+    modelMode,
+    engineOnline,
+    engineSnapshot,
+    serviceStatus,
+    isAdvancedAiEnabled
+  ])
 
   const aiServiceInfo = getFooterDisplay(effectiveStatus)
 
@@ -697,7 +724,10 @@ export function Footer() {
                         onClick={openErrorDialog}
                         title={t('点击查看AI服务错误详情')}
                       >
-                        <MaterialIcon icon="error_outline" className="text-xs shrink-0 animate-pulse" />
+                        <MaterialIcon
+                          icon="error_outline"
+                          className="text-xs shrink-0 animate-pulse"
+                        />
                         <span className="">
                           {errorMessageDisplay}，{t('点击查看原因')}
                         </span>
@@ -719,7 +749,9 @@ export function Footer() {
                     data-testid="engine-guide-bar"
                     className="text-xs leading-tight text-primary font-medium transition-all duration-200 hover:underline cursor-pointer flex items-center gap-1 text-left block truncate max-w-[480px]"
                     onClick={handleEngineGuideClick}
-                    title={t('当前为内置基础AI引擎，建议配置高级AI引擎，配置后可以增强分析结果。点击进入配置。')}
+                    title={t(
+                      '当前为内置基础AI引擎，建议配置高级AI引擎，配置后可以增强分析结果。点击进入配置。'
+                    )}
                   >
                     <MaterialIcon icon="rocket_launch" className="text-xs shrink-0" />
                     <span>

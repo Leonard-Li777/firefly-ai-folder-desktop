@@ -123,13 +123,14 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
   }, [workspace.workspace_config])
 
   const isReady = parsedConfig.status === 'ready'
-  const currentIntent = isReady ? parsedConfig.intent : 'fast_archive'
+  const currentIntent = isReady && parsedConfig.intent ? parsedConfig.intent : 'fast_archive'
 
   // 基线快照与工作目录 overrides
-  const baseDerived = useMemo(() => {
-    return isReady
-      ? parsedConfig.derivedSnapshot
-      : mapIntentToParameters(currentIntent, hardwareInfo)
+  const baseDerived: TechnicalEngineParameters = useMemo(() => {
+    if (isReady && (parsedConfig.baseAIConfig || parsedConfig.derivedSnapshot)) {
+      return parsedConfig.baseAIConfig || parsedConfig.derivedSnapshot
+    }
+    return mapIntentToParameters(currentIntent, hardwareInfo)
   }, [isReady, parsedConfig, currentIntent, hardwareInfo])
 
   const [overrides, setOverrides] = useState<Partial<TechnicalEngineParameters>>(() => {
@@ -170,10 +171,13 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
           status: 'ready',
           intent: currentIntent,
           policyVersion: 1,
+          baseAIConfig: baseDerived,
           derivedSnapshot: baseDerived,
           overrides: hasAnyOverride ? targetOverrides : undefined,
           customIgnoreRules:
-            parsedConfig.status === 'ready' ? parsedConfig.customIgnoreRules : undefined,
+            parsedConfig.status === 'ready' ? parsedConfig.customIgnoreRules || [] : [],
+          customWhitelistRules:
+            parsedConfig.status === 'ready' ? parsedConfig.customWhitelistRules || [] : [],
           configuredAt: Date.now()
         }
 
