@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { WorkspaceDirectory, WorkspaceConfig, parseWorkspaceConfig } from '@firefly/types'
 import { PRESET_BUILTIN_WORKFLOWS } from '@firefly/shared'
 import { getIntentDisplayName } from '../WorkspaceConfigPanel'
@@ -84,11 +84,29 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
   const [showEmptyFolderDialog, setShowEmptyFolderDialog] = useState(false)
   const [isScanningEmptyFolders, setIsScanningEmptyFolders] = useState(false)
 
+  // 工作流列表（从 ConfigDbManager 数据中枢获取，默认降级 PRESET_BUILTIN_WORKFLOWS）
+  const [workflows, setWorkflows] = useState<any[]>(() => PRESET_BUILTIN_WORKFLOWS)
+
+  useEffect(() => {
+    let isMounted = true
+    window.electronAPI
+      ?.getLocalWorkflows?.()
+      .then((res: any) => {
+        if (isMounted && res?.success && Array.isArray(res.data) && res.data.length > 0) {
+          setWorkflows(res.data)
+        }
+      })
+      .catch(() => {})
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
   // 绑定的工作流实体与白名单快照
   const boundWorkflow = useMemo(() => {
     if (!workspace.bound_workflow_id) return null
-    return PRESET_BUILTIN_WORKFLOWS.find(w => w.id === workspace.bound_workflow_id) || null
-  }, [workspace.bound_workflow_id])
+    return workflows.find((w: any) => w.id === workspace.bound_workflow_id) || null
+  }, [workspace.bound_workflow_id, workflows])
 
   const whitelistPatterns = useMemo<string[]>(() => {
     let raw = workspace.whitelist_patterns

@@ -38,7 +38,7 @@
     "$files": [
       "src/renderer/stores/ai-service-store.ts(6533-6541)",
       "src/renderer/stores/ai-service-store.ts(10217-10225)",
-      "src/renderer/stores/tier-store.ts(4953-4961)"
+      "src/renderer/stores/tier-store.ts(5112-5120)"
     ],
     "$id": 8872
   },
@@ -67,6 +67,32 @@
     "ko-KR": "모델 전환 실패",
     "$files": ["src/renderer/stores/ai-service-store.ts(9368-9378)"],
     "$id": 5462
+  },
+  "当前工作区尚未配置 AI 策略，分析已暂停。请先完成工作区配置。": {
+    "en-US": "当前工作区尚未配置 AI 策略，分析已暂停。请先完成工作区配置。",
+    "es-ES": "当前工作区尚未配置 AI 策略，分析已暂停。请先完成工作区配置。",
+    "ar-EG": "当前工作区尚未配置 AI 策略，分析已暂停。请先完成工作区配置。",
+    "pt-PT": "当前工作区尚未配置 AI 策略，分析已暂停。请先完成工作区配置。",
+    "ru-RU": "当前工作区尚未配置 AI 策略，分析已暂停。请先完成工作区配置。",
+    "ja-JP": "当前工作区尚未配置 AI 策略，分析已暂停。请先完成工作区配置。",
+    "de-DE": "当前工作区尚未配置 AI 策略，分析已暂停。请先完成工作区配置。",
+    "fr-FR": "当前工作区尚未配置 AI 策略，分析已暂停。请先完成工作区配置。",
+    "ko-KR": "当前工作区尚未配置 AI 策略，分析已暂停。请先完成工作区配置。",
+    "$files": ["src/renderer/stores/analysis-queue-store.ts(13757-13793)"],
+    "$id": 22924
+  },
+  "前往配置": {
+    "en-US": "前往配置",
+    "es-ES": "前往配置",
+    "ar-EG": "前往配置",
+    "pt-PT": "前往配置",
+    "ru-RU": "前往配置",
+    "ja-JP": "前往配置",
+    "de-DE": "前往配置",
+    "fr-FR": "前往配置",
+    "ko-KR": "前往配置",
+    "$files": ["src/renderer/stores/analysis-queue-store.ts(13883-13891)"],
+    "$id": 22925
   },
   "更新配置失败": {
     "en-US": "Failed to update configuration",
@@ -107,161 +133,57 @@
     "$files": ["src/renderer/stores/config-store.ts(3263-3273)"],
     "$id": 5467
   },
-  "工作区": {
-    "en-US": "Workspace",
-    "es-ES": "Espacio de trabajo",
-    "ar-EG": "منطقة العمل",
-    "pt-PT": "Espaço de trabalho",
-    "ru-RU": "Рабочая область",
-    "ja-JP": "ワークスペース",
-    "de-DE": "Arbeitsbereich",
-    "fr-FR": "Espace de travail",
-    "ko-KR": "작업 공간",
-    "$files": ["src/renderer/stores/settings-store.ts(3058-3065)"],
-    "$id": 3301
+  "界面与显示偏好": {
+    "en-US": "界面与显示偏好",
+    "es-ES": "界面与显示偏好",
+    "ar-EG": "界面与显示偏好",
+    "pt-PT": "界面与显示偏好",
+    "ru-RU": "界面与显示偏好",
+    "ja-JP": "界面与显示偏好",
+    "de-DE": "界面与显示偏好",
+    "fr-FR": "界面与显示偏好",
+    "ko-KR": "界面与显示偏好",
+    "$files": ["src/renderer/stores/settings-store.ts(3495-3506)"],
+    "$id": 22926
   },
-  "目录管理和自动监听": {
-    "en-US": "Directory Management and Auto-watch",
-    "es-ES": "Gestión de directorios y escucha automática",
-    "ar-EG": "إدارة الدليل والمراقبة التلقائية",
-    "pt-PT": "Gestão de diretórios e monitorização automática",
-    "ru-RU": "Управление каталогами и автоматическое отслеживание",
-    "ja-JP": "ディレクトリ管理と自動監視",
-    "de-DE": "Verzeichnisverwaltung und automatische Überwachung",
-    "fr-FR": "Gestion des répertoires et surveillance automatique",
-    "ko-KR": "디렉터리 관리 및 자동 감시",
-    "$files": ["src/renderer/stores/settings-store.ts(3112-3125)"],
-    "$id": 3302
+  "外观、语言、主题及文件列表展示": {
+    "en-US": "外观、语言、主题及文件列表展示",
+    "es-ES": "外观、语言、主题及文件列表展示",
+    "ar-EG": "外观、语言、主题及文件列表展示",
+    "pt-PT": "外观、语言、主题及文件列表展示",
+    "ru-RU": "外观、语言、主题及文件列表展示",
+    "ja-JP": "外观、语言、主题及文件列表展示",
+    "de-DE": "外观、语言、主题及文件列表展示",
+    "fr-FR": "外观、语言、主题及文件列表展示",
+    "ko-KR": "外观、语言、主题及文件列表展示",
+    "$files": ["src/renderer/stores/settings-store.ts(3547-3566)"],
+    "$id": 22927
   },
-  "基础AI引擎配置": {
-    "en-US": "Basic AI Engine Configuration",
-    "es-ES": "Configuración del motor de IA básico",
-    "ar-EG": "إعداد محرك الذكاء الاصطناعي الأساسي",
-    "pt-PT": "Configuração do motor de IA base",
-    "ru-RU": "Конфигурация базового ИИ-движка",
-    "ja-JP": "基本AIエンジン設定",
-    "de-DE": "Grundlegende KI-Engine-Konfiguration",
-    "fr-FR": "Configuration du moteur IA de base",
-    "ko-KR": "기본 AI 엔진 설정",
-    "$files": ["src/renderer/stores/settings-store.ts(3199-3211)"],
-    "$id": 20499
+  "开启高级AI引擎": {
+    "en-US": "开启高级AI引擎",
+    "es-ES": "开启高级AI引擎",
+    "ar-EG": "开启高级AI引擎",
+    "pt-PT": "开启高级AI引擎",
+    "ru-RU": "开启高级AI引擎",
+    "ja-JP": "开启高级AI引擎",
+    "de-DE": "开启高级AI引擎",
+    "fr-FR": "开启高级AI引擎",
+    "ko-KR": "开启高级AI引擎",
+    "$files": ["src/renderer/stores/settings-store.ts(3630-3642)"],
+    "$id": 22928
   },
-  "分析模式、嵌入模型与向量维度、视频切片抽帧": {
-    "en-US": "Analysis mode, embedding model and vector dimension, video clip frame extraction",
-    "es-ES": "Modo de análisis, modelo de incorporación y dimensionalidad de vectores, fotogramas de fragmentos de video",
-    "ar-EG": "وضع التحليل، ونماذج التضمين وأبعاد المتجهات، واستخراج إطار الفيديو",
-    "pt-PT": "Modos de análise, modelos de incorporação e dimensão de vetores, extração de frames em fatias de vídeo",
-    "ru-RU": "Режимы анализа, встраивающая модель и размерность векторов, извлечение кадров из видеосекций",
-    "ja-JP": "分析モード、埋め込みモデルとベクトル次元、動画クリップのフレーム抽出",
-    "de-DE": "Analysemode, Embedding-Modell und Vektordimension, Video-Slicing und Frame-Extraktion",
-    "fr-FR": "Mode d'analyse, modèle d'intégration et dimensions vectorielles, extraction de frames de vidéos",
-    "ko-KR": "분석 모드, 임베딩 모델과 벡터 차원, 비디오 슬라이스 프레임 추출",
-    "$files": ["src/renderer/stores/settings-store.ts(3251-3276)"],
-    "$id": 20500
-  },
-  "高级AI引擎配置": {
-    "en-US": "Advanced AI Engine Configuration",
-    "es-ES": "Configuración del motor de IA avanzado",
-    "ar-EG": "تكوين محرك الذكاء الاصطناعي المتقدم",
-    "pt-PT": "Configuração avançada do mecanismo de IA",
-    "ru-RU": "Расширенная конфигурация механизма искусственного интеллекта",
-    "ja-JP": "高度なAIエンジン構成",
-    "de-DE": "Erweiterte KI-Engine-Konfiguration",
-    "fr-FR": "Configuration du moteur IA avancé",
-    "ko-KR": "고급 AI 엔진 구성",
-    "$files": ["src/renderer/stores/settings-store.ts(3406-3418)"],
-    "$id": 19417
-  },
-  "生效引擎选择、云端配置与思考模式": {
-    "en-US": "Active Engine Selection, Cloud Configuration, and Thinking Mode",
-    "es-ES": "Selección del motor aplicable, configuración en la nube y modo de razonamiento",
-    "ar-EG": "الاختيار الفعال للمحرك والتكوين السحابي ووضع التفكير",
-    "pt-PT": "Seleção eficaz de mecanismo, configuração de nuvem e modo de pensamento",
-    "ru-RU": "Эффективный выбор движка, конфигурация облака и режим мышления",
-    "ja-JP": "効果的なエンジンの選択、クラウド構成、思考モード",
-    "de-DE": "Effektive Engine-Auswahl, Cloud-Konfiguration und Denkmodus",
-    "fr-FR": "Sélection du moteur actif, configuration du cloud et mode de raisonnement",
-    "ko-KR": "효과적인 엔진 선택, 클라우드 구성 및 사고 모드",
-    "$files": ["src/renderer/stores/settings-store.ts(3470-3490)"],
-    "$id": 19418
-  },
-  "内容萃取设置": {
-    "en-US": "Content Extraction Settings",
-    "es-ES": "Configuración de extracción de contenido",
-    "ar-EG": "إعدادات استخراج المحتوى",
-    "pt-PT": "Configurações de extração de conteúdo",
-    "ru-RU": "Настройки извлечения контента",
-    "ja-JP": "コンテンツ抽出設定",
-    "de-DE": "Konfiguration der Inhaltsextraktion",
-    "fr-FR": "Paramètres d'extraction de contenu",
-    "ko-KR": "내용 추출 설정",
-    "$files": ["src/renderer/stores/settings-store.ts(3560-3570)"],
-    "$id": 20501
-  },
-  "文本与文档提取、OCR精度和音频截取": {
-    "en-US": "Text and document extraction, OCR accuracy, and audio capture",
-    "es-ES": "Extracción de texto y documentos, precisión de OCR y recorte de audio",
-    "ar-EG": "استخراج النصوص والمستندات، ودقة التعرف الضوئي على الحروف (OCR) ومقاطع الصوت",
-    "pt-PT": "Extração de texto e documentos, precisão da OCR e recorte de áudio",
-    "ru-RU": "Извлечение текста и документов, точность OCR и вырезание аудио",
-    "ja-JP": "テキストおよびドキュメントの抽出、OCR精度、音声キャプチャ",
-    "de-DE": "Text- und Dokumentenextraktion, OCR-Genauigkeit und Audiobeschneidung",
-    "fr-FR": "Extraction de texte et de documents, précision de l'OCR et capture audio",
-    "ko-KR": "텍스트 및 문서 추출, OCR 정확도 및 오디오 캡처",
-    "$files": ["src/renderer/stores/settings-store.ts(3611-3633)"],
-    "$id": 20502
-  },
-  "最小单元识别": {
-    "en-US": "Minimum Unit Recognition",
-    "es-ES": "Identificación de la unidad mínima",
-    "ar-EG": "تحديد أصغر وحدة",
-    "pt-PT": "Reconhecimento da menor unidade",
-    "ru-RU": "Определение минимальных единиц",
-    "ja-JP": "最小単位の識別",
-    "de-DE": "Erkennung der kleinsten Einheiten",
-    "fr-FR": "Identification de la plus petite unité",
-    "ko-KR": "최소 단위 식별",
-    "$files": ["src/renderer/stores/settings-store.ts(3701-3711)"],
-    "$id": 20503
-  },
-  "目录最小单元判定与单元识别提示词": {
-    "en-US": "Table of contents minimum unit determination and unit recognition prompts",
-    "es-ES": "Determinación de la unidad mínima del directorio y prompts de identificación de unidades",
-    "ar-EG": "تحديد أصغر وحدة في الفهرس واستدعاءات التعريف بالوحدات",
-    "pt-PT": "Determinação da menor unidade do diretório e palavras-chave de reconhecimento de unidades",
-    "ru-RU": "Определение минимальной единицы в каталоге и промпт для распознавания единиц",
-    "ja-JP": "目録の最小単位判定と単位識別プロンプト",
-    "de-DE": "Bestimmung der kleinsten Verzeichniseinheit und Eingabeaufforderung zur Einheitenidentifikation",
-    "fr-FR": "Définition des unités minimales dans les répertoires et prompts d'identification des unités",
-    "ko-KR": "상세목표 최소 단위 판정 및 단위 식별 프롬프트",
-    "$files": ["src/renderer/stores/settings-store.ts(3755-3775)"],
-    "$id": 20504
-  },
-  "高级AI提示词": {
-    "en-US": "Advanced AI Prompts",
-    "es-ES": "Prompts avanzados de IA",
-    "ar-EG": "كلمات مفتاحية متقدمة للذكاء الاصطناعي",
-    "pt-PT": "Prompt avançado de IA",
-    "ru-RU": "Продвинутые ИИ-промпты",
-    "ja-JP": "高度なAIプロンプト",
-    "de-DE": "Erweiterte KI-Eingabeaufforderungen",
-    "fr-FR": "Prompts avancés IA",
-    "ko-KR": "고급 AI 프롬프트",
-    "$files": ["src/renderer/stores/settings-store.ts(3846-3857)"],
-    "$id": 20505
-  },
-  "质量评分与标签智能生成提示词": {
-    "en-US": "Quality scoring and intelligent label generation prompts",
-    "es-ES": "Prompts para la generación inteligente de calificación de calidad y etiquetas",
-    "ar-EG": "استدعاءات التوليف الذكي لدرجات الجودة والوسوم",
-    "pt-PT": "Prompt de geração inteligente de pontuação de qualidade e etiquetas",
-    "ru-RU": "Промпты для генерации интеллектуальных оценок качества и меток",
-    "ja-JP": "品質スコアリングとタグのインテリジェント生成プロンプト",
-    "de-DE": "Eingabeaufforderungen für intelligente Generierung von Qualitätsbewertungen und Labels",
-    "fr-FR": "Prompts pour le score de qualité et la génération intelligente d'étiquettes",
-    "ko-KR": "품질 점수 및 태그 스마트 생성 프롬프트",
-    "$files": ["src/renderer/stores/settings-store.ts(3901-3919)"],
-    "$id": 20506
+  "高级推理引擎连接与思考模式": {
+    "en-US": "高级推理引擎连接与思考模式",
+    "es-ES": "高级推理引擎连接与思考模式",
+    "ar-EG": "高级推理引擎连接与思考模式",
+    "pt-PT": "高级推理引擎连接与思考模式",
+    "ru-RU": "高级推理引擎连接与思考模式",
+    "ja-JP": "高级推理引擎连接与思考模式",
+    "de-DE": "高级推理引擎连接与思考模式",
+    "fr-FR": "高级推理引擎连接与思考模式",
+    "ko-KR": "高级推理引擎连接与思考模式",
+    "$files": ["src/renderer/stores/settings-store.ts(3692-3709)"],
+    "$id": 22929
   },
   "语音合成 (TTS)": {
     "en-US": "Speech synthesis (TTS)",
@@ -273,7 +195,10 @@
     "de-DE": "Sprachsynthese (TTS)",
     "fr-FR": "Synthèse vocale (TTS)",
     "ko-KR": "음성 합성",
-    "$files": ["src/renderer/stores/settings-store.ts(3974-3988)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(3760-3774)",
+      "src/renderer/stores/settings-store.ts(5034-5048)"
+    ],
     "$id": 21213
   },
   "离线多发音人音色库、默认语速与收藏管理": {
@@ -286,7 +211,10 @@
     "de-DE": "Offline-Soundbibliothek mit mehreren Lautsprechern, Standardsprachrate und Sammlungsverwaltung",
     "fr-FR": "Bibliothèque de sons multi-haut-parleurs hors ligne, débit vocal par défaut et gestion de la collection",
     "ko-KR": "오프라인 멀티 스피커 사운드 라이브러리,기본 음성 속도 및 수집 관리",
-    "$files": ["src/renderer/stores/settings-store.ts(4041-4064)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(3825-3848)",
+      "src/renderer/stores/settings-store.ts(5099-5122)"
+    ],
     "$id": 21556
   },
   "AI分析忽略规则": {
@@ -299,8 +227,180 @@
     "de-DE": "Ignorierregeln für KI-Analysen",
     "fr-FR": "Règles d'ignorance de l'analyse IA",
     "ko-KR": "AI 분석 무시 규칙",
-    "$files": ["src/renderer/stores/settings-store.ts(4137-4149)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(3917-3929)",
+      "src/renderer/stores/settings-store.ts(5191-5203)"
+    ],
     "$id": 20507
+  },
+  "全系统通用文件与目录排除黑名单": {
+    "en-US": "全系统通用文件与目录排除黑名单",
+    "es-ES": "全系统通用文件与目录排除黑名单",
+    "ar-EG": "全系统通用文件与目录排除黑名单",
+    "pt-PT": "全系统通用文件与目录排除黑名单",
+    "ru-RU": "全系统通用文件与目录排除黑名单",
+    "ja-JP": "全系统通用文件与目录排除黑名单",
+    "de-DE": "全系统通用文件与目录排除黑名单",
+    "fr-FR": "全系统通用文件与目录排除黑名单",
+    "ko-KR": "全系统通用文件与目录排除黑名单",
+    "$files": ["src/renderer/stores/settings-store.ts(3969-3988)"],
+    "$id": 22930
+  },
+  "工作区": {
+    "en-US": "Workspace",
+    "es-ES": "Espacio de trabajo",
+    "ar-EG": "منطقة العمل",
+    "pt-PT": "Espaço de trabalho",
+    "ru-RU": "Рабочая область",
+    "ja-JP": "ワークスペース",
+    "de-DE": "Arbeitsbereich",
+    "fr-FR": "Espace de travail",
+    "ko-KR": "작업 공간",
+    "$files": ["src/renderer/stores/settings-store.ts(4148-4155)"],
+    "$id": 3301
+  },
+  "工作区配置、分析深度与目录管理": {
+    "en-US": "工作区配置、分析深度与目录管理",
+    "es-ES": "工作区配置、分析深度与目录管理",
+    "ar-EG": "工作区配置、分析深度与目录管理",
+    "pt-PT": "工作区配置、分析深度与目录管理",
+    "ru-RU": "工作区配置、分析深度与目录管理",
+    "ja-JP": "工作区配置、分析深度与目录管理",
+    "de-DE": "工作区配置、分析深度与目录管理",
+    "fr-FR": "工作区配置、分析深度与目录管理",
+    "ko-KR": "工作区配置、分析深度与目录管理",
+    "$files": ["src/renderer/stores/settings-store.ts(4200-4219)"],
+    "$id": 22931
+  },
+  "基础AI引擎配置": {
+    "en-US": "Basic AI Engine Configuration",
+    "es-ES": "Configuración del motor de IA básico",
+    "ar-EG": "إعداد محرك الذكاء الاصطناعي الأساسي",
+    "pt-PT": "Configuração do motor de IA base",
+    "ru-RU": "Конфигурация базового ИИ-движка",
+    "ja-JP": "基本AIエンジン設定",
+    "de-DE": "Grundlegende KI-Engine-Konfiguration",
+    "fr-FR": "Configuration du moteur IA de base",
+    "ko-KR": "기본 AI 엔진 설정",
+    "$files": ["src/renderer/stores/settings-store.ts(4289-4301)"],
+    "$id": 20499
+  },
+  "视觉语义搜索、多模态索引维护与工作区策略总览": {
+    "en-US": "视觉语义搜索、多模态索引维护与工作区策略总览",
+    "es-ES": "视觉语义搜索、多模态索引维护与工作区策略总览",
+    "ar-EG": "视觉语义搜索、多模态索引维护与工作区策略总览",
+    "pt-PT": "视觉语义搜索、多模态索引维护与工作区策略总览",
+    "ru-RU": "视觉语义搜索、多模态索引维护与工作区策略总览",
+    "ja-JP": "视觉语义搜索、多模态索引维护与工作区策略总览",
+    "de-DE": "视觉语义搜索、多模态索引维护与工作区策略总览",
+    "fr-FR": "视觉语义搜索、多模态索引维护与工作区策略总览",
+    "ko-KR": "视觉语义搜索、多模态索引维护与工作区策略总览",
+    "$files": ["src/renderer/stores/settings-store.ts(4339-4365)"],
+    "$id": 22932
+  },
+  "高级AI引擎配置": {
+    "en-US": "Advanced AI Engine Configuration",
+    "es-ES": "Configuración del motor de IA avanzado",
+    "ar-EG": "تكوين محرك الذكاء الاصطناعي المتقدم",
+    "pt-PT": "Configuração avançada do mecanismo de IA",
+    "ru-RU": "Расширенная конфигурация механизма искусственного интеллекта",
+    "ja-JP": "高度なAIエンジン構成",
+    "de-DE": "Erweiterte KI-Engine-Konfiguration",
+    "fr-FR": "Configuration du moteur IA avancé",
+    "ko-KR": "고급 AI 엔진 구성",
+    "$files": ["src/renderer/stores/settings-store.ts(4490-4502)"],
+    "$id": 19417
+  },
+  "生效引擎选择、云端配置与思考模式": {
+    "en-US": "Active Engine Selection, Cloud Configuration, and Thinking Mode",
+    "es-ES": "Selección del motor aplicable, configuración en la nube y modo de razonamiento",
+    "ar-EG": "الاختيار الفعال للمحرك والتكوين السحابي ووضع التفكير",
+    "pt-PT": "Seleção eficaz de mecanismo, configuração de nuvem e modo de pensamento",
+    "ru-RU": "Эффективный выбор движка, конфигурация облака и режим мышления",
+    "ja-JP": "効果的なエンジンの選択、クラウド構成、思考モード",
+    "de-DE": "Effektive Engine-Auswahl, Cloud-Konfiguration und Denkmodus",
+    "fr-FR": "Sélection du moteur actif, configuration du cloud et mode de raisonnement",
+    "ko-KR": "효과적인 엔진 선택, 클라우드 구성 및 사고 모드",
+    "$files": ["src/renderer/stores/settings-store.ts(4552-4572)"],
+    "$id": 19418
+  },
+  "内容萃取设置": {
+    "en-US": "Content Extraction Settings",
+    "es-ES": "Configuración de extracción de contenido",
+    "ar-EG": "إعدادات استخراج المحتوى",
+    "pt-PT": "Configurações de extração de conteúdo",
+    "ru-RU": "Настройки извлечения контента",
+    "ja-JP": "コンテンツ抽出設定",
+    "de-DE": "Konfiguration der Inhaltsextraktion",
+    "fr-FR": "Paramètres d'extraction de contenu",
+    "ko-KR": "내용 추출 설정",
+    "$files": ["src/renderer/stores/settings-store.ts(4638-4648)"],
+    "$id": 20501
+  },
+  "文本与文档提取、OCR精度和音频截取": {
+    "en-US": "Text and document extraction, OCR accuracy, and audio capture",
+    "es-ES": "Extracción de texto y documentos, precisión de OCR y recorte de audio",
+    "ar-EG": "استخراج النصوص والمستندات، ودقة التعرف الضوئي على الحروف (OCR) ومقاطع الصوت",
+    "pt-PT": "Extração de texto e documentos, precisão da OCR e recorte de áudio",
+    "ru-RU": "Извлечение текста и документов, точность OCR и вырезание аудио",
+    "ja-JP": "テキストおよびドキュメントの抽出、OCR精度、音声キャプチャ",
+    "de-DE": "Text- und Dokumentenextraktion, OCR-Genauigkeit und Audiobeschneidung",
+    "fr-FR": "Extraction de texte et de documents, précision de l'OCR et capture audio",
+    "ko-KR": "텍스트 및 문서 추출, OCR 정확도 및 오디오 캡처",
+    "$files": ["src/renderer/stores/settings-store.ts(4687-4709)"],
+    "$id": 20502
+  },
+  "最小单元识别": {
+    "en-US": "Minimum Unit Recognition",
+    "es-ES": "Identificación de la unidad mínima",
+    "ar-EG": "تحديد أصغر وحدة",
+    "pt-PT": "Reconhecimento da menor unidade",
+    "ru-RU": "Определение минимальных единиц",
+    "ja-JP": "最小単位の識別",
+    "de-DE": "Erkennung der kleinsten Einheiten",
+    "fr-FR": "Identification de la plus petite unité",
+    "ko-KR": "최소 단위 식별",
+    "$files": ["src/renderer/stores/settings-store.ts(4773-4783)"],
+    "$id": 20503
+  },
+  "目录最小单元判定与单元识别提示词": {
+    "en-US": "Table of contents minimum unit determination and unit recognition prompts",
+    "es-ES": "Determinación de la unidad mínima del directorio y prompts de identificación de unidades",
+    "ar-EG": "تحديد أصغر وحدة في الفهرس واستدعاءات التعريف بالوحدات",
+    "pt-PT": "Determinação da menor unidade do diretório e palavras-chave de reconhecimento de unidades",
+    "ru-RU": "Определение минимальной единицы в каталоге и промпт для распознавания единиц",
+    "ja-JP": "目録の最小単位判定と単位識別プロンプト",
+    "de-DE": "Bestimmung der kleinsten Verzeichniseinheit und Eingabeaufforderung zur Einheitenidentifikation",
+    "fr-FR": "Définition des unités minimales dans les répertoires et prompts d'identification des unités",
+    "ko-KR": "상세목표 최소 단위 판정 및 단위 식별 프롬프트",
+    "$files": ["src/renderer/stores/settings-store.ts(4825-4845)"],
+    "$id": 20504
+  },
+  "高级AI提示词": {
+    "en-US": "Advanced AI Prompts",
+    "es-ES": "Prompts avanzados de IA",
+    "ar-EG": "كلمات مفتاحية متقدمة للذكاء الاصطناعي",
+    "pt-PT": "Prompt avançado de IA",
+    "ru-RU": "Продвинутые ИИ-промпты",
+    "ja-JP": "高度なAIプロンプト",
+    "de-DE": "Erweiterte KI-Eingabeaufforderungen",
+    "fr-FR": "Prompts avancés IA",
+    "ko-KR": "고급 AI 프롬프트",
+    "$files": ["src/renderer/stores/settings-store.ts(4912-4923)"],
+    "$id": 20505
+  },
+  "质量评分与标签智能生成提示词": {
+    "en-US": "Quality scoring and intelligent label generation prompts",
+    "es-ES": "Prompts para la generación inteligente de calificación de calidad y etiquetas",
+    "ar-EG": "استدعاءات التوليف الذكي لدرجات الجودة والوسوم",
+    "pt-PT": "Prompt de geração inteligente de pontuação de qualidade e etiquetas",
+    "ru-RU": "Промпты для генерации интеллектуальных оценок качества и меток",
+    "ja-JP": "品質スコアリングとタグのインテリジェント生成プロンプト",
+    "de-DE": "Eingabeaufforderungen für intelligente Generierung von Qualitätsbewertungen und Labels",
+    "fr-FR": "Prompts pour le score de qualité et la génération intelligente d'étiquettes",
+    "ko-KR": "품질 점수 및 태그 스마트 생성 프롬프트",
+    "$files": ["src/renderer/stores/settings-store.ts(4965-4983)"],
+    "$id": 20506
   },
   "文件与目录排除规则、查重保护": {
     "en-US": "File and directory exclusion rules, duplicate content protection",
@@ -312,7 +412,7 @@
     "de-DE": "Ausschlussregeln für Dateien und Verzeichnisse, Schutz vor Duplikatprüfung",
     "fr-FR": "Règles d'exclusion de fichiers et de répertoires, protection contre les doublons",
     "ko-KR": "파일 및 디렉터리 제외 규칙, 중복 체크 보호",
-    "$files": ["src/renderer/stores/settings-store.ts(4191-4209)"],
+    "$files": ["src/renderer/stores/settings-store.ts(5243-5261)"],
     "$id": 20508
   },
   "风格和语言": {
@@ -325,7 +425,7 @@
     "de-DE": "Stil und Sprache",
     "fr-FR": "Style et langage",
     "ko-KR": "스타일과 언어",
-    "$files": ["src/renderer/stores/settings-store.ts(4270-4279)"],
+    "$files": ["src/renderer/stores/settings-store.ts(5318-5327)"],
     "$id": 4272
   },
   "外观、语言和主题": {
@@ -338,7 +438,7 @@
     "de-DE": "Aussehen, Sprache und Design",
     "fr-FR": "Apparence, langue et thèmes",
     "ko-KR": "모습, 언어 및 테마",
-    "$files": ["src/renderer/stores/settings-store.ts(4322-4334)"],
+    "$files": ["src/renderer/stores/settings-store.ts(5368-5380)"],
     "$id": 3295
   },
   "列表设置": {
@@ -351,7 +451,7 @@
     "de-DE": "Listeneinstellungen",
     "fr-FR": "Paramètres de la liste",
     "ko-KR": "목록 설정",
-    "$files": ["src/renderer/stores/settings-store.ts(4398-4406)"],
+    "$files": ["src/renderer/stores/settings-store.ts(5440-5448)"],
     "$id": 4273
   },
   "文件列表显示项": {
@@ -364,7 +464,7 @@
     "de-DE": "Anzeigeoptionen für Dateilisten",
     "fr-FR": "Éléments affichés dans la liste des fichiers",
     "ko-KR": "파일 목록 표시 항목",
-    "$files": ["src/renderer/stores/settings-store.ts(4451-4462)"],
+    "$files": ["src/renderer/stores/settings-store.ts(5491-5502)"],
     "$id": 3297
   },
   "保存设置失败": {
@@ -377,7 +477,7 @@
     "de-DE": "Speichern der Einstellungen fehlgeschlagen",
     "fr-FR": "Échec de la sauvegarde des paramètres",
     "ko-KR": "설정 저장 실패",
-    "$files": ["src/renderer/stores/settings-store.ts(7769-7779)"],
+    "$files": ["src/renderer/stores/settings-store.ts(10468-10478)"],
     "$id": 5491
   },
   "确认删除此工作目录？": {
@@ -390,7 +490,7 @@
     "de-DE": "Dieses Arbeitsverzeichnis wirklich löschen?",
     "fr-FR": "Confirmer la suppression de ce répertoire de travail ?",
     "ko-KR": "이 작업 디렉터리를 삭제하시겠습니까?",
-    "$files": ["src/renderer/stores/settings-store.ts(10554-10568)"],
+    "$files": ["src/renderer/stores/settings-store.ts(13161-13175)"],
     "$id": 3303
   },
   "确认重置此工作目录？": {
@@ -403,7 +503,7 @@
     "de-DE": "Dieses Arbeitsverzeichnis wirklich zurücksetzen?",
     "fr-FR": "Confirmer la réinitialisation de ce répertoire de travail ?",
     "ko-KR": "이 작업 디렉터리를 재설정하시겠습니까?",
-    "$files": ["src/renderer/stores/settings-store.ts(10876-10890)"],
+    "$files": ["src/renderer/stores/settings-store.ts(13472-13486)"],
     "$id": 3304
   },
   "不支持的语言设置": {
@@ -416,7 +516,7 @@
     "de-DE": "Nicht unterstützte Spracheinstellung",
     "fr-FR": "Paramètre de langue non pris en charge",
     "ko-KR": "지원되지 않는 언어 설정",
-    "$files": ["src/renderer/stores/settings-store.ts(11345-11357)"],
+    "$files": ["src/renderer/stores/settings-store.ts(13929-13941)"],
     "$id": 5501
   },
   "交易失败，已归还扣币，原因：{reason}": {
@@ -429,8 +529,21 @@
     "de-DE": "Die Transaktion ist fehlgeschlagen und die abgezogenen Firecores wurden zurückgegeben. Grund: {reason}",
     "fr-FR": "La transaction a échoué et les pièces déduites ont été restituées. Raison: {reason}",
     "ko-KR": "거래가 실패하여 차감된 코인이 반환되었습니다. 이유: {reason}",
-    "$files": ["src/renderer/stores/tier-store.ts(6048-6074)"],
+    "$files": ["src/renderer/stores/tier-store.ts(6178-6204)"],
     "$id": 8873
+  },
+  "当前设备已被账号解绑，已切换为免费版": {
+    "en-US": "当前设备已被账号解绑，已切换为免费版",
+    "es-ES": "当前设备已被账号解绑，已切换为免费版",
+    "ar-EG": "当前设备已被账号解绑，已切换为免费版",
+    "pt-PT": "当前设备已被账号解绑，已切换为免费版",
+    "ru-RU": "当前设备已被账号解绑，已切换为免费版",
+    "ja-JP": "当前设备已被账号解绑，已切换为免费版",
+    "de-DE": "当前设备已被账号解绑，已切换为免费版",
+    "fr-FR": "当前设备已被账号解绑，已切换为免费版",
+    "ko-KR": "当前设备已被账号解绑，已切换为免费版",
+    "$files": ["src/renderer/stores/tier-store.ts(6411-6433)"],
+    "$id": 22933
   },
   "正在合成音频，合成后会自动切换": {
     "en-US": "Audio is being synthesized, and it will be automatically switched after synthesis",

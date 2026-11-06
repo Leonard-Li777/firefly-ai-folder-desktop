@@ -91,34 +91,45 @@ interface DirectoryProfileResult {
   stats: ProfileStats
 }
 
-/** 角色身份中文显示字典 */
-const PERSONA_LABELS: Record<string, string> = {
-  photographer: '专业摄影师',
-  videographer: '影视剪辑师',
-  developer_designer: '开发与设计师',
-  designer: 'UI/UX设计师',
-  digital_artist: '3D与美术设计师',
-  modeler: '3D建模师',
-  gamer: '游戏与数字达人',
-  bookworm: '电子书友与网文读者',
-  anime_fan: '漫画二次元同好',
-  cinephile: '影视剧集藏家',
-  audiophile: '无损音乐发烧友',
-  financial: '财务法务审计',
-  office_clerk: '日常行政办公'
+/**
+ * 角色身份展示字典（函数动态返回，支持多语言切换刷新）
+ * 遵循 AGENTS.md "避免静态对象失效"铁律：t() 不能置于模块级静态字面量，
+ * 必须通过函数在渲染时动态调用以确保切语言后正确刷新。
+ */
+function getPersonaLabels(): Record<string, string> {
+  return {
+    photographer: t('专业摄影师'),
+    videographer: t('影视剪辑师'),
+    developer_designer: t('开发与设计师'),
+    designer: t('UI/UX设计师'),
+    digital_artist: t('3D与美术设计师'),
+    modeler: t('3D建模师'),
+    gamer: t('游戏与数字达人'),
+    bookworm: t('电子书友与网文读者'),
+    anime_fan: t('漫画二次元同好'),
+    cinephile: t('影视剧集藏家'),
+    audiophile: t('无损音乐发烧友'),
+    financial: t('财务法务审计'),
+    office_clerk: t('日常行政办公')
+  }
 }
 
-/** 分类选项卡定义 */
-const WORKFLOW_CATEGORIES: Array<{
+/**
+ * 分类选项卡定义（函数动态返回，支持多语言切换刷新）
+ * 遵循 AGENTS.md "避免静态对象失效"铁律：t() 不能置于模块级静态字面量。
+ */
+function getWorkflowCategories(): Array<{
   id: WorkflowCategory
   name: string
   icon: string
   count: number
-}> = [
-  { id: 'entertainment', name: '生活娱乐', icon: 'sports_esports', count: 5 },
-  { id: 'creative', name: '创意设计', icon: 'palette', count: 4 },
-  { id: 'office', name: '专业办公', icon: 'business_center', count: 2 }
-]
+}> {
+  return [
+    { id: 'entertainment', name: t('生活娱乐'), icon: 'sports_esports', count: 5 },
+    { id: 'creative', name: t('创意设计'), icon: 'palette', count: 4 },
+    { id: 'office', name: t('专业办公'), icon: 'business_center', count: 2 }
+  ]
+}
 
 /** 工作流与内置矢量图标映射 */
 function getWorkflowIconComponent(workflowId: string) {
@@ -414,6 +425,24 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     }
   }, [profileResult])
 
+  // 官方与本地工作流列表（从 ConfigDbManager 数据中枢获取，默认降级 PRESET_BUILTIN_WORKFLOWS）
+  const [workflows, setWorkflows] = useState<any[]>(() => PRESET_BUILTIN_WORKFLOWS)
+
+  useEffect(() => {
+    let isMounted = true
+    window.electronAPI
+      ?.getLocalWorkflows?.()
+      .then((res: any) => {
+        if (isMounted && res?.success && Array.isArray(res.data) && res.data.length > 0) {
+          setWorkflows(res.data)
+        }
+      })
+      .catch(() => {})
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
   // 基于目录画像推导工作流推荐评分列表
   const workflowRecommendations = useMemo<WorkflowRecommendation[]>(() => {
     if (!profileResult?.stats || profileResult.stats.totalSampled <= 0) {
@@ -427,8 +456,8 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
       otherCount: profileResult.stats.otherCount,
       topExtensions: profileResult.stats.topExtensions || []
     }
-    return recommendWorkflowByProfile(profileStats, PRESET_BUILTIN_WORKFLOWS)
-  }, [profileResult])
+    return recommendWorkflowByProfile(profileStats, workflows)
+  }, [profileResult, workflows])
 
   // 推荐分数值映射表
   const scoreMap = useMemo(() => {
@@ -447,9 +476,9 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
   const top1Recommendation = useMemo(() => {
     if (workflowRecommendations.length === 0) return null
     const topRec = workflowRecommendations[0]
-    const wf = PRESET_BUILTIN_WORKFLOWS.find(w => w.id === topRec.workflowId)
+    const wf = workflows.find((w: any) => w.id === topRec.workflowId)
     return wf ? { ...wf, score: topRec.score, matchReason: topRec.matchReason } : null
-  }, [workflowRecommendations])
+  }, [workflowRecommendations, workflows])
 
   // Top 1 智能推荐是否达到高亮门槛 (S1 >= 70 且 S1 - S2 >= 15)
   const isTopRecommendationHighlighted = useMemo(() => {
@@ -471,10 +500,8 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
 
   // 当前选中的完整工作流实体
   const selectedWorkflow = useMemo(() => {
-    return (
-      PRESET_BUILTIN_WORKFLOWS.find(w => w.id === selectedWorkflowId) || PRESET_BUILTIN_WORKFLOWS[0]
-    )
-  }, [selectedWorkflowId])
+    return workflows.find((w: any) => w.id === selectedWorkflowId) || workflows[0]
+  }, [selectedWorkflowId, workflows])
 
   // 解析当前选中工作流的目录树结构
   const previewTreeData = useMemo<TreeNode | null>(() => {
@@ -489,19 +516,38 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     if (totalSampled <= 0) return null
 
     let allowedExts = new Set<string>()
-    if (selectedWorkflow.filter_rules) {
+    let templateConfig: any = null
+    if (selectedWorkflow.workspace_config) {
+      try {
+        templateConfig =
+          typeof selectedWorkflow.workspace_config === 'string'
+            ? JSON.parse(selectedWorkflow.workspace_config)
+            : selectedWorkflow.workspace_config
+      } catch {}
+    }
+
+    const whitelistRules = templateConfig?.customWhitelistRules || []
+    if (Array.isArray(whitelistRules) && whitelistRules.length > 0) {
+      whitelistRules.forEach((r: any) => {
+        const ext = typeof r === 'string' ? r : r.value || r.pattern || ''
+        if (ext) allowedExts.add(ext.toLowerCase())
+      })
+    } else if (selectedWorkflow.filter_rules) {
       try {
         const rules = JSON.parse(selectedWorkflow.filter_rules)
         if (Array.isArray(rules)) {
           rules.forEach(r => {
-            const ext = typeof r === 'string' ? r : r.pattern || r.ext || ''
+            const ext = typeof r === 'string' ? r : r.value || r.pattern || ''
             if (ext) allowedExts.add(ext.toLowerCase())
           })
         }
       } catch {}
     }
 
-    if (selectedWorkflow.filter_mode === 'whitelist' && allowedExts.size > 0) {
+    if (
+      (selectedWorkflow.filter_mode === 'whitelist' || allowedExts.size > 0) &&
+      allowedExts.size > 0
+    ) {
       let matchedCount = 0
       for (const item of topExtensions || []) {
         if (allowedExts.has(item.ext.toLowerCase())) {
@@ -526,41 +572,18 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     return t(
       '采用此工作流规范将自动建立「{persona}」标准管理结构，对目标文件执行智能命名与分类归整。',
       {
-        persona: PERSONA_LABELS[selectedWorkflow.persona] || selectedWorkflow.name
+        persona: getPersonaLabels()[selectedWorkflow.persona] || selectedWorkflow.name
       }
     )
   }, [profileResult, selectedWorkflow])
 
-  // 切换工作流确认弹窗状态 (方案 B: 参数分层与定案保护)
-  const [showSwitchConfirm, setShowSwitchConfirm] = useState(false)
-  const [pendingFlowMode, setPendingFlowMode] = useState<'complete' | 'customize'>('complete')
-
-  // 统一提交入口：若检测到曾自定义过高级参数，弹出方案 B 二次确认
+  // 统一提交入口：恪守转化优先铁律与 Spec DoD-4，断言无弹窗阻断，直接填入工作流配置
   const submitConfig = (flowMode: 'complete' | 'customize') => {
-    const hasCustomOverrides =
-      parsedConfig.status === 'ready' &&
-      ((parsedConfig.overrides && Object.keys(parsedConfig.overrides).length > 0) ||
-        (parsedConfig.customIgnoreRules && parsedConfig.customIgnoreRules.length > 0))
-    if (hasCustomOverrides) {
-      setPendingFlowMode(flowMode)
-      setShowSwitchConfirm(true)
-    } else {
-      doSubmitConfig(flowMode, false)
-    }
-  }
-
-  const handleConfirmPreserveOverrides = () => {
-    setShowSwitchConfirm(false)
-    doSubmitConfig(pendingFlowMode, true)
-  }
-
-  const handleConfirmResetOverrides = () => {
-    setShowSwitchConfirm(false)
-    doSubmitConfig(pendingFlowMode, false)
+    doSubmitConfig(flowMode)
   }
 
   // 执行就绪配置持久化与工作流绑定
-  const doSubmitConfig = async (flowMode: 'complete' | 'customize', preserveOverrides: boolean) => {
+  const doSubmitConfig = async (flowMode: 'complete' | 'customize') => {
     if (!workspace.id) {
       toast.error(t('工作区 ID 无效'))
       return
@@ -576,53 +599,50 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
         }
       }
 
-      // 从选中的工作流中解析底层引擎参数快照
-      let derivedSnapshot: TechnicalEngineParameters
-      if (selectedWorkflow.engine_params_json) {
+      let templateConfig: any = null
+      if (selectedWorkflow.workspace_config) {
         try {
-          derivedSnapshot = JSON.parse(selectedWorkflow.engine_params_json)
-        } catch {
-          derivedSnapshot = mapIntentToParameters(
-            mapWorkflowToIntent(selectedWorkflow.id),
-            actualHw
-          )
-        }
-      } else {
-        derivedSnapshot = mapIntentToParameters(mapWorkflowToIntent(selectedWorkflow.id), actualHw)
-      }
-
-      // 提取工作流白名单规则集合
-      let whitelistPatterns: string[] = []
-      if (selectedWorkflow.filter_rules) {
-        try {
-          const parsed = JSON.parse(selectedWorkflow.filter_rules)
-          if (Array.isArray(parsed)) {
-            whitelistPatterns = parsed
-              .map(r => (typeof r === 'string' ? r : r.pattern || r.ext || ''))
-              .filter(Boolean)
-          }
+          templateConfig =
+            typeof selectedWorkflow.workspace_config === 'string'
+              ? JSON.parse(selectedWorkflow.workspace_config)
+              : selectedWorkflow.workspace_config
         } catch {}
       }
 
-      // 保留原有自定义忽略规则
-      const existingCustomIgnoreRules =
-        parsedConfig.status === 'ready' ? parsedConfig.customIgnoreRules : undefined
+      // 从选中的工作流中解析基础 AI 引擎配置快照
+      let baseAi: TechnicalEngineParameters
+      if (templateConfig?.baseAIConfig || templateConfig?.derivedSnapshot) {
+        baseAi = templateConfig.baseAIConfig || templateConfig.derivedSnapshot
+      } else if (selectedWorkflow.engine_params_json) {
+        try {
+          baseAi = JSON.parse(selectedWorkflow.engine_params_json)
+        } catch {
+          baseAi = mapIntentToParameters(mapWorkflowToIntent(selectedWorkflow.id), actualHw)
+        }
+      } else {
+        baseAi = mapIntentToParameters(mapWorkflowToIntent(selectedWorkflow.id), actualHw)
+      }
 
-      // 就绪配置对象 (根据用户二次确认决定是保留自定义 overrides 与规则还是彻底重置为新工作流基线)
+      // policyVersion 单调递增，确保 resolveEffectiveFilterPolicy 缓存键失效，使新策略生效
+      const nextPolicyVersion =
+        parsedConfig.status === 'ready' ? (parsedConfig.policyVersion ?? 0) + 1 : 1
+
+      // 就绪配置对象 (与 local_workflows.workspace_config 100% 同构)
       const readyConfig: WorkspaceConfig = {
         schemaVersion: 1,
         status: 'ready',
-        intent: mapWorkflowToIntent(selectedWorkflow.id),
-        policyVersion: 1,
-        derivedSnapshot,
-        overrides:
-          preserveOverrides && parsedConfig.status === 'ready' && parsedConfig.overrides
-            ? parsedConfig.overrides
-            : undefined,
-        customIgnoreRules:
-          preserveOverrides && parsedConfig.status === 'ready'
-            ? parsedConfig.customIgnoreRules
-            : undefined,
+        policyVersion: nextPolicyVersion,
+        workflowId: selectedWorkflow.id,
+        customIgnoreRules: templateConfig?.customIgnoreRules || [],
+        customWhitelistRules: templateConfig?.customWhitelistRules || [],
+        baseAIConfig: baseAi,
+        derivedSnapshot: baseAi,
+        advancedAIPrompts: templateConfig?.advancedAIPrompts || undefined,
+        unitRecognition: templateConfig?.unitRecognition || undefined,
+        namingPattern:
+          selectedWorkflow.naming_pattern || templateConfig?.namingPattern || undefined,
+        namingTemplate:
+          selectedWorkflow.naming_template || templateConfig?.namingTemplate || undefined,
         configuredAt: Date.now()
       }
 
@@ -634,15 +654,6 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
       // 2. 绑定工作流 ID
       if (window.electronAPI?.updateWorkspaceBoundWorkflow) {
         await window.electronAPI.updateWorkspaceBoundWorkflow(workspace.id, selectedWorkflow.id)
-      }
-
-      // 3. 过滤规则同步持久化：白名单模式写入扩展名集合，黑名单模式清空白名单恢复全量入场
-      if (window.electronAPI?.updateWorkspaceWhitelist) {
-        if (selectedWorkflow.filter_mode === 'whitelist' && whitelistPatterns.length > 0) {
-          await window.electronAPI.updateWorkspaceWhitelist(workspace.id, whitelistPatterns)
-        } else {
-          await window.electronAPI.updateWorkspaceWhitelist(workspace.id, [])
-        }
       }
 
       if (flowMode === 'complete') {
@@ -664,8 +675,8 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
 
   // 过滤出当前激活分类下的工作流卡片
   const categoryWorkflows = useMemo(() => {
-    return PRESET_BUILTIN_WORKFLOWS.filter(w => w.category === activeCategory)
-  }, [activeCategory])
+    return workflows.filter((w: any) => w.category === activeCategory)
+  }, [activeCategory, workflows])
 
   return (
     <div className="flex flex-col h-full overflow-hidden p-5 sm:p-6 space-y-3.5">
@@ -839,7 +850,8 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
                         🔥 {t('契合度 {score}%', { score: top1Recommendation.score })}
                       </span>
                       <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold bg-muted text-muted-foreground border border-border/60">
-                        {PERSONA_LABELS[top1Recommendation.persona] || top1Recommendation.persona}
+                        {getPersonaLabels()[top1Recommendation.persona] ||
+                          top1Recommendation.persona}
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed line-clamp-1">
@@ -904,7 +916,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
 
               {/* 3-Tab 分类切换器 */}
               <div className="flex items-center p-0.5 bg-muted/60 rounded-lg border border-border/60 gap-1">
-                {WORKFLOW_CATEGORIES.map(cat => {
+                {getWorkflowCategories().map(cat => {
                   const isActive = activeCategory === cat.id
                   return (
                     <button
@@ -919,7 +931,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
                       )}
                     >
                       <MaterialIcon icon={cat.icon} className="text-xs" />
-                      <span>{t(cat.name)}</span>
+                      <span>{cat.name}</span>
                       <span
                         className={cn(
                           'text-[10px] px-1 py-0.2 rounded-full font-mono',
@@ -982,7 +994,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
                               {wf.name}
                             </h5>
                             <span className="text-[10px] font-medium text-muted-foreground bg-muted px-1.5 py-0.2 rounded">
-                              {PERSONA_LABELS[wf.persona] || wf.persona}
+                              {getPersonaLabels()[wf.persona] || wf.persona}
                             </span>
                           </div>
                         </div>
@@ -1051,7 +1063,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
                 <span>{t('预期整理结构与效果预览')}</span>
               </div>
               <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 shrink-0">
-                {PERSONA_LABELS[selectedWorkflow.persona] || selectedWorkflow.persona}
+                {getPersonaLabels()[selectedWorkflow.persona] || selectedWorkflow.persona}
               </span>
             </div>
             <p className="text-[11px] text-muted-foreground leading-tight">
@@ -1148,49 +1160,6 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
           </Button>
         </div>
       </div>
-
-      {/* 切换工作流二次确认定案弹窗 (方案 B: 参数分层与定案保护) */}
-      <AlertDialog open={showSwitchConfirm} onOpenChange={setShowSwitchConfirm}>
-        <AlertDialogContent className="max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <span>{t('切换工作流与技术参数确认')}</span>
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-xs leading-relaxed text-muted-foreground pt-1">
-              {t(
-                '切换工作流将更新底层模板规则与技术参数。检测到您曾自定义过【高级参数】，是否重置？'
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex flex-col sm:flex-col gap-2 pt-2">
-            <Button
-              type="button"
-              variant="default"
-              size="sm"
-              className="w-full text-xs font-semibold justify-center h-9"
-              onClick={handleConfirmPreserveOverrides}
-            >
-              {t('仅更新工作流模板，保留我的自定义设置(推荐)')}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="w-full text-xs font-semibold justify-center h-9 border-destructive/40 text-destructive hover:bg-destructive/10"
-              onClick={handleConfirmResetOverrides}
-            >
-              {t('彻底重置为新工作流默认值')}
-            </Button>
-            <AlertDialogCancel
-              className="w-full text-xs h-8 mt-1"
-              onClick={() => setShowSwitchConfirm(false)}
-            >
-              {t('取消')}
-            </AlertDialogCancel>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   )
 }

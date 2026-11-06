@@ -6,6 +6,7 @@ import { ipcMain, BrowserWindow } from 'electron'
 import { logger, LogCategory } from '@firefly/shared'
 import { databaseService } from '../database/database-service'
 import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
+import { ConfigDbManager } from '../config/config-db-manager'
 import { loadIgnoreRules, getSystemIgnoreRules } from '../analysis/analysis-ignore-service'
 import type { IIgnoreRule } from '@firefly/types/settings-types'
 import type { WorkspaceConfig } from '@firefly/types'
@@ -503,6 +504,20 @@ export function registerSettingsIPCHandlers(): void {
       } catch (error) {
         logger.error(LogCategory.SETTING, `计算白名单影响失败: ${workspaceId}`, error)
         return { success: false, error: (error as any)?.message || String(error) }
+      }
+    }
+  )
+
+  // 获取本地工作流列表（从 ConfigDbManager 数据中枢获取）
+  ipcMain.handle(
+    'get-local-workflows',
+    async (_event, filter?: { source?: string; category?: string }) => {
+      try {
+        const workflows = ConfigDbManager.getInstance().getLocalWorkflows(filter as any)
+        return { success: true, data: workflows }
+      } catch (error) {
+        logger.error(LogCategory.SETTING, '获取本地工作流列表失败:', error)
+        return { success: false, error: (error as any)?.message || String(error), data: [] }
       }
     }
   )

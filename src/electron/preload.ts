@@ -774,6 +774,11 @@ const electronAPI = {
     ipcRenderer.invoke('preview-workspace-whitelist-impact', workspaceId, patterns),
   updateWorkspaceBoundWorkflow: (workspaceId: number, workflowId: string | null) =>
     ipcRenderer.invoke('update-workspace-bound-workflow', workspaceId, workflowId),
+  getLocalWorkflows: (filter?: {
+    source?: string
+    category?: string
+  }): Promise<{ success: boolean; data: any[]; error?: string }> =>
+    ipcRenderer.invoke('get-local-workflows', filter),
 
   rescanWorkspaceDirectory: (workspaceId: number): Promise<any> =>
     ipcRenderer.invoke('rescanWorkspaceDirectory', workspaceId),

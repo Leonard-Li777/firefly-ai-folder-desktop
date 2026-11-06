@@ -22,6 +22,7 @@ import { userTierService } from '../user-tier/user-tier-service'
 import { BrowserWindow } from 'electron'
 import type Database from 'better-sqlite3'
 import { resolveAppRegion } from '../../main/worktree-env'
+import { LocalWorkflowDao, LocalWorkflowRecord } from '../database/dao/modular-resource-dao'
 // ADR-0038 / Issue #682 与主设计 §7/§8（Fix-03）：
 // 原 builtin identity / fileDimension 灌库链路（buildBuiltinTagIdentity / buildBuiltinImportPlan
 // / tag_aliases 单表 / file_tags source='builtin' 行）已随单体 tag_aliases 表一并废弃删除，
@@ -36,6 +37,7 @@ export class ConfigDbManager {
   private fileDimensionsCache: Array<any> = []
   private initialized = false
   private currentLanguage = 'zh-CN'
+  private localWorkflows: LocalWorkflowRecord[] = []
 
   private constructor() {}
 
@@ -204,6 +206,7 @@ export class ConfigDbManager {
 
       // 3. 清空并导入 system_config（含模型配置）
       this.loadInitialSystemConfigToDb(db, resolvedLanguage)
+      this.loadInitialLocalWorkflowsToDb(db, resolvedLanguage)
 
       // 4. ADR-0038 / Issue #682：创世主库不再灌入 builtin 与 omw 受控标签
       //    受控分类树与多语言别名改由 Omni semantic.pack + taxonomy HTTP API 托管
@@ -403,11 +406,7 @@ export class ConfigDbManager {
           )
         }
       } catch (policyErr) {
-        logger.warn(
-          LogCategory.CONFIG,
-          'ConfigDbManager: 写入 DIMENSION_POLICIES 失败:',
-          policyErr
-        )
+        logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 写入 DIMENSION_POLICIES 失败:', policyErr)
       }
     } catch (error) {
       logger.error(LogCategory.CONFIG, 'ConfigDbManager: 导入初始 system_config 失败:', error)
@@ -450,6 +449,117 @@ export class ConfigDbManager {
     } catch (error) {
       logger.error(LogCategory.CONFIG, 'ConfigDbManager: 导入初始 file_constants 失败:', error)
     }
+  }
+
+  /**
+   * 从 local_workflow_{language}.json 读取初始官方工作流配置写入 DB
+   */
+  private loadInitialLocalWorkflowsToDb(db: Database.Database, language: string): void {
+    try {
+      let configPath = this.getConfigFilePath(`local_workflow_${language}.json`)
+      if (!fs.existsSync(configPath)) {
+        logger.warn(
+          LogCategory.CONFIG,
+          `ConfigDbManager: 未找到语言 [${language}] 的工作流配置，降级使用 local_workflow_zh-CN.json`
+        )
+        configPath = this.getConfigFilePath('local_workflow_zh-CN.json')
+      }
+
+      if (!fs.existsSync(configPath)) {
+        logger.warn(
+          LogCategory.CONFIG,
+          `ConfigDbManager: 初始 local_workflow 配置文件不存在: ${configPath}`
+        )
+        return
+      }
+
+      const raw = fs.readFileSync(configPath, 'utf-8')
+      const workflows = JSON.parse(raw)
+      if (!Array.isArray(workflows)) {
+        logger.warn(LogCategory.CONFIG, 'ConfigDbManager: local_workflow 配置格式非法 (非数组)')
+        return
+      }
+
+      const dao = new LocalWorkflowDao(db)
+      db.transaction(() => {
+        for (const item of workflows) {
+          try {
+            dao.upsert({
+              id: item.id,
+              user_id: null,
+              author: item.author || 'Firefly Official',
+              name: item.name,
+              version: item.version || '1.0.0',
+              persona: item.persona,
+              category: item.category,
+              summary: item.summary,
+              source: 'official',
+              status: item.status || 'published',
+              workspace_config:
+                typeof item.workspace_config === 'object'
+                  ? JSON.stringify(item.workspace_config)
+                  : item.workspace_config,
+              naming_pattern: item.naming_pattern,
+              naming_template: item.naming_template,
+              preset_directory_tree:
+                typeof item.preset_directory_tree === 'object'
+                  ? JSON.stringify(item.preset_directory_tree)
+                  : item.preset_directory_tree,
+              preview_tree:
+                typeof item.preview_tree === 'object'
+                  ? JSON.stringify(item.preview_tree)
+                  : item.preview_tree,
+              icon_svg: item.icon_svg,
+              filter_mode: item.filter_mode,
+              filter_rules:
+                typeof item.filter_rules === 'object'
+                  ? JSON.stringify(item.filter_rules)
+                  : item.filter_rules,
+              engine_params_json:
+                typeof item.engine_params_json === 'object'
+                  ? JSON.stringify(item.engine_params_json)
+                  : item.engine_params_json
+            } as any)
+          } catch (err) {
+            logger.error(LogCategory.CONFIG, `ConfigDbManager: 写入工作流失败 [${item.id}]:`, err)
+          }
+        }
+      })()
+
+      this.localWorkflows = dao.getAll()
+      logger.info(
+        LogCategory.CONFIG,
+        `ConfigDbManager: 初始 local_workflows 配置加载完成 (${this.localWorkflows.length} 个工作流, 语言: ${language})`
+      )
+    } catch (error) {
+      logger.error(LogCategory.CONFIG, 'ConfigDbManager: 加载初始 local_workflow 失败:', error)
+    }
+  }
+
+  /**
+   * 获取本地工作流列表（从数据中枢缓存获取，无缓存时回退 DB 查询）
+   */
+  getLocalWorkflows(filter?: { source?: string; category?: string }): LocalWorkflowRecord[] {
+    let list = this.localWorkflows
+    if (list.length === 0) {
+      const db = databaseService.db
+      if (db) {
+        try {
+          const dao = new LocalWorkflowDao(db)
+          this.localWorkflows = dao.getAll()
+          list = this.localWorkflows
+        } catch (err) {
+          logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 兜底查询 local_workflows 失败:', err)
+        }
+      }
+    }
+    if (filter?.source) {
+      list = list.filter(w => w.source === filter.source)
+    }
+    if (filter?.category) {
+      list = list.filter(w => w.category === filter.category)
+    }
+    return list
   }
 
   // 依据 ADR-0038 / PRD Issue #686：创世主库彻底废除 omw_* 与 hownet_* 导入，静态语义数据全量由只读语义包 semantic.pack 托管
@@ -505,6 +615,13 @@ export class ConfigDbManager {
       updateRuntimeFileConstants(constantsObj)
     } catch (err) {
       logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 读取 file_constants 失败:', err)
+    }
+
+    try {
+      const dao = new LocalWorkflowDao(db)
+      this.localWorkflows = dao.getAll()
+    } catch (err) {
+      logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 读取 local_workflows 失败:', err)
     }
 
     this.fileDimensionsCache = []
@@ -567,10 +684,7 @@ export class ConfigDbManager {
         'apps/desktop/build/extraResources/configs/dimension-policies.json'
       ),
       path.resolve(process.cwd(), 'build/extraResources/configs/dimension-policies.json'),
-      path.resolve(
-        __dirname,
-        '../../../../build/extraResources/configs/dimension-policies.json'
-      ),
+      path.resolve(__dirname, '../../../../build/extraResources/configs/dimension-policies.json'),
       path.resolve(
         __dirname,
         '../../../../../apps/desktop/build/extraResources/configs/dimension-policies.json'

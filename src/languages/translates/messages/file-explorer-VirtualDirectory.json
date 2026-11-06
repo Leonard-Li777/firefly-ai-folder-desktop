@@ -9,7 +9,7 @@
     "de-DE": "Hinzufügen des Arbeitsverzeichnisses fehlgeschlagen",
     "fr-FR": "Échec de l'ajout du répertoire de travail",
     "ko-KR": "작업 디렉터리 추가에 실패했습니다.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/index.tsx(5626-5638)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/index.tsx(5683-5695)"],
     "$id": 8752
   },
   "暂无已保存的虚拟目录": {
@@ -22,7 +22,7 @@
     "de-DE": "Keine gespeicherten virtuellen Verzeichnisse vorhanden",
     "fr-FR": "Aucun répertoire virtuel sauvegardé pour le moment",
     "ko-KR": "저장된 가상 디렉토리가 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/index.tsx(6209-6223)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/index.tsx(6244-6258)"],
     "$id": 8753
   },
   "请前往已分析页面勾选文件后点击立即整理": {
@@ -35,7 +35,7 @@
     "de-DE": "Bitte gehen Sie zur analysierten Seite, wählen Sie die Dateien aus und klicken Sie auf Jetzt organisieren",
     "fr-FR": "Veuillez vous rendre sur la page analysée, sélectionner les fichiers et cliquer sur Organiser maintenant",
     "ko-KR": "분석된 페이지로 이동하여 파일을 선택하고 지금 구성을 클릭하세요.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/index.tsx(6250-6273)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/index.tsx(6284-6307)"],
     "$id": 8754
   },
   "创建虚拟目录": {
@@ -49,7 +49,7 @@
     "fr-FR": "Créer un répertoire virtuel",
     "ko-KR": "가상 디렉터리 만들기",
     "$files": [
-      "src/renderer/components/file-explorer/VirtualDirectory/index.tsx(6626-6636)",
+      "src/renderer/components/file-explorer/VirtualDirectory/index.tsx(6650-6660)",
       "src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(10384-10394)"
     ],
     "$id": 8755
@@ -64,7 +64,7 @@
     "de-DE": "Überprüfen Sie mindestens eine Datei",
     "fr-FR": "Vérifiez au moins un fichier",
     "ko-KR": "하나 이상의 파일을 확인하십시오.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/index.tsx(16744-16756)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/index.tsx(16726-16738)"],
     "$id": 11478
   },
   "重命名虚拟目录": {
@@ -1208,22 +1208,6 @@
     "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(8754-8762)"],
     "$id": 8838
   },
-  "新虚拟目录": {
-    "en-US": "New virtual directory",
-    "es-ES": "Nuevo directorio virtual",
-    "ar-EG": "الدليل الظاهري الجديد",
-    "pt-PT": "Novo diretório virtual",
-    "ru-RU": "новый виртуальный каталог",
-    "ja-JP": "新しい仮想ディレクトリ",
-    "de-DE": "Neues virtuelles Verzeichnis",
-    "fr-FR": "Nouveau répertoire virtuel",
-    "ko-KR": "새 가상 디렉터리",
-    "$files": [
-      "src/renderer/components/file-explorer/VirtualDirectory/utils/vdir-naming-utils.ts(289-298)",
-      "src/renderer/components/file-explorer/VirtualDirectory/utils/vdir-naming-utils.ts(688-697)"
-    ],
-    "$id": 8856
-  },
   "正在通过拷贝模式重试...": {
     "en-US": "Retrying via copy mode...",
     "es-ES": "Reintentando a través del modo copia...",
@@ -1408,5 +1392,21 @@
     "ko-KR": "모든 파일",
     "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualNavigation.ts(1665-1673)"],
     "$id": 8855
+  },
+  "新虚拟目录": {
+    "en-US": "New virtual directory",
+    "es-ES": "Nuevo directorio virtual",
+    "ar-EG": "الدليل الظاهري الجديد",
+    "pt-PT": "Novo diretório virtual",
+    "ru-RU": "новый виртуальный каталог",
+    "ja-JP": "新しい仮想ディレクトリ",
+    "de-DE": "Neues virtuelles Verzeichnis",
+    "fr-FR": "Nouveau répertoire virtuel",
+    "ko-KR": "새 가상 디렉터리",
+    "$files": [
+      "src/renderer/components/file-explorer/VirtualDirectory/utils/vdir-naming-utils.ts(289-298)",
+      "src/renderer/components/file-explorer/VirtualDirectory/utils/vdir-naming-utils.ts(688-697)"
+    ],
+    "$id": 8856
   }
 }
