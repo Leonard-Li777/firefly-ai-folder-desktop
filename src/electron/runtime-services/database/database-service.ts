@@ -761,6 +761,51 @@ export class DatabaseService {
         UPDATE files SET language = 'ja-JP' WHERE language IN ('ja', 'ja_JP', 'ja-jp');
         UPDATE files SET language = 'ko-KR' WHERE language IN ('ko', 'ko_KR', 'ko-kr');
       `)
+
+      // 创世期自愈：检查 local_workflows 与 workspaces 表的缺失列，防老本地库写入失败
+      const selfHealColumns = (table: string, columns: Record<string, string>) => {
+        try {
+          const info = this._db!.prepare(`PRAGMA table_info(${table})`).all() as Array<{
+            name: string
+          }>
+          if (!info || info.length === 0) return
+          const existing = new Set(info.map(c => c.name.toLowerCase()))
+          for (const [col, colDef] of Object.entries(columns)) {
+            if (!existing.has(col.toLowerCase())) {
+              logger.info(
+                LogCategory.DATABASE_SERVICE,
+                `DatabaseService: 自愈补齐 ${table}.${col} 列`
+              )
+              this._db!.exec(`ALTER TABLE ${table} ADD COLUMN ${col} ${colDef}`)
+            }
+          }
+        } catch (e) {
+          logger.warn(
+            LogCategory.DATABASE_SERVICE,
+            `DatabaseService: 表 ${table} 列自愈探测异常:`,
+            e
+          )
+        }
+      }
+
+      selfHealColumns('local_workflows', {
+        workspace_config: 'TEXT NOT NULL DEFAULT \'{"schemaVersion":1,"status":"ready"}\'',
+        author: 'TEXT',
+        naming_pattern: 'TEXT',
+        naming_template: 'TEXT',
+        preset_directory_tree: 'TEXT',
+        preview_tree: 'TEXT',
+        icon_svg: 'TEXT'
+      })
+
+      selfHealColumns('workspaces', {
+        workspace_config: 'TEXT NOT NULL DEFAULT \'{"schemaVersion":1,"status":"pending"}\'',
+        bound_workflow_id: 'TEXT'
+      })
+
+      selfHealColumns('workspace_directories', {
+        bound_workflow_id: 'TEXT'
+      })
     } catch (error) {
       logger.warn(LogCategory.DATABASE_SERVICE, '确保兼容表结构自愈失败:', error)
     }

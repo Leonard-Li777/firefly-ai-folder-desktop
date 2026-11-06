@@ -888,8 +888,54 @@ export class WorkspaceDirectoryWorkflowExtensionDao implements IWorkspaceDirecto
       .run(directoryId)
   }
 
-  async updateWhitelistPatterns(_directoryId: number, _patterns: string[]): Promise<void> {
-    // 兼容空操作：白名单配置现已统一收拢于 workspace_config 同构体系中
+  async updateWhitelistPatterns(directoryId: number, patterns: string[]): Promise<void> {
+    const cleanRules = (patterns || []).map((val, idx) => ({
+      id: `whitelist-${idx + 1}-${val.replace(/^\./, '')}`,
+      type: 'extension' as const,
+      value: val.startsWith('.') ? val : `.${val}`,
+      isActive: true,
+      isSystem: false
+    }))
+
+    // 1. 优先按 workspaces.workspace_id 物理持久化到 workspace_config
+    const wsRow = this.db
+      .prepare('SELECT workspace_id, workspace_config FROM workspaces WHERE workspace_id = ?')
+      .get(directoryId) as { workspace_id: number; workspace_config: string } | undefined
+    if (wsRow) {
+      let cfg: any = {}
+      try {
+        cfg = JSON.parse(wsRow.workspace_config || '{}')
+      } catch {}
+      cfg.customWhitelistRules = cleanRules
+      cfg.policyVersion = (cfg.policyVersion || 0) + 1
+      cfg.configuredAt = Date.now()
+      this.db
+        .prepare('UPDATE workspaces SET workspace_config = ? WHERE workspace_id = ?')
+        .run(JSON.stringify(cfg), directoryId)
+      return
+    }
+
+    // 2. 尝试从 workspace_directories 向上查到根工作区并同步更新
+    const dirRow = this.db
+      .prepare('SELECT workspace_id FROM workspace_directories WHERE id = ?')
+      .get(directoryId) as { workspace_id: number } | undefined
+    if (dirRow && dirRow.workspace_id) {
+      const parentWs = this.db
+        .prepare('SELECT workspace_config FROM workspaces WHERE workspace_id = ?')
+        .get(dirRow.workspace_id) as { workspace_config: string } | undefined
+      if (parentWs) {
+        let cfg: any = {}
+        try {
+          cfg = JSON.parse(parentWs.workspace_config || '{}')
+        } catch {}
+        cfg.customWhitelistRules = cleanRules
+        cfg.policyVersion = (cfg.policyVersion || 0) + 1
+        cfg.configuredAt = Date.now()
+        this.db
+          .prepare('UPDATE workspaces SET workspace_config = ? WHERE workspace_id = ?')
+          .run(JSON.stringify(cfg), dirRow.workspace_id)
+      }
+    }
   }
 
   async getDirectoryWorkflowConfig(directoryId: number): Promise<{
@@ -897,20 +943,61 @@ export class WorkspaceDirectoryWorkflowExtensionDao implements IWorkspaceDirecto
     bound_workflow_id: string | null
     whitelist_patterns: string[]
   } | null> {
+    // 优先从根工作区获取
+    const wsRow = this.db
+      .prepare(
+        'SELECT workspace_id, bound_workflow_id, workspace_config FROM workspaces WHERE workspace_id = ?'
+      )
+      .get(directoryId) as
+      | { workspace_id: number; bound_workflow_id: string | null; workspace_config: string }
+      | undefined
+    if (wsRow) {
+      let patterns: string[] = []
+      try {
+        const cfg = JSON.parse(wsRow.workspace_config || '{}')
+        patterns = (cfg.customWhitelistRules || [])
+          .map((r: any) => (typeof r === 'string' ? r : r.value))
+          .filter(Boolean)
+      } catch {}
+      return {
+        id: wsRow.workspace_id,
+        bound_workflow_id: wsRow.bound_workflow_id,
+        whitelist_patterns: patterns
+      }
+    }
+
     const row = this.db
       .prepare(
         `
-      SELECT id, bound_workflow_id
+      SELECT id, workspace_id, bound_workflow_id
       FROM workspace_directories
       WHERE id = ?
     `
       )
-      .get(directoryId) as { id: number; bound_workflow_id: string | null } | undefined
+      .get(directoryId) as
+      | { id: number; workspace_id: number; bound_workflow_id: string | null }
+      | undefined
     if (!row) return null
+
+    let patterns: string[] = []
+    if (row.workspace_id) {
+      const parentWs = this.db
+        .prepare('SELECT workspace_config FROM workspaces WHERE workspace_id = ?')
+        .get(row.workspace_id) as { workspace_config: string } | undefined
+      if (parentWs) {
+        try {
+          const cfg = JSON.parse(parentWs.workspace_config || '{}')
+          patterns = (cfg.customWhitelistRules || [])
+            .map((r: any) => (typeof r === 'string' ? r : r.value))
+            .filter(Boolean)
+        } catch {}
+      }
+    }
+
     return {
       id: row.id,
       bound_workflow_id: row.bound_workflow_id,
-      whitelist_patterns: []
+      whitelist_patterns: patterns
     }
   }
 }
