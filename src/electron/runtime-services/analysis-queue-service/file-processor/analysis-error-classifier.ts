@@ -54,9 +54,7 @@ export function getErrorPhase(err: unknown): AnalysisErrorPhase | undefined {
 export function isTimeoutError(err: unknown): boolean {
   if (!err || typeof err !== 'object') return false
   const e = err as { name?: string; code?: string; errorType?: string }
-  return (
-    e.name === 'TimeoutError' || e.code === 'ETIMEDOUT' || e.errorType === 'REQUEST_TIMEOUT'
-  )
+  return e.name === 'TimeoutError' || e.code === 'ETIMEDOUT' || e.errorType === 'REQUEST_TIMEOUT'
 }
 
 /**
@@ -103,6 +101,9 @@ function matchesElectronNetTransientCode(text: string | undefined): boolean {
 const ENGINE_WARMUP_MESSAGES = [
   'AI engine is starting',
   'AI engine service is not started',
+  'AI engine is swapping models',
+  'engine_swapping',
+  'swapping models',
   'Loading model',
   'model is loading',
   '模型加载中'
@@ -124,6 +125,7 @@ export function isTransientInfraError(err: unknown): boolean {
       e.statusCode === 503 ||
       e.code === 'ECONNREFUSED' ||
       e.code === 'ECONNRESET' ||
+      e.code === 'engine_swapping' ||
       matchesElectronNetTransientCode(e.code)
     ) {
       return true
@@ -195,4 +197,3 @@ export function classifyAnalysisError(err: unknown): AnalysisErrorClassification
     allowTier1Fallback: errorPhase === 'inference' && isTimeout && !isTransient
   }
 }
-

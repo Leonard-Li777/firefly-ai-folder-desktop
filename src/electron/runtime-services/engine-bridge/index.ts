@@ -10,3 +10,15 @@ export {
 export type { Tier2EngineStatus, EngineBridgeSnapshot } from './engine-bridge-service'
 // Tier2CircuitState / Tier2CircuitBreakerOptions 为纯类型，须用 type 方式重导出
 export type { Tier2CircuitState, Tier2CircuitBreakerOptions } from './tier2-circuit-breaker'
+export {
+  EngineSwappingCoordinator,
+  engineSwappingCoordinator,
+  withEngineGate,
+  isAvailableForInference,
+  parseRetryAfter
+} from './engine-swapping-coordinator'
+export type {
+  EngineWorkerStatus,
+  EngineMetricsSnapshot,
+  EngineCapability
+} from './engine-swapping-coordinator'

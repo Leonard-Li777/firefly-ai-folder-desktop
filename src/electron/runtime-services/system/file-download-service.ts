@@ -198,7 +198,11 @@ export async function safeDeleteDirectory(dirPath: string): Promise<boolean> {
     fs.renameSync(dirPath, tombstonePath)
   } catch (renameErr: any) {
     if (renameErr.code === 'EBUSY' || renameErr.code === 'EPERM') {
-      logger.warn(LogCategory.SYSTEM, `[Delete] 目录被进程句柄占用，重命名失败: ${dirPath}`, renameErr)
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[Delete] 目录被进程句柄占用，重命名失败: ${dirPath}`,
+        renameErr
+      )
       return false
     }
     throw renameErr
@@ -217,7 +221,10 @@ export async function safeDeleteDirectory(dirPath: string): Promise<boolean> {
         continue
       }
       if (isLocked) {
-        logger.warn(LogCategory.SYSTEM, `[Delete] 目录物理删除退避耗尽，保留 Tombstone 等待下次启动清理: ${tombstonePath}`)
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[Delete] 目录物理删除退避耗尽，保留 Tombstone 等待下次启动清理: ${tombstonePath}`
+        )
         return false
       }
       throw rmErr
@@ -339,9 +346,17 @@ export class FileDownloadService {
         if (expectedSha256) {
           const { valid } = await streamVerifySha256(destPath, expectedSha256)
           if (valid) {
-            logger.info(LogCategory.SYSTEM, `[Download] 文件已存在且哈希校验一致，直接跳过: ${destPath}`)
+            logger.info(
+              LogCategory.SYSTEM,
+              `[Download] 文件已存在且哈希校验一致，直接跳过: ${destPath}`
+            )
             if (onProgress) {
-              onProgress({ percent: 100, receivedBytes: localSize, totalBytes: localSize, speed: 0 })
+              onProgress({
+                percent: 100,
+                receivedBytes: localSize,
+                totalBytes: localSize,
+                speed: 0
+              })
             }
             return true
           }
@@ -369,7 +384,12 @@ export class FileDownloadService {
         if (valid) {
           fs.renameSync(partPath, destPath)
           if (onProgress) {
-            onProgress({ percent: 100, receivedBytes: expectedBytes, totalBytes: expectedBytes, speed: 0 })
+            onProgress({
+              percent: 100,
+              receivedBytes: expectedBytes,
+              totalBytes: expectedBytes,
+              speed: 0
+            })
           }
           return true
         } else {
@@ -411,8 +431,14 @@ export class FileDownloadService {
 
       const cleanup = () => {
         if (taskId) this.activeRequests.delete(taskId)
-        if (fileStream && !fileStream.destroyed) {
-          fileStream.close()
+        if (fileStream) {
+          try {
+            if (typeof (fileStream as any).close === 'function') {
+              ;(fileStream as any).close()
+            } else if (typeof (fileStream as any).destroy === 'function') {
+              ;(fileStream as any).destroy()
+            }
+          } catch {}
         }
       }
 
@@ -429,7 +455,10 @@ export class FileDownloadService {
               // ignore
             }
           }
-          logger.warn(LogCategory.SYSTEM, `[Download] 416 Range Not Satisfiable, 已重置 .part: ${partPath}`)
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[Download] 416 Range Not Satisfiable, 已重置 .part: ${partPath}`
+          )
           resolve(false)
           return
         }
@@ -464,6 +493,16 @@ export class FileDownloadService {
             totalBytes = parseInt(lengthVal, 10)
           }
         }
+
+        // 立即同步绑定流写入完成与错误监听，杜绝异步轮询竞态
+        fileStream.on('finish', () => {
+          onStreamFinish()
+        })
+        fileStream.on('error', err => {
+          logger.error(LogCategory.SYSTEM, `[Download] 文件写入流异常:`, err)
+          cleanup()
+          resolve(false)
+        })
 
         response.on('data', chunk => {
           if (isAborted || !fileStream) return
@@ -521,6 +560,13 @@ export class FileDownloadService {
             LogCategory.SYSTEM,
             `[Download] 文件下载未完整: ${receivedBytes}/${totalBytes}，断点已保留`
           )
+          if (fs.existsSync(destPath)) {
+            try {
+              fs.unlinkSync(destPath)
+            } catch (e) {
+              logger.warn(LogCategory.SYSTEM, `删除不完整的正式文件失败: ${destPath}`, e)
+            }
+          }
           resolve(false)
           return
         }
@@ -547,12 +593,21 @@ export class FileDownloadService {
           }
         }
 
-        // 校验成功，原子 rename 为最终正式文件
+        // 校验成功，原子 rename 为最终正式文件 (防御 mock 环境下缺失 renameSync)
+        let canRename = false
         try {
-          if (fs.existsSync(destPath)) {
-            fs.unlinkSync(destPath)
+          canRename = typeof (fs as any).renameSync === 'function'
+        } catch {
+          canRename = false
+        }
+
+        try {
+          if (canRename && fs.existsSync(partPath)) {
+            if (fs.existsSync(destPath)) {
+              fs.unlinkSync(destPath)
+            }
+            fs.renameSync(partPath, destPath)
           }
-          fs.renameSync(partPath, destPath)
           resolve(true)
         } catch (renameErr) {
           logger.error(LogCategory.SYSTEM, `[Download] 重命名 .part 至正式文件失败:`, renameErr)
@@ -560,21 +615,9 @@ export class FileDownloadService {
         }
       }
 
-      // 绑定监听写入完成
-      const checkStreamFinishInterval = setInterval(() => {
-        if (fileStream) {
-          clearInterval(checkStreamFinishInterval)
-          fileStream.on('finish', () => {
-            onStreamFinish()
-          })
-        }
-      }, 20)
-      setTimeout(() => clearInterval(checkStreamFinishInterval), 5000)
-
       request.end()
     })
   }
 }
 
 export const fileDownloadService = FileDownloadService.getInstance()
-

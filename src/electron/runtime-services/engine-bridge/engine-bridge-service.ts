@@ -23,6 +23,12 @@ import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
 import { Tier2CircuitBreaker, Tier2CircuitState } from './tier2-circuit-breaker'
 import { CRASH_HEAL_MAX_ATTEMPTS, decideCrashHeal } from './crash-heal-policy'
 import { isServiceUsableStatus, shouldTriggerServiceStartAt } from './service-start-policy'
+import {
+  EngineCapability,
+  EngineMetricsSnapshot,
+  engineSwappingCoordinator,
+  parseRetryAfter
+} from './engine-swapping-coordinator'
 import { isLocalDevRuntime } from '../../main/worktree-env'
 
 /** Tier 2 引擎基准端口（与本地 AI 服务端口收敛一致：38400） */
@@ -45,6 +51,8 @@ const ENGINE_SERVICE_STOP_PATH = '/api/engine/stop'
 const ENGINE_SWITCH_PATH = '/api/engine/switch'
 /** 引擎全局思考模式端点（GET 读取 / POST 写入 config.json enable_thinking） */
 const ENGINE_THINKING_PATH = '/api/engine/thinking'
+/** 统一引擎运行时与 Worker 显存指标端点 (Ticket 3) */
+const ENGINE_METRICS_PATH = '/v1/engine/metrics'
 
 /** 桥接请求超时（毫秒） */
 const STATUS_TIMEOUT_MS = 1500
@@ -282,7 +290,8 @@ export class EngineBridgeService {
   /** ENABLE_THINKING_MODE 变更订阅取消函数 */
   private thinkingConfigUnsubscribe: (() => void) | null = null
   /** 内置模型元数据缓存（包含所有语言模型与 embedding 模型；权威来源 = engine /api/models/meta） */
-  private builtinModelCatalog: Array<{ id: string; name: string; isEmbedding?: boolean }> | null = null
+  private builtinModelCatalog: Array<{ id: string; name: string; isEmbedding?: boolean }> | null =
+    null
   /** 引擎 /api/models 模型列表缓存（随 refreshModelCount 更新，作为 matchSlotToCatalog 第二层匹配源） */
   private downloadedModelCatalog: Array<{
     id: string
@@ -349,9 +358,7 @@ export class EngineBridgeService {
    * 一旦引擎被任何路径拉起（`lastRawStatus` 恢复非空），本判定自动失效。
    */
   public isCrashHealExhaustedAndOffline(): boolean {
-    return (
-      this.autoHealAttempts >= CRASH_HEAL_MAX_ATTEMPTS && !this.process && !this.lastRawStatus
-    )
+    return this.autoHealAttempts >= CRASH_HEAL_MAX_ATTEMPTS && !this.process && !this.lastRawStatus
   }
 
   private constructor() {
@@ -439,8 +446,27 @@ export class EngineBridgeService {
     // 2. monorepo 相对路径兜底（cwd 可能是仓库根，也可能是 apps/desktop）
     for (const root of this.collectMonorepoRoots()) {
       const candidates = [
-        path.join(root, 'apps', 'desktop', 'build', 'extraResources', 'bin', ENGINE_BIN_DIR_NAME, exeName),
-        path.join(root, 'apps', 'desktop', 'pro', 'build', 'extraResources', 'bin', ENGINE_BIN_DIR_NAME, exeName),
+        path.join(
+          root,
+          'apps',
+          'desktop',
+          'build',
+          'extraResources',
+          'bin',
+          ENGINE_BIN_DIR_NAME,
+          exeName
+        ),
+        path.join(
+          root,
+          'apps',
+          'desktop',
+          'pro',
+          'build',
+          'extraResources',
+          'bin',
+          ENGINE_BIN_DIR_NAME,
+          exeName
+        ),
         path.join(root, 'build', 'extraResources', 'bin', ENGINE_BIN_DIR_NAME, exeName)
       ]
       for (const cand of candidates) {
@@ -555,7 +581,11 @@ export class EngineBridgeService {
         }
       }
     } catch (err) {
-      logger.debug(LogCategory.SYSTEM, '[EngineBridge] 从本地 model_zh-CN.json 加载 catalog 失败:', err)
+      logger.debug(
+        LogCategory.SYSTEM,
+        '[EngineBridge] 从本地 model_zh-CN.json 加载 catalog 失败:',
+        err
+      )
     }
     return []
   }
@@ -577,14 +607,19 @@ export class EngineBridgeService {
     // 防护：mmproj 是多模态投影器辅助文件，不是可直接启动的主模型，不应展示为当前模型名称
     const fileBasename = identifier.replace(/.*[/\\]/, '').toLowerCase()
     if (fileBasename.startsWith('mmproj')) {
-      logger.warn(LogCategory.SYSTEM, `[EngineBridge] current_model 指向投影器文件，忽略展示: ${identifier}`)
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[EngineBridge] current_model 指向投影器文件，忽略展示: ${identifier}`
+      )
       return null
     }
 
     // 0. 如果 identifier 本身已经是规范展示名称（包含中文、全角括号、或者非文件名且包含空格），直接返回
     if (
       /[\u4e00-\u9fa5（）]/.test(identifier) ||
-      (identifier.includes(' ') && !/[/\\]/.test(identifier) && !identifier.toLowerCase().endsWith('.gguf'))
+      (identifier.includes(' ') &&
+        !/[/\\]/.test(identifier) &&
+        !identifier.toLowerCase().endsWith('.gguf'))
     ) {
       return identifier
     }
@@ -790,7 +825,10 @@ export class EngineBridgeService {
       const withoutDrive = rawId.replace(/^[a-z]:/i, '')
       const colonIdx = withoutDrive.indexOf(':')
       if (colonIdx < 0) return null
-      const tag = withoutDrive.slice(colonIdx + 1).trim().toLowerCase()
+      const tag = withoutDrive
+        .slice(colonIdx + 1)
+        .trim()
+        .toLowerCase()
       if (!tag || tag.endsWith('.gguf') || tag.includes('/')) return null
       return tag.replace(/^ud[-_]/, '').replace(/_/g, '-')
     }
@@ -826,7 +864,9 @@ export class EngineBridgeService {
               const repoId = idLower.split(':')[0]
               if (!repoId || repoId.length <= 3) return false
               const repoSlug = repoId.replace(/\//g, '--')
-              return slotLower.includes(repoId) || (repoSlug !== repoId && slotLower.includes(repoSlug))
+              return (
+                slotLower.includes(repoId) || (repoSlug !== repoId && slotLower.includes(repoSlug))
+              )
             })()) ||
           (lpLower.length > 0 &&
             (slotLower === lpLower ||
@@ -870,7 +910,11 @@ export class EngineBridgeService {
       const mode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE') || 'local'
       return mode !== 'cloud' && mode !== 'disabled'
     } catch (err) {
-      logger.debug(LogCategory.SYSTEM, '[EngineBridge] 读取 AI_SERVICE_MODE 失败，跳过自动拉起:', err)
+      logger.debug(
+        LogCategory.SYSTEM,
+        '[EngineBridge] 读取 AI_SERVICE_MODE 失败，跳过自动拉起:',
+        err
+      )
       return false
     }
   }
@@ -1008,13 +1052,72 @@ export class EngineBridgeService {
   }
 
   /**
+   * 拉取统一引擎运行时指标与显存/Worker快照 (/v1/engine/metrics) (Ticket 3)
+   */
+  public async fetchMetrics(): Promise<EngineMetricsSnapshot | null> {
+    try {
+      const res = await fetch(`${this.baseUrl}${ENGINE_METRICS_PATH}`, {
+        method: 'GET',
+        signal: AbortSignal.timeout(STATUS_TIMEOUT_MS)
+      })
+      if (!res.ok) {
+        return null
+      }
+      const data = (await res.json()) as EngineMetricsSnapshot
+      // 联动置换协调器状态 (防惊群门闩)
+      if (data?.swapping?.isSwapping) {
+        const retryAfter = parseRetryAfter(null, data.swapping.etaMs)
+        engineSwappingCoordinator.enterSwapping(retryAfter)
+      } else if (engineSwappingCoordinator.isInSwapping()) {
+        engineSwappingCoordinator.exitSwapping()
+      }
+      return data
+    } catch {
+      return null
+    }
+  }
+
+  /**
+   * 获取当前引擎能力快照 (对齐系统不变量 6：四态 starting / ready / processing / stopped) (Ticket 3)
+   */
+  public async getEngineCapability(): Promise<EngineCapability> {
+    const raw = this.lastRawStatus
+    const metrics = await this.fetchMetrics()
+
+    let state: 'starting' | 'ready' | 'processing' | 'stopped' = 'stopped'
+    let reasonCode: string | undefined
+
+    if (raw?.status === 'ready') {
+      state = 'ready'
+      if (metrics?.swapping?.isSwapping) {
+        reasonCode = 'engine_swapping'
+      }
+    } else if (raw?.status === 'processing') {
+      state = 'processing'
+    } else if (raw?.status === 'starting' || this.isStarting) {
+      state = 'starting'
+    } else {
+      state = 'stopped'
+    }
+
+    return {
+      state,
+      reasonCode,
+      metrics: metrics || undefined,
+      supportedChannels: ['chat', 'embeddings']
+    }
+  }
+
+  /**
    * 探活：向 /api/engine/status 发起一次状态查询
    * 默认每次失败都将计入熔断器（Tier 2 静默熔断）；后台轮询与启动等待可传入 `{ recordFailure: false }` 走裸探活。
    *
    * 基准端口不可达时会扫描 38400~38419，采纳引擎实际绑定的滑动端口，
    * 避免引擎顺延后 desktop 永久显示「未连接」。
    */
-  public async healthCheck(options?: { recordFailure?: boolean }): Promise<Tier2EngineStatus | null> {
+  public async healthCheck(options?: {
+    recordFailure?: boolean
+  }): Promise<Tier2EngineStatus | null> {
     const epoch = this.stopEpoch
     const data = await this.probeStatus(this.activePort, STATUS_TIMEOUT_MS)
     if (epoch !== this.stopEpoch) {
@@ -1062,13 +1165,16 @@ export class EngineBridgeService {
     if (typeof data.version === 'string' && data.version) {
       this.versionCache = data.version
     }
-    const prevModel = this.lastRawStatus?.current_model || this.lastRawStatus?.model || this.lastKnownModel
-    const currentModel = data.current_model || data.model || (data.loaded_models?.[0]) || null
+    const prevModel =
+      this.lastRawStatus?.current_model || this.lastRawStatus?.model || this.lastKnownModel
+    const currentModel = data.current_model || data.model || data.loaded_models?.[0] || null
     const modelChanged = currentModel !== null && currentModel !== prevModel
     // 槽位变更检测：引擎 UI 切换嵌入/语言模型时 current_model 可能不变或置空，
     // 若只检测 current_model 会漏播广播，渲染层只能等下个轮询 tick —— Footer 模型状态「不同步」的延迟根因
-    const langSlotChanged = (data.active_language_model || null) !== (this.lastRawStatus?.active_language_model || null)
-    const embSlotChanged = (data.active_embedding_model || null) !== (this.lastRawStatus?.active_embedding_model || null)
+    const langSlotChanged =
+      (data.active_language_model || null) !== (this.lastRawStatus?.active_language_model || null)
+    const embSlotChanged =
+      (data.active_embedding_model || null) !== (this.lastRawStatus?.active_embedding_model || null)
     const statusChanged = data.status !== this.lastRawStatus?.status
     const wasOffline = this.lastRawStatus === null
 
@@ -1081,7 +1187,14 @@ export class EngineBridgeService {
     const hadError = this.lastError !== null
     this.lastError = null
     // 状态变化（错误清除、模型切换、激活槽位切换、运行状态 ready/processing 切换、从离线恢复）时立即广播，无需等待后续异步操作
-    if (hadError || modelChanged || langSlotChanged || embSlotChanged || statusChanged || wasOffline) {
+    if (
+      hadError ||
+      modelChanged ||
+      langSlotChanged ||
+      embSlotChanged ||
+      statusChanged ||
+      wasOffline
+    ) {
       this.broadcastStatus()
     }
     // PRD-0044：探活成功后异步刷新已安装模型计数，不阻塞探活关键路径。
@@ -1301,7 +1414,12 @@ export class EngineBridgeService {
             // 判断是否已被内置推荐目录包含（按 id、name 或文件名模糊匹配）
             const isBuiltin = catalog.some(b => {
               if (b.id && (b.id === m.id || b.name === m.name)) return true
-              if (m.localPath && b.id && m.localPath.toLowerCase().includes(b.id.split(':')[0].toLowerCase())) return true
+              if (
+                m.localPath &&
+                b.id &&
+                m.localPath.toLowerCase().includes(b.id.split(':')[0].toLowerCase())
+              )
+                return true
               return false
             })
             if (!isBuiltin) {
@@ -1494,10 +1612,7 @@ export class EngineBridgeService {
    * 为临时释放显存，而整个客户端重启后恢复 AI 可用符合多数用户直觉预期；为此引入
    * 持久化 `user_stopped` 状态机会显著增加状态机复杂度（见 Spec Out of Scope §6）。
    */
-  private triggerServiceStartIfNeeded(
-    explicit: boolean,
-    status?: Tier2EngineStatus | null
-  ): void {
+  private triggerServiceStartIfNeeded(explicit: boolean, status?: Tier2EngineStatus | null): void {
     const effective = status ?? this.lastRawStatus
     if (!this.shouldTriggerServiceStart(effective, { explicit })) {
       return
@@ -1517,7 +1632,10 @@ export class EngineBridgeService {
    * 确保引擎在线：在线则直接复用；离线则尝试静默拉起（受熔断器保护）
    * @param options.force 显式启动（用户点击）时跳过熔断冷却，避免「点了没反应」
    */
-  public async ensureRunning(options?: { force?: boolean; mode?: 'language' | 'embedding' }): Promise<boolean> {
+  public async ensureRunning(options?: {
+    force?: boolean
+    mode?: 'language' | 'embedding'
+  }): Promise<boolean> {
     if (options?.force) {
       // 显式启动视为用户意图，复位熔断器重新放行
       this.circuitBreaker.reset()
@@ -1550,7 +1668,10 @@ export class EngineBridgeService {
         }
         // 「HTTP 可响应」≠「推理服务可用」：必须按 status 分层判定
         if (this.isServiceUsable(status)) {
-          logger.info(LogCategory.SYSTEM, `[EngineBridge] 复用已运行的 Tier 2 引擎 (${this.baseUrl})`)
+          logger.info(
+            LogCategory.SYSTEM,
+            `[EngineBridge] 复用已运行的 Tier 2 引擎 (${this.baseUrl})`
+          )
           this.broadcastStatus()
           return true
         }
@@ -1956,7 +2077,11 @@ export class EngineBridgeService {
   /**
    * 读取引擎全局思考模式（GET /api/engine/thinking）
    */
-  public async getThinkingMode(): Promise<{ ok: boolean; enableThinking?: boolean; error?: string }> {
+  public async getThinkingMode(): Promise<{
+    ok: boolean
+    enableThinking?: boolean
+    error?: string
+  }> {
     try {
       const res = await fetch(`${this.baseUrl}${ENGINE_THINKING_PATH}`, {
         method: 'GET',
@@ -1985,13 +2110,23 @@ export class EngineBridgeService {
         body: JSON.stringify({ enableThinking }),
         signal: AbortSignal.timeout(STATUS_TIMEOUT_MS)
       })
-      const body = (await res.json().catch(() => ({}))) as { success?: boolean; enableThinking?: boolean; error?: string }
+      const body = (await res.json().catch(() => ({}))) as {
+        success?: boolean
+        enableThinking?: boolean
+        error?: string
+      }
       const ok = res.ok && body.success !== false
       if (ok) {
         this.lastSyncedThinking = enableThinking
-        logger.info(LogCategory.SYSTEM, `[EngineBridge] 已同步思考模式至引擎: enable_thinking=${enableThinking}`)
+        logger.info(
+          LogCategory.SYSTEM,
+          `[EngineBridge] 已同步思考模式至引擎: enable_thinking=${enableThinking}`
+        )
       } else {
-        logger.warn(LogCategory.SYSTEM, `[EngineBridge] 同步思考模式至引擎失败: ${body.error || res.status}`)
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[EngineBridge] 同步思考模式至引擎失败: ${body.error || res.status}`
+        )
       }
       return { ok, error: ok ? undefined : body.error || `引擎返回 ${res.status}` }
     } catch (err) {
@@ -2062,7 +2197,10 @@ export class EngineBridgeService {
    *   早返回成功 ⇒ 返回「启动成功」但实际加载的仍是上一个模型，随后
    *   `waitForServiceReady` 必然超时。
    */
-  public async startService(options?: { mode?: 'language' | 'embedding'; modelId?: string }): Promise<{ ok: boolean; error?: string }> {
+  public async startService(options?: {
+    mode?: 'language' | 'embedding'
+    modelId?: string
+  }): Promise<{ ok: boolean; error?: string }> {
     const key = `${options?.mode ?? 'auto'}|${options?.modelId ?? ''}`
 
     const existing = this.startServiceInFlight.get(key)
@@ -2106,7 +2244,10 @@ export class EngineBridgeService {
       const body = (await res.json().catch(() => ({}))) as { success?: boolean; error?: string }
       const ok = res.ok && body.success !== false
       if (!ok) {
-        logger.warn(LogCategory.SYSTEM, `[EngineBridge] 启动 AI 服务失败: ${body.error || res.status}`)
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[EngineBridge] 启动 AI 服务失败: ${body.error || res.status}`
+        )
       }
       return { ok, error: ok ? undefined : body.error || `引擎返回 ${res.status}` }
     } catch (err) {
@@ -2161,7 +2302,8 @@ export class EngineBridgeService {
       const status = await this.healthCheck()
       if (status) {
         const currentModel = (status.current_model || status.model || '').toLowerCase()
-        const isCurrentlyEmbedding = currentModel.includes('wemm') || currentModel.includes('embedding')
+        const isCurrentlyEmbedding =
+          currentModel.includes('wemm') || currentModel.includes('embedding')
         const matchesTarget = mode === 'embedding' ? isCurrentlyEmbedding : !isCurrentlyEmbedding
 
         // 同上：processing 表示服务已就绪但正在处理请求，同样算达成「就绪」
@@ -2203,7 +2345,10 @@ export class EngineBridgeService {
       const body = (await res.json().catch(() => ({}))) as { success?: boolean; error?: string }
       const ok = res.ok && body.success !== false
       if (!ok) {
-        logger.warn(LogCategory.SYSTEM, `[EngineBridge] 停止 AI 服务失败: ${body.error || res.status}`)
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[EngineBridge] 停止 AI 服务失败: ${body.error || res.status}`
+        )
       }
       return { ok, error: ok ? undefined : body.error || `引擎返回 ${res.status}` }
     } catch (err) {
@@ -2227,12 +2372,22 @@ export class EngineBridgeService {
         body: JSON.stringify({ backend }),
         signal: AbortSignal.timeout(STATUS_TIMEOUT_MS)
       })
-      const body = (await res.json().catch(() => ({}))) as { success?: boolean; error?: string; message?: string }
+      const body = (await res.json().catch(() => ({}))) as {
+        success?: boolean
+        error?: string
+        message?: string
+      }
       const ok = res.ok && body.success !== false
       if (!ok) {
-        logger.warn(LogCategory.SYSTEM, `[EngineBridge] 切换后端 ${backend} 失败: ${body.error || res.status}`)
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[EngineBridge] 切换后端 ${backend} 失败: ${body.error || res.status}`
+        )
       } else {
-        logger.info(LogCategory.SYSTEM, `[EngineBridge] 已请求切换后端至 ${backend}（重启服务后生效）`)
+        logger.info(
+          LogCategory.SYSTEM,
+          `[EngineBridge] 已请求切换后端至 ${backend}（重启服务后生效）`
+        )
       }
       return { ok, error: ok ? undefined : body.error || `引擎返回 ${res.status}` }
     } catch (err) {
@@ -2451,7 +2606,14 @@ export class EngineBridgeService {
       // 避免引擎切换到嵌入模型（WeMM）时 desktop Footer 滞留陈旧语言模型名称
       ...this.resolveDisplayModelPair(),
       // 引擎契约字段为 vram_usage_mb（兼容旧 vram_mb / gpu_mem_mb）
-      vramMb: typeof raw?.vram_usage_mb === 'number' ? raw.vram_usage_mb : typeof raw?.vram_mb === 'number' ? raw.vram_mb : typeof raw?.gpu_mem_mb === 'number' ? raw.gpu_mem_mb : null,
+      vramMb:
+        typeof raw?.vram_usage_mb === 'number'
+          ? raw.vram_usage_mb
+          : typeof raw?.vram_mb === 'number'
+            ? raw.vram_mb
+            : typeof raw?.gpu_mem_mb === 'number'
+              ? raw.gpu_mem_mb
+              : null,
       modelCount: raw ? this.lastModelCount : null,
       totalModelCount: raw ? this.lastTotalModelCount : null,
       lastError: this.lastError,
@@ -2492,10 +2654,18 @@ export class EngineBridgeService {
     // 1. 优先读取引擎上报的真实自适应运行时参数
     const rp = raw.runtime_params as any
     if (rp) {
-      if (rp.effective_enable_draft === true || rp.enable_draft === true || rp.enableDraft === true) {
+      if (
+        rp.effective_enable_draft === true ||
+        rp.enable_draft === true ||
+        rp.enableDraft === true
+      ) {
         return true
       }
-      if (rp.effective_enable_draft === false || rp.enable_draft === false || rp.enableDraft === false) {
+      if (
+        rp.effective_enable_draft === false ||
+        rp.enable_draft === false ||
+        rp.enableDraft === false
+      ) {
         return false
       }
     }
@@ -2530,7 +2700,10 @@ export class EngineBridgeService {
       }
     })
     try {
-      if (typeof BrowserWindow !== 'undefined' && typeof BrowserWindow?.getAllWindows === 'function') {
+      if (
+        typeof BrowserWindow !== 'undefined' &&
+        typeof BrowserWindow?.getAllWindows === 'function'
+      ) {
         for (const win of BrowserWindow.getAllWindows()) {
           if (!win.isDestroyed() && !win.webContents.isDestroyed()) {
             win.webContents.send('tier2:status-changed', snapshot)
