@@ -835,6 +835,33 @@ export class FileProcessor {
    * @param magikaCategory 已恢复的 Magika 分类（可能为 null）
    * @returns 需要请求 Markitdown Server 的缺失指标列表
    */
+  /**
+   * 解析工作区绑定的工作流命名规则配置 (包含智能文件名格式与附加属性模板)
+   */
+  private async resolveWorkflowNamingConfig(
+    rootWorkspaceDir?: any
+  ): Promise<{ namingPattern?: string; namingTemplate?: string } | null> {
+    if (!rootWorkspaceDir?.bound_workflow_id) return null
+    try {
+      const wfRecord = await databaseService.getLocalWorkflowById(
+        rootWorkspaceDir.bound_workflow_id
+      )
+      if (wfRecord) {
+        return {
+          namingPattern: wfRecord.naming_pattern?.trim() || undefined,
+          namingTemplate: wfRecord.naming_template?.trim() || undefined
+        }
+      }
+    } catch (err) {
+      logger.warn(
+        LogCategory.ANALYSIS_QUEUE,
+        `[工作流命名] 获取绑定工作流命名配置失败: ${rootWorkspaceDir.bound_workflow_id}`,
+        err
+      )
+    }
+    return null
+  }
+
   private filterMissingIndicators(
     indicators: string[],
     existingBasicData: {
@@ -1424,6 +1451,13 @@ export class FileProcessor {
             `[目录上下文] 文件 ${item.name} 开始 AI 分析，优先获取/自动分析所在父级目录: ${parentDir}`
           )
           directoryContext = await this.analyzeDirectoryContext(parentDir, false)
+          const workflowNaming = await this.resolveWorkflowNamingConfig(rootWorkspaceDir)
+          if (workflowNaming?.namingPattern) {
+            directoryContext = {
+              ...(directoryContext || {}),
+              namingPattern: directoryContext?.namingPattern || workflowNaming.namingPattern
+            }
+          }
         } catch (dirCtxError) {
           logger.warn(
             LogCategory.ANALYSIS_QUEUE,
@@ -1590,7 +1624,10 @@ export class FileProcessor {
           const effectiveDirConfig =
             (await directoryContextService?.getEffectiveDirectoryConfig(parentDir)) ||
             directoryContext
-          const template = effectiveDirConfig?.namingTemplate?.trim()
+          const workflowNamingForTemplate = await this.resolveWorkflowNamingConfig(rootWorkspaceDir)
+          const template =
+            effectiveDirConfig?.namingTemplate?.trim() ||
+            workflowNamingForTemplate?.namingTemplate?.trim()
           if (template) {
             const fileRenameContext = {
               id: 0,

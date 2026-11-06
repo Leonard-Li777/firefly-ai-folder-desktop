@@ -422,8 +422,30 @@ declare global {
       isPackaged: boolean
 
       // 系统日志
-      onLogForwarded: (callback: (payload: { category: LogCategory, level: string, message: string, data?: any, origin: 'backend' | 'frontend', origin_ts?: number, trace_id?: string }) => void) => () => void
-      onLogBatchForwarded?: (callback: (payloads: Array<{ category: LogCategory, level: string, message: string, data?: any, origin: 'backend' | 'frontend', origin_ts?: number, trace_id?: string }>) => void) => () => void
+      onLogForwarded: (
+        callback: (payload: {
+          category: LogCategory
+          level: string
+          message: string
+          data?: any
+          origin: 'backend' | 'frontend'
+          origin_ts?: number
+          trace_id?: string
+        }) => void
+      ) => () => void
+      onLogBatchForwarded?: (
+        callback: (
+          payloads: Array<{
+            category: LogCategory
+            level: string
+            message: string
+            data?: any
+            origin: 'backend' | 'frontend'
+            origin_ts?: number
+            trace_id?: string
+          }>
+        ) => void
+      ) => () => void
 
       // PostHog 诊断与会话绑定
       getRunId?: () => Promise<string>
@@ -481,7 +503,11 @@ declare global {
       // 配置管理
       getConfig: () => Promise<AppConfig>
       updateConfig: (updates: Partial<AppConfig>) => Promise<void>
-      updateConfigValue: (key: ConfigKey, value: unknown, options?: { preventAutoReload?: boolean }) => Promise<void>
+      updateConfigValue: (
+        key: ConfigKey,
+        value: unknown,
+        options?: { preventAutoReload?: boolean }
+      ) => Promise<void>
       onConfigChange: (callback: (config: AppConfig) => void) => () => void
       getStartupFlags: () => Promise<StartupFlags>
       initializeAppPhase: () => Promise<void>
@@ -524,7 +550,9 @@ declare global {
           extensions: string[]
         }>
       >
-      batchFixExtensions: (fixes: Array<{ fileFingerprint: string; chosenExtension: string | null }>) => Promise<{ success: boolean; count: number }>
+      batchFixExtensions: (
+        fixes: Array<{ fileFingerprint: string; chosenExtension: string | null }>
+      ) => Promise<{ success: boolean; count: number }>
       /** 工单 13：canonical 语义索引重建计数（设置页展示「重建中 / 待重建」） */
       getCanonicalRebuildCounts: () => Promise<{
         pending: number
@@ -551,7 +579,9 @@ declare global {
           source?: string
         }) => void
       ) => () => void
-      onDirectoryContextUpdated: (callback: (payload: { directoryPath: string; contextAnalysis: any }) => void) => () => void
+      onDirectoryContextUpdated: (
+        callback: (payload: { directoryPath: string; contextAnalysis: any }) => void
+      ) => () => void
       onModelStatusChanged: (callback: (payload: ModelStatusChange) => void) => () => void
       // PRD-0044（S5）：onModelNotDownloaded 声明随「内置模型下载链」清退删除
 
@@ -575,6 +605,7 @@ declare global {
       onWorkspaceDirectoriesUpdated: (callback: () => void) => () => void
 
       utils: {
+        getPathForFile: (file: File) => string
         getPlatform: () => string
         normalizeForCache: (p: string) => string
         isPathEqual: (p1?: string | null, p2?: string | null) => boolean
@@ -590,9 +621,7 @@ declare global {
         ) => Promise<{ canceled: boolean; filePath?: string }>
         showMessageBox: (options: MessageBoxOptions) => Promise<MessageBoxReturnValue>
         // 校验目录是否可写（通过实际创建临时文件检测）
-        checkDirectoryWritable: (
-          dirPath: string
-        ) => Promise<{ writable: boolean; error?: string }>
+        checkDirectoryWritable: (dirPath: string) => Promise<{ writable: boolean; error?: string }>
         // 探测工作目录画像（扩展名分布与推荐意图）
         probeDirectoryProfile: (dirPath: string) => Promise<{
           detectedIntent: WorkspaceConfigIntent
@@ -648,6 +677,21 @@ declare global {
         workspaceId: number,
         config: WorkspaceConfig
       ) => Promise<{ success: boolean; error?: string }>
+      updateWorkspaceWhitelist: (
+        workspaceId: number,
+        patterns: string[]
+      ) => Promise<{ success: boolean; error?: string }>
+      previewWorkspaceWhitelistImpact: (
+        workspaceId: number,
+        patterns: string[]
+      ) => Promise<{
+        success: boolean
+        totalFiles: number
+        includedFiles: number
+        excludedFiles: number
+        isSampled?: boolean
+        error?: string
+      }>
       rescanWorkspaceDirectory: (
         workspaceId: number
       ) => Promise<{ success: boolean; message: string }>
@@ -703,7 +747,9 @@ declare global {
       virtualDirectory: {
         getDimensionGroups: (workspaceDirectoryPath?: string) => Promise<DimensionGroup[]>
         getFilteredFiles: (params: VirtualDirectoryFilterParams) => Promise<FileInfo[]>
-        getFilteredFilesPaged: (params: VirtualDirectoryFilterPagedParams) => Promise<VirtualDirectoryPagedResult>
+        getFilteredFilesPaged: (
+          params: VirtualDirectoryFilterPagedParams
+        ) => Promise<VirtualDirectoryPagedResult>
         saveDirectory: (
           directory: SavedVirtualDirectory,
           workspaceDirectoryPath?: string
@@ -773,7 +819,10 @@ declare global {
 
       // 整理真实目录相关
       organizeRealDirectory: {
-        exportByVirtualDirectoryId: (params: { virtualDirectoryId: number; workspaceDirectoryPath: string }) => Promise<OrganizePreviewResult>
+        exportByVirtualDirectoryId: (params: {
+          virtualDirectoryId: number
+          workspaceDirectoryPath: string
+        }) => Promise<OrganizePreviewResult>
         byVirtualDirectory: (params: OrganizeParams) => Promise<OrganizePreviewResult>
         getPreview: (params: OrganizeParams) => Promise<OrganizePreviewResult>
         openDirectory: (directoryPath: string) => Promise<void>
@@ -781,9 +830,34 @@ declare global {
         getSavedVirtualDirectories: (
           workspaceDirectoryPath: string
         ) => Promise<SavedVirtualDirectory[]>
-        getSavedVirtualDirectoriesByPath: (workspaceDirectoryPath: string) => Promise<SavedVirtualDirectory[]>
-        getAnalyzedFiles: (workspaceDirectoryPath: string, selectedFileIds?: number[]) => Promise<Array<{ id: number; path: string; name: string; smartName: string | null; extension: string | null }>>
-        getLightweightFiles: (workspaceDirectoryPath: string, selectedFileIds?: number[], limit?: number) => Promise<Array<{ id: number; path: string; name: string; smartName: string | null; extension: string | null }>>
+        getSavedVirtualDirectoriesByPath: (
+          workspaceDirectoryPath: string
+        ) => Promise<SavedVirtualDirectory[]>
+        getAnalyzedFiles: (
+          workspaceDirectoryPath: string,
+          selectedFileIds?: number[]
+        ) => Promise<
+          Array<{
+            id: number
+            path: string
+            name: string
+            smartName: string | null
+            extension: string | null
+          }>
+        >
+        getLightweightFiles: (
+          workspaceDirectoryPath: string,
+          selectedFileIds?: number[],
+          limit?: number
+        ) => Promise<
+          Array<{
+            id: number
+            path: string
+            name: string
+            smartName: string | null
+            extension: string | null
+          }>
+        >
         getAnalyzedCount: (workspaceDirectoryPath: string) => Promise<number>
         matchPerspectivesAndStructures: (request: any) => Promise<any>
         calculateFilePathsCosine: (request: any) => Promise<any>
@@ -828,7 +902,9 @@ declare global {
       sendAIClassificationResult: (channel: string, result: AIClassificationResult) => void
 
       // AI Skill API — 整理方案应用
-      onApplyOrganizePlan: (callback: (payload: { name: string; strategy: string; perspective?: string }) => void) => () => void
+      onApplyOrganizePlan: (
+        callback: (payload: { name: string; strategy: string; perspective?: string }) => void
+      ) => () => void
 
       // 获取 Omni 引擎版本号
       getOmniVersion: () => Promise<string>
@@ -849,12 +925,25 @@ declare global {
       // 客户端自动更新
       update: {
         check: (manual?: boolean) => Promise<{
-          status: 'idle' | 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'installing' | 'error'
+          status:
+            | 'idle'
+            | 'checking'
+            | 'available'
+            | 'not-available'
+            | 'downloading'
+            | 'downloaded'
+            | 'installing'
+            | 'error'
           currentVersion: string
           latestVersion: string | null
           minVersion: string | null
           isMandatory: boolean
-          progress: { percent: number; transferred: number; total: number; bytesPerSecond: number } | null
+          progress: {
+            percent: number
+            transferred: number
+            total: number
+            bytesPerSecond: number
+          } | null
           error: string | null
           currentTrack: 'r2' | 'github'
           downloadedFilePath: string | null
@@ -862,12 +951,25 @@ declare global {
           releaseDate: string | null
         }>
         getState: () => Promise<{
-          status: 'idle' | 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'installing' | 'error'
+          status:
+            | 'idle'
+            | 'checking'
+            | 'available'
+            | 'not-available'
+            | 'downloading'
+            | 'downloaded'
+            | 'installing'
+            | 'error'
           currentVersion: string
           latestVersion: string | null
           minVersion: string | null
           isMandatory: boolean
-          progress: { percent: number; transferred: number; total: number; bytesPerSecond: number } | null
+          progress: {
+            percent: number
+            transferred: number
+            total: number
+            bytesPerSecond: number
+          } | null
           error: string | null
           currentTrack: 'r2' | 'github'
           downloadedFilePath: string | null
@@ -879,12 +981,25 @@ declare global {
         exitApp: () => Promise<boolean>
         onStatusChanged: (
           callback: (state: {
-            status: 'idle' | 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'installing' | 'error'
+            status:
+              | 'idle'
+              | 'checking'
+              | 'available'
+              | 'not-available'
+              | 'downloading'
+              | 'downloaded'
+              | 'installing'
+              | 'error'
             currentVersion: string
             latestVersion: string | null
             minVersion: string | null
             isMandatory: boolean
-            progress: { percent: number; transferred: number; total: number; bytesPerSecond: number } | null
+            progress: {
+              percent: number
+              transferred: number
+              total: number
+              bytesPerSecond: number
+            } | null
             error: string | null
             currentTrack: 'r2' | 'github'
             downloadedFilePath: string | null
@@ -896,7 +1011,13 @@ declare global {
 
       // 离线语音合成 (TTS)
       tts: {
-        synthesizeChunk: (text: string, voiceId: string | number, speed: number, sessionId?: number, sid?: number) => Promise<{ buffer: ArrayBuffer; hitCap: boolean; steps: number } | null>
+        synthesizeChunk: (
+          text: string,
+          voiceId: string | number,
+          speed: number,
+          sessionId?: number,
+          sid?: number
+        ) => Promise<{ buffer: ArrayBuffer; hitCap: boolean; steps: number } | null>
         abortSession: (sessionId: number) => Promise<void>
         listVoices: () => Promise<any[]>
         analyzeVoiceFile: (filePath: string) => Promise<{

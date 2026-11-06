@@ -167,9 +167,9 @@ export const WorkspaceSettingsDialog: React.FC = () => {
       },
       {
         id: 'ignore_rules',
-        name: t('AI分析忽略规则'),
+        name: t('文件过滤与黑白名单'),
         icon: 'filter',
-        description: t('目录专属跳过规则与系统基线合并')
+        description: t('标准模式/排他白名单与专属排除规则')
       },
       {
         id: 'maintenance',
