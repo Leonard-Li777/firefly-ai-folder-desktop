@@ -58,6 +58,7 @@
     "model-source": "src/electron/config/model-source.ts",
     "providers-source": "src/electron/config/providers-source.ts",
     "system-config-source": "src/electron/config/system-config-source.ts",
+    "local-workflow-source": "src/electron/config/local-workflow-source.ts",
     "ram-tag-source": "src/electron/config/ram-tag-source.ts",
     "adapters": "src/electron/adapters/",
     "config": "src/electron/config/",
