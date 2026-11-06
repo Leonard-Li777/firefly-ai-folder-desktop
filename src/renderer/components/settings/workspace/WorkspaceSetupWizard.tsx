@@ -30,6 +30,8 @@ import {
   ArrowRight,
   Sliders,
   FolderOpen,
+  Folder,
+  FolderTree,
   FileText,
   Image as ImageIcon,
   Film,
@@ -46,7 +48,10 @@ import {
   FileSpreadsheet,
   CheckCheck,
   Filter,
-  Tag
+  Tag,
+  ShieldCheck,
+  ChevronRight,
+  Layers
 } from 'lucide-react'
 
 export interface WorkspaceSetupWizardProps {
@@ -82,7 +87,9 @@ const PERSONA_LABELS: Record<string, string> = {
   photographer: '专业摄影师',
   videographer: '影视剪辑师',
   developer_designer: '开发与设计师',
+  designer: 'UI/UX设计师',
   digital_artist: '3D与美术设计师',
+  modeler: '3D建模师',
   gamer: '游戏与数字达人',
   bookworm: '电子书友与网文读者',
   anime_fan: '漫画二次元同好',
@@ -133,6 +140,112 @@ function getWorkflowIconComponent(workflowId: string) {
   }
 }
 
+/**
+ * 根据文件名后缀获取对应的小图标
+ */
+function getPreviewFileIcon(fileName: string) {
+  const ext = fileName.slice(fileName.lastIndexOf('.')).toLowerCase()
+  if (
+    [
+      '.cr3',
+      '.arw',
+      '.nef',
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.webp',
+      '.svg',
+      '.gif',
+      '.raw',
+      '.dng'
+    ].includes(ext)
+  ) {
+    return ImageIcon
+  }
+  if (['.mp4', '.mov', '.mkv', '.avi', '.flv', '.webm'].includes(ext)) {
+    return Film
+  }
+  if (['.mp3', '.wav', '.flac', '.aac', '.ogg', '.m4a', '.lrc'].includes(ext)) {
+    return Music
+  }
+  if (['.blend', '.obj', '.fbx', '.c4d', '.max', '.glb', '.gltf', '.hdr', '.exr'].includes(ext)) {
+    return Shapes
+  }
+  if (
+    [
+      '.ts',
+      '.js',
+      '.py',
+      '.rs',
+      '.go',
+      '.cpp',
+      '.c',
+      '.json',
+      '.html',
+      '.css',
+      '.vue',
+      '.tsx'
+    ].includes(ext)
+  ) {
+    return Code2
+  }
+  if (['.xlsx', '.xls', '.csv'].includes(ext)) {
+    return FileSpreadsheet
+  }
+  if (['.epub', '.mobi', '.azw3', '.pdf', '.txt', '.doc', '.docx'].includes(ext)) {
+    return BookOpen
+  }
+  return FileText
+}
+
+/** 树节点通用结构 */
+interface TreeNode {
+  name: string
+  children?: TreeNode[]
+  previewFiles?: string[]
+}
+
+/** 从工作流对象解析预览树数据 */
+function parseWorkflowPreviewTree(workflow: {
+  name: string
+  preview_tree?: string | null
+  preset_directory_tree?: string | null
+}): TreeNode | null {
+  if (workflow.preview_tree) {
+    try {
+      const parsed = JSON.parse(workflow.preview_tree)
+      if (parsed && typeof parsed === 'object') {
+        return parsed as TreeNode
+      }
+    } catch {
+      // fallback
+    }
+  }
+
+  if (workflow.preset_directory_tree) {
+    try {
+      const parsed = JSON.parse(workflow.preset_directory_tree)
+      if (Array.isArray(parsed)) {
+        const convertNode = (node: any): TreeNode => ({
+          name: node.name || '未命名目录',
+          children: node.subdirectories?.map(convertNode)
+        })
+        return {
+          name: workflow.name,
+          children: parsed.map(convertNode)
+        }
+      }
+    } catch {
+      // fallback
+    }
+  }
+
+  return {
+    name: workflow.name,
+    children: [{ name: '01_标准化归整', previewFiles: ['示例归档文件_01.dat'] }]
+  }
+}
+
 /** 工作流向通用场景意图的降级适配（保证旧视图消费兼容） */
 function mapWorkflowToIntent(workflowId: string): WorkspaceConfigIntent {
   switch (workflowId) {
@@ -154,14 +267,71 @@ function mapWorkflowToIntent(workflowId: string): WorkspaceConfigIntent {
   }
 }
 
+/** 递归目录树展示子组件 */
+const DirectoryTreeNodeView: React.FC<{
+  node: TreeNode
+  depth?: number
+  isRoot?: boolean
+}> = ({ node, depth = 0, isRoot = false }) => {
+  const hasChildren = node.children && node.children.length > 0
+  const hasFiles = node.previewFiles && node.previewFiles.length > 0
+
+  return (
+    <div className={cn('select-none text-xs', depth > 0 && 'ml-3 pl-2 border-l border-border/50')}>
+      {/* 目录节点行 */}
+      <div className="flex items-center gap-1.5 py-1 text-foreground font-medium group">
+        {isRoot ? (
+          <FolderTree className="w-4 h-4 text-primary shrink-0" />
+        ) : (
+          <FolderOpen className="w-3.5 h-3.5 text-amber-500/90 dark:text-amber-400 shrink-0" />
+        )}
+        <span className={cn('truncate', isRoot && 'font-bold text-primary')}>{node.name}</span>
+        {hasFiles && (
+          <span className="text-[10px] text-muted-foreground/70 font-mono ml-auto">
+            {node.previewFiles!.length} 项
+          </span>
+        )}
+      </div>
+
+      {/* 示例文件列表 */}
+      {hasFiles && (
+        <div className="ml-3 pl-2 border-l border-border/40 space-y-1 my-0.5">
+          {node.previewFiles!.map((fileName, idx) => {
+            const FileIcon = getPreviewFileIcon(fileName)
+            return (
+              <div
+                key={idx}
+                className="flex items-center gap-1.5 py-0.5 px-1.5 rounded-md text-[11px] font-mono text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                title={fileName}
+              >
+                <FileIcon className="w-3 h-3 text-primary/70 shrink-0" />
+                <span className="truncate">{fileName}</span>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* 递归渲染子目录 */}
+      {hasChildren && (
+        <div className="space-y-0.5">
+          {node.children!.map((child, idx) => (
+            <DirectoryTreeNodeView key={idx} node={child} depth={depth + 1} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 /**
  * 工作目录智能配置向导 (WorkspaceSetupWizard)
  *
- * 升级为基于工作流的两段式优雅布局 (Ticket 02)：
- * 1. 顶部高亮「AI 智能推荐」主卡片（门槛：S1 >= 70 且领先 S2 至少 15 分时亮起）；
- * 2. 底部 3-Tab 分类平铺工作流卡片库（生活娱乐 / 创意设计 / 专业办公，11套官方预置矩阵）；
- * 3. 完整保留文件特征扫描画像与扩展名可视化 UI（多色比例条、格式胶囊、诊断横幅）；
- * 4. 接入 @firefly/shared 的 recommendWorkflowByProfile 智能推荐引擎。
+ * 升级为基于工作流的两段式优雅布局 + 左右分栏结构：
+ * 1. 顶部：文件特征扫描画像与扩展名可视化 UI（多色比例条、主要格式胶囊、AI 匹配诊断横幅）；
+ * 2. 左栏：AI 智能推荐大卡片 + 3-Tab 官方工作流矩阵库卡片列表；
+ * 3. 右栏：实时联动展示选定工作流的目录树（preview_tree）、示例文件与智能命名规约；
+ * 4. 底部：选定反馈与双通道流转（快捷直接启动 / 主出口保存并打开详细配置）。
  */
 export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
   workspace,
@@ -296,6 +466,12 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
       PRESET_BUILTIN_WORKFLOWS.find(w => w.id === selectedWorkflowId) || PRESET_BUILTIN_WORKFLOWS[0]
     )
   }, [selectedWorkflowId])
+
+  // 解析当前选中工作流的目录树结构
+  const previewTreeData = useMemo<TreeNode | null>(() => {
+    if (!selectedWorkflow) return null
+    return parseWorkflowPreviewTree(selectedWorkflow)
+  }, [selectedWorkflow])
 
   // 计算预期大白话影响 (例如：预计纳入 85% 目标文件，排除 15% 杂质文件)
   const expectedImpactText = useMemo(() => {
@@ -449,12 +625,12 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
   }, [activeCategory])
 
   return (
-    <div className="flex flex-col h-full overflow-hidden p-6 space-y-4">
+    <div className="flex flex-col h-full overflow-hidden p-5 sm:p-6 space-y-3.5">
       {/* 头部标题与引导：清晰告知为当前工作目录定制专属工作流 */}
-      <div className="space-y-1.5 shrink-0">
+      <div className="space-y-1 shrink-0">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="space-y-0.5">
-            <h3 className="text-xl font-bold flex items-center gap-2.5 text-foreground">
+            <h3 className="text-lg sm:text-xl font-bold flex items-center gap-2.5 text-foreground">
               <span className="p-1 rounded-lg bg-primary/10 text-primary">
                 <Sparkles className="w-5 h-5" />
               </span>
@@ -466,7 +642,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
                 <FolderOpen className="w-3 h-3 text-primary" />
                 {workspace.name}
               </span>
-              <span className="text-muted-foreground/60">({workspace.path})</span>
+              <span className="text-muted-foreground/60 hidden sm:inline">({workspace.path})</span>
             </p>
           </div>
 
@@ -481,7 +657,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
       </div>
 
       {/* 核心亮点：文件特征扫描画像展示区 (100% 完整保留扩展名可视化 UI) */}
-      <div className="rounded-xl border border-border/80 bg-gradient-to-br from-card via-card to-muted/20 p-4 shadow-xs shrink-0 space-y-3">
+      <div className="rounded-xl border border-border/80 bg-gradient-to-br from-card via-card to-muted/20 p-3.5 shadow-xs shrink-0 space-y-2.5">
         <div className="flex items-center justify-between flex-wrap gap-2 text-xs">
           <div className="flex items-center gap-2 font-semibold text-foreground">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -587,7 +763,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
 
         {/* 画像推荐结论横幅 */}
         {expectedImpactText && (
-          <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-primary/5 border border-primary/20 text-xs text-foreground/90">
+          <div className="flex items-start gap-2.5 p-2 rounded-lg bg-primary/5 border border-primary/20 text-xs text-foreground/90">
             <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
             <div className="leading-relaxed font-normal">
               <span className="font-semibold text-primary mr-1">{t('✨ AI 匹配诊断:')}</span>
@@ -597,250 +773,302 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
         )}
       </div>
 
-      {/* 两段式主内容区 */}
-      <div className="flex-1 overflow-y-auto space-y-3.5 pr-1">
-        {/* 段落 1: 顶部高亮「AI 智能推荐」主卡片 (触发门槛: S1 >= 70 且领先 S2 至少 15 分) */}
-        {isTopRecommendationHighlighted && top1Recommendation && (
-          <div className="rounded-xl border-2 border-amber-500/60 bg-gradient-to-r from-amber-500/[0.08] via-primary/[0.04] to-card p-4 shadow-sm relative overflow-hidden space-y-3">
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 shadow-xs border border-amber-500/30">
-                  {React.createElement(getWorkflowIconComponent(top1Recommendation.id), {
-                    className: 'w-5 h-5'
-                  })}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-bold text-base text-foreground leading-snug">
-                      {top1Recommendation.name}
-                    </h4>
-                    <span className="text-[11px] px-2 py-0.5 rounded-full font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-xs flex items-center gap-1">
-                      <span>🔥 {t('匹配度 {score}%', { score: top1Recommendation.score })}</span>
-                    </span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-md font-semibold bg-muted text-muted-foreground border border-border/60">
-                      {PERSONA_LABELS[top1Recommendation.persona] || top1Recommendation.persona}
-                    </span>
+      {/* 左右分栏核心交互区：左侧选工作流，右侧预览结构化目录树 */}
+      <div className="flex-1 flex min-h-0 gap-4 overflow-hidden">
+        {/* ==================== 左侧：工作流选择与矩阵库 (可纵向滚动) ==================== */}
+        <div className="flex-1 min-w-0 flex flex-col h-full overflow-y-auto pr-1 space-y-3">
+          {/* 段落 1: 顶部高亮「AI 智能推荐」主卡片 (触发门槛: S1 >= 70 且领先 S2 至少 15 分) */}
+          {isTopRecommendationHighlighted && top1Recommendation && (
+            <div className="rounded-xl border-2 border-amber-500/60 bg-gradient-to-r from-amber-500/[0.08] via-primary/[0.04] to-card p-3.5 shadow-xs relative overflow-hidden space-y-2.5 shrink-0">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 shadow-xs border border-amber-500/30">
+                    {React.createElement(getWorkflowIconComponent(top1Recommendation.id), {
+                      className: 'w-4 h-4'
+                    })}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                    {top1Recommendation.summary}
-                  </p>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <h4 className="font-bold text-sm text-foreground leading-snug">
+                        {top1Recommendation.name}
+                      </h4>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-xs">
+                        🔥 {t('契合度 {score}%', { score: top1Recommendation.score })}
+                      </span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold bg-muted text-muted-foreground border border-border/60">
+                        {PERSONA_LABELS[top1Recommendation.persona] || top1Recommendation.persona}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed line-clamp-1">
+                      {top1Recommendation.summary}
+                    </p>
+                  </div>
+                </div>
+
+                {/* 推荐卡片直接采用主按钮 */}
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="default"
+                    disabled={isSaving}
+                    onClick={() => {
+                      hasUserInteractedRef.current = true
+                      setSelectedWorkflowId(top1Recommendation.id)
+                      submitConfig('complete')
+                    }}
+                    className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-3 shadow-xs h-7.5"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 mr-1 fill-current" />
+                    <span>{t('一键采用推荐')}</span>
+                  </Button>
                 </div>
               </div>
 
-              {/* 推荐卡片直接采用主按钮 */}
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="default"
-                  disabled={isSaving}
-                  onClick={() => {
-                    hasUserInteractedRef.current = true
-                    setSelectedWorkflowId(top1Recommendation.id)
-                    submitConfig('complete')
-                  }}
-                  className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-3.5 shadow-sm h-8"
-                >
-                  <Sparkles className="w-3.5 h-3.5 mr-1.5 fill-current" />
-                  <span>{t('一键采用此推荐并开始分析')}</span>
-                </Button>
+              {/* 规则与命名格式预览行 */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-2 border-t border-border/40 text-[11px]">
+                <div className="flex items-center gap-1.5 text-muted-foreground truncate">
+                  <Filter className="w-3 h-3 text-primary shrink-0" />
+                  <span className="font-medium text-foreground">{t('准入:')}</span>
+                  <span className="truncate font-mono">
+                    {top1Recommendation.filter_mode === 'whitelist'
+                      ? t('白名单放行')
+                      : t('黑名单过滤')}
+                    {' · '}
+                    {top1Recommendation.filter_rules}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 text-muted-foreground truncate">
+                  <Tag className="w-3 h-3 text-primary shrink-0" />
+                  <span className="font-medium text-foreground">{t('智能命名:')}</span>
+                  <span className="truncate font-mono">
+                    {top1Recommendation.naming_template ||
+                      top1Recommendation.naming_pattern ||
+                      t('标准格式')}
+                  </span>
+                </div>
               </div>
             </div>
+          )}
 
-            {/* 规则与命名格式预览行 */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-border/40 text-xs">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Filter className="w-3.5 h-3.5 text-primary shrink-0" />
-                <span className="font-medium text-foreground">{t('准入模式:')}</span>
-                <span className="truncate font-mono text-[11px]">
-                  {top1Recommendation.filter_mode === 'whitelist'
-                    ? t('白名单放行')
-                    : t('黑名单过滤')}
-                  {' · '}
-                  {top1Recommendation.filter_rules}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Tag className="w-3.5 h-3.5 text-primary shrink-0" />
-                <span className="font-medium text-foreground">{t('智能命名:')}</span>
-                <span className="truncate font-mono text-[11px]">
-                  {top1Recommendation.naming_template ||
-                    top1Recommendation.naming_pattern ||
-                    t('标准格式')}
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
+          {/* 段落 2: 底部 3-Tab 分类平铺工作流卡片库 */}
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <span>{t('全场景官方工作流矩阵库')}</span>
+                <span className="text-muted-foreground font-normal">({t('共 11 套')})</span>
+              </Label>
 
-        {/* 段落 2: 底部 3-Tab 分类平铺工作流卡片库 */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-              <span>{t('全场景官方工作流矩阵库')}</span>
-              <span className="text-muted-foreground font-normal">
-                ({t('共 11 套官方内置工作流，支持自由选用')})
-              </span>
-            </Label>
-
-            {/* 3-Tab 分类切换器 */}
-            <div className="flex items-center p-1 bg-muted/60 rounded-lg border border-border/60 gap-1">
-              {WORKFLOW_CATEGORIES.map(cat => {
-                const isActive = activeCategory === cat.id
-                return (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => setActiveCategory(cat.id)}
-                    className={cn(
-                      'px-3 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer select-none',
-                      isActive
-                        ? 'bg-card text-foreground shadow-2xs border border-border'
-                        : 'text-muted-foreground hover:text-foreground'
-                    )}
-                  >
-                    <MaterialIcon icon={cat.icon} className="text-sm" />
-                    <span>{t(cat.name)}</span>
-                    <span
+              {/* 3-Tab 分类切换器 */}
+              <div className="flex items-center p-0.5 bg-muted/60 rounded-lg border border-border/60 gap-1">
+                {WORKFLOW_CATEGORIES.map(cat => {
+                  const isActive = activeCategory === cat.id
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => setActiveCategory(cat.id)}
                       className={cn(
-                        'text-[10px] px-1.5 py-0.2 rounded-full font-mono',
-                        isActive ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                        'px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer select-none',
+                        isActive
+                          ? 'bg-card text-foreground shadow-2xs border border-border'
+                          : 'text-muted-foreground hover:text-foreground'
                       )}
                     >
-                      {cat.count}
-                    </span>
-                  </button>
+                      <MaterialIcon icon={cat.icon} className="text-xs" />
+                      <span>{t(cat.name)}</span>
+                      <span
+                        className={cn(
+                          'text-[10px] px-1 py-0.2 rounded-full font-mono',
+                          isActive ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                        )}
+                      >
+                        {cat.count}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* 工作流平铺卡片列表 */}
+            <div className="space-y-2">
+              {categoryWorkflows.map(wf => {
+                const isSelected = selectedWorkflowId === wf.id
+                const rec = scoreMap.get(wf.id)
+                const IconComp = getWorkflowIconComponent(wf.id)
+
+                return (
+                  <div
+                    key={wf.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => {
+                      hasUserInteractedRef.current = true
+                      setSelectedWorkflowId(wf.id)
+                    }}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        hasUserInteractedRef.current = true
+                        setSelectedWorkflowId(wf.id)
+                      }
+                    }}
+                    className={cn(
+                      'relative flex flex-col p-3 rounded-xl border text-left cursor-pointer transition-all duration-200 select-none group',
+                      isSelected
+                        ? 'bg-primary/5 dark:bg-primary/10 border-primary shadow-xs ring-2 ring-primary/80'
+                        : 'bg-card hover:bg-muted/40 border-border/80 hover:border-border'
+                    )}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div
+                          className={cn(
+                            'w-8 h-8 rounded-lg flex items-center justify-center transition-colors shrink-0',
+                            isSelected
+                              ? 'bg-primary text-primary-foreground shadow-xs'
+                              : 'bg-muted text-muted-foreground group-hover:text-foreground'
+                          )}
+                        >
+                          <IconComp className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <h5 className="font-bold text-xs sm:text-sm leading-snug truncate text-foreground">
+                              {wf.name}
+                            </h5>
+                            <span className="text-[10px] font-medium text-muted-foreground bg-muted px-1.5 py-0.2 rounded">
+                              {PERSONA_LABELS[wf.persona] || wf.persona}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 推荐分数值小胶囊或选中状态 */}
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {rec && rec.score >= 60 && (
+                          <span className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                            <Sparkles className="w-2.5 h-2.5 fill-current" />
+                            <span>{rec.score}%</span>
+                          </span>
+                        )}
+                        {isSelected ? (
+                          <span className="text-primary font-bold flex items-center gap-1 text-xs">
+                            <CheckCircle2 className="w-3.5 h-3.5 fill-current" />
+                            <span className="hidden sm:inline">{t('已选中')}</span>
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground/50 group-hover:text-foreground text-[11px] transition-colors">
+                            {t('选择')}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground leading-relaxed mt-1.5 line-clamp-1">
+                      {wf.summary}
+                    </p>
+
+                    {/* 准入规则与智能命名小条 */}
+                    <div className="mt-2 pt-1.5 border-t border-border/40 text-[11px] flex items-center justify-between text-muted-foreground gap-2">
+                      <div className="truncate flex items-center gap-1">
+                        <Filter className="w-3 h-3 text-primary/70 shrink-0" />
+                        <span className="font-mono truncate">{wf.filter_rules}</span>
+                      </div>
+                      {wf.naming_template && (
+                        <div className="truncate flex items-center gap-1 font-mono text-[10px] text-muted-foreground/70 hidden sm:flex">
+                          <Tag className="w-3 h-3 text-primary/70 shrink-0" />
+                          <span className="truncate">{wf.naming_template}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 )
               })}
             </div>
           </div>
 
-          {/* 工作流平铺卡片网格 */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {categoryWorkflows.map(wf => {
-              const isSelected = selectedWorkflowId === wf.id
-              const rec = scoreMap.get(wf.id)
-              const IconComp = getWorkflowIconComponent(wf.id)
-
-              return (
-                <div
-                  key={wf.id}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => {
-                    hasUserInteractedRef.current = true
-                    setSelectedWorkflowId(wf.id)
-                  }}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      hasUserInteractedRef.current = true
-                      setSelectedWorkflowId(wf.id)
-                    }
-                  }}
-                  className={cn(
-                    'relative flex flex-col p-4 rounded-xl border text-left cursor-pointer transition-all duration-200 select-none group',
-                    isSelected
-                      ? 'bg-primary/5 dark:bg-primary/10 border-primary shadow-md shadow-primary/10 ring-2 ring-primary/80'
-                      : 'bg-card hover:bg-muted/40 border-border/80 hover:border-border'
-                  )}
-                >
-                  {/* 推荐分数值小胶囊 */}
-                  {rec && rec.score >= 60 && (
-                    <div className="absolute top-3 right-3 flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                      <Sparkles className="w-2.5 h-2.5 fill-current" />
-                      <span>{t('契合度 {score}%', { score: rec.score })}</span>
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-3 mb-2">
-                    <div
-                      className={cn(
-                        'w-9 h-9 rounded-lg flex items-center justify-center transition-colors shrink-0',
-                        isSelected
-                          ? 'bg-primary text-primary-foreground shadow-xs'
-                          : 'bg-muted text-muted-foreground group-hover:text-foreground'
-                      )}
-                    >
-                      <IconComp className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0 flex-1 pr-16">
-                      <div className="flex items-center gap-1.5">
-                        <h5 className="font-bold text-sm leading-snug truncate text-foreground">
-                          {wf.name}
-                        </h5>
-                      </div>
-                      <span className="text-[10px] font-medium text-muted-foreground">
-                        {PERSONA_LABELS[wf.persona] || wf.persona}
-                      </span>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-muted-foreground leading-relaxed flex-1 line-clamp-2">
-                    {wf.summary}
-                  </p>
-
-                  {/* 规则与命名简述 */}
-                  <div className="mt-3 pt-2.5 border-t border-border/50 text-[11px] space-y-1">
-                    <div className="flex items-center justify-between text-muted-foreground">
-                      <span className="font-medium text-foreground">
-                        {wf.filter_mode === 'whitelist' ? t('白名单放行') : t('黑名单过滤')}:
-                      </span>
-                      <span className="font-mono truncate max-w-[170px] text-muted-foreground/80">
-                        {wf.filter_rules}
-                      </span>
-                    </div>
-                    {wf.naming_template && (
-                      <div className="flex items-center justify-between text-muted-foreground">
-                        <span className="font-medium text-foreground">{t('智能命名')}:</span>
-                        <span className="font-mono truncate max-w-[170px] text-muted-foreground/80">
-                          {wf.naming_template}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* 底部选中反馈 */}
-                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/40 text-xs">
-                    <span className="text-[10px] text-muted-foreground">
-                      {wf.category === 'creative'
-                        ? t('创意设计类')
-                        : wf.category === 'entertainment'
-                          ? t('生活娱乐类')
-                          : t('专业办公类')}
-                    </span>
-                    {isSelected ? (
-                      <span className="text-primary font-bold flex items-center gap-1 text-xs">
-                        <CheckCircle2 className="w-3.5 h-3.5 fill-current" />
-                        {t('已选中')}
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground/60 group-hover:text-foreground text-[11px] transition-colors">
-                        {t('点击选用')}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+          {/* 影视剪辑素材场景 Free/Pro 权益中性告知 */}
+          {isFreeTier && selectedWorkflow.id === 'builtin.workflow.video-production' && (
+            <div className="flex items-center gap-2 p-2.5 rounded-xl bg-primary/5 border border-primary/20 text-xs text-muted-foreground">
+              <Sparkles className="w-4 h-4 text-primary shrink-0" />
+              <span>{t('当前体验首个 5 分钟切片分析，升级 Pro 可流式续作自动处理全片')}</span>
+            </div>
+          )}
         </div>
 
-        {/* 影视剪辑素材场景 Free/Pro 权益中性告知 */}
-        {isFreeTier && selectedWorkflow.id === 'builtin.workflow.video-production' && (
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/5 border border-primary/20 text-xs text-muted-foreground mt-1">
-            <Sparkles className="w-4 h-4 text-primary shrink-0" />
-            <span>{t('当前体验首个 5 分钟切片分析，升级 Pro 可流式续作自动处理全片')}</span>
+        {/* ==================== 右侧：实时预览选中工作流的目录树与整理效果 ==================== */}
+        <div className="w-[330px] sm:w-[360px] lg:w-[390px] shrink-0 h-full flex flex-col rounded-xl border border-border/80 bg-muted/20 dark:bg-muted/10 p-3.5 overflow-hidden shadow-xs space-y-3">
+          {/* 右侧头部：选定工作流的特征标头 */}
+          <div className="space-y-1.5 pb-2.5 border-b border-border/60 shrink-0">
+            <div className="flex items-center justify-between gap-1.5">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-foreground truncate">
+                <FolderTree className="w-4 h-4 text-primary shrink-0" />
+                <span>{t('预期整理结构与效果预览')}</span>
+              </div>
+              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 shrink-0">
+                {PERSONA_LABELS[selectedWorkflow.persona] || selectedWorkflow.persona}
+              </span>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-tight">
+              {t('选用「{name}」将自动为您构建以下标准虚拟归档目录：', {
+                name: selectedWorkflow.name
+              })}
+            </p>
           </div>
-        )}
+
+          {/* 智能命名与放行规则指示条 */}
+          <div className="bg-card/70 border border-border/60 rounded-lg p-2.5 space-y-1.5 shrink-0 text-[11px]">
+            <div className="flex items-center justify-between text-muted-foreground">
+              <span className="font-medium text-foreground flex items-center gap-1">
+                <Filter className="w-3 h-3 text-primary shrink-0" />
+                <span>{t('准入放行:')}</span>
+              </span>
+              <span className="font-mono text-[10px] truncate max-w-[190px] bg-muted/60 px-1 py-0.2 rounded">
+                {selectedWorkflow.filter_rules}
+              </span>
+            </div>
+            {selectedWorkflow.naming_template && (
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span className="font-medium text-foreground flex items-center gap-1">
+                  <Tag className="w-3 h-3 text-primary shrink-0" />
+                  <span>{t('智能命名:')}</span>
+                </span>
+                <span className="font-mono text-[10px] truncate max-w-[190px] bg-muted/60 px-1 py-0.2 rounded text-primary">
+                  {selectedWorkflow.naming_template}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* 右侧主体：树状目录预览 (带滚动条) */}
+          <div className="flex-1 overflow-y-auto pr-1 min-h-0 bg-card/60 rounded-lg border border-border/60 p-2.5 shadow-2xs">
+            {previewTreeData ? (
+              <DirectoryTreeNodeView node={previewTreeData} isRoot={true} />
+            ) : (
+              <div className="h-full flex items-center justify-center text-xs text-muted-foreground">
+                {t('暂无目录结构预览')}
+              </div>
+            )}
+          </div>
+
+          {/* 右侧底部：无损虚拟目录机制保障提示 */}
+          <div className="flex items-start gap-1.5 pt-1 text-[11px] text-muted-foreground shrink-0 leading-normal">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+            <span>
+              {t('安全无损：通过虚拟标签树进行整理归档，绝不会物理移动或破坏您的原始磁盘文件。')}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* 底部双通道流转操作栏：主按钮高亮（应用推荐并查看详细配置） + 快捷通道 */}
-      <div className="pt-3.5 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+      <div className="pt-3 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
         <div className="text-xs text-muted-foreground flex items-center gap-2 min-w-0">
           <Sliders className="w-3.5 h-3.5 text-primary shrink-0" />
           <span className="truncate">
-            {t('当前选定工作流:')}{' '}
+            {t('已选定工作流:')}{' '}
             <strong className="text-foreground">{selectedWorkflow.name}</strong>
           </span>
         </div>
