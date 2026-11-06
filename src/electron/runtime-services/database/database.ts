@@ -60,16 +60,42 @@ export const GENESIS_V1_SCHEMA = `
 
   -- 0.1 本地工作流定义表 (必须先于 workspaces 声明以满足外键依赖)
   CREATE TABLE IF NOT EXISTS local_workflows (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    version TEXT NOT NULL DEFAULT '1.0.0',
-    persona TEXT NOT NULL,
-    summary TEXT,
-    is_builtin INTEGER NOT NULL DEFAULT 0,
-    manifest_json TEXT NOT NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    modified_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    id                    TEXT PRIMARY KEY,                             -- 工作流全局唯一标识 (UUID 或官方内置标识如 'builtin.workflow.photography-raw')
+    user_id               TEXT,                                         -- 本地创建用户ID (官方工作流强制为 NULL，自建工作流强制为 NOT NULL)
+    author                TEXT,                                         -- 模板署名/原作者名称 (用于官方署名、社区或导入工作流，避免污染本地 user_id)
+    name                  TEXT NOT NULL,                                -- 工作流显示名称
+    version               TEXT NOT NULL DEFAULT '1.0.0',                -- 语义化版本号 (SemVer)
+    persona               TEXT NOT NULL,                                -- 适用的业务角色身份 (如 photographer, engineer, financial 等)
+    category              TEXT NOT NULL DEFAULT 'entertainment'         -- 工作流分类：生活娱乐 | 创意设计 | 专业办公 ('entertainment' | 'creative' | 'office')
+                          CHECK (category IN ('entertainment', 'creative', 'office')),
+    summary               TEXT,                                         -- 工作流功能简述与使用说明
+    source                TEXT NOT NULL DEFAULT 'official'              -- 工作流来源：官方 | 用户自建 | 导入 | 社区 ('official' | 'user' | 'imported' | 'community')
+                          CHECK (source IN ('official', 'user', 'imported', 'community')),
+    filter_mode           TEXT NOT NULL DEFAULT 'whitelist'             -- 文件过滤模式：白名单或黑名单二选一 ('whitelist' | 'blacklist')
+                          CHECK (filter_mode IN ('whitelist', 'blacklist')),
+    filter_rules          TEXT NOT NULL DEFAULT '[]'                    -- 统一过滤规则集合 (JSON of IFilterRule[], 支持文件/目录/扩展名/正则/通配符)
+                          CHECK (json_valid(filter_rules) = 1),
+    naming_pattern        TEXT,                                         -- 智能文件名格式：指导 AI 提炼核心语义名称的结构格式规范
+    naming_template       TEXT,                                         -- 智能文件名附加属性模板：基于 NamingDSLEngine 的 DSL 装饰模板
+    engine_params_json    TEXT                                          -- 底层 AI 与分析引擎技术参数快照 (JSON，工作流预设的通用 AI 分析引擎模板参数，不可与 workspaces.workspace_config 运行时实例覆盖混淆)
+                          CHECK (engine_params_json IS NULL OR json_valid(engine_params_json) = 1),
+    preset_directory_tree TEXT                                          -- 工作流预置目录树结构大纲 (纯目录树，用于批量整理模式 stage 结构微调)
+                          CHECK (preset_directory_tree IS NULL OR json_valid(preset_directory_tree) = 1),
+    preview_tree          TEXT                                          -- 工作流目录树带示例文件预览 (JSON 格式，用于在向导和选择器中直观展示最终整理效果)
+                          CHECK (preview_tree IS NULL OR json_valid(preview_tree) = 1),
+    icon_svg              TEXT,                                         -- 工作流专属视觉图标 SVG 源码或资源标识
+    created_at            DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,  -- 工作流本地创建时间
+    modified_at           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,  -- 工作流最近修改时间
+    CONSTRAINT chk_local_workflows_user_source CHECK (
+      (source = 'official' AND user_id IS NULL) OR
+      (source = 'user' AND user_id IS NOT NULL) OR
+      (source IN ('imported', 'community') AND author IS NOT NULL)
+    )
   );
+
+  CREATE INDEX IF NOT EXISTS idx_local_workflows_user_id ON local_workflows(user_id);
+  CREATE INDEX IF NOT EXISTS idx_local_workflows_category ON local_workflows(category);
+  CREATE INDEX IF NOT EXISTS idx_local_workflows_source ON local_workflows(source);
 
   -- 1. 用户根工作区配置表
   CREATE TABLE IF NOT EXISTS workspaces (
@@ -80,7 +106,7 @@ export const GENESIS_V1_SCHEMA = `
     is_active BOOLEAN NOT NULL DEFAULT 1,         -- 是否为当前激活的工作区
     auto_watch BOOLEAN NOT NULL DEFAULT 0,        -- 是否自动监听文件系统变化 (单一真相源)
     last_scan_at DATETIME,                        -- 最后一次完整扫描的时间
-    workspace_config TEXT NOT NULL DEFAULT '{"schemaVersion":1,"status":"pending"}' CHECK (json_valid(workspace_config) = 1 AND json_extract(workspace_config, '$.status') IN ('pending', 'ready')), -- 工作区专有配置 JSON (就绪门闩与全量AI处理策略)
+    workspace_config TEXT NOT NULL DEFAULT '{"schemaVersion":1,"status":"pending"}' CHECK (json_valid(workspace_config) = 1 AND json_extract(workspace_config, '$.status') IN ('pending', 'ready')), -- 工作区专有配置 JSON (具体工作区实例运行时的就绪门闩与全量AI处理策略覆盖，不可与工作流模板 engine_params_json 混淆)
     meta TEXT NOT NULL DEFAULT '{}',              -- 弹性运行时元数据 (JSON，仅限扫描统计缓存、UI状态等，不存策略配置)
     whitelist_patterns TEXT NOT NULL DEFAULT '[]' CHECK (json_valid(whitelist_patterns) = 1), -- 入场白名单扩展名集合 (JSON 字符串数组，如 [".cr3", ".arw"])
     bound_workflow_id TEXT,                       -- 绑定的工作流 ID (解绑置空)
@@ -408,12 +434,22 @@ export const GENESIS_V1_SCHEMA = `
   -- 16.7 内置与可选功能模块化及物理资产下载底座 (Genesis V1 创世基线 - Issue 01a)
   -- 1. 内置与可选模块注册表
   CREATE TABLE IF NOT EXISTS builtin_modules (
-    id                TEXT PRIMARY KEY,              -- 模块唯一标识符 (如 'asr_engine', 'nsfw_detector')
+    id                TEXT PRIMARY KEY,              -- 模块唯一标识符 (如 'asr_engine', 'diffusion_studio')
     kind              TEXT NOT NULL DEFAULT 'builtin-module'
                       CHECK (kind IN ('builtin-module', 'third-party-plugin')),
-    version           TEXT NOT NULL,                 -- 当前安装/激活的版本号
-    category          TEXT NOT NULL                  -- 'ai-engine' | 'perception' | 'media' | 'tool'
+    version           TEXT NOT NULL,                 -- 当前激活的版本号 (SemVer)
+    catalog_version   INTEGER NOT NULL DEFAULT 1,    -- 市场元数据版本号 (单调递增，防云端旧版本回退覆盖)
+    category          TEXT NOT NULL                  -- 模块分类
                       CHECK (category IN ('ai-engine', 'perception', 'media', 'tool', 'parser', 'vfs-archive')),
+    author_code       TEXT NOT NULL DEFAULT 'official'
+                      CHECK (author_code IN ('official', 'community', 'third_party')),
+    author_name       TEXT,                          -- 第三方/社区开发者名称 (官方插件保持为 NULL，由前端 t('Firefly 官方') 动态国际化)
+    availability      TEXT NOT NULL DEFAULT 'available'
+                      CHECK (availability IN ('available', 'coming_soon', 'unavailable')),
+    total_bytes       INTEGER NOT NULL DEFAULT 0,    -- 安装包与资源总体积 (字节)
+    catalog_meta_json TEXT CHECK (catalog_meta_json IS NULL OR json_valid(catalog_meta_json) = 1), -- 市场展示元数据 (JSON)
+    config_schema     TEXT CHECK (config_schema IS NULL OR json_valid(config_schema) = 1),         -- 插件配置项 Schema (JSON)
+    user_config       TEXT CHECK (user_config IS NULL OR json_valid(user_config) = 1),             -- 用户个性化持久化配置 (JSON)
     install_state     TEXT NOT NULL DEFAULT 'not_installed'
                       CHECK (install_state IN ('not_installed', 'downloading', 'installed_inactive', 'active', 'error')),
     selected_variant  TEXT,                          -- 用户选装的变体标识符 (如 'sensevoice-onnx')
@@ -422,7 +458,7 @@ export const GENESIS_V1_SCHEMA = `
     last_activated_at INTEGER,                       -- 最近一次激活时间戳 (Unix ms)
     user_consent      INTEGER NOT NULL DEFAULT 0,    -- 是否通过敏感授权/隐私告知 (1: 是, 0: 否)
     error_message     TEXT,                          -- 异常退出或校验失败原因
-    config_json       TEXT                           -- 模块专有持久化配置项 (JSON 字典)
+    config_json       TEXT                           -- 运行时内部专有持久化配置项 (JSON 字典)
   );
 
   -- 2. 物理资源下载实体表 (资源中心化 SSOT)
@@ -438,8 +474,11 @@ export const GENESIS_V1_SCHEMA = `
     expected_bytes    INTEGER NOT NULL,              -- 预期文件大小 (字节，BOM SSOT)
     downloaded_bytes  INTEGER NOT NULL DEFAULT 0,    -- 仅作为 UI 进度投影 (真实断点以磁盘 .part 大小为准)
     expected_sha256   TEXT NOT NULL,                 -- 权威 SHA-256 完整性摘要
+    actual_sha256     TEXT,                          -- 落地后实际计算摘要
+    etag              TEXT,                          -- HTTP ETag 缓存标签
+    last_modified     TEXT,                          -- HTTP Last-Modified
     download_state    TEXT NOT NULL DEFAULT 'pending'
-                      CHECK (download_state IN ('pending', 'downloading', 'paused', 'completed', 'failed')),
+                      CHECK (download_state IN ('pending', 'downloading', 'paused', 'completed', 'failed', 'pending_delete')),
     error_message     TEXT,                          -- 网络异常或 HTTP 状态码说明
     created_at        INTEGER NOT NULL,              -- 任务创建时间戳
     updated_at        INTEGER NOT NULL               -- 进度刷新时间戳
@@ -506,6 +545,7 @@ export const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_workspaces_bound_wf ON workspaces(bound_workflow_id);
   CREATE INDEX IF NOT EXISTS idx_workspace_directories_bound_wf ON workspace_directories(bound_workflow_id);
   CREATE INDEX IF NOT EXISTS idx_local_workflows_persona ON local_workflows(persona);
+  CREATE INDEX IF NOT EXISTS idx_local_workflows_user_id ON local_workflows(user_id);
   CREATE INDEX IF NOT EXISTS idx_file_tags_private_name ON file_tags_private(name);
   CREATE INDEX IF NOT EXISTS idx_file_tags_private_source ON file_tags_private(source);
 
