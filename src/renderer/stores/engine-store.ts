@@ -39,8 +39,25 @@ export interface EngineBridgeSnapshotUI {
   totalModelCount?: number | null
   /** 原始引擎状态（hardware 等 dashboard 增项经此透传） */
   raw?: {
-    hardware?: { gpu_name?: string; is_integrated?: boolean; [key: string]: any } | null
+    hardware?: {
+      gpu_name?: string
+      is_integrated?: boolean
+      total_vram_gb?: number
+      used_vram_gb?: number
+      total_ram_gb?: number
+      used_ram_gb?: number
+      [key: string]: any
+    } | null
     status?: string
+    arbiter?: {
+      phase?: 'idle' | 'serving' | 'swapping' | 'cooling_down'
+      eta_ms?: number
+      queue_position?: number
+      vram_budget_mb?: number
+      vram_used_mb?: number
+      [key: string]: any
+    } | null
+    reasonCode?: string
     [key: string]: any
   } | null
 }

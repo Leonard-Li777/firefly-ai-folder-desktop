@@ -1,5 +1,19 @@
 import React, { useEffect, useState } from 'react'
-import { Ban, Brain, CircleCheck, CircleX, CircleAlert, Clock, Cloud, Plus, Power, Radio, Box, Zap, Sparkles } from 'lucide-react'
+import {
+  Ban,
+  Brain,
+  CircleCheck,
+  CircleX,
+  CircleAlert,
+  Clock,
+  Cloud,
+  Plus,
+  Power,
+  Radio,
+  Box,
+  Zap,
+  Sparkles
+} from 'lucide-react'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import { Card } from '../ui/card'
@@ -16,6 +30,7 @@ import { useEngineStore } from '../../stores/engine-store'
 import { toast } from '../common/Toast'
 import { CloudModelConfigSettings } from './cloud-model-config-settings'
 import { CloudErrorCard } from './cloud-error-card'
+import { VramArbiterMeterCard } from './VramArbiterMeterCard'
 import {
   deriveEngineBadge,
   deriveEngineHealthState,
@@ -24,7 +39,10 @@ import {
   type EngineBadgeResult,
   type EngineBadgeStatus
 } from '../../lib/engine-status-badge'
-import { useCloudEngineStatusStore, isCloudStrictConnected } from '../../stores/cloud-engine-status-store'
+import {
+  useCloudEngineStatusStore,
+  isCloudStrictConnected
+} from '../../stores/cloud-engine-status-store'
 import { runCloudProbe } from '../../lib/cloud-engine-probe'
 import type { CloudModelConfig } from '@firefly/types'
 
@@ -36,7 +54,9 @@ type ActiveEngineMode = 'local' | 'cloud'
  * Fix-05：不得以模块级静态对象持有裸文案，改为函数返回对象
  * 以保证切换语言时翻译即时刷新、t() 只收静态字符串）
  */
-function getCircuitLabels(t: (key: string) => string): Record<string, { text: string; tone: 'green' | 'yellow' | 'red' | 'gray' }> {
+function getCircuitLabels(
+  t: (key: string) => string
+): Record<string, { text: string; tone: 'green' | 'yellow' | 'red' | 'gray' }> {
   return {
     closed: { text: t('引擎状态良好'), tone: 'green' },
     half_open: { text: t('引擎偶发异常，正在自动尝试'), tone: 'yellow' },
@@ -71,9 +91,15 @@ export const AIEngineConfigSettings: React.FC = () => {
   const getConfigValue = useSettingsStore(s => s.getConfigValue)
   const updateConfigValue = useSettingsStore(s => s.updateConfigValue)
   // 订阅云端配置字段：配置改坏时徽章需立即重算（AI_CLOUD_* 变更必须触发重渲染）
-  const cloudProviderCfg = useSettingsStore(s => (s.config as any)?.aiCloudProvider as string | undefined)
-  const cloudApiKeyCfg = useSettingsStore(s => (s.config as any)?.aiCloudApiKey as string | undefined)
-  const cloudBaseUrlCfg = useSettingsStore(s => (s.config as any)?.aiCloudBaseUrl as string | undefined)
+  const cloudProviderCfg = useSettingsStore(
+    s => (s.config as any)?.aiCloudProvider as string | undefined
+  )
+  const cloudApiKeyCfg = useSettingsStore(
+    s => (s.config as any)?.aiCloudApiKey as string | undefined
+  )
+  const cloudBaseUrlCfg = useSettingsStore(
+    s => (s.config as any)?.aiCloudBaseUrl as string | undefined
+  )
   const cloudSelectedModelCfg = useSettingsStore(
     s => (s.config as any)?.aiCloudSelectedModelId as string | undefined
   )
@@ -180,7 +206,9 @@ export const AIEngineConfigSettings: React.FC = () => {
   const runCloudAutoProbe = React.useCallback(async () => {
     const provider = (cloudProviderCfg ?? getConfigValue<string>('AI_CLOUD_PROVIDER'))?.trim()
     const apiKey = (cloudApiKeyCfg ?? getConfigValue<string>('AI_CLOUD_API_KEY'))?.trim()
-    const model = (cloudSelectedModelCfg ?? getConfigValue<string>('AI_CLOUD_SELECTED_MODEL_ID'))?.trim()
+    const model = (
+      cloudSelectedModelCfg ?? getConfigValue<string>('AI_CLOUD_SELECTED_MODEL_ID')
+    )?.trim()
     const baseUrl = (cloudBaseUrlCfg ?? getConfigValue<string>('AI_CLOUD_BASE_URL'))?.trim()
     // ollama 免 Key；模型列表路径不强制已选模型
     const basicallyValid = !!provider && (provider === 'ollama' || !!apiKey)
@@ -218,7 +246,9 @@ export const AIEngineConfigSettings: React.FC = () => {
 
   useEffect(() => {
     if (!isCloudMode) return
-    const model = (cloudSelectedModelCfg ?? getConfigValue<string>('AI_CLOUD_SELECTED_MODEL_ID'))?.trim()
+    const model = (
+      cloudSelectedModelCfg ?? getConfigValue<string>('AI_CLOUD_SELECTED_MODEL_ID')
+    )?.trim()
     const provider = (cloudProviderCfg ?? getConfigValue<string>('AI_CLOUD_PROVIDER'))?.trim()
     const apiKey = (cloudApiKeyCfg ?? getConfigValue<string>('AI_CLOUD_API_KEY'))?.trim()
     const valid = !!provider && !!model && (provider === 'ollama' || !!apiKey)
@@ -251,9 +281,9 @@ export const AIEngineConfigSettings: React.FC = () => {
     const detail = message?.trim() || t('操作失败，请查看日志')
     const aiErrorType =
       key === 'stop-service' ? AIErrorType.SERVER_STOP_FAILED : AIErrorType.SERVER_START_FAILED
-    useAIServiceStore.getState().setError(
-      ErrorNormalizer.normalize(detail, aiErrorType, 'EngineBridge')
-    )
+    useAIServiceStore
+      .getState()
+      .setError(ErrorNormalizer.normalize(detail, aiErrorType, 'EngineBridge'))
     toast.error(detail)
   }
 
@@ -311,7 +341,9 @@ export const AIEngineConfigSettings: React.FC = () => {
     return STATUS_ICON_MAP.error
   }
 
-  const buildBadge = (mode: ActiveEngineMode): { icon: React.ReactNode; text: string; cls: string } => {
+  const buildBadge = (
+    mode: ActiveEngineMode
+  ): { icon: React.ReactNode; text: string; cls: string } => {
     const selected = activeMode === mode
     const raw: EngineBadgeResult =
       mode === 'local'
@@ -451,9 +483,7 @@ export const AIEngineConfigSettings: React.FC = () => {
             <span className="text-sm font-semibold text-foreground">{name}</span>
             {extraBadge}
           </div>
-          <p className="text-xs text-muted-foreground font-normal mt-1.5 leading-relaxed">
-            {desc}
-          </p>
+          <p className="text-xs text-muted-foreground font-normal mt-1.5 leading-relaxed">{desc}</p>
         </div>
         <div
           className={`mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-all ${
@@ -486,7 +516,9 @@ export const AIEngineConfigSettings: React.FC = () => {
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            {t('选择生效引擎：开启后可以支持更佳的AI分析体验，禁用后仅使用基础AI引擎，不开启高级引擎占用资源')}
+            {t(
+              '选择生效引擎：开启后可以支持更佳的AI分析体验，禁用后仅使用基础AI引擎，不开启高级引擎占用资源'
+            )}
           </p>
         </div>
         <Switch
@@ -524,7 +556,10 @@ export const AIEngineConfigSettings: React.FC = () => {
                       t('支持生成文件整理目录结构，支持按目录结构分类'),
                       t('轻量高速，支持所有硬件环境')
                     ].map(item => (
-                      <li key={item} className="flex items-start gap-2 text-xs leading-relaxed text-foreground/80">
+                      <li
+                        key={item}
+                        className="flex items-start gap-2 text-xs leading-relaxed text-foreground/80"
+                      >
                         <CircleCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
                         <span>{item}</span>
                       </li>
@@ -544,7 +579,10 @@ export const AIEngineConfigSettings: React.FC = () => {
                       t('文件质量按专业维度智能评分'),
                       t('生成多套文件整理方案供自由选择')
                     ].map(item => (
-                      <li key={item} className="flex items-start gap-2 text-xs leading-relaxed text-foreground/80">
+                      <li
+                        key={item}
+                        className="flex items-start gap-2 text-xs leading-relaxed text-foreground/80"
+                      >
                         <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
                         <span>{item}</span>
                       </li>
@@ -651,20 +689,29 @@ export const AIEngineConfigSettings: React.FC = () => {
                         </div>
                         <div className="min-w-0">
                           <Label className="text-sm font-semibold flex items-center gap-2 flex-wrap">
-                            {snapshot?.version ? `${t('萤核AI引擎')} v${snapshot.version}` : t('萤核AI引擎')}
-                            <Badge className={`font-semibold px-2 py-0.5 text-[11px] rounded-full border ${statusBadge.cls}`}>
+                            {snapshot?.version
+                              ? `${t('萤核AI引擎')} v${snapshot.version}`
+                              : t('萤核AI引擎')}
+                            <Badge
+                              className={`font-semibold px-2 py-0.5 text-[11px] rounded-full border ${statusBadge.cls}`}
+                            >
                               {statusBadge.icon}
                               <span className="ml-1">{statusBadge.text}</span>
                             </Badge>
                             {snapshot?.devMode && (
-                              <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-medium">
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] h-4 px-1.5 font-medium"
+                              >
                                 DEV
                               </Badge>
                             )}
                           </Label>
                           <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
                             <span>{t('本地通信端口')}:</span>
-                            <span className="font-mono font-semibold text-foreground/80">127.0.0.1:{snapshot?.port ?? 38400}</span>
+                            <span className="font-mono font-semibold text-foreground/80">
+                              127.0.0.1:{snapshot?.port ?? 38400}
+                            </span>
                           </p>
                         </div>
                       </div>
@@ -675,7 +722,11 @@ export const AIEngineConfigSettings: React.FC = () => {
                             size="sm"
                             variant="destructive"
                             disabled={actionPending !== null}
-                            onClick={() => runAction('stop-service', () => window.electronAPI.engineBridge.stopService())}
+                            onClick={() =>
+                              runAction('stop-service', () =>
+                                window.electronAPI.engineBridge.stopService()
+                              )
+                            }
                             className="h-8 text-xs font-medium"
                           >
                             <CircleX className="h-3.5 w-3.5 mr-1" />
@@ -686,7 +737,11 @@ export const AIEngineConfigSettings: React.FC = () => {
                             size="sm"
                             variant="default"
                             disabled={actionPending !== null}
-                            onClick={() => runAction('start-service', () => window.electronAPI.engineBridge.startService())}
+                            onClick={() =>
+                              runAction('start-service', () =>
+                                window.electronAPI.engineBridge.startService()
+                              )
+                            }
                             className="h-8 text-xs font-medium"
                           >
                             <Power className="h-3.5 w-3.5 mr-1" />
@@ -697,7 +752,9 @@ export const AIEngineConfigSettings: React.FC = () => {
                           size="sm"
                           variant="secondary"
                           disabled={actionPending !== null || !snapshot?.connected}
-                          onClick={() => runAction('open-ui', () => window.electronAPI.engineBridge.openUI())}
+                          onClick={() =>
+                            runAction('open-ui', () => window.electronAPI.engineBridge.openUI())
+                          }
                           className="h-8 text-xs font-medium"
                         >
                           <Plus className="h-3.5 w-3.5 mr-1" />
@@ -705,7 +762,6 @@ export const AIEngineConfigSettings: React.FC = () => {
                         </Button>
                       </div>
                     </div>
-
                   </div>
 
                   {/* 运行指标网格（PRD-0044 dashboard 等效：不复制显存/内存等引擎侧专属卡） */}
@@ -717,7 +773,10 @@ export const AIEngineConfigSettings: React.FC = () => {
                         <span className="text-[11px] font-medium text-muted-foreground">
                           {t('计算引擎')}
                         </span>
-                        <span className="text-xs font-semibold truncate" title={snapshot?.backend || undefined}>
+                        <span
+                          className="text-xs font-semibold truncate"
+                          title={snapshot?.backend || undefined}
+                        >
                           {snapshot?.backend
                             ? `${snapshot.backend}${snapshot?.raw?.hardware?.gpu_name ? ` · ${snapshot.raw.hardware.gpu_name}` : ''}`
                             : snapshot?.connected
@@ -741,7 +800,10 @@ export const AIEngineConfigSettings: React.FC = () => {
                           {/* 精简标签，去掉"（引擎侧只读）"冗余说明 */}
                           {t('当前模型')}
                         </span>
-                        <span className="text-xs font-semibold truncate" title={snapshot?.model || undefined}>
+                        <span
+                          className="text-xs font-semibold truncate"
+                          title={snapshot?.model || undefined}
+                        >
                           {/* 优先取规范模型友好名称（内置模型库/映射表/智能美化），无模型统一显示 — */}
                           {formatFriendlyModelName(snapshot?.modelName, snapshot?.model)}
                         </span>
@@ -795,7 +857,9 @@ export const AIEngineConfigSettings: React.FC = () => {
                       <p className="text-xs text-muted-foreground font-normal mt-1 leading-relaxed">
                         {snapshot?.available
                           ? t('萤核AI引擎当前没有运行。点击下方按钮会自动启动引擎并打开引擎窗口。')
-                          : t('未检测到萤核AI引擎程序，请确认应用安装完整后重试；点击下方按钮会再次尝试启动。')}
+                          : t(
+                              '未检测到萤核AI引擎程序，请确认应用安装完整后重试；点击下方按钮会再次尝试启动。'
+                            )}
                       </p>
                       <Button
                         ref={openEngineBtnRef}
@@ -823,6 +887,9 @@ export const AIEngineConfigSettings: React.FC = () => {
                 </Card>
               )}
 
+              {/* 本地 AI 引擎显存大白话仪表盘 */}
+              <VramArbiterMeterCard />
+
               {/* 基础AI引擎保底提示卡 */}
               <Card className="p-4 border-border/60 shadow-xs rounded-xl bg-muted/10">
                 <div className="flex items-start gap-3">
@@ -830,7 +897,9 @@ export const AIEngineConfigSettings: React.FC = () => {
                     <CircleAlert className="h-4 w-4" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <Label className="text-xs font-semibold text-foreground/90">{t('基础AI引擎自动兜底')}</Label>
+                    <Label className="text-xs font-semibold text-foreground/90">
+                      {t('基础AI引擎自动兜底')}
+                    </Label>
                     <p className="text-xs text-muted-foreground font-normal mt-1 leading-relaxed">
                       {t(
                         '当高级AI引擎（萤核AI引擎或云端）连续分析失败或未连接时，分析流水线将静默降级到基础AI引擎纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。'
@@ -852,4 +921,3 @@ export const AIEngineConfigSettings: React.FC = () => {
     </div>
   )
 }
-
