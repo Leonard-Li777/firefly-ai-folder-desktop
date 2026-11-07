@@ -406,34 +406,25 @@ export function registerSettingsIPCHandlers(): void {
     }
   )
 
-  // 更新工作区白名单规则并联动取消队列中不匹配任务
+  // 更新工作区白名单规则并联动取消队列中不匹配任务 (通过 WorkspaceAdmissionService 单一事实源)
   ipcMain.handle(
     'update-workspace-whitelist',
     async (_event, workspaceId: number, patterns: string[]) => {
       try {
-        const success = await databaseService.updateWorkspaceWhitelistPatterns(
-          workspaceId,
-          patterns
-        )
-        if (success) {
-          fileWatcherService.updateWorkspaceWhitelist(workspaceId, patterns)
-          await analysisQueueService.cancelUnmatchedTasks(workspaceId, patterns)
-
-          // 放宽白名单或重置白名单时，触发增量补扫
-          const workspace = await databaseService.getWorkspaceDirectoryById(workspaceId)
-          if (workspace?.path) {
-            fileWatcherService.syncDirectory(workspace.path, true).catch(err => {
-              logger.warn(LogCategory.SETTING, `白名单更新后增量同步失败: ${workspace.path}`, err)
-            })
+        const result = await workspaceAdmissionService.applyPolicyMutation(workspaceId, {
+          customWhitelistExts: patterns
+        })
+        BrowserWindow.getAllWindows().forEach(win => {
+          if (!win.isDestroyed()) {
+            win.webContents.send('workspace-directories-updated')
           }
-
-          BrowserWindow.getAllWindows().forEach(win => {
-            if (!win.isDestroyed()) {
-              win.webContents.send('workspace-directories-updated')
-            }
-          })
+        })
+        return {
+          success: true,
+          policyVersion: result.policyVersion,
+          prunedFilesCount: result.prunedFilesCount,
+          cancelledTasksCount: result.cancelledTasksCount
         }
-        return { success }
       } catch (error) {
         logger.error(LogCategory.SETTING, `更新工作区白名单失败: ${workspaceId}`, error)
         return { success: false, error: (error as any)?.message || String(error) }
@@ -441,83 +432,41 @@ export function registerSettingsIPCHandlers(): void {
     }
   )
 
-  // 预览工作区白名单规则变更的量化影响
+  // 预览工作区白名单规则变更的量化影响 (通过 WorkspaceAdmissionService 单一事实源)
   ipcMain.handle(
     'preview-workspace-whitelist-impact',
     async (_event, workspaceId: number, patterns: string[]) => {
       try {
-        const impact = await databaseService.calculateWhitelistImpact(workspaceId, patterns)
-        if (impact.totalFiles > 0) {
-          return { success: true, ...impact, isSampled: false }
-        }
-
-        // 数据库尚无文件记录，尝试通过画像探测器对物理磁盘进行采样推算
+        let probeExtensionCounts: Record<string, number> | undefined
         const workspace = await databaseService.getWorkspaceDirectoryById(workspaceId)
         if (workspace?.path && fs.existsSync(workspace.path)) {
-          const { directoryProfilerService } =
-            await import('../filesystem/directory-profiler-service')
-          const profile = await directoryProfilerService.probeProfile(workspace.path)
-          const totalSampled = profile.stats?.totalSampled || 0
-          if (totalSampled > 0) {
-            const cleanPatterns = (patterns || [])
-              .map(p => (typeof p === 'string' ? p.trim().toLowerCase() : ''))
-              .filter(Boolean)
-              .map(p => (p.startsWith('.') ? p : `.${p}`))
-
-            if (cleanPatterns.length === 0) {
-              return {
-                success: true,
-                totalFiles: totalSampled,
-                includedFiles: totalSampled,
-                excludedFiles: 0,
-                isSampled: true
-              }
+          try {
+            const { directoryProfilerService } =
+              await import('../filesystem/directory-profiler-service')
+            const profile = await directoryProfilerService.probeProfile(workspace.path)
+            if (profile.stats?.extensionCounts) {
+              probeExtensionCounts = profile.stats.extensionCounts
             }
-
-            const extSet = new Set(cleanPatterns)
-            let included = 0
-            for (const item of profile.stats?.topExtensions || []) {
-              const ext = item.ext.startsWith('.')
-                ? item.ext.toLowerCase()
-                : `.${item.ext.toLowerCase()}`
-              if (extSet.has(ext)) {
-                included += item.count
-              }
-            }
-            return {
-              success: true,
-              totalFiles: totalSampled,
-              includedFiles: included,
-              excludedFiles: Math.max(0, totalSampled - included),
-              isSampled: true
-            }
+          } catch {
+            // 采样探针异常降级
           }
         }
 
+        const impact = await workspaceAdmissionService.previewPolicyImpact(
+          workspaceId,
+          { customWhitelistExts: patterns },
+          probeExtensionCounts
+        )
         return {
           success: true,
-          totalFiles: 0,
-          includedFiles: 0,
-          excludedFiles: 0,
-          isSampled: false
+          totalFiles: impact.totalFiles,
+          includedFiles: impact.matchedFiles,
+          excludedFiles: impact.excludedFiles,
+          isSampled: impact.isSampled
         }
       } catch (error) {
-        logger.error(LogCategory.SETTING, `计算白名单影响失败: ${workspaceId}`, error)
+        logger.error(LogCategory.SETTING, `预览白名单影响失败: ${workspaceId}`, error)
         return { success: false, error: (error as any)?.message || String(error) }
-      }
-    }
-  )
-
-  // 获取本地工作流列表（从 ConfigDbManager 数据中枢获取）
-  ipcMain.handle(
-    'get-local-workflows',
-    async (_event, filter?: { source?: string; category?: string }) => {
-      try {
-        const workflows = ConfigDbManager.getInstance().getLocalWorkflows(filter as any)
-        return { success: true, data: workflows }
-      } catch (error) {
-        logger.error(LogCategory.SETTING, '获取本地工作流列表失败:', error)
-        return { success: false, error: (error as any)?.message || String(error), data: [] }
       }
     }
   )

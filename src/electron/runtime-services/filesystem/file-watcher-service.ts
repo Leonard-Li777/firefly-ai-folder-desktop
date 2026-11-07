@@ -53,7 +53,8 @@ class FileWatcherService {
 
     const count = this.fileEventLogCounts.get(eventType) || 0
     if (count < 5) {
-      const actionText = eventType === FileWatcherService.EVENT_TYPE_ADD ? '新文件' : `文件${eventType}`
+      const actionText =
+        eventType === FileWatcherService.EVENT_TYPE_ADD ? '新文件' : `文件${eventType}`
       logger.info(LogCategory.FILE_WATCHER, `检测到${actionText}: ${filePath}`)
       this.fileEventLogCounts.set(eventType, count + 1)
     } else {
@@ -276,6 +277,25 @@ class FileWatcherService {
   updateWorkspaceWhitelist(workspaceId: number, patterns: string[] | null | undefined): void {
     this.workspaceWhitelistCache.set(workspaceId, compileWhitelistExtSet(patterns))
     logger.info(LogCategory.FILE_WATCHER, `工作区 ID: ${workspaceId} 白名单已更新`)
+  }
+
+  async onWorkspacePolicyUpdated(workspaceId: number, policy: any): Promise<void> {
+    const exts = policy?.primaryExtensions ? (Array.from(policy.primaryExtensions) as string[]) : []
+    this.updateWorkspaceWhitelist(workspaceId, exts)
+    try {
+      const workspace = await databaseService.getWorkspaceDirectoryById(workspaceId)
+      if (workspace?.path) {
+        this.syncDirectory(workspace.path, true).catch(err => {
+          logger.warn(
+            LogCategory.FILE_WATCHER,
+            `工作区策略更新后增量同步失败: ${workspace.path}`,
+            err
+          )
+        })
+      }
+    } catch (err) {
+      logger.warn(LogCategory.FILE_WATCHER, `查找工作区路径异常: ${workspaceId}`, err)
+    }
   }
 
   async syncDirectory(dirPath: string, triggerAnalysis = false): Promise<void> {

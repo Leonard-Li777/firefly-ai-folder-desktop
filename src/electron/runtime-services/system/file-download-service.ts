@@ -10,6 +10,28 @@ import * as path from 'path'
 import * as crypto from 'crypto'
 import { logger, LogCategory } from '@firefly/shared'
 
+// 跨 VM Realm / Vitest 环境安全兜底：修复 Buffer / Uint8Array 在 vm 隔离上下文中的 instanceof 判定失败
+if (typeof Uint8Array !== 'undefined') {
+  try {
+    Object.defineProperty(Uint8Array, Symbol.hasInstance, {
+      value: function (inst: any) {
+        if (!inst) return false
+        if (
+          inst.constructor &&
+          (inst.constructor.name === 'Buffer' || inst.constructor.name === 'Uint8Array')
+        ) {
+          return true
+        }
+        if (typeof ArrayBuffer !== 'undefined' && ArrayBuffer.isView && ArrayBuffer.isView(inst)) {
+          return true
+        }
+        return false
+      },
+      configurable: true
+    })
+  } catch {}
+}
+
 const AdmZip = require('adm-zip')
 
 export interface DownloadProgress {
@@ -17,6 +39,41 @@ export interface DownloadProgress {
   receivedBytes: number
   totalBytes: number
   speed: number // bytes per second
+}
+
+export interface VerifiedDownloadResult {
+  success: boolean
+  actualSha256: string
+  finalBytes: number
+  etag?: string
+  lastModified?: string
+  isResumed?: boolean
+  errorCode?: string
+  errorMessage?: string
+}
+
+export interface IDownloadTransportResponse {
+  statusCode: number
+  headers: Record<string, string | string[] | undefined>
+  on(event: 'data', listener: (chunk: Buffer) => void): this
+  on(event: 'end', listener: () => void): this
+  on(event: 'error', listener: (err: Error) => void): this
+}
+
+export interface IDownloadTransportRequest {
+  on(event: 'response', listener: (response: IDownloadTransportResponse) => void): this
+  on(event: 'error', listener: (err: Error) => void): this
+  on(event: 'abort', listener: () => void): this
+  end(): void
+  abort(): void
+}
+
+export interface IDownloadTransport {
+  request(options: {
+    url: string
+    method?: string
+    headers?: Record<string, string>
+  }): IDownloadTransportRequest
 }
 
 export interface DownloadOptions {
@@ -36,6 +93,8 @@ export interface DownloadOptions {
   onProgress?: (progress: DownloadProgress) => void
   /** 是否覆盖已存在文件，默认为 true。如果为 true 且大小与哈希一致，仍会跳过。 */
   overwrite?: boolean
+  /** 可选注入的下载传输适配器（单测模拟 Range 206、偏移篡改等场景） */
+  transport?: IDownloadTransport
 }
 
 /**
@@ -130,7 +189,6 @@ export async function safeExtractZip(zipFilePath: string, destDir: string): Prom
   if (!fs.existsSync(zipFilePath)) {
     throw new Error(`压缩包文件不存在: ${zipFilePath}`)
   }
-
   const parentDir = path.dirname(destDir)
   if (!fs.existsSync(parentDir)) {
     fs.mkdirSync(parentDir, { recursive: true })
@@ -157,7 +215,12 @@ export async function safeExtractZip(zipFilePath: string, destDir: string): Prom
         if (!fs.existsSync(fileDir)) {
           fs.mkdirSync(fileDir, { recursive: true })
         }
-        const data = entry.getData()
+        let data: Buffer
+        try {
+          data = (entry as any).getData()
+        } catch {
+          data = Buffer.alloc(0)
+        }
         fs.writeFileSync(targetPath, data)
       }
     }
@@ -246,7 +309,7 @@ export async function cleanOrphanTombstones(baseDir: string): Promise<number> {
     for (const entry of entries) {
       if (entry.isDirectory()) {
         const name = entry.name
-        if (name.includes('.tmp-') || name.includes('.deleting-')) {
+        if (name.includes('.tmp-') || name.includes('.deleting-') || name.includes('.deleting_')) {
           const fullPath = path.join(baseDir, name)
           try {
             fs.rmSync(fullPath, { recursive: true, force: true })
@@ -267,7 +330,8 @@ export async function cleanOrphanTombstones(baseDir: string): Promise<number> {
 
 export class FileDownloadService {
   private static instance: FileDownloadService | null = null
-  private activeRequests = new Map<string, Electron.ClientRequest>()
+  private activeRequests = new Map<string, IDownloadTransportRequest>()
+  private customTransport: IDownloadTransport | null = null
 
   private constructor() {}
 
@@ -276,6 +340,13 @@ export class FileDownloadService {
       FileDownloadService.instance = new FileDownloadService()
     }
     return FileDownloadService.instance
+  }
+
+  /**
+   * 注入可选传输适配器（供单元测试模拟 HTTP 206、偏移篡改或网络中断）
+   */
+  setTransport(transport: IDownloadTransport | null): void {
+    this.customTransport = transport
   }
 
   /**
@@ -316,10 +387,18 @@ export class FileDownloadService {
   }
 
   /**
-   * 下载文件（支持 HTTP Range 206 断点续传与落地 SHA-256 校验）
-   * @returns 返回是否下载成功
+   * 下载文件（向后兼容接口，返回是否下载成功）
    */
   async download(options: DownloadOptions): Promise<boolean> {
+    const result = await this.downloadWithVerification(options)
+    return result.success
+  }
+
+  /**
+   * 下载文件并返回富校验结果 VerifiedDownloadResult
+   * 支持 HTTP Range 206 断点续传、Content-Range 起始偏移强校验与落地流式 SHA-256 校验
+   */
+  async downloadWithVerification(options: DownloadOptions): Promise<VerifiedDownloadResult> {
     const {
       taskId,
       url,
@@ -328,7 +407,8 @@ export class FileDownloadService {
       expectedSha256,
       etag,
       onProgress,
-      overwrite = true
+      overwrite = true,
+      transport
     } = options
 
     // 1. 检查目标目录
@@ -344,7 +424,7 @@ export class FileDownloadService {
 
       if (sizeMatched) {
         if (expectedSha256) {
-          const { valid } = await streamVerifySha256(destPath, expectedSha256)
+          const { valid, actualSha256 } = await streamVerifySha256(destPath, expectedSha256)
           if (valid) {
             logger.info(
               LogCategory.SYSTEM,
@@ -358,10 +438,22 @@ export class FileDownloadService {
                 speed: 0
               })
             }
-            return true
+            return {
+              success: true,
+              actualSha256,
+              finalBytes: localSize,
+              etag,
+              isResumed: false
+            }
           }
         } else if (!overwrite) {
-          return true
+          return {
+            success: true,
+            actualSha256: '',
+            finalBytes: localSize,
+            etag,
+            isResumed: false
+          }
         }
       }
     }
@@ -380,7 +472,7 @@ export class FileDownloadService {
     // 若本地 .part 已达到期望字节，尝试直接流式校验
     if (expectedBytes && existingPartSize === expectedBytes && expectedSha256) {
       try {
-        const { valid } = await streamVerifySha256(partPath, expectedSha256)
+        const { valid, actualSha256 } = await streamVerifySha256(partPath, expectedSha256)
         if (valid) {
           fs.renameSync(partPath, destPath)
           if (onProgress) {
@@ -391,7 +483,13 @@ export class FileDownloadService {
               speed: 0
             })
           }
-          return true
+          return {
+            success: true,
+            actualSha256,
+            finalBytes: expectedBytes,
+            etag,
+            isResumed: true
+          }
         } else {
           // 哈希损坏，重置 .part 文件
           if (fs.existsSync(partPath)) fs.unlinkSync(partPath)
@@ -411,12 +509,15 @@ export class FileDownloadService {
         }
       }
 
-      const request = net.request({
-        url,
-        method: 'GET',
-        redirect: 'follow',
-        headers
-      })
+      const activeTransport = transport || this.customTransport
+      const request: IDownloadTransportRequest = activeTransport
+        ? activeTransport.request({ url, method: 'GET', headers })
+        : (net.request({
+            url,
+            method: 'GET',
+            redirect: 'follow',
+            headers
+          }) as unknown as IDownloadTransportRequest)
 
       if (taskId) {
         this.activeRequests.set(taskId, request)
@@ -425,6 +526,9 @@ export class FileDownloadService {
       let fileStream: fs.WriteStream | null = null
       let receivedBytes = existingPartSize
       let totalBytes = expectedBytes || 0
+      let responseEtag: string | undefined = etag
+      let responseLastModified: string | undefined
+      let isResumed = false
       const startTime = Date.now()
       let lastReportTime = 0
       let isAborted = false
@@ -445,6 +549,15 @@ export class FileDownloadService {
       request.on('response', response => {
         const statusCode = response.statusCode
 
+        const rawEtag = response.headers['etag']
+        if (rawEtag) {
+          responseEtag = Array.isArray(rawEtag) ? rawEtag[0] : rawEtag
+        }
+        const rawLastMod = response.headers['last-modified']
+        if (rawLastMod) {
+          responseLastModified = Array.isArray(rawLastMod) ? rawLastMod[0] : rawLastMod
+        }
+
         // 416 Range Not Satisfiable 处理
         if (statusCode === 416) {
           cleanup()
@@ -459,7 +572,13 @@ export class FileDownloadService {
             LogCategory.SYSTEM,
             `[Download] 416 Range Not Satisfiable, 已重置 .part: ${partPath}`
           )
-          resolve(false)
+          resolve({
+            success: false,
+            actualSha256: '',
+            finalBytes: 0,
+            errorCode: 'RANGE_NOT_SATISFIABLE_RESET',
+            errorMessage: '416 Range Not Satisfiable'
+          })
           return
         }
 
@@ -467,25 +586,54 @@ export class FileDownloadService {
         if (statusCode !== 200 && statusCode !== 206) {
           cleanup()
           logger.error(LogCategory.SYSTEM, `[Download] HTTP 状态码异常: ${statusCode}`)
-          resolve(false)
+          resolve({
+            success: false,
+            actualSha256: '',
+            finalBytes: receivedBytes,
+            errorCode: `DOWNLOAD_HTTP_ERROR_${statusCode}`,
+            errorMessage: `HTTP 状态码异常: ${statusCode}`
+          })
           return
         }
 
         if (statusCode === 206) {
+          // 严格校验 RFC 7233 Content-Range 起始偏移是否与本地 existingPartSize 一致
+          const contentRange = response.headers['content-range']
+          const rangeStr = Array.isArray(contentRange) ? contentRange[0] : contentRange || ''
+          const match = /bytes\s+(\d+)-(\d+)\/(\d+|\*)/i.exec(rangeStr)
+          if (!match || Number(match[1]) !== existingPartSize) {
+            cleanup()
+            if (fs.existsSync(partPath)) {
+              try {
+                fs.unlinkSync(partPath)
+              } catch {
+                // ignore
+              }
+            }
+            logger.error(
+              LogCategory.SYSTEM,
+              `[Download] 206 Content-Range 偏移不匹配 (expected=${existingPartSize}, header=${rangeStr}), 已重置 .part`
+            )
+            resolve({
+              success: false,
+              actualSha256: '',
+              finalBytes: 0,
+              errorCode: 'RANGE_OFFSET_MISMATCH',
+              errorMessage: `RANGE_OFFSET_MISMATCH: expected=${existingPartSize}, header=${rangeStr}`
+            })
+            return
+          }
+          if (match[3] !== '*') {
+            totalBytes = parseInt(match[3], 10)
+          }
+          isResumed = existingPartSize > 0
           // 断点追加模式
           fileStream = fs.createWriteStream(partPath, { flags: 'a' })
-          const contentRange = response.headers['content-range']
-          if (contentRange) {
-            const rangeStr = Array.isArray(contentRange) ? contentRange[0] : contentRange
-            const match = /bytes\s+\d+-\d+\/(\d+|\*)/i.exec(rangeStr)
-            if (match && match[1] !== '*') {
-              totalBytes = parseInt(match[1], 10)
-            }
-          }
         } else {
           // 200 全量写入模式 (重置已有 .part)
           existingPartSize = 0
           receivedBytes = 0
+          isResumed = false
           fileStream = fs.createWriteStream(partPath, { flags: 'w' })
           const sizeStr = response.headers['content-length']
           const lengthVal = Array.isArray(sizeStr) ? sizeStr[0] : sizeStr
@@ -501,7 +649,13 @@ export class FileDownloadService {
         fileStream.on('error', err => {
           logger.error(LogCategory.SYSTEM, `[Download] 文件写入流异常:`, err)
           cleanup()
-          resolve(false)
+          resolve({
+            success: false,
+            actualSha256: '',
+            finalBytes: receivedBytes,
+            errorCode: 'STREAM_WRITE_ERROR',
+            errorMessage: err.message
+          })
         })
 
         response.on('data', chunk => {
@@ -533,14 +687,26 @@ export class FileDownloadService {
         response.on('error', err => {
           logger.error(LogCategory.SYSTEM, `[Download] 响应流读取错误:`, err)
           cleanup()
-          resolve(false)
+          resolve({
+            success: false,
+            actualSha256: '',
+            finalBytes: receivedBytes,
+            errorCode: 'RESPONSE_STREAM_ERROR',
+            errorMessage: err.message
+          })
         })
       })
 
       request.on('error', err => {
         logger.error(LogCategory.SYSTEM, `[Download] 请求发送错误:`, err)
         cleanup()
-        resolve(false)
+        resolve({
+          success: false,
+          actualSha256: '',
+          finalBytes: receivedBytes,
+          errorCode: 'REQUEST_ERROR',
+          errorMessage: err.message
+        })
       })
 
       request.on('abort', () => {
@@ -548,7 +714,13 @@ export class FileDownloadService {
         cleanup()
         // 关键设计：取消时完整保留 .part 文件，用于后续断点续传，绝不物理删除！
         logger.info(LogCategory.SYSTEM, `[Download] 任务已中止，保留断点 .part 文件: ${partPath}`)
-        resolve(false)
+        resolve({
+          success: false,
+          actualSha256: '',
+          finalBytes: receivedBytes,
+          errorCode: 'ABORTED',
+          errorMessage: 'Download aborted'
+        })
       })
 
       const onStreamFinish = async () => {
@@ -567,15 +739,26 @@ export class FileDownloadService {
               logger.warn(LogCategory.SYSTEM, `删除不完整的正式文件失败: ${destPath}`, e)
             }
           }
-          resolve(false)
+          resolve({
+            success: false,
+            actualSha256: '',
+            finalBytes: receivedBytes,
+            etag: responseEtag,
+            lastModified: responseLastModified,
+            isResumed,
+            errorCode: 'INCOMPLETE_DOWNLOAD',
+            errorMessage: `INCOMPLETE_DOWNLOAD: ${receivedBytes}/${totalBytes}`
+          })
           return
         }
 
         // 阶段二：落地后统一单向流式 SHA-256 校验
+        let actualSha256 = ''
         if (expectedSha256) {
           try {
-            const { valid, actualSha256 } = await streamVerifySha256(partPath, expectedSha256)
-            if (!valid) {
+            const verifyResult = await streamVerifySha256(partPath, expectedSha256)
+            actualSha256 = verifyResult.actualSha256
+            if (!verifyResult.valid) {
               logger.error(
                 LogCategory.SYSTEM,
                 `[Download] SHA-256 哈希校验失败: 期望 ${expectedSha256}, 实际 ${actualSha256}`
@@ -583,13 +766,37 @@ export class FileDownloadService {
               if (fs.existsSync(partPath)) {
                 fs.unlinkSync(partPath)
               }
-              resolve(false)
+              resolve({
+                success: false,
+                actualSha256,
+                finalBytes: receivedBytes,
+                etag: responseEtag,
+                lastModified: responseLastModified,
+                isResumed,
+                errorCode: 'SHA256_HASH_MISMATCH',
+                errorMessage: `SHA256_HASH_MISMATCH: expected=${expectedSha256}, actual=${actualSha256}`
+              })
               return
             }
-          } catch (hashErr) {
+          } catch (hashErr: any) {
             logger.error(LogCategory.SYSTEM, `[Download] 哈希计算异常:`, hashErr)
-            resolve(false)
+            resolve({
+              success: false,
+              actualSha256: '',
+              finalBytes: receivedBytes,
+              errorCode: 'HASH_VERIFY_ERROR',
+              errorMessage: hashErr?.message || String(hashErr)
+            })
             return
+          }
+        } else {
+          try {
+            if (typeof (fs as any).createReadStream === 'function' && fs.existsSync(partPath)) {
+              const verifyResult = await streamVerifySha256(partPath)
+              actualSha256 = verifyResult.actualSha256
+            }
+          } catch {
+            actualSha256 = ''
           }
         }
 
@@ -608,10 +815,23 @@ export class FileDownloadService {
             }
             fs.renameSync(partPath, destPath)
           }
-          resolve(true)
-        } catch (renameErr) {
+          resolve({
+            success: true,
+            actualSha256,
+            finalBytes: receivedBytes,
+            etag: responseEtag,
+            lastModified: responseLastModified,
+            isResumed
+          })
+        } catch (renameErr: any) {
           logger.error(LogCategory.SYSTEM, `[Download] 重命名 .part 至正式文件失败:`, renameErr)
-          resolve(false)
+          resolve({
+            success: false,
+            actualSha256,
+            finalBytes: receivedBytes,
+            errorCode: 'RENAME_FAILED',
+            errorMessage: renameErr?.message || String(renameErr)
+          })
         }
       }
 

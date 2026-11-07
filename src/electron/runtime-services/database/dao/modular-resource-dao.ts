@@ -113,43 +113,75 @@ export interface LocalWorkflowRecord {
 
 export interface IBuiltinModuleDAO {
   listAll(): Promise<BuiltinModuleRecord[]>
+  listAllSync(): BuiltinModuleRecord[]
   findById(id: string): Promise<BuiltinModuleRecord | null>
-  upsertModule(record: Partial<BuiltinModuleRecord> & { id: string }): Promise<void>
+  findByIdSync(id: string): BuiltinModuleRecord | null
+  upsertModule(record: Partial<BuiltinModuleRecord> & { id: string }): Promise<boolean>
+  upsertModuleSync(record: Partial<BuiltinModuleRecord> & { id: string }): boolean
   updateInstallState(id: string, state: ModuleInstallState, error?: string): Promise<void>
+  updateInstallStateSync(id: string, state: ModuleInstallState, error?: string): void
   updateVariant(id: string, variant: string): Promise<void>
+  updateVariantSync(id: string, variant: string): void
   updateUserConfig(id: string, userConfig: string | null): Promise<void>
+  updateUserConfigSync(id: string, userConfig: string | null): void
+  updateUserConsentSync(id: string, userConsent: number): void
   deleteModule(id: string): Promise<void>
 }
 
 export interface IResourceDownloadDAO {
+  listAll(): Promise<ResourceDownloadRecord[]>
+  listAllSync(): ResourceDownloadRecord[]
   createOrGetTask(
     task: Omit<ResourceDownloadRecord, 'downloaded_bytes' | 'created_at' | 'updated_at'>
   ): Promise<ResourceDownloadRecord>
+  createOrGetTaskSync(
+    task: Omit<ResourceDownloadRecord, 'downloaded_bytes' | 'created_at' | 'updated_at'>
+  ): ResourceDownloadRecord
   bindResourceToModule(moduleId: string, resourceId: string): Promise<void>
+  bindResourceToModuleSync(moduleId: string, resourceId: string): void
   unbindResourceFromModule(moduleId: string, resourceId: string): Promise<void>
+  unbindResourceFromModuleSync(moduleId: string, resourceId: string): void
   updateProgress(
     resourceId: string,
     downloadedBytes: number,
     state: DownloadState,
     errorMessage?: string
   ): Promise<void>
+  updateProgressSync(
+    resourceId: string,
+    downloadedBytes: number,
+    state: DownloadState,
+    errorMessage?: string
+  ): void
   markVerified(
     resourceId: string,
     success: boolean,
     actualShaOrError?: string | { actualSha256?: string; errorMessage?: string },
     errorMessage?: string
   ): Promise<void>
+  markVerifiedSync(
+    resourceId: string,
+    success: boolean,
+    actualShaOrError?: string | { actualSha256?: string; errorMessage?: string },
+    errorMessage?: string
+  ): void
   updateHeaders(
     resourceId: string,
     etag?: string | null,
     lastModified?: string | null
   ): Promise<void>
+  updateHeadersSync(resourceId: string, etag?: string | null, lastModified?: string | null): void
   markPendingDelete(resourceId: string): Promise<void>
+  markPendingDeleteSync(resourceId: string): void
   findResourcesByModule(moduleId: string): Promise<ResourceDownloadRecord[]>
+  findResourcesByModuleSync(moduleId: string): ResourceDownloadRecord[]
   getReferencingModules(resourceId: string): Promise<string[]>
   getResourceActiveRefCount(resourceId: string): Promise<number>
+  getResourceActiveRefCountSync(resourceId: string): number
   findById(resourceId: string): Promise<ResourceDownloadRecord | null>
+  findByIdSync(resourceId: string): ResourceDownloadRecord | null
   deleteResource(resourceId: string): Promise<void>
+  deleteResourceSync(resourceId: string): void
 }
 
 export interface ILocalWorkflowDAO {
@@ -164,34 +196,36 @@ export interface ILocalWorkflowDAO {
   delete?(id: string): boolean
 }
 
-export interface IWorkspaceDirectoryWorkflowExtensionDAO {
-  bindWorkflow(directoryId: number, workflowId: string, whitelist: string[]): Promise<void>
-  unbindWorkflow(directoryId: number, clearWhitelist?: boolean): Promise<void>
-  updateWhitelistPatterns(directoryId: number, patterns: string[]): Promise<void>
-}
-
 /**
  * 内置与可选功能模块 DAO
  */
 export class BuiltinModuleDao implements IBuiltinModuleDAO {
   constructor(private db: Database) {}
 
-  async listAll(): Promise<BuiltinModuleRecord[]> {
+  listAllSync(): BuiltinModuleRecord[] {
     const rows = this.db
       .prepare('SELECT * FROM builtin_modules ORDER BY id ASC')
       .all() as BuiltinModuleRecord[]
     return rows
   }
 
-  async findById(id: string): Promise<BuiltinModuleRecord | null> {
+  async listAll(): Promise<BuiltinModuleRecord[]> {
+    return this.listAllSync()
+  }
+
+  findByIdSync(id: string): BuiltinModuleRecord | null {
     const row = this.db.prepare('SELECT * FROM builtin_modules WHERE id = ?').get(id) as
       | BuiltinModuleRecord
       | undefined
     return row ?? null
   }
 
-  async upsertModule(record: Partial<BuiltinModuleRecord> & { id: string }): Promise<void> {
-    const existing = await this.findById(record.id)
+  async findById(id: string): Promise<BuiltinModuleRecord | null> {
+    return this.findByIdSync(id)
+  }
+
+  upsertModuleSync(record: Partial<BuiltinModuleRecord> & { id: string }): boolean {
+    const existing = this.findByIdSync(record.id)
     if (!existing) {
       const stmt = this.db.prepare(`
         INSERT INTO builtin_modules (
@@ -229,6 +263,7 @@ export class BuiltinModuleDao implements IBuiltinModuleDAO {
         record.error_message ?? null,
         record.config_json ?? null
       )
+      return true
     } else {
       // [IN-04] catalog_version 回退防御与警告机制
       const incomingCatalogVersion = record.catalog_version ?? 1
@@ -238,7 +273,7 @@ export class BuiltinModuleDao implements IBuiltinModuleDAO {
           LogCategory.SYSTEM,
           `[catalog_version_regression] 云端下发元数据版本 (${incomingCatalogVersion}) 低于本地版本 (${localCatalogVersion})，忽略本次覆盖: ${record.id}`
         )
-        return
+        return false
       }
 
       const merged: BuiltinModuleRecord = {
@@ -296,25 +331,41 @@ export class BuiltinModuleDao implements IBuiltinModuleDAO {
         merged.config_json ?? null,
         record.id
       )
+      return true
     }
   }
 
-  async updateUserConfig(id: string, userConfig: string | null): Promise<void> {
+  async upsertModule(record: Partial<BuiltinModuleRecord> & { id: string }): Promise<boolean> {
+    return this.upsertModuleSync(record)
+  }
+
+  updateUserConfigSync(id: string, userConfig: string | null): void {
     this.db.prepare('UPDATE builtin_modules SET user_config = ? WHERE id = ?').run(userConfig, id)
   }
 
-  async updateInstallState(id: string, state: ModuleInstallState, error?: string): Promise<void> {
+  async updateUserConfig(id: string, userConfig: string | null): Promise<void> {
+    this.updateUserConfigSync(id, userConfig)
+  }
+
+  updateUserConsentSync(id: string, userConsent: number): void {
+    this.db
+      .prepare('UPDATE builtin_modules SET user_consent = ? WHERE id = ?')
+      .run(userConsent ? 1 : 0, id)
+  }
+
+  updateInstallStateSync(id: string, state: ModuleInstallState, error?: string): void {
     const now = Date.now()
     if (state === 'active') {
       this.db
         .prepare(
           `
         UPDATE builtin_modules
-        SET install_state = ?, error_message = ?, last_activated_at = ?
+        SET install_state = ?, error_message = ?, last_activated_at = ?,
+            installed_at = COALESCE(installed_at, ?)
         WHERE id = ?
       `
         )
-        .run(state, error ?? null, now, id)
+        .run(state, error ?? null, now, now, id)
     } else if (state === 'installed_inactive') {
       this.db
         .prepare(
@@ -339,8 +390,16 @@ export class BuiltinModuleDao implements IBuiltinModuleDAO {
     }
   }
 
-  async updateVariant(id: string, variant: string): Promise<void> {
+  async updateInstallState(id: string, state: ModuleInstallState, error?: string): Promise<void> {
+    this.updateInstallStateSync(id, state, error)
+  }
+
+  updateVariantSync(id: string, variant: string): void {
     this.db.prepare('UPDATE builtin_modules SET selected_variant = ? WHERE id = ?').run(variant, id)
+  }
+
+  async updateVariant(id: string, variant: string): Promise<void> {
+    this.updateVariantSync(id, variant)
   }
 
   async deleteModule(id: string): Promise<void> {
@@ -355,17 +414,31 @@ export class BuiltinModuleDao implements IBuiltinModuleDAO {
 export class ResourceDownloadDao implements IResourceDownloadDAO {
   constructor(private db: Database) {}
 
-  async findById(resourceId: string): Promise<ResourceDownloadRecord | null> {
+  listAllSync(): ResourceDownloadRecord[] {
+    return this.db
+      .prepare('SELECT * FROM resource_downloads ORDER BY resource_id ASC')
+      .all() as ResourceDownloadRecord[]
+  }
+
+  async listAll(): Promise<ResourceDownloadRecord[]> {
+    return this.listAllSync()
+  }
+
+  findByIdSync(resourceId: string): ResourceDownloadRecord | null {
     const row = this.db
       .prepare('SELECT * FROM resource_downloads WHERE resource_id = ?')
       .get(resourceId) as ResourceDownloadRecord | undefined
     return row ?? null
   }
 
-  async createOrGetTask(
+  async findById(resourceId: string): Promise<ResourceDownloadRecord | null> {
+    return this.findByIdSync(resourceId)
+  }
+
+  createOrGetTaskSync(
     task: Omit<ResourceDownloadRecord, 'downloaded_bytes' | 'created_at' | 'updated_at'>
-  ): Promise<ResourceDownloadRecord> {
-    const existing = await this.findById(task.resource_id)
+  ): ResourceDownloadRecord {
+    const existing = this.findByIdSync(task.resource_id)
     if (existing) {
       return existing
     }
@@ -397,10 +470,16 @@ export class ResourceDownloadDao implements IResourceDownloadDAO {
       now,
       now
     )
-    return (await this.findById(task.resource_id))!
+    return this.findByIdSync(task.resource_id)!
   }
 
-  async bindResourceToModule(moduleId: string, resourceId: string): Promise<void> {
+  async createOrGetTask(
+    task: Omit<ResourceDownloadRecord, 'downloaded_bytes' | 'created_at' | 'updated_at'>
+  ): Promise<ResourceDownloadRecord> {
+    return this.createOrGetTaskSync(task)
+  }
+
+  bindResourceToModuleSync(moduleId: string, resourceId: string): void {
     const now = Date.now()
     this.db
       .prepare(
@@ -412,7 +491,11 @@ export class ResourceDownloadDao implements IResourceDownloadDAO {
       .run(moduleId, resourceId, now)
   }
 
-  async unbindResourceFromModule(moduleId: string, resourceId: string): Promise<void> {
+  async bindResourceToModule(moduleId: string, resourceId: string): Promise<void> {
+    this.bindResourceToModuleSync(moduleId, resourceId)
+  }
+
+  unbindResourceFromModuleSync(moduleId: string, resourceId: string): void {
     this.db
       .prepare(
         `
@@ -423,12 +506,16 @@ export class ResourceDownloadDao implements IResourceDownloadDAO {
       .run(moduleId, resourceId)
   }
 
-  async updateProgress(
+  async unbindResourceFromModule(moduleId: string, resourceId: string): Promise<void> {
+    this.unbindResourceFromModuleSync(moduleId, resourceId)
+  }
+
+  updateProgressSync(
     resourceId: string,
     downloadedBytes: number,
     state: DownloadState,
     errorMessage?: string
-  ): Promise<void> {
+  ): void {
     const now = Date.now()
     this.db
       .prepare(
@@ -441,12 +528,21 @@ export class ResourceDownloadDao implements IResourceDownloadDAO {
       .run(downloadedBytes, state, errorMessage ?? null, now, resourceId)
   }
 
-  async markVerified(
+  async updateProgress(
+    resourceId: string,
+    downloadedBytes: number,
+    state: DownloadState,
+    errorMessage?: string
+  ): Promise<void> {
+    this.updateProgressSync(resourceId, downloadedBytes, state, errorMessage)
+  }
+
+  markVerifiedSync(
     resourceId: string,
     success: boolean,
     actualShaOrError?: string | { actualSha256?: string; errorMessage?: string },
     errorMessage?: string
-  ): Promise<void> {
+  ): void {
     const now = Date.now()
     let actualSha256: string | null = null
     let error: string | null = null
@@ -489,11 +585,16 @@ export class ResourceDownloadDao implements IResourceDownloadDAO {
     }
   }
 
-  async updateHeaders(
+  async markVerified(
     resourceId: string,
-    etag?: string | null,
-    lastModified?: string | null
+    success: boolean,
+    actualShaOrError?: string | { actualSha256?: string; errorMessage?: string },
+    errorMessage?: string
   ): Promise<void> {
+    this.markVerifiedSync(resourceId, success, actualShaOrError, errorMessage)
+  }
+
+  updateHeadersSync(resourceId: string, etag?: string | null, lastModified?: string | null): void {
     const now = Date.now()
     this.db
       .prepare(
@@ -506,7 +607,15 @@ export class ResourceDownloadDao implements IResourceDownloadDAO {
       .run(etag ?? null, lastModified ?? null, now, resourceId)
   }
 
-  async markPendingDelete(resourceId: string): Promise<void> {
+  async updateHeaders(
+    resourceId: string,
+    etag?: string | null,
+    lastModified?: string | null
+  ): Promise<void> {
+    this.updateHeadersSync(resourceId, etag, lastModified)
+  }
+
+  markPendingDeleteSync(resourceId: string): void {
     const now = Date.now()
     this.db
       .prepare(
@@ -519,7 +628,11 @@ export class ResourceDownloadDao implements IResourceDownloadDAO {
       .run(now, resourceId)
   }
 
-  async findResourcesByModule(moduleId: string): Promise<ResourceDownloadRecord[]> {
+  async markPendingDelete(resourceId: string): Promise<void> {
+    this.markPendingDeleteSync(resourceId)
+  }
+
+  findResourcesByModuleSync(moduleId: string): ResourceDownloadRecord[] {
     const rows = this.db
       .prepare(
         `
@@ -531,6 +644,10 @@ export class ResourceDownloadDao implements IResourceDownloadDAO {
       )
       .all(moduleId) as ResourceDownloadRecord[]
     return rows
+  }
+
+  async findResourcesByModule(moduleId: string): Promise<ResourceDownloadRecord[]> {
+    return this.findResourcesByModuleSync(moduleId)
   }
 
   async getReferencingModules(resourceId: string): Promise<string[]> {
@@ -549,7 +666,7 @@ export class ResourceDownloadDao implements IResourceDownloadDAO {
   /**
    * 事务内即时动态引用计数查询 (AC 3)
    */
-  async getResourceActiveRefCount(resourceId: string): Promise<number> {
+  getResourceActiveRefCountSync(resourceId: string): number {
     const row = this.db
       .prepare(
         `
@@ -560,12 +677,20 @@ export class ResourceDownloadDao implements IResourceDownloadDAO {
     return row?.count ?? 0
   }
 
-  async deleteResource(resourceId: string): Promise<void> {
-    const refCount = await this.getResourceActiveRefCount(resourceId)
+  async getResourceActiveRefCount(resourceId: string): Promise<number> {
+    return this.getResourceActiveRefCountSync(resourceId)
+  }
+
+  deleteResourceSync(resourceId: string): void {
+    const refCount = this.getResourceActiveRefCountSync(resourceId)
     if (refCount > 0) {
       throw new Error(`无法物理删除资源 ${resourceId}: 仍有 ${refCount} 个模块引用`)
     }
     this.db.prepare('DELETE FROM resource_downloads WHERE resource_id = ?').run(resourceId)
+  }
+
+  async deleteResource(resourceId: string): Promise<void> {
+    this.deleteResourceSync(resourceId)
   }
 
   /**
@@ -855,166 +980,16 @@ export class LocalWorkflowDao implements ILocalWorkflowDAO {
 }
 
 /**
- * 工作目录工作流与白名单扩展 DAO (AC 5)
- */
-export class WorkspaceDirectoryWorkflowExtensionDao implements IWorkspaceDirectoryWorkflowExtensionDAO {
-  constructor(private db: Database) {}
-
-  async bindWorkflow(directoryId: number, workflowId: string, whitelist?: string[]): Promise<void> {
-    this.db
-      .prepare(
-        `
-      UPDATE workspace_directories
-      SET bound_workflow_id = ?, modified_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `
-      )
-      .run(workflowId, directoryId)
-  }
-
-  /**
-   * 解绑工作流 (Issue 12a AC 2)
-   * 默认仅将 bound_workflow_id 置空
-   */
-  async unbindWorkflow(directoryId: number, _clearWhitelist = false): Promise<void> {
-    this.db
-      .prepare(
-        `
-      UPDATE workspace_directories
-      SET bound_workflow_id = NULL, modified_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `
-      )
-      .run(directoryId)
-  }
-
-  async updateWhitelistPatterns(directoryId: number, patterns: string[]): Promise<void> {
-    const cleanRules = (patterns || []).map((val, idx) => ({
-      id: `whitelist-${idx + 1}-${val.replace(/^\./, '')}`,
-      type: 'extension' as const,
-      value: val.startsWith('.') ? val : `.${val}`,
-      isActive: true,
-      isSystem: false
-    }))
-
-    // 1. 优先按 workspaces.workspace_id 物理持久化到 workspace_config
-    const wsRow = this.db
-      .prepare('SELECT workspace_id, workspace_config FROM workspaces WHERE workspace_id = ?')
-      .get(directoryId) as { workspace_id: number; workspace_config: string } | undefined
-    if (wsRow) {
-      let cfg: any = {}
-      try {
-        cfg = JSON.parse(wsRow.workspace_config || '{}')
-      } catch {}
-      cfg.customWhitelistRules = cleanRules
-      cfg.policyVersion = (cfg.policyVersion || 0) + 1
-      cfg.configuredAt = Date.now()
-      this.db
-        .prepare('UPDATE workspaces SET workspace_config = ? WHERE workspace_id = ?')
-        .run(JSON.stringify(cfg), directoryId)
-      return
-    }
-
-    // 2. 尝试从 workspace_directories 向上查到根工作区并同步更新
-    const dirRow = this.db
-      .prepare('SELECT workspace_id FROM workspace_directories WHERE id = ?')
-      .get(directoryId) as { workspace_id: number } | undefined
-    if (dirRow && dirRow.workspace_id) {
-      const parentWs = this.db
-        .prepare('SELECT workspace_config FROM workspaces WHERE workspace_id = ?')
-        .get(dirRow.workspace_id) as { workspace_config: string } | undefined
-      if (parentWs) {
-        let cfg: any = {}
-        try {
-          cfg = JSON.parse(parentWs.workspace_config || '{}')
-        } catch {}
-        cfg.customWhitelistRules = cleanRules
-        cfg.policyVersion = (cfg.policyVersion || 0) + 1
-        cfg.configuredAt = Date.now()
-        this.db
-          .prepare('UPDATE workspaces SET workspace_config = ? WHERE workspace_id = ?')
-          .run(JSON.stringify(cfg), dirRow.workspace_id)
-      }
-    }
-  }
-
-  async getDirectoryWorkflowConfig(directoryId: number): Promise<{
-    id: number
-    bound_workflow_id: string | null
-    whitelist_patterns: string[]
-  } | null> {
-    // 优先从根工作区获取
-    const wsRow = this.db
-      .prepare(
-        'SELECT workspace_id, bound_workflow_id, workspace_config FROM workspaces WHERE workspace_id = ?'
-      )
-      .get(directoryId) as
-      | { workspace_id: number; bound_workflow_id: string | null; workspace_config: string }
-      | undefined
-    if (wsRow) {
-      let patterns: string[] = []
-      try {
-        const cfg = JSON.parse(wsRow.workspace_config || '{}')
-        patterns = (cfg.customWhitelistRules || [])
-          .map((r: any) => (typeof r === 'string' ? r : r.value))
-          .filter(Boolean)
-      } catch {}
-      return {
-        id: wsRow.workspace_id,
-        bound_workflow_id: wsRow.bound_workflow_id,
-        whitelist_patterns: patterns
-      }
-    }
-
-    const row = this.db
-      .prepare(
-        `
-      SELECT id, workspace_id, bound_workflow_id
-      FROM workspace_directories
-      WHERE id = ?
-    `
-      )
-      .get(directoryId) as
-      | { id: number; workspace_id: number; bound_workflow_id: string | null }
-      | undefined
-    if (!row) return null
-
-    let patterns: string[] = []
-    if (row.workspace_id) {
-      const parentWs = this.db
-        .prepare('SELECT workspace_config FROM workspaces WHERE workspace_id = ?')
-        .get(row.workspace_id) as { workspace_config: string } | undefined
-      if (parentWs) {
-        try {
-          const cfg = JSON.parse(parentWs.workspace_config || '{}')
-          patterns = (cfg.customWhitelistRules || [])
-            .map((r: any) => (typeof r === 'string' ? r : r.value))
-            .filter(Boolean)
-        } catch {}
-      }
-    }
-
-    return {
-      id: row.id,
-      bound_workflow_id: row.bound_workflow_id,
-      whitelist_patterns: patterns
-    }
-  }
-}
-
-/**
  * 模块化资源数据访问聚合门面
  */
 export class ModularResourceDao {
   public modules: BuiltinModuleDao
   public resources: ResourceDownloadDao
   public workflows: LocalWorkflowDao
-  public directoryWorkflows: WorkspaceDirectoryWorkflowExtensionDao
 
   constructor(private db: Database) {
     this.modules = new BuiltinModuleDao(db)
     this.resources = new ResourceDownloadDao(db)
     this.workflows = new LocalWorkflowDao(db)
-    this.directoryWorkflows = new WorkspaceDirectoryWorkflowExtensionDao(db)
   }
 }

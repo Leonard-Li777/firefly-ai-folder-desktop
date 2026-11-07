@@ -468,7 +468,8 @@ export const GENESIS_V1_SCHEMA = `
     resource_id       TEXT PRIMARY KEY,              -- 物理资产唯一 ID (对应 firefly-resources BOM 中的 key，如 'ffmpeg')
     asset_name        TEXT NOT NULL,                 -- 归档压缩包文件名 (如 'ffmpeg-master-20260827-win32-x64.zip')
     target_local_path TEXT NOT NULL,                 -- 解压后的最终物理安装目录
-    active_source_key TEXT NOT NULL DEFAULT 'auto',  -- 使用的网络源模式 ('cn' | 'global')
+    active_source_key TEXT NOT NULL DEFAULT 'auto'   -- 使用的网络源模式 ('auto' | 'cn' | 'global')
+                      CHECK (active_source_key IN ('auto', 'cn', 'global')),
     active_url        TEXT,                          -- 当前实际请求的下载 URL
     expected_bytes    INTEGER NOT NULL,              -- 预期文件大小 (字节，BOM SSOT)
     downloaded_bytes  INTEGER NOT NULL DEFAULT 0,    -- 仅作为 UI 进度投影 (真实断点以磁盘 .part 大小为准)
@@ -544,7 +545,6 @@ export const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_workspaces_bound_wf ON workspaces(bound_workflow_id);
   CREATE INDEX IF NOT EXISTS idx_workspace_directories_bound_wf ON workspace_directories(bound_workflow_id);
   CREATE INDEX IF NOT EXISTS idx_local_workflows_persona ON local_workflows(persona);
-  CREATE INDEX IF NOT EXISTS idx_local_workflows_user_id ON local_workflows(user_id);
   CREATE INDEX IF NOT EXISTS idx_file_tags_private_name ON file_tags_private(name);
   CREATE INDEX IF NOT EXISTS idx_file_tags_private_source ON file_tags_private(source);
 
