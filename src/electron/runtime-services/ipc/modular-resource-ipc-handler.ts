@@ -48,9 +48,14 @@ export function registerModularResourceIpcHandlers(
 
   ipcMain.handle('modular-resource:install', async (_event, moduleId: string) => {
     try {
-      return await service.installModule(moduleId, progressEvt => {
+      const res = await service.installModule(moduleId, progressEvt => {
         broadcastModularResourceProgress(progressEvt)
       })
+      if (moduleId === 'ai_organize_skill') {
+        const { aiSkillApiService } = await import('../ai-skill-api-service')
+        await aiSkillApiService.reconcile()
+      }
+      return res
     } catch (err: any) {
       logger.error(LogCategory.MAIN, `[ModularResourceIPC] install(${moduleId}) 失败:`, err)
       throw err
@@ -59,7 +64,12 @@ export function registerModularResourceIpcHandlers(
 
   ipcMain.handle('modular-resource:uninstall', async (_event, moduleId: string) => {
     try {
-      return await service.uninstallModule(moduleId)
+      const res = await service.uninstallModule(moduleId)
+      if (moduleId === 'ai_organize_skill') {
+        const { aiSkillApiService } = await import('../ai-skill-api-service')
+        await aiSkillApiService.reconcile()
+      }
+      return res
     } catch (err: any) {
       logger.error(LogCategory.MAIN, `[ModularResourceIPC] uninstall(${moduleId}) 失败:`, err)
       throw err
@@ -79,7 +89,12 @@ export function registerModularResourceIpcHandlers(
       }
     ) => {
       try {
-        return service.updateModuleState(moduleId, patch)
+        const res = service.updateModuleState(moduleId, patch)
+        if (moduleId === 'ai_organize_skill') {
+          const { aiSkillApiService } = await import('../ai-skill-api-service')
+          await aiSkillApiService.reconcile()
+        }
+        return res
       } catch (err: any) {
         logger.error(LogCategory.MAIN, `[ModularResourceIPC] update-state(${moduleId}) 失败:`, err)
         throw err

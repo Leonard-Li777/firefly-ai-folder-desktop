@@ -12,10 +12,12 @@ import {
   isSubPath,
   isPathEqual,
   stripTrailingSlash,
-  mapIntentToParameters
+  mapIntentToParameters,
+  invalidateWorkspacePolicyCache
 } from '@firefly/shared'
 import { t } from '@app/languages'
 import * as path from 'node:path'
+import { WorkspaceAdmissionService } from '../../workspace/workspace-admission-service'
 
 function extractWhitelistPatterns(parsedConfig: WorkspaceConfig | undefined): string[] {
   if (!parsedConfig || parsedConfig.status !== 'ready') return []
@@ -534,6 +536,7 @@ export class WorkspaceDao {
     const result = this.db
       .prepare('UPDATE workspaces SET workspace_config = ? WHERE workspace_id = ?')
       .run(serialized, workspaceId)
+    invalidateWorkspacePolicyCache(workspaceId)
     return result.changes > 0
   }
 
@@ -546,37 +549,9 @@ export class WorkspaceDao {
   }
 
   async updateWhitelistPatterns(workspaceId: number, patterns: string[]): Promise<boolean> {
-    const config = await this.getConfig(workspaceId)
-    const cleanRules = (patterns || []).map((val, idx) => ({
-      id: `whitelist-${idx + 1}-${val.replace(/^\./, '')}`,
-      type: 'extension' as const,
-      value: val.startsWith('.') ? val : `.${val}`,
-      isActive: true,
-      isSystem: false
-    }))
-
-    const defaultBaseAi = mapIntentToParameters('fast_archive', undefined)
-
-    const updatedConfig: WorkspaceConfig =
-      config.status === 'ready'
-        ? {
-            ...config,
-            policyVersion: (config.policyVersion || 0) + 1,
-            customWhitelistRules: cleanRules,
-            configuredAt: Date.now()
-          }
-        : {
-            schemaVersion: 1,
-            status: 'ready',
-            policyVersion: 1,
-            customIgnoreRules: [],
-            customWhitelistRules: cleanRules,
-            baseAIConfig: defaultBaseAi,
-            derivedSnapshot: defaultBaseAi,
-            configuredAt: Date.now()
-          }
-
-    return this.updateConfig(workspaceId, updatedConfig)
+    const admission = new WorkspaceAdmissionService({ db: this.db })
+    await admission.applyPolicyMutation(workspaceId, { customWhitelistExts: patterns || [] })
+    return true
   }
 
   /**
@@ -595,7 +570,7 @@ export class WorkspaceDao {
     const nextPolicyVersion =
       (currentConfig.status === 'ready' ? currentConfig.policyVersion : 0) + 1
 
-    return this.db.transaction(() => {
+    const changed = this.db.transaction(() => {
       const stmt = this.db.prepare(`
         UPDATE workspaces
         SET 
@@ -615,6 +590,8 @@ export class WorkspaceDao {
       } catch {}
       return res.changes > 0
     })()
+    invalidateWorkspacePolicyCache(workspaceId)
+    return changed
   }
 
   /**
@@ -647,48 +624,19 @@ export class WorkspaceDao {
     `)
 
     const result = stmt.run(nextPolicyVersion, Date.now(), workspaceId)
+    invalidateWorkspacePolicyCache(workspaceId)
     return result.changes > 0
   }
 
   /**
-   * 测算白名单规则在当前工作区文件中的命中影响
+   * 测算白名单规则在当前工作区文件中的命中影响（支持同目录伴生文件保护计数）
    */
   async calculateWhitelistImpact(
     workspaceId: number,
     patterns: string[]
-  ): Promise<{ totalFiles: number; includedFiles: number; excludedFiles: number }> {
-    const rows = this.db
-      .prepare('SELECT name FROM workspace_files WHERE workspace_id = ?')
-      .all(workspaceId) as Array<{ name: string }>
-
-    const totalFiles = rows.length
-    if (totalFiles === 0) {
-      return { totalFiles: 0, includedFiles: 0, excludedFiles: 0 }
-    }
-
-    const cleanPatterns = (patterns || [])
-      .map(p => (typeof p === 'string' ? p.trim().toLowerCase() : ''))
-      .filter(Boolean)
-      .map(p => (p.startsWith('.') ? p : `.${p}`))
-
-    if (cleanPatterns.length === 0) {
-      return { totalFiles, includedFiles: totalFiles, excludedFiles: 0 }
-    }
-
-    const extSet = new Set(cleanPatterns)
-    let included = 0
-    for (const row of rows) {
-      const ext = path.extname(row.name || '').toLowerCase()
-      if (extSet.has(ext)) {
-        included++
-      }
-    }
-
-    return {
-      totalFiles,
-      includedFiles: included,
-      excludedFiles: totalFiles - included
-    }
+  ): Promise<{ totalFiles: number; includedFiles: number; excludedFiles: number; companionFilesProtected?: number }> {
+    const admission = new WorkspaceAdmissionService({ db: this.db })
+    return admission.previewPolicyImpact(workspaceId, { customWhitelistExts: patterns || [] })
   }
 
   async updateBoundWorkflow(workspaceId: number, workflowId: string | null): Promise<boolean> {
@@ -706,6 +654,7 @@ export class WorkspaceDao {
         err
       )
     }
+    invalidateWorkspacePolicyCache(workspaceId)
     return result.changes > 0
   }
 }

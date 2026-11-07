@@ -92,6 +92,7 @@ export interface FilterFilesParams {
     phase: 'phase1' | 'phase2' | 'phase3',
     response: FilteredFilesResponse & { clipPending?: boolean }
   ) => void
+  signal?: AbortSignal
 }
 
 /** 混合检索分页引用：已分析候选 / 未分析 FS 命中 */

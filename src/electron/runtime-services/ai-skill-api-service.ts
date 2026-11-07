@@ -3,17 +3,169 @@ import * as http from 'node:http'
 import * as fs from 'node:fs/promises'
 import * as path from 'path'
 import { BrowserWindow } from 'electron'
-import { logger, LogCategory, findAvailablePort, APP_PORTS } from '@firefly/shared'
+import { logger, LogCategory, APP_PORTS } from '@firefly/shared'
 import * as iconv from 'iconv-lite'
 import { databaseService } from './database/database-service'
 import { analysisQueueService } from './analysis-queue-service'
 import { organizeRealDirectoryService, virtualDirectoryService } from '../main/state'
+
+export interface VideoSegmentItem {
+  chunkIndices: number[]
+  startSec: number
+  endSec: number
+  repPtsSec: number
+  seekSec: number
+  score: number
+  textSnippet?: string
+}
+
+export interface SearchResultItemDTO {
+  id: string
+  name: string
+  path: string
+  score: number
+  matchType: 'exact' | 'fuzzy' | 'semantic' | 'unanalyzed' | 'video_chunk'
+  mediaType: 'video' | 'image' | 'document' | 'other'
+  hasVideoSegments: boolean
+  snippet?: string
+  videoSegments: VideoSegmentItem[]
+  videoSegmentsTotal: number
+  videoSegmentsTruncated: boolean
+}
+
+export class SseChannel {
+  private res: http.ServerResponse
+  private ended = false
+
+  constructor(res: http.ServerResponse, onAbort?: () => void) {
+    this.res = res
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache, no-transform',
+      Connection: 'keep-alive',
+      'X-Accel-Buffering': 'no'
+    })
+    res.flushHeaders?.()
+
+    const cleanup = () => {
+      if (!this.ended) {
+        this.ended = true
+        onAbort?.()
+      }
+    }
+    res.once('close', cleanup)
+    res.once('error', cleanup)
+  }
+
+  isClosed(): boolean {
+    return this.ended || this.res.writableEnded || this.res.destroyed
+  }
+
+  async sendEvent(event: string, data: any): Promise<boolean> {
+    if (this.isClosed()) return false
+    const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`
+    const canWrite = this.res.write(payload)
+    if (!canWrite && !this.isClosed()) {
+      await new Promise<void>(resolve => {
+        this.res.once('drain', resolve)
+        this.res.once('close', resolve)
+      })
+    }
+    return !this.isClosed()
+  }
+
+  close(): void {
+    if (this.isClosed()) return
+    this.ended = true
+    try {
+      this.res.end()
+    } catch {
+      // ignore
+    }
+  }
+}
+
+function detectMediaType(filePath: string, name: string): 'video' | 'image' | 'document' | 'other' {
+  const ext = path.extname(name || filePath).toLowerCase().replace('.', '')
+  const videoExts = new Set(['mp4', 'mkv', 'mov', 'avi', 'webm', 'flv', 'wmv', 'm4v'])
+  const imageExts = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico', 'tiff', 'heic'])
+  const docExts = new Set(['pdf', 'doc', 'docx', 'txt', 'md', 'xls', 'xlsx', 'ppt', 'pptx', 'csv', 'epub'])
+  if (videoExts.has(ext)) return 'video'
+  if (imageExts.has(ext)) return 'image'
+  if (docExts.has(ext)) return 'document'
+  return 'other'
+}
+
+function mapItemsToDTO(items: any[]): SearchResultItemDTO[] {
+  if (!Array.isArray(items)) return []
+  return items.map(item => {
+    const rawChunks: any[] = item.matchedChunks || item.videoSegments || (item.matchedChunk ? [item.matchedChunk] : [])
+    const videoSegmentsTotal = rawChunks.length
+    const topChunks = rawChunks.slice(0, 3)
+    const videoSegmentsTruncated = videoSegmentsTotal > topChunks.length
+
+    const videoSegments: VideoSegmentItem[] = topChunks.map(c => {
+      let indices: number[] = []
+      if (Array.isArray(c.chunkIndices)) {
+        indices = c.chunkIndices
+      } else if (c.chunkIndex !== undefined && Number.isFinite(c.chunkIndex)) {
+        indices = [c.chunkIndex]
+      }
+      return {
+        chunkIndices: indices,
+        startSec: typeof c.startSec === 'number' ? c.startSec : 0,
+        endSec: typeof c.endSec === 'number' ? c.endSec : 0,
+        repPtsSec: typeof c.repPtsSec === 'number' ? c.repPtsSec : (c.startSec || 0),
+        seekSec: typeof c.seekSec === 'number' ? c.seekSec : (c.startSec || 0),
+        score: typeof c.score === 'number' ? c.score : (c.similarity || 0.8),
+        textSnippet: item.snippet ? item.snippet.slice(0, 150) : undefined
+      }
+    })
+
+    const hasVideoSegments = videoSegments.length > 0
+    const mediaType = detectMediaType(item.path || '', item.name || '')
+    const snippet = item.snippet
+      ? item.snippet.slice(0, 200)
+      : (item.description ? item.description.slice(0, 200) : undefined)
+
+    let score = 1.0
+    if (typeof item.similarity === 'number') {
+      score = item.similarity
+    } else if (videoSegments.length > 0 && typeof videoSegments[0].score === 'number') {
+      score = videoSegments[0].score
+    }
+
+    let matchType: 'exact' | 'fuzzy' | 'semantic' | 'unanalyzed' | 'video_chunk' = 'exact'
+    if (hasVideoSegments) {
+      matchType = 'video_chunk'
+    } else if (item.matchType === 'fuzzy' || item.matchType === 'semantic' || item.matchType === 'unanalyzed') {
+      matchType = item.matchType
+    }
+
+    return {
+      id: String(item.id ?? item.path ?? ''),
+      name: item.name || path.basename(item.path || ''),
+      path: item.path || '',
+      score: Math.round(score * 1000) / 1000,
+      matchType,
+      mediaType,
+      hasVideoSegments,
+      snippet,
+      videoSegments,
+      videoSegmentsTotal,
+      videoSegmentsTruncated
+    }
+  })
+}
 
 export class AISkillApiService {
   private server: http.Server | null = null
   private configuredPort: number = APP_PORTS.AI_SKILL_API
   private actualPort = 0
   private configFilePath = ''
+  private reconcilePromise: Promise<void> | null = null
+  private inFlightAbortControllers: Set<AbortController> = new Set()
+  private activeSearchesCount = 0
 
   constructor(port: number = APP_PORTS.AI_SKILL_API, userDataPath?: string) {
     this.configuredPort = port
@@ -35,8 +187,48 @@ export class AISkillApiService {
     return this.actualPort
   }
 
+  isRunning(): boolean {
+    return this.server !== null
+  }
+
+  async reconcile(): Promise<void> {
+    if (this.reconcilePromise) {
+      return this.reconcilePromise
+    }
+
+    this.reconcilePromise = (async () => {
+      try {
+        const { modularResourceService } = await import('./system/modular-resource-service')
+        const modules = modularResourceService.listModules()
+        const skillModule = modules.find(m => m.id === 'ai_organize_skill')
+        const shouldRun = skillModule?.install_state === 'active'
+
+        if (shouldRun) {
+          if (!this.server) {
+            try {
+              await this.start()
+            } catch (startErr: any) {
+              logger.error(LogCategory.SYSTEM, '[AISkillApiService] 启动失败:', startErr)
+              modularResourceService.updateModuleState('ai_organize_skill', { active: false })
+              throw startErr
+            }
+          }
+        } else {
+          if (this.server) {
+            await this.stop()
+          }
+        }
+      } catch (err) {
+        logger.warn(LogCategory.SYSTEM, '[AISkillApiService] reconcile 异常:', err)
+      } finally {
+        this.reconcilePromise = null
+      }
+    })()
+
+    return this.reconcilePromise
+  }
+
   async start(): Promise<void> {
-    // 独立启动 HTTP 监听器（具备 EADDRINUSE 自愈能力）
     if (this.server) return
 
     let currentPort = this.configuredPort
@@ -55,10 +247,10 @@ export class AISkillApiService {
 
           const onError = (err: any) => {
             server.off('listening', onListening)
-            if (err.code === 'EADDRINUSE') {
+            if (err.code === 'EADDRINUSE' || err.code === 'EACCES') {
               logger.warn(
                 LogCategory.SYSTEM,
-                `[AI Skill API] 端口 ${currentPort} 被占用 (EADDRINUSE)，准备尝试下一个端口 ${currentPort + 1}...`
+                `[AI Skill API] 端口 ${currentPort} 不可用 (${err.code})，准备尝试下一个端口 ${currentPort + 1}...`
               )
               currentPort++
               server.close()
@@ -99,33 +291,96 @@ export class AISkillApiService {
       }
       attempts++
     }
+
+    // 若 20 个端口全部探测占满，采用 listen(0, '127.0.0.1') 动态随机端口终极兜底
+    logger.warn(LogCategory.SYSTEM, '[AI Skill API] 预置端口段均不可用，尝试动态分配端口兜底...')
+    await new Promise<void>((resolve, reject) => {
+      const server = http.createServer(async (req, res) => {
+        const handled = await this.handleRequest(req, res)
+        if (!handled && !res.writableEnded) {
+          this.sendError(res, 404, t('接口不存在'))
+        }
+      })
+
+      server.once('error', reject)
+      server.once('listening', () => {
+        const addr = server.address()
+        if (addr && typeof addr === 'object') {
+          this.actualPort = addr.port
+        }
+        this.server = server
+        logger.info(
+          LogCategory.SYSTEM,
+          `[AI Skill API] 动态兜底端口分配成功，监听 http://127.0.0.1:${this.actualPort}`
+        )
+        this.writeConfigFile().catch(err =>
+          logger.error(LogCategory.SYSTEM, '[AI Skill API] 写入配置文件失败', err)
+        )
+        resolve()
+      })
+      server.listen(0, '127.0.0.1')
+    })
   }
 
   async stop(): Promise<void> {
+    await this.removeConfigFile()
+
+    for (const controller of this.inFlightAbortControllers) {
+      try {
+        controller.abort()
+      } catch {
+        // ignore
+      }
+    }
+    this.inFlightAbortControllers.clear()
+
     if (this.server) {
+      const serverToClose = this.server
+      this.server = null
       await new Promise<void>(resolve => {
-        this.server!.close(() => {
-          this.server = null
+        try {
+          (serverToClose as any).closeAllConnections?.()
+        } catch {
+          // ignore
+        }
+        serverToClose.close(() => {
           logger.info(LogCategory.SYSTEM, '[AI Skill API] 服务已停止')
           resolve()
         })
       })
     }
-    await this.removeConfigFile()
   }
 
   private async writeConfigFile(): Promise<void> {
     if (!this.configFilePath) return
+    const tmpPath = `${this.configFilePath}.tmp.${process.pid}.${Date.now()}`
     const config = {
-      port: this.actualPort,
       host: '127.0.0.1',
-      startedAt: new Date().toISOString()
+      port: this.actualPort,
+      pid: process.pid,
+      startedAt: new Date().toISOString(),
+      apiVersion: '1.2.0',
+      capabilities: {
+        progressiveSearch: true,
+        videoSegments: true,
+        organizeTemplates: true
+      }
     }
-    await fs.writeFile(this.configFilePath, JSON.stringify(config, null, 2), 'utf-8')
-    logger.info(
-      LogCategory.SYSTEM,
-      `[AI Skill API] 已成功写出端口配置文件 (port: ${this.actualPort}): ${this.configFilePath}`
-    )
+    try {
+      await fs.writeFile(tmpPath, JSON.stringify(config, null, 2), 'utf-8')
+      await fs.rename(tmpPath, this.configFilePath)
+      logger.info(
+        LogCategory.SYSTEM,
+        `[AI Skill API] 已成功写出端口配置文件 (port: ${this.actualPort}): ${this.configFilePath}`
+      )
+    } catch (err) {
+      logger.error(LogCategory.SYSTEM, '[AI Skill API] 写入配置文件原子失败', err)
+      try {
+        await fs.unlink(tmpPath)
+      } catch {
+        // ignore
+      }
+    }
   }
 
   private async removeConfigFile(): Promise<void> {
@@ -138,9 +393,7 @@ export class AISkillApiService {
   }
 
   private safeDecodeURIComponent(str: string): string {
-    // 去掉外层空格和引号（兼容一些客户端会在 encodeURIComponent 结果外加引号）
     const trimmed = str.trim().replace(/^["']|["']$/g, '')
-    // 检测是否包含合法的百分号编码序列
     if (!/%[0-9a-fA-F]{2}/.test(trimmed)) return trimmed
     try {
       return decodeURIComponent(trimmed)
@@ -185,42 +438,29 @@ export class AISkillApiService {
       })
       req.on('end', () => {
         const raw = Buffer.concat(buffers)
-        const hexDump = raw.length > 0 ? raw.subarray(0, 500).toString('hex') : '(empty)'
-        logger.info(
-          LogCategory.SYSTEM,
-          `[AI Skill API] readBody 原始字节 (hex, 前500字节): ${hexDump} (总字节数: ${raw.length})`
-        )
-        const contentType = (req.headers['content-type'] || '').toLowerCase()
-        const contentLength = req.headers['content-length'] || '(none)'
-        logger.info(
-          LogCategory.SYSTEM,
-          `[AI Skill API] readBody Content-Type: ${contentType}, Content-Length: ${contentLength}`
-        )
-
         if (!raw.length) {
           resolve({})
           return
         }
 
+        const contentType = (req.headers['content-type'] || '').toLowerCase()
         let body: string
-        // 如果 Content-Type 显式指定了 gbk / gb2312，优先使用 GBK 解码
         if (contentType.includes('gbk') || contentType.includes('gb2312')) {
           try {
             body = iconv.decode(raw, 'gbk')
             resolve(JSON.parse(body))
             return
           } catch {
-            // 忽略，继续尝试 utf-8
+            // ignore
           }
         }
 
-        // 默认优先尝试 UTF-8 解码并解析 JSON
         try {
           body = raw.toString('utf-8')
           resolve(JSON.parse(body))
           return
         } catch {
-          // UTF-8 解析失败时尝试 GBK
+          // ignore
         }
 
         try {
@@ -228,7 +468,7 @@ export class AISkillApiService {
           resolve(JSON.parse(body))
           return
         } catch {
-          // GBK 解析也失败
+          // ignore
         }
 
         reject(new Error('Invalid JSON body'))
@@ -243,179 +483,281 @@ export class AISkillApiService {
   ): Promise<boolean> {
     let pathname = ''
     try {
+      // 1. Host 校验 (环回访问白名单)
+      const hostHeader = (req.headers.host || '').trim()
+      const [hostname] = hostHeader.split(':')
+      if (hostname !== '127.0.0.1' && hostname !== 'localhost') {
+        this.sendError(res, 403, 'Forbidden: loopback access only')
+        return true
+      }
+
+      // 2. Origin 校验 (防跨站恶意探测)
+      const originHeader = req.headers.origin
+      if (originHeader) {
+        try {
+          const u = new URL(originHeader)
+          if (u.hostname !== '127.0.0.1' && u.hostname !== 'localhost') {
+            this.sendError(res, 403, 'Forbidden: cross-origin requests from non-loopback rejected')
+            return true
+          }
+        } catch {
+          this.sendError(res, 403, 'Forbidden: invalid origin')
+          return true
+        }
+      }
+
       const parsedUrl = new URL(req.url || '', 'http://127.0.0.1')
       pathname = parsedUrl.pathname || ''
       const query = Object.fromEntries(parsedUrl.searchParams.entries())
       const method = req.method
 
-      // 只捕获特定的 Skill API 路由
-      const isSkillRoute =
-        pathname.startsWith('/api/workspaces') ||
-        pathname.startsWith('/api/analysis/') ||
-        pathname.startsWith('/api/files/') ||
-        pathname.startsWith('/api/organize/') ||
-        pathname.startsWith('/api/virtual-directories') ||
-        pathname.startsWith('/api/ai/')
-
-      if (!isSkillRoute) {
-        return false
-      }
-
-      logger.debug(LogCategory.SYSTEM, `[AI Skill API] 收到请求: ${req.method} ${pathname}`)
-
-      // CORS 头（允许 OpenClaw Canvas 面板跨域访问）
-      res.setHeader('Access-Control-Allow-Origin', '*')
-      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
-
-      // 预检请求直接返回
-      if (method === 'OPTIONS') {
-        res.writeHead(204)
-        res.end()
+      // 3. GET /api/health 纯内存健康检查
+      if (method === 'GET' && pathname === '/api/health') {
+        this.sendSuccess(res, {
+          status: 'ok',
+          pid: process.pid,
+          apiVersion: '1.2.0',
+          uptime: Math.round(process.uptime() * 10) / 10
+        })
         return true
       }
 
-      res.setHeader('Content-Type', 'application/json; charset=utf-8')
-
-      // API 路由
       if (method === 'GET' && pathname === '/api/workspaces') {
-        logger.debug(LogCategory.SYSTEM, '[AI Skill API] 正在获取所有工作空间...')
-        const list = await databaseService.getAllWorkspaceDirectories()
-        logger.debug(LogCategory.SYSTEM, `[AI Skill API] 找到 ${list.length} 个工作空间`)
-        this.sendSuccess(res, { data: list })
+        const workspaces = await databaseService.getAllWorkspaceDirectories()
+        this.sendSuccess(res, workspaces)
         return true
       }
 
       if (method === 'GET' && pathname === '/api/analysis/queue-status') {
-        const snapshot = analysisQueueService.getSnapshot()
-        const currentItem = snapshot.items.find(i => i.id === snapshot.currentItemId)
-        this.sendSuccess(res, {
-          systemIdle:
-            !snapshot.running &&
-            snapshot.items.every(i => i.status !== 'analyzing' && i.status !== 'pending'),
-          queueLength: snapshot.items.filter(i => i.status === 'pending').length,
-          currentProcessingFile: currentItem?.path
-        })
+        const status = await analysisQueueService.getQueueStatus()
+        this.sendSuccess(res, status)
         return true
       }
 
       if (method === 'GET' && pathname === '/api/analysis/progress') {
-        const snapshot = analysisQueueService.getSnapshot()
-        const analyzed = snapshot.items.filter(i => i.status === 'completed').length
-        const total = snapshot.items.length
-        const percentage = total > 0 ? (analyzed / total) * 100 : 0
-
-        this.sendSuccess(res, {
-          isIdle: !snapshot.running,
-          analysis: {
-            status: snapshot.running ? 'processing' : 'idle',
-            progressPercentage: percentage
-          },
-          organizePage: {
-            status: 'idle', // 暂时不支持查询整理页面进度
-            progressPercentage: 0
-          }
-        })
+        const progress = await analysisQueueService.getProgress()
+        this.sendSuccess(res, progress)
         return true
       }
 
       if (method === 'GET' && pathname === '/api/files/analysis-data') {
-        const fileId = query.fileId as string
-        const fieldsParam = query.fields as string
-        const limit = Number(query.limit) || 10
+        const fileId = query.fileId ? Number(query.fileId) : undefined
+        const fields = query.fields ? (query.fields as string).split(',') : undefined
+        const limit = Number(query.limit) || 20
         const offset = Number(query.offset) || 0
 
-        const applyFilters = (item: any) => {
-          let filtered = this.filterInfrastructureFields(item)
-          if (fieldsParam) {
-            const requestedFields = fieldsParam.split(',')
-            const result: any = {}
-            const fieldMap: Record<string, string> = {
-              description: 'description',
-              smartName: 'smartName',
-              tags: 'dimensionTags',
-              metadata: 'metadata',
-              qualityScore: 'qualityScore',
-              content: 'content'
-            }
-            requestedFields.forEach(f => {
-              const fieldName = f.trim()
-              const targetKey = fieldMap[fieldName]
-              if (targetKey && filtered[targetKey] !== undefined) {
-                result[fieldName] = filtered[targetKey]
-              }
-            })
-            return result
-          }
-          return filtered
-        }
-
         if (fileId) {
-          const result = await databaseService.getFileAnalysisResult(fileId)
-          if (!result) {
+          const file = await databaseService.getFileAnalysisData(fileId, fields)
+          if (!file) {
             this.sendError(res, 404, t('文件未找到'))
             return true
           }
-          this.sendSuccess(res, applyFilters(result))
-          return true
-        } else {
-          const files = await databaseService.getAllFiles(limit, offset)
-          this.sendSuccess(
-            res,
-            files.map(f => applyFilters(f))
-          )
+          this.sendSuccess(res, this.filterInfrastructureFields(file))
           return true
         }
+
+        const files = await databaseService.getPagedFileAnalysisData(limit, offset, fields)
+        this.sendSuccess(
+          res,
+          files.map(f => this.filterInfrastructureFields(f))
+        )
+        return true
       }
 
-      // 智能获取文件分析数据（自动检查工作区，未分析时优先入队）
       if (method === 'POST' && pathname === '/api/files/analysis-data-smart') {
         const body = await this.readBody(req)
-        const { filePath, autoQueue = true, priority = 100 } = body
+        const filePath = body.filePath as string
+        const autoQueue = body.autoQueue !== false
+        const priority = typeof body.priority === 'number' ? body.priority : 100
+
         if (!filePath) {
-          this.sendError(res, 400, t('缺少 filePath 参数'))
+          this.sendError(res, 400, t('缺少必填字段: filePath'))
           return true
         }
-        console.debug(
-          `[AISkillApiService][debug] 智能获取文件分析数据 - file: ${path.basename(filePath)}`
-        )
-        const { getFileAnalysisData } =
-          await import('./file-analysis-service')
+
+        const { getFileAnalysisData } = await import('./file-analysis-service')
         const result = await getFileAnalysisData(filePath, autoQueue, priority)
-        console.debug(
-          `[AISkillApiService][debug] 智能获取文件分析数据返回 - belongsToWorkspace: ${result.belongsToWorkspace}, isAnalyzed: ${result.isAnalyzed}`
-        )
         this.sendSuccess(res, result)
         return true
       }
 
       if (method === 'GET' && pathname === '/api/files/search') {
-        const keyword = query.keyword as string
-        const workspaceId = query.workspaceId ? Number(query.workspaceId) : undefined
-        const scope = (query.scope as string) || 'real'
-        const virtualDirectoryId = query.virtualDirectoryId
-          ? Number(query.virtualDirectoryId)
-          : undefined
-        const limit = Number(query.limit) || 20
-        const offset = Number(query.offset) || 0
-
-        const results: any[] = []
-
-        if (scope === 'real' || scope === 'all') {
-          const realResults = await databaseService.searchFilesFTS(keyword, workspaceId)
-          results.push(...realResults.map(r => ({ ...r, scope: 'real' })))
-        }
-
-        if (scope === 'virtual' || scope === 'all') {
-          const virtualResults = await databaseService.searchVirtualDirectoryFiles(
-            keyword,
-            virtualDirectoryId
+        // 4. 并发守卫：在途搜索请求上限 4
+        if (this.activeSearchesCount >= 4) {
+          res.writeHead(429, {
+            'Content-Type': 'application/json',
+            'Retry-After': '2'
+          })
+          res.end(
+            JSON.stringify({
+              success: false,
+              error: 'Too many search requests, please retry shortly'
+            })
           )
-          results.push(...virtualResults.map(r => ({ ...r, scope: 'virtual' })))
+          return true
         }
+        this.activeSearchesCount++
 
-        this.sendSuccess(res, results.slice(offset, offset + limit))
-        return true
+        try {
+          const keyword = typeof query.keyword === 'string' ? query.keyword.trim() : ''
+          if (!keyword) {
+            this.sendError(res, 400, t('搜索关键词不能为空'))
+            return true
+          }
+
+          const mode = (query.mode as string) || 'final'
+          if (mode !== 'final' && mode !== 'stream') {
+            this.sendError(res, 400, t('无效的搜索模式，仅支持 final 或 stream'))
+            return true
+          }
+
+          const scope = (query.scope as string) || 'real'
+          if (scope !== 'real' && scope !== 'virtual' && scope !== 'all') {
+            this.sendError(res, 400, t('无效的搜索范围，仅支持 real、virtual 或 all'))
+            return true
+          }
+
+          const limit = Math.min(50, Math.max(1, Number(query.limit) || 20))
+          const offset = Math.max(0, Number(query.offset) || 0)
+          const virtualDirectoryId = query.virtualDirectoryId
+            ? Number(query.virtualDirectoryId)
+            : undefined
+          const workspaceId = query.workspaceId ? Number(query.workspaceId) : undefined
+
+          let workspaceDirectoryPath: string | undefined = undefined
+          if (workspaceId !== undefined) {
+            const ws = await databaseService.getWorkspaceDirectoryById(workspaceId)
+            if (!ws) {
+              this.sendError(res, 400, t('工作区不存在'))
+              return true
+            }
+            workspaceDirectoryPath = ws.path
+          }
+
+          const abortController = new AbortController()
+          this.inFlightAbortControllers.add(abortController)
+
+          const params: any = {
+            searchKeyword: keyword,
+            workspaceDirectoryPath: scope === 'virtual' ? undefined : workspaceDirectoryPath,
+            virtualDirectoryId: scope === 'virtual' ? virtualDirectoryId : undefined,
+            limit,
+            offset,
+            includeUnanalyzed: true,
+            signal: abortController.signal
+          }
+
+          if (mode === 'stream') {
+            const channel = new SseChannel(res, () => abortController.abort())
+            params.onProgress = async (phase: 'phase1' | 'phase2' | 'phase3', progRes: any) => {
+              if (channel.isClosed()) return
+              const dtoItems = mapItemsToDTO(progRes?.items || [])
+              if (phase === 'phase1') {
+                await channel.sendEvent('phase1', {
+                  phase: 1,
+                  total: progRes?.total || dtoItems.length,
+                  isSettled: false,
+                  items: dtoItems
+                })
+              } else if (phase === 'phase2') {
+                await channel.sendEvent('phase2', {
+                  phase: 2,
+                  total: progRes?.total || dtoItems.length,
+                  isSettled: true,
+                  clipPending: Boolean(progRes?.clipPending),
+                  items: dtoItems
+                })
+              } else if (phase === 'phase3') {
+                await channel.sendEvent('phase3', {
+                  phase: 3,
+                  total: progRes?.total || dtoItems.length,
+                  isSettled: true,
+                  items: dtoItems
+                })
+              }
+            }
+
+            try {
+              if (virtualDirectoryService) {
+                await virtualDirectoryService.getFilteredFilesPaged(params)
+              } else {
+                const { TagTreeQuery } = await import(
+                  './filesystem/virtual-directory-service/TagTreeQuery'
+                )
+                const tagTreeQuery = new TagTreeQuery(databaseService.getDb())
+                await tagTreeQuery.getFilteredFilesPaged(params)
+              }
+              await channel.sendEvent('done', { isSettled: true })
+            } catch (err: any) {
+              if (!channel.isClosed()) {
+                await channel.sendEvent('error', { error: err?.message || String(err) })
+              }
+            } finally {
+              channel.close()
+              this.inFlightAbortControllers.delete(abortController)
+            }
+            return true
+          }
+
+          // mode === 'final'
+          const startTime = performance.now()
+          let lastProgressResult: any = null
+          params.onProgress = (_phase: string, progRes: any) => {
+            lastProgressResult = progRes
+          }
+
+          try {
+            const timeoutPromise = new Promise<'timeout'>(resolve => {
+              setTimeout(() => resolve('timeout'), 8000)
+            })
+
+            const searchPromise = (async () => {
+              if (virtualDirectoryService) {
+                return await virtualDirectoryService.getFilteredFilesPaged(params)
+              } else {
+                const { TagTreeQuery } = await import(
+                  './filesystem/virtual-directory-service/TagTreeQuery'
+                )
+                const tagTreeQuery = new TagTreeQuery(databaseService.getDb())
+                return await tagTreeQuery.getFilteredFilesPaged(params)
+              }
+            })()
+
+            const raceResult = await Promise.race([searchPromise, timeoutPromise])
+            const duration = Math.round(performance.now() - startTime)
+
+            if (raceResult === 'timeout') {
+              abortController.abort()
+              const fallbackItems = lastProgressResult?.items || []
+              this.sendSuccess(res, {
+                total: lastProgressResult?.total || fallbackItems.length,
+                isSettled: true,
+                searchDurationMs: duration,
+                degraded: true,
+                degradedReasons: ['search_timeout'],
+                items: mapItemsToDTO(fallbackItems)
+              })
+            } else {
+              const searchRes = raceResult
+              this.sendSuccess(res, {
+                total: searchRes.total,
+                isSettled: true,
+                searchDurationMs: duration,
+                degraded: false,
+                degradedReasons: [],
+                clipPending: Boolean(searchRes.clipPending),
+                items: mapItemsToDTO(searchRes.items)
+              })
+            }
+          } catch (err: any) {
+            this.sendError(res, 500, err?.message || String(err))
+          } finally {
+            this.inFlightAbortControllers.delete(abortController)
+          }
+          return true
+        } finally {
+          this.activeSearchesCount--
+        }
       }
 
       if (method === 'GET' && pathname === '/api/organize/templates') {
@@ -461,7 +803,6 @@ export class AISkillApiService {
         if (!rawName) throw new Error('缺少必填字段: name')
         if (!rawStrategy) throw new Error('缺少必填字段: strategy')
 
-        // 安全解码 URI 编码的字段（兼容中文字段）
         const name = this.safeDecodeURIComponent(rawName)
         const strategy = this.safeDecodeURIComponent(rawStrategy)
         const perspective = body.perspective ? this.safeDecodeURIComponent(body.perspective) : ''
@@ -492,6 +833,7 @@ export class AISkillApiService {
       res.statusCode = statusCode
       const payload = { success: false, error: message }
       const responseData = JSON.stringify(payload)
+      res.setHeader('Content-Type', 'application/json')
       res.setHeader('Content-Length', Buffer.byteLength(responseData))
       res.end(responseData)
     } catch (error: any) {
@@ -513,6 +855,7 @@ export class AISkillApiService {
         payload.data = data
       }
       const responseData = JSON.stringify(payload)
+      res.setHeader('Content-Type', 'application/json')
       res.setHeader('Content-Length', Buffer.byteLength(responseData))
       res.end(responseData)
     } catch (error: any) {

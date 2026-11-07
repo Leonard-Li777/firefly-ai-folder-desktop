@@ -138,3 +138,4 @@ src/**/*.d.ts.map
 
 # Fix-11: monorepo 单锁约定，锁文件由主仓根目录统一管理，子模块内禁止再提交
 /pnpm-lock.yaml
+build/_tmp

@@ -14,13 +14,18 @@ import {
   logger,
   isPathEqual,
   isSubPath,
-  compileWhitelistExtSet
+  compileWhitelistExtSet,
+  shouldIngressFile,
+  shouldDescendDirectory,
+  COMPANION_EXTENSIONS,
+  type EffectiveFilterPolicy
 } from '@firefly/shared'
 import { t } from '@app/languages'
 
 import type { EnqueueInput } from './types'
 import { databaseService } from '../database/database-service'
 import { shouldIgnoreFile } from '../analysis/analysis-ignore-service'
+import { workspaceAdmissionService } from '../workspace/workspace-admission-service'
 import path from 'node:path'
 import fs from 'node:fs'
 
@@ -354,10 +359,54 @@ export class QueueManager {
       })
     }
 
+    // 预先按目录聚合当前批次与队列中的同级文件名，供伴生文件准入判定使用
+    const dirSiblingsMap = new Map<string, string[]>()
+    for (const file of resolvedInputs) {
+      if (file.type === 'folder') continue
+      const dir = path.dirname(file.nativePath)
+      if (!dirSiblingsMap.has(dir)) {
+        const set = new Set<string>()
+        for (const r of resolvedInputs) {
+          if (r.type !== 'folder' && path.dirname(r.nativePath) === dir) {
+            set.add(r.name || path.basename(r.nativePath))
+          }
+        }
+        for (const q of this.queue) {
+          if (q.itemType !== 'directory' && q.path && path.dirname(q.path) === dir) {
+            set.add(q.name || path.basename(q.path))
+          }
+        }
+        if (dir && dir !== '.' && fs.existsSync(dir)) {
+          try {
+            for (const entry of fs.readdirSync(dir)) set.add(entry)
+          } catch {}
+        }
+        dirSiblingsMap.set(dir, Array.from(set))
+      }
+    }
+
     // 第二步：在事务中插入队列记录
     const transaction = db?.transaction(() => {
       for (const file of resolvedInputs) {
         if (shouldIgnoreFile(file.nativePath, file.name, this.ignoreRules)) continue
+
+        // 基于工作区统一准入策略（含黑名单、白名单与伴生文件保护）进行入队把关
+        try {
+          const isDir = file.type === 'folder'
+          const siblings = isDir ? undefined : dirSiblingsMap.get(path.dirname(file.nativePath))
+          if (
+            !workspaceAdmissionService.shouldAdmitFile(
+              file.workspaceId,
+              file.nativePath,
+              isDir,
+              siblings
+            )
+          ) {
+            continue
+          }
+        } catch {
+          // 数据库为轻量 Mock 或未包含策略表时安全回退
+        }
 
         const key = `${file.nativePath}|${file.workspaceId}`
         const exists = existingByPathAndWorkspace.get(key)
@@ -628,35 +677,111 @@ export class QueueManager {
 
   cancelUnmatchedTasks(
     workspaceId: number,
-    allowedExtensions: string[] | null | undefined,
+    policyOrAllowedExtensions: EffectiveFilterPolicy | string[] | null | undefined,
     directoryPrefix?: string
   ): { cancelledCount: number } {
-    if (!this.isInitialized || !allowedExtensions || allowedExtensions.length === 0) {
+    if ((!this.isInitialized && this.queue.length === 0) || !policyOrAllowedExtensions) {
       return { cancelledCount: 0 }
     }
-    const allowedSet = compileWhitelistExtSet(allowedExtensions)
-    if (!allowedSet || allowedSet.size === 0) {
-      return { cancelledCount: 0 }
+
+    const isPolicyObject =
+      typeof policyOrAllowedExtensions === 'object' &&
+      !Array.isArray(policyOrAllowedExtensions) &&
+      ('whitelistRules' in policyOrAllowedExtensions ||
+        'systemDenyRules' in policyOrAllowedExtensions)
+
+    // 预构建同目录文件名映射表，确保队列内与磁盘同级主文件能保护伴生文件
+    const dirSiblingsMap = new Map<string, string[]>()
+    for (const item of this.queue) {
+      if (item.workspaceId !== workspaceId || item.itemType === 'directory' || !item.path) continue
+      const dir = path.dirname(item.path)
+      if (!dirSiblingsMap.has(dir)) {
+        const set = new Set<string>()
+        for (const q of this.queue) {
+          if (q.workspaceId === workspaceId && q.itemType !== 'directory' && q.path && path.dirname(q.path) === dir) {
+            set.add(q.name || path.basename(q.path))
+          }
+        }
+        if (dir && dir !== '.' && fs.existsSync(dir)) {
+          try {
+            for (const entry of fs.readdirSync(dir)) set.add(entry)
+          } catch {}
+        }
+        dirSiblingsMap.set(dir, Array.from(set))
+      }
     }
+
     const idsToRemove: number[] = []
 
-    this.queue = this.queue.filter(item => {
-      if (item.status === 'pending' && item.workspaceId === workspaceId) {
-        if (!directoryPrefix || isSubPath(directoryPrefix, item.path)) {
-          const ext = path.extname(item.path).toLowerCase()
-          if (!allowedSet.has(ext)) {
+    if (isPolicyObject) {
+      const policy = policyOrAllowedExtensions as EffectiveFilterPolicy
+      this.queue = this.queue.filter(item => {
+        if (item.status === 'pending' && item.workspaceId === workspaceId) {
+          if (!directoryPrefix || isSubPath(directoryPrefix, item.path)) {
+            const isDir = item.itemType === 'directory'
+            const admitted = isDir
+              ? shouldDescendDirectory(item.path, policy)
+              : shouldIngressFile(
+                  item.path,
+                  false,
+                  policy,
+                  dirSiblingsMap.get(path.dirname(item.path))
+                )
+            if (!admitted) {
+              idsToRemove.push(item.id)
+              return false
+            }
+          }
+        }
+        return true
+      })
+    } else {
+      const allowedExtensions = policyOrAllowedExtensions as string[]
+      if (allowedExtensions.length === 0) {
+        return { cancelledCount: 0 }
+      }
+      const allowedSet = compileWhitelistExtSet(allowedExtensions)
+      if (!allowedSet || allowedSet.size === 0) {
+        return { cancelledCount: 0 }
+      }
+
+      this.queue = this.queue.filter(item => {
+        if (item.status === 'pending' && item.workspaceId === workspaceId) {
+          if (!directoryPrefix || isSubPath(directoryPrefix, item.path)) {
+            if (item.itemType === 'directory') return true
+            const ext = path.extname(item.path).toLowerCase()
+            if (allowedSet.has(ext)) {
+              return true
+            }
+            // 伴生文件保护：若同目录存在合法主文件，则保留该伴生文件任务
+            if (COMPANION_EXTENSIONS.has(ext)) {
+              const baseName = path.parse(item.path).name.toLowerCase()
+              const siblings = dirSiblingsMap.get(path.dirname(item.path)) || []
+              const hasPrimary = siblings.some(entry => {
+                const entryBase = path.parse(entry).name.toLowerCase()
+                const entryExt = path.extname(entry).toLowerCase()
+                return (
+                  entryBase === baseName &&
+                  !COMPANION_EXTENSIONS.has(entryExt) &&
+                  allowedSet.has(entryExt)
+                )
+              })
+              if (hasPrimary) {
+                return true
+              }
+            }
             idsToRemove.push(item.id)
             return false
           }
         }
-      }
-      return true
-    })
+        return true
+      })
+    }
 
     if (idsToRemove.length > 0) {
       logger.info(
         LogCategory.ANALYSIS_QUEUE,
-        `[分析队列] 根据白名单取消了 ${idsToRemove.length} 个不匹配的待分析任务 (工作区 ID: ${workspaceId})`
+        `[分析队列] 根据准入策略取消了 ${idsToRemove.length} 个不匹配的待分析任务 (工作区 ID: ${workspaceId})`
       )
       this.emitUpdate()
       try {

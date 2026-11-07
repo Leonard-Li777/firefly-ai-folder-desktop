@@ -320,6 +320,9 @@ export class HybridSearchSession {
           : Math.max(0, ((params.page ?? 1) - 1) * limit)
 
       // 字段覆盖补充候选源（LIKE 兜底）提前查询
+      if (params.signal?.aborted) {
+        return { total: 0, items: [] }
+      }
       const fieldCoverageRefs = this.collaborators.fetchFieldCoverageRefs(params)
       if (fieldCoverageRefs.failure) {
         logger.warn(
@@ -381,6 +384,10 @@ export class HybridSearchSession {
           `[HybridSearchSession] 混合检索部分降级: fts=${pool.failures.fts}, vector=${pool.failures.vector}, ` +
             `fs=${pool.failures.fs}, clip=${pool.failures.clip}`
         )
+      }
+
+      if (params.signal?.aborted) {
+        return { total: 0, items: [] }
       }
 
       // Phase 2: 全量加权 RRF 页面构建与富摘要丰富

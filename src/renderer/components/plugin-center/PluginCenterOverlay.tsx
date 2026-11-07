@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Search, Sliders, ChevronLeft, Puzzle, Sparkles, Layers, Code } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog'
 import { Input } from '../ui/input'
@@ -37,9 +37,25 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
   const selectedCategory = usePluginCenterStore(s => s.selectedCategory)
   const setSelectedCategory = usePluginCenterStore(s => s.setSelectedCategory)
   const modules = usePluginCenterStore(s => s.modules)
+  const loadModules = usePluginCenterStore(s => s.loadModules)
+  const subscribeProgress = usePluginCenterStore(s => s.subscribeProgress)
   const installPlugin = usePluginCenterStore(s => s.installPlugin)
   const togglePluginActive = usePluginCenterStore(s => s.togglePluginActive)
   const updateUserConfig = usePluginCenterStore(s => s.updateUserConfig)
+
+  // IN-06: 订阅后端实时下载进度并支持 React StrictMode 双挂载安全清理
+  useEffect(() => {
+    const unsubscribe = subscribeProgress()
+    return () => {
+      unsubscribe()
+    }
+  }, [subscribeProgress])
+
+  useEffect(() => {
+    if (isOverlayOpen) {
+      void loadModules()
+    }
+  }, [isOverlayOpen, loadModules])
 
   // 自定义配置草稿 (用于 config_schema / user_config 插槽)
   const [userConfigDraft, setUserConfigDraft] = useState<string>('')

@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+﻿import { app, BrowserWindow } from 'electron'
 import * as os from 'os'
 import {
   logger,
@@ -1022,43 +1022,21 @@ export async function initializeFullServices(): Promise<void> {
     registerServiceHealthChecks()
     const orchestrator = ConfigOrchestrator.getInstance()
 
-    // 启动 AI Skill API 服务
-    const startApiService = async (port: number) => {
-      const { AISkillApiService } = await import('../runtime-services/ai-skill-api-service')
-      const apiService = new AISkillApiService(port, app.getPath('userData'))
-      await apiService.start()
-      return apiService
-    }
+    // 启动 AI Skill API 服务 (由插件中心按需对账驱动)
+    try {
+      const { aiSkillApiService } = await import('../runtime-services/ai-skill-api-service')
+      await aiSkillApiService.reconcile()
 
-    let currentApiService: any = null
-    const initialEnableAiSkill = orchestrator.getValue<boolean>('ENABLE_AI_SKILL_API') ?? true
-    const initialAiSkillPort = orchestrator.getValue<number>('AI_SKILL_API_PORT') ?? APP_PORTS.AI_SKILL_API
-
-    if (initialEnableAiSkill) {
-      currentApiService = await startApiService(initialAiSkillPort)
-    }
-
-    // 监听配置变更
-    orchestrator.onValueChange('ENABLE_AI_SKILL_API', async enabled => {
-      if (enabled) {
-        if (!currentApiService) {
-          const port = orchestrator.getValue<number>('AI_SKILL_API_PORT') ?? APP_PORTS.AI_SKILL_API
-          currentApiService = await startApiService(port)
+      app.once('before-quit', async () => {
+        try {
+          await aiSkillApiService.stop()
+        } catch (stopErr) {
+          logger.warn(LogCategory.SYSTEM, '[AISkillApiService] before-quit 停止失败:', stopErr)
         }
-      } else {
-        if (currentApiService) {
-          await currentApiService.stop()
-          currentApiService = null
-        }
-      }
-    })
-
-    orchestrator.onValueChange('AI_SKILL_API_PORT', async port => {
-      if (currentApiService) {
-        await currentApiService.stop()
-        currentApiService = await startApiService(port as number)
-      }
-    })
+      })
+    } catch (skillErr) {
+      logger.warn(LogCategory.SYSTEM, '[AISkillApiService] 初始化对账失败:', skillErr)
+    }
 
     logger.info(LogCategory.MAIN, '初始化阶段完成，所有服务已初始化')
     logger.info(LogCategory.MAIN, '开始同步云端配置...')

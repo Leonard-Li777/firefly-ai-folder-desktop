@@ -1053,6 +1053,7 @@ export class EngineBridgeService {
 
   /**
    * 拉取统一引擎运行时指标与显存/Worker快照 (/v1/engine/metrics) (Ticket 3)
+   * 兼容 Rust 端 { arbiter: { phase, eta_ms, vram_budget_mb, vram_used_mb } } 与标准化 EngineMetricsSnapshot
    */
   public async fetchMetrics(): Promise<EngineMetricsSnapshot | null> {
     try {
@@ -1063,7 +1064,40 @@ export class EngineBridgeService {
       if (!res.ok) {
         return null
       }
-      const data = (await res.json()) as EngineMetricsSnapshot
+      const rawData = (await res.json()) as any
+      let data: EngineMetricsSnapshot
+      if (rawData && rawData.arbiter && !rawData.swapping) {
+        const arb = rawData.arbiter
+        const totalVramBytes = Math.max(0, Number(arb.vram_budget_mb || 0) * 1024 * 1024)
+        const usedVramBytes = Math.max(0, Number(arb.vram_used_mb || 0) * 1024 * 1024)
+        const systemReservedVramBytes =
+          totalVramBytes > 0 ? Math.max(1.5 * 1024 ** 3, totalVramBytes * 0.15) : 0
+        const freeVramBytes = Math.max(0, totalVramBytes - usedVramBytes - systemReservedVramBytes)
+        const isSwapping = arb.phase === 'swapping'
+        data = {
+          totalVramBytes,
+          usedVramBytes,
+          freeVramBytes,
+          systemReservedVramBytes,
+          workers: rawData.workers || {
+            llm: {
+              state: arb.phase === 'serving' ? 'processing' : 'ready',
+              vramBytes: usedVramBytes
+            },
+            embedding: { state: 'ready', vramBytes: 0 },
+            diffusion: { state: 'stopped', vramBytes: 0 },
+            audio: { state: 'stopped', vramBytes: 0 }
+          },
+          swapping: {
+            isSwapping,
+            etaMs: typeof arb.eta_ms === 'number' ? arb.eta_ms : undefined,
+            reasonCode: isSwapping ? 'engine_swapping' : undefined
+          }
+        }
+      } else {
+        data = rawData as EngineMetricsSnapshot
+      }
+
       // 联动置换协调器状态 (防惊群门闩)
       if (data?.swapping?.isSwapping) {
         const retryAfter = parseRetryAfter(null, data.swapping.etaMs)
@@ -1078,13 +1112,13 @@ export class EngineBridgeService {
   }
 
   /**
-   * 获取当前引擎能力快照 (对齐系统不变量 6：四态 starting / ready / processing / stopped) (Ticket 3)
+   * 获取当前引擎能力快照 (严守 AGENTS.md §2.12：五态 starting / ready / processing / error / stopped) (Ticket 3)
    */
   public async getEngineCapability(): Promise<EngineCapability> {
     const raw = this.lastRawStatus
     const metrics = await this.fetchMetrics()
 
-    let state: 'starting' | 'ready' | 'processing' | 'stopped' = 'stopped'
+    let state: 'starting' | 'ready' | 'processing' | 'error' | 'stopped' = 'stopped'
     let reasonCode: string | undefined
 
     if (raw?.status === 'ready') {
@@ -1096,6 +1130,8 @@ export class EngineBridgeService {
       state = 'processing'
     } else if (raw?.status === 'starting' || this.isStarting) {
       state = 'starting'
+    } else if (raw?.status === 'error') {
+      state = 'error'
     } else {
       state = 'stopped'
     }

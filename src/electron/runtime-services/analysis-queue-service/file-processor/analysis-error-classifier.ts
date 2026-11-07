@@ -10,6 +10,8 @@
  *   `code === 'ETIMEDOUT'`），不再匹配「超时」文案。
  */
 
+import { isEngineSwappingError } from '../../engine-bridge/engine-swapping-coordinator'
+
 /** 分析管道错误来源阶段 */
 export type AnalysisErrorPhase = 'extraction' | 'inference'
 
@@ -112,12 +114,45 @@ const ENGINE_WARMUP_MESSAGES = [
 /** 文本是否命中引擎暖机期文案 */
 function matchesEngineWarmupMessage(text: string | undefined): boolean {
   if (!text) return false
-  return ENGINE_WARMUP_MESSAGES.some(msg => text.includes(msg))
+  return isEngineSwappingError(text) || ENGINE_WARMUP_MESSAGES.some(msg => text.includes(msg))
 }
 
 /** 是否为基础设施未就绪等瞬态错误（不可静默降级为完成，必须等待就绪或重试） */
 export function isTransientInfraError(err: unknown): boolean {
   if (!err) return false
+
+  // 严守 AGENTS.md §2.12：确定性失败 HTTP 500 (ProcessStatus::Failed / engine_failed) 必须上浮为永久错误，绝不混入瞬态重试
+  if (typeof err === 'object') {
+    const e = err as {
+      status?: number
+      statusCode?: number
+      code?: string
+      message?: string
+      error?: { code?: string; message?: string }
+    }
+    const status = e.status ?? e.statusCode ?? 0
+    if (
+      status === 500 ||
+      e.code === 'engine_failed' ||
+      e.error?.code === 'engine_failed' ||
+      (typeof e.message === 'string' &&
+        (e.message.includes('ProcessStatus::Failed') ||
+          e.message.includes('AI engine failed to start')))
+    ) {
+      return false
+    }
+  } else if (
+    typeof err === 'string' &&
+    (err.includes('ProcessStatus::Failed') || err.includes('AI engine failed to start'))
+  ) {
+    return false
+  }
+
+  // 唯一权威 503 模型置换判定原语
+  if (isEngineSwappingError(err)) {
+    return true
+  }
+
   if (typeof err === 'object') {
     const e = err as { status?: number; statusCode?: number; code?: string; message?: string }
     if (
@@ -139,6 +174,9 @@ export function isTransientInfraError(err: unknown): boolean {
       : typeof (err as { message?: unknown })?.message === 'string'
         ? (err as { message: string }).message
         : String(err)
+  if (msg.includes('ProcessStatus::Failed') || msg.includes('AI engine failed to start')) {
+    return false
+  }
   return (
     msg.includes('503') ||
     matchesEngineWarmupMessage(msg) ||

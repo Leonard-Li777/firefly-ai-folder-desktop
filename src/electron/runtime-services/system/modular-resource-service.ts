@@ -265,6 +265,22 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     firecore_cost: 0,
     total_bytes: 94500000,
     install_state: 'not_installed'
+  },
+  {
+    id: 'ai_organize_skill',
+    name: 'AI 整理助手与外部智能体 Skill API',
+    description: '对外提供本地 HTTP API 与 OpenClaw/外部智能体通信桥梁，支持渐进式语义检索、视频高光切片定位与自动化整理方案推送',
+    icon: 'FolderSync',
+    kind: 'builtin-module',
+    version: '1.2.0',
+    catalog_version: 1,
+    category: 'tool',
+    author_code: 'official',
+    author_name: null,
+    availability: 'available',
+    firecore_cost: 0,
+    total_bytes: 0,
+    install_state: 'not_installed'
   }
 ]
 
