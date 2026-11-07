@@ -1290,6 +1290,44 @@ export class OmniService {
         logger.info(LogCategory.SYSTEM, `[OmniService] 🎙️ MOSS-TTS 预置音色库 (OMNI_MOSS_VOICES_PATH): ${voicesPath}`)
       }
 
+      // NSFW-L3 深度敏感分类模型目录显式下发（路径同源铁律；缺陷 F4）
+      //
+      // Rust 侧 `omni-text/src/nsfw_l3.rs::resolve_model_dir()` 的寻址链是
+      // `NSFW_L3_MODEL_PATH` ➔ 4 个相对候选 ➔ 从 cwd 逐级上溯 6 层。
+      // 全仓此前只有读取点、没有任何设置点，而引擎子进程 cwd 被本服务固定为 `binDir`
+      // （见下方 spawn 的 `cwd: binDir`），于是生产安装态实际靠「猜目录」命中，
+      // 与本工程「路径同源 / 显式注入」红线不符（参照上方 PP-OCRv6、MOSS-TTS 的成熟形态）。
+      // 这里按同一候选栈显式注入，让寻址链第一优先级真正生效；
+      // 解析不到时必须 `logger.warn` 显式上报（L3 通道保持关闭，严禁静默降级）。
+      const candidateNsfwL3Dirs = [
+        ResourceLocator.resolveResourcePath?.('models/nsfw-l3'),
+        path.join(process.cwd(), 'apps/desktop/build/extraResources/models/nsfw-l3'),
+        path.join(process.cwd(), 'build/extraResources/models/nsfw-l3'),
+        path.join(binDir, '../../models/nsfw-l3')
+      ]
+      // 就绪判据与 Rust 侧一致：模型与分词器必须同时在位（缺分词器时 Rust 侧会关闭 L3）
+      const isNsfwL3DirReady = (dir: string): boolean =>
+        fs.existsSync(path.join(dir, 'nsfw_l3_int8.onnx')) &&
+        fs.existsSync(path.join(dir, 'tokenizer.json'))
+      let nsfwL3Dir: string | null = null
+      for (const cand of candidateNsfwL3Dirs) {
+        if (cand && isNsfwL3DirReady(cand)) {
+          nsfwL3Dir = cand
+          break
+        }
+      }
+      if (nsfwL3Dir) {
+        env.NSFW_L3_MODEL_PATH = nsfwL3Dir
+        logger.info(LogCategory.SYSTEM, `[OmniService] 🛡️ NSFW-L3 模型目录 (NSFW_L3_MODEL_PATH): ${nsfwL3Dir}`)
+      } else {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[OmniService] 未解析到 NSFW-L3 深度敏感模型（候选：${candidateNsfwL3Dirs
+            .filter(Boolean)
+            .join(' | ')}），L3 深度语义通道保持关闭（仅 L1/L2 生效）`
+        )
+      }
+
       env.OMNI_WATCH_STDIN = '1'
 
       // 注入当前激活的多模态嵌入画像档位 (classic_light | gemma_unified) 与 MRL 维度 (Spec §3.4.1)
