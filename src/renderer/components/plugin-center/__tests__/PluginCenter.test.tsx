@@ -2,7 +2,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import React from 'react'
-import { render, screen, fireEvent, act } from '@testing-library/react'
+import { render, screen, fireEvent, act, within } from '@testing-library/react'
 
 // Mock 语言包
 vi.mock('@app/languages', () => ({
@@ -174,7 +174,7 @@ describe('PluginCenterOverlay (弹层交互、失焦保护与配置挂载)', () 
 
     // 应该只展示 TTS 插件卡片
     expect(screen.getByText(/离线语音合成 TTS/)).toBeInTheDocument()
-    expect(screen.queryByText('CAD / 3D 图纸模型解析器')).not.toBeInTheDocument()
+    expect(screen.queryByText(/压缩包透视/)).not.toBeInTheDocument()
   })
 
   it('点击高级 AI 引擎配置按钮时挂载 AIEngineConfigSettings', () => {
@@ -205,7 +205,7 @@ describe('PluginCenterOverlay (弹层交互、失焦保护与配置挂载)', () 
   it('点击其他支持 schema 的插件配置按钮时展示自定义 JSON 配置插槽', () => {
     act(() => {
       usePluginCenterStore.getState().openOverlay()
-      usePluginCenterStore.getState().setConfiguringModuleId('cad_3d_parser')
+      usePluginCenterStore.getState().setConfiguringModuleId('archive_vfs_parser')
     })
 
     render(<PluginCenterOverlay />)
@@ -218,14 +218,14 @@ describe('PluginCenterOverlay (弹层交互、失焦保护与配置挂载)', () 
     fireEvent.click(screen.getByText('保存配置'))
 
     expect(usePluginCenterStore.getState().configuringModuleId).toBeNull()
-    const updated = usePluginCenterStore.getState().modules.find(m => m.id === 'cad_3d_parser')
+    const updated = usePluginCenterStore.getState().modules.find(m => m.id === 'archive_vfs_parser')
     expect(updated?.user_config).toBe('{"renderQuality": "high"}')
   })
 
   it('自定义配置保存时拦截非法 JSON 并显示错误提示', () => {
     act(() => {
       usePluginCenterStore.getState().openOverlay()
-      usePluginCenterStore.getState().setConfiguringModuleId('cad_3d_parser')
+      usePluginCenterStore.getState().setConfiguringModuleId('archive_vfs_parser')
     })
 
     render(<PluginCenterOverlay />)
@@ -234,7 +234,7 @@ describe('PluginCenterOverlay (弹层交互、失焦保护与配置挂载)', () 
     fireEvent.click(screen.getByText('保存配置'))
 
     // 仍停留在配置页面且报错
-    expect(usePluginCenterStore.getState().configuringModuleId).toBe('cad_3d_parser')
+    expect(usePluginCenterStore.getState().configuringModuleId).toBe('archive_vfs_parser')
     expect(screen.getByText(/配置格式错误，必须为合法的 JSON 格式字符串/)).toBeInTheDocument()
   })
 
@@ -350,5 +350,125 @@ describe('PluginCenterOverlay (弹层交互、失焦保护与配置挂载)', () 
     expect(screen.getByText('社区开发者')).toBeInTheDocument()
     expect(screen.getByText('这是测试插件的详细功能说明')).toBeInTheDocument()
     expect(screen.getByText(/安装包总体积: 100.0 MB/)).toBeInTheDocument()
+  })
+})
+
+describe('方案 A: 能力槽位聚类分组与互斥语义 (Slot Grouping & Mutual Exclusion)', () => {
+  beforeEach(() => {
+    act(() => {
+      usePluginCenterStore.getState().resetForTest()
+    })
+  })
+
+  it('按能力槽位聚类分组渲染，展示对应槽位头部与排他策略 Badge', () => {
+    act(() => {
+      usePluginCenterStore.getState().openOverlay()
+    })
+    render(<PluginCenterOverlay />)
+
+    // 检查基础语义嵌入引擎槽位分组
+    const embeddingGroup = screen.getByTestId('slot-group-base_embedding')
+    expect(embeddingGroup).toBeInTheDocument()
+    expect(embeddingGroup).toHaveTextContent('基础语义检索引擎')
+    expect(embeddingGroup).toHaveTextContent('必选单例 · 二选一互斥')
+
+    // 检查语音合成槽位分组
+    const ttsGroup = screen.getByTestId('slot-group-voice_tts')
+    expect(ttsGroup).toBeInTheDocument()
+    expect(ttsGroup).toHaveTextContent('离线语音合成与朗读 (TTS)')
+    expect(ttsGroup).toHaveTextContent('选配单选 · 互斥生效')
+
+    // 检查通用多活槽位分组
+    const generalGroup = screen.getByTestId('slot-group-general')
+    expect(generalGroup).toBeInTheDocument()
+    expect(generalGroup).toHaveTextContent('智能工具与扩展技能')
+    expect(generalGroup).toHaveTextContent('多选并发 · 独立运行')
+  })
+
+  it('exclusive_required 槽位拦截直接停用操作，并保持激活状态', async () => {
+    act(() => {
+      usePluginCenterStore.setState(state => ({
+        ...state,
+        isOverlayOpen: true,
+        modules: state.modules.map(m =>
+          m.id === 'engine_classic_light' ? { ...m, install_state: 'active' } : m
+        )
+      }))
+    })
+    render(<PluginCenterOverlay />)
+
+    // 查找 engine_classic_light (已激活的 exclusive_required 插件)
+    const classicLightCard = screen.getByTestId('plugin-card-engine_classic_light')
+    expect(classicLightCard).toBeInTheDocument()
+
+    const switchBtn = within(classicLightCard).getByRole('switch')
+    expect(switchBtn).toBeChecked()
+
+    // 尝试点击 Switch 停用
+    await act(async () => {
+      fireEvent.click(switchBtn)
+    })
+
+    // 由于 exclusive_required 保护，插件仍然保持 active 状态
+    const mod = usePluginCenterStore.getState().modules.find(m => m.id === 'engine_classic_light')
+    expect(mod?.install_state).toBe('active')
+  })
+
+  it('exclusive_optional 槽位激活新插件时自动排他关闭同槽位已激活项', async () => {
+    // 设置初始状态：给 voice_tts 槽位添加两个插件，一个已激活，一个已安装但未激活
+    act(() => {
+      usePluginCenterStore.setState({
+        isOverlayOpen: true,
+        modules: [
+          {
+            id: 'tts_moss_onnx',
+            name: 'MossTTS 离线语音合成',
+            version: '1.0.0',
+            category: 'media',
+            capability_slot: 'voice_tts',
+            slot_policy: 'exclusive_optional',
+            author_code: 'official',
+            author_name: null,
+            availability: 'available',
+            total_bytes: 200000000,
+            install_state: 'active',
+            description: 'MossTTS 离线模型',
+            icon: 'Volume2'
+          },
+          {
+            id: 'tts_chat_onnx',
+            name: 'ChatTTS 拟真语音合成',
+            version: '1.0.0',
+            category: 'media',
+            capability_slot: 'voice_tts',
+            slot_policy: 'exclusive_optional',
+            author_code: 'community',
+            author_name: 'TTS Community',
+            availability: 'available',
+            total_bytes: 300000000,
+            install_state: 'installed_inactive',
+            description: 'ChatTTS 离线模型',
+            icon: 'Volume2'
+          }
+        ]
+      })
+    })
+
+    render(<PluginCenterOverlay />)
+
+    const chatTtsCard = screen.getByTestId('plugin-card-tts_chat_onnx')
+    expect(chatTtsCard).toBeInTheDocument()
+
+    // 点击 ChatTTS 的启用开关
+    const chatTtsSwitch = within(chatTtsCard).getByRole('switch')
+    await act(async () => {
+      fireEvent.click(chatTtsSwitch)
+    })
+
+    // 断言 ChatTTS 激活，而 MossTTS 自动被互斥停用
+    const chatMod = usePluginCenterStore.getState().modules.find(m => m.id === 'tts_chat_onnx')
+    const mossMod = usePluginCenterStore.getState().modules.find(m => m.id === 'tts_moss_onnx')
+    expect(chatMod?.install_state).toBe('active')
+    expect(mossMod?.install_state).toBe('installed_inactive')
   })
 })

@@ -441,8 +441,10 @@ export const GENESIS_V1_SCHEMA = `
     author_code       TEXT NOT NULL DEFAULT 'official'
                       CHECK (author_code IN ('official', 'community', 'third_party')),
     author_name       TEXT,                          -- 第三方/社区开发者名称 (官方插件保持为 NULL，由前端 t('Firefly 官方') 动态国际化)
-    availability      TEXT NOT NULL DEFAULT 'available'
-                      CHECK (availability IN ('available', 'coming_soon', 'unavailable')),
+    availability      TEXT NOT NULL DEFAULT 'approved'
+                      CHECK (availability IN ('coming_soon', 'draft', 'approved', 'delisted')),
+    delist_reason     TEXT
+                      CHECK (delist_reason IS NULL OR delist_reason IN ('general_deprecation', 'security_violation')),
     firecore_cost     INTEGER NOT NULL DEFAULT 0     -- 开启/解锁此插件所需支付的萤火数量 (默认 0 代表免费)
                       CHECK (firecore_cost >= 0),
     total_bytes       INTEGER NOT NULL DEFAULT 0,    -- 安装包与资源总体积 (字节)
@@ -462,7 +464,13 @@ export const GENESIS_V1_SCHEMA = `
     slot_policy       TEXT NOT NULL DEFAULT 'multi_active'
                       CHECK (slot_policy IN ('exclusive_required', 'exclusive_optional', 'multi_active')),
     backend_type      TEXT NOT NULL DEFAULT 'omni_onnx'
-                      CHECK (backend_type IN ('omni_onnx', 'ai_engine', 'utility_process', 'builtin'))
+                      CHECK (backend_type IN ('omni_onnx', 'ai_engine', 'utility_process', 'builtin')),
+    -- 严密双向互斥约束：下架状态必须有合法原因，非下架状态原因必须为 NULL
+    CHECK (
+      (availability = 'delisted' AND delist_reason IS NOT NULL)
+      OR
+      (availability != 'delisted' AND delist_reason IS NULL)
+    )
   );
 
   -- 2. 物理资源下载实体表 (资源中心化 SSOT)
@@ -516,6 +524,14 @@ export const GENESIS_V1_SCHEMA = `
   ON builtin_modules(capability_slot)
   WHERE install_state = 'active'
     AND capability_slot IN ('base_embedding', 'asr', 'tts', 'perception_nsfw', 'perception_face');
+
+  -- 复合索引：支持市场主视图按 availability、category 与 install_state 复合过滤
+  CREATE INDEX IF NOT EXISTS idx_builtin_modules_query
+    ON builtin_modules(availability, category, install_state);
+
+  -- 复合索引：支持已安装管理视图过滤
+  CREATE INDEX IF NOT EXISTS idx_builtin_modules_installed_delist
+    ON builtin_modules(install_state, availability, delist_reason);
 
   -- 全机同时至多一个 serving 状态向量代际
   CREATE UNIQUE INDEX IF NOT EXISTS ux_one_serving_epoch

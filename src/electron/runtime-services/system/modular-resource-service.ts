@@ -72,6 +72,7 @@ export interface CatalogModuleEntry {
   author_code?: ModuleAuthorCode
   author_name?: string | null
   availability?: ModuleAvailability
+  delist_reason?: 'general_deprecation' | 'security_violation' | null
   firecore_cost?: number
   total_bytes: number
   catalog_meta_json?: string | Record<string, unknown> | null
@@ -427,22 +428,23 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     install_state: 'not_installed'
   },
   {
-    id: 'cad_3d_parser',
-    name: 'CAD / 3D 图纸模型解析器',
-    description: 'DWG/DXF 工程图纸与 OBJ/GLTF 三维模型离线轻量解析与缩略图渲染',
-    icon: 'Box',
+    id: 'archive_vfs_parser',
+    name: '压缩包透视与深度解析器',
+    description: '可以透视压缩包中的内容，并生成标签和描述等',
+    icon: 'Archive',
     kind: 'builtin-module',
-    version: '1.2.0',
+    version: '1.0.0',
     catalog_version: 1,
-    category: 'parser',
+    category: 'vfs-archive',
     capability_slot: 'parser',
     slot_policy: 'multi_active',
     backend_type: 'utility_process',
     author_code: 'official',
     author_name: null,
-    availability: 'available',
+    availability: 'coming_soon',
+    delist_reason: null,
     firecore_cost: 0,
-    total_bytes: 94500000,
+    total_bytes: 42000000,
     install_state: 'not_installed'
   },
   {
@@ -460,7 +462,8 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     backend_type: 'builtin',
     author_code: 'official',
     author_name: null,
-    availability: 'available',
+    availability: 'approved',
+    delist_reason: null,
     firecore_cost: 0,
     total_bytes: 0,
     install_state: 'not_installed'
@@ -759,7 +762,7 @@ export class ModularResourceService implements IModularResourceService {
           author_code: entry.author_code ?? existing?.author_code ?? 'official',
           author_name:
             entry.author_name !== undefined ? entry.author_name : (existing?.author_name ?? null),
-          availability: entry.availability ?? existing?.availability ?? 'available',
+          availability: entry.availability ?? existing?.availability ?? 'approved',
           firecore_cost: entry.firecore_cost ?? existing?.firecore_cost ?? 0,
           total_bytes: entry.total_bytes,
           catalog_meta_json: JSON.stringify(mergedMeta),
@@ -1374,7 +1377,7 @@ export class ModularResourceService implements IModularResourceService {
     const view = this.buildModuleView(dao.modules.findByIdSync(moduleId)!)
 
     // 若涉及感知插槽热插拔（perception_nsfw 或 perception_face），动态通知 Omni 引擎热重载
-    if (mod.capability_slot === 'perception_nsfw' || mod.capability_slot === 'perception_face') {
+    if (view.capability_slot === 'perception_nsfw' || view.capability_slot === 'perception_face') {
       try {
         const { omniService } = require('./omni-service')
         omniService?.syncConfigFromDesktop?.().catch?.(() => {})

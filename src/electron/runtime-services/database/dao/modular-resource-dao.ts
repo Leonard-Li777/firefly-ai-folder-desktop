@@ -16,12 +16,15 @@ export type ModuleInstallState =
   | 'active'
   | 'error'
 export type ModuleAuthorCode = 'official' | 'community' | 'third_party'
-export type ModuleAvailability = 'available' | 'coming_soon' | 'unavailable'
+export type ModuleAvailability = 'coming_soon' | 'draft' | 'approved' | 'delisted'
+export type DelistReason = 'general_deprecation' | 'security_violation'
 
 export type PluginCapabilitySlot =
   | 'base_embedding'
   | 'asr'
   | 'tts'
+  | 'voice_asr'
+  | 'voice_tts'
   | 'perception_nsfw'
   | 'perception_face'
   | 'advanced_ai_engine'
@@ -52,6 +55,7 @@ export interface BuiltinModuleRecord {
   author_code: ModuleAuthorCode
   author_name?: string | null
   availability: ModuleAvailability
+  delist_reason?: DelistReason | null
   firecore_cost?: number
   total_bytes: number
   catalog_meta_json?: string | null
@@ -139,9 +143,17 @@ export interface LocalWorkflowRecord {
   engine_params_json?: string | null
 }
 
+export interface ListModulesFilter {
+  scope?: 'market' | 'installed'
+  category?: string
+  includeDraft?: boolean
+}
+
 export interface IBuiltinModuleDAO {
-  listAll(): Promise<BuiltinModuleRecord[]>
-  listAllSync(): BuiltinModuleRecord[]
+  listAll(filter?: ListModulesFilter): Promise<BuiltinModuleRecord[]>
+  listAllSync(filter?: ListModulesFilter): BuiltinModuleRecord[]
+  findActive(): Promise<BuiltinModuleRecord[]>
+  findActiveSync(): BuiltinModuleRecord[]
   findById(id: string): Promise<BuiltinModuleRecord | null>
   findByIdSync(id: string): BuiltinModuleRecord | null
   upsertModule(record: Partial<BuiltinModuleRecord> & { id: string }): Promise<boolean>
@@ -242,15 +254,42 @@ export interface ILocalWorkflowDAO {
 export class BuiltinModuleDao implements IBuiltinModuleDAO {
   constructor(private db: Database) {}
 
-  listAllSync(): BuiltinModuleRecord[] {
-    const rows = this.db
-      .prepare('SELECT * FROM builtin_modules ORDER BY id ASC')
-      .all() as BuiltinModuleRecord[]
+  listAllSync(filter?: ListModulesFilter): BuiltinModuleRecord[] {
+    let sql = 'SELECT * FROM builtin_modules WHERE 1=1'
+    const params: unknown[] = []
+
+    if (filter?.scope === 'market') {
+      if (filter.includeDraft) {
+        sql += " AND availability IN ('approved', 'coming_soon', 'draft')"
+      } else {
+        sql += " AND availability IN ('approved', 'coming_soon')"
+      }
+    } else if (filter?.scope === 'installed') {
+      sql += " AND install_state != 'not_installed'"
+    }
+
+    if (filter?.category) {
+      sql += ' AND category = ?'
+      params.push(filter.category)
+    }
+
+    sql += ' ORDER BY id ASC'
+    const rows = this.db.prepare(sql).all(...params) as BuiltinModuleRecord[]
     return rows
   }
 
-  async listAll(): Promise<BuiltinModuleRecord[]> {
-    return this.listAllSync()
+  async listAll(filter?: ListModulesFilter): Promise<BuiltinModuleRecord[]> {
+    return this.listAllSync(filter)
+  }
+
+  findActiveSync(): BuiltinModuleRecord[] {
+    return this.db
+      .prepare("SELECT * FROM builtin_modules WHERE install_state = 'active' ORDER BY id ASC")
+      .all() as BuiltinModuleRecord[]
+  }
+
+  async findActive(): Promise<BuiltinModuleRecord[]> {
+    return this.findActiveSync()
   }
 
   findByIdSync(id: string): BuiltinModuleRecord | null {
@@ -266,17 +305,26 @@ export class BuiltinModuleDao implements IBuiltinModuleDAO {
 
   upsertModuleSync(record: Partial<BuiltinModuleRecord> & { id: string }): boolean {
     const existing = this.findByIdSync(record.id)
+    const rawAvailability = record.availability ?? existing?.availability ?? 'approved'
+    const availability = (
+      rawAvailability === ('available' as any) ? 'approved' : rawAvailability
+    ) as ModuleAvailability
+    const delist_reason =
+      availability === 'delisted'
+        ? (record.delist_reason ?? existing?.delist_reason ?? 'general_deprecation')
+        : null
+
     if (!existing) {
       const stmt = this.db.prepare(`
         INSERT INTO builtin_modules (
           id, kind, version, catalog_version, category, author_code, author_name,
-          availability, firecore_cost, total_bytes, catalog_meta_json, config_schema, user_config,
+          availability, delist_reason, firecore_cost, total_bytes, catalog_meta_json, config_schema, user_config,
           install_state, selected_variant, install_path, installed_at,
           last_activated_at, user_consent, error_message, config_json,
           capability_slot, slot_policy, backend_type
         ) VALUES (
           ?, ?, ?, ?, ?, ?, ?,
-          ?, ?, ?, ?, ?, ?,
+          ?, ?, ?, ?, ?, ?, ?,
           ?, ?, ?, ?,
           ?, ?, ?, ?,
           ?, ?, ?
@@ -290,7 +338,8 @@ export class BuiltinModuleDao implements IBuiltinModuleDAO {
         record.category ?? 'tool',
         record.author_code ?? 'official',
         record.author_name ?? null,
-        record.availability ?? 'available',
+        availability,
+        delist_reason,
         record.firecore_cost ?? 0,
         record.total_bytes ?? 0,
         record.catalog_meta_json ?? null,
@@ -324,6 +373,8 @@ export class BuiltinModuleDao implements IBuiltinModuleDAO {
       const merged: BuiltinModuleRecord = {
         ...existing,
         ...record,
+        availability,
+        delist_reason,
         // 关键防护：保留本地运行态与个性化配置，绝不被云端元数据静默覆盖
         install_state: record.install_state ?? existing.install_state,
         user_config: record.user_config ?? existing.user_config,
@@ -341,6 +392,7 @@ export class BuiltinModuleDao implements IBuiltinModuleDAO {
           author_code = ?,
           author_name = ?,
           availability = ?,
+          delist_reason = ?,
           firecore_cost = ?,
           total_bytes = ?,
           catalog_meta_json = ?,
@@ -366,7 +418,8 @@ export class BuiltinModuleDao implements IBuiltinModuleDAO {
         merged.category,
         merged.author_code ?? 'official',
         merged.author_name ?? null,
-        merged.availability ?? 'available',
+        merged.availability,
+        merged.delist_reason ?? null,
         merged.firecore_cost ?? 0,
         merged.total_bytes ?? 0,
         merged.catalog_meta_json ?? null,

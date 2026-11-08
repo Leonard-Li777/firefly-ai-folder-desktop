@@ -4,7 +4,7 @@ import {
   Volume2,
   Mic,
   Sparkles,
-  Box,
+  Archive,
   Puzzle,
   Sliders,
   Download,
@@ -80,8 +80,8 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
         return Mic
       case 'diffusion_studio':
         return Sparkles
-      case 'cad_3d_parser':
-        return Box
+      case 'archive_vfs_parser':
+        return Archive
       default:
         return Puzzle
     }

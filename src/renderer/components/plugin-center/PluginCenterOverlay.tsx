@@ -94,7 +94,7 @@ function getSlotDefinition(
         policy: 'multi_active',
         icon: '📐',
         badgeText: t('多选并发 · 自由扩展'),
-        description: t('CAD/3D 模型图纸等专用行业格式深度解析与元数据抽取'),
+        description: t('行业文档、工程归档等专用格式深度解析与元数据抽取'),
         order: 50
       }
     default:

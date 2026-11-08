@@ -8,7 +8,7 @@ export type PluginCategory =
   | 'parser'
   | 'vfs-archive'
 export type PluginAuthorCode = 'official' | 'community' | 'third_party'
-export type PluginAvailability = 'available' | 'coming_soon' | 'unavailable'
+export type PluginAvailability = 'coming_soon' | 'draft' | 'approved' | 'delisted'
 export type PluginInstallState =
   | 'not_installed'
   | 'downloading'
@@ -34,6 +34,7 @@ export interface PluginModuleItem {
   author_code: PluginAuthorCode
   author_name?: string | null
   availability: PluginAvailability
+  delist_reason?: 'general_deprecation' | 'security_violation' | null
   firecore_cost?: number
   total_bytes: number
   install_state: PluginInstallState
@@ -146,7 +147,7 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
     backend_type: 'omni_onnx',
     author_code: 'official',
     author_name: null,
-    availability: 'available',
+    availability: 'approved',
     total_bytes: 319195255,
     install_state: 'not_installed',
     contributes: {
@@ -183,7 +184,7 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
     backend_type: 'omni_onnx',
     author_code: 'official',
     author_name: null,
-    availability: 'available',
+    availability: 'approved',
     total_bytes: 254003864,
     install_state: 'not_installed',
     contributes: {
@@ -215,7 +216,7 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
     backend_type: 'omni_onnx',
     author_code: 'official',
     author_name: null,
-    availability: 'available',
+    availability: 'approved',
     total_bytes: 21966375,
     install_state: 'not_installed',
     contributes: {
@@ -247,7 +248,7 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
     backend_type: 'omni_onnx',
     author_code: 'official',
     author_name: null,
-    availability: 'available',
+    availability: 'approved',
     total_bytes: 168587158,
     install_state: 'not_installed',
     contributes: {
@@ -284,7 +285,7 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
     backend_type: 'omni_onnx',
     author_code: 'official',
     author_name: null,
-    availability: 'available',
+    availability: 'approved',
     total_bytes: 249105462,
     install_state: 'not_installed',
     contributes: {
@@ -324,17 +325,18 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
     icon: 'Sparkles'
   },
   {
-    id: 'cad_3d_parser',
-    name: 'CAD / 3D 图纸模型解析器',
-    version: '1.2.0',
-    category: 'parser',
+    id: 'archive_vfs_parser',
+    name: '压缩包透视与深度解析器',
+    version: '1.0.0',
+    category: 'vfs-archive',
     author_code: 'official',
     author_name: null,
-    availability: 'available',
-    total_bytes: 94500000,
+    availability: 'coming_soon',
+    delist_reason: null,
+    total_bytes: 42000000,
     install_state: 'not_installed',
-    description: 'DWG/DXF 工程图纸与 OBJ/GLTF 三维模型离线轻量解析与缩略图渲染',
-    icon: 'Box'
+    description: '可以透视压缩包中的内容，并生成标签和描述等',
+    icon: 'Archive'
   },
   {
     id: 'ai_organize_skill',
@@ -343,7 +345,8 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
     category: 'tool',
     author_code: 'official',
     author_name: null,
-    availability: 'available',
+    availability: 'approved',
+    delist_reason: null,
     total_bytes: 0,
     install_state: 'not_installed',
     description:
@@ -381,7 +384,7 @@ function normalizeRemoteModuleItem(raw: any): PluginModuleItem {
     category: raw.category || seed?.category || 'tool',
     author_code: raw.author_code || seed?.author_code || 'official',
     author_name: raw.author_name !== undefined ? raw.author_name : (seed?.author_name ?? null),
-    availability: raw.availability || seed?.availability || 'available',
+    availability: raw.availability || seed?.availability || 'approved',
     firecore_cost: raw.firecore_cost ?? 0,
     total_bytes: raw.total_bytes ?? seed?.total_bytes ?? 0,
     install_state: raw.install_state || 'not_installed',
