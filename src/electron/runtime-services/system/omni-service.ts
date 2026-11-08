@@ -2369,7 +2369,7 @@ export class OmniService {
    */
   public async transcribeAudio(
     filePath: string,
-    options?: { language?: string; timeoutMs?: number }
+    options?: { language?: string; timeoutMs?: number; signal?: AbortSignal }
   ): Promise<OmniAudioTranscribeResponse | null> {
     await this.ensureRunning()
     const tStart = Date.now()
@@ -2380,11 +2380,19 @@ export class OmniService {
     const timeoutMs = options?.timeoutMs || 60000
 
     const doFetch = async () => {
+      let fetchSignal: AbortSignal = AbortSignal.timeout(timeoutMs)
+      if (options?.signal) {
+        if (typeof (AbortSignal as any).any === 'function') {
+          fetchSignal = (AbortSignal as any).any([options.signal, fetchSignal])
+        } else {
+          fetchSignal = options.signal
+        }
+      }
       const res = await fetch(`${this.baseUrl}/api/audio/transcribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reqBody),
-        signal: AbortSignal.timeout(timeoutMs)
+        signal: fetchSignal
       })
       if (!res.ok) return null
       return (await res.json()) as OmniAudioTranscribeResponse
@@ -2393,6 +2401,9 @@ export class OmniService {
     try {
       return await doFetch()
     } catch (err: any) {
+      if (options?.signal?.aborted || err?.name === 'AbortError') {
+        return null
+      }
       logger.debug(
         LogCategory.SYSTEM,
         `[OmniService] transcribeAudio 异常 (${filePath}):`,

@@ -141,6 +141,9 @@ export interface IModularResourceService {
 
   /** 停用指定模块（若处于 exclusive_required 且激活状态则拒绝并抛出 SLOT_REQUIRED_EMPTY） */
   deactivateModule(moduleId: string): BuiltinModuleView
+
+  /** 按能力槽位查询当前激活的模块（若无激活返回 null） */
+  getActiveModuleBySlot(slot: PluginCapabilitySlot): BuiltinModuleView | null
 }
 
 /**
@@ -1302,6 +1305,17 @@ export class ModularResourceService implements IModularResourceService {
    */
   deactivateModule(moduleId: string): BuiltinModuleView {
     return this.updateModuleState(moduleId, { active: false })
+  }
+
+  /**
+   * 按能力槽位查询当前激活的模块（若无激活返回 null）
+   */
+  getActiveModuleBySlot(slot: PluginCapabilitySlot): BuiltinModuleView | null {
+    this.ensureDefaultSeeds()
+    const dao = this.getDao()
+    const row = dao.modules.findActiveBySlotSync(slot)
+    if (!row) return null
+    return this.buildModuleView(row)
   }
 }
 

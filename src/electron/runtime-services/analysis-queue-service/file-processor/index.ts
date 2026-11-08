@@ -64,6 +64,7 @@ import {
 import { executeProPreflight, executeProTagReconciliation } from '@pro'
 import { omniService } from '../../system/omni-service'
 import { omniClient } from '../../../services/omni-client'
+import { modularResourceService } from '../../system/modular-resource-service'
 import { thumbnailService } from '../../filesystem/thumbnail-service'
 import { anydocService, AnydocAsset, AnydocResult } from '../../system/anydoc-service'
 import { cloudAnalysisService } from '@firefly/server'
@@ -2213,11 +2214,28 @@ export class FileProcessor {
       }
 
       if (!seg0Completed) {
+        let enableAudioTranscript: boolean | undefined = undefined
+        if (isAudioOrVideo) {
+          try {
+            const asrMod = modularResourceService.getActiveModuleBySlot('voice_asr')
+            if (asrMod) {
+              enableAudioTranscript = true
+            } else {
+              logger.warn(
+                LogCategory.ANALYSIS_QUEUE,
+                `[分析队列] 未激活 ASR 插件，跳过音视频字幕提取 (可前往插件中心安装 ASR 语音模型): ${filePath}`
+              )
+            }
+          } catch {
+            enableAudioTranscript = true
+          }
+        }
+
         anydocResult = await anydocService
           .perceive(filePath, {
             language,
-            // 音视频文件在 0 号切片启用 SenseVoice 语音转录，并传递配置的截取时长
-            enableAudioTranscript: isAudioOrVideo ? true : undefined,
+            // 音视频文件在 0 号切片根据 ASR 插件激活状态启用语音转录，并传递配置的截取时长
+            enableAudioTranscript,
             audioAnalysisDuration: audioAnalysisDuration,
             videoFrameIntervalSeconds: videoFrameIntervalSeconds,
             videoSoftTokenBudget: videoSoftTokenBudget,
