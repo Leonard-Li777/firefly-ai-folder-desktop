@@ -28,6 +28,13 @@ import {
 
 export type { PluginCapabilitySlot, SlotPolicy, BackendType, EmbeddingEpochRecord }
 import {
+  TombstoneGCService,
+  tombstoneGCService,
+  OfflinePackageService,
+  offlinePackageService,
+  type PendingDeletionItem
+} from '../modular-resource'
+import {
   FileDownloadService,
   fileDownloadService,
   safeExtractZip,
@@ -150,6 +157,31 @@ export interface IModularResourceService {
 
   /** 按能力槽位查询当前激活的模块（若无激活返回 null） */
   getActiveModuleBySlot(slot: PluginCapabilitySlot): BuiltinModuleView | null
+
+  /** 获取单个模块的视图（若不存在返回 null） */
+  getModule(moduleId: string): BuiltinModuleView | null
+
+  /** 获取被 Windows 句柄占用的待清理路径清单 */
+  getPendingTombstones(): PendingDeletionItem[]
+
+  /** 是否存在待重启清理的 Tombstone 目录 */
+  hasPendingTombstones(): boolean
+
+  /** 请求重启桌面端应用以释放磁盘句柄 */
+  requestRestart(): void
+
+  /** 导出离线插件包 (.ffp / .zip) */
+  exportOfflinePackage(
+    moduleId: string,
+    targetFilePath: string,
+    options?: { signerPrivateKey?: string }
+  ): Promise<string>
+
+  /** 导入离线插件包 (.ffp / .zip) */
+  importOfflinePackage(
+    archivePath: string,
+    options?: { rootPublicKey?: string }
+  ): Promise<BuiltinModuleView>
 }
 
 /**
@@ -441,6 +473,8 @@ export interface ModularResourceServiceOptions {
   downloadService?: FileDownloadService
   transport?: IDownloadTransport
   deleteDirectoryFn?: (dirPath: string) => Promise<boolean>
+  tombstoneGC?: TombstoneGCService
+  offlinePackageService?: OfflinePackageService
 }
 
 export class ModularResourceService implements IModularResourceService {
@@ -451,6 +485,8 @@ export class ModularResourceService implements IModularResourceService {
   private downloadService: FileDownloadService
   private transport?: IDownloadTransport
   private deleteDirectoryFn: (dirPath: string) => Promise<boolean>
+  private tombstoneGC: TombstoneGCService
+  private offlinePackageService: OfflinePackageService
   private inFlightResources = new Map<string, Promise<void>>()
   private liveProgress = new Map<
     string,
@@ -464,6 +500,8 @@ export class ModularResourceService implements IModularResourceService {
     this.downloadService = options?.downloadService ?? fileDownloadService
     this.transport = options?.transport
     this.deleteDirectoryFn = options?.deleteDirectoryFn ?? safeDeleteDirectory
+    this.tombstoneGC = options?.tombstoneGC ?? tombstoneGCService
+    this.offlinePackageService = options?.offlinePackageService ?? new OfflinePackageService(this)
   }
 
   static getInstance(): ModularResourceService {
@@ -549,6 +587,7 @@ export class ModularResourceService implements IModularResourceService {
     cleanedTombstones += await cleanOrphanTombstones(baseDir)
     cleanedTombstones += await cleanOrphanTombstones(modulesDir)
     cleanedTombstones += await cleanOrphanTombstones(sharedDir)
+    cleanedTombstones += await this.tombstoneGC.reconcileOnStartup([baseDir, modulesDir, sharedDir])
 
     const dao = this.getDao()
     const resetDownloads: string[] = []
@@ -1190,7 +1229,10 @@ export class ModularResourceService implements IModularResourceService {
     for (const res of resourcesToDelete) {
       const targetAbsDir = this.resolvePhysicalPath(res.target_local_path)
       try {
-        const deleted = await this.deleteDirectoryFn(targetAbsDir)
+        const deleted = await this.tombstoneGC.safeDeleteWithTombstone(targetAbsDir, {
+          slot: record.capability_slot ?? undefined,
+          deleteDirectoryFn: this.deleteDirectoryFn
+        })
         if (deleted) {
           // 再次确认引用计数为 0 后删除数据库记录
           const refCount = dao.resources.getResourceActiveRefCountSync(res.resource_id)
@@ -1365,6 +1407,41 @@ export class ModularResourceService implements IModularResourceService {
     const row = dao.modules.findActiveBySlotSync(slot)
     if (!row) return null
     return this.buildModuleView(row)
+  }
+
+  getModule(moduleId: string): BuiltinModuleView | null {
+    this.ensureDefaultSeeds()
+    const dao = this.getDao()
+    const row = dao.modules.findByIdSync(moduleId)
+    if (!row) return null
+    return this.buildModuleView(row)
+  }
+
+  getPendingTombstones(): PendingDeletionItem[] {
+    return this.tombstoneGC.getPendingDeletions()
+  }
+
+  hasPendingTombstones(): boolean {
+    return this.tombstoneGC.hasPendingDeletions()
+  }
+
+  requestRestart(): void {
+    this.tombstoneGC.requestAppRestart()
+  }
+
+  async exportOfflinePackage(
+    moduleId: string,
+    targetFilePath: string,
+    options?: { signerPrivateKey?: string }
+  ): Promise<string> {
+    return this.offlinePackageService.exportOfflinePackage(moduleId, targetFilePath, options)
+  }
+
+  async importOfflinePackage(
+    archivePath: string,
+    options?: { rootPublicKey?: string }
+  ): Promise<BuiltinModuleView> {
+    return this.offlinePackageService.importOfflinePackage(archivePath, options)
   }
 }
 

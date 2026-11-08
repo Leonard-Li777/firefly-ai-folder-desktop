@@ -9,7 +9,8 @@ import {
   Sliders,
   Download,
   RefreshCw,
-  HardDrive
+  HardDrive,
+  Share2
 } from 'lucide-react'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
@@ -26,6 +27,7 @@ export interface PluginListItemProps {
   onToggleActive?: (id: string, active: boolean) => void
   onInstall?: (id: string) => void
   onConfigure?: (id: string) => void
+  onExport?: (id: string) => void
   className?: string
 }
 
@@ -55,6 +57,7 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
   onToggleActive,
   onInstall,
   onConfigure,
+  onExport,
   className
 }) => {
   const { t } = useVoerkaI18n(i18nScope)
@@ -168,6 +171,22 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
                 {categoryLabel}
               </Badge>
             )}
+            {module.slot_policy === 'exclusive_required' && (
+              <span
+                data-testid="exclusive-badge"
+                className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 shrink-0"
+              >
+                {t('必选二选一')}
+              </span>
+            )}
+            {module.slot_policy === 'exclusive_optional' && (
+              <span
+                data-testid="exclusive-badge"
+                className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0"
+              >
+                {t('选配互斥')}
+              </span>
+            )}
             <span className="text-muted-foreground/40 text-xs hidden sm:inline">·</span>
             <span className="text-[11px] text-muted-foreground truncate">{authorDisplay}</span>
           </div>
@@ -244,7 +263,11 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
                 htmlFor={`switch-${module.id}`}
                 className="text-xs text-muted-foreground cursor-pointer select-none whitespace-nowrap"
               >
-                {isActive ? t('已启用') : t('已停用')}
+                {isActive
+                  ? module.slot_policy === 'exclusive_required'
+                    ? t('已启用 (必选)')
+                    : t('已启用')
+                  : t('已停用')}
               </label>
             </div>
 
@@ -257,6 +280,19 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
               <Sliders className="w-3.5 h-3.5" />
               <span>{t('配置')}</span>
             </Button>
+            {onExport && (
+              <Button
+                size="sm"
+                variant="ghost"
+                data-testid="export-plugin-btn"
+                onClick={() => onExport(module.id)}
+                className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer flex items-center gap-1"
+                title={t('导出离线插件包 (.ffp)')}
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">{t('导出')}</span>
+              </Button>
+            )}
           </div>
         ) : isError ? (
           /* 错误状态：展示异常说明与重试按钮 */

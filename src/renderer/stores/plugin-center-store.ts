@@ -86,6 +86,16 @@ export interface IModularResourceBridge {
     model_paths?: Record<string, string>
     test_tokens?: string[]
   }) => Promise<{ success: boolean; latency_ms?: number; error?: string }>
+  getPendingTombstones?: () => Promise<
+    Array<{ path: string; registeredAt: string; reason?: string }>
+  >
+  hasPendingTombstones?: () => Promise<boolean>
+  restartApp?: () => Promise<boolean>
+  exportOfflinePackage?: (payload: {
+    moduleId: string
+    targetFilePath?: string
+  }) => Promise<string | null>
+  importOfflinePackage?: (payload?: { archivePath?: string }) => Promise<PluginModuleItem | null>
   onProgress?: (callback: (event: ModularResourceProgressPayload) => void) => () => void
 }
 
@@ -116,6 +126,12 @@ export interface PluginCenterState {
   updateUserConfig: (id: string, userConfig: string | null) => Promise<void>
   updateDownloadProgress: (id: string, progress: DownloadProgress) => void
   subscribeProgress: () => () => void
+  hasPendingTombstones: boolean
+  pendingTombstones: Array<{ path: string; registeredAt: string; reason?: string }>
+  checkPendingTombstones: () => Promise<void>
+  restartApp: () => Promise<void>
+  exportOfflinePackage: (moduleId: string) => Promise<string | null>
+  importOfflinePackage: (archivePath?: string) => Promise<PluginModuleItem | null>
   resetForTest: () => void
 }
 
@@ -386,6 +402,8 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
   selectedCategory: 'all',
   modules: INITIAL_PLUGINS,
   isLoading: false,
+  hasPendingTombstones: false,
+  pendingTombstones: [],
 
   setOverlayOpen: (open: boolean) => {
     set({
@@ -441,6 +459,9 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
       if (Array.isArray(list) && list.length > 0) {
         const normalized = list.map(normalizeRemoteModuleItem)
         set({ modules: normalized, isLoading: false })
+        get()
+          .checkPendingTombstones()
+          .catch(() => {})
         return normalized
       }
       set({ isLoading: false })
@@ -477,6 +498,9 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
           set(state => ({
             modules: state.modules.map(m => (m.id === id ? norm : m))
           }))
+          get()
+            .checkPendingTombstones()
+            .catch(() => {})
         }
       } catch (err: any) {
         const errMsg = err?.message || String(err)
@@ -518,13 +542,40 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
   },
 
   togglePluginActive: async (id: string, active: boolean) => {
+    const currentModules = get().modules
+    const target = currentModules.find(m => m.id === id)
+    if (!target) return
+
+    // 检查槽位排他策略 (exclusive_required / exclusive_optional)
+    const isExclusive =
+      target.slot_policy === 'exclusive_required' || target.slot_policy === 'exclusive_optional'
+    const targetSlot = target.capability_slot
+
+    // 收集同槽位中需要被互斥停用的插件 ID 列表
+    const mutuallyExcludedIds: string[] = []
+    if (active && isExclusive && targetSlot) {
+      currentModules.forEach(m => {
+        if (m.id !== id && m.capability_slot === targetSlot && m.install_state === 'active') {
+          mutuallyExcludedIds.push(m.id)
+        }
+      })
+    }
+
     set(state => ({
       modules: state.modules.map(m => {
-        if (m.id !== id) return m
-        return {
-          ...m,
-          install_state: active ? 'active' : 'installed_inactive'
+        if (m.id === id) {
+          return {
+            ...m,
+            install_state: active ? 'active' : 'installed_inactive'
+          }
         }
+        if (mutuallyExcludedIds.includes(m.id)) {
+          return {
+            ...m,
+            install_state: 'installed_inactive'
+          }
+        }
+        return m
       })
     }))
 
@@ -537,6 +588,10 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
           set(state => ({
             modules: state.modules.map(m => (m.id === id ? norm : m))
           }))
+        }
+        // 同步通知同槽位被互斥停用的插件
+        for (const exId of mutuallyExcludedIds) {
+          bridge.updateState(exId, { active: false }).catch(() => {})
         }
       } catch {
         // 保留乐观更新状态
@@ -612,6 +667,44 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
     })
   },
 
+  checkPendingTombstones: async () => {
+    const bridge = getModularResourceBridge()
+    if (!bridge || typeof bridge.getPendingTombstones !== 'function') return
+    try {
+      const items = await bridge.getPendingTombstones()
+      const has = Array.isArray(items) && items.length > 0
+      set({ pendingTombstones: items || [], hasPendingTombstones: has })
+    } catch {}
+  },
+
+  restartApp: async () => {
+    const bridge = getModularResourceBridge()
+    if (bridge && typeof bridge.restartApp === 'function') {
+      await bridge.restartApp()
+    }
+  },
+
+  exportOfflinePackage: async (moduleId: string) => {
+    const bridge = getModularResourceBridge()
+    if (!bridge || typeof bridge.exportOfflinePackage !== 'function') return null
+    return bridge.exportOfflinePackage({ moduleId })
+  },
+
+  importOfflinePackage: async (archivePath?: string) => {
+    const bridge = getModularResourceBridge()
+    if (!bridge || typeof bridge.importOfflinePackage !== 'function') return null
+    try {
+      const res = await bridge.importOfflinePackage({ archivePath })
+      if (res) {
+        await get().loadModules()
+        return res
+      }
+      return null
+    } catch (err: any) {
+      throw err
+    }
+  },
+
   resetForTest: () => {
     set({
       isOverlayOpen: false,
@@ -619,7 +712,9 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
       searchKeyword: '',
       selectedCategory: 'all',
       modules: INITIAL_PLUGINS,
-      isLoading: false
+      isLoading: false,
+      hasPendingTombstones: false,
+      pendingTombstones: []
     })
   }
 }))

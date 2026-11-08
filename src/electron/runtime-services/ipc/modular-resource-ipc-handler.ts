@@ -10,7 +10,7 @@
  * - modular-resource:reconcile -> 执行启动期对账与孤儿清理
  */
 
-import { ipcMain, BrowserWindow } from 'electron'
+import { ipcMain, BrowserWindow, dialog } from 'electron'
 import { logger, LogCategory } from '@firefly/shared'
 import {
   modularResourceService,
@@ -151,6 +151,82 @@ export function registerModularResourceIpcHandlers(
       } catch (err: any) {
         logger.error(LogCategory.MAIN, '[ModularResourceIPC] smoke-test 失败:', err)
         return { success: false, error: err?.message || String(err) }
+      }
+    }
+  )
+
+  ipcMain.handle('modular-resource:get-pending-tombstones', async () => {
+    try {
+      return service.getPendingTombstones()
+    } catch (err: any) {
+      logger.error(LogCategory.MAIN, '[ModularResourceIPC] get-pending-tombstones 失败:', err)
+      return []
+    }
+  })
+
+  ipcMain.handle('modular-resource:has-pending-tombstones', async () => {
+    try {
+      return service.hasPendingTombstones()
+    } catch (err: any) {
+      logger.error(LogCategory.MAIN, '[ModularResourceIPC] has-pending-tombstones 失败:', err)
+      return false
+    }
+  })
+
+  ipcMain.handle('modular-resource:restart-app', async () => {
+    try {
+      service.requestRestart()
+      return true
+    } catch (err: any) {
+      logger.error(LogCategory.MAIN, '[ModularResourceIPC] restart-app 失败:', err)
+      return false
+    }
+  })
+
+  ipcMain.handle(
+    'modular-resource:export-offline-package',
+    async (_event, payload: { moduleId: string; targetFilePath?: string }) => {
+      try {
+        let dest = payload.targetFilePath
+        if (!dest) {
+          const res = await dialog.showSaveDialog({
+            title: '导出离线插件包',
+            defaultPath: `${payload.moduleId}.ffp`,
+            filters: [{ name: 'Firefly 离线插件包 (*.ffp)', extensions: ['ffp', 'zip'] }]
+          })
+          if (res.canceled || !res.filePath) return null
+          dest = res.filePath
+        }
+        return await service.exportOfflinePackage(payload.moduleId, dest)
+      } catch (err: any) {
+        logger.error(
+          LogCategory.MAIN,
+          `[ModularResourceIPC] export-offline-package(${payload.moduleId}) 失败:`,
+          err
+        )
+        throw err
+      }
+    }
+  )
+
+  ipcMain.handle(
+    'modular-resource:import-offline-package',
+    async (_event, payload?: { archivePath?: string }) => {
+      try {
+        let src = payload?.archivePath
+        if (!src) {
+          const res = await dialog.showOpenDialog({
+            title: '导入离线插件包',
+            properties: ['openFile'],
+            filters: [{ name: 'Firefly 离线插件包 (*.ffp, *.zip)', extensions: ['ffp', 'zip'] }]
+          })
+          if (res.canceled || !res.filePaths || res.filePaths.length === 0) return null
+          src = res.filePaths[0]
+        }
+        return await service.importOfflinePackage(src)
+      } catch (err: any) {
+        logger.error(LogCategory.MAIN, '[ModularResourceIPC] import-offline-package 失败:', err)
+        throw err
       }
     }
   )

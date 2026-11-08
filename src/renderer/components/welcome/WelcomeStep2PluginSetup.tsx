@@ -262,17 +262,24 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
     }
   }
 
-  // 离线插件包导入处理 (先掐断在线下载流)
+  // 离线插件包导入处理 (先掐断在线下载流并执行 Sign-Then-Extract 导入)
   const handleOfflineImport = async () => {
     try {
       const electron = (window as any).electronAPI
       if (electron?.modularResource?.abortAll) {
         await electron.modularResource.abortAll()
       }
-      // 触发离线包导入文件选择
-      alert(t('已中止在途网络下载。请选择官方离线插件包 (.ffp / .zip) 进行导入。'))
-    } catch (err) {
-      console.warn('离线导入中断异常:', err)
+      if (electron?.modularResource?.importOfflinePackage) {
+        const imported = await electron.modularResource.importOfflinePackage()
+        if (imported) {
+          if (imported.id === selectedEngine || imported.capability_slot === 'base_ai_engine') {
+            setInstallPhase('ready')
+          }
+        }
+      }
+    } catch (err: any) {
+      setInstallPhase('error')
+      setErrorMessage(err?.message || String(err))
     }
   }
 

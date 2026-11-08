@@ -35,6 +35,13 @@ export const modularResourcePreloadBridge: IModularResourceBridge = {
     test_tokens?: string[]
   }): Promise<{ success: boolean; latency_ms?: number; error?: string }> =>
     ipcRenderer.invoke('modular-resource:smoke-test', payload),
+  getPendingTombstones: () => ipcRenderer.invoke('modular-resource:get-pending-tombstones'),
+  hasPendingTombstones: () => ipcRenderer.invoke('modular-resource:has-pending-tombstones'),
+  restartApp: () => ipcRenderer.invoke('modular-resource:restart-app'),
+  exportOfflinePackage: (payload: { moduleId: string; targetFilePath?: string }) =>
+    ipcRenderer.invoke('modular-resource:export-offline-package', payload),
+  importOfflinePackage: (payload?: { archivePath?: string }) =>
+    ipcRenderer.invoke('modular-resource:import-offline-package', payload),
   onProgress: (callback: (event: ModularResourceProgressPayload) => void) => {
     const handler = (_event: unknown, payload: ModularResourceProgressPayload) => callback(payload)
     ipcRenderer.on('modular-resource:progress', handler as any)

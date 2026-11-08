@@ -1788,6 +1788,14 @@ export class OmniService {
   }
 
   /**
+   * 卸载指定插槽的模型（释放 Windows 文件句柄）
+   */
+  public async unloadSlot(slot: string): Promise<boolean> {
+    logger.info(LogCategory.SYSTEM, `[OmniService] 触发卸载插槽模型以释放句柄: ${slot}`)
+    return this.syncConfigFromDesktop()
+  }
+
+  /**
    * 语言切换后通知 Omni 重载只读 SQLite 连接
    * POST /api/reconnect { dbPath } (ADR-0035 §8.4 双消费者热重连契约)
    */

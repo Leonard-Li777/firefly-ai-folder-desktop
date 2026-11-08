@@ -1,5 +1,16 @@
-import React, { useEffect, useMemo, useState, useRef } from 'react'
-import { Search, Sliders, ChevronLeft, Puzzle, Sparkles, Code, X } from 'lucide-react'
+import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react'
+import {
+  Search,
+  Sliders,
+  ChevronLeft,
+  Puzzle,
+  Sparkles,
+  Code,
+  X,
+  AlertTriangle,
+  RefreshCw,
+  Download
+} from 'lucide-react'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
@@ -12,9 +23,91 @@ import { SettingsCategory } from '@firefly/types'
 import { PluginListItem } from './PluginListItem'
 import { AIEngineConfigSettings } from '../settings/ai-engine-config-settings'
 import { TTSSettings } from '../settings/tts-settings'
+import { toast } from '../common/Toast'
 
 export interface PluginCenterOverlayProps {
   className?: string
+}
+
+export interface SlotDefinition {
+  key: string
+  name: string
+  policy: 'exclusive_required' | 'exclusive_optional' | 'multi_active'
+  icon: string
+  badgeText: string
+  description: string
+  order: number
+}
+
+function getSlotDefinition(
+  slotKey: string,
+  sampleMod: any,
+  t: (s: string) => string
+): SlotDefinition {
+  switch (slotKey) {
+    case 'base_embedding':
+      return {
+        key: 'base_embedding',
+        name: t('基础语义检索引擎'),
+        policy: 'exclusive_required',
+        icon: '🔒',
+        badgeText: t('必选单例 · 二选一互斥'),
+        description: t('全系统基础语义底座，切换将翻转单例代际 (EmbeddingEpoch)'),
+        order: 10
+      }
+    case 'voice_asr':
+    case 'asr':
+      return {
+        key: 'voice_asr',
+        name: t('语音识别与字幕提取 (ASR)'),
+        policy: 'exclusive_optional',
+        icon: '🎙️',
+        badgeText: t('选配单选 · 互斥生效'),
+        description: t('高精离线语音转录、富文本标点对齐与字幕分段提取'),
+        order: 20
+      }
+    case 'voice_tts':
+    case 'tts':
+      return {
+        key: 'voice_tts',
+        name: t('离线语音合成与朗读 (TTS)'),
+        policy: 'exclusive_optional',
+        icon: '🔊',
+        badgeText: t('选配单选 · 互斥生效'),
+        description: t('高质量自然语音朗读、多语种伴音生成与发音人管理'),
+        order: 30
+      }
+    case 'perception_nsfw':
+      return {
+        key: 'perception_nsfw',
+        name: t('内容感知与合规分级识别'),
+        policy: 'exclusive_optional',
+        icon: '🛡️',
+        badgeText: t('选配感知 · 原生插槽'),
+        description: t('敏感图像与文本多模态安全识别，自动挂载合规分级标签'),
+        order: 40
+      }
+    case 'parser':
+      return {
+        key: 'parser',
+        name: t('专用格式解析切槽'),
+        policy: 'multi_active',
+        icon: '📐',
+        badgeText: t('多选并发 · 自由扩展'),
+        description: t('CAD/3D 模型图纸等专用行业格式深度解析与元数据抽取'),
+        order: 50
+      }
+    default:
+      return {
+        key: slotKey,
+        name: t('智能工具与扩展技能'),
+        policy: sampleMod?.slot_policy || 'multi_active',
+        icon: '🧩',
+        badgeText: t('多选并发 · 独立运行'),
+        description: t('目录智能整理、自动化归档与系统扩展辅助技能'),
+        order: 60
+      }
+  }
 }
 
 /**
@@ -45,6 +138,11 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
   const installPlugin = usePluginCenterStore(s => s.installPlugin)
   const togglePluginActive = usePluginCenterStore(s => s.togglePluginActive)
   const updateUserConfig = usePluginCenterStore(s => s.updateUserConfig)
+  const hasPendingTombstones = usePluginCenterStore(s => s.hasPendingTombstones)
+  const checkPendingTombstones = usePluginCenterStore(s => s.checkPendingTombstones)
+  const restartApp = usePluginCenterStore(s => s.restartApp)
+  const exportOfflinePackage = usePluginCenterStore(s => s.exportOfflinePackage)
+  const importOfflinePackage = usePluginCenterStore(s => s.importOfflinePackage)
 
   // IN-06: 订阅后端实时下载进度并支持 React StrictMode 双挂载安全清理
   useEffect(() => {
@@ -57,6 +155,7 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
   useEffect(() => {
     if (isOverlayOpen) {
       void loadModules()
+      void checkPendingTombstones()
     }
   }, [isOverlayOpen, loadModules])
 
@@ -126,6 +225,44 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
       return true
     })
   }, [modules, selectedCategory, searchKeyword, t])
+
+  // 槽位聚类分组 (方案 A: Slot Grouping)
+  const slotGroups = useMemo(() => {
+    const slotMap = new Map<
+      string,
+      { definition: SlotDefinition; modules: typeof filteredModules }
+    >()
+
+    filteredModules.forEach(mod => {
+      const rawSlot = mod.capability_slot || 'general'
+      const slotKey = rawSlot === 'asr' ? 'voice_asr' : rawSlot === 'tts' ? 'voice_tts' : rawSlot
+
+      if (!slotMap.has(slotKey)) {
+        const def = getSlotDefinition(slotKey, mod, t)
+        slotMap.set(slotKey, { definition: def, modules: [] })
+      }
+      slotMap.get(slotKey)!.modules.push(mod)
+    })
+
+    return Array.from(slotMap.values()).sort((a, b) => a.definition.order - b.definition.order)
+  }, [filteredModules, t])
+
+  // 切换插件激活状态，带 exclusive_required 拒关与互斥感知
+  const handleTogglePluginActive = useCallback(
+    async (id: string, active: boolean) => {
+      const target = modules.find(m => m.id === id)
+      if (!target) return
+
+      // 若尝试关闭处于 exclusive_required 策略下的激活项，阻断并弹出告警
+      if (target.slot_policy === 'exclusive_required' && !active) {
+        toast.warning(t('基础 AI 引擎为系统核心底座，必须保持激活，请直接切换另一款引擎'))
+        return
+      }
+
+      await togglePluginActive(id, active)
+    },
+    [modules, togglePluginActive, t]
+  )
 
   // 卡片配置一键直达系统设置对应 Tab (Ticket 05 / Spec §5.2)
   const handleOpenConfig = (id: string) => {
@@ -233,17 +370,37 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
           </div>
         </div>
 
-        {/* 右上角关闭按钮 */}
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={closeOverlay}
-          className="h-8 w-8 p-0 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
-          title={t('关闭插件中心 (Esc)')}
-          aria-label={t('关闭插件中心')}
-        >
-          <X className="w-4 h-4" />
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button
+            size="sm"
+            variant="outline"
+            data-testid="import-offline-plugin-btn"
+            onClick={async () => {
+              try {
+                await importOfflinePackage()
+              } catch (err: any) {
+                alert(err?.message || String(err))
+              }
+            }}
+            className="h-8 px-2.5 text-xs flex items-center gap-1.5 border-dashed border-border/80 hover:border-primary/50 text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+            title={t('导入离线插件包 (.ffp / .zip)')}
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>{t('导入离线包')}</span>
+          </Button>
+
+          {/* 右上角关闭按钮 */}
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={closeOverlay}
+            className="h-8 w-8 p-0 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+            title={t('关闭插件中心 (Esc)')}
+            aria-label={t('关闭插件中心')}
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       {/* 主体内容区 */}
@@ -374,6 +531,27 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
           {/* 插件条目 List 列表 */}
           <div className="flex-1 overflow-y-auto p-6">
             <div className="max-w-6xl mx-auto w-full">
+              {hasPendingTombstones && (
+                <div
+                  data-testid="tombstone-pending-banner"
+                  className="mb-4 flex items-center justify-between rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-xs text-amber-700 dark:text-amber-300 shadow-sm"
+                >
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" />
+                    <span className="font-medium">{t('新版本已就绪，旧模型清理被系统占用')}</span>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    data-testid="restart-app-btn"
+                    onClick={() => restartApp()}
+                    className="h-7 text-xs border-amber-500/40 hover:bg-amber-500/20 gap-1.5 font-semibold text-amber-700 dark:text-amber-300 cursor-pointer"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5" />
+                    {t('🔄 立即重启应用以释放磁盘')}
+                  </Button>
+                </div>
+              )}
               {filteredModules.length === 0 ? (
                 <div className="h-64 flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
                   <Puzzle className="w-10 h-10 mb-2 opacity-40" />
@@ -383,15 +561,53 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
                   </p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {filteredModules.map(item => (
-                    <PluginListItem
-                      key={item.id}
-                      module={item}
-                      onInstall={installPlugin}
-                      onToggleActive={togglePluginActive}
-                      onConfigure={handleOpenConfig}
-                    />
+                <div className="space-y-4">
+                  {slotGroups.map(group => (
+                    <div
+                      key={group.definition.key}
+                      data-testid={`slot-group-${group.definition.key}`}
+                      className="bg-card/75 dark:bg-card/40 border border-border/70 rounded-2xl p-4 shadow-2xs space-y-3 backdrop-blur-xs"
+                    >
+                      {/* 槽位组头部：名称、图标、策略 Badge、描述 */}
+                      <div className="flex items-center justify-between pb-2.5 border-b border-border/50 flex-wrap gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base">{group.definition.icon}</span>
+                          <span className="font-bold text-sm text-foreground tracking-tight">
+                            {group.definition.name}
+                          </span>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              'text-[10px] px-2 py-0.2 font-semibold rounded-full border',
+                              group.definition.policy === 'exclusive_required' &&
+                                'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
+                              group.definition.policy === 'exclusive_optional' &&
+                                'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+                              group.definition.policy === 'multi_active' &&
+                                'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                            )}
+                          >
+                            {group.definition.badgeText}
+                          </Badge>
+                        </div>
+                        <span className="text-xs text-muted-foreground/80 hidden sm:inline">
+                          {group.definition.description}
+                        </span>
+                      </div>
+
+                      {/* 槽位内的插件条目列表 */}
+                      <div className="space-y-2.5">
+                        {group.modules.map(item => (
+                          <PluginListItem
+                            key={item.id}
+                            module={item}
+                            onInstall={installPlugin}
+                            onToggleActive={handleTogglePluginActive}
+                            onConfigure={handleOpenConfig}
+                          />
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}
