@@ -28,6 +28,9 @@ export interface PluginModuleItem {
   version: string
   catalog_version?: number
   category: PluginCategory
+  capability_slot?: string
+  slot_policy?: string
+  backend_type?: string
   author_code: PluginAuthorCode
   author_name?: string | null
   availability: PluginAvailability
@@ -41,6 +44,12 @@ export interface PluginModuleItem {
   user_config?: string | null
   error_message?: string | null
   download_progress?: DownloadProgress
+  resources?: Array<{
+    resource_id: string
+    asset_name: string
+    expected_bytes: number
+    expected_sha256?: string
+  }>
 }
 
 export interface ModularResourceProgressPayload {
@@ -68,6 +77,12 @@ export interface IModularResourceBridge {
       userConsent?: boolean
     }
   ) => Promise<PluginModuleItem>
+  abortAll?: () => Promise<boolean>
+  smokeTest?: (payload: {
+    profile: 'classic_light' | 'gemma_unified'
+    model_paths?: Record<string, string>
+    test_tokens?: string[]
+  }) => Promise<{ success: boolean; latency_ms?: number; error?: string }>
   onProgress?: (callback: (event: ModularResourceProgressPayload) => void) => () => void
 }
 
@@ -103,43 +118,138 @@ export interface PluginCenterState {
 
 export const INITIAL_PLUGINS: PluginModuleItem[] = [
   {
-    id: 'advanced_ai_engine',
-    name: '高级本地 AI 推理引擎',
+    id: 'engine_classic_light',
+    name: '经典轻量 AI 引擎 (Classic Light)',
     version: '1.0.0',
     category: 'ai-engine',
+    capability_slot: 'base_embedding',
+    slot_policy: 'exclusive_required',
+    backend_type: 'omni_onnx',
     author_code: 'official',
     author_name: null,
     availability: 'available',
-    total_bytes: 2314200000,
-    install_state: 'active',
-    description: '深度语义理解、智能重命名与多模态分析的大语言模型推理引擎',
-    icon: 'Brain'
+    total_bytes: 319195255,
+    install_state: 'not_installed',
+    description:
+      '非对称双塔极速架构：Bekko 384d 文本与 CLIP 512d 视觉检索，低内存消耗，CPU 即可流畅运转',
+    icon: 'Feather',
+    resources: [
+      {
+        resource_id: 'bekko-a8m',
+        asset_name: 'bekko-a8m-1.0.0.zip',
+        expected_bytes: 106269288
+      },
+      {
+        resource_id: 'chinese-clip',
+        asset_name: 'chinese-clip-int8-v3.zip',
+        expected_bytes: 212925967
+      }
+    ]
   },
   {
-    id: 'offline_tts',
-    name: '离线语音合成 TTS',
+    id: 'engine_gemma_unified',
+    name: '统一全模态 AI 引擎 (Gemma Unified)',
+    version: '1.0.0',
+    category: 'ai-engine',
+    capability_slot: 'base_embedding',
+    slot_policy: 'exclusive_required',
+    backend_type: 'omni_onnx',
+    author_code: 'official',
+    author_name: null,
+    availability: 'available',
+    total_bytes: 254003864,
+    install_state: 'not_installed',
+    description:
+      'EmbeddingGemma-2 图文同构统一流形空间，支持 MRL 256/512/768 弹性维度截断与高精度跨模态匹配',
+    icon: 'Layers',
+    resources: [
+      {
+        resource_id: 'embeddinggemma-2-onnx',
+        asset_name: 'embeddinggemma-2-onnx-1.0.0.zip',
+        expected_bytes: 254003864
+      }
+    ]
+  },
+  {
+    id: 'perception_nsfw',
+    name: '敏感内容与 NSFW 分级识别',
+    version: '1.0.0',
+    category: 'perception',
+    capability_slot: 'perception_nsfw',
+    slot_policy: 'exclusive_optional',
+    backend_type: 'omni_onnx',
+    author_code: 'official',
+    author_name: null,
+    availability: 'available',
+    total_bytes: 21966375,
+    install_state: 'not_installed',
+    description:
+      '集成 MobileNetV2 视觉 5 分类与多语种文本 FastText 分类器，精准识别成人内容与分级标签 (PG-13/R-18/R-18G)',
+    icon: 'ShieldAlert',
+    resources: [
+      {
+        resource_id: 'nsfw-l3',
+        asset_name: 'nsfw-l3-1.0.0.zip',
+        expected_bytes: 21966375
+      }
+    ]
+  },
+  {
+    id: 'asr_sensevoice_onnx',
+    name: '语音识别与字幕提取 ASR (SenseVoice)',
+    version: '1.0.0',
+    category: 'perception',
+    capability_slot: 'asr',
+    slot_policy: 'exclusive_optional',
+    backend_type: 'omni_onnx',
+    author_code: 'official',
+    author_name: null,
+    availability: 'available',
+    total_bytes: 168587158,
+    install_state: 'not_installed',
+    description:
+      'SenseVoice 极速高精音频转录、富文本标点对齐与多语言语音识别，支持音视频字幕分段抽取 (音频转码复用系统内置 FFmpeg)',
+    icon: 'Mic',
+    resources: [
+      {
+        resource_id: 'sherpa-onnx-runtime',
+        asset_name: 'sherpa-onnx-runtime-1.13.8-win32-x64.zip',
+        expected_bytes: 8282676
+      },
+      {
+        resource_id: 'sensevoice-onnx',
+        asset_name: 'sensevoice-onnx-int8.zip',
+        expected_bytes: 160304482
+      }
+    ]
+  },
+  {
+    id: 'tts_moss_onnx',
+    name: '离线语音合成 TTS (Moss-TTS)',
     version: '1.0.0',
     category: 'media',
+    capability_slot: 'tts',
+    slot_policy: 'exclusive_optional',
+    backend_type: 'omni_onnx',
     author_code: 'official',
     author_name: null,
     availability: 'available',
-    total_bytes: 216426086, // 206.4 MB
-    install_state: 'active',
-    description: '高质量离线自然语音朗读、伴音生成与多语种音色克隆引擎',
-    icon: 'Volume2'
-  },
-  {
-    id: 'asr_engine',
-    name: '语音识别与字幕提取 ASR',
-    version: '0.9.2',
-    category: 'perception',
-    author_code: 'official',
-    author_name: null,
-    availability: 'available',
-    total_bytes: 185597132,
+    total_bytes: 249105462,
     install_state: 'not_installed',
-    description: 'SenseVoice 极速高精音频转录、富文本标点对齐与多语言语音识别',
-    icon: 'Mic'
+    description: '高质量离线自然语音朗读、51 款精选音色库与多语种伴音生成引擎',
+    icon: 'Volume2',
+    resources: [
+      {
+        resource_id: 'sherpa-onnx-runtime',
+        asset_name: 'sherpa-onnx-runtime-1.13.8-win32-x64.zip',
+        expected_bytes: 8282676
+      },
+      {
+        resource_id: 'moss-tts',
+        asset_name: 'moss-tts-1.0.0.zip',
+        expected_bytes: 240822786
+      }
+    ]
   },
   {
     id: 'diffusion_studio',
@@ -177,7 +287,8 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
     availability: 'available',
     total_bytes: 0,
     install_state: 'not_installed',
-    description: '对外提供本地 HTTP API 与 OpenClaw/外部智能体通信桥梁，支持渐进式语义检索、视频高光切片定位与自动化整理方案推送',
+    description:
+      '对外提供本地 HTTP API 与 OpenClaw/外部智能体通信桥梁，支持渐进式语义检索、视频高光切片定位与自动化整理方案推送',
     icon: 'FolderSync'
   }
 ]

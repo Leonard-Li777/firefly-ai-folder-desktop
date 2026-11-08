@@ -28,6 +28,13 @@ export const modularResourcePreloadBridge: IModularResourceBridge = {
     }
   ): Promise<PluginModuleItem> =>
     ipcRenderer.invoke('modular-resource:update-state', moduleId, patch),
+  abortAll: (): Promise<boolean> => ipcRenderer.invoke('modular-resource:abort-all'),
+  smokeTest: (payload: {
+    profile: 'classic_light' | 'gemma_unified'
+    model_paths?: Record<string, string>
+    test_tokens?: string[]
+  }): Promise<{ success: boolean; latency_ms?: number; error?: string }> =>
+    ipcRenderer.invoke('modular-resource:smoke-test', payload),
   onProgress: (callback: (event: ModularResourceProgressPayload) => void) => {
     const handler = (_event: unknown, payload: ModularResourceProgressPayload) => callback(payload)
     ipcRenderer.on('modular-resource:progress', handler as any)

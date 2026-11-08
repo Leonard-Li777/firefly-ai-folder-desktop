@@ -12,7 +12,14 @@ import { ChildProcess, spawn } from 'node:child_process'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
 import { app, BrowserWindow, dialog, shell } from 'electron'
-import { ResourceLocator, logger, LogCategory, APP_PORTS, findAvailablePort, isPathEqual } from '@firefly/shared'
+import {
+  ResourceLocator,
+  logger,
+  LogCategory,
+  APP_PORTS,
+  findAvailablePort,
+  isPathEqual
+} from '@firefly/shared'
 import { MagikaFileCategory } from '@firefly/types'
 import { resolveAnalysisTimeoutBudget } from './analysis-timeout-policy'
 import { isLocalDevRuntime } from '../../main/worktree-env'
@@ -607,49 +614,51 @@ export class OmniService {
       }
 
       // 监听 Desktop 端 OCR 与分析相关的 ConfigKey 变更，实时自动推送到 Omni
-      import('../../config/config-orchestrator').then(({ ConfigOrchestrator }) => {
-        const orchestrator = ConfigOrchestrator.getInstance()
-        // 注意：VIDEO_SOFT_TOKEN_BUDGET 不在此列——它是逐请求参数（随 perceive 请求体透传），不进全局 OmniConfig
-        const ocrKeys = [
-          'ENABLE_IMAGE_OCR',
-          'ENABLE_DOCUMENT_OCR',
-          'MAX_DOCUMENT_OCR_ITEMS',
-          'ENABLE_OFFICE_COVER',
-          'OCR_MODEL_SIZE',
-          'MAX_DOCUMENT_OCR_FILE_SIZE',
-          'MAX_CONTENT_SIZE_KB',
-          'MAX_FILE_SIZE',
-          'ANALYSIS_MODE',
-          'REUSE_BASIC_ANALYSIS_DATA',
-          // 抽帧间隔已由引擎按预算自决，不再进配置监听；语音识别时长仍需同步为引擎默认值
-          'AUDIO_ANALYSIS_DURATION'
-        ] as const
-        ocrKeys.forEach(key => {
-          orchestrator.onValueChange(key as any, () => {
-            this.syncConfigFromDesktop().catch(() => {})
+      import('../../config/config-orchestrator')
+        .then(({ ConfigOrchestrator }) => {
+          const orchestrator = ConfigOrchestrator.getInstance()
+          // 注意：VIDEO_SOFT_TOKEN_BUDGET 不在此列——它是逐请求参数（随 perceive 请求体透传），不进全局 OmniConfig
+          const ocrKeys = [
+            'ENABLE_IMAGE_OCR',
+            'ENABLE_DOCUMENT_OCR',
+            'MAX_DOCUMENT_OCR_ITEMS',
+            'ENABLE_OFFICE_COVER',
+            'OCR_MODEL_SIZE',
+            'MAX_DOCUMENT_OCR_FILE_SIZE',
+            'MAX_CONTENT_SIZE_KB',
+            'MAX_FILE_SIZE',
+            'ANALYSIS_MODE',
+            'REUSE_BASIC_ANALYSIS_DATA',
+            // 抽帧间隔已由引擎按预算自决，不再进配置监听；语音识别时长仍需同步为引擎默认值
+            'AUDIO_ANALYSIS_DURATION'
+          ] as const
+          ocrKeys.forEach(key => {
+            orchestrator.onValueChange(key as any, () => {
+              this.syncConfigFromDesktop().catch(() => {})
+            })
+          })
+
+          // 监听多模态嵌入档位与 MRL 维度变更，执行优雅热重启并切换运行时
+          orchestrator.onValueChange('AI_EMBEDDING_PROFILE' as any, async (newVal, oldVal) => {
+            if (newVal && oldVal && newVal !== oldVal) {
+              logger.info(
+                LogCategory.SYSTEM,
+                `[OmniService] 检测到 AI_EMBEDDING_PROFILE 变更 (${oldVal} -> ${newVal})，正在优雅重启 Omni 服务...`
+              )
+              await this.restart()
+            }
+          })
+          orchestrator.onValueChange('EMBEDDING_MRL_DIMENSION' as any, async (newVal, oldVal) => {
+            if (newVal && oldVal && newVal !== oldVal) {
+              logger.info(
+                LogCategory.SYSTEM,
+                `[OmniService] 检测到 EMBEDDING_MRL_DIMENSION 变更 (${oldVal} -> ${newVal})，正在优雅重启 Omni 服务...`
+              )
+              await this.restart()
+            }
           })
         })
-
-        // 监听多模态嵌入档位与 MRL 维度变更，执行优雅热重启并切换运行时
-        orchestrator.onValueChange('AI_EMBEDDING_PROFILE' as any, async (newVal, oldVal) => {
-          if (newVal && oldVal && newVal !== oldVal) {
-            logger.info(
-              LogCategory.SYSTEM,
-              `[OmniService] 检测到 AI_EMBEDDING_PROFILE 变更 (${oldVal} -> ${newVal})，正在优雅重启 Omni 服务...`
-            )
-            await this.restart()
-          }
-        })
-        orchestrator.onValueChange('EMBEDDING_MRL_DIMENSION' as any, async (newVal, oldVal) => {
-          if (newVal && oldVal && newVal !== oldVal) {
-            logger.info(
-              LogCategory.SYSTEM,
-              `[OmniService] 检测到 EMBEDDING_MRL_DIMENSION 变更 (${oldVal} -> ${newVal})，正在优雅重启 Omni 服务...`
-            )
-            await this.restart()
-          }
-        })
-      }).catch(() => {})
+        .catch(() => {})
     } catch {}
   }
 
@@ -707,7 +716,9 @@ export class OmniService {
    * 同步判定 Omni 服务是否已处于就绪运行态（无异步阻塞开销，供实时交互/快速检索 fast-fail 判定）
    */
   public isReady(): boolean {
-    return Boolean(this.process && !this.process.killed && !this.isStarting && this.cachedVersion !== null)
+    return Boolean(
+      this.process && !this.process.killed && !this.isStarting && this.cachedVersion !== null
+    )
   }
 
   /**
@@ -746,7 +757,9 @@ export class OmniService {
   private getConfigValue<T>(key: string): T | undefined {
     try {
       const req = typeof require !== 'undefined' ? require : eval('require')
-      return req('../../config/config-orchestrator')?.ConfigOrchestrator?.getInstance?.()?.getValue?.(key)
+      return req('../../config/config-orchestrator')
+        ?.ConfigOrchestrator?.getInstance?.()
+        ?.getValue?.(key)
     } catch {
       return undefined
     }
@@ -846,7 +859,8 @@ export class OmniService {
     const root = process.cwd()
 
     // 1. 生产或已部署环境：通过 ResourceLocator 检索
-    const bin = ResourceLocator.resolveBin('omni/firefly-omni') || ResourceLocator.resolveBin('firefly-omni')
+    const bin =
+      ResourceLocator.resolveBin('omni/firefly-omni') || ResourceLocator.resolveBin('firefly-omni')
     if (bin && fs.existsSync(bin)) {
       return bin
     }
@@ -855,7 +869,7 @@ export class OmniService {
     if (isDev) {
       const devCandidates = [
         path.join(root, 'apps', 'omni', 'target', 'debug', exeName),
-        path.join(root, 'apps', 'omni', 'target', 'release', exeName),
+        path.join(root, 'apps', 'omni', 'target', 'release', exeName)
       ]
       for (const cand of devCandidates) {
         if (fs.existsSync(cand)) {
@@ -938,7 +952,10 @@ export class OmniService {
       if (typeof app.isReady === 'function' && !app.isReady()) {
         if (!this.binaryMissingNotifyDeferred && typeof app.whenReady === 'function') {
           this.binaryMissingNotifyDeferred = true
-          void app.whenReady().then(() => this.notifyBinaryMissing()).catch(() => {})
+          void app
+            .whenReady()
+            .then(() => this.notifyBinaryMissing())
+            .catch(() => {})
         }
         return
       }
@@ -997,14 +1014,16 @@ export class OmniService {
         cancelId: 1,
         noLink: true
       })
-      void shown?.then?.((result: any) => {
-        if (result?.response !== 0) return
-        const target = dirState === 'exists' && omniDir ? omniDir : baseDir
-        if (!target) return
-        void shell?.openPath?.(target)
-      })?.catch?.(() => {
-        this.binaryMissingNotified = false
-      })
+      void shown
+        ?.then?.((result: any) => {
+          if (result?.response !== 0) return
+          const target = dirState === 'exists' && omniDir ? omniDir : baseDir
+          if (!target) return
+          void shell?.openPath?.(target)
+        })
+        ?.catch?.(() => {
+          this.binaryMissingNotified = false
+        })
     } catch (err: any) {
       this.binaryMissingNotified = false
     }
@@ -1036,7 +1055,10 @@ export class OmniService {
     this.isStarting = true
     // 缺失冷却检查：避免每个文件都触发一次 resolveOmniExecutable 的遍历
     if (this.missingBinaryRetryAt > Date.now()) {
-      logger.debug(LogCategory.SYSTEM, '[OmniService] firefly-omni 二进制仍处于缺失冷却期，跳过本次拉起')
+      logger.debug(
+        LogCategory.SYSTEM,
+        '[OmniService] firefly-omni 二进制仍处于缺失冷却期，跳过本次拉起'
+      )
       this.isStarting = false
       return false
     }
@@ -1154,7 +1176,10 @@ export class OmniService {
       // 将实际端口写入环境变量，供 DuplicateDetectionService 等跨服务读取
       process.env.OMNI_ACTUAL_PORT = String(port)
 
-      logger.info(LogCategory.SYSTEM, `[OmniService] 正在拉起 firefly-omni 守护进程 (Port: ${port}): ${exePath}`)
+      logger.info(
+        LogCategory.SYSTEM,
+        `[OmniService] 正在拉起 firefly-omni 守护进程 (Port: ${port}): ${exePath}`
+      )
       const isDevMode = isLocalDevRuntime()
       const binDir = path.dirname(exePath)
       const existingPath = process.env.PATH || ''
@@ -1165,9 +1190,10 @@ export class OmniService {
         PATH: injectedPath,
         OMNI_PORT: String(port),
         OMNI_DEV_MODE: isDevMode ? '1' : '0',
-        RUST_LOG: process.env.RUST_LOG || (isDevMode ? 'info,omni_vision=info,omni_server=info,omni_text=info' : 'warn')
+        RUST_LOG:
+          process.env.RUST_LOG ||
+          (isDevMode ? 'info,omni_vision=info,omni_server=info,omni_text=info' : 'warn')
       }
-
 
       const candidatePackPaths = [
         ResourceLocator.resolveResourcePath?.('semantic/semantic.pack'),
@@ -1213,7 +1239,10 @@ export class OmniService {
         const vectorsDir = expectedVectorsDir || path.join(path.dirname(dbPath), 'vectors')
         spawnArgs.push('--vectors-path', vectorsDir)
         env.OMNI_VECTORS_PATH = vectorsDir
-        logger.info(LogCategory.SYSTEM, `[OmniService] 🎯 矢量数据隔离路径 (--vectors-path): ${vectorsDir}`)
+        logger.info(
+          LogCategory.SYSTEM,
+          `[OmniService] 🎯 矢量数据隔离路径 (--vectors-path): ${vectorsDir}`
+        )
       }
       if (packPath) {
         spawnArgs.push('--pack-path', packPath)
@@ -1221,7 +1250,10 @@ export class OmniService {
       }
       if (geoPath) {
         env.OMNI_GEO_DATA_PATH = geoPath
-        logger.info(LogCategory.SYSTEM, `[OmniService] 🌍 地理数据集路径 (OMNI_GEO_DATA_PATH): ${geoPath}`)
+        logger.info(
+          LogCategory.SYSTEM,
+          `[OmniService] 🌍 地理数据集路径 (OMNI_GEO_DATA_PATH): ${geoPath}`
+        )
       } else {
         logger.warn(
           LogCategory.SYSTEM,
@@ -1237,14 +1269,22 @@ export class OmniService {
       ]
       let ppocrDir: string | null = null
       for (const cand of candidatePpocrDirs) {
-        if (cand && fs.existsSync(cand) && (fs.existsSync(path.join(cand, 'PP-OCRv6_det_tiny.onnx')) || fs.existsSync(path.join(cand, 'PP-OCRv6_det_small.onnx')))) {
+        if (
+          cand &&
+          fs.existsSync(cand) &&
+          (fs.existsSync(path.join(cand, 'PP-OCRv6_det_tiny.onnx')) ||
+            fs.existsSync(path.join(cand, 'PP-OCRv6_det_small.onnx')))
+        ) {
           ppocrDir = cand
           break
         }
       }
       if (ppocrDir) {
         env.OMNI_PPOCR_MODEL_PATH = ppocrDir
-        logger.info(LogCategory.SYSTEM, `[OmniService] 🔤 PP-OCRv6 模型目录 (OMNI_PPOCR_MODEL_PATH): ${ppocrDir}`)
+        logger.info(
+          LogCategory.SYSTEM,
+          `[OmniService] 🔤 PP-OCRv6 模型目录 (OMNI_PPOCR_MODEL_PATH): ${ppocrDir}`
+        )
       }
 
       // MOSS-TTS 48kHz 原生离线语音合成模型与预置音色库路径下发
@@ -1266,13 +1306,19 @@ export class OmniService {
       }
       if (mossDir) {
         env.OMNI_MOSS_MODEL_PATH = mossDir
-        logger.info(LogCategory.SYSTEM, `[OmniService] 🎙️ MOSS-TTS 模型目录 (OMNI_MOSS_MODEL_PATH): ${mossDir}`)
+        logger.info(
+          LogCategory.SYSTEM,
+          `[OmniService] 🎙️ MOSS-TTS 模型目录 (OMNI_MOSS_MODEL_PATH): ${mossDir}`
+        )
       }
 
       const candidateVoicesPaths = [
         mossDir ? path.join(mossDir, 'preset_voices.bin') : null,
         ResourceLocator.resolveResourcePath?.('models/audio/moss/preset_voices.bin'),
-        path.join(process.cwd(), 'apps/desktop/build/extraResources/models/audio/moss/preset_voices.bin'),
+        path.join(
+          process.cwd(),
+          'apps/desktop/build/extraResources/models/audio/moss/preset_voices.bin'
+        ),
         path.join(
           process.env.USERPROFILE || process.env.HOME || '',
           '.cache/moss_tts_test/test_voices.bin'
@@ -1287,7 +1333,10 @@ export class OmniService {
       }
       if (voicesPath) {
         env.OMNI_MOSS_VOICES_PATH = voicesPath
-        logger.info(LogCategory.SYSTEM, `[OmniService] 🎙️ MOSS-TTS 预置音色库 (OMNI_MOSS_VOICES_PATH): ${voicesPath}`)
+        logger.info(
+          LogCategory.SYSTEM,
+          `[OmniService] 🎙️ MOSS-TTS 预置音色库 (OMNI_MOSS_VOICES_PATH): ${voicesPath}`
+        )
       }
 
       // NSFW-L3 深度敏感分类模型目录显式下发（路径同源铁律；缺陷 F4）
@@ -1318,7 +1367,10 @@ export class OmniService {
       }
       if (nsfwL3Dir) {
         env.NSFW_L3_MODEL_PATH = nsfwL3Dir
-        logger.info(LogCategory.SYSTEM, `[OmniService] 🛡️ NSFW-L3 模型目录 (NSFW_L3_MODEL_PATH): ${nsfwL3Dir}`)
+        logger.info(
+          LogCategory.SYSTEM,
+          `[OmniService] 🛡️ NSFW-L3 模型目录 (NSFW_L3_MODEL_PATH): ${nsfwL3Dir}`
+        )
       } else {
         logger.warn(
           LogCategory.SYSTEM,
@@ -1336,9 +1388,8 @@ export class OmniService {
         const configOrch = ConfigOrchestrator?.getInstance?.()
         if (configOrch) {
           const embeddingProfile =
-            configOrch.getValue<'classic_light' | 'gemma_unified'>(
-              'AI_EMBEDDING_PROFILE'
-            ) || 'classic_light'
+            configOrch.getValue<'classic_light' | 'gemma_unified'>('AI_EMBEDDING_PROFILE') ||
+            'classic_light'
           spawnArgs.push('--embedding-profile', embeddingProfile)
           logger.info(
             LogCategory.SYSTEM,
@@ -1393,7 +1444,15 @@ export class OmniService {
         const str = stripAnsi(data).trim()
         if (str && !isCzkawkaDump(str)) {
           // 若子进程输出为 INFO 级别或包含多模态关键业务日志，以 info 输出至控制台；其余以 debug 输出
-          const isInfoMsg = str.includes('INFO') || str.includes('[普遍语法造句') || str.includes('[双锚点融合') || str.includes('[OmniServer]') || str.includes('[prune_and_rank_tags]') || str.includes('[落选') || str.includes('[胜出') || str.includes('[MossTtsPerf]')
+          const isInfoMsg =
+            str.includes('INFO') ||
+            str.includes('[普遍语法造句') ||
+            str.includes('[双锚点融合') ||
+            str.includes('[OmniServer]') ||
+            str.includes('[prune_and_rank_tags]') ||
+            str.includes('[落选') ||
+            str.includes('[胜出') ||
+            str.includes('[MossTtsPerf]')
           if (isInfoMsg) {
             logger.info(LogCategory.SYSTEM, `[Omni] ${str}`)
           } else {
@@ -1427,7 +1486,10 @@ export class OmniService {
         // 子进程退出后，先检测是否对应端口上已有服务接管，若健康则直接接入，不触发重启
         const aliveAfterExit = await this.checkHealth()
         if (aliveAfterExit) {
-          logger.info(LogCategory.SYSTEM, `[OmniService] ${this.actualPort} 端口已有外部服务接管，直接连接`)
+          logger.info(
+            LogCategory.SYSTEM,
+            `[OmniService] ${this.actualPort} 端口已有外部服务接管，直接连接`
+          )
           this.restartAttempts = 0
           // 外部服务接管成功，推送"运行中"状态
           this.pushStatus().catch(() => {})
@@ -1453,7 +1515,10 @@ export class OmniService {
 
         await new Promise(r => setTimeout(r, 200))
         if (await this.checkHealth()) {
-          logger.info(LogCategory.SYSTEM, `[OmniService] firefly-omni 服务就绪并在 ${this.baseUrl} 正常监听`)
+          logger.info(
+            LogCategory.SYSTEM,
+            `[OmniService] firefly-omni 服务就绪并在 ${this.baseUrl} 正常监听`
+          )
           this.restartAttempts = 0
           this.isStarting = false
           // 探活就绪后，记录二进制签名，并开启开发态热更新监听
@@ -1471,7 +1536,10 @@ export class OmniService {
         }
       }
 
-      logger.error(LogCategory.SYSTEM, `[OmniService] firefly-omni 启动探活超时 (80s)，终止当前未就绪子进程`)
+      logger.error(
+        LogCategory.SYSTEM,
+        `[OmniService] firefly-omni 启动探活超时 (80s)，终止当前未就绪子进程`
+      )
       this.stop()
       this.isStarting = false
       // 启动失败（探活超时），推送"未运行"状态
@@ -1564,13 +1632,19 @@ export class OmniService {
     }
 
     if (this.restartAttempts >= this.maxRestartAttempts) {
-      logger.error(LogCategory.SYSTEM, `[OmniService] 已达到最大重启重试次数 (${this.maxRestartAttempts})，停止自动重启`)
+      logger.error(
+        LogCategory.SYSTEM,
+        `[OmniService] 已达到最大重启重试次数 (${this.maxRestartAttempts})，停止自动重启`
+      )
       return
     }
 
     const delay = Math.min(1000 * Math.pow(2, this.restartAttempts), 15000)
     this.restartAttempts++
-    logger.info(LogCategory.SYSTEM, `[OmniService] 安排在 ${delay}ms 后尝试重启 Omni 服务 (第 ${this.restartAttempts} 次)...`)
+    logger.info(
+      LogCategory.SYSTEM,
+      `[OmniService] 安排在 ${delay}ms 后尝试重启 Omni 服务 (第 ${this.restartAttempts} 次)...`
+    )
 
     this.restartTimeout = setTimeout(() => {
       this.start().catch(err => {
@@ -1625,14 +1699,18 @@ export class OmniService {
       // 提取最新的受保护排除项清单 (来自 IGNORE_RULES 中 isCzkawka 标记)
       let excludedItems: any[] = []
       try {
-        const { duplicateDetectionService } = await import('../filesystem/duplicate-detection-service')
-        excludedItems = duplicateDetectionService ? duplicateDetectionService.getProtectedExcludedItems() : []
+        const { duplicateDetectionService } =
+          await import('../filesystem/duplicate-detection-service')
+        excludedItems = duplicateDetectionService
+          ? duplicateDetectionService.getProtectedExcludedItems()
+          : []
       } catch {
         excludedItems = []
       }
 
       const embeddingProfile =
-        orchestrator.getValue<'classic_light' | 'gemma_unified'>('AI_EMBEDDING_PROFILE') || 'classic_light'
+        orchestrator.getValue<'classic_light' | 'gemma_unified'>('AI_EMBEDDING_PROFILE') ||
+        'classic_light'
       const mrlDimension = orchestrator.getValue<number>('EMBEDDING_MRL_DIMENSION') || 512
 
       const payload = JSON.stringify({
@@ -1667,7 +1745,11 @@ export class OmniService {
       }
       return false
     } catch (err: any) {
-      logger.debug(LogCategory.SYSTEM, '[OmniService] 同步配置到 Omni 引擎失败 (无头环境已容错):', err.message)
+      logger.debug(
+        LogCategory.SYSTEM,
+        '[OmniService] 同步配置到 Omni 引擎失败 (无头环境已容错):',
+        err.message
+      )
       return false
     }
   }
@@ -1686,7 +1768,10 @@ export class OmniService {
         signal: AbortSignal.timeout(5000)
       })
       if (!res.ok) {
-        logger.warn(LogCategory.SYSTEM, `[OmniService] POST /api/reconnect 失败: status=${res.status}`)
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[OmniService] POST /api/reconnect 失败: status=${res.status}`
+        )
         return false
       }
       const json = await res.json()
@@ -1739,7 +1824,8 @@ export class OmniService {
     try {
       return await doFetch()
     } catch (err: any) {
-      const causeMsg = err?.cause?.message || err?.cause?.code || (err?.cause ? String(err.cause) : '')
+      const causeMsg =
+        err?.cause?.message || err?.cause?.code || (err?.cause ? String(err.cause) : '')
       const fullError = causeMsg ? `${err.message} (cause: ${causeMsg})` : err.message
       logger.warn(
         LogCategory.SYSTEM,
@@ -1751,8 +1837,13 @@ export class OmniService {
         try {
           return await doFetch()
         } catch (retryErr: any) {
-          const retryCause = retryErr?.cause?.message || retryErr?.cause?.code || (retryErr?.cause ? String(retryErr.cause) : '')
-          const retryFull = retryCause ? `${retryErr.message} (cause: ${retryCause})` : retryErr.message
+          const retryCause =
+            retryErr?.cause?.message ||
+            retryErr?.cause?.code ||
+            (retryErr?.cause ? String(retryErr.cause) : '')
+          const retryFull = retryCause
+            ? `${retryErr.message} (cause: ${retryCause})`
+            : retryErr.message
           logger.error(
             LogCategory.SYSTEM,
             `[OmniService] <<< POST /api/extract 自愈重试仍失败 (${filePath}): ${retryFull}`
@@ -1898,7 +1989,11 @@ export class OmniService {
         throw fetchErr
       }
     } catch (err: any) {
-      logger.debug(LogCategory.SYSTEM, `[OmniService] <<< POST /api/geo/reverse 调用异常 (耗时: ${Date.now() - tStart}ms):`, err.message)
+      logger.debug(
+        LogCategory.SYSTEM,
+        `[OmniService] <<< POST /api/geo/reverse 调用异常 (耗时: ${Date.now() - tStart}ms):`,
+        err.message
+      )
       return null
     }
   }
@@ -1919,7 +2014,10 @@ export class OmniService {
         group: m.group || (extResult.mime_type.startsWith('image/') ? 'image' : 'document'),
         description: m.description || m.name || '',
         extensions: Array.isArray(m.extensions) && m.extensions.length > 0 ? m.extensions : extList,
-        is_text: m.is_text ?? (extResult.mime_type.startsWith('text/') || (extResult.markdown_content ? extResult.markdown_content.length > 0 : false)),
+        is_text:
+          m.is_text ??
+          (extResult.mime_type.startsWith('text/') ||
+            (extResult.markdown_content ? extResult.markdown_content.length > 0 : false)),
         score: typeof m.score === 'number' ? m.score : 0.99
       }
     }
@@ -1979,7 +2077,7 @@ export class OmniService {
       const arrayBuffer = await res.arrayBuffer()
       const buffer = Buffer.from(arrayBuffer)
       const durationHeader = res.headers.get('x-cover-duration-ms')
-      const durationMs = durationHeader ? Number(durationHeader) : (Date.now() - tStart)
+      const durationMs = durationHeader ? Number(durationHeader) : Date.now() - tStart
       this.lastCoverDurationMs = durationMs
       this.coverDurationMap.set(path.resolve(filePath), durationMs)
       logger.debug(
@@ -1992,13 +2090,20 @@ export class OmniService {
     try {
       return await doFetch()
     } catch (err: any) {
-      logger.debug(LogCategory.SYSTEM, `[OmniService] <<< GET /api/cover 首次调用异常 (${filePath}, 耗时: ${Date.now() - tStart}ms): ${err.message}，尝试自愈重试...`)
+      logger.debug(
+        LogCategory.SYSTEM,
+        `[OmniService] <<< GET /api/cover 首次调用异常 (${filePath}, 耗时: ${Date.now() - tStart}ms): ${err.message}，尝试自愈重试...`
+      )
       const restarted = await this.start()
       if (restarted) {
         try {
           return await doFetch()
         } catch (retryErr: any) {
-          logger.debug(LogCategory.SYSTEM, `[OmniService] <<< GET /api/cover 自愈重试仍异常 (${filePath}):`, retryErr.message)
+          logger.debug(
+            LogCategory.SYSTEM,
+            `[OmniService] <<< GET /api/cover 自愈重试仍异常 (${filePath}):`,
+            retryErr.message
+          )
         }
       }
       return null
@@ -2054,11 +2159,9 @@ export class OmniService {
       video_frame_interval_seconds: options?.videoFrameIntervalSeconds,
       video_soft_token_budget: options?.videoSoftTokenBudget,
       video_frame_quota_max:
-        options?.videoFrameQuotaMax ??
-        this.getConfigValue<number>('VIDEO_FRAME_QUOTA_MAX'),
+        options?.videoFrameQuotaMax ?? this.getConfigValue<number>('VIDEO_FRAME_QUOTA_MAX'),
       video_cut_sensitivity:
-        options?.videoCutSensitivity ??
-        this.getConfigValue<string>('VIDEO_CUT_SENSITIVITY'),
+        options?.videoCutSensitivity ?? this.getConfigValue<string>('VIDEO_CUT_SENSITIVITY'),
       video_max_analyze_sec: options?.videoMaxAnalyzeSec,
       video_analyze_start_sec: options?.videoAnalyzeStartSec
     }
@@ -2077,9 +2180,7 @@ export class OmniService {
     // 视频抽帧与多模态感知具有客观重计算开销（如 200s+ 视频 Route A 需约 80-90s），
     // 为防止压线 100s 触发 AbortSignal 导致整个视频切片与向量全毁，至少预留 totalMs - 20s 给 perceive
     const effectiveCpuCapMs =
-      budget.kind === 'video'
-        ? Math.max(budget.cpuCapMs, budget.totalMs - 20000)
-        : budget.cpuCapMs
+      budget.kind === 'video' ? Math.max(budget.cpuCapMs, budget.totalMs - 20000) : budget.cpuCapMs
     const timeoutMs = options?.timeoutMs || effectiveCpuCapMs
 
     const doFetch = async () => {
@@ -2087,7 +2188,7 @@ export class OmniService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Connection': 'keep-alive'
+          Connection: 'keep-alive'
         },
         body: JSON.stringify(reqBody),
         signal: AbortSignal.timeout(timeoutMs)
@@ -2104,7 +2205,10 @@ export class OmniService {
       const json = (await res.json()) as OmniPerceptionResponse
 
       // 级联仲裁终局结果显式输出至 Desktop 控制台 (debug/开发模式可见)
-      if (json.winning_hypothesis || (json.candidate_hypotheses && json.candidate_hypotheses.length > 0)) {
+      if (
+        json.winning_hypothesis ||
+        (json.candidate_hypotheses && json.candidate_hypotheses.length > 0)
+      ) {
         logger.info(
           LogCategory.SYSTEM,
           `[级联仲裁:Desktop] 终局胜出: "${json.winning_hypothesis?.prompt_text || '无'}" (置信度: ${json.winning_hypothesis?.confidence ?? 'N/A'}) | 建议命名: ${json.smart_name || '无'}`
@@ -2203,7 +2307,8 @@ export class OmniService {
     try {
       return await doFetch()
     } catch (err: any) {
-      const causeMsg = err?.cause?.message || err?.cause?.code || (err?.cause ? String(err.cause) : '')
+      const causeMsg =
+        err?.cause?.message || err?.cause?.code || (err?.cause ? String(err.cause) : '')
       const fullError = causeMsg ? `${err.message} (cause: ${causeMsg})` : err.message
       logger.warn(
         LogCategory.SYSTEM,
@@ -2214,8 +2319,13 @@ export class OmniService {
         try {
           return await doFetch()
         } catch (retryErr: any) {
-          const retryCause = retryErr?.cause?.message || retryErr?.cause?.code || (retryErr?.cause ? String(retryErr.cause) : '')
-          const retryFull = retryCause ? `${retryErr.message} (cause: ${retryCause})` : retryErr.message
+          const retryCause =
+            retryErr?.cause?.message ||
+            retryErr?.cause?.code ||
+            (retryErr?.cause ? String(retryErr.cause) : '')
+          const retryFull = retryCause
+            ? `${retryErr.message} (cause: ${retryCause})`
+            : retryErr.message
           logger.error(
             LogCategory.SYSTEM,
             `[OmniService] <<< POST /api/perceive 自愈重试仍失败 (${filePath}): ${retryFull}`
@@ -2256,7 +2366,11 @@ export class OmniService {
     try {
       return await doFetch()
     } catch (err: any) {
-      logger.debug(LogCategory.SYSTEM, `[OmniService] transcribeAudio 异常 (${filePath}):`, err.message)
+      logger.debug(
+        LogCategory.SYSTEM,
+        `[OmniService] transcribeAudio 异常 (${filePath}):`,
+        err.message
+      )
       const restarted = await this.start()
       if (restarted) {
         try {
@@ -2343,7 +2457,11 @@ export class OmniService {
     try {
       return await doFetch()
     } catch (err: any) {
-      logger.debug(LogCategory.SYSTEM, `[OmniService] extractVisualTags 异常 (${filePath}):`, err.message)
+      logger.debug(
+        LogCategory.SYSTEM,
+        `[OmniService] extractVisualTags 异常 (${filePath}):`,
+        err.message
+      )
       const restarted = await this.start()
       if (restarted) {
         try {
@@ -2379,7 +2497,11 @@ export class OmniService {
     try {
       return await doFetch()
     } catch (err: any) {
-      logger.debug(LogCategory.SYSTEM, `[OmniService] inspectVision 异常 (${filePath}):`, err.message)
+      logger.debug(
+        LogCategory.SYSTEM,
+        `[OmniService] inspectVision 异常 (${filePath}):`,
+        err.message
+      )
       const restarted = await this.start()
       if (restarted) {
         try {
@@ -2451,7 +2573,9 @@ export class OmniService {
       logger.debug(LogCategory.SYSTEM, `[OmniService] indexDocuments 异常:`, err.message)
       const restarted = await this.start()
       if (restarted) {
-        try { return await doFetch() } catch {}
+        try {
+          return await doFetch()
+        } catch {}
       }
       return null
     }
@@ -2486,7 +2610,9 @@ export class OmniService {
       logger.debug(LogCategory.SYSTEM, `[OmniService] searchHybrid 异常:`, err.message)
       const restarted = await this.start()
       if (restarted) {
-        try { return await doFetch() } catch {}
+        try {
+          return await doFetch()
+        } catch {}
       }
       return null
     }
@@ -2526,7 +2652,10 @@ export class OmniService {
       })
       if (!res.ok) {
         const errorText = await res.text().catch(() => '')
-        logger.warn(LogCategory.SYSTEM, `[OmniService] clusterDocuments 响应错误 HTTP ${res.status}: ${errorText}`)
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[OmniService] clusterDocuments 响应错误 HTTP ${res.status}: ${errorText}`
+        )
         return { success: false, error: `HTTP ${res.status}: ${errorText}` }
       }
       return (await res.json()) as OmniClusterResponse
@@ -2537,7 +2666,9 @@ export class OmniService {
       logger.debug(LogCategory.SYSTEM, `[OmniService] clusterDocuments 异常:`, err.message)
       const restarted = await this.start()
       if (restarted) {
-        try { return await doFetch() } catch {}
+        try {
+          return await doFetch()
+        } catch {}
       }
       return null
     }
@@ -2586,7 +2717,10 @@ export class OmniService {
     try {
       const { ConfigOrchestrator } = await import('../../config/config-orchestrator')
       const orchestrator = ConfigOrchestrator.getInstance()
-      return orchestrator.getValue<'classic_light' | 'gemma_unified'>('AI_EMBEDDING_PROFILE') || 'classic_light'
+      return (
+        orchestrator.getValue<'classic_light' | 'gemma_unified'>('AI_EMBEDDING_PROFILE') ||
+        'classic_light'
+      )
     } catch {
       return 'classic_light'
     }
@@ -2758,13 +2892,63 @@ export class OmniService {
         durationMs: number
       }
     } catch (err: any) {
-      logger.warn(
-        LogCategory.SYSTEM,
-        `[OmniService] batchEmbedText 异常或超时: ${err.message}`
-      )
+      logger.warn(LogCategory.SYSTEM, `[OmniService] batchEmbedText 异常或超时: ${err.message}`)
       throw err
     } finally {
       clearTimeout(timer)
+    }
+  }
+
+  /**
+   * 基础引擎解耦探活冒烟自检协议 (Decoupled Smoke Test)
+   * 向 Omni 进程显式发送 POST /api/engine/smoke-test，传入 profile 与 model_paths 进行 5-Token 推理验证
+   */
+  public async runSmokeTest(payload: {
+    profile: 'classic_light' | 'gemma_unified'
+    model_paths?: Record<string, string>
+    test_tokens?: string[]
+  }): Promise<{ success: boolean; latency_ms?: number; error?: string }> {
+    try {
+      await this.ensureRunning()
+      const tokens = payload.test_tokens || ['test', '向量', 'search', '检索', 'firefly']
+      const timer = AbortSignal.timeout(5000)
+      const res = await fetch(`${this.baseUrl}/api/engine/smoke-test`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          profile: payload.profile,
+          model_paths: payload.model_paths || {},
+          test_tokens: tokens
+        }),
+        signal: timer
+      })
+
+      if (!res.ok) {
+        if (res.status === 404 || res.status === 501) {
+          const testEmbed = await this.batchEmbedText(tokens, {
+            profile: payload.profile,
+            timeoutMs: 4000
+          })
+          return {
+            success: Boolean(testEmbed && testEmbed.vectors.length > 0),
+            latency_ms: testEmbed.durationMs
+          }
+        }
+        return { success: false, error: `HTTP ${res.status}: ${res.statusText}` }
+      }
+
+      const data = (await res.json()) as any
+      if (data && data.success !== false) {
+        return { success: true, latency_ms: data.latency_ms }
+      }
+      return { success: false, error: data?.error || '冒烟自检校验失败' }
+    } catch (err: any) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        '[OmniService] runSmokeTest 异常:',
+        err?.message || String(err)
+      )
+      return { success: false, error: err?.message || String(err) }
     }
   }
 }
@@ -2790,5 +2974,3 @@ export interface InspectControlledTagsResponse {
 }
 
 export const omniService = OmniService.getInstance()
-
-

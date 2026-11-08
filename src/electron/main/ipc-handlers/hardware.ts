@@ -16,5 +16,38 @@ export function registerHardwareIPCHandlers() {
   ipcMain.handle('get-recommended-embedding-settings', async () => {
     return await hardwareDetectionService.getRecommendedEmbeddingSettings?.()
   })
-}
 
+  // 欢迎向导硬件能力探测看板 (RAM, GPU, VRAM, 磁盘可用空间)
+  ipcMain.handle('detect-system-resources', async () => {
+    try {
+      const res = await hardwareDetectionService.detectSystemResources()
+      const totalMemMB = res.memory?.total || 0
+      const totalMemGB = Math.round((totalMemMB / 1024) * 10) / 10
+      const primaryGpu = res.gpus?.[0]
+      const gpuName = primaryGpu?.name || ''
+      const vramGB = primaryGpu?.memory ? Math.round((primaryGpu.memory / 1024) * 10) / 10 : 0
+      const isGpuSupported = Boolean(primaryGpu && !primaryGpu.isIntegrated)
+      const storageFreeGB =
+        res.storage?.available !== undefined ? Math.round(res.storage.available * 10) / 10 : 10
+
+      return {
+        totalMemGB,
+        totalMemMB,
+        gpuName,
+        vramGB,
+        isGpuSupported,
+        storageFreeGB,
+        raw: res
+      }
+    } catch {
+      return {
+        totalMemGB: 8,
+        totalMemMB: 8192,
+        gpuName: 'Generic GPU',
+        vramGB: 0,
+        isGpuSupported: false,
+        storageFreeGB: 50
+      }
+    }
+  })
+}

@@ -119,4 +119,39 @@ export function registerModularResourceIpcHandlers(
       throw err
     }
   })
+
+  ipcMain.handle('modular-resource:abort-all', async () => {
+    try {
+      const { fileDownloadService } = await import('../system/file-download-service')
+      fileDownloadService.abortAll()
+      return true
+    } catch (err: any) {
+      logger.error(LogCategory.MAIN, '[ModularResourceIPC] abort-all 失败:', err)
+      return false
+    }
+  })
+
+  ipcMain.handle(
+    'modular-resource:smoke-test',
+    async (
+      _event,
+      payload: {
+        profile: 'classic_light' | 'gemma_unified'
+        model_paths?: Record<string, string>
+        test_tokens?: string[]
+      }
+    ) => {
+      try {
+        const { omniService } = await import('../system/omni-service')
+        return await omniService.runSmokeTest({
+          profile: payload.profile,
+          model_paths: payload.model_paths || {},
+          test_tokens: payload.test_tokens
+        })
+      } catch (err: any) {
+        logger.error(LogCategory.MAIN, '[ModularResourceIPC] smoke-test 失败:', err)
+        return { success: false, error: err?.message || String(err) }
+      }
+    }
+  )
 }

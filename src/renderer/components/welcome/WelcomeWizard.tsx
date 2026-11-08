@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useVoerkaI18n } from '@voerkai18n/react'
 import i18nScope from '@src/languages'
 import { WelcomeStep1 } from './WelcomeStep1'
+import { WelcomeStep2PluginSetup } from './WelcomeStep2PluginSetup'
 import { useWelcomeStore } from '@stores/config-store'
 import { Header } from '../common/Header'
 import './welcome.css'
@@ -12,17 +13,14 @@ interface WelcomeWizardProps {
 }
 
 /**
- * 欢迎向导（仅语言选择一步）
+ * 欢迎向导（自适应两步流转）
  *
- * 模型存储目录配置已迁移至引擎应用（firefly-ai-engine），
- * 引擎/模型下载引导由引擎应用承载（见 docs/prd/0043-engine-model-first-download-guidance-prd.md 与 ADR-0042）。
- *
- * V4 架构已取消内置模型、模型下载完全由引擎应用负责，因此原「模型目录合法检测」步骤
- * 及其配套步骤机（currentStep / modelMode / nextStep / goToStep / goToModelSelection）
- * 已随 PRD-0044 全链清退，本组件固定渲染唯一的语言选择步骤。
+ * Step 1: 语言选择偏好
+ * Step 2: AI 能力与插件自适应装配（硬件探测看板、去重精确求和与必装强门禁）
  */
 export function WelcomeWizard({ onComplete }: WelcomeWizardProps) {
   const { t, activeLanguage } = useVoerkaI18n(i18nScope)
+  const [currentStep, setCurrentStep] = useState<1 | 2>(1)
 
   // 设置窗口标题栏显示版本号
   useEffect(() => {
@@ -30,14 +28,22 @@ export function WelcomeWizard({ onComplete }: WelcomeWizardProps) {
     document.title = `${appName} v${__APP_VERSION__}`
   }, [activeLanguage, t])
 
-  // 跟踪进入向导（单步：语言选择）
+  // 跟踪进入向导步骤
   useEffect(() => {
     captureEvent('进入欢迎向导步骤', {
-      step: 1
+      step: currentStep
     })
-  }, [])
+  }, [currentStep])
 
-  const handleNext = async () => {
+  const handleStep1Next = () => {
+    setCurrentStep(2)
+  }
+
+  const handleStep2Back = () => {
+    setCurrentStep(1)
+  }
+
+  const handleFinish = async () => {
     await useWelcomeStore.getState().completeSetup()
     onComplete?.()
   }
@@ -46,7 +52,10 @@ export function WelcomeWizard({ onComplete }: WelcomeWizardProps) {
     <div className="h-screen w-full flex flex-col overflow-hidden bg-slate-50">
       <Header />
       <div className="flex-grow overflow-hidden">
-        <WelcomeStep1 onNext={handleNext} />
+        {currentStep === 1 && <WelcomeStep1 onNext={handleStep1Next} />}
+        {currentStep === 2 && (
+          <WelcomeStep2PluginSetup onBack={handleStep2Back} onComplete={handleFinish} />
+        )}
       </div>
     </div>
   )

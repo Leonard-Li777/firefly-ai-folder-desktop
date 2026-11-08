@@ -362,6 +362,24 @@ export class FileDownloadService {
   }
 
   /**
+   * 中止所有在途下载任务（离线导入互斥等场景）
+   */
+  abortAll(): void {
+    logger.info(
+      LogCategory.SYSTEM,
+      `[Download] 中止全部在途下载任务 (共 ${this.activeRequests.size} 个)`
+    )
+    for (const [taskId, request] of this.activeRequests.entries()) {
+      try {
+        request.abort()
+      } catch (err) {
+        logger.warn(LogCategory.SYSTEM, `[Download] 中止任务失败: ${taskId}`, err)
+      }
+    }
+    this.activeRequests.clear()
+  }
+
+  /**
    * 获取远程文件大小
    */
   private async getRemoteSize(url: string): Promise<number> {
