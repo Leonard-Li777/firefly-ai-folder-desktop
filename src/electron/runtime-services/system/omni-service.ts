@@ -76,6 +76,14 @@ export interface OmniBenchmarkResponse {
   [subtask_ms: `${string}_ms`]: number | undefined
 }
 
+/**
+ * 原生感知插槽分析状态与命中标签 (Ticket 03)
+ */
+export interface PerceptionSlotResult {
+  status: 'skipped' | 'clean' | 'flagged'
+  tags: string[]
+}
+
 export interface OmniExtractionResponse {
   file_path: string
   mime_type: string
@@ -345,6 +353,10 @@ export interface OmniPerceptionResponse {
   phash?: string
   is_corrupted: boolean
   benchmark?: OmniPerceptionBenchmarkResponse
+  /** 原生感知插槽: 敏感内容合规识别 (perception_nsfw, Ticket 03) */
+  nsfw_perception?: PerceptionSlotResult
+  /** 原生感知插槽: 人脸特征分析 (perception_face, Ticket 03) */
+  face_perception?: PerceptionSlotResult
 }
 
 export interface OmniVideoChunkItem {
@@ -1349,9 +1361,12 @@ export class OmniService {
       // 这里按同一候选栈显式注入，让寻址链第一优先级真正生效；
       // 解析不到时必须 `logger.warn` 显式上报（L3 通道保持关闭，严禁静默降级）。
       const candidateNsfwL3Dirs = [
+        ResourceLocator.resolveResourcePath?.('modules/_shared/nsfw-l3'),
         ResourceLocator.resolveResourcePath?.('models/nsfw-l3'),
+        path.join(process.cwd(), 'apps/desktop/build/extraResources/modules/_shared/nsfw-l3'),
         path.join(process.cwd(), 'apps/desktop/build/extraResources/models/nsfw-l3'),
         path.join(process.cwd(), 'build/extraResources/models/nsfw-l3'),
+        path.join(binDir, '../../modules/_shared/nsfw-l3'),
         path.join(binDir, '../../models/nsfw-l3')
       ]
       // 就绪判据与 Rust 侧一致：模型与分词器必须同时在位（缺分词器时 Rust 侧会关闭 L3）
@@ -1713,6 +1728,16 @@ export class OmniService {
         'classic_light'
       const mrlDimension = orchestrator.getValue<number>('EMBEDDING_MRL_DIMENSION') || 512
 
+      let enableNsfwPerception = false
+      let enableFacePerception = false
+      try {
+        const { modularResourceService } = await import('./modular-resource-service')
+        const nsfwMod = modularResourceService.getModule('perception_nsfw')
+        enableNsfwPerception = nsfwMod?.install_state === 'active'
+        const faceMod = modularResourceService.getModule('perception_face')
+        enableFacePerception = faceMod?.install_state === 'active'
+      } catch {}
+
       const payload = JSON.stringify({
         enable_office_cover: enableOfficeCover,
         max_document_ocr_items: maxDocOcrItems,
@@ -1726,7 +1751,9 @@ export class OmniService {
         excluded_items: excludedItems,
         language: currentLanguage,
         embedding_profile: embeddingProfile,
-        mrl_dimension: mrlDimension
+        mrl_dimension: mrlDimension,
+        enable_nsfw_perception: enableNsfwPerception,
+        enable_face_perception: enableFacePerception
       })
 
       const res = await fetch(`${this.baseUrl}/api/config`, {

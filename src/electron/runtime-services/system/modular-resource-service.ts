@@ -1277,7 +1277,17 @@ export class ModularResourceService implements IModularResourceService {
     })
 
     tx.immediate()
-    return this.buildModuleView(dao.modules.findByIdSync(moduleId)!)
+    const view = this.buildModuleView(dao.modules.findByIdSync(moduleId)!)
+
+    // 若涉及感知插槽热插拔（perception_nsfw 或 perception_face），动态通知 Omni 引擎热重载
+    if (mod.capability_slot === 'perception_nsfw' || mod.capability_slot === 'perception_face') {
+      try {
+        const { omniService } = require('./omni-service')
+        omniService?.syncConfigFromDesktop?.().catch?.(() => {})
+      } catch {}
+    }
+
+    return view
   }
 
   /**
