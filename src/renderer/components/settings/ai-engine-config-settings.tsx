@@ -400,27 +400,9 @@ export const AIEngineConfigSettings: React.FC = () => {
   const serviceRunning = isEngineServiceOnline(snapshot?.raw?.status)
   const openEngineBtnRef = React.useRef<HTMLButtonElement>(null)
 
-  /** 将模型文件名或标识符美化为规范友好的模型展示名称 */
+  /** 展示美化模型名称（后端 EngineModelCatalogResolver 与 Snapshot 保证单源权威） */
   const formatFriendlyModelName = (name?: string | null, rawModel?: string | null): string => {
-    const candidate = name || rawModel
-    if (!candidate) return '—'
-    if (name && (name.includes(' ') || /[\u4e00-\u9fa5（）]/.test(name))) {
-      return name
-    }
-    const clean = candidate.replace(/.*[\\/]/, '').replace(/\.[^.]+$/, '')
-    if (/minicpm5[-_]1b/i.test(clean)) {
-      return t('MiniCPM5 1B（较好•越狱）')
-    }
-    if (/minicpm5[-_]2b/i.test(clean)) {
-      return t('MiniCPM5 2B（高质量•高速）')
-    }
-    if (/qwen3\.?5[-_]0\.8b/i.test(clean)) {
-      return t('Qwen 3.5 0.8B (中文更佳)')
-    }
-    if (/lfm2\.?5[-_]1\.2b/i.test(clean)) {
-      return t('LFM2.5 1.2B Instruct（英文更佳•高速）')
-    }
-    return name || clean
+    return name || rawModel || '—'
   }
 
   // 「打开萤核AI引擎」为未连接态唯一行动点，渲染后自动置于焦点（user story 5）
@@ -805,7 +787,8 @@ export const AIEngineConfigSettings: React.FC = () => {
                           title={snapshot?.model || undefined}
                         >
                           {/* 优先取规范模型友好名称（内置模型库/映射表/智能美化），无模型统一显示 — */}
-                          {formatFriendlyModelName(snapshot?.modelName, snapshot?.model)}
+                          {snapshot?.activeModel ||
+                            formatFriendlyModelName(snapshot?.modelName, snapshot?.model)}
                         </span>
                       </div>
                       <div className="col-span-1 flex flex-col gap-1 p-3 bg-muted/20 border border-border/50 rounded-xl hover:bg-muted/30 transition-colors">

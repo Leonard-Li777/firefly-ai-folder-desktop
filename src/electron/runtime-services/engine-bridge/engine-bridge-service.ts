@@ -30,6 +30,8 @@ import {
   normalizeEngineMetricsPayload,
   parseRetryAfter
 } from './engine-swapping-coordinator'
+import { EngineLifecycleStateMachine } from './engine-lifecycle-state-machine'
+import { EngineModelCatalogResolver } from './engine-model-catalog-resolver'
 import { isLocalDevRuntime } from '../../main/worktree-env'
 
 /** Tier 2 引擎基准端口（与本地 AI 服务端口收敛一致：38400） */
@@ -233,10 +235,17 @@ export interface EngineBridgeSnapshot {
   metrics?: EngineMetricsSnapshot | null
   /** 运行时指标快照更新时间戳 */
   metricsUpdatedAt?: number | null
+  /** 当前激活模型友好展示名称 */
+  activeModel?: string | null
+  /** 当前激活多模态/视觉模型文件或标识符（未连接时为 null） */
+  activeMmproj?: string | null
+  /** 是否激活 D-Spark 双模型协同加速 */
+  isDSparkActive?: boolean
 }
 
 export class EngineBridgeService {
   private static instance: EngineBridgeService
+  private lifecycle = new EngineLifecycleStateMachine()
   private process: ChildProcess | null = null
   /** 当前实际通信端口（初始为基准端口；引擎滑动时经探测采纳实际端口） */
   private activePort: number = TIER2_ENGINE_PORT
@@ -611,288 +620,39 @@ export class EngineBridgeService {
    */
   public resolveFriendlyModelName(identifier: string | null): string | null {
     if (!identifier) return null
-
-    // 防护：mmproj 是多模态投影器辅助文件，不是可直接启动的主模型，不应展示为当前模型名称
-    const fileBasename = identifier.replace(/.*[/\\]/, '').toLowerCase()
-    if (fileBasename.startsWith('mmproj')) {
-      logger.warn(
-        LogCategory.SYSTEM,
-        `[EngineBridge] current_model 指向投影器文件，忽略展示: ${identifier}`
-      )
-      return null
-    }
-
-    // 0. 如果 identifier 本身已经是规范展示名称（包含中文、全角括号、或者非文件名且包含空格），直接返回
-    if (
-      /[\u4e00-\u9fa5（）]/.test(identifier) ||
-      (identifier.includes(' ') &&
-        !/[/\\]/.test(identifier) &&
-        !identifier.toLowerCase().endsWith('.gguf'))
-    ) {
-      return identifier
-    }
-
-    // 1. 优先从内置模型目录进行语义与归一化匹配（获取 Qwen 3.5 0.8B (中文更佳) 等中文规范名称）
-    const catalog = this.loadBuiltinModelCatalog()
-    if (catalog.length > 0) {
-      // 1.1 直接精确匹配 id 或 name
-      const direct = catalog.find(m => m.id === identifier || m.name === identifier)
-      if (direct?.name) return direct.name
-
-      // 1.2 如果 identifier 是完整物理路径，匹配其包含的 repo 仓库标识
-      // 例如路径包含 'zensignGG/MiniCPM5-1B-Claude-Opus-Fable5-V2-Thinking-heretic-GGUF'
-      const normalizedPath = identifier.replace(/\\/g, '/').toLowerCase()
-      const pathHit = catalog.find(m => {
-        if (!m.id) return false
-        const repoId = m.id.split(':')[0].toLowerCase()
-        if (!repoId) return false
-        const repoSlug = repoId.replace('/', '--')
-        return normalizedPath.includes(repoId) || normalizedPath.includes(repoSlug)
-      })
-      if (pathHit?.name) return pathHit.name
-
-      // 1.3 规范化匹配（去掉扩展名、路径前缀）
-      const clean = identifier.replace(/\.[^.]+$/, '').replace(/.*[\\/]/, '')
-      const cleanNorm = clean.toLowerCase().replace(/[-_:\/]|gguf/gi, '')
-      const hit = catalog.find(m => {
-        if (!m.id) return false
-        if (m.id === clean || m.name === clean) return true
-        const idNorm = m.id.toLowerCase().replace(/[-_:\/]|gguf/gi, '')
-        if (idNorm.includes(cleanNorm) || cleanNorm.includes(idNorm)) return true
-
-        // 针对模型家族关键词与尺寸进行深度匹配（如 minicpm5 + 1b）
-        const cLower = clean.toLowerCase()
-        const idLower = m.id.toLowerCase()
-        if (cLower.includes('minicpm5') && idLower.includes('minicpm5')) {
-          if (cLower.includes('1b') && idLower.includes('1b')) return true
-          if (cLower.includes('2b') && idLower.includes('2b')) return true
-        }
-        if (cLower.includes('qwen') && idLower.includes('qwen')) {
-          if (cLower.includes('0.8b') && idLower.includes('0.8b')) return true
-        }
-        return false
-      })
-      if (hit && hit.name) {
-        return hit.name
-      }
-    }
-
-    // 2. 次选从 /api/models 映射表中反查（若名称与原始 ID 不同则采用）
-    if (this.lastModelNameMap.size > 0) {
-      const mapped = this.lastModelNameMap.get(identifier)
-      if (mapped && mapped !== identifier) {
-        return mapped
-      }
-    }
-
-    // 3. 兜底语义映射（绝不能将冰冷的文件名原样暴露为模型名称）
-    const cleanStem = identifier.replace(/.*[\\/]/, '').replace(/\.[^.]+$/, '')
-    if (/minicpm5[-_]1b/i.test(cleanStem)) {
-      return 'MiniCPM5 1B（较好•越狱）'
-    }
-    if (/minicpm5[-_]2b/i.test(cleanStem)) {
-      return 'MiniCPM5 2B（高质量•高速）'
-    }
-    if (/qwen3\.?5[-_]0\.8b/i.test(cleanStem)) {
-      return 'Qwen 3.5 0.8B (中文更佳)'
-    }
-    if (/lfm2\.?5[-_]1\.2b/i.test(cleanStem)) {
-      return 'LFM2.5 1.2B Instruct（英文更佳•高速）'
-    }
-
-    return cleanStem
+    return (
+      EngineModelCatalogResolver.resolveFriendlyModelName(identifier, {
+        catalog: this.loadBuiltinModelCatalog(),
+        modelNameMap: this.lastModelNameMap
+      }) || null
+    )
   }
 
   /**
-   * 推导展示模型及其友好名称（对齐 firefly-ai-engine resolveDisplayModel 的权威优先级）：
-   *   P1 运行模型 —— 仅 ready/starting 态（停止态严禁使用残留 current_model）
-   *   P2 激活主语言模型槽位（active_language_model）
-   *   P3 激活嵌入向量模型槽位（active_embedding_model）
-   *   P4 兜底 —— 上次已知运行模型 → 本地首个已下载就绪模型
-   *
-   * 修复「引擎 UI 与 desktop Footer 模型状态不同步」：引擎切换到嵌入模型（如 WeMM）时
-   * current_model 可能为空而嵌入槽位已激活，旧逻辑 current_model → lastKnownModel →
-   * firstDownloadedModel 单链会滞留陈旧的语言模型名称。
+   * 推导展示模型及其友好名称（对齐 firefly-ai-engine resolveDisplayModel 的权威优先级）
    */
   private resolveDisplayModelPair(): { model: string | null; modelName: string | null } {
-    const raw = this.lastRawStatus
-    // 服务在线口径：已就绪（ready）/ 推理中（processing）/ 拉起中（starting）。
-    // 引擎在有请求处理时会把 status 由 ready 改为 processing，若此处只认 ready+starting，
-    // 分析过程中 P1「运行模型」会失效并回落到激活槽位，导致「当前模型」展示名交替跳变。
-    const isRunningOrStarting =
-      raw?.status === 'ready' || raw?.status === 'processing' || raw?.status === 'starting'
-    const running =
-      raw?.current_model ||
-      raw?.model ||
-      (raw?.loaded_models && raw.loaded_models.length > 0 ? raw.loaded_models[0] : null) ||
-      null
-    const runningName = raw?.current_model_name || raw?.model_name || null
-
-    // P1：运行模型（仅实际运行态；停止态跳过，严禁使用残留 current_model）
-    if (isRunningOrStarting && running) {
-      return { model: running, modelName: runningName || this.resolveFriendlyModelName(running) }
-    }
-
-    // P2：激活主语言模型槽位
-    const langHit = raw?.active_language_model
-      ? this.matchSlotToCatalog(raw.active_language_model, 'language')
-      : null
-    if (langHit) {
-      return { model: langHit.id, modelName: langHit.name }
-    }
-
-    // P3：激活嵌入向量模型槽位
-    const embHit = raw?.active_embedding_model
-      ? this.matchSlotToCatalog(raw.active_embedding_model, 'embedding')
-      : null
-    if (embHit) {
-      return { model: embHit.id, modelName: embHit.name }
-    }
-
-    // P4：兜底 —— 上次已知运行模型 → 本地首个已下载就绪模型（引擎未启动服务时展示当前激活模型）
-    const fallback = this.lastKnownModel || this.firstDownloadedModel || null
-    return { model: fallback, modelName: this.resolveFriendlyModelName(fallback) }
+    const res = EngineModelCatalogResolver.resolveDisplayModelPair(this.lastRawStatus, {
+      builtinCatalog: this.loadBuiltinModelCatalog(),
+      downloadedCatalog: this.downloadedModelCatalog,
+      modelNameMap: this.lastModelNameMap,
+      lastKnownModel: this.lastKnownModel,
+      firstDownloadedModel: this.firstDownloadedModel
+    })
+    return { model: res.model, modelName: res.modelName }
   }
 
   /**
-   * 将引擎激活槽位值匹配到内置模型目录或已下载/自定义模型列表条目。
-   * 槽位值格式（firefly-ai-engine api.rs）：
-   * - 手动切换：`{model_id}@{source}`（source ∈ modelscope | huggingface）
-   * - 自动绑定：本地物理路径（如启动时自动检测绑定）
-   * 匹配优先级（Two-Pass，先精确、后模糊，各阶段内按第一层内置目录 -> 第二层 /api/models 列表）：
-   * - Pass 1：ID / 名称精确匹配（防止第一层模糊基名截胡同底座或同仓库不同量化的自定义模型）
-   * - Pass 2：路径、localPath/fileName 与基名归一化模糊匹配（含显式量化标签冲突守卫与双向 >3 长度门禁）
-   * 槽位语义过滤对两层匹配源同等生效（语言槽位只匹配非 embedding、嵌入槽位只匹配 embedding 模型）。
+   * 将引擎激活槽位值匹配到内置模型目录或已下载/自定义模型列表条目
    */
   private matchSlotToCatalog(
     slot: string,
     prefer: 'language' | 'embedding'
   ): { id: string; name: string } | null {
-    if (!slot) return null
-
-    const slotLower = slot.toLowerCase().replace(/\\/g, '/')
-    // {model_id}@{source} → model_id（model_id 本身不含 '@'）
-    const slotId = slotLower.split('@')[0]
-    const slotFileName = slotId.replace(/.*\//, '')
-    // 防护：mmproj 多模态投影器辅助文件严禁命中主语言模型或嵌入模型槽位
-    if (slotFileName.startsWith('mmproj')) return null
-
-    const layers: Array<
-      Array<{
-        id: string
-        name: string
-        localPath?: string
-        fileName?: string
-        isEmbedding?: boolean
-      }>
-    > = [this.loadBuiltinModelCatalog(), this.downloadedModelCatalog]
-
-    if (layers[0].length === 0 && layers[1].length === 0) return null
-
-    const matchesSlotType = (entry: {
-      id: string
-      name: string
-      fileName?: string
-      isEmbedding?: boolean
-    }): boolean => {
-      const entryIsEmbedding =
-        entry.isEmbedding === true ||
-        /wemm|embedding/i.test(entry.id) ||
-        /wemm|embedding/i.test(entry.name) ||
-        Boolean(entry.fileName && /wemm|embedding/i.test(entry.fileName))
-      return prefer === 'embedding' ? entryIsEmbedding : !entryIsEmbedding
-    }
-
-    // Pass 1：ID / 名称精确匹配（Layer 1 内置推荐目录 -> Layer 2 引擎 /api/models 列表）
-    for (const layer of layers) {
-      for (const entry of layer) {
-        if (!entry.id || !entry.name) continue
-        if (!matchesSlotType(entry)) continue
-        const idLower = entry.id.toLowerCase()
-        if (slotId === idLower || slotLower === entry.name.toLowerCase()) {
-          return { id: entry.id, name: entry.name }
-        }
-      }
-    }
-
-    // Pass 2：路径与基名归一化模糊匹配（Layer 1 内置推荐目录 -> Layer 2 引擎 /api/models 列表）
-    const slotBase = slotId.replace(/.*\//, '').split(':')[0]
-    const norm = (s: string): string => s.replace(/[-_:./\\]|gguf/gi, '').toLowerCase()
-    const slotIdNorm = norm(slotBase)
-    const slotStemNorm = norm(slotFileName.replace(/\.[^.]+$/, ''))
-    const looksLikePath = slotLower.includes('.gguf') || slotLower.split('/').length >= 3
-
-    // 对称双向长度守卫：仅当双侧长度均 > 3 时才允许子串包含匹配，杜绝空串/短串 .includes("") 恒真
-    const fuzzyMatch = (a: string, b: string): boolean =>
-      a.length > 0 &&
-      b.length > 0 &&
-      (a === b || (a.length > 3 && b.length > 3 && (a.includes(b) || b.includes(a))))
-
-    // 提取显式量化标签（剔除 Windows 盘符前缀、路径与 .gguf 文件名后缀，统一去除 ud- 前缀）
-    const extractQuantTag = (rawId: string): string | null => {
-      const withoutDrive = rawId.replace(/^[a-z]:/i, '')
-      const colonIdx = withoutDrive.indexOf(':')
-      if (colonIdx < 0) return null
-      const tag = withoutDrive
-        .slice(colonIdx + 1)
-        .trim()
-        .toLowerCase()
-      if (!tag || tag.endsWith('.gguf') || tag.includes('/')) return null
-      return tag.replace(/^ud[-_]/, '').replace(/_/g, '-')
-    }
-    const slotQuant = extractQuantTag(slotId)
-
-    for (const layer of layers) {
-      for (const entry of layer) {
-        if (!entry.id || !entry.name) continue
-        if (!matchesSlotType(entry)) continue
-
-        const idLower = entry.id.toLowerCase()
-        const entryQuant = extractQuantTag(idLower)
-        if (slotQuant && entryQuant && slotQuant !== entryQuant) continue
-
-        const entryBase = idLower.replace(/.*\//, '').split(':')[0]
-        const entryBaseNorm = norm(entryBase)
-
-        const lpLower = entry.localPath ? entry.localPath.toLowerCase().replace(/\\/g, '/') : ''
-        const fnLower = entry.fileName
-          ? entry.fileName.toLowerCase().replace(/\\/g, '/')
-          : lpLower
-            ? lpLower.replace(/.*\//, '')
-            : ''
-        const fnStem = fnLower ? fnLower.replace(/\.[^.]+$/, '') : ''
-        const fnStemNorm = fnStem ? norm(fnStem) : ''
-
-        const hit =
-          fuzzyMatch(slotBase, entryBase) ||
-          fuzzyMatch(slotIdNorm, entryBaseNorm) ||
-          fuzzyMatch(slotStemNorm, entryBaseNorm) ||
-          (looksLikePath &&
-            (() => {
-              const repoId = idLower.split(':')[0]
-              if (!repoId || repoId.length <= 3) return false
-              const repoSlug = repoId.replace(/\//g, '--')
-              return (
-                slotLower.includes(repoId) || (repoSlug !== repoId && slotLower.includes(repoSlug))
-              )
-            })()) ||
-          (lpLower.length > 0 &&
-            (slotLower === lpLower ||
-              (looksLikePath &&
-                lpLower.length > 3 &&
-                slotLower.length > 3 &&
-                (lpLower.includes(slotLower) || slotLower.includes(lpLower))))) ||
-          (fnLower.length > 0 && (slotLower === fnLower || slotFileName === fnLower)) ||
-          fuzzyMatch(slotBase, fnStem) ||
-          fuzzyMatch(slotIdNorm, fnStemNorm) ||
-          fuzzyMatch(slotStemNorm, fnStemNorm)
-
-        if (hit) {
-          return { id: entry.id, name: entry.name }
-        }
-      }
-    }
-    return null
+    return EngineModelCatalogResolver.matchSlotToCatalog(slot, prefer, [
+      this.loadBuiltinModelCatalog(),
+      this.downloadedModelCatalog
+    ])
   }
 
   /**
@@ -2626,10 +2386,20 @@ export class EngineBridgeService {
   }
 
   /**
-   * 组装生命周期与模型状态扩展段（占位，将在 Ticket 04 状态机与解析器中注入）
+   * 组装生命周期与模型状态扩展段
    */
-  private buildLifecycleAndModelSnapshotSection(): Record<string, unknown> {
-    return {}
+  private buildLifecycleAndModelSnapshotSection(): {
+    activeModel: string | null
+    activeMmproj: string | null
+    isDSparkActive: boolean
+  } {
+    const raw = this.lastRawStatus
+    const pair = this.resolveDisplayModelPair()
+    return {
+      activeModel: pair.modelName || pair.model,
+      activeMmproj: (raw as any)?.active_mmproj || null,
+      isDSparkActive: this.isDSparkActive()
+    }
   }
 
   /**
@@ -2698,44 +2468,7 @@ export class EngineBridgeService {
    * 判断当前引擎或主模型是否激活了 DSpark / 草稿投机采样加速
    */
   public isDSparkActive(): boolean {
-    const raw = this.lastRawStatus
-    if (!raw) {
-      return false
-    }
-
-    // 1. 优先读取引擎上报的真实自适应运行时参数
-    const rp = raw.runtime_params as any
-    if (rp) {
-      if (
-        rp.effective_enable_draft === true ||
-        rp.enable_draft === true ||
-        rp.enableDraft === true
-      ) {
-        return true
-      }
-      if (
-        rp.effective_enable_draft === false ||
-        rp.enable_draft === false ||
-        rp.enableDraft === false
-      ) {
-        return false
-      }
-    }
-
-    // 2. 其次匹配当前激活模型 ID、物理路径或展示名中的 spark / dspark / draft 标记
-    const modelCandidates = [
-      raw.current_model,
-      raw.current_model_name,
-      raw.model,
-      raw.active_language_model
-    ]
-    for (const m of modelCandidates) {
-      if (typeof m === 'string' && /(?:dspark|spark|draft)/i.test(m)) {
-        return true
-      }
-    }
-
-    return false
+    return EngineModelCatalogResolver.isDSparkActive(this.lastRawStatus)
   }
 
   /**

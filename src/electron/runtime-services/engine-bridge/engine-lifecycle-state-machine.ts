@@ -118,11 +118,34 @@ export class EngineLifecycleStateMachine {
     this.lastImplicitStartAt = now
   }
 
-  /** 记录我方主动 kill / stop 进程（更新 lastSelfKillAt 并递增返回新的 stopEpoch） */
-  public recordIntentionalStop(now: number = Date.now()): number {
+  /**
+   * 记录我方主动 kill / stop 进程（更新 lastSelfKillAt）：
+   * - `restartExpected` 默认取 `options?.restartExpected ?? this.deploying`；
+   * - 当 `restartExpected === false` 时递增 `this.stopEpoch++`，返回当前 `stopEpoch`。
+   */
+  public recordIntentionalStop(
+    now: number = Date.now(),
+    options?: { restartExpected?: boolean }
+  ): number {
     this.lastSelfKillAt = now
     this.autoHealAttempts = 0
-    this.stopEpoch++
+    const restartExpected = options?.restartExpected ?? this.deploying
+    if (!restartExpected) {
+      this.stopEpoch++
+    }
+    return this.stopEpoch
+  }
+
+  /**
+   * 校验捕获的异步世代是否仍然有效（capturedEpoch === this.stopEpoch && !this.deploying）
+   * 所有跨 await 的异步恢复动作在执行前必须校验此方法，防止主动 stop() 后幽灵拉起。
+   */
+  public isEpochCurrent(capturedEpoch: number): boolean {
+    return capturedEpoch === this.stopEpoch && !this.deploying
+  }
+
+  /** 获取当前 stopEpoch */
+  public getStopEpoch(): number {
     return this.stopEpoch
   }
 
