@@ -41,17 +41,21 @@ export const VramArbiterMeterCard: React.FC<VramArbiterMeterCardProps> = ({ clas
     )
   )
 
+  const metrics = (snapshot as any)?.metrics
   const raw = snapshot?.raw
   const hardware = raw?.hardware
   const arbiter = raw?.arbiter
 
-  // 显卡型号名称
-  const gpuName = hardware?.gpu_name?.trim() || t('默认显卡')
+  // 显卡型号名称：优先 metrics?.gpuName，次取 hardware?.gpu_name，兜底默认显卡
+  const gpuName = metrics?.gpuName || hardware?.gpu_name?.trim() || t('默认显卡')
   const isIntegrated = Boolean(hardware?.is_integrated)
 
   // 显存容量与占用换算 (GB)
-  // 总显存优先取 arbiter?.vram_budget_mb / 1024，次取 hardware?.total_vram_gb，兜底 0
+  // 总显存优先取 metrics?.totalVramBytes / 1024^3，次取 arbiter?.vram_budget_mb / 1024，次取 hardware?.total_vram_gb，兜底 0
   const totalVramGb = useMemo(() => {
+    if (typeof metrics?.totalVramBytes === 'number' && metrics.totalVramBytes > 0) {
+      return metrics.totalVramBytes / 1024 ** 3
+    }
     if (typeof arbiter?.vram_budget_mb === 'number' && arbiter.vram_budget_mb > 0) {
       return arbiter.vram_budget_mb / 1024
     }
@@ -59,10 +63,13 @@ export const VramArbiterMeterCard: React.FC<VramArbiterMeterCardProps> = ({ clas
       return hardware.total_vram_gb
     }
     return 0
-  }, [arbiter?.vram_budget_mb, hardware?.total_vram_gb])
+  }, [metrics?.totalVramBytes, arbiter?.vram_budget_mb, hardware?.total_vram_gb])
 
-  // 已用显存优先取 arbiter?.vram_used_mb / 1024，次取 hardware?.used_vram_gb，次取 snapshot?.vramMb / 1024，兜底 0
+  // 已用显存优先取 metrics?.usedVramBytes / 1024^3，次取 arbiter?.vram_used_mb / 1024，次取 hardware?.used_vram_gb，次取 snapshot?.vramMb / 1024，兜底 0
   const usedVramGb = useMemo(() => {
+    if (typeof metrics?.usedVramBytes === 'number' && metrics.usedVramBytes >= 0) {
+      return metrics.usedVramBytes / 1024 ** 3
+    }
     if (typeof arbiter?.vram_used_mb === 'number' && arbiter.vram_used_mb >= 0) {
       return arbiter.vram_used_mb / 1024
     }
@@ -73,22 +80,34 @@ export const VramArbiterMeterCard: React.FC<VramArbiterMeterCardProps> = ({ clas
       return snapshot.vramMb / 1024
     }
     return 0
-  }, [arbiter?.vram_used_mb, hardware?.used_vram_gb, snapshot?.vramMb])
+  }, [metrics?.usedVramBytes, arbiter?.vram_used_mb, hardware?.used_vram_gb, snapshot?.vramMb])
 
-  // 系统防卡顿保底水位: max(1.5, total * 0.15)
+  // 系统防卡顿保底水位: 优先 metrics?.systemReservedVramBytes / 1024^3，次取 max(1.5, total * 0.15)
   const safetyWatermarkGb = useMemo(() => {
+    if (
+      typeof metrics?.systemReservedVramBytes === 'number' &&
+      metrics.systemReservedVramBytes > 0
+    ) {
+      return metrics.systemReservedVramBytes / 1024 ** 3
+    }
     if (totalVramGb <= 0) return 0
     return Math.max(1.5, totalVramGb * 0.15)
-  }, [totalVramGb])
+  }, [metrics?.systemReservedVramBytes, totalVramGb])
 
-  // 剩余可用显存: max(0, total - used - safety)
+  // 剩余可用显存: 优先 metrics?.freeVramBytes / 1024^3，次取 max(0, total - used - safety)
   const freeVramGb = useMemo(() => {
+    if (typeof metrics?.freeVramBytes === 'number' && metrics.freeVramBytes >= 0) {
+      return metrics.freeVramBytes / 1024 ** 3
+    }
     if (totalVramGb <= 0) return 0
     return Math.max(0, totalVramGb - usedVramGb - safetyWatermarkGb)
-  }, [totalVramGb, usedVramGb, safetyWatermarkGb])
+  }, [metrics?.freeVramBytes, totalVramGb, usedVramGb, safetyWatermarkGb])
 
-  // 核显/共享内存保护判定（专用显存未分配或极小 <= 0.5 GB）
-  const isSharedOrIntegrated = isIntegrated || totalVramGb <= 0.5
+  // 核显/共享内存保护判定（优先 metrics?.isSharedMemory，次取 isIntegrated || totalVramGb <= 0.5）
+  const isSharedOrIntegrated =
+    typeof metrics?.isSharedMemory === 'boolean'
+      ? metrics.isSharedMemory
+      : isIntegrated || totalVramGb <= 0.5
 
   // 显存使用率 (0 ~ 100)
   const usedPercentage = useMemo(() => {
@@ -104,19 +123,29 @@ export const VramArbiterMeterCard: React.FC<VramArbiterMeterCardProps> = ({ clas
   }, [isSharedOrIntegrated, safetyWatermarkGb, totalVramGb, usedPercentage])
 
   // Swapping 置换状态与排队推理任务
-  const isSwapping = arbiter?.phase === 'swapping' || raw?.reasonCode === 'engine_swapping'
+  const isSwapping =
+    metrics?.swapping?.isSwapping ??
+    (arbiter?.phase === 'swapping' || raw?.reasonCode === 'engine_swapping')
   const hasQueuedTasks =
     hasPendingAnalysis ||
     Boolean(typeof arbiter?.queue_position === 'number' && arbiter.queue_position > 0)
 
   const showSwappingBanner = isSwapping && hasQueuedTasks
   const etaSeconds = useMemo(() => {
-    const ms = typeof arbiter?.eta_ms === 'number' && arbiter.eta_ms > 0 ? arbiter.eta_ms : 2500
+    const ms =
+      typeof metrics?.swapping?.etaMs === 'number' && metrics.swapping.etaMs > 0
+        ? metrics.swapping.etaMs
+        : typeof arbiter?.eta_ms === 'number' && arbiter.eta_ms > 0
+          ? arbiter.eta_ms
+          : 2500
     return Math.max(0.5, ms / 1000).toFixed(1)
-  }, [arbiter?.eta_ms])
+  }, [metrics?.swapping?.etaMs, arbiter?.eta_ms])
 
   // Worker 1: 大语言模型状态
-  const isLLMRunning = raw?.status === 'processing' || arbiter?.phase === 'serving'
+  const isLLMRunning =
+    metrics?.workers?.llm?.state === 'processing' ||
+    raw?.status === 'processing' ||
+    arbiter?.phase === 'serving'
 
   return (
     <Card

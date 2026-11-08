@@ -46,6 +46,33 @@ export interface EngineMetricsSnapshot {
 }
 
 /**
+ * 中止模型置换等待的原因描述
+ */
+export interface AbortSwappingReason {
+  kind: 'permanent' | 'retryable' | 'cancelled'
+  code: string
+  message: string
+}
+
+/**
+ * 模型置换等待被强行中止时抛出的错误异常
+ */
+export class EngineSwappingAbortError extends Error {
+  readonly status: number
+  readonly code: string
+  readonly kind: 'permanent' | 'retryable' | 'cancelled'
+
+  constructor(public readonly reason: AbortSwappingReason) {
+    super(reason.message)
+    this.name = 'EngineSwappingAbortError'
+    this.kind = reason.kind
+    this.code = reason.code
+    // permanent 映射 500, retryable 映射 503, cancelled 映射 499
+    this.status = reason.kind === 'permanent' ? 500 : reason.kind === 'retryable' ? 503 : 499
+  }
+}
+
+/**
  * 引擎能力与健康状态快照（遵循 AGENTS.md §2.12：五态 starting / ready / processing / error / stopped）
  */
 export interface EngineCapability {
@@ -101,6 +128,7 @@ export class EngineSwappingCoordinator {
 
   private waitPromise: Promise<void> | null = null
   private waitResolve: (() => void) | null = null
+  private waitReject: ((reason?: any) => void) | null = null
   private isSwapping = false
   private swappingTimer: NodeJS.Timeout | null = null
   private swappingCount = 0
@@ -152,8 +180,9 @@ export class EngineSwappingCoordinator {
       `[EngineSwapping] 进入模型置换门闩，挂起新推理请求，预估等待: ${delayMs}ms`
     )
 
-    this.waitPromise = new Promise<void>(resolve => {
+    this.waitPromise = new Promise<void>((resolve, reject) => {
       this.waitResolve = resolve
+      this.waitReject = reject
       this.swappingTimer = setTimeout(() => {
         this.exitSwapping()
       }, delayMs)
@@ -172,12 +201,36 @@ export class EngineSwappingCoordinator {
     }
     const resolve = this.waitResolve
     this.waitResolve = null
+    this.waitReject = null
     this.isSwapping = false
     this.waitPromise = null
     if (resolve) {
       resolve()
     }
     logger.info(LogCategory.SYSTEM, `[EngineSwapping] 模型置换门闩已解除，放行排队请求`)
+  }
+
+  /**
+   * 中止置换等待，向所有正在排队的请求抛出 Abort 错误（支持 permanent 500、retryable 503 与 cancelled 499）
+   */
+  abortSwapping(reason: AbortSwappingReason): void {
+    if (this.swappingTimer) {
+      clearTimeout(this.swappingTimer)
+      this.swappingTimer = null
+    }
+    const reject = this.waitReject
+    this.waitResolve = null
+    this.waitReject = null
+    this.isSwapping = false
+    this.waitPromise = null
+
+    if (reject) {
+      reject(new EngineSwappingAbortError(reason))
+    }
+    logger.warn(
+      LogCategory.SYSTEM,
+      `[EngineSwapping] 模型置换门闩因外部事件中止 (${reason.kind}): ${reason.code} - ${reason.message}`
+    )
   }
 
   /**
@@ -504,22 +557,49 @@ export function normalizeEngineMetricsPayload(rawPayload: unknown): EngineMetric
 }
 
 /**
- * 根据请求 URL 路径自动判定引擎门闩通道：
+ * 根据请求 URL 路径与 Origin 自动判定引擎门闩通道：
+ * - 外部云端请求（非 localhost / 127.0.0.1）-> null（完全放行，免除本地引擎置换门闩）
  * - 包含 '/v1/embeddings' 或 '/api/v1/vector' -> 'embeddings'（独立常驻，零等待直放）
+ * - '/v1/engine/metrics' -> null（探活与指标读取端点直通）
  * - 其余 '/v1/*' 推理端点 -> 'chat'（受 EngineSwappingCoordinator 门闩保护）
  */
-export function resolveEngineGateChannel(urlOrPath: string): 'chat' | 'embeddings' | null {
+export function resolveEngineGateChannel(
+  urlOrPath: string,
+  localBaseUrl?: string
+): 'chat' | 'embeddings' | null {
   if (!urlOrPath || typeof urlOrPath !== 'string') {
     return null
   }
-  const normalized = urlOrPath.toLowerCase()
-  if (normalized.includes('/v1/embeddings') || normalized.includes('/api/v1/vector')) {
+
+  let pathname = urlOrPath.toLowerCase()
+
+  // 1. 尝试 URL 解析做 Origin 校验，防止云端自定义 API 被本地置换门闩误拦截
+  try {
+    const parsed = new URL(urlOrPath, localBaseUrl || 'http://127.0.0.1:38400')
+    const hostname = parsed.hostname.toLowerCase()
+    const isLocal =
+      hostname === '127.0.0.1' ||
+      hostname === 'localhost' ||
+      hostname === '::1' ||
+      hostname === '[::1]'
+
+    // 非本机回环地址（如 api.openai.com 等外部云端提供商），直接放行
+    if (!isLocal) {
+      return null
+    }
+
+    pathname = parsed.pathname.toLowerCase()
+  } catch {
+    // URL 解析失败时降级走原始路径字串匹配
+  }
+
+  if (pathname.includes('/v1/embeddings') || pathname.includes('/api/v1/vector')) {
     return 'embeddings'
   }
-  if (normalized.includes('/v1/engine/metrics')) {
+  if (pathname.includes('/v1/engine/metrics')) {
     return null
   }
-  if (normalized.includes('/v1/')) {
+  if (pathname.includes('/v1/')) {
     return 'chat'
   }
   return null
@@ -571,9 +651,10 @@ export async function withEngineGate<T>(
 export async function executeWithEngineTransportGate<T>(
   urlOrPath: string,
   action: () => Promise<T>,
-  coordinator: EngineSwappingCoordinator = engineSwappingCoordinator
+  coordinator: EngineSwappingCoordinator = engineSwappingCoordinator,
+  localBaseUrl?: string
 ): Promise<T> {
-  const channel = resolveEngineGateChannel(urlOrPath)
+  const channel = resolveEngineGateChannel(urlOrPath, localBaseUrl)
   if (!channel) {
     return action()
   }

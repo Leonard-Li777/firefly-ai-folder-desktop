@@ -27,6 +27,7 @@ import {
   EngineCapability,
   EngineMetricsSnapshot,
   engineSwappingCoordinator,
+  normalizeEngineMetricsPayload,
   parseRetryAfter
 } from './engine-swapping-coordinator'
 import { isLocalDevRuntime } from '../../main/worktree-env'
@@ -228,6 +229,10 @@ export interface EngineBridgeSnapshot {
   updatedAt: number | null
   /** 原始引擎状态（可能为空） */
   raw: Tier2EngineStatus | null
+  /** 统一引擎运行时指标快照（/v1/engine/metrics 归一化） */
+  metrics?: EngineMetricsSnapshot | null
+  /** 运行时指标快照更新时间戳 */
+  metricsUpdatedAt?: number | null
 }
 
 export class EngineBridgeService {
@@ -302,6 +307,9 @@ export class EngineBridgeService {
   }> = []
   /** 引擎模型元数据全量缓存（含 totalSize / vramRequiredGB / recommendedConfig 等，供 enrichAIStatus 匹配） */
   private modelMetaCache: { lang: string; models: any[]; fetchedAt: number } | null = null
+  /** 统一引擎最新运行时指标快照与更新时间戳缓存 */
+  private latestMetrics: EngineMetricsSnapshot | null = null
+  private latestMetricsUpdatedAt: number | null = null
   /** 模型计数刷新进行中的 Promise（并发调用共享同一刷新，await 可等待真正完成） */
   private modelCountPromise: Promise<void> | null = null
   /** 最近一次模型计数刷新尝试的完成时刻（0 = 从未尝试；心跳节流判据，见 shouldRefreshModelCount） */
@@ -1053,7 +1061,7 @@ export class EngineBridgeService {
 
   /**
    * 拉取统一引擎运行时指标与显存/Worker快照 (/v1/engine/metrics) (Ticket 3)
-   * 兼容 Rust 端 { arbiter: { phase, eta_ms, vram_budget_mb, vram_used_mb } } 与标准化 EngineMetricsSnapshot
+   * 归一化为标准 EngineMetricsSnapshot，在超时或瞬态失败时保留上一次有效缓存且不累加探活失败计数
    */
   public async fetchMetrics(): Promise<EngineMetricsSnapshot | null> {
     try {
@@ -1062,52 +1070,18 @@ export class EngineBridgeService {
         signal: AbortSignal.timeout(STATUS_TIMEOUT_MS)
       })
       if (!res.ok) {
-        return null
+        return this.latestMetrics
       }
       const rawData = (await res.json()) as any
-      let data: EngineMetricsSnapshot
-      if (rawData && rawData.arbiter && !rawData.swapping) {
-        const arb = rawData.arbiter
-        const totalVramBytes = Math.max(0, Number(arb.vram_budget_mb || 0) * 1024 * 1024)
-        const usedVramBytes = Math.max(0, Number(arb.vram_used_mb || 0) * 1024 * 1024)
-        const systemReservedVramBytes =
-          totalVramBytes > 0 ? Math.max(1.5 * 1024 ** 3, totalVramBytes * 0.15) : 0
-        const freeVramBytes = Math.max(0, totalVramBytes - usedVramBytes - systemReservedVramBytes)
-        const isSwapping = arb.phase === 'swapping'
-        data = {
-          totalVramBytes,
-          usedVramBytes,
-          freeVramBytes,
-          systemReservedVramBytes,
-          workers: rawData.workers || {
-            llm: {
-              state: arb.phase === 'serving' ? 'processing' : 'ready',
-              vramBytes: usedVramBytes
-            },
-            embedding: { state: 'ready', vramBytes: 0 },
-            diffusion: { state: 'stopped', vramBytes: 0 },
-            audio: { state: 'stopped', vramBytes: 0 }
-          },
-          swapping: {
-            isSwapping,
-            etaMs: typeof arb.eta_ms === 'number' ? arb.eta_ms : undefined,
-            reasonCode: isSwapping ? 'engine_swapping' : undefined
-          }
-        }
-      } else {
-        data = rawData as EngineMetricsSnapshot
+      const data = normalizeEngineMetricsPayload(rawData)
+      if (data) {
+        this.latestMetrics = data
+        this.latestMetricsUpdatedAt = Date.now()
       }
-
-      // 联动置换协调器状态 (防惊群门闩)
-      if (data?.swapping?.isSwapping) {
-        const retryAfter = parseRetryAfter(null, data.swapping.etaMs)
-        engineSwappingCoordinator.enterSwapping(retryAfter)
-      } else if (engineSwappingCoordinator.isInSwapping()) {
-        engineSwappingCoordinator.exitSwapping()
-      }
-      return data
+      return this.latestMetrics
     } catch {
-      return null
+      // 超时或瞬态失败保留上一次有效 metrics，且不累加 probeFailureCount
+      return this.latestMetrics
     }
   }
 
@@ -1245,6 +1219,21 @@ export class EngineBridgeService {
     // 确保已连接 SSE 实时状态流（用于毫秒级捕获引擎 API 开始/完成状态）
     this.ensureEventStream()
 
+    // 联动模型置换门闩：若引擎处于 Failed 状态则永久中止，若 stopped 则可重试中止
+    if (data.status === 'error' || (data as any).reason === 'ProcessStatus::Failed') {
+      engineSwappingCoordinator.abortSwapping({
+        kind: 'permanent',
+        code: 'engine_failed',
+        message: 'AI engine failed to start (ProcessStatus::Failed)'
+      })
+    } else if (data.status === 'stopped') {
+      engineSwappingCoordinator.abortSwapping({
+        kind: 'retryable',
+        code: 'engine_stopped',
+        message: 'AI engine service is not started'
+      })
+    }
+
     // 因分析进行中被推迟的二进制热更新：引擎回到空闲（ready）后补一次检测并重启
     if (this.deferredBinaryRestart && data.status === 'ready') {
       this.deferredBinaryRestart = false
@@ -1262,6 +1251,11 @@ export class EngineBridgeService {
    * 采纳离线状态：清空原始状态缓存，中断 SSE 事件流，并在状态发生变化时按需广播离线
    */
   public applyOffline(): void {
+    engineSwappingCoordinator.abortSwapping({
+      kind: 'retryable',
+      code: 'engine_stopped',
+      message: 'AI engine service is not started'
+    })
     if (this.eventStreamAbortController) {
       this.eventStreamAbortController.abort()
       this.eventStreamAbortController = null
@@ -2619,6 +2613,26 @@ export class EngineBridgeService {
   }
 
   /**
+   * 组装统一引擎运行时指标段
+   */
+  private buildRuntimeMetricsSnapshotSection(): {
+    metrics: EngineMetricsSnapshot | null
+    metricsUpdatedAt: number | null
+  } {
+    return {
+      metrics: this.latestMetrics,
+      metricsUpdatedAt: this.latestMetricsUpdatedAt
+    }
+  }
+
+  /**
+   * 组装生命周期与模型状态扩展段（占位，将在 Ticket 04 状态机与解析器中注入）
+   */
+  private buildLifecycleAndModelSnapshotSection(): Record<string, unknown> {
+    return {}
+  }
+
+  /**
    * 组装对外状态快照
    */
   public getSnapshot(): EngineBridgeSnapshot {
@@ -2654,7 +2668,9 @@ export class EngineBridgeService {
       totalModelCount: raw ? this.lastTotalModelCount : null,
       lastError: this.lastError,
       updatedAt: raw ? Date.now() : null,
-      raw
+      raw,
+      ...this.buildRuntimeMetricsSnapshotSection(),
+      ...this.buildLifecycleAndModelSnapshotSection()
     }
   }
 
@@ -2756,6 +2772,12 @@ export class EngineBridgeService {
    */
   public stop(): void {
     this.stopEpoch++
+    // 联动模型置换门闩：主动停止时取消所有等待中的置换请求
+    engineSwappingCoordinator.abortSwapping({
+      kind: 'cancelled',
+      code: 'engine_cancelled',
+      message: 'AI engine intentionally stopped by user'
+    })
     // 主动停止：撤销待执行的崩溃自愈与配额重置，避免「停用后又被自己拉起来」
     if (this.autoHealTimer) {
       clearTimeout(this.autoHealTimer)
@@ -2777,6 +2799,8 @@ export class EngineBridgeService {
     this.activePort = TIER2_ENGINE_PORT
     this.spawnedBinarySignature = null
     this.lastRawStatus = null
+    this.latestMetrics = null
+    this.latestMetricsUpdatedAt = null
     this.lastModelCount = null
     this.lastBackendMatchType = null
     this.lastSyncedThinking = null
