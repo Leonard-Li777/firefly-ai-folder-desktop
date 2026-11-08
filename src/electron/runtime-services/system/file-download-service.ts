@@ -411,6 +411,25 @@ export class FileDownloadService {
       transport
     } = options
 
+    // 0. 强校验 expectedSha256：必须为合法 64 位十六进制字符，缺失或非法时拒绝无校验直接写入 (AC-1)
+    if (expectedSha256 !== undefined && expectedSha256 !== null) {
+      const isShaValid =
+        typeof expectedSha256 === 'string' && /^[a-fA-F0-9]{64}$/.test(expectedSha256.trim())
+      if (!isShaValid) {
+        logger.error(
+          LogCategory.SYSTEM,
+          `[Download] expectedSha256 非法 (必须为 64 位十六进制串): ${expectedSha256}`
+        )
+        return {
+          success: false,
+          actualSha256: '',
+          finalBytes: 0,
+          errorCode: 'INVALID_EXPECTED_SHA256',
+          errorMessage: `INVALID_EXPECTED_SHA256: expectedSha256 must be a valid 64-char hex string, got '${expectedSha256}'`
+        }
+      }
+    }
+
     // 1. 检查目标目录
     const destDir = path.dirname(destPath)
     if (!fs.existsSync(destDir)) {
@@ -465,6 +484,17 @@ export class FileDownloadService {
       try {
         existingPartSize = fs.statSync(partPath).size
       } catch {
+        existingPartSize = 0
+      }
+      // 若本地 .part 体积超出 expectedBytes，说明已损坏或过载，本地直接删除重置（免除无效 416 往返）
+      if (expectedBytes && existingPartSize > expectedBytes) {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[Download] 本地 .part 体积 (${existingPartSize}) 超出期望体积 (${expectedBytes})，本地直接删除重置`
+        )
+        try {
+          fs.unlinkSync(partPath)
+        } catch {}
         existingPartSize = 0
       }
     }

@@ -269,7 +269,8 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
   {
     id: 'ai_organize_skill',
     name: 'AI 整理助手与外部智能体 Skill API',
-    description: '对外提供本地 HTTP API 与 OpenClaw/外部智能体通信桥梁，支持渐进式语义检索、视频高光切片定位与自动化整理方案推送',
+    description:
+      '对外提供本地 HTTP API 与 OpenClaw/外部智能体通信桥梁，支持渐进式语义检索、视频高光切片定位与自动化整理方案推送',
     icon: 'FolderSync',
     kind: 'builtin-module',
     version: '1.2.0',
@@ -432,6 +433,21 @@ export class ModularResourceService implements IModularResourceService {
             dao.resources.updateProgressSync(res.resource_id, 0, 'pending')
           }
           resetDownloads.push(res.resource_id)
+        }
+      } else {
+        // 逆向自愈收录 (AC-3)：若未标记 completed 但物理目标目录完整存在且非空，自动逆向收录为 completed
+        if (fs.existsSync(targetAbsPath)) {
+          try {
+            const files = fs.readdirSync(targetAbsPath)
+            if (files.length > 0) {
+              dao.resources.markVerifiedSync(
+                res.resource_id,
+                true,
+                res.expected_sha256 || undefined
+              )
+              cleanedTombstones++
+            }
+          } catch {}
         }
       }
     }
