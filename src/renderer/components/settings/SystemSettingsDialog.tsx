@@ -13,30 +13,25 @@ import {
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog'
 import { Button } from '../ui/button'
 import { useSettingsStore, systemSettingsCategories } from '../../stores/settings-store'
+import { usePluginCenterStore } from '../../stores/plugin-center-store'
 import { SettingsCategory } from '@firefly/types'
 import { t } from '@app/languages'
 import { cn } from '../../lib/utils'
-
-import { InterfaceSettings } from './interface-settings'
-import { AIEngineConfigSettings } from './ai-engine-config-settings'
-import { TTSSettings } from './tts-settings'
-import { AnalysisIgnoreRulesSettings } from './analysis-ignore-rules-settings'
-
-const MemoizedInterfaceSettings = memo(InterfaceSettings)
-const MemoizedAIEngineConfigSettings = memo(AIEngineConfigSettings)
-const MemoizedTTSSettings = memo(TTSSettings)
-const MemoizedAnalysisIgnoreRulesSettings = memo(AnalysisIgnoreRulesSettings)
+import { SETTINGS_COMPONENT_MAP } from './settings-component-map'
 
 const SYSTEM_CATEGORY_COMPONENTS: Array<{
   category: SettingsCategory
   Component: React.ComponentType
 }> = [
-  { category: SettingsCategory.INTERFACE, Component: MemoizedInterfaceSettings },
-  { category: SettingsCategory.AI_ENGINE_CONFIG, Component: MemoizedAIEngineConfigSettings },
-  { category: SettingsCategory.TTS, Component: MemoizedTTSSettings },
+  { category: SettingsCategory.INTERFACE, Component: SETTINGS_COMPONENT_MAP.interface },
+  {
+    category: SettingsCategory.AI_ENGINE_CONFIG,
+    Component: SETTINGS_COMPONENT_MAP.ai_engine_config
+  },
+  { category: SettingsCategory.TTS, Component: SETTINGS_COMPONENT_MAP.tts },
   {
     category: SettingsCategory.ANALYSIS_IGNORE_RULES,
-    Component: MemoizedAnalysisIgnoreRulesSettings
+    Component: SETTINGS_COMPONENT_MAP.analysis_ignore_rules
   }
 ]
 
@@ -79,11 +74,49 @@ export const SystemSettingsDialog: React.FC = () => {
 
   if (!isOpen) return null
 
-  // 兜底校验：如果当前分类不在系统设置 4 项中，重置为 INTERFACE
-  const validCategories = systemSettingsCategories()
+  const modules = usePluginCenterStore(s => s.modules)
+
+  // 动态根据已安装且激活的插件挂载或隐藏对应 Tab (Spec §5.2)
+  const validCategories = React.useMemo(() => {
+    const all = systemSettingsCategories()
+    if (!modules || modules.length === 0) return all
+
+    const activeModules = modules.filter(m => m.install_state === 'active')
+
+    return all.filter(category => {
+      // 基础界面与全系统忽略规则为内置常驻项
+      if (
+        category.id === SettingsCategory.INTERFACE ||
+        category.id === SettingsCategory.ANALYSIS_IGNORE_RULES
+      ) {
+        return true
+      }
+      // 语音合成 (TTS)：若对应插件未激活则自动隐藏
+      if (category.id === SettingsCategory.TTS) {
+        return activeModules.some(
+          m =>
+            m.contributes?.settings?.componentId === 'tts' ||
+            m.capability_slot === 'voice_tts' ||
+            m.id === 'tts_moss_onnx'
+        )
+      }
+      // 高级 AI 引擎：若对应插件未激活则自动隐藏
+      if (category.id === SettingsCategory.AI_ENGINE_CONFIG) {
+        return activeModules.some(
+          m =>
+            m.contributes?.settings?.componentId === 'ai_engine_config' ||
+            m.capability_slot === 'ai_engine' ||
+            m.id === 'ai_organize_skill'
+        )
+      }
+      return true
+    })
+  }, [modules])
+
+  // 兜底校验：如果当前分类不在可用项中，重置为第一个有效分类
   const activeCategory = validCategories.some(c => c.id === currentCategory)
     ? currentCategory
-    : SettingsCategory.INTERFACE
+    : (validCategories[0]?.id as SettingsCategory) || SettingsCategory.INTERFACE
 
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && closeSettings()}>

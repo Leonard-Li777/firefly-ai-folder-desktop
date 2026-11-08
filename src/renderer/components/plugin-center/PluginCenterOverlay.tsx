@@ -7,6 +7,8 @@ import { cn } from '../../lib/utils'
 import i18nScope from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
 import { usePluginCenterStore } from '../../stores/plugin-center-store'
+import { useSettingsStore } from '../../stores/settings-store'
+import { SettingsCategory } from '@firefly/types'
 import { PluginListItem } from './PluginListItem'
 import { AIEngineConfigSettings } from '../settings/ai-engine-config-settings'
 import { TTSSettings } from '../settings/tts-settings'
@@ -125,12 +127,41 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
     })
   }, [modules, selectedCategory, searchKeyword, t])
 
-  // 打开配置面板时同步配置草稿
+  // 卡片配置一键直达系统设置对应 Tab (Ticket 05 / Spec §5.2)
   const handleOpenConfig = (id: string) => {
     const mod = modules.find(m => m.id === id)
-    setUserConfigDraft(mod?.user_config || '{\n  \n}')
-    setConfigError(null)
-    setConfiguringModuleId(id)
+    closeOverlay()
+
+    const contrib = mod?.contributes?.settings
+    if (contrib) {
+      if (contrib.scope === 'workspace') {
+        useSettingsStore.getState().openWorkspaceSettings({ targetTab: contrib.componentId })
+        return
+      } else if (contrib.scope === 'global') {
+        const catMap: Record<string, SettingsCategory> = {
+          tts: SettingsCategory.TTS,
+          ai_engine_config: SettingsCategory.AI_ENGINE_CONFIG,
+          interface: SettingsCategory.INTERFACE,
+          analysis_ignore_rules: SettingsCategory.ANALYSIS_IGNORE_RULES
+        }
+        const targetCategory = catMap[contrib.componentId] || SettingsCategory.INTERFACE
+        useSettingsStore.getState().openSystemSettings(targetCategory)
+        return
+      }
+    }
+
+    // 默认兜底映射
+    if (mod?.capability_slot === 'voice_tts' || id === 'tts_moss_onnx') {
+      useSettingsStore.getState().openSystemSettings(SettingsCategory.TTS)
+    } else if (mod?.capability_slot === 'base_embedding' || id.startsWith('engine_')) {
+      useSettingsStore.getState().openWorkspaceSettings({ targetTab: 'basic_ai_engine' })
+    } else if (mod?.capability_slot === 'perception_nsfw' || id === 'perception_nsfw') {
+      useSettingsStore.getState().openWorkspaceSettings({ targetTab: 'content_extraction' })
+    } else if (id === 'ai_organize_skill') {
+      useSettingsStore.getState().openSystemSettings(SettingsCategory.AI_ENGINE_CONFIG)
+    } else {
+      useSettingsStore.getState().openSystemSettings(SettingsCategory.INTERFACE)
+    }
   }
 
   // 保存自定义配置 (增加 JSON 合法性校验防脏写，空白串归一为 null 满足 Genesis V1 CHECK 约束)
@@ -220,7 +251,11 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
         /* ==================== 插件配置子视图 ==================== */
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-5xl mx-auto w-full space-y-6">
-            {configuringModule.id === 'advanced_ai_engine' ? (
+            {configuringModule.id === 'advanced_ai_engine' ||
+            configuringModule.id === 'ai_organize_skill' ||
+            configuringModule.id === 'engine_classic_light' ||
+            configuringModule.id === 'engine_gemma_unified' ||
+            configuringModule.contributes?.settings?.componentId === 'basic_ai_engine' ? (
               /* 高级 AI 引擎专属配置面板 */
               <div className="space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-border/60">
@@ -234,7 +269,9 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
                 </div>
                 <AIEngineConfigSettings />
               </div>
-            ) : configuringModule.id === 'offline_tts' ? (
+            ) : configuringModule.id === 'offline_tts' ||
+              configuringModule.id === 'tts_moss_onnx' ||
+              configuringModule.contributes?.settings?.componentId === 'tts' ? (
               /* 离线语音合成 TTS 专属配置面板 */
               <div className="space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-border/60">

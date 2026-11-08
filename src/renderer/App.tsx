@@ -25,6 +25,7 @@ import { PreviewOverlay } from './components/file-explorer/PreviewOverlay'
 import { SplitPreviewPanel } from './components/file-explorer/SplitPreviewPanel'
 import { Organize } from './components/file-explorer/Organize/index'
 import { GlobalSearchOverlay } from './components/file-explorer/GlobalSearchOverlay'
+import { PluginCenterOverlay } from './components/plugin-center/PluginCenterOverlay'
 import { WelcomeWizard } from './components/welcome/WelcomeWizard'
 // PRD-0044（S5）：InitialSetupOverlay / GpuDriverOverlay / ModelDownloadProgress / use-model-download
 // 等模型下载与本地切换残留 UI 已随「模型激活归萤核AI引擎独占」整体清退
@@ -814,6 +815,9 @@ const App: React.FC = () => {
 
           {/* 全域搜索浮层 - GlobalSearchOverlay (单例挂载于 App 顶层) */}
           <GlobalSearchOverlay workspaceDirectory={currentWorkspaceDirectory} />
+
+          {/* 插件中心全局覆盖层 - PluginCenterOverlay (单例挂载于 App 顶层主内容区) */}
+          <PluginCenterOverlay />
 
           {/* 基础路由占位，确保路由系统正常工作 */}
           <Routes>

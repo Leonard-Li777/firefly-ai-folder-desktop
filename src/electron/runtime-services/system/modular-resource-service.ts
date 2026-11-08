@@ -73,6 +73,9 @@ export interface CatalogModuleEntry {
   selected_variant?: string | null
   install_path?: string | null
   resources?: CatalogResourceSpec[]
+  contributes?: {
+    settings?: import('@firefly/types').PluginSettingsContribution
+  }
 }
 
 export interface ModuleDownloadProgressEvent {
@@ -96,6 +99,9 @@ export interface BuiltinModuleView extends BuiltinModuleRecord {
     percentage: number
     speed_bytes_per_sec: number
     is_resumed: boolean
+  }
+  contributes?: {
+    settings?: import('@firefly/types').PluginSettingsContribution
   }
 }
 
@@ -167,6 +173,14 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     author_code: 'official',
     total_bytes: 319195255, // 106,269,288 (bekko) + 212,925,967 (chinese-clip) = 304.4 MiB
     install_state: 'not_installed',
+    contributes: {
+      settings: {
+        scope: 'workspace',
+        tabTitle: '基础 AI 引擎',
+        componentId: 'basic_ai_engine',
+        priority: 10
+      }
+    },
     resources: [
       {
         resource_id: 'bekko-a8m',
@@ -207,6 +221,14 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     author_code: 'official',
     total_bytes: 254003864, // 242.2 MiB
     install_state: 'not_installed',
+    contributes: {
+      settings: {
+        scope: 'workspace',
+        tabTitle: '基础 AI 引擎',
+        componentId: 'basic_ai_engine',
+        priority: 10
+      }
+    },
     resources: [
       {
         resource_id: 'embeddinggemma-2-onnx',
@@ -237,6 +259,14 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     author_code: 'official',
     total_bytes: 21966375, // 20.9 MiB
     install_state: 'not_installed',
+    contributes: {
+      settings: {
+        scope: 'workspace',
+        tabTitle: '文件内容萃取',
+        componentId: 'content_extraction',
+        priority: 20
+      }
+    },
     resources: [
       {
         resource_id: 'nsfw-l3',
@@ -261,12 +291,20 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     version: '1.0.0',
     catalog_version: 1,
     category: 'perception',
-    capability_slot: 'asr',
+    capability_slot: 'voice_asr',
     slot_policy: 'exclusive_optional',
     backend_type: 'omni_onnx',
     author_code: 'official',
     total_bytes: 168587158, // 8,282,676 (sherpa) + 160,304,482 (sensevoice) = 160.8 MiB
     install_state: 'not_installed',
+    contributes: {
+      settings: {
+        scope: 'workspace',
+        tabTitle: '文件内容萃取',
+        componentId: 'content_extraction',
+        priority: 25
+      }
+    },
     resources: [
       {
         resource_id: 'sherpa-onnx-runtime',
@@ -300,12 +338,20 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     version: '1.0.0',
     catalog_version: 1,
     category: 'media',
-    capability_slot: 'tts',
+    capability_slot: 'voice_tts',
     slot_policy: 'exclusive_optional',
     backend_type: 'omni_onnx',
     author_code: 'official',
     total_bytes: 249105462, // 8,282,676 (sherpa) + 240,822,786 (moss-tts) = 237.6 MiB
     install_state: 'not_installed',
+    contributes: {
+      settings: {
+        scope: 'global',
+        tabTitle: '语音合成 (TTS)',
+        componentId: 'tts',
+        priority: 30
+      }
+    },
     resources: [
       {
         resource_id: 'sherpa-onnx-runtime',
@@ -757,12 +803,15 @@ export class ModularResourceService implements IModularResourceService {
       }
     }
 
+    const contributes = meta.contributes || seed?.contributes
+
     return {
       ...record,
       name,
       description,
       icon,
       resources,
+      ...(contributes ? { contributes } : {}),
       ...(downloadProgress ? { download_progress: downloadProgress } : {})
     }
   }

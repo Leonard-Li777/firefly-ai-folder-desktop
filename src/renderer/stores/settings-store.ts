@@ -65,6 +65,8 @@ interface ISettingsState {
   validationResult: ISettingsValidationResult | null
   targetWorkspaceId: number | null
   setTargetWorkspaceId: (workspaceId: number | null) => void
+  targetWorkspaceTab: string | null
+  setTargetWorkspaceTab: (tab: string | null) => void
   openSettings: (
     category?: SettingsCategory,
     options?: { workspaceId?: number; targetTab?: string }
@@ -207,6 +209,8 @@ export const useSettingsStore = create<ISettingsState>()(
       currentCategory: SettingsCategory.INTERFACE,
       targetWorkspaceId: null,
       setTargetWorkspaceId: (targetWorkspaceId: number | null) => set({ targetWorkspaceId }),
+      targetWorkspaceTab: null,
+      setTargetWorkspaceTab: (targetWorkspaceTab: string | null) => set({ targetWorkspaceTab }),
       isLoading: false,
       error: null,
       config: {} as AppConfig,
@@ -249,7 +253,10 @@ export const useSettingsStore = create<ISettingsState>()(
           validationResult: null
         })
 
-        if (!get().isWorkspaceSettingsOpen && window.electronAPI?.aiService?.setConfigReloadSuspended) {
+        if (
+          !get().isWorkspaceSettingsOpen &&
+          window.electronAPI?.aiService?.setConfigReloadSuspended
+        ) {
           try {
             await window.electronAPI.aiService.setConfigReloadSuspended(false)
           } catch (error) {
@@ -264,6 +271,7 @@ export const useSettingsStore = create<ISettingsState>()(
           isWorkspaceSettingsOpen: true,
           isOpen: true,
           targetWorkspaceId: options?.workspaceId ?? null,
+          targetWorkspaceTab: options?.targetTab ?? null,
           error: null
         })
 
@@ -284,7 +292,10 @@ export const useSettingsStore = create<ISettingsState>()(
           error: null
         })
 
-        if (!get().isSystemSettingsOpen && window.electronAPI?.aiService?.setConfigReloadSuspended) {
+        if (
+          !get().isSystemSettingsOpen &&
+          window.electronAPI?.aiService?.setConfigReloadSuspended
+        ) {
           try {
             await window.electronAPI.aiService.setConfigReloadSuspended(false)
           } catch (error) {
@@ -314,9 +325,7 @@ export const useSettingsStore = create<ISettingsState>()(
 
       setCurrentCategory: category => {
         let targetCategory =
-          category === SettingsCategory.ANALYSIS
-            ? SettingsCategory.CONTENT_EXTRACTION
-            : category
+          category === SettingsCategory.ANALYSIS ? SettingsCategory.CONTENT_EXTRACTION : category
         set({
           currentCategory: targetCategory,
           error: null

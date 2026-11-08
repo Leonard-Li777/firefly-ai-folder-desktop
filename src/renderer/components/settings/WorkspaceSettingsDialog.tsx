@@ -11,6 +11,7 @@ import { Label } from '../ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 import { useSettingsStore } from '../../stores/settings-store'
 import { useVirtualDirectoryStore } from '../../stores/virtual-directory-store'
+import { usePluginCenterStore } from '../../stores/plugin-center-store'
 import { MaterialIcon, cn } from '../../lib/utils'
 import { t } from '@app/languages'
 import {
@@ -64,6 +65,8 @@ export const WorkspaceSettingsDialog: React.FC = () => {
   const isOpen = useSettingsStore(s => s.isWorkspaceSettingsOpen)
   const closeSettings = useSettingsStore(s => s.closeWorkspaceSettings)
   const targetWorkspaceId = useSettingsStore(s => s.targetWorkspaceId)
+  const targetWorkspaceTab = useSettingsStore(s => s.targetWorkspaceTab)
+  const modules = usePluginCenterStore(s => s.modules)
 
   // 从 virtual directory store 获取工作目录列表与当前活动目录
   const workspaceDirectories = useVirtualDirectoryStore(s => s.workspaceDirectories)
@@ -79,9 +82,12 @@ export const WorkspaceSettingsDialog: React.FC = () => {
     () => new Set(['basic_ai_engine'])
   )
 
-  // 1. 初始化或同步选中的工作区 ID
+  // 1. 初始化或同步选中的工作区 ID 与目标 Tab (Ticket 05 路由锚点直达)
   useEffect(() => {
     if (isOpen) {
+      if (targetWorkspaceTab) {
+        setActiveTab(targetWorkspaceTab as WorkspaceTabId)
+      }
       if (targetWorkspaceId != null) {
         setSelectedWorkspaceId(targetWorkspaceId)
       } else if (currentWorkspace?.id != null) {
@@ -91,7 +97,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
       }
       setIsManualWizardMode(false)
     }
-  }, [isOpen, targetWorkspaceId, currentWorkspace?.id, workspaceDirectories])
+  }, [isOpen, targetWorkspaceId, targetWorkspaceTab, currentWorkspace?.id, workspaceDirectories])
 
   // 2. 加载硬件信息
   useEffect(() => {
@@ -150,9 +156,9 @@ export const WorkspaceSettingsDialog: React.FC = () => {
     }
   }
 
-  // 4-Tab 完整还原定义 (基础AI引擎、文件内容萃取、忽略规则、目录维护)
-  const tabs: WorkspaceTabInfo[] = useMemo(
-    () => [
+  // 4-Tab 完整还原定义 (基础AI引擎、文件内容萃取、忽略规则、目录维护) - 依据已激活插件动态挂载 (Spec §5.2)
+  const tabs: WorkspaceTabInfo[] = useMemo(() => {
+    const allTabs: WorkspaceTabInfo[] = [
       {
         id: 'basic_ai_engine',
         name: t('基础AI引擎'),
@@ -177,9 +183,34 @@ export const WorkspaceSettingsDialog: React.FC = () => {
         icon: 'folder_open',
         description: t('重新运行向导与两段式安全重置')
       }
-    ],
-    []
-  )
+    ]
+
+    if (!modules || modules.length === 0) return allTabs
+    const activeModules = modules.filter(m => m.install_state === 'active')
+
+    return allTabs.filter(tab => {
+      if (tab.id === 'ignore_rules' || tab.id === 'maintenance') return true
+      if (tab.id === 'basic_ai_engine') {
+        return activeModules.some(
+          m =>
+            m.contributes?.settings?.componentId === 'basic_ai_engine' ||
+            m.capability_slot === 'base_embedding'
+        )
+      }
+      if (tab.id === 'content_extraction') {
+        return (
+          activeModules.length === 0 ||
+          activeModules.some(
+            m =>
+              m.contributes?.settings?.componentId === 'content_extraction' ||
+              m.capability_slot === 'perception_nsfw' ||
+              m.capability_slot === 'voice_asr'
+          )
+        )
+      }
+      return true
+    })
+  }, [modules])
 
   if (!isOpen) return null
 

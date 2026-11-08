@@ -1484,6 +1484,12 @@ export class OmniService {
       })
 
       child.on('error', err => {
+        try {
+          const { handleExecutableSecurityBlock } = require('./antivirus-guard')
+          if (handleExecutableSecurityBlock(exePath, err)) {
+            return
+          }
+        } catch {}
         logger.error(LogCategory.SYSTEM, '[OmniService] 子进程启动失败:', err)
       })
 

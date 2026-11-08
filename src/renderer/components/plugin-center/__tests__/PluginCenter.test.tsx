@@ -42,6 +42,7 @@ vi.mock('../../settings/tts-settings', () => ({
 }))
 
 import { PluginCard, formatBytes } from '../PluginCard'
+import { PluginListItem } from '../PluginListItem'
 import { PluginCenterOverlay } from '../PluginCenterOverlay'
 import { usePluginCenterStore, type PluginModuleItem } from '../../../stores/plugin-center-store'
 
@@ -172,14 +173,14 @@ describe('PluginCenterOverlay (弹层交互、失焦保护与配置挂载)', () 
     fireEvent.change(searchInput, { target: { value: 'TTS' } })
 
     // 应该只展示 TTS 插件卡片
-    expect(screen.getByText('离线语音合成 TTS')).toBeInTheDocument()
+    expect(screen.getByText(/离线语音合成 TTS/)).toBeInTheDocument()
     expect(screen.queryByText('CAD / 3D 图纸模型解析器')).not.toBeInTheDocument()
   })
 
   it('点击高级 AI 引擎配置按钮时挂载 AIEngineConfigSettings', () => {
     act(() => {
       usePluginCenterStore.getState().openOverlay()
-      usePluginCenterStore.getState().setConfiguringModuleId('advanced_ai_engine')
+      usePluginCenterStore.getState().setConfiguringModuleId('ai_organize_skill')
     })
 
     render(<PluginCenterOverlay />)
@@ -194,7 +195,7 @@ describe('PluginCenterOverlay (弹层交互、失焦保护与配置挂载)', () 
   it('点击离线 TTS 配置按钮时挂载 TTSSettings', () => {
     act(() => {
       usePluginCenterStore.getState().openOverlay()
-      usePluginCenterStore.getState().setConfiguringModuleId('offline_tts')
+      usePluginCenterStore.getState().setConfiguringModuleId('tts_moss_onnx')
     })
 
     render(<PluginCenterOverlay />)
@@ -238,22 +239,116 @@ describe('PluginCenterOverlay (弹层交互、失焦保护与配置挂载)', () 
   })
 
   it('下载进度流转与安装状态切换完整验证', () => {
+    const targetId = usePluginCenterStore
+      .getState()
+      .modules.some(m => m.id === 'asr_sensevoice_onnx')
+      ? 'asr_sensevoice_onnx'
+      : 'asr_engine'
+
     act(() => {
-      usePluginCenterStore.getState().installPlugin('asr_engine')
+      usePluginCenterStore.getState().installPlugin(targetId)
     })
 
-    let asr = usePluginCenterStore.getState().modules.find(m => m.id === 'asr_engine')
+    let asr = usePluginCenterStore.getState().modules.find(m => m.id === targetId)
     expect(asr?.install_state).toBe('downloading')
 
     act(() => {
-      usePluginCenterStore.getState().updateDownloadProgress('asr_engine', {
+      usePluginCenterStore.getState().updateDownloadProgress(targetId, {
         percentage: 100,
         speed_bytes_per_sec: 1024 * 1024 * 10,
         is_resumed: false
       })
     })
 
-    asr = usePluginCenterStore.getState().modules.find(m => m.id === 'asr_engine')
+    asr = usePluginCenterStore.getState().modules.find(m => m.id === targetId)
     expect(asr?.install_state).toBe('active')
+  })
+
+  it('未打开时不渲染任何 DOM 节点 (return null)', () => {
+    act(() => {
+      usePluginCenterStore.getState().closeOverlay()
+    })
+    const { container } = render(<PluginCenterOverlay />)
+    expect(container.firstChild).toBeNull()
+  })
+
+  it('呈现与全局搜索完全一致的主内容区域全局覆盖形态 (非弹窗)', () => {
+    act(() => {
+      usePluginCenterStore.getState().openOverlay()
+    })
+    render(<PluginCenterOverlay />)
+    const overlay = screen.getByTestId('plugin-center-overlay')
+    expect(overlay).toBeInTheDocument()
+    expect(overlay).toHaveClass('absolute')
+    expect(overlay).toHaveClass('inset-x-0')
+    expect(overlay).toHaveClass('bottom-0')
+    expect(overlay).toHaveClass('z-30')
+    expect(overlay).toHaveClass('bg-background')
+    expect(overlay.style.top).toBe('var(--app-header-height, 53px)')
+  })
+
+  it('点击右上角关闭按钮或按 Esc 键可退出插件中心', () => {
+    act(() => {
+      usePluginCenterStore.getState().openOverlay()
+    })
+    const { unmount } = render(<PluginCenterOverlay />)
+    expect(usePluginCenterStore.getState().isOverlayOpen).toBe(true)
+
+    // 点击右上角关闭按钮
+    const closeBtn = screen.getByTitle('关闭插件中心 (Esc)')
+    fireEvent.click(closeBtn)
+    expect(usePluginCenterStore.getState().isOverlayOpen).toBe(false)
+
+    unmount()
+
+    // 重新打开，测试 Esc 快捷键关闭
+    act(() => {
+      usePluginCenterStore.getState().openOverlay()
+    })
+    render(<PluginCenterOverlay />)
+    expect(usePluginCenterStore.getState().isOverlayOpen).toBe(true)
+    fireEvent.keyDown(window, { key: 'Escape' })
+    expect(usePluginCenterStore.getState().isOverlayOpen).toBe(false)
+  })
+
+  it('在配置子模式下按 Esc 键优先返回插件列表而不是关闭覆盖层', () => {
+    act(() => {
+      usePluginCenterStore.getState().openOverlay()
+      usePluginCenterStore.getState().setConfiguringModuleId('advanced_ai_engine')
+    })
+    render(<PluginCenterOverlay />)
+    expect(usePluginCenterStore.getState().configuringModuleId).toBe('advanced_ai_engine')
+
+    // 按 Esc 键
+    fireEvent.keyDown(window, { key: 'Escape' })
+    // configuringModuleId 变为 null，但 isOverlayOpen 仍为 true
+    expect(usePluginCenterStore.getState().configuringModuleId).toBeNull()
+    expect(usePluginCenterStore.getState().isOverlayOpen).toBe(true)
+
+    // 再次按 Esc 键，退出覆盖层
+    fireEvent.keyDown(window, { key: 'Escape' })
+    expect(usePluginCenterStore.getState().isOverlayOpen).toBe(false)
+  })
+
+  it('PluginListItem 作为 List 行组件可正确呈现插件信息', () => {
+    const mockModule: PluginModuleItem = {
+      id: 'test_plugin',
+      name: '测试扩展组件',
+      version: '2.1.0',
+      category: 'perception',
+      author_code: 'community',
+      author_name: '社区开发者',
+      availability: 'available',
+      total_bytes: 104857600, // 100 MB
+      install_state: 'not_installed',
+      description: '这是测试插件的详细功能说明'
+    }
+    render(<PluginListItem module={mockModule} />)
+    expect(screen.getByText('测试扩展组件')).toBeInTheDocument()
+    expect(screen.getByText('v2.1.0')).toBeInTheDocument()
+    expect(screen.getByText('感知分析')).toBeInTheDocument()
+    expect(screen.getByText('社区开发者')).toBeInTheDocument()
+    expect(screen.getByText('这是测试插件的详细功能说明')).toBeInTheDocument()
+    expect(screen.getByText(/安装包总体积: 100.0 MB/)).toBeInTheDocument()
   })
 })

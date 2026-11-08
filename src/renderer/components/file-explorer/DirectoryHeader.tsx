@@ -23,7 +23,6 @@ import { ResourceContentionBanner } from './ResourceContentionBanner'
 import { WorkspacePendingConfigBanner } from './WorkspacePendingConfigBanner'
 import { GlobalTTSPlaybackBar } from './GlobalTTSPlaybackBar'
 import { usePluginCenterStore } from '../../stores/plugin-center-store'
-import { PluginCenterOverlay } from '../plugin-center/PluginCenterOverlay'
 
 interface DirectoryHeaderProps {
   currentWorkspaceDirectory: WorkspaceDirectory | null
@@ -598,7 +597,13 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                 data-no-drag
                 data-testid="plugin-center-toggle-btn"
                 data-plugin-center-toggle="true"
-                onClick={togglePluginCenter}
+                onClick={() => {
+                  if (!isPluginCenterOpen) {
+                    clearGlobalSearch()
+                    setLocalSearchInput('')
+                  }
+                  togglePluginCenter()
+                }}
                 style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
                 className={cn(
                   'no-drag flex-shrink-0 h-8 px-3 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer flex items-center gap-1.5 border shadow-2xs select-none active:scale-95',
@@ -680,6 +685,11 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
           <div
             className="flex items-center flex-shrink-0 gap-1"
             style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+            onClickCapture={() => {
+              if (usePluginCenterStore.getState().isOverlayOpen) {
+                usePluginCenterStore.getState().closeOverlay()
+              }
+            }}
           >
             {/* Directory Selector */}
             <div
@@ -711,6 +721,9 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                   if (!showDirectoryDropdown && globalSearchKeyword) {
                     clearGlobalSearch()
                     setLocalSearchInput('')
+                  }
+                  if (usePluginCenterStore.getState().isOverlayOpen) {
+                    usePluginCenterStore.getState().closeOverlay()
                   }
                   onToggleDirectoryDropdown()
                 }}
@@ -1077,6 +1090,9 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                 onStepClick={path => {
                   if (path === '/analyzed-directory') setHasNewFiles(false)
                   clearGlobalSearch()
+                  if (usePluginCenterStore.getState().isOverlayOpen) {
+                    usePluginCenterStore.getState().closeOverlay()
+                  }
                   navigate(path)
                 }}
               />
@@ -1115,6 +1131,9 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                   const isNativeComposing =
                     (e.nativeEvent as any)?.isComposing ?? isComposingRef.current
                   if (!isNativeComposing) {
+                    if (val.trim() && usePluginCenterStore.getState().isOverlayOpen) {
+                      usePluginCenterStore.getState().closeOverlay()
+                    }
                     setGlobalSearchKeyword(val)
                     onSearch?.(val)
                   }
@@ -1323,8 +1342,6 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
             <div className="h-full w-full bg-gradient-to-r from-transparent via-primary to-transparent animate-indeterminate-bar" />
           </div>
         )}
-        {/* 插件中心全局覆盖弹层 */}
-        <PluginCenterOverlay />
       </header>
     )
   }

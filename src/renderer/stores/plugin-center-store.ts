@@ -44,6 +44,9 @@ export interface PluginModuleItem {
   user_config?: string | null
   error_message?: string | null
   download_progress?: DownloadProgress
+  contributes?: {
+    settings?: import('@firefly/types').PluginSettingsContribution
+  }
   resources?: Array<{
     resource_id: string
     asset_name: string
@@ -130,6 +133,14 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
     availability: 'available',
     total_bytes: 319195255,
     install_state: 'not_installed',
+    contributes: {
+      settings: {
+        scope: 'workspace',
+        tabTitle: '基础 AI 引擎',
+        componentId: 'basic_ai_engine',
+        priority: 10
+      }
+    },
     description:
       '非对称双塔极速架构：Bekko 384d 文本与 CLIP 512d 视觉检索，低内存消耗，CPU 即可流畅运转',
     icon: 'Feather',
@@ -159,6 +170,14 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
     availability: 'available',
     total_bytes: 254003864,
     install_state: 'not_installed',
+    contributes: {
+      settings: {
+        scope: 'workspace',
+        tabTitle: '基础 AI 引擎',
+        componentId: 'basic_ai_engine',
+        priority: 10
+      }
+    },
     description:
       'EmbeddingGemma-2 图文同构统一流形空间，支持 MRL 256/512/768 弹性维度截断与高精度跨模态匹配',
     icon: 'Layers',
@@ -183,6 +202,14 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
     availability: 'available',
     total_bytes: 21966375,
     install_state: 'not_installed',
+    contributes: {
+      settings: {
+        scope: 'workspace',
+        tabTitle: '文件内容萃取',
+        componentId: 'content_extraction',
+        priority: 20
+      }
+    },
     description:
       '集成 MobileNetV2 视觉 5 分类与多语种文本 FastText 分类器，精准识别成人内容与分级标签 (PG-13/R-18/R-18G)',
     icon: 'ShieldAlert',
@@ -199,7 +226,7 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
     name: '语音识别与字幕提取 ASR (SenseVoice)',
     version: '1.0.0',
     category: 'perception',
-    capability_slot: 'asr',
+    capability_slot: 'voice_asr',
     slot_policy: 'exclusive_optional',
     backend_type: 'omni_onnx',
     author_code: 'official',
@@ -207,6 +234,14 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
     availability: 'available',
     total_bytes: 168587158,
     install_state: 'not_installed',
+    contributes: {
+      settings: {
+        scope: 'workspace',
+        tabTitle: '文件内容萃取',
+        componentId: 'content_extraction',
+        priority: 25
+      }
+    },
     description:
       'SenseVoice 极速高精音频转录、富文本标点对齐与多语言语音识别，支持音视频字幕分段抽取 (音频转码复用系统内置 FFmpeg)',
     icon: 'Mic',
@@ -228,7 +263,7 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
     name: '离线语音合成 TTS (Moss-TTS)',
     version: '1.0.0',
     category: 'media',
-    capability_slot: 'tts',
+    capability_slot: 'voice_tts',
     slot_policy: 'exclusive_optional',
     backend_type: 'omni_onnx',
     author_code: 'official',
@@ -236,6 +271,14 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
     availability: 'available',
     total_bytes: 249105462,
     install_state: 'not_installed',
+    contributes: {
+      settings: {
+        scope: 'global',
+        tabTitle: '语音合成 (TTS)',
+        componentId: 'tts',
+        priority: 30
+      }
+    },
     description: '高质量离线自然语音朗读、51 款精选音色库与多语种伴音生成引擎',
     icon: 'Volume2',
     resources: [
