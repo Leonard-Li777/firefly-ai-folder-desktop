@@ -593,17 +593,17 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
                 )}
                 {whitelistPatterns.length > 0 && (
                   <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400">
-                    {t('白名单快照生效中 ({count})', { count: whitelistPatterns.length })}
+                    {t('包含规则快照生效中 ({count})', { count: whitelistPatterns.length })}
                   </span>
                 )}
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 {workspace.bound_workflow_id
                   ? t(
-                      '已绑定专属业务工作流。解除绑定后目录将恢复为通用模式，且自动保留白名单快照防止非目标文件涌入。'
+                      '已绑定专属业务工作流。解除绑定后目录将恢复为通用模式，且自动保留包含规则快照防止非目标文件涌入。'
                     )
                   : t(
-                      '当前目录未绑定专属工作流。若存在白名单快照，将继续作为安全保护生效，亦可随时清空恢复全量模式。'
+                      '当前目录未绑定专属工作流。若存在包含规则快照，将继续作为安全保护生效，亦可随时清空恢复全量模式。'
                     )}
               </p>
             </div>
@@ -633,7 +633,7 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
                 className="text-xs font-semibold h-8 px-3 border-amber-500/30 text-amber-600 hover:bg-amber-500/10 dark:text-amber-400"
               >
                 {isClearingWhitelist ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : null}
-                <span>{t('清空白名单并恢复全量模式')}</span>
+                <span>{t('清空包含规则并恢复全量模式')}</span>
               </Button>
             )}
             {!workspace.bound_workflow_id && (
@@ -829,7 +829,7 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
                   <ShieldCheck className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
                   <span>
                     {t(
-                      '【快照安全保护】：为防止非目标垃圾文件骤然涌入分析队列，当前生效的白名单扩展名（共 {count} 项）将作为安全快照完整保留。',
+                      '【快照安全保护】：为防止非目标垃圾文件骤然涌入分析队列，当前生效的包含规则扩展名（共 {count} 项）将作为安全快照完整保留。',
                       { count: whitelistPatterns.length }
                     )}
                   </span>
@@ -855,25 +855,25 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* 清空白名单并恢复全量模式确认对话框 */}
+      {/* 清空包含规则并恢复全量模式确认对话框 */}
       <AlertDialog open={showClearWhitelistDialog} onOpenChange={setShowClearWhitelistDialog}>
         <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
               <AlertTriangle className="h-5 w-5" />
-              <span>{t('确认清空白名单并恢复全量模式？')}</span>
+              <span>{t('确认清空包含规则并恢复全量模式？')}</span>
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="text-xs leading-relaxed space-y-2 text-muted-foreground">
                 <p>
                   {t(
-                    '清空白名单后，目录将恢复为标准全量入场模式。除系统与自定义排除规则拦截的项目外，所有新增与存量合法文件都将纳入扫描与 AI 分析队列。'
+                    '清空包含规则后，目录将恢复为标准全量入场模式。除系统与自定义排除规则拦截的项目外，所有新增与存量合法文件都将纳入扫描与 AI 分析队列。'
                   )}
                 </p>
                 <div className="p-2.5 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300 flex items-start gap-2 border border-amber-500/20">
                   <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
                   <span>
-                    {t('此操作将清空当前已配置的 {count} 项扩展名放行白名单，并触发增量补扫。', {
+                    {t('此操作将清空当前已配置的 {count} 项扩展名放行包含规则，并触发增量补扫。', {
                       count: whitelistPatterns.length
                     })}
                   </span>

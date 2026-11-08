@@ -217,15 +217,15 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> 
           toast.success(
             mode === 'standard'
               ? t('已切换至标准全量入场模式')
-              : t('白名单规则已更新，已生效 {count} 项扩展名', { count: targetPatterns.length })
+              : t('包含规则已更新，已生效 {count} 项扩展名', { count: targetPatterns.length })
           )
           onConfigSaved?.()
         } else {
-          toast.error(res.error || t('更新白名单失败'))
+          toast.error(res.error || t('更新包含规则失败'))
         }
       }
     } catch (err: any) {
-      toast.error(err?.message || t('保存白名单失败'))
+      toast.error(err?.message || t('保存包含规则失败'))
     } finally {
       setIsSavingWhitelist(false)
     }
@@ -371,10 +371,10 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> 
         <div>
           <h3 className="text-lg font-bold flex items-center gap-2">
             <Filter className="w-5 h-5 text-primary" />
-            <span>{t('文件过滤与白名单规则 (当前工作目录)')}</span>
+            <span>{t('文件准入与包含规则 (当前工作目录)')}</span>
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {t('管理当前工作目录的文件准入模式（标准全量或排他白名单），并定制目录专属排除项。')}
+            {t('管理当前工作目录的文件准入模式（标准全量或排他包含），并定制目录专属排除项。')}
           </p>
         </div>
 
@@ -391,7 +391,7 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> 
             ) : (
               <Save className="w-3.5 h-3.5" />
             )}
-            <span>{isSavingWhitelist ? t('正在保存...') : t('保存过滤模式与白名单')}</span>
+            <span>{isSavingWhitelist ? t('正在保存...') : t('保存准入规则与包含模式')}</span>
           </Button>
         )}
       </div>
@@ -411,7 +411,7 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> 
           </div>
           <p className="text-[11px] mt-1 text-emerald-800/90 dark:text-emerald-300/90 leading-relaxed">
             {t(
-              '修改白名单规则仅重新过滤 AI 索引与分析队列，绝不会删除或修改您电脑磁盘中的任何原始物理文件。'
+              '修改包含与排除规则仅重新过滤 AI 索引与分析队列，绝不会删除或修改您电脑磁盘中的任何原始物理文件。'
             )}
           </p>
         </div>
@@ -493,7 +493,7 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> 
                 </div>
                 <div>
                   <div className="text-xs font-bold text-foreground">
-                    {t('排他白名单模式 (仅放行指定格式)')}
+                    {t('排他包含模式 (仅放行指定格式)')}
                   </div>
                   <div className="text-[10px] text-muted-foreground">
                     {t('精准过滤，仅目标格式进入')}
@@ -518,7 +518,7 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> 
         <Card className="p-4 bg-muted/10 border-border/70 space-y-4">
           <div className="flex items-center justify-between">
             <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-              <span>{t('已启用的白名单扩展名')}</span>
+              <span>{t('已启用的包含规则扩展名')}</span>
               <span className="text-[11px] font-normal text-muted-foreground font-mono">
                 ({whitelistTags.length})
               </span>
@@ -532,7 +532,7 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> 
                 onClick={() => setWhitelistTags([])}
                 className="h-6 text-[11px] text-muted-foreground hover:text-destructive px-2"
               >
-                {t('清空白名单')}
+                {t('清空包含规则')}
               </Button>
             )}
           </div>
@@ -541,7 +541,7 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> 
           {whitelistTags.length === 0 ? (
             <div className="p-4 text-center rounded-xl border border-dashed border-border/70 text-muted-foreground text-xs space-y-1">
               <p className="text-amber-600 dark:text-amber-400 font-medium">
-                {t('暂未添加任何白名单扩展名')}
+                {t('暂未添加任何包含规则扩展名')}
               </p>
               <p className="text-[11px] text-muted-foreground/80">
                 {t('请在下方输入扩展名（如 .cr3 或 docx），或点击快速预设一键选用')}
@@ -682,7 +682,7 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> 
             <AlertTriangle className="w-4 h-4 shrink-0" />
             <span>
               {t(
-                '白名单为空：若保存为空白名单，系统将安全回退为全量放行模式，避免全部文件被过滤。'
+                '包含规则为空：若保存为空规则，系统将安全回退为全量放行模式，避免全部文件被过滤。'
               )}
             </span>
           </div>
@@ -726,7 +726,7 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> 
             <p className="text-[11px] text-muted-foreground leading-relaxed">
               {impact.totalFiles > 0
                 ? t(
-                    '基于当前目录嗅探（共 {total} 个文件），预期将精准纳入 {included} 个目标格式文件（约 {inPct}%），并自动排除其余 {excluded} 个非白名单文件（约 {outPct}%）。',
+                    '基于当前目录嗅探（共 {total} 个文件），预期将精准纳入 {included} 个目标格式文件（约 {inPct}%），并自动排除其余 {excluded} 个非包含规则文件（约 {outPct}%）。',
                     {
                       total: impact.totalFiles,
                       included: impact.includedFiles,
