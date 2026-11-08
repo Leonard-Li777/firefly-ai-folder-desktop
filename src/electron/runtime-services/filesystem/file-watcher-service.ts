@@ -9,6 +9,7 @@ import {
   compileWhitelistExtSet,
   shouldIngressFile
 } from '@firefly/shared'
+import { workspaceAdmissionService } from '../workspace/workspace-admission-service'
 import { databaseService } from '../database/database-service'
 import { analysisQueueService } from '../analysis-queue-service'
 import { loadIgnoreRules, shouldIgnoreFile } from '../analysis/analysis-ignore-service'
@@ -157,15 +158,12 @@ class FileWatcherService {
 
       logger.info(LogCategory.FILE_WATCHER, `开始监听目录: ${directoryPath}`)
       try {
-        const dirConfig = await databaseService.getWorkspaceDirectoryById(workspaceId)
-        if (dirConfig?.whitelist_patterns) {
-          this.workspaceWhitelistCache.set(
-            workspaceId,
-            compileWhitelistExtSet(dirConfig.whitelist_patterns)
-          )
+        const policy = workspaceAdmissionService.getEffectivePolicy(workspaceId)
+        if (policy?.primaryExtensions) {
+          this.workspaceWhitelistCache.set(workspaceId, policy.primaryExtensions)
         }
       } catch (err) {
-        logger.warn(LogCategory.FILE_WATCHER, `加载工作区 ID: ${workspaceId} 白名单配置失败:`, err)
+        logger.warn(LogCategory.FILE_WATCHER, `加载工作区 ID: ${workspaceId} 过滤策略失败:`, err)
       }
 
       // 创建监听器
@@ -470,20 +468,8 @@ class FileWatcherService {
     autoWatchEnabled?: boolean,
     skipNotify?: boolean
   ): Promise<void> {
-    // 【门禁0】白名单排他过滤短路丢弃 (Issue 12a AC 1)
-    let allowedExts = this.workspaceWhitelistCache.get(workspaceId)
-    if (allowedExts === undefined) {
-      try {
-        const ws = await databaseService.getWorkspaceDirectoryById(workspaceId)
-        if (ws?.whitelist_patterns) {
-          allowedExts = compileWhitelistExtSet(ws.whitelist_patterns)
-          this.workspaceWhitelistCache.set(workspaceId, allowedExts)
-        }
-      } catch {
-        // 容错降级
-      }
-    }
-    if (!shouldIngressFile(filePath, false, allowedExts, this.ignoreRules)) {
+    // 【门禁0】四阶单层短路准入检查 (WorkspaceAdmissionService 单一事实源 [M06])
+    if (!workspaceAdmissionService.shouldAdmitFile(workspaceId, filePath, false)) {
       return
     }
 
@@ -560,6 +546,34 @@ class FileWatcherService {
         }
       }
 
+      // 伴生文件乱序重评 (AC-2 / VET-08)
+      try {
+        const policy = workspaceAdmissionService.getEffectivePolicy(workspaceId)
+        const fileExt = path.extname(filePath).toLowerCase()
+        if (policy.whitelistRules.length > 0 && !policy.companionExtensions.has(fileExt)) {
+          const dir = path.dirname(filePath)
+          const baseStem = path.basename(filePath, path.extname(filePath))
+          const COMPANION_EXTS = ['.xmp', '.lrc', '.edl', '.cue', '.vtt', '.srt', '.ass', '.ssa']
+          for (const cExt of COMPANION_EXTS) {
+            const candidatePath = path.join(dir, `${baseStem}${cExt}`)
+            if (fs.existsSync(candidatePath) && !this.processingFiles.has(candidatePath)) {
+              const existing = await databaseService.getFileByPath(candidatePath)
+              if (!existing) {
+                void this.handleFileAdded(
+                  workspaceId,
+                  directoryPath,
+                  candidatePath,
+                  autoWatchEnabled,
+                  true
+                )
+              }
+            }
+          }
+        }
+      } catch {
+        // 忽略伴生补评异常
+      }
+
       if (!skipNotify) {
         this.notifyDirectoryUpdate(directoryPath)
       }
@@ -577,20 +591,8 @@ class FileWatcherService {
     autoWatchEnabled?: boolean,
     skipNotify?: boolean
   ): Promise<void> {
-    // 【门禁0】白名单排他过滤短路丢弃 (Issue 12a AC 1)
-    let allowedExts = this.workspaceWhitelistCache.get(workspaceId)
-    if (allowedExts === undefined) {
-      try {
-        const ws = await databaseService.getWorkspaceDirectoryById(workspaceId)
-        if (ws?.whitelist_patterns) {
-          allowedExts = compileWhitelistExtSet(ws.whitelist_patterns)
-          this.workspaceWhitelistCache.set(workspaceId, allowedExts)
-        }
-      } catch {
-        // 容错降级
-      }
-    }
-    if (!shouldIngressFile(filePath, false, allowedExts, this.ignoreRules)) {
+    // 【门禁0】四阶单层短路准入检查 (WorkspaceAdmissionService 单一事实源 [M06])
+    if (!workspaceAdmissionService.shouldAdmitFile(workspaceId, filePath, false)) {
       return
     }
 
@@ -679,6 +681,33 @@ class FileWatcherService {
       if (file) {
         await databaseService.updateFileStatus(file.fileId || file.id, 0)
         logger.info(LogCategory.FILE_WATCHER, `文件不存在，已更新数据库状态 status=0: ${filePath}`)
+      }
+
+      // 伴生文件孤儿解绑重评 (AC-2 / VET-08)
+      try {
+        const policy = workspaceAdmissionService.getEffectivePolicy(workspaceId)
+        const fileExt = path.extname(filePath).toLowerCase()
+        if (policy.whitelistRules.length > 0 && !policy.companionExtensions.has(fileExt)) {
+          const dir = path.dirname(filePath)
+          const baseStem = path.basename(filePath, path.extname(filePath))
+          const COMPANION_EXTS = ['.xmp', '.lrc', '.edl', '.cue', '.vtt', '.srt', '.ass', '.ssa']
+          for (const cExt of COMPANION_EXTS) {
+            const candidatePath = path.join(dir, `${baseStem}${cExt}`)
+            const cFile = await databaseService.getFileByPath(candidatePath)
+            if (
+              cFile &&
+              !workspaceAdmissionService.shouldAdmitFile(workspaceId, candidatePath, false)
+            ) {
+              await databaseService.updateFileStatus(cFile.fileId || cFile.id, 0)
+              logger.info(
+                LogCategory.FILE_WATCHER,
+                `主文件已删除，孤儿伴生文件已解绑: ${candidatePath}`
+              )
+            }
+          }
+        }
+      } catch {
+        // 忽略伴生孤儿解绑异常
       }
 
       if (!skipNotify) {

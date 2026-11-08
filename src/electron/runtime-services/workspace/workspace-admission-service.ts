@@ -2,17 +2,18 @@
  * 工作区文件准入与过滤策略深模块 (WorkspaceAdmissionService)
  *
  * 职责边界：
- * 1. 单一配置源：所有白名单与忽略规则统一持久化在 `workspaces.workspace_config` JSON 与 `bound_workflow_id` 中，
+ * 1. 单一配置源：所有包含（白名单）与排除（黑名单）规则统一持久化在 `workspaces.workspace_config` JSON 与 `bound_workflow_id` 中，
  *    无 `whitelist_patterns` 物理数据库列。
- * 2. 四阶短路决策：系统硬黑名单 > 工作区黑名单 (`customIgnoreRules`) > 工作区白名单 (`customWhitelistRules` + 8 种伴生文件) > 默认放行。
- * 3. 版本单调递增与缓存一致性：唯一写入口 `applyPolicyMutation` 强制递增 `policyVersion = (current.policyVersion || 0) + 1`，
- *    并调用 `invalidateWorkspacePolicyCache(workspaceId)` 精确失效旧缓存。
+ * 2. 四阶单层短路决策：系统硬排除 > 用户自定义排除规则 (excludeRules) > 排他包含规则 (includeRules + 8 种伴生文件特权) > 默认准入放行。
+ * 3. 版本单调递增与指纹短路 (M01/M02)：主进程唯一版本权威。当修改 AI 温度/并发/Prompt/命名模板等非准入字段时，
+ *    准入指纹完全一致且元数据已对齐，直接短路返回零 I/O；指纹变化时原子自增 policyVersion。
  * 4. 索引解绑绝不删物理文件 (IN-02 铁律)：策略收紧后仅从 `workspace_files` 与 `analysis_queue` 移除失配索引及待处理任务，
  *    绝对禁止调用 `fs.unlink` / `fs.rm` 删除用户磁盘上的物理文件。
+ * 5. 准入对账后置回写与非阻塞自愈 (Y-02/Y-07)：workspaces.meta.admittedPolicyHash 仅在解绑、裁剪与重扫全部成功后回写；
+ *    启动时由 reconcileAllWorkspacesOnStartup 异步非阻塞对账自愈。
  */
 
 import type { Database } from 'better-sqlite3'
-import fs from 'node:fs'
 import path from 'node:path'
 import {
   isWorkspaceConfigReady,
@@ -26,7 +27,10 @@ import {
   type WorkspaceConfigReady
 } from '@firefly/types'
 import {
+  compileFilterPolicy,
+  computeAdmissionFingerprint,
   invalidateWorkspacePolicyCache,
+  isPolicyRelaxed,
   LogCategory,
   logger,
   mapIntentToParameters,
@@ -41,6 +45,13 @@ import { LOCAL_WORKFLOW_CONFIG_SOURCE } from '../../config/local-workflow-source
 export interface WorkspacePolicyMutation {
   workflowId?: string | null
   restoreWorkflowDefault?: boolean
+  /** 排他包含扩展名列表 (规范对称命名，如 ['.cr3', '.jpg']) */
+  includeExts?: string[]
+  /** 包含规则对象列表 (白名单模式) */
+  includeRules?: IFilterRule[]
+  /** 用户自定义排除规则列表 (黑名单) */
+  excludeRules?: IFilterRule[]
+  /** 兼容旧别名 (服务层自动解包归一) */
   customWhitelistExts?: string[]
   customWhitelistRules?: IFilterRule[]
   customIgnoreRules?: IFilterRule[]
@@ -63,15 +74,25 @@ export interface PolicyImpactPreview {
 
 export interface AdmissionReconcileResult {
   policyVersion: number
+  /** 编译后准入指纹是否发生变化（仅修改 AI 温度/并发/Prompt/命名模板时为 false，短路零 I/O） */
+  admissionChanged: boolean
+  /** 是否放宽了准入范围而触发了增量补扫（仅收紧规则或未变化时为 false） */
+  needsRescan: boolean
   prunedFilesCount: number
   cancelledTasksCount: number
+  cancelledTaskDetails?: {
+    pendingCount: number
+    analyzingCount: number
+  }
 }
 
 export interface IWorkspaceAdmissionService {
   /** 获取编译后的不可变策略快照（内部管理 `${workspaceId}:${policyVersion}` 缓存） */
   getEffectivePolicy(workspaceId: number): EffectiveFilterPolicy
 
-  /** 判定单个文件或目录是否允许准入（封装四阶短路与伴生文件同目录校验） */
+  /**
+   * 判定单个文件或目录是否允许准入（封装四阶单层短路与伴生主文件同目录校验）
+   */
   shouldAdmitFile(
     workspaceId: number,
     filePath: string,
@@ -79,7 +100,9 @@ export interface IWorkspaceAdmissionService {
     siblingEntries?: string[]
   ): boolean
 
-  /** 预览策略变更对当前工作区或探测画像的影响（含伴生文件保护计数） */
+  /**
+   * 预览策略变更对当前工作区或探测画像的影响（含伴生文件保护计数，零污染生产策略缓存）
+   */
   previewPolicyImpact(
     workspaceId: number,
     mutation: WorkspacePolicyMutation,
@@ -87,17 +110,22 @@ export interface IWorkspaceAdmissionService {
   ): Promise<PolicyImpactPreview>
 
   /**
-   * 原子应用策略变更（唯一写入口）：
-   * 1. 强制递增 `policyVersion = (current.policyVersion || 0) + 1`；
-   * 2. 合并或重置 `bound_workflow_id` 与 `workspace_config` 并持久化至 `workspaces` 表；
-   * 3. 精确调用 `invalidateWorkspacePolicyCache(workspaceId)`；
-   * 4. 执行伴生文件感知的 `workspace_files` 索引解绑（IN-02：仅从索引表移除记录，严禁删除物理磁盘文件）；
-   * 5. 驱动 `queueManager.cancelUnmatchedTasks`（基于完整 `EffectiveFilterPolicy` 取消失配待处理任务）与 `fileWatcherService` 增量重扫。
+   * 原子应用策略变更（唯一写入口，按 workspaceId 串行队列执行）：
+   * 1. 忽略前端传入的旧版本，主进程为单一权威；
+   * 2. 准入指纹比对：若指纹未变且 meta.admittedPolicyHash 匹配，短路返回零 I/O；
+   * 3. 若指纹变化：自增 policyVersion，第一阶段微事务写入配置；
+   * 4. 第二阶段非阻塞批量解绑失配文件（零磁盘 I/O）并取消队列任务；
+   * 5. 若规则放宽则通知重扫；全流程成功后后置回写 workspaces.meta.admittedPolicyHash。
    */
   applyPolicyMutation(
     workspaceId: number,
     mutation: WorkspacePolicyMutation
   ): Promise<AdmissionReconcileResult>
+
+  /**
+   * 启动期电平触发自愈对账 (ALT-1 / Y-02 / Y-07)
+   */
+  reconcileAllWorkspacesOnStartup?(): Promise<number>
 }
 
 export interface WorkspaceAdmissionDependencies {
@@ -179,6 +207,8 @@ function normalizeRuleList(
 
 export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
   private deps: WorkspaceAdmissionDependencies
+  /** 按 workspaceId 维护的串行执行队列锁，防止并发冲突 (M02) */
+  private workspaceQueues = new Map<number, Promise<any>>()
 
   constructor(deps: WorkspaceAdmissionDependencies = {}) {
     this.deps = deps
@@ -204,6 +234,29 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
       return loadIgnoreRules()
     } catch {
       return []
+    }
+  }
+
+  /**
+   * 串行包装执行器 (M02)
+   */
+  private async runSerialized<T>(workspaceId: number, fn: () => Promise<T>): Promise<T> {
+    const prev = this.workspaceQueues.get(workspaceId) || Promise.resolve()
+    const next = (async () => {
+      try {
+        await prev
+      } catch {
+        // 忽略前一个任务的异常，不阻断后续任务排队
+      }
+      return await fn()
+    })()
+    this.workspaceQueues.set(workspaceId, next)
+    try {
+      return await next
+    } finally {
+      if (this.workspaceQueues.get(workspaceId) === next) {
+        this.workspaceQueues.delete(workspaceId)
+      }
     }
   }
 
@@ -372,7 +425,7 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
   ): {
     nextConfig: WorkspaceConfigReady
     nextBoundWorkflowId: string | null
-    nextPolicyVersion: number
+    currentPolicyVersion: number
   } {
     const row = db
       .prepare(
@@ -393,7 +446,6 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
     const currentConfig = parseWorkspaceConfig(row.workspace_config)
     const currentReady = currentConfig.status === 'ready' ? currentConfig : null
     const currentPolicyVersion = currentReady ? currentReady.policyVersion || 0 : 0
-    const nextPolicyVersion = currentPolicyVersion + 1
 
     let nextBoundWorkflowId: string | null =
       row.bound_workflow_id ?? currentReady?.workflowId ?? null
@@ -421,25 +473,28 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
       }
     }
 
-    // 1. 计算白名单规则：显式 customWhitelistExts > 显式 customWhitelistRules > 工作流模板覆盖 > 既有配置
+    // 1. 包含规则解包：includeExts/customWhitelistExts > includeRules/customWhitelistRules > 模板覆盖 > 既有
+    const incomingExts = mutation.includeExts ?? mutation.customWhitelistExts
+    const incomingIncludeRules = mutation.includeRules ?? mutation.customWhitelistRules
     let nextWhitelistRules: IFilterRule[]
-    if (mutation.customWhitelistExts !== undefined) {
-      nextWhitelistRules = normalizeExtensionsToFilterRules(mutation.customWhitelistExts)
-    } else if (mutation.customWhitelistRules !== undefined) {
-      nextWhitelistRules = normalizeRuleList(mutation.customWhitelistRules, 'whitelist')
+    if (incomingExts !== undefined) {
+      nextWhitelistRules = normalizeExtensionsToFilterRules(incomingExts)
+    } else if (incomingIncludeRules !== undefined) {
+      nextWhitelistRules = normalizeRuleList(incomingIncludeRules, 'whitelist')
     } else if (templateOverlay?.customWhitelistRules !== undefined) {
       nextWhitelistRules = templateOverlay.customWhitelistRules
     } else if (mutation.workflowId === null) {
-      // 显式解绑工作流且未指定自定义白名单时，保持既有白名单或默认空列表
+      // 显式解绑工作流且未指定自定义包含规则时，保持既有规则
       nextWhitelistRules = currentReady?.customWhitelistRules || []
     } else {
       nextWhitelistRules = currentReady?.customWhitelistRules || []
     }
 
-    // 2. 计算黑名单规则：显式 customIgnoreRules > restoreWorkflowDefault 模板覆盖 > 既有配置合并模板
+    // 2. 排除规则解包：excludeRules/customIgnoreRules > restoreWorkflowDefault 模板覆盖 > 既有配置合并模板
+    const incomingExcludeRules = mutation.excludeRules ?? mutation.customIgnoreRules
     let nextIgnoreRules: IFilterRule[]
-    if (mutation.customIgnoreRules !== undefined) {
-      nextIgnoreRules = normalizeRuleList(mutation.customIgnoreRules, 'ignore')
+    if (incomingExcludeRules !== undefined) {
+      nextIgnoreRules = normalizeRuleList(incomingExcludeRules, 'ignore')
     } else if (mutation.restoreWorkflowDefault) {
       nextIgnoreRules = templateOverlay?.customIgnoreRules || []
     } else if (templateOverlay?.customIgnoreRules && templateOverlay.customIgnoreRules.length > 0) {
@@ -475,7 +530,7 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
     const nextConfig: WorkspaceConfigReady = {
       schemaVersion: 1,
       status: 'ready',
-      policyVersion: nextPolicyVersion,
+      policyVersion: currentPolicyVersion, // 初始保持当前版本，若指纹改变由主写入口递增
       workflowId: nextBoundWorkflowId,
       intent: mutation.intent ?? currentReady?.intent,
       overrides: mutation.overrides ?? currentReady?.overrides,
@@ -495,35 +550,26 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
     return {
       nextConfig,
       nextBoundWorkflowId,
-      nextPolicyVersion
+      currentPolicyVersion
     }
   }
 
   /**
-   * 构造同级目录文件名映射表（合并 workspace_files 已入库同目录文件名与物理目录文件名，保证伴生文件精确判定）
+   * 纯内存构造同级目录文件名映射表（基于已查出的 workspace_files，零同步磁盘 fs.readdirSync [M06/ALT-4]）
    */
   private buildDirectorySiblingsMap(
     rows: Array<{ id: number; path: string; name: string }>
   ): Map<string, string[]> {
     const dirSets = new Map<string, Set<string>>()
 
-    for (const row of rows) {
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i]
       const filePath = row.path || row.name || ''
       const dir = path.dirname(filePath)
       const fileName = row.name || path.basename(filePath)
       let set = dirSets.get(dir)
       if (!set) {
         set = new Set<string>()
-        // 若磁盘目录存在，合入磁盘同级文件名，防止主文件尚未入库时误杀伴生文件
-        if (dir && dir !== '.' && fs.existsSync(dir)) {
-          try {
-            for (const entry of fs.readdirSync(dir)) {
-              set.add(entry)
-            }
-          } catch {
-            // 忽略读取权限或瞬态目录异常
-          }
-        }
         dirSets.set(dir, set)
       }
       if (fileName) {
@@ -539,7 +585,7 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
   }
 
   /**
-   * 预览策略变更对当前工作区或探测画像的影响（含伴生文件保护计数）
+   * 预览策略变更对当前工作区或探测画像的影响（含伴生文件保护计数，零污染生产策略缓存 [M03]）
    */
   async previewPolicyImpact(
     workspaceId: number,
@@ -550,17 +596,15 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
     const { nextConfig } = this.computeMergedState(db, workspaceId, mutation)
     const systemRules = this.resolveSystemRules()
 
-    // 使用负版本号或独立解析并在解析后清理该临时缓存键，避免污染正式版本缓存
-    const previewVersion = -Date.now()
-    const candidatePolicy = resolveEffectiveFilterPolicy({
+    // 调用纯函数 compileFilterPolicy 编译候选策略，彻底杜绝污染生产 policyCache
+    const candidatePolicy = compileFilterPolicy({
       workspaceId,
-      policyVersion: previewVersion,
+      policyVersion: -1,
       systemRules,
       workflow: null,
       customIgnoreRules: nextConfig.customIgnoreRules,
       customWhitelistRules: nextConfig.customWhitelistRules
     })
-    invalidateWorkspacePolicyCache(workspaceId)
 
     // 模式 A：基于冷启动探测画像 (probeExtensionCounts) 估算影响
     if (probeExtensionCounts && Object.keys(probeExtensionCounts).length > 0) {
@@ -603,7 +647,7 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
           continue
         }
 
-        // 2. 白名单模式检查
+        // 2. 包含模式检查
         if (candidatePolicy.whitelistRules.length > 0) {
           if (shouldIgnoreFileByRules(virtualName, virtualName, candidatePolicy.whitelistRules)) {
             includedFiles += count
@@ -629,7 +673,7 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
       }
     }
 
-    // 模式 B：基于已入库 workspace_files 精确计算影响（含同目录伴生文件保护判定）
+    // 模式 B：基于已入库 workspace_files 精确计算影响（纯内存伴生文件保护判定）
     const rows = db
       .prepare('SELECT id, path, name FROM workspace_files WHERE workspace_id = ?')
       .all(workspaceId) as Array<{ id: number; path: string; name: string }>
@@ -648,7 +692,8 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
     let includedFiles = 0
     let companionFilesProtected = 0
 
-    for (const row of rows) {
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i]
       const filePath = row.path || row.name || ''
       const fileName = row.name || path.basename(filePath)
       const dir = path.dirname(filePath)
@@ -674,125 +719,333 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
   }
 
   /**
-   * 原子应用策略变更（唯一写入口）
+   * 原子应用策略变更（唯一写入口，按 workspaceId 串行执行 [M01/M02/M03/M04/M05/M07/Y-01/Y-02/Y-07]）
    */
   async applyPolicyMutation(
     workspaceId: number,
     mutation: WorkspacePolicyMutation
   ): Promise<AdmissionReconcileResult> {
-    const db = this.resolveDb()
-    const { nextConfig, nextBoundWorkflowId, nextPolicyVersion } = this.computeMergedState(
-      db,
-      workspaceId,
-      mutation
-    )
+    return this.runSerialized(workspaceId, async () => {
+      const db = this.resolveDb()
 
-    if (!isWorkspaceConfigReady(nextConfig)) {
-      throw new Error(
-        '[WorkspaceAdmissionService] 拒绝写入非法 ready 配置: 缺少必要基础 AI 配置或过滤规则数组'
+      // 读取当前工作区物理元数据与配置
+      const row = db
+        .prepare(
+          'SELECT workspace_id, workspace_config, bound_workflow_id, meta FROM workspaces WHERE workspace_id = ?'
+        )
+        .get(workspaceId) as
+        | {
+            workspace_id: number
+            workspace_config: string | null
+            bound_workflow_id: string | null
+            meta: string | null
+          }
+        | undefined
+
+      if (!row) {
+        throw new Error(`WORKSPACE_NOT_FOUND: ${workspaceId}`)
+      }
+
+      let parsedMeta: Record<string, any> = {}
+      try {
+        parsedMeta = JSON.parse(row.meta || '{}')
+      } catch {
+        parsedMeta = {}
+      }
+
+      const admittedPolicyHash =
+        typeof parsedMeta.admittedPolicyHash === 'string' ? parsedMeta.admittedPolicyHash : null
+
+      const { nextConfig, nextBoundWorkflowId, currentPolicyVersion } = this.computeMergedState(
+        db,
+        workspaceId,
+        mutation
       )
-    }
 
-    const serializedConfig = serializeWorkspaceConfig(nextConfig)
-
-    // 1. 事务持久化 workspaces.workspace_config 与 bound_workflow_id
-    db.transaction(() => {
-      db.prepare(
-        'UPDATE workspaces SET workspace_config = ?, bound_workflow_id = ? WHERE workspace_id = ?'
-      ).run(serializedConfig, nextBoundWorkflowId, workspaceId)
-
-      try {
-        db.prepare(
-          'UPDATE workspace_directories SET bound_workflow_id = ? WHERE workspace_id = ?'
-        ).run(nextBoundWorkflowId, workspaceId)
-      } catch {
-        // 忽略子目录表同步异常
+      if (!isWorkspaceConfigReady(nextConfig)) {
+        throw new Error(
+          '[WorkspaceAdmissionService] 拒绝写入非法 ready 配置: 缺少必要基础 AI 配置或过滤规则数组'
+        )
       }
-    })()
 
-    // 2. 精确失效旧版策略缓存并编译最新不可变策略快照
-    invalidateWorkspacePolicyCache(workspaceId)
-    const newPolicy = this.getEffectivePolicy(workspaceId)
+      const systemRules = this.resolveSystemRules()
 
-    // 3. 驱动队列管理器取消不匹配的新增黑名单或白名单任务（内存队列 + DB 队列）
-    let cancelledFromQueueManager = 0
-    if (this.deps.queueCancelUnmatched) {
-      const res = await this.deps.queueCancelUnmatched(workspaceId, newPolicy)
-      cancelledFromQueueManager = res?.cancelledCount || 0
-    } else {
-      try {
-        const { analysisQueueService } = await import('../analysis-queue-service')
-        const res = await analysisQueueService.cancelUnmatchedTasks(workspaceId, newPolicy as any)
-        cancelledFromQueueManager = res?.cancelledCount || 0
-      } catch {
-        // 测试环境或服务未初始化时安全降级，由下方 SQL 事务兜底清理 analysis_queue
-      }
-    }
+      // 编译当前已有有效策略并计算指纹
+      const currentConfig = parseWorkspaceConfig(row.workspace_config)
+      const isReady = currentConfig.status === 'ready'
+      const currentEffectivePolicy = compileFilterPolicy({
+        workspaceId,
+        policyVersion: currentPolicyVersion,
+        systemRules,
+        workflow:
+          !isReady && row.bound_workflow_id
+            ? this.findWorkflowTemplate(db, row.bound_workflow_id)
+            : null,
+        customIgnoreRules: isReady ? currentConfig.customIgnoreRules : [],
+        customWhitelistRules: isReady ? currentConfig.customWhitelistRules : []
+      })
+      const currentFingerprint = computeAdmissionFingerprint(currentEffectivePolicy)
 
-    // 4. 伴生文件感知的 workspace_files 索引解绑（IN-02 铁律：仅解绑数据库索引，严禁删除磁盘物理文件）
-    const rows = db
-      .prepare('SELECT id, path, name FROM workspace_files WHERE workspace_id = ?')
-      .all(workspaceId) as Array<{ id: number; path: string; name: string }>
+      // 编译候选策略并计算新指纹
+      const candidatePolicy = compileFilterPolicy({
+        workspaceId,
+        policyVersion: currentPolicyVersion + 1,
+        systemRules,
+        workflow: null,
+        customIgnoreRules: nextConfig.customIgnoreRules,
+        customWhitelistRules: nextConfig.customWhitelistRules
+      })
+      const candidateFingerprint = computeAdmissionFingerprint(candidatePolicy)
 
-    const prunedFileIds: number[] = []
-    if (rows.length > 0) {
-      const dirSiblingsMap = this.buildDirectorySiblingsMap(rows)
-      for (const row of rows) {
-        const filePath = row.path || row.name || ''
-        const fileName = row.name || path.basename(filePath)
-        const dir = path.dirname(filePath)
-        const siblings = dirSiblingsMap.get(dir) || [fileName]
+      // 判定准入指纹是否发生变化
+      const isFingerprintIdentical = candidateFingerprint === currentFingerprint
+      const isReconciled = admittedPolicyHash === candidateFingerprint
 
-        if (!shouldIngressFile(filePath, false, newPolicy, siblings)) {
-          prunedFileIds.push(row.id)
+      // 短路分支：若准入指纹未变且历史对账一致，仅保存非准入配置，版本不递增，零 I/O (M01)
+      if (isFingerprintIdentical && isReconciled) {
+        nextConfig.policyVersion = currentPolicyVersion
+        const serializedConfig = serializeWorkspaceConfig(nextConfig)
+        db.transaction(() => {
+          db.prepare(
+            'UPDATE workspaces SET workspace_config = ?, bound_workflow_id = ? WHERE workspace_id = ?'
+          ).run(serializedConfig, nextBoundWorkflowId, workspaceId)
+        })()
+
+        return {
+          policyVersion: currentPolicyVersion,
+          admissionChanged: false,
+          needsRescan: false,
+          prunedFilesCount: 0,
+          cancelledTasksCount: 0
         }
       }
-    }
 
-    let dbQueueCancelledCount = 0
-    if (prunedFileIds.length > 0) {
+      // 指纹发生变化或历史对账未完成：递增版本号并启动两阶段执行
+      const nextPolicyVersion = currentPolicyVersion + 1
+      nextConfig.policyVersion = nextPolicyVersion
+      const serializedConfig = serializeWorkspaceConfig(nextConfig)
+
+      // 阶段 1：微事务原子持久化配置（先不回写 admittedPolicyHash，保持后置回写）
       db.transaction(() => {
-        const batchSize = 500
+        db.prepare(
+          'UPDATE workspaces SET workspace_config = ?, bound_workflow_id = ? WHERE workspace_id = ?'
+        ).run(serializedConfig, nextBoundWorkflowId, workspaceId)
+
+        try {
+          db.prepare(
+            'UPDATE workspace_directories SET bound_workflow_id = ? WHERE workspace_id = ?'
+          ).run(nextBoundWorkflowId, workspaceId)
+        } catch {
+          // 忽略子目录表同步异常
+        }
+      })()
+
+      // 作废旧缓存并编译新策略
+      invalidateWorkspacePolicyCache(workspaceId)
+      const newPolicy = this.getEffectivePolicy(workspaceId)
+
+      // 驱动队列管理器取消失配任务（内存队列 + DB 队列）
+      let cancelledFromQueueManager = 0
+      if (this.deps.queueCancelUnmatched) {
+        const res = await this.deps.queueCancelUnmatched(workspaceId, newPolicy)
+        cancelledFromQueueManager = res?.cancelledCount || 0
+      } else {
+        try {
+          const { analysisQueueService } = await import('../analysis-queue-service')
+          const res = await analysisQueueService.cancelUnmatchedTasks(workspaceId, newPolicy as any)
+          cancelledFromQueueManager = res?.cancelledCount || 0
+        } catch {
+          // 测试环境或服务未初始化时安全降级
+        }
+      }
+
+      // 阶段 2：伴生文件感知索引解绑（IN-02 铁律：纯内存构建 Set<lowerStem>，零 fs.readdirSync，零删物理文件）
+      const rows = db
+        .prepare('SELECT id, path, name FROM workspace_files WHERE workspace_id = ?')
+        .all(workspaceId) as Array<{ id: number; path: string; name: string }>
+
+      const prunedFileIds: number[] = []
+      if (rows.length > 0) {
+        const dirSiblingsMap = this.buildDirectorySiblingsMap(rows)
+        for (let i = 0; i < rows.length; i++) {
+          const row = rows[i]
+          const filePath = row.path || row.name || ''
+          const fileName = row.name || path.basename(filePath)
+          const dir = path.dirname(filePath)
+          const siblings = dirSiblingsMap.get(dir) || [fileName]
+
+          if (!shouldIngressFile(filePath, false, newPolicy, siblings)) {
+            prunedFileIds.push(row.id)
+          }
+        }
+      }
+
+      let dbQueueCancelledCount = 0
+      if (prunedFileIds.length > 0) {
+        const batchSize = 1000
         for (let i = 0; i < prunedFileIds.length; i += batchSize) {
           const batch = prunedFileIds.slice(i, i + batchSize)
           const placeholders = batch.map(() => '?').join(',')
 
-          // 清理待处理分析队列记录（pending / analyzing）
-          const queueDelRes = db
-            .prepare(
-              `DELETE FROM analysis_queue WHERE item_type = 'file' AND item_id IN (${placeholders})`
-            )
-            .run(...batch)
-          dbQueueCancelledCount += queueDelRes.changes
+          db.transaction(() => {
+            // 清理待处理分析队列记录
+            const queueDelRes = db
+              .prepare(
+                `DELETE FROM analysis_queue WHERE item_type = 'file' AND item_id IN (${placeholders})`
+              )
+              .run(...batch)
+            dbQueueCancelledCount += queueDelRes.changes
 
-          // 仅从 workspace_files 索引表解绑记录（IN-02：严禁触碰磁盘物理文件与全局 files 指纹缓存）
-          db.prepare(`DELETE FROM workspace_files WHERE id IN (${placeholders})`).run(...batch)
+            // 仅从 workspace_files 索引表解绑记录（IN-02：严禁触碰物理文件与全局 files 缓存）
+            db.prepare(`DELETE FROM workspace_files WHERE id IN (${placeholders})`).run(...batch)
+          })()
+
+          // 批次间出让事件循环，防止阻塞渲染进程通信 (Y-02)
+          if (i + batchSize < prunedFileIds.length) {
+            await new Promise(r => setImmediate(r))
+          }
         }
-      })()
 
+        logger.info(
+          LogCategory.DATABASE_SERVICE,
+          `[WorkspaceAdmissionService] 策略更新完成索引解绑 (workspaceId=${workspaceId}, policyVersion=${nextPolicyVersion}, pruned=${prunedFileIds.length})`
+        )
+      }
+
+      // 判定是否放宽策略需要补扫 (M04)
+      const needsRescan = isPolicyRelaxed(currentEffectivePolicy, newPolicy)
+
+      // 通知文件监听服务刷新策略并按需触发增量补扫
+      if (needsRescan) {
+        if (this.deps.onPolicyApplied) {
+          await this.deps.onPolicyApplied(workspaceId, newPolicy)
+        } else {
+          try {
+            const { fileWatcherService } = await import('../filesystem/file-watcher-service')
+            await fileWatcherService.onWorkspacePolicyUpdated(workspaceId, newPolicy)
+          } catch {
+            // 监听服务未启动或处于纯单测环境时忽略
+          }
+        }
+      }
+
+      // 后置回写：仅当解绑、裁剪、重扫通知全部成功后，才回写 admittedPolicyHash (Y-07)
+      try {
+        const nextMeta = { ...parsedMeta, admittedPolicyHash: candidateFingerprint }
+        db.prepare('UPDATE workspaces SET meta = ? WHERE workspace_id = ?').run(
+          JSON.stringify(nextMeta),
+          workspaceId
+        )
+      } catch (err) {
+        logger.warn(
+          LogCategory.DATABASE_SERVICE,
+          `[WorkspaceAdmissionService] 回写 admittedPolicyHash 失败: ${String(err)}`
+        )
+      }
+
+      return {
+        policyVersion: nextPolicyVersion,
+        admissionChanged: true,
+        needsRescan,
+        prunedFilesCount: prunedFileIds.length,
+        cancelledTasksCount: cancelledFromQueueManager + dbQueueCancelledCount
+      }
+    })
+  }
+
+  /**
+   * 启动期电平触发自愈对账 (ALT-1 / Y-02 / Y-07)
+   * 遍历所有已就绪工作区，比对编译指纹与 meta.admittedPolicyHash。
+   * 若不一致，按批次 500 行出让事件循环执行幂等修剪，全部成功后回写 admittedPolicyHash。
+   */
+  async reconcileAllWorkspacesOnStartup(): Promise<number> {
+    const db = this.resolveDb()
+    let rows: Array<{
+      workspace_id: number
+      workspace_config: string | null
+      meta: string | null
+    }> = []
+    try {
+      rows = db.prepare('SELECT workspace_id, workspace_config, meta FROM workspaces').all() as any
+    } catch {
+      return 0
+    }
+
+    let reconciledCount = 0
+
+    for (let w = 0; w < rows.length; w++) {
+      const row = rows[w]
+      const workspaceId = row.workspace_id
+      const config = parseWorkspaceConfig(row.workspace_config)
+      if (config.status !== 'ready') continue
+
+      let meta: Record<string, any> = {}
+      try {
+        meta = JSON.parse(row.meta || '{}')
+      } catch {
+        meta = {}
+      }
+
+      const policy = this.getEffectivePolicy(workspaceId)
+      const currentFingerprint = computeAdmissionFingerprint(policy)
+
+      if (meta.admittedPolicyHash === currentFingerprint) {
+        continue
+      }
+
+      // 指纹失配，启动修剪自愈
       logger.info(
         LogCategory.DATABASE_SERVICE,
-        `[WorkspaceAdmissionService] 策略更新完成索引解绑 (workspaceId=${workspaceId}, policyVersion=${nextPolicyVersion}, pruned=${prunedFileIds.length})`
+        `[WorkspaceAdmissionService] 工作区 ${workspaceId} 启动指纹失配，执行自愈对账...`
       )
-    }
 
-    // 5. 通知文件监听服务刷新工作区策略并按需触发增量同步
-    if (this.deps.onPolicyApplied) {
-      await this.deps.onPolicyApplied(workspaceId, newPolicy)
-    } else {
-      try {
-        const { fileWatcherService } = await import('../filesystem/file-watcher-service')
-        await fileWatcherService.onWorkspacePolicyUpdated(workspaceId, newPolicy)
-      } catch {
-        // 监听服务未启动或处于纯单测环境时忽略
+      const fileRows = db
+        .prepare('SELECT id, path, name FROM workspace_files WHERE workspace_id = ?')
+        .all(workspaceId) as Array<{ id: number; path: string; name: string }>
+
+      const prunedIds: number[] = []
+      if (fileRows.length > 0) {
+        const dirSiblingsMap = this.buildDirectorySiblingsMap(fileRows)
+        for (let i = 0; i < fileRows.length; i++) {
+          const f = fileRows[i]
+          const filePath = f.path || f.name || ''
+          const fileName = f.name || path.basename(filePath)
+          const dir = path.dirname(filePath)
+          const siblings = dirSiblingsMap.get(dir) || [fileName]
+
+          if (!shouldIngressFile(filePath, false, policy, siblings)) {
+            prunedIds.push(f.id)
+          }
+        }
       }
+
+      if (prunedIds.length > 0) {
+        const batchSize = 500
+        for (let i = 0; i < prunedIds.length; i += batchSize) {
+          const batch = prunedIds.slice(i, i + batchSize)
+          const placeholders = batch.map(() => '?').join(',')
+          db.transaction(() => {
+            db.prepare(
+              `DELETE FROM analysis_queue WHERE item_type = 'file' AND item_id IN (${placeholders})`
+            ).run(...batch)
+            db.prepare(`DELETE FROM workspace_files WHERE id IN (${placeholders})`).run(...batch)
+          })()
+          await new Promise(r => setImmediate(r))
+        }
+      }
+
+      // 修剪完成，回写 admittedPolicyHash
+      meta.admittedPolicyHash = currentFingerprint
+      db.prepare('UPDATE workspaces SET meta = ? WHERE workspace_id = ?').run(
+        JSON.stringify(meta),
+        workspaceId
+      )
+
+      reconciledCount++
+      await new Promise(r => setImmediate(r))
     }
 
-    return {
-      policyVersion: nextPolicyVersion,
-      prunedFilesCount: prunedFileIds.length,
-      cancelledTasksCount: cancelledFromQueueManager + dbQueueCancelledCount
-    }
+    return reconciledCount
   }
 }
 

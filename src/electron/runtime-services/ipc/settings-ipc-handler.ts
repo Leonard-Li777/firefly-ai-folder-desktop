@@ -19,6 +19,10 @@ import { cleanupVirtualDirectoryOnDelete } from '../filesystem/virtual-directory
 export { cleanupVirtualDirectoryOnDelete }
 import { thumbnailService } from '../filesystem/thumbnail-service'
 import { omniClient } from '../../services/omni-client'
+import {
+  workspaceAdmissionService,
+  type WorkspacePolicyMutation
+} from '../workspace/workspace-admission-service'
 
 /** 校验忽略规则类型 */
 function isValidIgnoreRuleType(value: unknown): value is IIgnoreRule['type'] {
@@ -381,24 +385,57 @@ export function registerSettingsIPCHandlers(): void {
     }
   })
 
-  // 更新工作区专有配置 (设置就绪门闩与全量AI处理策略)
+  // 更新工作区专有配置 (通过 WorkspaceAdmissionService 单一写入口，自动计算准入指纹并执行版本自增与索引解绑 [M07])
   ipcMain.handle(
     'update-workspace-config',
     async (_event, workspaceId: number, config: WorkspaceConfig) => {
       try {
-        const success = await databaseService.updateWorkspaceConfig(workspaceId, config)
-        if (success) {
-          BrowserWindow.getAllWindows().forEach(win => {
-            if (!win.isDestroyed()) {
-              win.webContents.send('workspace-directories-updated')
-            }
-          })
-          // 若更新为已就绪 (ready)，主动唤醒分析队列处理栈，解除静默挂起
-          if (config && config.status === 'ready') {
-            void analysisQueueService.start(workspaceId)
+        if (!config || config.status !== 'ready') {
+          // pending 态直接更新数据库
+          const success = await databaseService.updateWorkspaceConfig(workspaceId, config)
+          if (success) {
+            BrowserWindow.getAllWindows().forEach(win => {
+              if (!win.isDestroyed()) {
+                win.webContents.send('workspace-directories-updated')
+              }
+            })
           }
+          return { success }
         }
-        return { success }
+
+        const mutation: WorkspacePolicyMutation = {
+          workflowId: config.workflowId,
+          includeRules: config.customWhitelistRules,
+          excludeRules: config.customIgnoreRules,
+          baseAIConfig: config.baseAIConfig,
+          derivedSnapshot: config.derivedSnapshot,
+          intent: config.intent,
+          overrides: config.overrides,
+          advancedAIPrompts: config.advancedAIPrompts,
+          unitRecognition: config.unitRecognition,
+          namingPattern: config.namingPattern,
+          namingTemplate: config.namingTemplate
+        }
+
+        const result = await workspaceAdmissionService.applyPolicyMutation(workspaceId, mutation)
+
+        BrowserWindow.getAllWindows().forEach(win => {
+          if (!win.isDestroyed()) {
+            win.webContents.send('workspace-directories-updated')
+          }
+        })
+
+        // 若更新为已就绪 (ready)，主动唤醒分析队列处理栈，解除静默挂起
+        void analysisQueueService.start(workspaceId)
+
+        return {
+          success: true,
+          policyVersion: result.policyVersion,
+          admissionChanged: result.admissionChanged,
+          needsRescan: result.needsRescan,
+          prunedFilesCount: result.prunedFilesCount,
+          cancelledTasksCount: result.cancelledTasksCount
+        }
       } catch (error) {
         logger.error(LogCategory.SETTING, `更新工作区配置失败: ${workspaceId}`, error)
         return { success: false, error: (error as any)?.message || String(error) }
@@ -460,9 +497,10 @@ export function registerSettingsIPCHandlers(): void {
         return {
           success: true,
           totalFiles: impact.totalFiles,
-          includedFiles: impact.matchedFiles,
+          includedFiles: impact.includedFiles,
           excludedFiles: impact.excludedFiles,
-          isSampled: impact.isSampled
+          companionFilesProtected: impact.companionFilesProtected,
+          isSampled: (impact as any).isSampled ?? false
         }
       } catch (error) {
         logger.error(LogCategory.SETTING, `预览白名单影响失败: ${workspaceId}`, error)
@@ -471,31 +509,39 @@ export function registerSettingsIPCHandlers(): void {
     }
   )
 
-  // 更新工作区绑定的工作流
+  // 更新工作区绑定的工作流 (通过 WorkspaceAdmissionService 单一写入口 [M07])
   ipcMain.handle(
     'update-workspace-bound-workflow',
     async (_event, workspaceId: number, workflowId: string | null) => {
       try {
-        const success = await databaseService.updateWorkspaceBoundWorkflow(workspaceId, workflowId)
-        if (success) {
-          if (workflowId === null) {
-            logger.info(
-              LogCategory.SETTING,
-              `[工作流解绑] 工作区 ${workspaceId} 已成功解除工作流绑定，白名单快照依法保留`
-            )
-          } else {
-            logger.info(
-              LogCategory.SETTING,
-              `[工作流绑定] 工作区 ${workspaceId} 已成功绑定工作流: ${workflowId}`
-            )
-          }
-          BrowserWindow.getAllWindows().forEach(win => {
-            if (!win.isDestroyed()) {
-              win.webContents.send('workspace-directories-updated')
-            }
-          })
+        const result = await workspaceAdmissionService.applyPolicyMutation(workspaceId, {
+          workflowId,
+          restoreWorkflowDefault: workflowId !== null // 绑定新工作流时套用模板默认规则，解绑置空时保留规则
+        })
+        if (workflowId === null) {
+          logger.info(
+            LogCategory.SETTING,
+            `[工作流解绑] 工作区 ${workspaceId} 已成功解除工作流绑定，白名单快照依法保留`
+          )
+        } else {
+          logger.info(
+            LogCategory.SETTING,
+            `[工作流绑定] 工作区 ${workspaceId} 已成功绑定工作流: ${workflowId}`
+          )
         }
-        return { success }
+        BrowserWindow.getAllWindows().forEach(win => {
+          if (!win.isDestroyed()) {
+            win.webContents.send('workspace-directories-updated')
+          }
+        })
+        return {
+          success: true,
+          policyVersion: result.policyVersion,
+          admissionChanged: result.admissionChanged,
+          needsRescan: result.needsRescan,
+          prunedFilesCount: result.prunedFilesCount,
+          cancelledTasksCount: result.cancelledTasksCount
+        }
       } catch (error) {
         logger.error(LogCategory.SETTING, `更新工作区绑定工作流失败: ${workspaceId}`, error)
         return { success: false, error: (error as any)?.message || String(error) }

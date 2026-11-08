@@ -1,4 +1,4 @@
-﻿import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow } from 'electron'
 import * as os from 'os'
 import {
   logger,
@@ -28,6 +28,7 @@ import { DirectoryContextService } from '../runtime-services/filesystem/director
 import { OrganizeRealDirectoryService } from '../runtime-services/filesystem/organize-real-directory-service/index'
 import { FileCleanupService } from '../runtime-services/filesystem/file-cleanup-service'
 import { fileWatcherService } from '../runtime-services/filesystem/file-watcher-service'
+import { workspaceAdmissionService } from '../runtime-services/workspace/workspace-admission-service'
 import { createCoreEngine } from '@firefly/core-engine'
 import { createCoreEngineAdapters } from '../adapters'
 import { ffmpegService } from '../runtime-services/system/ffmpeg-service'
@@ -143,15 +144,14 @@ export async function initializeHardwareDetection(wait = false): Promise<void> {
         const totalMemGB = memRaw > 1024 * 1024 ? memRaw / (1024 * 1024 * 1024) : memRaw / 1024
         const cpuCores = resources?.cpu?.cores || os.cpus().length
 
-        const settings =
-          hardwareDetectionService.getRecommendedEmbeddingSettings?.({
-            totalMemGB,
-            cpu: { cores: cpuCores }
-          }) || {
-            profile: totalMemGB >= 7.5 && cpuCores > 4 ? 'gemma_unified' : 'classic_light',
-            mrlDimension: totalMemGB >= 15.5 ? 768 : totalMemGB >= 7.5 ? 512 : 256,
-            videoSoftTokenBudget: totalMemGB < 7.5 || cpuCores <= 4 ? 70 : 140
-          }
+        const settings = hardwareDetectionService.getRecommendedEmbeddingSettings?.({
+          totalMemGB,
+          cpu: { cores: cpuCores }
+        }) || {
+          profile: totalMemGB >= 7.5 && cpuCores > 4 ? 'gemma_unified' : 'classic_light',
+          mrlDimension: totalMemGB >= 15.5 ? 768 : totalMemGB >= 7.5 ? 512 : 256,
+          videoSoftTokenBudget: totalMemGB < 7.5 || cpuCores <= 4 ? 70 : 140
+        }
         config.updateValue('AI_EMBEDDING_PROFILE', settings.profile)
         config.updateValue('EMBEDDING_MRL_DIMENSION', settings.mrlDimension)
         // 抽帧间隔已改由引擎按 120s 单文件预算自决，不再持久化（避免与引擎求解值冲突）
@@ -283,6 +283,13 @@ export async function initDatabaseAndDependentServices(
       await analysisQueueService.reloadDatabase()
       await fileWatcherService.startAllAutoWatchers().catch(err => {
         logger.error(LogCategory.MAIN, '启动文件监听失败:', err)
+      })
+
+      // 启动期电平自愈对账 (ALT-1 / Y-02 / Y-07)
+      setImmediate(() => {
+        void workspaceAdmissionService.reconcileAllWorkspacesOnStartup().catch(err => {
+          logger.warn(LogCategory.MAIN, '启动期工作区准入对账自愈异常:', err)
+        })
       })
 
       ConfigDbManager.getInstance()
@@ -483,7 +490,11 @@ export async function initializeMinimalServices(options?: {
         }
       }
     } catch (bridgeError) {
-      logger.warn(LogCategory.MAIN, '[EngineBridge] Tier 2 引擎桥接初始化异常（不阻断启动）:', bridgeError)
+      logger.warn(
+        LogCategory.MAIN,
+        '[EngineBridge] Tier 2 引擎桥接初始化异常（不阻断启动）:',
+        bridgeError
+      )
     }
 
     // 2.6 CLIP 文本第 5 路陈旧状态复位：必须在任何检索发生前完成注册
@@ -582,10 +593,7 @@ export async function initializeFullServices(): Promise<void> {
     } else if (fullInitMode === 'disabled') {
       logger.info(LogCategory.MAIN, '当前为禁用模式，跳过本地 AI 引擎初始化')
     } else {
-      logger.info(
-        LogCategory.MAIN,
-        '本地模式：启动阶段自适应拉起 Tier 2 引擎模型推理服务'
-      )
+      logger.info(LogCategory.MAIN, '本地模式：启动阶段自适应拉起 Tier 2 引擎模型推理服务')
       // 启动阶段在初始化 AI 服务前，确保外部 Tier 2 引擎与模型推理服务就绪（避免 waitForModelReady 超时）
       if (!shouldSkipAIServiceInTest()) {
         try {
@@ -603,7 +611,10 @@ export async function initializeFullServices(): Promise<void> {
             )
             const res = await engineBridgeService.ensureMode(targetMode, { force: true })
             if (res.ok) {
-              logger.info(LogCategory.MAIN, `[EngineBridge] Tier 2 引擎模型推理服务已就绪 (${targetMode})`)
+              logger.info(
+                LogCategory.MAIN,
+                `[EngineBridge] Tier 2 引擎模型推理服务已就绪 (${targetMode})`
+              )
             } else {
               logger.warn(LogCategory.MAIN, `[EngineBridge] 引擎模型服务拉起告警: ${res.error}`)
             }
@@ -719,7 +730,10 @@ export async function initializeFullServices(): Promise<void> {
 
       setGlobalLlamaIndexService(service)
 
-      if (!shouldSkipAIServiceInTest() && typeof (service as any).setEnsureLocalServerHandler === 'function') {
+      if (
+        !shouldSkipAIServiceInTest() &&
+        typeof (service as any).setEnsureLocalServerHandler === 'function'
+      ) {
         ;(service as any).setEnsureLocalServerHandler(async () => {
           const mode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
           if (mode === 'disabled' || mode === 'cloud') {
@@ -758,17 +772,27 @@ export async function initializeFullServices(): Promise<void> {
         if ('AI_SERVICE_MODE' in changes) {
           const newMode = changes['AI_SERVICE_MODE']
           if (newMode === 'disabled' || newMode === 'cloud') {
-            logger.info(LogCategory.MAIN, `[initialization] 生效引擎切换为 ${newMode}，请求萤核AI引擎完全退出`)
+            logger.info(
+              LogCategory.MAIN,
+              `[initialization] 生效引擎切换为 ${newMode}，请求萤核AI引擎完全退出`
+            )
             void (async () => {
               try {
                 const { engineBridgeService } = await import('../runtime-services/engine-bridge')
                 await engineBridgeService.shutdown()
               } catch (err) {
-                logger.warn(LogCategory.MAIN, '[initialization] 请求引擎退出失败（引擎可能未运行）:', err)
+                logger.warn(
+                  LogCategory.MAIN,
+                  '[initialization] 请求引擎退出失败（引擎可能未运行）:',
+                  err
+                )
               }
             })()
           } else if (newMode === 'local') {
-            logger.info(LogCategory.MAIN, '[initialization] 生效引擎切换为 local，主动自适应拉起萤核AI引擎模型')
+            logger.info(
+              LogCategory.MAIN,
+              '[initialization] 生效引擎切换为 local，主动自适应拉起萤核AI引擎模型'
+            )
             void (async () => {
               try {
                 const { engineBridgeService } = await import('../runtime-services/engine-bridge')
@@ -786,7 +810,10 @@ export async function initializeFullServices(): Promise<void> {
                   )
                 }
                 if (analysisQueueService.hasPendingItems()) {
-                  logger.info(LogCategory.MAIN, '[initialization] 切换 local 模式后检测到待办任务，自动启动分析队列循环')
+                  logger.info(
+                    LogCategory.MAIN,
+                    '[initialization] 切换 local 模式后检测到待办任务，自动启动分析队列循环'
+                  )
                   void analysisQueueService.start()
                 }
               } catch (err) {
@@ -1003,7 +1030,11 @@ export async function initializeFullServices(): Promise<void> {
       const tierData = userTierService.getCachedData()
       if (tierData?.tier && tierData.tier !== UserTier.FREE) {
         analysisQueueService.requeueIncompleteVideos().catch(err => {
-          logger.warn(LogCategory.ANALYSIS_QUEUE, '[analysis-queue] 启动时唤醒待续作长视频失败:', err)
+          logger.warn(
+            LogCategory.ANALYSIS_QUEUE,
+            '[analysis-queue] 启动时唤醒待续作长视频失败:',
+            err
+          )
         })
       }
     } catch {}
@@ -1071,4 +1102,3 @@ export async function initializeFullServices(): Promise<void> {
     logger.error(LogCategory.MAIN, '服务初始化失败:', error)
   }
 }
-

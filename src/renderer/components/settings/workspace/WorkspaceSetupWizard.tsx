@@ -645,14 +645,9 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
         configuredAt: Date.now()
       }
 
-      // 1. 持久化工作区配置
+      // 单次原子持久化工作区配置与绑定工作流 (已在 readyConfig 中携带 workflowId，服务端一次原子完成 [M07])
       if (window.electronAPI?.updateWorkspaceConfig) {
         await window.electronAPI.updateWorkspaceConfig(workspace.id, readyConfig)
-      }
-
-      // 2. 绑定工作流 ID
-      if (window.electronAPI?.updateWorkspaceBoundWorkflow) {
-        await window.electronAPI.updateWorkspaceBoundWorkflow(workspace.id, selectedWorkflow.id)
       }
 
       if (flowMode === 'complete') {
