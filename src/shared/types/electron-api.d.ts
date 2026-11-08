@@ -677,6 +677,21 @@ declare global {
         workspaceId: number,
         config: WorkspaceConfig
       ) => Promise<{ success: boolean; error?: string }>
+      updateWorkspaceInclusion: (
+        workspaceId: number,
+        patterns: string[]
+      ) => Promise<{ success: boolean; error?: string }>
+      previewWorkspaceInclusionImpact: (
+        workspaceId: number,
+        patterns: string[]
+      ) => Promise<{
+        success: boolean
+        totalFiles: number
+        includedFiles: number
+        excludedFiles: number
+        isSampled?: boolean
+        error?: string
+      }>
       updateWorkspaceWhitelist: (
         workspaceId: number,
         patterns: string[]

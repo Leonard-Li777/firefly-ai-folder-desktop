@@ -12,7 +12,7 @@ import {
 import { workspaceAdmissionService } from '../workspace/workspace-admission-service'
 import { databaseService } from '../database/database-service'
 import { analysisQueueService } from '../analysis-queue-service'
-import { loadIgnoreRules, shouldIgnoreFile } from '../analysis/analysis-ignore-service'
+import { loadIgnoreRules, shouldIgnoreFile } from '../analysis/analysis-exclusion-service'
 import type { IIgnoreRule } from '@firefly/types'
 
 export { shouldIngressFile }

@@ -7,7 +7,7 @@ import { logger, LogCategory } from '@firefly/shared'
 import { databaseService } from '../database/database-service'
 import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
 import { ConfigDbManager } from '../config/config-db-manager'
-import { loadIgnoreRules, getSystemIgnoreRules } from '../analysis/analysis-ignore-service'
+import { loadIgnoreRules, getSystemIgnoreRules } from '../analysis/analysis-exclusion-service'
 import type { IIgnoreRule } from '@firefly/types/settings-types'
 import type { WorkspaceConfig } from '@firefly/types'
 import fs from 'node:fs'
@@ -443,70 +443,84 @@ export function registerSettingsIPCHandlers(): void {
     }
   )
 
-  // 更新工作区白名单规则并联动取消队列中不匹配任务 (通过 WorkspaceAdmissionService 单一事实源)
-  ipcMain.handle(
-    'update-workspace-whitelist',
-    async (_event, workspaceId: number, patterns: string[]) => {
-      try {
-        const result = await workspaceAdmissionService.applyPolicyMutation(workspaceId, {
-          customWhitelistExts: patterns
-        })
-        BrowserWindow.getAllWindows().forEach(win => {
-          if (!win.isDestroyed()) {
-            win.webContents.send('workspace-directories-updated')
-          }
-        })
-        return {
-          success: true,
-          policyVersion: result.policyVersion,
-          prunedFilesCount: result.prunedFilesCount,
-          cancelledTasksCount: result.cancelledTasksCount
+  const handleUpdateInclusion = async (workspaceId: number, patterns: string[]) => {
+    try {
+      const result = await workspaceAdmissionService.applyPolicyMutation(workspaceId, {
+        includeExts: patterns
+      })
+      BrowserWindow.getAllWindows().forEach(win => {
+        if (!win.isDestroyed()) {
+          win.webContents.send('workspace-directories-updated')
         }
-      } catch (error) {
-        logger.error(LogCategory.SETTING, `更新工作区白名单失败: ${workspaceId}`, error)
-        return { success: false, error: (error as any)?.message || String(error) }
+      })
+      return {
+        success: true,
+        policyVersion: result.policyVersion,
+        admissionChanged: result.admissionChanged,
+        needsRescan: result.needsRescan,
+        prunedFilesCount: result.prunedFilesCount,
+        cancelledTasksCount: result.cancelledTasksCount
       }
+    } catch (error) {
+      logger.error(LogCategory.SETTING, `更新工作区包含规则失败: ${workspaceId}`, error)
+      return { success: false, error: (error as any)?.message || String(error) }
     }
+  }
+
+  const handlePreviewInclusionImpact = async (workspaceId: number, patterns: string[]) => {
+    try {
+      let probeExtensionCounts: Record<string, number> | undefined
+      const workspace = await databaseService.getWorkspaceDirectoryById(workspaceId)
+      if (workspace?.path && fs.existsSync(workspace.path)) {
+        try {
+          const { directoryProfilerService } =
+            await import('../filesystem/directory-profiler-service')
+          const profile = await directoryProfilerService.probeProfile(workspace.path)
+          if (profile.stats?.extensionCounts) {
+            probeExtensionCounts = profile.stats.extensionCounts
+          }
+        } catch {
+          // 采样探针异常降级
+        }
+      }
+
+      const impact = await workspaceAdmissionService.previewPolicyImpact(
+        workspaceId,
+        { includeExts: patterns },
+        probeExtensionCounts
+      )
+      return {
+        success: true,
+        totalFiles: impact.totalFiles,
+        includedFiles: impact.includedFiles,
+        excludedFiles: impact.excludedFiles,
+        companionFilesProtected: impact.companionFilesProtected,
+        isSampled: (impact as any).isSampled ?? false
+      }
+    } catch (error) {
+      logger.error(LogCategory.SETTING, `预览包含规则影响失败: ${workspaceId}`, error)
+      return { success: false, error: (error as any)?.message || String(error) }
+    }
+  }
+
+  // 1. 规范对称命名 IPC 频道
+  ipcMain.handle('update-workspace-inclusion', (_event, workspaceId: number, patterns: string[]) =>
+    handleUpdateInclusion(workspaceId, patterns)
+  )
+  ipcMain.handle(
+    'preview-workspace-inclusion-impact',
+    (_event, workspaceId: number, patterns: string[]) =>
+      handlePreviewInclusionImpact(workspaceId, patterns)
   )
 
-  // 预览工作区白名单规则变更的量化影响 (通过 WorkspaceAdmissionService 单一事实源)
+  // 2. 兼容旧版命名 IPC 频道
+  ipcMain.handle('update-workspace-whitelist', (_event, workspaceId: number, patterns: string[]) =>
+    handleUpdateInclusion(workspaceId, patterns)
+  )
   ipcMain.handle(
     'preview-workspace-whitelist-impact',
-    async (_event, workspaceId: number, patterns: string[]) => {
-      try {
-        let probeExtensionCounts: Record<string, number> | undefined
-        const workspace = await databaseService.getWorkspaceDirectoryById(workspaceId)
-        if (workspace?.path && fs.existsSync(workspace.path)) {
-          try {
-            const { directoryProfilerService } =
-              await import('../filesystem/directory-profiler-service')
-            const profile = await directoryProfilerService.probeProfile(workspace.path)
-            if (profile.stats?.extensionCounts) {
-              probeExtensionCounts = profile.stats.extensionCounts
-            }
-          } catch {
-            // 采样探针异常降级
-          }
-        }
-
-        const impact = await workspaceAdmissionService.previewPolicyImpact(
-          workspaceId,
-          { customWhitelistExts: patterns },
-          probeExtensionCounts
-        )
-        return {
-          success: true,
-          totalFiles: impact.totalFiles,
-          includedFiles: impact.includedFiles,
-          excludedFiles: impact.excludedFiles,
-          companionFilesProtected: impact.companionFilesProtected,
-          isSampled: (impact as any).isSampled ?? false
-        }
-      } catch (error) {
-        logger.error(LogCategory.SETTING, `预览白名单影响失败: ${workspaceId}`, error)
-        return { success: false, error: (error as any)?.message || String(error) }
-      }
-    }
+    (_event, workspaceId: number, patterns: string[]) =>
+      handlePreviewInclusionImpact(workspaceId, patterns)
   )
 
   // 更新工作区绑定的工作流 (通过 WorkspaceAdmissionService 单一写入口 [M07])

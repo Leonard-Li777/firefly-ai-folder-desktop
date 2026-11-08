@@ -230,7 +230,7 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
       return this.deps.systemRulesProvider()
     }
     try {
-      const { loadIgnoreRules } = require('../analysis/analysis-ignore-service')
+      const { loadIgnoreRules } = require('../analysis/analysis-exclusion-service')
       return loadIgnoreRules()
     } catch {
       return []

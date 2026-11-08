@@ -8,7 +8,10 @@ export { WorkspaceSettingsDialog } from './WorkspaceSettingsDialog'
 export { WorkspaceSetupWizard } from './workspace/WorkspaceSetupWizard'
 export { BasicAIEngineTab } from './workspace/BasicAIEngineTab'
 export { ContentExtractionTab } from './workspace/ContentExtractionTab'
-export { WorkspaceIgnoreRulesTab } from './workspace/WorkspaceIgnoreRulesTab'
+export {
+  WorkspaceAdmissionRulesTab,
+  WorkspaceIgnoreRulesTab
+} from './workspace/WorkspaceAdmissionRulesTab'
 export { WorkspaceMaintenanceTab } from './workspace/WorkspaceMaintenanceTab'
 export { SettingsNavigation } from './settings-navigation'
 export { SettingsButton, SettingsIconButton } from './settings-button'
@@ -22,7 +25,10 @@ export { BasicAIEngineConfigSettings } from './basic-ai-engine-config-settings'
 export { ContentExtractionSettings } from './content-extraction-settings'
 export { UnitRecognitionSettings } from './unit-recognition-settings'
 export { AdvancedAIPromptsSettings } from './advanced-ai-prompts-settings'
-export { AnalysisIgnoreRulesSettings } from './analysis-ignore-rules-settings'
+export {
+  AnalysisExclusionRulesSettings,
+  AnalysisIgnoreRulesSettings
+} from './analysis-exclusion-rules-settings'
 export { AnalysisSettings } from './analysis-settings'
 export { MonitoringSettings, WorkspaceSettings } from './workspace-settings'
 export { TTSSettings } from './tts-settings'
