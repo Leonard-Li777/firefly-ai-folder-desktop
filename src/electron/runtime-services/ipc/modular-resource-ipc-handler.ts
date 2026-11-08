@@ -230,4 +230,24 @@ export function registerModularResourceIpcHandlers(
       }
     }
   )
+
+  ipcMain.handle('modular-resource:pick-and-import-local-plugin', async event => {
+    try {
+      const { PluginImporter } = await import('../plugin/plugin-importer')
+      const importer = new PluginImporter()
+      const win = BrowserWindow.fromWebContents(event.sender) ?? undefined
+      const res = await importer.pickAndImportLocalPlugin(win)
+      if (res.canceled) {
+        return { canceled: true }
+      }
+      if (res.error) {
+        return { canceled: false, error: res.error }
+      }
+      const view = res.module ? service.getModule(res.module.id) : null
+      return { canceled: false, module: view }
+    } catch (err: any) {
+      logger.error(LogCategory.MAIN, '[ModularResourceIPC] pick-and-import-local-plugin 失败:', err)
+      return { canceled: false, error: err?.message || '导入失败' }
+    }
+  })
 }

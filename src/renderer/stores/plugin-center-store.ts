@@ -97,6 +97,11 @@ export interface IModularResourceBridge {
     targetFilePath?: string
   }) => Promise<string | null>
   importOfflinePackage?: (payload?: { archivePath?: string }) => Promise<PluginModuleItem | null>
+  pickAndImportLocalPlugin?: () => Promise<{
+    canceled: boolean
+    module?: PluginModuleItem
+    error?: string
+  }>
   onProgress?: (callback: (event: ModularResourceProgressPayload) => void) => () => void
 }
 

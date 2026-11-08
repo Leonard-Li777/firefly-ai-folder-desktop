@@ -42,6 +42,8 @@ export const modularResourcePreloadBridge: IModularResourceBridge = {
     ipcRenderer.invoke('modular-resource:export-offline-package', payload),
   importOfflinePackage: (payload?: { archivePath?: string }) =>
     ipcRenderer.invoke('modular-resource:import-offline-package', payload),
+  pickAndImportLocalPlugin: () =>
+    ipcRenderer.invoke('modular-resource:pick-and-import-local-plugin'),
   onProgress: (callback: (event: ModularResourceProgressPayload) => void) => {
     const handler = (_event: unknown, payload: ModularResourceProgressPayload) => callback(payload)
     ipcRenderer.on('modular-resource:progress', handler as any)
