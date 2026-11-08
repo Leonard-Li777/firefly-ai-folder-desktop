@@ -89,7 +89,7 @@ export function registerModularResourceIpcHandlers(
       }
     ) => {
       try {
-        const res = service.updateModuleState(moduleId, patch)
+        const res = await service.updateModuleState(moduleId, patch)
         if (moduleId === 'ai_organize_skill') {
           const { aiSkillApiService } = await import('../ai-skill-api-service')
           await aiSkillApiService.reconcile()

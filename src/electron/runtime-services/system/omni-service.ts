@@ -1738,10 +1738,12 @@ export class OmniService {
       let enableFacePerception = false
       try {
         const { modularResourceService } = await import('./modular-resource-service')
-        const nsfwMod = modularResourceService.getModule('perception_nsfw')
-        enableNsfwPerception = nsfwMod?.install_state === 'active'
-        const faceMod = modularResourceService.getModule('perception_face')
-        enableFacePerception = faceMod?.install_state === 'active'
+        enableNsfwPerception = modularResourceService.processManager
+          ? modularResourceService.processManager.isUsable('perception_nsfw')
+          : modularResourceService.getModule('perception_nsfw')?.install_state === 'active'
+        enableFacePerception = modularResourceService.processManager
+          ? modularResourceService.processManager.isUsable('perception_face')
+          : modularResourceService.getModule('perception_face')?.install_state === 'active'
       } catch {}
 
       const payload = JSON.stringify({

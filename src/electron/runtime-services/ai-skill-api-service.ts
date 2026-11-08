@@ -86,10 +86,36 @@ export class SseChannel {
 }
 
 function detectMediaType(filePath: string, name: string): 'video' | 'image' | 'document' | 'other' {
-  const ext = path.extname(name || filePath).toLowerCase().replace('.', '')
+  const ext = path
+    .extname(name || filePath)
+    .toLowerCase()
+    .replace('.', '')
   const videoExts = new Set(['mp4', 'mkv', 'mov', 'avi', 'webm', 'flv', 'wmv', 'm4v'])
-  const imageExts = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico', 'tiff', 'heic'])
-  const docExts = new Set(['pdf', 'doc', 'docx', 'txt', 'md', 'xls', 'xlsx', 'ppt', 'pptx', 'csv', 'epub'])
+  const imageExts = new Set([
+    'jpg',
+    'jpeg',
+    'png',
+    'gif',
+    'webp',
+    'svg',
+    'bmp',
+    'ico',
+    'tiff',
+    'heic'
+  ])
+  const docExts = new Set([
+    'pdf',
+    'doc',
+    'docx',
+    'txt',
+    'md',
+    'xls',
+    'xlsx',
+    'ppt',
+    'pptx',
+    'csv',
+    'epub'
+  ])
   if (videoExts.has(ext)) return 'video'
   if (imageExts.has(ext)) return 'image'
   if (docExts.has(ext)) return 'document'
@@ -99,7 +125,8 @@ function detectMediaType(filePath: string, name: string): 'video' | 'image' | 'd
 function mapItemsToDTO(items: any[]): SearchResultItemDTO[] {
   if (!Array.isArray(items)) return []
   return items.map(item => {
-    const rawChunks: any[] = item.matchedChunks || item.videoSegments || (item.matchedChunk ? [item.matchedChunk] : [])
+    const rawChunks: any[] =
+      item.matchedChunks || item.videoSegments || (item.matchedChunk ? [item.matchedChunk] : [])
     const videoSegmentsTotal = rawChunks.length
     const topChunks = rawChunks.slice(0, 3)
     const videoSegmentsTruncated = videoSegmentsTotal > topChunks.length
@@ -115,9 +142,9 @@ function mapItemsToDTO(items: any[]): SearchResultItemDTO[] {
         chunkIndices: indices,
         startSec: typeof c.startSec === 'number' ? c.startSec : 0,
         endSec: typeof c.endSec === 'number' ? c.endSec : 0,
-        repPtsSec: typeof c.repPtsSec === 'number' ? c.repPtsSec : (c.startSec || 0),
-        seekSec: typeof c.seekSec === 'number' ? c.seekSec : (c.startSec || 0),
-        score: typeof c.score === 'number' ? c.score : (c.similarity || 0.8),
+        repPtsSec: typeof c.repPtsSec === 'number' ? c.repPtsSec : c.startSec || 0,
+        seekSec: typeof c.seekSec === 'number' ? c.seekSec : c.startSec || 0,
+        score: typeof c.score === 'number' ? c.score : c.similarity || 0.8,
         textSnippet: item.snippet ? item.snippet.slice(0, 150) : undefined
       }
     })
@@ -126,7 +153,9 @@ function mapItemsToDTO(items: any[]): SearchResultItemDTO[] {
     const mediaType = detectMediaType(item.path || '', item.name || '')
     const snippet = item.snippet
       ? item.snippet.slice(0, 200)
-      : (item.description ? item.description.slice(0, 200) : undefined)
+      : item.description
+        ? item.description.slice(0, 200)
+        : undefined
 
     let score = 1.0
     if (typeof item.similarity === 'number') {
@@ -138,7 +167,11 @@ function mapItemsToDTO(items: any[]): SearchResultItemDTO[] {
     let matchType: 'exact' | 'fuzzy' | 'semantic' | 'unanalyzed' | 'video_chunk' = 'exact'
     if (hasVideoSegments) {
       matchType = 'video_chunk'
-    } else if (item.matchType === 'fuzzy' || item.matchType === 'semantic' || item.matchType === 'unanalyzed') {
+    } else if (
+      item.matchType === 'fuzzy' ||
+      item.matchType === 'semantic' ||
+      item.matchType === 'unanalyzed'
+    ) {
       matchType = item.matchType
     }
 
@@ -201,7 +234,9 @@ export class AISkillApiService {
         const { modularResourceService } = await import('./system/modular-resource-service')
         const modules = modularResourceService.listModules()
         const skillModule = modules.find(m => m.id === 'ai_organize_skill')
-        const shouldRun = skillModule?.install_state === 'active'
+        const shouldRun = modularResourceService.processManager
+          ? modularResourceService.processManager.isUsable('ai_organize_skill')
+          : skillModule?.install_state === 'active'
 
         if (shouldRun) {
           if (!this.server) {
@@ -209,7 +244,7 @@ export class AISkillApiService {
               await this.start()
             } catch (startErr: any) {
               logger.error(LogCategory.SYSTEM, '[AISkillApiService] 启动失败:', startErr)
-              modularResourceService.updateModuleState('ai_organize_skill', { active: false })
+              await modularResourceService.updateModuleState('ai_organize_skill', { active: false })
               throw startErr
             }
           }
@@ -339,7 +374,7 @@ export class AISkillApiService {
       this.server = null
       await new Promise<void>(resolve => {
         try {
-          (serverToClose as any).closeAllConnections?.()
+          ;(serverToClose as any).closeAllConnections?.()
         } catch {
           // ignore
         }
@@ -681,9 +716,8 @@ export class AISkillApiService {
               if (virtualDirectoryService) {
                 await virtualDirectoryService.getFilteredFilesPaged(params)
               } else {
-                const { TagTreeQuery } = await import(
-                  './filesystem/virtual-directory-service/TagTreeQuery'
-                )
+                const { TagTreeQuery } =
+                  await import('./filesystem/virtual-directory-service/TagTreeQuery')
                 const tagTreeQuery = new TagTreeQuery(databaseService.getDb())
                 await tagTreeQuery.getFilteredFilesPaged(params)
               }
@@ -715,9 +749,8 @@ export class AISkillApiService {
               if (virtualDirectoryService) {
                 return await virtualDirectoryService.getFilteredFilesPaged(params)
               } else {
-                const { TagTreeQuery } = await import(
-                  './filesystem/virtual-directory-service/TagTreeQuery'
-                )
+                const { TagTreeQuery } =
+                  await import('./filesystem/virtual-directory-service/TagTreeQuery')
                 const tagTreeQuery = new TagTreeQuery(databaseService.getDb())
                 return await tagTreeQuery.getFilteredFilesPaged(params)
               }

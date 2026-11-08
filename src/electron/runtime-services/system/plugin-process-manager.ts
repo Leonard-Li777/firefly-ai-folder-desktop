@@ -31,6 +31,7 @@ export type ActivationSource = 'user_toggle' | 'slot_release' | 'dev_mode_on' | 
 
 export interface PluginProcessManagerOptions {
   dao?: ReturnType<typeof getModularResourceDao>
+  getDao?: () => ReturnType<typeof getModularResourceDao>
   hostManager?: PluginHostManager
   isPackaged?: boolean
 }
@@ -38,11 +39,13 @@ export interface PluginProcessManagerOptions {
 export class PluginProcessManager {
   private readonly runningStates = new Map<string, RunningPluginState>()
   private customDao?: ReturnType<typeof getModularResourceDao>
+  private customDaoGetter?: () => ReturnType<typeof getModularResourceDao>
   private readonly hostManager: PluginHostManager
   private readonly isPackaged: boolean
 
   constructor(options?: PluginProcessManagerOptions) {
     this.customDao = options?.dao
+    this.customDaoGetter = options?.getDao
     this.hostManager = options?.hostManager ?? pluginHostManager
     this.isPackaged =
       options?.isPackaged ?? (typeof app !== 'undefined' && app.isPackaged ? app.isPackaged : false)
@@ -50,6 +53,12 @@ export class PluginProcessManager {
 
   private getDao(): ReturnType<typeof getModularResourceDao> {
     if (this.customDao) return this.customDao
+    if (this.customDaoGetter) {
+      try {
+        const d = this.customDaoGetter()
+        if (d) return d
+      } catch {}
+    }
     return getModularResourceDao()
   }
 

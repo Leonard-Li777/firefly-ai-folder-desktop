@@ -103,6 +103,7 @@ export interface BuiltinModuleView extends BuiltinModuleRecord {
   name: string
   description: string
   icon?: string
+  is_usable?: boolean
   resources: ResourceDownloadRecord[]
   download_progress?: {
     percentage: number
@@ -149,13 +150,13 @@ export interface IModularResourceService {
       selectedVariant?: string
       userConsent?: boolean
     }
-  ): BuiltinModuleView
+  ): Promise<BuiltinModuleView>
 
   /** 激活指定模块（针对排他槽位自动停用同槽位其他模块） */
-  activateModule(moduleId: string): BuiltinModuleView
+  activateModule(moduleId: string): Promise<BuiltinModuleView>
 
   /** 停用指定模块（若处于 exclusive_required 且激活状态则拒绝并抛出 SLOT_REQUIRED_EMPTY） */
-  deactivateModule(moduleId: string): BuiltinModuleView
+  deactivateModule(moduleId: string): Promise<BuiltinModuleView>
 
   /** 按能力槽位查询当前激活的模块（若无激活返回 null） */
   getActiveModuleBySlot(slot: PluginCapabilitySlot): BuiltinModuleView | null
@@ -508,7 +509,11 @@ export class ModularResourceService implements IModularResourceService {
     this.deleteDirectoryFn = options?.deleteDirectoryFn ?? safeDeleteDirectory
     this.tombstoneGC = options?.tombstoneGC ?? tombstoneGCService
     this.offlinePackageService = options?.offlinePackageService ?? new OfflinePackageService(this)
-    this.processManager = options?.processManager ?? getPluginProcessManager()
+    this.processManager =
+      options?.processManager ??
+      new PluginProcessManager({
+        getDao: () => this.getDao()
+      })
   }
 
   static getInstance(): ModularResourceService {
@@ -850,12 +855,16 @@ export class ModularResourceService implements IModularResourceService {
     }
 
     const contributes = meta.contributes || seed?.contributes
+    const isUsable = this.processManager
+      ? this.processManager.isUsable(record.id)
+      : record.install_state === 'active'
 
     return {
       ...record,
       name,
       description,
       icon,
+      is_usable: isUsable,
       resources,
       ...(contributes ? { contributes } : {}),
       ...(downloadProgress ? { download_progress: downloadProgress } : {})
@@ -1275,7 +1284,7 @@ export class ModularResourceService implements IModularResourceService {
   /**
    * 切换模块激活状态或更新 user_config / selected_variant / user_consent
    */
-  updateModuleState(
+  async updateModuleState(
     moduleId: string,
     patch: {
       active?: boolean
@@ -1283,125 +1292,129 @@ export class ModularResourceService implements IModularResourceService {
       selectedVariant?: string
       userConsent?: boolean
     }
-  ): BuiltinModuleView {
+  ): Promise<BuiltinModuleView> {
     this.ensureDefaultSeeds()
-    const db = this.getDb()
     const dao = this.getDao()
     const existing = dao.modules.findByIdSync(moduleId)
     if (!existing) {
       throw new Error(`未找到模块定义: ${moduleId}`)
     }
 
-    const tx = db.transaction(() => {
-      if (patch.active !== undefined) {
-        if (patch.active) {
-          const slot = existing.capability_slot ?? 'general'
-          const policy = existing.slot_policy ?? 'multi_active'
-          const isExclusive = policy === 'exclusive_required' || policy === 'exclusive_optional'
-
-          if (isExclusive) {
-            // 排他逻辑：将同槽位已有 active 模块置为 installed_inactive
-            const currentActive = dao.modules.findActiveBySlotSync(slot)
-            if (currentActive && currentActive.id !== moduleId) {
-              dao.modules.updateInstallStateSync(currentActive.id, 'installed_inactive')
-            }
-          }
-          dao.modules.updateInstallStateSync(moduleId, 'active')
-
-          // 基础引擎切换时的代际翻转
-          if (slot === 'base_embedding') {
-            const servingEpoch = dao.epochs.findServingEpochSync()
-            const newEpochNum = servingEpoch ? servingEpoch.epoch + 1 : 1
-            const isClassic = moduleId.includes('classic')
-            const textDim = isClassic ? 384 : 768
-            const imageDim = isClassic ? 512 : 768
-
-            if (servingEpoch && servingEpoch.module_id !== moduleId) {
-              dao.epochs.createEpochSync({
-                epoch: newEpochNum,
-                module_id: moduleId,
-                text_dim: textDim,
-                image_dim: imageDim,
-                status: 'building',
-                reindex_cursor: null
-              })
-              dao.epochs.flipEpochSync(servingEpoch.epoch, newEpochNum)
-            } else if (!servingEpoch) {
-              dao.epochs.createEpochSync({
-                epoch: 1,
-                module_id: moduleId,
-                text_dim: textDim,
-                image_dim: imageDim,
-                status: 'serving',
-                reindex_cursor: null
-              })
-            }
-          }
+    // 1. 处理配置与变体
+    if (patch.userConfig !== undefined) {
+      let configStr: string | null = null
+      if (patch.userConfig === null) {
+        configStr = null
+      } else if (typeof patch.userConfig === 'string') {
+        const trimmed = patch.userConfig.trim()
+        if (trimmed) {
+          JSON.parse(trimmed)
+          configStr = patch.userConfig
         } else {
-          // 停用逻辑
-          if (
-            existing.slot_policy === 'exclusive_required' &&
-            existing.install_state === 'active'
-          ) {
-            throw new Error('SLOT_REQUIRED_EMPTY')
-          }
-          dao.modules.updateInstallStateSync(moduleId, 'installed_inactive')
-        }
-      }
-
-      if (patch.userConfig !== undefined) {
-        let configStr: string | null = null
-        if (patch.userConfig === null) {
           configStr = null
-        } else if (typeof patch.userConfig === 'string') {
-          const trimmed = patch.userConfig.trim()
-          if (trimmed) {
-            // 校验 JSON 合法性
-            JSON.parse(trimmed)
-            configStr = patch.userConfig
-          } else {
-            configStr = null
-          }
-        } else {
-          configStr = JSON.stringify(patch.userConfig)
         }
-        dao.modules.updateUserConfigSync(moduleId, configStr)
+      } else {
+        configStr = JSON.stringify(patch.userConfig)
       }
-
-      if (patch.selectedVariant !== undefined) {
-        dao.modules.updateVariantSync(moduleId, patch.selectedVariant)
-      }
-
-      if (patch.userConsent !== undefined) {
-        dao.modules.updateUserConsentSync(moduleId, patch.userConsent ? 1 : 0)
-      }
-    })
-
-    tx.immediate()
-    const view = this.buildModuleView(dao.modules.findByIdSync(moduleId)!)
-
-    // 若涉及感知插槽热插拔（perception_nsfw 或 perception_face），动态通知 Omni 引擎热重载
-    if (view.capability_slot === 'perception_nsfw' || view.capability_slot === 'perception_face') {
-      try {
-        const { omniService } = require('./omni-service')
-        omniService?.syncConfigFromDesktop?.().catch?.(() => {})
-      } catch {}
+      dao.modules.updateUserConfigSync(moduleId, configStr)
     }
 
-    return view
+    if (patch.selectedVariant !== undefined) {
+      dao.modules.updateVariantSync(moduleId, patch.selectedVariant)
+    }
+
+    if (patch.userConsent !== undefined) {
+      dao.modules.updateUserConsentSync(moduleId, patch.userConsent ? 1 : 0)
+    }
+
+    // 2. 处理激活/停用流转
+    if (patch.active === true) {
+      const slot = existing.capability_slot ?? 'general'
+      const policy = existing.slot_policy ?? 'multi_active'
+      const isExclusive = policy === 'exclusive_required' || policy === 'exclusive_optional'
+
+      if (isExclusive) {
+        // 排他逻辑：同槽位前任置为 installed_inactive 并平滑停止
+        const currentActive = dao.modules.findActiveBySlotSync(slot)
+        if (currentActive && currentActive.id !== moduleId) {
+          dao.modules.updateInstallStateSync(currentActive.id, 'installed_inactive')
+          await this.processManager.stopProcess(currentActive.id)
+        }
+      }
+
+      const actRes = await this.processManager.requestActivate(moduleId, 'user_toggle')
+      if (actRes.success) {
+        dao.modules.updateInstallStateSync(moduleId, 'active')
+
+        // 核心不变量 1：基础向量引擎切换时代际翻转
+        if (slot === 'base_embedding') {
+          const servingEpoch = dao.epochs.findServingEpochSync()
+          const newEpochNum = servingEpoch ? servingEpoch.epoch + 1 : 1
+          const isClassic = moduleId.includes('classic')
+          const textDim = isClassic ? 384 : 768
+          const imageDim = isClassic ? 512 : 768
+
+          if (servingEpoch && servingEpoch.module_id !== moduleId) {
+            dao.epochs.createEpochSync({
+              epoch: newEpochNum,
+              module_id: moduleId,
+              text_dim: textDim,
+              image_dim: imageDim,
+              status: 'building',
+              reindex_cursor: null
+            })
+            dao.epochs.flipEpochSync(servingEpoch.epoch, newEpochNum)
+          } else if (!servingEpoch) {
+            dao.epochs.createEpochSync({
+              epoch: 1,
+              module_id: moduleId,
+              text_dim: textDim,
+              image_dim: imageDim,
+              status: 'serving',
+              reindex_cursor: null
+            })
+          }
+        }
+
+        // 核心不变量 2：Omni 感知热重载通知
+        if (slot === 'perception_nsfw' || slot === 'perception_face') {
+          try {
+            const { omniService } = require('./omni-service')
+            omniService?.syncConfigFromDesktop?.().catch?.(() => {})
+          } catch {}
+        }
+      } else {
+        // 门禁拦截：保持 installed_inactive 并记录错误原因
+        dao.modules.updateInstallStateSync(
+          moduleId,
+          'installed_inactive',
+          actRes.error ?? '激活门禁拦截'
+        )
+      }
+    } else if (patch.active === false) {
+      // 核心不变量 3：必选槽防空保护
+      if (existing.slot_policy === 'exclusive_required' && existing.install_state === 'active') {
+        throw new Error('SLOT_REQUIRED_EMPTY')
+      }
+
+      dao.modules.updateInstallStateSync(moduleId, 'installed_inactive')
+      await this.processManager.stopProcess(moduleId)
+    }
+
+    return this.buildModuleView(dao.modules.findByIdSync(moduleId)!)
   }
 
   /**
    * 激活指定模块（针对排他槽位自动停用同槽位其他模块）
    */
-  activateModule(moduleId: string): BuiltinModuleView {
+  async activateModule(moduleId: string): Promise<BuiltinModuleView> {
     return this.updateModuleState(moduleId, { active: true })
   }
 
   /**
    * 停用指定模块（若处于 exclusive_required 且激活状态则拒绝并抛出 SLOT_REQUIRED_EMPTY）
    */
-  deactivateModule(moduleId: string): BuiltinModuleView {
+  async deactivateModule(moduleId: string): Promise<BuiltinModuleView> {
     return this.updateModuleState(moduleId, { active: false })
   }
 
