@@ -68,8 +68,6 @@ export class UserTierService {
         configSet: (key: string, value: any, options?: any) =>
           orchestrator.updateValue(key as any, value, options),
         isOnline: () => (typeof net.isOnline === 'function' ? net.isOnline() : true),
-        // 企业离线授权激活后本地 SQLite 为唯一权益事实源，联网也不得走云端同步链（ADR-0051 决策 6）
-        isOfflineLicenseActive: () => !!orchestrator.getValue<string>('OFFLINE_LICENSE'),
         onDataChanged: () => {
           this.notifyProfileChanged()
         },
