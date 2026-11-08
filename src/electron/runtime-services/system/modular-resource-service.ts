@@ -27,6 +27,7 @@ import {
 } from '../database/dao/modular-resource-dao'
 
 export type { PluginCapabilitySlot, SlotPolicy, BackendType, EmbeddingEpochRecord }
+import { PluginProcessManager, getPluginProcessManager } from './plugin-process-manager'
 import {
   TombstoneGCService,
   tombstoneGCService,
@@ -478,11 +479,13 @@ export interface ModularResourceServiceOptions {
   deleteDirectoryFn?: (dirPath: string) => Promise<boolean>
   tombstoneGC?: TombstoneGCService
   offlinePackageService?: OfflinePackageService
+  processManager?: PluginProcessManager
 }
 
 export class ModularResourceService implements IModularResourceService {
   private static instance: ModularResourceService | null = null
 
+  public readonly processManager: PluginProcessManager
   private customDb: Database | null = null
   private customBaseDir: string | null = null
   private downloadService: FileDownloadService
@@ -505,6 +508,7 @@ export class ModularResourceService implements IModularResourceService {
     this.deleteDirectoryFn = options?.deleteDirectoryFn ?? safeDeleteDirectory
     this.tombstoneGC = options?.tombstoneGC ?? tombstoneGCService
     this.offlinePackageService = options?.offlinePackageService ?? new OfflinePackageService(this)
+    this.processManager = options?.processManager ?? getPluginProcessManager()
   }
 
   static getInstance(): ModularResourceService {

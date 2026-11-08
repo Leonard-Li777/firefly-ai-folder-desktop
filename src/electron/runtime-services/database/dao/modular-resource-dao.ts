@@ -1214,3 +1214,20 @@ export class ModularResourceDao {
     this.epochs = new EmbeddingEpochDao(db)
   }
 }
+
+let defaultModularResourceDao: ModularResourceDao | null = null
+
+export function getModularResourceDao(customDb?: Database): ModularResourceDao {
+  if (customDb) {
+    return new ModularResourceDao(customDb)
+  }
+  if (!defaultModularResourceDao) {
+    try {
+      const { databaseService } = require('../database-service')
+      if (databaseService?.db) {
+        defaultModularResourceDao = new ModularResourceDao(databaseService.db)
+      }
+    } catch {}
+  }
+  return defaultModularResourceDao!
+}
