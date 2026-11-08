@@ -8,10 +8,7 @@ export { WorkspaceSettingsDialog } from './WorkspaceSettingsDialog'
 export { WorkspaceSetupWizard } from './workspace/WorkspaceSetupWizard'
 export { BasicAIEngineTab } from './workspace/BasicAIEngineTab'
 export { ContentExtractionTab } from './workspace/ContentExtractionTab'
-export {
-  WorkspaceAdmissionRulesTab,
-  WorkspaceIgnoreRulesTab
-} from './workspace/WorkspaceAdmissionRulesTab'
+export { WorkspaceAdmissionRulesTab } from './workspace/WorkspaceAdmissionRulesTab'
 export { WorkspaceMaintenanceTab } from './workspace/WorkspaceMaintenanceTab'
 export { SettingsNavigation } from './settings-navigation'
 export { SettingsButton, SettingsIconButton } from './settings-button'

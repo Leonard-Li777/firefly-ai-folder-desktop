@@ -28,7 +28,7 @@ import {
 import { WorkspaceSetupWizard } from './workspace/WorkspaceSetupWizard'
 import { BasicAIEngineTab } from './workspace/BasicAIEngineTab'
 import { ContentExtractionTab } from './workspace/ContentExtractionTab'
-import { WorkspaceIgnoreRulesTab } from './workspace/WorkspaceIgnoreRulesTab'
+import { WorkspaceAdmissionRulesTab } from './workspace/WorkspaceAdmissionRulesTab'
 import { WorkspaceMaintenanceTab } from './workspace/WorkspaceMaintenanceTab'
 
 type WorkspaceTabId = 'basic_ai_engine' | 'content_extraction' | 'ignore_rules' | 'maintenance'
@@ -42,7 +42,7 @@ interface WorkspaceTabInfo {
 
 const MemoizedBasicAIEngineTab = memo(BasicAIEngineTab)
 const MemoizedContentExtractionTab = memo(ContentExtractionTab)
-const MemoizedWorkspaceIgnoreRulesTab = memo(WorkspaceIgnoreRulesTab)
+const MemoizedWorkspaceAdmissionRulesTab = memo(WorkspaceAdmissionRulesTab)
 const MemoizedWorkspaceMaintenanceTab = memo(WorkspaceMaintenanceTab)
 
 /**
@@ -57,7 +57,7 @@ const MemoizedWorkspaceMaintenanceTab = memo(WorkspaceMaintenanceTab)
  *    - 点击「深度自定义设置 ➔」就地切换至 3-Tab 高级模式；
  * 4. 常态 3-Tab 高级模式：
  *    - 1. AI分析与多媒体策略 (TaskEngineSettings)
- *    - 2. AI分析忽略规则 (WorkspaceIgnoreRulesTab)
+ *    - 2. 文件准入与包含排除规则 (WorkspaceAdmissionRulesTab)
  *    - 3. 目录维护与安全重置 (WorkspaceMaintenanceTab)
  */
 export const WorkspaceSettingsDialog: React.FC = () => {
@@ -167,9 +167,9 @@ export const WorkspaceSettingsDialog: React.FC = () => {
       },
       {
         id: 'ignore_rules',
-        name: t('文件过滤与黑白名单'),
+        name: t('文件准入与包含排除'),
         icon: 'filter',
-        description: t('标准模式/排他白名单与专属排除规则')
+        description: t('标准模式/排他包含模式与专属排除规则')
       },
       {
         id: 'maintenance',
@@ -381,7 +381,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                       activeTab !== 'ignore_rules' && 'hidden'
                     )}
                   >
-                    <MemoizedWorkspaceIgnoreRulesTab
+                    <MemoizedWorkspaceAdmissionRulesTab
                       key={activeWorkspace.id}
                       workspace={activeWorkspace}
                       onConfigSaved={refreshWorkspaceData}

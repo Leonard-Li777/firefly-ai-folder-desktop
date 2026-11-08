@@ -35,21 +35,23 @@ import {
   Loader2
 } from 'lucide-react'
 
-export interface WorkspaceIgnoreRulesTabProps {
+export interface WorkspaceAdmissionRulesTabProps {
   workspace: WorkspaceDirectory
   onConfigSaved?: () => void
 }
 
+export type WorkspaceIgnoreRulesTabProps = WorkspaceAdmissionRulesTabProps
+
 /**
- * 工作区专有：文件过滤规则与黑白名单管理面板 (Ticket 01)
+ * 工作区专有：文件准入与包含排除规则管理面板 (Ticket 01)
  *
  * 核心设计：
- * 1. 模式切换：标准模式（全量入场，受黑名单排除）与排他白名单模式（仅放行指定扩展名）；
- * 2. 白名单标签化管理：支持输入纯小写/带点扩展名、批量添加与分类快速预设；
+ * 1. 模式切换：标准模式（全量入场，受排除规则过滤）与排他包含模式（仅放行指定扩展名）；
+ * 2. 包含规则标签化管理：支持输入纯小写/带点扩展名、批量添加与分类快速预设；
  * 3. 实时影响预览与安全告知：实时测算纳入/排除比例与文件数量，常驻醒目“绝不删除用户磁盘物理文件”绿色安全徽标；
- * 4. 专属黑名单与系统全局基线完整保留并紧密协同。
+ * 4. 专属排除规则与系统全局基线完整保留并紧密协同。
  */
-export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> = ({
+export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProps> = ({
   workspace,
   onConfigSaved
 }) => {
@@ -126,7 +128,7 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> 
           })
         }
       } catch (err) {
-        console.warn('[WorkspaceIgnoreRulesTab] 测算白名单影响失败:', err)
+        console.warn('[WorkspaceAdmissionRulesTab] 测算包含规则影响失败:', err)
       } finally {
         if (!cancelled) setIsCalculatingImpact(false)
       }
@@ -959,6 +961,3 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceIgnoreRulesTabProps> 
     </div>
   )
 }
-
-// 向后兼容旧命名导出
-export { WorkspaceAdmissionRulesTab as WorkspaceIgnoreRulesTab }
