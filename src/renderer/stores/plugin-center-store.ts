@@ -39,6 +39,12 @@ export interface PluginModuleItem {
   total_bytes: number
   install_state: PluginInstallState
   selected_variant?: string | null
+  is_running?: boolean
+  is_usable?: boolean
+  can_activate?: boolean
+  can_install?: boolean
+  can_uninstall?: boolean
+  hold_reasons?: string[]
   description: string
   icon?: string
   config_schema?: string | null
@@ -69,7 +75,13 @@ export interface ModularResourceProgressPayload {
 }
 
 export interface IModularResourceBridge {
-  list: () => Promise<PluginModuleItem[]>
+  list: (filter?: {
+    scope?: 'market' | 'installed'
+    category?: string
+    includeDraft?: boolean
+  }) => Promise<PluginModuleItem[]>
+  getDevMode?: () => Promise<boolean>
+  setDevMode?: (payload: { enabled: boolean }) => Promise<boolean>
   install: (moduleId: string) => Promise<PluginModuleItem>
   uninstall: (moduleId: string) => Promise<PluginModuleItem>
   updateState: (
@@ -112,16 +124,20 @@ export interface PluginCenterState {
   selectedCategory: string
   modules: PluginModuleItem[]
   isLoading: boolean
+  isDeveloperMode: boolean
+  scope: 'market' | 'installed'
 
   // 弹层开关动作
-  setOverlayOpen: (open: boolean) => void
-  openOverlay: () => void
+  setOverlayOpen: (open: boolean) => void | Promise<void>
+  openOverlay: () => void | Promise<void>
   closeOverlay: () => void
-  toggleOverlay: () => void
+  toggleOverlay: () => void | Promise<void>
 
   // 筛选与搜索
   setSearchKeyword: (keyword: string) => void
   setSelectedCategory: (category: string) => void
+  setDeveloperMode: (enabled: boolean) => Promise<void>
+  setScope: (scope: 'market' | 'installed') => void
 
   // 插件管理与 IPC 持久化读写
   loadModules: () => Promise<PluginModuleItem[]>
@@ -138,6 +154,7 @@ export interface PluginCenterState {
   restartApp: () => Promise<void>
   exportOfflinePackage: (moduleId: string) => Promise<string | null>
   importOfflinePackage: (archivePath?: string) => Promise<PluginModuleItem | null>
+  pickAndImportLocalPlugin: () => Promise<boolean>
   resetForTest: () => void
 }
 
@@ -399,6 +416,12 @@ function normalizeRemoteModuleItem(raw: any): PluginModuleItem {
     config_schema: raw.config_schema ?? null,
     user_config: raw.user_config ?? null,
     error_message: raw.error_message ?? null,
+    is_running: raw.is_running,
+    is_usable: raw.is_usable,
+    can_activate: raw.can_activate,
+    can_install: raw.can_install,
+    can_uninstall: raw.can_uninstall,
+    hold_reasons: raw.hold_reasons,
     ...(raw.download_progress ? { download_progress: raw.download_progress } : {})
   }
 }
@@ -410,37 +433,60 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
   selectedCategory: 'all',
   modules: INITIAL_PLUGINS,
   isLoading: false,
+  isDeveloperMode: false,
+  scope: 'market',
   hasPendingTombstones: false,
   pendingTombstones: [],
 
-  setOverlayOpen: (open: boolean) => {
+  setOverlayOpen: async (open: boolean) => {
     set({
       isOverlayOpen: open,
       // 关闭弹层时若在配置子界面，重置回主列表
       ...(open ? {} : { configuringModuleId: null })
     })
     if (open) {
-      void get().loadModules()
+      const bridge = getModularResourceBridge()
+      if (bridge && typeof bridge.getDevMode === 'function') {
+        try {
+          const enabled = await bridge.getDevMode()
+          set({ isDeveloperMode: !!enabled })
+        } catch {}
+      }
+      await get().loadModules()
     }
   },
 
-  openOverlay: () => {
+  openOverlay: async () => {
     set({ isOverlayOpen: true })
-    void get().loadModules()
+    const bridge = getModularResourceBridge()
+    if (bridge && typeof bridge.getDevMode === 'function') {
+      try {
+        const enabled = await bridge.getDevMode()
+        set({ isDeveloperMode: !!enabled })
+      } catch {}
+    }
+    await get().loadModules()
   },
 
   closeOverlay: () => {
     set({ isOverlayOpen: false, configuringModuleId: null })
   },
 
-  toggleOverlay: () => {
+  toggleOverlay: async () => {
     const next = !get().isOverlayOpen
     set({
       isOverlayOpen: next,
       ...(next ? {} : { configuringModuleId: null })
     })
     if (next) {
-      void get().loadModules()
+      const bridge = getModularResourceBridge()
+      if (bridge && typeof bridge.getDevMode === 'function') {
+        try {
+          const enabled = await bridge.getDevMode()
+          set({ isDeveloperMode: !!enabled })
+        } catch {}
+      }
+      await get().loadModules()
     }
   },
 
@@ -452,8 +498,41 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
     set({ selectedCategory: category })
   },
 
+  setDeveloperMode: async (enabled: boolean) => {
+    set({ isDeveloperMode: enabled })
+    const bridge = getModularResourceBridge()
+    if (bridge && typeof bridge.setDevMode === 'function') {
+      try {
+        await bridge.setDevMode({ enabled })
+      } catch {}
+    }
+    await get().loadModules()
+  },
+
+  setScope: (scope: 'market' | 'installed') => {
+    set({ scope })
+    void get().loadModules()
+  },
+
   setConfiguringModuleId: (id: string | null) => {
     set({ configuringModuleId: id })
+  },
+
+  pickAndImportLocalPlugin: async () => {
+    const bridge = getModularResourceBridge()
+    if (!bridge || typeof bridge.pickAndImportLocalPlugin !== 'function') {
+      return false
+    }
+    try {
+      const res = await bridge.pickAndImportLocalPlugin()
+      if (res && !res.canceled && res.module) {
+        await get().loadModules()
+        return true
+      }
+      return false
+    } catch {
+      return false
+    }
   },
 
   loadModules: async () => {
@@ -463,8 +542,12 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
     }
     set({ isLoading: true })
     try {
-      const list = await bridge.list()
-      if (Array.isArray(list) && list.length > 0) {
+      const filter = {
+        scope: get().scope,
+        includeDraft: get().isDeveloperMode
+      }
+      const list = await bridge.list(filter)
+      if (Array.isArray(list)) {
         const normalized = list.map(normalizeRemoteModuleItem)
         set({ modules: normalized, isLoading: false })
         get()
@@ -721,6 +804,8 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
       selectedCategory: 'all',
       modules: INITIAL_PLUGINS,
       isLoading: false,
+      isDeveloperMode: false,
+      scope: 'market',
       hasPendingTombstones: false,
       pendingTombstones: []
     })

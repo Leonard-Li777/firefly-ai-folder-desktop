@@ -472,3 +472,190 @@ describe('方案 A: 能力槽位聚类分组与互斥语义 (Slot Grouping & Mut
     expect(mossMod?.install_state).toBe('installed_inactive')
   })
 })
+
+describe('Ticket 05: 开发者模式双视图、4态徽标与安装事实门禁', () => {
+  beforeEach(async () => {
+    const { setModularResourceBridgeForTest } = await import('../../../stores/plugin-center-store')
+    setModularResourceBridgeForTest(null)
+    act(() => {
+      usePluginCenterStore.getState().resetForTest()
+    })
+  })
+
+  it('四态徽标正确展示：draft、delisted(一般下架)与安全违规(security_violation)', () => {
+    const draftModule: PluginModuleItem = {
+      id: 'local_draft_plugin',
+      name: '本地草稿插件',
+      version: '0.1.0',
+      category: 'tool',
+      author_code: 'third_party',
+      availability: 'draft',
+      total_bytes: 1024,
+      install_state: 'installed_inactive',
+      description: '本地草稿调试中'
+    }
+    const delistedGeneralModule: PluginModuleItem = {
+      id: 'old_parser',
+      name: '老旧解析器',
+      version: '1.0.0',
+      category: 'parser',
+      author_code: 'official',
+      availability: 'delisted',
+      delist_reason: 'general_deprecation',
+      total_bytes: 2048,
+      install_state: 'not_installed',
+      description: '已弃用'
+    }
+    const delistedSecurityModule: PluginModuleItem = {
+      id: 'malicious_plugin',
+      name: '恶意插件',
+      version: '1.0.0',
+      category: 'tool',
+      author_code: 'community',
+      availability: 'delisted',
+      delist_reason: 'security_violation',
+      total_bytes: 4096,
+      install_state: 'installed_inactive',
+      description: '存在安全漏洞'
+    }
+
+    const { rerender } = render(<PluginCard module={draftModule} />)
+    expect(screen.getByTestId('draft-badge')).toHaveTextContent('开发版')
+
+    rerender(<PluginCard module={delistedGeneralModule} />)
+    expect(screen.getByTestId('delisted-badge')).toHaveTextContent('已下架')
+    expect(screen.getByText('该模块已下架，不可安装')).toBeInTheDocument()
+
+    rerender(<PluginCard module={delistedSecurityModule} />)
+    expect(screen.getByTestId('security-violation-badge')).toHaveTextContent('安全停用')
+    expect(screen.getByText('安全阻断')).toBeInTheDocument()
+    // 安全阻断下没有开关
+    expect(screen.queryByRole('switch')).not.toBeInTheDocument()
+  })
+
+  it('安装事实门禁：can_install===false 禁用下载按钮；can_activate===false 禁用启用Switch', () => {
+    const cannotInstallModule: PluginModuleItem = {
+      id: 'huge_model',
+      name: '超大模型',
+      version: '1.0.0',
+      category: 'ai-engine',
+      author_code: 'official',
+      availability: 'approved',
+      total_bytes: 9999999999,
+      install_state: 'not_installed',
+      can_install: false,
+      description: '磁盘不足不可安装'
+    }
+    const cannotActivateModule: PluginModuleItem = {
+      id: 'broken_plugin',
+      name: '依赖缺失插件',
+      version: '1.0.0',
+      category: 'tool',
+      author_code: 'official',
+      availability: 'approved',
+      total_bytes: 1024,
+      install_state: 'installed_inactive',
+      can_activate: false,
+      description: '缺少外部运行时'
+    }
+
+    const { rerender } = render(<PluginCard module={cannotInstallModule} />)
+    const installBtn = screen.getByRole('button', { name: /下载安装/ })
+    expect(installBtn).toBeDisabled()
+
+    rerender(<PluginCard module={cannotActivateModule} />)
+    const switchEl = screen.getByRole('switch')
+    expect(switchEl).toBeDisabled()
+  })
+
+  it('开发者模式切换时触发 setDevMode 并在 UI 展现本地导入按钮', async () => {
+    const mockBridge = {
+      list: vi.fn().mockResolvedValue([]),
+      setDevMode: vi.fn().mockResolvedValue(true),
+      getDevMode: vi.fn().mockResolvedValue(false),
+      install: vi.fn(),
+      uninstall: vi.fn(),
+      updateState: vi.fn(),
+      pickAndImportLocalPlugin: vi
+        .fn()
+        .mockResolvedValue({ canceled: false, module: { id: 'imported' } })
+    }
+    const { setModularResourceBridgeForTest } = await import('../../../stores/plugin-center-store')
+    setModularResourceBridgeForTest(mockBridge as any)
+
+    try {
+      await act(async () => {
+        await usePluginCenterStore.getState().openOverlay()
+      })
+
+      render(<PluginCenterOverlay />)
+      const devModeSwitch = screen.getByTestId('dev-mode-switch')
+      expect(devModeSwitch).not.toBeChecked()
+      expect(screen.queryByTestId('pick-local-plugin-btn')).not.toBeInTheDocument()
+
+      // 开启开发者模式
+      await act(async () => {
+        fireEvent.click(devModeSwitch)
+      })
+
+      expect(mockBridge.setDevMode).toHaveBeenCalledWith({ enabled: true })
+      expect(screen.getByTestId('pick-local-plugin-btn')).toBeInTheDocument()
+
+      // 点击导入本地插件
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('pick-local-plugin-btn'))
+      })
+      expect(mockBridge.pickAndImportLocalPlugin).toHaveBeenCalled()
+    } finally {
+      setModularResourceBridgeForTest(null)
+    }
+  })
+
+  it('双视图 Tab 切换 (market <-> installed) 触发过滤', async () => {
+    act(() => {
+      usePluginCenterStore.setState({
+        isOverlayOpen: true,
+        scope: 'market',
+        modules: [
+          {
+            id: 'm1',
+            name: '市场未安装插件',
+            version: '1.0.0',
+            category: 'tool',
+            author_code: 'official',
+            availability: 'approved',
+            total_bytes: 100,
+            install_state: 'not_installed',
+            description: '未安装'
+          },
+          {
+            id: 'm2',
+            name: '本地已安装插件',
+            version: '1.0.0',
+            category: 'tool',
+            author_code: 'official',
+            availability: 'approved',
+            total_bytes: 200,
+            install_state: 'active',
+            description: '已安装'
+          }
+        ]
+      })
+    })
+
+    render(<PluginCenterOverlay />)
+    expect(screen.getByText('市场未安装插件')).toBeInTheDocument()
+    expect(screen.getByText('本地已安装插件')).toBeInTheDocument()
+
+    // 切换到 已安装 视图
+    const installedTab = screen.getByTestId('scope-installed-tab')
+    await act(async () => {
+      fireEvent.click(installedTab)
+    })
+
+    expect(usePluginCenterStore.getState().scope).toBe('installed')
+    // 在已安装视图中，未安装的 m1 应该被过滤掉
+    expect(screen.queryByText('市场未安装插件')).not.toBeInTheDocument()
+    expect(screen.getByText('本地已安装插件')).toBeInTheDocument()
+  })
+})

@@ -14,6 +14,7 @@ import {
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
+import { Switch } from '../ui/switch'
 import { cn } from '../../lib/utils'
 import i18nScope from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
@@ -143,6 +144,11 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
   const restartApp = usePluginCenterStore(s => s.restartApp)
   const exportOfflinePackage = usePluginCenterStore(s => s.exportOfflinePackage)
   const importOfflinePackage = usePluginCenterStore(s => s.importOfflinePackage)
+  const isDeveloperMode = usePluginCenterStore(s => s.isDeveloperMode)
+  const setDeveloperMode = usePluginCenterStore(s => s.setDeveloperMode)
+  const scope = usePluginCenterStore(s => s.scope)
+  const setScope = usePluginCenterStore(s => s.setScope)
+  const pickAndImportLocalPlugin = usePluginCenterStore(s => s.pickAndImportLocalPlugin)
 
   // IN-06: 订阅后端实时下载进度并支持 React StrictMode 双挂载安全清理
   useEffect(() => {
@@ -206,6 +212,14 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
   // 过滤后的插件列表（兼顾源码原名、多语言展示名与插件 ID）
   const filteredModules = useMemo(() => {
     return modules.filter(m => {
+      // 范围筛选：若为已安装视图，排除未安装模块
+      if (scope === 'installed' && m.install_state === 'not_installed') {
+        return false
+      }
+      // 开发者模式保护：非开发者模式下过滤 draft 草稿模块
+      if (!isDeveloperMode && m.availability === 'draft') {
+        return false
+      }
       // 分类筛选
       if (selectedCategory !== 'all' && m.category !== selectedCategory) {
         return false
@@ -224,7 +238,7 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
       }
       return true
     })
-  }, [modules, selectedCategory, searchKeyword, t])
+  }, [modules, scope, isDeveloperMode, selectedCategory, searchKeyword, t])
 
   // 槽位聚类分组 (方案 A: Slot Grouping)
   const slotGroups = useMemo(() => {
@@ -371,6 +385,47 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          {/* 开发者模式开关 */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/60 border border-border/50">
+            <Switch
+              id="dev-mode-switch"
+              data-testid="dev-mode-switch"
+              checked={isDeveloperMode}
+              onCheckedChange={setDeveloperMode}
+              aria-label={t('开发者模式')}
+            />
+            <label
+              htmlFor="dev-mode-switch"
+              className="text-xs font-medium text-muted-foreground cursor-pointer select-none"
+            >
+              {t('开发者模式')}
+            </label>
+          </div>
+
+          {/* 开发者模式下展示：导入本地开发插件 */}
+          {isDeveloperMode && (
+            <Button
+              size="sm"
+              variant="outline"
+              data-testid="pick-local-plugin-btn"
+              onClick={async () => {
+                try {
+                  const success = await pickAndImportLocalPlugin()
+                  if (success) {
+                    toast.success(t('本地开发插件导入成功'))
+                  }
+                } catch (err: any) {
+                  toast.error(err?.message || String(err))
+                }
+              }}
+              className="h-8 px-2.5 text-xs flex items-center gap-1.5 border-dashed border-amber-500/60 hover:border-amber-500 text-amber-700 dark:text-amber-400 hover:text-foreground shrink-0 cursor-pointer"
+              title={t('选择本地开发目录并导入')}
+            >
+              <span>📁</span>
+              <span>{t('导入本地插件')}</span>
+            </Button>
+          )}
+
           <Button
             size="sm"
             variant="outline"
@@ -495,25 +550,57 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
       ) : (
         /* ==================== 插件市场 List 列表视图 ==================== */
         <div className="flex-1 flex flex-col min-h-0">
-          {/* 二级控制条：分类 Tab 与 关键词搜索输入框 */}
+          {/* 二级控制条：双视图 Tab、分类 Tab 与 关键词搜索输入框 */}
           <div className="px-6 py-3 border-b border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-muted/15 flex-shrink-0">
-            {/* 分类切换按钮组 */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-              {categories.map(c => (
+            <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-0.5">
+              {/* 范围双视图切换器 */}
+              <div className="flex items-center p-0.5 rounded-lg bg-muted/80 border border-border/50 shrink-0">
                 <button
-                  key={c.id}
                   type="button"
-                  onClick={() => setSelectedCategory(c.id)}
+                  data-testid="scope-market-tab"
+                  onClick={() => setScope('market')}
                   className={cn(
-                    'px-3 py-1 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer whitespace-nowrap select-none',
-                    selectedCategory === c.id
-                      ? 'bg-primary text-primary-foreground shadow-2xs font-semibold'
-                      : 'bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground'
+                    'px-3 py-1 rounded-md text-xs font-medium transition-all cursor-pointer whitespace-nowrap',
+                    scope === 'market'
+                      ? 'bg-background text-foreground shadow-2xs font-semibold'
+                      : 'text-muted-foreground hover:text-foreground'
                   )}
                 >
-                  {c.label}
+                  {t('全部市场')}
                 </button>
-              ))}
+                <button
+                  type="button"
+                  data-testid="scope-installed-tab"
+                  onClick={() => setScope('installed')}
+                  className={cn(
+                    'px-3 py-1 rounded-md text-xs font-medium transition-all cursor-pointer whitespace-nowrap',
+                    scope === 'installed'
+                      ? 'bg-background text-foreground shadow-2xs font-semibold'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {t('已安装')}
+                </button>
+              </div>
+
+              {/* 分类切换按钮组 */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                {categories.map(c => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => setSelectedCategory(c.id)}
+                    className={cn(
+                      'px-3 py-1 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer whitespace-nowrap select-none',
+                      selectedCategory === c.id
+                        ? 'bg-primary text-primary-foreground shadow-2xs font-semibold'
+                        : 'bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* 关键词检索输入框 */}

@@ -103,7 +103,12 @@ export interface BuiltinModuleView extends BuiltinModuleRecord {
   name: string
   description: string
   icon?: string
+  is_running?: boolean
   is_usable?: boolean
+  can_activate?: boolean
+  can_install?: boolean
+  can_uninstall?: boolean
+  hold_reasons?: string[]
   resources: ResourceDownloadRecord[]
   download_progress?: {
     percentage: number
@@ -129,8 +134,12 @@ export interface IModularResourceService {
     skippedRegression: number
   }>
 
-  /** 获取所有模块完整视图（合并 builtin_modules 状态与关联 resource_downloads 进度） */
-  listModules(): BuiltinModuleView[]
+  /** 获取所有模块完整视图（合并 builtin_modules 状态与关联 resource_downloads 进度，支持 scope 过滤） */
+  listModules(filter?: {
+    scope?: 'market' | 'installed'
+    category?: string
+    includeDraft?: boolean
+  }): BuiltinModuleView[]
 
   /** 幂等下载并安装模块（引用计数复用 -> Range 206 -> SHA-256 -> Zip Slip 解压 -> 原子 rename） */
   installModule(
@@ -475,6 +484,7 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
 export interface ModularResourceServiceOptions {
   db?: Database
   baseDir?: string
+  presetDir?: string
   downloadService?: FileDownloadService
   transport?: IDownloadTransport
   deleteDirectoryFn?: (dirPath: string) => Promise<boolean>
@@ -489,6 +499,7 @@ export class ModularResourceService implements IModularResourceService {
   public readonly processManager: PluginProcessManager
   private customDb: Database | null = null
   private customBaseDir: string | null = null
+  private customPresetDir: string | null = null
   private downloadService: FileDownloadService
   private transport?: IDownloadTransport
   private deleteDirectoryFn: (dirPath: string) => Promise<boolean>
@@ -500,10 +511,17 @@ export class ModularResourceService implements IModularResourceService {
     { percentage: number; speed_bytes_per_sec: number; is_resumed: boolean }
   >()
   private seeded = false
+  private corruptedPresetCache = new Map<string, boolean>()
+  private resourceBomOverrides = new Map<
+    string,
+    Array<{ name: string; size: number; sha256: string }>
+  >()
+  private verificationPromises = new Map<string, Promise<boolean>>()
 
   constructor(options?: ModularResourceServiceOptions) {
     this.customDb = options?.db ?? null
     this.customBaseDir = options?.baseDir ?? null
+    this.customPresetDir = options?.presetDir ?? null
     this.downloadService = options?.downloadService ?? fileDownloadService
     this.transport = options?.transport
     this.deleteDirectoryFn = options?.deleteDirectoryFn ?? safeDeleteDirectory
@@ -561,6 +579,313 @@ export class ModularResourceService implements IModularResourceService {
   public resolveDownloadArchivePath(resourceId: string, assetName: string): string {
     const safeAsset = assetName.replace(/[^a-zA-Z0-9._-]/g, '_')
     return path.join(this.getBaseDir(), 'downloads', 'tmp', `${resourceId}_${safeAsset}`)
+  }
+
+  /**
+   * 测试接缝：覆盖指定资源的 BOM 散列文件清单
+   */
+  public setResourceBomOverride(
+    resourceId: string,
+    files: Array<{ name: string; size: number; sha256: string }>
+  ): void {
+    this.resourceBomOverrides.set(resourceId, files)
+  }
+
+  /**
+   * 推理引擎加载门控：等待指定模块完成真实文件 SHA-256 异步校验
+   */
+  public async ensureVerified(moduleId: string): Promise<boolean> {
+    const promise = this.verificationPromises.get(moduleId)
+    if (promise) {
+      return await promise
+    }
+    return true
+  }
+
+  /**
+   * 读取资源的 BOM 文件清单定义
+   */
+  private loadBomFilesForResource(
+    resourceId: string
+  ): Array<{ name: string; size: number; sha256: string }> {
+    if (this.resourceBomOverrides.has(resourceId)) {
+      return this.resourceBomOverrides.get(resourceId)!
+    }
+
+    const candidateBomPaths = [
+      path.join(process.cwd(), 'apps/desktop/build/extraResources/configs/resources.bom.json'),
+      path.join(this.getBaseDir(), 'configs', 'resources.bom.json')
+    ]
+    try {
+      if (typeof electronApp !== 'undefined' && electronApp.isPackaged) {
+        candidateBomPaths.unshift(path.join(process.resourcesPath, 'configs', 'resources.bom.json'))
+      }
+    } catch {}
+
+    for (const bomPath of candidateBomPaths) {
+      if (fs.existsSync(bomPath)) {
+        try {
+          const content = JSON.parse(fs.readFileSync(bomPath, 'utf-8'))
+          const res = content.resources?.[resourceId]
+          if (res?.files && Array.isArray(res.files)) {
+            return res.files
+          }
+        } catch {}
+      }
+    }
+
+    return []
+  }
+
+  /**
+   * L1 物理探活：检查目标解压目录是否健全
+   * 返回 'fast_hit' | 'slow_healed' | 'corrupted' | 'not_found'
+   */
+  private async checkL1TargetDirPreflight(
+    targetAbsDir: string,
+    spec: CatalogResourceSpec
+  ): Promise<'fast_hit' | 'slow_healed' | 'corrupted' | 'not_found'> {
+    if (!fs.existsSync(targetAbsDir)) {
+      return 'not_found'
+    }
+
+    const filesInDir = fs.readdirSync(targetAbsDir).filter(f => !f.startsWith('.'))
+    if (filesInDir.length === 0) {
+      return 'not_found'
+    }
+
+    const expectedSha256 = spec.expected_sha256
+    const sha8 = expectedSha256.slice(0, 8)
+    const readyMarkerPath = path.join(targetAbsDir, `.ready-${sha8}.json`)
+
+    // 1. 快路径：检查 .ready 标记是否存在且内容有效
+    if (fs.existsSync(readyMarkerPath)) {
+      try {
+        const marker = JSON.parse(fs.readFileSync(readyMarkerPath, 'utf-8'))
+        if (
+          marker.version === 1 &&
+          marker.archiveSha256?.toLowerCase() === expectedSha256.toLowerCase() &&
+          Array.isArray(marker.coreFiles) &&
+          marker.coreFiles.length > 0
+        ) {
+          let fastOk = true
+          for (const core of marker.coreFiles) {
+            const p = path.join(targetAbsDir, core.name)
+            if (!fs.existsSync(p)) {
+              fastOk = false
+              break
+            }
+            const st = fs.statSync(p)
+            if (st.size !== core.size) {
+              fastOk = false
+              break
+            }
+            if (core.mtimeMs && Math.abs(st.mtimeMs - core.mtimeMs) > 2000) {
+              // 容差 2s (FAT/跨平台)
+              fastOk = false
+              break
+            }
+          }
+          if (fastOk) {
+            return 'fast_hit'
+          }
+        }
+      } catch {
+        // marker 损坏，回退慢路径
+      }
+    }
+
+    // 2. 慢路径：逐文件流式计算真实 SHA-256
+    const expectedFiles = this.loadBomFilesForResource(spec.resource_id)
+    if (expectedFiles.length > 0) {
+      let allFilesOk = true
+      const verifiedList: Array<{ name: string; size: number; mtimeMs: number; sha256: string }> =
+        []
+
+      for (const ef of expectedFiles) {
+        const p = path.join(targetAbsDir, ef.name)
+        if (!fs.existsSync(p)) {
+          allFilesOk = false
+          break
+        }
+        const st = fs.statSync(p)
+        if (st.size !== ef.size) {
+          allFilesOk = false
+          break
+        }
+        const verifyRes = await streamVerifySha256(p, ef.sha256)
+        if (!verifyRes.valid) {
+          allFilesOk = false
+          break
+        }
+        verifiedList.push({
+          name: ef.name,
+          size: st.size,
+          mtimeMs: st.mtimeMs,
+          sha256: verifyRes.actualSha256
+        })
+      }
+
+      if (allFilesOk) {
+        // 原子补写 .ready 标记自愈
+        try {
+          const markerContent = {
+            version: 1,
+            assetId: spec.resource_id,
+            archiveSha256: expectedSha256,
+            bomSha256: 'bom_verified',
+            createdAt: new Date().toISOString(),
+            coreFiles: verifiedList
+          }
+          const tmpReady = `${readyMarkerPath}.tmp-${Date.now()}`
+          fs.writeFileSync(tmpReady, JSON.stringify(markerContent, null, 2), 'utf-8')
+          fs.renameSync(tmpReady, readyMarkerPath)
+        } catch {}
+        return 'slow_healed'
+      } else {
+        // 发现文件损坏或缺失，执行隔离
+        await this.isolateCorruptDirectory(targetAbsDir)
+        return 'corrupted'
+      }
+    } else {
+      // 无 BOM 清单的通用/测试资源：若已有 completed 记录且目录非空，补写轻量 .ready 标记放行
+      const task = this.getDao().resources.findByIdSync(spec.resource_id)
+      if (
+        task?.download_state === 'completed' &&
+        (!task.expected_sha256 ||
+          !task.actual_sha256 ||
+          task.actual_sha256.toLowerCase() === task.expected_sha256.toLowerCase())
+      ) {
+        try {
+          const files = fs
+            .readdirSync(targetAbsDir)
+            .filter(f => !f.startsWith('.'))
+            .map(f => {
+              const p = path.join(targetAbsDir, f)
+              const st = fs.statSync(p)
+              return { name: f, size: st.size, mtimeMs: st.mtimeMs, sha256: '' }
+            })
+          fs.writeFileSync(
+            readyMarkerPath,
+            JSON.stringify(
+              {
+                version: 1,
+                assetId: spec.resource_id,
+                archiveSha256: expectedSha256,
+                bomSha256: 'task_completed_fallback',
+                createdAt: new Date().toISOString(),
+                coreFiles: files
+              },
+              null,
+              2
+            ),
+            'utf-8'
+          )
+        } catch {}
+        return 'slow_healed'
+      }
+    }
+
+    return 'not_found'
+  }
+
+  /**
+   * 将损坏目录原子隔离至同卷 .corrupt-<uuid>
+   */
+  private async isolateCorruptDirectory(targetAbsDir: string): Promise<void> {
+    const parentDir = path.dirname(targetAbsDir)
+    const baseName = path.basename(targetAbsDir)
+    const corruptTarget = path.join(parentDir, `${baseName}.corrupt-${Date.now()}`)
+    try {
+      if (fs.existsSync(targetAbsDir)) {
+        fs.renameSync(targetAbsDir, corruptTarget)
+      }
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, `[ModularResource] 隔离破损目录失败: ${targetAbsDir}`, err)
+    }
+  }
+
+  /**
+   * L2 物理探活：探测本地预置包并验证
+   */
+  private async checkL2LocalPresetPreflight(
+    spec: CatalogResourceSpec,
+    targetAbsDir: string
+  ): Promise<boolean> {
+    const candidateDirs = [
+      path.join(process.cwd(), 'apps/desktop/build/presetResources'),
+      path.join(process.cwd(), 'apps/desktop/build/extraResources/models'),
+      path.join(this.getBaseDir(), 'presetResources')
+    ]
+    if (this.customPresetDir) {
+      candidateDirs.unshift(this.customPresetDir)
+    }
+    try {
+      if (typeof electronApp !== 'undefined' && electronApp.isPackaged) {
+        candidateDirs.unshift(path.join(process.resourcesPath, 'presetResources'))
+        candidateDirs.unshift(path.join(process.resourcesPath, 'models'))
+      }
+    } catch {}
+
+    for (const pDir of candidateDirs) {
+      const zipPath = path.join(pDir, spec.asset_name)
+      if (!fs.existsSync(zipPath)) continue
+
+      const cacheKey = `${zipPath}:${spec.expected_sha256}`
+      if (this.corruptedPresetCache.has(cacheKey)) {
+        continue
+      }
+
+      try {
+        const verify = await streamVerifySha256(zipPath, spec.expected_sha256)
+        if (verify.valid) {
+          logger.info(
+            LogCategory.SYSTEM,
+            `[ModularResource] L2 预置包探活命中: ${zipPath}，直接本地解压`
+          )
+          await safeExtractZip(zipPath, targetAbsDir)
+
+          // 写入 .ready 标记
+          const sha8 = spec.expected_sha256.slice(0, 8)
+          const readyMarkerPath = path.join(targetAbsDir, `.ready-${sha8}.json`)
+          try {
+            const files = fs
+              .readdirSync(targetAbsDir)
+              .filter(f => !f.startsWith('.'))
+              .map(f => {
+                const fp = path.join(targetAbsDir, f)
+                const st = fs.statSync(fp)
+                return { name: f, size: st.size, mtimeMs: st.mtimeMs, sha256: '' }
+              })
+            fs.writeFileSync(
+              readyMarkerPath,
+              JSON.stringify(
+                {
+                  version: 1,
+                  assetId: spec.resource_id,
+                  archiveSha256: spec.expected_sha256,
+                  bomSha256: 'preset_verified',
+                  createdAt: new Date().toISOString(),
+                  coreFiles: files
+                },
+                null,
+                2
+              ),
+              'utf-8'
+            )
+          } catch {}
+
+          return true
+        } else {
+          // 仅记录内存缓存，严禁向只读目录调用 unlinkSync
+          this.corruptedPresetCache.set(cacheKey, true)
+        }
+      } catch (err) {
+        this.corruptedPresetCache.set(cacheKey, true)
+      }
+    }
+
+    return false
   }
 
   /**
@@ -855,16 +1180,39 @@ export class ModularResourceService implements IModularResourceService {
     }
 
     const contributes = meta.contributes || seed?.contributes
+    const isRunning = this.processManager
+      ? this.processManager.isRunning(record.id)
+      : record.install_state === 'active'
     const isUsable = this.processManager
       ? this.processManager.isUsable(record.id)
       : record.install_state === 'active'
+    const holdReasons = this.processManager ? this.processManager.getHoldReasons(record.id) : []
+
+    const devModeEffective = typeof electronApp !== 'undefined' ? !electronApp.isPackaged : true
+
+    // G-02 安装事实严格门禁算法
+    const canInstall =
+      record.install_state === 'not_installed' && record.availability !== 'coming_soon'
+    const canActivate =
+      record.install_state === 'installed_inactive' &&
+      record.availability !== 'coming_soon' &&
+      !(record.availability === 'draft' && !devModeEffective) &&
+      record.delist_reason !== 'security_violation' &&
+      !holdReasons.includes('slotPreempted')
+    const canUninstall =
+      record.install_state !== 'not_installed' && record.slot_policy !== 'exclusive_required'
 
     return {
       ...record,
       name,
       description,
       icon,
+      is_running: isRunning,
       is_usable: isUsable,
+      can_activate: canActivate,
+      can_install: canInstall,
+      can_uninstall: canUninstall,
+      hold_reasons: holdReasons,
       resources,
       ...(contributes ? { contributes } : {}),
       ...(downloadProgress ? { download_progress: downloadProgress } : {})
@@ -872,12 +1220,23 @@ export class ModularResourceService implements IModularResourceService {
   }
 
   /**
-   * 获取所有模块完整视图（合并 builtin_modules 状态与关联 resource_downloads 进度）
+   * 获取模块完整视图列表（支持 scope: 'market' | 'installed' 过滤）
    */
-  listModules(): BuiltinModuleView[] {
+  listModules(filter?: {
+    scope?: 'market' | 'installed'
+    category?: string
+    includeDraft?: boolean
+  }): BuiltinModuleView[] {
     this.ensureDefaultSeeds()
     const dao = this.getDao()
-    const records = dao.modules.listAllSync()
+    const devModeEffective = typeof electronApp !== 'undefined' ? !electronApp.isPackaged : true
+    const includeDraft = filter?.includeDraft ?? devModeEffective
+
+    const records = dao.modules.listAllSync({
+      scope: filter?.scope ?? 'market',
+      category: filter?.category,
+      includeDraft
+    })
 
     // 按照内置种子顺序优先排列，其余按 ID 排序
     const seedOrder = new Map(DEFAULT_CATALOG_SEEDS.map((s, idx) => [s.id, idx]))
@@ -982,19 +1341,36 @@ export class ModularResourceService implements IModularResourceService {
 
         const targetAbsDir = this.resolvePhysicalPath(task.target_local_path)
 
-        // 2. 引用计数复用检查：若资源已处于 completed 且物理目录存在、哈希吻合，直接跳过重复下载
-        if (
-          task.download_state === 'completed' &&
-          fs.existsSync(targetAbsDir) &&
-          (!task.expected_sha256 ||
-            !task.actual_sha256 ||
-            task.actual_sha256.toLowerCase() === task.expected_sha256.toLowerCase())
-        ) {
+        // 2. 确定性三级物理探活拓扑 (L1 目标解压目录 -> L2 本地预置包 -> L3 网络下载)
+        // L1: 目标解压目录探活 (快路径毫秒放行 + 慢路径自愈补标记)
+        const l1Result = await this.checkL1TargetDirPreflight(targetAbsDir, spec)
+        if (l1Result === 'fast_hit' || l1Result === 'slow_healed') {
+          dao.resources.markVerifiedSync(spec.resource_id, true)
+          dao.resources.updateProgressSync(spec.resource_id, spec.expected_bytes, 'completed')
+
+          if (l1Result === 'fast_hit') {
+            // 后台异步低优先级流式 SHA-256 核验兜底
+            const asyncVerifyPromise = (async () => {
+              const expectedFiles = this.loadBomFilesForResource(spec.resource_id)
+              for (const ef of expectedFiles) {
+                const p = path.join(targetAbsDir, ef.name)
+                if (!fs.existsSync(p)) return false
+                const v = await streamVerifySha256(p, ef.sha256)
+                if (!v.valid) {
+                  await this.isolateCorruptDirectory(targetAbsDir)
+                  return false
+                }
+              }
+              return true
+            })()
+            this.verificationPromises.set(moduleId, asyncVerifyPromise)
+          }
+
           const completedEvt: ModuleDownloadProgressEvent = {
             moduleId,
             resourceId: spec.resource_id,
-            downloadedBytes: task.expected_bytes,
-            expectedBytes: task.expected_bytes,
+            downloadedBytes: spec.expected_bytes,
+            expectedBytes: spec.expected_bytes,
             percentage: 100,
             speedBytesPerSec: 0,
             isResumed: false,
@@ -1008,6 +1384,33 @@ export class ModularResourceService implements IModularResourceService {
           onProgress?.(completedEvt)
           continue
         }
+
+        // L2: 本地后备预置包打捞 (apps/desktop/build/presetResources 等)
+        const l2Hit = await this.checkL2LocalPresetPreflight(spec, targetAbsDir)
+        if (l2Hit) {
+          dao.resources.markVerifiedSync(spec.resource_id, true)
+          dao.resources.updateProgressSync(spec.resource_id, spec.expected_bytes, 'completed')
+
+          const completedEvt: ModuleDownloadProgressEvent = {
+            moduleId,
+            resourceId: spec.resource_id,
+            downloadedBytes: spec.expected_bytes,
+            expectedBytes: spec.expected_bytes,
+            percentage: 100,
+            speedBytesPerSec: 0,
+            isResumed: false,
+            state: 'completed'
+          }
+          this.liveProgress.set(moduleId, {
+            percentage: 100,
+            speed_bytes_per_sec: 0,
+            is_resumed: false
+          })
+          onProgress?.(completedEvt)
+          continue
+        }
+
+        // L3: 网络分块并发断点下载与 Singleflight 保护
 
         // Singleflight 并发合并保护：同一物理资源同时只允许一个下载流
         let flight = this.inFlightResources.get(spec.resource_id)
@@ -1153,6 +1556,37 @@ export class ModularResourceService implements IModularResourceService {
           state: 'extracting'
         })
         await safeExtractZip(archivePath, targetAbsDir)
+        // 解压成功后写入 .ready 标记供后续毫秒级快检复用
+        const sha8 = (task.expected_sha256 || '').slice(0, 8)
+        if (sha8) {
+          try {
+            const readyMarkerPath = path.join(targetAbsDir, `.ready-${sha8}.json`)
+            const files = fs
+              .readdirSync(targetAbsDir)
+              .filter(f => !f.startsWith('.'))
+              .map(f => {
+                const fp = path.join(targetAbsDir, f)
+                const st = fs.statSync(fp)
+                return { name: f, size: st.size, mtimeMs: st.mtimeMs, sha256: '' }
+              })
+            fs.writeFileSync(
+              readyMarkerPath,
+              JSON.stringify(
+                {
+                  version: 1,
+                  assetId: task.resource_id,
+                  archiveSha256: task.expected_sha256,
+                  bomSha256: 'download_extracted',
+                  createdAt: new Date().toISOString(),
+                  coreFiles: files
+                },
+                null,
+                2
+              ),
+              'utf-8'
+            )
+          } catch {}
+        }
         // 解压成功后清理归档包临时文件
         if (fs.existsSync(archivePath)) {
           try {

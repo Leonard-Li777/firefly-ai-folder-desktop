@@ -37,13 +37,41 @@ export function registerModularResourceIpcHandlers(
 ): void {
   logger.info(LogCategory.MAIN, '正在注册 ModularResource IPC 处理器...')
 
-  ipcMain.handle('modular-resource:list', async () => {
-    try {
-      return service.listModules()
-    } catch (err: any) {
-      logger.error(LogCategory.MAIN, '[ModularResourceIPC] list 失败:', err)
-      throw err
+  let devModeEnabled = typeof app !== 'undefined' ? !app.isPackaged : true
+
+  ipcMain.handle(
+    'modular-resource:list',
+    async (
+      _event,
+      filter?: { scope?: 'market' | 'installed'; category?: string; includeDraft?: boolean }
+    ) => {
+      try {
+        const effectiveDevMode =
+          typeof app !== 'undefined' && app.isPackaged ? false : devModeEnabled
+        return service.listModules({
+          ...filter,
+          includeDraft: filter?.includeDraft ?? effectiveDevMode
+        })
+      } catch (err: any) {
+        logger.error(LogCategory.MAIN, '[ModularResourceIPC] list 失败:', err)
+        throw err
+      }
     }
+  )
+
+  ipcMain.handle('modular-resource:get-dev-mode', async () => {
+    const effective = typeof app !== 'undefined' && app.isPackaged ? false : devModeEnabled
+    return { enabled: devModeEnabled, devModeEffective: effective }
+  })
+
+  ipcMain.handle('modular-resource:set-dev-mode', async (_event, payload: { enabled: boolean }) => {
+    devModeEnabled = !!payload.enabled
+    const effective = typeof app !== 'undefined' && app.isPackaged ? false : devModeEnabled
+    logger.info(
+      LogCategory.MAIN,
+      `[ModularResourceIPC] 切换开发者模式: ${devModeEnabled} (有效状态: ${effective})`
+    )
+    return { devModeEffective: effective }
   })
 
   ipcMain.handle('modular-resource:install', async (_event, moduleId: string) => {

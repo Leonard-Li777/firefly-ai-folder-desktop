@@ -13,7 +13,14 @@ import type {
 } from '../renderer/stores/plugin-center-store'
 
 export const modularResourcePreloadBridge: IModularResourceBridge = {
-  list: (): Promise<PluginModuleItem[]> => ipcRenderer.invoke('modular-resource:list'),
+  list: (filter?: {
+    scope?: 'market' | 'installed'
+    category?: string
+    includeDraft?: boolean
+  }): Promise<PluginModuleItem[]> => ipcRenderer.invoke('modular-resource:list', filter),
+  getDevMode: () => ipcRenderer.invoke('modular-resource:get-dev-mode'),
+  setDevMode: (payload: { enabled: boolean }) =>
+    ipcRenderer.invoke('modular-resource:set-dev-mode', payload),
   install: (moduleId: string): Promise<PluginModuleItem> =>
     ipcRenderer.invoke('modular-resource:install', moduleId),
   uninstall: (moduleId: string): Promise<PluginModuleItem> =>

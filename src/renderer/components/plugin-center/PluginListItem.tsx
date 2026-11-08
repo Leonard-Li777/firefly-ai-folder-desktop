@@ -155,7 +155,7 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
             <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-muted/80 text-muted-foreground border border-border/40 shrink-0">
               v{module.version}
             </span>
-            {isComingSoon ? (
+            {module.availability === 'coming_soon' ? (
               <Badge
                 variant="secondary"
                 data-testid="coming-soon-badge"
@@ -163,7 +163,34 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
               >
                 {t('即将推出')}
               </Badge>
-            ) : (
+            ) : module.availability === 'draft' ? (
+              <Badge
+                variant="outline"
+                data-testid="draft-badge"
+                className="text-[10px] px-2 py-0.2 bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 font-medium shrink-0"
+              >
+                {t('开发版')}
+              </Badge>
+            ) : module.availability === 'delisted' ? (
+              module.delist_reason === 'security_violation' ? (
+                <Badge
+                  variant="destructive"
+                  data-testid="security-violation-badge"
+                  className="text-[10px] px-2 py-0.2 bg-destructive/15 text-destructive border-destructive/30 font-medium shrink-0"
+                >
+                  {t('安全停用')}
+                </Badge>
+              ) : (
+                <Badge
+                  variant="secondary"
+                  data-testid="delisted-badge"
+                  className="text-[10px] px-2 py-0.2 bg-muted text-muted-foreground font-medium shrink-0"
+                >
+                  {t('已下架')}
+                </Badge>
+              )
+            ) : null}
+            {!isComingSoon && (
               <Badge
                 variant="outline"
                 className="text-[10px] px-2 py-0.2 border-border/60 text-muted-foreground shrink-0"
@@ -250,26 +277,34 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
             />
           </div>
         ) : isInstalled ? (
-          /* 已安装：启用 Switch + 配置按钮 */
+          /* 已安装：启用 Switch + 配置按钮 (安全停用物理阻断) */
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <Switch
-                id={`switch-${module.id}`}
-                checked={isActive}
-                onCheckedChange={checked => onToggleActive?.(module.id, checked)}
-                aria-label={isActive ? t('已启用') : t('已停用')}
-              />
-              <label
-                htmlFor={`switch-${module.id}`}
-                className="text-xs text-muted-foreground cursor-pointer select-none whitespace-nowrap"
-              >
-                {isActive
-                  ? module.slot_policy === 'exclusive_required'
-                    ? t('已启用 (必选)')
-                    : t('已启用')
-                  : t('已停用')}
-              </label>
-            </div>
+            {module.delist_reason === 'security_violation' ? (
+              <span className="text-xs text-destructive font-medium flex items-center gap-1">
+                <span>🛡️</span>
+                <span>{t('安全阻断')}</span>
+              </span>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Switch
+                  id={`switch-${module.id}`}
+                  checked={isActive}
+                  disabled={!isActive && module.can_activate === false}
+                  onCheckedChange={checked => onToggleActive?.(module.id, checked)}
+                  aria-label={isActive ? t('已启用') : t('已停用')}
+                />
+                <label
+                  htmlFor={`switch-${module.id}`}
+                  className="text-xs text-muted-foreground cursor-pointer select-none whitespace-nowrap"
+                >
+                  {isActive
+                    ? module.slot_policy === 'exclusive_required'
+                      ? t('已启用 (必选)')
+                      : t('已启用')
+                    : t('已停用')}
+                </label>
+              </div>
+            )}
 
             <Button
               size="sm"
@@ -311,19 +346,28 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
             </Button>
           </div>
         ) : (
-          /* 未安装：展示「下载安装」按钮 */
+          /* 未安装：展示「下载安装」按钮或下架禁装提示 */
           <div className="flex items-center gap-3">
-            <span className="text-xs text-muted-foreground hidden sm:inline">
-              {t('未安装扩展模块')}
-            </span>
-            <Button
-              size="sm"
-              onClick={() => onInstall?.(module.id)}
-              className="h-8 px-3.5 text-xs flex items-center gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer shadow-2xs font-medium"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>{t('下载安装')}</span>
-            </Button>
+            {module.availability === 'delisted' ? (
+              <span className="text-xs text-muted-foreground italic">
+                {t('该模块已下架，不可安装')}
+              </span>
+            ) : (
+              <>
+                <span className="text-xs text-muted-foreground hidden sm:inline">
+                  {t('未安装扩展模块')}
+                </span>
+                <Button
+                  size="sm"
+                  disabled={module.can_install === false}
+                  onClick={() => onInstall?.(module.id)}
+                  className="h-8 px-3.5 text-xs flex items-center gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer shadow-2xs font-medium"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>{t('下载安装')}</span>
+                </Button>
+              </>
+            )}
           </div>
         )}
       </div>
