@@ -1,6 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { Search, Sliders, ChevronLeft, Puzzle, Sparkles, Layers, Code } from 'lucide-react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog'
+import React, { useEffect, useMemo, useState, useRef } from 'react'
+import { Search, Sliders, ChevronLeft, Puzzle, Sparkles, Code, X } from 'lucide-react'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
@@ -8,7 +7,7 @@ import { cn } from '../../lib/utils'
 import i18nScope from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
 import { usePluginCenterStore } from '../../stores/plugin-center-store'
-import { PluginCard } from './PluginCard'
+import { PluginListItem } from './PluginListItem'
 import { AIEngineConfigSettings } from '../settings/ai-engine-config-settings'
 import { TTSSettings } from '../settings/tts-settings'
 
@@ -17,16 +16,18 @@ export interface PluginCenterOverlayProps {
 }
 
 /**
- * 插件中心全局覆盖弹层 (Plugin Center Overlay)
+ * 插件中心主内容区域全局覆盖层 (Plugin Center Overlay)
  *
- * 遵循规格说明书 §6.1 与 Ticket 05：
- * 1. 类似全局搜索的居中全局覆盖弹层与半透明遮罩；
- * 2. Radix Focus Trap 焦点保护；Esc 键仅关闭顶层弹层；
- * 3. 失焦行为规范：点击应用内半透明遮罩关闭弹层；点击应用外其他窗口保留弹层不关闭；再次点击顶部按钮亦可关闭；
- * 4. 高级 AI 引擎与语音合成 TTS 迁移挂载至插件中心，并预留好 config_schema 与 user_config 模板插槽。
+ * 遵循与全域搜索 (GlobalSearchOverlay) 完全一致的架构规范：
+ * 1. 结构形态：摒弃传统浮动弹窗 (Dialog/Modal)，改为主内容区域绝对定位全局覆盖层；
+ * 2. 空间布局：紧贴顶部 DirectoryHeader 底边 (top: var(--app-header-height, 53px))，铺满主内容视口；
+ * 3. 展现形态：插件列表全面改用横向条目 (List) 形态，取代狭窄的卡片网格形态；
+ * 4. 键盘与交互：支持 Esc 键逐级返回与退出（配置模式返回列表，列表模式关闭覆盖层）；
+ * 5. 高级 AI 引擎与离线 TTS 获得充裕的大视口展示空间，配置体验舒展自然。
  */
 export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ className }) => {
   const { t } = useVoerkaI18n(i18nScope)
+  const overlayContainerRef = useRef<HTMLDivElement>(null)
 
   const isOverlayOpen = usePluginCenterStore(s => s.isOverlayOpen)
   const closeOverlay = usePluginCenterStore(s => s.closeOverlay)
@@ -56,6 +57,28 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
       void loadModules()
     }
   }, [isOverlayOpen, loadModules])
+
+  // Esc 键盘多级退出监听
+  useEffect(() => {
+    if (!isOverlayOpen) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        e.stopPropagation()
+        if (configuringModuleId) {
+          setConfiguringModuleId(null)
+        } else {
+          closeOverlay()
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown, true)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown, true)
+    }
+  }, [isOverlayOpen, configuringModuleId, setConfiguringModuleId, closeOverlay])
 
   // 自定义配置草稿 (用于 config_schema / user_config 插槽)
   const [userConfigDraft, setUserConfigDraft] = useState<string>('')
@@ -128,72 +151,75 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
     setConfiguringModuleId(null)
   }
 
-  return (
-    <Dialog
-      open={isOverlayOpen}
-      onOpenChange={open => {
-        if (!open) closeOverlay()
-      }}
-    >
-      <DialogContent
-        data-testid="plugin-center-overlay"
-        className={cn(
-          'max-w-5xl w-[92vw] max-h-[86vh] h-[86vh] flex flex-col p-0 overflow-hidden bg-card text-card-foreground border-2 border-border/80 shadow-2xl rounded-2xl select-text transform-gpu',
-          className
-        )}
-        onFocusOutside={e => {
-          // 核心业务铁律：点击应用外其他窗口保留弹层不关闭（防止用户切屏查阅文档导致输入状态丢失）
-          e.preventDefault()
-        }}
-        onPointerDownOutside={e => {
-          // 若点击的是顶部导航栏的插件中心切换按钮，阻止 default 关闭，由按钮自身 onClick 完成开关联动
-          const target = e.target as HTMLElement | null
-          if (target?.closest('[data-plugin-center-toggle]')) {
-            e.preventDefault()
-          }
-        }}
-      >
-        {/* 顶部标题栏 */}
-        <DialogHeader className="px-6 py-4 border-b border-border/70 flex-shrink-0 flex flex-row items-center justify-between pr-14">
-          <div className="flex items-center gap-3">
-            {configuringModule && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => setConfiguringModuleId(null)}
-                className="h-8 px-2 text-xs flex items-center gap-1 hover:bg-accent -ml-2 cursor-pointer"
-                title={t('返回插件列表')}
-              >
-                <ChevronLeft className="w-4 h-4" />
-                <span>{t('返回')}</span>
-              </Button>
-            )}
-            <div>
-              <DialogTitle className="text-lg font-bold flex items-center gap-2">
-                <span className="text-xl">🧩</span>
-                <span>{t('插件中心')}</span>
-                {configuringModule && (
-                  <>
-                    <span className="text-muted-foreground font-normal">/</span>
-                    <span className="text-primary text-base font-semibold">
-                      {t(configuringModule.name)}
-                    </span>
-                  </>
-                )}
-              </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                {configuringModule
-                  ? t('配置插件运行时参数与专有模型通道')
-                  : t('管理本地 AI 引擎、离线多媒体工具与格式解析扩展能力')}
-              </DialogDescription>
-            </div>
-          </div>
-        </DialogHeader>
+  if (!isOverlayOpen) {
+    return null
+  }
 
-        {/* 主体内容区 */}
-        {configuringModule ? (
-          /* ==================== 插件配置子视图 ==================== */
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+  return (
+    <div
+      ref={overlayContainerRef}
+      data-testid="plugin-center-overlay"
+      className={cn(
+        'absolute inset-x-0 bottom-0 z-30 bg-background flex flex-col overflow-hidden select-text',
+        'animate-in fade-in duration-200',
+        className
+      )}
+      style={{ top: 'var(--app-header-height, 53px)' }}
+    >
+      {/* 顶部主工具栏：左侧标题/面包屑与副标，右侧快捷关闭按钮 */}
+      <div className="px-6 py-3 border-b border-border/70 flex-shrink-0 flex items-center justify-between bg-card min-h-[52px] gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          {configuringModule && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setConfiguringModuleId(null)}
+              className="h-8 px-2 text-xs flex items-center gap-1 hover:bg-accent -ml-2 cursor-pointer shrink-0"
+              title={t('返回插件列表')}
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>{t('返回')}</span>
+            </Button>
+          )}
+          <div className="min-w-0">
+            <div className="text-base font-bold flex items-center gap-2 text-foreground">
+              <span className="text-lg shrink-0">🧩</span>
+              <span>{t('插件中心')}</span>
+              {configuringModule && (
+                <>
+                  <span className="text-muted-foreground font-normal">/</span>
+                  <span className="text-primary text-sm font-semibold truncate max-w-[200px] sm:max-w-[320px]">
+                    {t(configuringModule.name)}
+                  </span>
+                </>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5 truncate">
+              {configuringModule
+                ? t('配置插件运行时参数与专有模型通道')
+                : t('管理本地 AI 引擎、离线多媒体工具与格式解析扩展能力')}
+            </p>
+          </div>
+        </div>
+
+        {/* 右上角关闭按钮 */}
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={closeOverlay}
+          className="h-8 w-8 p-0 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+          title={t('关闭插件中心 (Esc)')}
+          aria-label={t('关闭插件中心')}
+        >
+          <X className="w-4 h-4" />
+        </Button>
+      </div>
+
+      {/* 主体内容区 */}
+      {configuringModule ? (
+        /* ==================== 插件配置子视图 ==================== */
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-5xl mx-auto w-full space-y-6">
             {configuringModule.id === 'advanced_ai_engine' ? (
               /* 高级 AI 引擎专属配置面板 */
               <div className="space-y-4">
@@ -225,7 +251,7 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
             ) : (
               /* 通用插件 config_schema 与 user_config 模板插槽 */
               <div className="space-y-4 max-w-2xl mx-auto py-4">
-                <div className="p-4 rounded-xl border border-border/70 bg-muted/20 space-y-3">
+                <div className="p-5 rounded-xl border border-border/70 bg-muted/20 space-y-3">
                   <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                     <Code className="w-4 h-4 text-primary" />
                     <span>{t('插件个性化配置项 (JSON Schema)')}</span>
@@ -236,7 +262,7 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
                     )}
                   </p>
                   <textarea
-                    rows={10}
+                    rows={12}
                     value={userConfigDraft}
                     onChange={e => {
                       setUserConfigDraft(e.target.value)
@@ -271,44 +297,46 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
               </div>
             )}
           </div>
-        ) : (
-          /* ==================== 插件市场卡片列表视图 ==================== */
-          <div className="flex-1 flex flex-col min-h-0">
-            {/* 检索栏与分类 Tab */}
-            <div className="px-6 py-3 border-b border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-muted/15 flex-shrink-0">
-              {/* 分类切换按钮组 */}
-              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-                {categories.map(c => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => setSelectedCategory(c.id)}
-                    className={cn(
-                      'px-3 py-1 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer whitespace-nowrap select-none',
-                      selectedCategory === c.id
-                        ? 'bg-primary text-primary-foreground shadow-2xs font-semibold'
-                        : 'bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground'
-                    )}
-                  >
-                    {c.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* 关键词检索输入框 */}
-              <div className="relative w-full sm:w-64 flex-shrink-0">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/70" />
-                <Input
-                  value={searchKeyword}
-                  onChange={e => setSearchKeyword(e.target.value)}
-                  placeholder={t('搜索插件名称或描述...')}
-                  className="h-8 pl-8 pr-3 text-xs rounded-full bg-background border-border/80 focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
+        </div>
+      ) : (
+        /* ==================== 插件市场 List 列表视图 ==================== */
+        <div className="flex-1 flex flex-col min-h-0">
+          {/* 二级控制条：分类 Tab 与 关键词搜索输入框 */}
+          <div className="px-6 py-3 border-b border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-muted/15 flex-shrink-0">
+            {/* 分类切换按钮组 */}
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+              {categories.map(c => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setSelectedCategory(c.id)}
+                  className={cn(
+                    'px-3 py-1 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer whitespace-nowrap select-none',
+                    selectedCategory === c.id
+                      ? 'bg-primary text-primary-foreground shadow-2xs font-semibold'
+                      : 'bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {c.label}
+                </button>
+              ))}
             </div>
 
-            {/* 插件卡片网格 */}
-            <div className="flex-1 overflow-y-auto p-6">
+            {/* 关键词检索输入框 */}
+            <div className="relative w-full sm:w-64 flex-shrink-0">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/70" />
+              <Input
+                value={searchKeyword}
+                onChange={e => setSearchKeyword(e.target.value)}
+                placeholder={t('搜索插件名称或描述...')}
+                className="h-8 pl-8 pr-3 text-xs rounded-full bg-background border-border/80 focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+          </div>
+
+          {/* 插件条目 List 列表 */}
+          <div className="flex-1 overflow-y-auto p-6">
+            <div className="max-w-6xl mx-auto w-full">
               {filteredModules.length === 0 ? (
                 <div className="h-64 flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
                   <Puzzle className="w-10 h-10 mb-2 opacity-40" />
@@ -318,9 +346,9 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="space-y-3">
                   {filteredModules.map(item => (
-                    <PluginCard
+                    <PluginListItem
                       key={item.id}
                       module={item}
                       onInstall={installPlugin}
@@ -331,18 +359,18 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
                 </div>
               )}
             </div>
-
-            {/* 底部统计栏 */}
-            <div className="px-6 py-2.5 border-t border-border/60 bg-muted/20 flex items-center justify-between text-[11px] text-muted-foreground flex-shrink-0">
-              <span className="flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-primary/80" />
-                <span>{t('已加载 {total} 个内置与扩展模块', { total: modules.length })}</span>
-              </span>
-              <span>{t('纯本地离线推理 · 零隐私数据回传')}</span>
-            </div>
           </div>
-        )}
-      </DialogContent>
-    </Dialog>
+
+          {/* 底部统计栏 */}
+          <div className="px-6 py-2.5 border-t border-border/60 bg-muted/20 flex items-center justify-between text-[11px] text-muted-foreground flex-shrink-0">
+            <span className="flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-primary/80" />
+              <span>{t('已加载 {total} 个内置与扩展模块', { total: modules.length })}</span>
+            </span>
+            <span>{t('纯本地离线推理 · 零隐私数据回传')}</span>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }

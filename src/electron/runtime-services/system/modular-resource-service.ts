@@ -19,8 +19,14 @@ import {
   type ModuleCategory,
   type ModuleInstallState,
   type ModuleAuthorCode,
-  type ModuleAvailability
+  type ModuleAvailability,
+  type PluginCapabilitySlot,
+  type SlotPolicy,
+  type BackendType,
+  type EmbeddingEpochRecord
 } from '../database/dao/modular-resource-dao'
+
+export type { PluginCapabilitySlot, SlotPolicy, BackendType, EmbeddingEpochRecord }
 import {
   FileDownloadService,
   fileDownloadService,
@@ -53,6 +59,9 @@ export interface CatalogModuleEntry {
   version: string
   catalog_version: number
   category: ModuleCategory
+  capability_slot?: PluginCapabilitySlot
+  slot_policy?: SlotPolicy
+  backend_type?: BackendType
   author_code?: ModuleAuthorCode
   author_name?: string | null
   availability?: ModuleAvailability
@@ -126,43 +135,174 @@ export interface IModularResourceService {
       userConsent?: boolean
     }
   ): BuiltinModuleView
+
+  /** 激活指定模块（针对排他槽位自动停用同槽位其他模块） */
+  activateModule(moduleId: string): BuiltinModuleView
+
+  /** 停用指定模块（若处于 exclusive_required 且激活状态则拒绝并抛出 SLOT_REQUIRED_EMPTY） */
+  deactivateModule(moduleId: string): BuiltinModuleView
 }
 
 /**
  * 本地离线内置插件目录种子 (IN-04 纯离线兜底 SSOT)
  */
 export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
+  // 1. 基础 AI 引擎：经典轻量极速档 (二选一必选)
   {
-    id: 'advanced_ai_engine',
-    name: '高级本地 AI 推理引擎',
-    description: '深度语义理解、智能重命名与多模态分析的大语言模型推理引擎',
-    icon: 'Brain',
+    id: 'engine_classic_light',
+    name: '经典轻量 AI 引擎 (Classic Light)',
+    description:
+      '非对称双塔极速架构：Bekko 384d 文本与 CLIP 512d 视觉检索，低内存消耗，CPU 即可流畅运转',
+    icon: 'Feather',
     kind: 'builtin-module',
     version: '1.0.0',
     catalog_version: 1,
     category: 'ai-engine',
+    capability_slot: 'base_embedding',
+    slot_policy: 'exclusive_required',
+    backend_type: 'omni_onnx',
     author_code: 'official',
-    author_name: null,
-    availability: 'available',
-    firecore_cost: 0,
-    total_bytes: 2314200000,
-    install_state: 'active'
+    total_bytes: 319195255, // 106,269,288 (bekko) + 212,925,967 (chinese-clip) = 304.4 MiB
+    install_state: 'not_installed',
+    resources: [
+      {
+        resource_id: 'bekko-a8m',
+        asset_name: 'bekko-a8m-1.0.0.zip',
+        target_local_path: 'modules/_shared/bekko-a8m',
+        active_source_key: 'auto',
+        active_url:
+          'https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/bekko-a8m-1.0.0.zip',
+        expected_bytes: 106269288,
+        expected_sha256: '315c4cba94333207522ae6e12c5de234199d1c4fc11740b05ac32aebd3e82d13'
+      },
+      {
+        resource_id: 'chinese-clip',
+        asset_name: 'chinese-clip-int8-v3.zip',
+        target_local_path: 'modules/_shared/chinese-clip',
+        active_source_key: 'auto',
+        active_url:
+          'https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/chinese-clip-int8-v3.zip',
+        expected_bytes: 212925967,
+        expected_sha256: '67a5e4a0d0985085a3ad9e153efa5d4817af3851b6c4c7c8933b5c0a83ca3093'
+      }
+    ]
   },
+  // 2. 基础 AI 引擎：统一全模态档 (二选一必选)
   {
-    id: 'offline_tts',
-    name: '离线语音合成 TTS',
-    description: '高质量离线自然语音朗读、伴音生成与多语种音色克隆引擎',
+    id: 'engine_gemma_unified',
+    name: '统一全模态 AI 引擎 (Gemma Unified)',
+    description:
+      'EmbeddingGemma-2 图文同构统一流形空间，支持 MRL 256/512/768 弹性维度截断与高精度跨模态匹配',
+    icon: 'Layers',
+    kind: 'builtin-module',
+    version: '1.0.0',
+    catalog_version: 1,
+    category: 'ai-engine',
+    capability_slot: 'base_embedding',
+    slot_policy: 'exclusive_required',
+    backend_type: 'omni_onnx',
+    author_code: 'official',
+    total_bytes: 254003864, // 242.2 MiB
+    install_state: 'not_installed',
+    resources: [
+      {
+        resource_id: 'embeddinggemma-2-onnx',
+        asset_name: 'embeddinggemma-2-onnx-1.0.0.zip',
+        target_local_path: 'modules/_shared/embeddinggemma-2-onnx',
+        active_source_key: 'auto',
+        active_url:
+          'https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/embeddinggemma-2-onnx-1.0.0.zip',
+        expected_bytes: 254003864,
+        expected_sha256: 'f2cfc8643f708702c3abeeb5130df42becb909793d5ade429531daf810314f26'
+      }
+    ]
+  },
+  // 3. 感知分析模型：敏感内容与 NSFW 分级识别
+  {
+    id: 'perception_nsfw',
+    name: '敏感内容与 NSFW 分级识别',
+    description:
+      '集成 MobileNetV2 视觉 5 分类与多语种文本 FastText 分类器，精准识别成人内容与分级标签 (PG-13/R-18/R-18G)',
+    icon: 'ShieldAlert',
+    kind: 'builtin-module',
+    version: '1.0.0',
+    catalog_version: 1,
+    category: 'perception',
+    capability_slot: 'perception_nsfw',
+    slot_policy: 'exclusive_optional',
+    backend_type: 'omni_onnx',
+    author_code: 'official',
+    total_bytes: 21966375, // 20.9 MiB
+    install_state: 'not_installed',
+    resources: [
+      {
+        resource_id: 'nsfw-l3',
+        asset_name: 'nsfw-l3-1.0.0.zip',
+        target_local_path: 'modules/_shared/nsfw-l3',
+        active_source_key: 'auto',
+        active_url:
+          'https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/nsfw-l3-1.0.0.zip',
+        expected_bytes: 21966375,
+        expected_sha256: '84383b64d723d31ec3ab940522f866ff1979a24454269cd6336ee2fc98ff2ddf'
+      }
+    ]
+  },
+  // 4. 语音识别与字幕提取 ASR (SenseVoice, 纯模型，转码复用系统内置 FFmpeg)
+  {
+    id: 'asr_sensevoice_onnx',
+    name: '语音识别与字幕提取 ASR (SenseVoice)',
+    description:
+      'SenseVoice 极速高精音频转录、富文本标点对齐与多语言语音识别，支持音视频字幕分段抽取 (音频转码复用系统内置 FFmpeg)',
+    icon: 'Mic',
+    kind: 'builtin-module',
+    version: '1.0.0',
+    catalog_version: 1,
+    category: 'perception',
+    capability_slot: 'asr',
+    slot_policy: 'exclusive_optional',
+    backend_type: 'omni_onnx',
+    author_code: 'official',
+    total_bytes: 168587158, // 8,282,676 (sherpa) + 160,304,482 (sensevoice) = 160.8 MiB
+    install_state: 'not_installed',
+    resources: [
+      {
+        resource_id: 'sherpa-onnx-runtime',
+        asset_name: 'sherpa-onnx-runtime-1.13.8-win32-x64.zip',
+        target_local_path: 'modules/_shared/sherpa-onnx-runtime',
+        active_source_key: 'auto',
+        active_url:
+          'https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/sherpa-onnx-runtime-1.13.8-win32-x64.zip',
+        expected_bytes: 8282676,
+        expected_sha256: '3cb751f7e27d9c0768687487335d67bee3dd9694b6825e50ee439ade7cb6bd04'
+      },
+      {
+        resource_id: 'sensevoice-onnx',
+        asset_name: 'sensevoice-onnx-int8.zip',
+        target_local_path: 'modules/_shared/sensevoice-onnx',
+        active_source_key: 'auto',
+        active_url:
+          'https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/sensevoice-onnx-int8.zip',
+        expected_bytes: 160304482,
+        expected_sha256: 'a5cd6e2836c3916e18efb2ee81bd6fd536c92bf957fd29a524b8a7e82c6cdceb'
+      }
+    ]
+  },
+  // 5. 离线语音合成 TTS (Moss-TTS)
+  {
+    id: 'tts_moss_onnx',
+    name: '离线语音合成 TTS (Moss-TTS)',
+    description: '高质量离线自然语音朗读、51 款精选音色库与多语种伴音生成引擎',
     icon: 'Volume2',
     kind: 'builtin-module',
     version: '1.0.0',
     catalog_version: 1,
     category: 'media',
+    capability_slot: 'tts',
+    slot_policy: 'exclusive_optional',
+    backend_type: 'omni_onnx',
     author_code: 'official',
-    author_name: null,
-    availability: 'available',
-    firecore_cost: 0,
-    total_bytes: 216426086,
-    install_state: 'active',
+    total_bytes: 249105462, // 8,282,676 (sherpa) + 240,822,786 (moss-tts) = 237.6 MiB
+    install_state: 'not_installed',
     resources: [
       {
         resource_id: 'sherpa-onnx-runtime',
@@ -187,54 +327,6 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     ]
   },
   {
-    id: 'asr_engine',
-    name: '语音识别与字幕提取 ASR',
-    description: 'SenseVoice 极速高精音频转录、富文本标点对齐与多语言语音识别',
-    icon: 'Mic',
-    kind: 'builtin-module',
-    version: '0.9.2',
-    catalog_version: 1,
-    category: 'perception',
-    author_code: 'official',
-    author_name: null,
-    availability: 'available',
-    firecore_cost: 0,
-    total_bytes: 185597132,
-    install_state: 'not_installed',
-    resources: [
-      {
-        resource_id: 'ffmpeg',
-        asset_name: 'ffmpeg-master-20260827-win32-x64.zip',
-        target_local_path: 'modules/_shared/ffmpeg',
-        active_source_key: 'auto',
-        active_url:
-          'https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/ffmpeg-master-20260827-win32-x64.zip',
-        expected_bytes: 56096345,
-        expected_sha256: 'e39f97014143737827de6f9f91c3cfc283cea620f75c3fdef5d1f505c79171ff'
-      },
-      {
-        resource_id: 'sherpa-onnx-runtime',
-        asset_name: 'sherpa-onnx-runtime-1.13.8-win32-x64.zip',
-        target_local_path: 'modules/_shared/sherpa-onnx-runtime',
-        active_source_key: 'auto',
-        active_url:
-          'https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/sherpa-onnx-runtime-1.13.8-win32-x64.zip',
-        expected_bytes: 8282676,
-        expected_sha256: '3cb751f7e27d9c0768687487335d67bee3dd9694b6825e50ee439ade7cb6bd04'
-      },
-      {
-        resource_id: 'sensevoice-onnx',
-        asset_name: 'sensevoice-onnx-int8.zip',
-        target_local_path: 'modules/_shared/sensevoice-onnx',
-        active_source_key: 'auto',
-        active_url:
-          'https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/sensevoice-onnx-int8.zip',
-        expected_bytes: 160304482,
-        expected_sha256: 'a5cd6e2836c3916e18efb2ee81bd6fd536c92bf957fd29a524b8a7e82c6cdceb'
-      }
-    ]
-  },
-  {
     id: 'diffusion_studio',
     name: '本地生图 Studio',
     description: '基于本地硬件加速的图像生成、超分辨率画面修复与视觉扩展',
@@ -243,6 +335,9 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     version: '0.1.0',
     catalog_version: 1,
     category: 'ai-engine',
+    capability_slot: 'advanced_ai_engine',
+    slot_policy: 'exclusive_optional',
+    backend_type: 'ai_engine',
     author_code: 'official',
     author_name: null,
     availability: 'coming_soon',
@@ -259,6 +354,9 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     version: '1.2.0',
     catalog_version: 1,
     category: 'parser',
+    capability_slot: 'parser',
+    slot_policy: 'multi_active',
+    backend_type: 'utility_process',
     author_code: 'official',
     author_name: null,
     availability: 'available',
@@ -276,6 +374,9 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     version: '1.2.0',
     catalog_version: 1,
     category: 'tool',
+    capability_slot: 'tool',
+    slot_policy: 'multi_active',
+    backend_type: 'builtin',
     author_code: 'official',
     author_name: null,
     availability: 'available',
@@ -564,6 +665,9 @@ export class ModularResourceService implements IModularResourceService {
           version: entry.version,
           catalog_version: incomingVersion,
           category: entry.category,
+          capability_slot: entry.capability_slot ?? existing?.capability_slot ?? 'general',
+          slot_policy: entry.slot_policy ?? existing?.slot_policy ?? 'multi_active',
+          backend_type: entry.backend_type ?? existing?.backend_type ?? 'omni_onnx',
           author_code: entry.author_code ?? existing?.author_code ?? 'official',
           author_name:
             entry.author_name !== undefined ? entry.author_name : (existing?.author_name ?? null),
@@ -729,8 +833,20 @@ export class ModularResourceService implements IModularResourceService {
 
     const resourceSpecs = this.resolveModuleResourceSpecs(record)
     if (resourceSpecs.length === 0) {
-      // 无外部物理资产依赖的模块，直接标记为 active
-      dao.modules.updateInstallStateSync(moduleId, 'active')
+      // 无外部物理资产依赖的模块，按排他规则标记为 active 或 installed_inactive
+      const slot = record.capability_slot ?? 'general'
+      const policy = record.slot_policy ?? 'multi_active'
+      const isExclusive = policy === 'exclusive_required' || policy === 'exclusive_optional'
+      if (isExclusive) {
+        const currentActive = dao.modules.findActiveBySlotSync(slot)
+        if (currentActive && currentActive.id !== moduleId) {
+          dao.modules.updateInstallStateSync(moduleId, 'installed_inactive')
+        } else {
+          dao.modules.activateExclusiveModuleSync(moduleId)
+        }
+      } else {
+        dao.modules.updateInstallStateSync(moduleId, 'active')
+      }
       this.liveProgress.delete(moduleId)
       return this.buildModuleView(dao.modules.findByIdSync(moduleId)!)
     }
@@ -799,8 +915,34 @@ export class ModularResourceService implements IModularResourceService {
         await flight
       }
 
-      // 5. 全部依赖资源就绪，将模块状态流转为 active
-      dao.modules.updateInstallStateSync(moduleId, 'active')
+      // 5. 全部依赖资源就绪，将模块状态流转为 active 或 installed_inactive (若已有同槽位 active)
+      const slot = record.capability_slot ?? 'general'
+      const policy = record.slot_policy ?? 'multi_active'
+      const isExclusive = policy === 'exclusive_required' || policy === 'exclusive_optional'
+      if (isExclusive) {
+        const currentActive = dao.modules.findActiveBySlotSync(slot)
+        if (currentActive && currentActive.id !== moduleId) {
+          dao.modules.updateInstallStateSync(moduleId, 'installed_inactive')
+        } else {
+          dao.modules.activateExclusiveModuleSync(moduleId)
+          if (slot === 'base_embedding') {
+            const serving = dao.epochs.findServingEpochSync()
+            if (!serving) {
+              const isClassic = moduleId.includes('classic')
+              dao.epochs.createEpochSync({
+                epoch: 1,
+                module_id: moduleId,
+                text_dim: isClassic ? 384 : 768,
+                image_dim: isClassic ? 512 : 768,
+                status: 'serving',
+                reindex_cursor: null
+              })
+            }
+          }
+        }
+      } else {
+        dao.modules.updateInstallStateSync(moduleId, 'active')
+      }
       this.liveProgress.delete(moduleId)
       return this.buildModuleView(dao.modules.findByIdSync(moduleId)!)
     } catch (err: any) {
@@ -1051,8 +1193,59 @@ export class ModularResourceService implements IModularResourceService {
 
     const tx = db.transaction(() => {
       if (patch.active !== undefined) {
-        const nextState: ModuleInstallState = patch.active ? 'active' : 'installed_inactive'
-        dao.modules.updateInstallStateSync(moduleId, nextState)
+        if (patch.active) {
+          const slot = existing.capability_slot ?? 'general'
+          const policy = existing.slot_policy ?? 'multi_active'
+          const isExclusive = policy === 'exclusive_required' || policy === 'exclusive_optional'
+
+          if (isExclusive) {
+            // 排他逻辑：将同槽位已有 active 模块置为 installed_inactive
+            const currentActive = dao.modules.findActiveBySlotSync(slot)
+            if (currentActive && currentActive.id !== moduleId) {
+              dao.modules.updateInstallStateSync(currentActive.id, 'installed_inactive')
+            }
+          }
+          dao.modules.updateInstallStateSync(moduleId, 'active')
+
+          // 基础引擎切换时的代际翻转
+          if (slot === 'base_embedding') {
+            const servingEpoch = dao.epochs.findServingEpochSync()
+            const newEpochNum = servingEpoch ? servingEpoch.epoch + 1 : 1
+            const isClassic = moduleId.includes('classic')
+            const textDim = isClassic ? 384 : 768
+            const imageDim = isClassic ? 512 : 768
+
+            if (servingEpoch && servingEpoch.module_id !== moduleId) {
+              dao.epochs.createEpochSync({
+                epoch: newEpochNum,
+                module_id: moduleId,
+                text_dim: textDim,
+                image_dim: imageDim,
+                status: 'building',
+                reindex_cursor: null
+              })
+              dao.epochs.flipEpochSync(servingEpoch.epoch, newEpochNum)
+            } else if (!servingEpoch) {
+              dao.epochs.createEpochSync({
+                epoch: 1,
+                module_id: moduleId,
+                text_dim: textDim,
+                image_dim: imageDim,
+                status: 'serving',
+                reindex_cursor: null
+              })
+            }
+          }
+        } else {
+          // 停用逻辑
+          if (
+            existing.slot_policy === 'exclusive_required' &&
+            existing.install_state === 'active'
+          ) {
+            throw new Error('SLOT_REQUIRED_EMPTY')
+          }
+          dao.modules.updateInstallStateSync(moduleId, 'installed_inactive')
+        }
       }
 
       if (patch.userConfig !== undefined) {
@@ -1083,8 +1276,22 @@ export class ModularResourceService implements IModularResourceService {
       }
     })
 
-    tx()
+    tx.immediate()
     return this.buildModuleView(dao.modules.findByIdSync(moduleId)!)
+  }
+
+  /**
+   * 激活指定模块（针对排他槽位自动停用同槽位其他模块）
+   */
+  activateModule(moduleId: string): BuiltinModuleView {
+    return this.updateModuleState(moduleId, { active: true })
+  }
+
+  /**
+   * 停用指定模块（若处于 exclusive_required 且激活状态则拒绝并抛出 SLOT_REQUIRED_EMPTY）
+   */
+  deactivateModule(moduleId: string): BuiltinModuleView {
+    return this.updateModuleState(moduleId, { active: false })
   }
 }
 

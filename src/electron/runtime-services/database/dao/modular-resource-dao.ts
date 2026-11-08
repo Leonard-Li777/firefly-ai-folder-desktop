@@ -18,6 +18,31 @@ export type ModuleInstallState =
 export type ModuleAuthorCode = 'official' | 'community' | 'third_party'
 export type ModuleAvailability = 'available' | 'coming_soon' | 'unavailable'
 
+export type PluginCapabilitySlot =
+  | 'base_embedding'
+  | 'asr'
+  | 'tts'
+  | 'perception_nsfw'
+  | 'perception_face'
+  | 'advanced_ai_engine'
+  | 'parser'
+  | 'tool'
+  | 'general'
+
+export type SlotPolicy = 'exclusive_required' | 'exclusive_optional' | 'multi_active'
+
+export type BackendType = 'omni_onnx' | 'ai_engine' | 'utility_process' | 'builtin'
+
+export interface EmbeddingEpochRecord {
+  epoch: number
+  module_id: string
+  text_dim: number
+  image_dim: number
+  status: 'building' | 'serving' | 'retired' | 'cancelled'
+  created_at: number
+  reindex_cursor?: string | null
+}
+
 export interface BuiltinModuleRecord {
   id: string
   kind: ModuleKind
@@ -40,6 +65,9 @@ export interface BuiltinModuleRecord {
   user_consent: number
   error_message?: string | null
   config_json?: string | null
+  capability_slot?: PluginCapabilitySlot
+  slot_policy?: SlotPolicy
+  backend_type?: BackendType
 }
 
 export type DownloadState =
@@ -126,6 +154,18 @@ export interface IBuiltinModuleDAO {
   updateUserConfigSync(id: string, userConfig: string | null): void
   updateUserConsentSync(id: string, userConsent: number): void
   deleteModule(id: string): Promise<void>
+  findActiveBySlotSync(slot: PluginCapabilitySlot): BuiltinModuleRecord | null
+  activateExclusiveModuleSync(id: string): void
+  deactivateModuleSync(id: string): void
+}
+
+export interface IEmbeddingEpochDAO {
+  findServingEpochSync(): EmbeddingEpochRecord | null
+  findBuildingEpochSync(): EmbeddingEpochRecord | null
+  createEpochSync(epoch: Omit<EmbeddingEpochRecord, 'created_at'>): EmbeddingEpochRecord
+  flipEpochSync(oldEpoch: number, newEpoch: number): void
+  cancelBuildingEpochsSync(): void
+  updateCursorSync(epoch: number, cursorJson: string): void
 }
 
 export interface IResourceDownloadDAO {
@@ -232,12 +272,14 @@ export class BuiltinModuleDao implements IBuiltinModuleDAO {
           id, kind, version, catalog_version, category, author_code, author_name,
           availability, firecore_cost, total_bytes, catalog_meta_json, config_schema, user_config,
           install_state, selected_variant, install_path, installed_at,
-          last_activated_at, user_consent, error_message, config_json
+          last_activated_at, user_consent, error_message, config_json,
+          capability_slot, slot_policy, backend_type
         ) VALUES (
           ?, ?, ?, ?, ?, ?, ?,
           ?, ?, ?, ?, ?, ?,
           ?, ?, ?, ?,
-          ?, ?, ?, ?
+          ?, ?, ?, ?,
+          ?, ?, ?
         )
       `)
       stmt.run(
@@ -261,7 +303,10 @@ export class BuiltinModuleDao implements IBuiltinModuleDAO {
         record.last_activated_at ?? null,
         record.user_consent ?? 0,
         record.error_message ?? null,
-        record.config_json ?? null
+        record.config_json ?? null,
+        record.capability_slot ?? 'general',
+        record.slot_policy ?? 'multi_active',
+        record.backend_type ?? 'omni_onnx'
       )
       return true
     } else {
@@ -282,7 +327,10 @@ export class BuiltinModuleDao implements IBuiltinModuleDAO {
         // 关键防护：保留本地运行态与个性化配置，绝不被云端元数据静默覆盖
         install_state: record.install_state ?? existing.install_state,
         user_config: record.user_config ?? existing.user_config,
-        config_json: record.config_json ?? existing.config_json
+        config_json: record.config_json ?? existing.config_json,
+        capability_slot: record.capability_slot ?? existing.capability_slot ?? 'general',
+        slot_policy: record.slot_policy ?? existing.slot_policy ?? 'multi_active',
+        backend_type: record.backend_type ?? existing.backend_type ?? 'omni_onnx'
       }
       const stmt = this.db.prepare(`
         UPDATE builtin_modules SET
@@ -305,7 +353,10 @@ export class BuiltinModuleDao implements IBuiltinModuleDAO {
           last_activated_at = ?,
           user_consent = ?,
           error_message = ?,
-          config_json = ?
+          config_json = ?,
+          capability_slot = ?,
+          slot_policy = ?,
+          backend_type = ?
         WHERE id = ?
       `)
       stmt.run(
@@ -329,6 +380,9 @@ export class BuiltinModuleDao implements IBuiltinModuleDAO {
         merged.user_consent ?? 0,
         merged.error_message ?? null,
         merged.config_json ?? null,
+        merged.capability_slot ?? 'general',
+        merged.slot_policy ?? 'multi_active',
+        merged.backend_type ?? 'omni_onnx',
         record.id
       )
       return true
@@ -400,6 +454,49 @@ export class BuiltinModuleDao implements IBuiltinModuleDAO {
 
   async updateVariant(id: string, variant: string): Promise<void> {
     this.updateVariantSync(id, variant)
+  }
+
+  findActiveBySlotSync(slot: PluginCapabilitySlot): BuiltinModuleRecord | null {
+    const row = this.db
+      .prepare('SELECT * FROM builtin_modules WHERE capability_slot = ? AND install_state = ?')
+      .get(slot, 'active') as BuiltinModuleRecord | undefined
+    return row ?? null
+  }
+
+  activateExclusiveModuleSync(id: string): void {
+    const target = this.findByIdSync(id)
+    if (!target) {
+      throw new Error(`未找到模块: ${id}`)
+    }
+    const slot = target.capability_slot ?? 'general'
+    const policy = target.slot_policy ?? 'multi_active'
+    const isExclusive = policy === 'exclusive_required' || policy === 'exclusive_optional'
+
+    const tx = this.db.transaction(() => {
+      if (isExclusive) {
+        // 先停用同槽位已有 active 模块
+        this.db
+          .prepare(
+            `UPDATE builtin_modules
+             SET install_state = 'installed_inactive'
+             WHERE capability_slot = ? AND install_state = 'active' AND id != ?`
+          )
+          .run(slot, id)
+      }
+      this.updateInstallStateSync(id, 'active')
+    })
+    tx.immediate()
+  }
+
+  deactivateModuleSync(id: string): void {
+    const target = this.findByIdSync(id)
+    if (!target) {
+      throw new Error(`未找到模块: ${id}`)
+    }
+    if (target.slot_policy === 'exclusive_required' && target.install_state === 'active') {
+      throw new Error('SLOT_REQUIRED_EMPTY')
+    }
+    this.updateInstallStateSync(id, 'installed_inactive')
   }
 
   async deleteModule(id: string): Promise<void> {
@@ -980,16 +1077,87 @@ export class LocalWorkflowDao implements ILocalWorkflowDAO {
 }
 
 /**
+ * 向量代际管理 DAO
+ */
+export class EmbeddingEpochDao implements IEmbeddingEpochDAO {
+  constructor(private db: Database) {}
+
+  findServingEpochSync(): EmbeddingEpochRecord | null {
+    const row = this.db
+      .prepare("SELECT * FROM embedding_epochs WHERE status = 'serving' LIMIT 1")
+      .get() as EmbeddingEpochRecord | undefined
+    return row ?? null
+  }
+
+  findBuildingEpochSync(): EmbeddingEpochRecord | null {
+    const row = this.db
+      .prepare("SELECT * FROM embedding_epochs WHERE status = 'building' LIMIT 1")
+      .get() as EmbeddingEpochRecord | undefined
+    return row ?? null
+  }
+
+  createEpochSync(epoch: Omit<EmbeddingEpochRecord, 'created_at'>): EmbeddingEpochRecord {
+    const now = Date.now()
+    const stmt = this.db.prepare(`
+      INSERT INTO embedding_epochs (epoch, module_id, text_dim, image_dim, status, created_at, reindex_cursor)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `)
+    stmt.run(
+      epoch.epoch,
+      epoch.module_id,
+      epoch.text_dim,
+      epoch.image_dim,
+      epoch.status,
+      now,
+      epoch.reindex_cursor ?? null
+    )
+    return {
+      ...epoch,
+      created_at: now,
+      reindex_cursor: epoch.reindex_cursor ?? null
+    }
+  }
+
+  flipEpochSync(oldEpoch: number, newEpoch: number): void {
+    const tx = this.db.transaction(() => {
+      if (oldEpoch > 0) {
+        this.db
+          .prepare("UPDATE embedding_epochs SET status = 'retired' WHERE epoch = ?")
+          .run(oldEpoch)
+      }
+      this.db
+        .prepare("UPDATE embedding_epochs SET status = 'serving' WHERE epoch = ?")
+        .run(newEpoch)
+    })
+    tx.immediate()
+  }
+
+  cancelBuildingEpochsSync(): void {
+    this.db
+      .prepare("UPDATE embedding_epochs SET status = 'cancelled' WHERE status = 'building'")
+      .run()
+  }
+
+  updateCursorSync(epoch: number, cursorJson: string): void {
+    this.db
+      .prepare('UPDATE embedding_epochs SET reindex_cursor = ? WHERE epoch = ?')
+      .run(cursorJson, epoch)
+  }
+}
+
+/**
  * 模块化资源数据访问聚合门面
  */
 export class ModularResourceDao {
   public modules: BuiltinModuleDao
   public resources: ResourceDownloadDao
   public workflows: LocalWorkflowDao
+  public epochs: EmbeddingEpochDao
 
   constructor(private db: Database) {
     this.modules = new BuiltinModuleDao(db)
     this.resources = new ResourceDownloadDao(db)
     this.workflows = new LocalWorkflowDao(db)
+    this.epochs = new EmbeddingEpochDao(db)
   }
 }

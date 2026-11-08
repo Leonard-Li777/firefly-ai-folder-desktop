@@ -457,7 +457,12 @@ export const GENESIS_V1_SCHEMA = `
     last_activated_at INTEGER,                       -- 最近一次激活时间戳 (Unix ms)
     user_consent      INTEGER NOT NULL DEFAULT 0,    -- 是否通过敏感授权/隐私告知 (1: 是, 0: 否)
     error_message     TEXT,                          -- 异常退出或校验失败原因
-    config_json       TEXT                           -- 运行时内部专有持久化配置项 (JSON 字典)
+    config_json       TEXT,                          -- 运行时内部专有持久化配置项 (JSON 字典)
+    capability_slot   TEXT NOT NULL DEFAULT 'general', -- 归属能力槽位 (如 'base_embedding', 'asr', 'tts', 'perception_nsfw', 'general')
+    slot_policy       TEXT NOT NULL DEFAULT 'multi_active'
+                      CHECK (slot_policy IN ('exclusive_required', 'exclusive_optional', 'multi_active')),
+    backend_type      TEXT NOT NULL DEFAULT 'omni_onnx'
+                      CHECK (backend_type IN ('omni_onnx', 'ai_engine', 'utility_process', 'builtin'))
   );
 
   -- 2. 物理资源下载实体表 (资源中心化 SSOT)
@@ -494,6 +499,33 @@ export const GENESIS_V1_SCHEMA = `
   );
 
   CREATE INDEX IF NOT EXISTS idx_mod_res_map_rid ON module_resource_downloads(resource_id);
+
+  -- 4. 向量代际管理表 (单一活动代际翻转协议 - Issue 01a)
+  CREATE TABLE IF NOT EXISTS embedding_epochs (
+    epoch             INTEGER PRIMARY KEY,           -- 单调递增代际编号
+    module_id         TEXT NOT NULL,                 -- 关联的 base_embedding 模块 ID
+    text_dim          INTEGER NOT NULL,              -- 文本向量维度 (384 / 768)
+    image_dim         INTEGER NOT NULL,              -- 视觉向量维度 (512 / 768)
+    status            TEXT NOT NULL CHECK (status IN ('building', 'serving', 'retired', 'cancelled')),
+    created_at        INTEGER NOT NULL,              -- 创建时间戳 (ms)
+    reindex_cursor    TEXT                           -- 续跑游标 (JSON)
+  );
+
+  -- 独占排他槽位唯一激活约束 (白名单硬核过滤，杜绝通过篡改 slot_policy 绕过防双活)
+  CREATE UNIQUE INDEX IF NOT EXISTS ux_exclusive_active_slot
+  ON builtin_modules(capability_slot)
+  WHERE install_state = 'active'
+    AND capability_slot IN ('base_embedding', 'asr', 'tts', 'perception_nsfw', 'perception_face');
+
+  -- 全机同时至多一个 serving 状态向量代际
+  CREATE UNIQUE INDEX IF NOT EXISTS ux_one_serving_epoch
+  ON embedding_epochs(status)
+  WHERE status = 'serving';
+
+  -- 全机同时至多一个 building 状态向量代际 (单飞熔断防并发重建冲突)
+  CREATE UNIQUE INDEX IF NOT EXISTS ux_one_building_epoch
+  ON embedding_epochs(status)
+  WHERE status = 'building';
 
 
   -- 17. FTS5 全文搜索虚拟表（标准独立存储表）
