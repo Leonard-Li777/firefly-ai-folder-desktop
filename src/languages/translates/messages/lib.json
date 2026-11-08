@@ -139,7 +139,7 @@
     "de-DE": "Ozeanblau",
     "fr-FR": "Bleu océan",
     "ko-KR": "오션 블루",
-    "$files": ["src/renderer/lib/theme-config.ts(604-611)"],
+    "$files": ["src/renderer/lib/theme-config.ts(843-850)"],
     "$id": 4620
   },
   "极光紫": {
@@ -152,7 +152,7 @@
     "de-DE": "Aurora lila",
     "fr-FR": "Aurore violette",
     "ko-KR": "오로라 보라색",
-    "$files": ["src/renderer/lib/theme-config.ts(2300-2307)"],
+    "$files": ["src/renderer/lib/theme-config.ts(2539-2546)"],
     "$id": 4621
   },
   "薄荷绿": {
@@ -165,7 +165,7 @@
     "de-DE": "Mintgrün",
     "fr-FR": "Vert menthe",
     "ko-KR": "민트 그린",
-    "$files": ["src/renderer/lib/theme-config.ts(3983-3990)"],
+    "$files": ["src/renderer/lib/theme-config.ts(4222-4229)"],
     "$id": 4622
   },
   "琥珀金": {
@@ -178,7 +178,7 @@
     "de-DE": "Bernsteingold",
     "fr-FR": "Ambre or",
     "ko-KR": "앰버 골드",
-    "$files": ["src/renderer/lib/theme-config.ts(5662-5669)"],
+    "$files": ["src/renderer/lib/theme-config.ts(5901-5908)"],
     "$id": 4623
   },
   "珊瑚红": {
@@ -191,7 +191,7 @@
     "de-DE": "Korallenrot",
     "fr-FR": "Rouge corail",
     "ko-KR": "산호 레드",
-    "$files": ["src/renderer/lib/theme-config.ts(7307-7314)"],
+    "$files": ["src/renderer/lib/theme-config.ts(7546-7553)"],
     "$id": 4624
   },
   "极客灰": {
@@ -204,7 +204,7 @@
     "de-DE": "Geek grau",
     "fr-FR": "Gris geek",
     "ko-KR": "괴짜 회색",
-    "$files": ["src/renderer/lib/theme-config.ts(8999-9006)"],
+    "$files": ["src/renderer/lib/theme-config.ts(9238-9245)"],
     "$id": 4625
   }
 }

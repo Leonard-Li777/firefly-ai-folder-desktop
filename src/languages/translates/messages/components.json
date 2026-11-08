@@ -1,7 +1,7 @@
 {
   "Firefly 官方": {
     "en-US": "Firefly official",
-    "es-ES": "oficial de luciérnaga",
+    "es-ES": "Oficial de luciérnaga",
     "ar-EG": "مسؤول اليراع",
     "pt-PT": "Oficial do vaga-lume",
     "ru-RU": "Официальный представитель Firefly",
@@ -25,9 +25,7 @@
     "de-DE": "Community-Beiträge (nicht vom Autor bereitgestellt)",
     "fr-FR": "Contributions de la communauté (non fournies par l'auteur)",
     "ko-KR": "커뮤니티 기여(작성자가 제공하지 않음)",
-    "$files": [
-      "src/renderer/components/plugin-center/format-plugin-author.ts(368-383)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/format-plugin-author.ts(368-383)"],
     "$id": 22971
   },
   "第三方插件（作者未提供）": {
@@ -40,14 +38,12 @@
     "de-DE": "Plug-Ins von Drittanbietern (nicht vom Autor bereitgestellt)",
     "fr-FR": "Plugins tiers (non fournis par l'auteur)",
     "ko-KR": "타사 플러그인(저작자가 제공하지 않음)",
-    "$files": [
-      "src/renderer/components/plugin-center/format-plugin-author.ts(421-437)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/format-plugin-author.ts(421-437)"],
     "$id": 22972
   },
   "AI 引擎": {
     "en-US": "AI engine",
-    "es-ES": "motor de IA",
+    "es-ES": "Motor de IA",
     "ar-EG": "محرك الذكاء الاصطناعي",
     "pt-PT": "Motor de IA",
     "ru-RU": "движок искусственного интеллекта",
@@ -57,7 +53,7 @@
     "ko-KR": "AI 엔진",
     "$files": [
       "src/renderer/components/plugin-center/PluginCard.tsx(2483-2492)",
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(2589-2598)"
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3037-3046)"
     ],
     "$id": 22973
   },
@@ -73,23 +69,23 @@
     "ko-KR": "지각 분석",
     "$files": [
       "src/renderer/components/plugin-center/PluginCard.tsx(2534-2542)",
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(2636-2644)"
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3084-3092)"
     ],
     "$id": 22974
   },
   "多媒体": {
-    "en-US": "multimedia",
-    "es-ES": "multimedia",
+    "en-US": "Multimedia",
+    "es-ES": "Multimedia",
     "ar-EG": "الوسائط المتعددة",
-    "pt-PT": "multimídia",
+    "pt-PT": "Multimídia",
     "ru-RU": "мультимедиа",
     "ja-JP": "マルチメディア",
     "de-DE": "Multimedia",
-    "fr-FR": "multimédia",
+    "fr-FR": "Multimédia",
     "ko-KR": "멀티미디어",
     "$files": [
       "src/renderer/components/plugin-center/PluginCard.tsx(2579-2586)",
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(2677-2684)"
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3125-3132)"
     ],
     "$id": 22975
   },
@@ -105,7 +101,7 @@
     "ko-KR": "형식 분석",
     "$files": [
       "src/renderer/components/plugin-center/PluginCard.tsx(2624-2632)",
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(2718-2726)"
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3166-3174)"
     ],
     "$id": 22976
   },
@@ -119,9 +115,7 @@
     "de-DE": "Archivspeicher",
     "fr-FR": "Stockage d'archives",
     "ko-KR": "아카이브 스토리지",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCard.tsx(2675-2683)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCard.tsx(2675-2683)"],
     "$id": 22977
   },
   "工具扩展": {
@@ -134,9 +128,7 @@
     "de-DE": "Werkzeugerweiterungen",
     "fr-FR": "Extensions d'outils",
     "ko-KR": "도구 확장",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCard.tsx(2715-2723)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCard.tsx(2715-2723)"],
     "$id": 22978
   },
   "安装包总体积": {
@@ -149,9 +141,7 @@
     "de-DE": "Das Gesamtvolumen des Installationspakets",
     "fr-FR": "Le volume total du package d'installation",
     "ko-KR": "설치 패키지의 총 볼륨",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCard.tsx(3078-3088)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCard.tsx(3078-3088)"],
     "$id": 22979
   },
   "即将推出": {
@@ -180,9 +170,7 @@
     "de-DE": "Diese Fähigkeit wird lokal angepasst",
     "fr-FR": "Cette capacité est en cours d'adaptation localement",
     "ko-KR": "이 기능은 로컬로 조정되고 있습니다.",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCard.tsx(6303-6318)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCard.tsx(6303-6318)"],
     "$id": 22981
   },
   "正在下载安装包...": {
@@ -195,9 +183,7 @@
     "de-DE": "Installationspaket wird heruntergeladen...",
     "fr-FR": "Téléchargement du package d'installation...",
     "ko-KR": "설치 패키지 다운로드 중...",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCard.tsx(6944-6958)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCard.tsx(6944-6958)"],
     "$id": 22982
   },
   "断点续传": {
@@ -210,9 +196,7 @@
     "de-DE": "Setzen Sie den Upload vom Haltepunkt fort",
     "fr-FR": "Reprendre le téléchargement à partir du point d'arrêt",
     "ko-KR": "중단점에서 업로드 재개",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCard.tsx(7237-7245)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCard.tsx(7237-7245)"],
     "$id": 22983
   },
   "已启用": {
@@ -257,9 +241,7 @@
     "de-DE": "Konfiguration",
     "fr-FR": "Configuration",
     "ko-KR": "구성",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCard.tsx(8879-8885)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCard.tsx(8879-8885)"],
     "$id": 22986
   },
   "安装失败": {
@@ -272,9 +254,7 @@
     "de-DE": "Die Installation ist fehlgeschlagen",
     "fr-FR": "L'installation a échoué",
     "ko-KR": "설치 실패",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCard.tsx(9171-9179)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCard.tsx(9171-9179)"],
     "$id": 22987
   },
   "重试": {
@@ -287,9 +267,7 @@
     "de-DE": "Wiederholen",
     "fr-FR": "Réessayer",
     "ko-KR": "재시도",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCard.tsx(9495-9501)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCard.tsx(9495-9501)"],
     "$id": 22988
   },
   "未安装扩展模块": {
@@ -302,9 +280,7 @@
     "de-DE": "Erweiterungsmodul nicht installiert",
     "fr-FR": "Module d'extension non installé",
     "ko-KR": "확장 모듈이 설치되지 않았습니다.",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCard.tsx(9718-9729)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCard.tsx(9718-9729)"],
     "$id": 22989
   },
   "下载安装": {
@@ -317,9 +293,7 @@
     "de-DE": "Herunterladen und installieren",
     "fr-FR": "Téléchargez et installez",
     "ko-KR": "다운로드 및 설치",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCard.tsx(10070-10078)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCard.tsx(10070-10078)"],
     "$id": 22990
   },
   "全部插件": {
@@ -332,9 +306,7 @@
     "de-DE": "Alle Plugins",
     "fr-FR": "Tous les plugins",
     "ko-KR": "모든 플러그인",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(2544-2552)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(2992-3000)"],
     "$id": 22991
   },
   "配置格式错误，必须为合法的 JSON 格式字符串": {
@@ -347,9 +319,7 @@
     "de-DE": "Konfigurationsformatfehler, es muss sich um eine zulässige JSON-Formatzeichenfolge handeln",
     "fr-FR": "Erreur de format de configuration. Il doit s'agir d'une chaîne au format JSON légal.",
     "ko-KR": "구성 형식 오류입니다. 올바른 JSON 형식 문자열이어야 합니다.",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(4106-4134)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(4554-4582)"],
     "$id": 22992
   },
   "返回插件列表": {
@@ -362,24 +332,20 @@
     "de-DE": "Zurück zur Plugin-Liste",
     "fr-FR": "Revenir à la liste des plugins",
     "ko-KR": "플러그인 목록으로 돌아가기",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(5713-5723)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(6161-6171)"],
     "$id": 22993
   },
   "返回": {
-    "en-US": "return",
-    "es-ES": "devolver",
+    "en-US": "Return",
+    "es-ES": "Devolver",
     "ar-EG": "يعود",
-    "pt-PT": "retornar",
+    "pt-PT": "Retornar",
     "ru-RU": "возвращаться",
     "ja-JP": "戻る",
-    "de-DE": "zurückkehren",
-    "fr-FR": "retour",
+    "de-DE": "Zurückkehren",
+    "fr-FR": "Retour",
     "ko-KR": "반품",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(5817-5823)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(6265-6271)"],
     "$id": 22994
   },
   "插件中心": {
@@ -392,9 +358,7 @@
     "de-DE": "Plug-in-Center",
     "fr-FR": "Centre de plug-ins",
     "ko-KR": "플러그인 센터",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(6047-6055)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(6495-6503)"],
     "$id": 22995
   },
   "配置插件运行时参数与专有模型通道": {
@@ -407,9 +371,7 @@
     "de-DE": "Konfigurieren Sie Plug-in-Laufzeitparameter und proprietäre Modellkanäle",
     "fr-FR": "Configurer les paramètres d'exécution du plug-in et les canaux de modèle propriétaires",
     "ko-KR": "플러그인 런타임 매개변수 및 독점 모델 채널 구성",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(6569-6589)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(7017-7037)"],
     "$id": 22996
   },
   "管理本地 AI 引擎、离线多媒体工具与格式解析扩展能力": {
@@ -422,9 +384,7 @@
     "de-DE": "Verwalten Sie die lokale KI-Engine, Offline-Multimedia-Tools und Format-Parsing-Erweiterungsfunktionen",
     "fr-FR": "Gérez le moteur d'IA local, les outils multimédias hors ligne et les capacités d'extension d'analyse de format.",
     "ko-KR": "로컬 AI 엔진, 오프라인 멀티미디어 도구 및 형식 구문 분석 확장 기능을 관리합니다.",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(6611-6642)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(7059-7090)"],
     "$id": 22997
   },
   "本地高级 AI 推理引擎配置": {
@@ -437,9 +397,7 @@
     "de-DE": "Lokale erweiterte KI-Inferenz-Engine-Konfiguration",
     "fr-FR": "Configuration du moteur d'inférence IA avancé local",
     "ko-KR": "로컬 고급 AI 추론 엔진 구성",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(7350-7368)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(7798-7816)"],
     "$id": 22998
   },
   "离线语音合成与发音人管理": {
@@ -452,9 +410,7 @@
     "de-DE": "Offline-Sprachsynthese und Sprecherverwaltung",
     "fr-FR": "Synthèse vocale hors ligne et gestion des locuteurs",
     "ko-KR": "오프라인 음성 합성 및 스피커 관리",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(8084-8100)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(8532-8548)"],
     "$id": 22999
   },
   "插件个性化配置项 (JSON Schema)": {
@@ -467,9 +423,7 @@
     "de-DE": "Plug-in-personalisierte Konfigurationselemente (JSON-Schema)",
     "fr-FR": "Éléments de configuration personnalisés du plug-in (schéma JSON)",
     "ko-KR": "플러그인 개인화 구성 항목(JSON 스키마)",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(8809-8835)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(9257-9283)"],
     "$id": 23000
   },
   "该模块支持通过标准 JSON 配置调整运行行为。所有配置将持久化存入系统主库 user_config 字段。": {
@@ -482,9 +436,7 @@
     "de-DE": "Dieses Modul unterstützt die Anpassung des Laufzeitverhaltens über die Standard-JSON-Konfiguration. Alle Konfigurationen werden dauerhaft im Feld user_config der Hauptsystembibliothek gespeichert.",
     "fr-FR": "Ce module prend en charge l'ajustement du comportement d'exécution via la configuration JSON standard. Toutes les configurations seront stockées de manière persistante dans le champ user_config de la bibliothèque système principale.",
     "ko-KR": "이 모듈은 표준 JSON 구성을 통해 런타임 동작 조정을 지원합니다. 모든 구성은 기본 시스템 라이브러리의 user_config 필드에 영구적으로 저장됩니다.",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(8971-9052)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(9419-9500)"],
     "$id": 23001
   },
   "取消": {
@@ -497,9 +449,7 @@
     "de-DE": "Abbrechen",
     "fr-FR": "Annuler",
     "ko-KR": "취소",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(10402-10408)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(10850-10856)"],
     "$id": 23002
   },
   "保存配置": {
@@ -512,9 +462,7 @@
     "de-DE": "Konfiguration speichern",
     "fr-FR": "Enregistrer la configuration",
     "ko-KR": "구성 저장",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(10550-10558)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(10998-11006)"],
     "$id": 23003
   },
   "搜索插件名称或描述...": {
@@ -527,9 +475,7 @@
     "de-DE": "Nach Name oder Beschreibung des Plugins suchen...",
     "fr-FR": "Rechercher le nom ou la description du plugin...",
     "ko-KR": "플러그인 이름 또는 설명 검색...",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(12270-12286)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(12718-12734)"],
     "$id": 23004
   },
   "未找到匹配的插件模块": {
@@ -542,9 +488,7 @@
     "de-DE": "Kein passendes Plugin-Modul gefunden",
     "fr-FR": "Aucun module de plugin correspondant trouvé",
     "ko-KR": "일치하는 플러그인 모듈을 찾을 수 없습니다.",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(12852-12866)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(13300-13314)"],
     "$id": 23005
   },
   "请尝试切换分类或使用更简短的关键词搜索": {
@@ -557,9 +501,7 @@
     "de-DE": "Versuchen Sie bitte, die Kategorien zu wechseln oder eine kürzere Stichwortsuche zu verwenden",
     "fr-FR": "Veuillez essayer de changer de catégorie ou d'utiliser une recherche par mot clé plus courte.",
     "ko-KR": "카테고리를 전환하거나 더 짧은 키워드 검색을 사용해 보세요.",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(12952-12975)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(13400-13423)"],
     "$id": 23006
   },
   "已加载 {total} 个内置与扩展模块": {
@@ -572,9 +514,7 @@
     "de-DE": "{total} integrierte und Erweiterungsmodule geladen",
     "fr-FR": "{total} modules intégrés et d'extension chargés",
     "ko-KR": "{total} 내장 및 확장 모듈이 로드됨",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(13887-13911)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(14335-14359)"],
     "$id": 23007
   },
   "纯本地离线推理 · 零隐私数据回传": {
@@ -587,9 +527,7 @@
     "de-DE": "Rein lokale Offline-Inferenz · Daten-Backhaul ohne Datenschutz",
     "fr-FR": "Inférence hors ligne purement locale · Liaison de données sans confidentialité",
     "ko-KR": "순수 로컬 오프라인 추론 · 개인정보 데이터 백홀 없음",
-    "$files": [
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(13991-14012)"
-    ],
+    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(14439-14460)"],
     "$id": 23008
   },
   "重要版本更新提示": {
@@ -602,9 +540,7 @@
     "de-DE": "Wichtige Versionshinweise",
     "fr-FR": "Avis de mise à jour majeure",
     "ko-KR": "중요 버전 업데이트 알림",
-    "$files": [
-      "src/renderer/components/update/UpdateNotification.tsx(3035-3047)"
-    ],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(3035-3047)"],
     "$id": 21098
   },
   "检测到应用存在重大架构或协议演进，当前版本已无法继续提供基础服务，必须升级至 v{version} 即可恢复使用。": {
@@ -617,9 +553,7 @@
     "de-DE": "Es wurde eine wesentliche architektonische oder protokollbezogene Weiterentwicklung der App festgestellt. Die aktuelle Version kann die Basisservices nicht mehr bereitstellen; ein Upgrade auf v{version} ist erforderlich, um die Nutzung wieder aufzunehmen.",
     "fr-FR": "Une évolution importante de l'architecture ou du protocole a été détectée ; la version actuelle ne peut plus fournir les services de base. Il est impératif de mettre à niveau vers v{version} pour rétablir le fonctionnement.",
     "ko-KR": "앱에 중요한 아키텍처 또는 프로토콜 진화가 감지되어, 현재 버전으로는 기본 서비스를 더 ��상 제공할 수 없으며 v{version}으로 업그레이드해야만 사용이 복구됩니다.",
-    "$files": [
-      "src/renderer/components/update/UpdateNotification.tsx(3177-3238)"
-    ],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(3177-3238)"],
     "$id": 21099
   },
   "正在差分增量下载...": {
@@ -632,9 +566,7 @@
     "de-DE": "Differenzielle Zuzugsübertragung wird geladen...",
     "fr-FR": "Téléchargement incrémental par différences en cours...",
     "ko-KR": "차등 증분 다운로드 중...",
-    "$files": [
-      "src/renderer/components/update/UpdateNotification.tsx(3815-3830)"
-    ],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(3815-3830)"],
     "$id": 21100
   },
   "速度: {speed}/s": {
@@ -647,9 +579,7 @@
     "de-DE": "Geschwindigkeit: {speed}/s",
     "fr-FR": "Vitesse : {speed}/s",
     "ko-KR": "속도: {speed}/s",
-    "$files": [
-      "src/renderer/components/update/UpdateNotification.tsx(4416-4433)"
-    ],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(4416-4433)"],
     "$id": 21101
   },
   "更新包下载遇到网络障碍": {
@@ -662,9 +592,7 @@
     "de-DE": "Netzwerkausfall beim Herunterladen des Update-Pakets",
     "fr-FR": "Obstacle réseau rencontré lors du téléchargement du paquet de mise à jour",
     "ko-KR": "업데이트 패키지 다운로드 중 네트워크 장애 발생",
-    "$files": [
-      "src/renderer/components/update/UpdateNotification.tsx(4905-4920)"
-    ],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(4905-4920)"],
     "$id": 21102
   },
   "网络连接超时或不可达": {
@@ -677,9 +605,7 @@
     "de-DE": "Netzwerkzeitüberschreitung oder nicht erreichbar",
     "fr-FR": "Délai d'attente d'expiration de la connexion ou réseau inatteignable",
     "ko-KR": "네트워크 연결 시간 초과 또는 접근 불가",
-    "$files": [
-      "src/renderer/components/update/UpdateNotification.tsx(4987-5001)"
-    ],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(4987-5001)"],
     "$id": 21103
   },
   "正在准备覆盖安装...": {
@@ -692,9 +618,7 @@
     "de-DE": "Aufbereiten des Überlagerungshinweises...",
     "fr-FR": "Préparation de l'installation par écrasement en cours...",
     "ko-KR": "자동 덮어쓰기 설치 준비 중...",
-    "$files": [
-      "src/renderer/components/update/UpdateNotification.tsx(5629-5644)"
-    ],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(5629-5644)"],
     "$id": 21104
   },
   "立即重启并生效": {
@@ -707,9 +631,7 @@
     "de-DE": "Sofort neu starten und aktivieren",
     "fr-FR": "Redémarrer immédiatement pour appliquer les changements",
     "ko-KR": "즉시 재시작하여 적용",
-    "$files": [
-      "src/renderer/components/update/UpdateNotification.tsx(5648-5659)"
-    ],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(5648-5659)"],
     "$id": 21105
   },
   "正在重新探测...": {
@@ -722,9 +644,7 @@
     "de-DE": "Neuer Suchvorgang läuft...",
     "fr-FR": "Nouvelle détection en cours...",
     "ko-KR": "재탐색 중...",
-    "$files": [
-      "src/renderer/components/update/UpdateNotification.tsx(6258-6271)"
-    ],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(6258-6271)"],
     "$id": 21106
   },
   "重试连接": {
@@ -737,9 +657,7 @@
     "de-DE": "Verbindung erneut herstellen",
     "fr-FR": "Tenter de reconnecter",
     "ko-KR": "연결 재시도",
-    "$files": [
-      "src/renderer/components/update/UpdateNotification.tsx(6275-6283)"
-    ],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(6275-6283)"],
     "$id": 21107
   },
   "正在高速下载更新包...": {
@@ -752,9 +670,7 @@
     "de-DE": "Update-Paket wird mit hoher Geschwindigkeit heruntergeladen...",
     "fr-FR": "Téléchargement accéléré du paquet de mise à jour en cours...",
     "ko-KR": "고속으로 업데이트 패키지 다운로드 중...",
-    "$files": [
-      "src/renderer/components/update/UpdateNotification.tsx(6514-6530)"
-    ],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(6514-6530)"],
     "$id": 21108
   },
   "官网手动下载": {
@@ -767,9 +683,7 @@
     "de-DE": "Website manuell herunterladen",
     "fr-FR": "Téléchargement manuel depuis le site officiel",
     "ko-KR": "공식 웹사이트에서 수동으로 다운로드",
-    "$files": [
-      "src/renderer/components/update/UpdateNotification.tsx(6878-6888)"
-    ],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(6878-6888)"],
     "$id": 21109
   },
   "退出应用": {
@@ -782,9 +696,7 @@
     "de-DE": "App beenden",
     "fr-FR": "Quitter l'application",
     "ko-KR": "앱에서 종료",
-    "$files": [
-      "src/renderer/components/update/UpdateNotification.tsx(7558-7566)"
-    ],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(7558-7566)"],
     "$id": 21110
   },
   "新版本已就绪": {
@@ -797,9 +709,7 @@
     "de-DE": "Neue Version bereit",
     "fr-FR": "Nouvelle version prête",
     "ko-KR": "새 버전이 준비되었습니다",
-    "$files": [
-      "src/renderer/components/update/UpdateNotification.tsx(8608-8618)"
-    ],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(8608-8618)"],
     "$id": 21111
   },
   "正在后台下载新版本": {
@@ -812,9 +722,7 @@
     "de-DE": "Neue Version wird im Hintergrund heruntergeladen",
     "fr-FR": "Téléchargement de la nouvelle version en arrière-plan",
     "ko-KR": "백그라운드로 새 버전 다운로드 중",
-    "$files": [
-      "src/renderer/components/update/UpdateNotification.tsx(8622-8635)"
-    ],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(8622-8635)"],
     "$id": 21112
   },
   "关闭": {
@@ -827,9 +735,7 @@
     "de-DE": "Schließen",
     "fr-FR": "Fermer",
     "ko-KR": "닫기",
-    "$files": [
-      "src/renderer/components/update/UpdateNotification.tsx(8852-8858)"
-    ],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(8852-8858)"],
     "$id": 21113
   },
   "萤核智能文件夹 v{version} 已下载完成，可立即重启更新或在下次启动时自动应用。": {
@@ -842,9 +748,7 @@
     "de-DE": "Firefly AI Folder v{version} wurde erfolgreich heruntergeladen. Sie können sofort neu starten, um das Update anzuwenden, oder es beim nächsten Start automatisch anwenden.",
     "fr-FR": "Le téléchargement de Firefly AI Folder v{version} est terminé. Vous pouvez redémarrer immédiatement pour mettre à jour ou appliquer automatiquement la mise à jour au prochain démarrage.",
     "ko-KR": "Firefly AI Folder v{version} 다운로드 완료. 즉시 재시작하여 업데이트하거나 다음 시작 시 자동 적용할 수 있습니다.",
-    "$files": [
-      "src/renderer/components/update/UpdateNotification.tsx(9097-9145)"
-    ],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(9097-9145)"],
     "$id": 21114
   },
   "正在为您拉取最新版本 v{version} 增量差分更新包...": {
@@ -857,9 +761,7 @@
     "de-DE": "Erstelle nun das inkrementelle Delta-Updatepaket für die neueste Version v{version} für Sie...",
     "fr-FR": "Téléchargement du paquet de mise à jour différentielle incrémentielle v{version}...",
     "ko-KR": "최신 버전 v{version} 증분 차등 업데이트 패키지를 가져오는 중...",
-    "$files": [
-      "src/renderer/components/update/UpdateNotification.tsx(9270-9306)"
-    ],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(9270-9306)"],
     "$id": 21115
   },
   "下次启动生效": {
@@ -872,9 +774,7 @@
     "de-DE": "Wirkt beim nächsten Start",
     "fr-FR": "Prise d'effet au prochain démarrage",
     "ko-KR": "다음 시작 시 적용",
-    "$files": [
-      "src/renderer/components/update/UpdateNotification.tsx(10369-10379)"
-    ],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(10369-10379)"],
     "$id": 21116
   },
   "立即重启更新": {
@@ -887,9 +787,7 @@
     "de-DE": "Sofort neu starten",
     "fr-FR": "Redémarrer immédiatement pour mettre à jour",
     "ko-KR": "즉시 재시작하여 업데이트",
-    "$files": [
-      "src/renderer/components/update/UpdateNotification.tsx(10727-10737)"
-    ],
+    "$files": ["src/renderer/components/update/UpdateNotification.tsx(10727-10737)"],
     "$id": 21117
   }
 }

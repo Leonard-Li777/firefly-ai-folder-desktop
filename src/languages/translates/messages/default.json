@@ -190,7 +190,8 @@
     "fr-FR": "L'interface n'existe pas",
     "ko-KR": "인터페이스가 존재하지 않습니다",
     "$files": [
-      "src/electron/runtime-services/ai-skill-api-service.ts(1826-1835)"
+      "src/electron/runtime-services/ai-skill-api-service.ts(7883-7892)",
+      "src/electron/runtime-services/ai-skill-api-service.ts(9797-9806)"
     ],
     "$id": 9521
   },
@@ -205,24 +206,84 @@
     "fr-FR": "Fichier introuvable",
     "ko-KR": "파일을 찾을 수 없습니다",
     "$files": [
-      "src/electron/runtime-services/ai-skill-api-service.ts(11486-11495)"
+      "src/electron/runtime-services/ai-skill-api-service.ts(16749-16758)"
     ],
     "$id": 7629
   },
-  "缺少 filePath 参数": {
-    "en-US": "FilePath parameter missing",
-    "es-ES": "Falta el parámetro filePath",
-    "ar-EG": "معلمة filePath مفقودة",
-    "pt-PT": "Parâmetro filePath ausente",
-    "ru-RU": "параметр filePath отсутствует",
-    "ja-JP": "filePathパラメータがありません",
-    "de-DE": "FilePath-Parameter fehlt",
-    "fr-FR": "Paramètre filePath manquant",
-    "ko-KR": "filePath 매개변수가 누락되었습니다.",
+  "缺少必填字段: filePath": {
+    "en-US": "Missing required field: filePath",
+    "es-ES": "Falta el campo obligatorio: filePath",
+    "ar-EG": "الحقل المطلوب مفقود: filePath",
+    "pt-PT": "Campo obrigatório ausente: filePath",
+    "ru-RU": "Отсутствует обязательное поле: filePath.",
+    "ja-JP": "必須フィールドが欠落しています: filePath",
+    "de-DE": "Fehlendes Pflichtfeld: filePath",
+    "fr-FR": "Champ obligatoire manquant : filePath",
+    "ko-KR": "필수 필드 누락: filePath",
     "$files": [
-      "src/electron/runtime-services/ai-skill-api-service.ts(12154-12172)"
+      "src/electron/runtime-services/ai-skill-api-service.ts(17502-17522)"
     ],
-    "$id": 9446
+    "$id": 26598
+  },
+  "搜索关键词不能为空": {
+    "en-US": "Search keyword cannot be empty",
+    "es-ES": "La palabra clave de búsqueda no puede estar vacía",
+    "ar-EG": "لا يمكن أن تكون الكلمة الأساسية للبحث فارغة",
+    "pt-PT": "A palavra-chave de pesquisa não pode ficar vazia",
+    "ru-RU": "Ключевое слово для поиска не может быть пустым.",
+    "ja-JP": "検索キーワードを空にすることはできません",
+    "de-DE": "Der Suchbegriff darf nicht leer sein",
+    "fr-FR": "Le mot-clé de recherche ne peut pas être vide",
+    "ko-KR": "검색 키워드는 비워둘 수 없습니다.",
+    "$files": [
+      "src/electron/runtime-services/ai-skill-api-service.ts(18457-18470)"
+    ],
+    "$id": 26647
+  },
+  "无效的搜索模式，仅支持 final 或 stream": {
+    "en-US": "Invalid search mode, only final or stream is supported",
+    "es-ES": "Modo de búsqueda no válido, solo se admite final o transmisión",
+    "ar-EG": "وضع البحث غير صالح، يتم دعم النهائي أو الدفق فقط",
+    "pt-PT": "Modo de pesquisa inválido, apenas final ou stream são suportados",
+    "ru-RU": "Неверный режим поиска, поддерживается только финал или поток.",
+    "ja-JP": "無効な検索モードです。ファイナルまたはストリームのみがサポートされています",
+    "de-DE": "Ungültiger Suchmodus, nur Final oder Stream wird unterstützt",
+    "fr-FR": "Mode de recherche invalide, seul final ou stream est pris en charge",
+    "ko-KR": "검색 모드가 잘못되었습니다. 최종 또는 스트림만 지원됩니다.",
+    "$files": [
+      "src/electron/runtime-services/ai-skill-api-service.ts(18659-18689)"
+    ],
+    "$id": 26666
+  },
+  "无效的搜索范围，仅支持 real、virtual 或 all": {
+    "en-US": "Invalid search scope, only real, virtual or all supported",
+    "es-ES": "Alcance de búsqueda no válido, solo se admite real, virtual o todos",
+    "ar-EG": "نطاق البحث غير صالح، فقط حقيقي أو افتراضي أو جميعها مدعومة",
+    "pt-PT": "Escopo de pesquisa inválido, apenas real, virtual ou totalmente compatível",
+    "ru-RU": "Неверная область поиска: только реальная, виртуальная или все поддерживаемые.",
+    "ja-JP": "検索範囲が無効です。実、仮想、またはすべてがサポートされています",
+    "de-DE": "Ungültiger Suchbereich, nur real, virtuell oder alle werden unterstützt",
+    "fr-FR": "Champ de recherche non valide, uniquement réel, virtuel ou tous pris en charge",
+    "ko-KR": "검색 범위가 잘못되었습니다. 실제, 가상 또는 모두 지원됩니다.",
+    "$files": [
+      "src/electron/runtime-services/ai-skill-api-service.ts(18900-18934)"
+    ],
+    "$id": 26667
+  },
+  "工作区不存在": {
+    "en-US": "Workspace does not exist",
+    "es-ES": "El espacio de trabajo no existe",
+    "ar-EG": "مساحة العمل غير موجودة",
+    "pt-PT": "O espaço de trabalho não existe",
+    "ru-RU": "Рабочее пространство не существует",
+    "ja-JP": "ワークスペースが存在しません",
+    "de-DE": "Arbeitsbereich existiert nicht",
+    "fr-FR": "L'espace de travail n'existe pas",
+    "ko-KR": "작업공간이 존재하지 않습니다.",
+    "$files": [
+      "src/electron/runtime-services/ai-skill-api-service.ts(19595-19605)"
+    ],
+    "$id": 26675
   },
   "响应序列化失败": {
     "en-US": "Response serialization failed",
@@ -235,8 +296,8 @@
     "fr-FR": "La sérialisation de la réponse a échoué",
     "ko-KR": "응답 직렬화 실패",
     "$files": [
-      "src/electron/runtime-services/ai-skill-api-service.ts(17025-17036)",
-      "src/electron/runtime-services/ai-skill-api-service.ts(17742-17753)"
+      "src/electron/runtime-services/ai-skill-api-service.ts(27690-27701)",
+      "src/electron/runtime-services/ai-skill-api-service.ts(28442-28453)"
     ],
     "$id": 7631
   },
@@ -741,7 +802,7 @@
   },
   "Firefly 官方": {
     "en-US": "Firefly official",
-    "es-ES": "oficial de luciérnaga",
+    "es-ES": "Oficial de luciérnaga",
     "ar-EG": "مسؤول اليراع",
     "pt-PT": "Oficial do vaga-lume",
     "ru-RU": "Официальный представитель Firefly",
@@ -826,7 +887,7 @@
     "fr-FR": "Ce répertoire a été créé en tant que {typeName}",
     "ko-KR": "해당 디렉토리가 {typeName}(으)로 생성되었습니다",
     "$files": [
-      "src/electron/runtime-services/database/dao/workspace-dao.ts(6538-6559)"
+      "src/electron/runtime-services/database/dao/workspace-dao.ts(6690-6711)"
     ],
     "$id": 8124
   }

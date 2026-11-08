@@ -5,7 +5,7 @@
   "models": [
     {
       "id": "saidutta69/LFM3-VL-2B-heretic:Q4_K_M",
-      "name": "LFM3-VL 2B Heretic（越狱识图）",
+      "name": "LFM3-VL 2B Heretic（탈옥 이미지 인식）",
       "company": "saidutta69",
       "parameterSize": "2B",
       "intelligenceLevel": 3,
@@ -14,7 +14,7 @@
       "mmprojSize": "361MB",
       "totalSize": "1.38GB",
       "recommended": true,
-      "description": "LFM3-VL 2B 越狱微调多模态模型，体积轻量，支持视觉与文本深度理解。",
+      "description": "LFM3-VL 2B는 가볍고 심층적인 시각적 및 텍스트 이해를 지원하는 탈옥된 미세 조정 다중 모드 모델입니다.",
       "source": "huggingface",
       "quantization": "Q4_K_M",
       "isMultiModal": true,
@@ -31,7 +31,7 @@
         "경량",
         "다중 모드",
         "감옥 휴식",
-        "高性价比"
+        "높은 비용 성능"
       ],
       "recommendedConfig": {
         "numCtx": 8192,

@@ -5,7 +5,7 @@
   "models": [
     {
       "id": "saidutta69/LFM3-VL-2B-heretic:Q4_K_M",
-      "name": "LFM3-VL 2B Heretic（越狱识图）",
+      "name": "LFM3-VL 2B Heretic（Распознавание изображений с джейлбрейком）",
       "company": "saidutta69",
       "parameterSize": "2B",
       "intelligenceLevel": 3,
@@ -14,7 +14,7 @@
       "mmprojSize": "361MB",
       "totalSize": "1.38GB",
       "recommended": true,
-      "description": "LFM3-VL 2B 越狱微调多模态模型，体积轻量，支持视觉与文本深度理解。",
+      "description": "LFM3-VL 2B — это настроенная мультимодальная модель с джейлбрейком, легкая и поддерживающая глубокое визуальное и текстовое понимание.",
       "source": "huggingface",
       "quantization": "Q4_K_M",
       "isMultiModal": true,
@@ -31,7 +31,7 @@
         "легкий",
         "мультимодальный",
         "побег из тюрьмы",
-        "高性价比"
+        "Высокая стоимость исполнения"
       ],
       "recommendedConfig": {
         "numCtx": 8192,

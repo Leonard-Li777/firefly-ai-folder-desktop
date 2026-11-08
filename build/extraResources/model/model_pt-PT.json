@@ -5,7 +5,7 @@
   "models": [
     {
       "id": "saidutta69/LFM3-VL-2B-heretic:Q4_K_M",
-      "name": "LFM3-VL 2B Heretic（越狱识图）",
+      "name": "LFM3-VL 2B Heretic（Reconhecimento de imagem de jailbreak）",
       "company": "saidutta69",
       "parameterSize": "2B",
       "intelligenceLevel": 3,
@@ -14,7 +14,7 @@
       "mmprojSize": "361MB",
       "totalSize": "1.38GB",
       "recommended": true,
-      "description": "LFM3-VL 2B 越狱微调多模态模型，体积轻量，支持视觉与文本深度理解。",
+      "description": "LFM3-VL 2B é um modelo multimodal ajustado com jailbreak que é leve e suporta profunda compreensão visual e de texto.",
       "source": "huggingface",
       "quantization": "Q4_K_M",
       "isMultiModal": true,
@@ -31,7 +31,7 @@
         "Leve",
         "Multimodal",
         "Fuga da prisão",
-        "高性价比"
+        "Desempenho de alto custo"
       ],
       "recommendedConfig": {
         "numCtx": 8192,

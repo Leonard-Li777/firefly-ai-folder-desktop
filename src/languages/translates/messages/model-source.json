@@ -9,9 +9,7 @@
     "de-DE": "Jailbreak-Bilderkennung",
     "fr-FR": "Reconnaissance d'images jailbreakées",
     "ko-KR": "탈옥 이미지 인식",
-    "$files": [
-      "src/electron/config/model-source.ts(506-514)"
-    ],
+    "$files": ["src/electron/config/model-source.ts(506-514)"],
     "$id": 22921
   },
   "LFM3-VL 2B 越狱微调多模态模型，体积轻量，支持视觉与文本深度理解。": {
@@ -24,9 +22,7 @@
     "de-DE": "LFM3-VL 2B ist ein fein abgestimmtes multimodales Modell mit Jailbreak, das leichtgewichtig ist und ein tiefes Bild- und Textverständnis unterstützt.",
     "fr-FR": "LFM3-VL 2B est un modèle multimodal jailbreaké et affiné, léger et prenant en charge une compréhension visuelle et textuelle approfondie.",
     "ko-KR": "LFM3-VL 2B는 가볍고 심층적인 시각적 및 텍스트 이해를 지원하는 탈옥된 미세 조정 다중 모드 모델입니다.",
-    "$files": [
-      "src/electron/config/model-source.ts(771-813)"
-    ],
+    "$files": ["src/electron/config/model-source.ts(771-813)"],
     "$id": 22922
   },
   "轻量": {
@@ -123,9 +119,7 @@
     "de-DE": "Hohe Kostenleistung",
     "fr-FR": "Performances à coût élevé",
     "ko-KR": "높은 비용 성능",
-    "$files": [
-      "src/electron/config/model-source.ts(1102-1110)"
-    ],
+    "$files": ["src/electron/config/model-source.ts(1102-1110)"],
     "$id": 22923
   },
   "轻量识图": {
@@ -138,9 +132,7 @@
     "de-DE": "Leichte Bilderkennung",
     "fr-FR": "Reconnaissance d'image légère",
     "ko-KR": "경량 이미지 인식",
-    "$files": [
-      "src/electron/config/model-source.ts(1297-1305)"
-    ],
+    "$files": ["src/electron/config/model-source.ts(1297-1305)"],
     "$id": 9475
   },
   "智能最低，但能识图。": {
@@ -153,9 +145,7 @@
     "de-DE": "Die geringste Intelligenz, kann aber Bilder lesen.",
     "fr-FR": "L'intelligence la plus basse, mais peut lire des images.",
     "ko-KR": "지능은 가장 낮지만 그림을 읽을 수 있습니다.",
-    "$files": [
-      "src/electron/config/model-source.ts(1470-1484)"
-    ],
+    "$files": ["src/electron/config/model-source.ts(1470-1484)"],
     "$id": 20142
   },
   "支持CPU运行": {
@@ -186,9 +176,7 @@
     "de-DE": "Extreme Geschwindigkeit",
     "fr-FR": "Vitesse extrême",
     "ko-KR": "극한의 속도",
-    "$files": [
-      "src/electron/config/model-source.ts(1760-1766)"
-    ],
+    "$files": ["src/electron/config/model-source.ts(1760-1766)"],
     "$id": 11221
   },
   "仅文本": {
@@ -236,9 +224,7 @@
     "de-DE": "Kleine Größe",
     "fr-FR": "Petite taille",
     "ko-KR": "작은 사이즈",
-    "$files": [
-      "src/electron/config/model-source.ts(2020-2027)"
-    ],
+    "$files": ["src/electron/config/model-source.ts(2020-2027)"],
     "$id": 20143
   },
   "显存不足，又想正确分类文件，必须选我，唯一缺点仅支持文本。": {
@@ -251,9 +237,7 @@
     "de-DE": "Es ist nicht genügend Videospeicher vorhanden, und wenn Sie Dateien richtig klassifizieren möchten, müssen Sie mich auswählen. Der einzige Nachteil ist, dass es nur Text unterstützt.",
     "fr-FR": "La mémoire vidéo est insuffisante et si vous souhaitez classer correctement les fichiers, vous devez me choisir. Le seul inconvénient est qu'il ne supporte que le texte.",
     "ko-KR": "비디오 메모리가 부족하고 파일을 올바르게 분류하려면 나를 선택해야합니다. 유일한 단점은 텍스트 만 지원한다는 것입니다.",
-    "$files": [
-      "src/electron/config/model-source.ts(2191-2224)"
-    ],
+    "$files": ["src/electron/config/model-source.ts(2191-2224)"],
     "$id": 11379
   },
   "中文更佳": {
@@ -285,9 +269,7 @@
     "de-DE": "Es ist nicht genügend Videospeicher vorhanden, und wenn Sie Dateien richtig klassifizieren möchten, müssen Sie mich auswählen, um die Version einzuschränken (Abliteriert).",
     "fr-FR": "La mémoire vidéo est insuffisante, et si vous souhaitez classer correctement les fichiers, vous devez me choisir pour restreindre la version (Ablitérée).",
     "ko-KR": "이 불충분 한 비디오 메모리이며,제대로 파일을 분류 할 경우,당신은 버전을 제한하기 위해 저를 선택해야합니다(문자가없는).",
-    "$files": [
-      "src/electron/config/model-source.ts(2958-3000)"
-    ],
+    "$files": ["src/electron/config/model-source.ts(2958-3000)"],
     "$id": 11647
   },
   "去限制": {
@@ -335,9 +317,7 @@
     "de-DE": "MiniCPM5 1B wird verwendet, um die Version mit Jailbreak zu überprüfen. Es ist sehr klein und unterstützt nur die Textanalyse.",
     "fr-FR": "MiniCPM5 1B est utilisé pour revoir la version jailbreakée. Il est très petit et ne prend en charge que l'analyse de texte.",
     "ko-KR": "MiniCPM5 1B는 탈옥 버전을 검토하는 데 사용됩니다. 매우 작으며 텍스트 분석만 지원합니다.",
-    "$files": [
-      "src/electron/config/model-source.ts(3743-3780)"
-    ],
+    "$files": ["src/electron/config/model-source.ts(3743-3780)"],
     "$id": 20145
   },
   "MiniCPM5 1B 越狱思考版本，仅支持文本分析。": {
@@ -350,9 +330,7 @@
     "de-DE": "Die Jailbreak-Version von MiniCPM5 1B unterstützt nur die Textanalyse.",
     "fr-FR": "La version jailbreak MiniCPM5 1B ne prend en charge que l'analyse de texte.",
     "ko-KR": "MiniCPM5 1B 탈옥 버전은 텍스트 분석만 지원합니다.",
-    "$files": [
-      "src/electron/config/model-source.ts(4638-4669)"
-    ],
+    "$files": ["src/electron/config/model-source.ts(4638-4669)"],
     "$id": 20146
   },
   "支持音频": {
@@ -484,9 +462,7 @@
     "de-DE": "Allmächtig",
     "fr-FR": "Tout-Puissant",
     "ko-KR": "전능자",
-    "$files": [
-      "src/electron/config/model-source.ts(9051-9057)"
-    ],
+    "$files": ["src/electron/config/model-source.ts(9051-9057)"],
     "$id": 9483
   },
   "APEX 特化去审查版，优化的 I-Mini 量化。": {
@@ -499,9 +475,7 @@
     "de-DE": "Auf APEX spezialisierte, dezensierte Version, optimierte I-Mini-Quantisierung.",
     "fr-FR": "Version décensurée spécialisée APEX, quantification I-Mini optimisée.",
     "ko-KR": "APEX 전문 무검열 버전, 최적화된 I-Mini 양자화.",
-    "$files": [
-      "src/electron/config/model-source.ts(9305-9335)"
-    ],
+    "$files": ["src/electron/config/model-source.ts(9305-9335)"],
     "$id": 9664
   },
   "全能-主力": {
@@ -514,9 +488,7 @@
     "de-DE": "Allmächtig – Hauptkraft",
     "fr-FR": "Tout-Puissant - force principale",
     "ko-KR": "올마이티 - 주력",
-    "$files": [
-      "src/electron/config/model-source.ts(9837-9846)"
-    ],
+    "$files": ["src/electron/config/model-source.ts(9837-9846)"],
     "$id": 9485
   },
   "统一多模态QAT量化版，MoE架构极致省显存，支持文本、图像和音频分析。": {
@@ -529,9 +501,7 @@
     "de-DE": "Die einheitliche multimodale QAT-Quantifizierungsversion, die MoE-Architektur spart extrem Videospeicher und unterstützt Text-, Bild- und Audioanalyse.",
     "fr-FR": "Version quantifiée QAT multimodale unifiée, l'architecture MoE économise considérablement la mémoire vidéo, prend en charge l'analyse de texte, d'image et d'audio.",
     "ko-KR": "통합 다중 모드 QAT 정량화 버전인 MoE 아키텍처는 비디오 메모리를 대폭 절약하고 텍스트, 이미지 및 오디오 분석을 지원합니다.",
-    "$files": [
-      "src/electron/config/model-source.ts(10089-10129)"
-    ],
+    "$files": ["src/electron/config/model-source.ts(10089-10129)"],
     "$id": 9668
   },
   "QAT量化": {
@@ -576,9 +546,7 @@
     "de-DE": "Allround – hohe Geschwindigkeit",
     "fr-FR": "Polyvalent – ​​grande vitesse",
     "ko-KR": "만능 - 고속",
-    "$files": [
-      "src/electron/config/model-source.ts(10900-10909)"
-    ],
+    "$files": ["src/electron/config/model-source.ts(10900-10909)"],
     "$id": 9486
   },
   "全能力，外加MTP技术提速，目前为止不二之选的模型。": {
@@ -591,9 +559,7 @@
     "de-DE": "Mit allen Funktionen und der MTP-Technologie für Geschwindigkeit ist es bei weitem das beste Modell, das Sie wählen können.",
     "fr-FR": "Avec toutes ses capacités, ainsi que la technologie MTP pour la vitesse, c'est de loin le meilleur modèle à choisir.",
     "ko-KR": "모든 기능과 속도를 위한 MTP 기술을 갖춘 이 제품은 단연 최고의 모델입니다.",
-    "$files": [
-      "src/electron/config/model-source.ts(11070-11100)"
-    ],
+    "$files": ["src/electron/config/model-source.ts(11070-11100)"],
     "$id": 9672
   },
   "2比特": {
@@ -659,9 +625,7 @@
     "de-DE": "Super Kompression",
     "fr-FR": "Super-compression",
     "ko-KR": "슈퍼 압축",
-    "$files": [
-      "src/electron/config/model-source.ts(12784-12792)"
-    ],
+    "$files": ["src/electron/config/model-source.ts(12784-12792)"],
     "$id": 9489
   },
   "1比特": {
@@ -690,9 +654,7 @@
     "de-DE": "2-Bit-Kompression",
     "fr-FR": "Compression 2 bits",
     "ko-KR": "2비트 압축",
-    "$files": [
-      "src/electron/config/model-source.ts(13764-13773)"
-    ],
+    "$files": ["src/electron/config/model-source.ts(13764-13773)"],
     "$id": 20163
   },
   "高智能": {
@@ -721,9 +683,7 @@
     "de-DE": "1-Bit-Kompression",
     "fr-FR": "Compression 1 bit",
     "ko-KR": "1비트 압���",
-    "$files": [
-      "src/electron/config/model-source.ts(14717-14726)"
-    ],
+    "$files": ["src/electron/config/model-source.ts(14717-14726)"],
     "$id": 20165
   },
   "最强": {
@@ -752,9 +712,7 @@
     "de-DE": "Die offizielle Version der dynamischen UD-Quantisierung von unsloth mit extrem geringem Qualitätsverlust unterstützt Text- und Bildanalyse und erfordert einen größeren Videospeicher.",
     "fr-FR": "La version officielle de quantification dynamique UD d'unsloth, avec une perte de qualité extrêmement faible, prend en charge l'analyse de texte et d'image et nécessite une mémoire vidéo plus grande.",
     "ko-KR": "unsloth의 공식 UD 동적 양자화 버전은 품질 손실이 매우 낮고 텍스트 및 이미지 분석을 지원하며 더 큰 비디오 메모리가 필요합니다.",
-    "$files": [
-      "src/electron/config/model-source.ts(15732-15781)"
-    ],
+    "$files": ["src/electron/config/model-source.ts(15732-15781)"],
     "$id": 11195
   },
   "大参数": {
@@ -800,9 +758,7 @@
     "de-DE": "Qwen3.8-27B stark zensurloser Version, P-Reihe-Quantifizierung behält höhere Genauigkeit in kritischen Tensoren, durchbringt Sicherheitskontrollen und unterstützt Bildanalyse.",
     "fr-FR": "Qwen3.8-27B version agressivement déverrouillée, le re-quantization de la série P conserve une précision plus élevée sur les tenseurs critiques, jailbreak et support de l'analyse de l'image.",
     "ko-KR": "Qwen3.8-27B aggressive de-review version, P-series re-quantization retains higher precision in key tensors, jailbreakable and supports image analysis.",
-    "$files": [
-      "src/electron/config/model-source.ts(16549-16601)"
-    ],
+    "$files": ["src/electron/config/model-source.ts(16549-16601)"],
     "$id": 19376
   },
   "顶级": {
