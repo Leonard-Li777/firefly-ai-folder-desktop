@@ -151,6 +151,7 @@ export const GENESIS_V1_SCHEMA = `
     canonical_text TEXT,                         -- 统一语义文本（embedding 唯一输入）；NULL=未计算
     canonical_text_hash TEXT,                    -- sha256(profile|dim|ver|text)；skipped 行为 NULL
     canonical_vector_state TEXT,                 -- pending/ready/visual_only/skipped/failed；NULL=未计算
+    rating_user_override TEXT,                   -- 用户手动评级受控码覆盖 (r18g/r18/r15/all_ages)，重扫不覆盖，Egress展示优先
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 文件在文件系统中的创建时间
     modified_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 文件在文件系统中的修改时间
     accessed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP -- 文件在文件系统中的最后访问时间
