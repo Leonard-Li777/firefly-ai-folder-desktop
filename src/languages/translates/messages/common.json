@@ -475,44 +475,44 @@
     "$files": ["src/renderer/components/common/Footer.tsx(18404-18412)"],
     "$id": 3908
   },
-  "高级AI引擎未运行，AI 服务未就绪": {
-    "en-US": "The advanced AI engine is not running, and the AI service is not ready.",
-    "es-ES": "Motor IA avanzado no está en ejecución, el servicio de IA no está listo",
-    "ar-EG": "المحرك المتقدم للذكاء الاصطناعي غير مُشغّل، وخدمة الذكاء الاصطناعي ليست جاهزة",
-    "pt-PT": "O motor de IA avançado não está em execução; o serviço de IA não está pronto",
-    "ru-RU": "Продвинутый ИИ-движок не запущен, сервис ИИ не готов",
-    "ja-JP": "高度なAIエンジンが実行されていません。AIサービスが未準備です",
-    "de-DE": "Das erweiterte KI-Engine ist nicht aktiv. Der KI-Dienst ist nicht bereit.",
-    "fr-FR": "Le moteur IA avancé n'est pas en cours d'exécution, le service IA n'est pas prêt",
-    "ko-KR": "고급 AI 엔진이 실행되지 않아 AI 서비스가 준비되지 않았습니다.",
-    "$files": ["src/renderer/components/common/Footer.tsx(20790-20812)"],
-    "$id": 20509
+  "生成式引擎未运行，AI 服务未就绪": {
+    "en-US": "生成式引擎未运行，AI 服务未就绪",
+    "es-ES": "生成式引擎未运行，AI 服务未就绪",
+    "ar-EG": "生成式引擎未运行，AI 服务未就绪",
+    "pt-PT": "生成式引擎未运行，AI 服务未就绪",
+    "ru-RU": "生成式引擎未运行，AI 服务未就绪",
+    "ja-JP": "生成式引擎未运行，AI 服务未就绪",
+    "de-DE": "生成式引擎未运行，AI 服务未就绪",
+    "fr-FR": "生成式引擎未运行，AI 服务未就绪",
+    "ko-KR": "生成式引擎未运行，AI 服务未就绪",
+    "$files": ["src/renderer/components/common/Footer.tsx(20790-20811)"],
+    "$id": 28306
   },
-  "[基础AI引擎] Omni 服务就绪": {
-    "en-US": "[Basic AI Engine] Omni service is ready.",
-    "es-ES": "[Motor IA básico] Servicio Omni listo",
-    "ar-EG": "[المحرك الأساسي للذكاء الاصطناعي] خدمة Omni جاهزة",
-    "pt-PT": "[Motor de IA base] Serviço Omni pronto",
-    "ru-RU": "[Базовый ИИ-движок] Сервис Omni готов",
-    "ja-JP": "[ベースAIエンジン] Omni サービスは準備完了です",
-    "de-DE": "[Basis-KI-Engine] Omni-Dienst bereit",
-    "fr-FR": "[Moteur IA de base] Service Omni prêt",
-    "ko-KR": "[기본 AI 엔진] Omni 서비스 준비됨",
-    "$files": ["src/renderer/components/common/Footer.tsx(21893-21915)"],
-    "$id": 20510
+  "[检索式引擎] Omni 服务就绪": {
+    "en-US": "[检索式引擎] Omni 服务就绪",
+    "es-ES": "[检索式引擎] Omni 服务就绪",
+    "ar-EG": "[检索式引擎] Omni 服务就绪",
+    "pt-PT": "[检索式引擎] Omni 服务就绪",
+    "ru-RU": "[检索式引擎] Omni 服务就绪",
+    "ja-JP": "[检索式引擎] Omni 服务就绪",
+    "de-DE": "[检索式引擎] Omni 服务就绪",
+    "fr-FR": "[检索式引擎] Omni 服务就绪",
+    "ko-KR": "[检索式引擎] Omni 服务就绪",
+    "$files": ["src/renderer/components/common/Footer.tsx(21892-21913)"],
+    "$id": 28307
   },
-  "[基础AI引擎] Omni 服务未运行": {
-    "en-US": "[Basic AI Engine] Omni service is not running.",
-    "es-ES": "[Motor IA básico] Servicio Omni no está en ejecución",
-    "ar-EG": "[المحرك الأساسي للذكاء الاصطناعي] خدمة Omni غير مُشغّلة",
-    "pt-PT": "[Motor de IA base] Serviço Omni não está em execução",
-    "ru-RU": "[Базовый ИИ-движок] Сервис Omni не запущен",
-    "ja-JP": "[ベースAIエンジン] Omni サービスは実行されていません",
-    "de-DE": "[Basis-KI-Engine] Omni-Dienst nicht aktiv",
-    "fr-FR": "[Moteur IA de base] Service Omni non fonctionnel",
-    "ko-KR": "[기본 AI 엔진] Omni ��비스가 실행되지 않았습니다.",
-    "$files": ["src/renderer/components/common/Footer.tsx(22069-22092)"],
-    "$id": 20511
+  "[检索式引擎] Omni 服务未运行": {
+    "en-US": "[检索式引擎] Omni 服务未运行",
+    "es-ES": "[检索式引擎] Omni 服务未运行",
+    "ar-EG": "[检索式引擎] Omni 服务未运行",
+    "pt-PT": "[检索式引擎] Omni 服务未运行",
+    "ru-RU": "[检索式引擎] Omni 服务未运行",
+    "ja-JP": "[检索式引擎] Omni 服务未运行",
+    "de-DE": "[检索式引擎] Omni 服务未运行",
+    "fr-FR": "[检索式引擎] Omni 服务未运行",
+    "ko-KR": "[检索式引擎] Omni 服务未运行",
+    "$files": ["src/renderer/components/common/Footer.tsx(22067-22089)"],
+    "$id": 28308
   },
   "AI服务出现异常，点击查看详情与修复方案": {
     "en-US": "An abnormality occurs in the AI ​​service. Click to view details and repair plan.",
@@ -524,7 +524,7 @@
     "de-DE": "Im KI-Dienst ist eine Anomalie aufgetreten. Klicken Sie hier, um Details und Reparaturplan anzuzeigen.",
     "fr-FR": "Une anomalie se produit dans le service AI. Cliquez pour afficher les détails et le plan de réparation.",
     "ko-KR": "AI 서비스에 이상이 발생합니다. 자세한 내용과 수리 계획을 보려면 클릭하세요.",
-    "$files": ["src/renderer/components/common/Footer.tsx(24924-24948)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(24921-24945)"],
     "$id": 11301
   },
   "点击查看AI服务错误详情": {
@@ -537,7 +537,7 @@
     "de-DE": "Klicken Sie hier, um Details zu AI-Dienstfehlern anzuzeigen",
     "fr-FR": "Cliquez pour afficher les détails de l'erreur du service AI",
     "ko-KR": "AI 서비스 오류 세부정보를 보려면 클릭하세요.",
-    "$files": ["src/renderer/components/common/Footer.tsx(25334-25350)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(25331-25347)"],
     "$id": 11302
   },
   "点击查看原因": {
@@ -550,7 +550,7 @@
     "de-DE": "Klicken Sie hier, um zu sehen, warum",
     "fr-FR": "Cliquez pour voir pourquoi",
     "ko-KR": "이유를 보려면 클릭하세요.",
-    "$files": ["src/renderer/components/common/Footer.tsx(25651-25661)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(25648-25658)"],
     "$id": 11214
   },
   "检测到您有高性能显卡，请切换更聪明的AI模型，立即设置": {
@@ -564,36 +564,36 @@
     "fr-FR": "Vous avez détecté que vous disposez d'une carte graphique hautes performances, veuillez passer à un modèle d'IA plus intelligent et le configurer maintenant",
     "ko-KR": "고성능 그래픽 카드가 있는 것으로 감지되었습니다. 지금 더 스마트한 AI 모델로 전환하여 설정하세요.",
     "$files": [
-      "src/renderer/components/common/Footer.tsx(26161-26192)",
-      "src/renderer/components/common/Footer.tsx(26236-26267)"
+      "src/renderer/components/common/Footer.tsx(26158-26189)",
+      "src/renderer/components/common/Footer.tsx(26233-26264)"
     ],
     "$id": 4525
   },
-  "当前为内置基础AI引擎，建议配置高级AI引擎，配置后可以增强分析结果。点击进入配置。": {
-    "en-US": "Currently using the built-in basic AI engine. It is recommended to configure an advanced AI engine, which can enhance the analysis results after configuration. Click to enter the configuration.",
-    "es-ES": "Actualmente es el motor de IA básico integrado; se recomienda configurar un motor de IA avanzado. Después de la configuración, los resultados de análisis mejorarán. Haga clic para acceder a la configuración.",
-    "ar-EG": "المحرك الحالي هو محرك AI أساسي مدمج، يُنصح بتكوين محرك AI متطور، يمكن تعزيز نتائج التحليل بعد التكوين. انقر هنا للدخول إلى الإعدادات.",
-    "pt-PT": "Atualmente, está em uso o motor de IA básico integrado. Recomenda-se configurar um motor de IA avançado, pois a configuração pode melhorar os resultados da análise. Clique aqui para entrar na configuração.",
-    "ru-RU": "Используется встроенный базовый движок ИИ. Рекомендуется настроить расширенный движок ИИ; после настройки результаты анализа будут улучшены. Перейдите к настройке, щелкнув здесь.",
-    "ja-JP": "現在は組み込みの基本 AI エンジンです。高度な AI エンジンの設定を推奨します。設定すると分析結果が強化されます。設定に移動するにはここをクリックしてください。",
-    "de-DE": "Derzeit wird die integrierte Basis-AI-Engine verwendet. Es wird empfohlen, eine fortgeschrittene AI-Engine zu konfigurieren. Nach der Konfiguration können die Analyseergebnisse verbessert werden. Klicken Sie hier, um zur Konfiguration zu gelangen.",
-    "fr-FR": "Le moteur IA de base intégré est actuellement utilisé. Il est recommandé de configurer un moteur IA avancé pour améliorer les résultats d'analyse. Cliquez pour accéder à la configuration.",
-    "ko-KR": "현재 기본 내장 AI 엔진이 사용 중입니다. 고급 AI 엔진을 구성할 것을 권장하며, 구성 후 분석 결과가 향상됩니다. 클릭하여 구성 페이지로 이동합니다.",
-    "$files": ["src/renderer/components/common/Footer.tsx(26713-26782)"],
-    "$id": 19425
+  "当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果。点击进入配置。": {
+    "en-US": "当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果。点击进入配置。",
+    "es-ES": "当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果。点击进入配置。",
+    "ar-EG": "当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果。点击进入配置。",
+    "pt-PT": "当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果。点击进入配置。",
+    "ru-RU": "当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果。点击进入配置。",
+    "ja-JP": "当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果。点击进入配置。",
+    "de-DE": "当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果。点击进入配置。",
+    "fr-FR": "当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果。点击进入配置。",
+    "ko-KR": "当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果。点击进入配置。",
+    "$files": ["src/renderer/components/common/Footer.tsx(26710-26777)"],
+    "$id": 28309
   },
-  "当前为内置基础AI引擎，建议配置高级AI引擎，配置后可以增强分析结果": {
-    "en-US": "Currently using the built-in basic AI engine. It is recommended to configure an advanced AI engine, which can enhance the analysis results after configuration",
-    "es-ES": "Actualmente es el motor de IA básico integrado; se recomienda configurar un motor de IA avanzado. Después de la configuración, los resultados de análisis mejorarán",
-    "ar-EG": "المحرك الحالي هو محرك AI أساسي مدمج، يُنصح بتكوين محرك AI متطور، يمكن تعزيز نتائج التحليل بعد التكوين",
-    "pt-PT": "Atualmente, está em uso o motor de IA básico integrado. Recomenda-se configurar um motor de IA avançado, pois a configuração pode melhorar os resultados da análise",
-    "ru-RU": "Используется встроенный базовый движок ИИ. Рекомендуется настроить расширенный движок ИИ; после настройки результаты анализа будут улучшены",
-    "ja-JP": "現在は組み込みの基本 AI エンジンです。高度な AI エンジンの設定を推奨します。設定すると分析結果が強化されます",
-    "de-DE": "Derzeit wird die integrierte Basis-AI-Engine verwendet. Es wird empfohlen, eine fortgeschrittene AI-Engine zu konfigurieren. Nach der Konfiguration können die Analyseergebnisse verbessert werden.",
-    "fr-FR": "Le moteur IA de base intégré est actuellement utilisé. Il est recommandé de configurer un moteur IA avancé pour améliorer les résultats d'analyse",
-    "ko-KR": "현재 기본 내장 AI 엔진이 사용 중입니다. 고급 AI 엔진을 구성할 것을 권장하며, 구성 후 분석 결과가 향상됩니다",
-    "$files": ["src/renderer/components/common/Footer.tsx(26963-27001)"],
-    "$id": 19426
+  "当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果": {
+    "en-US": "当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果",
+    "es-ES": "当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果",
+    "ar-EG": "当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果",
+    "pt-PT": "当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果",
+    "ru-RU": "当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果",
+    "ja-JP": "当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果",
+    "de-DE": "当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果",
+    "fr-FR": "当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果",
+    "ko-KR": "当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果",
+    "$files": ["src/renderer/components/common/Footer.tsx(26958-26994)"],
+    "$id": 28310
   },
   "萤核智能文件夹 - 更新日志": {
     "en-US": "Firefly AI Folder - Release Notes",
@@ -605,7 +605,7 @@
     "de-DE": "Firefly AI Folder - Änderungsprotokoll",
     "fr-FR": "Firefly AI Folder - Notes de mise à jour",
     "ko-KR": "형광석 스마트 폴더 - 업데이트 로그",
-    "$files": ["src/renderer/components/common/Footer.tsx(27497-27515)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(27490-27508)"],
     "$id": 3278
   },
   "最新版本: v{version}": {
@@ -618,7 +618,7 @@
     "de-DE": "Neueste Version: v{version}",
     "fr-FR": "Dernière version : v{version}",
     "ko-KR": "최신 버전: v{version}",
-    "$files": ["src/renderer/components/common/Footer.tsx(27697-27717)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(27690-27710)"],
     "$id": 3279
   },
   "稍后再说": {
@@ -631,7 +631,7 @@
     "de-DE": "Später",
     "fr-FR": "Plus tard",
     "ko-KR": "나중에 하기",
-    "$files": ["src/renderer/components/common/Footer.tsx(28438-28446)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(28431-28439)"],
     "$id": 3280
   },
   "无法打开下载页面": {
@@ -644,7 +644,7 @@
     "de-DE": "Download-Seite kann nicht geöffnet werden",
     "fr-FR": "Impossible d'ouvrir la page de téléchargement",
     "ko-KR": "다운로드 페이지를 열 수 없습니다",
-    "$files": ["src/renderer/components/common/Footer.tsx(28693-28705)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(28686-28698)"],
     "$id": 4526
   },
   "去官网下载新版": {
@@ -657,7 +657,7 @@
     "de-DE": "Neue Version von der offiziellen Website herunterladen",
     "fr-FR": "Télécharger la nouvelle version sur le site officiel",
     "ko-KR": "공식 홈페이지에서 새 버전 다운로드",
-    "$files": ["src/renderer/components/common/Footer.tsx(28886-28897)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(28879-28890)"],
     "$id": 3283
   },
   "查看分析队列 - 当前: {ws}{name}": {
@@ -670,7 +670,7 @@
     "de-DE": "Analysewarteschlange anzeigen – Aktuell: {ws}{name}",
     "fr-FR": "Afficher la file d'attente d'analyse - Actuel : {ws}{name}",
     "ko-KR": "분석 대기열 보기 - 현재: {ws}{name}",
-    "$files": ["src/renderer/components/common/Footer.tsx(29492-29519)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(29485-29512)"],
     "$id": 7806
   },
   "查看分析队列 - {count} 个文件等待中": {
@@ -683,7 +683,7 @@
     "de-DE": "Analysewarteschlange anzeigen - {count} Dateien warten\r",
     "fr-FR": "Voir la file d'analyse - {count} fichiers en attente\r",
     "ko-KR": "분석 대기열 보기 - {count}개 파일 대기 중\r",
-    "$files": ["src/renderer/components/common/Footer.tsx(29688-29715)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(29681-29708)"],
     "$id": 3910
   },
   "等待: {count}": {
@@ -697,8 +697,8 @@
     "fr-FR": "En attente : {count}",
     "ko-KR": "기다리다: {count}",
     "$files": [
-      "src/renderer/components/common/Footer.tsx(33054-33069)",
-      "src/renderer/components/common/Footer.tsx(33518-33533)"
+      "src/renderer/components/common/Footer.tsx(33047-33062)",
+      "src/renderer/components/common/Footer.tsx(33511-33526)"
     ],
     "$id": 3913
   },
@@ -712,7 +712,7 @@
     "de-DE": "Warteschlange angehalten",
     "fr-FR": "Mise en attente de la file d'attente",
     "ko-KR": "대기열 일시 중지",
-    "$files": ["src/renderer/components/common/Footer.tsx(33224-33232)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(33217-33225)"],
     "$id": 11246
   },
   "空闲": {
@@ -725,7 +725,7 @@
     "de-DE": "Leerlauf",
     "fr-FR": "Inactif",
     "ko-KR": "게으른",
-    "$files": ["src/renderer/components/common/Footer.tsx(33346-33352)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(33339-33345)"],
     "$id": 3912
   },
   "点击配置当前工作区AI策略与分析模式: {name}": {
@@ -738,7 +738,7 @@
     "de-DE": "Klicken Sie hier, um die aktuelle KI-Strategie und den Analysemodus für den Arbeitsbereich zu konfigurieren: {name}",
     "fr-FR": "Cliquez pour configurer la stratégie d'IA et le mode d'analyse actuels de l'espace de travail : {name}",
     "ko-KR": "현재 작업 공간 AI 전략 및 분석 모드를 구성하려면 클릭하세요. {name}",
-    "$files": ["src/renderer/components/common/Footer.tsx(34098-34128)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(34091-34121)"],
     "$id": 22936
   },
   "点击打开工作区配置": {
@@ -751,7 +751,7 @@
     "de-DE": "Klicken Sie hier, um die Arbeitsbereichskonfiguration zu öffnen",
     "fr-FR": "Cliquez pour ouvrir la configuration de l'espace de travail",
     "ko-KR": "작업공간 구성을 열려면 클릭하세요.",
-    "$files": ["src/renderer/components/common/Footer.tsx(34222-34235)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(34215-34228)"],
     "$id": 22937
   },
   "标准分析": {
@@ -764,7 +764,7 @@
     "de-DE": "Standardanalyse",
     "fr-FR": "Analyse standard",
     "ko-KR": "표준 분석",
-    "$files": ["src/renderer/components/common/Footer.tsx(34683-34691)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(34676-34684)"],
     "$id": 19427
   },
   "增强分析": {
@@ -777,7 +777,7 @@
     "de-DE": "Erweiterte Analyse",
     "fr-FR": "Analyse avancée",
     "ko-KR": "강화 분석",
-    "$files": ["src/renderer/components/common/Footer.tsx(34764-34772)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(34757-34765)"],
     "$id": 19428
   },
   "全面分析": {
@@ -790,7 +790,7 @@
     "de-DE": "Umfassende Analyse",
     "fr-FR": "Analyse complète",
     "ko-KR": "종합적인 분석",
-    "$files": ["src/renderer/components/common/Footer.tsx(34792-34800)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(34785-34793)"],
     "$id": 9424
   },
   "点击打开AI引擎配置": {
@@ -803,7 +803,7 @@
     "de-DE": "Klicken Sie hier, um die KI-Engine-Konfiguration zu öffnen",
     "fr-FR": "Cliquez pour ouvrir la configuration du moteur AI",
     "ko-KR": "AI 엔진 구성을 열려면 클릭하세요.",
-    "$files": ["src/renderer/components/common/Footer.tsx(35136-35150)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(35129-35143)"],
     "$id": 7683
   },
   "思考": {
@@ -816,7 +816,7 @@
     "de-DE": "Denken",
     "fr-FR": "Pense",
     "ko-KR": "생각하다",
-    "$files": ["src/renderer/components/common/Footer.tsx(35203-35209)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(35196-35202)"],
     "$id": 7747
   },
   "开发模式标识：区域 - 环境 - 分支": {
@@ -829,7 +829,7 @@
     "de-DE": "Entwicklermodus-Kennung: Region - Umgebung - Zweig",
     "fr-FR": "Identifiant du mode de développement：Région - Environnement - Branche",
     "ko-KR": "개발 모드 식별자：영역 - 환경 - 브랜치",
-    "$files": ["src/renderer/components/common/Footer.tsx(36028-36051)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(36021-36044)"],
     "$id": 11484
   },
   "发现新版本 v{version}": {
@@ -842,7 +842,7 @@
     "de-DE": "Neue Version v{version} entdeckt",
     "fr-FR": "Nouvelle version détectée v{version}",
     "ko-KR": "새 버전 감지 v{version}",
-    "$files": ["src/renderer/components/common/Footer.tsx(36819-36839)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(36812-36832)"],
     "$id": 3263
   },
   "最小化窗口": {

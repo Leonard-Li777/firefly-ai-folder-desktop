@@ -3530,18 +3530,18 @@
     "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(22344-22352)"],
     "$id": 7874
   },
-  "高级AI引擎未开启，请先开启高级AI引擎": {
-    "en-US": "The advanced AI engine is not enabled. Please enable the advanced AI engine first.",
-    "es-ES": "El motor de IA avanzado no está habilitado. Primero habilite el motor de IA avanzado.",
-    "ar-EG": "لم يتم تمكين محرك الذكاء الاصطناعي المتقدم. يرجى تمكين محرك الذكاء الاصطناعي المتقدم أولاً.",
-    "pt-PT": "O mecanismo avançado de IA não está habilitado. Ative primeiro o mecanismo avançado de IA.",
-    "ru-RU": "Расширенный механизм искусственного интеллекта не включен. Пожалуйста, сначала включите расширенный механизм искусственного интеллекта.",
-    "ja-JP": "高度な AI エンジンが有効になっていません。まず高度な AI エンジンを有効にしてください。",
-    "de-DE": "Die erweiterte KI-Engine ist nicht aktiviert. Bitte aktivieren Sie zuerst die erweiterte KI-Engine.",
-    "fr-FR": "Le moteur d'IA avancé n'est pas activé. Veuillez d'abord activer le moteur d'IA avancé.",
-    "ko-KR": "고급 AI 엔진이 활성화되어 있지 않습니다. 먼저 고급 AI 엔진을 활성화해 주세요.",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(23124-23148)"],
-    "$id": 23453
+  "生成式引擎未开启，请先开启生成式引擎": {
+    "en-US": "生成式引擎未开启，请先开启生成式引擎",
+    "es-ES": "生成式引擎未开启，请先开启生成式引擎",
+    "ar-EG": "生成式引擎未开启，请先开启生成式引擎",
+    "pt-PT": "生成式引擎未开启，请先开启生成式引擎",
+    "ru-RU": "生成式引擎未开启，请先开启生成式引擎",
+    "ja-JP": "生成式引擎未开启，请先开启生成式引擎",
+    "de-DE": "生成式引擎未开启，请先开启生成式引擎",
+    "fr-FR": "生成式引擎未开启，请先开启生成式引擎",
+    "ko-KR": "生成式引擎未开启，请先开启生成式引擎",
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(23124-23146)"],
+    "$id": 28352
   },
   "前往设置": {
     "en-US": "Go to settings",
@@ -3554,36 +3554,36 @@
     "fr-FR": "Allez dans les paramètres",
     "ko-KR": "설정으로 이동",
     "$files": [
-      "src/renderer/components/tier/UserAvatarMenu.tsx(23203-23211)",
-      "src/renderer/components/tier/UserAvatarMenu.tsx(23921-23929)"
+      "src/renderer/components/tier/UserAvatarMenu.tsx(23201-23209)",
+      "src/renderer/components/tier/UserAvatarMenu.tsx(23916-23924)"
     ],
     "$id": 23454
   },
-  "高级AI引擎正在启动中，请稍后重试": {
-    "en-US": "The advanced AI engine is starting, please try again later.",
-    "es-ES": "El motor de IA avanzado se está iniciando. Vuelva a intentarlo más tarde.",
-    "ar-EG": "بدأ تشغيل محرك الذكاء الاصطناعي المتقدم، يرجى المحاولة مرة أخرى لاحقًا.",
-    "pt-PT": "O mecanismo avançado de IA está sendo iniciado. Tente novamente mais tarde.",
-    "ru-RU": "Усовершенствованный механизм искусственного интеллекта запускается. Повторите попытку позже.",
-    "ja-JP": "高度な AI エンジンが起動中です。後でもう一度お試しください。",
-    "de-DE": "Die erweiterte KI-Engine wird gestartet. Bitte versuchen Sie es später noch einmal.",
-    "fr-FR": "Le moteur d'IA avancé démarre, veuillez réessayer plus tard.",
-    "ko-KR": "고급 AI 엔진이 시작됩니다. 나중에 다시 시도해 주세요.",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(23666-23687)"],
-    "$id": 23455
+  "生成式引擎正在启动中，请稍后重试": {
+    "en-US": "生成式引擎正在启动中，请稍后重试",
+    "es-ES": "生成式引擎正在启动中，请稍后重试",
+    "ar-EG": "生成式引擎正在启动中，请稍后重试",
+    "pt-PT": "生成式引擎正在启动中，请稍后重试",
+    "ru-RU": "生成式引擎正在启动中，请稍后重试",
+    "ja-JP": "生成式引擎正在启动中，请稍后重试",
+    "de-DE": "生成式引擎正在启动中，请稍后重试",
+    "fr-FR": "生成式引擎正在启动中，请稍后重试",
+    "ko-KR": "生成式引擎正在启动中，请稍后重试",
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(23664-23684)"],
+    "$id": 28353
   },
-  "高级AI引擎未启动，请先启动高级AI引擎": {
-    "en-US": "The advanced AI engine has not been started. Please start the advanced AI engine first.",
-    "es-ES": "El motor de IA avanzado no se ha iniciado. Primero inicie el motor de IA avanzado.",
-    "ar-EG": "لم يتم تشغيل محرك الذكاء الاصطناعي المتقدم. يرجى تشغيل محرك الذكاء الاصطناعي المتقدم أولاً.",
-    "pt-PT": "O mecanismo avançado de IA não foi iniciado. Por favor, inicie o mecanismo avançado de IA primeiro.",
-    "ru-RU": "Усовершенствованный механизм искусственного интеллекта не запущен. Пожалуйста, сначала запустите усовершенствованный механизм искусственного интеллекта.",
-    "ja-JP": "高度なAIエンジンが起動していません。まずは高度なAIエンジンを起動してください。",
-    "de-DE": "Die erweiterte KI-Engine wurde nicht gestartet. Bitte starten Sie zuerst die erweiterte KI-Engine.",
-    "fr-FR": "Le moteur d'IA avancé n'a pas été démarré. Veuillez d'abord démarrer le moteur d'IA avancé.",
-    "ko-KR": "고급 AI 엔진이 시작되지 않았습니다. 먼저 고급 AI 엔진을 시작해 보세요.",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(23842-23866)"],
-    "$id": 23456
+  "生成式引擎未启动，请先启动生成式引擎": {
+    "en-US": "生成式引擎未启动，请先启动生成式引擎",
+    "es-ES": "生成式引擎未启动，请先启动生成式引擎",
+    "ar-EG": "生成式引擎未启动，请先启动生成式引擎",
+    "pt-PT": "生成式引擎未启动，请先启动生成式引擎",
+    "ru-RU": "生成式引擎未启动，请先启动生成式引擎",
+    "ja-JP": "生成式引擎未启动，请先启动生成式引擎",
+    "de-DE": "生成式引擎未启动，请先启动生成式引擎",
+    "fr-FR": "生成式引擎未启动，请先启动生成式引擎",
+    "ko-KR": "生成式引擎未启动，请先启动生成式引擎",
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(23839-23861)"],
+    "$id": 28354
   },
   "与本地AI私密聊天": {
     "en-US": "Chat privately with local AI",
@@ -3595,7 +3595,7 @@
     "de-DE": "Chatten Sie privat mit lokaler KI",
     "fr-FR": "Discutez en privé avec l'IA locale",
     "ko-KR": "로컬 AI와 비공개 채팅",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(24975-24988)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(24970-24983)"],
     "$id": 7987
   },
   "重置布局": {
@@ -3608,7 +3608,7 @@
     "de-DE": "Layout zurücksetzen",
     "fr-FR": "Réinitialiser la mise en page",
     "ko-KR": "레이아웃 재설정",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(26708-26716)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(26703-26711)"],
     "$id": 11045
   },
   "Telegram 官方频道": {
@@ -3621,7 +3621,7 @@
     "de-DE": "Offizieller Telegram-Kanal",
     "fr-FR": "Chaîne officielle de Telegram",
     "ko-KR": "텔레그램 공식 채널",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(27836-27853)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(27831-27848)"],
     "$id": 9544
   },
   "知乎萤核圈子": {
@@ -3634,7 +3634,7 @@
     "de-DE": "Zhihu Feuerkernkreis",
     "fr-FR": "Cercle de noyau de feu de Zhihu",
     "ko-KR": "Zhihu 파이어 코어 서클",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(29021-29031)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(29016-29026)"],
     "$id": 11046
   },
   "扫码加微信群": {
@@ -3648,7 +3648,7 @@
     "fr-FR": "Scannez le code QR pour rejoindre le groupe WeChat",
     "ko-KR": "WeChat 그룹에 가입하려면 QR 코드를 스캔하세요.",
     "$files": [
-      "src/renderer/components/tier/UserAvatarMenu.tsx(30118-30128)",
+      "src/renderer/components/tier/UserAvatarMenu.tsx(30113-30123)",
       "src/renderer/components/tier/WechatQRDialog.tsx(1074-1084)"
     ],
     "$id": 11047
@@ -3663,7 +3663,7 @@
     "de-DE": "Über Firefly",
     "fr-FR": "À propos de Firefly",
     "ko-KR": "‘잉허’에 대하여",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(31005-31013)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(31000-31008)"],
     "$id": 11619
   },
   "微信二维码": {
