@@ -1394,14 +1394,17 @@ export class FileDownloadService {
       }
 
       const activeTransport = transport || this.customTransport
-      const activeUrl = urls[0]
+      const sourceRouter = options.router || new DualTrackSourceRouter()
+      let currentSource = sourceRouter.selectBestSource(urls)
+      let activeUrl = currentSource.url
 
       // Worker 循环执行未完成块
       const workerRun = async () => {
         while (pendingBlocks.length > 0) {
           if (signal?.aborted) throw new Error('DOWNLOAD_ABORTED')
 
-          while (activeInflight >= maxInflightBlocks) {
+          const effectiveConcurrency = sourceRouter.getConcurrency(activeUrl, maxConcurrency)
+          while (activeInflight >= Math.min(maxInflightBlocks, effectiveConcurrency)) {
             await new Promise(r => setTimeout(r, 20))
           }
 
@@ -1430,6 +1433,19 @@ export class FileDownloadService {
 
               const chunks: Buffer[] = []
               req.on('response', (res: IDownloadTransportResponse) => {
+                if (res.statusCode === 429) {
+                  const retryHeader =
+                    (res as any).headers?.['retry-after'] || (res as any).headers?.['Retry-After']
+                  const retrySec = retryHeader
+                    ? parseInt(Array.isArray(retryHeader) ? retryHeader[0] : retryHeader, 10)
+                    : undefined
+                  const res429 = sourceRouter.handle429(activeUrl, retrySec)
+                  const err429: any = new Error('HTTP_429_TOO_MANY_REQUESTS')
+                  err429.is429 = true
+                  err429.routerResult = res429
+                  rejectNet(err429)
+                  return
+                }
                 res.on('data', c => chunks.push(c))
                 res.on('end', () => resolveNet(Buffer.concat(chunks)))
                 res.on('error', rejectNet)
@@ -1458,6 +1474,16 @@ export class FileDownloadService {
             })
 
             await flushMeta(false)
+          } catch (err: any) {
+            if (err?.is429) {
+              // 429 降并发并将块放回未完成队列
+              pendingBlocks.unshift(blockIndex)
+              const best = sourceRouter.selectBestSource(urls)
+              activeUrl = best.url
+              await new Promise(r => setTimeout(r, 50))
+            } else {
+              throw err
+            }
           } finally {
             activeInflight--
           }
@@ -1491,11 +1517,11 @@ export class FileDownloadService {
       }
     }
 
-    // 原子重命名为最终正式目标文件
+    // 原子重命名为最终正式目标文件 (带 Windows EBUSY 退避)
     if (fs.existsSync(destPath)) {
       fs.unlinkSync(destPath)
     }
-    fs.renameSync(partPath, destPath)
+    await renameWithRetry(partPath, destPath)
     if (fs.existsSync(metaPath)) {
       try {
         fs.unlinkSync(metaPath)
