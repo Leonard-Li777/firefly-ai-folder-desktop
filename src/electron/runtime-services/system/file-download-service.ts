@@ -4,7 +4,7 @@
  * 落地后单向流式 SHA-256 校验、两层防逃逸解压与 Windows Tombstone 删除协议。
  */
 
-import { net } from 'electron'
+import { net, app as electronApp } from 'electron'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as crypto from 'crypto'
@@ -50,6 +50,22 @@ export interface VerifiedDownloadResult {
   isResumed?: boolean
   errorCode?: string
   errorMessage?: string
+}
+
+export interface ChunkDownloadOptions {
+  taskId: string
+  assetId?: string
+  urls: string[]
+  destPath: string
+  expectedBytes: number
+  expectedSha256: string
+  maxConcurrency?: number
+  maxInflightBlocks?: number
+  maxRedownloadRetries?: number
+  router?: DualTrackSourceRouter
+  transport?: IDownloadTransport
+  signal?: AbortSignal
+  onProgress?: (progress: DownloadProgress) => void
 }
 
 export interface IDownloadTransportResponse {
@@ -185,7 +201,358 @@ export async function streamVerifySha256(
  * 安全解压 zip 压缩包到目标目录
  * 采用过渡临时目录解压 + 原子 rename + 两层防逃逸检查
  */
-export async function safeExtractZip(zipFilePath: string, destDir: string): Promise<void> {
+/**
+ * Windows 强化重命名操作（遭遇 EBUSY / EPERM / EACCES / ENOTEMPTY 时指数退避重试，最大预算 8 秒）
+ */
+export async function renameWithRetry(
+  oldPath: string,
+  newPath: string,
+  maxWaitMs: number = 8000
+): Promise<void> {
+  const startTime = Date.now()
+  let delay = 50
+  while (true) {
+    try {
+      await fs.promises.rename(oldPath, newPath)
+      return
+    } catch (err: any) {
+      const isLockError = ['EBUSY', 'EPERM', 'EACCES', 'ENOTEMPTY'].includes(err?.code)
+      const elapsed = Date.now() - startTime
+      if (!isLockError || elapsed + delay >= maxWaitMs) {
+        throw err
+      }
+      await new Promise(r => setTimeout(r, delay))
+      delay = Math.min(1000, delay * 2)
+    }
+  }
+}
+
+export interface DirSwitchIntent {
+  readonly state: 'prepared' | 'old-moved' | 'new-moved'
+  readonly targetDir: string
+  readonly trashDir: string
+  readonly stagingDir: string
+  readonly updatedAt: number
+}
+
+function resolveDefaultIntentsDir(targetDir: string): string {
+  try {
+    if (typeof (electronApp as any)?.getPath === 'function') {
+      const userData = (electronApp as any).getPath('userData')
+      if (userData) return path.join(userData, 'intents')
+    }
+  } catch {}
+  return path.join(path.dirname(targetDir), '.intents')
+}
+
+export async function writeDirSwitchIntent(
+  intentFile: string,
+  intent: DirSwitchIntent
+): Promise<void> {
+  const dir = path.dirname(intentFile)
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true })
+  }
+  const tmpFile = `${intentFile}.tmp-${Date.now()}`
+  await fs.promises.writeFile(tmpFile, JSON.stringify(intent, null, 2), 'utf-8')
+  await fs.promises.rename(tmpFile, intentFile)
+}
+
+export async function atomicDirectorySwitch(
+  stagingDir: string,
+  targetDir: string,
+  intentsDir?: string
+): Promise<void> {
+  const resolvedIntentsDir = intentsDir || resolveDefaultIntentsDir(targetDir)
+  const targetHash = crypto.createHash('sha256').update(targetDir).digest('hex').slice(0, 16)
+  const intentFile = path.join(resolvedIntentsDir, `dir-switch-${targetHash}.json`)
+  const trashDir = `${targetDir}.trash-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`
+
+  let intent: DirSwitchIntent = {
+    state: 'prepared',
+    targetDir,
+    trashDir,
+    stagingDir,
+    updatedAt: Date.now()
+  }
+  await writeDirSwitchIntent(intentFile, intent)
+
+  // 步骤 1：若目标目录已存在，重命名为 trashDir
+  if (fs.existsSync(targetDir)) {
+    await renameWithRetry(targetDir, trashDir)
+    intent = { ...intent, state: 'old-moved', updatedAt: Date.now() }
+    await writeDirSwitchIntent(intentFile, intent)
+  }
+
+  // 步骤 2：将 stagingDir 重命名为 targetDir
+  await renameWithRetry(stagingDir, targetDir)
+  intent = { ...intent, state: 'new-moved', updatedAt: Date.now() }
+  await writeDirSwitchIntent(intentFile, intent)
+
+  // 步骤 3：异步清理 trashDir，并删除意图日志
+  if (fs.existsSync(trashDir)) {
+    try {
+      await fs.promises.rm(trashDir, { recursive: true, force: true })
+    } catch {
+      // 忽略清理异常，后续由启动期自愈或后台 GC 处理
+    }
+  }
+  try {
+    if (fs.existsSync(intentFile)) {
+      await fs.promises.unlink(intentFile)
+    }
+  } catch {}
+}
+
+export async function reconcileDirSwitchIntents(intentsDir: string): Promise<number> {
+  if (!fs.existsSync(intentsDir)) return 0
+  let reconciled = 0
+  try {
+    const files = fs
+      .readdirSync(intentsDir)
+      .filter(f => f.startsWith('dir-switch-') && f.endsWith('.json'))
+    for (const f of files) {
+      const intentPath = path.join(intentsDir, f)
+      try {
+        const raw = fs.readFileSync(intentPath, 'utf-8')
+        const intent: DirSwitchIntent = JSON.parse(raw)
+        const targetExists = fs.existsSync(intent.targetDir)
+        const trashExists = fs.existsSync(intent.trashDir)
+        const stagingExists = fs.existsSync(intent.stagingDir)
+
+        if (targetExists) {
+          // targetDir 健全：静默清理残余 trashDir / stagingDir
+          if (trashExists) {
+            try {
+              fs.rmSync(intent.trashDir, { recursive: true, force: true })
+            } catch {}
+          }
+          if (stagingExists) {
+            try {
+              fs.rmSync(intent.stagingDir, { recursive: true, force: true })
+            } catch {}
+          }
+        } else {
+          // targetDir 缺失
+          if (trashExists && stagingExists) {
+            // 补完切换：将 stagingDir 重命名为 targetDir
+            await renameWithRetry(intent.stagingDir, intent.targetDir)
+            try {
+              fs.rmSync(intent.trashDir, { recursive: true, force: true })
+            } catch {}
+          } else if (trashExists && !stagingExists) {
+            // 崩溃回滚：将 trashDir 重命名回 targetDir
+            await renameWithRetry(intent.trashDir, intent.targetDir)
+          } else if (!trashExists && stagingExists) {
+            // 仅 staging 存在：补完
+            await renameWithRetry(intent.stagingDir, intent.targetDir)
+          }
+        }
+        try {
+          fs.unlinkSync(intentPath)
+        } catch {}
+        reconciled++
+      } catch (err) {
+        logger.warn(LogCategory.SYSTEM, `[IntentReconcile] 处理意图日志异常: ${intentPath}`, err)
+      }
+    }
+  } catch (scanErr) {
+    logger.warn(LogCategory.SYSTEM, `[IntentReconcile] 扫描意图目录异常: ${intentsDir}`, scanErr)
+  }
+  return reconciled
+}
+
+export interface DiskSpaceCheckResult {
+  sufficient: boolean
+  requiredBytes: number
+  availableBytes: number
+}
+
+export function checkDiskSpace(
+  targetPath: string,
+  options: {
+    archiveBytes: number
+    existingPartDiskBytes?: number
+    maxUncompressedBytes: number
+    extraBufferBytes?: number
+    isLocalPreset?: boolean
+  }
+): DiskSpaceCheckResult {
+  const existingPart = options.existingPartDiskBytes ?? 0
+  const archiveCost = options.isLocalPreset ? 0 : Math.max(0, options.archiveBytes - existingPart)
+  const extraBuffer = options.extraBufferBytes ?? 50 * 1024 * 1024 // 50MB
+  const requiredBytes = archiveCost + options.maxUncompressedBytes + extraBuffer
+
+  let checkDir = targetPath
+  while (!fs.existsSync(checkDir)) {
+    const parent = path.dirname(checkDir)
+    if (parent === checkDir) break
+    checkDir = parent
+  }
+
+  let availableBytes = Number.MAX_SAFE_INTEGER
+  try {
+    if (typeof (fs as any).statfsSync === 'function') {
+      const stats = (fs as any).statfsSync(checkDir)
+      availableBytes = stats.bavail * stats.bsize
+    }
+  } catch {}
+
+  return {
+    sufficient: availableBytes >= requiredBytes,
+    requiredBytes,
+    availableBytes
+  }
+}
+
+export async function cleanOldTrashAndOrphanParts(
+  baseDir: string,
+  maxAgeMs: number = 7 * 24 * 60 * 60 * 1000
+): Promise<number> {
+  if (!fs.existsSync(baseDir)) return 0
+  let cleaned = 0
+  const now = Date.now()
+
+  try {
+    const entries = fs.readdirSync(baseDir, { withFileTypes: true })
+    for (const entry of entries) {
+      const fullPath = path.join(baseDir, entry.name)
+      if (entry.isDirectory()) {
+        if (entry.name.includes('.trash-') || entry.name.includes('.deleting-')) {
+          try {
+            const st = fs.statSync(fullPath)
+            if (now - st.mtimeMs > maxAgeMs) {
+              fs.rmSync(fullPath, { recursive: true, force: true })
+              cleaned++
+            }
+          } catch {}
+        }
+      } else if (entry.isFile()) {
+        if (entry.name.endsWith('.part') || entry.name.endsWith('.meta.json')) {
+          try {
+            const st = fs.statSync(fullPath)
+            if (now - st.mtimeMs > maxAgeMs) {
+              fs.unlinkSync(fullPath)
+              cleaned++
+            }
+          } catch {}
+        }
+      }
+    }
+  } catch {}
+  return cleaned
+}
+
+export function isSourceCooledDown(until: number, now = Date.now()): boolean {
+  return until > now && until - now <= 15 * 60 * 1000
+}
+
+export class DualTrackSourceRouter {
+  private sourcesState = new Map<
+    string,
+    {
+      concurrency: number
+      cooldownUntil: number
+      consecutive429Count: number
+    }
+  >()
+
+  getConcurrency(url: string, defaultConcurrency = 8): number {
+    return this.sourcesState.get(url)?.concurrency ?? defaultConcurrency
+  }
+
+  isCooling(url: string, now = Date.now()): boolean {
+    const state = this.sourcesState.get(url)
+    if (!state) return false
+    return isSourceCooledDown(state.cooldownUntil, now)
+  }
+
+  handle429(
+    url: string,
+    retryAfterSeconds?: number,
+    now = Date.now()
+  ): {
+    newConcurrency: number
+    cooledDown: boolean
+    cooldownUntil: number
+  } {
+    let state = this.sourcesState.get(url)
+    if (!state) {
+      state = { concurrency: 8, cooldownUntil: 0, consecutive429Count: 0 }
+      this.sourcesState.set(url, state)
+    }
+
+    state.consecutive429Count++
+    if (state.concurrency > 1) {
+      // AIMD 乘性减并发 8 -> 4 -> 2 -> 1
+      state.concurrency = Math.max(1, Math.floor(state.concurrency / 2))
+      return {
+        newConcurrency: state.concurrency,
+        cooledDown: false,
+        cooldownUntil: 0
+      }
+    }
+
+    // 单并发下再次 429 -> 进入 15 分钟冷却
+    const delayMs =
+      retryAfterSeconds && retryAfterSeconds > 0 ? retryAfterSeconds * 1000 : 15 * 60 * 1000
+    state.cooldownUntil = now + Math.min(delayMs, 15 * 60 * 1000)
+    return {
+      newConcurrency: 1,
+      cooledDown: true,
+      cooldownUntil: state.cooldownUntil
+    }
+  }
+
+  recordSuccess(url: string): void {
+    const state = this.sourcesState.get(url)
+    if (state) {
+      state.consecutive429Count = 0
+      state.cooldownUntil = 0
+    }
+  }
+
+  selectBestSource(
+    urls: readonly string[],
+    now = Date.now()
+  ): { url: string; concurrency: number } {
+    if (urls.length === 0) {
+      throw new Error('No candidate URLs provided')
+    }
+
+    // 1. 查找未冷却的源
+    for (const url of urls) {
+      if (!this.isCooling(url, now)) {
+        return {
+          url,
+          concurrency: this.getConcurrency(url, 8)
+        }
+      }
+    }
+
+    // 2. 全源冷却保底：若所有源均处于冷却中，选择 cooldownUntil 最早到期的源解除冷却，并以单并发（concurrency = 1）重试，严禁全源死锁挂起
+    let earliestUrl = urls[0]
+    let earliestUntil = this.sourcesState.get(earliestUrl)?.cooldownUntil ?? Infinity
+    for (const url of urls) {
+      const until = this.sourcesState.get(url)?.cooldownUntil ?? Infinity
+      if (until < earliestUntil) {
+        earliestUntil = until
+        earliestUrl = url
+      }
+    }
+
+    return {
+      url: earliestUrl,
+      concurrency: 1
+    }
+  }
+}
+
+export async function safeExtractZip(
+  zipFilePath: string,
+  destDir: string,
+  intentsDir?: string
+): Promise<void> {
   if (!fs.existsSync(zipFilePath)) {
     throw new Error(`压缩包文件不存在: ${zipFilePath}`)
   }
@@ -225,11 +592,8 @@ export async function safeExtractZip(zipFilePath: string, destDir: string): Prom
       }
     }
 
-    // 原子提交：若目标目录已存在则先安全清退，然后 rename
-    if (fs.existsSync(destDir)) {
-      await safeDeleteDirectory(destDir)
-    }
-    fs.renameSync(tmpDir, destDir)
+    // 原子提交：通过 atomicDirectorySwitch 强化，带意图日志与 renameWithRetry
+    await atomicDirectorySwitch(tmpDir, destDir, intentsDir)
   } catch (err) {
     try {
       if (fs.existsSync(tmpDir)) {
@@ -885,6 +1249,270 @@ export class FileDownloadService {
 
       request.end()
     })
+  }
+
+  /**
+   * 固定 4MiB 块网格高弹性并发断点续传下载器 (Ticket 02)
+   */
+  async downloadWithFixedBlocks(options: ChunkDownloadOptions): Promise<VerifiedDownloadResult> {
+    const {
+      taskId,
+      assetId,
+      urls,
+      destPath,
+      expectedBytes,
+      expectedSha256,
+      maxConcurrency = 4,
+      maxInflightBlocks = 4,
+      transport,
+      signal,
+      onProgress
+    } = options
+
+    const FIXED_BLOCK_SIZE = 4 * 1024 * 1024 // 4MiB
+    const blockCount = Math.ceil(expectedBytes / FIXED_BLOCK_SIZE)
+    const destDir = path.dirname(destPath)
+    if (!fs.existsSync(destDir)) {
+      fs.mkdirSync(destDir, { recursive: true })
+    }
+
+    // 1. 若目标正式文件已存在且哈希校验吻合，直接完成
+    if (fs.existsSync(destPath) && fs.statSync(destPath).size === expectedBytes) {
+      const verify = await streamVerifySha256(destPath, expectedSha256)
+      if (verify.valid) {
+        onProgress?.({
+          percent: 100,
+          receivedBytes: expectedBytes,
+          totalBytes: expectedBytes,
+          speed: 0
+        })
+        return { success: true, actualSha256: verify.actualSha256, finalBytes: expectedBytes }
+      }
+    }
+
+    const partPath = `${destPath}.part`
+    const metaPath = `${partPath}.meta.json`
+    const completedBlocks = new Set<number>()
+
+    // 2. 读取或恢复单 Manifest 元数据
+    if (fs.existsSync(metaPath)) {
+      try {
+        const meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8'))
+        if (
+          meta.version === 1 &&
+          meta.expectedBytes === expectedBytes &&
+          meta.expectedSha256?.toLowerCase() === expectedSha256.toLowerCase() &&
+          Array.isArray(meta.completedBlocks)
+        ) {
+          for (const b of meta.completedBlocks) {
+            completedBlocks.add(b)
+          }
+        } else {
+          // 元数据不匹配或损坏，清理
+          if (fs.existsSync(partPath)) fs.unlinkSync(partPath)
+          fs.unlinkSync(metaPath)
+        }
+      } catch {
+        if (fs.existsSync(partPath)) fs.unlinkSync(partPath)
+        try {
+          fs.unlinkSync(metaPath)
+        } catch {}
+      }
+    }
+
+    // 3. 打开文件句柄 (O_RDWR | O_CREAT)
+    const fileHandle = await fs.promises.open(partPath, fs.constants.O_RDWR | fs.constants.O_CREAT)
+
+    try {
+      const stat = await fileHandle.stat()
+      if (stat.size === 0 && expectedBytes > 0) {
+        await fileHandle.truncate(expectedBytes)
+      }
+
+      // 4. 计算待下载块列表
+      const pendingBlocks: number[] = []
+      for (let i = 0; i < blockCount; i++) {
+        if (!completedBlocks.has(i)) {
+          pendingBlocks.push(i)
+        }
+      }
+
+      // 5. 串行写盘队列与背压信号量
+      let writeQueue = Promise.resolve()
+      let uncommittedBatchCount = 0
+
+      const enqueueWrite = (offset: number, buffer: Buffer): Promise<void> => {
+        return new Promise((resolveWrite, rejectWrite) => {
+          writeQueue = writeQueue.then(async () => {
+            try {
+              let written = 0
+              while (written < buffer.length) {
+                const res = await fileHandle.write(
+                  buffer,
+                  written,
+                  buffer.length - written,
+                  offset + written
+                )
+                if (res.bytesWritten === 0) {
+                  throw new Error('Disk write failed (bytesWritten === 0)')
+                }
+                written += res.bytesWritten
+              }
+              resolveWrite()
+            } catch (err) {
+              rejectWrite(err)
+            }
+          })
+        })
+      }
+
+      const flushMeta = async (force = false) => {
+        if (force || uncommittedBatchCount >= 8) {
+          await fileHandle.datasync()
+          const metaContent = {
+            version: 1,
+            assetId: assetId || taskId,
+            expectedBytes,
+            expectedSha256,
+            blockSize: FIXED_BLOCK_SIZE,
+            blockCount,
+            completedBlocks: Array.from(completedBlocks).sort((a, b) => a - b)
+          }
+          const tmpMeta = `${metaPath}.tmp-${Date.now()}`
+          fs.writeFileSync(tmpMeta, JSON.stringify(metaContent, null, 2), 'utf-8')
+          fs.renameSync(tmpMeta, metaPath)
+          uncommittedBatchCount = 0
+        }
+      }
+
+      let activeInflight = 0
+      let committedBytes = completedBlocks.size * FIXED_BLOCK_SIZE
+      if (completedBlocks.has(blockCount - 1)) {
+        committedBytes =
+          (completedBlocks.size - 1) * FIXED_BLOCK_SIZE +
+          (expectedBytes - (blockCount - 1) * FIXED_BLOCK_SIZE)
+      }
+
+      const activeTransport = transport || this.customTransport
+      const activeUrl = urls[0]
+
+      // Worker 循环执行未完成块
+      const workerRun = async () => {
+        while (pendingBlocks.length > 0) {
+          if (signal?.aborted) throw new Error('DOWNLOAD_ABORTED')
+
+          while (activeInflight >= maxInflightBlocks) {
+            await new Promise(r => setTimeout(r, 20))
+          }
+
+          const blockIndex = pendingBlocks.shift()
+          if (blockIndex === undefined) break
+
+          activeInflight++
+          const start = blockIndex * FIXED_BLOCK_SIZE
+          const end = Math.min(start + FIXED_BLOCK_SIZE - 1, expectedBytes - 1)
+          const rangeLength = end - start + 1
+
+          try {
+            const blockBuffer = await new Promise<Buffer>((resolveNet, rejectNet) => {
+              const headers: Record<string, string> = {
+                Range: `bytes=${start}-${end}`,
+                'Accept-Encoding': 'identity'
+              }
+
+              const req = activeTransport
+                ? activeTransport.request({ url: activeUrl, method: 'GET', headers })
+                : (net.request({
+                    url: activeUrl,
+                    method: 'GET',
+                    headers
+                  }) as unknown as IDownloadTransportRequest)
+
+              const chunks: Buffer[] = []
+              req.on('response', (res: IDownloadTransportResponse) => {
+                res.on('data', c => chunks.push(c))
+                res.on('end', () => resolveNet(Buffer.concat(chunks)))
+                res.on('error', rejectNet)
+              })
+              req.on('error', rejectNet)
+              req.end()
+            })
+
+            if (blockBuffer.length !== rangeLength) {
+              throw new Error(
+                `Block ${blockIndex} length mismatch: expected ${rangeLength}, got ${blockBuffer.length}`
+              )
+            }
+
+            // 排队串行写入操作系统
+            await enqueueWrite(start, blockBuffer)
+            completedBlocks.add(blockIndex)
+            uncommittedBatchCount++
+            committedBytes += rangeLength
+
+            onProgress?.({
+              percent: Math.min(99, Math.round((committedBytes / expectedBytes) * 100)),
+              receivedBytes: committedBytes,
+              totalBytes: expectedBytes,
+              speed: 0
+            })
+
+            await flushMeta(false)
+          } finally {
+            activeInflight--
+          }
+        }
+      }
+
+      if (pendingBlocks.length > 0) {
+        const workers = Array.from({ length: Math.min(maxConcurrency, pendingBlocks.length) }, () =>
+          workerRun()
+        )
+        await Promise.all(workers)
+      }
+
+      await writeQueue
+      await flushMeta(true)
+    } finally {
+      await fileHandle.close()
+    }
+
+    // 6. 全量整包 SHA-256 流式校验
+    const finalVerify = await streamVerifySha256(partPath, expectedSha256)
+    if (!finalVerify.valid) {
+      if (fs.existsSync(partPath)) fs.unlinkSync(partPath)
+      if (fs.existsSync(metaPath)) fs.unlinkSync(metaPath)
+      return {
+        success: false,
+        actualSha256: finalVerify.actualSha256,
+        finalBytes: 0,
+        errorCode: 'CHECKSUM_MISMATCH',
+        errorMessage: `CHECKSUM_MISMATCH: expected ${expectedSha256}, got ${finalVerify.actualSha256}`
+      }
+    }
+
+    // 原子重命名为最终正式目标文件
+    if (fs.existsSync(destPath)) {
+      fs.unlinkSync(destPath)
+    }
+    fs.renameSync(partPath, destPath)
+    if (fs.existsSync(metaPath)) {
+      try {
+        fs.unlinkSync(metaPath)
+      } catch {}
+    }
+
+    onProgress?.({
+      percent: 100,
+      receivedBytes: expectedBytes,
+      totalBytes: expectedBytes,
+      speed: 0
+    })
+    return {
+      success: true,
+      actualSha256: finalVerify.actualSha256,
+      finalBytes: expectedBytes
+    }
   }
 }
 

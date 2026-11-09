@@ -42,6 +42,11 @@ import {
   safeDeleteDirectory,
   cleanOrphanTombstones,
   streamVerifySha256,
+  renameWithRetry,
+  reconcileDirSwitchIntents,
+  checkDiskSpace,
+  cleanOldTrashAndOrphanParts,
+  DualTrackSourceRouter,
   type VerifiedDownloadResult,
   type IDownloadTransport
 } from './file-download-service'
@@ -517,6 +522,7 @@ export class ModularResourceService implements IModularResourceService {
     Array<{ name: string; size: number; sha256: string }>
   >()
   private verificationPromises = new Map<string, Promise<boolean>>()
+  public readonly sourceRouter: DualTrackSourceRouter = new DualTrackSourceRouter()
 
   constructor(options?: ModularResourceServiceOptions) {
     this.customDb = options?.db ?? null
@@ -532,6 +538,14 @@ export class ModularResourceService implements IModularResourceService {
       new PluginProcessManager({
         getDao: () => this.getDao()
       })
+
+    // ISS-15: 应用启动后延迟 15 秒后台扫描清理超过 7 天的 .trash-* 与未完成孤儿断点
+    setTimeout(() => {
+      try {
+        const base = this.getBaseDir()
+        cleanOldTrashAndOrphanParts(base).catch(() => {})
+      } catch {}
+    }, 15000)
   }
 
   static getInstance(): ModularResourceService {
@@ -925,6 +939,10 @@ export class ModularResourceService implements IModularResourceService {
     cleanedTombstones += await cleanOrphanTombstones(modulesDir)
     cleanedTombstones += await cleanOrphanTombstones(sharedDir)
     cleanedTombstones += await this.tombstoneGC.reconcileOnStartup([baseDir, modulesDir, sharedDir])
+
+    // B4: 扫描并自愈由于杀软占用或断电未完成的目录切换意图日志
+    const intentsDir = path.join(baseDir, '.intents')
+    await reconcileDirSwitchIntents(intentsDir)
 
     const dao = this.getDao()
     const resetDownloads: string[] = []

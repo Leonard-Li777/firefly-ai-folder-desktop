@@ -9,7 +9,7 @@
     "de-DE": "RAW-Film-Workflow für professionelle Fotografen",
     "fr-FR": "Flux de travail de film RAW pour les photographes professionnels",
     "ko-KR": "전문 사진작가를 위한 RAW 필름 워크플로우",
-    "$files": ["src/electron/config/local-workflow-source.ts(441-460)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(455-474)"],
     "$id": 23804
   },
   "面向单反/微单相机的专业 RAW 原始底片归档，提取 EXIF 机身信息与拍摄时间智能命名并沉淀至摄影三阶目录树": {
@@ -22,7 +22,7 @@
     "de-DE": "Professionelle RAW-Originalfilmarchivierung für Spiegelreflex-/Mikro-Spiegelreflexkameras, EXIF-Körperinformationen und Aufnahmezeit extrahieren, intelligent benennen und in einem dreistufigen Fotografie-Verzeichnisbaum ablegen",
     "fr-FR": "Archivage professionnel de films originaux RAW pour appareils photo SLR/Micro-SLR, extrayez les informations sur le corps EXIF ​​​​et l'heure de prise de vue, nommez-les intelligemment et déposez-les dans une arborescence de répertoires de photographie à trois niveaux",
     "ko-KR": "SLR/Micro-SLR 카메라용 전문 RAW 원본 필름 보관, EXIF ​​신체 정보 및 촬영 시간 추출, 지능적으로 이름을 지정하고 사진 3레벨 디렉토리 트리에 보관",
-    "$files": ["src/electron/config/local-workflow-source.ts(553-620)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(571-639)"],
     "$id": 23805
   },
   "[拍摄场景]_[主题主体]": {
@@ -35,7 +35,7 @@
     "de-DE": "[Aufnahmeszene]_[Betreff]",
     "fr-FR": "[scène de tournage]_[sujet]",
     "ko-KR": "[촬영현장]_[주제]",
-    "$files": ["src/electron/config/local-workflow-source.ts(697-714)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(720-737)"],
     "$id": 23806
   },
   "影视剪辑与音视频素材流": {
@@ -48,7 +48,7 @@
     "de-DE": "Film- und Fernsehbearbeitung sowie Streaming von Audio- und Videomaterial",
     "fr-FR": "Montage de films et de télévision et diffusion de matériel audio et vidéo",
     "ko-KR": "영화 및 TV 편집, 오디오 및 비디오 자료 스트리밍",
-    "$files": ["src/electron/config/local-workflow-source.ts(3305-3320)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(3343-3358)"],
     "$id": 23861
   },
   "面向长视频与镜头片段，高帧率抽帧识别与伴音 ASR 语音台词转写，按场景与景别自动化归整素材": {
@@ -61,7 +61,7 @@
     "de-DE": "Für lange Videos und Filmmaterial, Bilderkennung mit hoher Bildrate und begleitender ASR-Sprachtranskription, automatische Organisation von Materialien nach Szenen und Szenen.",
     "fr-FR": "Pour les longues vidéos et séquences, la reconnaissance d'images à fréquence d'images élevée et la transcription de lignes vocales ASR qui l'accompagnent, organisant automatiquement les matériaux en fonction des scènes et des scènes.",
     "ko-KR": "긴 비디오 및 영상의 경우 높은 프레임 속도의 프레임 인식 및 ASR 음성 대사 전사 기능을 통해 장면 및 장면에 따라 자료를 자동으로 구성합니다.",
-    "$files": ["src/electron/config/local-workflow-source.ts(3413-3470)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(3455-3513)"],
     "$id": 24020
   },
   "[场景机位]_[片段主题]_[人物动作]": {
@@ -74,7 +74,7 @@
     "de-DE": "[Szenenkamera]_[Clip-Thema]_[Charakteraktion]",
     "fr-FR": "[Caméra de scène]_[Thème du clip]_[Action du personnage]",
     "ko-KR": "[씬 카메라]_[클립 테마]_[캐릭터 액션]",
-    "$files": ["src/electron/config/local-workflow-source.ts(3547-3571)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(3594-3618)"],
     "$id": 24073
   },
   "UI/UX与前端研发设计流": {
@@ -87,7 +87,7 @@
     "de-DE": "UI/UX- und Front-End-F&E-Designablauf",
     "fr-FR": "Flux de conception UI/UX et R&D front-end",
     "ko-KR": "UI/UX 및 프론트엔드 R&D 디자인 흐름",
-    "$files": ["src/electron/config/local-workflow-source.ts(6427-6444)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(6489-6506)"],
     "$id": 24127
   },
   "面向设计稿源文件与切图矢量图标，快速提炼页面模块与交互状态，自动化分拣设计资源与组件资产": {
@@ -100,7 +100,7 @@
     "de-DE": "Für Design-Entwurfsquelldateien und ausgeschnittene Vektorsymbole können Sie Seitenmodule und Interaktionszustände schnell verfeinern und Designressourcen und Komponentenressourcen automatisch sortieren.",
     "fr-FR": "Pour les projets de conception de fichiers sources et d'icônes vectorielles découpées, affinez rapidement les modules de page et les états d'interaction, et triez automatiquement les ressources de conception et les actifs de composants.",
     "ko-KR": "디자인 초안 소스 파일과 컷아웃 벡터 아이콘의 경우 페이지 모듈과 상호 작용 상태를 빠르게 구체화하고 디자인 리소스와 구성 요소 자산을 자동으로 정렬합니다.",
-    "$files": ["src/electron/config/local-workflow-source.ts(6533-6588)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(6599-6655)"],
     "$id": 24143
   },
   "[业务模块]_[页面名称]_[状态变体]": {
@@ -113,7 +113,7 @@
     "de-DE": "[Geschäftsmodul]_[Seitenname]_[Statusvariante]",
     "fr-FR": "[Module métier]_[Nom de la page]_[Variante de statut]",
     "ko-KR": "[비즈니스 모듈]_[페이지 이름]_[상태 변형]",
-    "$files": ["src/electron/config/local-workflow-source.ts(6665-6689)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(6736-6760)"],
     "$id": 24173
   },
   "3D模型与贴图材质库": {
@@ -126,7 +126,7 @@
     "de-DE": "3D-Modell- und Texturbibliothek",
     "fr-FR": "Bibliothèque de modèles et de textures 3D",
     "ko-KR": "3D 모델 및 텍스처 라이브러리",
-    "$files": ["src/electron/config/local-workflow-source.ts(9141-9155)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(9227-9241)"],
     "$id": 24262
   },
   "面向 Blender/C4D/Maya 3D建模工程与 PBR 材质贴图，智能识别模型拓扑与贴图通道，构建标准化 3D 资产库": {
@@ -139,7 +139,7 @@
     "de-DE": "Für Blender/C4D/Maya 3D-Modellierungsprojekte und PBR-Materialkartierung können Sie Modelltopologie und Kartierungskanäle intelligent identifizieren und eine standardisierte 3D-Asset-Bibliothek erstellen",
     "fr-FR": "Pour les projets de modélisation 3D Blender/C4D/Maya et le mappage de matériaux PBR, identifiez intelligemment la topologie du modèle et les canaux de mappage, et créez une bibliothèque d'actifs 3D standardisée.",
     "ko-KR": "Blender/C4D/Maya 3D 모델링 프로젝트 및 PBR 재료 매핑의 경우 모델 토폴로지 및 매핑 채널을 지능적으로 식별하고 표준화된 3D 자산 라이브러리를 구축합니다.",
-    "$files": ["src/electron/config/local-workflow-source.ts(9243-9317)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(9333-9408)"],
     "$id": 24263
   },
   "[资产分类]_[模型主体]_[面数档位]": {
@@ -152,7 +152,7 @@
     "de-DE": "[Asset-Klassifizierung]_[Modellsubjekt]_[Anzahl der Seiten]",
     "fr-FR": "[Classification des actifs]_[Sujet du modèle]_[Nombre de côtés]",
     "ko-KR": "[자산분류]_[모델주제]_[면수]",
-    "$files": ["src/electron/config/local-workflow-source.ts(9394-9418)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(9489-9513)"],
     "$id": 24335
   },
   "游戏精彩时刻与录屏集锦流": {
@@ -165,7 +165,7 @@
     "de-DE": "Spiel-Highlights und Bildschirmaufzeichnungs-Highlights",
     "fr-FR": "Faits saillants du jeu et faits saillants de l’enregistrement d’écran",
     "ko-KR": "게임 하이라이트 및 화면 녹화 하이라이트",
-    "$files": ["src/electron/config/local-workflow-source.ts(12152-12168)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(12262-12278)"],
     "$id": 24427
   },
   "面向游戏录屏、高光击杀片段与游戏截图，快速抽帧识别游戏名称与对战高光，自动按游戏项目归集整理": {
@@ -178,7 +178,7 @@
     "de-DE": "Heben Sie bei Spielbildschirmaufzeichnungen Kill-Clips und Spiel-Screenshots hervor, extrahieren Sie schnell Frames, um Spielnamen und Kampf-Highlights zu identifizieren, und sammeln und organisieren Sie sie automatisch nach Spielelementen.",
     "fr-FR": "Pour les enregistrements d'écran de jeu, mettez en surbrillance les clips de mise à mort et les captures d'écran de jeu, extrayez rapidement les images pour identifier les noms de jeu et les moments forts des batailles, et collectez-les et organisez-les automatiquement en fonction des éléments du jeu.",
     "ko-KR": "게임 화면 녹화의 경우 킬 클립과 게임 스크린샷을 하이라이트하고 프레임을 빠르게 추출하여 게임 이름과 전투 하이라이트를 식별하고 게임 항목에 따라 자동으로 수집하고 정리합니다.",
-    "$files": ["src/electron/config/local-workflow-source.ts(12259-12316)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(12373-12431)"],
     "$id": 24431
   },
   "[游戏名称]_[高光时刻]_[地图战绩]": {
@@ -191,7 +191,7 @@
     "de-DE": "[Spielname]_[Highlight-Moment]_[Kartenaufzeichnung]",
     "fr-FR": "[Nom du jeu]_[Moment marquant]_[Enregistrement de la carte]",
     "ko-KR": "[게임명]_[하이라이트 순간]_[맵 기록]",
-    "$files": ["src/electron/config/local-workflow-source.ts(12393-12417)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(12512-12536)"],
     "$id": 24464
   },
   "网络小说与电子书藏书馆": {
@@ -204,7 +204,7 @@
     "de-DE": "Online-Roman- und E-Book-Bibliothek",
     "fr-FR": "Bibliothèque de romans et de livres électroniques en ligne",
     "ko-KR": "온라인 소설 및 전자책 도서관",
-    "$files": ["src/electron/config/local-workflow-source.ts(14859-14874)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(14993-15008)"],
     "$id": 24507
   },
   "面向网络连载小说、出版书与杂志，快速提取书名、作者、流派分类与完结状态，构建个人电子书分类书架": {
@@ -217,7 +217,7 @@
     "de-DE": "Für online veröffentlichte Romane, veröffentlichte Bücher und Zeitschriften können Sie schnell Titel, Autor, Genreklassifizierung und Fertigstellungsstatus extrahieren und ein persönliches E-Book-Klassifizierungsbücherregal erstellen",
     "fr-FR": "Pour les romans sérialisés en ligne, les livres publiés et les magazines, extrayez rapidement le titre, l'auteur, la classification du genre et l'état d'achèvement, et créez une bibliothèque personnelle de classification des livres électroniques.",
     "ko-KR": "온라인 연재 소설, 출판 도서, 잡지의 경우 제목, 작가, 장르 분류, 완결 여부 등을 빠르게 추출하여 개인용 전자책 분류 책장을 구축합니다.",
-    "$files": ["src/electron/config/local-workflow-source.ts(14966-15024)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(15104-15163)"],
     "$id": 24556
   },
   "[作品书名]_[核心流派]_[字数卷册]": {
@@ -230,7 +230,7 @@
     "de-DE": "[Titel des Werks]_[Kerngenre]_[Anzahl der Wörter im Band]",
     "fr-FR": "[Titre de l'œuvre]_[Genre principal]_[Nombre de mots dans le volume]",
     "ko-KR": "[작품명]_[핵심장르]_[단어수]",
-    "$files": ["src/electron/config/local-workflow-source.ts(15101-15125)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(15244-15268)"],
     "$id": 24580
   },
   "漫画画册与二次元图集流": {
@@ -243,7 +243,7 @@
     "de-DE": "Comic-Album und zweidimensionaler Atlas-Flow",
     "fr-FR": "Album de bandes dessinées et flux d'atlas en deux dimensions",
     "ko-KR": "만화책과 2차원 아틀라스 흐름",
-    "$files": ["src/electron/config/local-workflow-source.ts(17271-17286)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(17429-17444)"],
     "$id": 24639
   },
   "面向漫画单行本、同人画集与插画压缩包，智能识别作品 IP、画师作者与画风主题，按系列多卷自动收拢": {
@@ -256,7 +256,7 @@
     "de-DE": "Bei Comic-Einzelbänden, Fan-Art-Sammlungen und komprimierten Illustrationspaketen können IP, Künstler, Autor und Stilthema des Werks intelligent identifiziert und automatisch entsprechend der Bandreihe zusammengestellt werden.",
     "fr-FR": "Pour les volumes uniques de bandes dessinées, les collections de fan art et les packages d'illustrations compressés, identifiez intelligemment l'IP, l'artiste, l'auteur et le thème de style de l'œuvre, et collectez-les automatiquement en fonction de la série de volumes.",
     "ko-KR": "만화 단행본, 팬아트 컬렉션, 일러스트 압축 패키지의 경우 작품의 IP, 아티스트, 작가, 스타일 테마를 지능적으로 식별하고 시리즈별로 자동으로 수집합니다.",
-    "$files": ["src/electron/config/local-workflow-source.ts(17377-17436)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(17539-17599)"],
     "$id": 24644
   },
   "[作品系列]_[分卷编号]_[核心画师]": {
@@ -269,7 +269,7 @@
     "de-DE": "[Werkserie]_[Bandnummer]_[Kernkünstler]",
     "fr-FR": "[Série d'œuvres]_[Numéro du volume]_[Artiste principal]",
     "ko-KR": "[작품시리즈]_[권수]_[핵심작가]",
-    "$files": ["src/electron/config/local-workflow-source.ts(17513-17537)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(17680-17704)"],
     "$id": 24682
   },
   "电影剧集与影视字幕流": {
@@ -282,7 +282,7 @@
     "de-DE": "Streaming von Filmserien und Videountertiteln",
     "fr-FR": "Streaming de séries de films et de sous-titres vidéo",
     "ko-KR": "영화 시리즈 및 비디오 자막 스트리밍",
-    "$files": ["src/electron/config/local-workflow-source.ts(20108-20122)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(20290-20304)"],
     "$id": 24886
   },
   "面向蓝光压制电影、连续剧全集与外挂字幕，识别中文片名、上映年份与分辨率规格，自动按系列季集组织目录": {
@@ -295,7 +295,7 @@
     "de-DE": "Für Blu-ray-komprimierte Filme, TV-Serien-Komplettwerke und externe Untertitel, identifizieren Sie chinesische Filmtitel, Erscheinungsjahre und Auflösungsspezifikationen und organisieren Sie den Katalog automatisch nach Serienstaffeln.",
     "fr-FR": "Pour les films compressés Blu-ray, les œuvres complètes des séries télévisées et les sous-titres externes, identifiez les titres de films chinois, les années de sortie et les spécifications de résolution, et organisez automatiquement le catalogue par saisons de séries.",
     "ko-KR": "Blu-ray 압축 영화, TV 시리즈 전작 및 외부 자막의 경우 중국 영화 제목, 출시 연도 및 해상도 사양을 식별하고 시리즈 시즌별로 카탈로그를 자동으로 구성합니다.",
-    "$files": ["src/electron/config/local-workflow-source.ts(20217-20277)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(20403-20464)"],
     "$id": 24893
   },
   "[电影片名]_[上映年份]_[制式规格]": {
@@ -308,7 +308,7 @@
     "de-DE": "[Filmtitel]_[Erscheinungsjahr]_[Formatangaben]",
     "fr-FR": "[Titre du film]_[Année de sortie]_[Spécifications du format]",
     "ko-KR": "[영화제목]_[개봉연도]_[형식사양]",
-    "$files": ["src/electron/config/local-workflow-source.ts(20354-20378)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(20545-20569)"],
     "$id": 24931
   },
   "音乐无损专辑与播客库": {
@@ -321,7 +321,7 @@
     "de-DE": "Musikverlustfreie Album- und Podcast-Bibliothek",
     "fr-FR": "Album de musique sans perte et bibliothèque de podcasts",
     "ko-KR": "음악 무손실 앨범 및 팟캐스트 라이브러리",
-    "$files": ["src/electron/config/local-workflow-source.ts(22972-22986)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(23178-23192)"],
     "$id": 25053
   },
   "面向 FLAC/APE/DSD 无损音轨、分轨 CUE 与播客音频，提取 ID3 艺术家、专辑唱片与音轨序号，构建规范音乐唱片馆": {
@@ -334,7 +334,7 @@
     "de-DE": "Extrahieren Sie für verlustfreie FLAC/APE/DSD-Audiospuren, Split-Track-CUE und Podcast-Audio ID3-Künstler, Albumaufzeichnungen und Audiospur-Seriennummern, um eine standardisierte Musikaufzeichnungsbibliothek zu erstellen",
     "fr-FR": "Pour les pistes audio sans perte FLAC/APE/DSD, le CUE sur piste divisée et l'audio podcast, extrayez les artistes ID3, les enregistrements d'album et les numéros de série des pistes audio pour créer une bibliothèque d'enregistrements musicaux standardisée.",
     "ko-KR": "FLAC/APE/DSD 무손실 오디오 트랙, 분할 트랙 CUE 및 팟캐스트 오디오의 경우 ID3 아티스트, 앨범 레코드 및 오디오 트랙 일련 번호를 추출하여 표준화된 음악 레코드 라이브러리 구축",
-    "$files": ["src/electron/config/local-workflow-source.ts(23082-23157)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(23292-23368)"],
     "$id": 25063
   },
   "[音轨序号]_[曲目名称]_[演绎歌手]": {
@@ -347,7 +347,7 @@
     "de-DE": "[Titelnummer]_[Titelname]_[Interpretierender Sänger]",
     "fr-FR": "[Numéro de la piste]_[Nom de la piste]_[Chanteur interprète]",
     "ko-KR": "[트랙번호]_[트랙명]_[출연가수]",
-    "$files": ["src/electron/config/local-workflow-source.ts(23234-23258)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(23449-23473)"],
     "$id": 25074
   },
   "日常办公文档与汇报材料流": {
@@ -360,7 +360,7 @@
     "de-DE": "Täglicher Bürodokumenten- und Berichtsmaterialfluss",
     "fr-FR": "Flux de documents de bureau quotidiens et de reporting",
     "ko-KR": "일일 사무 문서 및 보고 자료 흐름",
-    "$files": ["src/electron/config/local-workflow-source.ts(25877-25893)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(26107-26123)"],
     "$id": 25108
   },
   "面向日常 Office 办公套件与 PDF 资料，提取报告主题、所属项目与拟写部门，快速规范重命名并分发至办公层级目录": {
@@ -373,7 +373,7 @@
     "de-DE": "Extrahieren Sie für tägliche Office-Suiten und PDF-Materialien Berichtsthemen, zugehörige Projekte und Schreibabteilungen, benennen Sie sie schnell um und verteilen Sie sie an Verzeichnisse auf Büroebene",
     "fr-FR": "Pour les suites Office quotidiennes et les documents PDF, extrayez les sujets de rapports, les projets affiliés et les services de rédaction, renommez-les et distribuez-les rapidement dans des répertoires au niveau du bureau.",
     "ko-KR": "일일 Office 제품군 및 PDF 자료의 경우 보고서 주제, 관련 프로젝트 및 집필 부서를 추출하고 신속하게 이름을 변경하여 사무실 수준 디렉토리에 배포합니다.",
-    "$files": ["src/electron/config/local-workflow-source.ts(25979-26049)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(26213-26284)"],
     "$id": 25167
   },
   "[汇报主题]_[业务事项]_[拟写部门]": {
@@ -386,7 +386,7 @@
     "de-DE": "[Thema des Berichts]_[Geschäftsangelegenheiten]_[Vorbereitungsabteilung]",
     "fr-FR": "[Sujet du rapport]_[Questions commerciales]_[Département de préparation]",
     "ko-KR": "[보고주제]_[업무사항]_[준비부서]",
-    "$files": ["src/electron/config/local-workflow-source.ts(26126-26150)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(26365-26389)"],
     "$id": 25169
   },
   "财务法务合同与凭证审计流": {
@@ -399,7 +399,7 @@
     "de-DE": "Finanzrechtlicher Vertrags- und Gutscheinprüfungsablauf",
     "fr-FR": "Flux d'audit des contrats juridiques financiers et des pièces justificatives",
     "ko-KR": "금융법률계약 및 바우처 감사 흐름",
-    "$files": ["src/electron/config/local-workflow-source.ts(28941-28957)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(29195-29211)"],
     "$id": 25180
   },
   "黑名单阻断临时杂质文件，深度 OCR 识别签署双方、业务性质与合同金额，组装规范归档名并沉淀至财务年审目录树": {
@@ -412,7 +412,7 @@
     "de-DE": "Die Blacklist blockiert temporäre Verunreinigungsdateien, eine detaillierte OCR identifiziert die Unterzeichnerparteien, die Geschäftsart und den Vertragsumfang, stellt standardisierte Archivnamen zusammen und legt sie im Verzeichnisbaum der jährlichen Finanzberichte ab.",
     "fr-FR": "La liste noire bloque les fichiers d'impuretés temporaires, l'OCR approfondi identifie les parties signataires, la nature de l'entreprise et le montant du contrat, rassemble les noms d'archives standardisés et les dépose dans l'arborescence du répertoire de revue financière annuelle.",
     "ko-KR": "블랙리스트는 임시 불순물 파일을 차단하고, 심층 OCR은 서명 당사자, 비즈니스 성격 및 계약 금액을 식별하고, 표준화된 아카이브 이름을 모아 재무 연간 검토 디렉터리 트리에 보관합니다.",
-    "$files": ["src/electron/config/local-workflow-source.ts(29045-29110)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(29303-29369)"],
     "$id": 25186
   },
   "[签署双方]_[业务性质]_[标的要点]": {
@@ -425,7 +425,7 @@
     "de-DE": "[Unterzeichnende Parteien]_[Art des Geschäfts]_[Wichtige Punkte des Gegenstands]",
     "fr-FR": "[Parties signataires]_[Nature de l'activité]_[Points clés du sujet]",
     "ko-KR": "[체결 당사자]_[업무 성격]_[주제의 핵심]",
-    "$files": ["src/electron/config/local-workflow-source.ts(29187-29211)"],
+    "$files": ["src/electron/config/local-workflow-source.ts(29450-29474)"],
     "$id": 25268
   }
 }

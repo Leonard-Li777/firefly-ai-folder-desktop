@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-11-05T15:13:10.357Z",
+  "generatedAt": "2026-11-08T04:58:55.831Z",
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources"
@@ -226,7 +226,19 @@
         "sha256": "aa6f5f47391a9ee30d3cfcb42029b449fb03496d8161ee9102cb2f5df6c1859b",
         "size": 8972400,
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/ram-assets-1.0.0.zip"
-      }
+      },
+      "files": [
+        {
+          "name": "ram_tag_embeddings.bin",
+          "size": 9390080,
+          "sha256": "8c0ef9a0e8ceb99687e9cee8953b271f42e2297f400ba9331b9057e43d8d7f8b"
+        },
+        {
+          "name": "ram_pan_projection.json",
+          "size": 805740,
+          "sha256": "3e418e7d7d13f5baee77e3db3eb2d11b78eb8ee08b93a408aa0e3145520c6747"
+        }
+      ]
     }
   },
   "engines": {
