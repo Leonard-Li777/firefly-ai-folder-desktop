@@ -355,7 +355,7 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
     author_name: null,
     availability: 'coming_soon',
     delist_reason: null,
-    total_bytes: 42000000,
+    total_bytes: 0,
     install_state: 'not_installed',
     description: '可以透视压缩包中的内容，并生成标签和描述等',
     icon: 'Archive'
@@ -370,7 +370,7 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
     availability: 'approved',
     delist_reason: null,
     total_bytes: 0,
-    install_state: 'not_installed',
+    install_state: 'installed',
     description:
       '对外提供本地 HTTP API 与 OpenClaw/外部智能体通信桥梁，支持渐进式语义检索、视频高光切片定位与自动化整理方案推送',
     icon: 'FolderSync'
@@ -572,8 +572,8 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
           install_state: 'downloading',
           error_message: null,
           download_progress: {
-            percentage: 5,
-            speed_bytes_per_sec: 1024 * 1024 * 4.2,
+            percentage: 0,
+            speed_bytes_per_sec: 0,
             is_resumed: false
           }
         }
@@ -723,7 +723,7 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
         if (m.id !== id) return m
         return {
           ...m,
-          install_state: progress.percentage >= 100 ? 'active' : 'downloading',
+          install_state: m.install_state === 'active' ? 'active' : 'downloading',
           download_progress: progress
         }
       })
