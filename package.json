@@ -78,6 +78,8 @@
     "test:unit:renderer": "cross-env AI_ENGINE=llama.cpp pnpm build:prebuild && cross-env AI_ENGINE=llama.cpp node ../../scripts/test-electron.js run pro/tests/unit/renderer",
     "test:integration": "cross-env AI_ENGINE=llama.cpp pnpm build:prebuild && cross-env AI_ENGINE=llama.cpp pnpm build && cross-env NODE_ENV=test playwright test --config=pro/tests/integration/config/playwright.config.ts",
     "test:e2e": "node ../../scripts/run-local-release-test.mjs",
+    "test:ground-truth": "node ../../scripts/test-ground-truth.mjs --self-check",
+    "test:tier3": "node ../../scripts/test-tier3-probes.mjs",
     "test:coverage": "cross-env AI_ENGINE=llama.cpp pnpm build:prebuild && cross-env AI_ENGINE=llama.cpp node ../../scripts/test-electron.js run pro/tests/unit --coverage",
     "dev:legacy": "node pro/scripts/run.js dev-runner.mjs",
     "build:sync": "pnpm run build:prebuild && electron-vite build && (robocopy out_build out\\firefly-ai-folder-win32-x64\\resources\\app\\out_build /E /IS /IT /NC /NS /NP /NFL /NDL || exit 0)",
