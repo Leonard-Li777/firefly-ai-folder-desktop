@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-11-08T04:58:55.831Z",
+  "generatedAt": "2026-11-09T09:07:02.717Z",
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources"
@@ -169,14 +169,31 @@
       }
     },
     "nsfw-l3": {
-      "version": "1.0.0",
+      "version": "1.2.0",
       "source": "shared",
       "asset": {
-        "name": "nsfw-l3-1.0.0.zip",
-        "sha256": "84383b64d723d31ec3ab940522f866ff1979a24454269cd6336ee2fc98ff2ddf",
-        "size": 21966375,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/nsfw-l3-1.0.0.zip"
-      }
+        "name": "nsfw-l3-1.2.0.zip",
+        "sha256": "929e5e074783194c8af976cab37b9dff43c2dfddb6626ee2041e2517c3cc443f",
+        "size": 33311367,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/nsfw-l3-1.2.0.zip"
+      },
+      "files": [
+        {
+          "name": "model_manifest.json",
+          "size": 21393,
+          "sha256": "df72fead2463ae124599d020e253bf08ee8f9a2fbddd8ba5bff71be1ce7f7a38"
+        },
+        {
+          "name": "nsfw_l3_int8.onnx",
+          "size": 31397696,
+          "sha256": "11a04bdc58fabc152e8b9248cc19bfe6df532240af12333ad4793c07229d8df0"
+        },
+        {
+          "name": "tokenizer.json",
+          "size": 1891928,
+          "sha256": "3acc19e1869c8a1915bfc1435fac935aad6d9a78bab92d7a5bad2ae216a9fc3f"
+        }
+      ]
     },
     "embeddinggemma-2-onnx": {
       "version": "1.0.0",
