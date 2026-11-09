@@ -74,6 +74,11 @@ const App: React.FC = () => {
   const [hasMountedAnalyzed, setHasMountedAnalyzed] = useState(false)
   const [hasMountedOrganize, setHasMountedOrganize] = useState(false)
   const [hasMountedVirtual, setHasMountedVirtual] = useState(false)
+  const [licenseInfo, setLicenseInfo] = useState<{
+    status: string
+    error?: string
+    canOffline?: boolean
+  } | null>(null)
   const [isDeviceBindOpen, setIsDeviceBindOpen] = useState(false)
 
   // 首次启动时检测当前设备是否已绑定微信小程序账号（未登录强制扫码绑定，不可跳过）
@@ -262,11 +267,6 @@ const App: React.FC = () => {
     return 'config'
   })
   const [startupMessage, setStartupMessage] = useState<string>(t('正在准备启动应用...'))
-  const [licenseInfo, setLicenseInfo] = useState<{
-    status: string
-    error?: string
-    canOffline?: boolean
-  } | null>(null)
   const forceConfigFlagConsumedRef = useRef(false)
   // PRD-0044（S5 提前摘除）：模型下载完成"立即激活"确认弹窗链删除，模型激活归萤核AI引擎独占
 
