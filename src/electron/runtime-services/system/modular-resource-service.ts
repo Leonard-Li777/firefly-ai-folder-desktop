@@ -1491,46 +1491,119 @@ export class ModularResourceService implements IModularResourceService {
     onProgress?: (event: ModuleDownloadProgressEvent) => void
   ): Promise<void> {
     const dao = this.getDao()
-    const downloadUrl = task.active_url || spec.active_url
-    if (!downloadUrl) {
-      dao.resources.markVerifiedSync(task.resource_id, false, 'MISSING_ACTIVE_DOWNLOAD_URL')
+    const candidateUrls: string[] = []
+    if (task.active_url) candidateUrls.push(task.active_url)
+    if (spec.active_url && !candidateUrls.includes(spec.active_url))
+      candidateUrls.push(spec.active_url)
+    if (Array.isArray((spec as any).urls)) {
+      for (const u of (spec as any).urls) {
+        if (u && !candidateUrls.includes(u)) candidateUrls.push(u)
+      }
+    }
+    if (Array.isArray((task as any).urls)) {
+      for (const u of (task as any).urls) {
+        if (u && !candidateUrls.includes(u)) candidateUrls.push(u)
+      }
+    }
+    if (candidateUrls.length === 0) {
+      dao.resources.markVerifiedSync(
+        task.resource_id,
+        false,
+        undefined,
+        'MISSING_ACTIVE_DOWNLOAD_URL'
+      )
       throw new Error(`MISSING_ACTIVE_DOWNLOAD_URL: ${task.resource_id}`)
     }
 
     const archivePath = this.resolveDownloadArchivePath(task.resource_id, task.asset_name)
     const partPath = `${archivePath}.part`
     const hadPartBefore = fs.existsSync(partPath) && fs.statSync(partPath).size > 0
+    const targetAbsDir = this.resolvePhysicalPath(task.target_local_path)
+
+    // ISS-12: 动态磁盘门禁扣减检查
+    const partDiskBytes = fs.existsSync(partPath) ? fs.statSync(partPath).size : 0
+    const diskCheck = checkDiskSpace(targetAbsDir, {
+      archiveBytes: task.expected_bytes,
+      existingPartDiskBytes: partDiskBytes,
+      maxUncompressedBytes: Math.round(task.expected_bytes * 1.5),
+      isLocalPreset: false
+    })
+    if (!diskCheck.sufficient) {
+      const errMsg = `ENOSPC: 磁盘剩余空间不足 (需要 ${(diskCheck.requiredBytes / 1024 / 1024).toFixed(1)}MB, 可用 ${(diskCheck.availableBytes / 1024 / 1024).toFixed(1)}MB)`
+      dao.resources.markVerifiedSync(task.resource_id, false, undefined, errMsg)
+      throw new Error(errMsg)
+    }
 
     dao.resources.updateProgressSync(task.resource_id, task.downloaded_bytes || 0, 'downloading')
 
-    const result = await this.downloadService.downloadWithVerification({
-      taskId: `${moduleId}:${task.resource_id}`,
-      url: downloadUrl,
-      destPath: archivePath,
-      expectedBytes: task.expected_bytes,
-      expectedSha256: task.expected_sha256,
-      etag: task.etag ?? undefined,
-      transport: this.transport,
-      onProgress: prog => {
-        const pct = Math.min(100, Math.round(prog.percent))
-        dao.resources.updateProgressSync(task.resource_id, prog.receivedBytes, 'downloading')
-        this.liveProgress.set(moduleId, {
-          percentage: pct,
-          speed_bytes_per_sec: prog.speed,
-          is_resumed: hadPartBefore
-        })
-        onProgress?.({
-          moduleId,
-          resourceId: task.resource_id,
-          downloadedBytes: prog.receivedBytes,
-          expectedBytes: prog.totalBytes || task.expected_bytes,
-          percentage: pct,
-          speedBytesPerSec: prog.speed,
-          isResumed: hadPartBefore,
-          state: 'downloading'
-        })
-      }
-    })
+    const hasMultipleUrls =
+      (Array.isArray((spec as any).urls) && (spec as any).urls.length > 1) ||
+      (Array.isArray((task as any).urls) && (task as any).urls.length > 1)
+
+    let result: VerifiedDownloadResult
+    if (hasMultipleUrls && typeof this.downloadService.downloadWithFixedBlocks === 'function') {
+      result = await this.downloadService.downloadWithFixedBlocks({
+        taskId: `${moduleId}:${task.resource_id}`,
+        assetId: task.resource_id,
+        urls: candidateUrls,
+        destPath: archivePath,
+        expectedBytes: task.expected_bytes,
+        expectedSha256: task.expected_sha256,
+        router: this.sourceRouter,
+        transport: this.transport,
+        onProgress: prog => {
+          // ISS-13: 字节加权下载阶段 0 ~ 92%
+          const total = prog.totalBytes || task.expected_bytes || 1
+          const pct = Math.min(92, Math.round((prog.receivedBytes / total) * 92))
+          dao.resources.updateProgressSync(task.resource_id, prog.receivedBytes, 'downloading')
+          this.liveProgress.set(moduleId, {
+            percentage: pct,
+            speed_bytes_per_sec: prog.speed,
+            is_resumed: hadPartBefore
+          })
+          onProgress?.({
+            moduleId,
+            resourceId: task.resource_id,
+            downloadedBytes: prog.receivedBytes,
+            expectedBytes: total,
+            percentage: pct,
+            speedBytesPerSec: prog.speed,
+            isResumed: hadPartBefore,
+            state: 'downloading'
+          })
+        }
+      })
+    } else {
+      result = await this.downloadService.downloadWithVerification({
+        taskId: `${moduleId}:${task.resource_id}`,
+        url: candidateUrls[0],
+        destPath: archivePath,
+        expectedBytes: task.expected_bytes,
+        expectedSha256: task.expected_sha256,
+        etag: task.etag ?? undefined,
+        transport: this.transport,
+        onProgress: prog => {
+          const total = prog.totalBytes || task.expected_bytes || 1
+          const pct = Math.min(92, Math.round((prog.receivedBytes / total) * 92))
+          dao.resources.updateProgressSync(task.resource_id, prog.receivedBytes, 'downloading')
+          this.liveProgress.set(moduleId, {
+            percentage: pct,
+            speed_bytes_per_sec: prog.speed,
+            is_resumed: hadPartBefore
+          })
+          onProgress?.({
+            moduleId,
+            resourceId: task.resource_id,
+            downloadedBytes: prog.receivedBytes,
+            expectedBytes: total,
+            percentage: pct,
+            speedBytesPerSec: prog.speed,
+            isResumed: hadPartBefore,
+            state: 'downloading'
+          })
+        }
+      })
+    }
 
     if (result.etag || result.lastModified) {
       dao.resources.updateHeadersSync(task.resource_id, result.etag, result.lastModified)
@@ -1558,9 +1631,9 @@ export class ModularResourceService implements IModularResourceService {
       throw new Error(errMsg)
     }
 
-    // 4. 若为 .zip 或 .ffp 归档，调用 safeExtractZip（内置两层 Zip Slip 防御）解压至 .tmp-<uuid> 并原子 rename
-    const targetAbsDir = this.resolvePhysicalPath(task.target_local_path)
+    // 4. 若为 .zip 或 .ffp 归档，调用 safeExtractZip（带意图日志与 renameWithRetry）
     const lowerAsset = task.asset_name.toLowerCase()
+    const intentsDir = path.join(this.getBaseDir(), '.intents')
     try {
       if (lowerAsset.endsWith('.zip') || lowerAsset.endsWith('.ffp')) {
         onProgress?.({
@@ -1568,12 +1641,12 @@ export class ModularResourceService implements IModularResourceService {
           resourceId: task.resource_id,
           downloadedBytes: result.finalBytes,
           expectedBytes: task.expected_bytes,
-          percentage: 99,
+          percentage: 95,
           speedBytesPerSec: 0,
           isResumed: Boolean(result.isResumed),
           state: 'extracting'
         })
-        await safeExtractZip(archivePath, targetAbsDir)
+        await safeExtractZip(archivePath, targetAbsDir, intentsDir)
         // 解压成功后写入 .ready 标记供后续毫秒级快检复用
         const sha8 = (task.expected_sha256 || '').slice(0, 8)
         if (sha8) {
@@ -1614,7 +1687,7 @@ export class ModularResourceService implements IModularResourceService {
           }
         }
       } else {
-        // 非压缩包单文件资源：直接移入目标目录
+        // 非压缩包单文件资源：直接移入目标目录 (使用 renameWithRetry 防止杀软冲突)
         if (!fs.existsSync(targetAbsDir)) {
           fs.mkdirSync(targetAbsDir, { recursive: true })
         }
@@ -1622,7 +1695,7 @@ export class ModularResourceService implements IModularResourceService {
         if (fs.existsSync(destFile)) {
           fs.unlinkSync(destFile)
         }
-        fs.renameSync(archivePath, destFile)
+        await renameWithRetry(archivePath, destFile)
       }
     } catch (extractErr: any) {
       const errMsg = extractErr?.message || String(extractErr)
