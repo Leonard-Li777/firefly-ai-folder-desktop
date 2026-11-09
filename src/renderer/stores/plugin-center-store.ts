@@ -370,7 +370,7 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
     availability: 'approved',
     delist_reason: null,
     total_bytes: 0,
-    install_state: 'installed',
+    install_state: 'active',
     description:
       '对外提供本地 HTTP API 与 OpenClaw/外部智能体通信桥梁，支持渐进式语义检索、视频高光切片定位与自动化整理方案推送',
     icon: 'FolderSync'
