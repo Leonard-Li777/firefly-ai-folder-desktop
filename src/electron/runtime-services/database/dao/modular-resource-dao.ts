@@ -77,7 +77,10 @@ export interface BuiltinModuleRecord {
 export type DownloadState =
   | 'pending'
   | 'downloading'
+  | 'verifying'
+  | 'extracting'
   | 'paused'
+  | 'cancelled'
   | 'completed'
   | 'failed'
   | 'pending_delete'
