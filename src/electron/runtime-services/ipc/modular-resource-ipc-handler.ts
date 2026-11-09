@@ -10,7 +10,7 @@
  * - modular-resource:reconcile -> 执行启动期对账与孤儿清理
  */
 
-import { ipcMain, BrowserWindow, dialog } from 'electron'
+import { ipcMain, BrowserWindow, dialog, app } from 'electron'
 import { logger, LogCategory } from '@firefly/shared'
 import {
   modularResourceService,
@@ -79,10 +79,6 @@ export function registerModularResourceIpcHandlers(
       const res = await service.installModule(moduleId, progressEvt => {
         broadcastModularResourceProgress(progressEvt)
       })
-      if (moduleId === 'ai_organize_skill') {
-        const { aiSkillApiService } = await import('../ai-skill-api-service')
-        await aiSkillApiService.reconcile()
-      }
       return res
     } catch (err: any) {
       logger.error(LogCategory.MAIN, `[ModularResourceIPC] install(${moduleId}) 失败:`, err)
@@ -93,10 +89,6 @@ export function registerModularResourceIpcHandlers(
   ipcMain.handle('modular-resource:uninstall', async (_event, moduleId: string) => {
     try {
       const res = await service.uninstallModule(moduleId)
-      if (moduleId === 'ai_organize_skill') {
-        const { aiSkillApiService } = await import('../ai-skill-api-service')
-        await aiSkillApiService.reconcile()
-      }
       return res
     } catch (err: any) {
       logger.error(LogCategory.MAIN, `[ModularResourceIPC] uninstall(${moduleId}) 失败:`, err)
@@ -118,10 +110,6 @@ export function registerModularResourceIpcHandlers(
     ) => {
       try {
         const res = await service.updateModuleState(moduleId, patch)
-        if (moduleId === 'ai_organize_skill') {
-          const { aiSkillApiService } = await import('../ai-skill-api-service')
-          await aiSkillApiService.reconcile()
-        }
         return res
       } catch (err: any) {
         logger.error(LogCategory.MAIN, `[ModularResourceIPC] update-state(${moduleId}) 失败:`, err)

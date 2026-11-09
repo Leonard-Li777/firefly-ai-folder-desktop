@@ -180,7 +180,7 @@ describe('PluginCenterOverlay (弹层交互、失焦保护与配置挂载)', () 
   it('点击高级 AI 引擎配置按钮时挂载 AIEngineConfigSettings', () => {
     act(() => {
       usePluginCenterStore.getState().openOverlay()
-      usePluginCenterStore.getState().setConfiguringModuleId('ai_organize_skill')
+      usePluginCenterStore.getState().setConfiguringModuleId('advanced_ai_engine')
     })
 
     render(<PluginCenterOverlay />)

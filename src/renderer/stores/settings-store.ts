@@ -127,6 +127,12 @@ export const systemSettingsCategories = (): ISettingsCategoryInfo[] => [
     name: t('AI分析忽略规则'),
     icon: 'filter',
     description: t('全系统通用文件与目录排除黑名单')
+  },
+  {
+    id: SettingsCategory.EXTERNAL_API,
+    name: t('萤核对外接口'),
+    icon: 'share',
+    description: t('对外 HTTP API、智能体连接状态与生态集成')
   }
 ]
 

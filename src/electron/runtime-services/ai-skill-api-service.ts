@@ -1,10 +1,18 @@
 import { t } from '@app/languages'
 import * as http from 'node:http'
 import * as fs from 'node:fs/promises'
+import * as fsSync from 'node:fs'
+import * as crypto from 'node:crypto'
 import * as path from 'path'
 import { BrowserWindow } from 'electron'
 import { logger, LogCategory, APP_PORTS } from '@firefly/shared'
 import * as iconv from 'iconv-lite'
+import {
+  type ExternalApiActivityInfo,
+  type ExternalApiTestResultDTO,
+  type AiSkillDiscoveryFileV1,
+  EXTERNAL_API_CAPABILITIES
+} from '@firefly/types'
 import { databaseService } from './database/database-service'
 import { analysisQueueService } from './analysis-queue-service'
 import { organizeRealDirectoryService, virtualDirectoryService } from '../main/state'
@@ -196,12 +204,39 @@ export class AISkillApiService {
   private configuredPort: number = APP_PORTS.AI_SKILL_API
   private actualPort = 0
   private configFilePath = ''
-  private reconcilePromise: Promise<void> | null = null
   private inFlightAbortControllers: Set<AbortController> = new Set()
   private activeSearchesCount = 0
 
-  constructor(port: number = APP_PORTS.AI_SKILL_API, userDataPath?: string) {
+  // 生命周期、安全与探针状态
+  private acceptingRequests = false
+  private probeNonce: string = crypto.randomUUID()
+  private inFlightRequests = 0
+  private activeSseChannels: Set<SseChannel> = new Set()
+  private currentEpoch = 0
+  private startedAt: Date | null = null
+  private discoveryPresent = false
+  private crashListeners: Set<(err: Error) => void> = new Set()
+
+  // 外部调用活动统计
+  private totalRequests = 0
+  private lastCallTimestamp: number | null = null
+  private lastCaller: string | null = null
+  private lastEndpoint: string | null = null
+  private lastStatusCode: number | null = null
+
+  // 时间常量注入接缝 (REV-ISS-10.1 DoD)
+  private readonly drainBudgetMs: number
+  private readonly stopBudgetMs: number
+
+  constructor(
+    port: number = APP_PORTS.AI_SKILL_API,
+    userDataPath?: string,
+    options?: { drainBudgetMs?: number; stopBudgetMs?: number }
+  ) {
     this.configuredPort = port
+    // 默认排空预算 800ms + 强制关闭 1000ms = 1800ms，严格受控于 before-quit 2500ms 守护时限内
+    this.drainBudgetMs = options?.drainBudgetMs ?? 800
+    this.stopBudgetMs = options?.stopBudgetMs ?? 1000
     if (userDataPath) {
       this.configFilePath = path.join(userDataPath, 'ai-skill-config.json')
     } else {
@@ -214,6 +249,61 @@ export class AISkillApiService {
         // 非 Electron / 单测环境
       }
     }
+    // 启动期安全自愈：清理损坏或孤儿发现文件 (TEST-EXT-10 / Spec §2.2)
+    this.cleanupOrphanDiscoveryOnStartup()
+  }
+
+  /**
+   * 启动期安全清理孤儿或损坏发现文件
+   */
+  private cleanupOrphanDiscoveryOnStartup(): void {
+    try {
+      if (!this.configFilePath || !fsSync.existsSync(this.configFilePath)) return
+      const content = fsSync.readFileSync(this.configFilePath, 'utf8')
+      let config: any
+      try {
+        config = JSON.parse(content)
+      } catch {
+        // 非法 JSON 损坏文件，直接清理 (TEST-EXT-10)
+        logger.warn(LogCategory.SYSTEM, `[AISkillApi] 清理损坏的发现文件: ${this.configFilePath}`)
+        fsSync.unlinkSync(this.configFilePath)
+        return
+      }
+
+      if (config.service !== 'firefly-ai-skill-api') {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[AISkillApi] 发现文件 service 不匹配 (${config.service})，拒绝覆盖或删除`
+        )
+        return
+      }
+
+      if (config.pid === process.pid) return // 本进程有效
+
+      // D-03: 单实例互斥锁下，属于本服务的旧发现文件必属旧残留
+      // isPidAlive 仅用于日志精确分类 (CRASH_RESIDUE vs ZOMBIE_OR_REUSED_PID)，不作为保留死文件的依据
+      const isAlive = this.isPidAlive(config.pid)
+      const residueType = isAlive ? 'ZOMBIE_OR_REUSED_PID' : 'CRASH_RESIDUE'
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[AISkillApi] 清理孤儿发现文件 (分类: ${residueType}, 原PID: ${config.pid}): ${this.configFilePath}`
+      )
+      fsSync.unlinkSync(this.configFilePath)
+    } catch (err: any) {
+      if (err.code !== 'ENOENT') {
+        logger.warn(LogCategory.SYSTEM, '[AISkillApi] 启动期检查旧发现文件异常:', err)
+      }
+    }
+  }
+
+  private isPidAlive(pid: number): boolean {
+    if (!pid || typeof pid !== 'number') return false
+    try {
+      process.kill(pid, 0)
+      return true
+    } catch (e: any) {
+      return e.code === 'EPERM'
+    }
   }
 
   getActualPort(): number {
@@ -221,201 +311,352 @@ export class AISkillApiService {
   }
 
   isRunning(): boolean {
-    return this.server !== null
+    return this.server !== null && this.acceptingRequests
   }
 
-  async reconcile(): Promise<void> {
-    if (this.reconcilePromise) {
-      return this.reconcilePromise
+  getUptimeSec(): number | null {
+    if (!this.startedAt) return null
+    return Math.max(0, Math.floor((Date.now() - this.startedAt.getTime()) / 1000))
+  }
+
+  getActivitySnapshot(): ExternalApiActivityInfo {
+    return {
+      totalRequests: this.totalRequests,
+      lastCallTimestamp: this.lastCallTimestamp,
+      lastCaller: this.lastCaller,
+      lastEndpoint: this.lastEndpoint,
+      lastStatusCode: this.lastStatusCode
     }
-
-    this.reconcilePromise = (async () => {
-      try {
-        const { modularResourceService } = await import('./system/modular-resource-service')
-        const modules = modularResourceService.listModules()
-        const skillModule = modules.find(m => m.id === 'ai_organize_skill')
-        const shouldRun = modularResourceService.processManager
-          ? modularResourceService.processManager.isUsable('ai_organize_skill')
-          : skillModule?.install_state === 'active'
-
-        if (shouldRun) {
-          if (!this.server) {
-            try {
-              await this.start()
-            } catch (startErr: any) {
-              logger.error(LogCategory.SYSTEM, '[AISkillApiService] 启动失败:', startErr)
-              await modularResourceService.updateModuleState('ai_organize_skill', { active: false })
-              throw startErr
-            }
-          }
-        } else {
-          if (this.server) {
-            await this.stop()
-          }
-        }
-      } catch (err) {
-        logger.warn(LogCategory.SYSTEM, '[AISkillApiService] reconcile 异常:', err)
-      } finally {
-        this.reconcilePromise = null
-      }
-    })()
-
-    return this.reconcilePromise
   }
 
+  isDiscoveryPresent(): boolean {
+    return this.discoveryPresent
+  }
+
+  getConfigFilePath(): string {
+    return this.configFilePath
+  }
+
+  getProbeNonce(): string {
+    return this.probeNonce
+  }
+
+  onCrash(listener: (err: Error) => void): () => void {
+    this.crashListeners.add(listener)
+    return () => {
+      this.crashListeners.delete(listener)
+    }
+  }
+
+  private handleUnexpectedError(err: any): void {
+    logger.error(LogCategory.SYSTEM, '[AISkillApiService] 服务器非预期错误:', err)
+    for (const listener of this.crashListeners) {
+      try {
+        listener(err instanceof Error ? err : new Error(String(err)))
+      } catch {}
+    }
+  }
+
+  private handleUnexpectedClose(): void {
+    logger.warn(LogCategory.SYSTEM, '[AISkillApiService] 服务器在接受请求期间非预期关闭')
+    this.acceptingRequests = false
+    const err = new Error('服务器非预期意外关闭')
+    ;(err as any).code = 'CRASH'
+    for (const listener of this.crashListeners) {
+      try {
+        listener(err)
+      } catch {}
+    }
+  }
+
+  /**
+   * 启动发布事务 (Spec §2.3)
+   * 1. listen(exclusive: true) 绑定端口
+   * 2. 原子发布发现文件 (若失败立即回滚关服)
+   * 3. 宣告 acceptingRequests = true
+   */
   async start(): Promise<void> {
     if (this.server) return
 
-    let currentPort = this.configuredPort
-    let attempts = 0
-    const maxAttempts = 20
+    // 检查是否有粘性端口可复用 (38300 ~ 38319)
+    let stickyPort: number | null = null
+    try {
+      if (this.configFilePath && fsSync.existsSync(this.configFilePath)) {
+        const raw = fsSync.readFileSync(this.configFilePath, 'utf-8')
+        const parsed = JSON.parse(raw)
+        if (
+          parsed.service === 'firefly-ai-skill-api' &&
+          typeof parsed.port === 'number' &&
+          parsed.port >= APP_PORTS.AI_SKILL_API &&
+          parsed.port < APP_PORTS.AI_SKILL_API + 20 &&
+          !this.isPidAlive(parsed.pid)
+        ) {
+          stickyPort = parsed.port
+        }
+      }
+    } catch {}
 
-    while (attempts < maxAttempts) {
+    const candidatePorts: number[] = []
+    if (stickyPort !== null) {
+      candidatePorts.push(stickyPort)
+    }
+    const basePort = this.configuredPort
+    for (let p = basePort; p < basePort + 20; p++) {
+      if (!candidatePorts.includes(p)) {
+        candidatePorts.push(p)
+      }
+    }
+
+    let hasAccessError = false
+
+    for (const port of candidatePorts) {
       try {
-        await new Promise<void>((resolve, reject) => {
-          const server = http.createServer(async (req, res) => {
-            const handled = await this.handleRequest(req, res)
-            if (!handled && !res.writableEnded) {
-              this.sendError(res, 404, t('接口不存在'))
-            }
-          })
+        const server = http.createServer(async (req, res) => {
+          const handled = await this.handleRequest(req, res)
+          if (!handled && !res.writableEnded) {
+            this.sendError(res, 404, t('接口不存在'))
+          }
+        })
 
+        await new Promise<void>((resolve, reject) => {
           const onError = (err: any) => {
             server.off('listening', onListening)
-            if (err.code === 'EADDRINUSE' || err.code === 'EACCES') {
-              logger.warn(
-                LogCategory.SYSTEM,
-                `[AI Skill API] 端口 ${currentPort} 不可用 (${err.code})，准备尝试下一个端口 ${currentPort + 1}...`
-              )
-              currentPort++
-              server.close()
-              resolve()
-            } else {
-              logger.error(LogCategory.SYSTEM, '[AI Skill API] 服务启动未知错误', err)
-              server.close()
-              reject(err)
-            }
+            server.close()
+            reject(err)
           }
 
           const onListening = () => {
             server.off('error', onError)
             const addr = server.address()
             if (addr && typeof addr === 'object') {
-              currentPort = addr.port
+              this.actualPort = addr.port
+            } else {
+              this.actualPort = port
             }
             this.server = server
-            this.actualPort = currentPort
-            logger.info(
-              LogCategory.SYSTEM,
-              `[AI Skill API] 服务已独立启动，监听 http://127.0.0.1:${this.actualPort}`
-            )
-            this.writeConfigFile().catch(err =>
-              logger.error(LogCategory.SYSTEM, '[AI Skill API] 写入配置文件失败', err)
-            )
             resolve()
           }
 
           server.once('error', onError)
           server.once('listening', onListening)
-          server.listen(currentPort, '127.0.0.1')
+          // 环回独占监听
+          server.listen({ port, host: '127.0.0.1', exclusive: true })
         })
 
-        if (this.server) return
-      } catch (err) {
+        // 绑定成功
+        break
+      } catch (err: any) {
+        const code = err.code || ''
+        if (code === 'EADDRNOTAVAIL') {
+          // 本地环回栈异常，不作递增，快速失败归因 BIND_FAILED
+          const fatalErr = new Error(`本地环回栈异常 (${code}): ${err.message}`)
+          ;(fatalErr as any).code = 'BIND_FAILED'
+          throw fatalErr
+        }
+
+        if (code === 'EACCES' || code === 'EPERM' || code === 'WSAEACCES') {
+          hasAccessError = true
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[AI Skill API] 端口 ${port} 遇到端口特异性权限占用 (${code})，尝试下一个端口...`
+          )
+        } else if (code === 'EADDRINUSE') {
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[AI Skill API] 端口 ${port} 已被占用 (${code})，尝试下一个端口...`
+          )
+        } else {
+          const fatalErr = new Error(`绑定端口发生未知错误 (${code}): ${err.message}`)
+          ;(fatalErr as any).code = 'BIND_FAILED'
+          throw fatalErr
+        }
+      }
+    }
+
+    const runningServer = this.server as http.Server | null
+    if (!runningServer) {
+      if (hasAccessError) {
+        const err = new Error('绑定端口失败: 端口特异性权限不足且可用端口耗尽')
+        ;(err as any).code = 'BIND_FAILED'
+        throw err
+      } else {
+        const err = new Error('所有 20 个候选端口均已被占用')
+        ;(err as any).code = 'PORT_EXHAUSTED'
         throw err
       }
-      attempts++
     }
 
-    // 若 20 个端口全部探测占满，采用 listen(0, '127.0.0.1') 动态随机端口终极兜底
-    logger.warn(LogCategory.SYSTEM, '[AI Skill API] 预置端口段均不可用，尝试动态分配端口兜底...')
-    await new Promise<void>((resolve, reject) => {
-      const server = http.createServer(async (req, res) => {
-        const handled = await this.handleRequest(req, res)
-        if (!handled && !res.writableEnded) {
-          this.sendError(res, 404, t('接口不存在'))
-        }
-      })
-
-      server.once('error', reject)
-      server.once('listening', () => {
-        const addr = server.address()
-        if (addr && typeof addr === 'object') {
-          this.actualPort = addr.port
-        }
-        this.server = server
-        logger.info(
-          LogCategory.SYSTEM,
-          `[AI Skill API] 动态兜底端口分配成功，监听 http://127.0.0.1:${this.actualPort}`
-        )
-        this.writeConfigFile().catch(err =>
-          logger.error(LogCategory.SYSTEM, '[AI Skill API] 写入配置文件失败', err)
-        )
-        resolve()
-      })
-      server.listen(0, '127.0.0.1')
+    runningServer.on('error', (err: any) => {
+      this.handleUnexpectedError(err)
     })
+    runningServer.on('close', () => {
+      if (this.acceptingRequests) {
+        this.handleUnexpectedClose()
+      }
+    })
+
+    this.startedAt = new Date()
+
+    // 事务性发布发现文件
+    try {
+      await this.atomicPublishDiscoveryFile()
+    } catch (publishErr) {
+      logger.error(
+        LogCategory.SYSTEM,
+        '[AI Skill API] 发布发现文件事务失败，执行回滚并关闭端口:',
+        publishErr
+      )
+      this.acceptingRequests = false
+      const serverToClose = runningServer
+      this.server = null
+      this.actualPort = 0
+      this.startedAt = null
+      this.discoveryPresent = false
+
+      // D-05: 发布失败回滚时，确保不保留任何指向已关闭服务的死发现文件
+      try {
+        if (this.configFilePath && fsSync.existsSync(this.configFilePath)) {
+          const raw = fsSync.readFileSync(this.configFilePath, 'utf-8')
+          const parsed = JSON.parse(raw)
+          if (parsed.service === 'firefly-ai-skill-api') {
+            fsSync.unlinkSync(this.configFilePath)
+          }
+        }
+      } catch {}
+
+      await new Promise<void>(r => {
+        try {
+          serverToClose.closeAllConnections?.()
+        } catch {}
+        serverToClose.close(() => r())
+      })
+      throw publishErr
+    }
+
+    // 发布成功后才宣告就绪接客
+    this.acceptingRequests = true
+    logger.info(
+      LogCategory.SYSTEM,
+      `[AI Skill API] 服务启动成功并原子发布发现文件，监听 http://127.0.0.1:${this.actualPort}`
+    )
   }
 
+  /**
+   * 两阶段排空停止协议 (Spec §2.3)
+   * 阶段一：acceptingRequests=false ➔ 撤销发现文件 ➔ SSE 广播 stopping ➔ 排空在途请求 (预算 1500ms)
+   * 阶段二：强制回收连接 ➔ closeAllConnections ➔ 释放端口 (总预算 2000ms)
+   */
   async stop(): Promise<void> {
+    // 阶段一：排空与撤销
+    this.acceptingRequests = false
     await this.removeConfigFile()
+    this.discoveryPresent = false
 
-    for (const controller of this.inFlightAbortControllers) {
+    // 向所有存量 SSE 客户端广播 stopping 事件
+    for (const channel of this.activeSseChannels) {
       try {
-        controller.abort()
-      } catch {
-        // ignore
-      }
+        await channel.sendEvent('service-stopping', { reason: 'graceful-shutdown' })
+      } catch {}
     }
-    this.inFlightAbortControllers.clear()
 
+    // 排空在途请求 (drainBudgetMs 预算)
+    const drainStartTime = Date.now()
+    while (this.inFlightRequests > 0 && Date.now() - drainStartTime < this.drainBudgetMs) {
+      await new Promise(r => setTimeout(r, Math.min(50, this.drainBudgetMs)))
+    }
+
+    // 阶段二：强制回收连接与端口
     if (this.server) {
       const serverToClose = this.server
       this.server = null
-      await new Promise<void>(resolve => {
+      this.actualPort = 0
+      this.startedAt = null
+      this.currentEpoch++
+
+      for (const controller of this.inFlightAbortControllers) {
         try {
-          ;(serverToClose as any).closeAllConnections?.()
-        } catch {
-          // ignore
-        }
-        serverToClose.close(() => {
-          logger.info(LogCategory.SYSTEM, '[AI Skill API] 服务已停止')
-          resolve()
-        })
-      })
+          controller.abort()
+        } catch {}
+      }
+      this.inFlightAbortControllers.clear()
+
+      for (const channel of this.activeSseChannels) {
+        try {
+          channel.close()
+        } catch {}
+      }
+      this.activeSseChannels.clear()
+
+      await Promise.race([
+        new Promise<void>(resolve => {
+          try {
+            serverToClose.closeAllConnections?.()
+          } catch {}
+          serverToClose.close(() => {
+            logger.info(LogCategory.SYSTEM, '[AI Skill API] 服务已正常停止')
+            resolve()
+          })
+        }),
+        new Promise<void>(resolve => setTimeout(resolve, this.stopBudgetMs))
+      ])
     }
   }
 
-  private async writeConfigFile(): Promise<void> {
+  /**
+   * Windows 文件锁退避原子写 (V1 Schema)
+   */
+  private async atomicPublishDiscoveryFile(): Promise<void> {
     if (!this.configFilePath) return
-    const tmpPath = `${this.configFilePath}.tmp.${process.pid}.${Date.now()}`
-    const config = {
+    const tmpPath = `${this.configFilePath}.${process.pid}.${Date.now()}.${Math.random().toString(36).slice(2)}.tmp`
+    const config: AiSkillDiscoveryFileV1 = {
+      schemaVersion: 1,
+      service: 'firefly-ai-skill-api',
       host: '127.0.0.1',
       port: this.actualPort,
+      baseUrl: `http://127.0.0.1:${this.actualPort}`,
       pid: process.pid,
-      startedAt: new Date().toISOString(),
-      apiVersion: '1.2.0',
-      capabilities: {
-        progressiveSearch: true,
-        videoSegments: true,
-        organizeTemplates: true
+      startedAt: (this.startedAt || new Date()).toISOString(),
+      capabilities: EXTERNAL_API_CAPABILITIES
+    }
+    const payload = JSON.stringify(config, null, 2)
+    await fs.writeFile(tmpPath, payload, 'utf-8')
+
+    // Windows 文件锁指数退避重试 (20, 40, 80, 160, 320ms)
+    const backoffs = [20, 40, 80, 160, 320]
+    let renamed = false
+    let lastRenameErr: any = null
+
+    for (const delayMs of backoffs) {
+      try {
+        await fs.rename(tmpPath, this.configFilePath)
+        renamed = true
+        break
+      } catch (err: any) {
+        lastRenameErr = err
+        if (err.code === 'EBUSY' || err.code === 'EPERM' || err.code === 'EACCES') {
+          await new Promise(r => setTimeout(r, delayMs))
+        } else {
+          break
+        }
       }
     }
-    try {
-      await fs.writeFile(tmpPath, JSON.stringify(config, null, 2), 'utf-8')
-      await fs.rename(tmpPath, this.configFilePath)
-      logger.info(
-        LogCategory.SYSTEM,
-        `[AI Skill API] 已成功写出端口配置文件 (port: ${this.actualPort}): ${this.configFilePath}`
-      )
-    } catch (err) {
-      logger.error(LogCategory.SYSTEM, '[AI Skill API] 写入配置文件原子失败', err)
+
+    if (!renamed) {
       try {
         await fs.unlink(tmpPath)
-      } catch {
-        // ignore
-      }
+      } catch {}
+      const err = new Error(
+        `写入发现文件失败: ${lastRenameErr?.message || '重试耗尽'}`
+      )
+      ;(err as any).code = 'DISCOVERY_WRITE_FAILED'
+      throw err
     }
+
+    this.discoveryPresent = true
+    logger.info(
+      LogCategory.SYSTEM,
+      `[AI Skill API] 已成功原子写出端口配置文件 (port: ${this.actualPort}): ${this.configFilePath}`
+    )
   }
 
   private async removeConfigFile(): Promise<void> {
@@ -425,6 +666,82 @@ export class AISkillApiService {
     } catch {
       // 文件不存在则忽略
     }
+  }
+
+  /**
+   * 进程退出时的同步清理兜底 (DoD 10)
+   */
+  syncCleanupOnExit(): void {
+    try {
+      if (this.configFilePath && fsSync.existsSync(this.configFilePath)) {
+        const raw = fsSync.readFileSync(this.configFilePath, 'utf-8')
+        const parsed = JSON.parse(raw)
+        if (parsed.service === 'firefly-ai-skill-api' && parsed.pid === process.pid) {
+          fsSync.unlinkSync(this.configFilePath)
+        }
+      }
+    } catch {}
+  }
+
+  /**
+   * 真实环回 HTTP 探针探活 (带 Nonce)
+   */
+  async testSelfLoopback(): Promise<ExternalApiTestResultDTO> {
+    if (!this.server || this.actualPort === 0) {
+      return {
+        success: false,
+        latencyMs: null,
+        error: { code: 'NOT_RUNNING', message: '服务未启动' }
+      }
+    }
+    const startTime = Date.now()
+    return new Promise<ExternalApiTestResultDTO>(resolve => {
+      const req = http.get(
+        {
+          host: '127.0.0.1',
+          port: this.actualPort,
+          path: '/api/health',
+          headers: {
+            'X-Firefly-Probe': this.probeNonce
+          },
+          timeout: 2000
+        },
+        res => {
+          const latencyMs = Math.max(0, Date.now() - startTime)
+          const statusCode = res.statusCode
+          res.resume()
+          if (statusCode === 200) {
+            resolve({
+              success: true,
+              latencyMs,
+              statusCode
+            })
+          } else {
+            resolve({
+              success: false,
+              latencyMs,
+              statusCode,
+              error: { code: 'INTERNAL', message: `HTTP状态码异常: ${statusCode}` }
+            })
+          }
+        }
+      )
+      req.on('timeout', () => {
+        req.destroy()
+        resolve({
+          success: false,
+          latencyMs: null,
+          error: { code: 'PROBE_TIMEOUT', message: '本地环回探针响应超时' }
+        })
+      })
+      req.on('error', err => {
+        resolve({
+          success: false,
+          latencyMs: null,
+          error: { code: 'INTERNAL', message: err.message || '环回连接失败' }
+        })
+      })
+    })
   }
 
   private safeDecodeURIComponent(str: string): string {
@@ -512,31 +829,90 @@ export class AISkillApiService {
     })
   }
 
+  private recordBusinessRequest(
+    req: http.IncomingMessage,
+    pathname: string,
+    res: http.ServerResponse,
+    isProbe: boolean
+  ): void {
+    if (isProbe) return
+
+    const epoch = this.currentEpoch
+    this.inFlightRequests++
+    this.totalRequests++
+
+    const rawUa = (req.headers['user-agent'] as string) || 'unknown'
+    const cleanedUa = Array.from(
+      rawUa.replace(/[\x00-\x1F\x7F-\x9F\u200E\u200F\u202A-\u202E]/g, '')
+    )
+      .slice(0, 128)
+      .join('')
+
+    this.lastCaller = cleanedUa || 'unknown'
+    this.lastEndpoint = pathname
+    this.lastCallTimestamp = Date.now()
+
+    res.once('close', () => {
+      this.inFlightRequests = Math.max(0, this.inFlightRequests - 1)
+      if (this.currentEpoch === epoch && this.server) {
+        this.lastStatusCode = res.statusCode
+      }
+    })
+  }
+
   private async handleRequest(
     req: http.IncomingMessage,
     res: http.ServerResponse
   ): Promise<boolean> {
     let pathname = ''
     try {
-      // 1. Host 校验 (环回访问白名单)
-      const hostHeader = (req.headers.host || '').trim()
-      const [hostname] = hostHeader.split(':')
-      if (hostname !== '127.0.0.1' && hostname !== 'localhost') {
-        this.sendError(res, 403, 'Forbidden: loopback access only')
+      // 0. 安全响应头与跨域 OPTIONS 强阻断 (REV-ISS-08.1 DoD)
+      res.setHeader('X-Content-Type-Options', 'nosniff')
+      if (req.method === 'OPTIONS') {
+        this.sendError(res, 405, 'Method Not Allowed')
         return true
       }
 
-      // 2. Origin 校验 (防跨站恶意探测)
-      const originHeader = req.headers.origin
-      if (originHeader) {
-        try {
-          const u = new URL(originHeader)
-          if (u.hostname !== '127.0.0.1' && u.hostname !== 'localhost') {
-            this.sendError(res, 403, 'Forbidden: cross-origin requests from non-loopback rejected')
-            return true
-          }
-        } catch {
-          this.sendError(res, 403, 'Forbidden: invalid origin')
+      const isProbe = req.headers['x-firefly-probe'] === this.probeNonce
+
+      // 1. 服务未就绪且非内部自检探针，返回 503
+      if (!this.acceptingRequests && !isProbe) {
+        this.sendError(res, 503, 'Service Unavailable: Not accepting requests')
+        return true
+      }
+
+      // 2. 精确端口 Host 校验 (正则严格匹配 127.0.0.1:port 必带端口且与 actualPort 完全一致)
+      const hostHeader = (req.headers.host || '').trim()
+      const hostMatch = hostHeader.match(/^127\.0\.0\.1:(\d{1,5})$/)
+      if (!hostMatch) {
+        this.sendError(res, 403, 'Forbidden: Invalid Host header')
+        return true
+      }
+      const hostPort = Number(hostMatch[1])
+      if (this.actualPort > 0 && hostPort !== this.actualPort) {
+        this.sendError(res, 403, 'Forbidden: Invalid Host header')
+        return true
+      }
+
+      // 3. 跨站 Origin 强阻断 (浏览器发起跨站请求必带 Origin)
+      if (req.headers.origin) {
+        this.sendError(res, 403, 'Forbidden: Cross-origin requests not allowed')
+        return true
+      }
+
+      // 4. Sec-Fetch-Site 校验 (仅允许 same-origin 与 none)
+      const secFetchSite = req.headers['sec-fetch-site']
+      if (secFetchSite && secFetchSite !== 'same-origin' && secFetchSite !== 'none') {
+        this.sendError(res, 403, 'Forbidden: Sec-Fetch-Site rejected')
+        return true
+      }
+
+      // 5. 非 GET/HEAD 请求强制 application/json (物理绝杀 Simple CSRF)
+      const method = (req.method || 'GET').toUpperCase()
+      if (method !== 'GET' && method !== 'HEAD') {
+        const contentType = (req.headers['content-type'] || '').toLowerCase()
+        if (!contentType.includes('application/json')) {
+          this.sendError(res, 415, 'Unsupported Media Type: application/json required')
           return true
         }
       }
@@ -544,45 +920,51 @@ export class AISkillApiService {
       const parsedUrl = new URL(req.url || '', 'http://127.0.0.1')
       pathname = parsedUrl.pathname || ''
       const query = Object.fromEntries(parsedUrl.searchParams.entries())
-      const method = req.method
 
-      // 3. GET /api/health 纯内存健康检查
+      // 6. GET /api/health 纯内存健康检查 (支持自检探针快速放行)
       if (method === 'GET' && pathname === '/api/health') {
         this.sendSuccess(res, {
           status: 'ok',
+          service: 'firefly-ai-skill-api',
+          schemaVersion: 1,
           pid: process.pid,
+          startedAt: this.startedAt?.toISOString() || null,
           apiVersion: '1.2.0',
-          uptime: Math.round(process.uptime() * 10) / 10
+          uptime: this.getUptimeSec()
         })
         return true
       }
 
       if (method === 'GET' && pathname === '/api/workspaces') {
+        this.recordBusinessRequest(req, pathname, res, isProbe)
         const workspaces = await databaseService.getAllWorkspaceDirectories()
         this.sendSuccess(res, workspaces)
         return true
       }
 
       if (method === 'GET' && pathname === '/api/analysis/queue-status') {
-        const status = await analysisQueueService.getQueueStatus()
+        this.recordBusinessRequest(req, pathname, res, isProbe)
+        const status = await (analysisQueueService as any).getQueueStatus()
         this.sendSuccess(res, status)
         return true
       }
 
       if (method === 'GET' && pathname === '/api/analysis/progress') {
-        const progress = await analysisQueueService.getProgress()
+        this.recordBusinessRequest(req, pathname, res, isProbe)
+        const progress = await (analysisQueueService as any).getProgress()
         this.sendSuccess(res, progress)
         return true
       }
 
       if (method === 'GET' && pathname === '/api/files/analysis-data') {
+        this.recordBusinessRequest(req, pathname, res, isProbe)
         const fileId = query.fileId ? Number(query.fileId) : undefined
         const fields = query.fields ? (query.fields as string).split(',') : undefined
         const limit = Number(query.limit) || 20
         const offset = Number(query.offset) || 0
 
         if (fileId) {
-          const file = await databaseService.getFileAnalysisData(fileId, fields)
+          const file = await (databaseService as any).getFileAnalysisData(fileId, fields)
           if (!file) {
             this.sendError(res, 404, t('文件未找到'))
             return true
@@ -591,15 +973,16 @@ export class AISkillApiService {
           return true
         }
 
-        const files = await databaseService.getPagedFileAnalysisData(limit, offset, fields)
+        const files = await (databaseService as any).getPagedFileAnalysisData(limit, offset, fields)
         this.sendSuccess(
           res,
-          files.map(f => this.filterInfrastructureFields(f))
+          files.map((f: any) => this.filterInfrastructureFields(f))
         )
         return true
       }
 
       if (method === 'POST' && pathname === '/api/files/analysis-data-smart') {
+        this.recordBusinessRequest(req, pathname, res, isProbe)
         const body = await this.readBody(req)
         const filePath = body.filePath as string
         const autoQueue = body.autoQueue !== false
@@ -617,6 +1000,7 @@ export class AISkillApiService {
       }
 
       if (method === 'GET' && pathname === '/api/files/search') {
+        this.recordBusinessRequest(req, pathname, res, isProbe)
         // 4. 并发守卫：在途搜索请求上限 4
         if (this.activeSearchesCount >= 4) {
           res.writeHead(429, {
@@ -683,7 +1067,14 @@ export class AISkillApiService {
           }
 
           if (mode === 'stream') {
-            const channel = new SseChannel(res, () => abortController.abort())
+            const channel = new SseChannel(res, () => {
+              this.activeSseChannels.delete(channel)
+              abortController.abort()
+            })
+            this.activeSseChannels.add(channel)
+            res.once('close', () => {
+              this.activeSseChannels.delete(channel)
+            })
             params.onProgress = async (phase: 'phase1' | 'phase2' | 'phase3', progRes: any) => {
               if (channel.isClosed()) return
               const dtoItems = mapItemsToDTO(progRes?.items || [])
@@ -718,7 +1109,7 @@ export class AISkillApiService {
               } else {
                 const { TagTreeQuery } =
                   await import('./filesystem/virtual-directory-service/TagTreeQuery')
-                const tagTreeQuery = new TagTreeQuery(databaseService.getDb())
+                const tagTreeQuery = new TagTreeQuery((databaseService as any).getDb())
                 await tagTreeQuery.getFilteredFilesPaged(params)
               }
               await channel.sendEvent('done', { isSettled: true })
@@ -751,7 +1142,7 @@ export class AISkillApiService {
               } else {
                 const { TagTreeQuery } =
                   await import('./filesystem/virtual-directory-service/TagTreeQuery')
-                const tagTreeQuery = new TagTreeQuery(databaseService.getDb())
+                const tagTreeQuery = new TagTreeQuery((databaseService as any).getDb())
                 return await tagTreeQuery.getFilteredFilesPaged(params)
               }
             })()
@@ -778,7 +1169,7 @@ export class AISkillApiService {
                 searchDurationMs: duration,
                 degraded: false,
                 degradedReasons: [],
-                clipPending: Boolean(searchRes.clipPending),
+                clipPending: Boolean((searchRes as any).clipPending),
                 items: mapItemsToDTO(searchRes.items)
               })
             }
@@ -794,6 +1185,7 @@ export class AISkillApiService {
       }
 
       if (method === 'GET' && pathname === '/api/organize/templates') {
+        this.recordBusinessRequest(req, pathname, res, isProbe)
         const workspaceId = Number(query.workspaceId)
         const userInstruction = (query.userInstruction as string) || ''
 
@@ -819,6 +1211,7 @@ export class AISkillApiService {
       }
 
       if (method === 'GET' && pathname === '/api/virtual-directories') {
+        this.recordBusinessRequest(req, pathname, res, isProbe)
         const workspaceId = Number(query.workspaceId)
         if (!workspaceId) throw new Error('Missing workspaceId')
 
@@ -829,6 +1222,7 @@ export class AISkillApiService {
       }
 
       if (method === 'POST' && pathname === '/api/organize/apply-plan') {
+        this.recordBusinessRequest(req, pathname, res, isProbe)
         const body = await this.readBody(req)
         const rawName = body.name
         const rawStrategy = body.strategy

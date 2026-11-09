@@ -13,6 +13,7 @@ import { registerTTSIPCHandlers } from './tts'
 import { registerDeviceBindIPCHandlers } from './device-bind'
 import { registerPreviewIPCHandlers } from './preview'
 import { registerVoiceIPCHandlers } from './voice'
+import { registerExternalApiIPCHandlers } from './external-api'
 import { syncedDirectories } from '../state'
 import { logger, LogCategory } from '@firefly/shared'
 
@@ -34,6 +35,7 @@ export async function setupIPCHandlers(): Promise<void> {
   registerDeviceBindIPCHandlers()
   registerPreviewIPCHandlers()
   registerVoiceIPCHandlers()
+  registerExternalApiIPCHandlers()
 
   if (syncedDirectoriesCleanupInterval) {
     clearInterval(syncedDirectoriesCleanupInterval)

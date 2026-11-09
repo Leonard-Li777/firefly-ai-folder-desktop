@@ -1,7 +1,9 @@
 /**
  * 通用文件下载与资源解压服务
  * 基于 Electron 的 net 模块实现，支持自动代理、重定向、Range 206 断点续传、
- * 落地后单向流式 SHA-256 校验、两层防逃逸解压与 Windows Tombstone 删除协议。
+ * 固定 4MiB 块网格并发下载、流式 SHA-256 校验、两层防逃逸解压与 Windows 意图日志自愈协议。
+ *
+ * @doc-anchor: docs/specs/plugin-download-multithread-hash-verify-and-preset-fallback-spec.md
  */
 
 import { net, app as electronApp } from 'electron'

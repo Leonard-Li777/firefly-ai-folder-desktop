@@ -308,8 +308,6 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
       useSettingsStore.getState().openWorkspaceSettings({ targetTab: 'basic_ai_engine' })
     } else if (mod?.capability_slot === 'perception_nsfw' || id === 'perception_nsfw') {
       useSettingsStore.getState().openWorkspaceSettings({ targetTab: 'content_extraction' })
-    } else if (id === 'ai_organize_skill') {
-      useSettingsStore.getState().openSystemSettings(SettingsCategory.AI_ENGINE_CONFIG)
     } else {
       useSettingsStore.getState().openSystemSettings(SettingsCategory.INTERFACE)
     }
@@ -464,7 +462,6 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-5xl mx-auto w-full space-y-6">
             {configuringModule.id === 'advanced_ai_engine' ||
-            configuringModule.id === 'ai_organize_skill' ||
             configuringModule.id === 'engine_classic_light' ||
             configuringModule.id === 'engine_gemma_unified' ||
             configuringModule.contributes?.settings?.componentId === 'basic_ai_engine' ? (

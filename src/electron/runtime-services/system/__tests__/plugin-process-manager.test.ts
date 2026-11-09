@@ -186,9 +186,9 @@ describe('PluginProcessManager (权威调度中枢与 isUsable 分层)', () => {
     } as BuiltinModuleRecord)
 
     // 2. 注册 builtin 模块（Node 内置服务）
-    mockModules.set('ai_organize_skill', {
-      id: 'ai_organize_skill',
-      name: 'AI Organize Skill',
+    mockModules.set('builtin_mock_service', {
+      id: 'builtin_mock_service',
+      name: 'Builtin Mock Service',
       version: '1.0.0',
       catalog_version: 1,
       category: 'tool',
@@ -223,7 +223,7 @@ describe('PluginProcessManager (权威调度中枢与 isUsable 分层)', () => {
 
     // 验证 omni_onnx 与 builtin：内存态虽无 PID，但只要 active 且无 holdReasons 即判定 isUsable = true
     expect(manager.isUsable('perception_nsfw')).toBe(true)
-    expect(manager.isUsable('ai_organize_skill')).toBe(true)
+    expect(manager.isUsable('builtin_mock_service')).toBe(true)
 
     // 验证 utility_process：因尚未启动子进程，判定为 false
     expect(manager.isUsable('custom_parser')).toBe(false)

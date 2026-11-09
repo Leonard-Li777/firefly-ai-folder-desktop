@@ -33,6 +33,11 @@ const logger = {
 }
 
 import type { ConfigKey } from '@firefly/types/config-types'
+import type {
+  ExternalApiStatusDTO,
+  ExternalApiTestResultDTO,
+  ExternalApiSetDesiredResult
+} from '@firefly/types'
 // PRD-0044（S5）：IModelRecommendation 类型导入随 recommendModelsByHardware IPC 清退删除
 // 仅类型导入（编译期擦除，不引入主进程运行时依赖），用于引擎桥 IPC 类型化（Fix-05）
 import type { EngineBridgeSnapshot } from './runtime-services/engine-bridge'
@@ -1513,6 +1518,22 @@ const electronAPI = {
       chunkIndex: number
       chunkText?: string
     }): Promise<ArrayBuffer | null> => ipcRenderer.invoke('tts:read-chunk', params)
+  },
+
+  externalApi: {
+    getStatus: (): Promise<ExternalApiStatusDTO> =>
+      ipcRenderer.invoke('external-api:get-status'),
+    setDesired: (enabled: boolean): Promise<ExternalApiSetDesiredResult> =>
+      ipcRenderer.invoke('external-api:set-desired', enabled),
+    testConnection: (): Promise<ExternalApiTestResultDTO> =>
+      ipcRenderer.invoke('external-api:test-connection'),
+    onStatusChanged: (callback: (status: ExternalApiStatusDTO) => void): (() => void) => {
+      const handler = (_event: any, status: ExternalApiStatusDTO) => callback(status)
+      ipcRenderer.on('external-api:status-changed', handler)
+      return () => {
+        ipcRenderer.off('external-api:status-changed', handler)
+      }
+    }
   }
 }
 

@@ -2,8 +2,10 @@
  * 插件中心与资源下载生命周期协调器 (ModularResourceService)
  *
  * 作为深模块（Deep Module），将 BuiltinModuleDao、ResourceDownloadDao 与底层文件/网络原语
- * （Range 206 断点续传、流式 SHA-256 校验、两层 Zip Slip 安全解压、Windows Tombstone 两阶段删除、
- * 启动期自愈与 IN-04 catalog_version 防回退）收拢在 6 个高杠杆接口背后。
+ * （三级探活拓扑、后备预置包直通、固定 4MiB 块网格断点续传、双轨源 AIMD 退避、
+ * 启动期自愈与 IN-04 catalog_version 防回退）收拢在统一的高杠杆接口背后。
+ *
+ * @doc-anchor: docs/specs/plugin-download-multithread-hash-verify-and-preset-fallback-spec.md
  */
 
 import * as fs from 'fs'
@@ -493,27 +495,6 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     firecore_cost: 0,
     total_bytes: 0,
     install_state: 'not_installed'
-  },
-  {
-    id: 'ai_organize_skill',
-    name: 'AI 整理助手与外部智能体 Skill API',
-    description:
-      '对外提供本地 HTTP API 与 OpenClaw/外部智能体通信桥梁，支持渐进式语义检索、视频高光切片定位与自动化整理方案推送',
-    icon: 'FolderSync',
-    kind: 'builtin-module',
-    version: '1.2.0',
-    catalog_version: 1,
-    category: 'tool',
-    capability_slot: 'tool',
-    slot_policy: 'multi_active',
-    backend_type: 'builtin',
-    author_code: 'official',
-    author_name: null,
-    availability: 'approved',
-    delist_reason: null,
-    firecore_cost: 0,
-    total_bytes: 0,
-    install_state: 'active'
   }
 ]
 

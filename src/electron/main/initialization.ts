@@ -253,6 +253,13 @@ export async function initDatabaseAndDependentServices(
 
     // 数据库就绪后，为新用户一次性插入 welcome_grant（幂等：确定性 txId + INSERT OR IGNORE）
     if (databaseService.db) {
+      // 清理已移出插件中心的历史内置模块记录 (TASK-01 / Genesis V1 幂等清扫)
+      try {
+        databaseService.db.prepare("DELETE FROM builtin_modules WHERE id = 'ai_organize_skill'").run()
+      } catch (cleanErr) {
+        logger.warn(LogCategory.MAIN, '[Initialization] 清理 ai_organize_skill 记录失败:', cleanErr)
+      }
+
       try {
         const { SystemIdentityService } =
           await import('../runtime-services/system/system-identity-service')
@@ -1053,20 +1060,37 @@ export async function initializeFullServices(): Promise<void> {
     registerServiceHealthChecks()
     const orchestrator = ConfigOrchestrator.getInstance()
 
-    // 启动 AI Skill API 服务 (由插件中心按需对账驱动)
+    // 启动 AI Skill API 协调器 (由全局配置 ENABLE_AI_SKILL_API 与设置页驱动)
     try {
+      const { aiSkillApiReconciler } = await import('../runtime-services/system/ai-skill-reconciler')
       const { aiSkillApiService } = await import('../runtime-services/ai-skill-api-service')
-      await aiSkillApiService.reconcile()
+      const initialEnabled = Boolean(orchestrator.getValue<boolean>('ENABLE_AI_SKILL_API') ?? false)
+      await aiSkillApiReconciler.initialize(initialEnabled)
+
+      orchestrator.onValueChange<boolean>('ENABLE_AI_SKILL_API', enabled => {
+        aiSkillApiReconciler.setDesired(Boolean(enabled)).catch(err => {
+          logger.warn(LogCategory.SYSTEM, '[AISkillApiReconciler] setDesired 失败:', err)
+        })
+      })
 
       app.once('before-quit', async () => {
         try {
-          await aiSkillApiService.stop()
+          await Promise.race([
+            aiSkillApiReconciler.shutdown(),
+            new Promise(resolve => setTimeout(resolve, 2500))
+          ])
         } catch (stopErr) {
-          logger.warn(LogCategory.SYSTEM, '[AISkillApiService] before-quit 停止失败:', stopErr)
+          logger.warn(LogCategory.SYSTEM, '[AISkillApiReconciler] before-quit 停止失败:', stopErr)
         }
       })
+
+      process.on('exit', () => {
+        try {
+          aiSkillApiService.syncCleanupOnExit()
+        } catch {}
+      })
     } catch (skillErr) {
-      logger.warn(LogCategory.SYSTEM, '[AISkillApiService] 初始化对账失败:', skillErr)
+      logger.warn(LogCategory.SYSTEM, '[AISkillApiReconciler] 初始化启动失败:', skillErr)
     }
 
     logger.info(LogCategory.MAIN, '初始化阶段完成，所有服务已初始化')

@@ -32,6 +32,10 @@ const SYSTEM_CATEGORY_COMPONENTS: Array<{
   {
     category: SettingsCategory.ANALYSIS_IGNORE_RULES,
     Component: SETTINGS_COMPONENT_MAP.analysis_ignore_rules
+  },
+  {
+    category: SettingsCategory.EXTERNAL_API,
+    Component: SETTINGS_COMPONENT_MAP.external_api
   }
 ]
 
@@ -39,7 +43,8 @@ const ICON_MAP: Record<string, string> = {
   palette: '🎨',
   settings_suggest: '✨',
   record_voice_over: '🎙️',
-  filter: '🛡️'
+  filter: '🛡️',
+  share: '🔌'
 }
 
 /**
@@ -84,10 +89,11 @@ export const SystemSettingsDialog: React.FC = () => {
     const activeModules = modules.filter(m => m.install_state === 'active')
 
     return all.filter(category => {
-      // 基础界面与全系统忽略规则为内置常驻项
+      // 基础界面、全系统忽略规则与对外接口为内置常驻项
       if (
         category.id === SettingsCategory.INTERFACE ||
-        category.id === SettingsCategory.ANALYSIS_IGNORE_RULES
+        category.id === SettingsCategory.ANALYSIS_IGNORE_RULES ||
+        category.id === SettingsCategory.EXTERNAL_API
       ) {
         return true
       }
@@ -105,8 +111,7 @@ export const SystemSettingsDialog: React.FC = () => {
         return activeModules.some(
           m =>
             m.contributes?.settings?.componentId === 'ai_engine_config' ||
-            m.capability_slot === 'ai_engine' ||
-            m.id === 'ai_organize_skill'
+            m.capability_slot === 'ai_engine'
         )
       }
       return true
