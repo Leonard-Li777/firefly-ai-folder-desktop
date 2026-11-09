@@ -77,8 +77,13 @@ const App: React.FC = () => {
   const [isDeviceBindOpen, setIsDeviceBindOpen] = useState(false)
 
   // 首次启动时检测当前设备是否已绑定微信小程序账号（未登录强制扫码绑定，不可跳过）
+  // 离线/未授权检测优先：保证如果离线的话，弹出的是离线弹层，而不是登录；
+  // 仅在授权状态确认且为 AUTHORIZED 时才检测设备绑定
   useEffect(() => {
     let isMounted = true
+    if (licenseInfo?.status !== 'AUTHORIZED') {
+      return
+    }
     const checkBind = async () => {
       try {
         if (window.electronAPI?.deviceBind?.getStatus) {
@@ -95,7 +100,7 @@ const App: React.FC = () => {
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [licenseInfo?.status])
 
   useEffect(() => {
     if (currentPath === '/' || currentPath === '/real-directory') {
@@ -849,7 +854,10 @@ const App: React.FC = () => {
           onOpenChange={open => (open ? openUpgradeDialog() : closeUpgradeDialog())}
         />
         <UpdateNotification />
-        <DeviceBindModal open={isDeviceBindOpen} onOpenChange={setIsDeviceBindOpen} />
+        <DeviceBindModal
+          open={isDeviceBindOpen && !showLicenseOverlay && licenseInfo?.status === 'AUTHORIZED'}
+          onOpenChange={setIsDeviceBindOpen}
+        />
 
         {/* AI服务错误对话框 */}
         <AIServiceErrorDialog
