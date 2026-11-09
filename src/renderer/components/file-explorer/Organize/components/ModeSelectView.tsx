@@ -145,7 +145,7 @@ export function ModeSelectView({
               <div
                 onClick={() => {
                   if (!isAdvancedAiEnabled) {
-                    toast.info(t('由文件推导目录树需要高级AI引擎支持，请前往“设置 -> AI引擎配置”开启'))
+                    toast.info(t('由文件推导目录树需要生成式引擎支持，请前往“设置 -> 生成式引擎”开启'))
                     return
                   }
                   onSelectMode('fine-organize')
@@ -172,12 +172,12 @@ export function ModeSelectView({
                     {isAdvancedAiEnabled ? (
                       <span className="text-[10px] font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20 flex items-center gap-1 shrink-0">
                         <MaterialIcon icon="bolt" className="text-[11px]" />
-                        {t('需高级AI引擎')}
+                        {t('需生成式引擎')}
                       </span>
                     ) : (
                       <span className="text-[10px] font-bold text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full border border-border/60 flex items-center gap-1 shrink-0">
                         <MaterialIcon icon="lock" className="text-[11px]" />
-                        {t('需开启高级AI引擎')}
+                        {t('需开启生成式引擎')}
                       </span>
                     )}
                   </div>

@@ -132,7 +132,7 @@ describe('Ticket 05: 原生执行器免杀与设置声明式动态挂载测试',
 
       // TTS 处于停用状态，Tab 应当被隐藏
       expect(screen.queryByText('语音合成 (TTS)')).toBeNull()
-      expect(screen.queryByText('开启高级AI引擎')).toBeNull()
+      expect(screen.queryByText('开启生成式引擎')).toBeNull()
     })
 
     it('激活 TTS 插件后，系统设置动态挂载对应 Tab', () => {

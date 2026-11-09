@@ -470,7 +470,7 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
                 <div className="flex items-center justify-between pb-3 border-b border-border/60">
                   <div className="flex items-center gap-2">
                     <Sliders className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-semibold">{t('本地高级 AI 推理引擎配置')}</span>
+                    <span className="text-sm font-semibold">{t('生成式引擎配置')}</span>
                   </div>
                   <Badge variant="outline" className="text-xs font-mono">
                     engine: llama.cpp / v{configuringModule.version}

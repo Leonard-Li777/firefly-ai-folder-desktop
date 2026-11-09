@@ -459,7 +459,7 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
         <div>
           <h3 className="text-lg font-bold flex items-center gap-2">
             <Sliders className="w-5 h-5 text-primary" />
-            <span>{t('基础AI引擎')}</span>
+            <span>{t('检索式引擎')}</span>
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5">
             {t('当前工作目录生效场景: {intent}。配置分析模式、视频取帧参数。', {
@@ -510,7 +510,7 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
               <Label className="text-base font-semibold leading-none">{t('选择分析模式')}</Label>
               <HelpTooltip
                 content={t(
-                  '根据需求选择不同模式，全面分析耗时最长但精度最高；标准分析最快。增强分析与全面分析需开启高级AI引擎。'
+                  '根据需求选择不同模式，全面分析耗时最长但精度最高；标准分析最快。增强分析与全面分析需开启生成式引擎。'
                 )}
               />
             </div>
@@ -546,7 +546,7 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                {t('基于基础AI引擎高速获取文件标签、智能文件名和摘要')}
+                {t('基于检索式引擎高速获取文件标签、智能文件名和摘要')}
               </p>
             </div>
 
@@ -587,12 +587,12 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
                 )}
               </div>
               <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                {t('【标准分析】+ 高级AI引擎润色智能文件名和描述以及补充标签')}
+                {t('【标准分析】+ 生成式引擎润色智能文件名和描述以及补充标签')}
               </p>
               {!isAdvancedAiEnabled && (
                 <div className="flex items-center gap-1.5 mt-2.5 text-xs text-amber-600 dark:text-amber-400">
                   <Lock className="h-3 w-3 shrink-0" />
-                  <span className="font-medium">{t('需在系统设置开启高级AI引擎')}</span>
+                  <span className="font-medium">{t('需在系统设置开启生成式引擎')}</span>
                 </div>
               )}
             </div>
@@ -639,7 +639,7 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
               {!isAdvancedAiEnabled && (
                 <div className="flex items-center gap-1.5 mt-2.5 text-xs text-amber-600 dark:text-amber-400">
                   <Lock className="h-3 w-3 shrink-0" />
-                  <span className="font-medium">{t('需在系统设置开启高级AI引擎')}</span>
+                  <span className="font-medium">{t('需在系统设置开启生成式引擎')}</span>
                 </div>
               )}
             </div>

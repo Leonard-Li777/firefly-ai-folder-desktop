@@ -98,7 +98,7 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
       {/* 头部标题区 */}
       <div>
         <h3 className="text-lg font-semibold mb-1 text-foreground">
-          {t('基础AI引擎与全局检索')}
+          {t('检索式引擎与全局检索')}
         </h3>
         <p className="text-xs text-muted-foreground leading-relaxed">
           {t('管理全局视觉语义检索、多模态索引维护，或前往各工作区配置专属场景策略。')}

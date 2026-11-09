@@ -156,12 +156,12 @@ export const WorkspaceSettingsDialog: React.FC = () => {
     }
   }
 
-  // 4-Tab 完整还原定义 (基础AI引擎、文件内容萃取、忽略规则、目录维护) - 依据已激活插件动态挂载 (Spec §5.2)
+  // 4-Tab 完整还原定义 (检索式引擎、文件内容萃取、忽略规则、目录维护) - 依据已激活插件动态挂载 (Spec §5.2)
   const tabs: WorkspaceTabInfo[] = useMemo(() => {
     const allTabs: WorkspaceTabInfo[] = [
       {
         id: 'basic_ai_engine',
-        name: t('基础AI引擎'),
+        name: t('检索式引擎'),
         icon: 'tune',
         description: t('分析模式、视频抽帧与向量底座看板')
       },

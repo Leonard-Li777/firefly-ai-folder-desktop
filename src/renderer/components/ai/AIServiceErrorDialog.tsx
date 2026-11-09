@@ -353,7 +353,7 @@ export const AIServiceErrorDialog: React.FC<IAIServiceErrorDialogProps> = ({
         suggestions: (aiError.suggestions && aiError.suggestions.length > 0
           ? aiError.suggestions
           : completeInfo.solutions
-        ).concat(t('标准分析模式由基础AI引擎处理，高效完成文件标签、智能文件名和摘要')),
+        ).concat(t('标准分析模式由检索式引擎处理，高效完成文件标签、智能文件名和摘要')),
         actions
       }
     },

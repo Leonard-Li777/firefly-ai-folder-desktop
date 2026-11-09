@@ -13,6 +13,56 @@ export const MODEL_CONFIG_SOURCE = () => ({
   lastUpdated: '2026-09-26',
   models: [
     {
+      id: 'MNN/MNN-Pocket-0.3B-GGUF:Q4_1',
+      name: `MNN-Pocket 0.3B（${t('极速')}•${t('轻量')}）`,
+      company: 'MNN',
+      parameterSize: '0.3B',
+      intelligenceLevel: 1,
+      modelSize: '183MB',
+      totalSize: '183MB',
+      recommended: false,
+      description: t('MNN-Pocket 0.3B 超轻量模型，极低内存与显存占用，支持快速文本理解与生成。'),
+      source: 'modelscope',
+      quantization: 'Q4_1',
+      isMultiModal: false,
+      contextLength: 131072,
+      capabilities: ['TEXT'],
+      performance: {
+        speed: 'extreme',
+        quality: 'medium'
+      },
+      tags: [t('轻量'), t('支持CPU运行'), t('极速'), t('仅文本')],
+      recommendedConfig: {
+        numCtx: 8192,
+        numPredict: 2048
+      }
+    },
+    {
+      id: 'taobao-mnn/MNN-Pocket-0.3B-GGUF:Q4_1',
+      name: `MNN-Pocket 0.3B（${t('极速')}•${t('轻量')}）`,
+      company: 'MNN',
+      parameterSize: '0.3B',
+      intelligenceLevel: 1,
+      modelSize: '183MB',
+      totalSize: '183MB',
+      recommended: false,
+      description: t('MNN-Pocket 0.3B 超轻量模型，极低内存与显存占用，支持快速文本理解与生成。'),
+      source: 'huggingface',
+      quantization: 'Q4_1',
+      isMultiModal: false,
+      contextLength: 131072,
+      capabilities: ['TEXT'],
+      performance: {
+        speed: 'extreme',
+        quality: 'medium'
+      },
+      tags: [t('轻量'), t('支持CPU运行'), t('极速'), t('仅文本')],
+      recommendedConfig: {
+        numCtx: 8192,
+        numPredict: 2048
+      }
+    },
+    {
       id: 'saidutta69/LFM3-VL-2B-heretic:Q4_K_M',
       name: `LFM3-VL 2B Heretic（${t('越狱识图')}）`,
       company: 'saidutta69',

@@ -507,7 +507,7 @@ export const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({ onOpenChange }) 
                         (await window.electronAPI?.getConfigValue<string>('AI_SERVICE_MODE')) ??
                         'local'
                       if (aiServiceMode === 'disabled') {
-                        toast.warning(t('高级AI引擎未开启，请先开启高级AI引擎'), 3000, undefined, {
+                        toast.warning(t('生成式引擎未开启，请先开启生成式引擎'), 3000, undefined, {
                           label: t('前往设置'),
                           onClick: () => openSettings(SettingsCategory.AI_ENGINE_CONFIG)
                         })
@@ -518,11 +518,11 @@ export const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({ onOpenChange }) 
                       const snapshot = await window.electronAPI?.engineBridge?.getStatus?.()
                       const status = snapshot?.raw?.status
                       if (status === 'starting') {
-                        toast.info(t('高级AI引擎正在启动中，请稍后重试'))
+                        toast.info(t('生成式引擎正在启动中，请稍后重试'))
                         return
                       }
                       if (!isEngineServiceReady(status)) {
-                        toast.warning(t('高级AI引擎未启动，请先启动高级AI引擎'), 3000, undefined, {
+                        toast.warning(t('生成式引擎未启动，请先启动生成式引擎'), 3000, undefined, {
                           label: t('前往设置'),
                           onClick: () => openSettings(SettingsCategory.AI_ENGINE_CONFIG)
                         })

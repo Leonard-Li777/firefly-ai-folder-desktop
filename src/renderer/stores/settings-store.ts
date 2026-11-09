@@ -112,9 +112,9 @@ export const systemSettingsCategories = (): ISettingsCategoryInfo[] => [
   },
   {
     id: SettingsCategory.AI_ENGINE_CONFIG,
-    name: t('开启高级AI引擎'),
+    name: t('开启生成式引擎'),
     icon: 'settings_suggest',
-    description: t('高级推理引擎连接与思考模式')
+    description: t('生成式推理引擎连接与思考模式')
   },
   {
     id: SettingsCategory.TTS,
@@ -148,14 +148,14 @@ export const settingsCategories = (): ISettingsCategoryInfo[] => [
   },
   {
     id: SettingsCategory.BASIC_AI_ENGINE_CONFIG,
-    name: t('基础AI引擎配置'),
+    name: t('检索式引擎配置'),
     icon: 'tune',
     description: t('视觉语义搜索、多模态索引维护与工作区策略总览')
   },
-  // PRD-0044：模型管理（AI_MODEL）分类清退，与 AI引擎配置 合并为唯一「高级AI引擎配置」tab
+  // PRD-0044：模型管理（AI_MODEL）分类清退，与 AI引擎配置 合并为唯一「生成式引擎」tab
   {
     id: SettingsCategory.AI_ENGINE_CONFIG,
-    name: t('高级AI引擎配置'),
+    name: t('生成式引擎'),
     icon: 'settings_suggest',
     description: t('生效引擎选择、云端配置与思考模式')
   },
@@ -173,7 +173,7 @@ export const settingsCategories = (): ISettingsCategoryInfo[] => [
   },
   {
     id: SettingsCategory.ADVANCED_AI_PROMPTS,
-    name: t('高级AI提示词'),
+    name: t('生成式提示词'),
     icon: 'sparkles',
     description: t('质量评分与标签智能生成提示词')
   },

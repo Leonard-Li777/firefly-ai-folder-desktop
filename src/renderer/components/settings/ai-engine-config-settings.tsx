@@ -60,7 +60,7 @@ function getCircuitLabels(
   return {
     closed: { text: t('引擎状态良好'), tone: 'green' },
     half_open: { text: t('引擎偶发异常，正在自动尝试'), tone: 'yellow' },
-    open: { text: t('引擎连续失败，已临时停用并由基础AI引擎兜底'), tone: 'red' }
+    open: { text: t('引擎连续失败，已临时停用并由检索式引擎兜底'), tone: 'red' }
   }
 }
 
@@ -486,7 +486,7 @@ export const AIEngineConfigSettings: React.FC = () => {
       <div className="flex items-center justify-between gap-4 pb-2 border-b border-border/40">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2.5">
-            <h3 className="text-xl font-bold tracking-tight">{t('开启高级AI引擎')}</h3>
+            <h3 className="text-xl font-bold tracking-tight">{t('开启生成式引擎')}</h3>
             <Badge
               className={`font-semibold px-2 py-0.5 text-[11px] rounded-full border ${
                 isEnabled
@@ -499,19 +499,19 @@ export const AIEngineConfigSettings: React.FC = () => {
           </div>
           <p className="text-xs text-muted-foreground mt-1">
             {t(
-              '选择生效引擎：开启后可以支持更佳的AI分析体验，禁用后仅使用基础AI引擎，不开启高级引擎占用资源'
+              '选择生效引擎：开启后可以支持更佳的AI分析体验，禁用后仅使用检索式引擎，不开启生成式引擎占用资源'
             )}
           </p>
         </div>
         <Switch
           id="advanced-ai-switch"
-          aria-label={t('开启高级AI引擎')}
+          aria-label={t('开启生成式引擎')}
           checked={isEnabled}
           onCheckedChange={handleToggleEnabled}
         />
       </div>
 
-      {/* 关闭态：基础引擎已有能力 vs 开启高级引擎可解锁能力对比 */}
+      {/* 关闭态：检索式引擎已有能力 vs 开启生成式引擎可解锁能力对比 */}
       {!isEnabled && (
         <Card className="p-5 border-border/80 shadow-xs rounded-2xl bg-card">
           <div className="flex items-start gap-3.5">
@@ -519,16 +519,16 @@ export const AIEngineConfigSettings: React.FC = () => {
               <Ban className="h-[18px] w-[18px]" />
             </div>
             <div className="flex-1 min-w-0">
-              <Label className="text-sm font-semibold">{t('已禁用高级AI引擎')}</Label>
+              <Label className="text-sm font-semibold">{t('已禁用生成式引擎')}</Label>
               <p className="text-xs text-muted-foreground font-normal mt-1 leading-relaxed">
-                {t('AI增强分析已关闭，文件将由内置轻量基础AI引擎自动处理。')}
+                {t('AI生成式分析已关闭，文件将由内置轻量检索式引擎自动处理。')}
               </p>
               <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* 基础引擎保留能力列：绿色勾图标 */}
+                {/* 检索式引擎保留能力列：绿色勾图标 */}
                 <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.04] p-3.5">
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                     <CircleCheck className="h-3.5 w-3.5" />
-                    {t('基础引擎保留能力')}
+                    {t('检索式引擎保留能力')}
                   </div>
                   <ul className="mt-2 space-y-1.5">
                     {[
@@ -548,11 +548,11 @@ export const AIEngineConfigSettings: React.FC = () => {
                     ))}
                   </ul>
                 </div>
-                {/* 开启高级引擎可解锁能力列：高亮图标 */}
+                {/* 开启生成式引擎可解锁能力列：高亮图标 */}
                 <div className="rounded-xl border border-primary/20 bg-primary/[0.04] p-3.5">
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
                     <Sparkles className="h-3.5 w-3.5" />
-                    {t('开启高级引擎可解锁')}
+                    {t('开启生成式引擎可解锁')}
                   </div>
                   <ul className="mt-2 space-y-1.5">
                     {[
@@ -787,7 +787,7 @@ export const AIEngineConfigSettings: React.FC = () => {
                           title={snapshot?.model || undefined}
                         >
                           {/* 优先取规范模型友好名称（内置模型库/映射表/智能美化），无模型统一显示 — */}
-                          {snapshot?.activeModel ||
+                          {(snapshot as any)?.activeModel ||
                             formatFriendlyModelName(snapshot?.modelName, snapshot?.model)}
                         </span>
                       </div>
@@ -823,7 +823,7 @@ export const AIEngineConfigSettings: React.FC = () => {
                       <span className="font-mono text-[11px] truncate">
                         {snapshot?.available
                           ? snapshot?.exePath || t('引擎二进制已部署')
-                          : t('未检测到引擎二进制，在线分析由基础AI引擎自动兜底。')}
+                          : t('未检测到引擎二进制，在线分析由检索式引擎自动兜底。')}
                       </span>
                     </div>
                   )}
@@ -881,11 +881,11 @@ export const AIEngineConfigSettings: React.FC = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <Label className="text-xs font-semibold text-foreground/90">
-                      {t('基础AI引擎自动兜底')}
+                      {t('检索式引擎自动兜底')}
                     </Label>
                     <p className="text-xs text-muted-foreground font-normal mt-1 leading-relaxed">
                       {t(
-                        '当高级AI引擎（萤核AI引擎或云端）连续分析失败或未连接时，分析流水线将静默降级到基础AI引擎纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。'
+                        '当生成式引擎（萤核引擎或云端）连续分析失败或未连接时，分析流水线将静默降级到检索式引擎纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。'
                       )}
                       {/* 最近异常仅在未连接时展示：已连接后历史启动超时等信息不再打扰用户 */}
                       {!engineConnected && snapshot?.lastError && (

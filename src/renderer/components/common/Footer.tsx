@@ -602,7 +602,7 @@ export function Footer() {
   const effectiveAiServiceInfo =
     engineOnline === false && modelMode === 'local' && isAdvancedAiEnabled
       ? {
-          text: t('高级AI引擎未运行，AI 服务未就绪'),
+          text: t('生成式引擎未运行，AI 服务未就绪'),
           icon: 'radio_button_unchecked',
           color: 'text-gray-400'
         }
@@ -642,14 +642,14 @@ export function Footer() {
   const omniAiServiceInfo = useMemo(() => {
     if (omniStatus?.running) {
       return {
-        text: t('[基础AI引擎] Omni 服务就绪'),
+        text: t('[检索式引擎] Omni 服务就绪'),
         icon: 'check_circle',
         color: 'text-green-500',
         animate: undefined as string | undefined
       }
     }
     return {
-      text: t('[基础AI引擎] Omni 服务未运行'),
+      text: t('[检索式引擎] Omni 服务未运行'),
       icon: 'radio_button_unchecked',
       color: 'text-gray-400',
       animate: undefined as string | undefined
@@ -750,12 +750,12 @@ export function Footer() {
                     className="text-xs leading-tight text-primary font-medium transition-all duration-200 hover:underline cursor-pointer flex items-center gap-1 text-left block truncate max-w-[480px]"
                     onClick={handleEngineGuideClick}
                     title={t(
-                      '当前为内置基础AI引擎，建议配置高级AI引擎，配置后可以增强分析结果。点击进入配置。'
+                      '当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果。点击进入配置。'
                     )}
                   >
                     <MaterialIcon icon="rocket_launch" className="text-xs shrink-0" />
                     <span>
-                      {t('当前为内置基础AI引擎，建议配置高级AI引擎，配置后可以增强分析结果')}
+                      {t('当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果')}
                     </span>
                   </button>
                 )}

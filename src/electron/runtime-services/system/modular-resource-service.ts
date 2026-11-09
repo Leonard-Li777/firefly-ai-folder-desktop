@@ -238,10 +238,10 @@ export interface IModularResourceService {
  * 本地离线内置插件目录种子 (IN-04 纯离线兜底 SSOT)
  */
 export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
-  // 1. 基础 AI 引擎：经典轻量极速档 (二选一必选)
+  // 1. 检索式引擎：经典轻量极速档 (二选一必选)
   {
     id: 'engine_classic_light',
-    name: '经典轻量 AI 引擎 (Classic Light)',
+    name: '经典轻量检索式引擎 (Classic Light)',
     description:
       '非对称双塔极速架构：Bekko 384d 文本与 CLIP 512d 视觉检索，低内存消耗，CPU 即可流畅运转',
     icon: 'Feather',
@@ -258,7 +258,7 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     contributes: {
       settings: {
         scope: 'workspace',
-        tabTitle: '基础 AI 引擎',
+        tabTitle: '检索式引擎',
         componentId: 'basic_ai_engine',
         priority: 10
       }
@@ -286,10 +286,10 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
       }
     ]
   },
-  // 2. 基础 AI 引擎：统一全模态档 (二选一必选)
+  // 2. 检索式引擎：统一全模态档 (二选一必选)
   {
     id: 'engine_gemma_unified',
-    name: '统一全模态 AI 引擎 (Gemma Unified)',
+    name: '统一全模态检索式引擎 (Gemma Unified)',
     description:
       'EmbeddingGemma-2 图文同构统一流形空间，支持 MRL 256/512/768 弹性维度截断与高精度跨模态匹配',
     icon: 'Layers',
@@ -306,7 +306,7 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     contributes: {
       settings: {
         scope: 'workspace',
-        tabTitle: '基础 AI 引擎',
+        tabTitle: '检索式引擎',
         componentId: 'basic_ai_engine',
         priority: 10
       }

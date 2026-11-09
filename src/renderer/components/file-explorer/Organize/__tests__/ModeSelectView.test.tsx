@@ -98,11 +98,11 @@ describe('ModeSelectView 2+3 结构化网格与高级 AI 门禁', () => {
 
     render(<ModeSelectView onSelectMode={mockOnSelectMode} />)
 
-    expect(screen.getByText('需开启高级AI引擎')).toBeDefined()
+    expect(screen.getByText('需开启生成式引擎')).toBeDefined()
     fireEvent.click(screen.getByText('由文件推导目录树'))
     expect(mockOnSelectMode).not.toHaveBeenCalled()
     expect(toast.info).toHaveBeenCalledWith(
-      expect.stringContaining('由文件推导目录树需要高级AI引擎支持')
+      expect.stringContaining('由文件推导目录树需要生成式引擎支持')
     )
   })
 

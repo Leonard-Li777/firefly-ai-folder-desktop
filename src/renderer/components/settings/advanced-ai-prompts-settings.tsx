@@ -107,7 +107,7 @@ export const AdvancedAIPromptsSettings: React.FC = () => {
                   : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
               }`}
             >
-              {isAdvancedAiEnabled ? t('已生效') : t('需开启高级AI引擎')}
+              {isAdvancedAiEnabled ? t('已生效') : t('需开启生成式引擎')}
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
@@ -125,10 +125,10 @@ export const AdvancedAIPromptsSettings: React.FC = () => {
             </div>
             <div className="space-y-0.5 min-w-0">
               <p className="text-sm font-semibold text-amber-700 dark:text-amber-300">
-                {t('高级AI引擎当前未开启，提示词暂不生效')}
+                {t('生成式引擎当前未开启，提示词暂不生效')}
               </p>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                {t('自定义质量评分和标签生成提示词依赖高级AI引擎的语言模型理解能力。开启高级AI引擎后方可生效。')}
+                {t('自定义质量评分和标签生成提示词依赖生成式引擎的语言模型理解能力。开启生成式引擎后方可生效。')}
               </p>
             </div>
           </div>
@@ -138,7 +138,7 @@ export const AdvancedAIPromptsSettings: React.FC = () => {
             className="shrink-0 border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10"
             onClick={() => openSettings(SettingsCategory.AI_ENGINE_CONFIG)}
           >
-            {t('前往开启高级AI引擎')}
+            {t('前往开启生成式引擎')}
           </Button>
         </div>
       )}
@@ -169,7 +169,7 @@ export const AdvancedAIPromptsSettings: React.FC = () => {
                 {!isAdvancedAiEnabled && (
                   <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 dark:text-amber-400">
                     <Lock className="h-3 w-3" />
-                    {t('未开启高级AI')}
+                    {t('未开启生成式引擎')}
                   </span>
                 )}
               </div>
@@ -207,7 +207,7 @@ export const AdvancedAIPromptsSettings: React.FC = () => {
             {!isAdvancedAiEnabled ? (
               <span className="text-[11px] text-amber-600 dark:text-amber-400 flex items-center gap-1 font-medium">
                 <Lock className="h-3 w-3" />
-                {t('高级AI引擎未开启，提示词暂不生效')}
+                {t('生成式引擎未开启，提示词暂不生效')}
               </span>
             ) : (
               <span className="text-[11px] italic">
@@ -231,7 +231,7 @@ export const AdvancedAIPromptsSettings: React.FC = () => {
                 {!isAdvancedAiEnabled && (
                   <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 dark:text-amber-400">
                     <Lock className="h-3 w-3" />
-                    {t('未开启高级AI')}
+                    {t('未开启生成式引擎')}
                   </span>
                 )}
               </div>
@@ -269,7 +269,7 @@ export const AdvancedAIPromptsSettings: React.FC = () => {
             {!isAdvancedAiEnabled ? (
               <span className="text-[11px] text-amber-600 dark:text-amber-400 flex items-center gap-1 font-medium">
                 <Lock className="h-3 w-3" />
-                {t('高级AI引擎未开启，提示词暂不生效')}
+                {t('生成式引擎未开启，提示词暂不生效')}
               </span>
             ) : (
               <span className="text-[11px] italic">
@@ -289,7 +289,7 @@ export const AdvancedAIPromptsSettings: React.FC = () => {
         <p>
           {isAdvancedAiEnabled
             ? t('提示词修改后将实时防抖保存，并应用于后续触发的全部文件分析任务。')
-            : t('提示词依赖高级AI引擎的大语言模型能力。开启高级AI引擎后，此处配置将自动参与分析。')}
+            : t('提示词依赖生成式引擎的大语言模型能力。开启生成式引擎后，此处配置将自动参与分析。')}
         </p>
       </div>
     </div>

@@ -160,7 +160,7 @@ export const UnitRecognitionSettings: React.FC = () => {
               {!isAdvancedAiEnabled ? (
                 <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">
                   <Lock className="h-3 w-3" />
-                  {t('需开启高级AI引擎')}
+                  {t('需开启生成式引擎')}
                 </span>
               ) : !isEnabled ? (
                 <span className="text-[11px] text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full font-medium">
@@ -190,7 +190,7 @@ export const UnitRecognitionSettings: React.FC = () => {
           <div className="p-3 rounded-lg border border-amber-500/30 bg-amber-500/[0.08] dark:bg-amber-500/[0.12] flex items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300 min-w-0">
               <Lock className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">{t('自定义最小单元提示词依赖高级AI引擎的语言模型理解能力，当前未开启。')}</span>
+              <span className="truncate">{t('自定义最小单元提示词依赖生成式引擎的语言模型理解能力，当前未开启。')}</span>
             </div>
             <Button
               size="sm"
@@ -198,7 +198,7 @@ export const UnitRecognitionSettings: React.FC = () => {
               className="h-7 text-xs shrink-0 border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10"
               onClick={() => openSettings(SettingsCategory.AI_ENGINE_CONFIG)}
             >
-              {t('前往开启高级AI引擎')}
+              {t('前往开启生成式引擎')}
             </Button>
           </div>
         )}
@@ -221,7 +221,7 @@ export const UnitRecognitionSettings: React.FC = () => {
           {!isAdvancedAiEnabled ? (
             <span className="text-[11px] text-amber-600 dark:text-amber-400 flex items-center gap-1 font-medium">
               <Lock className="h-3 w-3" />
-              {t('高级AI引擎未开启，提示词暂不生效')}
+              {t('生成式引擎未开启，提示词暂不生效')}
             </span>
           ) : !isEnabled ? (
             <span className="text-[11px] text-amber-600 dark:text-amber-400 flex items-center gap-1 font-medium">
