@@ -491,7 +491,7 @@ export const GENESIS_V1_SCHEMA = `
     etag              TEXT,                          -- HTTP ETag 缓存标签
     last_modified     TEXT,                          -- HTTP Last-Modified
     download_state    TEXT NOT NULL DEFAULT 'pending'
-                      CHECK (download_state IN ('pending', 'downloading', 'paused', 'completed', 'failed', 'pending_delete')),
+                      CHECK (download_state IN ('pending', 'downloading', 'verifying', 'extracting', 'completed', 'failed', 'paused', 'cancelled', 'pending_delete')),
     error_message     TEXT,                          -- 网络异常或 HTTP 状态码说明
     created_at        INTEGER NOT NULL,              -- 任务创建时间戳
     updated_at        INTEGER NOT NULL               -- 进度刷新时间戳

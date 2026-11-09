@@ -104,6 +104,37 @@ export interface ModuleDownloadProgressEvent {
   errorMessage?: string
 }
 
+/**
+ * 依据资源下载任务状态列表映射上层模块安装状态 (ISS-09 / Ticket 04)
+ */
+export function mapTaskStatesToModuleState(
+  tasks: readonly ResourceDownloadRecord[]
+): ModuleInstallState {
+  if (tasks.length === 0) return 'not_installed'
+
+  // 1. 若所有关联资源任务均处于 completed，模块确立为 active
+  if (tasks.every(t => t.download_state === 'completed')) {
+    return 'active'
+  }
+
+  // 2. 若存在任何任务正在进行中，模块呈现 downloading
+  if (
+    tasks.some(t =>
+      ['downloading', 'verifying', 'extracting', 'pending'].includes(t.download_state)
+    )
+  ) {
+    return 'downloading'
+  }
+
+  // 3. 若存在失败且无在途任务，呈现 error
+  if (tasks.some(t => t.download_state === 'failed')) {
+    return 'error'
+  }
+
+  // 4. paused / cancelled 映射为 not_installed (保留本地断点进度)
+  return 'not_installed'
+}
+
 export interface BuiltinModuleView extends BuiltinModuleRecord {
   name: string
   description: string
@@ -460,7 +491,7 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     availability: 'coming_soon',
     delist_reason: null,
     firecore_cost: 0,
-    total_bytes: 42000000,
+    total_bytes: 0,
     install_state: 'not_installed'
   },
   {
@@ -482,7 +513,7 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     delist_reason: null,
     firecore_cost: 0,
     total_bytes: 0,
-    install_state: 'not_installed'
+    install_state: 'active'
   }
 ]
 
