@@ -1,0 +1,15 @@
+{
+  "description": "用例 E: 多垂直 T1 同梯队同分平局画像 (断言字典序确定性裁决)",
+  "profile": {
+    "totalFiles": 20,
+    "countsByExt": {
+      ".blend": 3,
+      ".sketch": 3,
+      ".txt": 14
+    }
+  },
+  "expected": {
+    "tier": "T1",
+    "mustContainCandidates": ["builtin.workflow.3d-assets", "builtin.workflow.uiux-design"]
+  }
+}

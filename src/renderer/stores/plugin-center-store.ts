@@ -185,7 +185,7 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
       }
     },
     description:
-      '【通过意思找文件与图片】根据你描述的大致意思快速搜索照片和文档。占用极少内存，即使老电脑和低配轻薄本也能流畅运行。',
+      '【通过意思找文件与图片】根据你描述的大致意思快速搜索照片和文档。占用极少内存，即使老电脑和低配轻薄本也能流畅运行。不支持音视频',
     hardware_requirement: {
       level: 'minimal',
       text: '配置要求极低 · 老电脑与轻薄本首选'
@@ -226,7 +226,7 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
       }
     },
     description:
-      '【更聪明的全能搜索大脑】对复杂句子和图片的理解更深入精准，找东西更懂你的心思。推荐 8GB 或以上内存电脑使用。',
+      '【更聪明的全能搜索大脑】对复杂句子和图片、音视频的理解更深入精准，找东西更懂你的心思。推荐 8GB 或以上内存电脑使用。',
     hardware_requirement: {
       level: 'recommended',
       text: '推荐配置 · 电脑内存 8GB 或以上'

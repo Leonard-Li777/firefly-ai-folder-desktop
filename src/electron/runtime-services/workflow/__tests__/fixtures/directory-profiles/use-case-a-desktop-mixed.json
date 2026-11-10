@@ -1,0 +1,19 @@
+{
+  "description": "用例 A: 桌面混合散杂文件画像 (含快捷方式、截图、下载残留安装包与草稿文档)",
+  "profile": {
+    "totalFiles": 19,
+    "countsByExt": {
+      ".lnk": 4,
+      ".png": 10,
+      ".exe": 3,
+      ".docx": 2
+    },
+    "isDesktopPath": true
+  },
+  "expected": {
+    "topWorkflowId": "builtin.workflow.desktop-declutter",
+    "minScore": 85,
+    "tier": "T3",
+    "forbiddenWorkflowIds": ["builtin.workflow.downloads-triage"]
+  }
+}

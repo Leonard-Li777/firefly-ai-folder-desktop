@@ -1,0 +1,18 @@
+{
+  "description": "用例 C: 3D 资产建模与材质工程画像",
+  "profile": {
+    "totalFiles": 16,
+    "countsByExt": {
+      ".blend": 4,
+      ".obj": 2,
+      ".png": 10
+    }
+  },
+  "expected": {
+    "topWorkflowId": "builtin.workflow.3d-assets",
+    "alternativeTopIds": ["builtin.workflow.creative-assets"],
+    "minScore": 95,
+    "tier": "T1",
+    "reasonCode": "3d_assets"
+  }
+}

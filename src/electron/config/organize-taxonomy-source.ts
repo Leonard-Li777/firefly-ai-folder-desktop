@@ -10,7 +10,7 @@ import type { WorkspaceConfigReady, BaseAIConfig } from '@firefly/types'
 /** 目录树节点定义 */
 export interface DirectoryTreeNode {
   name: string
-  children?: DirectoryTreeNode[]
+  children?: DirectoryTreeNode[] | readonly DirectoryTreeNode[]
 }
 
 /** 身份蓝图静态拓扑事实源 (语言中立声明模型) */
@@ -23,13 +23,13 @@ export interface BlueprintStaticTemplate {
   persona: string
   naming_template: string
   naming_pattern?: string
-  preset_directory_tree: DirectoryTreeNode[]
-  paths?: string[]
+  preset_directory_tree: ReadonlyArray<DirectoryTreeNode> | DirectoryTreeNode[]
+  paths?: readonly string[]
   extensions: {
-    exclusive?: string[]
-    common: string[]
+    exclusive?: readonly string[]
+    common: readonly string[]
   }
-  custom_ignores?: string[]
+  custom_ignores?: readonly string[]
   recommended_engine: {
     analysisMode: 'simple' | 'quick_name' | 'full'
     embeddingProfile: 'classic_light' | 'gemma_unified'

@@ -1,0 +1,13 @@
+{
+  "description": "用例 D: 普通图片相册画像 (无专业 UI/UX 矢量工程源文件，防误判设计流)",
+  "profile": {
+    "totalFiles": 35,
+    "countsByExt": {
+      ".png": 20,
+      ".jpg": 15
+    }
+  },
+  "expected": {
+    "forbiddenWorkflowIds": ["builtin.workflow.uiux-design", "builtin.workflow.design-dev"]
+  }
+}

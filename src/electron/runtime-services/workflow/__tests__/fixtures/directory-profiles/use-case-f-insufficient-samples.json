@@ -1,0 +1,17 @@
+{
+  "description": "用例 F: 小样本目录画像 (总文件数 < 5 且无垂直 T1 强特征，触发小样本防御兜底)",
+  "profile": {
+    "totalFiles": 3,
+    "countsByExt": {
+      ".txt": 2,
+      ".pdf": 1
+    }
+  },
+  "expected": {
+    "topWorkflowId": "builtin.workflow.general-inbox",
+    "alternativeTopIds": ["builtin.workflow.inbox-staging-universal"],
+    "tier": "FALLBACK",
+    "score": 60,
+    "reasonCode": "insufficient_samples"
+  }
+}

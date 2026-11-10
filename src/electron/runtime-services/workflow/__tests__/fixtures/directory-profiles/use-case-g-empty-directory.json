@@ -1,0 +1,14 @@
+{
+  "description": "用例 G: 空目录零值边界防御画像 (totalFiles 为 0，零除防 NaN 崩溃)",
+  "profile": {
+    "totalFiles": 0,
+    "countsByExt": {}
+  },
+  "expected": {
+    "topWorkflowId": "builtin.workflow.general-inbox",
+    "alternativeTopIds": ["builtin.workflow.inbox-staging-universal"],
+    "tier": "FALLBACK",
+    "score": 60,
+    "reasonCode": "empty_directory"
+  }
+}

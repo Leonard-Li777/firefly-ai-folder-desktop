@@ -1,0 +1,20 @@
+{
+  "description": "用例 B: 网络下载目录文件画像 (密集安装包与压缩归档，无快捷方式)",
+  "profile": {
+    "totalFiles": 18,
+    "countsByExt": {
+      ".exe": 8,
+      ".msi": 2,
+      ".zip": 5,
+      ".7z": 2,
+      ".pdf": 1
+    },
+    "isDownloadsPath": true
+  },
+  "expected": {
+    "topWorkflowId": "builtin.workflow.downloads-triage",
+    "minScore": 90,
+    "tier": "T2",
+    "forbiddenWorkflowIds": ["builtin.workflow.desktop-declutter"]
+  }
+}
