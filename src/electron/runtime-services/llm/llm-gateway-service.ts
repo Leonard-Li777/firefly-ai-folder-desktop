@@ -189,7 +189,7 @@ export interface ILlmGatewayService {
 export class LlmGatewayService implements ILlmGatewayService {
   private static instance: LlmGatewayService | null = null
 
-  private desiredMode: GenerativeEngineMode = 'cpu'
+  private desiredMode: GenerativeEngineMode = 'local'
   private routeEpoch: number = 1
   private cpuLastError: string | null = null
   private cpuCrashCount: number = 0

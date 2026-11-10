@@ -112,9 +112,9 @@ export const AIEngineConfigSettings: React.FC = () => {
     s => (s.config as any)?.aiCloudSelectedModelId as string | undefined
   )
 
-  // 记录上一次激活的模式（用于关闭后再次打开时还原），若无则默认为 cpu
+  // 记录上一次激活的模式（用于关闭后再次打开时还原），若无则默认为 local 萤核引擎
   const [lastActiveMode, setLastActiveMode] = useState<ActiveEngineMode>(
-    aiServiceMode === 'cloud' ? 'cloud' : aiServiceMode === 'local' ? 'local' : 'cpu'
+    aiServiceMode === 'cloud' ? 'cloud' : aiServiceMode === 'cpu' ? 'cpu' : 'local'
   )
 
   useEffect(() => {
@@ -215,7 +215,7 @@ export const AIEngineConfigSettings: React.FC = () => {
   /** 切换高级AI引擎总控开关 */
   const handleToggleEnabled = (checked: boolean) => {
     if (checked) {
-      const targetMode: ActiveEngineMode = lastActiveMode || 'cpu'
+      const targetMode: ActiveEngineMode = lastActiveMode || 'local'
       updateConfigValue('AI_SERVICE_MODE', targetMode)
       if (window.electronAPI?.llmGateway?.setDesiredMode) {
         window.electronAPI.llmGateway.setDesiredMode(targetMode).catch(err => {
@@ -223,6 +223,7 @@ export const AIEngineConfigSettings: React.FC = () => {
         })
       }
       captureEvent('启用生成式引擎', { mode: targetMode })
+      void useSettingsStore.getState().saveSettings?.()
     } else {
       updateConfigValue('AI_SERVICE_MODE', 'disabled')
       if (window.electronAPI?.llmGateway?.setDesiredMode) {
@@ -237,6 +238,7 @@ export const AIEngineConfigSettings: React.FC = () => {
           console.warn('[AiEngineConfigSettings] 关闭高级引擎失败:', err)
         })
       }
+      void useSettingsStore.getState().saveSettings?.()
     }
   }
 
@@ -261,6 +263,7 @@ export const AIEngineConfigSettings: React.FC = () => {
       })
     }
     captureEvent('切换生效引擎', { mode })
+    void useSettingsStore.getState().saveSettings?.()
   }
 
   /** 取消切换并恢复原引擎 (AC-03 逃生舱) */
@@ -522,11 +525,38 @@ export const AIEngineConfigSettings: React.FC = () => {
   const cpuInstalled = llmSnapshot?.installation?.cpu === 'installed'
   const localInstalled = true
 
+  // 自动纠偏：若当前配置模式为 cpu，但快照明确上报未安装，自动矫正为默认内置的 local 萤核AI引擎
+  useEffect(() => {
+    if (
+      activeMode === 'cpu' &&
+      llmSnapshot !== null &&
+      llmSnapshot.installation?.cpu === 'not_installed'
+    ) {
+      console.log(
+        '[AiEngineConfigSettings] 检测到当前模式为 cpu 但未安装，自动矫正为 local 萤核AI引擎'
+      )
+      updateConfigValue('AI_SERVICE_MODE', 'local')
+      if (window.electronAPI?.llmGateway?.setDesiredMode) {
+        window.electronAPI.llmGateway.setDesiredMode('local').catch(() => {})
+      }
+      void useSettingsStore.getState().saveSettings?.()
+    }
+  }, [activeMode, llmSnapshot, updateConfigValue])
+
   /** 轻量CPU状态徽章 (TASK-04 / Spec §5.3) */
   const renderCpuBadge = () => {
     const isSelected = activeMode === 'cpu'
     const cpuRuntime = llmSnapshot?.runtime?.cpu
     const unavailable = llmSnapshot?.unavailableReason
+
+    if (!cpuInstalled && llmSnapshot !== null) {
+      return (
+        <Badge className="font-semibold px-2 py-0.5 text-[11px] rounded-full border border-border/60 bg-muted text-muted-foreground">
+          <Clock className="h-3.5 w-3.5 mr-1" />
+          {t('未安装')}
+        </Badge>
+      )
+    }
 
     if (unavailable === 'CRASH_LOOP') {
       return (
@@ -632,7 +662,9 @@ export const AIEngineConfigSettings: React.FC = () => {
         }}
         className={`group relative flex flex-col justify-between p-4 rounded-2xl border text-left transition-all duration-200 ${
           isDisabled
-            ? 'opacity-85 border-border/50 bg-muted/10 cursor-not-allowed'
+            ? checked
+              ? 'border-primary/50 bg-muted/20 text-foreground ring-1 ring-primary/10'
+              : 'opacity-85 border-border/50 bg-muted/10 cursor-not-allowed'
             : checked
               ? 'border-primary bg-primary/[0.04] text-foreground shadow-xs ring-1 ring-primary/20 cursor-pointer'
               : 'border-border/70 bg-card hover:border-primary/40 hover:bg-muted/30 text-muted-foreground hover:text-foreground cursor-pointer'
@@ -666,13 +698,21 @@ export const AIEngineConfigSettings: React.FC = () => {
           <div
             className={`mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-all ${
               isDisabled
-                ? 'border-muted/40 bg-muted/20'
+                ? checked
+                  ? 'border-muted-foreground/60 bg-muted/30 text-muted-foreground'
+                  : 'border-muted-foreground/25 bg-transparent'
                 : checked
                   ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-muted-foreground/30 group-hover:border-muted-foreground/50'
+                  : 'border-muted-foreground/30 group-hover:border-muted-foreground/50 bg-transparent'
             }`}
           >
-            {checked && <div className="h-1.5 w-1.5 rounded-full bg-background" />}
+            {checked && (
+              <div
+                className={`h-1.5 w-1.5 rounded-full ${
+                  isDisabled ? 'bg-muted-foreground' : 'bg-background'
+                }`}
+              />
+            )}
           </div>
         </div>
         {options?.footerAction && (
@@ -764,6 +804,7 @@ export const AIEngineConfigSettings: React.FC = () => {
                   <ul className="mt-2 space-y-1.5">
                     {[
                       t('智能文件名和描述深度润色（告别机械感）'),
+                      t('扩充更多文件标签'),
                       t('图片与视觉内容的自然语言深度描述'),
                       t('文件质量按专业维度智能评分'),
                       t('生成多套文件整理方案供自由选择')
