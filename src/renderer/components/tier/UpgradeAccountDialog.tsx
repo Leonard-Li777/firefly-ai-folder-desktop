@@ -109,7 +109,10 @@ export const UpgradeAccountDialog: React.FC<UpgradeAccountDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl p-0 overflow-hidden border-none shadow-2xl bg-background/95 backdrop-blur-xl">
+      <DialogContent
+        data-testid="upgrade-account-dialog"
+        className="max-w-5xl p-0 overflow-hidden border-none shadow-2xl bg-background/95 backdrop-blur-xl"
+      >
         <DialogHeader className="p-8 pb-4 text-center space-y-2">
           <div className="flex justify-center mb-2">
             <div className="flex justify-center mb-2">
@@ -177,6 +180,13 @@ export const UpgradeAccountDialog: React.FC<UpgradeAccountDialogProps> = ({
                 <CardFooter>
                   <Button
                     variant={tInfo.buttonVariant}
+                    data-testid={
+                      tInfo.id === UserTier.PRO
+                        ? 'upgrade-pro-btn'
+                        : tInfo.id === UserTier.ENTERPRISE
+                          ? 'upgrade-enterprise-btn'
+                          : 'current-plan-btn'
+                    }
                     className={`w-full h-11 text-sm font-black rounded-xl transition-all ${
                       tInfo.highlight
                         ? 'shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98]'
@@ -195,7 +205,9 @@ export const UpgradeAccountDialog: React.FC<UpgradeAccountDialogProps> = ({
                     }}
                   >
                     <span>{tInfo.buttonText}</span>
-                    {tInfo.id !== UserTier.FREE && <ExternalLink className="w-3.5 h-3.5 ml-1 opacity-70" />}
+                    {tInfo.id !== UserTier.FREE && (
+                      <ExternalLink className="w-3.5 h-3.5 ml-1 opacity-70" />
+                    )}
                   </Button>
                 </CardFooter>
               </Card>

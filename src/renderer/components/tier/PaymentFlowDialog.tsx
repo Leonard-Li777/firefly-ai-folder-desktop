@@ -66,7 +66,9 @@ export const PaymentFlowDialog: React.FC<PaymentFlowDialogProps> = ({
       if (result.success) {
         onSuccess()
         onOpenChange(false)
-        const msg = successDescription ? `${successTitle ?? t('兑换成功')}: ${successDescription}` : (successTitle ?? t('兑换成功'))
+        const msg = successDescription
+          ? `${successTitle ?? t('兑换成功')}: ${successDescription}`
+          : (successTitle ?? t('兑换成功'))
         toast.success(msg)
       } else {
         toast.error(result.message || t('操作无法完成，请稍后再试'))
@@ -105,7 +107,10 @@ export const PaymentFlowDialog: React.FC<PaymentFlowDialogProps> = ({
           if (!o) handleClose()
         }}
       >
-        <DialogContent className="max-w-md [&>button]:w-8 [&>button]:h-8 [&>button]:flex [&>button]:items-center [&>button]:justify-center [&>button_svg]:w-5 [&>button_svg]:h-5">
+        <DialogContent
+          data-testid="payment-flow-dialog"
+          className="max-w-md [&>button]:w-8 [&>button]:h-8 [&>button]:flex [&>button]:items-center [&>button]:justify-center [&>button_svg]:w-5 [&>button_svg]:h-5"
+        >
           <DialogHeader>
             <DialogTitle>{t('萤火消费确认')}</DialogTitle>
           </DialogHeader>
@@ -162,6 +167,7 @@ export const PaymentFlowDialog: React.FC<PaymentFlowDialogProps> = ({
           {/* 按钮区域：确认支付居中单行 + 其他操作单行 */}
           <div className="flex flex-col items-center gap-4 pb-2">
             <Button
+              data-testid="confirm-spend-firecores-btn"
               className="w-full max-w-[220px] rounded-xl h-10 text-sm font-semibold gap-2 shadow-md shadow-primary/20"
               disabled={isSubmitting || !hasEnough}
               onClick={handleConfirm}
@@ -197,7 +203,10 @@ export const PaymentFlowDialog: React.FC<PaymentFlowDialogProps> = ({
           if (!o) handleBack()
         }}
       >
-        <DialogContent className="max-w-md [&>button]:w-8 [&>button]:h-8 [&>button]:flex [&>button]:items-center [&>button]:justify-center [&>button_svg]:w-5 [&>button_svg]:h-5">
+        <DialogContent
+          data-testid="payment-flow-dialog"
+          className="max-w-md [&>button]:w-8 [&>button]:h-8 [&>button]:flex [&>button]:items-center [&>button]:justify-center [&>button_svg]:w-5 [&>button_svg]:h-5"
+        >
           <DialogHeader>
             <DialogTitle>{t('萤火余额不足')}</DialogTitle>
             <DialogDescription>{t('您的萤火不足以完成此操作')}</DialogDescription>

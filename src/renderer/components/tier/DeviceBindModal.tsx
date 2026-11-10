@@ -135,6 +135,7 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
       }}
     >
       <DialogContent
+        data-testid="device-bind-modal"
         className="sm:max-w-md p-6 bg-card text-card-foreground border-border/80 shadow-2xl [&>button:last-child]:hidden select-none"
         onPointerDownOutside={e => e.preventDefault()}
         onEscapeKeyDown={e => e.preventDefault()}
@@ -177,7 +178,10 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
             )}
 
             {!loading && isSuccess && (
-              <div className="flex flex-col items-center gap-2 text-emerald-500 animate-in fade-in zoom-in-95">
+              <div
+                data-testid="bind-success-badge"
+                className="flex flex-col items-center gap-2 text-emerald-500 animate-in fade-in zoom-in-95"
+              >
                 <CheckCircle2 className="w-14 h-14" />
                 <span className="text-sm font-semibold text-foreground">绑定成功</span>
                 <span className="text-xs text-muted-foreground">正在同步会员资产...</span>
@@ -187,6 +191,7 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
             {!loading && !error && !isSuccess && bindData?.imageDataUrl && (
               <div className="flex flex-col items-center justify-center w-full h-full">
                 <img
+                  data-testid="bind-qr-image"
                   src={bindData.imageDataUrl}
                   alt="微信扫码绑定"
                   className="w-56 h-56 object-contain"
@@ -203,7 +208,10 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
                   <ShieldCheck className="w-4 h-4 text-primary" />
                   <span>设备校验码:</span>
                 </div>
-                <span className="font-mono font-bold tracking-widest text-primary text-sm">
+                <span
+                  data-testid="bind-code-text"
+                  className="font-mono font-bold tracking-widest text-primary text-sm"
+                >
                   {bindData.code}
                 </span>
               </div>
