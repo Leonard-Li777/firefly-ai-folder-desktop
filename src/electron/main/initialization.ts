@@ -29,6 +29,7 @@ import { OrganizeRealDirectoryService } from '../runtime-services/filesystem/org
 import { FileCleanupService } from '../runtime-services/filesystem/file-cleanup-service'
 import { fileWatcherService } from '../runtime-services/filesystem/file-watcher-service'
 import { workspaceAdmissionService } from '../runtime-services/workspace/workspace-admission-service'
+import { loadIgnoreRules } from '../runtime-services/analysis/analysis-exclusion-service'
 import { createCoreEngine } from '@firefly/core-engine'
 import { createCoreEngineAdapters } from '../adapters'
 import { ffmpegService } from '../runtime-services/system/ffmpeg-service'
@@ -249,6 +250,16 @@ export async function initDatabaseAndDependentServices(
     await databaseService.initialize(language)
     // loadFromJson 已在迁移后回调中执行，此处只需确保内存数据同步
     await ConfigDbManager.getInstance().initialize(language, force)
+
+    // 工作区准入服务单例是无参构造，必须在数据库与配置中枢就绪后显式注入运行时依赖。
+    // 它原先靠运行时 require('../database/database-service') 兜底，但该相对路径在
+    // electron-vite 打包产物中不存在（且 DatabaseService 只有 db getter、没有 getDb()），
+    // 导致保存工作区配置时恒定抛出「数据库未初始化且未提供 db 依赖」。
+    workspaceAdmissionService.configureRuntimeDependencies({
+      getDb: () => databaseService.db,
+      systemRulesProvider: () => loadIgnoreRules()
+    })
+
     unifiedModelManager.ensureLoaded(true)
 
     // 数据库就绪后，为新用户一次性插入 welcome_grant（幂等：确定性 txId + INSERT OR IGNORE）

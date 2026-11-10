@@ -46,6 +46,10 @@ export interface PluginModuleItem {
   can_uninstall?: boolean
   hold_reasons?: string[]
   description: string
+  hardware_requirement?: {
+    level: 'minimal' | 'recommended' | 'heavy' | 'high'
+    text: string
+  }
   icon?: string
   config_schema?: string | null
   user_config?: string | null
@@ -181,7 +185,11 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
       }
     },
     description:
-      '非对称双塔极速架构：Bekko 384d 文本与 CLIP 512d 视觉检索，低内存消耗，CPU 即可流畅运转',
+      '【通过意思找文件与图片】根据你描述的大致意思快速搜索照片和文档。占用极少内存，即使老电脑和低配轻薄本也能流畅运行。',
+    hardware_requirement: {
+      level: 'minimal',
+      text: '配置要求极低 · 老电脑与轻薄本首选'
+    },
     icon: 'Feather',
     resources: [
       {
@@ -218,7 +226,11 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
       }
     },
     description:
-      'EmbeddingGemma-2 图文同构统一流形空间，支持 MRL 256/512/768 弹性维度截断与高精度跨模态匹配',
+      '【更聪明的全能搜索大脑】对复杂句子和图片的理解更深入精准，找东西更懂你的心思。推荐 8GB 或以上内存电脑使用。',
+    hardware_requirement: {
+      level: 'recommended',
+      text: '推荐配置 · 电脑内存 8GB 或以上'
+    },
     icon: 'Layers',
     resources: [
       {
@@ -250,7 +262,11 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
       }
     },
     description:
-      '集成 MobileNetV2 视觉 5 分类与多语种文本 FastText 分类器，精准识别成人内容与分级标签 (PG-13/R-18/R-18G)',
+      '【私密与敏感图片标记】自动识别不适合在公开场合打开的图片并加上标记，防止投屏查看时尴尬。所有电脑均可极速运行。',
+    hardware_requirement: {
+      level: 'minimal',
+      text: '配置要求极低 · 极速处理'
+    },
     icon: 'ShieldAlert',
     resources: [
       {
@@ -282,7 +298,11 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
       }
     },
     description:
-      'SenseVoice 极速高精音频转录、富文本标点对齐与多语言语音识别，支持音视频字幕分段抽取 (音频转码复用系统内置 FFmpeg)',
+      '【录音与视频自动转文字】听懂视频和录音里的说话内容并提取字幕，可以直接搜索“某句话是谁说的”。较耗算力，推荐 16GB 内存或有显卡。',
+    hardware_requirement: {
+      level: 'heavy',
+      text: '较耗算力 · 推荐 16GB 内存或有显卡'
+    },
     icon: 'Mic',
     resources: [
       {
@@ -318,7 +338,12 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
         priority: 30
       }
     },
-    description: '高质量离线自然语音朗读、51 款精选音色库与多语种伴音生成引擎',
+    description:
+      '【真人般自然朗读文章】把文档和文章读给你听，支持戴耳机离线听书看材料，完全不消耗网络。普通电脑即可流畅发音。',
+    hardware_requirement: {
+      level: 'minimal',
+      text: '配置要求低 · 普通电脑流畅发音'
+    },
     icon: 'Volume2',
     resources: [
       {
@@ -343,7 +368,11 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
     availability: 'coming_soon',
     total_bytes: 3824100000,
     install_state: 'not_installed',
-    description: '基于本地硬件加速的图像生成、超分辨率画面修复与视觉扩展',
+    description: '【电脑本地自己画图】输入一句话即可在本地画出精美图片，不花一分钱。需要较好的独立显卡。',
+    hardware_requirement: {
+      level: 'high',
+      text: '较高配置 · 需要独立显卡'
+    },
     icon: 'Sparkles'
   },
   {
@@ -357,7 +386,11 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
     delist_reason: null,
     total_bytes: 0,
     install_state: 'not_installed',
-    description: '可以透视压缩包中的内容，并生成标签和描述等',
+    description: '【不用解压直接搜压缩包】不用解压 zip/rar 就能直接查看和搜索里面的文件内容，无额外电脑负担。',
+    hardware_requirement: {
+      level: 'minimal',
+      text: '配置要求极低 · 无额外负担'
+    },
     icon: 'Archive'
   }
 ]
@@ -397,6 +430,7 @@ function normalizeRemoteModuleItem(raw: any): PluginModuleItem {
     install_state: raw.install_state || 'not_installed',
     selected_variant: raw.selected_variant ?? null,
     description: raw.description || seed?.description || '',
+    hardware_requirement: raw.hardware_requirement || seed?.hardware_requirement,
     icon: raw.icon || seed?.icon,
     config_schema: raw.config_schema ?? null,
     user_config: raw.user_config ?? null,

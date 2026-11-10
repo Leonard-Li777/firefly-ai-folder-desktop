@@ -130,7 +130,8 @@ export interface IWorkspaceAdmissionService {
 
 export interface WorkspaceAdmissionDependencies {
   db?: Database
-  getDb?: () => Database
+  /** 运行期数据库提供者；返回 null 表示数据库尚未初始化，由 resolveDb 给出明确错误 */
+  getDb?: () => Database | null
   systemRulesProvider?: () => IFilterRule[]
   queueCancelUnmatched?: (
     workspaceId: number,
@@ -214,15 +215,35 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
     this.deps = deps
   }
 
+  /**
+   * 启动期注入运行时依赖（生产单例为无参构造，由 initialization 在数据库就绪后调用）。
+   *
+   * 历史实现在这里用 `require('../database/database-service')` 兜底，但 electron-vite 会把
+   * 主进程源码整体打进 main.js，产物中并不存在该相对路径，require 必然 MODULE_NOT_FOUND；
+   * 且 DatabaseService 暴露的是 `db` getter 而非 `getDb()`。空 catch 把两种真实异常统一
+   * 伪装成「数据库未初始化且未提供 db 依赖」，使「更新工作区配置」恒定失败且无法排障。
+   * 因此改由启动链路注入静态 import 的实例，彻底绕开打包后的模块解析问题。
+   */
+  configureRuntimeDependencies(deps: {
+    getDb: () => Database | null
+    systemRulesProvider: () => IFilterRule[]
+  }): void {
+    this.deps.getDb = deps.getDb
+    this.deps.systemRulesProvider = deps.systemRulesProvider
+  }
+
   private resolveDb(): Database {
     if (this.deps.db) return this.deps.db
-    if (this.deps.getDb) return this.deps.getDb()
-    try {
-      const { databaseService } = require('../database/database-service')
-      return databaseService.getDb()
-    } catch {
-      throw new Error('[WorkspaceAdmissionService] 数据库未初始化且未提供 db 依赖')
+    if (this.deps.getDb) {
+      const db = this.deps.getDb()
+      if (db) return db
+      throw new Error(
+        '[WorkspaceAdmissionService] 数据库尚未初始化 (databaseService.db 为 null)，请确认 databaseService.initialize() 已完成'
+      )
     }
+    throw new Error(
+      '[WorkspaceAdmissionService] 未提供 db 依赖：构造时传入 { db }，或在启动期调用 configureRuntimeDependencies() 注入'
+    )
   }
 
   private resolveSystemRules(): IFilterRule[] {
@@ -230,9 +251,17 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
       return this.deps.systemRulesProvider()
     }
     try {
+      // 仅保留给单测 / 未打包环境；生产路径必须由 configureRuntimeDependencies 注入，
+      // 因为打包产物里不存在该相对模块路径。
       const { loadIgnoreRules } = require('../analysis/analysis-exclusion-service')
       return loadIgnoreRules()
-    } catch {
+    } catch (error) {
+      // 禁止静默降级：系统硬排除规则为空会让准入四阶判定的第一阶整段失效。
+      logger.warn(
+        LogCategory.MAIN,
+        '[WorkspaceAdmissionService] 系统排除规则加载失败，请在启动期注入 systemRulesProvider:',
+        error
+      )
       return []
     }
   }

@@ -128,7 +128,7 @@ describe('Ticket 05: 原生执行器免杀与设置声明式动态挂载测试',
 
       // 基础界面与忽略规则始终存在
       expect(screen.getByText('界面与显示偏好')).toBeInTheDocument()
-      expect(screen.getByText('AI分析忽略规则')).toBeInTheDocument()
+      expect(screen.getByText('全局排除文件规则')).toBeInTheDocument()
 
       // TTS 处于停用状态，Tab 应当被隐藏
       expect(screen.queryByText('语音合成 (TTS)')).toBeNull()

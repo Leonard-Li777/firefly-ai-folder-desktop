@@ -95,7 +95,10 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
           setWorkflows(res.data)
         }
       })
-      .catch(() => {})
+      .catch((err: unknown) => {
+        // 禁止静默降级：IPC 通道缺失或主进程异常必须显式上报，否则工作流数据缺口不可观测
+        console.warn('[WorkspaceMaintenanceTab] 获取本地工作流列表失败:', err)
+      })
     return () => {
       isMounted = false
     }

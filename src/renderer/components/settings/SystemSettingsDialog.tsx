@@ -77,8 +77,6 @@ export const SystemSettingsDialog: React.FC = () => {
     }
   }, [currentCategory])
 
-  if (!isOpen) return null
-
   const modules = usePluginCenterStore(s => s.modules)
 
   // 动态根据已安装且激活的插件挂载或隐藏对应 Tab (Spec §5.2)
@@ -117,6 +115,11 @@ export const SystemSettingsDialog: React.FC = () => {
       return true
     })
   }, [modules])
+
+  // 提前返回必须置于所有 Hook 之后：弹窗由「关」切到「开」时若在此之前返回，
+  // 会少调用 usePluginCenterStore / useMemo，导致两次渲染的 Hook 数量不一致，
+  // 触发 React "Rendered more hooks than during the previous render." 崩溃。
+  if (!isOpen) return null
 
   // 兜底校验：如果当前分类不在可用项中，重置为第一个有效分类
   const activeCategory = validCategories.some(c => c.id === currentCategory)

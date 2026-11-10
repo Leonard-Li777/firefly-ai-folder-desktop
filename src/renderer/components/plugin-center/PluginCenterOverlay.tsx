@@ -53,7 +53,7 @@ function getSlotDefinition(
         policy: 'exclusive_required',
         icon: '🔒',
         badgeText: t('必选单例 · 二选一互斥'),
-        description: t('全系统基础语义底座，切换将翻转单例代际 (EmbeddingEpoch)'),
+        description: t('整个软件的核心搜索大脑（二选一）。换引擎会自动重新建立全部文件的搜索索引。'),
         order: 10
       }
     case 'voice_asr':
@@ -64,7 +64,7 @@ function getSlotDefinition(
         policy: 'exclusive_optional',
         icon: '🎙️',
         badgeText: t('选配单选 · 互斥生效'),
-        description: t('高精离线语音转录、富文本标点对齐与字幕分段提取'),
+        description: t('听懂音视频里的说话内容并转成文字字幕，可直接按对白搜索文件。'),
         order: 20
       }
     case 'voice_tts':
@@ -75,7 +75,7 @@ function getSlotDefinition(
         policy: 'exclusive_optional',
         icon: '🔊',
         badgeText: t('选配单选 · 互斥生效'),
-        description: t('高质量自然语音朗读、多语种伴音生成与发音人管理'),
+        description: t('用好听的真人声音把文档读给你听，支持戴耳机离线听书看材料。'),
         order: 30
       }
     case 'perception_nsfw':
@@ -85,7 +85,7 @@ function getSlotDefinition(
         policy: 'exclusive_optional',
         icon: '🛡️',
         badgeText: t('选配感知 · 原生插槽'),
-        description: t('敏感图像与文本多模态安全识别，自动挂载合规分级标签'),
+        description: t('自动识别私密照片和敏感内容并打标，防止当众投屏或查看时尴尬。'),
         order: 40
       }
     case 'parser':
@@ -95,7 +95,7 @@ function getSlotDefinition(
         policy: 'multi_active',
         icon: '📐',
         badgeText: t('多选并发 · 自由扩展'),
-        description: t('行业文档、工程归档等专用格式深度解析与元数据抽取'),
+        description: t('不用解压就能透视压缩包等特殊文件内容，直接搜索内部资料。'),
         order: 50
       }
     default:
@@ -105,7 +105,7 @@ function getSlotDefinition(
         policy: sampleMod?.slot_policy || 'multi_active',
         icon: '🧩',
         badgeText: t('多选并发 · 独立运行'),
-        description: t('目录智能整理、自动化归档与系统扩展辅助技能'),
+        description: t('丰富的智能扩展小工具，可自由开启多款，辅助日常整理与分析。'),
         order: 60
       }
   }

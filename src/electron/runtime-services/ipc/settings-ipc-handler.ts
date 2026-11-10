@@ -385,6 +385,26 @@ export function registerSettingsIPCHandlers(): void {
     }
   })
 
+  // 获取本地工作流列表（ConfigDbManager 数据中枢缓存，缓存未命中时回退 DB 查询）
+  // 该通道此前仅在 preload 暴露而主进程未注册 handler，导致渲染层恒收到空列表，
+  // 工作区向导遂在 selectedWorkflow 为 undefined 时解引用 .id 崩溃。
+  ipcMain.handle(
+    'get-local-workflows',
+    async (_event, filter?: { source?: string; category?: string }) => {
+      try {
+        const data = ConfigDbManager.getInstance().getLocalWorkflows(filter)
+        return { success: true, data }
+      } catch (error) {
+        logger.error(LogCategory.SETTING, '获取本地工作流列表失败:', error)
+        return {
+          success: false,
+          data: [],
+          error: (error as Error)?.message || String(error)
+        }
+      }
+    }
+  )
+
   // 更新工作区专有配置 (通过 WorkspaceAdmissionService 单一写入口，自动计算准入指纹并执行版本自增与索引解绑 [M07])
   ipcMain.handle(
     'update-workspace-config',

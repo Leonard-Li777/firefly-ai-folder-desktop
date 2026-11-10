@@ -10,7 +10,8 @@ import {
   Download,
   RefreshCw,
   HardDrive,
-  Share2
+  Share2,
+  Cpu
 } from 'lucide-react'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
@@ -121,6 +122,52 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
     return `${t('安装包总体积')}: ${formatBytes(module.total_bytes)}`
   }, [module.total_bytes, t])
 
+  // 小白硬件门槛解读：能不能运行得起
+  const hwReq = useMemo(() => {
+    if (module.hardware_requirement) {
+      return module.hardware_requirement
+    }
+    switch (module.id) {
+      case 'engine_classic_light':
+        return {
+          level: 'minimal' as const,
+          text: t('配置要求极低 · 老电脑与轻薄本首选')
+        }
+      case 'engine_gemma_unified':
+        return {
+          level: 'recommended' as const,
+          text: t('推荐配置 · 电脑内存 8GB 或以上')
+        }
+      case 'perception_nsfw':
+        return {
+          level: 'minimal' as const,
+          text: t('配置要求极低 · 极速处理')
+        }
+      case 'asr_sensevoice_onnx':
+        return {
+          level: 'heavy' as const,
+          text: t('较耗算力 · 推荐 16GB 内存或有显卡')
+        }
+      case 'tts_moss_onnx':
+        return {
+          level: 'minimal' as const,
+          text: t('配置要求低 · 普通电脑流畅发音')
+        }
+      case 'diffusion_studio':
+        return {
+          level: 'high' as const,
+          text: t('较高配置 · 需要独立显卡')
+        }
+      case 'archive_vfs_parser':
+        return {
+          level: 'minimal' as const,
+          text: t('配置要求极低 · 无额外负担')
+        }
+      default:
+        return null
+    }
+  }, [module.id, module.hardware_requirement, t])
+
   return (
     <div
       data-testid={`plugin-card-${module.id}`}
@@ -218,15 +265,37 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
             <span className="text-[11px] text-muted-foreground truncate">{authorDisplay}</span>
           </div>
 
-          {/* 描述文案 */}
+          {/* 描述文案：通俗大白话功能说明 */}
           <p className="text-xs text-muted-foreground line-clamp-2 md:line-clamp-1 leading-relaxed">
             {t(module.description)}
           </p>
 
-          {/* 核心字段：仅展示安装包总体积（彻底去除依赖资源折叠项） */}
-          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/80 pt-0.5">
-            <HardDrive className="w-3.5 h-3.5 shrink-0 text-muted-foreground/60" />
-            <span className="font-medium">{sizeDisplay}</span>
+          {/* 核心字段：运行门槛（能不能跑得起）+ 安装包总体积 */}
+          <div className="flex items-center gap-2.5 text-[11px] text-muted-foreground/80 pt-0.5 flex-wrap">
+            {hwReq && (
+              <div
+                data-testid="hw-requirement-badge"
+                className={cn(
+                  'inline-flex items-center gap-1 font-medium px-1.5 py-0.2 rounded text-[10px] select-none',
+                  hwReq.level === 'minimal' &&
+                    'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
+                  hwReq.level === 'recommended' &&
+                    'bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20',
+                  hwReq.level === 'heavy' &&
+                    'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20',
+                  hwReq.level === 'high' &&
+                    'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20'
+                )}
+              >
+                <Cpu className="w-3 h-3 shrink-0" />
+                <span>{hwReq.text}</span>
+              </div>
+            )}
+
+            <div className="flex items-center gap-1.5">
+              <HardDrive className="w-3.5 h-3.5 shrink-0 text-muted-foreground/60" />
+              <span className="font-medium">{sizeDisplay}</span>
+            </div>
           </div>
         </div>
       </div>

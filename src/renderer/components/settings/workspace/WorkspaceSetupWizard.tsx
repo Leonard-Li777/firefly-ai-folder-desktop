@@ -59,7 +59,9 @@ import {
   Tag,
   ShieldCheck,
   ChevronRight,
-  Layers
+  Layers,
+  LayoutGrid,
+  Download
 } from 'lucide-react'
 
 export interface WorkspaceSetupWizardProps {
@@ -117,16 +119,43 @@ function getPersonaLabels(): Record<string, string> {
  * 分类选项卡定义（函数动态返回，支持多语言切换刷新）
  * 遵循 AGENTS.md "避免静态对象失效"铁律：t() 不能置于模块级静态字面量。
  */
-function getWorkflowCategories(): Array<{
-  id: WorkflowCategory
+function getWorkflowCategories(workflowList?: any[]): Array<{
+  id: WorkflowCategory | 'all'
   name: string
   icon: string
   count: number
 }> {
   return [
-    { id: 'entertainment', name: t('生活娱乐'), icon: 'sports_esports', count: 5 },
-    { id: 'creative', name: t('创意设计'), icon: 'palette', count: 4 },
-    { id: 'office', name: t('专业办公'), icon: 'business_center', count: 2 }
+    {
+      id: 'all',
+      name: t('全部'),
+      icon: 'apps',
+      count: workflowList && workflowList.length > 0 ? workflowList.length : 13
+    },
+    {
+      id: 'entertainment',
+      name: t('生活娱乐'),
+      icon: 'sports_esports',
+      count: workflowList && workflowList.length > 0
+        ? workflowList.filter(w => w?.category === 'entertainment').length
+        : 5
+    },
+    {
+      id: 'creative',
+      name: t('创意设计'),
+      icon: 'palette',
+      count: workflowList && workflowList.length > 0
+        ? workflowList.filter(w => w?.category === 'creative').length
+        : 4
+    },
+    {
+      id: 'office',
+      name: t('专业办公'),
+      icon: 'business_center',
+      count: workflowList && workflowList.length > 0
+        ? workflowList.filter(w => w?.category === 'office').length
+        : 4
+    }
   ]
 }
 
@@ -153,6 +182,10 @@ function getWorkflowIconComponent(workflowId: string) {
       return Music
     case 'builtin.workflow.finance-contract':
       return FileSpreadsheet
+    case 'builtin.workflow.desktop-declutter':
+      return LayoutGrid
+    case 'builtin.workflow.downloads-triage':
+      return Download
     case 'builtin.workflow.office-docs':
     default:
       return FileText
@@ -360,7 +393,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
   const [profileResult, setProfileResult] = useState<DirectoryProfileResult | null>(null)
   const [isProbing, setIsProbing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
-  const [activeCategory, setActiveCategory] = useState<WorkflowCategory>('creative')
+  const [activeCategory, setActiveCategory] = useState<WorkflowCategory | 'all'>('all')
   const hasUserInteractedRef = useRef(false)
 
   // 会员权益中性提示
@@ -426,17 +459,48 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
 
   // 官方与本地工作流列表（从 ConfigDbManager 数据中枢获取）
   const [workflows, setWorkflows] = useState<any[]>([])
+  // 列表加载状态与失败原因：数据缺口必须可见，严禁静默降级
+  const [isWorkflowsLoading, setIsWorkflowsLoading] = useState(true)
+  const [workflowsLoadError, setWorkflowsLoadError] = useState<string | null>(null)
 
   useEffect(() => {
     let isMounted = true
-    window.electronAPI
-      ?.getLocalWorkflows?.()
+    // 把 API 调用包进 then 链，使接口缺失或同步抛错也统一进入下方 catch 显式上报
+    Promise.resolve()
+      .then(() => window.electronAPI?.getLocalWorkflows?.())
       .then((res: any) => {
-        if (isMounted && res?.success && Array.isArray(res.data) && res.data.length > 0) {
-          setWorkflows(res.data)
+        if (!isMounted) return
+        if (!res?.success || !Array.isArray(res.data)) {
+          const reason = res?.error || t('主进程未返回有效的工作流列表')
+          console.warn('[WorkspaceSetupWizard] 获取本地工作流列表失败:', reason)
+          setWorkflowsLoadError(reason)
+          return
         }
+        // 数据清洗：剔除缺少 id 的脏记录并显式上报，避免后续 find/map 解引用崩溃
+        const valid = res.data.filter((w: any) => w && typeof w.id === 'string')
+        if (valid.length !== res.data.length) {
+          console.warn(
+            `[WorkspaceSetupWizard] 已过滤 ${res.data.length - valid.length} 条缺少 id 的无效工作流记录`
+          )
+        }
+        if (valid.length === 0) {
+          const reason = t('未获取到任何官方工作流，请检查配置数据是否完成初始化')
+          console.warn('[WorkspaceSetupWizard] 本地工作流列表为空:', reason)
+          setWorkflowsLoadError(reason)
+          return
+        }
+        setWorkflows(valid)
+        setWorkflowsLoadError(null)
       })
-      .catch(() => {})
+      .catch((err: unknown) => {
+        if (!isMounted) return
+        const reason = (err as Error)?.message || String(err)
+        console.warn('[WorkspaceSetupWizard] 获取本地工作流列表异常:', reason)
+        setWorkflowsLoadError(reason)
+      })
+      .finally(() => {
+        if (isMounted) setIsWorkflowsLoading(false)
+      })
     return () => {
       isMounted = false
     }
@@ -475,7 +539,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
   const top1Recommendation = useMemo(() => {
     if (workflowRecommendations.length === 0) return null
     const topRec = workflowRecommendations[0]
-    const wf = workflows.find((w: any) => w.id === topRec.workflowId)
+    const wf = workflows.find((w: any) => w?.id === topRec.workflowId)
     return wf ? { ...wf, score: topRec.score, matchReason: topRec.matchReason } : null
   }, [workflowRecommendations, workflows])
 
@@ -487,19 +551,20 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     return s1 >= 70 && s1 - s2 >= 15
   }, [workflowRecommendations])
 
-  // 当 Profiler 分析完成且用户尚未手动干预时，自动预选推荐工作流并定位分类
+  // 当 Profiler 分析完成且用户尚未手动干预时，自动预选推荐工作流（保持停留在'全部'或当前分类）
   useEffect(() => {
     if (top1Recommendation && !hasUserInteractedRef.current) {
       setSelectedWorkflowId(top1Recommendation.id)
-      if (top1Recommendation.category) {
-        setActiveCategory(top1Recommendation.category)
-      }
     }
   }, [top1Recommendation])
 
-  // 当前选中的完整工作流实体
+  // 当前选中的完整工作流实体：只接受具备合法 id 的记录，
+  // 杜绝「半有效对象 / undefined」流向下游渲染层造成属性解引用崩溃。
   const selectedWorkflow = useMemo(() => {
-    return workflows.find((w: any) => w.id === selectedWorkflowId) || workflows[0]
+    const matched = workflows.find((w: any) => w?.id === selectedWorkflowId)
+    if (matched) return matched
+    const fallback = workflows[0]
+    return fallback && typeof fallback.id === 'string' ? fallback : null
   }, [selectedWorkflowId, workflows])
 
   // 解析当前选中工作流的目录树结构
@@ -571,7 +636,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     return t(
       '采用此工作流规范将自动建立「{persona}」标准管理结构，对目标文件执行智能命名与分类归整。',
       {
-        persona: getPersonaLabels()[selectedWorkflow.persona] || selectedWorkflow.name
+        persona: getPersonaLabels()[selectedWorkflow?.persona] || selectedWorkflow?.name
       }
     )
   }, [profileResult, selectedWorkflow])
@@ -585,6 +650,11 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
   const doSubmitConfig = async (flowMode: 'complete' | 'customize') => {
     if (!workspace.id) {
       toast.error(t('工作区 ID 无效'))
+      return
+    }
+    // 工作流列表未就绪时禁止提交，避免在配置组装阶段解引用 undefined
+    if (!selectedWorkflow) {
+      toast.error(t('工作流数据尚未就绪，请稍后重试'))
       return
     }
     setIsSaving(true)
@@ -667,10 +737,35 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     }
   }
 
-  // 过滤出当前激活分类下的工作流卡片
+  // 过滤出当前激活分类下的工作流卡片（支持 'all' 显示全部）；一并剔除缺 id 的脏记录，
+  // 保证下方 map 回调中的 wf 恒为可用实体（数据入口已清洗，此处为渲染前二次门禁）
   const categoryWorkflows = useMemo(() => {
-    return workflows.filter((w: any) => w.category === activeCategory)
+    return workflows.filter(
+      (w: any) =>
+        w &&
+        typeof w.id === 'string' &&
+        (activeCategory === 'all' || w?.category === activeCategory)
+    )
   }, [activeCategory, workflows])
+
+  // 提前返回必须置于所有 Hook 之后（保证两次渲染的 Hook 数量恒定）；
+  // 工作流列表加载中 / 加载失败时 selectedWorkflow 为 undefined，若继续渲染会在
+  // 下方多处解引用 selectedWorkflow.id / .name / .persona，触发 TypeError 崩溃。
+  if (!selectedWorkflow) {
+    return (
+      <div className="flex flex-col h-full items-center justify-center gap-3 p-6 text-center">
+        {isWorkflowsLoading && <Loader2 className="w-6 h-6 animate-spin text-primary" />}
+        <p className="text-sm font-medium text-foreground">
+          {isWorkflowsLoading
+            ? t('正在加载官方工作流列表...')
+            : t('工作流列表不可用，请重启应用后重试')}
+        </p>
+        {workflowsLoadError && (
+          <p className="text-xs text-muted-foreground max-w-md break-words">{workflowsLoadError}</p>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col h-full overflow-hidden p-5 sm:p-6 space-y-3.5">
@@ -684,14 +779,6 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
               </span>
               <span>{t('为当前工作目录定制专属 AI 工作流')}</span>
             </h3>
-            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-              <span>{t('当前配置目录:')}</span>
-              <span className="font-semibold text-foreground bg-muted px-2 py-0.5 rounded text-[11px] flex items-center gap-1">
-                <FolderOpen className="w-3 h-3 text-primary" />
-                {workspace.name}
-              </span>
-              <span className="text-muted-foreground/60 hidden sm:inline">({workspace.path})</span>
-            </p>
           </div>
 
           {/* 探测状态徽标 */}
@@ -844,8 +931,8 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
                         🔥 {t('契合度 {score}%', { score: top1Recommendation.score })}
                       </span>
                       <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold bg-muted text-muted-foreground border border-border/60">
-                        {getPersonaLabels()[top1Recommendation.persona] ||
-                          top1Recommendation.persona}
+                        {getPersonaLabels()[top1Recommendation?.persona] ||
+                          top1Recommendation?.persona}
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed line-clamp-1">
@@ -905,12 +992,12 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
             <div className="flex items-center justify-between flex-wrap gap-2">
               <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
                 <span>{t('全场景官方工作流矩阵库')}</span>
-                <span className="text-muted-foreground font-normal">({t('共 11 套')})</span>
+                <span className="text-muted-foreground font-normal">({t('共 {total} 套', { total: workflows.length || 13 })})</span>
               </Label>
 
               {/* 3-Tab 分类切换器 */}
               <div className="flex items-center p-0.5 bg-muted/60 rounded-lg border border-border/60 gap-1">
-                {getWorkflowCategories().map(cat => {
+                {getWorkflowCategories(workflows).map(cat => {
                   const isActive = activeCategory === cat.id
                   return (
                     <button
@@ -988,7 +1075,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
                               {wf.name}
                             </h5>
                             <span className="text-[10px] font-medium text-muted-foreground bg-muted px-1.5 py-0.2 rounded">
-                              {getPersonaLabels()[wf.persona] || wf.persona}
+                              {getPersonaLabels()[wf?.persona] || wf?.persona}
                             </span>
                           </div>
                         </div>
@@ -1057,7 +1144,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
                 <span>{t('预期整理结构与效果预览')}</span>
               </div>
               <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 shrink-0">
-                {getPersonaLabels()[selectedWorkflow.persona] || selectedWorkflow.persona}
+                {getPersonaLabels()[selectedWorkflow?.persona] || selectedWorkflow?.persona}
               </span>
             </div>
             <p className="text-[11px] text-muted-foreground leading-tight">
@@ -1067,8 +1154,8 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
             </p>
           </div>
 
-          {/* 智能命名与放行规则指示条 */}
-          <div className="bg-card/70 border border-border/60 rounded-lg p-2.5 space-y-1.5 shrink-0 text-[11px]">
+          {/* 准入放行规则指示条 (根据用户需求，预览中不展示智能名这一行) */}
+          <div className="bg-card/70 border border-border/60 rounded-lg px-2.5 py-2 shrink-0 text-[11px]">
             <div className="flex items-center justify-between text-muted-foreground">
               <span className="font-medium text-foreground flex items-center gap-1">
                 <Filter className="w-3 h-3 text-primary shrink-0" />
@@ -1078,17 +1165,6 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
                 {selectedWorkflow.filter_rules}
               </span>
             </div>
-            {selectedWorkflow.naming_template && (
-              <div className="flex items-center justify-between text-muted-foreground">
-                <span className="font-medium text-foreground flex items-center gap-1">
-                  <Tag className="w-3 h-3 text-primary shrink-0" />
-                  <span>{t('智能命名:')}</span>
-                </span>
-                <span className="font-mono text-[10px] truncate max-w-[190px] bg-muted/60 px-1 py-0.2 rounded text-primary">
-                  {selectedWorkflow.naming_template}
-                </span>
-              </div>
-            )}
           </div>
 
           {/* 右侧主体：树状目录预览 (带滚动条) */}

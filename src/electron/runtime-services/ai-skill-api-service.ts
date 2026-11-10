@@ -1109,7 +1109,9 @@ export class AISkillApiService {
               } else {
                 const { TagTreeQuery } =
                   await import('./filesystem/virtual-directory-service/TagTreeQuery')
-                const tagTreeQuery = new TagTreeQuery((databaseService as any).getDb())
+                const db = databaseService.db
+                if (!db) throw new Error('[AISkillAPI] 数据库未初始化，无法执行标签树查询')
+                const tagTreeQuery = new TagTreeQuery(db)
                 await tagTreeQuery.getFilteredFilesPaged(params)
               }
               await channel.sendEvent('done', { isSettled: true })
@@ -1142,7 +1144,9 @@ export class AISkillApiService {
               } else {
                 const { TagTreeQuery } =
                   await import('./filesystem/virtual-directory-service/TagTreeQuery')
-                const tagTreeQuery = new TagTreeQuery((databaseService as any).getDb())
+                const db = databaseService.db
+                if (!db) throw new Error('[AISkillAPI] 数据库未初始化，无法执行标签树查询')
+                const tagTreeQuery = new TagTreeQuery(db)
                 return await tagTreeQuery.getFilteredFilesPaged(params)
               }
             })()

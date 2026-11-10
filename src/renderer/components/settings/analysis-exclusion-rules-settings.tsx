@@ -192,9 +192,9 @@ export const AnalysisExclusionRulesSettings: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h3 className="text-lg font-semibold mb-2">{t('AI分析忽略规则')}</h3>
+        <h3 className="text-lg font-semibold mb-2">{t('全局排除文件规则')}</h3>
         <p className="text-sm text-muted-foreground">
-          {t('配置不需要进行AI分析的文件与目录，提高分析效率并支持查重清理保护')}
+          {t('配置真实目录不显示的文件，以便不进入AI分析提高分析效率并支持批量查重清理保护这些排除的文件')}
         </p>
       </div>
 
