@@ -57,6 +57,8 @@ export interface DirMigrationProgressPayload {
   totalBytes: number
   percentage: number
   currentFile: string
+  copiedFiles?: number
+  totalFiles?: number
 }
 
 export interface DirMigrationContext {
@@ -339,6 +341,8 @@ export class DirMigrationCoordinator {
             phase: 'copying',
             copiedBytes: 0,
             totalBytes: 0,
+            copiedFiles: 0,
+            totalFiles: 0,
             percentage: 100,
             currentFile: 'Done'
           },
@@ -380,6 +384,8 @@ export class DirMigrationCoordinator {
                 phase: 'copying',
                 copiedBytes: context.copiedBytes,
                 totalBytes,
+                copiedFiles: context.copiedFiles,
+                totalFiles: context.totalFiles,
                 percentage: pct,
                 currentFile: context.currentFile || ''
               })
@@ -401,6 +407,8 @@ export class DirMigrationCoordinator {
           phase: 'verifying',
           copiedBytes: totalBytes,
           totalBytes,
+          copiedFiles: context.copiedFiles,
+          totalFiles: context.totalFiles,
           percentage: 99,
           currentFile: 'Verifying data integrity...'
         },
@@ -418,6 +426,8 @@ export class DirMigrationCoordinator {
           phase: 'committing',
           copiedBytes: totalBytes,
           totalBytes,
+          copiedFiles: context.copiedFiles,
+          totalFiles: context.totalFiles,
           percentage: 99,
           currentFile: 'Committing directory changes...'
         },
@@ -475,6 +485,8 @@ export class DirMigrationCoordinator {
           phase: 'committing',
           copiedBytes: totalBytes,
           totalBytes,
+          copiedFiles: context.copiedFiles,
+          totalFiles: context.totalFiles,
           percentage: 100,
           currentFile: 'Completed'
         },

@@ -627,7 +627,7 @@ export const InterfaceSettings: React.FC = () => {
               <div className="flex items-center gap-2">
                 <HardDrive className="w-4 h-4 text-muted-foreground shrink-0" />
                 <span className="text-xs font-mono font-medium truncate select-all">
-                  {dirInfo?.currentPath || t('正在获取目录信息...')}
+                  {dirInfo?.currentPath || dirInfo?.currentDir || t('正在获取目录信息...')}
                 </span>
               </div>
               <p className="text-xs text-muted-foreground">

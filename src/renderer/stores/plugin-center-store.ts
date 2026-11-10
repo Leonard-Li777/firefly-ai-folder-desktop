@@ -1176,8 +1176,11 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
     }
     return bridge.onDirMigrationProgress((payload: any) => {
       set({ dirMigrationProgress: payload })
-      if (payload?.phase) {
-        set({ dirPhase: payload.phase === 'DONE' ? 'PENDING_RESTART' : 'MIGRATING' })
+      if (payload) {
+        const isDone =
+          payload.phase === 'DONE' ||
+          (payload.phase === 'committing' && (payload.percentage ?? 0) >= 100)
+        set({ dirPhase: isDone ? 'PENDING_RESTART' : 'MIGRATING' })
       }
     })
   },

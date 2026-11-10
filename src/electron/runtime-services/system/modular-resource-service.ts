@@ -752,6 +752,9 @@ export class ModularResourceService implements IModularResourceService {
       this.effectivePluginsRootDir = path.join(this.getBaseDir(), 'modules')
     }
 
+    // 确保主进程及子进程 process.env 统一拥有模块根路径
+    process.env.FIREFLY_MODULES_ROOT = this.effectivePluginsRootDir
+
     return this.effectivePluginsRootDir
   }
 
@@ -883,15 +886,41 @@ export class ModularResourceService implements IModularResourceService {
     const usedBytes = await this.calculateCurrentDirUsedBytes()
     const { freeBytes } = getDiskFreeSpace(currentDir)
 
+    let previousPath: string | null = null
+    let previousPathExists = false
+    try {
+      const prev = this.getConfigOrchestrator()?.getValue('PREVIOUS_PLUGIN_MODULES_PATH')
+      if (prev && typeof prev === 'string' && prev.trim()) {
+        previousPath = path.resolve(prev.trim())
+        previousPathExists = fs.existsSync(previousPath)
+      }
+    } catch {}
+
     return {
       currentDir,
+      currentPath: currentDir,
       committedDir,
       isDefault,
       defaultDirNonAscii,
       phase: this.dirRuntimePhase,
       usedBytes,
-      freeBytes
+      freeBytes,
+      previousPath,
+      previousPathExists
     }
+  }
+
+  /**
+   * 测试接缝：获取或注入目录迁移协调器实例
+   */
+  private migrationCoordinatorInstance: DirMigrationCoordinator = dirMigrationCoordinator
+
+  public setMigrationCoordinator(coordinator: DirMigrationCoordinator): void {
+    this.migrationCoordinatorInstance = coordinator
+  }
+
+  public getMigrationCoordinator(): DirMigrationCoordinator {
+    return this.migrationCoordinatorInstance
   }
 
   /**
@@ -940,7 +969,7 @@ export class ModularResourceService implements IModularResourceService {
     } catch {}
 
     // 3. 执行流式迁移
-    const result = await dirMigrationCoordinator.executeMigration(
+    const result = await this.migrationCoordinatorInstance.executeMigration(
       currentSourceDir,
       resolvedTarget,
       {
@@ -975,7 +1004,7 @@ export class ModularResourceService implements IModularResourceService {
     cancelled: boolean
     errorCode?: PluginDirErrorCode
   }> {
-    return await dirMigrationCoordinator.cancelMigration(this.getBaseDir())
+    return await this.migrationCoordinatorInstance.cancelMigration(this.getBaseDir())
   }
 
   /**
@@ -1501,7 +1530,7 @@ export class ModularResourceService implements IModularResourceService {
     await reconcileDirSwitchIntents(intentsDir)
 
     // 自愈未完成的插件根目录大迁移意图日志 (Issue 03)
-    cleanedTombstones += await dirMigrationCoordinator.reconcileOnStartup(
+    cleanedTombstones += await this.migrationCoordinatorInstance.reconcileOnStartup(
       baseDir,
       this.getCommittedPluginsRootDir()
     )
