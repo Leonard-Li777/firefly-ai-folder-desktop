@@ -15,3 +15,15 @@ export {
   computeResourceDirSha256,
   partitionResourcesByDiskState
 } from './deterministic-hasher'
+export {
+  OfflineBundleExporter,
+  OfflineBundleExportError,
+  type OfflineBundleExportErrorCode,
+  type ModuleExportDeclaration,
+  type BundleManifestModuleItem,
+  type BundleManifest,
+  type ExportBundleOptions,
+  type ExportBundleResult,
+  type BackgroundVerificationLockState,
+  type BundleExporterContext
+} from './offline-bundle-exporter'
