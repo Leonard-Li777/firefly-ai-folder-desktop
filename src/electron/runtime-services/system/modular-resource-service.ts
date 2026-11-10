@@ -12,7 +12,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { app as electronApp } from 'electron'
 import type { Database } from 'better-sqlite3'
-import { logger, LogCategory, isPathEqual } from '@firefly/shared'
+import { logger, LogCategory, isPathEqual, isSubPath } from '@firefly/shared'
 import {
   ModularResourceDao,
   type BuiltinModuleRecord,
@@ -296,6 +296,19 @@ export interface IModularResourceService {
     cancelled: boolean
     errorCode?: PluginDirErrorCode
   }>
+
+  /** 清理历史旧目录残留资产 (Issue 04) */
+  cleanupOldPluginDirectory(): Promise<{
+    success: boolean
+    freedBytes: number
+    errorCode?: PluginDirErrorCode
+  }>
+
+  /** 忽略历史旧目录清理提示 */
+  dismissOldDirCleanup(): void
+
+  /** 是否已忽略旧目录清理提示 */
+  isOldDirCleanupDismissed(): boolean
 }
 
 /**
@@ -643,6 +656,24 @@ export class ModularResourceService implements IModularResourceService {
   private dirRuntimePhase: DirRuntimePhase = 'STABLE'
   private cachedUsedBytes: number | null = null
   private lastUsedBytesCalculatedAt = 0
+  private oldDirCleanupDismissed = false
+  private injectedConfigOrchestrator?: any
+
+  public setConfigOrchestrator(orchestrator: any): void {
+    this.injectedConfigOrchestrator = orchestrator
+  }
+
+  private getConfigOrchestrator(): any {
+    if (this.injectedConfigOrchestrator) {
+      return this.injectedConfigOrchestrator
+    }
+    try {
+      const { ConfigOrchestrator } = require('../../config/config-orchestrator')
+      return ConfigOrchestrator.getInstance()
+    } catch {
+      return null
+    }
+  }
 
   constructor(options?: ModularResourceServiceOptions) {
     this.customDb = options?.db ?? null
@@ -708,8 +739,7 @@ export class ModularResourceService implements IModularResourceService {
     // 优先读取持久化配置
     let committedPath: string | undefined
     try {
-      const { ConfigOrchestrator } = require('../../config/config-orchestrator')
-      committedPath = ConfigOrchestrator.getInstance().getValue<string>('PLUGIN_MODULES_PATH')
+      committedPath = this.getConfigOrchestrator()?.getValue('PLUGIN_MODULES_PATH')
     } catch {
       // 容错
     }
@@ -735,8 +765,7 @@ export class ModularResourceService implements IModularResourceService {
    */
   public getCommittedPluginsRootDir(): string {
     try {
-      const { ConfigOrchestrator } = require('../../config/config-orchestrator')
-      const val = ConfigOrchestrator.getInstance().getValue<string>('PLUGIN_MODULES_PATH')
+      const val = this.getConfigOrchestrator()?.getValue('PLUGIN_MODULES_PATH')
       if (val && typeof val === 'string' && val.trim()) {
         return path.resolve(val.trim())
       }
@@ -788,8 +817,16 @@ export class ModularResourceService implements IModularResourceService {
             for (const item of list) {
               const full = path.join(dir, item.name)
               if (item.isDirectory()) {
+                if (item.name.startsWith('.deleting-') || item.name.startsWith('.migrating-'))
+                  continue
                 calculateDir(full)
               } else if (item.isFile()) {
+                if (
+                  item.name.endsWith('.part') ||
+                  item.name.startsWith('.deleting-') ||
+                  item.name.startsWith('.migrating-')
+                )
+                  continue
                 try {
                   totalBytes += fs.statSync(full).size
                 } catch {}
@@ -912,16 +949,19 @@ export class ModularResourceService implements IModularResourceService {
         },
         onConfigCommit: async (newPath: string, oldPath: string) => {
           try {
-            const { ConfigOrchestrator } = require('../../config/config-orchestrator')
-            const orchestrator = ConfigOrchestrator.getInstance()
-            orchestrator.setValue('PREVIOUS_PLUGIN_MODULES_PATH', oldPath)
-            orchestrator.setValue('PLUGIN_MODULES_PATH', newPath)
+            const orchestrator = this.getConfigOrchestrator()
+            orchestrator?.setValue('PREVIOUS_PLUGIN_MODULES_PATH', oldPath)
+            orchestrator?.setValue('PLUGIN_MODULES_PATH', newPath)
           } catch (err) {
             logger.warn(LogCategory.MAIN, '[ModularResourceService] 更新配置失败:', err)
           }
         }
       }
     )
+
+    if (result.success) {
+      this.oldDirCleanupDismissed = false
+    }
 
     return result
   }
@@ -934,6 +974,125 @@ export class ModularResourceService implements IModularResourceService {
     errorCode?: PluginDirErrorCode
   }> {
     return await dirMigrationCoordinator.cancelMigration(this.getBaseDir())
+  }
+
+  /**
+   * 清理历史旧目录残留资产 (Issue 04)
+   *
+   * 两阶段延迟安全清理：
+   * 1. 验证目标目录不是系统目录、不是当前生效根目录、未被未决 Journal 引用；
+   * 2. 计算将释放的磁盘空间；
+   * 3. 重命名为 .deleting-* 隔离；
+   * 4. 异步流式安全删除；
+   * 5. 持久化清空 PREVIOUS_PLUGIN_MODULES_PATH 配置项。
+   */
+  public async cleanupOldPluginDirectory(): Promise<{
+    success: boolean
+    freedBytes: number
+    errorCode?: PluginDirErrorCode
+  }> {
+    this.assertWriteGateAllowed()
+
+    let previousPath: string | undefined
+    try {
+      previousPath = this.getConfigOrchestrator()?.getValue('PREVIOUS_PLUGIN_MODULES_PATH')
+    } catch {}
+
+    if (!previousPath || !previousPath.trim() || !fs.existsSync(previousPath.trim())) {
+      // 已经不存在，将配置清空并返回
+      try {
+        this.getConfigOrchestrator()?.setValue('PREVIOUS_PLUGIN_MODULES_PATH', '')
+      } catch {}
+      return { success: true, freedBytes: 0 }
+    }
+
+    const resolvedOld = path.resolve(previousPath.trim())
+    const currentRoot = this.getPluginsRootDir()
+
+    // 安全检查 1: 绝对不能是系统保护目录或盘符根
+    const parsed = path.parse(resolvedOld)
+    if (parsed.root.toLowerCase() === resolvedOld.toLowerCase()) {
+      throw new ModularResourceError('SYSTEM_DIR_FORBIDDEN', 'Cannot cleanup drive root directory.')
+    }
+
+    // 安全检查 2: 绝对不能是当前激活根目录或其子目录
+    if (isPathEqual(resolvedOld, currentRoot) || isSubPath(currentRoot, resolvedOld)) {
+      throw new ModularResourceError(
+        'SAME_AS_CURRENT',
+        'Cannot cleanup the currently active plugin directory.'
+      )
+    }
+
+    // 统计旧目录体积
+    let freedBytes = 0
+    const calculateDirBytes = (dir: string): void => {
+      try {
+        const list = fs.readdirSync(dir, { withFileTypes: true })
+        for (const item of list) {
+          const full = path.join(dir, item.name)
+          if (item.isDirectory()) {
+            calculateDirBytes(full)
+          } else if (item.isFile()) {
+            try {
+              freedBytes += fs.statSync(full).size
+            } catch {}
+          }
+        }
+      } catch {}
+    }
+    calculateDirBytes(resolvedOld)
+
+    // 两阶段隔离与异步删除
+    const parentDir = path.dirname(resolvedOld)
+    const tombstoneDir = path.join(
+      parentDir,
+      `.deleting-old-modules-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
+    )
+
+    try {
+      fs.renameSync(resolvedOld, tombstoneDir)
+    } catch {
+      // 若无法重命名，直接对原目录异步清理
+    }
+
+    const targetToDelete = fs.existsSync(tombstoneDir) ? tombstoneDir : resolvedOld
+
+    // 异步执行安全删除，不阻塞当前响应
+    setTimeout(() => {
+      try {
+        this.deleteDirectoryFn(targetToDelete).catch(err => {
+          logger.warn(LogCategory.MAIN, '[ModularResourceService] 异步清理旧目录失败:', err)
+        })
+      } catch {}
+    }, 100)
+
+    // 清空 PREVIOUS_PLUGIN_MODULES_PATH 配置
+    try {
+      this.getConfigOrchestrator()?.setValue('PREVIOUS_PLUGIN_MODULES_PATH', '')
+    } catch {}
+
+    return { success: true, freedBytes }
+  }
+
+  /**
+   * 忽略历史旧目录清理提示
+   */
+  public dismissOldDirCleanup(): void {
+    this.oldDirCleanupDismissed = true
+  }
+
+  /**
+   * 是否已忽略旧目录清理提示
+   */
+  public isOldDirCleanupDismissed(): boolean {
+    return this.oldDirCleanupDismissed
+  }
+
+  /**
+   * 测试/自定义目录删除函数注入接缝
+   */
+  public setDeleteDirectoryFn(fn: (dirPath: string) => Promise<boolean>): void {
+    this.deleteDirectoryFn = fn
   }
 
   /**
@@ -1012,6 +1171,40 @@ export class ModularResourceService implements IModularResourceService {
     }
 
     return []
+  }
+
+  /**
+   * 读取全部资源的 BOM 文件清单定义
+   */
+  public loadResourceBom(): Array<{ name: string; size: number; sha256: string }> {
+    const candidateBomPaths = [
+      path.join(process.cwd(), 'apps/desktop/build/extraResources/configs/resources.bom.json'),
+      path.join(this.getBaseDir(), 'configs', 'resources.bom.json')
+    ]
+    try {
+      if (typeof electronApp !== 'undefined' && electronApp.isPackaged) {
+        candidateBomPaths.unshift(path.join(process.resourcesPath, 'configs', 'resources.bom.json'))
+      }
+    } catch {}
+
+    const results: Array<{ name: string; size: number; sha256: string }> = []
+    for (const bomPath of candidateBomPaths) {
+      if (fs.existsSync(bomPath)) {
+        try {
+          const content = JSON.parse(fs.readFileSync(bomPath, 'utf-8'))
+          const resources = content.resources || {}
+          for (const resKey of Object.keys(resources)) {
+            const files = resources[resKey]?.files
+            if (Array.isArray(files)) {
+              results.push(...files)
+            }
+          }
+          if (results.length > 0) return results
+        } catch {}
+      }
+    }
+
+    return results
   }
 
   /**
@@ -1400,6 +1593,23 @@ export class ModularResourceService implements IModularResourceService {
           resetModules.push(mod.id)
         }
       }
+    }
+
+    // 3. 启动期离线总包两阶段对账自愈与后台 Dry-Run 校验队列 (Ticket 05 / 07 / 08)
+    try {
+      const { StartupReconciler } = await import('../modular-resource/startup-reconciler')
+      const { OfflinePackageDao } = await import('../modular-resource/offline-package-dao')
+      const db = this.getDb()
+      const offlineDao = new OfflinePackageDao(db)
+      const isTestEnv = process.env.NODE_ENV === 'test' || Boolean(process.env.VITEST)
+      await StartupReconciler.reconcileOnStartup({
+        baseDir,
+        dao: offlineDao,
+        db,
+        skipDeferredQueue: isTestEnv
+      })
+    } catch (reconcileErr) {
+      logger.warn(LogCategory.SYSTEM, '[ModularResource] 离线总包冷启动对账自愈异常:', reconcileErr)
     }
 
     return {

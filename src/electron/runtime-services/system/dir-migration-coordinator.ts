@@ -706,11 +706,12 @@ export class DirMigrationCoordinator {
       }
       abortSignal.addEventListener('abort', onAbort, { once: true })
 
-      srcStream.on('data', (chunk: Buffer) => {
+      srcStream.on('data', (chunk: Buffer | string) => {
         if (isAborted) return
-        sourceHasher.update(chunk)
-        targetHasher.update(chunk)
-        onChunk(chunk.length)
+        const buf = typeof chunk === 'string' ? Buffer.from(chunk) : chunk
+        sourceHasher.update(buf)
+        targetHasher.update(buf)
+        onChunk(buf.length)
       })
 
       srcStream.on('error', err => {

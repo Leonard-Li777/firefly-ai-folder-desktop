@@ -128,8 +128,11 @@ export const PLUGIN_ERROR_MESSAGES: Record<string, string> = {
 export function formatPluginErrorMessage(error: unknown): string {
   if (!error) return PLUGIN_ERROR_MESSAGES.UNKNOWN_ERROR
 
-  const errObj = typeof error === 'object' && error !== null ? (error as Record<string, unknown>) : null
-  const rawCode = String(errObj?.code || '').trim().toUpperCase()
+  const errObj =
+    typeof error === 'object' && error !== null ? (error as Record<string, unknown>) : null
+  const rawCode = String(errObj?.code || '')
+    .trim()
+    .toUpperCase()
   if (rawCode && PLUGIN_ERROR_MESSAGES[rawCode]) {
     return PLUGIN_ERROR_MESSAGES[rawCode]
   }
@@ -153,7 +156,11 @@ export function formatPluginErrorMessage(error: unknown): string {
   if (rawMessage.includes('ENOSPC') || rawMessage.includes('no space left')) {
     return PLUGIN_ERROR_MESSAGES.QUOTA_EXCEEDED
   }
-  if (rawMessage.includes('ECONNRESET') || rawMessage.includes('ETIMEDOUT') || rawMessage.includes('fetch failed')) {
+  if (
+    rawMessage.includes('ECONNRESET') ||
+    rawMessage.includes('ETIMEDOUT') ||
+    rawMessage.includes('fetch failed')
+  ) {
     return PLUGIN_ERROR_MESSAGES.NETWORK_ERROR
   }
 
@@ -215,6 +222,9 @@ export interface IModularResourceBridge {
   validatePluginDir?: (targetPath: string) => Promise<any>
   changePluginDir?: (targetPath: string) => Promise<any>
   cancelDirMigration?: () => Promise<any>
+  cleanupOldDir?: () => Promise<any>
+  dismissOldDirCleanup?: () => Promise<any>
+  isOldDirCleanupDismissed?: () => Promise<any>
   onDirMigrationProgress?: (callback: (payload: any) => void) => () => void
   onProgress?: (callback: (event: ModularResourceProgressPayload) => void) => () => void
 }
@@ -595,12 +605,17 @@ function normalizeRemoteModuleItem(raw: any): PluginModuleItem {
   }
 }
 
-async function syncDevModeFromBridge(set: (state: Partial<PluginCenterState>) => void): Promise<boolean> {
+async function syncDevModeFromBridge(
+  set: (state: Partial<PluginCenterState>) => void
+): Promise<boolean> {
   const bridge = getModularResourceBridge()
   if (bridge && typeof bridge.getDevMode === 'function') {
     try {
       const res = await bridge.getDevMode()
-      const isDev = typeof res === 'boolean' ? res : Boolean((res as any)?.devModeEffective ?? (res as any)?.enabled)
+      const isDev =
+        typeof res === 'boolean'
+          ? res
+          : Boolean((res as any)?.devModeEffective ?? (res as any)?.enabled)
       set({ isDeveloperMode: isDev })
       return isDev
     } catch {
@@ -674,11 +689,7 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
     if (!envelope || typeof envelope !== 'object') return false
     const current = get().environmentVisibility
     // 双锚定时钟防护：仅当跨 epoch 或同一 epoch 内 revision 递增时才采纳
-    if (
-      !current ||
-      envelope.epoch !== current.epoch ||
-      envelope.revision > current.revision
-    ) {
+    if (!current || envelope.epoch !== current.epoch || envelope.revision > current.revision) {
       set({
         environmentVisibility: envelope,
         isDeveloperMode: !!envelope.visibility?.developerModeEnabled

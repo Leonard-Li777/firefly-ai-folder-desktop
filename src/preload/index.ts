@@ -71,6 +71,10 @@ export const modularResourcePreloadBridge: IModularResourceBridge = {
   changePluginDir: (targetPath: string) =>
     ipcRenderer.invoke('modular-resource:change-plugin-dir', { targetPath }),
   cancelDirMigration: () => ipcRenderer.invoke('modular-resource:cancel-dir-migration'),
+  cleanupOldDir: () => ipcRenderer.invoke('modular-resource:cleanup-old-dir'),
+  dismissOldDirCleanup: () => ipcRenderer.invoke('modular-resource:dismiss-old-dir-cleanup'),
+  isOldDirCleanupDismissed: () =>
+    ipcRenderer.invoke('modular-resource:is-old-dir-cleanup-dismissed'),
   onDirMigrationProgress: (callback: (payload: any) => void) => {
     const handler = (_event: unknown, payload: any) => callback(payload)
     ipcRenderer.on('modular-resource:dir-migration-progress', handler as any)

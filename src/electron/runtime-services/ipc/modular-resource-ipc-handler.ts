@@ -18,6 +18,7 @@ import {
   type ModuleDownloadProgressEvent,
   type CatalogModuleEntry
 } from '../system/modular-resource-service'
+import { safeRestartApp } from '../system/app-lifecycle'
 import {
   EnvironmentVisibilityCoordinator,
   type EnvironmentVisibilityEnvelope
@@ -228,7 +229,7 @@ export function registerModularResourceIpcHandlers(
 
   ipcMain.handle('modular-resource:restart-app', async () => {
     try {
-      service.requestRestart()
+      await safeRestartApp()
       return true
     } catch (err: any) {
       logger.error(LogCategory.MAIN, '[ModularResourceIPC] restart-app 失败:', err)
@@ -373,5 +374,30 @@ export function registerModularResourceIpcHandlers(
         errorCode: err?.code
       }
     }
+  })
+
+  // 清理历史旧目录残留
+  ipcMain.handle('modular-resource:cleanup-old-dir', async () => {
+    try {
+      return await service.cleanupOldPluginDirectory()
+    } catch (err: any) {
+      logger.error(LogCategory.MAIN, '[ModularResourceIPC] cleanup-old-dir 失败:', err)
+      return {
+        success: false,
+        freedBytes: 0,
+        errorCode: err?.code ?? 'PATH_NOT_WRITABLE'
+      }
+    }
+  })
+
+  // 忽略历史旧目录清理提示
+  ipcMain.handle('modular-resource:dismiss-old-dir-cleanup', async () => {
+    service.dismissOldDirCleanup()
+    return true
+  })
+
+  // 检查是否已忽略历史旧目录清理提示
+  ipcMain.handle('modular-resource:is-old-dir-cleanup-dismissed', async () => {
+    return service.isOldDirCleanupDismissed()
   })
 }

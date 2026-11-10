@@ -266,7 +266,9 @@ export async function initDatabaseAndDependentServices(
     if (databaseService.db) {
       // 清理已移出插件中心的历史内置模块记录 (TASK-01 / Genesis V1 幂等清扫)
       try {
-        databaseService.db.prepare("DELETE FROM builtin_modules WHERE id = 'ai_organize_skill'").run()
+        databaseService.db
+          .prepare("DELETE FROM builtin_modules WHERE id = 'ai_organize_skill'")
+          .run()
       } catch (cleanErr) {
         logger.warn(LogCategory.MAIN, '[Initialization] 清理 ai_organize_skill 记录失败:', cleanErr)
       }
@@ -1073,7 +1075,8 @@ export async function initializeFullServices(): Promise<void> {
 
     // 启动 AI Skill API 协调器 (由全局配置 ENABLE_AI_SKILL_API 与设置页驱动)
     try {
-      const { aiSkillApiReconciler } = await import('../runtime-services/system/ai-skill-reconciler')
+      const { aiSkillApiReconciler } =
+        await import('../runtime-services/system/ai-skill-reconciler')
       const { aiSkillApiService } = await import('../runtime-services/ai-skill-api-service')
       const initialEnabled = Boolean(orchestrator.getValue<boolean>('ENABLE_AI_SKILL_API') ?? false)
       await aiSkillApiReconciler.initialize(initialEnabled)
@@ -1131,6 +1134,16 @@ export async function initializeFullServices(): Promise<void> {
         }
       }
     } catch {}
+
+    // 挂载插件中心与离线包冷启动对账自愈 (Ticket 05 / 07 / 08)
+    try {
+      const { modularResourceService } =
+        await import('../runtime-services/system/modular-resource-service')
+      await modularResourceService.reconcileOnStartup()
+      logger.info(LogCategory.MAIN, '[ModularResource] 启动期插件与离线包对账自愈完成')
+    } catch (reconcileErr) {
+      logger.warn(LogCategory.MAIN, '[ModularResource] 启动期对账自愈异常:', reconcileErr)
+    }
 
     logger.info(LogCategory.MAIN, '完整服务初始化完成')
   } catch (error) {
