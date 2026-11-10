@@ -353,7 +353,7 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
       {
         resource_id: 'pocket-cpu-int8-onnx',
         asset_name: 'pocket-cpu-int8-onnx-1.0.0.zip',
-        target_local_path: 'models/pocket-cpu',
+        target_local_path: 'modules/_shared/pocket-cpu',
         active_source_key: 'auto',
         active_url:
           'https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/pocket-cpu-int8-onnx-1.0.0.zip',
@@ -370,14 +370,14 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
       '【私密与敏感图片标记】自动识别不适合在公开场合打开的图片并加上标记，防止投屏查看时尴尬。所有电脑均可极速运行。',
     icon: 'ShieldAlert',
     kind: 'builtin-module',
-    version: '1.0.0',
+    version: '1.2.0',
     catalog_version: 1,
     category: 'perception',
     capability_slot: 'perception_nsfw',
     slot_policy: 'exclusive_optional',
     backend_type: 'omni_onnx',
     author_code: 'official',
-    total_bytes: 21966375, // 20.9 MiB
+    total_bytes: 33311367, // 31.7 MiB (aligned with resources.bom.json v1.2.0)
     install_state: 'not_installed',
     contributes: {
       settings: {
@@ -390,13 +390,13 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     resources: [
       {
         resource_id: 'nsfw-l3',
-        asset_name: 'nsfw-l3-1.0.0.zip',
+        asset_name: 'nsfw-l3-1.2.0.zip',
         target_local_path: 'modules/_shared/nsfw-l3',
         active_source_key: 'auto',
         active_url:
-          'https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/nsfw-l3-1.0.0.zip',
-        expected_bytes: 21966375,
-        expected_sha256: '84383b64d723d31ec3ab940522f866ff1979a24454269cd6336ee2fc98ff2ddf'
+          'https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/nsfw-l3-1.2.0.zip',
+        expected_bytes: 33311367,
+        expected_sha256: '929e5e074783194c8af976cab37b9dff43c2dfddb6626ee2041e2517c3cc443f'
       }
     ]
   },
@@ -1543,19 +1543,42 @@ export class ModularResourceService implements IModularResourceService {
   ): Promise<void> {
     const dao = this.getDao()
     const candidateUrls: string[] = []
-    if (task.active_url) candidateUrls.push(task.active_url)
-    if (spec.active_url && !candidateUrls.includes(spec.active_url))
-      candidateUrls.push(spec.active_url)
+
+    // 1. 公共 R2 CDN 高速加速源（最高优先级且公开可用）
+    const assetName = task.asset_name || spec.asset_name
+    if (assetName) {
+      const r2Url = `https://download.iocn.cn/firefly-resources/${assetName}`
+      candidateUrls.push(r2Url)
+    }
+
+    // 2. 收集原始配置 URL，并过滤私有仓库 404 镜像（方案 A 过滤规则）
+    const rawUrls: string[] = []
+    if (task.active_url) rawUrls.push(task.active_url)
+    if (spec.active_url && !rawUrls.includes(spec.active_url)) rawUrls.push(spec.active_url)
     if (Array.isArray((spec as any).urls)) {
       for (const u of (spec as any).urls) {
-        if (u && !candidateUrls.includes(u)) candidateUrls.push(u)
+        if (u && !rawUrls.includes(u)) rawUrls.push(u)
       }
     }
     if (Array.isArray((task as any).urls)) {
       for (const u of (task as any).urls) {
-        if (u && !candidateUrls.includes(u)) candidateUrls.push(u)
+        if (u && !rawUrls.includes(u)) rawUrls.push(u)
       }
     }
+
+    const isPrivateGithubRepo = (u: string) =>
+      u.includes('github.com/Leonard-Li777/firefly-resources/releases/download')
+
+    for (const u of rawUrls) {
+      // 方案 A：在 firefly-resources 仍为私有仓时，匿名下载过滤剔除私有 GitHub Release URL，防 404 假死
+      if (isPrivateGithubRepo(u)) {
+        continue
+      }
+      if (!candidateUrls.includes(u)) {
+        candidateUrls.push(u)
+      }
+    }
+
     if (candidateUrls.length === 0) {
       dao.resources.markVerifiedSync(
         task.resource_id,

@@ -78,6 +78,93 @@ export interface ModularResourceProgressPayload {
   errorMessage?: string
 }
 
+export interface EnvironmentVisibility {
+  isDev: boolean
+  isEnterpriseOffline: boolean
+  developerModeEnabled: boolean
+  allowDeveloperMode: boolean
+  allowLocalPluginImport: boolean
+  allowOfflineImport: boolean
+  allowOfflineExport: boolean
+}
+
+export interface EnvironmentVisibilityEnvelope {
+  epoch: string
+  revision: number
+  visibility: Readonly<EnvironmentVisibility>
+}
+
+/**
+ * 离线包与插件中心错误码白名单大白话字典（恪守 RULE 2.16 大白话禁术语铁律）
+ */
+export const PLUGIN_ERROR_MESSAGES: Record<string, string> = {
+  SIGNATURE_INVALID: '插件签名校验未通过，安装包可能已被损坏或非法篡改，已安全终止。',
+  ASSET_HASH_MISMATCH: '插件核心模型或资源文件校验不一致，文件可能已损坏，请重新下载或获取。',
+  MODULE_ACTIVE_CONFLICT: '已有相同类型的核心插件正在运行中，请先停用当前运行的插件后再试。',
+  VERSION_CONFLICT: '检测到已安装同等或更高版本的插件，无需重复安装。',
+  RESOURCE_CONFLICT: '插件所需资源与现有组件存在版本冲突，无法直接覆盖。',
+  QUOTA_EXCEEDED: '电脑磁盘剩余存储空间不足，无法解压或安装该插件，请清理磁盘空间后重试。',
+  ZIP_ENTRY_REJECTED: '离线安装包内包含非法路径或被禁止的文件，系统已安全拦截。',
+  JOB_SUPERSEDED: '已有更高优先级的离线包任务正在进行，当前操作已取消。',
+  RESOURCE_DIR_INVALID: '插件资源目录命名格式不合规，安装已取消。',
+  MANIFEST_INVALID: '插件描述配置文件格式有误或缺失必要信息，无法读取。',
+  MANIFEST_MISSING: '离线安装包中缺少必要的插件信息描述文件。',
+  BUNDLE_EMPTY: '离线总包中未包含任何可用的插件内容。',
+  EXPORT_BUSY: '当前有其他离线任务正在运行，请稍候再试。',
+  IMPORT_BUSY: '当前有离线包正在解压或安装中，请稍候再试。',
+  VERIFICATION_CRASH_LIMIT: '离线包安全校验连续异常，为保障系统安全已停止处理该文件。',
+  NETWORK_ERROR: '网络连接超时或中断，请检查网络后重试。',
+  PERMISSION_DENIED: '系统权限不足，无法写入插件目录，请以管理员身份运行或检查目录权限。',
+  UNSUPPORTED_ARCH: '当前电脑硬件或系统架构不受该插件支持。',
+  CHECKSUM_FAILED: '文件完整性校验失败，请重新获取安装包。',
+  DOWNLOAD_FAILED: '组件资源下载失败，请检查网络连接后重试。',
+  MODULE_NOT_FOUND: '未找到对应的插件信息，可能已被移除。',
+  UNKNOWN_ERROR: '插件操作发生未知异常，请稍后重试。'
+}
+
+/**
+ * 将底层错误对象或消息转换为零黑话的大白话排障提示
+ */
+export function formatPluginErrorMessage(error: unknown): string {
+  if (!error) return PLUGIN_ERROR_MESSAGES.UNKNOWN_ERROR
+
+  const errObj = typeof error === 'object' && error !== null ? (error as Record<string, unknown>) : null
+  const rawCode = String(errObj?.code || '').trim().toUpperCase()
+  if (rawCode && PLUGIN_ERROR_MESSAGES[rawCode]) {
+    return PLUGIN_ERROR_MESSAGES[rawCode]
+  }
+
+  const rawMessage = typeof error === 'string' ? error : String(errObj?.message || error)
+
+  // 匹配已知错误码子串
+  for (const [code, msg] of Object.entries(PLUGIN_ERROR_MESSAGES)) {
+    if (rawMessage.includes(code)) {
+      return msg
+    }
+  }
+
+  // 常见系统异常转换
+  if (rawMessage.includes('EBUSY') || rawMessage.includes('resource busy')) {
+    return '文件正在被其他程序占用，请关闭相关应用后重试。'
+  }
+  if (rawMessage.includes('EACCES') || rawMessage.includes('permission denied')) {
+    return PLUGIN_ERROR_MESSAGES.PERMISSION_DENIED
+  }
+  if (rawMessage.includes('ENOSPC') || rawMessage.includes('no space left')) {
+    return PLUGIN_ERROR_MESSAGES.QUOTA_EXCEEDED
+  }
+  if (rawMessage.includes('ECONNRESET') || rawMessage.includes('ETIMEDOUT') || rawMessage.includes('fetch failed')) {
+    return PLUGIN_ERROR_MESSAGES.NETWORK_ERROR
+  }
+
+  // 过滤专业术语黑话（ONNX, IPC, CRC, Checksum 等）
+  const sanitized = rawMessage
+    .replace(/\b(ONNX|IPC|Token|Checksum|CRC32|SHA256|Ed25519)\b/gi, '')
+    .trim()
+
+  return sanitized || PLUGIN_ERROR_MESSAGES.UNKNOWN_ERROR
+}
+
 export interface IModularResourceBridge {
   list: (filter?: {
     scope?: 'market' | 'installed'
@@ -113,6 +200,12 @@ export interface IModularResourceBridge {
     targetFilePath?: string
   }) => Promise<string | null>
   importOfflinePackage?: (payload?: { archivePath?: string }) => Promise<PluginModuleItem | null>
+  exportOfflineBundle?: () => Promise<string | null>
+  getEnvironmentVisibility?: () => Promise<EnvironmentVisibilityEnvelope>
+  setDeveloperMode?: (payload: { enabled: boolean }) => Promise<EnvironmentVisibilityEnvelope>
+  onEnvironmentVisibilityChanged?: (
+    callback: (envelope: EnvironmentVisibilityEnvelope) => void
+  ) => () => void
   pickAndImportLocalPlugin?: () => Promise<{
     canceled: boolean
     module?: PluginModuleItem
@@ -130,6 +223,9 @@ export interface PluginCenterState {
   isLoading: boolean
   isDeveloperMode: boolean
   scope: 'market' | 'installed'
+  environmentVisibility: EnvironmentVisibilityEnvelope | null
+  isExportingBundle: boolean
+  isImportingBundle: boolean
 
   // 弹层开关动作
   setOverlayOpen: (open: boolean) => void | Promise<void>
@@ -142,6 +238,11 @@ export interface PluginCenterState {
   setSelectedCategory: (category: string) => void
   setDeveloperMode: (enabled: boolean) => Promise<void>
   setScope: (scope: 'market' | 'installed') => void
+
+  // 环境可见性与时钟防护
+  applyVisibilityEnvelope: (envelope: EnvironmentVisibilityEnvelope) => boolean
+  loadEnvironmentVisibility: () => Promise<EnvironmentVisibilityEnvelope | null>
+  subscribeEnvironmentVisibility: () => () => void
 
   // 插件管理与 IPC 持久化读写
   loadModules: () => Promise<PluginModuleItem[]>
@@ -157,6 +258,7 @@ export interface PluginCenterState {
   checkPendingTombstones: () => Promise<void>
   restartApp: () => Promise<void>
   exportOfflinePackage: (moduleId: string) => Promise<string | null>
+  exportOfflineBundle: () => Promise<string | null>
   importOfflinePackage: (archivePath?: string) => Promise<PluginModuleItem | null>
   pickAndImportLocalPlugin: () => Promise<boolean>
   resetForTest: () => void
@@ -262,7 +364,7 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
       }
     },
     description:
-      '【办公轻薄本标配】内存仅占约400MB，0门槛秒级响应，完全离线私密。支持智能文件名深度润色、描述提取与内容深度解析。',
+      '【办公轻薄本标配】支持智能文件名深度润色、描述提取与内容深度解析，如果已启用萤核引擎则不需要此插件。',
     hardware_requirement: {
       level: 'minimal',
       text: '配置要求极低 · 纯CPU运行'
@@ -446,8 +548,13 @@ function getModularResourceBridge(): IModularResourceBridge | null {
   if (injectedModularResourceBridge) {
     return injectedModularResourceBridge
   }
-  if (typeof window !== 'undefined' && (window as any).electronAPI?.modularResource) {
-    return (window as any).electronAPI.modularResource as IModularResourceBridge
+  if (typeof window !== 'undefined') {
+    if ((window as any).electronAPI?.modularResource) {
+      return (window as any).electronAPI.modularResource as IModularResourceBridge
+    }
+    if ((window as any).modularResource) {
+      return (window as any).modularResource as IModularResourceBridge
+    }
   }
   return null
 }
@@ -483,6 +590,19 @@ function normalizeRemoteModuleItem(raw: any): PluginModuleItem {
   }
 }
 
+async function syncDevModeFromBridge(set: (state: Partial<PluginCenterState>) => void): Promise<boolean> {
+  const bridge = getModularResourceBridge()
+  if (bridge && typeof bridge.getDevMode === 'function') {
+    try {
+      const res = await bridge.getDevMode()
+      const isDev = typeof res === 'boolean' ? res : Boolean((res as any)?.devModeEffective ?? (res as any)?.enabled)
+      set({ isDeveloperMode: isDev })
+      return isDev
+    } catch {}
+  }
+  return false
+}
+
 export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
   isOverlayOpen: false,
   configuringModuleId: null,
@@ -492,6 +612,9 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
   isLoading: false,
   isDeveloperMode: false,
   scope: 'market',
+  environmentVisibility: null,
+  isExportingBundle: false,
+  isImportingBundle: false,
   hasPendingTombstones: false,
   pendingTombstones: [],
 
@@ -502,26 +625,16 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
       ...(open ? {} : { configuringModuleId: null })
     })
     if (open) {
-      const bridge = getModularResourceBridge()
-      if (bridge && typeof bridge.getDevMode === 'function') {
-        try {
-          const enabled = await bridge.getDevMode()
-          set({ isDeveloperMode: !!enabled })
-        } catch {}
-      }
+      await get().loadEnvironmentVisibility()
+      await syncDevModeFromBridge(set)
       await get().loadModules()
     }
   },
 
   openOverlay: async () => {
     set({ isOverlayOpen: true })
-    const bridge = getModularResourceBridge()
-    if (bridge && typeof bridge.getDevMode === 'function') {
-      try {
-        const enabled = await bridge.getDevMode()
-        set({ isDeveloperMode: !!enabled })
-      } catch {}
-    }
+    await get().loadEnvironmentVisibility()
+    await syncDevModeFromBridge(set)
     await get().loadModules()
   },
 
@@ -536,13 +649,8 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
       ...(next ? {} : { configuringModuleId: null })
     })
     if (next) {
-      const bridge = getModularResourceBridge()
-      if (bridge && typeof bridge.getDevMode === 'function') {
-        try {
-          const enabled = await bridge.getDevMode()
-          set({ isDeveloperMode: !!enabled })
-        } catch {}
-      }
+      await get().loadEnvironmentVisibility()
+      await syncDevModeFromBridge(set)
       await get().loadModules()
     }
   },
@@ -555,13 +663,66 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
     set({ selectedCategory: category })
   },
 
+  applyVisibilityEnvelope: (envelope: EnvironmentVisibilityEnvelope) => {
+    if (!envelope || typeof envelope !== 'object') return false
+    const current = get().environmentVisibility
+    // 双锚定时钟防护：仅当跨 epoch 或同一 epoch 内 revision 递增时才采纳
+    if (
+      !current ||
+      envelope.epoch !== current.epoch ||
+      envelope.revision > current.revision
+    ) {
+      set({
+        environmentVisibility: envelope,
+        isDeveloperMode: !!envelope.visibility?.developerModeEnabled
+      })
+      return true
+    }
+    // 旧 revision 迟到或倒流，丢弃更新
+    return false
+  },
+
+  loadEnvironmentVisibility: async () => {
+    const bridge = getModularResourceBridge()
+    if (!bridge || typeof bridge.getEnvironmentVisibility !== 'function') return null
+    try {
+      const envelope = await bridge.getEnvironmentVisibility()
+      if (envelope) {
+        get().applyVisibilityEnvelope(envelope)
+        return envelope
+      }
+      return null
+    } catch {
+      return null
+    }
+  },
+
+  subscribeEnvironmentVisibility: () => {
+    const bridge = getModularResourceBridge()
+    if (!bridge || typeof bridge.onEnvironmentVisibilityChanged !== 'function') {
+      return () => {}
+    }
+    return bridge.onEnvironmentVisibilityChanged(envelope => {
+      get().applyVisibilityEnvelope(envelope)
+    })
+  },
+
   setDeveloperMode: async (enabled: boolean) => {
     set({ isDeveloperMode: enabled })
     const bridge = getModularResourceBridge()
-    if (bridge && typeof bridge.setDevMode === 'function') {
-      try {
-        await bridge.setDevMode({ enabled })
-      } catch {}
+    if (bridge) {
+      if (typeof bridge.setDeveloperMode === 'function') {
+        try {
+          const envelope = await bridge.setDeveloperMode({ enabled })
+          if (envelope) {
+            get().applyVisibilityEnvelope(envelope)
+          }
+        } catch {}
+      } else if (typeof bridge.setDevMode === 'function') {
+        try {
+          await bridge.setDevMode({ enabled })
+        } catch {}
+      }
     }
     await get().loadModules()
   },
@@ -838,9 +999,21 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
     return bridge.exportOfflinePackage({ moduleId })
   },
 
+  exportOfflineBundle: async () => {
+    const bridge = getModularResourceBridge()
+    if (!bridge || typeof bridge.exportOfflineBundle !== 'function') return null
+    set({ isExportingBundle: true })
+    try {
+      return await bridge.exportOfflineBundle()
+    } finally {
+      set({ isExportingBundle: false })
+    }
+  },
+
   importOfflinePackage: async (archivePath?: string) => {
     const bridge = getModularResourceBridge()
     if (!bridge || typeof bridge.importOfflinePackage !== 'function') return null
+    set({ isImportingBundle: true })
     try {
       const res = await bridge.importOfflinePackage({ archivePath })
       if (res) {
@@ -850,6 +1023,8 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
       return null
     } catch (err: any) {
       throw err
+    } finally {
+      set({ isImportingBundle: false })
     }
   },
 
@@ -863,6 +1038,9 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
       isLoading: false,
       isDeveloperMode: false,
       scope: 'market',
+      environmentVisibility: null,
+      isExportingBundle: false,
+      isImportingBundle: false,
       hasPendingTombstones: false,
       pendingTombstones: []
     })
