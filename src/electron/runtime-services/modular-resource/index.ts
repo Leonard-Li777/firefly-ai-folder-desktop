@@ -27,3 +27,20 @@ export {
   type BackgroundVerificationLockState,
   type BundleExporterContext
 } from './offline-bundle-exporter'
+export {
+  BundleExtractorError,
+  runBundleExtractorRoutine,
+  type BundleExtractorErrorCode,
+  type ExpectedAssetEntry,
+  type BundleExtractorLimits,
+  type BundleExtractorWorkerOptions,
+  type ExtractedAssetResult,
+  type BundleExtractorResult,
+  type ExtractorWorkerInMessage,
+  type ExtractorWorkerOutMessage
+} from './workers/bundle-extractor-worker'
+export {
+  BundleExtractorDispatcher,
+  resolveExtractorWorkerPath,
+  type DispatchOptions
+} from './bundle-extractor-dispatcher'
