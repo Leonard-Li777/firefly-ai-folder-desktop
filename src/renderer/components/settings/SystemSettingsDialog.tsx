@@ -85,28 +85,45 @@ export const SystemSettingsDialog: React.FC = () => {
     if (!modules || modules.length === 0) return all
 
     const activeModules = modules.filter(m => m.install_state === 'active')
+    const activeTtsModule = activeModules.find(
+      m =>
+        m.capability_slot === 'voice_tts' ||
+        m.id === 'tts_moss_onnx' ||
+        m.id === 'tts_m5_onnx' ||
+        m.contributes?.settings?.componentId === 'tts'
+    )
 
-    return all.filter(category => {
-      // 基础界面、生成式引擎、全系统忽略规则与对外接口为内置常驻项
-      if (
-        category.id === SettingsCategory.INTERFACE ||
-        category.id === SettingsCategory.AI_ENGINE_CONFIG ||
-        category.id === SettingsCategory.ANALYSIS_IGNORE_RULES ||
-        category.id === SettingsCategory.EXTERNAL_API
-      ) {
+    return all
+      .filter(category => {
+        // 基础界面、生成式引擎、全系统忽略规则与对外接口为内置常驻项
+        if (
+          category.id === SettingsCategory.INTERFACE ||
+          category.id === SettingsCategory.AI_ENGINE_CONFIG ||
+          category.id === SettingsCategory.ANALYSIS_IGNORE_RULES ||
+          category.id === SettingsCategory.EXTERNAL_API
+        ) {
+          return true
+        }
+        // 语音合成 (TTS)：若对应插件未激活则自动隐藏
+        if (category.id === SettingsCategory.TTS) {
+          return Boolean(activeTtsModule)
+        }
         return true
-      }
-      // 语音合成 (TTS)：若对应插件未激活则自动隐藏
-      if (category.id === SettingsCategory.TTS) {
-        return activeModules.some(
-          m =>
-            m.contributes?.settings?.componentId === 'tts' ||
-            m.capability_slot === 'voice_tts' ||
-            m.id === 'tts_moss_onnx'
-        )
-      }
-      return true
-    })
+      })
+      .map(category => {
+        // 动态互斥呈现：依据当前激活的 TTS 插件定制 Tab 标题与说明
+        if (category.id === SettingsCategory.TTS && activeTtsModule) {
+          const isM5 = activeTtsModule.id === 'tts_m5_onnx'
+          return {
+            ...category,
+            name: isM5 ? t('极速语音朗读 (M5-TTS)') : t('个性声音克隆 (Moss-TTS)'),
+            description: isM5
+              ? t('51款预置音色、默认语速与发音人收藏管理')
+              : t('离线多发音人音色库、音色克隆与收藏管理')
+          }
+        }
+        return category
+      })
   }, [modules])
 
   // 提前返回必须置于所有 Hook 之后：弹窗由「关」切到「开」时若在此之前返回，

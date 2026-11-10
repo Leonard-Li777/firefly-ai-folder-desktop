@@ -25,6 +25,7 @@ import { SettingsCategory } from '@firefly/types'
 import { PluginListItem } from './PluginListItem'
 import { AIEngineConfigSettings } from '../settings/ai-engine-config-settings'
 import { TTSSettings } from '../settings/tts-settings'
+import { M5TTSSettings } from '../settings/m5-tts-settings'
 import { toast } from '../common/Toast'
 
 export interface PluginCenterOverlayProps {
@@ -349,7 +350,7 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
     }
 
     // 默认兜底映射
-    if (mod?.capability_slot === 'voice_tts' || id === 'tts_moss_onnx') {
+    if (mod?.capability_slot === 'voice_tts' || id === 'tts_moss_onnx' || id === 'tts_m5_onnx') {
       useSettingsStore.getState().openSystemSettings(SettingsCategory.TTS)
     } else if (mod?.capability_slot === 'base_embedding' || id.startsWith('engine_')) {
       useSettingsStore.getState().openWorkspaceSettings({ targetTab: 'basic_ai_engine' })
@@ -636,6 +637,20 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
                   </Badge>
                 </div>
                 <AIEngineConfigSettings />
+              </div>
+            ) : configuringModule.id === 'tts_m5_onnx' ? (
+              /* M5-TTS 极速语音合成专属配置面板 (无音色克隆) */
+              <div className="space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-border/60">
+                  <div className="flex items-center gap-2">
+                    <Sliders className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-semibold">{t('极速语音朗读配置 (M5-TTS)')}</span>
+                  </div>
+                  <Badge variant="outline" className="text-xs font-mono">
+                    tts: m5-onnx / v{configuringModule.version}
+                  </Badge>
+                </div>
+                <M5TTSSettings />
               </div>
             ) : configuringModule.id === 'offline_tts' ||
               configuringModule.id === 'tts_moss_onnx' ||

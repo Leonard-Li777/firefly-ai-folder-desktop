@@ -45,7 +45,7 @@ import { PluginCenterOverlay } from '../PluginCenterOverlay'
 import {
   usePluginCenterStore,
   formatPluginErrorMessage,
-  PLUGIN_ERROR_MESSAGES,
+  getPluginErrorMessages,
   type EnvironmentVisibilityEnvelope
 } from '../../../stores/plugin-center-store'
 
@@ -380,10 +380,11 @@ describe('Ticket 08: 插件中心环境可见性、时钟防护与大白话排�
         'UNKNOWN_ERROR'
       ]
 
+      const messages = getPluginErrorMessages()
       for (const code of expectedCodes) {
-        expect(PLUGIN_ERROR_MESSAGES[code]).toBeDefined()
+        expect(messages[code]).toBeDefined()
         const formatted = formatPluginErrorMessage({ code })
-        expect(formatted).toBe(PLUGIN_ERROR_MESSAGES[code])
+        expect(formatted).toBe(messages[code])
         // 确保没有任何晦涩的底层技术黑话
         expect(formatted).not.toMatch(/ONNX|IPC|Token|Checksum|CRC32|SHA256|Ed25519/i)
       }
@@ -392,7 +393,7 @@ describe('Ticket 08: 插件中心环境可见性、时钟防护与大白话排�
     it('支持从复合异常消息文本中智能提取已知错误码', () => {
       const err = new Error('Verification failed with code [SIGNATURE_INVALID]: signature rejected')
       const msg = formatPluginErrorMessage(err)
-      expect(msg).toBe(PLUGIN_ERROR_MESSAGES.SIGNATURE_INVALID)
+      expect(msg).toBe(getPluginErrorMessages().SIGNATURE_INVALID)
     })
 
     it('将系统原生 IO 错误 (EBUSY / EACCES / ENOSPC / 网络异常) 转换为通俗大白话', () => {
@@ -400,13 +401,13 @@ describe('Ticket 08: 插件中心环境可见性、时钟防护与大白话排�
         '文件正在被其他程序占用，请关闭相关应用后重试。'
       )
       expect(formatPluginErrorMessage(new Error('EACCES: permission denied, open'))).toBe(
-        PLUGIN_ERROR_MESSAGES.PERMISSION_DENIED
+        getPluginErrorMessages().PERMISSION_DENIED
       )
       expect(formatPluginErrorMessage(new Error('ENOSPC: no space left on device'))).toBe(
-        PLUGIN_ERROR_MESSAGES.QUOTA_EXCEEDED
+        getPluginErrorMessages().QUOTA_EXCEEDED
       )
       expect(formatPluginErrorMessage(new Error('fetch failed ECONNRESET'))).toBe(
-        PLUGIN_ERROR_MESSAGES.NETWORK_ERROR
+        getPluginErrorMessages().NETWORK_ERROR
       )
     })
 
