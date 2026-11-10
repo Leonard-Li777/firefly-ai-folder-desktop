@@ -127,23 +127,33 @@ export function safeResolveZipEntry(destRoot: string, entryName: string): string
   // 1. 规范化路径分隔符为正斜杠，消除跨平台差异
   const normalized = entryName.replace(/\\/g, '/')
 
-  // 空字符、Windows 盘符 (C:)、UNC (// 或 \\) 物理拦截
+  // 空字符、绝对路径开头 (/ 或 \)、Windows 盘符 (C:)、UNC (// 或 \\) 物理拦截
   if (
     normalized.includes('\0') ||
+    normalized.startsWith('/') ||
+    normalized.startsWith('\\') ||
     /^[a-zA-Z]:/.test(normalized) ||
     normalized.startsWith('//') ||
-    normalized.startsWith('\\\\')
+    normalized.startsWith('\\\\') ||
+    path.isAbsolute(entryName)
   ) {
     throw new Error(`SECURITY_VIOLATION: 非法绝对路径或UNC: ${entryName}`)
   }
 
-  const targetPath = path.resolve(destRoot, normalized)
-  const relative = path.relative(destRoot, targetPath)
+  // 拦截 NTFS 备用数据流 Alternate Data Streams (ADS) 冒号
+  if (normalized.includes(':') || entryName.includes(':')) {
+    throw new Error(`SECURITY_VIOLATION: 非法ADS冒号流注入: ${entryName}`)
+  }
+
+  const resolvedRoot = path.resolve(destRoot)
+  const targetPath = path.resolve(resolvedRoot, normalized)
+  const relative = path.relative(resolvedRoot, targetPath)
 
   // 第一层：逻辑越界拦截 (Zip Slip 路径逃逸)
-  // relative 必须位于 destRoot 内部，不能为 '..'，也不能以 '../' 开头，且必须为相对路径
+  // relative 必须位于 resolvedRoot 内部，不能为 '..'，也不能以 '../' 开头，且必须为相对路径
   if (
     !relative ||
+    relative === '.' ||
     relative === '..' ||
     relative.startsWith('..' + path.sep) ||
     relative.startsWith('../') ||
@@ -157,12 +167,11 @@ export function safeResolveZipEntry(destRoot: string, entryName: string): string
   const WIN_RESERVED = /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\..*)?$/i
 
   for (const seg of segments) {
-    // 拦截 NTFS 备用数据流 Alternate Data Streams (ADS) 冒号
     if (seg.includes(':')) {
       throw new Error(`SECURITY_VIOLATION: 非法ADS冒号流注入: ${entryName}`)
     }
-    // 拦截 Windows 保留设备名
-    if (WIN_RESERVED.test(seg)) {
+    const trimmed = seg.replace(/[ .]+$/, '')
+    if (WIN_RESERVED.test(seg) || WIN_RESERVED.test(trimmed)) {
       throw new Error(`SECURITY_VIOLATION: Windows保留设备名注入: ${entryName}`)
     }
   }
@@ -694,6 +703,42 @@ export async function cleanOrphanTombstones(baseDir: string): Promise<number> {
   return cleanedCount
 }
 
+function createNodeFallbackTransport(): IDownloadTransport {
+  const http = require('node:http')
+  const https = require('node:https')
+
+  return {
+    request(options: {
+      url: string
+      method?: string
+      headers?: Record<string, string>
+    }): IDownloadTransportRequest {
+      const urlObj = new URL(options.url)
+      const client = urlObj.protocol === 'https:' ? https : http
+
+      const req = client.request(options.url, {
+        method: options.method || 'GET',
+        headers: options.headers
+      })
+
+      const transportReq: IDownloadTransportRequest = {
+        on(event: string, listener: any) {
+          req.on(event, listener)
+          return this
+        },
+        end() {
+          req.end()
+        },
+        abort() {
+          req.destroy()
+        }
+      }
+
+      return transportReq
+    }
+  }
+}
+
 export class FileDownloadService {
   private static instance: FileDownloadService | null = null
   private activeRequests = new Map<string, IDownloadTransportRequest>()
@@ -923,7 +968,10 @@ export class FileDownloadService {
         }
       }
 
-      const activeTransport = transport || this.customTransport
+      let activeTransport = transport || this.customTransport
+      if (!activeTransport && (!net || typeof net.request !== 'function')) {
+        activeTransport = createNodeFallbackTransport()
+      }
       const request: IDownloadTransportRequest = activeTransport
         ? activeTransport.request({ url, method: 'GET', headers })
         : (net.request({

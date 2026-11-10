@@ -17,7 +17,7 @@ import * as crypto from 'crypto'
 import JSZip from 'jszip'
 import { logger, LogCategory } from '@firefly/shared'
 import type { ModularResourceService, BuiltinModuleView } from '../system/modular-resource-service'
-import { fileDownloadService } from '../system/file-download-service'
+import { fileDownloadService, safeResolveZipEntry } from '../system/file-download-service'
 
 /**
  * 官方 Ed25519 根公钥常量 (SPKI PEM 格式)
@@ -303,7 +303,14 @@ export class OfflinePackageService {
     } catch {}
 
     const fileBuffer = fs.readFileSync(archivePath)
-    const zip = await JSZip.loadAsync(fileBuffer)
+    const zip = await JSZip.loadAsync(fileBuffer, {
+      decodeFileName: (bytes: string[] | Buffer | Uint8Array) =>
+        Array.isArray(bytes)
+          ? Buffer.from(
+              bytes.map(b => (typeof b === 'number' ? (b as number) : parseInt(b, 10)))
+            ).toString('utf-8')
+          : Buffer.from(bytes).toString('utf-8')
+    })
 
     // 阶段 1：中央目录只读解析
     const manifestFile = zip.file('manifest.json')
@@ -314,7 +321,7 @@ export class OfflinePackageService {
 
     const manifestBuffer = await manifestFile.async('nodebuffer')
     const manifestStr = manifestBuffer.toString('utf-8')
-    const sigHex = (await sigFile.async('string')).trim()
+    const sigHex = (await sigFile.async('nodebuffer')).toString('utf-8').trim()
 
     // 阶段 2：官方根公钥验签 (Ed25519)
     const pubKey = options?.rootPublicKey ?? ROOT_ED25519_PK
@@ -331,15 +338,11 @@ export class OfflinePackageService {
       throw new Error('manifest.json 中未定义 module_id')
     }
 
-    // Zip-Slip 前置校验：检查 manifest.resources 中声明的 target_local_path
+    // Zip-Slip 前置校验：统一调用 safeResolveZipEntry 校验 manifest.resources 中声明的 target_local_path
     for (const res of manifest.resources || []) {
-      if (
-        res.target_local_path.includes('..') ||
-        res.target_local_path.startsWith('/') ||
-        res.target_local_path.startsWith('\\') ||
-        path.isAbsolute(res.target_local_path) ||
-        /^[a-zA-Z]:/.test(res.target_local_path)
-      ) {
+      try {
+        safeResolveZipEntry(process.cwd(), res.target_local_path)
+      } catch {
         throw new ZipSlipSecurityError(
           `检测到潜在的 Zip-Slip 目录逃逸路径: ${res.target_local_path}`
         )
@@ -364,20 +367,12 @@ export class OfflinePackageService {
         const entry = zip.files[entryName]
         if (entry.dir) continue
 
-        // Zip-Slip 防逃逸校验：严禁包含 '..'、以 '/' 开头、或含 Windows 盘符
-        if (
-          entryName.includes('..') ||
-          entryName.startsWith('/') ||
-          entryName.startsWith('\\') ||
-          path.isAbsolute(entryName) ||
-          /^[a-zA-Z]:/.test(entryName)
-        ) {
-          throw new ZipSlipSecurityError(`检测到潜在的 Zip-Slip 目录逃逸路径: ${entryName}`)
-        }
-
-        const outPath = path.resolve(stagingDir, entryName)
-        if (!outPath.startsWith(path.resolve(stagingDir))) {
-          throw new ZipSlipSecurityError(`路径解析超出目标解压目录: ${entryName}`)
+        // 统一使用 safeResolveZipEntry 进行安全路径解析与防逃逸拦截
+        let outPath: string
+        try {
+          outPath = safeResolveZipEntry(stagingDir, entryName)
+        } catch {
+          throw new ZipSlipSecurityError(`路径解析超出目标解压目录或非法路径注入: ${entryName}`)
         }
 
         // 解压单文件大小配额检查
@@ -459,6 +454,7 @@ export class OfflinePackageService {
             resource_id: res.resource_id,
             asset_name: res.asset_name,
             target_local_path: res.target_local_path,
+            active_source_key: 'auto',
             download_state: 'completed',
             expected_bytes: bytes,
             expected_sha256: res.expected_sha256 ?? ''

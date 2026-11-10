@@ -92,7 +92,10 @@ export class RuntimePathResolver {
 
   static resolve(scope: keyof Omit<E2ERuntimeRoots, 'runId' | 'root'>): string {
     if (!RuntimePathResolver.roots) {
-      throw new DesktopE2EError(4, 'E2ERuntimeRoots 未初始化，请先调用 RuntimePathResolver.initialize()')
+      throw new DesktopE2EError(
+        4,
+        'E2ERuntimeRoots 未初始化，请先调用 RuntimePathResolver.initialize()'
+      )
     }
     return RuntimePathResolver.roots[scope]
   }
@@ -158,6 +161,13 @@ export function getE2EConfig(): E2EConfig {
   }
 
   return _e2eConfigCache
+}
+
+/**
+ * 判断当前是否处于 E2E 测试模式
+ */
+export function isE2EMode(): boolean {
+  return getE2EConfig().isE2EMode
 }
 
 /**

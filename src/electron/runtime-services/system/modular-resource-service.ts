@@ -220,6 +220,15 @@ export interface IModularResourceService {
   /** 请求重启桌面端应用以释放磁盘句柄 */
   requestRestart(): void
 
+  /** 获取底层数据库实例 */
+  getDb(): Database
+
+  /** 获取底层模块化资源 DAO */
+  getDao(): ModularResourceDao
+
+  /** 获取模块根存储目录 */
+  getBaseDir(): string
+
   /** 导出离线插件包 (.ffp / .zip) */
   exportOfflinePackage(
     moduleId: string,
@@ -583,6 +592,12 @@ export class ModularResourceService implements IModularResourceService {
     this.transport = options?.transport
     this.deleteDirectoryFn = options?.deleteDirectoryFn ?? safeDeleteDirectory
     this.tombstoneGC = options?.tombstoneGC ?? tombstoneGCService
+    try {
+      const persistenceFile = path.join(this.getBaseDir(), 'modules', '_pending_tombstones.json')
+      this.tombstoneGC.setPersistenceFile(persistenceFile)
+    } catch {
+      // ignore
+    }
     this.offlinePackageService = options?.offlinePackageService ?? new OfflinePackageService(this)
     this.processManager =
       options?.processManager ??
@@ -606,7 +621,7 @@ export class ModularResourceService implements IModularResourceService {
     return ModularResourceService.instance
   }
 
-  private getDb(): Database {
+  public getDb(): Database {
     if (this.customDb) return this.customDb
     const { databaseService } = require('../database/database-service')
     if (!databaseService?.db) {
@@ -615,11 +630,11 @@ export class ModularResourceService implements IModularResourceService {
     return databaseService.db
   }
 
-  private getDao(): ModularResourceDao {
+  public getDao(): ModularResourceDao {
     return new ModularResourceDao(this.getDb())
   }
 
-  private getBaseDir(): string {
+  public getBaseDir(): string {
     if (this.customBaseDir) return this.customBaseDir
     try {
       return electronApp.getPath('userData')
@@ -908,7 +923,8 @@ export class ModularResourceService implements IModularResourceService {
             LogCategory.SYSTEM,
             `[ModularResource] L2 预置包探活命中: ${zipPath}，直接本地解压`
           )
-          await safeExtractZip(zipPath, targetAbsDir)
+          const intentsDir = path.join(this.getBaseDir(), '.intents')
+          await safeExtractZip(zipPath, targetAbsDir, intentsDir)
 
           // 写入 .ready 标记
           const sha8 = spec.expected_sha256.slice(0, 8)

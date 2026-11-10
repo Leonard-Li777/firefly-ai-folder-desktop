@@ -266,7 +266,9 @@ export async function initDatabaseAndDependentServices(
     if (databaseService.db) {
       // 清理已移出插件中心的历史内置模块记录 (TASK-01 / Genesis V1 幂等清扫)
       try {
-        databaseService.db.prepare("DELETE FROM builtin_modules WHERE id = 'ai_organize_skill'").run()
+        databaseService.db
+          .prepare("DELETE FROM builtin_modules WHERE id = 'ai_organize_skill'")
+          .run()
       } catch (cleanErr) {
         logger.warn(LogCategory.MAIN, '[Initialization] 清理 ai_organize_skill 记录失败:', cleanErr)
       }
@@ -309,6 +311,27 @@ export async function initDatabaseAndDependentServices(
           logger.warn(LogCategory.MAIN, '启动期工作区准入对账自愈异常:', err)
         })
       })
+
+      // 模块化资源与 Tombstone 启动期对账与持久化配置 (Spec §7.1.1 #5)
+      try {
+        const { tombstoneGCService } =
+          await import('../runtime-services/modular-resource/tombstone-gc')
+        const { modularResourceService } =
+          await import('../runtime-services/system/modular-resource-service')
+        const persistenceFile = path.join(
+          app.getPath('userData'),
+          'modules',
+          '_pending_tombstones.json'
+        )
+        tombstoneGCService.setPersistenceFile(persistenceFile)
+        setImmediate(() => {
+          modularResourceService.reconcileOnStartup().catch(err => {
+            logger.warn(LogCategory.MAIN, '[Initialization] 插件模块启动期对账自愈异常:', err)
+          })
+        })
+      } catch (err) {
+        logger.warn(LogCategory.MAIN, '[Initialization] 配置 Tombstone 持久化异常:', err)
+      }
 
       ConfigDbManager.getInstance()
         .syncFromCloud()
@@ -1073,7 +1096,8 @@ export async function initializeFullServices(): Promise<void> {
 
     // 启动 AI Skill API 协调器 (由全局配置 ENABLE_AI_SKILL_API 与设置页驱动)
     try {
-      const { aiSkillApiReconciler } = await import('../runtime-services/system/ai-skill-reconciler')
+      const { aiSkillApiReconciler } =
+        await import('../runtime-services/system/ai-skill-reconciler')
       const { aiSkillApiService } = await import('../runtime-services/ai-skill-api-service')
       const initialEnabled = Boolean(orchestrator.getValue<boolean>('ENABLE_AI_SKILL_API') ?? false)
       await aiSkillApiReconciler.initialize(initialEnabled)

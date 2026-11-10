@@ -1552,6 +1552,39 @@ const electronAPI = {
         ipcRenderer.off('external-api:status-changed', handler)
       }
     }
+  },
+
+  modularResource: {
+    list: (filter?: any) => ipcRenderer.invoke('modular-resource:list', filter),
+    getDevMode: (): Promise<boolean> =>
+      ipcRenderer.invoke('modular-resource:get-dev-mode').then(r => r?.enabled ?? false),
+    setDevMode: (payload: { enabled: boolean }): Promise<boolean> =>
+      ipcRenderer
+        .invoke('modular-resource:set-dev-mode', payload)
+        .then(r => r?.devModeEffective ?? false),
+    install: (moduleId: string) => ipcRenderer.invoke('modular-resource:install', moduleId),
+    uninstall: (moduleId: string) => ipcRenderer.invoke('modular-resource:uninstall', moduleId),
+    updateState: (moduleId: string, patch: any) =>
+      ipcRenderer.invoke('modular-resource:update-state', moduleId, patch),
+    abortAll: (): Promise<boolean> => ipcRenderer.invoke('modular-resource:abort-all'),
+    smokeTest: (payload: any) => ipcRenderer.invoke('modular-resource:smoke-test', payload),
+    getPendingTombstones: () => ipcRenderer.invoke('modular-resource:get-pending-tombstones'),
+    hasPendingTombstones: (): Promise<boolean> =>
+      ipcRenderer.invoke('modular-resource:has-pending-tombstones'),
+    restartApp: (): Promise<boolean> => ipcRenderer.invoke('modular-resource:restart-app'),
+    exportOfflinePackage: (payload: { moduleId: string; targetFilePath?: string }) =>
+      ipcRenderer.invoke('modular-resource:export-offline-package', payload),
+    importOfflinePackage: (payload?: { archivePath?: string }) =>
+      ipcRenderer.invoke('modular-resource:import-offline-package', payload),
+    pickAndImportLocalPlugin: () =>
+      ipcRenderer.invoke('modular-resource:pick-and-import-local-plugin'),
+    onProgress: (callback: (event: any) => void) => {
+      const handler = (_event: any, data: any) => callback(data)
+      ipcRenderer.on('modular-resource:progress', handler)
+      return () => {
+        ipcRenderer.off('modular-resource:progress', handler)
+      }
+    }
   }
 }
 

@@ -11,7 +11,11 @@
  */
 
 import { ipcMain, BrowserWindow, dialog, app } from 'electron'
+import * as fs from 'fs'
+import * as path from 'path'
 import { logger, LogCategory } from '@firefly/shared'
+import { isE2EMode } from '../e2e/e2e-gate'
+import { ProbeBridgeService } from '../e2e/probe-bridge'
 import {
   modularResourceService,
   type IModularResourceService,
@@ -266,4 +270,71 @@ export function registerModularResourceIpcHandlers(
       return { canceled: false, error: err?.message || '导入失败' }
     }
   })
+
+  // E2E 模式注册只读探针处理器 (Spec §3.4 / §5.3)
+  if (isE2EMode()) {
+    ProbeBridgeService.registerScopeHandler('embedding-epoch', async () => {
+      try {
+        const dao = service.getDao()
+        const serving = dao.epochs.findServingEpochSync()
+        return {
+          epoch: serving?.epoch ?? 1,
+          activeSlotId: serving?.module_id ?? null
+        }
+      } catch {
+        return { epoch: 1, activeSlotId: null }
+      }
+    })
+
+    ProbeBridgeService.registerScopeHandler('dir-switch-intent', async () => {
+      try {
+        const intentsDir = path.join(service.getBaseDir(), '.intents')
+        const intents: Array<{
+          state: 'prepared' | 'old-moved' | 'new-moved'
+          targetDir: string
+          trashDir: string
+          stagingDir: string
+          updatedAt: number
+        }> = []
+        if (fs.existsSync(intentsDir)) {
+          const files = fs.readdirSync(intentsDir).filter(f => f.endsWith('.intent.json'))
+          for (const f of files) {
+            try {
+              const content = JSON.parse(fs.readFileSync(path.join(intentsDir, f), 'utf-8'))
+              intents.push(content)
+            } catch {}
+          }
+        }
+        return { intents }
+      } catch {
+        return { intents: [] }
+      }
+    })
+
+    ProbeBridgeService.registerScopeHandler('tombstone-queue', async () => {
+      try {
+        const pending = service.getPendingTombstones()
+        const pendingItems = (pending || []).map(item => ({
+          id: item.path,
+          type: 'directory',
+          registeredAt: item.registeredAt,
+          reason: item.reason
+        }))
+
+        const db = service.getDb()
+        const rows = db
+          .prepare(
+            "SELECT resource_id as resourceId, target_local_path as targetLocalPath, download_state as downloadState FROM resource_downloads WHERE download_state = 'pending_delete'"
+          )
+          .all() as Array<{ resourceId: string; targetLocalPath: string; downloadState: string }>
+
+        return {
+          pendingItems,
+          pendingDeleteResources: rows
+        }
+      } catch {
+        return { pendingItems: [], pendingDeleteResources: [] }
+      }
+    })
+  }
 }

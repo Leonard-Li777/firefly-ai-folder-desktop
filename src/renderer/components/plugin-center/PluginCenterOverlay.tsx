@@ -18,13 +18,23 @@ import { Switch } from '../ui/switch'
 import { cn } from '../../lib/utils'
 import i18nScope from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
-import { usePluginCenterStore } from '../../stores/plugin-center-store'
+import { usePluginCenterStore, type PluginModuleItem } from '../../stores/plugin-center-store'
 import { useSettingsStore } from '../../stores/settings-store'
 import { SettingsCategory } from '@firefly/types'
 import { PluginListItem } from './PluginListItem'
 import { AIEngineConfigSettings } from '../settings/ai-engine-config-settings'
 import { TTSSettings } from '../settings/tts-settings'
 import { toast } from '../common/Toast'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '../ui/alert-dialog'
 
 export interface PluginCenterOverlayProps {
   className?: string
@@ -149,6 +159,7 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
   const loadModules = usePluginCenterStore(s => s.loadModules)
   const subscribeProgress = usePluginCenterStore(s => s.subscribeProgress)
   const installPlugin = usePluginCenterStore(s => s.installPlugin)
+  const uninstallPlugin = usePluginCenterStore(s => s.uninstallPlugin)
   const togglePluginActive = usePluginCenterStore(s => s.togglePluginActive)
   const updateUserConfig = usePluginCenterStore(s => s.updateUserConfig)
   const hasPendingTombstones = usePluginCenterStore(s => s.hasPendingTombstones)
@@ -161,6 +172,16 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
   const scope = usePluginCenterStore(s => s.scope)
   const setScope = usePluginCenterStore(s => s.setScope)
   const pickAndImportLocalPlugin = usePluginCenterStore(s => s.pickAndImportLocalPlugin)
+
+  // 卸载与槽位切换确认弹窗状态 (Spec §3.4 TEST-UI-PLUGIN-03/04)
+  const [pendingUninstallModule, setPendingUninstallModule] = useState<PluginModuleItem | null>(
+    null
+  )
+  const [pendingSwitchSlot, setPendingSwitchSlot] = useState<{
+    targetId: string
+    currentActiveName: string
+    targetName: string
+  } | null>(null)
 
   // IN-06: 订阅后端实时下载进度并支持 React StrictMode 双挂载安全清理
   useEffect(() => {
@@ -285,10 +306,60 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
         return
       }
 
+      // 如果是切换互斥槽位（开启另一款引擎），弹出确认对话框 (Spec §3.4 TEST-UI-PLUGIN-03)
+      if (target.slot_policy === 'exclusive_required' && active) {
+        const currentActive = modules.find(
+          m =>
+            m.capability_slot === target.capability_slot &&
+            m.install_state === 'active' &&
+            m.id !== id
+        )
+        if (currentActive) {
+          setPendingSwitchSlot({
+            targetId: id,
+            currentActiveName: currentActive.name,
+            targetName: target.name
+          })
+          return
+        }
+      }
+
       await togglePluginActive(id, active)
     },
     [modules, togglePluginActive, t]
   )
+
+  const handleRequestUninstall = useCallback(
+    (id: string) => {
+      const target = modules.find(m => m.id === id)
+      if (target) {
+        setPendingUninstallModule(target)
+      }
+    },
+    [modules]
+  )
+
+  const handleConfirmUninstall = useCallback(async () => {
+    if (!pendingUninstallModule) return
+    const id = pendingUninstallModule.id
+    setPendingUninstallModule(null)
+    try {
+      await uninstallPlugin(id)
+    } catch (err: any) {
+      toast.error(err?.message || t('卸载失败'))
+    }
+  }, [pendingUninstallModule, uninstallPlugin, t])
+
+  const handleConfirmSwitchSlot = useCallback(async () => {
+    if (!pendingSwitchSlot) return
+    const id = pendingSwitchSlot.targetId
+    setPendingSwitchSlot(null)
+    try {
+      await togglePluginActive(id, true)
+    } catch (err: any) {
+      toast.error(err?.message || t('切换失败'))
+    }
+  }, [pendingSwitchSlot, togglePluginActive, t])
 
   // 卡片配置一键直达系统设置对应 Tab (Ticket 05 / Spec §5.2)
   const handleOpenConfig = (id: string) => {
@@ -698,6 +769,7 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
                             key={item.id}
                             module={item}
                             onInstall={installPlugin}
+                            onUninstall={handleRequestUninstall}
                             onToggleActive={handleTogglePluginActive}
                             onConfigure={handleOpenConfig}
                           />
@@ -720,6 +792,69 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
           </div>
         </div>
       )}
+
+      {/* 槽位切换确认弹窗 (Spec §3.4 TEST-UI-PLUGIN-03) */}
+      <AlertDialog
+        open={!!pendingSwitchSlot}
+        onOpenChange={open => !open && setPendingSwitchSlot(null)}
+      >
+        <AlertDialogContent data-testid="plugin-confirm-dialog" data-dialog-type="switch">
+          <AlertDialogHeader>
+            <AlertDialogTitle data-testid="confirm-dialog-title">
+              {t('确认切换基础 AI 引擎？')}
+            </AlertDialogTitle>
+            <AlertDialogDescription data-testid="confirm-dialog-desc">
+              {t('切换基础 AI 引擎将停止当前引擎并激活新引擎，历史向量数据将在后台自愈重算。')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              data-testid="confirm-dialog-cancel-btn"
+              onClick={() => setPendingSwitchSlot(null)}
+            >
+              {t('取消')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              data-testid="confirm-dialog-confirm-btn"
+              onClick={handleConfirmSwitchSlot}
+            >
+              {t('确认切换')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* 卸载确认弹窗 (Spec §3.4 TEST-UI-PLUGIN-04) */}
+      <AlertDialog
+        open={!!pendingUninstallModule}
+        onOpenChange={open => !open && setPendingUninstallModule(null)}
+      >
+        <AlertDialogContent data-testid="plugin-confirm-dialog" data-dialog-type="uninstall">
+          <AlertDialogHeader>
+            <AlertDialogTitle data-testid="confirm-dialog-title">
+              {t('确认卸载该扩展模块？')}
+            </AlertDialogTitle>
+            <AlertDialogDescription data-testid="confirm-dialog-desc">
+              {t('卸载将释放相关模型文件并清理本地缓存，确认继续？')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              data-testid="confirm-dialog-cancel-btn"
+              onClick={() => setPendingUninstallModule(null)}
+            >
+              {t('取消')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              data-testid="confirm-dialog-confirm-btn"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleConfirmUninstall}
+            >
+              {t('确认卸载')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

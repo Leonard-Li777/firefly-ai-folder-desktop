@@ -11,6 +11,7 @@ import {
   RefreshCw,
   HardDrive,
   Share2,
+  Trash2,
   Cpu
 } from 'lucide-react'
 import { Badge } from '../ui/badge'
@@ -27,6 +28,7 @@ export interface PluginListItemProps {
   module: PluginModuleItem
   onToggleActive?: (id: string, active: boolean) => void
   onInstall?: (id: string) => void
+  onUninstall?: (id: string) => void
   onConfigure?: (id: string) => void
   onExport?: (id: string) => void
   className?: string
@@ -57,6 +59,7 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
   module,
   onToggleActive,
   onInstall,
+  onUninstall,
   onConfigure,
   onExport,
   className
@@ -354,9 +357,10 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
                 <span>{t('安全阻断')}</span>
               </span>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2" data-testid={`toggle-active-${module.id}`}>
                 <Switch
                   id={`switch-${module.id}`}
+                  data-plugin-id={module.id}
                   checked={isActive}
                   disabled={!isActive && module.can_activate === false}
                   onCheckedChange={checked => onToggleActive?.(module.id, checked)}
@@ -378,6 +382,8 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
             <Button
               size="sm"
               variant="outline"
+              data-testid="configure-plugin-btn"
+              data-plugin-id={module.id}
               onClick={() => onConfigure?.(module.id)}
               className="h-8 px-3 text-xs flex items-center gap-1.5 hover:bg-accent cursor-pointer"
             >
@@ -389,12 +395,27 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
                 size="sm"
                 variant="ghost"
                 data-testid="export-plugin-btn"
+                data-plugin-id={module.id}
                 onClick={() => onExport(module.id)}
                 className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer flex items-center gap-1"
                 title={t('导出离线插件包 (.ffp)')}
               >
                 <Share2 className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">{t('导出')}</span>
+              </Button>
+            )}
+            {onUninstall && (
+              <Button
+                size="sm"
+                variant="ghost"
+                data-testid="uninstall-plugin-btn"
+                data-plugin-id={module.id}
+                onClick={() => onUninstall(module.id)}
+                className="h-8 px-2 text-xs text-muted-foreground hover:text-destructive cursor-pointer flex items-center gap-1"
+                title={t('卸载扩展模块')}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">{t('卸载')}</span>
               </Button>
             )}
           </div>
@@ -407,6 +428,8 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
             <Button
               size="sm"
               variant="destructive"
+              data-testid="retry-plugin-btn"
+              data-plugin-id={module.id}
               onClick={() => onInstall?.(module.id)}
               className="h-8 text-xs flex items-center gap-1.5 cursor-pointer"
             >
@@ -428,6 +451,8 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
                 </span>
                 <Button
                   size="sm"
+                  data-testid="install-plugin-btn"
+                  data-plugin-id={module.id}
                   disabled={module.can_install === false}
                   onClick={() => onInstall?.(module.id)}
                   className="h-8 px-3.5 text-xs flex items-center gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer shadow-2xs font-medium"
