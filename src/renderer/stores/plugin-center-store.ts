@@ -860,7 +860,17 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
     if (bridge && typeof bridge.updateState === 'function') {
       try {
         await bridge.updateState(pluginId, { active: true })
-      } catch {}
+      } catch (err) {
+        console.error(`[PluginCenterStore] Failed to restart plugin ${pluginId}:`, err)
+        set(state => ({
+          modules: state.modules.map(m =>
+            m.id === pluginId
+              ? { ...m, is_crashed: true, is_running: false, error_message: String(err) }
+              : m
+          )
+        }))
+        return false
+      }
     }
     await get().loadModules()
     return true
@@ -903,14 +913,24 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
   }
 }))
 
-// 渲染层全局挂载插件崩溃事件监听 (Spec §3.4 / onPluginCrash)
+// 渲染层全局挂载插件崩溃事件监听 (支持生产环境 modularResource.onCrash 与 E2E 探针)
 if (typeof window !== 'undefined') {
-  const api = (window as any).electronAPI
-  if (api && typeof api.onPluginCrash === 'function') {
-    api.onPluginCrash((data: any) => {
-      if (data?.pluginId) {
-        usePluginCenterStore.getState().markPluginCrashed(data.pluginId)
-      }
-    })
+  const win = window as any
+  const modular = win.electronAPI?.modularResource
+  const e2eProbe = win.__e2e_probe_bridge
+  const e2eApi = win.electronAPI
+
+  const onCrashHandler = (data: any) => {
+    if (data?.pluginId) {
+      usePluginCenterStore.getState().markPluginCrashed(data.pluginId)
+    }
+  }
+
+  if (modular && typeof modular.onCrash === 'function') {
+    modular.onCrash(onCrashHandler)
+  } else if (e2eProbe && typeof e2eProbe.onPluginCrash === 'function') {
+    e2eProbe.onPluginCrash(onCrashHandler)
+  } else if (e2eApi && typeof e2eApi.onPluginCrash === 'function') {
+    e2eApi.onPluginCrash(onCrashHandler)
   }
 }

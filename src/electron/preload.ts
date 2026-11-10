@@ -1584,6 +1584,13 @@ const electronAPI = {
       return () => {
         ipcRenderer.off('modular-resource:progress', handler)
       }
+    },
+    onCrash: (callback: (event: any) => void) => {
+      const handler = (_event: any, data: any) => callback(data)
+      ipcRenderer.on('plugin:crashed', handler)
+      return () => {
+        ipcRenderer.off('plugin:crashed', handler)
+      }
     }
   }
 }

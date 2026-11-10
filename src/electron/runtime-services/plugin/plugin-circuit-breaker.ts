@@ -56,13 +56,6 @@ export class PluginCircuitBreaker {
   }
 
   /**
-   * 直接设置虚拟时钟偏移量（毫秒）
-   */
-  public setVirtualClockOffset(offsetMs: number): void {
-    this.virtualClockOffsetMs = Math.max(0, offsetMs)
-  }
-
-  /**
    * 获取当前有效时间戳（结合虚拟时钟偏移）
    */
   public getEffectiveNow(now?: number): number {
