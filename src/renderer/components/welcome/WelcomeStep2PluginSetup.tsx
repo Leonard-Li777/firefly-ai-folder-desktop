@@ -227,7 +227,7 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
     })
 
     const electron = (window as any).electronAPI
-    const modular = electron?.modularResource
+    const modular = electron?.modularResource || (window as any).modularResource
 
     try {
       // 1. 启动必须的基础引擎下载与解压
@@ -242,7 +242,7 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
         const smokeRes = await modular.smokeTest({ profile })
         if (!smokeRes.success) {
           throw new Error(
-            smokeRes.error || t('模型初始化异常，可能由于系统缺失对应 VC++ 运行库或指令集不支持')
+            smokeRes.error || t('引擎启动遇到问题，请尝试重试或切换为极速轻巧引擎')
           )
         }
       }
@@ -270,7 +270,7 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
     } catch (err: any) {
       setInstallPhase('error')
       setErrorMessage(
-        err?.message || t('模型初始化异常，可能由于系统缺失对应 VC++ 运行库或指令集不支持')
+        err?.message || t('引擎启动遇到问题，请尝试重试或切换为极速轻巧引擎')
       )
     }
   }
@@ -278,14 +278,19 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
   // 离线插件包导入处理 (先掐断在线下载流并执行 Sign-Then-Extract 导入)
   const handleOfflineImport = async () => {
     try {
-      const electron = (window as any).electronAPI
-      if (electron?.modularResource?.abortAll) {
-        await electron.modularResource.abortAll()
+      const modular =
+        (window as any).electronAPI?.modularResource || (window as any).modularResource
+      if (modular?.abortAll) {
+        await modular.abortAll()
       }
-      if (electron?.modularResource?.importOfflinePackage) {
-        const imported = await electron.modularResource.importOfflinePackage()
+      if (modular?.importOfflinePackage) {
+        const imported = await modular.importOfflinePackage()
         if (imported) {
-          if (imported.id === selectedEngine || imported.capability_slot === 'base_ai_engine') {
+          if (
+            imported.id === selectedEngine ||
+            imported.capability_slot === 'base_ai_engine' ||
+            imported.capability_slot === 'base_embedding'
+          ) {
             setInstallPhase('ready')
           }
         }
@@ -301,9 +306,9 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
       <div className="w-full max-w-4xl mx-auto flex flex-col max-h-[90vh]">
         {/* 顶部标题区 */}
         <header className="text-center mb-4 shrink-0">
-          <h1 className="text-xl font-bold tracking-tight">{t('AI 能力与插件装配')}</h1>
+          <h1 className="text-xl font-bold tracking-tight">{t('AI 引擎与智能能力装配')}</h1>
           <p className="mt-1 text-sm text-slate-600">
-            {t('根据您的电脑硬件配置，自适应推荐最佳 AI 引擎档位与可选感知插件')}
+            {t('已检测您的电脑硬件，为您推荐最流畅的搜索大脑与实用整理技能')}
           </p>
         </header>
 
@@ -316,26 +321,26 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
                   <div className="flex items-center gap-2">
                     <Cpu className="w-4 h-4 text-sky-400" />
                     <div>
-                      <div className="text-xs text-slate-400">{t('物理内存 (RAM)')}</div>
+                      <div className="text-xs text-slate-400">{t('电脑内存 (RAM)')}</div>
                       <div className="text-sm font-semibold">{hardware.totalMemGB} GB</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-amber-400" />
                     <div>
-                      <div className="text-xs text-slate-400">{t('图形设备 (GPU)')}</div>
+                      <div className="text-xs text-slate-400">{t('图形显卡 (GPU)')}</div>
                       <div
                         className="text-sm font-semibold truncate max-w-[200px]"
                         title={hardware.gpuName}
                       >
-                        {hardware.gpuName || t('集成显卡')}
+                        {hardware.gpuName || t('集成显卡 / 普通办公')}
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <HardDrive className="w-4 h-4 text-emerald-400" />
                     <div>
-                      <div className="text-xs text-slate-400">{t('磁盘可用空间')}</div>
+                      <div className="text-xs text-slate-400">{t('磁盘剩余空间')}</div>
                       <div className="text-sm font-semibold">{hardware.storageFreeGB} GB</div>
                     </div>
                   </div>
@@ -344,11 +349,11 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
                 <div>
                   {hardware.totalMemGB >= 8 ? (
                     <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white border-none px-3 py-1 text-xs">
-                      {t('推荐配置: 统一全模态档 (Gemma Unified)')}
+                      {t('推荐档位：高智能全能版（理解更深入）')}
                     </Badge>
                   ) : (
                     <Badge className="bg-sky-600 hover:bg-sky-700 text-white border-none px-3 py-1 text-xs">
-                      {t('轻量配置: 经典极速档 (Classic Light)')}
+                      {t('轻量档位：极速轻巧版（低配电脑秒开）')}
                     </Badge>
                   )}
                 </div>
@@ -358,20 +363,20 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
               <div className="mt-3 pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span className="text-slate-400">{t('生成式引擎推荐')}:</span>
+                  <span className="text-slate-400">{t('智能起名与总结')}:</span>
                   <Badge
                     variant="outline"
                     className="bg-slate-800 text-amber-300 border-amber-400/40 text-xs"
                   >
                     {generativeEngineMode === 'cpu'
-                      ? t('轻量CPU引擎 (办公轻薄本标配)')
-                      : t('高级萤核AI引擎 (独显深度版)')}
+                      ? t('轻巧办公版（无需独立显卡，低内存占用）')
+                      : t('专业深度版（需独立显卡，深度整理）')}
                   </Badge>
                 </div>
                 <span className="text-slate-400">
                   {generativeEngineMode === 'cpu'
-                    ? t('零独显门槛，秒级启动与极简内存')
-                    : t('独显硬件加速，深度多步推演')}
+                    ? t('不挑电脑、秒级启动、后台静默不卡电脑')
+                    : t('显卡加速运算、擅长大批量文件智能整理')}
                 </span>
               </div>
             </CardContent>
@@ -381,7 +386,7 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
           {isDiskSpaceInsufficient && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3 text-red-800 text-sm">
               <AlertCircle className="w-5 h-5 shrink-0 text-red-600" />
-              <span>{t('磁盘剩余空间不足，请至少预留 2GB 空间以供模型下载与解压')}</span>
+              <span>{t('磁盘剩余空间不足，请至少预留 2GB 空间以供下载与安装')}</span>
             </div>
           )}
 
@@ -390,10 +395,10 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold text-slate-800 flex items-center gap-1.5">
                 <span className="w-1.5 h-3.5 bg-sky-500 rounded-full inline-block" />
-                {t('基础 AI 语义嵌入底座 (二选一必选)')}
+                {t('搜索核心大脑（二选一 · 必选）')}
               </h2>
               <span className="text-xs text-slate-500">
-                {t('全系统语义检索与智能归类的核心基石')}
+                {t('用你的大白话随心找文件和整理目录的核心动力')}
               </span>
             </div>
 
@@ -412,10 +417,10 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
                     <Layers className="w-5 h-5 text-sky-600" />
                     <div>
                       <div className="font-semibold text-sm text-slate-900">
-                        {t('统一全模态 AI 引擎 (Gemma Unified)')}
+                        {t('高智能全能引擎（理解更准）')}
                       </div>
                       <div className="text-xs text-slate-500 mt-0.5">
-                        {t('EmbeddingGemma-2 图文同构统一流形，精度更高')}
+                        {t('深度理解一句话的大致意思，找文字和图片更精准；推荐电脑内存 8GB 或以上')}
                       </div>
                     </div>
                   </div>
@@ -428,7 +433,7 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
                 {hardware.totalMemGB >= 8 && (
                   <div className="mt-2 text-[11px] text-emerald-600 font-medium flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    {t('当前机器硬件推荐档位 (RAM ≥ 8GB)')}
+                    {t('当前电脑配置推荐（内存充足，体验最佳）')}
                   </div>
                 )}
               </div>
@@ -447,10 +452,10 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
                     <Feather className="w-5 h-5 text-amber-600" />
                     <div>
                       <div className="font-semibold text-sm text-slate-900">
-                        {t('经典轻量 AI 引擎 (Classic Light)')}
+                        {t('极速轻巧引擎（老电脑首选）')}
                       </div>
                       <div className="text-xs text-slate-500 mt-0.5">
-                        {t('Bekko 384d + CLIP 512d 非对称极速架构，CPU 流畅运转')}
+                        {t('占用内存极少，反应极快；老电脑和低配轻薄本也能流畅运行不卡顿')}
                       </div>
                     </div>
                   </div>
@@ -463,7 +468,7 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
                 {hardware.totalMemGB < 8 && (
                   <div className="mt-2 text-[11px] text-sky-600 font-medium flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    {t('当前机器硬件推荐档位 (RAM < 8GB)')}
+                    {t('当前电脑配置推荐（轻巧省资源）')}
                   </div>
                 )}
               </div>
@@ -475,9 +480,9 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold text-slate-800 flex items-center gap-1.5">
                 <span className="w-1.5 h-3.5 bg-emerald-500 rounded-full inline-block" />
-                {t('感知分析与多媒体能力扩展 (推荐预选)')}
+                {t('实用智能技能扩展（选配 · 可随时调整）')}
               </h2>
-              <span className="text-xs text-slate-500">{t('可在主界面就绪后在后台静默下载')}</span>
+              <span className="text-xs text-slate-500">{t('进入主界面后后台静默下载，不耽误您马上使用')}</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -500,16 +505,16 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
                   <div className="flex items-center gap-2">
                     <ShieldAlert className="w-4 h-4 text-rose-500 shrink-0" />
                     <span className="text-xs font-semibold text-slate-900">
-                      {t('敏感内容合规识别 (NSFW)')}
+                      {t('私密与敏感照片识别')}
                     </span>
                   </div>
                   <Checkbox checked={selectedOptionals.perception_nsfw} />
                 </div>
                 <div className="text-[11px] text-slate-500 mt-2">
-                  {t('MobileNetV2 5分类 + FastText，护航内容合规')}
+                  {t('自动识别私密照片并打上安全标签，投屏或分享时避免尴尬')}
                 </div>
                 <div className="mt-2 flex justify-between items-center text-[11px]">
-                  <span className="text-emerald-600 font-medium">{t('默认推荐')}</span>
+                  <span className="text-emerald-600 font-medium">{t('推荐勾选')}</span>
                   <span className="font-mono text-slate-400">20.9 MiB</span>
                 </div>
               </div>
@@ -533,13 +538,13 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
                   <div className="flex items-center gap-2">
                     <Mic className="w-4 h-4 text-sky-500 shrink-0" />
                     <span className="text-xs font-semibold text-slate-900">
-                      {t('语音识别转录 (ASR)')}
+                      {t('音视频转字幕与语音搜索')}
                     </span>
                   </div>
                   <Checkbox checked={selectedOptionals.asr_sensevoice_onnx} />
                 </div>
                 <div className="text-[11px] text-slate-500 mt-2">
-                  {t('SenseVoice 高精多语言字幕转录，复用系统 FFmpeg')}
+                  {t('听懂视频和录音里的对白并提取字幕，可以直接按台词找到对应视频')}
                 </div>
                 <div className="mt-2 flex justify-between items-center text-[11px]">
                   <span className="text-slate-400">{t('可选功能')}</span>
@@ -563,13 +568,13 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
                   <div className="flex items-center gap-2">
                     <Volume2 className="w-4 h-4 text-purple-500 shrink-0" />
                     <span className="text-xs font-semibold text-slate-900">
-                      {t('离线语音朗读 (TTS)')}
+                      {t('离线语音朗读')}
                     </span>
                   </div>
                   <Checkbox checked={selectedOptionals.tts_moss_onnx} />
                 </div>
                 <div className="text-[11px] text-slate-500 mt-2">
-                  {t('Moss-TTS 离线自然语音合成，51款高品质音色')}
+                  {t('用自然真人声音把文档读给你听，无需连网，支持戴耳机边听边工作')}
                 </div>
                 <div className="mt-2 flex justify-between items-center text-[11px]">
                   <span className="text-slate-400">{t('可选功能')}</span>
@@ -588,27 +593,27 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
                     {installPhase === 'installing' && (
                       <>
                         <RefreshCw className="w-4 h-4 text-sky-500 animate-spin" />
-                        <span>{t('正在下载并解压基础 AI 引擎...')}</span>
+                        <span>{t('正在准备核心搜索引擎...')}</span>
                       </>
                     )}
                     {installPhase === 'smoke_testing' && (
                       <>
                         <RefreshCw className="w-4 h-4 text-amber-500 animate-spin" />
-                        <span>{t('正在执行 Omni 显式参数探活冒烟自检...')}</span>
+                        <span>{t('正在检验引擎运行状态...')}</span>
                       </>
                     )}
                     {installPhase === 'ready' && (
                       <>
                         <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                         <span className="text-emerald-700 font-semibold">
-                          {t('基础 AI 引擎已完成装配并通过自检！')}
+                          {t('核心引擎已准备就绪，可以开始使用了！')}
                         </span>
                       </>
                     )}
                     {installPhase === 'error' && (
                       <>
                         <AlertCircle className="w-4 h-4 text-red-500" />
-                        <span className="text-red-700 font-semibold">{t('安装自检异常')}</span>
+                        <span className="text-red-700 font-semibold">{t('引擎准备遇到问题')}</span>
                       </>
                     )}
                   </div>
@@ -684,7 +689,7 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
 
           <div className="flex items-center gap-4">
             <div className="text-right text-xs">
-              <span className="text-slate-500">{t('精确预估下载体积:')} </span>
+              <span className="text-slate-500">{t('预估下载大小:')} </span>
               <span className="font-semibold text-slate-900 font-mono text-sm">{displaySize}</span>
             </div>
 
