@@ -156,7 +156,13 @@ export const WorkspaceSettingsDialog: React.FC = () => {
     }
   }
 
-  // 4-Tab 完整还原定义 (检索式引擎、文件内容萃取、忽略规则、目录维护) - 依据已激活插件动态挂载 (Spec §5.2)
+  // 4-Tab 完整还原定义 (检索式引擎、文件内容萃取、忽略规则、目录维护)
+  // 内置常驻项：检索式引擎、文件准入与包含排除、目录维护与安全重置；
+  // 文件内容萃取仍依据已激活插件动态挂载 (Spec §5.2)。
+  // 「检索式引擎」必须常驻：activeTab 默认值、visitedTabs 初值、向导完成回流以及
+  // 插件中心配置锚点 (targetTab: 'basic_ai_engine') 均指向它，右侧内容区也会默认渲染。
+  // 若按插件激活状态过滤，全新安装或插件未激活时会出现「入口消失但内容仍在」、
+  // 且 activeTab 指向不可见 Tab 的断裂，用户无法再进入检索式引擎设置。
   const tabs: WorkspaceTabInfo[] = useMemo(() => {
     const allTabs: WorkspaceTabInfo[] = [
       {
@@ -189,13 +195,9 @@ export const WorkspaceSettingsDialog: React.FC = () => {
     const activeModules = modules.filter(m => m.install_state === 'active')
 
     return allTabs.filter(tab => {
-      if (tab.id === 'ignore_rules' || tab.id === 'maintenance') return true
-      if (tab.id === 'basic_ai_engine') {
-        return activeModules.some(
-          m =>
-            m.contributes?.settings?.componentId === 'basic_ai_engine' ||
-            m.capability_slot === 'base_embedding'
-        )
+      // 内置常驻项不随插件激活状态隐藏
+      if (tab.id === 'basic_ai_engine' || tab.id === 'ignore_rules' || tab.id === 'maintenance') {
+        return true
       }
       if (tab.id === 'content_extraction') {
         return (
@@ -305,9 +307,9 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                   if (mode === 'complete') {
                     closeSettings()
                   } else {
-                    // 切入深度自定义 4-Tab 模式
+                    // 切入深度自定义模式：直达「文件准入与包含排除」Tab
                     setIsManualWizardMode(false)
-                    setActiveTab('basic_ai_engine')
+                    setActiveTab('ignore_rules')
                   }
                 }}
               />

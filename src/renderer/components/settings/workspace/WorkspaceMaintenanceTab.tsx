@@ -211,8 +211,9 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
     setIsScanningEmptyFolders(true)
     try {
       if (window.electronAPI?.emptyFolder?.scan) {
-        const result = await window.electronAPI.emptyFolder.scan(workspace.path)
-        if (!result.emptyFolders || result.emptyFolders.length === 0) {
+        // IPC 契约：主进程原样透传 EmptyFolderNode[] 裸数组，而非 { emptyFolders } 包装对象
+        const emptyFolders = await window.electronAPI.emptyFolder.scan(workspace.path)
+        if (emptyFolders.length === 0) {
           toast.info(t('未发现空文件夹，目录结构非常整洁！'))
         } else {
           setShowEmptyFolderDialog(true)

@@ -985,7 +985,12 @@ export class LocalWorkflowDao implements ILocalWorkflowDAO {
           : `wf_${Math.random().toString(36).substring(2, 10)}`
 
     // 提取统一同构 workspace_config
-    let workspaceConfigStr = record.workspace_config
+    let workspaceConfigStr =
+      typeof record.workspace_config === 'string'
+        ? record.workspace_config
+        : record.workspace_config
+          ? JSON.stringify(record.workspace_config)
+          : ''
     if (!workspaceConfigStr) {
       const rawConfig = (record as any).workspaceConfig || {}
       const baseAi =
@@ -1060,6 +1065,19 @@ export class LocalWorkflowDao implements ILocalWorkflowDAO {
          OR (excluded.source != 'official')
     `)
 
+    const presetDirectoryTreeStr =
+      typeof record.preset_directory_tree === 'string'
+        ? record.preset_directory_tree
+        : record.preset_directory_tree
+          ? JSON.stringify(record.preset_directory_tree)
+          : null
+    const previewTreeStr =
+      typeof record.preview_tree === 'string'
+        ? record.preview_tree
+        : record.preview_tree
+          ? JSON.stringify(record.preview_tree)
+          : null
+
     const result = stmt.run(
       workflowId,
       userId,
@@ -1074,8 +1092,8 @@ export class LocalWorkflowDao implements ILocalWorkflowDAO {
       workspaceConfigStr,
       record.naming_pattern ?? null,
       record.naming_template ?? null,
-      record.preset_directory_tree ?? null,
-      record.preview_tree ?? null,
+      presetDirectoryTreeStr,
+      previewTreeStr,
       record.icon_svg ?? null
     )
 

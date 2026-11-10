@@ -53,8 +53,20 @@ function getSlotDefinition(
         policy: 'exclusive_required',
         icon: '🔒',
         badgeText: t('必选单例 · 二选一互斥'),
-        description: t('整个软件的核心搜索大脑（二选一）。换引擎会自动重新建立全部文件的搜索索引。'),
+        description: t(
+          '整个软件的核心搜索大脑（二选一）。换引擎会自动重新建立全部文件的搜索索引。'
+        ),
         order: 10
+      }
+    case 'ai_engine_cpu':
+      return {
+        key: 'ai_engine_cpu',
+        name: t('轻量CPU生成式引擎'),
+        policy: 'exclusive_optional',
+        icon: '⚡',
+        badgeText: t('轻量极速 · 纯CPU运行'),
+        description: t('办公轻薄本标配，内存仅占约400MB，0门槛秒级响应，完全离线私密。'),
+        order: 15
       }
     case 'voice_asr':
     case 'asr':

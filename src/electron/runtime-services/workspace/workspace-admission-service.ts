@@ -22,6 +22,7 @@ import {
   type IFilterRule,
   type LocalWorkflowRecord,
   type TechnicalEngineParameters,
+  type BaseAIConfig,
   type WorkspaceConfig,
   type WorkspaceConfigIntent,
   type WorkspaceConfigReady
@@ -55,7 +56,7 @@ export interface WorkspacePolicyMutation {
   customWhitelistExts?: string[]
   customWhitelistRules?: IFilterRule[]
   customIgnoreRules?: IFilterRule[]
-  baseAIConfig?: WorkspaceConfig['baseAIConfig']
+  baseAIConfig?: BaseAIConfig
   derivedSnapshot?: TechnicalEngineParameters
   intent?: WorkspaceConfigIntent
   overrides?: Partial<TechnicalEngineParameters>
@@ -539,6 +540,7 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
     // 3. 计算 AI 分析基础参数
     const defaultBaseAi = mapIntentToParameters(
       mutation.intent || currentReady?.intent || 'fast_archive',
+      null,
       mutation.overrides || currentReady?.overrides
     )
     const nextBaseAi: TechnicalEngineParameters =
@@ -560,7 +562,7 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
       schemaVersion: 1,
       status: 'ready',
       policyVersion: currentPolicyVersion, // 初始保持当前版本，若指纹改变由主写入口递增
-      workflowId: nextBoundWorkflowId,
+      workflowId: nextBoundWorkflowId ?? undefined,
       intent: mutation.intent ?? currentReady?.intent,
       overrides: mutation.overrides ?? currentReady?.overrides,
       customIgnoreRules: nextIgnoreRules,

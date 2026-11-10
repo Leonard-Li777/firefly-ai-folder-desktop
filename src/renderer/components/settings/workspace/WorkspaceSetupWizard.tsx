@@ -952,6 +952,10 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
                 <Loader2 className="w-3 h-3 animate-spin text-primary" />
                 <span>{t('正在深度扫描目录文件特征...')}</span>
               </>
+            ) : profileResult?.stats?.totalSampled === 0 ? (
+              <span className="text-muted-foreground font-normal">
+                {t('空目录 (未检测到文件)')}
+              </span>
             ) : (
               <>
                 <Check className="w-3.5 h-3.5" />
@@ -1029,10 +1033,14 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
               )}
             </div>
           </div>
-        ) : (
+        ) : isProbing ? (
           <div className="text-xs text-muted-foreground flex items-center gap-2 py-1">
             <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
             <span>{t('正在统计文件构成以推断最佳算力模型...')}</span>
+          </div>
+        ) : (
+          <div className="text-xs text-muted-foreground py-1">
+            <span>{t('当前目录为空，放入文件后将自动分类整理')}</span>
           </div>
         )}
       </div>

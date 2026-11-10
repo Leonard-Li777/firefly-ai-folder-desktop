@@ -569,7 +569,7 @@ export const MonitoringSettings: React.FC = () => {
                                 directory.path
                               )
 
-                              if (scanResult.emptyFolders?.length === 0) {
+                              if (scanResult.length === 0) {
                                 // 没有空文件夹，显示Toast提示
                                 toast.info(t('未发现空文件夹'))
                               } else {

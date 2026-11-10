@@ -276,7 +276,9 @@ export class LlmGatewayService implements ILlmGatewayService {
     try {
       const { ConfigOrchestrator } = require('../../config/config-orchestrator')
       const orchestrator = ConfigOrchestrator?.getInstance?.()
-      const savedMode = orchestrator?.getValue?.('AI_SERVICE_LAST_ENABLED_MODE')
+      const savedMode =
+        orchestrator?.getValue?.('AI_SERVICE_MODE') ||
+        orchestrator?.getValue?.('AI_SERVICE_LAST_ENABLED_MODE')
       if (savedMode && ['local', 'cpu', 'cloud', 'disabled'].includes(savedMode)) {
         this.desiredMode = savedMode as GenerativeEngineMode
       }
@@ -296,9 +298,40 @@ export class LlmGatewayService implements ILlmGatewayService {
     try {
       const candidates = [
         path.join(ResourceLocator.getBaseResourceDir(), 'models', 'pocket-cpu', 'model.onnx'),
+        path.join(
+          ResourceLocator.getBaseResourceDir(),
+          'models',
+          'pocket-cpu',
+          'model_quantized.onnx'
+        ),
         path.join(ResourceLocator.getBaseResourceDir(), 'model', 'pocket-cpu', 'model.onnx'),
         path.join(process.cwd(), 'apps/desktop/build/extraResources/models/pocket-cpu/model.onnx'),
-        path.join(process.cwd(), 'build/extraResources/models/pocket-cpu/model.onnx')
+        path.join(
+          process.cwd(),
+          'apps/desktop/build/extraResources/models/pocket-cpu/model_quantized.onnx'
+        ),
+        path.join(process.cwd(), 'build/extraResources/models/pocket-cpu/model.onnx'),
+        path.join(ResourceLocator.getAppUserDataDir(), 'models', 'pocket-cpu', 'model.onnx'),
+        path.join(
+          ResourceLocator.getAppUserDataDir(),
+          'models',
+          'pocket-cpu',
+          'model_quantized.onnx'
+        ),
+        path.join(
+          ResourceLocator.getAppUserDataDir(),
+          'modules',
+          '_shared',
+          'pocket-cpu-int8-onnx',
+          'model.onnx'
+        ),
+        path.join(
+          ResourceLocator.getAppUserDataDir(),
+          'modules',
+          '_shared',
+          'pocket-cpu-int8-onnx',
+          'model_quantized.onnx'
+        )
       ]
       for (const p of candidates) {
         if (fs.existsSync(p)) {
@@ -322,6 +355,18 @@ export class LlmGatewayService implements ILlmGatewayService {
     }
 
     try {
+      // 萤核AI引擎为系统内置捆绑组件（PRD-0044 Invariant），探查实际引擎可执行文件
+      const { EngineBridgeService } = require('../engine-bridge/engine-bridge-service')
+      const exe = EngineBridgeService?.getInstance?.()?.resolveEngineExecutable?.()
+      if (exe && fs.existsSync(exe)) {
+        return 'installed'
+      }
+
+      // 生产环境打包后恒为内置已安装
+      if (process.env.NODE_ENV === 'production' || app?.isPackaged) {
+        return 'installed'
+      }
+
       const candidates = [
         path.join(ResourceLocator.getBaseResourceDir(), 'bin', 'llama.cpp'),
         path.join(process.cwd(), 'apps/desktop/build/extraResources/bin/llama.cpp'),
@@ -334,7 +379,8 @@ export class LlmGatewayService implements ILlmGatewayService {
       logger.warn(LogCategory.SYSTEM, '[LlmGatewayService] 探测本地高级引擎安装资产异常:', err)
     }
 
-    return 'not_installed'
+    // 萤核AI引擎随客户端捆绑交付，默认作为内置已安装
+    return 'installed'
   }
 
   /**
@@ -443,7 +489,10 @@ export class LlmGatewayService implements ILlmGatewayService {
       const { ConfigOrchestrator } = require('../../config/config-orchestrator')
       const orchestrator = ConfigOrchestrator?.getInstance?.()
       if (mode !== 'disabled') {
-        orchestrator?.setValues?.({ AI_SERVICE_LAST_ENABLED_MODE: mode })
+        orchestrator?.setValues?.({
+          AI_SERVICE_MODE: mode,
+          AI_SERVICE_LAST_ENABLED_MODE: mode
+        })
       }
     } catch {}
   }

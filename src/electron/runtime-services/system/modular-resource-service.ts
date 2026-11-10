@@ -324,7 +324,45 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
       }
     ]
   },
-  // 3. 感知分析模型：敏感内容与 NSFW 分级识别
+  // 3. 生成式引擎：轻量 CPU 引擎 (Pocket CPU)
+  {
+    id: 'pocket-cpu-int8-onnx',
+    name: '轻量CPU生成式引擎 (Pocket CPU)',
+    description:
+      '【办公轻薄本标配】内存仅占约400MB，0门槛秒级响应，完全离线私密。支持智能文件名深度润色、描述提取与内容深度解析。',
+    icon: 'Cpu',
+    kind: 'builtin-module',
+    version: '1.0.0',
+    catalog_version: 1,
+    category: 'ai-engine',
+    capability_slot: 'ai_engine_cpu',
+    slot_policy: 'exclusive_optional',
+    backend_type: 'omni_onnx',
+    author_code: 'official',
+    total_bytes: 380633088, // 363 MiB
+    install_state: 'not_installed',
+    contributes: {
+      settings: {
+        scope: 'global',
+        tabTitle: '生成式引擎',
+        componentId: 'ai_engine_config',
+        priority: 15
+      }
+    },
+    resources: [
+      {
+        resource_id: 'pocket-cpu-int8-onnx',
+        asset_name: 'pocket-cpu-int8-onnx-1.0.0.zip',
+        target_local_path: 'models/pocket-cpu',
+        active_source_key: 'auto',
+        active_url:
+          'https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/pocket-cpu-int8-onnx-1.0.0.zip',
+        expected_bytes: 380633088,
+        expected_sha256: '9a9b7367c3ca16bc2605bb1dca2e927cb7801a610f443b8782a69ce45f78c85c'
+      }
+    ]
+  },
+  // 4. 感知分析模型：敏感内容与 NSFW 分级识别
   {
     id: 'perception_nsfw',
     name: '敏感内容与 NSFW 分级识别',

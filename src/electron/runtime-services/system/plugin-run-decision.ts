@@ -6,7 +6,7 @@
  * shouldRun 必须完全基于显式布尔逻辑计算，holdReasons 负责全量收集诊断原因，物理正交解耦。
  */
 
-import type { PluginAvailability } from '../../database/dao/modular-resource-dao'
+import type { ModuleAvailability as PluginAvailability } from '../database/dao/modular-resource-dao'
 
 export type HoldReason = 'securityDelist' | 'devModeOff' | 'slotPreempted'
 
@@ -33,7 +33,7 @@ export function deriveRunDecision(
   row: {
     availability: PluginAvailability | string
     install_state: string
-    delist_reason: string | null
+    delist_reason?: string | null
   },
   ctx: RunContext
 ): RunDecision {

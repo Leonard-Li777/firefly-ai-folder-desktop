@@ -10,7 +10,6 @@ import {
   Cpu,
   Plus,
   Power,
-  Radio,
   RotateCw,
   Box,
   Zap,
@@ -25,6 +24,7 @@ import { captureEvent } from '../../lib/posthog'
 import i18nScope from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
 import { useSettingsConfig, useSettingsStore } from '../../stores/settings-store'
+import { usePluginCenterStore } from '../../stores/plugin-center-store'
 import { AIErrorType, AIServiceStatus } from '@firefly/types'
 import { ErrorNormalizer, type GenerativeEngineSnapshot } from '@firefly/shared'
 import { useAIServiceStore } from '../../stores/ai-service-store'
@@ -518,10 +518,9 @@ export const AIEngineConfigSettings: React.FC = () => {
     return false
   }, [snapshot?.raw?.hardware?.vram_bytes])
 
-  /** 底座安装态感知 */
+  /** 底座安装态感知（萤核AI引擎为内置捆绑组件，恒为已安装） */
   const cpuInstalled = llmSnapshot?.installation?.cpu === 'installed'
-  const localInstalled =
-    snapshot?.available !== false && llmSnapshot?.installation?.local !== 'not_installed'
+  const localInstalled = true
 
   /** 轻量CPU状态徽章 (TASK-04 / Spec §5.3) */
   const renderCpuBadge = () => {
