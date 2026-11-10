@@ -23,6 +23,7 @@ import {
 import { MagikaFileCategory } from '@firefly/types'
 import { resolveAnalysisTimeoutBudget } from './analysis-timeout-policy'
 import { isLocalDevRuntime } from '../../main/worktree-env'
+import { OmniInstanceLock, OmniTokenManager } from './omni-security'
 
 /**
  * 基础AI引擎（Omni）运行状态快照，主动推送至渲染进程（omni:status-changed）
@@ -552,6 +553,8 @@ export class OmniService {
   private missingBinaryRetryAt = 0
   private binaryMissingNotified = false
   private binaryMissingNotifyDeferred = false
+  private instanceLock: OmniInstanceLock | null = null
+  private tokenManager: OmniTokenManager | null = null
 
   /** 开发态二进制热更新检测周期 (毫秒) */
   private static readonly DEV_BINARY_WATCH_INTERVAL_MS = 3_000
@@ -1197,11 +1200,24 @@ export class OmniService {
       const existingPath = process.env.PATH || ''
       const injectedPath = [binDir, existingPath].filter(Boolean).join(path.delimiter)
 
+      // 绑定操作系统单实例文件咨询锁与安全令牌 (Spec §8)
+      const runDir = dbPath
+        ? path.join(path.dirname(dbPath), 'run')
+        : path.join(process.cwd(), '.run')
+      this.instanceLock = new OmniInstanceLock(runDir)
+      if (!this.instanceLock.acquire()) {
+        logger.warn(LogCategory.SYSTEM, '[OmniService] 操作系统单实例文件锁检测到同用户实例已运行')
+      }
+      this.tokenManager = new OmniTokenManager(runDir)
+      const tokenPayload = this.tokenManager.createToken(port, `omni-boot-${Date.now()}`)
+
       const env: Record<string, string | undefined> = {
         ...process.env,
         PATH: injectedPath,
         OMNI_PORT: String(port),
         OMNI_DEV_MODE: isDevMode ? '1' : '0',
+        FIREFLY_RUN_DIR: runDir,
+        FIREFLY_OMNI_TOKEN: tokenPayload.token,
         RUST_LOG:
           process.env.RUST_LOG ||
           (isDevMode ? 'info,omni_vision=info,omni_server=info,omni_text=info' : 'warn')
@@ -1598,6 +1614,22 @@ export class OmniService {
       } catch {}
       this.process = null
     }
+
+    if (this.instanceLock) {
+      this.instanceLock.release()
+      this.instanceLock = null
+    }
+    if (this.tokenManager) {
+      this.tokenManager.removeToken()
+      this.tokenManager = null
+    }
+  }
+
+  /**
+   * 获取当前 Omni 进程的安全授权 Token (Spec §8)
+   */
+  public getOmniToken(): string | null {
+    return this.tokenManager?.readToken()?.token || null
   }
 
   public stop(): void {

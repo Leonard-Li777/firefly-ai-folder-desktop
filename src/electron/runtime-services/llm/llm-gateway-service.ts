@@ -21,6 +21,20 @@ import {
   ResourceLocator
 } from '@firefly/shared'
 import type { TaskSpec, FinishReason } from './task-specs/types'
+import {
+  shortNameTaskSpec,
+  type ShortNameInput,
+  type ShortNameOutput,
+  tagTaskSpec,
+  type TagTaskInput,
+  type TagTaskOutput,
+  qualityScoreTaskSpec,
+  type QualityScoreInput,
+  type QualityScoreOutput,
+  directoryPlanTaskSpec,
+  type DirectoryPlanInput,
+  type DirectoryPlanOutput
+} from './task-specs'
 import { OmniService } from '../system/omni-service'
 
 export type GatewayErrorCode =
@@ -123,6 +137,36 @@ export interface ChatOptions {
   maxTokens?: number
 }
 
+export interface ChatMessage {
+  role: 'system' | 'user' | 'assistant'
+  content: string
+}
+
+export interface ChatCompletionOptions {
+  taskId: 'short-name' | 'tag' | 'quality-score' | 'directory-plan'
+  messages: ChatMessage[]
+  temperature?: number
+  maxTokens?: number
+  queueTimeoutMs?: number
+  runTimeoutMs?: number
+  signal?: AbortSignal
+  responseFormat?: 'text' | 'json'
+  taskIdTrace?: string
+}
+
+export interface ChatCompletionResult {
+  content: string
+  model: string
+  finishReason: FinishReason
+  servedBy: 'cpu' | 'local' | 'cloud'
+  usage: {
+    promptTokens: number
+    completionTokens: number
+    totalTokens: number
+  }
+  degraded?: boolean
+}
+
 export interface TokenizeResult {
   tokens: number[][]
   counts: number[]
@@ -130,6 +174,11 @@ export interface TokenizeResult {
 
 export interface ILlmGatewayService {
   chat<I, O>(taskSpec: TaskSpec<I, O>, input: I, options?: ChatOptions): Promise<O>
+  suggestShortName(input: ShortNameInput, options?: ChatOptions): Promise<ShortNameOutput>
+  extractControlledTags(input: TagTaskInput, options?: ChatOptions): Promise<TagTaskOutput>
+  evaluateQualityScore(input: QualityScoreInput, options?: ChatOptions): Promise<QualityScoreOutput>
+  planDirectory(input: DirectoryPlanInput, options?: ChatOptions): Promise<DirectoryPlanOutput>
+  chatCompletion(options: ChatCompletionOptions): Promise<ChatCompletionResult>
   tokenize(texts: string[]): Promise<TokenizeResult>
   getSnapshot(): GenerativeEngineSnapshot
   setDesiredMode(mode: GenerativeEngineMode): Promise<void>
@@ -193,7 +242,9 @@ export class LlmGatewayService implements ILlmGatewayService {
           }
         }
       }
-    } catch {}
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[LlmGatewayService] 加载 crashState 异常:', err)
+    }
   }
 
   /**
@@ -213,7 +264,9 @@ export class LlmGatewayService implements ILlmGatewayService {
         }),
         'utf8'
       )
-    } catch {}
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[LlmGatewayService] 保存 crashState 失败:', err)
+    }
   }
 
   /**
@@ -253,11 +306,8 @@ export class LlmGatewayService implements ILlmGatewayService {
           return stat.size < 1000 ? 'corrupt' : 'installed'
         }
       }
-    } catch {}
-
-    // 单测环境保底避免无资产阻断
-    if (process.env.VITEST || process.env.NODE_ENV === 'test') {
-      return 'installed'
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[LlmGatewayService] 探测 CPU 引擎安装资产异常:', err)
     }
 
     return 'not_installed'
@@ -280,10 +330,8 @@ export class LlmGatewayService implements ILlmGatewayService {
       for (const p of candidates) {
         if (fs.existsSync(p)) return 'installed'
       }
-    } catch {}
-
-    if (process.env.VITEST || process.env.NODE_ENV === 'test') {
-      return 'installed'
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[LlmGatewayService] 探测本地高级引擎安装资产异常:', err)
     }
 
     return 'not_installed'
@@ -326,7 +374,9 @@ export class LlmGatewayService implements ILlmGatewayService {
       if (url && url.startsWith('http')) {
         return url.replace(/\/$/, '')
       }
-    } catch {}
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[LlmGatewayService] 获取 OmniService baseUrl 失败:', err)
+    }
 
     // 跨进程 run 目录端口文件发现兜底
     try {
@@ -337,9 +387,11 @@ export class LlmGatewayService implements ILlmGatewayService {
           return `http://127.0.0.1:${data.port}`
         }
       }
-    } catch {}
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[LlmGatewayService] 读取 firefly-omni.json 失败:', err)
+    }
 
-    return 'http://127.0.0.1:38100'
+    return 'http://127.0.0.1:38200'
   }
 
   /**
@@ -561,11 +613,20 @@ export class LlmGatewayService implements ILlmGatewayService {
       max_tokens: options?.maxTokens ?? 64
     }
 
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      Host: '127.0.0.1'
+    }
+    const token = OmniService.getInstance().getOmniToken()
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+
     let res: Response
     try {
       res = await fetch(`${baseUrl}/v1/chat/completions`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(reqBody),
         signal
       })
@@ -604,6 +665,267 @@ export class LlmGatewayService implements ILlmGatewayService {
     const finishReason = (data?.choices?.[0]?.finish_reason as FinishReason) || 'stop'
 
     return await taskSpec.postValidate(rawText, finishReason)
+  }
+
+  /**
+   * 智能文件名提炼门面方法 (short-name)
+   */
+  public async suggestShortName(
+    input: ShortNameInput,
+    options?: ChatOptions
+  ): Promise<ShortNameOutput> {
+    return this.chat(shortNameTaskSpec, input, options)
+  }
+
+  /**
+   * 受控概念语义打标门面方法 (tag)
+   */
+  public async extractControlledTags(
+    input: TagTaskInput,
+    options?: ChatOptions
+  ): Promise<TagTaskOutput> {
+    return this.chat(tagTaskSpec, input, options)
+  }
+
+  /**
+   * 文件内容质量评分门面方法 (quality-score)
+   */
+  public async evaluateQualityScore(
+    input: QualityScoreInput,
+    options?: ChatOptions
+  ): Promise<QualityScoreOutput> {
+    return this.chat(qualityScoreTaskSpec, input, options)
+  }
+
+  /**
+   * 目录智能重构规划门面方法 (directory-plan)
+   */
+  public async planDirectory(
+    input: DirectoryPlanInput,
+    options?: ChatOptions
+  ): Promise<DirectoryPlanOutput> {
+    return this.chat(directoryPlanTaskSpec, input, options)
+  }
+
+  /**
+   * 通用结构化对话补全门面方法 (chatCompletion)
+   * 遵守统一网关与契约-A/B/C
+   */
+  public async chatCompletion(options: ChatCompletionOptions): Promise<ChatCompletionResult> {
+    // 约束校验：单请求消息数 <= 16，单条消息字符数 <= 16,000 (契约-B)
+    if (!options.messages || options.messages.length === 0) {
+      throw new LlmGatewayError('UNSUPPORTED_PARAMETER', 'messages 不能为空')
+    }
+    if (options.messages.length > 16) {
+      throw new LlmGatewayError(
+        'PAYLOAD_TOO_LARGE',
+        `单请求消息数 (${options.messages.length}) 超过上限 16`
+      )
+    }
+    for (const msg of options.messages) {
+      if (msg.content && msg.content.length > 16000) {
+        throw new LlmGatewayError(
+          'PAYLOAD_TOO_LARGE',
+          `单条消息字符数 (${msg.content.length}) 超过上限 16,000`
+        )
+      }
+    }
+
+    const snapshot = this.getSnapshot()
+    const mode = snapshot.effectiveMode
+    if (mode === 'disabled') {
+      const reason = snapshot.unavailableReason || 'MODE_DISABLED'
+      const code: GatewayErrorCode =
+        reason === 'CRASH_LOOP'
+          ? 'CRASH_LOOP'
+          : reason === 'NOT_INSTALLED' || reason === 'CORRUPT'
+            ? 'ASSET_INCOMPATIBLE'
+            : 'MODE_DISABLED'
+      throw new LlmGatewayError(code, `生成式 AI 能力当前不可用: ${reason}`)
+    }
+
+    // directory-plan 任务禁止在 cpu 底座运行
+    if (options.taskId === 'directory-plan' && mode === 'cpu') {
+      throw new LlmGatewayError(
+        'TASK_NOT_SUPPORTED',
+        '任务 [directory-plan] 不支持在 [cpu] 底座运行'
+      )
+    }
+
+    // 超时与中断信号绑定
+    const runTimeoutMs = options.runTimeoutMs ?? (mode === 'cpu' ? 30000 : 120000)
+    const timeoutController = new AbortController()
+    const timer = setTimeout(() => {
+      timeoutController.abort(new LlmGatewayError('TIMEOUT', `推理执行超时 (${runTimeoutMs}ms)`))
+    }, runTimeoutMs)
+
+    let combinedSignal: AbortSignal
+    if (options.signal) {
+      const userSignal = options.signal
+      if (typeof AbortSignal !== 'undefined' && 'any' in AbortSignal) {
+        combinedSignal = (AbortSignal as any).any([userSignal, timeoutController.signal])
+      } else {
+        const combinedController = new AbortController()
+        userSignal.addEventListener('abort', () => combinedController.abort(userSignal.reason), {
+          once: true
+        })
+        timeoutController.signal.addEventListener(
+          'abort',
+          () => combinedController.abort(timeoutController.signal.reason),
+          { once: true }
+        )
+        combinedSignal = combinedController.signal
+      }
+    } else {
+      combinedSignal = timeoutController.signal
+    }
+
+    try {
+      if (mode === 'cpu') {
+        return await this.cpuLane.enqueue(async () => {
+          return await this.executeRawCpuChat(options, combinedSignal)
+        })
+      } else if (mode === 'local') {
+        return await this.localLane.enqueue(async () => {
+          return await this.executeRawLocalChat(options, combinedSignal)
+        })
+      } else if (mode === 'cloud') {
+        throw new LlmGatewayError(
+          'UNSUPPORTED_CAPABILITY',
+          '云端大模型底座尚未配置 API Key 或未在当前切片启用'
+        )
+      } else {
+        throw new LlmGatewayError('MODE_DISABLED', `未知或未启用底座: ${mode}`)
+      }
+    } finally {
+      clearTimeout(timer)
+    }
+  }
+
+  private async executeRawCpuChat(
+    options: ChatCompletionOptions,
+    signal?: AbortSignal
+  ): Promise<ChatCompletionResult> {
+    const baseUrl = this.getOmniBaseUrl()
+    const reqBody: Record<string, unknown> = {
+      model: 'pocket-cpu-int8',
+      task_id: options.taskId,
+      messages: options.messages,
+      temperature: options.temperature ?? 0.0,
+      max_tokens: options.maxTokens ?? 64
+    }
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      Host: '127.0.0.1'
+    }
+    const token = OmniService.getInstance().getOmniToken()
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+
+    let res: Response
+    try {
+      res = await fetch(`${baseUrl}/v1/chat/completions`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(reqBody),
+        signal
+      })
+    } catch (err: any) {
+      if (signal?.aborted) {
+        if (signal.reason instanceof LlmGatewayError) {
+          throw signal.reason
+        }
+        throw new LlmGatewayError('CANCELLED', '请求已被取消')
+      }
+      throw new LlmGatewayError('ENGINE_CRASHED', `连接 Pocket CPU 失败: ${err.message}`)
+    }
+
+    if (!res.ok) {
+      if (res.status === 429) {
+        throw new LlmGatewayError('BUSY', 'Pocket CPU 当前繁忙 (429)')
+      }
+      if (res.status === 500) {
+        this.cpuCrashCount++
+        if (this.cpuCrashCount >= 2) {
+          this.cpuLastError = 'CRASH_LOOP'
+        }
+        this.cpuRuntimeState = 'failed'
+        this.saveCrashState()
+        throw new LlmGatewayError('ENGINE_CRASHED', `Pocket CPU 发生故障 (500)`)
+      }
+      if (res.status >= 500) {
+        throw new LlmGatewayError('UPSTREAM_5XX', `上游服务错误: status=${res.status}`)
+      }
+      throw new LlmGatewayError('UPSTREAM_4XX', `请求参数不合法: status=${res.status}`)
+    }
+
+    const data = await res.json()
+    this.cpuRuntimeState = 'ready'
+    const rawText = data?.choices?.[0]?.message?.content || ''
+    const finishReason = (data?.choices?.[0]?.finish_reason as FinishReason) || 'stop'
+
+    return {
+      content: rawText,
+      model: data?.model || 'pocket-cpu-int8',
+      finishReason,
+      servedBy: 'cpu',
+      usage: {
+        promptTokens: data?.usage?.prompt_tokens ?? 0,
+        completionTokens: data?.usage?.completion_tokens ?? 0,
+        totalTokens: data?.usage?.total_tokens ?? 0
+      }
+    }
+  }
+
+  private async executeRawLocalChat(
+    options: ChatCompletionOptions,
+    signal?: AbortSignal
+  ): Promise<ChatCompletionResult> {
+    const localUrl = 'http://127.0.0.1:38400'
+
+    let res: Response
+    try {
+      res = await fetch(`${localUrl}/v1/chat/completions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: options.messages,
+          temperature: options.temperature ?? 0.2,
+          max_tokens: options.maxTokens
+        }),
+        signal
+      })
+    } catch (err: any) {
+      if (signal?.aborted) {
+        if (signal.reason instanceof LlmGatewayError) {
+          throw signal.reason
+        }
+        throw new LlmGatewayError('CANCELLED', '请求已被取消')
+      }
+      throw new LlmGatewayError('ENGINE_CRASHED', `本地高级引擎连接失败: ${err.message}`)
+    }
+
+    if (!res.ok) {
+      throw new LlmGatewayError('ENGINE_CRASHED', `本地高级引擎推理失败 (status=${res.status})`)
+    }
+
+    const data = await res.json()
+    const rawText = data?.choices?.[0]?.message?.content || ''
+    const finishReason = (data?.choices?.[0]?.finish_reason as FinishReason) || 'stop'
+
+    return {
+      content: rawText,
+      model: data?.model || 'local-llm',
+      finishReason,
+      servedBy: 'local',
+      usage: {
+        promptTokens: data?.usage?.prompt_tokens ?? 0,
+        completionTokens: data?.usage?.completion_tokens ?? 0,
+        totalTokens: data?.usage?.total_tokens ?? 0
+      }
+    }
   }
 
   private async executeLocalChat<I, O>(

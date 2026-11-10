@@ -218,18 +218,24 @@ export const AIEngineConfigSettings: React.FC = () => {
       const targetMode: ActiveEngineMode = lastActiveMode || 'cpu'
       updateConfigValue('AI_SERVICE_MODE', targetMode)
       if (window.electronAPI?.llmGateway?.setDesiredMode) {
-        window.electronAPI.llmGateway.setDesiredMode(targetMode).catch(() => {})
+        window.electronAPI.llmGateway.setDesiredMode(targetMode).catch(err => {
+          console.warn('[AiEngineConfigSettings] 启用设置生效底座失败:', err)
+        })
       }
       captureEvent('启用生成式引擎', { mode: targetMode })
     } else {
       updateConfigValue('AI_SERVICE_MODE', 'disabled')
       if (window.electronAPI?.llmGateway?.setDesiredMode) {
-        window.electronAPI.llmGateway.setDesiredMode('disabled').catch(() => {})
+        window.electronAPI.llmGateway.setDesiredMode('disabled').catch(err => {
+          console.warn('[AiEngineConfigSettings] 停用设置生效底座失败:', err)
+        })
       }
       captureEvent('停用生成式引擎')
       // 显式调用 IPC 请求关闭高级AI引擎程序
       if (typeof window.electronAPI?.engineBridge?.shutdown === 'function') {
-        window.electronAPI.engineBridge.shutdown().catch(() => {})
+        window.electronAPI.engineBridge.shutdown().catch(err => {
+          console.warn('[AiEngineConfigSettings] 关闭高级引擎失败:', err)
+        })
       }
     }
   }
@@ -250,7 +256,9 @@ export const AIEngineConfigSettings: React.FC = () => {
 
     updateConfigValue('AI_SERVICE_MODE', mode)
     if (window.electronAPI?.llmGateway?.setDesiredMode) {
-      window.electronAPI.llmGateway.setDesiredMode(mode).catch(() => {})
+      window.electronAPI.llmGateway.setDesiredMode(mode).catch(err => {
+        console.warn('[AiEngineConfigSettings] 切换生效引擎失败:', err)
+      })
     }
     captureEvent('切换生效引擎', { mode })
   }
@@ -263,7 +271,9 @@ export const AIEngineConfigSettings: React.FC = () => {
     setSwitchingTarget(null)
     updateConfigValue('AI_SERVICE_MODE', prev)
     if (window.electronAPI?.llmGateway?.setDesiredMode) {
-      window.electronAPI.llmGateway.setDesiredMode(prev).catch(() => {})
+      window.electronAPI.llmGateway.setDesiredMode(prev).catch(err => {
+        console.warn('[AiEngineConfigSettings] 逃生恢复原引擎失败:', err)
+      })
     }
     toast.info(t('已取消切换并恢复原引擎'))
   }
@@ -800,7 +810,9 @@ export const AIEngineConfigSettings: React.FC = () => {
                       variant="outline"
                       className="h-7 text-xs"
                       onClick={() => {
-                        window.electronAPI?.llmGateway?.preheat({ wait: true }).catch(() => {})
+                        window.electronAPI?.llmGateway?.preheat({ wait: true }).catch(err => {
+                          console.warn('[AiEngineConfigSettings] 预热模型触发失败:', err)
+                        })
                       }}
                     >
                       {t('下载模型')}
