@@ -544,6 +544,36 @@ export const GENESIS_V1_SCHEMA = `
   ON embedding_epochs(status)
   WHERE status = 'building';
 
+  -- 16.5 离线包导入导出协调表 (Offline Package Coordination Jobs)
+  -- 统一离线总包导入导出任务状态机、所有权恢复与崩溃自愈对账
+  CREATE TABLE IF NOT EXISTS offline_package_jobs (
+    job_id                     TEXT PRIMARY KEY,              -- 任务唯一标识 (UUID)
+    job_type                   TEXT NOT NULL                  -- 任务类型
+                               CHECK (job_type IN ('IMPORT', 'EXPORT')),
+    status                     TEXT NOT NULL                  -- 协调状态
+                               CHECK (status IN ('PREPARED', 'PROMOTING', 'PROMOTED', 'DB_COMMITTED', 'EXPORTING', 'CLEANUP_PENDING', 'FINISHED', 'FAILED', 'RECOVERY_REQUIRED')),
+    archive_path               TEXT NOT NULL,                 -- 导入源文件路径 或 导出目标文件路径
+    total_modules              INTEGER NOT NULL,              -- 包含模块总数
+    created_resource_ids       TEXT NOT NULL DEFAULT '[]',    -- JSON 数组：Phase 1 移动前先持久化登记的本 job 独占资源 ID，崩溃恢复所有权依据
+    reused_resource_ids        TEXT NOT NULL DEFAULT '[]',    -- JSON 数组：本 job 复用的存量资源 ID
+    superseded_by_job_id       TEXT,                          -- 结构化权属：被哪个新导出 job 取代 (UUID)，用于崩溃恢复精确反查
+    superseded_at              INTEGER,                       -- 被取代时间戳
+    verification_attempts      INTEGER NOT NULL DEFAULT 0,    -- 后台 Dry-Run 调度总尝试次数 (仅增不减，审计统计用)
+    consecutive_worker_crashes INTEGER NOT NULL DEFAULT 0,    -- 连续 Worker 异常崩溃次数 (用于 3 次熔断；Worker 正常退出时重置为 0)
+    created_at                 INTEGER NOT NULL,              -- 任务创建时间戳
+    updated_at                 INTEGER NOT NULL               -- 状态更新时间戳
+  );
+
+  -- 同路径活跃导出互斥索引：从写入侧杜绝向同一目标路径并发产生多个活跃 EXPORTING 或未收敛 CLEANUP_PENDING 任务
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_offline_package_jobs_active_export
+    ON offline_package_jobs (archive_path)
+    WHERE job_type = 'EXPORT' AND status IN ('EXPORTING', 'CLEANUP_PENDING');
+
+  -- 被取代旧任务精确反查索引：用于阶段 1 权属恢复时根据新 jobId 秒级反查历史旧任务
+  CREATE INDEX IF NOT EXISTS idx_offline_package_jobs_superseded
+    ON offline_package_jobs (archive_path, superseded_by_job_id)
+    WHERE superseded_by_job_id IS NOT NULL;
+
 
   -- 17. FTS5 全文搜索虚拟表（标准独立存储表）
   -- 避免 contentless 模式在多表异步写入/更新时发生 token 不匹配导致 SQLITE_CORRUPT_VTAB (database disk image is malformed)
@@ -750,6 +780,7 @@ export const migrations: IMigrationConfig[] = [
       DROP TABLE IF EXISTS module_resource_downloads;
       DROP TABLE IF EXISTS resource_downloads;
       DROP TABLE IF EXISTS builtin_modules;
+      DROP TABLE IF EXISTS offline_package_jobs;
       DROP TABLE IF EXISTS files_fts;
       DROP TABLE IF EXISTS files_pinyin_fts;
     `

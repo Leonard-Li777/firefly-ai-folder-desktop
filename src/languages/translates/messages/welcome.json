@@ -62,8 +62,8 @@
     "fr-FR": "Exception d'initialisation du modèle, probablement due au manque de prise en charge du système pour la bibliothèque d'exécution VC++ ou le jeu d'instructions correspondant.",
     "ko-KR": "해당 VC++ 런타임 라이브러리 또는 명령어 세트에 대한 시스템 지원 부족으로 인해 모델 초기화 예외가 발생할 수 있습니다.",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(6954-6992)",
-      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(7647-7685)"
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(7448-7486)",
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(8302-8340)"
     ],
     "$id": 28436
   },
@@ -77,7 +77,7 @@
     "de-DE": "KI-Funktionen und Plug-in-Assembly",
     "fr-FR": "Capacités d’IA et assemblage de plug-ins",
     "ko-KR": "AI 기능 및 플러그인 어셈블리",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(8728-8742)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(9383-9397)"],
     "$id": 28437
   },
   "根据您的电脑硬件配置，自适应推荐最佳 AI 引擎档位与可选感知插件": {
@@ -90,7 +90,7 @@
     "de-DE": "Empfehlen Sie entsprechend Ihrer Computer-Hardwarekonfiguration adaptiv die beste KI-Engine-Ausrüstung und das optionale Wahrnehmungs-Plug-in",
     "fr-FR": "En fonction de la configuration matérielle de votre ordinateur, recommandez de manière adaptative le meilleur équipement de moteur d'IA et le plug-in de perception en option",
     "ko-KR": "귀하의 컴퓨터 하드웨어 구성에 따라 최적의 AI 엔진 장비 및 선택적 인식 플러그인을 적응적으로 추천합니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(8817-8854)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(9472-9509)"],
     "$id": 28438
   },
   "物理内存 (RAM)": {
@@ -103,7 +103,7 @@
     "de-DE": "Physischer Speicher (RAM)",
     "fr-FR": "Mémoire physique (RAM)",
     "ko-KR": "물리적 메모리(RAM)",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(9449-9463)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(10104-10118)"],
     "$id": 28439
   },
   "图形设备 (GPU)": {
@@ -116,7 +116,7 @@
     "de-DE": "Grafikgerät (GPU)",
     "fr-FR": "Périphérique graphique (GPU)",
     "ko-KR": "그래픽 장치(GPU)",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(9833-9847)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(10488-10502)"],
     "$id": 28440
   },
   "集成显卡": {
@@ -129,7 +129,7 @@
     "de-DE": "Integrierte Grafik",
     "fr-FR": "Graphiques intégrés",
     "ko-KR": "통합 그래픽",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(10082-10090)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(10737-10745)"],
     "$id": 28441
   },
   "磁盘可用空间": {
@@ -142,7 +142,7 @@
     "de-DE": "Freier Speicherplatz auf der Festplatte",
     "fr-FR": "Espace libre sur le disque",
     "ko-KR": "디스크 여유 공간",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(10394-10404)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(11049-11059)"],
     "$id": 28442
   },
   "推荐配置: 统一全模态档 (Gemma Unified)": {
@@ -155,7 +155,7 @@
     "de-DE": "Empfohlene Konfiguration: Gemma Unified",
     "fr-FR": "Configuration recommandée : Gemma Unifiée",
     "ko-KR": "권장 구성: Gemma 통합",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(10794-10826)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(11449-11481)"],
     "$id": 28443
   },
   "轻量配置: 经典极速档 (Classic Light)": {
@@ -168,8 +168,73 @@
     "de-DE": "Leichte Konfiguration: Classic Speed ​​​​(Classic Light)",
     "fr-FR": "Configuration légère : Classic Speed ​​​​(Classic Light)",
     "ko-KR": "경량 구성: 클래식 스피드(Classic Light)",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(11014-11045)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(11669-11700)"],
     "$id": 28444
+  },
+  "生成式引擎推荐": {
+    "en-US": "生成式引擎推荐",
+    "es-ES": "生成式引擎推荐",
+    "ar-EG": "生成式引擎推荐",
+    "pt-PT": "生成式引擎推荐",
+    "ru-RU": "生成式引擎推荐",
+    "ja-JP": "生成式引擎推荐",
+    "de-DE": "生成式引擎推荐",
+    "fr-FR": "生成式引擎推荐",
+    "ko-KR": "生成式引擎推荐",
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(12159-12170)"],
+    "$id": 30562
+  },
+  "轻量CPU引擎 (办公轻薄本标配)": {
+    "en-US": "轻量CPU引擎 (办公轻薄本标配)",
+    "es-ES": "轻量CPU引擎 (办公轻薄本标配)",
+    "ar-EG": "轻量CPU引擎 (办公轻薄本标配)",
+    "pt-PT": "轻量CPU引擎 (办公轻薄本标配)",
+    "ru-RU": "轻量CPU引擎 (办公轻薄本标配)",
+    "ja-JP": "轻量CPU引擎 (办公轻薄本标配)",
+    "de-DE": "轻量CPU引擎 (办公轻薄本标配)",
+    "fr-FR": "轻量CPU引擎 (办公轻薄本标配)",
+    "ko-KR": "轻量CPU引擎 (办公轻薄本标配)",
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(12428-12449)"],
+    "$id": 30563
+  },
+  "高级萤核AI引擎 (独显深度版)": {
+    "en-US": "高级萤核AI引擎 (独显深度版)",
+    "es-ES": "高级萤核AI引擎 (独显深度版)",
+    "ar-EG": "高级萤核AI引擎 (独显深度版)",
+    "pt-PT": "高级萤核AI引擎 (独显深度版)",
+    "ru-RU": "高级萤核AI引擎 (独显深度版)",
+    "ja-JP": "高级萤核AI引擎 (独显深度版)",
+    "de-DE": "高级萤核AI引擎 (独显深度版)",
+    "fr-FR": "高级萤核AI引擎 (独显深度版)",
+    "ko-KR": "高级萤核AI引擎 (独显深度版)",
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(12475-12495)"],
+    "$id": 30564
+  },
+  "零独显门槛，秒级启动与极简内存": {
+    "en-US": "零独显门槛，秒级启动与极简内存",
+    "es-ES": "零独显门槛，秒级启动与极简内存",
+    "ar-EG": "零独显门槛，秒级启动与极简内存",
+    "pt-PT": "零独显门槛，秒级启动与极简内存",
+    "ru-RU": "零独显门槛，秒级启动与极简内存",
+    "ja-JP": "零独显门槛，秒级启动与极简内存",
+    "de-DE": "零独显门槛，秒级启动与极简内存",
+    "fr-FR": "零独显门槛，秒级启动与极简内存",
+    "ko-KR": "零独显门槛，秒级启动与极简内存",
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(12670-12689)"],
+    "$id": 30565
+  },
+  "独显硬件加速，深度多步推演": {
+    "en-US": "独显硬件加速，深度多步推演",
+    "es-ES": "独显硬件加速，深度多步推演",
+    "ar-EG": "独显硬件加速，深度多步推演",
+    "pt-PT": "独显硬件加速，深度多步推演",
+    "ru-RU": "独显硬件加速，深度多步推演",
+    "ja-JP": "独显硬件加速，深度多步推演",
+    "de-DE": "独显硬件加速，深度多步推演",
+    "fr-FR": "独显硬件加速，深度多步推演",
+    "ko-KR": "独显硬件加速，深度多步推演",
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(12713-12730)"],
+    "$id": 30566
   },
   "磁盘剩余空间不足，请至少预留 2GB 空间以供模型下载与解压": {
     "en-US": "Insufficient disk space remaining, please reserve at least 2GB space for model download and decompression",
@@ -181,7 +246,7 @@
     "de-DE": "Der verbleibende Speicherplatz reicht nicht aus. Bitte reservieren Sie mindestens 2 GB Speicherplatz für den Download und die Dekomprimierung des Modells",
     "fr-FR": "Espace disque restant insuffisant, veuillez réserver au moins 2 Go d'espace pour le téléchargement et la décompression du modèle",
     "ko-KR": "남은 디스크 공간이 부족합니다. 모델 다운로드 및 압축 해제를 위해 최소 2GB 공간을 예약하세요.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(11472-11506)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(13108-13142)"],
     "$id": 28445
   },
   "基础 AI 语义嵌入底座 (二选一必选)": {
@@ -194,7 +259,7 @@
     "de-DE": "Grundlegende semantische Einbettungsbasis der KI (eine der beiden muss ausgewählt werden)",
     "fr-FR": "Base d'intégration sémantique de base de l'IA (vous devez choisir l'une des deux)",
     "ko-KR": "기본 AI 의미 임베딩 기반(둘 중 하나를 선택해야 함)",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(11890-11914)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(13526-13550)"],
     "$id": 28446
   },
   "全系统语义检索与智能归类的核心基石": {
@@ -207,7 +272,7 @@
     "de-DE": "Der zentrale Eckpfeiler des systemweiten semantischen Abrufs und der intelligenten Klassifizierung",
     "fr-FR": "La pierre angulaire de la récupération sémantique et de la classification intelligente à l’échelle du système",
     "ko-KR": "시스템 전반의 의미 검색 및 지능형 분류의 핵심 초석",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(12010-12031)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(13646-13667)"],
     "$id": 28447
   },
   "统一全模态 AI 引擎 (Gemma Unified)": {
@@ -220,7 +285,7 @@
     "de-DE": "Einheitliche, vollmodale KI-Engine (Gemma Unified)",
     "fr-FR": "Moteur d'IA tout modal unifié (Gemma Unified)",
     "ko-KR": "통합 올모달 AI 엔진(Gemma Unified)",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(13019-13050)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(14655-14686)"],
     "$id": 28448
   },
   "EmbeddingGemma-2 图文同构统一流形，精度更高": {
@@ -233,7 +298,7 @@
     "de-DE": "Einbetten einer isomorphen einheitlichen Mannigfaltigkeit mit Gemma-2-Grafik und Text mit höherer Genauigkeit",
     "fr-FR": "Incorporation d'une variété unifiée isomorphe graphique et textuelle Gemma-2 avec une plus grande précision",
     "ko-KR": "더 높은 정확도의 EmbeddingGemma-2 그래픽 및 텍스트 동형 통합 다양체",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(13177-13211)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(14813-14847)"],
     "$id": 28449
   },
   "当前机器硬件推荐档位 (RAM ≥ 8GB)": {
@@ -246,7 +311,7 @@
     "de-DE": "Empfohlene Ausrüstung für aktuelle Maschinenhardware (RAM ≥ 8 GB)",
     "fr-FR": "Équipement recommandé pour le matériel actuel de la machine (RAM ≥ 8 Go)",
     "ko-KR": "현재 기계 하드웨어에 권장되는 장비(RAM ≥ 8GB)",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(13783-13809)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(15419-15445)"],
     "$id": 28450
   },
   "经典轻量 AI 引擎 (Classic Light)": {
@@ -259,7 +324,7 @@
     "de-DE": "Classic Light KI-Engine (Classic Light)",
     "fr-FR": "Moteur AI Light classique (Classic Light)",
     "ko-KR": "클래식 라이트 AI 엔진(클래식 라이트)",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(14756-14786)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(16392-16422)"],
     "$id": 28451
   },
   "Bekko 384d + CLIP 512d 非对称极速架构，CPU 流畅运转": {
@@ -272,7 +337,7 @@
     "de-DE": "Bekko 384d + CLIP 512d asymmetrische ultraschnelle Architektur, reibungsloser CPU-Betrieb",
     "fr-FR": "Architecture ultra-rapide asymétrique Bekko 384d + CLIP 512d, fonctionnement fluide du processeur",
     "ko-KR": "Bekko 384d + CLIP 512d 비대칭 초고속 아키텍처, 원활한 CPU 작동",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(14913-14956)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(16549-16592)"],
     "$id": 28452
   },
   "当前机器硬件推荐档位 (RAM < 8GB)": {
@@ -285,7 +350,7 @@
     "de-DE": "Empfohlene Ausrüstung für aktuelle Maschinenhardware (RAM < 8 GB)",
     "fr-FR": "Équipement recommandé pour le matériel actuel de la machine (RAM < 8 Go)",
     "ko-KR": "현재 기계 하드웨어에 권장되는 장비(RAM < 8GB)",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(15523-15549)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(17159-17185)"],
     "$id": 28453
   },
   "感知分析与多媒体能力扩展 (推荐预选)": {
@@ -298,7 +363,7 @@
     "de-DE": "Wahrnehmungsanalyse und Erweiterung der Multimediafähigkeit (empfohlene Vorauswahl)",
     "fr-FR": "Analyse perceptuelle et extension des capacités multimédia (présélection recommandée)",
     "ko-KR": "지각 분석 및 멀티미디어 기능 확장(사전 선택 권장)",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(15993-16016)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(17629-17652)"],
     "$id": 28454
   },
   "可在主界面就绪后在后台静默下载": {
@@ -311,7 +376,7 @@
     "de-DE": "Kann still im Hintergrund heruntergeladen werden, nachdem die Hauptschnittstelle bereit ist",
     "fr-FR": "Peut être téléchargé silencieusement en arrière-plan une fois l'interface principale prête",
     "ko-KR": "메인 인터페이스가 준비된 후 백그라운드에서 자동으로 다운로드 가능",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(16095-16114)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(17731-17750)"],
     "$id": 28455
   },
   "敏感内容合规识别 (NSFW)": {
@@ -324,7 +389,7 @@
     "de-DE": "Identifizierung der Einhaltung sensibler Inhalte (NSFW)",
     "fr-FR": "Identification de conformité de contenu sensible (NSFW)",
     "ko-KR": "민감한 콘텐츠 규정 준수 식별(NSFW)",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(17203-17222)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(18839-18858)"],
     "$id": 28456
   },
   "MobileNetV2 5分类 + FastText，护航内容合规": {
@@ -337,7 +402,7 @@
     "de-DE": "MobileNetV2 5 Kategorien + FastText, Einhaltung von Begleitinhalten",
     "fr-FR": "MobileNetV2 5 catégories + FastText, conformité du contenu d'escorte",
     "ko-KR": "MobileNetV2 5개 카테고리 + FastText, 호위 콘텐츠 준수",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(17461-17498)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(19097-19134)"],
     "$id": 28457
   },
   "默认推荐": {
@@ -350,7 +415,7 @@
     "de-DE": "Standardmäßig empfohlen",
     "fr-FR": "Recommandé par défaut",
     "ko-KR": "기본적으로 권장됨",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(17675-17683)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(19311-19319)"],
     "$id": 28458
   },
   "语音识别转录 (ASR)": {
@@ -363,7 +428,7 @@
     "de-DE": "Spracherkennungstranskription (ASR)",
     "fr-FR": "Transcription par reconnaissance vocale (ASR)",
     "ko-KR": "음성 인식 전사(ASR)",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(18806-18822)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(20442-20458)"],
     "$id": 28459
   },
   "SenseVoice 高精多语言字幕转录，复用系统 FFmpeg": {
@@ -376,7 +441,7 @@
     "de-DE": "Hochpräzise mehrsprachige Untertiteltranskription von SenseVoice, Multiplexing-System FFmpeg",
     "fr-FR": "Transcription de sous-titres multilingues de haute précision SenseVoice, système de multiplexage FFmpeg",
     "ko-KR": "SenseVoice 고정밀 다국어 자막 전사, 다중화 시스템 FFmpeg",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(19065-19101)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(20701-20737)"],
     "$id": 28460
   },
   "可选功能": {
@@ -390,8 +455,8 @@
     "fr-FR": "Fonctionnalités optionnelles",
     "ko-KR": "선택적 기능",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(19264-19272)",
-      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(20773-20781)"
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(20900-20908)",
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(22409-22417)"
     ],
     "$id": 28461
   },
@@ -405,7 +470,7 @@
     "de-DE": "Offline-Sprachlesen (TTS)",
     "fr-FR": "Lecture vocale hors ligne (TTS)",
     "ko-KR": "오프라인 음성 읽기(TTS)",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(20327-20343)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(21963-21979)"],
     "$id": 28462
   },
   "Moss-TTS 离线自然语音合成，51款高品质音色": {
@@ -418,7 +483,7 @@
     "de-DE": "Moss-TTS offline natürliche Sprachsynthese, 51 hochwertige Sounds",
     "fr-FR": "Synthèse vocale naturelle hors ligne Moss-TTS, 51 sons de haute qualité",
     "ko-KR": "Moss-TTS 오프라인 자연 음성 합성, 51가지 고품질 사운드",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(20580-20610)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(22216-22246)"],
     "$id": 28463
   },
   "正在下载并解压基础 AI 引擎...": {
@@ -431,7 +496,7 @@
     "de-DE": "Die Basis-KI-Engine wird heruntergeladen und entpackt ...",
     "fr-FR": "Téléchargement et décompression du moteur AI de base...",
     "ko-KR": "기본 AI 엔진을 다운로드하고 압축을 푸는 중...",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(21525-21547)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(23161-23183)"],
     "$id": 28464
   },
   "正在执行 Omni 显式参数探活冒烟自检...": {
@@ -444,7 +509,7 @@
     "de-DE": "Omni-Explicit-Parameterprüfung und Rauch-Selbsttest werden ausgeführt ...",
     "fr-FR": "Exécution du sondage des paramètres explicites Omni et de l'auto-test de fumée...",
     "ko-KR": "Omni 명시적 매개변수 조사 및 연기 자체 테스트 실행 중...",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(21807-21834)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(23443-23470)"],
     "$id": 28465
   },
   "基础 AI 引擎已完成装配并通过自检！": {
@@ -457,7 +522,7 @@
     "de-DE": "Die grundlegende KI-Engine wurde zusammengebaut und hat die Selbstprüfung bestanden!",
     "fr-FR": "Le moteur d'IA de base a été assemblé et passé avec succès l'auto-inspection !",
     "ko-KR": "기본 AI 엔진이 조립되어 자체 검사를 통과했습니다!",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(22148-22171)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(23784-23807)"],
     "$id": 28466
   },
   "安装自检异常": {
@@ -470,7 +535,7 @@
     "de-DE": "Anomalie beim Installationsselbsttest",
     "fr-FR": "Anomalie de l’autotest d’installation",
     "ko-KR": "설치 자체 테스트 이상",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(22474-22484)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(24110-24120)"],
     "$id": 28467
   },
   "重试": {
@@ -483,7 +548,7 @@
     "de-DE": "Wiederholen",
     "fr-FR": "Réessayer",
     "ko-KR": "재시도",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(23378-23384)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(25014-25020)"],
     "$id": 28468
   },
   "换选另一引擎": {
@@ -496,7 +561,7 @@
     "de-DE": "Wählen Sie einen anderen Motor",
     "fr-FR": "Choisissez un autre moteur",
     "ko-KR": "다른 엔진을 선택하세요",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(23945-23955)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(25581-25591)"],
     "$id": 28469
   },
   "导入离线插件包": {
@@ -510,8 +575,8 @@
     "fr-FR": "Importer un package de plug-in hors ligne",
     "ko-KR": "오프라인 플러그인 패키지 가져오기",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(24172-24183)",
-      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(25230-25241)"
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(25808-25819)",
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(26866-26877)"
     ],
     "$id": 28470
   },
@@ -525,7 +590,7 @@
     "de-DE": "Zurückkehren",
     "fr-FR": "Retour",
     "ko-KR": "반품",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(24851-24857)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(26487-26493)"],
     "$id": 28471
   },
   "精确预估下载体积:": {
@@ -538,7 +603,7 @@
     "de-DE": "Downloadgröße genau schätzen:",
     "fr-FR": "Estimez avec précision la taille du téléchargement :",
     "ko-KR": "다운로드 크기를 정확하게 예측하세요.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(25433-25446)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(27069-27082)"],
     "$id": 28472
   },
   "开启 Firefly": {
@@ -551,7 +616,7 @@
     "de-DE": "Schalten Sie Firefly ein",
     "fr-FR": "Allumez Firefly",
     "ko-KR": "반딧불 켜기",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(25854-25868)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(27490-27504)"],
     "$id": 28473
   },
   "立即进入主界面": {
@@ -564,7 +629,7 @@
     "de-DE": "Rufen Sie sofort die Hauptschnittstelle auf",
     "fr-FR": "Entrez immédiatement dans l'interface principale",
     "ko-KR": "즉시 메인 인터페이스에 들어가십시오",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(26432-26443)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(28068-28079)"],
     "$id": 28474
   },
   "萤核智能文件夹": {
