@@ -1288,26 +1288,78 @@ export class OmniService {
           '[OmniService] 未解析到 omni-geo 地理数据集（geo/geonames-compact.json），逆地理编码将以 available:false 软降级'
         )
       }
-      // PP-OCRv6 字符识别与检测模型路径显式下发，确保子进程在任意 CWD 下均可 100% 稳定就绪
-      const candidatePpocrDirs = [
-        ResourceLocator.resolveResourcePath?.('models/PP-OCRv6'),
-        path.join(process.cwd(), 'apps/desktop/build/extraResources/models/PP-OCRv6'),
-        path.join(process.cwd(), 'build/extraResources/models/PP-OCRv6'),
-        path.join(binDir, '../../models/PP-OCRv6')
-      ]
-      let ppocrDir: string | null = null
-      for (const cand of candidatePpocrDirs) {
-        if (
-          cand &&
-          fs.existsSync(cand) &&
-          (fs.existsSync(path.join(cand, 'PP-OCRv6_det_tiny.onnx')) ||
-            fs.existsSync(path.join(cand, 'PP-OCRv6_det_small.onnx')))
-        ) {
-          ppocrDir = cand
-          break
-        }
+      // 原生动态库绝对物理隔离红线 (Issue 05 Spec §6.1)
+      // 永久锁定只读安装目录 extraResources/bin/omni，严禁从用户自定义插件目录加载 DLL
+      env.FIREFLY_ONNX_DIR = binDir
+
+      // 提取当前生效的唯一插件根目录并注入 FIREFLY_MODULES_ROOT
+      let pluginsRoot = ''
+      try {
+        const { modularResourceService } = await import('./modular-resource-service')
+        pluginsRoot = modularResourceService?.getPluginsRootDir?.() || ''
+      } catch {}
+      if (pluginsRoot) {
+        env.FIREFLY_MODULES_ROOT = pluginsRoot
+        logger.info(
+          LogCategory.SYSTEM,
+          `[OmniService] 🧩 统一插件根目录 (FIREFLY_MODULES_ROOT): ${pluginsRoot}`
+        )
       }
-      if (ppocrDir) {
+
+      const isSharedModuleReady = (resourceId: string): string | null => {
+        if (!pluginsRoot) return null
+        const targetDir = path.join(pluginsRoot, '_shared', resourceId)
+        if (!fs.existsSync(targetDir)) return null
+        try {
+          const files = fs.readdirSync(targetDir)
+          if (files.some(f => f.startsWith('.ready-') && f.endsWith('.json'))) {
+            return targetDir
+          }
+        } catch {}
+        return null
+      }
+
+      // Bekko 离线文本向量模型下发
+      const bekkoDir =
+        isSharedModuleReady('bekko-a8m') ||
+        ResourceLocator.resolveResourcePath?.('modules/_shared/bekko-a8m')
+      if (bekkoDir && fs.existsSync(bekkoDir)) {
+        env.BEKKO_MODEL_PATH = bekkoDir
+      }
+
+      // Chinese-CLIP 视觉多模态嵌入模型下发
+      const clipDir =
+        isSharedModuleReady('chinese-clip-int8-v3') ||
+        isSharedModuleReady('clip-vit-base-patch32') ||
+        ResourceLocator.resolveResourcePath?.('modules/_shared/chinese-clip-int8-v3')
+      if (clipDir && fs.existsSync(clipDir)) {
+        env.CLIP_MODEL_PATH = clipDir
+      }
+
+      // Gemma 统一多模态嵌入模型下发
+      const gemmaDir =
+        isSharedModuleReady('embeddinggemma-300m') ||
+        isSharedModuleReady('gemma-2-2b-it-cpu-int8') ||
+        ResourceLocator.resolveResourcePath?.('modules/_shared/embeddinggemma-300m')
+      if (gemmaDir && fs.existsSync(gemmaDir)) {
+        env.GEMMA_MODEL_PATH = gemmaDir
+      }
+
+      // Sherpa-ONNX 语音听写离线模型下发
+      const sherpaDir =
+        isSharedModuleReady('sensevoice-onnx-int8') ||
+        isSharedModuleReady('sensevoice-onnx') ||
+        ResourceLocator.resolveResourcePath?.('modules/_shared/sensevoice-onnx-int8')
+      if (sherpaDir && fs.existsSync(sherpaDir)) {
+        env.FIREFLY_SHERPA_SENSEVOICE_DIR = sherpaDir
+      }
+
+      // PP-OCRv6 字符识别与检测模型路径显式下发
+      const ppocrDir =
+        isSharedModuleReady('ppocrv6') ||
+        isSharedModuleReady('pp-ocrv6') ||
+        ResourceLocator.resolveResourcePath?.('modules/_shared/ppocrv6')
+      if (ppocrDir && fs.existsSync(ppocrDir)) {
         env.OMNI_PPOCR_MODEL_PATH = ppocrDir
         logger.info(
           LogCategory.SYSTEM,
@@ -1316,23 +1368,21 @@ export class OmniService {
       }
 
       // MOSS-TTS 48kHz 原生离线语音合成模型与预置音色库路径下发
-      const candidateMossDirs = [
-        ResourceLocator.resolveResourcePath?.('models/audio/moss'),
-        path.join(process.cwd(), 'apps/desktop/build/extraResources/models/audio/moss'),
-        path.join(process.cwd(), 'build/extraResources/models/audio/moss'),
-        path.join(
-          process.env.USERPROFILE || process.env.HOME || '',
-          '.cache/moss_tts_test/models/MOSS-TTS-Nano-100M-ONNX'
+      const mossDir =
+        isSharedModuleReady('moss-tts') ||
+        ResourceLocator.resolveResourcePath?.('modules/_shared/moss-tts') ||
+        (fs.existsSync(
+          path.join(
+            process.env.USERPROFILE || process.env.HOME || '',
+            '.cache/moss_tts_test/models/MOSS-TTS-Nano-100M-ONNX'
+          )
         )
-      ]
-      let mossDir: string | null = null
-      for (const cand of candidateMossDirs) {
-        if (cand && fs.existsSync(path.join(cand, 'moss_tts_prefill.onnx'))) {
-          mossDir = cand
-          break
-        }
-      }
-      if (mossDir) {
+          ? path.join(
+              process.env.USERPROFILE || process.env.HOME || '',
+              '.cache/moss_tts_test/models/MOSS-TTS-Nano-100M-ONNX'
+            )
+          : null)
+      if (mossDir && fs.existsSync(path.join(mossDir, 'moss_tts_prefill.onnx'))) {
         env.OMNI_MOSS_MODEL_PATH = mossDir
         logger.info(
           LogCategory.SYSTEM,
@@ -1342,11 +1392,7 @@ export class OmniService {
 
       const candidateVoicesPaths = [
         mossDir ? path.join(mossDir, 'preset_voices.bin') : null,
-        ResourceLocator.resolveResourcePath?.('models/audio/moss/preset_voices.bin'),
-        path.join(
-          process.cwd(),
-          'apps/desktop/build/extraResources/models/audio/moss/preset_voices.bin'
-        ),
+        ResourceLocator.resolveResourcePath?.('modules/_shared/moss-tts/preset_voices.bin'),
         path.join(
           process.env.USERPROFILE || process.env.HOME || '',
           '.cache/moss_tts_test/test_voices.bin'
@@ -1367,25 +1413,13 @@ export class OmniService {
         )
       }
 
-      // NSFW-L3 深度敏感分类模型目录显式下发（路径同源铁律；缺陷 F4）
-      //
-      // Rust 侧 `omni-text/src/nsfw_l3.rs::resolve_model_dir()` 的寻址链是
-      // `NSFW_L3_MODEL_PATH` ➔ 4 个相对候选 ➔ 从 cwd 逐级上溯 6 层。
-      // 全仓此前只有读取点、没有任何设置点，而引擎子进程 cwd 被本服务固定为 `binDir`
-      // （见下方 spawn 的 `cwd: binDir`），于是生产安装态实际靠「猜目录」命中，
-      // 与本工程「路径同源 / 显式注入」红线不符（参照上方 PP-OCRv6、MOSS-TTS 的成熟形态）。
-      // 这里按同一候选栈显式注入，让寻址链第一优先级真正生效；
-      // 解析不到时必须 `logger.warn` 显式上报（L3 通道保持关闭，严禁静默降级）。
+      // NSFW-L3 深度敏感分类模型目录显式下发
       const candidateNsfwL3Dirs = [
+        isSharedModuleReady('nsfw-l3'),
         ResourceLocator.resolveResourcePath?.('modules/_shared/nsfw-l3'),
-        ResourceLocator.resolveResourcePath?.('models/nsfw-l3'),
         path.join(process.cwd(), 'apps/desktop/build/extraResources/modules/_shared/nsfw-l3'),
-        path.join(process.cwd(), 'apps/desktop/build/extraResources/models/nsfw-l3'),
-        path.join(process.cwd(), 'build/extraResources/models/nsfw-l3'),
-        path.join(binDir, '../../modules/_shared/nsfw-l3'),
-        path.join(binDir, '../../models/nsfw-l3')
+        path.join(binDir, '../../modules/_shared/nsfw-l3')
       ]
-      // 就绪判据与 Rust 侧一致：模型与分词器必须同时在位（缺分词器时 Rust 侧会关闭 L3）
       const isNsfwL3DirReady = (dir: string): boolean =>
         fs.existsSync(path.join(dir, 'nsfw_l3_int8.onnx')) &&
         fs.existsSync(path.join(dir, 'tokenizer.json'))
@@ -1405,9 +1439,7 @@ export class OmniService {
       } else {
         logger.warn(
           LogCategory.SYSTEM,
-          `[OmniService] 未解析到 NSFW-L3 深度敏感模型（候选：${candidateNsfwL3Dirs
-            .filter(Boolean)
-            .join(' | ')}），L3 深度语义通道保持关闭（仅 L1/L2 生效）`
+          `[OmniService] 未解析到 NSFW-L3 深度敏感模型，L3 深度语义通道保持关闭（仅 L1/L2 生效）`
         )
       }
 

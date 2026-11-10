@@ -58,7 +58,8 @@ import {
   getDiskFreeSpace,
   ModularResourceError,
   RESERVED_DEVICE_REG,
-  isReservedDeviceName
+  isReservedDeviceName,
+  resolvePhysicalPath
 } from './plugin-dir-validator'
 import {
   dirMigrationCoordinator,
@@ -79,6 +80,7 @@ export {
   ModularResourceError,
   RESERVED_DEVICE_REG,
   isReservedDeviceName,
+  resolvePhysicalPath,
   dirMigrationCoordinator,
   DirMigrationCoordinator
 }
@@ -1384,7 +1386,6 @@ export class ModularResourceService implements IModularResourceService {
   ): Promise<boolean> {
     const candidateDirs = [
       path.join(process.cwd(), 'apps/desktop/build/presetResources'),
-      path.join(process.cwd(), 'apps/desktop/build/extraResources/models'),
       path.join(this.getBaseDir(), 'presetResources')
     ]
     if (this.customPresetDir) {
@@ -1393,7 +1394,6 @@ export class ModularResourceService implements IModularResourceService {
     try {
       if (typeof electronApp !== 'undefined' && electronApp.isPackaged) {
         candidateDirs.unshift(path.join(process.resourcesPath, 'presetResources'))
-        candidateDirs.unshift(path.join(process.resourcesPath, 'models'))
       }
     } catch {}
 

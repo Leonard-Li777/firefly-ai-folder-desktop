@@ -310,16 +310,8 @@ export class LlmGatewayService implements ILlmGatewayService {
           'model_quantized.onnx'
         ),
         path.join(ResourceLocator.getBaseResourceDir(), 'model', 'pocket-cpu', 'model.onnx'),
-        path.join(process.cwd(), 'apps/desktop/build/extraResources/models/pocket-cpu/model.onnx'),
-        path.join(
-          process.cwd(),
-          'apps/desktop/build/extraResources/models/pocket-cpu/model_quantized.onnx'
-        ),
-        path.join(process.cwd(), 'build/extraResources/models/pocket-cpu/model.onnx'),
         ...(userDataDir
           ? [
-              path.join(userDataDir, 'models', 'pocket-cpu', 'model.onnx'),
-              path.join(userDataDir, 'models', 'pocket-cpu', 'model_quantized.onnx'),
               path.join(userDataDir, 'modules', '_shared', 'pocket-cpu-int8-onnx', 'model.onnx'),
               path.join(
                 userDataDir,
