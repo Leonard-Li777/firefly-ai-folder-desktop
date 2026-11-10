@@ -124,9 +124,9 @@ export const systemSettingsCategories = (): ISettingsCategoryInfo[] => [
   },
   {
     id: SettingsCategory.ANALYSIS_IGNORE_RULES,
-    name: t('AI分析忽略规则'),
+    name: t('全局排除文件规则'),
     icon: 'filter',
-    description: t('全系统通用文件与目录排除黑名单')
+    description: t('配置真实目录不显示的文件，以便不进入AI分析提高分析效率并支持批量查重清理保护这些排除的文件')
   },
   {
     id: SettingsCategory.EXTERNAL_API,
@@ -185,9 +185,9 @@ export const settingsCategories = (): ISettingsCategoryInfo[] => [
   },
   {
     id: SettingsCategory.ANALYSIS_IGNORE_RULES,
-    name: t('AI分析忽略规则'),
+    name: t('全局排除文件规则'),
     icon: 'filter',
-    description: t('文件与目录排除规则、查重保护')
+    description: t('配置真实目录不显示的文件，以便不进入AI分析提高分析效率并支持批量查重清理保护这些排除的文件')
   },
   {
     id: SettingsCategory.INTERFACE,

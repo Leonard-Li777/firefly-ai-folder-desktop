@@ -180,7 +180,7 @@ describe('PluginCenterOverlay (弹层交互、失焦保护与配置挂载)', () 
   it('点击高级 AI 引擎配置按钮时挂载 AIEngineConfigSettings', () => {
     act(() => {
       usePluginCenterStore.getState().openOverlay()
-      usePluginCenterStore.getState().setConfiguringModuleId('advanced_ai_engine')
+      usePluginCenterStore.getState().setConfiguringModuleId('engine_classic_light')
     })
 
     render(<PluginCenterOverlay />)
@@ -254,14 +254,15 @@ describe('PluginCenterOverlay (弹层交互、失焦保护与配置挂载)', () 
 
     act(() => {
       usePluginCenterStore.getState().updateDownloadProgress(targetId, {
-        percentage: 100,
+        percentage: 80,
         speed_bytes_per_sec: 1024 * 1024 * 10,
         is_resumed: false
       })
     })
 
     asr = usePluginCenterStore.getState().modules.find(m => m.id === targetId)
-    expect(asr?.install_state).toBe('active')
+    expect(asr?.install_state).toBe('downloading')
+    expect(asr?.download_progress?.percentage).toBe(80)
   })
 
   it('未打开时不渲染任何 DOM 节点 (return null)', () => {
@@ -657,5 +658,36 @@ describe('Ticket 05: 开发者模式双视图、4态徽标与安装事实门禁'
     // 在已安装视图中，未安装的 m1 应该被过滤掉
     expect(screen.queryByText('市场未安装插件')).not.toBeInTheDocument()
     expect(screen.getByText('本地已安装插件')).toBeInTheDocument()
+  })
+
+  it('PluginListItem 渲染小白通俗大白话描述与电脑硬件配置门槛徽标', () => {
+    act(() => {
+      usePluginCenterStore.getState().openOverlay()
+    })
+    render(<PluginCenterOverlay />)
+
+    // 验证经典轻量引擎的大白话描述与硬件门槛
+    expect(
+      screen.getByText(/根据你描述的大致意思快速搜索照片和文档/)
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('配置要求极低 · 老电脑与轻薄本首选')
+    ).toBeInTheDocument()
+
+    // 验证统一全模态引擎的大白话描述与硬件门槛
+    expect(
+      screen.getByText(/对复杂句子和图片的理解更深入精准/)
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('推荐配置 · 电脑内存 8GB 或以上')
+    ).toBeInTheDocument()
+
+    // 验证语音合成 TTS 的大白话描述
+    expect(
+      screen.getByText(/把文档和文章读给你听，支持戴耳机离线听书/)
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('配置要求低 · 普通电脑流畅发音')
+    ).toBeInTheDocument()
   })
 })
