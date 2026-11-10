@@ -241,6 +241,42 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
     ]
   },
   {
+    id: 'pocket-cpu-int8-onnx',
+    name: '轻量CPU生成式引擎 (Pocket CPU)',
+    version: '1.0.0',
+    category: 'ai-engine',
+    capability_slot: 'ai_engine_cpu',
+    slot_policy: 'exclusive_optional',
+    backend_type: 'omni_onnx',
+    author_code: 'official',
+    author_name: null,
+    availability: 'approved',
+    total_bytes: 380633088,
+    install_state: 'not_installed',
+    contributes: {
+      settings: {
+        scope: 'global',
+        tabTitle: '生成式引擎',
+        componentId: 'ai_engine_config',
+        priority: 15
+      }
+    },
+    description:
+      '【办公轻薄本标配】内存仅占约400MB，0门槛秒级响应，完全离线私密。支持智能文件名深度润色、描述提取与内容深度解析。',
+    hardware_requirement: {
+      level: 'minimal',
+      text: '配置要求极低 · 纯CPU运行'
+    },
+    icon: 'Cpu',
+    resources: [
+      {
+        resource_id: 'pocket-cpu-int8-onnx',
+        asset_name: 'pocket-cpu-int8-onnx-1.0.0.zip',
+        expected_bytes: 380633088
+      }
+    ]
+  },
+  {
     id: 'perception_nsfw',
     name: '敏感内容与 NSFW 分级识别',
     version: '1.0.0',
@@ -368,7 +404,8 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
     availability: 'coming_soon',
     total_bytes: 3824100000,
     install_state: 'not_installed',
-    description: '【电脑本地自己画图】输入一句话即可在本地画出精美图片，不花一分钱。需要较好的独立显卡。',
+    description:
+      '【电脑本地自己画图】输入一句话即可在本地画出精美图片，不花一分钱。需要较好的独立显卡。',
     hardware_requirement: {
       level: 'high',
       text: '较高配置 · 需要独立显卡'
@@ -386,7 +423,8 @@ export const INITIAL_PLUGINS: PluginModuleItem[] = [
     delist_reason: null,
     total_bytes: 0,
     install_state: 'not_installed',
-    description: '【不用解压直接搜压缩包】不用解压 zip/rar 就能直接查看和搜索里面的文件内容，无额外电脑负担。',
+    description:
+      '【不用解压直接搜压缩包】不用解压 zip/rar 就能直接查看和搜索里面的文件内容，无额外电脑负担。',
     hardware_requirement: {
       level: 'minimal',
       text: '配置要求极低 · 无额外负担'

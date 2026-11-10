@@ -809,12 +809,12 @@ export const AIEngineConfigSettings: React.FC = () => {
                       variant="outline"
                       className="h-7 text-xs"
                       onClick={() => {
-                        window.electronAPI?.llmGateway?.preheat({ wait: true }).catch(err => {
-                          console.warn('[AiEngineConfigSettings] 预热模型触发失败:', err)
-                        })
+                        void useSettingsStore.getState().closeSystemSettings()
+                        void usePluginCenterStore.getState().openOverlay()
+                        usePluginCenterStore.getState().setSelectedCategory('ai-engine')
                       }}
                     >
-                      {t('下载模型')}
+                      {t('下载引擎')}
                     </Button>
                   ) : undefined
               }
@@ -825,23 +825,10 @@ export const AIEngineConfigSettings: React.FC = () => {
               'local',
               t('萤核AI引擎'),
               modeDescriptions.local,
-              <Radio className="h-[18px] w-[18px]" />,
+              <Zap className="h-[18px] w-[18px]" />,
               renderStatusBadge('local'),
               {
-                disabled: !localInstalled,
-                warningText: isVramLow ? t('您的设备显存不足 4GB，推荐使用轻量CPU引擎') : undefined,
-                footerAction: !localInstalled ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-7 text-xs"
-                    onClick={() => {
-                      runAction('open-engine', openEngineFlow)
-                    }}
-                  >
-                    {t('前往安装')}
-                  </Button>
-                ) : undefined
+                warningText: isVramLow ? t('您的设备显存不足 4GB，推荐使用轻量CPU引擎') : undefined
               }
             )}
 
@@ -1113,7 +1100,7 @@ export const AIEngineConfigSettings: React.FC = () => {
                 <Card className="border-border/80 shadow-xs rounded-2xl bg-card overflow-hidden">
                   <div className="p-5 flex items-start gap-3.5">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">
-                      <Radio className="h-[18px] w-[18px]" />
+                      <Zap className="h-[18px] w-[18px]" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <Label className="text-sm font-semibold">{t('萤核AI引擎未连接')}</Label>
