@@ -40,7 +40,7 @@ import {
   shouldIngressFile,
   type EffectiveFilterPolicy
 } from '@firefly/shared'
-import { LOCAL_WORKFLOW_CONFIG_SOURCE } from '../../config/local-workflow-source'
+import { LOCAL_WORKFLOW_CONFIG_SOURCE } from '../../config/organize-taxonomy-source'
 
 export interface WorkspacePolicyMutation {
   workflowId?: string | null
