@@ -74,8 +74,18 @@ loggingService.info(
   `[Worktree] 启动实例: ${worktreeInfo.appName}, 数据目录: ${worktreeInfo.userDataDir}`
 )
 
+// 1.1 E2E 模式启动看门狗（Spec §4.5 assertE2ESandboxOrThrow 启动第一道防线）
+// 严禁生产打包未剥离运行、严禁 DB 路径越界、严禁破坏用户真实 appData
+if (process.env.FF_E2E_MODE === '1') {
+  const { assertE2ESandboxOrThrow } = require('../runtime-services/e2e/e2e-gate') as typeof import('../runtime-services/e2e/e2e-gate')
+  assertE2ESandboxOrThrow(process.env)
+}
+
 // 2. 检查单实例锁，避免重复打开多个应用实例
-const gotSingleInstanceLock = app.requestSingleInstanceLock()
+// E2E 模式下同一测试套件可能并发启动多个沙箱实例（每个用例独立 runId），
+// 此时必须跳过 requestSingleInstanceLock，严禁互踢（Spec §4.4 Worktree 引导隔离规约）
+const isE2EMode = process.env.FF_E2E_MODE === '1'
+const gotSingleInstanceLock = isE2EMode ? true : app.requestSingleInstanceLock()
 if (!gotSingleInstanceLock) {
   console.log(`[App] 检测到已有实例正在运行 (${worktreeInfo.appName})，本实例直接退出。`)
   app.quit()

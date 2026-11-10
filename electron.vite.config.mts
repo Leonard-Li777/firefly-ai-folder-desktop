@@ -465,12 +465,15 @@ export default defineConfig(({ command, mode }) => {
           return raw === 'CN' || raw === 'INTL' ? JSON.stringify(raw) : 'undefined'
         })(),
         __BUILD_LABEL__: JSON.stringify(__BUILD_LABEL__),
+        // E2E DCE 门控（Spec §4.5 build:e2e-packaged=true / build:prod=false）
+        __FF_E2E__: JSON.stringify(process.env.FF_E2E_MODE === '1'),
         'process.env.APP_ENV': JSON.stringify(env.APP_ENV || mode),
         'process.env.AI_ENGINE': JSON.stringify(
           process.env.AI_ENGINE || env.AI_ENGINE || 'llama.cpp'
         ),
         'process.env.SUPABASE_URL': JSON.stringify(env.SUPABASE_URL || env.VITE_SUPABASE_URL || ''),
-        'process.env.APP_SECRET_KEY': JSON.stringify(env.APP_SECRET_KEY || ''),
+        // Spec §4.5：APP_SECRET_KEY 取值修正，优先读运行时环境变量，回退至 .env（防止测试包触发 FATAL: Missing APP_SECRET_KEY）
+        'process.env.APP_SECRET_KEY': JSON.stringify(process.env.APP_SECRET_KEY || env.APP_SECRET_KEY || ''),
         'process.env.SUPABASE_ANON_KEY': JSON.stringify(
           env.SUPABASE_ANON_KEY || env.VITE_SUPABASE_ANON_KEY || ''
         ),
@@ -630,6 +633,8 @@ export default defineConfig(({ command, mode }) => {
         __IS_PROD__: JSON.stringify(isProd),
         __APP_VERSION__: JSON.stringify(pkg.version),
         __BUILD_LABEL__: JSON.stringify(__BUILD_LABEL__),
+        // E2E DCE 门控（Spec §4.5）：与 main 保持一致，确保 preload 中的 __e2e_probe_bridge 在 build:prod 时被 DCE 剥离
+        __FF_E2E__: JSON.stringify(process.env.FF_E2E_MODE === '1'),
         'process.env.APP_ENV': JSON.stringify(env.APP_ENV || mode)
       },
       resolve: {

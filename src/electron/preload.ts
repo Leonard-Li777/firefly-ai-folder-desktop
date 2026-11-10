@@ -1728,3 +1728,18 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
 })
 
 // 类型声明已在 apps/desktop/src/shared/types/electron-api.d.ts 中统一定义
+
+// E2E 只读事件监听骨架（Spec §4.5 build:prod DCE 保证零残留）
+// build:e2e-packaged: __FF_E2E__ = true，此块保留并打包
+// build:prod: __FF_E2E__ = false，编译器 DCE 彻底剥离，产物中零残留
+if (__FF_E2E__) {
+  contextBridge.exposeInMainWorld('__e2e_probe_bridge', {
+    // 监听主进程插件崩溃事件（供 L2b/L3 用例断言渲染层感知）
+    onPluginCrash: (cb: (data: unknown) => void) => {
+      ipcRenderer.on('plugin:crashed', (_e, data) => cb(data))
+    }
+  })
+}
+
+// 模块级全局声明（由 Vite define 注入）
+declare const __FF_E2E__: boolean

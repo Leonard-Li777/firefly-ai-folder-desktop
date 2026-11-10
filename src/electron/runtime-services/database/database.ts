@@ -958,6 +958,41 @@ export function findTagCodeTwoStage(
  * @param language 可选语言代码（向后兼容保留，主库支持多语言动态映射）
  */
 export function getDatabaseConfig(language?: string): IDatabaseConfig {
+  // E2E 模式：单一收敛读取 getE2EConfig() 沙箱主库配置（Spec §4.5 规则 1/4 / Main Database Wire-up）
+  // 严禁散读环境变量，且在 E2E 模式下若配置异常绝对严禁静默回落生产库（Blocker 2 防虚假兜底铁律）
+  if (process.env.FF_E2E_MODE === '1') {
+    const { getE2EConfig, assertE2ESandboxOrThrow, DesktopE2EError } =
+      require('../e2e/e2e-gate') as typeof import('../e2e/e2e-gate')
+    
+    // 执行沙箱守卫强校验
+    assertE2ESandboxOrThrow(process.env)
+
+    const e2eConfig = getE2EConfig()
+    if (!e2eConfig.dbPath) {
+      throw new DesktopE2EError(3, '[E2E 致命错误] E2E 模式下必须配置合法非空沙箱主库路径，绝对严禁回退至生产主库')
+    }
+
+    return {
+      type: 'sqlite',
+      path: e2eConfig.dbPath,
+      migrations: true,
+      backup: {
+        enabled: false, // E2E 沙箱无需备份，避免沙箱路径被持久化
+        maxBackups: 0,
+        backupPath: ''
+      },
+      pragma: {
+        journal_mode: 'WAL',
+        synchronous: 'NORMAL',
+        cache_size: -64000,
+        mmap_size: 268435456,
+        temp_store: 'MEMORY',
+        foreign_keys: true,
+        busy_timeout: 5000
+      }
+    }
+  }
+
   // 安全获取 userData 路径，兼容非 Electron 环境（如测试）
   let userDataPath: string
   try {

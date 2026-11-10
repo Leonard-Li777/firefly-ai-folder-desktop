@@ -278,7 +278,20 @@ export function initWorktreeEnvironment(): WorktreeEnvInfo {
   app.setName(appName)
 
   const appDataDir = app.getPath('appData')
-  const userDataDir = path.join(appDataDir, appName)
+
+  // E2E 模式隔离规约（Spec §4.4 Worktree 引导隔离规约）：
+  // 当 FF_E2E_MODE === '1' 时，若命令行携带了 --user-data-dir 或配置了合法沙箱目录，
+  // 必须直接采纳沙箱 userDataDir，严禁覆写为默认 %APPDATA%/firefly-ai-folder 目录！
+  let userDataDir: string
+  const customUserDataArg = process.argv.find(arg => arg.startsWith('--user-data-dir='))
+  const customUserDataPath = customUserDataArg ? customUserDataArg.split('=')[1]?.trim() : ''
+
+  if (process.env.FF_E2E_MODE === '1' && customUserDataPath) {
+    userDataDir = path.resolve(customUserDataPath)
+  } else {
+    userDataDir = path.join(appDataDir, appName)
+  }
+
   app.setPath('userData', userDataDir)
 
   if (!fs.existsSync(userDataDir)) {
