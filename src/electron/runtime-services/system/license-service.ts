@@ -19,13 +19,8 @@ import { regionDetectionService } from './region-detection-service'
 import { KMLogic, HMAC_SALT } from '@firefly/server'
 import type { UserTierData } from '@firefly/types'
 
-export enum LicenseStatus {
-  AUTHORIZED = 'AUTHORIZED',
-  UNAUTHORIZED = 'UNAUTHORIZED',
-  EXPIRED = 'EXPIRED',
-  TIME_TAMPERED = 'TIME_TAMPERED',
-  PENDING_ONLINE = 'PENDING_ONLINE'
-}
+import { LicenseStatus } from './license-status'
+export { LicenseStatus }
 
 /**
  * Grace 期：3 天（72 小时）

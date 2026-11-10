@@ -8,6 +8,7 @@ import type { ElectronAPI } from './electron/preload'
 declare global {
   const __APP_VERSION__: string
   const __BUILD_REGION__: 'CN' | 'INTL'
+  const __BUILD_CHANNEL__: 'dev' | 'staging' | 'production' | undefined
   const __BUILD_LABEL__: string
   const __AI_ENGINE__: string
   const VITE_POSTHOG_HOST: string

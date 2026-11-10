@@ -454,6 +454,9 @@ export default defineConfig(({ command, mode }) => {
       define: {
         __IS_DEV__: JSON.stringify(!isProd),
         __IS_PROD__: JSON.stringify(isProd),
+        __BUILD_CHANNEL__: JSON.stringify(
+          isProd ? 'production' : mode === 'canary' || mode === 'staging' ? 'staging' : 'dev'
+        ),
         __AI_ENGINE__: JSON.stringify(process.env.AI_ENGINE || env.AI_ENGINE || 'llama.cpp'),
         __APP_VERSION__: JSON.stringify(pkg.version),
         // P0 (ISS-03): 仅在 main 进程注入 __BUILD_REGION__，未定义时注入 undefined 标识符避免 ReferenceError
@@ -777,6 +780,9 @@ export default defineConfig(({ command, mode }) => {
       define: {
         __IS_DEV__: JSON.stringify(!isProd),
         __IS_PROD__: JSON.stringify(isProd),
+        __BUILD_CHANNEL__: JSON.stringify(
+          isProd ? 'production' : mode === 'canary' || mode === 'staging' ? 'staging' : 'dev'
+        ),
         __AI_ENGINE__: JSON.stringify(process.env.AI_ENGINE || env.AI_ENGINE || 'llama.cpp'),
         __APP_VERSION__: JSON.stringify(pkg.version),
         __BUILD_LABEL__: JSON.stringify(__BUILD_LABEL__),
