@@ -7,9 +7,11 @@ import {
   CircleAlert,
   Clock,
   Cloud,
+  Cpu,
   Plus,
   Power,
   Radio,
+  RotateCw,
   Box,
   Zap,
   Sparkles
@@ -24,13 +26,14 @@ import i18nScope from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
 import { useSettingsConfig, useSettingsStore } from '../../stores/settings-store'
 import { AIErrorType, AIServiceStatus } from '@firefly/types'
-import { ErrorNormalizer } from '@firefly/shared'
+import { ErrorNormalizer, type GenerativeEngineSnapshot } from '@firefly/shared'
 import { useAIServiceStore } from '../../stores/ai-service-store'
 import { useEngineStore } from '../../stores/engine-store'
 import { toast } from '../common/Toast'
 import { CloudModelConfigSettings } from './cloud-model-config-settings'
 import { CloudErrorCard } from './cloud-error-card'
 import { VramArbiterMeterCard } from './VramArbiterMeterCard'
+import { CpuEngineDashboard } from './cpu-engine-dashboard'
 import {
   deriveEngineBadge,
   deriveEngineHealthState,
@@ -46,8 +49,8 @@ import {
 import { runCloudProbe } from '../../lib/cloud-engine-probe'
 import type { CloudModelConfig } from '@firefly/types'
 
-/** 高级引擎类型（开启状态下二选一）：萤核AI引擎（本地） | 云端AI引擎 */
-type ActiveEngineMode = 'local' | 'cloud'
+/** 高级引擎类型（开启状态下三选一）：轻量CPU引擎 | 萤核AI引擎（本地） | 云端AI引擎 */
+type ActiveEngineMode = 'cpu' | 'local' | 'cloud'
 
 /**
  * 引擎健康状态文案表（PRD-0044：熔断行话改通俗文案；
@@ -88,6 +91,11 @@ export const AIEngineConfigSettings: React.FC = () => {
   // 是否启用高级AI引擎：默认开启（未设置或不为 'disabled' 时均为开启态）
   const isEnabled = aiServiceMode !== 'disabled'
   const isCloudMode = aiServiceMode === 'cloud'
+  const isCpuMode = aiServiceMode === 'cpu'
+  const isLocalMode = aiServiceMode === 'local' || (!isCloudMode && !isCpuMode && isEnabled)
+  /** 当前激活的高级引擎（在开启态下三选一） */
+  const activeMode: ActiveEngineMode = isCloudMode ? 'cloud' : isCpuMode ? 'cpu' : 'local'
+
   const getConfigValue = useSettingsStore(s => s.getConfigValue)
   const updateConfigValue = useSettingsStore(s => s.updateConfigValue)
   // 订阅云端配置字段：配置改坏时徽章需立即重算（AI_CLOUD_* 变更必须触发重渲染）
@@ -104,16 +112,53 @@ export const AIEngineConfigSettings: React.FC = () => {
     s => (s.config as any)?.aiCloudSelectedModelId as string | undefined
   )
 
-  // 记录上一次激活的模式（用于关闭后再次打开时还原），若无则默认为 local
+  // 记录上一次激活的模式（用于关闭后再次打开时还原），若无则默认为 cpu
   const [lastActiveMode, setLastActiveMode] = useState<ActiveEngineMode>(
-    aiServiceMode === 'cloud' ? 'cloud' : 'local'
+    aiServiceMode === 'cloud' ? 'cloud' : aiServiceMode === 'local' ? 'local' : 'cpu'
   )
 
   useEffect(() => {
-    if (aiServiceMode === 'local' || aiServiceMode === 'cloud') {
+    if (aiServiceMode === 'local' || aiServiceMode === 'cloud' || aiServiceMode === 'cpu') {
       setLastActiveMode(aiServiceMode)
     }
   }, [aiServiceMode])
+
+  // 大模型统一网关快照状态 (TASK-04 / Spec §5.3)
+  const [llmSnapshot, setLlmSnapshot] = useState<GenerativeEngineSnapshot | null>(null)
+
+  const fetchLlmSnapshot = React.useCallback(async () => {
+    try {
+      if (window.electronAPI?.llmGateway?.getSnapshot) {
+        const snap = await window.electronAPI.llmGateway.getSnapshot()
+        setLlmSnapshot(snap)
+      }
+    } catch (err) {
+      console.warn('获取 LLM 网关快照失败:', err)
+    }
+  }, [])
+
+  useEffect(() => {
+    void fetchLlmSnapshot()
+    const timer = setInterval(() => {
+      void fetchLlmSnapshot()
+    }, 5000)
+    return () => clearInterval(timer)
+  }, [fetchLlmSnapshot])
+
+  // 3秒过渡平滑与逃生按钮机制 (TASK-04 / Spec §5.2 / AC-03)
+  const [switchingTarget, setSwitchingTarget] = useState<ActiveEngineMode | null>(null)
+  const [showEscapeHatch, setShowEscapeHatch] = useState(false)
+  const previousModeRef = React.useRef<ActiveEngineMode>(activeMode)
+  const switchTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // 组件卸载时清理逃生舱计时器，防止泄漏
+  useEffect(() => {
+    return () => {
+      if (switchTimerRef.current) {
+        clearTimeout(switchTimerRef.current)
+      }
+    }
+  }, [])
 
   // 引擎快照统一走全局引擎状态 store（PRD-0044 任务 #5），与 Footer 等消费方共享同一份订阅
   const snapshot = useEngineStore(s => s.snapshot)
@@ -167,18 +212,21 @@ export const AIEngineConfigSettings: React.FC = () => {
     !!(cloudSelectedModelCfg ?? getConfigValue<string>('AI_CLOUD_SELECTED_MODEL_ID'))?.trim()
   )
 
-  /** 当前激活的高级引擎（在开启态下） */
-  const activeMode: ActiveEngineMode = isCloudMode ? 'cloud' : 'local'
-
   /** 切换高级AI引擎总控开关 */
   const handleToggleEnabled = (checked: boolean) => {
     if (checked) {
-      const targetMode = lastActiveMode === 'cloud' ? 'cloud' : 'local'
+      const targetMode: ActiveEngineMode = lastActiveMode || 'cpu'
       updateConfigValue('AI_SERVICE_MODE', targetMode)
-      captureEvent('启用高级AI引擎', { mode: targetMode })
+      if (window.electronAPI?.llmGateway?.setDesiredMode) {
+        window.electronAPI.llmGateway.setDesiredMode(targetMode).catch(() => {})
+      }
+      captureEvent('启用生成式引擎', { mode: targetMode })
     } else {
       updateConfigValue('AI_SERVICE_MODE', 'disabled')
-      captureEvent('停用高级AI引擎')
+      if (window.electronAPI?.llmGateway?.setDesiredMode) {
+        window.electronAPI.llmGateway.setDesiredMode('disabled').catch(() => {})
+      }
+      captureEvent('停用生成式引擎')
       // 显式调用 IPC 请求关闭高级AI引擎程序
       if (typeof window.electronAPI?.engineBridge?.shutdown === 'function') {
         window.electronAPI.engineBridge.shutdown().catch(() => {})
@@ -186,13 +234,63 @@ export const AIEngineConfigSettings: React.FC = () => {
     }
   }
 
-  /** 在开启态下切换本地 / 云端引擎 */
+  /** 在开启态下切换底座引擎 (含3秒平滑过渡与逃生机制) */
   const selectEngine = (mode: ActiveEngineMode) => {
     if (mode === activeMode) return
+    previousModeRef.current = activeMode
     setLastActiveMode(mode)
+    setSwitchingTarget(mode)
+    setShowEscapeHatch(false)
+
+    // 启动 3000ms 逃生计时器 (AC-03)
+    if (switchTimerRef.current) clearTimeout(switchTimerRef.current)
+    switchTimerRef.current = setTimeout(() => {
+      setShowEscapeHatch(true)
+    }, 3000)
+
     updateConfigValue('AI_SERVICE_MODE', mode)
+    if (window.electronAPI?.llmGateway?.setDesiredMode) {
+      window.electronAPI.llmGateway.setDesiredMode(mode).catch(() => {})
+    }
     captureEvent('切换生效引擎', { mode })
   }
+
+  /** 取消切换并恢复原引擎 (AC-03 逃生舱) */
+  const cancelSwitchingAndRevert = () => {
+    if (switchTimerRef.current) clearTimeout(switchTimerRef.current)
+    const prev = previousModeRef.current
+    setShowEscapeHatch(false)
+    setSwitchingTarget(null)
+    updateConfigValue('AI_SERVICE_MODE', prev)
+    if (window.electronAPI?.llmGateway?.setDesiredMode) {
+      window.electronAPI.llmGateway.setDesiredMode(prev).catch(() => {})
+    }
+    toast.info(t('已取消切换并恢复原引擎'))
+  }
+
+  // 监听目标底座就绪状态，就绪时自动收起切换状态
+  useEffect(() => {
+    if (switchingTarget && activeMode === switchingTarget) {
+      const isTargetReady =
+        (switchingTarget === 'cpu' &&
+          (llmSnapshot?.runtime?.cpu === 'ready' || llmSnapshot?.runtime?.cpu === 'stopped')) ||
+        (switchingTarget === 'local' && (engineServiceReady || snapshot?.connected)) ||
+        (switchingTarget === 'cloud' && (cloudStarted || cloudStrictConnected))
+      if (isTargetReady) {
+        if (switchTimerRef.current) clearTimeout(switchTimerRef.current)
+        setSwitchingTarget(null)
+        setShowEscapeHatch(false)
+      }
+    }
+  }, [
+    switchingTarget,
+    activeMode,
+    llmSnapshot,
+    engineServiceReady,
+    snapshot?.connected,
+    cloudStarted,
+    cloudStrictConnected
+  ])
 
   // 挂载即拉取初始快照并订阅主进程广播，卸载时取消订阅（store 内部完成首次 load）
   useEffect(() => {
@@ -391,7 +489,8 @@ export const AIEngineConfigSettings: React.FC = () => {
     : null
 
   /** 萤核分支两态（PRD-0044）：已连接 = 引擎状态卡；未连接 = 提示卡 + 聚焦主按钮 */
-  const isLocalBranch = isEnabled && !isCloudMode
+  const isLocalBranch = isEnabled && activeMode === 'local'
+  const isCpuBranch = isEnabled && activeMode === 'cpu'
   const engineConnected = !!snapshot?.connected
   // 引擎侧 AI 推理服务是否运行中（引擎契约：llama.cpp 子进程存活时 status 为
   // "ready"（空闲）或 "processing"（推理中），"starting" 表示正在拉起）。
@@ -399,6 +498,72 @@ export const AIEngineConfigSettings: React.FC = () => {
   // 否则分析过程中两按钮会交替闪现。
   const serviceRunning = isEngineServiceOnline(snapshot?.raw?.status)
   const openEngineBtnRef = React.useRef<HTMLButtonElement>(null)
+
+  /** 设备显存不足 4GB 预警 (Spec §5.2 / AC-02) */
+  const isVramLow = React.useMemo(() => {
+    const vramBytes = snapshot?.raw?.hardware?.vram_bytes
+    if (typeof vramBytes === 'number' && vramBytes > 0) {
+      return vramBytes < 4 * 1024 * 1024 * 1024
+    }
+    return false
+  }, [snapshot?.raw?.hardware?.vram_bytes])
+
+  /** 底座安装态感知 */
+  const cpuInstalled = llmSnapshot?.installation?.cpu === 'installed'
+  const localInstalled =
+    snapshot?.available !== false && llmSnapshot?.installation?.local !== 'not_installed'
+
+  /** 轻量CPU状态徽章 (TASK-04 / Spec §5.3) */
+  const renderCpuBadge = () => {
+    const isSelected = activeMode === 'cpu'
+    const cpuRuntime = llmSnapshot?.runtime?.cpu
+    const unavailable = llmSnapshot?.unavailableReason
+
+    if (unavailable === 'CRASH_LOOP') {
+      return (
+        <Badge className="font-semibold px-2 py-0.5 text-[11px] rounded-full border border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400">
+          <CircleAlert className="h-3.5 w-3.5 mr-1" />
+          {t('熔断保护')}
+        </Badge>
+      )
+    }
+    if (unavailable === 'LOW_MEMORY') {
+      return (
+        <Badge className="font-semibold px-2 py-0.5 text-[11px] rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400">
+          <CircleAlert className="h-3.5 w-3.5 mr-1" />
+          {t('内存不足')}
+        </Badge>
+      )
+    }
+    if (cpuRuntime === 'loading') {
+      return (
+        <Badge className="font-semibold px-2 py-0.5 text-[11px] rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400 animate-pulse">
+          <RotateCw className="h-3.5 w-3.5 mr-1 animate-spin" />
+          {t('载入中...')}
+        </Badge>
+      )
+    }
+    if (cpuRuntime === 'ready') {
+      return (
+        <Badge
+          className={`font-semibold px-2 py-0.5 text-[11px] rounded-full border ${
+            isSelected
+              ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+              : 'border-border/60 bg-muted text-muted-foreground'
+          }`}
+        >
+          <CircleCheck className="h-3.5 w-3.5 mr-1" />
+          {t('待命就绪')}
+        </Badge>
+      )
+    }
+    return (
+      <Badge className="font-semibold px-2 py-0.5 text-[11px] rounded-full border border-border/60 bg-muted text-muted-foreground">
+        <Clock className="h-3.5 w-3.5 mr-1" />
+        {t('模型未载入')}
+      </Badge>
+    )
+  }
 
   /** 展示美化模型名称（后端 EngineModelCatalogResolver 与 Snapshot 保证单源权威） */
   const formatFriendlyModelName = (name?: string | null, rawModel?: string | null): string => {
@@ -424,59 +589,92 @@ export const AIEngineConfigSettings: React.FC = () => {
 
   /** 各高级模式在 Radio 卡片内部展示的描述文案 */
   const modeDescriptions: Record<ActiveEngineMode, string> = {
+    cpu: t('纯CPU本地运行，内存仅占数百兆，0门槛秒级响应，完全离线私密。'),
     local: t('由萤核AI引擎独立开源应用提供支持硬件加速的本地AI服务，隐私安全离线使用。'),
     cloud: t('连接其它第三方AI服务进行分析，提供更强语言认知能力，需保持网络连接。')
   }
 
-  /** 精致紧凑单选按钮（描述文案置于卡片内部） */
+  /** 精致紧凑单选卡片（支持单选禁用与卡片内行动点独立响应） */
   const renderModeOption = (
     mode: ActiveEngineMode,
     name: string,
     desc: string,
     icon: React.ReactNode,
-    extraBadge?: React.ReactNode
+    extraBadge?: React.ReactNode,
+    options?: {
+      disabled?: boolean
+      footerAction?: React.ReactNode
+      warningText?: string
+    }
   ) => {
     const checked = activeMode === mode
+    const isDisabled = options?.disabled ?? false
     return (
-      <button
+      <div
         key={mode}
-        type="button"
         role="radio"
         aria-checked={checked}
+        aria-disabled={isDisabled}
         aria-label={name}
-        onClick={() => selectEngine(mode)}
-        className={`group relative flex items-start gap-3.5 p-4 rounded-2xl border text-left transition-all duration-200 cursor-pointer ${
-          checked
-            ? 'border-primary bg-primary/[0.04] text-foreground shadow-xs ring-1 ring-primary/20'
-            : 'border-border/70 bg-card hover:border-primary/40 hover:bg-muted/30 text-muted-foreground hover:text-foreground'
+        onClick={() => {
+          if (!isDisabled) {
+            selectEngine(mode)
+          }
+        }}
+        className={`group relative flex flex-col justify-between p-4 rounded-2xl border text-left transition-all duration-200 ${
+          isDisabled
+            ? 'opacity-85 border-border/50 bg-muted/10 cursor-not-allowed'
+            : checked
+              ? 'border-primary bg-primary/[0.04] text-foreground shadow-xs ring-1 ring-primary/20 cursor-pointer'
+              : 'border-border/70 bg-card hover:border-primary/40 hover:bg-muted/30 text-muted-foreground hover:text-foreground cursor-pointer'
         }`}
       >
-        <div
-          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-colors mt-0.5 ${
-            checked
-              ? 'bg-primary/10 text-primary border-primary/20'
-              : 'bg-muted/40 text-muted-foreground border-border/40 group-hover:text-foreground'
-          }`}
-        >
-          {icon}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-semibold text-foreground">{name}</span>
-            {extraBadge}
+        <div className="flex items-start gap-3.5">
+          <div
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-colors mt-0.5 ${
+              checked && !isDisabled
+                ? 'bg-primary/10 text-primary border-primary/20'
+                : 'bg-muted/40 text-muted-foreground border-border/40 group-hover:text-foreground'
+            }`}
+          >
+            {icon}
           </div>
-          <p className="text-xs text-muted-foreground font-normal mt-1.5 leading-relaxed">{desc}</p>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm font-semibold text-foreground">{name}</span>
+              {extraBadge}
+            </div>
+            <p className="text-xs text-muted-foreground font-normal mt-1.5 leading-relaxed">
+              {desc}
+            </p>
+            {options?.warningText && (
+              <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium mt-1.5 flex items-center gap-1">
+                <CircleAlert className="h-3 w-3 shrink-0" />
+                <span>{options.warningText}</span>
+              </p>
+            )}
+          </div>
+          <div
+            className={`mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-all ${
+              isDisabled
+                ? 'border-muted/40 bg-muted/20'
+                : checked
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-muted-foreground/30 group-hover:border-muted-foreground/50'
+            }`}
+          >
+            {checked && <div className="h-1.5 w-1.5 rounded-full bg-background" />}
+          </div>
         </div>
-        <div
-          className={`mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-all ${
-            checked
-              ? 'border-primary bg-primary text-primary-foreground'
-              : 'border-muted-foreground/30 group-hover:border-muted-foreground/50'
-          }`}
-        >
-          {checked && <div className="h-1.5 w-1.5 rounded-full bg-background" />}
-        </div>
-      </button>
+        {options?.footerAction && (
+          <div
+            className="mt-3 pt-2.5 border-t border-border/30 flex items-center justify-end"
+            onClick={e => e.stopPropagation()}
+          >
+            {options.footerAction}
+          </div>
+        )}
+      </div>
     )
   }
 
@@ -577,22 +775,66 @@ export const AIEngineConfigSettings: React.FC = () => {
         </Card>
       )}
 
-      {/* 开启态：显示两个 Radio 单选卡（描述放于卡片内），以及具体引擎配置 */}
+      {/* 开启态：显示三个底座单选卡 (标准宽屏>=900px并排3列，窄屏自适应竖排) */}
       {isEnabled && (
         <div className="space-y-5">
-          {/* 第二层级：两个生效引擎单选卡（描述置于卡片内部，无需下方单开卡片） */}
+          {/* 第二层级：三生效引擎单选卡 (Spec §5.1, §5.2 / AC-01, AC-02) */}
           <div
             role="radiogroup"
             aria-label={t('生效引擎')}
-            className="grid grid-cols-1 md:grid-cols-2 gap-3"
+            className="grid grid-cols-1 md:grid-cols-3 gap-3.5"
           >
+            {/* 卡片 1: 轻量CPU引擎 (Pocket CPU) */}
+            {renderModeOption(
+              'cpu',
+              t('轻量CPU引擎'),
+              modeDescriptions.cpu,
+              <Cpu className="h-[18px] w-[18px]" />,
+              renderCpuBadge(),
+              {
+                disabled: !cpuInstalled && llmSnapshot !== null,
+                footerAction:
+                  !cpuInstalled && llmSnapshot !== null ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs"
+                      onClick={() => {
+                        window.electronAPI?.llmGateway?.preheat({ wait: true }).catch(() => {})
+                      }}
+                    >
+                      {t('下载模型')}
+                    </Button>
+                  ) : undefined
+              }
+            )}
+
+            {/* 卡片 2: 萤核AI引擎 (Local GPU) */}
             {renderModeOption(
               'local',
               t('萤核AI引擎'),
               modeDescriptions.local,
               <Radio className="h-[18px] w-[18px]" />,
-              renderStatusBadge('local')
+              renderStatusBadge('local'),
+              {
+                disabled: !localInstalled,
+                warningText: isVramLow ? t('您的设备显存不足 4GB，推荐使用轻量CPU引擎') : undefined,
+                footerAction: !localInstalled ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs"
+                    onClick={() => {
+                      runAction('open-engine', openEngineFlow)
+                    }}
+                  >
+                    {t('前往安装')}
+                  </Button>
+                ) : undefined
+              }
             )}
+
+            {/* 卡片 3: 云端AI引擎 (Cloud) */}
             {renderModeOption(
               'cloud',
               t('云端AI引擎'),
@@ -601,6 +843,31 @@ export const AIEngineConfigSettings: React.FC = () => {
               renderStatusBadge('cloud')
             )}
           </div>
+
+          {/* 3秒平滑过渡逃生横条 (Spec §5.2 / AC-03) */}
+          {showEscapeHatch && switchingTarget && (
+            <div className="flex items-center justify-between p-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 text-xs shadow-xs animate-in fade-in slide-in-from-top-1">
+              <div className="flex items-center gap-2">
+                <RotateCw className="h-4 w-4 animate-spin shrink-0" />
+                <span>
+                  {t('引擎切换正在进行中（已等待超过 3 秒），您可以继续等待或立即取消。')}
+                </span>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-xs border-amber-500/40 bg-background/80 hover:bg-amber-500/20 text-foreground shrink-0 ml-3"
+                onClick={cancelSwitchingAndRevert}
+              >
+                {t('取消切换并恢复原引擎')}
+              </Button>
+            </div>
+          )}
+
+          {/* 轻量CPU分支：通俗大白话仪表盘 (Spec §5.3 / AC-04) */}
+          {isCpuBranch && (
+            <CpuEngineDashboard snapshot={llmSnapshot} onRefresh={fetchLlmSnapshot} />
+          )}
 
           {/* 云端分支：错误卡片 + 云端模型配置区 + 思考模式 */}
           {isCloudMode && (
@@ -735,12 +1002,14 @@ export const AIEngineConfigSettings: React.FC = () => {
                           variant="secondary"
                           disabled={actionPending !== null || !snapshot?.connected}
                           onClick={() =>
-                            runAction('open-ui', () => window.electronAPI.engineBridge.openUI())
+                            runAction('open-ui', () =>
+                              window.electronAPI.engineBridge.openUI({ panel: 'models' })
+                            )
                           }
                           className="h-8 text-xs font-medium"
                         >
                           <Plus className="h-3.5 w-3.5 mr-1" />
-                          {t('打开引擎管理面板')}
+                          {t('在萤核AI引擎中管理模型')}
                         </Button>
                       </div>
                     </div>

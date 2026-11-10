@@ -9,7 +9,8 @@ import type { AppConfig, ConfigKey } from '@firefly/types'
 import {
   registerCloudModelConfigIPCHandlers,
   // PRD-0044（S5）：registerLocalModelConfigIPCHandlers 随模型迁移 IPC 清退删除
-  registerSettingsIPCHandlers
+  registerSettingsIPCHandlers,
+  registerLlmGatewayIPCHandlers
 } from '../../runtime-services/ipc'
 
 export function registerConfigIPCHandlers() {
@@ -34,8 +35,13 @@ export function registerConfigIPCHandlers() {
     // 残留 AI_ENGINE=ollama 配置强制回落本地 Tier 2（PRD-0042 清退内置 Ollama 推理）
     const configuredEngine = orchestrator.getValue<string>('AI_ENGINE')
     if (configuredEngine === 'ollama') {
-      await orchestrator.updateValue('AI_ENGINE', 'llama.cpp', { preventAutoReload: true }).catch(() => undefined)
-      logger.warn(LogCategory.MAIN, '检测到残留 AI_ENGINE=ollama，已回落为 llama.cpp（Tier 2 桥接）')
+      await orchestrator
+        .updateValue('AI_ENGINE', 'llama.cpp', { preventAutoReload: true })
+        .catch(() => undefined)
+      logger.warn(
+        LogCategory.MAIN,
+        '检测到残留 AI_ENGINE=ollama，已回落为 llama.cpp（Tier 2 桥接）'
+      )
     }
     const aiServiceMode = orchestrator.getValue<string>('AI_SERVICE_MODE')
     const needsEngineForce = aiServiceMode === 'local' && !isEngineReady
@@ -83,5 +89,5 @@ export function registerConfigIPCHandlers() {
 
   registerSettingsIPCHandlers()
   registerCloudModelConfigIPCHandlers()
+  registerLlmGatewayIPCHandlers()
 }
-

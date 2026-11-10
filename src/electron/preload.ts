@@ -333,6 +333,14 @@ const electronAPI = {
     }
   },
 
+  // 统一大模型网关服务 (TASK-03 / TASK-04)
+  llmGateway: {
+    getSnapshot: () => ipcRenderer.invoke('llm-gateway/get-snapshot'),
+    setDesiredMode: (mode: string) => ipcRenderer.invoke('llm-gateway/set-desired-mode', mode),
+    preheat: (options?: { wait?: boolean }) => ipcRenderer.invoke('llm-gateway/preheat', options),
+    drain: (waitDrainMs?: number) => ipcRenderer.invoke('llm-gateway/drain', waitDrainMs)
+  },
+
   // 邀请服务
   invitation: {
     match: (features: any) => ipcRenderer.invoke('invitation/match', features),
@@ -1521,8 +1529,7 @@ const electronAPI = {
   },
 
   externalApi: {
-    getStatus: (): Promise<ExternalApiStatusDTO> =>
-      ipcRenderer.invoke('external-api:get-status'),
+    getStatus: (): Promise<ExternalApiStatusDTO> => ipcRenderer.invoke('external-api:get-status'),
     setDesired: (enabled: boolean): Promise<ExternalApiSetDesiredResult> =>
       ipcRenderer.invoke('external-api:set-desired', enabled),
     testConnection: (): Promise<ExternalApiTestResultDTO> =>
