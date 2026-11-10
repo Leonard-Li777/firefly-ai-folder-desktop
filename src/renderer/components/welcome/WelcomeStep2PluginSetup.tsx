@@ -81,6 +81,8 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
     asr_sensevoice_onnx: false,
     tts_moss_onnx: false
   })
+  // 生成式引擎自适应底座推荐状态 (Spec §5.2 / AC-04)
+  const [generativeEngineMode, setGenerativeEngineMode] = useState<'cpu' | 'local' | 'cloud'>('cpu')
 
   // 3. 安装流水线状态
   // idle -> installing -> smoke_testing -> ready -> error
@@ -142,6 +144,12 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
             asr_sensevoice_onnx: hw.totalMemGB >= 16 && hw.isGpuSupported,
             tts_moss_onnx: hw.totalMemGB >= 16
           })
+
+          // 生成式引擎自适应推荐 (Spec §5.2, §7.2 / Issue 05 AC-04)
+          // 无独显、显存 < 4GB、或内存 <= 16GB 的办公轻薄本，默认推荐轻量 CPU 引擎；高配独显机型推荐高级本地引擎
+          const recommendCpu = !hw.isGpuSupported || hw.vramGB < 4 || hw.totalMemGB <= 16
+          const targetGenMode: 'cpu' | 'local' = recommendCpu ? 'cpu' : 'local'
+          setGenerativeEngineMode(targetGenMode)
         }
       } catch (err) {
         console.warn('硬件探测异常，采用标准默认推荐:', err)
@@ -252,6 +260,11 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
         })
       }
 
+      // 同步生成式底座配置 (Spec §5.2)
+      if (electron?.llmGateway?.setDesiredMode) {
+        await electron.llmGateway.setDesiredMode(generativeEngineMode)
+      }
+
       // 5. 必装放行强门禁解锁
       setInstallPhase('ready')
     } catch (err: any) {
@@ -339,6 +352,27 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
                     </Badge>
                   )}
                 </div>
+              </div>
+
+              {/* 生成式引擎自适应推荐条目 (Spec §5.2 / AC-04) */}
+              <div className="mt-3 pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="text-slate-400">{t('生成式引擎推荐')}:</span>
+                  <Badge
+                    variant="outline"
+                    className="bg-slate-800 text-amber-300 border-amber-400/40 text-xs"
+                  >
+                    {generativeEngineMode === 'cpu'
+                      ? t('轻量CPU引擎 (办公轻薄本标配)')
+                      : t('高级萤核AI引擎 (独显深度版)')}
+                  </Badge>
+                </div>
+                <span className="text-slate-400">
+                  {generativeEngineMode === 'cpu'
+                    ? t('零独显门槛，秒级启动与极简内存')
+                    : t('独显硬件加速，深度多步推演')}
+                </span>
               </div>
             </CardContent>
           </Card>
