@@ -460,6 +460,7 @@ export class OfflinePackageService {
             asset_name: res.asset_name,
             target_local_path: res.target_local_path,
             download_state: 'completed',
+            active_source_key: 'auto',
             expected_bytes: bytes,
             expected_sha256: res.expected_sha256 ?? ''
           })

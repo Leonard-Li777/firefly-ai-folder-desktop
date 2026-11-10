@@ -297,3 +297,72 @@ export class EnvironmentVisibilityEnvelopeManager {
     }
   }
 }
+
+/**
+ * 环境可见性单例协调器 (主进程 SSOT)
+ */
+export class EnvironmentVisibilityCoordinator {
+  private static instance: EnvironmentVisibilityCoordinator | null = null
+  private envelopeManager = new EnvironmentVisibilityEnvelopeManager()
+  private developerModeEnabled = false
+  private licenseSnapshot: LicenseSnapshot = {
+    status: 'AUTHORIZED',
+    normalizedType: 'COMMUNITY',
+    tier: 'FREE',
+    canOffline: false,
+    expiresAt: null,
+    perpetual: true
+  }
+
+  static getInstance(): EnvironmentVisibilityCoordinator {
+    if (!EnvironmentVisibilityCoordinator.instance) {
+      EnvironmentVisibilityCoordinator.instance = new EnvironmentVisibilityCoordinator()
+    }
+    return EnvironmentVisibilityCoordinator.instance
+  }
+
+  public updateLicenseSnapshot(snapshot: LicenseSnapshot): EnvironmentVisibilityEnvelope {
+    this.licenseSnapshot = snapshot
+    return this.refresh()
+  }
+
+  public setDeveloperMode(enabled: boolean, isPackaged?: boolean): EnvironmentVisibilityEnvelope {
+    const packaged =
+      isPackaged ??
+      (typeof process !== 'undefined' && process.argv
+        ? process.argv.includes('--is-packaged=true')
+        : false)
+    this.developerModeEnabled = enabled
+    return this.refresh(packaged)
+  }
+
+  public refresh(isPackaged?: boolean): EnvironmentVisibilityEnvelope {
+    const packaged =
+      isPackaged ??
+      (typeof process !== 'undefined' && process.argv
+        ? process.argv.includes('--is-packaged=true')
+        : false)
+    let visibility: EnvironmentVisibility
+    try {
+      visibility = resolveEnvironmentVisibility(
+        this.licenseSnapshot,
+        packaged,
+        this.developerModeEnabled
+      )
+    } catch {
+      visibility = computeEnvironmentVisibility(
+        'dev',
+        packaged,
+        this.licenseSnapshot,
+        this.developerModeEnabled
+      )
+    }
+    return this.envelopeManager.wrap(visibility)
+  }
+
+  public getEnvelope(isPackaged?: boolean): EnvironmentVisibilityEnvelope {
+    const current = this.envelopeManager.getCurrentEnvelope()
+    if (current) return current
+    return this.refresh(isPackaged)
+  }
+}

@@ -54,7 +54,8 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
       category: 'office',
       persona: '日常行政办公',
       summary: '针对临时截图与快捷方式的急救清理',
-      extensions: JSON.stringify({ common: ['.lnk', '.png', '.docx'] }),
+      // 覆盖「无常见扩展名清单」分支：预览树扩展名应回退到白名单首个扩展名规则
+      extensions: JSON.stringify({ common: [] }),
       naming_template: '{YYYYMMDD}_{分类}_{原名}.{ext}',
       preset_directory_tree: JSON.stringify([
         {
@@ -66,9 +67,40 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
           subdirectories: []
         }
       ]),
+      // 与生产预设 (organize-taxonomy-source.ts) 同构：白名单/排除规则为 IFilterRule 对象数组
       workspace_config: JSON.stringify({
-        customWhitelistRules: ['.lnk', '.png', '.docx'],
-        customIgnoreRules: ['Desktop_Old_Backups']
+        customWhitelistRules: [
+          {
+            id: 'builtin.workflow.desktop-declutter-common-1',
+            type: 'extension',
+            value: '.lnk',
+            isActive: true,
+            isSystem: true
+          },
+          {
+            id: 'builtin.workflow.desktop-declutter-common-2',
+            type: 'extension',
+            value: '.png',
+            isActive: true,
+            isSystem: true
+          },
+          {
+            id: 'builtin.workflow.desktop-declutter-common-3',
+            type: 'extension',
+            value: '.docx',
+            isActive: true,
+            isSystem: true
+          }
+        ],
+        customIgnoreRules: [
+          {
+            id: 'builtin.workflow.desktop-declutter-ignore-1',
+            type: 'directory',
+            value: 'Desktop_Old_Backups',
+            isActive: true,
+            isSystem: true
+          }
+        ]
       })
     },
     {
@@ -82,7 +114,22 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
       preset_directory_tree: JSON.stringify([{ name: '01_安装程序', subdirectories: [] }]),
       // 无专属排除规则 (空数组)
       workspace_config: JSON.stringify({
-        customWhitelistRules: ['.exe', '.zip'],
+        customWhitelistRules: [
+          {
+            id: 'builtin.workflow.downloads-triage-common-1',
+            type: 'extension',
+            value: '.exe',
+            isActive: true,
+            isSystem: true
+          },
+          {
+            id: 'builtin.workflow.downloads-triage-common-2',
+            type: 'extension',
+            value: '.zip',
+            isActive: true,
+            isSystem: true
+          }
+        ],
         customIgnoreRules: []
       })
     },

@@ -678,4 +678,62 @@ describe('Ticket 05: 开发者模式双视图、4态徽标与安装事实门禁'
     expect(screen.getByText(/把文档和文章读给你听，支持戴耳机离线听书/)).toBeInTheDocument()
     expect(screen.getByText('配置要求低 · 普通电脑流畅发音')).toBeInTheDocument()
   })
+
+  it('开发模式下显示顶部与列表项导出插件包按钮，且导入离线包调用 importOfflinePackage', async () => {
+    const mockBridge = {
+      list: vi.fn().mockResolvedValue([
+        {
+          id: 'installed_mod',
+          name: '已安装插件',
+          version: '1.0.0',
+          category: 'tool',
+          author_code: 'official',
+          availability: 'approved',
+          total_bytes: 1024,
+          install_state: 'active'
+        }
+      ]),
+      setDevMode: vi.fn().mockResolvedValue(true),
+      getDevMode: vi.fn().mockResolvedValue(true), // 开发模式启动
+      exportOfflinePackage: vi.fn().mockResolvedValue('/path/to/exported.ffp'),
+      importOfflinePackage: vi.fn().mockResolvedValue({ id: 'imported_pkg' })
+    }
+    const { setModularResourceBridgeForTest } = await import('../../../stores/plugin-center-store')
+    setModularResourceBridgeForTest(mockBridge as any)
+
+    try {
+      await act(async () => {
+        await usePluginCenterStore.getState().openOverlay()
+      })
+
+      render(<PluginCenterOverlay />)
+
+      // 验证开发模式下顶部导出插件包按钮存在
+      const exportTopBtn = screen.getByTestId('export-offline-plugin-btn')
+      expect(exportTopBtn).toBeInTheDocument()
+
+      // 点击顶部导出插件包
+      await act(async () => {
+        fireEvent.click(exportTopBtn)
+      })
+      expect(mockBridge.exportOfflinePackage).toHaveBeenCalledWith({ moduleId: 'installed_mod' })
+
+      // 验证已安装插件条目的导出按钮
+      const exportItemBtn = screen.getByTestId('export-plugin-btn')
+      expect(exportItemBtn).toBeInTheDocument()
+      await act(async () => {
+        fireEvent.click(exportItemBtn)
+      })
+      expect(mockBridge.exportOfflinePackage).toHaveBeenCalledWith({ moduleId: 'installed_mod' })
+
+      // 点击导入离线包
+      const importOfflineBtn = screen.getByTestId('import-offline-plugin-btn')
+      await act(async () => {
+        fireEvent.click(importOfflineBtn)
+      })
+      expect(mockBridge.importOfflinePackage).toHaveBeenCalled()
+    } finally {
+      setModularResourceBridgeForTest(null)
+    }
+  })
 })

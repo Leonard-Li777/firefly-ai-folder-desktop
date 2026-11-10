@@ -70,7 +70,7 @@ export class BackgroundVerificationQueue {
   private activeWorker: Worker | null = null
   private startTimer: NodeJS.Timeout | null = null
   private currentAbortController: AbortController | null = null
-  private lockState: BackgroundVerificationLockState = { isLocked: false }
+  private lockState: BackgroundVerificationLockState = { active: false, isLocked: false }
 
   constructor(options: BackgroundQueueOptions) {
     this.dao = options.dao
@@ -164,6 +164,7 @@ export class BackgroundVerificationQueue {
       const job = candidateJob
       this.currentAbortController = new AbortController()
       this.lockState = {
+        active: true,
         isLocked: true,
         jobId: job.job_id,
         archivePath: job.archive_path,
@@ -177,7 +178,7 @@ export class BackgroundVerificationQueue {
       await this.verifySingleJob(job)
     } finally {
       this.activeJobId = null
-      this.lockState = { isLocked: false }
+      this.lockState = { active: false, isLocked: false }
       this.currentAbortController = null
       this.isProcessing = false
 

@@ -142,6 +142,7 @@ export interface ExportBundleResult {
  */
 export interface BackgroundVerificationLockState {
   active: boolean
+  isLocked?: boolean
   jobId?: string | null
   archivePath?: string | null
   abortController?: AbortController | null

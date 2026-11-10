@@ -121,6 +121,7 @@ export class ZipEntryRejectedError extends Error {
 export interface ResourceDecl {
   resource_id: string
   asset_name?: string
+  target_local_path?: string
   expected_sha256?: string
 }
 

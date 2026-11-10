@@ -115,6 +115,7 @@ export class StartupReconciler {
                 affectedModules.push({
                   moduleId: modId,
                   version: '0.0.0',
+                  manifestRawBytes: Buffer.alloc(0),
                   resources: []
                 })
               }
@@ -316,6 +317,7 @@ export class StartupReconciler {
                 affectedModules.push({
                   moduleId: modId,
                   version: '0.0.0',
+                  manifestRawBytes: Buffer.alloc(0),
                   resources: []
                 })
               }

@@ -271,7 +271,7 @@ export class PluginImporter {
     // 步骤 5：数据持久化登记入库
     this.dao.modules.upsertModuleSync({
       id: manifest.id,
-      name: manifest.name,
+      kind: 'third-party-plugin',
       version: manifest.version,
       catalog_version: 1,
       category: (manifest.category as any) || 'tool',

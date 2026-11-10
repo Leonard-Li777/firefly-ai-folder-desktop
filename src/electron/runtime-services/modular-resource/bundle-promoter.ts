@@ -58,7 +58,7 @@ export interface IncomingModuleMeta {
   category?: string
   capability_slot?: string
   total_bytes?: number
-  manifestRawBytes: Buffer | string
+  manifestRawBytes?: Buffer | string
   catalog_meta_json?: string
   resources: Array<{
     resource_id: string
@@ -140,7 +140,7 @@ export class BundlePromoter {
     // 计算传入清单的 SHA-256
     const incomingBuffer = Buffer.isBuffer(manifestRawBytes)
       ? manifestRawBytes
-      : Buffer.from(manifestRawBytes, 'utf-8')
+      : Buffer.from(manifestRawBytes || '', 'utf-8')
     const incomingSha256 = crypto
       .createHash('sha256')
       .update(incomingBuffer)
@@ -345,15 +345,13 @@ export class BundlePromoter {
 
       // B. 提升共享物理资产 (Shared Resource Identity Guard)
       for (const res of declaredResources) {
-        const formalAssetPath = path.resolve(baseDir, res.target_local_path)
-        const stagedAssetPath = path.resolve(stagingDir, res.target_local_path)
+        const relPath = res.target_local_path || path.join('modules', '_shared', res.resource_id)
+        const formalAssetPath = path.resolve(baseDir, relPath)
+        const stagedAssetPath = path.resolve(stagingDir, relPath)
 
         // 路径穿越纵深防御：严防声明路径恶意逃逸
         if (!isSubPath(baseDir, formalAssetPath)) {
-          throw new BundlePromoterError(
-            'IO_FAILURE',
-            `非法资产目标路径逃逸: ${res.target_local_path}`
-          )
+          throw new BundlePromoterError('IO_FAILURE', `非法资产目标路径逃逸: ${relPath}`)
         }
 
         if (createdResourceIds.includes(res.resource_id)) {
@@ -453,10 +451,11 @@ export class BundlePromoter {
           `)
 
           const targetSha = res.expected_sha256 ?? ''
+          const relPath = res.target_local_path || path.join('modules', '_shared', res.resource_id)
           insertOrUpdateResource.run(
             res.resource_id,
-            path.basename(res.target_local_path),
-            res.target_local_path,
+            res.asset_name || path.basename(relPath),
+            relPath,
             targetSha,
             targetSha,
             nowMs,

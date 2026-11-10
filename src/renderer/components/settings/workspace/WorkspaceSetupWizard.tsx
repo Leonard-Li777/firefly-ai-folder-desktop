@@ -9,7 +9,8 @@ import {
   WorkflowRecommendation,
   WorkflowCategory,
   TechnicalEngineParameters,
-  DirectoryTreeNode
+  DirectoryTreeNode,
+  IFilterRule
 } from '@firefly/types'
 import {
   recommendWorkflowByProfile,
@@ -94,6 +95,31 @@ interface PolicyCommitErrorState {
   message: string
   stack?: string
   payload?: unknown
+}
+
+/**
+ * 规则集合元素：生产预设 (organize-taxonomy-source.ts) 为 IFilterRule 对象，
+ * 历史 filter_rules 兼容字段可能为纯字符串
+ */
+type WizardRuleEntry = string | IFilterRule
+
+/** 提取规则的可展示标签（对象规则取 value） */
+function getRuleLabel(rule: WizardRuleEntry): string {
+  if (typeof rule === 'string') return rule
+  return rule?.value ?? ''
+}
+
+/** 仅提取启用中的扩展名规则值，用于扩展名命中统计 */
+function getExtensionValues(rules: WizardRuleEntry[]): string[] {
+  const values: string[] = []
+  for (const rule of rules) {
+    if (typeof rule === 'string') {
+      values.push(rule)
+    } else if (rule?.isActive && rule.type === 'extension' && rule.value) {
+      values.push(rule.value)
+    }
+  }
+  return values
 }
 
 /**
@@ -561,37 +587,41 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     }
     if (Array.isArray(extsObj?.common) && extsObj.common.length > 0) {
       commonExt = extsObj.common[0]
-    } else if (
-      Array.isArray(selectedTemplateConfig?.customWhitelistRules) &&
-      selectedTemplateConfig.customWhitelistRules.length > 0
-    ) {
-      commonExt = selectedTemplateConfig.customWhitelistRules[0]
+    } else if (Array.isArray(selectedTemplateConfig?.customWhitelistRules)) {
+      // 白名单规则为 IFilterRule 对象，取首个启用的扩展名规则值
+      const whitelistExts = getExtensionValues(selectedTemplateConfig.customWhitelistRules)
+      if (whitelistExts.length > 0) {
+        commonExt = whitelistExts[0]
+      }
     }
-    if (commonExt && !commonExt.startsWith('.')) {
+    if (!commonExt.startsWith('.')) {
       commonExt = `.${commonExt}`
     }
 
     return buildPreviewTree(treeNodes, namingTemplate, commonExt)
   }, [selectedWorkflow, selectedTemplateConfig])
 
-  // 提取当前选定工作流的包含白名单规则
-  const currentWhitelistRules = useMemo<string[]>(() => {
+  // 提取当前选定工作流的包含白名单规则（labels 用于展示，extensions 用于扩展名命中统计）
+  const currentWhitelist = useMemo(() => {
+    let rules: WizardRuleEntry[] = []
     if (Array.isArray(selectedTemplateConfig?.customWhitelistRules)) {
-      return selectedTemplateConfig.customWhitelistRules
-    }
-    if (selectedWorkflow?.filter_rules && selectedWorkflow?.filter_mode === 'whitelist') {
+      rules = selectedTemplateConfig.customWhitelistRules
+    } else if (selectedWorkflow?.filter_rules && selectedWorkflow?.filter_mode === 'whitelist') {
       try {
         const parsed = JSON.parse(selectedWorkflow.filter_rules)
-        if (Array.isArray(parsed)) return parsed
+        if (Array.isArray(parsed)) rules = parsed
       } catch {}
     }
-    return []
+    return {
+      labels: rules.map(getRuleLabel),
+      extensions: getExtensionValues(rules)
+    }
   }, [selectedTemplateConfig, selectedWorkflow])
 
   // 提取当前选定工作流的专属排除规则（无则返回空数组）
   const currentCustomIgnoreRules = useMemo<string[]>(() => {
     if (Array.isArray(selectedTemplateConfig?.customIgnoreRules)) {
-      return selectedTemplateConfig.customIgnoreRules
+      return selectedTemplateConfig.customIgnoreRules.map(getRuleLabel)
     }
     if (selectedWorkflow?.custom_ignores) {
       try {
@@ -599,7 +629,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
           typeof selectedWorkflow.custom_ignores === 'string'
             ? JSON.parse(selectedWorkflow.custom_ignores)
             : selectedWorkflow.custom_ignores
-        if (Array.isArray(parsed)) return parsed
+        if (Array.isArray(parsed)) return parsed.map(getRuleLabel)
       } catch {}
     }
     return []
@@ -613,12 +643,12 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
         totalFiles: 0,
         matchedCount: 0,
         hiddenCount: 0,
-        isWhitelistActive: currentWhitelistRules.length > 0,
+        isWhitelistActive: currentWhitelist.labels.length > 0,
         description: t('当前工作目录为空或尚未完成扫描')
       }
     }
 
-    if (currentWhitelistRules.length === 0) {
+    if (currentWhitelist.labels.length === 0) {
       return {
         totalFiles,
         matchedCount: totalFiles,
@@ -633,7 +663,9 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
 
     // 统计白名单命中数
     const allowedExts = new Set(
-      currentWhitelistRules.map(r => (r.startsWith('.') ? r.toLowerCase() : `.${r.toLowerCase()}`))
+      currentWhitelist.extensions.map(r =>
+        r.startsWith('.') ? r.toLowerCase() : `.${r.toLowerCase()}`
+      )
     )
     let matchedCount = 0
     for (const item of profileResult?.stats?.topExtensions || []) {
@@ -658,7 +690,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
         }
       )
     }
-  }, [profileResult, currentWhitelistRules])
+  }, [profileResult, currentWhitelist])
 
   // 提交策略与流转主入口
   const submitPolicy = async (flowMode: 'complete' | 'customize') => {
@@ -1344,9 +1376,9 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
             </div>
 
             {/* 纳管扩展名徽章列表 */}
-            {currentWhitelistRules.length > 0 && (
+            {currentWhitelist.labels.length > 0 && (
               <div className="flex flex-wrap gap-1.5 pt-1">
-                {currentWhitelistRules.map((rule, idx) => (
+                {currentWhitelist.labels.map((rule, idx) => (
                   <span
                     key={idx}
                     className="px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"
