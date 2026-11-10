@@ -241,6 +241,7 @@
     "dotenv": "17.2.3",
     "electron": "45.2.1",
     "electron-vite": "5.0.0",
+    "fast-check": "4.5.3",
     "javascript-obfuscator": "5.1.0",
     "jsdom": "26.1.0",
     "rimraf": "6.1.2",
