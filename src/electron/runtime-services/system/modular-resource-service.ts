@@ -60,6 +60,11 @@ import {
   RESERVED_DEVICE_REG,
   isReservedDeviceName
 } from './plugin-dir-validator'
+import {
+  dirMigrationCoordinator,
+  DirMigrationCoordinator,
+  type DirMigrationProgressPayload
+} from './dir-migration-coordinator'
 import type {
   DirRuntimePhase,
   PluginDirErrorCode,
@@ -73,14 +78,17 @@ export {
   getDiskFreeSpace,
   ModularResourceError,
   RESERVED_DEVICE_REG,
-  isReservedDeviceName
+  isReservedDeviceName,
+  dirMigrationCoordinator,
+  DirMigrationCoordinator
 }
 export type {
   VerifiedDownloadResult,
   DirRuntimePhase,
   PluginDirErrorCode,
   PluginDirInfo,
-  ValidatePluginDirResult
+  ValidatePluginDirResult,
+  DirMigrationProgressPayload
 }
 
 export interface CatalogResourceSpec {
@@ -275,6 +283,19 @@ export interface IModularResourceService {
 
   /** 获取插件目录运行态信息与诊断 */
   getPluginDirInfo(): Promise<PluginDirInfo>
+
+  /** 触发插件目录迁移事务 */
+  changePluginDirectory(targetPath: string): Promise<{
+    success: boolean
+    migrationId?: string
+    errorCode?: PluginDirErrorCode
+  }>
+
+  /** 取消在途的插件目录迁移 (仅在 PRECHECK / STAGING / VERIFYING 有效) */
+  cancelDirMigration(): Promise<{
+    cancelled: boolean
+    errorCode?: PluginDirErrorCode
+  }>
 }
 
 /**
@@ -835,6 +856,87 @@ export class ModularResourceService implements IModularResourceService {
   }
 
   /**
+   * 全局写闸门校验 (DIR_CHANGE_GATE_ACTIVE)
+   */
+  public assertWriteGateAllowed(): void {
+    if (this.dirRuntimePhase !== 'STABLE') {
+      throw new ModularResourceError(
+        'DIR_CHANGE_GATE_ACTIVE',
+        'Plugin directory change is pending restart. All write operations are frozen.'
+      )
+    }
+  }
+
+  /**
+   * 触发插件目录迁移事务 (两阶段流式复制与崩溃自愈 Journal)
+   */
+  public async changePluginDirectory(targetPath: string): Promise<{
+    success: boolean
+    migrationId?: string
+    errorCode?: PluginDirErrorCode
+  }> {
+    this.assertWriteGateAllowed()
+
+    // 1. 前置 11 步校验管线
+    const validation = await this.validatePluginDir(targetPath)
+    if (!validation.valid) {
+      return {
+        success: false,
+        errorCode: validation.errorCode ?? 'PATH_NOT_WRITABLE'
+      }
+    }
+
+    const currentSourceDir = this.getPluginsRootDir()
+    const resolvedTarget = path.resolve(targetPath.trim())
+
+    // 2. 收集 BOM 哈希清单（供双端复制对账核验）
+    const bomHashes = new Map<string, string>()
+    try {
+      const bomRecords = this.loadResourceBom()
+      for (const item of bomRecords) {
+        if (item.name && item.sha256) {
+          bomHashes.set(item.name, item.sha256)
+        }
+      }
+    } catch {}
+
+    // 3. 执行流式迁移
+    const result = await dirMigrationCoordinator.executeMigration(
+      currentSourceDir,
+      resolvedTarget,
+      {
+        userDataDir: this.getBaseDir(),
+        bomHashes,
+        onPhaseChange: (phase: DirRuntimePhase) => {
+          this.setDirRuntimePhase(phase)
+        },
+        onConfigCommit: async (newPath: string, oldPath: string) => {
+          try {
+            const { ConfigOrchestrator } = require('../../config/config-orchestrator')
+            const orchestrator = ConfigOrchestrator.getInstance()
+            orchestrator.setValue('PREVIOUS_PLUGIN_MODULES_PATH', oldPath)
+            orchestrator.setValue('PLUGIN_MODULES_PATH', newPath)
+          } catch (err) {
+            logger.warn(LogCategory.MAIN, '[ModularResourceService] 更新配置失败:', err)
+          }
+        }
+      }
+    )
+
+    return result
+  }
+
+  /**
+   * 取消正在进行的目录迁移 (仅在 PRECHECK / STAGING / VERIFYING 生效)
+   */
+  public async cancelDirMigration(): Promise<{
+    cancelled: boolean
+    errorCode?: PluginDirErrorCode
+  }> {
+    return await dirMigrationCoordinator.cancelMigration(this.getBaseDir())
+  }
+
+  /**
    * 将相对路径解析为基于 pluginsRootDir 的绝对物理路径
    */
   public resolvePhysicalPath(targetLocalPath: string): string {
@@ -1205,6 +1307,12 @@ export class ModularResourceService implements IModularResourceService {
     const intentsDir = path.join(baseDir, '.intents')
     await reconcileDirSwitchIntents(intentsDir)
 
+    // 自愈未完成的插件根目录大迁移意图日志 (Issue 03)
+    cleanedTombstones += await dirMigrationCoordinator.reconcileOnStartup(
+      baseDir,
+      this.getCommittedPluginsRootDir()
+    )
+
     const dao = this.getDao()
     const resetDownloads: string[] = []
     const resetModules: string[] = []
@@ -1566,6 +1674,7 @@ export class ModularResourceService implements IModularResourceService {
     moduleId: string,
     onProgress?: (event: ModuleDownloadProgressEvent) => void
   ): Promise<BuiltinModuleView> {
+    this.assertWriteGateAllowed()
     this.ensureDefaultSeeds()
     const dao = this.getDao()
     const record = dao.modules.findByIdSync(moduleId)
@@ -2020,6 +2129,7 @@ export class ModularResourceService implements IModularResourceService {
    * 阶段二（事务外 Tombstone 删除）：对 pending_delete 资源调用 safeDeleteDirectory（重命名为 .deleting-<uuid> 并退避重试删除；若被占用则保持 pending_delete 等待下次启动清理）。
    */
   async uninstallModule(moduleId: string): Promise<BuiltinModuleView> {
+    this.assertWriteGateAllowed()
     this.ensureDefaultSeeds()
     const db = this.getDb()
     const dao = this.getDao()
@@ -2102,6 +2212,7 @@ export class ModularResourceService implements IModularResourceService {
       userConsent?: boolean
     }
   ): Promise<BuiltinModuleView> {
+    this.assertWriteGateAllowed()
     this.ensureDefaultSeeds()
     const dao = this.getDao()
     const existing = dao.modules.findByIdSync(moduleId)

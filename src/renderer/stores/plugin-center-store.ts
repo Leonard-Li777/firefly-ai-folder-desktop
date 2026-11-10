@@ -211,6 +211,11 @@ export interface IModularResourceBridge {
     module?: PluginModuleItem
     error?: string
   }>
+  getPluginDirInfo?: () => Promise<any>
+  validatePluginDir?: (targetPath: string) => Promise<any>
+  changePluginDir?: (targetPath: string) => Promise<any>
+  cancelDirMigration?: () => Promise<any>
+  onDirMigrationProgress?: (callback: (payload: any) => void) => () => void
   onProgress?: (callback: (event: ModularResourceProgressPayload) => void) => () => void
 }
 
@@ -598,7 +603,9 @@ async function syncDevModeFromBridge(set: (state: Partial<PluginCenterState>) =>
       const isDev = typeof res === 'boolean' ? res : Boolean((res as any)?.devModeEffective ?? (res as any)?.enabled)
       set({ isDeveloperMode: isDev })
       return isDev
-    } catch {}
+    } catch {
+      // 忽略探活异常
+    }
   }
   return false
 }
@@ -700,7 +707,7 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
   subscribeEnvironmentVisibility: () => {
     const bridge = getModularResourceBridge()
     if (!bridge || typeof bridge.onEnvironmentVisibilityChanged !== 'function') {
-      return () => {}
+      return () => undefined
     }
     return bridge.onEnvironmentVisibilityChanged(envelope => {
       get().applyVisibilityEnvelope(envelope)
@@ -717,11 +724,15 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
           if (envelope) {
             get().applyVisibilityEnvelope(envelope)
           }
-        } catch {}
+        } catch {
+          // 降级忽略
+        }
       } else if (typeof bridge.setDevMode === 'function') {
         try {
           await bridge.setDevMode({ enabled })
-        } catch {}
+        } catch {
+          // 降级忽略
+        }
       }
     }
     await get().loadModules()
@@ -770,7 +781,7 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
         set({ modules: normalized, isLoading: false })
         get()
           .checkPendingTombstones()
-          .catch(() => {})
+          .catch(() => undefined)
         return normalized
       }
       set({ isLoading: false })
@@ -809,7 +820,7 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
           }))
           get()
             .checkPendingTombstones()
-            .catch(() => {})
+            .catch(() => undefined)
         }
       } catch (err: any) {
         const errMsg = err?.message || String(err)
@@ -900,7 +911,7 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
         }
         // 同步通知同槽位被互斥停用的插件
         for (const exId of mutuallyExcludedIds) {
-          bridge.updateState(exId, { active: false }).catch(() => {})
+          bridge.updateState(exId, { active: false }).catch(() => undefined)
         }
       } catch {
         // 保留乐观更新状态
@@ -951,7 +962,7 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
   subscribeProgress: () => {
     const bridge = getModularResourceBridge()
     if (!bridge || typeof bridge.onProgress !== 'function') {
-      return () => {}
+      return () => undefined
     }
     return bridge.onProgress(evt => {
       if (evt.state === 'failed') {
@@ -983,7 +994,9 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
       const items = await bridge.getPendingTombstones()
       const has = Array.isArray(items) && items.length > 0
       set({ pendingTombstones: items || [], hasPendingTombstones: has })
-    } catch {}
+    } catch {
+      // 忽略墓碑读取异常
+    }
   },
 
   restartApp: async () => {
@@ -1021,8 +1034,6 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
         return res
       }
       return null
-    } catch (err: any) {
-      throw err
     } finally {
       set({ isImportingBundle: false })
     }

@@ -28,7 +28,7 @@ export class ModularResourceError extends Error {
     public readonly code: PluginDirErrorCode,
     message: string
   ) {
-    super(message)
+    super(`[${code}] ${message}`)
     this.name = 'ModularResourceError'
   }
 }

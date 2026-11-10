@@ -345,4 +345,33 @@ export function registerModularResourceIpcHandlers(
       }
     }
   )
+
+  // 发起目录迁移
+  ipcMain.handle(
+    'modular-resource:change-plugin-dir',
+    async (_event, payload: { targetPath: string }) => {
+      try {
+        return await service.changePluginDirectory(payload?.targetPath ?? '')
+      } catch (err: any) {
+        logger.error(LogCategory.MAIN, '[ModularResourceIPC] change-plugin-dir 失败:', err)
+        return {
+          success: false,
+          errorCode: err?.code ?? 'PATH_NOT_WRITABLE'
+        }
+      }
+    }
+  )
+
+  // 取消正在执行的目录迁移 (仅在 PRECHECK/STAGING/VERIFYING 生效)
+  ipcMain.handle('modular-resource:cancel-dir-migration', async () => {
+    try {
+      return await service.cancelDirMigration()
+    } catch (err: any) {
+      logger.error(LogCategory.MAIN, '[ModularResourceIPC] cancel-dir-migration 失败:', err)
+      return {
+        cancelled: false,
+        errorCode: err?.code
+      }
+    }
+  })
 }
