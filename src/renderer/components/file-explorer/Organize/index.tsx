@@ -417,6 +417,7 @@ export const Organize: React.FC = () => {
           <div className="flex items-center gap-2 shrink-0 min-w-0 overflow-hidden justify-end">
             {stage === 'batch-rename' && (
               <Button
+                data-testid="batch-rename-execute-btn"
                 size="sm"
                 onClick={() => {
                   const btn = document.getElementById('btn-execute-rename-trigger')
@@ -435,6 +436,7 @@ export const Organize: React.FC = () => {
 
             {stage === 'batch-tag' && (
               <Button
+                data-testid="batch-tag-save-btn"
                 size="sm"
                 onClick={() => {
                   const btn = document.getElementById('btn-save-tags-trigger')
@@ -461,6 +463,7 @@ export const Organize: React.FC = () => {
                   {t('回收站安全保护，支持随时还原')}
                 </span>
                 <Button
+                  data-testid="batch-duplicate-trash-btn"
                   variant="destructive"
                   size="sm"
                   onClick={() => {

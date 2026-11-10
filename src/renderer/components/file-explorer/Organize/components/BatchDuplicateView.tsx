@@ -2,6 +2,16 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { MaterialIcon, cn } from '../../../../lib/utils'
 import { t } from '@app/languages'
 import { Button } from '../../../ui/button'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel
+} from '../../../ui/alert-dialog'
 import { Badge } from '../../../ui/badge'
 import { Checkbox } from '../../../ui/checkbox'
 import { Switch } from '../../../ui/switch'
@@ -108,6 +118,7 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
   const [previewingPath, setPreviewingPath] = useState<string>('')
   const [trashingGroupId, setTrashingGroupId] = useState<string | null>(null)
   const [isBatchProcessing, setIsBatchProcessing] = useState<boolean>(false)
+  const [isDestructiveConfirmOpen, setIsDestructiveConfirmOpen] = useState<boolean>(false)
   const [streamingScannedCount, setStreamingScannedCount] = useState<number>(0)
   const [streamingTotalCount, setStreamingTotalCount] = useState<number>(0)
   const [currentScanStage, setCurrentScanStage] = useState<string>('')
@@ -976,9 +987,8 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
   }, [totalSelectedCount, onSelectedCountChange])
 
   // 批量处理全部勾选执行逻辑：
-  // 根据分组类型，针对每组已勾选的文件依次执行对应操作（避免并发竞态）；
-  // 优先执行删除操作，如果后续操作中文件已被删除或已不存在，则安全跳过。
-  const handleExecuteBatchProcessAll = async () => {
+  // 破坏性操作前置二次确认弹窗防误触，确认后按策略分组依次执行
+  const handleExecuteBatchProcessAll = () => {
     let hasAnySelected = false
     for (const g of duplicateGroups) {
       if (g.files.some(f => f.selectedForDelete && f.path)) {
@@ -991,6 +1001,11 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
       return
     }
 
+    // 弹出破坏性二次确认安全弹窗 (Spec §4.4 / §7.1.1)
+    setIsDestructiveConfirmOpen(true)
+  }
+
+  const executeBatchProcessConfirmed = async () => {
     setIsBatchProcessing(true)
     const deletedPathsSet = new Set<string>()
     let totalDeleted = 0
@@ -1238,7 +1253,7 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
   }, [])
 
   return (
-    <div className="flex-1 flex overflow-hidden bg-background">
+    <div data-testid="batch-duplicate-view" className="flex-1 flex overflow-hidden bg-background">
       <SplitPane
         direction="horizontal"
         storageKey="organize-batch-duplicate-main"
@@ -2504,6 +2519,38 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
           onClose={() => setContextMenu(null)}
         />
       )}
+
+      {/* 5. 破坏性二次确认安全弹窗 (Spec §4.4 / §7.1.1) */}
+      <AlertDialog open={isDestructiveConfirmOpen} onOpenChange={setIsDestructiveConfirmOpen}>
+        <AlertDialogContent data-testid="confirm-destructive">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('确认批量移入回收站？')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('选中的 {count} 个文件将被移入回收站。此操作为破坏性文件清理，请核对后确认。', {
+                count: totalSelectedCount
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              data-testid="confirm-destructive-cancel"
+              onClick={() => setIsDestructiveConfirmOpen(false)}
+            >
+              {t('取消')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              data-testid="confirm-destructive-accept"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                setIsDestructiveConfirmOpen(false)
+                executeBatchProcessConfirmed()
+              }}
+            >
+              {t('确认移入回收站')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

@@ -401,11 +401,8 @@ const isMutexSingleGroup = (group?: DimensionGroup | null): boolean => {
  * 注意：三态状态与批量操作的身份键仍是 tag 级的 `${dimensionId}::${tagValue}`
  * （批量打标按标签名生效，与分支路径无关），本函数仅用于 React 渲染 key。
  */
-export const getTagPillKey = (
-  dimensionId: number,
-  tag: DimensionTag,
-  index: number
-): string => `${dimensionId}::${tag.tagValue}::${tag.codePath || tag.code || index}`
+export const getTagPillKey = (dimensionId: number, tag: DimensionTag, index: number): string =>
+  `${dimensionId}::${tag.tagValue}::${tag.codePath || tag.code || index}`
 
 /**
  * 单个标签胶囊组件 (React.memo)
@@ -486,10 +483,16 @@ const TagPill: React.FC<TagPillProps> = React.memo(
             <MaterialIcon icon="add_circle" className="text-xs text-white shrink-0 relative z-10" />
           )}
           {isAllRemoved && (
-            <MaterialIcon icon="do_not_disturb_on" className="text-xs text-destructive shrink-0 relative z-10" />
+            <MaterialIcon
+              icon="do_not_disturb_on"
+              className="text-xs text-destructive shrink-0 relative z-10"
+            />
           )}
           {isOwnedByInspected && !isAllAttached && !isAllRemoved && (
-            <MaterialIcon icon="check_circle" className="text-xs text-primary shrink-0 relative z-10" />
+            <MaterialIcon
+              icon="check_circle"
+              className="text-xs text-primary shrink-0 relative z-10"
+            />
           )}
 
           {/* 标签名称 */}
@@ -597,13 +600,19 @@ const DimensionGroupCard: React.FC<DimensionGroupCardProps> = React.memo(
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-xs font-bold text-foreground/90">{group.name}</span>
-            <Badge variant="outline" className="text-[10px] h-4.5 px-1.5 font-normal bg-background/80">
+            <Badge
+              variant="outline"
+              className="text-[10px] h-4.5 px-1.5 font-normal bg-background/80"
+            >
               {t('{count} 个标签', {
                 count: groupTags.length + groupNewTags.length
               })}
             </Badge>
             {isPan && (
-              <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4 bg-primary/10 text-primary border border-primary/20 font-medium">
+              <Badge
+                variant="secondary"
+                className="text-[9px] px-1 py-0 h-4 bg-primary/10 text-primary border border-primary/20 font-medium"
+              >
                 {t('泛维度')}
               </Badge>
             )}
@@ -715,7 +724,10 @@ const DimensionGroupCard: React.FC<DimensionGroupCardProps> = React.memo(
             >
               <MaterialIcon icon="add_circle" className="text-xs" />
               <span>{name}</span>
-              <Badge variant="secondary" className="text-[9px] px-1 py-0 h-3.5 bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 font-normal">
+              <Badge
+                variant="secondary"
+                className="text-[9px] px-1 py-0 h-3.5 bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 font-normal"
+              >
                 {t('待附加')}
               </Badge>
               <MaterialIcon
@@ -844,14 +856,20 @@ const HierarchicalDimensionCard: React.FC<HierarchicalDimensionCardProps> = Reac
 
             {/* 直属标签数徽章 */}
             {rootTags.length > 0 && (
-              <Badge variant="outline" className="text-[10px] h-4.5 px-1.5 font-normal bg-background/80 shrink-0">
+              <Badge
+                variant="outline"
+                className="text-[10px] h-4.5 px-1.5 font-normal bg-background/80 shrink-0"
+              >
                 {t('{count} 个直属标签', { count: rootTags.length })}
               </Badge>
             )}
 
             {/* 子维度数量徽章 */}
             {children.length > 0 && (
-              <Badge variant="secondary" className="text-[10px] h-4.5 px-1.5 font-medium bg-primary/10 text-primary border border-primary/20 shrink-0">
+              <Badge
+                variant="secondary"
+                className="text-[10px] h-4.5 px-1.5 font-medium bg-primary/10 text-primary border border-primary/20 shrink-0"
+              >
                 {t('{count} 个子维度', { count: children.length })}
               </Badge>
             )}
@@ -929,7 +947,9 @@ const HierarchicalDimensionCard: React.FC<HierarchicalDimensionCardProps> = Reac
                     const isOwnedByInspected = hasInspected
                       ? inspectedTagSet.has(tag.tagValue.trim().toLowerCase()) ||
                         inspectedTagSet.has(`${root.id}::${tag.tagValue.trim().toLowerCase()}`) ||
-                        inspectedTagSet.has(`${rootNameLower}::${tag.tagValue.trim().toLowerCase()}`)
+                        inspectedTagSet.has(
+                          `${rootNameLower}::${tag.tagValue.trim().toLowerCase()}`
+                        )
                       : false
 
                     return (
@@ -953,9 +973,17 @@ const HierarchicalDimensionCard: React.FC<HierarchicalDimensionCardProps> = Reac
 
             {/* 2. 子维度树形嵌套分组区 */}
             {children.length > 0 && (
-              <div className={cn('space-y-3', rootTags.length > 0 ? 'pt-3 border-t border-border/40' : '')}>
+              <div
+                className={cn(
+                  'space-y-3',
+                  rootTags.length > 0 ? 'pt-3 border-t border-border/40' : ''
+                )}
+              >
                 <div className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5 px-0.5">
-                  <MaterialIcon icon="subdirectory_arrow_right" className="text-xs text-primary/70" />
+                  <MaterialIcon
+                    icon="subdirectory_arrow_right"
+                    className="text-xs text-primary/70"
+                  />
                   <span>{t('子维度 ({count})', { count: children.length })}</span>
                 </div>
 
@@ -972,8 +1000,13 @@ const HierarchicalDimensionCard: React.FC<HierarchicalDimensionCardProps> = Reac
                         {/* 子维度头部 */}
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-1.5 min-w-0">
-                            <span className="text-xs font-semibold text-foreground/90">{subGroup.name}</span>
-                            <Badge variant="outline" className="text-[9px] h-4 px-1 font-normal bg-background/80">
+                            <span className="text-xs font-semibold text-foreground/90">
+                              {subGroup.name}
+                            </span>
+                            <Badge
+                              variant="outline"
+                              className="text-[9px] h-4 px-1 font-normal bg-background/80"
+                            >
                               {subTags.length}
                             </Badge>
                           </div>
@@ -1019,8 +1052,12 @@ const HierarchicalDimensionCard: React.FC<HierarchicalDimensionCardProps> = Reac
                             const state = tagStates[tagKey] || 'initial'
                             const isOwnedByInspected = hasInspected
                               ? inspectedTagSet.has(tag.tagValue.trim().toLowerCase()) ||
-                                inspectedTagSet.has(`${subGroup.id}::${tag.tagValue.trim().toLowerCase()}`) ||
-                                inspectedTagSet.has(`${subNameLower}::${tag.tagValue.trim().toLowerCase()}`)
+                                inspectedTagSet.has(
+                                  `${subGroup.id}::${tag.tagValue.trim().toLowerCase()}`
+                                ) ||
+                                inspectedTagSet.has(
+                                  `${subNameLower}::${tag.tagValue.trim().toLowerCase()}`
+                                )
                               : false
 
                             return (
@@ -1260,8 +1297,12 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
     // 1. 载入全量预设维度定义
     for (const g of fullPresetGroups) {
       const isPan = isPanDimensionGroup(g, fullPresetGroups)
-      const prevMeta = typeof g.metadata === 'object' && g.metadata !== null ? (g.metadata as Record<string, any>) : {}
-      const prevFlag = typeof prevMeta.flag === 'object' && prevMeta.flag !== null ? prevMeta.flag : {}
+      const prevMeta =
+        typeof g.metadata === 'object' && g.metadata !== null
+          ? (g.metadata as Record<string, any>)
+          : {}
+      const prevFlag =
+        typeof prevMeta.flag === 'object' && prevMeta.flag !== null ? prevMeta.flag : {}
       dimMap.set(g.id, {
         ...g,
         code: resolveDimensionGroupCode(g) || g.code,
@@ -1279,7 +1320,10 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       if (existing) {
         const existingTagValues = new Set((existing.tags || []).map(t => t.tagValue.toLowerCase()))
         for (const t of g.tags || []) {
-          if (!isDeletedTag(existing.id, t.tagValue) && !existingTagValues.has(t.tagValue.toLowerCase())) {
+          if (
+            !isDeletedTag(existing.id, t.tagValue) &&
+            !existingTagValues.has(t.tagValue.toLowerCase())
+          ) {
             existing.tags = [
               ...(existing.tags || []),
               {
@@ -1297,7 +1341,8 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
             typeof existing.metadata === 'object' && existing.metadata !== null
               ? (existing.metadata as Record<string, any>)
               : {}
-          const prevFlag = typeof prevMeta.flag === 'object' && prevMeta.flag !== null ? prevMeta.flag : {}
+          const prevFlag =
+            typeof prevMeta.flag === 'object' && prevMeta.flag !== null ? prevMeta.flag : {}
           existing.metadata = {
             ...prevMeta,
             flag: {
@@ -1308,8 +1353,12 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
         }
       } else {
         const isPan = isPanDimensionGroup(g, fullPresetGroups)
-        const prevMeta = typeof g.metadata === 'object' && g.metadata !== null ? (g.metadata as Record<string, any>) : {}
-        const prevFlag = typeof prevMeta.flag === 'object' && prevMeta.flag !== null ? prevMeta.flag : {}
+        const prevMeta =
+          typeof g.metadata === 'object' && g.metadata !== null
+            ? (g.metadata as Record<string, any>)
+            : {}
+        const prevFlag =
+          typeof prevMeta.flag === 'object' && prevMeta.flag !== null ? prevMeta.flag : {}
         dimMap.set(g.id, {
           ...g,
           code: resolveDimensionGroupCode(g) || g.code,
@@ -1400,9 +1449,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       }
       // 敏感内容维度的隐蔽门禁：除非同维度的标签有一个及以上文件计数，否则全量隐藏不展示
       if (isSensitiveDimension(g)) {
-        const hasHit = (g.tags || []).some(
-          t => (tagFileCounts[t.tagValue] || t.fileCount || 0) > 0
-        )
+        const hasHit = (g.tags || []).some(t => (tagFileCounts[t.tagValue] || t.fileCount || 0) > 0)
         if (!hasHit) return false
       }
       return true
@@ -1483,10 +1530,20 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
         tags: validTags
       }
     })
-  }, [fullPresetGroups, dimensionGroups, fileCustomTags, tagFileCounts, deletedTagKeys, rootCategoryNamesSet])
+  }, [
+    fullPresetGroups,
+    dimensionGroups,
+    fileCustomTags,
+    tagFileCounts,
+    deletedTagKeys,
+    rootCategoryNamesSet
+  ])
 
   // 判断是否为泛维度（由策略元数据 flag.isPanDimension === true 驱动）
-  const isPanDimension = useCallback((group: DimensionGroup) => isPanDimensionGroup(group, fullPresetGroups), [fullPresetGroups])
+  const isPanDimension = useCallback(
+    (group: DimensionGroup) => isPanDimensionGroup(group, fullPresetGroups),
+    [fullPresetGroups]
+  )
 
   // 提取选中聚焦文件所拥有的所有标签集合（兼容数组或单个对象、各种字段名与维度ID）
   const inspectedTagSet = useMemo(() => {
@@ -1601,7 +1658,11 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
             ? dt.dimension
             : undefined)
         const val = dt?.tagValue ?? dt?.tag ?? dt?.name ?? dt?.value
-        addTag(dimId !== undefined && !isNaN(Number(dimId)) ? Number(dimId) : undefined, dimName, val)
+        addTag(
+          dimId !== undefined && !isNaN(Number(dimId)) ? Number(dimId) : undefined,
+          dimName,
+          val
+        )
       }
     }
 
@@ -1618,7 +1679,11 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
               ? t.dimension
               : undefined)
           const val = t.tagValue ?? t.tagName ?? t.name ?? t.value ?? t.tag
-          addTag(dimId !== undefined && !isNaN(Number(dimId)) ? Number(dimId) : undefined, dimName, val)
+          addTag(
+            dimId !== undefined && !isNaN(Number(dimId)) ? Number(dimId) : undefined,
+            dimName,
+            val
+          )
         }
       }
     }
@@ -1730,27 +1795,30 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
   }, [])
 
   // 快速全选某维度下的全部标签为全部附加
-  const handleBatchSetDimensionTags = useCallback((group: DimensionGroup, targetState: TagActionState) => {
-    // S3 规格 §5.3 状态机层兜底（第二道防线）：单选 / unknown 维度禁止「全附」。
-    // 展示层已把这些按钮替换为纯文本提示「选一个」，但任何新增入口都会绕过展示层，
-    // 故这里必须独立判定。toast 说明原因，避免用户以为按钮坏了。
-    if (targetState === 'add_all' && isMutexSingleGroup(group)) {
-      toast.info(t('该维度为单选维度，一次只能附加一个标签'))
-      return
-    }
-    setTagStates(prev => {
-      const next = { ...prev }
-      ;(group.tags || []).forEach(t => {
-        const key = `${group.id}::${t.tagValue}`
-        if (targetState === 'initial') {
-          delete next[key]
-        } else {
-          next[key] = targetState
-        }
+  const handleBatchSetDimensionTags = useCallback(
+    (group: DimensionGroup, targetState: TagActionState) => {
+      // S3 规格 §5.3 状态机层兜底（第二道防线）：单选 / unknown 维度禁止「全附」。
+      // 展示层已把这些按钮替换为纯文本提示「选一个」，但任何新增入口都会绕过展示层，
+      // 故这里必须独立判定。toast 说明原因，避免用户以为按钮坏了。
+      if (targetState === 'add_all' && isMutexSingleGroup(group)) {
+        toast.info(t('该维度为单选维度，一次只能附加一个标签'))
+        return
+      }
+      setTagStates(prev => {
+        const next = { ...prev }
+        ;(group.tags || []).forEach(t => {
+          const key = `${group.id}::${t.tagValue}`
+          if (targetState === 'initial') {
+            delete next[key]
+          } else {
+            next[key] = targetState
+          }
+        })
+        return next
       })
-      return next
-    })
-  }, [])
+    },
+    []
+  )
 
   // 提交新建标签
   const handleAddNewTag = useCallback(
@@ -1783,7 +1851,9 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
         const targetParentCode =
           targetGroup?.code ||
           CONTROLLED_DIMENSION_ROOT_CODES[dimensionId] ||
-          (targetGroup?.name && isControlledConcept(targetGroup.name) ? concept(targetGroup.name) : undefined) ||
+          (targetGroup?.name && isControlledConcept(targetGroup.name)
+            ? concept(targetGroup.name)
+            : undefined) ||
           concept('内容标签')
 
         // 即时预检受控语义
@@ -1859,29 +1929,32 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
   }, [])
 
   // 标记泛维度中的已有标签为待删除（从当前工作台中隐藏并加入移除变更队列）
-  const handleDeleteExistingTag = useCallback((dimId: number, tagName: string, e: React.MouseEvent) => {
-    e.stopPropagation()
-    const strVal = tagName.trim()
-    const key = `${dimId}::${strVal}`
-    const lowerKey = `${dimId}::${strVal.toLowerCase()}`
+  const handleDeleteExistingTag = useCallback(
+    (dimId: number, tagName: string, e: React.MouseEvent) => {
+      e.stopPropagation()
+      const strVal = tagName.trim()
+      const key = `${dimId}::${strVal}`
+      const lowerKey = `${dimId}::${strVal.toLowerCase()}`
 
-    setDeletedTagKeys(prev => {
-      const next = new Set(prev)
-      next.add(key)
-      next.add(lowerKey)
-      return next
-    })
+      setDeletedTagKeys(prev => {
+        const next = new Set(prev)
+        next.add(key)
+        next.add(lowerKey)
+        return next
+      })
 
-    // 如果该标签此前有三态附加设置，清理之
-    setTagStates(prev => {
-      const next = { ...prev }
-      delete next[key]
-      delete next[lowerKey]
-      return next
-    })
+      // 如果该标签此前有三态附加设置，清理之
+      setTagStates(prev => {
+        const next = { ...prev }
+        delete next[key]
+        delete next[lowerKey]
+        return next
+      })
 
-    toast.info(t('已将标签「{name}」标记为待移除，点击保存后生效', { name: tagName }))
-  }, [])
+      toast.info(t('已将标签「{name}」标记为待移除，点击保存后生效', { name: tagName }))
+    },
+    []
+  )
 
   // 汇总变更并提交
   const handleSave = async () => {
@@ -1913,7 +1986,9 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       const targetParentCode =
         targetGroup?.code ||
         CONTROLLED_DIMENSION_ROOT_CODES[activeInputDimId] ||
-        (targetGroup?.name && isControlledConcept(targetGroup.name) ? concept(targetGroup.name) : undefined) ||
+        (targetGroup?.name && isControlledConcept(targetGroup.name)
+          ? concept(targetGroup.name)
+          : undefined) ||
         concept('内容标签')
 
       let meta: {
@@ -1983,7 +2058,8 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       const [dimIdStr, ...tagValueParts] = tagKey.split('::')
       const tagValue = tagValueParts.join('::')
       const dimId = Number(dimIdStr)
-      const group = fullPresetGroups.find(g => g.id === dimId) || dimensionGroups.find(g => g.id === dimId)
+      const group =
+        fullPresetGroups.find(g => g.id === dimId) || dimensionGroups.find(g => g.id === dimId)
       const dimName = group?.name || '内容标签'
       const dimCode =
         group?.code ||
@@ -1991,10 +2067,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
         (dimName && isControlledConcept(dimName) ? concept(dimName) : undefined)
       const matchedTag = (group?.tags || []).find(t => t.tagValue === tagValue)
       const controlledCode = isControlledConcept(tagValue) ? concept(tagValue) : undefined
-      const tagCode =
-        controlledCode ||
-        (matchedTag as any)?.tagCode ||
-        (matchedTag as any)?.code
+      const tagCode = controlledCode || (matchedTag as any)?.tagCode || (matchedTag as any)?.code
 
       if (state === 'add_all') {
         addTags.push({
@@ -2026,7 +2099,8 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       const lowerKey = `${dimId}::${tagValue.toLowerCase()}`
       if (!processedRemoveKeys.has(lowerKey)) {
         processedRemoveKeys.add(lowerKey)
-        const group = fullPresetGroups.find(g => g.id === dimId) || dimensionGroups.find(g => g.id === dimId)
+        const group =
+          fullPresetGroups.find(g => g.id === dimId) || dimensionGroups.find(g => g.id === dimId)
         const dimName = group?.name || '内容标签'
         const dimCode =
           group?.code ||
@@ -2034,10 +2108,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
           (dimName && isControlledConcept(dimName) ? concept(dimName) : undefined)
         const matchedTag = (group?.tags || []).find(t => t.tagValue === tagValue)
         const controlledCode = isControlledConcept(tagValue) ? concept(tagValue) : undefined
-        const tagCode =
-          controlledCode ||
-          (matchedTag as any)?.tagCode ||
-          (matchedTag as any)?.code
+        const tagCode = controlledCode || (matchedTag as any)?.tagCode || (matchedTag as any)?.code
         removeTags.push({
           dimensionId: dimId,
           dimensionCode: dimCode,
@@ -2051,7 +2122,8 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
 
     for (const [dimIdStr, names] of Object.entries(activeNewTags)) {
       const dimId = Number(dimIdStr)
-      const group = fullPresetGroups.find(g => g.id === dimId) || dimensionGroups.find(g => g.id === dimId)
+      const group =
+        fullPresetGroups.find(g => g.id === dimId) || dimensionGroups.find(g => g.id === dimId)
       const dimName = group?.name || '内容标签'
       const dimCode =
         group?.code ||
@@ -2061,7 +2133,8 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
         if (name && name.trim()) {
           const trimmedName = name.trim()
           const cachedMeta = newTagMetaMap[dimId]?.[trimmedName]
-          const isControlledHit = cachedMeta?.isControlled && cachedMeta?.matchedParent && cachedMeta?.code
+          const isControlledHit =
+            cachedMeta?.isControlled && cachedMeta?.matchedParent && cachedMeta?.code
           newTags.push({
             dimensionId: dimId,
             dimensionCode: dimCode,
@@ -2112,7 +2185,9 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       .map(group => {
         const groupMatches = group.name.toLowerCase().includes(q)
         const matchedTags = (group.tags || []).filter(t => t.tagValue.toLowerCase().includes(q))
-        const matchedNewTags = (newTagNames[group.id] || []).filter(n => n.toLowerCase().includes(q))
+        const matchedNewTags = (newTagNames[group.id] || []).filter(n =>
+          n.toLowerCase().includes(q)
+        )
 
         if (groupMatches) return group
         if (matchedTags.length > 0 || matchedNewTags.length > 0) {
@@ -2338,7 +2413,10 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
   const hasInspected = Boolean(inspectedFileItem)
 
   return (
-    <div className="relative flex-1 flex flex-col overflow-hidden bg-background">
+    <div
+      data-testid="batch-tag-view"
+      className="relative flex-1 flex flex-col overflow-hidden bg-background"
+    >
       {/* 1. 选中文件聚焦联动状态条 (Inspector Banner - 浮动显示，脱离文档流，杜绝页面回流与重绘) */}
       {inspectedFileItem && (
         <div className="absolute top-3 left-4 right-4 z-30 px-4 py-3 bg-card/95 dark:bg-card/90 backdrop-blur-md border border-primary/30 rounded-2xl shadow-xl shadow-black/10 flex flex-col gap-2 text-xs transition-all duration-200 animate-in fade-in slide-in-from-top-2 will-change-transform pointer-events-auto">
@@ -2357,7 +2435,10 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
                   {inspectedFileItem.smartName || inspectedFileItem.name}
                 </span>
               </div>
-              <Badge variant="outline" className="bg-background/80 text-primary border-primary/30 text-[10px] h-4.5 px-1.5 shrink-0 font-mono font-medium">
+              <Badge
+                variant="outline"
+                className="bg-background/80 text-primary border-primary/30 text-[10px] h-4.5 px-1.5 shrink-0 font-mono font-medium"
+              >
                 {t('共 {count} 个标签', { count: inspectedFileTagsWithDimension.length })}
               </Badge>
             </div>
@@ -2492,7 +2573,9 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
         ) : filteredDimensionGroups.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center space-y-2 h-full">
             <MaterialIcon icon="search_off" className="text-3xl text-muted-foreground/50" />
-            <p className="text-xs font-semibold text-foreground/80">{t('未找到匹配的维度或标签')}</p>
+            <p className="text-xs font-semibold text-foreground/80">
+              {t('未找到匹配的维度或标签')}
+            </p>
             <p className="text-[11px] text-muted-foreground">{t('请尝试更换搜索词或新建标签')}</p>
           </div>
         ) : (
@@ -2513,7 +2596,10 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
                       <div className="flex items-center gap-2">
                         <MaterialIcon icon="category" className="text-sm text-primary" />
                         <span className="text-xs font-bold text-foreground">{t('分类维度')}</span>
-                        <Badge variant="outline" className="text-[10px] h-4.5 px-1.5 font-normal text-muted-foreground bg-background">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] h-4.5 px-1.5 font-normal text-muted-foreground bg-background"
+                        >
                           {t('{count} 个根分类', { count: hierarchicalGroups.length })}
                         </Badge>
                       </div>
@@ -2585,7 +2671,10 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
                       <div className="flex items-center gap-2">
                         <MaterialIcon icon="label" className="text-sm text-primary" />
                         <span className="text-xs font-bold text-foreground">{t('泛维度标签')}</span>
-                        <Badge variant="outline" className="text-[10px] h-4.5 px-1.5 font-normal text-muted-foreground bg-background">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] h-4.5 px-1.5 font-normal text-muted-foreground bg-background"
+                        >
                           {panGroups.length}
                         </Badge>
                       </div>

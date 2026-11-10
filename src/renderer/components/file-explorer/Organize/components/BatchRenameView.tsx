@@ -100,20 +100,17 @@ function isTokenInTemplate(tokenValue: string, currentTemplate: string): boolean
   // 1. 维度标签 {TAG:xxx}
   if (cleanVal.startsWith('{TAG:')) {
     const dimName = cleanVal.slice(5, -1).trim().toLowerCase()
-    return (
-      tpl.includes(`{tag:${dimName}}`) ||
-      tpl.includes(`tag:${dimName}`)
-    )
+    return tpl.includes(`{tag:${dimName}}`) || tpl.includes(`tag:${dimName}`)
   }
 
-// DSL 元数据槽位规范名 (用于模板存在性校验与别名映射)
-const META_SLOT_NAMES = {
-  RESOLUTION: '分辨率',
-  DURATION: '时长',
-  PAGES: '页数',
-  CODEC: '编码',
-  CODEC_FORMAT: '编码格式'
-} as const
+  // DSL 元数据槽位规范名 (用于模板存在性校验与别名映射)
+  const META_SLOT_NAMES = {
+    RESOLUTION: '分辨率',
+    DURATION: '时长',
+    PAGES: '页数',
+    CODEC: '编码',
+    CODEC_FORMAT: '编码格式'
+  } as const
 
   // 2. 多模态元数据 {META:xxx}
   if (cleanVal.startsWith('{META:')) {
@@ -129,25 +126,21 @@ const META_SLOT_NAMES = {
     // locale-invariant-ok: DSL 占位符模板匹配
     if (metaKey === META_SLOT_NAMES.DURATION || metaKey === 'duration' || metaKey === 'dur') {
       return (
-        tpl.includes('{meta:时长') ||
-        tpl.includes('{meta:duration') ||
-        tpl.includes('{meta:dur')
+        tpl.includes('{meta:时长') || tpl.includes('{meta:duration') || tpl.includes('{meta:dur')
       )
     }
     // locale-invariant-ok: DSL 占位符模板匹配
     if (metaKey === META_SLOT_NAMES.PAGES || metaKey === 'pages' || metaKey === 'page') {
-      return (
-        tpl.includes('{meta:页数') ||
-        tpl.includes('{meta:pages') ||
-        tpl.includes('{meta:page')
-      )
+      return tpl.includes('{meta:页数') || tpl.includes('{meta:pages') || tpl.includes('{meta:page')
     }
     // locale-invariant-ok: DSL 占位符模板匹配
-    if (metaKey === META_SLOT_NAMES.CODEC || metaKey === 'codec' || metaKey === META_SLOT_NAMES.CODEC_FORMAT) {
+    if (
+      metaKey === META_SLOT_NAMES.CODEC ||
+      metaKey === 'codec' ||
+      metaKey === META_SLOT_NAMES.CODEC_FORMAT
+    ) {
       return (
-        tpl.includes('{meta:编码') ||
-        tpl.includes('{meta:codec') ||
-        tpl.includes('{meta:编码格式')
+        tpl.includes('{meta:编码') || tpl.includes('{meta:codec') || tpl.includes('{meta:编码格式')
       )
     }
     return tpl.includes(`{meta:${metaKey}`)
@@ -281,7 +274,9 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
   isExecuting = false
 }) => {
   const { t, activeLanguage } = useVoerkaI18n(i18nScope)
-  const [template, setTemplate] = useState<string>(`[{TAG:${t('文件类型')}}]{SMART_NAME}_{MOD:YYYY-MM-DD}`)
+  const [template, setTemplate] = useState<string>(
+    `[{TAG:${t('文件类型')}}]{SMART_NAME}_{MOD:YYYY-MM-DD}`
+  )
   const [previewList, setPreviewList] = useState<BatchRenamePreviewItem[]>([])
   const [isLoadingPreview, setIsLoadingPreview] = useState(false)
 
@@ -299,7 +294,10 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
 
   // 胶囊拖拽排序状态
   const [draggedChipIndex, setDraggedChipIndex] = useState<number | null>(null)
-  const [dropTarget, setDropTarget] = useState<{ index: number; position: 'before' | 'after' } | null>(null)
+  const [dropTarget, setDropTarget] = useState<{
+    index: number
+    position: 'before' | 'after'
+  } | null>(null)
 
   // 左栏模板搜索
   const [templateSearch, setTemplateSearch] = useState('')
@@ -334,7 +332,10 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
       setIsLoadingPreview(true)
       try {
         if (window.electronAPI?.organizeBatch?.previewRename) {
-          const previews = await window.electronAPI.organizeBatch.previewRename(template, analyzedFiles)
+          const previews = await window.electronAPI.organizeBatch.previewRename(
+            template,
+            analyzedFiles
+          )
           if (isMounted) setPreviewList(previews)
         }
       } catch (e) {
@@ -376,7 +377,10 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
   const updateTemplateFromChips = useCallback((chips: string[]) => {
     let joined = chips.join('')
     // 优雅折叠连续分隔符
-    joined = joined.replace(/__+/g, '_').replace(/--+/g, '-').replace(/^\s*[_\-]|[\-_]\s*$/g, '')
+    joined = joined
+      .replace(/__+/g, '_')
+      .replace(/--+/g, '-')
+      .replace(/^\s*[_\-]|[\-_]\s*$/g, '')
     setTemplate(joined)
   }, [])
 
@@ -406,11 +410,7 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
     ) {
       return 'date'
     }
-    if (
-      tStr.includes('TAG:') ||
-      tStr.includes('AUTHOR') ||
-      tStr.includes('LANG')
-    ) {
+    if (tStr.includes('TAG:') || tStr.includes('AUTHOR') || tStr.includes('LANG')) {
       return 'tag'
     }
     if (tStr.includes('META:')) {
@@ -513,7 +513,12 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
     // 2. 统计该文件底层数据库中拥有的有效业务标签总数（排除扩展名标签）
     if (file) {
       if (Array.isArray(file.dimensionTags)) {
-        totalTagsCount += file.dimensionTags.filter((t: any) => t && (t.tag || t.tagValue || t.name) && !isExtensionTriggerTagName(t.tag || t.tagValue || t.name)).length
+        totalTagsCount += file.dimensionTags.filter(
+          (t: any) =>
+            t &&
+            (t.tag || t.tagValue || t.name) &&
+            !isExtensionTriggerTagName(t.tag || t.tagValue || t.name)
+        ).length
       }
       if (Array.isArray(file.tags)) {
         totalTagsCount += file.tags.filter(t => t && typeof t === 'string' && t.trim()).length
@@ -521,7 +526,11 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
       if (file.author && String(file.author).trim()) {
         totalTagsCount += 1
       }
-      if (file.metadata && typeof file.metadata === 'object' && Object.keys(file.metadata).length > 0) {
+      if (
+        file.metadata &&
+        typeof file.metadata === 'object' &&
+        Object.keys(file.metadata).length > 0
+      ) {
         totalTagsCount += 1
       }
     }
@@ -689,7 +698,7 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
   }
 
   return (
-    <div className="flex-1 flex overflow-hidden bg-background">
+    <div data-testid="batch-rename-view" className="flex-1 flex overflow-hidden bg-background">
       <SplitPane
         direction="horizontal"
         storageKey="organize-batch-rename"
@@ -743,7 +752,9 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                       <div
                         key={idx}
                         onClick={() => {
-                          const finalTpl = useTypeDelimiters ? item.template : stripTypeDelimiters(item.template)
+                          const finalTpl = useTypeDelimiters
+                            ? item.template
+                            : stripTypeDelimiters(item.template)
                           setTemplate(finalTpl)
                           toast.success(t('已套用模板: {name}', { name: item.name }))
                         }}
@@ -756,7 +767,10 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                       >
                         <div className="flex items-center justify-between gap-1">
                           <div className="flex items-center gap-1 min-w-0">
-                            <MaterialIcon icon={item.icon || 'label'} className="text-xs text-primary/70 shrink-0" />
+                            <MaterialIcon
+                              icon={item.icon || 'label'}
+                              className="text-xs text-primary/70 shrink-0"
+                            />
                             <span className="font-medium text-xs truncate">{item.name}</span>
                           </div>
                           <span className="text-[9px] px-1.5 py-0.2 rounded bg-muted/60 text-muted-foreground font-mono shrink-0">
@@ -925,6 +939,7 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                   {/* 表达式文本输入框与底部开关行 */}
                   <div className="space-y-2">
                     <Input
+                      data-testid="batch-rename-template-input"
                       value={template}
                       onChange={e => setTemplate(e.target.value)}
                       placeholder={t('自由编辑或输入 DSL 模板表达式')}
@@ -932,10 +947,18 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                     />
                     <div className="flex items-center justify-between gap-2 px-0.5 pt-0.5">
                       <div className="text-[11px] text-muted-foreground flex items-center gap-1.5">
-                        <MaterialIcon icon="auto_fix_high" className="text-xs text-primary/70 shrink-0" />
-                        <span className="truncate">{t('连接符已根据语义智能生成，缺少变量时自动折叠')}</span>
+                        <MaterialIcon
+                          icon="auto_fix_high"
+                          className="text-xs text-primary/70 shrink-0"
+                        />
+                        <span className="truncate">
+                          {t('连接符已根据语义智能生成，缺少变量时自动折叠')}
+                        </span>
                       </div>
-                      <label className="inline-flex items-center gap-1.5 text-xs text-foreground cursor-pointer select-none bg-background hover:bg-background/80 px-2.5 py-1 rounded-md border border-border/40 transition-colors shrink-0 shadow-2xs" title={t('勾选时自动添加 []、()、<> 等类型修饰符，取消勾选时则移除')}>
+                      <label
+                        className="inline-flex items-center gap-1.5 text-xs text-foreground cursor-pointer select-none bg-background hover:bg-background/80 px-2.5 py-1 rounded-md border border-border/40 transition-colors shrink-0 shadow-2xs"
+                        title={t('勾选时自动添加 []、()、<> 等类型修饰符，取消勾选时则移除')}
+                      >
                         <input
                           type="checkbox"
                           checked={useTypeDelimiters}
@@ -1010,7 +1033,9 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                           // 搜索模式下自动扩展至全量类别，确保用户能检索到系统内所有可用属性
                           candidateCategories = tokenCategories
                         } else {
-                          candidateCategories = tokenCategories.filter(cat => cat.key === selectedTokenCategory)
+                          candidateCategories = tokenCategories.filter(
+                            cat => cat.key === selectedTokenCategory
+                          )
                         }
                       } else {
                         if (selectedTokenCategory === 'common') {
@@ -1018,7 +1043,9 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                         } else if (selectedTokenCategory === 'all') {
                           candidateCategories = tokenCategories
                         } else {
-                          candidateCategories = tokenCategories.filter(cat => cat.key === selectedTokenCategory)
+                          candidateCategories = tokenCategories.filter(
+                            cat => cat.key === selectedTokenCategory
+                          )
                         }
                       }
 
@@ -1029,7 +1056,8 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                             tokenSearch.trim()
                               ? t.label.toLowerCase().includes(tokenSearch.toLowerCase()) ||
                                 t.value.toLowerCase().includes(tokenSearch.toLowerCase()) ||
-                                (t.parentName && t.parentName.toLowerCase().includes(tokenSearch.toLowerCase()))
+                                (t.parentName &&
+                                  t.parentName.toLowerCase().includes(tokenSearch.toLowerCase()))
                               : true
                           )
                         }))
@@ -1038,7 +1066,10 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                       if (visibleCategories.length === 0) {
                         return (
                           <div className="h-40 flex flex-col items-center justify-center text-xs text-muted-foreground gap-1.5 text-center px-4">
-                            <MaterialIcon icon="check_circle" className="text-2xl text-primary/60" />
+                            <MaterialIcon
+                              icon="check_circle"
+                              className="text-2xl text-primary/60"
+                            />
                             <span>
                               {tokenSearch.trim()
                                 ? t('没有找到匹配的属性')
@@ -1061,19 +1092,27 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                               isInTemplate
                                 ? t('已选入命名模板: {desc}', {
                                     desc: token.parentName
-                                      ? t('所属「{parent}」维度: {desc}', { parent: token.parentName, desc: token.desc })
+                                      ? t('所属「{parent}」维度: {desc}', {
+                                          parent: token.parentName,
+                                          desc: token.desc
+                                        })
                                       : token.desc
                                   })
                                 : token.parentName
-                                ? t('所属「{parent}」维度: {desc}', { parent: token.parentName, desc: token.desc })
-                                : token.desc
+                                  ? t('所属「{parent}」维度: {desc}', {
+                                      parent: token.parentName,
+                                      desc: token.desc
+                                    })
+                                  : token.desc
                             }
                             onClick={() => handleInsertToken(token.value)}
                             className={cn(
                               'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border transition-all duration-150',
                               'hover:-translate-y-0.5 hover:shadow-2xs active:scale-95 cursor-pointer',
-                              token.pillClass || 'bg-muted/30 hover:bg-primary/15 border-border/40 text-foreground',
-                              isInTemplate && 'opacity-40 hover:opacity-75 bg-muted/20 border-dashed saturate-50 ring-1 ring-primary/20'
+                              token.pillClass ||
+                                'bg-muted/30 hover:bg-primary/15 border-border/40 text-foreground',
+                              isInTemplate &&
+                                'opacity-40 hover:opacity-75 bg-muted/20 border-dashed saturate-50 ring-1 ring-primary/20'
                             )}
                           >
                             {isSelfNamed ? (
@@ -1094,18 +1133,22 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                         // ─── 维度体系：专用的原生维度树状层级导轨渲染 ───────────────
                         if (cat.tree && cat.tree.length > 0) {
                           const searchLower = tokenSearch.trim().toLowerCase()
-                          const filterNode = (node: DimensionTreeNode): DimensionTreeNode | null => {
+                          const filterNode = (
+                            node: DimensionTreeNode
+                          ): DimensionTreeNode | null => {
                             const isSelfMatch =
                               !searchLower ||
                               node.token.label.toLowerCase().includes(searchLower) ||
                               node.token.value.toLowerCase().includes(searchLower) ||
-                              (node.token.parentName && node.token.parentName.toLowerCase().includes(searchLower))
+                              (node.token.parentName &&
+                                node.token.parentName.toLowerCase().includes(searchLower))
 
-                            const matchedChildren = (!searchLower || isSelfMatch)
-                              ? (node.children || [])
-                              : (node.children || [])
-                                  .map(child => filterNode(child))
-                                  .filter(Boolean) as DimensionTreeNode[]
+                            const matchedChildren =
+                              !searchLower || isSelfMatch
+                                ? node.children || []
+                                : ((node.children || [])
+                                    .map(child => filterNode(child))
+                                    .filter(Boolean) as DimensionTreeNode[])
 
                             if (!searchLower || isSelfMatch || matchedChildren.length > 0) {
                               return {
@@ -1123,7 +1166,12 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                           return (
                             <div key={catIdx} className="space-y-3">
                               <div className="flex items-center justify-between">
-                                <span className={cn('px-2 py-0.5 rounded text-[10px] font-bold border', cat.badgeColor)}>
+                                <span
+                                  className={cn(
+                                    'px-2 py-0.5 rounded text-[10px] font-bold border',
+                                    cat.badgeColor
+                                  )}
+                                >
                                   {cat.category}
                                 </span>
                                 <span className="text-[10px] text-muted-foreground/70 font-mono">
@@ -1139,7 +1187,10 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                                   >
                                     {/* 顶层根节点：根维度本身即树根，无需多余 title 与 '根维度:' 文本 */}
                                     <div className="flex items-center gap-1.5 pb-1.5 border-b border-border/40">
-                                      <MaterialIcon icon="category" className="text-emerald-500 text-sm shrink-0" />
+                                      <MaterialIcon
+                                        icon="category"
+                                        className="text-emerald-500 text-sm shrink-0"
+                                      />
                                       {renderTokenButton(root.token, `root-${root.id}`)}
                                     </div>
 
@@ -1153,18 +1204,27 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                                               <span className="text-[11px] text-emerald-600/70 dark:text-emerald-400/70 font-mono select-none">
                                                 ├─
                                               </span>
-                                              {renderTokenButton(child.token, `child-${child.id}-${cIdx}`)}
+                                              {renderTokenButton(
+                                                child.token,
+                                                `child-${child.id}-${cIdx}`
+                                              )}
                                             </div>
 
                                             {/* 三级细分叶子节点（在二级节点下方，次级虚线导轨缩进） */}
                                             {child.children && child.children.length > 0 && (
                                               <div className="pl-4 ml-3 border-l border-dashed border-emerald-500/30 flex flex-wrap gap-2 py-0.5">
                                                 {child.children.map((grandChild, gIdx) => (
-                                                  <div key={grandChild.id} className="flex items-center gap-1">
+                                                  <div
+                                                    key={grandChild.id}
+                                                    className="flex items-center gap-1"
+                                                  >
                                                     <span className="text-[10px] text-emerald-600/50 dark:text-emerald-400/50 font-mono select-none">
                                                       └─
                                                     </span>
-                                                    {renderTokenButton(grandChild.token, `sub-${child.id}-${gIdx}`)}
+                                                    {renderTokenButton(
+                                                      grandChild.token,
+                                                      `sub-${child.id}-${gIdx}`
+                                                    )}
                                                   </div>
                                                 ))}
                                               </div>
@@ -1184,7 +1244,12 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                         return (
                           <div key={catIdx} className="space-y-2">
                             <div className="flex items-center justify-between">
-                              <span className={cn('px-2 py-0.5 rounded text-[10px] font-bold border', cat.badgeColor)}>
+                              <span
+                                className={cn(
+                                  'px-2 py-0.5 rounded text-[10px] font-bold border',
+                                  cat.badgeColor
+                                )}
+                              >
                                 {cat.category}
                               </span>
                               <span className="text-[10px] text-muted-foreground/70 font-mono">
@@ -1225,10 +1290,13 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                       {filteredPreviewList.length > MAX_PREVIEW_ITEMS && (
                         <span
                           className="text-[10px] text-amber-600 dark:text-amber-400 font-mono bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.2 rounded-full"
-                          title={t('为保证性能，实时对照列表仅展示前 {max} 个文件（共 {total} 个）', {
-                            max: MAX_PREVIEW_ITEMS,
-                            total: filteredPreviewList.length
-                          })}
+                          title={t(
+                            '为保证性能，实时对照列表仅展示前 {max} 个文件（共 {total} 个）',
+                            {
+                              max: MAX_PREVIEW_ITEMS,
+                              total: filteredPreviewList.length
+                            }
+                          )}
                         >
                           {t('仅展示前 {max} 项', { max: MAX_PREVIEW_ITEMS })}
                         </span>
@@ -1330,14 +1398,20 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                 <div className="flex-1 overflow-y-auto">
                   {displayedPreviewList.length === 0 ? (
                     <div className="h-40 flex flex-col items-center justify-center text-xs text-muted-foreground gap-1.5">
-                      <MaterialIcon icon="folder_open" className="text-2xl text-muted-foreground/50" />
+                      <MaterialIcon
+                        icon="folder_open"
+                        className="text-2xl text-muted-foreground/50"
+                      />
                       <span>{t('没有符合筛选条件的待重命名文件')}</span>
                     </div>
                   ) : rightViewMode === 'card' ? (
                     <div className="divide-y divide-border/30">
                       {displayedPreviewList.map((item, idx) => {
                         const isChanged = isItemChanged(item)
-                        const cleanSmartName = (item.rawSmartName || '').replace(/\.[a-zA-Z0-9]{1,10}$/i, '')
+                        const cleanSmartName = (item.rawSmartName || '').replace(
+                          /\.[a-zA-Z0-9]{1,10}$/i,
+                          ''
+                        )
                         return (
                           <div
                             key={item.fileId || idx}
@@ -1358,7 +1432,10 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                                 </span>
                               </div>
                               {item.hasError && (
-                                <Badge variant="destructive" className="text-[10px] h-4 px-1.5 shrink-0 ml-2">
+                                <Badge
+                                  variant="destructive"
+                                  className="text-[10px] h-4 px-1.5 shrink-0 ml-2"
+                                >
                                   {t('异常')}
                                 </Badge>
                               )}
@@ -1367,7 +1444,10 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                             {/* 2. 原始智能文件名（左对齐，纯文本，无背景色框，展示不带扩展名的 rawSmartName） */}
                             {cleanSmartName && (
                               <div className="flex items-center gap-1.5 text-[12px] text-muted-foreground font-sans">
-                                <MaterialIcon icon="psychology" className="text-xs text-primary/70 shrink-0" />
+                                <MaterialIcon
+                                  icon="psychology"
+                                  className="text-xs text-primary/70 shrink-0"
+                                />
                                 <span className="truncate" title={cleanSmartName}>
                                   {cleanSmartName}
                                 </span>
@@ -1428,13 +1508,25 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                         <tbody className="divide-y divide-border/30 font-mono text-[11px]">
                           {displayedPreviewList.map((item, idx) => {
                             const isChanged = isItemChanged(item)
-                            const cleanSmartName = (item.rawSmartName || '').replace(/\.[a-zA-Z0-9]{1,10}$/i, '')
+                            const cleanSmartName = (item.rawSmartName || '').replace(
+                              /\.[a-zA-Z0-9]{1,10}$/i,
+                              ''
+                            )
                             return (
-                              <tr key={item.fileId || idx} className="hover:bg-muted/20 transition-colors">
-                                <td className="p-2.5 truncate max-w-[120px] text-muted-foreground" title={item.currentName}>
+                              <tr
+                                key={item.fileId || idx}
+                                className="hover:bg-muted/20 transition-colors"
+                              >
+                                <td
+                                  className="p-2.5 truncate max-w-[120px] text-muted-foreground"
+                                  title={item.currentName}
+                                >
                                   {item.currentName}
                                 </td>
-                                <td className="p-2.5 truncate max-w-[120px] text-muted-foreground font-sans" title={cleanSmartName || '-'}>
+                                <td
+                                  className="p-2.5 truncate max-w-[120px] text-muted-foreground font-sans"
+                                  title={cleanSmartName || '-'}
+                                >
                                   {cleanSmartName || '-'}
                                 </td>
                                 <td className="p-2.5 truncate max-w-[160px]" title={item.newName}>
@@ -1492,4 +1584,3 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
     </div>
   )
 }
-

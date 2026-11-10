@@ -16,6 +16,7 @@ import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { t } from '@app/languages'
 import { decompressJson, decompressText } from '../../utils/text-compressor'
 import { isRenameProtectedExtension } from '../../utils/extension-rename-whitelist'
+import { getTrashPort } from './trash-port'
 
 export class DuplicateDetectionService {
   /**
@@ -144,7 +145,17 @@ export class DuplicateDetectionService {
           }
         } else {
           // 老数据兼容：未设置 isCzkawka 时，非待清理扩展名/构建目录的目录与文件规则默认纳入保护
-          const isCleanTarget = ['.tmp', '.log', '.bak', '.old', '.dmp', 'dist', 'build', 'out', 'target'].some(t => val.toLowerCase().includes(t))
+          const isCleanTarget = [
+            '.tmp',
+            '.log',
+            '.bak',
+            '.old',
+            '.dmp',
+            'dist',
+            'build',
+            'out',
+            'target'
+          ].some(t => val.toLowerCase().includes(t))
           if ((rule.type === 'directory' || rule.type === 'file') && !isCleanTarget) {
             if (!rawProtectedItems.includes(val)) {
               rawProtectedItems.push(val)
@@ -178,10 +189,17 @@ export class DuplicateDetectionService {
    */
   public async scanDuplicates(
     options: DuplicateDetectionOptions,
-    onProgress?: (data: { scanned: number; totalScanned: number; stage: string; group?: any }) => void
+    onProgress?: (data: {
+      scanned: number
+      totalScanned: number
+      stage: string
+      group?: any
+    }) => void
   ): Promise<DuplicateGroup[]> {
     const fileIdsCount = options.fileIds?.length ?? 0
-    const hasWorkspacePath = !!(options.workspaceDirectoryPath && fs.existsSync(options.workspaceDirectoryPath))
+    const hasWorkspacePath = !!(
+      options.workspaceDirectoryPath && fs.existsSync(options.workspaceDirectoryPath)
+    )
 
     logger.info(LogCategory.FILE_ORGANIZATION, '开始执行双轨查重扫描', {
       workspaceDirectoryPath: options.workspaceDirectoryPath,
@@ -204,7 +222,9 @@ export class DuplicateDetectionService {
     // Omni 负责对全量物理目录进行全策略扫描，DocSemantics 负责对已有数据库文本进行语义对比
     const [omniResult, docResult] = await Promise.allSettled([
       this.scanViaOmniRust(filePaths, options, onProgress),
-      dbFiles.length > 0 ? this.scanDocSemanticsAndHeuristics(dbFiles, options) : Promise.resolve([])
+      dbFiles.length > 0
+        ? this.scanDocSemanticsAndHeuristics(dbFiles, options)
+        : Promise.resolve([])
     ])
 
     const omniGroups = omniResult.status === 'fulfilled' ? omniResult.value : []
@@ -230,19 +250,32 @@ export class DuplicateDetectionService {
   private async scanViaOmniRust(
     filePaths: string[],
     options: DuplicateDetectionOptions,
-    onProgress?: (data: { scanned: number; totalScanned: number; stage: string; group?: any }) => void
+    onProgress?: (data: {
+      scanned: number
+      totalScanned: number
+      stage: string
+      group?: any
+    }) => void
   ): Promise<DuplicateGroup[]> {
     try {
-      const targetPaths = (options.workspaceDirectoryPath && fs.existsSync(options.workspaceDirectoryPath) && (!options.fileIds || options.fileIds.length === 0))
-        ? [options.workspaceDirectoryPath]
-        : (filePaths.length > 0 ? filePaths : [options.workspaceDirectoryPath || ''])
+      const targetPaths =
+        options.workspaceDirectoryPath &&
+        fs.existsSync(options.workspaceDirectoryPath) &&
+        (!options.fileIds || options.fileIds.length === 0)
+          ? [options.workspaceDirectoryPath]
+          : filePaths.length > 0
+            ? filePaths
+            : [options.workspaceDirectoryPath || '']
 
       const excludedItems = this.getProtectedExcludedItems()
       const reqBody = {
         paths: targetPaths,
-        min_similarity: options.minSimilarity !== undefined
-          ? (options.minSimilarity > 10 ? options.minSimilarity / 10 : options.minSimilarity)
-          : 7.5,
+        min_similarity:
+          options.minSimilarity !== undefined
+            ? options.minSimilarity > 10
+              ? options.minSimilarity / 10
+              : options.minSimilarity
+            : 7.5,
         strategies: options.strategies || ['exact_hash', 'image_phash'],
         name_issues_mode: options.nameIssuesMode || 'multilingual',
         excluded_items: excludedItems
@@ -676,10 +709,7 @@ export class DuplicateDetectionService {
     return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`
   }
 
-  public static applySmartRecommendKeep(
-    groups: DuplicateGroup[],
-    rule: string
-  ): DuplicateGroup[] {
+  public static applySmartRecommendKeep(groups: DuplicateGroup[], rule: string): DuplicateGroup[] {
     for (const group of groups) {
       if (!group.files || group.files.length === 0) continue
 
@@ -796,10 +826,7 @@ export class DuplicateDetectionService {
     return groups
   }
 
-  public applySmartRecommendKeep(
-    groups: DuplicateGroup[],
-    rule: string
-  ): DuplicateGroup[] {
+  public applySmartRecommendKeep(groups: DuplicateGroup[], rule: string): DuplicateGroup[] {
     return DuplicateDetectionService.applySmartRecommendKeep(groups, rule)
   }
 
@@ -820,8 +847,8 @@ export class DuplicateDetectionService {
           const stat = fs.statSync(filePath)
           const size = stat.size
 
-          // 核心安全操作：移入操作系统回收站
-          await shell.trashItem(filePath)
+          // 核心安全操作：移入操作系统回收站 (通过 TrashPort 抽象隔离)
+          await getTrashPort().trash(filePath)
           deletedCount++
           freedBytes += size
 
@@ -870,13 +897,17 @@ export class DuplicateDetectionService {
     // 辅助工具：快速原子移动文件 (同卷优先 renameSync，跨卷降级 copyFileSync + unlinkSync)
     const moveFileAtomically = (src: string, dest: string) => {
       if (fs.existsSync(dest)) {
-        try { fs.unlinkSync(dest) } catch {}
+        try {
+          fs.unlinkSync(dest)
+        } catch {}
       }
       try {
         fs.renameSync(src, dest)
       } catch {
         fs.copyFileSync(src, dest)
-        try { fs.unlinkSync(src) } catch {}
+        try {
+          fs.unlinkSync(src)
+        } catch {}
       }
     }
 
@@ -896,8 +927,12 @@ export class DuplicateDetectionService {
       const pathB = typeof b === 'string' ? b : b.path
       let sizeA = 0
       let sizeB = 0
-      try { sizeA = fs.statSync(pathA).size } catch {}
-      try { sizeB = fs.statSync(pathB).size } catch {}
+      try {
+        sizeA = fs.statSync(pathA).size
+      } catch {}
+      try {
+        sizeB = fs.statSync(pathB).size
+      } catch {}
       return sizeA - sizeB
     })
 
@@ -913,7 +948,7 @@ export class DuplicateDetectionService {
 
       try {
         if (action === 'trash') {
-          await shell.trashItem(filePath)
+          await getTrashPort().trash(filePath)
           if (db) {
             db.prepare('DELETE FROM workspace_files WHERE path = ?').run(filePath)
           }
@@ -925,14 +960,21 @@ export class DuplicateDetectionService {
           const dir = path.dirname(filePath)
           let newPath = ''
 
-          if (suggestedNewName && suggestedNewName.trim() && suggestedNewName.trim() !== path.basename(filePath)) {
+          if (
+            suggestedNewName &&
+            suggestedNewName.trim() &&
+            suggestedNewName.trim() !== path.basename(filePath)
+          ) {
             newPath = path.join(dir, suggestedNewName.trim())
           } else {
             // 兜底方案：清洗去除首尾空格、emoji、特殊符号、重复下划线
             const ext = path.extname(filePath)
             const nameWithoutExt = path.basename(filePath, ext)
             let cleaned = nameWithoutExt
-              .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
+              .replace(
+                /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu,
+                ''
+              )
               .replace(/[\s\-_]+/g, '_')
               .replace(/^[\s\-_.]+|[\s\-_.]+$/g, '')
               .trim()
@@ -943,7 +985,10 @@ export class DuplicateDetectionService {
           if (newPath && newPath !== filePath) {
             // 在 Windows NTFS 文件系统下，同名大小写变更必须通过临时中转名进行两步重命名
             if (process.platform === 'win32' && newPath.toLowerCase() === filePath.toLowerCase()) {
-              const tempPath = path.join(dir, `__temp_rename_${Date.now()}_${path.basename(filePath)}`)
+              const tempPath = path.join(
+                dir,
+                `__temp_rename_${Date.now()}_${path.basename(filePath)}`
+              )
               fs.renameSync(filePath, tempPath)
               fs.renameSync(tempPath, newPath)
             } else {
@@ -957,19 +1002,17 @@ export class DuplicateDetectionService {
               const pathBackslash = filePath.replace(/\//g, '\\')
 
               // 1. 更新 workspace_files 中的物理路径与真实文件名 (同时兼容正反斜杠匹配)
-              const wfRow = db.prepare('SELECT file_fingerprint FROM workspace_files WHERE path = ? OR path = ?').get(pathSlash, pathBackslash) as any
-              db.prepare('UPDATE workspace_files SET path = ?, name = ?, modified_at = CURRENT_TIMESTAMP WHERE path = ? OR path = ?').run(
-                newPath,
-                newName,
-                pathSlash,
-                pathBackslash
-              )
+              const wfRow = db
+                .prepare('SELECT file_fingerprint FROM workspace_files WHERE path = ? OR path = ?')
+                .get(pathSlash, pathBackslash) as any
+              db.prepare(
+                'UPDATE workspace_files SET path = ?, name = ?, modified_at = CURRENT_TIMESTAMP WHERE path = ? OR path = ?'
+              ).run(newPath, newName, pathSlash, pathBackslash)
               // 2. 如果存在关联的文件指纹，同步更新 files 表的基础元数据
               if (wfRow?.file_fingerprint) {
-                db.prepare('UPDATE files SET extension = ?, modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = ?').run(
-                  newExt,
-                  wfRow.file_fingerprint
-                )
+                db.prepare(
+                  'UPDATE files SET extension = ?, modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = ?'
+                ).run(newExt, wfRow.file_fingerprint)
               }
             }
           }
@@ -999,17 +1042,42 @@ export class DuplicateDetectionService {
           fs.closeSync(fd)
 
           if (buffer[0] === 0xff && buffer[1] === 0xd8) properExt = '.jpg'
-          else if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47) properExt = '.png'
-          else if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46) properExt = '.gif'
-          else if (buffer[0] === 0x25 && buffer[1] === 0x50 && buffer[2] === 0x44 && buffer[3] === 0x46) properExt = '.pdf'
+          else if (
+            buffer[0] === 0x89 &&
+            buffer[1] === 0x50 &&
+            buffer[2] === 0x4e &&
+            buffer[3] === 0x47
+          )
+            properExt = '.png'
+          else if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46)
+            properExt = '.gif'
+          else if (
+            buffer[0] === 0x25 &&
+            buffer[1] === 0x50 &&
+            buffer[2] === 0x44 &&
+            buffer[3] === 0x46
+          )
+            properExt = '.pdf'
           else if (buffer[0] === 0x50 && buffer[1] === 0x4b) properExt = '.zip'
-          else if (buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46) properExt = '.webp'
+          else if (
+            buffer[0] === 0x52 &&
+            buffer[1] === 0x49 &&
+            buffer[2] === 0x46 &&
+            buffer[3] === 0x46
+          )
+            properExt = '.webp'
 
           if (properExt) {
             const newPath = path.join(dir, `${nameWithoutExt}${properExt}`)
             if (newPath !== filePath) {
-              if (process.platform === 'win32' && newPath.toLowerCase() === filePath.toLowerCase()) {
-                const tempPath = path.join(dir, `__temp_fixext_${Date.now()}_${path.basename(filePath)}`)
+              if (
+                process.platform === 'win32' &&
+                newPath.toLowerCase() === filePath.toLowerCase()
+              ) {
+                const tempPath = path.join(
+                  dir,
+                  `__temp_fixext_${Date.now()}_${path.basename(filePath)}`
+                )
                 fs.renameSync(filePath, tempPath)
                 fs.renameSync(tempPath, newPath)
               } else {
@@ -1022,16 +1090,19 @@ export class DuplicateDetectionService {
                 const pathBackslash = filePath.replace(/\//g, '\\')
 
                 // 1. 更新 workspace_files 表中的物理路径与真实文件名 (同时兼容正反斜杠匹配)
-                const wfRow = db.prepare('SELECT file_fingerprint FROM workspace_files WHERE path = ? OR path = ?').get(pathSlash, pathBackslash) as any
-                db.prepare('UPDATE workspace_files SET path = ?, name = ?, modified_at = CURRENT_TIMESTAMP WHERE path = ? OR path = ?').run(
-                  newPath,
-                  newName,
-                  pathSlash,
-                  pathBackslash
-                )
+                const wfRow = db
+                  .prepare(
+                    'SELECT file_fingerprint FROM workspace_files WHERE path = ? OR path = ?'
+                  )
+                  .get(pathSlash, pathBackslash) as any
+                db.prepare(
+                  'UPDATE workspace_files SET path = ?, name = ?, modified_at = CURRENT_TIMESTAMP WHERE path = ? OR path = ?'
+                ).run(newPath, newName, pathSlash, pathBackslash)
                 // 2. 同步更新 files 表中记录的文件类型与后缀，并顺带更新智能文件名 (smart_name) 的扩展名
                 if (wfRow?.file_fingerprint) {
-                  const fileRow = db.prepare('SELECT smart_name FROM files WHERE file_fingerprint = ?').get(wfRow.file_fingerprint) as any
+                  const fileRow = db
+                    .prepare('SELECT smart_name FROM files WHERE file_fingerprint = ?')
+                    .get(wfRow.file_fingerprint) as any
                   let updatedSmartName = fileRow?.smart_name
                   if (updatedSmartName && typeof updatedSmartName === 'string') {
                     const oldSmartExt = path.extname(updatedSmartName)
@@ -1042,11 +1113,9 @@ export class DuplicateDetectionService {
                       updatedSmartName = `${updatedSmartName}${properExt}`
                     }
                   }
-                  db.prepare('UPDATE files SET extension = ?, smart_name = ?, modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = ?').run(
-                    cleanExt,
-                    updatedSmartName || null,
-                    wfRow.file_fingerprint
-                  )
+                  db.prepare(
+                    'UPDATE files SET extension = ?, smart_name = ?, modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = ?'
+                  ).run(cleanExt, updatedSmartName || null, wfRow.file_fingerprint)
                 }
               }
             }
@@ -1090,11 +1159,51 @@ export class DuplicateDetectionService {
                 path.join(process.resourcesPath || '', 'bin', 'exiftool', exeName),
                 path.join(process.resourcesPath || '', 'bin', 'exiftool', 'win32', exeName),
                 path.join(process.cwd(), 'build', 'extraResources', 'bin', 'exiftool', exeName),
-                path.join(process.cwd(), 'build', 'extraResources', 'bin', 'exiftool', 'win32', exeName),
-                path.join(process.cwd(), 'apps', 'desktop', 'build', 'extraResources', 'bin', 'exiftool', exeName),
-                path.join(process.cwd(), 'apps', 'omni', 'build', 'extraResources', 'bin', 'exiftool', exeName),
-                path.join(process.cwd(), 'node_modules', 'exiftool-vendored.exe', 'bin', 'exiftool.exe'),
-                path.join(process.cwd(), 'apps', 'desktop', 'node_modules', 'exiftool-vendored.exe', 'bin', 'exiftool.exe'),
+                path.join(
+                  process.cwd(),
+                  'build',
+                  'extraResources',
+                  'bin',
+                  'exiftool',
+                  'win32',
+                  exeName
+                ),
+                path.join(
+                  process.cwd(),
+                  'apps',
+                  'desktop',
+                  'build',
+                  'extraResources',
+                  'bin',
+                  'exiftool',
+                  exeName
+                ),
+                path.join(
+                  process.cwd(),
+                  'apps',
+                  'omni',
+                  'build',
+                  'extraResources',
+                  'bin',
+                  'exiftool',
+                  exeName
+                ),
+                path.join(
+                  process.cwd(),
+                  'node_modules',
+                  'exiftool-vendored.exe',
+                  'bin',
+                  'exiftool.exe'
+                ),
+                path.join(
+                  process.cwd(),
+                  'apps',
+                  'desktop',
+                  'node_modules',
+                  'exiftool-vendored.exe',
+                  'bin',
+                  'exiftool.exe'
+                ),
                 exeName
               ]
               for (const p of possiblePaths) {
@@ -1103,7 +1212,9 @@ export class DuplicateDetectionService {
               return null
             }
 
-            const meta = await sharpModule(filePath).metadata().catch(() => null)
+            const meta = await sharpModule(filePath)
+              .metadata()
+              .catch(() => null)
             const needsRotation = meta?.orientation && meta.orientation > 1
 
             if (!needsRotation) {
@@ -1111,14 +1222,20 @@ export class DuplicateDetectionService {
               const exifToolPath = findExifTool()
               if (exifToolPath) {
                 if (fs.existsSync(outFilePath)) {
-                  try { fs.unlinkSync(outFilePath) } catch {}
+                  try {
+                    fs.unlinkSync(outFilePath)
+                  } catch {}
                 }
                 fs.copyFileSync(filePath, outFilePath)
                 // windowsHide: exiftool 为控制台程序，逐文件调用时缺省会反复闪出控制台窗口
-                const res = cp.spawnSync(exifToolPath, ['-all=', '-overwrite_original', outFilePath], {
-                  encoding: 'utf-8',
-                  windowsHide: true
-                })
+                const res = cp.spawnSync(
+                  exifToolPath,
+                  ['-all=', '-overwrite_original', outFilePath],
+                  {
+                    encoding: 'utf-8',
+                    windowsHide: true
+                  }
+                )
                 if (res.status === 0 && fs.existsSync(outFilePath)) {
                   cleanExifSucceeded = true
                 }
@@ -1142,13 +1259,19 @@ export class DuplicateDetectionService {
               }
 
               if (fs.existsSync(outFilePath)) {
-                try { fs.unlinkSync(outFilePath) } catch {}
+                try {
+                  fs.unlinkSync(outFilePath)
+                } catch {}
               }
               fs.writeFileSync(outFilePath, cleanBuffer)
               cleanExifSucceeded = true
             }
           } catch (sharpErr: any) {
-            logger.warn(LogCategory.FILE_ORGANIZATION, `本地物理校正与擦除 Exif 异常 [${filePath}], 尝试降级至 Omni:`, sharpErr)
+            logger.warn(
+              LogCategory.FILE_ORGANIZATION,
+              `本地物理校正与擦除 Exif 异常 [${filePath}], 尝试降级至 Omni:`,
+              sharpErr
+            )
             // 降级调用 Omni 服务
             try {
               const resp = await fetch(`${this.omniApiUrl}/api/cleanup/fix`, {
@@ -1165,16 +1288,26 @@ export class DuplicateDetectionService {
                   const stem = path.basename(filePath, ext)
                   const cleanedCandidates = [
                     path.join(srcDir, `${stem}.czkawka_cleaned_exif${ext}`),
-                    path.join(srcDir, `${stem.toLowerCase()}.czkawka_cleaned_exif${ext.toLowerCase()}`),
-                    path.join(srcDir, `${stem.toUpperCase()}.czkawka_cleaned_exif${ext.toUpperCase()}`)
+                    path.join(
+                      srcDir,
+                      `${stem.toLowerCase()}.czkawka_cleaned_exif${ext.toLowerCase()}`
+                    ),
+                    path.join(
+                      srcDir,
+                      `${stem.toUpperCase()}.czkawka_cleaned_exif${ext.toUpperCase()}`
+                    )
                   ]
                   for (const cand of cleanedCandidates) {
                     if (fs.existsSync(cand)) {
                       if (fs.existsSync(outFilePath)) {
-                        try { fs.unlinkSync(outFilePath) } catch {}
+                        try {
+                          fs.unlinkSync(outFilePath)
+                        } catch {}
                       }
                       fs.copyFileSync(cand, outFilePath)
-                      try { fs.unlinkSync(cand) } catch {}
+                      try {
+                        fs.unlinkSync(cand)
+                      } catch {}
                       cleanExifSucceeded = true
                       break
                     }
@@ -1187,18 +1320,31 @@ export class DuplicateDetectionService {
           if (cleanExifSucceeded && fs.existsSync(outFilePath)) {
             processedPaths.push(filePath)
             successCount++
-            details.push({ oldPath: filePath, newPath: outFilePath, message: `已成功生成去 Exif 副本至: ${outFilePath}` })
+            details.push({
+              oldPath: filePath,
+              newPath: outFilePath,
+              message: `已成功生成去 Exif 副本至: ${outFilePath}`
+            })
 
             // 核心体验优化：首个文件生成后立即打开文件管理器并精准定位高亮该文件
             if (!hasOpenedFirstItem) {
               hasOpenedFirstItem = true
               try {
                 shell.showItemInFolder(outFilePath)
-                logger.info(LogCategory.FILE_ORGANIZATION, `[Exif清理] 首个文件处理完成，已立即打开文件管理器并定位: ${outFilePath}`)
+                logger.info(
+                  LogCategory.FILE_ORGANIZATION,
+                  `[Exif清理] 首个文件处理完成，已立即打开文件管理器并定位: ${outFilePath}`
+                )
               } catch (showErr: any) {
-                logger.warn(LogCategory.FILE_ORGANIZATION, `[Exif清理] 首个文件定位失败，尝试打开目录:`, showErr)
+                logger.warn(
+                  LogCategory.FILE_ORGANIZATION,
+                  `[Exif清理] 首个文件定位失败，尝试打开目录:`,
+                  showErr
+                )
                 if (targetOutputDirectory && fs.existsSync(targetOutputDirectory)) {
-                  try { await shell.openPath(targetOutputDirectory) } catch {}
+                  try {
+                    await shell.openPath(targetOutputDirectory)
+                  } catch {}
                 }
               }
             }
@@ -1248,10 +1394,15 @@ export class DuplicateDetectionService {
                   moveFileAtomically(optimizedCandidate, actualOutFile)
                   finalTranscodedPath = actualOutFile
                   omniTranscoded = true
-                  logger.info(LogCategory.FILE_ORGANIZATION, `[视频优化] 捕获并移动优化视频成功: ${actualOutFile}`)
+                  logger.info(
+                    LogCategory.FILE_ORGANIZATION,
+                    `[视频优化] 捕获并移动优化视频成功: ${actualOutFile}`
+                  )
                 } else {
                   // 尝试扫描同目录下以 stem 开头且不为原文件的生成文件
-                  const candFiles = fs.readdirSync(srcDir).filter(f => f.startsWith(stem) && f !== originalFileName)
+                  const candFiles = fs
+                    .readdirSync(srcDir)
+                    .filter(f => f.startsWith(stem) && f !== originalFileName)
                   for (const candName of candFiles) {
                     const candFull = path.join(srcDir, candName)
                     if (fs.existsSync(candFull) && fs.statSync(candFull).isFile()) {
@@ -1260,39 +1411,65 @@ export class DuplicateDetectionService {
                       moveFileAtomically(candFull, targetOut)
                       finalTranscodedPath = targetOut
                       omniTranscoded = true
-                      logger.info(LogCategory.FILE_ORGANIZATION, `[视频优化] 捕获候选转码文件成功: ${targetOut}`)
+                      logger.info(
+                        LogCategory.FILE_ORGANIZATION,
+                        `[视频优化] 捕获候选转码文件成功: ${targetOut}`
+                      )
                       break
                     }
                   }
                 }
               } else if (fixRes.errors && fixRes.errors.length > 0) {
                 failMessage = fixRes.errors.join('; ')
-                logger.warn(LogCategory.FILE_ORGANIZATION, `[视频优化] Omni 转码返回错误: ${failMessage}`)
+                logger.warn(
+                  LogCategory.FILE_ORGANIZATION,
+                  `[视频优化] Omni 转码返回错误: ${failMessage}`
+                )
               }
             } else {
-              logger.warn(LogCategory.FILE_ORGANIZATION, `[视频优化] Omni 转码 HTTP 请求失败: status=${resp.status}`)
+              logger.warn(
+                LogCategory.FILE_ORGANIZATION,
+                `[视频优化] Omni 转码 HTTP 请求失败: status=${resp.status}`
+              )
               failMessage = `Omni 服务响应异常 (HTTP ${resp.status})`
             }
           } catch (e: any) {
-            logger.warn(LogCategory.FILE_ORGANIZATION, `[视频优化] Omni 视频转码接口调用异常 [${filePath}]:`, e)
+            logger.warn(
+              LogCategory.FILE_ORGANIZATION,
+              `[视频优化] Omni 视频转码接口调用异常 [${filePath}]:`,
+              e
+            )
             failMessage = e?.message || '请求 Omni 视频转码服务超时或失败'
           }
 
           if (omniTranscoded && finalTranscodedPath && fs.existsSync(finalTranscodedPath)) {
             processedPaths.push(filePath)
             successCount++
-            details.push({ oldPath: filePath, newPath: finalTranscodedPath, message: `已完成视频高效能转码优化并导出至: ${finalTranscodedPath}` })
+            details.push({
+              oldPath: filePath,
+              newPath: finalTranscodedPath,
+              message: `已完成视频高效能转码优化并导出至: ${finalTranscodedPath}`
+            })
 
             // 核心体验优化：首个文件优化完成后立即打开文件管理器并精准高亮定位该文件，避免用户等待焦虑
             if (!hasOpenedFirstItem) {
               hasOpenedFirstItem = true
               try {
                 shell.showItemInFolder(finalTranscodedPath)
-                logger.info(LogCategory.FILE_ORGANIZATION, `[视频优化] 首个文件优化完成，已立即打开文件管理器并定位: ${finalTranscodedPath}`)
+                logger.info(
+                  LogCategory.FILE_ORGANIZATION,
+                  `[视频优化] 首个文件优化完成，已立即打开文件管理器并定位: ${finalTranscodedPath}`
+                )
               } catch (showErr: any) {
-                logger.warn(LogCategory.FILE_ORGANIZATION, `[视频优化] 首个文件定位失败，尝试打开输出目录:`, showErr)
+                logger.warn(
+                  LogCategory.FILE_ORGANIZATION,
+                  `[视频优化] 首个文件定位失败，尝试打开输出目录:`,
+                  showErr
+                )
                 if (targetOutputDirectory && fs.existsSync(targetOutputDirectory)) {
-                  try { await shell.openPath(targetOutputDirectory) } catch {}
+                  try {
+                    await shell.openPath(targetOutputDirectory)
+                  } catch {}
                 }
               }
             }
@@ -1302,17 +1479,29 @@ export class DuplicateDetectionService {
           }
         }
       } catch (err: any) {
-        logger.error(LogCategory.FILE_ORGANIZATION, `执行修复动作失败 [${action}] -> ${filePath}:`, err)
+        logger.error(
+          LogCategory.FILE_ORGANIZATION,
+          `执行修复动作失败 [${action}] -> ${filePath}:`,
+          err
+        )
         failedCount++
         errors.push({ path: filePath, error: err?.message || '修复执行失败' })
       }
     }
 
     // 执行成功且存在输出目录时，若在循环中尚未成功打开（例如异常兜底），自动使用系统文件管理器打开对应目标目录
-    if (!hasOpenedFirstItem && successCount > 0 && targetOutputDirectory && fs.existsSync(targetOutputDirectory)) {
+    if (
+      !hasOpenedFirstItem &&
+      successCount > 0 &&
+      targetOutputDirectory &&
+      fs.existsSync(targetOutputDirectory)
+    ) {
       try {
         await shell.openPath(targetOutputDirectory)
-        logger.info(LogCategory.FILE_ORGANIZATION, `已使用系统文件管理器打开生成目录: ${targetOutputDirectory}`)
+        logger.info(
+          LogCategory.FILE_ORGANIZATION,
+          `已使用系统文件管理器打开生成目录: ${targetOutputDirectory}`
+        )
       } catch (openErr: any) {
         logger.warn(LogCategory.FILE_ORGANIZATION, `自动打开输出目录失败:`, openErr)
       }
