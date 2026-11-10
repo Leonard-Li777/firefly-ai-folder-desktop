@@ -7,7 +7,7 @@ import {
 import { openExternalLink } from './external-link'
 import i18nScope from '@src/languages'
 import { useConfigStore } from '../stores/config-store'
-import { getAppRegion } from './app-region'
+import { getAppRegion, type AppRegion } from './app-region'
 
 export type MarketingAction = 'upgrade_pro' | 'buy_firecores' | 'enterprise'
 
@@ -34,7 +34,7 @@ function getPaymentInfo(): Record<string, any> {
  */
 function resolveDevMarketingUrl(targetUrl: URL): URL {
   const metaEnv = (import.meta as any)?.env
-  const isDev = metaEnv?.DEV ?? (window.electronAPI?.isPackaged === false)
+  const isDev = metaEnv?.DEV ?? window.electronAPI?.isPackaged === false
   if (!isDev) {
     return targetUrl
   }
@@ -52,9 +52,12 @@ function resolveDevMarketingUrl(targetUrl: URL): URL {
   const activeLang = i18nScope?.activeLanguage || 'zh-CN'
   let pathname = targetUrl.pathname
 
+  const firstSegment = pathname.split('/')[1] || ''
+  const isLangPrefix =
+    /^[a-zA-Z]{2}$/.test(firstSegment) || /^[a-zA-Z]{2}-[a-zA-Z]{2,4}$/.test(firstSegment)
   if (!pathname || pathname === '/' || pathname === '') {
     pathname = `/${activeLang}/pricing`
-  } else if (!/^\/[a-zA-Z]{2}(-[a-zA-Z]{2,4})?\//.test(pathname)) {
+  } else if (!isLangPrefix) {
     // 若原路径未携带语言前缀，自动补充语言前缀
     pathname = `/${activeLang}${pathname.startsWith('/') ? pathname : '/' + pathname}`
   }
@@ -82,7 +85,7 @@ function resolveDevMarketingUrl(targetUrl: URL): URL {
  */
 export function resolveDevCreemUrl(urlStr: string): string {
   const metaEnv = (import.meta as any)?.env
-  const isDev = metaEnv?.DEV ?? (window.electronAPI?.isPackaged === false)
+  const isDev = metaEnv?.DEV ?? window.electronAPI?.isPackaged === false
   if (!isDev || !urlStr) {
     return urlStr
   }
@@ -161,11 +164,7 @@ function getPricingBaseUrl(): string {
 /**
  * 按 action / identCode 组装定价页 URL
  */
-function composePricingUrl(
-  baseUrl: string,
-  action?: MarketingAction,
-  identCode?: string
-): string {
+function composePricingUrl(baseUrl: string, action?: MarketingAction, identCode?: string): string {
   const url = new URL(baseUrl)
 
   if (identCode) {
@@ -219,7 +218,7 @@ export function getInviteLink(machineId: string): string {
  * 构造官网营销站定价/购买页面的完整 URL (Promise<string>)
  * 自动在 URL query 中携带 44 位 Base64 标识码 (ident_code)，实现免密绑定设备
  * 在开发环境（import.meta.env.DEV）下默认拦截重定向至本地开发服务器（默认端口 38800）
- * 
+ *
  * @param action 可选的行为参数 (upgrade_pro | buy_firecores | enterprise)
  * @param options 可选配置，例如 forceProductionDomain 在离线复制链接场景下强制输出公网生产域名
  */
@@ -271,7 +270,7 @@ export async function getMarketingPricingUrl(
 
 /**
  * 构造并打开官网营销站定价/购买页面
- * 
+ *
  * @param action 可选的行为参数 (upgrade_pro | buy_firecores | enterprise)
  */
 export async function openMarketingPricingUrl(action?: MarketingAction) {
@@ -284,4 +283,59 @@ export async function openMarketingPricingUrl(action?: MarketingAction) {
   }
 }
 
+export const IDENT_CODE_PATTERN = /^[A-Za-z0-9+/]{43}=$/
 
+export const ENTERPRISE_PRODUCT_ID = 'ent_year' as const
+export const TELEGRAM_CHANNEL_URL = 'https://t.me/firefly_ai_folder' as const
+
+/**
+ * 严格 Base64 格式校验，必须先将 URL query 中的空格还原为 '+'，防止误杀
+ */
+export function validateIdentCode(raw: string | null | undefined): string | null {
+  if (!raw) return null
+  const clean = raw.trim().replace(/ /g, '+')
+  return IDENT_CODE_PATTERN.test(clean) ? clean : null
+}
+
+export interface EnterprisePricingUrlOptions {
+  region: AppRegion
+  identCode: string
+  forceProductionDomain?: boolean
+}
+
+/**
+ * 构造企业版专属落地页 URL（纯同步函数，零网络请求）
+ */
+export function buildEnterprisePricingUrl(options: EnterprisePricingUrlOptions): string {
+  const validCode = validateIdentCode(options.identCode)
+  if (!validCode) {
+    throw new TypeError('Valid IdentCode is required to generate enterprise pricing URL')
+  }
+
+  // 供手机扫码生成二维码时强制使用公网生产域名，防止开发环境下手机扫出 localhost:38800 废码
+  const origin = options.forceProductionDomain
+    ? options.region === 'cn'
+      ? 'https://aifolder.iocn.cn'
+      : 'https://www.aifolder.net'
+    : getOfficialSiteOrigin()
+
+  const params = new URLSearchParams({
+    action: 'enterprise',
+    tier: 'enterprise',
+    product_id: ENTERPRISE_PRODUCT_ID,
+    ident_code: validCode
+  })
+  return `${origin}/pricing?${params.toString()}#enterprise`
+}
+
+/**
+ * 构造国际版客服邮件 mailto 链接
+ */
+export function buildSupportMailto(identCode: string): string {
+  const validCode = validateIdentCode(identCode)
+  const q = new URLSearchParams({
+    subject: 'Enterprise Offline License Inquiry',
+    body: `Hello Support Team,\n\nI would like to inquire about enterprise offline licensing.\nMachine Identifier:\n${validCode || '(Not Available)'}\n`
+  })
+  return `mailto:support@aifolder.net?${q.toString()}`
+}

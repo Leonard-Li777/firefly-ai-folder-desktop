@@ -47,7 +47,11 @@ import {
   buildPricingUrlSync,
   getMarketingPricingUrl,
   getOfficialSiteDomain,
-  getOfficialSiteOrigin
+  getOfficialSiteOrigin,
+  validateIdentCode,
+  buildEnterprisePricingUrl,
+  buildSupportMailto,
+  TELEGRAM_CHANNEL_URL
 } from '../marketing-link'
 
 const setRegion = (region?: string) => {
@@ -109,9 +113,7 @@ describe('定价页区域域名分流', () => {
   it('pricing_url 语义 = 定价页完整地址，原样使用', () => {
     setRegion('cn')
     setPaymentInfo({ pricing_url: 'https://example.com/plans' })
-    expect(buildPricingUrlSync('upgrade_pro')).toBe(
-      'https://example.com/plans?action=upgrade_pro'
-    )
+    expect(buildPricingUrlSync('upgrade_pro')).toBe('https://example.com/plans?action=upgrade_pro')
   })
 
   it('official_site_url 语义 = 官网根，必须补 /pricing（不得落在首页）', () => {
@@ -179,9 +181,9 @@ describe('定价页区域域名分流', () => {
 
   it('异步入口 getMarketingPricingUrl（forceProductionDomain）同样按区域分流', async () => {
     setRegion('cn')
-    await expect(getMarketingPricingUrl('buy_firecores', { forceProductionDomain: true })).resolves.toBe(
-      'https://aifolder.iocn.cn/pricing?action=buy_firecores#firecores'
-    )
+    await expect(
+      getMarketingPricingUrl('buy_firecores', { forceProductionDomain: true })
+    ).resolves.toBe('https://aifolder.iocn.cn/pricing?action=buy_firecores#firecores')
   })
 
   it('异步入口真实链路：ident_code 取自 license.getIdentCode 且先于 action', async () => {
@@ -245,5 +247,62 @@ describe('定价页区域域名分流', () => {
       expect.stringContaining('worktree'),
       expect.anything()
     )
+  })
+
+  describe('企业离线专属落地页与客服通道契约', () => {
+    const validIdentCode = 'WjA1T1lYY3lhWE5vYm1GdFpXUXpORFExTmpjNE9UQT0='
+
+    it('validateIdentCode: 能正确将 URL 解码后的空格还原为加号并匹配 44 位 Base64', () => {
+      // 模拟 URL Query 解码后 '+' 变空格的情况
+      const spaced = 'WjA1T1lYY3lhWE5vYm1GdFpXUXpORFExTmpjNE9UQT0='.replace(/\+/g, ' ')
+      expect(validateIdentCode(spaced)).toBe(validIdentCode)
+      // 非法长度拒绝
+      expect(validateIdentCode('too_short')).toBeNull()
+      expect(validateIdentCode(null)).toBeNull()
+    })
+
+    it('buildEnterprisePricingUrl: 在扫码模式下输出公网生产域名且携带 product_id 与 ident_code', () => {
+      const cnUrl = buildEnterprisePricingUrl({
+        region: 'cn',
+        identCode: validIdentCode,
+        forceProductionDomain: true
+      })
+      expect(cnUrl).toBe(
+        `https://aifolder.iocn.cn/pricing?action=enterprise&tier=enterprise&product_id=ent_year&ident_code=${encodeURIComponent(
+          validIdentCode
+        )}#enterprise`
+      )
+
+      const intlUrl = buildEnterprisePricingUrl({
+        region: 'intl',
+        identCode: validIdentCode,
+        forceProductionDomain: true
+      })
+      expect(intlUrl).toBe(
+        `https://www.aifolder.net/pricing?action=enterprise&tier=enterprise&product_id=ent_year&ident_code=${encodeURIComponent(
+          validIdentCode
+        )}#enterprise`
+      )
+    })
+
+    it('buildEnterprisePricingUrl: 缺少有效识别码时抛错阻断空码外流', () => {
+      expect(() =>
+        buildEnterprisePricingUrl({
+          region: 'cn',
+          identCode: 'invalid_code'
+        })
+      ).toThrow(TypeError)
+    })
+
+    it('buildSupportMailto: 构造包含正确主题与设备编号的 mailto 链接', () => {
+      const mailto = buildSupportMailto(validIdentCode)
+      expect(mailto).toContain('mailto:support@aifolder.net?')
+      expect(mailto).toContain('Enterprise+Offline+License+Inquiry')
+      expect(mailto).toContain(encodeURIComponent(validIdentCode))
+    })
+
+    it('TELEGRAM_CHANNEL_URL: 固化官方频道常量', () => {
+      expect(TELEGRAM_CHANNEL_URL).toBe('https://t.me/firefly_ai_folder')
+    })
   })
 })
