@@ -106,7 +106,9 @@ export const VirtualDirectory: React.FC = () => {
     handleFileListDirectoryChange,
     isSplitView,
     currentWorkspaceDirectoryPath,
-    virtualBasePath
+    virtualBasePath,
+    isFlatMode,
+    setIsFlatMode
   } = useVirtualDirectory()
 
   const dirModalsRef = useRef<DirectoryManagementModalsRef>(null)
@@ -419,6 +421,8 @@ export const VirtualDirectory: React.FC = () => {
                             ) : (
                               <VirtualDirectoryFileList
                                 fileListFiles={fileListFiles}
+                                isFlatMode={isFlatMode}
+                                setIsFlatMode={setIsFlatMode}
                                 fileListDirectories={fileListDirectories}
                                 selectedFileListFiles={selectedFileListFiles}
                                 activeItem={activeItem}

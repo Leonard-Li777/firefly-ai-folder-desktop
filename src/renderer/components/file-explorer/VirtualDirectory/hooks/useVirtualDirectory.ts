@@ -32,9 +32,9 @@ export const useVirtualDirectory = () => {
   const [activeItem, setActiveItem] = useState<any | null>(null)
   const [selectedFileListFiles, setSelectedFileListFiles] = useState<any[]>([])
   const lastSelectedFileRef = useRef<any>(null)
-  const [viewMode, setViewMode] = useState<
-    'list' | 'grid' | 'waterfall' | 'table' | 'search-list'
-  >('grid')
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'waterfall' | 'table' | 'search-list'>(
+    'grid'
+  )
   const [vdirSidebarTab, setVdirSidebarTab] = useState<'directory' | 'dimensions'>('directory')
   const [dimensionGroups, setDimensionGroups] = useState<DimensionGroup[]>([])
   const [pathCountMap, setPathCountMap] = useState<Record<string, number> | undefined>(undefined)
@@ -45,6 +45,7 @@ export const useVirtualDirectory = () => {
   const [vdirMultiSelectMode, setVdirMultiSelectMode] = useState(false)
   const [unionMode, setUnionMode] = useState<UnionMode>('union')
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set())
+  const [isFlatMode, setIsFlatMode] = useState(false)
 
   const setPreviewFile = useCallback((_file: any) => {
     /* No-op: legacy placeholder */
@@ -310,7 +311,13 @@ export const useVirtualDirectory = () => {
     } finally {
       setIsFilteredFilesLoading(false)
     }
-  }, [selectedId, selectedTags, unionMode, virtualDirectoryKeyword, currentWorkspaceDirectory?.path])
+  }, [
+    selectedId,
+    selectedTags,
+    unionMode,
+    virtualDirectoryKeyword,
+    currentWorkspaceDirectory?.path
+  ])
 
   useEffect(() => {
     const handleTagsChanged = () => {
@@ -476,13 +483,14 @@ export const useVirtualDirectory = () => {
   }, [treeData, rootNode])
 
   const fileListFiles = useMemo(() => {
-    // 搜索模式下从整个虚拟目录树收集文件（扁平搜索空间），不受当前所在目录影响
+    // 搜索或平铺模式下从整个虚拟目录树收集文件（扁平搜索空间），不受当前所在目录影响
     const isSearching = !!virtualDirectoryKeyword?.trim()
-    const sourceFiles = isSearching
-      ? collectAllVirtualFiles()
-      : selectedNode
-        ? selectedNode.files
-        : rootNode?.rootFiles || []
+    const sourceFiles =
+      isSearching || isFlatMode
+        ? collectAllVirtualFiles()
+        : selectedNode
+          ? selectedNode.files
+          : rootNode?.rootFiles || []
     const mapped = sourceFiles.map(f => {
       let parsedTags: string[] = []
       if (f.tags) {
@@ -533,11 +541,18 @@ export const useVirtualDirectory = () => {
       })
     }
     return mapped
-  }, [selectedNode, rootNode, treeData, virtualDirectoryKeyword, collectAllVirtualFiles])
+  }, [
+    selectedNode,
+    rootNode,
+    treeData,
+    virtualDirectoryKeyword,
+    isFlatMode,
+    collectAllVirtualFiles
+  ])
 
   const fileListDirectories = useMemo(() => {
-    // 搜索模式下隐藏目录列表，仅展示扁平的搜索结果
-    if (virtualDirectoryKeyword?.trim()) {
+    // 搜索或平铺模式下隐藏目录列表，仅展示扁平的文件结果
+    if (virtualDirectoryKeyword?.trim() || isFlatMode) {
       return []
     }
     const sourceDirs = selectedNode ? selectedNode.subdirectories : treeData
@@ -558,7 +573,7 @@ export const useVirtualDirectory = () => {
       return mapped.filter(d => d.name.toLowerCase().includes(keyword))
     }
     return mapped
-  }, [selectedNode, treeData, virtualDirectoryKeyword])
+  }, [selectedNode, treeData, virtualDirectoryKeyword, isFlatMode])
 
   const allFiles = useMemo(() => {
     const files: any[] = []
@@ -844,6 +859,8 @@ export const useVirtualDirectory = () => {
     handleFileListDirectoryChange,
     isSplitView,
     currentWorkspaceDirectoryPath,
-    virtualBasePath
+    virtualBasePath,
+    isFlatMode,
+    setIsFlatMode
   }
 }

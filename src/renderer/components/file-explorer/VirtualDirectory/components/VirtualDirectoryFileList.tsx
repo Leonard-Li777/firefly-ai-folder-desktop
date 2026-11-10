@@ -39,6 +39,8 @@ interface VirtualDirectoryFileListProps {
   selectedNode: any
   rootNode: any
   currentVD: any
+  isFlatMode?: boolean
+  setIsFlatMode?: (mode: boolean) => void
 }
 
 export const VirtualDirectoryFileList: React.FC<VirtualDirectoryFileListProps> = React.memo(
@@ -70,7 +72,9 @@ export const VirtualDirectoryFileList: React.FC<VirtualDirectoryFileListProps> =
     vdirSidebarTab,
     selectedNode,
     rootNode,
-    currentVD
+    currentVD,
+    isFlatMode,
+    setIsFlatMode
   }) => {
     const navigate = useNavigate()
 
@@ -145,6 +149,19 @@ export const VirtualDirectoryFileList: React.FC<VirtualDirectoryFileListProps> =
             </div>
 
             <div className="flex items-center space-x-2 text-foreground dark:text-foreground ml-auto">
+              {setIsFlatMode && (
+                <Button
+                  data-testid="vdir-flat-mode-toggle"
+                  variant={isFlatMode ? 'secondary' : 'ghost'}
+                  size="sm"
+                  className="h-8 px-2 flex items-center gap-1 text-xs cursor-pointer text-muted-foreground hover:text-foreground"
+                  onClick={() => setIsFlatMode(!isFlatMode)}
+                  title={t('平铺模式 (展示所有层级文件)')}
+                >
+                  <MaterialIcon icon="view_stream" className="text-sm" />
+                  <span>{t('平铺')}</span>
+                </Button>
+              )}
               {/* 视图模式与显示设置 Mini 下拉弹窗 */}
               <MiniViewDisplaySettingsPopover
                 viewMode={layoutContext.viewMode}
@@ -182,16 +199,21 @@ export const VirtualDirectoryFileList: React.FC<VirtualDirectoryFileListProps> =
           </div>
         )}
         renderFooter={() => (
-          <div className="px-3 py-1.5 flex items-center text-xs text-muted-foreground">
+          <div
+            data-testid="virtual-file-count-footer"
+            className="px-3 py-1.5 flex items-center text-xs text-muted-foreground"
+          >
             <MaterialIcon icon="insert_drive_file" className="mr-1.5 text-sm" />
-            {t('{count} 个文件', {
-              count:
-                (vdirSidebarTab as string) === 'dimensions'
-                  ? filteredFilesByTags.length
-                  : selectedNode
-                    ? selectedNode.files.length
-                    : (rootNode?.rootFiles?.length || 0) + totalFiles
-            })}
+            <span data-testid="virtual-file-count-text">
+              {t('{count} 个文件', {
+                count:
+                  (vdirSidebarTab as string) === 'dimensions'
+                    ? filteredFilesByTags.length
+                    : selectedNode
+                      ? selectedNode.files.length
+                      : (rootNode?.rootFiles?.length || 0) + totalFiles
+              })}
+            </span>
           </div>
         )}
       />

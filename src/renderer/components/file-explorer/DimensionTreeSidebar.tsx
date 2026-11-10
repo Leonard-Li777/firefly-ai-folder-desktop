@@ -44,10 +44,7 @@ function collectDefaultCollapsedTagKeys(
 
   const walk = (node: DimensionTreeNode, parentTagValue: string | undefined, depth: number) => {
     const tagsToUse = resolveTagsToUse(node, parentTagValue)
-    const { tagsToShow } = handleVisibleAndHiddenTags(
-      { ...node, tags: tagsToUse },
-      node.childTags
-    )
+    const { tagsToShow } = handleVisibleAndHiddenTags({ ...node, tags: tagsToUse }, node.childTags)
 
     tagsToShow.forEach(tag => {
       const tagNodeKey = dimensionNodeKey(node.code || node.name, tag)
@@ -129,7 +126,11 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
   }) => {
     if (row.type === 'header' && row.node) {
       return (
-        <div className="dimension-group relative mb-2">
+        <div
+          data-testid="dimension-group-header"
+          data-group-code={row.node?.code || ''}
+          className="dimension-group relative mb-2"
+        >
           {/* 维度名称向下贯穿到底部 Tag 节点的垂直竖线 (精确左移 8px，100% 绝对对齐维度名称前的箭头中心) */}
           {!row.isCollapsed && (
             <div
@@ -163,6 +164,10 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
       const tag = row.tag
       return (
         <div
+          data-testid="dimension-tree-node"
+          data-node-id={tag.codePath || tag.code || row.tagKey || tag.tagValue}
+          data-concept-code={tag.code || ''}
+          data-lifted={tag.isLifted ? 'true' : 'false'}
           className="flex items-center group min-h-[25px] relative h-[26px]"
           style={{ paddingLeft: `${(row.depth || 0) * 18 + 0}px` }}
         >
@@ -204,6 +209,7 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
           <div className="w-5 h-5 flex items-center justify-center shrink-0 mr-0.5 z-10 -ml-0.5">
             {row.hasChildDimensions ? (
               <button
+                data-testid="node-expand-toggle"
                 className="p-0.5 hover:bg-accent rounded-sm text-muted-foreground hover:text-foreground transition-colors shrink-0 flex items-center justify-center cursor-pointer w-4.5 h-4.5"
                 onClick={e => {
                   e.stopPropagation()
@@ -243,6 +249,7 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
               }}
             >
               <input
+                data-testid="node-checkbox"
                 type="checkbox"
                 checked={row.isSelected}
                 disabled={row.isDisabled}
@@ -265,6 +272,8 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
           )}
 
           <button
+            data-testid="node-button"
+            data-code-path={tag.codePath || ''}
             data-selected={row.isSelected ? 'true' : 'false'}
             className={cn(
               'flex-1 text-xs px-1.5 py-0.5 flex items-center rounded-sm overflow-hidden border-l-2 gap-1 duration-0 select-none h-[24px]',
@@ -310,8 +319,13 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
             }}
             disabled={row.isDisabled}
           >
-            <span className="flex-1 text-left truncate text-current">{tag.tagValue}</span>
-            <span className="text-[10px] ml-1 shrink-0 opacity-55 text-current">
+            <span data-testid="node-name" className="flex-1 text-left truncate text-current">
+              {tag.tagValue}
+            </span>
+            <span
+              data-testid="node-count"
+              className="text-[10px] ml-1 shrink-0 opacity-55 text-current"
+            >
               ({tag.fileCount})
             </span>
           </button>
@@ -339,6 +353,9 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
   initialUnionMode = 'union'
 }) => {
   // 1. Internal states
+  const renderRevRef = useRef(0)
+  renderRevRef.current += 1
+
   const [selectedTags, setSelectedTags] = useState<Set<string>>(() => {
     if (storageKey && isExportMode) {
       try {
@@ -646,7 +663,15 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       if (isExportMode) {
         // 聚合行与直系实例行可能同父 code，key 必须带 liftCode 标记区分 (ADR-0034 §4 / M-4)；
         // 多父维度同名叶子跨分支优先带受控 hostScopeCode / codePath 消歧，杜绝跨语言/跨分支串选
-        const key = makeTagKey(dimensionId, tagValue, parentTagValue, viaParentCode, isLifted, codePath, hostScopeCode)
+        const key = makeTagKey(
+          dimensionId,
+          tagValue,
+          parentTagValue,
+          viaParentCode,
+          isLifted,
+          codePath,
+          hostScopeCode
+        )
         return selectedTags.has(key)
       } else {
         if (!currentTag) return false
@@ -680,7 +705,15 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       hostScopeCode?: string
     ) => {
       // 受控 hostScopeCode / codePath 分支消歧：多父受控维度同名叶子隔离，杜绝跨父类联动
-      const key = makeTagKey(dimensionId, tagValue, parentTagValue, viaParentCode, isLifted, codePath, hostScopeCode)
+      const key = makeTagKey(
+        dimensionId,
+        tagValue,
+        parentTagValue,
+        viaParentCode,
+        isLifted,
+        codePath,
+        hostScopeCode
+      )
 
       const isRemoving = selectedTags.has(key)
       const nextSelected = new Set(selectedTags)
@@ -722,9 +755,10 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       }
 
       if (onSelectionChangeRef.current) {
-        const visibleKeys = !showEmptyTags && visibleGroups.length > 0
-          ? new Set(getAllKeys(visibleGroups).map(i => i.key))
-          : null
+        const visibleKeys =
+          !showEmptyTags && visibleGroups.length > 0
+            ? new Set(getAllKeys(visibleGroups).map(i => i.key))
+            : null
         const safeSelected = visibleKeys
           ? new Set(Array.from(nextSelected).filter(k => visibleKeys.has(k)))
           : nextSelected
@@ -814,7 +848,15 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
 
   // 3. 递归构建维度树（严格过滤在当前 showEmptyTags 模式下无有效子标签的根级组，且响应 maxScaleDepth 刻度穿透提升）
   const visibleGroups = useMemo(() => {
-    const rawTree = buildDimensionTree(dimensionGroups, null, null, 0, maxScaleDepth, pathCountMap, !showEmptyTags)
+    const rawTree = buildDimensionTree(
+      dimensionGroups,
+      null,
+      null,
+      0,
+      maxScaleDepth,
+      pathCountMap,
+      !showEmptyTags
+    )
     return rawTree.filter(group => {
       const { tagsToShow } = handleVisibleAndHiddenTags(group, group.childTags)
       return tagsToShow && tagsToShow.length > 0
@@ -922,10 +964,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
 
     if (storageKey) {
       try {
-        localStorage.setItem(
-          `${storageKey}_selectedTags`,
-          JSON.stringify(Array.from(newSelected))
-        )
+        localStorage.setItem(`${storageKey}_selectedTags`, JSON.stringify(Array.from(newSelected)))
         localStorage.setItem(`${storageKey}_selectionStack`, JSON.stringify(newStack))
         localStorage.setItem(
           `${storageKey}_parentTagMap`,
@@ -961,10 +1000,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
 
     if (storageKey) {
       try {
-        localStorage.setItem(
-          `${storageKey}_selectedTags`,
-          JSON.stringify(Array.from(newSelected))
-        )
+        localStorage.setItem(`${storageKey}_selectedTags`, JSON.stringify(Array.from(newSelected)))
         localStorage.setItem(`${storageKey}_selectionStack`, JSON.stringify(newStack))
         localStorage.setItem(
           `${storageKey}_parentTagMap`,
@@ -977,7 +1013,6 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       onSelectionChangeRef.current(newSelected, 'invert', newParentTagMap)
     }
   }, [visibleGroups, selectedTags, storageKey, collapsedDimensionGroups])
-
 
   // 默认展开 5 级：预计算第 6 级及更深的父标签 key
   const defaultCollapsedTagKeys = useMemo(
@@ -1168,7 +1203,8 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
 
         if (hasChildDimensions && isTagExpanded) {
           childDimensions.forEach(childNode => {
-            const nextHostCode = tag.hostScopeCode || (depth === 0 ? tag.code : hostScopeCode) || tag.code || undefined
+            const nextHostCode =
+              tag.hostScopeCode || (depth === 0 ? tag.code : hostScopeCode) || tag.code || undefined
             traverse(childNode, tag.tagValue, currentChain, depth + 1, nextHostCode)
           })
         }
@@ -1265,20 +1301,27 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
     return flatRows.slice(startIndex, endIndex)
   }, [flatRows, startIndex, endIndex])
 
-
   return (
-    <div className={cn('flex flex-col h-full', className)}>
+    <div
+      data-testid="dimension-tree-sidebar"
+      data-render-rev={renderRevRef.current}
+      className={cn('flex flex-col h-full', className)}
+    >
       {/* 标签树层级深度刻度滑块 (2~10 刻度与穿透提升，ADR-0034 §4) */}
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-border/50 bg-muted/15 shrink-0 text-xs text-muted-foreground select-none">
         <div className="flex items-center gap-1 min-w-0">
           <MaterialIcon icon="tune" className="text-xs text-primary" />
           <span className="text-[11px] font-medium text-foreground/80">{t('层级深度')}</span>
-          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-primary/10 text-primary font-bold">
+          <span
+            data-testid="depth-display"
+            className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-primary/10 text-primary font-bold"
+          >
             {maxScaleDepth}
           </span>
         </div>
         <div className="flex items-center gap-2 flex-1 max-w-[100px] ml-2">
           <input
+            data-testid="depth-slider"
             type="range"
             min={2}
             max={10}

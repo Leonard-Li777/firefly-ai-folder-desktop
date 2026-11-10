@@ -140,6 +140,7 @@ export const VirtualDirectorySidebar: React.FC<VirtualDirectorySidebarProps> = R
         {/* Tab 选项卡 */}
         <div className="flex border-b border-border bg-card/60 px-2 flex-shrink-0 h-[44px]">
           <button
+            data-testid="vdir-tab-directory"
             onClick={() => {
               setVdirSidebarTab('directory')
               setActiveItem(selectedNode)
@@ -154,6 +155,7 @@ export const VirtualDirectorySidebar: React.FC<VirtualDirectorySidebarProps> = R
             {t('文件目录')}
           </button>
           <button
+            data-testid="vdir-tab-dimensions"
             onClick={() => {
               setVdirSidebarTab('dimensions')
               setActiveItem(null)
@@ -178,6 +180,7 @@ export const VirtualDirectorySidebar: React.FC<VirtualDirectorySidebarProps> = R
             <div className="flex items-center space-x-2">
               <span className="text-[11px] text-muted-foreground">{t('多选')}</span>
               <button
+                data-testid="vdir-multiselect-toggle"
                 role="switch"
                 aria-checked={vdirMultiSelectMode}
                 onClick={() => {
