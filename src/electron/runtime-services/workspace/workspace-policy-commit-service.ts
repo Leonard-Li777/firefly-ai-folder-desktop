@@ -21,8 +21,10 @@ import { invalidateWorkspacePolicyCache, LogCategory, logger } from '@firefly/sh
 
 export interface CommitWorkspacePolicyParams {
   workspaceId: string | number
-  workflowId: string
-  targetConfig: WorkspaceConfigReady
+  workflowId?: string
+  boundWorkflowId?: string | null
+  targetConfig?: WorkspaceConfigReady
+  templateConfig?: Partial<WorkspaceConfigReady>
   isWorkflowSwitch?: boolean
 }
 
@@ -31,9 +33,16 @@ export type PolicyCommitErrorCode = 'STORAGE' | 'PERMISSION' | 'CONFLICT' | 'UNK
 export interface CommitWorkspacePolicyResult {
   success: boolean
   policyVersion: number
-  committedConfig: WorkspaceConfigReady
+  committedConfig?: WorkspaceConfigReady
+  appliedConfig?: WorkspaceConfigReady
   errorCode?: PolicyCommitErrorCode
   errorMessage?: string
+  error?: {
+    code: PolicyCommitErrorCode
+    message: string
+    stack?: string
+    details?: unknown
+  }
 }
 
 export interface WorkspacePolicyCommitDependencies {
@@ -197,7 +206,29 @@ export class WorkspacePolicyCommitService {
           throw new Error(`工作区 [${workspaceId}] 不存在`)
         }
 
-        let configToPersist: WorkspaceConfigReady = { ...params.targetConfig }
+        const effectiveWorkflowId =
+          params.workflowId || params.boundWorkflowId || row.bound_workflow_id || ''
+        const rawTarget = (params.targetConfig || params.templateConfig || {}) as any
+        let configToPersist: WorkspaceConfigReady = {
+          schemaVersion: 1,
+          status: 'ready',
+          policyVersion: 1,
+          workflowId: effectiveWorkflowId,
+          customIgnoreRules: [],
+          customWhitelistRules: [],
+          baseAIConfig: {
+            analysisMode: 'simple',
+            embeddingProfile: 'classic_light',
+            mrlDimension: 256
+          },
+          derivedSnapshot: {
+            analysisMode: 'simple',
+            embeddingProfile: 'classic_light',
+            mrlDimension: 256
+          },
+          configuredAt: Date.now(),
+          ...rawTarget
+        }
 
         // 2. 规则合并策略 (Merge Policy)：切换工作流时保留用户自建规则
         if (params.isWorkflowSwitch) {
@@ -242,7 +273,7 @@ export class WorkspacePolicyCommitService {
           WHERE workspace_id = ?;
         `)
 
-        const updateResult = updateStmt.run(params.workflowId, serializedConfig, workspaceId)
+        const updateResult = updateStmt.run(effectiveWorkflowId, serializedConfig, workspaceId)
 
         if (updateResult.changes <= 0) {
           throw new Error(`原子更新工作区 [${workspaceId}] 失败，受影响行数为 0`)
@@ -284,7 +315,8 @@ export class WorkspacePolicyCommitService {
       return {
         success: true,
         policyVersion: newPolicyVersion,
-        committedConfig: finalCommittedConfig
+        committedConfig: finalCommittedConfig,
+        appliedConfig: finalCommittedConfig
       }
     } catch (err: any) {
       const errorCode = mapSqliteErrorCode(err)
@@ -298,7 +330,12 @@ export class WorkspacePolicyCommitService {
         policyVersion: 0,
         committedConfig: params.targetConfig,
         errorCode,
-        errorMessage: err.message
+        errorMessage: err.message,
+        error: {
+          code: errorCode,
+          message: err.message,
+          stack: err.stack
+        }
       }
     }
   }
