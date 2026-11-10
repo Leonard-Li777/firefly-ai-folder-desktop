@@ -31,6 +31,7 @@ export interface PluginListItemProps {
   onUninstall?: (id: string) => void
   onConfigure?: (id: string) => void
   onExport?: (id: string) => void
+  onRestart?: (id: string) => void
   className?: string
 }
 
@@ -62,6 +63,7 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
   onUninstall,
   onConfigure,
   onExport,
+  onRestart,
   className
 }) => {
   const { t } = useVoerkaI18n(i18nScope)
@@ -418,6 +420,29 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
                 <span className="hidden sm:inline">{t('卸载')}</span>
               </Button>
             )}
+          </div>
+        ) : module.is_crashed ? (
+          /* 崩溃状态：大白话展示“已崩溃，点击重启”与重启恢复按钮 (Spec §3.4 / TEST-UI-PLUGIN-05b) */
+          <div className="flex items-center gap-2">
+            <span
+              data-testid="crashed-badge"
+              data-plugin-id={module.id}
+              className="text-xs text-destructive font-medium flex items-center gap-1"
+            >
+              <span>💥</span>
+              <span>{t('已崩溃，点击重启')}</span>
+            </span>
+            <Button
+              size="sm"
+              variant="destructive"
+              data-testid="restart-plugin-btn"
+              data-plugin-id={module.id}
+              onClick={() => (onRestart ? onRestart(module.id) : onInstall?.(module.id))}
+              className="h-8 text-xs flex items-center gap-1.5 cursor-pointer"
+            >
+              <RefreshCw className="w-3 h-3" />
+              <span>{t('重启')}</span>
+            </Button>
           </div>
         ) : isError ? (
           /* 错误状态：展示异常说明与重试按钮 */

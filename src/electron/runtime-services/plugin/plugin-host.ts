@@ -7,6 +7,7 @@
 import {
   ExitClassification,
   ExitDetails,
+  ExitFacts,
   InFlightTask,
   IPluginUtilityProcess,
   NATIVE_CRASH_CODES,
@@ -46,6 +47,40 @@ export interface PluginHostOptions {
     warn: (...args: any[]) => void
     error: (...args: any[]) => void
   }
+}
+
+/**
+ * 依据进程退出码、信号及预期标志，推导客观退出事实 (Spec §3.4 / deriveExitFacts)
+ */
+export function deriveExitFacts(
+  code: number | null,
+  signal: string | null,
+  expected = false
+): ExitFacts {
+  if (expected) {
+    return { exitCode: code, signal, reason: 'clean-exit', expected: true, isAbnormalExit: false }
+  }
+  if (code === 0 && !signal) {
+    return {
+      exitCode: 0,
+      signal: null,
+      reason: 'clean-exit',
+      expected: false,
+      isAbnormalExit: false
+    }
+  }
+  const isWindowsCrash =
+    typeof code === 'number' &&
+    (code >>> 0 === 0xc0000005 || code === -1073741819 || code === 3221225477 || code < 0)
+  const isUnixCrash = signal === 'SIGSEGV' || signal === 'SIGABRT' || signal === 'SIGBUS'
+  const isOom = code === 134 || code === 137 || signal === 'SIGKILL_OOM'
+  if (isOom) {
+    return { exitCode: code, signal, reason: 'oom', expected: false, isAbnormalExit: true }
+  }
+  if (isWindowsCrash || isUnixCrash || (typeof code === 'number' && code !== 0 && !signal)) {
+    return { exitCode: code, signal, reason: 'crash', expected: false, isAbnormalExit: true }
+  }
+  return { exitCode: code, signal, reason: 'killed', expected: false, isAbnormalExit: true }
 }
 
 export class PluginHost {
@@ -285,8 +320,8 @@ export class PluginHost {
     let isDegraded = false
     let shouldRetry = false
 
-    if (this.isRetiring && (rawCode === 0 || rawCode === null)) {
-      // 1. 正常回收
+    if (this.isRetiring) {
+      // 1. 正常回收：只要标记了 isRetiring，无论退出码是否为 0 均归类 RETIRING (Spec §3.4 / §7.1.1 #5)
       classification = 'RETIRING'
       shouldRetry = false
       isDegraded = false
@@ -324,6 +359,9 @@ export class PluginHost {
       isDegraded = true
     }
 
+    // 计算客观退出事实 (Spec §3.4)
+    const exitFacts = deriveExitFacts(rawCode, signal, this.isRetiring)
+
     const currentTask = this.stateMachine.currentTask
 
     // 2. 执行退出清理屏障原子三件事：
@@ -340,6 +378,9 @@ export class PluginHost {
           `Process exited unexpectedly with code ${rawCode} (${classification}). ${this.stderrBuffer ? `Stderr: ${this.stderrBuffer}` : ''}`
         )
       }
+      if (classification !== 'RETIRING') {
+        ;(err as any).code = 'E_PLUGIN_PROCESS_CRASHED'
+      }
       ;(err as any).exitCode = rawCode
       ;(err as any).unsignedCode = unsignedCode
       ;(err as any).classification = classification
@@ -347,6 +388,7 @@ export class PluginHost {
       ;(err as any).stderr = this.stderrBuffer
       ;(err as any).isDegraded = isDegraded
       ;(err as any).taskOutcome = exitOutcome
+      ;(err as any).exitFacts = exitFacts
 
       this.stateMachine.settleTask(exitOutcome, err)
 
@@ -365,6 +407,40 @@ export class PluginHost {
       this.circuitBreaker.recordCrash(true)
     } else if (classification !== 'RETIRING') {
       this.circuitBreaker.recordCrash(false)
+    }
+
+    // (2.1) 广播插件崩溃事件 (Spec §3.4 / onPluginCrash)
+    if (
+      classification !== 'RETIRING' &&
+      (exitFacts.isAbnormalExit ||
+        classification === 'NATIVE_CRASH' ||
+        classification === 'PRE_HANDSHAKE')
+    ) {
+      try {
+        const { BrowserWindow } = require('electron')
+        const payload = {
+          pluginId: this.manifest.id,
+          generation: this.stateMachine.processGeneration,
+          exitFacts,
+          classification,
+          timestamp: Date.now()
+        }
+        BrowserWindow.getAllWindows().forEach((win: any) => {
+          if (!win.isDestroyed()) {
+            win.webContents.send('plugin:crashed', payload)
+          }
+        })
+      } catch (_) {}
+
+      try {
+        const { ProbeBridgeService } = require('../e2e/probe-bridge')
+        ProbeBridgeService.recordEvent('plugin', 'crashed', {
+          pluginId: this.manifest.id,
+          generation: this.stateMachine.processGeneration,
+          exitFacts,
+          classification
+        })
+      } catch (_) {}
     }
 
     // (3) 清理进程引用与通信通道
@@ -625,6 +701,11 @@ export class PluginHost {
           throw new Error('Process is not running')
         }
         this.currentProcess.postMessage(envelope)
+        if (input.taskId === '__e2e_crash' || input.payload?.__e2e_crash) {
+          setTimeout(() => {
+            this.triggerE2ECrash(input.payload?.exitCode ?? 0xc0000005)
+          }, 20)
+        }
       } catch (postErr) {
         if (deadlineTimer) {
           clearTimeout(deadlineTimer)
@@ -774,6 +855,31 @@ export class PluginHost {
     )
     if (typeof currentTask.extendDeadline === 'function') {
       currentTask.extendDeadline(bonusCompensationMs)
+    }
+  }
+
+  /**
+   * E2E 模式受控故障注入：向当前插件子进程注入崩溃 (Spec §3.4 / §4.7)
+   */
+  public triggerE2ECrash(exitCode: number = 0xc0000005): void {
+    this.logger.warn(
+      `[PluginHost:${this.manifest.id}] Triggering E2E crash with exit code 0x${(exitCode >>> 0).toString(16)}...`
+    )
+    const proc = this.currentProcess
+    if (proc) {
+      try {
+        proc.postMessage({ type: '__e2e_crash', exitCode })
+      } catch (_) {}
+      setTimeout(() => {
+        try {
+          proc.kill()
+        } catch (_) {}
+        if (this.currentProcess === proc) {
+          this.handleProcessExit(exitCode, null)
+        }
+      }, 30)
+    } else {
+      this.handleProcessExit(exitCode, null)
     }
   }
 

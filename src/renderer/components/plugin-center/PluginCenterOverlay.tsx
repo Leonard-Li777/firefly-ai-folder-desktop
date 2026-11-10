@@ -165,6 +165,7 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
   const hasPendingTombstones = usePluginCenterStore(s => s.hasPendingTombstones)
   const checkPendingTombstones = usePluginCenterStore(s => s.checkPendingTombstones)
   const restartApp = usePluginCenterStore(s => s.restartApp)
+  const restartPlugin = usePluginCenterStore(s => s.restartPlugin)
   const exportOfflinePackage = usePluginCenterStore(s => s.exportOfflinePackage)
   const importOfflinePackage = usePluginCenterStore(s => s.importOfflinePackage)
   const isDeveloperMode = usePluginCenterStore(s => s.isDeveloperMode)
@@ -772,6 +773,7 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
                             onUninstall={handleRequestUninstall}
                             onToggleActive={handleTogglePluginActive}
                             onConfigure={handleOpenConfig}
+                            onRestart={restartPlugin}
                           />
                         ))}
                       </div>

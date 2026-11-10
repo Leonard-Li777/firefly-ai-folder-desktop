@@ -34,11 +34,39 @@ export class PluginCircuitBreaker {
   /** 当前有效的冷却窗口（在半开探活失败后延长） */
   private currentCooldownMs: number
 
+  /**
+   * 受控虚拟时钟偏移量（毫秒，仅作用于当前熔断器，绝不全局 patch Date）(Spec §3.4 / §4.7)
+   */
+  private virtualClockOffsetMs: number = 0
+
   constructor(options: CircuitBreakerOptions = {}) {
     this.maxConsecutiveCrashes = options.maxConsecutiveCrashes ?? 3
     this.cooldownMs = options.cooldownMs ?? 60_000
     this.extendedCooldownMs = options.extendedCooldownMs ?? 300_000
     this.currentCooldownMs = this.cooldownMs
+  }
+
+  /**
+   * 推进受控虚拟时钟（毫秒）
+   */
+  public advanceClock(ms: number): void {
+    if (ms > 0) {
+      this.virtualClockOffsetMs += ms
+    }
+  }
+
+  /**
+   * 直接设置虚拟时钟偏移量（毫秒）
+   */
+  public setVirtualClockOffset(offsetMs: number): void {
+    this.virtualClockOffsetMs = Math.max(0, offsetMs)
+  }
+
+  /**
+   * 获取当前有效时间戳（结合虚拟时钟偏移）
+   */
+  public getEffectiveNow(now?: number): number {
+    return (now ?? Date.now()) + this.virtualClockOffsetMs
   }
 
   // ==================== 文件级熔断 ====================
@@ -72,13 +100,14 @@ export class PluginCircuitBreaker {
   /**
    * 检查当前插件是否允许派发新任务
    */
-  public canExecute(now: number = Date.now()): { allowed: boolean; reason?: string } {
+  public canExecute(now?: number): { allowed: boolean; reason?: string } {
+    const effectiveNow = this.getEffectiveNow(now)
     if (this.health.circuitState === 'CLOSED') {
       return { allowed: true }
     }
 
     if (this.health.circuitState === 'OPEN') {
-      const elapsed = now - this.health.lastCrashAt
+      const elapsed = effectiveNow - this.health.lastCrashAt
       if (elapsed >= this.currentCooldownMs) {
         // 冷却期结束，允许试探进入 HALF_OPEN
         this.health.circuitState = 'HALF_OPEN'
@@ -110,9 +139,10 @@ export class PluginCircuitBreaker {
   /**
    * 记录一次崩溃（由原生崩溃、非零异常退出或握手失败触发）
    */
-  public recordCrash(isPreHandshake: boolean = false, now: number = Date.now()): void {
+  public recordCrash(isPreHandshake: boolean = false, now?: number): void {
+    const effectiveNow = this.getEffectiveNow(now)
     this.health.consecutiveCrashes += 1
-    this.health.lastCrashAt = now
+    this.health.lastCrashAt = effectiveNow
 
     if (isPreHandshake) {
       // 握手前失败直接触发插件级熔断
@@ -167,10 +197,30 @@ export class PluginCircuitBreaker {
   }
 
   /**
+   * 获取符合 Spec §3.4 / §4.7 规范的只读探针快照
+   */
+  public getProbeState(pluginId: string = ''): {
+    pluginId: string
+    state: 'CLOSED' | 'OPEN' | 'HALF_OPEN'
+    consecutiveCrashes: number
+    currentCooldownMs: number
+    halfOpenTaskInFlight: boolean
+  } {
+    return {
+      pluginId,
+      state: this.health.circuitState,
+      consecutiveCrashes: this.health.consecutiveCrashes,
+      currentCooldownMs: this.currentCooldownMs,
+      halfOpenTaskInFlight: !!this.health.halfOpenTaskInFlight
+    }
+  }
+
+  /**
    * 重置熔断器（测试或人工干预）
    */
   public reset(): void {
     this.degradedFiles.clear()
+    this.virtualClockOffsetMs = 0
     this.health = {
       consecutiveCrashes: 0,
       lastCrashAt: 0,

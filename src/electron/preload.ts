@@ -1591,6 +1591,13 @@ const electronAPI = {
 // 类型定义
 export type ElectronAPI = typeof electronAPI
 
+// E2E 测试环境受控只读监听器注入 (Spec §4.5 build:prod DCE 保证零残留)
+if (__FF_E2E__) {
+  ;(electronAPI as any).onPluginCrash = (cb: (data: unknown) => void) => {
+    ipcRenderer.on('plugin:crashed', (_e, data) => cb(data))
+  }
+}
+
 // 暴露API到渲染进程
 contextBridge.exposeInMainWorld('__APP_REGION__', appRegion)
 contextBridge.exposeInMainWorld('__HAS_CROSS_REGION_DATA__', hasPeerData)

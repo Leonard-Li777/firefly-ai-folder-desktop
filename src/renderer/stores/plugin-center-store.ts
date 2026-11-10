@@ -54,6 +54,7 @@ export interface PluginModuleItem {
   config_schema?: string | null
   user_config?: string | null
   error_message?: string | null
+  is_crashed?: boolean
   download_progress?: DownloadProgress
   contributes?: {
     settings?: import('@firefly/types').PluginSettingsContribution
@@ -156,6 +157,8 @@ export interface PluginCenterState {
   pendingTombstones: Array<{ path: string; registeredAt: string; reason?: string }>
   checkPendingTombstones: () => Promise<void>
   restartApp: () => Promise<void>
+  markPluginCrashed: (pluginId: string) => void
+  restartPlugin: (pluginId: string) => Promise<boolean>
   exportOfflinePackage: (moduleId: string) => Promise<string | null>
   importOfflinePackage: (archivePath?: string) => Promise<PluginModuleItem | null>
   pickAndImportLocalPlugin: () => Promise<boolean>
@@ -832,6 +835,37 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
     }
   },
 
+  markPluginCrashed: (pluginId: string) => {
+    set(state => ({
+      modules: state.modules.map(m =>
+        m.id === pluginId
+          ? {
+              ...m,
+              is_crashed: true,
+              is_running: false,
+              error_message: '插件宿主已崩溃，点击重试恢复'
+            }
+          : m
+      )
+    }))
+  },
+
+  restartPlugin: async (pluginId: string) => {
+    set(state => ({
+      modules: state.modules.map(m =>
+        m.id === pluginId ? { ...m, is_crashed: false, is_running: true, error_message: null } : m
+      )
+    }))
+    const bridge = getModularResourceBridge()
+    if (bridge && typeof bridge.updateState === 'function') {
+      try {
+        await bridge.updateState(pluginId, { active: true })
+      } catch {}
+    }
+    await get().loadModules()
+    return true
+  },
+
   exportOfflinePackage: async (moduleId: string) => {
     const bridge = getModularResourceBridge()
     if (!bridge || typeof bridge.exportOfflinePackage !== 'function') return null
@@ -868,3 +902,15 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
     })
   }
 }))
+
+// 渲染层全局挂载插件崩溃事件监听 (Spec §3.4 / onPluginCrash)
+if (typeof window !== 'undefined') {
+  const api = (window as any).electronAPI
+  if (api && typeof api.onPluginCrash === 'function') {
+    api.onPluginCrash((data: any) => {
+      if (data?.pluginId) {
+        usePluginCenterStore.getState().markPluginCrashed(data.pluginId)
+      }
+    })
+  }
+}

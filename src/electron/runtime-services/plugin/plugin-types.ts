@@ -22,6 +22,17 @@ export type PluginHostState =
 export type ExitClassification = 'RETIRING' | 'WATCHDOG' | 'NATIVE_CRASH' | 'PRE_HANDSHAKE'
 
 /**
+ * 进程退出客观事实记录 (Spec §3.4 / ExitFacts)
+ */
+export interface ExitFacts {
+  exitCode: number | null
+  signal: string | null
+  reason: 'clean-exit' | 'crash' | 'killed' | 'oom'
+  expected: boolean
+  isAbnormalExit: boolean
+}
+
+/**
  * 原生确定性崩溃退出码常量（Windows NTSTATUS）
  * 注意：在 Node/Electron 下 exitCode 可能以有符号 32 位整型呈现，比较时需转换为无符号无符号整型 (code >>> 0)
  */
