@@ -784,6 +784,34 @@ ConfigOrchestrator.getInstance().onValueChange('HARDWARE_GPU_INFO', () => {
 // =================================================================
 
 app.on('ready', async () => {
+  // E2E 模式：安装出站网络拦截守卫并挂载主进程受控探针与故障总线 (Ticket 02 Spec §4.7 / §5.3)
+  if (process.env.FF_E2E_MODE === '1') {
+    const { session } = require('electron')
+    const { EgressGuardService } = require('../runtime-services/e2e/egress-guard')
+    const { ProbeBridgeService } = require('../runtime-services/e2e/probe-bridge')
+    const { FaultInjectorService } = require('../runtime-services/e2e/fault-injector')
+
+    EgressGuardService.install(session.defaultSession)
+    app.on('session-created', (s: any) => EgressGuardService.install(s))
+
+    ;(globalThis as any).__e2e_probe_bridge = {
+      'test:getInternalState': (scope: any, query: any, token: string) =>
+        ProbeBridgeService.getInternalState(scope, query, token),
+      'test:getEventTrace': (sinceSeq: number, token: string) =>
+        ProbeBridgeService.getEventTrace(sinceSeq, token),
+      'test:injectFault': (fault: any, token: string) =>
+        FaultInjectorService.injectFault(fault, token),
+      'test:getFaultReport': (token: string) =>
+        FaultInjectorService.getFaultReport(token),
+      'test:clearFaults': (token: string) =>
+        FaultInjectorService.clearFaults(token),
+      'test:getEgressLedger': (token: string) =>
+        EgressGuardService.getLedger(token),
+      'test:assertCleanEgress': (token: string) =>
+        EgressGuardService.assertCleanEgressOrThrow(token)
+    }
+  }
+
   // 关键：在注册 IPC 处理器之前注入包内 ConfigOrchestrator，
   // 避免 setupIPCHandlers 中包内服务早期读取配置触发
   // "ConfigOrchestrator has not been injected in AI package" 错误（日志已确认）

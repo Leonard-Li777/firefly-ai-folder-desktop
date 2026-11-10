@@ -73,6 +73,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "cross-env AI_ENGINE=llama.cpp pnpm build:prebuild && cross-env AI_ENGINE=llama.cpp node ../../scripts/test-electron.js run pro/tests/unit",
+    "test:desktop": "node scripts/test-desktop-runner.mjs",
+    "build:e2e-packaged": "cross-env FF_E2E_MODE=1 electron-vite build",
     "test:unit": "cross-env AI_ENGINE=llama.cpp pnpm build:prebuild && cross-env AI_ENGINE=llama.cpp node ../../scripts/test-electron.js run pro/tests/unit",
     "test:unit:node-service": "cross-env AI_ENGINE=llama.cpp pnpm build:prebuild && cross-env AI_ENGINE=llama.cpp node ../../scripts/test-electron.js run pro/tests/unit --exclude \"**/renderer/**\" --exclude \"**/*.test.tsx\"",
     "test:unit:renderer": "cross-env AI_ENGINE=llama.cpp pnpm build:prebuild && cross-env AI_ENGINE=llama.cpp node ../../scripts/test-electron.js run pro/tests/unit/renderer",
