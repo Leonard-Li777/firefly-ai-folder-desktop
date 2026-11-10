@@ -20,4 +20,75 @@ export function registerDeviceBindIPCHandlers(): void {
       return { success: false, error: err?.message || 'unknown' }
     }
   })
+
+  ipcMain.handle('deviceBind/pollResult', async (_event, { code, pollSecret }) => {
+    try {
+      return await DeviceBindService.getInstance().pollBindResult(code, pollSecret)
+    } catch (err: any) {
+      logger.error(LogCategory.IPC, '[IPC] deviceBind/pollResult failed:', err)
+      return { success: false, error: err?.message || 'unknown' }
+    }
+  })
+
+  ipcMain.handle('deviceBind/sendEmailOtp', async (_event, { email }) => {
+    try {
+      return await DeviceBindService.getInstance().sendEmailOtp(email)
+    } catch (err: any) {
+      logger.error(LogCategory.IPC, '[IPC] deviceBind/sendEmailOtp failed:', err)
+      return { success: false, error: err?.message || 'unknown' }
+    }
+  })
+
+  ipcMain.handle(
+    'deviceBind/completeEmailBinding',
+    async (_event, { email, code, invitationCode }) => {
+      try {
+        return await DeviceBindService.getInstance().completeEmailBinding(
+          email,
+          code,
+          invitationCode
+        )
+      } catch (err: any) {
+        logger.error(LogCategory.IPC, '[IPC] deviceBind/completeEmailBinding failed:', err)
+        return { success: false, error: err?.message || 'unknown' }
+      }
+    }
+  )
+
+  ipcMain.handle('deviceBind/hasActiveBindSession', async () => {
+    try {
+      return DeviceBindService.getInstance().hasActiveBindSession()
+    } catch (err: any) {
+      logger.error(LogCategory.IPC, '[IPC] deviceBind/hasActiveBindSession failed:', err)
+      return false
+    }
+  })
+
+  ipcMain.handle('deviceBind/seatDevice', async (_event, { sessionToken, evictDeviceId }) => {
+    try {
+      return await DeviceBindService.getInstance().seatThisDevice(sessionToken, evictDeviceId)
+    } catch (err: any) {
+      logger.error(LogCategory.IPC, '[IPC] deviceBind/seatDevice failed:', err)
+      return { success: false, error: err?.message || 'unknown' }
+    }
+  })
+
+  ipcMain.handle('deviceBind/listSeatedDevices', async (_event, { sessionToken } = {}) => {
+    try {
+      return await DeviceBindService.getInstance().listSeatedDevices(sessionToken)
+    } catch (err: any) {
+      logger.error(LogCategory.IPC, '[IPC] deviceBind/listSeatedDevices failed:', err)
+      return { success: false, error: err?.message || 'unknown' }
+    }
+  })
+
+  ipcMain.handle('deviceBind/unbind', async () => {
+    try {
+      await DeviceBindService.getInstance().unbind()
+      return { success: true }
+    } catch (err: any) {
+      logger.error(LogCategory.IPC, '[IPC] deviceBind/unbind failed:', err)
+      return { success: false, error: err?.message || 'unknown' }
+    }
+  })
 }

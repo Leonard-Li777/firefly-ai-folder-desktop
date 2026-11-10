@@ -73,7 +73,10 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
   const invitedCount = Number(counters?.invite_count ?? counters?.invited_count ?? 0)
 
   // 萤火进度与刻度（目标按 400 萤火计算，每 100 萤火一个大刻度）
-  const progressPercent = Math.min(100, Math.max(0, Math.round((firecores / unlockThreshold) * 100)))
+  const progressPercent = Math.min(
+    100,
+    Math.max(0, Math.round((firecores / unlockThreshold) * 100))
+  )
   const neededFirecores = Math.max(0, unlockThreshold - firecores)
 
   // 是否为 Pro / 企业版且在有效期内：会员本身即享无限分析额度，视为「已解锁无限额度」
@@ -120,10 +123,11 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
   const handleRedeem = async () => {
     let code = redeemCode.trim()
     if (!code) return
-    const base62Match = code.match(/[a-zA-Z0-9]{16}/)
-    if (base62Match) code = base62Match[0]
-    if (code.length !== 16) {
-      toast.error(t('请输入有效的 16 位邀请码'))
+    // 支持 8 位用户 ref_code 格式（新版）或 16 位历史兼容格式
+    const match = code.match(/[a-zA-Z0-9]{8,16}/)
+    if (match) code = match[0]
+    if (code.length !== 8 && code.length !== 16) {
+      toast.error(t('请输入有效的 8 位邀请码'))
       return
     }
     setIsRedeeming(true)
@@ -166,7 +170,6 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
       setIsUnlocking(false)
     }
   }
-
 
   return (
     <>
@@ -239,17 +242,23 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                               {t('已解锁无限额度')}
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10 text-[10px] px-2 py-0.2 font-semibold">
+                            <Badge
+                              variant="outline"
+                              className="border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10 text-[10px] px-2 py-0.2 font-semibold"
+                            >
                               <Zap className="w-3 h-3 mr-1 text-amber-500" />
                               {t('每100萤火进阶')}
                             </Badge>
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground font-medium mt-0.5">
-                          {t('每邀请1人即赠 {firecores} 萤火 + {bonus} 额度，集齐 400 萤火可永久兑换无限额度', {
-                            firecores: inviteFirecoreReward,
-                            bonus: inviteQuotaBonus
-                          })}
+                          {t(
+                            '每邀请1人即赠 {firecores} 萤火 + {bonus} 额度，集齐 400 萤火可永久兑换无限额度',
+                            {
+                              firecores: inviteFirecoreReward,
+                              bonus: inviteQuotaBonus
+                            }
+                          )}
                         </p>
                       </div>
                     </div>
@@ -262,7 +271,10 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                         <span className="font-black text-amber-600 dark:text-amber-400 tabular-nums text-sm">
                           {firecores}
                         </span>
-                        <span className="text-muted-foreground"> / {unlockThreshold} {t('萤火')}</span>
+                        <span className="text-muted-foreground">
+                          {' '}
+                          / {unlockThreshold} {t('萤火')}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -286,20 +298,66 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                         <span>0</span>
                       </div>
                       <div className="flex flex-col items-center">
-                        <span className={cn('w-1.5 h-1.5 rounded-full -mt-3.5 mb-1 transition-colors', firecores >= 100 ? 'bg-amber-500 ring-2 ring-amber-500/20' : 'bg-border')} />
-                        <span className={cn(firecores >= 100 && 'text-amber-600 dark:text-amber-400 font-bold')}>100</span>
+                        <span
+                          className={cn(
+                            'w-1.5 h-1.5 rounded-full -mt-3.5 mb-1 transition-colors',
+                            firecores >= 100 ? 'bg-amber-500 ring-2 ring-amber-500/20' : 'bg-border'
+                          )}
+                        />
+                        <span
+                          className={cn(
+                            firecores >= 100 && 'text-amber-600 dark:text-amber-400 font-bold'
+                          )}
+                        >
+                          100
+                        </span>
                       </div>
                       <div className="flex flex-col items-center">
-                        <span className={cn('w-1.5 h-1.5 rounded-full -mt-3.5 mb-1 transition-colors', firecores >= 200 ? 'bg-amber-500 ring-2 ring-amber-500/20' : 'bg-border')} />
-                        <span className={cn(firecores >= 200 && 'text-amber-600 dark:text-amber-400 font-bold')}>200</span>
+                        <span
+                          className={cn(
+                            'w-1.5 h-1.5 rounded-full -mt-3.5 mb-1 transition-colors',
+                            firecores >= 200 ? 'bg-amber-500 ring-2 ring-amber-500/20' : 'bg-border'
+                          )}
+                        />
+                        <span
+                          className={cn(
+                            firecores >= 200 && 'text-amber-600 dark:text-amber-400 font-bold'
+                          )}
+                        >
+                          200
+                        </span>
                       </div>
                       <div className="flex flex-col items-center">
-                        <span className={cn('w-1.5 h-1.5 rounded-full -mt-3.5 mb-1 transition-colors', firecores >= 300 ? 'bg-amber-500 ring-2 ring-amber-500/20' : 'bg-border')} />
-                        <span className={cn(firecores >= 300 && 'text-amber-600 dark:text-amber-400 font-bold')}>300</span>
+                        <span
+                          className={cn(
+                            'w-1.5 h-1.5 rounded-full -mt-3.5 mb-1 transition-colors',
+                            firecores >= 300 ? 'bg-amber-500 ring-2 ring-amber-500/20' : 'bg-border'
+                          )}
+                        />
+                        <span
+                          className={cn(
+                            firecores >= 300 && 'text-amber-600 dark:text-amber-400 font-bold'
+                          )}
+                        >
+                          300
+                        </span>
                       </div>
                       <div className="flex flex-col items-center">
-                        <span className={cn('w-1.5 h-1.5 rounded-full -mt-3.5 mb-1 transition-colors', firecores >= 400 ? 'bg-emerald-500 ring-2 ring-emerald-500/20' : 'bg-border')} />
-                        <span className={cn(firecores >= 400 && 'text-emerald-600 dark:text-emerald-400 font-bold')}>400 ({t('解锁无限')})</span>
+                        <span
+                          className={cn(
+                            'w-1.5 h-1.5 rounded-full -mt-3.5 mb-1 transition-colors',
+                            firecores >= 400
+                              ? 'bg-emerald-500 ring-2 ring-emerald-500/20'
+                              : 'bg-border'
+                          )}
+                        />
+                        <span
+                          className={cn(
+                            firecores >= 400 && 'text-emerald-600 dark:text-emerald-400 font-bold'
+                          )}
+                        >
+                          400 ({t('解锁无限')})
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -317,10 +375,14 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                     >
                       <div>
                         <div className="flex items-center justify-between gap-2 mb-2">
-                          <span className={cn(
-                            'text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md flex items-center gap-1',
-                            firecores >= 100 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-                          )}>
+                          <span
+                            className={cn(
+                              'text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md flex items-center gap-1',
+                              firecores >= 100
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-muted text-muted-foreground'
+                            )}
+                          >
                             <span>Step 1</span>
                             <span>·</span>
                             <span>{t('第1位好友')}</span>
@@ -340,11 +402,15 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                         <div className="space-y-1.5 my-1">
                           <div className="flex items-center gap-2 text-sm font-black text-foreground">
                             <Firecores className="w-4 h-4 text-amber-500 shrink-0" />
-                            <span>+{inviteFirecoreReward} {t('您获萤火')}</span>
+                            <span>
+                              +{inviteFirecoreReward} {t('您获萤火')}
+                            </span>
                           </div>
                           <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
                             <FolderPlus className="w-4 h-4 text-orange-500 shrink-0" />
-                            <span>+{inviteQuotaBonus} {t('双方各得额度')}</span>
+                            <span>
+                              +{inviteQuotaBonus} {t('双方各得额度')}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -363,10 +429,14 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                     >
                       <div>
                         <div className="flex items-center justify-between gap-2 mb-2">
-                          <span className={cn(
-                            'text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md flex items-center gap-1',
-                            firecores >= 200 ? 'bg-amber-500 text-white' : 'bg-muted text-muted-foreground'
-                          )}>
+                          <span
+                            className={cn(
+                              'text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md flex items-center gap-1',
+                              firecores >= 200
+                                ? 'bg-amber-500 text-white'
+                                : 'bg-muted text-muted-foreground'
+                            )}
+                          >
                             <span>Step 2</span>
                             <span>·</span>
                             <span>{t('第2位好友')}</span>
@@ -386,11 +456,15 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                         <div className="space-y-1.5 my-1">
                           <div className="flex items-center gap-2 text-sm font-black text-foreground">
                             <Firecores className="w-4 h-4 text-amber-500 shrink-0" />
-                            <span>{t('累计')} +{inviteFirecoreReward * 2} {t('您获萤火')}</span>
+                            <span>
+                              {t('累计')} +{inviteFirecoreReward * 2} {t('您获萤火')}
+                            </span>
                           </div>
                           <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
                             <FolderPlus className="w-4 h-4 text-orange-500 shrink-0" />
-                            <span>{t('累计')} +{inviteQuotaBonus * 2} {t('双方各得额度')}</span>
+                            <span>
+                              {t('累计')} +{inviteQuotaBonus * 2} {t('双方各得额度')}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -409,10 +483,14 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                     >
                       <div>
                         <div className="flex items-center justify-between gap-2 mb-2">
-                          <span className={cn(
-                            'text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md flex items-center gap-1',
-                            firecores >= 300 ? 'bg-amber-500 text-white' : 'bg-muted text-muted-foreground'
-                          )}>
+                          <span
+                            className={cn(
+                              'text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md flex items-center gap-1',
+                              firecores >= 300
+                                ? 'bg-amber-500 text-white'
+                                : 'bg-muted text-muted-foreground'
+                            )}
+                          >
                             <span>Step 3</span>
                             <span>·</span>
                             <span>{t('第3位好友')}</span>
@@ -432,11 +510,15 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                         <div className="space-y-1.5 my-1">
                           <div className="flex items-center gap-2 text-sm font-black text-foreground">
                             <Firecores className="w-4 h-4 text-amber-500 shrink-0" />
-                            <span>{t('累计')} +{inviteFirecoreReward * 3} {t('您获萤火')}</span>
+                            <span>
+                              {t('累计')} +{inviteFirecoreReward * 3} {t('您获萤火')}
+                            </span>
                           </div>
                           <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
                             <FolderPlus className="w-4 h-4 text-orange-500 shrink-0" />
-                            <span>{t('累计')} +{inviteQuotaBonus * 3} {t('双方各得额度')}</span>
+                            <span>
+                              {t('累计')} +{inviteQuotaBonus * 3} {t('双方各得额度')}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -456,12 +538,14 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
 
                       <div>
                         <div className="flex items-center justify-between gap-2 mb-2">
-                          <span className={cn(
-                            'text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md flex items-center gap-1 shadow-sm',
-                            firecores >= unlockThreshold || isUnlockedUnlimited
-                              ? 'bg-emerald-600 text-white'
-                              : 'bg-gradient-to-r from-amber-500 to-amber-600 text-white'
-                          )}>
+                          <span
+                            className={cn(
+                              'text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md flex items-center gap-1 shadow-sm',
+                              firecores >= unlockThreshold || isUnlockedUnlimited
+                                ? 'bg-emerald-600 text-white'
+                                : 'bg-gradient-to-r from-amber-500 to-amber-600 text-white'
+                            )}
+                          >
                             <span>Step 4</span>
                             <span>·</span>
                             <span>{t('第4位好友')}</span>
@@ -496,7 +580,9 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                                   ? t('消耗 {cost} 萤火，永久解锁私有目录无限分析额度', {
                                       cost: unlockThreshold
                                     })
-                                  : t('仅差 {needed} 萤火，可继续邀请好友或购买最小萤火包补齐', { needed: neededFirecores })
+                                  : t('仅差 {needed} 萤火，可继续邀请好友或购买最小萤火包补齐', {
+                                      needed: neededFirecores
+                                    })
                               }
                               className={cn(
                                 'w-full font-bold shadow-sm flex items-center justify-center gap-1.5 transition-all',
@@ -517,7 +603,11 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
 
                             {!canAffordUnlock && (
                               <div className="text-[11px] text-center text-muted-foreground flex items-center justify-center gap-1">
-                                <span>{t('仅差 {needed} 萤火，可邀请好友或', { needed: neededFirecores })}</span>
+                                <span>
+                                  {t('仅差 {needed} 萤火，可邀请好友或', {
+                                    needed: neededFirecores
+                                  })}
+                                </span>
                                 <button
                                   type="button"
                                   onClick={() => openMarketingPricingUrl('buy_firecores')}
@@ -550,9 +640,13 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                         </div>
                         <p className="text-muted-foreground mt-0.5">
                           {t('好友使用您的邀请码或链接，好友立得 ')}
-                          <span className="font-black text-emerald-600 dark:text-emerald-400 text-xs">+{inviteFirecoreRewardInvitee} {t('萤火')}</span>
+                          <span className="font-black text-emerald-600 dark:text-emerald-400 text-xs">
+                            +{inviteFirecoreRewardInvitee} {t('萤火')}
+                          </span>
                           {t('，且双方立即各获 ')}
-                          <span className="font-bold text-foreground text-xs">+{inviteQuotaBonus} {t('私有目录文件分析额度')}</span>
+                          <span className="font-bold text-foreground text-xs">
+                            +{inviteQuotaBonus} {t('私有目录文件分析额度')}
+                          </span>
                         </p>
                       </div>
                     </div>
@@ -615,10 +709,10 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                     </div>
                     <div className="flex gap-2">
                       <Input
-                        placeholder={t('在此输入 16 位邀请码或链接')}
+                        placeholder={t('在此输入 8 位邀请码')}
                         value={redeemCode}
                         onChange={e => setRedeemCode(e.target.value)}
-                        className="flex-1"
+                        className="flex-1 uppercase font-mono"
                       />
                       <Button
                         variant="outline"
@@ -660,7 +754,9 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                           </span>
                         </div>
                         <p className="text-xs text-muted-foreground leading-relaxed">
-                          {t('无需订阅即可按需选购萤火点数加油包，支持随时兑换槽位与更多高阶功能。')}
+                          {t(
+                            '无需订阅即可按需选购萤火点数加油包，支持随时兑换槽位与更多高阶功能。'
+                          )}
                         </p>
                       </div>
                     </div>
@@ -760,7 +856,7 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
       </Dialog>
       <UpgradeAccountDialog
         open={isUpgradeOpen}
-        onOpenChange={(open) => {
+        onOpenChange={open => {
           setIsUpgradeOpen(open)
         }}
       />
@@ -952,9 +1048,7 @@ const ConsumptionDetailTab: React.FC = () => {
               const expiresAt =
                 item.metadata?.expires_at ||
                 incomeOp.expires_at ||
-                (isUpgrade && subscription?.status === 'active'
-                  ? subscription?.expires_at
-                  : null)
+                (isUpgrade && subscription?.status === 'active' ? subscription?.expires_at : null)
 
               return (
                 <div
@@ -1014,7 +1108,9 @@ const ConsumptionDetailTab: React.FC = () => {
                             variant="outline"
                             className="text-[10px] font-black px-1.5 py-0 h-4 rounded-md border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400"
                           >
-                            {incomeOp.tier?.toUpperCase() === 'ENTERPRISE' ? 'Enterprise' : 'PRO VIP'}
+                            {incomeOp.tier?.toUpperCase() === 'ENTERPRISE'
+                              ? 'Enterprise'
+                              : 'PRO VIP'}
                           </Badge>
                         )}
                         {isRefund && (
@@ -1028,7 +1124,11 @@ const ConsumptionDetailTab: React.FC = () => {
                       </div>
 
                       {/* 丰富详细的操作详情 */}
-                      {(isUpgrade || isPurchaseFirecores || isRefund || item.type === 'admin_adjust' || incomeOp.type) && (
+                      {(isUpgrade ||
+                        isPurchaseFirecores ||
+                        isRefund ||
+                        item.type === 'admin_adjust' ||
+                        incomeOp.type) && (
                         <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] font-bold text-muted-foreground/90">
                           {isUpgrade && (
                             <>
@@ -1038,11 +1138,15 @@ const ConsumptionDetailTab: React.FC = () => {
                               {incomeOp.quantity && incomeOp.quantity > 1 && (
                                 <span>x{incomeOp.quantity}</span>
                               )}
-                              {((incomeOp.amount != null && incomeOp.amount > 0) || (item.metadata?.amount != null && item.metadata.amount > 0)) && (
+                              {((incomeOp.amount != null && incomeOp.amount > 0) ||
+                                (item.metadata?.amount != null && item.metadata.amount > 0)) && (
                                 <span className="text-foreground/90">
                                   {formatPrice({
                                     currency: incomeOp.currency || item.metadata?.currency || 'USD',
-                                    amount: incomeOp.amount != null && incomeOp.amount > 0 ? incomeOp.amount : item.metadata.amount
+                                    amount:
+                                      incomeOp.amount != null && incomeOp.amount > 0
+                                        ? incomeOp.amount
+                                        : item.metadata.amount
                                   })}
                                 </span>
                               )}
@@ -1060,7 +1164,9 @@ const ConsumptionDetailTab: React.FC = () => {
                             <>
                               <span>{t('点数入账')}</span>
                               {incomeOp.firecores && (
-                                <span>+{incomeOp.firecores} {t('萤火')}</span>
+                                <span>
+                                  +{incomeOp.firecores} {t('萤火')}
+                                </span>
                               )}
                               {incomeOp.amount != null && incomeOp.amount > 0 && (
                                 <span>
@@ -1075,26 +1181,35 @@ const ConsumptionDetailTab: React.FC = () => {
 
                           {isRefund && (
                             <>
-                              {item.metadata?.refund_amount != null && item.metadata.refund_amount > 0 && (
-                                <span className="text-rose-600 dark:text-rose-400 font-medium">
-                                  {t('退款金额')}: {formatPrice({
-                                    currency: item.metadata?.currency || 'USD',
-                                    amount:
-                                      item.metadata.refund_amount > 10000 && item.metadata.refund_amount % 100 === 0
-                                        ? item.metadata.refund_amount / 100
-                                        : item.metadata.refund_amount
-                                  })}
-                                </span>
-                              )}
+                              {item.metadata?.refund_amount != null &&
+                                item.metadata.refund_amount > 0 && (
+                                  <span className="text-rose-600 dark:text-rose-400 font-medium">
+                                    {t('退款金额')}:{' '}
+                                    {formatPrice({
+                                      currency: item.metadata?.currency || 'USD',
+                                      amount:
+                                        item.metadata.refund_amount > 10000 &&
+                                        item.metadata.refund_amount % 100 === 0
+                                          ? item.metadata.refund_amount / 100
+                                          : item.metadata.refund_amount
+                                    })}
+                                  </span>
+                                )}
                               {isSubscriptionRefund && (
                                 <>
                                   <span className="text-rose-600 dark:text-rose-400/90 font-medium">
-                                    {t('扣减时长')}: -{formatPeriodLabel(item.metadata?.period_unit || 'monthly', item.metadata?.period_count || 1)}
+                                    {t('扣减时长')}: -
+                                    {formatPeriodLabel(
+                                      item.metadata?.period_unit || 'monthly',
+                                      item.metadata?.period_count || 1
+                                    )}
                                   </span>
                                   {item.metadata?.new_expires && (
                                     <span className="text-amber-600/90 dark:text-amber-400/90 font-medium">
                                       {t('有效期至: {date}', {
-                                        date: formatDateTime(item.metadata.new_expires, { showSeconds: false })
+                                        date: formatDateTime(item.metadata.new_expires, {
+                                          showSeconds: false
+                                        })
                                       })}
                                     </span>
                                   )}
@@ -1118,7 +1233,9 @@ const ConsumptionDetailTab: React.FC = () => {
                               title={t('点击复制订单号: {orderId}', { orderId })}
                               className="text-muted-foreground/60 hover:text-foreground text-[10px] font-mono transition-colors cursor-pointer inline-flex items-center gap-1 select-all"
                             >
-                              <span>{t('订单')}: {orderId}</span>
+                              <span>
+                                {t('订单')}: {orderId}
+                              </span>
                               <Copy className="w-2.5 h-2.5 opacity-50 hover:opacity-100" />
                             </span>
                           )}
@@ -1129,7 +1246,10 @@ const ConsumptionDetailTab: React.FC = () => {
                         <span>{formatDateTime(item.time, { showSeconds: true })}</span>
                         {item.balance_after != null && (
                           <span className="text-muted-foreground/70">
-                            {t('萤火余额')}: <span className="tabular-nums font-extrabold">{item.balance_after}</span>
+                            {t('萤火余额')}:{' '}
+                            <span className="tabular-nums font-extrabold">
+                              {item.balance_after}
+                            </span>
                           </span>
                         )}
                       </div>

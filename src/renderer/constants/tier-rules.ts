@@ -31,7 +31,7 @@ export const getFirecoreRules = (prices: Record<string, number>) => ({
   spend: [
     {
       operation: 'unlock_private_unlimited',
-      description: t('解锁私有目录无限额度（邀请3人即可解锁）'),
+      description: t('解锁私有目录无限额度（邀请4位好友即可解锁）'),
       freePrice: prices['spend_unlock_analysis'] ?? 0,
       proPrice: 0,
       enterprisePrice: 0,

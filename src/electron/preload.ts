@@ -755,7 +755,23 @@ const electronAPI = {
 
   deviceBind: {
     getStatus: (): Promise<any> => ipcRenderer.invoke('deviceBind/getStatus'),
-    createCode: (): Promise<any> => ipcRenderer.invoke('deviceBind/createCode')
+    createCode: (): Promise<any> => ipcRenderer.invoke('deviceBind/createCode'),
+    pollResult: (payload: { code: string; pollSecret: string }): Promise<any> =>
+      ipcRenderer.invoke('deviceBind/pollResult', payload),
+    sendEmailOtp: (payload: { email: string }): Promise<any> =>
+      ipcRenderer.invoke('deviceBind/sendEmailOtp', payload),
+    completeEmailBinding: (payload: {
+      email: string
+      code: string
+      invitationCode?: string
+    }): Promise<any> => ipcRenderer.invoke('deviceBind/completeEmailBinding', payload),
+    hasActiveBindSession: (): Promise<boolean> =>
+      ipcRenderer.invoke('deviceBind/hasActiveBindSession'),
+    unbind: (): Promise<any> => ipcRenderer.invoke('deviceBind/unbind'),
+    seatDevice: (payload: { sessionToken?: string; evictDeviceId?: string | null }): Promise<any> =>
+      ipcRenderer.invoke('deviceBind/seatDevice', payload),
+    listSeatedDevices: (payload?: { sessionToken?: string }): Promise<any> =>
+      ipcRenderer.invoke('deviceBind/listSeatedDevices', payload)
   },
 
   // 工作目录管理
