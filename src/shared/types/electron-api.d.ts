@@ -16,6 +16,7 @@ import { AppConfig, WorkspaceDirectory, WorkspaceConfigIntent, WorkspaceConfig }
 // PRD-0044（S5）：IModelRecommendation / IModelSummary 导入随模型管理与推荐 IPC 清退删除
 import type { ConfigKey } from '@yonuc/types/config-types'
 import { FileInfo } from '@yonuc/core-engine'
+import type { EmptyFolderNode } from '@firefly/core-engine'
 import {
   DimensionGroup,
   SelectedTag,
@@ -266,13 +267,6 @@ interface UndoSessionParams {
 interface DeleteSessionParams {
   workspaceDirectoryPath: string
   sessionId: string
-}
-
-// 空文件夹扫描结果接口
-interface EmptyFolderScanResult {
-  emptyFolders: string[]
-  totalCount: number
-  totalSize: number
 }
 
 // 空文件夹删除结果接口
@@ -677,6 +671,22 @@ declare global {
         workspaceId: number,
         config: WorkspaceConfig
       ) => Promise<{ success: boolean; error?: string }>
+      commitWorkspacePolicy?: (params: {
+        workspaceId: number
+        templateConfig: Partial<WorkspaceConfig>
+        boundWorkflowId?: string | null
+        expectedPolicyVersion?: number
+      }) => Promise<{
+        success: boolean
+        policyVersion: number
+        appliedConfig?: WorkspaceConfig
+        error?: {
+          code: 'STORAGE' | 'PERMISSION' | 'CONFLICT' | 'UNKNOWN'
+          message: string
+          stack?: string
+          details?: unknown
+        }
+      }>
       updateWorkspaceInclusion: (
         workspaceId: number,
         patterns: string[]
@@ -906,7 +916,7 @@ declare global {
 
       // 空文件夹清理
       emptyFolder: {
-        scan: (workspaceDirectoryPath: string) => Promise<EmptyFolderScanResult>
+        scan: (workspaceDirectoryPath: string) => Promise<EmptyFolderNode[]>
         delete: (folderPaths: string[]) => Promise<EmptyFolderDeleteResult>
       }
 

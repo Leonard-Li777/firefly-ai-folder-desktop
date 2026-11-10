@@ -23,6 +23,10 @@ import {
   workspaceAdmissionService,
   type WorkspacePolicyMutation
 } from '../workspace/workspace-admission-service'
+import {
+  workspacePolicyCommitService,
+  type CommitWorkspacePolicyParams
+} from '../workspace/workspace-policy-commit-service'
 
 /** 校验忽略规则类型 */
 function isValidIgnoreRuleType(value: unknown): value is IIgnoreRule['type'] {
@@ -463,6 +467,38 @@ export function registerSettingsIPCHandlers(): void {
     }
   )
 
+  // 提交工作区策略变更 (通过 WorkspacePolicyCommitService 原子递增 policyVersion 并合并规则 [Spec v1.1 §2.2])
+  ipcMain.handle('commit-workspace-policy', async (_event, params: CommitWorkspacePolicyParams) => {
+    try {
+      const result = await workspacePolicyCommitService.commitPolicy(params)
+      if (result.success) {
+        BrowserWindow.getAllWindows().forEach(win => {
+          if (!win.isDestroyed()) {
+            win.webContents.send('workspace-directories-updated')
+          }
+        })
+        if (params.workspaceId) {
+          void analysisQueueService.start(Number(params.workspaceId))
+        }
+      }
+      return result
+    } catch (error) {
+      logger.error(
+        LogCategory.SETTING,
+        `commit-workspace-policy 异常: ${params?.workspaceId}`,
+        error
+      )
+      return {
+        success: false,
+        policyVersion: 0,
+        error: {
+          code: 'UNKNOWN',
+          message: (error as Error)?.message || String(error)
+        }
+      }
+    }
+  })
+
   const handleUpdateInclusion = async (workspaceId: number, patterns: string[]) => {
     try {
       const result = await workspaceAdmissionService.applyPolicyMutation(workspaceId, {
@@ -496,8 +532,8 @@ export function registerSettingsIPCHandlers(): void {
           const { directoryProfilerService } =
             await import('../filesystem/directory-profiler-service')
           const profile = await directoryProfilerService.probeProfile(workspace.path)
-          if (profile.stats?.extensionCounts) {
-            probeExtensionCounts = profile.stats.extensionCounts
+          if ((profile.stats as any)?.extensionCounts) {
+            probeExtensionCounts = (profile.stats as any).extensionCounts
           }
         } catch {
           // 采样探针异常降级

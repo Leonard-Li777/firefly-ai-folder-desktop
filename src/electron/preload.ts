@@ -782,10 +782,15 @@ const electronAPI = {
     ipcRenderer.invoke('get-workspace-config', workspaceId),
   updateWorkspaceConfig: (workspaceId: number, config: any) =>
     ipcRenderer.invoke('update-workspace-config', workspaceId, config),
+  commitWorkspacePolicy: (params: any) => ipcRenderer.invoke('commit-workspace-policy', params),
   updateWorkspaceWhitelist: (workspaceId: number, patterns: string[]) =>
     ipcRenderer.invoke('update-workspace-whitelist', workspaceId, patterns),
   previewWorkspaceWhitelistImpact: (workspaceId: number, patterns: string[]) =>
     ipcRenderer.invoke('preview-workspace-whitelist-impact', workspaceId, patterns),
+  updateWorkspaceInclusion: (workspaceId: number, patterns: string[]) =>
+    ipcRenderer.invoke('update-workspace-inclusion', workspaceId, patterns),
+  previewWorkspaceInclusionImpact: (workspaceId: number, patterns: string[]) =>
+    ipcRenderer.invoke('preview-workspace-inclusion-impact', workspaceId, patterns),
   updateWorkspaceBoundWorkflow: (workspaceId: number, workflowId: string | null) =>
     ipcRenderer.invoke('update-workspace-bound-workflow', workspaceId, workflowId),
   getLocalWorkflows: (filter?: {

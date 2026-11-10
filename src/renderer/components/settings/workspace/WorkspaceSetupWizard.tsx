@@ -6,28 +6,21 @@ import {
   parseWorkspaceConfig,
   HardwareInfo,
   UserTier,
-  LocalWorkflowRecord,
   WorkflowRecommendation,
   WorkflowCategory,
-  TechnicalEngineParameters
+  TechnicalEngineParameters,
+  DirectoryTreeNode
 } from '@firefly/types'
 import {
   recommendWorkflowByProfile,
   DirectoryProfileStats,
-  mapIntentToParameters
+  mapIntentToParameters,
+  buildPreviewTree,
+  PreviewNode
 } from '@firefly/shared'
 import { useTierStore } from '../../../stores/tier-store'
 import { Button } from '../../ui/button'
 import { Label } from '../../ui/label'
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogCancel
-} from '../../ui/alert-dialog'
 import { MaterialIcon, cn } from '../../../lib/utils'
 import { toast } from '../../common/Toast'
 import { t } from '@app/languages'
@@ -36,6 +29,7 @@ import {
   Check,
   Loader2,
   ArrowRight,
+  ArrowLeft,
   Sliders,
   FolderOpen,
   Folder,
@@ -45,7 +39,6 @@ import {
   Film,
   Package,
   CheckCircle2,
-  Cpu,
   Camera,
   Code2,
   Shapes,
@@ -54,14 +47,15 @@ import {
   Tv,
   Music,
   FileSpreadsheet,
-  CheckCheck,
   Filter,
   Tag,
   ShieldCheck,
-  ChevronRight,
-  Layers,
   LayoutGrid,
-  Download
+  Download,
+  AlertCircle,
+  Copy,
+  RefreshCw,
+  X
 } from 'lucide-react'
 
 export interface WorkspaceSetupWizardProps {
@@ -69,7 +63,7 @@ export interface WorkspaceSetupWizardProps {
   hardwareInfo?: HardwareInfo | null
   /**
    * 完成向导后的流转回调
-   * @param mode 'complete' 自动完成并关闭弹窗；'customize' 切入高级 4-Tab 自定义
+   * @param mode 'complete' 自动完成并进入工作目录；'customize' 切入个性化微调配置
    */
   onFinish: (mode: 'complete' | 'customize', readyConfig: WorkspaceConfig) => void
 }
@@ -93,9 +87,18 @@ interface DirectoryProfileResult {
 }
 
 /**
+ * 结构化持久化提交错误状态
+ */
+interface PolicyCommitErrorState {
+  code: 'STORAGE' | 'PERMISSION' | 'CONFLICT' | 'UNKNOWN'
+  message: string
+  stack?: string
+  payload?: unknown
+}
+
+/**
  * 角色身份展示字典（函数动态返回，支持多语言切换刷新）
- * 遵循 AGENTS.md "避免静态对象失效"铁律：t() 不能置于模块级静态字面量，
- * 必须通过函数在渲染时动态调用以确保切语言后正确刷新。
+ * 遵循 AGENTS.md "避免静态对象失效"铁律
  */
 function getPersonaLabels(): Record<string, string> {
   return {
@@ -117,7 +120,6 @@ function getPersonaLabels(): Record<string, string> {
 
 /**
  * 分类选项卡定义（函数动态返回，支持多语言切换刷新）
- * 遵循 AGENTS.md "避免静态对象失效"铁律：t() 不能置于模块级静态字面量。
  */
 function getWorkflowCategories(workflowList?: any[]): Array<{
   id: WorkflowCategory | 'all'
@@ -130,31 +132,34 @@ function getWorkflowCategories(workflowList?: any[]): Array<{
       id: 'all',
       name: t('全部'),
       icon: 'apps',
-      count: workflowList && workflowList.length > 0 ? workflowList.length : 13
-    },
-    {
-      id: 'entertainment',
-      name: t('生活娱乐'),
-      icon: 'sports_esports',
-      count: workflowList && workflowList.length > 0
-        ? workflowList.filter(w => w?.category === 'entertainment').length
-        : 5
-    },
-    {
-      id: 'creative',
-      name: t('创意设计'),
-      icon: 'palette',
-      count: workflowList && workflowList.length > 0
-        ? workflowList.filter(w => w?.category === 'creative').length
-        : 4
+      count: workflowList && workflowList.length > 0 ? workflowList.length : 70
     },
     {
       id: 'office',
       name: t('专业办公'),
       icon: 'business_center',
-      count: workflowList && workflowList.length > 0
-        ? workflowList.filter(w => w?.category === 'office').length
-        : 4
+      count:
+        workflowList && workflowList.length > 0
+          ? workflowList.filter(w => w?.category === 'office').length
+          : 24
+    },
+    {
+      id: 'creative',
+      name: t('创意设计'),
+      icon: 'palette',
+      count:
+        workflowList && workflowList.length > 0
+          ? workflowList.filter(w => w?.category === 'creative').length
+          : 26
+    },
+    {
+      id: 'entertainment',
+      name: t('生活娱乐'),
+      icon: 'sports_esports',
+      count:
+        workflowList && workflowList.length > 0
+          ? workflowList.filter(w => w?.category === 'entertainment').length
+          : 20
     }
   ]
 }
@@ -192,9 +197,7 @@ function getWorkflowIconComponent(workflowId: string) {
   }
 }
 
-/**
- * 根据文件名后缀获取对应的小图标
- */
+/** 根据文件名后缀获取对应图标 */
 function getPreviewFileIcon(fileName: string) {
   const ext = fileName.slice(fileName.lastIndexOf('.')).toLowerCase()
   if (
@@ -250,55 +253,7 @@ function getPreviewFileIcon(fileName: string) {
   return FileText
 }
 
-/** 树节点通用结构 */
-interface TreeNode {
-  name: string
-  children?: TreeNode[]
-  previewFiles?: string[]
-}
-
-/** 从工作流对象解析预览树数据 */
-function parseWorkflowPreviewTree(workflow: {
-  name: string
-  preview_tree?: string | null
-  preset_directory_tree?: string | null
-}): TreeNode | null {
-  if (workflow.preview_tree) {
-    try {
-      const parsed = JSON.parse(workflow.preview_tree)
-      if (parsed && typeof parsed === 'object') {
-        return parsed as TreeNode
-      }
-    } catch {
-      // fallback
-    }
-  }
-
-  if (workflow.preset_directory_tree) {
-    try {
-      const parsed = JSON.parse(workflow.preset_directory_tree)
-      if (Array.isArray(parsed)) {
-        const convertNode = (node: any): TreeNode => ({
-          name: node.name || '未命名目录',
-          children: node.subdirectories?.map(convertNode)
-        })
-        return {
-          name: workflow.name,
-          children: parsed.map(convertNode)
-        }
-      }
-    } catch {
-      // fallback
-    }
-  }
-
-  return {
-    name: workflow.name,
-    children: [{ name: '01_标准化归整', previewFiles: ['示例归档文件_01.dat'] }]
-  }
-}
-
-/** 工作流向通用场景意图的降级适配（保证旧视图消费兼容） */
+/** 工作流向通用场景意图的降级适配 */
 function mapWorkflowToIntent(workflowId: string): WorkspaceConfigIntent {
   switch (workflowId) {
     case 'builtin.workflow.photography-raw':
@@ -319,18 +274,42 @@ function mapWorkflowToIntent(workflowId: string): WorkspaceConfigIntent {
   }
 }
 
-/** 递归目录树展示子组件 */
-const DirectoryTreeNodeView: React.FC<{
-  node: TreeNode
+/**
+ * 递归渲染 PreviewNode（支持目录与单点命名原型节点）
+ */
+const PreviewTreeNodeView: React.FC<{
+  node: PreviewNode
   depth?: number
   isRoot?: boolean
 }> = ({ node, depth = 0, isRoot = false }) => {
-  const hasChildren = node.children && node.children.length > 0
-  const hasFiles = node.previewFiles && node.previewFiles.length > 0
+  const isPrototype = node.kind === 'naming-prototype'
+  const hasChildren = !isPrototype && Array.isArray(node.children) && node.children.length > 0
+
+  if (isPrototype) {
+    const FileIcon = getPreviewFileIcon(node.name)
+    return (
+      <div
+        className={cn(
+          'select-none text-xs my-1 pl-2 border-l border-primary/50',
+          depth > 0 && 'ml-3'
+        )}
+      >
+        <div
+          className="flex items-center gap-1.5 py-1 px-2 rounded-md bg-primary/10 border border-primary/30 text-primary font-mono text-[11px] shadow-2xs group"
+          title={node.name}
+        >
+          <FileIcon className="w-3.5 h-3.5 text-primary shrink-0" />
+          <span className="truncate font-semibold">{node.name}</span>
+          <span className="ml-auto text-[9px] px-1.5 py-0.2 rounded bg-primary text-primary-foreground font-sans font-bold">
+            {t('命名样例')}
+          </span>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className={cn('select-none text-xs', depth > 0 && 'ml-3 pl-2 border-l border-border/50')}>
-      {/* 目录节点行 */}
       <div className="flex items-center gap-1.5 py-1 text-foreground font-medium group">
         {isRoot ? (
           <FolderTree className="w-4 h-4 text-primary shrink-0" />
@@ -338,37 +317,12 @@ const DirectoryTreeNodeView: React.FC<{
           <FolderOpen className="w-3.5 h-3.5 text-amber-500/90 dark:text-amber-400 shrink-0" />
         )}
         <span className={cn('truncate', isRoot && 'font-bold text-primary')}>{node.name}</span>
-        {hasFiles && (
-          <span className="text-[10px] text-muted-foreground/70 font-mono ml-auto">
-            {node.previewFiles!.length} 项
-          </span>
-        )}
       </div>
 
-      {/* 示例文件列表 */}
-      {hasFiles && (
-        <div className="ml-3 pl-2 border-l border-border/40 space-y-1 my-0.5">
-          {node.previewFiles!.map((fileName, idx) => {
-            const FileIcon = getPreviewFileIcon(fileName)
-            return (
-              <div
-                key={idx}
-                className="flex items-center gap-1.5 py-0.5 px-1.5 rounded-md text-[11px] font-mono text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-                title={fileName}
-              >
-                <FileIcon className="w-3 h-3 text-primary/70 shrink-0" />
-                <span className="truncate">{fileName}</span>
-              </div>
-            )
-          })}
-        </div>
-      )}
-
-      {/* 递归渲染子目录 */}
       {hasChildren && (
         <div className="space-y-0.5">
           {node.children!.map((child, idx) => (
-            <DirectoryTreeNodeView key={idx} node={child} depth={depth + 1} />
+            <PreviewTreeNodeView key={`${child.name}-${idx}`} node={child} depth={depth + 1} />
           ))}
         </div>
       )}
@@ -377,23 +331,28 @@ const DirectoryTreeNodeView: React.FC<{
 }
 
 /**
- * 工作目录智能配置向导 (WorkspaceSetupWizard)
+ * 工作目录配置与规则确认向导 (WorkspaceSetupWizard)
  *
- * 升级为基于工作流的两段式优雅布局 + 左右分栏结构：
- * 1. 顶部：文件特征扫描画像与扩展名可视化 UI（多色比例条、主要格式胶囊、AI 匹配诊断横幅）；
- * 2. 左栏：AI 智能推荐大卡片 + 3-Tab 官方工作流矩阵库卡片列表；
- * 3. 右栏：实时联动展示选定工作流的目录树（preview_tree）、示例文件与智能命名规约；
- * 4. 底部：选定反馈与双通道流转（快捷直接启动 / 主出口保存并打开详细配置）。
+ * 落地二阶段视图与单点原型预览树：
+ * 1. 步骤 1：选择工作流（全局比例条、通栏推荐横幅、分类 Tab、默认 Top 6 / 展开 70 套、纯函数单点原型预览树）
+ * 2. 步骤 2：包含与排除规则确认（实测命中数计算、空白名单全量提示、专属排除无则隐藏、系统自动保护、双强主出口）
+ * 3. 页内常驻错误条与结构化错误分层
  */
 export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
   workspace,
   hardwareInfo,
   onFinish
 }) => {
+  // 向导步骤状态机：步骤 1 (选择工作流) ➔ 步骤 2 (包含与排除规则确认)
+  const [currentStep, setCurrentStep] = useState<1 | 2>(1)
+  // 是否展示所有 70 套工作流（默认仅展示 Top 6）
+  const [isShowingAllWorkflows, setIsShowingAllWorkflows] = useState<boolean>(false)
+
   const [profileResult, setProfileResult] = useState<DirectoryProfileResult | null>(null)
   const [isProbing, setIsProbing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [activeCategory, setActiveCategory] = useState<WorkflowCategory | 'all'>('all')
+  const [commitError, setCommitError] = useState<PolicyCommitErrorState | null>(null)
   const hasUserInteractedRef = useRef(false)
 
   // 会员权益中性提示
@@ -405,7 +364,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     return parseWorkspaceConfig(workspace.workspace_config)
   }, [workspace.workspace_config])
 
-  // 当前选中的工作流 ID (初始优先继承绑定工作流，否则默认选中推荐工作流)
+  // 当前选中的工作流 ID
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string>(
     (workspace as any).bound_workflow_id || 'builtin.workflow.photography-raw'
   )
@@ -457,15 +416,13 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     }
   }, [profileResult])
 
-  // 官方与本地工作流列表（从 ConfigDbManager 数据中枢获取）
+  // 官方与本地工作流列表
   const [workflows, setWorkflows] = useState<any[]>([])
-  // 列表加载状态与失败原因：数据缺口必须可见，严禁静默降级
   const [isWorkflowsLoading, setIsWorkflowsLoading] = useState(true)
   const [workflowsLoadError, setWorkflowsLoadError] = useState<string | null>(null)
 
   useEffect(() => {
     let isMounted = true
-    // 把 API 调用包进 then 链，使接口缺失或同步抛错也统一进入下方 catch 显式上报
     Promise.resolve()
       .then(() => window.electronAPI?.getLocalWorkflows?.())
       .then((res: any) => {
@@ -476,13 +433,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
           setWorkflowsLoadError(reason)
           return
         }
-        // 数据清洗：剔除缺少 id 的脏记录并显式上报，避免后续 find/map 解引用崩溃
         const valid = res.data.filter((w: any) => w && typeof w.id === 'string')
-        if (valid.length !== res.data.length) {
-          console.warn(
-            `[WorkspaceSetupWizard] 已过滤 ${res.data.length - valid.length} 条缺少 id 的无效工作流记录`
-          )
-        }
         if (valid.length === 0) {
           const reason = t('未获取到任何官方工作流，请检查配置数据是否完成初始化')
           console.warn('[WorkspaceSetupWizard] 本地工作流列表为空:', reason)
@@ -506,7 +457,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     }
   }, [])
 
-  // 基于目录画像推导工作流推荐评分列表
+  // 推导工作流推荐评分列表
   const workflowRecommendations = useMemo<WorkflowRecommendation[]>(() => {
     if (!profileResult?.stats || profileResult.stats.totalSampled <= 0) {
       return []
@@ -543,7 +494,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     return wf ? { ...wf, score: topRec.score, matchReason: topRec.matchReason } : null
   }, [workflowRecommendations, workflows])
 
-  // Top 1 智能推荐是否达到高亮门槛 (S1 >= 70 且 S1 - S2 >= 15)
+  // Top 1 智能推荐是否达到高亮门槛
   const isTopRecommendationHighlighted = useMemo(() => {
     if (!workflowRecommendations || workflowRecommendations.length < 2) return false
     const s1 = workflowRecommendations[0].score
@@ -551,15 +502,14 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     return s1 >= 70 && s1 - s2 >= 15
   }, [workflowRecommendations])
 
-  // 当 Profiler 分析完成且用户尚未手动干预时，自动预选推荐工作流（保持停留在'全部'或当前分类）
+  // 初始自动预选推荐工作流
   useEffect(() => {
     if (top1Recommendation && !hasUserInteractedRef.current) {
       setSelectedWorkflowId(top1Recommendation.id)
     }
   }, [top1Recommendation])
 
-  // 当前选中的完整工作流实体：只接受具备合法 id 的记录，
-  // 杜绝「半有效对象 / undefined」流向下游渲染层造成属性解引用崩溃。
+  // 当前选中的完整工作流实体
   const selectedWorkflow = useMemo(() => {
     const matched = workflows.find((w: any) => w?.id === selectedWorkflowId)
     if (matched) return matched
@@ -567,121 +517,175 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     return fallback && typeof fallback.id === 'string' ? fallback : null
   }, [selectedWorkflowId, workflows])
 
-  // 解析当前选中工作流的目录树结构
-  const previewTreeData = useMemo<TreeNode | null>(() => {
-    if (!selectedWorkflow) return null
-    return parseWorkflowPreviewTree(selectedWorkflow)
-  }, [selectedWorkflow])
-
-  // 计算预期大白话影响 (例如：预计纳入 85% 目标文件，排除 15% 杂质文件)
-  const expectedImpactText = useMemo(() => {
-    if (!profileResult?.stats || !selectedWorkflow) return null
-    const { topExtensions, totalSampled } = profileResult.stats
-    if (totalSampled <= 0) return null
-
-    let allowedExts = new Set<string>()
-    let templateConfig: any = null
-    if (selectedWorkflow.workspace_config) {
-      try {
-        templateConfig =
-          typeof selectedWorkflow.workspace_config === 'string'
-            ? JSON.parse(selectedWorkflow.workspace_config)
-            : selectedWorkflow.workspace_config
-      } catch {}
+  // 解析模板配置 JSON
+  const selectedTemplateConfig = useMemo<any>(() => {
+    if (!selectedWorkflow?.workspace_config) return null
+    try {
+      return typeof selectedWorkflow.workspace_config === 'string'
+        ? JSON.parse(selectedWorkflow.workspace_config)
+        : selectedWorkflow.workspace_config
+    } catch {
+      return null
     }
+  }, [selectedWorkflow?.workspace_config])
 
-    const whitelistRules = templateConfig?.customWhitelistRules || []
-    if (Array.isArray(whitelistRules) && whitelistRules.length > 0) {
-      whitelistRules.forEach((r: any) => {
-        const ext = typeof r === 'string' ? r : r.value || r.pattern || ''
-        if (ext) allowedExts.add(ext.toLowerCase())
-      })
-    } else if (selectedWorkflow.filter_rules) {
+  // 纯函数 buildPreviewTree 动态构建单点原型预览树
+  const previewTreeNodes = useMemo<PreviewNode[]>(() => {
+    if (!selectedWorkflow) return []
+    let treeNodes: readonly DirectoryTreeNode[] = []
+    if (selectedWorkflow.preset_directory_tree) {
       try {
-        const rules = JSON.parse(selectedWorkflow.filter_rules)
-        if (Array.isArray(rules)) {
-          rules.forEach(r => {
-            const ext = typeof r === 'string' ? r : r.value || r.pattern || ''
-            if (ext) allowedExts.add(ext.toLowerCase())
-          })
+        const parsed =
+          typeof selectedWorkflow.preset_directory_tree === 'string'
+            ? JSON.parse(selectedWorkflow.preset_directory_tree)
+            : selectedWorkflow.preset_directory_tree
+        if (Array.isArray(parsed)) {
+          treeNodes = parsed
         }
       } catch {}
     }
 
-    if (
-      (selectedWorkflow.filter_mode === 'whitelist' || allowedExts.size > 0) &&
-      allowedExts.size > 0
+    const namingTemplate =
+      selectedWorkflow.naming_template ||
+      selectedTemplateConfig?.namingTemplate ||
+      selectedWorkflow.naming_pattern ||
+      '{YYYYMMDD}_{SceneType}_{FileName}.{ext}'
+
+    // 解析首选常见扩展名
+    let commonExt = '.dat'
+    let extsObj = selectedWorkflow.extensions
+    if (typeof extsObj === 'string') {
+      try {
+        extsObj = JSON.parse(extsObj)
+      } catch {}
+    }
+    if (Array.isArray(extsObj?.common) && extsObj.common.length > 0) {
+      commonExt = extsObj.common[0]
+    } else if (
+      Array.isArray(selectedTemplateConfig?.customWhitelistRules) &&
+      selectedTemplateConfig.customWhitelistRules.length > 0
     ) {
-      let matchedCount = 0
-      for (const item of topExtensions || []) {
-        if (allowedExts.has(item.ext.toLowerCase())) {
-          matchedCount += item.count
-        }
+      commonExt = selectedTemplateConfig.customWhitelistRules[0]
+    }
+    if (commonExt && !commonExt.startsWith('.')) {
+      commonExt = `.${commonExt}`
+    }
+
+    return buildPreviewTree(treeNodes, namingTemplate, commonExt)
+  }, [selectedWorkflow, selectedTemplateConfig])
+
+  // 提取当前选定工作流的包含白名单规则
+  const currentWhitelistRules = useMemo<string[]>(() => {
+    if (Array.isArray(selectedTemplateConfig?.customWhitelistRules)) {
+      return selectedTemplateConfig.customWhitelistRules
+    }
+    if (selectedWorkflow?.filter_rules && selectedWorkflow?.filter_mode === 'whitelist') {
+      try {
+        const parsed = JSON.parse(selectedWorkflow.filter_rules)
+        if (Array.isArray(parsed)) return parsed
+      } catch {}
+    }
+    return []
+  }, [selectedTemplateConfig, selectedWorkflow])
+
+  // 提取当前选定工作流的专属排除规则（无则返回空数组）
+  const currentCustomIgnoreRules = useMemo<string[]>(() => {
+    if (Array.isArray(selectedTemplateConfig?.customIgnoreRules)) {
+      return selectedTemplateConfig.customIgnoreRules
+    }
+    if (selectedWorkflow?.custom_ignores) {
+      try {
+        const parsed =
+          typeof selectedWorkflow.custom_ignores === 'string'
+            ? JSON.parse(selectedWorkflow.custom_ignores)
+            : selectedWorkflow.custom_ignores
+        if (Array.isArray(parsed)) return parsed
+      } catch {}
+    }
+    return []
+  }, [selectedTemplateConfig, selectedWorkflow])
+
+  // 实测命中数与大白话透视计算 (Ticket 04 AC-4.3)
+  const fileImpactStats = useMemo(() => {
+    const totalFiles = profileResult?.stats?.totalSampled ?? 0
+    if (totalFiles <= 0) {
+      return {
+        totalFiles: 0,
+        matchedCount: 0,
+        hiddenCount: 0,
+        isWhitelistActive: currentWhitelistRules.length > 0,
+        description: t('当前工作目录为空或尚未完成扫描')
       }
-      const inPct = Math.min(99, Math.max(5, Math.round((matchedCount / totalSampled) * 100)))
-      const outPct = Math.max(0, 100 - inPct)
-      return t(
-        '检测到当前目录下主要为 {extSummary}，应用此工作流预计将纳入 {inPct}% 的目标资产并深度解析，过滤 {outPct}% 的非目标杂质文件。',
+    }
+
+    if (currentWhitelistRules.length === 0) {
+      return {
+        totalFiles,
+        matchedCount: totalFiles,
+        hiddenCount: 0,
+        isWhitelistActive: false,
+        description: t(
+          '基于当前目录扫描，预计将展示全部 {totalFiles} 个文件（未启用格式过滤，所有受管文件均正常呈现）',
+          { totalFiles }
+        )
+      }
+    }
+
+    // 统计白名单命中数
+    const allowedExts = new Set(
+      currentWhitelistRules.map(r => (r.startsWith('.') ? r.toLowerCase() : `.${r.toLowerCase()}`))
+    )
+    let matchedCount = 0
+    for (const item of profileResult?.stats?.topExtensions || []) {
+      const ext = item.ext.startsWith('.') ? item.ext.toLowerCase() : `.${item.ext.toLowerCase()}`
+      if (allowedExts.has(ext)) {
+        matchedCount += item.count
+      }
+    }
+    const hiddenCount = Math.max(0, totalFiles - matchedCount)
+
+    return {
+      totalFiles,
+      matchedCount,
+      hiddenCount,
+      isWhitelistActive: true,
+      description: t(
+        '基于当前目录扫描，预计将展示 {matchedCount} / {totalFiles} 个文件（其余 {hiddenCount} 个非此类文件将安全隐藏，绝不改动磁盘原文件）',
         {
-          extSummary: (topExtensions || [])
-            .slice(0, 3)
-            .map(e => e.ext)
-            .join('、'),
-          inPct,
-          outPct
+          matchedCount,
+          totalFiles,
+          hiddenCount
         }
       )
     }
+  }, [profileResult, currentWhitelistRules])
 
-    return t(
-      '采用此工作流规范将自动建立「{persona}」标准管理结构，对目标文件执行智能命名与分类归整。',
-      {
-        persona: getPersonaLabels()[selectedWorkflow?.persona] || selectedWorkflow?.name
-      }
-    )
-  }, [profileResult, selectedWorkflow])
-
-  // 统一提交入口：恪守转化优先铁律与 Spec DoD-4，断言无弹窗阻断，直接填入工作流配置
-  const submitConfig = (flowMode: 'complete' | 'customize') => {
-    doSubmitConfig(flowMode)
-  }
-
-  // 执行就绪配置持久化与工作流绑定
-  const doSubmitConfig = async (flowMode: 'complete' | 'customize') => {
+  // 提交策略与流转主入口
+  const submitPolicy = async (flowMode: 'complete' | 'customize') => {
     if (!workspace.id) {
       toast.error(t('工作区 ID 无效'))
       return
     }
-    // 工作流列表未就绪时禁止提交，避免在配置组装阶段解引用 undefined
     if (!selectedWorkflow) {
       toast.error(t('工作流数据尚未就绪，请稍后重试'))
       return
     }
+
     setIsSaving(true)
+    setCommitError(null)
+
     try {
       let actualHw = hardwareInfo
       if (!actualHw && window.electronAPI?.getHardwareInfo) {
         try {
           actualHw = await window.electronAPI.getHardwareInfo()
-        } catch {
-          // fallback
-        }
-      }
-
-      let templateConfig: any = null
-      if (selectedWorkflow.workspace_config) {
-        try {
-          templateConfig =
-            typeof selectedWorkflow.workspace_config === 'string'
-              ? JSON.parse(selectedWorkflow.workspace_config)
-              : selectedWorkflow.workspace_config
         } catch {}
       }
 
-      // 从选中的工作流中解析基础 AI 引擎配置快照
+      // 解析 AI 引擎参数
       let baseAi: TechnicalEngineParameters
-      if (templateConfig?.baseAIConfig || templateConfig?.derivedSnapshot) {
-        baseAi = templateConfig.baseAIConfig || templateConfig.derivedSnapshot
+      if (selectedTemplateConfig?.baseAIConfig || selectedTemplateConfig?.derivedSnapshot) {
+        baseAi = selectedTemplateConfig.baseAIConfig || selectedTemplateConfig.derivedSnapshot
       } else if (selectedWorkflow.engine_params_json) {
         try {
           baseAi = JSON.parse(selectedWorkflow.engine_params_json)
@@ -692,53 +696,107 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
         baseAi = mapIntentToParameters(mapWorkflowToIntent(selectedWorkflow.id), actualHw)
       }
 
-      // policyVersion 单调递增，确保 resolveEffectiveFilterPolicy 缓存键失效，使新策略生效
-      const nextPolicyVersion =
-        parsedConfig.status === 'ready' ? (parsedConfig.policyVersion ?? 0) + 1 : 1
-
-      // 就绪配置对象 (与 local_workflows.workspace_config 100% 同构)
-      const readyConfig: WorkspaceConfig = {
+      const templateConfig: Partial<WorkspaceConfig> = {
         schemaVersion: 1,
         status: 'ready',
-        policyVersion: nextPolicyVersion,
         workflowId: selectedWorkflow.id,
-        customIgnoreRules: templateConfig?.customIgnoreRules || [],
-        customWhitelistRules: templateConfig?.customWhitelistRules || [],
+        customIgnoreRules: selectedTemplateConfig?.customIgnoreRules || [],
+        customWhitelistRules: selectedTemplateConfig?.customWhitelistRules || [],
         baseAIConfig: baseAi,
         derivedSnapshot: baseAi,
-        advancedAIPrompts: templateConfig?.advancedAIPrompts || undefined,
-        unitRecognition: templateConfig?.unitRecognition || undefined,
+        advancedAIPrompts: selectedTemplateConfig?.advancedAIPrompts || undefined,
+        unitRecognition: selectedTemplateConfig?.unitRecognition || undefined,
         namingPattern:
-          selectedWorkflow.naming_pattern || templateConfig?.namingPattern || undefined,
+          selectedWorkflow.naming_pattern || selectedTemplateConfig?.namingPattern || undefined,
         namingTemplate:
-          selectedWorkflow.naming_template || templateConfig?.namingTemplate || undefined,
+          selectedWorkflow.naming_template || selectedTemplateConfig?.namingTemplate || undefined,
         configuredAt: Date.now()
       }
 
-      // 单次原子持久化工作区配置与绑定工作流 (已在 readyConfig 中携带 workflowId，服务端一次原子完成 [M07])
-      if (window.electronAPI?.updateWorkspaceConfig) {
-        await window.electronAPI.updateWorkspaceConfig(workspace.id, readyConfig)
+      // 优先调用主进程策略原子提交服务 WorkspacePolicyCommitService
+      let commitResult: any
+      if (window.electronAPI?.commitWorkspacePolicy) {
+        commitResult = await window.electronAPI.commitWorkspacePolicy({
+          workspaceId: workspace.id,
+          templateConfig,
+          boundWorkflowId: selectedWorkflow.id
+        })
+      } else if (window.electronAPI?.updateWorkspaceConfig) {
+        // 回退兼容方案
+        const nextPolicyVersion =
+          parsedConfig.status === 'ready' ? (parsedConfig.policyVersion ?? 0) + 1 : 1
+        const readyConfig: WorkspaceConfig = {
+          ...templateConfig,
+          policyVersion: nextPolicyVersion
+        } as WorkspaceConfig
+        const res = await window.electronAPI.updateWorkspaceConfig(workspace.id, readyConfig)
+        commitResult = {
+          success: res.success,
+          policyVersion: nextPolicyVersion,
+          appliedConfig: readyConfig,
+          error: res.error ? { code: 'UNKNOWN', message: res.error } : undefined
+        }
+      } else {
+        throw new Error(t('主进程未提供配置提交接口'))
       }
+
+      if (!commitResult.success) {
+        const errObj = commitResult.error || {
+          code: 'UNKNOWN',
+          message: t('策略提交未成功')
+        }
+        setCommitError({
+          code: errObj.code || 'UNKNOWN',
+          message: errObj.message || t('保存配置失败'),
+          stack: errObj.stack,
+          payload: {
+            workspaceId: workspace.id,
+            workflowId: selectedWorkflow.id,
+            details: errObj.details
+          }
+        })
+        return
+      }
+
+      const appliedConfig =
+        commitResult.appliedConfig ||
+        ({
+          ...templateConfig,
+          policyVersion: commitResult.policyVersion
+        } as WorkspaceConfig)
 
       if (flowMode === 'complete') {
         toast.success(
-          t('已绑定「{name}」，AI 分析与工作流已启动！', { name: selectedWorkflow.name })
+          t('已成功装配「{name}」，正在进入工作目录...', { name: selectedWorkflow.name })
         )
       } else {
         toast.success(
-          t('已选用「{name}」，正在为您打开详细配置页面', { name: selectedWorkflow.name })
+          t('已应用「{name}」，正在为您打开详细微调面板...', { name: selectedWorkflow.name })
         )
       }
-      onFinish(flowMode, readyConfig)
-    } catch (error: any) {
-      toast.error(error?.message || t('保存工作流配置异常'))
+      onFinish(flowMode, appliedConfig)
+    } catch (err: any) {
+      console.error('[WorkspaceSetupWizard] 提交异常:', err)
+      setCommitError({
+        code: 'UNKNOWN',
+        message: err?.message || String(err),
+        stack: err?.stack,
+        payload: { workspaceId: workspace.id, workflowId: selectedWorkflow.id }
+      })
     } finally {
       setIsSaving(false)
     }
   }
 
-  // 过滤出当前激活分类下的工作流卡片（支持 'all' 显示全部）；一并剔除缺 id 的脏记录，
-  // 保证下方 map 回调中的 wf 恒为可用实体（数据入口已清洗，此处为渲染前二次门禁）
+  // 复制错误详情到剪贴板
+  const copyErrorDetails = () => {
+    if (!commitError) return
+    const errorPayload = JSON.stringify(commitError, null, 2)
+    navigator.clipboard.writeText(errorPayload)
+    toast.success(t('已将错误诊断信息复制到剪贴板'))
+  }
+
+  // 过滤分类卡片
   const categoryWorkflows = useMemo(() => {
     return workflows.filter(
       (w: any) =>
@@ -748,9 +806,15 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     )
   }, [activeCategory, workflows])
 
-  // 提前返回必须置于所有 Hook 之后（保证两次渲染的 Hook 数量恒定）；
-  // 工作流列表加载中 / 加载失败时 selectedWorkflow 为 undefined，若继续渲染会在
-  // 下方多处解引用 selectedWorkflow.id / .name / .persona，触发 TypeError 崩溃。
+  // 默认展示 Top 6，展开后展示全部
+  const displayedWorkflows = useMemo(() => {
+    if (isShowingAllWorkflows) {
+      return categoryWorkflows
+    }
+    return categoryWorkflows.slice(0, 6)
+  }, [categoryWorkflows, isShowingAllWorkflows])
+
+  // 列表加载中或空保护
   if (!selectedWorkflow) {
     return (
       <div className="flex flex-col h-full items-center justify-center gap-3 p-6 text-center">
@@ -768,60 +832,136 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
   }
 
   return (
-    <div className="flex flex-col h-full overflow-hidden p-5 sm:p-6 space-y-3.5">
-      {/* 头部标题与引导：清晰告知为当前工作目录定制专属工作流 */}
-      <div className="space-y-1 shrink-0">
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="space-y-0.5">
-            <h3 className="text-lg sm:text-xl font-bold flex items-center gap-2.5 text-foreground">
-              <span className="p-1 rounded-lg bg-primary/10 text-primary">
-                <Sparkles className="w-5 h-5" />
-              </span>
-              <span>{t('为当前工作目录定制专属 AI 工作流')}</span>
-            </h3>
+    <div className="flex flex-col h-full overflow-hidden p-5 sm:p-6 space-y-3.5 select-none">
+      {/* 顶部指示导航与步骤进度条 */}
+      <div className="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-border/60 shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shadow-2xs">
+            FF
           </div>
+          <div>
+            <h3 className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
+              <span>{t('工作目录初始化向导')}</span>
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              {t('智能感知目录生态，自动化装配专属虚拟归档管道')}
+            </p>
+          </div>
+        </div>
 
-          {/* 探测状态徽标 */}
-          {isProbing && (
-            <div className="flex items-center gap-1.5 text-xs text-primary bg-primary/10 px-3 py-1 rounded-full animate-pulse border border-primary/20">
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              <span>{t('正在深度扫描目录文件特征...')}</span>
-            </div>
-          )}
+        {/* 步骤胶囊指示器 */}
+        <div className="flex items-center gap-2 text-xs font-semibold">
+          <div
+            className={cn(
+              'flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all cursor-pointer',
+              currentStep === 1
+                ? 'bg-primary text-primary-foreground shadow-xs'
+                : 'bg-emerald-600 text-white shadow-2xs'
+            )}
+            onClick={() => setCurrentStep(1)}
+          >
+            <span className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-[10px]">
+              1
+            </span>
+            <span>{t('选择工作流')}</span>
+          </div>
+          <div className="w-6 h-0.5 bg-border/80" />
+          <div
+            className={cn(
+              'flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all',
+              currentStep === 2
+                ? 'bg-primary text-primary-foreground shadow-xs'
+                : 'bg-muted text-muted-foreground'
+            )}
+          >
+            <span className="w-4 h-4 rounded-full bg-black/10 dark:bg-white/10 flex items-center justify-center text-[10px]">
+              2
+            </span>
+            <span>{t('包含与排除规则确认')}</span>
+          </div>
         </div>
       </div>
 
-      {/* 核心亮点：文件特征扫描画像展示区 (100% 完整保留扩展名可视化 UI) */}
-      <div className="rounded-xl border border-border/80 bg-gradient-to-br from-card via-card to-muted/20 p-3.5 shadow-xs shrink-0 space-y-2.5">
+      {/* 页内常驻错误条 (当提交遇到 STORAGE / PERMISSION / CONFLICT / UNKNOWN 故障时触发) */}
+      {commitError && (
+        <div className="p-3 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300 flex items-start justify-between gap-3 shrink-0 shadow-2xs animate-in fade-in">
+          <div className="flex items-start gap-2.5 min-w-0">
+            <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+            <div className="space-y-0.5 min-w-0 text-xs">
+              <div className="font-bold flex items-center gap-2">
+                <span>{t('策略保存失败')}</span>
+                <span className="px-1.5 py-0.2 rounded font-mono text-[10px] bg-rose-500/20 text-rose-800 dark:text-rose-200">
+                  {commitError.code}
+                </span>
+              </div>
+              <p className="truncate text-rose-600 dark:text-rose-300">{commitError.message}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => submitPolicy('complete')}
+              className="h-7 text-xs px-2.5 border-rose-300 text-rose-700 hover:bg-rose-100 dark:border-rose-800 dark:text-rose-300"
+            >
+              <RefreshCw className="w-3 h-3 mr-1" />
+              <span>{t('重试保存')}</span>
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={copyErrorDetails}
+              className="h-7 text-xs px-2 text-rose-700 hover:bg-rose-100 dark:text-rose-300"
+              title={t('复制错误诊断信息')}
+            >
+              <Copy className="w-3 h-3" />
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => setCommitError(null)}
+              className="h-7 w-7 p-0 text-rose-700 hover:bg-rose-100 dark:text-rose-300"
+              title={t('留在当前页')}
+            >
+              <X className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* 全局常驻顶部：当前目录文件构成特征 (第 1、2 步全局常驻显示) */}
+      <div className="rounded-xl border border-border/80 bg-gradient-to-br from-card via-card to-muted/20 p-3 shadow-xs shrink-0 space-y-2">
         <div className="flex items-center justify-between flex-wrap gap-2 text-xs">
           <div className="flex items-center gap-2 font-semibold text-foreground">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>{t('目录文件特征画像与智能诊断')}</span>
+            <span>{t('当前目录文件构成特征')}</span>
             {distribution && (
               <span className="text-muted-foreground font-normal">
-                ({t('共分析 {count} 个样本文件', { count: distribution.totalSampled })}
+                ({t('抽样 {count} 个文件', { count: distribution.totalSampled })}
                 {profileResult?.stats.durationMs ? ` · ${profileResult.stats.durationMs}ms` : ''})
               </span>
             )}
           </div>
 
-          {/* 常见文件后缀标签 (扩展名胶囊可视化) */}
-          {profileResult?.stats.topExtensions && profileResult.stats.topExtensions.length > 0 && (
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[11px] text-muted-foreground">{t('主要格式:')}</span>
-              {profileResult.stats.topExtensions.slice(0, 5).map((item, idx) => (
-                <span
-                  key={idx}
-                  className="px-1.5 py-0.5 rounded bg-muted text-[11px] font-mono text-muted-foreground border border-border/50"
-                >
-                  {item.ext} ({item.count})
-                </span>
-              ))}
-            </div>
-          )}
+          <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+            {isProbing ? (
+              <>
+                <Loader2 className="w-3 h-3 animate-spin text-primary" />
+                <span>{t('正在深度扫描目录文件特征...')}</span>
+              </>
+            ) : (
+              <>
+                <Check className="w-3.5 h-3.5" />
+                <span>{t('已完成多维画像嗅探')}</span>
+              </>
+            )}
+          </div>
         </div>
 
-        {/* 动态四色比例条 (Document / Image / Video / Other) */}
+        {/* 动态四色比例条 */}
         {distribution ? (
           <div className="space-y-2">
             <div className="h-2 w-full rounded-full overflow-hidden flex bg-muted/60">
@@ -895,107 +1035,60 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
             <span>{t('正在统计文件构成以推断最佳算力模型...')}</span>
           </div>
         )}
-
-        {/* 画像推荐结论横幅 */}
-        {expectedImpactText && (
-          <div className="flex items-start gap-2.5 p-2 rounded-lg bg-primary/5 border border-primary/20 text-xs text-foreground/90">
-            <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-            <div className="leading-relaxed font-normal">
-              <span className="font-semibold text-primary mr-1">{t('✨ AI 匹配诊断:')}</span>
-              {expectedImpactText}
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* 左右分栏核心交互区：左侧选工作流，右侧预览结构化目录树 */}
-      <div className="flex-1 flex min-h-0 gap-4 overflow-hidden">
-        {/* ==================== 左侧：工作流选择与矩阵库 (可纵向滚动) ==================== */}
-        <div className="flex-1 min-w-0 flex flex-col h-full overflow-y-auto pr-1 space-y-3">
-          {/* 段落 1: 顶部高亮「AI 智能推荐」主卡片 (触发门槛: S1 >= 70 且领先 S2 至少 15 分) */}
-          {isTopRecommendationHighlighted && top1Recommendation && (
-            <div className="rounded-xl border-2 border-amber-500/60 bg-gradient-to-r from-amber-500/[0.08] via-primary/[0.04] to-card p-3.5 shadow-xs relative overflow-hidden space-y-2.5 shrink-0">
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 shadow-xs border border-amber-500/30">
-                    {React.createElement(getWorkflowIconComponent(top1Recommendation.id), {
-                      className: 'w-4 h-4'
-                    })}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <h4 className="font-bold text-sm text-foreground leading-snug">
-                        {top1Recommendation.name}
-                      </h4>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-xs">
-                        🔥 {t('契合度 {score}%', { score: top1Recommendation.score })}
-                      </span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold bg-muted text-muted-foreground border border-border/60">
-                        {getPersonaLabels()[top1Recommendation?.persona] ||
-                          top1Recommendation?.persona}
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed line-clamp-1">
-                      {top1Recommendation.summary}
-                    </p>
-                  </div>
-                </div>
-
-                {/* 推荐卡片直接采用主按钮 */}
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="default"
-                    disabled={isSaving}
-                    onClick={() => {
-                      hasUserInteractedRef.current = true
-                      setSelectedWorkflowId(top1Recommendation.id)
-                      submitConfig('complete')
-                    }}
-                    className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-3 shadow-xs h-7.5"
-                  >
-                    <Sparkles className="w-3.5 h-3.5 mr-1 fill-current" />
-                    <span>{t('一键采用推荐')}</span>
-                  </Button>
-                </div>
-              </div>
-
-              {/* 规则与命名格式预览行 */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-2 border-t border-border/40 text-[11px]">
-                <div className="flex items-center gap-1.5 text-muted-foreground truncate">
-                  <Filter className="w-3 h-3 text-primary shrink-0" />
-                  <span className="font-medium text-foreground">{t('准入:')}</span>
-                  <span className="truncate font-mono">
-                    {top1Recommendation.filter_mode === 'whitelist'
-                      ? t('白名单放行')
-                      : t('黑名单过滤')}
-                    {' · '}
-                    {top1Recommendation.filter_rules}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 text-muted-foreground truncate">
-                  <Tag className="w-3 h-3 text-primary shrink-0" />
-                  <span className="font-medium text-foreground">{t('智能命名:')}</span>
-                  <span className="truncate font-mono">
-                    {top1Recommendation.naming_template ||
-                      top1Recommendation.naming_pattern ||
-                      t('标准格式')}
-                  </span>
-                </div>
-              </div>
+      {/* ================= 步骤 1 专属：推荐首选通栏横幅 (在第 2 步隐藏) ================= */}
+      {currentStep === 1 && top1Recommendation && (
+        <div className="p-3 rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex items-center justify-between gap-4 shrink-0 shadow-2xs">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold shrink-0 shadow-xs">
+              ★
             </div>
-          )}
+            <div className="min-w-0 space-y-0.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-primary text-primary-foreground shadow-2xs">
+                  🔥 {t('推荐首选 · 实测 {score} 分', { score: top1Recommendation.score })}
+                </span>
+                <h4 className="text-sm font-bold text-foreground truncate">
+                  {top1Recommendation.name}
+                </h4>
+                <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground font-medium">
+                  {getPersonaLabels()[top1Recommendation?.persona] || top1Recommendation?.persona}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground truncate">{top1Recommendation.summary}</p>
+            </div>
+          </div>
 
-          {/* 段落 2: 底部 3-Tab 分类平铺工作流卡片库 */}
-          <div className="space-y-2.5">
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                <span>{t('全场景官方工作流矩阵库')}</span>
-                <span className="text-muted-foreground font-normal">({t('共 {total} 套', { total: workflows.length || 13 })})</span>
-              </Label>
+          <Button
+            type="button"
+            size="sm"
+            variant="default"
+            onClick={() => {
+              hasUserInteractedRef.current = true
+              setSelectedWorkflowId(top1Recommendation.id)
+              setCurrentStep(2)
+            }}
+            className="px-3.5 py-1.5 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground shrink-0 shadow-xs"
+          >
+            <span>{t('采纳此推荐')}</span>
+            <ArrowRight className="w-3.5 h-3.5 ml-1" />
+          </Button>
+        </div>
+      )}
 
-              {/* 3-Tab 分类切换器 */}
+      {/* ================= 核心视图主体切换 ================= */}
+      {currentStep === 1 ? (
+        /* ========== 步骤 1 视图：选择工作流 (左右分栏) ========== */
+        <div className="flex-1 flex min-h-0 gap-4 overflow-hidden">
+          {/* 左侧：工作流分类与卡片列表 */}
+          <div className="flex-1 min-w-0 flex flex-col h-full overflow-y-auto pr-1 space-y-3">
+            {/* 分类 Tab（首位展示“全部”） */}
+            <div className="flex items-center justify-between flex-wrap gap-2 shrink-0">
+              <span className="text-xs font-bold text-foreground">
+                {t('全场景官方工作流矩阵库')}
+              </span>
+
               <div className="flex items-center p-0.5 bg-muted/60 rounded-lg border border-border/60 gap-1">
                 {getWorkflowCategories(workflows).map(cat => {
                   const isActive = activeCategory === cat.id
@@ -1027,9 +1120,9 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
               </div>
             </div>
 
-            {/* 工作流平铺卡片列表 */}
-            <div className="space-y-2">
-              {categoryWorkflows.map(wf => {
+            {/* 工作流卡片列表 */}
+            <div className="grid grid-cols-1 gap-2.5">
+              {displayedWorkflows.map(wf => {
                 const isSelected = selectedWorkflowId === wf.id
                 const rec = scoreMap.get(wf.id)
                 const IconComp = getWorkflowIconComponent(wf.id)
@@ -1081,7 +1174,6 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
                         </div>
                       </div>
 
-                      {/* 推荐分数值小胶囊或选中状态 */}
                       <div className="flex items-center gap-1.5 shrink-0">
                         {rec && rec.score >= 60 && (
                           <span className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
@@ -1106,7 +1198,6 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
                       {wf.summary}
                     </p>
 
-                    {/* 准入规则与智能命名小条 */}
                     <div className="mt-2 pt-1.5 border-t border-border/40 text-[11px] flex items-center justify-between text-muted-foreground gap-2">
                       <div className="truncate flex items-center gap-1">
                         <Filter className="w-3 h-3 text-primary/70 shrink-0" />
@@ -1123,111 +1214,295 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
                 )
               })}
             </div>
+
+            {/* 列表底部：展开 70 套工作流切换按钮 (Ticket 04 AC-4.2) */}
+            <div className="pt-2 text-center shrink-0">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsShowingAllWorkflows(!isShowingAllWorkflows)}
+                className="w-full py-2.5 rounded-xl border border-border hover:bg-muted/40 text-xs font-semibold text-foreground flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
+              >
+                <span>{isShowingAllWorkflows ? '▲' : '▼'}</span>
+                <span>
+                  {isShowingAllWorkflows
+                    ? t('收起工作流列表 (仅展示推荐)')
+                    : t('展示所有工作流 (共 {count} 套)', { count: workflows.length || 70 })}
+                </span>
+              </Button>
+            </div>
           </div>
 
-          {/* 影视剪辑素材场景 Free/Pro 权益中性告知 */}
-          {isFreeTier && selectedWorkflow.id === 'builtin.workflow.video-production' && (
-            <div className="flex items-center gap-2 p-2.5 rounded-xl bg-primary/5 border border-primary/20 text-xs text-muted-foreground">
-              <Sparkles className="w-4 h-4 text-primary shrink-0" />
-              <span>{t('当前体验首个 5 分钟切片分析，升级 Pro 可流式续作自动处理全片')}</span>
+          {/* 右侧：纯函数单点原型目录树预览 (w-[330px]~w-[390px]) */}
+          <div className="w-[320px] sm:w-[350px] lg:w-[380px] shrink-0 h-full flex flex-col rounded-xl border border-border/80 bg-muted/20 dark:bg-muted/10 p-3.5 overflow-hidden shadow-xs space-y-3">
+            <div className="space-y-1.5 pb-2.5 border-b border-border/60 shrink-0">
+              <div className="flex items-center justify-between gap-1.5">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-foreground truncate">
+                  <FolderTree className="w-4 h-4 text-primary shrink-0" />
+                  <span>{t('预期整理目录结构')}</span>
+                </div>
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 shrink-0">
+                  {getPersonaLabels()[selectedWorkflow?.persona] || selectedWorkflow?.persona}
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-tight">
+                {t('选用「{name}」将自动为您构建以下标准归档结构：', {
+                  name: selectedWorkflow.name
+                })}
+              </p>
             </div>
+
+            {/* 树状目录预览 (带命名原型) */}
+            <div className="flex-1 overflow-y-auto pr-1 min-h-0 bg-card/60 rounded-lg border border-border/60 p-2.5 shadow-2xs">
+              {previewTreeNodes.length > 0 ? (
+                <div className="space-y-1">
+                  {previewTreeNodes.map((rootNode, idx) => (
+                    <PreviewTreeNodeView
+                      key={`${rootNode.name}-${idx}`}
+                      node={rootNode}
+                      isRoot={true}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="h-full flex items-center justify-center text-xs text-muted-foreground">
+                  {t('暂无目录结构预览')}
+                </div>
+              )}
+            </div>
+
+            {/* 安全无损提示 */}
+            <div className="flex items-start gap-1.5 pt-1 text-[11px] text-muted-foreground shrink-0 leading-normal">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+              <span>
+                {t('安全无损：通过虚拟标签树进行整理归档，绝不会物理移动或破坏您的原始磁盘文件。')}
+              </span>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* ========== 步骤 2 视图：包含与排除规则确认 (大白话版) ========== */
+        <div className="flex-1 flex flex-col overflow-y-auto pr-1 space-y-4">
+          {/* 选定工作流横幅标头 */}
+          <div className="bg-card border border-border rounded-xl p-4 flex items-center justify-between shadow-2xs shrink-0">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                {React.createElement(getWorkflowIconComponent(selectedWorkflow.id), {
+                  className: 'w-5 h-5'
+                })}
+              </div>
+              <div className="min-w-0 space-y-0.5">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="text-base font-bold text-foreground">{selectedWorkflow.name}</h4>
+                  <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-semibold">
+                    {getPersonaLabels()[selectedWorkflow?.persona] || selectedWorkflow?.persona}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground truncate">{selectedWorkflow.summary}</p>
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setCurrentStep(1)}
+              className="text-xs font-semibold text-primary hover:underline cursor-pointer shrink-0"
+            >
+              {t('更换其他工作流')}
+            </Button>
+          </div>
+
+          {/* 核心板块 1：大白话「包含」卡片 (实测命中数计算) */}
+          <div className="bg-emerald-500/[0.04] dark:bg-emerald-500/[0.08] border border-emerald-500/30 rounded-xl p-4 space-y-2.5 shrink-0">
+            <div className="flex items-center gap-2.5">
+              <span className="w-6 h-6 rounded-md bg-emerald-600 text-white flex items-center justify-center text-xs font-bold">
+                ✓
+              </span>
+              <div className="flex items-center gap-2">
+                <h4 className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
+                  {t('包含')}
+                </h4>
+                <span className="text-xs font-semibold text-emerald-700/80 dark:text-emerald-300/80">
+                  {t('以下文件才会显示在工作（真实）目录中')}
+                </span>
+              </div>
+            </div>
+
+            {/* 实测命中数描述 (Ticket 04 AC-4.3) */}
+            <div className="text-xs font-medium text-emerald-800 dark:text-emerald-200 bg-emerald-500/10 p-2 rounded-lg border border-emerald-500/20">
+              {fileImpactStats.description}
+            </div>
+
+            {/* 纳管扩展名徽章列表 */}
+            {currentWhitelistRules.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {currentWhitelistRules.map((rule, idx) => (
+                  <span
+                    key={idx}
+                    className="px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"
+                  >
+                    {rule}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* 核心板块 2：大白话专属「排除」卡片 (无专属排除时整块 DOM 彻底隐藏 toBeNull) */}
+          {currentCustomIgnoreRules.length > 0 && (
+            <div
+              id="section-exclude"
+              className="bg-amber-500/[0.04] dark:bg-amber-500/[0.08] border border-amber-500/30 rounded-xl p-4 space-y-2.5 shrink-0"
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="w-6 h-6 rounded-md bg-amber-600 text-white flex items-center justify-center text-xs font-bold">
+                  ✕
+                </span>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-sm font-bold text-amber-700 dark:text-amber-400">
+                    {t('排除')}
+                  </h4>
+                  <span className="text-xs font-medium text-amber-700/80 dark:text-amber-300/80">
+                    {t('当前工作区专属排除目录与规则')}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {currentCustomIgnoreRules.map((rule, idx) => (
+                  <span
+                    key={idx}
+                    className="px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+                  >
+                    {rule}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 核心板块 3：检索式引擎与智能规范化命名格式 (全大白话规范) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 shrink-0">
+            <div className="bg-card border border-border rounded-xl p-3.5 space-y-2">
+              <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <span>⚡ {t('检索式引擎')}</span>
+              </div>
+              <div className="text-xs text-muted-foreground space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <span>{t('处理模式：')}</span>
+                  <span className="font-semibold text-foreground">
+                    {selectedWorkflow.analysis_mode === 'deep'
+                      ? t('全景多模态深度解析')
+                      : t('快速智能命名与轻量归档')}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>{t('索引级别：')}</span>
+                  <span className="font-semibold text-foreground">{t('标准轻量级检索底座')}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-card border border-border rounded-xl p-3.5 space-y-2">
+              <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <span>🏷️ {t('智能规范化命名格式')}</span>
+              </div>
+              <div className="bg-muted/60 p-2 rounded-lg font-mono text-xs text-primary font-bold truncate">
+                {selectedWorkflow.naming_template ||
+                  selectedTemplateConfig?.namingTemplate ||
+                  '{YYYYMMDD}_{SceneType}_{FileName}.{ext}'}
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                {t('整理时自动按此规律展示，原始磁盘文件名绝不受破坏。')}
+              </p>
+            </div>
+          </div>
+
+          {/* 醒目温馨通知：引导按需微调 */}
+          <div className="bg-primary/[0.05] border border-primary/20 rounded-xl p-3.5 flex items-start gap-3 shrink-0">
+            <span className="text-base">💡</span>
+            <div className="space-y-1 text-xs">
+              <div className="font-bold text-foreground">{t('随时支持按需微调')}</div>
+              <p className="text-muted-foreground leading-relaxed">
+                {t(
+                  '以上是系统为您预先搭配的推荐配置。启动后，您可随时在「工作目录设置 ➔ 文件准入与包含排除」中任意添加其他文件扩展名、修改排除规则，或在「检索式引擎」中调整分析深度。'
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= 底部操作栏 (双强主出口) ================= */}
+      <div className="pt-3 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+        <div>
+          {currentStep === 1 ? (
+            <span className="text-xs text-muted-foreground">
+              {t('已选定工作流:')}{' '}
+              <strong className="text-foreground">{selectedWorkflow.name}</strong>
+            </span>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentStep(1)}
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-border text-foreground hover:bg-muted/50 cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 mr-1" />
+              <span>{t('上一步：重选工作流')}</span>
+            </Button>
           )}
         </div>
 
-        {/* ==================== 右侧：实时预览选中工作流的目录树与整理效果 ==================== */}
-        <div className="w-[330px] sm:w-[360px] lg:w-[390px] shrink-0 h-full flex flex-col rounded-xl border border-border/80 bg-muted/20 dark:bg-muted/10 p-3.5 overflow-hidden shadow-xs space-y-3">
-          {/* 右侧头部：选定工作流的特征标头 */}
-          <div className="space-y-1.5 pb-2.5 border-b border-border/60 shrink-0">
-            <div className="flex items-center justify-between gap-1.5">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-foreground truncate">
-                <FolderTree className="w-4 h-4 text-primary shrink-0" />
-                <span>{t('预期整理结构与效果预览')}</span>
-              </div>
-              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 shrink-0">
-                {getPersonaLabels()[selectedWorkflow?.persona] || selectedWorkflow?.persona}
-              </span>
-            </div>
-            <p className="text-[11px] text-muted-foreground leading-tight">
-              {t('选用「{name}」将自动为您构建以下标准虚拟归档目录：', {
-                name: selectedWorkflow.name
-              })}
-            </p>
-          </div>
-
-          {/* 准入放行规则指示条 (根据用户需求，预览中不展示智能名这一行) */}
-          <div className="bg-card/70 border border-border/60 rounded-lg px-2.5 py-2 shrink-0 text-[11px]">
-            <div className="flex items-center justify-between text-muted-foreground">
-              <span className="font-medium text-foreground flex items-center gap-1">
-                <Filter className="w-3 h-3 text-primary shrink-0" />
-                <span>{t('准入放行:')}</span>
-              </span>
-              <span className="font-mono text-[10px] truncate max-w-[190px] bg-muted/60 px-1 py-0.2 rounded">
-                {selectedWorkflow.filter_rules}
-              </span>
-            </div>
-          </div>
-
-          {/* 右侧主体：树状目录预览 (带滚动条) */}
-          <div className="flex-1 overflow-y-auto pr-1 min-h-0 bg-card/60 rounded-lg border border-border/60 p-2.5 shadow-2xs">
-            {previewTreeData ? (
-              <DirectoryTreeNodeView node={previewTreeData} isRoot={true} />
-            ) : (
-              <div className="h-full flex items-center justify-center text-xs text-muted-foreground">
-                {t('暂无目录结构预览')}
-              </div>
-            )}
-          </div>
-
-          {/* 右侧底部：无损虚拟目录机制保障提示 */}
-          <div className="flex items-start gap-1.5 pt-1 text-[11px] text-muted-foreground shrink-0 leading-normal">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-            <span>
-              {t('安全无损：通过虚拟标签树进行整理归档，绝不会物理移动或破坏您的原始磁盘文件。')}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* 底部双通道流转操作栏：主按钮高亮（应用推荐并查看详细配置） + 快捷通道 */}
-      <div className="pt-3 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
-        <div className="text-xs text-muted-foreground flex items-center gap-2 min-w-0">
-          <Sliders className="w-3.5 h-3.5 text-primary shrink-0" />
-          <span className="truncate">
-            {t('已选定工作流:')}{' '}
-            <strong className="text-foreground">{selectedWorkflow.name}</strong>
-          </span>
-        </div>
-
         <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
-          {/* 快捷通道：直接完成并启动分析 (关闭弹窗) */}
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            disabled={isSaving}
-            onClick={() => submitConfig('complete')}
-            className="text-xs text-muted-foreground hover:text-foreground"
-          >
-            <span>{t('直接启动分析')}</span>
-          </Button>
+          {currentStep === 1 ? (
+            <Button
+              type="button"
+              variant="default"
+              size="default"
+              onClick={() => setCurrentStep(2)}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 text-xs font-bold px-5 bg-primary text-primary-foreground hover:bg-primary/90 h-9 shadow-xs"
+            >
+              <span>{t('下一步')}</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Button>
+          ) : (
+            /* 步骤 2 并行双强主出口 (Ticket 04 AC-4.6) */
+            <div className="flex items-center gap-2.5 w-full sm:w-auto">
+              {/* 出口 1：个性化微调工作目录配置 (高亮边框强调) */}
+              <Button
+                type="button"
+                variant="outline"
+                size="default"
+                disabled={isSaving}
+                onClick={() => submitPolicy('customize')}
+                className="w-full sm:w-auto flex items-center justify-center gap-1.5 text-xs font-bold px-4 border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground h-9 shadow-xs transition-all"
+              >
+                {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <span>⚙️</span>}
+                <span>{t('个性化微调工作目录配置')}</span>
+              </Button>
 
-          {/* 主出口：应用所选并查看详细配置（保存并定位到AI引擎配置页面） */}
-          <Button
-            type="button"
-            variant="default"
-            size="default"
-            disabled={isSaving}
-            onClick={() => submitConfig('customize')}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 text-xs font-bold px-5 shadow-md shadow-primary/20 bg-primary text-primary-foreground hover:bg-primary/90 h-9 transition-all"
-          >
-            {isSaving ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <Sparkles className="w-3.5 h-3.5 fill-current" />
-            )}
-            <span>{t('应用所选并查看详细配置')}</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Button>
+              {/* 出口 2：立即应用并进入工作目录 (主色按钮) */}
+              <Button
+                type="button"
+                variant="default"
+                size="default"
+                disabled={isSaving}
+                onClick={() => submitPolicy('complete')}
+                className="w-full sm:w-auto flex items-center justify-center gap-1.5 text-xs font-bold px-5 bg-emerald-600 hover:bg-emerald-700 text-white h-9 shadow-xs transition-all"
+              >
+                {isSaving ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Check className="w-3.5 h-3.5" />
+                )}
+                <span>{t('立即应用并进入工作目录')}</span>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

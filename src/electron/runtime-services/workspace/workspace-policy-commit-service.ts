@@ -202,15 +202,18 @@ export class WorkspacePolicyCommitService {
         // 2. 规则合并策略 (Merge Policy)：切换工作流时保留用户自建规则
         if (params.isWorkflowSwitch) {
           const prevConfig = parseWorkspaceConfig(row.workspace_config)
+          const prevReady = prevConfig.status === 'ready' ? prevConfig : null
 
-          const userIgnores = (prevConfig.customIgnoreRules || []).filter(r => !r.isSystem)
-          const userWhitelists = (prevConfig.customWhitelistRules || []).filter(r => !r.isSystem)
+          const userIgnores = (prevReady?.customIgnoreRules || []).filter((r: any) => !r.isSystem)
+          const userWhitelists = (prevReady?.customWhitelistRules || []).filter(
+            (r: any) => !r.isSystem
+          )
 
           const newTemplateIgnores = (configToPersist.customIgnoreRules || []).filter(
-            r => r.isSystem
+            (r: any) => r.isSystem
           )
           const newTemplateWhitelists = (configToPersist.customWhitelistRules || []).filter(
-            r => r.isSystem
+            (r: any) => r.isSystem
           )
 
           configToPersist.customIgnoreRules = mergeRules(newTemplateIgnores, userIgnores)
@@ -251,8 +254,8 @@ export class WorkspacePolicyCommitService {
           .get(workspaceId) as { workspace_config: string }
 
         const parsedResult = parseWorkspaceConfig(updatedRow.workspace_config)
-        newPolicyVersion = parsedResult.policyVersion || 1
-        finalCommittedConfig = parsedResult
+        newPolicyVersion = parsedResult.status === 'ready' ? (parsedResult.policyVersion ?? 1) : 1
+        finalCommittedConfig = parsedResult.status === 'ready' ? parsedResult : null
       })
 
       // 执行事务
