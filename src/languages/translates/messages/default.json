@@ -257,8 +257,8 @@
     "fr-FR": "La sérialisation de la réponse a échoué",
     "ko-KR": "응답 직렬화 실패",
     "$files": [
-      "src/electron/runtime-services/ai-skill-api-service.ts(39728-39739)",
-      "src/electron/runtime-services/ai-skill-api-service.ts(40480-40491)"
+      "src/electron/runtime-services/ai-skill-api-service.ts(39910-39921)",
+      "src/electron/runtime-services/ai-skill-api-service.ts(40662-40673)"
     ],
     "$id": 7631
   },

@@ -42,15 +42,15 @@
     "$id": 9607
   },
   "MNN-Pocket 0.3B 超轻量模型，极低内存与显存占用，支持快速文本理解与生成。": {
-    "en-US": "MNN-Pocket 0.3B 超轻量模型，极低内存与显存占用，支持快速文本理解与生成。",
-    "es-ES": "MNN-Pocket 0.3B 超轻量模型，极低内存与显存占用，支持快速文本理解与生成。",
-    "ar-EG": "MNN-Pocket 0.3B 超轻量模型，极低内存与显存占用，支持快速文本理解与生成。",
-    "pt-PT": "MNN-Pocket 0.3B 超轻量模型，极低内存与显存占用，支持快速文本理解与生成。",
-    "ru-RU": "MNN-Pocket 0.3B 超轻量模型，极低内存与显存占用，支持快速文本理解与生成。",
-    "ja-JP": "MNN-Pocket 0.3B 超轻量模型，极低内存与显存占用，支持快速文本理解与生成。",
-    "de-DE": "MNN-Pocket 0.3B 超轻量模型，极低内存与显存占用，支持快速文本理解与生成。",
-    "fr-FR": "MNN-Pocket 0.3B 超轻量模型，极低内存与显存占用，支持快速文本理解与生成。",
-    "ko-KR": "MNN-Pocket 0.3B 超轻量模型，极低内存与显存占用，支持快速文本理解与生成。",
+    "en-US": "MNN-Pocket 0.3B is an ultra-lightweight model with extremely low memory and graphics memory usage, and supports fast text understanding and generation.",
+    "es-ES": "MNN-Pocket 0.3B es un modelo ultraligero con un uso de memoria y memoria de gráficos extremadamente bajo y admite una rápida comprensión y generación de texto.",
+    "ar-EG": "MNN-Pocket 0.3B هو نموذج خفيف الوزن للغاية مع ذاكرة منخفضة للغاية واستخدام ذاكرة الرسومات، ويدعم فهم النص وتوليده بسرعة.",
+    "pt-PT": "MNN-Pocket 0.3B é um modelo ultraleve com uso extremamente baixo de memória e memória gráfica e suporta rápida compreensão e geração de texto.",
+    "ru-RU": "MNN-Pocket 0.3B — это сверхлегкая модель с чрезвычайно низким использованием памяти и графической памяти, а также поддерживающая быстрое понимание и генерацию текста.",
+    "ja-JP": "MNN-Pocket 0.3B は、メモリとグラフィックス メモリの使用量が極めて少ない超軽量モデルで、高速なテキストの理解と生成をサポートします。",
+    "de-DE": "MNN-Pocket 0.3B ist ein ultraleichtes Modell mit extrem geringer Speicher- und Grafikspeichernutzung und unterstützt schnelles Textverständnis und -generierung.",
+    "fr-FR": "MNN-Pocket 0.3B est un modèle ultra-léger avec une utilisation extrêmement faible de la mémoire et de la mémoire graphique, et prend en charge une compréhension et une génération rapides de texte.",
+    "ko-KR": "MNN-Pocket 0.3B는 메모리와 그래픽 메모리 사용량이 극히 낮은 초경량 모델로 빠른 텍스트 이해와 생성을 지원합니다.",
     "$files": [
       "src/electron/config/model-source.ts(679-727)",
       "src/electron/config/model-source.ts(1385-1433)"

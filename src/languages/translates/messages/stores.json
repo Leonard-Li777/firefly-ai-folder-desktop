@@ -160,28 +160,28 @@
     "$id": 22927
   },
   "开启生成式引擎": {
-    "en-US": "开启生成式引擎",
-    "es-ES": "开启生成式引擎",
-    "ar-EG": "开启生成式引擎",
-    "pt-PT": "开启生成式引擎",
-    "ru-RU": "开启生成式引擎",
-    "ja-JP": "开启生成式引擎",
-    "de-DE": "开启生成式引擎",
-    "fr-FR": "开启生成式引擎",
-    "ko-KR": "开启生成式引擎",
+    "en-US": "Turn on the generative engine",
+    "es-ES": "Enciende el motor generativo",
+    "ar-EG": "قم بتشغيل المحرك التوليدي",
+    "pt-PT": "Ligue o motor generativo",
+    "ru-RU": "Включите генеративный двигатель",
+    "ja-JP": "生成エンジンをオンにする",
+    "de-DE": "Schalten Sie den generativen Motor ein",
+    "fr-FR": "Allumez le moteur générateur",
+    "ko-KR": "생성 엔진을 켜세요",
     "$files": ["src/renderer/stores/settings-store.ts(3720-3731)"],
     "$id": 28298
   },
   "生成式推理引擎连接与思考模式": {
-    "en-US": "生成式推理引擎连接与思考模式",
-    "es-ES": "生成式推理引擎连接与思考模式",
-    "ar-EG": "生成式推理引擎连接与思考模式",
-    "pt-PT": "生成式推理引擎连接与思考模式",
-    "ru-RU": "生成式推理引擎连接与思考模式",
-    "ja-JP": "生成式推理引擎连接与思考模式",
-    "de-DE": "生成式推理引擎连接与思考模式",
-    "fr-FR": "生成式推理引擎连接与思考模式",
-    "ko-KR": "生成式推理引擎连接与思考模式",
+    "en-US": "Generative reasoning engine connects and thinks patterns",
+    "es-ES": "El motor de razonamiento generativo conecta y piensa patrones",
+    "ar-EG": "محرك التفكير التوليدي يربط الأنماط ويفكر فيها",
+    "pt-PT": "O mecanismo de raciocínio generativo conecta e pensa padrões",
+    "ru-RU": "Генеративный механизм рассуждения соединяет и мыслит шаблоны",
+    "ja-JP": "生成推論エンジンがパターンを接続して考える",
+    "de-DE": "Die generative Argumentationsmaschine verbindet und denkt Muster",
+    "fr-FR": "Le moteur de raisonnement génératif connecte et réfléchit aux modèles",
+    "ko-KR": "생성 추론 엔진은 패턴을 연결하고 생각합니다.",
     "$files": ["src/renderer/stores/settings-store.ts(3781-3799)"],
     "$id": 28299
   },
@@ -197,7 +197,7 @@
     "ko-KR": "음성 합성",
     "$files": [
       "src/renderer/stores/settings-store.ts(3850-3864)",
-      "src/renderer/stores/settings-store.ts(5253-5267)"
+      "src/renderer/stores/settings-store.ts(5284-5298)"
     ],
     "$id": 21213
   },
@@ -213,63 +213,66 @@
     "ko-KR": "오프라인 멀티 스피커 사운드 라이브러리,기본 음성 속도 및 수집 관리",
     "$files": [
       "src/renderer/stores/settings-store.ts(3915-3938)",
-      "src/renderer/stores/settings-store.ts(5318-5341)"
+      "src/renderer/stores/settings-store.ts(5349-5372)"
     ],
     "$id": 21556
   },
-  "AI分析忽略规则": {
-    "en-US": "AI Analysis Ignore Rules",
-    "es-ES": "Reglas de exclusión del análisis de IA",
-    "ar-EG": "قواعد تجاهيل التحليل بالذكاء الاصطناعي",
-    "pt-PT": "Regras de ignorância da análise por IA",
-    "ru-RU": "Правила игнорирования ИИ-анализа",
-    "ja-JP": "AI分析無視ルール",
-    "de-DE": "Ignorierregeln für KI-Analysen",
-    "fr-FR": "Règles d'ignorance de l'analyse IA",
-    "ko-KR": "AI 분석 무시 규칙",
+  "全局排除文件规则": {
+    "en-US": "Global exclude file rules",
+    "es-ES": "Reglas globales de exclusión de archivos",
+    "ar-EG": "قواعد استبعاد الملفات العالمية",
+    "pt-PT": "Regras globais de arquivo de exclusão",
+    "ru-RU": "Глобальные правила исключения файлов",
+    "ja-JP": "グローバル除外ファイル ルール",
+    "de-DE": "Globale Regeln zum Ausschließen von Dateien",
+    "fr-FR": "Règles globales de fichiers d'exclusion",
+    "ko-KR": "전역 제외 파일 규칙",
     "$files": [
       "src/renderer/stores/settings-store.ts(4007-4019)",
-      "src/renderer/stores/settings-store.ts(5410-5422)"
+      "src/renderer/stores/settings-store.ts(5441-5453)"
     ],
-    "$id": 20507
+    "$id": 28534
   },
-  "全系统通用文件与目录排除黑名单": {
-    "en-US": "System-wide general file and directory exclusion blacklist",
-    "es-ES": "Lista negra de exclusión de directorios y archivos generales de todo el sistema",
-    "ar-EG": "القائمة السوداء العامة لاستبعاد الملفات والدليل على مستوى النظام",
-    "pt-PT": "Lista negra geral de exclusão de arquivos e diretórios em todo o sistema",
-    "ru-RU": "Общесистемный черный список исключений файлов и каталогов",
-    "ja-JP": "システム全体の一般的なファイルおよびディレクトリの除外ブラックリスト",
-    "de-DE": "Systemweite allgemeine Blacklist zum Ausschließen von Dateien und Verzeichnissen",
-    "fr-FR": "Liste noire générale d'exclusion de fichiers et de répertoires à l'échelle du système",
-    "ko-KR": "시스템 전체 일반 파일 및 디렉터리 제외 블랙리스트",
-    "$files": ["src/renderer/stores/settings-store.ts(4059-4078)"],
-    "$id": 22930
+  "配置真实目录不显示的文件，以便不进入AI分析提高分析效率并支持批量查重清理保护这些排除的文件": {
+    "en-US": "Configure files that are not displayed in the real directory so that they do not enter AI analysis to improve analysis efficiency and support batch duplication checking and cleaning to protect these excluded files.",
+    "es-ES": "Configure los archivos que no se muestran en el directorio real para que no entren en el análisis de IA para mejorar la eficiencia del análisis y admitir la verificación y limpieza de duplicaciones por lotes para proteger estos archivos excluidos.",
+    "ar-EG": "قم بتكوين الملفات التي لا يتم عرضها في الدليل الحقيقي بحيث لا تدخل في تحليل الذكاء الاصطناعي لتحسين كفاءة التحليل ودعم التحقق من تكرار الدُفعات وتنظيفها لحماية هذه الملفات المستبعدة.",
+    "pt-PT": "Configure arquivos que não são exibidos no diretório real para que não entrem na análise de IA para melhorar a eficiência da análise e oferecer suporte à verificação e limpeza de duplicação em lote para proteger esses arquivos excluídos.",
+    "ru-RU": "Настройте файлы, которые не отображаются в реальном каталоге, чтобы они не входили в анализ AI, чтобы повысить эффективность анализа и поддерживать пакетную проверку и очистку дубликатов для защиты этих исключенных файлов.",
+    "ja-JP": "実ディレクトリに表示されないファイルが AI 分析に入らないように構成して分析効率を向上させ、バッチ重複チェックとクリーニングをサポートしてこれらの除外ファイルを保護します。",
+    "de-DE": "Konfigurieren Sie Dateien, die nicht im echten Verzeichnis angezeigt werden, so dass sie nicht in die KI-Analyse einbezogen werden, um die Analyseeffizienz zu verbessern und die Überprüfung und Bereinigung von Batch-Duplikaten zu unterstützen, um diese ausgeschlossenen Dateien zu schützen.",
+    "fr-FR": "Configurez les fichiers qui ne sont pas affichés dans le répertoire réel afin qu'ils n'entrent pas dans l'analyse AI afin d'améliorer l'efficacité de l'analyse et de prendre en charge la vérification et le nettoyage des duplications par lots pour protéger ces fichiers exclus.",
+    "ko-KR": "실제 디렉터리에 표시되지 않는 파일은 AI 분석에 들어가지 않도록 구성하여 분석 효율성을 높이고, 제외된 파일을 보호하기 위해 일괄 중복 검사 및 정리를 지원합니다.",
+    "$files": [
+      "src/renderer/stores/settings-store.ts(4059-4109)",
+      "src/renderer/stores/settings-store.ts(5493-5543)"
+    ],
+    "$id": 28535
   },
   "萤核对外接口": {
-    "en-US": "萤核对外接口",
-    "es-ES": "萤核对外接口",
-    "ar-EG": "萤核对外接口",
-    "pt-PT": "萤核对外接口",
-    "ru-RU": "萤核对外接口",
-    "ja-JP": "萤核对外接口",
-    "de-DE": "萤核对外接口",
-    "fr-FR": "萤核对外接口",
-    "ko-KR": "萤核对外接口",
-    "$files": ["src/renderer/stores/settings-store.ts(4138-4148)"],
+    "en-US": "Firefly external interface",
+    "es-ES": "Interfaz externa Firefly",
+    "ar-EG": "واجهة يينغ الخارجية",
+    "pt-PT": "Interface externa Yinhe",
+    "ru-RU": "Внешний интерфейс Инхэ",
+    "ja-JP": "Firefly外部インターフェース",
+    "de-DE": "Firefly externe Schnittstelle",
+    "fr-FR": "Interface externe Firefly",
+    "ko-KR": "잉허 외부 인터페이스",
+    "$files": ["src/renderer/stores/settings-store.ts(4169-4179)"],
     "$id": 28300
   },
   "对外 HTTP API、智能体连接状态与生态集成": {
-    "en-US": "对外 HTTP API、智能体连接状态与生态集成",
-    "es-ES": "对外 HTTP API、智能体连接状态与生态集成",
-    "ar-EG": "对外 HTTP API、智能体连接状态与生态集成",
-    "pt-PT": "对外 HTTP API、智能体连接状态与生态集成",
-    "ru-RU": "对外 HTTP API、智能体连接状态与生态集成",
-    "ja-JP": "对外 HTTP API、智能体连接状态与生态集成",
-    "de-DE": "对外 HTTP API、智能体连接状态与生态集成",
-    "fr-FR": "对外 HTTP API、智能体连接状态与生态集成",
-    "ko-KR": "对外 HTTP API、智能体连接状态与生态集成",
-    "$files": ["src/renderer/stores/settings-store.ts(4187-4215)"],
+    "en-US": "External HTTP API, agent connection status and ecological integration",
+    "es-ES": "API HTTP externa, estado de conexión del agente e integración ecológica",
+    "ar-EG": "واجهة برمجة تطبيقات HTTP الخارجية وحالة اتصال الوكيل والتكامل البيئي",
+    "pt-PT": "API HTTP externa, status de conexão do agente e integração ecológica",
+    "ru-RU": "Внешний HTTP API, статус подключения агента и экологическая интеграция",
+    "ja-JP": "外部 HTTP API、エージェントの接続ステータス、およびエコロジカルな統合",
+    "de-DE": "Externe HTTP-API, Agent-Verbindungsstatus und ökologische Integration",
+    "fr-FR": "API HTTP externe, statut de connexion des agents et intégration écologique",
+    "ko-KR": "외부 HTTP API, 에이전트 연결 상태 및 생태학적 통합",
+    "$files": ["src/renderer/stores/settings-store.ts(4218-4246)"],
     "$id": 28301
   },
   "工作区": {
@@ -282,7 +285,7 @@
     "de-DE": "Arbeitsbereich",
     "fr-FR": "Espace de travail",
     "ko-KR": "작업 공간",
-    "$files": ["src/renderer/stores/settings-store.ts(4375-4382)"],
+    "$files": ["src/renderer/stores/settings-store.ts(4406-4413)"],
     "$id": 3301
   },
   "工作区配置、分析深度与目录管理": {
@@ -295,20 +298,20 @@
     "de-DE": "Arbeitsbereichskonfiguration, Analysetiefe und Katalogverwaltung",
     "fr-FR": "Configuration de l'espace de travail, profondeur d'analyse et gestion du catalogue",
     "ko-KR": "작업 공간 구성, 분석 깊이 및 카탈로그 관리",
-    "$files": ["src/renderer/stores/settings-store.ts(4427-4446)"],
+    "$files": ["src/renderer/stores/settings-store.ts(4458-4477)"],
     "$id": 22931
   },
   "检索式引擎配置": {
-    "en-US": "检索式引擎配置",
-    "es-ES": "检索式引擎配置",
-    "ar-EG": "检索式引擎配置",
-    "pt-PT": "检索式引擎配置",
-    "ru-RU": "检索式引擎配置",
-    "ja-JP": "检索式引擎配置",
-    "de-DE": "检索式引擎配置",
-    "fr-FR": "检索式引擎配置",
-    "ko-KR": "检索式引擎配置",
-    "$files": ["src/renderer/stores/settings-store.ts(4516-4527)"],
+    "en-US": "Search engine configuration",
+    "es-ES": "Configuración del motor de búsqueda",
+    "ar-EG": "تكوين محرك البحث",
+    "pt-PT": "Configuração do mecanismo de pesquisa",
+    "ru-RU": "Конфигурация поисковой системы",
+    "ja-JP": "検索エンジンの設定",
+    "de-DE": "Suchmaschinenkonfiguration",
+    "fr-FR": "Configuration du moteur de recherche",
+    "ko-KR": "검색 엔진 구성",
+    "$files": ["src/renderer/stores/settings-store.ts(4547-4558)"],
     "$id": 28302
   },
   "视觉语义搜索、多模态索引维护与工作区策略总览": {
@@ -321,20 +324,20 @@
     "de-DE": "Überblick über visuelle semantische Suche, multimodale Indexpflege und Arbeitsbereichsstrategien",
     "fr-FR": "Présentation de la recherche sémantique visuelle, de la maintenance des index multimodaux et des stratégies d'espace de travail",
     "ko-KR": "시각적 의미 검색, 다중 모드 인덱스 유지 관리 및 작업 공간 전략 개요",
-    "$files": ["src/renderer/stores/settings-store.ts(4565-4591)"],
+    "$files": ["src/renderer/stores/settings-store.ts(4596-4622)"],
     "$id": 22932
   },
   "生成式引擎": {
-    "en-US": "生成式引擎",
-    "es-ES": "生成式引擎",
-    "ar-EG": "生成式引擎",
-    "pt-PT": "生成式引擎",
-    "ru-RU": "生成式引擎",
-    "ja-JP": "生成式引擎",
-    "de-DE": "生成式引擎",
-    "fr-FR": "生成式引擎",
-    "ko-KR": "生成式引擎",
-    "$files": ["src/renderer/stores/settings-store.ts(4713-4722)"],
+    "en-US": "Generative engine",
+    "es-ES": "Motor generativo",
+    "ar-EG": "المحرك التوليدي",
+    "pt-PT": "Motor generativo",
+    "ru-RU": "генеративный двигатель",
+    "ja-JP": "生成エンジン",
+    "de-DE": "Generativer Motor",
+    "fr-FR": "Moteur génératif",
+    "ko-KR": "생성 엔진",
+    "$files": ["src/renderer/stores/settings-store.ts(4744-4753)"],
     "$id": 28303
   },
   "生效引擎选择、云端配置与思考模式": {
@@ -347,7 +350,7 @@
     "de-DE": "Effektive Engine-Auswahl, Cloud-Konfiguration und Denkmodus",
     "fr-FR": "Sélection du moteur actif, configuration du cloud et mode de raisonnement",
     "ko-KR": "효과적인 엔진 선택, 클라우드 구성 및 사고 모드",
-    "$files": ["src/renderer/stores/settings-store.ts(4772-4792)"],
+    "$files": ["src/renderer/stores/settings-store.ts(4803-4823)"],
     "$id": 19418
   },
   "内容萃取设置": {
@@ -360,7 +363,7 @@
     "de-DE": "Konfiguration der Inhaltsextraktion",
     "fr-FR": "Paramètres d'extraction de contenu",
     "ko-KR": "내용 추출 설정",
-    "$files": ["src/renderer/stores/settings-store.ts(4858-4868)"],
+    "$files": ["src/renderer/stores/settings-store.ts(4889-4899)"],
     "$id": 20501
   },
   "文本与文档提取、OCR精度和音频截取": {
@@ -373,7 +376,7 @@
     "de-DE": "Text- und Dokumentenextraktion, OCR-Genauigkeit und Audiobeschneidung",
     "fr-FR": "Extraction de texte et de documents, précision de l'OCR et capture audio",
     "ko-KR": "텍스트 및 문서 추출, OCR 정확도 및 오디오 캡처",
-    "$files": ["src/renderer/stores/settings-store.ts(4907-4929)"],
+    "$files": ["src/renderer/stores/settings-store.ts(4938-4960)"],
     "$id": 20502
   },
   "最小单元识别": {
@@ -386,7 +389,7 @@
     "de-DE": "Erkennung der kleinsten Einheiten",
     "fr-FR": "Identification de la plus petite unité",
     "ko-KR": "최소 단위 식별",
-    "$files": ["src/renderer/stores/settings-store.ts(4993-5003)"],
+    "$files": ["src/renderer/stores/settings-store.ts(5024-5034)"],
     "$id": 20503
   },
   "目录最小单元判定与单元识别提示词": {
@@ -399,20 +402,20 @@
     "de-DE": "Bestimmung der kleinsten Verzeichniseinheit und Eingabeaufforderung zur Einheitenidentifikation",
     "fr-FR": "Définition des unités minimales dans les répertoires et prompts d'identification des unités",
     "ko-KR": "상세목표 최소 단위 판정 및 단위 식별 프롬프트",
-    "$files": ["src/renderer/stores/settings-store.ts(5045-5065)"],
+    "$files": ["src/renderer/stores/settings-store.ts(5076-5096)"],
     "$id": 20504
   },
   "生成式提示词": {
-    "en-US": "生成式提示词",
-    "es-ES": "生成式提示词",
-    "ar-EG": "生成式提示词",
-    "pt-PT": "生成式提示词",
-    "ru-RU": "生成式提示词",
-    "ja-JP": "生成式提示词",
-    "de-DE": "生成式提示词",
-    "fr-FR": "生成式提示词",
-    "ko-KR": "生成式提示词",
-    "$files": ["src/renderer/stores/settings-store.ts(5132-5142)"],
+    "en-US": "Generative prompt words",
+    "es-ES": "Palabras generativas",
+    "ar-EG": "الكلمات السريعة التوليدية",
+    "pt-PT": "Palavras de alerta generativas",
+    "ru-RU": "порождающие слова-подсказки",
+    "ja-JP": "生成的なプロンプトワード",
+    "de-DE": "Generative Aufforderungswörter",
+    "fr-FR": "Mots d'invite génératifs",
+    "ko-KR": "생성 프롬프트 단어",
+    "$files": ["src/renderer/stores/settings-store.ts(5163-5173)"],
     "$id": 28304
   },
   "质量评分与标签智能生成提示词": {
@@ -425,21 +428,8 @@
     "de-DE": "Eingabeaufforderungen für intelligente Generierung von Qualitätsbewertungen und Labels",
     "fr-FR": "Prompts pour le score de qualité et la génération intelligente d'étiquettes",
     "ko-KR": "품질 점수 및 태그 스마트 생성 프롬프트",
-    "$files": ["src/renderer/stores/settings-store.ts(5184-5202)"],
+    "$files": ["src/renderer/stores/settings-store.ts(5215-5233)"],
     "$id": 20506
-  },
-  "文件与目录排除规则、查重保护": {
-    "en-US": "File and directory exclusion rules, duplicate content protection",
-    "es-ES": "Reglas de exclusión de archivos y directorios, protección contra duplicados",
-    "ar-EG": "قواعد استبعاد الملفات والمجلدات، والحماية من التطابق",
-    "pt-PT": "Regras de exclusão de ficheiros e diretórios, proteção contra duplicação",
-    "ru-RU": "Правила исключения файлов и каталогов, защита от дублирования",
-    "ja-JP": "ファイルとディレクトリの除外ルール、重複チェック保護",
-    "de-DE": "Ausschlussregeln für Dateien und Verzeichnisse, Schutz vor Duplikatprüfung",
-    "fr-FR": "Règles d'exclusion de fichiers et de répertoires, protection contre les doublons",
-    "ko-KR": "파일 및 디렉터리 제외 규칙, 중복 체크 보호",
-    "$files": ["src/renderer/stores/settings-store.ts(5462-5480)"],
-    "$id": 20508
   },
   "风格和语言": {
     "en-US": "Style and language",
@@ -451,7 +441,7 @@
     "de-DE": "Stil und Sprache",
     "fr-FR": "Style et langage",
     "ko-KR": "스타일과 언어",
-    "$files": ["src/renderer/stores/settings-store.ts(5537-5546)"],
+    "$files": ["src/renderer/stores/settings-store.ts(5600-5609)"],
     "$id": 4272
   },
   "外观、语言和主题": {
@@ -464,7 +454,7 @@
     "de-DE": "Aussehen, Sprache und Design",
     "fr-FR": "Apparence, langue et thèmes",
     "ko-KR": "모습, 언어 및 테마",
-    "$files": ["src/renderer/stores/settings-store.ts(5587-5599)"],
+    "$files": ["src/renderer/stores/settings-store.ts(5650-5662)"],
     "$id": 3295
   },
   "列表设置": {
@@ -477,7 +467,7 @@
     "de-DE": "Listeneinstellungen",
     "fr-FR": "Paramètres de la liste",
     "ko-KR": "목록 설정",
-    "$files": ["src/renderer/stores/settings-store.ts(5659-5667)"],
+    "$files": ["src/renderer/stores/settings-store.ts(5722-5730)"],
     "$id": 4273
   },
   "文件列表显示项": {
@@ -490,7 +480,7 @@
     "de-DE": "Anzeigeoptionen für Dateilisten",
     "fr-FR": "Éléments affichés dans la liste des fichiers",
     "ko-KR": "파일 목록 표시 항목",
-    "$files": ["src/renderer/stores/settings-store.ts(5710-5721)"],
+    "$files": ["src/renderer/stores/settings-store.ts(5773-5784)"],
     "$id": 3297
   },
   "保存设置失败": {
@@ -503,7 +493,7 @@
     "de-DE": "Speichern der Einstellungen fehlgeschlagen",
     "fr-FR": "Échec de la sauvegarde des paramètres",
     "ko-KR": "설정 저장 실패",
-    "$files": ["src/renderer/stores/settings-store.ts(10910-10920)"],
+    "$files": ["src/renderer/stores/settings-store.ts(10973-10983)"],
     "$id": 5491
   },
   "确认删除此工作目录？": {
@@ -516,7 +506,7 @@
     "de-DE": "Dieses Arbeitsverzeichnis wirklich löschen?",
     "fr-FR": "Confirmer la suppression de ce répertoire de travail ?",
     "ko-KR": "이 작업 디렉터리를 삭제하시겠습니까?",
-    "$files": ["src/renderer/stores/settings-store.ts(13603-13617)"],
+    "$files": ["src/renderer/stores/settings-store.ts(13666-13680)"],
     "$id": 3303
   },
   "确认重置此工作目录？": {
@@ -529,7 +519,7 @@
     "de-DE": "Dieses Arbeitsverzeichnis wirklich zurücksetzen?",
     "fr-FR": "Confirmer la réinitialisation de ce répertoire de travail ?",
     "ko-KR": "이 작업 디렉터리를 재설정하시겠습니까?",
-    "$files": ["src/renderer/stores/settings-store.ts(13914-13928)"],
+    "$files": ["src/renderer/stores/settings-store.ts(13977-13991)"],
     "$id": 3304
   },
   "不支持的语言设置": {
@@ -542,7 +532,7 @@
     "de-DE": "Nicht unterstützte Spracheinstellung",
     "fr-FR": "Paramètre de langue non pris en charge",
     "ko-KR": "지원되지 않는 언어 설정",
-    "$files": ["src/renderer/stores/settings-store.ts(14371-14383)"],
+    "$files": ["src/renderer/stores/settings-store.ts(14434-14446)"],
     "$id": 5501
   },
   "交易失败，已归还扣币，原因：{reason}": {
