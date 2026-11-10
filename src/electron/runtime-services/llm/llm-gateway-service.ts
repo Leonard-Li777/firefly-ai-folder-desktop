@@ -296,6 +296,11 @@ export class LlmGatewayService implements ILlmGatewayService {
     }
 
     try {
+      let userDataDir = ''
+      try {
+        userDataDir = app?.getPath?.('userData') || ''
+      } catch {}
+
       const candidates = [
         path.join(ResourceLocator.getBaseResourceDir(), 'models', 'pocket-cpu', 'model.onnx'),
         path.join(
@@ -311,27 +316,20 @@ export class LlmGatewayService implements ILlmGatewayService {
           'apps/desktop/build/extraResources/models/pocket-cpu/model_quantized.onnx'
         ),
         path.join(process.cwd(), 'build/extraResources/models/pocket-cpu/model.onnx'),
-        path.join(ResourceLocator.getAppUserDataDir(), 'models', 'pocket-cpu', 'model.onnx'),
-        path.join(
-          ResourceLocator.getAppUserDataDir(),
-          'models',
-          'pocket-cpu',
-          'model_quantized.onnx'
-        ),
-        path.join(
-          ResourceLocator.getAppUserDataDir(),
-          'modules',
-          '_shared',
-          'pocket-cpu-int8-onnx',
-          'model.onnx'
-        ),
-        path.join(
-          ResourceLocator.getAppUserDataDir(),
-          'modules',
-          '_shared',
-          'pocket-cpu-int8-onnx',
-          'model_quantized.onnx'
-        )
+        ...(userDataDir
+          ? [
+              path.join(userDataDir, 'models', 'pocket-cpu', 'model.onnx'),
+              path.join(userDataDir, 'models', 'pocket-cpu', 'model_quantized.onnx'),
+              path.join(userDataDir, 'modules', '_shared', 'pocket-cpu-int8-onnx', 'model.onnx'),
+              path.join(
+                userDataDir,
+                'modules',
+                '_shared',
+                'pocket-cpu-int8-onnx',
+                'model_quantized.onnx'
+              )
+            ]
+          : [])
       ]
       for (const p of candidates) {
         if (fs.existsSync(p)) {

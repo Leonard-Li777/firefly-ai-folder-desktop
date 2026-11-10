@@ -28,6 +28,7 @@ export type PluginCapabilitySlot =
   | 'perception_nsfw'
   | 'perception_face'
   | 'advanced_ai_engine'
+  | 'ai_engine_cpu'
   | 'parser'
   | 'tool'
   | 'general'
