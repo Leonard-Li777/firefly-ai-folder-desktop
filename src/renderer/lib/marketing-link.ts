@@ -30,11 +30,22 @@ function getPaymentInfo(): Record<string, any> {
 }
 
 /**
+ * 判断当前是否处于开发环境营销站重定向模式
+ * Electron 运行时以 isPackaged 为最高事实源；未注入 electronAPI 时回退 import.meta.env.DEV
+ */
+export function isDevMarketingMode(): boolean {
+  if (typeof window !== 'undefined' && window.electronAPI?.isPackaged !== undefined) {
+    return !window.electronAPI.isPackaged
+  }
+  const metaEnv = (import.meta as any)?.env
+  return Boolean(metaEnv?.DEV)
+}
+
+/**
  * 将生产官网 URL 拦截替换为本地开发营销站 URL (仅在开发环境下生效)
  */
 function resolveDevMarketingUrl(targetUrl: URL): URL {
-  const metaEnv = (import.meta as any)?.env
-  const isDev = metaEnv?.DEV ?? window.electronAPI?.isPackaged === false
+  const isDev = isDevMarketingMode()
   if (!isDev) {
     return targetUrl
   }
@@ -45,8 +56,10 @@ function resolveDevMarketingUrl(targetUrl: URL): URL {
     return targetUrl
   }
 
+  const metaEnv = (import.meta as any)?.env
   const devPort = metaEnv?.VITE_MARKETING_PORT || '38800'
-  const devUrl = new URL(`http://localhost:${devPort}`)
+  const devHost = metaEnv?.VITE_MARKETING_HOST || '192.168.3.123'
+  const devUrl = new URL(`http://${devHost}:${devPort}`)
 
   // 保证路径包含当前活跃语言，例如 /zh-CN/pricing
   const activeLang = i18nScope?.activeLanguage || 'zh-CN'
@@ -305,6 +318,7 @@ export interface EnterprisePricingUrlOptions {
 
 /**
  * 构造企业版专属落地页 URL（纯同步函数，零网络请求）
+ * 开发模式下总是使用本地 marketing-home 开发端口访问（默认本机局域网 IP 192.168.3.123 便于手机扫码联调）；非开发/打包模式下使用公网官网域名。
  */
 export function buildEnterprisePricingUrl(options: EnterprisePricingUrlOptions): string {
   const validCode = validateIdentCode(options.identCode)
@@ -312,12 +326,8 @@ export function buildEnterprisePricingUrl(options: EnterprisePricingUrlOptions):
     throw new TypeError('Valid IdentCode is required to generate enterprise pricing URL')
   }
 
-  // 供手机扫码生成二维码时强制使用公网生产域名，防止开发环境下手机扫出 localhost:38800 废码
-  const origin = options.forceProductionDomain
-    ? options.region === 'cn'
-      ? 'https://aifolder.iocn.cn'
-      : 'https://www.aifolder.net'
-    : getOfficialSiteOrigin()
+  const isDev = isDevMarketingMode()
+  const origin = getSiteDomain(options.region).replace(/\/+$/, '')
 
   const params = new URLSearchParams({
     action: 'enterprise',
@@ -325,7 +335,14 @@ export function buildEnterprisePricingUrl(options: EnterprisePricingUrlOptions):
     product_id: ENTERPRISE_PRODUCT_ID,
     ident_code: validCode
   })
-  return `${origin}/pricing?${params.toString()}#enterprise`
+  const baseTarget = new URL(`${origin}/pricing?${params.toString()}#enterprise`)
+
+  // 开发模式下，总是使用本地 marketing-home 的开发端口访问
+  if (isDev) {
+    return resolveDevMarketingUrl(baseTarget).toString()
+  }
+
+  return baseTarget.toString()
 }
 
 /**

@@ -261,11 +261,10 @@ describe('定价页区域域名分流', () => {
       expect(validateIdentCode(null)).toBeNull()
     })
 
-    it('buildEnterprisePricingUrl: 在扫码模式下输出公网生产域名且携带 product_id 与 ident_code', () => {
+    it('buildEnterprisePricingUrl: 在生产/打包模式下输出公网生产域名且携带 product_id 与 ident_code', () => {
       const cnUrl = buildEnterprisePricingUrl({
         region: 'cn',
-        identCode: validIdentCode,
-        forceProductionDomain: true
+        identCode: validIdentCode
       })
       expect(cnUrl).toBe(
         `https://aifolder.iocn.cn/pricing?action=enterprise&tier=enterprise&product_id=ent_year&ident_code=${encodeURIComponent(
@@ -275,11 +274,24 @@ describe('定价页区域域名分流', () => {
 
       const intlUrl = buildEnterprisePricingUrl({
         region: 'intl',
-        identCode: validIdentCode,
-        forceProductionDomain: true
+        identCode: validIdentCode
       })
       expect(intlUrl).toBe(
         `https://www.aifolder.net/pricing?action=enterprise&tier=enterprise&product_id=ent_year&ident_code=${encodeURIComponent(
+          validIdentCode
+        )}#enterprise`
+      )
+    })
+
+    it('buildEnterprisePricingUrl: 在开发模式下总是输出本机局域网 IP (192.168.3.123:38800)', () => {
+      ;(window as any).electronAPI = { isPackaged: false }
+      const devUrl = buildEnterprisePricingUrl({
+        region: 'cn',
+        identCode: validIdentCode,
+        forceProductionDomain: true
+      })
+      expect(devUrl).toBe(
+        `http://192.168.3.123:38800/zh-CN/pricing?action=enterprise&tier=enterprise&product_id=ent_year&ident_code=${encodeURIComponent(
           validIdentCode
         )}#enterprise`
       )

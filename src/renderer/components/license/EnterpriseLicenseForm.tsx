@@ -98,7 +98,7 @@ export const EnterpriseLicenseForm: React.FC<EnterpriseLicenseFormProps> = ({
     void loadStaticQR()
   }, [])
 
-  // 离线动态生成购买二维码（带参专属落地页，强制使用公网生产域名）
+  // 离线动态生成购买二维码（带参专属落地页，开发模式自动路由至本地 marketing-home 端口）
   useEffect(() => {
     if (!isIdentReady || !currentIdentCode) {
       setPayQrDataUrl(null)
@@ -111,8 +111,7 @@ export const EnterpriseLicenseForm: React.FC<EnterpriseLicenseFormProps> = ({
     try {
       const pricingUrl = buildEnterprisePricingUrl({
         region,
-        identCode: currentIdentCode,
-        forceProductionDomain: true
+        identCode: currentIdentCode
       })
 
       QRCode.toDataURL(pricingUrl, {
