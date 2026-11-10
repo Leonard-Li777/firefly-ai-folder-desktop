@@ -144,13 +144,13 @@ const electronAPI = {
   searchWorkspaceFiles: (
     keyword: string,
     workspacePath: string,
-    options?: { stream?: boolean; seq?: number; channel?: string }
+    options?: { stream?: boolean; seq?: number; channel?: string; epoch?: number }
   ): Promise<FileItem[]> =>
     ipcRenderer.invoke('search-workspace-files', keyword, workspacePath, options),
 
   onSearchProgress: (
     callback: (payload: {
-      phase: 'phase1' | 'phase2' | 'phase3'
+      phase: 'phase1' | 'phase2' | 'phase3' | 'failed'
       channel?: string
       seq: number
       items: FileItem[]
@@ -158,18 +158,24 @@ const electronAPI = {
       tokens?: string[]
       /** 工单 13：冷态视觉模型首次加载中（仅 phase2 携带），phase3 到达或超时后应隐藏提示 */
       clipPending?: boolean
+      requestEpoch?: number
+      errorCode?: string
+      errorMessage?: string
     }) => void
   ) => {
     const handler = (
       _event: any,
       payload: {
-        phase: 'phase1' | 'phase2' | 'phase3'
+        phase: 'phase1' | 'phase2' | 'phase3' | 'failed'
         channel?: string
         seq: number
         items: FileItem[]
         total: number
         tokens?: string[]
         clipPending?: boolean
+        requestEpoch?: number
+        errorCode?: string
+        errorMessage?: string
       }
     ) => callback(payload)
     ipcRenderer.on('search-workspace-files-progress', handler)

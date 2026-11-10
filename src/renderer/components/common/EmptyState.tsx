@@ -22,6 +22,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 }) => {
   return (
     <div
+      data-testid="empty-state"
       className={cn(
         'flex-1 flex flex-col items-center justify-center h-full w-full bg-background relative overflow-hidden p-8 select-none',
         className
@@ -77,7 +78,12 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         </div>
 
         {/* 标题 */}
-        <h3 className={cn('text-xl font-bold tracking-tight text-foreground mb-2', isLoading && 'animate-pulse')}>
+        <h3
+          className={cn(
+            'text-xl font-bold tracking-tight text-foreground mb-2',
+            isLoading && 'animate-pulse'
+          )}
+        >
           {title}
         </h3>
 

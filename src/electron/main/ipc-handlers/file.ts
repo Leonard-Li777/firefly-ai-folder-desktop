@@ -17,10 +17,19 @@ import {
 } from '@firefly/shared'
 import { omniClient } from '../../services/omni-client'
 import { t } from '@app/languages'
-import type { FileInfo, FileItem, DirectoryItem, WorkspaceDirectory, FilteredFilesResponse } from '@firefly/types'
+import type {
+  FileInfo,
+  FileItem,
+  DirectoryItem,
+  WorkspaceDirectory,
+  FilteredFilesResponse
+} from '@firefly/types'
 import { virtualDirectoryService, syncedDirectories } from '../state'
 import { trayService } from '../../runtime-services/system/tray-service'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
+import { FaultInjectorService } from '../../runtime-services/e2e/fault-injector'
+import { ProbeBridgeService } from '../../runtime-services/e2e/probe-bridge'
+import { getModularResourceDao } from '../../runtime-services/database/dao/modular-resource-dao'
 
 export { getDirectoryAccessErrorMessage } from './directory-error'
 import { getDirectoryAccessErrorMessage } from './directory-error'
@@ -65,9 +74,8 @@ export function registerFileIPCHandlers() {
       }
     }
     try {
-      const { directoryProfilerService } = await import(
-        '../../runtime-services/filesystem/directory-profiler-service'
-      )
+      const { directoryProfilerService } =
+        await import('../../runtime-services/filesystem/directory-profiler-service')
       return await directoryProfilerService.probeProfile(dirPath)
     } catch (error) {
       logger.warn(LogCategory.MAIN, `嗅探目录画像失败: ${dirPath}`, error)
@@ -99,13 +107,32 @@ export function registerFileIPCHandlers() {
   // 维护渲染进程 WebContents ID + 通道标识 到活跃搜索序号的映射，用于发射前丢弃过期推流（防多通道相互踩踏）
   const activeSearchSeqBySender = new Map<string, number>()
 
+  // 记录最近一次搜索会话状态，用于测试探针桥
+  const lastSearchSession = { activeRequestId: 0, lastPhase: 'idle' }
+  if (process.env.FF_E2E_MODE === '1') {
+    ProbeBridgeService.registerScopeHandler('search-session', async () => ({
+      activeRequestId: lastSearchSession.activeRequestId,
+      lastPhase: lastSearchSession.lastPhase
+    }))
+  }
+
+  function getCurrentEmbeddingEpoch(): number {
+    try {
+      const dao = getModularResourceDao()
+      const serving = dao?.epochs?.findServingEpochSync?.()
+      return serving?.epoch ?? 1
+    } catch {
+      return 1
+    }
+  }
+
   ipcMain.handle(
     'search-workspace-files',
     async (
       event,
       keyword: string,
       workspacePath: string,
-      options?: { stream?: boolean; seq?: number; channel?: string }
+      options?: { stream?: boolean; seq?: number; channel?: string; epoch?: number }
     ) => {
       // 真实目录搜索统一走数据库"文件全信息搜索"：
       // FTS 全字段（文件名/智能名/描述/内容/标签等）+ path/type/author/language/category LIKE，
@@ -113,6 +140,11 @@ export function registerFileIPCHandlers() {
       const channel = options?.channel || 'default'
       const senderKey = `${event.sender.id}:${channel}`
       const searchSeq = options?.seq ?? 0
+      const requestEpoch = options?.epoch ?? getCurrentEmbeddingEpoch()
+
+      lastSearchSession.activeRequestId = searchSeq
+      lastSearchSession.lastPhase = 'idle'
+
       if (options?.stream && options?.seq !== undefined) {
         if (!activeSearchSeqBySender.has(senderKey)) {
           event.sender.once('destroyed', () => {
@@ -129,7 +161,11 @@ export function registerFileIPCHandlers() {
           ) => {
             // 发射前背压丢弃守卫：校验当前通道的请求序号是否已被新请求取代
             const currentActiveSeq = activeSearchSeqBySender.get(senderKey)
-            if (options?.seq !== undefined && currentActiveSeq !== undefined && searchSeq < currentActiveSeq) {
+            if (
+              options?.seq !== undefined &&
+              currentActiveSeq !== undefined &&
+              searchSeq < currentActiveSeq
+            ) {
               logger.debug(
                 LogCategory.VIRTUAL_DIRECTORY,
                 `[Search] 丢弃已过期的搜索任务推流: channel=${channel}, seq=${searchSeq}, active=${currentActiveSeq}, phase=${phase}`
@@ -139,6 +175,35 @@ export function registerFileIPCHandlers() {
 
             if (event.sender.isDestroyed()) return
 
+            const mappedPhase =
+              phase === 'phase1' ? 'lexical' : phase === 'phase2' ? 'vector' : 'fusion'
+            lastSearchSession.lastPhase = mappedPhase
+
+            // E2E 故障注入点 1: search-phase-gate 门禁延迟（模拟冷态视觉模型等加载耗时）
+            let gateDelayMs = 0
+            if (process.env.FF_E2E_MODE === '1') {
+              const gate = FaultInjectorService.triggerIfArmed(
+                'search-phase-gate',
+                f => f.phase === mappedPhase
+              )
+              if (gate && gate.delayMs > 0) {
+                gateDelayMs = gate.delayMs
+              }
+            }
+
+            // E2E 故障注入点 2: search-phase-fail 故障抛错
+            if (process.env.FF_E2E_MODE === '1') {
+              const fault = FaultInjectorService.triggerIfArmed(
+                'search-phase-fail',
+                f => f.phase === mappedPhase
+              )
+              if (fault) {
+                const injectedErr = new Error(`Injected search phase failure: ${fault.phase}`)
+                ;(injectedErr as any).code = fault.errorCode
+                throw injectedErr
+              }
+            }
+
             const mappedItems = response.items.map(item => ({
               ...item,
               id: item.path,
@@ -146,16 +211,36 @@ export function registerFileIPCHandlers() {
             }))
             ;(mappedItems as any).tokens = response.tokens ?? []
 
-            event.sender.send('search-workspace-files-progress', {
+            const progressPayload = {
               phase,
               channel,
               seq: searchSeq,
+              requestEpoch,
               items: mappedItems,
               total: response.total,
               tokens: response.tokens ?? [],
               // 工单 13：仅 phase2 会带此标记（冷态视觉模型首次加载中），phase3 到达即代表加载完成
               ...(response.clipPending ? { clipPending: true } : {})
-            })
+            }
+
+            const dispatchSend = () => {
+              if (event.sender.isDestroyed()) return
+              const activeSeqNow = activeSearchSeqBySender.get(senderKey)
+              if (
+                options?.seq !== undefined &&
+                activeSeqNow !== undefined &&
+                searchSeq < activeSeqNow
+              ) {
+                return
+              }
+              event.sender.send('search-workspace-files-progress', progressPayload)
+            }
+
+            if (gateDelayMs > 0) {
+              setTimeout(dispatchSend, gateDelayMs)
+            } else {
+              dispatchSend()
+            }
           }
         : undefined
 
@@ -179,6 +264,7 @@ export function registerFileIPCHandlers() {
         }))
         // 将提取的分词结果附加到数组属性上，兼容原有数组类型
         ;(items as any).tokens = result.tokens ?? []
+        ;(items as any).requestEpoch = requestEpoch
         // 工单 13/流式防假空态：透传 clipPending 标记给 invoke 调用方
         if ((result as any).clipPending) {
           ;(items as any).clipPending = true
@@ -186,7 +272,26 @@ export function registerFileIPCHandlers() {
         return items
       } catch (error) {
         logger.error(LogCategory.MAIN, '全信息搜索工作区文件失败:', error)
-        return []
+        const errorCode = (error as any)?.code || 'E_SEARCH_FAILED'
+        const errorMessage = (error as any)?.message || String(error)
+        lastSearchSession.lastPhase = 'failed'
+
+        if (options?.stream && !event.sender.isDestroyed()) {
+          event.sender.send('search-workspace-files-progress', {
+            phase: 'failed',
+            channel,
+            seq: searchSeq,
+            requestEpoch,
+            items: [],
+            total: 0,
+            tokens: [],
+            errorCode,
+            errorMessage
+          })
+        }
+        const searchError = new Error(errorMessage)
+        ;(searchError as any).code = errorCode
+        throw searchError
       }
     }
   )
@@ -445,9 +550,7 @@ export function registerFileIPCHandlers() {
       logger.error(LogCategory.MAIN, '读取目录失败:', error)
       const errorMessage = error instanceof Error ? error : new Error(String(error))
       const errorCode = (errorMessage as any).code
-      throw new Error(
-        getDirectoryAccessErrorMessage(dirPath, errorCode, errorMessage.message)
-      )
+      throw new Error(getDirectoryAccessErrorMessage(dirPath, errorCode, errorMessage.message))
     }
   })
 }

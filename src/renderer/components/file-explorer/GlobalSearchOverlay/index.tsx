@@ -9,7 +9,15 @@ import { usePreviewOverlayStore } from '../../../stores/preview-overlay-store'
 import { MaterialIcon, cn } from '../../../lib/utils'
 import i18nScope, { t } from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
-import { logger, LogCategory } from '@firefly/shared'
+import {
+  logger,
+  LogCategory,
+  SearchPhase,
+  SearchCommit,
+  ActiveSearchContext,
+  shouldApplySearchCommit,
+  createInitialSearchCommit
+} from '@firefly/shared'
 import { SEARCH_LIST_ROW_HEIGHT } from '../FileList/components/SearchListCard'
 import { MiniViewDisplaySettingsPopover } from '../../common/MiniViewDisplaySettingsPopover'
 
@@ -18,7 +26,7 @@ interface GlobalSearchOverlayProps {
 }
 
 /**
- * 工单 13：冷态视觉模型加载提示的最长展示时间。
+ * 冷态视觉模型加载提示的最长展示时间。
  * 与 desktop 侧 `CLIP_TEXT_TIMEOUT_COLD_MS`（6000ms）对齐 —— 超过这个预算还没等到 phase3，
  * 说明本轮第 5 路已失败/熔断，提示必须静默收掉（搜索界面不弹错误）。
  */
@@ -26,17 +34,10 @@ const CLIP_COLD_HINT_TIMEOUT_MS = 6000
 
 /**
  * 语义分析（Phase 2）安全超时熔断阈值。
- * 与冷态 CLIP 视觉模型超时（`CLIP_COLD_HINT_TIMEOUT_MS = 6000`）及后端口径对齐：
- * 冷态或热更新后，倒排 Trie 树装配（~650ms）+ 分词 + 768d 语义向量计算 + 段落对齐
- * 总耗时约 1.5s ~ 2.5s。旧值 1500ms 过于激进脆弱，会导致冷态/热更新后首次纯语义搜索
- * 100% 触发超时熔断，过早退出分析态并呈现「没有文件」假空态。
- * 放宽至 6000ms（防死锁兜底），既为冷态预留充足计算窗口，又防止死锁时呼吸条无限挂起。
  */
 export const SEMANTIC_SEARCH_TIMEOUT_MS = 6000
 
-export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
-  workspaceDirectory
-}) => {
+export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({ workspaceDirectory }) => {
   useVoerkaI18n(i18nScope)
   const globalSearchKeyword = useSearchStore(s => s.globalSearchKeyword)
   const clearGlobalSearch = useSearchStore(s => s.clearGlobalSearch)
@@ -68,21 +69,66 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
     } catch (e) {}
   }, [])
 
-  type SearchPhase = 'idle' | 'phase1_done_analyzing_semantic'
-  const [searchPhase, setSearchPhase] = useState<SearchPhase>('idle')
+  // 5 态 SearchCommit 统一状态机 (Spec §3.3)
+  const [searchCommit, setSearchCommit] = useState<SearchCommit>(() =>
+    createInitialSearchCommit(1, 0, '')
+  )
+  const searchCommitRef = useRef<SearchCommit>(searchCommit)
+  searchCommitRef.current = searchCommit
+
+  // 记录搜索经历的历史相位（用于 DOM 属性与测试断言回溯）
+  const [searchHistory, setSearchHistory] = useState<string[]>(['idle'])
+  const applyCommit = useCallback((commit: SearchCommit) => {
+    setSearchCommit(commit)
+    setSearchHistory(prev =>
+      prev[prev.length - 1] === commit.phase ? prev : [...prev, commit.phase]
+    )
+  }, [])
+
   /**
-   * 工单 13：冷态视觉模型首次加载提示。
+   * pointerdown 捕获阶段立即中断流并锁定 cancelled 终态 (Spec §3.3 / TEST-UI-SEARCH-04)
+   * 在鼠标按下瞬时冻结列表重排，防止点击时落点漂移
+   */
+  const handlePointerDownCapture = useCallback(
+    (e: React.PointerEvent) => {
+      const target = e.target as HTMLElement | null
+      const card = target?.closest('[data-path]')
+      if (
+        card &&
+        isSearchActive &&
+        searchCommitRef.current.phase !== 'fusion' &&
+        searchCommitRef.current.phase !== 'failed' &&
+        searchCommitRef.current.phase !== 'cancelled'
+      ) {
+        const activeCtx: ActiveSearchContext = {
+          requestId: searchSeqRef.current,
+          epoch: searchCommitRef.current.requestEpoch
+        }
+        const cancelledCommit: SearchCommit = {
+          ...searchCommitRef.current,
+          rev: searchCommitRef.current.rev + 1,
+          phase: 'cancelled'
+        }
+        if (shouldApplySearchCommit(activeCtx, searchCommitRef.current, cancelledCommit)) {
+          applyCommit(cancelledCommit)
+          setIsLoading(false)
+        }
+      }
+    },
+    [isSearchActive, applyCommit]
+  )
+
+  /**
+   * 冷态视觉模型首次加载提示。
    * 只在 phase2 携带 clipPending 时点亮，phase3 到达或超时后熄灭；
-   * 它只影响提示条的显隐，**不参与** searchPhase 状态机（不阻塞、不置灰列表）。
+   * 它只影响提示条的显隐，不阻塞、不置灰列表。
    */
   const [isClipColdLoading, setIsClipColdLoading] = useState(false)
 
   const searchSeqRef = useRef(0)
   const handledPhase2SeqRef = useRef<number>(-1)
-  /** 工单 13：phase3 独立序号守卫 —— **不得复用** handledPhase2SeqRef，否则两者互相吞并 */
+  /** phase3 独立序号守卫 —— 不得复用 handledPhase2SeqRef */
   const handledPhase3SeqRef = useRef<number>(-1)
-  /** 标识当前是否在等待冷态 Phase 3 视觉切片（此时当前结果仍为 0，需持续保持 Loading，防假空态闪烁） */
-  const isWaitingPhase3Ref = useRef<boolean>(false)
   const searchDebounceTimerRef = useRef<NodeJS.Timeout | null>(null)
   const semanticTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const clipHintTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -90,12 +136,19 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
   const overlayContainerRef = useRef<HTMLDivElement>(null)
 
   const isSearchSettled = settledSeq === searchSeqRef.current
+  const isTerminalPhase =
+    searchCommit.phase === 'fusion' ||
+    searchCommit.phase === 'failed' ||
+    searchCommit.phase === 'cancelled'
+
   /**
    * 核心推导（派生加载态）：
-   * 搜索激活且当前请求序号尚未终态结算（!isSearchSettled），或者显式标记 isLoading，恒为 loading 态！
+   * 搜索激活且未到达终态结算（!isSearchSettled 或 !isTerminalPhase），或显式标记 isLoading，恒为 loading 态！
    * 彻底杜绝组件初次挂载时的首帧 Render Lag、中间过渡帧或任何客户端超时误关暴露假空态。
    */
-  const effectiveIsLoading = isSearchActive ? (!isSearchSettled || isLoading) : false
+  const effectiveIsLoading = isSearchActive
+    ? !isSearchSettled || !isTerminalPhase || isLoading
+    : false
 
   // 1. 浮层激活与退出时的预览单例状态保护 (State Preservation)
   useEffect(() => {
@@ -127,10 +180,10 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
       setSelectedFiles([])
       setIsLoading(false)
       setSettledSeq(-1)
-      setSearchPhase('idle')
+      setSearchCommit(createInitialSearchCommit(searchCommitRef.current.requestEpoch, 0, ''))
+      setSearchHistory(['idle'])
       handledPhase2SeqRef.current = -1
       handledPhase3SeqRef.current = -1
-      isWaitingPhase3Ref.current = false
       if (semanticTimeoutRef.current) {
         clearTimeout(semanticTimeoutRef.current)
         semanticTimeoutRef.current = null
@@ -199,12 +252,7 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
   )
 
   /**
-   * 工单 13：phase3 **只追加**。
-   *
-   * 三条硬约束（AC11）：
-   * 1. 按 `path` 去重，已存在项一律忽略 —— 冷态 CLIP 命中的往往正是用户已看到的高相关项；
-   * 2. 不重排、不清空：新项只能出现在尾部，已有项的相对顺序与下标绝对不变（用户已滚动/悬停/点击时无跳变）；
-   * 3. 不动 `searchPhase`：phase3 到达不代表语义分析仍在进行，呼吸条/提示条各自独立收尾。
+   * Phase 3 只追加 (Spec §3.3)
    */
   const appendPhase3Items = useCallback((appendedItems: FileItem[]) => {
     if (!appendedItems.length) return
@@ -216,7 +264,7 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
     })
   }, [])
 
-  // 2. 双阶段流式推送监听 (Phase 1 毫秒先行 -> Phase 2 语义置换 -> Phase 3 冷态 CLIP 追加)
+  // 2. 多阶段流式推送监听 (Phase 1 字面先行 -> Phase 2 语义置换/收口 -> Phase 3 冷态追加)
   useEffect(() => {
     if (!window.electronAPI?.onSearchProgress) return
 
@@ -226,111 +274,183 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
       // 仅当前活跃序号允许写回，丢弃过期旧请求推流
       if (payload.seq !== searchSeqRef.current) return
 
+      const activeCtx: ActiveSearchContext = {
+        requestId: searchSeqRef.current,
+        epoch: searchCommitRef.current.requestEpoch
+      }
+
+      if (payload.phase === 'failed') {
+        const incoming: SearchCommit = {
+          requestEpoch: payload.requestEpoch ?? activeCtx.epoch,
+          requestId: payload.seq,
+          rev: searchCommitRef.current.rev + 1,
+          query: globalSearchKeyword.trim(),
+          phase: 'failed',
+          lexicalCount: searchResults.length,
+          vectorCount: 0,
+          fusedCount: searchResults.length,
+          vectorSkipped: false,
+          errorCode: payload.errorCode,
+          errorMessage: payload.errorMessage
+        }
+        if (shouldApplySearchCommit(activeCtx, searchCommitRef.current, incoming)) {
+          applyCommit(incoming)
+          setIsLoading(false)
+          setSettledSeq(payload.seq)
+        }
+        return
+      }
+
       if (payload.phase === 'phase1') {
-        // 若 Phase 2 已率先到达或处理，丢弃延迟的 Phase 1，防止全量置换被旧首屏覆盖
+        // 若 Phase 2 已率先到达或处理，丢弃延迟的 Phase 1
         if (handledPhase2SeqRef.current === payload.seq) return
 
         const hasItems = (payload.items?.length || 0) > 0
-
-        // Phase 1: 毫秒级字面先行上屏
-        setSearchResults(payload.items || [])
-        setSearchPhase('phase1_done_analyzing_semantic')
-        // 若 Phase 1 命中字面结果，收回全屏 Loading 呈现先行结果；
-        // 若 Phase 1 零命中（如纯语义词、描述短语），保持 isLoading=true，展示深度语义检索 Loading，
-        // 绝不可过早退出加载态而呈现「没有找到匹配的文件」虚假空态！
-        setIsLoading(!hasItems)
-
-        if (payload.tokens && payload.tokens.length > 0) {
-          useSearchStore.getState().setSearchTokens(payload.tokens)
+        const incoming: SearchCommit = {
+          requestEpoch: payload.requestEpoch ?? activeCtx.epoch,
+          requestId: payload.seq,
+          rev: searchCommitRef.current.rev + 1,
+          query: globalSearchKeyword.trim(),
+          phase: 'lexical',
+          lexicalCount: payload.items?.length || 0,
+          vectorCount: 0,
+          fusedCount: payload.items?.length || 0,
+          vectorSkipped: false
         }
 
-        // 挂载安全超时熔断（与冷态 6000ms 对齐），防止 Omni 死锁导致呼吸条挂起
-        if (semanticTimeoutRef.current) {
-          clearTimeout(semanticTimeoutRef.current)
-        }
-        semanticTimeoutRef.current = setTimeout(() => {
-          if (searchSeqRef.current === payload.seq) {
-            logger.warn(
-              LogCategory.RENDERER,
-              `[GlobalSearchOverlay] Phase 2 语义分析呼吸条超时(${SEMANTIC_SEARCH_TIMEOUT_MS}ms)，恢复空闲徽标`
-            )
-            setSearchPhase('idle')
+        if (shouldApplySearchCommit(activeCtx, searchCommitRef.current, incoming)) {
+          applyCommit(incoming)
+          setSearchResults(payload.items || [])
+          setIsLoading(!hasItems)
+
+          if (payload.tokens && payload.tokens.length > 0) {
+            useSearchStore.getState().setSearchTokens(payload.tokens)
           }
-        }, SEMANTIC_SEARCH_TIMEOUT_MS)
+
+          if (semanticTimeoutRef.current) {
+            clearTimeout(semanticTimeoutRef.current)
+          }
+          semanticTimeoutRef.current = setTimeout(() => {
+            if (
+              searchSeqRef.current === payload.seq &&
+              searchCommitRef.current.phase === 'lexical'
+            ) {
+              logger.warn(
+                LogCategory.RENDERER,
+                `[GlobalSearchOverlay] Phase 2 语义分析呼吸条超时(${SEMANTIC_SEARCH_TIMEOUT_MS}ms)，就地收口为 fusion`
+              )
+              const fallbackFusion: SearchCommit = {
+                ...searchCommitRef.current,
+                rev: searchCommitRef.current.rev + 1,
+                phase: 'fusion',
+                vectorSkipped: true
+              }
+              if (shouldApplySearchCommit(activeCtx, searchCommitRef.current, fallbackFusion)) {
+                applyCommit(fallbackFusion)
+                setIsLoading(false)
+                setSettledSeq(payload.seq)
+              }
+            }
+          }, SEMANTIC_SEARCH_TIMEOUT_MS)
+        }
       } else if (payload.phase === 'phase2') {
         const incomingItemsCount = (payload.items || []).length
         const hasPendingClip = Boolean(payload.clipPending)
 
-        // 收到 Phase 2 意味着语义分析已就绪，立即清除超时熔断定时器，防止 6000ms 误杀
         if (semanticTimeoutRef.current) {
           clearTimeout(semanticTimeoutRef.current)
           semanticTimeoutRef.current = null
         }
 
-        // 若当前结果为空且视觉模型仍在后台调度加载中（clipPending），最终结果尚未返回！
-        // 无论 Promise 是否先行返回，必须持续保持 isLoading=true，绝不能提前退出 loading 导致用户看到假空态！
-        if (incomingItemsCount === 0 && hasPendingClip) {
-          isWaitingPhase3Ref.current = true
-          setIsLoading(true)
-        } else if (!hasPendingClip) {
-          isWaitingPhase3Ref.current = false
+        // 防死锁确定性映射：热态无 clipPending 时直接跃迁至 fusion 终态！
+        const targetPhase: SearchPhase = hasPendingClip ? 'vector' : 'fusion'
+        const incoming: SearchCommit = {
+          requestEpoch: payload.requestEpoch ?? activeCtx.epoch,
+          requestId: payload.seq,
+          rev: searchCommitRef.current.rev + 1,
+          query: globalSearchKeyword.trim(),
+          phase: targetPhase,
+          lexicalCount: searchCommitRef.current.lexicalCount,
+          vectorCount: incomingItemsCount,
+          fusedCount: incomingItemsCount,
+          vectorSkipped: false,
+          clipPending: hasPendingClip
         }
 
-        // 工单 13：冷态视觉模型首次加载 → 轻量提示；phase3 到达或超时即收
-        if (clipHintTimeoutRef.current) {
-          clearTimeout(clipHintTimeoutRef.current)
-          clipHintTimeoutRef.current = null
-        }
-        if (hasPendingClip) {
-          setIsClipColdLoading(true)
-          clipHintTimeoutRef.current = setTimeout(() => {
-            if (searchSeqRef.current === payload.seq) {
-              // 超时静默收提示：搜索界面不弹错误，用户只是看不到额外追加项
-              setIsClipColdLoading(false)
-              if (isWaitingPhase3Ref.current) {
-                isWaitingPhase3Ref.current = false
-                setIsLoading(false)
-                setSettledSeq(payload.seq)
+        if (shouldApplySearchCommit(activeCtx, searchCommitRef.current, incoming)) {
+          applyCommit(incoming)
+
+          if (clipHintTimeoutRef.current) {
+            clearTimeout(clipHintTimeoutRef.current)
+            clipHintTimeoutRef.current = null
+          }
+
+          if (hasPendingClip) {
+            setIsClipColdLoading(true)
+            setIsLoading(true)
+            clipHintTimeoutRef.current = setTimeout(() => {
+              if (searchSeqRef.current === payload.seq) {
+                setIsClipColdLoading(false)
+                // 超时后收口为 fusion 终态
+                const timeoutFusion: SearchCommit = {
+                  ...searchCommitRef.current,
+                  rev: searchCommitRef.current.rev + 1,
+                  phase: 'fusion',
+                  clipPending: false
+                }
+                if (shouldApplySearchCommit(activeCtx, searchCommitRef.current, timeoutFusion)) {
+                  applyCommit(timeoutFusion)
+                  setIsLoading(false)
+                  setSettledSeq(payload.seq)
+                }
               }
-            }
-          }, CLIP_COLD_HINT_TIMEOUT_MS)
-        } else {
-          setIsClipColdLoading(false)
-        }
+            }, CLIP_COLD_HINT_TIMEOUT_MS)
+          } else {
+            setIsClipColdLoading(false)
+            setIsLoading(false)
+            setSettledSeq(payload.seq)
+          }
 
-        // 对称幂等保护：若已处理该序号的 Phase 2（例如 Promise 先行返回且置换了结果），跳过重复置换
-        if (handledPhase2SeqRef.current !== payload.seq) {
-          handledPhase2SeqRef.current = payload.seq
-          handlePhase2Replace(payload.items || [])
-        }
-        setSearchPhase('idle')
+          if (handledPhase2SeqRef.current !== payload.seq) {
+            handledPhase2SeqRef.current = payload.seq
+            handlePhase2Replace(payload.items || [])
+          }
 
-        // 数据已置换上屏，若不等待 Phase 3，收回 Loading 态并标记终态结算
-        if (!hasPendingClip || incomingItemsCount > 0) {
-          setIsLoading(false)
-          setSettledSeq(payload.seq)
-        }
-
-        if (payload.tokens && payload.tokens.length > 0) {
-          useSearchStore.getState().setSearchTokens(payload.tokens)
+          if (payload.tokens && payload.tokens.length > 0) {
+            useSearchStore.getState().setSearchTokens(payload.tokens)
+          }
         }
       } else if (payload.phase === 'phase3') {
-        // 工单 13：冷态 CLIP 追加。**独立序号守卫**（handledPhase3SeqRef），
-        // 与 phase2 的幂等标记互不干扰：phase2 已处理不代表 phase3 已处理，反之亦然。
         if (handledPhase3SeqRef.current === payload.seq) return
         handledPhase3SeqRef.current = payload.seq
+
         if (clipHintTimeoutRef.current) {
           clearTimeout(clipHintTimeoutRef.current)
           clipHintTimeoutRef.current = null
         }
         setIsClipColdLoading(false)
-        isWaitingPhase3Ref.current = false
-        // 先把 Phase 3 的视觉切片追加到结果中，再退出 Loading 并标记终态结算，确保用户看到的是数据上屏而非空态闪烁
-        if (payload.items && payload.items.length > 0) {
-          appendPhase3Items(payload.items)
+
+        const incoming: SearchCommit = {
+          requestEpoch: payload.requestEpoch ?? activeCtx.epoch,
+          requestId: payload.seq,
+          rev: searchCommitRef.current.rev + 1,
+          query: globalSearchKeyword.trim(),
+          phase: 'fusion',
+          lexicalCount: searchCommitRef.current.lexicalCount,
+          vectorCount: searchCommitRef.current.vectorCount,
+          fusedCount: searchResults.length + (payload.items?.length || 0),
+          vectorSkipped: false,
+          clipPending: false
         }
-        setIsLoading(false)
-        setSettledSeq(payload.seq)
+
+        if (shouldApplySearchCommit(activeCtx, searchCommitRef.current, incoming)) {
+          applyCommit(incoming)
+          if (payload.items && payload.items.length > 0) {
+            appendPhase3Items(payload.items)
+          }
+          setIsLoading(false)
+          setSettledSeq(payload.seq)
+        }
       }
     })
 
@@ -345,7 +465,7 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
         clipHintTimeoutRef.current = null
       }
     }
-  }, [handlePhase2Replace, appendPhase3Items])
+  }, [handlePhase2Replace, appendPhase3Items, searchResults.length, globalSearchKeyword])
 
   // 3. 搜索逻辑：防抖 + 竞态序号锁 + 双阶段全域跨目录检索
   useEffect(() => {
@@ -359,12 +479,11 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
       const nextSeq = ++searchSeqRef.current
       setSettledSeq(nextSeq)
       setSearchResults([])
-      isWaitingPhase3Ref.current = false
       handledPhase2SeqRef.current = -1
       handledPhase3SeqRef.current = -1
       setIsLoading(false)
-      setSearchPhase('idle')
-      // 工单 13：清空搜索词时一并收掉冷态提示，避免残留
+      setSearchCommit(createInitialSearchCommit(searchCommitRef.current.requestEpoch, nextSeq, ''))
+      setSearchHistory(['idle'])
       if (clipHintTimeoutRef.current) {
         clearTimeout(clipHintTimeoutRef.current)
         clipHintTimeoutRef.current = null
@@ -377,9 +496,11 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
       const nextSeq = ++searchSeqRef.current
       setSettledSeq(nextSeq)
       setSearchResults([])
-      isWaitingPhase3Ref.current = false
       setIsLoading(false)
-      setSearchPhase('idle')
+      setSearchCommit(
+        createInitialSearchCommit(searchCommitRef.current.requestEpoch, nextSeq, keyword)
+      )
+      setSearchHistory(['idle'])
       if (clipHintTimeoutRef.current) {
         clearTimeout(clipHintTimeoutRef.current)
         clipHintTimeoutRef.current = null
@@ -390,37 +511,58 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
 
     setIsLoading(true)
     const currentSeq = ++searchSeqRef.current
+    const activeCtx: ActiveSearchContext = {
+      requestId: currentSeq,
+      epoch: searchCommitRef.current.requestEpoch
+    }
+    // 重置当前搜索提交为初始态，开启新一轮检索周期
+    setSearchCommit(createInitialSearchCommit(activeCtx.epoch, currentSeq, keyword))
+    setSearchHistory(['idle'])
 
     searchDebounceTimerRef.current = setTimeout(async () => {
       let results: any = null
       try {
-        results = await window.electronAPI!.searchWorkspaceFiles(
-          keyword,
-          workspaceDirectory.path,
-          { stream: true, seq: currentSeq, channel: 'global-overlay' }
-        )
+        results = await window.electronAPI!.searchWorkspaceFiles(keyword, workspaceDirectory.path, {
+          stream: true,
+          seq: currentSeq,
+          channel: 'global-overlay',
+          epoch: activeCtx.epoch
+        })
 
         // 仅最新一次请求允许写回 State，防止慢响应覆盖快响应
         if (currentSeq === searchSeqRef.current) {
           const hasPendingClip = Boolean((results as any)?.clipPending)
           const itemsCount = results?.length || 0
 
-          // 无论 Promise 是否先行返回，立即解除 Phase 2 熔断定时器
           if (semanticTimeoutRef.current) {
             clearTimeout(semanticTimeoutRef.current)
             semanticTimeoutRef.current = null
           }
 
-          // 若流式 Phase 2 已先行处理，跳过重复置换与视口抖动
           if (handledPhase2SeqRef.current !== currentSeq) {
             handledPhase2SeqRef.current = currentSeq
             handlePhase2Replace(results || [])
           }
-          setSearchPhase('idle')
 
-          // 若返回 0 结果但声明冷态视觉模型调度中（clipPending），保持 loading 持续等待 Phase 3
+          const targetPhase: SearchPhase = hasPendingClip ? 'vector' : 'fusion'
+          const incoming: SearchCommit = {
+            requestEpoch: (results as any)?.requestEpoch ?? activeCtx.epoch,
+            requestId: currentSeq,
+            rev: searchCommitRef.current.rev + 1,
+            query: keyword,
+            phase: targetPhase,
+            lexicalCount: searchCommitRef.current.lexicalCount,
+            vectorCount: itemsCount,
+            fusedCount: itemsCount,
+            vectorSkipped: false,
+            clipPending: hasPendingClip
+          }
+
+          if (shouldApplySearchCommit(activeCtx, searchCommitRef.current, incoming)) {
+            applyCommit(incoming)
+          }
+
           if (hasPendingClip && itemsCount === 0) {
-            isWaitingPhase3Ref.current = true
             setIsLoading(true)
             setIsClipColdLoading(true)
             if (clipHintTimeoutRef.current) {
@@ -429,14 +571,20 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
             clipHintTimeoutRef.current = setTimeout(() => {
               if (searchSeqRef.current === currentSeq) {
                 setIsClipColdLoading(false)
-                if (isWaitingPhase3Ref.current) {
-                  isWaitingPhase3Ref.current = false
+                const timeoutFusion: SearchCommit = {
+                  ...searchCommitRef.current,
+                  rev: searchCommitRef.current.rev + 1,
+                  phase: 'fusion',
+                  clipPending: false
+                }
+                if (shouldApplySearchCommit(activeCtx, searchCommitRef.current, timeoutFusion)) {
+                  applyCommit(timeoutFusion)
                   setIsLoading(false)
                   setSettledSeq(currentSeq)
                 }
               }
             }, CLIP_COLD_HINT_TIMEOUT_MS)
-          } else if (!isWaitingPhase3Ref.current) {
+          } else if (!hasPendingClip) {
             setIsLoading(false)
             setSettledSeq(currentSeq)
           }
@@ -445,27 +593,42 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
           if (tokens.length > 0) {
             useSearchStore.getState().setSearchTokens(tokens)
           } else if (window.electronAPI?.tokenizeText) {
-            window.electronAPI.tokenizeText(keyword).then(t => {
-              if (currentSeq === searchSeqRef.current && t && t.length > 0) {
-                useSearchStore.getState().setSearchTokens(t)
-              }
-            }).catch(() => {})
+            window.electronAPI
+              .tokenizeText(keyword)
+              .then(t => {
+                if (currentSeq === searchSeqRef.current && t && t.length > 0) {
+                  useSearchStore.getState().setSearchTokens(t)
+                }
+              })
+              .catch(() => {})
           }
           useSearchStore.getState().addSearchHistory(keyword, 'global')
         }
       } catch (error) {
         logger.error(LogCategory.RENDERER, '全域工作空间搜索失败:', error)
         if (currentSeq === searchSeqRef.current) {
-          setSearchResults([])
-          setSearchPhase('idle')
-          isWaitingPhase3Ref.current = false
+          const incoming: SearchCommit = {
+            requestEpoch: activeCtx.epoch,
+            requestId: currentSeq,
+            rev: searchCommitRef.current.rev + 1,
+            query: keyword,
+            phase: 'failed',
+            lexicalCount: searchResults.length,
+            vectorCount: 0,
+            fusedCount: searchResults.length,
+            vectorSkipped: false,
+            errorCode: (error as any)?.code || 'E_SEARCH_FAILED',
+            errorMessage: (error as any)?.message || String(error)
+          }
+          if (shouldApplySearchCommit(activeCtx, searchCommitRef.current, incoming)) {
+            applyCommit(incoming)
+          }
           setIsLoading(false)
           setSettledSeq(currentSeq)
         }
       } finally {
         if (currentSeq === searchSeqRef.current) {
-          // 只要在等待冷态 Phase 3，绝不允许在 finally 中提前收回 Loading 导致假空态！
-          if (!isWaitingPhase3Ref.current && !(results as any)?.clipPending) {
+          if (!(results as any)?.clipPending && searchCommitRef.current.phase === 'fusion') {
             setIsLoading(false)
             setSettledSeq(currentSeq)
           }
@@ -479,9 +642,9 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
         clearTimeout(searchDebounceTimerRef.current)
       }
     }
-  }, [globalSearchKeyword, workspaceDirectory?.path, handlePhase2Replace])
+  }, [globalSearchKeyword, workspaceDirectory?.path, handlePhase2Replace, applyCommit])
 
-  // 3. 键盘事件监听 (Escape 退出)
+  // 4. 键盘事件监听 (Escape 退出)
   useEffect(() => {
     if (!isSearchActive) return
 
@@ -496,18 +659,43 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isSearchActive, clearGlobalSearch])
 
-  const handleFileSelect = useCallback((filesOrItem: FileItem[] | FileItem | null) => {
-    if (Array.isArray(filesOrItem)) {
-      setSelectedFiles(filesOrItem)
-      setActiveItem(filesOrItem.length === 1 ? filesOrItem[0] : null)
-    } else if (filesOrItem) {
-      setSelectedFiles([filesOrItem])
-      setActiveItem(filesOrItem)
-    } else {
-      setSelectedFiles([])
-      setActiveItem(null)
-    }
-  }, [])
+  // 用户交互选中/点击项：中断流并锁定 cancelled 终态 (TEST-UI-SEARCH-04)
+  const handleFileSelect = useCallback(
+    (filesOrItem: FileItem[] | FileItem | null) => {
+      if (
+        isSearchActive &&
+        searchCommitRef.current.phase !== 'fusion' &&
+        searchCommitRef.current.phase !== 'failed' &&
+        searchCommitRef.current.phase !== 'cancelled'
+      ) {
+        const activeCtx: ActiveSearchContext = {
+          requestId: searchSeqRef.current,
+          epoch: searchCommitRef.current.requestEpoch
+        }
+        const cancelledCommit: SearchCommit = {
+          ...searchCommitRef.current,
+          rev: searchCommitRef.current.rev + 1,
+          phase: 'cancelled'
+        }
+        if (shouldApplySearchCommit(activeCtx, searchCommitRef.current, cancelledCommit)) {
+          applyCommit(cancelledCommit)
+          setIsLoading(false)
+        }
+      }
+
+      if (Array.isArray(filesOrItem)) {
+        setSelectedFiles(filesOrItem)
+        setActiveItem(filesOrItem.length === 1 ? filesOrItem[0] : null)
+      } else if (filesOrItem) {
+        setSelectedFiles([filesOrItem])
+        setActiveItem(filesOrItem)
+      } else {
+        setSelectedFiles([])
+        setActiveItem(null)
+      }
+    },
+    [isSearchActive, applyCommit]
+  )
 
   const handleFileDoubleClick = useCallback((file: FileItem) => {
     if (file?.path) {
@@ -524,23 +712,30 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
   return (
     <div
       ref={overlayContainerRef}
+      data-testid="global-search-overlay"
+      data-search-phase={searchCommit.phase}
+      data-search-rev={searchCommit.rev}
+      data-search-history={searchHistory.join(',')}
+      onPointerDownCapture={handlePointerDownCapture}
       className={cn(
         'absolute inset-x-0 bottom-0 z-30 bg-background flex flex-col overflow-hidden',
         'animate-in fade-in duration-200'
       )}
       style={{ top: 'var(--app-header-height, 53px)' }}
     >
-      {/* 顶部通栏 Loading 条 (处于 DirectoryHeader 紧下方: 当处于搜索中或 Phase 2 深度对齐中全宽流动) */}
+      {/* 顶部通栏 Loading 条 */}
       <div
         className={cn(
           'absolute top-0 inset-x-0 h-[2px] z-50 pointer-events-none transition-opacity duration-300 overflow-hidden bg-primary/10',
-          (isLoading || searchPhase === 'phase1_done_analyzing_semantic') ? 'opacity-100' : 'opacity-0'
+          effectiveIsLoading || searchCommit.phase === 'lexical' || searchCommit.phase === 'vector'
+            ? 'opacity-100'
+            : 'opacity-0'
         )}
       >
         <div className="h-full w-full bg-gradient-to-r from-transparent via-primary to-transparent animate-indeterminate-bar" />
       </div>
 
-      {/* 工单 13：冷态视觉模型首次加载提示（搜索框下方轻量条，不遮挡列表、不弹错误） */}
+      {/* 冷态视觉模型首次加载提示 */}
       {isClipColdLoading && (
         <div
           data-testid="clip-cold-hint"
@@ -551,9 +746,23 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
         </div>
       )}
 
+      {/* 异常降级横幅 (TEST-UI-SEARCH-05) */}
+      {searchCommit.phase === 'failed' && (
+        <div
+          data-testid="search-degraded-banner"
+          className="flex-shrink-0 flex items-center justify-between px-3 py-1.5 border-b border-amber-500/30 bg-amber-500/10 text-xs text-amber-700 dark:text-amber-300"
+        >
+          <div className="flex items-center gap-1.5">
+            <MaterialIcon icon="warning" className="text-amber-500 text-sm" />
+            <span>{t('深度语义搜索暂时不可用，已为您展示基础字面匹配结果')}</span>
+          </div>
+          {searchCommit.errorCode && (
+            <span className="font-mono text-[10px] opacity-75">[{searchCommit.errorCode}]</span>
+          )}
+        </div>
+      )}
 
-
-      {/* 核心三栏同构布局: FileList | SplitPreviewPanel | FileDetailsPanel，未选择工作空间时渲染 EmptyState */}
+      {/* 核心三栏同构布局: FileList | SplitPreviewPanel | FileDetailsPanel */}
       <div className="flex-1 overflow-hidden relative">
         {!workspaceDirectory?.path ? (
           <EmptyState
@@ -586,7 +795,10 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
               <div className="flex-shrink-0 border-b border-border px-3 py-1.5 flex items-center justify-between bg-card gap-2 min-h-[44px]">
                 {/* 左侧：全域搜索状态与统计 */}
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <MaterialIcon icon="travel_explore" className="text-primary text-base flex-shrink-0" />
+                  <MaterialIcon
+                    icon="travel_explore"
+                    className="text-primary text-base flex-shrink-0"
+                  />
                   <span className="text-muted-foreground whitespace-nowrap text-xs">
                     {t('全域搜索:')}
                   </span>
@@ -594,15 +806,19 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
                     "{keyword}"
                   </span>
                   <span className="text-muted-foreground/80 text-[11px] whitespace-nowrap hidden sm:inline">
-                    {t('（共 {count} 项，包含未分析与已分析文件）', { count: searchResults.length })}
+                    {t('（共 {count} 项，包含未分析与已分析文件）', {
+                      count: searchResults.length
+                    })}
                   </span>
                   <span className="text-muted-foreground/80 text-[11px] whitespace-nowrap sm:hidden">
                     {t('（{count} 项）', { count: searchResults.length })}
                   </span>
-                  {searchPhase === 'phase1_done_analyzing_semantic' && (
+                  {(searchCommit.phase === 'lexical' || searchCommit.phase === 'vector') && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20 whitespace-nowrap shrink-0 animate-pulse flex items-center gap-1">
                       <span className="inline-block w-1.5 h-1.5 rounded-full bg-violet-500 animate-ping" />
-                      {t('深度语义对齐中...')}
+                      {searchCommit.phase === 'lexical'
+                        ? t('字面检索中...')
+                        : t('深度语义对齐中...')}
                     </span>
                   )}
                   {searchResults.length >= 500 && (
@@ -632,9 +848,7 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
             renderFooter={layoutContext => (
               <div className="px-4 py-1.5 flex items-center text-xs text-muted-foreground shrink-0 border-t border-border/40 min-h-[32px]">
                 <MaterialIcon icon="insert_drive_file" className="mr-1.5 text-sm" />
-                <span>
-                  {t('匹配文件: {count} 个', { count: layoutContext.files.length })}
-                </span>
+                <span>{t('匹配文件: {count} 个', { count: layoutContext.files.length })}</span>
                 {selectedFiles.length > 0 && (
                   <>
                     <span className="mx-2 text-border">|</span>

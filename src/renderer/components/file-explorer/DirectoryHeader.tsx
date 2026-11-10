@@ -1117,6 +1117,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
               />
               <input
                 ref={searchInputRef}
+                data-testid="global-search-input"
                 type="text"
                 value={localSearchInput}
                 onFocus={() => {
