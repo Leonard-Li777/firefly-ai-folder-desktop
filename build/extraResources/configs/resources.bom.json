@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-11-09T09:07:02.717Z",
+  "generatedAt": "2026-11-10T20:08:38.745Z",
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources"
@@ -166,6 +166,16 @@
         "sha256": "a236176147ad695655d2d54c810f925d574620689299b713484018b7dd8a910c",
         "size": 57910236,
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/mobile-clip-int8.zip"
+      }
+    },
+    "nsfw-mobilenetv2": {
+      "version": "1.0.0",
+      "source": "shared",
+      "asset": {
+        "name": "nsfw-mobilenetv2-1.0.0.zip",
+        "sha256": "af66beb688c2d05574cd32d72bd55169acd381bdbeb2b97deb016827ad6c6af1",
+        "size": 9556862,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/nsfw-mobilenetv2-1.0.0.zip"
       }
     },
     "nsfw-l3": {

@@ -94,10 +94,12 @@
     },
     "freeBaseQuota": 500,
     "welcomeGrantFirecores": 50,
-    "inviteFirecoreReward": 100,
-    "inviteFirecoreRewardInvitee": 50,
+    "inviteFirecoreReward": 500,
+    "inviteFirecoreRewardInvitee": 500,
     "inviteQuotaBonus": 500,
-    "accessWorkspaceCost": 20
+    "accessWorkspaceCost": 20,
+    "inviteTargetCount": 4,
+    "inviteFullMilestoneEntitlement": "unlimited_analysis"
   },
   "OPERATION_PRICES": {
     "upgrade_pro": {
