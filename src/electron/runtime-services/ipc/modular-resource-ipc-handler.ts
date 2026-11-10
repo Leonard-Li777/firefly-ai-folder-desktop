@@ -330,6 +330,24 @@ export function registerModularResourceIpcHandlers(
     }
   })
 
+  // 调起系统原生文件夹选择器 (Issue 06)
+  ipcMain.handle('modular-resource:pick-directory', async event => {
+    try {
+      const win = BrowserWindow.fromWebContents(event.sender) ?? undefined
+      const res = await dialog.showOpenDialog(win as any, {
+        title: '选择插件与模型存储文件夹',
+        properties: ['openDirectory', 'createDirectory', 'dontAddToRecent']
+      })
+      if (res.canceled || !res.filePaths || res.filePaths.length === 0) {
+        return { canceled: true }
+      }
+      return { canceled: false, selectedPath: res.filePaths[0] }
+    } catch (err: any) {
+      logger.error(LogCategory.MAIN, '[ModularResourceIPC] pick-directory 失败:', err)
+      return { canceled: false, error: err?.message || '打开选择器失败' }
+    }
+  })
+
   // 校验候选路径合法性（11步管线校验与诊断）
   ipcMain.handle(
     'modular-resource:validate-plugin-dir',

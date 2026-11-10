@@ -162,14 +162,14 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
   const setDeveloperMode = usePluginCenterStore(s => s.setDeveloperMode)
   const environmentVisibility = usePluginCenterStore(s => s.environmentVisibility)
   const loadEnvironmentVisibility = usePluginCenterStore(s => s.loadEnvironmentVisibility)
-  const subscribeEnvironmentVisibility = usePluginCenterStore(
-    s => s.subscribeEnvironmentVisibility
-  )
+  const subscribeEnvironmentVisibility = usePluginCenterStore(s => s.subscribeEnvironmentVisibility)
   const isExportingBundle = usePluginCenterStore(s => s.isExportingBundle)
   const isImportingBundle = usePluginCenterStore(s => s.isImportingBundle)
   const scope = usePluginCenterStore(s => s.scope)
   const setScope = usePluginCenterStore(s => s.setScope)
   const pickAndImportLocalPlugin = usePluginCenterStore(s => s.pickAndImportLocalPlugin)
+  const dirPhase = usePluginCenterStore(s => s.dirPhase)
+  const loadDirInfo = usePluginCenterStore(s => s.loadDirInfo)
 
   // 订阅后端实时下载进度与环境可见性变更，支持双挂载安全清理
   useEffect(() => {
@@ -186,8 +186,9 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
       void loadEnvironmentVisibility()
       void loadModules()
       void checkPendingTombstones()
+      void loadDirInfo()
     }
-  }, [isOverlayOpen, loadEnvironmentVisibility, loadModules])
+  }, [isOverlayOpen, loadEnvironmentVisibility, loadModules, loadDirInfo])
 
   // 环境通道与离线可见性派生决策（双锚定时钟收拢事实源，兼容桥接回退）
   const vis = environmentVisibility?.visibility
@@ -392,6 +393,30 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
       )}
       style={{ top: 'var(--app-header-height, 53px)' }}
     >
+      {/* 待重启黄色横幅 (Issue 06 Spec §7.1) */}
+      {dirPhase === 'PENDING_RESTART' && (
+        <div
+          data-testid="plugin-center-restart-banner"
+          className="px-6 py-2.5 bg-amber-500/15 border-b border-amber-500/30 flex items-center justify-between text-amber-800 dark:text-amber-200 text-xs shrink-0"
+        >
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+            <span className="font-medium">
+              {t(
+                '插件存储目录已成功迁移，需重启软件以加载新目录资源。当前插件中心所有写操作已临时安全锁定。'
+              )}
+            </span>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => void restartApp()}
+            className="h-7 px-3 bg-amber-600 hover:bg-amber-700 text-white text-xs shrink-0 cursor-pointer"
+          >
+            {t('立即重启')}
+          </Button>
+        </div>
+      )}
+
       {/* 顶部主工具栏：左侧标题/面包屑与副标，右侧快捷关闭按钮 */}
       <div className="px-6 py-3 border-b border-border/70 flex-shrink-0 flex items-center justify-between bg-card min-h-[52px] gap-4">
         <div className="flex items-center gap-3 min-w-0">

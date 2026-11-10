@@ -65,6 +65,8 @@ export const modularResourcePreloadBridge: IModularResourceBridge = {
   },
   pickAndImportLocalPlugin: () =>
     ipcRenderer.invoke('modular-resource:pick-and-import-local-plugin'),
+  pickDirectory: (): Promise<string | null> =>
+    ipcRenderer.invoke('modular-resource:pick-directory'),
   getPluginDirInfo: () => ipcRenderer.invoke('modular-resource:get-plugin-dir-info'),
   validatePluginDir: (targetPath: string) =>
     ipcRenderer.invoke('modular-resource:validate-plugin-dir', { targetPath }),

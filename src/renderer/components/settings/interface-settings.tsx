@@ -1,5 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { Sun, Moon, Monitor, Check, Loader2 } from 'lucide-react'
+import {
+  Sun,
+  Moon,
+  Monitor,
+  Check,
+  Loader2,
+  FolderOpen,
+  AlertTriangle,
+  HardDrive,
+  Trash2
+} from 'lucide-react'
 import { Card } from '../ui/card'
 import { Label } from '../ui/label'
 import { Switch } from '../ui/switch'
@@ -17,6 +27,7 @@ import {
 } from '../ui/alert-dialog'
 import { Button } from '../ui/button'
 import { useSettingsConfig, useSettingsStore } from '../../stores/settings-store'
+import { usePluginCenterStore, formatPluginErrorMessage } from '../../stores/plugin-center-store'
 import { useTheme } from '../ui/theme-provider'
 import type { LanguageCode } from '@firefly/types'
 import { toast } from '../common/Toast'
@@ -25,6 +36,21 @@ import { cn } from '../../lib/utils'
 import i18nScope from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
 import { SUPPORTED_LANGUAGES } from '@firefly/shared'
+
+/**
+ * 格式化字节为人类友好字符串 (1024 进制)
+ */
+function formatBytes(bytes?: number): string {
+  if (!bytes || bytes <= 0) return '0 B'
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  let size = bytes
+  let unitIndex = 0
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024
+    unitIndex++
+  }
+  return `${size.toFixed(unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`
+}
 
 /**
  * 界面设置组件
@@ -41,6 +67,37 @@ export const InterfaceSettings: React.FC = () => {
   const [showLanguageChangeDialog, setShowLanguageChangeDialog] = useState(false)
   const [pendingLanguage, setPendingLanguage] = useState<LanguageCode | null>(null)
   const [isSwitchingLanguage, setIsSwitchingLanguage] = useState(false)
+
+  // 目录管理与安全迁移 Store 订阅
+  const dirInfo = usePluginCenterStore(s => s.dirInfo)
+  const dirPhase = usePluginCenterStore(s => s.dirPhase)
+  const isOldDirCleanupDismissed = usePluginCenterStore(s => s.isOldDirCleanupDismissed)
+  const dirMigrationProgress = usePluginCenterStore(s => s.dirMigrationProgress)
+  const loadDirInfo = usePluginCenterStore(s => s.loadDirInfo)
+  const pickDirectory = usePluginCenterStore(s => s.pickDirectory)
+  const validatePluginDir = usePluginCenterStore(s => s.validatePluginDir)
+  const changePluginDir = usePluginCenterStore(s => s.changePluginDir)
+  const cancelDirMigration = usePluginCenterStore(s => s.cancelDirMigration)
+  const cleanupOldDir = usePluginCenterStore(s => s.cleanupOldDir)
+  const dismissOldDirCleanup = usePluginCenterStore(s => s.dismissOldDirCleanup)
+  const subscribeDirMigrationProgress = usePluginCenterStore(s => s.subscribeDirMigrationProgress)
+  const restartApp = usePluginCenterStore(s => s.restartApp)
+
+  const [migrationTarget, setMigrationTarget] = useState<string | null>(null)
+  const [migrationDiagnostics, setMigrationDiagnostics] = useState<any | null>(null)
+  const [showConfirmMigrationDialog, setShowConfirmMigrationDialog] = useState(false)
+  const [showRestartDialog, setShowRestartDialog] = useState(false)
+  const [isCleaningOldDir, setIsCleaningOldDir] = useState(false)
+  const [isStartingMigration, setIsStartingMigration] = useState(false)
+
+  // 初始化拉取目录信息与监听进度
+  useEffect(() => {
+    loadDirInfo()
+    const unsubscribe = subscribeDirMigrationProgress()
+    return () => {
+      unsubscribe()
+    }
+  }, [loadDirInfo, subscribeDirMigrationProgress])
 
   // 获取可用的配色方案
   const colorSchemes = useMemo(() => getAvailableColorSchemes(), [activeLanguage])
@@ -105,6 +162,95 @@ export const InterfaceSettings: React.FC = () => {
     setShowLanguageChangeDialog(false)
     setPendingLanguage(null)
     // Select组件会自动恢复为原值(因为config.language没变)
+  }
+
+  /**
+   * 选择新目录并校验
+   */
+  const handlePickAndChangeDir = async () => {
+    try {
+      const chosenPath = await pickDirectory()
+      if (!chosenPath) return
+
+      const validation = await validatePluginDir(chosenPath)
+      if (!validation.valid) {
+        const errorMsg =
+          formatPluginErrorMessage({ code: validation.errorCode }) ||
+          validation.errorMessage ||
+          t('所选路径不满足要求')
+        toast.error(errorMsg)
+        return
+      }
+
+      setMigrationTarget(chosenPath)
+      setMigrationDiagnostics(validation.diagnostics || null)
+      setShowConfirmMigrationDialog(true)
+    } catch (err: any) {
+      toast.error(formatPluginErrorMessage(err))
+    }
+  }
+
+  /**
+   * 确认并开始流式迁移
+   */
+  const handleConfirmMigration = async () => {
+    if (!migrationTarget) return
+    setShowConfirmMigrationDialog(false)
+    setIsStartingMigration(true)
+    try {
+      const res = await changePluginDir(migrationTarget)
+      if (res && !res.success && res.errorCode) {
+        toast.error(formatPluginErrorMessage({ code: res.errorCode }))
+      } else {
+        setShowRestartDialog(true)
+      }
+    } catch (err: any) {
+      toast.error(formatPluginErrorMessage(err))
+    } finally {
+      setIsStartingMigration(false)
+    }
+  }
+
+  /**
+   * 取消迁移
+   */
+  const handleCancelMigration = async () => {
+    try {
+      const res = await cancelDirMigration()
+      if (!res.cancelled && res.errorCode) {
+        toast.error(formatPluginErrorMessage({ code: res.errorCode }))
+      } else {
+        toast.info(t('已取消插件目录迁移'))
+      }
+    } catch (err: any) {
+      toast.error(formatPluginErrorMessage(err))
+    }
+  }
+
+  /**
+   * 清理旧目录残留
+   */
+  const handleCleanupOldDir = async () => {
+    setIsCleaningOldDir(true)
+    try {
+      const res = await cleanupOldDir()
+      if (res.success) {
+        toast.success(t(`旧插件目录清理完成，已释放 ${formatBytes(res.freedBytes)} 空间`))
+      } else {
+        toast.error(formatPluginErrorMessage({ code: res.errorCode || 'UNKNOWN_ERROR' }))
+      }
+    } catch (err: any) {
+      toast.error(formatPluginErrorMessage(err))
+    } finally {
+      setIsCleaningOldDir(false)
+    }
+  }
+
+  /**
+   * 忽略旧目录清理
+   */
+  const handleDismissOldDirCleanup = async () => {
+    await dismissOldDirCleanup()
   }
 
   /**
@@ -389,6 +535,261 @@ export const InterfaceSettings: React.FC = () => {
           </Select>
         </div>
       </Card>
+
+      {/* 插件与模型存储目录设置 (Issue 06 Spec §7.4) */}
+      <Card className="p-4" data-testid="plugin-dir-settings-card">
+        <div className="space-y-4">
+          <div>
+            <Label className="text-base font-medium">{t('插件与模型存储目录')}</Label>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t('存放 AI 大脑模型与功能扩展组件的本地文件夹')}
+            </p>
+          </div>
+
+          {/* 中文路径警告横幅 (RULE 2.16 & Spec §7.4) */}
+          {dirInfo?.defaultDirNonAscii && (
+            <div
+              data-testid="non-ascii-warning-banner"
+              className="flex items-start gap-2.5 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 text-xs"
+            >
+              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>
+                {t(
+                  '当前默认插件存储路径包含中文字符，可能影响部分 AI 模型稳定运行，强烈建议更改到纯英文磁盘目录'
+                )}
+              </span>
+            </div>
+          )}
+
+          {/* 待重启提示条 */}
+          {dirPhase === 'PENDING_RESTART' && (
+            <div
+              data-testid="dir-pending-restart-card-banner"
+              className="flex items-center justify-between p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs"
+            >
+              <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <span>{t('插件目录已迁移完成，需重启软件以加载新目录资源')}</span>
+              </div>
+              <Button
+                size="sm"
+                className="h-7 px-2.5 text-xs bg-amber-600 hover:bg-amber-700 text-white cursor-pointer"
+                onClick={() => restartApp()}
+              >
+                {t('立即重启')}
+              </Button>
+            </div>
+          )}
+
+          {/* 迁移中进度展示 */}
+          {dirPhase === 'MIGRATING' && (
+            <div
+              data-testid="dir-migration-progress-card"
+              className="space-y-2 p-3 bg-muted/40 rounded-lg border border-border"
+            >
+              <div className="flex items-center justify-between text-xs">
+                <span className="flex items-center gap-1.5 font-medium text-primary">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  {t('正在迁移插件与模型文件...')}
+                </span>
+                <span className="font-mono text-muted-foreground">
+                  {dirMigrationProgress?.percentage ?? 0}% ({dirMigrationProgress?.copiedFiles ?? 0}{' '}
+                  / {dirMigrationProgress?.totalFiles ?? 0} 个文件)
+                </span>
+              </div>
+              <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
+                <div
+                  className="bg-primary h-full transition-all duration-300"
+                  style={{ width: `${dirMigrationProgress?.percentage ?? 0}%` }}
+                />
+              </div>
+              {dirMigrationProgress?.currentFile && (
+                <p className="text-[11px] text-muted-foreground truncate font-mono">
+                  {dirMigrationProgress.currentFile}
+                </p>
+              )}
+              <div className="flex justify-end pt-1">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleCancelMigration}
+                  className="h-7 text-xs"
+                >
+                  {t('取消迁移')}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* 路径展示与更改操作 */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-lg bg-muted/30 border border-border">
+            <div className="space-y-1 min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <HardDrive className="w-4 h-4 text-muted-foreground shrink-0" />
+                <span className="text-xs font-mono font-medium truncate select-all">
+                  {dirInfo?.currentPath || t('正在获取目录信息...')}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {t('已占用空间')}:{' '}
+                <span className="font-medium text-foreground">
+                  {formatBytes(dirInfo?.usedBytes)}
+                </span>
+              </p>
+            </div>
+
+            <Button
+              size="sm"
+              variant="outline"
+              data-testid="change-plugin-dir-button"
+              disabled={dirPhase === 'MIGRATING' || isStartingMigration}
+              onClick={handlePickAndChangeDir}
+              className="h-8 px-3 text-xs shrink-0 cursor-pointer flex items-center gap-1.5"
+            >
+              <FolderOpen className="w-3.5 h-3.5" />
+              <span>{t('更改目录')}</span>
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      {/* 旧插件目录清理卡片 (Spec §7.4 & Issue 04) */}
+      {dirInfo?.previousPath &&
+        !isOldDirCleanupDismissed &&
+        dirInfo?.previousPathExists !== false && (
+          <Card className="p-4 border-amber-500/20" data-testid="old-dir-cleanup-card">
+            <div className="space-y-3">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <Label className="text-base font-medium text-foreground flex items-center gap-1.5">
+                    <Trash2 className="w-4 h-4 text-amber-500" />
+                    <span>{t('清理旧插件目录残留')}</span>
+                  </Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {t('检测到此前迁移遗留的旧目录，可安全清理以释放磁盘空间：')}
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-2.5 rounded bg-muted/40 font-mono text-xs text-muted-foreground truncate select-all">
+                {dirInfo.previousPath}
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-1">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleDismissOldDirCleanup}
+                  className="h-8 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                >
+                  {t('忽略')}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  data-testid="cleanup-old-dir-btn"
+                  disabled={isCleaningOldDir || dirPhase === 'MIGRATING'}
+                  onClick={handleCleanupOldDir}
+                  className="h-8 text-xs cursor-pointer flex items-center gap-1.5"
+                >
+                  {isCleaningOldDir ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-3.5 h-3.5" />
+                  )}
+                  <span>{t('立即清理')}</span>
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
+
+      {/* 迁移确认对话框 */}
+      <AlertDialog open={showConfirmMigrationDialog} onOpenChange={setShowConfirmMigrationDialog}>
+        <AlertDialogContent className="border-2 border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-lg">
+              <FolderOpen className="w-5 h-5 text-primary" />
+              {t('确认迁移插件存储目录')}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3 text-sm text-foreground pt-1">
+                <p>
+                  {t(
+                    '系统将把现有的插件与模型数据安全复制到新目录。迁移期间原目录资源保持只读保护。'
+                  )}
+                </p>
+                <div className="p-3 bg-muted/40 rounded-lg space-y-1.5 font-mono text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">{t('新存储路径')}:</span>
+                    <span className="font-semibold truncate max-w-[240px]">{migrationTarget}</span>
+                  </div>
+                  {migrationDiagnostics && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">{t('目标盘可用空间')}:</span>
+                        <span>{formatBytes(migrationDiagnostics.targetFreeBytes)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">{t('预估待迁移大小')}:</span>
+                        <span>{formatBytes(migrationDiagnostics.requiredBytes)}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t('迁移完成后需重启软件以正式加载新位置的模型与插件。')}
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button variant="outline" onClick={() => setShowConfirmMigrationDialog(false)}>
+                {t('取消')}
+              </Button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button
+                onClick={handleConfirmMigration}
+                className="bg-primary text-primary-foreground"
+              >
+                {t('开始迁移')}
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* 迁移完成重启提示框 */}
+      <AlertDialog open={showRestartDialog} onOpenChange={setShowRestartDialog}>
+        <AlertDialogContent className="border-2 border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-primary flex items-center gap-2 text-lg">
+              <Check className="w-5 h-5" />
+              {t('插件目录迁移完成')}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2 text-sm text-foreground pt-1">
+              {t('插件与模型已成功复制到新位置。需重启软件以加载新目录资源，您希望现在重启吗？')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button variant="outline" onClick={() => setShowRestartDialog(false)}>
+                {t('稍后重启')}
+              </Button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button
+                onClick={() => restartApp()}
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                {t('立即重启')}
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       {/* 标签显示设置 */}
       {__IS_DEV__ && (
         <Card className="p-4">

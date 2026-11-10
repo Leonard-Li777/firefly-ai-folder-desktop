@@ -119,7 +119,27 @@ export const PLUGIN_ERROR_MESSAGES: Record<string, string> = {
   CHECKSUM_FAILED: '文件完整性校验失败，请重新获取安装包。',
   DOWNLOAD_FAILED: '组件资源下载失败，请检查网络连接后重试。',
   MODULE_NOT_FOUND: '未找到对应的插件信息，可能已被移除。',
-  UNKNOWN_ERROR: '插件操作发生未知异常，请稍后重试。'
+  UNKNOWN_ERROR: '插件操作发生未知异常，请稍后重试。',
+  // 目录管理与镜像下载大白话提示 (RULE 2.16 & Spec §7.4)
+  PATH_NOT_ASCII: '文件夹路径不能包含中文，请选择纯英文路径',
+  PATH_HAS_WHITESPACE: '文件夹路径中不能有空格，请去掉空格后重试',
+  PATH_RESERVED_DEVICE_NAME: '文件夹名称不能使用系统保留字（如 CON、PRN 等）',
+  PATH_TOO_LONG: '文件夹层级太深，请选择路径更短的文件夹',
+  PATH_NOT_WRITABLE: '该文件夹没有写入权限，请更换其他磁盘位置',
+  PATH_NOT_A_DIRECTORY: '所选位置是一个文件，请选择一个文件夹',
+  PATH_NOT_ABSOLUTE: '请选择完整的磁盘绝对路径',
+  UNC_PATH_FORBIDDEN: '不支持局域网共享路径，请选择本地磁盘文件夹',
+  SAME_AS_CURRENT: '所选文件夹与当前正在使用的插件目录相同，无需迁移',
+  INSUFFICIENT_SPACE: '目标磁盘可用空间不足，请清理磁盘后重试',
+  SYSTEM_DIR_FORBIDDEN: '不能选择系统核心文件夹或磁盘根目录，请选择普通自定义文件夹',
+  DIR_CHANGE_GATE_ACTIVE: '插件目录变更需重启软件生效，暂无法进行其他操作',
+  DISK_FULL_DURING_MIGRATION: '迁移过程中磁盘空间耗尽，已自动取消并安全还原',
+  MIGRATION_CANCELLED: '已取消插件目录迁移，保持原目录不变',
+  MIGRATION_NOT_CANCELLABLE: '目录迁移已进入最后提交阶段，无法取消，请稍候',
+  HASH_MISMATCH: '文件复制过程中发现损坏，已自动安全回滚',
+  SYMLINK_REJECTED: '不支持包含快捷方式或符号链接的目录',
+  TARGET_MODULE_LOCKED: '目标文件夹中的旧模型文件正被其他程序占用，无法覆盖',
+  NETWORK_TIMEOUT: '网络连接缓慢或超时，正在自动切换备用网络重试'
 }
 
 /**
@@ -218,6 +238,7 @@ export interface IModularResourceBridge {
     module?: PluginModuleItem
     error?: string
   }>
+  pickDirectory?: () => Promise<string | null>
   getPluginDirInfo?: () => Promise<any>
   validatePluginDir?: (targetPath: string) => Promise<any>
   changePluginDir?: (targetPath: string) => Promise<any>
@@ -277,6 +298,20 @@ export interface PluginCenterState {
   importOfflinePackage: (archivePath?: string) => Promise<PluginModuleItem | null>
   pickAndImportLocalPlugin: () => Promise<boolean>
   resetForTest: () => void
+
+  // 目录管理与安全迁移状态 (Issue 02 - 06)
+  dirInfo: any | null
+  dirPhase: 'STABLE' | 'MIGRATING' | 'PENDING_RESTART'
+  isOldDirCleanupDismissed: boolean
+  dirMigrationProgress: any | null
+  pickDirectory: () => Promise<string | null>
+  loadDirInfo: () => Promise<any | null>
+  validatePluginDir: (targetPath: string) => Promise<any>
+  changePluginDir: (targetPath: string) => Promise<any>
+  cancelDirMigration: () => Promise<any>
+  cleanupOldDir: () => Promise<any>
+  dismissOldDirCleanup: () => Promise<void>
+  subscribeDirMigrationProgress: () => () => void
 }
 
 export const INITIAL_PLUGINS: PluginModuleItem[] = [
@@ -1050,6 +1085,103 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
     }
   },
 
+  // 目录管理与安全迁移状态 (Issue 02 - 06)
+  dirInfo: null,
+  dirPhase: 'STABLE',
+  isOldDirCleanupDismissed: false,
+  dirMigrationProgress: null,
+
+  pickDirectory: async () => {
+    const bridge = getModularResourceBridge()
+    if (!bridge || typeof bridge.pickDirectory !== 'function') {
+      return null
+    }
+    return await bridge.pickDirectory()
+  },
+
+  loadDirInfo: async () => {
+    const bridge = getModularResourceBridge()
+    if (!bridge || typeof bridge.getPluginDirInfo !== 'function') return null
+    try {
+      const info = await bridge.getPluginDirInfo()
+      if (info) {
+        set({ dirInfo: info, dirPhase: info.phase || 'STABLE' })
+      }
+      if (typeof bridge.isOldDirCleanupDismissed === 'function') {
+        const dismissed = await bridge.isOldDirCleanupDismissed()
+        set({ isOldDirCleanupDismissed: !!dismissed })
+      }
+      return info
+    } catch {
+      return null
+    }
+  },
+
+  validatePluginDir: async (targetPath: string) => {
+    const bridge = getModularResourceBridge()
+    if (!bridge || typeof bridge.validatePluginDir !== 'function') {
+      return { valid: false, errorCode: 'PATH_NOT_WRITABLE', errorMessage: 'Bridge unavailable' }
+    }
+    return await bridge.validatePluginDir(targetPath)
+  },
+
+  changePluginDir: async (targetPath: string) => {
+    const bridge = getModularResourceBridge()
+    if (!bridge || typeof bridge.changePluginDir !== 'function') {
+      return { success: false, errorCode: 'PATH_NOT_WRITABLE' }
+    }
+    set({ dirPhase: 'MIGRATING' })
+    try {
+      const res = await bridge.changePluginDir(targetPath)
+      await get().loadDirInfo()
+      return res
+    } catch (err: any) {
+      await get().loadDirInfo()
+      return { success: false, errorCode: err?.code || 'UNKNOWN_ERROR' }
+    }
+  },
+
+  cancelDirMigration: async () => {
+    const bridge = getModularResourceBridge()
+    if (!bridge || typeof bridge.cancelDirMigration !== 'function') {
+      return { cancelled: false }
+    }
+    const res = await bridge.cancelDirMigration()
+    await get().loadDirInfo()
+    return res
+  },
+
+  cleanupOldDir: async () => {
+    const bridge = getModularResourceBridge()
+    if (!bridge || typeof bridge.cleanupOldDir !== 'function') {
+      return { success: false, freedBytes: 0 }
+    }
+    const res = await bridge.cleanupOldDir()
+    await get().loadDirInfo()
+    return res
+  },
+
+  dismissOldDirCleanup: async () => {
+    const bridge = getModularResourceBridge()
+    if (bridge && typeof bridge.dismissOldDirCleanup === 'function') {
+      await bridge.dismissOldDirCleanup()
+    }
+    set({ isOldDirCleanupDismissed: true })
+  },
+
+  subscribeDirMigrationProgress: () => {
+    const bridge = getModularResourceBridge()
+    if (!bridge || typeof bridge.onDirMigrationProgress !== 'function') {
+      return () => {}
+    }
+    return bridge.onDirMigrationProgress((payload: any) => {
+      set({ dirMigrationProgress: payload })
+      if (payload?.phase) {
+        set({ dirPhase: payload.phase === 'DONE' ? 'PENDING_RESTART' : 'MIGRATING' })
+      }
+    })
+  },
+
   resetForTest: () => {
     set({
       isOverlayOpen: false,
@@ -1064,7 +1196,11 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
       isExportingBundle: false,
       isImportingBundle: false,
       hasPendingTombstones: false,
-      pendingTombstones: []
+      pendingTombstones: [],
+      dirInfo: null,
+      dirPhase: 'STABLE',
+      isOldDirCleanupDismissed: false,
+      dirMigrationProgress: null
     })
   }
 }))
