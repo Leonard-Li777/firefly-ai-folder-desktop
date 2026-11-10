@@ -82,9 +82,7 @@ export const SystemSettingsDialog: React.FC = () => {
   // 动态根据已安装且激活的插件挂载或隐藏对应 Tab (Spec §5.2)
   const validCategories = React.useMemo(() => {
     const all = systemSettingsCategories()
-    if (!modules || modules.length === 0) return all
-
-    const activeModules = modules.filter(m => m.install_state === 'active')
+    const activeModules = (modules || []).filter(m => m.install_state === 'active')
     const activeTtsModule = activeModules.find(
       m =>
         m.capability_slot === 'voice_tts' ||
@@ -104,7 +102,7 @@ export const SystemSettingsDialog: React.FC = () => {
         ) {
           return true
         }
-        // 语音合成 (TTS)：若对应插件未激活则自动隐藏
+        // 语音合成 (TTS)：仅在对应插件已激活时呈现，未安装或未激活一律安全隐藏
         if (category.id === SettingsCategory.TTS) {
           return Boolean(activeTtsModule)
         }

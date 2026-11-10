@@ -12,8 +12,12 @@ import * as fs from 'fs'
 import { ipcMain, dialog, BrowserWindow } from 'electron'
 import { logger, LogCategory } from '@firefly/shared'
 import { omniClient, TTSChunkResult } from '../../services/omni-client'
-import { ttsWavCacheService, TTSWavMetadata } from '../../runtime-services/filesystem/tts-wav-cache-service'
+import {
+  ttsWavCacheService,
+  TTSWavMetadata
+} from '../../runtime-services/filesystem/tts-wav-cache-service'
 import { voiceArchiveService } from '../../runtime-services/audio/voice-archive-service'
+import { modularResourceService } from '../../runtime-services/system/modular-resource-service'
 
 /** 管理会话级活跃请求的 AbortController，键为 sessionId */
 const activeSessionControllers = new Map<number, Set<AbortController>>()
@@ -30,6 +34,13 @@ export function registerTTSIPCHandlers(): void {
       sessionId?: number,
       sid?: number
     ): Promise<TTSChunkResult | null> => {
+      // 未安装或未激活 TTS 插件时，安全跳过，绝不发起底层调用，不阻塞
+      const activeTTS = modularResourceService.getActiveModuleBySlot('voice_tts')
+      if (!activeTTS) {
+        logger.debug(LogCategory.MAIN, '[TTS IPC] 未安装或未激活 TTS 插件，安全跳过合成')
+        return null
+      }
+
       let controller: AbortController | undefined
 
       if (sessionId !== undefined) {
@@ -84,11 +95,7 @@ export function registerTTSIPCHandlers(): void {
   // 3. 兼容旧版：流式拼装分句 WAV 并保存到用户本地文件
   ipcMain.handle(
     'tts:save-wav-file',
-    async (
-      _event,
-      defaultName: string,
-      chunks: Uint8Array[]
-    ): Promise<string | null> => {
+    async (_event, defaultName: string, chunks: Uint8Array[]): Promise<string | null> => {
       if (!chunks || chunks.length === 0) {
         logger.warn(LogCategory.MAIN, '[TTS IPC] save-wav-file: 没有可保存的音频块')
         return null
@@ -216,10 +223,7 @@ export function registerTTSIPCHandlers(): void {
   // 5. 读取本地 WAV 文件内嵌的 meta Chunk
   ipcMain.handle(
     'tts:read-wav-metadata',
-    async (
-      _event,
-      wavPath: string
-    ): Promise<TTSWavMetadata | null> => {
+    async (_event, wavPath: string): Promise<TTSWavMetadata | null> => {
       try {
         return await ttsWavCacheService.readWavMetadata(wavPath)
       } catch (err) {
@@ -232,10 +236,7 @@ export function registerTTSIPCHandlers(): void {
   // 6. 读取完整 WAV 文件供前端秒播
   ipcMain.handle(
     'tts:read-wav-file',
-    async (
-      _event,
-      wavPath: string
-    ): Promise<ArrayBuffer | null> => {
+    async (_event, wavPath: string): Promise<ArrayBuffer | null> => {
       try {
         const buf = await ttsWavCacheService.readWavFile(wavPath)
         if (!buf) return null
@@ -275,17 +276,14 @@ export function registerTTSIPCHandlers(): void {
   )
 
   // 8. 在系统资源管理器中定位并选中该音频文件
-  ipcMain.handle(
-    'tts:locate-wav-file',
-    async (_event, wavPath: string): Promise<boolean> => {
-      try {
-        return ttsWavCacheService.locateWavFile(wavPath)
-      } catch (err) {
-        logger.warn(LogCategory.MAIN, '[TTS IPC] locate-wav-file 失败:', err)
-        return false
-      }
+  ipcMain.handle('tts:locate-wav-file', async (_event, wavPath: string): Promise<boolean> => {
+    try {
+      return ttsWavCacheService.locateWavFile(wavPath)
+    } catch (err) {
+      logger.warn(LogCategory.MAIN, '[TTS IPC] locate-wav-file 失败:', err)
+      return false
     }
-  )
+  })
 
   // 9. 获取所有可用音色列表（内置预置 + 用户自定义）
   ipcMain.handle('tts:list-voices', async () => {
@@ -403,7 +401,7 @@ export function registerTTSIPCHandlers(): void {
 
       const abortController = new AbortController()
       let timeoutId: NodeJS.Timeout | undefined
-      const timeoutPromise = new Promise<null>((resolve) => {
+      const timeoutPromise = new Promise<null>(resolve => {
         timeoutId = setTimeout(() => {
           abortController.abort()
           resolve(null)
@@ -486,4 +484,3 @@ function fallbackLocalSplitChunks(text: string, minLen = 45, maxLen = 120): stri
   }
   return chunks.length > 0 ? chunks : [text.trim()]
 }
-

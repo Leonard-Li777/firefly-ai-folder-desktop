@@ -22,7 +22,10 @@ export const TTSDynamicContainerSettings: React.FC = () => {
       (m.capability_slot === 'voice_tts' || m.id === 'tts_moss_onnx' || m.id === 'tts_m5_onnx') &&
       m.install_state === 'active'
   )
-  if (activeTts?.id === 'tts_m5_onnx') {
+  if (!activeTts) {
+    return null
+  }
+  if (activeTts.id === 'tts_m5_onnx') {
     return React.createElement(M5TTSSettings)
   }
   return React.createElement(TTSSettings)

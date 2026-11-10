@@ -137,6 +137,19 @@ describe('Ticket 05: 原生执行器免杀与设置声明式动态挂载测试',
       expect(screen.queryByText('极速语音朗读 (M5-TTS)')).toBeNull()
     })
 
+    it('当用户完全未安装任何 TTS 插件（modules 为空列表）时，系统设置坚决不呈现 TTS Tab', () => {
+      usePluginCenterStore.setState({ modules: [] })
+      useSettingsStore.setState({ isSystemSettingsOpen: true, isOpen: true })
+
+      render(<SystemSettingsDialog />)
+
+      // 基础界面与常驻项存在，TTS 坚决不呈现
+      expect(screen.getByText('界面与显示偏好')).toBeInTheDocument()
+      expect(screen.queryByText('语音合成 (TTS)')).toBeNull()
+      expect(screen.queryByText('个性声音克隆 (Moss-TTS)')).toBeNull()
+      expect(screen.queryByText('极速语音朗读 (M5-TTS)')).toBeNull()
+    })
+
     it('激活 Moss-TTS 时，系统设置展示 Moss Tab 且互斥隐藏 M5 Tab', () => {
       const activeModules: PluginModuleItem[] = [
         {
