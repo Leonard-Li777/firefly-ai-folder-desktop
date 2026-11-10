@@ -44,3 +44,12 @@ export {
   resolveExtractorWorkerPath,
   type DispatchOptions
 } from './bundle-extractor-dispatcher'
+export {
+  BundlePromoter,
+  BundlePromoterError,
+  type BundlePromoterErrorCode,
+  type IncomingModuleMeta,
+  type AdmissionDecision,
+  type PromotionOptions,
+  type PromotionResult
+} from './bundle-promoter'
