@@ -34,6 +34,7 @@ import {
   splitTextIntoSentences,
   voiceSeamDispatcher
 } from '../voice-seam-dispatcher'
+import { M5HybridSampler, loadVoicePromptCodes, type M5VoiceMeta } from '../m5-tts-engine'
 
 describe('VoiceSeamDispatcher (Ticket 04) 语音中继调度与 PCM 流式测试', () => {
   beforeEach(() => {
@@ -249,6 +250,129 @@ describe('VoiceSeamDispatcher (Ticket 04) 语音中继调度与 PCM 流式测试
       expect(fullWav.byteLength).toBe(44 + 4)
       const recovered = stripWavHeader(fullWav)
       expect(recovered).toEqual(rawPcm)
+    })
+
+    it('synthesizeStream 传入空文本或空白字符时立即抛出 EMPTY_TEXT 错误', async () => {
+      mockActiveModules['voice_tts'] = {
+        id: 'tts_m5_onnx',
+        capability_slot: 'voice_tts',
+        backend_type: 'omni_onnx'
+      }
+
+      const emptyGen = voiceSeamDispatcher.synthesizeStream('   ')
+      await expect(emptyGen.next()).rejects.toThrow(VoiceSeamError)
+
+      try {
+        const g2 = voiceSeamDispatcher.synthesizeStream('')
+        await g2.next()
+      } catch (err: any) {
+        expect(err.code).toBe('EMPTY_TEXT')
+      }
+    })
+
+    it('激活 tts_m5_onnx 后流式生成标准 48000Hz PCM 分片', async () => {
+      mockActiveModules['voice_tts'] = {
+        id: 'tts_m5_onnx',
+        capability_slot: 'voice_tts',
+        backend_type: 'omni_onnx'
+      }
+
+      const chunks: any[] = []
+      for await (const chunk of voiceSeamDispatcher.synthesizeStream('测试 M5 极速语音合成')) {
+        chunks.push(chunk)
+      }
+
+      expect(chunks.length).toBeGreaterThan(0)
+      expect(chunks[0].format).toBe('pcm_s16le')
+      expect(chunks[0].sampleRate).toBe(48000)
+      expect(chunks[0].channels).toBe(1)
+      expect(chunks[0].data.byteLength).toBeGreaterThan(0)
+    })
+
+    it('激活 tts_m5_onnx 时传入已中止的 AbortSignal 抛出 ABORTED', async () => {
+      mockActiveModules['voice_tts'] = {
+        id: 'tts_m5_onnx',
+        capability_slot: 'voice_tts',
+        backend_type: 'omni_onnx'
+      }
+
+      const controller = new AbortController()
+      controller.abort()
+
+      const gen = voiceSeamDispatcher.synthesizeStream('测试即刻中止', {
+        signal: controller.signal
+      })
+      await expect(gen.next()).rejects.toThrow(VoiceSeamError)
+
+      try {
+        const g2 = voiceSeamDispatcher.synthesizeStream('测试即刻中止', {
+          signal: controller.signal
+        })
+        await g2.next()
+      } catch (err: any) {
+        expect(err.code).toBe('ABORTED')
+      }
+    })
+  })
+
+  describe('M5HybridSampler 与音色二进制码本契约 (Spec §3.3 & §5.2)', () => {
+    it('loadVoicePromptCodes 强制 4 字节对齐且越界立即阻断', () => {
+      const buffer = new ArrayBuffer(1024)
+      const mockMeta: M5VoiceMeta = {
+        id: 'huoshan_zhumei',
+        displayName: '火山朱美',
+        gender: 'female',
+        lang: 'zh',
+        desc: '自然女声',
+        recommended: true,
+        promptTokenLength: 10, // 10 帧 * 16 层 * 4 字节 = 640 字节
+        promptCodesOffset: 3 // 非 4 字节对齐
+      }
+
+      expect(() => loadVoicePromptCodes(buffer, mockMeta)).toThrow('PROMPT_CODE_OFFSET_UNALIGNED')
+
+      // 越界测试
+      const outOfBoundMeta: M5VoiceMeta = {
+        ...mockMeta,
+        promptCodesOffset: 500 // 500 + 640 = 1140 > 1024
+      }
+      expect(() => loadVoicePromptCodes(buffer, outOfBoundMeta)).toThrow(
+        'PROMPT_CODE_RANGE_OUT_OF_BOUND'
+      )
+
+      // 合法加载
+      const validMeta: M5VoiceMeta = {
+        ...mockMeta,
+        promptCodesOffset: 64 // 64 + 640 = 704 <= 1024
+      }
+      const codes = loadVoicePromptCodes(buffer, validMeta)
+      expect(codes.length).toBe(10 * 16)
+      expect(codes instanceof Int32Array).toBe(true)
+    })
+
+    it('M5HybridSampler 达到 maxFrames 强制返回 0 (EOS)', () => {
+      const sampler = new M5HybridSampler(12345)
+      const logits = new Float32Array([1.0, 5.0, 3.0, 2.0])
+      // frameIndex = 100 >= maxFrames (100)
+      const token = sampler.sampleC0(logits, 100, 10, { maxFrames: 100 })
+      expect(token).toBe(0)
+    })
+
+    it('M5HybridSampler 在 frameIndex < minFrames 时屏蔽 EOS (0)', () => {
+      const sampler = new M5HybridSampler(12345)
+      // 让 EOS (索引 0) 的 logit 极大
+      const logits = new Float32Array([100.0, 1.0, 1.0])
+      // 文本长度 10，minFrames >= 15，当前 frameIndex = 2 < minFrames
+      // temperature <= 0 贪心采样，若未屏蔽应选 0，屏蔽后应选 1
+      const token = sampler.sampleC0(logits, 2, 10, { temperature: 0, minFrames: 15 })
+      expect(token).toBe(1)
+    })
+
+    it('M5HybridSampler 贪心采样在允许 EOS 时正确选中最大值', () => {
+      const sampler = new M5HybridSampler(12345)
+      const logits = new Float32Array([1.0, 10.0, 2.0])
+      const token = sampler.sampleC0(logits, 20, 10, { temperature: 0, minFrames: 5 })
+      expect(token).toBe(1)
     })
   })
 })

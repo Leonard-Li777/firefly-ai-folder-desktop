@@ -19,6 +19,13 @@ import { logger, LogCategory } from '@firefly/shared'
 import { modularResourceService } from '../system/modular-resource-service'
 import { omniClient } from '../../services/omni-client'
 import { omniService } from '../system/omni-service'
+import {
+  acquireM5Worker,
+  releaseM5Worker,
+  waitWorkerEvent,
+  type IM5WorkerSession,
+  type M5EngineWorkerEvent
+} from './m5-tts-engine'
 
 /** 统一语音转录输出模型 */
 export interface TranscriptionResult {
@@ -67,7 +74,12 @@ export interface IVoiceSeamService {
   ): Promise<ArrayBuffer>
 }
 
-export type VoiceSeamErrorCode = 'NO_ACTIVE_PLUGIN' | 'INFERENCE_FAILED' | 'ABORTED'
+export type VoiceSeamErrorCode =
+  | 'NO_ACTIVE_PLUGIN'
+  | 'INFERENCE_FAILED'
+  | 'ABORTED'
+  | 'EMPTY_TEXT'
+  | 'UNSUPPORTED_BACKEND'
 
 export class VoiceSeamError extends Error {
   readonly code: VoiceSeamErrorCode
@@ -269,6 +281,11 @@ export class VoiceSeamDispatcher implements IVoiceSeamService {
     text: string,
     options?: { voiceId?: string; speed?: number; signal?: AbortSignal }
   ): AsyncIterable<AudioChunk> {
+    const trimmed = text ? text.trim() : ''
+    if (!trimmed) {
+      throw new VoiceSeamError('EMPTY_TEXT', '朗读文本为空')
+    }
+
     const activeModule = modularResourceService.getActiveModuleBySlot('voice_tts')
     if (!activeModule) {
       throw new VoiceSeamError('NO_ACTIVE_PLUGIN', '未激活 TTS 语音合成插件')
@@ -278,70 +295,187 @@ export class VoiceSeamDispatcher implements IVoiceSeamService {
       throw new VoiceSeamError('ABORTED', '语音合成已中止')
     }
 
-    if (activeModule.backend_type === 'omni_onnx') {
-      // 优先请求 Omni 智能分句，失败或空时降级到本地切分
-      let chunks: string[] = []
-      try {
-        const splitRes = await omniClient.splitTTSChunks(text, undefined, options?.signal)
-        if (splitRes && splitRes.chunks && splitRes.chunks.length > 0) {
-          chunks = splitRes.chunks
-        }
-      } catch {}
-
-      if (chunks.length === 0) {
-        chunks = splitTextIntoSentences(text)
-      }
-
-      if (chunks.length === 0) {
-        return
-      }
-
-      const voiceId = options?.voiceId || 'default'
-      const speed = options?.speed || 1.0
-
-      for (let i = 0; i < chunks.length; i++) {
+    try {
+      if (activeModule.id === 'tts_m5_onnx') {
+        const sessionId = uuidv4()
+        const worker = await acquireM5Worker()
+        let sessionClosed = false
+        const onAbort = () => worker.post({ type: 'ABORT_SYNTHESIS', sessionId })
+        options?.signal?.addEventListener('abort', onAbort, { once: true })
         if (options?.signal?.aborted) {
+          onAbort()
           throw new VoiceSeamError('ABORTED', '语音合成已中止')
         }
 
-        const chunkText = chunks[i]
-        const chunkRes = await omniClient.synthesizeTTSChunk(
-          chunkText,
-          voiceId,
-          speed,
-          undefined,
-          options?.signal
-        )
+        try {
+          for await (const chunk of this.dispatchM5TTS(
+            trimmed,
+            { ...options, sessionId },
+            worker
+          )) {
+            if (options?.signal?.aborted) break
+            yield chunk
+          }
+          sessionClosed = true
+        } finally {
+          options?.signal?.removeEventListener('abort', onAbort)
+          if (!sessionClosed) {
+            worker.post({ type: 'ABORT_SYNTHESIS', sessionId })
+            await Promise.race([
+              waitWorkerEvent(worker, sessionId, [
+                'SESSION_ABORTED',
+                'SESSION_COMPLETE',
+                'SESSION_ERROR'
+              ]),
+              new Promise<void>(resolve => setTimeout(resolve, 2000))
+            ])
+          }
+          releaseM5Worker(worker, sessionId)
+        }
+      } else if (activeModule.id === 'tts_moss_onnx' || activeModule.backend_type === 'omni_onnx') {
+        yield* this.dispatchMossTTS(trimmed, options)
+      } else if (activeModule.backend_type === 'ai_engine') {
+        throw new VoiceSeamError('INFERENCE_FAILED', 'ai_engine TTS 后端网关尚未接入')
+      } else {
+        throw new VoiceSeamError('UNSUPPORTED_BACKEND', `不支持的 TTS 模块: ${activeModule.id}`)
+      }
+    } catch (err) {
+      if (options?.signal?.aborted) return
+      if (err instanceof VoiceSeamError) throw err
+      logger.error(LogCategory.SYSTEM, `[VoiceSeamDispatcher] 合成失败 (${activeModule.id}):`, err)
+      throw err
+    }
+  }
 
-        if (options?.signal?.aborted) {
+  private async *dispatchM5TTS(
+    text: string,
+    options: { voiceId?: string; speed?: number; signal?: AbortSignal; sessionId: string },
+    worker: IM5WorkerSession
+  ): AsyncIterable<AudioChunk> {
+    const queue: M5EngineWorkerEvent[] = []
+    let resolveNext: (() => void) | null = null
+    let hasEnded = false
+
+    const handler = (evt: M5EngineWorkerEvent) => {
+      if (evt.sessionId !== options.sessionId) return
+      queue.push(evt)
+      if (resolveNext) {
+        resolveNext()
+        resolveNext = null
+      }
+    }
+
+    worker.on(handler)
+
+    try {
+      worker.post({
+        type: 'START_SYNTHESIS',
+        sessionId: options.sessionId,
+        text,
+        voiceId: options.voiceId || 'huoshan_zhumei',
+        speed: options.speed || 1.0
+      })
+
+      while (!hasEnded) {
+        if (options.signal?.aborted) {
           throw new VoiceSeamError('ABORTED', '语音合成已中止')
         }
 
-        if (!chunkRes || !chunkRes.buffer) {
-          throw new VoiceSeamError(
-            'INFERENCE_FAILED',
-            `TTS 分句合成失败: "${chunkText.slice(0, 20)}"`
-          )
+        if (queue.length === 0) {
+          await new Promise<void>(resolve => {
+            resolveNext = resolve
+          })
         }
 
-        // 剥离现役 Omni 返回的 44 字节 RIFF/WAV 容器头，产出保真 48kHz PCM
-        const pcmData = stripWavHeader(chunkRes.buffer)
-
-        yield {
-          format: 'pcm_s16le',
-          sampleRate: 48000,
-          channels: 1,
-          data: pcmData,
-          isLastChunk: i === chunks.length - 1
+        while (queue.length > 0) {
+          const evt = queue.shift()!
+          if (evt.type === 'CHUNK_READY') {
+            yield {
+              format: 'pcm_s16le',
+              sampleRate: evt.sampleRate,
+              channels: 1,
+              data: evt.pcmData,
+              isLastChunk: false
+            }
+          } else if (evt.type === 'SESSION_COMPLETE') {
+            hasEnded = true
+            break
+          } else if (evt.type === 'SESSION_ABORTED') {
+            hasEnded = true
+            throw new VoiceSeamError('ABORTED', '语音合成已中止')
+          } else if (evt.type === 'SESSION_ERROR') {
+            hasEnded = true
+            throw new VoiceSeamError(
+              'INFERENCE_FAILED',
+              `M5-TTS 合成错误: ${evt.errorMessage || evt.errorCode}`
+            )
+          }
         }
       }
-    } else if (activeModule.backend_type === 'ai_engine') {
-      throw new VoiceSeamError('INFERENCE_FAILED', 'ai_engine TTS 后端网关尚未接入')
-    } else {
-      throw new VoiceSeamError(
-        'INFERENCE_FAILED',
-        `不支持的 TTS 后端类型: ${activeModule.backend_type}`
+    } finally {
+      worker.off(handler)
+    }
+  }
+
+  private async *dispatchMossTTS(
+    text: string,
+    options?: { voiceId?: string; speed?: number; signal?: AbortSignal }
+  ): AsyncIterable<AudioChunk> {
+    // 优先请求 Omni 智能分句，失败或空时降级到本地切分
+    let chunks: string[] = []
+    try {
+      const splitRes = await omniClient.splitTTSChunks(text, undefined, options?.signal)
+      if (splitRes && splitRes.chunks && splitRes.chunks.length > 0) {
+        chunks = splitRes.chunks
+      }
+    } catch {}
+
+    if (chunks.length === 0) {
+      chunks = splitTextIntoSentences(text)
+    }
+
+    if (chunks.length === 0) {
+      return
+    }
+
+    const voiceId = options?.voiceId || 'default'
+    const speed = options?.speed || 1.0
+
+    for (let i = 0; i < chunks.length; i++) {
+      if (options?.signal?.aborted) {
+        throw new VoiceSeamError('ABORTED', '语音合成已中止')
+      }
+
+      const chunkText = chunks[i]
+      const chunkRes = await omniClient.synthesizeTTSChunk(
+        chunkText,
+        voiceId,
+        speed,
+        undefined,
+        options?.signal
       )
+
+      if (options?.signal?.aborted) {
+        throw new VoiceSeamError('ABORTED', '语音合成已中止')
+      }
+
+      if (!chunkRes || !chunkRes.buffer) {
+        throw new VoiceSeamError(
+          'INFERENCE_FAILED',
+          `TTS 分句合成失败: "${chunkText.slice(0, 20)}"`
+        )
+      }
+
+      // 剥离现役 Omni 返回的 44 字节 RIFF/WAV 容器头，产出保真 48kHz PCM
+      const pcmData = stripWavHeader(chunkRes.buffer)
+
+      yield {
+        format: 'pcm_s16le',
+        sampleRate: 48000,
+        channels: 1,
+        data: pcmData,
+        isLastChunk: i === chunks.length - 1
+      }
     }
   }
 

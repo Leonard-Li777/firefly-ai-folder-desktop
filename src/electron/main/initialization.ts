@@ -260,6 +260,14 @@ export async function initDatabaseAndDependentServices(
       systemRulesProvider: () => loadIgnoreRules()
     })
 
+    // 同样注入 ModularResourceService 依赖，防止打包后动态 require('../database/database-service') 抛出 MODULE_NOT_FOUND
+    const { modularResourceService } = await import(
+      '../runtime-services/system/modular-resource-service'
+    )
+    modularResourceService.configureRuntimeDependencies({
+      getDb: () => databaseService.db
+    })
+
     unifiedModelManager.ensureLoaded(true)
 
     // 数据库就绪后，为新用户一次性插入 welcome_grant（幂等：确定性 txId + INSERT OR IGNORE）

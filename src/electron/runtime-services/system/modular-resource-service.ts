@@ -441,22 +441,22 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
       }
     ]
   },
-  // 4. 感知分析模型：敏感内容与 NSFW 分级识别
+  // 4. 感知分析模型：敏感内容与 NSFW 分级识别 (包含社区开源识图模型 MobileNetV2 与自研 nsfw-l3 文本模型)
   {
     id: 'perception_nsfw',
     name: '敏感内容与 NSFW 分级识别',
     description:
-      '【私密与敏感图片标记】自动识别不适合在公开场合打开的图片并加上标记，防止投屏查看时尴尬。所有电脑均可极速运行。',
+      '【私密与敏感图文标记】自动识别私密敏感图片与包含露骨敏感描述的文档/AIGC文本并打上标记，防止投屏查看时尴尬。所有电脑均可极速运行。',
     icon: 'ShieldAlert',
     kind: 'builtin-module',
     version: '1.2.0',
-    catalog_version: 1,
+    catalog_version: 2,
     category: 'perception',
     capability_slot: 'perception_nsfw',
     slot_policy: 'exclusive_optional',
     backend_type: 'omni_onnx',
     author_code: 'official',
-    total_bytes: 33311367, // 31.7 MiB (aligned with resources.bom.json v1.2.0)
+    total_bytes: 42868229, // 9,556,862 (nsfw-mobilenetv2) + 33,311,367 (nsfw-l3) = 40.88 MiB
     install_state: 'not_installed',
     contributes: {
       settings: {
@@ -467,6 +467,16 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
       }
     },
     resources: [
+      {
+        resource_id: 'nsfw-mobilenetv2',
+        asset_name: 'nsfw-mobilenetv2-1.0.0.zip',
+        target_local_path: 'modules/_shared/nsfw',
+        active_source_key: 'auto',
+        active_url:
+          'https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/nsfw-mobilenetv2-1.0.0.zip',
+        expected_bytes: 9556862,
+        expected_sha256: 'af66beb688c2d05574cd32d72bd55169acd381bdbeb2b97deb016827ad6c6af1'
+      },
       {
         resource_id: 'nsfw-l3',
         asset_name: 'nsfw-l3-1.2.0.zip',
@@ -527,12 +537,12 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
       }
     ]
   },
-  // 5. 离线语音合成 TTS (Moss-TTS)
+  // 5. 离线语音合成 TTS (Moss-TTS 与 M5-TTS)
   {
     id: 'tts_moss_onnx',
-    name: '离线语音合成 TTS (Moss-TTS)',
+    name: '个性声音克隆 (Moss-TTS)',
     description:
-      '【真人般自然朗读文章】把文档和文章读给你听，支持戴耳机离线听书看材料，完全不消耗网络。普通电脑即可流畅发音。',
+      '【支持克隆专属声音】内置声音提取器，上传一段录音即可克隆专属声音朗读文章。支持 51 款精选音色与自定义克隆。',
     icon: 'Volume2',
     kind: 'builtin-module',
     version: '1.0.0',
@@ -572,6 +582,42 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
           'https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/moss-tts-1.0.0.zip',
         expected_bytes: 240822786,
         expected_sha256: '4374fe73fd27e9544674037890e773826727b959c6a63313989d787a263b7069'
+      }
+    ]
+  },
+  {
+    id: 'tts_m5_onnx',
+    name: '极速语音合成 (M5-TTS)',
+    description:
+      '【超轻量极速发音】首字 200ms 秒开朗读，内存占用极低（仅需 ~350MB），包含 51 款精品音色，普通笔记本丝滑朗读。',
+    icon: 'Zap',
+    kind: 'builtin-module',
+    version: '1.0.0',
+    catalog_version: 1,
+    category: 'media',
+    capability_slot: 'voice_tts',
+    slot_policy: 'exclusive_optional',
+    backend_type: 'omni_onnx',
+    author_code: 'official',
+    total_bytes: 305845248, // 305,845,248 bytes
+    install_state: 'not_installed',
+    contributes: {
+      settings: {
+        scope: 'global',
+        tabTitle: '语音合成 (TTS)',
+        componentId: 'tts',
+        priority: 30
+      }
+    },
+    resources: [
+      {
+        resource_id: 'm5-tts',
+        asset_name: 'm5-tts-1.0.0.zip',
+        target_local_path: 'modules/_shared/m5-tts',
+        active_source_key: 'auto',
+        active_url: 'https://download.iocn.cn/firefly-resources/m5-tts-1.0.0.zip',
+        expected_bytes: 305845248,
+        expected_sha256: '814b190f671e32a7e19add7655b032145ef96fc560f3326466042b5b4d96c240'
       }
     ]
   },
@@ -635,6 +681,7 @@ export class ModularResourceService implements IModularResourceService {
   private customDb: Database | null = null
   private customBaseDir: string | null = null
   private customPresetDir: string | null = null
+  private customDbGetter?: () => Database | null
   private downloadService: FileDownloadService
   private transport?: IDownloadTransport
   private deleteDirectoryFn: (dirPath: string) => Promise<boolean>
@@ -660,6 +707,30 @@ export class ModularResourceService implements IModularResourceService {
   private lastUsedBytesCalculatedAt = 0
   private oldDirCleanupDismissed = false
   private injectedConfigOrchestrator?: any
+  private slotLocks = new Map<string, Promise<unknown>>()
+
+  /**
+   * 槽位排他事务单写者互斥锁 (Spec §3.1)
+   * 确保同一槽位的状态流转（激活/停用）严格串行化，防止并发切换引发竞态
+   */
+  public async withSlotMutex<T>(slot: string, fn: () => Promise<T>): Promise<T> {
+    const prev = this.slotLocks.get(slot) ?? Promise.resolve()
+    let resolveCurrent!: () => void
+    const current = new Promise<void>(resolve => {
+      resolveCurrent = resolve
+    })
+    const tail = prev
+      .catch(() => {})
+      .then(() => fn())
+      .finally(() => {
+        resolveCurrent()
+        if (this.slotLocks.get(slot) === tail) {
+          this.slotLocks.delete(slot)
+        }
+      })
+    this.slotLocks.set(slot, tail)
+    return tail
+  }
 
   public setConfigOrchestrator(orchestrator: any): void {
     this.injectedConfigOrchestrator = orchestrator
@@ -701,6 +772,12 @@ export class ModularResourceService implements IModularResourceService {
     }, 15000)
   }
 
+  public configureRuntimeDependencies(deps: { getDb?: () => Database | null }): void {
+    if (deps.getDb) {
+      this.customDbGetter = deps.getDb
+    }
+  }
+
   static getInstance(): ModularResourceService {
     if (!ModularResourceService.instance) {
       ModularResourceService.instance = new ModularResourceService()
@@ -710,11 +787,18 @@ export class ModularResourceService implements IModularResourceService {
 
   public getDb(): Database {
     if (this.customDb) return this.customDb
-    const { databaseService } = require('../database/database-service')
-    if (!databaseService?.db) {
-      throw new Error('ModularResourceService: 数据库尚未初始化')
+    if (this.customDbGetter) {
+      const db = this.customDbGetter()
+      if (db) return db
     }
-    return databaseService.db
+    try {
+      // 容错在未通过 configureRuntimeDependencies 显式注入时的动态加载
+      const { databaseService } = require('../database/database-service')
+      if (databaseService?.db) {
+        return databaseService.db
+      }
+    } catch {}
+    throw new Error('ModularResourceService: 数据库尚未初始化')
   }
 
   public getDao(): ModularResourceDao {
@@ -2458,6 +2542,30 @@ export class ModularResourceService implements IModularResourceService {
     if (!existing) {
       throw new Error(`未找到模块定义: ${moduleId}`)
     }
+
+    const slot = existing.capability_slot ?? 'general'
+    const policy = existing.slot_policy ?? 'multi_active'
+    const isExclusive = policy === 'exclusive_required' || policy === 'exclusive_optional'
+
+    if (isExclusive && patch.active !== undefined) {
+      return this.withSlotMutex(slot, () =>
+        this.executeUpdateModuleState(moduleId, patch, existing)
+      )
+    }
+    return this.executeUpdateModuleState(moduleId, patch, existing)
+  }
+
+  private async executeUpdateModuleState(
+    moduleId: string,
+    patch: {
+      active?: boolean
+      userConfig?: Record<string, unknown> | string | null
+      selectedVariant?: string
+      userConsent?: boolean
+    },
+    existing: BuiltinModuleRecord
+  ): Promise<BuiltinModuleView> {
+    const dao = this.getDao()
 
     // 1. 处理配置与变体
     if (patch.userConfig !== undefined) {

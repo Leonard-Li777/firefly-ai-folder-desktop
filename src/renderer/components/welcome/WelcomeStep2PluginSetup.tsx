@@ -21,7 +21,8 @@ import {
   Download,
   ArrowRight,
   ArrowLeft,
-  FolderDown
+  FolderDown,
+  Zap
 } from 'lucide-react'
 
 // 资源清单权威体积字典 (与 BOM SSOT 严格对齐)
@@ -29,19 +30,22 @@ const RESOURCE_BYTES_MAP: Record<string, number> = {
   'bekko-a8m': 106269288,
   'chinese-clip': 212925967,
   'embeddinggemma-2-onnx': 254003864,
-  'nsfw-l3': 21966375,
+  'nsfw-mobilenetv2': 9556862,
+  'nsfw-l3': 33311367,
   'sherpa-onnx-runtime': 8282676,
   'sensevoice-onnx': 160304482,
-  'moss-tts': 240822786
+  'moss-tts': 240822786,
+  'm5-tts': 305845248
 }
 
 // 模块绑定的物理资源映射
 const MODULE_RESOURCES_MAP: Record<string, string[]> = {
   engine_classic_light: ['bekko-a8m', 'chinese-clip'],
   engine_gemma_unified: ['embeddinggemma-2-onnx'],
-  perception_nsfw: ['nsfw-l3'],
+  perception_nsfw: ['nsfw-mobilenetv2', 'nsfw-l3'],
   asr_sensevoice_onnx: ['sherpa-onnx-runtime', 'sensevoice-onnx'],
-  tts_moss_onnx: ['sherpa-onnx-runtime', 'moss-tts']
+  tts_moss_onnx: ['sherpa-onnx-runtime', 'moss-tts'],
+  tts_m5_onnx: ['m5-tts']
 }
 
 export interface HardwareProbeResult {
@@ -79,8 +83,10 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
   const [selectedOptionals, setSelectedOptionals] = useState<Record<string, boolean>>({
     perception_nsfw: true,
     asr_sensevoice_onnx: false,
-    tts_moss_onnx: false
+    tts_moss_onnx: false,
+    tts_m5_onnx: true
   })
+  const [selectedTtsEngine, setSelectedTtsEngine] = useState<'m5' | 'moss'>('m5')
   // 生成式引擎自适应底座推荐状态 (Spec §5.2 / AC-04)
   const [generativeEngineMode, setGenerativeEngineMode] = useState<'cpu' | 'local' | 'cloud'>('cpu')
 
@@ -241,9 +247,7 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
       if (modular?.smokeTest) {
         const smokeRes = await modular.smokeTest({ profile })
         if (!smokeRes.success) {
-          throw new Error(
-            smokeRes.error || t('引擎启动遇到问题，请尝试重试或切换为极速轻巧引擎')
-          )
+          throw new Error(smokeRes.error || t('引擎启动遇到问题，请尝试重试或切换为极速轻巧引擎'))
         }
       }
 
@@ -269,9 +273,7 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
       setInstallPhase('ready')
     } catch (err: any) {
       setInstallPhase('error')
-      setErrorMessage(
-        err?.message || t('引擎启动遇到问题，请尝试重试或切换为极速轻巧引擎')
-      )
+      setErrorMessage(err?.message || t('引擎启动遇到问题，请尝试重试或切换为极速轻巧引擎'))
     }
   }
 
@@ -482,7 +484,9 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
                 <span className="w-1.5 h-3.5 bg-emerald-500 rounded-full inline-block" />
                 {t('实用智能技能扩展（选配 · 可随时调整）')}
               </h2>
-              <span className="text-xs text-slate-500">{t('进入主界面后后台静默下载，不耽误您马上使用')}</span>
+              <span className="text-xs text-slate-500">
+                {t('进入主界面后后台静默下载，不耽误您马上使用')}
+              </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -511,11 +515,11 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
                   <Checkbox checked={selectedOptionals.perception_nsfw} />
                 </div>
                 <div className="text-[11px] text-slate-500 mt-2">
-                  {t('自动识别私密照片并打上安全标签，投屏或分享时避免尴尬')}
+                  {t('自动识别私密照片与敏感内容并打上安全标签，投屏或分享时避免尴尬')}
                 </div>
                 <div className="mt-2 flex justify-between items-center text-[11px]">
                   <span className="text-emerald-600 font-medium">{t('推荐勾选')}</span>
-                  <span className="font-mono text-slate-400">20.9 MiB</span>
+                  <span className="font-mono text-slate-400">40.9 MiB</span>
                 </div>
               </div>
 
@@ -552,35 +556,108 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
                 </div>
               </div>
 
-              {/* TTS */}
-              <div
-                onClick={() =>
-                  installPhase === 'idle' &&
-                  setSelectedOptionals(prev => ({ ...prev, tts_moss_onnx: !prev.tts_moss_onnx }))
-                }
-                className={`p-3 rounded-lg border flex flex-col justify-between cursor-pointer transition-all ${
-                  selectedOptionals.tts_moss_onnx
-                    ? 'border-emerald-500 bg-emerald-50/30'
-                    : 'border-slate-200 bg-white'
-                } ${installPhase !== 'idle' ? 'pointer-events-none opacity-80' : ''}`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <Volume2 className="w-4 h-4 text-purple-500 shrink-0" />
-                    <span className="text-xs font-semibold text-slate-900">
-                      {t('离线语音朗读')}
-                    </span>
+              {/* TTS 二选一互斥单选组 */}
+              {(() => {
+                const isTtsEnabled =
+                  Boolean(selectedOptionals.tts_m5_onnx) || Boolean(selectedOptionals.tts_moss_onnx)
+                return (
+                  <div
+                    className={`p-3 rounded-lg border flex flex-col justify-between transition-all ${
+                      isTtsEnabled
+                        ? 'border-emerald-500 bg-emerald-50/30'
+                        : 'border-slate-200 bg-white'
+                    } ${installPhase !== 'idle' ? 'pointer-events-none opacity-80' : ''}`}
+                  >
+                    <div>
+                      <div
+                        className="flex items-start justify-between gap-2 cursor-pointer"
+                        onClick={() => {
+                          if (installPhase !== 'idle') return
+                          if (isTtsEnabled) {
+                            setSelectedOptionals(prev => ({
+                              ...prev,
+                              tts_m5_onnx: false,
+                              tts_moss_onnx: false
+                            }))
+                          } else {
+                            setSelectedOptionals(prev => ({
+                              ...prev,
+                              tts_m5_onnx: selectedTtsEngine === 'm5',
+                              tts_moss_onnx: selectedTtsEngine === 'moss'
+                            }))
+                          }
+                        }}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Volume2 className="w-4 h-4 text-purple-500 shrink-0" />
+                          <span className="text-xs font-semibold text-slate-900">
+                            {t('离线语音朗读')}
+                          </span>
+                        </div>
+                        <Checkbox checked={isTtsEnabled} />
+                      </div>
+                      <div className="text-[11px] text-slate-500 mt-1.5">
+                        {t('用自然真人声音把文档读给你听，支持戴耳机离线听书')}
+                      </div>
+
+                      {/* 二选一互斥选择器 */}
+                      <div className="mt-2.5 grid grid-cols-2 gap-1.5 p-1 bg-slate-100/80 rounded-md">
+                        <button
+                          type="button"
+                          disabled={installPhase !== 'idle'}
+                          onClick={e => {
+                            e.stopPropagation()
+                            setSelectedTtsEngine('m5')
+                            setSelectedOptionals(prev => ({
+                              ...prev,
+                              tts_m5_onnx: true,
+                              tts_moss_onnx: false
+                            }))
+                          }}
+                          className={`px-2 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1 transition-all ${
+                            isTtsEnabled && selectedTtsEngine === 'm5'
+                              ? 'bg-white text-purple-700 shadow-xs border border-purple-200'
+                              : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                        >
+                          <Zap className="w-3 h-3 text-amber-500 shrink-0" />
+                          <span>{t('极速轻量')}</span>
+                        </button>
+                        <button
+                          type="button"
+                          disabled={installPhase !== 'idle'}
+                          onClick={e => {
+                            e.stopPropagation()
+                            setSelectedTtsEngine('moss')
+                            setSelectedOptionals(prev => ({
+                              ...prev,
+                              tts_moss_onnx: true,
+                              tts_m5_onnx: false
+                            }))
+                          }}
+                          className={`px-2 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1 transition-all ${
+                            isTtsEnabled && selectedTtsEngine === 'moss'
+                              ? 'bg-white text-purple-700 shadow-xs border border-purple-200'
+                              : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                        >
+                          <Volume2 className="w-3 h-3 text-purple-500 shrink-0" />
+                          <span>{t('声音克隆')}</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="mt-2.5 flex justify-between items-center text-[11px]">
+                      <span className="text-purple-600 font-medium">
+                        {selectedTtsEngine === 'm5' ? t('推荐 · 极速省电') : t('支持克隆音色')}
+                      </span>
+                      <span className="font-mono text-slate-400">
+                        {selectedTtsEngine === 'm5' ? '291.7 MiB' : '237.6 MiB'}
+                      </span>
+                    </div>
                   </div>
-                  <Checkbox checked={selectedOptionals.tts_moss_onnx} />
-                </div>
-                <div className="text-[11px] text-slate-500 mt-2">
-                  {t('用自然真人声音把文档读给你听，无需连网，支持戴耳机边听边工作')}
-                </div>
-                <div className="mt-2 flex justify-between items-center text-[11px]">
-                  <span className="text-slate-400">{t('可选功能')}</span>
-                  <span className="font-mono text-slate-400">237.6 MiB</span>
-                </div>
-              </div>
+                )
+              })()}
             </div>
           </div>
 
