@@ -18,6 +18,23 @@ import {
   type ModuleDownloadProgressEvent,
   type CatalogModuleEntry
 } from '../system/modular-resource-service'
+import {
+  EnvironmentVisibilityCoordinator,
+  type EnvironmentVisibilityEnvelope
+} from '../modular-resource/environment-visibility'
+
+export function broadcastEnvironmentVisibility(envelope: EnvironmentVisibilityEnvelope): void {
+  try {
+    const windows = BrowserWindow.getAllWindows()
+    for (const win of windows) {
+      if (!win.isDestroyed()) {
+        win.webContents.send('modular-resource:environment-visibility-changed', envelope)
+      }
+    }
+  } catch (err) {
+    logger.warn(LogCategory.MAIN, '[ModularResourceIPC] 广播环境可见性变更失败:', err)
+  }
+}
 
 export function broadcastModularResourceProgress(event: ModuleDownloadProgressEvent): void {
   try {
@@ -59,19 +76,39 @@ export function registerModularResourceIpcHandlers(
     }
   )
 
+  ipcMain.handle('modular-resource:get-environment-visibility', async () => {
+    const isPackaged = typeof app !== 'undefined' ? app.isPackaged : false
+    return EnvironmentVisibilityCoordinator.getInstance().getEnvelope(isPackaged)
+  })
+
+  ipcMain.handle(
+    'modular-resource:set-developer-mode',
+    async (_event, payload: { enabled: boolean }) => {
+      const isPackaged = typeof app !== 'undefined' ? app.isPackaged : false
+      devModeEnabled = !!payload.enabled
+      const envelope = EnvironmentVisibilityCoordinator.getInstance().setDeveloperMode(
+        payload.enabled,
+        isPackaged
+      )
+      broadcastEnvironmentVisibility(envelope)
+      return envelope
+    }
+  )
+
   ipcMain.handle('modular-resource:get-dev-mode', async () => {
     const effective = typeof app !== 'undefined' && app.isPackaged ? false : devModeEnabled
     return { enabled: devModeEnabled, devModeEffective: effective }
   })
 
   ipcMain.handle('modular-resource:set-dev-mode', async (_event, payload: { enabled: boolean }) => {
+    const isPackaged = typeof app !== 'undefined' && app.isPackaged ? false : devModeEnabled
     devModeEnabled = !!payload.enabled
-    const effective = typeof app !== 'undefined' && app.isPackaged ? false : devModeEnabled
-    logger.info(
-      LogCategory.MAIN,
-      `[ModularResourceIPC] 切换开发者模式: ${devModeEnabled} (有效状态: ${effective})`
+    const envelope = EnvironmentVisibilityCoordinator.getInstance().setDeveloperMode(
+      payload.enabled,
+      isPackaged
     )
-    return { devModeEffective: effective }
+    broadcastEnvironmentVisibility(envelope)
+    return { devModeEffective: envelope.visibility.developerModeEnabled }
   })
 
   ipcMain.handle('modular-resource:install', async (_event, moduleId: string) => {
@@ -199,6 +236,21 @@ export function registerModularResourceIpcHandlers(
     }
   })
 
+  ipcMain.handle('modular-resource:export-offline-bundle', async () => {
+    try {
+      const res = await dialog.showSaveDialog({
+        title: '导出离线插件总包',
+        defaultPath: 'firefly-offline-bundle.ffp',
+        filters: [{ name: 'Firefly 离线总包 (*.ffp)', extensions: ['ffp', 'zip'] }]
+      })
+      if (res.canceled || !res.filePath) return null
+      return await service.exportOfflinePackage('all', res.filePath)
+    } catch (err: unknown) {
+      logger.error(LogCategory.MAIN, '[ModularResourceIPC] export-offline-bundle 失败:', err)
+      throw err
+    }
+  })
+
   ipcMain.handle(
     'modular-resource:export-offline-package',
     async (_event, payload: { moduleId: string; targetFilePath?: string }) => {
@@ -266,4 +318,31 @@ export function registerModularResourceIpcHandlers(
       return { canceled: false, error: err?.message || '导入失败' }
     }
   })
+
+  // 获取插件目录详细信息与运行态状态
+  ipcMain.handle('modular-resource:get-plugin-dir-info', async () => {
+    try {
+      return await service.getPluginDirInfo()
+    } catch (err: any) {
+      logger.error(LogCategory.MAIN, '[ModularResourceIPC] get-plugin-dir-info 失败:', err)
+      throw err
+    }
+  })
+
+  // 校验候选路径合法性（11步管线校验与诊断）
+  ipcMain.handle(
+    'modular-resource:validate-plugin-dir',
+    async (_event, payload: { targetPath: string }) => {
+      try {
+        return await service.validatePluginDir(payload?.targetPath ?? '')
+      } catch (err: any) {
+        logger.error(LogCategory.MAIN, '[ModularResourceIPC] validate-plugin-dir 失败:', err)
+        return {
+          valid: false,
+          errorCode: 'PATH_NOT_WRITABLE',
+          errorMessage: err?.message || '校验失败'
+        }
+      }
+    }
+  )
 }

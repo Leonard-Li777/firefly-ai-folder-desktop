@@ -12,7 +12,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { app as electronApp } from 'electron'
 import type { Database } from 'better-sqlite3'
-import { logger, LogCategory } from '@firefly/shared'
+import { logger, LogCategory, isPathEqual } from '@firefly/shared'
 import {
   ModularResourceDao,
   type BuiltinModuleRecord,
@@ -52,8 +52,36 @@ import {
   type VerifiedDownloadResult,
   type IDownloadTransport
 } from './file-download-service'
+import {
+  validatePluginDirectory,
+  probeDirectoryWritableAndSpace,
+  getDiskFreeSpace,
+  ModularResourceError,
+  RESERVED_DEVICE_REG,
+  isReservedDeviceName
+} from './plugin-dir-validator'
+import type {
+  DirRuntimePhase,
+  PluginDirErrorCode,
+  PluginDirInfo,
+  ValidatePluginDirResult
+} from '@firefly/types/config-types'
 
-export type { VerifiedDownloadResult }
+export {
+  validatePluginDirectory,
+  probeDirectoryWritableAndSpace,
+  getDiskFreeSpace,
+  ModularResourceError,
+  RESERVED_DEVICE_REG,
+  isReservedDeviceName
+}
+export type {
+  VerifiedDownloadResult,
+  DirRuntimePhase,
+  PluginDirErrorCode,
+  PluginDirInfo,
+  ValidatePluginDirResult
+}
 
 export interface CatalogResourceSpec {
   resource_id: string
@@ -232,6 +260,21 @@ export interface IModularResourceService {
     archivePath: string,
     options?: { rootPublicKey?: string }
   ): Promise<BuiltinModuleView>
+
+  /** 获取当前进程内存生效的插件根目录 (IN-01) */
+  getPluginsRootDir(): string
+
+  /** 获取持久化配置中已提交生效的插件根目录 */
+  getCommittedPluginsRootDir(): string
+
+  /** 获取当前目录运行态相位 */
+  getDirRuntimePhase(): DirRuntimePhase
+
+  /** 校验候选插件存储目录合法性 */
+  validatePluginDir(targetPath: string): Promise<ValidatePluginDirResult>
+
+  /** 获取插件目录运行态信息与诊断 */
+  getPluginDirInfo(): Promise<PluginDirInfo>
 }
 
 /**
@@ -575,6 +618,11 @@ export class ModularResourceService implements IModularResourceService {
   private verificationPromises = new Map<string, Promise<boolean>>()
   public readonly sourceRouter: DualTrackSourceRouter = new DualTrackSourceRouter()
 
+  private effectivePluginsRootDir: string | null = null
+  private dirRuntimePhase: DirRuntimePhase = 'STABLE'
+  private cachedUsedBytes: number | null = null
+  private lastUsedBytesCalculatedAt = 0
+
   constructor(options?: ModularResourceServiceOptions) {
     this.customDb = options?.db ?? null
     this.customBaseDir = options?.baseDir ?? null
@@ -606,7 +654,7 @@ export class ModularResourceService implements IModularResourceService {
     return ModularResourceService.instance
   }
 
-  private getDb(): Database {
+  public getDb(): Database {
     if (this.customDb) return this.customDb
     const { databaseService } = require('../database/database-service')
     if (!databaseService?.db) {
@@ -615,11 +663,11 @@ export class ModularResourceService implements IModularResourceService {
     return databaseService.db
   }
 
-  private getDao(): ModularResourceDao {
+  public getDao(): ModularResourceDao {
     return new ModularResourceDao(this.getDb())
   }
 
-  private getBaseDir(): string {
+  public getBaseDir(): string {
     if (this.customBaseDir) return this.customBaseDir
     try {
       return electronApp.getPath('userData')
@@ -629,13 +677,175 @@ export class ModularResourceService implements IModularResourceService {
   }
 
   /**
-   * 将相对路径解析为基于 baseDir 的绝对物理路径
+   * 当前进程内存生效插件根目录 (IN-01: 生命周期内恒定不变，直至重启)
+   */
+  public getPluginsRootDir(): string {
+    if (this.effectivePluginsRootDir) {
+      return this.effectivePluginsRootDir
+    }
+
+    // 优先读取持久化配置
+    let committedPath: string | undefined
+    try {
+      const { ConfigOrchestrator } = require('../../config/config-orchestrator')
+      committedPath = ConfigOrchestrator.getInstance().getValue<string>('PLUGIN_MODULES_PATH')
+    } catch {
+      // 容错
+    }
+
+    if (committedPath && typeof committedPath === 'string' && committedPath.trim()) {
+      this.effectivePluginsRootDir = path.resolve(committedPath.trim())
+    } else {
+      this.effectivePluginsRootDir = path.join(this.getBaseDir(), 'modules')
+    }
+
+    return this.effectivePluginsRootDir
+  }
+
+  /**
+   * 测试接缝：重置或覆盖当前运行态生效根目录
+   */
+  public setPluginsRootDirForTesting(dir: string | null): void {
+    this.effectivePluginsRootDir = dir ? path.resolve(dir) : null
+  }
+
+  /**
+   * 获取持久化配置中已提交的新根目录
+   */
+  public getCommittedPluginsRootDir(): string {
+    try {
+      const { ConfigOrchestrator } = require('../../config/config-orchestrator')
+      const val = ConfigOrchestrator.getInstance().getValue<string>('PLUGIN_MODULES_PATH')
+      if (val && typeof val === 'string' && val.trim()) {
+        return path.resolve(val.trim())
+      }
+    } catch {}
+    return this.getPluginsRootDir()
+  }
+
+  /**
+   * 获取当前运行态相位
+   */
+  public getDirRuntimePhase(): DirRuntimePhase {
+    return this.dirRuntimePhase
+  }
+
+  /**
+   * 设置运行态相位
+   */
+  public setDirRuntimePhase(phase: DirRuntimePhase): void {
+    this.dirRuntimePhase = phase
+  }
+
+  /**
+   * 计算当前生效插件目录下已就绪模块的真实磁盘占用
+   */
+  public async calculateCurrentDirUsedBytes(forceRefresh = false): Promise<number> {
+    const now = Date.now()
+    if (
+      !forceRefresh &&
+      this.cachedUsedBytes !== null &&
+      now - this.lastUsedBytesCalculatedAt < 10000
+    ) {
+      return this.cachedUsedBytes
+    }
+
+    let totalBytes = 0
+    const sharedDir = path.join(this.getPluginsRootDir(), '_shared')
+    if (fs.existsSync(sharedDir)) {
+      try {
+        const entries = fs.readdirSync(sharedDir, { withFileTypes: true })
+        for (const entry of entries) {
+          if (!entry.isDirectory()) continue
+          const moduleDir = path.join(sharedDir, entry.name)
+          const files = fs.readdirSync(moduleDir)
+          const hasReady = files.some(f => f.startsWith('.ready-') && f.endsWith('.json'))
+          if (!hasReady) continue
+
+          const calculateDir = (dir: string): void => {
+            const list = fs.readdirSync(dir, { withFileTypes: true })
+            for (const item of list) {
+              const full = path.join(dir, item.name)
+              if (item.isDirectory()) {
+                calculateDir(full)
+              } else if (item.isFile()) {
+                try {
+                  totalBytes += fs.statSync(full).size
+                } catch {}
+              }
+            }
+          }
+          calculateDir(moduleDir)
+        }
+      } catch {}
+    }
+
+    this.cachedUsedBytes = totalBytes
+    this.lastUsedBytesCalculatedAt = now
+    return totalBytes
+  }
+
+  /**
+   * 校验候选插件存储目录合法性
+   */
+  public async validatePluginDir(targetPath: string): Promise<ValidatePluginDirResult> {
+    const currentUsedBytes = await this.calculateCurrentDirUsedBytes()
+    const sharedDir = path.join(this.getPluginsRootDir(), '_shared')
+    let installedIds: string[] = []
+    if (fs.existsSync(sharedDir)) {
+      try {
+        const entries = fs.readdirSync(sharedDir, { withFileTypes: true })
+        installedIds = entries
+          .filter(e => e.isDirectory())
+          .filter(e => {
+            const files = fs.readdirSync(path.join(sharedDir, e.name))
+            return files.some(f => f.startsWith('.ready-') && f.endsWith('.json'))
+          })
+          .map(e => e.name)
+      } catch {}
+    }
+
+    return await validatePluginDirectory(targetPath, this.getPluginsRootDir(), {
+      totalSourceBytes: currentUsedBytes,
+      currentInstalledModuleIds: installedIds
+    })
+  }
+
+  /**
+   * 获取插件目录详细信息与运行态状态
+   */
+  public async getPluginDirInfo(): Promise<PluginDirInfo> {
+    const currentDir = this.getPluginsRootDir()
+    const committedDir = this.getCommittedPluginsRootDir()
+    const defaultDir = path.join(this.getBaseDir(), 'modules')
+    const isDefault = isPathEqual(currentDir, defaultDir)
+    const defaultDirNonAscii = /[^\x20-\x7E]/.test(defaultDir)
+    const usedBytes = await this.calculateCurrentDirUsedBytes()
+    const { freeBytes } = getDiskFreeSpace(currentDir)
+
+    return {
+      currentDir,
+      committedDir,
+      isDefault,
+      defaultDirNonAscii,
+      phase: this.dirRuntimePhase,
+      usedBytes,
+      freeBytes
+    }
+  }
+
+  /**
+   * 将相对路径解析为基于 pluginsRootDir 的绝对物理路径
    */
   public resolvePhysicalPath(targetLocalPath: string): string {
     if (path.isAbsolute(targetLocalPath)) {
       return targetLocalPath
     }
-    return path.join(this.getBaseDir(), targetLocalPath)
+    let cleaned = targetLocalPath.replace(/\\/g, '/')
+    if (cleaned.startsWith('modules/')) {
+      cleaned = cleaned.slice(8)
+    }
+    return path.join(this.getPluginsRootDir(), cleaned)
   }
 
   /**
