@@ -126,13 +126,13 @@ describe('Ticket 05: 原生执行器免杀与设置声明式动态挂载测试',
 
       render(<SystemSettingsDialog />)
 
-      // 基础界面与忽略规则始终存在
+      // 基础界面、生成式引擎与忽略规则始终常驻存在
       expect(screen.getByText('界面与显示偏好')).toBeInTheDocument()
+      expect(screen.getByText('生成式引擎')).toBeInTheDocument()
       expect(screen.getByText('全局排除文件规则')).toBeInTheDocument()
 
       // TTS 处于停用状态，Tab 应当被隐藏
       expect(screen.queryByText('语音合成 (TTS)')).toBeNull()
-      expect(screen.queryByText('开启生成式引擎')).toBeNull()
     })
 
     it('激活 TTS 插件后，系统设置动态挂载对应 Tab', () => {

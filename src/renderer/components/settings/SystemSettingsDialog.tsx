@@ -87,9 +87,10 @@ export const SystemSettingsDialog: React.FC = () => {
     const activeModules = modules.filter(m => m.install_state === 'active')
 
     return all.filter(category => {
-      // 基础界面、全系统忽略规则与对外接口为内置常驻项
+      // 基础界面、生成式引擎、全系统忽略规则与对外接口为内置常驻项
       if (
         category.id === SettingsCategory.INTERFACE ||
+        category.id === SettingsCategory.AI_ENGINE_CONFIG ||
         category.id === SettingsCategory.ANALYSIS_IGNORE_RULES ||
         category.id === SettingsCategory.EXTERNAL_API
       ) {
@@ -102,14 +103,6 @@ export const SystemSettingsDialog: React.FC = () => {
             m.contributes?.settings?.componentId === 'tts' ||
             m.capability_slot === 'voice_tts' ||
             m.id === 'tts_moss_onnx'
-        )
-      }
-      // 高级 AI 引擎：若对应插件未激活则自动隐藏
-      if (category.id === SettingsCategory.AI_ENGINE_CONFIG) {
-        return activeModules.some(
-          m =>
-            m.contributes?.settings?.componentId === 'ai_engine_config' ||
-            m.capability_slot === 'ai_engine'
         )
       }
       return true

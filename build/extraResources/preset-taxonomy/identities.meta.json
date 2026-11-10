@@ -100,7 +100,11 @@
                 "桌面急救",
                 "Desktop"
               ],
-              "task_tags": ["omw.00288234.n", "builtin.archive", "builtin.document"],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.archive",
+                "builtin.document"
+              ],
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_desktop_classic_classification",
@@ -146,9 +150,16 @@
                 "清理下载",
                 "浏览器下载"
               ],
-              "task_tags": ["omw.00288234.n", "builtin.archive", "builtin.software"],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.archive",
+                "builtin.software"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_downloads_triage", "tpl_para_universal"],
+              "associated_template_ids": [
+                "tpl_downloads_triage",
+                "tpl_para_universal"
+              ],
               "domain_id": "domain_universal_cleanup",
               "category_id": "cat_universal_triage"
             },
@@ -189,7 +200,11 @@
                 "Log",
                 "Dump"
               ],
-              "task_tags": ["omw.00288234.n", "builtin.archive", "builtin.software"],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.archive",
+                "builtin.software"
+              ],
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_system_cache_appdata_vault",
@@ -263,9 +278,16 @@
                 "微信传输",
                 "未归类文件"
               ],
-              "task_tags": ["omw.00288234.n", "builtin.archive", "builtin.document"],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.archive",
+                "builtin.document"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_inbox_staging_universal", "tpl_johnny_decimal"],
+              "associated_template_ids": [
+                "tpl_inbox_staging_universal",
+                "tpl_johnny_decimal"
+              ],
               "domain_id": "domain_universal_cleanup",
               "category_id": "cat_staging_and_transfer"
             },
@@ -312,7 +334,10 @@
                 "builtin.image"
               ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_chat_software_vault", "tpl_inbox_staging_universal"],
+              "associated_template_ids": [
+                "tpl_chat_software_vault",
+                "tpl_inbox_staging_universal"
+              ],
               "domain_id": "domain_universal_cleanup",
               "category_id": "cat_staging_and_transfer"
             },
@@ -353,7 +378,12 @@
                 "多端协同",
                 "QuickShare"
               ],
-              "task_tags": ["omw.00288234.n", "builtin.image", "builtin.audio", "builtin.document"],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.image",
+                "builtin.audio",
+                "builtin.document"
+              ],
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_cross_device_transfer_vault",
@@ -428,7 +458,11 @@
                 "屏幕录制",
                 "截图"
               ],
-              "task_tags": ["omw.06613686.n", "builtin.image", "builtin.video"],
+              "task_tags": [
+                "omw.06613686.n",
+                "builtin.image",
+                "builtin.video"
+              ],
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_screenshots_screenrecord_vault",
@@ -473,9 +507,16 @@
                 "零碎文档",
                 "未整理草稿"
               ],
-              "task_tags": ["omw.00288234.n", "builtin.document", "builtin.document_sheet"],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.document",
+                "builtin.document_sheet"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_scratchpad_drafts_vault", "tpl_para_universal"],
+              "associated_template_ids": [
+                "tpl_scratchpad_drafts_vault",
+                "tpl_para_universal"
+              ],
               "domain_id": "domain_universal_cleanup",
               "category_id": "cat_scratchpad_and_captures"
             }
@@ -675,7 +716,11 @@
                 "Documents",
                 "工作总结"
               ],
-              "task_tags": ["omw.00288234.n", "builtin.document", "builtin.document_sheet"],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.document",
+                "builtin.document_sheet"
+              ],
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_docs_office_vault",
@@ -721,9 +766,16 @@
                 "学术文档",
                 "教材课件"
               ],
-              "task_tags": ["omw.00288234.n", "builtin.document", "builtin.archive"],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.document",
+                "builtin.archive"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_docs_study_research_vault", "tpl_academic_thesis"],
+              "associated_template_ids": [
+                "tpl_docs_study_research_vault",
+                "tpl_academic_thesis"
+              ],
               "domain_id": "domain_universal_cleanup",
               "category_id": "cat_documents_library"
             },
@@ -764,9 +816,16 @@
                 "电子发票",
                 "报销单据"
               ],
-              "task_tags": ["omw.00288234.n", "builtin.document", "builtin.document_sheet"],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.document",
+                "builtin.document_sheet"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_finance_accounting", "tpl_household_dossier_vault"],
+              "associated_template_ids": [
+                "tpl_finance_accounting",
+                "tpl_household_dossier_vault"
+              ],
               "domain_id": "domain_universal_cleanup",
               "category_id": "cat_documents_library"
             }
@@ -836,9 +895,15 @@
                 "Pictures",
                 "日常相册"
               ],
-              "task_tags": ["omw.03931044.n", "builtin.image"],
+              "task_tags": [
+                "omw.03931044.n",
+                "builtin.image"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_photography_pipeline", "tpl_family_household"],
+              "associated_template_ids": [
+                "tpl_photography_pipeline",
+                "tpl_family_household"
+              ],
               "domain_id": "domain_universal_cleanup",
               "category_id": "cat_pictures_library"
             },
@@ -879,9 +944,15 @@
                 "海报素材",
                 "高清壁纸"
               ],
-              "task_tags": ["omw.03931044.n", "builtin.image"],
+              "task_tags": [
+                "omw.03931044.n",
+                "builtin.image"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_graphic_brand_design", "tpl_illustration_cg_art"],
+              "associated_template_ids": [
+                "tpl_graphic_brand_design",
+                "tpl_illustration_cg_art"
+              ],
               "domain_id": "domain_universal_cleanup",
               "category_id": "cat_pictures_library"
             }
@@ -951,7 +1022,10 @@
                 "Music",
                 "Hi-Res"
               ],
-              "task_tags": ["omw.00543233.n", "builtin.audio"],
+              "task_tags": [
+                "omw.00543233.n",
+                "builtin.audio"
+              ],
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_home_theater_audiophile",
@@ -997,7 +1071,10 @@
                 "录音笔",
                 "课堂音频"
               ],
-              "task_tags": ["omw.00543233.n", "builtin.audio"],
+              "task_tags": [
+                "omw.00543233.n",
+                "builtin.audio"
+              ],
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_audio_sound_engineering",
@@ -1072,7 +1149,10 @@
                 "Videos",
                 "剧集合集"
               ],
-              "task_tags": ["omw.06613686.n", "builtin.video"],
+              "task_tags": [
+                "omw.06613686.n",
+                "builtin.video"
+              ],
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_media_collector_vault",
@@ -1118,9 +1198,15 @@
                 "视频成片",
                 "B-roll"
               ],
-              "task_tags": ["omw.06613686.n", "builtin.video"],
+              "task_tags": [
+                "omw.06613686.n",
+                "builtin.video"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_video_production", "tpl_newmedia_content"],
+              "associated_template_ids": [
+                "tpl_video_production",
+                "tpl_newmedia_content"
+              ],
               "domain_id": "domain_universal_cleanup",
               "category_id": "cat_videos_library"
             }
@@ -1218,9 +1304,16 @@
                 "打游戏的",
                 "Gamer"
               ],
-              "task_tags": ["omw.00486858.n", "builtin.media", "builtin.archive"],
+              "task_tags": [
+                "omw.00486858.n",
+                "builtin.media",
+                "builtin.archive"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_gamer_library", "tpl_para_universal"],
+              "associated_template_ids": [
+                "tpl_gamer_library",
+                "tpl_para_universal"
+              ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_gaming"
             },
@@ -1251,10 +1344,23 @@
                 "ru-RU": "Хранит сборки ПК, обновления BIOS, драйверы и макросы периферии, результаты бенчмарков и электронные гарантии",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات tech_geek بشكل دقيق واحترافي"
               },
-              "aliases": ["装机极客", "数码发烧友", "硬件玩家", "电脑DIY", "外设玩家"],
-              "task_tags": ["omw.03082974.n", "builtin.configuration", "builtin.archive"],
+              "aliases": [
+                "装机极客",
+                "数码发烧友",
+                "硬件玩家",
+                "电脑DIY",
+                "外设玩家"
+              ],
+              "task_tags": [
+                "omw.03082974.n",
+                "builtin.configuration",
+                "builtin.archive"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_pc_hardware_gear", "tpl_para_universal"],
+              "associated_template_ids": [
+                "tpl_pc_hardware_gear",
+                "tpl_para_universal"
+              ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_gaming"
             }
@@ -1323,9 +1429,16 @@
                 "小说迷",
                 "电子书藏家"
               ],
-              "task_tags": ["omw.03833065.n", "builtin.document", "builtin.archive"],
+              "task_tags": [
+                "omw.03833065.n",
+                "builtin.document",
+                "builtin.archive"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_novel_reading_library", "tpl_pkm_knowledge_vault"],
+              "associated_template_ids": [
+                "tpl_novel_reading_library",
+                "tpl_pkm_knowledge_vault"
+              ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_reading"
             },
@@ -1356,10 +1469,24 @@
                 "ru-RU": "Следит за сезонными аниме, собирает тома манги в высоком разрешении, иллюстрации с Pixiv, аудиодрамы и мерч",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات acg_fan بشكل دقيق واحترافي"
               },
-              "aliases": ["二次元", "动漫爱好者", "追番党", "漫迷", "ACG爱好者", "宅友"],
-              "task_tags": ["omw.03234306.n", "builtin.media", "builtin.archive"],
+              "aliases": [
+                "二次元",
+                "动漫爱好者",
+                "追番党",
+                "漫迷",
+                "ACG爱好者",
+                "宅友"
+              ],
+              "task_tags": [
+                "omw.03234306.n",
+                "builtin.media",
+                "builtin.archive"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_acg_anime_manga", "tpl_gamer_library"],
+              "associated_template_ids": [
+                "tpl_acg_anime_manga",
+                "tpl_gamer_library"
+              ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_reading"
             }
@@ -1428,9 +1555,16 @@
                 "蓝光原盘",
                 "家庭影院"
               ],
-              "task_tags": ["omw.00543233.n", "builtin.media", "builtin.archive"],
+              "task_tags": [
+                "omw.00543233.n",
+                "builtin.media",
+                "builtin.archive"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_home_theater_audiophile", "tpl_video_production"],
+              "associated_template_ids": [
+                "tpl_home_theater_audiophile",
+                "tpl_video_production"
+              ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_audiovisual"
             },
@@ -1461,10 +1595,23 @@
                 "ru-RU": "Работает с проектами DAW, библиотеками сэмплов OneShot/Loop, вокальными дорожками и мастер-версиями",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات sound_designer بشكل دقيق واحترافي"
               },
-              "aliases": ["音乐制作人", "音频剪辑", "编曲人", "调音师", "声音设计师"],
-              "task_tags": ["omw.00543233.n", "builtin.media", "builtin.design_assets"],
+              "aliases": [
+                "音乐制作人",
+                "音频剪辑",
+                "编曲人",
+                "调音师",
+                "声音设计师"
+              ],
+              "task_tags": [
+                "omw.00543233.n",
+                "builtin.media",
+                "builtin.design_assets"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_audio_sound_engineering", "tpl_video_production"],
+              "associated_template_ids": [
+                "tpl_audio_sound_engineering",
+                "tpl_video_production"
+              ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_audiovisual"
             },
@@ -1495,10 +1642,23 @@
                 "ru-RU": "Снимает влоги, обзоры заведений для Bilibili и Xiaohongshu, черновые монтажи, музыку, звуки и титры",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات vlogger بشكل دقيق واحترافي"
               },
-              "aliases": ["视频创作者", "Vlogger", "博主", "拍视频的", "剪辑师"],
-              "task_tags": ["omw.00543233.n", "builtin.media", "builtin.commercial"],
+              "aliases": [
+                "视频创作者",
+                "Vlogger",
+                "博主",
+                "拍视频的",
+                "剪辑师"
+              ],
+              "task_tags": [
+                "omw.00543233.n",
+                "builtin.media",
+                "builtin.commercial"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_video_production", "tpl_newmedia_content"],
+              "associated_template_ids": [
+                "tpl_video_production",
+                "tpl_newmedia_content"
+              ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_audiovisual"
             },
@@ -1537,9 +1697,16 @@
                 "影音收集",
                 "松鼠症仓储"
               ],
-              "task_tags": ["builtin.video", "builtin.audio", "builtin.archive"],
+              "task_tags": [
+                "builtin.video",
+                "builtin.audio",
+                "builtin.archive"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_media_collector_vault", "tpl_video_production"],
+              "associated_template_ids": [
+                "tpl_media_collector_vault",
+                "tpl_video_production"
+              ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_audiovisual"
             }
@@ -1599,10 +1766,22 @@
                 "ru-RU": "Занимается техникой и оптикой, отбором RAW-снимков, пресетами Lightroom и ретушью в высоком разрешении",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات photographer بشكل دقيق واحترافي"
               },
-              "aliases": ["摄影师", "摄影爱好者", "拍照片的", "单反玩家"],
-              "task_tags": ["omw.03234306.n", "builtin.media", "builtin.design_assets"],
+              "aliases": [
+                "摄影师",
+                "摄影爱好者",
+                "拍照片的",
+                "单反玩家"
+              ],
+              "task_tags": [
+                "omw.03234306.n",
+                "builtin.media",
+                "builtin.design_assets"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_photography_pipeline", "tpl_para_universal"],
+              "associated_template_ids": [
+                "tpl_photography_pipeline",
+                "tpl_para_universal"
+              ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_travel_photo"
             },
@@ -1633,10 +1812,23 @@
                 "ru-RU": "Планирует автопутешествия и походы, хранит билеты и брони, фото по маршруту, GPX-треки и путевые заметки",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات traveler بشكل دقيق واحترافي"
               },
-              "aliases": ["旅行家", "驴友", "自驾游玩家", "户外徒步", "背包客"],
-              "task_tags": ["omw.00288234.n", "builtin.media", "builtin.document"],
+              "aliases": [
+                "旅行家",
+                "驴友",
+                "自驾游玩家",
+                "户外徒步",
+                "背包客"
+              ],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.media",
+                "builtin.document"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_travel_outdoor_journey", "tpl_photography_pipeline"],
+              "associated_template_ids": [
+                "tpl_travel_outdoor_journey",
+                "tpl_photography_pipeline"
+              ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_travel_photo"
             }
@@ -1696,10 +1888,23 @@
                 "ru-RU": "Ведёт коммунальные счета, страховки, документы на жильё и автомобиль, расходы на ремонт и свидетельства детей",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات homemaker بشكل دقيق واحترافي"
               },
-              "aliases": ["家庭主理人", "家庭主妇", "家庭管家", "生活整理", "居家管理"],
-              "task_tags": ["omw.00288234.n", "builtin.document", "builtin.finance"],
+              "aliases": [
+                "家庭主理人",
+                "家庭主妇",
+                "家庭管家",
+                "生活整理",
+                "居家管理"
+              ],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.document",
+                "builtin.finance"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_family_household", "tpl_johnny_decimal"],
+              "associated_template_ids": [
+                "tpl_family_household",
+                "tpl_johnny_decimal"
+              ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_family_home"
             },
@@ -1730,10 +1935,23 @@
                 "ru-RU": "Хранит прививочные карты кошек и собак, результаты анализов, фотографии питомцев и обзоры кормов",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات pet_owner بشكل دقيق واحترافي"
               },
-              "aliases": ["铲屎官", "养宠达人", "养猫", "养狗", "宠物主人"],
-              "task_tags": ["omw.00288234.n", "builtin.media", "builtin.document"],
+              "aliases": [
+                "铲屎官",
+                "养宠达人",
+                "养猫",
+                "养狗",
+                "宠物主人"
+              ],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.media",
+                "builtin.document"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_pet_care_diary", "tpl_family_household"],
+              "associated_template_ids": [
+                "tpl_pet_care_diary",
+                "tpl_family_household"
+              ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_family_home"
             },
@@ -1764,10 +1982,24 @@
                 "ru-RU": "Собирает домашние рецепты, пропорции для выпечки, списки полезных супов, авторские напитки и обзоры заведений",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات cooking_foodie بشكل دقيق واحترافي"
               },
-              "aliases": ["做饭的", "烹饪美食家", "烘焙达人", "家庭厨神", "菜谱整理", "吃货"],
-              "task_tags": ["omw.00288234.n", "builtin.document", "builtin.media"],
+              "aliases": [
+                "做饭的",
+                "烹饪美食家",
+                "烘焙达人",
+                "家庭厨神",
+                "菜谱整理",
+                "吃货"
+              ],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.document",
+                "builtin.media"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_cooking_recipes_vault", "tpl_family_household"],
+              "associated_template_ids": [
+                "tpl_cooking_recipes_vault",
+                "tpl_family_household"
+              ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_family_home"
             },
@@ -1798,10 +2030,21 @@
                 "ru-RU": "Практикует минимализм, каталогизирует вещи, переводит документы в цифру и ведёт простые чек-листы",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات minimalist بشكل دقيق واحترافي"
               },
-              "aliases": ["收纳达人", "极简主义", "断舍离", "无纸化生活"],
-              "task_tags": ["omw.00288234.n", "builtin.document"],
+              "aliases": [
+                "收纳达人",
+                "极简主义",
+                "断舍离",
+                "无纸化生活"
+              ],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.document"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_family_household", "tpl_para_universal"],
+              "associated_template_ids": [
+                "tpl_family_household",
+                "tpl_para_universal"
+              ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_family_home"
             },
@@ -1832,8 +2075,19 @@
                 "ru-RU": "Оцифровывает семейные архивные фото, хранит медицинские справки, назначения врача и записи о здоровье",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات senior_citizen بشكل دقيق واحترافي"
               },
-              "aliases": ["长辈资料", "老人相册", "看病病历", "戏曲养生", "银发族", "老年生活"],
-              "task_tags": ["builtin.document", "builtin.image", "omw.00288234.n"],
+              "aliases": [
+                "长辈资料",
+                "老人相册",
+                "看病病历",
+                "戏曲养生",
+                "银发族",
+                "老年生活"
+              ],
+              "task_tags": [
+                "builtin.document",
+                "builtin.image",
+                "omw.00288234.n"
+              ],
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_senior_life_archive",
@@ -1869,10 +2123,24 @@
                 "ru-RU": "Надёжно хранит сканы документов, договоры аренды и покупки жилья, полисы, справки соцстраха и счета",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات household_assets بشكل دقيق واحترافي"
               },
-              "aliases": ["个人证件", "家庭资产", "租房合同", "保险保单", "水电缴费", "户口本扫描"],
-              "task_tags": ["builtin.finance", "builtin.document", "omw.00288234.n"],
+              "aliases": [
+                "个人证件",
+                "家庭资产",
+                "租房合同",
+                "保险保单",
+                "水电缴费",
+                "户口本扫描"
+              ],
+              "task_tags": [
+                "builtin.finance",
+                "builtin.document",
+                "omw.00288234.n"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_household_dossier_vault", "tpl_family_household"],
+              "associated_template_ids": [
+                "tpl_household_dossier_vault",
+                "tpl_family_household"
+              ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_family_home"
             }
@@ -1932,10 +2200,23 @@
                 "ru-RU": "Ведёт планы силовых тренировок, дневник питания, данные пульса и состава тела, показатели обследований",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات fitness بشكل دقيق واحترافي"
               },
-              "aliases": ["健身达人", "运动爱好者", "减脂塑形", "跑步达人", "健康生活"],
-              "task_tags": ["omw.00288234.n", "builtin.document", "builtin.archive"],
+              "aliases": [
+                "健身达人",
+                "运动爱好者",
+                "减脂塑形",
+                "跑步达人",
+                "健康生活"
+              ],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.document",
+                "builtin.archive"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_wellness_health_portfolio", "tpl_para_universal"],
+              "associated_template_ids": [
+                "tpl_wellness_health_portfolio",
+                "tpl_para_universal"
+              ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_wellness_growth"
             },
@@ -1966,10 +2247,23 @@
                 "ru-RU": "Строит второй мозг по методу Zettelkasten в Obsidian/Notion, облачные бэкапы, выдержки из литературы и карты знаний",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات digital_hoarder بشكل دقيق واحترافي"
               },
-              "aliases": ["数字仓鼠", "第二大脑", "卡片笔记", "知识管理", "网盘收藏家"],
-              "task_tags": ["omw.00288234.n", "builtin.document", "builtin.archive"],
+              "aliases": [
+                "数字仓鼠",
+                "第二大脑",
+                "卡片笔记",
+                "知识管理",
+                "网盘收藏家"
+              ],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.document",
+                "builtin.archive"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_pkm_knowledge_vault", "tpl_johnny_decimal"],
+              "associated_template_ids": [
+                "tpl_pkm_knowledge_vault",
+                "tpl_johnny_decimal"
+              ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_wellness_growth"
             },
@@ -2000,8 +2294,17 @@
                 "ru-RU": "Ведёт конспекты онлайн-курсов, практику на открытых проектах, решения задач, карту навыков и учебные итоги",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات self_learner بشكل دقيق واحترافي"
               },
-              "aliases": ["自学者", "转码自学", "终身学习", "编程学习"],
-              "task_tags": ["omw.00288234.n", "builtin.code", "builtin.document"],
+              "aliases": [
+                "自学者",
+                "转码自学",
+                "终身学习",
+                "编程学习"
+              ],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.code",
+                "builtin.document"
+              ],
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_code_asset_vault",
@@ -2038,8 +2341,19 @@
                 "ru-RU": "Системно раскладывает домашние задания, материалы онлайн-уроков, разбор ошибок, кружки и портфолио развития",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات k12_student_parent بشكل دقيق واحترافي"
               },
-              "aliases": ["中小学生", "辅导家长", "孩子作业", "家庭辅导", "学生作业", "K12教育"],
-              "task_tags": ["omw.00288234.n", "builtin.document", "builtin.image"],
+              "aliases": [
+                "中小学生",
+                "辅导家长",
+                "孩子作业",
+                "家庭辅导",
+                "学生作业",
+                "K12教育"
+              ],
+              "task_tags": [
+                "omw.00288234.n",
+                "builtin.document",
+                "builtin.image"
+              ],
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_k12_education_vault",
@@ -2133,8 +2447,15 @@
                 "ru-RU": "Пишет код клиентов Web/Electron, собирает UI-компоненты, конфигурации сборки и локальные тесты",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات frontend بشكل دقيق واحترافي"
               },
-              "aliases": ["Web前端", "前端开发", "Client Engineer"],
-              "task_tags": ["builtin.source_code", "builtin.design_assets"],
+              "aliases": [
+                "Web前端",
+                "前端开发",
+                "Client Engineer"
+              ],
+              "task_tags": [
+                "builtin.source_code",
+                "builtin.design_assets"
+              ],
               "external_ids": {
                 "isco": "2514"
               },
@@ -2173,8 +2494,15 @@
                 "ru-RU": "Поддерживает интерфейсы микросервисов, схемы баз данных, оптимизацию под нагрузку и документацию API",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات backend بشكل دقيق واحترافي"
               },
-              "aliases": ["服务端开发", "系统架构师", "Backend Engineer"],
-              "task_tags": ["builtin.source_code", "builtin.document_data"],
+              "aliases": [
+                "服务端开发",
+                "系统架构师",
+                "Backend Engineer"
+              ],
+              "task_tags": [
+                "builtin.source_code",
+                "builtin.document_data"
+              ],
               "external_ids": {
                 "isco": "2512"
               },
@@ -2213,8 +2541,15 @@
                 "ru-RU": "Отвечает за клиент и сервер целиком: самостоятельная разработка, базы данных и непрерывное развёртывание",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات fullstack بشكل دقيق واحترافي"
               },
-              "aliases": ["全栈开发", "独立开发者", "FullStack Developer"],
-              "task_tags": ["builtin.source_code", "builtin.document_data"],
+              "aliases": [
+                "全栈开发",
+                "独立开发者",
+                "FullStack Developer"
+              ],
+              "task_tags": [
+                "builtin.source_code",
+                "builtin.document_data"
+              ],
               "external_ids": {
                 "isco": "2512"
               },
@@ -2253,8 +2588,15 @@
                 "ru-RU": "Разрабатывает нативные и кроссплатформенные приложения iOS/Android, сертификаты, сборки для сторов и логи устройств",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات mobile بشكل دقيق واحترافي"
               },
-              "aliases": ["iOS开发", "Android开发", "Flutter开发"],
-              "task_tags": ["builtin.source_code", "builtin.document_data"],
+              "aliases": [
+                "iOS开发",
+                "Android开发",
+                "Flutter开发"
+              ],
+              "task_tags": [
+                "builtin.source_code",
+                "builtin.document_data"
+              ],
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_code_asset_vault",
@@ -2291,10 +2633,20 @@
                 "ru-RU": "Ведёт манифесты Kubernetes, скрипты CI/CD, настройки мониторинга и алертов, логи резервных копий",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات sre بشكل دقيق واحترافي"
               },
-              "aliases": ["系统管理员", "运维工程师", "DevOps"],
-              "task_tags": ["builtin.source_code", "builtin.document_data"],
+              "aliases": [
+                "系统管理员",
+                "运维工程师",
+                "DevOps"
+              ],
+              "task_tags": [
+                "builtin.source_code",
+                "builtin.document_data"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_cloud_native_sre", "tpl_backend_arch"],
+              "associated_template_ids": [
+                "tpl_cloud_native_sre",
+                "tpl_backend_arch"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_it_dev"
             },
@@ -2325,10 +2677,20 @@
                 "ru-RU": "Пишет тест-кейсы, скрипты автотестов, отчёты об ошибках и метрики нагрузочного тестирования",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات tester بشكل دقيق واحترافي"
               },
-              "aliases": ["软件测试", "QA工程师", "测试专家"],
-              "task_tags": ["builtin.document_data", "builtin.source_code"],
+              "aliases": [
+                "软件测试",
+                "QA工程师",
+                "测试专家"
+              ],
+              "task_tags": [
+                "builtin.document_data",
+                "builtin.source_code"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_qa_testing_asset_vault", "tpl_qa_testing_lifecycle"],
+              "associated_template_ids": [
+                "tpl_qa_testing_asset_vault",
+                "tpl_qa_testing_lifecycle"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_it_dev"
             },
@@ -2359,7 +2721,11 @@
                 "ru-RU": "Ведёт очищенные датасеты, SQL-скрипты, ноутбуки Jupyter, веса моделей и дашборды визуализации",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات analyst بشكل دقيق واحترافي"
               },
-              "aliases": ["数据科学家", "算法工程师", "BI工程师"],
+              "aliases": [
+                "数据科学家",
+                "算法工程师",
+                "BI工程师"
+              ],
               "task_tags": [
                 "builtin.document_data",
                 "builtin.document_sheet",
@@ -2402,7 +2768,12 @@
                 "ru-RU": "Отвечает за веса моделей, скрипты очистки данных, бенчмарки, эксперименты в Jupyter Notebook и дообучение LoRA",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات ai_ml بشكل دقيق واحترافي"
               },
-              "aliases": ["AI工程师", "算法工程师", "大模型研究员", "ML Engineer"],
+              "aliases": [
+                "AI工程师",
+                "算法工程师",
+                "大模型研究员",
+                "ML Engineer"
+              ],
               "task_tags": [
                 "builtin.source_code",
                 "builtin.document_data",
@@ -2411,7 +2782,10 @@
               "external_ids": {
                 "isco": "2511"
               },
-              "associated_template_ids": ["tpl_data_science_analytics", "tpl_backend_arch"],
+              "associated_template_ids": [
+                "tpl_data_science_analytics",
+                "tpl_backend_arch"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_it_dev"
             },
@@ -2442,12 +2816,23 @@
                 "ru-RU": "Разрабатывает прошивки микроконтроллеров (C/C++), схемы и PCB, пакеты данных с датчиков, отладку протоколов",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات embedded بشكل دقيق واحترافي"
               },
-              "aliases": ["单片机工程师", "固件工程师", "硬件开发", "IoT Developer"],
-              "task_tags": ["builtin.source_code", "builtin.document_data"],
+              "aliases": [
+                "单片机工程师",
+                "固件工程师",
+                "硬件开发",
+                "IoT Developer"
+              ],
+              "task_tags": [
+                "builtin.source_code",
+                "builtin.document_data"
+              ],
               "external_ids": {
                 "isco": "2152"
               },
-              "associated_template_ids": ["tpl_embedded_iot_firmware", "tpl_backend_arch"],
+              "associated_template_ids": [
+                "tpl_embedded_iot_firmware",
+                "tpl_backend_arch"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_it_dev"
             }
@@ -2507,12 +2892,22 @@
                 "ru-RU": "Готовит PRD, отчёты о конкурентах, роадмап функций и материалы пользовательских исследований",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات product بشكل دقيق واحترافي"
               },
-              "aliases": ["产品策划", "PRD撰写人", "产品规划师"],
-              "task_tags": ["builtin.document_data", "omw.03234306.n"],
+              "aliases": [
+                "产品策划",
+                "PRD撰写人",
+                "产品规划师"
+              ],
+              "task_tags": [
+                "builtin.document_data",
+                "omw.03234306.n"
+              ],
               "external_ids": {
                 "isco": "2431"
               },
-              "associated_template_ids": ["tpl_pm_product_workflow", "tpl_para_universal"],
+              "associated_template_ids": [
+                "tpl_pm_product_workflow",
+                "tpl_para_universal"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_design_product"
             },
@@ -2543,12 +2938,24 @@
                 "ru-RU": "Проводит глубинные интервью, тесты юзабилити с айтрекингом, карты пути клиента и анализ конкурентов",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات ux بشكل دقيق واحترافي"
               },
-              "aliases": ["UX研究员", "用户研究员", "用研", "User Researcher"],
-              "task_tags": ["builtin.document_data", "omw.03234306.n", "builtin.personal_notes"],
+              "aliases": [
+                "UX研究员",
+                "用户研究员",
+                "用研",
+                "User Researcher"
+              ],
+              "task_tags": [
+                "builtin.document_data",
+                "omw.03234306.n",
+                "builtin.personal_notes"
+              ],
               "external_ids": {
                 "isco": "2432"
               },
-              "associated_template_ids": ["tpl_pm_product_workflow", "tpl_ui_ux_standard"],
+              "associated_template_ids": [
+                "tpl_pm_product_workflow",
+                "tpl_ui_ux_standard"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_design_product"
             },
@@ -2579,13 +2986,25 @@
                 "ru-RU": "Отвечает за гайдлайны интерфейса, атомарную библиотеку компонентов, дизайн-ревью, иконки и прототипы",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات ui بشكل دقيق واحترافي"
               },
-              "aliases": ["界面设计师", "视觉设计师", "Product Designer", "UX Designer"],
-              "task_tags": ["omw.03234306.n", "builtin.design_assets", "builtin.design_draft"],
+              "aliases": [
+                "界面设计师",
+                "视觉设计师",
+                "Product Designer",
+                "UX Designer"
+              ],
+              "task_tags": [
+                "omw.03234306.n",
+                "builtin.design_assets",
+                "builtin.design_draft"
+              ],
               "external_ids": {
                 "isco": "2166",
                 "esco": "http://data.europa.eu/esco/occupation/ui-designer"
               },
-              "associated_template_ids": ["tpl_ui_ux_standard", "tpl_para_universal"],
+              "associated_template_ids": [
+                "tpl_ui_ux_standard",
+                "tpl_para_universal"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_design_product"
             },
@@ -2616,12 +3035,23 @@
                 "ru-RU": "Ведёт брендбук VI, рекламные постеры, буклеты и вывод векторных материалов",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات graphic بشكل دقيق واحترافي"
               },
-              "aliases": ["平面设计师", "品牌设计", "VI设计师"],
-              "task_tags": ["omw.03234306.n", "builtin.design_assets", "builtin.commercial"],
+              "aliases": [
+                "平面设计师",
+                "品牌设计",
+                "VI设计师"
+              ],
+              "task_tags": [
+                "omw.03234306.n",
+                "builtin.design_assets",
+                "builtin.commercial"
+              ],
               "external_ids": {
                 "isco": "2166"
               },
-              "associated_template_ids": ["tpl_graphic_brand_design", "tpl_ui_ux_standard"],
+              "associated_template_ids": [
+                "tpl_graphic_brand_design",
+                "tpl_ui_ux_standard"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_design_product"
             },
@@ -2652,10 +3082,20 @@
                 "ru-RU": "Создаёт коммерческие иллюстрации, многослойные PSD, концепт-арт персонажей и наборы кистей",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات illustrator بشكل دقيق واحترافي"
               },
-              "aliases": ["原画师", "插画师", "二次元画师"],
-              "task_tags": ["omw.03234306.n", "builtin.design_assets"],
+              "aliases": [
+                "原画师",
+                "插画师",
+                "二次元画师"
+              ],
+              "task_tags": [
+                "omw.03234306.n",
+                "builtin.design_assets"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_illustration_cg_art", "tpl_graphic_brand_design"],
+              "associated_template_ids": [
+                "tpl_illustration_cg_art",
+                "tpl_graphic_brand_design"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_design_product"
             },
@@ -2686,10 +3126,20 @@
                 "ru-RU": "Специализируется на моделях C4D/Blender, текстурах, рендере анимации и композитинге света и теней",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات 3d بشكل دقيق واحترافي"
               },
-              "aliases": ["三维设计师", "动态图形师", "C4D设计师"],
-              "task_tags": ["builtin.design_assets", "builtin.video_footage"],
+              "aliases": [
+                "三维设计师",
+                "动态图形师",
+                "C4D设计师"
+              ],
+              "task_tags": [
+                "builtin.design_assets",
+                "builtin.video_footage"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_3d_cg_animation", "tpl_video_production"],
+              "associated_template_ids": [
+                "tpl_3d_cg_animation",
+                "tpl_video_production"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_design_product"
             },
@@ -2720,12 +3170,23 @@
                 "ru-RU": "Отвечает за скетчи корпусов, 3D-моделирование поверхностей (Rhino/SolidWorks), CMF материалов и прототипы",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات industrial بشكل دقيق واحترافي"
               },
-              "aliases": ["工业设计师", "硬件造型师", "CMF设计师", "Industrial Designer"],
-              "task_tags": ["builtin.design_assets", "builtin.design_draft"],
+              "aliases": [
+                "工业设计师",
+                "硬件造型师",
+                "CMF设计师",
+                "Industrial Designer"
+              ],
+              "task_tags": [
+                "builtin.design_assets",
+                "builtin.design_draft"
+              ],
               "external_ids": {
                 "isco": "2163"
               },
-              "associated_template_ids": ["tpl_architectural_cad_design", "tpl_3d_cg_animation"],
+              "associated_template_ids": [
+                "tpl_architectural_cad_design",
+                "tpl_3d_cg_animation"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_design_product"
             }
@@ -2785,8 +3246,15 @@
                 "ru-RU": "Разрабатывает кампании продвижения бренда, спонсорские предложения, планы запусков и отчёты ROI по медиа",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات planner بشكل دقيق واحترافي"
               },
-              "aliases": ["市场策划", "品牌公关", "活动策划"],
-              "task_tags": ["builtin.document_data", "builtin.commercial"],
+              "aliases": [
+                "市场策划",
+                "品牌公关",
+                "活动策划"
+              ],
+              "task_tags": [
+                "builtin.document_data",
+                "builtin.commercial"
+              ],
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_marketing_campaign_imc",
@@ -2822,7 +3290,11 @@
                 "ru-RU": "Готовит посты для аккаунтов, тексты и подборки для Xiaohongshu, сценарии коротких видео, обложки и календарь",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات newmedia بشكل دقيق واحترافي"
               },
-              "aliases": ["新媒体运营", "文案策划", "社群运营"],
+              "aliases": [
+                "新媒体运营",
+                "文案策划",
+                "社群运营"
+              ],
               "task_tags": [
                 "builtin.document_data",
                 "builtin.social_media",
@@ -2863,10 +3335,20 @@
                 "ru-RU": "Ведёт ассортимент магазина, таблицы рекламных кампаний, главные фото и карточки товара, заявки на акции и сверку отправлений",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات ecommerce بشكل دقيق واحترافي"
               },
-              "aliases": ["电商店长", "网店运营", "跨境电商专员"],
-              "task_tags": ["builtin.document_sheet", "builtin.commercial"],
+              "aliases": [
+                "电商店长",
+                "网店运营",
+                "跨境电商专员"
+              ],
+              "task_tags": [
+                "builtin.document_sheet",
+                "builtin.commercial"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_ecommerce_ops", "tpl_cross_border_ops"],
+              "associated_template_ids": [
+                "tpl_ecommerce_ops",
+                "tpl_cross_border_ops"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_marketing_growth"
             },
@@ -2897,7 +3379,12 @@
                 "ru-RU": "Ведёт многоязычные листинги Amazon/TikTok/Shopee, логистику зарубежных складов, комплаенс платформ и таблицы товаров",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات cross_border بشكل دقيق واحترافي"
               },
-              "aliases": ["跨境电商", "亚马逊运营", "海外独立站", "CrossBorder Ecom"],
+              "aliases": [
+                "跨境电商",
+                "亚马逊运营",
+                "海外独立站",
+                "CrossBorder Ecom"
+              ],
               "task_tags": [
                 "builtin.commercial",
                 "builtin.document_sheet",
@@ -2906,7 +3393,10 @@
               "external_ids": {
                 "isco": "3322"
               },
-              "associated_template_ids": ["tpl_cross_border_ops", "tpl_ecommerce_ops"],
+              "associated_template_ids": [
+                "tpl_cross_border_ops",
+                "tpl_ecommerce_ops"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_marketing_growth"
             },
@@ -2937,12 +3427,24 @@
                 "ru-RU": "Готовит скрипты SOP для сообществ, материалы реферальных кампаний, сегментацию VIP-клиентов и разборы касаний",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات private_domain بشكل دقيق واحترافي"
               },
-              "aliases": ["私域运营", "社群管家", "用户运营", "Community Manager"],
-              "task_tags": ["builtin.social_media", "builtin.document_data", "builtin.commercial"],
+              "aliases": [
+                "私域运营",
+                "社群管家",
+                "用户运营",
+                "Community Manager"
+              ],
+              "task_tags": [
+                "builtin.social_media",
+                "builtin.document_data",
+                "builtin.commercial"
+              ],
               "external_ids": {
                 "isco": "2431"
               },
-              "associated_template_ids": ["tpl_marketing_campaign_imc", "tpl_newmedia_content"],
+              "associated_template_ids": [
+                "tpl_marketing_campaign_imc",
+                "tpl_newmedia_content"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_marketing_growth"
             },
@@ -2973,7 +3475,12 @@
                 "ru-RU": "Анализирует спрос по ключевым словам, отчёты ROI рекламных аккаунтов, A/B-тесты лендингов и воронку конверсии",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات sem_seo بشكل دقيق واحترافي"
               },
-              "aliases": ["投放专员", "广告优化师", "SEO优化师", "SEM Specialist"],
+              "aliases": [
+                "投放专员",
+                "广告优化师",
+                "SEO优化师",
+                "SEM Specialist"
+              ],
               "task_tags": [
                 "builtin.document_sheet",
                 "builtin.commercial",
@@ -2982,7 +3489,10 @@
               "external_ids": {
                 "isco": "2431"
               },
-              "associated_template_ids": ["tpl_marketing_campaign_imc", "tpl_cross_border_ops"],
+              "associated_template_ids": [
+                "tpl_marketing_campaign_imc",
+                "tpl_cross_border_ops"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_marketing_growth"
             },
@@ -3013,8 +3523,17 @@
                 "ru-RU": "Ведёт список сдач по проектам, договоры и сверки с клиентами, творческие референсы и портфолио",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات freelance بشكل دقيق واحترافي"
               },
-              "aliases": ["独立创作者", "自由职业者", "个体户", "Solopreneur"],
-              "task_tags": ["omw.03234306.n", "builtin.commercial", "builtin.personal_notes"],
+              "aliases": [
+                "独立创作者",
+                "自由职业者",
+                "个体户",
+                "Solopreneur"
+              ],
+              "task_tags": [
+                "omw.03234306.n",
+                "builtin.commercial",
+                "builtin.personal_notes"
+              ],
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_freelance_business_delivery",
@@ -3050,12 +3569,25 @@
                 "ru-RU": "Пишет поэпизодные планы, биографии персонажей и схемы связей, главы романа, заметки и издательские договоры",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات writer بشكل دقيق واحترافي"
               },
-              "aliases": ["编剧", "作家", "网络作者", "自由撰稿人", "Writer", "Author"],
-              "task_tags": ["builtin.document_data", "builtin.personal_notes"],
+              "aliases": [
+                "编剧",
+                "作家",
+                "网络作者",
+                "自由撰稿人",
+                "Writer",
+                "Author"
+              ],
+              "task_tags": [
+                "builtin.document_data",
+                "builtin.personal_notes"
+              ],
               "external_ids": {
                 "isco": "2641"
               },
-              "associated_template_ids": ["tpl_writing_publishing_pipeline", "tpl_para_universal"],
+              "associated_template_ids": [
+                "tpl_writing_publishing_pipeline",
+                "tpl_para_universal"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_marketing_growth"
             }
@@ -3115,12 +3647,22 @@
                 "ru-RU": "Архивирует счета и авансовые отчёты, месячные P&L, балансы, налоговые декларации и сверки",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات accountant بشكل دقيق واحترافي"
               },
-              "aliases": ["财务主管", "总账会计", "审计专员"],
-              "task_tags": ["builtin.document_sheet", "builtin.finance"],
+              "aliases": [
+                "财务主管",
+                "总账会计",
+                "审计专员"
+              ],
+              "task_tags": [
+                "builtin.document_sheet",
+                "builtin.finance"
+              ],
               "external_ids": {
                 "isco": "2411"
               },
-              "associated_template_ids": ["tpl_finance_accounting", "tpl_johnny_decimal"],
+              "associated_template_ids": [
+                "tpl_finance_accounting",
+                "tpl_johnny_decimal"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_finance_hr_legal"
             },
@@ -3151,10 +3693,20 @@
                 "ru-RU": "Ведёт банковские выписки, корешки чеков и расписок, кассовую книгу и платёжные документы по расходам",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات cashier بشكل دقيق واحترافي"
               },
-              "aliases": ["出纳员", "资金专员", "出纳会计"],
-              "task_tags": ["builtin.finance", "builtin.document_sheet"],
+              "aliases": [
+                "出纳员",
+                "资金专员",
+                "出纳会计"
+              ],
+              "task_tags": [
+                "builtin.finance",
+                "builtin.document_sheet"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_finance_accounting", "tpl_johnny_decimal"],
+              "associated_template_ids": [
+                "tpl_finance_accounting",
+                "tpl_johnny_decimal"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_finance_hr_legal"
             },
@@ -3185,12 +3737,24 @@
                 "ru-RU": "Готовит рабочие документы аудита и выборки, реестры налоговой отчётности, самопроверку контроля и due diligence",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات auditor بشكل دقيق واحترافي"
               },
-              "aliases": ["审计师", "CPA", "税务师", "Auditor"],
-              "task_tags": ["builtin.finance", "builtin.document_sheet", "builtin.document_data"],
+              "aliases": [
+                "审计师",
+                "CPA",
+                "税务师",
+                "Auditor"
+              ],
+              "task_tags": [
+                "builtin.finance",
+                "builtin.document_sheet",
+                "builtin.document_data"
+              ],
               "external_ids": {
                 "isco": "2411"
               },
-              "associated_template_ids": ["tpl_finance_accounting", "tpl_consulting_due_diligence"],
+              "associated_template_ids": [
+                "tpl_finance_accounting",
+                "tpl_consulting_due_diligence"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_finance_hr_legal"
             },
@@ -3221,12 +3785,22 @@
                 "ru-RU": "Ведёт штатное расписание, трудовые договоры, оценки KPI, базу резюме и внутренние регламенты",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات admin بشكل دقيق واحترافي"
               },
-              "aliases": ["人事经理", "HRBP", "行政主管"],
-              "task_tags": ["builtin.document_data", "builtin.hr_legal"],
+              "aliases": [
+                "人事经理",
+                "HRBP",
+                "行政主管"
+              ],
+              "task_tags": [
+                "builtin.document_data",
+                "builtin.hr_legal"
+              ],
               "external_ids": {
                 "isco": "2423"
               },
-              "associated_template_ids": ["tpl_hr_people_operations", "tpl_johnny_decimal"],
+              "associated_template_ids": [
+                "tpl_hr_people_operations",
+                "tpl_johnny_decimal"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_finance_hr_legal"
             },
@@ -3257,10 +3831,20 @@
                 "ru-RU": "Упорядочивает профили вакансий JD, базу резюме, оценочные листы интервью, согласование офферов и документы приёма",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات recruiter بشكل دقيق واحترافي"
               },
-              "aliases": ["招聘专员", "猎头顾问", "招聘HR"],
-              "task_tags": ["builtin.hr_legal", "builtin.document_data"],
+              "aliases": [
+                "招聘专员",
+                "猎头顾问",
+                "招聘HR"
+              ],
+              "task_tags": [
+                "builtin.hr_legal",
+                "builtin.document_data"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_hr_people_operations", "tpl_johnny_decimal"],
+              "associated_template_ids": [
+                "tpl_hr_people_operations",
+                "tpl_johnny_decimal"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_finance_hr_legal"
             },
@@ -3291,10 +3875,20 @@
                 "ru-RU": "Ведёт CRM-базу клиентов, коммерческие соглашения, прайс-листы, тендерные предложения и протоколы встреч",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات bd بشكل دقيق واحترافي"
               },
-              "aliases": ["商务经理", "客户成功经理", "大客户销售"],
-              "task_tags": ["builtin.document_data", "builtin.commercial"],
+              "aliases": [
+                "商务经理",
+                "客户成功经理",
+                "大客户销售"
+              ],
+              "task_tags": [
+                "builtin.document_data",
+                "builtin.commercial"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_sales_pipeline_crm", "tpl_para_universal"],
+              "associated_template_ids": [
+                "tpl_sales_pipeline_crm",
+                "tpl_para_universal"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_finance_hr_legal"
             },
@@ -3325,8 +3919,15 @@
                 "ru-RU": "Готовит и проверяет коммерческие договоры, доказательства прав ИС, памятки по комплаенсу и цепочки доказательств",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات compliance بشكل دقيق واحترافي"
               },
-              "aliases": ["公司法务", "合规顾问", "合同审查员"],
-              "task_tags": ["builtin.document_data", "builtin.hr_legal"],
+              "aliases": [
+                "公司法务",
+                "合规顾问",
+                "合同审查员"
+              ],
+              "task_tags": [
+                "builtin.document_data",
+                "builtin.hr_legal"
+              ],
               "external_ids": {
                 "isco": "2611"
               },
@@ -3364,12 +3965,24 @@
                 "ru-RU": "Ведёт досье гражданских и арбитражных дел, описи доказательств, процессуальные речи и ответы юрсопровождения",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات attorney بشكل دقيق واحترافي"
               },
-              "aliases": ["律师", "法律顾问", "诉讼律师", "Lawyer", "Attorney"],
-              "task_tags": ["builtin.hr_legal", "builtin.document_data"],
+              "aliases": [
+                "律师",
+                "法律顾问",
+                "诉讼律师",
+                "Lawyer",
+                "Attorney"
+              ],
+              "task_tags": [
+                "builtin.hr_legal",
+                "builtin.document_data"
+              ],
               "external_ids": {
                 "isco": "2611"
               },
-              "associated_template_ids": ["tpl_legal_case_dossier", "tpl_johnny_decimal"],
+              "associated_template_ids": [
+                "tpl_legal_case_dossier",
+                "tpl_johnny_decimal"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_finance_hr_legal"
             },
@@ -3400,8 +4013,16 @@
                 "ru-RU": "Готовит заявки на патенты, отчёты о поиске товарных знаков, документы на регистрацию ПО и доказательства нарушений",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات ip_agent بشكل دقيق واحترافي"
               },
-              "aliases": ["专利代理师", "商标代理人", "IP顾问", "Patent Agent"],
-              "task_tags": ["builtin.hr_legal", "builtin.document_data"],
+              "aliases": [
+                "专利代理师",
+                "商标代理人",
+                "IP顾问",
+                "Patent Agent"
+              ],
+              "task_tags": [
+                "builtin.hr_legal",
+                "builtin.document_data"
+              ],
               "external_ids": {
                 "isco": "2612"
               },
@@ -3439,7 +4060,12 @@
                 "ru-RU": "Готовит отраслевые исследования, бизнес-планы BP, интервью по диагностике изменений и презентации для руководства",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات consultant بشكل دقيق واحترافي"
               },
-              "aliases": ["咨询顾问", "战略规划", "行业分析师", "Management Consultant"],
+              "aliases": [
+                "咨询顾问",
+                "战略规划",
+                "行业分析师",
+                "Management Consultant"
+              ],
               "task_tags": [
                 "builtin.document_data",
                 "builtin.document_sheet",
@@ -3448,7 +4074,10 @@
               "external_ids": {
                 "isco": "2421"
               },
-              "associated_template_ids": ["tpl_consulting_due_diligence", "tpl_para_universal"],
+              "associated_template_ids": [
+                "tpl_consulting_due_diligence",
+                "tpl_para_universal"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_finance_hr_legal"
             },
@@ -3479,7 +4108,12 @@
                 "ru-RU": "Ведёт запросы цен поставщиков, рамочные договоры закупки, отчёты входного контроля и оборачиваемость запасов",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات supply_chain بشكل دقيق واحترافي"
               },
-              "aliases": ["采购主管", "供应链经理", "仓储物流", "Procurement Manager"],
+              "aliases": [
+                "采购主管",
+                "供应链经理",
+                "仓储物流",
+                "Procurement Manager"
+              ],
               "task_tags": [
                 "builtin.document_sheet",
                 "builtin.commercial",
@@ -3488,7 +4122,10 @@
               "external_ids": {
                 "isco": "1324"
               },
-              "associated_template_ids": ["tpl_supply_chain_logistics", "tpl_cross_border_ops"],
+              "associated_template_ids": [
+                "tpl_supply_chain_logistics",
+                "tpl_cross_border_ops"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_finance_hr_legal"
             },
@@ -3528,7 +4165,11 @@
                 "打杂文员",
                 "收发报表"
               ],
-              "task_tags": ["builtin.document", "builtin.document_sheet", "builtin.finance"],
+              "task_tags": [
+                "builtin.document",
+                "builtin.document_sheet",
+                "builtin.finance"
+              ],
               "external_ids": {
                 "isco": "4110"
               },
@@ -3595,12 +4236,23 @@
                 "ru-RU": "Ведёт заявки на государственные гранты, учебные программы, записи о руководстве аспирантами и патенты",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات faculty بشكل دقيق واحترافي"
               },
-              "aliases": ["大学教授", "青年学者", "博导", "硕导"],
-              "task_tags": ["builtin.academic_paper", "builtin.document_data"],
+              "aliases": [
+                "大学教授",
+                "青年学者",
+                "博导",
+                "硕导"
+              ],
+              "task_tags": [
+                "builtin.academic_paper",
+                "builtin.document_data"
+              ],
               "external_ids": {
                 "isco": "2310"
               },
-              "associated_template_ids": ["tpl_academic_thesis", "tpl_johnny_decimal"],
+              "associated_template_ids": [
+                "tpl_academic_thesis",
+                "tpl_johnny_decimal"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_education_academic"
             },
@@ -3631,7 +4283,12 @@
                 "ru-RU": "Работает с PDF обзоров литературы, первичными данными экспериментов, статьями LaTeX, слайдами конференций и рецензиями",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات grad بشكل دقيق واحترافي"
               },
-              "aliases": ["研究生", "博士生", "科研人员", "硕士生"],
+              "aliases": [
+                "研究生",
+                "博士生",
+                "科研人员",
+                "硕士生"
+              ],
               "task_tags": [
                 "builtin.academic_paper",
                 "builtin.document_data",
@@ -3640,7 +4297,10 @@
               "external_ids": {
                 "isco": "2310"
               },
-              "associated_template_ids": ["tpl_academic_thesis", "tpl_johnny_decimal"],
+              "associated_template_ids": [
+                "tpl_academic_thesis",
+                "tpl_johnny_decimal"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_education_academic"
             },
@@ -3671,10 +4331,20 @@
                 "ru-RU": "Архивирует материалы семестровых курсов, курсовые работы, отчёты по лабораторным, дела клуба и подготовку к языковым экзаменам",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات undergrad بشكل دقيق واحترافي"
               },
-              "aliases": ["大学生", "在校生", "本科生"],
-              "task_tags": ["builtin.study_material", "builtin.document_data"],
+              "aliases": [
+                "大学生",
+                "在校生",
+                "本科生"
+              ],
+              "task_tags": [
+                "builtin.study_material",
+                "builtin.document_data"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_academic_thesis", "tpl_para_universal"],
+              "associated_template_ids": [
+                "tpl_academic_thesis",
+                "tpl_para_universal"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_education_academic"
             },
@@ -3705,10 +4375,21 @@
                 "ru-RU": "Сортирует варианты экзаменов, карточки с ошибками, конспекты онлайн-курсов и майнд-карты для повторения",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات exam بشكل دقيق واحترافي"
               },
-              "aliases": ["考研党", "考公人", "法考考生", "考证一族"],
-              "task_tags": ["builtin.study_material", "builtin.document_data"],
+              "aliases": [
+                "考研党",
+                "考公人",
+                "法考考生",
+                "考证一族"
+              ],
+              "task_tags": [
+                "builtin.study_material",
+                "builtin.document_data"
+              ],
               "external_ids": {},
-              "associated_template_ids": ["tpl_academic_thesis", "tpl_pkm_knowledge_vault"],
+              "associated_template_ids": [
+                "tpl_academic_thesis",
+                "tpl_pkm_knowledge_vault"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_education_academic"
             },
@@ -3739,12 +4420,23 @@
                 "ru-RU": "Готовит планы уроков, презентации, тесты по разделам, записи классных часов и визитов, архив общения с родителями",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات k12_teacher بشكل دقيق واحترافي"
               },
-              "aliases": ["中小学老师", "班主任", "学科老师", "Teacher"],
-              "task_tags": ["builtin.study_material", "builtin.document_data"],
+              "aliases": [
+                "中小学老师",
+                "班主任",
+                "学科老师",
+                "Teacher"
+              ],
+              "task_tags": [
+                "builtin.study_material",
+                "builtin.document_data"
+              ],
               "external_ids": {
                 "isco": "2341"
               },
-              "associated_template_ids": ["tpl_teacher_lesson_prep", "tpl_para_universal"],
+              "associated_template_ids": [
+                "tpl_teacher_lesson_prep",
+                "tpl_para_universal"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_education_academic"
             },
@@ -3775,8 +4467,16 @@
                 "ru-RU": "Разрабатывает программы курсов, практические руководства, анкеты по итогам обучения и базу кейсов",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات trainer بشكل دقيق واحترافي"
               },
-              "aliases": ["培训讲师", "内训师", "讲师", "Corporate Trainer"],
-              "task_tags": ["builtin.study_material", "builtin.document_data"],
+              "aliases": [
+                "培训讲师",
+                "内训师",
+                "讲师",
+                "Corporate Trainer"
+              ],
+              "task_tags": [
+                "builtin.study_material",
+                "builtin.document_data"
+              ],
               "external_ids": {
                 "isco": "2424"
               },
@@ -3814,7 +4514,13 @@
                 "ru-RU": "Собирает варианты TOEFL/IELTS, эссе PS/CV/рекомендации, офферы вузов и документы для визы и нотариата",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات study_abroad بشكل دقيق واحترافي"
               },
-              "aliases": ["留学生", "雅思备考", "托福备考", "留学申请", "Applicant"],
+              "aliases": [
+                "留学生",
+                "雅思备考",
+                "托福备考",
+                "留学申请",
+                "Applicant"
+              ],
               "task_tags": [
                 "builtin.study_material",
                 "builtin.document_data",
@@ -3823,7 +4529,10 @@
               "external_ids": {
                 "isco": "2359"
               },
-              "associated_template_ids": ["tpl_study_abroad_application", "tpl_academic_thesis"],
+              "associated_template_ids": [
+                "tpl_study_abroad_application",
+                "tpl_academic_thesis"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_education_academic"
             }
@@ -3883,7 +4592,13 @@
                 "ru-RU": "Ведёт приёмы и обходы, наблюдение пациентов, поиск литературы, разбор анализов и научные темы",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات doctor بشكل دقيق واحترافي"
               },
-              "aliases": ["主治医师", "住院医", "外科医生", "内科医生", "Doctor"],
+              "aliases": [
+                "主治医师",
+                "住院医",
+                "外科医生",
+                "内科医生",
+                "Doctor"
+              ],
               "task_tags": [
                 "builtin.health_data",
                 "builtin.academic_paper",
@@ -3893,7 +4608,10 @@
                 "isco": "2211",
                 "esco": "http://data.europa.eu/esco/occupation/general-practitioner"
               },
-              "associated_template_ids": ["tpl_clinical_medical_records", "tpl_academic_thesis"],
+              "associated_template_ids": [
+                "tpl_clinical_medical_records",
+                "tpl_academic_thesis"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_health_engineering"
             },
@@ -3924,8 +4642,15 @@
                 "ru-RU": "Ведёт журналы передачи смен, листы выполнения назначений, материалы для пациентов и записи по инфекционному контролю",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات nurse بشكل دقيق واحترافي"
               },
-              "aliases": ["护士长", "责任护士", "Nurse"],
-              "task_tags": ["builtin.health_data", "builtin.document_data"],
+              "aliases": [
+                "护士长",
+                "责任护士",
+                "Nurse"
+              ],
+              "task_tags": [
+                "builtin.health_data",
+                "builtin.document_data"
+              ],
               "external_ids": {
                 "isco": "2221"
               },
@@ -3963,7 +4688,12 @@
                 "ru-RU": "Хранит карточки консультаций, отчёты по шкалам оценки, записи супервизии и планы терапии",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات psychologist بشكل دقيق واحترافي"
               },
-              "aliases": ["心理医生", "心理治疗师", "Therapist", "Counselor"],
+              "aliases": [
+                "心理医生",
+                "心理治疗师",
+                "Therapist",
+                "Counselor"
+              ],
               "task_tags": [
                 "builtin.health_data",
                 "builtin.personal_notes",
@@ -4006,7 +4736,12 @@
                 "ru-RU": "Составляет планы питания, отчёты по составу тела, программы коррекции при хронических болезнях и карты клиентов",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات nutritionist بشكل دقيق واحترافي"
               },
-              "aliases": ["营养师", "健康顾问", "Dietitian", "Nutritionist"],
+              "aliases": [
+                "营养师",
+                "健康顾问",
+                "Dietitian",
+                "Nutritionist"
+              ],
               "task_tags": [
                 "builtin.health_data",
                 "builtin.document_sheet",
@@ -4049,7 +4784,12 @@
                 "ru-RU": "Ведёт чертежи CAD, модели BIM, рендеры визуализаций, рабочую документацию и ведомости материалов",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات architect بشكل دقيق واحترافي"
               },
-              "aliases": ["空间设计师", "室内设计师", "方案主创", "Architect"],
+              "aliases": [
+                "空间设计师",
+                "室内设计师",
+                "方案主创",
+                "Architect"
+              ],
               "task_tags": [
                 "builtin.design_assets",
                 "builtin.document_data",
@@ -4058,7 +4798,10 @@
               "external_ids": {
                 "isco": "2161"
               },
-              "associated_template_ids": ["tpl_architectural_cad_design", "tpl_para_universal"],
+              "associated_template_ids": [
+                "tpl_architectural_cad_design",
+                "tpl_para_universal"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_health_engineering"
             },
@@ -4089,12 +4832,23 @@
                 "ru-RU": "Ведёт расчёты несущих конструкций, сметы и ведомости объёмов, надзор на площадке и архив приёмки",
                 "ar-EG": "إدارة وتنظيم وتصنيف ملفات civil_engineer بشكل دقيق واحترافي"
               },
-              "aliases": ["结构工程师", "造价工程师", "监理工程师"],
-              "task_tags": ["builtin.document_sheet", "builtin.document_data", "builtin.finance"],
+              "aliases": [
+                "结构工程师",
+                "造价工程师",
+                "监理工程师"
+              ],
+              "task_tags": [
+                "builtin.document_sheet",
+                "builtin.document_data",
+                "builtin.finance"
+              ],
               "external_ids": {
                 "isco": "2142"
               },
-              "associated_template_ids": ["tpl_architectural_cad_design", "tpl_johnny_decimal"],
+              "associated_template_ids": [
+                "tpl_architectural_cad_design",
+                "tpl_johnny_decimal"
+              ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_health_engineering"
             }
@@ -4141,7 +4895,11 @@
         "桌面急救",
         "Desktop"
       ],
-      "task_tags": ["omw.00288234.n", "builtin.archive", "builtin.document"],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.archive",
+        "builtin.document"
+      ],
       "external_ids": {},
       "associated_template_ids": [
         "tpl_desktop_classic_classification",
@@ -4187,9 +4945,16 @@
         "清理下载",
         "浏览器下载"
       ],
-      "task_tags": ["omw.00288234.n", "builtin.archive", "builtin.software"],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.archive",
+        "builtin.software"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_downloads_triage", "tpl_para_universal"],
+      "associated_template_ids": [
+        "tpl_downloads_triage",
+        "tpl_para_universal"
+      ],
       "domain_id": "domain_universal_cleanup",
       "category_id": "cat_universal_triage"
     },
@@ -4230,9 +4995,16 @@
         "Log",
         "Dump"
       ],
-      "task_tags": ["omw.00288234.n", "builtin.archive", "builtin.software"],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.archive",
+        "builtin.software"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_system_cache_appdata_vault", "tpl_inbox_staging_universal"],
+      "associated_template_ids": [
+        "tpl_system_cache_appdata_vault",
+        "tpl_inbox_staging_universal"
+      ],
       "domain_id": "domain_universal_cleanup",
       "category_id": "cat_universal_triage"
     },
@@ -4263,10 +5035,25 @@
         "ru-RU": "Сводит в порядок неразобранные смешанные папки, копии с USB-накопителей и файлы, переданные с других устройств",
         "ar-EG": "جمع وتنظيم ملفات الوسائط المتنوعة وعمليات النقل المؤقتة بين الأجهزة"
       },
-      "aliases": ["中转站", "暂存区", "临时文件", "文件周转", "收集箱", "微信传输", "未归类文件"],
-      "task_tags": ["omw.00288234.n", "builtin.archive", "builtin.document"],
+      "aliases": [
+        "中转站",
+        "暂存区",
+        "临时文件",
+        "文件周转",
+        "收集箱",
+        "微信传输",
+        "未归类文件"
+      ],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.archive",
+        "builtin.document"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_inbox_staging_universal", "tpl_johnny_decimal"],
+      "associated_template_ids": [
+        "tpl_inbox_staging_universal",
+        "tpl_johnny_decimal"
+      ],
       "domain_id": "domain_universal_cleanup",
       "category_id": "cat_staging_and_transfer"
     },
@@ -4306,9 +5093,17 @@
         "WeChat Files",
         "群文件"
       ],
-      "task_tags": ["omw.00288234.n", "builtin.document", "builtin.archive", "builtin.image"],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.document",
+        "builtin.archive",
+        "builtin.image"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_chat_software_vault", "tpl_inbox_staging_universal"],
+      "associated_template_ids": [
+        "tpl_chat_software_vault",
+        "tpl_inbox_staging_universal"
+      ],
       "domain_id": "domain_universal_cleanup",
       "category_id": "cat_staging_and_transfer"
     },
@@ -4349,9 +5144,17 @@
         "多端协同",
         "QuickShare"
       ],
-      "task_tags": ["omw.00288234.n", "builtin.image", "builtin.audio", "builtin.document"],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.image",
+        "builtin.audio",
+        "builtin.document"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_cross_device_transfer_vault", "tpl_inbox_staging_universal"],
+      "associated_template_ids": [
+        "tpl_cross_device_transfer_vault",
+        "tpl_inbox_staging_universal"
+      ],
       "domain_id": "domain_universal_cleanup",
       "category_id": "cat_staging_and_transfer"
     },
@@ -4392,7 +5195,11 @@
         "屏幕录制",
         "截图"
       ],
-      "task_tags": ["omw.06613686.n", "builtin.image", "builtin.video"],
+      "task_tags": [
+        "omw.06613686.n",
+        "builtin.image",
+        "builtin.video"
+      ],
       "external_ids": {},
       "associated_template_ids": [
         "tpl_screenshots_screenrecord_vault",
@@ -4437,9 +5244,16 @@
         "零碎文档",
         "未整理草稿"
       ],
-      "task_tags": ["omw.00288234.n", "builtin.document", "builtin.document_sheet"],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.document",
+        "builtin.document_sheet"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_scratchpad_drafts_vault", "tpl_para_universal"],
+      "associated_template_ids": [
+        "tpl_scratchpad_drafts_vault",
+        "tpl_para_universal"
+      ],
       "domain_id": "domain_universal_cleanup",
       "category_id": "cat_scratchpad_and_captures"
     },
@@ -4470,10 +5284,26 @@
         "ru-RU": "Разбирает неразобранные папки, скопированные с чужих флешек, внешних дисков и SD-карт камер, включая документы и утилиты",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات external_media_triage بشكل دقيق واحترافي"
       },
-      "aliases": ["U盘整理", "移动硬盘", "SD卡导入", "外接存储", "移动U盘", "拷贝文件", "USB"],
-      "task_tags": ["omw.00288234.n", "builtin.archive", "builtin.software", "builtin.document"],
+      "aliases": [
+        "U盘整理",
+        "移动硬盘",
+        "SD卡导入",
+        "外接存储",
+        "移动U盘",
+        "拷贝文件",
+        "USB"
+      ],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.archive",
+        "builtin.software",
+        "builtin.document"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_external_storage_vault", "tpl_inbox_staging_universal"],
+      "associated_template_ids": [
+        "tpl_external_storage_vault",
+        "tpl_inbox_staging_universal"
+      ],
       "domain_id": "domain_universal_cleanup",
       "category_id": "cat_external_and_digitization"
     },
@@ -4521,7 +5351,10 @@
         "builtin.document_sheet"
       ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_scanned_documents_vault", "tpl_inbox_staging_universal"],
+      "associated_template_ids": [
+        "tpl_scanned_documents_vault",
+        "tpl_inbox_staging_universal"
+      ],
       "domain_id": "domain_universal_cleanup",
       "category_id": "cat_external_and_digitization"
     },
@@ -4562,9 +5395,16 @@
         "Documents",
         "工作总结"
       ],
-      "task_tags": ["omw.00288234.n", "builtin.document", "builtin.document_sheet"],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.document",
+        "builtin.document_sheet"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_docs_office_vault", "tpl_office_document_dispatch_flow"],
+      "associated_template_ids": [
+        "tpl_docs_office_vault",
+        "tpl_office_document_dispatch_flow"
+      ],
       "domain_id": "domain_universal_cleanup",
       "category_id": "cat_documents_library"
     },
@@ -4605,9 +5445,16 @@
         "学术文档",
         "教材课件"
       ],
-      "task_tags": ["omw.00288234.n", "builtin.document", "builtin.archive"],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.document",
+        "builtin.archive"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_docs_study_research_vault", "tpl_academic_thesis"],
+      "associated_template_ids": [
+        "tpl_docs_study_research_vault",
+        "tpl_academic_thesis"
+      ],
       "domain_id": "domain_universal_cleanup",
       "category_id": "cat_documents_library"
     },
@@ -4648,9 +5495,16 @@
         "电子发票",
         "报销单据"
       ],
-      "task_tags": ["omw.00288234.n", "builtin.document", "builtin.document_sheet"],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.document",
+        "builtin.document_sheet"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_finance_accounting", "tpl_household_dossier_vault"],
+      "associated_template_ids": [
+        "tpl_finance_accounting",
+        "tpl_household_dossier_vault"
+      ],
       "domain_id": "domain_universal_cleanup",
       "category_id": "cat_documents_library"
     },
@@ -4691,9 +5545,15 @@
         "Pictures",
         "日常相册"
       ],
-      "task_tags": ["omw.03931044.n", "builtin.image"],
+      "task_tags": [
+        "omw.03931044.n",
+        "builtin.image"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_photography_pipeline", "tpl_family_household"],
+      "associated_template_ids": [
+        "tpl_photography_pipeline",
+        "tpl_family_household"
+      ],
       "domain_id": "domain_universal_cleanup",
       "category_id": "cat_pictures_library"
     },
@@ -4734,9 +5594,15 @@
         "海报素材",
         "高清壁纸"
       ],
-      "task_tags": ["omw.03931044.n", "builtin.image"],
+      "task_tags": [
+        "omw.03931044.n",
+        "builtin.image"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_graphic_brand_design", "tpl_illustration_cg_art"],
+      "associated_template_ids": [
+        "tpl_graphic_brand_design",
+        "tpl_illustration_cg_art"
+      ],
       "domain_id": "domain_universal_cleanup",
       "category_id": "cat_pictures_library"
     },
@@ -4777,9 +5643,15 @@
         "Music",
         "Hi-Res"
       ],
-      "task_tags": ["omw.00543233.n", "builtin.audio"],
+      "task_tags": [
+        "omw.00543233.n",
+        "builtin.audio"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_home_theater_audiophile", "tpl_media_collector_vault"],
+      "associated_template_ids": [
+        "tpl_home_theater_audiophile",
+        "tpl_media_collector_vault"
+      ],
       "domain_id": "domain_universal_cleanup",
       "category_id": "cat_audio_library"
     },
@@ -4820,9 +5692,15 @@
         "录音笔",
         "课堂音频"
       ],
-      "task_tags": ["omw.00543233.n", "builtin.audio"],
+      "task_tags": [
+        "omw.00543233.n",
+        "builtin.audio"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_audio_sound_engineering", "tpl_inbox_staging_universal"],
+      "associated_template_ids": [
+        "tpl_audio_sound_engineering",
+        "tpl_inbox_staging_universal"
+      ],
       "domain_id": "domain_universal_cleanup",
       "category_id": "cat_audio_library"
     },
@@ -4863,9 +5741,15 @@
         "Videos",
         "剧集合集"
       ],
-      "task_tags": ["omw.06613686.n", "builtin.video"],
+      "task_tags": [
+        "omw.06613686.n",
+        "builtin.video"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_media_collector_vault", "tpl_home_theater_audiophile"],
+      "associated_template_ids": [
+        "tpl_media_collector_vault",
+        "tpl_home_theater_audiophile"
+      ],
       "domain_id": "domain_universal_cleanup",
       "category_id": "cat_videos_library"
     },
@@ -4906,9 +5790,15 @@
         "视频成片",
         "B-roll"
       ],
-      "task_tags": ["omw.06613686.n", "builtin.video"],
+      "task_tags": [
+        "omw.06613686.n",
+        "builtin.video"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_video_production", "tpl_newmedia_content"],
+      "associated_template_ids": [
+        "tpl_video_production",
+        "tpl_newmedia_content"
+      ],
       "domain_id": "domain_universal_cleanup",
       "category_id": "cat_videos_library"
     },
@@ -4939,10 +5829,25 @@
         "ru-RU": "Собирает сохранения, MOD, игровые записи, библиотеку Steam и карты прохождений",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات gamer بشكل دقيق واحترافي"
       },
-      "aliases": ["游戏玩家", "单机玩家", "Steam玩家", "主机玩家", "电竞玩家", "打游戏的", "Gamer"],
-      "task_tags": ["omw.00486858.n", "builtin.media", "builtin.archive"],
+      "aliases": [
+        "游戏玩家",
+        "单机玩家",
+        "Steam玩家",
+        "主机玩家",
+        "电竞玩家",
+        "打游戏的",
+        "Gamer"
+      ],
+      "task_tags": [
+        "omw.00486858.n",
+        "builtin.media",
+        "builtin.archive"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_gamer_library", "tpl_para_universal"],
+      "associated_template_ids": [
+        "tpl_gamer_library",
+        "tpl_para_universal"
+      ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_gaming"
     },
@@ -4973,10 +5878,23 @@
         "ru-RU": "Хранит сборки ПК, обновления BIOS, драйверы и макросы периферии, результаты бенчмарков и электронные гарантии",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات tech_geek بشكل دقيق واحترافي"
       },
-      "aliases": ["装机极客", "数码发烧友", "硬件玩家", "电脑DIY", "外设玩家"],
-      "task_tags": ["omw.03082974.n", "builtin.configuration", "builtin.archive"],
+      "aliases": [
+        "装机极客",
+        "数码发烧友",
+        "硬件玩家",
+        "电脑DIY",
+        "外设玩家"
+      ],
+      "task_tags": [
+        "omw.03082974.n",
+        "builtin.configuration",
+        "builtin.archive"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_pc_hardware_gear", "tpl_para_universal"],
+      "associated_template_ids": [
+        "tpl_pc_hardware_gear",
+        "tpl_para_universal"
+      ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_gaming"
     },
@@ -5007,10 +5925,25 @@
         "ru-RU": "Собирает вычитанные TXT/EPUB, изданные электронные книги, главы сериалов, фанфики и списки рекомендаций",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات novel_reader بشكل دقيق واحترافي"
       },
-      "aliases": ["小说爱好者", "网文读者", "书迷", "追书党", "书友", "小说迷", "电子书藏家"],
-      "task_tags": ["omw.03833065.n", "builtin.document", "builtin.archive"],
+      "aliases": [
+        "小说爱好者",
+        "网文读者",
+        "书迷",
+        "追书党",
+        "书友",
+        "小说迷",
+        "电子书藏家"
+      ],
+      "task_tags": [
+        "omw.03833065.n",
+        "builtin.document",
+        "builtin.archive"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_novel_reading_library", "tpl_pkm_knowledge_vault"],
+      "associated_template_ids": [
+        "tpl_novel_reading_library",
+        "tpl_pkm_knowledge_vault"
+      ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_reading"
     },
@@ -5041,10 +5974,24 @@
         "ru-RU": "Следит за сезонными аниме, собирает тома манги в высоком разрешении, иллюстрации с Pixiv, аудиодрамы и мерч",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات acg_fan بشكل دقيق واحترافي"
       },
-      "aliases": ["二次元", "动漫爱好者", "追番党", "漫迷", "ACG爱好者", "宅友"],
-      "task_tags": ["omw.03234306.n", "builtin.media", "builtin.archive"],
+      "aliases": [
+        "二次元",
+        "动漫爱好者",
+        "追番党",
+        "漫迷",
+        "ACG爱好者",
+        "宅友"
+      ],
+      "task_tags": [
+        "omw.03234306.n",
+        "builtin.media",
+        "builtin.archive"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_acg_anime_manga", "tpl_gamer_library"],
+      "associated_template_ids": [
+        "tpl_acg_anime_manga",
+        "tpl_gamer_library"
+      ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_reading"
     },
@@ -5084,9 +6031,16 @@
         "蓝光原盘",
         "家庭影院"
       ],
-      "task_tags": ["omw.00543233.n", "builtin.media", "builtin.archive"],
+      "task_tags": [
+        "omw.00543233.n",
+        "builtin.media",
+        "builtin.archive"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_home_theater_audiophile", "tpl_video_production"],
+      "associated_template_ids": [
+        "tpl_home_theater_audiophile",
+        "tpl_video_production"
+      ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_audiovisual"
     },
@@ -5117,10 +6071,23 @@
         "ru-RU": "Работает с проектами DAW, библиотеками сэмплов OneShot/Loop, вокальными дорожками и мастер-версиями",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات sound_designer بشكل دقيق واحترافي"
       },
-      "aliases": ["音乐制作人", "音频剪辑", "编曲人", "调音师", "声音设计师"],
-      "task_tags": ["omw.00543233.n", "builtin.media", "builtin.design_assets"],
+      "aliases": [
+        "音乐制作人",
+        "音频剪辑",
+        "编曲人",
+        "调音师",
+        "声音设计师"
+      ],
+      "task_tags": [
+        "omw.00543233.n",
+        "builtin.media",
+        "builtin.design_assets"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_audio_sound_engineering", "tpl_video_production"],
+      "associated_template_ids": [
+        "tpl_audio_sound_engineering",
+        "tpl_video_production"
+      ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_audiovisual"
     },
@@ -5151,10 +6118,23 @@
         "ru-RU": "Снимает влоги, обзоры заведений для Bilibili и Xiaohongshu, черновые монтажи, музыку, звуки и титры",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات vlogger بشكل دقيق واحترافي"
       },
-      "aliases": ["视频创作者", "Vlogger", "博主", "拍视频的", "剪辑师"],
-      "task_tags": ["omw.00543233.n", "builtin.media", "builtin.commercial"],
+      "aliases": [
+        "视频创作者",
+        "Vlogger",
+        "博主",
+        "拍视频的",
+        "剪辑师"
+      ],
+      "task_tags": [
+        "omw.00543233.n",
+        "builtin.media",
+        "builtin.commercial"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_video_production", "tpl_newmedia_content"],
+      "associated_template_ids": [
+        "tpl_video_production",
+        "tpl_newmedia_content"
+      ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_audiovisual"
     },
@@ -5185,10 +6165,24 @@
         "ru-RU": "Раскладывает сериалы по сезонам, HD-фильмы, полные коллекции lossless, электронные книги и наборы утилит",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات collector_hoarder بشكل دقيق واحترافي"
       },
-      "aliases": ["追剧收藏", "电影原盘", "媒体仓储", "无损音乐库", "影音收集", "松鼠症仓储"],
-      "task_tags": ["builtin.video", "builtin.audio", "builtin.archive"],
+      "aliases": [
+        "追剧收藏",
+        "电影原盘",
+        "媒体仓储",
+        "无损音乐库",
+        "影音收集",
+        "松鼠症仓储"
+      ],
+      "task_tags": [
+        "builtin.video",
+        "builtin.audio",
+        "builtin.archive"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_media_collector_vault", "tpl_video_production"],
+      "associated_template_ids": [
+        "tpl_media_collector_vault",
+        "tpl_video_production"
+      ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_audiovisual"
     },
@@ -5219,10 +6213,22 @@
         "ru-RU": "Занимается техникой и оптикой, отбором RAW-снимков, пресетами Lightroom и ретушью в высоком разрешении",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات photographer بشكل دقيق واحترافي"
       },
-      "aliases": ["摄影师", "摄影爱好者", "拍照片的", "单反玩家"],
-      "task_tags": ["omw.03234306.n", "builtin.media", "builtin.design_assets"],
+      "aliases": [
+        "摄影师",
+        "摄影爱好者",
+        "拍照片的",
+        "单反玩家"
+      ],
+      "task_tags": [
+        "omw.03234306.n",
+        "builtin.media",
+        "builtin.design_assets"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_photography_pipeline", "tpl_para_universal"],
+      "associated_template_ids": [
+        "tpl_photography_pipeline",
+        "tpl_para_universal"
+      ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_travel_photo"
     },
@@ -5253,10 +6259,23 @@
         "ru-RU": "Планирует автопутешествия и походы, хранит билеты и брони, фото по маршруту, GPX-треки и путевые заметки",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات traveler بشكل دقيق واحترافي"
       },
-      "aliases": ["旅行家", "驴友", "自驾游玩家", "户外徒步", "背包客"],
-      "task_tags": ["omw.00288234.n", "builtin.media", "builtin.document"],
+      "aliases": [
+        "旅行家",
+        "驴友",
+        "自驾游玩家",
+        "户外徒步",
+        "背包客"
+      ],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.media",
+        "builtin.document"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_travel_outdoor_journey", "tpl_photography_pipeline"],
+      "associated_template_ids": [
+        "tpl_travel_outdoor_journey",
+        "tpl_photography_pipeline"
+      ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_travel_photo"
     },
@@ -5287,10 +6306,23 @@
         "ru-RU": "Ведёт коммунальные счета, страховки, документы на жильё и автомобиль, расходы на ремонт и свидетельства детей",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات homemaker بشكل دقيق واحترافي"
       },
-      "aliases": ["家庭主理人", "家庭主妇", "家庭管家", "生活整理", "居家管理"],
-      "task_tags": ["omw.00288234.n", "builtin.document", "builtin.finance"],
+      "aliases": [
+        "家庭主理人",
+        "家庭主妇",
+        "家庭管家",
+        "生活整理",
+        "居家管理"
+      ],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.document",
+        "builtin.finance"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_family_household", "tpl_johnny_decimal"],
+      "associated_template_ids": [
+        "tpl_family_household",
+        "tpl_johnny_decimal"
+      ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_family_home"
     },
@@ -5321,10 +6353,23 @@
         "ru-RU": "Хранит прививочные карты кошек и собак, результаты анализов, фотографии питомцев и обзоры кормов",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات pet_owner بشكل دقيق واحترافي"
       },
-      "aliases": ["铲屎官", "养宠达人", "养猫", "养狗", "宠物主人"],
-      "task_tags": ["omw.00288234.n", "builtin.media", "builtin.document"],
+      "aliases": [
+        "铲屎官",
+        "养宠达人",
+        "养猫",
+        "养狗",
+        "宠物主人"
+      ],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.media",
+        "builtin.document"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_pet_care_diary", "tpl_family_household"],
+      "associated_template_ids": [
+        "tpl_pet_care_diary",
+        "tpl_family_household"
+      ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_family_home"
     },
@@ -5355,10 +6400,24 @@
         "ru-RU": "Собирает домашние рецепты, пропорции для выпечки, списки полезных супов, авторские напитки и обзоры заведений",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات cooking_foodie بشكل دقيق واحترافي"
       },
-      "aliases": ["做饭的", "烹饪美食家", "烘焙达人", "家庭厨神", "菜谱整理", "吃货"],
-      "task_tags": ["omw.00288234.n", "builtin.document", "builtin.media"],
+      "aliases": [
+        "做饭的",
+        "烹饪美食家",
+        "烘焙达人",
+        "家庭厨神",
+        "菜谱整理",
+        "吃货"
+      ],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.document",
+        "builtin.media"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_cooking_recipes_vault", "tpl_family_household"],
+      "associated_template_ids": [
+        "tpl_cooking_recipes_vault",
+        "tpl_family_household"
+      ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_family_home"
     },
@@ -5389,10 +6448,21 @@
         "ru-RU": "Практикует минимализм, каталогизирует вещи, переводит документы в цифру и ведёт простые чек-листы",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات minimalist بشكل دقيق واحترافي"
       },
-      "aliases": ["收纳达人", "极简主义", "断舍离", "无纸化生活"],
-      "task_tags": ["omw.00288234.n", "builtin.document"],
+      "aliases": [
+        "收纳达人",
+        "极简主义",
+        "断舍离",
+        "无纸化生活"
+      ],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.document"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_family_household", "tpl_para_universal"],
+      "associated_template_ids": [
+        "tpl_family_household",
+        "tpl_para_universal"
+      ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_family_home"
     },
@@ -5423,10 +6493,24 @@
         "ru-RU": "Оцифровывает семейные архивные фото, хранит медицинские справки, назначения врача и записи о здоровье",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات senior_citizen بشكل دقيق واحترافي"
       },
-      "aliases": ["长辈资料", "老人相册", "看病病历", "戏曲养生", "银发族", "老年生活"],
-      "task_tags": ["builtin.document", "builtin.image", "omw.00288234.n"],
+      "aliases": [
+        "长辈资料",
+        "老人相册",
+        "看病病历",
+        "戏曲养生",
+        "银发族",
+        "老年生活"
+      ],
+      "task_tags": [
+        "builtin.document",
+        "builtin.image",
+        "omw.00288234.n"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_senior_life_archive", "tpl_senior_medical_care_pipeline"],
+      "associated_template_ids": [
+        "tpl_senior_life_archive",
+        "tpl_senior_medical_care_pipeline"
+      ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_family_home"
     },
@@ -5457,10 +6541,24 @@
         "ru-RU": "Надёжно хранит сканы документов, договоры аренды и покупки жилья, полисы, справки соцстраха и счета",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات household_assets بشكل دقيق واحترافي"
       },
-      "aliases": ["个人证件", "家庭资产", "租房合同", "保险保单", "水电缴费", "户口本扫描"],
-      "task_tags": ["builtin.finance", "builtin.document", "omw.00288234.n"],
+      "aliases": [
+        "个人证件",
+        "家庭资产",
+        "租房合同",
+        "保险保单",
+        "水电缴费",
+        "户口本扫描"
+      ],
+      "task_tags": [
+        "builtin.finance",
+        "builtin.document",
+        "omw.00288234.n"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_household_dossier_vault", "tpl_family_household"],
+      "associated_template_ids": [
+        "tpl_household_dossier_vault",
+        "tpl_family_household"
+      ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_family_home"
     },
@@ -5491,10 +6589,23 @@
         "ru-RU": "Ведёт планы силовых тренировок, дневник питания, данные пульса и состава тела, показатели обследований",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات fitness بشكل دقيق واحترافي"
       },
-      "aliases": ["健身达人", "运动爱好者", "减脂塑形", "跑步达人", "健康生活"],
-      "task_tags": ["omw.00288234.n", "builtin.document", "builtin.archive"],
+      "aliases": [
+        "健身达人",
+        "运动爱好者",
+        "减脂塑形",
+        "跑步达人",
+        "健康生活"
+      ],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.document",
+        "builtin.archive"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_wellness_health_portfolio", "tpl_para_universal"],
+      "associated_template_ids": [
+        "tpl_wellness_health_portfolio",
+        "tpl_para_universal"
+      ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_wellness_growth"
     },
@@ -5525,10 +6636,23 @@
         "ru-RU": "Строит второй мозг по методу Zettelkasten в Obsidian/Notion, облачные бэкапы, выдержки из литературы и карты знаний",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات digital_hoarder بشكل دقيق واحترافي"
       },
-      "aliases": ["数字仓鼠", "第二大脑", "卡片笔记", "知识管理", "网盘收藏家"],
-      "task_tags": ["omw.00288234.n", "builtin.document", "builtin.archive"],
+      "aliases": [
+        "数字仓鼠",
+        "第二大脑",
+        "卡片笔记",
+        "知识管理",
+        "网盘收藏家"
+      ],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.document",
+        "builtin.archive"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_pkm_knowledge_vault", "tpl_johnny_decimal"],
+      "associated_template_ids": [
+        "tpl_pkm_knowledge_vault",
+        "tpl_johnny_decimal"
+      ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_wellness_growth"
     },
@@ -5559,8 +6683,17 @@
         "ru-RU": "Ведёт конспекты онлайн-курсов, практику на открытых проектах, решения задач, карту навыков и учебные итоги",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات self_learner بشكل دقيق واحترافي"
       },
-      "aliases": ["自学者", "转码自学", "终身学习", "编程学习"],
-      "task_tags": ["omw.00288234.n", "builtin.code", "builtin.document"],
+      "aliases": [
+        "自学者",
+        "转码自学",
+        "终身学习",
+        "编程学习"
+      ],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.code",
+        "builtin.document"
+      ],
       "external_ids": {},
       "associated_template_ids": [
         "tpl_code_asset_vault",
@@ -5597,10 +6730,24 @@
         "ru-RU": "Системно раскладывает домашние задания, материалы онлайн-уроков, разбор ошибок, кружки и портфолио развития",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات k12_student_parent بشكل دقيق واحترافي"
       },
-      "aliases": ["中小学生", "辅导家长", "孩子作业", "家庭辅导", "学生作业", "K12教育"],
-      "task_tags": ["omw.00288234.n", "builtin.document", "builtin.image"],
+      "aliases": [
+        "中小学生",
+        "辅导家长",
+        "孩子作业",
+        "家庭辅导",
+        "学生作业",
+        "K12教育"
+      ],
+      "task_tags": [
+        "omw.00288234.n",
+        "builtin.document",
+        "builtin.image"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_k12_education_vault", "tpl_k12_school_term_pipeline"],
+      "associated_template_ids": [
+        "tpl_k12_education_vault",
+        "tpl_k12_school_term_pipeline"
+      ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_wellness_growth"
     },
@@ -5631,12 +6778,23 @@
         "ru-RU": "Пишет код клиентов Web/Electron, собирает UI-компоненты, конфигурации сборки и локальные тесты",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات frontend بشكل دقيق واحترافي"
       },
-      "aliases": ["Web前端", "前端开发", "Client Engineer"],
-      "task_tags": ["builtin.source_code", "builtin.design_assets"],
+      "aliases": [
+        "Web前端",
+        "前端开发",
+        "Client Engineer"
+      ],
+      "task_tags": [
+        "builtin.source_code",
+        "builtin.design_assets"
+      ],
       "external_ids": {
         "isco": "2514"
       },
-      "associated_template_ids": ["tpl_code_asset_vault", "tpl_frontend_dev", "tpl_para_universal"],
+      "associated_template_ids": [
+        "tpl_code_asset_vault",
+        "tpl_frontend_dev",
+        "tpl_para_universal"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_it_dev"
     },
@@ -5667,12 +6825,23 @@
         "ru-RU": "Поддерживает интерфейсы микросервисов, схемы баз данных, оптимизацию под нагрузку и документацию API",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات backend بشكل دقيق واحترافي"
       },
-      "aliases": ["服务端开发", "系统架构师", "Backend Engineer"],
-      "task_tags": ["builtin.source_code", "builtin.document_data"],
+      "aliases": [
+        "服务端开发",
+        "系统架构师",
+        "Backend Engineer"
+      ],
+      "task_tags": [
+        "builtin.source_code",
+        "builtin.document_data"
+      ],
       "external_ids": {
         "isco": "2512"
       },
-      "associated_template_ids": ["tpl_code_asset_vault", "tpl_backend_arch", "tpl_johnny_decimal"],
+      "associated_template_ids": [
+        "tpl_code_asset_vault",
+        "tpl_backend_arch",
+        "tpl_johnny_decimal"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_it_dev"
     },
@@ -5703,12 +6872,23 @@
         "ru-RU": "Отвечает за клиент и сервер целиком: самостоятельная разработка, базы данных и непрерывное развёртывание",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات fullstack بشكل دقيق واحترافي"
       },
-      "aliases": ["全栈开发", "独立开发者", "FullStack Developer"],
-      "task_tags": ["builtin.source_code", "builtin.document_data"],
+      "aliases": [
+        "全栈开发",
+        "独立开发者",
+        "FullStack Developer"
+      ],
+      "task_tags": [
+        "builtin.source_code",
+        "builtin.document_data"
+      ],
       "external_ids": {
         "isco": "2512"
       },
-      "associated_template_ids": ["tpl_code_asset_vault", "tpl_frontend_dev", "tpl_backend_arch"],
+      "associated_template_ids": [
+        "tpl_code_asset_vault",
+        "tpl_frontend_dev",
+        "tpl_backend_arch"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_it_dev"
     },
@@ -5739,10 +6919,21 @@
         "ru-RU": "Разрабатывает нативные и кроссплатформенные приложения iOS/Android, сертификаты, сборки для сторов и логи устройств",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات mobile بشكل دقيق واحترافي"
       },
-      "aliases": ["iOS开发", "Android开发", "Flutter开发"],
-      "task_tags": ["builtin.source_code", "builtin.document_data"],
+      "aliases": [
+        "iOS开发",
+        "Android开发",
+        "Flutter开发"
+      ],
+      "task_tags": [
+        "builtin.source_code",
+        "builtin.document_data"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_code_asset_vault", "tpl_mobile_app_dev", "tpl_frontend_dev"],
+      "associated_template_ids": [
+        "tpl_code_asset_vault",
+        "tpl_mobile_app_dev",
+        "tpl_frontend_dev"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_it_dev"
     },
@@ -5773,10 +6964,20 @@
         "ru-RU": "Ведёт манифесты Kubernetes, скрипты CI/CD, настройки мониторинга и алертов, логи резервных копий",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات sre بشكل دقيق واحترافي"
       },
-      "aliases": ["系统管理员", "运维工程师", "DevOps"],
-      "task_tags": ["builtin.source_code", "builtin.document_data"],
+      "aliases": [
+        "系统管理员",
+        "运维工程师",
+        "DevOps"
+      ],
+      "task_tags": [
+        "builtin.source_code",
+        "builtin.document_data"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_cloud_native_sre", "tpl_backend_arch"],
+      "associated_template_ids": [
+        "tpl_cloud_native_sre",
+        "tpl_backend_arch"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_it_dev"
     },
@@ -5807,10 +7008,20 @@
         "ru-RU": "Пишет тест-кейсы, скрипты автотестов, отчёты об ошибках и метрики нагрузочного тестирования",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات tester بشكل دقيق واحترافي"
       },
-      "aliases": ["软件测试", "QA工程师", "测试专家"],
-      "task_tags": ["builtin.document_data", "builtin.source_code"],
+      "aliases": [
+        "软件测试",
+        "QA工程师",
+        "测试专家"
+      ],
+      "task_tags": [
+        "builtin.document_data",
+        "builtin.source_code"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_qa_testing_asset_vault", "tpl_qa_testing_lifecycle"],
+      "associated_template_ids": [
+        "tpl_qa_testing_asset_vault",
+        "tpl_qa_testing_lifecycle"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_it_dev"
     },
@@ -5841,12 +7052,23 @@
         "ru-RU": "Ведёт очищенные датасеты, SQL-скрипты, ноутбуки Jupyter, веса моделей и дашборды визуализации",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات analyst بشكل دقيق واحترافي"
       },
-      "aliases": ["数据科学家", "算法工程师", "BI工程师"],
-      "task_tags": ["builtin.document_data", "builtin.document_sheet", "builtin.source_code"],
+      "aliases": [
+        "数据科学家",
+        "算法工程师",
+        "BI工程师"
+      ],
+      "task_tags": [
+        "builtin.document_data",
+        "builtin.document_sheet",
+        "builtin.source_code"
+      ],
       "external_ids": {
         "isco": "2511"
       },
-      "associated_template_ids": ["tpl_data_science_analytics", "tpl_consulting_due_diligence"],
+      "associated_template_ids": [
+        "tpl_data_science_analytics",
+        "tpl_consulting_due_diligence"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_it_dev"
     },
@@ -5877,12 +7099,24 @@
         "ru-RU": "Отвечает за веса моделей, скрипты очистки данных, бенчмарки, эксперименты в Jupyter Notebook и дообучение LoRA",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات ai_ml بشكل دقيق واحترافي"
       },
-      "aliases": ["AI工程师", "算法工程师", "大模型研究员", "ML Engineer"],
-      "task_tags": ["builtin.source_code", "builtin.document_data", "builtin.document_sheet"],
+      "aliases": [
+        "AI工程师",
+        "算法工程师",
+        "大模型研究员",
+        "ML Engineer"
+      ],
+      "task_tags": [
+        "builtin.source_code",
+        "builtin.document_data",
+        "builtin.document_sheet"
+      ],
       "external_ids": {
         "isco": "2511"
       },
-      "associated_template_ids": ["tpl_data_science_analytics", "tpl_backend_arch"],
+      "associated_template_ids": [
+        "tpl_data_science_analytics",
+        "tpl_backend_arch"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_it_dev"
     },
@@ -5913,12 +7147,23 @@
         "ru-RU": "Разрабатывает прошивки микроконтроллеров (C/C++), схемы и PCB, пакеты данных с датчиков, отладку протоколов",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات embedded بشكل دقيق واحترافي"
       },
-      "aliases": ["单片机工程师", "固件工程师", "硬件开发", "IoT Developer"],
-      "task_tags": ["builtin.source_code", "builtin.document_data"],
+      "aliases": [
+        "单片机工程师",
+        "固件工程师",
+        "硬件开发",
+        "IoT Developer"
+      ],
+      "task_tags": [
+        "builtin.source_code",
+        "builtin.document_data"
+      ],
       "external_ids": {
         "isco": "2152"
       },
-      "associated_template_ids": ["tpl_embedded_iot_firmware", "tpl_backend_arch"],
+      "associated_template_ids": [
+        "tpl_embedded_iot_firmware",
+        "tpl_backend_arch"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_it_dev"
     },
@@ -5949,12 +7194,22 @@
         "ru-RU": "Готовит PRD, отчёты о конкурентах, роадмап функций и материалы пользовательских исследований",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات product بشكل دقيق واحترافي"
       },
-      "aliases": ["产品策划", "PRD撰写人", "产品规划师"],
-      "task_tags": ["builtin.document_data", "omw.03234306.n"],
+      "aliases": [
+        "产品策划",
+        "PRD撰写人",
+        "产品规划师"
+      ],
+      "task_tags": [
+        "builtin.document_data",
+        "omw.03234306.n"
+      ],
       "external_ids": {
         "isco": "2431"
       },
-      "associated_template_ids": ["tpl_pm_product_workflow", "tpl_para_universal"],
+      "associated_template_ids": [
+        "tpl_pm_product_workflow",
+        "tpl_para_universal"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_design_product"
     },
@@ -5985,12 +7240,24 @@
         "ru-RU": "Проводит глубинные интервью, тесты юзабилити с айтрекингом, карты пути клиента и анализ конкурентов",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات ux بشكل دقيق واحترافي"
       },
-      "aliases": ["UX研究员", "用户研究员", "用研", "User Researcher"],
-      "task_tags": ["builtin.document_data", "omw.03234306.n", "builtin.personal_notes"],
+      "aliases": [
+        "UX研究员",
+        "用户研究员",
+        "用研",
+        "User Researcher"
+      ],
+      "task_tags": [
+        "builtin.document_data",
+        "omw.03234306.n",
+        "builtin.personal_notes"
+      ],
       "external_ids": {
         "isco": "2432"
       },
-      "associated_template_ids": ["tpl_pm_product_workflow", "tpl_ui_ux_standard"],
+      "associated_template_ids": [
+        "tpl_pm_product_workflow",
+        "tpl_ui_ux_standard"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_design_product"
     },
@@ -6021,13 +7288,25 @@
         "ru-RU": "Отвечает за гайдлайны интерфейса, атомарную библиотеку компонентов, дизайн-ревью, иконки и прототипы",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات ui بشكل دقيق واحترافي"
       },
-      "aliases": ["界面设计师", "视觉设计师", "Product Designer", "UX Designer"],
-      "task_tags": ["omw.03234306.n", "builtin.design_assets", "builtin.design_draft"],
+      "aliases": [
+        "界面设计师",
+        "视觉设计师",
+        "Product Designer",
+        "UX Designer"
+      ],
+      "task_tags": [
+        "omw.03234306.n",
+        "builtin.design_assets",
+        "builtin.design_draft"
+      ],
       "external_ids": {
         "isco": "2166",
         "esco": "http://data.europa.eu/esco/occupation/ui-designer"
       },
-      "associated_template_ids": ["tpl_ui_ux_standard", "tpl_para_universal"],
+      "associated_template_ids": [
+        "tpl_ui_ux_standard",
+        "tpl_para_universal"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_design_product"
     },
@@ -6058,12 +7337,23 @@
         "ru-RU": "Ведёт брендбук VI, рекламные постеры, буклеты и вывод векторных материалов",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات graphic بشكل دقيق واحترافي"
       },
-      "aliases": ["平面设计师", "品牌设计", "VI设计师"],
-      "task_tags": ["omw.03234306.n", "builtin.design_assets", "builtin.commercial"],
+      "aliases": [
+        "平面设计师",
+        "品牌设计",
+        "VI设计师"
+      ],
+      "task_tags": [
+        "omw.03234306.n",
+        "builtin.design_assets",
+        "builtin.commercial"
+      ],
       "external_ids": {
         "isco": "2166"
       },
-      "associated_template_ids": ["tpl_graphic_brand_design", "tpl_ui_ux_standard"],
+      "associated_template_ids": [
+        "tpl_graphic_brand_design",
+        "tpl_ui_ux_standard"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_design_product"
     },
@@ -6094,10 +7384,20 @@
         "ru-RU": "Создаёт коммерческие иллюстрации, многослойные PSD, концепт-арт персонажей и наборы кистей",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات illustrator بشكل دقيق واحترافي"
       },
-      "aliases": ["原画师", "插画师", "二次元画师"],
-      "task_tags": ["omw.03234306.n", "builtin.design_assets"],
+      "aliases": [
+        "原画师",
+        "插画师",
+        "二次元画师"
+      ],
+      "task_tags": [
+        "omw.03234306.n",
+        "builtin.design_assets"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_illustration_cg_art", "tpl_graphic_brand_design"],
+      "associated_template_ids": [
+        "tpl_illustration_cg_art",
+        "tpl_graphic_brand_design"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_design_product"
     },
@@ -6128,10 +7428,20 @@
         "ru-RU": "Специализируется на моделях C4D/Blender, текстурах, рендере анимации и композитинге света и теней",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات 3d بشكل دقيق واحترافي"
       },
-      "aliases": ["三维设计师", "动态图形师", "C4D设计师"],
-      "task_tags": ["builtin.design_assets", "builtin.video_footage"],
+      "aliases": [
+        "三维设计师",
+        "动态图形师",
+        "C4D设计师"
+      ],
+      "task_tags": [
+        "builtin.design_assets",
+        "builtin.video_footage"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_3d_cg_animation", "tpl_video_production"],
+      "associated_template_ids": [
+        "tpl_3d_cg_animation",
+        "tpl_video_production"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_design_product"
     },
@@ -6162,12 +7472,23 @@
         "ru-RU": "Отвечает за скетчи корпусов, 3D-моделирование поверхностей (Rhino/SolidWorks), CMF материалов и прототипы",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات industrial بشكل دقيق واحترافي"
       },
-      "aliases": ["工业设计师", "硬件造型师", "CMF设计师", "Industrial Designer"],
-      "task_tags": ["builtin.design_assets", "builtin.design_draft"],
+      "aliases": [
+        "工业设计师",
+        "硬件造型师",
+        "CMF设计师",
+        "Industrial Designer"
+      ],
+      "task_tags": [
+        "builtin.design_assets",
+        "builtin.design_draft"
+      ],
       "external_ids": {
         "isco": "2163"
       },
-      "associated_template_ids": ["tpl_architectural_cad_design", "tpl_3d_cg_animation"],
+      "associated_template_ids": [
+        "tpl_architectural_cad_design",
+        "tpl_3d_cg_animation"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_design_product"
     },
@@ -6198,10 +7519,20 @@
         "ru-RU": "Разрабатывает кампании продвижения бренда, спонсорские предложения, планы запусков и отчёты ROI по медиа",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات planner بشكل دقيق واحترافي"
       },
-      "aliases": ["市场策划", "品牌公关", "活动策划"],
-      "task_tags": ["builtin.document_data", "builtin.commercial"],
+      "aliases": [
+        "市场策划",
+        "品牌公关",
+        "活动策划"
+      ],
+      "task_tags": [
+        "builtin.document_data",
+        "builtin.commercial"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_marketing_campaign_imc", "tpl_consulting_due_diligence"],
+      "associated_template_ids": [
+        "tpl_marketing_campaign_imc",
+        "tpl_consulting_due_diligence"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_marketing_growth"
     },
@@ -6232,10 +7563,21 @@
         "ru-RU": "Готовит посты для аккаунтов, тексты и подборки для Xiaohongshu, сценарии коротких видео, обложки и календарь",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات newmedia بشكل دقيق واحترافي"
       },
-      "aliases": ["新媒体运营", "文案策划", "社群运营"],
-      "task_tags": ["builtin.document_data", "builtin.social_media", "builtin.design_assets"],
+      "aliases": [
+        "新媒体运营",
+        "文案策划",
+        "社群运营"
+      ],
+      "task_tags": [
+        "builtin.document_data",
+        "builtin.social_media",
+        "builtin.design_assets"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_newmedia_content", "tpl_writing_publishing_pipeline"],
+      "associated_template_ids": [
+        "tpl_newmedia_content",
+        "tpl_writing_publishing_pipeline"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_marketing_growth"
     },
@@ -6266,10 +7608,20 @@
         "ru-RU": "Ведёт ассортимент магазина, таблицы рекламных кампаний, главные фото и карточки товара, заявки на акции и сверку отправлений",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات ecommerce بشكل دقيق واحترافي"
       },
-      "aliases": ["电商店长", "网店运营", "跨境电商专员"],
-      "task_tags": ["builtin.document_sheet", "builtin.commercial"],
+      "aliases": [
+        "电商店长",
+        "网店运营",
+        "跨境电商专员"
+      ],
+      "task_tags": [
+        "builtin.document_sheet",
+        "builtin.commercial"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_ecommerce_ops", "tpl_cross_border_ops"],
+      "associated_template_ids": [
+        "tpl_ecommerce_ops",
+        "tpl_cross_border_ops"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_marketing_growth"
     },
@@ -6300,12 +7652,24 @@
         "ru-RU": "Ведёт многоязычные листинги Amazon/TikTok/Shopee, логистику зарубежных складов, комплаенс платформ и таблицы товаров",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات cross_border بشكل دقيق واحترافي"
       },
-      "aliases": ["跨境电商", "亚马逊运营", "海外独立站", "CrossBorder Ecom"],
-      "task_tags": ["builtin.commercial", "builtin.document_sheet", "builtin.document_data"],
+      "aliases": [
+        "跨境电商",
+        "亚马逊运营",
+        "海外独立站",
+        "CrossBorder Ecom"
+      ],
+      "task_tags": [
+        "builtin.commercial",
+        "builtin.document_sheet",
+        "builtin.document_data"
+      ],
       "external_ids": {
         "isco": "3322"
       },
-      "associated_template_ids": ["tpl_cross_border_ops", "tpl_ecommerce_ops"],
+      "associated_template_ids": [
+        "tpl_cross_border_ops",
+        "tpl_ecommerce_ops"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_marketing_growth"
     },
@@ -6336,12 +7700,24 @@
         "ru-RU": "Готовит скрипты SOP для сообществ, материалы реферальных кампаний, сегментацию VIP-клиентов и разборы касаний",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات private_domain بشكل دقيق واحترافي"
       },
-      "aliases": ["私域运营", "社群管家", "用户运营", "Community Manager"],
-      "task_tags": ["builtin.social_media", "builtin.document_data", "builtin.commercial"],
+      "aliases": [
+        "私域运营",
+        "社群管家",
+        "用户运营",
+        "Community Manager"
+      ],
+      "task_tags": [
+        "builtin.social_media",
+        "builtin.document_data",
+        "builtin.commercial"
+      ],
       "external_ids": {
         "isco": "2431"
       },
-      "associated_template_ids": ["tpl_marketing_campaign_imc", "tpl_newmedia_content"],
+      "associated_template_ids": [
+        "tpl_marketing_campaign_imc",
+        "tpl_newmedia_content"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_marketing_growth"
     },
@@ -6372,12 +7748,24 @@
         "ru-RU": "Анализирует спрос по ключевым словам, отчёты ROI рекламных аккаунтов, A/B-тесты лендингов и воронку конверсии",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات sem_seo بشكل دقيق واحترافي"
       },
-      "aliases": ["投放专员", "广告优化师", "SEO优化师", "SEM Specialist"],
-      "task_tags": ["builtin.document_sheet", "builtin.commercial", "builtin.document_data"],
+      "aliases": [
+        "投放专员",
+        "广告优化师",
+        "SEO优化师",
+        "SEM Specialist"
+      ],
+      "task_tags": [
+        "builtin.document_sheet",
+        "builtin.commercial",
+        "builtin.document_data"
+      ],
       "external_ids": {
         "isco": "2431"
       },
-      "associated_template_ids": ["tpl_marketing_campaign_imc", "tpl_cross_border_ops"],
+      "associated_template_ids": [
+        "tpl_marketing_campaign_imc",
+        "tpl_cross_border_ops"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_marketing_growth"
     },
@@ -6408,8 +7796,17 @@
         "ru-RU": "Ведёт список сдач по проектам, договоры и сверки с клиентами, творческие референсы и портфолио",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات freelance بشكل دقيق واحترافي"
       },
-      "aliases": ["独立创作者", "自由职业者", "个体户", "Solopreneur"],
-      "task_tags": ["omw.03234306.n", "builtin.commercial", "builtin.personal_notes"],
+      "aliases": [
+        "独立创作者",
+        "自由职业者",
+        "个体户",
+        "Solopreneur"
+      ],
+      "task_tags": [
+        "omw.03234306.n",
+        "builtin.commercial",
+        "builtin.personal_notes"
+      ],
       "external_ids": {},
       "associated_template_ids": [
         "tpl_freelance_business_delivery",
@@ -6445,12 +7842,25 @@
         "ru-RU": "Пишет поэпизодные планы, биографии персонажей и схемы связей, главы романа, заметки и издательские договоры",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات writer بشكل دقيق واحترافي"
       },
-      "aliases": ["编剧", "作家", "网络作者", "自由撰稿人", "Writer", "Author"],
-      "task_tags": ["builtin.document_data", "builtin.personal_notes"],
+      "aliases": [
+        "编剧",
+        "作家",
+        "网络作者",
+        "自由撰稿人",
+        "Writer",
+        "Author"
+      ],
+      "task_tags": [
+        "builtin.document_data",
+        "builtin.personal_notes"
+      ],
       "external_ids": {
         "isco": "2641"
       },
-      "associated_template_ids": ["tpl_writing_publishing_pipeline", "tpl_para_universal"],
+      "associated_template_ids": [
+        "tpl_writing_publishing_pipeline",
+        "tpl_para_universal"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_marketing_growth"
     },
@@ -6481,12 +7891,22 @@
         "ru-RU": "Архивирует счета и авансовые отчёты, месячные P&L, балансы, налоговые декларации и сверки",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات accountant بشكل دقيق واحترافي"
       },
-      "aliases": ["财务主管", "总账会计", "审计专员"],
-      "task_tags": ["builtin.document_sheet", "builtin.finance"],
+      "aliases": [
+        "财务主管",
+        "总账会计",
+        "审计专员"
+      ],
+      "task_tags": [
+        "builtin.document_sheet",
+        "builtin.finance"
+      ],
       "external_ids": {
         "isco": "2411"
       },
-      "associated_template_ids": ["tpl_finance_accounting", "tpl_johnny_decimal"],
+      "associated_template_ids": [
+        "tpl_finance_accounting",
+        "tpl_johnny_decimal"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_finance_hr_legal"
     },
@@ -6517,10 +7937,20 @@
         "ru-RU": "Ведёт банковские выписки, корешки чеков и расписок, кассовую книгу и платёжные документы по расходам",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات cashier بشكل دقيق واحترافي"
       },
-      "aliases": ["出纳员", "资金专员", "出纳会计"],
-      "task_tags": ["builtin.finance", "builtin.document_sheet"],
+      "aliases": [
+        "出纳员",
+        "资金专员",
+        "出纳会计"
+      ],
+      "task_tags": [
+        "builtin.finance",
+        "builtin.document_sheet"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_finance_accounting", "tpl_johnny_decimal"],
+      "associated_template_ids": [
+        "tpl_finance_accounting",
+        "tpl_johnny_decimal"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_finance_hr_legal"
     },
@@ -6551,12 +7981,24 @@
         "ru-RU": "Готовит рабочие документы аудита и выборки, реестры налоговой отчётности, самопроверку контроля и due diligence",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات auditor بشكل دقيق واحترافي"
       },
-      "aliases": ["审计师", "CPA", "税务师", "Auditor"],
-      "task_tags": ["builtin.finance", "builtin.document_sheet", "builtin.document_data"],
+      "aliases": [
+        "审计师",
+        "CPA",
+        "税务师",
+        "Auditor"
+      ],
+      "task_tags": [
+        "builtin.finance",
+        "builtin.document_sheet",
+        "builtin.document_data"
+      ],
       "external_ids": {
         "isco": "2411"
       },
-      "associated_template_ids": ["tpl_finance_accounting", "tpl_consulting_due_diligence"],
+      "associated_template_ids": [
+        "tpl_finance_accounting",
+        "tpl_consulting_due_diligence"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_finance_hr_legal"
     },
@@ -6587,12 +8029,22 @@
         "ru-RU": "Ведёт штатное расписание, трудовые договоры, оценки KPI, базу резюме и внутренние регламенты",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات admin بشكل دقيق واحترافي"
       },
-      "aliases": ["人事经理", "HRBP", "行政主管"],
-      "task_tags": ["builtin.document_data", "builtin.hr_legal"],
+      "aliases": [
+        "人事经理",
+        "HRBP",
+        "行政主管"
+      ],
+      "task_tags": [
+        "builtin.document_data",
+        "builtin.hr_legal"
+      ],
       "external_ids": {
         "isco": "2423"
       },
-      "associated_template_ids": ["tpl_hr_people_operations", "tpl_johnny_decimal"],
+      "associated_template_ids": [
+        "tpl_hr_people_operations",
+        "tpl_johnny_decimal"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_finance_hr_legal"
     },
@@ -6623,10 +8075,20 @@
         "ru-RU": "Упорядочивает профили вакансий JD, базу резюме, оценочные листы интервью, согласование офферов и документы приёма",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات recruiter بشكل دقيق واحترافي"
       },
-      "aliases": ["招聘专员", "猎头顾问", "招聘HR"],
-      "task_tags": ["builtin.hr_legal", "builtin.document_data"],
+      "aliases": [
+        "招聘专员",
+        "猎头顾问",
+        "招聘HR"
+      ],
+      "task_tags": [
+        "builtin.hr_legal",
+        "builtin.document_data"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_hr_people_operations", "tpl_johnny_decimal"],
+      "associated_template_ids": [
+        "tpl_hr_people_operations",
+        "tpl_johnny_decimal"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_finance_hr_legal"
     },
@@ -6657,10 +8119,20 @@
         "ru-RU": "Ведёт CRM-базу клиентов, коммерческие соглашения, прайс-листы, тендерные предложения и протоколы встреч",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات bd بشكل دقيق واحترافي"
       },
-      "aliases": ["商务经理", "客户成功经理", "大客户销售"],
-      "task_tags": ["builtin.document_data", "builtin.commercial"],
+      "aliases": [
+        "商务经理",
+        "客户成功经理",
+        "大客户销售"
+      ],
+      "task_tags": [
+        "builtin.document_data",
+        "builtin.commercial"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_sales_pipeline_crm", "tpl_para_universal"],
+      "associated_template_ids": [
+        "tpl_sales_pipeline_crm",
+        "tpl_para_universal"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_finance_hr_legal"
     },
@@ -6691,12 +8163,22 @@
         "ru-RU": "Готовит и проверяет коммерческие договоры, доказательства прав ИС, памятки по комплаенсу и цепочки доказательств",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات compliance بشكل دقيق واحترافي"
       },
-      "aliases": ["公司法务", "合规顾问", "合同审查员"],
-      "task_tags": ["builtin.document_data", "builtin.hr_legal"],
+      "aliases": [
+        "公司法务",
+        "合规顾问",
+        "合同审查员"
+      ],
+      "task_tags": [
+        "builtin.document_data",
+        "builtin.hr_legal"
+      ],
       "external_ids": {
         "isco": "2611"
       },
-      "associated_template_ids": ["tpl_corporate_legal_compliance", "tpl_legal_case_dossier"],
+      "associated_template_ids": [
+        "tpl_corporate_legal_compliance",
+        "tpl_legal_case_dossier"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_finance_hr_legal"
     },
@@ -6727,12 +8209,24 @@
         "ru-RU": "Ведёт досье гражданских и арбитражных дел, описи доказательств, процессуальные речи и ответы юрсопровождения",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات attorney بشكل دقيق واحترافي"
       },
-      "aliases": ["律师", "法律顾问", "诉讼律师", "Lawyer", "Attorney"],
-      "task_tags": ["builtin.hr_legal", "builtin.document_data"],
+      "aliases": [
+        "律师",
+        "法律顾问",
+        "诉讼律师",
+        "Lawyer",
+        "Attorney"
+      ],
+      "task_tags": [
+        "builtin.hr_legal",
+        "builtin.document_data"
+      ],
       "external_ids": {
         "isco": "2611"
       },
-      "associated_template_ids": ["tpl_legal_case_dossier", "tpl_johnny_decimal"],
+      "associated_template_ids": [
+        "tpl_legal_case_dossier",
+        "tpl_johnny_decimal"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_finance_hr_legal"
     },
@@ -6763,12 +8257,23 @@
         "ru-RU": "Готовит заявки на патенты, отчёты о поиске товарных знаков, документы на регистрацию ПО и доказательства нарушений",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات ip_agent بشكل دقيق واحترافي"
       },
-      "aliases": ["专利代理师", "商标代理人", "IP顾问", "Patent Agent"],
-      "task_tags": ["builtin.hr_legal", "builtin.document_data"],
+      "aliases": [
+        "专利代理师",
+        "商标代理人",
+        "IP顾问",
+        "Patent Agent"
+      ],
+      "task_tags": [
+        "builtin.hr_legal",
+        "builtin.document_data"
+      ],
       "external_ids": {
         "isco": "2612"
       },
-      "associated_template_ids": ["tpl_corporate_legal_compliance", "tpl_legal_case_dossier"],
+      "associated_template_ids": [
+        "tpl_corporate_legal_compliance",
+        "tpl_legal_case_dossier"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_finance_hr_legal"
     },
@@ -6799,12 +8304,24 @@
         "ru-RU": "Готовит отраслевые исследования, бизнес-планы BP, интервью по диагностике изменений и презентации для руководства",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات consultant بشكل دقيق واحترافي"
       },
-      "aliases": ["咨询顾问", "战略规划", "行业分析师", "Management Consultant"],
-      "task_tags": ["builtin.document_data", "builtin.document_sheet", "builtin.commercial"],
+      "aliases": [
+        "咨询顾问",
+        "战略规划",
+        "行业分析师",
+        "Management Consultant"
+      ],
+      "task_tags": [
+        "builtin.document_data",
+        "builtin.document_sheet",
+        "builtin.commercial"
+      ],
       "external_ids": {
         "isco": "2421"
       },
-      "associated_template_ids": ["tpl_consulting_due_diligence", "tpl_para_universal"],
+      "associated_template_ids": [
+        "tpl_consulting_due_diligence",
+        "tpl_para_universal"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_finance_hr_legal"
     },
@@ -6835,12 +8352,24 @@
         "ru-RU": "Ведёт запросы цен поставщиков, рамочные договоры закупки, отчёты входного контроля и оборачиваемость запасов",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات supply_chain بشكل دقيق واحترافي"
       },
-      "aliases": ["采购主管", "供应链经理", "仓储物流", "Procurement Manager"],
-      "task_tags": ["builtin.document_sheet", "builtin.commercial", "builtin.document_data"],
+      "aliases": [
+        "采购主管",
+        "供应链经理",
+        "仓储物流",
+        "Procurement Manager"
+      ],
+      "task_tags": [
+        "builtin.document_sheet",
+        "builtin.commercial",
+        "builtin.document_data"
+      ],
       "external_ids": {
         "isco": "1324"
       },
-      "associated_template_ids": ["tpl_supply_chain_logistics", "tpl_cross_border_ops"],
+      "associated_template_ids": [
+        "tpl_supply_chain_logistics",
+        "tpl_cross_border_ops"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_finance_hr_legal"
     },
@@ -6880,7 +8409,11 @@
         "打杂文员",
         "收发报表"
       ],
-      "task_tags": ["builtin.document", "builtin.document_sheet", "builtin.finance"],
+      "task_tags": [
+        "builtin.document",
+        "builtin.document_sheet",
+        "builtin.finance"
+      ],
       "external_ids": {
         "isco": "4110"
       },
@@ -6918,12 +8451,23 @@
         "ru-RU": "Ведёт заявки на государственные гранты, учебные программы, записи о руководстве аспирантами и патенты",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات faculty بشكل دقيق واحترافي"
       },
-      "aliases": ["大学教授", "青年学者", "博导", "硕导"],
-      "task_tags": ["builtin.academic_paper", "builtin.document_data"],
+      "aliases": [
+        "大学教授",
+        "青年学者",
+        "博导",
+        "硕导"
+      ],
+      "task_tags": [
+        "builtin.academic_paper",
+        "builtin.document_data"
+      ],
       "external_ids": {
         "isco": "2310"
       },
-      "associated_template_ids": ["tpl_academic_thesis", "tpl_johnny_decimal"],
+      "associated_template_ids": [
+        "tpl_academic_thesis",
+        "tpl_johnny_decimal"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_education_academic"
     },
@@ -6954,12 +8498,24 @@
         "ru-RU": "Работает с PDF обзоров литературы, первичными данными экспериментов, статьями LaTeX, слайдами конференций и рецензиями",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات grad بشكل دقيق واحترافي"
       },
-      "aliases": ["研究生", "博士生", "科研人员", "硕士生"],
-      "task_tags": ["builtin.academic_paper", "builtin.document_data", "builtin.document_sheet"],
+      "aliases": [
+        "研究生",
+        "博士生",
+        "科研人员",
+        "硕士生"
+      ],
+      "task_tags": [
+        "builtin.academic_paper",
+        "builtin.document_data",
+        "builtin.document_sheet"
+      ],
       "external_ids": {
         "isco": "2310"
       },
-      "associated_template_ids": ["tpl_academic_thesis", "tpl_johnny_decimal"],
+      "associated_template_ids": [
+        "tpl_academic_thesis",
+        "tpl_johnny_decimal"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_education_academic"
     },
@@ -6990,10 +8546,20 @@
         "ru-RU": "Архивирует материалы семестровых курсов, курсовые работы, отчёты по лабораторным, дела клуба и подготовку к языковым экзаменам",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات undergrad بشكل دقيق واحترافي"
       },
-      "aliases": ["大学生", "在校生", "本科生"],
-      "task_tags": ["builtin.study_material", "builtin.document_data"],
+      "aliases": [
+        "大学生",
+        "在校生",
+        "本科生"
+      ],
+      "task_tags": [
+        "builtin.study_material",
+        "builtin.document_data"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_academic_thesis", "tpl_para_universal"],
+      "associated_template_ids": [
+        "tpl_academic_thesis",
+        "tpl_para_universal"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_education_academic"
     },
@@ -7024,10 +8590,21 @@
         "ru-RU": "Сортирует варианты экзаменов, карточки с ошибками, конспекты онлайн-курсов и майнд-карты для повторения",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات exam بشكل دقيق واحترافي"
       },
-      "aliases": ["考研党", "考公人", "法考考生", "考证一族"],
-      "task_tags": ["builtin.study_material", "builtin.document_data"],
+      "aliases": [
+        "考研党",
+        "考公人",
+        "法考考生",
+        "考证一族"
+      ],
+      "task_tags": [
+        "builtin.study_material",
+        "builtin.document_data"
+      ],
       "external_ids": {},
-      "associated_template_ids": ["tpl_academic_thesis", "tpl_pkm_knowledge_vault"],
+      "associated_template_ids": [
+        "tpl_academic_thesis",
+        "tpl_pkm_knowledge_vault"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_education_academic"
     },
@@ -7058,12 +8635,23 @@
         "ru-RU": "Готовит планы уроков, презентации, тесты по разделам, записи классных часов и визитов, архив общения с родителями",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات k12_teacher بشكل دقيق واحترافي"
       },
-      "aliases": ["中小学老师", "班主任", "学科老师", "Teacher"],
-      "task_tags": ["builtin.study_material", "builtin.document_data"],
+      "aliases": [
+        "中小学老师",
+        "班主任",
+        "学科老师",
+        "Teacher"
+      ],
+      "task_tags": [
+        "builtin.study_material",
+        "builtin.document_data"
+      ],
       "external_ids": {
         "isco": "2341"
       },
-      "associated_template_ids": ["tpl_teacher_lesson_prep", "tpl_para_universal"],
+      "associated_template_ids": [
+        "tpl_teacher_lesson_prep",
+        "tpl_para_universal"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_education_academic"
     },
@@ -7094,12 +8682,23 @@
         "ru-RU": "Разрабатывает программы курсов, практические руководства, анкеты по итогам обучения и базу кейсов",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات trainer بشكل دقيق واحترافي"
       },
-      "aliases": ["培训讲师", "内训师", "讲师", "Corporate Trainer"],
-      "task_tags": ["builtin.study_material", "builtin.document_data"],
+      "aliases": [
+        "培训讲师",
+        "内训师",
+        "讲师",
+        "Corporate Trainer"
+      ],
+      "task_tags": [
+        "builtin.study_material",
+        "builtin.document_data"
+      ],
       "external_ids": {
         "isco": "2424"
       },
-      "associated_template_ids": ["tpl_teacher_lesson_prep", "tpl_freelance_business_delivery"],
+      "associated_template_ids": [
+        "tpl_teacher_lesson_prep",
+        "tpl_freelance_business_delivery"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_education_academic"
     },
@@ -7130,12 +8729,25 @@
         "ru-RU": "Собирает варианты TOEFL/IELTS, эссе PS/CV/рекомендации, офферы вузов и документы для визы и нотариата",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات study_abroad بشكل دقيق واحترافي"
       },
-      "aliases": ["留学生", "雅思备考", "托福备考", "留学申请", "Applicant"],
-      "task_tags": ["builtin.study_material", "builtin.document_data", "builtin.personal_notes"],
+      "aliases": [
+        "留学生",
+        "雅思备考",
+        "托福备考",
+        "留学申请",
+        "Applicant"
+      ],
+      "task_tags": [
+        "builtin.study_material",
+        "builtin.document_data",
+        "builtin.personal_notes"
+      ],
       "external_ids": {
         "isco": "2359"
       },
-      "associated_template_ids": ["tpl_study_abroad_application", "tpl_academic_thesis"],
+      "associated_template_ids": [
+        "tpl_study_abroad_application",
+        "tpl_academic_thesis"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_education_academic"
     },
@@ -7166,13 +8778,26 @@
         "ru-RU": "Ведёт приёмы и обходы, наблюдение пациентов, поиск литературы, разбор анализов и научные темы",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات doctor بشكل دقيق واحترافي"
       },
-      "aliases": ["主治医师", "住院医", "外科医生", "内科医生", "Doctor"],
-      "task_tags": ["builtin.health_data", "builtin.academic_paper", "builtin.document_data"],
+      "aliases": [
+        "主治医师",
+        "住院医",
+        "外科医生",
+        "内科医生",
+        "Doctor"
+      ],
+      "task_tags": [
+        "builtin.health_data",
+        "builtin.academic_paper",
+        "builtin.document_data"
+      ],
       "external_ids": {
         "isco": "2211",
         "esco": "http://data.europa.eu/esco/occupation/general-practitioner"
       },
-      "associated_template_ids": ["tpl_clinical_medical_records", "tpl_academic_thesis"],
+      "associated_template_ids": [
+        "tpl_clinical_medical_records",
+        "tpl_academic_thesis"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_health_engineering"
     },
@@ -7203,12 +8828,22 @@
         "ru-RU": "Ведёт журналы передачи смен, листы выполнения назначений, материалы для пациентов и записи по инфекционному контролю",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات nurse بشكل دقيق واحترافي"
       },
-      "aliases": ["护士长", "责任护士", "Nurse"],
-      "task_tags": ["builtin.health_data", "builtin.document_data"],
+      "aliases": [
+        "护士长",
+        "责任护士",
+        "Nurse"
+      ],
+      "task_tags": [
+        "builtin.health_data",
+        "builtin.document_data"
+      ],
       "external_ids": {
         "isco": "2221"
       },
-      "associated_template_ids": ["tpl_clinical_medical_records", "tpl_wellness_health_portfolio"],
+      "associated_template_ids": [
+        "tpl_clinical_medical_records",
+        "tpl_wellness_health_portfolio"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_health_engineering"
     },
@@ -7239,12 +8874,24 @@
         "ru-RU": "Хранит карточки консультаций, отчёты по шкалам оценки, записи супервизии и планы терапии",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات psychologist بشكل دقيق واحترافي"
       },
-      "aliases": ["心理医生", "心理治疗师", "Therapist", "Counselor"],
-      "task_tags": ["builtin.health_data", "builtin.personal_notes", "builtin.document_data"],
+      "aliases": [
+        "心理医生",
+        "心理治疗师",
+        "Therapist",
+        "Counselor"
+      ],
+      "task_tags": [
+        "builtin.health_data",
+        "builtin.personal_notes",
+        "builtin.document_data"
+      ],
       "external_ids": {
         "isco": "2634"
       },
-      "associated_template_ids": ["tpl_wellness_health_portfolio", "tpl_clinical_medical_records"],
+      "associated_template_ids": [
+        "tpl_wellness_health_portfolio",
+        "tpl_clinical_medical_records"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_health_engineering"
     },
@@ -7275,12 +8922,24 @@
         "ru-RU": "Составляет планы питания, отчёты по составу тела, программы коррекции при хронических болезнях и карты клиентов",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات nutritionist بشكل دقيق واحترافي"
       },
-      "aliases": ["营养师", "健康顾问", "Dietitian", "Nutritionist"],
-      "task_tags": ["builtin.health_data", "builtin.document_sheet", "builtin.personal_notes"],
+      "aliases": [
+        "营养师",
+        "健康顾问",
+        "Dietitian",
+        "Nutritionist"
+      ],
+      "task_tags": [
+        "builtin.health_data",
+        "builtin.document_sheet",
+        "builtin.personal_notes"
+      ],
       "external_ids": {
         "isco": "2265"
       },
-      "associated_template_ids": ["tpl_wellness_health_portfolio", "tpl_cooking_recipes_vault"],
+      "associated_template_ids": [
+        "tpl_wellness_health_portfolio",
+        "tpl_cooking_recipes_vault"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_health_engineering"
     },
@@ -7311,12 +8970,24 @@
         "ru-RU": "Ведёт чертежи CAD, модели BIM, рендеры визуализаций, рабочую документацию и ведомости материалов",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات architect بشكل دقيق واحترافي"
       },
-      "aliases": ["空间设计师", "室内设计师", "方案主创", "Architect"],
-      "task_tags": ["builtin.design_assets", "builtin.document_data", "builtin.design_draft"],
+      "aliases": [
+        "空间设计师",
+        "室内设计师",
+        "方案主创",
+        "Architect"
+      ],
+      "task_tags": [
+        "builtin.design_assets",
+        "builtin.document_data",
+        "builtin.design_draft"
+      ],
       "external_ids": {
         "isco": "2161"
       },
-      "associated_template_ids": ["tpl_architectural_cad_design", "tpl_para_universal"],
+      "associated_template_ids": [
+        "tpl_architectural_cad_design",
+        "tpl_para_universal"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_health_engineering"
     },
@@ -7347,12 +9018,23 @@
         "ru-RU": "Ведёт расчёты несущих конструкций, сметы и ведомости объёмов, надзор на площадке и архив приёмки",
         "ar-EG": "إدارة وتنظيم وتصنيف ملفات civil_engineer بشكل دقيق واحترافي"
       },
-      "aliases": ["结构工程师", "造价工程师", "监理工程师"],
-      "task_tags": ["builtin.document_sheet", "builtin.document_data", "builtin.finance"],
+      "aliases": [
+        "结构工程师",
+        "造价工程师",
+        "监理工程师"
+      ],
+      "task_tags": [
+        "builtin.document_sheet",
+        "builtin.document_data",
+        "builtin.finance"
+      ],
       "external_ids": {
         "isco": "2142"
       },
-      "associated_template_ids": ["tpl_architectural_cad_design", "tpl_johnny_decimal"],
+      "associated_template_ids": [
+        "tpl_architectural_cad_design",
+        "tpl_johnny_decimal"
+      ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_health_engineering"
     }

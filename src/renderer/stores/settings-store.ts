@@ -112,9 +112,9 @@ export const systemSettingsCategories = (): ISettingsCategoryInfo[] => [
   },
   {
     id: SettingsCategory.AI_ENGINE_CONFIG,
-    name: t('开启生成式引擎'),
+    name: t('生成式引擎'),
     icon: 'settings_suggest',
-    description: t('生成式推理引擎连接与思考模式')
+    description: t('生效底座选择、云端配置与思考模式')
   },
   {
     id: SettingsCategory.TTS,
@@ -126,7 +126,9 @@ export const systemSettingsCategories = (): ISettingsCategoryInfo[] => [
     id: SettingsCategory.ANALYSIS_IGNORE_RULES,
     name: t('全局排除文件规则'),
     icon: 'filter',
-    description: t('配置真实目录不显示的文件，以便不进入AI分析提高分析效率并支持批量查重清理保护这些排除的文件')
+    description: t(
+      '配置真实目录不显示的文件，以便不进入AI分析提高分析效率并支持批量查重清理保护这些排除的文件'
+    )
   },
   {
     id: SettingsCategory.EXTERNAL_API,
@@ -187,7 +189,9 @@ export const settingsCategories = (): ISettingsCategoryInfo[] => [
     id: SettingsCategory.ANALYSIS_IGNORE_RULES,
     name: t('全局排除文件规则'),
     icon: 'filter',
-    description: t('配置真实目录不显示的文件，以便不进入AI分析提高分析效率并支持批量查重清理保护这些排除的文件')
+    description: t(
+      '配置真实目录不显示的文件，以便不进入AI分析提高分析效率并支持批量查重清理保护这些排除的文件'
+    )
   },
   {
     id: SettingsCategory.INTERFACE,
