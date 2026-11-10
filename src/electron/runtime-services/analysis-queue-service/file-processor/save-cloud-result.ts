@@ -22,7 +22,8 @@ import {
   normalizeLangCode,
   isControlledConcept,
   CONTROLLED_CONCEPT_DETAILS,
-  getParentDimensionCodeOfTag
+  getParentDimensionCodeOfTag,
+  normalizeFileExtension
 } from '@firefly/shared'
 import { t } from '@app/languages'
 
@@ -54,7 +55,7 @@ export async function saveCloudResult(
   try {
     const filePath = item.path
     const rawType = item.type || path.extname(filePath).toLowerCase() || ''
-    let fileType = rawType ? (rawType.startsWith('.') ? rawType : `.${rawType}`) : ''
+    let fileType = normalizeFileExtension(rawType)
     const stats = fs.statSync(filePath)
     const fileCategory = getFileCategory(filePath)
     const topologyContext = {
@@ -69,15 +70,16 @@ export async function saveCloudResult(
     if (magikaCategory && typeof magikaCategory !== 'string') {
       const magikaExt = magikaCategory.extensions?.[0] || magikaCategory.label
       if (magikaExt && magikaExt.trim() !== '' && magikaExt !== 'empty') {
-        fileType = magikaExt.startsWith('.') ? magikaExt : `.${magikaExt}`
+        fileType = normalizeFileExtension(magikaExt)
       }
     }
 
     let thumbnailRelativePath = null
+    const normalizedNoDot = fileType.replace(/^\./, '').toLowerCase()
     if (
-      fileType &&
+      normalizedNoDot &&
       ['jpg', 'jpeg', 'png', 'webp', 'mp4', 'mov', 'avi', 'mkv', 'webm', 'pdf', 'pdfx'].includes(
-        fileType.toLowerCase()
+        normalizedNoDot
       )
     ) {
       try {
@@ -229,7 +231,7 @@ export async function saveCloudResult(
         smartName,
         description,
         stats.size,
-        fileType,
+        normalizeFileExtension(fileType),
         data.file_group || null,
         data.author || null,
         data.language ? normalizeLangCode(data.language) : null,
@@ -379,18 +381,20 @@ export async function saveCloudResult(
             // 若经由父为空或被填成内容标签，但该词本身是受控标签：优先反查受控父维度自愈回正
             if (!localDimCode || localDimCode === CONTENT_DIM_CODE) {
               const autoParent = isControlledConcept(cleanName)
-                ? (CONTROLLED_CONCEPT_DETAILS[cleanName]?.parentName
-                    ? concept(CONTROLLED_CONCEPT_DETAILS[cleanName].parentName as any)
-                    : undefined)
-                : (tagCode ? getParentDimensionCodeOfTag(tagCode) : undefined)
+                ? CONTROLLED_CONCEPT_DETAILS[cleanName]?.parentName
+                  ? concept(CONTROLLED_CONCEPT_DETAILS[cleanName].parentName as any)
+                  : undefined
+                : tagCode
+                  ? getParentDimensionCodeOfTag(tagCode)
+                  : undefined
               localDimCode = autoParent || localDimCode || CONTENT_DIM_CODE
             }
 
             const isControlled = Boolean(
               tagCode &&
               (tagCode.startsWith('builtin.') ||
-               tagCode.startsWith('omw.') ||
-               tagCode.startsWith('hownet.'))
+                tagCode.startsWith('omw.') ||
+                tagCode.startsWith('hownet.'))
             )
 
             if (isControlled) {
@@ -419,7 +423,8 @@ export async function saveCloudResult(
 
               const codePath = materialized.codePath
               const namePath = materialized.namePath
-              const depth = typeof tag.depth === 'number' && tag.depth > 0 ? tag.depth : (materialized.depth || 2)
+              const depth =
+                typeof tag.depth === 'number' && tag.depth > 0 ? tag.depth : materialized.depth || 2
               const confidence = typeof tag.confidence === 'number' ? tag.confidence : 1.0
 
               db.prepare(
@@ -442,12 +447,26 @@ export async function saveCloudResult(
                 // ADR-0045 票据 04：显式传入云端返回的原始分组（缺失/非法为 ''），
                 // 不再依赖 insertTagToDb 的 'fact' 缺省——那会把 AI / 融合标签错标成物理事实。
                 // 父码走显式 viaParentCode 参（第 6 参），不借道遗留 _dimensionId 槽。
-                insertTagToDb(db, fileFingerprint, cleanName, undefined, 0, localDimCode, cloudGroup, '', '', 1, topologyContext)
+                insertTagToDb(
+                  db,
+                  fileFingerprint,
+                  cleanName,
+                  undefined,
+                  0,
+                  localDimCode,
+                  cloudGroup,
+                  '',
+                  '',
+                  1,
+                  topologyContext
+                )
               } catch {
                 // 兜底：按离线确定性编码派生合法 code 并建立自然主键关联
-                const finalTagCode = tagCode || DeterministicCodeGenerator.generateUnique(cleanName, 'zh-CN', {
-                  lookupExistingName: DeterministicCodeGenerator.createDbLookup(db)
-                })
+                const finalTagCode =
+                  tagCode ||
+                  DeterministicCodeGenerator.generateUnique(cleanName, 'zh-CN', {
+                    lookupExistingName: DeterministicCodeGenerator.createDbLookup(db)
+                  })
                 const materialized = resolveRuntimeMaterializedPath({
                   db,
                   tagCode: finalTagCode,
@@ -468,7 +487,10 @@ export async function saveCloudResult(
 
                 const codePath = materialized.codePath
                 const namePath = materialized.namePath
-                const depth = typeof tag.depth === 'number' && tag.depth > 0 ? tag.depth : (materialized.depth || 2)
+                const depth =
+                  typeof tag.depth === 'number' && tag.depth > 0
+                    ? tag.depth
+                    : materialized.depth || 2
                 const confidence = typeof tag.confidence === 'number' ? tag.confidence : 1.0
 
                 db.prepare(

@@ -8,6 +8,7 @@ import {
   TAG_PROVENANCE_GROUPS,
   getCanonicalConceptName,
   isTagAdmissible,
+  normalizeFileExtension,
   type TagProvenanceGroup
 } from '@firefly/shared'
 import { t } from '@app/languages'
@@ -252,7 +253,7 @@ export class FileDao {
         fingerprint = await calculateFileFingerprint(workspaceFile.path)
         if (fingerprint) {
           const stats = fs.statSync(workspaceFile.path)
-          const ext = path.extname(workspaceFile.path).toLowerCase().replace(/^\./, '')
+          const ext = normalizeFileExtension(workspaceFile.path)
           // 先确保父表 files 与 file_contents 记录存在，防止触发 SQLite 外键约束异常
           this.db
             .prepare(
@@ -263,7 +264,7 @@ export class FileDao {
               fingerprint,
               workspaceFile.name,
               stats.size,
-              ext || 'unknown',
+              ext,
               stats.birthtime.toISOString(),
               stats.mtime.toISOString(),
               stats.atime.toISOString()
@@ -726,7 +727,7 @@ export class FileDao {
           smartNameSourceValue,
           smartNameTemplateSourceValue,
           result.size || 0,
-          result.extension || 'file',
+          normalizeFileExtension(result.extension || (wf ? wf.path : '')),
           result.fileGroup || null,
           result.author || null,
           result.language || null,
@@ -744,7 +745,7 @@ export class FileDao {
           writeNameFlag,
           smartNameTemplateSourceValue,
           result.size || null,
-          result.extension || null,
+          result.extension !== undefined ? normalizeFileExtension(result.extension) : null,
           result.fileGroup || null,
           result.author || null,
           result.language || null,
@@ -1216,13 +1217,7 @@ export class FileDao {
     const rows = this.db.prepare(sql).all(...params) as any[]
 
     return rows.map(row => {
-      const normalizedExt = row.extension
-        ? row.extension.startsWith('.')
-          ? row.extension
-          : `.${row.extension}`
-        : row.path
-          ? path.extname(row.path).toLowerCase()
-          : ''
+      const normalizedExt = normalizeFileExtension(row.extension || row.path || '')
       return {
         id: row.id,
         name: row.name,
@@ -1763,13 +1758,7 @@ export class FileDao {
       .all(dirRecord.id, workspaceId) as any[]
 
     return rows.map(row => {
-      const normalizedExt = row.extension
-        ? row.extension.startsWith('.')
-          ? row.extension
-          : `.${row.extension}`
-        : row.path
-          ? path.extname(row.path).toLowerCase()
-          : ''
+      const normalizedExt = normalizeFileExtension(row.extension || row.path || '')
       return {
         id: row.id,
         status: row.status ?? 1,

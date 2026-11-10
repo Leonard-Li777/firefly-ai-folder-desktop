@@ -41,7 +41,7 @@ import { rebuildNamePaths, type RebuildNamePathsResult } from './name-path-rebui
 import { omniClient } from '../../services/omni-client'
 
 import Database from 'better-sqlite3'
-import { calculateFileFingerprint } from '@firefly/shared'
+import { calculateFileFingerprint, normalizeFileExtension } from '@firefly/shared'
 import * as fs from 'fs'
 import * as path from 'path'
 import { t } from '@app/languages'
@@ -841,7 +841,7 @@ export class DatabaseService {
         fileFingerprint,
         path.basename(filePath),
         stats.size,
-        path.extname(filePath).toLowerCase(),
+        normalizeFileExtension(filePath),
         JSON.stringify({ mime_type: 'application/octet-stream' }),
         stats.birthtime.toISOString(),
         stats.mtime.toISOString(),
@@ -1508,7 +1508,7 @@ export class DatabaseService {
             fileFingerprint,
             path.basename(filePath),
             stats.size,
-            path.extname(filePath).toLowerCase(),
+            normalizeFileExtension(filePath),
             JSON.stringify({ mime_type: 'application/octet-stream' }),
             stats.birthtime.toISOString(),
             stats.mtime.toISOString(),

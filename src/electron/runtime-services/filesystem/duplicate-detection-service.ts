@@ -10,7 +10,7 @@ import {
   DuplicateFixAction,
   DuplicateFixResult
 } from '@firefly/types'
-import { LogCategory, logger, APP_PORTS } from '@firefly/shared'
+import { LogCategory, logger, APP_PORTS, normalizeFileExtension } from '@firefly/shared'
 import { databaseService } from '../database'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { t } from '@app/languages'
@@ -997,7 +997,7 @@ export class DuplicateDetectionService {
 
             if (db) {
               const newName = path.basename(newPath)
-              const newExt = path.extname(newPath).toLowerCase()
+              const newExt = normalizeFileExtension(newPath)
               const pathSlash = filePath.replace(/\\/g, '/')
               const pathBackslash = filePath.replace(/\//g, '\\')
 
@@ -1085,7 +1085,7 @@ export class DuplicateDetectionService {
               }
               if (db) {
                 const newName = path.basename(newPath)
-                const cleanExt = properExt.replace(/^\./, '').toLowerCase()
+                const cleanExt = normalizeFileExtension(properExt)
                 const pathSlash = filePath.replace(/\\/g, '/')
                 const pathBackslash = filePath.replace(/\//g, '\\')
 

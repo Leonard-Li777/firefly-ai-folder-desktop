@@ -35,6 +35,7 @@ import {
   resolveRuntimeMaterializedPath,
   CONTROLLED_CONCEPTS,
   normalizeLangCode,
+  normalizeFileExtension,
   safeTruncateUtf8Bytes
 } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
@@ -1260,7 +1261,7 @@ export class FileProcessor {
               fileFingerprint,
               initialSmartName,
               stats.size,
-              initialFileType,
+              normalizeFileExtension(initialFileType),
               new Date(stats.birthtime).toISOString(),
               new Date(stats.mtime).toISOString(),
               new Date(stats.atime).toISOString()
@@ -1904,7 +1905,7 @@ export class FileProcessor {
             fileFingerprint,
             initialSmartName,
             currentStats.size,
-            initialFileType,
+            normalizeFileExtension(initialFileType),
             new Date(currentStats.birthtime).toISOString(),
             new Date(currentStats.mtime).toISOString(),
             new Date(currentStats.atime).toISOString()
@@ -2934,7 +2935,7 @@ export class FileProcessor {
         fileInfo.name,
         cpuNameIsMachine ? 'machine' : null,
         stats.size,
-        enhancedFileType,
+        normalizeFileExtension(enhancedFileType),
         JSON.stringify(magikaCategory || { mime_type: getMimeType(enhancedFileType) }),
         resolvedAuthor,
         omniDescription || null,
@@ -3614,7 +3615,7 @@ export class FileProcessor {
     magikaCategory: MagikaCategory | null
   ): { fileType: string; smartName: string } {
     const diskExt = path.extname(filePath).toLowerCase()
-    let fileType = diskExt || originalType || ''
+    let fileType = normalizeFileExtension(diskExt || originalType)
     let smartName = originalName || path.basename(filePath) || '未知文件'
 
     // 仅当原文件无扩展名时，尝试使用 Magika 结果补全
@@ -3632,10 +3633,10 @@ export class FileProcessor {
             : magikaCategory.label
 
         if (magikaExt && magikaExt.trim() !== '') {
-          const newExt = magikaExt.startsWith('.') ? magikaExt : `.${magikaExt}`
+          const newExt = normalizeFileExtension(magikaExt)
 
           // Only update if it's not a generic fallback like "empty"
-          if (newExt !== '.empty' && newExt !== '.') {
+          if (newExt !== '.empty' && newExt !== '.' && newExt !== '') {
             fileType = newExt
           }
         }
@@ -3707,7 +3708,7 @@ export class FileProcessor {
         fileData.smart_name || fileName,
         fileData.description || '',
         fileData.size || 0,
-        fileData.type || 'unknown',
+        normalizeFileExtension(fileData.type || fileData.extension || fileName),
         fileData.category ? JSON.stringify(fileData.category) : null,
         fileData.author || '',
         normalizeLangCode(fileData.language),

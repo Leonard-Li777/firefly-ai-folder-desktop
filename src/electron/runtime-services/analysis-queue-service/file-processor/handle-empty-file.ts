@@ -1,6 +1,6 @@
 import { AnalysisQueueItem } from '@firefly/types'
 import { databaseService } from '../../database/database-service'
-import { LogCategory, logger, insertTagToDb } from '@firefly/shared'
+import { LogCategory, logger, insertTagToDb, normalizeFileExtension } from '@firefly/shared'
 import { t } from '@app/languages'
 import { SYSTEM_TAG_NAMES } from '../../../adapters/tag-tree-view-adapter'
 import fs from 'node:fs'
@@ -14,7 +14,7 @@ export async function handleEmptyFile(item: AnalysisQueueItem, workspaceId: numb
   if (!db) throw new Error(t('数据库未初始化'))
 
   const filePath = (item as any).file_path || item.path
-  const fileType = item.type || path.extname(filePath).toLowerCase() || ''
+  const fileType = normalizeFileExtension(item.type || path.extname(filePath))
   const fileName = item.name || path.basename(filePath) || t('未知文件')
   // 空文件智能名：原文件名前添加 "[空文件]" 前缀，便于直观区分空文件。
   // 前缀使用 t() 包裹，与 "空文件" 默认标签保持一致（smart_name 为持久化数据，生成后不随语言切换重算）。
