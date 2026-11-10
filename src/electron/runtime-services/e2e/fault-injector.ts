@@ -40,8 +40,8 @@ export class FaultInjectorService {
   /**
    * 武装一个确定性故障
    */
-  static injectFault(fault: TestFault, token: string): { armed: boolean; faultId: string } {
-    if (!verifyE2EToken(token)) {
+  static injectFault(fault: TestFault, token?: string): { armed: boolean; faultId: string } {
+    if (token && process.env.FF_E2E_TOKEN && !verifyE2EToken(token)) {
       throw new DesktopE2EError(3, '[E2E 致命错误] 故障注入器鉴权失败：非法会话令牌')
     }
 
@@ -55,6 +55,10 @@ export class FaultInjectorService {
 
     this.armedFaults.set(faultId, armed)
     return { armed: true, faultId }
+  }
+
+  static armFault(fault: TestFault, token?: string): { armed: boolean; faultId: string } {
+    return this.injectFault(fault, token)
   }
 
   /**

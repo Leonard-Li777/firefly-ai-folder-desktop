@@ -574,6 +574,23 @@ export const GENESIS_V1_SCHEMA = `
     ON offline_package_jobs (archive_path, superseded_by_job_id)
     WHERE superseded_by_job_id IS NOT NULL;
 
+  -- 16.5 文件系统操作两阶段事务日志表 (Spec §3.2 / Ticket 06)
+  CREATE TABLE IF NOT EXISTS fs_operation_journal (
+    id TEXT PRIMARY KEY,                           -- UUID 或 nanoId
+    batch_id TEXT NOT NULL,                        -- 批量操作批次号
+    seq INTEGER NOT NULL,                          -- 批次内严格递增序号
+    op TEXT NOT NULL CHECK (op IN ('rename', 'move', 'trash')),
+    from_path TEXT NOT NULL,
+    to_path TEXT NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('intent', 'committed', 'compensated', 'manual_recovery', 'undone', 'skipped_by_user')),
+    file_identity TEXT NOT NULL,                   -- 设备号与 inode 标识或 SHA256 前缀
+    attempt INTEGER NOT NULL DEFAULT 0,            -- 补偿重试次数
+    error_code TEXT,                               -- 失败错误码 (如 EBUSY, EACCES)
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_fs_journal_batch ON fs_operation_journal(batch_id, seq);
+  CREATE INDEX IF NOT EXISTS idx_fs_journal_status ON fs_operation_journal(status);
 
   -- 17. FTS5 全文搜索虚拟表（标准独立存储表）
   -- 避免 contentless 模式在多表异步写入/更新时发生 token 不匹配导致 SQLITE_CORRUPT_VTAB (database disk image is malformed)
@@ -781,6 +798,7 @@ export const migrations: IMigrationConfig[] = [
       DROP TABLE IF EXISTS resource_downloads;
       DROP TABLE IF EXISTS builtin_modules;
       DROP TABLE IF EXISTS offline_package_jobs;
+      DROP TABLE IF EXISTS fs_operation_journal;
       DROP TABLE IF EXISTS files_fts;
       DROP TABLE IF EXISTS files_pinyin_fts;
     `
@@ -963,13 +981,16 @@ export function getDatabaseConfig(language?: string): IDatabaseConfig {
   if (process.env.FF_E2E_MODE === '1') {
     const { getE2EConfig, assertE2ESandboxOrThrow, DesktopE2EError } =
       require('../e2e/e2e-gate') as typeof import('../e2e/e2e-gate')
-    
+
     // 执行沙箱守卫强校验
     assertE2ESandboxOrThrow(process.env)
 
     const e2eConfig = getE2EConfig()
     if (!e2eConfig.dbPath) {
-      throw new DesktopE2EError(3, '[E2E 致命错误] E2E 模式下必须配置合法非空沙箱主库路径，绝对严禁回退至生产主库')
+      throw new DesktopE2EError(
+        3,
+        '[E2E 致命错误] E2E 模式下必须配置合法非空沙箱主库路径，绝对严禁回退至生产主库'
+      )
     }
 
     return {
