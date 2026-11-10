@@ -297,7 +297,12 @@ export function registerModularResourceIpcHandlers(
           updatedAt: number
         }> = []
         if (fs.existsSync(intentsDir)) {
-          const files = fs.readdirSync(intentsDir).filter(f => f.endsWith('.intent.json'))
+          const files = fs
+            .readdirSync(intentsDir)
+            .filter(
+              f =>
+                (f.startsWith('dir-switch-') && f.endsWith('.json')) || f.endsWith('.intent.json')
+            )
           for (const f of files) {
             try {
               const content = JSON.parse(fs.readFileSync(path.join(intentsDir, f), 'utf-8'))
