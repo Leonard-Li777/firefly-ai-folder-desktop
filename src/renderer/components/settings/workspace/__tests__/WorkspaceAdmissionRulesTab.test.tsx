@@ -5,6 +5,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { WorkspaceAdmissionRulesTab } from '../WorkspaceAdmissionRulesTab'
 import { useSettingsStore } from '../../../../stores/settings-store'
 import { WorkspaceDirectory } from '@firefly/types'
+import { toast } from '../../../common/Toast'
 
 // Mock 语言包
 vi.mock('@app/languages', () => ({
@@ -119,6 +120,27 @@ describe('WorkspaceAdmissionRulesTab 包含与排除规则管理及影响预览'
       }
     } as any
   })
+
+  // ready 态配置必须带齐 baseAIConfig 与两组规则数组，否则 parseWorkspaceConfig 会降级为 pending
+  const workspaceWithDuplicates: WorkspaceDirectory = {
+    ...mockWorkspace,
+    workspace_config: JSON.stringify({
+      schemaVersion: 1,
+      status: 'ready',
+      baseAIConfig: {},
+      customWhitelistRules: [],
+      customIgnoreRules: [
+        {
+          id: 'dup-1',
+          type: 'directory',
+          value: 'node_modules',
+          isActive: true,
+          isSystem: false
+        },
+        { id: 'own-1', type: 'directory', value: 'temp', isActive: true, isSystem: false }
+      ]
+    })
+  }
 
   it('AC 3: 醒目渲染绿色物理安全防护徽标与铁律提示', () => {
     render(<WorkspaceAdmissionRulesTab workspace={mockStandardWorkspace} />)
@@ -246,5 +268,32 @@ describe('WorkspaceAdmissionRulesTab 包含与排除规则管理及影响预览'
       expect(screen.getByText('预计纳入: 75%')).toBeDefined()
       expect(screen.getByText('预计排除: 25%')).toBeDefined()
     })
+  })
+
+  it('目录专属黑名单自动剔除全局排除规则中已配置的项', () => {
+    render(<WorkspaceAdmissionRulesTab workspace={workspaceWithDuplicates} />)
+
+    // 与全局重复的 node_modules 仅在下方只读基线中出现一次，专属列表不再重复展示
+    expect(screen.getAllByText('node_modules')).toHaveLength(1)
+    expect(screen.getByText('temp')).toBeDefined()
+    expect(screen.getByText('(1)')).toBeDefined()
+    expect(screen.getByText('已自动合并 1 项与全局规则重复的排除项，它们依然生效。')).toBeDefined()
+  })
+
+  it('新增与全局规则重复的排除项时提示用户且不写回工作区配置', async () => {
+    render(<WorkspaceAdmissionRulesTab workspace={workspaceWithDuplicates} />)
+
+    fireEvent.click(screen.getByText('添加排除项'))
+    fireEvent.change(screen.getByPlaceholderText('build, dist, test_data'), {
+      target: { value: 'node_modules' }
+    })
+    fireEvent.click(screen.getByText('保存排除规则'))
+
+    await waitFor(() => {
+      expect(toast.info).toHaveBeenCalledWith(
+        '这项已经在全局规则里排除了，不需要在当前目录重复添加'
+      )
+    })
+    expect(window.electronAPI.updateWorkspaceConfig).not.toHaveBeenCalled()
   })
 })

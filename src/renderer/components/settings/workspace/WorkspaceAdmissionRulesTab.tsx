@@ -6,6 +6,7 @@ import {
   parseWorkspaceConfig,
   SettingsCategory
 } from '@firefly/types'
+import { filterOutGlobalExclusionRules } from '@firefly/shared'
 import { useSettingsStore } from '../../../stores/settings-store'
 import { Card } from '../../ui/card'
 import { Button } from '../../ui/button'
@@ -263,12 +264,25 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProp
     return parseWorkspaceConfig(workspace.workspace_config)
   }, [workspace.workspace_config])
 
-  const customRules: IIgnoreRule[] = useMemo(() => {
+  const rawCustomRules: IIgnoreRule[] = useMemo(() => {
     if (parsedConfig.status === 'ready' && Array.isArray(parsedConfig.customIgnoreRules)) {
       return parsedConfig.customIgnoreRules
     }
     return []
   }, [parsedConfig])
+
+  // 目录专属 = 全局排除规则的补集：全局已生效的项不重复展示、编辑与保存。
+  // 历史配置里已存在的重复项（如工作流模板预置的系统文件）由 persistRules 以本补集为准顺带清理。
+  const customRules: IIgnoreRule[] = useMemo(
+    () => filterOutGlobalExclusionRules(systemRules, rawCustomRules),
+    [systemRules, rawCustomRules]
+  )
+
+  // 被全局基线吸收的项数量：向用户解释列表为何变短，避免误以为规则丢失
+  const mergedRuleCount = useMemo(
+    () => Math.max(0, rawCustomRules.length - customRules.length),
+    [rawCustomRules, customRules]
+  )
 
   // 新增黑名单规则表单状态
   const [showAddForm, setShowAddForm] = useState(false)
@@ -280,7 +294,7 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProp
     description: ''
   })
 
-  // 保存黑名单规则集到 workspace_config
+  // 保存黑名单规则集到 workspace_config（仅保存「目录专属」补集，顺带清理与全局重复的历史项）
   const persistRules = async (nextRules: IIgnoreRule[]) => {
     if (!workspace.id) return
     try {
@@ -322,6 +336,12 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProp
       description: newRule.description?.trim() || undefined,
       isSystem: false,
       isActive: true
+    }
+
+    // 全局排除规则已覆盖的项无需在当前目录重复配置，避免与下方只读基线重复
+    if (filterOutGlobalExclusionRules(systemRules, [created]).length === 0) {
+      toast.info(t('这项已经在全局规则里排除了，不需要在当前目录重复添加'))
+      return
     }
 
     const next = [...customRules, created]
@@ -767,6 +787,17 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProp
             <span>{t('添加排除项')}</span>
           </Button>
         </div>
+
+        <p className="text-[11px] text-muted-foreground leading-relaxed">
+          {t('这里只显示当前目录额外要排除的项；全局规则里已经排除的，不会在这里重复出现。')}
+        </p>
+        {mergedRuleCount > 0 && (
+          <p className="text-[11px] text-muted-foreground/80">
+            {t('已自动合并 {count} 项与全局规则重复的排除项，它们依然生效。', {
+              count: mergedRuleCount
+            })}
+          </p>
+        )}
 
         {/* 添加新黑名单规则表单 */}
         {showAddForm && (
