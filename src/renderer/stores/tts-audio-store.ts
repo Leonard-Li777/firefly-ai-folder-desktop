@@ -41,6 +41,32 @@ export function hasActiveTTSPlugin(): boolean {
   }
 }
 
+/**
+ * 获取当前激活的 TTS 插件 ID
+ */
+export function getActiveTTSPluginId(): 'tts_m5_onnx' | 'tts_moss_onnx' | null {
+  try {
+    const modules = usePluginCenterStore.getState().modules
+    const active = (modules || []).find(
+      m =>
+        (m.capability_slot === 'voice_tts' || m.id === 'tts_moss_onnx' || m.id === 'tts_m5_onnx') &&
+        m.install_state === 'active'
+    )
+    if (active?.id === 'tts_m5_onnx') return 'tts_m5_onnx'
+    if (active?.id === 'tts_moss_onnx') return 'tts_moss_onnx'
+    return null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * 当前激活引擎是否支持声音克隆 (M5 专精预置极速发音人，不支持自定义音色克隆)
+ */
+export function isVoiceCloningSupported(): boolean {
+  return getActiveTTSPluginId() === 'tts_moss_onnx'
+}
+
 export interface TTSAudioState {
   /** 当前正在播放的原始文本 */
   playingText: string
@@ -1027,10 +1053,10 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
   isSynthesizing: false,
 
   refreshVoices: async () => {
-    // 若未安装或未激活 TTS 插件，安全跳过 IPC 调用，直接返回预置基线
+    // 若未安装或未激活 TTS 插件，安全跳过 IPC 调用，返回空列表，绝不使用伪数据兜底
     if (!hasActiveTTSPlugin()) {
-      set({ allVoices: PRESET_VOICES })
-      return PRESET_VOICES
+      set({ allVoices: [] })
+      return []
     }
     try {
       if (typeof window !== 'undefined' && window.electronAPI?.tts?.listVoices) {

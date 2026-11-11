@@ -9,7 +9,7 @@
  * 4. 纯净设计：不包含声音克隆模块，专精极速省电与超轻量开箱即用
  */
 
-import React, { useState, useMemo, useCallback } from 'react'
+import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { Loader2, Volume2, Pause, Play, BookmarkPlus, Zap } from 'lucide-react'
 import { Card } from '../ui/card'
 import { Label } from '../ui/label'
@@ -63,8 +63,13 @@ export const M5TTSSettings: React.FC = () => {
     return DEFAULT_FAVORITE_VOICE_IDS
   }, [config.ttsFavoriteVoices])
 
-  // 2. 音色库数据源 (M5 仅使用 51 款预置高保真音色)
-  const allVoices = PRESET_VOICES
+  // 2. 音色库数据源 (M5 动态拉取 51 款预置高保真音色)
+  const allVoicesFromStore = useTTSAudioStore(s => s.allVoices)
+  const allVoices = allVoicesFromStore && allVoicesFromStore.length > 0 ? allVoicesFromStore : []
+
+  useEffect(() => {
+    ttsAudioStore.refreshVoices()
+  }, [ttsAudioStore])
 
   // 3. 本地搜索与过滤状态
   const [searchQuery, setSearchQuery] = useState('')

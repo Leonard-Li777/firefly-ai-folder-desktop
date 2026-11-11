@@ -32,19 +32,19 @@ const RESOURCE_BYTES_MAP: Record<string, number> = {
   'embeddinggemma-2-onnx': 254003864,
   'nsfw-mobilenetv2': 9556862,
   'nsfw-l3': 33311367,
-  'sherpa-onnx-runtime': 8282676,
   'sensevoice-onnx': 160304482,
   'moss-tts': 240822786,
-  'm5-tts': 305845248
+  'm5-tts': 305845248,
+  'mobile-clip': 57910236
 }
 
 // 模块绑定的物理资源映射
 const MODULE_RESOURCES_MAP: Record<string, string[]> = {
-  engine_classic_light: ['bekko-a8m', 'chinese-clip'],
+  engine_classic_light: ['bekko-a8m', 'chinese-clip', 'mobile-clip'],
   engine_gemma_unified: ['embeddinggemma-2-onnx'],
   perception_nsfw: ['nsfw-mobilenetv2', 'nsfw-l3'],
-  asr_sensevoice_onnx: ['sherpa-onnx-runtime', 'sensevoice-onnx'],
-  tts_moss_onnx: ['sherpa-onnx-runtime', 'moss-tts'],
+  asr_sensevoice_onnx: ['sensevoice-onnx'],
+  tts_moss_onnx: ['moss-tts'],
   tts_m5_onnx: ['m5-tts']
 }
 

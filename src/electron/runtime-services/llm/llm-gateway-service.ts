@@ -18,7 +18,9 @@ import {
   GenerativeEngineInstallationState,
   GenerativeEngineRuntimeState,
   resolveEffectiveMode,
-  ResourceLocator
+  ResourceLocator,
+  PluginPathResolver,
+  BUILTIN_PLUGIN_CATALOG_META
 } from '@firefly/shared'
 import type { TaskSpec, FinishReason } from './task-specs/types'
 import {
@@ -290,50 +292,43 @@ export class LlmGatewayService implements ILlmGatewayService {
   /**
    * 真实探测 CPU 底座模型资产安装状态
    */
+  /**
+   * 单轨权威探测本地 CPU 极速推理引擎安装状态 (§3.2 SSOT)
+   * 仅认 ai_engine_cpu 槽位 active 模块与域 B _shared/pocket-cpu (.ready.json + >=10MB)；
+   * 严禁扫描只读安装目录 extraResources 或非受控旧目录。
+   */
   private probeCpuInstallation(): 'installed' | 'not_installed' | 'corrupt' {
     if (this.installationOverride?.cpu) {
       return this.installationOverride.cpu
     }
 
     try {
-      let userDataDir = ''
-      try {
-        userDataDir = app?.getPath?.('userData') || ''
-      } catch {}
-
-      const candidates = [
-        path.join(ResourceLocator.getBaseResourceDir(), 'models', 'pocket-cpu', 'model.onnx'),
-        path.join(
-          ResourceLocator.getBaseResourceDir(),
-          'models',
-          'pocket-cpu',
-          'model_quantized.onnx'
-        ),
-        path.join(ResourceLocator.getBaseResourceDir(), 'model', 'pocket-cpu', 'model.onnx'),
-        ...(userDataDir
-          ? [
-              path.join(userDataDir, 'modules', '_shared', 'pocket-cpu-int8-onnx', 'model.onnx'),
-              path.join(
-                userDataDir,
-                'modules',
-                '_shared',
-                'pocket-cpu-int8-onnx',
-                'model_quantized.onnx'
-              )
-            ]
-          : [])
-      ]
-      for (const p of candidates) {
-        if (fs.existsSync(p)) {
-          const stat = fs.statSync(p)
-          return stat.size < 1000 ? 'corrupt' : 'installed'
-        }
+      const { modularResourceService } = require('../system/modular-resource-service')
+      const activeCpu = modularResourceService?.getActiveModuleBySlot?.('ai_engine_cpu')
+      if (!activeCpu || activeCpu.install_state !== 'active') {
+        return 'not_installed'
       }
+
+      const meta = BUILTIN_PLUGIN_CATALOG_META['pocket-cpu-int8-onnx']
+      const pluginsRoot = modularResourceService?.getPluginsRootDir?.()
+      if (!pluginsRoot) {
+        return 'corrupt'
+      }
+
+      const readyDir = PluginPathResolver.getReadySharedResourceDirForRoot(
+        pluginsRoot,
+        meta.sharedSubDir,
+        {
+          requiredFileGroups: meta.requiredFileGroups,
+          minPrimaryFileBytes: meta.minPrimaryFileBytes,
+          requireReadyMarker: true
+        }
+      )
+      return readyDir ? 'installed' : 'corrupt'
     } catch (err) {
       logger.warn(LogCategory.SYSTEM, '[LlmGatewayService] 探测 CPU 引擎安装资产异常:', err)
+      return 'not_installed'
     }
-
-    return 'not_installed'
   }
 
   /**

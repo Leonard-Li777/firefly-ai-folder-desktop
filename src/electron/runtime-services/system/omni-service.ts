@@ -9,6 +9,7 @@
  */
 
 import { ChildProcess, spawn } from 'node:child_process'
+import * as crypto from 'node:crypto'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
 import { app, BrowserWindow, dialog, shell } from 'electron'
@@ -18,7 +19,11 @@ import {
   LogCategory,
   APP_PORTS,
   findAvailablePort,
-  isPathEqual
+  isPathEqual,
+  PluginPathResolver,
+  BUILTIN_PLUGIN_CATALOG_META,
+  BuiltinSharedResourceId,
+  CHILD_MODEL_ENV_KEYS_TO_PURGE
 } from '@firefly/shared'
 import { MagikaFileCategory } from '@firefly/types'
 import { resolveAnalysisTimeoutBudget } from './analysis-timeout-policy'
@@ -555,6 +560,16 @@ export class OmniService {
   private binaryMissingNotifyDeferred = false
   private instanceLock: OmniInstanceLock | null = null
   private tokenManager: OmniTokenManager | null = null
+  private isIntentionalStopping = false
+  private managedLifecycleActive = false
+  private currentMountManifestPath: string | null = null
+  private lastExpectedMounts: {
+    manifestPath: string | null
+    sharedDir: string | null
+    expectedResourceIds: string[]
+    strict: boolean
+  } | null = null
+  private lastMountValidationError: string | null = null
 
   /** 开发态二进制热更新检测周期 (毫秒) */
   private static readonly DEV_BINARY_WATCH_INTERVAL_MS = 3_000
@@ -599,18 +614,18 @@ export class OmniService {
       if (app && typeof app.on === 'function') {
         app.on('will-quit', () => {
           this.stopDevBinaryWatch()
-          this.stop()
+          this.stopImmediatelySync()
         })
         app.on('before-quit', () => {
           this.stopDevBinaryWatch()
-          this.stop()
+          this.stopImmediatelySync()
         })
       }
 
       // 注册 Node.js 进程级退出事件（针对开发模式下 Ctrl+C 或终端被杀）
       const cleanExit = () => {
         this.stopDevBinaryWatch()
-        this.stop()
+        this.stopImmediatelySync()
       }
       process.once('exit', cleanExit)
       process.once('SIGINT', cleanExit)
@@ -623,7 +638,7 @@ export class OmniService {
       if (process.platform === 'win32') {
         process.once('message', (msg: any) => {
           if (msg === 'shutdown') {
-            this.stop()
+            this.stopImmediatelySync()
           }
         })
       }
@@ -1067,7 +1082,10 @@ export class OmniService {
   }
 
   private async doStart(): Promise<boolean> {
+    this.managedLifecycleActive = true
+    this.isIntentionalStopping = false
     this.isStarting = true
+    this.lastMountValidationError = null
     // 缺失冷却检查：避免每个文件都触发一次 resolveOmniExecutable 的遍历
     if (this.missingBinaryRetryAt > Date.now()) {
       logger.debug(
@@ -1179,7 +1197,7 @@ export class OmniService {
 
       // 若未找到属于当前 Worktree 的运行中实例，且存在旧的未退出子进程，先执行安全清理（仅终止物理进程，不重置 isStarting 标记）
       if (this.process && !this.process.killed) {
-        this.killCurrentProcess()
+        this.forceKillProcessTree(this.process)
         await new Promise(r => setTimeout(r, 300))
       }
       this.isStarting = true
@@ -1292,154 +1310,163 @@ export class OmniService {
       // 永久锁定只读安装目录 extraResources/bin/omni，严禁从用户自定义插件目录加载 DLL
       env.FIREFLY_ONNX_DIR = binDir
 
-      // 提取当前生效的唯一插件根目录并注入 FIREFLY_MODULES_ROOT
+      // 单轨挂载前强制净化继承环境中的全部域 B 模型路径环境变量，阻断宿主机环境变量静默注入
+      for (const purgeKey of CHILD_MODEL_ENV_KEYS_TO_PURGE) {
+        delete env[purgeKey]
+      }
+      delete env.FIREFLY_ACTIVE_MODEL_MOUNTS_FILE
+      delete env.FIREFLY_STRICT_ACTIVE_PLUGINS
+      delete env.FIREFLY_SHARED_DIR
+      delete env.OMNI_PPOCR_MODEL_PATH
+
+      // 生成本次启动专属的唯一单轨挂载清单（域 A 与域 B 严格分界）
       let pluginsRoot = ''
+      let sharedDir = ''
+      let mountManifestPath: string | null = null
+      let expectedMountResourceIds: string[] = []
+      const mountsRecord: Record<string, Record<string, unknown>> = {}
+
       try {
         const { modularResourceService } = await import('./modular-resource-service')
         pluginsRoot = modularResourceService?.getPluginsRootDir?.() || ''
-      } catch {}
-      if (pluginsRoot) {
-        env.FIREFLY_MODULES_ROOT = pluginsRoot
-        logger.info(
+        const rootUnavailable = modularResourceService?.isRootUnavailable?.() === true
+
+        if (pluginsRoot) {
+          env.FIREFLY_MODULES_ROOT = pluginsRoot
+          sharedDir = PluginPathResolver.getSharedDirForRoot(pluginsRoot)
+          env.FIREFLY_SHARED_DIR = sharedDir
+          logger.info(
+            LogCategory.SYSTEM,
+            `[OmniService] 🧩 统一插件根目录 (FIREFLY_MODULES_ROOT): ${pluginsRoot}`
+          )
+        }
+
+        if (!rootUnavailable && modularResourceService) {
+          const resourceIdToModuleInfo = new Map<
+            string,
+            { moduleId: string; capabilitySlot: string }
+          >()
+          for (const mod of modularResourceService.listModules?.() || []) {
+            if (mod.install_state !== 'active') continue
+            for (const res of mod.resources || []) {
+              resourceIdToModuleInfo.set(res.resource_id, {
+                moduleId: mod.id,
+                capabilitySlot: mod.capability_slot || 'general'
+              })
+            }
+          }
+
+          const mountable = modularResourceService.getMountableResourcesSnapshot?.() || []
+          for (const item of mountable) {
+            const meta =
+              item.catalogMeta ||
+              BUILTIN_PLUGIN_CATALOG_META[item.resourceId as BuiltinSharedResourceId]
+            if (!meta || !item.physicalDir) continue
+
+            const envValue =
+              meta.envVarType === 'file' && meta.envFileRelativePath
+                ? path.join(item.physicalDir, meta.envFileRelativePath)
+                : item.physicalDir
+            if (meta.envVarType === 'file' && !fs.existsSync(envValue)) {
+              logger.warn(
+                LogCategory.SYSTEM,
+                `[OmniService] 跳过缺失目标文件的共享资源挂载: ${item.resourceId} (${envValue})`
+              )
+              continue
+            }
+
+            // 仅向白名单生效资源注入对应 Env（禁止回退 extraResources / ~/.cache）
+            env[meta.targetEnvVar] = envValue
+
+            if (meta.optionalFileEnvVar) {
+              const optPath = path.join(item.physicalDir, meta.optionalFileEnvVar.relativePath)
+              if (fs.existsSync(optPath)) {
+                env[meta.optionalFileEnvVar.envVar] = optPath
+              }
+            }
+
+            const modInfo = resourceIdToModuleInfo.get(item.resourceId) || {
+              moduleId: '',
+              capabilitySlot: 'general'
+            }
+            mountsRecord[item.resourceId] = {
+              resourceId: item.resourceId,
+              moduleId: modInfo.moduleId,
+              capabilitySlot: modInfo.capabilitySlot,
+              dir: item.physicalDir,
+              envVar: meta.targetEnvVar,
+              envValue,
+              requiredFileGroups: meta.requiredFileGroups.map(g => [...g]),
+              minPrimaryFileBytes: meta.minPrimaryFileBytes,
+              ...(meta.tower ? { tower: meta.tower } : {}),
+              ...(typeof meta.dim === 'number' ? { dim: meta.dim } : {}),
+              ...(typeof meta.encoderId === 'number' ? { encoderId: meta.encoderId } : {}),
+              ...(meta.vocabMeta ? { vocabMeta: { ...meta.vocabMeta } } : {})
+            }
+            expectedMountResourceIds.push(item.resourceId)
+          }
+        } else if (rootUnavailable) {
+          logger.warn(
+            LogCategory.SYSTEM,
+            '[OmniService] 检测到插件根目录不可用，写入空挂载清单仅拉起域 A 基础能力'
+          )
+        }
+      } catch (snapErr) {
+        logger.warn(
           LogCategory.SYSTEM,
-          `[OmniService] 🧩 统一插件根目录 (FIREFLY_MODULES_ROOT): ${pluginsRoot}`
+          '[OmniService] 读取插件挂载快照失败，使用空挂载清单拉起 Omni:',
+          snapErr
         )
       }
 
-      const isSharedModuleReady = (resourceId: string): string | null => {
-        if (!pluginsRoot) return null
-        const targetDir = path.join(pluginsRoot, '_shared', resourceId)
-        if (!fs.existsSync(targetDir)) return null
-        try {
-          const files = fs.readdirSync(targetDir)
-          if (files.some(f => f.startsWith('.ready-') && f.endsWith('.json'))) {
-            return targetDir
-          }
-        } catch {}
-        return null
+      try {
+        fs.mkdirSync(runDir, { recursive: true })
+        const manifestFileName = `active-mounts-${process.pid}-${Date.now()}-${crypto.randomUUID().slice(0, 8)}.json`
+        const manifestAbsPath = path.join(runDir, manifestFileName)
+        const tmpManifestPath = `${manifestAbsPath}.tmp`
+        const manifestPayload = {
+          version: 1,
+          generatedAt: Date.now(),
+          pid: process.pid,
+          sharedDir,
+          strict: true,
+          mounts: mountsRecord
+        }
+        fs.writeFileSync(tmpManifestPath, JSON.stringify(manifestPayload, null, 2), 'utf-8')
+        fs.renameSync(tmpManifestPath, manifestAbsPath)
+
+        mountManifestPath = manifestAbsPath
+        env.FIREFLY_ACTIVE_MODEL_MOUNTS_FILE = manifestAbsPath
+        env.FIREFLY_STRICT_ACTIVE_PLUGINS = '1'
+        this.currentMountManifestPath = manifestAbsPath
+        logger.info(
+          LogCategory.SYSTEM,
+          `[OmniService] 📦 下发单轨挂载清单 (${expectedMountResourceIds.length} 项): ${expectedMountResourceIds.join(', ') || 'none'}`
+        )
+      } catch (manifestWriteErr) {
+        logger.error(
+          LogCategory.SYSTEM,
+          '[OmniService] 写入单轨挂载清单失败，强制启用 strict 保护模式:',
+          manifestWriteErr
+        )
+        env.FIREFLY_STRICT_ACTIVE_PLUGINS = '1'
       }
 
-      // Bekko 离线文本向量模型下发
-      const bekkoDir =
-        isSharedModuleReady('bekko-a8m') ||
-        ResourceLocator.resolveResourcePath?.('modules/_shared/bekko-a8m')
-      if (bekkoDir && fs.existsSync(bekkoDir)) {
-        env.BEKKO_MODEL_PATH = bekkoDir
+      const expectedMountsSnapshot = {
+        manifestPath: mountManifestPath,
+        sharedDir: sharedDir || null,
+        expectedResourceIds: [...expectedMountResourceIds],
+        strict: true
       }
+      this.lastExpectedMounts = expectedMountsSnapshot
 
-      // Chinese-CLIP 视觉多模态嵌入模型下发
-      const clipDir =
-        isSharedModuleReady('chinese-clip-int8-v3') ||
-        isSharedModuleReady('clip-vit-base-patch32') ||
-        ResourceLocator.resolveResourcePath?.('modules/_shared/chinese-clip-int8-v3')
-      if (clipDir && fs.existsSync(clipDir)) {
-        env.CLIP_MODEL_PATH = clipDir
-      }
-
-      // Gemma 统一多模态嵌入模型下发
-      const gemmaDir =
-        isSharedModuleReady('embeddinggemma-300m') ||
-        isSharedModuleReady('gemma-2-2b-it-cpu-int8') ||
-        ResourceLocator.resolveResourcePath?.('modules/_shared/embeddinggemma-300m')
-      if (gemmaDir && fs.existsSync(gemmaDir)) {
-        env.GEMMA_MODEL_PATH = gemmaDir
-      }
-
-      // Sherpa-ONNX 语音听写离线模型下发
-      const sherpaDir =
-        isSharedModuleReady('sensevoice-onnx-int8') ||
-        isSharedModuleReady('sensevoice-onnx') ||
-        ResourceLocator.resolveResourcePath?.('modules/_shared/sensevoice-onnx-int8')
-      if (sherpaDir && fs.existsSync(sherpaDir)) {
-        env.FIREFLY_SHERPA_SENSEVOICE_DIR = sherpaDir
-      }
-
-      // PP-OCRv6 字符识别与检测模型路径显式下发
-      const ppocrDir =
-        isSharedModuleReady('ppocrv6') ||
-        isSharedModuleReady('pp-ocrv6') ||
-        ResourceLocator.resolveResourcePath?.('modules/_shared/ppocrv6')
+      // PP-OCRv6 属于应用随包只读域 A 模型，严格且仅从 ResourceLocator/models/PP-OCRv6 解析（严禁扫描 _shared）
+      const ppocrDir = ResourceLocator.resolveResourcePath?.('models/PP-OCRv6')
       if (ppocrDir && fs.existsSync(ppocrDir)) {
         env.OMNI_PPOCR_MODEL_PATH = ppocrDir
         logger.info(
           LogCategory.SYSTEM,
-          `[OmniService] 🔤 PP-OCRv6 模型目录 (OMNI_PPOCR_MODEL_PATH): ${ppocrDir}`
-        )
-      }
-
-      // MOSS-TTS 48kHz 原生离线语音合成模型与预置音色库路径下发
-      const mossDir =
-        isSharedModuleReady('moss-tts') ||
-        ResourceLocator.resolveResourcePath?.('modules/_shared/moss-tts') ||
-        (fs.existsSync(
-          path.join(
-            process.env.USERPROFILE || process.env.HOME || '',
-            '.cache/moss_tts_test/models/MOSS-TTS-Nano-100M-ONNX'
-          )
-        )
-          ? path.join(
-              process.env.USERPROFILE || process.env.HOME || '',
-              '.cache/moss_tts_test/models/MOSS-TTS-Nano-100M-ONNX'
-            )
-          : null)
-      if (mossDir && fs.existsSync(path.join(mossDir, 'moss_tts_prefill.onnx'))) {
-        env.OMNI_MOSS_MODEL_PATH = mossDir
-        logger.info(
-          LogCategory.SYSTEM,
-          `[OmniService] 🎙️ MOSS-TTS 模型目录 (OMNI_MOSS_MODEL_PATH): ${mossDir}`
-        )
-      }
-
-      const candidateVoicesPaths = [
-        mossDir ? path.join(mossDir, 'preset_voices.bin') : null,
-        ResourceLocator.resolveResourcePath?.('modules/_shared/moss-tts/preset_voices.bin'),
-        path.join(
-          process.env.USERPROFILE || process.env.HOME || '',
-          '.cache/moss_tts_test/test_voices.bin'
-        )
-      ]
-      let voicesPath: string | null = null
-      for (const cand of candidateVoicesPaths) {
-        if (cand && fs.existsSync(cand)) {
-          voicesPath = cand
-          break
-        }
-      }
-      if (voicesPath) {
-        env.OMNI_MOSS_VOICES_PATH = voicesPath
-        logger.info(
-          LogCategory.SYSTEM,
-          `[OmniService] 🎙️ MOSS-TTS 预置音色库 (OMNI_MOSS_VOICES_PATH): ${voicesPath}`
-        )
-      }
-
-      // NSFW-L3 深度敏感分类模型目录显式下发
-      const candidateNsfwL3Dirs = [
-        isSharedModuleReady('nsfw-l3'),
-        ResourceLocator.resolveResourcePath?.('modules/_shared/nsfw-l3'),
-        path.join(process.cwd(), 'apps/desktop/build/extraResources/modules/_shared/nsfw-l3'),
-        path.join(binDir, '../../modules/_shared/nsfw-l3')
-      ]
-      const isNsfwL3DirReady = (dir: string): boolean =>
-        fs.existsSync(path.join(dir, 'nsfw_l3_int8.onnx')) &&
-        fs.existsSync(path.join(dir, 'tokenizer.json'))
-      let nsfwL3Dir: string | null = null
-      for (const cand of candidateNsfwL3Dirs) {
-        if (cand && isNsfwL3DirReady(cand)) {
-          nsfwL3Dir = cand
-          break
-        }
-      }
-      if (nsfwL3Dir) {
-        env.NSFW_L3_MODEL_PATH = nsfwL3Dir
-        logger.info(
-          LogCategory.SYSTEM,
-          `[OmniService] 🛡️ NSFW-L3 模型目录 (NSFW_L3_MODEL_PATH): ${nsfwL3Dir}`
-        )
-      } else {
-        logger.warn(
-          LogCategory.SYSTEM,
-          `[OmniService] 未解析到 NSFW-L3 深度敏感模型，L3 深度语义通道保持关闭（仅 L1/L2 生效）`
+          `[OmniService] 🔤 PP-OCRv6 只读底座模型目录 (OMNI_PPOCR_MODEL_PATH): ${ppocrDir}`
         )
       }
 
@@ -1542,17 +1569,29 @@ export class OmniService {
       })
 
       child.on('exit', async (code, signal) => {
+        const wasCurrentChild = this.process === child
         logger.warn(LogCategory.SYSTEM, `[OmniService] 子进程退出 (code=${code}, signal=${signal})`)
         try {
           const { processReaper } = require('../../main/process-reaper')
           processReaper.unregisterChild(child.pid)
         } catch {}
-        if (this.process === child) {
+        if (wasCurrentChild) {
           this.process = null
+        }
+        this.unlinkManifestSafe(expectedMountsSnapshot.manifestPath)
+        if (
+          expectedMountsSnapshot.manifestPath &&
+          this.currentMountManifestPath === expectedMountsSnapshot.manifestPath
+        ) {
+          this.currentMountManifestPath = null
         }
         // 主动推送"未运行"状态至渲染进程（基础AI引擎 Footer 展示）
         this.pushStatus().catch(() => {})
-        // 子进程退出后，先检测是否对应端口上已有服务接管，若健康则直接接入，不触发重启
+        // 若正在主动停机（卸载/切换/退出）或已被新一轮子进程接替，绝不允许触发自愈重启或端口接管
+        if (this.isIntentionalStopping || !wasCurrentChild) {
+          return
+        }
+        // 子进程异常退出后，先检测是否对应端口上已有服务接管，若健康则直接接入，不触发重启
         const aliveAfterExit = await this.checkHealth()
         if (aliveAfterExit) {
           logger.info(
@@ -1569,14 +1608,18 @@ export class OmniService {
 
       this.process = child
 
-      // 等待服务就绪探活 (最多 400 次 * 200ms = 80秒，容纳 71.6 万条多语言别名冷启动解密热载与 SenseVoice/MOSS-TTS 多模型并发加载时间)
+      // 等待服务就绪探活 (最多 400 次 * 200ms = 80秒，容纳多模型并发加载时间)
       for (let i = 0; i < 400; i++) {
         // 关键防御：若子进程在探活期间提前退出或被终止，立即中止等待，拒绝僵尸死等 80s 阻塞系统
-        // 物理事实守卫：仅当子进程真正退出 (exitCode !== null) 或被显式 kill 时才判定为退出，杜绝状态位竞争引发的假性误杀
-        if (child.exitCode !== null || child.killed || this.process !== child) {
+        if (
+          child.exitCode !== null ||
+          child.killed ||
+          this.process !== child ||
+          this.isIntentionalStopping
+        ) {
           logger.warn(
             LogCategory.SYSTEM,
-            `[OmniService] firefly-omni 子进程在就绪前异常退出 (exitCode=${child.exitCode}, killed=${child.killed})，中止启动探活`
+            `[OmniService] firefly-omni 子进程在就绪前退出或中止 (exitCode=${child.exitCode}, killed=${child.killed}, stopping=${this.isIntentionalStopping})`
           )
           this.isStarting = false
           return false
@@ -1584,6 +1627,18 @@ export class OmniService {
 
         await new Promise(r => setTimeout(r, 200))
         if (await this.checkHealth()) {
+          const verifyRes = await this.verifyMountManifestStatus(expectedMountsSnapshot)
+          if (!verifyRes.ok) {
+            this.lastMountValidationError = verifyRes.error || '挂载清单双向核验未通过'
+            logger.error(
+              LogCategory.SYSTEM,
+              `[OmniService] 挂载清单双向核验失败 (Fail-Closed)，停机阻断激活: ${this.lastMountValidationError}`
+            )
+            await this.stop()
+            this.isStarting = false
+            this.pushStatus().catch(() => {})
+            return false
+          }
           logger.info(
             LogCategory.SYSTEM,
             `[OmniService] firefly-omni 服务就绪并在 ${this.baseUrl} 正常监听`
@@ -1609,7 +1664,7 @@ export class OmniService {
         LogCategory.SYSTEM,
         `[OmniService] firefly-omni 启动探活超时 (80s)，终止当前未就绪子进程`
       )
-      this.stop()
+      await this.stop()
       this.isStarting = false
       // 启动失败（探活超时），推送"未运行"状态
       this.pushStatus().catch(() => {})
@@ -1627,25 +1682,69 @@ export class OmniService {
   /**
    * 物理终止当前持有的 firefly-omni 子进程树（纯净终止，不污染 isStarting 状态机）
    */
-  private killCurrentProcess(): void {
-    if (this.process) {
-      const pid = this.process.pid
-      try {
-        const { processReaper } = require('../../main/process-reaper')
-        processReaper.unregisterChild(pid)
-      } catch {}
-      try {
-        if (process.platform === 'win32' && pid) {
-          try {
-            const { execSync } = require('node:child_process')
-            execSync(`taskkill /pid ${pid} /T /F`, { stdio: 'ignore' })
-          } catch {}
-        }
-        this.process.kill('SIGKILL')
-        logger.info(LogCategory.SYSTEM, `[OmniService] 已彻底终止 firefly-omni 进程树 (PID=${pid})`)
-      } catch {}
-      this.process = null
+  /**
+   * 强制终结子进程树辅助方法
+   */
+  private forceKillProcessTree(child: ChildProcess | null): void {
+    if (!child) return
+    const pid = child.pid
+    try {
+      const { processReaper } = require('../../main/process-reaper')
+      processReaper.unregisterChild(pid)
+    } catch {}
+    try {
+      if (process.platform === 'win32' && pid) {
+        try {
+          const { execSync } = require('node:child_process')
+          execSync(`taskkill /pid ${pid} /T /F`, { stdio: 'ignore' })
+        } catch {}
+      }
+      if (child.exitCode === null && child.signalCode === null) {
+        child.kill('SIGKILL')
+      }
+      logger.info(LogCategory.SYSTEM, `[OmniService] 已彻底终止 firefly-omni 进程树 (PID=${pid})`)
+    } catch {}
+  }
+
+  /**
+   * 安全清理单轨挂载清单临时文件
+   */
+  private unlinkManifestSafe(manifestPath: string | null | undefined): void {
+    if (!manifestPath) return
+    try {
+      if (fs.existsSync(manifestPath)) {
+        fs.unlinkSync(manifestPath)
+      }
+    } catch {}
+  }
+
+  /**
+   * 判定 Omni 是否处于受管运行时生命周期内（区分独立 DB 单测与完整运行期）
+   */
+  public isManagedLifecycleActive(): boolean {
+    return this.managedLifecycleActive
+  }
+
+  /**
+   * 返回最近一次挂载清单双向校验错误信息
+   */
+  public getLastMountValidationError(): string | null {
+    return this.lastMountValidationError
+  }
+
+  /**
+   * 同步立即终结当前持有的 firefly-omni 进程树（仅用于 process.once('exit') / 信号强制退出）
+   */
+  public stopImmediatelySync(): void {
+    this.isIntentionalStopping = true
+    this.isStarting = false
+    if (this.restartTimeout) {
+      clearTimeout(this.restartTimeout)
+      this.restartTimeout = null
     }
+    const child = this.process
+    this.process = null
+    this.forceKillProcessTree(child)
 
     if (this.instanceLock) {
       this.instanceLock.release()
@@ -1654,6 +1753,156 @@ export class OmniService {
     if (this.tokenManager) {
       this.tokenManager.removeToken()
       this.tokenManager = null
+    }
+    const manifestPath = this.currentMountManifestPath
+    this.currentMountManifestPath = null
+    this.unlinkManifestSafe(manifestPath)
+    broadcastOmniStatus({ running: false, version: null })
+  }
+
+  /**
+   * 双向核验 /api/v1/engine/status 中的 mountManifest 与 mobileClipVocab
+   */
+  public async verifyMountManifestStatus(expected?: {
+    manifestPath: string | null
+    sharedDir: string | null
+    expectedResourceIds: string[]
+    strict: boolean
+  }): Promise<{ ok: boolean; error?: string; statusData?: Record<string, any> }> {
+    const target = expected ?? this.lastExpectedMounts
+    try {
+      const res = await fetch(`${this.baseUrl}/api/v1/engine/status`, {
+        signal: AbortSignal.timeout(2500)
+      })
+      if (!res.ok) {
+        return { ok: false, error: `/api/v1/engine/status 响应异常: HTTP ${res.status}` }
+      }
+      const data = (await res.json()) as Record<string, any>
+      const mm = data?.mountManifest
+
+      if (target?.manifestPath) {
+        if (!mm || typeof mm !== 'object') {
+          return { ok: false, error: 'Omni 未返回 mountManifest 遥测对象', statusData: data }
+        }
+        if (mm.strict !== true || mm.mode !== 'manifest_single_track') {
+          return {
+            ok: false,
+            error: `Omni 未以单轨 strict 清单模式运行 (mode=${mm.mode}, strict=${mm.strict}, error=${mm.error || 'none'})`,
+            statusData: data
+          }
+        }
+        if (mm.manifestPath && !isPathEqual(mm.manifestPath, target.manifestPath)) {
+          return {
+            ok: false,
+            error: `Omni 挂载清单路径不一致: expected=${target.manifestPath}, actual=${mm.manifestPath}`,
+            statusData: data
+          }
+        }
+        if (mm.error) {
+          return { ok: false, error: `Omni 挂载清单校验报错: ${mm.error}`, statusData: data }
+        }
+
+        const actualActiveSet = new Set<string>(
+          Array.isArray(mm.activeResourceIds) ? mm.activeResourceIds : []
+        )
+        const rejectedList = Array.isArray(mm.rejectedMounts) ? mm.rejectedMounts : []
+        for (const reqId of target.expectedResourceIds) {
+          const rej = rejectedList.find((r: any) => r?.resourceId === reqId)
+          if (rej) {
+            return {
+              ok: false,
+              error: `资源 ${reqId} 被 Rust 运行时门禁拒绝: ${rej.reason || '未知原因'}`,
+              statusData: data
+            }
+          }
+          if (!actualActiveSet.has(reqId)) {
+            return {
+              ok: false,
+              error: `预期激活资源 ${reqId} 未出现在 Omni activeResourceIds 中`,
+              statusData: data
+            }
+          }
+        }
+
+        // 若本次激活挂载了 mobile-clip，检查英文词表双向核验（Pro 模式下 vocab.valid 必须为 true）
+        if (target.expectedResourceIds.includes('mobile-clip')) {
+          const vocab = data?.mobileClipVocab
+          const isPro = Boolean(data?.isPro ?? vocab != null)
+          if (isPro && (!vocab || vocab.valid !== true || vocab.status !== 'ready')) {
+            return {
+              ok: false,
+              error: `MobileCLIP 英文词表校验未就绪 (status=${vocab?.status || 'missing'}, reason=${vocab?.rejectReason || 'unknown'})`,
+              statusData: data
+            }
+          }
+        }
+      }
+
+      return { ok: true, statusData: data }
+    } catch (err: any) {
+      return {
+        ok: false,
+        error: `查询 /api/v1/engine/status 异常: ${err?.message || String(err)}`
+      }
+    }
+  }
+
+  /**
+   * 响应插件拓扑变更（激活、切换、卸载、后台修复完成）：
+   * 重启 Omni 刷新单轨清单并执行真实能力探活；失败即抛出异常以触发上层状态/Epoch 回滚
+   */
+  public async handleTopologyChanged(opts: {
+    moduleId?: string
+    reason: string
+    restartPolicy: 'restart' | 'ensure-running' | 'none'
+  }): Promise<void> {
+    if (!this.managedLifecycleActive || opts.restartPolicy === 'none') {
+      return
+    }
+
+    let ok = false
+    if (opts.restartPolicy === 'ensure-running' && !this.process) {
+      const alive = await this.checkHealth().catch(() => false)
+      ok = alive ? true : await this.start()
+    } else {
+      ok = await this.restart()
+    }
+
+    if (!ok) {
+      throw new Error(this.lastMountValidationError || 'Omni 引擎重启或单轨挂载清单双向校验失败')
+    }
+
+    // 针对主动切换/激活的独占能力执行实时健康冒烟验证（防止仅进程存活而推理链断链）
+    const isActivationCheck = opts.reason === 'module_change' && Boolean(opts.moduleId)
+    if (!isActivationCheck || !opts.moduleId) {
+      return
+    }
+
+    if (opts.moduleId === 'engine_classic_light' || opts.moduleId === 'engine_gemma_unified') {
+      const profile = opts.moduleId === 'engine_gemma_unified' ? 'gemma_unified' : 'classic_light'
+      const smoke = await this.runSmokeTest({ profile })
+      if (!smoke.success) {
+        throw new Error(smoke.error || `向量底座 ${opts.moduleId} 激活冒烟失败`)
+      }
+    } else if (opts.moduleId === 'tts_moss_onnx' || opts.moduleId === 'tts_m5_onnx') {
+      const expectedEngine =
+        opts.moduleId === 'tts_m5_onnx' ? 'm5-tts-50m-int8' : 'moss-tts-nano-100m'
+      const statusRes = await fetch(`${this.baseUrl}/api/audio/tts/status`, {
+        signal: AbortSignal.timeout(4000)
+      })
+      if (!statusRes.ok) {
+        throw new Error(`TTS 服务状态查询失败: HTTP ${statusRes.status}`)
+      }
+      const ttsStatus = (await statusRes.json()) as {
+        ready?: boolean
+        total_voices?: number
+        engine?: string
+      }
+      if (!ttsStatus?.ready || ttsStatus.engine !== expectedEngine) {
+        throw new Error(
+          `TTS 引擎挂载验证未通过 (expected=${expectedEngine}, actual=${ttsStatus?.engine || 'none'}, ready=${Boolean(ttsStatus?.ready)})`
+        )
+      }
     }
   }
 
@@ -1664,14 +1913,65 @@ export class OmniService {
     return this.tokenManager?.readToken()?.token || null
   }
 
-  public stop(): void {
+  /**
+   * 两阶段停机协议：SIGTERM 优雅落盘（<=1.5s）-> taskkill /T /F + SIGKILL -> 等待关闭与端口释放
+   */
+  public async stop(): Promise<void> {
+    this.isIntentionalStopping = true
     this.isStarting = false
     if (this.restartTimeout) {
       clearTimeout(this.restartTimeout)
       this.restartTimeout = null
     }
+    const manifestToCleanup = this.currentMountManifestPath
+    this.currentMountManifestPath = null
 
-    this.killCurrentProcess()
+    const child = this.process
+    if (child) {
+      const pid = child.pid
+      this.process = null
+      try {
+        const { processReaper } = require('../../main/process-reaper')
+        processReaper.unregisterChild(pid)
+      } catch {}
+
+      const waitChildClose = new Promise<void>(resolve => {
+        if (child.exitCode !== null || child.signalCode !== null) {
+          resolve()
+          return
+        }
+        const onDone = () => resolve()
+        child.once('close', onDone)
+        child.once('exit', onDone)
+      })
+
+      try {
+        if (child.exitCode === null && child.signalCode === null) {
+          child.kill('SIGTERM')
+        }
+      } catch {}
+
+      await Promise.race([waitChildClose, new Promise<void>(resolve => setTimeout(resolve, 1500))])
+
+      if (child.exitCode === null && child.signalCode === null) {
+        this.forceKillProcessTree(child)
+        await Promise.race([
+          waitChildClose,
+          new Promise<void>(resolve => setTimeout(resolve, 2000))
+        ])
+      }
+    }
+
+    if (this.instanceLock) {
+      this.instanceLock.release()
+      this.instanceLock = null
+    }
+    if (this.tokenManager) {
+      this.tokenManager.removeToken()
+      this.tokenManager = null
+    }
+    this.unlinkManifestSafe(manifestToCleanup)
+    await this.waitForPortReleased(3000)
     // 主动推送"未运行"状态至渲染进程（基础AI引擎 Footer 展示）
     broadcastOmniStatus({ running: false, version: null })
   }
@@ -1692,14 +1992,15 @@ export class OmniService {
   }
 
   /**
-   * 优雅热重启 Omni 服务（档位变更或异常恢复）
+   * 优雅热重启 Omni 服务（档位变更、插件拓扑变化或异常恢复）
    */
   public async restart(): Promise<boolean> {
     logger.info(LogCategory.SYSTEM, '[OmniService] 正在优雅重启 Omni 服务进程...')
-    this.stop()
-    if (this.startPromise) {
+    const pendingStart = this.startPromise
+    await this.stop()
+    if (pendingStart) {
       try {
-        await this.startPromise
+        await pendingStart
       } catch {}
     }
     await this.waitForPortReleased(3000)
@@ -1710,6 +2011,9 @@ export class OmniService {
    * 指数退避自愈重启
    */
   private async scheduleRestart(): Promise<void> {
+    if (this.isIntentionalStopping) {
+      return
+    }
     if (await this.checkHealth()) {
       logger.info(LogCategory.SYSTEM, '[OmniService] Omni 服务已在运行，跳过重启')
       this.restartAttempts = 0
@@ -3018,8 +3322,8 @@ export class OmniService {
   }
 
   /**
-   * 基础引擎解耦探活冒烟自检协议 (Decoupled Smoke Test)
-   * 向 Omni 进程显式发送 POST /api/engine/smoke-test，传入 profile 与 model_paths 进行 5-Token 推理验证
+   * 基础引擎真实推理探活冒烟自检协议 (Real Inference Smoke Test)
+   * 先通过 /api/v1/engine/status 双向核验挂载清单，再直连 POST /api/v1/vector/batch-embed-text 执行真实张量嵌入
    */
   public async runSmokeTest(payload: {
     profile: 'classic_light' | 'gemma_unified'
@@ -3028,38 +3332,34 @@ export class OmniService {
   }): Promise<{ success: boolean; latency_ms?: number; error?: string }> {
     try {
       await this.ensureRunning()
+      const verify = await this.verifyMountManifestStatus()
+      if (!verify.ok) {
+        return { success: false, error: verify.error || '挂载清单校验未通过' }
+      }
+
       const tokens = payload.test_tokens || ['test', '向量', 'search', '检索', 'firefly']
-      const timer = AbortSignal.timeout(5000)
-      const res = await fetch(`${this.baseUrl}/api/engine/smoke-test`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          profile: payload.profile,
-          model_paths: payload.model_paths || {},
-          test_tokens: tokens
-        }),
-        signal: timer
+      const testEmbed = await this.batchEmbedText(tokens, {
+        profile: payload.profile,
+        timeoutMs: 4000
       })
-
-      if (!res.ok) {
-        if (res.status === 404 || res.status === 501) {
-          const testEmbed = await this.batchEmbedText(tokens, {
-            profile: payload.profile,
-            timeoutMs: 4000
-          })
-          return {
-            success: Boolean(testEmbed && testEmbed.vectors.length > 0),
-            latency_ms: testEmbed.durationMs
-          }
+      if (
+        !testEmbed ||
+        !Array.isArray(testEmbed.vectors) ||
+        testEmbed.vectors.length !== tokens.length
+      ) {
+        return {
+          success: false,
+          error: `真实向量推理返回数目异常 (expected=${tokens.length}, actual=${testEmbed?.vectors?.length ?? 0})`
         }
-        return { success: false, error: `HTTP ${res.status}: ${res.statusText}` }
       }
-
-      const data = (await res.json()) as any
-      if (data && data.success !== false) {
-        return { success: true, latency_ms: data.latency_ms }
+      const firstDim = testEmbed.vectors[0]?.length ?? 0
+      if (firstDim === 0) {
+        return { success: false, error: '真实向量推理返回 0 维空向量' }
       }
-      return { success: false, error: data?.error || '冒烟自检校验失败' }
+      return {
+        success: true,
+        latency_ms: testEmbed.durationMs
+      }
     } catch (err: any) {
       logger.warn(
         LogCategory.SYSTEM,

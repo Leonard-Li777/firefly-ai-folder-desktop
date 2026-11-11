@@ -56,16 +56,6 @@
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/ppocrv6-resources.zip"
       }
     },
-    "LFM2.5-1.2B-Instruct-GGUF": {
-      "version": "Q4_K_M",
-      "source": "shared",
-      "asset": {
-        "name": "LFM2.5-1.2B-Instruct-GGUF--Q4_K_M.zip",
-        "sha256": "2902a813b175c48b9d77259c4ebb16e21f7567fc74316d2f27641c8c7ead3d1e",
-        "size": 730895438,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/LFM2.5-1.2B-Instruct-GGUF--Q4_K_M.zip"
-      }
-    },
     "onnxruntime-directml": {
       "version": "1.24.4",
       "source": "shared",
@@ -225,14 +215,14 @@
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/bekko-a8m-1.0.0.zip"
       }
     },
-    "sherpa-onnx-runtime": {
-      "version": "1.13.8",
+    "m5-tts": {
+      "version": "1.0.0",
       "source": "shared",
       "asset": {
-        "name": "sherpa-onnx-runtime-1.13.8-win32-x64.zip",
-        "sha256": "3cb751f7e27d9c0768687487335d67bee3dd9694b6825e50ee439ade7cb6bd04",
-        "size": 8282676,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/sherpa-onnx-runtime-1.13.8-win32-x64.zip"
+        "name": "m5-tts-1.0.0.zip",
+        "sha256": "814b190f671e32a7e19add7655b032145ef96fc560f3326466042b5b4d96c240",
+        "size": 305845248,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/m5-tts-1.0.0.zip"
       }
     },
     "moss-tts": {

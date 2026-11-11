@@ -20,7 +20,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { app } from 'electron'
-import { isSubPath, isPathEqual } from '@firefly/shared'
+import { isSubPath, isPathEqual, PluginPathResolver, SecurityViolationError } from '@firefly/shared'
 import type { PluginDirErrorCode, ValidatePluginDirResult } from '@firefly/types/config-types'
 
 export class ModularResourceError extends Error {
@@ -432,69 +432,17 @@ export async function validatePluginDirectory(
 }
 
 /**
- * 防目录穿越的物理路径反解规范 (resolvePhysicalPath)
- *
- * @doc-anchor: docs/specs/custom-plugin-directory-and-mirror-download-spec.md §6.4
+ * @deprecated 请直接调用 `@firefly/shared` 中的 `PluginPathResolver.resolvePhysicalPathForRoot`（或已初始化后的 `resolvePhysicalPath`）。
+ * 保留本函数作为迁移期兼容包装，仅将 `SecurityViolationError` 映射为 `ModularResourceError`。
+ * @doc-anchor: docs/specs/plugin-shared-ssot-convergence-spec.md §2.2
  */
 export function resolvePhysicalPath(pluginsRootDir: string, rawRelativePath: string): string {
-  // 0. 根目录基准先做真实路径归一化，消除 8.3 短名/Junction 误判
-  const resolvedRoot = path.resolve(pluginsRootDir)
-  let realRoot = resolvedRoot
   try {
-    if (fs.existsSync(resolvedRoot)) {
-      realRoot = fs.realpathSync(resolvedRoot)
+    return PluginPathResolver.resolvePhysicalPathForRoot(pluginsRootDir, rawRelativePath)
+  } catch (err) {
+    if (err instanceof SecurityViolationError) {
+      throw new ModularResourceError(err.reasonCode, err.message)
     }
-  } catch {}
-
-  // 1. 去除首尾空白，将反斜杠统一替换为正斜杠
-  let cleaned = (rawRelativePath ?? '').trim().replace(/\\/g, '/')
-
-  // 2. 循环防御式剥离前置 "modules/"
-  while (cleaned.toLowerCase().startsWith('modules/')) {
-    cleaned = cleaned.slice(8)
+    throw err
   }
-
-  // 3. 显式拆段并校验（严禁静默吞没空段）
-  const rawSegments = cleaned.split('/')
-  if (rawSegments.some(seg => seg === '')) {
-    throw new ModularResourceError('ILLEGAL_PATH_FORMAT', 'Illegal empty path segment detected')
-  }
-  for (const seg of rawSegments) {
-    if (
-      seg === '.' ||
-      seg === '..' ||
-      seg.includes(':') ||
-      isReservedDeviceName(seg) ||
-      seg.endsWith('.')
-    ) {
-      throw new ModularResourceError('ILLEGAL_PATH_FORMAT', `Illegal path segment detected: ${seg}`)
-    }
-  }
-
-  // 4. 拼接物理路径
-  const resolved = path.resolve(realRoot, ...rawSegments)
-
-  // 5. 对最近已存在祖先执行 realpathSync 反短名/大小写混淆，再比对边界
-  let anchor = resolved
-  while (!fs.existsSync(anchor)) {
-    const parent = path.dirname(anchor)
-    if (parent === anchor) break
-    anchor = parent
-  }
-  let realAnchor = anchor
-  try {
-    if (fs.existsSync(anchor)) {
-      realAnchor = fs.realpathSync(anchor)
-    }
-  } catch {}
-  const realResolved = path.resolve(realAnchor, path.relative(anchor, resolved))
-
-  if (!isSubPath(realRoot, realResolved) && !isPathEqual(realRoot, realResolved)) {
-    throw new ModularResourceError(
-      'PATH_TRAVERSAL_DETECTED',
-      `Path traversal violation: ${realResolved} escapes ${realRoot}`
-    )
-  }
-
-  return realResolved
 }

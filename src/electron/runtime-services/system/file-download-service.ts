@@ -605,7 +605,17 @@ export async function cleanOldTrashAndOrphanParts(
     for (const entry of entries) {
       const fullPath = path.join(baseDir, entry.name)
       if (entry.isDirectory()) {
-        if (entry.name.includes('.trash-') || entry.name.includes('.deleting-')) {
+        if (
+          entry.name.includes('.trash-') ||
+          entry.name.includes('.deleting-') ||
+          entry.name.startsWith('.tombstone-')
+        ) {
+          if (entry.name.startsWith('.tombstone-')) {
+            logger.warn(
+              LogCategory.SYSTEM,
+              `[GC] 检测到历史遗留 .tombstone- 目录并兼容清理: ${fullPath}`
+            )
+          }
           try {
             const st = fs.statSync(fullPath)
             if (now - st.mtimeMs > maxAgeMs) {
@@ -874,8 +884,19 @@ export async function cleanOrphanTombstones(baseDir: string): Promise<number> {
     for (const entry of entries) {
       if (entry.isDirectory()) {
         const name = entry.name
-        if (name.includes('.tmp-') || name.includes('.deleting-') || name.includes('.deleting_')) {
+        if (
+          name.includes('.tmp-') ||
+          name.includes('.deleting-') ||
+          name.includes('.deleting_') ||
+          name.startsWith('.tombstone-')
+        ) {
           const fullPath = path.join(baseDir, name)
+          if (name.startsWith('.tombstone-')) {
+            logger.warn(
+              LogCategory.SYSTEM,
+              `[GC] 检测到历史遗留 .tombstone- 目录并兼容清理: ${fullPath}`
+            )
+          }
           try {
             fs.rmSync(fullPath, { recursive: true, force: true })
             cleanedCount++

@@ -1,3 +1,5 @@
+// @doc-anchor: docs/specs/user-membership-and-multi-device-management-spec.md#44-已登录设备离线冷启动与-30-天软提示
+// @doc-anchor: docs/specs/user-based-invitation-and-mandatory-email-binding-spec.md
 import os from 'os'
 import crypto from 'crypto'
 import { WORKSPACE_CONSTANTS } from '@firefly/server'
@@ -41,7 +43,7 @@ export interface DeviceBindCodeResult {
 
 export interface PollBindResultResponse {
   success: boolean
-  status?: 'pending' | 'bound' | 'need_evict' | 'expired' | 'error'
+  status?: 'pending' | 'bound' | 'need_evict' | 'requires_email_binding' | 'expired' | 'error'
   bind_session_token?: string
   session_expires_at?: string
   device_token?: string
@@ -77,6 +79,7 @@ export interface ListSeatedDevicesResponse {
   monthly_unbind_limit?: number
   monthly_unbind_remaining?: number
   error?: string
+  message?: string
 }
 
 export interface SeatDeviceResponse {
@@ -161,6 +164,44 @@ export class DeviceBindService {
       )
     }
     return null
+  }
+
+  /**
+   * 判断是否属于网络层断网或连通性失败异常 (防底层英文黑话外泄)
+   */
+  private isNetworkError(error: any): boolean {
+    if (!error) return false
+    const name = String(error?.name || '')
+    const msg = String(error?.message || '')
+    return (
+      name === 'FunctionsFetchError' ||
+      name === 'FetchError' ||
+      msg.includes('Failed to send a request') ||
+      msg.includes('fetch failed') ||
+      msg.includes('ENOTFOUND') ||
+      msg.includes('ECONNREFUSED') ||
+      msg.includes('ETIMEDOUT') ||
+      msg.includes('network')
+    )
+  }
+
+  /**
+   * 将底层异常转译为用户大白话提示 (符合 AGENTS.md §2.16 大白话禁术语红线)
+   */
+  private resolveFriendlyErrorMessage(
+    error: any,
+    payloadMessage?: string,
+    defaultFallback = '操作失败，请重试'
+  ): string {
+    if (this.isNetworkError(error)) {
+      return '网络连接失败，请检查网络设置后再试'
+    }
+    const msg = payloadMessage || error?.message
+    if (!msg) return defaultFallback
+    if (this.isNetworkError({ message: msg })) {
+      return '网络连接失败，请检查网络设置后再试'
+    }
+    return msg
   }
 
   /**
@@ -481,7 +522,20 @@ export class DeviceBindService {
         return { success: true, status: 'pending' }
       }
 
-      // 分支 B: claimed / consumed (手机端已确认)
+      // 分支 B: requires_email_binding (阶段二国内版邮箱强制阻断绑定)
+      if (data?.status === 'requires_email_binding') {
+        if (data.bind_session_token) {
+          await this.setBindSessionToken(data.bind_session_token)
+        }
+        return {
+          success: true,
+          status: 'requires_email_binding',
+          bind_session_token: data.bind_session_token,
+          user: data.user
+        }
+      }
+
+      // 分支 C: claimed / consumed (手机端已确认且已完成邮箱验证)
       if (data?.status === 'claimed' || data?.status === 'consumed') {
         const sessionToken = data.session_token
         const sessionId = data.session_id
@@ -594,13 +648,15 @@ export class DeviceBindService {
           '[DeviceBindService] seat-device 网关调用失败:',
           errPayload || error
         )
+        const friendlyMessage = this.resolveFriendlyErrorMessage(error, errPayload?.message)
         return {
           success: false,
-          error: errPayload?.error || error.message,
+          error:
+            errPayload?.error || (this.isNetworkError(error) ? 'NETWORK_ERROR' : error.message),
           need_evict: !!(errPayload?.need_evict || errPayload?.error === 'NEED_EVICT'),
           monthly_unbind_limit: errPayload?.monthly_unbind_limit,
           monthly_unbind_remaining: errPayload?.monthly_unbind_remaining,
-          message: errPayload?.message
+          message: friendlyMessage
         }
       }
 
@@ -657,7 +713,13 @@ export class DeviceBindService {
           '[DeviceBindService] listSeatedDevices 失败:',
           errPayload || error
         )
-        return { success: false, error: errPayload?.error || error.message }
+        const friendlyMessage = this.resolveFriendlyErrorMessage(error, errPayload?.message)
+        return {
+          success: false,
+          error:
+            errPayload?.error || (this.isNetworkError(error) ? 'NETWORK_ERROR' : error.message),
+          message: friendlyMessage
+        }
       }
 
       if (!data?.success) {
@@ -804,11 +866,21 @@ export class DeviceBindService {
 
       if (error) {
         const errPayload = await this.extractFunctionErrorPayload(error)
-        logger.warn(LogCategory.SYSTEM, '[DeviceBindService] unbindDevice 失败:', errPayload || error)
+        logger.warn(
+          LogCategory.SYSTEM,
+          '[DeviceBindService] unbindDevice 失败:',
+          errPayload || error
+        )
+        const friendlyMessage = this.resolveFriendlyErrorMessage(
+          error,
+          errPayload?.message,
+          '解绑失败，请重试'
+        )
         return {
           success: false,
-          error: errPayload?.error || error.message,
-          message: errPayload?.message || error.message
+          error:
+            errPayload?.error || (this.isNetworkError(error) ? 'NETWORK_ERROR' : error.message),
+          message: friendlyMessage
         }
       }
 
@@ -823,8 +895,7 @@ export class DeviceBindService {
       // 如果解绑的是本机（未传 deviceId/machineId 或 machineId 等于本机 machine_id）
       const currentMachineId = SystemIdentityService.getInstance().getMachineId()
       const isSelf =
-        (!payload?.deviceId && !payload?.machineId) ||
-        payload?.machineId === currentMachineId
+        (!payload?.deviceId && !payload?.machineId) || payload?.machineId === currentMachineId
 
       if (isSelf) {
         await this.clearAllTokens()
@@ -840,7 +911,12 @@ export class DeviceBindService {
       }
     } catch (err: any) {
       logger.error(LogCategory.SYSTEM, '[DeviceBindService] unbindDevice 异常:', err)
-      return { success: false, error: err?.message || 'unknown' }
+      const friendlyMessage = this.resolveFriendlyErrorMessage(err, undefined, '解绑失败，请重试')
+      return {
+        success: false,
+        error: this.isNetworkError(err) ? 'NETWORK_ERROR' : err?.message || 'unknown',
+        message: friendlyMessage
+      }
     }
   }
 }

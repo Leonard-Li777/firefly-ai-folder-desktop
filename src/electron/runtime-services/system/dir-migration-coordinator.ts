@@ -15,7 +15,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as crypto from 'crypto'
 import { BrowserWindow } from 'electron'
-import { logger, LogCategory, isPathEqual } from '@firefly/shared'
+import { logger, LogCategory, isPathEqual, READY_MARKER_FILENAME } from '@firefly/shared'
 import type { DirRuntimePhase, PluginDirErrorCode } from '@firefly/types/config-types'
 import { ModularResourceError, validatePluginDirectory } from './plugin-dir-validator'
 
@@ -261,11 +261,40 @@ export class DirMigrationCoordinator {
             )
           }
 
-          // 检查 .ready-<sha8>.json
+          // 检查统一就绪标记 (.ready.json) 及迁移期遗留 .ready-<sha8>.json
           const files = fs.readdirSync(modulePath)
-          const hasReady = files.some(f => f.startsWith('.ready-') && f.endsWith('.json'))
+          const hasReady = files.some(
+            f => f === READY_MARKER_FILENAME || (f.startsWith('.ready-') && f.endsWith('.json'))
+          )
           if (hasReady) {
             modulesToMigrate.push(entry.name)
+          }
+        }
+      }
+
+      // 1b. 扫描源目录非空 _module_manifests/<moduleId> 目录并核验符号链接（清单随迁，防止迁移后清单缺失）
+      const sourceManifests = path.join(sourceDir, '_module_manifests')
+      const targetManifests = path.join(targetDir, '_module_manifests')
+      const manifestIdsToMigrate: string[] = []
+
+      if (fs.existsSync(sourceManifests)) {
+        const manifestEntries = fs.readdirSync(sourceManifests, { withFileTypes: true })
+        for (const entry of manifestEntries) {
+          if (!entry.isDirectory()) continue
+
+          const manifestDir = path.join(sourceManifests, entry.name)
+          const stats = fs.lstatSync(manifestDir)
+          const linkType = await detectSymlinkOrJunction(manifestDir, stats)
+          if (linkType !== 'none') {
+            throw new ModularResourceError(
+              'SYMLINK_REJECTED',
+              `Symlinks or Junctions are not supported: ${manifestDir}`
+            )
+          }
+
+          const items = fs.readdirSync(manifestDir)
+          if (items.length > 0) {
+            manifestIdsToMigrate.push(entry.name)
           }
         }
       }
@@ -281,15 +310,16 @@ export class DirMigrationCoordinator {
       const fileList: FileToCopy[] = []
       let totalBytes = 0
 
-      for (const resId of modulesToMigrate) {
-        const modSrc = path.join(sourceShared, resId)
-        const stagingMod = path.join(stagingDir, '_shared', resId)
-        const finalMod = path.join(targetShared, resId)
-
+      const collectDirForMigration = async (
+        planId: string,
+        srcDir: string,
+        stagingSubdir: string,
+        finalSubdir: string
+      ) => {
         journal.activationPlan.push({
-          resourceId: resId,
-          stagingPath: stagingMod,
-          finalPath: finalMod,
+          resourceId: planId,
+          stagingPath: stagingSubdir,
+          finalPath: finalSubdir,
           state: 'PENDING'
         })
 
@@ -312,10 +342,10 @@ export class DirMigrationCoordinator {
               await scanRecursive(fullPath, itemRel)
             } else if (item.isFile()) {
               fileList.push({
-                resourceId: resId,
+                resourceId: planId,
                 relPath: itemRel,
                 srcFile: fullPath,
-                destFile: path.join(stagingMod, itemRel),
+                destFile: path.join(stagingSubdir, itemRel),
                 size: itemStats.size
               })
               totalBytes += itemStats.size
@@ -323,7 +353,25 @@ export class DirMigrationCoordinator {
           }
         }
 
-        await scanRecursive(modSrc, '')
+        await scanRecursive(srcDir, '')
+      }
+
+      for (const resId of modulesToMigrate) {
+        await collectDirForMigration(
+          resId,
+          path.join(sourceShared, resId),
+          path.join(stagingDir, '_shared', resId),
+          path.join(targetShared, resId)
+        )
+      }
+
+      for (const modId of manifestIdsToMigrate) {
+        await collectDirForMigration(
+          `_module_manifests/${modId}`,
+          path.join(sourceManifests, modId),
+          path.join(stagingDir, '_module_manifests', modId),
+          path.join(targetManifests, modId)
+        )
       }
 
       context.totalFiles = fileList.length
@@ -440,8 +488,14 @@ export class DirMigrationCoordinator {
 
       // Step ③: 逐模块激活，对目标已有模块隔离为 backupPath
       for (const entry of journal.activationPlan) {
+        const finalParent = path.dirname(entry.finalPath)
+        if (!fs.existsSync(finalParent)) {
+          fs.mkdirSync(finalParent, { recursive: true })
+        }
+
         if (fs.existsSync(entry.finalPath)) {
-          const backup = path.join(targetShared, `.deleting-${entry.resourceId}-${Date.now()}`)
+          const safeId = entry.resourceId.replace(/[\\/]/g, '_')
+          const backup = path.join(finalParent, `.deleting-${safeId}-${Date.now()}`)
           try {
             fs.renameSync(entry.finalPath, backup)
             entry.backupPath = backup
@@ -503,7 +557,15 @@ export class DirMigrationCoordinator {
         for (const entry of journal.activationPlan.filter(e => e.state === 'ACTIVATED')) {
           try {
             if (fs.existsSync(entry.finalPath)) {
-              fs.renameSync(entry.finalPath, entry.stagingPath)
+              const stagingParent = path.dirname(entry.stagingPath)
+              if (!fs.existsSync(stagingParent)) {
+                fs.mkdirSync(stagingParent, { recursive: true })
+              }
+              try {
+                fs.renameSync(entry.finalPath, entry.stagingPath)
+              } catch {
+                fs.rmSync(entry.finalPath, { recursive: true, force: true })
+              }
             }
             if (entry.backupPath && fs.existsSync(entry.backupPath)) {
               fs.renameSync(entry.backupPath, entry.finalPath)

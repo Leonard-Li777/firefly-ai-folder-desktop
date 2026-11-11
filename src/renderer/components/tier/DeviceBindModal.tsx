@@ -205,6 +205,9 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
                 stopPolling()
                 setPendingSessionToken(pollRes.device_token || '')
                 setEvictOpen(true)
+              } else if (pollRes.status === 'requires_email_binding') {
+                stopPolling()
+                setStep('email_input')
               }
             } else if (pollRes?.error === 'CODE_EXPIRED' || pollRes?.status === 'expired') {
               stopPolling()

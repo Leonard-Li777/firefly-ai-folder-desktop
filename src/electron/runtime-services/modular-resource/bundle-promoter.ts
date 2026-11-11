@@ -22,7 +22,16 @@ import * as path from 'path'
 import * as crypto from 'crypto'
 import { valid, lt } from 'semver'
 import type { Database } from 'better-sqlite3'
-import { logger, LogCategory, isSubPath } from '@firefly/shared'
+import {
+  logger,
+  LogCategory,
+  PluginPathResolver,
+  SecurityViolationError,
+  deriveTargetLocalPath,
+  computeDirectoryReadyDigest,
+  writeReadyMarker,
+  invalidateReadyMarkers
+} from '@firefly/shared'
 import type { OfflinePackageDao } from './offline-package-dao'
 import {
   partitionResourcesByDiskState,
@@ -77,6 +86,7 @@ export interface PromotionOptions {
   jobId: string
   stagingDir: string
   baseDir: string
+  pluginsRootDir?: string
   incomingModules: IncomingModuleMeta[]
   dao: OfflinePackageDao
   db: Database
@@ -133,9 +143,11 @@ export class BundlePromoter {
   static evaluateAdmission(
     incoming: IncomingModuleMeta,
     baseDir: string,
-    db: Database
+    db: Database,
+    options?: { pluginsRootDir?: string }
   ): AdmissionDecision {
     const { moduleId, version: incomingVersion, manifestRawBytes } = incoming
+    const pluginsRootDir = options?.pluginsRootDir ?? path.join(baseDir, 'modules')
 
     // 计算传入清单的 SHA-256
     const incomingBuffer = Buffer.isBuffer(manifestRawBytes)
@@ -153,8 +165,12 @@ export class BundlePromoter {
       | { id: string; version: string; install_state: string }
       | undefined
 
-    // 检查正式物理目录 userData/modules/_shared/<moduleId>/manifest.json
-    const formalModuleDir = path.join(baseDir, 'modules', '_shared', moduleId)
+    // 优先检查 SSOT 清单目录 `_module_manifests/<moduleId>`，兼容回退旧 `_shared/<moduleId>`
+    const ssotManifestDir = PluginPathResolver.getModuleManifestDirForRoot(pluginsRootDir, moduleId)
+    const legacyManifestDir = path.join(pluginsRootDir, '_shared', moduleId)
+    const formalModuleDir = fs.existsSync(path.join(ssotManifestDir, 'manifest.json'))
+      ? ssotManifestDir
+      : legacyManifestDir
     const formalManifestPath = path.join(formalModuleDir, 'manifest.json')
     const formalSigPath = path.join(formalModuleDir, 'manifest.sig')
 
@@ -259,6 +275,7 @@ export class BundlePromoter {
    */
   static async executePromotion(options: PromotionOptions): Promise<PromotionResult> {
     const { jobId, stagingDir, baseDir, incomingModules, dao, db, maxRetries = 5 } = options
+    const pluginsRootDir = options.pluginsRootDir ?? path.join(baseDir, 'modules')
 
     const promotedModuleIds: string[] = []
     const skippedModuleIds: string[] = []
@@ -266,7 +283,7 @@ export class BundlePromoter {
 
     // 步骤 0：全量准入评估与前置校验
     for (const mod of incomingModules) {
-      const decision = this.evaluateAdmission(mod, baseDir, db)
+      const decision = this.evaluateAdmission(mod, baseDir, db, { pluginsRootDir })
       if (decision.decision === 'SKIPPED_SAME') {
         skippedModuleIds.push(mod.moduleId)
       } else {
@@ -288,7 +305,7 @@ export class BundlePromoter {
       }
     }
     const declaredResources = Array.from(declaredResourcesMap.values())
-    const sharedModulesDir = path.join(baseDir, 'modules', '_shared')
+    const sharedModulesDir = path.join(pluginsRootDir, '_shared')
     fs.mkdirSync(sharedModulesDir, { recursive: true })
 
     // 步骤 1：静态所有权划分与前置持久化 (Crash-Window Ownership Guard)
@@ -345,21 +362,30 @@ export class BundlePromoter {
 
       // B. 提升共享物理资产 (Shared Resource Identity Guard)
       for (const res of declaredResources) {
-        const relPath = res.target_local_path || path.join('modules', '_shared', res.resource_id)
-        const formalAssetPath = path.resolve(baseDir, relPath)
-        const stagedAssetPath = path.resolve(stagingDir, relPath)
-
-        // 路径穿越纵深防御：严防声明路径恶意逃逸
-        if (!isSubPath(baseDir, formalAssetPath)) {
-          throw new BundlePromoterError('IO_FAILURE', `非法资产目标路径逃逸: ${relPath}`)
+        const relPath =
+          res.target_local_path ||
+          deriveTargetLocalPath(res.resource_id) ||
+          `modules/_shared/${res.resource_id}`
+        let formalAssetPath: string
+        try {
+          formalAssetPath = PluginPathResolver.resolvePhysicalPathForRoot(pluginsRootDir, relPath)
+        } catch (secErr) {
+          throw new BundlePromoterError(
+            'IO_FAILURE',
+            secErr instanceof SecurityViolationError
+              ? secErr.message
+              : `非法资产目标路径逃逸: ${relPath}`
+          )
         }
+        const stagedAssetPath = path.resolve(stagingDir, relPath)
 
         if (createdResourceIds.includes(res.resource_id)) {
           // 独占新创建资产：从暂存区移动到正式目录
           if (fs.existsSync(stagedAssetPath)) {
             fs.mkdirSync(path.dirname(formalAssetPath), { recursive: true })
-            // 先清后移防 Windows EEXIST
+            // 先清后移防 Windows EEXIST，并于物化前后维护统一 `.ready.json` 标记
             if (fs.existsSync(formalAssetPath)) {
+              await invalidateReadyMarkers(formalAssetPath)
               await retryWithBackoff(() => {
                 fs.rmSync(formalAssetPath, { recursive: true, force: true })
               }, maxRetries)
@@ -367,6 +393,15 @@ export class BundlePromoter {
             await retryWithBackoff(() => {
               fs.renameSync(stagedAssetPath, formalAssetPath)
             }, maxRetries)
+            if (fs.existsSync(formalAssetPath) && fs.statSync(formalAssetPath).isDirectory()) {
+              await invalidateReadyMarkers(formalAssetPath)
+              const digestResult = await computeDirectoryReadyDigest(formalAssetPath)
+              await writeReadyMarker(formalAssetPath, {
+                resourceId: res.resource_id,
+                sharedSubDir: path.basename(formalAssetPath),
+                digestResult
+              })
+            }
           }
         }
       }
@@ -451,7 +486,10 @@ export class BundlePromoter {
           `)
 
           const targetSha = res.expected_sha256 ?? ''
-          const relPath = res.target_local_path || path.join('modules', '_shared', res.resource_id)
+          const relPath =
+            res.target_local_path ||
+            deriveTargetLocalPath(res.resource_id) ||
+            `modules/_shared/${res.resource_id}`
           insertOrUpdateResource.run(
             res.resource_id,
             res.asset_name || path.basename(relPath),
@@ -515,6 +553,7 @@ export class BundlePromoter {
       await this.rollbackPromotion({
         jobId,
         baseDir,
+        pluginsRootDir,
         modules: modulesToPhysicallyPromote,
         createdResourceIds,
         dao,
@@ -531,13 +570,15 @@ export class BundlePromoter {
   static async rollbackPromotion(options: {
     jobId: string
     baseDir: string
+    pluginsRootDir?: string
     modules: IncomingModuleMeta[]
     createdResourceIds: string[]
     dao: OfflinePackageDao
     maxRetries?: number
   }): Promise<void> {
     const { jobId, baseDir, modules, createdResourceIds, dao, maxRetries = 5 } = options
-    const sharedModulesDir = path.join(baseDir, 'modules', '_shared')
+    const pluginsRootDir = options.pluginsRootDir ?? path.join(baseDir, 'modules')
+    const sharedModulesDir = path.join(pluginsRootDir, '_shared')
 
     let rollbackLocked = false
 
@@ -590,8 +631,20 @@ export class BundlePromoter {
     for (const resId of uniqueCreatedResIds) {
       const targetLocalPath = resourceDeclMap.get(resId)
       if (!targetLocalPath) continue
-      const formalAssetPath = path.resolve(baseDir, targetLocalPath)
-      if (!isSubPath(baseDir, formalAssetPath)) continue
+      let formalAssetPath: string
+      try {
+        formalAssetPath = PluginPathResolver.resolvePhysicalPathForRoot(
+          pluginsRootDir,
+          targetLocalPath
+        )
+      } catch (secErr) {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[BundlePromoter] 回滚跳过非法资产路径: ${resId} (${targetLocalPath})`,
+          secErr
+        )
+        continue
+      }
 
       try {
         if (fs.existsSync(formalAssetPath)) {
@@ -620,13 +673,14 @@ export class BundlePromoter {
     moduleId: string,
     baseDir: string,
     db: Database,
-    maxRetries = 5
+    maxRetries = 5,
+    pluginsRootDir?: string
   ): Promise<{ ok: true; retentionDir: string }> {
-    const formalDir = path.join(baseDir, 'modules', '_shared', moduleId)
+    const resolvedPluginsRoot = pluginsRootDir ?? path.join(baseDir, 'modules')
+    const formalDir = path.join(resolvedPluginsRoot, '_shared', moduleId)
     const timestamp = Date.now()
     const retentionDir = path.join(
-      baseDir,
-      'modules',
+      resolvedPluginsRoot,
       '_shared',
       `${moduleId}.uninstalled-${timestamp}`
     )
@@ -654,9 +708,11 @@ export class BundlePromoter {
     moduleId: string,
     baseDir: string,
     db: Database,
-    maxRetries = 5
+    maxRetries = 5,
+    pluginsRootDir?: string
   ): Promise<{ ok: true; restoredVersion: string }> {
-    const sharedDir = path.join(baseDir, 'modules', '_shared')
+    const resolvedPluginsRoot = pluginsRootDir ?? path.join(baseDir, 'modules')
+    const sharedDir = path.join(resolvedPluginsRoot, '_shared')
     const prefix = `${moduleId}.uninstalled-`
 
     if (!fs.existsSync(sharedDir)) {

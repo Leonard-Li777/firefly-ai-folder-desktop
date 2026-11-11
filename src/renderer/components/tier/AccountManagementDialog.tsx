@@ -1,3 +1,5 @@
+// @doc-anchor: docs/specs/user-membership-and-multi-device-management-spec.md#22-权益双作用域模型-entitlement-scopes
+// @doc-anchor: docs/specs/user-membership-and-multi-device-management-spec.md#44-已登录设备离线冷启动与-30-天软提示
 import React, { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog'
 import { Button } from '../ui/button'
@@ -51,6 +53,8 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
   const [isSyncing, setIsSyncing] = useState<boolean>(false)
   const [isEvictOpen, setIsEvictOpen] = useState<boolean>(false)
   const [isUnbindingSelf, setIsUnbindingSelf] = useState<boolean>(false)
+  const [isDeviceBound, setIsDeviceBound] = useState<boolean>(false)
+  const [isEnterpriseOffline, setIsEnterpriseOffline] = useState<boolean>(false)
 
   const handleSyncStatus = async () => {
     setIsSyncing(true)
@@ -68,7 +72,7 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
   }
 
   useEffect(() => {
-    const fetchIdent = async () => {
+    const fetchIdentAndStatus = async () => {
       try {
         let code = ''
         if (window.electronAPI?.license?.getIdentCode) {
@@ -79,14 +83,39 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
           if (mId) code = encodeMachineIdToBase64(mId)
         }
         setIdentCode(code)
+
+        // 1. 判断是否属于企业离线授权 (本地硬件验签自治，不占云端席位)
+        let isOffline = false
+        if (window.electronAPI?.license?.getStatus) {
+          const lStatus = await window.electronAPI.license.getStatus()
+          if (lStatus?.type === 'ENTERPRISE' || lStatus?.type === 'ENTERPRISE_OFFLINE') {
+            isOffline = true
+          }
+        }
+        const { computed_limits, tier: currentTier } = useTierStore.getState()
+        if (computed_limits?.can_offline || currentTier === UserTier.ENTERPRISE) {
+          isOffline = true
+        }
+        setIsEnterpriseOffline(isOffline)
+
+        // 2. 检查设备在云端是否真正绑定了在线账号（企业离线授权下无需且不应请求云端设备席位）
+        if (!isOffline && window.electronAPI?.deviceBind?.getStatus) {
+          const bindStatus = await window.electronAPI.deviceBind.getStatus()
+          setIsDeviceBound(!!bindStatus?.bound)
+        } else {
+          setIsDeviceBound(false)
+        }
       } catch (err) {
-        console.warn('[AccountManagementDialog] 获取设备标识码失败:', err)
+        console.warn('[AccountManagementDialog] 获取设备与授权状态失败:', err)
       }
     }
     if (open) {
-      fetchIdent()
-      // 打开账户管理弹窗时，主动触发一次云端最新订阅状态同步
-      handleSyncStatus()
+      fetchIdentAndStatus()
+      // 打开账户管理弹窗时，非离线模式才主动触发云端订阅状态同步
+      const { computed_limits, tier: currentTier } = useTierStore.getState()
+      if (!computed_limits?.can_offline && currentTier !== UserTier.ENTERPRISE) {
+        handleSyncStatus()
+      }
     }
   }, [open])
 
@@ -612,54 +641,63 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
             </div>
           </div>
 
-          {/* ── 已绑定设备管理与本机解绑入口 ── */}
-          <div className="p-3 bg-muted/30 rounded-xl border border-border/50 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 min-w-0">
-              <Laptop className="w-4 h-4 text-primary shrink-0" />
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-foreground truncate">{t('已绑定设备与席位')}</p>
-                <p className="text-[10px] text-muted-foreground truncate">{t('最多支持 6 台设备同时登录与席位管理')}</p>
+          {/* ── 已绑定设备管理与本机解绑入口（仅在非离线授权且设备已绑定云端在线账号时显示） ── */}
+          {!isEnterpriseOffline && isDeviceBound && (
+            <div className="p-3 bg-muted/30 rounded-xl border border-border/50 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <Laptop className="w-4 h-4 text-primary shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-foreground truncate">
+                    {t('已绑定设备与席位')}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground truncate">
+                    {t('最多支持 6 台设备同时登录与席位管理')}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEvictOpen(true)}
+                  className="h-7 text-xs px-2.5 rounded-lg border-border/70 hover:bg-muted font-medium cursor-pointer"
+                >
+                  <Laptop className="w-3 h-3 mr-1 text-primary" />
+                  {t('管理设备席位')}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={isUnbindingSelf}
+                  onClick={async () => {
+                    const confirmed = window.confirm(
+                      t('确定要解绑本机吗？解绑后本机需重新扫码授权才能使用完整权益。')
+                    )
+                    if (!confirmed) return
+                    setIsUnbindingSelf(true)
+                    try {
+                      const res = await window.electronAPI?.deviceBind?.unbindDevice?.()
+                      if (res?.success) {
+                        toast.success(t('本机已解绑成功'))
+                        setIsDeviceBound(false)
+                        onOpenChange(false)
+                      } else {
+                        toast.error(res?.message || res?.error || t('解绑失败，请重试'))
+                      }
+                    } catch (err: any) {
+                      toast.error(err?.message || t('网络连接失败，请检查网络后重试'))
+                    } finally {
+                      setIsUnbindingSelf(false)
+                    }
+                  }}
+                  className="h-7 text-xs px-2.5 rounded-lg text-destructive hover:bg-destructive/10 hover:text-destructive font-medium cursor-pointer"
+                >
+                  <LogOut className="w-3 h-3 mr-1" />
+                  {isUnbindingSelf ? t('解绑中...') : t('解绑本机')}
+                </Button>
               </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsEvictOpen(true)}
-                className="h-7 text-xs px-2.5 rounded-lg border-border/70 hover:bg-muted font-medium cursor-pointer"
-              >
-                <Laptop className="w-3 h-3 mr-1 text-primary" />
-                {t('管理设备席位')}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={isUnbindingSelf}
-                onClick={async () => {
-                  const confirmed = window.confirm(t('确定要解绑本机吗？解绑后本机需重新扫码授权才能使用完整权益。'))
-                  if (!confirmed) return
-                  setIsUnbindingSelf(true)
-                  try {
-                    const res = await window.electronAPI?.deviceBind?.unbindDevice?.()
-                    if (res?.success) {
-                      toast.success(t('本机已解绑成功'))
-                      onOpenChange(false)
-                    } else {
-                      toast.error(res?.message || res?.error || t('解绑失败，请重试'))
-                    }
-                  } catch (err: any) {
-                    toast.error(err?.message || t('解绑异常'))
-                  } finally {
-                    setIsUnbindingSelf(false)
-                  }
-                }}
-                className="h-7 text-xs px-2.5 rounded-lg text-destructive hover:bg-destructive/10 hover:text-destructive font-medium cursor-pointer"
-              >
-                <LogOut className="w-3 h-3 mr-1" />
-                {isUnbindingSelf ? t('解绑中...') : t('解绑本机')}
-              </Button>
-            </div>
-          </div>
+          )}
 
           {/* ── 账单与自动续订管理模块 ── */}
           {paymentInfo?.method === 'creem' ? (

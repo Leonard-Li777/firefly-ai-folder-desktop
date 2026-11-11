@@ -121,13 +121,39 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
   }
 
   const handleRedeem = async () => {
-    let code = redeemCode.trim()
-    if (!code) return
-    // 支持 8 位用户 ref_code 格式（新版）或 16 位历史兼容格式
-    const match = code.match(/[a-zA-Z0-9]{8,16}/)
-    if (match) code = match[0]
+    let input = redeemCode.trim()
+    if (!input) return
+
+    // 智能提取邀请码：支持完整邀请链接（URL 中的 ref 参数）、纯文本短码（8位/16位）
+    let code = ''
+    try {
+      // 尝试是否为标准 URL 或包含协议/域名的链接
+      const urlCandidate = input.includes('://') ? input : `https://${input}`
+      const parsedUrl = new URL(urlCandidate)
+      const refParam = parsedUrl.searchParams.get('ref')
+      if (refParam) {
+        code = refParam.trim()
+      }
+    } catch {
+      // 非标准 URL 结构，继续降级提取
+    }
+
+    if (!code) {
+      // 尝试通过正则捕获 ref= 参数值
+      const refMatch = input.match(/[?&]ref=([a-zA-Z0-9]+)/i)
+      if (refMatch) {
+        code = refMatch[1]
+      } else {
+        // 直接匹配 8 位（新版 ref_code）或 16 位（旧版机器码前缀）邀请码
+        const codeMatch = input.match(/[a-zA-Z0-9]{8,16}/)
+        if (codeMatch) {
+          code = codeMatch[0]
+        }
+      }
+    }
+
     if (code.length !== 8 && code.length !== 16) {
-      toast.error(t('请输入有效的 8 位邀请码'))
+      toast.error(t('请输入有效的 8位或16位邀请码'))
       return
     }
     setIsRedeeming(true)
@@ -387,14 +413,10 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                             <span>·</span>
                             <span>{t('第1位好友')}</span>
                           </span>
-                          {firecores >= 100 ? (
+                          {firecores >= 100 && (
                             <span className="flex items-center gap-1 text-[11px] font-bold text-primary">
                               <CheckCircle2 className="w-3.5 h-3.5" />
-                              {t('已达成')}
-                            </span>
-                          ) : (
-                            <span className="text-[10px] text-muted-foreground font-medium">
-                              {t('需要 100 萤火')}
+                              {t('达成')}
                             </span>
                           )}
                         </div>
@@ -441,14 +463,10 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                             <span>·</span>
                             <span>{t('第2位好友')}</span>
                           </span>
-                          {firecores >= 200 ? (
+                          {firecores >= 200 && (
                             <span className="flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400">
                               <CheckCircle2 className="w-3.5 h-3.5" />
-                              {t('已达成')}
-                            </span>
-                          ) : (
-                            <span className="text-[10px] text-muted-foreground font-medium">
-                              {t('累计 200 萤火')}
+                              {t('达成')}
                             </span>
                           )}
                         </div>
@@ -495,14 +513,10 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                             <span>·</span>
                             <span>{t('第3位好友')}</span>
                           </span>
-                          {firecores >= 300 ? (
+                          {firecores >= 300 && (
                             <span className="flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400">
                               <CheckCircle2 className="w-3.5 h-3.5" />
-                              {t('已达成')}
-                            </span>
-                          ) : (
-                            <span className="text-[10px] text-muted-foreground font-medium">
-                              {t('累计 300 萤火')}
+                              {t('达成')}
                             </span>
                           )}
                         </div>
@@ -550,15 +564,10 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                             <span>·</span>
                             <span>{t('第4位好友')}</span>
                           </span>
-                          {firecores >= unlockThreshold || isUnlockedUnlimited ? (
+                          {(firecores >= unlockThreshold || isUnlockedUnlimited) && (
                             <span className="flex items-center gap-1 text-xs font-black text-emerald-600 dark:text-emerald-400">
                               <Unlock className="w-3.5 h-3.5" />
                               {t('终极大奖')}
-                            </span>
-                          ) : (
-                            <span className="flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400">
-                              <Lock className="w-3.5 h-3.5" />
-                              {t('需 {count} 萤火', { count: unlockThreshold })}
                             </span>
                           )}
                         </div>
@@ -580,7 +589,7 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                                   ? t('消耗 {cost} 萤火，永久解锁私有目录无限分析额度', {
                                       cost: unlockThreshold
                                     })
-                                  : t('仅差 {needed} 萤火，可继续邀请好友或购买最小萤火包补齐', {
+                                  : t('可购买最小萤火包补齐', {
                                       needed: neededFirecores
                                     })
                               }
@@ -603,17 +612,12 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
 
                             {!canAffordUnlock && (
                               <div className="text-[11px] text-center text-muted-foreground flex items-center justify-center gap-1">
-                                <span>
-                                  {t('仅差 {needed} 萤火，可邀请好友或', {
-                                    needed: neededFirecores
-                                  })}
-                                </span>
                                 <button
                                   type="button"
                                   onClick={() => openMarketingPricingUrl('buy_firecores')}
                                   className="text-amber-600 dark:text-amber-400 font-bold hover:underline inline-flex items-center"
                                 >
-                                  {t('购买最小萤火包补齐')}
+                                  {t('可购买最小萤火包补齐')}
                                 </button>
                               </div>
                             )}
@@ -709,10 +713,10 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                     </div>
                     <div className="flex gap-2">
                       <Input
-                        placeholder={t('在此输入 8 位邀请码')}
+                        placeholder={t('8位或16位邀请码或邀请链接')}
                         value={redeemCode}
                         onChange={e => setRedeemCode(e.target.value)}
-                        className="flex-1 uppercase font-mono"
+                        className="flex-1 font-mono"
                       />
                       <Button
                         variant="outline"

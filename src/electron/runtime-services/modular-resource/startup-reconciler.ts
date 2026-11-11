@@ -19,7 +19,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import type { Database } from 'better-sqlite3'
-import { logger, LogCategory } from '@firefly/shared'
+import { logger, LogCategory, deriveTargetLocalPath, PluginPathResolver } from '@firefly/shared'
 import type { OfflinePackageDao, OfflinePackageJobRecord } from './offline-package-dao'
 import { BundlePromoter, type IncomingModuleMeta } from './bundle-promoter'
 import { BackgroundVerificationQueue } from './background-verification-queue'
@@ -27,6 +27,7 @@ import { ROOT_ED25519_PK, verifyManifestSignature } from './offline-bundle-expor
 
 export interface ReconcileOptions {
   baseDir: string
+  pluginsRootDir?: string
   db: Database
   dao: OfflinePackageDao
   /** 自定义公钥 (测试用) */
@@ -67,6 +68,7 @@ export class StartupReconciler {
       inlineQueueForTest = false,
       skipDeferredQueue = false
     } = options
+    const pluginsRootDir = options.pluginsRootDir ?? path.join(baseDir, 'modules')
 
     const result: ReconcileResult = {
       reconciledImports: {
@@ -96,7 +98,8 @@ export class StartupReconciler {
       )
       .all() as OfflinePackageJobRecord[]
 
-    const sharedModulesDir = path.join(baseDir, 'modules', '_shared')
+    const sharedModulesDir = path.join(pluginsRootDir, '_shared')
+    const moduleManifestsDir = path.join(pluginsRootDir, '_module_manifests')
 
     for (const job of unconvergedImports) {
       if (job.status === 'PREPARED' || job.status === 'PROMOTING') {
@@ -104,14 +107,17 @@ export class StartupReconciler {
         try {
           const createdResIds: string[] = JSON.parse(job.created_resource_ids || '[]')
 
-          // 自动嗅探匹配属于该任务的所有 .old-<jobId> 备份目录
+          // 自动嗅探匹配属于该任务的所有 .old-<jobId> 备份目录，并从 DB 补全资源目标路径供独占清理
           const affectedModules: IncomingModuleMeta[] = []
-          if (fs.existsSync(sharedModulesDir)) {
+          const seenModIds = new Set<string>()
+          const collectRollbackModulesFromDir = (dir: string) => {
+            if (!fs.existsSync(dir)) return
             const suffix = `.old-${job.job_id}`
-            const entries = fs.readdirSync(sharedModulesDir)
-            for (const entry of entries) {
+            for (const entry of fs.readdirSync(dir)) {
               if (entry.endsWith(suffix)) {
                 const modId = entry.replace(suffix, '')
+                if (seenModIds.has(modId)) continue
+                seenModIds.add(modId)
                 affectedModules.push({
                   moduleId: modId,
                   version: '0.0.0',
@@ -121,10 +127,45 @@ export class StartupReconciler {
               }
             }
           }
+          collectRollbackModulesFromDir(sharedModulesDir)
+          collectRollbackModulesFromDir(moduleManifestsDir)
+
+          if (createdResIds.length > 0) {
+            const dbResRows = db
+              .prepare(
+                `SELECT resource_id, asset_name, target_local_path FROM resource_downloads WHERE resource_id IN (${createdResIds.map(() => '?').join(',')})`
+              )
+              .all(...createdResIds) as Array<{
+              resource_id: string
+              asset_name: string
+              target_local_path: string
+            }>
+            const rollbackResources = createdResIds.map(resId => {
+              const row = dbResRows.find(r => r.resource_id === resId)
+              const derived = deriveTargetLocalPath(resId) || `modules/_shared/${resId}`
+              const targetLocalPath = row?.target_local_path ?? derived
+              return {
+                resource_id: resId,
+                asset_name: row?.asset_name ?? path.basename(targetLocalPath),
+                target_local_path: targetLocalPath
+              }
+            })
+            if (affectedModules.length > 0) {
+              affectedModules[0].resources = rollbackResources
+            } else {
+              affectedModules.push({
+                moduleId: '__orphan_created_resources__',
+                version: '0.0.0',
+                manifestRawBytes: Buffer.alloc(0),
+                resources: rollbackResources
+              })
+            }
+          }
 
           await BundlePromoter.rollbackPromotion({
             jobId: job.job_id,
             baseDir,
+            pluginsRootDir,
             modules: affectedModules,
             createdResourceIds: createdResIds,
             dao
@@ -162,13 +203,51 @@ export class StartupReconciler {
               }
             }
           }
+          if (fs.existsSync(moduleManifestsDir)) {
+            const suffix = `.old-${job.job_id}`
+            for (const entry of fs.readdirSync(moduleManifestsDir)) {
+              if (entry.endsWith(suffix)) {
+                candidateModuleIds.add(entry.replace(suffix, ''))
+              }
+            }
+          }
 
-          // 2. 若 candidateModuleIds 为空 (全新安装)，扫描当前正式目录中具备有效签名的模块
+          // 2. 若 candidateModuleIds 为空 (全新安装)，仅扫描携带 manifest.json/manifest.sig 的模块目录（绝不误伤纯权重目录）
+          if (candidateModuleIds.size === 0 && fs.existsSync(moduleManifestsDir)) {
+            for (const entry of fs.readdirSync(moduleManifestsDir)) {
+              if (
+                entry.includes('.old-') ||
+                entry.includes('.uninstalled-') ||
+                entry.startsWith('.')
+              ) {
+                continue
+              }
+              const subDir = path.join(moduleManifestsDir, entry)
+              if (
+                fs.existsSync(path.join(subDir, 'manifest.json')) ||
+                fs.existsSync(path.join(subDir, 'manifest.sig'))
+              ) {
+                candidateModuleIds.add(entry)
+              }
+            }
+          }
           if (candidateModuleIds.size === 0 && fs.existsSync(sharedModulesDir)) {
             const entries = fs.readdirSync(sharedModulesDir)
             for (const entry of entries) {
-              if (entry.includes('.old-') || entry.includes('.uninstalled-')) continue
-              candidateModuleIds.add(entry)
+              if (
+                entry.includes('.old-') ||
+                entry.includes('.uninstalled-') ||
+                entry.startsWith('.')
+              ) {
+                continue
+              }
+              const subDir = path.join(sharedModulesDir, entry)
+              if (
+                fs.existsSync(path.join(subDir, 'manifest.json')) ||
+                fs.existsSync(path.join(subDir, 'manifest.sig'))
+              ) {
+                candidateModuleIds.add(entry)
+              }
             }
           }
 
@@ -176,9 +255,15 @@ export class StartupReconciler {
             allValid = false
           }
 
-          // 3. 对目标模块逐一核验 Ed25519 签名与清单结构
+          // 3. 对目标模块逐一核验 Ed25519 签名与清单结构（优先 _module_manifests，兼容旧 _shared/<moduleId>）
           for (const modId of candidateModuleIds) {
-            const dirPath = path.join(sharedModulesDir, modId)
+            const ssotDir = PluginPathResolver.getModuleManifestDirForRoot(pluginsRootDir, modId)
+            const legacyDir = path.join(sharedModulesDir, modId)
+            const dirPath =
+              fs.existsSync(path.join(ssotDir, 'manifest.json')) ||
+              fs.existsSync(path.join(ssotDir, 'manifest.sig'))
+                ? ssotDir
+                : legacyDir
             const manifestPath = path.join(dirPath, 'manifest.json')
             const sigPath = path.join(dirPath, 'manifest.sig')
 
@@ -226,7 +311,7 @@ export class StartupReconciler {
                   capability_slot = COALESCE(excluded.capability_slot, builtin_modules.capability_slot),
                   total_bytes = excluded.total_bytes,
                   install_state = 'installed_inactive',
-                  updated_at = excluded.installed_at
+                  installed_at = COALESCE(builtin_modules.installed_at, excluded.installed_at)
               `)
               insertMod.run(
                 moduleId,
@@ -249,7 +334,9 @@ export class StartupReconciler {
               for (const res of resources) {
                 if (!res.resource_id) continue
                 const targetPath =
-                  res.target_local_path || `modules/_shared/assets/${res.resource_id}`
+                  res.target_local_path ||
+                  deriveTargetLocalPath(res.resource_id) ||
+                  `modules/_shared/${res.resource_id}`
                 const sha = res.expected_sha256 || ''
 
                 const insertRes = db.prepare(`
@@ -327,6 +414,7 @@ export class StartupReconciler {
           await BundlePromoter.rollbackPromotion({
             jobId: job.job_id,
             baseDir,
+            pluginsRootDir,
             modules: affectedModules,
             createdResourceIds: createdResIds,
             dao
@@ -398,7 +486,7 @@ export class StartupReconciler {
     // ------------------------------------------------------------------
     // 阶段 1C: 异步孤儿 staging 目录清理
     // ------------------------------------------------------------------
-    const stagingDir = path.join(baseDir, 'modules', '_staging')
+    const stagingDir = path.join(pluginsRootDir, '_staging')
     if (fs.existsSync(stagingDir)) {
       try {
         fs.rmSync(stagingDir, { recursive: true, force: true })

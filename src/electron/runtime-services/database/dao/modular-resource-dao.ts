@@ -1,5 +1,12 @@
 import type { Database } from 'better-sqlite3'
-import { logger, LogCategory } from '@firefly/shared'
+import {
+  logger,
+  LogCategory,
+  isExclusiveCapabilitySlot,
+  type BuiltinCapabilitySlot,
+  type BuiltinSlotPolicy,
+  type BuiltinBackendType
+} from '@firefly/shared'
 
 export type ModuleKind = 'builtin-module' | 'third-party-plugin'
 export type ModuleCategory =
@@ -19,23 +26,11 @@ export type ModuleAuthorCode = 'official' | 'community' | 'third_party'
 export type ModuleAvailability = 'coming_soon' | 'draft' | 'approved' | 'delisted'
 export type DelistReason = 'general_deprecation' | 'security_violation'
 
-export type PluginCapabilitySlot =
-  | 'base_embedding'
-  | 'asr'
-  | 'tts'
-  | 'voice_asr'
-  | 'voice_tts'
-  | 'perception_nsfw'
-  | 'perception_face'
-  | 'advanced_ai_engine'
-  | 'ai_engine_cpu'
-  | 'parser'
-  | 'tool'
-  | 'general'
+export type PluginCapabilitySlot = BuiltinCapabilitySlot
 
-export type SlotPolicy = 'exclusive_required' | 'exclusive_optional' | 'multi_active'
+export type SlotPolicy = BuiltinSlotPolicy
 
-export type BackendType = 'omni_onnx' | 'ai_engine' | 'utility_process' | 'builtin'
+export type BackendType = BuiltinBackendType
 
 export interface EmbeddingEpochRecord {
   epoch: number
@@ -173,6 +168,7 @@ export interface IBuiltinModuleDAO {
   findActiveBySlotSync(slot: PluginCapabilitySlot): BuiltinModuleRecord | null
   activateExclusiveModuleSync(id: string): void
   deactivateModuleSync(id: string): void
+  updateTotalBytesAndMetaSync(id: string, totalBytes: number, catalogMetaJson?: string | null): void
 }
 
 export interface IEmbeddingEpochDAO {
@@ -180,6 +176,7 @@ export interface IEmbeddingEpochDAO {
   findBuildingEpochSync(): EmbeddingEpochRecord | null
   createEpochSync(epoch: Omit<EmbeddingEpochRecord, 'created_at'>): EmbeddingEpochRecord
   flipEpochSync(oldEpoch: number, newEpoch: number): void
+  rollbackEpochSync(prevServingEpoch: number | null, rolledBackEpoch: number): void
   cancelBuildingEpochsSync(): void
   updateCursorSync(epoch: number, cursorJson: string): void
 }
@@ -229,6 +226,7 @@ export interface IResourceDownloadDAO {
   updateHeadersSync(resourceId: string, etag?: string | null, lastModified?: string | null): void
   markPendingDelete(resourceId: string): Promise<void>
   markPendingDeleteSync(resourceId: string): void
+  updateTargetLocalPathSync(resourceId: string, canonicalPath: string): void
   findResourcesByModule(moduleId: string): Promise<ResourceDownloadRecord[]>
   findResourcesByModuleSync(moduleId: string): ResourceDownloadRecord[]
   getReferencingModules(resourceId: string): Promise<string[]>
@@ -527,7 +525,18 @@ export class BuiltinModuleDao implements IBuiltinModuleDAO {
     }
     const slot = target.capability_slot ?? 'general'
     const policy = target.slot_policy ?? 'multi_active'
-    const isExclusive = policy === 'exclusive_required' || policy === 'exclusive_optional'
+    const policyRequiresExclusive =
+      policy === 'exclusive_required' || policy === 'exclusive_optional'
+    const slotInWhitelist = isExclusiveCapabilitySlot(slot)
+
+    // [ISS-01 / TC-SSOT-16] Fail-Closed：声明为独占策略但槽位未纳入独占白名单，严禁激活
+    if (policyRequiresExclusive && !slotInWhitelist) {
+      throw new Error(
+        `UNREGISTERED_EXCLUSIVE_SLOT: capability_slot "${slot}" 未列入 EXCLUSIVE_CAPABILITY_SLOTS 独占白名单`
+      )
+    }
+
+    const isExclusive = policyRequiresExclusive || slotInWhitelist
 
     const tx = this.db.transaction(() => {
       if (isExclusive) {
@@ -554,6 +563,20 @@ export class BuiltinModuleDao implements IBuiltinModuleDAO {
       throw new Error('SLOT_REQUIRED_EMPTY')
     }
     this.updateInstallStateSync(id, 'installed_inactive')
+  }
+
+  updateTotalBytesAndMetaSync(
+    id: string,
+    totalBytes: number,
+    catalogMetaJson?: string | null
+  ): void {
+    if (catalogMetaJson !== undefined) {
+      this.db
+        .prepare('UPDATE builtin_modules SET total_bytes = ?, catalog_meta_json = ? WHERE id = ?')
+        .run(totalBytes, catalogMetaJson, id)
+    } else {
+      this.db.prepare('UPDATE builtin_modules SET total_bytes = ? WHERE id = ?').run(totalBytes, id)
+    }
   }
 
   async deleteModule(id: string): Promise<void> {
@@ -780,6 +803,19 @@ export class ResourceDownloadDao implements IResourceDownloadDAO {
     `
       )
       .run(now, resourceId)
+  }
+
+  updateTargetLocalPathSync(resourceId: string, canonicalPath: string): void {
+    const now = Date.now()
+    this.db
+      .prepare(
+        `
+      UPDATE resource_downloads
+      SET target_local_path = ?, updated_at = ?
+      WHERE resource_id = ?
+    `
+      )
+      .run(canonicalPath, now, resourceId)
   }
 
   async markPendingDelete(resourceId: string): Promise<void> {
@@ -1203,6 +1239,20 @@ export class EmbeddingEpochDao implements IEmbeddingEpochDAO {
       this.db
         .prepare("UPDATE embedding_epochs SET status = 'serving' WHERE epoch = ?")
         .run(newEpoch)
+    })
+    tx.immediate()
+  }
+
+  rollbackEpochSync(prevServingEpoch: number | null, rolledBackEpoch: number): void {
+    const tx = this.db.transaction(() => {
+      this.db
+        .prepare("UPDATE embedding_epochs SET status = 'cancelled' WHERE epoch = ?")
+        .run(rolledBackEpoch)
+      if (prevServingEpoch !== null && prevServingEpoch > 0) {
+        this.db
+          .prepare("UPDATE embedding_epochs SET status = 'serving' WHERE epoch = ?")
+          .run(prevServingEpoch)
+      }
     })
     tx.immediate()
   }

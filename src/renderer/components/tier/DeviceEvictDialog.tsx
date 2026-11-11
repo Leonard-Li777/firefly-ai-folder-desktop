@@ -62,7 +62,7 @@ export const DeviceEvictDialog: React.FC<DeviceEvictDialogProps> = ({
           setSelectedDeviceId(firstReplaceable.id)
         }
       } else {
-        setErrorMessage(res.error || '获取已绑定设备列表失败')
+        setErrorMessage(res.message || res.error || '获取已绑定设备列表失败')
       }
     } catch (err: any) {
       setErrorMessage(err?.message || '网络连接异常，请重试')

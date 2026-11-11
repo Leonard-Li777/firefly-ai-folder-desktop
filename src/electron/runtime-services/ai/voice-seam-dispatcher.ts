@@ -19,13 +19,6 @@ import { logger, LogCategory } from '@firefly/shared'
 import { modularResourceService } from '../system/modular-resource-service'
 import { omniClient } from '../../services/omni-client'
 import { omniService } from '../system/omni-service'
-import {
-  acquireM5Worker,
-  releaseM5Worker,
-  waitWorkerEvent,
-  type IM5WorkerSession,
-  type M5EngineWorkerEvent
-} from './m5-tts-engine'
 
 /** 统一语音转录输出模型 */
 export interface TranscriptionResult {
@@ -89,6 +82,46 @@ export class VoiceSeamError extends Error {
     this.name = 'VoiceSeamError'
     this.code = code
   }
+}
+
+/**
+ * 24kHz 单声道 16-bit PCM 线性插值升采样至 48kHz（点数加倍，保真平滑）
+ */
+export function upsamplePcm24kTo48k(pcm24k: Uint8Array): Uint8Array {
+  const sampleCount = Math.floor(pcm24k.byteLength / 2)
+  if (sampleCount === 0) return new Uint8Array(0)
+  const inView = new DataView(pcm24k.buffer, pcm24k.byteOffset, pcm24k.byteLength)
+  const outBytes = sampleCount * 4
+  const outBuf = new Uint8Array(outBytes)
+  const outView = new DataView(outBuf.buffer, outBuf.byteOffset, outBytes)
+
+  for (let i = 0; i < sampleCount; i++) {
+    const s0 = inView.getInt16(i * 2, true)
+    const s1 = i + 1 < sampleCount ? inView.getInt16((i + 1) * 2, true) : s0
+    const sMid = Math.round((s0 + s1) / 2)
+    outView.setInt16(i * 4, s0, true)
+    outView.setInt16(i * 4 + 2, sMid, true)
+  }
+  return outBuf
+}
+
+/**
+ * 从 WAV buffer 剥离头部并自适应归一化为 48000Hz PCM
+ */
+export function extractPcmNormalized48k(buffer: ArrayBuffer): Uint8Array {
+  if (buffer.byteLength < 44) {
+    return new Uint8Array(buffer)
+  }
+  const view = new DataView(buffer)
+  let sampleRate = 48000
+  if (view.getUint32(0, false) === 0x52494646 && view.getUint32(8, false) === 0x57415645) {
+    sampleRate = view.getUint32(24, true)
+  }
+  const rawPcm = stripWavHeader(buffer)
+  if (sampleRate === 24000) {
+    return upsamplePcm24kTo48k(rawPcm)
+  }
+  return rawPcm
 }
 
 /**
@@ -296,44 +329,12 @@ export class VoiceSeamDispatcher implements IVoiceSeamService {
     }
 
     try {
-      if (activeModule.id === 'tts_m5_onnx') {
-        const sessionId = uuidv4()
-        const worker = await acquireM5Worker()
-        let sessionClosed = false
-        const onAbort = () => worker.post({ type: 'ABORT_SYNTHESIS', sessionId })
-        options?.signal?.addEventListener('abort', onAbort, { once: true })
-        if (options?.signal?.aborted) {
-          onAbort()
-          throw new VoiceSeamError('ABORTED', '语音合成已中止')
-        }
-
-        try {
-          for await (const chunk of this.dispatchM5TTS(
-            trimmed,
-            { ...options, sessionId },
-            worker
-          )) {
-            if (options?.signal?.aborted) break
-            yield chunk
-          }
-          sessionClosed = true
-        } finally {
-          options?.signal?.removeEventListener('abort', onAbort)
-          if (!sessionClosed) {
-            worker.post({ type: 'ABORT_SYNTHESIS', sessionId })
-            await Promise.race([
-              waitWorkerEvent(worker, sessionId, [
-                'SESSION_ABORTED',
-                'SESSION_COMPLETE',
-                'SESSION_ERROR'
-              ]),
-              new Promise<void>(resolve => setTimeout(resolve, 2000))
-            ])
-          }
-          releaseM5Worker(worker, sessionId)
-        }
-      } else if (activeModule.id === 'tts_moss_onnx' || activeModule.backend_type === 'omni_onnx') {
-        yield* this.dispatchMossTTS(trimmed, options)
+      if (
+        activeModule.id === 'tts_m5_onnx' ||
+        activeModule.id === 'tts_moss_onnx' ||
+        activeModule.backend_type === 'omni_onnx'
+      ) {
+        yield* this.dispatchOmniTTS(trimmed, options)
       } else if (activeModule.backend_type === 'ai_engine') {
         throw new VoiceSeamError('INFERENCE_FAILED', 'ai_engine TTS 后端网关尚未接入')
       } else {
@@ -347,77 +348,7 @@ export class VoiceSeamDispatcher implements IVoiceSeamService {
     }
   }
 
-  private async *dispatchM5TTS(
-    text: string,
-    options: { voiceId?: string; speed?: number; signal?: AbortSignal; sessionId: string },
-    worker: IM5WorkerSession
-  ): AsyncIterable<AudioChunk> {
-    const queue: M5EngineWorkerEvent[] = []
-    let resolveNext: (() => void) | null = null
-    let hasEnded = false
-
-    const handler = (evt: M5EngineWorkerEvent) => {
-      if (evt.sessionId !== options.sessionId) return
-      queue.push(evt)
-      if (resolveNext) {
-        resolveNext()
-        resolveNext = null
-      }
-    }
-
-    worker.on(handler)
-
-    try {
-      worker.post({
-        type: 'START_SYNTHESIS',
-        sessionId: options.sessionId,
-        text,
-        voiceId: options.voiceId || 'huoshan_zhumei',
-        speed: options.speed || 1.0
-      })
-
-      while (!hasEnded) {
-        if (options.signal?.aborted) {
-          throw new VoiceSeamError('ABORTED', '语音合成已中止')
-        }
-
-        if (queue.length === 0) {
-          await new Promise<void>(resolve => {
-            resolveNext = resolve
-          })
-        }
-
-        while (queue.length > 0) {
-          const evt = queue.shift()!
-          if (evt.type === 'CHUNK_READY') {
-            yield {
-              format: 'pcm_s16le',
-              sampleRate: evt.sampleRate,
-              channels: 1,
-              data: evt.pcmData,
-              isLastChunk: false
-            }
-          } else if (evt.type === 'SESSION_COMPLETE') {
-            hasEnded = true
-            break
-          } else if (evt.type === 'SESSION_ABORTED') {
-            hasEnded = true
-            throw new VoiceSeamError('ABORTED', '语音合成已中止')
-          } else if (evt.type === 'SESSION_ERROR') {
-            hasEnded = true
-            throw new VoiceSeamError(
-              'INFERENCE_FAILED',
-              `M5-TTS 合成错误: ${evt.errorMessage || evt.errorCode}`
-            )
-          }
-        }
-      }
-    } finally {
-      worker.off(handler)
-    }
-  }
-
-  private async *dispatchMossTTS(
+  private async *dispatchOmniTTS(
     text: string,
     options?: { voiceId?: string; speed?: number; signal?: AbortSignal }
   ): AsyncIterable<AudioChunk> {
@@ -466,8 +397,8 @@ export class VoiceSeamDispatcher implements IVoiceSeamService {
         )
       }
 
-      // 剥离现役 Omni 返回的 44 字节 RIFF/WAV 容器头，产出保真 48kHz PCM
-      const pcmData = stripWavHeader(chunkRes.buffer)
+      // 剥离 WAV 容器头并统一归一化为保真 48kHz PCM（M5 原生 24kHz 自适应升采样至 48kHz）
+      const pcmData = extractPcmNormalized48k(chunkRes.buffer)
 
       yield {
         format: 'pcm_s16le',

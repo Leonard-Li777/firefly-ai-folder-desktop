@@ -277,6 +277,16 @@ describe('VoiceSeamDispatcher (Ticket 04) 语音中继调度与 PCM 流式测试
         backend_type: 'omni_onnx'
       }
 
+      mockSplitTTSChunks.mockResolvedValueOnce({
+        chunks: ['测试 M5 极速语音合成'],
+        totalChunks: 1,
+        totalChars: 11
+      })
+
+      const raw24kPcm = new Int16Array([100, 200, 300, 400])
+      const wav24k = createWavFromPcm(new Uint8Array(raw24kPcm.buffer), 24000, 1, 16)
+      mockSynthesizeTTSChunk.mockResolvedValueOnce({ buffer: wav24k, hitCap: false, steps: 30 })
+
       const chunks: any[] = []
       for await (const chunk of voiceSeamDispatcher.synthesizeStream('测试 M5 极速语音合成')) {
         chunks.push(chunk)

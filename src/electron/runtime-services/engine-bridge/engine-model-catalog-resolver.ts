@@ -129,9 +129,6 @@ export class EngineModelCatalogResolver {
     if (/qwen3\.?5[-_]0\.8b/i.test(cleanStem)) {
       return 'Qwen 3.5 0.8B (中文更佳)'
     }
-    if (/lfm2\.?5[-_]1\.2b/i.test(cleanStem)) {
-      return 'LFM2.5 1.2B Instruct（英文更佳•高速）'
-    }
 
     return cleanStem
   }

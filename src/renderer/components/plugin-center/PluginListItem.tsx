@@ -242,6 +242,24 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
                 </Badge>
               )
             ) : null}
+            {module.validation_status === 'pending_validation' && (
+              <Badge
+                variant="secondary"
+                data-testid="pending-validation-badge"
+                className="text-[10px] px-2 py-0.2 bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 font-medium shrink-0 animate-pulse"
+              >
+                {t('正在校验插件')}
+              </Badge>
+            )}
+            {module.validation_status === 'pending_repair' && (
+              <Badge
+                variant="destructive"
+                data-testid="pending-repair-badge"
+                className="text-[10px] px-2 py-0.2 bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-medium shrink-0"
+              >
+                {t('模型损坏需修复')}
+              </Badge>
+            )}
             {!isComingSoon && (
               <Badge
                 variant="outline"

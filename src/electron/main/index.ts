@@ -53,7 +53,8 @@ import {
   LogCategory,
   ErrorNormalizer,
   APP_PORTS,
-  getWorktreeDebugPortBase
+  getWorktreeDebugPortBase,
+  PluginPathResolver
 } from '@firefly/shared'
 import { loggingService } from '../runtime-services/system/logging-service'
 // 逆地理编码适配器注册：将 omniService 能力注入 core-engine（模块求值即注册，须早于任何维度分析）
@@ -787,6 +788,18 @@ app.on('ready', async () => {
   hardwareDetectionService.setConfigOrchestrator(ConfigOrchestrator.getInstance())
   hardwareDetectionService.setDeploymentIntegrityVerifier(deploymentIntegrityVerifier)
 
+  // SSOT P0：在 setupIPCHandlers() 与 LANGUAGE_CONFIRMED 分支判断前初始化全局唯一插件根目录解析器，
+  // 确保 Welcome 向导及 get-plugin-dir-info 等早期 IPC 调用可用；运行期内锁定不变（IN-01）。
+  const configuredPluginsRoot =
+    ConfigOrchestrator.getInstance().getValue<string>('PLUGIN_MODULES_PATH')
+  const initialPluginsRoot =
+    configuredPluginsRoot &&
+    typeof configuredPluginsRoot === 'string' &&
+    configuredPluginsRoot.trim()
+      ? path.resolve(configuredPluginsRoot.trim())
+      : path.join(app.getPath('userData'), 'modules')
+  PluginPathResolver.initialize(initialPluginsRoot)
+
   // 注册 IPC 处理器，确保在任何窗口创建及前端加载之前 IPC 响应就绪
   await setupIPCHandlers()
   deepLinkManager.init()
@@ -981,7 +994,7 @@ app.on('before-quit', async () => {
   logger.info(LogCategory.MAIN, '应用正在退出，清理资源...')
 
   try {
-    omniService.stop()
+    await omniService.stop()
     const { engineBridgeService } = await import('../runtime-services/engine-bridge')
     engineBridgeService.stop()
     // 关闭图标提取子进程，避免遗留孤儿子进程
@@ -1041,7 +1054,7 @@ process.on('unhandledRejection', reason => {
 // 处理终端终止信号 (Ctrl+C / 进程管理器杀进程)，确保 omni 等所有常驻子服务彻底释放
 const handleProcessTermination = () => {
   try {
-    omniService.stop()
+    omniService.stopImmediatelySync()
     const { engineBridgeService } = require('../runtime-services/engine-bridge')
     engineBridgeService.stop()
   } catch {}

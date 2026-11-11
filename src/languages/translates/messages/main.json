@@ -9,7 +9,7 @@
     "de-DE": "In der Schnittstelle tritt eine Ausnahme auf",
     "fr-FR": "Une exception se produit dans l'interface",
     "ko-KR": "인터페이스에서 예외가 발생했습니다.",
-    "$files": ["src/electron/main/window.ts(3228-3238)"],
+    "$files": ["src/electron/main/window.ts(3331-3341)"],
     "$id": 22350
   },
   "界面渲染进程已退出，应用未能自动恢复。请重启应用后重试。": {
@@ -22,7 +22,7 @@
     "de-DE": "Der Schnittstellen-Rendering-Prozess wurde beendet und die Anwendung konnte nicht automatisch fortgesetzt werden. Bitte starten Sie die App neu und versuchen Sie es erneut.",
     "fr-FR": "Le processus de rendu de l'interface s'est terminé et l'application n'a pas pu reprendre automatiquement. Veuillez redémarrer l'application et réessayer.",
     "ko-KR": "인터페이스 렌더링 프로세스가 종료되었으며 애플리케이션이 자동으로 재개되지 못했습니다. 앱을 다시 시작한 후 다시 시도해 주세요.",
-    "$files": ["src/electron/main/window.ts(3255-3287)"],
+    "$files": ["src/electron/main/window.ts(3358-3390)"],
     "$id": 22351
   },
   "异常原因": {
@@ -35,7 +35,7 @@
     "de-DE": "Abnormale Ursache",
     "fr-FR": "Cause anormale",
     "ko-KR": "비정상적인 원인",
-    "$files": ["src/electron/main/window.ts(3311-3319)"],
+    "$files": ["src/electron/main/window.ts(3414-3422)"],
     "$id": 22352
   },
   "重新加载": {
@@ -48,7 +48,7 @@
     "de-DE": "Neu laden",
     "fr-FR": "Recharger",
     "ko-KR": "다시 장전하다",
-    "$files": ["src/electron/main/window.ts(3640-3648)"],
+    "$files": ["src/electron/main/window.ts(3743-3751)"],
     "$id": 22353
   },
   "应用界面资源缺失（index.html 未找到），无法加载界面。请重新安装或修复安装本应用。": {
@@ -61,7 +61,7 @@
     "de-DE": "Die Ressourcen der Anwendungsschnittstelle fehlen (index.html wurde nicht gefunden) und die Schnittstelle kann nicht geladen werden. Bitte installieren Sie diese Anwendung neu oder reparieren Sie sie.",
     "fr-FR": "Les ressources de l'interface de l'application sont manquantes (index.html n'a pas été trouvé) et l'interface ne peut pas être chargée. Veuillez réinstaller ou réparer l'installation de cette application.",
     "ko-KR": "애플리케이션 인터페이스 리소스가 누락되어(index.html을 찾을 수 없음) 인터페이스를 로드할 수 없습니다. 이 애플리케이션을 다시 설치하거나 복구하여 설치하세요.",
-    "$files": ["src/electron/main/window.ts(15492-15542)"],
+    "$files": ["src/electron/main/window.ts(15595-15645)"],
     "$id": 22354
   },
   "AI 引擎检查完成": {

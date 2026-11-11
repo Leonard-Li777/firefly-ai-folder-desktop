@@ -334,8 +334,10 @@ export function registerTTSIPCHandlers(): void {
       const orchestrator = ConfigOrchestrator.getInstance()
       const defaultVoice = orchestrator.getValue<string>('TTS_DEFAULT_VOICE_ID' as any)
       if (defaultVoice === voiceId) {
-        await orchestrator.updateValue('TTS_DEFAULT_VOICE_ID' as any, 'lilihong_shejian')
-        await orchestrator.updateValue('TTS_DEFAULT_VOICE_SID' as any, 'lilihong_shejian')
+        const remaining = await voiceArchiveService.listVoices().catch(() => [])
+        const fallbackId = remaining.find(v => v.id !== voiceId)?.id || ''
+        await orchestrator.updateValue('TTS_DEFAULT_VOICE_ID' as any, fallbackId)
+        await orchestrator.updateValue('TTS_DEFAULT_VOICE_SID' as any, fallbackId)
       }
       const favVoices = orchestrator.getValue<string[]>('TTS_FAVORITE_VOICES' as any) || []
       if (favVoices.includes(voiceId)) {

@@ -55,6 +55,8 @@ export interface PluginModuleItem {
   config_schema?: string | null
   user_config?: string | null
   error_message?: string | null
+  validation_status?: 'ready' | 'pending_validation' | 'pending_repair' | 'legacy'
+  validation_message?: string
   download_progress?: DownloadProgress
   contributes?: {
     settings?: import('@firefly/types').PluginSettingsContribution
@@ -122,6 +124,10 @@ export function getPluginErrorMessages(): Record<string, string> {
     CHECKSUM_FAILED: t('文件完整性校验失败，请重新获取安装包。'),
     DOWNLOAD_FAILED: t('组件资源下载失败，请检查网络连接后重试。'),
     MODULE_NOT_FOUND: t('未找到对应的插件信息，可能已被移除。'),
+    MODULE_ROLLBACK: t('插件激活校验未通过，已自动为您恢复至原运行状态。'),
+    MODEL_CORRUPT: t('检测到插件模型文件不完整或损坏，请重新下载修复。'),
+    FAST_READY_TIMEOUT: t('插件快速检测超时，后台正在校验中。'),
+    SLOT_REQUIRED_EMPTY: t('当前分类必须保留一个启用的插件，无法直接停用。'),
     UNKNOWN_ERROR: t('插件操作发生未知异常，请稍后重试。'),
     // 目录管理与镜像下载大白话提示 (RULE 2.16 & Spec §7.4)
     PATH_NOT_ASCII: t('文件夹路径不能包含中文，请选择纯英文路径'),
@@ -696,6 +702,8 @@ function normalizeRemoteModuleItem(raw: any): PluginModuleItem {
     can_install: raw.can_install,
     can_uninstall: raw.can_uninstall,
     hold_reasons: raw.hold_reasons,
+    validation_status: raw.validation_status,
+    validation_message: raw.validation_message,
     ...(raw.download_progress ? { download_progress: raw.download_progress } : {})
   }
 }

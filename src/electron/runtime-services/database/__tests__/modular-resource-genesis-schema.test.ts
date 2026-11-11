@@ -1,8 +1,16 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import fs from 'node:fs'
+import path from 'node:path'
 import Database from 'better-sqlite3'
 import { GENESIS_V1_SCHEMA } from '../database'
 import { BuiltinModuleDao } from '../dao/modular-resource-dao'
 import { DEFAULT_CATALOG_SEEDS } from '../../system/modular-resource-service'
+import {
+  BUILTIN_MODULE_CATALOG_META,
+  BUILTIN_PLUGIN_CATALOG_META,
+  EXCLUSIVE_CAPABILITY_SLOTS,
+  MULTI_ACTIVE_CAPABILITY_SLOTS
+} from '@firefly/shared'
 
 describe('Ticket 01: Genesis V1 Schema & Modular Resource DAO', () => {
   let db: Database.Database
@@ -174,6 +182,190 @@ describe('Ticket 01: Genesis V1 Schema & Modular Resource DAO', () => {
       expect(archive?.install_state).toBe('not_installed')
       expect(archive?.category).toBe('vfs-archive')
       expect(archive?.capability_slot).toBe('parser')
+    })
+  })
+
+  describe('TC-SSOT-31: ux_exclusive_active_slot 三处全等对齐与种子 SSOT 一致性', () => {
+    it('GENESIS_V1_SCHEMA 局部唯一索引槽位、EXCLUSIVE_CAPABILITY_SLOTS 与 DAO 类型定义严格全等', () => {
+      const match = GENESIS_V1_SCHEMA.match(
+        /CREATE\s+UNIQUE\s+INDEX\s+IF\s+NOT\s+EXISTS\s+ux_exclusive_active_slot\s+ON\s+builtin_modules\s*\(capability_slot\)\s+WHERE\s+install_state\s*=\s*'active'\s+AND\s+capability_slot\s+IN\s*\(([^)]+)\)/i
+      )
+      expect(match).not.toBeNull()
+      const sqlSlots = match![1]
+        .split(',')
+        .map(s => s.trim().replace(/^'+|'+$/g, ''))
+        .filter(Boolean)
+        .sort()
+
+      const tsExclusiveSlots = [...EXCLUSIVE_CAPABILITY_SLOTS].sort()
+      expect(sqlSlots).toEqual(tsExclusiveSlots)
+
+      // 验证 DAO 源文件精确透传共享 BuiltinCapabilitySlot，避免类型飘移
+      const daoSourcePath = path.resolve(__dirname, '../dao/modular-resource-dao.ts')
+      const daoSource = fs.readFileSync(daoSourcePath, 'utf-8')
+      expect(daoSource).toContain('export type PluginCapabilitySlot = BuiltinCapabilitySlot')
+
+      // 验证 BuiltinCapabilitySlot 联合类型完整等价于 EXCLUSIVE + MULTI_ACTIVE
+      const catalogSourcePath = path.resolve(
+        __dirname,
+        '../../../../../pro/packages/shared/src/utils/builtin-plugin-catalog.ts'
+      )
+      const catalogSource = fs.readFileSync(catalogSourcePath, 'utf-8')
+      const unionMatch = catalogSource.match(
+        /export\s+type\s+BuiltinCapabilitySlot\s*=([\s\S]*?)\n\s*\n/
+      )
+      expect(unionMatch).not.toBeNull()
+      const declaredUnionSlots = Array.from(unionMatch![1].matchAll(/'([^']+)'/g))
+        .map(m => m[1])
+        .sort()
+      const combinedSlots = [...EXCLUSIVE_CAPABILITY_SLOTS, ...MULTI_ACTIVE_CAPABILITY_SLOTS].sort()
+      expect(declaredUnionSlots).toEqual(combinedSlots)
+    })
+
+    it('DEFAULT_CATALOG_SEEDS 与 BUILTIN_MODULE_CATALOG_META / BUILTIN_PLUGIN_CATALOG_META 100% 对齐且彻底清退 sherpa-onnx-runtime', () => {
+      const expectedIds = Object.keys(BUILTIN_MODULE_CATALOG_META).sort()
+      const seedIds = DEFAULT_CATALOG_SEEDS.map(m => m.id).sort()
+      expect(seedIds).toEqual(expectedIds)
+
+      for (const seed of DEFAULT_CATALOG_SEEDS) {
+        const meta = BUILTIN_MODULE_CATALOG_META[seed.id]
+        expect(meta).toBeDefined()
+        expect(seed.version).toBe(meta.version)
+        expect(seed.catalog_version).toBe(meta.catalogVersion)
+        expect(seed.category).toBe(meta.category)
+        expect(seed.capability_slot).toBe(meta.capabilitySlot)
+        expect(seed.slot_policy).toBe(meta.slotPolicy)
+        expect(seed.backend_type).toBe(meta.backendType)
+        expect(seed.total_bytes).toBe(meta.totalBytes)
+
+        const seedResIds = (seed.resources ?? []).map(r => r.resource_id)
+        expect(seedResIds).toEqual([...meta.resourceIds])
+        for (const res of seed.resources ?? []) {
+          expect(res.resource_id).not.toBe('sherpa-onnx-runtime')
+          const sharedMeta =
+            BUILTIN_PLUGIN_CATALOG_META[res.resource_id as keyof typeof BUILTIN_PLUGIN_CATALOG_META]
+          expect(sharedMeta).toBeDefined()
+          expect(res.target_local_path).toBe(sharedMeta.targetLocalPath)
+          expect(res.asset_name).toBe(sharedMeta.assetName)
+          expect(res.expected_bytes).toBe(sharedMeta.expectedBytes)
+          expect(res.expected_sha256).toBe(sharedMeta.expectedSha256)
+        }
+      }
+
+      // 显式核验新增/变更核心项（含 mobile-clip、pocket-cpu、tts_m5_onnx）
+      const classicLight = DEFAULT_CATALOG_SEEDS.find(m => m.id === 'engine_classic_light')
+      expect(classicLight?.resources?.map(r => r.resource_id)).toEqual([
+        'bekko-a8m',
+        'chinese-clip',
+        'mobile-clip'
+      ])
+      expect(classicLight?.total_bytes).toBe(377105491)
+      expect(DEFAULT_CATALOG_SEEDS.some(m => m.id === 'pocket-cpu-int8-onnx')).toBe(true)
+      expect(DEFAULT_CATALOG_SEEDS.some(m => m.id === 'tts_m5_onnx')).toBe(true)
+    })
+  })
+
+  describe('TC-SSOT-16: 独占槽位物理约束与 Fail-Closed 防护', () => {
+    it.each([
+      ['voice_tts', 'moss_1', 'm5_2'],
+      ['voice_asr', 'sensevoice_1', 'whisper_2'],
+      ['ai_engine_cpu', 'pocket_1', 'pocket_2']
+    ])('ux_exclusive_active_slot 物理阻断同独占槽位 (%s) 双 active 并发存在', (slot, id1, id2) => {
+      dao.upsertModuleSync({
+        id: id1,
+        version: '1.0.0',
+        category: 'media',
+        capability_slot: slot as any,
+        slot_policy: 'exclusive_optional',
+        availability: 'approved',
+        delist_reason: null,
+        install_state: 'active'
+      } as any)
+
+      expect(() => {
+        dao.upsertModuleSync({
+          id: id2,
+          version: '1.0.0',
+          category: 'media',
+          capability_slot: slot as any,
+          slot_policy: 'exclusive_optional',
+          availability: 'approved',
+          delist_reason: null,
+          install_state: 'active'
+        } as any)
+      }).toThrow(/UNIQUE constraint failed/)
+    })
+
+    it('general / parser / tool 非排他槽位允许多模块同时保持 active', () => {
+      for (const slot of MULTI_ACTIVE_CAPABILITY_SLOTS) {
+        expect(() => {
+          dao.upsertModuleSync({
+            id: `${slot}_a`,
+            version: '1.0.0',
+            category: 'tool',
+            capability_slot: slot,
+            slot_policy: 'multi_active',
+            availability: 'approved',
+            delist_reason: null,
+            install_state: 'active'
+          } as any)
+          dao.upsertModuleSync({
+            id: `${slot}_b`,
+            version: '1.0.0',
+            category: 'tool',
+            capability_slot: slot,
+            slot_policy: 'multi_active',
+            availability: 'approved',
+            delist_reason: null,
+            install_state: 'active'
+          } as any)
+        }).not.toThrow()
+      }
+    })
+
+    it('未列入 EXCLUSIVE_CAPABILITY_SLOTS 的独占槽位触发 Fail-Closed 拒绝激活', () => {
+      dao.upsertModuleSync({
+        id: 'rogue_exclusive',
+        version: '1.0.0',
+        category: 'tool',
+        capability_slot: 'unregistered_custom_slot' as any,
+        slot_policy: 'exclusive_optional',
+        availability: 'approved',
+        delist_reason: null,
+        install_state: 'installed_inactive'
+      } as any)
+
+      expect(() => dao.activateExclusiveModuleSync('rogue_exclusive')).toThrow(
+        /UNREGISTERED_EXCLUSIVE_SLOT/
+      )
+      expect(dao.findByIdSync('rogue_exclusive')?.install_state).toBe('installed_inactive')
+    })
+
+    it('activateExclusiveModuleSync 在独占槽位上可原子切换 active 且符合“先停旧再启新”语义', () => {
+      dao.upsertModuleSync({
+        id: 'tts_moss_onnx',
+        version: '1.0.0',
+        category: 'media',
+        capability_slot: 'voice_tts',
+        slot_policy: 'exclusive_optional',
+        availability: 'approved',
+        delist_reason: null,
+        install_state: 'active'
+      } as any)
+      dao.upsertModuleSync({
+        id: 'tts_m5_onnx',
+        version: '1.0.0',
+        category: 'media',
+        capability_slot: 'voice_tts',
+        slot_policy: 'exclusive_optional',
+        availability: 'approved',
+        delist_reason: null,
+        install_state: 'installed_inactive'
+      } as any)
+
+      dao.activateExclusiveModuleSync('tts_m5_onnx')
+      expect(dao.findByIdSync('tts_moss_onnx')?.install_state).toBe('installed_inactive')
+      expect(dao.findByIdSync('tts_m5_onnx')?.install_state).toBe('active')
     })
   })
 })

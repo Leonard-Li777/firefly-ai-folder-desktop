@@ -9,7 +9,7 @@
     "de-DE": "Der Start der Anwendung wird vorbereitet...",
     "fr-FR": "Préparation du lancement de l'application...",
     "ko-KR": "애플리케이션 실행 준비 중...",
-    "$files": ["src/renderer/App.tsx(10300-10315)"],
+    "$files": ["src/renderer/App.tsx(11031-11046)"],
     "$id": 7602
   },
   "正在检测应用配置...": {
@@ -22,7 +22,7 @@
     "de-DE": "Anwendungskonfiguration wird erkannt...",
     "fr-FR": "Détection de la configuration de l'application...",
     "ko-KR": "애플리케이션 구성을 감지하는 중...",
-    "$files": ["src/renderer/App.tsx(11533-11548)"],
+    "$files": ["src/renderer/App.tsx(12264-12279)"],
     "$id": 7614
   },
   "正在验证授权状态...": {
@@ -35,7 +35,7 @@
     "de-DE": "Autorisierungsstatus wird überprüft...",
     "fr-FR": "Vérification de l'état d'autorisation...",
     "ko-KR": "승인 상태 확인 중...",
-    "$files": ["src/renderer/App.tsx(14141-14156)"],
+    "$files": ["src/renderer/App.tsx(14872-14887)"],
     "$id": 7615
   },
   "正在初始化应用环境...": {
@@ -48,7 +48,7 @@
     "de-DE": "Anwendungsumgebung wird initialisiert...",
     "fr-FR": "Initialisation de l'environnement d'application...",
     "ko-KR": "애플리케이션 환경 초기화 중...",
-    "$files": ["src/renderer/App.tsx(22146-22162)"],
+    "$files": ["src/renderer/App.tsx(22877-22893)"],
     "$id": 7618
   },
   "正在初始化AI服务...": {
@@ -61,7 +61,7 @@
     "de-DE": "KI-Dienst wird initialisiert...",
     "fr-FR": "Initialisation du service IA...",
     "ko-KR": "AI 서비스 초기화 중...",
-    "$files": ["src/renderer/App.tsx(22304-22320)"],
+    "$files": ["src/renderer/App.tsx(23035-23051)"],
     "$id": 7619
   },
   "正在加载应用配置...": {
@@ -74,7 +74,7 @@
     "de-DE": "Anwendungskonfiguration wird geladen...",
     "fr-FR": "Chargement de la configuration de l'application...",
     "ko-KR": "애플리케이션 구성 로드 중...",
-    "$files": ["src/renderer/App.tsx(22582-22597)"],
+    "$files": ["src/renderer/App.tsx(23313-23328)"],
     "$id": 7620
   },
   "正在检查 AI 状态...": {
@@ -87,7 +87,7 @@
     "de-DE": "AI-Status wird überprüft...",
     "fr-FR": "Vérification de l'état de l'IA...",
     "ko-KR": "AI 상태를 확인하는 중...",
-    "$files": ["src/renderer/App.tsx(22648-22665)"],
+    "$files": ["src/renderer/App.tsx(23379-23396)"],
     "$id": 7621
   },
   "萤核智能文件夹需要访问您的“下载”文件夹以整理和检索文件。": {
@@ -739,7 +739,7 @@
     "de-DE": "Kontingent erschöpft: {count} private Verzeichnisdateien analysiert, aktuelles Kontingent beträgt {quota} Dateien. Sie können weitere Credits freischalten, indem Sie Freunde einladen.",
     "fr-FR": "Quota épuisé : {count} fichiers du répertoire privé analysés, le quota actuel est de {quota} fichiers. Vous pouvez débloquer plus de crédits en invitant des amis.",
     "ko-KR": "할당량 소진: {count}개의 개인 디렉터리 파일이 분석되었으며, 현재 할당량은 {quota}개 파일입니다. 친구를 초대하면 더 많은 크레딧을 잠금 해제할 수 있습니다.",
-    "$files": ["src/electron/runtime-services/invitation/invitation-service.ts(5865-5939)"],
+    "$files": ["src/electron/runtime-services/invitation/invitation-service.ts(4226-4300)"],
     "$id": 7662
   },
   "云端执行失败": {
