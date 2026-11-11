@@ -11,6 +11,7 @@ export interface SeatedDevice {
   device_label: string
   platform: string
   is_locked: boolean
+  zombie_exempt?: boolean
   bound_at: string
   last_seen_at?: string
   is_current_machine?: boolean
@@ -34,6 +35,8 @@ export const DeviceEvictDialog: React.FC<DeviceEvictDialogProps> = ({
   const [devices, setDevices] = useState<SeatedDevice[]>([])
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [monthlyUnbindLimit, setMonthlyUnbindLimit] = useState<number | null>(null)
+  const [monthlyUnbindRemaining, setMonthlyUnbindRemaining] = useState<number | null>(null)
 
   const loadDevices = useCallback(async () => {
     setLoading(true)
@@ -45,6 +48,12 @@ export const DeviceEvictDialog: React.FC<DeviceEvictDialogProps> = ({
       const res = await window.electronAPI.deviceBind.listSeatedDevices({ sessionToken })
       if (res.success && Array.isArray(res.devices)) {
         setDevices(res.devices)
+        if (typeof res.monthly_unbind_limit === 'number') {
+          setMonthlyUnbindLimit(res.monthly_unbind_limit)
+        }
+        if (typeof res.monthly_unbind_remaining === 'number') {
+          setMonthlyUnbindRemaining(res.monthly_unbind_remaining)
+        }
         // 默认不主动选中锁定的设备
         const firstReplaceable = res.devices.find(
           (d: SeatedDevice) => !d.is_locked && !d.is_current_machine
@@ -69,6 +78,8 @@ export const DeviceEvictDialog: React.FC<DeviceEvictDialogProps> = ({
       setDevices([])
       setSelectedDeviceId(null)
       setErrorMessage(null)
+      setMonthlyUnbindLimit(null)
+      setMonthlyUnbindRemaining(null)
     }
   }, [open, loadDevices])
 
@@ -123,9 +134,28 @@ export const DeviceEvictDialog: React.FC<DeviceEvictDialogProps> = ({
       } else if (res.error === 'EVICT_TARGET_ALREADY_UNBOUND') {
         toast.warning('所选设备已被解除绑定，正在为您刷新设备列表...')
         await loadDevices()
-      } else if (res.error === 'DEVICE_LOCKED_BY_ENTERPRISE') {
-        toast.error('目标设备受企业安全策略保护，禁止自助换绑')
+      } else if (
+        res.error === 'DEVICE_LOCKED' ||
+        res.error === 'DEVICE_LOCKED_BY_OTHER' ||
+        res.error === 'DEVICE_LOCKED_BY_ENTERPRISE'
+      ) {
+        toast.error(res.message || '目标设备已被锁定，禁止自助换绑')
         await loadDevices()
+      } else if (res.error === 'EVICT_QUOTA_EXCEEDED') {
+        if (typeof res.monthly_unbind_limit === 'number') {
+          setMonthlyUnbindLimit(res.monthly_unbind_limit)
+        }
+        if (typeof res.monthly_unbind_remaining === 'number') {
+          setMonthlyUnbindRemaining(res.monthly_unbind_remaining)
+        }
+        setErrorMessage(
+          res.message || '本月自助换绑次数已用完，仅支持替换闲置超过 90 天的旧电脑或联系客服'
+        )
+      } else if (res.error === 'CONCURRENT_LOCK_RETRY') {
+        setErrorMessage('系统正忙，其他设备正在同时换绑，请稍后重试')
+      } else if (res.error === 'SESSION_EXPIRED' || res.error === 'UNAUTHORIZED') {
+        toast.error('当前扫码登录已过期，请重新扫码绑定')
+        onOpenChange(false)
       } else {
         setErrorMessage(res.message || res.error || '换绑失败，请重试')
       }
@@ -169,6 +199,18 @@ export const DeviceEvictDialog: React.FC<DeviceEvictDialogProps> = ({
           </div>
         ) : (
           <div className="space-y-3 py-2">
+            {monthlyUnbindLimit !== null && monthlyUnbindRemaining !== null && (
+              <div className="px-3 py-2 rounded-lg bg-muted/50 border border-border/50 text-[11px] text-muted-foreground flex items-center justify-between">
+                <span>
+                  本月剩余自助换绑次数：
+                  <strong className="text-foreground font-semibold ml-1">
+                    {monthlyUnbindRemaining} / {monthlyUnbindLimit} 次
+                  </strong>
+                </span>
+                <span className="text-amber-600 dark:text-amber-400">闲置超90天免计次数</span>
+              </div>
+            )}
+
             {errorMessage && (
               <div className="p-2.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
@@ -180,7 +222,10 @@ export const DeviceEvictDialog: React.FC<DeviceEvictDialogProps> = ({
               {devices.map(device => {
                 const isSelected = selectedDeviceId === device.id
                 const isLocked = device.is_locked
-                const idleOver90 = isIdleOver90Days(device.last_seen_at, device.bound_at)
+                const zombieExempt =
+                  typeof device.zombie_exempt === 'boolean'
+                    ? device.zombie_exempt
+                    : isIdleOver90Days(device.last_seen_at, device.bound_at)
 
                 return (
                   <div
@@ -215,12 +260,12 @@ export const DeviceEvictDialog: React.FC<DeviceEvictDialogProps> = ({
                           </span>
                           {isLocked && (
                             <span className="px-1.5 py-0.2 rounded text-[10px] bg-purple-500/10 text-purple-600 dark:text-purple-400 font-semibold border border-purple-500/20">
-                              公司集中管理 (禁止替换)
+                              已被锁定 · 禁止替换
                             </span>
                           )}
-                          {!isLocked && idleOver90 && (
+                          {!isLocked && zombieExempt && (
                             <span className="px-1.5 py-0.2 rounded text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 font-semibold border border-amber-500/20">
-                              闲置超 3 个月 (建议替换)
+                              闲置超90天 · 免费换绑
                             </span>
                           )}
                         </div>

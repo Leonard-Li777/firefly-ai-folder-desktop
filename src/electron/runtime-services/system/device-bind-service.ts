@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import { WORKSPACE_CONSTANTS } from '@firefly/server'
 import { logger, LogCategory, getSharedSchemaName } from '@firefly/shared'
 import { SystemIdentityService } from './system-identity-service'
+import { RemoteConfigService } from './remote-config-service'
 import { createSupabaseClient } from './supabase-client-factory'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { SupabaseClient } from '@supabase/supabase-js'
@@ -15,6 +16,13 @@ export interface DeviceBindStatus {
   device_tier?: string
   status?: 'active' | 'unclaimed' | 'unbound'
   device_consumed_invitation?: boolean
+  error?: string
+}
+
+export interface UnseatedSessionStatus {
+  unseated: boolean
+  seated?: boolean
+  sessionToken?: string
   error?: string
 }
 
@@ -32,7 +40,7 @@ export interface DeviceBindCodeResult {
 
 export interface PollBindResultResponse {
   success: boolean
-  status?: 'pending' | 'bound' | 'need_evict' | 'requires_email_binding' | 'expired'
+  status?: 'pending' | 'bound' | 'need_evict' | 'expired' | 'error'
   bind_session_token?: string
   session_expires_at?: string
   device_token?: string
@@ -44,6 +52,7 @@ export interface PollBindResultResponse {
     email_canonical?: string
   }
   error?: string
+  message?: string
 }
 
 export interface SeatedDeviceItem {
@@ -53,9 +62,20 @@ export interface SeatedDeviceItem {
   device_label: string
   platform: string
   is_locked: boolean
+  zombie_exempt?: boolean
   bound_at: string
   last_seen_at?: string
   is_current_machine: boolean
+}
+
+export interface ListSeatedDevicesResponse {
+  success: boolean
+  devices?: SeatedDeviceItem[]
+  slot_limit?: number
+  active_count?: number
+  monthly_unbind_limit?: number
+  monthly_unbind_remaining?: number
+  error?: string
 }
 
 export interface SeatDeviceResponse {
@@ -64,6 +84,8 @@ export interface SeatDeviceResponse {
   takeover?: boolean
   need_evict?: boolean
   slot_index?: number
+  monthly_unbind_limit?: number
+  monthly_unbind_remaining?: number
   error?: string
   message?: string
 }
@@ -94,7 +116,6 @@ export interface CompleteEmailBindingResponse {
 
 export class DeviceBindService {
   private static instance: DeviceBindService | null = null
-  private supabaseClient: SupabaseClient | null = null
 
   private constructor() {}
 
@@ -106,24 +127,47 @@ export class DeviceBindService {
   }
 
   private getClient(): SupabaseClient {
-    if (!this.supabaseClient) {
-      const machineId = SystemIdentityService.getInstance().getMachineId()
-      this.supabaseClient = createSupabaseClient(
-        WORKSPACE_CONSTANTS.SUPABASE_URL,
-        WORKSPACE_CONSTANTS.SUPABASE_ANON_KEY,
-        machineId
-      )
+    const sharedClient = RemoteConfigService.getInstance().getSupabaseClient()
+    if (sharedClient) {
+      return sharedClient
     }
-    return this.supabaseClient
+    const identityService = SystemIdentityService.getInstance()
+    return createSupabaseClient(
+      WORKSPACE_CONSTANTS.SUPABASE_URL,
+      WORKSPACE_CONSTANTS.SUPABASE_ANON_KEY,
+      identityService.getMachineId(),
+      identityService.getSignature()
+    )
   }
 
   /**
-   * 安全持久化设备凭据 (Windows 平台通过 safeStorage 自动加密，内存同步活跃标记)
+   * 统一从 FunctionsHttpError.context 中解析 Edge Function 返回的 JSON 载荷
+   */
+  private async extractFunctionErrorPayload(error: any): Promise<Record<string, any> | null> {
+    try {
+      const ctx = error?.context
+      if (ctx && typeof ctx.json === 'function') {
+        const parsed = await ctx.json()
+        if (parsed && typeof parsed === 'object') {
+          return parsed
+        }
+      }
+    } catch (parseErr) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        '[DeviceBindService] 解析 Edge Function 错误响应体失败:',
+        parseErr
+      )
+    }
+    return null
+  }
+
+  /**
+   * 安全持久化设备凭据 (Windows 平台通过 safeStorage 自动加密，直写 ConfigOrchestrator 单一事实源)
    */
   public async setDeviceToken(token: string): Promise<void> {
     try {
-      ;(globalThis as any)._firefly_active_device_token = token
-      await (ConfigOrchestrator.getInstance() as any).updateValue?.('DEVICE_AUTH_TOKEN', token)
+      await ConfigOrchestrator.getInstance().updateValue('DEVICE_AUTH_TOKEN', token)
     } catch (err) {
       logger.error(LogCategory.SYSTEM, '[DeviceBindService] 持久化 DEVICE_AUTH_TOKEN 异常:', err)
     }
@@ -131,12 +175,19 @@ export class DeviceBindService {
 
   public getDeviceToken(): string | null {
     try {
-      const token = (ConfigOrchestrator.getInstance() as any).getValue?.(
-        'DEVICE_AUTH_TOKEN'
-      ) as string
-      return token || (globalThis as any)._firefly_active_device_token || null
-    } catch {
-      return (globalThis as any)._firefly_active_device_token || null
+      const token = ConfigOrchestrator.getInstance().getValue('DEVICE_AUTH_TOKEN') as string
+      return token && token.trim().length > 0 ? token : null
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[DeviceBindService] 读取 DEVICE_AUTH_TOKEN 异常:', err)
+      return null
+    }
+  }
+
+  public async clearDeviceToken(): Promise<void> {
+    try {
+      await ConfigOrchestrator.getInstance().updateValue('DEVICE_AUTH_TOKEN', '')
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[DeviceBindService] 清理 DEVICE_AUTH_TOKEN 异常:', err)
     }
   }
 
@@ -145,8 +196,7 @@ export class DeviceBindService {
    */
   public async setBindSessionToken(token: string): Promise<void> {
     try {
-      ;(globalThis as any)._firefly_active_bind_session_token = token
-      await (ConfigOrchestrator.getInstance() as any).updateValue?.('BIND_SESSION_TOKEN', token)
+      await ConfigOrchestrator.getInstance().updateValue('BIND_SESSION_TOKEN', token)
     } catch (err) {
       logger.error(LogCategory.SYSTEM, '[DeviceBindService] 持久化 BIND_SESSION_TOKEN 异常:', err)
     }
@@ -154,12 +204,11 @@ export class DeviceBindService {
 
   public getBindSessionToken(): string | null {
     try {
-      const token = (ConfigOrchestrator.getInstance() as any).getValue?.(
-        'BIND_SESSION_TOKEN'
-      ) as string
-      return token || (globalThis as any)._firefly_active_bind_session_token || null
-    } catch {
-      return (globalThis as any)._firefly_active_bind_session_token || null
+      const token = ConfigOrchestrator.getInstance().getValue('BIND_SESSION_TOKEN') as string
+      return token && token.trim().length > 0 ? token : null
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[DeviceBindService] 读取 BIND_SESSION_TOKEN 异常:', err)
+      return null
     }
   }
 
@@ -168,8 +217,7 @@ export class DeviceBindService {
    */
   public async clearBindSessionToken(): Promise<void> {
     try {
-      ;(globalThis as any)._firefly_active_bind_session_token = null
-      await (ConfigOrchestrator.getInstance() as any).updateValue?.('BIND_SESSION_TOKEN', '')
+      await ConfigOrchestrator.getInstance().updateValue('BIND_SESSION_TOKEN', '')
     } catch (err) {
       logger.warn(LogCategory.SYSTEM, '[DeviceBindService] 清理 BIND_SESSION_TOKEN 异常:', err)
     }
@@ -181,6 +229,61 @@ export class DeviceBindService {
   public hasActiveBindSession(): boolean {
     const token = this.getBindSessionToken()
     return !!token && token.trim().length > 0
+  }
+
+  /**
+   * 检查本地已存储的 DEVICE_AUTH_TOKEN 是否对应一个尚未入席（seated=false）的活跃会话，
+   * 若会话已过期或被吊销则同步清空无效凭据，确保软件重启后能准确恢复换绑弹窗。
+   */
+  public async getUnseatedSession(): Promise<UnseatedSessionStatus> {
+    const token = this.getDeviceToken()
+    if (!token) {
+      return { unseated: false }
+    }
+
+    try {
+      const client = this.getClient()
+      const { data, error } = await client.functions.invoke('seat-device', {
+        headers: {
+          authorization: `Bearer ${token}`
+        },
+        body: {
+          action: 'status'
+        }
+      })
+
+      if (error) {
+        const errPayload = await this.extractFunctionErrorPayload(error)
+        const errCode = errPayload?.error
+        if (
+          errCode === 'SESSION_EXPIRED' ||
+          errCode === 'UNAUTHORIZED' ||
+          errCode === 'DEVICE_UNBOUND'
+        ) {
+          await this.clearDeviceToken()
+          return { unseated: false, error: errCode }
+        }
+        logger.warn(
+          LogCategory.SYSTEM,
+          '[DeviceBindService] getUnseatedSession 调用失败:',
+          errPayload || error.message
+        )
+        return { unseated: false, error: errCode || error.message }
+      }
+
+      if (data?.success) {
+        return {
+          unseated: !data.seated,
+          seated: !!data.seated,
+          sessionToken: !data.seated ? token : undefined
+        }
+      }
+
+      return { unseated: false, error: data?.error }
+    } catch (err: any) {
+      logger.warn(LogCategory.SYSTEM, '[DeviceBindService] getUnseatedSession 异常:', err)
+      return { unseated: false, error: err?.message || 'unknown' }
+    }
   }
 
   /**
@@ -228,7 +331,7 @@ export class DeviceBindService {
    * 2. 计算 SHA256 散列后传入 rpc_create_device_bind_code (p_poll_secret_hash)；
    * 3. 短码与小程序码配套下发，轮询时必须持有原始 poll_secret。
    */
-  public async createDeviceBindCode(): Promise<DeviceBindCodeResult> {
+  public async createDeviceBindCode(forceRefresh = false): Promise<DeviceBindCodeResult> {
     try {
       const machineId = SystemIdentityService.getInstance().getMachineId()
       if (!machineId) {
@@ -261,7 +364,8 @@ export class DeviceBindService {
             p_machine_id: machineId,
             p_platform: platform,
             p_device_label: deviceLabel,
-            p_poll_secret_hash: pollSecretHash
+            p_poll_secret_hash: pollSecretHash,
+            p_force_refresh: !!forceRefresh
           })
 
         if (!rpcErr && rpcData?.success && rpcData?.code) {
@@ -288,21 +392,35 @@ export class DeviceBindService {
       }
 
       // 2. 将设备绑定短码提交给 Edge Function wxpay-qrcode (type='bind')，获取微信官方真实小程序码
+      let qrErrorMsg = ''
       try {
         const { data: qrData, error: qrErr } = await client.functions.invoke('wxpay-qrcode', {
           body: { type: 'bind', code }
         })
-        if (!qrErr && qrData?.imageDataUrl) {
+        if (!qrErr && qrData?.imageDataUrl && qrData.imageDataUrl.startsWith('data:image/')) {
           imageDataUrl = qrData.imageDataUrl
         } else {
+          const errPayload = qrErr ? await this.extractFunctionErrorPayload(qrErr) : null
+          qrErrorMsg =
+            errPayload?.message ||
+            errPayload?.error ||
+            qrData?.message ||
+            qrData?.error ||
+            qrErr?.message ||
+            '微信二维码生成失败，请稍后重试'
           logger.warn(
             LogCategory.SYSTEM,
             '[DeviceBindService] wxpay-qrcode bind 换码失败:',
-            qrErr || qrData
+            errPayload || qrErr || qrData
           )
         }
-      } catch (qrEx) {
+      } catch (qrEx: any) {
+        qrErrorMsg = qrEx?.message || '获取微信二维码网络异常，请稍后重试'
         logger.warn(LogCategory.SYSTEM, '[DeviceBindService] 调用 wxpay-qrcode bind 异常:', qrEx)
+      }
+
+      if (!imageDataUrl) {
+        return { success: false, error: qrErrorMsg || '微信二维码生成失败，请点击刷新重试' }
       }
 
       return {
@@ -342,6 +460,15 @@ export class DeviceBindService {
 
       if (data?.error === 'CODE_EXPIRED') {
         return { success: false, status: 'expired', error: 'CODE_EXPIRED' }
+      }
+
+      if (data?.error === 'CLAIM_PENDING') {
+        return {
+          success: false,
+          status: 'error',
+          error: 'CLAIM_PENDING',
+          message: '当前二维码正在其他手机端确认，请稍等片刻或刷新重试'
+        }
       }
 
       if (!data?.success && data?.error) {
@@ -398,15 +525,28 @@ export class DeviceBindService {
               user: data.user
             }
           }
+
+          // 入席失败时严禁伪报 bound，如实向上层透传错误状态与原因
+          return {
+            success: false,
+            status: 'error',
+            device_token: sessionToken,
+            session_id: sessionId,
+            seated: false,
+            user: data.user,
+            error: seatRes.error || 'SEAT_FAILED',
+            message: seatRes.message || '设备入席失败，请重试'
+          }
         }
 
         return {
-          success: true,
-          status: 'bound',
-          device_token: sessionToken,
+          success: false,
+          status: 'error',
           session_id: sessionId,
-          seated: !!data.seated,
-          user: data.user
+          seated: false,
+          user: data.user,
+          error: 'MISSING_SESSION_TOKEN',
+          message: '未获取到有效设备会话凭据，请刷新二维码重试'
         }
       }
 
@@ -447,15 +587,29 @@ export class DeviceBindService {
       })
 
       if (error) {
-        logger.warn(LogCategory.SYSTEM, '[DeviceBindService] seat-device 网关调用失败:', error)
-        return { success: false, error: error.message }
+        const errPayload = await this.extractFunctionErrorPayload(error)
+        logger.warn(
+          LogCategory.SYSTEM,
+          '[DeviceBindService] seat-device 网关调用失败:',
+          errPayload || error
+        )
+        return {
+          success: false,
+          error: errPayload?.error || error.message,
+          need_evict: !!(errPayload?.need_evict || errPayload?.error === 'NEED_EVICT'),
+          monthly_unbind_limit: errPayload?.monthly_unbind_limit,
+          monthly_unbind_remaining: errPayload?.monthly_unbind_remaining,
+          message: errPayload?.message
+        }
       }
 
       if (!data?.success) {
         return {
           success: false,
           error: data?.error || 'SEAT_FAILED',
-          need_evict: !!data?.need_evict,
+          need_evict: !!(data?.need_evict || data?.error === 'NEED_EVICT'),
+          monthly_unbind_limit: data?.monthly_unbind_limit,
+          monthly_unbind_remaining: data?.monthly_unbind_remaining,
           message: data?.message
         }
       }
@@ -465,6 +619,8 @@ export class DeviceBindService {
         seated: !!data.seated,
         takeover: !!data.takeover,
         slot_index: data.slot_index,
+        monthly_unbind_limit: data.monthly_unbind_limit,
+        monthly_unbind_remaining: data.monthly_unbind_remaining,
         message: data.message
       }
     } catch (err: any) {
@@ -476,9 +632,7 @@ export class DeviceBindService {
   /**
    * 拉取当前账号已绑定的 6 席位设备列表
    */
-  public async listSeatedDevices(
-    sessionToken?: string
-  ): Promise<{ success: boolean; devices?: SeatedDeviceItem[]; error?: string }> {
+  public async listSeatedDevices(sessionToken?: string): Promise<ListSeatedDevicesResponse> {
     try {
       const token = sessionToken || this.getDeviceToken()
       if (!token) {
@@ -496,13 +650,26 @@ export class DeviceBindService {
       })
 
       if (error) {
-        logger.warn(LogCategory.SYSTEM, '[DeviceBindService] listSeatedDevices 失败:', error)
-        return { success: false, error: error.message }
+        const errPayload = await this.extractFunctionErrorPayload(error)
+        logger.warn(
+          LogCategory.SYSTEM,
+          '[DeviceBindService] listSeatedDevices 失败:',
+          errPayload || error
+        )
+        return { success: false, error: errPayload?.error || error.message }
+      }
+
+      if (!data?.success) {
+        return { success: false, error: data?.error || 'LIST_DEVICES_FAILED' }
       }
 
       return {
         success: true,
-        devices: data?.devices || []
+        devices: data.devices || [],
+        slot_limit: data.slot_limit,
+        active_count: data.active_count,
+        monthly_unbind_limit: data.monthly_unbind_limit,
+        monthly_unbind_remaining: data.monthly_unbind_remaining
       }
     } catch (err: any) {
       logger.error(LogCategory.SYSTEM, '[DeviceBindService] listSeatedDevices 异常:', err)
@@ -603,16 +770,9 @@ export class DeviceBindService {
   }
 
   /**
-   * 解绑或注销当前设备凭据
+   * 清理当前设备的持久化凭据 (供会话过期或退出登录时使用)
    */
-  public async unbind(): Promise<void> {
-    try {
-      ;(globalThis as any)._firefly_active_device_token = null
-      ;(globalThis as any)._firefly_active_bind_session_token = null
-      await (ConfigOrchestrator.getInstance() as any).updateValue?.('DEVICE_AUTH_TOKEN', '')
-      await (ConfigOrchestrator.getInstance() as any).updateValue?.('BIND_SESSION_TOKEN', '')
-    } catch (err) {
-      logger.warn(LogCategory.SYSTEM, '[DeviceBindService] unbind 异常:', err)
-    }
+  public async clearAllTokens(): Promise<void> {
+    await Promise.all([this.clearDeviceToken(), this.clearBindSessionToken()])
   }
 }

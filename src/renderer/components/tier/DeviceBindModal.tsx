@@ -33,15 +33,28 @@ interface BindCodeData {
 
 type BindStep = 'qr_loading' | 'qr_polling' | 'email_input' | 'submitting' | 'success'
 
-function formatErrorMessage(err?: string): string {
-  if (!err) return '网络开小差了，请点击重试'
+function formatErrorMessage(err?: string, fallbackMessage?: string): string {
+  if (!err && !fallbackMessage) return '网络开小差了，请点击重试'
   if (err === 'RATE_LIMIT_EXCEEDED') return '操作过于频繁，请 1 分钟后再试'
-  if (err === 'machine_id_missing') return '未检测到设备硬件标识'
+  if (err === 'machine_id_missing') return '未检测到当前电脑硬件标识'
   if (err === 'BIND_SESSION_EXPIRED') return '登录凭证已超时，请重新扫码'
+  if (err === 'CLAIM_PENDING') return '当前二维码正在被其他手机确认，请稍等或点击刷新二维码'
   if (err === 'INVALID_CODE') return '验证码输入错误或已失效'
-  if (err === 'DISPOSABLE_DOMAIN') return '请使用常见的常用个人邮箱，暂不支持临时或一次性邮箱'
+  if (err === 'DISPOSABLE_DOMAIN') return '请使用常见的个人邮箱，暂不支持临时或一次性邮箱'
   if (err === 'EMAIL_OCCUPIED') return '该邮箱已被其他账号使用，请更换邮箱'
-  return err
+  if (err === 'SEAT_FAILED' || err === 'MISSING_SESSION_TOKEN') {
+    return fallbackMessage || '当前电脑登录席位激活失败，请点击重试或刷新二维码'
+  }
+  if (err === 'SESSION_EXPIRED' || err === 'UNAUTHORIZED') {
+    return '扫码登录状态已过期，请刷新二维码重新扫码'
+  }
+  if (err === 'EVICT_QUOTA_EXCEEDED') {
+    return fallbackMessage || '本月自助换绑次数已用完，请替换闲置超过 90 天的旧电脑或联系客服'
+  }
+  if (err === 'CONCURRENT_LOCK_RETRY') {
+    return '当前账号正在另一台设备操作换绑，请稍后重试'
+  }
+  return fallbackMessage || err || '网络开小差了，请点击重试'
 }
 
 export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenChange }) => {
@@ -85,116 +98,134 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
     }
   }, [cooldown])
 
-  // 启动时检查是否有未完成的断点会话 (已有 BIND_SESSION_TOKEN 直达阶段二)
+  // 启动时检查是否有未完成的断点会话（先查未入席会话，再查待补绑邮箱会话）
   const checkInitialSession = useCallback(async () => {
     try {
+      if (window.electronAPI?.deviceBind?.getUnseatedSession) {
+        const unseatedRes = await window.electronAPI.deviceBind.getUnseatedSession()
+        if (unseatedRes?.unseated && unseatedRes?.sessionToken) {
+          setPendingSessionToken(unseatedRes.sessionToken)
+          setStep('qr_polling')
+          setEvictOpen(true)
+          return true
+        }
+      }
       if (window.electronAPI?.deviceBind?.hasActiveBindSession) {
         const hasSession = await window.electronAPI.deviceBind.hasActiveBindSession()
         if (hasSession) {
-          // 查询设备是否已入墓碑
-          if (window.electronAPI?.deviceBind?.getStatus) {
-            const statusRes = await window.electronAPI.deviceBind.getStatus()
-            setDeviceConsumedInvitation(!!statusRes?.device_consumed_invitation)
+          // 查询本机是否已参加过好友邀请活动
+          try {
+            if (window.electronAPI?.deviceBind?.getStatus) {
+              const statusRes = await window.electronAPI.deviceBind.getStatus()
+              setDeviceConsumedInvitation(!!statusRes?.device_consumed_invitation)
+            }
+          } catch (statusErr) {
+            console.warn('[DeviceBindModal] 查询设备绑定状态失败:', statusErr)
           }
           setStep('email_input')
           return true
         }
       }
-    } catch {
-      // 容错回退到扫码
+    } catch (err) {
+      console.warn('[DeviceBindModal] 检查初始绑定会话失败，回退为扫码登录:', err)
     }
     return false
   }, [])
 
   // 获取绑定短凭据与微信官方小程序码
-  const loadBindCode = useCallback(async () => {
-    const currentRequestId = ++loadRequestIdRef.current
-    setStep('qr_loading')
-    setError(null)
-    stopPolling()
+  const loadBindCode = useCallback(
+    async (forceRefresh = false) => {
+      const currentRequestId = ++loadRequestIdRef.current
+      setStep('qr_loading')
+      setError(null)
+      stopPolling()
 
-    try {
-      if (!window.electronAPI?.deviceBind?.createCode) {
-        throw new Error('设备绑定接口未就绪')
-      }
-
-      // 先查询本机是否已参与过好友邀请活动
       try {
-        const statusRes = await window.electronAPI.deviceBind.getStatus()
-        setDeviceConsumedInvitation(!!statusRes?.device_consumed_invitation)
-      } catch {
-        // 忽略状态查询警告
-      }
+        if (!window.electronAPI?.deviceBind?.createCode) {
+          throw new Error('设备绑定接口未就绪')
+        }
 
-      const res = await window.electronAPI.deviceBind.createCode()
-      if (currentRequestId !== loadRequestIdRef.current || !open) {
-        return
-      }
+        // 先查询本机是否已参与过好友邀请活动
+        try {
+          const statusRes = await window.electronAPI.deviceBind.getStatus()
+          setDeviceConsumedInvitation(!!statusRes?.device_consumed_invitation)
+        } catch (statusErr) {
+          console.warn('[DeviceBindModal] 查询邀请资格状态警告:', statusErr)
+        }
 
-      if (!res.success || !res.code || !res.pollSecret) {
-        throw new Error(formatErrorMessage(res.error))
-      }
-
-      if (!res.imageDataUrl || !res.imageDataUrl.startsWith('data:image/')) {
-        throw new Error('微信二维码生成未完成，请点击重试')
-      }
-
-      setBindData({
-        code: res.code,
-        pollSecret: res.pollSecret,
-        imageDataUrl: res.imageDataUrl,
-        deviceLabel: res.deviceLabel,
-        platform: res.platform,
-        machineIdTail: res.machineIdTail,
-        expiresAt: res.expiresAt
-      })
-      setStep('qr_polling')
-
-      // 启动轮询检查设备认领与邮箱绑定诉求
-      pollTimerRef.current = setInterval(async () => {
+        const res = await window.electronAPI.deviceBind.createCode({ forceRefresh })
         if (currentRequestId !== loadRequestIdRef.current || !open) {
-          stopPolling()
           return
         }
-        try {
-          if (!window.electronAPI?.deviceBind?.pollResult) return
-          const pollRes = await window.electronAPI.deviceBind.pollResult({
-            code: res.code!,
-            pollSecret: res.pollSecret!
-          })
 
-          if (pollRes?.success) {
-            if (pollRes.status === 'bound') {
-              stopPolling()
-              setStep('success')
-              toast.success('微信设备绑定成功！')
-              await syncFromCloud().catch(() => {})
-              setTimeout(() => {
-                onOpenChange(false)
-              }, 1200)
-            } else if (pollRes.status === 'need_evict') {
-              stopPolling()
-              setPendingSessionToken(pollRes.device_token || '')
-              setEvictOpen(true)
-            } else if (pollRes.status === 'requires_email_binding') {
-              stopPolling()
-              setStep('email_input')
-            }
-          } else if (pollRes?.error === 'CODE_EXPIRED' || pollRes?.status === 'expired') {
-            stopPolling()
-            setError('二维码已过期，请点击刷新')
-          }
-        } catch {
-          // 轮询异常静默重试
+        if (!res.success || !res.code || !res.pollSecret) {
+          throw new Error(formatErrorMessage(res.error))
         }
-      }, 2500)
-    } catch (err: any) {
-      if (currentRequestId === loadRequestIdRef.current && open) {
-        setError(formatErrorMessage(err?.message))
+
+        if (!res.imageDataUrl || !res.imageDataUrl.startsWith('data:image/')) {
+          throw new Error('微信二维码生成未完成，请点击刷新重试')
+        }
+
+        setBindData({
+          code: res.code,
+          pollSecret: res.pollSecret,
+          imageDataUrl: res.imageDataUrl,
+          deviceLabel: res.deviceLabel,
+          platform: res.platform,
+          machineIdTail: res.machineIdTail,
+          expiresAt: res.expiresAt
+        })
         setStep('qr_polling')
+
+        // 启动轮询检查设备认领与席位入座结果
+        pollTimerRef.current = setInterval(async () => {
+          if (currentRequestId !== loadRequestIdRef.current || !open) {
+            stopPolling()
+            return
+          }
+          try {
+            if (!window.electronAPI?.deviceBind?.pollResult) return
+            const pollRes = await window.electronAPI.deviceBind.pollResult({
+              code: res.code!,
+              pollSecret: res.pollSecret!
+            })
+
+            if (pollRes?.success) {
+              if (pollRes.status === 'bound' && pollRes.seated !== false) {
+                stopPolling()
+                setStep('success')
+                toast.success('微信设备绑定成功！')
+                await syncFromCloud().catch(syncErr => {
+                  console.warn('[DeviceBindModal] 绑定成功后同步云端权益失败:', syncErr)
+                })
+                setTimeout(() => {
+                  onOpenChange(false)
+                }, 1200)
+              } else if (pollRes.status === 'need_evict') {
+                stopPolling()
+                setPendingSessionToken(pollRes.device_token || '')
+                setEvictOpen(true)
+              }
+            } else if (pollRes?.error === 'CODE_EXPIRED' || pollRes?.status === 'expired') {
+              stopPolling()
+              setError('二维码已过期，请点击刷新二维码重试')
+            } else if (pollRes?.status === 'error' || pollRes?.error) {
+              stopPolling()
+              setError(formatErrorMessage(pollRes.error, pollRes.message))
+            }
+          } catch (pollErr) {
+            console.warn('[DeviceBindModal] 轮询绑定状态网络波动，将自动重试:', pollErr)
+          }
+        }, 2500)
+      } catch (err: any) {
+        if (currentRequestId === loadRequestIdRef.current && open) {
+          setError(formatErrorMessage(undefined, err?.message))
+          setStep('qr_polling')
+        }
       }
-    }
-  }, [open, onOpenChange, stopPolling, syncFromCloud])
+    },
+    [open, onOpenChange, stopPolling, syncFromCloud]
+  )
 
   useEffect(() => {
     if (open) {
@@ -277,7 +308,9 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
         }
 
         setStep('success')
-        await syncFromCloud().catch(() => {})
+        await syncFromCloud().catch(syncErr => {
+          console.warn('[DeviceBindModal] 邮箱激活后同步云端权益失败:', syncErr)
+        })
         setTimeout(() => {
           onOpenChange(false)
         }, 1200)
@@ -345,7 +378,7 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
                     size="sm"
                     variant="outline"
                     className="mt-2 text-xs h-8"
-                    onClick={loadBindCode}
+                    onClick={() => loadBindCode(true)}
                   >
                     <RefreshCw className="w-3.5 h-3.5 mr-1" /> 重试
                   </Button>
@@ -391,7 +424,7 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
                 variant="ghost"
                 size="sm"
                 className="text-xs text-muted-foreground hover:text-foreground h-8 px-4"
-                onClick={loadBindCode}
+                onClick={() => loadBindCode(true)}
                 disabled={step === 'qr_loading'}
               >
                 <RefreshCw
@@ -516,12 +549,19 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
       {/* 席位已满换绑弹窗 */}
       <DeviceEvictDialog
         open={evictOpen}
-        onOpenChange={setEvictOpen}
+        onOpenChange={nextOpen => {
+          setEvictOpen(nextOpen)
+          if (!nextOpen && step !== 'success' && !bindData) {
+            loadBindCode(false)
+          }
+        }}
         sessionToken={pendingSessionToken}
         onEvictedSuccess={async () => {
           setStep('success')
           toast.success('设备替换成功，已完成登录！')
-          await syncFromCloud().catch(() => {})
+          await syncFromCloud().catch(syncErr => {
+            console.warn('[DeviceBindModal] 设备替换后同步云端权益失败:', syncErr)
+          })
           setTimeout(() => {
             onOpenChange(false)
           }, 1200)

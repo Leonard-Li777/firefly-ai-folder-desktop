@@ -324,5 +324,7 @@
     "spend_cloud_decompress": 2,
     "spend_get_password": 5,
     "spend_regenerate_vdir": 20
-  }
+  },
+  "IOS_VIRTUAL_PAY_ENABLED": false,
+  "MONTHLY_DEVICE_UNBIND_LIMIT": 5
 }

@@ -187,7 +187,10 @@ export const useTierStore = create<TierState>()(
       window.electronAPI.userTier.removeDeviceUnbound?.()
       window.electronAPI.userTier.onDeviceUnbound?.(() => {
         get().fetchProfile()
-        toast.warning(t('当前设备已被账号解绑，已切换为免费版'))
+        toast.warning(t('当前设备登录已失效或已被账号解绑，请重新绑定'))
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('firefly:device-unbound'))
+        }
       })
     }
   }))

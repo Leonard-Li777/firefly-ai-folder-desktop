@@ -12,9 +12,9 @@ export function registerDeviceBindIPCHandlers(): void {
     }
   })
 
-  ipcMain.handle('deviceBind/createCode', async () => {
+  ipcMain.handle('deviceBind/createCode', async (_event, payload?: { forceRefresh?: boolean }) => {
     try {
-      return await DeviceBindService.getInstance().createDeviceBindCode()
+      return await DeviceBindService.getInstance().createDeviceBindCode(!!payload?.forceRefresh)
     } catch (err: any) {
       logger.error(LogCategory.IPC, '[IPC] deviceBind/createCode failed:', err)
       return { success: false, error: err?.message || 'unknown' }
@@ -64,6 +64,15 @@ export function registerDeviceBindIPCHandlers(): void {
     }
   })
 
+  ipcMain.handle('deviceBind/getUnseatedSession', async () => {
+    try {
+      return await DeviceBindService.getInstance().getUnseatedSession()
+    } catch (err: any) {
+      logger.error(LogCategory.IPC, '[IPC] deviceBind/getUnseatedSession failed:', err)
+      return { unseated: false, error: err?.message || 'unknown' }
+    }
+  })
+
   ipcMain.handle('deviceBind/seatDevice', async (_event, { sessionToken, evictDeviceId }) => {
     try {
       return await DeviceBindService.getInstance().seatThisDevice(sessionToken, evictDeviceId)
@@ -78,16 +87,6 @@ export function registerDeviceBindIPCHandlers(): void {
       return await DeviceBindService.getInstance().listSeatedDevices(sessionToken)
     } catch (err: any) {
       logger.error(LogCategory.IPC, '[IPC] deviceBind/listSeatedDevices failed:', err)
-      return { success: false, error: err?.message || 'unknown' }
-    }
-  })
-
-  ipcMain.handle('deviceBind/unbind', async () => {
-    try {
-      await DeviceBindService.getInstance().unbind()
-      return { success: true }
-    } catch (err: any) {
-      logger.error(LogCategory.IPC, '[IPC] deviceBind/unbind failed:', err)
       return { success: false, error: err?.message || 'unknown' }
     }
   })

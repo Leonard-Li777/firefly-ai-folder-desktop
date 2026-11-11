@@ -96,6 +96,18 @@ export function createSupabaseClient(
   const smartFetch = async (input: any, init: any) => {
     const executeFetch = async () => {
       const fetchOptions = { ...init }
+      let deviceToken: string | undefined
+      try {
+        deviceToken = ConfigOrchestrator.getInstance().getValue('DEVICE_AUTH_TOKEN') as string
+      } catch (e) {
+        logger.warn(LogCategory.SUPABASE, '[SupabaseClientFactory] 读取 DEVICE_AUTH_TOKEN 失败:', e)
+      }
+      if (deviceToken) {
+        fetchOptions.headers = {
+          ...fetchOptions.headers,
+          'x-device-token': deviceToken
+        }
+      }
 
       let timeout = 60000
       try {

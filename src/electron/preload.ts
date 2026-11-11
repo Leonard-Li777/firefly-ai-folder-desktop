@@ -755,7 +755,8 @@ const electronAPI = {
 
   deviceBind: {
     getStatus: (): Promise<any> => ipcRenderer.invoke('deviceBind/getStatus'),
-    createCode: (): Promise<any> => ipcRenderer.invoke('deviceBind/createCode'),
+    createCode: (payload?: { forceRefresh?: boolean }): Promise<any> =>
+      ipcRenderer.invoke('deviceBind/createCode', payload),
     pollResult: (payload: { code: string; pollSecret: string }): Promise<any> =>
       ipcRenderer.invoke('deviceBind/pollResult', payload),
     sendEmailOtp: (payload: { email: string }): Promise<any> =>
@@ -767,7 +768,7 @@ const electronAPI = {
     }): Promise<any> => ipcRenderer.invoke('deviceBind/completeEmailBinding', payload),
     hasActiveBindSession: (): Promise<boolean> =>
       ipcRenderer.invoke('deviceBind/hasActiveBindSession'),
-    unbind: (): Promise<any> => ipcRenderer.invoke('deviceBind/unbind'),
+    getUnseatedSession: (): Promise<any> => ipcRenderer.invoke('deviceBind/getUnseatedSession'),
     seatDevice: (payload: { sessionToken?: string; evictDeviceId?: string | null }): Promise<any> =>
       ipcRenderer.invoke('deviceBind/seatDevice', payload),
     listSeatedDevices: (payload?: { sessionToken?: string }): Promise<any> =>
