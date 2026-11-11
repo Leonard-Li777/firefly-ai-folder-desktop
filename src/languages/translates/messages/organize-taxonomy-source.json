@@ -12970,30 +12970,30 @@
     "$id": 30475
   },
   "04-互传中转暂存": {
-    "en-US": "04-互传中转暂存",
-    "es-ES": "04-互传中转暂存",
-    "ar-EG": "04-互传中转暂存",
-    "pt-PT": "04-互传中转暂存",
-    "ru-RU": "04-互传中转暂存",
-    "ja-JP": "04-互传中转暂存",
-    "de-DE": "04-互传中转暂存",
-    "fr-FR": "04-互传中转暂存",
-    "ko-KR": "04-互传中转暂存",
+    "en-US": "04- Mutual transfer and temporary storage",
+    "es-ES": "04- Transferencia mutua y almacenamiento temporal",
+    "ar-EG": "04- النقل المتبادل والتخزين المؤقت",
+    "pt-PT": "04- Transferência mútua e armazenamento temporário",
+    "ru-RU": "04- Взаимная передача и временное хранение",
+    "ja-JP": "04- 相互転送と一時保管",
+    "de-DE": "04- Gegenseitige Übertragung und vorübergehende Lagerung",
+    "fr-FR": "04- Transfert mutuel et stockage temporaire",
+    "ko-KR": "04- 상호이전 및 임시보관",
     "$files": [
       "src/electron/config/organize-taxonomy-source.ts(397878-397891)"
     ],
     "$id": 30476
   },
   "屏幕截图与录屏归档资产库": {
-    "en-US": "屏幕截图与录屏归档资产库",
-    "es-ES": "屏幕截图与录屏归档资产库",
-    "ar-EG": "屏幕截图与录屏归档资产库",
-    "pt-PT": "屏幕截图与录屏归档资产库",
-    "ru-RU": "屏幕截图与录屏归档资产库",
-    "ja-JP": "屏幕截图与录屏归档资产库",
-    "de-DE": "屏幕截图与录屏归档资产库",
-    "fr-FR": "屏幕截图与录屏归档资产库",
-    "ko-KR": "屏幕截图与录屏归档资产库",
+    "en-US": "Screen capture and screen recording archive asset library",
+    "es-ES": "Biblioteca de recursos de archivo de captura y grabación de pantalla",
+    "ar-EG": "مكتبة أصول أرشيف التقاط الشاشة وتسجيل الشاشة",
+    "pt-PT": "Biblioteca de ativos de arquivo de captura e gravação de tela",
+    "ru-RU": "Библиотека архивных ресурсов захвата и записи экрана",
+    "ja-JP": "画面キャプチャと画面録画のアーカイブ アセット ライブラリ",
+    "de-DE": "Archiv-Asset-Bibliothek zur Bildschirmaufnahme und Bildschirmaufzeichnung",
+    "fr-FR": "Bibliothèque de ressources d'archives de capture d'écran et d'enregistrement d'écran",
+    "ko-KR": "화면 캡처 및 화면 녹화 아카이브 자산 라이브러리",
     "$files": [
       "src/electron/config/organize-taxonomy-source.ts(401012-401028)"
     ],
