@@ -27,7 +27,12 @@ export interface RunningPluginState {
   lastError?: string
 }
 
-export type ActivationSource = 'user_toggle' | 'slot_release' | 'dev_mode_on' | 'startup_reconcile'
+export type ActivationSource =
+  | 'user_toggle'
+  | 'slot_release'
+  | 'rollback'
+  | 'dev_mode_on'
+  | 'startup_reconcile'
 
 export interface PluginProcessManagerOptions {
   dao?: ReturnType<typeof getModularResourceDao>

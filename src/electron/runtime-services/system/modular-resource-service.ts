@@ -447,10 +447,16 @@ export interface IModularResourceService {
     options?: { signerPrivateKey?: string }
   ): Promise<string>
 
-  /** 导入离线插件包 (.ffp / .zip) */
+  /** 导出全量离线插件总包 (.ffbundle) */
+  exportOfflineBundle(
+    targetFilePath: string,
+    options?: { rootPublicKey?: string; producerAppVersion?: string }
+  ): Promise<string>
+
+  /** 导入离线插件包 / 离线总包 (.ffp / .zip) */
   importOfflinePackage(
     archivePath: string,
-    options?: { rootPublicKey?: string }
+    options?: { rootPublicKey?: string; preferredEngineId?: string }
   ): Promise<BuiltinModuleView>
 
   /** 获取当前进程内存生效的插件根目录 (IN-01) */
@@ -703,7 +709,8 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
   {
     id: BUILTIN_MODULE_CATALOG_META.diffusion_studio.id,
     name: '本地生图 Studio',
-    description: '基于本地硬件加速的图像生成、超分辨率画面修复与视觉扩展',
+    description:
+      '【电脑本地自己画图】输入一句话即可在本地画出精美图片，不花一分钱。需要较好的独立显卡。',
     icon: 'Sparkles',
     kind: 'builtin-module',
     version: BUILTIN_MODULE_CATALOG_META.diffusion_studio.version,
@@ -722,7 +729,8 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
   {
     id: BUILTIN_MODULE_CATALOG_META.archive_vfs_parser.id,
     name: '压缩包透视与深度解析器',
-    description: '可以透视压缩包中的内容，并生成标签和描述等',
+    description:
+      '【不用解压直接搜压缩包】不用解压 zip/rar 就能直接查看和搜索里面的文件内容，无额外电脑负担。',
     icon: 'Archive',
     kind: 'builtin-module',
     version: BUILTIN_MODULE_CATALOG_META.archive_vfs_parser.version,
@@ -1403,7 +1411,9 @@ export class ModularResourceService implements IModularResourceService {
           if (res?.files && Array.isArray(res.files)) {
             return res.files
           }
-        } catch {}
+        } catch (err) {
+          logger.warn(LogCategory.SYSTEM, `[ModularResource] 解析 BOM 文件失败: ${bomPath}`, err)
+        }
       }
     }
 
@@ -1437,7 +1447,9 @@ export class ModularResourceService implements IModularResourceService {
             }
           }
           if (results.length > 0) return results
-        } catch {}
+        } catch (err) {
+          logger.warn(LogCategory.SYSTEM, `[ModularResource] 加载全量 BOM 失败: ${bomPath}`, err)
+        }
       }
     }
 
@@ -1516,7 +1528,13 @@ export class ModularResourceService implements IModularResourceService {
             resourceId: spec.resource_id,
             sharedSubDir
           })
-        } catch {}
+        } catch (err) {
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[ModularResource] BOM 慢路径写入就绪标记失败: ${spec.resource_id}`,
+            err
+          )
+        }
         return 'slow_healed'
       } else {
         await this.isolateCorruptDirectory(targetAbsDir)
@@ -1543,7 +1561,13 @@ export class ModularResourceService implements IModularResourceService {
             resourceId: spec.resource_id,
             sharedSubDir
           })
-        } catch {}
+        } catch (err) {
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[ModularResource] BOM 慢路径写入就绪标记失败: ${spec.resource_id}`,
+            err
+          )
+        }
         return 'slow_healed'
       }
     }
@@ -2431,7 +2455,13 @@ export class ModularResourceService implements IModularResourceService {
             )
             await fs.promises.writeFile(tmpPath, legacyPayload, 'utf-8')
             await fs.promises.rename(tmpPath, path.join(targetDir, LEGACY_HEAL_MARKER_FILENAME))
-          } catch {}
+          } catch (err) {
+            logger.warn(
+              LogCategory.SYSTEM,
+              `[ModularResource] 写入补位就绪标记失败: ${res.resource_id}`,
+              err
+            )
+          }
           legacyUpgradeTargets.add(res.resource_id)
           settled.set(res.resource_id, {
             resourceId: res.resource_id,
@@ -2871,7 +2901,9 @@ export class ModularResourceService implements IModularResourceService {
     try {
       const { voiceArchiveService } = require('../audio/voice-archive-service')
       voiceArchiveService?.invalidatePresetVoicesCache?.()
-    } catch {}
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[ModularResource] 失效语音音色缓存告警:', err)
+    }
 
     const runNotify = async () => {
       if (this.topologyListener) {
@@ -3076,7 +3108,9 @@ export class ModularResourceService implements IModularResourceService {
       record.delist_reason !== 'security_violation' &&
       !holdReasons.includes('slotPreempted')
     const canUninstall =
-      record.install_state !== 'not_installed' && record.slot_policy !== 'exclusive_required'
+      record.install_state !== 'not_installed' &&
+      (record.slot_policy !== 'exclusive_required' ||
+        this.findReadyBackupModulesSync(record).length > 0)
 
     let validationStatus: BuiltinModuleView['validation_status']
     let validationMessage: string | undefined
@@ -3696,7 +3730,9 @@ export class ModularResourceService implements IModularResourceService {
         await omniService.stop()
         return true
       }
-    } catch {}
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[ModularResource] 卸载前停机 Omni 服务告警:', err)
+    }
     return false
   }
 
@@ -3781,10 +3817,60 @@ export class ModularResourceService implements IModularResourceService {
   }
 
   /**
+   * 检索指定必选底座同槽位下所有处于健康可服役状态的备选模块 (Ready Backup)
+   *
+   * @doc-anchor: docs/specs/plugin-center-slots-exclusivity-and-lifecycle-spec.md#25-插件全生命周期管控停用与两阶段卸载回收-lifecycle-management
+   */
+  private findReadyBackupModulesSync(record: BuiltinModuleRecord): BuiltinModuleRecord[] {
+    const dao = this.getDao()
+    const slot = record.capability_slot
+    if (!slot) return []
+
+    const siblings = dao.modules
+      .listAllSync({ includeDraft: true })
+      .filter(m => m.capability_slot === slot && m.id !== record.id)
+
+    return siblings.filter(candidate => {
+      // 仅处于已安装就绪态或已激活态才具接替资格；crashed 置错或未安装/下载中严禁接替
+      if (
+        candidate.install_state !== 'installed_inactive' &&
+        candidate.install_state !== 'active'
+      ) {
+        return false
+      }
+      if (
+        candidate.availability === 'coming_soon' ||
+        candidate.availability === 'delisted' ||
+        candidate.delist_reason === 'security_violation'
+      ) {
+        return false
+      }
+      if (candidate.error_message) {
+        return false
+      }
+      const holds = this.processManager ? this.processManager.getHoldReasons(candidate.id) : []
+      if (holds.length > 0) {
+        return false
+      }
+      const resList = dao.resources.findResourcesByModuleSync(candidate.id)
+      for (const res of resList) {
+        if (res.download_state !== 'completed') {
+          return false
+        }
+        const snap = this.fastReadySnapshot.get(res.resource_id)
+        if (snap && (snap.status === 'pending_repair' || snap.status === 'unknown_resource')) {
+          return false
+        }
+      }
+      return true
+    })
+  }
+
+  /**
    * 卸载模块（Windows 两阶段停机解锁 + Tombstone 单步隔离删除协议）：
-   * 阶段一（事务内标记）：解绑 module_resource_downloads，计算剩余有效引用计数；引用归零置 pending_delete，模块置 not_installed；
+   * 阶段一（前置防空拦截与事务内接替/解绑）：必选底座无就绪备选时坚决拦截；存在备选时同一事务内原子提升备选并解绑旧项；
    * 阶段二（停机释放句柄 + 原子隔离删除）：先停用关联进程与 Omni 引擎解除 ORT mmap 句柄，再单步重命名为 .deleting-* 并异步回收；
-   * 阶段三（重启对齐拓扑）：刷新挂载清单与音色缓存。
+   * 阶段三（重启对齐拓扑）：刷新挂载清单与音色缓存，或拉起接替备选底座。
    */
   async uninstallModule(moduleId: string): Promise<BuiltinModuleView> {
     this.assertWriteGateAllowed()
@@ -3798,10 +3884,27 @@ export class ModularResourceService implements IModularResourceService {
         throw new Error(`未找到模块定义: ${moduleId}`)
       }
 
+      // 核心底座物理防空拦截：必选槽位必须先检验是否存在健康就绪备选（Ready Backup）
+      let backupToActivate: BuiltinModuleRecord | null = null
+      if (record.slot_policy === 'exclusive_required') {
+        const readyBackups = this.findReadyBackupModulesSync(record)
+        if (readyBackups.length === 0) {
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[ModularResource] 拒绝卸载唯一或无健康就绪备选的必选底座: ${moduleId}`
+          )
+          throw new Error('CANNOT_UNINSTALL_LAST_REQUIRED_SLOT')
+        }
+        const hasOtherActive = readyBackups.some(b => b.install_state === 'active')
+        if (!hasOtherActive) {
+          backupToActivate = readyBackups[0]
+        }
+      }
+
       const wasActive = record.install_state === 'active'
       const resourcesToDelete: ResourceDownloadRecord[] = []
 
-      // 阶段一：事务内解绑并计算引用计数，绝不在事务内做磁盘 I/O
+      // 阶段一：事务内解绑并计算引用计数（含就绪备选同事务原子提升），绝不在事务内做磁盘 I/O
       const tx = db.transaction(() => {
         const boundResources = dao.resources.findResourcesByModuleSync(moduleId)
         for (const res of boundResources) {
@@ -3816,6 +3919,39 @@ export class ModularResourceService implements IModularResourceService {
           }
         }
         dao.modules.updateInstallStateSync(moduleId, 'not_installed')
+
+        // 若需由健康就绪备选接替，在同一事务内完成状态晋升与 Epoch 翻转
+        if (backupToActivate) {
+          dao.modules.updateInstallStateSync(backupToActivate.id, 'active')
+          if (backupToActivate.capability_slot === 'base_embedding') {
+            const prevServingEpoch = dao.epochs.findServingEpochSync()
+            const isClassic = backupToActivate.id.includes('classic')
+            const textDim = isClassic ? 384 : 768
+            const imageDim = isClassic ? 512 : 768
+
+            if (prevServingEpoch && prevServingEpoch.module_id !== backupToActivate.id) {
+              const newEpochNum = prevServingEpoch.epoch + 1
+              dao.epochs.createEpochSync({
+                epoch: newEpochNum,
+                module_id: backupToActivate.id,
+                text_dim: textDim,
+                image_dim: imageDim,
+                status: 'building',
+                reindex_cursor: null
+              })
+              dao.epochs.flipEpochSync(prevServingEpoch.epoch, newEpochNum)
+            } else if (!prevServingEpoch) {
+              dao.epochs.createEpochSync({
+                epoch: 1,
+                module_id: backupToActivate.id,
+                text_dim: textDim,
+                image_dim: imageDim,
+                status: 'serving',
+                reindex_cursor: null
+              })
+            }
+          }
+        }
       })
 
       tx()
@@ -3877,8 +4013,25 @@ export class ModularResourceService implements IModularResourceService {
         }
       }
 
-      // 阶段三：失效缓存并在需要时恢复干净的 Omni 底座运行
-      if (wasActive || omniStopped) {
+      // 阶段三：失效缓存并在需要时恢复干净的 Omni 底座运行或激活接替底座
+      if (backupToActivate) {
+        const failoverRes = await this.processManager
+          .requestActivate(backupToActivate.id, 'slot_release')
+          .catch(err => ({ success: false, error: err?.message || String(err) }))
+        if (!failoverRes.success) {
+          logger.error(
+            LogCategory.SYSTEM,
+            `[ModularResource] 接替底座 ${backupToActivate.id} 拉起失败: ${failoverRes.error ?? 'unknown'}`
+          )
+        }
+        await this.notifyRuntimePluginTopologyChanged({
+          moduleId: backupToActivate.id,
+          reason: 'module_uninstall_failover',
+          restartPolicy: 'ensure-running'
+        }).catch(err => {
+          logger.warn(LogCategory.SYSTEM, '[ModularResource] 卸载接替后刷新拓扑告警:', err)
+        })
+      } else if (wasActive || omniStopped) {
         await this.notifyRuntimePluginTopologyChanged({
           moduleId,
           reason: 'module_uninstall',
@@ -3949,7 +4102,11 @@ export class ModularResourceService implements IModularResourceService {
       } else if (typeof patch.userConfig === 'string') {
         const trimmed = patch.userConfig.trim()
         if (trimmed) {
-          JSON.parse(trimmed)
+          try {
+            JSON.parse(trimmed)
+          } catch {
+            throw new Error('INVALID_USER_CONFIG: userConfig 必须为合法 JSON 字符串')
+          }
           configStr = patch.userConfig
         } else {
           configStr = null
@@ -3986,17 +4143,37 @@ export class ModularResourceService implements IModularResourceService {
         await this.processManager.stopProcess(prevActive.id)
       }
 
+      const restorePrevActiveRuntime = async (prevId: string, stage: string): Promise<void> => {
+        dao.modules.activateExclusiveModuleSync(prevId)
+        const rbRes = await this.processManager
+          .requestActivate(prevId, 'rollback')
+          .catch(rbErr => ({ success: false, error: rbErr?.message || String(rbErr) }))
+        if (!rbRes.success) {
+          logger.error(
+            LogCategory.SYSTEM,
+            `[ModularResource] ${stage}回滚重启前任模块 ${prevId} 失败: ${rbRes.error ?? 'unknown'}`
+          )
+        }
+        await this.notifyRuntimePluginTopologyChanged({
+          moduleId: prevId,
+          reason: 'module_state_rollback',
+          restartPolicy: 'ensure-running'
+        }).catch(rbErr => {
+          logger.warn(LogCategory.SYSTEM, `[ModularResource] ${stage}回滚恢复拓扑告警:`, rbErr)
+        })
+      }
+
       const actRes = await this.processManager.requestActivate(moduleId, 'user_toggle')
       if (!actRes.success) {
-        if (isExclusive && prevActive && prevActive.id !== moduleId) {
-          dao.modules.activateExclusiveModuleSync(prevActive.id)
-        }
         dao.modules.updateInstallStateSync(
           moduleId,
           'installed_inactive',
           actRes.error ?? '激活门禁拦截'
         )
-        return this.buildModuleView(dao.modules.findByIdSync(moduleId)!)
+        if (isExclusive && prevActive && prevActive.id !== moduleId) {
+          await restorePrevActiveRuntime(prevActive.id, '激活门禁')
+        }
+        throw new Error(actRes.error ?? '激活门禁拦截')
       }
 
       dao.modules.activateExclusiveModuleSync(moduleId)
@@ -4044,7 +4221,14 @@ export class ModularResourceService implements IModularResourceService {
           `[ModularResource] 模块 ${moduleId} 运行时加载或冒烟失败，执行严格回滚:`,
           activateErr
         )
-        // 严格回滚时序 (Spec §2.3.3)：先释放新项（防 ux_exclusive_active_slot 冲突），再恢复代际与前任
+        // 先停掉已激活的新进程，再释放 DB 状态防 ux_exclusive_active_slot 冲突与进程状态分裂
+        await this.processManager.stopProcess(moduleId).catch(stopErr => {
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[ModularResource] 回滚停用新模块进程 ${moduleId} 告警:`,
+            stopErr
+          )
+        })
         dao.modules.updateInstallStateSync(moduleId, 'installed_inactive', errMsg)
         if (slot === 'base_embedding' && createdOrFlippedEpochNum !== null) {
           try {
@@ -4054,21 +4238,14 @@ export class ModularResourceService implements IModularResourceService {
           }
         }
         if (isExclusive && prevActive && prevActive.id !== moduleId) {
-          dao.modules.activateExclusiveModuleSync(prevActive.id)
-          await this.notifyRuntimePluginTopologyChanged({
-            moduleId: prevActive.id,
-            reason: 'module_state_rollback',
-            restartPolicy: 'ensure-running'
-          }).catch(rbErr => {
-            logger.warn(LogCategory.SYSTEM, '[ModularResource] 回滚恢复拓扑告警:', rbErr)
-          })
+          await restorePrevActiveRuntime(prevActive.id, '运行时加载')
         }
         throw activateErr
       }
     } else if (patch.active === false) {
-      // 核心不变量 3：必选槽防空保护
-      if (existing.slot_policy === 'exclusive_required' && existing.install_state === 'active') {
-        throw new Error('SLOT_REQUIRED_EMPTY')
+      // 核心不变量：必选槽防空保护 (TC-10)
+      if (existing.slot_policy === 'exclusive_required') {
+        throw new Error('CANNOT_DEACTIVATE_REQUIRED_SLOT (SLOT_REQUIRED_EMPTY)')
       }
 
       dao.modules.deactivateModuleSync(moduleId)
@@ -4138,10 +4315,121 @@ export class ModularResourceService implements IModularResourceService {
     return this.offlinePackageService.exportOfflinePackage(moduleId, targetFilePath, options)
   }
 
+  /**
+   * 导出全量离线插件总包 (.ffbundle)
+   * 对接 OfflineBundleExporter（官方公钥强校验 + 流式 SHA-256 + 原子刷盘）。
+   */
+  async exportOfflineBundle(
+    targetFilePath: string,
+    options?: { rootPublicKey?: string; producerAppVersion?: string }
+  ): Promise<string> {
+    this.ensureDefaultSeeds()
+    const db = this.getDb()
+    const dao = this.getDao()
+    const pluginsRootDir = this.getPluginsRootDir()
+
+    const { OfflinePackageDao } = await import('../modular-resource/offline-package-dao')
+    const { OfflineBundleExporter } = await import('../modular-resource/offline-bundle-exporter')
+    const offlineDao = new OfflinePackageDao(db)
+
+    const exporter = new OfflineBundleExporter({
+      dao: offlineDao,
+      modulesSharedDir: path.join(pluginsRootDir, '_shared'),
+      getExportableModules: async () => {
+        const allModules = dao.modules.listAllSync({ includeDraft: false })
+        const exportable = []
+        for (const mod of allModules) {
+          if (mod.install_state !== 'active' && mod.install_state !== 'installed_inactive') {
+            continue
+          }
+          const bound = dao.resources.findResourcesByModuleSync(mod.id)
+          if (bound.length === 0 || bound.some(r => r.download_state !== 'completed')) {
+            continue
+          }
+          const ssotManifestDir = PluginPathResolver.getModuleManifestDirForRoot(
+            pluginsRootDir,
+            mod.id
+          )
+          const legacyManifestDir = path.join(pluginsRootDir, '_shared', mod.id)
+          const manifestDir = fs.existsSync(path.join(ssotManifestDir, 'manifest.sig'))
+            ? ssotManifestDir
+            : legacyManifestDir
+          const manifestPath = path.join(manifestDir, 'manifest.json')
+          const sigPath = path.join(manifestDir, 'manifest.sig')
+
+          // 在线散装下载模块若不具备官方原签清单，优雅跳过并记录日志，严禁伪造签名或中断其他已签名官方模块导出
+          if (!fs.existsSync(manifestPath) || !fs.existsSync(sigPath)) {
+            logger.info(
+              LogCategory.SYSTEM,
+              `[ModularResource] 模块 ${mod.id} 缺少官方清单/签名凭证 (${manifestDir})，已跳过离线总包打包`
+            )
+            continue
+          }
+
+          // 读取签名清单内的 resource 元数据，避免误拿在线 .zip 归档哈希比对已解压目录哈希
+          const manifestResourceMap = new Map<
+            string,
+            { asset_name?: string; expected_sha256?: string }
+          >()
+          try {
+            const parsedManifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8')) as {
+              resources?: Array<{
+                resource_id?: string
+                asset_name?: string
+                expected_sha256?: string
+              }>
+            }
+            if (Array.isArray(parsedManifest.resources)) {
+              for (const mr of parsedManifest.resources) {
+                if (mr.resource_id) {
+                  manifestResourceMap.set(mr.resource_id, mr)
+                }
+              }
+            }
+          } catch (parseErr) {
+            logger.warn(
+              LogCategory.SYSTEM,
+              `[ModularResource] 读取模块 ${mod.id} 清单 JSON 失败，交由导出验签器终裁:`,
+              parseErr
+            )
+          }
+
+          exportable.push({
+            id: mod.id,
+            version: mod.version,
+            install_state: mod.install_state,
+            manifestPath,
+            sigPath,
+            resources: bound.map(res => {
+              const signedRes = manifestResourceMap.get(res.resource_id)
+              return {
+                resource_id: res.resource_id,
+                asset_name: signedRes?.asset_name || res.asset_name,
+                // 统一基于 pluginsRootDir 解析规范物理路径，杜绝非 _shared/ 相对路径在 Exporter 内分叉错拼
+                target_local_path: this.resolvePhysicalPath(res.target_local_path),
+                expected_sha256: signedRes?.expected_sha256 || undefined,
+                size: res.expected_bytes ?? undefined
+              }
+            })
+          })
+        }
+        return exportable
+      }
+    })
+
+    const res = await exporter.exportOfflineBundle({
+      targetPath: targetFilePath,
+      producerAppVersion: options?.producerAppVersion,
+      rootPublicKey: options?.rootPublicKey
+    })
+    return res.filePath
+  }
+
   async importOfflinePackage(
     archivePath: string,
-    options?: { rootPublicKey?: string }
+    options?: { rootPublicKey?: string; preferredEngineId?: string }
   ): Promise<BuiltinModuleView> {
+    this.ensureDefaultSeeds()
     return this.offlinePackageService.importOfflinePackage(archivePath, options)
   }
 }

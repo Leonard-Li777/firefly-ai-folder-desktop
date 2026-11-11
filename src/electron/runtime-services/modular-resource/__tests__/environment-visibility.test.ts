@@ -285,7 +285,7 @@ describe('EnvironmentVisibility & BuildGate', () => {
       expect(visibility.allowDeveloperMode).toBe(false)
       expect(visibility.allowLocalPluginImport).toBe(false)
       expect(visibility.allowOfflineExport).toBe(false)
-      expect(visibility.allowOfflineImport).toBe(false)
+      expect(visibility.allowOfflineImport).toBe(true)
     })
 
     it('should forbid dev privileges if channel is production even if unpackaged (unpacked defense)', () => {
@@ -328,69 +328,86 @@ describe('EnvironmentVisibility & BuildGate', () => {
       expect(visibility.allowOfflineExport).toBe(false)
     })
 
-    it('should reject offline import in production if offline license expired or non-finite', () => {
+    it('should keep allowOfflineImport true in production even if enterprise offline license expired or absent while strictly keeping isEnterpriseOffline false', () => {
       const expiredOfflineSnapshot: LicenseSnapshot = {
         ...validOfflineSnapshot,
         expiresAt: now - 1000 // expired
       }
-      expect(
-        computeEnvironmentVisibility('production', true, expiredOfflineSnapshot, false, now)
-          .allowOfflineImport
-      ).toBe(false)
+      const vExpired = computeEnvironmentVisibility(
+        'production',
+        true,
+        expiredOfflineSnapshot,
+        false,
+        now
+      )
+      expect(vExpired.isEnterpriseOffline).toBe(false)
+      expect(vExpired.allowOfflineImport).toBe(true)
 
       const nullExpirySnapshot: LicenseSnapshot = {
         ...validOfflineSnapshot,
         expiresAt: null
       }
-      expect(
-        computeEnvironmentVisibility('production', true, nullExpirySnapshot, false, now)
-          .allowOfflineImport
-      ).toBe(false)
+      const vNull = computeEnvironmentVisibility('production', true, nullExpirySnapshot, false, now)
+      expect(vNull.isEnterpriseOffline).toBe(false)
+      expect(vNull.allowOfflineImport).toBe(true)
 
       const nonFiniteExpirySnapshot: LicenseSnapshot = {
         ...validOfflineSnapshot,
         expiresAt: Infinity
       }
-      expect(
-        computeEnvironmentVisibility('production', true, nonFiniteExpirySnapshot, false, now)
-          .allowOfflineImport
-      ).toBe(false)
+      const vInf = computeEnvironmentVisibility(
+        'production',
+        true,
+        nonFiniteExpirySnapshot,
+        false,
+        now
+      )
+      expect(vInf.isEnterpriseOffline).toBe(false)
+      expect(vInf.allowOfflineImport).toBe(true)
 
       const nonEnterpriseSnapshot: LicenseSnapshot = {
         ...validOfflineSnapshot,
         tier: 'FREE'
       }
-      expect(
-        computeEnvironmentVisibility('production', true, nonEnterpriseSnapshot, false, now)
-          .allowOfflineImport
-      ).toBe(false)
+      const vFree = computeEnvironmentVisibility(
+        'production',
+        true,
+        nonEnterpriseSnapshot,
+        false,
+        now
+      )
+      expect(vFree.isEnterpriseOffline).toBe(false)
+      expect(vFree.allowOfflineImport).toBe(true)
 
       const unauthSnapshot: LicenseSnapshot = {
         ...validOfflineSnapshot,
         status: 'UNAUTHORIZED'
       }
-      expect(
-        computeEnvironmentVisibility('production', true, unauthSnapshot, false, now)
-          .allowOfflineImport
-      ).toBe(false)
+      const vUnauth = computeEnvironmentVisibility('production', true, unauthSnapshot, false, now)
+      expect(vUnauth.isEnterpriseOffline).toBe(false)
+      expect(vUnauth.allowOfflineImport).toBe(true)
 
       const onlineSnapshot: LicenseSnapshot = {
         ...validOfflineSnapshot,
         normalizedType: 'ONLINE'
       }
-      expect(
-        computeEnvironmentVisibility('production', true, onlineSnapshot, false, now)
-          .allowOfflineImport
-      ).toBe(false)
+      const vOnline = computeEnvironmentVisibility('production', true, onlineSnapshot, false, now)
+      expect(vOnline.isEnterpriseOffline).toBe(false)
+      expect(vOnline.allowOfflineImport).toBe(true)
 
       const canOfflineFalseSnapshot: LicenseSnapshot = {
         ...validOfflineSnapshot,
         canOffline: false
       }
-      expect(
-        computeEnvironmentVisibility('production', true, canOfflineFalseSnapshot, false, now)
-          .allowOfflineImport
-      ).toBe(false)
+      const vNoOffline = computeEnvironmentVisibility(
+        'production',
+        true,
+        canOfflineFalseSnapshot,
+        false,
+        now
+      )
+      expect(vNoOffline.isEnterpriseOffline).toBe(false)
+      expect(vNoOffline.allowOfflineImport).toBe(true)
     })
   })
 

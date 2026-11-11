@@ -19,28 +19,16 @@ import { Switch } from '../ui/switch'
 import { cn } from '../../lib/utils'
 import i18nScope from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
-import {
-  usePluginCenterStore,
-  formatPluginErrorMessage,
-  type PluginModuleItem
-} from '../../stores/plugin-center-store'
+import { usePluginCenterStore, formatPluginErrorMessage } from '../../stores/plugin-center-store'
+import { normalizeCapabilitySlot } from '@firefly/shared'
 import { useSettingsStore } from '../../stores/settings-store'
 import { SettingsCategory } from '@firefly/types'
 import { PluginListItem } from './PluginListItem'
+import { shouldRenderOfflineExportButton } from './plugin-center-helpers'
 import { AIEngineConfigSettings } from '../settings/ai-engine-config-settings'
 import { TTSSettings } from '../settings/tts-settings'
 import { M5TTSSettings } from '../settings/m5-tts-settings'
 import { toast } from '../common/Toast'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from '../ui/alert-dialog'
 
 export interface PluginCenterOverlayProps {
   className?: string
@@ -126,9 +114,29 @@ function getSlotDefinition(
         description: t('不用解压就能透视压缩包等特殊文件内容，直接搜索内部资料。'),
         order: 50
       }
+    case 'perception_face':
+      return {
+        key: 'perception_face',
+        name: t('人像与画面场景识别'),
+        policy: 'exclusive_optional',
+        icon: '🙂',
+        badgeText: t('选配单选 · 互斥生效'),
+        description: t('智能识别照片里的人物画面特征，方便按人物回忆查找相册。'),
+        order: 45
+      }
+    case 'advanced_ai_engine':
+      return {
+        key: 'advanced_ai_engine',
+        name: t('高级视觉生成引擎'),
+        policy: 'exclusive_optional',
+        icon: '🎨',
+        badgeText: t('选配单选 · 独显推荐'),
+        description: t('在电脑本地画图与修复图片的高性能扩展引擎（需独立显卡）。'),
+        order: 55
+      }
     default:
       return {
-        key: slotKey,
+        key: 'general',
         name: t('智能工具与扩展技能'),
         policy: sampleMod?.slot_policy || 'multi_active',
         icon: '🧩',
@@ -142,12 +150,12 @@ function getSlotDefinition(
 /**
  * 插件中心主内容区域全局覆盖层 (Plugin Center Overlay)
  *
- * 遵循与全域搜索 (GlobalSearchOverlay) 完全一致的架构规范：
- * 1. 结构形态：摒弃传统浮动弹窗 (Dialog/Modal)，改为主内容区域绝对定位全局覆盖层；
- * 2. 空间布局：紧贴顶部 DirectoryHeader 底边 (top: var(--app-header-height, 53px))，铺满主内容视口；
- * 3. 展现形态：插件列表全面改用横向条目 (List) 形态，取代狭窄的卡片网格形态；
- * 4. 键盘与交互：支持 Esc 键逐级返回与退出（配置模式返回列表，列表模式关闭覆盖层）；
- * 5. 高级 AI 引擎与离线 TTS 获得充裕的大视口展示空间，配置体验舒展自然。
+ * 遵循能力插槽分组、零阻断原子单选切换与极简导出生命周期模型：
+ * 1. 结构形态：主内容视口全屏覆盖层；
+ * 2. 导出收敛：彻底移除行内及顶部单插件导出，唯一保留开发模式下的全量离线总包导出；
+ * 3. 导入常驻：顶部【导入离线包】全场景常驻开放；
+ * 4. 零阻断切换：彻底清理二次确认弹窗，互斥单选原子无缝接替；
+ * 5. 卸载确认：友好展示即将释放的模型磁盘体积。
  */
 export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ className }) => {
   const { t } = useVoerkaI18n(i18nScope)
@@ -172,7 +180,6 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
   const checkPendingTombstones = usePluginCenterStore(s => s.checkPendingTombstones)
   const restartApp = usePluginCenterStore(s => s.restartApp)
   const restartPlugin = usePluginCenterStore(s => s.restartPlugin)
-  const exportOfflinePackage = usePluginCenterStore(s => s.exportOfflinePackage)
   const exportOfflineBundle = usePluginCenterStore(s => s.exportOfflineBundle)
   const importOfflinePackage = usePluginCenterStore(s => s.importOfflinePackage)
   const isDeveloperMode = usePluginCenterStore(s => s.isDeveloperMode)
@@ -182,21 +189,12 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
   const subscribeEnvironmentVisibility = usePluginCenterStore(s => s.subscribeEnvironmentVisibility)
   const isExportingBundle = usePluginCenterStore(s => s.isExportingBundle)
   const isImportingBundle = usePluginCenterStore(s => s.isImportingBundle)
+  const isTogglingSlot = usePluginCenterStore(s => s.isTogglingSlot)
   const scope = usePluginCenterStore(s => s.scope)
   const setScope = usePluginCenterStore(s => s.setScope)
   const pickAndImportLocalPlugin = usePluginCenterStore(s => s.pickAndImportLocalPlugin)
   const dirPhase = usePluginCenterStore(s => s.dirPhase)
   const loadDirInfo = usePluginCenterStore(s => s.loadDirInfo)
-
-  // 卸载与槽位切换确认弹窗状态 (Spec §3.4 TEST-UI-PLUGIN-03/04)
-  const [pendingUninstallModule, setPendingUninstallModule] = useState<PluginModuleItem | null>(
-    null
-  )
-  const [pendingSwitchSlot, setPendingSwitchSlot] = useState<{
-    targetId: string
-    currentActiveName: string
-    targetName: string
-  } | null>(null)
 
   // 订阅后端实时下载进度与环境可见性变更，支持双挂载安全清理
   useEffect(() => {
@@ -215,14 +213,13 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
       void checkPendingTombstones()
       void loadDirInfo()
     }
-  }, [isOverlayOpen, loadEnvironmentVisibility, loadModules, loadDirInfo])
+  }, [isOverlayOpen, loadEnvironmentVisibility, loadModules, checkPendingTombstones, loadDirInfo])
 
-  // 环境通道与离线可见性派生决策（双锚定时钟收拢事实源，兼容桥接回退）
+  // 环境通道与离线可见性派生决策 (未就绪时默认 Fail-Closed，严禁越权暴露开发态入口)
   const vis = environmentVisibility?.visibility
-  const allowDeveloperMode = vis ? vis.allowDeveloperMode : true
-  const allowOfflineExport = vis ? vis.allowOfflineExport : isDeveloperMode
-  const allowOfflineImport = vis ? vis.allowOfflineImport : true
-  const allowLocalPluginImport = vis ? vis.allowLocalPluginImport : isDeveloperMode
+  const allowDeveloperMode = vis ? vis.allowDeveloperMode : false
+  const allowOfflineExport = vis ? vis.allowOfflineExport : false
+  const allowLocalPluginImport = vis ? vis.allowLocalPluginImport : false
 
   // Esc 键盘多级退出监听
   useEffect(() => {
@@ -255,6 +252,18 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
     if (!configuringModuleId) return null
     return modules.find(m => m.id === configuringModuleId) || null
   }, [configuringModuleId, modules])
+
+  // 仅在打开或切换配置模块 ID 时同步重置草稿与历史错误，保存失败回滚时保留用户编辑内容与报错
+  useEffect(() => {
+    if (!configuringModuleId) {
+      setUserConfigDraft('')
+      setConfigError(null)
+      return
+    }
+    const target = usePluginCenterStore.getState().modules.find(m => m.id === configuringModuleId)
+    setUserConfigDraft(target?.user_config ?? '')
+    setConfigError(null)
+  }, [configuringModuleId])
 
   // 分类过滤器
   const categories = useMemo(
@@ -299,7 +308,7 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
     })
   }, [modules, scope, isDeveloperMode, selectedCategory, searchKeyword, t])
 
-  // 槽位聚类分组 (方案 A: Slot Grouping)
+  // 槽位聚类分组 (Slot Grouping)
   const slotGroups = useMemo(() => {
     const slotMap = new Map<
       string,
@@ -307,8 +316,8 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
     >()
 
     filteredModules.forEach(mod => {
-      const rawSlot = mod.capability_slot || 'general'
-      const slotKey = rawSlot === 'asr' ? 'voice_asr' : rawSlot === 'tts' ? 'voice_tts' : rawSlot
+      const normalizedSlot = normalizeCapabilitySlot(mod.capability_slot)
+      const slotKey = normalizedSlot === 'tool' ? 'general' : normalizedSlot
 
       if (!slotMap.has(slotKey)) {
         const def = getSlotDefinition(slotKey, mod, t)
@@ -320,7 +329,7 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
     return Array.from(slotMap.values()).sort((a, b) => a.definition.order - b.definition.order)
   }, [filteredModules, t])
 
-  // 切换插件激活状态，带 exclusive_required 拒关与互斥感知
+  // 切换插件激活状态：零阻断原子接替与必选底座强防护
   const handleTogglePluginActive = useCallback(
     async (id: string, active: boolean) => {
       const target = modules.find(m => m.id === id)
@@ -332,76 +341,50 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
         return
       }
 
-      // 如果是切换互斥槽位（开启另一款引擎），弹出确认对话框 (Spec §3.4 TEST-UI-PLUGIN-03)
-      if (target.slot_policy === 'exclusive_required' && active) {
-        const currentActive = modules.find(
+      const targetSlot = normalizeCapabilitySlot(target.capability_slot)
+      const hadSiblingActive =
+        active &&
+        (target.slot_policy === 'exclusive_required' ||
+          target.slot_policy === 'exclusive_optional') &&
+        modules.some(
           m =>
-            m.capability_slot === target.capability_slot &&
-            m.install_state === 'active' &&
-            m.id !== id
+            normalizeCapabilitySlot(m.capability_slot) === targetSlot &&
+            m.id !== id &&
+            m.install_state === 'active'
         )
-        if (currentActive) {
-          setPendingSwitchSlot({
-            targetId: id,
-            currentActiveName: currentActive.name,
-            targetName: target.name
-          })
-          return
-        }
-      }
 
-      await togglePluginActive(id, active)
-    },
-    [modules, togglePluginActive, t]
-  )
-
-  const handleRequestUninstall = useCallback(
-    (id: string) => {
-      const target = modules.find(m => m.id === id)
-      if (target) {
-        setPendingUninstallModule(target)
-      }
-    },
-    [modules]
-  )
-
-  const handleConfirmUninstall = useCallback(async () => {
-    if (!pendingUninstallModule) return
-    const id = pendingUninstallModule.id
-    setPendingUninstallModule(null)
-    try {
-      await uninstallPlugin(id)
-    } catch (err: any) {
-      toast.error(err?.message || t('卸载失败'))
-    }
-  }, [pendingUninstallModule, uninstallPlugin, t])
-
-  const handleConfirmSwitchSlot = useCallback(async () => {
-    if (!pendingSwitchSlot) return
-    const id = pendingSwitchSlot.targetId
-    setPendingSwitchSlot(null)
-    try {
-      await togglePluginActive(id, true)
-    } catch (err: any) {
-      toast.error(err?.message || t('切换失败'))
-    }
-  }, [pendingSwitchSlot, togglePluginActive, t])
-
-  // 导出离线插件包处理
-  const handleExportPlugin = useCallback(
-    async (moduleId: string) => {
+      // 零阻断原子接替（无需二次确认弹窗打断用户流转）
       try {
-        const dest = await exportOfflinePackage(moduleId)
-        if (dest) {
-          toast.success(t('离线插件包导出成功'))
+        await togglePluginActive(id, active)
+        if (active) {
+          toast.success(
+            hadSiblingActive
+              ? t('已切换为 {name}，原同分类插件已自动停用', { name: t(target.name) })
+              : t('已启用 {name}', { name: t(target.name) })
+          )
+        } else {
+          toast.success(t('已停用 {name}', { name: t(target.name) }))
         }
       } catch (err: unknown) {
         toast.error(formatPluginErrorMessage(err))
       }
     },
-    [exportOfflinePackage, t]
+    [modules, togglePluginActive, t]
   )
-  // 卡片配置一键直达系统设置对应 Tab (Ticket 05 / Spec §5.2)
+
+  const handleUninstallPlugin = useCallback(
+    async (id: string) => {
+      try {
+        await uninstallPlugin(id)
+        toast.success(t('插件卸载成功'))
+      } catch (err: any) {
+        toast.error(formatPluginErrorMessage(err))
+      }
+    },
+    [uninstallPlugin, t]
+  )
+
+  // 卡片配置一键直达系统设置对应 Tab
   const handleOpenConfig = (id: string) => {
     const mod = modules.find(m => m.id === id)
     closeOverlay()
@@ -436,19 +419,24 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
     }
   }
 
-  // 保存自定义配置 (增加 JSON 合法性校验防脏写，空白串归一为 null 满足 Genesis V1 CHECK 约束)
-  const handleSaveConfig = () => {
+  // 保存自定义配置
+  const handleSaveConfig = async () => {
     const trimmed = userConfigDraft.trim()
     if (trimmed) {
       try {
         JSON.parse(trimmed)
       } catch {
-        setConfigError(t('配置格式错误，必须为合法的 JSON 格式字符串'))
+        setConfigError(t('配置内容格式有误，请检查大括号、引号与逗号是否成对匹配'))
         return
       }
     }
     if (configuringModuleId) {
-      updateUserConfig(configuringModuleId, trimmed ? userConfigDraft : null)
+      try {
+        await updateUserConfig(configuringModuleId, trimmed ? userConfigDraft : null)
+      } catch (err) {
+        setConfigError(formatPluginErrorMessage(err))
+        return
+      }
     }
     setConfigError(null)
     setConfiguringModuleId(null)
@@ -469,7 +457,7 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
       )}
       style={{ top: 'var(--app-header-height, 53px)' }}
     >
-      {/* 待重启黄色横幅 (Issue 06 Spec §7.1) */}
+      {/* 待重启黄色横幅 */}
       {dirPhase === 'PENDING_RESTART' && (
         <div
           data-testid="plugin-center-restart-banner"
@@ -493,7 +481,7 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
         </div>
       )}
 
-      {/* 顶部主工具栏：左侧标题/面包屑与副标，右侧快捷关闭按钮 */}
+      {/* 顶部主工具栏 */}
       <div className="px-6 py-3 border-b border-border/70 flex-shrink-0 flex items-center justify-between bg-card min-h-[52px] gap-4">
         <div className="flex items-center gap-3 min-w-0">
           {configuringModule && (
@@ -573,109 +561,71 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
             </Button>
           )}
 
-          {/* 导出能力：严格受控于环境可见性准入 */}
-          {allowOfflineExport && (
-            <>
-              <Button
-                size="sm"
-                variant="outline"
-                data-testid="export-offline-plugin-btn"
-                disabled={isExportingBundle}
-                onClick={async () => {
-                  try {
-                    if (configuringModuleId) {
-                      await handleExportPlugin(configuringModuleId)
-                      return
-                    }
-                    const installed = modules.filter(
-                      m => m.install_state === 'active' || m.install_state === 'installed_inactive'
-                    )
-                    if (installed.length === 0) {
-                      toast.info(t('暂无可导出的已安装插件'))
-                      return
-                    }
-                    if (installed.length === 1) {
-                      await handleExportPlugin(installed[0].id)
-                    } else {
-                      toast.info(t('请在下方已安装插件条目右侧直接点击“导出”按钮'))
-                    }
-                  } catch (err: unknown) {
-                    toast.error(formatPluginErrorMessage(err))
-                  }
-                }}
-                className="h-8 px-2.5 text-xs flex items-center gap-1.5 border-dashed border-sky-500/60 hover:border-sky-500 text-sky-700 dark:text-sky-400 hover:text-foreground shrink-0 cursor-pointer"
-                title={t('导出离线插件包 (.ffp)')}
-              >
-                <Share2 className="w-3.5 h-3.5" />
-                <span>{t('导出插件包')}</span>
-              </Button>
-
-              <Button
-                size="sm"
-                variant="outline"
-                data-testid="export-offline-bundle-btn"
-                disabled={isExportingBundle}
-                onClick={async () => {
-                  try {
-                    const dest = await exportOfflineBundle()
-                    if (dest) {
-                      toast.success(t('离线插件总包导出成功'))
-                    }
-                  } catch (err: unknown) {
-                    toast.error(formatPluginErrorMessage(err))
-                  }
-                }}
-                className="h-8 px-2.5 text-xs flex items-center gap-1.5 border-dashed border-indigo-500/60 hover:border-indigo-500 text-indigo-700 dark:text-indigo-400 hover:text-foreground shrink-0 cursor-pointer"
-                title={t('导出包含所有已安装插件及共享资产的离线总包 (.ffp)')}
-              >
-                {isExportingBundle ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>{t('正在导出总包...')}</span>
-                  </>
-                ) : (
-                  <>
-                    <Share2 className="w-3.5 h-3.5" />
-                    <span>{t('导出离线总包')}</span>
-                  </>
-                )}
-              </Button>
-            </>
-          )}
-
-          {/* 导入能力：严格受控于环境可见性准入 */}
-          {allowOfflineImport && (
+          {/* 导出能力：极致收敛至仅在开启开发者模式下暴露唯一的「导出离线总包」 */}
+          {shouldRenderOfflineExportButton(isDeveloperMode, allowOfflineExport) && (
             <Button
               size="sm"
               variant="outline"
-              data-testid="import-offline-plugin-btn"
-              disabled={isImportingBundle}
+              data-testid="export-offline-bundle-btn"
+              disabled={isExportingBundle}
               onClick={async () => {
                 try {
-                  const res = await importOfflinePackage()
-                  if (res) {
-                    toast.success(t('离线插件包导入成功'))
+                  const dest = await exportOfflineBundle()
+                  if (dest) {
+                    toast.success(t('离线插件总包导出成功'))
                   }
                 } catch (err: unknown) {
                   toast.error(formatPluginErrorMessage(err))
                 }
               }}
-              className="h-8 px-2.5 text-xs flex items-center gap-1.5 border-dashed border-border/80 hover:border-primary/50 text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
-              title={t('导入离线插件包 (.ffp / .zip)')}
+              className="h-8 px-2.5 text-xs flex items-center gap-1.5 border-dashed border-indigo-500/60 hover:border-indigo-500 text-indigo-700 dark:text-indigo-400 hover:text-foreground shrink-0 cursor-pointer"
+              title={t('导出包含所有已安装插件及共享资产的离线总包 (.ffbundle)')}
             >
-              {isImportingBundle ? (
+              {isExportingBundle ? (
                 <>
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  <span>{t('正在导入...')}</span>
+                  <span>{t('正在导出总包...')}</span>
                 </>
               ) : (
                 <>
-                  <Download className="w-3.5 h-3.5" />
-                  <span>{t('导入离线包')}</span>
+                  <Share2 className="w-3.5 h-3.5" />
+                  <span>{t('导出离线总包')}</span>
                 </>
               )}
             </Button>
           )}
+
+          {/* 导入能力：恒常放行，全场景全局常驻显示 */}
+          <Button
+            size="sm"
+            variant="outline"
+            data-testid="import-offline-plugin-btn"
+            disabled={isImportingBundle}
+            onClick={async () => {
+              try {
+                const res = await importOfflinePackage()
+                if (res) {
+                  toast.success(t('离线插件包导入成功'))
+                }
+              } catch (err: unknown) {
+                toast.error(formatPluginErrorMessage(err))
+              }
+            }}
+            className="h-8 px-2.5 text-xs flex items-center gap-1.5 border-dashed border-border/80 hover:border-primary/50 text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+            title={t('导入离线插件包 (.ffp / .zip)')}
+          >
+            {isImportingBundle ? (
+              <>
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                <span>{t('正在导入...')}</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-3.5 h-3.5" />
+                <span>{t('导入离线包')}</span>
+              </>
+            )}
+          </Button>
 
           {/* 右上角关闭按钮 */}
           <Button
@@ -708,13 +658,13 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
                     <span className="text-sm font-semibold">{t('生成式引擎配置')}</span>
                   </div>
                   <Badge variant="outline" className="text-xs font-mono">
-                    engine: llama.cpp / v{configuringModule.version}
+                    v{configuringModule.version}
                   </Badge>
                 </div>
                 <AIEngineConfigSettings />
               </div>
             ) : configuringModule.id === 'tts_m5_onnx' ? (
-              /* M5-TTS 极速语音合成专属配置面板 (无音色克隆) */
+              /* M5-TTS 极速语音合成专属配置面板 */
               <div className="space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-border/60">
                   <div className="flex items-center gap-2">
@@ -722,7 +672,7 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
                     <span className="text-sm font-semibold">{t('极速语音朗读配置 (M5-TTS)')}</span>
                   </div>
                   <Badge variant="outline" className="text-xs font-mono">
-                    tts: m5-onnx / v{configuringModule.version}
+                    v{configuringModule.version}
                   </Badge>
                 </div>
                 <M5TTSSettings />
@@ -738,23 +688,21 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
                     <span className="text-sm font-semibold">{t('离线语音合成与发音人管理')}</span>
                   </div>
                   <Badge variant="outline" className="text-xs font-mono">
-                    tts: sensevoice-sherpa / v{configuringModule.version}
+                    v{configuringModule.version}
                   </Badge>
                 </div>
                 <TTSSettings />
               </div>
             ) : (
-              /* 通用插件 config_schema 与 user_config 模板插槽 */
+              /* 通用插件个性参数配置插槽 */
               <div className="space-y-4 max-w-2xl mx-auto py-4">
                 <div className="p-5 rounded-xl border border-border/70 bg-muted/20 space-y-3">
                   <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                     <Code className="w-4 h-4 text-primary" />
-                    <span>{t('插件个性化配置项 (JSON Schema)')}</span>
+                    <span>{t('插件个性化配置项')}</span>
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    {t(
-                      '该模块支持通过标准 JSON 配置调整运行行为。所有配置将持久化存入系统主库 user_config 字段。'
-                    )}
+                    {t('通过下方设置项可自定义该插件的运行偏好，保存后将立即生效并持久化保存。')}
                   </p>
                   <textarea
                     rows={12}
@@ -767,7 +715,7 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
                       'w-full p-3 text-xs font-mono rounded-lg border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-y',
                       configError ? 'border-destructive' : 'border-border/80 focus:border-primary'
                     )}
-                    placeholder="{\n  // 请输入符合插件定义的 JSON 配置项\n}"
+                    placeholder={t('请输入插件参数配置内容（如 {"key": "value"}）')}
                   />
                   {configError && (
                     <div className="text-xs text-destructive font-medium flex items-center gap-1">
@@ -934,12 +882,18 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
                           <PluginListItem
                             key={item.id}
                             module={item}
+                            slotPolicy={group.definition.policy}
+                            isSlotToggling={isTogglingSlot}
+                            slotOwnershipLabel={
+                              scope === 'installed'
+                                ? `${t('所属槽位')}: ${group.definition.name} (${group.definition.badgeText})`
+                                : undefined
+                            }
                             onInstall={installPlugin}
-                            onUninstall={handleRequestUninstall}
+                            onUninstall={handleUninstallPlugin}
                             onToggleActive={handleTogglePluginActive}
                             onConfigure={handleOpenConfig}
                             onRestart={restartPlugin}
-                            onExport={handleExportPlugin}
                           />
                         ))}
                       </div>
@@ -960,69 +914,6 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
           </div>
         </div>
       )}
-
-      {/* 槽位切换确认弹窗 (Spec §3.4 TEST-UI-PLUGIN-03) */}
-      <AlertDialog
-        open={!!pendingSwitchSlot}
-        onOpenChange={open => !open && setPendingSwitchSlot(null)}
-      >
-        <AlertDialogContent data-testid="plugin-confirm-dialog" data-dialog-type="switch">
-          <AlertDialogHeader>
-            <AlertDialogTitle data-testid="confirm-dialog-title">
-              {t('确认切换基础 AI 引擎？')}
-            </AlertDialogTitle>
-            <AlertDialogDescription data-testid="confirm-dialog-desc">
-              {t('切换基础 AI 引擎将停止当前引擎并激活新引擎，历史向量数据将在后台自愈重算。')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel
-              data-testid="confirm-dialog-cancel-btn"
-              onClick={() => setPendingSwitchSlot(null)}
-            >
-              {t('取消')}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              data-testid="confirm-dialog-confirm-btn"
-              onClick={handleConfirmSwitchSlot}
-            >
-              {t('确认切换')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* 卸载确认弹窗 (Spec §3.4 TEST-UI-PLUGIN-04) */}
-      <AlertDialog
-        open={!!pendingUninstallModule}
-        onOpenChange={open => !open && setPendingUninstallModule(null)}
-      >
-        <AlertDialogContent data-testid="plugin-confirm-dialog" data-dialog-type="uninstall">
-          <AlertDialogHeader>
-            <AlertDialogTitle data-testid="confirm-dialog-title">
-              {t('确认卸载该扩展模块？')}
-            </AlertDialogTitle>
-            <AlertDialogDescription data-testid="confirm-dialog-desc">
-              {t('卸载将释放相关模型文件并清理本地缓存，确认继续？')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel
-              data-testid="confirm-dialog-cancel-btn"
-              onClick={() => setPendingUninstallModule(null)}
-            >
-              {t('取消')}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              data-testid="confirm-dialog-confirm-btn"
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={handleConfirmUninstall}
-            >
-              {t('确认卸载')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   )
 }

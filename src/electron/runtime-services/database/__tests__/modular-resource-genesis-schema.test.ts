@@ -9,7 +9,8 @@ import {
   BUILTIN_MODULE_CATALOG_META,
   BUILTIN_PLUGIN_CATALOG_META,
   EXCLUSIVE_CAPABILITY_SLOTS,
-  MULTI_ACTIVE_CAPABILITY_SLOTS
+  MULTI_ACTIVE_CAPABILITY_SLOTS,
+  normalizeCapabilitySlot
 } from '@firefly/shared'
 
 describe('Ticket 01: Genesis V1 Schema & Modular Resource DAO', () => {
@@ -175,12 +176,12 @@ describe('Ticket 01: Genesis V1 Schema & Modular Resource DAO', () => {
       expect(cad).toBeUndefined()
     })
 
-    it('DEFAULT_CATALOG_SEEDS 中包含 archive_vfs_parser 且状态为 coming_soon', () => {
+    it('DEFAULT_CATALOG_SEEDS 中包含 archive_vfs_parser 且状态为 coming_soon, 分类已归一化为 parser', () => {
       const archive = DEFAULT_CATALOG_SEEDS.find(m => m.id === 'archive_vfs_parser')
       expect(archive).toBeDefined()
       expect(archive?.availability).toBe('coming_soon')
       expect(archive?.install_state).toBe('not_installed')
-      expect(archive?.category).toBe('vfs-archive')
+      expect(archive?.category).toBe('parser')
       expect(archive?.capability_slot).toBe('parser')
     })
   })
@@ -366,6 +367,42 @@ describe('Ticket 01: Genesis V1 Schema & Modular Resource DAO', () => {
       dao.activateExclusiveModuleSync('tts_m5_onnx')
       expect(dao.findByIdSync('tts_moss_onnx')?.install_state).toBe('installed_inactive')
       expect(dao.findByIdSync('tts_m5_onnx')?.install_state).toBe('active')
+    })
+
+    it('normalizeCapabilitySlot 将历史别名与未知脏值确定性收敛，DAO 写入前自动归一化防索引绕过', () => {
+      expect(normalizeCapabilitySlot('asr')).toBe('voice_asr')
+      expect(normalizeCapabilitySlot('tts')).toBe('voice_tts')
+      expect(normalizeCapabilitySlot('engine_primary')).toBe('base_embedding')
+      expect(normalizeCapabilitySlot('base_ai_engine')).toBe('base_embedding')
+      expect(normalizeCapabilitySlot('vfs-archive')).toBe('parser')
+      expect(normalizeCapabilitySlot('dirty_unknown_slot')).toBe('general')
+      expect(normalizeCapabilitySlot(null)).toBe('general')
+
+      dao.upsertModuleSync({
+        id: 'alias_asr_1',
+        version: '1.0.0',
+        category: 'perception',
+        capability_slot: 'asr' as any,
+        slot_policy: 'exclusive_optional',
+        availability: 'approved',
+        delist_reason: null,
+        install_state: 'active'
+      } as any)
+      expect(dao.findByIdSync('alias_asr_1')?.capability_slot).toBe('voice_asr')
+
+      // 写入规范名 voice_asr 的第二个 active 项同样被 ux_exclusive_active_slot 物理阻断
+      expect(() => {
+        dao.upsertModuleSync({
+          id: 'canonical_asr_2',
+          version: '1.0.0',
+          category: 'perception',
+          capability_slot: 'voice_asr',
+          slot_policy: 'exclusive_optional',
+          availability: 'approved',
+          delist_reason: null,
+          install_state: 'active'
+        } as any)
+      }).toThrow(/UNIQUE constraint failed/)
     })
   })
 })

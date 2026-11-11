@@ -106,7 +106,7 @@ export function registerModularResourceIpcHandlers(
   })
 
   ipcMain.handle('modular-resource:set-dev-mode', async (_event, payload: { enabled: boolean }) => {
-    const isPackaged = typeof app !== 'undefined' && app.isPackaged ? false : devModeEnabled
+    const isPackaged = typeof app !== 'undefined' ? app.isPackaged : false
     devModeEnabled = !!payload.enabled
     const envelope = EnvironmentVisibilityCoordinator.getInstance().setDeveloperMode(
       payload.enabled,
@@ -245,11 +245,11 @@ export function registerModularResourceIpcHandlers(
     try {
       const res = await dialog.showSaveDialog({
         title: '导出离线插件总包',
-        defaultPath: 'firefly-offline-bundle.ffp',
-        filters: [{ name: 'Firefly 离线总包 (*.ffp)', extensions: ['ffp', 'zip'] }]
+        defaultPath: 'firefly-offline-bundle.ffbundle',
+        filters: [{ name: 'Firefly 离线总包 (*.ffbundle)', extensions: ['ffbundle', 'ffp', 'zip'] }]
       })
       if (res.canceled || !res.filePath) return null
-      return await service.exportOfflinePackage('all', res.filePath)
+      return await service.exportOfflineBundle(res.filePath)
     } catch (err: unknown) {
       logger.error(LogCategory.MAIN, '[ModularResourceIPC] export-offline-bundle 失败:', err)
       throw err
@@ -284,19 +284,26 @@ export function registerModularResourceIpcHandlers(
 
   ipcMain.handle(
     'modular-resource:import-offline-package',
-    async (_event, payload?: { archivePath?: string }) => {
+    async (_event, payload?: { archivePath?: string; preferredEngineId?: string }) => {
       try {
         let src = payload?.archivePath
         if (!src) {
           const res = await dialog.showOpenDialog({
-            title: '导入离线插件包',
+            title: '导入离线总包',
             properties: ['openFile'],
-            filters: [{ name: 'Firefly 离线插件包 (*.ffp, *.zip)', extensions: ['ffp', 'zip'] }]
+            filters: [
+              {
+                name: 'Firefly 离线包 (*.ffbundle, *.ffp, *.zip)',
+                extensions: ['ffbundle', 'ffp', 'zip']
+              }
+            ]
           })
           if (res.canceled || !res.filePaths || res.filePaths.length === 0) return null
           src = res.filePaths[0]
         }
-        return await service.importOfflinePackage(src)
+        return await service.importOfflinePackage(src, {
+          preferredEngineId: payload?.preferredEngineId
+        })
       } catch (err: any) {
         logger.error(LogCategory.MAIN, '[ModularResourceIPC] import-offline-package 失败:', err)
         throw err

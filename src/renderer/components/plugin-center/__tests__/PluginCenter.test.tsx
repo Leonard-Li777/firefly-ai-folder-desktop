@@ -42,7 +42,7 @@ vi.mock('../../settings/tts-settings', () => ({
 }))
 
 import { PluginCard, formatBytes } from '../PluginCard'
-import { PluginListItem } from '../PluginListItem'
+import { PluginListItem, getPluginIcon, PLUGIN_ICON_MAP } from '../PluginListItem'
 import { PluginCenterOverlay } from '../PluginCenterOverlay'
 import { usePluginCenterStore, type PluginModuleItem } from '../../../stores/plugin-center-store'
 
@@ -133,22 +133,90 @@ describe('PluginCard (插件卡片精简与状态呈现)', () => {
     expect(screen.getByText(/5.5 MB\/s/)).toBeInTheDocument()
   })
 
-  it('已安装状态：展示已启用 Switch 开关与配置按钮并触发回调', () => {
+  it('已安装状态：展示【停用】、【配置】与【卸载】按钮并支持防误删确认弹窗 (TC-04)', () => {
     const onToggleActive = vi.fn()
     const onConfigure = vi.fn()
+    const onUninstall = vi.fn()
 
     render(
-      <PluginCard module={baseModule} onToggleActive={onToggleActive} onConfigure={onConfigure} />
+      <PluginCard
+        module={{ ...baseModule, capability_slot: 'voice_tts', slot_policy: 'exclusive_optional' }}
+        slotPolicy="exclusive_optional"
+        onToggleActive={onToggleActive}
+        onConfigure={onConfigure}
+        onUninstall={onUninstall}
+      />
     )
 
-    const switchEl = screen.getByRole('switch', { name: '已启用' })
-    expect(switchEl).toBeInTheDocument()
-    expect(switchEl).toBeChecked()
+    // 废除旧版 Switch 与单插件导出按钮
+    expect(screen.queryByRole('switch')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('export-plugin-btn')).not.toBeInTheDocument()
+
+    // 渲染停用按钮并触发回调
+    const deactivateBtn = screen.getByTestId('deactivate-plugin-btn-offline_tts')
+    expect(deactivateBtn).toHaveTextContent('停用')
+    fireEvent.click(deactivateBtn)
+    expect(onToggleActive).toHaveBeenCalledWith('offline_tts', false)
 
     const configBtn = screen.getByRole('button', { name: /配置/ })
     expect(configBtn).toBeInTheDocument()
     fireEvent.click(configBtn)
     expect(onConfigure).toHaveBeenCalledWith('offline_tts')
+
+    // 点击卸载按钮 -> 弹出防误删确认弹窗并展示预计释放空间 (206.4 MB)
+    const uninstallBtn = screen.getByTestId('uninstall-plugin-btn')
+    fireEvent.click(uninstallBtn)
+    const dialog = screen.getByTestId('plugin-confirm-dialog')
+    expect(dialog).toBeInTheDocument()
+    expect(screen.getByTestId('confirm-dialog-title')).toHaveTextContent('确认卸载插件')
+    expect(screen.getByTestId('confirm-dialog-desc')).toHaveTextContent(/206\.4 MB/)
+
+    fireEvent.click(screen.getByTestId('confirm-dialog-confirm-btn'))
+    expect(onUninstall).toHaveBeenCalledWith('offline_tts')
+  })
+
+  it('崩溃态 (is_crashed = true)：同时展示崩溃警示、【重启】与【卸载】按钮并可安全卸载解除死锁 (TC-08)', () => {
+    const onRestart = vi.fn()
+    const onUninstall = vi.fn()
+    const crashedModule: PluginModuleItem = {
+      ...baseModule,
+      install_state: 'active',
+      is_crashed: true,
+      slot_policy: 'exclusive_optional'
+    }
+
+    render(
+      <PluginCard
+        module={crashedModule}
+        slotPolicy="exclusive_optional"
+        onRestart={onRestart}
+        onUninstall={onUninstall}
+      />
+    )
+
+    expect(screen.getByTestId('crashed-badge')).toHaveTextContent('已崩溃，点击重启')
+    const restartBtn = screen.getByTestId('restart-plugin-btn')
+    expect(restartBtn).toHaveTextContent('重启')
+    fireEvent.click(restartBtn)
+    expect(onRestart).toHaveBeenCalledWith('offline_tts')
+
+    const uninstallBtn = screen.getByTestId('uninstall-plugin-btn')
+    expect(uninstallBtn).toBeInTheDocument()
+    fireEvent.click(uninstallBtn)
+    fireEvent.click(screen.getByTestId('confirm-dialog-confirm-btn'))
+    expect(onUninstall).toHaveBeenCalledWith('offline_tts')
+  })
+
+  it('动态图标映射 getPluginIcon 覆盖已知图标并在未知名称时回落 Package (TC-07)', () => {
+    expect(getPluginIcon('Feather')).toBe(PLUGIN_ICON_MAP.feather)
+    expect(getPluginIcon('Layers')).toBe(PLUGIN_ICON_MAP.layers)
+    expect(getPluginIcon('Cpu')).toBe(PLUGIN_ICON_MAP.cpu)
+    expect(getPluginIcon('ShieldAlert')).toBe(PLUGIN_ICON_MAP['shield-alert'])
+    expect(getPluginIcon('Mic')).toBe(PLUGIN_ICON_MAP.mic)
+    expect(getPluginIcon('Volume2')).toBe(PLUGIN_ICON_MAP['volume-2'])
+    expect(getPluginIcon('Zap')).toBe(PLUGIN_ICON_MAP.zap)
+    expect(getPluginIcon('Archive')).toBe(PLUGIN_ICON_MAP.archive)
+    expect(getPluginIcon('nonexistent-icon-xyz', 'custom_unknown_id')).toBe(PLUGIN_ICON_MAP.package)
   })
 })
 
@@ -172,9 +240,15 @@ describe('PluginCenterOverlay (弹层交互、失焦保护与配置挂载)', () 
     const searchInput = screen.getByPlaceholderText('搜索插件名称或描述...')
     fireEvent.change(searchInput, { target: { value: 'TTS' } })
 
-    // 应该只展示 TTS 插件卡片
-    expect(screen.getByText(/离线语音合成 TTS/)).toBeInTheDocument()
+    // 应该只展示 TTS 插件卡片（匹配 Moss-TTS 与 M5-TTS），不展示压缩包透视
+    expect(screen.getByText(/个性声音克隆朗读.*Moss-TTS/)).toBeInTheDocument()
+    expect(screen.getByText(/极速轻量语音朗读.*M5-TTS/)).toBeInTheDocument()
     expect(screen.queryByText(/压缩包透视/)).not.toBeInTheDocument()
+
+    // 清空搜索并切换至「格式解析」分类，验证 archive_vfs_parser 已归入 parser 分类
+    fireEvent.change(searchInput, { target: { value: '' } })
+    fireEvent.click(screen.getByRole('button', { name: '格式解析' }))
+    expect(screen.getByText(/压缩包透视/)).toBeInTheDocument()
   })
 
   it('点击高级 AI 引擎配置按钮时挂载 AIEngineConfigSettings', () => {
@@ -202,7 +276,7 @@ describe('PluginCenterOverlay (弹层交互、失焦保护与配置挂载)', () 
     expect(screen.getByTestId('mock-tts-settings')).toBeInTheDocument()
   })
 
-  it('点击其他支持 schema 的插件配置按钮时展示自定义 JSON 配置插槽', () => {
+  it('点击其他支持 schema 的插件配置按钮时展示自定义 JSON 配置插槽', async () => {
     act(() => {
       usePluginCenterStore.getState().openOverlay()
       usePluginCenterStore.getState().setConfiguringModuleId('archive_vfs_parser')
@@ -210,32 +284,78 @@ describe('PluginCenterOverlay (弹层交互、失焦保护与配置挂载)', () 
 
     render(<PluginCenterOverlay />)
     expect(screen.getByText(/插件个性化配置项/)).toBeInTheDocument()
-    expect(screen.getByPlaceholderText(/请输入符合插件定义的 JSON 配置项/)).toBeInTheDocument()
+    expect(screen.getByPlaceholderText(/请输入插件参数配置内容/)).toBeInTheDocument()
 
     // 输入自定义 JSON 配置并保存
-    const textarea = screen.getByPlaceholderText(/请输入符合插件定义的 JSON 配置项/)
+    const textarea = screen.getByPlaceholderText(/请输入插件参数配置内容/)
     fireEvent.change(textarea, { target: { value: '{"renderQuality": "high"}' } })
-    fireEvent.click(screen.getByText('保存配置'))
+    await act(async () => {
+      fireEvent.click(screen.getByText('保存配置'))
+    })
 
     expect(usePluginCenterStore.getState().configuringModuleId).toBeNull()
     const updated = usePluginCenterStore.getState().modules.find(m => m.id === 'archive_vfs_parser')
     expect(updated?.user_config).toBe('{"renderQuality": "high"}')
   })
 
-  it('自定义配置保存时拦截非法 JSON 并显示错误提示', () => {
+  it('自定义配置保存时拦截非法 JSON 并显示错误提示；后端拒绝时回滚并停留配置页', async () => {
     act(() => {
       usePluginCenterStore.getState().openOverlay()
       usePluginCenterStore.getState().setConfiguringModuleId('archive_vfs_parser')
     })
 
     render(<PluginCenterOverlay />)
-    const textarea = screen.getByPlaceholderText(/请输入符合插件定义的 JSON 配置项/)
+    const textarea = screen.getByPlaceholderText(/请输入插件参数配置内容/)
     fireEvent.change(textarea, { target: { value: '{ invalid json }' } })
-    fireEvent.click(screen.getByText('保存配置'))
+    await act(async () => {
+      fireEvent.click(screen.getByText('保存配置'))
+    })
 
     // 仍停留在配置页面且报错
     expect(usePluginCenterStore.getState().configuringModuleId).toBe('archive_vfs_parser')
-    expect(screen.getByText(/配置格式错误，必须为合法的 JSON 格式字符串/)).toBeInTheDocument()
+    expect(screen.getByText(/配置内容格式有误/)).toBeInTheDocument()
+
+    // 模拟后端抛出 INVALID_USER_CONFIG 时应回滚且停留配置页展示大白话错误
+    const { setModularResourceBridgeForTest } = await import('../../../stores/plugin-center-store')
+    setModularResourceBridgeForTest({
+      updateState: vi.fn().mockRejectedValue(new Error('INVALID_USER_CONFIG: 非法格式'))
+    } as any)
+    try {
+      fireEvent.change(textarea, { target: { value: '{"renderQuality": "ultra"}' } })
+      await act(async () => {
+        fireEvent.click(screen.getByText('保存配置'))
+      })
+      expect(usePluginCenterStore.getState().configuringModuleId).toBe('archive_vfs_parser')
+      expect(screen.getByText(/配置格式不正确/)).toBeInTheDocument()
+      const modAfter = usePluginCenterStore
+        .getState()
+        .modules.find(m => m.id === 'archive_vfs_parser')
+      expect(modAfter?.user_config).toBeUndefined()
+    } finally {
+      setModularResourceBridgeForTest(null)
+    }
+
+    // M4: 重新打开带有历史 user_config 的插件时自动回显，切换未配置插件时自动清空旧草稿与错误
+    act(() => {
+      usePluginCenterStore.setState(state => ({
+        ...state,
+        configuringModuleId: 'perception_nsfw',
+        modules: state.modules.map(m =>
+          m.id === 'perception_nsfw' ? { ...m, user_config: '{"threshold":0.8}' } : m
+        )
+      }))
+    })
+    expect(
+      (screen.getByPlaceholderText(/请输入插件参数配置内容/) as HTMLTextAreaElement).value
+    ).toBe('{"threshold":0.8}')
+    expect(screen.queryByText(/配置格式不正确/)).not.toBeInTheDocument()
+
+    act(() => {
+      usePluginCenterStore.getState().setConfiguringModuleId('archive_vfs_parser')
+    })
+    expect(
+      (screen.getByPlaceholderText(/请输入插件参数配置内容/) as HTMLTextAreaElement).value
+    ).toBe('')
   })
 
   it('下载进度流转与安装状态切换完整验证', () => {
@@ -363,7 +483,25 @@ describe('方案 A: 能力槽位聚类分组与互斥语义 (Slot Grouping & Mut
 
   it('按能力槽位聚类分组渲染，展示对应槽位头部与排他策略 Badge', () => {
     act(() => {
-      usePluginCenterStore.getState().openOverlay()
+      usePluginCenterStore.setState(state => ({
+        ...state,
+        isOverlayOpen: true,
+        modules: [
+          ...state.modules,
+          {
+            id: 'custom_general_tool',
+            name: '智能扩展工具示例',
+            version: '1.0.0',
+            category: 'tool',
+            capability_slot: 'general',
+            slot_policy: 'multi_active',
+            author_code: 'official',
+            availability: 'approved',
+            total_bytes: 1024,
+            install_state: 'not_installed'
+          } as any
+        ]
+      }))
     })
     render(<PluginCenterOverlay />)
 
@@ -379,6 +517,12 @@ describe('方案 A: 能力槽位聚类分组与互斥语义 (Slot Grouping & Mut
     expect(ttsGroup).toHaveTextContent('离线语音合成与朗读 (TTS)')
     expect(ttsGroup).toHaveTextContent('选配单选 · 互斥生效')
 
+    // 检查本地生图已正确归位至高级视觉生成引擎槽位（不再错误掉入 general）
+    const advGroup = screen.getByTestId('slot-group-advanced_ai_engine')
+    expect(advGroup).toBeInTheDocument()
+    expect(advGroup).toHaveTextContent('高级视觉生成引擎')
+    expect(advGroup).toHaveTextContent('选配单选 · 独显推荐')
+
     // 检查通用多活槽位分组
     const generalGroup = screen.getByTestId('slot-group-general')
     expect(generalGroup).toBeInTheDocument()
@@ -386,7 +530,7 @@ describe('方案 A: 能力槽位聚类分组与互斥语义 (Slot Grouping & Mut
     expect(generalGroup).toHaveTextContent('多选并发 · 独立运行')
   })
 
-  it('exclusive_required 槽位拦截直接停用操作，并保持激活状态', async () => {
+  it('TC-02: exclusive_required 槽位激活项仅显示使用中徽标且无停用/卸载按钮，Store 侧亦拦截直接停用', async () => {
     act(() => {
       usePluginCenterStore.setState(state => ({
         ...state,
@@ -398,28 +542,158 @@ describe('方案 A: 能力槽位聚类分组与互斥语义 (Slot Grouping & Mut
     })
     render(<PluginCenterOverlay />)
 
+    // 分组容器存在且包含槽位互斥标记
+    expect(screen.getByTestId('slot-group-base_embedding')).toBeInTheDocument()
+
     // 查找 engine_classic_light (已激活的 exclusive_required 插件)
     const classicLightCard = screen.getByTestId('plugin-card-engine_classic_light')
     expect(classicLightCard).toBeInTheDocument()
 
-    const switchBtn = within(classicLightCard).getByRole('switch')
-    expect(switchBtn).toBeChecked()
+    // 激活态必选底座只展示「使用中」徽标，无 Switch、无停用按钮、无卸载按钮
+    expect(within(classicLightCard).getByTestId('active-in-use-badge')).toHaveTextContent('使用中')
+    expect(within(classicLightCard).queryByRole('switch')).not.toBeInTheDocument()
+    expect(
+      within(classicLightCard).queryByTestId('deactivate-plugin-btn-engine_classic_light')
+    ).not.toBeInTheDocument()
+    expect(within(classicLightCard).queryByTestId('uninstall-plugin-btn')).not.toBeInTheDocument()
 
-    // 尝试点击 Switch 停用
-    await act(async () => {
-      fireEvent.click(switchBtn)
-    })
+    // 即使代码层直接调用 Store togglePluginActive 尝试停用，也应拦截并保持 active
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      await act(async () => {
+        await usePluginCenterStore.getState().togglePluginActive('engine_classic_light', false)
+      })
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('拒绝停用必选底座'))
+    } finally {
+      warnSpy.mockRestore()
+    }
 
-    // 由于 exclusive_required 保护，插件仍然保持 active 状态
     const mod = usePluginCenterStore.getState().modules.find(m => m.id === 'engine_classic_light')
     expect(mod?.install_state).toBe('active')
   })
 
-  it('exclusive_optional 槽位激活新插件时自动排他关闭同槽位已激活项', async () => {
+  it('TC-13 UI: 必选底座存在健康备选 (can_uninstall=true) 时展示【切换并卸载】并弹窗提示', async () => {
+    const seededModules = usePluginCenterStore.getState().modules.map(m => {
+      if (m.id === 'engine_classic_light') {
+        return { ...m, install_state: 'active' as const, can_uninstall: true }
+      }
+      if (m.id === 'engine_gemma_unified') {
+        return { ...m, install_state: 'installed_inactive' as const, can_activate: true }
+      }
+      return m
+    })
+    const mockUninstall = vi.fn().mockResolvedValue({
+      id: 'engine_classic_light',
+      install_state: 'not_installed'
+    })
+    const { setModularResourceBridgeForTest } = await import('../../../stores/plugin-center-store')
+    setModularResourceBridgeForTest({
+      list: vi.fn().mockResolvedValue(seededModules),
+      uninstall: mockUninstall
+    } as any)
+
+    try {
+      await act(async () => {
+        await usePluginCenterStore.getState().openOverlay()
+      })
+
+      render(<PluginCenterOverlay />)
+
+      const classicCard = screen.getByTestId('plugin-card-engine_classic_light')
+      expect(within(classicCard).getByTestId('active-in-use-badge')).toHaveTextContent('使用中')
+      const switchUninstallBtn = within(classicCard).getByTestId('uninstall-plugin-btn')
+      expect(switchUninstallBtn).toHaveTextContent('切换并卸载')
+
+      await act(async () => {
+        fireEvent.click(switchUninstallBtn)
+      })
+
+      expect(screen.getByTestId('confirm-dialog-title')).toHaveTextContent('确认切换并卸载当前引擎')
+      expect(screen.getByTestId('confirm-dialog-desc')).toHaveTextContent(
+        /自动切换至同类型的另一款已安装引擎/
+      )
+
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('confirm-dialog-confirm-btn'))
+      })
+      expect(mockUninstall).toHaveBeenCalledWith('engine_classic_light')
+    } finally {
+      setModularResourceBridgeForTest(null)
+    }
+  })
+
+  it('C2 UI: 排他切换后前任插件恢复 can_activate=true，无需关窗即可再次切换回来', async () => {
+    act(() => {
+      usePluginCenterStore.setState({
+        isOverlayOpen: true,
+        isTogglingSlot: false,
+        modules: [
+          {
+            id: 'tts_moss_onnx',
+            name: 'MossTTS 离线语音合成',
+            version: '1.0.0',
+            category: 'media',
+            capability_slot: 'voice_tts',
+            slot_policy: 'exclusive_optional',
+            author_code: 'official',
+            author_name: null,
+            availability: 'approved',
+            total_bytes: 200000000,
+            install_state: 'active',
+            can_activate: false,
+            description: 'MossTTS 离线模型',
+            icon: 'Volume2'
+          },
+          {
+            id: 'tts_chat_onnx',
+            name: 'ChatTTS 拟真语音合成',
+            version: '1.0.0',
+            category: 'media',
+            capability_slot: 'voice_tts',
+            slot_policy: 'exclusive_optional',
+            author_code: 'community',
+            author_name: 'TTS Community',
+            availability: 'approved',
+            total_bytes: 300000000,
+            install_state: 'installed_inactive',
+            can_activate: true,
+            description: 'ChatTTS 离线模型',
+            icon: 'Volume2'
+          }
+        ]
+      })
+    })
+
+    render(<PluginCenterOverlay />)
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('activate-plugin-btn-tts_chat_onnx'))
+    })
+    expect(
+      usePluginCenterStore.getState().modules.find(m => m.id === 'tts_chat_onnx')?.install_state
+    ).toBe('active')
+
+    // 切换后前任 MossTTS 的【启用】按钮必须可点击（不再被 can_activate=false 锁死）
+    const mossActivateBtn = screen.getByTestId('activate-plugin-btn-tts_moss_onnx')
+    expect(mossActivateBtn).not.toBeDisabled()
+
+    await act(async () => {
+      fireEvent.click(mossActivateBtn)
+    })
+    expect(
+      usePluginCenterStore.getState().modules.find(m => m.id === 'tts_moss_onnx')?.install_state
+    ).toBe('active')
+    expect(
+      usePluginCenterStore.getState().modules.find(m => m.id === 'tts_chat_onnx')?.install_state
+    ).toBe('installed_inactive')
+  })
+
+  it('TC-03 / TC-04 / TC-07: exclusive_optional 零阻断单选切换、并发防连点锁及已安装视图插槽归属徽标', async () => {
     // 设置初始状态：给 voice_tts 槽位添加两个插件，一个已激活，一个已安装但未激活
     act(() => {
       usePluginCenterStore.setState({
         isOverlayOpen: true,
+        isTogglingSlot: false,
         modules: [
           {
             id: 'tts_moss_onnx',
@@ -457,20 +731,41 @@ describe('方案 A: 能力槽位聚类分组与互斥语义 (Slot Grouping & Mut
 
     render(<PluginCenterOverlay />)
 
+    // 分组容器存在
+    expect(screen.getByTestId('slot-group-voice_tts')).toBeInTheDocument()
+
     const chatTtsCard = screen.getByTestId('plugin-card-tts_chat_onnx')
     expect(chatTtsCard).toBeInTheDocument()
 
-    // 点击 ChatTTS 的启用开关
-    const chatTtsSwitch = within(chatTtsCard).getByRole('switch')
-    await act(async () => {
-      fireEvent.click(chatTtsSwitch)
+    // 验证 isTogglingSlot 为 true 时激活按钮处于禁用状态（防并发连点竞态）
+    act(() => {
+      usePluginCenterStore.setState({ isTogglingSlot: true })
     })
+    expect(within(chatTtsCard).getByTestId('activate-plugin-btn-tts_chat_onnx')).toBeDisabled()
+    act(() => {
+      usePluginCenterStore.setState({ isTogglingSlot: false })
+    })
+
+    // 点击 ChatTTS 的【启用】按钮（零弹窗阻断直接切换）
+    const chatTtsActivateBtn = within(chatTtsCard).getByTestId('activate-plugin-btn-tts_chat_onnx')
+    await act(async () => {
+      fireEvent.click(chatTtsActivateBtn)
+    })
+
+    // 未出现切换互斥确认弹窗
+    expect(screen.queryByText('确认切换生效插件？')).not.toBeInTheDocument()
 
     // 断言 ChatTTS 激活，而 MossTTS 自动被互斥停用
     const chatMod = usePluginCenterStore.getState().modules.find(m => m.id === 'tts_chat_onnx')
     const mossMod = usePluginCenterStore.getState().modules.find(m => m.id === 'tts_moss_onnx')
     expect(chatMod?.install_state).toBe('active')
     expect(mossMod?.install_state).toBe('installed_inactive')
+
+    // 切换至「已安装」Tab，验证卡片显示插槽归属徽标 slot-ownership-badge
+    fireEvent.click(screen.getByRole('button', { name: /已安装/ }))
+    const ownershipBadges = screen.getAllByTestId('slot-ownership-badge')
+    expect(ownershipBadges.length).toBeGreaterThanOrEqual(2)
+    expect(ownershipBadges[0]).toHaveTextContent(/离线语音合成与朗读/)
   })
 })
 
@@ -565,8 +860,8 @@ describe('Ticket 05: 开发者模式双视图、4态徽标与安装事实门禁'
     expect(installBtn).toBeDisabled()
 
     rerender(<PluginCard module={cannotActivateModule} />)
-    const switchEl = screen.getByRole('switch')
-    expect(switchEl).toBeDisabled()
+    const activateBtn = screen.getByTestId('activate-plugin-btn-broken_plugin')
+    expect(activateBtn).toBeDisabled()
   })
 
   it('开发者模式切换时触发 setDevMode 并在 UI 展现本地导入按钮', async () => {
@@ -574,6 +869,32 @@ describe('Ticket 05: 开发者模式双视图、4态徽标与安装事实门禁'
       list: vi.fn().mockResolvedValue([]),
       setDevMode: vi.fn().mockResolvedValue(true),
       getDevMode: vi.fn().mockResolvedValue(false),
+      getEnvironmentVisibility: vi.fn().mockResolvedValue({
+        epoch: 'e-dev-test',
+        revision: 1,
+        visibility: {
+          isDev: true,
+          isEnterpriseOffline: false,
+          developerModeEnabled: false,
+          allowDeveloperMode: true,
+          allowLocalPluginImport: false,
+          allowOfflineImport: true,
+          allowOfflineExport: false
+        }
+      }),
+      setDeveloperMode: vi.fn().mockImplementation(async ({ enabled }: { enabled: boolean }) => ({
+        epoch: 'e-dev-test',
+        revision: enabled ? 2 : 3,
+        visibility: {
+          isDev: true,
+          isEnterpriseOffline: false,
+          developerModeEnabled: enabled,
+          allowDeveloperMode: true,
+          allowLocalPluginImport: enabled,
+          allowOfflineImport: true,
+          allowOfflineExport: enabled
+        }
+      })),
       install: vi.fn(),
       uninstall: vi.fn(),
       updateState: vi.fn(),
@@ -599,7 +920,7 @@ describe('Ticket 05: 开发者模式双视图、4态徽标与安装事实门禁'
         fireEvent.click(devModeSwitch)
       })
 
-      expect(mockBridge.setDevMode).toHaveBeenCalledWith({ enabled: true })
+      expect(mockBridge.setDeveloperMode).toHaveBeenCalledWith({ enabled: true })
       expect(screen.getByTestId('pick-local-plugin-btn')).toBeInTheDocument()
 
       // 点击导入本地插件
@@ -674,12 +995,19 @@ describe('Ticket 05: 开发者模式双视图、4态徽标与安装事实门禁'
     expect(screen.getByText(/对复杂句子和图片.*的理解更深入精准/)).toBeInTheDocument()
     expect(screen.getByText('推荐配置 · 电脑内存 8GB 或以上')).toBeInTheDocument()
 
-    // 验证语音合成 TTS 的大白话描述
-    expect(screen.getByText(/把文档和文章读给你听，支持戴耳机离线听书/)).toBeInTheDocument()
+    // 验证语音合成 Moss-TTS 与 M5-TTS 的大白话描述
+    expect(
+      screen.getByText(/内置声音提取器，上传一段录音即可克隆专属声音朗读文章/)
+    ).toBeInTheDocument()
     expect(screen.getByText('配置要求低 · 普通电脑流畅发音')).toBeInTheDocument()
+    expect(screen.getByText(/按下播放毫秒级即刻发声/)).toBeInTheDocument()
+    expect(screen.getByText('配置要求极低 · 普通轻薄本流畅发音')).toBeInTheDocument()
+
+    // 验证轻量 CPU 引擎硬件徽标
+    expect(screen.getByText('配置要求极低 · 纯CPU运行')).toBeInTheDocument()
   })
 
-  it('开发模式下显示顶部与列表项导出插件包按钮，且导入离线包调用 importOfflinePackage', async () => {
+  it('TC-01: 彻底移除单插件导出按钮，仅开发者模式渲染顶部导出离线总包且全环境常驻导入离线包', async () => {
     const mockBridge = {
       list: vi.fn().mockResolvedValue([
         {
@@ -695,7 +1023,21 @@ describe('Ticket 05: 开发者模式双视图、4态徽标与安装事实门禁'
       ]),
       setDevMode: vi.fn().mockResolvedValue(true),
       getDevMode: vi.fn().mockResolvedValue(true), // 开发模式启动
+      getEnvironmentVisibility: vi.fn().mockResolvedValue({
+        epoch: 'e-tc01',
+        revision: 1,
+        visibility: {
+          isDev: true,
+          isEnterpriseOffline: false,
+          developerModeEnabled: true,
+          allowDeveloperMode: true,
+          allowLocalPluginImport: true,
+          allowOfflineImport: true,
+          allowOfflineExport: true
+        }
+      }),
       exportOfflinePackage: vi.fn().mockResolvedValue('/path/to/exported.ffp'),
+      exportOfflineBundle: vi.fn().mockResolvedValue('/path/to/bundle.ffbundle'),
       importOfflinePackage: vi.fn().mockResolvedValue({ id: 'imported_pkg' })
     }
     const { setModularResourceBridgeForTest } = await import('../../../stores/plugin-center-store')
@@ -708,26 +1050,21 @@ describe('Ticket 05: 开发者模式双视图、4态徽标与安装事实门禁'
 
       render(<PluginCenterOverlay />)
 
-      // 验证开发模式下顶部导出插件包按钮存在
-      const exportTopBtn = screen.getByTestId('export-offline-plugin-btn')
-      expect(exportTopBtn).toBeInTheDocument()
+      // 彻底移除单插件导出按钮与列表中行内导出按钮
+      expect(screen.queryByTestId('export-offline-plugin-btn')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('export-plugin-btn')).not.toBeInTheDocument()
 
-      // 点击顶部导出插件包
+      // 开发模式下顶部导出离线总包按钮存在并可触发 exportOfflineBundle
+      const exportBundleBtn = screen.getByTestId('export-offline-bundle-btn')
+      expect(exportBundleBtn).toBeInTheDocument()
       await act(async () => {
-        fireEvent.click(exportTopBtn)
+        fireEvent.click(exportBundleBtn)
       })
-      expect(mockBridge.exportOfflinePackage).toHaveBeenCalledWith({ moduleId: 'installed_mod' })
-
-      // 验证已安装插件条目的导出按钮
-      const exportItemBtn = screen.getByTestId('export-plugin-btn')
-      expect(exportItemBtn).toBeInTheDocument()
-      await act(async () => {
-        fireEvent.click(exportItemBtn)
-      })
-      expect(mockBridge.exportOfflinePackage).toHaveBeenCalledWith({ moduleId: 'installed_mod' })
+      expect(mockBridge.exportOfflineBundle).toHaveBeenCalled()
 
       // 点击导入离线包
       const importOfflineBtn = screen.getByTestId('import-offline-plugin-btn')
+      expect(importOfflineBtn).toBeInTheDocument()
       await act(async () => {
         fireEvent.click(importOfflineBtn)
       })

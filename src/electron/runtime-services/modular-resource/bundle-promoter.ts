@@ -30,7 +30,8 @@ import {
   deriveTargetLocalPath,
   computeDirectoryReadyDigest,
   writeReadyMarker,
-  invalidateReadyMarkers
+  invalidateReadyMarkers,
+  normalizeCapabilitySlot
 } from '@firefly/shared'
 import type { OfflinePackageDao } from './offline-package-dao'
 import {
@@ -238,7 +239,7 @@ export class BundlePromoter {
     ) {
       throw new BundlePromoterError(
         'VERSION_CONFLICT',
-        `插件 ${moduleId} 存在同版本异构构建硬冲突: 已有清单哈希 (${existingManifestSha256}) 与导入清单哈希 (${incomingSha256}) 不匹配`,
+        `插件 ${moduleId} 版本相同但内容校验不一致，请重新下载官方完整安装包后再试`,
         `existingSha256=${existingManifestSha256}, incomingSha256=${incomingSha256}`
       )
     }
@@ -247,7 +248,7 @@ export class BundlePromoter {
     if (currentInstallState === 'active') {
       throw new BundlePromoterError(
         'MODULE_ACTIVE_CONFLICT',
-        `插件 ${moduleId} 当前处于运行中 (active)，禁止原地物理覆写替换。请先在插件中心停用或卸载后再导入更新。`
+        `插件 ${moduleId} 当前正在运行中，禁止原地覆盖替换。请先切换至其他同类型插件或将该插件卸载后，再导入更新。`
       )
     }
 
@@ -435,7 +436,7 @@ export class BundlePromoter {
             mod.moduleId,
             mod.version,
             mod.category ?? 'tool',
-            mod.capability_slot ?? 'general',
+            normalizeCapabilitySlot(mod.capability_slot),
             mod.total_bytes ?? 0,
             mod.catalog_meta_json ?? null,
             nowMs
@@ -463,7 +464,7 @@ export class BundlePromoter {
             mod.moduleId,
             mod.version,
             mod.category ?? 'tool',
-            mod.capability_slot ?? 'general',
+            normalizeCapabilitySlot(mod.capability_slot),
             mod.total_bytes ?? 0,
             mod.catalog_meta_json ?? null,
             nowMs

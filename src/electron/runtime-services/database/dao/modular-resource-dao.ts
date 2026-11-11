@@ -3,6 +3,7 @@ import {
   logger,
   LogCategory,
   isExclusiveCapabilitySlot,
+  normalizeCapabilitySlot,
   type BuiltinCapabilitySlot,
   type BuiltinSlotPolicy,
   type BuiltinBackendType
@@ -355,7 +356,7 @@ export class BuiltinModuleDao implements IBuiltinModuleDAO {
         record.user_consent ?? 0,
         record.error_message ?? null,
         record.config_json ?? null,
-        record.capability_slot ?? 'general',
+        normalizeCapabilitySlot(record.capability_slot ?? 'general'),
         record.slot_policy ?? 'multi_active',
         record.backend_type ?? 'omni_onnx'
       )
@@ -381,7 +382,9 @@ export class BuiltinModuleDao implements IBuiltinModuleDAO {
         install_state: record.install_state ?? existing.install_state,
         user_config: record.user_config ?? existing.user_config,
         config_json: record.config_json ?? existing.config_json,
-        capability_slot: record.capability_slot ?? existing.capability_slot ?? 'general',
+        capability_slot: normalizeCapabilitySlot(
+          record.capability_slot ?? existing.capability_slot ?? 'general'
+        ),
         slot_policy: record.slot_policy ?? existing.slot_policy ?? 'multi_active',
         backend_type: record.backend_type ?? existing.backend_type ?? 'omni_onnx'
       }
@@ -559,8 +562,8 @@ export class BuiltinModuleDao implements IBuiltinModuleDAO {
     if (!target) {
       throw new Error(`未找到模块: ${id}`)
     }
-    if (target.slot_policy === 'exclusive_required' && target.install_state === 'active') {
-      throw new Error('SLOT_REQUIRED_EMPTY')
+    if (target.slot_policy === 'exclusive_required') {
+      throw new Error('CANNOT_DEACTIVATE_REQUIRED_SLOT (SLOT_REQUIRED_EMPTY)')
     }
     this.updateInstallStateSync(id, 'installed_inactive')
   }

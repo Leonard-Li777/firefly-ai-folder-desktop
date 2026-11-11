@@ -1,5 +1,11 @@
 import { create } from 'zustand'
 import { t } from '@app/languages'
+import {
+  normalizeCapabilitySlot,
+  BUILTIN_MODULE_CATALOG_META,
+  BUILTIN_PLUGIN_CATALOG_META,
+  type BuiltinSharedResourceId
+} from '@firefly/shared'
 
 export type PluginCategory =
   | 'ai-engine'
@@ -106,7 +112,7 @@ export function getPluginErrorMessages(): Record<string, string> {
   return {
     SIGNATURE_INVALID: t('插件签名校验未通过，安装包可能已被损坏或非法篡改，已安全终止。'),
     ASSET_HASH_MISMATCH: t('插件核心模型或资源文件校验不一致，文件可能已损坏，请重新下载或获取。'),
-    MODULE_ACTIVE_CONFLICT: t('已有相同类型的核心插件正在运行中，请先停用当前运行的插件后再试。'),
+    MODULE_ACTIVE_CONFLICT: t('该插件当前正在运行中，请先切换至其他同类型插件或将其卸载后再试。'),
     VERSION_CONFLICT: t('检测到已安装同等或更高版本的插件，无需重复安装。'),
     RESOURCE_CONFLICT: t('插件所需资源与现有组件存在版本冲突，无法直接覆盖。'),
     QUOTA_EXCEEDED: t('电脑磁盘剩余存储空间不足，无法解压或安装该插件，请清理磁盘空间后重试。'),
@@ -117,6 +123,13 @@ export function getPluginErrorMessages(): Record<string, string> {
     MANIFEST_MISSING: t('离线安装包中缺少必要的插件信息描述文件。'),
     BUNDLE_EMPTY: t('离线总包中未包含任何可用的插件内容。'),
     EXPORT_BUSY: t('当前有其他离线任务正在运行，请稍候再试。'),
+    EMPTY_SOURCE: t('当前没有满足官方安全验证的已安装插件可供导出，请先导入或安装官方插件。'),
+    SOURCE_RESOURCE_CORRUPTED: t(
+      '检测到部分插件资源文件不完整或已损坏，无法打包导出，请修复后再试。'
+    ),
+    IO_FAILURE: t('写入导出文件失败，请检查目标磁盘空间及写入权限后重试。'),
+    CANCELLED: t('已取消本次离线包操作。'),
+    BUSY: t('系统正在执行其他校验或导出任务，请稍候再试。'),
     IMPORT_BUSY: t('当前有离线包正在解压或安装中，请稍候再试。'),
     VERIFICATION_CRASH_LIMIT: t('离线包安全校验连续异常，为保障系统安全已停止处理该文件。'),
     NETWORK_ERROR: t('网络连接超时或中断，请检查网络后重试。'),
@@ -129,6 +142,11 @@ export function getPluginErrorMessages(): Record<string, string> {
     MODEL_CORRUPT: t('检测到插件模型文件不完整或损坏，请重新下载修复。'),
     FAST_READY_TIMEOUT: t('插件快速检测超时，后台正在校验中。'),
     SLOT_REQUIRED_EMPTY: t('当前分类必须保留一个启用的插件，无法直接停用。'),
+    CANNOT_DEACTIVATE_REQUIRED_SLOT: t('基础 AI 引擎为系统核心底座，必须保持激活，无法直接停用。'),
+    CANNOT_UNINSTALL_LAST_REQUIRED_SLOT: t(
+      '必须先安装并启用另一款可替换的基础 AI 引擎，才能卸载当前使用的引擎。'
+    ),
+    INVALID_USER_CONFIG: t('配置格式不正确，请检查输入内容后重试。'),
     UNKNOWN_ERROR: t('插件操作发生未知异常，请稍后重试。'),
     // 目录管理与镜像下载大白话提示 (RULE 2.16 & Spec §7.4)
     PATH_NOT_ASCII: t('文件夹路径不能包含中文，请选择纯英文路径'),
@@ -171,10 +189,16 @@ export function formatPluginErrorMessage(error: unknown): string {
 
   const rawMessage = typeof error === 'string' ? error : String(errObj?.message || error)
 
-  // 匹配已知错误码子串
-  for (const [code, msg] of Object.entries(messages)) {
-    if (rawMessage.includes(code)) {
-      return msg
+  // 全词边界匹配已知错误码（防止 EBUSY 误撞 BUSY 子串）
+  const tokenMatches = rawMessage.match(/\b[A-Z][A-Z0-9_]{2,}\b/g)
+  if (tokenMatches) {
+    for (const token of tokenMatches) {
+      if (token === 'EBUSY') {
+        return t('文件正在被其他程序占用，请关闭相关应用后重试。')
+      }
+      if (messages[token]) {
+        return messages[token]
+      }
     }
   }
 
@@ -196,12 +220,19 @@ export function formatPluginErrorMessage(error: unknown): string {
     return messages.NETWORK_ERROR
   }
 
-  // 过滤专业术语黑话（ONNX, IPC, CRC, Checksum 等）
+  // 过滤专业术语黑话（ONNX, IPC, SHA-256, JSON Schema 等），避免残缺符号句直出
   const sanitized = rawMessage
-    .replace(/\b(ONNX|IPC|Token|Checksum|CRC32|SHA256|Ed25519)\b/gi, '')
+    .replace(
+      /\b(ONNX|IPC|Token|Checksum|CRC32|SHA-?256|Ed25519|JSON\s*Schema|JSON|user_config)\b/gi,
+      ''
+    )
+    .replace(/\s{2,}/g, ' ')
     .trim()
 
-  return sanitized || messages.UNKNOWN_ERROR
+  if (!sanitized || /^[\s:：,，.。;；()（）\-_/\\]+$/.test(sanitized)) {
+    return messages.UNKNOWN_ERROR
+  }
+  return sanitized
 }
 
 export interface IModularResourceBridge {
@@ -238,7 +269,10 @@ export interface IModularResourceBridge {
     moduleId: string
     targetFilePath?: string
   }) => Promise<string | null>
-  importOfflinePackage?: (payload?: { archivePath?: string }) => Promise<PluginModuleItem | null>
+  importOfflinePackage?: (payload?: {
+    archivePath?: string
+    preferredEngineId?: string
+  }) => Promise<PluginModuleItem | null>
   exportOfflineBundle?: () => Promise<string | null>
   getEnvironmentVisibility?: () => Promise<EnvironmentVisibilityEnvelope>
   setDeveloperMode?: (payload: { enabled: boolean }) => Promise<EnvironmentVisibilityEnvelope>
@@ -275,6 +309,7 @@ export interface PluginCenterState {
   environmentVisibility: EnvironmentVisibilityEnvelope | null
   isExportingBundle: boolean
   isImportingBundle: boolean
+  isTogglingSlot: boolean
 
   // 弹层开关动作
   setOverlayOpen: (open: boolean) => void | Promise<void>
@@ -330,6 +365,28 @@ export interface PluginCenterState {
 }
 
 /**
+ * 从 @firefly/shared 唯一事实源组装前端初始化种子体积与资源清单，彻底防止与后端脱节及退役资源残留
+ */
+function buildSeedCatalogFields(moduleId: string): {
+  total_bytes: number
+  resources: Array<{ resource_id: string; asset_name: string; expected_bytes: number }>
+} {
+  const modMeta = BUILTIN_MODULE_CATALOG_META[moduleId]
+  if (!modMeta) return { total_bytes: 0, resources: [] }
+  return {
+    total_bytes: modMeta.totalBytes,
+    resources: modMeta.resourceIds.map((rid: BuiltinSharedResourceId) => {
+      const resMeta = BUILTIN_PLUGIN_CATALOG_META[rid]
+      return {
+        resource_id: rid,
+        asset_name: resMeta.assetName,
+        expected_bytes: resMeta.expectedBytes
+      }
+    })
+  }
+}
+
+/**
  * 预置插件目录种子：以函数动态返回，展示文案在调用时按当前语言翻译
  */
 export function getInitialPlugins(): PluginModuleItem[] {
@@ -345,7 +402,7 @@ export function getInitialPlugins(): PluginModuleItem[] {
       author_code: 'official',
       author_name: null,
       availability: 'approved',
-      total_bytes: 319195255,
+      ...buildSeedCatalogFields('engine_classic_light'),
       install_state: 'not_installed',
       contributes: {
         settings: {
@@ -362,19 +419,7 @@ export function getInitialPlugins(): PluginModuleItem[] {
         level: 'minimal',
         text: t('配置要求极低 · 老电脑与轻薄本首选')
       },
-      icon: 'Feather',
-      resources: [
-        {
-          resource_id: 'bekko-a8m',
-          asset_name: 'bekko-a8m-1.0.0.zip',
-          expected_bytes: 106269288
-        },
-        {
-          resource_id: 'chinese-clip',
-          asset_name: 'chinese-clip-int8-v3.zip',
-          expected_bytes: 212925967
-        }
-      ]
+      icon: 'Feather'
     },
     {
       id: 'engine_gemma_unified',
@@ -387,7 +432,7 @@ export function getInitialPlugins(): PluginModuleItem[] {
       author_code: 'official',
       author_name: null,
       availability: 'approved',
-      total_bytes: 254003864,
+      ...buildSeedCatalogFields('engine_gemma_unified'),
       install_state: 'not_installed',
       contributes: {
         settings: {
@@ -404,14 +449,7 @@ export function getInitialPlugins(): PluginModuleItem[] {
         level: 'recommended',
         text: t('推荐配置 · 电脑内存 8GB 或以上')
       },
-      icon: 'Layers',
-      resources: [
-        {
-          resource_id: 'embeddinggemma-2-onnx',
-          asset_name: 'embeddinggemma-2-onnx-1.0.0.zip',
-          expected_bytes: 254003864
-        }
-      ]
+      icon: 'Layers'
     },
     {
       id: 'pocket-cpu-int8-onnx',
@@ -424,7 +462,7 @@ export function getInitialPlugins(): PluginModuleItem[] {
       author_code: 'official',
       author_name: null,
       availability: 'approved',
-      total_bytes: 380633088,
+      ...buildSeedCatalogFields('pocket-cpu-int8-onnx'),
       install_state: 'not_installed',
       contributes: {
         settings: {
@@ -441,14 +479,7 @@ export function getInitialPlugins(): PluginModuleItem[] {
         level: 'minimal',
         text: t('配置要求极低 · 纯CPU运行')
       },
-      icon: 'Cpu',
-      resources: [
-        {
-          resource_id: 'pocket-cpu-int8-onnx',
-          asset_name: 'pocket-cpu-int8-onnx-1.0.0.zip',
-          expected_bytes: 380633088
-        }
-      ]
+      icon: 'Cpu'
     },
     {
       id: 'perception_nsfw',
@@ -461,7 +492,7 @@ export function getInitialPlugins(): PluginModuleItem[] {
       author_code: 'official',
       author_name: null,
       availability: 'approved',
-      total_bytes: 42868229,
+      ...buildSeedCatalogFields('perception_nsfw'),
       install_state: 'not_installed',
       contributes: {
         settings: {
@@ -478,19 +509,7 @@ export function getInitialPlugins(): PluginModuleItem[] {
         level: 'minimal',
         text: t('配置要求极低 · 极速处理')
       },
-      icon: 'ShieldAlert',
-      resources: [
-        {
-          resource_id: 'nsfw-mobilenetv2',
-          asset_name: 'nsfw-mobilenetv2-1.0.0.zip',
-          expected_bytes: 9556862
-        },
-        {
-          resource_id: 'nsfw-l3',
-          asset_name: 'nsfw-l3-1.2.0.zip',
-          expected_bytes: 33311367
-        }
-      ]
+      icon: 'ShieldAlert'
     },
     {
       id: 'asr_sensevoice_onnx',
@@ -503,7 +522,7 @@ export function getInitialPlugins(): PluginModuleItem[] {
       author_code: 'official',
       author_name: null,
       availability: 'approved',
-      total_bytes: 168587158,
+      ...buildSeedCatalogFields('asr_sensevoice_onnx'),
       install_state: 'not_installed',
       contributes: {
         settings: {
@@ -520,19 +539,7 @@ export function getInitialPlugins(): PluginModuleItem[] {
         level: 'heavy',
         text: t('较耗算力 · 推荐 16GB 内存或有显卡')
       },
-      icon: 'Mic',
-      resources: [
-        {
-          resource_id: 'sherpa-onnx-runtime',
-          asset_name: 'sherpa-onnx-runtime-1.13.8-win32-x64.zip',
-          expected_bytes: 8282676
-        },
-        {
-          resource_id: 'sensevoice-onnx',
-          asset_name: 'sensevoice-onnx-int8.zip',
-          expected_bytes: 160304482
-        }
-      ]
+      icon: 'Mic'
     },
     {
       id: 'tts_moss_onnx',
@@ -545,7 +552,7 @@ export function getInitialPlugins(): PluginModuleItem[] {
       author_code: 'official',
       author_name: null,
       availability: 'approved',
-      total_bytes: 249105462,
+      ...buildSeedCatalogFields('tts_moss_onnx'),
       install_state: 'not_installed',
       contributes: {
         settings: {
@@ -562,19 +569,7 @@ export function getInitialPlugins(): PluginModuleItem[] {
         level: 'minimal',
         text: t('配置要求低 · 普通电脑流畅发音')
       },
-      icon: 'Volume2',
-      resources: [
-        {
-          resource_id: 'sherpa-onnx-runtime',
-          asset_name: 'sherpa-onnx-runtime-1.13.8-win32-x64.zip',
-          expected_bytes: 8282676
-        },
-        {
-          resource_id: 'moss-tts',
-          asset_name: 'moss-tts-1.0.0.zip',
-          expected_bytes: 240822786
-        }
-      ]
+      icon: 'Volume2'
     },
     {
       id: 'tts_m5_onnx',
@@ -587,7 +582,7 @@ export function getInitialPlugins(): PluginModuleItem[] {
       author_code: 'official',
       author_name: null,
       availability: 'approved',
-      total_bytes: 305845248,
+      ...buildSeedCatalogFields('tts_m5_onnx'),
       install_state: 'not_installed',
       contributes: {
         settings: {
@@ -604,20 +599,15 @@ export function getInitialPlugins(): PluginModuleItem[] {
         level: 'minimal',
         text: t('配置要求极低 · 普通轻薄本流畅发音')
       },
-      icon: 'Zap',
-      resources: [
-        {
-          resource_id: 'm5-tts',
-          asset_name: 'm5-tts-1.0.0.zip',
-          expected_bytes: 305845248
-        }
-      ]
+      icon: 'Zap'
     },
     {
       id: 'diffusion_studio',
       name: t('本地生图 Studio'),
       version: '0.1.0',
       category: 'ai-engine',
+      capability_slot: 'advanced_ai_engine',
+      slot_policy: 'exclusive_optional',
       author_code: 'official',
       author_name: null,
       availability: 'coming_soon',
@@ -636,7 +626,9 @@ export function getInitialPlugins(): PluginModuleItem[] {
       id: 'archive_vfs_parser',
       name: t('压缩包透视与深度解析器'),
       version: '1.0.0',
-      category: 'vfs-archive',
+      category: 'parser',
+      capability_slot: 'parser',
+      slot_policy: 'multi_active',
       author_code: 'official',
       author_name: null,
       availability: 'coming_soon',
@@ -686,7 +678,10 @@ function normalizeRemoteModuleItem(raw: any): PluginModuleItem {
     name: raw.name || seed?.name || raw.id,
     version: raw.version || seed?.version || '1.0.0',
     catalog_version: raw.catalog_version ?? 1,
-    category: raw.category || seed?.category || 'tool',
+    category: raw.category === 'vfs-archive' ? 'parser' : raw.category || seed?.category || 'tool',
+    capability_slot: normalizeCapabilitySlot(raw.capability_slot ?? seed?.capability_slot),
+    slot_policy: raw.slot_policy ?? seed?.slot_policy,
+    backend_type: raw.backend_type ?? seed?.backend_type,
     author_code: raw.author_code || seed?.author_code || 'official',
     author_name: raw.author_name !== undefined ? raw.author_name : (seed?.author_name ?? null),
     availability: raw.availability || seed?.availability || 'approved',
@@ -744,6 +739,7 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
   environmentVisibility: null,
   isExportingBundle: false,
   isImportingBundle: false,
+  isTogglingSlot: false,
   hasPendingTombstones: false,
   pendingTombstones: [],
 
@@ -754,16 +750,20 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
       ...(open ? {} : { configuringModuleId: null })
     })
     if (open) {
-      await get().loadEnvironmentVisibility()
-      await syncDevModeFromBridge(set)
+      const envVis = await get().loadEnvironmentVisibility()
+      if (!envVis) {
+        await syncDevModeFromBridge(set)
+      }
       await get().loadModules()
     }
   },
 
   openOverlay: async () => {
     set({ isOverlayOpen: true })
-    await get().loadEnvironmentVisibility()
-    await syncDevModeFromBridge(set)
+    const envVis = await get().loadEnvironmentVisibility()
+    if (!envVis) {
+      await syncDevModeFromBridge(set)
+    }
     await get().loadModules()
   },
 
@@ -778,8 +778,10 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
       ...(next ? {} : { configuringModuleId: null })
     })
     if (next) {
-      await get().loadEnvironmentVisibility()
-      await syncDevModeFromBridge(set)
+      const envVis = await get().loadEnvironmentVisibility()
+      if (!envVis) {
+        await syncDevModeFromBridge(set)
+      }
       await get().loadModules()
     }
   },
@@ -952,92 +954,106 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
   },
 
   uninstallPlugin: async (id: string) => {
-    set(state => ({
-      modules: state.modules.map(m =>
-        m.id === id ? { ...m, install_state: 'not_installed', download_progress: undefined } : m
-      )
-    }))
-
     const bridge = getModularResourceBridge()
     if (bridge && typeof bridge.uninstall === 'function') {
-      try {
-        const updated = await bridge.uninstall(id)
-        if (updated) {
-          const norm = normalizeRemoteModuleItem(updated)
-          set(state => ({
-            modules: state.modules.map(m => (m.id === id ? norm : m))
-          }))
-        }
-      } catch (err: any) {
-        const errMsg = err?.message || String(err)
+      const updated = await bridge.uninstall(id)
+      // 卸载可能触发必选底座原子接替或跨模块状态变化，重新同步后端权威事实源
+      await get().loadModules()
+      if (updated) {
+        const norm = normalizeRemoteModuleItem(updated)
         set(state => ({
-          modules: state.modules.map(m =>
-            m.id === id ? { ...m, install_state: 'error', error_message: errMsg } : m
-          )
+          modules: state.modules.map(m => (m.id === id ? norm : m))
         }))
       }
+      get()
+        .checkPendingTombstones()
+        .catch(() => undefined)
+    } else {
+      set(state => ({
+        modules: state.modules.map(m =>
+          m.id === id
+            ? {
+                ...m,
+                install_state: 'not_installed',
+                is_crashed: false,
+                download_progress: undefined
+              }
+            : m
+        )
+      }))
     }
   },
 
   togglePluginActive: async (id: string, active: boolean) => {
+    if (get().isTogglingSlot) return
     const currentModules = get().modules
     const target = currentModules.find(m => m.id === id)
     if (!target) return
 
-    // 检查槽位排他策略 (exclusive_required / exclusive_optional)
-    const isExclusive =
-      target.slot_policy === 'exclusive_required' || target.slot_policy === 'exclusive_optional'
-    const targetSlot = target.capability_slot
-
-    // 收集同槽位中需要被互斥停用的插件 ID 列表
-    const mutuallyExcludedIds: string[] = []
-    if (active && isExclusive && targetSlot) {
-      currentModules.forEach(m => {
-        if (m.id !== id && m.capability_slot === targetSlot && m.install_state === 'active') {
-          mutuallyExcludedIds.push(m.id)
-        }
-      })
+    // 核心不变量：必选底座禁止停用 (TC-02)
+    if (target.slot_policy === 'exclusive_required' && !active) {
+      console.warn(`[PluginCenterStore] 拒绝停用必选底座: ${id}`)
+      return
     }
 
-    set(state => ({
-      modules: state.modules.map(m => {
-        if (m.id === id) {
-          return {
-            ...m,
-            install_state: active ? 'active' : 'installed_inactive'
-          }
-        }
-        if (mutuallyExcludedIds.includes(m.id)) {
-          return {
-            ...m,
-            install_state: 'installed_inactive'
-          }
-        }
-        return m
-      })
-    }))
+    set({ isTogglingSlot: true })
+    try {
+      // 检查槽位排他策略 (exclusive_required / exclusive_optional)
+      const isExclusive =
+        target.slot_policy === 'exclusive_required' || target.slot_policy === 'exclusive_optional'
+      const targetSlot = normalizeCapabilitySlot(target.capability_slot)
 
-    const bridge = getModularResourceBridge()
-    if (bridge && typeof bridge.updateState === 'function') {
-      try {
-        const updated = await bridge.updateState(id, { active })
-        if (updated) {
-          const norm = normalizeRemoteModuleItem(updated)
-          set(state => ({
-            modules: state.modules.map(m => (m.id === id ? norm : m))
-          }))
+      set(state => ({
+        modules: state.modules.map(m => {
+          if (m.id === id) {
+            return {
+              ...m,
+              install_state: active ? 'active' : 'installed_inactive',
+              can_activate: active ? false : true
+            }
+          }
+          if (
+            active &&
+            isExclusive &&
+            targetSlot &&
+            normalizeCapabilitySlot(m.capability_slot) === targetSlot &&
+            m.id !== id
+          ) {
+            return {
+              ...m,
+              install_state: 'installed_inactive',
+              can_activate: true
+            }
+          }
+          return m
+        })
+      }))
+
+      const bridge = getModularResourceBridge()
+      if (bridge && typeof bridge.updateState === 'function') {
+        try {
+          const updated = await bridge.updateState(id, { active })
+          if (typeof bridge.list === 'function') {
+            await get().loadModules()
+          } else if (updated) {
+            const norm = normalizeRemoteModuleItem(updated)
+            set(state => ({
+              modules: state.modules.map(m => (m.id === id ? norm : m))
+            }))
+          }
+        } catch (err) {
+          // 后端拒绝切换或模型拉起失败：坚决还原真实状态，拒绝虚假乐观假死
+          set({ modules: currentModules })
+          throw err
         }
-        // 同步通知同槽位被互斥停用的插件
-        for (const exId of mutuallyExcludedIds) {
-          bridge.updateState(exId, { active: false }).catch(() => undefined)
-        }
-      } catch {
-        // 保留乐观更新状态
       }
+    } finally {
+      set({ isTogglingSlot: false })
     }
   },
 
   updateUserConfig: async (id: string, userConfig: string | null) => {
+    const currentModules = get().modules
     set(state => ({
       modules: state.modules.map(m => {
         if (m.id !== id) return m
@@ -1058,8 +1074,10 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
             modules: state.modules.map(m => (m.id === id ? norm : m))
           }))
         }
-      } catch {
-        // 保留乐观更新状态
+      } catch (err) {
+        // 保存失败或参数格式非法：强制回滚本地配置状态并将错误显式上抛
+        set({ modules: currentModules })
+        throw err
       }
     }
   },
@@ -1311,6 +1329,7 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
       environmentVisibility: null,
       isExportingBundle: false,
       isImportingBundle: false,
+      isTogglingSlot: false,
       hasPendingTombstones: false,
       pendingTombstones: [],
       dirInfo: null,

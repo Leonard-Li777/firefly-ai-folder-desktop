@@ -42,6 +42,7 @@ vi.mock('../../settings/tts-settings', () => ({
 }))
 
 import { PluginCenterOverlay } from '../PluginCenterOverlay'
+import { shouldRenderOfflineExportButton } from '../plugin-center-helpers'
 import {
   usePluginCenterStore,
   formatPluginErrorMessage,
@@ -54,8 +55,8 @@ describe('Ticket 08: 插件中心环境可见性、时钟防护与大白话排�
     usePluginCenterStore.getState().resetForTest()
   })
 
-  describe('一、三态环境可见性铁律 (3-State Environment Visibility Invariant)', () => {
-    it('1. 普通用户生产态 (isDev=false, isEnterpriseOffline=false): 开发者开关、导入按钮、导出按钮均物理不渲染在 DOM 中', async () => {
+  describe('一、三态环境可见性铁律与导入导出极简收敛 (TC-05 & TC-06)', () => {
+    it('1. 普通用户生产态 (isDev=false, isEnterpriseOffline=false): 导入离线包恒常可见，开发者开关与导出按钮物理不渲染', async () => {
       const prodEnvelope: EnvironmentVisibilityEnvelope = {
         epoch: 'epoch-1',
         revision: 1,
@@ -65,7 +66,7 @@ describe('Ticket 08: 插件中心环境可见性、时钟防护与大白话排�
           developerModeEnabled: false,
           allowDeveloperMode: false,
           allowLocalPluginImport: false,
-          allowOfflineImport: false,
+          allowOfflineImport: true,
           allowOfflineExport: false
         }
       }
@@ -81,12 +82,14 @@ describe('Ticket 08: 插件中心环境可见性、时钟防护与大白话排�
 
       // 验证开发者模式开关彻底不渲染
       expect(screen.queryByTestId('dev-mode-switch')).not.toBeInTheDocument()
-      // 验证导入离线包按钮彻底不渲染
-      expect(screen.queryByTestId('import-offline-plugin-btn')).not.toBeInTheDocument()
-      // 验证导出按钮彻底不渲染
+      // 验证导入离线包按钮全场景恒常可见且可用 (TC-06)
+      const importBtn = screen.getByTestId('import-offline-plugin-btn')
+      expect(importBtn).toBeInTheDocument()
+      expect(importBtn).toHaveTextContent('导入离线包')
+      expect(importBtn).not.toBeDisabled()
+      // 验证导出按钮与本地开发插件导入彻底不渲染
       expect(screen.queryByTestId('export-offline-plugin-btn')).not.toBeInTheDocument()
       expect(screen.queryByTestId('export-offline-bundle-btn')).not.toBeInTheDocument()
-      // 验证本地开发插件导入彻底不渲染
       expect(screen.queryByTestId('pick-local-plugin-btn')).not.toBeInTheDocument()
     })
 
@@ -126,7 +129,7 @@ describe('Ticket 08: 插件中心环境可见性、时钟防护与大白话排�
       expect(importBtn).toHaveTextContent('导入离线包')
     })
 
-    it('3. 开发者模式调试态 (isDev=true): 完整渲染开发者开关、导入离线包、导出插件包与导出总包按钮', async () => {
+    it('3. 开发者模式调试态 (isDev=true): 仅保留「导出离线总包」，彻底移除「导出插件包」(TC-05)', async () => {
       const devEnvelope: EnvironmentVisibilityEnvelope = {
         epoch: 'epoch-1',
         revision: 3,
@@ -156,13 +159,19 @@ describe('Ticket 08: 插件中心环境可见性、时钟防护与大白话排�
       expect(devSwitch).toBeInTheDocument()
       expect(devSwitch).toBeChecked()
 
-      // 验证导入离线包按钮存在
+      // 验证导入离线包与本地插件导入按钮存在
       expect(screen.getByTestId('import-offline-plugin-btn')).toBeInTheDocument()
-      // 验证本地插件导入按钮存在
       expect(screen.getByTestId('pick-local-plugin-btn')).toBeInTheDocument()
-      // 验证导出单包与导出总包按钮均存在
-      expect(screen.getByTestId('export-offline-plugin-btn')).toBeInTheDocument()
+      // 验证顶部唯一保留「导出离线总包」，彻底不存在旧版单包导出按钮
+      expect(screen.queryByTestId('export-offline-plugin-btn')).not.toBeInTheDocument()
       expect(screen.getByTestId('export-offline-bundle-btn')).toBeInTheDocument()
+    })
+
+    it('4. shouldRenderOfflineExportButton 4格矩阵守卫 (TC-05 物理隔离验证)', () => {
+      expect(shouldRenderOfflineExportButton(false, false)).toBe(false)
+      expect(shouldRenderOfflineExportButton(false, true)).toBe(false)
+      expect(shouldRenderOfflineExportButton(true, false)).toBe(false)
+      expect(shouldRenderOfflineExportButton(true, true)).toBe(true)
     })
   })
 
@@ -377,6 +386,15 @@ describe('Ticket 08: 插件中心环境可见性、时钟防护与大白话排�
         'CHECKSUM_FAILED',
         'DOWNLOAD_FAILED',
         'MODULE_NOT_FOUND',
+        'SLOT_REQUIRED_EMPTY',
+        'CANNOT_DEACTIVATE_REQUIRED_SLOT',
+        'CANNOT_UNINSTALL_LAST_REQUIRED_SLOT',
+        'INVALID_USER_CONFIG',
+        'EMPTY_SOURCE',
+        'SOURCE_RESOURCE_CORRUPTED',
+        'IO_FAILURE',
+        'CANCELLED',
+        'BUSY',
         'UNKNOWN_ERROR'
       ]
 
@@ -417,6 +435,55 @@ describe('Ticket 08: 插件中心环境可见性、时钟防护与大白话排�
       // 确认专业术语已全部剔除
       expect(sanitized).not.toContain('ONNX')
       expect(sanitized).not.toContain('IPC')
+    })
+
+    it('H-02: 配置保存异步失败回滚时保留用户编辑草稿与大白话报错不被重置清空', async () => {
+      const { setModularResourceBridgeForTest } =
+        await import('../../../stores/plugin-center-store')
+      const deferredReject = vi.fn().mockImplementation(
+        () =>
+          new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('INVALID_USER_CONFIG: bad setting')), 15)
+          })
+      )
+      setModularResourceBridgeForTest({
+        list: vi.fn().mockResolvedValue([]),
+        updateState: deferredReject
+      } as any)
+
+      act(() => {
+        usePluginCenterStore.setState({
+          isOverlayOpen: true,
+          configuringModuleId: 'custom_plugin_alpha',
+          modules: [
+            {
+              id: 'custom_plugin_alpha',
+              name: '自定义测试插件',
+              version: '1.0.0',
+              category: 'tool',
+              author_code: 'official',
+              availability: 'approved',
+              total_bytes: 1024,
+              install_state: 'active',
+              user_config: '{"initial":1}'
+            } as any
+          ]
+        })
+      })
+
+      render(<PluginCenterOverlay />)
+      const textarea = screen.getByRole('textbox') as HTMLTextAreaElement
+      expect(textarea.value).toBe('{"initial":1}')
+
+      fireEvent.change(textarea, { target: { value: '{"edited":2}' } })
+      await act(async () => {
+        fireEvent.click(screen.getByText('保存配置'))
+        await new Promise(resolve => setTimeout(resolve, 40))
+      })
+
+      // 报错停留在界面且用户修改后的草稿未被 store 回滚冲毁
+      expect(screen.getByText(getPluginErrorMessages().INVALID_USER_CONFIG)).toBeInTheDocument()
+      expect((screen.getByRole('textbox') as HTMLTextAreaElement).value).toBe('{"edited":2}')
     })
   })
 })

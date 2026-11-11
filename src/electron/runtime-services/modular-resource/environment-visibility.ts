@@ -5,6 +5,7 @@
  */
 
 import crypto from 'node:crypto'
+import { logger, LogCategory } from '@firefly/shared'
 import { LicenseStatus } from '../system/license-status'
 
 export { LicenseStatus }
@@ -350,9 +351,14 @@ export class EnvironmentVisibilityCoordinator {
         packaged,
         this.developerModeEnabled
       )
-    } catch {
+    } catch (err) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[EnvironmentVisibility] 环境可见性计算失败，按 packed=${packaged} 保守降级:`,
+        err
+      )
       visibility = computeEnvironmentVisibility(
-        'dev',
+        packaged ? 'production' : 'dev',
         packaged,
         this.licenseSnapshot,
         this.developerModeEnabled
