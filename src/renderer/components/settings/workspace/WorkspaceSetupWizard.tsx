@@ -10,16 +10,20 @@ import {
   WorkflowCategory,
   TechnicalEngineParameters,
   DirectoryTreeNode,
-  IFilterRule
+  IFilterRule,
+  IIgnoreRule
 } from '@firefly/types'
 import {
   recommendWorkflowByProfile,
   DirectoryProfileStats,
   mapIntentToParameters,
   buildPreviewTree,
-  PreviewNode
+  PreviewNode,
+  filterOutGlobalExclusionRules,
+  getExclusionRuleKey
 } from '@firefly/shared'
 import { useTierStore } from '../../../stores/tier-store'
+import { useSettingsStore } from '../../../stores/settings-store'
 import { Button } from '../../ui/button'
 import { Label } from '../../ui/label'
 import { MaterialIcon, cn } from '../../../lib/utils'
@@ -225,6 +229,70 @@ type WizardRuleEntry = string | IFilterRule
 function getRuleLabel(rule: WizardRuleEntry): string {
   if (typeof rule === 'string') return rule
   return rule?.value ?? ''
+}
+
+/**
+ * 过滤掉已包含在全局生效排除规则中的项，确保仅保留当前工作区独有排除规则
+ * 复用 @firefly/shared 的 filterOutGlobalExclusionRules 与 getExclusionRuleKey，并兼容字符串及 file/extension 跨类型同名文件（如 .DS_Store）
+ */
+function filterWorkspaceUniqueIgnoreEntries(
+  globalRules: readonly IIgnoreRule[],
+  entries: readonly WizardRuleEntry[]
+): WizardRuleEntry[] {
+  if (entries.length === 0) return []
+  const activeGlobalRules = globalRules.filter(rule => rule && rule.isActive !== false)
+  if (activeGlobalRules.length === 0) return [...entries]
+
+  const activeGlobalKeys = new Set(activeGlobalRules.map(rule => getExclusionRuleKey(rule)))
+  const activeGlobalFileOrExtValues = new Set<string>()
+  const activeGlobalAllValues = new Set<string>()
+
+  for (const rule of activeGlobalRules) {
+    const valLower = (rule.value || '').trim().toLowerCase()
+    if (!valLower) continue
+    activeGlobalAllValues.add(valLower)
+    if (rule.type === 'file') {
+      activeGlobalFileOrExtValues.add(valLower)
+    } else if (rule.type === 'extension') {
+      activeGlobalFileOrExtValues.add(valLower.startsWith('.') ? valLower : `.${valLower}`)
+    }
+  }
+
+  return entries.filter(entry => {
+    if (typeof entry === 'string') {
+      const rawVal = entry.trim()
+      if (!rawVal) return false
+      const lowerVal = rawVal.toLowerCase()
+      if (activeGlobalAllValues.has(lowerVal)) return false
+      if (
+        activeGlobalKeys.has(getExclusionRuleKey({ type: 'extension', value: rawVal })) ||
+        activeGlobalKeys.has(getExclusionRuleKey({ type: 'file', value: rawVal })) ||
+        activeGlobalKeys.has(getExclusionRuleKey({ type: 'directory', value: rawVal }))
+      ) {
+        return false
+      }
+      return true
+    }
+
+    if (!entry) return false
+    const remaining = filterOutGlobalExclusionRules(activeGlobalRules, [
+      entry as unknown as IIgnoreRule
+    ])
+    if (remaining.length === 0) return false
+
+    if (entry.type === 'file' || entry.type === 'extension') {
+      const valLower = (entry.value || '').trim().toLowerCase()
+      const normalizedFileOrExt =
+        entry.type === 'extension' && valLower && !valLower.startsWith('.')
+          ? `.${valLower}`
+          : valLower
+      if (normalizedFileOrExt && activeGlobalFileOrExtValues.has(normalizedFileOrExt)) {
+        return false
+      }
+    }
+
+    return true
+  })
 }
 
 /** 仅提取启用中的扩展名规则值，用于扩展名命中统计 */
@@ -466,6 +534,16 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
   // 会员权益中性提示
   const tier = useTierStore(s => s.tier)
   const isFreeTier = (tier ?? UserTier.FREE) === UserTier.FREE
+
+  // 全局排除规则（用于过滤当前工作区专属排除规则，仅展示工作目录独有配置项）
+  const globalIgnoreRules = useSettingsStore(s => s.ignoreRules)
+  const loadGlobalIgnoreRules = useSettingsStore(s => s.loadIgnoreRules)
+
+  useEffect(() => {
+    if (typeof window.electronAPI?.database?.getAnalysisIgnoreRules === 'function') {
+      loadGlobalIgnoreRules()
+    }
+  }, [loadGlobalIgnoreRules])
 
   // 解析当前工作区配置
   const parsedConfig = useMemo<WorkspaceConfig>(() => {
@@ -812,22 +890,26 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     }
   }, [selectedTemplateConfig, selectedWorkflow])
 
-  // 提取当前选定工作流的专属排除规则（无则返回空数组）
-  const currentCustomIgnoreRules = useMemo<string[]>(() => {
+  // 提取当前选定工作流的专属排除规则（剔除全局生效排除规则，无则返回空数组）
+  const filteredCustomIgnoreEntries = useMemo<WizardRuleEntry[]>(() => {
+    let rawEntries: WizardRuleEntry[] = []
     if (Array.isArray(selectedTemplateConfig?.customIgnoreRules)) {
-      return selectedTemplateConfig.customIgnoreRules.map(getRuleLabel)
-    }
-    if (selectedWorkflow?.custom_ignores) {
+      rawEntries = selectedTemplateConfig.customIgnoreRules
+    } else if (selectedWorkflow?.custom_ignores) {
       try {
         const parsed =
           typeof selectedWorkflow.custom_ignores === 'string'
             ? JSON.parse(selectedWorkflow.custom_ignores)
             : selectedWorkflow.custom_ignores
-        if (Array.isArray(parsed)) return parsed.map(getRuleLabel)
+        if (Array.isArray(parsed)) rawEntries = parsed
       } catch {}
     }
-    return []
-  }, [selectedTemplateConfig, selectedWorkflow])
+    return filterWorkspaceUniqueIgnoreEntries(globalIgnoreRules, rawEntries)
+  }, [selectedTemplateConfig, selectedWorkflow, globalIgnoreRules])
+
+  const currentCustomIgnoreRules = useMemo<string[]>(() => {
+    return filteredCustomIgnoreEntries.map(getRuleLabel).filter(Boolean)
+  }, [filteredCustomIgnoreEntries])
 
   // 实测命中数与大白话透视计算 (Ticket 04 AC-4.3)
   const fileImpactStats = useMemo(() => {
@@ -936,7 +1018,12 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
         schemaVersion: 1,
         status: 'ready',
         workflowId: selectedWorkflow.id,
-        customIgnoreRules: selectedTemplateConfig?.customIgnoreRules || [],
+        customIgnoreRules: Array.isArray(selectedTemplateConfig?.customIgnoreRules)
+          ? filterWorkspaceUniqueIgnoreEntries(
+              globalIgnoreRules,
+              selectedTemplateConfig.customIgnoreRules
+            ).filter((r): r is IFilterRule => typeof r !== 'string')
+          : [],
         customWhitelistRules: selectedTemplateConfig?.customWhitelistRules || [],
         baseAIConfig: baseAi,
         derivedSnapshot: baseAi,
@@ -1716,14 +1803,14 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
           ) : (
             /* 步骤 2 并行双强主出口 (Ticket 04 AC-4.6) */
             <div className="flex items-center gap-2.5 w-full sm:w-auto">
-              {/* 出口 1：个性化微调工作目录配置 (高亮边框强调) */}
+              {/* 出口 1：个性化微调工作目录配置 (高亮边框强调；悬停沿用主题主色文字与浅底，规避暗色模式下 --primary-foreground 深黑对比度失真) */}
               <Button
                 type="button"
                 variant="outline"
                 size="default"
                 disabled={isSaving}
                 onClick={() => submitPolicy('customize')}
-                className="w-full sm:w-auto flex items-center justify-center gap-1.5 text-xs font-bold px-4 border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground h-9 shadow-xs transition-all"
+                className="w-full sm:w-auto flex items-center justify-center gap-1.5 text-xs font-bold px-4 border-2 border-primary text-primary hover:bg-primary/10 hover:text-primary hover:border-primary dark:hover:bg-primary/20 dark:hover:text-primary dark:hover:border-primary h-9 shadow-xs transition-all"
               >
                 {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <span>⚙️</span>}
                 <span>{t('个性化微调工作目录配置')}</span>

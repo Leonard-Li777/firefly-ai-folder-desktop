@@ -4,6 +4,7 @@ import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { WorkspaceSetupWizard } from '../WorkspaceSetupWizard'
 import { WorkspaceDirectory } from '@firefly/types'
+import { useSettingsStore } from '../../../../stores/settings-store'
 
 // Mock 语言包
 vi.mock('@app/languages', () => ({
@@ -211,6 +212,7 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    useSettingsStore.setState({ ignoreRules: [] })
 
     mockCommitWorkspacePolicy = vi.fn().mockResolvedValue({
       success: true,
@@ -341,11 +343,13 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
     // 进入步骤 2
     fireEvent.click(screen.getByRole('button', { name: /下一步/ }))
 
-    // 出口 1: 个性化微调工作目录配置
+    // 出口 1: 个性化微调工作目录配置 (校验暗色模式悬停可读性，禁止使用 hover:text-primary-foreground)
     const customizeBtn = screen.getByRole('button', {
       name: /个性化微调工作目录配置/
     })
     expect(customizeBtn).toBeDefined()
+    expect(customizeBtn.className).not.toContain('hover:text-primary-foreground')
+    expect(customizeBtn.className).toContain('dark:hover:text-primary')
     fireEvent.click(customizeBtn)
 
     await waitFor(() => {
@@ -382,5 +386,139 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
 
     // 验证重试与留在当前页按钮
     expect(screen.getByRole('button', { name: /重试保存/ })).toBeDefined()
+  })
+
+  it('步骤 2 当前工作区专属排除目录与规则过滤掉已启用全局排除规则，仅保留工作目录独有规则', async () => {
+    useSettingsStore.setState({
+      ignoreRules: [
+        { id: 'sys-tmp', type: 'extension', value: '.tmp', isActive: true, isSystem: true },
+        { id: 'sys-thumbs', type: 'file', value: 'thumbs.db', isActive: true, isSystem: true },
+        { id: 'sys-ds', type: 'file', value: '.DS_Store', isActive: true, isSystem: true },
+        { id: 'sys-lnk', type: 'extension', value: '.lnk', isActive: false, isSystem: true }
+      ]
+    })
+
+    const workflowMixedIgnores = {
+      ...mockWorkflows[0],
+      workspace_config: JSON.stringify({
+        customWhitelistRules: [],
+        customIgnoreRules: [
+          {
+            id: 'wf-ig-1',
+            type: 'extension',
+            value: '.tmp',
+            isActive: true,
+            isSystem: true
+          },
+          {
+            id: 'wf-ig-2',
+            type: 'file',
+            value: 'Thumbs.db',
+            isActive: true,
+            isSystem: true
+          },
+          {
+            id: 'wf-ig-3',
+            type: 'extension',
+            value: '.ds_store',
+            isActive: true,
+            isSystem: true
+          },
+          {
+            id: 'wf-ig-4',
+            type: 'extension',
+            value: '.lnk',
+            isActive: true,
+            isSystem: true
+          },
+          {
+            id: 'wf-ig-5',
+            type: 'directory',
+            value: 'Desktop_Old_Backups',
+            isActive: true,
+            isSystem: true
+          }
+        ]
+      })
+    }
+
+    ;(window as any).electronAPI.getLocalWorkflows = vi.fn().mockResolvedValue({
+      success: true,
+      data: [workflowMixedIgnores, ...mockWorkflows.slice(1)]
+    })
+
+    const onFinish = vi.fn()
+    render(<WorkspaceSetupWizard workspace={mockWorkspace} onFinish={onFinish} />)
+
+    await waitFor(() => {
+      expect(screen.getAllByText('电脑桌面急救与杂乱清理流').length).toBeGreaterThan(0)
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /下一步/ }))
+
+    // 全局启用的 .tmp / Thumbs.db / .ds_store 必须被过滤，未启用全局规则的 .lnk 与工作区独有 Desktop_Old_Backups 保留展示
+    expect(screen.getByText('当前工作区专属排除目录与规则')).toBeDefined()
+    expect(screen.getByText('Desktop_Old_Backups')).toBeDefined()
+    expect(screen.getByText('.lnk')).toBeDefined()
+    expect(screen.queryByText('.tmp')).toBeNull()
+    expect(screen.queryByText('Thumbs.db')).toBeNull()
+    expect(screen.queryByText('.ds_store')).toBeNull()
+
+    // 提交持久化配置时也应仅包含剔除全局规则后的独有规则
+    fireEvent.click(screen.getByRole('button', { name: /立即应用并进入工作目录/ }))
+    await waitFor(() => {
+      expect(mockCommitWorkspacePolicy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          templateConfig: expect.objectContaining({
+            customIgnoreRules: expect.arrayContaining([
+              expect.objectContaining({ value: '.lnk' }),
+              expect.objectContaining({ value: 'Desktop_Old_Backups' })
+            ])
+          })
+        })
+      )
+    })
+    const committedIgnores =
+      mockCommitWorkspacePolicy.mock.calls[0][0].templateConfig.customIgnoreRules
+    expect(committedIgnores).toHaveLength(2)
+  })
+
+  it('当工作流排除规则与已启用全局规则完全重合时，隐藏当前工作区专属排除目录与规则卡片（兼容纯字符串规则）', async () => {
+    useSettingsStore.setState({
+      ignoreRules: [
+        {
+          id: 'sys-dir',
+          type: 'directory',
+          value: 'Desktop_Old_Backups',
+          isActive: true,
+          isSystem: true
+        },
+        { id: 'sys-tmp', type: 'extension', value: '.tmp', isActive: true, isSystem: true }
+      ]
+    })
+
+    const workflowAllCoveredByGlobal = {
+      ...mockWorkflows[0],
+      workspace_config: JSON.stringify({
+        customWhitelistRules: [],
+        customIgnoreRules: ['Desktop_Old_Backups', '.tmp']
+      })
+    }
+
+    ;(window as any).electronAPI.getLocalWorkflows = vi.fn().mockResolvedValue({
+      success: true,
+      data: [workflowAllCoveredByGlobal, ...mockWorkflows.slice(1)]
+    })
+
+    const onFinish = vi.fn()
+    render(<WorkspaceSetupWizard workspace={mockWorkspace} onFinish={onFinish} />)
+
+    await waitFor(() => {
+      expect(screen.getAllByText('电脑桌面急救与杂乱清理流').length).toBeGreaterThan(0)
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /下一步/ }))
+
+    expect(screen.queryByText('当前工作区专属排除目录与规则')).toBeNull()
   })
 })
