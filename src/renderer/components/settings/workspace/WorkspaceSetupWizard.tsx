@@ -686,7 +686,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
 
   // 推导工作流推荐评分列表（传入目录路径先验与全量扩展名映射，确保首推与文件构成严格匹配）
   const workflowRecommendations = useMemo<WorkflowRecommendation[]>(() => {
-    if (!profileResult?.stats || profileResult.stats.totalSampled <= 0) {
+    if (!profileResult?.stats || profileResult.stats.totalSampled <= 0 || workflows.length === 0) {
       return []
     }
     const pathNorm = (workspace.path || '').trim()
