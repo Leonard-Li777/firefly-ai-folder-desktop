@@ -365,7 +365,13 @@ export const InterfaceSettings: React.FC = () => {
       <Card className="p-4">
         <div className="space-y-4">
           <div>
-            <Label className="text-base font-medium">{t('界面语言')}</Label>
+            <Label
+              data-testid="interface-language-label"
+              data-i18n-key="界面语言"
+              className="text-base font-medium"
+            >
+              {t('界面语言')}
+            </Label>
             <p className="text-sm text-muted-foreground mt-1">{t('选择应用界面显示的语言')}</p>
           </div>
 
@@ -373,12 +379,16 @@ export const InterfaceSettings: React.FC = () => {
             value={getConfigValue<LanguageCode>('DEFAULT_LANGUAGE') || 'zh-CN'}
             onValueChange={handleLanguageChange}
           >
-            <SelectTrigger className="w-full">
+            <SelectTrigger data-testid="language-select-trigger" className="w-full">
               <SelectValue placeholder={t('选择语言')} />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent data-testid="language-select-content">
               {languageOptions.map(option => (
-                <SelectItem key={option.value} value={option.value}>
+                <SelectItem
+                  key={option.value}
+                  value={option.value}
+                  data-testid={`language-option-${option.value}`}
+                >
                   <div className="flex items-center gap-2">
                     <span>{option.flag}</span>
                     <span>{option.label}</span>
@@ -423,7 +433,10 @@ export const InterfaceSettings: React.FC = () => {
 
       {/* 语言变更确认对话框 */}
       <AlertDialog open={showLanguageChangeDialog} onOpenChange={setShowLanguageChangeDialog}>
-        <AlertDialogContent className="border-2 dark:border-2 border-border dark:border-border">
+        <AlertDialogContent
+          data-testid="language-change-confirm-dialog"
+          className="border-2 dark:border-2 border-border dark:border-border"
+        >
           <AlertDialogHeader>
             <AlertDialogTitle className="text-amber-600 dark:text-amber-500 flex items-center gap-2 text-lg dark:text-lg">
               <span className="text-2xl">⚠️</span>
@@ -447,6 +460,7 @@ export const InterfaceSettings: React.FC = () => {
             </AlertDialogCancel>
             <AlertDialogAction asChild>
               <Button
+                data-testid="confirm-language-change-btn"
                 variant="destructive"
                 onClick={handleConfirmLanguageChange}
                 className="bg-amber-600 hover:bg-amber-700 dark:bg-amber-600 dark:hover:bg-amber-700 text-white dark:text-white"

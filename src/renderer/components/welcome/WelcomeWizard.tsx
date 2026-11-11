@@ -49,7 +49,10 @@ export function WelcomeWizard({ onComplete }: WelcomeWizardProps) {
   }
 
   return (
-    <div className="h-screen w-full flex flex-col overflow-hidden bg-slate-50">
+    <div
+      data-testid="welcome-wizard-container"
+      className="h-screen w-full flex flex-col overflow-hidden bg-slate-50"
+    >
       <Header />
       <div className="flex-grow overflow-hidden">
         {currentStep === 1 && <WelcomeStep1 onNext={handleStep1Next} />}

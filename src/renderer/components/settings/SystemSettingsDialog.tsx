@@ -121,10 +121,17 @@ export const SystemSettingsDialog: React.FC = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && closeSettings()}>
-      <DialogContent className="max-w-5xl w-[88vw] h-[82vh] flex flex-col p-0 bg-card text-foreground border-4 border-border rounded-2xl surface-elev-3 transform-gpu [contain:content]">
+      <DialogContent
+        data-testid="system-settings-dialog"
+        className="max-w-5xl w-[88vw] h-[82vh] flex flex-col p-0 bg-card text-foreground border-4 border-border rounded-2xl surface-elev-3 transform-gpu [contain:content]"
+      >
         <DialogHeader className="px-6 py-4 border-b flex-shrink-0 flex flex-row items-center justify-between">
           <div>
-            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+            <DialogTitle
+              data-testid="settings-title"
+              data-i18n-key="系统设置"
+              className="text-xl font-bold flex items-center gap-2"
+            >
               <span>⚙️</span>
               <span>{t('系统设置')}</span>
             </DialogTitle>
@@ -143,6 +150,7 @@ export const SystemSettingsDialog: React.FC = () => {
                 return (
                   <Button
                     key={category.id}
+                    data-testid={`settings-nav-${category.id}`}
                     variant={isActive ? 'default' : 'ghost'}
                     className={cn(
                       'w-full justify-start text-left h-auto p-2.5 whitespace-break-spaces transition-all duration-200',
@@ -156,7 +164,12 @@ export const SystemSettingsDialog: React.FC = () => {
                         {ICON_MAP[category.icon] || '⚙️'}
                       </span>
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-xs leading-snug">{category.name}</div>
+                        <div
+                          className="font-semibold text-xs leading-snug"
+                          data-i18n-key={category.id}
+                        >
+                          {category.name}
+                        </div>
                         <div
                           className={cn(
                             'text-[11px] mt-0.5 line-clamp-1 opacity-80',

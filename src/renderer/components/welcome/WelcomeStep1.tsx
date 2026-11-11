@@ -61,6 +61,7 @@ export function WelcomeStep1({ onNext }: WelcomeStep1Props) {
             <Card className="rounded-lg bg-white shadow-sm ring-1 ring-slate-200 p-4">
               <CardContent className="p-0">
                 <RadioGroup
+                  data-testid="welcome-lang-radiogroup"
                   value={selectedLanguage}
                   onValueChange={handleLanguageChange}
                   className="grid grid-cols-2 sm:grid-cols-3 gap-2"
@@ -70,6 +71,7 @@ export function WelcomeStep1({ onNext }: WelcomeStep1Props) {
                   {SUPPORTED_LANGUAGES.map(language => (
                     <label
                       key={language.code}
+                      data-testid={`welcome-lang-${language.code}`}
                       className={`relative flex items-center justify-between gap-2 rounded-md p-2 cursor-pointer transition-all duration-200 ${
                         selectedLanguage === language.code
                           ? 'border-2 border-sky-500 bg-sky-50'
@@ -110,6 +112,7 @@ export function WelcomeStep1({ onNext }: WelcomeStep1Props) {
 
                 <div className="mt-4 flex items-center justify-end">
                   <Button
+                    data-testid="welcome-step1-next-btn"
                     onClick={handleNext}
                     className="h-9 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white hover:bg-slate-800"
                   >

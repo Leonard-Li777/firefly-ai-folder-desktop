@@ -297,7 +297,10 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
   }
 
   return (
-    <div className="text-slate-900 flex flex-col h-full items-center justify-center p-4">
+    <div
+      data-testid="welcome-step2-container"
+      className="text-slate-900 flex flex-col h-full items-center justify-center p-4"
+    >
       <div className="w-full max-w-4xl mx-auto flex flex-col max-h-[90vh]">
         {/* 顶部标题区 */}
         <header className="text-center mb-4 shrink-0">
@@ -660,6 +663,7 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
         <footer className="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <Button
+              data-testid="welcome-step2-back-btn"
               variant="ghost"
               size="sm"
               onClick={onBack}
@@ -690,6 +694,7 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
 
             {installPhase === 'idle' && (
               <Button
+                data-testid="welcome-start-install-btn"
                 onClick={handleStartInstall}
                 disabled={isDiskSpaceInsufficient}
                 className="bg-sky-600 hover:bg-sky-700 text-white font-medium px-5"
@@ -701,6 +706,7 @@ export function WelcomeStep2PluginSetup({ onBack, onComplete }: WelcomeStep2Plug
 
             {installPhase !== 'idle' && (
               <Button
+                data-testid="welcome-enter-app-btn"
                 onClick={onComplete}
                 disabled={installPhase !== 'ready'}
                 className={`${

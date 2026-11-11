@@ -44,7 +44,10 @@ export const ExportFailedDialog: React.FC<ExportFailedDialogProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-card text-card-foreground rounded-lg shadow-xl max-w-lg w-full p-6 border border-border">
+      <div
+        data-testid="export-failed-dialog"
+        className="bg-card text-card-foreground rounded-lg shadow-xl max-w-lg w-full p-6 border border-border"
+      >
         {/* 头部 */}
         <div className="flex items-center mb-4">
           <MaterialIcon icon="warning" className="text-amber-500 text-4xl mr-3" />
@@ -63,11 +66,19 @@ export const ExportFailedDialog: React.FC<ExportFailedDialogProps> = ({
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900/50 rounded-lg p-3">
             <p className="text-sm text-green-600 dark:text-green-400 mb-1">{t('成功')}</p>
-            <p className="text-2xl font-bold text-green-900 dark:text-green-100">{exportedCount}</p>
+            <p
+              data-testid="success-files-count"
+              className="text-2xl font-bold text-green-900 dark:text-green-100"
+            >
+              {exportedCount}
+            </p>
           </div>
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 rounded-lg p-3">
             <p className="text-sm text-red-600 dark:text-red-400 mb-1">{t('失败')}</p>
-            <p className="text-2xl font-bold text-red-900 dark:text-red-100">
+            <p
+              data-testid="failed-files-count"
+              className="text-2xl font-bold text-red-900 dark:text-red-100"
+            >
               {failedFiles.length}
             </p>
           </div>
@@ -120,7 +131,12 @@ export const ExportFailedDialog: React.FC<ExportFailedDialogProps> = ({
         <div className="flex justify-end space-x-3">
           {failedOperations && failedOperations.length > 0 && onRetryWithCopy && (
             <div className="relative group">
-              <Button variant="outline" onClick={handleRetryWithCopy} disabled={isRetrying}>
+              <Button
+                data-testid="retry-copy-btn"
+                variant="outline"
+                onClick={handleRetryWithCopy}
+                disabled={isRetrying}
+              >
                 {isRetrying ? (
                   <>
                     <MaterialIcon icon="sync" className="text-base mr-1 animate-spin" />
@@ -142,7 +158,7 @@ export const ExportFailedDialog: React.FC<ExportFailedDialogProps> = ({
               </div>
             </div>
           )}
-          <Button variant="default" onClick={onClose}>
+          <Button data-testid="close-export-failed-btn" variant="default" onClick={onClose}>
             {t('我知道了')}
           </Button>
         </div>

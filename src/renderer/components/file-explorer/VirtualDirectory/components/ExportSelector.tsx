@@ -40,6 +40,7 @@ export const ExportSelector: React.FC<ExportSelectorProps> = React.memo(
           <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-8 px-8 pb-10">
             {/* 导出虚拟目录卡片 */}
             <div
+              data-testid="export-vdir-card"
               onClick={handleExportVdir}
               className="group relative flex flex-col p-8 rounded-3xl border-2 border-border/50 bg-background hover:border-green-500/50 hover:shadow-2xl hover:shadow-green-500/10 transition-all duration-300 cursor-pointer overflow-hidden"
             >
@@ -94,6 +95,7 @@ export const ExportSelector: React.FC<ExportSelectorProps> = React.memo(
 
             {/* 导出真实目录卡片 */}
             <div
+              data-testid="export-real-card"
               onClick={handleExportReal}
               className="group relative flex flex-col p-8 rounded-3xl border-2 border-border/50 bg-background hover:border-orange-500/50 hover:shadow-2xl hover:shadow-orange-500/10 transition-all duration-300 cursor-pointer overflow-hidden"
             >
