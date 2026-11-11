@@ -208,7 +208,8 @@ export function computeEnvironmentVisibility(
     developerModeEnabled: isDev && developerModeEnabled,
     allowDeveloperMode: isDev,
     allowLocalPluginImport: isDev && developerModeEnabled,
-    allowOfflineImport: isDev || isEnterpriseOffline,
+    // 离线导入不限会员体系与开发模式，全场景全局常驻开放，供用户自由导入离线包
+    allowOfflineImport: true,
     allowOfflineExport: isDev
   }
 }
