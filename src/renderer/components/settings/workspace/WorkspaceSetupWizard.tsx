@@ -23,6 +23,7 @@ import { useTierStore } from '../../../stores/tier-store'
 import { Button } from '../../ui/button'
 import { Label } from '../../ui/label'
 import { MaterialIcon, cn } from '../../../lib/utils'
+import { FileTypeIcon, extractFileExtension } from '../../common/FileTypeIcon'
 import { toast } from '../../common/Toast'
 import { t } from '@app/languages'
 import {
@@ -39,6 +40,8 @@ import {
   Image as ImageIcon,
   Film,
   Package,
+  Archive,
+  Link2,
   CheckCircle2,
   Camera,
   Code2,
@@ -76,9 +79,124 @@ interface ProfileStats {
   imageCount: number
   videoCount: number
   otherCount: number
+  installerCount?: number
+  archiveCount?: number
+  shortcutCount?: number
+  audioCount?: number
+  countsByExt?: Record<string, number>
+  extensionCounts?: Record<string, number>
+  categoryCounts?: Record<string, number>
   topExtensions: Array<{ ext: string; count: number }>
   durationMs: number
   hitTimeBudget: boolean
+}
+
+const PROFILE_INSTALLER_EXTS = new Set([
+  'exe',
+  'msi',
+  'dmg',
+  'pkg',
+  'deb',
+  'rpm',
+  'apk',
+  'appx',
+  'msix'
+])
+const PROFILE_ARCHIVE_EXTS = new Set([
+  'zip',
+  'rar',
+  '7z',
+  'tar',
+  'gz',
+  'bz2',
+  'xz',
+  'zst',
+  'tgz',
+  'iso',
+  'cab'
+])
+const PROFILE_SHORTCUT_EXTS = new Set(['lnk', 'url', 'webloc', 'desktop'])
+const PROFILE_AUDIO_EXTS = new Set([
+  'mp3',
+  'wav',
+  'flac',
+  'aac',
+  'ogg',
+  'm4a',
+  'ape',
+  'wma',
+  'opus',
+  'dsf',
+  'dff'
+])
+
+/** 统一从工作流记录中提取纳管包含扩展名列表（兼容 workspace_config.customWhitelistRules、extensions、filter_rules） */
+function extractWorkflowIncludedExtensions(wf: any): string[] {
+  if (!wf) return []
+  const seen = new Set<string>()
+  const result: string[] = []
+  const pushExt = (raw: string) => {
+    const trimmed = (raw || '').trim().toLowerCase()
+    if (!trimmed) return
+    const normalized = trimmed.startsWith('.') ? trimmed : `.${trimmed}`
+    if (!seen.has(normalized)) {
+      seen.add(normalized)
+      result.push(normalized)
+    }
+  }
+
+  let tplCfg: any = wf.workspace_config
+  if (typeof tplCfg === 'string') {
+    try {
+      tplCfg = JSON.parse(tplCfg)
+    } catch {
+      tplCfg = null
+    }
+  }
+  if (Array.isArray(tplCfg?.customWhitelistRules)) {
+    for (const ext of getExtensionValues(tplCfg.customWhitelistRules)) {
+      pushExt(ext)
+    }
+  }
+
+  if (result.length === 0 && wf.extensions) {
+    let extsObj = wf.extensions
+    if (typeof extsObj === 'string') {
+      try {
+        extsObj = JSON.parse(extsObj)
+      } catch {
+        extsObj = null
+      }
+    }
+    if (Array.isArray(extsObj?.exclusive)) {
+      for (const ext of extsObj.exclusive) pushExt(ext)
+    }
+    if (Array.isArray(extsObj?.common)) {
+      for (const ext of extsObj.common) pushExt(ext)
+    }
+  }
+
+  if (result.length === 0 && wf.filter_rules) {
+    try {
+      const parsed =
+        typeof wf.filter_rules === 'string' ? JSON.parse(wf.filter_rules) : wf.filter_rules
+      if (Array.isArray(parsed) && wf.filter_mode !== 'blacklist') {
+        for (const ext of getExtensionValues(parsed)) pushExt(ext)
+      }
+    } catch {}
+  }
+
+  return result
+}
+
+/** 统一解析工作流关联的文件命名模板 */
+function resolveWorkflowNamingTemplate(wf: any, templateConfig?: any): string {
+  return (
+    wf?.naming_template ||
+    templateConfig?.namingTemplate ||
+    wf?.naming_pattern ||
+    '{YYYYMMDD}_{SceneType}_{FileName}.{ext}'
+  )
 }
 
 interface DirectoryProfileResult {
@@ -223,62 +341,6 @@ function getWorkflowIconComponent(workflowId: string) {
   }
 }
 
-/** 根据文件名后缀获取对应图标 */
-function getPreviewFileIcon(fileName: string) {
-  const ext = fileName.slice(fileName.lastIndexOf('.')).toLowerCase()
-  if (
-    [
-      '.cr3',
-      '.arw',
-      '.nef',
-      '.jpg',
-      '.jpeg',
-      '.png',
-      '.webp',
-      '.svg',
-      '.gif',
-      '.raw',
-      '.dng'
-    ].includes(ext)
-  ) {
-    return ImageIcon
-  }
-  if (['.mp4', '.mov', '.mkv', '.avi', '.flv', '.webm'].includes(ext)) {
-    return Film
-  }
-  if (['.mp3', '.wav', '.flac', '.aac', '.ogg', '.m4a', '.lrc'].includes(ext)) {
-    return Music
-  }
-  if (['.blend', '.obj', '.fbx', '.c4d', '.max', '.glb', '.gltf', '.hdr', '.exr'].includes(ext)) {
-    return Shapes
-  }
-  if (
-    [
-      '.ts',
-      '.js',
-      '.py',
-      '.rs',
-      '.go',
-      '.cpp',
-      '.c',
-      '.json',
-      '.html',
-      '.css',
-      '.vue',
-      '.tsx'
-    ].includes(ext)
-  ) {
-    return Code2
-  }
-  if (['.xlsx', '.xls', '.csv'].includes(ext)) {
-    return FileSpreadsheet
-  }
-  if (['.epub', '.mobi', '.azw3', '.pdf', '.txt', '.doc', '.docx'].includes(ext)) {
-    return BookOpen
-  }
-  return FileText
-}
-
 /** 工作流向通用场景意图的降级适配 */
 function mapWorkflowToIntent(workflowId: string): WorkspaceConfigIntent {
   switch (workflowId) {
@@ -301,35 +363,50 @@ function mapWorkflowToIntent(workflowId: string): WorkspaceConfigIntent {
 }
 
 /**
- * 递归渲染 PreviewNode（支持目录与单点命名原型节点）
+ * 递归渲染 PreviewNode（支持目录与单点命名原型节点，对齐系统文件/目录预览图标样式）
  */
 const PreviewTreeNodeView: React.FC<{
   node: PreviewNode
   depth?: number
   isRoot?: boolean
-}> = ({ node, depth = 0, isRoot = false }) => {
+  namingTemplate?: string
+}> = ({ node, depth = 0, isRoot = false, namingTemplate }) => {
   const isPrototype = node.kind === 'naming-prototype'
   const hasChildren = !isPrototype && Array.isArray(node.children) && node.children.length > 0
 
   if (isPrototype) {
-    const FileIcon = getPreviewFileIcon(node.name)
+    const ext = extractFileExtension(node.name)
     return (
       <div
         className={cn(
-          'select-none text-xs my-1 pl-2 border-l border-primary/50',
+          'select-none text-xs my-1 pl-2 border-l border-primary/50 space-y-1',
           depth > 0 && 'ml-3'
         )}
       >
         <div
-          className="flex items-center gap-1.5 py-1 px-2 rounded-md bg-primary/10 border border-primary/30 text-primary font-mono text-[11px] shadow-2xs group"
+          className="flex items-center gap-1.5 py-1.5 px-2 rounded-md bg-primary/10 border border-primary/30 text-primary font-mono text-[11px] shadow-2xs group"
           title={node.name}
         >
-          <FileIcon className="w-3.5 h-3.5 text-primary shrink-0" />
+          <FileTypeIcon
+            extension={ext}
+            className="w-4 h-4 object-contain shrink-0"
+            fallbackClassName="text-[16px] text-primary shrink-0 leading-none"
+          />
           <span className="truncate font-semibold">{node.name}</span>
-          <span className="ml-auto text-[9px] px-1.5 py-0.2 rounded bg-primary text-primary-foreground font-sans font-bold">
+          <span className="ml-auto text-[9px] px-1.5 py-0.2 rounded bg-primary text-primary-foreground font-sans font-bold shrink-0">
             {t('命名样例')}
           </span>
         </div>
+        {namingTemplate && (
+          <div className="flex items-center gap-1.5 px-1 text-[10px] text-muted-foreground">
+            <span className="px-1 py-0.2 rounded bg-muted text-foreground/80 font-sans font-medium shrink-0">
+              {t('命名模板')}
+            </span>
+            <span className="font-mono truncate" title={namingTemplate}>
+              {namingTemplate}
+            </span>
+          </div>
+        )}
       </div>
     )
   }
@@ -338,9 +415,9 @@ const PreviewTreeNodeView: React.FC<{
     <div className={cn('select-none text-xs', depth > 0 && 'ml-3 pl-2 border-l border-border/50')}>
       <div className="flex items-center gap-1.5 py-1 text-foreground font-medium group">
         {isRoot ? (
-          <FolderTree className="w-4 h-4 text-primary shrink-0" />
+          <Folder className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
         ) : (
-          <FolderOpen className="w-3.5 h-3.5 text-amber-500/90 dark:text-amber-400 shrink-0" />
+          <Folder className="w-3.5 h-3.5 text-amber-500 fill-amber-500/20 dark:text-amber-400 dark:fill-amber-400/20 shrink-0" />
         )}
         <span className={cn('truncate', isRoot && 'font-bold text-primary')}>{node.name}</span>
       </div>
@@ -348,7 +425,12 @@ const PreviewTreeNodeView: React.FC<{
       {hasChildren && (
         <div className="space-y-0.5">
           {node.children!.map((child, idx) => (
-            <PreviewTreeNodeView key={`${child.name}-${idx}`} node={child} depth={depth + 1} />
+            <PreviewTreeNodeView
+              key={`${child.name}-${idx}`}
+              node={child}
+              depth={depth + 1}
+              namingTemplate={namingTemplate}
+            />
           ))}
         </div>
       )}
@@ -419,26 +501,145 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     }
   }, [workspace.id, workspace.path, parsedConfig.status])
 
-  // 计算文件特征分布百分比
+  // 计算文件特征细分分布百分比（支持安装包、压缩归档、快捷方式、文档、图像、影视、音频、其他）
   const distribution = useMemo(() => {
-    if (!profileResult?.stats || profileResult.stats.totalSampled <= 0) {
+    const stats = profileResult?.stats
+    if (!stats || stats.totalSampled <= 0) {
       return null
     }
-    const { totalSampled, docCount, imageCount, videoCount } = profileResult.stats
-    const docPct = Math.round((docCount / totalSampled) * 100)
-    const imgPct = Math.round((imageCount / totalSampled) * 100)
-    const videoPct = Math.round((videoCount / totalSampled) * 100)
-    const otherPct = Math.max(0, 100 - docPct - imgPct - videoPct)
+
+    const { totalSampled, docCount, imageCount, videoCount, otherCount } = stats
+    const cat = stats.categoryCounts
+
+    // 优先采用后端直出细分类计数，否则从全量扩展名映射或高频扩展名榜单推导
+    let installerCount = cat?.installer ?? stats.installerCount ?? 0
+    let archiveCount = cat?.archive ?? stats.archiveCount ?? 0
+    let shortcutCount = cat?.shortcut ?? stats.shortcutCount ?? 0
+    let audioCount = cat?.audio ?? stats.audioCount ?? 0
+
+    if (
+      cat === undefined &&
+      stats.installerCount === undefined &&
+      stats.archiveCount === undefined &&
+      stats.shortcutCount === undefined
+    ) {
+      const extEntries: Array<[string, number]> = []
+      const mapObj = stats.countsByExt ?? stats.extensionCounts
+      if (mapObj && typeof mapObj === 'object') {
+        for (const [k, v] of Object.entries(mapObj)) {
+          if (typeof v === 'number' && v > 0) extEntries.push([k, v])
+        }
+      } else if (Array.isArray(stats.topExtensions)) {
+        for (const item of stats.topExtensions) {
+          if (item && typeof item.count === 'number' && item.count > 0) {
+            extEntries.push([item.ext, item.count])
+          }
+        }
+      }
+
+      for (const [rawExt, count] of extEntries) {
+        const cleanExt = rawExt.trim().toLowerCase().replace(/^\./, '')
+        if (PROFILE_INSTALLER_EXTS.has(cleanExt)) {
+          installerCount += count
+        } else if (PROFILE_ARCHIVE_EXTS.has(cleanExt)) {
+          archiveCount += count
+        } else if (PROFILE_SHORTCUT_EXTS.has(cleanExt)) {
+          shortcutCount += count
+        } else if (PROFILE_AUDIO_EXTS.has(cleanExt)) {
+          audioCount += count
+        }
+      }
+    }
+
+    const fineOtherSubSum = installerCount + archiveCount + shortcutCount + audioCount
+    const otherRemainingCount =
+      cat?.other !== undefined
+        ? cat.other
+        : Math.max(
+            0,
+            (otherCount ?? Math.max(0, totalSampled - docCount - imageCount - videoCount)) -
+              fineOtherSubSum
+          )
+
+    const rawBuckets = [
+      {
+        key: 'installer',
+        label: t('安装包 (.exe/.msi)'),
+        count: installerCount,
+        colorClass: 'bg-blue-500',
+        textClass: 'text-blue-600 dark:text-blue-400',
+        Icon: Package
+      },
+      {
+        key: 'archive',
+        label: t('压缩归档 (.zip/.7z)'),
+        count: archiveCount,
+        colorClass: 'bg-amber-500',
+        textClass: 'text-amber-600 dark:text-amber-400',
+        Icon: Archive
+      },
+      {
+        key: 'shortcut',
+        label: t('快捷方式 (.lnk)'),
+        count: shortcutCount,
+        colorClass: 'bg-cyan-500',
+        textClass: 'text-cyan-600 dark:text-cyan-400',
+        Icon: Link2
+      },
+      {
+        key: 'doc',
+        label: t('文档与代码'),
+        count: docCount,
+        colorClass: 'bg-emerald-500',
+        textClass: 'text-emerald-600 dark:text-emerald-400',
+        Icon: FileText
+      },
+      {
+        key: 'image',
+        label: t('图片与插画'),
+        count: imageCount,
+        colorClass: 'bg-violet-500',
+        textClass: 'text-violet-600 dark:text-violet-400',
+        Icon: ImageIcon
+      },
+      {
+        key: 'video',
+        label: t('视频与影视'),
+        count: videoCount,
+        colorClass: 'bg-orange-500',
+        textClass: 'text-orange-600 dark:text-orange-400',
+        Icon: Film
+      },
+      {
+        key: 'audio',
+        label: t('音乐与音频'),
+        count: audioCount,
+        colorClass: 'bg-pink-500',
+        textClass: 'text-pink-600 dark:text-pink-400',
+        Icon: Music
+      },
+      {
+        key: 'other',
+        label: t('其他格式'),
+        count: otherRemainingCount,
+        colorClass: 'bg-slate-400 dark:bg-slate-600',
+        textClass: 'text-slate-500',
+        Icon: Package
+      }
+    ].filter(item => item.count > 0)
+
+    const sumCounts = rawBuckets.reduce((acc, b) => acc + b.count, 0)
+    const denom = Math.max(totalSampled, sumCounts, 1)
+
+    const segments = rawBuckets.map(item => ({
+      ...item,
+      pct: Math.max(1, Math.round((item.count / denom) * 100)),
+      widthPct: (item.count / denom) * 100
+    }))
 
     return {
       totalSampled,
-      docCount,
-      imageCount,
-      videoCount,
-      docPct,
-      imgPct,
-      videoPct,
-      otherPct
+      segments
     }
   }, [profileResult])
 
@@ -483,21 +684,31 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     }
   }, [])
 
-  // 推导工作流推荐评分列表
+  // 推导工作流推荐评分列表（传入目录路径先验与全量扩展名映射，确保首推与文件构成严格匹配）
   const workflowRecommendations = useMemo<WorkflowRecommendation[]>(() => {
     if (!profileResult?.stats || profileResult.stats.totalSampled <= 0) {
       return []
     }
+    const pathNorm = (workspace.path || '').trim()
+    const isDesktopPath = /(?:^|[\\/])(?:desktop|桌面)(?:[\\/]|$)/i.test(pathNorm)
+    const isDownloadsPath = /(?:^|[\\/])(?:downloads?|下载)(?:[\\/]|$)/i.test(pathNorm)
+
     const profileStats: DirectoryProfileStats = {
+      totalFiles: profileResult.stats.totalSampled,
       totalSampled: profileResult.stats.totalSampled,
       docCount: profileResult.stats.docCount,
       imageCount: profileResult.stats.imageCount,
       videoCount: profileResult.stats.videoCount,
       otherCount: profileResult.stats.otherCount,
-      topExtensions: profileResult.stats.topExtensions || []
+      countsByExt: profileResult.stats.countsByExt,
+      extensionCounts: profileResult.stats.extensionCounts,
+      categoryCounts: profileResult.stats.categoryCounts,
+      topExtensions: profileResult.stats.topExtensions || [],
+      isDesktopPath,
+      isDownloadsPath
     }
     return recommendWorkflowByProfile(profileStats, workflows)
-  }, [profileResult, workflows])
+  }, [profileResult, workflows, workspace.path])
 
   // 推荐分数值映射表
   const scoreMap = useMemo(() => {
@@ -555,6 +766,12 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     }
   }, [selectedWorkflow?.workspace_config])
 
+  // 当前工作流的规范命名模板（用于预览树与样例生成）
+  const selectedNamingTemplate = useMemo<string>(() => {
+    if (!selectedWorkflow) return '{YYYYMMDD}_{SceneType}_{FileName}.{ext}'
+    return resolveWorkflowNamingTemplate(selectedWorkflow, selectedTemplateConfig)
+  }, [selectedWorkflow, selectedTemplateConfig])
+
   // 纯函数 buildPreviewTree 动态构建单点原型预览树
   const previewTreeNodes = useMemo<PreviewNode[]>(() => {
     if (!selectedWorkflow) return []
@@ -571,35 +788,12 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
       } catch {}
     }
 
-    const namingTemplate =
-      selectedWorkflow.naming_template ||
-      selectedTemplateConfig?.namingTemplate ||
-      selectedWorkflow.naming_pattern ||
-      '{YYYYMMDD}_{SceneType}_{FileName}.{ext}'
+    // 解析首选常见扩展名：exclusive > common > workspace_config 白名单 > .dat
+    const includedExts = extractWorkflowIncludedExtensions(selectedWorkflow)
+    const commonExt = includedExts[0] || '.dat'
 
-    // 解析首选常见扩展名
-    let commonExt = '.dat'
-    let extsObj = selectedWorkflow.extensions
-    if (typeof extsObj === 'string') {
-      try {
-        extsObj = JSON.parse(extsObj)
-      } catch {}
-    }
-    if (Array.isArray(extsObj?.common) && extsObj.common.length > 0) {
-      commonExt = extsObj.common[0]
-    } else if (Array.isArray(selectedTemplateConfig?.customWhitelistRules)) {
-      // 白名单规则为 IFilterRule 对象，取首个启用的扩展名规则值
-      const whitelistExts = getExtensionValues(selectedTemplateConfig.customWhitelistRules)
-      if (whitelistExts.length > 0) {
-        commonExt = whitelistExts[0]
-      }
-    }
-    if (!commonExt.startsWith('.')) {
-      commonExt = `.${commonExt}`
-    }
-
-    return buildPreviewTree(treeNodes, namingTemplate, commonExt)
-  }, [selectedWorkflow, selectedTemplateConfig])
+    return buildPreviewTree(treeNodes, selectedNamingTemplate, commonExt)
+  }, [selectedWorkflow, selectedNamingTemplate])
 
   // 提取当前选定工作流的包含白名单规则（labels 用于展示，extensions 用于扩展名命中统计）
   const currentWhitelist = useMemo(() => {
@@ -661,17 +855,27 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
       }
     }
 
-    // 统计白名单命中数
+    // 统计白名单命中数（优先全量扩展名映射，其次回退 topExtensions）
     const allowedExts = new Set(
       currentWhitelist.extensions.map(r =>
         r.startsWith('.') ? r.toLowerCase() : `.${r.toLowerCase()}`
       )
     )
     let matchedCount = 0
-    for (const item of profileResult?.stats?.topExtensions || []) {
-      const ext = item.ext.startsWith('.') ? item.ext.toLowerCase() : `.${item.ext.toLowerCase()}`
-      if (allowedExts.has(ext)) {
-        matchedCount += item.count
+    const extMap = profileResult?.stats?.countsByExt ?? profileResult?.stats?.extensionCounts
+    if (extMap && typeof extMap === 'object') {
+      for (const [rawExt, count] of Object.entries(extMap)) {
+        const ext = rawExt.startsWith('.') ? rawExt.toLowerCase() : `.${rawExt.toLowerCase()}`
+        if (allowedExts.has(ext) && typeof count === 'number') {
+          matchedCount += count
+        }
+      }
+    } else {
+      for (const item of profileResult?.stats?.topExtensions || []) {
+        const ext = item.ext.startsWith('.') ? item.ext.toLowerCase() : `.${item.ext.toLowerCase()}`
+        if (allowedExts.has(ext)) {
+          matchedCount += item.count
+        }
       }
     }
     const hiddenCount = Math.max(0, totalFiles - matchedCount)
@@ -828,15 +1032,21 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     toast.success(t('已将错误诊断信息复制到剪贴板'))
   }
 
-  // 过滤分类卡片
+  // 过滤分类卡片并按推荐契合度降序排列，保证最匹配的工作流始终排在列表前列
   const categoryWorkflows = useMemo(() => {
-    return workflows.filter(
+    const filtered = workflows.filter(
       (w: any) =>
         w &&
         typeof w.id === 'string' &&
         (activeCategory === 'all' || w?.category === activeCategory)
     )
-  }, [activeCategory, workflows])
+    if (scoreMap.size === 0) return filtered
+    return [...filtered].sort((a, b) => {
+      const sa = scoreMap.get(a.id)?.score ?? -1
+      const sb = scoreMap.get(b.id)?.score ?? -1
+      return sb - sa
+    })
+  }, [activeCategory, workflows, scoreMap])
 
   // 默认展示 Top 6，展开后展示全部
   const displayedWorkflows = useMemo(() => {
@@ -997,72 +1207,33 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
           </div>
         </div>
 
-        {/* 动态四色比例条 */}
+        {/* 动态多维细分比例条 */}
         {distribution ? (
           <div className="space-y-2">
             <div className="h-2 w-full rounded-full overflow-hidden flex bg-muted/60">
-              {distribution.docPct > 0 && (
+              {distribution.segments.map(seg => (
                 <div
-                  style={{ width: `${distribution.docPct}%` }}
-                  className="bg-emerald-500 transition-all duration-500"
-                  title={`${t('文档与代码')}: ${distribution.docPct}%`}
+                  key={seg.key}
+                  style={{ width: `${seg.widthPct}%` }}
+                  className={cn(seg.colorClass, 'transition-all duration-500')}
+                  title={`${seg.label}: ${seg.pct}%`}
                 />
-              )}
-              {distribution.imgPct > 0 && (
-                <div
-                  style={{ width: `${distribution.imgPct}%` }}
-                  className="bg-violet-500 transition-all duration-500"
-                  title={`${t('图片与插画')}: ${distribution.imgPct}%`}
-                />
-              )}
-              {distribution.videoPct > 0 && (
-                <div
-                  style={{ width: `${distribution.videoPct}%` }}
-                  className="bg-amber-500 transition-all duration-500"
-                  title={`${t('视频与音频')}: ${distribution.videoPct}%`}
-                />
-              )}
-              {distribution.otherPct > 0 && (
-                <div
-                  style={{ width: `${distribution.otherPct}%` }}
-                  className="bg-slate-400 dark:bg-slate-600 transition-all duration-500"
-                  title={`${t('其他格式')}: ${distribution.otherPct}%`}
-                />
-              )}
+              ))}
             </div>
 
-            {/* 图例占比药丸 */}
+            {/* 细分类图例占比药丸 */}
             <div className="flex items-center gap-3 sm:gap-4 flex-wrap text-[11px]">
-              <span className="flex items-center gap-1 text-muted-foreground">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                <FileText className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                <span>
-                  {t('文档与代码')} {distribution.docPct}%
-                </span>
-              </span>
-              <span className="flex items-center gap-1 text-muted-foreground">
-                <span className="w-2 h-2 rounded-full bg-violet-500" />
-                <ImageIcon className="w-3 h-3 text-violet-600 dark:text-violet-400" />
-                <span>
-                  {t('图片与插画')} {distribution.imgPct}%
-                </span>
-              </span>
-              <span className="flex items-center gap-1 text-muted-foreground">
-                <span className="w-2 h-2 rounded-full bg-amber-500" />
-                <Film className="w-3 h-3 text-amber-600 dark:text-amber-400" />
-                <span>
-                  {t('视频与音频')} {distribution.videoPct}%
-                </span>
-              </span>
-              {distribution.otherPct > 0 && (
-                <span className="flex items-center gap-1 text-muted-foreground">
-                  <span className="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-600" />
-                  <Package className="w-3 h-3 text-slate-500" />
-                  <span>
-                    {t('其他')} {distribution.otherPct}%
+              {distribution.segments.map(seg => {
+                const SegIcon = seg.Icon
+                return (
+                  <span key={seg.key} className="flex items-center gap-1 text-muted-foreground">
+                    <span className={cn('w-2 h-2 rounded-full', seg.colorClass)} />
+                    <SegIcon className={cn('w-3 h-3', seg.textClass)} />
+                    <span className="font-medium text-foreground/90">{seg.label}</span>
+                    <span>{seg.pct}%</span>
                   </span>
-                </span>
-              )}
+                )
+              })}
             </div>
           </div>
         ) : isProbing ? (
@@ -1238,18 +1409,50 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
                       {wf.summary}
                     </p>
 
-                    <div className="mt-2 pt-1.5 border-t border-border/40 text-[11px] flex items-center justify-between text-muted-foreground gap-2">
-                      <div className="truncate flex items-center gap-1">
-                        <Filter className="w-3 h-3 text-primary/70 shrink-0" />
-                        <span className="font-mono truncate">{wf.filter_rules}</span>
-                      </div>
-                      {wf.naming_template && (
-                        <div className="truncate flex items-center gap-1 font-mono text-[10px] text-muted-foreground/70 hidden sm:flex">
-                          <Tag className="w-3 h-3 text-primary/70 shrink-0" />
-                          <span className="truncate">{wf.naming_template}</span>
+                    {(() => {
+                      const includedExts = extractWorkflowIncludedExtensions(wf)
+                      const wfNamingTemplate = wf.naming_template || wf.naming_pattern
+                      return (
+                        <div className="mt-2 pt-1.5 border-t border-border/40 text-[11px] flex items-center justify-between text-muted-foreground gap-2">
+                          <div className="min-w-0 flex items-center gap-1.5 flex-wrap">
+                            <span className="font-semibold text-emerald-600 dark:text-emerald-400 shrink-0 flex items-center gap-1">
+                              <Filter className="w-3 h-3 shrink-0" />
+                              {t('包含扩展名:')}
+                            </span>
+                            {includedExts.length > 0 ? (
+                              <div className="flex items-center gap-1 flex-wrap">
+                                {includedExts.slice(0, 5).map(ext => (
+                                  <span
+                                    key={ext}
+                                    className="px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 font-mono text-[10px]"
+                                  >
+                                    {ext}
+                                  </span>
+                                ))}
+                                {includedExts.length > 5 && (
+                                  <span className="text-[10px] font-mono text-muted-foreground">
+                                    +{includedExts.length - 5}
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-[11px] text-muted-foreground">
+                                {t('全部受管格式')}
+                              </span>
+                            )}
+                          </div>
+                          {wfNamingTemplate && (
+                            <div
+                              className="truncate max-w-[140px] flex items-center gap-1 font-mono text-[10px] text-muted-foreground/70 hidden sm:flex shrink-0"
+                              title={wfNamingTemplate}
+                            >
+                              <Tag className="w-3 h-3 text-primary/70 shrink-0" />
+                              <span className="truncate">{wfNamingTemplate}</span>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
+                      )
+                    })()}
                   </div>
                 )
               })}
@@ -1302,6 +1505,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
                       key={`${rootNode.name}-${idx}`}
                       node={rootNode}
                       isRoot={true}
+                      namingTemplate={selectedNamingTemplate}
                     />
                   ))}
                 </div>

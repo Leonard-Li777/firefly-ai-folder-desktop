@@ -391,5 +391,49 @@ describe('Workflow Preset & Recommender Engine (Spec v1.1 §3.2)', () => {
 
       expect(priorScore).toBe(Math.min(99, baseScore + 10))
     })
+
+    it('代码工程目录应首推代码资产工作流，绝不误推日常办公文档；普通相册与普通视频应精确匹配', () => {
+      const codeStats: DirectoryProfileStats = {
+        totalFiles: 50,
+        docCount: 48,
+        countsByExt: { '.ts': 22, '.tsx': 12, '.json': 10, '.py': 4, '.png': 2 }
+      }
+      const codeRec = recommendWorkflowByProfile(codeStats)
+      expect([
+        'builtin.workflow.code-asset-vault',
+        'builtin.workflow.frontend-dev',
+        'builtin.workflow.backend-arch'
+      ]).toContain(codeRec[0].workflowId)
+
+      const imgStats: DirectoryProfileStats = {
+        totalFiles: 30,
+        countsByExt: { '.png': 18, '.jpg': 10, '.mp4': 2 }
+      }
+      const imgRec = recommendWorkflowByProfile(imgStats)
+      expect([
+        'builtin.workflow.screenshots-screenrecord-vault',
+        'builtin.workflow.media-collector-vault',
+        'builtin.workflow.family-household'
+      ]).toContain(imgRec[0].workflowId)
+
+      const videoStats: DirectoryProfileStats = {
+        totalFiles: 20,
+        countsByExt: { '.mp4': 12, '.mkv': 6, '.srt': 2 }
+      }
+      const videoRec = recommendWorkflowByProfile(videoStats)
+      expect(['builtin.workflow.movie-cinema', 'builtin.workflow.media-collector-vault']).toContain(
+        videoRec[0].workflowId
+      )
+    })
+
+    it('支配占比保护：100个安装包目录中夹杂1个.prproj或少数.psd，不得劫持下载分流首推', () => {
+      const mixedDownloads: DirectoryProfileStats = {
+        totalFiles: 100,
+        countsByExt: { '.exe': 45, '.msi': 15, '.zip': 20, '.prproj': 1, '.psd': 6, '.pdf': 13 },
+        isDownloadsPath: true
+      }
+      const res = recommendWorkflowByProfile(mixedDownloads)
+      expect(res[0].workflowId).toBe('builtin.workflow.downloads-triage')
+    })
   })
 })

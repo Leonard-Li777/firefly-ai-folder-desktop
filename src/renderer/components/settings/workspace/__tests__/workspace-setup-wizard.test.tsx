@@ -201,7 +201,8 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
         { ext: '.lnk', count: 25 },
         { ext: '.docx', count: 15 },
         { ext: '.zip', count: 10 },
-        { ext: '.log', count: 15 }
+        { ext: '.exe', count: 10 },
+        { ext: '.log', count: 5 }
       ]
     }
   }
@@ -243,14 +244,23 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
       expect(screen.getByText('当前目录文件构成特征')).toBeDefined()
     })
 
-    // 全局比例条抽样数
+    // 全局比例条抽样数与细分分类（安装包、压缩归档、快捷方式）
     expect(screen.getByText(/抽样 100 个文件/)).toBeDefined()
     expect(screen.getByText('已完成多维画像嗅探')).toBeDefined()
+    expect(screen.getByText('安装包 (.exe/.msi)')).toBeDefined()
+    expect(screen.getByText('压缩归档 (.zip/.7z)')).toBeDefined()
+    expect(screen.getByText('快捷方式 (.lnk)')).toBeDefined()
 
     // 默认展示分类与卡片（mockWorkflows 共有 8 套，Top 6 限制下默认只呈现 6 套）
     expect(screen.getByText('全场景官方工作流矩阵库')).toBeDefined()
     const matches = screen.getAllByText('电脑桌面急救与杂乱清理流')
     expect(matches.length).toBeGreaterThan(0)
+
+    // 步骤 1 卡片列表中直接显示包含扩展名徽章
+    expect(screen.getAllByText('包含扩展名:').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('.lnk').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('.exe').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('全部受管格式').length).toBeGreaterThan(0)
 
     // 展开按钮初始文案
     const toggleBtn = screen.getByText(/展示所有工作流 \(共 8 套\)/)
@@ -265,8 +275,11 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
     fireEvent.click(screen.getByText('收起工作流列表 (仅展示推荐)'))
     expect(screen.getByText(/展示所有工作流 \(共 8 套\)/)).toBeDefined()
 
-    // 右侧纯函数预览树检查单点原型
+    // 右侧纯函数预览树检查最深子目录、格式化文件示例与命名模板展示
     expect(screen.getByText('预期整理目录结构')).toBeDefined()
+    expect(screen.getByText('常用办公')).toBeDefined()
+    expect(screen.getByText('20261110_工作归档_示例文件.lnk')).toBeDefined()
+    expect(screen.getByText('命名模板')).toBeDefined()
     expect(screen.getByText('命名样例')).toBeDefined()
     expect(screen.getByText(/安全无损/)).toBeDefined()
   })

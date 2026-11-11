@@ -49,28 +49,159 @@ export const IGNORED_DIRECTORY_NAMES = new Set([
  * 文档与文本类扩展名
  */
 export const DOCUMENT_EXTENSIONS = new Set([
-  'txt', 'md', 'markdown', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
-  'csv', 'json', 'xml', 'html', 'htm', 'epub', 'mobi', 'rtf', 'log', 'tex',
-  'ts', 'tsx', 'js', 'jsx', 'py', 'rs', 'java', 'c', 'cpp', 'h', 'hpp',
-  'cs', 'go', 'rb', 'php', 'sql', 'sh', 'bash', 'ps1', 'bat', 'cmd',
-  'yaml', 'yml', 'toml', 'ini', 'env'
+  'txt',
+  'md',
+  'markdown',
+  'pdf',
+  'doc',
+  'docx',
+  'xls',
+  'xlsx',
+  'ppt',
+  'pptx',
+  'csv',
+  'json',
+  'xml',
+  'html',
+  'htm',
+  'epub',
+  'mobi',
+  'rtf',
+  'log',
+  'tex',
+  'ts',
+  'tsx',
+  'js',
+  'jsx',
+  'py',
+  'rs',
+  'java',
+  'c',
+  'cpp',
+  'h',
+  'hpp',
+  'cs',
+  'go',
+  'rb',
+  'php',
+  'sql',
+  'sh',
+  'bash',
+  'ps1',
+  'bat',
+  'cmd',
+  'yaml',
+  'yml',
+  'toml',
+  'ini',
+  'env'
 ])
 
 /**
  * 图片与视觉类扩展名
  */
 export const IMAGE_EXTENSIONS = new Set([
-  'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico', 'tiff', 'tif',
-  'heic', 'heif', 'avif', 'raw', 'cr2', 'nef', 'arw', 'dng', 'psd', 'ai',
-  'eps', 'sketch', 'xd', 'fig'
+  'jpg',
+  'jpeg',
+  'png',
+  'gif',
+  'webp',
+  'svg',
+  'bmp',
+  'ico',
+  'tiff',
+  'tif',
+  'heic',
+  'heif',
+  'avif',
+  'raw',
+  'cr2',
+  'nef',
+  'arw',
+  'dng',
+  'psd',
+  'ai',
+  'eps',
+  'sketch',
+  'xd',
+  'fig'
 ])
 
 /**
  * 视频与影视类扩展名
  */
 export const VIDEO_EXTENSIONS = new Set([
-  'mp4', 'mkv', 'mov', 'avi', 'wmv', 'flv', 'webm', 'm4v', 'rmvb', 'rm',
-  '3gp', 'ts', 'mpg', 'mpeg', 'vob', 'm2ts', 'mts'
+  'mp4',
+  'mkv',
+  'mov',
+  'avi',
+  'wmv',
+  'flv',
+  'webm',
+  'm4v',
+  'rmvb',
+  'rm',
+  '3gp',
+  'ts',
+  'mpg',
+  'mpeg',
+  'vob',
+  'm2ts',
+  'mts'
+])
+
+/**
+ * 安装包与可执行程序类扩展名
+ */
+export const INSTALLER_EXTENSIONS = new Set([
+  'exe',
+  'msi',
+  'dmg',
+  'pkg',
+  'deb',
+  'rpm',
+  'apk',
+  'appx',
+  'msix'
+])
+
+/**
+ * 压缩与归档包类扩展名
+ */
+export const ARCHIVE_EXTENSIONS = new Set([
+  'zip',
+  'rar',
+  '7z',
+  'tar',
+  'gz',
+  'bz2',
+  'xz',
+  'zst',
+  'tgz',
+  'iso',
+  'cab'
+])
+
+/**
+ * 快捷方式与链接类扩展名
+ */
+export const SHORTCUT_EXTENSIONS = new Set(['lnk', 'url', 'webloc', 'desktop'])
+
+/**
+ * 音频与音乐类扩展名
+ */
+export const AUDIO_EXTENSIONS = new Set([
+  'mp3',
+  'wav',
+  'flac',
+  'aac',
+  'ogg',
+  'm4a',
+  'ape',
+  'wma',
+  'opus',
+  'dsf',
+  'dff'
 ])
 
 /**
@@ -82,6 +213,12 @@ export interface DirectoryProfileStats {
   imageCount: number
   videoCount: number
   otherCount: number
+  installerCount?: number
+  archiveCount?: number
+  shortcutCount?: number
+  audioCount?: number
+  countsByExt?: Record<string, number>
+  categoryCounts?: Record<string, number>
   topExtensions: Array<{ ext: string; count: number }>
   durationMs: number
   hitTimeBudget: boolean
@@ -121,6 +258,10 @@ export class DirectoryProfiler {
     let imageCount = 0
     let videoCount = 0
     let otherCount = 0
+    let installerCount = 0
+    let archiveCount = 0
+    let shortcutCount = 0
+    let audioCount = 0
     let totalSampled = 0
     let hitTimeBudget = false
 
@@ -192,6 +333,15 @@ export class DirectoryProfiler {
                 videoCount++
               } else {
                 otherCount++
+                if (INSTALLER_EXTENSIONS.has(ext)) {
+                  installerCount++
+                } else if (ARCHIVE_EXTENSIONS.has(ext)) {
+                  archiveCount++
+                } else if (SHORTCUT_EXTENSIONS.has(ext)) {
+                  shortcutCount++
+                } else if (AUDIO_EXTENSIONS.has(ext)) {
+                  audioCount++
+                }
               }
             } else {
               otherCount++
@@ -213,16 +363,30 @@ export class DirectoryProfiler {
     try {
       await Promise.race([traverseTask(), timeoutPromise])
     } catch (error) {
-      logger.warn(LogCategory.FILE_SCANNER, `[DirectoryProfiler] 嗅探目录发生非致命异常: ${targetPath}`, error)
+      logger.warn(
+        LogCategory.FILE_SCANNER,
+        `[DirectoryProfiler] 嗅探目录发生非致命异常: ${targetPath}`,
+        error
+      )
     }
 
     const durationMs = Date.now() - startTime
 
-    // 统计频率最高的前 5 个扩展名
+    // 统计频率最高的前 5 个扩展名与完整扩展名频次字典
     const topExtensions = Array.from(extensionCounts.entries())
       .map(([ext, count]) => ({ ext, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 5)
+
+    const countsByExt: Record<string, number> = {}
+    for (const [ext, count] of extensionCounts.entries()) {
+      countsByExt[ext] = count
+    }
+
+    const otherRemainingCount = Math.max(
+      0,
+      otherCount - installerCount - archiveCount - shortcutCount - audioCount
+    )
 
     const stats: DirectoryProfileStats = {
       totalSampled,
@@ -230,6 +394,21 @@ export class DirectoryProfiler {
       imageCount,
       videoCount,
       otherCount,
+      installerCount,
+      archiveCount,
+      shortcutCount,
+      audioCount,
+      countsByExt,
+      categoryCounts: {
+        installer: installerCount,
+        archive: archiveCount,
+        shortcut: shortcutCount,
+        doc: docCount,
+        image: imageCount,
+        video: videoCount,
+        audio: audioCount,
+        other: otherRemainingCount
+      },
       topExtensions,
       durationMs,
       hitTimeBudget
@@ -264,12 +443,12 @@ export class DirectoryProfiler {
     const videoRatio = videoCount / totalSampled
 
     // 2. 绝对多数派优先判定：视觉图库意图 (图片 >= 60%)
-    if (imageRatio >= 0.60) {
+    if (imageRatio >= 0.6) {
       return { detectedIntent: 'visual_gallery', confidence: 0.9 }
     }
 
     // 3. 绝对多数派优先判定：文档文献意图 (文档/代码 >= 50%)
-    if (docRatio >= 0.50) {
+    if (docRatio >= 0.5) {
       return { detectedIntent: 'fast_archive', confidence: 0.9 }
     }
 

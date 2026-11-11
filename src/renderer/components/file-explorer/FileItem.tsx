@@ -23,8 +23,11 @@ export const getFileIcon = (type: 'file' | 'directory', extension?: string, clas
     pdf: 'picture_as_pdf',
     doc: 'description',
     docx: 'description',
+    wps: 'description',
+    ofd: 'description',
     xls: 'table_chart',
     xlsx: 'table_chart',
+    csv: 'table_chart',
     ppt: 'slideshow',
     pptx: 'slideshow',
 
@@ -41,7 +44,7 @@ export const getFileIcon = (type: 'file' | 'directory', extension?: string, clas
     yaml: 'code',
     yml: 'code',
 
-    // 图片类型
+    // 图片与设计类型
     jpg: 'image',
     jpeg: 'image',
     png: 'image',
@@ -49,6 +52,23 @@ export const getFileIcon = (type: 'file' | 'directory', extension?: string, clas
     svg: 'image',
     bmp: 'image',
     webp: 'image',
+    cr3: 'photo_camera',
+    arw: 'photo_camera',
+    nef: 'photo_camera',
+    cr2: 'photo_camera',
+    dng: 'photo_camera',
+    raw: 'photo_camera',
+    psd: 'palette',
+    ai: 'palette',
+    fig: 'palette',
+    sketch: 'palette',
+
+    // 3D 与模型类型
+    blend: 'view_in_ar',
+    obj: 'view_in_ar',
+    fbx: 'view_in_ar',
+    glb: 'view_in_ar',
+    gltf: 'view_in_ar',
 
     // 音频类型
     mp3: 'music_note',
@@ -69,7 +89,15 @@ export const getFileIcon = (type: 'file' | 'directory', extension?: string, clas
     rar: 'archive',
     '7z': 'archive',
     tar: 'archive',
-    gz: 'archive'
+    gz: 'archive',
+
+    // 安装包与快捷方式
+    exe: 'install_desktop',
+    msi: 'install_desktop',
+    dmg: 'install_desktop',
+    apk: 'install_desktop',
+    lnk: 'shortcut',
+    url: 'shortcut'
   }
 
   return (
