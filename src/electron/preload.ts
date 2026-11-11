@@ -772,7 +772,9 @@ const electronAPI = {
     seatDevice: (payload: { sessionToken?: string; evictDeviceId?: string | null }): Promise<any> =>
       ipcRenderer.invoke('deviceBind/seatDevice', payload),
     listSeatedDevices: (payload?: { sessionToken?: string }): Promise<any> =>
-      ipcRenderer.invoke('deviceBind/listSeatedDevices', payload)
+      ipcRenderer.invoke('deviceBind/listSeatedDevices', payload),
+    unbindDevice: (payload?: { deviceId?: string; machineId?: string }): Promise<any> =>
+      ipcRenderer.invoke('deviceBind/unbindDevice', payload)
   },
 
   // 工作目录管理

@@ -90,4 +90,13 @@ export function registerDeviceBindIPCHandlers(): void {
       return { success: false, error: err?.message || 'unknown' }
     }
   })
+
+  ipcMain.handle('deviceBind/unbindDevice', async (_event, payload?: { deviceId?: string; machineId?: string }) => {
+    try {
+      return await DeviceBindService.getInstance().unbindDevice(payload)
+    } catch (err: any) {
+      logger.error(LogCategory.IPC, '[IPC] deviceBind/unbindDevice failed:', err)
+      return { success: false, error: err?.message || 'unknown' }
+    }
+  })
 }

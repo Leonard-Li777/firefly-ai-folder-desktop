@@ -19,7 +19,9 @@ import {
   MessageCircle,
   RefreshCw,
   Sparkle,
-  Layers
+  Layers,
+  Laptop,
+  LogOut
 } from 'lucide-react'
 import { useTierStore } from '../../stores/tier-store'
 import { useConfigStore } from '../../stores/config-store'
@@ -28,6 +30,8 @@ import { openExternalLink } from '../../lib/external-link'
 import { resolveDevCreemUrl, getOfficialSiteOrigin } from '../../lib/marketing-link'
 import { EmailSvg } from '../ui/EmailSvg'
 import { cn } from '../../lib/utils'
+import { DeviceEvictDialog } from './DeviceEvictDialog'
+import { toast } from '../common/Toast'
 
 interface AccountManagementDialogProps {
   open: boolean
@@ -45,6 +49,8 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
   const [identCode, setIdentCode] = useState<string>('')
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
   const [isSyncing, setIsSyncing] = useState<boolean>(false)
+  const [isEvictOpen, setIsEvictOpen] = useState<boolean>(false)
+  const [isUnbindingSelf, setIsUnbindingSelf] = useState<boolean>(false)
 
   const handleSyncStatus = async () => {
     setIsSyncing(true)
@@ -606,6 +612,55 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
             </div>
           </div>
 
+          {/* ── 已绑定设备管理与本机解绑入口 ── */}
+          <div className="p-3 bg-muted/30 rounded-xl border border-border/50 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <Laptop className="w-4 h-4 text-primary shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-foreground truncate">{t('已绑定设备与席位')}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{t('最多支持 6 台设备同时登录与席位管理')}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEvictOpen(true)}
+                className="h-7 text-xs px-2.5 rounded-lg border-border/70 hover:bg-muted font-medium cursor-pointer"
+              >
+                <Laptop className="w-3 h-3 mr-1 text-primary" />
+                {t('管理设备席位')}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={isUnbindingSelf}
+                onClick={async () => {
+                  const confirmed = window.confirm(t('确定要解绑本机吗？解绑后本机需重新扫码授权才能使用完整权益。'))
+                  if (!confirmed) return
+                  setIsUnbindingSelf(true)
+                  try {
+                    const res = await window.electronAPI?.deviceBind?.unbindDevice?.()
+                    if (res?.success) {
+                      toast.success(t('本机已解绑成功'))
+                      onOpenChange(false)
+                    } else {
+                      toast.error(res?.message || res?.error || t('解绑失败，请重试'))
+                    }
+                  } catch (err: any) {
+                    toast.error(err?.message || t('解绑异常'))
+                  } finally {
+                    setIsUnbindingSelf(false)
+                  }
+                }}
+                className="h-7 text-xs px-2.5 rounded-lg text-destructive hover:bg-destructive/10 hover:text-destructive font-medium cursor-pointer"
+              >
+                <LogOut className="w-3 h-3 mr-1" />
+                {isUnbindingSelf ? t('解绑中...') : t('解绑本机')}
+              </Button>
+            </div>
+          </div>
+
           {/* ── 账单与自动续订管理模块 ── */}
           {paymentInfo?.method === 'creem' ? (
             <div className="p-4 bg-muted/40 rounded-2xl space-y-3 border border-border/50 relative overflow-hidden">
@@ -718,6 +773,15 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
           </div>
         </div>
       </DialogContent>
+
+      <DeviceEvictDialog
+        open={isEvictOpen}
+        onOpenChange={setIsEvictOpen}
+        onEvictedSuccess={() => {
+          setIsEvictOpen(false)
+          handleSyncStatus()
+        }}
+      />
     </Dialog>
   )
 }

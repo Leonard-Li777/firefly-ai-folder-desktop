@@ -101,7 +101,9 @@ export const LicenseGateway: React.FC<LicenseGatewayProps> = ({
               <CardDescription className="text-lg mt-2">
                 {status === 'TIME_TAMPERED'
                   ? t('检测到系统时间异常，请校准时间后再运行。')
-                  : t('当前处于离线环境，个人需要联网，企业需要获取离线授权才能继续使用。')}
+                  : error
+                    ? error
+                    : t('当前处于离线环境，个人版最长允许离线使用 3 天，请联网刷新授权；企业版可输入离线授权码使用。')}
               </CardDescription>
             </div>
           </CardHeader>

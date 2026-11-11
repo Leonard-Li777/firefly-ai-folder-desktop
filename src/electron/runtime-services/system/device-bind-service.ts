@@ -7,6 +7,7 @@ import { RemoteConfigService } from './remote-config-service'
 import { createSupabaseClient } from './supabase-client-factory'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { SupabaseClient } from '@supabase/supabase-js'
+import { getMainWindow } from '../../main/window'
 
 export interface DeviceBindStatus {
   success: boolean
@@ -774,5 +775,72 @@ export class DeviceBindService {
    */
   public async clearAllTokens(): Promise<void> {
     await Promise.all([this.clearDeviceToken(), this.clearBindSessionToken()])
+  }
+
+  /**
+   * 主动解绑设备 (本机或指定设备)
+   */
+  public async unbindDevice(payload?: {
+    deviceId?: string
+    machineId?: string
+  }): Promise<{ success: boolean; error?: string; message?: string }> {
+    try {
+      const token = this.getDeviceToken()
+      if (!token) {
+        return { success: false, error: 'NO_SESSION_TOKEN', message: '未获取到当前登录会话' }
+      }
+
+      const client = this.getClient()
+      const { data, error } = await client.functions.invoke('seat-device', {
+        headers: {
+          authorization: `Bearer ${token}`
+        },
+        body: {
+          action: 'unbind',
+          deviceId: payload?.deviceId,
+          machineId: payload?.machineId
+        }
+      })
+
+      if (error) {
+        const errPayload = await this.extractFunctionErrorPayload(error)
+        logger.warn(LogCategory.SYSTEM, '[DeviceBindService] unbindDevice 失败:', errPayload || error)
+        return {
+          success: false,
+          error: errPayload?.error || error.message,
+          message: errPayload?.message || error.message
+        }
+      }
+
+      if (!data?.success) {
+        return {
+          success: false,
+          error: data?.error || 'UNBIND_FAILED',
+          message: data?.message || '解绑失败'
+        }
+      }
+
+      // 如果解绑的是本机（未传 deviceId/machineId 或 machineId 等于本机 machine_id）
+      const currentMachineId = SystemIdentityService.getInstance().getMachineId()
+      const isSelf =
+        (!payload?.deviceId && !payload?.machineId) ||
+        payload?.machineId === currentMachineId
+
+      if (isSelf) {
+        await this.clearAllTokens()
+        const mainWindow = getMainWindow()
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('userTier/deviceUnbound')
+        }
+      }
+
+      return {
+        success: true,
+        message: data?.message || '设备解绑成功'
+      }
+    } catch (err: any) {
+      logger.error(LogCategory.SYSTEM, '[DeviceBindService] unbindDevice 异常:', err)
+      return { success: false, error: err?.message || 'unknown' }
+    }
   }
 }
