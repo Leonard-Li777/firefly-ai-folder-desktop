@@ -241,6 +241,7 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
 
     // 等待工作流加载
     await waitFor(() => {
+      expect(screen.getByText('工作目录工作流向导')).toBeDefined()
       expect(screen.getByText('当前目录文件构成特征')).toBeDefined()
     })
 

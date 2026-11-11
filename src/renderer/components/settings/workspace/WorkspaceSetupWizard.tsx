@@ -1083,7 +1083,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
           </div>
           <div>
             <h3 className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
-              <span>{t('工作目录初始化向导')}</span>
+              <span>{t('工作目录工作流向导')}</span>
             </h3>
             <p className="text-xs text-muted-foreground">
               {t('智能感知目录生态，自动化装配专属虚拟归档管道')}
