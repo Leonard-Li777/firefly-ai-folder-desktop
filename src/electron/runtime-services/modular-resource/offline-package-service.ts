@@ -15,7 +15,14 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as crypto from 'crypto'
 import JSZip from 'jszip'
-import { logger, LogCategory } from '@firefly/shared'
+import {
+  logger,
+  LogCategory,
+  PluginPathResolver,
+  computeDirectoryReadyDigest,
+  writeReadyMarker,
+  invalidateReadyMarkers
+} from '@firefly/shared'
 import type { ModularResourceService, BuiltinModuleView } from '../system/modular-resource-service'
 import { fileDownloadService, safeResolveZipEntry } from '../system/file-download-service'
 
@@ -32,6 +39,25 @@ MCowBQYDK2VwAyEAbEbqhO4NMnk/Y57Hf9vEFv8RNZIzJx20H25Om97twHs=
 export const TEST_ED25519_SK = `-----BEGIN PRIVATE KEY-----
 MC4CAQAwBQYDK2VwBCIEIKGwIbpF/QyjrXzc8FBbw/oB5szFDqGQVkLLSFbqB2Cc
 -----END PRIVATE KEY-----`
+
+function computePathTotalBytesSync(targetPath: string): number {
+  const st = fs.lstatSync(targetPath)
+  if (st.isFile()) return st.size
+  if (!st.isDirectory()) return 0
+  let total = 0
+  for (const entry of fs.readdirSync(targetPath, { withFileTypes: true })) {
+    if (entry.name.startsWith('.')) continue
+    const full = path.join(targetPath, entry.name)
+    const itemStat = fs.lstatSync(full)
+    if (itemStat.isSymbolicLink()) continue
+    if (itemStat.isFile()) {
+      total += itemStat.size
+    } else if (itemStat.isDirectory()) {
+      total += computePathTotalBytesSync(full)
+    }
+  }
+  return total
+}
 
 /**
  * 单文件解压配额限制 (2GB)
@@ -193,8 +219,12 @@ export class OfflinePackageService {
     }
 
     const zip = new JSZip()
-    const baseDir = service.getBaseDir()
-    const moduleSharedDir = path.join(baseDir, 'modules', '_shared', moduleId)
+    const pluginsRootDir = service.getPluginsRootDir()
+    const ssotManifestDir = PluginPathResolver.getModuleManifestDirForRoot(pluginsRootDir, moduleId)
+    const legacyManifestDir = path.join(pluginsRootDir, '_shared', moduleId)
+    const moduleManifestDir = fs.existsSync(path.join(ssotManifestDir, 'manifest.sig'))
+      ? ssotManifestDir
+      : legacyManifestDir
 
     // 构建 Manifest
     const manifest: OfflinePackageManifest = {
@@ -225,7 +255,7 @@ export class OfflinePackageService {
     zip.file('manifest.json', manifestJsonStr)
 
     // 签名保护：优先复用官方原版 manifest.sig
-    const originalSigPath = path.join(moduleSharedDir, 'manifest.sig')
+    const originalSigPath = path.join(moduleManifestDir, 'manifest.sig')
     let sigHex = ''
     if (fs.existsSync(originalSigPath)) {
       sigHex = fs.readFileSync(originalSigPath, 'utf8').trim()
@@ -350,11 +380,10 @@ export class OfflinePackageService {
     }
 
     const service = this.getService()
-    const baseDir = service.getBaseDir()
+    const pluginsRootDir = service.getPluginsRootDir()
     const stagingDir = path.join(
-      baseDir,
-      'modules',
-      '_shared',
+      pluginsRootDir,
+      '_staging',
       `${moduleId}.import-${Date.now()}-${Math.random().toString(36).substring(7)}`
     )
 
@@ -410,7 +439,7 @@ export class OfflinePackageService {
       }
 
       // 阶段 5：物理迁移与持久化入库
-      // 将 staging 目录下的资源移动到 baseDir 对应的真实路径
+      // 将 staging 目录下的资源移动到 pluginsRootDir 对应的真实路径
       for (const res of manifest.resources) {
         const extractedResPath = path.resolve(stagingDir, res.target_local_path)
         const targetPhysicalPath = service.resolvePhysicalPath(res.target_local_path)
@@ -419,8 +448,9 @@ export class OfflinePackageService {
           fs.mkdirSync(targetParentDir, { recursive: true })
         }
 
-        // 若已存在旧目录或文件，先使用 rmSync 清理
+        // 若已存在旧目录或文件，先清理旧标记再删除，防止半成品放行
         if (fs.existsSync(targetPhysicalPath)) {
+          await invalidateReadyMarkers(targetPhysicalPath)
           fs.rmSync(targetPhysicalPath, { recursive: true, force: true })
         }
 
@@ -431,25 +461,42 @@ export class OfflinePackageService {
           fs.cpSync(extractedResPath, targetPhysicalPath, { recursive: true })
           fs.rmSync(extractedResPath, { recursive: true, force: true })
         }
+
+        // 物化完成：为目录级共享资源原子写入统一 `.ready.json`
+        if (fs.existsSync(targetPhysicalPath) && fs.statSync(targetPhysicalPath).isDirectory()) {
+          await invalidateReadyMarkers(targetPhysicalPath)
+          const digestResult = await computeDirectoryReadyDigest(targetPhysicalPath)
+          await writeReadyMarker(targetPhysicalPath, {
+            resourceId: res.resource_id,
+            sharedSubDir: path.basename(targetPhysicalPath),
+            digestResult
+          })
+        }
       }
 
-      // 缓存 manifest.sig 与 manifest.json 到 modules/_shared/<moduleId>/
-      const finalModuleSharedDir = path.join(baseDir, 'modules', '_shared', moduleId)
-      if (!fs.existsSync(finalModuleSharedDir)) {
-        fs.mkdirSync(finalModuleSharedDir, { recursive: true })
+      // 缓存 manifest.sig 与 manifest.json 到 SSOT 隔离清单目录 `_module_manifests/<moduleId>/`
+      const finalManifestDir = PluginPathResolver.getModuleManifestDirForRoot(
+        pluginsRootDir,
+        moduleId
+      )
+      if (!fs.existsSync(finalManifestDir)) {
+        fs.mkdirSync(finalManifestDir, { recursive: true })
       }
-      fs.writeFileSync(path.join(finalModuleSharedDir, 'manifest.json'), manifestStr, 'utf8')
-      fs.writeFileSync(path.join(finalModuleSharedDir, 'manifest.sig'), sigHex, 'utf8')
+      fs.writeFileSync(path.join(finalManifestDir, 'manifest.json'), manifestStr, 'utf8')
+      fs.writeFileSync(path.join(finalManifestDir, 'manifest.sig'), sigHex, 'utf8')
 
       // 阶段 6：数据库单事务持久化
       const db = service.getDb()
       const dao = service.getDao()
+      let autoActivatedSlotModuleId: string | null = null
 
       const tx = db.transaction(() => {
         // 1. 写入/更新 resource_downloads
         for (const res of manifest.resources) {
           const absPath = service.resolvePhysicalPath(res.target_local_path)
-          const bytes = fs.existsSync(absPath) ? fs.statSync(absPath).size : (res.size ?? 0)
+          const bytes = fs.existsSync(absPath)
+            ? computePathTotalBytesSync(absPath)
+            : (res.size ?? 0)
           dao.resources.createOrGetTaskSync({
             resource_id: res.resource_id,
             asset_name: res.asset_name,
@@ -477,6 +524,7 @@ export class OfflinePackageService {
           const activeEngine = dao.modules.findActiveBySlotSync(slot as any)
           if (!activeEngine) {
             targetInstallState = 'active'
+            autoActivatedSlotModuleId = moduleId
           }
         }
 
@@ -498,6 +546,10 @@ export class OfflinePackageService {
       })
 
       tx()
+
+      if (autoActivatedSlotModuleId) {
+        await service.notifyRuntimePluginTopologyChanged?.(autoActivatedSlotModuleId)
+      }
 
       logger.info(LogCategory.SYSTEM, `[OfflinePackage] 离线插件包导入成功: ${moduleId}`)
       return service.getModule(moduleId)!

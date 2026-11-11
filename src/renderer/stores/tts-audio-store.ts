@@ -13,6 +13,7 @@ import { create } from 'zustand'
 import { cleanTextForTTS, splitTextIntoChunks } from '../lib/text-chunker'
 import { useConfigStore } from './config-store'
 import { useSettingsStore } from './settings-store'
+import { usePluginCenterStore } from './plugin-center-store'
 import {
   getVoiceById,
   DEFAULT_VOICE_ID,
@@ -23,6 +24,48 @@ import { toast } from '../components/common/Toast'
 import { t } from '@app/languages'
 
 export type TTSPlayStatus = 'idle' | 'loading' | 'playing' | 'paused' | 'error' | 'exporting'
+
+/**
+ * 探测当前环境是否安装并激活了 TTS 插件 (voice_tts / tts_moss_onnx / tts_m5_onnx)
+ */
+export function hasActiveTTSPlugin(): boolean {
+  try {
+    const modules = usePluginCenterStore.getState().modules
+    return (modules || []).some(
+      m =>
+        (m.capability_slot === 'voice_tts' || m.id === 'tts_moss_onnx' || m.id === 'tts_m5_onnx') &&
+        m.install_state === 'active'
+    )
+  } catch {
+    return false
+  }
+}
+
+/**
+ * 获取当前激活的 TTS 插件 ID
+ */
+export function getActiveTTSPluginId(): 'tts_m5_onnx' | 'tts_moss_onnx' | null {
+  try {
+    const modules = usePluginCenterStore.getState().modules
+    const active = (modules || []).find(
+      m =>
+        (m.capability_slot === 'voice_tts' || m.id === 'tts_moss_onnx' || m.id === 'tts_m5_onnx') &&
+        m.install_state === 'active'
+    )
+    if (active?.id === 'tts_m5_onnx') return 'tts_m5_onnx'
+    if (active?.id === 'tts_moss_onnx') return 'tts_moss_onnx'
+    return null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * 当前激活引擎是否支持声音克隆 (M5 专精预置极速发音人，不支持自定义音色克隆)
+ */
+export function isVoiceCloningSupported(): boolean {
+  return getActiveTTSPluginId() === 'tts_moss_onnx'
+}
 
 export interface TTSAudioState {
   /** 当前正在播放的原始文本 */
@@ -247,17 +290,19 @@ function flushPrebufferedChunks(list: PrebufferedChunkItem[], ctx: AudioContext)
 export function getCurrentTTSChunks(): string[] {
   return currentCleanedChunks
 }
-let currentPlayOptions: {
-  textId?: string
-  filePath?: string
-  fileFingerprint?: string
-  fieldName?: string
-  displayName?: string
-  sid?: number
-  voiceId?: string
-  speed?: number
-  isLrc?: boolean
-} | undefined = undefined
+let currentPlayOptions:
+  | {
+      textId?: string
+      filePath?: string
+      fileFingerprint?: string
+      fieldName?: string
+      displayName?: string
+      sid?: number
+      voiceId?: string
+      speed?: number
+      isLrc?: boolean
+    }
+  | undefined = undefined
 
 function getOrCreateAudioContext(): AudioContext {
   if (!audioContext || audioContext.state === 'closed') {
@@ -367,9 +412,12 @@ function getCurrentAudioProgress(): AudioProgressInfo {
         }
       }
 
-      const elapsedInSentence = Math.max(0, Math.min(sentenceDuration, audioElapsed - sentenceStartTime))
+      const elapsedInSentence = Math.max(
+        0,
+        Math.min(sentenceDuration, audioElapsed - sentenceStartTime)
+      )
       const remainingInSentence = Math.max(0, sentenceDuration - elapsedInSentence)
-      const fullTotalDuration = currentMasterTotalDuration || (single.endTime - single.startTime)
+      const fullTotalDuration = currentMasterTotalDuration || single.endTime - single.startTime
 
       return {
         sentenceIndex,
@@ -387,7 +435,7 @@ function getCurrentAudioProgress(): AudioProgressInfo {
       totalChars += Math.max(1, c.length)
     }
 
-    const fullTotalDuration = currentMasterTotalDuration || (single.endTime - single.startTime)
+    const fullTotalDuration = currentMasterTotalDuration || single.endTime - single.startTime
     const ratio = Math.min(1.0, audioElapsed / Math.max(0.01, fullTotalDuration))
     let sentenceIndex = 0
     let accumulatedChars = 0
@@ -409,7 +457,10 @@ function getCurrentAudioProgress(): AudioProgressInfo {
     }
 
     const sentenceDuration = Math.max(0.01, sentenceEndTime - sentenceStartTime)
-    const elapsedInSentence = Math.max(0, Math.min(sentenceDuration, audioElapsed - sentenceStartTime))
+    const elapsedInSentence = Math.max(
+      0,
+      Math.min(sentenceDuration, audioElapsed - sentenceStartTime)
+    )
     const remainingInSentence = Math.max(0, sentenceDuration - elapsedInSentence)
 
     return {
@@ -425,7 +476,7 @@ function getCurrentAudioProgress(): AudioProgressInfo {
   // 模式 2：分句流式排程模式（包含 1 个或多个分句节点）
   let totalDuration = 0
   for (const s of scheduledSources) {
-    totalDuration += (s.endTime - s.startTime)
+    totalDuration += s.endTime - s.startTime
   }
 
   // 1. 若当前硬件时钟尚未到达首个排程节点的起播时间（启动微缓冲期，如前 0.05s），精准定位在首个排程节点的 index
@@ -447,7 +498,7 @@ function getCurrentAudioProgress(): AudioProgressInfo {
     let elapsedTotalTime = 0
     for (const s of scheduledSources) {
       if (s.index < active.index) {
-        elapsedTotalTime += (s.endTime - s.startTime)
+        elapsedTotalTime += s.endTime - s.startTime
       } else if (s.index === active.index) {
         elapsedTotalTime += Math.max(0, now - s.startTime)
         break
@@ -476,7 +527,7 @@ function getCurrentAudioProgress(): AudioProgressInfo {
     let elapsedTotalTime = 0
     for (const s of scheduledSources) {
       if (s.index <= prevNode.index) {
-        elapsedTotalTime += (s.endTime - s.startTime)
+        elapsedTotalTime += s.endTime - s.startTime
       }
     }
     return {
@@ -495,8 +546,8 @@ function getCurrentAudioProgress(): AudioProgressInfo {
 
   return {
     sentenceIndex: lastIndex,
-    elapsedInSentence: lastSource ? (lastSource.endTime - lastSource.startTime) : 0,
-    sentenceDuration: lastSource ? (lastSource.endTime - lastSource.startTime) : 0,
+    elapsedInSentence: lastSource ? lastSource.endTime - lastSource.startTime : 0,
+    sentenceDuration: lastSource ? lastSource.endTime - lastSource.startTime : 0,
     remainingInSentence: 0,
     elapsedTotalTime: totalDuration,
     totalDuration
@@ -531,7 +582,12 @@ function ensureProgressMonitor(): void {
  * 核心特性：播放中平滑热切换（Hot Handover）
  * 保持当前音频在扬声器中连贯朗读的同时，在后台异步预合成新音色/新倍率切入点，完成后无缝自动接管播放
  */
-function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: number; oldSpeed?: number }) {
+function triggerHotSwitch(changed: {
+  voiceId?: string
+  sid?: number
+  speed?: number
+  oldSpeed?: number
+}) {
   const store = useTTSAudioStore.getState()
   const text = store.playingText
   if (!text || !currentCleanedChunks.length) return
@@ -600,10 +656,15 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
 
       // 【通道 A：整音频极速无缝接管通道】
       // 若目标音频已全量落盘（如 WSOLA 毫秒级派生完成或历史完整缓存命中），直接读取并按精确时间偏移无缝接管
-      if (targetCachePath && window.electronAPI?.tts?.readWavMetadata && window.electronAPI?.tts?.readWavFile) {
+      if (
+        targetCachePath &&
+        window.electronAPI?.tts?.readWavMetadata &&
+        window.electronAPI?.tts?.readWavFile
+      ) {
         try {
           const metadata = await window.electronAPI.tts.readWavMetadata(targetCachePath)
-          const isSpeedMatch = metadata?.speed === undefined || Math.abs(metadata.speed - targetSpeed) < 0.01
+          const isSpeedMatch =
+            metadata?.speed === undefined || Math.abs(metadata.speed - targetSpeed) < 0.01
           if (metadata && metadata.completed && isSpeedMatch) {
             const fullWavBuffer = await window.electronAPI.tts.readWavFile(targetCachePath)
             if (fullWavBuffer && fullWavBuffer.byteLength > 44) {
@@ -677,7 +738,10 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
             }
           }
         } catch (fastSwitchErr) {
-          console.warn('[TTS HotSwitch] 全量整音频极速接管失败，平滑回退分句流式通道:', fastSwitchErr)
+          console.warn(
+            '[TTS HotSwitch] 全量整音频极速接管失败，平滑回退分句流式通道:',
+            fastSwitchErr
+          )
         }
       }
 
@@ -835,21 +899,23 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
 
       // 异步分片独立落盘（路线 A：即合成即写盘，零内存驻留压力）
       if (baseBuffer && baseBuffer.byteLength > 0 && window.electronAPI?.tts?.saveChunk) {
-        window.electronAPI.tts.saveChunk({
-          filePath: options?.filePath,
-          fileFingerprint: options?.fileFingerprint,
-          fieldName: options?.fieldName,
-          displayName: targetDisplayName,
-          voiceId: targetVoiceId,
-          sid: targetSid,
-          speed: targetSpeed,
-          chunkIndex: targetSentenceIdx,
-          totalChunks: currentCleanedChunks.length,
-          chunkData: new Uint8Array(baseBuffer),
-          chunkText: currentCleanedChunks[targetSentenceIdx]
-        }).catch(err => {
-          console.warn('[TTS HotSwitch] 异步保存切入句分片异常:', err)
-        })
+        window.electronAPI.tts
+          .saveChunk({
+            filePath: options?.filePath,
+            fileFingerprint: options?.fileFingerprint,
+            fieldName: options?.fieldName,
+            displayName: targetDisplayName,
+            voiceId: targetVoiceId,
+            sid: targetSid,
+            speed: targetSpeed,
+            chunkIndex: targetSentenceIdx,
+            totalChunks: currentCleanedChunks.length,
+            chunkData: new Uint8Array(baseBuffer),
+            chunkText: currentCleanedChunks[targetSentenceIdx]
+          })
+          .catch(err => {
+            console.warn('[TTS HotSwitch] 异步保存切入句分片异常:', err)
+          })
       }
 
       // 紧接着在后台流式合成后续句子（targetSentenceIdx + 1 到全文结束）
@@ -903,21 +969,23 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
 
         // 异步分片独立落盘（路线 A：即合成即写盘，集齐后自动无损流式合并并派生目标倍速）
         if (window.electronAPI?.tts?.saveChunk) {
-          window.electronAPI.tts.saveChunk({
-            filePath: options?.filePath,
-            fileFingerprint: options?.fileFingerprint,
-            fieldName: options?.fieldName,
-            displayName: targetDisplayName,
-            voiceId: targetVoiceId,
-            sid: targetSid,
-            speed: targetSpeed,
-            chunkIndex: i,
-            totalChunks: currentCleanedChunks.length,
-            chunkData: nextChunkUint8,
-            chunkText: nextChunkText
-          }).catch(err => {
-            console.warn('[TTS HotSwitch] 异步保存后续分片异常:', err)
-          })
+          window.electronAPI.tts
+            .saveChunk({
+              filePath: options?.filePath,
+              fileFingerprint: options?.fileFingerprint,
+              fieldName: options?.fieldName,
+              displayName: targetDisplayName,
+              voiceId: targetVoiceId,
+              sid: targetSid,
+              speed: targetSpeed,
+              chunkIndex: i,
+              totalChunks: currentCleanedChunks.length,
+              chunkData: nextChunkUint8,
+              chunkText: nextChunkText
+            })
+            .catch(err => {
+              console.warn('[TTS HotSwitch] 异步保存后续分片异常:', err)
+            })
         }
 
         // 目标倍率 WSOLA
@@ -985,6 +1053,11 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
   isSynthesizing: false,
 
   refreshVoices: async () => {
+    // 若未安装或未激活 TTS 插件，安全跳过 IPC 调用，返回空列表，绝不使用伪数据兜底
+    if (!hasActiveTTSPlugin()) {
+      set({ allVoices: [] })
+      return []
+    }
     try {
       if (typeof window !== 'undefined' && window.electronAPI?.tts?.listVoices) {
         const list = await window.electronAPI.tts.listVoices()
@@ -1023,8 +1096,14 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     const matched = getVoiceById(sid, state.allVoices)
     const voiceId = matched?.id || String(sid)
     set({ currentSid: sid, currentVoiceId: voiceId })
-    useSettingsStore.getState().updateConfigValue('TTS_DEFAULT_VOICE_SID', voiceId).catch(() => {})
-    useConfigStore.getState().updateConfigValue('TTS_DEFAULT_VOICE_SID', voiceId).catch(() => {})
+    useSettingsStore
+      .getState()
+      .updateConfigValue('TTS_DEFAULT_VOICE_SID', voiceId)
+      .catch(() => {})
+    useConfigStore
+      .getState()
+      .updateConfigValue('TTS_DEFAULT_VOICE_SID', voiceId)
+      .catch(() => {})
   },
 
   setVoiceId: (voiceId: string) => {
@@ -1034,8 +1113,14 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     const matched = getVoiceById(voiceId, state.allVoices)
     const sid = matched?.sid ?? 63
     set({ currentVoiceId: voiceId, currentSid: sid })
-    useSettingsStore.getState().updateConfigValue('TTS_DEFAULT_VOICE_SID', voiceId).catch(() => {})
-    useConfigStore.getState().updateConfigValue('TTS_DEFAULT_VOICE_SID', voiceId).catch(() => {})
+    useSettingsStore
+      .getState()
+      .updateConfigValue('TTS_DEFAULT_VOICE_SID', voiceId)
+      .catch(() => {})
+    useConfigStore
+      .getState()
+      .updateConfigValue('TTS_DEFAULT_VOICE_SID', voiceId)
+      .catch(() => {})
 
     // 若当前正在播放或暂停，平滑热切新音色（不断音，合成好后自动无缝切入，接续当前进度）
     if (state.status === 'playing' || state.status === 'loading' || state.status === 'paused') {
@@ -1049,8 +1134,14 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
 
     const oldSpeed = state.speed
     set({ speed })
-    useSettingsStore.getState().updateConfigValue('TTS_SPEED', speed).catch(() => {})
-    useConfigStore.getState().updateConfigValue('TTS_SPEED', speed).catch(() => {})
+    useSettingsStore
+      .getState()
+      .updateConfigValue('TTS_SPEED', speed)
+      .catch(() => {})
+    useConfigStore
+      .getState()
+      .updateConfigValue('TTS_SPEED', speed)
+      .catch(() => {})
 
     // 若当前正在播放或暂停，平滑热切新倍速（不断音，通过纯 Rust WSOLA 极速派生并在合成后自动切换，接续当前进度）
     if (state.status === 'playing' || state.status === 'loading' || state.status === 'paused') {
@@ -1110,26 +1201,46 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
   },
 
   play: async (text: string, options) => {
+    // 0. 前置安全门禁：未安装或未激活任何 TTS 插件时，系统能正确跳过业务逻辑，绝不阻断，杜绝错误
+    if (!hasActiveTTSPlugin()) {
+      console.warn('[useTTSAudioStore] 当前未安装或未激活任何 TTS 插件，安全跳过播放')
+      return
+    }
+
     const state = get()
     const targetTextId = options?.textId || text
 
     // 1. 同文本ID且同一朗读内容、且音色与语速均未改变时：
     //    - 正在播放 -> 暂停
     //    - 已暂停 -> 恢复
-    const isVoiceChanged = options?.voiceId !== undefined && options.voiceId !== state.currentVoiceId
-    const isSpeedChanged = options?.speed !== undefined && Math.abs(options.speed - state.speed) >= 0.01
+    const isVoiceChanged =
+      options?.voiceId !== undefined && options.voiceId !== state.currentVoiceId
+    const isSpeedChanged =
+      options?.speed !== undefined && Math.abs(options.speed - state.speed) >= 0.01
 
     if (!isVoiceChanged && !isSpeedChanged) {
-      if (state.status === 'playing' && state.playingTextId === targetTextId && state.playingText === text) {
+      if (
+        state.status === 'playing' &&
+        state.playingTextId === targetTextId &&
+        state.playingText === text
+      ) {
         await state.pause()
         return
       }
 
-      if (state.status === 'paused' && state.playingTextId === targetTextId && state.playingText === text) {
+      if (
+        state.status === 'paused' &&
+        state.playingTextId === targetTextId &&
+        state.playingText === text
+      ) {
         await state.resume()
         return
       }
-    } else if (state.status === 'playing' || state.status === 'loading' || state.status === 'paused') {
+    } else if (
+      state.status === 'playing' ||
+      state.status === 'loading' ||
+      state.status === 'paused'
+    ) {
       // 若当前正在播放或暂停同段文本但改变了音色或倍速，直接走平滑热切，接续当前进度
       const oldSpeed = state.speed
       if (options?.voiceId !== undefined) {
@@ -1140,7 +1251,12 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         set({ speed: options.speed })
       }
       currentPlayOptions = options
-      triggerHotSwitch({ voiceId: options?.voiceId, sid: options?.sid, speed: options?.speed, oldSpeed })
+      triggerHotSwitch({
+        voiceId: options?.voiceId,
+        sid: options?.sid,
+        speed: options?.speed,
+        oldSpeed
+      })
       return
     }
 
@@ -1158,7 +1274,11 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         ? String(options.voiceId)
         : options?.sid !== undefined
           ? String(options.sid)
-          : String((config as any)?.ttsDefaultVoiceId || (config as any)?.ttsDefaultVoiceSid || DEFAULT_VOICE_ID)
+          : String(
+              (config as any)?.ttsDefaultVoiceId ||
+                (config as any)?.ttsDefaultVoiceSid ||
+                DEFAULT_VOICE_ID
+            )
     const matchedVoice = getVoiceById(chosenVoiceId, get().allVoices)
     // 关键修复：优先采用解析出的音色真实专属 sid，彻底杜绝调用方传入 stale sid 污染导致不同音色发音恒同！
     const chosenSid =
@@ -1169,7 +1289,8 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
           : !isNaN(Number(chosenVoiceId))
             ? Number(chosenVoiceId)
             : (matchedVoice?.sid ?? 63)
-    const chosenSpeed = options?.speed !== undefined ? options.speed : ((config as any)?.ttsSpeed ?? 1.0)
+    const chosenSpeed =
+      options?.speed !== undefined ? options.speed : ((config as any)?.ttsSpeed ?? 1.0)
 
     // 文本清洗与分句切片：优先调用 Omni 原生词性与自然换气智能分句，异常时平滑回退本地纯标点分句
     const cleaned = cleanTextForTTS(text, { isLrc: options?.isLrc })
@@ -1186,7 +1307,13 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     }
 
     if (chunks.length === 0) {
-      set({ status: 'idle', currentFilePath: null, currentTitle: null, currentRealName: null, errorMessage: '没有可朗读的有效文本内容' })
+      set({
+        status: 'idle',
+        currentFilePath: null,
+        currentTitle: null,
+        currentRealName: null,
+        errorMessage: '没有可朗读的有效文本内容'
+      })
       return
     }
 
@@ -1228,7 +1355,8 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     const isAudition = options?.textId?.startsWith('audition-') || options?.fieldName === 'audition'
     const targetFingerprint = isAudition ? 'preview' : options?.fileFingerprint
     const targetFieldName = isAudition ? 'audition' : options?.fieldName
-    const chosenDisplayName = options?.displayName || matchedVoice?.displayName || String(chosenVoiceId)
+    const chosenDisplayName =
+      options?.displayName || matchedVoice?.displayName || String(chosenVoiceId)
     let targetCachePath: string | null = null
     let base1xCachePath: string | null = null
 
@@ -1306,7 +1434,11 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
       try {
         const metadata = await window.electronAPI.tts.readWavMetadata(targetCachePath)
         // 语速严格一致才命中，确保不同倍率拥有独立的纯正原音，杜绝变调
-        if (metadata && metadata.completed && (metadata.speed === undefined || Math.abs(metadata.speed - chosenSpeed) < 0.01)) {
+        if (
+          metadata &&
+          metadata.completed &&
+          (metadata.speed === undefined || Math.abs(metadata.speed - chosenSpeed) < 0.01)
+        ) {
           const fullWavBuffer = await window.electronAPI.tts.readWavFile(targetCachePath)
           if (fullWavBuffer && fullWavBuffer.byteLength > 44) {
             if (activeSessionId !== thisSessionId) return
@@ -1451,8 +1583,11 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
           if (!isWatermarkSatisfied && readyBufferList.length > 0) {
             let timer: ReturnType<typeof setTimeout> | undefined
             try {
-              const timeoutPromise = new Promise<null>((resolve) => {
-                timer = setTimeout(() => resolve(null), TTS_BUFFER_WATERMARK.CHUNK_SYNTHESIZE_TIMEOUT_MS)
+              const timeoutPromise = new Promise<null>(resolve => {
+                timer = setTimeout(
+                  () => resolve(null),
+                  TTS_BUFFER_WATERMARK.CHUNK_SYNTHESIZE_TIMEOUT_MS
+                )
               })
               const raceResult = await Promise.race([synthPromise, timeoutPromise])
 
@@ -1509,21 +1644,23 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
 
         // 异步独立分片落盘（传入 chunkText 确保 manifest 记录 sha256 文本指纹）
         if (window.electronAPI?.tts?.saveChunk) {
-          window.electronAPI.tts.saveChunk({
-            filePath: options?.filePath,
-            fileFingerprint: options?.fileFingerprint,
-            fieldName: options?.fieldName,
-            displayName: chosenDisplayName,
-            voiceId: chosenVoiceId,
-            sid: chosenSid,
-            speed: chosenSpeed,
-            chunkIndex: i,
-            totalChunks: chunks.length,
-            chunkData: chunkUint8,
-            chunkText
-          }).catch(err => {
-            console.warn('[TTS] 保存独立分片异常:', err)
-          })
+          window.electronAPI.tts
+            .saveChunk({
+              filePath: options?.filePath,
+              fileFingerprint: options?.fileFingerprint,
+              fieldName: options?.fieldName,
+              displayName: chosenDisplayName,
+              voiceId: chosenVoiceId,
+              sid: chosenSid,
+              speed: chosenSpeed,
+              chunkIndex: i,
+              totalChunks: chunks.length,
+              chunkData: chunkUint8,
+              chunkText
+            })
+            .catch(err => {
+              console.warn('[TTS] 保存独立分片异常:', err)
+            })
         }
 
         // 若当前播放倍率非 1.0x，调用纯 Rust WSOLA 极速算法在内存中（< 2ms）派生目标倍率单句音频
@@ -1557,8 +1694,11 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
           set({ bufferedDuration: totalBufferedDuration })
 
           // 水线判定：条件 A（达标声学安全时长 >= 15.0s）或 条件 B（末尾自愈：所有剩余分句已蓄满，短文本 1~2 句直接放行）
-          const satisfiesCount = readyBufferList.length >= Math.min(TTS_BUFFER_WATERMARK.MIN_BUFFERED_CHUNKS, remainingChunksCount)
-          const satisfiesDuration = totalBufferedDuration >= TTS_BUFFER_WATERMARK.MIN_BUFFERED_DURATION_SEC
+          const satisfiesCount =
+            readyBufferList.length >=
+            Math.min(TTS_BUFFER_WATERMARK.MIN_BUFFERED_CHUNKS, remainingChunksCount)
+          const satisfiesDuration =
+            totalBufferedDuration >= TTS_BUFFER_WATERMARK.MIN_BUFFERED_DURATION_SEC
           const satisfiesAllRemaining = readyBufferList.length >= remainingChunksCount
 
           if (satisfiesCount || satisfiesDuration || satisfiesAllRemaining) {
@@ -1624,7 +1764,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     }
   },
 
-  locateAudio: async (options) => {
+  locateAudio: async options => {
     let wavPath = get().currentCachePath
     if (!wavPath && window.electronAPI?.tts?.getCachePath) {
       const state = get()
@@ -1665,11 +1805,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
       for (let i = 0; i < currentCleanedChunks.length; i++) {
         let chunkData = cachedChunksMap.get(i)
         if (!chunkData) {
-          const synthRes = await safeSynthesizeChunk(
-            currentCleanedChunks[i],
-            voiceId,
-            1.0
-          )
+          const synthRes = await safeSynthesizeChunk(currentCleanedChunks[i], voiceId, 1.0)
           if (synthRes) {
             if (synthRes.hitCap) {
               toast.warning(t('音频片段过长已自动截断'))
@@ -1718,7 +1854,11 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     const speed = state.speed
 
     // 1. 若当前文本已具备整段全量缓存文件，直接按字符比例换算时间毫秒级定位起播
-    if (state.currentCachePath && window.electronAPI?.tts?.readWavMetadata && window.electronAPI?.tts?.readWavFile) {
+    if (
+      state.currentCachePath &&
+      window.electronAPI?.tts?.readWavMetadata &&
+      window.electronAPI?.tts?.readWavFile
+    ) {
       try {
         const metadata = await window.electronAPI.tts.readWavMetadata(state.currentCachePath)
         if (metadata && metadata.completed) {
@@ -1729,7 +1869,11 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
 
             // 优先读取精准内嵌时间戳索引表 (Cue Table)，实现 0.0000s 误差级绝对精准定位！
             let offset = 0
-            if (metadata.chunks && metadata.chunks[clampedIndex] && typeof metadata.chunks[clampedIndex].startTime === 'number') {
+            if (
+              metadata.chunks &&
+              metadata.chunks[clampedIndex] &&
+              typeof metadata.chunks[clampedIndex].startTime === 'number'
+            ) {
               offset = metadata.chunks[clampedIndex].startTime
             } else {
               // 容错降级：按字符累积比例估算时间偏移量
@@ -1832,21 +1976,18 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         }
 
         if (!baseBuffer) {
-          const synthPromise = safeSynthesizeChunk(
-            chunkText,
-            voiceId,
-            1.0,
-            thisSeekSession,
-            sid
-          )
+          const synthPromise = safeSynthesizeChunk(chunkText, voiceId, 1.0, thisSeekSession, sid)
 
           let synthRes: { buffer: ArrayBuffer; hitCap: boolean; steps: number } | null = null
           // 若起播门禁尚未放行且蓄水池已具备首句，注入 8000ms 超时门禁探测
           if (!isWatermarkSatisfied && readyBufferList.length > 0) {
             let timer: ReturnType<typeof setTimeout> | undefined
             try {
-              const timeoutPromise = new Promise<null>((resolve) => {
-                timer = setTimeout(() => resolve(null), TTS_BUFFER_WATERMARK.CHUNK_SYNTHESIZE_TIMEOUT_MS)
+              const timeoutPromise = new Promise<null>(resolve => {
+                timer = setTimeout(
+                  () => resolve(null),
+                  TTS_BUFFER_WATERMARK.CHUNK_SYNTHESIZE_TIMEOUT_MS
+                )
               })
               const raceResult = await Promise.race([synthPromise, timeoutPromise])
 
@@ -1889,21 +2030,23 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
 
         // 异步分片独立落盘（传入 chunkText 确保防错位）
         if (window.electronAPI?.tts?.saveChunk) {
-          window.electronAPI.tts.saveChunk({
-            filePath: options?.filePath,
-            fileFingerprint: options?.fileFingerprint,
-            fieldName: options?.fieldName,
-            displayName,
-            voiceId,
-            sid,
-            speed,
-            chunkIndex: i,
-            totalChunks: currentCleanedChunks.length,
-            chunkData: chunkUint8,
-            chunkText
-          }).catch(err => {
-            console.warn('[TTS Seek] 异步保存分片异常:', err)
-          })
+          window.electronAPI.tts
+            .saveChunk({
+              filePath: options?.filePath,
+              fileFingerprint: options?.fileFingerprint,
+              fieldName: options?.fieldName,
+              displayName,
+              voiceId,
+              sid,
+              speed,
+              chunkIndex: i,
+              totalChunks: currentCleanedChunks.length,
+              chunkData: chunkUint8,
+              chunkText
+            })
+            .catch(err => {
+              console.warn('[TTS Seek] 异步保存分片异常:', err)
+            })
         }
 
         // 目标倍率 WSOLA 派生
@@ -1929,8 +2072,11 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
           set({ bufferedDuration: totalBufferedDuration })
 
           // 水线判定：条件 A（达标声学安全时长 >= 15.0s）或 条件 B（末尾自愈：所有剩余分句已蓄满，短文本 1~2 句直接放行）
-          const satisfiesCount = readyBufferList.length >= Math.min(TTS_BUFFER_WATERMARK.MIN_BUFFERED_CHUNKS, remainingChunksCount)
-          const satisfiesDuration = totalBufferedDuration >= TTS_BUFFER_WATERMARK.MIN_BUFFERED_DURATION_SEC
+          const satisfiesCount =
+            readyBufferList.length >=
+            Math.min(TTS_BUFFER_WATERMARK.MIN_BUFFERED_CHUNKS, remainingChunksCount)
+          const satisfiesDuration =
+            totalBufferedDuration >= TTS_BUFFER_WATERMARK.MIN_BUFFERED_DURATION_SEC
           const satisfiesAllRemaining = readyBufferList.length >= remainingChunksCount
 
           if (satisfiesCount || satisfiesDuration || satisfiesAllRemaining) {
@@ -1972,7 +2118,10 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
 // 渲染进程启动时自动异步预热拉取全量音色（含自定义音色）与同步设置配置默认值
 if (typeof window !== 'undefined') {
   setTimeout(() => {
-    useTTSAudioStore.getState().refreshVoices().catch(() => {})
+    useTTSAudioStore
+      .getState()
+      .refreshVoices()
+      .catch(() => {})
   }, 0)
 
   // 监听并同步设置中心（SettingsStore）中的默认音色与倍率配置
@@ -1996,7 +2145,8 @@ if (typeof window !== 'undefined') {
       const targetSid = matched?.sid ?? 63
 
       const needsSpeedUpdate = Math.abs(state.speed - targetSpeed) >= 0.01
-      const needsVoiceUpdate = state.currentVoiceId !== targetVoiceId || state.currentSid !== targetSid
+      const needsVoiceUpdate =
+        state.currentVoiceId !== targetVoiceId || state.currentSid !== targetSid
 
       if (needsSpeedUpdate || needsVoiceUpdate) {
         useTTSAudioStore.setState({
@@ -2020,4 +2170,3 @@ if (typeof window !== 'undefined') {
     })
   } catch {}
 }
-

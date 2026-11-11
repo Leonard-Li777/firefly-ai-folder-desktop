@@ -19,10 +19,10 @@ import * as fs from 'node:fs'
 import * as fsPromises from 'node:fs/promises'
 import * as path from 'node:path'
 import { app } from 'electron'
-import { logger, LogCategory, ResourceLocator } from '@firefly/shared'
+import { logger, LogCategory, ResourceLocator, PluginPathResolver } from '@firefly/shared'
 import { omniClient } from '../../services/omni-client'
 import { omniService } from '../system/omni-service'
-import { PRESET_VOICES, VoiceMeta } from '../../../renderer/constants/tts-voices'
+import type { VoiceMeta } from '../../../renderer/constants/tts-voices'
 
 /** 16 字节 Header 常量 */
 const ARCHIVE_MAGIC = 'MTTS'
@@ -51,14 +51,20 @@ export class VoiceArchiveService {
   private constructor() {
     // 监听 Omni 服务启动就绪事件，崩溃重启时自动全量重放注册用户自定义音色
     omniService.onReady(async () => {
-      logger.info(LogCategory.SYSTEM, '[VoiceArchiveService] Omni 服务已就绪，正在重放注册本地自定义音色...')
+      logger.info(
+        LogCategory.SYSTEM,
+        '[VoiceArchiveService] Omni 服务已就绪，正在重放注册本地自定义音色...'
+      )
       await this.replayRegisterCustomVoices()
     })
 
     // 定期 5 分钟扫描清理过期的临时暂存特征码
-    setInterval(() => {
-      this.cleanupExpiredTempVoices()
-    }, 5 * 60 * 1000)
+    setInterval(
+      () => {
+        this.cleanupExpiredTempVoices()
+      },
+      5 * 60 * 1000
+    )
   }
 
   public static getInstance(): VoiceArchiveService {
@@ -98,56 +104,147 @@ export class VoiceArchiveService {
   }
 
   /**
-   * 读取预置内置音色元数据列表
+   * 失效内置预置音色缓存（在模块切换、卸载或拓扑变更时被调用）
    */
-  public async getPresetVoices(): Promise<VoiceMeta[]> {
+  public invalidatePresetVoicesCache(): void {
+    this.presetVoicesCache = null
+  }
+
+  /**
+   * 读取预置内置音色元数据列表（区分 tts_moss_onnx 与 tts_m5_onnx）
+   * 严守 AGENTS.md §2.9/§2.10：严禁生产欺诈伪兜底，未挂载时返回空数组且不污染缓存
+   */
+  public async getPresetVoices(moduleOverride?: string): Promise<VoiceMeta[]> {
     if (this.presetVoicesCache && this.presetVoicesCache.length > 0) {
       return this.presetVoicesCache
     }
 
+    let activeModuleId: string | null = moduleOverride || null
+    let pluginsRoot = ''
     try {
-      const baseDir = ResourceLocator.getBaseResourceDir()
-      const candidates = [
-        process.env.OMNI_MOSS_VOICES_PATH || '',
-        path.join(baseDir, 'models/audio/moss/preset_voices.bin'),
-        path.join(process.cwd(), 'apps/desktop/build/extraResources/models/audio/moss/preset_voices.bin'),
-        path.join(
-          process.env.USERPROFILE || process.env.HOME || '',
-          '.cache/moss_tts_test/test_voices.bin'
-        )
-      ]
-
-      let presetBinPath: string | null = null
-      for (const p of candidates) {
-        if (fs.existsSync(p)) {
-          presetBinPath = p
-          break
+      const { modularResourceService } = require('../system/modular-resource-service')
+      if (!activeModuleId) {
+        const activeModule = modularResourceService?.getActiveModuleBySlot?.('voice_tts')
+        if (activeModule && activeModule.install_state === 'active') {
+          activeModuleId = activeModule.id
         }
       }
+      pluginsRoot =
+        modularResourceService?.getPluginsRootDir?.() ||
+        (() => {
+          try {
+            return PluginPathResolver.getPluginsRootDir()
+          } catch {
+            return ''
+          }
+        })()
+    } catch {
+      try {
+        pluginsRoot = PluginPathResolver.getPluginsRootDir()
+      } catch {}
+    }
 
-      if (presetBinPath) {
-        const buf = await fsPromises.readFile(presetBinPath)
-        if (buf.length >= HEADER_SIZE) {
-          const magic = buf.toString('ascii', 0, 4)
-          const version = buf.readUInt32LE(4)
-          const metaLength = buf.readUInt32LE(8)
+    if (!activeModuleId) {
+      return []
+    }
 
-          if (magic === ARCHIVE_MAGIC && version === ARCHIVE_VERSION && buf.length >= HEADER_SIZE + metaLength) {
-            const metaJsonStr = buf.toString('utf-8', HEADER_SIZE, HEADER_SIZE + metaLength)
-            const parsed = JSON.parse(metaJsonStr)
-            if (parsed && Array.isArray(parsed.voices)) {
-              this.presetVoicesCache = parsed.voices
-              return parsed.voices
+    try {
+      if (activeModuleId === 'tts_m5_onnx') {
+        const candidateJsonPaths = [
+          pluginsRoot ? path.join(pluginsRoot, '_shared', 'm5-tts', 'preset_voices.json') : '',
+          ResourceLocator.resolveResourcePath?.('models/audio/m5/preset_voices.json') || '',
+          path.join(
+            ResourceLocator.getBaseResourceDir(),
+            'models',
+            'audio',
+            'm5',
+            'preset_voices.json'
+          ),
+          path.join(process.cwd(), 'models', 'audio', 'm5', 'preset_voices.json')
+        ]
+        let foundJsonPath: string | null = null
+        for (const p of candidateJsonPaths) {
+          if (p && fs.existsSync(p)) {
+            foundJsonPath = p
+            break
+          }
+        }
+        if (foundJsonPath) {
+          const rawStr = await fsPromises.readFile(foundJsonPath, 'utf-8')
+          const rawItems = JSON.parse(rawStr)
+          if (Array.isArray(rawItems)) {
+            const voices: VoiceMeta[] = rawItems.map((item: any) => ({
+              id: String(item.id),
+              displayName: String(item.displayName || item.id),
+              gender:
+                item.gender === 'female' || item.gender === 'male' || item.gender === 'child'
+                  ? item.gender
+                  : 'female',
+              lang: String(item.lang || 'zh'),
+              desc: String(item.desc || ''),
+              recommended: Boolean(item.recommended),
+              isCustom: false
+            }))
+            if (voices.length > 0) {
+              this.presetVoicesCache = voices
+              return voices
             }
           }
         }
+        return []
+      }
+
+      if (activeModuleId === 'tts_moss_onnx') {
+        const candidates = [
+          pluginsRoot ? path.join(pluginsRoot, '_shared', 'moss-tts', 'preset_voices.bin') : '',
+          process.env.OMNI_MOSS_VOICES_PATH || '',
+          ResourceLocator.resolveResourcePath?.('modules/_shared/moss-tts/preset_voices.bin') || '',
+          path.join(
+            process.env.USERPROFILE || process.env.HOME || '',
+            '.cache/moss_tts_test/test_voices.bin'
+          )
+        ]
+
+        let presetBinPath: string | null = null
+        for (const p of candidates) {
+          if (p && fs.existsSync(p)) {
+            presetBinPath = p
+            break
+          }
+        }
+
+        if (presetBinPath) {
+          const buf = await fsPromises.readFile(presetBinPath)
+          if (buf.length >= HEADER_SIZE) {
+            const magic = buf.toString('ascii', 0, 4)
+            const version = buf.readUInt32LE(4)
+            const metaLength = buf.readUInt32LE(8)
+
+            if (
+              magic === ARCHIVE_MAGIC &&
+              version === ARCHIVE_VERSION &&
+              buf.length >= HEADER_SIZE + metaLength
+            ) {
+              const metaJsonStr = buf.toString('utf-8', HEADER_SIZE, HEADER_SIZE + metaLength)
+              const parsed = JSON.parse(metaJsonStr)
+              if (parsed && Array.isArray(parsed.voices)) {
+                this.presetVoicesCache = parsed.voices
+                return parsed.voices
+              }
+            }
+          }
+        }
+        return []
       }
     } catch (err) {
-      logger.warn(LogCategory.SYSTEM, '[VoiceArchiveService] 从 preset_voices.bin 读取元数据失败，回退静态字典:', err)
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[VoiceArchiveService] 读取预置音色失败 (${activeModuleId}):`,
+        err
+      )
     }
 
-    this.presetVoicesCache = PRESET_VOICES
-    return PRESET_VOICES
+    return []
   }
 
   /**
@@ -183,7 +280,11 @@ export class VoiceArchiveService {
             })
           }
         } catch (readErr) {
-          logger.warn(LogCategory.SYSTEM, `[VoiceArchiveService] 读取单音色文件 ${file} 失败:`, readErr)
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[VoiceArchiveService] 读取单音色文件 ${file} 失败:`,
+            readErr
+          )
         }
       }
     } catch (err) {
@@ -197,10 +298,7 @@ export class VoiceArchiveService {
    * 获取所有可用音色列表（内置 preset + 用户 custom）
    */
   public async listVoices(): Promise<VoiceMeta[]> {
-    const [presets, customs] = await Promise.all([
-      this.getPresetVoices(),
-      this.getCustomVoices()
-    ])
+    const [presets, customs] = await Promise.all([this.getPresetVoices(), this.getCustomVoices()])
     // 严格按 ID 去重（自定义音色优先覆盖同 ID 预置音色）
     const seen = new Set<string>()
     const result: VoiceMeta[] = []
@@ -342,7 +440,10 @@ export class VoiceArchiveService {
       // 清理临时缓存
       this.tempVoices.delete(tempVoiceId)
 
-      logger.info(LogCategory.SYSTEM, `[VoiceArchiveService] 成功保存自定义音色 ${voiceId} (${voiceMeta.displayName})`)
+      logger.info(
+        LogCategory.SYSTEM,
+        `[VoiceArchiveService] 成功保存自定义音色 ${voiceId} (${voiceMeta.displayName})`
+      )
       return {
         success: true,
         voice: voiceMeta
@@ -370,7 +471,10 @@ export class VoiceArchiveService {
     try {
       if (fs.existsSync(targetFilePath)) {
         await fsPromises.unlink(targetFilePath)
-        logger.info(LogCategory.SYSTEM, `[VoiceArchiveService] 成功删除自定义音色文件: ${targetFilePath}`)
+        logger.info(
+          LogCategory.SYSTEM,
+          `[VoiceArchiveService] 成功删除自定义音色文件: ${targetFilePath}`
+        )
       }
 
       // 级联处理配置兜底：若删除的是默认音色或处于收藏中，由主进程/设置端协同更新
@@ -423,11 +527,18 @@ export class VoiceArchiveService {
           await omniClient.registerVoice(meta.id, totalFrames, codes)
           registeredCount++
         } catch (itemErr) {
-          logger.warn(LogCategory.SYSTEM, `[VoiceArchiveService] 重放注册音色 ${file} 失败:`, itemErr)
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[VoiceArchiveService] 重放注册音色 ${file} 失败:`,
+            itemErr
+          )
         }
       }
 
-      logger.info(LogCategory.SYSTEM, `[VoiceArchiveService] 完成自定义音色重放，共注册 ${registeredCount} 个音色`)
+      logger.info(
+        LogCategory.SYSTEM,
+        `[VoiceArchiveService] 完成自定义音色重放，共注册 ${registeredCount} 个音色`
+      )
     } catch (err) {
       logger.warn(LogCategory.SYSTEM, '[VoiceArchiveService] 重放注册流程异常:', err)
     }

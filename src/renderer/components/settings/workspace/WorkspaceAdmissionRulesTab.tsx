@@ -433,7 +433,7 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProp
           </div>
           <p className="text-[11px] mt-1 text-emerald-800/90 dark:text-emerald-300/90 leading-relaxed">
             {t(
-              '修改包含与排除规则仅重新过滤 AI 索引与分析队列，绝不会删除或修改您电脑磁盘中的任何原始物理文件。'
+              '修改包含与排除规则仅影响真实目录中显示的文件， 不会触碰您电脑磁盘中的任何原始物理文件。'
             )}
           </p>
         </div>

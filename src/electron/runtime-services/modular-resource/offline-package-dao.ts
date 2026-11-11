@@ -135,7 +135,7 @@ export class OfflinePackageDao {
   ): void {
     const now = details?.nowMs ?? Date.now()
     const sets: string[] = ['status = ?', 'updated_at = ?']
-    const bindings: any[] = [status, now]
+    const bindings: unknown[] = [status, now]
 
     if (details?.created_resource_ids !== undefined) {
       sets.push('created_resource_ids = ?')
@@ -413,17 +413,16 @@ export class OfflinePackageDao {
    */
   public evictExpiredOrOverflownJobs(
     nowMs: number = Date.now(),
-    ttlDays: number = 7,
-    queueLimit: number = 50,
+    ttlDays = 7,
+    queueLimit = 50,
     activeJobId: string | null = null
   ): string[] {
     const pending = this.getCleanupPendingJobs()
     const evictedIds: string[] = []
     const ttlMs = ttlDays * 24 * 3600 * 1000
 
-    // 第一段：TTL 超时淘汰
+    // 第一段：TTL 超时淘汰 (连续 7 天且至少尝试过 1 次)
     for (const job of pending) {
-      if (job.job_id === activeJobId) continue
       if (nowMs - job.updated_at > ttlMs && job.verification_attempts >= 1) {
         evictedIds.push(job.job_id)
       }
@@ -463,11 +462,14 @@ export function getOfflinePackageDao(customDb?: Database): OfflinePackageDao {
   }
   if (!defaultOfflinePackageDao) {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { databaseService } = require('../database/database-service')
       if (databaseService?.db) {
         defaultOfflinePackageDao = new OfflinePackageDao(databaseService.db)
       }
-    } catch {}
+    } catch {
+      // ignore
+    }
   }
   if (!defaultOfflinePackageDao) {
     throw new Error('[OfflinePackageDao] Database has not been initialized yet.')

@@ -260,6 +260,13 @@ export async function initDatabaseAndDependentServices(
       systemRulesProvider: () => loadIgnoreRules()
     })
 
+    // 同样注入 ModularResourceService 依赖，防止打包后动态 require('../database/database-service') 抛出 MODULE_NOT_FOUND
+    const { modularResourceService } =
+      await import('../runtime-services/system/modular-resource-service')
+    modularResourceService.configureRuntimeDependencies({
+      getDb: () => databaseService.db
+    })
+
     unifiedModelManager.ensureLoaded(true)
 
     // 数据库就绪后，为新用户一次性插入 welcome_grant（幂等：确定性 txId + INSERT OR IGNORE）
@@ -981,9 +988,29 @@ export async function initializeFullServices(): Promise<void> {
       }
     }
 
-    // 初始化常驻微服务 (Omni 原生微服务)
+    // 启动时序铁律 (§3.1): 先执行 DB 绑定同步对账、冷启动回收自愈与 200ms 域 B 快路径校验，再拉起 Omni
+    try {
+      const { modularResourceService } =
+        await import('../runtime-services/system/modular-resource-service')
+      modularResourceService.reconcileBuiltinModuleBindingsSync()
+      await modularResourceService.reconcileOnStartup()
+      const fastReadyResult = await modularResourceService.runFastReadyBarrier(200)
+      logger.info(
+        LogCategory.MAIN,
+        `[ModularResource] 启动期绑定对账与快路径校验完成 (root=${fastReadyResult.rootStatus}, timedOut=${fastReadyResult.timedOut})`
+      )
+    } catch (modInitErr) {
+      logger.error(
+        LogCategory.MAIN,
+        '[ModularResource] 启动期数据库或插件对账发生致命异常，中止 Omni 拉起:',
+        modInitErr
+      )
+      throw modInitErr
+    }
+
+    // 初始化常驻微服务 (Omni 原生微服务) —— 必须在对账与快路径校验之后启动
     const { omniService } = await import('../runtime-services/system/omni-service')
-    omniService.start().catch(err => {
+    await omniService.start().catch(err => {
       logger.error(LogCategory.MAIN, '[OmniService] 原生微服务启动失败:', err)
     })
 

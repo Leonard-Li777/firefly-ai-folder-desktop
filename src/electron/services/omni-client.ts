@@ -263,7 +263,10 @@ export class OmniClient {
           signal: AbortSignal.timeout(timeoutMs)
         })
         if (!res.ok) {
-          logger.warn(LogCategory.DIMENSION_SERVICE, `[OmniClient] HTTP ${res.status} ${path} (第 ${attempt + 1}/${retries + 1} 次尝试)`)
+          logger.warn(
+            LogCategory.DIMENSION_SERVICE,
+            `[OmniClient] HTTP ${res.status} ${path} (第 ${attempt + 1}/${retries + 1} 次尝试)`
+          )
           if (attempt < retries) {
             await new Promise(r => setTimeout(r, 400 * (attempt + 1)))
             continue
@@ -273,7 +276,11 @@ export class OmniClient {
         return (await res.json()) as T
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err)
-        logger.debug(LogCategory.DIMENSION_SERVICE, `[OmniClient] 请求失败 ${path} (第 ${attempt + 1}/${retries + 1} 次尝试):`, msg)
+        logger.debug(
+          LogCategory.DIMENSION_SERVICE,
+          `[OmniClient] 请求失败 ${path} (第 ${attempt + 1}/${retries + 1} 次尝试):`,
+          msg
+        )
         if (attempt < retries) {
           await new Promise(r => setTimeout(r, 400 * (attempt + 1)))
           continue
@@ -304,7 +311,10 @@ export class OmniClient {
     dbPath?: string,
     options?: { workspaceId?: number | string; directoryPrefix?: string; includeFiles?: boolean }
   ): Promise<OmniTaxonomyTreeResponse | null> {
-    const wsPart = options?.workspaceId !== undefined && options?.workspaceId !== null ? String(options.workspaceId) : ''
+    const wsPart =
+      options?.workspaceId !== undefined && options?.workspaceId !== null
+        ? String(options.workspaceId)
+        : ''
     const dirPart = options?.directoryPrefix || ''
     const incPart = options?.includeFiles ? '1' : '0'
     const cacheKey = `${locale}::${root || ''}::${dbPath || ''}::${wsPart}::${dirPart}::${incPart}`
@@ -362,14 +372,19 @@ export class OmniClient {
         if (options?.includeFiles) {
           params.set('includeFiles', 'true')
         }
-        const res = await this.request<OmniTaxonomyTreeResponse>(`/api/v1/taxonomy/tree?${params.toString()}`)
+        const res = await this.request<OmniTaxonomyTreeResponse>(
+          `/api/v1/taxonomy/tree?${params.toString()}`
+        )
         if (res && res.rootNodes && res.rootNodes.length > 0) {
           this._taxonomyTreeCache.set(cacheKey, { data: res, time: Date.now() })
           return res
         }
         // 降级兜底：若网络请求偶发失败但存在历史缓存，优先使用历史缓存，杜绝受控维度根坍塌
         if (cached) {
-          logger.warn(LogCategory.DIMENSION_SERVICE, `[OmniClient] getTaxonomyTree 请求失败，降级使用历史缓存数据`)
+          logger.warn(
+            LogCategory.DIMENSION_SERVICE,
+            `[OmniClient] getTaxonomyTree 请求失败，降级使用历史缓存数据`
+          )
           return cached.data
         }
         return res
@@ -418,10 +433,14 @@ export class OmniClient {
         encoderId: item.encoderId
       }))
     }
-    return this.request<OmniVectorUpsertResponse>('/api/v1/vector/upsert', {
-      method: 'POST',
-      body: JSON.stringify(payload)
-    }, timeoutMs)
+    return this.request<OmniVectorUpsertResponse>(
+      '/api/v1/vector/upsert',
+      {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      },
+      timeoutMs
+    )
   }
 
   /** 便捷写入单文件向量（`encoderId` 必填，语义同 upsertVectors） */
@@ -480,10 +499,14 @@ export class OmniClient {
     timeoutMs = 10000
   ): Promise<OmniVectorGetResponse | null> {
     if (!fileFingerprints.length) return { vectors: [], count: 0 }
-    return this.request<OmniVectorGetResponse>('/api/v1/vector/get', {
-      method: 'POST',
-      body: JSON.stringify({ fileFingerprints, dim })
-    }, timeoutMs)
+    return this.request<OmniVectorGetResponse>(
+      '/api/v1/vector/get',
+      {
+        method: 'POST',
+        body: JSON.stringify({ fileFingerprints, dim })
+      },
+      timeoutMs
+    )
   }
 
   /** 批量删除向量：DELETE /api/v1/vector/delete */
@@ -501,7 +524,8 @@ export class OmniClient {
    * 5 分钟缓存：探活本身要打一次 HTTP，若每次查询都探活会把首屏延迟抬高一个量级；
    * 缓存按**成功响应**写入，失败不缓存（引擎热启动完成后应立即恢复）。
    */
-  private _clipTextHealthCacheMap: Map<string, { data: OmniClipTextHealth; time: number }> = new Map()
+  private _clipTextHealthCacheMap: Map<string, { data: OmniClipTextHealth; time: number }> =
+    new Map()
   private _clipTextHealthInFlightMap: Map<string, Promise<OmniClipTextHealth | null>> = new Map()
 
   async getClipTextHealth(options?: {
@@ -511,11 +535,7 @@ export class OmniClient {
     const langKey = (options?.lang || '').toLowerCase().startsWith('zh') ? 'zh' : 'en'
     const now = Date.now()
     const cached = this._clipTextHealthCacheMap.get(langKey)
-    if (
-      !options?.forceRefresh &&
-      cached &&
-      now - cached.time < CLIP_TEXT_HEALTH_TTL_MS
-    ) {
+    if (!options?.forceRefresh && cached && now - cached.time < CLIP_TEXT_HEALTH_TTL_MS) {
       return cached.data
     }
     // Singleflight：并发查询按语言键共用同一次探活
@@ -808,17 +828,33 @@ export class OmniClient {
   ): Promise<{ success: boolean; error?: string } | null> {
     try {
       await omniService.ensureRunning()
-      return await this.request('/api/audio/tts/register-voice', {
+      const res = await fetch(`${this.getBaseUrl()}/api/audio/tts/register-voice`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           voice_id: voiceId,
           frames,
           codes
         }),
-        signal
+        signal: signal ?? AbortSignal.timeout(5000)
       })
-    } catch (err) {
-      logger.warn(LogCategory.MAIN, '[OmniClient] registerVoice 失败:', err)
+
+      if (res.status === 501) {
+        const errText = await res.text().catch(() => '')
+        throw new Error(`NOT_IMPLEMENTED: ${errText || '当前激活的语音合成引擎不支持音色克隆'}`)
+      }
+
+      if (!res.ok) {
+        logger.warn(LogCategory.MAIN, `[OmniClient] registerVoice HTTP ${res.status}`)
+        return { success: false, error: `HTTP ${res.status}` }
+      }
+
+      return (await res.json()) as { success: boolean; error?: string }
+    } catch (err: any) {
+      logger.warn(LogCategory.MAIN, '[OmniClient] registerVoice 失败:', err?.message || String(err))
+      if (err?.message?.includes('NOT_IMPLEMENTED') || err?.status === 501) {
+        throw err
+      }
       return null
     }
   }
@@ -826,8 +862,20 @@ export class OmniClient {
   /**
    * 获取 TTS 引擎状态：GET /api/audio/tts/status
    */
-  async getTTSStatus(signal?: AbortSignal): Promise<{ ready: boolean; total_voices?: number; sample_rate?: number; engine?: string } | null> {
-    return this.request<{ ready: boolean; total_voices?: number; sample_rate?: number; engine?: string }>('/api/audio/tts/status', {
+  async getTTSStatus(
+    signal?: AbortSignal
+  ): Promise<{
+    ready: boolean
+    total_voices?: number
+    sample_rate?: number
+    engine?: string
+  } | null> {
+    return this.request<{
+      ready: boolean
+      total_voices?: number
+      sample_rate?: number
+      engine?: string
+    }>('/api/audio/tts/status', {
       method: 'GET',
       signal
     })
@@ -934,4 +982,3 @@ export class OmniClient {
 }
 
 export const omniClient = OmniClient.getInstance()
-

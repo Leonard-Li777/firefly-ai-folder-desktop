@@ -15,6 +15,7 @@ import * as path from 'path'
 import * as crypto from 'crypto'
 import JSZip from 'jszip'
 import * as yauzl from 'yauzl'
+import { PluginPathResolver } from '@firefly/shared'
 import { computeFileStreamSha256, computeResourceDirSha256 } from './deterministic-hasher'
 import type { OfflinePackageDao } from './offline-package-dao'
 
@@ -142,6 +143,7 @@ export interface ExportBundleResult {
  */
 export interface BackgroundVerificationLockState {
   active: boolean
+  isLocked?: boolean
   jobId?: string | null
   archivePath?: string | null
   abortController?: AbortController | null
@@ -279,10 +281,27 @@ export class OfflineBundleExporter {
           isDirectory: boolean
         }> = []
 
+        const normalizedSharedDir = path.resolve(this.ctx.modulesSharedDir)
+        const pluginsRootDir =
+          path.basename(normalizedSharedDir) === '_shared'
+            ? path.dirname(normalizedSharedDir)
+            : normalizedSharedDir
+
         for (const res of mod.resources) {
-          const physicalPath = path.isAbsolute(res.target_local_path)
-            ? res.target_local_path
-            : path.join(this.ctx.modulesSharedDir, res.target_local_path)
+          let physicalPath: string
+          if (path.isAbsolute(res.target_local_path)) {
+            physicalPath = res.target_local_path
+          } else {
+            const posixRel = res.target_local_path.replace(/\\/g, '/').replace(/^\/+/, '')
+            const targetRoot =
+              posixRel.startsWith('modules/_shared/') || posixRel.startsWith('_shared/')
+                ? pluginsRootDir
+                : normalizedSharedDir
+            physicalPath = PluginPathResolver.resolvePhysicalPathForRoot(
+              targetRoot,
+              res.target_local_path
+            )
+          }
 
           if (!fs.existsSync(physicalPath)) {
             throw new OfflineBundleExportError(

@@ -133,13 +133,28 @@ describe('Ticket 05: 原生执行器免杀与设置声明式动态挂载测试',
 
       // TTS 处于停用状态，Tab 应当被隐藏
       expect(screen.queryByText('语音合成 (TTS)')).toBeNull()
+      expect(screen.queryByText('个性声音克隆 (Moss-TTS)')).toBeNull()
+      expect(screen.queryByText('极速语音朗读 (M5-TTS)')).toBeNull()
     })
 
-    it('激活 TTS 插件后，系统设置动态挂载对应 Tab', () => {
+    it('当用户完全未安装任何 TTS 插件（modules 为空列表）时，系统设置坚决不呈现 TTS Tab', () => {
+      usePluginCenterStore.setState({ modules: [] })
+      useSettingsStore.setState({ isSystemSettingsOpen: true, isOpen: true })
+
+      render(<SystemSettingsDialog />)
+
+      // 基础界面与常驻项存在，TTS 坚决不呈现
+      expect(screen.getByText('界面与显示偏好')).toBeInTheDocument()
+      expect(screen.queryByText('语音合成 (TTS)')).toBeNull()
+      expect(screen.queryByText('个性声音克隆 (Moss-TTS)')).toBeNull()
+      expect(screen.queryByText('极速语音朗读 (M5-TTS)')).toBeNull()
+    })
+
+    it('激活 Moss-TTS 时，系统设置展示 Moss Tab 且互斥隐藏 M5 Tab', () => {
       const activeModules: PluginModuleItem[] = [
         {
           id: 'tts_moss_onnx',
-          name: '离线语音合成 TTS',
+          name: '个性声音克隆 (Moss-TTS)',
           version: '1.0.0',
           category: 'media',
           capability_slot: 'voice_tts',
@@ -151,7 +166,26 @@ describe('Ticket 05: 原生执行器免杀与设置声明式动态挂载测试',
           contributes: {
             settings: {
               scope: 'global',
-              tabTitle: '语音合成 (TTS)',
+              tabTitle: '个性声音克隆 (Moss-TTS)',
+              componentId: 'tts'
+            }
+          }
+        },
+        {
+          id: 'tts_m5_onnx',
+          name: '极速语音合成 (M5-TTS)',
+          version: '1.0.0',
+          category: 'media',
+          capability_slot: 'voice_tts',
+          author_code: 'official',
+          availability: 'available',
+          total_bytes: 1000,
+          install_state: 'installed_inactive',
+          description: 'M5 描述',
+          contributes: {
+            settings: {
+              scope: 'global',
+              tabTitle: '极速语音朗读 (M5-TTS)',
               componentId: 'tts'
             }
           }
@@ -162,8 +196,60 @@ describe('Ticket 05: 原生执行器免杀与设置声明式动态挂载测试',
 
       render(<SystemSettingsDialog />)
 
-      // 激活后 TTS Tab 应成功展示
-      expect(screen.getByText('语音合成 (TTS)')).toBeInTheDocument()
+      // 激活 Moss 后，Moss Tab 应当展示，而 M5 Tab 互斥隐藏
+      expect(screen.getByText('个性声音克隆 (Moss-TTS)')).toBeInTheDocument()
+      expect(screen.queryByText('极速语音朗读 (M5-TTS)')).toBeNull()
+    })
+
+    it('激活 M5-TTS 时，系统设置展示 M5 Tab 且互斥隐藏 Moss Tab', () => {
+      const activeModules: PluginModuleItem[] = [
+        {
+          id: 'tts_moss_onnx',
+          name: '个性声音克隆 (Moss-TTS)',
+          version: '1.0.0',
+          category: 'media',
+          capability_slot: 'voice_tts',
+          author_code: 'official',
+          availability: 'available',
+          total_bytes: 1000,
+          install_state: 'installed_inactive',
+          description: 'TTS 描述',
+          contributes: {
+            settings: {
+              scope: 'global',
+              tabTitle: '个性声音克隆 (Moss-TTS)',
+              componentId: 'tts'
+            }
+          }
+        },
+        {
+          id: 'tts_m5_onnx',
+          name: '极速语音合成 (M5-TTS)',
+          version: '1.0.0',
+          category: 'media',
+          capability_slot: 'voice_tts',
+          author_code: 'official',
+          availability: 'available',
+          total_bytes: 1000,
+          install_state: 'active',
+          description: 'M5 描述',
+          contributes: {
+            settings: {
+              scope: 'global',
+              tabTitle: '极速语音朗读 (M5-TTS)',
+              componentId: 'tts'
+            }
+          }
+        }
+      ]
+      usePluginCenterStore.setState({ modules: activeModules })
+      useSettingsStore.setState({ isSystemSettingsOpen: true, isOpen: true })
+
+      render(<SystemSettingsDialog />)
+
+      // 激活 M5 后，M5 Tab 应当展示，而 Moss Tab 互斥隐藏
+      expect(screen.getByText('极速语音朗读 (M5-TTS)')).toBeInTheDocument()
+      expect(screen.queryByText('个性声音克隆 (Moss-TTS)')).toBeNull()
     })
   })
 

@@ -54,6 +54,191 @@ export interface VerifiedDownloadResult {
   errorMessage?: string
 }
 
+export interface DownloadWatchdogOptions {
+  taskId?: string
+  connectTimeoutMs?: number // 默认 15000ms: TCP/TLS 握手
+  ttfbTimeoutMs?: number // 默认 15000ms: 握手成功至收到响应头
+  stallTimeoutMs?: number // 默认 30000ms: 连续 chunk 最大间隔
+  signal?: AbortSignal
+}
+
+/**
+ * 挂载连接、首字节 (TTFB) 与流传输停滞三重独立看门狗定时器
+ * 支持连接池复用已连接 socket 检测，防 CONNECT 误报；在 error/abort/end 及 signal 时统一清理防泄漏。
+ */
+export function attachDownloadWatchdogs(
+  req: any,
+  opts: DownloadWatchdogOptions,
+  onTimeout: (stage: 'CONNECT_TIMEOUT' | 'TTFB_TIMEOUT' | 'STALL_TIMEOUT') => void
+): () => void {
+  let settled = false
+  let currentTimer: ReturnType<typeof setTimeout> | null = null
+  let currentSocket: any = null
+  let currentResponse: any = null
+
+  const clearAll = () => {
+    if (currentTimer) {
+      clearTimeout(currentTimer)
+      currentTimer = null
+    }
+    if (currentSocket) {
+      if (typeof currentSocket.removeAllListeners === 'function') {
+        currentSocket.removeAllListeners('connect')
+        currentSocket.removeAllListeners('secureConnect')
+      }
+      currentSocket = null
+    }
+    if (currentResponse) {
+      if (typeof currentResponse.removeAllListeners === 'function') {
+        currentResponse.removeAllListeners('data')
+        currentResponse.removeAllListeners('end')
+      }
+      currentResponse = null
+    }
+  }
+
+  const arm = (ms: number, stage: 'CONNECT_TIMEOUT' | 'TTFB_TIMEOUT' | 'STALL_TIMEOUT') => {
+    if (currentTimer) clearTimeout(currentTimer)
+    currentTimer = setTimeout(() => {
+      if (settled) return
+      settled = true
+      clearAll()
+      try {
+        if (typeof req.abort === 'function') req.abort()
+      } catch {}
+      onTimeout(stage)
+    }, ms)
+  }
+
+  // 1. 启动独立连接超时看门狗
+  arm(opts.connectTimeoutMs ?? 15000, 'CONNECT_TIMEOUT')
+
+  if (typeof req.on === 'function') {
+    req.on('socket', (socket: any) => {
+      currentSocket = socket
+      const startTtfb = () => {
+        if (!settled) {
+          // 2. 握手完成，启动独立首字节 (TTFB) 超时看门狗
+          arm(opts.ttfbTimeoutMs ?? 15000, 'TTFB_TIMEOUT')
+        }
+      }
+
+      // 连接池复用已连接 socket：直接进入 TTFB 阶段，防 CONNECT 误报
+      if (socket && (socket.remoteAddress || socket.readyState === 'open')) {
+        startTtfb()
+        return
+      }
+
+      if (socket && typeof socket.once === 'function') {
+        socket.once('connect', () => {
+          if (socket.encrypted) {
+            socket.once('secureConnect', startTtfb)
+          } else {
+            startTtfb()
+          }
+        })
+      }
+    })
+
+    req.on('response', (response: any) => {
+      currentResponse = response
+      // 3. 响应头到达，启动流传输停滞看门狗
+      arm(opts.stallTimeoutMs ?? 30000, 'STALL_TIMEOUT')
+      if (typeof response.on === 'function') {
+        response.on('data', () => {
+          if (!settled) {
+            arm(opts.stallTimeoutMs ?? 30000, 'STALL_TIMEOUT')
+          }
+        })
+        response.on('end', () => {
+          settled = true
+          clearAll()
+        })
+      }
+    })
+
+    req.on('error', () => {
+      settled = true
+      clearAll()
+    })
+    req.on('abort', () => {
+      settled = true
+      clearAll()
+    })
+  }
+
+  if (opts.signal) {
+    if (opts.signal.aborted) {
+      settled = true
+      clearAll()
+      try {
+        if (typeof req.abort === 'function') req.abort()
+      } catch {}
+    } else {
+      opts.signal.addEventListener(
+        'abort',
+        () => {
+          settled = true
+          clearAll()
+          try {
+            if (typeof req.abort === 'function') req.abort()
+          } catch {}
+        },
+        { once: true }
+      )
+    }
+  }
+
+  return clearAll
+}
+
+/**
+ * 校验分片下载响应的 Range 206 协议契约
+ * 杜绝假 200/HTML 报错页或私网登录页污染 4MiB 块网格
+ */
+export function assertPartialResponse(
+  res: any,
+  start: number,
+  end: number,
+  expectedBytes?: number
+): void {
+  const statusCode = res.statusCode
+  if (statusCode !== 206) {
+    throw new Error(`RANGE_NOT_SUPPORTED: Expected HTTP 206, got ${statusCode}`)
+  }
+
+  const rawContentRange = res.headers?.['content-range'] || res.headers?.['Content-Range']
+  const contentRange = Array.isArray(rawContentRange) ? rawContentRange[0] : rawContentRange
+  if (contentRange && typeof contentRange === 'string') {
+    const match = contentRange.match(/^bytes\s+(\d+)-(\d+)\/(\d+|\*)$/i)
+    if (match) {
+      const actualStart = parseInt(match[1], 10)
+      const actualEnd = parseInt(match[2], 10)
+      const actualTotal = match[3] !== '*' ? parseInt(match[3], 10) : undefined
+
+      if (actualStart !== start || actualEnd !== end) {
+        throw new Error(
+          `RANGE_MISMATCH: Requested bytes ${start}-${end}, got ${actualStart}-${actualEnd}`
+        )
+      }
+      if (expectedBytes && actualTotal && actualTotal !== expectedBytes) {
+        throw new Error(`RANGE_TOTAL_MISMATCH: Expected total ${expectedBytes}, got ${actualTotal}`)
+      }
+    }
+  }
+
+  const rawLength = res.headers?.['content-length'] || res.headers?.['Content-Length']
+  const contentLength = rawLength
+    ? parseInt(Array.isArray(rawLength) ? rawLength[0] : rawLength, 10)
+    : undefined
+  const expectedBlockLen = end - start + 1
+  if (contentLength !== undefined && !isNaN(contentLength) && contentLength !== expectedBlockLen) {
+    throw new Error(
+      `RANGE_LENGTH_MISMATCH: Expected block length ${expectedBlockLen}, got ${contentLength}`
+    )
+  }
+}
+
 export interface ChunkDownloadOptions {
   taskId: string
   assetId?: string
@@ -429,7 +614,17 @@ export async function cleanOldTrashAndOrphanParts(
     for (const entry of entries) {
       const fullPath = path.join(baseDir, entry.name)
       if (entry.isDirectory()) {
-        if (entry.name.includes('.trash-') || entry.name.includes('.deleting-')) {
+        if (
+          entry.name.includes('.trash-') ||
+          entry.name.includes('.deleting-') ||
+          entry.name.startsWith('.tombstone-')
+        ) {
+          if (entry.name.startsWith('.tombstone-')) {
+            logger.warn(
+              LogCategory.SYSTEM,
+              `[GC] 检测到历史遗留 .tombstone- 目录并兼容清理: ${fullPath}`
+            )
+          }
           try {
             const st = fs.statSync(fullPath)
             if (now - st.mtimeMs > maxAgeMs) {
@@ -520,6 +715,20 @@ export class DualTrackSourceRouter {
     if (state) {
       state.consecutive429Count = 0
       state.cooldownUntil = 0
+    }
+  }
+
+  reportFailure(url: string, failureReason?: string, now = Date.now()): void {
+    let state = this.sourcesState.get(url)
+    if (!state) {
+      state = { concurrency: 8, cooldownUntil: 0, consecutive429Count: 0 }
+      this.sourcesState.set(url, state)
+    }
+    if (state.concurrency > 1) {
+      state.concurrency = Math.max(1, Math.floor(state.concurrency / 2))
+    } else {
+      // 连续失败进入 3 分钟冷却，让其他备用镜像源优先处理
+      state.cooldownUntil = now + 3 * 60 * 1000
     }
   }
 
@@ -684,8 +893,19 @@ export async function cleanOrphanTombstones(baseDir: string): Promise<number> {
     for (const entry of entries) {
       if (entry.isDirectory()) {
         const name = entry.name
-        if (name.includes('.tmp-') || name.includes('.deleting-') || name.includes('.deleting_')) {
+        if (
+          name.includes('.tmp-') ||
+          name.includes('.deleting-') ||
+          name.includes('.deleting_') ||
+          name.startsWith('.tombstone-')
+        ) {
           const fullPath = path.join(baseDir, name)
+          if (name.startsWith('.tombstone-')) {
+            logger.warn(
+              LogCategory.SYSTEM,
+              `[GC] 检测到历史遗留 .tombstone- 目录并兼容清理: ${fullPath}`
+            )
+          }
           try {
             fs.rmSync(fullPath, { recursive: true, force: true })
             cleanedCount++
@@ -995,7 +1215,13 @@ export class FileDownloadService {
       let lastReportTime = 0
       let isAborted = false
 
+      let clearWatchdogs: (() => void) | null = null
+
       const cleanup = () => {
+        if (clearWatchdogs) {
+          clearWatchdogs()
+          clearWatchdogs = null
+        }
         if (taskId) this.activeRequests.delete(taskId)
         if (fileStream) {
           try {
@@ -1007,6 +1233,25 @@ export class FileDownloadService {
           } catch {}
         }
       }
+
+      clearWatchdogs = attachDownloadWatchdogs(
+        request,
+        {
+          taskId,
+          signal: (options as any)?.signal
+        },
+        stage => {
+          isAborted = true
+          cleanup()
+          resolve({
+            success: false,
+            actualSha256: '',
+            finalBytes: receivedBytes,
+            errorCode: stage,
+            errorMessage: `Download watchdog triggered: ${stage}`
+          })
+        }
+      )
 
       request.on('response', response => {
         const statusCode = response.statusCode
@@ -1481,9 +1726,25 @@ export class FileDownloadService {
                     headers
                   }) as unknown as IDownloadTransportRequest)
 
+              let clearWorkerWatchdogs: (() => void) | null = null
+              clearWorkerWatchdogs = attachDownloadWatchdogs(
+                req,
+                {
+                  taskId: `${taskId}:block:${blockIndex}`,
+                  signal: options.signal
+                },
+                stage => {
+                  const timeoutErr: any = new Error(`Download block watchdog timed out: ${stage}`)
+                  timeoutErr.errorCode = stage
+                  timeoutErr.isTimeout = true
+                  rejectNet(timeoutErr)
+                }
+              )
+
               const chunks: Buffer[] = []
               req.on('response', (res: IDownloadTransportResponse) => {
                 if (res.statusCode === 429) {
+                  if (clearWorkerWatchdogs) clearWorkerWatchdogs()
                   const retryHeader =
                     (res as any).headers?.['retry-after'] || (res as any).headers?.['Retry-After']
                   const retrySec = retryHeader
@@ -1496,11 +1757,33 @@ export class FileDownloadService {
                   rejectNet(err429)
                   return
                 }
+
+                try {
+                  // 深度核验 Range 206 契约，防假 200/HTML 污染分片
+                  assertPartialResponse(res, start, end, expectedBytes)
+                } catch (rangeErr) {
+                  if (clearWorkerWatchdogs) clearWorkerWatchdogs()
+                  try {
+                    if (typeof req.abort === 'function') req.abort()
+                  } catch {}
+                  rejectNet(rangeErr)
+                  return
+                }
+
                 res.on('data', c => chunks.push(c))
-                res.on('end', () => resolveNet(Buffer.concat(chunks)))
-                res.on('error', rejectNet)
+                res.on('end', () => {
+                  if (clearWorkerWatchdogs) clearWorkerWatchdogs()
+                  resolveNet(Buffer.concat(chunks))
+                })
+                res.on('error', err => {
+                  if (clearWorkerWatchdogs) clearWorkerWatchdogs()
+                  rejectNet(err)
+                })
               })
-              req.on('error', rejectNet)
+              req.on('error', err => {
+                if (clearWorkerWatchdogs) clearWorkerWatchdogs()
+                rejectNet(err)
+              })
               req.end()
             })
 
@@ -1531,6 +1814,13 @@ export class FileDownloadService {
               const best = sourceRouter.selectBestSource(urls)
               activeUrl = best.url
               await new Promise(r => setTimeout(r, 50))
+            } else if (err?.isTimeout || err?.message?.includes('RANGE')) {
+              // 看门狗超时或非 206 假响应：向 router 报告失败，重入块并尝试切源
+              sourceRouter.reportFailure(activeUrl, err.errorCode || 'NETWORK_FAILURE')
+              pendingBlocks.unshift(blockIndex)
+              const best = sourceRouter.selectBestSource(urls)
+              activeUrl = best.url
+              await new Promise(r => setTimeout(r, 100))
             } else {
               throw err
             }

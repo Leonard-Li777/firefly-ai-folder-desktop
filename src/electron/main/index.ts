@@ -53,7 +53,8 @@ import {
   LogCategory,
   ErrorNormalizer,
   APP_PORTS,
-  getWorktreeDebugPortBase
+  getWorktreeDebugPortBase,
+  PluginPathResolver
 } from '@firefly/shared'
 import { loggingService } from '../runtime-services/system/logging-service'
 // 逆地理编码适配器注册：将 omniService 能力注入 core-engine（模块求值即注册，须早于任何维度分析）
@@ -77,7 +78,8 @@ loggingService.info(
 // 1.1 E2E 模式启动看门狗（Spec §4.5 assertE2ESandboxOrThrow 启动第一道防线）
 // 严禁生产打包未剥离运行、严禁 DB 路径越界、严禁破坏用户真实 appData
 if (process.env.FF_E2E_MODE === '1') {
-  const { assertE2ESandboxOrThrow } = require('../runtime-services/e2e/e2e-gate') as typeof import('../runtime-services/e2e/e2e-gate')
+  const { assertE2ESandboxOrThrow } =
+    require('../runtime-services/e2e/e2e-gate') as typeof import('../runtime-services/e2e/e2e-gate')
   assertE2ESandboxOrThrow(process.env)
 }
 
@@ -793,7 +795,6 @@ app.on('ready', async () => {
 
     EgressGuardService.install(session.defaultSession)
     app.on('session-created', (s: any) => EgressGuardService.install(s))
-
     ;(globalThis as any).__e2e_probe_bridge = {
       'test:getInternalState': (scope: any, query: any, token: string) =>
         ProbeBridgeService.getInternalState(scope, query, token),
@@ -801,12 +802,9 @@ app.on('ready', async () => {
         ProbeBridgeService.getEventTrace(sinceSeq, token),
       'test:injectFault': (fault: any, token: string) =>
         FaultInjectorService.injectFault(fault, token),
-      'test:getFaultReport': (token: string) =>
-        FaultInjectorService.getFaultReport(token),
-      'test:clearFaults': (token: string) =>
-        FaultInjectorService.clearFaults(token),
-      'test:getEgressLedger': (token: string) =>
-        EgressGuardService.getLedger(token),
+      'test:getFaultReport': (token: string) => FaultInjectorService.getFaultReport(token),
+      'test:clearFaults': (token: string) => FaultInjectorService.clearFaults(token),
+      'test:getEgressLedger': (token: string) => EgressGuardService.getLedger(token),
       'test:assertCleanEgress': (token: string) =>
         EgressGuardService.assertCleanEgressOrThrow(token)
     }
@@ -824,6 +822,18 @@ app.on('ready', async () => {
   // 完整性校验会被跳过并记录 "deploymentIntegrityVerifier 未注入" 日志。
   hardwareDetectionService.setConfigOrchestrator(ConfigOrchestrator.getInstance())
   hardwareDetectionService.setDeploymentIntegrityVerifier(deploymentIntegrityVerifier)
+
+  // SSOT P0：在 setupIPCHandlers() 与 LANGUAGE_CONFIRMED 分支判断前初始化全局唯一插件根目录解析器，
+  // 确保 Welcome 向导及 get-plugin-dir-info 等早期 IPC 调用可用；运行期内锁定不变（IN-01）。
+  const configuredPluginsRoot =
+    ConfigOrchestrator.getInstance().getValue<string>('PLUGIN_MODULES_PATH')
+  const initialPluginsRoot =
+    configuredPluginsRoot &&
+    typeof configuredPluginsRoot === 'string' &&
+    configuredPluginsRoot.trim()
+      ? path.resolve(configuredPluginsRoot.trim())
+      : path.join(app.getPath('userData'), 'modules')
+  PluginPathResolver.initialize(initialPluginsRoot)
 
   // 注册 IPC 处理器，确保在任何窗口创建及前端加载之前 IPC 响应就绪
   await setupIPCHandlers()
@@ -1019,7 +1029,7 @@ app.on('before-quit', async () => {
   logger.info(LogCategory.MAIN, '应用正在退出，清理资源...')
 
   try {
-    omniService.stop()
+    await omniService.stop()
     const { engineBridgeService } = await import('../runtime-services/engine-bridge')
     engineBridgeService.stop()
     // 关闭图标提取子进程，避免遗留孤儿子进程
@@ -1079,7 +1089,7 @@ process.on('unhandledRejection', reason => {
 // 处理终端终止信号 (Ctrl+C / 进程管理器杀进程)，确保 omni 等所有常驻子服务彻底释放
 const handleProcessTermination = () => {
   try {
-    omniService.stop()
+    omniService.stopImmediatelySync()
     const { engineBridgeService } = require('../runtime-services/engine-bridge')
     engineBridgeService.stop()
   } catch {}

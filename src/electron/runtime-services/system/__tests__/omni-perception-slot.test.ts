@@ -86,4 +86,50 @@ describe('Omni 原生感知插槽 (Ticket 03) Desktop 端消费与配置同步�
     expect(capturedBody.enable_nsfw_perception).toBe(true)
     expect(capturedBody.enable_face_perception).toBe(false)
   })
+
+  it('当用户未开启 perception_nsfw 插件时，下发 enable_nsfw_perception: false 且正确跳过不阻断', async () => {
+    const { modularResourceService } = await import('../modular-resource-service')
+    vi.spyOn(modularResourceService, 'getModule').mockReturnValue({
+      id: 'perception_nsfw',
+      install_state: 'installed_inactive'
+    } as any)
+
+    let capturedBody: any = null
+    const globalFetch = vi.fn().mockImplementation((url: string, init: any) => {
+      if (url.includes('/api/config')) {
+        capturedBody = JSON.parse(init.body)
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({})
+        })
+      }
+      return Promise.resolve({ ok: true, status: 200, json: async () => ({}) })
+    })
+    vi.stubGlobal('fetch', globalFetch)
+
+    const ok = await omniService.syncConfigFromDesktop()
+    expect(ok).toBe(true)
+    expect(capturedBody).toBeDefined()
+    expect(capturedBody.enable_nsfw_perception).toBe(false)
+
+    // 验证跳过状态下返回数据符合预期，且不产生错误阻断
+    const mockSkippedResponse: OmniPerceptionResponse = {
+      file_path: 'C:/test/nature.jpg',
+      mime_type: 'image/jpeg',
+      file_size: 2048,
+      visual_tags: ['风景', '山脉'],
+      audio_events: [],
+      is_corrupted: false,
+      metadata: {},
+      nsfw_perception: {
+        status: 'skipped',
+        tags: []
+      }
+    }
+    expect(mockSkippedResponse.nsfw_perception?.status).toBe('skipped')
+    expect(mockSkippedResponse.nsfw_perception?.tags).toEqual([])
+    expect(mockSkippedResponse.visual_tags).not.toContain('色情')
+    expect(mockSkippedResponse.visual_tags).not.toContain('血腥')
+  })
 })

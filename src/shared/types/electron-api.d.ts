@@ -1135,6 +1135,7 @@ declare global {
           chunkText?: string
         }) => Promise<ArrayBuffer | null>
       }
+      modularResource?: import('../../renderer/stores/plugin-center-store').IModularResourceBridge
     }
 
     // 其他全局对象

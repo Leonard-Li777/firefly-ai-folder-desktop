@@ -10,8 +10,8 @@
     "fr-FR": "La langue change... veuillez patienter",
     "ko-KR": "언어를 전환하는 중입니다...잠시 기다려 주십시오",
     "$files": [
-      "src/renderer/components/settings/interface-settings.tsx(2867-2884)",
-      "src/renderer/components/settings/interface-settings.tsx(20127-20144)"
+      "src/renderer/components/settings/interface-settings.tsx(4964-4981)",
+      "src/renderer/components/settings/interface-settings.tsx(34801-34818)"
     ],
     "$id": 7814
   },
@@ -25,7 +25,7 @@
     "de-DE": "Sprache wurde gewechselt, Seite wird aktualisiert...",
     "fr-FR": "La langue a été changée, la page est en cours de rafraîchissement...",
     "ko-KR": "언어가 전환되었습니다. 페이지를 새로 고치는 중...",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(3094-3113)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(5183-5202)"],
     "$id": 2815
   },
   "切换语言失败,请重试": {
@@ -38,8 +38,34 @@
     "de-DE": "Die Sprachumschaltung ist fehlgeschlagen. Bitte versuchen Sie es erneut",
     "fr-FR": "Échec du changement de langue, veuillez réessayer",
     "ko-KR": "언어를 전환하지 못했습니다. 다시 시도해 주세요.",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(3318-3332)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(5399-5413)"],
     "$id": 2910
+  },
+  "所选路径不满足要求": {
+    "en-US": "The selected path does not meet the requirements",
+    "es-ES": "La ruta seleccionada no cumple con los requisitos.",
+    "ar-EG": "المسار المحدد لا يلبي المتطلبات",
+    "pt-PT": "O caminho selecionado não atende aos requisitos",
+    "ru-RU": "Выбранный путь не соответствует требованиям",
+    "ja-JP": "選択したパスは要件を満たしていません",
+    "de-DE": "Der ausgewählte Pfad entspricht nicht den Anforderungen",
+    "fr-FR": "Le chemin sélectionné ne répond pas aux exigences",
+    "ko-KR": "선택한 경로가 요구 사항을 충족하지 않습니다.",
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(6117-6130)"],
+    "$id": 31486
+  },
+  "已取消插件目录迁移": {
+    "en-US": "Plug-in directory migration canceled",
+    "es-ES": "Migración del directorio de complementos cancelada",
+    "ar-EG": "تم إلغاء ترحيل دليل المكون الإضافي",
+    "pt-PT": "Migração de diretório de plug-ins cancelada",
+    "ru-RU": "Миграция каталога подключаемых модулей отменена",
+    "ja-JP": "プラグイン ディレクトリの移行がキャンセルされました",
+    "de-DE": "Migration des Plug-in-Verzeichnisses abgebrochen",
+    "fr-FR": "Migration du répertoire de plug-ins annulée",
+    "ko-KR": "플러그인 디렉터리 마이그레이션이 취소되었습니다.",
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(7249-7262)"],
+    "$id": 31487
   },
   "浅色主题": {
     "en-US": "Light theme  ",
@@ -51,7 +77,7 @@
     "de-DE": "Helles Design",
     "fr-FR": "Thème clair",
     "ko-KR": "라이트 테마",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(3951-3959)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(8250-8258)"],
     "$id": 3118
   },
   "始终使用浅色界面": {
@@ -64,7 +90,7 @@
     "de-DE": "Immer helle Oberfläche verwenden",
     "fr-FR": "Utiliser toujours une interface claire",
     "ko-KR": "항상 라이트 인터페이스 사용",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(3975-3987)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(8274-8286)"],
     "$id": 3119
   },
   "深色主题": {
@@ -77,7 +103,7 @@
     "de-DE": "Dunkles Design",
     "fr-FR": "Thème sombre",
     "ko-KR": "다크 테마",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(4023-4031)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(8321-8329)"],
     "$id": 3120
   },
   "始终使用深色界面": {
@@ -90,7 +116,7 @@
     "de-DE": "Immer dunkle Oberfläche verwenden",
     "fr-FR": "Utiliser toujours une interface sombre",
     "ko-KR": "항상 다크 인터페이스 사용",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(4047-4059)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(8345-8357)"],
     "$id": 3121
   },
   "跟随系统": {
@@ -103,7 +129,7 @@
     "de-DE": "Systemeinstellung folgen",
     "fr-FR": "Suivre le système",
     "ko-KR": "시스템 설정 따르기",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(4095-4103)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(8392-8400)"],
     "$id": 3122
   },
   "根据系统设置自动切换": {
@@ -116,7 +142,7 @@
     "de-DE": "Automatisch gemäß Systemeinstellung wechseln",
     "fr-FR": "Basculer automatiquement selon les paramètres du système",
     "ko-KR": "시스템 설정에 따라 자동 전환",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(4119-4133)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(8416-8430)"],
     "$id": 3123
   },
   "界面设置": {
@@ -129,7 +155,7 @@
     "de-DE": "Oberflächeneinstellungen",
     "fr-FR": "Paramètres de l'interface",
     "ko-KR": "인터페이스 설정",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(4547-4555)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(8824-8832)"],
     "$id": 3128
   },
   "自定义应用的外观和界面行为": {
@@ -142,7 +168,7 @@
     "de-DE": "Aussehen und Verhalten der Anwendung anpassen",
     "fr-FR": "Personnaliser l'apparence et le comportement de l'interface de l'application",
     "ko-KR": "앱의 외관 및 인터페이스 동작을 사용자 정의",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(4618-4635)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(8894-8911)"],
     "$id": 3129
   },
   "关闭时，最小化到托盘": {
@@ -155,7 +181,7 @@
     "de-DE": "Beim Schließen in den Tray minimieren",
     "fr-FR": "Minimiser dans la barre d'état système lors de la fermeture",
     "ko-KR": "닫혀 있으면 트레이로 최소화하세요.",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(5007-5021)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(9272-9286)"],
     "$id": 7982
   },
   "关闭主窗口时将应用隐藏到系统右下角托盘，可通过托盘图标重新打开应用": {
@@ -168,7 +194,7 @@
     "de-DE": "Bei Schließung des Hauptfensters wird die Anwendung in den Tray unten rechts ausgeblendet. Die Anwendung kann über das Tray-Symbol erneut geöffnet werden.",
     "fr-FR": "Lors de la fermeture de la fenêtre principale, l'application se cache dans la barre d'état système en bas à droite ; l'icône de la barre d'état permet de rouvrir l'application",
     "ko-KR": "메인 창이 닫히면 시스템 오른쪽 하단에 있는 트레이에 애플리케이션이 숨겨집니다. 트레이 아이콘을 통해 애플리케이션을 다시 열 수 있습니다.",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(5121-5158)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(9383-9420)"],
     "$id": 7983
   },
   "主题模式": {
@@ -181,7 +207,7 @@
     "de-DE": "Designmodus",
     "fr-FR": "Mode de thème",
     "ko-KR": "테마 모드",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(5686-5694)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(9931-9939)"],
     "$id": 3130
   },
   "选择应用的明暗视觉外观": {
@@ -194,7 +220,7 @@
     "de-DE": "Visuelles Erscheinungsbild (Hell/Dunkel) der Anwendung wählen",
     "fr-FR": "Choisir l'apparence visuelle claire ou sombre de l'application",
     "ko-KR": "앱의 밝고 어두운 시각적 모양을 선택하세요.",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(5769-5784)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(10013-10028)"],
     "$id": 7984
   },
   "配色方案": {
@@ -207,7 +233,7 @@
     "de-DE": "Farbschema",
     "fr-FR": "Schéma de couleurs",
     "ko-KR": "색상 구성",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(11855-11863)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(15992-16000)"],
     "$id": 3132
   },
   "选择应用的主题配色": {
@@ -220,7 +246,7 @@
     "de-DE": "Das Farbthema der Anwendung auswählen",
     "fr-FR": "Choisir la palette de couleurs du thème de l'application",
     "ko-KR": "앱의 테마 색상 선택",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(11938-11951)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(16074-16087)"],
     "$id": 3133
   },
   "界面语言": {
@@ -233,7 +259,7 @@
     "de-DE": "Oberflächensprache",
     "fr-FR": "Langue de l'interface",
     "ko-KR": "인터페이스 언어",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(15689-15697)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(19743-19751)"],
     "$id": 3134
   },
   "选择应用界面显示的语言": {
@@ -246,7 +272,7 @@
     "de-DE": "Die Sprache für die Anzeige der Benutzeroberfläche auswählen",
     "fr-FR": "Choisir la langue d'affichage de l'interface de l'application",
     "ko-KR": "앱 인터페이스에 표시될 언어 선택",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(15772-15787)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(19825-19840)"],
     "$id": 3135
   },
   "选择语言": {
@@ -259,8 +285,339 @@
     "de-DE": "Sprache auswählen",
     "fr-FR": "Sélectionner la langue  ",
     "ko-KR": "언어 선택",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(16066-16074)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(20111-20119)"],
     "$id": 3137
+  },
+  "插件与模型存储目录": {
+    "en-US": "Plug-in and model storage directory",
+    "es-ES": "Directorio de almacenamiento de modelos y complementos",
+    "ar-EG": "دليل تخزين المكونات الإضافية والنماذج",
+    "pt-PT": "Diretório de armazenamento de plug-in e modelo",
+    "ru-RU": "Каталог хранения плагинов и моделей",
+    "ja-JP": "プラグインとモデルの保存ディレクトリ",
+    "de-DE": "Plug-in- und Modellspeicherverzeichnis",
+    "fr-FR": "Répertoire de stockage des plug-ins et des modèles",
+    "ko-KR": "플러그인 및 모델 저장 디렉터리",
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(20826-20839)"],
+    "$id": 31488
+  },
+  "存放 AI 大脑模型与功能扩展组件的本地文件夹": {
+    "en-US": "A local folder that stores AI brain models and functional expansion components",
+    "es-ES": "Una carpeta local que almacena modelos cerebrales de IA y componentes de expansión funcional.",
+    "ar-EG": "مجلد محلي يخزن نماذج دماغ الذكاء الاصطناعي ومكونات التوسع الوظيفي",
+    "pt-PT": "Uma pasta local que armazena modelos cerebrais de IA e componentes de expansão funcional",
+    "ru-RU": "Локальная папка, в которой хранятся модели мозга ИИ и компоненты функционального расширения.",
+    "ja-JP": "AI脳モデルや機能拡張コンポーネントを格納するローカルフォルダー",
+    "de-DE": "Ein lokaler Ordner, der KI-Gehirnmodelle und funktionale Erweiterungskomponenten speichert",
+    "fr-FR": "Un dossier local qui stocke les modèles cérébraux d'IA et les composants d'expansion fonctionnelle",
+    "ko-KR": "AI 두뇌 모델과 기능 확장 구성 요소를 저장하는 로컬 폴더",
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(20928-20955)"],
+    "$id": 31489
+  },
+  "当前默认插件存储路径包含中文字符，可能影响部分 AI 模型稳定运行，强烈建议更改到纯英文磁盘目录": {
+    "en-US": "The current default plug-in storage path contains Chinese characters, which may affect the stable operation of some AI models. It is strongly recommended to change to a pure English disk directory.",
+    "es-ES": "La ruta de almacenamiento predeterminada actual del complemento contiene caracteres chinos, lo que puede afectar el funcionamiento estable de algunos modelos de IA. Se recomienda encarecidamente cambiar a un directorio de disco exclusivamente en inglés.",
+    "ar-EG": "يحتوي مسار تخزين المكون الإضافي الافتراضي الحالي على أحرف صينية، مما قد يؤثر على التشغيل المستقر لبعض نماذج الذكاء الاصطناعي. يوصى بشدة بالتغيير إلى دليل القرص الإنجليزي النقي.",
+    "pt-PT": "O caminho de armazenamento padrão atual do plug-in contém caracteres chineses, o que pode afetar a operação estável de alguns modelos de IA. É altamente recomendável mudar para um diretório de disco em inglês puro.",
+    "ru-RU": "Текущий путь к хранилищу плагинов по умолчанию содержит китайские иероглифы, что может повлиять на стабильную работу некоторых моделей ИИ. Настоятельно рекомендуется перейти на чисто английский каталог диска.",
+    "ja-JP": "現在のデフォルトのプラグイン ストレージ パスには中国語の文字が含まれており、一部の AI モデルの安定した動作に影響を与える可能性があります。純粋な英語のディスク ディレクトリに変更することを強くお勧めします。",
+    "de-DE": "Der aktuelle Standard-Plug-In-Speicherpfad enthält chinesische Zeichen, die den stabilen Betrieb einiger KI-Modelle beeinträchtigen können. Es wird dringend empfohlen, auf ein rein englisches Festplattenverzeichnis zu wechseln.",
+    "fr-FR": "Le chemin de stockage actuel du plug-in par défaut contient des caractères chinois, ce qui peut affecter le fonctionnement stable de certains modèles d'IA. Il est fortement recommandé de passer à un répertoire de disque en anglais pur.",
+    "ko-KR": "현재 기본 플러그인 저장 경로에는 중국어 문자가 포함되어 있어 일부 AI 모델의 안정적인 작동에 영향을 미칠 수 있습니다. 순수 영어 디스크 디렉터리로 변경하는 것이 좋습니다.",
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(21430-21501)"],
+    "$id": 31490
+  },
+  "插件目录已迁移完成，需重启软件以加载新目录资源": {
+    "en-US": "The plug-in directory has been migrated and the software needs to be restarted to load the new directory resources.",
+    "es-ES": "El directorio del complemento se ha migrado y es necesario reiniciar el software para cargar los nuevos recursos del directorio.",
+    "ar-EG": "تم ترحيل دليل البرنامج الإضافي ويلزم إعادة تشغيل البرنامج لتحميل موارد الدليل الجديد.",
+    "pt-PT": "O diretório do plug-in foi migrado e o software precisa ser reiniciado para carregar os novos recursos do diretório.",
+    "ru-RU": "Каталог подключаемого модуля был перенесен, и необходимо перезапустить программное обеспечение, чтобы загрузить новые ресурсы каталога.",
+    "ja-JP": "プラグイン ディレクトリは移行されたため、新しいディレクトリ リソースをロードするにはソフトウェアを再起動する必要があります。",
+    "de-DE": "Das Plug-in-Verzeichnis wurde migriert und die Software muss neu gestartet werden, um die neuen Verzeichnisressourcen zu laden.",
+    "fr-FR": "Le répertoire du plug-in a été migré et le logiciel doit être redémarré pour charger les nouvelles ressources du répertoire.",
+    "ko-KR": "플러그인 디렉터리가 마이그레이션되었으며 새 디렉터리 리소스를 로드하려면 소프트웨어를 다시 시작해야 합니다.",
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(22042-22069)"],
+    "$id": 31491
+  },
+  "立即重启": {
+    "en-US": "Restart now",
+    "es-ES": "Reiniciar ahora",
+    "ar-EG": "أعد التشغيل الآن",
+    "pt-PT": "Reinicie agora",
+    "ru-RU": "Перезагрузить сейчас",
+    "ja-JP": "今すぐ再起動してください",
+    "de-DE": "Starten Sie jetzt neu",
+    "fr-FR": "Redémarrer maintenant",
+    "ko-KR": "지금 다시 시작",
+    "$files": [
+      "src/renderer/components/settings/interface-settings.tsx(22331-22339)",
+      "src/renderer/components/settings/interface-settings.tsx(31176-31184)"
+    ],
+    "$id": 31492
+  },
+  "正在迁移插件与模型文件...": {
+    "en-US": "Migrating plug-ins and model files...",
+    "es-ES": "Migrando complementos y archivos de modelo...",
+    "ar-EG": "ترحيل المكونات الإضافية وملفات النماذج...",
+    "pt-PT": "Migrando plug-ins e arquivos de modelo...",
+    "ru-RU": "Перенос плагинов и файлов моделей...",
+    "ja-JP": "プラグインとモデル ファイルを移行しています...",
+    "de-DE": "Plug-Ins und Modelldateien werden migriert...",
+    "fr-FR": "Migration des plug-ins et des fichiers de modèle...",
+    "ko-KR": "플러그인 및 모델 파일 마이그레이션 중...",
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(22883-22901)"],
+    "$id": 31493
+  },
+  "取消迁移": {
+    "en-US": "Cancel migration",
+    "es-ES": "Cancelar migración",
+    "ar-EG": "إلغاء الترحيل",
+    "pt-PT": "Cancelar migração",
+    "ru-RU": "Отменить миграцию",
+    "ja-JP": "移行をキャンセルする",
+    "de-DE": "Migration abbrechen",
+    "fr-FR": "Annuler la migration",
+    "ko-KR": "이전 취소",
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(24015-24023)"],
+    "$id": 31494
+  },
+  "正在获取目录信息...": {
+    "en-US": "Getting directory information...",
+    "es-ES": "Obteniendo información del directorio...",
+    "ar-EG": "جارٍ الحصول على معلومات الدليل...",
+    "pt-PT": "Obtendo informações do diretório...",
+    "ru-RU": "Получение информации о каталоге...",
+    "ja-JP": "ディレクトリ情報を取得しています...",
+    "de-DE": "Verzeichnisinformationen abrufen...",
+    "fr-FR": "Obtention d'informations sur l'annuaire...",
+    "ko-KR": "디렉터리 정보를 가져오는 중...",
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(24617-24632)"],
+    "$id": 31495
+  },
+  "已占用空间": {
+    "en-US": "Space occupied",
+    "es-ES": "Espacio ocupado",
+    "ar-EG": "الفضاء المحتلة",
+    "pt-PT": "Espaço ocupado",
+    "ru-RU": "Пространство занято",
+    "ja-JP": "占有スペース",
+    "de-DE": "Platz belegt",
+    "fr-FR": "Espace occupé",
+    "ko-KR": "점유 공간",
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(24757-24766)"],
+    "$id": 31496
+  },
+  "更改目录": {
+    "en-US": "Change directory",
+    "es-ES": "Cambiar directorio",
+    "ar-EG": "تغيير الدليل",
+    "pt-PT": "Alterar diretório",
+    "ru-RU": "Изменить каталог",
+    "ja-JP": "ディレクトリを変更する",
+    "de-DE": "Verzeichnis wechseln",
+    "fr-FR": "Changer de répertoire",
+    "ko-KR": "디렉토리 변경",
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(25383-25391)"],
+    "$id": 31497
+  },
+  "清理旧插件目录残留": {
+    "en-US": "Clean up the remnants of the old plug-in directory",
+    "es-ES": "Limpiar los restos del antiguo directorio de complementos",
+    "ar-EG": "قم بتنظيف بقايا دليل المكونات الإضافية القديم",
+    "pt-PT": "Limpe os restos do antigo diretório de plug-ins",
+    "ru-RU": "Очистите остатки старой директории плагина",
+    "ja-JP": "古いプラグイン ディレクトリの残りをクリーンアップします。",
+    "de-DE": "Bereinigen Sie die Überreste des alten Plug-in-Verzeichnisses",
+    "fr-FR": "Nettoyer les restes de l'ancien répertoire des plug-ins",
+    "ko-KR": "이전 플러그인 디렉토리의 남은 부분을 정리합니다.",
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(26053-26066)"],
+    "$id": 31498
+  },
+  "检测到此前迁移遗留的旧目录，可安全清理以释放磁盘空间：": {
+    "en-US": "Old directories left over from previous migrations are detected and can be safely cleaned to free up disk space:",
+    "es-ES": "Se detectan los directorios antiguos que quedan de migraciones anteriores y se pueden limpiar de forma segura para liberar espacio en el disco:",
+    "ar-EG": "تم اكتشاف الأدلة القديمة المتبقية من عمليات الترحيل السابقة ويمكن تنظيفها بأمان لتحرير مساحة على القرص:",
+    "pt-PT": "Os diretórios antigos que sobraram de migrações anteriores são detectados e podem ser limpos com segurança para liberar espaço em disco:",
+    "ru-RU": "Обнаруживаются старые каталоги, оставшиеся от предыдущих миграций, и их можно безопасно очистить, чтобы освободить место на диске:",
+    "ja-JP": "以前の移行で残った古いディレクトリが検出され、安全にクリーンアップしてディスク領域を解放できます。",
+    "de-DE": "Alte Verzeichnisse, die von früheren Migrationen übrig geblieben sind, werden erkannt und können sicher bereinigt werden, um Speicherplatz freizugeben:",
+    "fr-FR": "Les anciens répertoires laissés par les migrations précédentes sont détectés et peuvent être nettoyés en toute sécurité pour libérer de l'espace disque :",
+    "ko-KR": "이전 마이그레이션에서 남은 오래된 디렉터리가 감지되고 안전하게 정리되어 디스크 공간을 확보할 수 있습니다.",
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(26193-26224)"],
+    "$id": 31499
+  },
+  "忽略": {
+    "en-US": "neglect",
+    "es-ES": "descuido",
+    "ar-EG": "أهمل",
+    "pt-PT": "negligência",
+    "ru-RU": "пренебрегать",
+    "ja-JP": "無視する",
+    "de-DE": "Vernachlässigung",
+    "fr-FR": "négligence",
+    "ko-KR": "소홀히 하다",
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(26826-26832)"],
+    "$id": 31500
+  },
+  "立即清理": {
+    "en-US": "Clean up now",
+    "es-ES": "Limpiar ahora",
+    "ar-EG": "تنظيف الآن",
+    "pt-PT": "Limpe agora",
+    "ru-RU": "Очистите сейчас",
+    "ja-JP": "今すぐ掃除してください",
+    "de-DE": "Jetzt aufräumen",
+    "fr-FR": "Nettoyer maintenant",
+    "ko-KR": "지금 청소하세요",
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(27462-27470)"],
+    "$id": 31501
+  },
+  "确认迁移插件存储目录": {
+    "en-US": "Confirm the migration plug-in storage directory",
+    "es-ES": "Confirme el directorio de almacenamiento del complemento de migración",
+    "ar-EG": "قم بتأكيد دليل تخزين المكونات الإضافية للترحيل",
+    "pt-PT": "Confirme o diretório de armazenamento do plug-in de migração",
+    "ru-RU": "Подтвердите каталог хранения модуля миграции.",
+    "ja-JP": "マイグレーションプラグイン格納ディレクトリの確認",
+    "de-DE": "Bestätigen Sie das Speicherverzeichnis des Migrations-Plug-Ins",
+    "fr-FR": "Confirmez le répertoire de stockage du plug-in de migration",
+    "ko-KR": "마이그레이션 플러그인 저장소 디렉터리 확인",
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(27943-27957)"],
+    "$id": 31502
+  },
+  "系统将把现有的插件与模型数据安全复制到新目录。迁移期间原目录资源保持只读保护。": {
+    "en-US": "Existing plug-in and model data will be safely copied to the new directory. During migration, the original directory resources remain read-only protected.",
+    "es-ES": "Los datos de modelos y complementos existentes se copiarán de forma segura en el nuevo directorio. Durante la migración, los recursos del directorio original permanecen protegidos como de solo lectura.",
+    "ar-EG": "سيتم نسخ بيانات النموذج والمكونات الإضافية الموجودة بأمان إلى الدليل الجديد. أثناء الترحيل، تظل موارد الدليل الأصلي محمية للقراءة فقط.",
+    "pt-PT": "Os dados de plug-in e modelo existentes serão copiados com segurança para o novo diretório. Durante a migração, os recursos do diretório original permanecem protegidos somente leitura.",
+    "ru-RU": "Существующие данные плагина и модели будут безопасно скопированы в новый каталог. Во время миграции исходные ресурсы каталога остаются защищенными только для чтения.",
+    "ja-JP": "既存のプラグインとモデルのデータは新しいディレクトリに安全にコピーされます。移行中、元のディレクトリ リソースは読み取り専用で保護されたままになります。",
+    "de-DE": "Vorhandene Plug-in- und Modelldaten werden sicher in das neue Verzeichnis kopiert. Während der Migration bleiben die ursprünglichen Verzeichnisressourcen schreibgeschützt.",
+    "fr-FR": "Les données de plug-in et de modèle existantes seront copiées en toute sécurité dans le nouveau répertoire. Pendant la migration, les ressources du répertoire d'origine restent protégées en lecture seule.",
+    "ko-KR": "기존 플러그인 및 모델 데이터는 새 디렉터리에 안전하게 복사됩니다. 마이그레이션 중에 원래 디렉터리 리소스는 읽기 전용으로 보호된 상태로 유지됩니다.",
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(28147-28211)"],
+    "$id": 31503
+  },
+  "新存储路径": {
+    "en-US": "New storage path",
+    "es-ES": "Nueva ruta de almacenamiento",
+    "ar-EG": "مسار تخزين جديد",
+    "pt-PT": "Novo caminho de armazenamento",
+    "ru-RU": "Новый путь хранения",
+    "ja-JP": "新しいストレージパス",
+    "de-DE": "Neuer Speicherpfad",
+    "fr-FR": "Nouveau chemin de stockage",
+    "ko-KR": "새로운 저장 경로",
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(28463-28472)"],
+    "$id": 31504
+  },
+  "目标盘可用空间": {
+    "en-US": "Target disk available space",
+    "es-ES": "Espacio disponible en el disco de destino",
+    "ar-EG": "المساحة المتوفرة على القرص المستهدف",
+    "pt-PT": "Espaço disponível em disco de destino",
+    "ru-RU": "Доступное место на целевом диске",
+    "ja-JP": "ターゲットディスクの空き容量",
+    "de-DE": "Verfügbarer Speicherplatz auf der Zielfestplatte",
+    "fr-FR": "Espace disponible sur le disque cible",
+    "ko-KR": "대상 디스크 사용 가능 공간",
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(28802-28813)"],
+    "$id": 31505
+  },
+  "预估待迁移大小": {
+    "en-US": "Estimated size to be migrated",
+    "es-ES": "Tamaño estimado a migrar",
+    "ar-EG": "الحجم المقدر المراد ترحيله",
+    "pt-PT": "Tamanho estimado a ser migrado",
+    "ru-RU": "Предполагаемый размер для переноса",
+    "ja-JP": "移行される推定サイズ",
+    "de-DE": "Geschätzte zu migrierende Größe",
+    "fr-FR": "Taille estimée à migrer",
+    "ko-KR": "마이그레이션할 예상 크기",
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(29068-29079)"],
+    "$id": 31506
+  },
+  "迁移完成后需重启软件以正式加载新位置的模型与插件。": {
+    "en-US": "After the migration is completed, the software needs to be restarted to officially load the models and plug-ins in the new location.",
+    "es-ES": "Una vez completada la migración, es necesario reiniciar el software para cargar oficialmente los modelos y complementos en la nueva ubicación.",
+    "ar-EG": "بعد اكتمال الترحيل، يجب إعادة تشغيل البرنامج لتحميل النماذج والمكونات الإضافية رسميًا في الموقع الجديد.",
+    "pt-PT": "Após a conclusão da migração, o software precisa ser reiniciado para carregar oficialmente os modelos e plug-ins no novo local.",
+    "ru-RU": "После завершения миграции необходимо перезапустить программное обеспечение, чтобы официально загрузить модели и плагины в новом месте.",
+    "ja-JP": "移行が完了したら、ソフトウェアを再起動して、モデルとプラグインを新しい場所に正式にロードする必要があります。",
+    "de-DE": "Nach Abschluss der Migration muss die Software neu gestartet werden, um die Modelle und Plug-Ins offiziell am neuen Speicherort zu laden.",
+    "fr-FR": "Une fois la migration terminée, le logiciel doit être redémarré pour charger officiellement les modèles et les plug-ins dans le nouvel emplacement.",
+    "ko-KR": "마이그레이션이 완료된 후 모델과 플러그인을 새 위치에 공식적으로 로드하려면 소프트웨어를 다시 시작해야 합니다.",
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(29355-29384)"],
+    "$id": 31507
+  },
+  "取消": {
+    "en-US": "Cancel",
+    "es-ES": "Cancelar",
+    "ar-EG": "إلغاء",
+    "pt-PT": "Cancelar",
+    "ru-RU": "Отмена",
+    "ja-JP": "キャンセル",
+    "de-DE": "Abbrechen",
+    "fr-FR": "Annuler",
+    "ko-KR": "취소",
+    "$files": [
+      "src/renderer/components/settings/interface-settings.tsx(29679-29685)",
+      "src/renderer/components/settings/interface-settings.tsx(33558-33564)"
+    ],
+    "$id": 3152
+  },
+  "开始迁移": {
+    "en-US": "Start migration",
+    "es-ES": "Iniciar migración",
+    "ar-EG": "ابدأ الهجرة",
+    "pt-PT": "Iniciar migração",
+    "ru-RU": "Начать миграцию",
+    "ja-JP": "移行の開始",
+    "de-DE": "Starten Sie die Migration",
+    "fr-FR": "Démarrer la migration",
+    "ko-KR": "마이그레이션 시작",
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(29952-29960)"],
+    "$id": 31508
+  },
+  "插件目录迁移完成": {
+    "en-US": "Plug-in directory migration completed",
+    "es-ES": "Migración del directorio de complementos completada",
+    "ar-EG": "اكتمل ترحيل دليل المكون الإضافي",
+    "pt-PT": "Migração de diretório de plug-in concluída",
+    "ru-RU": "Миграция каталога плагинов завершена",
+    "ja-JP": "プラグインディレクトリの移行が完了しました",
+    "de-DE": "Die Migration des Plug-in-Verzeichnisses ist abgeschlossen",
+    "fr-FR": "Migration du répertoire des plug-ins terminée",
+    "ko-KR": "플러그인 디렉토리 마이그레이션 완료",
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(30449-30461)"],
+    "$id": 31509
+  },
+  "插件与模型已成功复制到新位置。需重启软件以加载新目录资源，您希望现在重启吗？": {
+    "en-US": "The plugin and model were successfully copied to the new location. The software needs to be restarted to load the new directory resources. Do you want to restart now?",
+    "es-ES": "El complemento y el modelo se copiaron correctamente en la nueva ubicación. Es necesario reiniciar el software para cargar los nuevos recursos del directorio. ¿Quieres reiniciar ahora?",
+    "ar-EG": "تم نسخ المكون الإضافي والنموذج بنجاح إلى الموقع الجديد. يحتاج البرنامج إلى إعادة التشغيل لتحميل موارد الدليل الجديد. هل تريد إعادة التشغيل الآن؟",
+    "pt-PT": "O plugin e o modelo foram copiados com sucesso para o novo local. O software precisa ser reiniciado para carregar os novos recursos do diretório. Quer reiniciar agora?",
+    "ru-RU": "Плагин и модель были успешно скопированы в новое место. Программное обеспечение необходимо перезапустить, чтобы загрузить новые ресурсы каталога. Хотите перезапустить сейчас?",
+    "ja-JP": "プラグインとモデルは新しい場所に正常にコピーされました。新しいディレクトリ リソースをロードするには、ソフトウェアを再起動する必要があります。今すぐ再起動しますか?",
+    "de-DE": "Das Plugin und das Modell wurden erfolgreich an den neuen Speicherort kopiert. Die Software muss neu gestartet werden, um die neuen Verzeichnisressourcen zu laden. Möchten Sie jetzt neu starten?",
+    "fr-FR": "Le plugin et le modèle ont été copiés avec succès vers le nouvel emplacement. Le logiciel doit être redémarré pour charger les nouvelles ressources du répertoire. Voulez-vous redémarrer maintenant ?",
+    "ko-KR": "플러그인과 모델이 새 위치에 성공적으로 복사되었습니다. 새 디렉터리 리소스를 로드하려면 소프트웨어를 다시 시작해야 합니다. 지금 다시 시작하시겠습니까?",
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(30599-30641)"],
+    "$id": 31510
+  },
+  "稍后重启": {
+    "en-US": "Restart later",
+    "es-ES": "Reiniciar más tarde",
+    "ar-EG": "أعد التشغيل لاحقًا",
+    "pt-PT": "Reinicie mais tarde",
+    "ru-RU": "Перезагрузить позже",
+    "ja-JP": "後で再起動する",
+    "de-DE": "Später neu starten",
+    "fr-FR": "Redémarrer plus tard",
+    "ko-KR": "나중에 다시 시작",
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(30885-30893)"],
+    "$id": 31511
   },
   "标签显示": {
     "en-US": "Tag Display  ",
@@ -272,7 +629,7 @@
     "de-DE": "Etikettenanzeige",
     "fr-FR": "Affichage des étiquettes  ",
     "ko-KR": "태그 표시",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(16766-16774)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(31513-31521)"],
     "$id": 3140
   },
   "控制虚拟目录中标签的显示行为": {
@@ -285,7 +642,7 @@
     "de-DE": "Das Anzeigeverhalten von Etiketten im virtuellen Verzeichnis steuern",
     "fr-FR": "Contrôler le comportement d’affichage des étiquettes dans les répertoires virtuels  ",
     "ko-KR": "가상 디렉터리에서 태그의 표시 방식 제어",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(16869-16887)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(31614-31632)"],
     "$id": 3141
   },
   "显示空标签": {
@@ -298,7 +655,7 @@
     "de-DE": "Leere Etiketten anzeigen",
     "fr-FR": "Afficher les étiquettes vides  ",
     "ko-KR": "빈 태그 표시",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(17546-17555)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(32277-32286)"],
     "$id": 3142
   },
   "在维度标签树中显示文件数为0的标签": {
@@ -311,7 +668,7 @@
     "de-DE": "Etiketten mit einer Dateianzahl von 0 im Dimensions-Etikettenbaum anzeigen",
     "fr-FR": "Afficher dans l’arborescence des étiquettes dimensionnelles les étiquettes dont le nombre de fichiers est égal à 0  ",
     "ko-KR": "차원 태그 트리에서 파일 수가 0인 태그 표시",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(17690-17711)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(32417-32438)"],
     "$id": 3143
   },
   "语言变更警告": {
@@ -324,7 +681,7 @@
     "de-DE": "Warnung bei Sprachwechsel",
     "fr-FR": "Avertissement concernant le changement de langue  ",
     "ko-KR": "언어 변경 경고",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(18243-18253)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(32957-32967)"],
     "$id": 3148
   },
   "已创建的工作目录不支持语言切换，因为已分析文件的语言无法匹配新的语言环境。您可以随时切换回语言来恢复": {
@@ -337,21 +694,8 @@
     "de-DE": "Das erstellte Arbeitsverzeichnis unterstützt keinen Sprachwechsel, da die Sprache der analysierten Dateien nicht mit der neuen Sprachumgebung übereinstimmt. Sie können jederzeit zurück zur ursprünglichen Sprache wechseln, um den Zustand wiederherzustellen",
     "fr-FR": "Le répertoire de travail créé ne prend pas en charge le changement de langue, car la langue des fichiers analysés ne correspond pas au nouveau paramètre régional. Vous pouvez à tout moment revenir à la langue précédente pour restaurer le fonctionnement.",
     "ko-KR": "생성된 작업 디렉토리는 언어 전환을 지원하지 않습니다. 분석된 파일의 언어가 새로운 언어 환경과 일치하지 않기 때문입니다. 언제든지 언어를 다시 전환하여 복구할 수 있습니다",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(18412-18484)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(33123-33194)"],
     "$id": 3068
-  },
-  "取消": {
-    "en-US": "Cancel",
-    "es-ES": "Cancelar",
-    "ar-EG": "إلغاء",
-    "pt-PT": "Cancelar",
-    "ru-RU": "Отмена",
-    "ja-JP": "キャンセル",
-    "de-DE": "Abbrechen",
-    "fr-FR": "Annuler",
-    "ko-KR": "취소",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(18859-18865)"],
-    "$id": 3152
   },
   "继续": {
     "en-US": "Continue",
@@ -363,7 +707,7 @@
     "de-DE": "Fortfahren",
     "fr-FR": "Continuer",
     "ko-KR": "계속",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(19250-19256)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(33940-33946)"],
     "$id": 3153
   },
   "正在初始化数据库与配置文件": {
@@ -376,7 +720,7 @@
     "de-DE": "Initialisieren von Datenbank- und Konfigurationsdateien",
     "fr-FR": "Initialisation de la base de données et des fichiers de configuration",
     "ko-KR": "데이터베이스 및 구성 파일 초기화",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(20229-20246)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(34901-34918)"],
     "$id": 8972
   }
 }

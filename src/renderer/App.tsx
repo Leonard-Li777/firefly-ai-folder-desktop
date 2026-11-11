@@ -92,8 +92,16 @@ const App: React.FC = () => {
     const checkBind = async () => {
       try {
         if (window.electronAPI?.deviceBind?.getStatus) {
-          const res = await window.electronAPI.deviceBind.getStatus()
-          if (isMounted && res?.success && !res.bound) {
+          const [res, hasSession, unseatedRes] = await Promise.all([
+            window.electronAPI.deviceBind.getStatus(),
+            window.electronAPI.deviceBind.hasActiveBindSession
+              ? window.electronAPI.deviceBind.hasActiveBindSession()
+              : Promise.resolve(false),
+            window.electronAPI.deviceBind.getUnseatedSession
+              ? window.electronAPI.deviceBind.getUnseatedSession()
+              : Promise.resolve({ unseated: false })
+          ])
+          if (isMounted && ((res?.success && !res.bound) || hasSession || unseatedRes?.unseated)) {
             setIsDeviceBindOpen(true)
           }
         }
@@ -102,8 +110,17 @@ const App: React.FC = () => {
       }
     }
     checkBind()
+
+    const handleDeviceUnbound = () => {
+      if (isMounted) {
+        setIsDeviceBindOpen(true)
+      }
+    }
+    window.addEventListener('firefly:device-unbound', handleDeviceUnbound)
+
     return () => {
       isMounted = false
+      window.removeEventListener('firefly:device-unbound', handleDeviceUnbound)
     }
   }, [licenseInfo?.status])
 

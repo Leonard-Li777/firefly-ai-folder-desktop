@@ -22,9 +22,6 @@
     "PP-OCRv6": {
       "version": "v6"
     },
-    "LFM2.5-1.2B-Instruct-GGUF": {
-      "version": "Q4_K_M"
-    },
     "onnxruntime-directml": {
       "version": "1.24.4"
     },
@@ -58,8 +55,8 @@
     "bekko-a8m": {
       "version": "1.0.0"
     },
-    "sherpa-onnx-runtime": {
-      "version": "1.13.8"
+    "m5-tts": {
+      "version": "1.0.0"
     },
     "moss-tts": {
       "version": "1.0.0"

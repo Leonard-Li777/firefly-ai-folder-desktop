@@ -22,7 +22,7 @@ import { cn } from '../../lib/utils'
 import i18nScope from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
 import { formatPluginAuthor } from './format-plugin-author'
-import type { PluginModuleItem } from '../../stores/plugin-center-store'
+import { usePluginCenterStore, type PluginModuleItem } from '../../stores/plugin-center-store'
 
 export interface PluginListItemProps {
   module: PluginModuleItem
@@ -67,6 +67,11 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
   className
 }) => {
   const { t } = useVoerkaI18n(i18nScope)
+  const dirPhase = usePluginCenterStore(s => s.dirPhase)
+  const isDirBlocked = dirPhase === 'PENDING_RESTART' || dirPhase === 'MIGRATING'
+  const blockedTooltip = isDirBlocked
+    ? t('插件目录正在迁移或等待重启生效，暂无法执行操作')
+    : undefined
 
   const isComingSoon = module.availability === 'coming_soon'
   const isInstalled =
@@ -242,6 +247,24 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
                 </Badge>
               )
             ) : null}
+            {module.validation_status === 'pending_validation' && (
+              <Badge
+                variant="secondary"
+                data-testid="pending-validation-badge"
+                className="text-[10px] px-2 py-0.2 bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 font-medium shrink-0 animate-pulse"
+              >
+                {t('正在校验插件')}
+              </Badge>
+            )}
+            {module.validation_status === 'pending_repair' && (
+              <Badge
+                variant="destructive"
+                data-testid="pending-repair-badge"
+                className="text-[10px] px-2 py-0.2 bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-medium shrink-0"
+              >
+                {t('模型损坏需修复')}
+              </Badge>
+            )}
             {!isComingSoon && (
               <Badge
                 variant="outline"
@@ -382,18 +405,27 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
                 <span>{t('安全阻断')}</span>
               </span>
             ) : (
-              <div className="flex items-center gap-2" data-testid={`toggle-active-${module.id}`}>
+              <div
+                className="flex items-center gap-2"
+                data-testid={`toggle-active-${module.id}`}
+                title={blockedTooltip}
+              >
                 <Switch
                   id={`switch-${module.id}`}
                   data-plugin-id={module.id}
                   checked={isActive}
-                  disabled={!isActive && module.can_activate === false}
+                  disabled={isDirBlocked || (!isActive && module.can_activate === false)}
                   onCheckedChange={checked => onToggleActive?.(module.id, checked)}
                   aria-label={isActive ? t('已启用') : t('已停用')}
                 />
                 <label
                   htmlFor={`switch-${module.id}`}
-                  className="text-xs text-muted-foreground cursor-pointer select-none whitespace-nowrap"
+                  className={cn(
+                    'text-xs select-none whitespace-nowrap',
+                    isDirBlocked
+                      ? 'text-muted-foreground/60 cursor-not-allowed'
+                      : 'text-muted-foreground cursor-pointer'
+                  )}
                 >
                   {isActive
                     ? module.slot_policy === 'exclusive_required'
@@ -409,8 +441,10 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
               variant="outline"
               data-testid="configure-plugin-btn"
               data-plugin-id={module.id}
+              disabled={isDirBlocked}
+              title={blockedTooltip}
               onClick={() => onConfigure?.(module.id)}
-              className="h-8 px-3 text-xs flex items-center gap-1.5 hover:bg-accent cursor-pointer"
+              className="h-8 px-3 text-xs flex items-center gap-1.5 hover:bg-accent cursor-pointer disabled:cursor-not-allowed"
             >
               <Sliders className="w-3.5 h-3.5" />
               <span>{t('配置')}</span>
@@ -421,9 +455,10 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
                 variant="ghost"
                 data-testid="export-plugin-btn"
                 data-plugin-id={module.id}
+                disabled={isDirBlocked}
                 onClick={() => onExport(module.id)}
-                className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer flex items-center gap-1"
-                title={t('导出离线插件包 (.ffp)')}
+                className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer flex items-center gap-1 disabled:cursor-not-allowed"
+                title={blockedTooltip || t('导出离线插件包 (.ffp)')}
               >
                 <Share2 className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">{t('导出')}</span>
@@ -455,8 +490,10 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
               variant="destructive"
               data-testid="retry-plugin-btn"
               data-plugin-id={module.id}
+              disabled={isDirBlocked}
+              title={blockedTooltip}
               onClick={() => onInstall?.(module.id)}
-              className="h-8 text-xs flex items-center gap-1.5 cursor-pointer"
+              className="h-8 text-xs flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed"
             >
               <RefreshCw className="w-3 h-3" />
               <span>{t('重试')}</span>
@@ -478,9 +515,10 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
                   size="sm"
                   data-testid="install-plugin-btn"
                   data-plugin-id={module.id}
-                  disabled={module.can_install === false}
+                  disabled={isDirBlocked || module.can_install === false}
+                  title={blockedTooltip}
                   onClick={() => onInstall?.(module.id)}
-                  className="h-8 px-3.5 text-xs flex items-center gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer shadow-2xs font-medium"
+                  className="h-8 px-3.5 text-xs flex items-center gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer shadow-2xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Download className="w-3.5 h-3.5" />
                   <span>{t('下载安装')}</span>

@@ -13,6 +13,7 @@ import { useTTSAudioStore } from '../../stores/tts-audio-store'
 import { triggerTTSFlyAnimation } from '../../lib/tts-fly-animation'
 import { useConfigStore } from '../../stores/config-store'
 import { useSettingsStore } from '../../stores/settings-store'
+import { usePluginCenterStore } from '../../stores/plugin-center-store'
 import { SettingsCategory } from '@firefly/types'
 import {
   getVoiceById,
@@ -64,6 +65,16 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
   const config = useSettingsStore(s => s.config)
   const ttsEnabled = (config as any)?.ttsEnabled ?? true
 
+  // 严密门控：未安装或未激活任何 TTS 插件时，系统完全不呈现相关 UI，零开销安全跳过
+  const modules = usePluginCenterStore(s => s.modules)
+  const hasActiveTTS = useMemo(() => {
+    return (modules || []).some(
+      m =>
+        (m.capability_slot === 'voice_tts' || m.id === 'tts_moss_onnx' || m.id === 'tts_m5_onnx') &&
+        m.install_state === 'active'
+    )
+  }, [modules])
+
   const {
     playingTextId,
     status,
@@ -86,16 +97,17 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
     targetBufferDuration
   } = useTTSAudioStore()
 
-  // 挂载时拉取最新音色库（包含自定义克隆音色）
+  // 仅在已激活 TTS 插件时拉取最新音色库（未激活时跳过，避免无效调用）
   useEffect(() => {
-    refreshVoices().catch(() => {})
-  }, [refreshVoices])
+    if (hasActiveTTS) {
+      refreshVoices().catch(() => {})
+    }
+  }, [hasActiveTTS, refreshVoices])
 
   // 下拉菜单显隐控制
   const [showVoiceMenu, setShowVoiceMenu] = useState(false)
   const [showSpeedMenu, setShowSpeedMenu] = useState(false)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
-
 
   const voiceRef = useRef<HTMLDivElement>(null)
   const speedRef = useRef<HTMLDivElement>(null)
@@ -129,14 +141,14 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
   const isPaused = isThisActive && status === 'paused'
   const isExporting = isThisActive && status === 'exporting'
 
-
   // 解析收藏音色列表（以用户配置的收藏音色为准，严格清洗历史纯数字旧配置并去重防御）
   const favoriteVoices = useMemo(() => {
     const fromConfig = (config as any)?.ttsFavoriteVoices
     let ids: string[] = DEFAULT_FAVORITE_VOICE_IDS
     if (Array.isArray(fromConfig) && fromConfig.length > 0) {
       const hasLegacyNumbers = fromConfig.some(
-        (v: any) => typeof v === 'number' || (!isNaN(Number(v)) && !allVoices.some(p => p.id === String(v)))
+        (v: any) =>
+          typeof v === 'number' || (!isNaN(Number(v)) && !allVoices.some(p => p.id === String(v)))
       )
       if (!hasLegacyNumbers) {
         ids = fromConfig.map(String)
@@ -160,9 +172,22 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
       return getVoiceById(currentVoiceId, allVoices)
     }
     const configVoice = (config as any)?.ttsDefaultVoiceSid || (config as any)?.ttsDefaultVoiceId
-    const fallbackId = currentVoiceId || (configVoice ? (isNaN(Number(configVoice)) ? String(configVoice) : getVoiceById(Number(configVoice), allVoices)?.id) : undefined) || DEFAULT_VOICE_ID
+    const fallbackId =
+      currentVoiceId ||
+      (configVoice
+        ? isNaN(Number(configVoice))
+          ? String(configVoice)
+          : getVoiceById(Number(configVoice), allVoices)?.id
+        : undefined) ||
+      DEFAULT_VOICE_ID
     return getVoiceById(fallbackId, allVoices)
-  }, [isThisActive, currentVoiceId, (config as any)?.ttsDefaultVoiceSid, (config as any)?.ttsDefaultVoiceId, allVoices])
+  }, [
+    isThisActive,
+    currentVoiceId,
+    (config as any)?.ttsDefaultVoiceSid,
+    (config as any)?.ttsDefaultVoiceId,
+    allVoices
+  ])
 
   // 解析生效语速：正在播放当前文本时跟随全局 speed，否则优先从用户配置的默认语速兜底
   const activeSpeed = useMemo(() => {
@@ -172,8 +197,8 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
     return (config as any)?.ttsSpeed ?? speed ?? 1.0
   }, [isThisActive, speed, (config as any)?.ttsSpeed])
 
-  // 若功能在设置中全局关闭，不渲染
-  if (!ttsEnabled) {
+  // 若功能在设置中全局关闭，或当前未安装/未激活 TTS 插件，完全不呈现 UI 并安全跳过
+  if (!ttsEnabled || !hasActiveTTS) {
     return null
   }
 
@@ -245,7 +270,10 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
             isLoading
               ? bufferedDuration >= 1.0
                 ? t('正在缓冲语音，已就绪 {current}s / {target}s...', {
-                    current: Math.min(Math.round(bufferedDuration), Math.round(targetBufferDuration)),
+                    current: Math.min(
+                      Math.round(bufferedDuration),
+                      Math.round(targetBufferDuration)
+                    ),
                     target: Math.round(targetBufferDuration)
                   })
                 : t('正在准备语音，请稍候...')
@@ -327,7 +355,13 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
                   >
                     <span className="truncate max-w-[96px]">{voice.displayName}</span>
                     <span className="text-[10px] text-muted-foreground ml-2 shrink-0">
-                      {voice.isCustom ? t('自定义') : voice.lang === 'zh' ? '中文' : voice.lang === 'ja' ? '日文' : 'EN'}
+                      {voice.isCustom
+                        ? t('自定义')
+                        : voice.lang === 'zh'
+                          ? '中文'
+                          : voice.lang === 'ja'
+                            ? '日文'
+                            : 'EN'}
                     </span>
                   </button>
                 ))}

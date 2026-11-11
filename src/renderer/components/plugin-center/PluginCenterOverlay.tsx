@@ -9,7 +9,8 @@ import {
   X,
   AlertTriangle,
   RefreshCw,
-  Download
+  Download,
+  Share2
 } from 'lucide-react'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
@@ -18,12 +19,17 @@ import { Switch } from '../ui/switch'
 import { cn } from '../../lib/utils'
 import i18nScope from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
-import { usePluginCenterStore, type PluginModuleItem } from '../../stores/plugin-center-store'
+import {
+  usePluginCenterStore,
+  formatPluginErrorMessage,
+  type PluginModuleItem
+} from '../../stores/plugin-center-store'
 import { useSettingsStore } from '../../stores/settings-store'
 import { SettingsCategory } from '@firefly/types'
 import { PluginListItem } from './PluginListItem'
 import { AIEngineConfigSettings } from '../settings/ai-engine-config-settings'
 import { TTSSettings } from '../settings/tts-settings'
+import { M5TTSSettings } from '../settings/m5-tts-settings'
 import { toast } from '../common/Toast'
 import {
   AlertDialog,
@@ -167,12 +173,20 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
   const restartApp = usePluginCenterStore(s => s.restartApp)
   const restartPlugin = usePluginCenterStore(s => s.restartPlugin)
   const exportOfflinePackage = usePluginCenterStore(s => s.exportOfflinePackage)
+  const exportOfflineBundle = usePluginCenterStore(s => s.exportOfflineBundle)
   const importOfflinePackage = usePluginCenterStore(s => s.importOfflinePackage)
   const isDeveloperMode = usePluginCenterStore(s => s.isDeveloperMode)
   const setDeveloperMode = usePluginCenterStore(s => s.setDeveloperMode)
+  const environmentVisibility = usePluginCenterStore(s => s.environmentVisibility)
+  const loadEnvironmentVisibility = usePluginCenterStore(s => s.loadEnvironmentVisibility)
+  const subscribeEnvironmentVisibility = usePluginCenterStore(s => s.subscribeEnvironmentVisibility)
+  const isExportingBundle = usePluginCenterStore(s => s.isExportingBundle)
+  const isImportingBundle = usePluginCenterStore(s => s.isImportingBundle)
   const scope = usePluginCenterStore(s => s.scope)
   const setScope = usePluginCenterStore(s => s.setScope)
   const pickAndImportLocalPlugin = usePluginCenterStore(s => s.pickAndImportLocalPlugin)
+  const dirPhase = usePluginCenterStore(s => s.dirPhase)
+  const loadDirInfo = usePluginCenterStore(s => s.loadDirInfo)
 
   // 卸载与槽位切换确认弹窗状态 (Spec §3.4 TEST-UI-PLUGIN-03/04)
   const [pendingUninstallModule, setPendingUninstallModule] = useState<PluginModuleItem | null>(
@@ -184,20 +198,31 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
     targetName: string
   } | null>(null)
 
-  // IN-06: 订阅后端实时下载进度并支持 React StrictMode 双挂载安全清理
+  // 订阅后端实时下载进度与环境可见性变更，支持双挂载安全清理
   useEffect(() => {
-    const unsubscribe = subscribeProgress()
+    const unsubProgress = subscribeProgress()
+    const unsubVisibility = subscribeEnvironmentVisibility()
     return () => {
-      unsubscribe()
+      unsubProgress()
+      unsubVisibility()
     }
-  }, [subscribeProgress])
+  }, [subscribeProgress, subscribeEnvironmentVisibility])
 
   useEffect(() => {
     if (isOverlayOpen) {
+      void loadEnvironmentVisibility()
       void loadModules()
       void checkPendingTombstones()
+      void loadDirInfo()
     }
-  }, [isOverlayOpen, loadModules])
+  }, [isOverlayOpen, loadEnvironmentVisibility, loadModules, loadDirInfo])
+
+  // 环境通道与离线可见性派生决策（双锚定时钟收拢事实源，兼容桥接回退）
+  const vis = environmentVisibility?.visibility
+  const allowDeveloperMode = vis ? vis.allowDeveloperMode : true
+  const allowOfflineExport = vis ? vis.allowOfflineExport : isDeveloperMode
+  const allowOfflineImport = vis ? vis.allowOfflineImport : true
+  const allowLocalPluginImport = vis ? vis.allowLocalPluginImport : isDeveloperMode
 
   // Esc 键盘多级退出监听
   useEffect(() => {
@@ -362,6 +387,20 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
     }
   }, [pendingSwitchSlot, togglePluginActive, t])
 
+  // 导出离线插件包处理
+  const handleExportPlugin = useCallback(
+    async (moduleId: string) => {
+      try {
+        const dest = await exportOfflinePackage(moduleId)
+        if (dest) {
+          toast.success(t('离线插件包导出成功'))
+        }
+      } catch (err: unknown) {
+        toast.error(formatPluginErrorMessage(err))
+      }
+    },
+    [exportOfflinePackage, t]
+  )
   // 卡片配置一键直达系统设置对应 Tab (Ticket 05 / Spec §5.2)
   const handleOpenConfig = (id: string) => {
     const mod = modules.find(m => m.id === id)
@@ -386,7 +425,7 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
     }
 
     // 默认兜底映射
-    if (mod?.capability_slot === 'voice_tts' || id === 'tts_moss_onnx') {
+    if (mod?.capability_slot === 'voice_tts' || id === 'tts_moss_onnx' || id === 'tts_m5_onnx') {
       useSettingsStore.getState().openSystemSettings(SettingsCategory.TTS)
     } else if (mod?.capability_slot === 'base_embedding' || id.startsWith('engine_')) {
       useSettingsStore.getState().openWorkspaceSettings({ targetTab: 'basic_ai_engine' })
@@ -430,6 +469,30 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
       )}
       style={{ top: 'var(--app-header-height, 53px)' }}
     >
+      {/* 待重启黄色横幅 (Issue 06 Spec §7.1) */}
+      {dirPhase === 'PENDING_RESTART' && (
+        <div
+          data-testid="plugin-center-restart-banner"
+          className="px-6 py-2.5 bg-amber-500/15 border-b border-amber-500/30 flex items-center justify-between text-amber-800 dark:text-amber-200 text-xs shrink-0"
+        >
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+            <span className="font-medium">
+              {t(
+                '插件存储目录已成功迁移，需重启软件以加载新目录资源。当前插件中心所有写操作已临时安全锁定。'
+              )}
+            </span>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => void restartApp()}
+            className="h-7 px-3 bg-amber-600 hover:bg-amber-700 text-white text-xs shrink-0 cursor-pointer"
+          >
+            {t('立即重启')}
+          </Button>
+        </div>
+      )}
+
       {/* 顶部主工具栏：左侧标题/面包屑与副标，右侧快捷关闭按钮 */}
       <div className="px-6 py-3 border-b border-border/70 flex-shrink-0 flex items-center justify-between bg-card min-h-[52px] gap-4">
         <div className="flex items-center gap-3 min-w-0">
@@ -467,25 +530,27 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          {/* 开发者模式开关 */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/60 border border-border/50">
-            <Switch
-              id="dev-mode-switch"
-              data-testid="dev-mode-switch"
-              checked={isDeveloperMode}
-              onCheckedChange={setDeveloperMode}
-              aria-label={t('开发者模式')}
-            />
-            <label
-              htmlFor="dev-mode-switch"
-              className="text-xs font-medium text-muted-foreground cursor-pointer select-none"
-            >
-              {t('开发者模式')}
-            </label>
-          </div>
+          {/* 开发者模式开关：严格受控于环境可见性准入 */}
+          {allowDeveloperMode && (
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/60 border border-border/50">
+              <Switch
+                id="dev-mode-switch"
+                data-testid="dev-mode-switch"
+                checked={isDeveloperMode}
+                onCheckedChange={setDeveloperMode}
+                aria-label={t('开发者模式')}
+              />
+              <label
+                htmlFor="dev-mode-switch"
+                className="text-xs font-medium text-muted-foreground cursor-pointer select-none"
+              >
+                {t('开发者模式')}
+              </label>
+            </div>
+          )}
 
           {/* 开发者模式下展示：导入本地开发插件 */}
-          {isDeveloperMode && (
+          {allowLocalPluginImport && isDeveloperMode && (
             <Button
               size="sm"
               variant="outline"
@@ -496,8 +561,8 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
                   if (success) {
                     toast.success(t('本地开发插件导入成功'))
                   }
-                } catch (err: any) {
-                  toast.error(err?.message || String(err))
+                } catch (err: unknown) {
+                  toast.error(formatPluginErrorMessage(err))
                 }
               }}
               className="h-8 px-2.5 text-xs flex items-center gap-1.5 border-dashed border-amber-500/60 hover:border-amber-500 text-amber-700 dark:text-amber-400 hover:text-foreground shrink-0 cursor-pointer"
@@ -508,23 +573,109 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
             </Button>
           )}
 
-          <Button
-            size="sm"
-            variant="outline"
-            data-testid="import-offline-plugin-btn"
-            onClick={async () => {
-              try {
-                await importOfflinePackage()
-              } catch (err: any) {
-                alert(err?.message || String(err))
-              }
-            }}
-            className="h-8 px-2.5 text-xs flex items-center gap-1.5 border-dashed border-border/80 hover:border-primary/50 text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
-            title={t('导入离线插件包 (.ffp / .zip)')}
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>{t('导入离线包')}</span>
-          </Button>
+          {/* 导出能力：严格受控于环境可见性准入 */}
+          {allowOfflineExport && (
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                data-testid="export-offline-plugin-btn"
+                disabled={isExportingBundle}
+                onClick={async () => {
+                  try {
+                    if (configuringModuleId) {
+                      await handleExportPlugin(configuringModuleId)
+                      return
+                    }
+                    const installed = modules.filter(
+                      m => m.install_state === 'active' || m.install_state === 'installed_inactive'
+                    )
+                    if (installed.length === 0) {
+                      toast.info(t('暂无可导出的已安装插件'))
+                      return
+                    }
+                    if (installed.length === 1) {
+                      await handleExportPlugin(installed[0].id)
+                    } else {
+                      toast.info(t('请在下方已安装插件条目右侧直接点击“导出”按钮'))
+                    }
+                  } catch (err: unknown) {
+                    toast.error(formatPluginErrorMessage(err))
+                  }
+                }}
+                className="h-8 px-2.5 text-xs flex items-center gap-1.5 border-dashed border-sky-500/60 hover:border-sky-500 text-sky-700 dark:text-sky-400 hover:text-foreground shrink-0 cursor-pointer"
+                title={t('导出离线插件包 (.ffp)')}
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span>{t('导出插件包')}</span>
+              </Button>
+
+              <Button
+                size="sm"
+                variant="outline"
+                data-testid="export-offline-bundle-btn"
+                disabled={isExportingBundle}
+                onClick={async () => {
+                  try {
+                    const dest = await exportOfflineBundle()
+                    if (dest) {
+                      toast.success(t('离线插件总包导出成功'))
+                    }
+                  } catch (err: unknown) {
+                    toast.error(formatPluginErrorMessage(err))
+                  }
+                }}
+                className="h-8 px-2.5 text-xs flex items-center gap-1.5 border-dashed border-indigo-500/60 hover:border-indigo-500 text-indigo-700 dark:text-indigo-400 hover:text-foreground shrink-0 cursor-pointer"
+                title={t('导出包含所有已安装插件及共享资产的离线总包 (.ffp)')}
+              >
+                {isExportingBundle ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>{t('正在导出总包...')}</span>
+                  </>
+                ) : (
+                  <>
+                    <Share2 className="w-3.5 h-3.5" />
+                    <span>{t('导出离线总包')}</span>
+                  </>
+                )}
+              </Button>
+            </>
+          )}
+
+          {/* 导入能力：严格受控于环境可见性准入 */}
+          {allowOfflineImport && (
+            <Button
+              size="sm"
+              variant="outline"
+              data-testid="import-offline-plugin-btn"
+              disabled={isImportingBundle}
+              onClick={async () => {
+                try {
+                  const res = await importOfflinePackage()
+                  if (res) {
+                    toast.success(t('离线插件包导入成功'))
+                  }
+                } catch (err: unknown) {
+                  toast.error(formatPluginErrorMessage(err))
+                }
+              }}
+              className="h-8 px-2.5 text-xs flex items-center gap-1.5 border-dashed border-border/80 hover:border-primary/50 text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+              title={t('导入离线插件包 (.ffp / .zip)')}
+            >
+              {isImportingBundle ? (
+                <>
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <span>{t('正在导入...')}</span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-3.5 h-3.5" />
+                  <span>{t('导入离线包')}</span>
+                </>
+              )}
+            </Button>
+          )}
 
           {/* 右上角关闭按钮 */}
           <Button
@@ -561,6 +712,20 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
                   </Badge>
                 </div>
                 <AIEngineConfigSettings />
+              </div>
+            ) : configuringModule.id === 'tts_m5_onnx' ? (
+              /* M5-TTS 极速语音合成专属配置面板 (无音色克隆) */
+              <div className="space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-border/60">
+                  <div className="flex items-center gap-2">
+                    <Sliders className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-semibold">{t('极速语音朗读配置 (M5-TTS)')}</span>
+                  </div>
+                  <Badge variant="outline" className="text-xs font-mono">
+                    tts: m5-onnx / v{configuringModule.version}
+                  </Badge>
+                </div>
+                <M5TTSSettings />
               </div>
             ) : configuringModule.id === 'offline_tts' ||
               configuringModule.id === 'tts_moss_onnx' ||
@@ -774,6 +939,7 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
                             onToggleActive={handleTogglePluginActive}
                             onConfigure={handleOpenConfig}
                             onRestart={restartPlugin}
+                            onExport={handleExportPlugin}
                           />
                         ))}
                       </div>

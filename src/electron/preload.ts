@@ -45,6 +45,7 @@ import type {
   DeepLinkTargetPayload,
   LaunchOutcome
 } from './runtime-services/system/external-app-launcher'
+import { modularResourcePreloadBridge } from '../preload'
 
 /**
  * 暴露给渲染进程的安全API
@@ -760,7 +761,26 @@ const electronAPI = {
 
   deviceBind: {
     getStatus: (): Promise<any> => ipcRenderer.invoke('deviceBind/getStatus'),
-    createCode: (): Promise<any> => ipcRenderer.invoke('deviceBind/createCode')
+    createCode: (payload?: { forceRefresh?: boolean }): Promise<any> =>
+      ipcRenderer.invoke('deviceBind/createCode', payload),
+    pollResult: (payload: { code: string; pollSecret: string }): Promise<any> =>
+      ipcRenderer.invoke('deviceBind/pollResult', payload),
+    sendEmailOtp: (payload: { email: string }): Promise<any> =>
+      ipcRenderer.invoke('deviceBind/sendEmailOtp', payload),
+    completeEmailBinding: (payload: {
+      email: string
+      code: string
+      invitationCode?: string
+    }): Promise<any> => ipcRenderer.invoke('deviceBind/completeEmailBinding', payload),
+    hasActiveBindSession: (): Promise<boolean> =>
+      ipcRenderer.invoke('deviceBind/hasActiveBindSession'),
+    getUnseatedSession: (): Promise<any> => ipcRenderer.invoke('deviceBind/getUnseatedSession'),
+    seatDevice: (payload: { sessionToken?: string; evictDeviceId?: string | null }): Promise<any> =>
+      ipcRenderer.invoke('deviceBind/seatDevice', payload),
+    listSeatedDevices: (payload?: { sessionToken?: string }): Promise<any> =>
+      ipcRenderer.invoke('deviceBind/listSeatedDevices', payload),
+    unbindDevice: (payload?: { deviceId?: string; machineId?: string }): Promise<any> =>
+      ipcRenderer.invoke('deviceBind/unbindDevice', payload)
   },
 
   // 工作目录管理
@@ -1554,45 +1574,8 @@ const electronAPI = {
     }
   },
 
-  modularResource: {
-    list: (filter?: any) => ipcRenderer.invoke('modular-resource:list', filter),
-    getDevMode: (): Promise<boolean> =>
-      ipcRenderer.invoke('modular-resource:get-dev-mode').then(r => r?.enabled ?? false),
-    setDevMode: (payload: { enabled: boolean }): Promise<boolean> =>
-      ipcRenderer
-        .invoke('modular-resource:set-dev-mode', payload)
-        .then(r => r?.devModeEffective ?? false),
-    install: (moduleId: string) => ipcRenderer.invoke('modular-resource:install', moduleId),
-    uninstall: (moduleId: string) => ipcRenderer.invoke('modular-resource:uninstall', moduleId),
-    updateState: (moduleId: string, patch: any) =>
-      ipcRenderer.invoke('modular-resource:update-state', moduleId, patch),
-    abortAll: (): Promise<boolean> => ipcRenderer.invoke('modular-resource:abort-all'),
-    smokeTest: (payload: any) => ipcRenderer.invoke('modular-resource:smoke-test', payload),
-    getPendingTombstones: () => ipcRenderer.invoke('modular-resource:get-pending-tombstones'),
-    hasPendingTombstones: (): Promise<boolean> =>
-      ipcRenderer.invoke('modular-resource:has-pending-tombstones'),
-    restartApp: (): Promise<boolean> => ipcRenderer.invoke('modular-resource:restart-app'),
-    exportOfflinePackage: (payload: { moduleId: string; targetFilePath?: string }) =>
-      ipcRenderer.invoke('modular-resource:export-offline-package', payload),
-    importOfflinePackage: (payload?: { archivePath?: string }) =>
-      ipcRenderer.invoke('modular-resource:import-offline-package', payload),
-    pickAndImportLocalPlugin: () =>
-      ipcRenderer.invoke('modular-resource:pick-and-import-local-plugin'),
-    onProgress: (callback: (event: any) => void) => {
-      const handler = (_event: any, data: any) => callback(data)
-      ipcRenderer.on('modular-resource:progress', handler)
-      return () => {
-        ipcRenderer.off('modular-resource:progress', handler)
-      }
-    },
-    onCrash: (callback: (event: any) => void) => {
-      const handler = (_event: any, data: any) => callback(data)
-      ipcRenderer.on('plugin:crashed', handler)
-      return () => {
-        ipcRenderer.off('plugin:crashed', handler)
-      }
-    }
-  }
+  // 模块化资源与插件中心生命周期桥
+  modularResource: modularResourcePreloadBridge
 }
 
 // 类型定义
@@ -1609,6 +1592,7 @@ if (__FF_E2E__) {
 contextBridge.exposeInMainWorld('__APP_REGION__', appRegion)
 contextBridge.exposeInMainWorld('__HAS_CROSS_REGION_DATA__', hasPeerData)
 contextBridge.exposeInMainWorld('electronAPI', electronAPI)
+contextBridge.exposeInMainWorld('modularResource', modularResourcePreloadBridge)
 
 // 暴露 AI 功能到渲染进程
 // 注意：通过 IPC 调用主进程的 llama-server 服务

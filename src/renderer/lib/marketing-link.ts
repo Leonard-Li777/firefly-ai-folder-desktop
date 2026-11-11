@@ -7,7 +7,7 @@ import {
 import { openExternalLink } from './external-link'
 import i18nScope from '@src/languages'
 import { useConfigStore } from '../stores/config-store'
-import { getAppRegion } from './app-region'
+import { getAppRegion, type AppRegion } from './app-region'
 
 export type MarketingAction = 'upgrade_pro' | 'buy_firecores' | 'enterprise'
 
@@ -30,11 +30,22 @@ function getPaymentInfo(): Record<string, any> {
 }
 
 /**
+ * 判断当前是否处于开发环境营销站重定向模式
+ * Electron 运行时以 isPackaged 为最高事实源；未注入 electronAPI 时回退 import.meta.env.DEV
+ */
+export function isDevMarketingMode(): boolean {
+  if (typeof window !== 'undefined' && window.electronAPI?.isPackaged !== undefined) {
+    return !window.electronAPI.isPackaged
+  }
+  const metaEnv = (import.meta as any)?.env
+  return Boolean(metaEnv?.DEV)
+}
+
+/**
  * 将生产官网 URL 拦截替换为本地开发营销站 URL (仅在开发环境下生效)
  */
 function resolveDevMarketingUrl(targetUrl: URL): URL {
-  const metaEnv = (import.meta as any)?.env
-  const isDev = metaEnv?.DEV ?? (window.electronAPI?.isPackaged === false)
+  const isDev = isDevMarketingMode()
   if (!isDev) {
     return targetUrl
   }
@@ -45,16 +56,21 @@ function resolveDevMarketingUrl(targetUrl: URL): URL {
     return targetUrl
   }
 
+  const metaEnv = (import.meta as any)?.env
   const devPort = metaEnv?.VITE_MARKETING_PORT || '38800'
-  const devUrl = new URL(`http://localhost:${devPort}`)
+  const devHost = metaEnv?.VITE_MARKETING_HOST || '192.168.3.123'
+  const devUrl = new URL(`http://${devHost}:${devPort}`)
 
   // 保证路径包含当前活跃语言，例如 /zh-CN/pricing
   const activeLang = i18nScope?.activeLanguage || 'zh-CN'
   let pathname = targetUrl.pathname
 
+  const firstSegment = pathname.split('/')[1] || ''
+  const isLangPrefix =
+    /^[a-zA-Z]{2}$/.test(firstSegment) || /^[a-zA-Z]{2}-[a-zA-Z]{2,4}$/.test(firstSegment)
   if (!pathname || pathname === '/' || pathname === '') {
     pathname = `/${activeLang}/pricing`
-  } else if (!/^\/[a-zA-Z]{2}(-[a-zA-Z]{2,4})?\//.test(pathname)) {
+  } else if (!isLangPrefix) {
     // 若原路径未携带语言前缀，自动补充语言前缀
     pathname = `/${activeLang}${pathname.startsWith('/') ? pathname : '/' + pathname}`
   }
@@ -82,7 +98,7 @@ function resolveDevMarketingUrl(targetUrl: URL): URL {
  */
 export function resolveDevCreemUrl(urlStr: string): string {
   const metaEnv = (import.meta as any)?.env
-  const isDev = metaEnv?.DEV ?? (window.electronAPI?.isPackaged === false)
+  const isDev = metaEnv?.DEV ?? window.electronAPI?.isPackaged === false
   if (!isDev || !urlStr) {
     return urlStr
   }
@@ -161,11 +177,7 @@ function getPricingBaseUrl(): string {
 /**
  * 按 action / identCode 组装定价页 URL
  */
-function composePricingUrl(
-  baseUrl: string,
-  action?: MarketingAction,
-  identCode?: string
-): string {
+function composePricingUrl(baseUrl: string, action?: MarketingAction, identCode?: string): string {
   const url = new URL(baseUrl)
 
   if (identCode) {
@@ -219,7 +231,7 @@ export function getInviteLink(machineId: string): string {
  * 构造官网营销站定价/购买页面的完整 URL (Promise<string>)
  * 自动在 URL query 中携带 44 位 Base64 标识码 (ident_code)，实现免密绑定设备
  * 在开发环境（import.meta.env.DEV）下默认拦截重定向至本地开发服务器（默认端口 38800）
- * 
+ *
  * @param action 可选的行为参数 (upgrade_pro | buy_firecores | enterprise)
  * @param options 可选配置，例如 forceProductionDomain 在离线复制链接场景下强制输出公网生产域名
  */
@@ -271,7 +283,7 @@ export async function getMarketingPricingUrl(
 
 /**
  * 构造并打开官网营销站定价/购买页面
- * 
+ *
  * @param action 可选的行为参数 (upgrade_pro | buy_firecores | enterprise)
  */
 export async function openMarketingPricingUrl(action?: MarketingAction) {
@@ -284,4 +296,63 @@ export async function openMarketingPricingUrl(action?: MarketingAction) {
   }
 }
 
+export const IDENT_CODE_PATTERN = /^[A-Za-z0-9+/]{43}=$/
 
+export const ENTERPRISE_PRODUCT_ID = 'ent_year' as const
+export const TELEGRAM_CHANNEL_URL = 'https://t.me/firefly_ai_folder' as const
+
+/**
+ * 严格 Base64 格式校验，必须先将 URL query 中的空格还原为 '+'，防止误杀
+ */
+export function validateIdentCode(raw: string | null | undefined): string | null {
+  if (!raw) return null
+  const clean = raw.trim().replace(/ /g, '+')
+  return IDENT_CODE_PATTERN.test(clean) ? clean : null
+}
+
+export interface EnterprisePricingUrlOptions {
+  region: AppRegion
+  identCode: string
+  forceProductionDomain?: boolean
+}
+
+/**
+ * 构造企业版专属落地页 URL（纯同步函数，零网络请求）
+ * 开发模式下总是使用本地 marketing-home 开发端口访问（默认本机局域网 IP 192.168.3.123 便于手机扫码联调）；非开发/打包模式下使用公网官网域名。
+ */
+export function buildEnterprisePricingUrl(options: EnterprisePricingUrlOptions): string {
+  const validCode = validateIdentCode(options.identCode)
+  if (!validCode) {
+    throw new TypeError('Valid IdentCode is required to generate enterprise pricing URL')
+  }
+
+  const isDev = isDevMarketingMode()
+  const origin = getSiteDomain(options.region).replace(/\/+$/, '')
+
+  const params = new URLSearchParams({
+    action: 'enterprise',
+    tier: 'enterprise',
+    product_id: ENTERPRISE_PRODUCT_ID,
+    ident_code: validCode
+  })
+  const baseTarget = new URL(`${origin}/pricing?${params.toString()}#enterprise`)
+
+  // 开发模式下，总是使用本地 marketing-home 的开发端口访问
+  if (isDev) {
+    return resolveDevMarketingUrl(baseTarget).toString()
+  }
+
+  return baseTarget.toString()
+}
+
+/**
+ * 构造国际版客服邮件 mailto 链接
+ */
+export function buildSupportMailto(identCode: string): string {
+  const validCode = validateIdentCode(identCode)
+  const q = new URLSearchParams({
+    subject: 'Enterprise Offline License Inquiry',
+    body: `Hello Support Team,\n\nI would like to inquire about enterprise offline licensing.\nMachine Identifier:\n${validCode || '(Not Available)'}\n`
+  })
+  return `mailto:support@aifolder.net?${q.toString()}`
+}

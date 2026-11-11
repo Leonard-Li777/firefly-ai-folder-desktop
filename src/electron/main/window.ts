@@ -1,4 +1,4 @@
-import { BrowserWindow, app } from 'electron'
+import { BrowserWindow, app, dialog } from 'electron'
 import { logger, LogCategory, ResourceLocator } from '@firefly/shared'
 import * as path from 'path'
 import * as fs from 'fs'
@@ -6,6 +6,7 @@ import * as os from 'os'
 import { pathToFileURL } from 'url'
 import { ConfigOrchestrator } from '../config/config-orchestrator'
 import { trayService } from '../runtime-services/system/tray-service'
+import { dirMigrationCoordinator } from '../runtime-services/system/dir-migration-coordinator'
 import { resolveAppRegion, getWorktreeInfo } from './worktree-env'
 import { t } from '@app/languages'
 
@@ -492,9 +493,30 @@ export const createWindow = () => {
   // 初始化系统托盘
   trayService.init(mainWindow)
 
-  // 拦截关闭事件实现最小化到托盘
-  mainWindow.on('close', event => {
+  // 拦截关闭事件实现最小化到托盘与迁移安全保护
+  mainWindow.on('close', async event => {
     if (trayService.getIsQuitting()) {
+      return
+    }
+
+    if (dirMigrationCoordinator.isBusy()) {
+      event.preventDefault()
+      const choice = dialog.showMessageBoxSync(mainWindow, {
+        type: 'warning',
+        buttons: ['继续退出并取消迁移', '保持运行'],
+        defaultId: 1,
+        cancelId: 1,
+        title: '正在迁移插件目录',
+        message: '目录迁移正在进行中，关闭软件将中止迁移并自动回滚已复制数据，确定继续退出吗？'
+      })
+      if (choice === 0) {
+        trayService.setQuitting(true)
+        try {
+          await dirMigrationCoordinator.cancelMigration(app.getPath('userData'))
+        } catch {}
+        mainWindow.destroy()
+        app.quit()
+      }
       return
     }
 

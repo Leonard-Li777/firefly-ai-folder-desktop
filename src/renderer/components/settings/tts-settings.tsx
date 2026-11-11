@@ -38,7 +38,12 @@ import {
   DialogFooter
 } from '../ui/dialog'
 import { useSettingsStore } from '../../stores/settings-store'
-import { useTTSAudioStore } from '../../stores/tts-audio-store'
+import {
+  useTTSAudioStore,
+  isVoiceCloningSupported,
+  getActiveTTSPluginId
+} from '../../stores/tts-audio-store'
+import { usePluginCenterStore } from '../../stores/plugin-center-store'
 import { cn } from '../../lib/utils'
 import { t } from '@app/languages'
 import {
@@ -98,9 +103,24 @@ export const TTSSettings: React.FC = () => {
     }
   }, [config.ttsFavoriteVoices, config.ttsDefaultVoiceSid, updateConfigValue])
 
+  const modules = usePluginCenterStore(s => s.modules)
+  const supportsCloning = useMemo(() => isVoiceCloningSupported(), [modules])
+  const activePluginId = useMemo(() => getActiveTTSPluginId(), [modules])
+
   // 2. 音色库数据源（与全局 ttsAudioStore 单一事实源对齐，结合预置音色与用户克隆音色）
   const allVoicesFromStore = useTTSAudioStore(s => s.allVoices)
-  const allVoices = allVoicesFromStore && allVoicesFromStore.length > 0 ? allVoicesFromStore : PRESET_VOICES
+  const allVoices = useMemo(() => {
+    if (allVoicesFromStore && allVoicesFromStore.length > 0) {
+      return allVoicesFromStore
+    }
+    if (!activePluginId) {
+      return []
+    }
+    if (activePluginId === 'tts_moss_onnx') {
+      return PRESET_VOICES
+    }
+    return []
+  }, [allVoicesFromStore, activePluginId])
 
   // 刷新拉取音色库并同步全局 store
   const refreshVoices = useCallback(async () => {
@@ -114,6 +134,12 @@ export const TTSSettings: React.FC = () => {
   // 3. 本地搜索与过滤状态（支持：全部、自定义、10 种语言、女、男、童声）
   const [searchQuery, setSearchQuery] = useState('')
   const [groupFilter, setGroupFilter] = useState<string>('all')
+
+  useEffect(() => {
+    if (!supportsCloning && groupFilter === 'custom') {
+      setGroupFilter('all')
+    }
+  }, [supportsCloning, groupFilter])
 
   // 获取语言显示名称（带国旗与地道名称）
   const getLanguageLabel = useCallback((lang?: string): string => {
@@ -190,7 +216,7 @@ export const TTSSettings: React.FC = () => {
       const bCustom = b.isCustom ? 2 : 0
       const aRec = a.recommended || RECOMMENDED_VOICE_SIDS.has(a.id) ? 1 : 0
       const bRec = b.recommended || RECOMMENDED_VOICE_SIDS.has(b.id) ? 1 : 0
-      return (bCustom + bRec) - (aCustom + aRec)
+      return bCustom + bRec - (aCustom + aRec)
     })
   }, [allVoices, searchQuery, groupFilter])
 
@@ -442,7 +468,9 @@ export const TTSSettings: React.FC = () => {
         <div>
           <h3 className="text-lg font-semibold mb-1 text-foreground">{t('离线语音合成 (TTS)')}</h3>
           <p className="text-sm text-muted-foreground">
-            {t('48kHz 高保真离线模型，支持多语言发音与零样本声音克隆')}
+            {supportsCloning
+              ? t('48kHz 高保真离线模型，支持多语言发音与零样本声音克隆')
+              : t('轻量化高保真离线模型，支持丰富发音人与多语言自然朗读')}
           </p>
         </div>
       </div>
@@ -492,8 +520,7 @@ export const TTSSettings: React.FC = () => {
           {favoriteVoices.map(voice => {
             const isDefault = voice.id === defaultVoiceId
             const isCurrentTarget =
-              auditionVoiceId === voice.id &&
-              ttsAudioStore.playingTextId === `audition-${voice.id}`
+              auditionVoiceId === voice.id && ttsAudioStore.playingTextId === `audition-${voice.id}`
             const isLoading = isCurrentTarget && ttsAudioStore.status === 'loading'
             const isPlaying = isCurrentTarget && ttsAudioStore.status === 'playing'
             const isPaused = isCurrentTarget && ttsAudioStore.status === 'paused'
@@ -528,20 +555,19 @@ export const TTSSettings: React.FC = () => {
                           {voice.emotion}
                         </span>
                       )}
-                      {(voice.recommended || RECOMMENDED_VOICE_SIDS.has(voice.id)) && !voice.isCustom && (
-                        <span className="text-[10px] px-1.5 py-0.2 rounded-full font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                          {t('推荐')}
-                        </span>
-                      )}
+                      {(voice.recommended || RECOMMENDED_VOICE_SIDS.has(voice.id)) &&
+                        !voice.isCustom && (
+                          <span className="text-[10px] px-1.5 py-0.2 rounded-full font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                            {t('推荐')}
+                          </span>
+                        )}
                       {isDefault && (
                         <span className="text-[10px] bg-primary text-primary-foreground px-1.5 py-0.2 rounded-full font-medium">
                           {t('默认')}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
-                      {voice.desc}
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{voice.desc}</p>
                   </div>
 
                   {/* 试听例句按钮 */}
@@ -588,7 +614,9 @@ export const TTSSettings: React.FC = () => {
                       {t('设为默认音色')}
                     </button>
                   ) : (
-                    <span className="text-muted-foreground text-[11px]">{t('当前默认朗读音色')}</span>
+                    <span className="text-muted-foreground text-[11px]">
+                      {t('当前默认朗读音色')}
+                    </span>
                   )}
 
                   {!isDefault && (
@@ -613,18 +641,22 @@ export const TTSSettings: React.FC = () => {
           <div className="space-y-0.5">
             <Label className="text-sm font-semibold">{t('发音人音色库')}</Label>
             <p className="text-xs text-muted-foreground">
-              {t('浏览 51 个精选音色及自定义克隆音色，试听并将喜欢的音色加入快捷收藏。')}
+              {supportsCloning
+                ? t('浏览 51 个精选音色及自定义克隆音色，试听并将喜欢的音色加入快捷收藏。')
+                : t('浏览精选音色库，试听并将喜欢的音色加入快捷收藏。')}
             </p>
           </div>
           <div className="flex flex-col items-end gap-1">
-            <Button
-              type="button"
-              onClick={handleOpenCloneDialog}
-              className="gap-1.5 shadow-xs cursor-pointer"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>{t('克隆新音色')}</span>
-            </Button>
+            {supportsCloning && (
+              <Button
+                type="button"
+                onClick={handleOpenCloneDialog}
+                className="gap-1.5 shadow-xs cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>{t('克隆新音色')}</span>
+              </Button>
+            )}
             <span className="text-xs text-muted-foreground font-mono">
               {filteredVoices.length} / {allVoices.length} {t('个音色')}
             </span>
@@ -711,15 +743,17 @@ export const TTSSettings: React.FC = () => {
             >
               {t('全部')}
             </Button>
-            <Button
-              type="button"
-              variant={groupFilter === 'custom' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setGroupFilter('custom')}
-              className="text-xs h-9 px-2.5"
-            >
-              {t('自定义')}
-            </Button>
+            {supportsCloning && (
+              <Button
+                type="button"
+                variant={groupFilter === 'custom' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setGroupFilter('custom')}
+                className="text-xs h-9 px-2.5"
+              >
+                {t('自定义')}
+              </Button>
+            )}
             <Button
               type="button"
               variant={groupFilter === 'female' ? 'default' : 'outline'}
@@ -791,7 +825,9 @@ export const TTSSettings: React.FC = () => {
                 <SelectItem value="all_langs" disabled className="text-xs text-muted-foreground">
                   {t('更多...')}
                 </SelectItem>
-                {AUDITION_LANGUAGE_OPTIONS.filter(opt => !['zh', 'en', 'ja'].includes(opt.langKey)).map(opt => (
+                {AUDITION_LANGUAGE_OPTIONS.filter(
+                  opt => !['zh', 'en', 'ja'].includes(opt.langKey)
+                ).map(opt => (
                   <SelectItem key={opt.langKey} value={opt.langKey} className="text-xs">
                     <span className="flex items-center gap-1.5">
                       <span>{opt.flag}</span>
@@ -809,8 +845,7 @@ export const TTSSettings: React.FC = () => {
           {filteredVoices.map(voice => {
             const isFavorite = favoriteVoiceIds.includes(voice.id)
             const isCurrentTarget =
-              auditionVoiceId === voice.id &&
-              ttsAudioStore.playingTextId === `audition-${voice.id}`
+              auditionVoiceId === voice.id && ttsAudioStore.playingTextId === `audition-${voice.id}`
             const isLoading = isCurrentTarget && ttsAudioStore.status === 'loading'
             const isPlaying = isCurrentTarget && ttsAudioStore.status === 'playing'
             const isPaused = isCurrentTarget && ttsAudioStore.status === 'paused'
@@ -822,9 +857,7 @@ export const TTSSettings: React.FC = () => {
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium text-xs text-foreground">
-                      {voice.displayName}
-                    </span>
+                    <span className="font-medium text-xs text-foreground">{voice.displayName}</span>
                     <span className="font-mono text-[10px] text-muted-foreground">
                       ({voice.id})
                     </span>
@@ -838,16 +871,21 @@ export const TTSSettings: React.FC = () => {
                         {voice.emotion}
                       </span>
                     )}
-                    {(voice.recommended || RECOMMENDED_VOICE_SIDS.has(voice.id)) && !voice.isCustom && (
-                      <span className="text-[10px] px-1.5 py-0.2 rounded-full font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                        {t('推荐')}
-                      </span>
-                    )}
+                    {(voice.recommended || RECOMMENDED_VOICE_SIDS.has(voice.id)) &&
+                      !voice.isCustom && (
+                        <span className="text-[10px] px-1.5 py-0.2 rounded-full font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                          {t('推荐')}
+                        </span>
+                      )}
                     <span className="text-[10px] px-1 py-0.2 rounded bg-muted text-muted-foreground">
                       {getLanguageLabel(voice.lang)}
                     </span>
                     <span className="text-[10px] px-1 py-0.2 rounded bg-muted text-muted-foreground">
-                      {voice.gender === 'female' ? t('女声') : voice.gender === 'male' ? t('男声') : t('童声')}
+                      {voice.gender === 'female'
+                        ? t('女声')
+                        : voice.gender === 'male'
+                          ? t('男声')
+                          : t('童声')}
                     </span>
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
@@ -864,7 +902,8 @@ export const TTSSettings: React.FC = () => {
                     onClick={() => handleToggleAudition(voice)}
                     className={cn(
                       'h-7 min-w-[68px] px-2 text-xs transition-colors justify-center cursor-pointer',
-                      isPaused && 'bg-primary/20 text-primary hover:bg-primary/30 border border-primary/40'
+                      isPaused &&
+                        'bg-primary/20 text-primary hover:bg-primary/30 border border-primary/40'
                     )}
                   >
                     {isLoading ? (
@@ -935,7 +974,7 @@ export const TTSSettings: React.FC = () => {
       </Card>
 
       {/* 4. 克隆新音色模态对话框 */}
-      <Dialog open={isCloneDialogOpen} onOpenChange={setIsCloneDialogOpen}>
+      <Dialog open={isCloneDialogOpen && supportsCloning} onOpenChange={setIsCloneDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base">
@@ -943,7 +982,9 @@ export const TTSSettings: React.FC = () => {
               <span>{t('零样本克隆新音色')}</span>
             </DialogTitle>
             <DialogDescription className="text-xs">
-              {t('上传一段 3~10 秒清晰的人声参考音频，系统将自动识别语言与情感并提取高保真声学特征。')}
+              {t(
+                '上传一段 3~10 秒清晰的人声参考音频，系统将自动识别语言与情感并提取高保真声学特征。'
+              )}
             </DialogDescription>
           </DialogHeader>
 
@@ -1016,10 +1057,7 @@ export const TTSSettings: React.FC = () => {
                         {t('AI 识别')}
                       </span>
                     </div>
-                    <Select
-                      value={cloneLang}
-                      onValueChange={(val: any) => setCloneLang(val)}
-                    >
+                    <Select value={cloneLang} onValueChange={(val: any) => setCloneLang(val)}>
                       <SelectTrigger className="h-8 text-xs">
                         <SelectValue />
                       </SelectTrigger>
@@ -1041,17 +1079,20 @@ export const TTSSettings: React.FC = () => {
                       <Label className="text-xs">{t('性别')}</Label>
                       <span className="text-[10px] text-muted-foreground">{t('人工确认')}</span>
                     </div>
-                    <Select
-                      value={cloneGender}
-                      onValueChange={(val: any) => setCloneGender(val)}
-                    >
+                    <Select value={cloneGender} onValueChange={(val: any) => setCloneGender(val)}>
                       <SelectTrigger className="h-8 text-xs">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="female" className="text-xs">{t('女声')}</SelectItem>
-                        <SelectItem value="male" className="text-xs">{t('男声')}</SelectItem>
-                        <SelectItem value="child" className="text-xs">{t('萌娃/童声')}</SelectItem>
+                        <SelectItem value="female" className="text-xs">
+                          {t('女声')}
+                        </SelectItem>
+                        <SelectItem value="male" className="text-xs">
+                          {t('男声')}
+                        </SelectItem>
+                        <SelectItem value="child" className="text-xs">
+                          {t('萌娃/童声')}
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

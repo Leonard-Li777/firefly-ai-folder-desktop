@@ -262,8 +262,11 @@ export class LicenseService {
       // 如果 Supabase 不可达，检查是否触发 grace（3 天内有运行记录但未连接服务器）
       const gracePassed = this.checkServerConnectivityGrace()
       if (!gracePassed) {
-        logger.warn(LogCategory.SYSTEM, '[License] Grace 检查未通过，服务器长期不可达')
-        // 继续后续检查，最终会返回 UNAUTHORIZED
+        logger.warn(LogCategory.SYSTEM, '[License] Grace 检查未通过，服务器长期不可达（离线超过 3 天）')
+        return {
+          status: LicenseStatus.UNAUTHORIZED,
+          error: '离线使用已超过 3 天，请联网刷新授权后继续使用'
+        }
       }
 
       // 3. 检查时间回拨

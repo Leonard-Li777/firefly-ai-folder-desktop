@@ -10,9 +10,32 @@
 
 import * as fs from 'fs'
 import * as path from 'path'
+import { AsyncLocalStorage } from 'async_hooks'
 import { app as electronApp } from 'electron'
 import type { Database } from 'better-sqlite3'
-import { logger, LogCategory } from '@firefly/shared'
+import {
+  logger,
+  LogCategory,
+  isPathEqual,
+  isSubPath,
+  BUILTIN_MODULE_CATALOG_META,
+  BUILTIN_PLUGIN_CATALOG_META,
+  EXCLUSIVE_CAPABILITY_SLOTS,
+  OBSOLETE_SHARED_RESOURCE_IDS,
+  deriveTargetLocalPath,
+  computeModuleTotalBytes,
+  buildResourceSpecFromCatalog,
+  isExclusiveCapabilitySlot,
+  PluginPathResolver,
+  READY_MARKER_FILENAME,
+  LEGACY_READY_MARKER_PREFIX,
+  SecurityViolationError,
+  computeDirectoryReadyDigest,
+  readReadyMarker,
+  writeReadyMarker,
+  invalidateReadyMarkers,
+  type BuiltinSharedResourceId
+} from '@firefly/shared'
 import {
   ModularResourceDao,
   type BuiltinModuleRecord,
@@ -52,8 +75,46 @@ import {
   type VerifiedDownloadResult,
   type IDownloadTransport
 } from './file-download-service'
+import {
+  validatePluginDirectory,
+  probeDirectoryWritableAndSpace,
+  getDiskFreeSpace,
+  ModularResourceError,
+  RESERVED_DEVICE_REG,
+  isReservedDeviceName,
+  resolvePhysicalPath
+} from './plugin-dir-validator'
+import {
+  dirMigrationCoordinator,
+  DirMigrationCoordinator,
+  type DirMigrationProgressPayload
+} from './dir-migration-coordinator'
+import type {
+  DirRuntimePhase,
+  PluginDirErrorCode,
+  PluginDirInfo,
+  ValidatePluginDirResult
+} from '@firefly/types/config-types'
 
-export type { VerifiedDownloadResult }
+export {
+  validatePluginDirectory,
+  probeDirectoryWritableAndSpace,
+  getDiskFreeSpace,
+  ModularResourceError,
+  RESERVED_DEVICE_REG,
+  isReservedDeviceName,
+  resolvePhysicalPath,
+  dirMigrationCoordinator,
+  DirMigrationCoordinator
+}
+export type {
+  VerifiedDownloadResult,
+  DirRuntimePhase,
+  PluginDirErrorCode,
+  PluginDirInfo,
+  ValidatePluginDirResult,
+  DirMigrationProgressPayload
+}
 
 export interface CatalogResourceSpec {
   resource_id: string
@@ -147,6 +208,8 @@ export interface BuiltinModuleView extends BuiltinModuleRecord {
   can_install?: boolean
   can_uninstall?: boolean
   hold_reasons?: string[]
+  validation_status?: 'ready' | 'pending_validation' | 'pending_repair' | 'legacy'
+  validation_message?: string
   resources: ResourceDownloadRecord[]
   download_progress?: {
     percentage: number
@@ -157,6 +220,154 @@ export interface BuiltinModuleView extends BuiltinModuleRecord {
     settings?: import('@firefly/types').PluginSettingsContribution
   }
 }
+
+export type FastReadyStatus = 'ready_fast' | 'legacy_heal' | 'pending_repair' | 'pending_validation'
+
+export interface ResourceValidationEntry {
+  resourceId: string
+  sharedSubDir: string
+  physicalDir: string | null
+  status: FastReadyStatus | 'unknown_resource'
+  validationLevel: 'full' | 'legacy'
+  reason?: string
+  checkedAt: number
+}
+
+export interface FastReadyBarrierResult {
+  rootStatus: 'ready' | 'unavailable'
+  readyResources: ResourceValidationEntry[]
+  legacyHealResources: ResourceValidationEntry[]
+  pendingValidationResources: ResourceValidationEntry[]
+  pendingRepairResources: ResourceValidationEntry[]
+  timedOut: boolean
+  elapsedMs: number
+}
+
+export interface TopologyChangeNotificationOptions {
+  moduleId?: string
+  reason?: string
+  restartPolicy?: 'restart' | 'ensure-running' | 'stop-if-unused'
+}
+
+export type TopologyChangeHandler = (
+  opts: TopologyChangeNotificationOptions
+) => Promise<void> | void
+
+const LEGACY_HEAL_MARKER_FILENAME = `${LEGACY_READY_MARKER_PREFIX}legacy.json`
+
+function hasAnyReadyMarkerFile(files: string[]): boolean {
+  return files.some(
+    f =>
+      f === READY_MARKER_FILENAME ||
+      (f.startsWith(LEGACY_READY_MARKER_PREFIX) && f.endsWith('.json'))
+  )
+}
+
+function resolveSharedSubDir(resourceId: string): string {
+  const meta = (BUILTIN_PLUGIN_CATALOG_META as Record<string, { sharedSubDir?: string }>)[
+    resourceId
+  ]
+  return meta?.sharedSubDir ?? resourceId
+}
+
+/**
+ * 解析 `ux_exclusive_active_slot` SQL 索引中的 `IN (...)` 白名单槽位
+ */
+function parseExclusiveSlotsFromIndexSql(sql: string | undefined | null): string[] {
+  if (!sql) return []
+  const match = sql.match(/capability_slot\s+IN\s*\(([^)]+)\)/i)
+  if (!match || !match[1]) return []
+  return match[1]
+    .split(',')
+    .map(part => part.trim().replace(/^['"]|['"]$/g, ''))
+    .filter(Boolean)
+}
+
+/**
+ * 运行时拓扑单协调器 (`RuntimeTopologyCoordinator`)
+ *
+ * 将模块安装、状态切换、离线激活与卸载统一收拢至单一异步互斥队列，
+ * 借助 AsyncLocalStorage 识别重入调用避免嵌套死锁 (`TC-SSOT-10`)，并对尾部高频拓扑通知做去重合并。
+ */
+export class RuntimeTopologyCoordinator {
+  private mutexChain: Promise<void> = Promise.resolve()
+  private readonly als = new AsyncLocalStorage<symbol>()
+  private activeToken: symbol | null = null
+  private pendingCoalescedNotify: Promise<void> | null = null
+  private latestCoalescedTask: (() => Promise<void>) | null = null
+
+  public async execute<T>(
+    task: () => Promise<T>,
+    options?: {
+      restartAfter?: boolean
+      onRestart?: () => Promise<void>
+    }
+  ): Promise<T> {
+    const runWithRestart = async (): Promise<T> => {
+      const result = await task()
+      if (options?.restartAfter && options.onRestart) {
+        await options.onRestart()
+      }
+      return result
+    }
+
+    // 同一异步执行链重入时直接复用当前锁持有人上下文，防止自锁
+    const currentToken = this.als.getStore()
+    if (currentToken && currentToken === this.activeToken) {
+      return await runWithRestart()
+    }
+
+    const prev = this.mutexChain
+    let release!: () => void
+    this.mutexChain = new Promise<void>(resolve => {
+      release = resolve
+    })
+
+    await prev.catch(() => {})
+    const token = Symbol('topology-lock')
+    this.activeToken = token
+    try {
+      return await this.als.run(token, runWithRestart)
+    } finally {
+      if (this.activeToken === token) {
+        this.activeToken = null
+      }
+      release()
+    }
+  }
+
+  /**
+   * 尾沿合并通知：若当前已有外部队列等待通知，仅刷新末次意图并复用同一等待期
+   */
+  public async coalesceTopologyNotify(run: () => Promise<void>): Promise<void> {
+    const currentToken = this.als.getStore()
+    if (currentToken && currentToken === this.activeToken) {
+      await run()
+      return
+    }
+
+    this.latestCoalescedTask = run
+    if (this.pendingCoalescedNotify) {
+      return await this.pendingCoalescedNotify
+    }
+
+    this.pendingCoalescedNotify = this.execute(async () => {
+      // 微小防抖窗口（5ms）聚合瞬间批量后台校验完成事件
+      await new Promise(resolve => setTimeout(resolve, 5))
+      const taskToRun = this.latestCoalescedTask
+      this.latestCoalescedTask = null
+      if (taskToRun) {
+        await taskToRun()
+      }
+    }).finally(() => {
+      this.pendingCoalescedNotify = null
+    })
+
+    return await this.pendingCoalescedNotify
+  }
+}
+
+export const runtimeTopologyCoordinator = new RuntimeTopologyCoordinator()
 
 export interface IModularResourceService {
   /** 启动期自愈：清理 .tmp-* 与 .deleting_* 孤儿目录 + 对账 DB 与磁盘实际安装目录 */
@@ -241,28 +452,70 @@ export interface IModularResourceService {
     archivePath: string,
     options?: { rootPublicKey?: string }
   ): Promise<BuiltinModuleView>
+
+  /** 获取当前进程内存生效的插件根目录 (IN-01) */
+  getPluginsRootDir(): string
+
+  /** 获取持久化配置中已提交生效的插件根目录 */
+  getCommittedPluginsRootDir(): string
+
+  /** 获取当前目录运行态相位 */
+  getDirRuntimePhase(): DirRuntimePhase
+
+  /** 校验候选插件存储目录合法性 */
+  validatePluginDir(targetPath: string): Promise<ValidatePluginDirResult>
+
+  /** 获取插件目录运行态信息与诊断 */
+  getPluginDirInfo(): Promise<PluginDirInfo>
+
+  /** 触发插件目录迁移事务 */
+  changePluginDirectory(targetPath: string): Promise<{
+    success: boolean
+    migrationId?: string
+    errorCode?: PluginDirErrorCode
+  }>
+
+  /** 取消在途的插件目录迁移 (仅在 PRECHECK / STAGING / VERIFYING 有效) */
+  cancelDirMigration(): Promise<{
+    cancelled: boolean
+    errorCode?: PluginDirErrorCode
+  }>
+
+  /** 清理历史旧目录残留资产 (Issue 04) */
+  cleanupOldPluginDirectory(): Promise<{
+    success: boolean
+    freedBytes: number
+    errorCode?: PluginDirErrorCode
+  }>
+
+  /** 忽略历史旧目录清理提示 */
+  dismissOldDirCleanup(): void
+
+  /** 是否已忽略旧目录清理提示 */
+  isOldDirCleanupDismissed(): boolean
 }
 
 /**
  * 本地离线内置插件目录种子 (IN-04 纯离线兜底 SSOT)
+ * 所有模块资源规格、字节数与 `_shared` 相对路径严格派生自 `@firefly/shared` 单一事实源。
  */
 export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
   // 1. 检索式引擎：经典轻量极速档 (二选一必选)
   {
-    id: 'engine_classic_light',
+    id: BUILTIN_MODULE_CATALOG_META.engine_classic_light.id,
     name: '经典轻量检索式引擎 (Classic Light)',
     description:
       '【通过意思找文件与图片】根据你描述的大致意思快速搜索照片和文档。占用极少内存，即使老电脑和低配轻薄本也能流畅运行。',
     icon: 'Feather',
     kind: 'builtin-module',
-    version: '1.0.0',
-    catalog_version: 1,
-    category: 'ai-engine',
-    capability_slot: 'base_embedding',
-    slot_policy: 'exclusive_required',
-    backend_type: 'omni_onnx',
+    version: BUILTIN_MODULE_CATALOG_META.engine_classic_light.version,
+    catalog_version: BUILTIN_MODULE_CATALOG_META.engine_classic_light.catalogVersion,
+    category: BUILTIN_MODULE_CATALOG_META.engine_classic_light.category,
+    capability_slot: BUILTIN_MODULE_CATALOG_META.engine_classic_light.capabilitySlot,
+    slot_policy: BUILTIN_MODULE_CATALOG_META.engine_classic_light.slotPolicy,
+    backend_type: BUILTIN_MODULE_CATALOG_META.engine_classic_light.backendType,
     author_code: 'official',
-    total_bytes: 319195255, // 106,269,288 (bekko) + 212,925,967 (chinese-clip) = 304.4 MiB
+    total_bytes: BUILTIN_MODULE_CATALOG_META.engine_classic_light.totalBytes,
     install_state: 'not_installed',
     contributes: {
       settings: {
@@ -272,45 +525,26 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
         priority: 10
       }
     },
-    resources: [
-      {
-        resource_id: 'bekko-a8m',
-        asset_name: 'bekko-a8m-1.0.0.zip',
-        target_local_path: 'modules/_shared/bekko-a8m',
-        active_source_key: 'auto',
-        active_url:
-          'https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/bekko-a8m-1.0.0.zip',
-        expected_bytes: 106269288,
-        expected_sha256: '315c4cba94333207522ae6e12c5de234199d1c4fc11740b05ac32aebd3e82d13'
-      },
-      {
-        resource_id: 'chinese-clip',
-        asset_name: 'chinese-clip-int8-v3.zip',
-        target_local_path: 'modules/_shared/chinese-clip',
-        active_source_key: 'auto',
-        active_url:
-          'https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/chinese-clip-int8-v3.zip',
-        expected_bytes: 212925967,
-        expected_sha256: '67a5e4a0d0985085a3ad9e153efa5d4817af3851b6c4c7c8933b5c0a83ca3093'
-      }
-    ]
+    resources: BUILTIN_MODULE_CATALOG_META.engine_classic_light.resourceIds.map(
+      buildResourceSpecFromCatalog
+    )
   },
   // 2. 检索式引擎：统一全模态档 (二选一必选)
   {
-    id: 'engine_gemma_unified',
+    id: BUILTIN_MODULE_CATALOG_META.engine_gemma_unified.id,
     name: '统一全模态检索式引擎 (Gemma Unified)',
     description:
       '【更聪明的全能搜索大脑】对复杂句子和图片的理解更深入精准，找东西更懂你的心思。推荐 8GB 或以上内存电脑使用。',
     icon: 'Layers',
     kind: 'builtin-module',
-    version: '1.0.0',
-    catalog_version: 1,
-    category: 'ai-engine',
-    capability_slot: 'base_embedding',
-    slot_policy: 'exclusive_required',
-    backend_type: 'omni_onnx',
+    version: BUILTIN_MODULE_CATALOG_META.engine_gemma_unified.version,
+    catalog_version: BUILTIN_MODULE_CATALOG_META.engine_gemma_unified.catalogVersion,
+    category: BUILTIN_MODULE_CATALOG_META.engine_gemma_unified.category,
+    capability_slot: BUILTIN_MODULE_CATALOG_META.engine_gemma_unified.capabilitySlot,
+    slot_policy: BUILTIN_MODULE_CATALOG_META.engine_gemma_unified.slotPolicy,
+    backend_type: BUILTIN_MODULE_CATALOG_META.engine_gemma_unified.backendType,
     author_code: 'official',
-    total_bytes: 254003864, // 242.2 MiB
+    total_bytes: BUILTIN_MODULE_CATALOG_META.engine_gemma_unified.totalBytes,
     install_state: 'not_installed',
     contributes: {
       settings: {
@@ -320,35 +554,26 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
         priority: 10
       }
     },
-    resources: [
-      {
-        resource_id: 'embeddinggemma-2-onnx',
-        asset_name: 'embeddinggemma-2-onnx-1.0.0.zip',
-        target_local_path: 'modules/_shared/embeddinggemma-2-onnx',
-        active_source_key: 'auto',
-        active_url:
-          'https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/embeddinggemma-2-onnx-1.0.0.zip',
-        expected_bytes: 254003864,
-        expected_sha256: 'f2cfc8643f708702c3abeeb5130df42becb909793d5ade429531daf810314f26'
-      }
-    ]
+    resources: BUILTIN_MODULE_CATALOG_META.engine_gemma_unified.resourceIds.map(
+      buildResourceSpecFromCatalog
+    )
   },
   // 3. 生成式引擎：轻量 CPU 引擎 (Pocket CPU)
   {
-    id: 'pocket-cpu-int8-onnx',
+    id: BUILTIN_MODULE_CATALOG_META['pocket-cpu-int8-onnx'].id,
     name: '轻量CPU生成式引擎 (Pocket CPU)',
     description:
       '【办公轻薄本标配】内存仅占约400MB，0门槛秒级响应，完全离线私密。支持智能文件名深度润色、描述提取与内容深度解析。',
     icon: 'Cpu',
     kind: 'builtin-module',
-    version: '1.0.0',
-    catalog_version: 1,
-    category: 'ai-engine',
-    capability_slot: 'ai_engine_cpu',
-    slot_policy: 'exclusive_optional',
-    backend_type: 'omni_onnx',
+    version: BUILTIN_MODULE_CATALOG_META['pocket-cpu-int8-onnx'].version,
+    catalog_version: BUILTIN_MODULE_CATALOG_META['pocket-cpu-int8-onnx'].catalogVersion,
+    category: BUILTIN_MODULE_CATALOG_META['pocket-cpu-int8-onnx'].category,
+    capability_slot: BUILTIN_MODULE_CATALOG_META['pocket-cpu-int8-onnx'].capabilitySlot,
+    slot_policy: BUILTIN_MODULE_CATALOG_META['pocket-cpu-int8-onnx'].slotPolicy,
+    backend_type: BUILTIN_MODULE_CATALOG_META['pocket-cpu-int8-onnx'].backendType,
     author_code: 'official',
-    total_bytes: 380633088, // 363 MiB
+    total_bytes: BUILTIN_MODULE_CATALOG_META['pocket-cpu-int8-onnx'].totalBytes,
     install_state: 'not_installed',
     contributes: {
       settings: {
@@ -358,35 +583,26 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
         priority: 15
       }
     },
-    resources: [
-      {
-        resource_id: 'pocket-cpu-int8-onnx',
-        asset_name: 'pocket-cpu-int8-onnx-1.0.0.zip',
-        target_local_path: 'models/pocket-cpu',
-        active_source_key: 'auto',
-        active_url:
-          'https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/pocket-cpu-int8-onnx-1.0.0.zip',
-        expected_bytes: 380633088,
-        expected_sha256: '9a9b7367c3ca16bc2605bb1dca2e927cb7801a610f443b8782a69ce45f78c85c'
-      }
-    ]
+    resources: BUILTIN_MODULE_CATALOG_META['pocket-cpu-int8-onnx'].resourceIds.map(
+      buildResourceSpecFromCatalog
+    )
   },
-  // 4. 感知分析模型：敏感内容与 NSFW 分级识别
+  // 4. 感知分析模型：敏感内容与 NSFW 分级识别 (包含社区开源识图模型 MobileNetV2 与自研 nsfw-l3 文本模型)
   {
-    id: 'perception_nsfw',
+    id: BUILTIN_MODULE_CATALOG_META.perception_nsfw.id,
     name: '敏感内容与 NSFW 分级识别',
     description:
-      '【私密与敏感图片标记】自动识别不适合在公开场合打开的图片并加上标记，防止投屏查看时尴尬。所有电脑均可极速运行。',
+      '【私密与敏感图文标记】自动识别私密敏感图片与包含露骨敏感描述的文档/AIGC文本并打上标记，防止投屏查看时尴尬。所有电脑均可极速运行。',
     icon: 'ShieldAlert',
     kind: 'builtin-module',
-    version: '1.0.0',
-    catalog_version: 1,
-    category: 'perception',
-    capability_slot: 'perception_nsfw',
-    slot_policy: 'exclusive_optional',
-    backend_type: 'omni_onnx',
+    version: BUILTIN_MODULE_CATALOG_META.perception_nsfw.version,
+    catalog_version: BUILTIN_MODULE_CATALOG_META.perception_nsfw.catalogVersion,
+    category: BUILTIN_MODULE_CATALOG_META.perception_nsfw.category,
+    capability_slot: BUILTIN_MODULE_CATALOG_META.perception_nsfw.capabilitySlot,
+    slot_policy: BUILTIN_MODULE_CATALOG_META.perception_nsfw.slotPolicy,
+    backend_type: BUILTIN_MODULE_CATALOG_META.perception_nsfw.backendType,
     author_code: 'official',
-    total_bytes: 21966375, // 20.9 MiB
+    total_bytes: BUILTIN_MODULE_CATALOG_META.perception_nsfw.totalBytes,
     install_state: 'not_installed',
     contributes: {
       settings: {
@@ -396,35 +612,26 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
         priority: 20
       }
     },
-    resources: [
-      {
-        resource_id: 'nsfw-l3',
-        asset_name: 'nsfw-l3-1.0.0.zip',
-        target_local_path: 'modules/_shared/nsfw-l3',
-        active_source_key: 'auto',
-        active_url:
-          'https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/nsfw-l3-1.0.0.zip',
-        expected_bytes: 21966375,
-        expected_sha256: '84383b64d723d31ec3ab940522f866ff1979a24454269cd6336ee2fc98ff2ddf'
-      }
-    ]
+    resources: BUILTIN_MODULE_CATALOG_META.perception_nsfw.resourceIds.map(
+      buildResourceSpecFromCatalog
+    )
   },
-  // 4. 语音识别与字幕提取 ASR (SenseVoice, 纯模型，转码复用系统内置 FFmpeg)
+  // 4. 语音识别与字幕提取 ASR (SenseVoice, 纯模型，转码复用系统内置 FFmpeg，运行时锁定域 A sherpa)
   {
-    id: 'asr_sensevoice_onnx',
+    id: BUILTIN_MODULE_CATALOG_META.asr_sensevoice_onnx.id,
     name: '语音识别与字幕提取 ASR (SenseVoice)',
     description:
       '【录音与视频自动转文字】听懂视频和录音里的说话内容并提取字幕，可以直接搜索“某句话是谁说的”。较耗算力，推荐 16GB 内存或有显卡。',
     icon: 'Mic',
     kind: 'builtin-module',
-    version: '1.0.0',
-    catalog_version: 1,
-    category: 'perception',
-    capability_slot: 'voice_asr',
-    slot_policy: 'exclusive_optional',
-    backend_type: 'omni_onnx',
+    version: BUILTIN_MODULE_CATALOG_META.asr_sensevoice_onnx.version,
+    catalog_version: BUILTIN_MODULE_CATALOG_META.asr_sensevoice_onnx.catalogVersion,
+    category: BUILTIN_MODULE_CATALOG_META.asr_sensevoice_onnx.category,
+    capability_slot: BUILTIN_MODULE_CATALOG_META.asr_sensevoice_onnx.capabilitySlot,
+    slot_policy: BUILTIN_MODULE_CATALOG_META.asr_sensevoice_onnx.slotPolicy,
+    backend_type: BUILTIN_MODULE_CATALOG_META.asr_sensevoice_onnx.backendType,
     author_code: 'official',
-    total_bytes: 168587158, // 8,282,676 (sherpa) + 160,304,482 (sensevoice) = 160.8 MiB
+    total_bytes: BUILTIN_MODULE_CATALOG_META.asr_sensevoice_onnx.totalBytes,
     install_state: 'not_installed',
     contributes: {
       settings: {
@@ -434,45 +641,26 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
         priority: 25
       }
     },
-    resources: [
-      {
-        resource_id: 'sherpa-onnx-runtime',
-        asset_name: 'sherpa-onnx-runtime-1.13.8-win32-x64.zip',
-        target_local_path: 'modules/_shared/sherpa-onnx-runtime',
-        active_source_key: 'auto',
-        active_url:
-          'https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/sherpa-onnx-runtime-1.13.8-win32-x64.zip',
-        expected_bytes: 8282676,
-        expected_sha256: '3cb751f7e27d9c0768687487335d67bee3dd9694b6825e50ee439ade7cb6bd04'
-      },
-      {
-        resource_id: 'sensevoice-onnx',
-        asset_name: 'sensevoice-onnx-int8.zip',
-        target_local_path: 'modules/_shared/sensevoice-onnx',
-        active_source_key: 'auto',
-        active_url:
-          'https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/sensevoice-onnx-int8.zip',
-        expected_bytes: 160304482,
-        expected_sha256: 'a5cd6e2836c3916e18efb2ee81bd6fd536c92bf957fd29a524b8a7e82c6cdceb'
-      }
-    ]
+    resources: BUILTIN_MODULE_CATALOG_META.asr_sensevoice_onnx.resourceIds.map(
+      buildResourceSpecFromCatalog
+    )
   },
-  // 5. 离线语音合成 TTS (Moss-TTS)
+  // 5. 离线语音合成 TTS (Moss-TTS 与 M5-TTS)
   {
-    id: 'tts_moss_onnx',
-    name: '离线语音合成 TTS (Moss-TTS)',
+    id: BUILTIN_MODULE_CATALOG_META.tts_moss_onnx.id,
+    name: '个性声音克隆 (Moss-TTS)',
     description:
-      '【真人般自然朗读文章】把文档和文章读给你听，支持戴耳机离线听书看材料，完全不消耗网络。普通电脑即可流畅发音。',
+      '【支持克隆专属声音】内置声音提取器，上传一段录音即可克隆专属声音朗读文章。支持 51 款精选音色与自定义克隆。',
     icon: 'Volume2',
     kind: 'builtin-module',
-    version: '1.0.0',
-    catalog_version: 1,
-    category: 'media',
-    capability_slot: 'voice_tts',
-    slot_policy: 'exclusive_optional',
-    backend_type: 'omni_onnx',
+    version: BUILTIN_MODULE_CATALOG_META.tts_moss_onnx.version,
+    catalog_version: BUILTIN_MODULE_CATALOG_META.tts_moss_onnx.catalogVersion,
+    category: BUILTIN_MODULE_CATALOG_META.tts_moss_onnx.category,
+    capability_slot: BUILTIN_MODULE_CATALOG_META.tts_moss_onnx.capabilitySlot,
+    slot_policy: BUILTIN_MODULE_CATALOG_META.tts_moss_onnx.slotPolicy,
+    backend_type: BUILTIN_MODULE_CATALOG_META.tts_moss_onnx.backendType,
     author_code: 'official',
-    total_bytes: 249105462, // 8,282,676 (sherpa) + 240,822,786 (moss-tts) = 237.6 MiB
+    total_bytes: BUILTIN_MODULE_CATALOG_META.tts_moss_onnx.totalBytes,
     install_state: 'not_installed',
     contributes: {
       settings: {
@@ -482,66 +670,73 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
         priority: 30
       }
     },
-    resources: [
-      {
-        resource_id: 'sherpa-onnx-runtime',
-        asset_name: 'sherpa-onnx-runtime-1.13.8-win32-x64.zip',
-        target_local_path: 'modules/_shared/sherpa-onnx-runtime',
-        active_source_key: 'auto',
-        active_url:
-          'https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/sherpa-onnx-runtime-1.13.8-win32-x64.zip',
-        expected_bytes: 8282676,
-        expected_sha256: '3cb751f7e27d9c0768687487335d67bee3dd9694b6825e50ee439ade7cb6bd04'
-      },
-      {
-        resource_id: 'moss-tts',
-        asset_name: 'moss-tts-1.0.0.zip',
-        target_local_path: 'modules/_shared/moss-tts',
-        active_source_key: 'auto',
-        active_url:
-          'https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/moss-tts-1.0.0.zip',
-        expected_bytes: 240822786,
-        expected_sha256: '4374fe73fd27e9544674037890e773826727b959c6a63313989d787a263b7069'
-      }
-    ]
+    resources: BUILTIN_MODULE_CATALOG_META.tts_moss_onnx.resourceIds.map(
+      buildResourceSpecFromCatalog
+    )
   },
   {
-    id: 'diffusion_studio',
+    id: BUILTIN_MODULE_CATALOG_META.tts_m5_onnx.id,
+    name: '极速语音合成 (M5-TTS)',
+    description:
+      '【超轻量极速发音】首字 200ms 秒开朗读，内存占用极低（仅需 ~350MB），包含 51 款精品音色，普通笔记本丝滑朗读。',
+    icon: 'Zap',
+    kind: 'builtin-module',
+    version: BUILTIN_MODULE_CATALOG_META.tts_m5_onnx.version,
+    catalog_version: BUILTIN_MODULE_CATALOG_META.tts_m5_onnx.catalogVersion,
+    category: BUILTIN_MODULE_CATALOG_META.tts_m5_onnx.category,
+    capability_slot: BUILTIN_MODULE_CATALOG_META.tts_m5_onnx.capabilitySlot,
+    slot_policy: BUILTIN_MODULE_CATALOG_META.tts_m5_onnx.slotPolicy,
+    backend_type: BUILTIN_MODULE_CATALOG_META.tts_m5_onnx.backendType,
+    author_code: 'official',
+    total_bytes: BUILTIN_MODULE_CATALOG_META.tts_m5_onnx.totalBytes,
+    install_state: 'not_installed',
+    contributes: {
+      settings: {
+        scope: 'global',
+        tabTitle: '语音合成 (TTS)',
+        componentId: 'tts',
+        priority: 30
+      }
+    },
+    resources: BUILTIN_MODULE_CATALOG_META.tts_m5_onnx.resourceIds.map(buildResourceSpecFromCatalog)
+  },
+  {
+    id: BUILTIN_MODULE_CATALOG_META.diffusion_studio.id,
     name: '本地生图 Studio',
     description: '基于本地硬件加速的图像生成、超分辨率画面修复与视觉扩展',
     icon: 'Sparkles',
     kind: 'builtin-module',
-    version: '0.1.0',
-    catalog_version: 1,
-    category: 'ai-engine',
-    capability_slot: 'advanced_ai_engine',
-    slot_policy: 'exclusive_optional',
-    backend_type: 'ai_engine',
+    version: BUILTIN_MODULE_CATALOG_META.diffusion_studio.version,
+    catalog_version: BUILTIN_MODULE_CATALOG_META.diffusion_studio.catalogVersion,
+    category: BUILTIN_MODULE_CATALOG_META.diffusion_studio.category,
+    capability_slot: BUILTIN_MODULE_CATALOG_META.diffusion_studio.capabilitySlot,
+    slot_policy: BUILTIN_MODULE_CATALOG_META.diffusion_studio.slotPolicy,
+    backend_type: BUILTIN_MODULE_CATALOG_META.diffusion_studio.backendType,
     author_code: 'official',
     author_name: null,
     availability: 'coming_soon',
     firecore_cost: 0,
-    total_bytes: 3824100000,
+    total_bytes: BUILTIN_MODULE_CATALOG_META.diffusion_studio.totalBytes,
     install_state: 'not_installed'
   },
   {
-    id: 'archive_vfs_parser',
+    id: BUILTIN_MODULE_CATALOG_META.archive_vfs_parser.id,
     name: '压缩包透视与深度解析器',
     description: '可以透视压缩包中的内容，并生成标签和描述等',
     icon: 'Archive',
     kind: 'builtin-module',
-    version: '1.0.0',
-    catalog_version: 1,
-    category: 'vfs-archive',
-    capability_slot: 'parser',
-    slot_policy: 'multi_active',
-    backend_type: 'utility_process',
+    version: BUILTIN_MODULE_CATALOG_META.archive_vfs_parser.version,
+    catalog_version: BUILTIN_MODULE_CATALOG_META.archive_vfs_parser.catalogVersion,
+    category: BUILTIN_MODULE_CATALOG_META.archive_vfs_parser.category,
+    capability_slot: BUILTIN_MODULE_CATALOG_META.archive_vfs_parser.capabilitySlot,
+    slot_policy: BUILTIN_MODULE_CATALOG_META.archive_vfs_parser.slotPolicy,
+    backend_type: BUILTIN_MODULE_CATALOG_META.archive_vfs_parser.backendType,
     author_code: 'official',
     author_name: null,
     availability: 'coming_soon',
     delist_reason: null,
     firecore_cost: 0,
-    total_bytes: 0,
+    total_bytes: BUILTIN_MODULE_CATALOG_META.archive_vfs_parser.totalBytes,
     install_state: 'not_installed'
   }
 ]
@@ -549,6 +744,7 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
 export interface ModularResourceServiceOptions {
   db?: Database
   baseDir?: string
+  pluginsRootDir?: string
   presetDir?: string
   downloadService?: FileDownloadService
   transport?: IDownloadTransport
@@ -556,6 +752,7 @@ export interface ModularResourceServiceOptions {
   tombstoneGC?: TombstoneGCService
   offlinePackageService?: OfflinePackageService
   processManager?: PluginProcessManager
+  onTopologyChanged?: TopologyChangeHandler
 }
 
 export class ModularResourceService implements IModularResourceService {
@@ -564,7 +761,9 @@ export class ModularResourceService implements IModularResourceService {
   public readonly processManager: PluginProcessManager
   private customDb: Database | null = null
   private customBaseDir: string | null = null
+  private customPluginsRootDir: string | null = null
   private customPresetDir: string | null = null
+  private customDbGetter?: () => Database | null
   private downloadService: FileDownloadService
   private transport?: IDownloadTransport
   private deleteDirectoryFn: (dirPath: string) => Promise<boolean>
@@ -584,9 +783,69 @@ export class ModularResourceService implements IModularResourceService {
   private verificationPromises = new Map<string, Promise<boolean>>()
   public readonly sourceRouter: DualTrackSourceRouter = new DualTrackSourceRouter()
 
+  private effectivePluginsRootDir: string | null = null
+  private dirRuntimePhase: DirRuntimePhase = 'STABLE'
+  private cachedUsedBytes: number | null = null
+  private lastUsedBytesCalculatedAt = 0
+  private oldDirCleanupDismissed = false
+  private injectedConfigOrchestrator?: any
+  private slotLocks = new Map<string, Promise<unknown>>()
+  private readonly topologyCoordinator = new RuntimeTopologyCoordinator()
+  private topologyListener: TopologyChangeHandler | null = null
+  private fastReadySnapshot = new Map<string, ResourceValidationEntry>()
+  private repairPendingResources = new Set<string>()
+  private unknownResources = new Set<string>()
+  private deferredBackfillResources = new Set<string>()
+  private rootUnavailable = false
+  private schemaIndexDriftDetected = false
+  private bgVerificationInFlight: Promise<void> | null = null
+  private bgVerificationTimer: NodeJS.Timeout | null = null
+
+  /**
+   * 槽位排他事务单写者互斥锁 (Spec §3.1)
+   * 路由至统一 RuntimeTopologyCoordinator 单锁链，防跨槽位拓扑重入死锁并保持 slotLocks 追踪语义
+   */
+  public async withSlotMutex<T>(slot: string, fn: () => Promise<T>): Promise<T> {
+    const prev = this.slotLocks.get(slot) ?? Promise.resolve()
+    let resolveCurrent!: () => void
+    const current = new Promise<void>(resolve => {
+      resolveCurrent = resolve
+    })
+    const tail = prev
+      .catch(() => {})
+      .then(() => this.topologyCoordinator.execute(fn))
+      .finally(() => {
+        resolveCurrent()
+        if (this.slotLocks.get(slot) === tail) {
+          this.slotLocks.delete(slot)
+        }
+      })
+    this.slotLocks.set(slot, tail)
+    return tail
+  }
+
+  public setConfigOrchestrator(orchestrator: any): void {
+    this.injectedConfigOrchestrator = orchestrator
+  }
+
+  private getConfigOrchestrator(): any {
+    if (this.injectedConfigOrchestrator) {
+      return this.injectedConfigOrchestrator
+    }
+    try {
+      const { ConfigOrchestrator } = require('../../config/config-orchestrator')
+      return ConfigOrchestrator.getInstance()
+    } catch {
+      return null
+    }
+  }
+
   constructor(options?: ModularResourceServiceOptions) {
     this.customDb = options?.db ?? null
     this.customBaseDir = options?.baseDir ?? null
+    this.customPluginsRootDir = options?.pluginsRootDir
+      ? path.resolve(options.pluginsRootDir)
+      : null
     this.customPresetDir = options?.presetDir ?? null
     this.downloadService = options?.downloadService ?? fileDownloadService
     this.transport = options?.transport
@@ -599,6 +858,7 @@ export class ModularResourceService implements IModularResourceService {
       // ignore
     }
     this.offlinePackageService = options?.offlinePackageService ?? new OfflinePackageService(this)
+    this.topologyListener = options?.onTopologyChanged ?? null
     this.processManager =
       options?.processManager ??
       new PluginProcessManager({
@@ -606,12 +866,30 @@ export class ModularResourceService implements IModularResourceService {
       })
 
     // ISS-15: 应用启动后延迟 15 秒后台扫描清理超过 7 天的 .trash-* 与未完成孤儿断点
-    setTimeout(() => {
+    const maintenanceTimer = setTimeout(() => {
       try {
         const base = this.getBaseDir()
         cleanOldTrashAndOrphanParts(base).catch(() => {})
       } catch {}
+      try {
+        const rootDir = this.getPluginsRootDir()
+        cleanOldTrashAndOrphanParts(rootDir).catch(() => {})
+      } catch {}
     }, 15000)
+    maintenanceTimer.unref?.()
+  }
+
+  /**
+   * 注入或替换运行时拓扑变化监听器（由 OmniService / 集成测试注入）
+   */
+  public setTopologyChangeHandler(handler: TopologyChangeHandler | null): void {
+    this.topologyListener = handler
+  }
+
+  public configureRuntimeDependencies(deps: { getDb?: () => Database | null }): void {
+    if (deps.getDb) {
+      this.customDbGetter = deps.getDb
+    }
   }
 
   static getInstance(): ModularResourceService {
@@ -623,11 +901,18 @@ export class ModularResourceService implements IModularResourceService {
 
   public getDb(): Database {
     if (this.customDb) return this.customDb
-    const { databaseService } = require('../database/database-service')
-    if (!databaseService?.db) {
-      throw new Error('ModularResourceService: 数据库尚未初始化')
+    if (this.customDbGetter) {
+      const db = this.customDbGetter()
+      if (db) return db
     }
-    return databaseService.db
+    try {
+      // 容错在未通过 configureRuntimeDependencies 显式注入时的动态加载
+      const { databaseService } = require('../database/database-service')
+      if (databaseService?.db) {
+        return databaseService.db
+      }
+    } catch {}
+    throw new Error('ModularResourceService: 数据库尚未初始化')
   }
 
   public getDao(): ModularResourceDao {
@@ -644,13 +929,421 @@ export class ModularResourceService implements IModularResourceService {
   }
 
   /**
-   * 将相对路径解析为基于 baseDir 的绝对物理路径
+   * 当前进程内存生效插件根目录 (IN-01: 生命周期内恒定不变，直至重启)
+   */
+  public getPluginsRootDir(): string {
+    if (this.effectivePluginsRootDir) {
+      return this.effectivePluginsRootDir
+    }
+
+    if (this.customPluginsRootDir) {
+      this.effectivePluginsRootDir = this.customPluginsRootDir
+      process.env.FIREFLY_MODULES_ROOT = this.effectivePluginsRootDir
+      return this.effectivePluginsRootDir
+    }
+
+    try {
+      const ssotRoot = PluginPathResolver.getPluginsRootDir()
+      if (ssotRoot) {
+        this.effectivePluginsRootDir = ssotRoot
+        process.env.FIREFLY_MODULES_ROOT = ssotRoot
+        return ssotRoot
+      }
+    } catch {}
+
+    if (this.customBaseDir) {
+      let committedPath: string | undefined
+      try {
+        committedPath = this.injectedConfigOrchestrator?.getValue?.('PLUGIN_MODULES_PATH')
+      } catch {
+        // 容错
+      }
+      this.effectivePluginsRootDir =
+        committedPath && typeof committedPath === 'string' && committedPath.trim()
+          ? path.resolve(committedPath.trim())
+          : path.join(this.customBaseDir, 'modules')
+      process.env.FIREFLY_MODULES_ROOT = this.effectivePluginsRootDir
+      return this.effectivePluginsRootDir
+    }
+
+    const resolved = PluginPathResolver.getPluginsRootDir()
+    process.env.FIREFLY_MODULES_ROOT = resolved
+    return resolved
+  }
+
+  /**
+   * 测试接缝：重置或覆盖当前运行态生效根目录
+   */
+  public setPluginsRootDirForTesting(dir: string | null): void {
+    this.effectivePluginsRootDir = dir ? path.resolve(dir) : null
+  }
+
+  /**
+   * 获取持久化配置中已提交的新根目录
+   */
+  public getCommittedPluginsRootDir(): string {
+    try {
+      const val = this.getConfigOrchestrator()?.getValue('PLUGIN_MODULES_PATH')
+      if (val && typeof val === 'string' && val.trim()) {
+        return path.resolve(val.trim())
+      }
+    } catch {}
+    return this.getPluginsRootDir()
+  }
+
+  /**
+   * 获取当前运行态相位
+   */
+  public getDirRuntimePhase(): DirRuntimePhase {
+    return this.dirRuntimePhase
+  }
+
+  /**
+   * 设置运行态相位
+   */
+  public setDirRuntimePhase(phase: DirRuntimePhase): void {
+    this.dirRuntimePhase = phase
+  }
+
+  /**
+   * 计算当前生效插件目录下已就绪模块的真实磁盘占用
+   */
+  public async calculateCurrentDirUsedBytes(forceRefresh = false): Promise<number> {
+    const now = Date.now()
+    if (
+      !forceRefresh &&
+      this.cachedUsedBytes !== null &&
+      now - this.lastUsedBytesCalculatedAt < 10000
+    ) {
+      return this.cachedUsedBytes
+    }
+
+    let totalBytes = 0
+    const sharedDir = path.join(this.getPluginsRootDir(), '_shared')
+    if (fs.existsSync(sharedDir)) {
+      try {
+        const entries = fs.readdirSync(sharedDir, { withFileTypes: true })
+        for (const entry of entries) {
+          if (!entry.isDirectory()) continue
+          const moduleDir = path.join(sharedDir, entry.name)
+          const files = fs.readdirSync(moduleDir)
+          const hasReady = hasAnyReadyMarkerFile(files)
+          if (!hasReady) continue
+
+          const calculateDir = (dir: string): void => {
+            const list = fs.readdirSync(dir, { withFileTypes: true })
+            for (const item of list) {
+              const full = path.join(dir, item.name)
+              if (item.isDirectory()) {
+                if (item.name.startsWith('.deleting-') || item.name.startsWith('.migrating-'))
+                  continue
+                calculateDir(full)
+              } else if (item.isFile()) {
+                if (
+                  item.name.endsWith('.part') ||
+                  item.name.startsWith('.deleting-') ||
+                  item.name.startsWith('.migrating-')
+                )
+                  continue
+                try {
+                  totalBytes += fs.statSync(full).size
+                } catch {}
+              }
+            }
+          }
+          calculateDir(moduleDir)
+        }
+      } catch {}
+    }
+
+    this.cachedUsedBytes = totalBytes
+    this.lastUsedBytesCalculatedAt = now
+    return totalBytes
+  }
+
+  /**
+   * 校验候选插件存储目录合法性
+   */
+  public async validatePluginDir(targetPath: string): Promise<ValidatePluginDirResult> {
+    const currentUsedBytes = await this.calculateCurrentDirUsedBytes()
+    const sharedDir = path.join(this.getPluginsRootDir(), '_shared')
+    let installedIds: string[] = []
+    if (fs.existsSync(sharedDir)) {
+      try {
+        const entries = fs.readdirSync(sharedDir, { withFileTypes: true })
+        installedIds = entries
+          .filter(e => e.isDirectory())
+          .filter(e => {
+            const files = fs.readdirSync(path.join(sharedDir, e.name))
+            return hasAnyReadyMarkerFile(files)
+          })
+          .map(e => e.name)
+      } catch {}
+    }
+
+    return await validatePluginDirectory(targetPath, this.getPluginsRootDir(), {
+      totalSourceBytes: currentUsedBytes,
+      currentInstalledModuleIds: installedIds
+    })
+  }
+
+  /**
+   * 获取插件目录详细信息与运行态状态
+   */
+  public async getPluginDirInfo(): Promise<PluginDirInfo> {
+    const currentDir = this.getPluginsRootDir()
+    const committedDir = this.getCommittedPluginsRootDir()
+    const defaultDir = path.join(this.getBaseDir(), 'modules')
+    const isDefault = isPathEqual(currentDir, defaultDir)
+    const defaultDirNonAscii = /[^\x20-\x7E]/.test(defaultDir)
+    const usedBytes = await this.calculateCurrentDirUsedBytes()
+    const { freeBytes } = getDiskFreeSpace(currentDir)
+
+    let previousPath: string | null = null
+    let previousPathExists = false
+    try {
+      const prev = this.getConfigOrchestrator()?.getValue('PREVIOUS_PLUGIN_MODULES_PATH')
+      if (prev && typeof prev === 'string' && prev.trim()) {
+        previousPath = path.resolve(prev.trim())
+        previousPathExists = fs.existsSync(previousPath)
+      }
+    } catch {}
+
+    return {
+      currentDir,
+      currentPath: currentDir,
+      committedDir,
+      isDefault,
+      defaultDirNonAscii,
+      phase: this.dirRuntimePhase,
+      usedBytes,
+      freeBytes,
+      previousPath,
+      previousPathExists
+    }
+  }
+
+  /**
+   * 测试接缝：获取或注入目录迁移协调器实例
+   */
+  private migrationCoordinatorInstance: DirMigrationCoordinator = dirMigrationCoordinator
+
+  public setMigrationCoordinator(coordinator: DirMigrationCoordinator): void {
+    this.migrationCoordinatorInstance = coordinator
+  }
+
+  public getMigrationCoordinator(): DirMigrationCoordinator {
+    return this.migrationCoordinatorInstance
+  }
+
+  /**
+   * 全局写闸门校验 (DIR_CHANGE_GATE_ACTIVE)
+   */
+  public assertWriteGateAllowed(): void {
+    if (this.dirRuntimePhase !== 'STABLE') {
+      throw new ModularResourceError(
+        'DIR_CHANGE_GATE_ACTIVE',
+        'Plugin directory change is pending restart. All write operations are frozen.'
+      )
+    }
+  }
+
+  /**
+   * 触发插件目录迁移事务 (两阶段流式复制与崩溃自愈 Journal)
+   */
+  public async changePluginDirectory(targetPath: string): Promise<{
+    success: boolean
+    migrationId?: string
+    errorCode?: PluginDirErrorCode
+  }> {
+    this.assertWriteGateAllowed()
+
+    // 1. 前置 11 步校验管线
+    const validation = await this.validatePluginDir(targetPath)
+    if (!validation.valid) {
+      return {
+        success: false,
+        errorCode: validation.errorCode ?? 'PATH_NOT_WRITABLE'
+      }
+    }
+
+    const currentSourceDir = this.getPluginsRootDir()
+    const resolvedTarget = path.resolve(targetPath.trim())
+
+    // 2. 收集 BOM 哈希清单（供双端复制对账核验）
+    const bomHashes = new Map<string, string>()
+    try {
+      const bomRecords = this.loadResourceBom()
+      for (const item of bomRecords) {
+        if (item.name && item.sha256) {
+          bomHashes.set(item.name, item.sha256)
+        }
+      }
+    } catch {}
+
+    // 3. 执行流式迁移
+    const result = await this.migrationCoordinatorInstance.executeMigration(
+      currentSourceDir,
+      resolvedTarget,
+      {
+        userDataDir: this.getBaseDir(),
+        bomHashes,
+        onPhaseChange: (phase: DirRuntimePhase) => {
+          this.setDirRuntimePhase(phase)
+        },
+        onConfigCommit: async (newPath: string, oldPath: string) => {
+          try {
+            const orchestrator = this.getConfigOrchestrator()
+            orchestrator?.setValue('PREVIOUS_PLUGIN_MODULES_PATH', oldPath)
+            orchestrator?.setValue('PLUGIN_MODULES_PATH', newPath)
+          } catch (err) {
+            logger.warn(LogCategory.MAIN, '[ModularResourceService] 更新配置失败:', err)
+          }
+        }
+      }
+    )
+
+    if (result.success) {
+      this.oldDirCleanupDismissed = false
+    }
+
+    return result
+  }
+
+  /**
+   * 取消正在进行的目录迁移 (仅在 PRECHECK / STAGING / VERIFYING 生效)
+   */
+  public async cancelDirMigration(): Promise<{
+    cancelled: boolean
+    errorCode?: PluginDirErrorCode
+  }> {
+    return await this.migrationCoordinatorInstance.cancelMigration(this.getBaseDir())
+  }
+
+  /**
+   * 清理历史旧目录残留资产 (Issue 04)
+   *
+   * 两阶段延迟安全清理：
+   * 1. 验证目标目录不是系统目录、不是当前生效根目录、未被未决 Journal 引用；
+   * 2. 计算将释放的磁盘空间；
+   * 3. 重命名为 .deleting-* 隔离；
+   * 4. 异步流式安全删除；
+   * 5. 持久化清空 PREVIOUS_PLUGIN_MODULES_PATH 配置项。
+   */
+  public async cleanupOldPluginDirectory(): Promise<{
+    success: boolean
+    freedBytes: number
+    errorCode?: PluginDirErrorCode
+  }> {
+    this.assertWriteGateAllowed()
+
+    let previousPath: string | undefined
+    try {
+      previousPath = this.getConfigOrchestrator()?.getValue('PREVIOUS_PLUGIN_MODULES_PATH')
+    } catch {}
+
+    if (!previousPath || !previousPath.trim() || !fs.existsSync(previousPath.trim())) {
+      // 已经不存在，将配置清空并返回
+      try {
+        this.getConfigOrchestrator()?.setValue('PREVIOUS_PLUGIN_MODULES_PATH', '')
+      } catch {}
+      return { success: true, freedBytes: 0 }
+    }
+
+    const resolvedOld = path.resolve(previousPath.trim())
+    const currentRoot = this.getPluginsRootDir()
+
+    // 安全检查 1: 绝对不能是系统保护目录或盘符根
+    const parsed = path.parse(resolvedOld)
+    if (parsed.root.toLowerCase() === resolvedOld.toLowerCase()) {
+      throw new ModularResourceError('SYSTEM_DIR_FORBIDDEN', 'Cannot cleanup drive root directory.')
+    }
+
+    // 安全检查 2: 绝对不能是当前激活根目录或其子目录
+    if (isPathEqual(resolvedOld, currentRoot) || isSubPath(currentRoot, resolvedOld)) {
+      throw new ModularResourceError(
+        'SAME_AS_CURRENT',
+        'Cannot cleanup the currently active plugin directory.'
+      )
+    }
+
+    // 统计旧目录体积
+    let freedBytes = 0
+    const calculateDirBytes = (dir: string): void => {
+      try {
+        const list = fs.readdirSync(dir, { withFileTypes: true })
+        for (const item of list) {
+          const full = path.join(dir, item.name)
+          if (item.isDirectory()) {
+            calculateDirBytes(full)
+          } else if (item.isFile()) {
+            try {
+              freedBytes += fs.statSync(full).size
+            } catch {}
+          }
+        }
+      } catch {}
+    }
+    calculateDirBytes(resolvedOld)
+
+    // 两阶段隔离与异步删除
+    const parentDir = path.dirname(resolvedOld)
+    const tombstoneDir = path.join(
+      parentDir,
+      `.deleting-old-modules-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
+    )
+
+    try {
+      fs.renameSync(resolvedOld, tombstoneDir)
+    } catch {
+      // 若无法重命名，直接对原目录异步清理
+    }
+
+    const targetToDelete = fs.existsSync(tombstoneDir) ? tombstoneDir : resolvedOld
+
+    // 异步执行安全删除，不阻塞当前响应
+    setTimeout(() => {
+      try {
+        this.deleteDirectoryFn(targetToDelete).catch(err => {
+          logger.warn(LogCategory.MAIN, '[ModularResourceService] 异步清理旧目录失败:', err)
+        })
+      } catch {}
+    }, 100)
+
+    // 清空 PREVIOUS_PLUGIN_MODULES_PATH 配置
+    try {
+      this.getConfigOrchestrator()?.setValue('PREVIOUS_PLUGIN_MODULES_PATH', '')
+    } catch {}
+
+    return { success: true, freedBytes }
+  }
+
+  /**
+   * 忽略历史旧目录清理提示
+   */
+  public dismissOldDirCleanup(): void {
+    this.oldDirCleanupDismissed = true
+  }
+
+  /**
+   * 是否已忽略旧目录清理提示
+   */
+  public isOldDirCleanupDismissed(): boolean {
+    return this.oldDirCleanupDismissed
+  }
+
+  /**
+   * 测试/自定义目录删除函数注入接缝
+   */
+  public setDeleteDirectoryFn(fn: (dirPath: string) => Promise<boolean>): void {
+    this.deleteDirectoryFn = fn
+  }
+
+  /**
+   * 将相对路径解析为基于 pluginsRootDir 的绝对物理路径（严禁绝对路径或目录穿越）
    */
   public resolvePhysicalPath(targetLocalPath: string): string {
-    if (path.isAbsolute(targetLocalPath)) {
-      return targetLocalPath
-    }
-    return path.join(this.getBaseDir(), targetLocalPath)
+    return resolvePhysicalPath(this.getPluginsRootDir(), targetLocalPath)
   }
 
   /**
@@ -718,6 +1411,40 @@ export class ModularResourceService implements IModularResourceService {
   }
 
   /**
+   * 读取全部资源的 BOM 文件清单定义
+   */
+  public loadResourceBom(): Array<{ name: string; size: number; sha256: string }> {
+    const candidateBomPaths = [
+      path.join(process.cwd(), 'apps/desktop/build/extraResources/configs/resources.bom.json'),
+      path.join(this.getBaseDir(), 'configs', 'resources.bom.json')
+    ]
+    try {
+      if (typeof electronApp !== 'undefined' && electronApp.isPackaged) {
+        candidateBomPaths.unshift(path.join(process.resourcesPath, 'configs', 'resources.bom.json'))
+      }
+    } catch {}
+
+    const results: Array<{ name: string; size: number; sha256: string }> = []
+    for (const bomPath of candidateBomPaths) {
+      if (fs.existsSync(bomPath)) {
+        try {
+          const content = JSON.parse(fs.readFileSync(bomPath, 'utf-8'))
+          const resources = content.resources || {}
+          for (const resKey of Object.keys(resources)) {
+            const files = resources[resKey]?.files
+            if (Array.isArray(files)) {
+              results.push(...files)
+            }
+          }
+          if (results.length > 0) return results
+        } catch {}
+      }
+    }
+
+    return results
+  }
+
+  /**
    * L1 物理探活：检查目标解压目录是否健全
    * 返回 'fast_hit' | 'slow_healed' | 'corrupted' | 'not_found'
    */
@@ -734,53 +1461,35 @@ export class ModularResourceService implements IModularResourceService {
       return 'not_found'
     }
 
-    const expectedSha256 = spec.expected_sha256
-    const sha8 = expectedSha256.slice(0, 8)
-    const readyMarkerPath = path.join(targetAbsDir, `.ready-${sha8}.json`)
-
-    // 1. 快路径：检查 .ready 标记是否存在且内容有效
-    if (fs.existsSync(readyMarkerPath)) {
-      try {
-        const marker = JSON.parse(fs.readFileSync(readyMarkerPath, 'utf-8'))
-        if (
-          marker.version === 1 &&
-          marker.archiveSha256?.toLowerCase() === expectedSha256.toLowerCase() &&
-          Array.isArray(marker.coreFiles) &&
-          marker.coreFiles.length > 0
-        ) {
-          let fastOk = true
-          for (const core of marker.coreFiles) {
-            const p = path.join(targetAbsDir, core.name)
-            if (!fs.existsSync(p)) {
-              fastOk = false
-              break
-            }
-            const st = fs.statSync(p)
-            if (st.size !== core.size) {
-              fastOk = false
-              break
-            }
-            if (core.mtimeMs && Math.abs(st.mtimeMs - core.mtimeMs) > 2000) {
-              // 容差 2s (FAT/跨平台)
-              fastOk = false
-              break
-            }
-          }
-          if (fastOk) {
-            return 'fast_hit'
-          }
+    const sharedSubDir = resolveSharedSubDir(spec.resource_id)
+    const catalogMeta = (
+      BUILTIN_PLUGIN_CATALOG_META as Record<
+        string,
+        {
+          sharedSubDir?: string
+          requiredFileGroups?: readonly (readonly string[])[]
+          minPrimaryFileBytes?: number
         }
-      } catch {
-        // marker 损坏，回退慢路径
+      >
+    )[spec.resource_id]
+
+    // 1. 快路径：校验标准 .ready.json 与特征文件组
+    const marker = await readReadyMarker(targetAbsDir)
+    if (marker && marker.resourceId === spec.resource_id && marker.sharedSubDir === sharedSubDir) {
+      const filesOk = await PluginPathResolver.checkRequiredFileGroupsAsync(
+        targetAbsDir,
+        catalogMeta?.requiredFileGroups,
+        catalogMeta?.minPrimaryFileBytes
+      )
+      if (filesOk) {
+        return 'fast_hit'
       }
     }
 
-    // 2. 慢路径：逐文件流式计算真实 SHA-256
+    // 2. 慢路径：逐文件流式计算真实 SHA-256 并自愈补写标准 .ready.json
     const expectedFiles = this.loadBomFilesForResource(spec.resource_id)
     if (expectedFiles.length > 0) {
       let allFilesOk = true
-      const verifiedList: Array<{ name: string; size: number; mtimeMs: number; sha256: string }> =
-        []
 
       for (const ef of expectedFiles) {
         const p = path.join(targetAbsDir, ef.name)
@@ -798,69 +1507,42 @@ export class ModularResourceService implements IModularResourceService {
           allFilesOk = false
           break
         }
-        verifiedList.push({
-          name: ef.name,
-          size: st.size,
-          mtimeMs: st.mtimeMs,
-          sha256: verifyRes.actualSha256
-        })
       }
 
       if (allFilesOk) {
-        // 原子补写 .ready 标记自愈
         try {
-          const markerContent = {
-            version: 1,
-            assetId: spec.resource_id,
-            archiveSha256: expectedSha256,
-            bomSha256: 'bom_verified',
-            createdAt: new Date().toISOString(),
-            coreFiles: verifiedList
-          }
-          const tmpReady = `${readyMarkerPath}.tmp-${Date.now()}`
-          fs.writeFileSync(tmpReady, JSON.stringify(markerContent, null, 2), 'utf-8')
-          fs.renameSync(tmpReady, readyMarkerPath)
+          await invalidateReadyMarkers(targetAbsDir)
+          await writeReadyMarker(targetAbsDir, {
+            resourceId: spec.resource_id,
+            sharedSubDir
+          })
         } catch {}
         return 'slow_healed'
       } else {
-        // 发现文件损坏或缺失，执行隔离
         await this.isolateCorruptDirectory(targetAbsDir)
         return 'corrupted'
       }
     } else {
-      // 无 BOM 清单的通用/测试资源：若已有 completed 记录且目录非空，补写轻量 .ready 标记放行
+      // 无 BOM 清单的通用/测试资源：若已有 completed 记录且特征文件存在，补写标准 .ready.json 放行
       const task = this.getDao().resources.findByIdSync(spec.resource_id)
+      const filesOk = await PluginPathResolver.checkRequiredFileGroupsAsync(
+        targetAbsDir,
+        catalogMeta?.requiredFileGroups,
+        catalogMeta?.minPrimaryFileBytes
+      )
       if (
+        filesOk &&
         task?.download_state === 'completed' &&
         (!task.expected_sha256 ||
           !task.actual_sha256 ||
           task.actual_sha256.toLowerCase() === task.expected_sha256.toLowerCase())
       ) {
         try {
-          const files = fs
-            .readdirSync(targetAbsDir)
-            .filter(f => !f.startsWith('.'))
-            .map(f => {
-              const p = path.join(targetAbsDir, f)
-              const st = fs.statSync(p)
-              return { name: f, size: st.size, mtimeMs: st.mtimeMs, sha256: '' }
-            })
-          fs.writeFileSync(
-            readyMarkerPath,
-            JSON.stringify(
-              {
-                version: 1,
-                assetId: spec.resource_id,
-                archiveSha256: expectedSha256,
-                bomSha256: 'task_completed_fallback',
-                createdAt: new Date().toISOString(),
-                coreFiles: files
-              },
-              null,
-              2
-            ),
-            'utf-8'
-          )
+          await invalidateReadyMarkers(targetAbsDir)
+          await writeReadyMarker(targetAbsDir, {
+            resourceId: spec.resource_id,
+            sharedSubDir
+          })
         } catch {}
         return 'slow_healed'
       }
@@ -886,7 +1568,7 @@ export class ModularResourceService implements IModularResourceService {
   }
 
   /**
-   * L2 物理探活：探测本地预置包并验证
+   * L2 物理探活：探测本地预置包并验证（优先匹配 presetResources/<resource_id>/<asset_name>，向下兼容平放）
    */
   private async checkL2LocalPresetPreflight(
     spec: CatalogResourceSpec,
@@ -894,7 +1576,6 @@ export class ModularResourceService implements IModularResourceService {
   ): Promise<boolean> {
     const candidateDirs = [
       path.join(process.cwd(), 'apps/desktop/build/presetResources'),
-      path.join(process.cwd(), 'apps/desktop/build/extraResources/models'),
       path.join(this.getBaseDir(), 'presetResources')
     ]
     if (this.customPresetDir) {
@@ -903,66 +1584,60 @@ export class ModularResourceService implements IModularResourceService {
     try {
       if (typeof electronApp !== 'undefined' && electronApp.isPackaged) {
         candidateDirs.unshift(path.join(process.resourcesPath, 'presetResources'))
-        candidateDirs.unshift(path.join(process.resourcesPath, 'models'))
       }
     } catch {}
 
+    const sharedSubDir = resolveSharedSubDir(spec.resource_id)
+
     for (const pDir of candidateDirs) {
-      const zipPath = path.join(pDir, spec.asset_name)
-      if (!fs.existsSync(zipPath)) continue
+      const candidatePaths = [
+        path.join(pDir, spec.resource_id, spec.asset_name),
+        path.join(pDir, spec.asset_name)
+      ]
+      for (const presetPath of candidatePaths) {
+        if (!fs.existsSync(presetPath)) continue
 
-      const cacheKey = `${zipPath}:${spec.expected_sha256}`
-      if (this.corruptedPresetCache.has(cacheKey)) {
-        continue
-      }
+        const cacheKey = `${presetPath}:${spec.expected_sha256}`
+        if (this.corruptedPresetCache.has(cacheKey)) {
+          continue
+        }
 
-      try {
-        const verify = await streamVerifySha256(zipPath, spec.expected_sha256)
-        if (verify.valid) {
-          logger.info(
-            LogCategory.SYSTEM,
-            `[ModularResource] L2 预置包探活命中: ${zipPath}，直接本地解压`
-          )
-          const intentsDir = path.join(this.getBaseDir(), '.intents')
-          await safeExtractZip(zipPath, targetAbsDir, intentsDir)
-
-          // 写入 .ready 标记
-          const sha8 = spec.expected_sha256.slice(0, 8)
-          const readyMarkerPath = path.join(targetAbsDir, `.ready-${sha8}.json`)
-          try {
-            const files = fs
-              .readdirSync(targetAbsDir)
-              .filter(f => !f.startsWith('.'))
-              .map(f => {
-                const fp = path.join(targetAbsDir, f)
-                const st = fs.statSync(fp)
-                return { name: f, size: st.size, mtimeMs: st.mtimeMs, sha256: '' }
-              })
-            fs.writeFileSync(
-              readyMarkerPath,
-              JSON.stringify(
-                {
-                  version: 1,
-                  assetId: spec.resource_id,
-                  archiveSha256: spec.expected_sha256,
-                  bomSha256: 'preset_verified',
-                  createdAt: new Date().toISOString(),
-                  coreFiles: files
-                },
-                null,
-                2
-              ),
-              'utf-8'
+        try {
+          const verify = await streamVerifySha256(presetPath, spec.expected_sha256)
+          if (verify.valid) {
+            logger.info(
+              LogCategory.SYSTEM,
+              `[ModularResource] L2 预置包探活命中: ${presetPath}，本地物化至 ${targetAbsDir}`
             )
-          } catch {}
+            // 物化前先清理目标目录旧 .ready* 标记，防 TOCTOU
+            await invalidateReadyMarkers(targetAbsDir)
 
-          return true
-        } else {
-          // 仅记录内存缓存，严禁向只读目录调用 unlinkSync
+            const lowerAsset = spec.asset_name.toLowerCase()
+            if (lowerAsset.endsWith('.zip') || lowerAsset.endsWith('.ffp')) {
+              const intentsDir = path.join(this.getBaseDir(), '.intents')
+              await safeExtractZip(presetPath, targetAbsDir, intentsDir)
+            } else {
+              await fs.promises.mkdir(targetAbsDir, { recursive: true })
+              const destFile = path.join(targetAbsDir, spec.asset_name)
+              const tmpFile = `${destFile}.tmp-${Date.now()}`
+              await fs.promises.copyFile(presetPath, tmpFile)
+              await renameWithRetry(tmpFile, destFile)
+            }
+
+            // 解压/物化完成后仅向 targetAbsDir (_shared/<sharedSubDir>) 写入标准 .ready.json
+            await writeReadyMarker(targetAbsDir, {
+              resourceId: spec.resource_id,
+              sharedSubDir
+            })
+
+            return true
+          } else {
+            // 仅记录内存缓存，严禁向只读目录调用 unlinkSync
+            this.corruptedPresetCache.set(cacheKey, true)
+          }
+        } catch {
           this.corruptedPresetCache.set(cacheKey, true)
         }
-      } catch (err) {
-        this.corruptedPresetCache.set(cacheKey, true)
       }
     }
 
@@ -970,27 +1645,369 @@ export class ModularResourceService implements IModularResourceService {
   }
 
   /**
-   * 确保默认种子已注入数据库
+   * 同步执行目录元数据更新（确保 DEFAULT_CATALOG_SEEDS 新增模块落地）
    */
   public ensureDefaultSeeds(): void {
-    if (this.seeded) return
-    try {
-      const dao = this.getDao()
-      const existing = dao.modules.listAllSync()
-      if (existing.length === 0) {
+    const dao = this.getDao()
+    const existing = dao.modules.listAllSync()
+    if (!this.seeded || existing.length === 0) {
+      try {
         this.syncCatalogSync(DEFAULT_CATALOG_SEEDS)
+        this.seeded = true
+      } catch (err) {
+        logger.warn(LogCategory.SYSTEM, '[ModularResource] 初始化内置目录种子失败:', err)
       }
-      this.seeded = true
-    } catch (err) {
-      logger.warn(LogCategory.SYSTEM, '[ModularResource] 初始化内置目录种子失败:', err)
     }
   }
 
   /**
+   * 启动期同步绑定与表结构自愈调和 (Spec §2.2.4, §2.6)
+   *
+   * 必须在 `openDatabase()` 之后、`reconcileOnStartup()` 与 `omniService.start()` 之前同步执行：
+   * 1. 单资源粒度原子修复偏离 `deriveTargetLocalPath(id)` 的 `target_local_path`；标注未知资源 `unknown_resource`；
+   * 2. 清理 `OBSOLETE_SHARED_RESOURCE_IDS` (`sherpa-onnx-runtime`) 绑定与目录；
+   * 3. 补齐 `BUILTIN_MODULE_CATALOG_META` 缺失绑定（含存量 `engine_classic_light` 补绑 `mobile-clip` 并保活）；
+   * 4. 校验 `ux_exclusive_active_slot` SQL 白名单与 `EXCLUSIVE_CAPABILITY_SLOTS` 双向一致性。
+   */
+  public reconcileBuiltinModuleBindingsSync(): {
+    repairedPaths: string[]
+    failedRepairs: string[]
+    removedObsolete: string[]
+    backfilledBindings: Array<{ moduleId: string; resourceId: string }>
+    schemaIndexDriftDetected: boolean
+  } {
+    const db = this.getDb()
+    const dao = this.getDao()
+    const pluginsRootDir = this.getPluginsRootDir()
+
+    this.repairPendingResources.clear()
+    this.unknownResources.clear()
+    this.deferredBackfillResources.clear()
+    this.schemaIndexDriftDetected = false
+
+    // 若主表读取即抛出 DB 级致命异常，直接上抛阻断 Omni 启动
+    dao.modules.listAllSync()
+    this.ensureDefaultSeeds()
+
+    const repairedPaths: string[] = []
+    const failedRepairs: string[] = []
+    const removedObsolete: string[] = []
+    const backfilledBindings: Array<{ moduleId: string; resourceId: string }> = []
+
+    // 1. 单资源粒度修复偏离 canonical 的 target_local_path，隔离未知资源与单点失败
+    const allResources = dao.resources.listAllSync()
+    for (const res of allResources) {
+      const canonicalPath = deriveTargetLocalPath(res.resource_id)
+      if (canonicalPath) {
+        if (res.target_local_path !== canonicalPath) {
+          try {
+            logger.info(
+              LogCategory.SYSTEM,
+              '[ModularResource] 修复偏离 SSOT 的 target_local_path',
+              {
+                resourceId: res.resource_id,
+                oldTargetLocalPath: res.target_local_path,
+                canonicalPath
+              }
+            )
+            const singleTx = db.transaction(() => {
+              dao.resources.updateTargetLocalPathSync(res.resource_id, canonicalPath)
+            })
+            singleTx()
+            const verified = dao.resources.findByIdSync(res.resource_id)
+            if (!verified || verified.target_local_path !== canonicalPath) {
+              throw new Error(`post-write verify failed for ${res.resource_id}`)
+            }
+            repairedPaths.push(res.resource_id)
+          } catch (err: any) {
+            const msg = err?.message || String(err)
+            logger.error(
+              LogCategory.SYSTEM,
+              `[ModularResource] 单资源 target_local_path 自愈失败，转入 pending_repair: ${res.resource_id}`,
+              err
+            )
+            this.repairPendingResources.add(res.resource_id)
+            this.fastReadySnapshot.set(res.resource_id, {
+              resourceId: res.resource_id,
+              sharedSubDir: resolveSharedSubDir(res.resource_id),
+              physicalDir: null,
+              status: 'pending_repair',
+              validationLevel: 'full',
+              reason: msg,
+              checkedAt: Date.now()
+            })
+            failedRepairs.push(res.resource_id)
+          }
+        }
+      } else {
+        this.unknownResources.add(res.resource_id)
+        try {
+          resolvePhysicalPath(pluginsRootDir, res.target_local_path)
+        } catch (err: any) {
+          logger.error(
+            LogCategory.SYSTEM,
+            `[ModularResource] 未知资源存在非法相对路径，标记 pending_repair 并拒绝挂载: ${res.resource_id}`,
+            err
+          )
+          this.repairPendingResources.add(res.resource_id)
+          this.fastReadySnapshot.set(res.resource_id, {
+            resourceId: res.resource_id,
+            sharedSubDir: res.resource_id,
+            physicalDir: null,
+            status: 'unknown_resource',
+            validationLevel: 'full',
+            reason: err?.message || 'invalid_unknown_resource_path',
+            checkedAt: Date.now()
+          })
+          failedRepairs.push(res.resource_id)
+        }
+      }
+    }
+
+    // 2. 清理遗留废弃资源绑定与物理目录（例如 sherpa-onnx-runtime）
+    for (const obsoleteId of OBSOLETE_SHARED_RESOURCE_IDS) {
+      try {
+        const refRows = db
+          .prepare('SELECT module_id FROM module_resource_downloads WHERE resource_id = ?')
+          .all(obsoleteId) as Array<{ module_id: string }>
+        const targetModules = new Set([
+          'asr_sensevoice_onnx',
+          'tts_moss_onnx',
+          ...refRows.map(r => r.module_id)
+        ])
+
+        const cleanTx = db.transaction(() => {
+          for (const modId of targetModules) {
+            dao.resources.unbindResourceFromModuleSync(modId, obsoleteId)
+            const catMeta = BUILTIN_MODULE_CATALOG_META[modId]
+            if (catMeta) {
+              const totalBytes = computeModuleTotalBytes(catMeta.resourceIds)
+              dao.modules.updateTotalBytesAndMetaSync(modId, totalBytes)
+            }
+          }
+          if (dao.resources.getResourceActiveRefCountSync(obsoleteId) === 0) {
+            db.prepare('DELETE FROM resource_downloads WHERE resource_id = ?').run(obsoleteId)
+          }
+        })
+        cleanTx()
+
+        if (refRows.length > 0) {
+          removedObsolete.push(obsoleteId)
+        }
+
+        // 原子隔离 _shared/<obsoleteId> -> _shared/.deleting-<ts>-sherpa
+        const sharedDir = PluginPathResolver.getSharedDirForRoot(pluginsRootDir)
+        const legacyPhysical = path.join(sharedDir, obsoleteId)
+        if (fs.existsSync(legacyPhysical)) {
+          const suffix = obsoleteId.includes('sherpa') ? 'sherpa' : obsoleteId
+          const tombstoneDir = path.join(sharedDir, `.deleting-${Date.now()}-${suffix}`)
+          try {
+            fs.renameSync(legacyPhysical, tombstoneDir)
+          } catch (renameErr) {
+            logger.warn(
+              LogCategory.SYSTEM,
+              `[ModularResource] 重命名废弃目录 ${legacyPhysical} 失败:`,
+              renameErr
+            )
+          }
+        }
+      } catch (err) {
+        logger.error(LogCategory.SYSTEM, `[ModularResource] 清理废弃资源 ${obsoleteId} 失败:`, err)
+      }
+    }
+
+    // 3. 补齐 catalog 已知模块资源绑定（含 engine_classic_light -> mobile-clip）并刷新 total_bytes
+    for (const [modId, meta] of Object.entries(BUILTIN_MODULE_CATALOG_META)) {
+      const modRow = dao.modules.findByIdSync(modId)
+      if (!modRow) continue
+
+      try {
+        const expectedTotalBytes = computeModuleTotalBytes(meta.resourceIds)
+        const resourceSpecs = meta.resourceIds.map(buildResourceSpecFromCatalog)
+        let parsedMeta: Record<string, unknown> = {}
+        if (modRow.catalog_meta_json) {
+          try {
+            parsedMeta = JSON.parse(modRow.catalog_meta_json)
+          } catch {
+            parsedMeta = {}
+          }
+        }
+        const existingResources = dao.resources.findResourcesByModuleSync(modId)
+        const existingIds = new Set(existingResources.map(r => r.resource_id))
+        const missingIds = meta.resourceIds.filter(id => !existingIds.has(id))
+
+        if (
+          modRow.total_bytes !== expectedTotalBytes ||
+          missingIds.length > 0 ||
+          !Array.isArray(parsedMeta.resources) ||
+          parsedMeta.resources.length !== resourceSpecs.length
+        ) {
+          const updatedMeta = { ...parsedMeta, resources: resourceSpecs }
+          dao.modules.updateTotalBytesAndMetaSync(
+            modId,
+            expectedTotalBytes,
+            JSON.stringify(updatedMeta)
+          )
+        }
+
+        for (const resId of missingIds) {
+          const resMeta = BUILTIN_PLUGIN_CATALOG_META[resId]
+          const spec = buildResourceSpecFromCatalog(resId)
+          const physicallyReady =
+            PluginPathResolver.getReadySharedResourceDirForRoot(
+              pluginsRootDir,
+              resMeta.sharedSubDir,
+              {
+                requiredFileGroups: resMeta.requiredFileGroups,
+                minPrimaryFileBytes: resMeta.minPrimaryFileBytes
+              }
+            ) !== null
+          const initialState = physicallyReady ? 'completed' : 'pending'
+
+          const bindTx = db.transaction(() => {
+            const task = dao.resources.createOrGetTaskSync({
+              resource_id: spec.resource_id,
+              asset_name: spec.asset_name,
+              target_local_path: spec.target_local_path,
+              active_source_key: spec.active_source_key,
+              active_url: spec.active_url,
+              expected_bytes: spec.expected_bytes,
+              expected_sha256: spec.expected_sha256,
+              download_state: initialState
+            })
+            if (physicallyReady && task.download_state !== 'completed') {
+              dao.resources.updateProgressSync(resId, spec.expected_bytes, 'completed')
+              dao.resources.markVerifiedSync(resId, true, spec.expected_sha256)
+            }
+            dao.resources.bindResourceToModuleSync(modId, resId)
+          })
+          bindTx()
+
+          backfilledBindings.push({ moduleId: modId, resourceId: resId })
+
+          if (
+            !physicallyReady &&
+            modId === 'engine_classic_light' &&
+            resId === 'mobile-clip' &&
+            (modRow.install_state === 'active' || modRow.install_state === 'installed_inactive')
+          ) {
+            this.deferredBackfillResources.add(resId)
+          }
+        }
+      } catch (err) {
+        logger.error(LogCategory.SYSTEM, `[ModularResource] 补齐模块绑定失败: ${modId}`, err)
+      }
+    }
+
+    // 4. 双向校验 ux_exclusive_active_slot SQL 白名单与 EXCLUSIVE_CAPABILITY_SLOTS ([ISS-01])
+    try {
+      const activeNonMulti = db
+        .prepare(
+          "SELECT id, capability_slot, slot_policy FROM builtin_modules WHERE install_state = 'active' AND slot_policy != 'multi_active'"
+        )
+        .all() as Array<{ id: string; capability_slot: string; slot_policy: string }>
+
+      for (const row of activeNonMulti) {
+        if (!isExclusiveCapabilitySlot(row.capability_slot)) {
+          logger.error(
+            LogCategory.SYSTEM,
+            `[ModularResource] 运行态槽位契约违规: 模块 ${row.id} (slot_policy=${row.slot_policy}) 的 capability_slot="${row.capability_slot}" 未在 EXCLUSIVE_CAPABILITY_SLOTS 中注册`
+          )
+        }
+      }
+
+      const idxRow = db
+        .prepare(
+          "SELECT sql FROM sqlite_master WHERE type = 'index' AND name = 'ux_exclusive_active_slot'"
+        )
+        .get() as { sql?: string } | undefined
+
+      if (idxRow?.sql) {
+        const sqlSlots = new Set(parseExclusiveSlotsFromIndexSql(idxRow.sql))
+        const missingFromIndex = EXCLUSIVE_CAPABILITY_SLOTS.filter(slot => !sqlSlots.has(slot))
+        if (missingFromIndex.length > 0) {
+          this.schemaIndexDriftDetected = true
+          logger.error(
+            LogCategory.SYSTEM,
+            `[ModularResource] 检测到创世索引定义过期 (ux_exclusive_active_slot 缺少槽位: ${missingFromIndex.join(', ')})，请删除开发库重建`,
+            { missingFromIndex }
+          )
+        }
+      }
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[ModularResource] 校验唯一索引白名单失败:', err)
+    }
+
+    return {
+      repairedPaths,
+      failedRepairs,
+      removedObsolete,
+      backfilledBindings,
+      schemaIndexDriftDetected: this.schemaIndexDriftDetected
+    }
+  }
+
+  /**
+   * 为 engine_classic_light 保活场景判断除可选同伴 mobile-clip 外其余核心资产是否就绪
+   */
+  private isClassicEngineCoreReady(boundResources: ResourceDownloadRecord[]): boolean {
+    const coreIds = ['bekko-a8m', 'chinese-clip']
+    return coreIds.every(coreId => {
+      const res = boundResources.find(r => r.resource_id === coreId)
+      if (!res || res.download_state !== 'completed') return false
+      try {
+        const abs = this.resolvePhysicalPath(res.target_local_path)
+        return fs.existsSync(abs)
+      } catch {
+        return false
+      }
+    })
+  }
+
+  /**
+   * 后台静默补下载伴随资源（如存量 engine_classic_light 缺失的 mobile-clip），完成后热刷新挂载
+   */
+  private triggerCompanionBackfill(moduleId: string, resourceId: BuiltinSharedResourceId): void {
+    if (process.env.NODE_ENV === 'test' || process.env.VITEST) {
+      return
+    }
+    const dao = this.getDao()
+    const task = dao.resources.findByIdSync(resourceId)
+    if (!task || task.download_state === 'completed') return
+    if (this.inFlightResources.has(resourceId)) return
+
+    const spec = buildResourceSpecFromCatalog(resourceId)
+    const flight = this.downloadAndInstallSingleResource(moduleId, task, spec)
+      .then(async () => {
+        const mod = dao.modules.findByIdSync(moduleId)
+        if (mod?.install_state === 'active') {
+          await this.notifyRuntimePluginTopologyChanged({
+            moduleId,
+            reason: 'companion_backfill',
+            restartPolicy: 'restart'
+          })
+        }
+      })
+      .catch(err => {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[ModularResource] 伴随资源后台补齐失败 (${moduleId}/${resourceId}):`,
+          err
+        )
+      })
+      .finally(() => {
+        this.inFlightResources.delete(resourceId)
+      })
+
+    this.inFlightResources.set(resourceId, flight)
+  }
+
+  /**
    * 启动期自愈与孤儿清理：
-   * 1. 扫描清理遗留的 .tmp-* 与 .deleting_* / .deleting-* 孤儿目录；
+   * 1. 扫描清理遗留的 .tmp-* / .deleting-* / 历史 .tombstone-* 与陈旧 active-mounts-*.json；
    * 2. 清理此前被标记为 pending_delete 且已无模块引用的资源目录与记录；
-   * 3. 对账 builtin_modules 与 resource_downloads：若标记为已安装/已完成但磁盘目录缺失，自动回退状态。
+   * 3. 对账 builtin_modules 与 resource_downloads：保障单资源故障隔离与 engine_classic_light 保活；
+   * 4. 执行 OfflinePackage/StartupReconciler 离线自愈。
    */
   async reconcileOnStartup(): Promise<{
     cleanedTombstones: number
@@ -998,59 +2015,143 @@ export class ModularResourceService implements IModularResourceService {
     resetDownloads: string[]
   }> {
     const baseDir = this.getBaseDir()
-    const sharedDir = path.join(baseDir, 'modules', '_shared')
-    const modulesDir = path.join(baseDir, 'modules')
+    const pluginsRootDir = this.getPluginsRootDir()
+    const sharedDir = PluginPathResolver.getSharedDirForRoot(pluginsRootDir)
+
+    // 外置慢盘/磁盘不可达时，执行 0ms 保护性短路，严禁破坏性清扫与退档数据库状态
+    const parsedRoot = path.parse(pluginsRootDir)
+    const rootDriveAvailable = !parsedRoot.root || fs.existsSync(parsedRoot.root)
+    if (!rootDriveAvailable) {
+      this.rootUnavailable = true
+      this.fastReadySnapshot.clear()
+      logger.error(
+        LogCategory.SYSTEM,
+        `[ModularResource] 插件根目录磁盘不可达，保护性跳过清扫并将挂载置空: ${pluginsRootDir}`
+      )
+      return {
+        cleanedTombstones: 0,
+        resetModules: [],
+        resetDownloads: []
+      }
+    }
+    this.rootUnavailable = false
 
     let cleanedTombstones = 0
     cleanedTombstones += await cleanOrphanTombstones(baseDir)
-    cleanedTombstones += await cleanOrphanTombstones(modulesDir)
+    cleanedTombstones += await cleanOrphanTombstones(pluginsRootDir)
     cleanedTombstones += await cleanOrphanTombstones(sharedDir)
-    cleanedTombstones += await this.tombstoneGC.reconcileOnStartup([baseDir, modulesDir, sharedDir])
+    cleanedTombstones += await this.tombstoneGC.reconcileOnStartup([
+      baseDir,
+      pluginsRootDir,
+      sharedDir
+    ])
+
+    // 清理应用异常退出残留的 active-mounts-*.json 清单文件
+    const runDir = path.join(baseDir, 'run')
+    if (fs.existsSync(runDir)) {
+      try {
+        for (const f of fs.readdirSync(runDir)) {
+          if (f.startsWith('active-mounts-') && f.endsWith('.json')) {
+            try {
+              fs.unlinkSync(path.join(runDir, f))
+              cleanedTombstones++
+            } catch {}
+          }
+        }
+      } catch {}
+    }
 
     // B4: 扫描并自愈由于杀软占用或断电未完成的目录切换意图日志
     const intentsDir = path.join(baseDir, '.intents')
     await reconcileDirSwitchIntents(intentsDir)
 
+    // 自愈未完成的插件根目录大迁移意图日志 (Issue 03)
+    cleanedTombstones += await this.migrationCoordinatorInstance.reconcileOnStartup(
+      baseDir,
+      this.getCommittedPluginsRootDir()
+    )
+
     const dao = this.getDao()
     const resetDownloads: string[] = []
     const resetModules: string[] = []
 
-    // 1. 对账物理资源记录
+    // 1. 单资源隔离对账物理资源记录
     const allResources = dao.resources.listAllSync()
     for (const res of allResources) {
-      const targetAbsPath = this.resolvePhysicalPath(res.target_local_path)
-
-      if (res.download_state === 'pending_delete') {
-        const refCount = dao.resources.getResourceActiveRefCountSync(res.resource_id)
-        if (refCount === 0) {
-          const deleted = await this.deleteDirectoryFn(targetAbsPath)
-          if (deleted) {
-            dao.resources.deleteResourceSync(res.resource_id)
-            cleanedTombstones++
-          }
-        }
+      if (this.repairPendingResources.has(res.resource_id)) {
         continue
       }
 
-      if (res.download_state === 'completed' || res.download_state === 'downloading') {
-        const exists = fs.existsSync(targetAbsPath)
-        if (!exists) {
-          const archivePath = this.resolveDownloadArchivePath(res.resource_id, res.asset_name)
-          const partPath = `${archivePath}.part`
-          if (fs.existsSync(partPath)) {
-            const partSize = fs.statSync(partPath).size
-            dao.resources.updateProgressSync(res.resource_id, partSize, 'paused')
-          } else {
-            dao.resources.updateProgressSync(res.resource_id, 0, 'pending')
+      let targetAbsPath: string
+      try {
+        targetAbsPath = this.resolvePhysicalPath(res.target_local_path)
+      } catch (pathErr: any) {
+        logger.error(
+          LogCategory.SYSTEM,
+          `[ModularResource] 对账阶段检测到非法路径，标为 pending_repair: ${res.resource_id}`,
+          pathErr
+        )
+        this.repairPendingResources.add(res.resource_id)
+        this.fastReadySnapshot.set(res.resource_id, {
+          resourceId: res.resource_id,
+          sharedSubDir: resolveSharedSubDir(res.resource_id),
+          physicalDir: null,
+          status: 'pending_repair',
+          validationLevel: 'full',
+          reason: pathErr?.message || 'invalid_target_local_path',
+          checkedAt: Date.now()
+        })
+        continue
+      }
+
+      try {
+        if (res.download_state === 'pending_delete') {
+          const refCount = dao.resources.getResourceActiveRefCountSync(res.resource_id)
+          if (refCount === 0) {
+            const deleted = await this.deleteDirectoryFn(targetAbsPath)
+            if (deleted) {
+              dao.resources.deleteResourceSync(res.resource_id)
+              cleanedTombstones++
+            }
           }
-          resetDownloads.push(res.resource_id)
+          continue
         }
-      } else {
-        // 逆向自愈收录 (AC-3)：若未标记 completed 但物理目标目录完整存在且非空，自动逆向收录为 completed
-        if (fs.existsSync(targetAbsPath)) {
-          try {
+
+        if (res.download_state === 'completed' || res.download_state === 'downloading') {
+          const exists = fs.existsSync(targetAbsPath)
+          if (!exists) {
+            const archivePath = this.resolveDownloadArchivePath(res.resource_id, res.asset_name)
+            const partPath = `${archivePath}.part`
+            if (fs.existsSync(partPath)) {
+              const partSize = fs.statSync(partPath).size
+              dao.resources.updateProgressSync(res.resource_id, partSize, 'paused')
+            } else {
+              dao.resources.updateProgressSync(res.resource_id, 0, 'pending')
+            }
+            resetDownloads.push(res.resource_id)
+          }
+        } else {
+          // 逆向自愈收录：若未标记 completed 但物理目录完整存在（有 .ready 标记或有效文件组），自动逆向收录为 completed
+          if (fs.existsSync(targetAbsPath)) {
             const files = fs.readdirSync(targetAbsPath)
-            if (files.length > 0) {
+            const nonHidden = files.filter(f => !f.startsWith('.'))
+            const catalogMeta = (
+              BUILTIN_PLUGIN_CATALOG_META as Record<
+                string,
+                {
+                  requiredFileGroups?: readonly (readonly string[])[]
+                  minPrimaryFileBytes?: number
+                }
+              >
+            )[res.resource_id]
+            const filesValid = catalogMeta
+              ? PluginPathResolver.checkRequiredFileGroupsSync(
+                  targetAbsPath,
+                  catalogMeta.requiredFileGroups,
+                  catalogMeta.minPrimaryFileBytes
+                )
+              : nonHidden.length > 0
+            if (filesValid && (hasAnyReadyMarkerFile(files) || nonHidden.length > 0)) {
               dao.resources.markVerifiedSync(
                 res.resource_id,
                 true,
@@ -1058,12 +2159,28 @@ export class ModularResourceService implements IModularResourceService {
               )
               cleanedTombstones++
             }
-          } catch {}
+          }
         }
+      } catch (resErr: any) {
+        logger.error(
+          LogCategory.SYSTEM,
+          `[ModularResource] 单资源启动对账失败，隔离为 pending_repair: ${res.resource_id}`,
+          resErr
+        )
+        this.repairPendingResources.add(res.resource_id)
+        this.fastReadySnapshot.set(res.resource_id, {
+          resourceId: res.resource_id,
+          sharedSubDir: resolveSharedSubDir(res.resource_id),
+          physicalDir: null,
+          status: 'pending_repair',
+          validationLevel: 'full',
+          reason: resErr?.message || String(resErr),
+          checkedAt: Date.now()
+        })
       }
     }
 
-    // 2. 对账模块状态
+    // 2. 对账模块状态（严守 engine_classic_light 对 mobile-clip 缺失的业务连续性保活）
     const allModules = dao.modules.listAllSync()
     for (const mod of allModules) {
       if (
@@ -1073,18 +2190,39 @@ export class ModularResourceService implements IModularResourceService {
       ) {
         const boundResources = dao.resources.findResourcesByModuleSync(mod.id)
         let missingPhysical = false
+        let needsClassicMobileClipBackfill = false
 
         if (mod.install_path) {
-          const modAbsPath = this.resolvePhysicalPath(mod.install_path)
-          if (!fs.existsSync(modAbsPath)) {
+          try {
+            const modAbsPath = this.resolvePhysicalPath(mod.install_path)
+            if (!fs.existsSync(modAbsPath)) {
+              missingPhysical = true
+            }
+          } catch {
             missingPhysical = true
           }
         }
 
         if (boundResources.length > 0) {
+          const coreReadyForClassic =
+            mod.id === 'engine_classic_light' &&
+            (mod.install_state === 'active' || mod.install_state === 'installed_inactive') &&
+            this.isClassicEngineCoreReady(boundResources)
+
           for (const res of boundResources) {
-            const resAbsPath = this.resolvePhysicalPath(res.target_local_path)
-            if (res.download_state !== 'completed' || !fs.existsSync(resAbsPath)) {
+            let resExists = false
+            try {
+              const resAbsPath = this.resolvePhysicalPath(res.target_local_path)
+              resExists = fs.existsSync(resAbsPath)
+            } catch {
+              resExists = false
+            }
+
+            if (res.download_state !== 'completed' || !resExists) {
+              if (res.resource_id === 'mobile-clip' && coreReadyForClassic) {
+                needsClassicMobileClipBackfill = true
+                continue
+              }
               missingPhysical = true
               break
             }
@@ -1096,8 +2234,29 @@ export class ModularResourceService implements IModularResourceService {
         if (missingPhysical) {
           dao.modules.updateInstallStateSync(mod.id, 'not_installed')
           resetModules.push(mod.id)
+        } else if (needsClassicMobileClipBackfill) {
+          this.deferredBackfillResources.add('mobile-clip')
+          this.triggerCompanionBackfill('engine_classic_light', 'mobile-clip')
         }
       }
+    }
+
+    // 3. 启动期离线总包两阶段对账自愈与后台 Dry-Run 校验队列
+    try {
+      const { StartupReconciler } = await import('../modular-resource/startup-reconciler')
+      const { OfflinePackageDao } = await import('../modular-resource/offline-package-dao')
+      const db = this.getDb()
+      const offlineDao = new OfflinePackageDao(db)
+      const isTestEnv = process.env.NODE_ENV === 'test' || Boolean(process.env.VITEST)
+      await StartupReconciler.reconcileOnStartup({
+        baseDir,
+        pluginsRootDir,
+        dao: offlineDao,
+        db,
+        skipDeferredQueue: isTestEnv
+      })
+    } catch (reconcileErr) {
+      logger.warn(LogCategory.SYSTEM, '[ModularResource] 离线总包冷启动对账自愈异常:', reconcileErr)
     }
 
     return {
@@ -1105,6 +2264,638 @@ export class ModularResourceService implements IModularResourceService {
       resetModules,
       resetDownloads
     }
+  }
+
+  /**
+   * 冷启动纯异步快路径门禁 Barrier (Spec §2.3.4, §2.6)
+   * - 严禁 `fs.*Sync` 阻塞事件循环，并发上限 4，Promise.race 预算默认 200ms
+   * - 产出 `ready_fast` / `legacy_heal` / `pending_repair` / `pending_validation` 四态快照
+   * - `pending_validation` 与 `pending_repair` 严禁进入挂载清单
+   */
+  public async runFastReadyBarrier(timeoutMs = 200): Promise<FastReadyBarrierResult> {
+    const startMs = Date.now()
+    if (this.rootUnavailable) {
+      this.fastReadySnapshot.clear()
+      return {
+        rootStatus: 'unavailable',
+        readyResources: [],
+        legacyHealResources: [],
+        pendingValidationResources: [],
+        pendingRepairResources: [],
+        timedOut: false,
+        elapsedMs: 0
+      }
+    }
+
+    const dao = this.getDao()
+    const pluginsRootDir = this.getPluginsRootDir()
+    const activeModules = dao.modules.findActiveSync()
+    const activeResourceMap = new Map<string, ResourceDownloadRecord>()
+
+    for (const mod of activeModules) {
+      const bound = dao.resources.findResourcesByModuleSync(mod.id)
+      for (const res of bound) {
+        if (res.download_state !== 'pending_delete' && !activeResourceMap.has(res.resource_id)) {
+          activeResourceMap.set(res.resource_id, res)
+        }
+      }
+    }
+
+    const items = Array.from(activeResourceMap.values())
+    const settled = new Map<string, ResourceValidationEntry>()
+    const legacyUpgradeTargets = new Set<string>()
+    const latePromises: Array<Promise<void>> = []
+
+    const probeSingleResource = async (res: ResourceDownloadRecord): Promise<void> => {
+      const sharedSubDir = resolveSharedSubDir(res.resource_id)
+      const now = Date.now()
+
+      if (this.repairPendingResources.has(res.resource_id)) {
+        const existingDiag = this.fastReadySnapshot.get(res.resource_id)
+        settled.set(res.resource_id, {
+          resourceId: res.resource_id,
+          sharedSubDir,
+          physicalDir: null,
+          status:
+            existingDiag?.status === 'unknown_resource' ? 'unknown_resource' : 'pending_repair',
+          validationLevel: 'full',
+          reason: existingDiag?.reason ?? 'repair_pending',
+          checkedAt: now
+        })
+        return
+      }
+
+      const catalogMeta = (
+        BUILTIN_PLUGIN_CATALOG_META as Record<
+          string,
+          {
+            sharedSubDir: string
+            requiredFileGroups: readonly (readonly string[])[]
+            minPrimaryFileBytes?: number
+          }
+        >
+      )[res.resource_id]
+
+      // 读层路径防越权校验 (Fail-Closed)
+      let targetDir: string
+      try {
+        targetDir = resolvePhysicalPath(pluginsRootDir, res.target_local_path)
+      } catch (err: any) {
+        logger.error(
+          LogCategory.SYSTEM,
+          `[ModularResource] 快路径发现越权或非法 target_local_path，拒绝挂载: ${res.resource_id}`,
+          err
+        )
+        settled.set(res.resource_id, {
+          resourceId: res.resource_id,
+          sharedSubDir,
+          physicalDir: null,
+          status: 'pending_repair',
+          validationLevel: 'full',
+          reason: err?.message || 'invalid_target_local_path',
+          checkedAt: now
+        })
+        return
+      }
+
+      if (this.unknownResources.has(res.resource_id)) {
+        settled.set(res.resource_id, {
+          resourceId: res.resource_id,
+          sharedSubDir,
+          physicalDir: null,
+          status: 'unknown_resource',
+          validationLevel: 'full',
+          reason: 'unknown_resource',
+          checkedAt: now
+        })
+        return
+      }
+
+      try {
+        const st = await fs.promises.lstat(targetDir)
+        if (st.isSymbolicLink() || !st.isDirectory()) {
+          settled.set(res.resource_id, {
+            resourceId: res.resource_id,
+            sharedSubDir,
+            physicalDir: null,
+            status: 'pending_repair',
+            validationLevel: 'full',
+            reason: 'target_not_directory_or_symlink',
+            checkedAt: now
+          })
+          return
+        }
+
+        const marker = await readReadyMarker(targetDir)
+        const filesOk = await PluginPathResolver.checkRequiredFileGroupsAsync(
+          targetDir,
+          catalogMeta?.requiredFileGroups,
+          catalogMeta?.minPrimaryFileBytes ?? 1
+        )
+
+        // 分支 1: ready_fast
+        if (
+          marker &&
+          marker.resourceId === res.resource_id &&
+          marker.sharedSubDir === sharedSubDir &&
+          filesOk
+        ) {
+          settled.set(res.resource_id, {
+            resourceId: res.resource_id,
+            sharedSubDir,
+            physicalDir: targetDir,
+            status: 'ready_fast',
+            validationLevel: 'full',
+            checkedAt: Date.now()
+          })
+          return
+        }
+
+        // 分支 2: legacy_heal (.ready.json 缺失但特征文件存在且满足字节阈值 -> 临时 marker + 后台升级正式 .ready.json)
+        if (!marker && filesOk) {
+          try {
+            const tmpPath = path.join(
+              targetDir,
+              `${LEGACY_HEAL_MARKER_FILENAME}.tmp-${process.pid}-${Date.now()}`
+            )
+            const legacyPayload = JSON.stringify(
+              {
+                version: 1,
+                validationLevel: 'legacy',
+                resourceId: res.resource_id,
+                sharedSubDir,
+                generatedAt: new Date().toISOString()
+              },
+              null,
+              2
+            )
+            await fs.promises.writeFile(tmpPath, legacyPayload, 'utf-8')
+            await fs.promises.rename(tmpPath, path.join(targetDir, LEGACY_HEAL_MARKER_FILENAME))
+          } catch {}
+          legacyUpgradeTargets.add(res.resource_id)
+          settled.set(res.resource_id, {
+            resourceId: res.resource_id,
+            sharedSubDir,
+            physicalDir: targetDir,
+            status: 'legacy_heal',
+            validationLevel: 'legacy',
+            reason: 'missing_ready_marker_legacy_healed',
+            checkedAt: Date.now()
+          })
+          return
+        }
+
+        // 分支 3: pending_repair
+        settled.set(res.resource_id, {
+          resourceId: res.resource_id,
+          sharedSubDir,
+          physicalDir: null,
+          status: 'pending_repair',
+          validationLevel: 'full',
+          reason: !filesOk ? 'required_files_missing_or_truncated' : 'ready_marker_mismatch',
+          checkedAt: Date.now()
+        })
+      } catch (err: any) {
+        settled.set(res.resource_id, {
+          resourceId: res.resource_id,
+          sharedSubDir,
+          physicalDir: null,
+          status: 'pending_repair',
+          validationLevel: 'full',
+          reason: err?.code || err?.message || 'probe_io_error',
+          checkedAt: Date.now()
+        })
+      }
+    }
+
+    // 并发上限 4 的异步执行池
+    const concurrency = 4
+    let cursor = 0
+    const workers = Array.from({ length: Math.min(concurrency, items.length) }, async () => {
+      while (cursor < items.length) {
+        const idx = cursor++
+        const res = items[idx]
+        const p = probeSingleResource(res)
+        latePromises.push(p)
+        await p
+      }
+    })
+    const allWorkPromise = Promise.all(workers).then(() => false)
+
+    let timerHandle: NodeJS.Timeout | null = null
+    let timedOut = false
+    if (items.length > 0 && Number.isFinite(timeoutMs) && timeoutMs > 0) {
+      const timeoutPromise = new Promise<boolean>(resolve => {
+        timerHandle = setTimeout(() => resolve(true), timeoutMs)
+        timerHandle.unref?.()
+      })
+      timedOut = await Promise.race([allWorkPromise, timeoutPromise])
+      if (timerHandle) {
+        clearTimeout(timerHandle)
+        timerHandle = null
+      }
+    } else {
+      await allWorkPromise
+    }
+
+    const readyResources: ResourceValidationEntry[] = []
+    const legacyHealResources: ResourceValidationEntry[] = []
+    const pendingValidationResources: ResourceValidationEntry[] = []
+    const pendingRepairResources: ResourceValidationEntry[] = []
+
+    const delayedIds: string[] = []
+
+    for (const res of items) {
+      const entry = settled.get(res.resource_id)
+      if (entry) {
+        this.fastReadySnapshot.set(res.resource_id, entry)
+        if (entry.status === 'ready_fast') {
+          readyResources.push(entry)
+        } else if (entry.status === 'legacy_heal') {
+          legacyHealResources.push(entry)
+        } else if (entry.status === 'pending_repair' || entry.status === 'unknown_resource') {
+          pendingRepairResources.push(entry)
+        } else {
+          pendingValidationResources.push(entry)
+        }
+      } else {
+        // 分支 4: 超出预算落入 pending_validation（绝不写入首轮挂载清单，UI 呈「正在校验插件」）
+        const pendingEntry: ResourceValidationEntry = {
+          resourceId: res.resource_id,
+          sharedSubDir: resolveSharedSubDir(res.resource_id),
+          physicalDir: null,
+          status: 'pending_validation',
+          validationLevel: 'full',
+          reason: 'fast_barrier_timeout',
+          checkedAt: Date.now()
+        }
+        this.fastReadySnapshot.set(res.resource_id, pendingEntry)
+        pendingValidationResources.push(pendingEntry)
+        delayedIds.push(res.resource_id)
+      }
+    }
+
+    // 对 legacy_heal 或超时转入 pending_validation 的资产，后台无感计算全量校验与热刷新
+    if (legacyUpgradeTargets.size > 0 || delayedIds.length > 0) {
+      const targets = new Set([...legacyUpgradeTargets, ...delayedIds])
+      if (delayedIds.length > 0) {
+        allWorkPromise
+          .catch(() => {})
+          .then(() => {
+            this.scheduleBackgroundFullVerification(Array.from(targets), 10)
+          })
+      } else {
+        this.scheduleBackgroundFullVerification(Array.from(targets), 50)
+      }
+    }
+
+    return {
+      rootStatus: 'ready',
+      readyResources,
+      legacyHealResources,
+      pendingValidationResources,
+      pendingRepairResources,
+      timedOut,
+      elapsedMs: Date.now() - startMs
+    }
+  }
+
+  /**
+   * 后台全量验证与 `.ready.json` 平滑升级调度器：
+   * - 校验 BOM 文件 SHA-256 或生成完整目录内容摘要写入正式 `.ready.json`
+   * - 发现损坏则隔离为 `pending_repair`
+   * - 从 `pending_validation` 转正或状态改变后，自动通过协调器尾沿合并触发 Omni 热刷新
+   */
+  public scheduleBackgroundFullVerification(resourceIds: string[], delayMs = 50): Promise<void> {
+    if (resourceIds.length === 0) {
+      return Promise.resolve()
+    }
+    const runTask = async () => {
+      await this.processBackgroundVerification(resourceIds)
+    }
+    if (delayMs <= 0) {
+      return runTask()
+    }
+    return new Promise<void>(resolve => {
+      if (this.bgVerificationTimer) {
+        clearTimeout(this.bgVerificationTimer)
+      }
+      this.bgVerificationTimer = setTimeout(() => {
+        this.bgVerificationTimer = null
+        runTask().finally(resolve)
+      }, delayMs)
+      this.bgVerificationTimer.unref?.()
+    })
+  }
+
+  public cleanupForTesting(): void {
+    if (this.bgVerificationTimer) {
+      clearTimeout(this.bgVerificationTimer)
+      this.bgVerificationTimer = null
+    }
+  }
+
+  private async processBackgroundVerification(resourceIds: string[]): Promise<void> {
+    if (this.bgVerificationInFlight) {
+      await this.bgVerificationInFlight.catch(() => {})
+    }
+
+    const work = (async () => {
+      try {
+        const dao = this.getDao()
+        const pluginsRootDir = this.getPluginsRootDir()
+        let topologyNeedsRefresh = false
+
+        for (const resourceId of resourceIds) {
+          const res = dao.resources.findByIdSync(resourceId)
+          if (!res || res.download_state === 'pending_delete') continue
+
+          const sharedSubDir = resolveSharedSubDir(resourceId)
+          const catalogMeta = (
+            BUILTIN_PLUGIN_CATALOG_META as Record<
+              string,
+              {
+                sharedSubDir: string
+                requiredFileGroups: readonly (readonly string[])[]
+                minPrimaryFileBytes?: number
+              }
+            >
+          )[resourceId]
+
+          let targetDir: string
+          try {
+            targetDir = resolvePhysicalPath(pluginsRootDir, res.target_local_path)
+          } catch (err: any) {
+            this.fastReadySnapshot.set(resourceId, {
+              resourceId,
+              sharedSubDir,
+              physicalDir: null,
+              status: 'pending_repair',
+              validationLevel: 'full',
+              reason: err?.message || 'invalid_path',
+              checkedAt: Date.now()
+            })
+            continue
+          }
+
+          const prevStatus = this.fastReadySnapshot.get(resourceId)?.status
+          const expectedFiles = this.loadBomFilesForResource(resourceId)
+          let valid = false
+
+          try {
+            const filesOk = await PluginPathResolver.checkRequiredFileGroupsAsync(
+              targetDir,
+              catalogMeta?.requiredFileGroups,
+              catalogMeta?.minPrimaryFileBytes ?? 1
+            )
+            if (filesOk) {
+              if (expectedFiles.length > 0) {
+                valid = true
+                for (const ef of expectedFiles) {
+                  const filePath = path.join(targetDir, ef.name)
+                  if (!fs.existsSync(filePath)) {
+                    valid = false
+                    break
+                  }
+                  const st = await fs.promises.stat(filePath)
+                  if (st.size !== ef.size) {
+                    valid = false
+                    break
+                  }
+                  const shaRes = await streamVerifySha256(filePath, ef.sha256)
+                  if (!shaRes.valid) {
+                    valid = false
+                    break
+                  }
+                }
+              } else {
+                valid = true
+              }
+            }
+          } catch {
+            valid = false
+          }
+
+          if (valid) {
+            try {
+              await invalidateReadyMarkers(targetDir)
+              const digestResult = await computeDirectoryReadyDigest(targetDir)
+              await writeReadyMarker(targetDir, {
+                resourceId,
+                sharedSubDir,
+                digestResult
+              })
+              this.fastReadySnapshot.set(resourceId, {
+                resourceId,
+                sharedSubDir,
+                physicalDir: targetDir,
+                status: 'ready_fast',
+                validationLevel: 'full',
+                checkedAt: Date.now()
+              })
+              if (prevStatus === 'pending_validation') {
+                topologyNeedsRefresh = true
+              }
+            } catch (writeErr: any) {
+              logger.warn(
+                LogCategory.SYSTEM,
+                `[ModularResource] 后台升级 .ready.json 失败: ${resourceId}`,
+                writeErr
+              )
+            }
+          } else {
+            await invalidateReadyMarkers(targetDir).catch(() => {})
+            await this.isolateCorruptDirectory(targetDir)
+            this.fastReadySnapshot.set(resourceId, {
+              resourceId,
+              sharedSubDir,
+              physicalDir: null,
+              status: 'pending_repair',
+              validationLevel: 'full',
+              reason: 'background_verification_failed',
+              checkedAt: Date.now()
+            })
+            if (prevStatus === 'legacy_heal' || prevStatus === 'ready_fast') {
+              topologyNeedsRefresh = true
+            }
+          }
+        }
+
+        if (topologyNeedsRefresh) {
+          await this.notifyRuntimePluginTopologyChanged({
+            reason: 'background_verified',
+            restartPolicy: 'restart'
+          })
+        }
+      } catch (err: any) {
+        logger.warn(LogCategory.SYSTEM, '[ModularResource] 后台全量校验异常:', err)
+      }
+    })()
+
+    this.bgVerificationInFlight = work
+    try {
+      await work
+    } finally {
+      if (this.bgVerificationInFlight === work) {
+        this.bgVerificationInFlight = null
+      }
+    }
+  }
+
+  /**
+   * 查询指定资源最近一次快路径校验诊断状态
+   */
+  public getFastReadyStatus(resourceId: string): ResourceValidationEntry | undefined {
+    return this.fastReadySnapshot.get(resourceId)
+  }
+
+  /**
+   * 返回当前可进入 active-mounts-*.json 的已就绪域 B 资源快照
+   * （仅允许处于 active 模块且状态为 ready_fast 或 legacy_heal 的非修复资源）
+   */
+  public getMountableResourcesSnapshot(): Array<
+    ResourceValidationEntry & {
+      catalogMeta?: (typeof BUILTIN_PLUGIN_CATALOG_META)[BuiltinSharedResourceId]
+    }
+  > {
+    if (this.rootUnavailable) {
+      return []
+    }
+    const dao = this.getDao()
+    const pluginsRootDir = this.getPluginsRootDir()
+    const activeModules = dao.modules.findActiveSync()
+    const activeResourceIds = new Set<string>()
+    const resMap = new Map<string, ResourceDownloadRecord>()
+
+    for (const mod of activeModules) {
+      for (const res of dao.resources.findResourcesByModuleSync(mod.id)) {
+        if (res.download_state !== 'pending_delete') {
+          activeResourceIds.add(res.resource_id)
+          resMap.set(res.resource_id, res)
+        }
+      }
+    }
+
+    const result: Array<
+      ResourceValidationEntry & {
+        catalogMeta?: (typeof BUILTIN_PLUGIN_CATALOG_META)[BuiltinSharedResourceId]
+      }
+    > = []
+
+    for (const resId of activeResourceIds) {
+      if (this.repairPendingResources.has(resId) || this.unknownResources.has(resId)) {
+        continue
+      }
+      const res = resMap.get(resId)!
+      const catMeta = (
+        BUILTIN_PLUGIN_CATALOG_META as Record<
+          string,
+          (typeof BUILTIN_PLUGIN_CATALOG_META)[BuiltinSharedResourceId]
+        >
+      )[resId]
+      if (!catMeta) continue
+
+      let snap = this.fastReadySnapshot.get(resId)
+      if (!snap) {
+        // 若冷启动尚未运行过 barrier，按当前磁盘严格 .ready.json 门禁实时核验
+        try {
+          const resolvedDir = resolvePhysicalPath(pluginsRootDir, res.target_local_path)
+          const readyDir = PluginPathResolver.getReadySharedResourceDirForRoot(
+            pluginsRootDir,
+            catMeta.sharedSubDir,
+            {
+              requiredFileGroups: catMeta.requiredFileGroups,
+              minPrimaryFileBytes: catMeta.minPrimaryFileBytes
+            }
+          )
+          if (readyDir && resolvedDir) {
+            snap = {
+              resourceId: resId,
+              sharedSubDir: catMeta.sharedSubDir,
+              physicalDir: readyDir,
+              status: 'ready_fast',
+              validationLevel: 'full',
+              checkedAt: Date.now()
+            }
+            this.fastReadySnapshot.set(resId, snap)
+          }
+        } catch (err) {
+          logger.error(
+            LogCategory.SYSTEM,
+            `[ModularResource] 读取挂载资源路径失败 (Fail-Closed): ${resId}`,
+            err
+          )
+          continue
+        }
+      }
+
+      if (
+        snap &&
+        (snap.status === 'ready_fast' || snap.status === 'legacy_heal') &&
+        snap.physicalDir
+      ) {
+        result.push({
+          ...snap,
+          catalogMeta: catMeta
+        })
+      }
+    }
+
+    return result
+  }
+
+  public isRootUnavailable(): boolean {
+    return this.rootUnavailable
+  }
+
+  public getSchemaIndexDriftDetected(): boolean {
+    return this.schemaIndexDriftDetected
+  }
+
+  /**
+   * 运行时插件拓扑变更统一通知入口（经过 RuntimeTopologyCoordinator 尾沿去重并发往 Omni/VoiceCache）
+   */
+  public async notifyRuntimePluginTopologyChanged(
+    reasonOrOpts?: string | TopologyChangeNotificationOptions
+  ): Promise<void> {
+    const opts: TopologyChangeNotificationOptions =
+      typeof reasonOrOpts === 'string'
+        ? { moduleId: reasonOrOpts, reason: 'module_change', restartPolicy: 'ensure-running' }
+        : {
+            reason: 'module_change',
+            restartPolicy: 'restart',
+            ...reasonOrOpts
+          }
+
+    // 失效语音音色内存缓存，确保 voice_tts 槽位切换或卸载立即生效
+    try {
+      const { voiceArchiveService } = require('../audio/voice-archive-service')
+      voiceArchiveService?.invalidatePresetVoicesCache?.()
+    } catch {}
+
+    const runNotify = async () => {
+      if (this.topologyListener) {
+        await this.topologyListener(opts)
+        return
+      }
+      try {
+        const { omniService } = require('./omni-service')
+        if (typeof omniService?.handleTopologyChanged === 'function') {
+          await omniService.handleTopologyChanged(opts)
+        }
+      } catch (err) {
+        if (this.topologyListener) {
+          throw err
+        }
+        // 在纯离线无 Omni 环境的单元测试中忽略模块加载失败，真实已启动环境 error 向上抛出
+        const msg = err instanceof Error ? err.message : String(err)
+        if (!msg.includes('Cannot find module')) {
+          throw err
+        }
+      }
+    }
+
+    await this.topologyCoordinator.coalesceTopologyNotify(runNotify)
   }
 
   /**
@@ -1287,6 +3078,28 @@ export class ModularResourceService implements IModularResourceService {
     const canUninstall =
       record.install_state !== 'not_installed' && record.slot_policy !== 'exclusive_required'
 
+    let validationStatus: BuiltinModuleView['validation_status']
+    let validationMessage: string | undefined
+    if (this.rootUnavailable && record.install_state === 'active') {
+      validationStatus = 'pending_repair'
+      validationMessage = '插件存储目录不可达，请检查磁盘连接'
+    } else if (resources.length > 0) {
+      const snaps = resources
+        .map(r => this.fastReadySnapshot.get(r.resource_id))
+        .filter((s): s is ResourceValidationEntry => Boolean(s))
+      if (snaps.some(s => s.status === 'pending_repair' || s.status === 'unknown_resource')) {
+        validationStatus = 'pending_repair'
+        validationMessage = '模型损坏需修复'
+      } else if (snaps.some(s => s.status === 'pending_validation')) {
+        validationStatus = 'pending_validation'
+        validationMessage = '正在校验插件'
+      } else if (snaps.some(s => s.status === 'legacy_heal')) {
+        validationStatus = 'legacy'
+      } else if (snaps.length > 0 && snaps.every(s => s.status === 'ready_fast')) {
+        validationStatus = 'ready'
+      }
+    }
+
     return {
       ...record,
       name,
@@ -1298,6 +3111,8 @@ export class ModularResourceService implements IModularResourceService {
       can_install: canInstall,
       can_uninstall: canUninstall,
       hold_reasons: holdReasons,
+      ...(validationStatus ? { validation_status: validationStatus } : {}),
+      ...(validationMessage ? { validation_message: validationMessage } : {}),
       resources,
       ...(contributes ? { contributes } : {}),
       ...(downloadProgress ? { download_progress: downloadProgress } : {})
@@ -1372,180 +3187,243 @@ export class ModularResourceService implements IModularResourceService {
     moduleId: string,
     onProgress?: (event: ModuleDownloadProgressEvent) => void
   ): Promise<BuiltinModuleView> {
+    this.assertWriteGateAllowed()
     this.ensureDefaultSeeds()
-    const dao = this.getDao()
-    const record = dao.modules.findByIdSync(moduleId)
-    if (!record) {
-      throw new Error(`未找到模块定义: ${moduleId}`)
-    }
 
-    // 1. 将模块置为 downloading
-    dao.modules.updateInstallStateSync(moduleId, 'downloading')
-
-    const resourceSpecs = this.resolveModuleResourceSpecs(record)
-    if (resourceSpecs.length === 0) {
-      // 无外部物理资产依赖的模块，按排他规则标记为 active 或 installed_inactive
-      const slot = record.capability_slot ?? 'general'
-      const policy = record.slot_policy ?? 'multi_active'
-      const isExclusive = policy === 'exclusive_required' || policy === 'exclusive_optional'
-      if (isExclusive) {
-        const currentActive = dao.modules.findActiveBySlotSync(slot)
-        if (currentActive && currentActive.id !== moduleId) {
-          dao.modules.updateInstallStateSync(moduleId, 'installed_inactive')
-        } else {
-          dao.modules.activateExclusiveModuleSync(moduleId)
-        }
-      } else {
-        dao.modules.updateInstallStateSync(moduleId, 'active')
+    return await this.topologyCoordinator.execute(async () => {
+      const dao = this.getDao()
+      const record = dao.modules.findByIdSync(moduleId)
+      if (!record) {
+        throw new Error(`未找到模块定义: ${moduleId}`)
       }
-      this.liveProgress.delete(moduleId)
-      return this.buildModuleView(dao.modules.findByIdSync(moduleId)!)
-    }
 
-    try {
-      for (const spec of resourceSpecs) {
-        const targetLocalPath =
-          spec.target_local_path || path.posix.join('modules', '_shared', spec.resource_id)
-        const existingTask = dao.resources.findByIdSync(spec.resource_id)
+      // 1. 将模块置为 downloading
+      dao.modules.updateInstallStateSync(moduleId, 'downloading')
 
-        const task = existingTask
-          ? existingTask
-          : dao.resources.createOrGetTaskSync({
-              resource_id: spec.resource_id,
-              asset_name: spec.asset_name,
-              target_local_path: targetLocalPath,
-              active_source_key: spec.active_source_key ?? 'auto',
-              active_url: spec.active_url ?? null,
-              expected_bytes: spec.expected_bytes,
-              expected_sha256: spec.expected_sha256,
-              download_state: 'pending'
+      const resourceSpecs = this.resolveModuleResourceSpecs(record)
+      if (resourceSpecs.length === 0) {
+        // 无外部物理资产依赖的模块，按排他规则标记为 active 或 installed_inactive
+        const slot = record.capability_slot ?? 'general'
+        const policy = record.slot_policy ?? 'multi_active'
+        const isExclusive = policy === 'exclusive_required' || policy === 'exclusive_optional'
+        if (isExclusive) {
+          const currentActive = dao.modules.findActiveBySlotSync(slot)
+          if (currentActive && currentActive.id !== moduleId) {
+            dao.modules.updateInstallStateSync(moduleId, 'installed_inactive')
+          } else {
+            dao.modules.activateExclusiveModuleSync(moduleId)
+          }
+        } else {
+          dao.modules.updateInstallStateSync(moduleId, 'active')
+        }
+        this.liveProgress.delete(moduleId)
+        return this.buildModuleView(dao.modules.findByIdSync(moduleId)!)
+      }
+
+      try {
+        for (const spec of resourceSpecs) {
+          const targetLocalPath =
+            spec.target_local_path ||
+            deriveTargetLocalPath(spec.resource_id) ||
+            path.posix.join('modules', '_shared', spec.resource_id)
+          const existingTask = dao.resources.findByIdSync(spec.resource_id)
+
+          const task = existingTask
+            ? existingTask
+            : dao.resources.createOrGetTaskSync({
+                resource_id: spec.resource_id,
+                asset_name: spec.asset_name,
+                target_local_path: targetLocalPath,
+                active_source_key: spec.active_source_key ?? 'auto',
+                active_url: spec.active_url ?? null,
+                expected_bytes: spec.expected_bytes,
+                expected_sha256: spec.expected_sha256,
+                download_state: 'pending'
+              })
+
+          // 建立模块与物理资源的引用绑定
+          dao.resources.bindResourceToModuleSync(moduleId, spec.resource_id)
+
+          const targetAbsDir = this.resolvePhysicalPath(task.target_local_path)
+
+          // 2. 确定性三级物理探活拓扑 (L1 目标解压目录 -> L2 本地预置包 -> L3 网络下载)
+          // L1: 目标解压目录探活 (快路径毫秒放行 + 慢路径自愈补标记)
+          const l1Result = await this.checkL1TargetDirPreflight(targetAbsDir, spec)
+          if (l1Result === 'fast_hit' || l1Result === 'slow_healed') {
+            dao.resources.markVerifiedSync(spec.resource_id, true)
+            dao.resources.updateProgressSync(spec.resource_id, spec.expected_bytes, 'completed')
+            this.repairPendingResources.delete(spec.resource_id)
+            this.fastReadySnapshot.set(spec.resource_id, {
+              resourceId: spec.resource_id,
+              sharedSubDir: resolveSharedSubDir(spec.resource_id),
+              physicalDir: targetAbsDir,
+              status: 'ready_fast',
+              validationLevel: 'full',
+              checkedAt: Date.now()
             })
 
-        // 建立模块与物理资源的引用绑定
-        dao.resources.bindResourceToModuleSync(moduleId, spec.resource_id)
-
-        const targetAbsDir = this.resolvePhysicalPath(task.target_local_path)
-
-        // 2. 确定性三级物理探活拓扑 (L1 目标解压目录 -> L2 本地预置包 -> L3 网络下载)
-        // L1: 目标解压目录探活 (快路径毫秒放行 + 慢路径自愈补标记)
-        const l1Result = await this.checkL1TargetDirPreflight(targetAbsDir, spec)
-        if (l1Result === 'fast_hit' || l1Result === 'slow_healed') {
-          dao.resources.markVerifiedSync(spec.resource_id, true)
-          dao.resources.updateProgressSync(spec.resource_id, spec.expected_bytes, 'completed')
-
-          if (l1Result === 'fast_hit') {
-            // 后台异步低优先级流式 SHA-256 核验兜底
-            const asyncVerifyPromise = (async () => {
-              const expectedFiles = this.loadBomFilesForResource(spec.resource_id)
-              for (const ef of expectedFiles) {
-                const p = path.join(targetAbsDir, ef.name)
-                if (!fs.existsSync(p)) return false
-                const v = await streamVerifySha256(p, ef.sha256)
-                if (!v.valid) {
-                  await this.isolateCorruptDirectory(targetAbsDir)
-                  return false
+            if (l1Result === 'fast_hit') {
+              // 后台异步低优先级流式 SHA-256 核验兜底
+              const asyncVerifyPromise = (async () => {
+                const expectedFiles = this.loadBomFilesForResource(spec.resource_id)
+                for (const ef of expectedFiles) {
+                  const p = path.join(targetAbsDir, ef.name)
+                  if (!fs.existsSync(p)) return false
+                  const v = await streamVerifySha256(p, ef.sha256)
+                  if (!v.valid) {
+                    await this.isolateCorruptDirectory(targetAbsDir)
+                    this.fastReadySnapshot.set(spec.resource_id, {
+                      resourceId: spec.resource_id,
+                      sharedSubDir: resolveSharedSubDir(spec.resource_id),
+                      physicalDir: null,
+                      status: 'pending_repair',
+                      validationLevel: 'full',
+                      reason: 'background_bom_mismatch',
+                      checkedAt: Date.now()
+                    })
+                    await this.notifyRuntimePluginTopologyChanged({
+                      moduleId,
+                      reason: 'background_verified',
+                      restartPolicy: 'restart'
+                    }).catch(() => {})
+                    return false
+                  }
                 }
-              }
-              return true
-            })()
-            this.verificationPromises.set(moduleId, asyncVerifyPromise)
+                return true
+              })()
+              this.verificationPromises.set(moduleId, asyncVerifyPromise)
+            }
+
+            const completedEvt: ModuleDownloadProgressEvent = {
+              moduleId,
+              resourceId: spec.resource_id,
+              downloadedBytes: spec.expected_bytes,
+              expectedBytes: spec.expected_bytes,
+              percentage: 100,
+              speedBytesPerSec: 0,
+              isResumed: false,
+              state: 'completed'
+            }
+            this.liveProgress.set(moduleId, {
+              percentage: 100,
+              speed_bytes_per_sec: 0,
+              is_resumed: false
+            })
+            onProgress?.(completedEvt)
+            continue
           }
 
-          const completedEvt: ModuleDownloadProgressEvent = {
-            moduleId,
-            resourceId: spec.resource_id,
-            downloadedBytes: spec.expected_bytes,
-            expectedBytes: spec.expected_bytes,
-            percentage: 100,
-            speedBytesPerSec: 0,
-            isResumed: false,
-            state: 'completed'
+          // L2: 本地后备预置包打捞 (apps/desktop/build/presetResources 等)
+          const l2Hit = await this.checkL2LocalPresetPreflight(spec, targetAbsDir)
+          if (l2Hit) {
+            dao.resources.markVerifiedSync(spec.resource_id, true)
+            dao.resources.updateProgressSync(spec.resource_id, spec.expected_bytes, 'completed')
+            this.repairPendingResources.delete(spec.resource_id)
+            this.fastReadySnapshot.set(spec.resource_id, {
+              resourceId: spec.resource_id,
+              sharedSubDir: resolveSharedSubDir(spec.resource_id),
+              physicalDir: targetAbsDir,
+              status: 'ready_fast',
+              validationLevel: 'full',
+              checkedAt: Date.now()
+            })
+
+            const completedEvt: ModuleDownloadProgressEvent = {
+              moduleId,
+              resourceId: spec.resource_id,
+              downloadedBytes: spec.expected_bytes,
+              expectedBytes: spec.expected_bytes,
+              percentage: 100,
+              speedBytesPerSec: 0,
+              isResumed: false,
+              state: 'completed'
+            }
+            this.liveProgress.set(moduleId, {
+              percentage: 100,
+              speed_bytes_per_sec: 0,
+              is_resumed: false
+            })
+            onProgress?.(completedEvt)
+            continue
           }
-          this.liveProgress.set(moduleId, {
-            percentage: 100,
-            speed_bytes_per_sec: 0,
-            is_resumed: false
-          })
-          onProgress?.(completedEvt)
-          continue
-        }
 
-        // L2: 本地后备预置包打捞 (apps/desktop/build/presetResources 等)
-        const l2Hit = await this.checkL2LocalPresetPreflight(spec, targetAbsDir)
-        if (l2Hit) {
-          dao.resources.markVerifiedSync(spec.resource_id, true)
-          dao.resources.updateProgressSync(spec.resource_id, spec.expected_bytes, 'completed')
-
-          const completedEvt: ModuleDownloadProgressEvent = {
-            moduleId,
-            resourceId: spec.resource_id,
-            downloadedBytes: spec.expected_bytes,
-            expectedBytes: spec.expected_bytes,
-            percentage: 100,
-            speedBytesPerSec: 0,
-            isResumed: false,
-            state: 'completed'
-          }
-          this.liveProgress.set(moduleId, {
-            percentage: 100,
-            speed_bytes_per_sec: 0,
-            is_resumed: false
-          })
-          onProgress?.(completedEvt)
-          continue
-        }
-
-        // L3: 网络分块并发断点下载与 Singleflight 保护
-
-        // Singleflight 并发合并保护：同一物理资源同时只允许一个下载流
-        let flight = this.inFlightResources.get(spec.resource_id)
-        if (!flight) {
-          flight = this.downloadAndInstallSingleResource(moduleId, task, spec, onProgress).finally(
-            () => {
+          // L3: 网络分块并发断点下载与 Singleflight 保护
+          let flight = this.inFlightResources.get(spec.resource_id)
+          if (!flight) {
+            flight = this.downloadAndInstallSingleResource(
+              moduleId,
+              task,
+              spec,
+              onProgress
+            ).finally(() => {
               this.inFlightResources.delete(spec.resource_id)
-            }
-          )
-          this.inFlightResources.set(spec.resource_id, flight)
+            })
+            this.inFlightResources.set(spec.resource_id, flight)
+          }
+          await flight
         }
-        await flight
-      }
 
-      // 5. 全部依赖资源就绪，将模块状态流转为 active 或 installed_inactive (若已有同槽位 active)
-      const slot = record.capability_slot ?? 'general'
-      const policy = record.slot_policy ?? 'multi_active'
-      const isExclusive = policy === 'exclusive_required' || policy === 'exclusive_optional'
-      if (isExclusive) {
-        const currentActive = dao.modules.findActiveBySlotSync(slot)
-        if (currentActive && currentActive.id !== moduleId) {
-          dao.modules.updateInstallStateSync(moduleId, 'installed_inactive')
-        } else {
-          dao.modules.activateExclusiveModuleSync(moduleId)
-          if (slot === 'base_embedding') {
-            const serving = dao.epochs.findServingEpochSync()
-            if (!serving) {
-              const isClassic = moduleId.includes('classic')
-              dao.epochs.createEpochSync({
-                epoch: 1,
-                module_id: moduleId,
-                text_dim: isClassic ? 384 : 768,
-                image_dim: isClassic ? 512 : 768,
-                status: 'serving',
-                reindex_cursor: null
-              })
+        // 5. 全部依赖资源就绪，将模块状态流转为 active 或 installed_inactive (若已有同槽位 active)
+        const slot = record.capability_slot ?? 'general'
+        const policy = record.slot_policy ?? 'multi_active'
+        const isExclusive = policy === 'exclusive_required' || policy === 'exclusive_optional'
+        let becameActive = false
+
+        if (isExclusive) {
+          const currentActive = dao.modules.findActiveBySlotSync(slot)
+          if (currentActive && currentActive.id !== moduleId) {
+            dao.modules.updateInstallStateSync(moduleId, 'installed_inactive')
+          } else {
+            dao.modules.activateExclusiveModuleSync(moduleId)
+            becameActive = true
+            if (slot === 'base_embedding') {
+              const serving = dao.epochs.findServingEpochSync()
+              if (!serving) {
+                const isClassic = moduleId.includes('classic')
+                dao.epochs.createEpochSync({
+                  epoch: 1,
+                  module_id: moduleId,
+                  text_dim: isClassic ? 384 : 768,
+                  image_dim: isClassic ? 512 : 768,
+                  status: 'serving',
+                  reindex_cursor: null
+                })
+              }
             }
           }
+        } else {
+          dao.modules.updateInstallStateSync(moduleId, 'active')
+          becameActive = true
         }
-      } else {
-        dao.modules.updateInstallStateSync(moduleId, 'active')
+
+        if (becameActive) {
+          await this.notifyRuntimePluginTopologyChanged({
+            moduleId,
+            reason: 'module_install',
+            restartPolicy: 'ensure-running'
+          })
+        }
+
+        this.liveProgress.delete(moduleId)
+        return this.buildModuleView(dao.modules.findByIdSync(moduleId)!)
+      } catch (err: any) {
+        const errorMsg = err?.message || String(err)
+        const latest = dao.modules.findByIdSync(moduleId)
+        // 若所有资源实际上已下载完毕、仅在通知激活阶段出错，保留 installed_inactive 以免丢失已下载权重
+        const bound = dao.resources.findResourcesByModuleSync(moduleId)
+        const allResourcesCompleted =
+          bound.length > 0 && bound.every(r => r.download_state === 'completed')
+        dao.modules.updateInstallStateSync(
+          moduleId,
+          allResourcesCompleted && latest?.install_state !== 'downloading'
+            ? 'installed_inactive'
+            : 'error',
+          errorMsg
+        )
+        this.liveProgress.delete(moduleId)
+        throw err
       }
-      this.liveProgress.delete(moduleId)
-      return this.buildModuleView(dao.modules.findByIdSync(moduleId)!)
-    } catch (err: any) {
-      const errorMsg = err?.message || String(err)
-      dao.modules.updateInstallStateSync(moduleId, 'error', errorMsg)
-      this.liveProgress.delete(moduleId)
-      throw err
-    }
+    })
   }
 
   /**
@@ -1559,19 +3437,42 @@ export class ModularResourceService implements IModularResourceService {
   ): Promise<void> {
     const dao = this.getDao()
     const candidateUrls: string[] = []
-    if (task.active_url) candidateUrls.push(task.active_url)
-    if (spec.active_url && !candidateUrls.includes(spec.active_url))
-      candidateUrls.push(spec.active_url)
+
+    // 1. 公共 R2 CDN 高速加速源（最高优先级且公开可用）
+    const assetName = task.asset_name || spec.asset_name
+    if (assetName) {
+      const r2Url = `https://download.iocn.cn/firefly-resources/${assetName}`
+      candidateUrls.push(r2Url)
+    }
+
+    // 2. 收集原始配置 URL，并过滤私有仓库 404 镜像（方案 A 过滤规则）
+    const rawUrls: string[] = []
+    if (task.active_url) rawUrls.push(task.active_url)
+    if (spec.active_url && !rawUrls.includes(spec.active_url)) rawUrls.push(spec.active_url)
     if (Array.isArray((spec as any).urls)) {
       for (const u of (spec as any).urls) {
-        if (u && !candidateUrls.includes(u)) candidateUrls.push(u)
+        if (u && !rawUrls.includes(u)) rawUrls.push(u)
       }
     }
     if (Array.isArray((task as any).urls)) {
       for (const u of (task as any).urls) {
-        if (u && !candidateUrls.includes(u)) candidateUrls.push(u)
+        if (u && !rawUrls.includes(u)) rawUrls.push(u)
       }
     }
+
+    const isPrivateGithubRepo = (u: string) =>
+      u.includes('github.com/Leonard-Li777/firefly-resources/releases/download')
+
+    for (const u of rawUrls) {
+      // 方案 A：在 firefly-resources 仍为私有仓时，匿名下载过滤剔除私有 GitHub Release URL，防 404 假死
+      if (isPrivateGithubRepo(u)) {
+        continue
+      }
+      if (!candidateUrls.includes(u)) {
+        candidateUrls.push(u)
+      }
+    }
+
     if (candidateUrls.length === 0) {
       dao.resources.markVerifiedSync(
         task.resource_id,
@@ -1701,7 +3602,11 @@ export class ModularResourceService implements IModularResourceService {
     // 4. 若为 .zip 或 .ffp 归档，调用 safeExtractZip（带意图日志与 renameWithRetry）
     const lowerAsset = task.asset_name.toLowerCase()
     const intentsDir = path.join(this.getBaseDir(), '.intents')
+    const sharedSubDir = resolveSharedSubDir(task.resource_id)
     try {
+      // 物化写入前先使目标目录既有 .ready* 标记失效，严防 TOCTOU 读取半成品
+      await invalidateReadyMarkers(targetAbsDir)
+
       if (lowerAsset.endsWith('.zip') || lowerAsset.endsWith('.ffp')) {
         onProgress?.({
           moduleId,
@@ -1714,37 +3619,6 @@ export class ModularResourceService implements IModularResourceService {
           state: 'extracting'
         })
         await safeExtractZip(archivePath, targetAbsDir, intentsDir)
-        // 解压成功后写入 .ready 标记供后续毫秒级快检复用
-        const sha8 = (task.expected_sha256 || '').slice(0, 8)
-        if (sha8) {
-          try {
-            const readyMarkerPath = path.join(targetAbsDir, `.ready-${sha8}.json`)
-            const files = fs
-              .readdirSync(targetAbsDir)
-              .filter(f => !f.startsWith('.'))
-              .map(f => {
-                const fp = path.join(targetAbsDir, f)
-                const st = fs.statSync(fp)
-                return { name: f, size: st.size, mtimeMs: st.mtimeMs, sha256: '' }
-              })
-            fs.writeFileSync(
-              readyMarkerPath,
-              JSON.stringify(
-                {
-                  version: 1,
-                  assetId: task.resource_id,
-                  archiveSha256: task.expected_sha256,
-                  bomSha256: 'download_extracted',
-                  createdAt: new Date().toISOString(),
-                  coreFiles: files
-                },
-                null,
-                2
-              ),
-              'utf-8'
-            )
-          } catch {}
-        }
         // 解压成功后清理归档包临时文件
         if (fs.existsSync(archivePath)) {
           try {
@@ -1764,6 +3638,21 @@ export class ModularResourceService implements IModularResourceService {
         }
         await renameWithRetry(archivePath, destFile)
       }
+
+      // 解压或单文件物化成功后，统一计算确定性 SHA-256 摘要并原子写入标准 .ready.json
+      await writeReadyMarker(targetAbsDir, {
+        resourceId: task.resource_id,
+        sharedSubDir
+      })
+      this.repairPendingResources.delete(task.resource_id)
+      this.fastReadySnapshot.set(task.resource_id, {
+        resourceId: task.resource_id,
+        sharedSubDir,
+        physicalDir: targetAbsDir,
+        status: 'ready_fast',
+        validationLevel: 'full',
+        checkedAt: Date.now()
+      })
     } catch (extractErr: any) {
       const errMsg = extractErr?.message || String(extractErr)
       dao.resources.markVerifiedSync(task.resource_id, false, result.actualSha256, errMsg)
@@ -1798,79 +3687,209 @@ export class ModularResourceService implements IModularResourceService {
   }
 
   /**
-   * 卸载模块（Windows 两阶段 Tombstone 删除协议）：
-   * 阶段一（事务内标记）：解绑 module_resource_downloads，计算剩余有效引用计数；引用归零的资源置为 pending_delete，模块置为 not_installed；
-   * 阶段二（事务外 Tombstone 删除）：对 pending_delete 资源调用 safeDeleteDirectory（重命名为 .deleting-<uuid> 并退避重试删除；若被占用则保持 pending_delete 等待下次启动清理）。
+   * 卸载模块并通知安全停机释放文件句柄
+   */
+  private async stopOmniProcessForUninstall(): Promise<boolean> {
+    try {
+      const { omniService } = require('./omni-service')
+      if (omniService?.isManagedLifecycleActive?.()) {
+        await omniService.stop()
+        return true
+      }
+    } catch {}
+    return false
+  }
+
+  /**
+   * 激活门禁核验：确认模块绑定物理资产已完整落盘（允许 engine_classic_light 在可选伴随资源 mobile-clip 未到位时保活）
+   */
+  private async assertModuleResourcesReadyForActivation(
+    moduleId: string,
+    record: BuiltinModuleRecord
+  ): Promise<void> {
+    const dao = this.getDao()
+    const boundResources = dao.resources.findResourcesByModuleSync(moduleId)
+    const specs = this.resolveModuleResourceSpecs(record)
+    if (boundResources.length === 0 && specs.length === 0) {
+      return
+    }
+
+    const pluginsRootDir = this.getPluginsRootDir()
+    const coreReadyForClassic =
+      moduleId === 'engine_classic_light' && this.isClassicEngineCoreReady(boundResources)
+
+    for (const res of boundResources) {
+      if (this.repairPendingResources.has(res.resource_id)) {
+        throw new Error(`模块资源处于待修复状态，禁止激活: ${moduleId}/${res.resource_id}`)
+      }
+      if (res.download_state !== 'completed') {
+        if (
+          moduleId === 'engine_classic_light' &&
+          res.resource_id === 'mobile-clip' &&
+          coreReadyForClassic
+        ) {
+          continue
+        }
+        throw new Error(`模块资源尚未下载完成 (${res.download_state}): ${res.resource_id}`)
+      }
+
+      const targetDir = resolvePhysicalPath(pluginsRootDir, res.target_local_path)
+      const catalogMeta = (
+        BUILTIN_PLUGIN_CATALOG_META as Record<
+          string,
+          {
+            sharedSubDir: string
+            requiredFileGroups: readonly (readonly string[])[]
+            minPrimaryFileBytes?: number
+          }
+        >
+      )[res.resource_id]
+
+      const filesOk = await PluginPathResolver.checkRequiredFileGroupsAsync(
+        targetDir,
+        catalogMeta?.requiredFileGroups,
+        catalogMeta?.minPrimaryFileBytes ?? 1
+      )
+      if (!filesOk) {
+        throw new Error(`模块权重文件缺失或被截断，无法激活: ${res.resource_id}`)
+      }
+
+      const sharedSubDir = resolveSharedSubDir(res.resource_id)
+      const marker = await readReadyMarker(targetDir)
+      if (!marker || marker.resourceId !== res.resource_id) {
+        // 若特征文件组有效但尚未补齐 .ready.json，记录为 legacy_heal 放行并触发后台升级
+        this.fastReadySnapshot.set(res.resource_id, {
+          resourceId: res.resource_id,
+          sharedSubDir,
+          physicalDir: targetDir,
+          status: 'legacy_heal',
+          validationLevel: 'legacy',
+          checkedAt: Date.now()
+        })
+        this.scheduleBackgroundFullVerification([res.resource_id], 50)
+      } else {
+        this.fastReadySnapshot.set(res.resource_id, {
+          resourceId: res.resource_id,
+          sharedSubDir,
+          physicalDir: targetDir,
+          status: 'ready_fast',
+          validationLevel: 'full',
+          checkedAt: Date.now()
+        })
+      }
+    }
+  }
+
+  /**
+   * 卸载模块（Windows 两阶段停机解锁 + Tombstone 单步隔离删除协议）：
+   * 阶段一（事务内标记）：解绑 module_resource_downloads，计算剩余有效引用计数；引用归零置 pending_delete，模块置 not_installed；
+   * 阶段二（停机释放句柄 + 原子隔离删除）：先停用关联进程与 Omni 引擎解除 ORT mmap 句柄，再单步重命名为 .deleting-* 并异步回收；
+   * 阶段三（重启对齐拓扑）：刷新挂载清单与音色缓存。
    */
   async uninstallModule(moduleId: string): Promise<BuiltinModuleView> {
+    this.assertWriteGateAllowed()
     this.ensureDefaultSeeds()
-    const db = this.getDb()
-    const dao = this.getDao()
-    const record = dao.modules.findByIdSync(moduleId)
-    if (!record) {
-      throw new Error(`未找到模块定义: ${moduleId}`)
-    }
 
-    const resourcesToDelete: ResourceDownloadRecord[] = []
+    return await this.topologyCoordinator.execute(async () => {
+      const db = this.getDb()
+      const dao = this.getDao()
+      const record = dao.modules.findByIdSync(moduleId)
+      if (!record) {
+        throw new Error(`未找到模块定义: ${moduleId}`)
+      }
 
-    // 阶段一：事务内解绑并计算引用计数，绝不在事务内做磁盘 I/O
-    const tx = db.transaction(() => {
-      const boundResources = dao.resources.findResourcesByModuleSync(moduleId)
-      for (const res of boundResources) {
-        dao.resources.unbindResourceFromModuleSync(moduleId, res.resource_id)
-        const remainingRefs = dao.resources.getResourceActiveRefCountSync(res.resource_id)
-        if (remainingRefs === 0) {
-          dao.resources.markPendingDeleteSync(res.resource_id)
-          const updatedRes = dao.resources.findByIdSync(res.resource_id)
-          if (updatedRes) {
-            resourcesToDelete.push(updatedRes)
+      const wasActive = record.install_state === 'active'
+      const resourcesToDelete: ResourceDownloadRecord[] = []
+
+      // 阶段一：事务内解绑并计算引用计数，绝不在事务内做磁盘 I/O
+      const tx = db.transaction(() => {
+        const boundResources = dao.resources.findResourcesByModuleSync(moduleId)
+        for (const res of boundResources) {
+          dao.resources.unbindResourceFromModuleSync(moduleId, res.resource_id)
+          const remainingRefs = dao.resources.getResourceActiveRefCountSync(res.resource_id)
+          if (remainingRefs === 0) {
+            dao.resources.markPendingDeleteSync(res.resource_id)
+            const updatedRes = dao.resources.findByIdSync(res.resource_id)
+            if (updatedRes) {
+              resourcesToDelete.push(updatedRes)
+            }
+          }
+        }
+        dao.modules.updateInstallStateSync(moduleId, 'not_installed')
+      })
+
+      tx()
+      this.liveProgress.delete(moduleId)
+
+      // 阶段二：停机释放 Windows mmap 文件句柄后再物理清理
+      if (wasActive || this.processManager.isRunning(moduleId)) {
+        await this.processManager.stopProcess(moduleId)
+      }
+      let omniStopped = false
+      if (resourcesToDelete.length > 0 && record.backend_type !== 'utility_process') {
+        omniStopped = await this.stopOmniProcessForUninstall()
+      }
+
+      for (const res of resourcesToDelete) {
+        this.fastReadySnapshot.delete(res.resource_id)
+        let targetAbsDir: string
+        try {
+          targetAbsDir = this.resolvePhysicalPath(res.target_local_path)
+        } catch (pathErr) {
+          logger.error(
+            LogCategory.SYSTEM,
+            `[ModularResource] 卸载阶段检测到非法路径，跳过磁盘删除: ${res.resource_id}`,
+            pathErr
+          )
+          continue
+        }
+
+        try {
+          await invalidateReadyMarkers(targetAbsDir).catch(() => {})
+          const deleted = await this.tombstoneGC.safeDeleteWithTombstone(targetAbsDir, {
+            slot: record.capability_slot ?? undefined,
+            deleteDirectoryFn: this.deleteDirectoryFn
+          })
+          if (deleted) {
+            const refCount = dao.resources.getResourceActiveRefCountSync(res.resource_id)
+            if (refCount === 0) {
+              dao.resources.deleteResourceSync(res.resource_id)
+            }
+          } else {
+            logger.warn(
+              LogCategory.SYSTEM,
+              `[ModularResource] 资源目录仍被占用，保持 pending_delete 等待下次启动 GC: ${res.resource_id}`
+            )
+          }
+        } catch (err: any) {
+          if (err?.code === 'EBUSY' || err?.code === 'EPERM') {
+            logger.warn(
+              LogCategory.SYSTEM,
+              `[ModularResource] 卸载删除捕获句柄占用 (${err.code})，保持 pending_delete: ${res.resource_id}`
+            )
+          } else {
+            logger.warn(
+              LogCategory.SYSTEM,
+              `[ModularResource] 卸载删除资源目录异常，保持 pending_delete: ${res.resource_id}`,
+              err
+            )
           }
         }
       }
-      dao.modules.updateInstallStateSync(moduleId, 'not_installed')
-    })
 
-    tx()
-    this.liveProgress.delete(moduleId)
-
-    // 阶段二：事务外执行物理 Tombstone 删除与退避重试
-    for (const res of resourcesToDelete) {
-      const targetAbsDir = this.resolvePhysicalPath(res.target_local_path)
-      try {
-        const deleted = await this.tombstoneGC.safeDeleteWithTombstone(targetAbsDir, {
-          slot: record.capability_slot ?? undefined,
-          deleteDirectoryFn: this.deleteDirectoryFn
+      // 阶段三：失效缓存并在需要时恢复干净的 Omni 底座运行
+      if (wasActive || omniStopped) {
+        await this.notifyRuntimePluginTopologyChanged({
+          moduleId,
+          reason: 'module_uninstall',
+          restartPolicy: omniStopped ? 'ensure-running' : 'restart'
+        }).catch(err => {
+          logger.warn(LogCategory.SYSTEM, '[ModularResource] 卸载后刷新拓扑告警:', err)
         })
-        if (deleted) {
-          // 再次确认引用计数为 0 后删除数据库记录
-          const refCount = dao.resources.getResourceActiveRefCountSync(res.resource_id)
-          if (refCount === 0) {
-            dao.resources.deleteResourceSync(res.resource_id)
-          }
-        } else {
-          // 句柄被占用（EBUSY/EPERM），保持 pending_delete 交由下次启动 reconcileOnStartup 清理
-          logger.warn(
-            LogCategory.SYSTEM,
-            `[ModularResource] 资源目录仍被占用，保持 pending_delete 等待下次启动 GC: ${res.resource_id}`
-          )
-        }
-      } catch (err: any) {
-        if (err?.code === 'EBUSY' || err?.code === 'EPERM') {
-          logger.warn(
-            LogCategory.SYSTEM,
-            `[ModularResource] 卸载删除捕获句柄占用 (${err.code})，保持 pending_delete: ${res.resource_id}`
-          )
-        } else {
-          logger.warn(
-            LogCategory.SYSTEM,
-            `[ModularResource] 卸载删除资源目录异常，保持 pending_delete: ${res.resource_id}`,
-            err
-          )
-        }
       }
-    }
 
-    return this.buildModuleView(dao.modules.findByIdSync(moduleId)!)
+      return this.buildModuleView(dao.modules.findByIdSync(moduleId)!)
+    })
   }
 
   /**
@@ -1885,12 +3904,42 @@ export class ModularResourceService implements IModularResourceService {
       userConsent?: boolean
     }
   ): Promise<BuiltinModuleView> {
+    this.assertWriteGateAllowed()
     this.ensureDefaultSeeds()
     const dao = this.getDao()
     const existing = dao.modules.findByIdSync(moduleId)
     if (!existing) {
       throw new Error(`未找到模块定义: ${moduleId}`)
     }
+
+    const slot = existing.capability_slot ?? 'general'
+    const policy = existing.slot_policy ?? 'multi_active'
+    const isExclusive = policy === 'exclusive_required' || policy === 'exclusive_optional'
+
+    if (patch.active !== undefined) {
+      if (isExclusive) {
+        return this.withSlotMutex(slot, () =>
+          this.executeUpdateModuleState(moduleId, patch, existing)
+        )
+      }
+      return this.topologyCoordinator.execute(() =>
+        this.executeUpdateModuleState(moduleId, patch, existing)
+      )
+    }
+    return this.executeUpdateModuleState(moduleId, patch, existing)
+  }
+
+  private async executeUpdateModuleState(
+    moduleId: string,
+    patch: {
+      active?: boolean
+      userConfig?: Record<string, unknown> | string | null
+      selectedVariant?: string
+      userConsent?: boolean
+    },
+    existing: BuiltinModuleRecord
+  ): Promise<BuiltinModuleView> {
+    const dao = this.getDao()
 
     // 1. 处理配置与变体
     if (patch.userConfig !== undefined) {
@@ -1919,69 +3968,102 @@ export class ModularResourceService implements IModularResourceService {
       dao.modules.updateUserConsentSync(moduleId, patch.userConsent ? 1 : 0)
     }
 
-    // 2. 处理激活/停用流转
+    // 2. 处理激活/停用流转（附严格前置门禁与失败回滚保护）
     if (patch.active === true) {
       const slot = existing.capability_slot ?? 'general'
       const policy = existing.slot_policy ?? 'multi_active'
       const isExclusive = policy === 'exclusive_required' || policy === 'exclusive_optional'
 
-      if (isExclusive) {
-        // 排他逻辑：同槽位前任置为 installed_inactive 并平滑停止
-        const currentActive = dao.modules.findActiveBySlotSync(slot)
-        if (currentActive && currentActive.id !== moduleId) {
-          dao.modules.updateInstallStateSync(currentActive.id, 'installed_inactive')
-          await this.processManager.stopProcess(currentActive.id)
-        }
+      // 前置物理门禁检查（未就绪绝不降级或驱逐前任）
+      await this.assertModuleResourcesReadyForActivation(moduleId, existing)
+
+      const prevActive = isExclusive ? dao.modules.findActiveBySlotSync(slot) : null
+      const prevServingEpoch = slot === 'base_embedding' ? dao.epochs.findServingEpochSync() : null
+      let createdOrFlippedEpochNum: number | null = null
+
+      if (isExclusive && prevActive && prevActive.id !== moduleId) {
+        dao.modules.updateInstallStateSync(prevActive.id, 'installed_inactive')
+        await this.processManager.stopProcess(prevActive.id)
       }
 
       const actRes = await this.processManager.requestActivate(moduleId, 'user_toggle')
-      if (actRes.success) {
-        dao.modules.updateInstallStateSync(moduleId, 'active')
-
-        // 核心不变量 1：基础向量引擎切换时代际翻转
-        if (slot === 'base_embedding') {
-          const servingEpoch = dao.epochs.findServingEpochSync()
-          const newEpochNum = servingEpoch ? servingEpoch.epoch + 1 : 1
-          const isClassic = moduleId.includes('classic')
-          const textDim = isClassic ? 384 : 768
-          const imageDim = isClassic ? 512 : 768
-
-          if (servingEpoch && servingEpoch.module_id !== moduleId) {
-            dao.epochs.createEpochSync({
-              epoch: newEpochNum,
-              module_id: moduleId,
-              text_dim: textDim,
-              image_dim: imageDim,
-              status: 'building',
-              reindex_cursor: null
-            })
-            dao.epochs.flipEpochSync(servingEpoch.epoch, newEpochNum)
-          } else if (!servingEpoch) {
-            dao.epochs.createEpochSync({
-              epoch: 1,
-              module_id: moduleId,
-              text_dim: textDim,
-              image_dim: imageDim,
-              status: 'serving',
-              reindex_cursor: null
-            })
-          }
+      if (!actRes.success) {
+        if (isExclusive && prevActive && prevActive.id !== moduleId) {
+          dao.modules.activateExclusiveModuleSync(prevActive.id)
         }
-
-        // 核心不变量 2：Omni 感知热重载通知
-        if (slot === 'perception_nsfw' || slot === 'perception_face') {
-          try {
-            const { omniService } = require('./omni-service')
-            omniService?.syncConfigFromDesktop?.().catch?.(() => {})
-          } catch {}
-        }
-      } else {
-        // 门禁拦截：保持 installed_inactive 并记录错误原因
         dao.modules.updateInstallStateSync(
           moduleId,
           'installed_inactive',
           actRes.error ?? '激活门禁拦截'
         )
+        return this.buildModuleView(dao.modules.findByIdSync(moduleId)!)
+      }
+
+      dao.modules.activateExclusiveModuleSync(moduleId)
+
+      if (slot === 'base_embedding') {
+        const isClassic = moduleId.includes('classic')
+        const textDim = isClassic ? 384 : 768
+        const imageDim = isClassic ? 512 : 768
+
+        if (prevServingEpoch && prevServingEpoch.module_id !== moduleId) {
+          const newEpochNum = prevServingEpoch.epoch + 1
+          dao.epochs.createEpochSync({
+            epoch: newEpochNum,
+            module_id: moduleId,
+            text_dim: textDim,
+            image_dim: imageDim,
+            status: 'building',
+            reindex_cursor: null
+          })
+          dao.epochs.flipEpochSync(prevServingEpoch.epoch, newEpochNum)
+          createdOrFlippedEpochNum = newEpochNum
+        } else if (!prevServingEpoch) {
+          dao.epochs.createEpochSync({
+            epoch: 1,
+            module_id: moduleId,
+            text_dim: textDim,
+            image_dim: imageDim,
+            status: 'serving',
+            reindex_cursor: null
+          })
+          createdOrFlippedEpochNum = 1
+        }
+      }
+
+      try {
+        await this.notifyRuntimePluginTopologyChanged({
+          moduleId,
+          reason: 'module_state',
+          restartPolicy: 'ensure-running'
+        })
+      } catch (activateErr: any) {
+        const errMsg = activateErr?.message || String(activateErr)
+        logger.error(
+          LogCategory.SYSTEM,
+          `[ModularResource] 模块 ${moduleId} 运行时加载或冒烟失败，执行严格回滚:`,
+          activateErr
+        )
+        // 严格回滚时序 (Spec §2.3.3)：先释放新项（防 ux_exclusive_active_slot 冲突），再恢复代际与前任
+        dao.modules.updateInstallStateSync(moduleId, 'installed_inactive', errMsg)
+        if (slot === 'base_embedding' && createdOrFlippedEpochNum !== null) {
+          try {
+            dao.epochs.rollbackEpochSync(prevServingEpoch?.epoch ?? null, createdOrFlippedEpochNum)
+          } catch (epochRbErr) {
+            logger.warn(LogCategory.SYSTEM, '[ModularResource] Epoch 回滚告警:', epochRbErr)
+          }
+        }
+        if (isExclusive && prevActive && prevActive.id !== moduleId) {
+          dao.modules.activateExclusiveModuleSync(prevActive.id)
+          await this.notifyRuntimePluginTopologyChanged({
+            moduleId: prevActive.id,
+            reason: 'module_state_rollback',
+            restartPolicy: 'ensure-running'
+          }).catch(rbErr => {
+            logger.warn(LogCategory.SYSTEM, '[ModularResource] 回滚恢复拓扑告警:', rbErr)
+          })
+        }
+        throw activateErr
       }
     } else if (patch.active === false) {
       // 核心不变量 3：必选槽防空保护
@@ -1989,8 +4071,15 @@ export class ModularResourceService implements IModularResourceService {
         throw new Error('SLOT_REQUIRED_EMPTY')
       }
 
-      dao.modules.updateInstallStateSync(moduleId, 'installed_inactive')
+      dao.modules.deactivateModuleSync(moduleId)
       await this.processManager.stopProcess(moduleId)
+      await this.notifyRuntimePluginTopologyChanged({
+        moduleId,
+        reason: 'module_deactivate',
+        restartPolicy: 'restart'
+      }).catch(err => {
+        logger.warn(LogCategory.SYSTEM, '[ModularResource] 停用模块刷新拓扑告警:', err)
+      })
     }
 
     return this.buildModuleView(dao.modules.findByIdSync(moduleId)!)

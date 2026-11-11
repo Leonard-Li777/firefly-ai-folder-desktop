@@ -89,7 +89,7 @@ export const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({ onOpenChange }) 
           borderClass: 'border-purple-500/30',
           badgeClass:
             'bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-purple-500/20',
-          ringClass: 'ring-1 ring-purple-500/30 hover:ring-purple-500/50',
+          ringClass: 'hover:ring-1 hover:ring-purple-500/50',
           arrowClass: 'text-purple-500/70'
         }
       case UserTier.AGENT:
@@ -100,7 +100,7 @@ export const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({ onOpenChange }) 
           borderClass: 'border-emerald-500/30',
           badgeClass:
             'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-emerald-500/20',
-          ringClass: 'ring-1 ring-emerald-500/30 hover:ring-emerald-500/50',
+          ringClass: 'hover:ring-1 hover:ring-emerald-500/50',
           arrowClass: 'text-emerald-500/70'
         }
       case UserTier.PRO:
@@ -111,7 +111,7 @@ export const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({ onOpenChange }) 
           borderClass: 'border-amber-500/30',
           badgeClass:
             'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-amber-500/20',
-          ringClass: 'ring-1 ring-amber-500/30 hover:ring-amber-500/50',
+          ringClass: 'hover:ring-1 hover:ring-amber-500/50',
           arrowClass: 'text-amber-500/70'
         }
       default:
@@ -121,7 +121,7 @@ export const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({ onOpenChange }) 
           textClass: 'text-muted-foreground',
           borderClass: 'border-border/50',
           badgeClass: 'bg-secondary text-secondary-foreground',
-          ringClass: 'ring-1 ring-border/50 hover:ring-border',
+          ringClass: 'hover:ring-1 hover:ring-border',
           arrowClass: 'text-muted-foreground/70'
         }
     }
@@ -237,7 +237,7 @@ export const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({ onOpenChange }) 
         style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
         onClick={() => updateIsOpen(!isOpen)}
         className={cn(
-          'relative flex items-center gap-1.5 px-2 py-1.5 rounded-full transition-all active:scale-95 hover:bg-accent/50 cursor-pointer',
+          'relative flex items-center gap-1.5 px-1 py-1 rounded-full transition-all active:scale-95 hover:bg-accent/50 cursor-pointer',
           tierConfig.ringClass
         )}
       >

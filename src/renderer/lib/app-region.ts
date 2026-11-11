@@ -1,4 +1,5 @@
 import { normalizeAppRegion, type AppRegion } from '@firefly/shared'
+export type { AppRegion }
 
 /**
  * 当前客户端所属区域（渲染层唯一判定入口）

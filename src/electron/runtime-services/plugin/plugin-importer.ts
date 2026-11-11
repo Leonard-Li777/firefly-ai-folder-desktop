@@ -14,7 +14,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { randomUUID } from 'crypto'
 import { dialog, app, type BrowserWindow } from 'electron'
-import { isSubPath, logger, LogCategory } from '@firefly/shared'
+import { isSubPath, logger, LogCategory, PluginPathResolver } from '@firefly/shared'
 import {
   getModularResourceDao,
   type BuiltinModuleRecord
@@ -77,11 +77,7 @@ export class PluginImporter {
   private readonly devModeEffective: boolean
 
   constructor(options?: ImportPluginOptions) {
-    this.targetBaseDir =
-      options?.targetBaseDir ??
-      (typeof app !== 'undefined'
-        ? path.join(app.getPath('userData'), 'modules')
-        : path.join(process.cwd(), 'modules'))
+    this.targetBaseDir = options?.targetBaseDir ?? PluginPathResolver.getPluginsRootDir()
     this.dao = options?.dao ?? getModularResourceDao()
     this.isPackaged =
       options?.isPackaged ?? (typeof app !== 'undefined' && app.isPackaged ? app.isPackaged : false)

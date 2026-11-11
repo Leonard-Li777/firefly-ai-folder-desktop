@@ -44,3 +44,30 @@ export {
   resolveExtractorWorkerPath,
   type DispatchOptions
 } from './bundle-extractor-dispatcher'
+export {
+  BundlePromoter,
+  BundlePromoterError,
+  type BundlePromoterErrorCode,
+  type IncomingModuleMeta,
+  type AdmissionDecision,
+  type PromotionOptions,
+  type PromotionResult
+} from './bundle-promoter'
+export {
+  BundleVerifierWorkerLogic,
+  type VerifierWorkerOptions,
+  type VerifierResult,
+  type VerifierErrorType,
+  type VerifierWorkerInMessage,
+  type VerifierWorkerOutMessage
+} from './workers/bundle-verifier-worker'
+export {
+  BackgroundVerificationQueue,
+  resolveVerifierWorkerPath,
+  type BackgroundQueueOptions
+} from './background-verification-queue'
+export {
+  StartupReconciler,
+  type ReconcileOptions,
+  type ReconcileResult
+} from './startup-reconciler'

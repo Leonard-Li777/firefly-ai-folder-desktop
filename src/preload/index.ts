@@ -7,6 +7,7 @@
 
 import { ipcRenderer } from 'electron'
 import type {
+  EnvironmentVisibilityEnvelope,
   IModularResourceBridge,
   ModularResourceProgressPayload,
   PluginModuleItem
@@ -49,13 +50,55 @@ export const modularResourcePreloadBridge: IModularResourceBridge = {
     ipcRenderer.invoke('modular-resource:export-offline-package', payload),
   importOfflinePackage: (payload?: { archivePath?: string }) =>
     ipcRenderer.invoke('modular-resource:import-offline-package', payload),
+  exportOfflineBundle: (): Promise<string | null> =>
+    ipcRenderer.invoke('modular-resource:export-offline-bundle'),
+  getEnvironmentVisibility: (): Promise<EnvironmentVisibilityEnvelope> =>
+    ipcRenderer.invoke('modular-resource:get-environment-visibility'),
+  setDeveloperMode: (payload: { enabled: boolean }): Promise<EnvironmentVisibilityEnvelope> =>
+    ipcRenderer.invoke('modular-resource:set-developer-mode', payload),
+  onEnvironmentVisibilityChanged: (callback: (envelope: EnvironmentVisibilityEnvelope) => void) => {
+    const handler = (_event: unknown, envelope: EnvironmentVisibilityEnvelope) => callback(envelope)
+    ipcRenderer.on('modular-resource:environment-visibility-changed', handler as any)
+    return () => {
+      ipcRenderer.removeListener('modular-resource:environment-visibility-changed', handler as any)
+    }
+  },
   pickAndImportLocalPlugin: () =>
     ipcRenderer.invoke('modular-resource:pick-and-import-local-plugin'),
+  pickDirectory: async (): Promise<string | null> => {
+    const res: any = await ipcRenderer.invoke('modular-resource:pick-directory')
+    if (!res || res.canceled || !res.selectedPath) return null
+    return res.selectedPath
+  },
+  getPluginDirInfo: () => ipcRenderer.invoke('modular-resource:get-plugin-dir-info'),
+  validatePluginDir: (targetPath: string) =>
+    ipcRenderer.invoke('modular-resource:validate-plugin-dir', { targetPath }),
+  changePluginDir: (targetPath: string) =>
+    ipcRenderer.invoke('modular-resource:change-plugin-dir', { targetPath }),
+  cancelDirMigration: () => ipcRenderer.invoke('modular-resource:cancel-dir-migration'),
+  cleanupOldDir: () => ipcRenderer.invoke('modular-resource:cleanup-old-dir'),
+  dismissOldDirCleanup: () => ipcRenderer.invoke('modular-resource:dismiss-old-dir-cleanup'),
+  isOldDirCleanupDismissed: () =>
+    ipcRenderer.invoke('modular-resource:is-old-dir-cleanup-dismissed'),
+  onDirMigrationProgress: (callback: (payload: any) => void) => {
+    const handler = (_event: unknown, payload: any) => callback(payload)
+    ipcRenderer.on('modular-resource:dir-migration-progress', handler as any)
+    return () => {
+      ipcRenderer.removeListener('modular-resource:dir-migration-progress', handler as any)
+    }
+  },
   onProgress: (callback: (event: ModularResourceProgressPayload) => void) => {
     const handler = (_event: unknown, payload: ModularResourceProgressPayload) => callback(payload)
     ipcRenderer.on('modular-resource:progress', handler as any)
     return () => {
       ipcRenderer.removeListener('modular-resource:progress', handler as any)
+    }
+  },
+  onCrash: (callback: (event: any) => void) => {
+    const handler = (_event: unknown, data: any) => callback(data)
+    ipcRenderer.on('plugin:crashed', handler as any)
+    return () => {
+      ipcRenderer.removeListener('plugin:crashed', handler as any)
     }
   }
 }

@@ -22,6 +22,24 @@ import {
   type ModuleDownloadProgressEvent,
   type CatalogModuleEntry
 } from '../system/modular-resource-service'
+import { safeRestartApp } from '../system/app-lifecycle'
+import {
+  EnvironmentVisibilityCoordinator,
+  type EnvironmentVisibilityEnvelope
+} from '../modular-resource/environment-visibility'
+
+export function broadcastEnvironmentVisibility(envelope: EnvironmentVisibilityEnvelope): void {
+  try {
+    const windows = BrowserWindow.getAllWindows()
+    for (const win of windows) {
+      if (!win.isDestroyed()) {
+        win.webContents.send('modular-resource:environment-visibility-changed', envelope)
+      }
+    }
+  } catch (err) {
+    logger.warn(LogCategory.MAIN, '[ModularResourceIPC] 广播环境可见性变更失败:', err)
+  }
+}
 
 export function broadcastModularResourceProgress(event: ModuleDownloadProgressEvent): void {
   try {
@@ -63,19 +81,39 @@ export function registerModularResourceIpcHandlers(
     }
   )
 
+  ipcMain.handle('modular-resource:get-environment-visibility', async () => {
+    const isPackaged = typeof app !== 'undefined' ? app.isPackaged : false
+    return EnvironmentVisibilityCoordinator.getInstance().getEnvelope(isPackaged)
+  })
+
+  ipcMain.handle(
+    'modular-resource:set-developer-mode',
+    async (_event, payload: { enabled: boolean }) => {
+      const isPackaged = typeof app !== 'undefined' ? app.isPackaged : false
+      devModeEnabled = !!payload.enabled
+      const envelope = EnvironmentVisibilityCoordinator.getInstance().setDeveloperMode(
+        payload.enabled,
+        isPackaged
+      )
+      broadcastEnvironmentVisibility(envelope)
+      return envelope
+    }
+  )
+
   ipcMain.handle('modular-resource:get-dev-mode', async () => {
     const effective = typeof app !== 'undefined' && app.isPackaged ? false : devModeEnabled
     return { enabled: devModeEnabled, devModeEffective: effective }
   })
 
   ipcMain.handle('modular-resource:set-dev-mode', async (_event, payload: { enabled: boolean }) => {
+    const isPackaged = typeof app !== 'undefined' && app.isPackaged ? false : devModeEnabled
     devModeEnabled = !!payload.enabled
-    const effective = typeof app !== 'undefined' && app.isPackaged ? false : devModeEnabled
-    logger.info(
-      LogCategory.MAIN,
-      `[ModularResourceIPC] 切换开发者模式: ${devModeEnabled} (有效状态: ${effective})`
+    const envelope = EnvironmentVisibilityCoordinator.getInstance().setDeveloperMode(
+      payload.enabled,
+      isPackaged
     )
-    return { devModeEffective: effective }
+    broadcastEnvironmentVisibility(envelope)
+    return { devModeEffective: envelope.visibility.developerModeEnabled }
   })
 
   ipcMain.handle('modular-resource:install', async (_event, moduleId: string) => {
@@ -195,11 +233,26 @@ export function registerModularResourceIpcHandlers(
 
   ipcMain.handle('modular-resource:restart-app', async () => {
     try {
-      service.requestRestart()
+      await safeRestartApp()
       return true
     } catch (err: any) {
       logger.error(LogCategory.MAIN, '[ModularResourceIPC] restart-app 失败:', err)
       return false
+    }
+  })
+
+  ipcMain.handle('modular-resource:export-offline-bundle', async () => {
+    try {
+      const res = await dialog.showSaveDialog({
+        title: '导出离线插件总包',
+        defaultPath: 'firefly-offline-bundle.ffp',
+        filters: [{ name: 'Firefly 离线总包 (*.ffp)', extensions: ['ffp', 'zip'] }]
+      })
+      if (res.canceled || !res.filePath) return null
+      return await service.exportOfflinePackage('all', res.filePath)
+    } catch (err: unknown) {
+      logger.error(LogCategory.MAIN, '[ModularResourceIPC] export-offline-bundle 失败:', err)
+      throw err
     }
   })
 
@@ -269,6 +322,105 @@ export function registerModularResourceIpcHandlers(
       logger.error(LogCategory.MAIN, '[ModularResourceIPC] pick-and-import-local-plugin 失败:', err)
       return { canceled: false, error: err?.message || '导入失败' }
     }
+  })
+
+  // 获取插件目录详细信息与运行态状态
+  ipcMain.handle('modular-resource:get-plugin-dir-info', async () => {
+    try {
+      return await service.getPluginDirInfo()
+    } catch (err: any) {
+      logger.error(LogCategory.MAIN, '[ModularResourceIPC] get-plugin-dir-info 失败:', err)
+      throw err
+    }
+  })
+
+  // 调起系统原生文件夹选择器 (Issue 06)
+  ipcMain.handle('modular-resource:pick-directory', async event => {
+    try {
+      const win = BrowserWindow.fromWebContents(event.sender) ?? undefined
+      const res = await dialog.showOpenDialog(win as any, {
+        title: '选择插件与模型存储文件夹',
+        properties: ['openDirectory', 'createDirectory', 'dontAddToRecent']
+      })
+      if (res.canceled || !res.filePaths || res.filePaths.length === 0) {
+        return { canceled: true }
+      }
+      return { canceled: false, selectedPath: res.filePaths[0] }
+    } catch (err: any) {
+      logger.error(LogCategory.MAIN, '[ModularResourceIPC] pick-directory 失败:', err)
+      return { canceled: false, error: err?.message || '打开选择器失败' }
+    }
+  })
+
+  // 校验候选路径合法性（11步管线校验与诊断）
+  ipcMain.handle(
+    'modular-resource:validate-plugin-dir',
+    async (_event, payload: { targetPath: string }) => {
+      try {
+        return await service.validatePluginDir(payload?.targetPath ?? '')
+      } catch (err: any) {
+        logger.error(LogCategory.MAIN, '[ModularResourceIPC] validate-plugin-dir 失败:', err)
+        return {
+          valid: false,
+          errorCode: 'PATH_NOT_WRITABLE',
+          errorMessage: err?.message || '校验失败'
+        }
+      }
+    }
+  )
+
+  // 发起目录迁移
+  ipcMain.handle(
+    'modular-resource:change-plugin-dir',
+    async (_event, payload: { targetPath: string }) => {
+      try {
+        return await service.changePluginDirectory(payload?.targetPath ?? '')
+      } catch (err: any) {
+        logger.error(LogCategory.MAIN, '[ModularResourceIPC] change-plugin-dir 失败:', err)
+        return {
+          success: false,
+          errorCode: err?.code ?? 'PATH_NOT_WRITABLE'
+        }
+      }
+    }
+  )
+
+  // 取消正在执行的目录迁移 (仅在 PRECHECK/STAGING/VERIFYING 生效)
+  ipcMain.handle('modular-resource:cancel-dir-migration', async () => {
+    try {
+      return await service.cancelDirMigration()
+    } catch (err: any) {
+      logger.error(LogCategory.MAIN, '[ModularResourceIPC] cancel-dir-migration 失败:', err)
+      return {
+        cancelled: false,
+        errorCode: err?.code
+      }
+    }
+  })
+
+  // 清理历史旧目录残留
+  ipcMain.handle('modular-resource:cleanup-old-dir', async () => {
+    try {
+      return await service.cleanupOldPluginDirectory()
+    } catch (err: any) {
+      logger.error(LogCategory.MAIN, '[ModularResourceIPC] cleanup-old-dir 失败:', err)
+      return {
+        success: false,
+        freedBytes: 0,
+        errorCode: err?.code ?? 'PATH_NOT_WRITABLE'
+      }
+    }
+  })
+
+  // 忽略历史旧目录清理提示
+  ipcMain.handle('modular-resource:dismiss-old-dir-cleanup', async () => {
+    service.dismissOldDirCleanup()
+    return true
+  })
+
+  // 检查是否已忽略历史旧目录清理提示
+  ipcMain.handle('modular-resource:is-old-dir-cleanup-dismissed', async () => {
+    return service.isOldDirCleanupDismissed()
   })
 
   // E2E 模式注册只读探针处理器 (Spec §3.4 / §5.3)

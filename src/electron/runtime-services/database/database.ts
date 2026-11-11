@@ -520,11 +520,21 @@ export const GENESIS_V1_SCHEMA = `
     reindex_cursor    TEXT                           -- 续跑游标 (JSON)
   );
 
-  -- 独占排他槽位唯一激活约束 (白名单硬核过滤，杜绝通过篡改 slot_policy 绕过防双活)
+  -- 独占排他槽位唯一激活约束 (白名单硬核过滤，与 @firefly/shared EXCLUSIVE_CAPABILITY_SLOTS 严格同源，杜绝通过篡改 slot_policy 绕过防双活)
   CREATE UNIQUE INDEX IF NOT EXISTS ux_exclusive_active_slot
   ON builtin_modules(capability_slot)
   WHERE install_state = 'active'
-    AND capability_slot IN ('base_embedding', 'asr', 'tts', 'perception_nsfw', 'perception_face');
+    AND capability_slot IN (
+      'base_embedding',
+      'asr',
+      'voice_asr',
+      'tts',
+      'voice_tts',
+      'perception_nsfw',
+      'perception_face',
+      'ai_engine_cpu',
+      'advanced_ai_engine'
+    );
 
   -- 复合索引：支持市场主视图按 availability、category 与 install_state 复合过滤
   CREATE INDEX IF NOT EXISTS idx_builtin_modules_query
