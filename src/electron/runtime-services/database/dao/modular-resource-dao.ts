@@ -989,11 +989,28 @@ export class LocalWorkflowDao implements ILocalWorkflowDAO {
   }
 
   getAll(): LocalWorkflowRecord[] {
-    return this.db
+    const rows = this.db
       .prepare(
         'SELECT id, user_id, author, name, version, persona, category, summary, source, status, workspace_config, naming_pattern, naming_template, preset_directory_tree, preview_tree, icon_svg, created_at, modified_at FROM local_workflows ORDER BY created_at DESC'
       )
       .all() as LocalWorkflowRecord[]
+
+    // 读链路透传与静态蓝图归一化权重回退 (Spec §3.1.3 第 8 处白名单)
+    return rows.map(r => {
+      let extensionWeights: Record<string, number> | undefined
+      if (r.workspace_config) {
+        try {
+          const cfg = typeof r.workspace_config === 'string' ? JSON.parse(r.workspace_config) : r.workspace_config
+          if (cfg && cfg.extensionWeights && typeof cfg.extensionWeights === 'object') {
+            extensionWeights = cfg.extensionWeights
+          }
+        } catch {}
+      }
+      return {
+        ...r,
+        extensionWeights
+      }
+    })
   }
 
   upsert(
@@ -1042,13 +1059,13 @@ export class LocalWorkflowDao implements ILocalWorkflowDAO {
         status: 'ready',
         policyVersion: 1,
         workflowId,
-        customIgnoreRules:
-          rawConfig.customIgnoreRules ||
+        customExcludeRules:
+          rawConfig.customExcludeRules ||
           ((record as any).filter_mode === 'blacklist'
             ? JSON.parse(record.filter_rules || '[]')
             : []),
-        customWhitelistRules:
-          rawConfig.customWhitelistRules ||
+        customIncludeRules:
+          rawConfig.customIncludeRules ||
           ((record as any).filter_mode === 'whitelist'
             ? JSON.parse(record.filter_rules || '[]')
             : []),
@@ -1056,6 +1073,7 @@ export class LocalWorkflowDao implements ILocalWorkflowDAO {
         derivedSnapshot: baseAi,
         advancedAIPrompts: rawConfig.advancedAIPrompts || undefined,
         unitRecognition: rawConfig.unitRecognition || undefined,
+        extensionWeights: rawConfig.extensionWeights || undefined,
         namingPattern: record.naming_pattern || rawConfig.namingPattern || undefined,
         namingTemplate: record.naming_template || rawConfig.namingTemplate || undefined,
         configuredAt: Date.now()

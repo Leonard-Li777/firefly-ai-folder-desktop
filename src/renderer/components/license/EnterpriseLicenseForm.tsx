@@ -29,6 +29,7 @@ import {
 } from '../../lib/marketing-link'
 import { openExternalLink } from '../../lib/external-link'
 import type { AppRegion } from '../../lib/app-region'
+import { useTierStore } from '../../stores/tier-store'
 
 export type IdentCodeState =
   | { status: 'loading' }
@@ -255,6 +256,8 @@ export const EnterpriseLicenseForm: React.FC<EnterpriseLicenseFormProps> = ({
         if (statusResult.expiry) {
           setExpiryDate(statusResult.expiry)
         }
+        // 激活成功后主动刷新等级 store，确保门控与头像菜单同步切换
+        await useTierStore.getState().fetchProfile()
         fireCelebration()
         toast.success(tier === 'pro' ? t('Pro 版授权激活成功！') : t('企业版授权激活成功！'))
         setTimeout(() => {

@@ -148,32 +148,68 @@ describe('WorkspaceAdmissionRulesTab 包含与排除规则管理及影响预览'
     expect(screen.getByText('绝不删除用户磁盘物理文件')).toBeDefined()
     expect(
       screen.getByText(
-        '修改包含与排除规则仅重新过滤 AI 索引与分析队列，绝不会删除或修改您电脑磁盘中的任何原始物理文件。'
+        '修改包含与排除规则仅影响真实目录中显示的文件，不会触碰您电脑磁盘中的任何原始物理文件。'
       )
     ).toBeDefined()
   })
 
-  it('AC 1: 支持在标准模式与包含规则模式之间无缝切换', async () => {
+  it('AC 1: 包含规则与排除规则常驻可同时设置，不存在互斥的文件入场模式', () => {
     render(<WorkspaceAdmissionRulesTab workspace={mockStandardWorkspace} />)
 
-    // 初始标准模式
-    expect(screen.getByText('标准模式 (全量入场)')).toBeDefined()
-    expect(screen.getByText('排他包含模式 (仅放行指定格式)')).toBeDefined()
+    // 规格已废除 filterMode 二选一互斥模式：面板不得再出现任何模式切换入口
+    expect(screen.queryByText('文件入场模式')).toBeNull()
+    expect(screen.queryByText('标准模式 (全量入场)')).toBeNull()
+    expect(screen.queryByText('排他包含模式 (仅放行指定格式)')).toBeNull()
 
-    // 点击切换至排他模式
-    fireEvent.click(screen.getByText('排他包含模式 (仅放行指定格式)'))
+    // 即使包含规则为空，两套规则编辑区仍然常驻且同时可见
+    expect(screen.getByText('文件准入规则 (可同时设置)')).toBeDefined()
+    expect(screen.getByText('包含 + 排除叠加生效')).toBeDefined()
+    expect(screen.getByText('目录专属包含规则')).toBeDefined()
+    expect(screen.getByText('常用类型快速选用')).toBeDefined()
+    expect(screen.getByText('目录专属排除规则')).toBeDefined()
+    expect(screen.getByText('添加排除项')).toBeDefined()
+  })
 
-    // 切换后显示扩展名相关输入与预设
+  it('回归: 包含规则为空时仍可直接添加扩展名，保存按实际配置写入而不被清空', async () => {
+    const onConfigSaved = vi.fn()
+    render(
+      <WorkspaceAdmissionRulesTab workspace={mockStandardWorkspace} onConfigSaved={onConfigSaved} />
+    )
+
+    const input = screen.getByPlaceholderText(
+      '输入扩展名（如 png 或 .docx，回车添加，支持逗号分隔）'
+    )
+    fireEvent.change(input, { target: { value: 'CR3' } })
+    fireEvent.click(screen.getByText('添加'))
+
+    expect(screen.getByTestId('whitelist-tag-.cr3')).toBeDefined()
+
+    const saveBtn = await screen.findByText('保存包含与排除规则')
+    fireEvent.click(saveBtn)
+
     await waitFor(() => {
-      expect(screen.getByText('已启用的包含规则扩展名')).toBeDefined()
-      expect(screen.getByText('常用类型快速选用')).toBeDefined()
+      expect(mockUpdateWorkspaceWhitelist).toHaveBeenCalledWith(mockStandardWorkspace.id, ['.cr3'])
+      expect(onConfigSaved).toHaveBeenCalled()
     })
+    expect(mockUpdateWorkspaceWhitelist).not.toHaveBeenCalledWith(mockStandardWorkspace.id, [])
+  })
 
-    // 再切换回标准模式
-    fireEvent.click(screen.getByText('标准模式 (全量入场)'))
+  it('回归: 两套规则可同时操作，空包含规则时仍按叠加顺序测算与放行说明', async () => {
+    render(<WorkspaceAdmissionRulesTab workspace={mockStandardWorkspace} />)
+
+    // 空包含规则也照常发起测算（不再因「标准模式」跳过或强制按 100% 展示）
     await waitFor(() => {
-      expect(screen.queryByText('已启用的包含规则扩展名')).toBeNull()
+      expect(mockPreviewWorkspaceWhitelistImpact).toHaveBeenCalledWith(mockStandardWorkspace.id, [])
     })
+    expect(screen.getByText('包含规则留空：按排除规则放行其余文件')).toBeDefined()
+
+    // 包含规则区与排除规则区互不排斥，可同时编辑
+    expect(screen.getByText('目录专属包含规则')).toBeDefined()
+    fireEvent.click(screen.getByText('添加排除项'))
+    expect(screen.getByText('新增目录排除规则')).toBeDefined()
+    expect(
+      screen.getByPlaceholderText('输入扩展名（如 png 或 .docx，回车添加，支持逗号分隔）')
+    ).toBeDefined()
   })
 
   it('AC 2: 包含规则扩展名展示，键入扩展名时自动规范化为纯小写带点格式 (.png)', async () => {
@@ -242,7 +278,7 @@ describe('WorkspaceAdmissionRulesTab 包含与排除规则管理及影响预览'
     fireEvent.click(screen.getByText('添加'))
 
     // 出现保存按钮
-    const saveBtn = await screen.findByText('保存准入规则与包含模式')
+    const saveBtn = await screen.findByText('保存包含与排除规则')
     expect(saveBtn).toBeDefined()
 
     fireEvent.click(saveBtn)
@@ -267,6 +303,27 @@ describe('WorkspaceAdmissionRulesTab 包含与排除规则管理及影响预览'
       expect(screen.getByText('预期影响测算')).toBeDefined()
       expect(screen.getByText('预计纳入: 75%')).toBeDefined()
       expect(screen.getByText('预计排除: 25%')).toBeDefined()
+      expect(
+        screen.getByText(/基于已扫描文件库（共 100 个文件），预期将精准纳入 75 个目标格式文件/)
+      ).toBeDefined()
+    })
+  })
+
+  it('基于物理抽样探测时正确展示基于当前目录嗅探文案', async () => {
+    mockPreviewWorkspaceWhitelistImpact.mockResolvedValueOnce({
+      success: true,
+      totalFiles: 180,
+      includedFiles: 35,
+      excludedFiles: 145,
+      isSampled: true
+    })
+
+    render(<WorkspaceAdmissionRulesTab workspace={mockWorkspace} />)
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/基于当前目录嗅探（共 180 个文件），预期将精准纳入 35 个目标格式文件/)
+      ).toBeDefined()
     })
   })
 

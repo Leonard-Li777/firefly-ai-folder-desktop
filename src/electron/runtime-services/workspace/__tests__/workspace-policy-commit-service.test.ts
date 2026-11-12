@@ -306,6 +306,50 @@ describe('WorkspacePolicyCommitService (Spec v1.1 §2.2 & Ticket 03)', () => {
       expect(result.success).toBe(false)
       expect(result.errorCode).toBe('PERMISSION')
     })
+
+    it('当数据库未提供且未初始化时，应返回包含 error 结构体与 PERMISSION 错误码的结果', async () => {
+      const bareService = new WorkspacePolicyCommitService({})
+      const result = await bareService.commitPolicy({
+        workspaceId: 1,
+        workflowId: 'builtin.workflow.photography-raw',
+        targetConfig: initialWorkspaceConfig
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.errorCode).toBe('PERMISSION')
+      expect(result.error).toBeDefined()
+      expect(result.error?.code).toBe('PERMISSION')
+      expect(result.error?.message).toContain('数据库尚未初始化且未提供 db 依赖')
+    })
+
+    it('当 workspaceId 非法时，应返回包含 error 结构体与 UNKNOWN 错误码的结果', async () => {
+      const result = await service.commitPolicy({
+        workspaceId: 0,
+        workflowId: 'builtin.workflow.photography-raw',
+        targetConfig: initialWorkspaceConfig
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.errorCode).toBe('UNKNOWN')
+      expect(result.error).toBeDefined()
+      expect(result.error?.code).toBe('UNKNOWN')
+      expect(result.error?.message).toContain('无效的 workspaceId')
+    })
+
+    it('当未提供 workflowId 时，bound_workflow_id 应为 NULL 而非空字符串（杜绝外键破坏）', async () => {
+      const result = await service.commitPolicy({
+        workspaceId: 1,
+        workflowId: '',
+        boundWorkflowId: null,
+        targetConfig: initialWorkspaceConfig
+      })
+
+      expect(result.success).toBe(true)
+      const row = db
+        .prepare('SELECT bound_workflow_id FROM workspaces WHERE workspace_id = 1')
+        .get() as any
+      expect(row.bound_workflow_id).toBeNull()
+    })
   })
 
   describe('AC-3.5: 事务提交成功后事件驱动与回调触发', () => {

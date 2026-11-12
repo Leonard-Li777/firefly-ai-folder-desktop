@@ -21,7 +21,7 @@ import { WorkspaceAdmissionService } from '../../workspace/workspace-admission-s
 
 function extractWhitelistPatterns(parsedConfig: WorkspaceConfig | undefined): string[] {
   if (!parsedConfig || parsedConfig.status !== 'ready') return []
-  const rules = parsedConfig.customWhitelistRules || []
+  const rules = parsedConfig.customIncludeRules || []
   return rules.map((r: any) => (typeof r === 'string' ? r : r.value)).filter(Boolean)
 }
 
@@ -31,7 +31,7 @@ export class WorkspaceDao {
     const rows = this.db.prepare('SELECT * FROM workspaces ORDER BY created_at ASC').all() as any[]
     return rows.map(row => {
       const parsedConfig = parseWorkspaceConfig(row.workspace_config)
-      const whitelistRules = (parsedConfig as any).customWhitelistRules || []
+      const whitelistRules = (parsedConfig as any).customIncludeRules || []
       const whitelistPatterns = Array.isArray(whitelistRules)
         ? whitelistRules.map((r: any) => (typeof r === 'string' ? r : r.value)).filter(Boolean)
         : []

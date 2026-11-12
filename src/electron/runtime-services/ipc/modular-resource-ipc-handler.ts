@@ -314,7 +314,9 @@ export function registerModularResourceIpcHandlers(
   ipcMain.handle('modular-resource:pick-and-import-local-plugin', async event => {
     try {
       const { PluginImporter } = await import('../plugin/plugin-importer')
-      const importer = new PluginImporter()
+      // 显式传入 service 当前生效根目录：首次运行向导设定新目录后，
+      // PluginPathResolver 仍锁定启动期旧根，这里必须以 service 为准，避免插件落到旧目录。
+      const importer = new PluginImporter({ targetBaseDir: service.getPluginsRootDir() })
       const win = BrowserWindow.fromWebContents(event.sender) ?? undefined
       const res = await importer.pickAndImportLocalPlugin(win)
       if (res.canceled) {
@@ -384,6 +386,23 @@ export function registerModularResourceIpcHandlers(
         return await service.changePluginDirectory(payload?.targetPath ?? '')
       } catch (err: any) {
         logger.error(LogCategory.MAIN, '[ModularResourceIPC] change-plugin-dir 失败:', err)
+        return {
+          success: false,
+          errorCode: err?.code ?? 'PATH_NOT_WRITABLE'
+        }
+      }
+    }
+  )
+
+  // 首次运行引导期设定插件安装目录（无资产可迁移，不进入 PENDING_RESTART 写冻结）
+  // 与插件中心的 change-plugin-dir 严格区分：后者仍走两阶段迁移 + 重启生效。
+  ipcMain.handle(
+    'modular-resource:apply-initial-plugin-dir',
+    async (_event, payload: { targetPath: string }) => {
+      try {
+        return await service.applyInitialPluginDirectory(payload?.targetPath ?? '')
+      } catch (err: any) {
+        logger.error(LogCategory.MAIN, '[ModularResourceIPC] apply-initial-plugin-dir 失败:', err)
         return {
           success: false,
           errorCode: err?.code ?? 'PATH_NOT_WRITABLE'

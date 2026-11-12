@@ -82,22 +82,32 @@ export const WorkspaceSettingsDialog: React.FC = () => {
     () => new Set(['basic_ai_engine'])
   )
 
-  // 1. 初始化或同步选中的工作区 ID 与目标 Tab (Ticket 05 路由锚点直达)
+  // 1a. 初始化或同步选中的工作区 ID
   useEffect(() => {
     if (isOpen) {
-      if (targetWorkspaceTab) {
-        setActiveTab(targetWorkspaceTab as WorkspaceTabId)
-      }
       if (targetWorkspaceId != null) {
         setSelectedWorkspaceId(targetWorkspaceId)
       } else if (currentWorkspace?.id != null) {
         setSelectedWorkspaceId(currentWorkspace.id)
       } else if (workspaceDirectories.length > 0) {
-        setSelectedWorkspaceId(workspaceDirectories[0].id ?? null)
+        setSelectedWorkspaceId(prev => prev ?? workspaceDirectories[0].id ?? null)
       }
-      setIsManualWizardMode(false)
     }
-  }, [isOpen, targetWorkspaceId, targetWorkspaceTab, currentWorkspace?.id, workspaceDirectories])
+  }, [isOpen, targetWorkspaceId, currentWorkspace?.id, workspaceDirectories])
+
+  // 1b. 弹窗打开或路由锚点变化时，直达目标 Tab 或工作流向导模式
+  useEffect(() => {
+    if (isOpen) {
+      if (targetWorkspaceTab === 'wizard') {
+        setIsManualWizardMode(true)
+      } else {
+        if (targetWorkspaceTab) {
+          setActiveTab(targetWorkspaceTab as WorkspaceTabId)
+        }
+        setIsManualWizardMode(false)
+      }
+    }
+  }, [isOpen, targetWorkspaceId, targetWorkspaceTab])
 
   // 2. 加载硬件信息
   useEffect(() => {
@@ -181,7 +191,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
         id: 'ignore_rules',
         name: t('文件准入与包含排除'),
         icon: 'filter',
-        description: t('标准模式/排他包含模式与专属排除规则')
+        description: t('包含规则与排除规则可同时设置、叠加生效')
       },
       {
         id: 'maintenance',

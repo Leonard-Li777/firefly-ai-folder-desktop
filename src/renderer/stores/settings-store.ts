@@ -299,6 +299,7 @@ export const useSettingsStore = create<ISettingsState>()(
           isWorkspaceSettingsOpen: false,
           isOpen: get().isSystemSettingsOpen,
           targetWorkspaceId: null,
+          targetWorkspaceTab: null,
           error: null
         })
 

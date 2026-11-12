@@ -50,6 +50,7 @@ import { useTierStore } from '../../../stores/tier-store'
 import { UpgradeAccountDialog } from '../../tier/UpgradeAccountDialog'
 import { captureEvent } from '../../../lib/posthog'
 import { useSettingsStore } from '../../../stores/settings-store'
+import { usePluginCenterStore } from '../../../stores/plugin-center-store'
 import { toast } from '../../common/Toast'
 import { t } from '@app/languages'
 import { getIntentDisplayName } from '../WorkspaceConfigPanel'
@@ -174,10 +175,10 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
           baseAIConfig: baseDerived,
           derivedSnapshot: baseDerived,
           overrides: hasAnyOverride ? targetOverrides : undefined,
-          customIgnoreRules:
-            parsedConfig.status === 'ready' ? parsedConfig.customIgnoreRules || [] : [],
-          customWhitelistRules:
-            parsedConfig.status === 'ready' ? parsedConfig.customWhitelistRules || [] : [],
+          customExcludeRules:
+            parsedConfig.status === 'ready' ? parsedConfig.customExcludeRules || [] : [],
+          customIncludeRules:
+            parsedConfig.status === 'ready' ? parsedConfig.customIncludeRules || [] : [],
           configuredAt: Date.now()
         }
 
@@ -271,8 +272,45 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
   const isAdvancedAiEnabled = (config?.aiServiceMode ?? 'local') !== 'disabled'
   const analysisMode = isAdvancedAiEnabled ? effectiveParams.analysisMode : 'simple'
 
-  // 嵌入画像与 MRL 维度
-  const embeddingProfile = effectiveParams.embeddingProfile ?? 'classic_light'
+  // 全局插件中心底座模块与活跃状态（SSOT：优先从插件中心读取当前激活的 base_embedding 模块）
+  const pluginModules = usePluginCenterStore(s => s.modules)
+  const activeBaseEmbeddingModule = useMemo(() => {
+    return (
+      pluginModules.find(
+        m => m.capability_slot === 'base_embedding' && m.install_state === 'active'
+      ) || null
+    )
+  }, [pluginModules])
+
+  // 当前生效的基础语义检索引擎展示名
+  const currentEngineDisplayName = useMemo(() => {
+    if (activeBaseEmbeddingModule?.name) {
+      return activeBaseEmbeddingModule.name
+    }
+    const globalProfile = getConfigValue<string>('AI_EMBEDDING_PROFILE')
+    if (globalProfile === 'gemma_unified') {
+      return t('统一全模态 AI 引擎 (Gemma Unified)')
+    }
+    return t('经典轻量 AI 引擎 (Classic Light)')
+  }, [activeBaseEmbeddingModule, getConfigValue])
+
+  // 跳转到插件中心底座分类
+  const handleJumpToPlugins = useCallback(() => {
+    void useSettingsStore.getState().closeWorkspaceSettings()
+    void usePluginCenterStore.getState().openOverlay()
+    usePluginCenterStore.getState().setSelectedCategory('ai-engine')
+  }, [])
+
+  // 嵌入画像与 MRL 维度（全局画像优先对齐，确保音视频展开态与底座一致）
+  const globalProfile = getConfigValue<'classic_light' | 'gemma_unified'>('AI_EMBEDDING_PROFILE')
+  const embeddingProfile =
+    (activeBaseEmbeddingModule?.id === 'engine_gemma_unified'
+      ? 'gemma_unified'
+      : activeBaseEmbeddingModule?.id === 'engine_classic_light'
+        ? 'classic_light'
+        : globalProfile) ??
+    effectiveParams.embeddingProfile ??
+    'classic_light'
   const mrlDimension = effectiveParams.mrlDimension ?? 512
 
   const [pendingProfile, setPendingProfile] = useState<'classic_light' | 'gemma_unified' | null>(
@@ -400,57 +438,6 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
       })
       .catch(() => {})
   }, [])
-
-  const handleConfirmProfileSwitch = async () => {
-    if (!isDev || !pendingProfile) return
-    const target = pendingProfile
-    setPendingProfile(null)
-    handleParamChange('embeddingProfile', target)
-    if (target === 'gemma_unified' && recommendedSettings?.mrlDimension) {
-      handleParamChange('mrlDimension', recommendedSettings.mrlDimension)
-    }
-    if (pendingVideoRecommendation && recommendedSettings?.videoSoftTokenBudget) {
-      handleParamChange(
-        'videoSoftTokenBudget',
-        recommendedSettings.videoSoftTokenBudget as 48 | 140
-      )
-    }
-    setPendingVideoRecommendation(false)
-    captureEvent('切换嵌入模型档位', { profile: target })
-    toast.success(t('已切换搜索与理解模式，新分析的文件将使用新模式'))
-  }
-
-  const handleConfirmDimensionSwitch = async () => {
-    if (!isDev || !pendingDimension) return
-    const target = pendingDimension
-    setPendingDimension(null)
-    handleParamChange('mrlDimension', target)
-    captureEvent('切换特征分析精度', { dimension: target })
-    toast.success(t('已将特征分析精度切换为 {dim} 维', { dim: target }))
-  }
-
-  const handleApplyHardwareRecommendations = () => {
-    if (!recommendedSettings) return
-    if (embeddingProfile !== recommendedSettings.profile) {
-      setPendingProfile(recommendedSettings.profile)
-      setPendingVideoRecommendation(true)
-      return
-    }
-    const rec = recommendedSettings
-    if (rec.mrlDimension) {
-      handleParamChange('mrlDimension', rec.mrlDimension)
-    }
-    if (rec.videoSoftTokenBudget) {
-      handleParamChange('videoSoftTokenBudget', rec.videoSoftTokenBudget as 48 | 140)
-    }
-    toast.success(
-      t('已同步硬件推荐配置（{profile} · {dim}维 · 画面{detail}）', {
-        profile: rec.profile === 'gemma_unified' ? t('全模态标准档') : t('极速轻量档'),
-        dim: rec.mrlDimension,
-        detail: rec.videoSoftTokenBudget === 48 ? t('流畅极速搜索') : t('高清精细搜索')
-      })
-    )
-  }
 
   return (
     <div className="p-6 space-y-6 max-w-4xl mx-auto overflow-y-auto max-h-full">
@@ -647,277 +634,40 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
         </div>
       </Card>
 
-      {/* 2. 语义搜索与智能理解模式 (仅在 Dev 模式显示且可配置，生产模式隐藏并锁定) */}
-      {isDev && (
-        <Card className="p-5 border-amber-500/30 bg-amber-500/[0.02]">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Layers className="h-4 w-4" />
-                </div>
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <Label className="text-base font-semibold leading-none">
-                    {t('语义搜索与智能理解模式')}
-                  </Label>
-                  <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                    DEV ONLY
-                  </span>
-                  <HelpTooltip
-                    content={t(
-                      '决定文件与音视频的搜索理解深度。全模态标准档支持深层看懂图片与音视频对话；极速轻量档省电省内存、低发热。'
-                    )}
-                  />
-                </div>
-              </div>
-
-              {recommendedSettings && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-xs text-primary border-primary/30 hover:bg-primary/10"
-                  onClick={handleApplyHardwareRecommendations}
-                >
-                  <Sparkles className="h-3.5 w-3.5 mr-1 text-primary" />
-                  {t('应用硬件推荐设置')}
-                </Button>
-              )}
+      {/* 2. 基础语义检索引擎 */}
+      <Card className="p-5 border-border/80 bg-card/60 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Layers className="h-5 w-5" />
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {/* 极速轻量档 */}
-              <div
-                onClick={() => {
-                  if (isDev && embeddingProfile !== 'classic_light') {
-                    setPendingProfile('classic_light')
-                  }
-                }}
-                className={cn(
-                  'relative overflow-hidden flex flex-col p-4 rounded-xl border-2 transition-all',
-                  embeddingProfile === 'classic_light'
-                    ? 'border-primary bg-primary/10 shadow-xs ring-1 ring-primary/20'
-                    : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30',
-                  isDev ? 'cursor-pointer' : 'cursor-default'
-                )}
-              >
-                <div className="absolute top-0 right-0 text-[11px] font-semibold bg-muted text-muted-foreground px-2.5 py-0.5 rounded-bl-md">
-                  {t('超省电 · 极速分析')}
-                </div>
-                {embeddingProfile === 'classic_light' && (
-                  <div className="absolute bottom-2.5 right-2.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-xs">
-                    <Check className="h-3 w-3 text-primary-foreground stroke-[2.5]" />
-                  </div>
-                )}
-                <div className="flex items-center gap-2 pr-8">
-                  <span
-                    className={cn(
-                      'font-semibold text-sm',
-                      embeddingProfile === 'classic_light' && 'text-primary'
-                    )}
-                  >
-                    {t('极速轻量档')}
-                  </span>
-                  {recommendedSettings?.profile === 'classic_light' && (
-                    <span className="text-[9px] font-medium px-1 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
-                      {t('硬件推荐')}
-                    </span>
-                  )}
-                </div>
-                <div className="text-xs text-muted-foreground mt-2 leading-relaxed space-y-1">
-                  <div>{t('【优势】分析飞快，内存占用极低（< 80MB），省电且机身不发热。')}</div>
-                  <div>{t('【代价】仅支持文字与基础图片搜索，无法深度理解视频内容与对话。')}</div>
-                  <div>{t('【适合】8GB 内存轻薄本、日常基础办公或电池供电场景。')}</div>
-                </div>
+            <div className="space-y-0.5 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-foreground">
+                  {t('当前基础语义检索引擎')}：
+                </span>
+                <span className="text-sm font-bold text-primary truncate">
+                  {currentEngineDisplayName}
+                </span>
               </div>
-
-              {/* 全模态标准档 */}
-              <div
-                onClick={() => {
-                  if (isDev && embeddingProfile !== 'gemma_unified') {
-                    setPendingProfile('gemma_unified')
-                  }
-                }}
-                className={cn(
-                  'relative overflow-hidden flex flex-col p-4 rounded-xl border-2 transition-all',
-                  embeddingProfile === 'gemma_unified'
-                    ? 'border-primary bg-primary/10 shadow-xs ring-1 ring-primary/20'
-                    : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30',
-                  isDev ? 'cursor-pointer' : 'cursor-default'
-                )}
-              >
-                <div className="absolute top-0 right-0 text-[11px] font-semibold bg-green-500 text-white px-2.5 py-0.5 rounded-bl-md shadow-xs dark:bg-green-600">
-                  {t('深度理解 · 音视频全能')}
-                </div>
-                {embeddingProfile === 'gemma_unified' && (
-                  <div className="absolute bottom-2.5 right-2.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-xs">
-                    <Check className="h-3 w-3 text-primary-foreground stroke-[2.5]" />
-                  </div>
-                )}
-                <div className="flex items-center gap-2 pr-8">
-                  <span
-                    className={cn(
-                      'font-semibold text-sm',
-                      embeddingProfile === 'gemma_unified' && 'text-primary'
-                    )}
-                  >
-                    {t('全模态标准档')}
-                  </span>
-                  {recommendedSettings?.profile === 'gemma_unified' && (
-                    <span className="text-[9px] font-medium px-1 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">
-                      {t('硬件推荐')}
-                    </span>
-                  )}
-                </div>
-                <div className="text-xs text-muted-foreground mt-2 leading-relaxed space-y-1">
-                  <div>
-                    {t('【优势】看懂复杂画面细节与音视频对话，搜一句话即可秒级定位到视频片段。')}
-                  </div>
-                  <div>{t('【代价】分析时会占用一定算力与内存（约 300~500MB）。')}</div>
-                  <div>{t('【适合】16GB 及以上内存电脑，追求极致搜索与智能整理体验。')}</div>
-                </div>
-              </div>
+              <p className="text-xs text-muted-foreground">
+                {t('语义索引由全系统统一底座驱动，可在插件中心自由安装或切换其他官方及社区底座。')}
+              </p>
             </div>
-
-            {/* 全模态标准档下的进阶配置 */}
-            {embeddingProfile === 'gemma_unified' && (
-              <div className="mt-5 pt-4 border-t border-border/60 space-y-4">
-                {/* MRL 分析精度多档配置 */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <Label className="text-sm font-medium text-foreground">
-                        {t('特征分析精度')}
-                      </Label>
-                      <HelpTooltip
-                        content={t(
-                          '决定为每个文件提取特征的精细程度。精度越高，模糊词和长句搜索越精准；精度越低，索引文件越省磁盘空间。'
-                        )}
-                      />
-                    </div>
-                    {recommendedSettings?.mrlDimension && (
-                      <span className="text-[11px] text-muted-foreground">
-                        {t('硬件推荐：{level}（{dim}维）', {
-                          level:
-                            recommendedSettings.mrlDimension === 768
-                              ? t('精准档')
-                              : recommendedSettings.mrlDimension === 512
-                                ? t('标准档')
-                                : t('紧凑档'),
-                          dim: recommendedSettings.mrlDimension
-                        })}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    {/* 紧凑档 256 */}
-                    <div
-                      onClick={() => {
-                        if (isDev && mrlDimension !== 256) setPendingDimension(256)
-                      }}
-                      className={cn(
-                        'relative overflow-hidden flex flex-col p-4 rounded-xl border-2 transition-all',
-                        mrlDimension === 256
-                          ? 'border-primary bg-primary/10 shadow-xs ring-1 ring-primary/20'
-                          : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30',
-                        isDev ? 'cursor-pointer' : 'cursor-default'
-                      )}
-                    >
-                      <div className="absolute top-0 right-0 text-[11px] font-semibold bg-muted text-muted-foreground px-2.5 py-0.5 rounded-bl-md">
-                        {t('超省磁盘')}
-                      </div>
-                      {mrlDimension === 256 && (
-                        <div className="absolute bottom-2.5 right-2.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-xs">
-                          <Check className="h-3 w-3 text-primary-foreground stroke-[2.5]" />
-                        </div>
-                      )}
-                      <span
-                        className={cn(
-                          'font-semibold text-sm',
-                          mrlDimension === 256 && 'text-primary'
-                        )}
-                      >
-                        {t('紧凑省盘档')}
-                      </span>
-                      <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                        {t('极省磁盘，每文件仅约 1KB 索引，省 67% 存储空间。')}
-                      </p>
-                    </div>
-
-                    {/* 标准档 512 */}
-                    <div
-                      onClick={() => {
-                        if (isDev && mrlDimension !== 512) setPendingDimension(512)
-                      }}
-                      className={cn(
-                        'relative overflow-hidden flex flex-col p-4 rounded-xl border-2 transition-all',
-                        mrlDimension === 512
-                          ? 'border-primary bg-primary/10 shadow-xs ring-1 ring-primary/20'
-                          : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30',
-                        isDev ? 'cursor-pointer' : 'cursor-default'
-                      )}
-                    >
-                      <div className="absolute top-0 right-0 text-[11px] font-semibold bg-green-500 text-white px-2.5 py-0.5 rounded-bl-md shadow-xs dark:bg-green-600">
-                        {t('推荐')}
-                      </div>
-                      {mrlDimension === 512 && (
-                        <div className="absolute bottom-2.5 right-2.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-xs">
-                          <Check className="h-3 w-3 text-primary-foreground stroke-[2.5]" />
-                        </div>
-                      )}
-                      <span
-                        className={cn(
-                          'font-semibold text-sm',
-                          mrlDimension === 512 && 'text-primary'
-                        )}
-                      >
-                        {t('标准平衡档')}
-                      </span>
-                      <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                        {t('速度与精度的黄金平衡，保留 98.5% 以上细节辨识能力。')}
-                      </p>
-                    </div>
-
-                    {/* 精准档 768 */}
-                    <div
-                      onClick={() => {
-                        if (isDev && mrlDimension !== 768) setPendingDimension(768)
-                      }}
-                      className={cn(
-                        'relative overflow-hidden flex flex-col p-4 rounded-xl border-2 transition-all',
-                        mrlDimension === 768
-                          ? 'border-primary bg-primary/10 shadow-xs ring-1 ring-primary/20'
-                          : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30',
-                        isDev ? 'cursor-pointer' : 'cursor-default'
-                      )}
-                    >
-                      <div className="absolute top-0 right-0 text-[11px] font-semibold bg-muted text-muted-foreground px-2.5 py-0.5 rounded-bl-md">
-                        {t('旗舰高精')}
-                      </div>
-                      {mrlDimension === 768 && (
-                        <div className="absolute bottom-2.5 right-2.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-xs">
-                          <Check className="h-3 w-3 text-primary-foreground stroke-[2.5]" />
-                        </div>
-                      )}
-                      <span
-                        className={cn(
-                          'font-semibold text-sm',
-                          mrlDimension === 768 && 'text-primary'
-                        )}
-                      >
-                        {t('旗舰精准档')}
-                      </span>
-                      <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                        {t('满血最高精度，对模糊长句和音画视频内容细节匹配最佳。')}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
-        </Card>
-      )}
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleJumpToPlugins}
+            className="shrink-0 flex items-center gap-1.5 self-start sm:self-auto"
+          >
+            <span>{t('切换')}</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+      </Card>
 
       {/* 3. 视频画面分析与检索模式 (仅在 gemma_unified 全模态模式展示，classic_light 极速轻量档隐藏) */}
       {embeddingProfile === 'gemma_unified' && (
@@ -1543,66 +1293,6 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
           </Button>
         </div>
       </Card>
-
-      {/* 确认切换画像弹窗 (仅 Dev 模式) */}
-      <AlertDialog
-        open={Boolean(isDev && pendingProfile)}
-        onOpenChange={open => {
-          if (!open) {
-            setPendingProfile(null)
-            setPendingVideoRecommendation(false)
-          }
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('确认切换智能理解模式？')}</AlertDialogTitle>
-            <AlertDialogDescription asChild>
-              <div className="space-y-2 pt-1 text-sm text-muted-foreground">
-                <p>
-                  {t('即将切换为【{profile}】模式。切换后新导入的文件将使用新模式。', {
-                    profile:
-                      pendingProfile === 'gemma_unified' ? t('全模态标准档') : t('极速轻量档')
-                  })}
-                </p>
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('取消')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmProfileSwitch}>
-              {t('立即应用')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* 确认切换精度弹窗 (仅 Dev 模式) */}
-      <AlertDialog
-        open={Boolean(isDev && pendingDimension)}
-        onOpenChange={open => !open && setPendingDimension(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('确认切换特征分析精度？')}</AlertDialogTitle>
-            <AlertDialogDescription asChild>
-              <div className="space-y-2 pt-1 text-sm text-muted-foreground">
-                <p>
-                  {t('即将把特征分析精度调整为【{dim} 维】。', {
-                    dim: pendingDimension ?? 512
-                  })}
-                </p>
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('取消')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDimensionSwitch}>
-              {t('确认调整精度')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       <UpgradeAccountDialog open={isUpgradeOpen} onOpenChange={setIsUpgradeOpen} />
     </div>

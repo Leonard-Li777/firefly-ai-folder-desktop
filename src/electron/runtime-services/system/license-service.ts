@@ -6,7 +6,8 @@ import {
   encodeMachineIdToRef,
   SUPPORTED_LICENSE_VERSION,
   encodeMachineIdToBase64,
-  isTestEnvironment
+  isTestEnvironment,
+  computeComputedLimits
 } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { SystemIdentityService } from './system-identity-service'
@@ -17,7 +18,7 @@ import crypto from 'node:crypto'
 import { nativeFetch } from '../../utils/native-network'
 import { regionDetectionService } from './region-detection-service'
 import { KMLogic, HMAC_SALT } from '@firefly/server'
-import type { UserTierData } from '@firefly/types'
+import { UserTier, type UserTierData } from '@firefly/types'
 
 import { LicenseStatus } from './license-status'
 export { LicenseStatus }
@@ -546,6 +547,8 @@ export class LicenseService {
     try {
       fs.writeFileSync(this.licenseFilePath, licenseCode, 'utf8')
       await config.updateValue('OFFLINE_LICENSE', licenseCode, { source: 'runtime' })
+      // 必须在密钥重派生前清除旧缓存，否则 UserTierService.ensureKeys() -> checkLicenseStatus() 会读到激活前的 UNAUTHORIZED 状态
+      this.cachedResult = null
 
       if (isEnterpriseFormat) {
         const enterpriseData = result.data as any
@@ -559,21 +562,45 @@ export class LicenseService {
         const rawKM = KMLogic.deriveKMFromLicense(licenseCode, machineId)
         const encryptedKMHex = KMLogic.encryptKM(rawKM, machineId)
         await config.updateValue('CACHE_KEY_DATA', encryptedKMHex, { source: 'runtime' })
+
+        const legacyData = result.data as { type?: string; expiry: string }
+        const upperType = (legacyData.type || '').toUpperCase()
+        const mappedTier: UserTier | null =
+          upperType === 'ENTERPRISE' || upperType === 'ENTERPRISE_OFFLINE'
+            ? UserTier.ENTERPRISE
+            : upperType === 'PRO'
+              ? UserTier.PRO
+              : null
+
+        const { userTierService } = await import('../user-tier/user-tier-service')
+        if (mappedTier) {
+          const tierConstants = config.getTierConstants()
+          const legacyTierData: UserTierData = {
+            version: 1,
+            tier: mappedTier,
+            firecores: 0,
+            subscription: {
+              tier: mappedTier,
+              plan_id: legacyData.type || mappedTier,
+              status: 'active',
+              expires_at: legacyData.expiry
+            },
+            entitlements: [],
+            counters: {},
+            computed_limits: computeComputedLimits(mappedTier, [], tierConstants)
+          }
+          await userTierService.restoreFromLicenseData(legacyTierData, machineId)
+        } else {
+          // 非标准 legacy type：重置密钥缓存并触发同步以更新等级
+          // @ts-ignore
+          userTierService.encryptionKey = null
+          // @ts-ignore
+          userTierService.hmacKey = null
+          await userTierService.syncLocalCacheAndNotify(machineId).catch(err => {
+            logger.error(LogCategory.SYSTEM, '[License] 激活后同步用户等级失败:', err)
+          })
+        }
       }
-
-      this.cachedResult = null // 激活成功后清除缓存
-
-      // 重置 userTierService 密钥缓存并重新同步以更新等级
-      const { userTierService } = await import('../user-tier/user-tier-service')
-      // @ts-ignore
-      userTierService.encryptionKey = null
-      // @ts-ignore
-      userTierService.hmacKey = null
-
-      // 触发本地等级计算更新与通知
-      userTierService.syncLocalCacheAndNotify(machineId).catch(err => {
-        logger.error(LogCategory.SYSTEM, '[License] 激活后同步用户等级失败:', err)
-      })
 
       return { success: true }
     } catch (e) {

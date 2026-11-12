@@ -50,14 +50,10 @@ export interface WorkspacePolicyMutation {
   extensionWeights?: Record<string, number> | null
   /** 排他包含扩展名列表 (规范对称命名，如 ['.cr3', '.jpg']) */
   includeExts?: string[]
-  /** 包含规则对象列表 (白名单模式) */
-  includeRules?: IFilterRule[]
-  /** 用户自定义排除规则列表 (黑名单) */
-  excludeRules?: IFilterRule[]
-  /** 兼容旧别名 (服务层自动解包归一) */
-  customWhitelistExts?: string[]
-  customWhitelistRules?: IFilterRule[]
-  customIgnoreRules?: IFilterRule[]
+  /** 工作区专有包含规则列表 (标准规范命名) */
+  customIncludeRules?: IFilterRule[]
+  /** 工作区专有排除规则列表 (标准规范命名) */
+  customExcludeRules?: IFilterRule[]
   baseAIConfig?: BaseAIConfig
   derivedSnapshot?: TechnicalEngineParameters
   intent?: WorkspaceConfigIntent
@@ -73,6 +69,7 @@ export interface PolicyImpactPreview {
   includedFiles: number
   excludedFiles: number
   companionFilesProtected: number
+  isSampled?: boolean
 }
 
 export interface AdmissionReconcileResult {
@@ -337,14 +334,14 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
             ? JSON.parse(workflow.workspace_config)
             : workflow.workspace_config
         if (parsed && typeof parsed === 'object') {
-          if (Array.isArray(parsed.customWhitelistRules)) {
-            result.customWhitelistRules = normalizeRuleList(
-              parsed.customWhitelistRules,
-              'wf-whitelist'
+          if (Array.isArray(parsed.customIncludeRules)) {
+            result.customIncludeRules = normalizeRuleList(
+              parsed.customIncludeRules,
+              'wf-include'
             )
           }
-          if (Array.isArray(parsed.customIgnoreRules)) {
-            result.customIgnoreRules = normalizeRuleList(parsed.customIgnoreRules, 'wf-ignore')
+          if (Array.isArray(parsed.customExcludeRules)) {
+            result.customExcludeRules = normalizeRuleList(parsed.customExcludeRules, 'wf-exclude')
           }
           if (parsed.baseAIConfig) {
             result.baseAIConfig = parsed.baseAIConfig
@@ -381,9 +378,9 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
         if (Array.isArray(rawRules)) {
           const normalized = normalizeRuleList(rawRules, 'wf-legacy')
           if (workflow.filter_mode === 'whitelist') {
-            result.customWhitelistRules = [...(result.customWhitelistRules || []), ...normalized]
+            result.customIncludeRules = [...(result.customIncludeRules || []), ...normalized]
           } else {
-            result.customIgnoreRules = [...(result.customIgnoreRules || []), ...normalized]
+            result.customExcludeRules = [...(result.customExcludeRules || []), ...normalized]
           }
         }
       } catch {}
@@ -433,8 +430,8 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
       policyVersion,
       systemRules,
       workflow: workflowForFallback,
-      customIgnoreRules: isReady ? parsedConfig.customIgnoreRules : [],
-      customWhitelistRules: isReady ? parsedConfig.customWhitelistRules : []
+      customExcludeRules: isReady ? parsedConfig.customExcludeRules : [],
+      customIncludeRules: isReady ? parsedConfig.customIncludeRules : []
     })
   }
 
@@ -512,38 +509,38 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
       }
     }
 
-    // 1. 包含规则解包：includeExts/customWhitelistExts > includeRules/customWhitelistRules > 模板覆盖 > 既有
-    const incomingExts = mutation.includeExts ?? mutation.customWhitelistExts
-    const incomingIncludeRules = mutation.includeRules ?? mutation.customWhitelistRules
-    let nextWhitelistRules: IFilterRule[]
+    // 1. 包含规则解包：includeExts > customIncludeRules > 模板覆盖 > 既有
+    const incomingExts = mutation.includeExts
+    const incomingIncludeRules = mutation.customIncludeRules
+    let nextIncludeRules: IFilterRule[]
     if (incomingExts !== undefined) {
-      nextWhitelistRules = normalizeExtensionsToFilterRules(incomingExts)
+      nextIncludeRules = normalizeExtensionsToFilterRules(incomingExts)
     } else if (incomingIncludeRules !== undefined) {
-      nextWhitelistRules = normalizeRuleList(incomingIncludeRules, 'whitelist')
-    } else if (templateOverlay?.customWhitelistRules !== undefined) {
-      nextWhitelistRules = templateOverlay.customWhitelistRules
+      nextIncludeRules = normalizeRuleList(incomingIncludeRules, 'include')
+    } else if (templateOverlay?.customIncludeRules !== undefined) {
+      nextIncludeRules = templateOverlay.customIncludeRules
     } else if (mutation.workflowId === null) {
       // 显式解绑工作流且未指定自定义包含规则时，保持既有规则
-      nextWhitelistRules = currentReady?.customWhitelistRules || []
+      nextIncludeRules = currentReady?.customIncludeRules || []
     } else {
-      nextWhitelistRules = currentReady?.customWhitelistRules || []
+      nextIncludeRules = currentReady?.customIncludeRules || []
     }
 
-    // 2. 排除规则解包：excludeRules/customIgnoreRules > restoreWorkflowDefault 模板覆盖 > 既有配置合并模板
-    const incomingExcludeRules = mutation.excludeRules ?? mutation.customIgnoreRules
-    let nextIgnoreRules: IFilterRule[]
+    // 2. 排除规则解包：customExcludeRules > restoreWorkflowDefault 模板覆盖 > 既有配置合并模板
+    const incomingExcludeRules = mutation.customExcludeRules
+    let nextExcludeRules: IFilterRule[]
     if (incomingExcludeRules !== undefined) {
-      nextIgnoreRules = normalizeRuleList(incomingExcludeRules, 'ignore')
+      nextExcludeRules = normalizeRuleList(incomingExcludeRules, 'exclude')
     } else if (mutation.restoreWorkflowDefault) {
-      nextIgnoreRules = templateOverlay?.customIgnoreRules || []
-    } else if (templateOverlay?.customIgnoreRules && templateOverlay.customIgnoreRules.length > 0) {
-      const existing = currentReady?.customIgnoreRules || []
-      nextIgnoreRules = normalizeRuleList(
-        [...existing, ...templateOverlay.customIgnoreRules],
-        'ignore'
+      nextExcludeRules = templateOverlay?.customExcludeRules || []
+    } else if (templateOverlay?.customExcludeRules && templateOverlay.customExcludeRules.length > 0) {
+      const existing = currentReady?.customExcludeRules || []
+      nextExcludeRules = normalizeRuleList(
+        [...existing, ...templateOverlay.customExcludeRules],
+        'exclude'
       )
     } else {
-      nextIgnoreRules = currentReady?.customIgnoreRules || []
+      nextExcludeRules = currentReady?.customExcludeRules || []
     }
 
     // 3. 计算 AI 分析基础参数
@@ -596,8 +593,8 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
       intent: mutation.intent ?? currentReady?.intent,
       overrides: mutation.overrides ?? currentReady?.overrides,
       extensionWeights: nextExtensionWeights,
-      customIgnoreRules: nextIgnoreRules,
-      customWhitelistRules: nextWhitelistRules,
+      customExcludeRules: nextExcludeRules,
+      customIncludeRules: nextIncludeRules,
       baseAIConfig: nextBaseAi,
       advancedAIPrompts: mutation.advancedAIPrompts ?? currentReady?.advancedAIPrompts,
       unitRecognition: mutation.unitRecognition ?? currentReady?.unitRecognition,
@@ -664,8 +661,8 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
       policyVersion: -1,
       systemRules,
       workflow: null,
-      customIgnoreRules: nextConfig.customIgnoreRules,
-      customWhitelistRules: nextConfig.customWhitelistRules
+      customExcludeRules: nextConfig.customExcludeRules,
+      customIncludeRules: nextConfig.customIncludeRules
     })
 
     // 模式 A：基于冷启动探测画像 (probeExtensionCounts) 估算影响
@@ -731,7 +728,8 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
         totalFiles,
         includedFiles,
         excludedFiles: Math.max(0, totalFiles - includedFiles),
-        companionFilesProtected
+        companionFilesProtected,
+        isSampled: true
       }
     }
 
@@ -746,7 +744,8 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
         totalFiles: 0,
         includedFiles: 0,
         excludedFiles: 0,
-        companionFilesProtected: 0
+        companionFilesProtected: 0,
+        isSampled: false
       }
     }
 
@@ -776,7 +775,8 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
       totalFiles,
       includedFiles,
       excludedFiles: totalFiles - includedFiles,
-      companionFilesProtected
+      companionFilesProtected,
+      isSampled: false
     }
   }
 
@@ -788,6 +788,14 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
     mutation: WorkspacePolicyMutation
   ): Promise<AdmissionReconcileResult> {
     return this.runSerialized(workspaceId, async () => {
+      // 变更开始时立即锁定 30 秒自动监听静默期，留足充分时间处理变动并杜绝任何误入队
+      try {
+        const { fileWatcherService } = await import('../filesystem/file-watcher-service')
+        fileWatcherService.muteAutoWatch(workspaceId, 30000)
+      } catch {
+        // 单测或未初始化环境忽略
+      }
+
       const db = this.resolveDb()
 
       // 读取当前工作区物理元数据与配置
@@ -843,8 +851,8 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
           !isReady && row.bound_workflow_id
             ? this.findWorkflowTemplate(db, row.bound_workflow_id)
             : null,
-        customIgnoreRules: isReady ? currentConfig.customIgnoreRules : [],
-        customWhitelistRules: isReady ? currentConfig.customWhitelistRules : []
+        customExcludeRules: isReady ? currentConfig.customExcludeRules : [],
+        customIncludeRules: isReady ? currentConfig.customIncludeRules : []
       })
       const currentFingerprint = computeAdmissionFingerprint(currentEffectivePolicy)
 
@@ -854,8 +862,8 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
         policyVersion: currentPolicyVersion + 1,
         systemRules,
         workflow: null,
-        customIgnoreRules: nextConfig.customIgnoreRules,
-        customWhitelistRules: nextConfig.customWhitelistRules
+        customExcludeRules: nextConfig.customExcludeRules,
+        customIncludeRules: nextConfig.customIncludeRules
       })
       const candidateFingerprint = computeAdmissionFingerprint(candidatePolicy)
 
@@ -974,24 +982,20 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
         )
       }
 
-      // 判定是否放宽策略需要补扫 (M04)
-      const needsRescan = isPolicyRelaxed(currentEffectivePolicy, newPolicy)
-
-      // 通知文件监听服务刷新策略并按需触发增量补扫
-      if (needsRescan) {
+      // 策略更新时仅通知文件监听服务刷新内存策略缓存
+      // 系统铁律：分析队列只允许自动删除文件，绝不允许自动添加文件；严禁触发自动补扫加入分析队列
+      try {
         if (this.deps.onPolicyApplied) {
           await this.deps.onPolicyApplied(workspaceId, newPolicy)
         } else {
-          try {
-            const { fileWatcherService } = await import('../filesystem/file-watcher-service')
-            await fileWatcherService.onWorkspacePolicyUpdated(workspaceId, newPolicy)
-          } catch {
-            // 监听服务未启动或处于纯单测环境时忽略
-          }
+          const { fileWatcherService } = await import('../filesystem/file-watcher-service')
+          await fileWatcherService.onWorkspacePolicyUpdated(workspaceId, newPolicy)
         }
+      } catch {
+        // 监听服务未启动或处于纯单测环境时忽略
       }
 
-      // 后置回写：仅当解绑、裁剪、重扫通知全部成功后，才回写 admittedPolicyHash (Y-07)
+      // 后置回写：仅当解绑与裁剪全部成功后，才回写 admittedPolicyHash (Y-07)
       try {
         const nextMeta = { ...parsedMeta, admittedPolicyHash: candidateFingerprint }
         db.prepare('UPDATE workspaces SET meta = ? WHERE workspace_id = ?').run(
@@ -1008,7 +1012,7 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
       return {
         policyVersion: nextPolicyVersion,
         admissionChanged: true,
-        needsRescan,
+        needsRescan: false,
         prunedFilesCount: prunedFileIds.length,
         cancelledTasksCount: cancelledFromQueueManager + dbQueueCancelledCount
       }

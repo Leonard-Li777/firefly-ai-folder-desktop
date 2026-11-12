@@ -653,7 +653,13 @@ export const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({ onOpenChange }) 
         open={isAccountManagementOpen}
         onOpenChange={setIsAccountManagementOpen}
       />
-      <ActivationCodeDialog open={isActivationCodeOpen} onOpenChange={setIsActivationCodeOpen} />
+      <ActivationCodeDialog
+        open={isActivationCodeOpen}
+        onOpenChange={setIsActivationCodeOpen}
+        onActivated={() => {
+          void fetchProfile()
+        }}
+      />
       <AboutDialog open={isAboutOpen} onOpenChange={setIsAboutOpen} />
       <WechatQRDialog open={isWechatQROpen} onOpenChange={setIsWechatQROpen} />
     </div>

@@ -232,8 +232,8 @@ export class WorkspacePolicyCommitService {
           policyVersion: 1,
           workflowId: effectiveWorkflowId || undefined,
           extensionWeights: rawTarget.extensionWeights,
-          customIgnoreRules: [],
-          customWhitelistRules: [],
+          customExcludeRules: [],
+          customIncludeRules: [],
           baseAIConfig: {
             analysisMode: 'simple',
             embeddingProfile: 'classic_light',
@@ -253,20 +253,20 @@ export class WorkspacePolicyCommitService {
           const prevConfig = parseWorkspaceConfig(row.workspace_config)
           const prevReady = prevConfig.status === 'ready' ? prevConfig : null
 
-          const userIgnores = (prevReady?.customIgnoreRules || []).filter((r: any) => !r.isSystem)
-          const userWhitelists = (prevReady?.customWhitelistRules || []).filter(
+          const userExcludes = (prevReady?.customExcludeRules || []).filter((r: any) => !r.isSystem)
+          const userIncludes = (prevReady?.customIncludeRules || []).filter(
             (r: any) => !r.isSystem
           )
 
-          const newTemplateIgnores = (configToPersist.customIgnoreRules || []).filter(
+          const newTemplateExcludes = (configToPersist.customExcludeRules || []).filter(
             (r: any) => r.isSystem
           )
-          const newTemplateWhitelists = (configToPersist.customWhitelistRules || []).filter(
+          const newTemplateIncludes = (configToPersist.customIncludeRules || []).filter(
             (r: any) => r.isSystem
           )
 
-          configToPersist.customIgnoreRules = mergeRules(newTemplateIgnores, userIgnores)
-          configToPersist.customWhitelistRules = mergeRules(newTemplateWhitelists, userWhitelists)
+          configToPersist.customExcludeRules = mergeRules(newTemplateExcludes, userExcludes)
+          configToPersist.customIncludeRules = mergeRules(newTemplateIncludes, userIncludes)
         }
 
         // 确保状态就绪与模式版本对齐

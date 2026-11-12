@@ -25,6 +25,7 @@ import { toast } from '../common/Toast'
 import { t } from '@app/languages'
 import confetti from 'canvas-confetti'
 import { openMarketingPricingUrl, getMarketingPricingUrl, buildPricingUrlSync } from '../../lib/marketing-link'
+import { useTierStore } from '../../stores/tier-store'
 
 
 interface ActivationCodeSectionProps {
@@ -352,6 +353,8 @@ const EnterpriseActivationFlow: React.FC<{ onActivated?: () => void }> = ({ onAc
         if (statusResult.expiry) {
           setExpiryDate(statusResult.expiry)
         }
+        // 激活成功后主动拉取最新等级画像，避免依赖异步 IPC 事件导致头像菜单短暂仍显示免费版
+        await useTierStore.getState().fetchProfile()
 
         fireCelebration()
         toast.success(t('企业版授权激活成功！'))

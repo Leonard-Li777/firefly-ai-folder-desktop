@@ -11,6 +11,8 @@ import {
 } from '@firefly/types'
 import { mapIntentToParameters } from '@firefly/shared'
 import { useTierStore } from '../../stores/tier-store'
+import { useSettingsStore } from '../../stores/settings-store'
+import { usePluginCenterStore } from '../../stores/plugin-center-store'
 import { Card } from '../ui/card'
 import { Button } from '../ui/button'
 import { Label } from '../ui/label'
@@ -141,6 +143,34 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
     return parseWorkspaceConfig(workspace.workspace_config)
   }, [workspace.workspace_config])
 
+  // 基础语义检索引擎 SSOT 解析
+  const pluginModules = usePluginCenterStore(s => s.modules)
+  const getConfigValue = useSettingsStore(s => s.getConfigValue)
+  const activeBaseEmbeddingModule = useMemo(() => {
+    return (
+      pluginModules.find(
+        m => m.capability_slot === 'base_embedding' && m.install_state === 'active'
+      ) || null
+    )
+  }, [pluginModules])
+
+  const currentEngineDisplayName = useMemo(() => {
+    if (activeBaseEmbeddingModule?.name) {
+      return activeBaseEmbeddingModule.name
+    }
+    const globalProfile = getConfigValue<string>('AI_EMBEDDING_PROFILE')
+    if (globalProfile === 'gemma_unified') {
+      return t('统一全模态 AI 引擎 (Gemma Unified)')
+    }
+    return t('经典轻量 AI 引擎 (Classic Light)')
+  }, [activeBaseEmbeddingModule, getConfigValue])
+
+  const handleJumpToPlugins = useCallback(() => {
+    void useSettingsStore.getState().closeWorkspaceSettings()
+    void usePluginCenterStore.getState().openOverlay()
+    usePluginCenterStore.getState().setSelectedCategory('ai-engine')
+  }, [])
+
   const initialIntent: WorkspaceConfigIntent = useMemo(() => {
     if (parsedConfig.status === 'ready') {
       return parsedConfig.intent || 'fast_archive'
@@ -165,7 +195,7 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
     if (targetIntent === selectedIntent) return
     const hasCustomOverrides =
       Object.keys(overrides).length > 0 ||
-      Boolean(parsedConfig.status === 'ready' && parsedConfig.customIgnoreRules?.length)
+      Boolean(parsedConfig.status === 'ready' && parsedConfig.customExcludeRules?.length)
     if (hasCustomOverrides) {
       setPendingIntent(targetIntent)
       setShowSwitchConfirm(true)
@@ -284,13 +314,13 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
         overrides: hasOverrides ? overrides : undefined,
         extensionWeights:
           parsedConfig.status === 'ready' ? parsedConfig.extensionWeights : undefined,
-        customIgnoreRules:
-          parsedConfig.status === 'ready' && parsedConfig.customIgnoreRules
-            ? parsedConfig.customIgnoreRules
+        customExcludeRules:
+          parsedConfig.status === 'ready' && parsedConfig.customExcludeRules
+            ? parsedConfig.customExcludeRules
             : [],
-        customWhitelistRules:
-          parsedConfig.status === 'ready' && parsedConfig.customWhitelistRules
-            ? parsedConfig.customWhitelistRules
+        customIncludeRules:
+          parsedConfig.status === 'ready' && parsedConfig.customIncludeRules
+            ? parsedConfig.customIncludeRules
             : [],
         configuredAt: Date.now()
       }
@@ -654,18 +684,24 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
               </div>
             </div>
 
-            {/* 向量空间与硬件只读信息 */}
-            <div className="p-2.5 rounded-lg bg-background/80 border border-border/40 flex items-center justify-between text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                <Cpu className="w-3.5 h-3.5 text-primary" />
-                <span>
-                  {t('当前工作区向量空间: {profile} ({dim}维)', {
-                    profile: effectiveParams.embeddingProfile,
-                    dim: effectiveParams.mrlDimension
-                  })}
+            {/* 基础语义检索引擎与全域向量空间信息 */}
+            <div className="p-3 rounded-lg bg-background/80 border border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-muted-foreground">
+              <div className="flex items-center gap-2 min-w-0">
+                <Cpu className="w-4 h-4 text-primary shrink-0" />
+                <span className="text-xs">
+                  {t('当前基础语义检索引擎')}：
+                  <span className="font-semibold text-foreground">{currentEngineDisplayName}</span>
                 </span>
               </div>
-              <span className="text-[11px] opacity-75">{t('根据全机硬件自动锁定')}</span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleJumpToPlugins}
+                className="h-6 px-2 text-xs text-primary hover:text-primary self-start sm:self-auto"
+              >
+                <span>{t('切换')}</span>
+              </Button>
             </div>
           </div>
         )}

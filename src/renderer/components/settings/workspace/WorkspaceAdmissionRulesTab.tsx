@@ -263,8 +263,8 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProp
   }, [workspace.workspace_config])
 
   const rawCustomRules: IIgnoreRule[] = useMemo(() => {
-    if (parsedConfig.status === 'ready' && Array.isArray(parsedConfig.customIgnoreRules)) {
-      return parsedConfig.customIgnoreRules
+    if (parsedConfig.status === 'ready' && Array.isArray(parsedConfig.customExcludeRules)) {
+      return parsedConfig.customExcludeRules
     }
     return []
   }, [parsedConfig])
@@ -303,7 +303,7 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProp
 
       const updatedConfig: WorkspaceConfig = {
         ...parsedConfig,
-        customIgnoreRules: nextRules,
+        customExcludeRules: nextRules,
         configuredAt: Date.now()
       }
 
@@ -477,12 +477,125 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProp
         </Card>
       </div>
 
+      {/* 实时影响测算与大白话预览 */}
+      <Card className="p-4 bg-muted/20 border-border/60 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-primary" />
+            <span className="text-xs font-bold text-foreground">{t('预期影响测算')}</span>
+            {isCalculatingImpact && (
+              <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
+            )}
+          </div>
+          {impact.totalFiles > 0 && (
+            <span className="text-[10px] text-muted-foreground font-mono">
+              {impact.isSampled ? t('基于物理抽样估算') : t('基于已扫描文件库')}
+            </span>
+          )}
+        </div>
+
+        {whitelistTags.length === 0 ? (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">
+                {t('包含规则留空：按排除规则放行其余文件')}
+              </span>
+              <span className="font-mono font-bold text-primary">
+                {impact.totalFiles > 0 ? `${inPct}%` : t('待测算')}
+              </span>
+            </div>
+            <div className="w-full h-2 rounded-full bg-muted/60 overflow-hidden">
+              <div
+                className="h-full bg-primary rounded-full transition-all duration-300"
+                style={{ width: `${inPct}%` }}
+              />
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              {impact.totalFiles > 0
+                ? t(
+                    '当前未设置包含规则：目录下共 {totalFiles} 个文件，除系统硬排除与目录专属排除规则命中的文件外，其余 {included} 个均将纳入 AI 分析。',
+                    { totalFiles: impact.totalFiles, included: impact.includedFiles }
+                  )
+                : t(
+                    '当前未设置包含规则：除系统硬排除与目录专属排除规则命中的文件外，其余文件均将纳入 AI 索引与分析。可随时添加包含规则，与排除规则同时生效。'
+                  )}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2">
+                <span className="text-foreground font-semibold">
+                  {t('预计纳入: {inPct}%', { inPct })}
+                </span>
+                {impact.totalFiles > 0 && (
+                  <span className="text-muted-foreground font-mono text-[11px]">
+                    ({impact.includedFiles} / {impact.totalFiles})
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">
+                  {t('预计排除: {outPct}%', { outPct })}
+                </span>
+                {impact.totalFiles > 0 && (
+                  <span className="text-muted-foreground font-mono text-[11px]">
+                    ({impact.excludedFiles} / {impact.totalFiles})
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* 双色对比进度条 */}
+            <div className="w-full h-2.5 rounded-full bg-muted/60 overflow-hidden flex">
+              <div
+                className="h-full bg-primary transition-all duration-300"
+                style={{ width: `${inPct}%` }}
+              />
+              <div
+                className="h-full bg-amber-500/60 transition-all duration-300"
+                style={{ width: `${outPct}%` }}
+              />
+            </div>
+
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              {impact.totalFiles > 0
+                ? impact.isSampled
+                  ? t(
+                      '基于当前目录嗅探（共 {total} 个文件），预期将精准纳入 {included} 个目标格式文件（约 {inPct}%），并自动排除其余 {excluded} 个非包含规则文件（约 {outPct}%）。',
+                      {
+                        total: impact.totalFiles,
+                        included: impact.includedFiles,
+                        inPct,
+                        excluded: impact.excludedFiles,
+                        outPct
+                      }
+                    )
+                  : t(
+                      '基于已扫描文件库（共 {total} 个文件），预期将精准纳入 {included} 个目标格式文件（约 {inPct}%），并自动排除其余 {excluded} 个非包含规则文件（约 {outPct}%）。',
+                      {
+                        total: impact.totalFiles,
+                        included: impact.includedFiles,
+                        inPct,
+                        excluded: impact.excludedFiles,
+                        outPct
+                      }
+                    )
+                : t(
+                    '已设定 {count} 种目标扩展名。保存后仅允许符合这些扩展名的文件进入 AI 分析队列。',
+                    { count: whitelistTags.length }
+                  )}
+            </p>
+          </div>
+        )}
+      </Card>
       {/* 包含规则标签化管理区 (常驻可编辑，与排除规则同时设置) */}
       <Card className="p-4 bg-muted/10 border-border/70 space-y-4">
         <div className="flex items-center justify-between">
-          <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-            <span>{t('已启用的包含规则扩展名')}</span>
-            <span className="text-[11px] font-normal text-muted-foreground font-mono">
+          <Label className="text-sm font-semibold flex items-center gap-2">
+            <FolderOpen className="w-4 h-4 text-primary" />
+            <span>{t('目录专属包含规则')}</span>
+            <span className="text-xs font-normal text-muted-foreground font-mono">
               ({whitelistTags.length})
             </span>
           </Label>
@@ -600,298 +713,197 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProp
         </div>
       </Card>
 
-      {/* 实时影响测算与大白话预览 */}
-      <Card className="p-4 bg-muted/20 border-border/60 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-xs font-bold text-foreground">{t('预期影响测算')}</span>
-            {isCalculatingImpact && (
-              <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
-            )}
-          </div>
-          {impact.totalFiles > 0 && (
-            <span className="text-[10px] text-muted-foreground font-mono">
-              {impact.isSampled ? t('基于物理抽样估算') : t('基于已扫描文件库')}
-            </span>
-          )}
-        </div>
-
-        {whitelistTags.length === 0 ? (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">
-                {t('包含规则留空：按排除规则放行其余文件')}
-              </span>
-              <span className="font-mono font-bold text-primary">
-                {impact.totalFiles > 0 ? `${inPct}%` : t('待测算')}
-              </span>
-            </div>
-            <div className="w-full h-2 rounded-full bg-muted/60 overflow-hidden">
-              <div
-                className="h-full bg-primary rounded-full transition-all duration-300"
-                style={{ width: `${inPct}%` }}
-              />
-            </div>
-            <p className="text-[11px] text-muted-foreground leading-relaxed">
-              {impact.totalFiles > 0
-                ? t(
-                    '当前未设置包含规则：目录下共 {totalFiles} 个文件，除系统硬排除与目录专属排除规则命中的文件外，其余 {included} 个均将纳入 AI 分析。',
-                    { totalFiles: impact.totalFiles, included: impact.includedFiles }
-                  )
-                : t(
-                    '当前未设置包含规则：除系统硬排除与目录专属排除规则命中的文件外，其余文件均将纳入 AI 索引与分析。可随时添加包含规则，与排除规则同时生效。'
-                  )}
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-2.5">
-            <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2">
-                <span className="text-foreground font-semibold">
-                  {t('预计纳入: {inPct}%', { inPct })}
-                </span>
-                {impact.totalFiles > 0 && (
-                  <span className="text-muted-foreground font-mono text-[11px]">
-                    ({impact.includedFiles} / {impact.totalFiles})
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">
-                  {t('预计排除: {outPct}%', { outPct })}
-                </span>
-                {impact.totalFiles > 0 && (
-                  <span className="text-muted-foreground font-mono text-[11px]">
-                    ({impact.excludedFiles} / {impact.totalFiles})
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* 双色对比进度条 */}
-            <div className="w-full h-2.5 rounded-full bg-muted/60 overflow-hidden flex">
-              <div
-                className="h-full bg-primary transition-all duration-300"
-                style={{ width: `${inPct}%` }}
-              />
-              <div
-                className="h-full bg-amber-500/60 transition-all duration-300"
-                style={{ width: `${outPct}%` }}
-              />
-            </div>
-
-            <p className="text-[11px] text-muted-foreground leading-relaxed">
-              {impact.totalFiles > 0
-                ? t(
-                    '基于当前目录嗅探（共 {total} 个文件），预期将精准纳入 {included} 个目标格式文件（约 {inPct}%），并自动排除其余 {excluded} 个非包含规则文件（约 {outPct}%）。',
-                    {
-                      total: impact.totalFiles,
-                      included: impact.includedFiles,
-                      inPct,
-                      excluded: impact.excludedFiles,
-                      outPct
-                    }
-                  )
-                : t(
-                    '已设定 {count} 种目标扩展名。保存后仅允许符合这些扩展名的文件进入 AI 分析队列。',
-                    { count: whitelistTags.length }
-                  )}
-            </p>
-          </div>
-        )}
-      </Card>
-
       {/* 目录专属黑名单规则 (跳过名单) */}
-      <div className="space-y-3 pt-2 border-t border-border/60">
-        <div className="flex items-center justify-between">
-          <Label className="text-sm font-semibold flex items-center gap-2">
-            <FolderOpen className="w-4 h-4 text-primary" />
-            <span>{t('目录专属黑名单排除规则')}</span>
-            <span className="text-xs font-normal text-muted-foreground font-mono">
-              ({customRules.length})
-            </span>
-          </Label>
+      <Card className="p-4 bg-muted/10 border-border/70 space-y-4">
+        <div className="space-y-3 pt-2 border-t border-border/60">
+          <div className="flex items-center justify-between">
+            <Label className="text-sm font-semibold flex items-center gap-2">
+              <FolderOpen className="w-4 h-4 text-primary" />
+              <span>{t('目录专属排除规则')}</span>
+              <span className="text-xs font-normal text-muted-foreground font-mono">
+                ({customRules.length})
+              </span>
+            </Label>
 
-          <Button
-            type="button"
-            size="sm"
-            onClick={() => setShowAddForm(true)}
-            className="text-xs font-semibold flex items-center gap-1.5 h-7 px-2.5 shadow-xs shrink-0"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>{t('添加排除项')}</span>
-          </Button>
-        </div>
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setShowAddForm(true)}
+              className="text-xs font-semibold flex items-center gap-1.5 h-7 px-2.5 shadow-xs shrink-0"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>{t('添加排除项')}</span>
+            </Button>
+          </div>
 
-        <p className="text-[11px] text-muted-foreground leading-relaxed">
-          {t('这里只显示当前目录额外要排除的项；全局规则里已经排除的，不会在这里重复出现。')}
-        </p>
-        {mergedRuleCount > 0 && (
-          <p className="text-[11px] text-muted-foreground/80">
-            {t('已自动合并 {count} 项与全局规则重复的排除项，它们依然生效。', {
-              count: mergedRuleCount
-            })}
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            {t('这里只显示当前目录额外要排除的项；全局规则里已经排除的，不会在这里重复出现。')}
           </p>
-        )}
+          {mergedRuleCount > 0 && (
+            <p className="text-[11px] text-muted-foreground/80">
+              {t('已自动合并 {count} 项与全局规则重复的排除项，它们依然生效。', {
+                count: mergedRuleCount
+              })}
+            </p>
+          )}
 
-        {/* 添加新黑名单规则表单 */}
-        {showAddForm && (
-          <Card className="p-4 bg-muted/20 border-primary/40 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-primary">{t('新增目录排除规则')}</span>
-              <button
-                type="button"
-                onClick={() => setShowAddForm(false)}
-                className="text-muted-foreground hover:text-foreground p-1"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
+          {/* 添加新黑名单规则表单 */}
+          {showAddForm && (
+            <Card className="p-4 bg-muted/20 border-primary/40 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-primary">{t('新增目录排除规则')}</span>
+                <button
+                  type="button"
+                  onClick={() => setShowAddForm(false)}
+                  className="text-muted-foreground hover:text-foreground p-1"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <Label className="text-[11px] text-muted-foreground mb-1 block">
+                    {t('匹配类型')}
+                  </Label>
+                  <Select
+                    value={newRule.type}
+                    onValueChange={val => setNewRule(prev => ({ ...prev, type: val as any }))}
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="directory">{t('特定目录名')}</SelectItem>
+                      <SelectItem value="file">{t('特定文件名')}</SelectItem>
+                      <SelectItem value="extension">{t('文件扩展名')}</SelectItem>
+                      <SelectItem value="wildcard">{t('通配符路径')}</SelectItem>
+                      <SelectItem value="regex">{t('正则表达式')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <Label className="text-[11px] text-muted-foreground mb-1 block">
+                    {t('匹配值')}
+                  </Label>
+                  <Input
+                    placeholder={
+                      newRule.type === 'directory'
+                        ? 'build, dist, test_data'
+                        : newRule.type === 'extension'
+                          ? '.bak, .tmp'
+                          : t('输入要排除的名称或模式')
+                    }
+                    value={newRule.value}
+                    onChange={e => setNewRule(prev => ({ ...prev, value: e.target.value }))}
+                    className="h-8 text-xs font-mono"
+                  />
+                </div>
+              </div>
+
               <div>
                 <Label className="text-[11px] text-muted-foreground mb-1 block">
-                  {t('匹配类型')}
-                </Label>
-                <Select
-                  value={newRule.type}
-                  onValueChange={val => setNewRule(prev => ({ ...prev, type: val as any }))}
-                >
-                  <SelectTrigger className="h-8 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="directory">{t('特定目录名')}</SelectItem>
-                    <SelectItem value="file">{t('特定文件名')}</SelectItem>
-                    <SelectItem value="extension">{t('文件扩展名')}</SelectItem>
-                    <SelectItem value="wildcard">{t('通配符路径')}</SelectItem>
-                    <SelectItem value="regex">{t('正则表达式')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="sm:col-span-2">
-                <Label className="text-[11px] text-muted-foreground mb-1 block">
-                  {t('匹配值')}
+                  {t('备注说明 (可选)')}
                 </Label>
                 <Input
-                  placeholder={
-                    newRule.type === 'directory'
-                      ? 'build, dist, test_data'
-                      : newRule.type === 'extension'
-                        ? '.bak, .tmp'
-                        : t('输入要排除的名称或模式')
-                  }
-                  value={newRule.value}
-                  onChange={e => setNewRule(prev => ({ ...prev, value: e.target.value }))}
-                  className="h-8 text-xs font-mono"
+                  placeholder={t('例如：本地临时编译构建输出目录')}
+                  value={newRule.description || ''}
+                  onChange={e => setNewRule(prev => ({ ...prev, description: e.target.value }))}
+                  className="h-8 text-xs"
                 />
               </div>
-            </div>
 
-            <div>
-              <Label className="text-[11px] text-muted-foreground mb-1 block">
-                {t('备注说明 (可选)')}
-              </Label>
-              <Input
-                placeholder={t('例如：本地临时编译构建输出目录')}
-                value={newRule.description || ''}
-                onChange={e => setNewRule(prev => ({ ...prev, description: e.target.value }))}
-                className="h-8 text-xs"
-              />
-            </div>
+              <div className="flex items-center justify-end gap-2 pt-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAddForm(false)}
+                  className="h-7 text-xs"
+                >
+                  {t('取消')}
+                </Button>
+                <Button
+                  type="button"
+                  variant="default"
+                  size="sm"
+                  onClick={handleAddRule}
+                  disabled={!newRule.value?.trim()}
+                  className="h-7 text-xs font-semibold"
+                >
+                  <Save className="w-3.5 h-3.5 mr-1" />
+                  {t('保存排除规则')}
+                </Button>
+              </div>
+            </Card>
+          )}
 
-            <div className="flex items-center justify-end gap-2 pt-1">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowAddForm(false)}
-                className="h-7 text-xs"
-              >
-                {t('取消')}
-              </Button>
-              <Button
-                type="button"
-                variant="default"
-                size="sm"
-                onClick={handleAddRule}
-                disabled={!newRule.value?.trim()}
-                className="h-7 text-xs font-semibold"
-              >
-                <Save className="w-3.5 h-3.5 mr-1" />
-                {t('保存排除规则')}
-              </Button>
-            </div>
-          </Card>
-        )}
-
-        {/* 专属规则列表 */}
-        {customRules.length === 0 && !showAddForm ? (
-          <div className="p-4 text-center rounded-xl border border-dashed border-border/70 text-muted-foreground text-xs space-y-1">
-            <p>{t('当前工作目录暂无专属排除规则，仅遵守下方系统全局基线。')}</p>
-            <p className="text-[11px] text-muted-foreground/70">
-              {t(
-                '若该目录下有专用的临时构建、缓存或私人文件夹无需分析，可点击上方「添加排除项」。'
-              )}
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {customRules.map(rule => (
-              <div
-                key={rule.id}
-                className={cn(
-                  'flex items-center justify-between p-3 rounded-xl border transition-all duration-150',
-                  rule.isActive
-                    ? 'bg-card border-border/80'
-                    : 'bg-muted/10 border-border/40 opacity-60'
+          {/* 专属规则列表 */}
+          {customRules.length === 0 && !showAddForm ? (
+            <div className="p-4 text-center rounded-xl border border-dashed border-border/70 text-muted-foreground text-xs space-y-1">
+              <p>{t('当前工作目录暂无专属排除规则，仅遵守下方系统全局基线。')}</p>
+              <p className="text-[11px] text-muted-foreground/70">
+                {t(
+                  '若该目录下有专用的临时构建、缓存或私人文件夹无需分析，可点击上方「添加排除项」。'
                 )}
-              >
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 shrink-0">
-                    {typeLabels[rule.type] || rule.type}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="font-mono text-xs font-bold text-foreground truncate">
-                      {rule.value}
-                    </div>
-                    {rule.description && (
-                      <div className="text-[11px] text-muted-foreground truncate">
-                        {rule.description}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {customRules.map(rule => (
+                <div
+                  key={rule.id}
+                  className={cn(
+                    'flex items-center justify-between p-3 rounded-xl border transition-all duration-150',
+                    rule.isActive
+                      ? 'bg-card border-border/80'
+                      : 'bg-muted/10 border-border/40 opacity-60'
+                  )}
+                >
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 shrink-0">
+                      {typeLabels[rule.type] || rule.type}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-mono text-xs font-bold text-foreground truncate">
+                        {rule.value}
                       </div>
-                    )}
+                      {rule.description && (
+                        <div className="text-[11px] text-muted-foreground truncate">
+                          {rule.description}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 shrink-0 ml-3">
+                    <Switch
+                      checked={rule.isActive}
+                      onCheckedChange={checked => handleToggleActive(rule.id, checked)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteRule(rule.id)}
+                      className="p-1 text-muted-foreground hover:text-destructive rounded-md transition-colors"
+                      title={t('删除此规则')}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-3 shrink-0 ml-3">
-                  <Switch
-                    checked={rule.isActive}
-                    onCheckedChange={checked => handleToggleActive(rule.id, checked)}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteRule(rule.id)}
-                    className="p-1 text-muted-foreground hover:text-destructive rounded-md transition-colors"
-                    title={t('删除此规则')}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* 继承自系统的全局基线规则 */}
+              ))}
+            </div>
+          )}
+        </div>
+      </Card>
+      {/* 继承自系统的全局排除规则 */}
       <Card className="p-4 bg-muted/20 border-border/60 space-y-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-muted-foreground" />
             <h4 className="font-bold text-xs text-foreground">
-              {t('继承自系统的全局基线规则 (只读)')}
+              {t('继承自系统的全局排除规则 (只读)')}
             </h4>
           </div>
 

@@ -16,6 +16,7 @@ import type { Database } from 'better-sqlite3'
 import {
   logger,
   LogCategory,
+  ResourceLocator,
   isPathEqual,
   isSubPath,
   BUILTIN_MODULE_CATALOG_META,
@@ -704,6 +705,9 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     slot_policy: BUILTIN_MODULE_CATALOG_META.tts_m5_onnx.slotPolicy,
     backend_type: BUILTIN_MODULE_CATALOG_META.tts_m5_onnx.backendType,
     author_code: 'official',
+    author_name: null,
+    availability: BUILTIN_MODULE_CATALOG_META.tts_m5_onnx.availability,
+    firecore_cost: 0,
     total_bytes: BUILTIN_MODULE_CATALOG_META.tts_m5_onnx.totalBytes,
     install_state: 'not_installed',
     contributes: {
@@ -904,9 +908,15 @@ export class ModularResourceService implements IModularResourceService {
     this.topologyListener = handler
   }
 
-  public configureRuntimeDependencies(deps: { getDb?: () => Database | null }): void {
+  public configureRuntimeDependencies(deps: {
+    getDb?: () => Database | null
+    configOrchestrator?: any
+  }): void {
     if (deps.getDb) {
       this.customDbGetter = deps.getDb
+    }
+    if (deps.configOrchestrator) {
+      this.injectedConfigOrchestrator = deps.configOrchestrator
     }
   }
 
@@ -1470,6 +1480,42 @@ export class ModularResourceService implements IModularResourceService {
   /**
    * 读取资源的 BOM 文件清单定义
    */
+  /**
+   * 候选 BOM 路径解析（严格适配打包态、开发态与 monorepo 子工作区不同 cwd）
+   */
+  private getCandidateBomPaths(): string[] {
+    const rawPaths: string[] = []
+    try {
+      if (typeof electronApp !== 'undefined' && electronApp.isPackaged) {
+        rawPaths.push(path.join(process.resourcesPath, 'configs', 'resources.bom.json'))
+        rawPaths.push(
+          path.join(process.resourcesPath, 'extraResources', 'configs', 'resources.bom.json')
+        )
+      }
+    } catch {}
+    try {
+      const resolvedBom = ResourceLocator.resolveResourcePath('configs/resources.bom.json')
+      if (resolvedBom) rawPaths.push(resolvedBom)
+    } catch {}
+    rawPaths.push(
+      path.join(process.cwd(), 'build', 'extraResources', 'configs', 'resources.bom.json'),
+      path.join(
+        process.cwd(),
+        'apps',
+        'desktop',
+        'build',
+        'extraResources',
+        'configs',
+        'resources.bom.json'
+      ),
+      path.join(this.getBaseDir(), 'configs', 'resources.bom.json')
+    )
+    return Array.from(new Set(rawPaths.filter(Boolean)))
+  }
+
+  /**
+   * 按资源 ID 获取预期文件清单（优先读取 BOM 文件，用于解压完成后的物理对账）
+   */
   private loadBomFilesForResource(
     resourceId: string
   ): Array<{ name: string; size: number; sha256: string }> {
@@ -1477,15 +1523,7 @@ export class ModularResourceService implements IModularResourceService {
       return this.resourceBomOverrides.get(resourceId)!
     }
 
-    const candidateBomPaths = [
-      path.join(process.cwd(), 'apps/desktop/build/extraResources/configs/resources.bom.json'),
-      path.join(this.getBaseDir(), 'configs', 'resources.bom.json')
-    ]
-    try {
-      if (typeof electronApp !== 'undefined' && electronApp.isPackaged) {
-        candidateBomPaths.unshift(path.join(process.resourcesPath, 'configs', 'resources.bom.json'))
-      }
-    } catch {}
+    const candidateBomPaths = this.getCandidateBomPaths()
 
     for (const bomPath of candidateBomPaths) {
       if (fs.existsSync(bomPath)) {
@@ -1508,15 +1546,7 @@ export class ModularResourceService implements IModularResourceService {
    * 读取全部资源的 BOM 文件清单定义
    */
   public loadResourceBom(): Array<{ name: string; size: number; sha256: string }> {
-    const candidateBomPaths = [
-      path.join(process.cwd(), 'apps/desktop/build/extraResources/configs/resources.bom.json'),
-      path.join(this.getBaseDir(), 'configs', 'resources.bom.json')
-    ]
-    try {
-      if (typeof electronApp !== 'undefined' && electronApp.isPackaged) {
-        candidateBomPaths.unshift(path.join(process.resourcesPath, 'configs', 'resources.bom.json'))
-      }
-    } catch {}
+    const candidateBomPaths = this.getCandidateBomPaths()
 
     const results: Array<{ name: string; size: number; sha256: string }> = []
     for (const bomPath of candidateBomPaths) {
@@ -1682,18 +1712,28 @@ export class ModularResourceService implements IModularResourceService {
     spec: CatalogResourceSpec,
     targetAbsDir: string
   ): Promise<boolean> {
-    const candidateDirs = [
-      path.join(process.cwd(), 'apps/desktop/build/presetResources'),
-      path.join(this.getBaseDir(), 'presetResources')
-    ]
+    const rawCandidateDirs: string[] = []
     if (this.customPresetDir) {
-      candidateDirs.unshift(this.customPresetDir)
+      rawCandidateDirs.push(this.customPresetDir)
     }
     try {
       if (typeof electronApp !== 'undefined' && electronApp.isPackaged) {
-        candidateDirs.unshift(path.join(process.resourcesPath, 'presetResources'))
+        rawCandidateDirs.push(path.join(process.resourcesPath, 'presetResources'))
       }
     } catch {}
+    try {
+      const extraBase = ResourceLocator.getBaseResourceDir()
+      if (extraBase) {
+        rawCandidateDirs.push(path.join(path.dirname(extraBase), 'presetResources'))
+      }
+    } catch {}
+    rawCandidateDirs.push(
+      path.join(process.cwd(), 'build', 'presetResources'),
+      path.join(process.cwd(), 'apps', 'desktop', 'build', 'presetResources'),
+      path.join(this.getBaseDir(), 'presetResources')
+    )
+
+    const candidateDirs = Array.from(new Set(rawCandidateDirs.filter(Boolean)))
 
     const sharedSubDir = resolveSharedSubDir(spec.resource_id)
 
@@ -2366,6 +2406,9 @@ export class ModularResourceService implements IModularResourceService {
     } catch (reconcileErr) {
       logger.warn(LogCategory.SYSTEM, '[ModularResource] 离线总包冷启动对账自愈异常:', reconcileErr)
     }
+
+    // 4. 确保当前激活底座与 ConfigOrchestrator 的 AI_EMBEDDING_PROFILE 强一致
+    await this.syncEmbeddingProfileToConfig()
 
     return {
       cleanedTombstones,
@@ -3520,6 +3563,9 @@ export class ModularResourceService implements IModularResourceService {
             reason: 'module_install',
             restartPolicy: 'ensure-running'
           })
+          if (slot === 'base_embedding') {
+            await this.syncEmbeddingProfileToConfig()
+          }
         }
 
         this.liveProgress.delete(moduleId)
@@ -4115,6 +4161,9 @@ export class ModularResourceService implements IModularResourceService {
         }).catch(err => {
           logger.warn(LogCategory.SYSTEM, '[ModularResource] 卸载接替后刷新拓扑告警:', err)
         })
+        if (backupToActivate.capability_slot === 'base_embedding') {
+          await this.syncEmbeddingProfileToConfig()
+        }
       } else if (wasActive || omniStopped) {
         await this.notifyRuntimePluginTopologyChanged({
           moduleId,
@@ -4298,6 +4347,9 @@ export class ModularResourceService implements IModularResourceService {
           reason: 'module_state',
           restartPolicy: 'ensure-running'
         })
+        if (slot === 'base_embedding') {
+          await this.syncEmbeddingProfileToConfig()
+        }
       } catch (activateErr: any) {
         const errMsg = activateErr?.message || String(activateErr)
         logger.error(
@@ -4323,6 +4375,9 @@ export class ModularResourceService implements IModularResourceService {
         }
         if (isExclusive && prevActive && prevActive.id !== moduleId) {
           await restorePrevActiveRuntime(prevActive.id, '运行时加载')
+        }
+        if (slot === 'base_embedding') {
+          await this.syncEmbeddingProfileToConfig()
         }
         throw activateErr
       }
@@ -4507,6 +4562,43 @@ export class ModularResourceService implements IModularResourceService {
       rootPublicKey: options?.rootPublicKey
     })
     return res.filePath
+  }
+
+  /**
+   * 同步活跃底座画像状态到 ConfigOrchestrator（保证 base_embedding 与 AI_EMBEDDING_PROFILE / EMBEDDING_MRL_DIMENSION 唯一事实源全域统一）
+   */
+  public async syncEmbeddingProfileToConfig(): Promise<void> {
+    try {
+      const activeBase = this.getActiveModuleBySlot('base_embedding')
+      if (!activeBase) return
+
+      let configOrch = this.injectedConfigOrchestrator
+      if (!configOrch) {
+        try {
+          const { ConfigOrchestrator } = await import('../../config/config-orchestrator')
+          configOrch = ConfigOrchestrator.getInstance()
+        } catch {
+          return
+        }
+      }
+      if (!configOrch) return
+
+      const targetProfile =
+        activeBase.id === 'engine_gemma_unified' ? 'gemma_unified' : 'classic_light'
+      const currentProfile = configOrch.getValue?.('AI_EMBEDDING_PROFILE')
+
+      if (currentProfile !== targetProfile) {
+        logger.info(
+          LogCategory.SYSTEM,
+          `[ModularResource] 同步底座槽位活跃状态到配置: ${currentProfile} -> ${targetProfile}`
+        )
+        if (typeof configOrch.updateValue === 'function') {
+          await configOrch.updateValue('AI_EMBEDDING_PROFILE', targetProfile)
+        }
+      }
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[ModularResource] 同步底座嵌入画像到配置告警:', err)
+    }
   }
 
   async importOfflinePackage(

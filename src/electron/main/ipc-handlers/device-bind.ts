@@ -55,6 +55,20 @@ export function registerDeviceBindIPCHandlers(): void {
     }
   )
 
+  ipcMain.handle(
+    'deviceBind/completeOaContactBinding',
+    async (_event, payload?: { invitationCode?: string }) => {
+      try {
+        return await DeviceBindService.getInstance().completeOaContactBinding(
+          payload?.invitationCode
+        )
+      } catch (err: any) {
+        logger.error(LogCategory.IPC, '[IPC] deviceBind/completeOaContactBinding failed:', err)
+        return { success: false, error: err?.message || 'unknown' }
+      }
+    }
+  )
+
   ipcMain.handle('deviceBind/hasActiveBindSession', async () => {
     try {
       return DeviceBindService.getInstance().hasActiveBindSession()
