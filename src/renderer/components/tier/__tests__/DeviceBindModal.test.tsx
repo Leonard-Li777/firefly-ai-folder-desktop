@@ -76,18 +76,20 @@ describe('DeviceBindModal (Stage 2 关注公众号填口令 / 邮箱验证码二
     cleanup()
   })
 
-  it('默认展示「关注公众号填口令」Tab 与公众号二维码、口令输入框', async () => {
+  it('Phase 1 默认纯净展示公众号关注与 4 位口令输入，隐藏邮箱 Tab 干扰', async () => {
     render(<DeviceBindModal open={true} onOpenChange={vi.fn()} />)
 
     await waitFor(() => {
       expect(screen.getByTestId('panel-wechat-oa')).toBeDefined()
     })
 
-    expect(screen.getByTestId('tab-wechat-oa')).toBeDefined()
-    expect(screen.getByTestId('tab-email-otp')).toBeDefined()
+    // Phase 1 收敛：隐藏二选一 Tab 栏
+    expect(screen.queryByTestId('tab-wechat-oa')).toBeNull()
+    expect(screen.queryByTestId('tab-email-otp')).toBeNull()
     expect(screen.getByAltText('萤核智能文件夹公众号二维码')).toBeDefined()
     expect(screen.getByTestId('oa-passcode-input')).toBeDefined()
     expect(screen.queryByTestId('panel-email-otp')).toBeNull()
+    expect(screen.getByText('关注公众号 · 完成账号激活')).toBeDefined()
   })
 
   it('输入错误口令时直接在前端拦截，不调用 completeOaContactBinding', async () => {
@@ -136,46 +138,14 @@ describe('DeviceBindModal (Stage 2 关注公众号填口令 / 邮箱验证码二
     expect(mockSyncFromCloud).toHaveBeenCalledTimes(1)
   })
 
-  it('可切换至「邮箱验证码」Tab 并完成发送验证码与提交绑定', async () => {
-    mockSendEmailOtp.mockResolvedValue({ success: true, cooldown_seconds: 60 })
-    mockCompleteEmailBinding.mockResolvedValue({
-      success: true,
-      status: 'active',
-      seated: true,
-      contact_channel: 'email'
-    })
-
+  it('口令输入框为空时，提交激活按钮保持禁用状态', async () => {
     render(<DeviceBindModal open={true} onOpenChange={vi.fn()} />)
 
-    const emailTab = await screen.findByTestId('tab-email-otp')
-    fireEvent.click(emailTab)
+    const passcodeInput = await screen.findByTestId('oa-passcode-input')
+    expect((passcodeInput as HTMLInputElement).value).toBe('')
 
-    await waitFor(() => {
-      expect(screen.getByTestId('panel-email-otp')).toBeDefined()
-    })
-
-    const emailInput = screen.getByPlaceholderText('例如 yourname@qq.com / 163.com')
-    const otpInput = screen.getByPlaceholderText('6 位数字')
-    fireEvent.change(emailInput, { target: { value: 'user@example.com' } })
-    fireEvent.click(screen.getByText('获取验证码'))
-
-    await waitFor(() => {
-      expect(mockSendEmailOtp).toHaveBeenCalledWith({ email: 'user@example.com' })
-    })
-
-    fireEvent.change(otpInput, { target: { value: '654321' } })
-    fireEvent.click(screen.getByTestId('stage2-submit-btn'))
-
-    await waitFor(() => {
-      expect(mockCompleteEmailBinding).toHaveBeenCalledWith({
-        email: 'user@example.com',
-        code: '654321',
-        invitationCode: undefined
-      })
-    })
-    await waitFor(() => {
-      expect(screen.getByTestId('bind-success-badge')).toBeDefined()
-    })
+    const submitBtn = screen.getByTestId('stage2-submit-btn') as HTMLButtonElement
+    expect(submitBtn.disabled).toBe(true)
   })
 
   it('当 completeOaContactBinding 返回 need_evict 时打开换绑弹窗', async () => {

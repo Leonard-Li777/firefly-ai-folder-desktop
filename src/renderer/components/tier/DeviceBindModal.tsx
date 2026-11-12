@@ -22,6 +22,8 @@ import { extractInvitationCodeInput } from '../../lib/marketing-link'
 const oaQrImageUrl = new URL('../../assets/official-account-qr.jpg', import.meta.url).href
 const OA_ACCOUNT_NAME = '萤核智能文件夹'
 const OA_FOLLOW_PASSCODE = '7394'
+// Phase 1 国内版聚焦公众号口令单一流；邮箱验证码保留在代码中供 Phase 2 阿里云 DirectMail 就绪后开启
+const ENABLE_EMAIL_BINDING = false
 
 interface DeviceBindModalProps {
   open: boolean
@@ -296,7 +298,21 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
         toast.success('验证码已发送至您的邮箱，请注意查收')
         setCooldown(res.cooldown_seconds || 60)
       } else {
-        toast.error(formatErrorMessage(res?.error))
+        if (
+          res?.error === 'SESSION_EXPIRED' ||
+          res?.error === 'BIND_SESSION_EXPIRED' ||
+          res?.error === 'UNAUTHORIZED'
+        ) {
+          toast.error('微信扫码状态已过期，请重新扫码登录')
+          setError('微信扫码状态已过期，请重新扫码登录')
+          if (window.electronAPI?.deviceBind?.resetToQr) {
+            await window.electronAPI.deviceBind.resetToQr()
+          }
+          loadBindCode(true)
+          return
+        }
+        toast.error(formatErrorMessage(res?.error, res?.message))
+        setError(formatErrorMessage(res?.error, res?.message))
       }
     } catch (err: any) {
       toast.error(formatErrorMessage(err?.message))
@@ -454,23 +470,23 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
         <DialogHeader className="text-center sm:text-center space-y-1">
           <div className="mx-auto w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-1">
             {step === 'contact_input' || step === 'submitting' ? (
-              contactTab === 'wechat_oa' ? (
-                <MessageSquareText className="w-6 h-6 text-primary" />
-              ) : (
-                <Mail className="w-6 h-6 text-primary" />
-              )
+              <MessageSquareText className="w-6 h-6 text-primary" />
             ) : (
               <Smartphone className="w-6 h-6" />
             )}
           </div>
           <DialogTitle className="text-lg font-bold tracking-tight">
             {step === 'contact_input' || step === 'submitting'
-              ? '关注公众号或绑定邮箱 · 完成账号激活'
+              ? ENABLE_EMAIL_BINDING
+                ? '关注公众号或绑定邮箱 · 完成账号激活'
+                : '关注公众号 · 完成账号激活'
               : '微信扫码登录 · 绑定当前电脑'}
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
             {step === 'contact_input' || step === 'submitting'
-              ? '任选一种方式即可进入软件，后续重要升级与福利通知不错过'
+              ? ENABLE_EMAIL_BINDING
+                ? '任选一种方式即可进入软件，后续重要升级与福利通知不错过'
+                : '关注官方公众号获取 4 位数字口令，重要升级与福利通知不错过'
               : '使用微信扫描小程序码，同一账号支持在多台设备间共享权益'}
           </DialogDescription>
         </DialogHeader>
@@ -566,43 +582,45 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
               </div>
             )}
 
-            {/* 联系方式二选一切换栏 */}
-            <div className="grid grid-cols-2 gap-1 p-1 rounded-lg bg-muted/70 border border-border/60">
-              <button
-                type="button"
-                data-testid="tab-wechat-oa"
-                disabled={step === 'submitting'}
-                onClick={() => {
-                  setContactTab('wechat_oa')
-                  setError(null)
-                }}
-                className={`h-8 rounded-md text-xs font-semibold transition-all ${
-                  contactTab === 'wechat_oa'
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                关注公众号填口令
-              </button>
-              <button
-                type="button"
-                data-testid="tab-email-otp"
-                disabled={step === 'submitting'}
-                onClick={() => {
-                  setContactTab('email')
-                  setError(null)
-                }}
-                className={`h-8 rounded-md text-xs font-semibold transition-all ${
-                  contactTab === 'email'
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                邮箱验证码
-              </button>
-            </div>
+            {/* 联系方式二选一切换栏 (Phase 2 待阿里云 DirectMail 就绪后开启) */}
+            {ENABLE_EMAIL_BINDING && (
+              <div className="grid grid-cols-2 gap-1 p-1 rounded-lg bg-muted/70 border border-border/60">
+                <button
+                  type="button"
+                  data-testid="tab-wechat-oa"
+                  disabled={step === 'submitting'}
+                  onClick={() => {
+                    setContactTab('wechat_oa')
+                    setError(null)
+                  }}
+                  className={`h-8 rounded-md text-xs font-semibold transition-all ${
+                    contactTab === 'wechat_oa'
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  关注公众号填口令
+                </button>
+                <button
+                  type="button"
+                  data-testid="tab-email-otp"
+                  disabled={step === 'submitting'}
+                  onClick={() => {
+                    setContactTab('email')
+                    setError(null)
+                  }}
+                  className={`h-8 rounded-md text-xs font-semibold transition-all ${
+                    contactTab === 'email'
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  邮箱验证码
+                </button>
+              </div>
+            )}
 
-            {contactTab === 'wechat_oa' ? (
+            {(!ENABLE_EMAIL_BINDING || contactTab === 'wechat_oa') && (
               <div className="space-y-3" data-testid="panel-wechat-oa">
                 <div className="flex items-center gap-3.5 p-3 rounded-xl bg-muted/40 border border-border/60">
                   <div className="w-28 h-28 shrink-0 rounded-lg bg-white p-1.5 border border-border/50 flex items-center justify-center overflow-hidden">
@@ -646,7 +664,9 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
                   />
                 </div>
               </div>
-            ) : (
+            )}
+
+            {ENABLE_EMAIL_BINDING && contactTab === 'email' && (
               <div className="space-y-3" data-testid="panel-email-otp">
                 {/* 邮箱输入 */}
                 <div className="space-y-1">
@@ -725,11 +745,15 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
               type="button"
               data-testid="stage2-submit-btn"
               onClick={
-                contactTab === 'wechat_oa' ? handleSubmitOaContact : handleSubmitEmailBinding
+                !ENABLE_EMAIL_BINDING || contactTab === 'wechat_oa'
+                  ? handleSubmitOaContact
+                  : handleSubmitEmailBinding
               }
               disabled={
                 step === 'submitting' ||
-                (contactTab === 'wechat_oa' ? !oaPasscode.trim() : !email.trim() || !otpCode.trim())
+                (!ENABLE_EMAIL_BINDING || contactTab === 'wechat_oa'
+                  ? !oaPasscode.trim()
+                  : !email.trim() || !otpCode.trim())
               }
               className="w-full h-9 mt-2 text-xs font-bold"
             >

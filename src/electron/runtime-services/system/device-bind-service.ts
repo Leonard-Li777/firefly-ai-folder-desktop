@@ -99,6 +99,7 @@ export interface SendEmailOtpResponse {
   cooldown_seconds?: number
   expires_in_seconds?: number
   error?: string
+  message?: string
 }
 
 export interface CompleteEmailBindingResponse {
@@ -781,14 +782,39 @@ export class DeviceBindService {
       })
 
       if (error) {
-        logger.warn(LogCategory.SYSTEM, '[DeviceBindService] send-email-otp 调用失败:', error)
-        return { success: false, error: error.message }
+        const errPayload = await this.extractFunctionErrorPayload(error)
+        logger.warn(
+          LogCategory.SYSTEM,
+          '[DeviceBindService] send-email-otp 调用失败:',
+          errPayload || error
+        )
+        const errCode = errPayload?.error
+        if (
+          errCode === 'SESSION_EXPIRED' ||
+          errCode === 'UNAUTHORIZED' ||
+          errCode === 'BIND_SESSION_EXPIRED'
+        ) {
+          await this.clearBindSessionToken()
+        }
+        return {
+          success: false,
+          error: errCode || (this.isNetworkError(error) ? 'NETWORK_ERROR' : error.message),
+          message: errPayload?.message
+        }
       }
 
       if (!data?.success) {
+        if (
+          data?.error === 'SESSION_EXPIRED' ||
+          data?.error === 'UNAUTHORIZED' ||
+          data?.error === 'BIND_SESSION_EXPIRED'
+        ) {
+          await this.clearBindSessionToken()
+        }
         return {
           success: false,
           error: data?.error || 'SEND_OTP_FAILED',
+          message: data?.message,
           cooldown_seconds: data?.cooldown_seconds
         }
       }

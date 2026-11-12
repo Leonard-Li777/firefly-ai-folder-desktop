@@ -226,4 +226,30 @@ describe('DeviceBindService Stage 2 (公众号口令 & 邮箱绑定共用闭环)
     })
     expect(configMap.get('BIND_SESSION_TOKEN')).toBe('')
   })
+
+  it('sendEmailOtp 遇到 Edge Function 非 2xx (如 SESSION_EXPIRED) 时自动解析载荷并清理本地凭据', async () => {
+    configMap.set('BIND_SESSION_TOKEN', 'stale-session-token')
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: null,
+      error: {
+        message: 'Edge Function returned a non-2xx status code',
+        context: {
+          json: async () => ({
+            success: false,
+            error: 'SESSION_EXPIRED',
+            message: '绑定会话已过期，请重新微信扫码'
+          })
+        }
+      }
+    })
+
+    const res = await service.sendEmailOtp('user@example.com')
+
+    expect(res).toEqual({
+      success: false,
+      error: 'SESSION_EXPIRED',
+      message: '绑定会话已过期，请重新微信扫码'
+    })
+    expect(configMap.get('BIND_SESSION_TOKEN')).toBe('')
+  })
 })
