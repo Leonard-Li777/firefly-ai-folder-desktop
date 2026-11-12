@@ -609,6 +609,11 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
     }
   }, [currentPath, currentWorkspaceDirectory])
 
+  const loadDirectoryContentsRef = useRef(loadDirectoryContents)
+  useEffect(() => {
+    loadDirectoryContentsRef.current = loadDirectoryContents
+  }, [loadDirectoryContents])
+
   // 获取工作目录及相关事件监听
   useEffect(() => {
     const loadWorkspaceDirectories = async (isInitial = false) => {
@@ -651,10 +656,11 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
 
     loadWorkspaceDirectories(true)
 
-    // 监听工作目录更新事件 (例如删除或添加了新的根目录)
+    // 监听工作目录更新事件 (例如删除或添加了新的根目录、修改了包含/排除规则)
     const unsubscribe = window.electronAPI!.onWorkspaceDirectoriesUpdated?.(() => {
       logger.info(LogCategory.RENDERER, '工作目录已更新，重新加载...')
       loadWorkspaceDirectories(false)
+      loadDirectoryContentsRef.current?.()
     })
 
     return () => {

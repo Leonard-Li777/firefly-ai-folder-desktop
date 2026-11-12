@@ -76,11 +76,11 @@ export class LocalWorkflowService {
         status: 'ready',
         policyVersion: 1,
         workflowId: resolvedWorkflowId,
-        customIgnoreRules:
-          (unifiedConfig as any)?.customIgnoreRules ||
+        customExcludeRules:
+          (unifiedConfig as any)?.customExcludeRules ||
           (manifest.filterMode === 'blacklist' ? manifest.filterPatterns || [] : []),
-        customWhitelistRules:
-          (unifiedConfig as any)?.customWhitelistRules ||
+        customIncludeRules:
+          (unifiedConfig as any)?.customIncludeRules ||
           (manifest.filterMode === 'whitelist'
             ? manifest.whitelistPatterns || manifest.filterPatterns || []
             : []),
@@ -168,9 +168,9 @@ export class LocalWorkflowService {
       } catch {}
     }
 
-    const whitelistRules = workspaceConfig?.customWhitelistRules || []
-    const filterPatterns = Array.isArray(whitelistRules)
-      ? whitelistRules.map((r: any) => (typeof r === 'string' ? r : r.value)).filter(Boolean)
+    const includeRules = workspaceConfig?.customIncludeRules || []
+    const filterPatterns = Array.isArray(includeRules)
+      ? includeRules.map((r: any) => (typeof r === 'string' ? r : r.value)).filter(Boolean)
       : []
 
     let presetDirectoryTree: any[] | undefined = undefined

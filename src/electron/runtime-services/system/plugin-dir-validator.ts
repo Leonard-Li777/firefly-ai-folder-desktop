@@ -118,8 +118,8 @@ export async function probeDirectoryWritableAndSpace(
     }
   }
 
-  // 若目标目录尚不存在，仅寻找其最近一级已存在的父祖先目录试探写权限
-  let testParent = resolved
+  // 1. 动态空间预检：若目标目录尚不存在，寻找其最近一级已存在的父祖先目录计算磁盘可用空间
+  let spaceAnchor = resolved
   if (!exists) {
     let curr = resolved
     while (!fs.existsSync(curr)) {
@@ -127,11 +127,10 @@ export async function probeDirectoryWritableAndSpace(
       if (parent === curr) break
       curr = parent
     }
-    testParent = curr
+    spaceAnchor = curr
   }
 
-  // 1. 动态空间预检：requiredBytes = totalBytes + max(512MB, totalBytes * 5%)
-  const stats = getDiskFreeSpace(testParent)
+  const stats = getDiskFreeSpace(spaceAnchor)
   const extraBuffer = Math.max(512 * 1024 * 1024, Math.ceil(totalSourceBytes * 0.05))
   const requiredBytes = totalSourceBytes + extraBuffer
   if (stats.freeBytes < requiredBytes) {
@@ -141,9 +140,23 @@ export async function probeDirectoryWritableAndSpace(
     )
   }
 
-  // 2. 独占创建临时试探文件并写入数据
+  // 2. 独占试探目标目录可写性：
+  //    若目标目录尚不存在，尝试递归创建目标目录自身，并在其内部进行写试探。
+  //    严禁回退到 Windows 盘符根目录（如 D:\, E:\）写隐藏文件，
+  //    因为 Windows 磁盘根目录受系统 ACL/UAC 保护，普通进程写文件会误报 EPERM/EACCES。
+  if (!exists) {
+    try {
+      fs.mkdirSync(resolved, { recursive: true })
+    } catch (err: any) {
+      throw new ModularResourceError(
+        'PATH_NOT_WRITABLE',
+        `Target path is not writable: ${err?.message || 'Access denied'}`
+      )
+    }
+  }
+
   const testFile = path.join(
-    testParent,
+    resolved,
     `.probe-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.tmp`
   )
   try {
@@ -348,12 +361,22 @@ export async function validatePluginDirectory(
     }
 
     // 特殊目录名称检验（回收站、卷信息等）
-    const lowerResolved = resolved.toLowerCase()
-    if (
-      lowerResolved.includes('$recycle.bin') ||
-      lowerResolved.includes('system volume information') ||
-      lowerResolved.includes('recovery')
-    ) {
+    // 逐段精确匹配，而非整路径子串匹配：
+    // 子串匹配会误杀含 "recovery"/"backup" 等词的普通目录（如 D:\recovery-tools），
+    // 正确语义是「路径中存在某个段本身就是系统卷/恢复目录名」时才拦截。
+    const isSystemVolumeSegment = (seg: string): boolean => {
+      const s = seg.trim().toLowerCase()
+      return (
+        s === '$recycle.bin' ||
+        s === '$recycle' ||
+        s === 'system volume information' ||
+        s === 'recovery' ||
+        s === 'recovered' ||
+        s === 'recycler'
+      )
+    }
+    const segmentsForSystemCheck = resolved.split(/[\\/]+/).filter(Boolean)
+    if (segmentsForSystemCheck.some(isSystemVolumeSegment)) {
       throw new ModularResourceError(
         'SYSTEM_DIR_FORBIDDEN',
         'System volume or recovery directories cannot be used.'

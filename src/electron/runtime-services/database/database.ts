@@ -73,7 +73,7 @@ export const GENESIS_V1_SCHEMA = `
                           CHECK (source IN ('official', 'user', 'imported', 'community')),
     status                TEXT NOT NULL DEFAULT 'draft'                 -- 工作流流转状态：已发布 | 草稿 | 私有 | 审核中 | 驳回 | 下架 ('published' | 'draft' | 'private' | 'reviewing' | 'rejected' | 'delisted')
                           CHECK (status IN ('published', 'draft', 'private', 'reviewing', 'rejected', 'delisted')),
-    workspace_config      TEXT NOT NULL                                 -- 工作空间配置 JSON (与 workspaces.workspace_config 100% 同构，内含 customIgnoreRules, customWhitelistRules, derivedSnapshot)
+    workspace_config      TEXT NOT NULL                                 -- 工作空间配置 JSON (与 workspaces.workspace_config 100% 同构，内含 customExcludeRules, customIncludeRules, derivedSnapshot)
                           CHECK (json_valid(workspace_config) = 1 AND json_extract(workspace_config, '$.status') IN ('pending', 'ready')),
     naming_pattern        TEXT,                                         -- 智能文件名格式：指导 AI 提炼核心语义名称的结构格式规范
     naming_template       TEXT,                                         -- 智能文件名附加属性模板：基于 NamingDSLEngine 的 DSL 装饰模板

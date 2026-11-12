@@ -1244,6 +1244,8 @@ export class OmniService {
       const candidatePackPaths = [
         ResourceLocator.resolveResourcePath?.('semantic/semantic.pack'),
         ResourceLocator.resolveResourcePath?.('presetResources/semantic/semantic.pack'),
+        path.join(process.cwd(), 'build/extraResources/semantic/semantic.pack'),
+        path.join(process.cwd(), 'build/presetResources/semantic/semantic.pack'),
         path.join(process.cwd(), 'apps/desktop/build/extraResources/semantic/semantic.pack'),
         path.join(process.cwd(), 'apps/desktop/build/presetResources/semantic/semantic.pack')
       ]

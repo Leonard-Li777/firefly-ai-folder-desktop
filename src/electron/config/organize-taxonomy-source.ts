@@ -4260,19 +4260,32 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
       '99-旧桌面历史归档Archive/往期桌面历史备份归档'
     ],
     extensions: {
-      common: ['.docx', '.xlsx', '.pptx', '.pdf', '.png', '.jpg', '.exe', '.zip'],
+      common: [
+        '.lnk',
+        '.url',
+        '.docx',
+        '.xlsx',
+        '.pptx',
+        '.pdf',
+        '.png',
+        '.jpg',
+        '.exe',
+        '.zip'
+      ],
       weights: {
+        '.lnk': 0.12,
+        '.url': 0.03,
         '.png': 0.075,
         '.jpg': 0.075,
-        '.docx': 0.1417,
-        '.xlsx': 0.1417,
-        '.pptx': 0.1417,
-        '.pdf': 0.1417,
-        '.exe': 0.1417,
-        '.zip': 0.1415
+        '.docx': 0.117,
+        '.xlsx': 0.117,
+        '.pptx': 0.117,
+        '.pdf': 0.117,
+        '.exe': 0.117,
+        '.zip': 0.115
       }
     },
-    custom_ignores: ['.tmp', '.temp', '.lnk', '.url', 'desktop.ini', 'thumbs.db', '.ds_store'],
+    custom_ignores: ['.tmp', '.temp', 'desktop.ini', 'thumbs.db', '.ds_store'],
     recommended_engine: {
       analysisMode: 'quick_name',
       embeddingProfile: 'classic_light',
@@ -4555,15 +4568,27 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
       '04-软件安装与压缩暂存/02-压缩文件与临时解压包'
     ],
     extensions: {
-      common: ['.exe', '.docx', '.xlsx', '.pptx', '.pdf', '.jpg', '.zip'],
+      common: [
+        '.lnk',
+        '.url',
+        '.exe',
+        '.docx',
+        '.xlsx',
+        '.pptx',
+        '.pdf',
+        '.jpg',
+        '.zip'
+      ],
       weights: {
-        '.jpg': 0.15,
-        '.exe': 0.1417,
-        '.docx': 0.1417,
-        '.xlsx': 0.1417,
-        '.pptx': 0.1417,
-        '.pdf': 0.1417,
-        '.zip': 0.1415
+        '.lnk': 0.13,
+        '.url': 0.03,
+        '.jpg': 0.12,
+        '.exe': 0.12,
+        '.docx': 0.12,
+        '.xlsx': 0.12,
+        '.pptx': 0.12,
+        '.pdf': 0.12,
+        '.zip': 0.12
       }
     },
     custom_ignores: [],
@@ -6258,14 +6283,16 @@ const WORKFLOW_EXTENSION_WEIGHTS_BY_ID = {
     '.png': 0.07
   },
   'builtin.workflow.desktop-declutter': {
+    '.lnk': 0.12,
+    '.url': 0.03,
     '.png': 0.075,
     '.jpg': 0.075,
-    '.docx': 0.1417,
-    '.xlsx': 0.1417,
-    '.pptx': 0.1417,
-    '.pdf': 0.1417,
-    '.exe': 0.1417,
-    '.zip': 0.1415
+    '.docx': 0.117,
+    '.xlsx': 0.117,
+    '.pptx': 0.117,
+    '.pdf': 0.117,
+    '.exe': 0.117,
+    '.zip': 0.115
   },
   'builtin.workflow.downloads-triage': {
     '.jpg': 0.1501,
@@ -6289,13 +6316,15 @@ const WORKFLOW_EXTENSION_WEIGHTS_BY_ID = {
     '.zip': 0.17
   },
   'builtin.workflow.desktop-classic-classification': {
-    '.jpg': 0.15,
-    '.exe': 0.1417,
-    '.docx': 0.1417,
-    '.xlsx': 0.1417,
-    '.pptx': 0.1417,
-    '.pdf': 0.1417,
-    '.zip': 0.1415
+    '.lnk': 0.13,
+    '.url': 0.03,
+    '.jpg': 0.12,
+    '.exe': 0.12,
+    '.docx': 0.12,
+    '.xlsx': 0.12,
+    '.pptx': 0.12,
+    '.pdf': 0.12,
+    '.zip': 0.12
   },
   'builtin.workflow.qa-testing-asset-vault': {
     '.xlsx': 0.1667,
@@ -12723,20 +12752,6 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
             isSystem: true
           },
           {
-            id: 'builtin.workflow.desktop-declutter-ignore-3',
-            type: 'extension',
-            value: '.lnk',
-            isActive: true,
-            isSystem: true
-          },
-          {
-            id: 'builtin.workflow.desktop-declutter-ignore-4',
-            type: 'extension',
-            value: '.url',
-            isActive: true,
-            isSystem: true
-          },
-          {
             id: 'builtin.workflow.desktop-declutter-ignore-5',
             type: 'file',
             value: 'desktop.ini',
@@ -12759,6 +12774,20 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
           }
         ],
         customWhitelistRules: [
+          {
+            id: 'builtin.workflow.desktop-declutter-common-0-lnk',
+            type: 'extension',
+            value: '.lnk',
+            isActive: true,
+            isSystem: true
+          },
+          {
+            id: 'builtin.workflow.desktop-declutter-common-0-url',
+            type: 'extension',
+            value: '.url',
+            isActive: true,
+            isSystem: true
+          },
           {
             id: 'builtin.workflow.desktop-declutter-common-1',
             type: 'extension',
@@ -13225,6 +13254,20 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.desktop-classic-classification'],
         customIgnoreRules: [],
         customWhitelistRules: [
+          {
+            id: 'builtin.workflow.desktop-classic-classification-common-0-lnk',
+            type: 'extension',
+            value: '.lnk',
+            isActive: true,
+            isSystem: true
+          },
+          {
+            id: 'builtin.workflow.desktop-classic-classification-common-0-url',
+            type: 'extension',
+            value: '.url',
+            isActive: true,
+            isSystem: true
+          },
           {
             id: 'builtin.workflow.desktop-classic-classification-common-1',
             type: 'extension',

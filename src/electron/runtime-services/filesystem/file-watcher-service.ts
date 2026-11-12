@@ -23,6 +23,8 @@ export { shouldIngressFile }
 class FileWatcherService {
   private watchers: Map<number, ReturnType<typeof chokidar.watch>> = new Map()
   private workspaceWhitelistCache: Map<number, ReadonlySet<string> | null> = new Map()
+  /** 工作区自动分析静默截止时间戳 (毫秒) */
+  private autoWatchMuteUntil: Map<number, number> = new Map()
   private ignoreRules: IIgnoreRule[] = []
   private isInitialized = false
   private syncingPaths: Set<string> = new Set()
@@ -272,6 +274,32 @@ class FileWatcherService {
     return this.workspaceWhitelistCache.get(workspaceId) ?? null
   }
 
+  /**
+   * 设置指定工作区在接下来的一段时间内静默自动分析 (例如调整包含排除规则期间)
+   * 默认 30 秒，留足时间让规则变动、元数据对账与前端列表刷新彻底沉降
+   */
+  muteAutoWatch(workspaceId: number, durationMs = 30000): void {
+    const until = Date.now() + durationMs
+    this.autoWatchMuteUntil.set(workspaceId, until)
+    logger.info(
+      LogCategory.FILE_WATCHER,
+      `工作区 ${workspaceId} 自动监听分析已进入静默期 (${durationMs}ms，截止: ${new Date(until).toLocaleTimeString()})`
+    )
+  }
+
+  /**
+   * 检查指定工作区当前是否处于自动分析静默期
+   */
+  isAutoWatchMuted(workspaceId: number): boolean {
+    const until = this.autoWatchMuteUntil.get(workspaceId)
+    if (!until) return false
+    if (Date.now() > until) {
+      this.autoWatchMuteUntil.delete(workspaceId)
+      return false
+    }
+    return true
+  }
+
   updateWorkspaceWhitelist(workspaceId: number, patterns: string[] | null | undefined): void {
     this.workspaceWhitelistCache.set(workspaceId, compileWhitelistExtSet(patterns))
     logger.info(LogCategory.FILE_WATCHER, `工作区 ID: ${workspaceId} 白名单已更新`)
@@ -280,13 +308,16 @@ class FileWatcherService {
   async onWorkspacePolicyUpdated(workspaceId: number, policy: any): Promise<void> {
     const exts = policy?.primaryExtensions ? (Array.from(policy.primaryExtensions) as string[]) : []
     this.updateWorkspaceWhitelist(workspaceId, exts)
+    // 规则调整时启动 30 秒充裕静默保护，留足时间处理包含和排除的变动，绝不触发自动补扫加入分析队列
+    this.muteAutoWatch(workspaceId, 30000)
     try {
       const workspace = await databaseService.getWorkspaceDirectoryById(workspaceId)
       if (workspace?.path) {
-        this.syncDirectory(workspace.path, true).catch(err => {
+        // 仅同步文件系统元数据供 FileList 渲染，triggerAnalysis 严格为 false
+        this.syncDirectory(workspace.path, false).catch(err => {
           logger.warn(
             LogCategory.FILE_WATCHER,
-            `工作区策略更新后增量同步失败: ${workspace.path}`,
+            `工作区策略更新后元数据同步失败: ${workspace.path}`,
             err
           )
         })
@@ -430,23 +461,8 @@ class FileWatcherService {
         `目录同步完成: ${dirPath} (新增:${added}, 更新:${updated}, 删除:${deleted}, 子目录:${dirsAdded})`
       )
 
-      // 如果有新增文件，且开启了自动分析，则批量添加到队列
-      const isAutoWatchActive = triggerAnalysis || workspace.autoWatch
-      if (isAutoWatchActive && filesToAdd.length > 0) {
-        logger.info(
-          LogCategory.FILE_WATCHER,
-          `开始批量将 ${filesToAdd.length} 个文件加入分析队列...`
-        )
-        const queueItems = filesToAdd.map(f => ({
-          path: f.filePath,
-          name: path.basename(f.filePath),
-          size: f.stats.size,
-          type: path.extname(f.filePath).toLowerCase() || 'unknown'
-        }))
-        await analysisQueueService.addItems(queueItems, false)
-        logger.info(LogCategory.FILE_WATCHER, `批量加入队列完成`)
-      }
-
+      // 系统铁律：分析队列只允许自动删除文件，严禁自动添加文件。
+      // 目录同步仅完成数据库元数据入库，绝不自动调用 analysisQueueService.addItems。
       this.notifyDirectoryUpdate(dirPath)
     } catch (error) {
       logger.error(LogCategory.FILE_WATCHER, `同步目录失败: ${dirPath}`, error)
@@ -519,30 +535,36 @@ class FileWatcherService {
         `文件已添加到数据库: ${filePath}, Fingerprint: ${fileId}`
       )
 
-      const isAutoWatchActive = autoWatchEnabled ?? true
-
+      // 自动监听日常新增文件加入分析队列：
+      // 1. 处于规则变动静默期时，严格静默，绝不入队
+      // 2. 工作区必须启用了自动监听 (autoWatchEnabled ?? true)
+      // 3. 必须通过当前工作区准入规则判定 (未被排除且符合包含格式)
+      const isAutoWatchActive = (autoWatchEnabled ?? true) && !this.isAutoWatchMuted(workspaceId)
       if (isAutoWatchActive) {
-        // 检查文件是否已经被分析过（例如文件重命名或移动后触发的 add 事件）
-        const fileRecord = await databaseService.getFileByPath(filePath)
-        if (fileRecord && fileRecord.isAnalyzed) {
-          logger.info(LogCategory.FILE_WATCHER, `文件已被分析过，跳过加入分析队列: ${filePath}`)
+        if (!workspaceAdmissionService.shouldAdmitFile(workspaceId, filePath, false)) {
+          logger.debug(LogCategory.FILE_WATCHER, `新增文件未通过准入规则，跳过分析队列: ${filePath}`)
         } else {
-          const fileName = path.basename(filePath)
-          const fileExt = path.extname(filePath).toLowerCase()
+          const fileRecord = await databaseService.getFileByPath(filePath)
+          if (fileRecord && fileRecord.isAnalyzed) {
+            logger.info(LogCategory.FILE_WATCHER, `文件已被分析过，跳过加入分析队列: ${filePath}`)
+          } else {
+            const fileName = path.basename(filePath)
+            const fileExt = path.extname(filePath).toLowerCase()
 
-          await analysisQueueService.addItems(
-            [
-              {
-                path: filePath,
-                name: fileName,
-                size: stats.size,
-                type: fileExt || 'unknown'
-              }
-            ],
-            false
-          )
+            await analysisQueueService.addItems(
+              [
+                {
+                  path: filePath,
+                  name: fileName,
+                  size: stats.size,
+                  type: fileExt || 'unknown'
+                }
+              ],
+              false
+            )
 
-          logger.info(LogCategory.FILE_WATCHER, `文件已加入分析队列: ${filePath}`)
+            logger.info(LogCategory.FILE_WATCHER, `[自动监听] 实时新增文件已加入分析队列: ${filePath}`)
+          }
         }
       }
 
@@ -624,32 +646,37 @@ class FileWatcherService {
         return
       }
 
-      const isAutoWatchActive = autoWatchEnabled ?? true
-
+      // 自动监听日常修改文件重新分析：
+      // 1. 处于规则变动静默期时，严格静默，绝不入队
+      // 2. 工作区必须启用了自动监听 (autoWatchEnabled ?? true)
+      // 3. 必须通过当前工作区准入规则判定 (未被排除且符合包含格式)
+      const isAutoWatchActive = (autoWatchEnabled ?? true) && !this.isAutoWatchMuted(workspaceId)
       if (isAutoWatchActive) {
-        const contentHash = await calculateFileFingerprint(filePath)
+        if (!workspaceAdmissionService.shouldAdmitFile(workspaceId, filePath, false)) {
+          logger.debug(LogCategory.FILE_WATCHER, `修改的文件未通过准入规则，跳过分析: ${filePath}`)
+        } else {
+          const contentHash = await calculateFileFingerprint(filePath)
+          if (file.contentHash === contentHash && file.isAnalyzed) {
+            logger.info(LogCategory.FILE_WATCHER, `文件内容无变化，跳过队列分析: ${filePath}`)
+          } else {
+            const fileName = path.basename(filePath)
+            const fileExt = path.extname(filePath).toLowerCase()
 
-        if (file.contentHash === contentHash && file.isAnalyzed) {
-          logger.info(LogCategory.FILE_WATCHER, `文件内容无变化，跳过队列分析: ${filePath}`)
-          return
+            await analysisQueueService.addItems(
+              [
+                {
+                  path: filePath,
+                  name: fileName,
+                  size: stats.size,
+                  type: fileExt || 'unknown'
+                }
+              ],
+              true
+            )
+
+            logger.info(LogCategory.FILE_WATCHER, `[自动监听] 实时修改文件已重新加入分析队列: ${filePath}`)
+          }
         }
-
-        const fileName = path.basename(filePath)
-        const fileExt = path.extname(filePath).toLowerCase()
-
-        await analysisQueueService.addItems(
-          [
-            {
-              path: filePath,
-              name: fileName,
-              size: stats.size,
-              type: fileExt || 'unknown'
-            }
-          ],
-          true
-        )
-
-        logger.info(LogCategory.FILE_WATCHER, `修改的文件已重新加入分析队列: ${filePath}`)
       }
 
       if (!skipNotify) {

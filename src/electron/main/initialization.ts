@@ -264,6 +264,16 @@ export async function initDatabaseAndDependentServices(
     const { modularResourceService } =
       await import('../runtime-services/system/modular-resource-service')
     modularResourceService.configureRuntimeDependencies({
+      getDb: () => databaseService.db,
+      configOrchestrator: ConfigOrchestrator.getInstance()
+    })
+    modularResourceService.setConfigOrchestrator(ConfigOrchestrator.getInstance())
+
+    // 工作区策略提交服务单例注入数据库运行时依赖，杜绝打包产物中动态 require 失败
+    const { workspacePolicyCommitService } = await import(
+      '../runtime-services/workspace/workspace-policy-commit-service'
+    )
+    workspacePolicyCommitService.configureDependencies({
       getDb: () => databaseService.db
     })
 

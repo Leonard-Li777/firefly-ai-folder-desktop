@@ -473,5 +473,70 @@ describe('Workflow Preset & Recommender Engine (Spec v1.1 §3.2)', () => {
       expect(top2.score).toBeLessThanOrEqual(70)
       expect(top1.score - top2.score).toBeGreaterThanOrEqual(15)
     })
+
+    it('桌面相关工作流契约：desktop-declutter 与 desktop-classic-classification 必须包含 .lnk/.url 扩展名，且绝不置于排除名单中', () => {
+      const desktopWorkflows = [
+        'builtin.workflow.desktop-declutter',
+        'builtin.workflow.desktop-classic-classification'
+      ]
+
+      for (const wfId of desktopWorkflows) {
+        const bp = BLUEPRINT_STATIC_TEMPLATES.find(t => t.workflow_id === wfId)
+        expect(bp).toBeDefined()
+        const commonExts = bp?.extensions?.common || []
+        const ignores = bp?.custom_ignores || []
+        const weights = bp?.extensions?.weights || {}
+
+        // 必须包含常见桌面快捷方式扩展名
+        expect(commonExts).toContain('.lnk')
+        expect(commonExts).toContain('.url')
+
+        // 严禁将 .lnk 与 .url 放在排除名单中
+        expect(ignores).not.toContain('.lnk')
+        expect(ignores).not.toContain('.url')
+
+        // 权重字典必须分配正权重
+        expect(weights['.lnk']).toBeGreaterThan(0)
+        expect(weights['.url']).toBeGreaterThan(0)
+      }
+
+      // 在含有丰富快捷方式与办公文档的典型电脑桌面场景下，桌面急救或经典分类应获得高分首推
+      const desktopStats: DirectoryProfileStats = {
+        totalFiles: 80,
+        totalSampled: 80,
+        docCount: 20,
+        imageCount: 15,
+        videoCount: 0,
+        otherCount: 45,
+        countsByExt: {
+          '.lnk': 25,
+          '.url': 5,
+          '.docx': 10,
+          '.xlsx': 10,
+          '.png': 15,
+          '.exe': 10,
+          '.zip': 5
+        },
+        topExtensions: [
+          { ext: '.lnk', count: 25 },
+          { ext: '.png', count: 15 },
+          { ext: '.docx', count: 10 },
+          { ext: '.xlsx', count: 10 },
+          { ext: '.exe', count: 10 },
+          { ext: '.url', count: 5 },
+          { ext: '.zip', count: 5 }
+        ],
+        isDesktopPath: true
+      }
+
+      const recs = recommendWorkflowByProfile(desktopStats, BLUEPRINT_STATIC_TEMPLATES)
+      expect(recs.length).toBeGreaterThan(0)
+      const topRec = recs[0]
+      expect([
+        'builtin.workflow.desktop-declutter',
+        'builtin.workflow.desktop-classic-classification'
+      ]).toContain(topRec.workflowId)
+      expect(topRec.score).toBeGreaterThanOrEqual(85)
+    })
   })
 })

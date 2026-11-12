@@ -30,6 +30,7 @@ import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { FaultInjectorService } from '../../runtime-services/e2e/fault-injector'
 import { ProbeBridgeService } from '../../runtime-services/e2e/probe-bridge'
 import { getModularResourceDao } from '../../runtime-services/database/dao/modular-resource-dao'
+import { workspaceAdmissionService } from '../../runtime-services/workspace/workspace-admission-service'
 
 export { getDirectoryAccessErrorMessage } from './directory-error'
 import { getDirectoryAccessErrorMessage } from './directory-error'
@@ -402,9 +403,11 @@ export function registerFileIPCHandlers() {
       ])
 
       const loadedFilePaths = new Set<string>()
+      const siblingFileNames = entries.filter(e => e.isFile()).map(e => e.name)
+      const workspaceId = workspace?.id ? Number(workspace.id) : undefined
 
-      if (workspace && workspace.id) {
-        const dbFiles = await databaseService.getFilesByParentPath(dirPath, workspace.id)
+      if (workspaceId !== undefined) {
+        const dbFiles = await databaseService.getFilesByParentPath(dirPath, workspaceId)
 
         await Promise.all(
           dbFiles.map(async file => {
@@ -413,6 +416,18 @@ export function registerFileIPCHandlers() {
 
             if (shouldIgnoreFile(safePath, safeName, effectiveIgnoreRules)) {
               logger.debug(LogCategory.MAIN, `[Main] 过滤掉数据库中被忽略的文件: ${safePath}`)
+              return
+            }
+
+            // 工作区准入规则裁决（包含规则 + 专属排除规则 + 伴生保护）
+            if (
+              !workspaceAdmissionService.shouldAdmitFile(
+                workspaceId,
+                safePath,
+                false,
+                siblingFileNames
+              )
+            ) {
               return
             }
 
@@ -473,6 +488,11 @@ export function registerFileIPCHandlers() {
               shouldIgnoreFile(fullPath, entry.name, effectiveIgnoreRules)
             )
               return
+            if (
+              workspaceId !== undefined &&
+              !workspaceAdmissionService.shouldAdmitFile(workspaceId, fullPath, true)
+            )
+              return
             try {
               const stats = await fs.promises.stat(fullPath)
               directories.push({
@@ -490,6 +510,16 @@ export function registerFileIPCHandlers() {
             if (
               loadedFilePaths.has(fullPath) ||
               shouldIgnoreFile(fullPath, entry.name, effectiveIgnoreRules)
+            )
+              return
+            if (
+              workspaceId !== undefined &&
+              !workspaceAdmissionService.shouldAdmitFile(
+                workspaceId,
+                fullPath,
+                false,
+                siblingFileNames
+              )
             )
               return
             try {

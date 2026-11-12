@@ -408,6 +408,10 @@ export class ConfigOrchestrator extends EventEmitter {
     void this.flushAndEmitChanges(source, [])
   }
 
+  setValue(key: ConfigKey, value: unknown): void {
+    void this.updateValue(key, value)
+  }
+
   async updateValue(key: ConfigKey, value: unknown, options?: UpdateOptions): Promise<void> {
     await this.updateValues({ [key]: value }, options)
   }

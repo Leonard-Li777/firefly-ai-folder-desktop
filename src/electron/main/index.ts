@@ -834,6 +834,10 @@ app.on('ready', async () => {
       ? path.resolve(configuredPluginsRoot.trim())
       : path.join(app.getPath('userData'), 'modules')
   PluginPathResolver.initialize(initialPluginsRoot)
+  try {
+    const { modularResourceService } = require('../runtime-services/system/modular-resource-service')
+    modularResourceService.setConfigOrchestrator(ConfigOrchestrator.getInstance())
+  } catch {}
 
   // 注册 IPC 处理器，确保在任何窗口创建及前端加载之前 IPC 响应就绪
   await setupIPCHandlers()

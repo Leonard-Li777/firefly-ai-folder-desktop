@@ -140,3 +140,4 @@ src/**/*.d.ts.map
 /pnpm-lock.yaml
 build/_tmp
 out_build.shielded
+.run/

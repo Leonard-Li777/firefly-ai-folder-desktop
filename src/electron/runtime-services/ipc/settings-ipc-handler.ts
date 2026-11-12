@@ -429,8 +429,9 @@ export function registerSettingsIPCHandlers(): void {
 
         const mutation: WorkspacePolicyMutation = {
           workflowId: config.workflowId,
-          includeRules: config.customWhitelistRules,
-          excludeRules: config.customIgnoreRules,
+          customIncludeRules: config.customIncludeRules,
+          customExcludeRules: config.customExcludeRules,
+          extensionWeights: config.extensionWeights,
           baseAIConfig: config.baseAIConfig,
           derivedSnapshot: config.derivedSnapshot,
           intent: config.intent,
@@ -443,14 +444,15 @@ export function registerSettingsIPCHandlers(): void {
 
         const result = await workspaceAdmissionService.applyPolicyMutation(workspaceId, mutation)
 
+        const ws = await databaseService.getWorkspaceDirectoryById(workspaceId)
         BrowserWindow.getAllWindows().forEach(win => {
           if (!win.isDestroyed()) {
             win.webContents.send('workspace-directories-updated')
+            if (ws?.path) {
+              win.webContents.send('directory-files-updated', ws.path)
+            }
           }
         })
-
-        // 若更新为已就绪 (ready)，主动唤醒分析队列处理栈，解除静默挂起
-        void analysisQueueService.start(workspaceId)
 
         return {
           success: true,
@@ -472,14 +474,16 @@ export function registerSettingsIPCHandlers(): void {
     try {
       const result = await workspacePolicyCommitService.commitPolicy(params)
       if (result.success) {
+        const wsId = params.workspaceId ? Number(params.workspaceId) : undefined
+        const ws = wsId ? await databaseService.getWorkspaceDirectoryById(wsId) : undefined
         BrowserWindow.getAllWindows().forEach(win => {
           if (!win.isDestroyed()) {
             win.webContents.send('workspace-directories-updated')
+            if (ws?.path) {
+              win.webContents.send('directory-files-updated', ws.path)
+            }
           }
         })
-        if (params.workspaceId) {
-          void analysisQueueService.start(Number(params.workspaceId))
-        }
       }
       return result
     } catch (error) {
@@ -504,9 +508,13 @@ export function registerSettingsIPCHandlers(): void {
       const result = await workspaceAdmissionService.applyPolicyMutation(workspaceId, {
         includeExts: patterns
       })
+      const ws = await databaseService.getWorkspaceDirectoryById(workspaceId)
       BrowserWindow.getAllWindows().forEach(win => {
         if (!win.isDestroyed()) {
           win.webContents.send('workspace-directories-updated')
+          if (ws?.path) {
+            win.webContents.send('directory-files-updated', ws.path)
+          }
         }
       })
       return {
@@ -532,8 +540,10 @@ export function registerSettingsIPCHandlers(): void {
           const { directoryProfilerService } =
             await import('../filesystem/directory-profiler-service')
           const profile = await directoryProfilerService.probeProfile(workspace.path)
-          if ((profile.stats as any)?.extensionCounts) {
-            probeExtensionCounts = (profile.stats as any).extensionCounts
+          const extCounts =
+            profile.stats?.countsByExt || (profile.stats as any)?.extensionCounts
+          if (extCounts) {
+            probeExtensionCounts = extCounts
           }
         } catch {
           // 采样探针异常降级
@@ -551,7 +561,7 @@ export function registerSettingsIPCHandlers(): void {
         includedFiles: impact.includedFiles,
         excludedFiles: impact.excludedFiles,
         companionFilesProtected: impact.companionFilesProtected,
-        isSampled: (impact as any).isSampled ?? false
+        isSampled: impact.isSampled ?? false
       }
     } catch (error) {
       logger.error(LogCategory.SETTING, `预览包含规则影响失败: ${workspaceId}`, error)
