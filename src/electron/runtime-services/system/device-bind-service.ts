@@ -273,6 +273,13 @@ export class DeviceBindService {
   }
 
   /**
+   * 重置绑定状态回退至阶段一微信扫码（清理本地失效的 BIND_SESSION_TOKEN）
+   */
+  public async resetToQr(): Promise<void> {
+    await this.clearBindSessionToken()
+  }
+
+  /**
    * 检查本地是否存在有效且尚未消费的 BIND_SESSION_TOKEN
    */
   public hasActiveBindSession(): boolean {
@@ -820,6 +827,9 @@ export class DeviceBindService {
       }
 
       if (!data?.success) {
+        if (data?.error === 'SESSION_EXPIRED' || data?.error === 'BIND_SESSION_EXPIRED') {
+          await this.clearBindSessionToken()
+        }
         return {
           success: false,
           error: data?.error || 'BINDING_FAILED',

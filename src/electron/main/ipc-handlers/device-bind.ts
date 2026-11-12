@@ -78,6 +78,16 @@ export function registerDeviceBindIPCHandlers(): void {
     }
   })
 
+  ipcMain.handle('deviceBind/resetToQr', async () => {
+    try {
+      await DeviceBindService.getInstance().resetToQr()
+      return { success: true }
+    } catch (err: any) {
+      logger.error(LogCategory.IPC, '[IPC] deviceBind/resetToQr failed:', err)
+      return { success: false, error: err?.message || 'unknown' }
+    }
+  })
+
   ipcMain.handle('deviceBind/getUnseatedSession', async () => {
     try {
       return await DeviceBindService.getInstance().getUnseatedSession()

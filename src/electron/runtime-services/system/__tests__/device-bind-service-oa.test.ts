@@ -205,4 +205,25 @@ describe('DeviceBindService Stage 2 (公众号口令 & 邮箱绑定共用闭环)
       device_token: 'device-token-email-1'
     })
   })
+
+  it('当 RPC 返回 SESSION_EXPIRED 时自动清空本地 BIND_SESSION_TOKEN 并返回失败', async () => {
+    configMap.set('BIND_SESSION_TOKEN', 'stale-session-token')
+    mockRpc.mockResolvedValueOnce({
+      data: {
+        success: false,
+        error: 'SESSION_EXPIRED',
+        message: '绑定会话已过期，请重新微信扫码'
+      },
+      error: null
+    })
+
+    const res = await service.completeOaContactBinding()
+
+    expect(res).toEqual({
+      success: false,
+      error: 'SESSION_EXPIRED',
+      message: '绑定会话已过期，请重新微信扫码'
+    })
+    expect(configMap.get('BIND_SESSION_TOKEN')).toBe('')
+  })
 })

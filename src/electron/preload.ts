@@ -787,6 +787,7 @@ const electronAPI = {
       ipcRenderer.invoke('deviceBind/completeOaContactBinding', payload),
     hasActiveBindSession: (): Promise<boolean> =>
       ipcRenderer.invoke('deviceBind/hasActiveBindSession'),
+    resetToQr: (): Promise<any> => ipcRenderer.invoke('deviceBind/resetToQr'),
     getUnseatedSession: (): Promise<any> => ipcRenderer.invoke('deviceBind/getUnseatedSession'),
     seatDevice: (payload: { sessionToken?: string; evictDeviceId?: string | null }): Promise<any> =>
       ipcRenderer.invoke('deviceBind/seatDevice', payload),

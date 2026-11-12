@@ -11,7 +11,8 @@ import {
   AlertCircle,
   Mail,
   Gift,
-  MessageSquareText
+  MessageSquareText,
+  ArrowLeft
 } from 'lucide-react'
 import { useTierStore } from '../../stores/tier-store'
 import { toast } from '../common/Toast'
@@ -52,7 +53,10 @@ function formatErrorMessage(err?: string, fallbackMessage?: string): string {
   }
   if (err === 'INVITATION_CAP_REACHED') return '该好友的邀请名额已用完'
   if (err === 'INVALID_CODE') return '验证码不正确，请重新输入'
-  if (err === 'CODE_EXPIRED' || err === 'SESSION_EXPIRED') return '操作或验证码已过期，请重新获取'
+  if (err === 'CODE_EXPIRED') return '邮箱验证码已过期，请重新获取'
+  if (err === 'SESSION_EXPIRED' || err === 'BIND_SESSION_EXPIRED') {
+    return '微信扫码登录状态已过期，请重新扫码登录'
+  }
   if (err === 'REDISPATCH_EXHAUSTED') return '操作过于频繁或重试次数已达上限，请重新扫码获取'
   if (err === 'MAX_ATTEMPTS_EXCEEDED') return '验证码错误次数过多，请稍后再试'
   if (err === 'EMAIL_ALREADY_BOUND' || err === 'EMAIL_OCCUPIED')
@@ -68,7 +72,6 @@ function formatErrorMessage(err?: string, fallbackMessage?: string): string {
   // 其他常见错误的大白话处理
   if (err === 'RATE_LIMIT_EXCEEDED') return '操作过于频繁，请 1 分钟后再试'
   if (err === 'machine_id_missing') return '未检测到当前电脑硬件标识'
-  if (err === 'BIND_SESSION_EXPIRED') return '登录凭证已超时，请重新扫码'
   if (err === 'CLAIM_PENDING') return '当前二维码正在被其他手机确认，请稍等或点击刷新二维码'
   if (err === 'DISPOSABLE_DOMAIN') return '请使用常见的个人邮箱，暂不支持临时或一次性邮箱'
   if (err === 'SEAT_FAILED' || err === 'MISSING_SESSION_TOKEN') {
@@ -350,8 +353,30 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
       return
     }
 
+    if (res?.error === 'SESSION_EXPIRED' || res?.error === 'BIND_SESSION_EXPIRED') {
+      toast.error('微信扫码状态已过期，请重新扫码登录')
+      setError('微信扫码状态已过期，请重新扫码登录')
+      if (window.electronAPI?.deviceBind?.resetToQr) {
+        await window.electronAPI.deviceBind.resetToQr()
+      }
+      loadBindCode(true)
+      return
+    }
+
     setError(formatErrorMessage(res?.error, res?.message))
     setStep('contact_input')
+  }
+
+  // 返回重新扫码（重置会话并刷新二维码）
+  const handleResetToQr = async () => {
+    stopPolling()
+    setError(null)
+    setOaPasscode('')
+    setOtpCode('')
+    if (window.electronAPI?.deviceBind?.resetToQr) {
+      await window.electronAPI.deviceBind.resetToQr()
+    }
+    loadBindCode(true)
   }
 
   // 提交公众号口令完成激活
@@ -717,6 +742,22 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
                 '完成绑定并进入软件'
               )}
             </Button>
+
+            {/* 返回重新扫码入口 */}
+            <div className="flex items-center justify-center pt-0.5">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                data-testid="back-to-qr-btn"
+                className="text-xs text-muted-foreground hover:text-foreground h-7 px-3"
+                onClick={handleResetToQr}
+                disabled={step === 'submitting'}
+              >
+                <ArrowLeft className="w-3.5 h-3.5 mr-1" />
+                返回重新扫码
+              </Button>
+            </div>
           </div>
         )}
 
