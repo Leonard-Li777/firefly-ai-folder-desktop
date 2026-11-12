@@ -39,7 +39,7 @@
     "de-DE": "Das System konfiguriert den öffentlichen Schlüssel nicht",
     "fr-FR": "Le système ne configure pas la clé publique",
     "ko-KR": "시스템이 공개 키를 구성하지 않습니다.",
-    "$files": ["src/electron/runtime-services/system/license-service.ts(16387-16398)"],
+    "$files": ["src/electron/runtime-services/system/license-service.ts(16516-16527)"],
     "$id": 11064
   },
   "该授权码不适用于当前机器": {
@@ -52,7 +52,7 @@
     "de-DE": "Der Autorisierungscode gilt nicht für die aktuelle Maschine",
     "fr-FR": "Le code d'autorisation ne s'applique pas à la machine actuelle",
     "ko-KR": "인증 코드는 현재 기기에 적용되지 않습니다",
-    "$files": ["src/electron/runtime-services/system/license-service.ts(16797-16813)"],
+    "$files": ["src/electron/runtime-services/system/license-service.ts(16926-16942)"],
     "$id": 11065
   },
   "该授权码已过期": {
@@ -66,8 +66,8 @@
     "fr-FR": "Le code d'autorisation a expiré",
     "ko-KR": "인증 코드가 만료되었습니다",
     "$files": [
-      "src/electron/runtime-services/system/license-service.ts(17297-17308)",
-      "src/electron/runtime-services/system/license-service.ts(17517-17528)"
+      "src/electron/runtime-services/system/license-service.ts(17426-17437)",
+      "src/electron/runtime-services/system/license-service.ts(17646-17657)"
     ],
     "$id": 11066
   },
@@ -81,7 +81,7 @@
     "de-DE": "Die Schreibberechtigung ist fehlgeschlagen",
     "fr-FR": "L'autorisation d'écriture a échoué",
     "ko-KR": "쓰기 승인 실패",
-    "$files": ["src/electron/runtime-services/system/license-service.ts(18852-18862)"],
+    "$files": ["src/electron/runtime-services/system/license-service.ts(20167-20177)"],
     "$id": 11067
   },
   "性能优化正在进行中": {

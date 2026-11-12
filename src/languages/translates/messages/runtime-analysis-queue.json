@@ -162,7 +162,7 @@
     "$files": [
       "src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(51029-51047)",
       "src/electron/runtime-services/analysis-queue-service/directory-processor.ts(10321-10339)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(128919-128937)"
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(132489-132507)"
     ],
     "$id": 2977
   },
@@ -191,7 +191,7 @@
     "ko-KR": "할당량 소진: 프라이빗 디렉토리 파일 {count} 개를 분석했으며, 현재 할당량은 {quota} 개 파일입니다. 친구 초대로 더 많은 한도를 해제할 수 있습니다.",
     "$files": [
       "src/electron/runtime-services/analysis-queue-service/directory-processor.ts(3352-3432)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(37253-37333)"
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(38425-38506)"
     ],
     "$id": 11053
   },
@@ -661,8 +661,8 @@
     "fr-FR": "Base de données non initialisée",
     "ko-KR": "데이터베이스가 초기화되지 않았습니다",
     "$files": [
-      "src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(540-551)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/save-cloud-result.ts(1633-1644)",
+      "src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(564-575)",
+      "src/electron/runtime-services/analysis-queue-service/file-processor/save-cloud-result.ts(1660-1671)",
       "src/electron/runtime-services/analysis-queue-service/file-processor/save-local-cache-result.ts(1510-1521)"
     ],
     "$id": 8130
@@ -677,7 +677,7 @@
     "de-DE": "Unbekannte Datei",
     "fr-FR": "Fichier inconnu",
     "ko-KR": "알 수 없는 파일",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(749-757)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(777-785)"],
     "$id": 8969
   },
   "空文件": {
@@ -691,9 +691,9 @@
     "fr-FR": "Fichier vide",
     "ko-KR": "빈 파일",
     "$files": [
-      "src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(977-984)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(2699-2706)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(3337-3344)"
+      "src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(1005-1012)",
+      "src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(2727-2734)",
+      "src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(3365-3372)"
     ],
     "$id": 8970
   },
@@ -707,7 +707,7 @@
     "de-DE": "Dateigröße beträgt 0",
     "fr-FR": "Taille du fichier égale à zéro",
     "ko-KR": "파일 크기가 0임",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(2845-2855)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(2873-2883)"],
     "$id": 8971
   },
   "建议减少 PDF 分析页数或关闭 OCR 功能": {
@@ -720,7 +720,7 @@
     "de-DE": "Es wird empfohlen, die Anzahl der PDF-Analyseseiten zu reduzieren oder die OCR-Funktion auszuschalten",
     "fr-FR": "Il est recommandé de réduire le nombre de pages d'analyse PDF ou de désactiver la fonction OCR",
     "ko-KR": "PDF 분석 페이지 수를 줄이거나 OCR 기능을 끄는 것이 좋습니다",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(128959-128986)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(132530-132557)"],
     "$id": 11054
   },
   "AI 服务未就绪": {
