@@ -47,7 +47,7 @@ describe('WorkspaceAdmissionRulesTab 包含与排除规则管理及影响预览'
     workspace_config: JSON.stringify({
       schemaVersion: 1,
       status: 'ready',
-      customIgnoreRules: [
+      customExcludeRules: [
         {
           id: 'rule-1',
           type: 'directory',
@@ -72,7 +72,7 @@ describe('WorkspaceAdmissionRulesTab 包含与排除规则管理及影响预览'
     workspace_config: JSON.stringify({
       schemaVersion: 1,
       status: 'ready',
-      customIgnoreRules: []
+      customExcludeRules: []
     })
   }
 
@@ -128,8 +128,8 @@ describe('WorkspaceAdmissionRulesTab 包含与排除规则管理及影响预览'
       schemaVersion: 1,
       status: 'ready',
       baseAIConfig: {},
-      customWhitelistRules: [],
-      customIgnoreRules: [
+      customIncludeRules: [],
+      customExcludeRules: [
         {
           id: 'dup-1',
           type: 'directory',

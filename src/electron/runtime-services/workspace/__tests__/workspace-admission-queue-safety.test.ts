@@ -19,7 +19,9 @@ vi.mock('electron', () => ({
 
 vi.mock('electron-conf', () => ({
   Conf: class {
-    get() { return {} }
+    get() {
+      return {}
+    }
     set() {}
   }
 }))
@@ -66,8 +68,8 @@ describe('准入规则变更与分析队列铁律：只允许自动删除，严�
         schemaVersion: 1,
         status: 'ready',
         policyVersion: 1,
-        customIgnoreRules: [],
-        customWhitelistRules: []
+        customExcludeRules: [],
+        customIncludeRules: []
       })
     )
 
@@ -80,18 +82,12 @@ describe('准入规则变更与分析队列铁律：只允许自动删除，严�
 
   it('规则变更时：失配文件从 analysis_queue 自动删除，绝不自动增量添加新文件', async () => {
     // 预置两个工作区文件：一个 txt，一个 jpg
-    db.prepare(`INSERT INTO workspace_files (id, workspace_id, path, name) VALUES (?, ?, ?, ?)`).run(
-      101,
-      1,
-      'F:/lilun/Desktop/doc.txt',
-      'doc.txt'
-    )
-    db.prepare(`INSERT INTO workspace_files (id, workspace_id, path, name) VALUES (?, ?, ?, ?)`).run(
-      102,
-      1,
-      'F:/lilun/Desktop/photo.jpg',
-      'photo.jpg'
-    )
+    db.prepare(
+      `INSERT INTO workspace_files (id, workspace_id, path, name) VALUES (?, ?, ?, ?)`
+    ).run(101, 1, 'F:/lilun/Desktop/doc.txt', 'doc.txt')
+    db.prepare(
+      `INSERT INTO workspace_files (id, workspace_id, path, name) VALUES (?, ?, ?, ?)`
+    ).run(102, 1, 'F:/lilun/Desktop/photo.jpg', 'photo.jpg')
 
     // 预置分析队列：包含这两个文件
     db.prepare(
@@ -128,8 +124,8 @@ describe('准入规则变更与分析队列铁律：只允许自动删除，严�
         schemaVersion: 1,
         status: 'ready',
         policyVersion: 2,
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'rule-1',
             type: 'extension',

@@ -99,8 +99,8 @@ describe('AC-5.3: 物理资产绝对安全回归测试 (Physical File Safety Inv
         schemaVersion: 1,
         status: 'ready',
         policyVersion: 1,
-        customWhitelistRules: ['.cr3', '.arw'],
-        customIgnoreRules: [
+        customIncludeRules: ['.cr3', '.arw'],
+        customExcludeRules: [
           { id: 'cache-rule', type: 'directory', value: 'IGNORED_CACHE', isSystem: true }
         ]
       })
@@ -130,7 +130,7 @@ describe('AC-5.3: 物理资产绝对安全回归测试 (Physical File Safety Inv
       workspaceId: 1,
       templateConfig: {
         workflowId: t1.workflow_id,
-        customWhitelistRules: t1.extensions.common as string[]
+        customIncludeRules: t1.extensions.common as string[]
       },
       boundWorkflowId: t1.workflow_id
     })
@@ -139,7 +139,7 @@ describe('AC-5.3: 物理资产绝对安全回归测试 (Physical File Safety Inv
       workspaceId: 1,
       templateConfig: {
         workflowId: t2.workflow_id,
-        customWhitelistRules: t2.extensions.common as string[]
+        customIncludeRules: t2.extensions.common as string[]
       },
       boundWorkflowId: t2.workflow_id
     })
@@ -148,7 +148,7 @@ describe('AC-5.3: 物理资产绝对安全回归测试 (Physical File Safety Inv
       workspaceId: 1,
       templateConfig: {
         workflowId: t3.workflow_id,
-        customWhitelistRules: t3.extensions.common as string[]
+        customIncludeRules: t3.extensions.common as string[]
       },
       boundWorkflowId: t3.workflow_id
     })
@@ -169,7 +169,7 @@ describe('AC-5.3: 物理资产绝对安全回归测试 (Physical File Safety Inv
         workspaceId: 1,
         templateConfig: {
           workflowId: tmpl.workflow_id,
-          customWhitelistRules: tmpl.extensions.common as string[]
+          customIncludeRules: tmpl.extensions.common as string[]
         },
         boundWorkflowId: tmpl.workflow_id
       })

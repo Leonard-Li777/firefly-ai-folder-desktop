@@ -550,7 +550,7 @@ export class WorkspaceDao {
 
   async updateWhitelistPatterns(workspaceId: number, patterns: string[]): Promise<boolean> {
     const admission = new WorkspaceAdmissionService({ db: this.db })
-    await admission.applyPolicyMutation(workspaceId, { customWhitelistExts: patterns || [] })
+    await admission.applyPolicyMutation(workspaceId, { includeExts: patterns || [] })
     return true
   }
 
@@ -634,9 +634,14 @@ export class WorkspaceDao {
   async calculateWhitelistImpact(
     workspaceId: number,
     patterns: string[]
-  ): Promise<{ totalFiles: number; includedFiles: number; excludedFiles: number; companionFilesProtected?: number }> {
+  ): Promise<{
+    totalFiles: number
+    includedFiles: number
+    excludedFiles: number
+    companionFilesProtected?: number
+  }> {
     const admission = new WorkspaceAdmissionService({ db: this.db })
-    return admission.previewPolicyImpact(workspaceId, { customWhitelistExts: patterns || [] })
+    return admission.previewPolicyImpact(workspaceId, { includeExts: patterns || [] })
   }
 
   async updateBoundWorkflow(workspaceId: number, workflowId: string | null): Promise<boolean> {

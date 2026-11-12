@@ -37,8 +37,8 @@ describe('WorkspaceAdmissionService.previewPolicyImpact (准入规则影响精�
         schemaVersion: 1,
         status: 'ready',
         policyVersion: 1,
-        customIgnoreRules: [],
-        customWhitelistRules: []
+        customExcludeRules: [],
+        customIncludeRules: []
       })
     )
 

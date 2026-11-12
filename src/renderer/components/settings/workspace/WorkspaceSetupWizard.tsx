@@ -137,7 +137,7 @@ const PROFILE_AUDIO_EXTS = new Set([
   'dff'
 ])
 
-/** 统一从工作流记录中提取纳管包含扩展名列表（兼容 workspace_config.customWhitelistRules、extensions、filter_rules） */
+/** 统一从工作流记录中提取纳管包含扩展名列表（兼容 workspace_config.customIncludeRules、extensions、filter_rules） */
 function extractWorkflowIncludedExtensions(wf: any): string[] {
   if (!wf) return []
   const seen = new Set<string>()
@@ -160,8 +160,8 @@ function extractWorkflowIncludedExtensions(wf: any): string[] {
       tplCfg = null
     }
   }
-  if (Array.isArray(tplCfg?.customWhitelistRules)) {
-    for (const ext of getExtensionValues(tplCfg.customWhitelistRules)) {
+  if (Array.isArray(tplCfg?.customIncludeRules)) {
+    for (const ext of getExtensionValues(tplCfg.customIncludeRules)) {
       pushExt(ext)
     }
   }
@@ -1003,8 +1003,8 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
   // 提取当前选定工作流的包含白名单规则（labels 用于展示，extensions 用于扩展名命中统计）
   const currentWhitelist = useMemo(() => {
     let rules: WizardRuleEntry[] = []
-    if (Array.isArray(selectedTemplateConfig?.customWhitelistRules)) {
-      rules = selectedTemplateConfig.customWhitelistRules
+    if (Array.isArray(selectedTemplateConfig?.customIncludeRules)) {
+      rules = selectedTemplateConfig.customIncludeRules
     } else if (selectedWorkflow?.filter_rules && selectedWorkflow?.filter_mode === 'whitelist') {
       try {
         const parsed = JSON.parse(selectedWorkflow.filter_rules)
@@ -1020,8 +1020,8 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
   // 提取当前选定工作流的专属排除规则（剔除全局生效排除规则，无则返回空数组）
   const filteredCustomIgnoreEntries = useMemo<WizardRuleEntry[]>(() => {
     let rawEntries: WizardRuleEntry[] = []
-    if (Array.isArray(selectedTemplateConfig?.customIgnoreRules)) {
-      rawEntries = selectedTemplateConfig.customIgnoreRules
+    if (Array.isArray(selectedTemplateConfig?.customExcludeRules)) {
+      rawEntries = selectedTemplateConfig.customExcludeRules
     } else if (selectedWorkflow?.custom_ignores) {
       try {
         const parsed =
@@ -1149,13 +1149,13 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
           selectedTemplateConfig?.extensionWeights ||
           selectedWorkflow.extensionWeights ||
           undefined,
-        customIgnoreRules: Array.isArray(selectedTemplateConfig?.customIgnoreRules)
+        customExcludeRules: Array.isArray(selectedTemplateConfig?.customExcludeRules)
           ? filterWorkspaceUniqueIgnoreEntries(
               globalIgnoreRules,
-              selectedTemplateConfig.customIgnoreRules
+              selectedTemplateConfig.customExcludeRules
             ).filter((r): r is IFilterRule => typeof r !== 'string')
           : [],
-        customWhitelistRules: selectedTemplateConfig?.customWhitelistRules || [],
+        customIncludeRules: selectedTemplateConfig?.customIncludeRules || [],
         baseAIConfig: baseAi,
         derivedSnapshot: baseAi,
         advancedAIPrompts: selectedTemplateConfig?.advancedAIPrompts || undefined,

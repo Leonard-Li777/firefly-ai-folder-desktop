@@ -73,7 +73,7 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
       ]),
       // 与生产预设 (organize-taxonomy-source.ts) 同构：白名单/排除规则为 IFilterRule 对象数组
       workspace_config: JSON.stringify({
-        customWhitelistRules: [
+        customIncludeRules: [
           {
             id: 'builtin.workflow.desktop-declutter-common-1',
             type: 'extension',
@@ -96,7 +96,7 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
             isSystem: true
           }
         ],
-        customIgnoreRules: [
+        customExcludeRules: [
           {
             id: 'builtin.workflow.desktop-declutter-ignore-1',
             type: 'directory',
@@ -118,7 +118,7 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
       preset_directory_tree: JSON.stringify([{ name: '01_安装程序', subdirectories: [] }]),
       // 无专属排除规则 (空数组)
       workspace_config: JSON.stringify({
-        customWhitelistRules: [
+        customIncludeRules: [
           {
             id: 'builtin.workflow.downloads-triage-common-1',
             type: 'extension',
@@ -134,7 +134,7 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
             isSystem: true
           }
         ],
-        customIgnoreRules: []
+        customExcludeRules: []
       })
     },
     {
@@ -148,8 +148,8 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
       preset_directory_tree: '[]',
       // 空白名单
       workspace_config: JSON.stringify({
-        customWhitelistRules: [],
-        customIgnoreRules: []
+        customIncludeRules: [],
+        customExcludeRules: []
       })
     },
     {
@@ -404,8 +404,8 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
     const workflowMixedIgnores = {
       ...mockWorkflows[0],
       workspace_config: JSON.stringify({
-        customWhitelistRules: [],
-        customIgnoreRules: [
+        customIncludeRules: [],
+        customExcludeRules: [
           {
             id: 'wf-ig-1',
             type: 'extension',
@@ -473,7 +473,7 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
       expect(mockCommitWorkspacePolicy).toHaveBeenCalledWith(
         expect.objectContaining({
           templateConfig: expect.objectContaining({
-            customIgnoreRules: expect.arrayContaining([
+            customExcludeRules: expect.arrayContaining([
               expect.objectContaining({ value: '.lnk' }),
               expect.objectContaining({ value: 'Desktop_Old_Backups' })
             ])
@@ -482,7 +482,7 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
       )
     })
     const committedIgnores =
-      mockCommitWorkspacePolicy.mock.calls[0][0].templateConfig.customIgnoreRules
+      mockCommitWorkspacePolicy.mock.calls[0][0].templateConfig.customExcludeRules
     expect(committedIgnores).toHaveLength(2)
   })
 
@@ -503,8 +503,8 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
     const workflowAllCoveredByGlobal = {
       ...mockWorkflows[0],
       workspace_config: JSON.stringify({
-        customWhitelistRules: [],
-        customIgnoreRules: ['Desktop_Old_Backups', '.tmp']
+        customIncludeRules: [],
+        customExcludeRules: ['Desktop_Old_Backups', '.tmp']
       })
     }
 

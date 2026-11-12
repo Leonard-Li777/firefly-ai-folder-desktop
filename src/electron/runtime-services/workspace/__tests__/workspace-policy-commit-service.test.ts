@@ -25,7 +25,7 @@ describe('WorkspacePolicyCommitService (Spec v1.1 §2.2 & Ticket 03)', () => {
     schemaVersion: 1,
     status: 'ready',
     policyVersion: 1,
-    customIgnoreRules: [
+    customExcludeRules: [
       {
         id: 'sys-rule-1',
         type: 'folder',
@@ -41,7 +41,7 @@ describe('WorkspacePolicyCommitService (Spec v1.1 §2.2 & Ticket 03)', () => {
         isSystem: false
       }
     ],
-    customWhitelistRules: [
+    customIncludeRules: [
       {
         id: 'sys-wl-1',
         type: 'extension',
@@ -200,7 +200,7 @@ describe('WorkspacePolicyCommitService (Spec v1.1 §2.2 & Ticket 03)', () => {
       // 构造新工作流的预设模板规则
       const newWorkflowConfig: WorkspaceConfigReady = {
         ...initialWorkspaceConfig,
-        customIgnoreRules: [
+        customExcludeRules: [
           // 新模板自带的系统排除规则
           {
             id: 'tpl-rule-cache',
@@ -210,7 +210,7 @@ describe('WorkspacePolicyCommitService (Spec v1.1 §2.2 & Ticket 03)', () => {
             isSystem: true
           }
         ],
-        customWhitelistRules: [
+        customIncludeRules: [
           // 新模板自带的系统白名单规则
           {
             id: 'tpl-wl-raw',
@@ -232,24 +232,24 @@ describe('WorkspacePolicyCommitService (Spec v1.1 §2.2 & Ticket 03)', () => {
       const result = await service.commitPolicy(params)
       expect(result.success).toBe(true)
 
-      const mergedIgnores = result.committedConfig.customIgnoreRules || []
-      const mergedWhitelists = result.committedConfig.customWhitelistRules || []
+      const mergedExcludes = result.committedConfig.customExcludeRules || []
+      const mergedIncludes = result.committedConfig.customIncludeRules || []
 
       // 1. 旧模板预设规则 (node_modules, isSystem: true) 应被替换清除
-      expect(mergedIgnores.some(r => r.value === 'node_modules')).toBe(false)
+      expect(mergedExcludes.some(r => r.value === 'node_modules')).toBe(false)
 
       // 2. 新模板预设规则 (.cache, isSystem: true) 应成功合入
-      expect(mergedIgnores.some(r => r.value === '.cache' && r.isSystem === true)).toBe(true)
+      expect(mergedExcludes.some(r => r.value === '.cache' && r.isSystem === true)).toBe(true)
 
       // 3. 用户之前手动配置的自定义排除规则 (my-private-docs, isSystem: false) 必须完整保留！
-      expect(mergedIgnores.some(r => r.value === 'my-private-docs' && r.isSystem === false)).toBe(
+      expect(mergedExcludes.some(r => r.value === 'my-private-docs' && r.isSystem === false)).toBe(
         true
       )
 
-      // 4. 白名单同理：旧模板 .docx 被替换，新模板 .cr3 写入，用户自建 .secret 必须保留！
-      expect(mergedWhitelists.some(r => r.value === '.docx')).toBe(false)
-      expect(mergedWhitelists.some(r => r.value === '.cr3' && r.isSystem === true)).toBe(true)
-      expect(mergedWhitelists.some(r => r.value === '.secret' && r.isSystem === false)).toBe(true)
+      // 4. 包含规则同理：旧模板 .docx 被替换，新模板 .cr3 写入，用户自建 .secret 必须保留！
+      expect(mergedIncludes.some(r => r.value === '.docx')).toBe(false)
+      expect(mergedIncludes.some(r => r.value === '.cr3' && r.isSystem === true)).toBe(true)
+      expect(mergedIncludes.some(r => r.value === '.secret' && r.isSystem === false)).toBe(true)
     })
   })
 

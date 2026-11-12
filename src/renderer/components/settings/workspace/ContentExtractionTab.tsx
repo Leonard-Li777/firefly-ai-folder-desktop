@@ -145,10 +145,10 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
           baseAIConfig: baseDerived,
           derivedSnapshot: baseDerived,
           overrides: hasAnyOverride ? targetOverrides : undefined,
-          customIgnoreRules:
-            parsedConfig.status === 'ready' ? parsedConfig.customIgnoreRules || [] : [],
-          customWhitelistRules:
-            parsedConfig.status === 'ready' ? parsedConfig.customWhitelistRules || [] : [],
+          customExcludeRules:
+            parsedConfig.status === 'ready' ? parsedConfig.customExcludeRules || [] : [],
+          customIncludeRules:
+            parsedConfig.status === 'ready' ? parsedConfig.customIncludeRules || [] : [],
           configuredAt: Date.now()
         }
 

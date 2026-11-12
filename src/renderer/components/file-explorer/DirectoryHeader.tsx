@@ -156,10 +156,10 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
         const hasOverrides = Boolean(
           parsedConfig.overrides && Object.keys(parsedConfig.overrides).length > 0
         )
-        const hasCustomIgnoreRules = Boolean(
-          parsedConfig.customIgnoreRules && parsedConfig.customIgnoreRules.length > 0
+        const hasCustomExcludeRules = Boolean(
+          parsedConfig.customExcludeRules && parsedConfig.customExcludeRules.length > 0
         )
-        const isCustom = parsedConfig.intent === 'custom' || hasOverrides || hasCustomIgnoreRules
+        const isCustom = parsedConfig.intent === 'custom' || hasOverrides || hasCustomExcludeRules
 
         if (isCustom) {
           return {

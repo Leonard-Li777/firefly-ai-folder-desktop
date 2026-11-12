@@ -4260,18 +4260,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
       '99-旧桌面历史归档Archive/往期桌面历史备份归档'
     ],
     extensions: {
-      common: [
-        '.lnk',
-        '.url',
-        '.docx',
-        '.xlsx',
-        '.pptx',
-        '.pdf',
-        '.png',
-        '.jpg',
-        '.exe',
-        '.zip'
-      ],
+      common: ['.lnk', '.url', '.docx', '.xlsx', '.pptx', '.pdf', '.png', '.jpg', '.exe', '.zip'],
       weights: {
         '.lnk': 0.12,
         '.url': 0.03,
@@ -4568,17 +4557,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
       '04-软件安装与压缩暂存/02-压缩文件与临时解压包'
     ],
     extensions: {
-      common: [
-        '.lnk',
-        '.url',
-        '.exe',
-        '.docx',
-        '.xlsx',
-        '.pptx',
-        '.pdf',
-        '.jpg',
-        '.zip'
-      ],
+      common: ['.lnk', '.url', '.exe', '.docx', '.xlsx', '.pptx', '.pdf', '.jpg', '.zip'],
       weights: {
         '.lnk': 0.13,
         '.url': 0.03,
@@ -6517,8 +6496,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.design-dev',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.design-dev'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.design-dev-exclusive-1',
             type: 'extension',
@@ -6633,8 +6612,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.frontend-dev',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.frontend-dev'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.frontend-dev-exclusive-1',
             type: 'extension',
@@ -6762,8 +6741,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.backend-arch',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.backend-arch'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.backend-arch-exclusive-1',
             type: 'extension',
@@ -6891,8 +6870,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.para-universal',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.para-universal'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.para-universal-common-1',
             type: 'extension',
@@ -6999,8 +6978,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.johnny-decimal',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.johnny-decimal'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.johnny-decimal-common-1',
             type: 'extension',
@@ -7108,8 +7087,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.photography-raw',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.photography-raw'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.photography-raw-exclusive-1',
             type: 'extension',
@@ -7245,8 +7224,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.video-production',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.video-production'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.video-production-exclusive-1',
             type: 'extension',
@@ -7382,8 +7361,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.academic-thesis',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.academic-thesis'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.academic-thesis-exclusive-1',
             type: 'extension',
@@ -7505,7 +7484,7 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.finance-contract',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.finance-contract'],
-        customIgnoreRules: [
+        customExcludeRules: [
           {
             id: 'builtin.workflow.finance-contract-ignore-1',
             type: 'extension',
@@ -7563,7 +7542,7 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
             isSystem: true
           }
         ],
-        customWhitelistRules: [
+        customIncludeRules: [
           {
             id: 'builtin.workflow.finance-contract-exclusive-1',
             type: 'extension',
@@ -7678,8 +7657,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.family-household',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.family-household'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.family-household-common-1',
             type: 'extension',
@@ -7787,8 +7766,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.newmedia-content',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.newmedia-content'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.newmedia-content-exclusive-1',
             type: 'extension',
@@ -7910,8 +7889,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.ecommerce-ops',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.ecommerce-ops'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.ecommerce-ops-common-1',
             type: 'extension',
@@ -8026,8 +8005,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.game-dev-assets',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.game-dev-assets'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.game-dev-assets-exclusive-1',
             type: 'extension',
@@ -8162,8 +8141,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.cross-border-ops',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.cross-border-ops'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.cross-border-ops-common-1',
             type: 'extension',
@@ -8270,8 +8249,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.legal-case-dossier',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.legal-case-dossier'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.legal-case-dossier-common-1',
             type: 'extension',
@@ -8379,8 +8358,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.clinical-medical-records',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.clinical-medical-records'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.clinical-medical-records-exclusive-1',
             type: 'extension',
@@ -8494,8 +8473,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.teacher-lesson-prep',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.teacher-lesson-prep'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.teacher-lesson-prep-common-1',
             type: 'extension',
@@ -8610,8 +8589,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.consulting-due-diligence',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.consulting-due-diligence'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.consulting-due-diligence-common-1',
             type: 'extension',
@@ -8712,8 +8691,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.architectural-cad-design',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.architectural-cad-design'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.architectural-cad-design-exclusive-1',
             type: 'extension',
@@ -8842,8 +8821,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.writing-publishing-pipeline',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.writing-publishing-pipeline'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.writing-publishing-pipeline-common-1',
             type: 'extension',
@@ -8951,8 +8930,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.wellness-health-portfolio',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.wellness-health-portfolio'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.wellness-health-portfolio-common-1',
             type: 'extension',
@@ -9076,8 +9055,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.pm-product-workflow',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.pm-product-workflow'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.pm-product-workflow-exclusive-1',
             type: 'extension',
@@ -9230,8 +9209,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.data-science-analytics',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.data-science-analytics'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.data-science-analytics-exclusive-1',
             type: 'extension',
@@ -9389,8 +9368,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.qa-testing-lifecycle',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.qa-testing-lifecycle'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.qa-testing-lifecycle-common-1',
             type: 'extension',
@@ -9537,8 +9516,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.sales-pipeline-crm',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.sales-pipeline-crm'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.sales-pipeline-crm-common-1',
             type: 'extension',
@@ -9668,8 +9647,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.hr-people-operations',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.hr-people-operations'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.hr-people-operations-common-1',
             type: 'extension',
@@ -9796,8 +9775,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.marketing-campaign-imc',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.marketing-campaign-imc'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.marketing-campaign-imc-common-1',
             type: 'extension',
@@ -9945,7 +9924,7 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.corporate-legal-compliance',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.corporate-legal-compliance'],
-        customIgnoreRules: [
+        customExcludeRules: [
           {
             id: 'builtin.workflow.corporate-legal-compliance-ignore-1',
             type: 'extension',
@@ -10003,7 +9982,7 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
             isSystem: true
           }
         ],
-        customWhitelistRules: [
+        customIncludeRules: [
           {
             id: 'builtin.workflow.corporate-legal-compliance-common-1',
             type: 'extension',
@@ -10145,8 +10124,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.embedded-iot-firmware',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.embedded-iot-firmware'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.embedded-iot-firmware-exclusive-1',
             type: 'extension',
@@ -10317,8 +10296,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.creative-assets',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.creative-assets'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.creative-assets-exclusive-1',
             type: 'extension',
@@ -10501,8 +10480,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.freelance-business-delivery',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.freelance-business-delivery'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.freelance-business-delivery-common-1',
             type: 'extension',
@@ -10636,8 +10615,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.pkm-knowledge-vault',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.pkm-knowledge-vault'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.pkm-knowledge-vault-common-1',
             type: 'extension',
@@ -10761,8 +10740,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.gaming',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.gaming'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.gaming-exclusive-1',
             type: 'extension',
@@ -10901,8 +10880,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.novel',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.novel'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.novel-exclusive-1',
             type: 'extension',
@@ -11026,8 +11005,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.movie-cinema',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.movie-cinema'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.movie-cinema-exclusive-1',
             type: 'extension',
@@ -11163,8 +11142,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.anime-comic',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.anime-comic'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.anime-comic-exclusive-1',
             type: 'extension',
@@ -11294,8 +11273,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.pc-hardware-gear',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.pc-hardware-gear'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.pc-hardware-gear-exclusive-1',
             type: 'extension',
@@ -11432,8 +11411,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.cooking-recipes-vault',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.cooking-recipes-vault'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.cooking-recipes-vault-common-1',
             type: 'extension',
@@ -11551,8 +11530,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.pet-care-diary',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.pet-care-diary'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.pet-care-diary-common-1',
             type: 'extension',
@@ -11677,8 +11656,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.travel-outdoor-journey',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.travel-outdoor-journey'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.travel-outdoor-journey-exclusive-1',
             type: 'extension',
@@ -11814,8 +11793,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.music-audio',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.music-audio'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.music-audio-exclusive-1',
             type: 'extension',
@@ -11972,8 +11951,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.graphic-brand-design',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.graphic-brand-design'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.graphic-brand-design-exclusive-1',
             type: 'extension',
@@ -12106,8 +12085,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.illustration-cg-art',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.illustration-cg-art'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.illustration-cg-art-exclusive-1',
             type: 'extension',
@@ -12242,8 +12221,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.mobile-app-dev',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.mobile-app-dev'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.mobile-app-dev-exclusive-1',
             type: 'extension',
@@ -12389,8 +12368,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.cloud-native-sre',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.cloud-native-sre'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.cloud-native-sre-exclusive-1',
             type: 'extension',
@@ -12521,8 +12500,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.supply-chain-logistics',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.supply-chain-logistics'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.supply-chain-logistics-common-1',
             type: 'extension',
@@ -12631,8 +12610,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.study-abroad-application',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.study-abroad-application'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.study-abroad-application-common-1',
             type: 'extension',
@@ -12736,7 +12715,7 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.desktop-declutter',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.desktop-declutter'],
-        customIgnoreRules: [
+        customExcludeRules: [
           {
             id: 'builtin.workflow.desktop-declutter-ignore-1',
             type: 'extension',
@@ -12773,7 +12752,7 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
             isSystem: true
           }
         ],
-        customWhitelistRules: [
+        customIncludeRules: [
           {
             id: 'builtin.workflow.desktop-declutter-common-0-lnk',
             type: 'extension',
@@ -12923,7 +12902,7 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.downloads-triage',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.downloads-triage'],
-        customIgnoreRules: [
+        customExcludeRules: [
           {
             id: 'builtin.workflow.downloads-triage-ignore-1',
             type: 'extension',
@@ -12974,7 +12953,7 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
             isSystem: true
           }
         ],
-        customWhitelistRules: [
+        customIncludeRules: [
           {
             id: 'builtin.workflow.downloads-triage-exclusive-1',
             type: 'extension',
@@ -13111,8 +13090,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.inbox-staging-universal',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.inbox-staging-universal'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.inbox-staging-universal-common-1',
             type: 'extension',
@@ -13252,8 +13231,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.desktop-classic-classification',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.desktop-classic-classification'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.desktop-classic-classification-common-0-lnk',
             type: 'extension',
@@ -13400,8 +13379,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.qa-testing-asset-vault',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.qa-testing-asset-vault'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.qa-testing-asset-vault-common-1',
             type: 'extension',
@@ -13526,8 +13505,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.k12-education-vault',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.k12-education-vault'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.k12-education-vault-common-1',
             type: 'extension',
@@ -13640,8 +13619,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.k12-school-term-pipeline',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.k12-school-term-pipeline'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.k12-school-term-pipeline-common-1',
             type: 'extension',
@@ -13756,8 +13735,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.senior-life-archive',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.senior-life-archive'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.senior-life-archive-common-1',
             type: 'extension',
@@ -13858,8 +13837,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.senior-medical-care-pipeline',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.senior-medical-care-pipeline'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.senior-medical-care-pipeline-common-1',
             type: 'extension',
@@ -13972,8 +13951,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.office-docs',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.office-docs'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.office-docs-common-1',
             type: 'extension',
@@ -14095,8 +14074,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.office-document-dispatch-flow',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.office-document-dispatch-flow'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.office-document-dispatch-flow-common-1',
             type: 'extension',
@@ -14215,8 +14194,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.household-dossier-vault',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.household-dossier-vault'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.household-dossier-vault-common-1',
             type: 'extension',
@@ -14334,8 +14313,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.media-collector-vault',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.media-collector-vault'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.media-collector-vault-exclusive-1',
             type: 'extension',
@@ -14460,8 +14439,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.code-asset-vault',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.code-asset-vault'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.code-asset-vault-common-1',
             type: 'extension',
@@ -14590,8 +14569,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.system-cache-appdata-vault',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.system-cache-appdata-vault'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.system-cache-appdata-vault-exclusive-1',
             type: 'extension',
@@ -14698,8 +14677,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.chat-software-vault',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.chat-software-vault'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.chat-software-vault-common-1',
             type: 'extension',
@@ -14821,8 +14800,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.cross-device-transfer-vault',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.cross-device-transfer-vault'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.cross-device-transfer-vault-common-1',
             type: 'extension',
@@ -14930,8 +14909,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.screenshots-screenrecord-vault',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.screenshots-screenrecord-vault'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.screenshots-screenrecord-vault-exclusive-1',
             type: 'extension',
@@ -15032,8 +15011,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.scratchpad-drafts-vault',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.scratchpad-drafts-vault'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.scratchpad-drafts-vault-common-1',
             type: 'extension',
@@ -15127,8 +15106,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.external-storage-vault',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.external-storage-vault'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.external-storage-vault-common-1',
             type: 'extension',
@@ -15236,8 +15215,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.scanned-documents-vault',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.scanned-documents-vault'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.scanned-documents-vault-exclusive-1',
             type: 'extension',
@@ -15337,8 +15316,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         policyVersion: 1,
         workflowId: 'builtin.workflow.docs-office-vault',
         extensionWeights: WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.docs-office-vault'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.docs-office-vault-common-1',
             type: 'extension',
@@ -15439,8 +15418,8 @@ export const LOCAL_WORKFLOW_CONFIG_SOURCE = (
         workflowId: 'builtin.workflow.docs-study-research-vault',
         extensionWeights:
           WORKFLOW_EXTENSION_WEIGHTS_BY_ID['builtin.workflow.docs-study-research-vault'],
-        customIgnoreRules: [],
-        customWhitelistRules: [
+        customExcludeRules: [],
+        customIncludeRules: [
           {
             id: 'builtin.workflow.docs-study-research-vault-common-1',
             type: 'extension',
