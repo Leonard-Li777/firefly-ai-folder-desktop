@@ -737,6 +737,9 @@ function normalizeRemoteModuleItem(raw: any): PluginModuleItem {
     hold_reasons: raw.hold_reasons,
     validation_status: raw.validation_status,
     validation_message: raw.validation_message,
+    // 关键：透传设置贡献（contributes），否则 handleOpenConfig 拿不到 componentId，
+    // 生成式 CPU 引擎等插件会误落入 INTERFACE 兜底，跳到「界面与显示偏好」而非目标 tab。
+    contributes: raw.contributes ?? seed?.contributes,
     ...(raw.download_progress ? { download_progress: raw.download_progress } : {})
   }
 }

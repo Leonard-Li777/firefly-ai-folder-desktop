@@ -17,6 +17,7 @@ import {
   Wifi
 } from 'lucide-react'
 import type { HardwareProbeResult, WelcomeSelection } from './welcome-types'
+import { formatPluginErrorMessage } from '@stores/plugin-center-store'
 
 /**
  * 安装页的两类展示态由 installMethod 决定：
@@ -147,9 +148,13 @@ export function WelcomeStep5InstallReady({
       if (modular?.smokeTest) {
         const smokeRes = await modular.smokeTest({ profile })
         if (!smokeRes?.success) {
-          throw new Error(
+          // 携带 errorCode，供 catch 里的 formatPluginErrorMessage 按码表转译大白话；
+          // FAST_READY_TIMEOUT 等已知码走统一文案，未知则回退到 error 文本。
+          const smokeErr: any = new Error(
             smokeRes?.error || t('引擎启动遇到问题，请尝试重试或切换为极速轻巧引擎')
           )
+          if (smokeRes?.errorCode) smokeErr.code = smokeRes.errorCode
+          throw smokeErr
         }
       }
 
@@ -266,7 +271,13 @@ export function WelcomeStep5InstallReady({
         }
       } catch (err: any) {
         setPhase('error')
-        setErrorMessage(err?.message || t('安装遇到问题，请重试'))
+        // 统一走大白话翻译层：
+        // - 技术串（fetch failed / /api/v1/engine/status）→ 转成用户能看懂的提示
+        // - 带 code 的错误（如引擎就绪超时 FAST_READY_TIMEOUT）→ 按码表转译
+        // - 已经是白话的错误（离线导入 / 自检）→ 原样放行
+        // 传整个 err（而非 err.message），以保留 .code 供码表匹配；翻译层对 Error
+        // 实例会兜底读 .message，不会因此丢文本。
+        setErrorMessage(formatPluginErrorMessage(err) || t('安装遇到问题，请重试'))
       }
     }
 
