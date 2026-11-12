@@ -168,9 +168,9 @@ export class LocalWorkflowService {
       } catch {}
     }
 
-    const includeRules = workspaceConfig?.customIncludeRules || []
-    const filterPatterns = Array.isArray(includeRules)
-      ? includeRules.map((r: any) => (typeof r === 'string' ? r : r.value)).filter(Boolean)
+    const customIncludeRules = workspaceConfig?.customIncludeRules || []
+    const filterPatterns = Array.isArray(customIncludeRules)
+      ? customIncludeRules.map((r: any) => (typeof r === 'string' ? r : r.value)).filter(Boolean)
       : []
 
     let presetDirectoryTree: any[] | undefined = undefined

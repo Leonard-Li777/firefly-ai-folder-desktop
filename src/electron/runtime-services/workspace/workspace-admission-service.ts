@@ -4,7 +4,7 @@
  * 职责边界：
  * 1. 单一配置源：所有包含（白名单）与排除（黑名单）规则统一持久化在 `workspaces.workspace_config` JSON 与 `bound_workflow_id` 中，
  *    无 `whitelist_patterns` 物理数据库列。
- * 2. 四阶单层短路决策：系统硬排除 > 用户自定义排除规则 (excludeRules) > 排他包含规则 (includeRules + 8 种伴生文件特权) > 默认准入放行。
+ * 2. 四阶单层短路决策：系统硬排除 > 用户自定义排除规则 (customExcludeRules) > 排他包含规则 (customIncludeRules + 8 种伴生文件特权) > 默认准入放行。
  * 3. 版本单调递增与指纹短路 (M01/M02)：主进程唯一版本权威。当修改 AI 温度/并发/Prompt/命名模板等非准入字段时，
  *    准入指纹完全一致且元数据已对齐，直接短路返回零 I/O；指纹变化时原子自增 policyVersion。
  * 4. 索引解绑绝不删物理文件 (IN-02 铁律)：策略收紧后仅从 `workspace_files` 与 `analysis_queue` 移除失配索引及待处理任务，
@@ -335,10 +335,7 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
             : workflow.workspace_config
         if (parsed && typeof parsed === 'object') {
           if (Array.isArray(parsed.customIncludeRules)) {
-            result.customIncludeRules = normalizeRuleList(
-              parsed.customIncludeRules,
-              'wf-include'
-            )
+            result.customIncludeRules = normalizeRuleList(parsed.customIncludeRules, 'wf-include')
           }
           if (Array.isArray(parsed.customExcludeRules)) {
             result.customExcludeRules = normalizeRuleList(parsed.customExcludeRules, 'wf-exclude')
@@ -533,7 +530,10 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
       nextExcludeRules = normalizeRuleList(incomingExcludeRules, 'exclude')
     } else if (mutation.restoreWorkflowDefault) {
       nextExcludeRules = templateOverlay?.customExcludeRules || []
-    } else if (templateOverlay?.customExcludeRules && templateOverlay.customExcludeRules.length > 0) {
+    } else if (
+      templateOverlay?.customExcludeRules &&
+      templateOverlay.customExcludeRules.length > 0
+    ) {
       const existing = currentReady?.customExcludeRules || []
       nextExcludeRules = normalizeRuleList(
         [...existing, ...templateOverlay.customExcludeRules],
