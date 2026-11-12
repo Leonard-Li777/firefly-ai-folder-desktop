@@ -1018,7 +1018,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
   }, [selectedTemplateConfig, selectedWorkflow])
 
   // 提取当前选定工作流的专属排除规则（剔除全局生效排除规则，无则返回空数组）
-  const filteredCustomIgnoreEntries = useMemo<WizardRuleEntry[]>(() => {
+  const filteredCustomExcludeEntries = useMemo<WizardRuleEntry[]>(() => {
     let rawEntries: WizardRuleEntry[] = []
     if (Array.isArray(selectedTemplateConfig?.customExcludeRules)) {
       rawEntries = selectedTemplateConfig.customExcludeRules
@@ -1034,9 +1034,9 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     return filterWorkspaceUniqueIgnoreEntries(globalIgnoreRules, rawEntries)
   }, [selectedTemplateConfig, selectedWorkflow, globalIgnoreRules])
 
-  const currentCustomIgnoreRules = useMemo<string[]>(() => {
-    return filteredCustomIgnoreEntries.map(getRuleLabel).filter(Boolean)
-  }, [filteredCustomIgnoreEntries])
+  const currentCustomExcludeRules = useMemo<string[]>(() => {
+    return filteredCustomExcludeEntries.map(getRuleLabel).filter(Boolean)
+  }, [filteredCustomExcludeEntries])
 
   // 实测命中数与大白话透视计算 (Ticket 04 AC-4.3)
   const fileImpactStats = useMemo(() => {
@@ -1841,7 +1841,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
           </div>
 
           {/* 核心板块 2：大白话专属「排除」卡片 (无专属排除时整块 DOM 彻底隐藏 toBeNull) */}
-          {currentCustomIgnoreRules.length > 0 && (
+          {currentCustomExcludeRules.length > 0 && (
             <div
               id="section-exclude"
               className="bg-amber-500/[0.04] dark:bg-amber-500/[0.08] border border-amber-500/30 rounded-xl p-4 space-y-2.5 shrink-0"
@@ -1861,7 +1861,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
               </div>
 
               <div className="flex flex-wrap gap-1.5 pt-1">
-                {currentCustomIgnoreRules.map((rule, idx) => (
+                {currentCustomExcludeRules.map((rule, idx) => (
                   <span
                     key={idx}
                     className="px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30"
