@@ -9,7 +9,9 @@
     "de-DE": "ElectronAPI.aiService.initialize nicht verfügbar",
     "fr-FR": "ElectronAPI.aiService.initialize n'est pas disponible",
     "ko-KR": "electronAPI.aiService.initialize를 사용할 수 없습니다",
-    "$files": ["src/renderer/stores/ai-service-store.ts(4272-4312)"],
+    "$files": [
+      "src/renderer/stores/ai-service-store.ts(4272-4312)"
+    ],
     "$id": 5455
   },
   "AI服务初始化失败": {
@@ -22,7 +24,9 @@
     "de-DE": "Initialisierung des KI-Dienstes fehlgeschlagen",
     "fr-FR": "Échec de l'initialisation du service IA",
     "ko-KR": "AI 서비스 초기화 실패",
-    "$files": ["src/renderer/stores/ai-service-store.ts(5727-5740)"],
+    "$files": [
+      "src/renderer/stores/ai-service-store.ts(5727-5740)"
+    ],
     "$id": 5458
   },
   "未知错误": {
@@ -52,7 +56,9 @@
     "de-DE": "ElectronAPI.aiService.onModelChanged nicht verfügbar",
     "fr-FR": "ElectronAPI.aiService.onModelChanged n'est pas disponible",
     "ko-KR": "electronAPI.aiService.onModelChanged 사용 불가",
-    "$files": ["src/renderer/stores/ai-service-store.ts(7466-7510)"],
+    "$files": [
+      "src/renderer/stores/ai-service-store.ts(7466-7510)"
+    ],
     "$id": 8128
   },
   "模型切换失败": {
@@ -65,7 +71,9 @@
     "de-DE": "Modellwechsel fehlgeschlagen",
     "fr-FR": "Échec du changement de modèle",
     "ko-KR": "모델 전환 실패",
-    "$files": ["src/renderer/stores/ai-service-store.ts(9368-9378)"],
+    "$files": [
+      "src/renderer/stores/ai-service-store.ts(9368-9378)"
+    ],
     "$id": 5462
   },
   "当前工作区尚未配置 AI 策略，分析已暂停。请先完成工作区配置。": {
@@ -78,7 +86,9 @@
     "de-DE": "Für den aktuellen Arbeitsbereich ist keine KI-Richtlinie konfiguriert und die Analyse ist angehalten. Bitte schließen Sie zunächst die Arbeitsbereichskonfiguration ab.",
     "fr-FR": "L’espace de travail actuel n’a aucune stratégie d’IA configurée et l’analyse est suspendue. Veuillez d'abord terminer la configuration de l'espace de travail.",
     "ko-KR": "현재 작업 영역에는 구성된 AI 정책이 없으며 분석이 일시 중지되었습니다. 먼저 작업공간 구성을 완료하세요.",
-    "$files": ["src/renderer/stores/analysis-queue-store.ts(13757-13793)"],
+    "$files": [
+      "src/renderer/stores/analysis-queue-store.ts(13757-13793)"
+    ],
     "$id": 22924
   },
   "前往配置": {
@@ -91,7 +101,9 @@
     "de-DE": "Gehen Sie zur Konfiguration",
     "fr-FR": "Aller à la configuration",
     "ko-KR": "구성으로 이동",
-    "$files": ["src/renderer/stores/analysis-queue-store.ts(13883-13891)"],
+    "$files": [
+      "src/renderer/stores/analysis-queue-store.ts(13883-13891)"
+    ],
     "$id": 22925
   },
   "更新配置失败": {
@@ -104,7 +116,9 @@
     "de-DE": "Aktualisierung der Konfiguration fehlgeschlagen",
     "fr-FR": "Échec de la mise à jour de la configuration",
     "ko-KR": "구성 업데이트 실패",
-    "$files": ["src/renderer/stores/config-store.ts(2018-2028)"],
+    "$files": [
+      "src/renderer/stores/config-store.ts(2018-2028)"
+    ],
     "$id": 5465
   },
   "更新配置项失败": {
@@ -117,7 +131,9 @@
     "de-DE": "Aktualisierung der Konfigurationseinstellungen fehlgeschlagen",
     "fr-FR": "Échec de la mise à jour des paramètres de configuration",
     "ko-KR": "구성 항목 업데이트 실패",
-    "$files": ["src/renderer/stores/config-store.ts(2748-2759)"],
+    "$files": [
+      "src/renderer/stores/config-store.ts(2748-2759)"
+    ],
     "$id": 5466
   },
   "获取配置失败": {
@@ -130,7 +146,9 @@
     "de-DE": "Abrufen der Konfiguration fehlgeschlagen",
     "fr-FR": "Échec de la récupération de la configuration",
     "ko-KR": "구성 가져오기 실패",
-    "$files": ["src/renderer/stores/config-store.ts(3263-3273)"],
+    "$files": [
+      "src/renderer/stores/config-store.ts(3263-3273)"
+    ],
     "$id": 5467
   },
   "插件签名校验未通过，安装包可能已被损坏或非法篡改，已安全终止。": {
@@ -143,7 +161,9 @@
     "de-DE": "插件签名校验未通过，安装包可能已被损坏或非法篡改，已安全终止。",
     "fr-FR": "插件签名校验未通过，安装包可能已被损坏或非法篡改，已安全终止。",
     "ko-KR": "插件签名校验未通过，安装包可能已被损坏或非法篡改，已安全终止。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(2601-2636)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(2891-2926)"
+    ],
     "$id": 31289
   },
   "插件核心模型或资源文件校验不一致，文件可能已损坏，请重新下载或获取。": {
@@ -156,21 +176,25 @@
     "de-DE": "插件核心模型或资源文件校验不一致，文件可能已损坏，请重新下载或获取。",
     "fr-FR": "插件核心模型或资源文件校验不一致，文件可能已损坏，请重新下载或获取。",
     "ko-KR": "插件核心模型或资源文件校验不一致，文件可能已损坏，请重新下载或获取。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(2664-2702)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(2954-2992)"
+    ],
     "$id": 31290
   },
-  "已有相同类型的核心插件正在运行中，请先停用当前运行的插件后再试。": {
-    "en-US": "已有相同类型的核心插件正在运行中，请先停用当前运行的插件后再试。",
-    "es-ES": "已有相同类型的核心插件正在运行中，请先停用当前运行的插件后再试。",
-    "ar-EG": "已有相同类型的核心插件正在运行中，请先停用当前运行的插件后再试。",
-    "pt-PT": "已有相同类型的核心插件正在运行中，请先停用当前运行的插件后再试。",
-    "ru-RU": "已有相同类型的核心插件正在运行中，请先停用当前运行的插件后再试。",
-    "ja-JP": "已有相同类型的核心插件正在运行中，请先停用当前运行的插件后再试。",
-    "de-DE": "已有相同类型的核心插件正在运行中，请先停用当前运行的插件后再试。",
-    "fr-FR": "已有相同类型的核心插件正在运行中，请先停用当前运行的插件后再试。",
-    "ko-KR": "已有相同类型的核心插件正在运行中，请先停用当前运行的插件后再试。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(2733-2769)"],
-    "$id": 31291
+  "该插件当前正在运行中，请先切换至其他同类型插件或将其卸载后再试。": {
+    "en-US": "该插件当前正在运行中，请先切换至其他同类型插件或将其卸载后再试。",
+    "es-ES": "该插件当前正在运行中，请先切换至其他同类型插件或将其卸载后再试。",
+    "ar-EG": "该插件当前正在运行中，请先切换至其他同类型插件或将其卸载后再试。",
+    "pt-PT": "该插件当前正在运行中，请先切换至其他同类型插件或将其卸载后再试。",
+    "ru-RU": "该插件当前正在运行中，请先切换至其他同类型插件或将其卸载后再试。",
+    "ja-JP": "该插件当前正在运行中，请先切换至其他同类型插件或将其卸载后再试。",
+    "de-DE": "该插件当前正在运行中，请先切换至其他同类型插件或将其卸载后再试。",
+    "fr-FR": "该插件当前正在运行中，请先切换至其他同类型插件或将其卸载后再试。",
+    "ko-KR": "该插件当前正在运行中，请先切换至其他同类型插件或将其卸载后再试。",
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(3023-3059)"
+    ],
+    "$id": 31622
   },
   "检测到已安装同等或更高版本的插件，无需重复安装。": {
     "en-US": "检测到已安装同等或更高版本的插件，无需重复安装。",
@@ -182,7 +206,9 @@
     "de-DE": "检测到已安装同等或更高版本的插件，无需重复安装。",
     "fr-FR": "检测到已安装同等或更高版本的插件，无需重复安装。",
     "ko-KR": "检测到已安装同等或更高版本的插件，无需重复安装。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(2794-2822)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(3084-3112)"
+    ],
     "$id": 31292
   },
   "插件所需资源与现有组件存在版本冲突，无法直接覆盖。": {
@@ -195,7 +221,9 @@
     "de-DE": "插件所需资源与现有组件存在版本冲突，无法直接覆盖。",
     "fr-FR": "插件所需资源与现有组件存在版本冲突，无法直接覆盖。",
     "ko-KR": "插件所需资源与现有组件存在版本冲突，无法直接覆盖。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(2848-2877)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(3138-3167)"
+    ],
     "$id": 31293
   },
   "电脑磁盘剩余存储空间不足，无法解压或安装该插件，请清理磁盘空间后重试。": {
@@ -208,7 +236,9 @@
     "de-DE": "电脑磁盘剩余存储空间不足，无法解压或安装该插件，请清理磁盘空间后重试。",
     "fr-FR": "电脑磁盘剩余存储空间不足，无法解压或安装该插件，请清理磁盘空间后重试。",
     "ko-KR": "电脑磁盘剩余存储空间不足，无法解压或安装该插件，请清理磁盘空间后重试。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(2900-2939)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(3190-3229)"
+    ],
     "$id": 31294
   },
   "离线安装包内包含非法路径或被禁止的文件，系统已安全拦截。": {
@@ -221,7 +251,9 @@
     "de-DE": "离线安装包内包含非法路径或被禁止的文件，系统已安全拦截。",
     "fr-FR": "离线安装包内包含非法路径或被禁止的文件，系统已安全拦截。",
     "ko-KR": "离线安装包内包含非法路径或被禁止的文件，系统已安全拦截。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(2966-2998)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(3256-3288)"
+    ],
     "$id": 31295
   },
   "已有更高优先级的离线包任务正在进行，当前操作已取消。": {
@@ -234,7 +266,9 @@
     "de-DE": "已有更高优先级的离线包任务正在进行，当前操作已取消。",
     "fr-FR": "已有更高优先级的离线包任务正在进行，当前操作已取消。",
     "ko-KR": "已有更高优先级的离线包任务正在进行，当前操作已取消。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3021-3051)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(3311-3341)"
+    ],
     "$id": 31296
   },
   "插件资源目录命名格式不合规，安装已取消。": {
@@ -247,7 +281,9 @@
     "de-DE": "插件资源目录命名格式不合规，安装已取消。",
     "fr-FR": "插件资源目录命名格式不合规，安装已取消。",
     "ko-KR": "插件资源目录命名格式不合规，安装已取消。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3080-3104)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(3370-3394)"
+    ],
     "$id": 31297
   },
   "插件描述配置文件格式有误或缺失必要信息，无法读取。": {
@@ -260,7 +296,9 @@
     "de-DE": "插件描述配置文件格式有误或缺失必要信息，无法读取。",
     "fr-FR": "插件描述配置文件格式有误或缺失必要信息，无法读取。",
     "ko-KR": "插件描述配置文件格式有误或缺失必要信息，无法读取。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3129-3158)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(3419-3448)"
+    ],
     "$id": 31298
   },
   "离线安装包中缺少必要的插件信息描述文件。": {
@@ -273,7 +311,9 @@
     "de-DE": "离线安装包中缺少必要的插件信息描述文件。",
     "fr-FR": "离线安装包中缺少必要的插件信息描述文件。",
     "ko-KR": "离线安装包中缺少必要的插件信息描述文件。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3183-3207)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(3473-3497)"
+    ],
     "$id": 31299
   },
   "离线总包中未包含任何可用的插件内容。": {
@@ -286,7 +326,9 @@
     "de-DE": "离线总包中未包含任何可用的插件内容。",
     "fr-FR": "离线总包中未包含任何可用的插件内容。",
     "ko-KR": "离线总包中未包含任何可用的插件内容。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3228-3250)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(3518-3540)"
+    ],
     "$id": 31300
   },
   "当前有其他离线任务正在运行，请稍候再试。": {
@@ -299,8 +341,85 @@
     "de-DE": "当前有其他离线任务正在运行，请稍候再试。",
     "fr-FR": "当前有其他离线任务正在运行，请稍候再试。",
     "ko-KR": "当前有其他离线任务正在运行，请稍候再试。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3270-3294)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(3560-3584)"
+    ],
     "$id": 31301
+  },
+  "当前没有满足官方安全验证的已安装插件可供导出，请先导入或安装官方插件。": {
+    "en-US": "当前没有满足官方安全验证的已安装插件可供导出，请先导入或安装官方插件。",
+    "es-ES": "当前没有满足官方安全验证的已安装插件可供导出，请先导入或安装官方插件。",
+    "ar-EG": "当前没有满足官方安全验证的已安装插件可供导出，请先导入或安装官方插件。",
+    "pt-PT": "当前没有满足官方安全验证的已安装插件可供导出，请先导入或安装官方插件。",
+    "ru-RU": "当前没有满足官方安全验证的已安装插件可供导出，请先导入或安装官方插件。",
+    "ja-JP": "当前没有满足官方安全验证的已安装插件可供导出，请先导入或安装官方插件。",
+    "de-DE": "当前没有满足官方安全验证的已安装插件可供导出，请先导入或安装官方插件。",
+    "fr-FR": "当前没有满足官方安全验证的已安装插件可供导出，请先导入或安装官方插件。",
+    "ko-KR": "当前没有满足官方安全验证的已安装插件可供导出，请先导入或安装官方插件。",
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(3605-3644)"
+    ],
+    "$id": 31623
+  },
+  "检测到部分插件资源文件不完整或已损坏，无法打包导出，请修复后再试。": {
+    "en-US": "检测到部分插件资源文件不完整或已损坏，无法打包导出，请修复后再试。",
+    "es-ES": "检测到部分插件资源文件不完整或已损坏，无法打包导出，请修复后再试。",
+    "ar-EG": "检测到部分插件资源文件不完整或已损坏，无法打包导出，请修复后再试。",
+    "pt-PT": "检测到部分插件资源文件不完整或已损坏，无法打包导出，请修复后再试。",
+    "ru-RU": "检测到部分插件资源文件不完整或已损坏，无法打包导出，请修复后再试。",
+    "ja-JP": "检测到部分插件资源文件不完整或已损坏，无法打包导出，请修复后再试。",
+    "de-DE": "检测到部分插件资源文件不完整或已损坏，无法打包导出，请修复后再试。",
+    "fr-FR": "检测到部分插件资源文件不完整或已损坏，无法打包导出，请修复后再试。",
+    "ko-KR": "检测到部分插件资源文件不完整或已损坏，无法打包导出，请修复后再试。",
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(3678-3722)"
+    ],
+    "$id": 31624
+  },
+  "写入导出文件失败，请检查目标磁盘空间及写入权限后重试。": {
+    "en-US": "写入导出文件失败，请检查目标磁盘空间及写入权限后重试。",
+    "es-ES": "写入导出文件失败，请检查目标磁盘空间及写入权限后重试。",
+    "ar-EG": "写入导出文件失败，请检查目标磁盘空间及写入权限后重试。",
+    "pt-PT": "写入导出文件失败，请检查目标磁盘空间及写入权限后重试。",
+    "ru-RU": "写入导出文件失败，请检查目标磁盘空间及写入权限后重试。",
+    "ja-JP": "写入导出文件失败，请检查目标磁盘空间及写入权限后重试。",
+    "de-DE": "写入导出文件失败，请检查目标磁盘空间及写入权限后重试。",
+    "fr-FR": "写入导出文件失败，请检查目标磁盘空间及写入权限后重试。",
+    "ko-KR": "写入导出文件失败，请检查目标磁盘空间及写入权限后重试。",
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(3746-3777)"
+    ],
+    "$id": 31625
+  },
+  "已取消本次离线包操作。": {
+    "en-US": "已取消本次离线包操作。",
+    "es-ES": "已取消本次离线包操作。",
+    "ar-EG": "已取消本次离线包操作。",
+    "pt-PT": "已取消本次离线包操作。",
+    "ru-RU": "已取消本次离线包操作。",
+    "ja-JP": "已取消本次离线包操作。",
+    "de-DE": "已取消本次离线包操作。",
+    "fr-FR": "已取消本次离线包操作。",
+    "ko-KR": "已取消本次离线包操作。",
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(3795-3810)"
+    ],
+    "$id": 31626
+  },
+  "系统正在执行其他校验或导出任务，请稍候再试。": {
+    "en-US": "系统正在执行其他校验或导出任务，请稍候再试。",
+    "es-ES": "系统正在执行其他校验或导出任务，请稍候再试。",
+    "ar-EG": "系统正在执行其他校验或导出任务，请稍候再试。",
+    "pt-PT": "系统正在执行其他校验或导出任务，请稍候再试。",
+    "ru-RU": "系统正在执行其他校验或导出任务，请稍候再试。",
+    "ja-JP": "系统正在执行其他校验或导出任务，请稍候再试。",
+    "de-DE": "系统正在执行其他校验或导出任务，请稍候再试。",
+    "fr-FR": "系统正在执行其他校验或导出任务，请稍候再试。",
+    "ko-KR": "系统正在执行其他校验或导出任务，请稍候再试。",
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(3823-3849)"
+    ],
+    "$id": 31627
   },
   "当前有离线包正在解压或安装中，请稍候再试。": {
     "en-US": "当前有离线包正在解压或安装中，请稍候再试。",
@@ -312,7 +431,9 @@
     "de-DE": "当前有离线包正在解压或安装中，请稍候再试。",
     "fr-FR": "当前有离线包正在解压或安装中，请稍候再试。",
     "ko-KR": "当前有离线包正在解压或安装中，请稍候再试。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3314-3339)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(3869-3894)"
+    ],
     "$id": 31302
   },
   "离线包安全校验连续异常，为保障系统安全已停止处理该文件。": {
@@ -325,7 +446,9 @@
     "de-DE": "离线包安全校验连续异常，为保障系统安全已停止处理该文件。",
     "fr-FR": "离线包安全校验连续异常，为保障系统安全已停止处理该文件。",
     "ko-KR": "离线包安全校验连续异常，为保障系统安全已停止处理该文件。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3372-3404)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(3927-3959)"
+    ],
     "$id": 31303
   },
   "网络连接超时或中断，请检查网络后重试。": {
@@ -338,7 +461,9 @@
     "de-DE": "网络连接超时或中断，请检查网络后重试。",
     "fr-FR": "网络连接超时或中断，请检查网络后重试。",
     "ko-KR": "网络连接超时或中断，请检查网络后重试。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3426-3449)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(3981-4004)"
+    ],
     "$id": 31304
   },
   "系统权限不足，无法写入插件目录，请以管理员身份运行或检查目录权限。": {
@@ -351,7 +476,9 @@
     "de-DE": "系统权限不足，无法写入插件目录，请以管理员身份运行或检查目录权限。",
     "fr-FR": "系统权限不足，无法写入插件目录，请以管理员身份运行或检查目录权限。",
     "ko-KR": "系统权限不足，无法写入插件目录，请以管理员身份运行或检查目录权限。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3475-3512)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(4030-4067)"
+    ],
     "$id": 31305
   },
   "当前电脑硬件或系统架构不受该插件支持。": {
@@ -364,7 +491,9 @@
     "de-DE": "当前电脑硬件或系统架构不受该插件支持。",
     "fr-FR": "当前电脑硬件或系统架构不受该插件支持。",
     "ko-KR": "当前电脑硬件或系统架构不受该插件支持。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3537-3560)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(4092-4115)"
+    ],
     "$id": 31306
   },
   "文件完整性校验失败，请重新获取安装包。": {
@@ -377,7 +506,9 @@
     "de-DE": "文件完整性校验失败，请重新获取安装包。",
     "fr-FR": "文件完整性校验失败，请重新获取安装包。",
     "ko-KR": "文件完整性校验失败，请重新获取安装包。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3584-3607)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(4139-4162)"
+    ],
     "$id": 31307
   },
   "组件资源下载失败，请检查网络连接后重试。": {
@@ -390,7 +521,9 @@
     "de-DE": "组件资源下载失败，请检查网络连接后重试。",
     "fr-FR": "组件资源下载失败，请检查网络连接后重试。",
     "ko-KR": "组件资源下载失败，请检查网络连接后重试。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3631-3655)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(4186-4210)"
+    ],
     "$id": 31308
   },
   "未找到对应的插件信息，可能已被移除。": {
@@ -403,8 +536,115 @@
     "de-DE": "未找到对应的插件信息，可能已被移除。",
     "fr-FR": "未找到对应的插件信息，可能已被移除。",
     "ko-KR": "未找到对应的插件信息，可能已被移除。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3680-3702)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(4235-4257)"
+    ],
     "$id": 31309
+  },
+  "插件激活校验未通过，已自动为您恢复至原运行状态。": {
+    "en-US": "插件激活校验未通过，已自动为您恢复至原运行状态。",
+    "es-ES": "插件激活校验未通过，已自动为您恢复至原运行状态。",
+    "ar-EG": "插件激活校验未通过，已自动为您恢复至原运行状态。",
+    "pt-PT": "插件激活校验未通过，已自动为您恢复至原运行状态。",
+    "ru-RU": "插件激活校验未通过，已自动为您恢复至原运行状态。",
+    "ja-JP": "插件激活校验未通过，已自动为您恢复至原运行状态。",
+    "de-DE": "插件激活校验未通过，已自动为您恢复至原运行状态。",
+    "fr-FR": "插件激活校验未通过，已自动为您恢复至原运行状态。",
+    "ko-KR": "插件激活校验未通过，已自动为您恢复至原运行状态。",
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(4281-4309)"
+    ],
+    "$id": 31628
+  },
+  "检测到插件模型文件不完整或损坏，请重新下载修复。": {
+    "en-US": "检测到插件模型文件不完整或损坏，请重新下载修复。",
+    "es-ES": "检测到插件模型文件不完整或损坏，请重新下载修复。",
+    "ar-EG": "检测到插件模型文件不完整或损坏，请重新下载修复。",
+    "pt-PT": "检测到插件模型文件不完整或损坏，请重新下载修复。",
+    "ru-RU": "检测到插件模型文件不完整或损坏，请重新下载修复。",
+    "ja-JP": "检测到插件模型文件不完整或损坏，请重新下载修复。",
+    "de-DE": "检测到插件模型文件不完整或损坏，请重新下载修复。",
+    "fr-FR": "检测到插件模型文件不完整或损坏，请重新下载修复。",
+    "ko-KR": "检测到插件模型文件不完整或损坏，请重新下载修复。",
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(4331-4359)"
+    ],
+    "$id": 31629
+  },
+  "插件快速检测超时，后台正在校验中。": {
+    "en-US": "插件快速检测超时，后台正在校验中。",
+    "es-ES": "插件快速检测超时，后台正在校验中。",
+    "ar-EG": "插件快速检测超时，后台正在校验中。",
+    "pt-PT": "插件快速检测超时，后台正在校验中。",
+    "ru-RU": "插件快速检测超时，后台正在校验中。",
+    "ja-JP": "插件快速检测超时，后台正在校验中。",
+    "de-DE": "插件快速检测超时，后台正在校验中。",
+    "fr-FR": "插件快速检测超时，后台正在校验中。",
+    "ko-KR": "插件快速检测超时，后台正在校验中。",
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(4386-4407)"
+    ],
+    "$id": 31630
+  },
+  "当前分类必须保留一个启用的插件，无法直接停用。": {
+    "en-US": "当前分类必须保留一个启用的插件，无法直接停用。",
+    "es-ES": "当前分类必须保留一个启用的插件，无法直接停用。",
+    "ar-EG": "当前分类必须保留一个启用的插件，无法直接停用。",
+    "pt-PT": "当前分类必须保留一个启用的插件，无法直接停用。",
+    "ru-RU": "当前分类必须保留一个启用的插件，无法直接停用。",
+    "ja-JP": "当前分类必须保留一个启用的插件，无法直接停用。",
+    "de-DE": "当前分类必须保留一个启用的插件，无法直接停用。",
+    "fr-FR": "当前分类必须保留一个启用的插件，无法直接停用。",
+    "ko-KR": "当前分类必须保留一个启用的插件，无法直接停用。",
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(4435-4462)"
+    ],
+    "$id": 31631
+  },
+  "基础 AI 引擎为系统核心底座，必须保持激活，无法直接停用。": {
+    "en-US": "基础 AI 引擎为系统核心底座，必须保持激活，无法直接停用。",
+    "es-ES": "基础 AI 引擎为系统核心底座，必须保持激活，无法直接停用。",
+    "ar-EG": "基础 AI 引擎为系统核心底座，必须保持激活，无法直接停用。",
+    "pt-PT": "基础 AI 引擎为系统核心底座，必须保持激活，无法直接停用。",
+    "ru-RU": "基础 AI 引擎为系统核心底座，必须保持激活，无法直接停用。",
+    "ja-JP": "基础 AI 引擎为系统核心底座，必须保持激活，无法直接停用。",
+    "de-DE": "基础 AI 引擎为系统核心底座，必须保持激活，无法直接停用。",
+    "fr-FR": "基础 AI 引擎为系统核心底座，必须保持激活，无法直接停用。",
+    "ko-KR": "基础 AI 引擎为系统核心底座，必须保持激活，无法直接停用。",
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(4502-4536)"
+    ],
+    "$id": 31632
+  },
+  "必须先安装并启用另一款可替换的基础 AI 引擎，才能卸载当前使用的引擎。": {
+    "en-US": "必须先安装并启用另一款可替换的基础 AI 引擎，才能卸载当前使用的引擎。",
+    "es-ES": "必须先安装并启用另一款可替换的基础 AI 引擎，才能卸载当前使用的引擎。",
+    "ar-EG": "必须先安装并启用另一款可替换的基础 AI 引擎，才能卸载当前使用的引擎。",
+    "pt-PT": "必须先安装并启用另一款可替换的基础 AI 引擎，才能卸载当前使用的引擎。",
+    "ru-RU": "必须先安装并启用另一款可替换的基础 AI 引擎，才能卸载当前使用的引擎。",
+    "ja-JP": "必须先安装并启用另一款可替换的基础 AI 引擎，才能卸载当前使用的引擎。",
+    "de-DE": "必须先安装并启用另一款可替换的基础 AI 引擎，才能卸载当前使用的引擎。",
+    "fr-FR": "必须先安装并启用另一款可替换的基础 AI 引擎，才能卸载当前使用的引擎。",
+    "ko-KR": "必须先安装并启用另一款可替换的基础 AI 引擎，才能卸载当前使用的引擎。",
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(4580-4627)"
+    ],
+    "$id": 31633
+  },
+  "配置格式不正确，请检查输入内容后重试。": {
+    "en-US": "配置格式不正确，请检查输入内容后重试。",
+    "es-ES": "配置格式不正确，请检查输入内容后重试。",
+    "ar-EG": "配置格式不正确，请检查输入内容后重试。",
+    "pt-PT": "配置格式不正确，请检查输入内容后重试。",
+    "ru-RU": "配置格式不正确，请检查输入内容后重试。",
+    "ja-JP": "配置格式不正确，请检查输入内容后重试。",
+    "de-DE": "配置格式不正确，请检查输入内容后重试。",
+    "fr-FR": "配置格式不正确，请检查输入内容后重试。",
+    "ko-KR": "配置格式不正确，请检查输入内容后重试。",
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(4660-4683)"
+    ],
+    "$id": 31634
   },
   "插件操作发生未知异常，请稍后重试。": {
     "en-US": "插件操作发生未知异常，请稍后重试。",
@@ -416,7 +656,9 @@
     "de-DE": "插件操作发生未知异常，请稍后重试。",
     "fr-FR": "插件操作发生未知异常，请稍后重试。",
     "ko-KR": "插件操作发生未知异常，请稍后重试。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3724-3745)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(4705-4726)"
+    ],
     "$id": 31310
   },
   "文件夹路径不能包含中文，请选择纯英文路径": {
@@ -429,7 +671,9 @@
     "de-DE": "文件夹路径不能包含中文，请选择纯英文路径",
     "fr-FR": "文件夹路径不能包含中文，请选择纯英文路径",
     "ko-KR": "文件夹路径不能包含中文，请选择纯英文路径",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3814-3838)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(4795-4819)"
+    ],
     "$id": 31311
   },
   "文件夹路径中不能有空格，请去掉空格后重试": {
@@ -442,7 +686,9 @@
     "de-DE": "文件夹路径中不能有空格，请去掉空格后重试",
     "fr-FR": "文件夹路径中不能有空格，请去掉空格后重试",
     "ko-KR": "文件夹路径中不能有空格，请去掉空格后重试",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3866-3890)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(4847-4871)"
+    ],
     "$id": 31312
   },
   "文件夹名称不能使用系统保留字（如 CON、PRN 等）": {
@@ -455,7 +701,9 @@
     "de-DE": "文件夹名称不能使用系统保留字（如 CON、PRN 等）",
     "fr-FR": "文件夹名称不能使用系统保留字（如 CON、PRN 等）",
     "ko-KR": "文件夹名称不能使用系统保留字（如 CON、PRN 等）",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3924-3955)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(4905-4936)"
+    ],
     "$id": 31313
   },
   "文件夹层级太深，请选择路径更短的文件夹": {
@@ -468,7 +716,9 @@
     "de-DE": "文件夹层级太深，请选择路径更短的文件夹",
     "fr-FR": "文件夹层级太深，请选择路径更短的文件夹",
     "ko-KR": "文件夹层级太深，请选择路径更短的文件夹",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3977-4000)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(4958-4981)"
+    ],
     "$id": 31314
   },
   "该文件夹没有写入权限，请更换其他磁盘位置": {
@@ -481,7 +731,9 @@
     "de-DE": "该文件夹没有写入权限，请更换其他磁盘位置",
     "fr-FR": "该文件夹没有写入权限，请更换其他磁盘位置",
     "ko-KR": "该文件夹没有写入权限，请更换其他磁盘位置",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4026-4050)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(5007-5031)"
+    ],
     "$id": 31315
   },
   "所选位置是一个文件，请选择一个文件夹": {
@@ -494,7 +746,9 @@
     "de-DE": "所选位置是一个文件，请选择一个文件夹",
     "fr-FR": "所选位置是一个文件，请选择一个文件夹",
     "ko-KR": "所选位置是一个文件，请选择一个文件夹",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4079-4101)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(5060-5082)"
+    ],
     "$id": 31316
   },
   "请选择完整的磁盘绝对路径": {
@@ -507,7 +761,9 @@
     "de-DE": "请选择完整的磁盘绝对路径",
     "fr-FR": "请选择完整的磁盘绝对路径",
     "ko-KR": "请选择完整的磁盘绝对路径",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4127-4143)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(5108-5124)"
+    ],
     "$id": 31317
   },
   "不支持局域网共享路径，请选择本地磁盘文件夹": {
@@ -520,7 +776,9 @@
     "de-DE": "不支持局域网共享路径，请选择本地磁盘文件夹",
     "fr-FR": "不支持局域网共享路径，请选择本地磁盘文件夹",
     "ko-KR": "不支持局域网共享路径，请选择本地磁盘文件夹",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4170-4195)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(5151-5176)"
+    ],
     "$id": 31318
   },
   "所选文件夹与当前正在使用的插件目录相同，无需迁移": {
@@ -533,7 +791,9 @@
     "de-DE": "所选文件夹与当前正在使用的插件目录相同，无需迁移",
     "fr-FR": "所选文件夹与当前正在使用的插件目录相同，无需迁移",
     "ko-KR": "所选文件夹与当前正在使用的插件目录相同，无需迁移",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4219-4247)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(5200-5228)"
+    ],
     "$id": 31319
   },
   "目标磁盘可用空间不足，请清理磁盘后重试": {
@@ -546,7 +806,9 @@
     "de-DE": "目标磁盘可用空间不足，请清理磁盘后重试",
     "fr-FR": "目标磁盘可用空间不足，请清理磁盘后重试",
     "ko-KR": "目标磁盘可用空间不足，请清理磁盘后重试",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4274-4297)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(5255-5278)"
+    ],
     "$id": 31320
   },
   "不能选择系统核心文件夹或磁盘根目录，请选择普通自定义文件夹": {
@@ -559,7 +821,9 @@
     "de-DE": "不能选择系统核心文件夹或磁盘根目录，请选择普通自定义文件夹",
     "fr-FR": "不能选择系统核心文件夹或磁盘根目录，请选择普通自定义文件夹",
     "ko-KR": "不能选择系统核心文件夹或磁盘根目录，请选择普通自定义文件夹",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4326-4359)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(5307-5340)"
+    ],
     "$id": 31321
   },
   "插件目录变更需重启软件生效，暂无法进行其他操作": {
@@ -572,7 +836,9 @@
     "de-DE": "插件目录变更需重启软件生效，暂无法进行其他操作",
     "fr-FR": "插件目录变更需重启软件生效，暂无法进行其他操作",
     "ko-KR": "插件目录变更需重启软件生效，暂无法进行其他操作",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4390-4417)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(5371-5398)"
+    ],
     "$id": 31322
   },
   "迁移过程中磁盘空间耗尽，已自动取消并安全还原": {
@@ -585,7 +851,9 @@
     "de-DE": "迁移过程中磁盘空间耗尽，已自动取消并安全还原",
     "fr-FR": "迁移过程中磁盘空间耗尽，已自动取消并安全还原",
     "ko-KR": "迁移过程中磁盘空间耗尽，已自动取消并安全还原",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4452-4478)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(5433-5459)"
+    ],
     "$id": 31323
   },
   "已取消插件目录迁移，保持原目录不变": {
@@ -598,7 +866,9 @@
     "de-DE": "已取消插件目录迁移，保持原目录不变",
     "fr-FR": "已取消插件目录迁移，保持原目录不变",
     "ko-KR": "已取消插件目录迁移，保持原目录不变",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4506-4527)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(5487-5508)"
+    ],
     "$id": 31324
   },
   "目录迁移已进入最后提交阶段，无法取消，请稍候": {
@@ -611,7 +881,9 @@
     "de-DE": "目录迁移已进入最后提交阶段，无法取消，请稍候",
     "fr-FR": "目录迁移已进入最后提交阶段，无法取消，请稍候",
     "ko-KR": "目录迁移已进入最后提交阶段，无法取消，请稍候",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4561-4587)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(5542-5568)"
+    ],
     "$id": 31325
   },
   "文件复制过程中发现损坏，已自动安全回滚": {
@@ -624,7 +896,9 @@
     "de-DE": "文件复制过程中发现损坏，已自动安全回滚",
     "fr-FR": "文件复制过程中发现损坏，已自动安全回滚",
     "ko-KR": "文件复制过程中发现损坏，已自动安全回滚",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4609-4632)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(5590-5613)"
+    ],
     "$id": 31326
   },
   "不支持包含快捷方式或符号链接的目录": {
@@ -637,7 +911,9 @@
     "de-DE": "不支持包含快捷方式或符号链接的目录",
     "fr-FR": "不支持包含快捷方式或符号链接的目录",
     "ko-KR": "不支持包含快捷方式或符号链接的目录",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4657-4678)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(5638-5659)"
+    ],
     "$id": 31327
   },
   "目标文件夹中的旧模型文件正被其他程序占用，无法覆盖": {
@@ -650,7 +926,9 @@
     "de-DE": "目标文件夹中的旧模型文件正被其他程序占用，无法覆盖",
     "fr-FR": "目标文件夹中的旧模型文件正被其他程序占用，无法覆盖",
     "ko-KR": "目标文件夹中的旧模型文件正被其他程序占用，无法覆盖",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4707-4736)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(5688-5717)"
+    ],
     "$id": 31328
   },
   "网络连接缓慢或超时，正在自动切换备用网络重试": {
@@ -663,7 +941,9 @@
     "de-DE": "网络连接缓慢或超时，正在自动切换备用网络重试",
     "fr-FR": "网络连接缓慢或超时，正在自动切换备用网络重试",
     "ko-KR": "网络连接缓慢或超时，正在自动切换备用网络重试",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4760-4786)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(5741-5767)"
+    ],
     "$id": 31329
   },
   "文件正在被其他程序占用，请关闭相关应用后重试。": {
@@ -676,20 +956,25 @@
     "de-DE": "文件正在被其他程序占用，请关闭相关应用后重试。",
     "fr-FR": "文件正在被其他程序占用，请关闭相关应用后重试。",
     "ko-KR": "文件正在被其他程序占用，请关闭相关应用后重试。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(5574-5601)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(6529-6556)",
+      "src/renderer/stores/plugin-center-store.ts(6748-6775)"
+    ],
     "$id": 31330
   },
   "经典轻量 AI 引擎 (Classic Light)": {
-    "en-US": "经典轻量 AI 引擎 (Classic Light)",
-    "es-ES": "经典轻量 AI 引擎 (Classic Light)",
-    "ar-EG": "经典轻量 AI 引擎 (Classic Light)",
-    "pt-PT": "经典轻量 AI 引擎 (Classic Light)",
-    "ru-RU": "经典轻量 AI 引擎 (Classic Light)",
-    "ja-JP": "经典轻量 AI 引擎 (Classic Light)",
-    "de-DE": "经典轻量 AI 引擎 (Classic Light)",
-    "fr-FR": "经典轻量 AI 引擎 (Classic Light)",
-    "ko-KR": "经典轻量 AI 引擎 (Classic Light)",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(11226-11256)"],
+    "en-US": "Classic Light AI Engine (Classic Light)",
+    "es-ES": "Motor AI ligero clásico (luz clásica)",
+    "ar-EG": "محرك الذكاء الاصطناعي الخفيف الكلاسيكي (الضوء الكلاسيكي)",
+    "pt-PT": "Mecanismo AI Light Clássico (Luz Clássica)",
+    "ru-RU": "Классический свет AI Engine (Классический свет)",
+    "ja-JP": "Classic Light AI エンジン (Classic Light)",
+    "de-DE": "Classic Light KI-Engine (Classic Light)",
+    "fr-FR": "Moteur AI Light classique (Classic Light)",
+    "ko-KR": "클래식 라이트 AI 엔진(클래식 라이트)",
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(13654-13684)"
+    ],
     "$id": 31331
   },
   "基础 AI 引擎": {
@@ -703,8 +988,8 @@
     "fr-FR": "基础 AI 引擎",
     "ko-KR": "基础 AI 引擎",
     "$files": [
-      "src/renderer/stores/plugin-center-store.ts(11674-11686)",
-      "src/renderer/stores/plugin-center-store.ts(12822-12834)"
+      "src/renderer/stores/plugin-center-store.ts(14129-14141)",
+      "src/renderer/stores/plugin-center-store.ts(14993-15005)"
     ],
     "$id": 31332
   },
@@ -718,33 +1003,39 @@
     "de-DE": "【通过意思找文件与图片】根据你描述的大致意思快速搜索照片和文档。占用极少内存，即使老电脑和低配轻薄本也能流畅运行。不支持音视频",
     "fr-FR": "【通过意思找文件与图片】根据你描述的大致意思快速搜索照片和文档。占用极少内存，即使老电脑和低配轻薄本也能流畅运行。不支持音视频",
     "ko-KR": "【通过意思找文件与图片】根据你描述的大致意思快速搜索照片和文档。占用极少内存，即使老电脑和低配轻薄本也能流畅运行。不支持音视频",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(11792-11868)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(14247-14323)"
+    ],
     "$id": 31333
   },
   "配置要求极低 · 老电脑与轻薄本首选": {
-    "en-US": "配置要求极低 · 老电脑与轻薄本首选",
-    "es-ES": "配置要求极低 · 老电脑与轻薄本首选",
-    "ar-EG": "配置要求极低 · 老电脑与轻薄本首选",
-    "pt-PT": "配置要求极低 · 老电脑与轻薄本首选",
-    "ru-RU": "配置要求极低 · 老电脑与轻薄本首选",
+    "en-US": "Extremely low configuration requirements · The first choice for old computers and thin and light laptops",
+    "es-ES": "Requisitos de configuración extremadamente bajos · La primera opción para computadoras antiguas y portátiles delgadas y livianas",
+    "ar-EG": "متطلبات تكوين منخفضة للغاية · الخيار الأول لأجهزة الكمبيوتر القديمة وأجهزة الكمبيوتر المحمولة الرفيعة والخفيفة",
+    "pt-PT": "Requisitos de configuração extremamente baixos · A primeira escolha para computadores antigos e laptops finos e leves",
+    "ru-RU": "Чрезвычайно низкие требования к конфигурации · Первый выбор для старых компьютеров и тонких и легких ноутбуков.",
     "ja-JP": "配置要求极低 · 老电脑与轻薄本首选",
-    "de-DE": "配置要求极低 · 老电脑与轻薄本首选",
-    "fr-FR": "配置要求极低 · 老电脑与轻薄本首选",
-    "ko-KR": "配置要求极低 · 老电脑与轻薄本首选",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(11948-11970)"],
+    "de-DE": "Extrem geringer Konfigurationsaufwand · Die erste Wahl für alte Computer und dünne und leichte Laptops",
+    "fr-FR": "Exigences de configuration extrêmement faibles · Le premier choix pour les vieux ordinateurs et les ordinateurs portables fins et légers",
+    "ko-KR": "매우 낮은 구성 요구 사항 · 오래된 컴퓨터와 얇고 가벼운 노트북을 위한 첫 번째 선택",
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(14403-14425)"
+    ],
     "$id": 31334
   },
   "统一全模态 AI 引擎 (Gemma Unified)": {
-    "en-US": "统一全模态 AI 引擎 (Gemma Unified)",
-    "es-ES": "统一全模态 AI 引擎 (Gemma Unified)",
-    "ar-EG": "统一全模态 AI 引擎 (Gemma Unified)",
-    "pt-PT": "统一全模态 AI 引擎 (Gemma Unified)",
-    "ru-RU": "统一全模态 AI 引擎 (Gemma Unified)",
+    "en-US": "Unified all-modal AI engine (Gemma Unified)",
+    "es-ES": "Motor de IA unificado y totalmente modal (Gemma Unified)",
+    "ar-EG": "محرك الذكاء الاصطناعي الموحد متعدد الوسائط (Gemma Unified)",
+    "pt-PT": "Mecanismo de IA unificado totalmente modal (Gemma Unified)",
+    "ru-RU": "Единый всемодальный движок искусственного интеллекта (Gemma Unified)",
     "ja-JP": "统一全模态 AI 引擎 (Gemma Unified)",
-    "de-DE": "统一全模态 AI 引擎 (Gemma Unified)",
-    "fr-FR": "统一全模态 AI 引擎 (Gemma Unified)",
-    "ko-KR": "统一全模态 AI 引擎 (Gemma Unified)",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(12373-12404)"],
+    "de-DE": "Einheitliche, vollmodale KI-Engine (Gemma Unified)",
+    "fr-FR": "Moteur d'IA tout modal unifié (Gemma Unified)",
+    "ko-KR": "통합 올모달 AI 엔진(Gemma Unified)",
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(14517-14548)"
+    ],
     "$id": 31335
   },
   "【更聪明的全能搜索大脑】对复杂句子和图片、音视频的理解更深入精准，找东西更懂你的心思。推荐 8GB 或以上内存电脑使用。": {
@@ -757,20 +1048,24 @@
     "de-DE": "【更聪明的全能搜索大脑】对复杂句子和图片、音视频的理解更深入精准，找东西更懂你的心思。推荐 8GB 或以上内存电脑使用。",
     "fr-FR": "【更聪明的全能搜索大脑】对复杂句子和图片、音视频的理解更深入精准，找东西更懂你的心思。推荐 8GB 或以上内存电脑使用。",
     "ko-KR": "【更聪明的全能搜索大脑】对复杂句子和图片、音视频的理解更深入精准，找东西更懂你的心思。推荐 8GB 或以上内存电脑使用。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(12940-13013)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(15111-15184)"
+    ],
     "$id": 31336
   },
   "推荐配置 · 电脑内存 8GB 或以上": {
-    "en-US": "推荐配置 · 电脑内存 8GB 或以上",
-    "es-ES": "推荐配置 · 电脑内存 8GB 或以上",
-    "ar-EG": "推荐配置 · 电脑内存 8GB 或以上",
-    "pt-PT": "推荐配置 · 电脑内存 8GB 或以上",
-    "ru-RU": "推荐配置 · 电脑内存 8GB 或以上",
+    "en-US": "Recommended configuration · Computer memory 8GB or above",
+    "es-ES": "Configuración recomendada · Memoria del ordenador 8GB o superior",
+    "ar-EG": "التكوين الموصى به · ذاكرة الكمبيوتر 8 جيجابايت أو أعلى",
+    "pt-PT": "Configuração recomendada · Memória do computador 8 GB ou superior",
+    "ru-RU": "Рекомендуемая конфигурация · Память компьютера 8 ГБ или выше",
     "ja-JP": "推荐配置 · 电脑内存 8GB 或以上",
-    "de-DE": "推荐配置 · 电脑内存 8GB 或以上",
-    "fr-FR": "推荐配置 · 电脑内存 8GB 或以上",
-    "ko-KR": "推荐配置 · 电脑内存 8GB 或以上",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(13097-13120)"],
+    "de-DE": "Empfohlene Konfiguration · Computerspeicher 8 GB oder mehr",
+    "fr-FR": "Configuration recommandée · Mémoire de l'ordinateur 8 Go ou plus",
+    "ko-KR": "권장 구성 · 컴퓨터 메모리 8GB 이상",
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(15268-15291)"
+    ],
     "$id": 31337
   },
   "轻量CPU生成式引擎 (Pocket CPU)": {
@@ -783,7 +1078,9 @@
     "de-DE": "轻量CPU生成式引擎 (Pocket CPU)",
     "fr-FR": "轻量CPU生成式引擎 (Pocket CPU)",
     "ko-KR": "轻量CPU生成式引擎 (Pocket CPU)",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(13400-13427)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(15382-15409)"
+    ],
     "$id": 31338
   },
   "生成式引擎": {
@@ -797,7 +1094,7 @@
     "fr-FR": "Moteur génératif",
     "ko-KR": "생성 엔진",
     "$files": [
-      "src/renderer/stores/plugin-center-store.ts(13841-13850)",
+      "src/renderer/stores/plugin-center-store.ts(15850-15859)",
       "src/renderer/stores/settings-store.ts(3720-3729)",
       "src/renderer/stores/settings-store.ts(4756-4765)"
     ],
@@ -813,20 +1110,24 @@
     "de-DE": "【办公轻薄本标配】支持智能文件名深度润色、描述提取与内容深度解析，如果已启用萤核引擎则不需要此插件。",
     "fr-FR": "【办公轻薄本标配】支持智能文件名深度润色、描述提取与内容深度解析，如果已启用萤核引擎则不需要此插件。",
     "ko-KR": "【办公轻薄本标配】支持智能文件名深度润色、描述提取与内容深度解析，如果已启用萤核引擎则不需要此插件。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(13957-14020)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(15966-16029)"
+    ],
     "$id": 31339
   },
   "配置要求极低 · 纯CPU运行": {
-    "en-US": "配置要求极低 · 纯CPU运行",
-    "es-ES": "配置要求极低 · 纯CPU运行",
-    "ar-EG": "配置要求极低 · 纯CPU运行",
-    "pt-PT": "配置要求极低 · 纯CPU运行",
-    "ru-RU": "配置要求极低 · 纯CPU运行",
+    "en-US": "Extremely low configuration requirements · Pure CPU operation",
+    "es-ES": "Requisitos de configuración extremadamente bajos · Funcionamiento puro de CPU",
+    "ar-EG": "متطلبات التكوين منخفضة للغاية · تشغيل وحدة المعالجة المركزية النقي",
+    "pt-PT": "Requisitos de configuração extremamente baixos · Operação pura da CPU",
+    "ru-RU": "Чрезвычайно низкие требования к конфигурации · Работа только на процессоре",
     "ja-JP": "配置要求极低 · 纯CPU运行",
-    "de-DE": "配置要求极低 · 纯CPU运行",
-    "fr-FR": "配置要求极低 · 纯CPU运行",
-    "ko-KR": "配置要求极低 · 纯CPU运行",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(14100-14119)"],
+    "de-DE": "Extrem niedrige Konfigurationsanforderungen · Reiner CPU-Betrieb",
+    "fr-FR": "Exigences de configuration extrêmement faibles · Fonctionnement pur du processeur",
+    "ko-KR": "매우 낮은 구성 요구 사항 · 순수한 CPU 작동",
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(16109-16128)"
+    ],
     "$id": 31340
   },
   "敏感内容与 NSFW 分级识别": {
@@ -839,22 +1140,24 @@
     "de-DE": "敏感内容与 NSFW 分级识别",
     "fr-FR": "敏感内容与 NSFW 分级识别",
     "ko-KR": "敏感内容与 NSFW 分级识别",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(14389-14408)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(16211-16230)"
+    ],
     "$id": 31341
   },
   "文件内容萃取": {
-    "en-US": "文件内容萃取",
-    "es-ES": "文件内容萃取",
-    "ar-EG": "文件内容萃取",
-    "pt-PT": "文件内容萃取",
-    "ru-RU": "文件内容萃取",
+    "en-US": "File content extraction",
+    "es-ES": "Extracción de contenido de archivos",
+    "ar-EG": "استخراج محتوى الملف",
+    "pt-PT": "Extração de conteúdo de arquivo",
+    "ru-RU": "Извлечение содержимого файла",
     "ja-JP": "文件内容萃取",
-    "de-DE": "文件内容萃取",
-    "fr-FR": "文件内容萃取",
-    "ko-KR": "文件内容萃取",
+    "de-DE": "Extraktion von Dateiinhalten",
+    "fr-FR": "Extraction du contenu du fichier",
+    "ko-KR": "파일 콘텐츠 추출",
     "$files": [
-      "src/renderer/stores/plugin-center-store.ts(14827-14837)",
-      "src/renderer/stores/plugin-center-store.ts(15972-15982)"
+      "src/renderer/stores/plugin-center-store.ts(16672-16682)",
+      "src/renderer/stores/plugin-center-store.ts(17533-17543)"
     ],
     "$id": 31342
   },
@@ -868,20 +1171,24 @@
     "de-DE": "【私密与敏感图文标记】自动识别私密敏感图片与包含露骨敏感描述的文档/AIGC文本并打上标记，防止投屏查看时尴尬。所有电脑均可极速运行。",
     "fr-FR": "【私密与敏感图文标记】自动识别私密敏感图片与包含露骨敏感描述的文档/AIGC文本并打上标记，防止投屏查看时尴尬。所有电脑均可极速运行。",
     "ko-KR": "【私密与敏感图文标记】自动识别私密敏感图片与包含露骨敏感描述的文档/AIGC文本并打上标记，防止投屏查看时尴尬。所有电脑均可极速运行。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(14946-15026)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(16791-16871)"
+    ],
     "$id": 31343
   },
   "配置要求极低 · 极速处理": {
-    "en-US": "配置要求极低 · 极速处理",
-    "es-ES": "配置要求极低 · 极速处理",
-    "ar-EG": "配置要求极低 · 极速处理",
-    "pt-PT": "配置要求极低 · 极速处理",
-    "ru-RU": "配置要求极低 · 极速处理",
+    "en-US": "Minimal configuration requirements · Extremely fast processing",
+    "es-ES": "Requisitos mínimos de configuración · Procesamiento extremadamente rápido",
+    "ar-EG": "الحد الأدنى من متطلبات التكوين · معالجة سريعة للغاية",
+    "pt-PT": "Requisitos mínimos de configuração · Processamento extremamente rápido",
+    "ru-RU": "Минимальные требования к конфигурации · Чрезвычайно быстрая обработка",
     "ja-JP": "配置要求极低 · 极速处理",
-    "de-DE": "配置要求极低 · 极速处理",
-    "fr-FR": "配置要求极低 · 极速处理",
-    "ko-KR": "配置要求极低 · 极速处理",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(15106-15123)"],
+    "de-DE": "Minimale Konfigurationsanforderungen · Extrem schnelle Verarbeitung",
+    "fr-FR": "Exigences de configuration minimales · Traitement extrêmement rapide",
+    "ko-KR": "최소한의 구성 요구 사항 · 매우 빠른 처리",
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(16951-16968)"
+    ],
     "$id": 31344
   },
   "语音识别与字幕提取 ASR (SenseVoice)": {
@@ -894,7 +1201,9 @@
     "de-DE": "语音识别与字幕提取 ASR (SenseVoice)",
     "fr-FR": "语音识别与字幕提取 ASR (SenseVoice)",
     "ko-KR": "语音识别与字幕提取 ASR (SenseVoice)",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(15528-15558)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(17063-17093)"
+    ],
     "$id": 31345
   },
   "【录音与视频自动转文字】听懂视频和录音里的说话内容并提取字幕，可以直接搜索“某句话是谁说的”。较耗算力，推荐 16GB 内存或有显卡。": {
@@ -907,20 +1216,24 @@
     "de-DE": "【录音与视频自动转文字】听懂视频和录音里的说话内容并提取字幕，可以直接搜索“某句话是谁说的”。较耗算力，推荐 16GB 内存或有显卡。",
     "fr-FR": "【录音与视频自动转文字】听懂视频和录音里的说话内容并提取字幕，可以直接搜索“某句话是谁说的”。较耗算力，推荐 16GB 内存或有显卡。",
     "ko-KR": "【录音与视频自动转文字】听懂视频和录音里的说话内容并提取字幕，可以直接搜索“某句话是谁说的”。较耗算力，推荐 16GB 内存或有显卡。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(16091-16171)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(17652-17732)"
+    ],
     "$id": 31346
   },
   "较耗算力 · 推荐 16GB 内存或有显卡": {
-    "en-US": "较耗算力 · 推荐 16GB 内存或有显卡",
-    "es-ES": "较耗算力 · 推荐 16GB 内存或有显卡",
-    "ar-EG": "较耗算力 · 推荐 16GB 内存或有显卡",
-    "pt-PT": "较耗算力 · 推荐 16GB 内存或有显卡",
-    "ru-RU": "较耗算力 · 推荐 16GB 内存或有显卡",
+    "en-US": "More computing power required · 16GB memory or graphics card recommended",
+    "es-ES": "Se requiere más potencia informática · Se recomiendan 16 GB de memoria o tarjeta gráfica",
+    "ar-EG": "مطلوب المزيد من قوة الحوسبة · يوصى بذاكرة سعة 16 جيجابايت أو بطاقة رسومات",
+    "pt-PT": "É necessária mais capacidade de computação · Memória de 16 GB ou placa gráfica recomendada",
+    "ru-RU": "Требуется больше вычислительной мощности · Рекомендуется 16 ГБ памяти или видеокарта",
     "ja-JP": "较耗算力 · 推荐 16GB 内存或有显卡",
-    "de-DE": "较耗算力 · 推荐 16GB 内存或有显卡",
-    "fr-FR": "较耗算力 · 推荐 16GB 内存或有显卡",
-    "ko-KR": "较耗算力 · 推荐 16GB 内存或有显卡",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(16249-16274)"],
+    "de-DE": "Mehr Rechenleistung erforderlich · 16 GB Speicher oder Grafikkarte empfohlen",
+    "fr-FR": "Plus de puissance de calcul requise · Mémoire de 16 Go ou carte graphique recommandée",
+    "ko-KR": "더 많은 컴퓨팅 성능 필요 · 16GB 메모리 또는 그래픽 카드 권장",
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(17810-17835)"
+    ],
     "$id": 31347
   },
   "个性声音克隆朗读 (Moss-TTS)": {
@@ -933,7 +1246,9 @@
     "de-DE": "个性声音克隆朗读 (Moss-TTS)",
     "fr-FR": "个性声音克隆朗读 (Moss-TTS)",
     "ko-KR": "个性声音克隆朗读 (Moss-TTS)",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(16698-16721)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(17916-17939)"
+    ],
     "$id": 31348
   },
   "语音合成 (TTS)": {
@@ -947,8 +1262,8 @@
     "fr-FR": "Synthèse vocale (TTS)",
     "ko-KR": "음성 합성",
     "$files": [
-      "src/renderer/stores/plugin-center-store.ts(17127-17141)",
-      "src/renderer/stores/plugin-center-store.ts(18243-18257)",
+      "src/renderer/stores/plugin-center-store.ts(18365-18379)",
+      "src/renderer/stores/plugin-center-store.ts(19169-19183)",
       "src/renderer/stores/settings-store.ts(3850-3864)",
       "src/renderer/stores/settings-store.ts(5296-5310)"
     ],
@@ -964,20 +1279,24 @@
     "de-DE": "【支持克隆专属声音】内置声音提取器，上传一段录音即可克隆专属声音朗读文章。支持 50+ 精选音色与自定义克隆。",
     "fr-FR": "【支持克隆专属声音】内置声音提取器，上传一段录音即可克隆专属声音朗读文章。支持 50+ 精选音色与自定义克隆。",
     "ko-KR": "【支持克隆专属声音】内置声音提取器，上传一段录音即可克隆专属声音朗读文章。支持 50+ 精选音色与自定义克隆。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(17235-17303)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(18473-18541)"
+    ],
     "$id": 31349
   },
   "配置要求低 · 普通电脑流畅发音": {
-    "en-US": "配置要求低 · 普通电脑流畅发音",
-    "es-ES": "配置要求低 · 普通电脑流畅发音",
-    "ar-EG": "配置要求低 · 普通电脑流畅发音",
-    "pt-PT": "配置要求低 · 普通电脑流畅发音",
-    "ru-RU": "配置要求低 · 普通电脑流畅发音",
+    "en-US": "Low configuration requirements · Ordinary computer for smooth pronunciation",
+    "es-ES": "Requisitos de configuración bajos · Computadora común para una pronunciación fluida",
+    "ar-EG": "متطلبات تكوين منخفضة · كمبيوتر عادي للنطق السلس",
+    "pt-PT": "Baixos requisitos de configuração · Computador comum para uma pronúncia suave",
+    "ru-RU": "Низкие требования к конфигурации · Обычный компьютер для плавного произношения",
     "ja-JP": "配置要求低 · 普通电脑流畅发音",
-    "de-DE": "配置要求低 · 普通电脑流畅发音",
-    "fr-FR": "配置要求低 · 普通电脑流畅发音",
-    "ko-KR": "配置要求低 · 普通电脑流畅发音",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(17383-17403)"],
+    "de-DE": "Geringe Konfigurationsanforderungen · Normaler Computer für reibungslose Aussprache",
+    "fr-FR": "Faibles exigences de configuration · Ordinateur ordinaire pour une prononciation fluide",
+    "ko-KR": "낮은 구성 요구 사항 · 원활한 발음을 위한 일반 컴퓨터",
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(18621-18641)"
+    ],
     "$id": 31350
   },
   "极速轻量语音朗读 (M5-TTS)": {
@@ -990,7 +1309,9 @@
     "de-DE": "极速轻量语音朗读 (M5-TTS)",
     "fr-FR": "极速轻量语音朗读 (M5-TTS)",
     "ko-KR": "极速轻量语音朗读 (M5-TTS)",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(17816-17837)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(18724-18745)"
+    ],
     "$id": 31351
   },
   "【极速省电朗读】按下播放毫秒级即刻发声，内置 50+ 丰富高品质声线，长篇文档朗读流畅不卡顿。普通轻薄本流畅运行。": {
@@ -1003,20 +1324,24 @@
     "de-DE": "【极速省电朗读】按下播放毫秒级即刻发声，内置 50+ 丰富高品质声线，长篇文档朗读流畅不卡顿。普通轻薄本流畅运行。",
     "fr-FR": "【极速省电朗读】按下播放毫秒级即刻发声，内置 50+ 丰富高品质声线，长篇文档朗读流畅不卡顿。普通轻薄本流畅运行。",
     "ko-KR": "【极速省电朗读】按下播放毫秒级即刻发声，内置 50+ 丰富高品质声线，长篇文档朗读流畅不卡顿。普通轻薄本流畅运行。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(18351-18421)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(19277-19347)"
+    ],
     "$id": 31352
   },
   "配置要求极低 · 普通轻薄本流畅发音": {
-    "en-US": "配置要求极低 · 普通轻薄本流畅发音",
-    "es-ES": "配置要求极低 · 普通轻薄本流畅发音",
-    "ar-EG": "配置要求极低 · 普通轻薄本流畅发音",
-    "pt-PT": "配置要求极低 · 普通轻薄本流畅发音",
-    "ru-RU": "配置要求极低 · 普通轻薄本流畅发音",
+    "en-US": "Extremely low configuration requirements · Smooth pronunciation for ordinary thin and light notebooks",
+    "es-ES": "Requisitos de configuración extremadamente bajos · Pronunciación fluida para portátiles normales, finos y ligeros",
+    "ar-EG": "متطلبات تكوين منخفضة للغاية · نطق سلس لأجهزة الكمبيوتر المحمولة العادية الرقيقة والخفيفة",
+    "pt-PT": "Requisitos de configuração extremamente baixos · Pronúncia suave para notebooks finos e leves comuns",
+    "ru-RU": "Чрезвычайно низкие требования к конфигурации · Гладкое произношение для обычных тонких и легких ноутбуков.",
     "ja-JP": "配置要求极低 · 普通轻薄本流畅发音",
-    "de-DE": "配置要求极低 · 普通轻薄本流畅发音",
-    "fr-FR": "配置要求极低 · 普通轻薄本流畅发音",
-    "ko-KR": "配置要求极低 · 普通轻薄本流畅发音",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(18501-18523)"],
+    "de-DE": "Extrem geringe Konfigurationsanforderungen · Reibungslose Aussprache für gewöhnliche dünne und leichte Notebooks",
+    "fr-FR": "Exigences de configuration extrêmement faibles · Prononciation fluide pour les ordinateurs portables fins et légers ordinaires",
+    "ko-KR": "매우 낮은 구성 요구 사항 · 일반 얇고 가벼운 노트북을 위한 부드러운 발음",
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(19427-19449)"
+    ],
     "$id": 31353
   },
   "本地生图 Studio": {
@@ -1029,7 +1354,9 @@
     "de-DE": "本地生图 Studio",
     "fr-FR": "本地生图 Studio",
     "ko-KR": "本地生图 Studio",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(18766-18781)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(19533-19548)"
+    ],
     "$id": 31354
   },
   "【电脑本地自己画图】输入一句话即可在本地画出精美图片，不花一分钱。需要较好的独立显卡。": {
@@ -1042,20 +1369,24 @@
     "de-DE": "【电脑本地自己画图】输入一句话即可在本地画出精美图片，不花一分钱。需要较好的独立显卡。",
     "fr-FR": "【电脑本地自己画图】输入一句话即可在本地画出精美图片，不花一分钱。需要较好的独立显卡。",
     "ko-KR": "【电脑本地自己画图】输入一句话即可在本地画出精美图片，不花一分钱。需要较好的独立显卡。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(19016-19072)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(19869-19925)"
+    ],
     "$id": 31355
   },
   "较高配置 · 需要独立显卡": {
-    "en-US": "较高配置 · 需要独立显卡",
-    "es-ES": "较高配置 · 需要独立显卡",
-    "ar-EG": "较高配置 · 需要独立显卡",
-    "pt-PT": "较高配置 · 需要独立显卡",
-    "ru-RU": "较高配置 · 需要独立显卡",
+    "en-US": "Higher configuration · Requires discrete graphics card",
+    "es-ES": "Configuración superior · Requiere tarjeta gráfica discreta",
+    "ar-EG": "تكوين أعلى · يتطلب بطاقة رسومات منفصلة",
+    "pt-PT": "Configuração superior · Requer placa gráfica discreta",
+    "ru-RU": "Более высокая конфигурация · Требуется дискретная видеокарта",
     "ja-JP": "较高配置 · 需要独立显卡",
-    "de-DE": "较高配置 · 需要独立显卡",
-    "fr-FR": "较高配置 · 需要独立显卡",
-    "ko-KR": "较高配置 · 需要独立显卡",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(19149-19166)"],
+    "de-DE": "Höhere Konfiguration · Erfordert separate Grafikkarte",
+    "fr-FR": "Configuration supérieure · Nécessite une carte graphique discrète",
+    "ko-KR": "더 높은 구성 · 별도의 그래픽 카드 필요",
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(20002-20019)"
+    ],
     "$id": 31356
   },
   "压缩包透视与深度解析器": {
@@ -1068,7 +1399,9 @@
     "de-DE": "压缩包透视与深度解析器",
     "fr-FR": "压缩包透视与深度解析器",
     "ko-KR": "压缩包透视与深度解析器",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(19257-19272)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(20110-20125)"
+    ],
     "$id": 31357
   },
   "【不用解压直接搜压缩包】不用解压 zip/rar 就能直接查看和搜索里面的文件内容，无额外电脑负担。": {
@@ -1081,33 +1414,39 @@
     "de-DE": "【不用解压直接搜压缩包】不用解压 zip/rar 就能直接查看和搜索里面的文件内容，无额外电脑负担。",
     "fr-FR": "【不用解压直接搜压缩包】不用解压 zip/rar 就能直接查看和搜索里面的文件内容，无额外电脑负担。",
     "ko-KR": "【不用解压直接搜压缩包】不用解压 zip/rar 就能直接查看和搜索里面的文件内容，无额外电脑负担。",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(19527-19590)"],
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(20443-20506)"
+    ],
     "$id": 31358
   },
   "配置要求极低 · 无额外负担": {
-    "en-US": "配置要求极低 · 无额外负担",
-    "es-ES": "配置要求极低 · 无额外负担",
-    "ar-EG": "配置要求极低 · 无额外负担",
-    "pt-PT": "配置要求极低 · 无额外负担",
-    "ru-RU": "配置要求极低 · 无额外负担",
+    "en-US": "Minimal configuration requirements · No additional burden",
+    "es-ES": "Requisitos mínimos de configuración · Sin carga adicional",
+    "ar-EG": "الحد الأدنى من متطلبات التكوين · لا يوجد عبء إضافي",
+    "pt-PT": "Requisitos mínimos de configuração · Sem encargos adicionais",
+    "ru-RU": "Минимальные требования к конфигурации · Никакой дополнительной нагрузки",
     "ja-JP": "配置要求极低 · 无额外负担",
-    "de-DE": "配置要求极低 · 无额外负担",
-    "fr-FR": "配置要求极低 · 无额外负担",
-    "ko-KR": "配置要求极低 · 无额外负担",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(19670-19688)"],
+    "de-DE": "Minimale Konfigurationsanforderungen · Keine zusätzliche Belastung",
+    "fr-FR": "Exigences de configuration minimales · Aucune charge supplémentaire",
+    "ko-KR": "최소 구성 요구 사항 · 추가 부담 없음",
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(20586-20604)"
+    ],
     "$id": 31359
   },
   "下载失败": {
-    "en-US": "下载失败",
-    "es-ES": "下载失败",
-    "ar-EG": "下载失败",
-    "pt-PT": "下载失败",
-    "ru-RU": "下载失败",
+    "en-US": "Download failed",
+    "es-ES": "Descarga fallida",
+    "ar-EG": "فشل التنزيل",
+    "pt-PT": "Falha no download",
+    "ru-RU": "Загрузка не удалась",
     "ja-JP": "下载失败",
-    "de-DE": "下载失败",
-    "fr-FR": "下载失败",
-    "ko-KR": "下载失败",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(32509-32517)"],
+    "de-DE": "Der Download ist fehlgeschlagen",
+    "fr-FR": "Le téléchargement a échoué",
+    "ko-KR": "다운로드 실패",
+    "$files": [
+      "src/renderer/stores/plugin-center-store.ts(34411-34419)"
+    ],
     "$id": 31360
   },
   "界面与显示偏好": {
@@ -1120,7 +1459,9 @@
     "de-DE": "Benutzeroberflächen- und Anzeigeeinstellungen",
     "fr-FR": "Préférences d’interface et d’affichage",
     "ko-KR": "인터페이스 및 디스플레이 기본 설정",
-    "$files": ["src/renderer/stores/settings-store.ts(3585-3596)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(3585-3596)"
+    ],
     "$id": 22926
   },
   "外观、语言、主题及文件列表展示": {
@@ -1133,7 +1474,9 @@
     "de-DE": "Darstellung, Sprache, Thema und Dateilistenanzeige",
     "fr-FR": "Affichage de l'apparence, de la langue, du thème et de la liste des fichiers",
     "ko-KR": "모양, 언어, 테마 및 파일 목록 표시",
-    "$files": ["src/renderer/stores/settings-store.ts(3637-3656)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(3637-3656)"
+    ],
     "$id": 22927
   },
   "生效底座选择、云端配置与思考模式": {
@@ -1146,7 +1489,9 @@
     "de-DE": "生效底座选择、云端配置与思考模式",
     "fr-FR": "生效底座选择、云端配置与思考模式",
     "ko-KR": "生效底座选择、云端配置与思考模式",
-    "$files": ["src/renderer/stores/settings-store.ts(3779-3799)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(3779-3799)"
+    ],
     "$id": 31361
   },
   "离线多发音人音色库、默认语速与收藏管理": {
@@ -1207,7 +1552,9 @@
     "de-DE": "Firefly externe Schnittstelle",
     "fr-FR": "Interface externe Firefly",
     "ko-KR": "잉허 외부 인터페이스",
-    "$files": ["src/renderer/stores/settings-store.ts(4181-4191)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(4181-4191)"
+    ],
     "$id": 28300
   },
   "对外 HTTP API、智能体连接状态与生态集成": {
@@ -1220,7 +1567,9 @@
     "de-DE": "Externe HTTP-API, Agent-Verbindungsstatus und ökologische Integration",
     "fr-FR": "API HTTP externe, statut de connexion des agents et intégration écologique",
     "ko-KR": "외부 HTTP API, 에이전트 연결 상태 및 생태학적 통합",
-    "$files": ["src/renderer/stores/settings-store.ts(4230-4258)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(4230-4258)"
+    ],
     "$id": 28301
   },
   "工作区": {
@@ -1233,7 +1582,9 @@
     "de-DE": "Arbeitsbereich",
     "fr-FR": "Espace de travail",
     "ko-KR": "작업 공간",
-    "$files": ["src/renderer/stores/settings-store.ts(4418-4425)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(4418-4425)"
+    ],
     "$id": 3301
   },
   "工作区配置、分析深度与目录管理": {
@@ -1246,7 +1597,9 @@
     "de-DE": "Arbeitsbereichskonfiguration, Analysetiefe und Katalogverwaltung",
     "fr-FR": "Configuration de l'espace de travail, profondeur d'analyse et gestion du catalogue",
     "ko-KR": "작업 공간 구성, 분석 깊이 및 카탈로그 관리",
-    "$files": ["src/renderer/stores/settings-store.ts(4470-4489)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(4470-4489)"
+    ],
     "$id": 22931
   },
   "检索式引擎配置": {
@@ -1259,7 +1612,9 @@
     "de-DE": "Suchmaschinenkonfiguration",
     "fr-FR": "Configuration du moteur de recherche",
     "ko-KR": "검색 엔진 구성",
-    "$files": ["src/renderer/stores/settings-store.ts(4559-4570)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(4559-4570)"
+    ],
     "$id": 28302
   },
   "视觉语义搜索、多模态索引维护与工作区策略总览": {
@@ -1272,7 +1627,9 @@
     "de-DE": "Überblick über visuelle semantische Suche, multimodale Indexpflege und Arbeitsbereichsstrategien",
     "fr-FR": "Présentation de la recherche sémantique visuelle, de la maintenance des index multimodaux et des stratégies d'espace de travail",
     "ko-KR": "시각적 의미 검색, 다중 모드 인덱스 유지 관리 및 작업 공간 전략 개요",
-    "$files": ["src/renderer/stores/settings-store.ts(4608-4634)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(4608-4634)"
+    ],
     "$id": 22932
   },
   "生效引擎选择、云端配置与思考模式": {
@@ -1285,7 +1642,9 @@
     "de-DE": "Effektive Engine-Auswahl, Cloud-Konfiguration und Denkmodus",
     "fr-FR": "Sélection du moteur actif, configuration du cloud et mode de raisonnement",
     "ko-KR": "효과적인 엔진 선택, 클라우드 구성 및 사고 모드",
-    "$files": ["src/renderer/stores/settings-store.ts(4815-4835)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(4815-4835)"
+    ],
     "$id": 19418
   },
   "内容萃取设置": {
@@ -1298,7 +1657,9 @@
     "de-DE": "Konfiguration der Inhaltsextraktion",
     "fr-FR": "Paramètres d'extraction de contenu",
     "ko-KR": "내용 추출 설정",
-    "$files": ["src/renderer/stores/settings-store.ts(4901-4911)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(4901-4911)"
+    ],
     "$id": 20501
   },
   "文本与文档提取、OCR精度和音频截取": {
@@ -1311,7 +1672,9 @@
     "de-DE": "Text- und Dokumentenextraktion, OCR-Genauigkeit und Audiobeschneidung",
     "fr-FR": "Extraction de texte et de documents, précision de l'OCR et capture audio",
     "ko-KR": "텍스트 및 문서 추출, OCR 정확도 및 오디오 캡처",
-    "$files": ["src/renderer/stores/settings-store.ts(4950-4972)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(4950-4972)"
+    ],
     "$id": 20502
   },
   "最小单元识别": {
@@ -1324,7 +1687,9 @@
     "de-DE": "Erkennung der kleinsten Einheiten",
     "fr-FR": "Identification de la plus petite unité",
     "ko-KR": "최소 단위 식별",
-    "$files": ["src/renderer/stores/settings-store.ts(5036-5046)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(5036-5046)"
+    ],
     "$id": 20503
   },
   "目录最小单元判定与单元识别提示词": {
@@ -1337,7 +1702,9 @@
     "de-DE": "Bestimmung der kleinsten Verzeichniseinheit und Eingabeaufforderung zur Einheitenidentifikation",
     "fr-FR": "Définition des unités minimales dans les répertoires et prompts d'identification des unités",
     "ko-KR": "상세목표 최소 단위 판정 및 단위 식별 프롬프트",
-    "$files": ["src/renderer/stores/settings-store.ts(5088-5108)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(5088-5108)"
+    ],
     "$id": 20504
   },
   "生成式提示词": {
@@ -1350,7 +1717,9 @@
     "de-DE": "Generative Aufforderungswörter",
     "fr-FR": "Mots d'invite génératifs",
     "ko-KR": "생성 프롬프트 단어",
-    "$files": ["src/renderer/stores/settings-store.ts(5175-5185)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(5175-5185)"
+    ],
     "$id": 28304
   },
   "质量评分与标签智能生成提示词": {
@@ -1363,7 +1732,9 @@
     "de-DE": "Eingabeaufforderungen für intelligente Generierung von Qualitätsbewertungen und Labels",
     "fr-FR": "Prompts pour le score de qualité et la génération intelligente d'étiquettes",
     "ko-KR": "품질 점수 및 태그 스마트 생성 프롬프트",
-    "$files": ["src/renderer/stores/settings-store.ts(5227-5245)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(5227-5245)"
+    ],
     "$id": 20506
   },
   "风格和语言": {
@@ -1376,7 +1747,9 @@
     "de-DE": "Stil und Sprache",
     "fr-FR": "Style et langage",
     "ko-KR": "스타일과 언어",
-    "$files": ["src/renderer/stores/settings-store.ts(5624-5633)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(5624-5633)"
+    ],
     "$id": 4272
   },
   "外观、语言和主题": {
@@ -1389,7 +1762,9 @@
     "de-DE": "Aussehen, Sprache und Design",
     "fr-FR": "Apparence, langue et thèmes",
     "ko-KR": "모습, 언어 및 테마",
-    "$files": ["src/renderer/stores/settings-store.ts(5674-5686)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(5674-5686)"
+    ],
     "$id": 3295
   },
   "列表设置": {
@@ -1402,7 +1777,9 @@
     "de-DE": "Listeneinstellungen",
     "fr-FR": "Paramètres de la liste",
     "ko-KR": "목록 설정",
-    "$files": ["src/renderer/stores/settings-store.ts(5746-5754)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(5746-5754)"
+    ],
     "$id": 4273
   },
   "文件列表显示项": {
@@ -1415,7 +1792,9 @@
     "de-DE": "Anzeigeoptionen für Dateilisten",
     "fr-FR": "Éléments affichés dans la liste des fichiers",
     "ko-KR": "파일 목록 표시 항목",
-    "$files": ["src/renderer/stores/settings-store.ts(5797-5808)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(5797-5808)"
+    ],
     "$id": 3297
   },
   "保存设置失败": {
@@ -1428,7 +1807,9 @@
     "de-DE": "Speichern der Einstellungen fehlgeschlagen",
     "fr-FR": "Échec de la sauvegarde des paramètres",
     "ko-KR": "설정 저장 실패",
-    "$files": ["src/renderer/stores/settings-store.ts(10997-11007)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(11033-11043)"
+    ],
     "$id": 5491
   },
   "确认删除此工作目录？": {
@@ -1441,7 +1822,9 @@
     "de-DE": "Dieses Arbeitsverzeichnis wirklich löschen?",
     "fr-FR": "Confirmer la suppression de ce répertoire de travail ?",
     "ko-KR": "이 작업 디렉터리를 삭제하시겠습니까?",
-    "$files": ["src/renderer/stores/settings-store.ts(13690-13704)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(13726-13740)"
+    ],
     "$id": 3303
   },
   "确认重置此工作目录？": {
@@ -1454,7 +1837,9 @@
     "de-DE": "Dieses Arbeitsverzeichnis wirklich zurücksetzen?",
     "fr-FR": "Confirmer la réinitialisation de ce répertoire de travail ?",
     "ko-KR": "이 작업 디렉터리를 재설정하시겠습니까?",
-    "$files": ["src/renderer/stores/settings-store.ts(14001-14015)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(14037-14051)"
+    ],
     "$id": 3304
   },
   "不支持的语言设置": {
@@ -1467,7 +1852,9 @@
     "de-DE": "Nicht unterstützte Spracheinstellung",
     "fr-FR": "Paramètre de langue non pris en charge",
     "ko-KR": "지원되지 않는 언어 설정",
-    "$files": ["src/renderer/stores/settings-store.ts(14458-14470)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(14494-14506)"
+    ],
     "$id": 5501
   },
   "交易失败，已归还扣币，原因：{reason}": {
@@ -1480,7 +1867,9 @@
     "de-DE": "Die Transaktion ist fehlgeschlagen und die abgezogenen Firecores wurden zurückgegeben. Grund: {reason}",
     "fr-FR": "La transaction a échoué et les pièces déduites ont été restituées. Raison: {reason}",
     "ko-KR": "거래가 실패하여 차감된 코인이 반환되었습니다. 이유: {reason}",
-    "$files": ["src/renderer/stores/tier-store.ts(6178-6204)"],
+    "$files": [
+      "src/renderer/stores/tier-store.ts(6178-6204)"
+    ],
     "$id": 8873
   },
   "当前设备登录已失效或已被账号解绑，请重新绑定": {
@@ -1493,7 +1882,9 @@
     "de-DE": "当前设备登录已失效或已被账号解绑，请重新绑定",
     "fr-FR": "当前设备登录已失效或已被账号解绑，请重新绑定",
     "ko-KR": "当前设备登录已失效或已被账号解绑，请重新绑定",
-    "$files": ["src/renderer/stores/tier-store.ts(6411-6437)"],
+    "$files": [
+      "src/renderer/stores/tier-store.ts(6411-6437)"
+    ],
     "$id": 31362
   },
   "正在合成音频，合成后会自动切换": {
@@ -1506,7 +1897,9 @@
     "de-DE": "Audio wird synthetisiert und nach der Synthese automatisch umgeschaltet",
     "fr-FR": "L'audio est en cours de synthèse et il sera automatiquement commuté après la synthèse",
     "ko-KR": "오디오가 합성되고 있으며 합성 후 자동으로 전환됩니다",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(16734-16753)"],
+    "$files": [
+      "src/renderer/stores/tts-audio-store.ts(17441-17460)"
+    ],
     "$id": 21557
   },
   "已自动切换播放": {
@@ -1520,8 +1913,8 @@
     "fr-FR": "La lecture a été automatiquement commutée",
     "ko-KR": "재생이 자동으로 전환되었습니다",
     "$files": [
-      "src/renderer/stores/tts-audio-store.ts(22291-22302)",
-      "src/renderer/stores/tts-audio-store.ts(27030-27041)"
+      "src/renderer/stores/tts-audio-store.ts(22998-23009)",
+      "src/renderer/stores/tts-audio-store.ts(27737-27748)"
     ],
     "$id": 21559
   },
@@ -1536,11 +1929,11 @@
     "fr-FR": "Le clip audio est trop long et a été automatiquement tronqué.",
     "ko-KR": "오디오 클립이 너무 길어서 자동으로 잘렸습니다.",
     "$files": [
-      "src/renderer/stores/tts-audio-store.ts(24314-24329)",
-      "src/renderer/stores/tts-audio-store.ts(29460-29475)",
-      "src/renderer/stores/tts-audio-store.ts(51398-51413)",
-      "src/renderer/stores/tts-audio-store.ts(58012-58027)",
-      "src/renderer/stores/tts-audio-store.ts(65327-65342)"
+      "src/renderer/stores/tts-audio-store.ts(25021-25036)",
+      "src/renderer/stores/tts-audio-store.ts(30167-30182)",
+      "src/renderer/stores/tts-audio-store.ts(52090-52105)",
+      "src/renderer/stores/tts-audio-store.ts(58704-58719)",
+      "src/renderer/stores/tts-audio-store.ts(66019-66034)"
     ],
     "$id": 22279
   },
@@ -1555,8 +1948,8 @@
     "fr-FR": "La commutation de tonalité a échoué et le service de synthèse vocale n'est pas disponible",
     "ko-KR": "톤 전환에 실패하고 음성 합성 서비스를 사용할 수 없습니다",
     "$files": [
-      "src/renderer/stores/tts-audio-store.ts(24621-24641)",
-      "src/renderer/stores/tts-audio-store.ts(31847-31867)"
+      "src/renderer/stores/tts-audio-store.ts(25328-25348)",
+      "src/renderer/stores/tts-audio-store.ts(32554-32574)"
     ],
     "$id": 21558
   },
@@ -1570,7 +1963,9 @@
     "de-DE": "Benutzerdefinierter Klontonwert",
     "fr-FR": "Tonalité de clonage définie par l'utilisateur",
     "ko-KR": "사용자 정의 클론 톤",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(33365-33378)"],
+    "$files": [
+      "src/renderer/stores/tts-audio-store.ts(34057-34070)"
+    ],
     "$id": 21644
   },
   "语音合成失败，请检查服务连接状态": {
@@ -1583,7 +1978,9 @@
     "de-DE": "Sprachsynthese fehlgeschlagen, bitte überprüfen Sie den Status der Dienstverbindung",
     "fr-FR": "La synthèse vocale a échoué, veuillez vérifier l'état de la connexion au service",
     "ko-KR": "음성 합성 실패,서비스 연결 상태를 확인하시기 바랍니다",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(52087-52107)"],
+    "$files": [
+      "src/renderer/stores/tts-audio-store.ts(52779-52799)"
+    ],
     "$id": 21560
   },
   "语音合成未能生成有效音频，请稍后重试": {
@@ -1596,7 +1993,9 @@
     "de-DE": "Sprachsynthese konnte kein gültiges Audio generieren, bitte versuchen Sie es später erneut",
     "fr-FR": "La synthèse vocale n'a pas réussi à générer un son valide, veuillez réessayer plus tard",
     "ko-KR": "음성 합성이 유효한 오디오를 생성하지 못했습니다.",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(55947-55969)"],
+    "$files": [
+      "src/renderer/stores/tts-audio-store.ts(56639-56661)"
+    ],
     "$id": 21561
   },
   "语音合成服务异常，请稍后重试": {
@@ -1609,7 +2008,9 @@
     "de-DE": "Der Sprachsynthesedienst ist abnormal, bitte versuchen Sie es später erneut",
     "fr-FR": "Le service de synthèse vocale est anormal, veuillez réessayer plus tard",
     "ko-KR": "음성 합성 서비스가 이상,나중에 다시 시도하십시오",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(56387-56405)"],
+    "$files": [
+      "src/renderer/stores/tts-audio-store.ts(57079-57097)"
+    ],
     "$id": 21562
   },
   "该片段正在合成中，请稍候...": {
@@ -1622,7 +2023,9 @@
     "de-DE": "Dieser Clip wird synthetisiert, bitte warten...",
     "fr-FR": "Ce clip est en cours de synthèse, veuillez patienter...",
     "ko-KR": "이 클립은 합성되고,기다려주십시오...",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(62446-62465)"],
+    "$files": [
+      "src/renderer/stores/tts-audio-store.ts(63138-63157)"
+    ],
     "$id": 21645
   },
   "该片段合成失败，请稍后重试": {
@@ -1635,7 +2038,9 @@
     "de-DE": "Die Clipsynthese ist fehlgeschlagen, bitte versuchen Sie es später erneut",
     "fr-FR": "La synthèse du clip a échoué, veuillez réessayer plus tard",
     "ko-KR": "클립 합성에 실패,나중에 다시 시도하십시오",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(65640-65657)"],
+    "$files": [
+      "src/renderer/stores/tts-audio-store.ts(66332-66349)"
+    ],
     "$id": 21646
   }
 }

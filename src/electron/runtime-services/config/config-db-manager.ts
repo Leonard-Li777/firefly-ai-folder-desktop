@@ -41,6 +41,13 @@ export class ConfigDbManager {
 
   private constructor() {}
 
+  /**
+   * 获取当前生效的配置语言 (SSOT)
+   */
+  getCurrentLanguage(): string {
+    return this.currentLanguage
+  }
+
   static getInstance(): ConfigDbManager {
     if (!ConfigDbManager.instance) {
       ConfigDbManager.instance = new ConfigDbManager()

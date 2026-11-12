@@ -46,6 +46,8 @@ import { LOCAL_WORKFLOW_CONFIG_SOURCE } from '../../config/organize-taxonomy-sou
 export interface WorkspacePolicyMutation {
   workflowId?: string | null
   restoreWorkflowDefault?: boolean
+  /** 扩展名期望占比权重映射（null 表示重置为模板默认） */
+  extensionWeights?: Record<string, number> | null
   /** 排他包含扩展名列表 (规范对称命名，如 ['.cr3', '.jpg']) */
   includeExts?: string[]
   /** 包含规则对象列表 (白名单模式) */
@@ -356,10 +358,17 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
           if (parsed.namingTemplate) {
             result.namingTemplate = parsed.namingTemplate
           }
+          if (parsed.extensionWeights && typeof parsed.extensionWeights === 'object') {
+            result.extensionWeights = parsed.extensionWeights
+          }
         }
       } catch {
         // 忽略损坏的模板 JSON
       }
+    }
+
+    if (!result.extensionWeights && workflow.extensionWeights) {
+      result.extensionWeights = workflow.extensionWeights
     }
 
     // 向下兼容旧版 filter_rules + filter_mode
@@ -558,6 +567,27 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
       currentReady?.derivedSnapshot ||
       nextBaseAi
 
+    // 4. 计算扩展名期望占比权重 (Spec §3.1.3 覆盖优先级修复)
+    // 优先级：mutation.restoreWorkflowDefault ➔ templateOverlay / blueprint 优先；
+    // 否则：mutation 显式权重 ➔ currentReady 已有权重 ➔ templateOverlay / blueprint 兜底
+    const hasPositiveFiniteWeights = (weights: unknown): weights is Record<string, number> => {
+      if (!weights || typeof weights !== 'object') return false
+      const entries = Object.entries(weights as Record<string, unknown>)
+      return (
+        entries.length > 0 &&
+        entries.every(([, v]) => typeof v === 'number' && Number.isFinite(v) && v > 0)
+      )
+    }
+
+    const nextExtensionWeights =
+      mutation.restoreWorkflowDefault || mutation.extensionWeights === null
+        ? (templateOverlay?.extensionWeights ?? currentReady?.extensionWeights)
+        : hasPositiveFiniteWeights(mutation.extensionWeights)
+          ? mutation.extensionWeights
+          : hasPositiveFiniteWeights(currentReady?.extensionWeights)
+            ? currentReady?.extensionWeights
+            : templateOverlay?.extensionWeights
+
     const nextConfig: WorkspaceConfigReady = {
       schemaVersion: 1,
       status: 'ready',
@@ -565,6 +595,7 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
       workflowId: nextBoundWorkflowId ?? undefined,
       intent: mutation.intent ?? currentReady?.intent,
       overrides: mutation.overrides ?? currentReady?.overrides,
+      extensionWeights: nextExtensionWeights,
       customIgnoreRules: nextIgnoreRules,
       customWhitelistRules: nextWhitelistRules,
       baseAIConfig: nextBaseAi,

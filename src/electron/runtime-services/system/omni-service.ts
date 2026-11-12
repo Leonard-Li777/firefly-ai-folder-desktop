@@ -2045,9 +2045,19 @@ export class OmniService {
   /**
    * 服务健康探活
    */
-  public async checkHealth(): Promise<boolean> {
+  public async checkHealth(options?: {
+    timeoutMs?: number
+    signal?: AbortSignal
+  }): Promise<boolean> {
     try {
-      const res = await fetch(`${this.baseUrl}/health`, { signal: AbortSignal.timeout(1000) })
+      const timeoutMs = options?.timeoutMs ?? 1000
+      let fetchSignal: AbortSignal = AbortSignal.timeout(timeoutMs)
+      if (options?.signal) {
+        fetchSignal = (AbortSignal as any).any
+          ? (AbortSignal as any).any([fetchSignal, options.signal])
+          : options.signal
+      }
+      const res = await fetch(`${this.baseUrl}/health`, { signal: fetchSignal })
       if (res.ok) {
         try {
           const data = await res.json()
@@ -3267,6 +3277,28 @@ export class OmniService {
   }
 
   /**
+   * 解析当前激活的多模态嵌入画像档位与向量维度 (Spec §3.2.1)
+   */
+  public async resolveEmbeddingTarget(options?: {
+    skipAutoStart?: boolean
+  }): Promise<{ profile: 'classic_light' | 'gemma_unified'; dim: number }> {
+    try {
+      const { ConfigOrchestrator } = await import('../../config/config-orchestrator')
+      const orchestrator = ConfigOrchestrator.getInstance()
+      const profile =
+        orchestrator.getValue<'classic_light' | 'gemma_unified'>('AI_EMBEDDING_PROFILE') ||
+        'classic_light'
+      const dim =
+        profile === 'gemma_unified'
+          ? orchestrator.getValue<number>('EMBEDDING_MRL_DIMENSION') || 512
+          : 384
+      return { profile, dim }
+    } catch {
+      return { profile: 'classic_light', dim: 384 }
+    }
+  }
+
+  /**
    * 批量计算文本特征向量 (POST /api/v1/vector/batch-embed-text)
    * 依据 batch-organize-hybrid-vector-classification-spec.md 规格契约：
    * 支持 classic_light (Bekko 384d) 与 gemma_unified (Gemma 256/512/768d) 双底座动态路由
@@ -3277,6 +3309,8 @@ export class OmniService {
       profile?: string
       dim?: number
       timeoutMs?: number
+      skipAutoStart?: boolean
+      signal?: AbortSignal
     }
   ): Promise<{
     vectors: number[][]
@@ -3285,7 +3319,17 @@ export class OmniService {
     profile: string
     durationMs: number
   }> {
-    await this.ensureRunning()
+    if (options?.skipAutoStart) {
+      if (!this.isReady()) {
+        const isHealthy = await this.checkHealth({ timeoutMs: 200, signal: options?.signal })
+        if (!isHealthy) {
+          throw new Error('engine_not_ready')
+        }
+      }
+    } else {
+      await this.ensureRunning()
+    }
+
     const reqBody = {
       texts,
       profile: options?.profile,
@@ -3296,6 +3340,17 @@ export class OmniService {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), timeoutMs)
 
+    let cleanupAbortListener: (() => void) | undefined
+    if (options?.signal) {
+      if (options.signal.aborted) {
+        controller.abort()
+      } else {
+        const onAbort = () => controller.abort()
+        options.signal.addEventListener('abort', onAbort)
+        cleanupAbortListener = () => options.signal!.removeEventListener('abort', onAbort)
+      }
+    }
+
     try {
       const res = await fetch(`${this.baseUrl}/api/v1/vector/batch-embed-text`, {
         method: 'POST',
@@ -3304,6 +3359,9 @@ export class OmniService {
         signal: controller.signal
       })
       if (!res.ok) {
+        if (res.status === 503) {
+          throw new Error('http_503')
+        }
         throw new Error(`HTTP ${res.status}: ${res.statusText}`)
       }
       return (await res.json()) as {
@@ -3318,6 +3376,7 @@ export class OmniService {
       throw err
     } finally {
       clearTimeout(timer)
+      cleanupAbortListener?.()
     }
   }
 

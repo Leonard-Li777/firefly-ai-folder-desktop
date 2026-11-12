@@ -11,7 +11,9 @@ import {
   TechnicalEngineParameters,
   DirectoryTreeNode,
   IFilterRule,
-  IIgnoreRule
+  IIgnoreRule,
+  RecommendReasonCode,
+  WorkflowSemanticsScoreRequest
 } from '@firefly/types'
 import {
   recommendWorkflowByProfile,
@@ -63,6 +65,7 @@ import {
   AlertCircle,
   Copy,
   RefreshCw,
+  HelpCircle,
   X
 } from 'lucide-react'
 
@@ -506,6 +509,58 @@ const PreviewTreeNodeView: React.FC<{
   )
 }
 
+/** 22 项封闭推荐理由大白话映射函数 (符合 AGENTS.md §2.6 / Zero Jargon 铁律) */
+function getWorkflowReasonDisplay(reasonCode?: RecommendReasonCode, fallbackText?: string): string {
+  switch (reasonCode) {
+    case 'photography_raw':
+      return t('检测到高价值相机原片，适合专业摄影底片管理')
+    case '3d_assets':
+      return t('检测到核心三维模型与工程资产，适合建模与游戏资产管理')
+    case 'uiux_design':
+      return t('检测到视觉设计源文件，适合UI/UX与视觉设计文件整理')
+    case 'lossless_audio':
+      return t('检测到高保真无损音乐与音频工程，适合音乐制作与收藏')
+    case 'video_post':
+      return t('检测到专业剪辑与后期工程文件，适合视频创作资产管理')
+    case 'comic_manga':
+      return t('检测到漫画与画集专属阅读包，适合二次元与数字漫画收纳')
+    case 'ebook_novel':
+      return t('检测到电子书与文学阅读文件，适合书籍与个人书库整理')
+    case 'desktop_declutter':
+      return t('检测到多种桌面散杂与快捷方式，适合一键桌面应急急救')
+    case 'downloads_triage':
+      return t('检测到密集安装包与压缩归档，适合下载暂存区自动分流')
+    case 'office_finance':
+      return t('检测到高频财务报表与对账表格，适合合同与财务数据归档')
+    case 'office_daily':
+      return t('检测到高比例日常办公文档，适合行政与综合办公文件管理')
+    case 'code_assets':
+      return t('检测到高频源码与工程配置，适合技术开发与代码资产收纳')
+    case 'general_audio':
+      return t('检测到大量音乐与音频录音，适合音频剪辑与素材库管理')
+    case 'plain_images':
+      return t('检测到大量常用格式图片，适合相册备份与截图管理')
+    case 'template_extension_match':
+      return t('文件格式与当前工作流预设高度契合')
+    case 'empty_directory':
+      return t('当前目录为空，放入文件后将自动分类整理')
+    case 'insufficient_samples':
+      return t('样本文件较少，放入更多文件后将提供更精准推荐')
+    case 'high_entropy':
+      return t('文件类型较分散，推荐先使用通用收件箱整理')
+    case 'executable_programs':
+      return t('检测到程序与安装包，适合软件与安装包专区归档')
+    case 'extension_weight_fit':
+      return t('文件构成比例与该场景理想标准高度相符')
+    case 'semantic_filename_boost':
+      return t('结合目录特征与文件名深度理解，推荐此专属场景')
+    case 'default_fallback':
+      return t('文件类型较丰富，推荐采用通用归档方案')
+    default:
+      return fallbackText || t('文件格式与当前工作流预设高度契合')
+  }
+}
+
 /**
  * 工作目录配置与规则确认向导 (WorkspaceSetupWizard)
  *
@@ -555,21 +610,74 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     (workspace as any).bound_workflow_id || 'builtin.workflow.photography-raw'
   )
 
-  // 异步探测目录画像
+  // Stage B 语义分与解锁集合 (单代际 epoch 绑定)
+  const probeSeqRef = useRef<number>(0)
+  const boundKeyRef = useRef<string>('')
+  const [semanticScores, setSemanticScores] = useState<Record<string, number>>({})
+  const [unlockedWorkflowIds, setUnlockedWorkflowIds] = useState<string[]>([])
+
+  // 异步探测目录画像 (Stage A 极速首屏 + Stage B 异步端侧语义打分协同流转)
   useEffect(() => {
     let cancelled = false
+    const epoch = ++probeSeqRef.current
+    const boundKey = `${workspace.id}:${workspace.path}`
+    boundKeyRef.current = boundKey
+    hasUserInteractedRef.current = false
+    setSemanticScores({})
+    setUnlockedWorkflowIds([])
+
     const probe = async () => {
       if (!window.electronAPI?.utils?.probeDirectoryProfile || !workspace.path) return
       setIsProbing(true)
       try {
         const result = await window.electronAPI.utils.probeDirectoryProfile(workspace.path)
-        if (!cancelled && result) {
+        if (cancelled || epoch !== probeSeqRef.current || boundKeyRef.current !== boundKey) {
+          return
+        }
+        if (result) {
           setProfileResult(result as DirectoryProfileResult)
+
+          // Stage B: 触发异步端侧语义向量打分 (仅在 totalSampled >= 5 且有接口时触发)
+          const sampled = (result as any).stats?.totalSampled ?? 0
+          if (sampled >= 5 && window.electronAPI?.utils?.scoreWorkflowSemantics) {
+            const req: WorkflowSemanticsScoreRequest = {
+              probeSeq: epoch,
+              dirPath: workspace.path,
+              countsByExt: (result as any).stats?.countsByExt || {},
+              totalFiles: sampled,
+              sampledFileNames: (result as any).stats?.sampledFileNames || []
+            }
+
+            // 渲染端外层超时 1500ms 熔断保护 (Promise.race)
+            const timeoutPromise = new Promise<{ status: 'degraded'; reason: 'timeout' }>(resolve =>
+              setTimeout(() => resolve({ status: 'degraded', reason: 'timeout' }), 1500)
+            )
+
+            Promise.race([window.electronAPI.utils.scoreWorkflowSemantics(req), timeoutPromise])
+              .then(bRes => {
+                if (
+                  cancelled ||
+                  epoch !== probeSeqRef.current ||
+                  boundKeyRef.current !== boundKey
+                ) {
+                  return
+                }
+                if (bRes?.status === 'ok') {
+                  setSemanticScores(bRes.semanticScoresByWorkflowId || {})
+                  setUnlockedWorkflowIds([...(bRes.unlockedWorkflowIds || [])])
+                }
+              })
+              .catch(err => {
+                console.warn('[WorkspaceSetupWizard] Stage B 语义打分异常:', err)
+              })
+          }
         }
       } catch (err) {
         console.warn('[WorkspaceSetupWizard] 嗅探目录画像失败:', err)
       } finally {
-        if (!cancelled) setIsProbing(false)
+        if (!cancelled && epoch === probeSeqRef.current) {
+          setIsProbing(false)
+        }
       }
     }
 
@@ -579,7 +687,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     }
   }, [workspace.id, workspace.path, parsedConfig.status])
 
-  // 计算文件特征细分分布百分比（支持安装包、压缩归档、快捷方式、文档、图像、影视、音频、其他）
+  // 计算文件特征细分分布百分比（全面覆盖程序、归档、快捷方式、代码、文档、图片、视频、音频与其他）
   const distribution = useMemo(() => {
     const stats = profileResult?.stats
     if (!stats || stats.totalSampled <= 0) {
@@ -589,11 +697,15 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     const { totalSampled, docCount, imageCount, videoCount, otherCount } = stats
     const cat = stats.categoryCounts
 
-    // 优先采用后端直出细分类计数，否则从全量扩展名映射或高频扩展名榜单推导
-    let installerCount = cat?.installer ?? stats.installerCount ?? 0
+    let executableCount = cat?.executable ?? cat?.installer ?? stats.installerCount ?? 0
     let archiveCount = cat?.archive ?? stats.archiveCount ?? 0
-    let shortcutCount = cat?.shortcut ?? stats.shortcutCount ?? 0
+    let shortcutCount = cat?.application ?? cat?.shortcut ?? stats.shortcutCount ?? 0
+    let codeCount = cat?.code ?? 0
+    let effectiveDocCount = cat?.doc ?? (cat ? (cat.doc ?? 0) : docCount)
+    let effectiveImageCount = cat?.image ?? imageCount
+    let effectiveVideoCount = cat?.video ?? videoCount
     let audioCount = cat?.audio ?? stats.audioCount ?? 0
+    let otherRemainingCount = cat?.other ?? otherCount
 
     if (
       cat === undefined &&
@@ -618,7 +730,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
       for (const [rawExt, count] of extEntries) {
         const cleanExt = rawExt.trim().toLowerCase().replace(/^\./, '')
         if (PROFILE_INSTALLER_EXTS.has(cleanExt)) {
-          installerCount += count
+          executableCount += count
         } else if (PROFILE_ARCHIVE_EXTS.has(cleanExt)) {
           archiveCount += count
         } else if (PROFILE_SHORTCUT_EXTS.has(cleanExt)) {
@@ -627,23 +739,18 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
           audioCount += count
         }
       }
+      otherRemainingCount = Math.max(
+        0,
+        (otherCount ?? Math.max(0, totalSampled - docCount - imageCount - videoCount)) -
+          (executableCount + archiveCount + shortcutCount + audioCount)
+      )
     }
-
-    const fineOtherSubSum = installerCount + archiveCount + shortcutCount + audioCount
-    const otherRemainingCount =
-      cat?.other !== undefined
-        ? cat.other
-        : Math.max(
-            0,
-            (otherCount ?? Math.max(0, totalSampled - docCount - imageCount - videoCount)) -
-              fineOtherSubSum
-          )
 
     const rawBuckets = [
       {
-        key: 'installer',
-        label: t('安装包 (.exe/.msi)'),
-        count: installerCount,
+        key: 'executable',
+        label: t('程序与安装包'),
+        count: executableCount,
         colorClass: 'bg-blue-500',
         textClass: 'text-blue-600 dark:text-blue-400',
         Icon: Package
@@ -658,16 +765,24 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
       },
       {
         key: 'shortcut',
-        label: t('快捷方式 (.lnk)'),
+        label: t('快捷方式与应用'),
         count: shortcutCount,
         colorClass: 'bg-cyan-500',
         textClass: 'text-cyan-600 dark:text-cyan-400',
         Icon: Link2
       },
       {
+        key: 'code',
+        label: t('源码与脚本'),
+        count: codeCount,
+        colorClass: 'bg-indigo-500',
+        textClass: 'text-indigo-600 dark:text-indigo-400',
+        Icon: Code2
+      },
+      {
         key: 'doc',
-        label: t('文档与代码'),
-        count: docCount,
+        label: t('文档与表格'),
+        count: effectiveDocCount,
         colorClass: 'bg-emerald-500',
         textClass: 'text-emerald-600 dark:text-emerald-400',
         Icon: FileText
@@ -675,7 +790,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
       {
         key: 'image',
         label: t('图片与插画'),
-        count: imageCount,
+        count: effectiveImageCount,
         colorClass: 'bg-violet-500',
         textClass: 'text-violet-600 dark:text-violet-400',
         Icon: ImageIcon
@@ -683,7 +798,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
       {
         key: 'video',
         label: t('视频与影视'),
-        count: videoCount,
+        count: effectiveVideoCount,
         colorClass: 'bg-orange-500',
         textClass: 'text-orange-600 dark:text-orange-400',
         Icon: Film
@@ -702,7 +817,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
         count: otherRemainingCount,
         colorClass: 'bg-slate-400 dark:bg-slate-600',
         textClass: 'text-slate-500',
-        Icon: Package
+        Icon: HelpCircle
       }
     ].filter(item => item.count > 0)
 
@@ -782,20 +897,26 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
       extensionCounts: profileResult.stats.extensionCounts,
       categoryCounts: profileResult.stats.categoryCounts,
       topExtensions: profileResult.stats.topExtensions || [],
+      semanticScoresByWorkflowId: semanticScores,
+      unlockedWorkflowIds,
       isDesktopPath,
       isDownloadsPath
     }
     return recommendWorkflowByProfile(profileStats, workflows)
-  }, [profileResult, workflows, workspace.path])
+  }, [profileResult, workflows, workspace.path, semanticScores, unlockedWorkflowIds])
 
   // 推荐分数值映射表
   const scoreMap = useMemo(() => {
-    const map = new Map<string, { score: number; matchReason: string; isTop: boolean }>()
+    const map = new Map<
+      string,
+      { score: number; matchReason: string; isTop: boolean; reasonCode?: RecommendReasonCode }
+    >()
     for (const rec of workflowRecommendations) {
       map.set(rec.workflowId, {
         score: rec.score,
-        matchReason: rec.matchReason,
-        isTop: rec.isTopRecommendation
+        matchReason: getWorkflowReasonDisplay(rec.reasonCode, rec.matchReason),
+        isTop: rec.isTopRecommendation,
+        reasonCode: rec.reasonCode
       })
     }
     return map
@@ -806,14 +927,20 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     if (workflowRecommendations.length === 0) return null
     const topRec = workflowRecommendations[0]
     const wf = workflows.find((w: any) => w?.id === topRec.workflowId)
-    return wf ? { ...wf, score: topRec.score, matchReason: topRec.matchReason } : null
+    return wf
+      ? {
+          ...wf,
+          score: topRec.score,
+          matchReason: getWorkflowReasonDisplay(topRec.reasonCode, topRec.matchReason)
+        }
+      : null
   }, [workflowRecommendations, workflows])
 
-  // Top 1 智能推荐是否达到高亮门槛
+  // Top 1 智能推荐是否达到高亮门槛 (首选分 >= 70 且领先第二名 >= 15 分，无第二名视为 0 分)
   const isTopRecommendationHighlighted = useMemo(() => {
-    if (!workflowRecommendations || workflowRecommendations.length < 2) return false
+    if (!workflowRecommendations || workflowRecommendations.length === 0) return false
     const s1 = workflowRecommendations[0].score
-    const s2 = workflowRecommendations[1].score
+    const s2 = workflowRecommendations.length > 1 ? workflowRecommendations[1].score : 0
     return s1 >= 70 && s1 - s2 >= 15
   }, [workflowRecommendations])
 
@@ -1018,6 +1145,10 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
         schemaVersion: 1,
         status: 'ready',
         workflowId: selectedWorkflow.id,
+        extensionWeights:
+          selectedTemplateConfig?.extensionWeights ||
+          selectedWorkflow.extensionWeights ||
+          undefined,
         customIgnoreRules: Array.isArray(selectedTemplateConfig?.customIgnoreRules)
           ? filterWorkspaceUniqueIgnoreEntries(
               globalIgnoreRules,
@@ -1064,13 +1195,18 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
       }
 
       if (!commitResult.success) {
-        const errObj = commitResult.error || {
-          code: 'UNKNOWN',
-          message: t('策略提交未成功')
+        const rawErr = commitResult.error
+        const fallbackCode = commitResult.errorCode || 'UNKNOWN'
+        const fallbackMsg = commitResult.errorMessage || t('策略提交未成功')
+        const errObj = {
+          code: rawErr?.code || fallbackCode,
+          message: rawErr?.message || fallbackMsg,
+          stack: rawErr?.stack,
+          details: rawErr?.details
         }
         setCommitError({
-          code: errObj.code || 'UNKNOWN',
-          message: errObj.message || t('保存配置失败'),
+          code: errObj.code,
+          message: errObj.message,
           stack: errObj.stack,
           payload: {
             workspaceId: workspace.id,
@@ -1337,15 +1473,36 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
 
       {/* ================= 步骤 1 专属：推荐首选通栏横幅 (在第 2 步隐藏) ================= */}
       {currentStep === 1 && top1Recommendation && (
-        <div className="p-3 rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex items-center justify-between gap-4 shrink-0 shadow-2xs">
+        <div
+          className={cn(
+            'p-3 rounded-xl border flex items-center justify-between gap-4 shrink-0 shadow-2xs transition-colors',
+            isTopRecommendationHighlighted
+              ? 'border-primary/40 bg-gradient-to-r from-primary/15 via-primary/10 to-transparent ring-1 ring-primary/20'
+              : 'border-border/50 bg-muted/30'
+          )}
+        >
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold shrink-0 shadow-xs">
+            <div
+              className={cn(
+                'w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 shadow-xs',
+                isTopRecommendationHighlighted
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground'
+              )}
+            >
               ★
             </div>
             <div className="min-w-0 space-y-0.5">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-primary text-primary-foreground shadow-2xs">
-                  🔥 {t('推荐首选 · 实测 {score} 分', { score: top1Recommendation.score })}
+                <span
+                  className={cn(
+                    'text-xs font-bold px-2 py-0.5 rounded-full shadow-2xs',
+                    isTopRecommendationHighlighted
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground'
+                  )}
+                >
+                  {`${isTopRecommendationHighlighted ? '🔥 ' : '★ '}${t('推荐首选 · 实测 {score} 分', { score: top1Recommendation.score })}`}
                 </span>
                 <h4 className="text-sm font-bold text-foreground truncate">
                   {top1Recommendation.name}
@@ -1354,7 +1511,9 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
                   {getPersonaLabels()[top1Recommendation?.persona] || top1Recommendation?.persona}
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground truncate">{top1Recommendation.summary}</p>
+              <p className="text-xs text-muted-foreground truncate">
+                {top1Recommendation.matchReason || top1Recommendation.summary}
+              </p>
             </div>
           </div>
 
@@ -1493,7 +1652,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
                     </div>
 
                     <p className="text-xs text-muted-foreground leading-relaxed mt-1.5 line-clamp-1">
-                      {wf.summary}
+                      {rec?.matchReason || wf.summary}
                     </p>
 
                     {(() => {

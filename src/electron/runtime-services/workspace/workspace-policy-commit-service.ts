@@ -146,7 +146,11 @@ export class WorkspacePolicyCommitService {
         policyVersion: 0,
         committedConfig: params.targetConfig,
         errorCode: 'UNKNOWN',
-        errorMessage: `无效的 workspaceId: ${params.workspaceId}`
+        errorMessage: `无效的 workspaceId: ${params.workspaceId}`,
+        error: {
+          code: 'UNKNOWN',
+          message: `无效的 workspaceId: ${params.workspaceId}`
+        }
       }
     }
 
@@ -184,7 +188,12 @@ export class WorkspacePolicyCommitService {
         policyVersion: 0,
         committedConfig: params.targetConfig,
         errorCode: 'PERMISSION',
-        errorMessage: err.message
+        errorMessage: err.message,
+        error: {
+          code: 'PERMISSION',
+          message: err.message,
+          stack: err.stack
+        }
       }
     }
 
@@ -206,14 +215,23 @@ export class WorkspacePolicyCommitService {
           throw new Error(`工作区 [${workspaceId}] 不存在`)
         }
 
-        const effectiveWorkflowId =
-          params.workflowId || params.boundWorkflowId || row.bound_workflow_id || ''
+        // 显式支持解绑或未绑定工作流：传 null/空串时清空绑定；传非空字符串时绑定；杜绝传空字符串 '' 破坏外键约束
+        let effectiveWorkflowId: string | null = null
+        if (params.boundWorkflowId !== undefined) {
+          effectiveWorkflowId = params.boundWorkflowId || null
+        } else if (params.workflowId !== undefined) {
+          effectiveWorkflowId = params.workflowId || null
+        } else if (row.bound_workflow_id) {
+          effectiveWorkflowId = row.bound_workflow_id
+        }
+
         const rawTarget = (params.targetConfig || params.templateConfig || {}) as any
         let configToPersist: WorkspaceConfigReady = {
           schemaVersion: 1,
           status: 'ready',
           policyVersion: 1,
-          workflowId: effectiveWorkflowId,
+          workflowId: effectiveWorkflowId || undefined,
+          extensionWeights: rawTarget.extensionWeights,
           customIgnoreRules: [],
           customWhitelistRules: [],
           baseAIConfig: {

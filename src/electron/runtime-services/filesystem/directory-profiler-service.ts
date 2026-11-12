@@ -10,8 +10,14 @@
 
 import * as fs from 'fs'
 import * as path from 'path'
-import type { WorkspaceConfigIntent } from '@firefly/types'
-import { LogCategory, logger } from '@firefly/shared'
+import type { WorkspaceConfigIntent, SampledFileStemCount } from '@firefly/types'
+import {
+  LogCategory,
+  logger,
+  extensionFromFileName,
+  getFileCategory,
+  FileCategory
+} from '@firefly/shared'
 
 /**
  * 常见黑名单目录名称 (小写比较，无条件跳过)
@@ -214,12 +220,15 @@ export interface DirectoryProfileStats {
   videoCount: number
   otherCount: number
   installerCount?: number
+  executableCount?: number
   archiveCount?: number
   shortcutCount?: number
   audioCount?: number
+  codeCount?: number
   countsByExt?: Record<string, number>
   categoryCounts?: Record<string, number>
   topExtensions: Array<{ ext: string; count: number }>
+  sampledFileNames?: SampledFileStemCount[]
   durationMs: number
   hitTimeBudget: boolean
 }
@@ -248,26 +257,66 @@ export class DirectoryProfiler {
   }
 
   /**
+   * 清洗文件名并提取标准化词干 (Spec §2.3.2)
+   * 剥离：① 日期/时间戳；② UUID/长十六进制串；③ 副本括号与末尾连续数字序号；截断 24 字符
+   */
+  private cleanFileNameStem(rawStem: string): string | null {
+    if (!rawStem || typeof rawStem !== 'string') return null
+    let s = rawStem.trim()
+    if (!s) return null
+
+    // 剥离两端常见括号与中英文标点
+    s = s.replace(/^[\s\[\]()（）【】_.-]+|[\s\[\]()（）【】_.-]+$/g, '')
+    if (!s) return null
+
+    // 剥离日期前缀或后缀 (如 2026-11-12, 20261112_ 等)
+    s = s.replace(/^(?:19|20)\d{2}[-_.]?(?:0[1-9]|1[0-2])[-_.]?(?:0[1-9]|[12]\d|3[01])[\s_-]*/i, '')
+    s = s.replace(/[\s_-]*(?:19|20)\d{2}[-_.]?(?:0[1-9]|1[0-2])[-_.]?(?:0[1-9]|[12]\d|3[01])$/i, '')
+
+    // 剥离 UUID 或 长十六进制串
+    s = s.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '')
+    s = s.replace(/[0-9a-f]{16,64}/gi, '')
+
+    // 剥离副本括号与末尾序号 (如 (1), [2], _01, -副本)，采用无嵌套正则规避 ReDoS
+    while (/[\s_-]*(?:副本|\(\d{1,4}\)|\[\d{1,4}\])$/i.test(s)) {
+      s = s.replace(/[\s_-]*(?:副本|\(\d{1,4}\)|\[\d{1,4}\])$/i, '')
+    }
+    s = s.replace(/[\s_-]+\d{1,4}$/g, '')
+
+    // 再次剥离边缘标点
+    s = s.replace(/^[\s\[\]()（）【】_.-]+|[\s\[\]()（）【】_.-]+$/g, '')
+
+    // 过滤纯符号或长度 < 2 的碎片
+    if (s.length < 2) return null
+    if (!/[a-zA-Z0-9\u4e00-\u9fa5]/.test(s)) return null
+
+    return s.slice(0, 24)
+  }
+
+  /**
    * 异步广度优先遍历嗅探目录扩展名分布 (带硬超时竞速防护)
    */
   async profileDirectory(targetPath: string): Promise<DirectoryProfileResult> {
     const startTime = Date.now()
     const extensionCounts = new Map<string, number>()
+    const rawStemFrequency = new Map<string, number>()
 
     let docCount = 0
     let imageCount = 0
     let videoCount = 0
-    let otherCount = 0
-    let installerCount = 0
-    let archiveCount = 0
-    let shortcutCount = 0
     let audioCount = 0
+    let archiveCount = 0
+    let codeCount = 0
+    let executableCount = 0
+    let shortcutCount = 0
+    let otherCount = 0
     let totalSampled = 0
     let hitTimeBudget = false
 
     // 内部实际执行遍历的异步任务
     const traverseTask = async (): Promise<void> => {
       const queue: Array<{ dirPath: string; depth: number }> = [{ dirPath: targetPath, depth: 0 }]
+      let filesProcessedSinceYield = 0
 
       while (queue.length > 0) {
         if (totalSampled >= this.maxFiles) {
@@ -296,6 +345,13 @@ export class DirectoryProfiler {
             break
           }
 
+          // 协作式调度：每处理 32 个条目让出事件循环微任务
+          filesProcessedSinceYield++
+          if (filesProcessedSinceYield >= 32) {
+            filesProcessedSinceYield = 0
+            await new Promise(r => setImmediate(r))
+          }
+
           // 符号链接一律跳过，防止目录循环与网络映射死锁
           if (entry.isSymbolicLink()) {
             continue
@@ -322,27 +378,48 @@ export class DirectoryProfiler {
             }
 
             totalSampled++
-            const ext = path.extname(fileName).slice(1).toLowerCase()
-            if (ext) {
-              extensionCounts.set(ext, (extensionCounts.get(ext) ?? 0) + 1)
-              if (DOCUMENT_EXTENSIONS.has(ext)) {
-                docCount++
-              } else if (IMAGE_EXTENSIONS.has(ext)) {
-                imageCount++
-              } else if (VIDEO_EXTENSIONS.has(ext)) {
-                videoCount++
-              } else {
-                otherCount++
-                if (INSTALLER_EXTENSIONS.has(ext)) {
-                  installerCount++
-                } else if (ARCHIVE_EXTENSIONS.has(ext)) {
-                  archiveCount++
-                } else if (SHORTCUT_EXTENSIONS.has(ext)) {
-                  shortcutCount++
-                } else if (AUDIO_EXTENSIONS.has(ext)) {
-                  audioCount++
-                }
-              }
+            const extNoDot = extensionFromFileName(fileName, { withDot: false })
+            const extWithDot = extensionFromFileName(fileName, { withDot: true })
+
+            // 词干提取与频次统计
+            const dotIdx = extWithDot ? fileName.toLowerCase().lastIndexOf(extWithDot) : -1
+            const baseStem = dotIdx > 0 ? fileName.slice(0, dotIdx) : fileName
+            const cleanedStem = this.cleanFileNameStem(baseStem)
+            if (cleanedStem) {
+              rawStemFrequency.set(cleanedStem, (rawStemFrequency.get(cleanedStem) ?? 0) + 1)
+            }
+
+            if (extNoDot) {
+              extensionCounts.set(extNoDot, (extensionCounts.get(extNoDot) ?? 0) + 1)
+            }
+
+            const category = getFileCategory(fileName)
+
+            if (INSTALLER_EXTENSIONS.has(extNoDot)) {
+              executableCount++
+            } else if (category === FileCategory.IMAGE) {
+              imageCount++
+            } else if (category === FileCategory.VIDEO) {
+              videoCount++
+            } else if (category === FileCategory.AUDIO || AUDIO_EXTENSIONS.has(extNoDot)) {
+              audioCount++
+            } else if (category === FileCategory.CODE) {
+              codeCount++
+              docCount++
+            } else if (
+              category === FileCategory.DOCUMENT ||
+              category === FileCategory.OFFICE ||
+              category === FileCategory.TEXT ||
+              category === FileCategory.EBOOK ||
+              DOCUMENT_EXTENSIONS.has(extNoDot)
+            ) {
+              docCount++
+            } else if (category === FileCategory.EXECUTABLE) {
+              executableCount++
+            } else if (category === FileCategory.ARCHIVE || ARCHIVE_EXTENSIONS.has(extNoDot)) {
+              archiveCount++
+            } else if (category === FileCategory.APPLICATION || SHORTCUT_EXTENSIONS.has(extNoDot)) {
+              shortcutCount++
             } else {
               otherCount++
             }
@@ -383,10 +460,11 @@ export class DirectoryProfiler {
       countsByExt[ext] = count
     }
 
-    const otherRemainingCount = Math.max(
-      0,
-      otherCount - installerCount - archiveCount - shortcutCount - audioCount
-    )
+    // 统计词干频次 Top 24
+    const sampledFileNames: SampledFileStemCount[] = Array.from(rawStemFrequency.entries())
+      .map(([stem, count]) => ({ stem, count }))
+      .sort((a, b) => b.count - a.count || a.stem.localeCompare(b.stem))
+      .slice(0, 24)
 
     const stats: DirectoryProfileStats = {
       totalSampled,
@@ -394,22 +472,27 @@ export class DirectoryProfiler {
       imageCount,
       videoCount,
       otherCount,
-      installerCount,
+      installerCount: executableCount, // 兼容历史 installerCount 字段
+      executableCount,
       archiveCount,
       shortcutCount,
       audioCount,
+      codeCount,
       countsByExt,
       categoryCounts: {
-        installer: installerCount,
+        installer: executableCount,
+        executable: executableCount,
         archive: archiveCount,
         shortcut: shortcutCount,
         doc: docCount,
+        code: codeCount,
         image: imageCount,
         video: videoCount,
         audio: audioCount,
-        other: otherRemainingCount
+        other: otherCount
       },
       topExtensions,
+      sampledFileNames,
       durationMs,
       hitTimeBudget
     }

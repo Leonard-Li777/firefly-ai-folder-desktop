@@ -352,7 +352,9 @@ const electronAPI = {
   invitation: {
     match: (features: any) => ipcRenderer.invoke('invitation/match', features),
     getCount: () => ipcRenderer.invoke('invitation/get-count'),
-    redeem: (inviterRef: string) => ipcRenderer.invoke('invitation/redeem', inviterRef)
+    redeem: (inviterRef: string) => ipcRenderer.invoke('invitation/redeem', inviterRef),
+    redeemInvitationCode: (inviterRef: string) =>
+      ipcRenderer.invoke('invitation/redeem', inviterRef)
   },
 
   // 分析队列
@@ -613,6 +615,12 @@ const electronAPI = {
     probeDirectoryProfile: (dirPath: string) =>
       ipcRenderer.invoke('probe-directory-profile', dirPath),
 
+    // 端侧工作流语义打分 (Stage B)
+    scoreWorkflowSemantics: (
+      request: import('@firefly/types').WorkflowSemanticsScoreRequest
+    ): Promise<import('@firefly/types').WorkflowSemanticsScoreResult> =>
+      ipcRenderer.invoke('score-workflow-semantics', request),
+
     getUserHomePath: () => ipcRenderer.invoke('get-user-home-path'),
 
     // 添加路径连接函数
@@ -709,6 +717,7 @@ const electronAPI = {
     getProfile: (): Promise<{
       tier: string
       firecores: number
+      ref_code?: string
       computed_limits: any
       entitlements: string[]
       counters?: Record<string, any>
@@ -718,6 +727,8 @@ const electronAPI = {
         plan_id: string
       }
     }> => ipcRenderer.invoke('userTier/getProfile'),
+    redeemInvitationCode: (inviterRef: string) =>
+      ipcRenderer.invoke('invitation/redeem', inviterRef),
     syncFromCloud: (): Promise<any> => ipcRenderer.invoke('userTier/syncFromCloud'),
     getConsumptionDetails: (): Promise<any[]> =>
       ipcRenderer.invoke('userTier/getConsumptionDetails'),
@@ -772,6 +783,8 @@ const electronAPI = {
       code: string
       invitationCode?: string
     }): Promise<any> => ipcRenderer.invoke('deviceBind/completeEmailBinding', payload),
+    completeOaContactBinding: (payload?: { invitationCode?: string }): Promise<any> =>
+      ipcRenderer.invoke('deviceBind/completeOaContactBinding', payload),
     hasActiveBindSession: (): Promise<boolean> =>
       ipcRenderer.invoke('deviceBind/hasActiveBindSession'),
     getUnseatedSession: (): Promise<any> => ipcRenderer.invoke('deviceBind/getUnseatedSession'),
@@ -1582,7 +1595,7 @@ const electronAPI = {
 export type ElectronAPI = typeof electronAPI
 
 // E2E 测试环境受控只读监听器注入 (Spec §4.5 build:prod DCE 保证零残留)
-if (__FF_E2E__) {
+if (typeof __FF_E2E__ !== 'undefined' && __FF_E2E__) {
   ;(electronAPI as any).onPluginCrash = (cb: (data: unknown) => void) => {
     ipcRenderer.on('plugin:crashed', (_e, data) => cb(data))
   }
@@ -1769,7 +1782,7 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
 // E2E 只读事件监听骨架（Spec §4.5 build:prod DCE 保证零残留）
 // build:e2e-packaged: __FF_E2E__ = true，此块保留并打包
 // build:prod: __FF_E2E__ = false，编译器 DCE 彻底剥离，产物中零残留
-if (__FF_E2E__) {
+if (typeof __FF_E2E__ !== 'undefined' && __FF_E2E__) {
   contextBridge.exposeInMainWorld('__e2e_probe_bridge', {
     // 监听主进程插件崩溃事件（供 L2b/L3 用例断言渲染层感知）
     onPluginCrash: (cb: (data: unknown) => void) => {

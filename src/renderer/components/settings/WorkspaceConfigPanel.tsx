@@ -282,6 +282,8 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
         baseAIConfig: derivedSnapshot,
         derivedSnapshot,
         overrides: hasOverrides ? overrides : undefined,
+        extensionWeights:
+          parsedConfig.status === 'ready' ? parsedConfig.extensionWeights : undefined,
         customIgnoreRules:
           parsedConfig.status === 'ready' && parsedConfig.customIgnoreRules
             ? parsedConfig.customIgnoreRules

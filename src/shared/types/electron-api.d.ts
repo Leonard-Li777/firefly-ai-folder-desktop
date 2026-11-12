@@ -631,6 +631,9 @@ declare global {
             hitTimeBudget: boolean
           }
         }>
+        scoreWorkflowSemantics?: (
+          request: import('@firefly/types').WorkflowSemanticsScoreRequest
+        ) => Promise<import('@firefly/types').WorkflowSemanticsScoreResult>
         getUserHomePath: () => Promise<string>
         joinPath: (basePath: string, relativePath: string) => Promise<string>
         openFileWithDefaultApp: (filePath: string) => Promise<void>
@@ -1136,6 +1139,26 @@ declare global {
         }) => Promise<ArrayBuffer | null>
       }
       modularResource?: import('../../renderer/stores/plugin-center-store').IModularResourceBridge
+      deviceBind: {
+        getStatus: () => Promise<any>
+        createCode: (payload?: { forceRefresh?: boolean }) => Promise<any>
+        pollResult: (payload: { code: string; pollSecret: string }) => Promise<any>
+        sendEmailOtp: (payload: { email: string }) => Promise<any>
+        completeEmailBinding: (payload: {
+          email: string
+          code: string
+          invitationCode?: string
+        }) => Promise<any>
+        completeOaContactBinding: (payload?: { invitationCode?: string }) => Promise<any>
+        hasActiveBindSession: () => Promise<boolean>
+        getUnseatedSession: () => Promise<any>
+        seatDevice: (payload: {
+          sessionToken?: string
+          evictDeviceId?: string | null
+        }) => Promise<any>
+        listSeatedDevices: (payload?: { sessionToken?: string }) => Promise<any>
+        unbindDevice: (payload?: { deviceId?: string; machineId?: string }) => Promise<any>
+      }
     }
 
     // 其他全局对象

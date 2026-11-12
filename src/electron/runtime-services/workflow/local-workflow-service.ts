@@ -88,6 +88,7 @@ export class LocalWorkflowService {
         derivedSnapshot: baseAi,
         advancedAIPrompts: (unifiedConfig as any)?.advancedAIPrompts || undefined,
         unitRecognition: (unifiedConfig as any)?.unitRecognition || undefined,
+        extensionWeights: (unifiedConfig as any)?.extensionWeights || undefined,
         namingPattern: manifest.namingPattern || (unifiedConfig as any)?.namingPattern || undefined,
         namingTemplate:
           manifest.namingTemplate || (unifiedConfig as any)?.namingTemplate || undefined,

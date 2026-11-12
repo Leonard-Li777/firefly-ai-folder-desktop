@@ -6,7 +6,7 @@ import {
   parseWorkspaceConfig,
   SettingsCategory
 } from '@firefly/types'
-import { filterOutGlobalExclusionRules } from '@firefly/shared'
+import { filterOutGlobalExclusionRules, isValidAdmissionExtension } from '@firefly/shared'
 import { useSettingsStore } from '../../../stores/settings-store'
 import { Card } from '../../ui/card'
 import { Button } from '../../ui/button'
@@ -29,9 +29,6 @@ import {
   FolderOpen,
   CheckCircle2,
   ListFilter,
-  Layers,
-  AlertTriangle,
-  RotateCcw,
   Sparkles,
   Loader2
 } from 'lucide-react'
@@ -46,11 +43,15 @@ export type WorkspaceIgnoreRulesTabProps = WorkspaceAdmissionRulesTabProps
 /**
  * 工作区专有：文件准入与包含排除规则管理面板 (Ticket 01)
  *
+ * @doc-anchor: docs/specs/workspace-whitelist-and-workflow-orchestration-spec.md §2.4
+ *
  * 核心设计：
- * 1. 模式切换：标准模式（全量入场，受排除规则过滤）与排他包含模式（仅放行指定扩展名）；
- * 2. 包含规则标签化管理：支持输入纯小写/带点扩展名、批量添加与分类快速预设；
+ * 1. 两套规则可同时设置、叠加生效：规格已废除 filterMode 二选一互斥模式，本面板不再提供互斥的「入场模式」；
+ *    判定顺序固定为：系统硬排除优先，其次目录专属排除规则，再匹配包含规则，最后默认放行
+ *    （包含规则留空即表示不限格式，除排除项外全量放行）；
+ * 2. 包含规则标签化管理：常驻可编辑，支持输入纯小写/带点扩展名、批量添加与分类快速预设；
  * 3. 实时影响预览与安全告知：实时测算纳入/排除比例与文件数量，常驻醒目“绝不删除用户磁盘物理文件”绿色安全徽标；
- * 4. 专属排除规则与系统全局基线完整保留并紧密协同。
+ * 4. 专属排除规则与系统全局基线完整保留并紧密协同，始终与包含规则同时参与准入判定。
  */
 export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProps> = ({
   workspace,
@@ -77,14 +78,13 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProp
             return trimmed.startsWith('.') ? trimmed : `.${trimmed}`
           })
         )
-      ).filter(p => /^\.[a-z0-9_-]+$/i.test(p))
+      ).filter(p => isValidAdmissionExtension(p))
     }
     return []
   }, [workspace.whitelist_patterns])
 
-  const [mode, setMode] = useState<'standard' | 'whitelist'>(() => {
-    return initialWhitelist.length > 0 ? 'whitelist' : 'standard'
-  })
+  // 规格已废除「标准 / 排他」二选一互斥模式：包含规则与排除规则始终同时存在、叠加生效，
+  // 因此这里不再维护 mode 状态，包含规则列表本身即唯一事实（空列表 = 不限格式）。
   const [whitelistTags, setWhitelistTags] = useState<string[]>(initialWhitelist)
   const [tagInput, setTagInput] = useState('')
   const [isSavingWhitelist, setIsSavingWhitelist] = useState(false)
@@ -92,7 +92,6 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProp
   // 同步外部 workspace 数据变化
   useEffect(() => {
     setWhitelistTags(initialWhitelist)
-    setMode(initialWhitelist.length > 0 ? 'whitelist' : 'standard')
   }, [initialWhitelist])
 
   // 2. 实时影响测算状态
@@ -115,7 +114,8 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProp
         return
       setIsCalculatingImpact(true)
       try {
-        const patternsToTest = mode === 'standard' ? [] : whitelistTags
+        // 两套规则叠加判定：始终按当前实际包含规则测算，不再因「模式」绕过或清空
+        const patternsToTest = whitelistTags
         const previewFn =
           window.electronAPI.previewWorkspaceInclusionImpact ||
           window.electronAPI.previewWorkspaceWhitelistImpact
@@ -140,17 +140,14 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProp
       cancelled = true
       clearTimeout(timer)
     }
-  }, [workspace.id, mode, whitelistTags])
+  }, [workspace.id, whitelistTags])
 
-  // 3. 白名单修改脏状态检查
+  // 3. 包含规则修改脏状态检查（两套规则常驻，脏状态仅由包含规则本身决定）
   const isWhitelistDirty = useMemo(() => {
-    const initialMode = initialWhitelist.length > 0 ? 'whitelist' : 'standard'
-    if (mode !== initialMode) return true
-    if (mode === 'standard') return false
     if (whitelistTags.length !== initialWhitelist.length) return true
     const initSet = new Set(initialWhitelist)
     return whitelistTags.some(t => !initSet.has(t))
-  }, [mode, whitelistTags, initialWhitelist])
+  }, [whitelistTags, initialWhitelist])
 
   // 4. 白名单添加与预设处理
   const handleAddTag = (rawText: string) => {
@@ -165,7 +162,7 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProp
         const lower = p.toLowerCase()
         return lower.startsWith('.') ? lower : `.${lower}`
       })
-      .filter(p => /^\.[a-z0-9_-]+$/i.test(p))
+      .filter(p => isValidAdmissionExtension(p))
 
     if (normalized.length === 0) {
       toast.info(t('请输入合法的扩展名，例如 .cr3 或 docx'))
@@ -211,15 +208,16 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProp
     if (!workspace.id) return
     setIsSavingWhitelist(true)
     try {
-      const targetPatterns = mode === 'standard' ? [] : whitelistTags
+      // 始终按实际配置写入：不再存在「切到标准模式就清空包含规则」的互斥分支
+      const targetPatterns = whitelistTags
       const updateFn =
         window.electronAPI?.updateWorkspaceInclusion || window.electronAPI?.updateWorkspaceWhitelist
       if (updateFn) {
         const res = await updateFn(workspace.id, targetPatterns)
         if (res.success) {
           toast.success(
-            mode === 'standard'
-              ? t('已切换至标准全量入场模式')
+            targetPatterns.length === 0
+              ? t('包含规则已清空，现按排除规则全量放行')
               : t('包含规则已更新，已生效 {count} 项扩展名', { count: targetPatterns.length })
           )
           onConfigSaved?.()
@@ -381,7 +379,7 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProp
   const inPct =
     impact.totalFiles > 0
       ? Math.min(100, Math.max(0, Math.round((impact.includedFiles / impact.totalFiles) * 100)))
-      : mode === 'standard'
+      : whitelistTags.length === 0
         ? 100
         : 0
   const outPct = 100 - inPct
@@ -396,7 +394,9 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProp
             <span>{t('文件准入与包含规则 (当前工作目录)')}</span>
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {t('管理当前工作目录的文件准入模式（标准全量或排他包含），并定制目录专属排除项。')}
+            {t(
+              '包含规则与排除规则可同时设置、一起生效；系统会先排除、再按包含规则过滤，最后放行其余文件。'
+            )}
           </p>
         </div>
 
@@ -413,7 +413,7 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProp
             ) : (
               <Save className="w-3.5 h-3.5" />
             )}
-            <span>{isSavingWhitelist ? t('正在保存...') : t('保存准入规则与包含模式')}</span>
+            <span>{isSavingWhitelist ? t('正在保存...') : t('保存包含与排除规则')}</span>
           </Button>
         )}
       </div>
@@ -433,234 +433,172 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProp
           </div>
           <p className="text-[11px] mt-1 text-emerald-800/90 dark:text-emerald-300/90 leading-relaxed">
             {t(
-              '修改包含与排除规则仅影响真实目录中显示的文件， 不会触碰您电脑磁盘中的任何原始物理文件。'
+              '修改包含与排除规则仅影响真实目录中显示的文件，不会触碰您电脑磁盘中的任何原始物理文件。'
             )}
           </p>
         </div>
       </div>
 
-      {/* 模式切换卡片区 */}
+      {/* 两套规则常驻叠加：规格已废除二选一互斥模式，此处仅说明固定判定顺序 */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <Label className="text-sm font-semibold flex items-center gap-2">
             <ListFilter className="w-4 h-4 text-primary" />
-            <span>{t('文件入场模式')}</span>
+            <span>{t('文件准入规则 (可同时设置)')}</span>
           </Label>
+          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+            {t('包含 + 排除叠加生效')}
+          </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {/* 标准模式 */}
-          <div
-            onClick={() => setMode('standard')}
-            className={cn(
-              'p-4 rounded-xl border cursor-pointer transition-all duration-150 flex flex-col justify-between',
-              mode === 'standard'
-                ? 'bg-card border-primary ring-2 ring-primary/20 shadow-xs'
-                : 'bg-muted/10 border-border/70 hover:bg-muted/20 hover:border-border'
+        <Card className="p-3.5 bg-muted/10 border-border/70 space-y-2.5">
+          <p className="text-[11px] text-foreground leading-relaxed">
+            {t(
+              '包含规则与排除规则是两套独立配置，可同时设置、叠加生效，无需在两者之间二选一。系统按以下固定顺序判定：'
             )}
-          >
-            <div className="flex items-start justify-between gap-2 mb-2">
-              <div className="flex items-center gap-2">
-                <div
-                  className={cn(
-                    'w-7 h-7 rounded-lg flex items-center justify-center shrink-0',
-                    mode === 'standard'
-                      ? 'bg-primary/10 text-primary'
-                      : 'bg-muted text-muted-foreground'
-                  )}
-                >
-                  <Layers className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-foreground">
-                    {t('标准模式 (全量入场)')}
-                  </div>
-                  <div className="text-[10px] text-muted-foreground">
-                    {t('全量入场，受黑名单排除')}
-                  </div>
-                </div>
-              </div>
-              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary shrink-0">
-                {t('默认推荐')}
-              </span>
-            </div>
-            <p className="text-[11px] text-muted-foreground leading-relaxed mt-1">
-              {t(
-                '目录中所有支持的文件类型均会进入 AI 索引与分析，仅排除下方黑名单中的文件或目录。'
-              )}
-            </p>
-          </div>
-
-          {/* 排他白名单模式 */}
-          <div
-            onClick={() => setMode('whitelist')}
-            className={cn(
-              'p-4 rounded-xl border cursor-pointer transition-all duration-150 flex flex-col justify-between',
-              mode === 'whitelist'
-                ? 'bg-card border-primary ring-2 ring-primary/20 shadow-xs'
-                : 'bg-muted/10 border-border/70 hover:bg-muted/20 hover:border-border'
+          </p>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {[t('1. 系统硬排除'), t('2. 目录专属排除'), t('3. 包含规则'), t('4. 默认放行')].map(
+              (step, idx) => (
+                <React.Fragment key={step}>
+                  {idx > 0 && <span className="text-[10px] text-muted-foreground">→</span>}
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-muted/60 text-foreground border border-border/60">
+                    {step}
+                  </span>
+                </React.Fragment>
+              )
             )}
-          >
-            <div className="flex items-start justify-between gap-2 mb-2">
-              <div className="flex items-center gap-2">
-                <div
-                  className={cn(
-                    'w-7 h-7 rounded-lg flex items-center justify-center shrink-0',
-                    mode === 'whitelist'
-                      ? 'bg-primary/10 text-primary'
-                      : 'bg-muted text-muted-foreground'
-                  )}
-                >
-                  <Filter className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-foreground">
-                    {t('排他包含模式 (仅放行指定格式)')}
-                  </div>
-                  <div className="text-[10px] text-muted-foreground">
-                    {t('精准过滤，仅目标格式进入')}
-                  </div>
-                </div>
-              </div>
-              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary shrink-0">
-                {t('精准过滤')}
-              </span>
-            </div>
-            <p className="text-[11px] text-muted-foreground leading-relaxed mt-1">
-              {t(
-                '仅放行指定扩展名（如 RAW 底片、工程图纸或专有文档）进入 AI 队列，其余文件完全跳过。'
-              )}
-            </p>
           </div>
-        </div>
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            {t(
+              '包含规则留空表示不限格式，除排除项外全量放行；填写后仅放行这些扩展名。排除规则始终优先生效，可在宽泛包含规则下精确剔除缩略图、缓存目录等文件。'
+            )}
+          </p>
+        </Card>
       </div>
 
-      {/* 白名单标签化管理区 (仅在排他白名单模式展开) */}
-      {mode === 'whitelist' && (
-        <Card className="p-4 bg-muted/10 border-border/70 space-y-4">
-          <div className="flex items-center justify-between">
-            <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-              <span>{t('已启用的包含规则扩展名')}</span>
-              <span className="text-[11px] font-normal text-muted-foreground font-mono">
-                ({whitelistTags.length})
-              </span>
-            </Label>
+      {/* 包含规则标签化管理区 (常驻可编辑，与排除规则同时设置) */}
+      <Card className="p-4 bg-muted/10 border-border/70 space-y-4">
+        <div className="flex items-center justify-between">
+          <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+            <span>{t('已启用的包含规则扩展名')}</span>
+            <span className="text-[11px] font-normal text-muted-foreground font-mono">
+              ({whitelistTags.length})
+            </span>
+          </Label>
 
-            {whitelistTags.length > 0 && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setWhitelistTags([])}
-                className="h-6 text-[11px] text-muted-foreground hover:text-destructive px-2"
-              >
-                {t('清空包含规则')}
-              </Button>
-            )}
-          </div>
-
-          {/* 徽章列表 */}
-          {whitelistTags.length === 0 ? (
-            <div className="p-4 text-center rounded-xl border border-dashed border-border/70 text-muted-foreground text-xs space-y-1">
-              <p className="text-amber-600 dark:text-amber-400 font-medium">
-                {t('暂未添加任何包含规则扩展名')}
-              </p>
-              <p className="text-[11px] text-muted-foreground/80">
-                {t('请在下方输入扩展名（如 .cr3 或 docx），或点击快速预设一键选用')}
-              </p>
-            </div>
-          ) : (
-            <div data-testid="whitelist-tags-list" className="flex flex-wrap gap-2">
-              {whitelistTags.map(tag => (
-                <span
-                  key={tag}
-                  data-testid={`whitelist-tag-${tag}`}
-                  className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 transition-colors"
-                >
-                  <span>{tag}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveTag(tag)}
-                    className="hover:text-destructive transition-colors p-0.5 rounded-full"
-                    title={t('移除此扩展名')}
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* 键入新扩展名 */}
-          <div className="flex items-center gap-2 pt-1">
-            <Input
-              placeholder={t('输入扩展名（如 png 或 .docx，回车添加，支持逗号分隔）')}
-              value={tagInput}
-              onChange={e => setTagInput(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  handleAddTag(tagInput)
-                }
-              }}
-              className="h-8 text-xs font-mono"
-            />
+          {whitelistTags.length > 0 && (
             <Button
               type="button"
+              variant="ghost"
               size="sm"
-              onClick={() => handleAddTag(tagInput)}
-              disabled={!tagInput.trim()}
-              className="h-8 text-xs shrink-0 font-medium"
+              onClick={() => setWhitelistTags([])}
+              className="h-6 text-[11px] text-muted-foreground hover:text-destructive px-2"
             >
-              <Plus className="w-3.5 h-3.5 mr-1" />
-              <span>{t('添加')}</span>
+              {t('清空包含规则')}
             </Button>
-          </div>
+          )}
+        </div>
 
-          {/* 快速预设选用 */}
-          <div className="space-y-2 pt-2 border-t border-border/50">
-            <div className="text-[11px] font-bold text-muted-foreground">
-              {t('常用类型快速选用')}
-            </div>
-            <div className="space-y-2">
-              {presetGroups.map(group => (
-                <div key={group.name} className="flex items-center gap-2 flex-wrap text-xs">
-                  <span className="text-[11px] text-muted-foreground w-20 shrink-0">
-                    {group.name}:
-                  </span>
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    {group.extensions.map(ext => {
-                      const isAdded = whitelistTags.includes(ext)
-                      return (
-                        <button
-                          key={ext}
-                          type="button"
-                          onClick={() => handleTogglePresetExt(ext)}
-                          className={cn(
-                            'text-[10px] font-mono px-2 py-0.5 rounded-md border transition-colors',
-                            isAdded
-                              ? 'bg-primary text-primary-foreground border-primary font-bold'
-                              : 'bg-muted/40 hover:bg-muted text-foreground border-border/60'
-                          )}
-                        >
-                          {ext}
-                        </button>
-                      )
-                    })}
-                    <button
-                      type="button"
-                      onClick={() => handleAddPresetGroup(group.extensions)}
-                      className="text-[10px] text-primary hover:underline ml-1"
-                    >
-                      {t('+ 全选')}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+        {/* 徽章列表 */}
+        {whitelistTags.length === 0 ? (
+          <div className="p-4 text-center rounded-xl border border-dashed border-border/70 text-muted-foreground text-xs space-y-1">
+            <p className="text-amber-600 dark:text-amber-400 font-medium">
+              {t('暂未添加任何包含规则扩展名')}
+            </p>
+            <p className="text-[11px] text-muted-foreground/80">
+              {t('请在下方输入扩展名（如 .cr3 或 docx），或点击快速预设一键选用')}
+            </p>
           </div>
-        </Card>
-      )}
+        ) : (
+          <div data-testid="whitelist-tags-list" className="flex flex-wrap gap-2">
+            {whitelistTags.map(tag => (
+              <span
+                key={tag}
+                data-testid={`whitelist-tag-${tag}`}
+                className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 transition-colors"
+              >
+                <span>{tag}</span>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveTag(tag)}
+                  className="hover:text-destructive transition-colors p-0.5 rounded-full"
+                  title={t('移除此扩展名')}
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* 键入新扩展名 */}
+        <div className="flex items-center gap-2 pt-1">
+          <Input
+            placeholder={t('输入扩展名（如 png 或 .docx，回车添加，支持逗号分隔）')}
+            value={tagInput}
+            onChange={e => setTagInput(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                handleAddTag(tagInput)
+              }
+            }}
+            className="h-8 text-xs font-mono"
+          />
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => handleAddTag(tagInput)}
+            disabled={!tagInput.trim()}
+            className="h-8 text-xs shrink-0 font-medium"
+          >
+            <Plus className="w-3.5 h-3.5 mr-1" />
+            <span>{t('添加')}</span>
+          </Button>
+        </div>
+
+        {/* 快速预设选用 */}
+        <div className="space-y-2 pt-2 border-t border-border/50">
+          <div className="text-[11px] font-bold text-muted-foreground">{t('常用类型快速选用')}</div>
+          <div className="space-y-2">
+            {presetGroups.map(group => (
+              <div key={group.name} className="flex items-center gap-2 flex-wrap text-xs">
+                <span className="text-[11px] text-muted-foreground w-20 shrink-0">
+                  {group.name}:
+                </span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {group.extensions.map(ext => {
+                    const isAdded = whitelistTags.includes(ext)
+                    return (
+                      <button
+                        key={ext}
+                        type="button"
+                        onClick={() => handleTogglePresetExt(ext)}
+                        className={cn(
+                          'text-[10px] font-mono px-2 py-0.5 rounded-md border transition-colors',
+                          isAdded
+                            ? 'bg-primary text-primary-foreground border-primary font-bold'
+                            : 'bg-muted/40 hover:bg-muted text-foreground border-border/60'
+                        )}
+                      >
+                        {ext}
+                      </button>
+                    )
+                  })}
+                  <button
+                    type="button"
+                    onClick={() => handleAddPresetGroup(group.extensions)}
+                    className="text-[10px] text-primary hover:underline ml-1"
+                  >
+                    {t('+ 全选')}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Card>
 
       {/* 实时影响测算与大白话预览 */}
       <Card className="p-4 bg-muted/20 border-border/60 space-y-3">
@@ -679,34 +617,32 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProp
           )}
         </div>
 
-        {mode === 'standard' ? (
+        {whitelistTags.length === 0 ? (
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">{t('预期纳入全部目标资产')}</span>
-              <span className="font-mono font-bold text-primary">100%</span>
+              <span className="text-muted-foreground">
+                {t('包含规则留空：按排除规则放行其余文件')}
+              </span>
+              <span className="font-mono font-bold text-primary">
+                {impact.totalFiles > 0 ? `${inPct}%` : t('待测算')}
+              </span>
             </div>
             <div className="w-full h-2 rounded-full bg-muted/60 overflow-hidden">
-              <div className="h-full bg-primary rounded-full transition-all duration-300 w-full" />
+              <div
+                className="h-full bg-primary rounded-full transition-all duration-300"
+                style={{ width: `${inPct}%` }}
+              />
             </div>
             <p className="text-[11px] text-muted-foreground leading-relaxed">
               {impact.totalFiles > 0
                 ? t(
-                    '当前为标准全量模式。检测到目录下共 {totalFiles} 个文件，全部将纳入 AI 深度分析（受下方专属黑名单约束）。',
-                    { totalFiles: impact.totalFiles }
+                    '当前未设置包含规则：目录下共 {totalFiles} 个文件，除系统硬排除与目录专属排除规则命中的文件外，其余 {included} 个均将纳入 AI 分析。',
+                    { totalFiles: impact.totalFiles, included: impact.includedFiles }
                   )
                 : t(
-                    '当前为标准全量模式，目录下所有支持的文件均将纳入 AI 索引与分析（受下方黑名单约束）。'
+                    '当前未设置包含规则：除系统硬排除与目录专属排除规则命中的文件外，其余文件均将纳入 AI 索引与分析。可随时添加包含规则，与排除规则同时生效。'
                   )}
             </p>
-          </div>
-        ) : whitelistTags.length === 0 ? (
-          <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
-            <AlertTriangle className="w-4 h-4 shrink-0" />
-            <span>
-              {t(
-                '包含规则为空：若保存为空规则，系统将安全回退为全量放行模式，避免全部文件被过滤。'
-              )}
-            </span>
           </div>
         ) : (
           <div className="space-y-2.5">

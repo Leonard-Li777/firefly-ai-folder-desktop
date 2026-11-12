@@ -55,8 +55,11 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
       category: 'office',
       persona: '日常行政办公',
       summary: '针对临时截图与快捷方式的急救清理',
-      // 覆盖「无常见扩展名清单」分支：预览树扩展名应回退到白名单首个扩展名规则
-      extensions: JSON.stringify({ common: [] }),
+      // 覆盖「无常见扩展名清单」分支：预览树扩展名应回退到白名单首个扩展名规则，同时提供期望权重
+      extensions: JSON.stringify({
+        common: [],
+        weights: { '.lnk': 0.4, '.png': 0.4, '.docx': 0.2 }
+      }),
       naming_template: '{YYYYMMDD}_{分类}_{原名}.{ext}',
       preset_directory_tree: JSON.stringify([
         {
@@ -247,12 +250,12 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
       expect(screen.getByText('当前目录文件构成特征')).toBeDefined()
     })
 
-    // 全局比例条抽样数与细分分类（安装包、压缩归档、快捷方式）
+    // 全局比例条抽样数与细分分类（程序与安装包、压缩归档、快捷方式与应用）
     expect(screen.getByText(/抽样 100 个文件/)).toBeDefined()
     expect(screen.getByText('已完成多维画像嗅探')).toBeDefined()
-    expect(screen.getByText('安装包 (.exe/.msi)')).toBeDefined()
+    expect(screen.getByText('程序与安装包')).toBeDefined()
     expect(screen.getByText('压缩归档 (.zip/.7z)')).toBeDefined()
-    expect(screen.getByText('快捷方式 (.lnk)')).toBeDefined()
+    expect(screen.getByText('快捷方式与应用')).toBeDefined()
 
     // 默认展示分类与卡片（mockWorkflows 共有 8 套，Top 6 限制下默认只呈现 6 套）
     expect(screen.getByText('全场景官方工作流矩阵库')).toBeDefined()
@@ -520,5 +523,69 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
     fireEvent.click(screen.getByRole('button', { name: /下一步/ }))
 
     expect(screen.queryByText('当前工作区专属排除目录与规则')).toBeNull()
+  })
+
+  it('AC-4.6: 策略提交失败且仅返回扁平 errorCode/errorMessage 时，页内常驻错误条应完整呈现真实错误码与错误信息，而非降级为 UNKNOWN / 策略提交未成功', async () => {
+    // 模拟后端仅返回扁平的 errorCode 与 errorMessage（缺少 error 字段）
+    mockCommitWorkspacePolicy.mockResolvedValueOnce({
+      success: false,
+      policyVersion: 0,
+      errorCode: 'PERMISSION',
+      errorMessage: 'WorkspacePolicyCommitService: 数据库尚未初始化且未提供 db 依赖'
+    })
+
+    const onFinish = vi.fn()
+    render(<WorkspaceSetupWizard workspace={mockWorkspace} onFinish={onFinish} />)
+
+    await waitFor(() => {
+      expect(screen.getAllByText('电脑桌面急救与杂乱清理流').length).toBeGreaterThan(0)
+    })
+
+    // 进入步骤 2
+    fireEvent.click(screen.getByRole('button', { name: /下一步/ }))
+
+    // 点击立即应用并进入工作目录
+    const applyBtn = screen.getByRole('button', { name: /立即应用并进入工作目录/ })
+    fireEvent.click(applyBtn)
+
+    // 断言常驻错误条呈现，且呈现真实的 PERMISSION 与错误信息，而非 UNKNOWN 或兜底的「策略提交未成功」
+    await waitFor(() => {
+      expect(screen.getByText('策略保存失败')).toBeDefined()
+      expect(screen.getByText('PERMISSION')).toBeDefined()
+      expect(
+        screen.getByText('WorkspacePolicyCommitService: 数据库尚未初始化且未提供 db 依赖')
+      ).toBeDefined()
+    })
+    expect(screen.queryByText('UNKNOWN')).toBeNull()
+    expect(screen.queryByText('策略提交未成功')).toBeNull()
+  })
+
+  it('Stage B 语义向量探测与单代 epoch 状态机：成功返回时合并得分，超时优雅降级', async () => {
+    const mockScoreSemantics = vi.fn().mockResolvedValue({
+      status: 'ok',
+      semanticScoresByWorkflowId: {
+        'builtin.workflow.desktop-declutter': 0.85
+      },
+      unlockedWorkflowIds: ['builtin.workflow.desktop-declutter']
+    })
+
+    ;(window as any).electronAPI.utils.scoreWorkflowSemantics = mockScoreSemantics
+
+    const onFinish = vi.fn()
+    render(<WorkspaceSetupWizard workspace={mockWorkspace} onFinish={onFinish} />)
+
+    await waitFor(() => {
+      expect(screen.getAllByText('电脑桌面急救与杂乱清理流').length).toBeGreaterThan(0)
+    })
+
+    // 验证 Stage B 被调用
+    await waitFor(() => {
+      expect(mockScoreSemantics).toHaveBeenCalled()
+    })
+
+    // 第一名与第二名分差拉开 >= 15 分时展示推荐横幅且带有高亮
+    await waitFor(() => {
+      expect(screen.getByText(/🔥 推荐首选/)).toBeDefined()
+    })
   })
 })

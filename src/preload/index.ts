@@ -48,7 +48,7 @@ export const modularResourcePreloadBridge: IModularResourceBridge = {
   restartApp: () => ipcRenderer.invoke('modular-resource:restart-app'),
   exportOfflinePackage: (payload: { moduleId: string; targetFilePath?: string }) =>
     ipcRenderer.invoke('modular-resource:export-offline-package', payload),
-  importOfflinePackage: (payload?: { archivePath?: string }) =>
+  importOfflinePackage: (payload?: { archivePath?: string; preferredEngineId?: string }) =>
     ipcRenderer.invoke('modular-resource:import-offline-package', payload),
   exportOfflineBundle: (): Promise<string | null> =>
     ipcRenderer.invoke('modular-resource:export-offline-bundle'),
@@ -75,6 +75,9 @@ export const modularResourcePreloadBridge: IModularResourceBridge = {
     ipcRenderer.invoke('modular-resource:validate-plugin-dir', { targetPath }),
   changePluginDir: (targetPath: string) =>
     ipcRenderer.invoke('modular-resource:change-plugin-dir', { targetPath }),
+  // 首次运行引导期专用：不迁移、不冻结写操作，设定后紧接着就能安装插件
+  applyInitialPluginDir: (targetPath: string) =>
+    ipcRenderer.invoke('modular-resource:apply-initial-plugin-dir', { targetPath }),
   cancelDirMigration: () => ipcRenderer.invoke('modular-resource:cancel-dir-migration'),
   cleanupOldDir: () => ipcRenderer.invoke('modular-resource:cleanup-old-dir'),
   dismissOldDirCleanup: () => ipcRenderer.invoke('modular-resource:dismiss-old-dir-cleanup'),

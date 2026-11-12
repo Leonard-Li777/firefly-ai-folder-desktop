@@ -722,6 +722,13 @@ export function registerMiscIPCHandlers() {
     })
   })
 
+  // 端侧工作流语义打分 (Stage B)
+  ipcMain.handle('score-workflow-semantics', async (_event, request) => {
+    const { WorkflowSemanticMatcherService } =
+      await import('../../runtime-services/workflow/workflow-semantic-matcher-service')
+    return WorkflowSemanticMatcherService.getInstance().scoreWorkflowSemantics(request)
+  })
+
   // 本地推理引擎已外置为 Tier 2 独立应用（firefly-ai-engine），
   // 引擎状态由 engine-bridge IPC（engine-bridge/*）暴露给渲染层。
 

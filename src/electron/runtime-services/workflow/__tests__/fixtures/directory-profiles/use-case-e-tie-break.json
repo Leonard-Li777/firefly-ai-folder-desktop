@@ -3,9 +3,9 @@
   "profile": {
     "totalFiles": 20,
     "countsByExt": {
-      ".blend": 3,
-      ".sketch": 3,
-      ".txt": 14
+      ".blend": 2,
+      ".sketch": 2,
+      ".txt": 16
     }
   },
   "expected": {

@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "canonicalization": "json-stable-v1",
-  "canonical_sha256": "fc1f51fafc903240d4ed1007b37d6fbe3ea1dbb4cceedb606a831af634bac4a9",
-  "bake_fingerprint": "da2dad6da72d060fffaacfc5b58f4bb3c00ffe5e56b03cfb2fa9f491926b9a53",
+  "canonical_sha256": "c838246be707b2cea60fcaff9e0f8cc9a25274f009d8f6482b29bf0c29754b46",
+  "bake_fingerprint": "d93d44b2127277d565fb13ee1e72fde813bdac7c1f314acac8676b628389bb89",
   "languages": [
     "zh-CN",
     "en-US",
@@ -75,7 +75,16 @@
         ],
         "extensions": {
           "exclusive": [".fig", ".sketch", ".xd"],
-          "common": [".psd", ".ai", ".svg", ".png"]
+          "common": [".psd", ".ai", ".svg", ".png"],
+          "weights": {
+            ".fig": 0.2,
+            ".sketch": 0.2,
+            ".xd": 0.2,
+            ".psd": 0.1,
+            ".ai": 0.1,
+            ".svg": 0.1,
+            ".png": 0.1
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -140,7 +149,18 @@
         ],
         "extensions": {
           "exclusive": [".vue", ".tsx", ".jsx", ".svelte"],
-          "common": [".ts", ".js", ".css", ".html", ".json"]
+          "common": [".ts", ".js", ".css", ".html", ".json"],
+          "weights": {
+            ".vue": 0.1538,
+            ".tsx": 0.1538,
+            ".jsx": 0.1538,
+            ".svelte": 0.1538,
+            ".ts": 0.0769,
+            ".js": 0.0769,
+            ".css": 0.0769,
+            ".html": 0.0769,
+            ".json": 0.0772
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -201,7 +221,18 @@
         ],
         "extensions": {
           "exclusive": [".proto", ".graphql", ".sql"],
-          "common": [".go", ".rs", ".java", ".py", ".yml", ".yaml"]
+          "common": [".go", ".rs", ".java", ".py", ".yml", ".yaml"],
+          "weights": {
+            ".proto": 0.1667,
+            ".graphql": 0.1667,
+            ".sql": 0.1667,
+            ".go": 0.0833,
+            ".rs": 0.0833,
+            ".java": 0.0833,
+            ".py": 0.0833,
+            ".yml": 0.0833,
+            ".yaml": 0.0834
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -261,7 +292,15 @@
           "04-Archives (历史封存归档)/已完成结项"
         ],
         "extensions": {
-          "common": [".docx", ".xlsx", ".pptx", ".pdf", ".md", ".txt"]
+          "common": [".docx", ".xlsx", ".pptx", ".pdf", ".md", ".txt"],
+          "weights": {
+            ".docx": 0.1667,
+            ".xlsx": 0.1667,
+            ".pptx": 0.1667,
+            ".pdf": 0.1667,
+            ".md": 0.1667,
+            ".txt": 0.1665
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -321,7 +360,15 @@
           "40-49 资产采购与行政/41-固定资产"
         ],
         "extensions": {
-          "common": [".pdf", ".xlsx", ".docx", ".pptx", ".txt", ".zip"]
+          "common": [".pdf", ".xlsx", ".docx", ".pptx", ".txt", ".zip"],
+          "weights": {
+            ".pdf": 0.1667,
+            ".xlsx": 0.1667,
+            ".docx": 0.1667,
+            ".pptx": 0.1667,
+            ".txt": 0.1667,
+            ".zip": 0.1665
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -391,7 +438,19 @@
         ],
         "extensions": {
           "exclusive": [".cr3", ".cr2", ".arw", ".nef", ".raf", ".rw2"],
-          "common": [".dng", ".jpg", ".tif", ".lrtemplate"]
+          "common": [".dng", ".jpg", ".tif", ".lrtemplate"],
+          "weights": {
+            ".cr3": 0.125,
+            ".cr2": 0.125,
+            ".arw": 0.125,
+            ".nef": 0.125,
+            ".raf": 0.125,
+            ".rw2": 0.125,
+            ".dng": 0.0625,
+            ".jpg": 0.0625,
+            ".tif": 0.0625,
+            ".lrtemplate": 0.0625
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -461,7 +520,19 @@
         ],
         "extensions": {
           "exclusive": [".prproj", ".drp", ".aep", ".fcpxml"],
-          "common": [".mp4", ".mov", ".mkv", ".wav", ".cube", ".srt"]
+          "common": [".mp4", ".mov", ".mkv", ".wav", ".cube", ".srt"],
+          "weights": {
+            ".prproj": 0.1429,
+            ".drp": 0.1429,
+            ".aep": 0.1429,
+            ".fcpxml": 0.1429,
+            ".mp4": 0.0714,
+            ".mov": 0.0714,
+            ".mkv": 0.0714,
+            ".wav": 0.0714,
+            ".cube": 0.0714,
+            ".srt": 0.0714
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -531,7 +602,17 @@
         ],
         "extensions": {
           "exclusive": [".tex", ".bib", ".cls"],
-          "common": [".pdf", ".docx", ".csl", ".pptx", ".xlsx"]
+          "common": [".pdf", ".docx", ".csl", ".pptx", ".xlsx"],
+          "weights": {
+            ".tex": 0.1818,
+            ".bib": 0.1818,
+            ".cls": 0.1818,
+            ".pdf": 0.0909,
+            ".docx": 0.0909,
+            ".csl": 0.0909,
+            ".pptx": 0.0909,
+            ".xlsx": 0.091
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -601,7 +682,16 @@
         ],
         "extensions": {
           "exclusive": [".ofd", ".qbo"],
-          "common": [".xlsx", ".xls", ".csv", ".pdf", ".docx"]
+          "common": [".xlsx", ".xls", ".csv", ".pdf", ".docx"],
+          "weights": {
+            ".ofd": 0.2222,
+            ".qbo": 0.2222,
+            ".xlsx": 0.1111,
+            ".xls": 0.1111,
+            ".csv": 0.1111,
+            ".pdf": 0.1111,
+            ".docx": 0.1112
+          }
         },
         "custom_ignores": [
           ".tmp",
@@ -679,7 +769,15 @@
           "05-生活电器与售后/电子发票与保修卡"
         ],
         "extensions": {
-          "common": [".pdf", ".jpg", ".png", ".xlsx", ".docx", ".mp4"]
+          "common": [".pdf", ".jpg", ".png", ".xlsx", ".docx", ".mp4"],
+          "weights": {
+            ".jpg": 0.075,
+            ".png": 0.075,
+            ".pdf": 0.2125,
+            ".xlsx": 0.2125,
+            ".docx": 0.2125,
+            ".mp4": 0.2125
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -749,7 +847,17 @@
         ],
         "extensions": {
           "exclusive": [".aep", ".prproj"],
-          "common": [".mp4", ".png", ".jpg", ".mov", ".docx", ".psd"]
+          "common": [".mp4", ".png", ".jpg", ".mov", ".docx", ".psd"],
+          "weights": {
+            ".aep": 0.2,
+            ".prproj": 0.2,
+            ".mp4": 0.1,
+            ".png": 0.1,
+            ".jpg": 0.1,
+            ".mov": 0.1,
+            ".docx": 0.1,
+            ".psd": 0.1
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -818,7 +926,16 @@
           "05-大促复盘与售后/好评维护与客诉分析"
         ],
         "extensions": {
-          "common": [".xlsx", ".csv", ".psd", ".jpg", ".png", ".docx", ".pdf"]
+          "common": [".xlsx", ".csv", ".psd", ".jpg", ".png", ".docx", ".pdf"],
+          "weights": {
+            ".xlsx": 0.15,
+            ".csv": 0.15,
+            ".psd": 0.15,
+            ".jpg": 0.125,
+            ".png": 0.125,
+            ".docx": 0.15,
+            ".pdf": 0.15
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -888,7 +1005,19 @@
         ],
         "extensions": {
           "exclusive": [".unity", ".uproject", ".blend", ".fbx"],
-          "common": [".png", ".tga", ".wav", ".ogg", ".cs", ".cpp"]
+          "common": [".png", ".tga", ".wav", ".ogg", ".cs", ".cpp"],
+          "weights": {
+            ".unity": 0.1429,
+            ".uproject": 0.1429,
+            ".blend": 0.1429,
+            ".fbx": 0.1429,
+            ".png": 0.0714,
+            ".tga": 0.0714,
+            ".wav": 0.0714,
+            ".ogg": 0.0714,
+            ".cs": 0.0714,
+            ".cpp": 0.0714
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -948,7 +1077,15 @@
           "04-订单售后与财务对账/退换货与利润表"
         ],
         "extensions": {
-          "common": [".xlsx", ".csv", ".pdf", ".docx", ".png", ".jpg"]
+          "common": [".xlsx", ".csv", ".pdf", ".docx", ".png", ".jpg"],
+          "weights": {
+            ".xlsx": 0.1875,
+            ".csv": 0.1875,
+            ".pdf": 0.1875,
+            ".docx": 0.1875,
+            ".png": 0.125,
+            ".jpg": 0.125
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -1008,7 +1145,15 @@
           "04-判决裁定与执行/生效文书与结案"
         ],
         "extensions": {
-          "common": [".docx", ".doc", ".pdf", ".wps", ".ofd", ".xlsx"]
+          "common": [".docx", ".doc", ".pdf", ".wps", ".ofd", ".xlsx"],
+          "weights": {
+            ".docx": 0.1667,
+            ".doc": 0.1667,
+            ".pdf": 0.1667,
+            ".wps": 0.1667,
+            ".ofd": 0.1667,
+            ".xlsx": 0.1665
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -1069,7 +1214,16 @@
         ],
         "extensions": {
           "exclusive": [".dcm", ".dicom"],
-          "common": [".pdf", ".docx", ".xlsx", ".jpg", ".png"]
+          "common": [".pdf", ".docx", ".xlsx", ".jpg", ".png"],
+          "weights": {
+            ".dcm": 0.2222,
+            ".dicom": 0.2222,
+            ".pdf": 0.1111,
+            ".docx": 0.1111,
+            ".xlsx": 0.1111,
+            ".jpg": 0.1111,
+            ".png": 0.1112
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -1129,7 +1283,16 @@
           "04-教师教研与专业进修/课题申报与公开课"
         ],
         "extensions": {
-          "common": [".pptx", ".ppt", ".docx", ".doc", ".pdf", ".mp4", ".xlsx"]
+          "common": [".pptx", ".ppt", ".docx", ".doc", ".pdf", ".mp4", ".xlsx"],
+          "weights": {
+            ".pptx": 0.1429,
+            ".ppt": 0.1429,
+            ".docx": 0.1429,
+            ".doc": 0.1429,
+            ".pdf": 0.1429,
+            ".mp4": 0.1429,
+            ".xlsx": 0.1426
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -1189,7 +1352,14 @@
           "04-战略建议与交付成果/汇报PPT与决议"
         ],
         "extensions": {
-          "common": [".pptx", ".xlsx", ".pdf", ".docx", ".pbix"]
+          "common": [".pptx", ".xlsx", ".pdf", ".docx", ".pbix"],
+          "weights": {
+            ".pptx": 0.2,
+            ".xlsx": 0.2,
+            ".pdf": 0.2,
+            ".docx": 0.2,
+            ".pbix": 0.2
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -1250,7 +1420,18 @@
         ],
         "extensions": {
           "exclusive": [".dwg", ".dxf", ".rvt", ".skp"],
-          "common": [".pdf", ".pln", ".3dm", ".jpg", ".tif"]
+          "common": [".pdf", ".pln", ".3dm", ".jpg", ".tif"],
+          "weights": {
+            ".dwg": 0.1538,
+            ".dxf": 0.1538,
+            ".rvt": 0.1538,
+            ".skp": 0.1538,
+            ".pdf": 0.0769,
+            ".pln": 0.0769,
+            ".3dm": 0.0769,
+            ".jpg": 0.0769,
+            ".tif": 0.0772
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -1310,7 +1491,15 @@
           "04-出版申报与审校沟通/三审三校修改记录"
         ],
         "extensions": {
-          "common": [".docx", ".txt", ".md", ".epub", ".pdf", ".mobi"]
+          "common": [".docx", ".txt", ".md", ".epub", ".pdf", ".mobi"],
+          "weights": {
+            ".docx": 0.1667,
+            ".txt": 0.1667,
+            ".md": 0.1667,
+            ".epub": 0.1667,
+            ".pdf": 0.1667,
+            ".mobi": 0.1665
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -1370,7 +1559,14 @@
           "04-阶段复盘与回访记录/调理效果对比总结"
         ],
         "extensions": {
-          "common": [".pdf", ".xlsx", ".docx", ".jpg", ".png"]
+          "common": [".pdf", ".xlsx", ".docx", ".jpg", ".png"],
+          "weights": {
+            ".pdf": 0.4,
+            ".docx": 0.3,
+            ".xlsx": 0.1,
+            ".jpg": 0.11,
+            ".png": 0.09
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -1460,7 +1656,18 @@
         ],
         "extensions": {
           "exclusive": [".rp", ".xmind", ".vsdx"],
-          "common": [".docx", ".pdf", ".xlsx", ".pptx", ".png", ".md"]
+          "common": [".docx", ".pdf", ".xlsx", ".pptx", ".png", ".md"],
+          "weights": {
+            ".rp": 0.1667,
+            ".xmind": 0.1667,
+            ".vsdx": 0.1667,
+            ".docx": 0.0833,
+            ".pdf": 0.0833,
+            ".xlsx": 0.0833,
+            ".pptx": 0.0833,
+            ".png": 0.0833,
+            ".md": 0.0834
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -1550,7 +1757,18 @@
         ],
         "extensions": {
           "exclusive": [".ipynb", ".parquet", ".feather"],
-          "common": [".py", ".r", ".csv", ".sql", ".json", ".html"]
+          "common": [".py", ".r", ".csv", ".sql", ".json", ".html"],
+          "weights": {
+            ".ipynb": 0.1667,
+            ".parquet": 0.1667,
+            ".feather": 0.1667,
+            ".py": 0.0833,
+            ".r": 0.0833,
+            ".csv": 0.0833,
+            ".sql": 0.0833,
+            ".json": 0.0833,
+            ".html": 0.0834
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -1639,7 +1857,16 @@
           "05-测试交付与准出/02-线上缺陷复盘与回归备忘"
         ],
         "extensions": {
-          "common": [".xlsx", ".docx", ".pdf", ".jmx", ".yaml", ".log", ".png"]
+          "common": [".xlsx", ".docx", ".pdf", ".jmx", ".yaml", ".log", ".png"],
+          "weights": {
+            ".xlsx": 0.1429,
+            ".docx": 0.1429,
+            ".pdf": 0.1429,
+            ".jmx": 0.1429,
+            ".yaml": 0.1429,
+            ".log": 0.1429,
+            ".png": 0.1426
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -1728,7 +1955,14 @@
           "05-回款对账与客情/02-客户定期回访与续约评估"
         ],
         "extensions": {
-          "common": [".xlsx", ".pdf", ".docx", ".pptx", ".vcf"]
+          "common": [".xlsx", ".pdf", ".docx", ".pptx", ".vcf"],
+          "weights": {
+            ".xlsx": 0.2,
+            ".pdf": 0.2,
+            ".docx": 0.2,
+            ".pptx": 0.2,
+            ".vcf": 0.2
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -1817,7 +2051,13 @@
           "05-培训发展与员工关怀/02-团建活动策划与员工关怀关照"
         ],
         "extensions": {
-          "common": [".docx", ".xlsx", ".pdf", ".pptx"]
+          "common": [".docx", ".xlsx", ".pdf", ".pptx"],
+          "weights": {
+            ".docx": 0.25,
+            ".xlsx": 0.25,
+            ".pdf": 0.25,
+            ".pptx": 0.25
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -1906,7 +2146,16 @@
           "05-数据监控与结案复盘/02-Campaign结案总结与ROI复盘报告"
         ],
         "extensions": {
-          "common": [".pptx", ".psd", ".ai", ".pdf", ".mp4", ".jpg", ".png"]
+          "common": [".pptx", ".psd", ".ai", ".pdf", ".mp4", ".jpg", ".png"],
+          "weights": {
+            ".pptx": 0.15,
+            ".psd": 0.15,
+            ".ai": 0.15,
+            ".pdf": 0.15,
+            ".mp4": 0.15,
+            ".jpg": 0.125,
+            ".png": 0.125
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -1995,7 +2244,14 @@
           "05-法律纠纷与诉讼管理/02-司法判决与和解协议归档"
         ],
         "extensions": {
-          "common": [".docx", ".pdf", ".wps", ".xlsx", ".ofd"]
+          "common": [".docx", ".pdf", ".wps", ".xlsx", ".ofd"],
+          "weights": {
+            ".docx": 0.2,
+            ".pdf": 0.2,
+            ".wps": 0.2,
+            ".xlsx": 0.2,
+            ".ofd": 0.2
+          }
         },
         "custom_ignores": [
           ".tmp",
@@ -2109,7 +2365,19 @@
         ],
         "extensions": {
           "exclusive": [".hex", ".bin", ".elf", ".dts"],
-          "common": [".c", ".h", ".cpp", ".hpp", ".s", ".ld"]
+          "common": [".c", ".h", ".cpp", ".hpp", ".s", ".ld"],
+          "weights": {
+            ".hex": 0.1429,
+            ".bin": 0.1429,
+            ".elf": 0.1429,
+            ".dts": 0.1429,
+            ".c": 0.0714,
+            ".h": 0.0714,
+            ".cpp": 0.0714,
+            ".hpp": 0.0714,
+            ".s": 0.0714,
+            ".ld": 0.0714
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -2224,7 +2492,21 @@
         ],
         "extensions": {
           "exclusive": [".blend", ".c4d", ".max", ".ma", ".mb", ".zpr"],
-          "common": [".obj", ".fbx", ".gltf", ".glb", ".exr", ".hdr"]
+          "common": [".obj", ".fbx", ".gltf", ".glb", ".exr", ".hdr"],
+          "weights": {
+            ".blend": 0.1111,
+            ".c4d": 0.1111,
+            ".max": 0.1111,
+            ".ma": 0.1111,
+            ".mb": 0.1111,
+            ".zpr": 0.1111,
+            ".obj": 0.0556,
+            ".fbx": 0.0556,
+            ".gltf": 0.0556,
+            ".glb": 0.0556,
+            ".exr": 0.0556,
+            ".hdr": 0.0554
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -2313,7 +2595,15 @@
           "05-个人品牌与作品集/02-个人商业介绍PDF与服务报价手册"
         ],
         "extensions": {
-          "common": [".pdf", ".docx", ".xlsx", ".zip", ".psd", ".ai"]
+          "common": [".pdf", ".docx", ".xlsx", ".zip", ".psd", ".ai"],
+          "weights": {
+            ".pdf": 0.1667,
+            ".docx": 0.1667,
+            ".xlsx": 0.1667,
+            ".zip": 0.1667,
+            ".psd": 0.1667,
+            ".ai": 0.1665
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -2398,7 +2688,14 @@
           "04-周期复盘与沉淀Output/02-对外公开发布的文章与博客归档"
         ],
         "extensions": {
-          "common": [".md", ".txt", ".pdf", ".html", ".epub"]
+          "common": [".md", ".txt", ".pdf", ".html", ".epub"],
+          "weights": {
+            ".md": 0.2,
+            ".txt": 0.2,
+            ".pdf": 0.2,
+            ".html": 0.2,
+            ".epub": 0.2
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -2488,7 +2785,17 @@
         ],
         "extensions": {
           "exclusive": [".dem", ".replay", ".sav"],
-          "common": [".mp4", ".mkv", ".png", ".jpg", ".zip"]
+          "common": [".mp4", ".mkv", ".png", ".jpg", ".zip"],
+          "weights": {
+            ".dem": 0.1818,
+            ".replay": 0.1818,
+            ".sav": 0.1818,
+            ".mp4": 0.0909,
+            ".mkv": 0.0909,
+            ".png": 0.0909,
+            ".jpg": 0.0909,
+            ".zip": 0.091
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -2583,7 +2890,15 @@
         ],
         "extensions": {
           "exclusive": [".epub", ".mobi", ".azw3"],
-          "common": [".txt", ".pdf", ".zip"]
+          "common": [".txt", ".pdf", ".zip"],
+          "weights": {
+            ".epub": 0.2222,
+            ".mobi": 0.2222,
+            ".azw3": 0.2222,
+            ".txt": 0.1111,
+            ".pdf": 0.1111,
+            ".zip": 0.1112
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -2673,7 +2988,17 @@
         ],
         "extensions": {
           "exclusive": [".iso", ".m2ts", ".bdmv"],
-          "common": [".mkv", ".mp4", ".srt", ".ass", ".sub"]
+          "common": [".mkv", ".mp4", ".srt", ".ass", ".sub"],
+          "weights": {
+            ".iso": 0.1818,
+            ".m2ts": 0.1818,
+            ".bdmv": 0.1818,
+            ".mkv": 0.0909,
+            ".mp4": 0.0909,
+            ".srt": 0.0909,
+            ".ass": 0.0909,
+            ".sub": 0.091
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -2755,7 +3080,17 @@
         ],
         "extensions": {
           "exclusive": [".cbz", ".cbr"],
-          "common": [".zip", ".rar", ".7z", ".pdf", ".jpg", ".png"]
+          "common": [".zip", ".rar", ".7z", ".pdf", ".jpg", ".png"],
+          "weights": {
+            ".cbz": 0.2,
+            ".cbr": 0.2,
+            ".zip": 0.1,
+            ".rar": 0.1,
+            ".7z": 0.1,
+            ".pdf": 0.1,
+            ".jpg": 0.1,
+            ".png": 0.1
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -2829,7 +3164,17 @@
         ],
         "extensions": {
           "exclusive": [".rom", ".cap", ".bin"],
-          "common": [".pdf", ".jpg", ".png", ".txt", ".xlsx"]
+          "common": [".pdf", ".jpg", ".png", ".txt", ".xlsx"],
+          "weights": {
+            ".rom": 0.1818,
+            ".cap": 0.1818,
+            ".bin": 0.1818,
+            ".pdf": 0.0909,
+            ".jpg": 0.0909,
+            ".png": 0.0909,
+            ".txt": 0.0909,
+            ".xlsx": 0.091
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -2910,7 +3255,14 @@
           "05-探店美食与私房菜单/城市美食探店打卡与宴客菜单"
         ],
         "extensions": {
-          "common": [".pdf", ".docx", ".jpg", ".png", ".mp4"]
+          "common": [".pdf", ".docx", ".jpg", ".png", ".mp4"],
+          "weights": {
+            ".pdf": 0.38,
+            ".docx": 0.34,
+            ".mp4": 0.1,
+            ".jpg": 0.1,
+            ".png": 0.08
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -2987,7 +3339,14 @@
           "05-用品说明书与寄养出行/自动喂食器说明书与寄养协议"
         ],
         "extensions": {
-          "common": [".jpg", ".png", ".mp4", ".mov", ".pdf"]
+          "common": [".jpg", ".png", ".mp4", ".mov", ".pdf"],
+          "weights": {
+            ".pdf": 0.38,
+            ".mov": 0.18,
+            ".mp4": 0.18,
+            ".jpg": 0.14,
+            ".png": 0.12
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -3073,7 +3432,17 @@
         ],
         "extensions": {
           "exclusive": [".gpx", ".kml", ".fit"],
-          "common": [".jpg", ".png", ".mp4", ".mov", ".pdf"]
+          "common": [".jpg", ".png", ".mp4", ".mov", ".pdf"],
+          "weights": {
+            ".gpx": 0.1818,
+            ".kml": 0.1818,
+            ".fit": 0.1818,
+            ".jpg": 0.0909,
+            ".png": 0.0909,
+            ".mp4": 0.0909,
+            ".mov": 0.0909,
+            ".pdf": 0.091
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -3155,7 +3524,20 @@
         ],
         "extensions": {
           "exclusive": [".flac", ".ape", ".dsd", ".dff", ".als", ".cpr"],
-          "common": [".wav", ".mp3", ".m4a", ".cue", ".lrc"]
+          "common": [".wav", ".mp3", ".m4a", ".cue", ".lrc"],
+          "weights": {
+            ".flac": 0.1176,
+            ".ape": 0.1176,
+            ".dsd": 0.1176,
+            ".dff": 0.1176,
+            ".als": 0.1176,
+            ".cpr": 0.1176,
+            ".wav": 0.0588,
+            ".mp3": 0.0588,
+            ".m4a": 0.0588,
+            ".cue": 0.0588,
+            ".lrc": 0.0592
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -3233,7 +3615,17 @@
         ],
         "extensions": {
           "exclusive": [".ai", ".cdr", ".indd"],
-          "common": [".psd", ".eps", ".svg", ".pdf", ".png"]
+          "common": [".psd", ".eps", ".svg", ".pdf", ".png"],
+          "weights": {
+            ".ai": 0.1818,
+            ".cdr": 0.1818,
+            ".indd": 0.1818,
+            ".psd": 0.0909,
+            ".eps": 0.0909,
+            ".svg": 0.0909,
+            ".pdf": 0.0909,
+            ".png": 0.091
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -3303,7 +3695,16 @@
         ],
         "extensions": {
           "exclusive": [".clip", ".sai", ".procreate"],
-          "common": [".psd", ".png", ".jpg", ".tif"]
+          "common": [".psd", ".png", ".jpg", ".tif"],
+          "weights": {
+            ".clip": 0.2,
+            ".sai": 0.2,
+            ".procreate": 0.2,
+            ".psd": 0.1,
+            ".png": 0.1,
+            ".jpg": 0.1,
+            ".tif": 0.1
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -3381,7 +3782,18 @@
         ],
         "extensions": {
           "exclusive": [".ipa", ".apk", ".aab", ".xcworkspace"],
-          "common": [".swift", ".kt", ".dart", ".plist", ".xml"]
+          "common": [".swift", ".kt", ".dart", ".plist", ".xml"],
+          "weights": {
+            ".ipa": 0.1538,
+            ".apk": 0.1538,
+            ".aab": 0.1538,
+            ".xcworkspace": 0.1538,
+            ".swift": 0.0769,
+            ".kt": 0.0769,
+            ".dart": 0.0769,
+            ".plist": 0.0769,
+            ".xml": 0.0772
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -3455,7 +3867,17 @@
         ],
         "extensions": {
           "exclusive": [".tf", ".tfvars"],
-          "common": [".yaml", ".yml", ".sh", ".json", ".conf", ".log"]
+          "common": [".yaml", ".yml", ".sh", ".json", ".conf", ".log"],
+          "weights": {
+            ".tf": 0.2,
+            ".tfvars": 0.2,
+            ".yaml": 0.1,
+            ".yml": 0.1,
+            ".sh": 0.1,
+            ".json": 0.1,
+            ".conf": 0.1,
+            ".log": 0.1
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -3524,7 +3946,13 @@
           "05-干线物流与国际报关/国内货运提单与海运报关单据"
         ],
         "extensions": {
-          "common": [".xlsx", ".csv", ".pdf", ".docx"]
+          "common": [".xlsx", ".csv", ".pdf", ".docx"],
+          "weights": {
+            ".xlsx": 0.25,
+            ".csv": 0.25,
+            ".pdf": 0.25,
+            ".docx": 0.25
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -3597,7 +4025,14 @@
           "05-Offer录用与留学签证/录取通知书Offer与签证I20面签资料"
         ],
         "extensions": {
-          "common": [".pdf", ".docx", ".xlsx", ".jpg", ".png"]
+          "common": [".pdf", ".docx", ".xlsx", ".jpg", ".png"],
+          "weights": {
+            ".pdf": 0.45,
+            ".docx": 0.3,
+            ".xlsx": 0.1,
+            ".jpg": 0.08,
+            ".png": 0.07
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -3675,7 +4110,17 @@
           "99-旧桌面历史归档Archive/往期桌面历史备份归档"
         ],
         "extensions": {
-          "common": [".docx", ".xlsx", ".pptx", ".pdf", ".png", ".jpg", ".exe", ".zip"]
+          "common": [".docx", ".xlsx", ".pptx", ".pdf", ".png", ".jpg", ".exe", ".zip"],
+          "weights": {
+            ".png": 0.075,
+            ".jpg": 0.075,
+            ".docx": 0.1417,
+            ".xlsx": 0.1417,
+            ".pptx": 0.1417,
+            ".pdf": 0.1417,
+            ".exe": 0.1417,
+            ".zip": 0.1415
+          }
         },
         "custom_ignores": [
           ".tmp",
@@ -3769,7 +4214,19 @@
         ],
         "extensions": {
           "exclusive": [".exe", ".msi", ".dmg", ".pkg"],
-          "common": [".zip", ".rar", ".7z", ".pdf", ".mp4", ".jpg"]
+          "common": [".zip", ".rar", ".7z", ".pdf", ".mp4", ".jpg"],
+          "weights": {
+            ".jpg": 0.1501,
+            ".exe": 0.0944,
+            ".msi": 0.0944,
+            ".dmg": 0.0944,
+            ".pkg": 0.0944,
+            ".zip": 0.0944,
+            ".rar": 0.0944,
+            ".7z": 0.0944,
+            ".pdf": 0.0944,
+            ".mp4": 0.0947
+          }
         },
         "custom_ignores": [
           ".crdownload",
@@ -3846,7 +4303,16 @@
           "04-冷归档Archive/已完结事项与历史凭证备份"
         ],
         "extensions": {
-          "common": [".docx", ".xlsx", ".pdf", ".jpg", ".png", ".txt", ".zip"]
+          "common": [".docx", ".xlsx", ".pdf", ".jpg", ".png", ".txt", ".zip"],
+          "weights": {
+            ".jpg": 0.075,
+            ".png": 0.075,
+            ".docx": 0.17,
+            ".xlsx": 0.17,
+            ".pdf": 0.17,
+            ".txt": 0.17,
+            ".zip": 0.17
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -3942,7 +4408,16 @@
           "04-软件安装与压缩暂存/02-压缩文件与临时解压包"
         ],
         "extensions": {
-          "common": [".exe", ".docx", ".xlsx", ".pptx", ".pdf", ".jpg", ".zip"]
+          "common": [".exe", ".docx", ".xlsx", ".pptx", ".pdf", ".jpg", ".zip"],
+          "weights": {
+            ".jpg": 0.15,
+            ".exe": 0.1417,
+            ".docx": 0.1417,
+            ".xlsx": 0.1417,
+            ".pptx": 0.1417,
+            ".pdf": 0.1417,
+            ".zip": 0.1415
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -4014,7 +4489,15 @@
           "04-准出与复盘资产/01-发布版本质量度量与准出清单"
         ],
         "extensions": {
-          "common": [".xlsx", ".docx", ".pdf", ".jmx", ".yaml", ".png"]
+          "common": [".xlsx", ".docx", ".pdf", ".jmx", ".yaml", ".png"],
+          "weights": {
+            ".xlsx": 0.1667,
+            ".docx": 0.1667,
+            ".pdf": 0.1667,
+            ".jmx": 0.1667,
+            ".yaml": 0.1667,
+            ".png": 0.1665
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -4090,7 +4573,15 @@
           "04-课外兴趣与才艺拓展/02-体育赛事与社会实践记录"
         ],
         "extensions": {
-          "common": [".pdf", ".docx", ".pptx", ".mp4", ".jpg", ".png"]
+          "common": [".pdf", ".docx", ".pptx", ".mp4", ".jpg", ".png"],
+          "weights": {
+            ".pdf": 0.1875,
+            ".docx": 0.1875,
+            ".pptx": 0.1875,
+            ".mp4": 0.1875,
+            ".jpg": 0.125,
+            ".png": 0.125
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -4154,7 +4645,14 @@
           "04-学期归档与暑寒假规划/01-寒暑假作业与实践报告"
         ],
         "extensions": {
-          "common": [".pdf", ".docx", ".xlsx", ".pptx", ".jpg"]
+          "common": [".pdf", ".docx", ".xlsx", ".pptx", ".jpg"],
+          "weights": {
+            ".pdf": 0.2,
+            ".docx": 0.2,
+            ".xlsx": 0.2,
+            ".pptx": 0.2,
+            ".jpg": 0.2
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -4226,7 +4724,14 @@
           "04-养老证件与重要备忘/01-身份证医保卡社保卡复印件"
         ],
         "extensions": {
-          "common": [".jpg", ".png", ".mp4", ".pdf", ".docx"]
+          "common": [".jpg", ".png", ".mp4", ".pdf", ".docx"],
+          "weights": {
+            ".pdf": 0.38,
+            ".docx": 0.34,
+            ".mp4": 0.1,
+            ".jpg": 0.1,
+            ".png": 0.08
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -4286,7 +4791,13 @@
           "04-长期健康档案归档/01-年度健康汇总表"
         ],
         "extensions": {
-          "common": [".pdf", ".jpg", ".png", ".docx"]
+          "common": [".pdf", ".jpg", ".png", ".docx"],
+          "weights": {
+            ".pdf": 0.45,
+            ".docx": 0.3,
+            ".jpg": 0.15,
+            ".png": 0.1
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -4362,7 +4873,17 @@
           "04-公章用印与标准合同/02-用印审批登记表"
         ],
         "extensions": {
-          "common": [".docx", ".doc", ".xlsx", ".xls", ".pptx", ".ppt", ".pdf", ".wps"]
+          "common": [".docx", ".doc", ".xlsx", ".xls", ".pptx", ".ppt", ".pdf", ".wps"],
+          "weights": {
+            ".docx": 0.125,
+            ".doc": 0.125,
+            ".xlsx": 0.125,
+            ".xls": 0.125,
+            ".pptx": 0.125,
+            ".ppt": 0.125,
+            ".pdf": 0.125,
+            ".wps": 0.125
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -4422,7 +4943,14 @@
           "04-办结归档与销号立卷/01-年度办结归档文书"
         ],
         "extensions": {
-          "common": [".docx", ".pdf", ".ofd", ".wps", ".xlsx"]
+          "common": [".docx", ".pdf", ".ofd", ".wps", ".xlsx"],
+          "weights": {
+            ".docx": 0.2,
+            ".pdf": 0.2,
+            ".ofd": 0.2,
+            ".wps": 0.2,
+            ".xlsx": 0.2
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -4498,7 +5026,14 @@
           "04-公用事业缴费与银行票据/02-银行定存与大额理财对账单"
         ],
         "extensions": {
-          "common": [".pdf", ".jpg", ".png", ".docx", ".xlsx"]
+          "common": [".pdf", ".jpg", ".png", ".docx", ".xlsx"],
+          "weights": {
+            ".jpg": 0.075,
+            ".png": 0.075,
+            ".pdf": 0.2833,
+            ".docx": 0.2833,
+            ".xlsx": 0.2834
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -4575,7 +5110,16 @@
         ],
         "extensions": {
           "exclusive": [".iso", ".m2ts"],
-          "common": [".mkv", ".mp4", ".flac", ".mp3", ".srt"]
+          "common": [".mkv", ".mp4", ".flac", ".mp3", ".srt"],
+          "weights": {
+            ".iso": 0.2222,
+            ".m2ts": 0.2222,
+            ".mkv": 0.1111,
+            ".mp4": 0.1111,
+            ".flac": 0.1111,
+            ".mp3": 0.1111,
+            ".srt": 0.1112
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -4647,7 +5191,18 @@
           "04-实用脚本与运维自动化/01-Shell与Python运维脚本"
         ],
         "extensions": {
-          "common": [".ts", ".js", ".py", ".go", ".rs", ".java", ".cpp", ".json", ".md"]
+          "common": [".ts", ".js", ".py", ".go", ".rs", ".java", ".cpp", ".json", ".md"],
+          "weights": {
+            ".ts": 0.1111,
+            ".js": 0.1111,
+            ".py": 0.1111,
+            ".go": 0.1111,
+            ".rs": 0.1111,
+            ".java": 0.1111,
+            ".cpp": 0.1111,
+            ".json": 0.1111,
+            ".md": 0.1112
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -4688,7 +5243,15 @@
         ],
         "extensions": {
           "exclusive": [".log", ".dump", ".bak"],
-          "common": [".tmp", ".temp", ".cache"]
+          "common": [".tmp", ".temp", ".cache"],
+          "weights": {
+            ".log": 0.1667,
+            ".dump": 0.1667,
+            ".bak": 0.1667,
+            ".tmp": 0.1667,
+            ".temp": 0.1667,
+            ".cache": 0.1665
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -4728,7 +5291,17 @@
           "04-临时待转存与待办"
         ],
         "extensions": {
-          "common": [".pdf", ".docx", ".xlsx", ".pptx", ".jpg", ".png", ".mp4", ".zip"]
+          "common": [".pdf", ".docx", ".xlsx", ".pptx", ".jpg", ".png", ".mp4", ".zip"],
+          "weights": {
+            ".jpg": 0.075,
+            ".png": 0.075,
+            ".pdf": 0.1417,
+            ".docx": 0.1417,
+            ".xlsx": 0.1417,
+            ".pptx": 0.1417,
+            ".mp4": 0.1417,
+            ".zip": 0.1415
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -4768,7 +5341,15 @@
           "04-互传中转暂存"
         ],
         "extensions": {
-          "common": [".jpg", ".png", ".mp4", ".pdf", ".docx", ".zip"]
+          "common": [".jpg", ".png", ".mp4", ".pdf", ".docx", ".zip"],
+          "weights": {
+            ".jpg": 0.075,
+            ".png": 0.075,
+            ".mp4": 0.2125,
+            ".pdf": 0.2125,
+            ".docx": 0.2125,
+            ".zip": 0.2125
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -4809,7 +5390,14 @@
         ],
         "extensions": {
           "exclusive": [".png", ".jpg"],
-          "common": [".mp4", ".mov", ".gif"]
+          "common": [".mp4", ".mov", ".gif"],
+          "weights": {
+            ".png": 0.48,
+            ".jpg": 0.36,
+            ".gif": 0.08,
+            ".mp4": 0.05,
+            ".mov": 0.03
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -4849,7 +5437,13 @@
           "04-已完结待沉淀文章"
         ],
         "extensions": {
-          "common": [".txt", ".md", ".docx", ".png"]
+          "common": [".txt", ".md", ".docx", ".png"],
+          "weights": {
+            ".png": 0.15,
+            ".txt": 0.2833,
+            ".md": 0.2833,
+            ".docx": 0.2834
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -4889,7 +5483,15 @@
           "04-历史项目临时快照"
         ],
         "extensions": {
-          "common": [".zip", ".pdf", ".docx", ".jpg", ".mp4", ".exe"]
+          "common": [".zip", ".pdf", ".docx", ".jpg", ".mp4", ".exe"],
+          "weights": {
+            ".jpg": 0.15,
+            ".zip": 0.17,
+            ".pdf": 0.17,
+            ".docx": 0.17,
+            ".mp4": 0.17,
+            ".exe": 0.17
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -4930,7 +5532,14 @@
         ],
         "extensions": {
           "exclusive": [".pdf"],
-          "common": [".jpg", ".png", ".tif", ".ofd"]
+          "common": [".jpg", ".png", ".tif", ".ofd"],
+          "weights": {
+            ".jpg": 0.075,
+            ".png": 0.075,
+            ".pdf": 0.2833,
+            ".tif": 0.2833,
+            ".ofd": 0.2834
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -4970,7 +5579,14 @@
           "04-规章制度与参考资料"
         ],
         "extensions": {
-          "common": [".docx", ".xlsx", ".pptx", ".pdf", ".wps"]
+          "common": [".docx", ".xlsx", ".pptx", ".pdf", ".wps"],
+          "weights": {
+            ".docx": 0.2,
+            ".xlsx": 0.2,
+            ".pptx": 0.2,
+            ".pdf": 0.2,
+            ".wps": 0.2
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {
@@ -5010,7 +5626,14 @@
           "04-历年真题与练习题库"
         ],
         "extensions": {
-          "common": [".pdf", ".docx", ".pptx", ".md", ".xlsx"]
+          "common": [".pdf", ".docx", ".pptx", ".md", ".xlsx"],
+          "weights": {
+            ".pdf": 0.2,
+            ".docx": 0.2,
+            ".pptx": 0.2,
+            ".md": 0.2,
+            ".xlsx": 0.2
+          }
         },
         "custom_ignores": [],
         "recommended_engine": {

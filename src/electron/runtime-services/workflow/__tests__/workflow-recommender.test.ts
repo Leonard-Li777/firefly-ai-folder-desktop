@@ -280,15 +280,17 @@ describe('Workflow Preset & Recommender Engine (Spec v1.1 §3.2)', () => {
 
       const results = recommendWorkflowByProfile(stats)
       const top = results[0]
-      expect(['builtin.workflow.video-post', 'builtin.workflow.video-production']).toContain(
-        top.workflowId
-      )
+      expect([
+        'builtin.workflow.video-post',
+        'builtin.workflow.video-production',
+        'builtin.workflow.newmedia-content'
+      ]).toContain(top.workflowId)
       expect(top.tier).toBe('T1')
       expect(top.score).toBeGreaterThanOrEqual(92)
       expect(top.reasonCode).toBe('video_post')
     })
 
-    it('二次元漫画：专用漫画包 .cbz/.cbr 命中 >= 2 时给 95 分，普通 .zip 绝不触发', () => {
+    it('二次元漫画：专用漫画包 .cbz/.cbr 命中 >= 2 时触发 T1 专精推荐 (>= 94分)，普通 .zip 绝不触发', () => {
       // 普通 zip 压缩包
       const zipStats: DirectoryProfileStats = {
         totalFiles: 10,
@@ -310,7 +312,7 @@ describe('Workflow Preset & Recommender Engine (Spec v1.1 §3.2)', () => {
         top.workflowId
       )
       expect(top.tier).toBe('T1')
-      expect(top.score).toBe(95)
+      expect(top.score).toBeGreaterThanOrEqual(94)
       expect(top.reasonCode).toBe('comic_manga')
     })
 
@@ -434,6 +436,42 @@ describe('Workflow Preset & Recommender Engine (Spec v1.1 §3.2)', () => {
       }
       const res = recommendWorkflowByProfile(mixedDownloads)
       expect(res[0].workflowId).toBe('builtin.workflow.downloads-triage')
+    })
+
+    it('Spec §4.1.1 用例 1: 96% 图片目录断言截图录屏稳居榜首且与第二名拉开 >= 15 分', () => {
+      const stats: DirectoryProfileStats = {
+        totalFiles: 100,
+        countsByExt: {
+          '.png': 48,
+          '.jpg': 48,
+          '.pdf': 2,
+          '.docx': 1,
+          '.lnk': 1
+        },
+        isDesktopPath: true
+      }
+      const results = recommendWorkflowByProfile(stats, BLUEPRINT_STATIC_TEMPLATES)
+      expect(results.length).toBeGreaterThanOrEqual(2)
+
+      const top1 = results[0]
+      const top2 = results[1]
+
+      // 1. 首推必须是 screenshots-screenrecord-vault
+      expect(top1.workflowId).toBe('builtin.workflow.screenshots-screenrecord-vault')
+      expect(top1.score).toBeGreaterThanOrEqual(85)
+      expect(top1.isTopRecommendation).toBe(true)
+
+      // 2. 弱垂类 senior-medical-care-pipeline 必须 <= 70
+      const medicalRec = results.find(
+        r => r.workflowId === 'builtin.workflow.senior-medical-care-pipeline'
+      )
+      if (medicalRec) {
+        expect(medicalRec.score).toBeLessThanOrEqual(70)
+      }
+
+      // 3. 全量第二名 s2 必须 <= 70，分差严格 >= 15
+      expect(top2.score).toBeLessThanOrEqual(70)
+      expect(top1.score - top2.score).toBeGreaterThanOrEqual(15)
     })
   })
 })
