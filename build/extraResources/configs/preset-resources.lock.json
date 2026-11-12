@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updatedAt": "2026-11-09",
+  "updatedAt": "2026-11-12",
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources",
@@ -62,6 +62,9 @@
       "version": "1.0.0"
     },
     "ram-assets": {
+      "version": "1.0.0"
+    },
+    "pocket-cpu-int8-onnx": {
       "version": "1.0.0"
     }
   },

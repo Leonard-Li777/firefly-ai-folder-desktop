@@ -256,6 +256,16 @@
           "sha256": "3e418e7d7d13f5baee77e3db3eb2d11b78eb8ee08b93a408aa0e3145520c6747"
         }
       ]
+    },
+    "pocket-cpu-int8-onnx": {
+      "version": "1.0.0",
+      "source": "shared",
+      "asset": {
+        "name": "pocket-cpu-int8-onnx-1.0.0.zip",
+        "sha256": "cde1aca83d8a22061a185891b49867896096f9b0c45bd3fef86dcc40402811c7",
+        "size": 250572161,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/pocket-cpu-int8-onnx-1.0.0.zip"
+      }
     }
   },
   "engines": {
