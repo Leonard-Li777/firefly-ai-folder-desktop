@@ -172,6 +172,34 @@ export function getPluginErrorMessages(): Record<string, string> {
 }
 
 /**
+ * 从任意抛出的错误值中安全提取「人类可读」消息，绝不把对象原样 String() 化。
+ *
+ * 背景 bug：直接 String(errorObject) 会得到 "[object Object]"。
+ * 该辅助函数保证返回值总是字符串：
+ * - 字符串错误 → 原样返回
+ * - Error 实例 → 取 .message
+ * - 普通对象 → 依次取 message / errorMessage / msg / description 等人类可读字段
+ * - 兜底 → 空字符串（由调用方降级为 UNKNOWN_ERROR 大白话，绝不返回 JSON / [object Object]）
+ */
+function extractRawMessage(error: unknown): string {
+  if (typeof error === 'string') return error
+  if (!error || typeof error !== 'object') return error == null ? '' : String(error)
+
+  const obj = error as Record<string, unknown>
+  // 只取「人类可读」字段；code/errorCode 已在上游统一码表里处理，
+  // 这里若再兜底会把 "EBUSY" 这类码当成文案直出给用户。
+  const candidates = [obj.message, obj.errorMessage, obj.msg, obj.description]
+  for (const c of candidates) {
+    if (typeof c === 'string' && c.trim()) return c
+  }
+  // Error 实例可能有非自身可枚举的 message，单独兜底
+  if (error instanceof Error && error.message) return error.message
+  // 最后手段：结构化信息仅用于开发排障，不直接展示给用户，
+  // 返回空串让调用方降级为 UNKNOWN_ERROR 大白话（避免 JSON / [object Object] 直出）。
+  return ''
+}
+
+/**
  * 将底层错误对象或消息转换为零黑话的大白话排障提示
  */
 export function formatPluginErrorMessage(error: unknown): string {
@@ -187,7 +215,7 @@ export function formatPluginErrorMessage(error: unknown): string {
     return messages[rawCode]
   }
 
-  const rawMessage = typeof error === 'string' ? error : String(errObj?.message || error)
+  const rawMessage = extractRawMessage(error)
 
   // 全词边界匹配已知错误码（防止 EBUSY 误撞 BUSY 子串）
   const tokenMatches = rawMessage.match(/\b[A-Z][A-Z0-9_]{2,}\b/g)
@@ -288,6 +316,12 @@ export interface IModularResourceBridge {
   getPluginDirInfo?: () => Promise<any>
   validatePluginDir?: (targetPath: string) => Promise<any>
   changePluginDir?: (targetPath: string) => Promise<any>
+  /** 首次运行引导期专用：无资产可迁移时直接设定安装目录，不进入重启写冻结 */
+  applyInitialPluginDir?: (targetPath: string) => Promise<{
+    success: boolean
+    appliedPath?: string
+    errorCode?: string
+  }>
   cancelDirMigration?: () => Promise<any>
   cleanupOldDir?: () => Promise<any>
   dismissOldDirCleanup?: () => Promise<any>

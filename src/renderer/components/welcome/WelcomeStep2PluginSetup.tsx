@@ -117,7 +117,7 @@ export function WelcomeStep2PluginSetup({
           <span className="font-mono text-sm font-semibold text-primary">{displaySize}</span>
         </div>
         <div data-testid="welcome-step2-later-method-hint" className="text-muted-foreground text-[11px] sm:text-xs">
-          {t('先挑本领，稍后决定安装方式 · 现在还不会下载文件')}
+          {t('先挑插件，稍后决定安装方式 · 现在还不会下载文件')}
         </div>
       </div>
       <div className="flex items-center gap-2">

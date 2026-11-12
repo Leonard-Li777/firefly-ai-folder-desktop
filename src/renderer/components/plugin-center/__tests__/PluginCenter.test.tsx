@@ -1073,4 +1073,131 @@ describe('Ticket 05: 开发者模式双视图、4态徽标与安装事实门禁'
       setModularResourceBridgeForTest(null)
     }
   })
+
+  it('TC-14: 插件描述一行显示不完时多行显示，无强制单行截断类名', () => {
+    const longDesc =
+      '这是一段非常长非常详细的插件功能描述文案，旨在说明当前插件的各项高级特性与能力，在窄屏和宽屏下均可多行自适应折行完整呈现，杜绝单行截断'
+    const mockModule: PluginModuleItem = {
+      id: 'test_long_desc_plugin',
+      name: '测试长描述插件',
+      version: '1.0.0',
+      category: 'perception',
+      author_code: 'official',
+      availability: 'available',
+      total_bytes: 1048576,
+      install_state: 'not_installed',
+      description: longDesc
+    }
+
+    render(<PluginListItem module={mockModule} />)
+    const descEl = screen.getByText(longDesc)
+    expect(descEl).toBeInTheDocument()
+    // 确认已移除强制单行与两行截断 line-clamp 类
+    expect(descEl.className).not.toContain('line-clamp-1')
+    expect(descEl.className).not.toContain('md:line-clamp-1')
+    expect(descEl.className).not.toContain('line-clamp-2')
+    expect(descEl.className).toContain('break-words')
+  })
+
+  it('TC-15: 切换基础语义检索引擎时触发二次确认弹窗，确认后才执行切换，取消则保持现状', async () => {
+    act(() => {
+      usePluginCenterStore.setState({
+        isOverlayOpen: true,
+        isTogglingSlot: false,
+        modules: [
+          {
+            id: 'engine_classic_light',
+            name: '经典轻量 AI 引擎',
+            version: '1.0.0',
+            category: 'ai-engine',
+            capability_slot: 'base_embedding',
+            slot_policy: 'exclusive_required',
+            author_code: 'official',
+            availability: 'approved',
+            total_bytes: 50000000,
+            install_state: 'active',
+            can_activate: false,
+            description: '轻量极速底座'
+          },
+          {
+            id: 'engine_gemma_unified',
+            name: '统一全模态 AI 引擎',
+            version: '1.0.0',
+            category: 'ai-engine',
+            capability_slot: 'base_embedding',
+            slot_policy: 'exclusive_required',
+            author_code: 'official',
+            availability: 'approved',
+            total_bytes: 500000000,
+            install_state: 'installed_inactive',
+            can_activate: true,
+            description: '全模态底座'
+          }
+        ]
+      })
+    })
+
+    render(<PluginCenterOverlay />)
+
+    // 初始状态：经典轻量引擎为使用中，统一全模态引擎有【启用】按钮
+    const gemmaActivateBtn = screen.getByTestId('activate-plugin-btn-engine_gemma_unified')
+    expect(gemmaActivateBtn).toBeInTheDocument()
+
+    // 点击启用统一全模态引擎 -> 应触发二次确认弹窗，而不是直接切换
+    await act(async () => {
+      fireEvent.click(gemmaActivateBtn)
+    })
+
+    // 弹窗可见并包含指定提示文案
+    const confirmDialog = screen.getByTestId('switch-engine-confirm-dialog')
+    expect(confirmDialog).toBeInTheDocument()
+    expect(screen.getByTestId('switch-engine-confirm-dialog-desc')).toHaveTextContent(
+      '切换引擎需要重建文件索引，花费较多时间，是否切换？'
+    )
+
+    // 此时尚未切换：经典轻量依然是 active，全模态依然是 installed_inactive
+    expect(
+      usePluginCenterStore.getState().modules.find(m => m.id === 'engine_classic_light')
+        ?.install_state
+    ).toBe('active')
+    expect(
+      usePluginCenterStore.getState().modules.find(m => m.id === 'engine_gemma_unified')
+        ?.install_state
+    ).toBe('installed_inactive')
+
+    // 1. 测试点击取消：弹窗关闭，保持原状
+    const cancelBtn = screen.getByTestId('cancel-switch-engine-btn')
+    await act(async () => {
+      fireEvent.click(cancelBtn)
+    })
+    expect(
+      usePluginCenterStore.getState().modules.find(m => m.id === 'engine_classic_light')
+        ?.install_state
+    ).toBe('active')
+    expect(
+      usePluginCenterStore.getState().modules.find(m => m.id === 'engine_gemma_unified')
+        ?.install_state
+    ).toBe('installed_inactive')
+
+    // 2. 再次点击启用，并点击确认切换
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('activate-plugin-btn-engine_gemma_unified'))
+    })
+    expect(screen.getByTestId('switch-engine-confirm-dialog')).toBeInTheDocument()
+
+    const confirmBtn = screen.getByTestId('confirm-switch-engine-btn')
+    await act(async () => {
+      fireEvent.click(confirmBtn)
+    })
+
+    // 确认后完成切换：全模态变为 active，经典轻量自动降级为 installed_inactive
+    expect(
+      usePluginCenterStore.getState().modules.find(m => m.id === 'engine_gemma_unified')
+        ?.install_state
+    ).toBe('active')
+    expect(
+      usePluginCenterStore.getState().modules.find(m => m.id === 'engine_classic_light')
+        ?.install_state
+    ).toBe('installed_inactive')
+  })
 })

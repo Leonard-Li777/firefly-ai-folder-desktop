@@ -16,10 +16,24 @@ import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 import { Switch } from '../ui/switch'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '../ui/alert-dialog'
 import { cn } from '../../lib/utils'
 import i18nScope from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
-import { usePluginCenterStore, formatPluginErrorMessage } from '../../stores/plugin-center-store'
+import {
+  usePluginCenterStore,
+  formatPluginErrorMessage,
+  type PluginModuleItem
+} from '../../stores/plugin-center-store'
 import { normalizeCapabilitySlot } from '@firefly/shared'
 import { useSettingsStore } from '../../stores/settings-store'
 import { SettingsCategory } from '@firefly/types'
@@ -247,6 +261,10 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
   const [userConfigDraft, setUserConfigDraft] = useState<string>('')
   const [configError, setConfigError] = useState<string | null>(null)
 
+  // 待二次确认切换的基础语义检索引擎
+  const [pendingSwitchEngineModule, setPendingSwitchEngineModule] =
+    useState<PluginModuleItem | null>(null)
+
   // 当前正在配置的插件实例
   const configuringModule = useMemo(() => {
     if (!configuringModuleId) return null
@@ -329,7 +347,28 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
     return Array.from(slotMap.values()).sort((a, b) => a.definition.order - b.definition.order)
   }, [filteredModules, t])
 
-  // 切换插件激活状态：零阻断原子接替与必选底座强防护
+  // 执行插件状态切换的底层调用
+  const executeTogglePluginActive = useCallback(
+    async (target: PluginModuleItem, active: boolean, hadSiblingActive: boolean) => {
+      try {
+        await togglePluginActive(target.id, active)
+        if (active) {
+          toast.success(
+            hadSiblingActive
+              ? t('已切换为 {name}，原同分类插件已自动停用', { name: t(target.name) })
+              : t('已启用 {name}', { name: t(target.name) })
+          )
+        } else {
+          toast.success(t('已停用 {name}', { name: t(target.name) }))
+        }
+      } catch (err: unknown) {
+        toast.error(formatPluginErrorMessage(err))
+      }
+    },
+    [togglePluginActive, t]
+  )
+
+  // 切换插件激活状态：基础语义检索引擎需要二次确认，其余插槽零阻断原子接替与必选底座强防护
   const handleTogglePluginActive = useCallback(
     async (id: string, active: boolean) => {
       const target = modules.find(m => m.id === id)
@@ -353,24 +392,28 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
             m.install_state === 'active'
         )
 
-      // 零阻断原子接替（无需二次确认弹窗打断用户流转）
-      try {
-        await togglePluginActive(id, active)
-        if (active) {
-          toast.success(
-            hadSiblingActive
-              ? t('已切换为 {name}，原同分类插件已自动停用', { name: t(target.name) })
-              : t('已启用 {name}', { name: t(target.name) })
-          )
-        } else {
-          toast.success(t('已停用 {name}', { name: t(target.name) }))
-        }
-      } catch (err: unknown) {
-        toast.error(formatPluginErrorMessage(err))
+      // 基础语义检索引擎切换二次确认：切换引擎需要重建文件索引，花费较多时间，是否切换？
+      if (
+        active &&
+        (targetSlot === 'base_embedding' || target.slot_policy === 'exclusive_required') &&
+        hadSiblingActive
+      ) {
+        setPendingSwitchEngineModule(target)
+        return
       }
+
+      await executeTogglePluginActive(target, active, hadSiblingActive)
     },
-    [modules, togglePluginActive, t]
+    [modules, executeTogglePluginActive, t]
   )
+
+  // 确认切换基础语义检索引擎
+  const handleConfirmSwitchEngine = useCallback(async () => {
+    if (!pendingSwitchEngineModule) return
+    const target = pendingSwitchEngineModule
+    setPendingSwitchEngineModule(null)
+    await executeTogglePluginActive(target, true, true)
+  }, [pendingSwitchEngineModule, executeTogglePluginActive])
 
   const handleUninstallPlugin = useCallback(
     async (id: string) => {
@@ -914,6 +957,46 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
           </div>
         </div>
       )}
+
+      {/* 切换基础语义检索引擎二次确认弹窗 */}
+      <AlertDialog
+        open={!!pendingSwitchEngineModule}
+        onOpenChange={open => {
+          if (!open) setPendingSwitchEngineModule(null)
+        }}
+      >
+        <AlertDialogContent
+          data-testid="switch-engine-confirm-dialog"
+          data-dialog-type="switch-engine"
+        >
+          <AlertDialogHeader>
+            <AlertDialogTitle data-testid="switch-engine-confirm-dialog-title">
+              {t('切换基础语义检索引擎')}
+            </AlertDialogTitle>
+            <AlertDialogDescription
+              data-testid="switch-engine-confirm-dialog-desc"
+              className="text-sm text-muted-foreground"
+            >
+              {t('切换引擎需要重建文件索引，花费较多时间，是否切换？')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              data-testid="cancel-switch-engine-btn"
+              onClick={() => setPendingSwitchEngineModule(null)}
+            >
+              {t('取消')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              data-testid="confirm-switch-engine-btn"
+              onClick={handleConfirmSwitchEngine}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
+            >
+              {t('确认切换')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

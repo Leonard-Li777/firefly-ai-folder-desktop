@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+﻿// @vitest-environment jsdom
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import React from 'react'
@@ -77,7 +77,7 @@ describe('WelcomeStep2PluginSetup (欢迎向导第二步：只选择、不安装
 
     expect(screen.getByText('16 GB')).toBeDefined()
     expect(screen.getByText('50 GB')).toBeDefined()
-    expect(screen.getByText('推荐档位：高智能全能版（理解更深入）')).toBeDefined()
+    expect(within(screen.getByTestId('welcome-engine-gemma-card')).getByText('推荐')).toBeDefined()
     expect(screen.getByText('727.7 MiB')).toBeDefined()
   })
 
@@ -175,7 +175,7 @@ describe('WelcomeStep2PluginSetup (欢迎向导第二步：只选择、不安装
     }
     const props = setup({ selection: lowMemorySelection, hardware: { ...DEFAULT_HARDWARE, totalMemGB: 4 } })
 
-    expect(screen.getByText('轻量档位：极速轻巧版（低配电脑秒开）')).toBeDefined()
+    expect(within(screen.getByTestId('welcome-engine-classic-card')).getByText('推荐')).toBeDefined()
     expect(screen.getByText('692.2 MiB')).toBeDefined()
 
     fireEvent.click(screen.getByTestId('welcome-engine-gemma-card'))
@@ -212,7 +212,7 @@ describe('WelcomeStep2PluginSetup (欢迎向导第二步：只选择、不安装
     const gemmaTag = within(gemmaCard).getByTestId('engine-gemma-media-capability')
     const classicTag = within(classicCard).getByTestId('engine-classic-media-capability')
 
-    expect(gemmaCard.textContent).toContain('视频和录音都能搜')
+    expect(gemmaCard.textContent).toContain('找文字、图片、视频、录音更精准')
     expect(gemmaTag.textContent).toContain('支持音视频')
     expect(classicCard.textContent).toContain('只处理文档和图片')
     expect(classicTag.textContent).toContain('不支持音视频')
@@ -235,7 +235,7 @@ describe('WelcomeStep2PluginSetup (欢迎向导第二步：只选择、不安装
     expect((screen.getByTestId('welcome-step2-next-btn') as HTMLButtonElement).disabled).toBe(true)
   })
 
-  it('安装方式在 Step 4 才决定：本页只提示「先挑本领、稍后再决定怎么装」，且不受 installMethod 影响', () => {
+  it('安装方式在 Step 4 才决定：本页只提示「先挑插件、稍后再决定怎么装」，且不受 installMethod 影响', () => {
     const { unmount: unmountFirst } = setup()
     expect(screen.getByTestId('welcome-step2-later-method-hint').textContent).toContain(
       '现在还不会下载文件'
@@ -268,3 +268,4 @@ describe('WelcomeStep2PluginSetup (欢迎向导第二步：只选择、不安装
     expect(html).toContain('text-muted-foreground')
   })
 })
+

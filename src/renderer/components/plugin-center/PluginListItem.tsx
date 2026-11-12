@@ -371,8 +371,8 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
               <span className="text-[11px] text-muted-foreground truncate">{authorDisplay}</span>
             </div>
 
-            {/* 描述文案：通俗大白话功能说明 */}
-            <p className="text-xs text-muted-foreground line-clamp-2 md:line-clamp-1 leading-relaxed">
+            {/* 描述文案：通俗大白话功能说明，一行显示不完时多行换行完整展示 */}
+            <p className="text-xs text-muted-foreground leading-relaxed break-words">
               {t(module.description)}
             </p>
 

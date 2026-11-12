@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+﻿import React, { useState, useEffect } from 'react'
 import { useVoerkaI18n } from '@voerkai18n/react'
 import { Card, CardContent } from '@components/ui/card'
 import { Button } from '@components/ui/button'
@@ -6,6 +6,7 @@ import { RadioGroup, RadioGroupItem } from '@components/ui/radio-group'
 import { type LanguageCode } from '@firefly/types'
 import { useSettingsStore } from '@stores/settings-store'
 import i18nScope from '@src/languages'
+import { WelcomeStepLayout } from './WelcomeStepLayout'
 import { SUPPORTED_LANGUAGES, getDefaultLanguage } from '@firefly/shared'
 
 interface WelcomeStep1Props {
@@ -48,82 +49,72 @@ export function WelcomeStep1({ onNext }: WelcomeStep1Props) {
   }
 
   return (
-    <div className="text-slate-900 flex flex-col h-full items-center justify-center">
-      {/* 主要内容区域 */}
-      <div className="w-full overflow-auto py-4">
-        <div className="w-full max-w-5xl px-4 mx-auto">
-          <section className="mx-auto max-w-2xl">
-            <header className="text-center mb-4">
-              <h1 className="text-xl font-bold tracking-tight">{t('欢迎使用 - 初始设置')}</h1>
-              <p className="mt-1 text-sm text-slate-600">{t('请选择您偏好的语言以继续')}</p>
-            </header>
-
-            <Card className="rounded-lg bg-white shadow-sm ring-1 ring-slate-200 p-4">
-              <CardContent className="p-0">
-                <RadioGroup
-                  data-testid="welcome-lang-radiogroup"
-                  value={selectedLanguage}
-                  onValueChange={handleLanguageChange}
-                  className="grid grid-cols-2 sm:grid-cols-3 gap-2"
-                  role="radiogroup"
-                  aria-label={t('语言选择')}
-                >
-                  {SUPPORTED_LANGUAGES.map(language => (
-                    <label
-                      key={language.code}
-                      data-testid={`welcome-lang-${language.code}`}
-                      className={`relative flex items-center justify-between gap-2 rounded-md p-2 cursor-pointer transition-all duration-200 ${
-                        selectedLanguage === language.code
-                          ? 'border-2 border-sky-500 bg-sky-50'
-                          : 'border border-slate-200 bg-white hover:border-sky-500 hover:bg-sky-50/50'
-                      }`}
-                    >
-                      <div className="min-w-0">
-                        <span className="block text-sm font-semibold text-slate-900 truncate">
-                          {language.nativeName}
-                        </span>
-                        <span className="block text-xs text-slate-500 truncate">
-                          {language.name}
-                        </span>
-                      </div>
-                      <RadioGroupItem value={language.code} className="peer sr-only" />
-                      {selectedLanguage === language.code ? (
-                        <svg
-                          aria-hidden="true"
-                          viewBox="0 0 24 24"
-                          className="h-5 w-5 shrink-0 text-white"
-                        >
-                          <circle cx="12" cy="12" r="12" className="fill-sky-500" />
-                          <path
-                            d="M7 13l3 3 7-7"
-                            stroke="white"
-                            strokeWidth="2"
-                            fill="none"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      ) : (
-                        <span className="h-5 w-5 rounded-full border border-slate-300 shrink-0"></span>
-                      )}
-                    </label>
-                  ))}
-                </RadioGroup>
-
-                <div className="mt-4 flex items-center justify-end">
-                  <Button
-                    data-testid="welcome-step1-next-btn"
-                    onClick={handleNext}
-                    className="h-9 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white hover:bg-slate-800"
-                  >
-                    {t('继续')}
-                  </Button>
+    <WelcomeStepLayout
+      testId="welcome-step1-container"
+      maxWidthClass="max-w-2xl"
+      title={t('欢迎使用 - 初始设置')}
+      subtitle={t('请选择您偏好的语言以继续')}
+      footer={
+        <>
+          <span />
+          <Button
+            data-testid="welcome-step1-next-btn"
+            onClick={handleNext}
+            className="h-10 rounded-lg bg-primary px-6 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+          >
+            {t('继续')}
+          </Button>
+        </>
+      }
+    >
+      <Card className="rounded-xl bg-card shadow-sm ring-1 ring-border p-3 sm:p-4">
+        <CardContent className="p-0">
+          <RadioGroup
+            data-testid="welcome-lang-radiogroup"
+            value={selectedLanguage}
+            onValueChange={handleLanguageChange}
+            className="grid grid-cols-2 sm:grid-cols-3 gap-2"
+            role="radiogroup"
+            aria-label={t('语言选择')}
+          >
+            {SUPPORTED_LANGUAGES.map(language => (
+              <label
+                key={language.code}
+                data-testid={`welcome-lang-${language.code}`}
+                className={`relative flex items-center justify-between gap-2 rounded-lg p-2.5 cursor-pointer transition-all duration-200 ${
+                  selectedLanguage === language.code
+                    ? 'border-2 border-primary bg-primary/10'
+                    : 'border border-border bg-card hover:border-primary hover:bg-primary/10'
+                }`}
+              >
+                <div className="min-w-0">
+                  <span className="block text-sm font-semibold text-foreground truncate">
+                    {language.nativeName}
+                  </span>
+                  <span className="block text-xs text-muted-foreground truncate">{language.name}</span>
                 </div>
-              </CardContent>
-            </Card>
-          </section>
-        </div>
-      </div>
-    </div>
+                <RadioGroupItem value={language.code} className="peer sr-only" />
+                {selectedLanguage === language.code ? (
+                  <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 shrink-0 text-white">
+                    <circle cx="12" cy="12" r="12" className="fill-primary" />
+                    <path
+                      d="M7 13l3 3 7-7"
+                      stroke="white"
+                      strokeWidth="2"
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                ) : (
+                  <span className="h-5 w-5 rounded-full border border-border shrink-0"></span>
+                )}
+              </label>
+            ))}
+          </RadioGroup>
+        </CardContent>
+      </Card>
+    </WelcomeStepLayout>
   )
 }
+
