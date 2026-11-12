@@ -204,6 +204,25 @@ export class LlmGatewayService implements ILlmGatewayService {
   public installationOverride?: Partial<GenerativeEngineInstallationState> | null
   public runtimeOverride?: Partial<GenerativeEngineRuntimeState> | null
 
+  /**
+   * 测试接缝：注入模块化资源服务（用于在测试中绑定内存库，
+   * 避免生产代码 CJS require 与 ESM 单例不一致导致的探测失真）。
+   */
+  private modularResourceResolver: () => any = () => {
+    // 生产：延迟 CJS require，规避循环依赖
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { modularResourceService } = require('../system/modular-resource-service')
+    return modularResourceService
+  }
+
+  public setModularResourceResolverForTesting(resolver: (() => any) | null): void {
+    this.modularResourceResolver =
+      resolver ?? (() => {
+        const { modularResourceService } = require('../system/modular-resource-service')
+        return modularResourceService
+      })
+  }
+
   private constructor() {
     this.initModeFromConfig()
     this.loadCrashState()
@@ -294,7 +313,9 @@ export class LlmGatewayService implements ILlmGatewayService {
    */
   /**
    * 单轨权威探测本地 CPU 极速推理引擎安装状态 (§3.2 SSOT)
-   * 仅认 ai_engine_cpu 槽位 active 模块与域 B _shared/pocket-cpu (.ready.json + >=10MB)；
+   * 安装态口径与插件中心对齐：ai_engine_cpu 槽位模块的 active（已启用）与
+   * installed_inactive（已下载权重、待启用）均视为 installed；
+   * 再校验域 B _shared/pocket-cpu (.ready.json + >=10MB) 决定 installed / corrupt；
    * 严禁扫描只读安装目录 extraResources 或非受控旧目录。
    */
   private probeCpuInstallation(): 'installed' | 'not_installed' | 'corrupt' {
@@ -303,9 +324,20 @@ export class LlmGatewayService implements ILlmGatewayService {
     }
 
     try {
-      const { modularResourceService } = require('../system/modular-resource-service')
-      const activeCpu = modularResourceService?.getActiveModuleBySlot?.('ai_engine_cpu')
-      if (!activeCpu || activeCpu.install_state !== 'active') {
+      const modularResourceService = this.modularResourceResolver?.()
+      // 已安装 = 权重已就位可启用。installed_inactive 表示权重已下载完整、
+      // 仅未设为激活态，不应被误判为「未安装」（与插件中心口径一致）。
+      // 按 ai_engine_cpu 槽位聚合判定，不绑定单一模块 id，对未来 CPU 引擎成员更稳健。
+      const dao = modularResourceService?.getDao?.()
+      const cpuModules = (dao?.modules?.listAllSync?.() ?? []).filter(
+        (m: { capability_slot?: string; install_state?: string }) =>
+          m.capability_slot === 'ai_engine_cpu'
+      )
+      const cpuInstalledState = cpuModules.some(
+        (m: { capability_slot?: string; install_state?: string }) =>
+          m.install_state === 'active' || m.install_state === 'installed_inactive'
+      )
+      if (!cpuInstalledState) {
         return 'not_installed'
       }
 

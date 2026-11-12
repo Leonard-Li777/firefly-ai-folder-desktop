@@ -1763,6 +1763,49 @@ export class OmniService {
   }
 
   /**
+   * 有界等待引擎 HTTP 端口真正可达。
+   *
+   * 背景：引擎子进程 `start()` 返回 ≠ HTTP 端口已监听。刚装完/刚拉起时端口可能仍在
+   * 初始化，此时直接探测会得到 fetch failed（连接拒绝 / ECONNREFUSED）。
+   * 这里按固定间隔轮询 `/api/v1/engine/status`，直到端口可达或总时限耗尽。
+   *
+   * @param totalMs  总等待上限（默认 30s，覆盖首次冷启动 + 模型加载）
+   * @param intervalMs 轮询间隔（默认 500ms）
+   * @returns true=端口已可达；false=超时仍未可达
+   */
+  private async waitForEnginePortReady(
+    totalMs = 30_000,
+    intervalMs = 500
+  ): Promise<boolean> {
+    const deadline = Date.now() + totalMs
+    let lastErr = ''
+    while (Date.now() < deadline) {
+      try {
+        // 用较短的单次超时探测端口是否监听；可达即返回，不等完整 2.5s
+        const res = await fetch(`${this.baseUrl}/api/v1/engine/status`, {
+          signal: AbortSignal.timeout(1500)
+        })
+        // 端口已监听并返回（无论业务状态码），说明 HTTP 层已就绪
+        if (res) {
+          // 主动释放 body，避免连接泄漏
+          try {
+            await res.arrayBuffer()
+          } catch {}
+          return true
+        }
+      } catch (err: any) {
+        lastErr = err?.message || String(err)
+      }
+      await new Promise(r => setTimeout(r, intervalMs))
+    }
+    logger.warn(
+      LogCategory.SYSTEM,
+      `[OmniService] waitForEnginePortReady 超时 (${totalMs}ms)，最后错误: ${lastErr}`
+    )
+    return false
+  }
+
+  /**
    * 双向核验 /api/v1/engine/status 中的 mountManifest 与 mobileClipVocab
    */
   public async verifyMountManifestStatus(expected?: {
@@ -3390,9 +3433,23 @@ export class OmniService {
     profile: 'classic_light' | 'gemma_unified'
     model_paths?: Record<string, string>
     test_tokens?: string[]
-  }): Promise<{ success: boolean; latency_ms?: number; error?: string }> {
+  }): Promise<{ success: boolean; latency_ms?: number; error?: string; errorCode?: string }> {
     try {
       await this.ensureRunning()
+      // 端口就绪门禁：ensureRunning() 返回 ≠ HTTP 端口已监听。
+      // 刚装完/冷启动时模型可能仍在加载，端口尚未监听；若立即探测会得到
+      // fetch failed（连接拒绝）。这里先有界等待端口可达（默认最长 30s），
+      // 仍未可达才判失败，给用户明确「引擎还没就绪」的语义而非裸连接错误。
+      const portReady = await this.waitForEnginePortReady()
+      if (!portReady) {
+        // 返回结构化错误码，由前端 formatPluginErrorMessage 按码表转译为大白话，
+        // 避免裸字符串里夹杂 API 等英文被全词匹配误判成网络错误。
+        return {
+          success: false,
+          error: '引擎服务尚未就绪（等待引擎启动超时），请点击重试',
+          errorCode: 'FAST_READY_TIMEOUT'
+        }
+      }
       const verify = await this.verifyMountManifestStatus()
       if (!verify.ok) {
         return { success: false, error: verify.error || '挂载清单校验未通过' }
