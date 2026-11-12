@@ -905,7 +905,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                   <div className="w-full sm:w-[370px] flex-1 flex flex-col p-3.5 space-y-3.5 bg-background dark:bg-zinc-900">
                     {/* 醒目的工作区配置卡片 */}
                     <div className="rounded-xl border border-primary/25 dark:border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-3 shadow-sm hover:border-primary/45 transition-all">
-                      {/* 卡片顶栏：当前工作区标题 + 醒目的调整策略按钮 */}
+                      {/* 卡片顶栏：当前工作区标题 */}
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-1.5">
                           <span className="flex h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
@@ -913,22 +913,6 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                             {t('当前工作区设置')}
                           </span>
                         </div>
-                        <Button
-                          size="sm"
-                          className="h-7 px-2.5 text-xs font-semibold gap-1 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm cursor-pointer"
-                          onClick={() => {
-                            onToggleDirectoryDropdown(false)
-                            useSettingsStore
-                              .getState()
-                              .openSettings(SettingsCategory.WORKSPACE_CONFIG, {
-                                workspaceId: activeWorkspaceDir?.id
-                              })
-                          }}
-                          title={t('点击调整工作区场景意图、文件过滤与整理规则')}
-                        >
-                          <MaterialIcon icon="tune" className="text-xs" />
-                          <span>{t('调整策略')}</span>
-                        </Button>
                       </div>
 
                       {/* 当前工作区名称与路径 */}
@@ -984,6 +968,43 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                         <p className="text-[11px] text-muted-foreground leading-relaxed">
                           {currentStrategyInfo.desc}
                         </p>
+                      </div>
+
+                      {/* 卡片底部双操作按钮：工作流向导 + 工作目录设置（双主按钮等权醒目展示） */}
+                      <div className="grid grid-cols-2 gap-2 mt-2.5">
+                        <Button
+                          size="sm"
+                          className="h-8 px-2.5 text-xs font-semibold gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm cursor-pointer"
+                          onClick={() => {
+                            onToggleDirectoryDropdown(false)
+                            useSettingsStore
+                              .getState()
+                              .openSettings(SettingsCategory.WORKSPACE_CONFIG, {
+                                workspaceId: activeWorkspaceDir?.id,
+                                targetTab: 'wizard'
+                              })
+                          }}
+                          title={t('打开向导重新挑选适合这个文件夹的整理方案')}
+                        >
+                          <MaterialIcon icon="auto_awesome" className="text-sm" />
+                          <span>{t('工作流向导')}</span>
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="h-8 px-2.5 text-xs font-semibold gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm cursor-pointer"
+                          onClick={() => {
+                            onToggleDirectoryDropdown(false)
+                            useSettingsStore
+                              .getState()
+                              .openSettings(SettingsCategory.WORKSPACE_CONFIG, {
+                                workspaceId: activeWorkspaceDir?.id
+                              })
+                          }}
+                          title={t('修改当前文件夹的分析选项、过滤规则与目录维护')}
+                        >
+                          <MaterialIcon icon="tune" className="text-sm" />
+                          <span>{t('工作目录设置')}</span>
+                        </Button>
                       </div>
                     </div>
 

@@ -38,7 +38,11 @@ import { getFirecoreRules } from '../../constants/tier-rules'
 import { UserTier, TierConstants } from '@firefly/types'
 import { EmptyState } from '../common/EmptyState'
 import { UpgradeAccountDialog } from './UpgradeAccountDialog'
-import { openMarketingPricingUrl, getInviteLink } from '../../lib/marketing-link'
+import {
+  openMarketingPricingUrl,
+  getInviteLink,
+  extractInvitationCodeInput
+} from '../../lib/marketing-link'
 
 interface FirecoresRulesDialogProps {
   open: boolean
@@ -58,7 +62,7 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
   const [isUpgradeOpen, setIsUpgradeOpen] = useState(false)
   // 兑换无限额度：处理中状态
   const [isUnlocking, setIsUnlocking] = useState(false)
-  const { counters, firecores = 0, tier, subscription, spendFirecores } = useTierStore()
+  const { counters, firecores = 0, tier, subscription, spendFirecores, refCode } = useTierStore()
   const wasInvited = counters?.is_invited === 1
 
   const config = useConfigStore(state => state.config)
@@ -69,8 +73,8 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
   const inviteFirecoreRewardInvitee = tierConstants?.inviteFirecoreRewardInvitee || 50
   const unlockThreshold = tierConstants?.prices?.spend_unlock_analysis || 400
 
-  // 邀请人数统计（若后端无邀请人数，可由已获邀请奖励或萤火刻度推算展示）
-  const invitedCount = Number(counters?.invite_count ?? counters?.invited_count ?? 0)
+  // 邀请人数统计（按规范彻底收敛至 counters?.invitation_count，废弃 invite_count / invited_count）
+  const invitedCount = Number(counters?.invitation_count || 0)
 
   // 萤火进度与刻度（目标按 400 萤火计算，每 100 萤火一个大刻度）
   const progressPercent = Math.min(
@@ -106,9 +110,12 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
   }, [open])
 
   if (!open) return null
-  const inviteLink = getInviteLink(machineId)
-  const text = `${t('我发现一个超好用的开源免费AI工具"萤核智能文件夹"，一键整理乱七八糟的桌面、下载目录等、自然语言秒搜图文音视频内容，视频甚至可以定位到具体时间区间，AI自动分类/重命名/标签/描述/缩略图/归档/清理！利用本地AI能力保障隐私，无需显卡，低内存轻薄本也能高质量跑AI，创新虚拟目录整理技术保障文件安全，快来试试看吧！')}\n${inviteLink}`
+  const inviteLink = getInviteLink(refCode)
+  const text = inviteLink
+    ? `${t('我发现一个超好用的开源免费AI工具"萤核智能文件夹"，一键整理乱七八糟的桌面、下载目录等、自然语言秒搜图文音视频内容，视频甚至可以定位到具体时间区间，AI自动分类/重命名/标签/描述/缩略图/归档/清理！利用本地AI能力保障隐私，无需显卡，低内存轻薄本也能高质量跑AI，创新虚拟目录整理技术保障文件安全，快来试试看吧！')}\n${inviteLink}`
+    : ''
   const handleCopyLink = async () => {
+    if (!inviteLink) return
     try {
       await navigator.clipboard.writeText(text)
       toast.success(t('邀请链接已复制'))
@@ -121,38 +128,11 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
   }
 
   const handleRedeem = async () => {
-    let input = redeemCode.trim()
+    const input = redeemCode.trim()
     if (!input) return
 
-    // 智能提取邀请码：支持完整邀请链接（URL 中的 ref 参数）、纯文本短码（8位/16位）
-    let code = ''
-    try {
-      // 尝试是否为标准 URL 或包含协议/域名的链接
-      const urlCandidate = input.includes('://') ? input : `https://${input}`
-      const parsedUrl = new URL(urlCandidate)
-      const refParam = parsedUrl.searchParams.get('ref')
-      if (refParam) {
-        code = refParam.trim()
-      }
-    } catch {
-      // 非标准 URL 结构，继续降级提取
-    }
-
+    const code = extractInvitationCodeInput(input)
     if (!code) {
-      // 尝试通过正则捕获 ref= 参数值
-      const refMatch = input.match(/[?&]ref=([a-zA-Z0-9]+)/i)
-      if (refMatch) {
-        code = refMatch[1]
-      } else {
-        // 直接匹配 8 位（新版 ref_code）或 16 位（旧版机器码前缀）邀请码
-        const codeMatch = input.match(/[a-zA-Z0-9]{8,16}/)
-        if (codeMatch) {
-          code = codeMatch[0]
-        }
-      }
-    }
-
-    if (code.length !== 8 && code.length !== 16) {
       toast.error(t('请输入有效的 8位或16位邀请码'))
       return
     }
@@ -669,9 +649,15 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                 <div className="rounded-2xl border border-border/60 bg-card p-4 space-y-3 shadow-sm">
                   {/* 完整推荐语与链接预览区域 */}
                   <div className="relative rounded-xl border border-border/80 bg-muted/40 p-3.5">
-                    <p className="text-foreground text-sm sm:text-[15px] leading-snug select-all whitespace-pre-wrap font-medium">
-                      {text}
-                    </p>
+                    {inviteLink ? (
+                      <p className="text-foreground text-sm sm:text-[15px] leading-snug select-all whitespace-pre-wrap font-medium">
+                        {text}
+                      </p>
+                    ) : (
+                      <p className="text-muted-foreground text-sm leading-relaxed">
+                        {t('登录并绑定常用邮箱后，即可生成您的专属邀请链接')}
+                      </p>
+                    )}
                   </div>
 
                   {/* 标题（左对齐）与复制按钮（右对齐）在同一排 */}
@@ -689,7 +675,7 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                     <Button
                       size="sm"
                       onClick={handleCopyLink}
-                      disabled={!machineId}
+                      disabled={!inviteLink}
                       className={`h-9 px-4 transition-all shadow-xs gap-1.5 font-bold shrink-0 self-end sm:self-auto ${hasCopied ? 'bg-green-600 hover:bg-green-600' : ''}`}
                     >
                       {hasCopied ? (

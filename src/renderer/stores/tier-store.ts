@@ -7,6 +7,7 @@ import { toast } from '../components/common/Toast'
 interface TierState {
   tier: UserTier
   firecores: number
+  refCode?: string | null
   entitlements: any[]
   counters: Record<string, any>
   computed_limits: ComputedLimits
@@ -18,6 +19,7 @@ interface TierState {
   isRulesOpen: boolean
   rulesDefaultTab: string | undefined
 
+  clearRefCode: () => void
   openUpgradeDialog: () => void
   closeUpgradeDialog: () => void
   openRulesDialog: (tab?: string) => void
@@ -41,6 +43,7 @@ export const useTierStore = create<TierState>()(
   subscribeWithSelector((set, get) => ({
     tier: UserTier.FREE,
     firecores: 0,
+    refCode: null,
     entitlements: [],
     counters: {},
     computed_limits: {
@@ -60,6 +63,9 @@ export const useTierStore = create<TierState>()(
     consumptionDetails: [],
     subscription: undefined,
     isUpgradeOpen: false,
+    clearRefCode: () => {
+      set({ refCode: null })
+    },
     openUpgradeDialog: () => {
       set({ isUpgradeOpen: true })
     },
@@ -83,6 +89,7 @@ export const useTierStore = create<TierState>()(
         set({
           tier: profile.tier as UserTier,
           firecores: profile.firecores,
+          refCode: profile.ref_code ?? null,
           entitlements: profile.entitlements,
           counters: profile.counters || {},
           computed_limits: profile.computed_limits,
@@ -103,6 +110,7 @@ export const useTierStore = create<TierState>()(
           set({
             tier: profile.tier as UserTier,
             firecores: profile.firecores,
+            refCode: profile.ref_code ?? null,
             entitlements: profile.entitlements,
             counters: profile.counters || {},
             computed_limits: profile.computed_limits,
@@ -186,6 +194,7 @@ export const useTierStore = create<TierState>()(
       })
       window.electronAPI.userTier.removeDeviceUnbound?.()
       window.electronAPI.userTier.onDeviceUnbound?.(() => {
+        set({ refCode: null })
         get().fetchProfile()
         toast.warning(t('当前设备登录已失效或已被账号解绑，请重新绑定'))
         if (typeof window !== 'undefined') {

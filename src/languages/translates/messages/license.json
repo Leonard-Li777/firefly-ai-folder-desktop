@@ -9,7 +9,7 @@
     "de-DE": "Abgelaufen",
     "fr-FR": "Expiré",
     "ko-KR": "만료됨",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(4356-4363)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(4411-4418)"],
     "$id": 10497
   },
   "{years}年-{months}月-{days}日 {hours}:{minutes}:{seconds}": {
@@ -22,7 +22,7 @@
     "de-DE": "{years}Jahr-{months}Monat-{days}Tag {hours}:{minutes}:{seconds}",
     "fr-FR": "{years} ans-{months} mois-{days} jours {hours}:{minutes}:{seconds}",
     "ko-KR": "{years}년-{months}월-{days}일 {hours}:{minutes}:{seconds}",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(4809-4867)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(4864-4922)"],
     "$id": 8195
   },
   "电脑识别码已复制": {
@@ -35,7 +35,7 @@
     "de-DE": "Computer-ID wurde kopiert",
     "fr-FR": "L'ID de l'ordinateur a été copié",
     "ko-KR": "컴퓨터 ID가 복사되었습니다",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(6069-6081)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(6124-6136)"],
     "$id": 31363
   },
   "请先输入授权码": {
@@ -48,7 +48,7 @@
     "de-DE": "Bitte geben Sie zuerst den Autorisierungscode ein",
     "fr-FR": "Veuillez d'abord saisir le code d'autorisation",
     "ko-KR": "인증번호를 먼저 입력해주세요",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(6765-6776)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(6820-6831)"],
     "$id": 31364
   },
   "授权码长度不足，请确认是否复制完整": {
@@ -61,7 +61,7 @@
     "de-DE": "Der Autorisierungscode ist nicht lang genug. Bitte überprüfen Sie, ob die Kopie vollständig ist",
     "fr-FR": "Le code d'autorisation n'est pas assez long, veuillez confirmer si la copie est complète",
     "ko-KR": "인증 코드가 너무 길지 않습니다. 복사가 완료되었는지 확인하세요.",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(6863-6884)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(6918-6939)"],
     "$id": 31365
   },
   "Pro 版授权激活成功！": {
@@ -74,7 +74,7 @@
     "de-DE": "Lizenzaktivierung der Pro-Version erfolgreich!",
     "fr-FR": "Activation de la licence de la version Pro réussie !",
     "ko-KR": "Pro 버전 라이선스 활성화에 성공했습니다!",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(7323-7339)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(7474-7490)"],
     "$id": 10499
   },
   "企业版授权激活成功！": {
@@ -87,7 +87,7 @@
     "de-DE": "Aktivierung der Enterprise-Versionslizenz erfolgreich!",
     "fr-FR": "Activation de la licence de la version Entreprise réussie !",
     "ko-KR": "Enterprise 버전 라이선스 활성화에 성공했습니다!",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(7343-7357)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(7494-7508)"],
     "$id": 10500
   },
   "这个授权码不对，请确认复制完整后重试；如刚购买，请等几分钟再试": {
@@ -101,8 +101,8 @@
     "fr-FR": "Ce code d'autorisation est incorrect, veuillez confirmer que la copie est complète et réessayer ; si vous venez d'acheter, veuillez attendre quelques minutes et réessayer.",
     "ko-KR": "이 승인 코드는 올바르지 않습니다. 복사가 완료되었는지 확인한 후 다시 시도해 주세요. 방금 구매하셨다면 잠시 후에 다시 시도해주세요.",
     "$files": [
-      "src/renderer/components/license/EnterpriseLicenseForm.tsx(7504-7539)",
-      "src/renderer/components/license/EnterpriseLicenseForm.tsx(7583-7618)"
+      "src/renderer/components/license/EnterpriseLicenseForm.tsx(7655-7690)",
+      "src/renderer/components/license/EnterpriseLicenseForm.tsx(7734-7769)"
     ],
     "$id": 31366
   },
@@ -116,7 +116,7 @@
     "de-DE": "Willkommen bei der Pro-Version",
     "fr-FR": "Bienvenue dans la version Pro",
     "ko-KR": "Pro 버전에 오신 것을 환영합니다",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(8359-8373)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(8510-8524)"],
     "$id": 10504
   },
   "欢迎使用企业版": {
@@ -129,7 +129,7 @@
     "de-DE": "Willkommen bei der Enterprise Edition",
     "fr-FR": "Bienvenue dans l'édition Entreprise",
     "ko-KR": "엔터프라이즈 에디션에 오신 것을 환영합니다",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(8377-8388)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(8528-8539)"],
     "$id": 10505
   },
   "授权验证成功，所有高级功能已解锁": {
@@ -142,7 +142,7 @@
     "de-DE": "Autorisierungsüberprüfung erfolgreich, alle erweiterten Funktionen wurden freigeschaltet",
     "fr-FR": "Vérification de l'autorisation réussie, toutes les fonctionnalités avancées ont été déverrouillées",
     "ko-KR": "승인 확인에 성공했습니다. 모든 고급 기능이 잠금 해제되었습니다.",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(8486-8506)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(8637-8657)"],
     "$id": 10506
   },
   "授权有效期至：{date}": {
@@ -155,7 +155,7 @@
     "de-DE": "Die Autorisierung ist gültig bis: {date}",
     "fr-FR": "L'autorisation est valable jusqu'au : {date}",
     "ko-KR": "승인은 다음 날짜까지 유효합니다: {date}",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(9062-9079)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(9213-9230)"],
     "$id": 10507
   },
   "剩余时间：{time}": {
@@ -168,7 +168,7 @@
     "de-DE": "Übrige Zeit:{time}",
     "fr-FR": "Temps restant:{time}",
     "ko-KR": "남은 시간:{time}",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(9366-9381)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(9517-9532)"],
     "$id": 10508
   },
   "返回": {
@@ -181,7 +181,7 @@
     "de-DE": "Zurückkehren",
     "fr-FR": "Retour",
     "ko-KR": "반품",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(10087-10093)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(10238-10244)"],
     "$id": 10527
   },
   "企业离线授权": {
@@ -194,7 +194,7 @@
     "de-DE": "Offline-Autorisierung für Unternehmen",
     "fr-FR": "Autorisation hors ligne d'entreprise",
     "ko-KR": "기업 오프라인 승인",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(10357-10367)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(10508-10518)"],
     "$id": 31367
   },
   "一次激活，没网也能永久正常用": {
@@ -207,7 +207,7 @@
     "de-DE": "Einmal aktiviert, kann es auch ohne Internetverbindung normal genutzt werden",
     "fr-FR": "Une fois activé, il peut être utilisé normalement même sans connexion Internet",
     "ko-KR": "활성화되면 인터넷 연결 없이도 정상적으로 사용할 수 있습니다.",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(10553-10571)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(10704-10722)"],
     "$id": 31368
   },
   "国内服务": {
@@ -220,7 +220,7 @@
     "de-DE": "Inländische Dienstleistungen",
     "fr-FR": "Services domestiques",
     "ko-KR": "국내 서비스",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(10740-10748)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(10891-10899)"],
     "$id": 31369
   },
   "Global Service": {
@@ -233,7 +233,7 @@
     "de-DE": "Global Service",
     "fr-FR": "Global Service",
     "ko-KR": "Global Service",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(10752-10770)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(10903-10921)"],
     "$id": 31370
   },
   "第一步：获取授权": {
@@ -246,7 +246,7 @@
     "de-DE": "Schritt eins: Autorisierung einholen",
     "fr-FR": "Première étape : obtenir l’autorisation",
     "ko-KR": "1단계: 승인 받기",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(11305-11317)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(11456-11468)"],
     "$id": 31371
   },
   "已自动绑定本机": {
@@ -259,7 +259,7 @@
     "de-DE": "Automatisch an diese Maschine gebunden",
     "fr-FR": "Automatiquement lié à cette machine",
     "ko-KR": "이 머신에 자동으로 바인딩됩니다.",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(11461-11472)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(11612-11623)"],
     "$id": 31372
   },
   "正在准备设备信息...": {
@@ -272,7 +272,7 @@
     "de-DE": "Geräteinformationen werden vorbereitet...",
     "fr-FR": "Préparation des informations sur l'appareil...",
     "ko-KR": "기기 정보 준비 중...",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(11596-11611)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(11747-11762)"],
     "$id": 31373
   },
   "这台电脑的识别码": {
@@ -285,7 +285,7 @@
     "de-DE": "Der Identifikationscode dieses Computers",
     "fr-FR": "Le code d'identification de cet ordinateur",
     "ko-KR": "이 컴퓨터의 식별 코드",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(12134-12146)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(12285-12297)"],
     "$id": 31374
   },
   "重试": {
@@ -298,7 +298,7 @@
     "de-DE": "Wiederholen",
     "fr-FR": "Réessayer",
     "ko-KR": "재시도",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(12535-12541)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(12686-12692)"],
     "$id": 31375
   },
   "正在读取设备编号...": {
@@ -311,7 +311,7 @@
     "de-DE": "Gerätenummer wird gelesen...",
     "fr-FR": "Lecture du numéro de l'appareil...",
     "ko-KR": "장치 번호를 읽는 중...",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(12884-12899)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(13035-13050)"],
     "$id": 31376
   },
   "暂时未能读取到设备编号": {
@@ -324,7 +324,7 @@
     "de-DE": "Die Gerätenummer kann vorübergehend nicht gelesen werden.",
     "fr-FR": "Le numéro d'appareil ne peut pas être lu temporairement.",
     "ko-KR": "일시적으로 장치 번호를 읽을 수 없습니다.",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(12954-12969)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(13105-13120)"],
     "$id": 31377
   },
   "复制": {
@@ -338,10 +338,10 @@
     "fr-FR": "Copier",
     "ko-KR": "복사",
     "$files": [
-      "src/renderer/components/license/EnterpriseLicenseForm.tsx(13406-13412)",
-      "src/renderer/components/license/EnterpriseLicenseForm.tsx(14698-14704)",
-      "src/renderer/components/license/EnterpriseLicenseForm.tsx(15251-15257)",
-      "src/renderer/components/license/EnterpriseLicenseForm.tsx(16350-16356)"
+      "src/renderer/components/license/EnterpriseLicenseForm.tsx(13557-13563)",
+      "src/renderer/components/license/EnterpriseLicenseForm.tsx(14849-14855)",
+      "src/renderer/components/license/EnterpriseLicenseForm.tsx(15402-15408)",
+      "src/renderer/components/license/EnterpriseLicenseForm.tsx(16501-16507)"
     ],
     "$id": 10510
   },
@@ -355,7 +355,7 @@
     "de-DE": "Besuchen Sie die offizielle Website, um den Preis zu überprüfen",
     "fr-FR": "Allez sur le site officiel pour vérifier le prix",
     "ko-KR": "공식 홈페이지에 가서 가격을 확인해보세요",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(13932-13944)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(14083-14095)"],
     "$id": 31378
   },
   "View Pricing on Website": {
@@ -368,7 +368,7 @@
     "de-DE": "View Pricing on Website",
     "fr-FR": "View Pricing on Website",
     "ko-KR": "View Pricing on Website",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(13948-13975)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(14099-14126)"],
     "$id": 31379
   },
   "客服微信：": {
@@ -381,7 +381,7 @@
     "de-DE": "Kundenservice WeChat:",
     "fr-FR": "Service client WeChat :",
     "ko-KR": "고객 서비스 위챗:",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(14329-14338)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(14480-14489)"],
     "$id": 31380
   },
   "微信号已复制": {
@@ -394,7 +394,7 @@
     "de-DE": "Die WeChat-ID wurde kopiert",
     "fr-FR": "L'identifiant WeChat a été copié",
     "ko-KR": "위챗 아이디가 복사되었습니다",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(14539-14549)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(14690-14700)"],
     "$id": 31381
   },
   "客服邮箱：": {
@@ -407,7 +407,7 @@
     "de-DE": "Kundendienst-E-Mail:",
     "fr-FR": "E-mail du service client :",
     "ko-KR": "고객 서비스 이메일:",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(14893-14902)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(15044-15053)"],
     "$id": 31382
   },
   "邮箱已复制": {
@@ -421,8 +421,8 @@
     "fr-FR": "L'e-mail a été copié",
     "ko-KR": "이메일이 복사되었습니다",
     "$files": [
-      "src/renderer/components/license/EnterpriseLicenseForm.tsx(15093-15102)",
-      "src/renderer/components/license/EnterpriseLicenseForm.tsx(16186-16195)"
+      "src/renderer/components/license/EnterpriseLicenseForm.tsx(15244-15253)",
+      "src/renderer/components/license/EnterpriseLicenseForm.tsx(16337-16346)"
     ],
     "$id": 31383
   },
@@ -436,7 +436,7 @@
     "de-DE": "Official Email:",
     "fr-FR": "Official Email:",
     "ko-KR": "Official Email:",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(15505-15524)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(15656-15675)"],
     "$id": 31384
   },
   "Send": {
@@ -449,7 +449,7 @@
     "de-DE": "Send",
     "fr-FR": "Send",
     "ko-KR": "Send",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(15974-15982)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(16125-16133)"],
     "$id": 31385
   },
   "Telegram:": {
@@ -462,7 +462,7 @@
     "de-DE": "Telegram:",
     "fr-FR": "Telegram:",
     "ko-KR": "Telegram:",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(16574-16587)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(16725-16738)"],
     "$id": 31386
   },
   "Join": {
@@ -475,7 +475,7 @@
     "de-DE": "Join",
     "fr-FR": "Join",
     "ko-KR": "Join",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(16895-16903)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(17046-17054)"],
     "$id": 31387
   },
   "扫码购买": {
@@ -488,7 +488,7 @@
     "de-DE": "Scannen Sie den QR-Code, um zu kaufen",
     "fr-FR": "Scannez le code QR pour acheter",
     "ko-KR": "구매하려면 QR 코드를 스캔하세요.",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(17876-17884)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(18027-18035)"],
     "$id": 31388
   },
   "加微信": {
@@ -501,7 +501,7 @@
     "de-DE": "WeChat hinzufügen",
     "fr-FR": "Ajouter WeChat",
     "ko-KR": "위챗 추가",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(18388-18395)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(18539-18546)"],
     "$id": 31389
   },
   "Scan to purchase online": {
@@ -514,7 +514,7 @@
     "de-DE": "Scan to purchase online",
     "fr-FR": "Scan to purchase online",
     "ko-KR": "Scan to purchase online",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(18553-18580)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(18704-18731)"],
     "$id": 31390
   },
   "客服微信二维码": {
@@ -527,7 +527,7 @@
     "de-DE": "Kundendienst WeChat QR-Code",
     "fr-FR": "Code QR WeChat du service client",
     "ko-KR": "고객 서비스 WeChat QR 코드",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(19038-19049)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(19189-19200)"],
     "$id": 31391
   },
   "添加客服微信号：": {
@@ -540,7 +540,7 @@
     "de-DE": "Kundendienst-WeChat-ID hinzufügen:",
     "fr-FR": "Ajouter l'identifiant WeChat du service client :",
     "ko-KR": "고객 서비스 WeChat ID 추가:",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(19568-19580)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(19719-19731)"],
     "$id": 31392
   },
   "生成中...": {
@@ -553,7 +553,7 @@
     "de-DE": "Generieren...",
     "fr-FR": "Générateur...",
     "ko-KR": "생성 중...",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(20214-20224)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(20365-20375)"],
     "$id": 31393
   },
   "购买二维码": {
@@ -566,7 +566,7 @@
     "de-DE": "QR-Code kaufen",
     "fr-FR": "Acheter le code QR",
     "ko-KR": "QR코드 구매",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(20373-20382)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(20524-20533)"],
     "$id": 31394
   },
   "准备中...": {
@@ -579,7 +579,7 @@
     "de-DE": "Vorbereitung läuft...",
     "fr-FR": "En préparation...",
     "ko-KR": "준비 중...",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(20822-20832)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(20973-20983)"],
     "$id": 31395
   },
   "扫码添加客服微信": {
@@ -592,7 +592,7 @@
     "de-DE": "Scannen Sie den QR-Code, um den Kundendienst WeChat hinzuzufügen",
     "fr-FR": "Scannez le code QR pour ajouter le service client WeChat",
     "ko-KR": "고객 서비스 WeChat을 추가하려면 QR 코드를 스캔하세요.",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(21056-21068)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(21207-21219)"],
     "$id": 31396
   },
   "手机扫一扫，直接开通": {
@@ -605,7 +605,7 @@
     "de-DE": "Scannen Sie es mit Ihrem Mobiltelefon und aktivieren Sie es direkt",
     "fr-FR": "Scannez-le avec votre téléphone portable et activez-le directement",
     "ko-KR": "휴대폰으로 스캔하여 직접 활성화하세요",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(21088-21102)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(21239-21253)"],
     "$id": 31397
   },
   "第二步：粘贴授权码": {
@@ -618,7 +618,7 @@
     "de-DE": "Schritt 2: Fügen Sie den Autorisierungscode ein",
     "fr-FR": "Étape 2 : Collez le code d'autorisation",
     "ko-KR": "2단계: 인증 코드 붙여넣기",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(21634-21647)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(21785-21798)"],
     "$id": 31398
   },
   "收到授权码后，直接粘贴在这里...": {
@@ -631,7 +631,7 @@
     "de-DE": "Nachdem Sie den Autorisierungscode erhalten haben, fügen Sie ihn direkt hier ein...",
     "fr-FR": "Après avoir reçu le code d'autorisation, collez-le directement ici...",
     "ko-KR": "인증코드를 받은 후 여기에 직접 붙여넣으세요...",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(21790-21811)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(21941-21962)"],
     "$id": 31399
   },
   "激活使用": {
@@ -644,7 +644,7 @@
     "de-DE": "Aktivieren",
     "fr-FR": "Activer",
     "ko-KR": "활성화",
-    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(22786-22794)"],
+    "$files": ["src/renderer/components/license/EnterpriseLicenseForm.tsx(22937-22945)"],
     "$id": 31400
   },
   "授权验证失败": {
@@ -658,8 +658,8 @@
     "fr-FR": "La vérification de l'autorisation a échoué",
     "ko-KR": "승인 확인 실패",
     "$files": [
-      "src/renderer/components/license/EnterpriseLicenseForm.tsx(23056-23066)",
-      "src/renderer/components/license/LicenseGateway.tsx(4184-4194)"
+      "src/renderer/components/license/EnterpriseLicenseForm.tsx(23207-23217)",
+      "src/renderer/components/license/LicenseGateway.tsx(4254-4264)"
     ],
     "$id": 10518
   },
@@ -728,18 +728,18 @@
     "$files": ["src/renderer/components/license/LicenseGateway.tsx(3734-3758)"],
     "$id": 10523
   },
-  "当前处于离线环境，个人需要联网，企业需要获取离线授权才能继续使用。": {
-    "en-US": "It is currently in an offline environment, individuals need to be connected to the Internet, and enterprises need to obtain offline authorization to continue using it.",
-    "es-ES": "Actualmente se encuentra en un entorno fuera de línea, las personas deben estar conectadas a Internet y las empresas deben obtener autorización fuera de línea para continuar usándolo.",
-    "ar-EG": "إنه حاليًا في بيئة غير متصلة بالإنترنت، ويحتاج الأفراد إلى الاتصال بالإنترنت، وتحتاج المؤسسات إلى الحصول على ترخيص دون اتصال لمواصلة استخدامه.",
-    "pt-PT": "Atualmente está em um ambiente offline, os indivíduos precisam estar conectados à Internet e as empresas precisam obter autorização offline para continuar a usá-lo.",
-    "ru-RU": "В настоящее время он находится в автономной среде, отдельные лица должны быть подключены к Интернету, а предприятиям необходимо получить автономную авторизацию, чтобы продолжить его использование.",
-    "ja-JP": "現在はオフライン環境にあり、個人はインターネットに接続する必要があり、企業は引き続き使用するためにオフライン認証を取得する必要があります。",
-    "de-DE": "Es befindet sich derzeit in einer Offline-Umgebung, Einzelpersonen müssen mit dem Internet verbunden sein und Unternehmen müssen eine Offline-Autorisierung erhalten, um es weiterhin verwenden zu können.",
-    "fr-FR": "Il se trouve actuellement dans un environnement hors ligne, les individus doivent être connectés à Internet et les entreprises doivent obtenir une autorisation hors ligne pour continuer à l'utiliser.",
-    "ko-KR": "현재는 오프라인 환경이므로 개인은 인터넷에 연결되어 있어야 하며, 기업은 이를 계속 사용하려면 오프라인 승인을 받아야 합니다.",
-    "$files": ["src/renderer/components/license/LicenseGateway.tsx(3780-3817)"],
-    "$id": 10524
+  "当前处于离线环境，个人版最长允许离线使用 3 天，请联网刷新授权；企业版可输入离线授权码使用。": {
+    "en-US": "It is currently in an offline environment. The personal version can be used offline for up to 3 days. Please go online to refresh the authorization; the enterprise version can be used by entering an offline authorization code.",
+    "es-ES": "Actualmente se encuentra en un entorno fuera de línea. La versión personal se puede utilizar sin conexión hasta por 3 días. Conéctese en línea para actualizar la autorización; la versión empresarial se puede utilizar ingresando un código de autorización fuera de línea.",
+    "ar-EG": "وهو حاليًا في بيئة غير متصلة بالإنترنت. يمكن استخدام الإصدار الشخصي دون الاتصال بالإنترنت لمدة تصل إلى 3 أيام. يرجى الاتصال بالإنترنت لتحديث الترخيص؛ يمكن استخدام إصدار المؤسسة عن طريق إدخال رمز التفويض دون اتصال بالإنترنت.",
+    "pt-PT": "Atualmente está em um ambiente offline. A versão pessoal pode ser usada offline por até 3 dias. Acesse a Internet para atualizar a autorização; a versão empresarial pode ser usada inserindo um código de autorização offline.",
+    "ru-RU": "В настоящее время он находится в автономной среде. Персональную версию можно использовать в автономном режиме до 3 дней. Пожалуйста, подключитесь к Интернету, чтобы обновить авторизацию; корпоративную версию можно использовать, введя автономный код авторизации.",
+    "ja-JP": "現在オフライン環境にあります。個人版はオフラインで最大 3 日間使用できます。オンラインにアクセスして認証を更新してください。エンタープライズ版は、オフライン認証コードを入力することで使用できます。",
+    "de-DE": "Es befindet sich derzeit in einer Offline-Umgebung. Die persönliche Version kann bis zu 3 Tage offline genutzt werden. Bitte gehen Sie online, um die Autorisierung zu aktualisieren. Die Enterprise-Version kann durch Eingabe eines Offline-Autorisierungscodes genutzt werden.",
+    "fr-FR": "Il est actuellement dans un environnement hors ligne. La version personnelle peut être utilisée hors ligne pendant 3 jours maximum. Veuillez vous rendre en ligne pour actualiser l'autorisation ; la version entreprise peut être utilisée en saisissant un code d'autorisation hors ligne.",
+    "ko-KR": "현재 오프라인 환경입니다. 개인 버전은 최대 3일 동안 오프라인으로 사용할 수 있습니다. 승인을 새로 고치려면 온라인으로 접속하세요. 기업용 버전은 오프라인 인증코드를 입력하여 사용할 수 있습니다.",
+    "$files": ["src/renderer/components/license/LicenseGateway.tsx(3836-3887)"],
+    "$id": 31641
   },
   "个人，我已打开网络": {
     "en-US": "Personally, I have turned on the Internet",
@@ -751,7 +751,7 @@
     "de-DE": "Persönlich habe ich das Internet eingeschaltet",
     "fr-FR": "Personnellement, j'ai activé Internet",
     "ko-KR": "개인적으로 인터넷을 켰는데",
-    "$files": ["src/renderer/components/license/LicenseGateway.tsx(4806-4819)"],
+    "$files": ["src/renderer/components/license/LicenseGateway.tsx(4876-4889)"],
     "$id": 10525
   },
   "企业，离线授权使用": {
@@ -764,7 +764,7 @@
     "de-DE": "Enterprise, autorisierte Offline-Nutzung",
     "fr-FR": "Entreprise, utilisation autorisée hors ligne",
     "ko-KR": "기업, 오프라인 승인 사용",
-    "$files": ["src/renderer/components/license/LicenseGateway.tsx(5273-5286)"],
+    "$files": ["src/renderer/components/license/LicenseGateway.tsx(5343-5356)"],
     "$id": 10526
   },
   "本软件受版权保护，合法授权后方可解锁。": {
@@ -777,7 +777,7 @@
     "de-DE": "Diese Software ist urheberrechtlich geschützt und kann nur nach Erhalt einer gültigen Lizenz freigeschaltet werden.",
     "fr-FR": "Ce logiciel est protégé par le droit d'auteur et doit être débloqué après obtention d'une autorisation légale.",
     "ko-KR": "이 소프트웨어는 저작권의 보호를 받으며, 합법적인 권한 부여 후에만 잠금이 해제됩니다.",
-    "$files": ["src/renderer/components/license/LicenseGateway.tsx(5978-6001)"],
+    "$files": ["src/renderer/components/license/LicenseGateway.tsx(6048-6071)"],
     "$id": 10528
   }
 }

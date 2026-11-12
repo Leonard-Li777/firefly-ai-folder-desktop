@@ -481,6 +481,16 @@ export interface IModularResourceService {
     errorCode?: PluginDirErrorCode
   }>
 
+  /**
+   * 首次运行引导期专用：无资产可迁移时直接设定安装目录。
+   * 不调用 DirMigrationCoordinator、不进入 PENDING_RESTART 写冻结，设定后即可立即安装。
+   */
+  applyInitialPluginDirectory(targetPath: string): Promise<{
+    success: boolean
+    appliedPath?: string
+    errorCode?: PluginDirErrorCode
+  }>
+
   /** 取消在途的插件目录迁移 (仅在 PRECHECK / STAGING / VERIFYING 有效) */
   cancelDirMigration(): Promise<{
     cancelled: boolean
@@ -1216,6 +1226,80 @@ export class ModularResourceService implements IModularResourceService {
     }
 
     return result
+  }
+
+  /**
+   * 首次运行引导期专用：设定插件安装目录（不迁移、不进入 PENDING_RESTART）
+   *
+   * 与 changePluginDirectory() 的区别（欢迎向导 5 步流程的关键前提）：
+   * - changePluginDirectory() 面向「已有资源的运行期换目录」，DirMigrationCoordinator 在
+   *   提交成功后必定把相位切到 PENDING_RESTART 并冻结所有写操作（IN-01：内存根目录
+   *   生命周期内恒定，需重启才对齐）。若欢迎向导在选完目录后紧接着安装，
+   *   installModule() / updateModuleState() 会被 assertWriteGateAllowed() 以
+   *   DIR_CHANGE_GATE_ACTIVE 直接拦截。
+   * - 本方法只在「相位 STABLE + 当前根目录没有任何已就绪模块」的严格前提下生效：
+   *   此刻没有文件需要搬迁，也没有已运行的插件进程或已加载模型绑定旧根目录，
+   *   因此复用同一套 11 步校验管线后，持久化配置并一次性对齐本进程内存根目录，
+   *   让紧接着的安装直接落到用户选的文件夹，全程无需重启。
+   * - 插件中心设置页继续走 changePluginDirectory() 迁移事务，语义完全不变。
+   *
+   * 下次启动时 main/index.ts 会从 PLUGIN_MODULES_PATH 重新 initialize
+   * PluginPathResolver，启动期锁定仍由 SSOT 解析器负责。
+   */
+  public async applyInitialPluginDirectory(targetPath: string): Promise<{
+    success: boolean
+    appliedPath?: string
+    errorCode?: PluginDirErrorCode
+  }> {
+    this.assertWriteGateAllowed()
+
+    const resolvedTarget = path.resolve((targetPath ?? '').trim())
+    const currentDir = this.getPluginsRootDir()
+    // 幂等分支必须先于 11 步校验：校验器对「与当前目录相同」会返回 SAME_AS_CURRENT，
+    // 但向导里用户直接选中默认目录是合法操作，等同于「不改」，无需校验也无需写配置。
+    if (isPathEqual(currentDir, resolvedTarget)) {
+      return { success: true, appliedPath: resolvedTarget }
+    }
+
+    // 1. 复用与插件中心完全相同的 11 步校验管线（纯英文路径、禁系统目录、空间门槛等）
+    const validation = await this.validatePluginDir(targetPath)
+    if (!validation.valid) {
+      return {
+        success: false,
+        errorCode: validation.errorCode ?? 'PATH_NOT_WRITABLE'
+      }
+    }
+
+    // 2. 严格前置条件：根目录下没有任何已就绪模块，否则必须回到迁移事务 + 重启链路
+    const usedBytes = await this.calculateCurrentDirUsedBytes(true)
+    if (usedBytes > 0) {
+      return { success: false, errorCode: 'DIR_CHANGE_GATE_ACTIVE' }
+    }
+
+    // 3. 持久化配置（ConfigOrchestrator 的真实写入 API 是 updateValue，不是 setValue）
+    const orchestrator = this.getConfigOrchestrator()
+    if (!orchestrator || typeof orchestrator.updateValue !== 'function') {
+      return { success: false, errorCode: 'PATH_NOT_WRITABLE' }
+    }
+    try {
+      await orchestrator.updateValue('PLUGIN_MODULES_PATH', resolvedTarget, {
+        source: 'user',
+        preventAutoReload: true
+      })
+    } catch (err) {
+      logger.warn(LogCategory.MAIN, '[ModularResourceService] 首次运行目录写入失败:', err)
+      return { success: false, errorCode: 'PATH_NOT_WRITABLE' }
+    }
+
+    // 4. 对齐本进程内存根目录与子进程可见的环境变量。
+    //    PluginPathResolver 的启动期锁定保持不变：安装链路全部经由
+    //    ModularResourceService.getPluginsRootDir() 取得根目录。
+    this.effectivePluginsRootDir = resolvedTarget
+    process.env.FIREFLY_MODULES_ROOT = resolvedTarget
+    this.cachedUsedBytes = 0
+    this.lastUsedBytesCalculatedAt = 0
+
+    return { success: true, appliedPath: resolvedTarget }
   }
 
   /**

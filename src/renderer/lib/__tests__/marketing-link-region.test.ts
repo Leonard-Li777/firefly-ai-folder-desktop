@@ -51,7 +51,9 @@ import {
   validateIdentCode,
   buildEnterprisePricingUrl,
   buildSupportMailto,
-  TELEGRAM_CHANNEL_URL
+  TELEGRAM_CHANNEL_URL,
+  getInviteLink,
+  extractInvitationCodeInput
 } from '../marketing-link'
 
 const setRegion = (region?: string) => {
@@ -315,6 +317,47 @@ describe('定价页区域域名分流', () => {
 
     it('TELEGRAM_CHANNEL_URL: 固化官方频道常量', () => {
       expect(TELEGRAM_CHANNEL_URL).toBe('https://t.me/firefly_ai_folder')
+    })
+
+    describe('getInviteLink & extractInvitationCodeInput', () => {
+      it('getInviteLink: 无邀请码或空字符时返回 null', () => {
+        expect(getInviteLink(null)).toBeNull()
+        expect(getInviteLink(undefined)).toBeNull()
+        expect(getInviteLink('')).toBeNull()
+        expect(getInviteLink('   ')).toBeNull()
+      })
+
+      it('getInviteLink: 传入有效 refCode 拼接包含 ?ref= 的营销站链接', () => {
+        setRegion('cn')
+        const link = getInviteLink('ABC23456')
+        expect(link).toBe('https://aifolder.iocn.cn/?ref=ABC23456')
+      })
+
+      it('extractInvitationCodeInput: 纯 8 位邀请码忽略大小写转为大写', () => {
+        expect(extractInvitationCodeInput('abc23456')).toBe('ABC23456')
+        expect(extractInvitationCodeInput('  8HKLMNPQ  ')).toBe('8HKLMNPQ')
+      })
+
+      it('extractInvitationCodeInput: 从包含 ?ref= 或 &ref= 的 URL 中提取邀请码', () => {
+        expect(extractInvitationCodeInput('https://aifolder.iocn.cn/?ref=abc23456')).toBe(
+          'ABC23456'
+        )
+        expect(
+          extractInvitationCodeInput('https://aifolder.net/zh-CN/pricing?ref=XYZ23456&source=share')
+        ).toBe('XYZ23456')
+      })
+
+      it('extractInvitationCodeInput: 16 位 V3 邀请码严禁改变大小写，原样返回', () => {
+        const v3Code = '0123456789aBcDeF'
+        expect(extractInvitationCodeInput(v3Code)).toBe(v3Code)
+        expect(extractInvitationCodeInput(`https://aifolder.iocn.cn/?ref=${v3Code}`)).toBe(v3Code)
+      })
+
+      it('extractInvitationCodeInput: 无效字符或错误长度返回 null', () => {
+        expect(extractInvitationCodeInput('123')).toBeNull() // 太短
+        expect(extractInvitationCodeInput('INVALIDCHAR01')).toBeNull() // 包含排除字符 0/1/I/O
+        expect(extractInvitationCodeInput('!@#$%^&*()')).toBeNull()
+      })
     })
   })
 })

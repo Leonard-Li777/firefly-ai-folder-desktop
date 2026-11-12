@@ -1,5 +1,5 @@
 import { TierService, UserTierQueries, KMLogic, WORKSPACE_CONSTANTS } from '@firefly/server'
-import { UserTierDataManager } from '@firefly/core-engine'
+import { UserTierDataManager, LocalOfflineLicenseInfo } from '@firefly/core-engine'
 import {
   UserTierProfile,
   FirecoreOperationType,
@@ -28,6 +28,8 @@ export class UserTierService {
   private configCleanup: (() => void) | null = null
   /** UserTierDataManager 实例，延迟初始化 */
   private dataManager: UserTierDataManager | null = null
+  /** 已校验的本机离线授权摘要，供 DataManager 执行本地优先仲裁 */
+  private verifiedOfflineLicense: LocalOfflineLicenseInfo | null = null
   /** 防重：记录最近消费的 txId，防止重复扣费 */
   private recentSpendTxIds: Set<string> = new Set()
 
@@ -48,6 +50,7 @@ export class UserTierService {
     UserTierDataManager.resetInstance()
     if (UserTierService.instance) {
       UserTierService.instance.dataManager = null
+      UserTierService.instance.verifiedOfflineLicense = null
     }
   }
 
@@ -68,6 +71,7 @@ export class UserTierService {
         configSet: (key: string, value: any, options?: any) =>
           orchestrator.updateValue(key as any, value, options),
         isOnline: () => (typeof net.isOnline === 'function' ? net.isOnline() : true),
+        getLocalOfflineLicense: () => this.verifiedOfflineLicense,
         onDataChanged: () => {
           this.notifyProfileChanged()
         },
@@ -118,6 +122,7 @@ export class UserTierService {
     return {
       tier: data.tier,
       firecores: data.firecores,
+      ref_code: data.ref_code,
       entitlements: data.entitlements,
       counters: data.counters,
       computed_limits: data.computed_limits,
@@ -496,34 +501,74 @@ export class UserTierService {
     this.tierService = null
     UserTierDataManager.resetInstance()
     this.dataManager = null
+    this.verifiedOfflineLicense = null
     this.recentSpendTxIds.clear()
     logger.info(LogCategory.SYSTEM, 'UserTierService services reloaded')
   }
 
   /**
+   * 探测本机是否存在有效且未过期的物理机离线授权，写入内存仲裁基线。
+   * 仅对显式离线证书类型（ENTERPRISE / ENTERPRISE_OFFLINE / PRO）生效，ONLINE 授权不计入。
+   */
+  private async refreshVerifiedOfflineLicense(): Promise<void> {
+    try {
+      const { LicenseService, LicenseStatus } = await import('../system/license-service')
+      const licenseStatus = await LicenseService.getInstance().checkLicenseStatus()
+      if (
+        licenseStatus.status === LicenseStatus.AUTHORIZED &&
+        (licenseStatus.type === 'ENTERPRISE' ||
+          licenseStatus.type === 'ENTERPRISE_OFFLINE' ||
+          licenseStatus.type === 'PRO')
+      ) {
+        const tier = licenseStatus.type === 'PRO' ? UserTier.PRO : UserTier.ENTERPRISE
+        this.verifiedOfflineLicense = {
+          valid: true,
+          tier,
+          expires_at: licenseStatus.expiry ?? null,
+          plan_id: tier
+        }
+      } else {
+        this.verifiedOfflineLicense = null
+      }
+    } catch {
+      // 单测 mock 或授权服务未就绪时不覆写已有 verifiedOfflineLicense
+    }
+  }
+
+  /**
    * 从离线授权码中恢复 userTierData，重置密钥缓存并重新计算 computed_limits。
    *
-   * 调用前需确保 CACHE_KEY_DATA 已更新（由 LicenseService.writeEmbeddedUserTierData 写入），
-   * 本方法内部通过 ensureKeys 从新 CACHE_KEY_DATA 重新派生密钥。
+   * 调用前需确保 CACHE_KEY_DATA 已更新（由 LicenseService.writeEmbeddedUserTierData / activate 写入），
+   * 本方法内部通过 ensureKeys 从新 CACHE_KEY_DATA 重新派生密钥，直接权威落盘并立即广播更新事件。
    *
-   * @param data  离线授权码中嵌入的 userTierData
-   * @param machineId  机器标识
+   * @param data  离线授权码中嵌入或构造的 userTierData
+   * @param _machineId  机器标识
    */
-  async restoreFromLicenseData(data: UserTierData, machineId: string): Promise<void> {
+  async restoreFromLicenseData(data: UserTierData, _machineId: string): Promise<void> {
+    const effectiveData = UserTierDataManager.ensureNotExpired(data)
+    if (effectiveData.tier !== UserTier.FREE) {
+      this.verifiedOfflineLicense = {
+        valid: true,
+        tier: effectiveData.tier,
+        expires_at: effectiveData.subscription?.expires_at ?? null,
+        plan_id: effectiveData.subscription?.plan_id || effectiveData.tier
+      }
+    } else {
+      this.verifiedOfflineLicense = null
+    }
+
     // 1. 清除密钥缓存，后续 ensureKeys 从新 CACHE_KEY_DATA 重新派生
     this.encryptionKey = null
     this.hmacKey = null
     await this.ensureKeys()
 
-    // 2. 重置 UserTierDataManager 实例，强制重建时使用新密钥
+    // 2. 重置 UserTierDataManager 实例，强制重建时使用新密钥并保留未消费的已有本地数据
     UserTierDataManager.resetInstance()
     this.dataManager = null
 
-    // 3. 重新创建 DataManager（已使用新密钥），通过统一方法处理订阅过期后写入
+    // 3. 创建新 DataManager 并权威落盘离线授权数据（绕过云端 version<=1 拦截并立即通知前端）
     const manager = this.getDataManager()
-    const effectiveData = UserTierDataManager.ensureNotExpired(data)
-    // replaceFromCloud() 内部调用 build() → computeComputedLimits() 并持久化
-    await manager.replaceFromCloud(effectiveData)
+    await manager.applyAuthoritativeOfflineData(effectiveData)
   }
 
   async initialize(): Promise<void> {
@@ -546,6 +591,7 @@ export class UserTierService {
       )
       const machineId = await SystemIdentityService.getInstance().getMachineId()
       logger.info(LogCategory.SYSTEM, '[UserTierService] 初始化开始, machineId:', machineId)
+      await this.refreshVerifiedOfflineLicense()
       // ensureKeys 可能因网络等问题失败，但不阻塞后续初始化
       try {
         await this.ensureKeys()
@@ -590,6 +636,7 @@ export class UserTierService {
       '[UserTierService] syncLocalCacheAndNotify 开始, machineId:',
       machineId
     )
+    await this.refreshVerifiedOfflineLicense()
     try {
       // 先确保密钥已派生（可能被 activate 清空后需从新写入的 CACHE_KEY_DATA 重新派生）
       await this.ensureKeys()
@@ -597,7 +644,8 @@ export class UserTierService {
       logger.warn(LogCategory.SYSTEM, '[UserTierService] 密钥派生失败，降级进行同步:', e)
     }
     try {
-      // 清除缓存的 DataManager，强制从最新配置（新写入的 USER_TIER_CACHE_DATA）重新加载
+      // 重置并重建 DataManager，确保从最新密钥、离线授权基线及最新加密缓存加载
+      UserTierDataManager.resetInstance()
       this.dataManager = null
       await this.getDataManager().trySync()
     } catch (e) {

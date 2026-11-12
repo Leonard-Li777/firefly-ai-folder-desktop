@@ -27,6 +27,7 @@ import { Organize } from './components/file-explorer/Organize/index'
 import { GlobalSearchOverlay } from './components/file-explorer/GlobalSearchOverlay'
 import { PluginCenterOverlay } from './components/plugin-center/PluginCenterOverlay'
 import { WelcomeWizard } from './components/welcome/WelcomeWizard'
+import { resolveWelcomeGateState, type WelcomeGateModuleLike } from './lib/welcome-gate'
 // PRD-0044（S5）：InitialSetupOverlay / GpuDriverOverlay / ModelDownloadProgress / use-model-download
 // 等模型下载与本地切换残留 UI 已随「模型激活归萤核AI引擎独占」整体清退
 import { LicenseGateway } from './components/license/LicenseGateway'
@@ -283,6 +284,12 @@ const App: React.FC = () => {
     }
     return 'config'
   })
+  const [welcomeInitialStep, setWelcomeInitialStep] = useState<1 | 2>(1)
+  const startupPhaseRef = useRef<StartupPhase>(startupPhase)
+  const hasDeterminedPhaseRef = useRef(false)
+  useEffect(() => {
+    startupPhaseRef.current = startupPhase
+  }, [startupPhase])
   const [startupMessage, setStartupMessage] = useState<string>(t('正在准备启动应用...'))
   const forceConfigFlagConsumedRef = useRef(false)
   // PRD-0044（S5 提前摘除）：模型下载完成"立即激活"确认弹窗链删除，模型激活归萤核AI引擎独占
@@ -290,7 +297,6 @@ const App: React.FC = () => {
   // AI服务状态管理
   const { initializeAIService } = useAIServiceInitialization()
   const { isOpen: isErrorDialogOpen, closeDialog: closeErrorDialog } = useAIServiceErrorDialog()
-  const { updateConfigValue } = useSettingsStore()
   const { filePath: previewFilePath } = usePreviewOverlayStore()
 
   // PRD-0044（S5）：模型迁移进度监听与迁移蒙版超时兜底随「内置模型迁移链」整体清退删除。
@@ -304,12 +310,16 @@ const App: React.FC = () => {
   const determineStartupPhase = useCallback(
     async (options?: { ignoreForceFlag?: boolean }) => {
       if (!window.electronAPI) {
+        hasDeterminedPhaseRef.current = true
+        startupPhaseRef.current = 'config'
         setStartupPhase('config')
         return
       }
 
       // 预览窗口不初始化 AI 服务（/preview 和 /preview-window 两个路由都是预览窗口）
       if (currentPath === '/preview' || currentPath === '/preview-window') {
+        hasDeterminedPhaseRef.current = true
+        startupPhaseRef.current = 'ready'
         setStartupPhase('ready')
         return
       }
@@ -337,8 +347,6 @@ const App: React.FC = () => {
 
         if (shouldForceConfig) {
           forceConfigFlagConsumedRef.current = true
-          setStartupPhase('config')
-          return
         }
 
         const languageConfirmed = config.languageConfirmed ?? false
@@ -376,18 +384,45 @@ const App: React.FC = () => {
           })
         }
 
-        // 核心逻辑：判断是否需要进入配置阶段（欢迎向导）
-        // 1. 如果是首次运行，或者语言未确认，必须进入配置阶段
-        if (!languageConfirmed) {
-          logger.info(LogCategory.RENDERER, '-> 进入配置阶段（语言未确认）')
-          setStartupPhase('config')
-          return
-        } else if (config.isFirstRun) {
-          logger.info(LogCategory.RENDERER, '-> 语言已确认但后端认为是首次运行，自动设为非首次运行')
-          updateConfigValue('IS_FIRST_RUN', false, { preventAutoReload: true })
+        // 核心逻辑：欢迎向导强校验门禁（语言确认 + 基础 AI 引擎插件装配 + 正式完成标记）
+        // 严禁在语言已确认时自动抹平 IS_FIRST_RUN，未完成第二步插件装配绝不允许进入主界面
+        let installedModules: WelcomeGateModuleLike[] | null = null
+        const modularBridge =
+          (window.electronAPI as any)?.modularResource || (window as any).modularResource
+        if (typeof modularBridge?.list === 'function') {
+          try {
+            const listRes = await modularBridge.list({ scope: 'installed' })
+            if (Array.isArray(listRes)) {
+              installedModules = listRes
+            }
+          } catch (err) {
+            logger.warn(LogCategory.RENDERER, '查询已安装基础 AI 引擎失败:', err)
+          }
         }
 
-        // 3. 授权检查（在模型检查之前执行，确保授权是硬门控）
+        const gateDecision = resolveWelcomeGateState({
+          config,
+          installedModules,
+          ignoreFirstRunFlag: Boolean(options?.ignoreForceFlag),
+          forceConfigStage: shouldForceConfig
+        })
+
+        if (!gateDecision.completed) {
+          logger.info(
+            LogCategory.RENDERER,
+            `-> 欢迎向导强校验未通过 (${gateDecision.reason})，进入配置阶段 Step ${gateDecision.step}`
+          )
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('languageConfirmed')
+          }
+          setWelcomeInitialStep(gateDecision.step)
+          startupPhaseRef.current = 'config'
+          hasDeterminedPhaseRef.current = true
+          setStartupPhase('config')
+          return
+        }
+
+        // 3. 授权检查（在欢迎向导完成后执行，避免离线授权弹窗取代或打断欢迎向导）
         setStartupMessage(t('正在验证授权状态...'))
         const licenseResult = await window.electronAPI!.license.getStatus()
 
@@ -424,6 +459,8 @@ const App: React.FC = () => {
               LogCategory.RENDERER,
               '-> 检测到欢迎向导完成触发，虽然模型未就绪，但允许进入初始化阶段进行深度检查'
             )
+            hasDeterminedPhaseRef.current = true
+            startupPhaseRef.current = 'initializing'
             setStartupPhase('initializing')
             return
           }
@@ -434,16 +471,22 @@ const App: React.FC = () => {
             LogCategory.RENDERER,
             '-> 模型尚未就绪（本地未下载或云端未配置），但允许继续进入初始化阶段'
           )
+          hasDeterminedPhaseRef.current = true
+          startupPhaseRef.current = 'initializing'
           setStartupPhase('initializing')
           return
         }
 
         localStorage.setItem('languageConfirmed', 'true')
         logger.info(LogCategory.RENDERER, '-> 直接进入初始化阶段')
+        hasDeterminedPhaseRef.current = true
+        startupPhaseRef.current = 'initializing'
         setStartupPhase('initializing')
       } catch (error) {
         logger.error(LogCategory.RENDERER, '判定启动阶段失败:', error)
         // 报错时默认进入配置阶段（最安全）
+        hasDeterminedPhaseRef.current = true
+        startupPhaseRef.current = 'config'
         setStartupPhase('config')
       }
     },
@@ -663,6 +706,17 @@ const App: React.FC = () => {
   useEffect(() => {
     if (window.electronAPI?.license?.onUnauthorized) {
       const unsubscribe = window.electronAPI.license.onUnauthorized(result => {
+        // 欢迎向导强校验期间或启动阶段尚未完成判定时，严禁通过 reload 或弹窗打断欢迎向导；
+        // 仅记录最新授权状态，待欢迎向导完成后再触发授权拦截。
+        if (startupPhaseRef.current === 'config' || !hasDeterminedPhaseRef.current) {
+          logger.info(
+            LogCategory.RENDERER,
+            '欢迎向导尚未完成，延后处理授权失效通知:',
+            result.status
+          )
+          setLicenseInfo(result)
+          return
+        }
         logger.warn(LogCategory.RENDERER, '收到授权失效通知，准备刷新页面:', result.status)
         // 如果当前不在 licensing 阶段，强制刷新整个页面以清理环境
         // 这也避免了在启动阶段的重复刷新循环
@@ -671,6 +725,7 @@ const App: React.FC = () => {
           return
         }
         setLicenseInfo(result)
+        startupPhaseRef.current = 'licensing'
         setStartupPhase('licensing')
       })
       return () => {
@@ -712,12 +767,22 @@ const App: React.FC = () => {
   useEffect(() => {
     const handleManualUnauthorized = (event: any) => {
       const result = event.detail
+      if (startupPhaseRef.current === 'config' || !hasDeterminedPhaseRef.current) {
+        logger.info(
+          LogCategory.RENDERER,
+          '欢迎向导尚未完成，延后处理手动触发的授权失效事件:',
+          result?.status
+        )
+        setLicenseInfo(result)
+        return
+      }
       logger.warn(LogCategory.RENDERER, '收到手动触发的授权失效事件:', result.status)
       if (startupPhase !== 'licensing') {
         window.location.reload()
         return
       }
       setLicenseInfo(result)
+      startupPhaseRef.current = 'licensing'
       setStartupPhase('licensing')
     }
 
@@ -740,15 +805,18 @@ const App: React.FC = () => {
   // 移除 initializing 阶段的阻塞遮罩，允许直接进入应用
   // 并移除 licensing 阶段的阻塞全屏，改为进入主界面后弹层提示
 
-  // 仅在 config 阶段显示欢迎向导进行语言选择
+  // 仅在 config 阶段显示欢迎向导进行语言选择与基础能力装配
   if (startupPhase === 'config') {
     return (
       <ErrorBoundary>
         <div className="h-screen w-screen relative">
           <WelcomeWizard
+            initialStep={welcomeInitialStep}
             onComplete={() => {
               localStorage.setItem('languageConfirmed', 'true')
               // 立即进入初始化阶段，隐藏欢迎向导；后台异步执行授权/模型检查
+              hasDeterminedPhaseRef.current = true
+              startupPhaseRef.current = 'initializing'
               setStartupPhase('initializing')
               determineStartupPhase({ ignoreForceFlag: true })
             }}
@@ -759,8 +827,12 @@ const App: React.FC = () => {
     )
   }
 
-  // 进入主界面后，如果授权未通过则显示弹层
-  const showLicenseOverlay = licenseInfo?.status != null && licenseInfo.status !== 'AUTHORIZED'
+  // 进入主界面后，如果授权未通过则显示弹层（能到达此处已通过 startupPhase === 'config' 早返回；
+  // 再叠加 hasDeterminedPhaseRef 防止冷启动判定完成前闪现授权弹层）
+  const showLicenseOverlay =
+    hasDeterminedPhaseRef.current &&
+    licenseInfo?.status != null &&
+    licenseInfo.status !== 'AUTHORIZED'
 
   return (
     <ErrorBoundary>

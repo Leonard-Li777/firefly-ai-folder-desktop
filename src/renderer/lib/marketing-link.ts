@@ -216,14 +216,39 @@ export function buildPricingUrlSync(action?: MarketingAction, identCode?: string
 }
 
 /**
- * 根据机器码及当前版本区域生成对应的专属邀请链接
+ * 提取并校验用户输入的邀请码或包含 ref= 的完整邀请链接
+ * 纯函数解析：8 位转大写，16 位 V3 Base62 严禁改变大小写
  */
-export function getInviteLink(machineId: string): string {
-  if (!machineId) return ''
+export function extractInvitationCodeInput(raw: string): string | null {
+  const text = (raw || '').trim()
+  const fromQuery = text.match(/[?&]ref=([^&#\s]+)/i)?.[1]
+  let candidate = text
+  if (fromQuery) {
+    try {
+      candidate = decodeURIComponent(fromQuery).trim()
+    } catch {
+      candidate = fromQuery.trim()
+    }
+  }
+  if (/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{8}$/i.test(candidate)) {
+    return candidate.toUpperCase()
+  }
+  if (/^[0-9A-Za-z]{16}$/.test(candidate)) {
+    return candidate
+  }
+  return null
+}
+
+/**
+ * 根据用户的专属邀请码 (ref_code) 生成对应的专属邀请链接
+ * 若未绑定或无有效 refCode，返回 null
+ */
+export function getInviteLink(refCode?: string | null): string | null {
+  const cleanCode = refCode ? refCode.trim() : ''
+  if (!cleanCode) return null
   const domain = getOfficialSiteDomain()
-  const refCode = encodeMachineIdToRef(machineId)
   const targetUrl = new URL(domain)
-  targetUrl.searchParams.set('ref', refCode)
+  targetUrl.searchParams.set('ref', cleanCode)
   return resolveDevMarketingUrl(targetUrl).toString()
 }
 

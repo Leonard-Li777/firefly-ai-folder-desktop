@@ -104,11 +104,15 @@ export interface SendEmailOtpResponse {
 export interface CompleteEmailBindingResponse {
   success: boolean
   status?: string
+  seated?: boolean
+  need_evict?: boolean
+  contact_channel?: 'email' | 'wechat_oa'
   device_token?: string
   user?: {
     id: string
     ref_code?: string
     email_canonical?: string
+    contact_channel?: 'email' | 'wechat_oa'
   }
   invitation_result?: {
     success: boolean
@@ -116,6 +120,7 @@ export interface CompleteEmailBindingResponse {
     message?: string
   }
   error?: string
+  message?: string
 }
 
 export class DeviceBindService {
@@ -212,6 +217,7 @@ export class DeviceBindService {
       await ConfigOrchestrator.getInstance().updateValue('DEVICE_AUTH_TOKEN', token)
     } catch (err) {
       logger.error(LogCategory.SYSTEM, '[DeviceBindService] 持久化 DEVICE_AUTH_TOKEN 异常:', err)
+      throw err
     }
   }
 
@@ -241,6 +247,7 @@ export class DeviceBindService {
       await ConfigOrchestrator.getInstance().updateValue('BIND_SESSION_TOKEN', token)
     } catch (err) {
       logger.error(LogCategory.SYSTEM, '[DeviceBindService] 持久化 BIND_SESSION_TOKEN 异常:', err)
+      throw err
     }
   }
 
@@ -671,6 +678,12 @@ export class DeviceBindService {
         }
       }
 
+      // 仅当成功入座 (seated === true) 时，原子写入永久 DEVICE_AUTH_TOKEN 并清理临时 BIND_SESSION_TOKEN
+      if (data.seated && sessionToken) {
+        await this.setDeviceToken(sessionToken)
+        await this.clearBindSessionToken()
+      }
+
       return {
         success: true,
         seated: !!data.seated,
@@ -785,6 +798,123 @@ export class DeviceBindService {
   }
 
   /**
+   * 阶段二联系方式确认后的统一激活落盘与设备入席流程
+   * 供「邮箱验证码」与「关注公众号口令」两条等价分支共享
+   */
+  private async finalizeStage2BindingRpc(
+    rpcName: string,
+    rpcArgs: Record<string, any>
+  ): Promise<CompleteEmailBindingResponse> {
+    try {
+      const client = this.getClient()
+      const schema = getSharedSchemaName()
+      const { data, error } = await (client as any).schema(schema).rpc(rpcName, rpcArgs)
+
+      if (error) {
+        logger.warn(LogCategory.SYSTEM, `[DeviceBindService] ${rpcName} 失败:`, error)
+        return {
+          success: false,
+          error: this.isNetworkError(error) ? 'NETWORK_ERROR' : error.message,
+          message: this.resolveFriendlyErrorMessage(error)
+        }
+      }
+
+      if (!data?.success) {
+        return {
+          success: false,
+          error: data?.error || 'BINDING_FAILED',
+          message: data?.message
+        }
+      }
+
+      const sessionToken = data?.device_token || data?.session_token
+      // 契约守卫：仅当 data?.status === 'active' && data?.device_token && (data?.seated === true || data?.need_evict === false) 时才写入 DEVICE_AUTH_TOKEN
+      if (
+        data?.status === 'active' &&
+        sessionToken &&
+        (data?.seated === true || data?.need_evict === false)
+      ) {
+        await this.setDeviceToken(sessionToken)
+        await this.clearBindSessionToken()
+      }
+
+      const invitationResult =
+        data?.invitation_result ??
+        (data?.invitation_status && data.invitation_status !== 'none'
+          ? {
+              success: data.invitation_status === 'success',
+              message: data.invitation_error || undefined
+            }
+          : undefined)
+
+      if (data?.seated) {
+        return {
+          success: true,
+          status: data.status || 'active',
+          seated: true,
+          contact_channel: data.contact_channel,
+          device_token: sessionToken,
+          user: data.user,
+          invitation_result: invitationResult
+        }
+      }
+
+      if (sessionToken) {
+        const seatRes = await this.seatThisDevice(sessionToken, null)
+        if (seatRes.success && seatRes.seated) {
+          return {
+            success: true,
+            status: 'active',
+            seated: true,
+            contact_channel: data.contact_channel,
+            device_token: sessionToken,
+            user: data.user,
+            invitation_result: invitationResult
+          }
+        }
+
+        if (seatRes.need_evict) {
+          return {
+            success: true,
+            status: 'need_evict',
+            need_evict: true,
+            seated: false,
+            contact_channel: data.contact_channel,
+            device_token: sessionToken,
+            user: data.user,
+            invitation_result: invitationResult
+          }
+        }
+
+        return {
+          success: false,
+          status: 'error',
+          seated: false,
+          contact_channel: data.contact_channel,
+          device_token: sessionToken,
+          user: data.user,
+          invitation_result: invitationResult,
+          error: seatRes.error || 'SEAT_FAILED',
+          message: seatRes.message || '当前电脑登录席位激活失败，请重试'
+        }
+      }
+
+      return {
+        success: false,
+        error: 'MISSING_SESSION_TOKEN',
+        message: '未获取到有效设备会话凭据，请重新扫码重试'
+      }
+    } catch (err: any) {
+      logger.error(LogCategory.SYSTEM, `[DeviceBindService] ${rpcName} 异常:`, err)
+      return {
+        success: false,
+        error: this.isNetworkError(err) ? 'NETWORK_ERROR' : err?.message || 'unknown',
+        message: this.resolveFriendlyErrorMessage(err)
+      }
+    }
+  }
+
+  /**
    * 完成邮箱验证与好友邀请兑换原子结算
    */
   public async completeEmailBinding(
@@ -792,44 +922,34 @@ export class DeviceBindService {
     code: string,
     invitationCode?: string
   ): Promise<CompleteEmailBindingResponse> {
-    try {
-      const bindSessionToken = this.getBindSessionToken()
-      if (!bindSessionToken) {
-        return { success: false, error: 'BIND_SESSION_EXPIRED' }
-      }
-
-      const client = this.getClient()
-      const schema = getSharedSchemaName()
-      const { data, error } = await (client as any)
-        .schema(schema)
-        .rpc('rpc_complete_email_binding_and_invitation', {
-          p_bind_session_token: bindSessionToken,
-          p_email: email.trim().toLowerCase(),
-          p_code: code.trim(),
-          p_invitation_code: invitationCode ? invitationCode.trim() : null
-        })
-
-      if (error) {
-        logger.warn(LogCategory.SYSTEM, '[DeviceBindService] completeEmailBinding 失败:', error)
-        return { success: false, error: error.message }
-      }
-
-      if (data?.status === 'active' && data?.device_token) {
-        await this.setDeviceToken(data.device_token)
-        await this.clearBindSessionToken()
-      }
-
-      return {
-        success: true,
-        status: data?.status,
-        device_token: data?.device_token,
-        user: data?.user,
-        invitation_result: data?.invitation_result
-      }
-    } catch (err: any) {
-      logger.error(LogCategory.SYSTEM, '[DeviceBindService] completeEmailBinding 异常:', err)
-      return { success: false, error: err?.message || 'unknown' }
+    const bindSessionToken = this.getBindSessionToken()
+    if (!bindSessionToken) {
+      return { success: false, error: 'BIND_SESSION_EXPIRED' }
     }
+
+    return this.finalizeStage2BindingRpc('rpc_complete_email_binding_and_invitation', {
+      p_bind_session_token: bindSessionToken,
+      p_email: email.trim().toLowerCase(),
+      p_code: code.trim(),
+      p_invitation_code: invitationCode ? invitationCode.trim() : null
+    })
+  }
+
+  /**
+   * 完成关注公众号口令确认与好友邀请兑换原子结算（二选一轻量路径）
+   */
+  public async completeOaContactBinding(
+    invitationCode?: string
+  ): Promise<CompleteEmailBindingResponse> {
+    const bindSessionToken = this.getBindSessionToken()
+    if (!bindSessionToken) {
+      return { success: false, error: 'BIND_SESSION_EXPIRED' }
+    }
+
+    return this.finalizeStage2BindingRpc('rpc_complete_oa_contact_binding', {
+      p_bind_session_token: bindSessionToken,
+      p_invitation_code: invitationCode ? invitationCode.trim() : null
+    })
   }
 
   /**
