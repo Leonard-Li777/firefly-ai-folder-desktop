@@ -427,7 +427,7 @@ export function getInitialPlugins(): PluginModuleItem[] {
   return [
     {
       id: 'engine_classic_light',
-      name: t('经典轻量 AI 引擎 (Classic Light)'),
+      name: t('标准极速语义搜索'),
       version: '1.0.0',
       category: 'ai-engine',
       capability_slot: 'base_embedding',
@@ -457,7 +457,7 @@ export function getInitialPlugins(): PluginModuleItem[] {
     },
     {
       id: 'engine_gemma_unified',
-      name: t('统一全模态 AI 引擎 (Gemma Unified)'),
+      name: t('高精度全能语义搜索'),
       version: '1.0.0',
       category: 'ai-engine',
       capability_slot: 'base_embedding',
@@ -487,7 +487,7 @@ export function getInitialPlugins(): PluginModuleItem[] {
     },
     {
       id: 'pocket-cpu-int8-onnx',
-      name: t('轻量CPU生成式引擎 (Pocket CPU)'),
+      name: t('离线轻量智能引擎'),
       version: '1.0.0',
       category: 'ai-engine',
       capability_slot: 'ai_engine_cpu',
@@ -517,7 +517,7 @@ export function getInitialPlugins(): PluginModuleItem[] {
     },
     {
       id: 'perception_nsfw',
-      name: t('敏感内容与 NSFW 分级识别'),
+      name: t('敏感内容过滤与安全识别'),
       version: '1.2.0',
       category: 'perception',
       capability_slot: 'perception_nsfw',
@@ -547,7 +547,7 @@ export function getInitialPlugins(): PluginModuleItem[] {
     },
     {
       id: 'asr_sensevoice_onnx',
-      name: t('语音识别与字幕提取 ASR (SenseVoice)'),
+      name: t('语音识别与字幕提取'),
       version: '1.0.0',
       category: 'perception',
       capability_slot: 'voice_asr',
@@ -577,7 +577,7 @@ export function getInitialPlugins(): PluginModuleItem[] {
     },
     {
       id: 'tts_moss_onnx',
-      name: t('个性声音克隆朗读 (Moss-TTS)'),
+      name: t('个性化声音克隆与朗读'),
       version: '1.0.0',
       category: 'media',
       capability_slot: 'voice_tts',
@@ -607,7 +607,7 @@ export function getInitialPlugins(): PluginModuleItem[] {
     },
     {
       id: 'tts_m5_onnx',
-      name: t('极速轻量语音朗读 (M5-TTS)'),
+      name: t('极速语音合成与朗读'),
       version: '1.0.0',
       category: 'media',
       capability_slot: 'voice_tts',

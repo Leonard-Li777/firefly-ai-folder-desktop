@@ -1011,7 +1011,7 @@ export const TTSSettings: React.FC = () => {
             {isAnalyzing && (
               <div className="p-3 rounded-md bg-primary/5 border border-primary/20 flex items-center gap-2.5 text-primary">
                 <Loader2 className="w-4 h-4 animate-spin shrink-0" />
-                <span>{t('SenseVoice 正在解析音频声学特征、语种与情感标签...')}</span>
+                <span>{t('正在解析音频声学特征、语种与情感标签...')}</span>
               </div>
             )}
 

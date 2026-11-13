@@ -712,7 +712,7 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
                 <div className="flex items-center justify-between pb-3 border-b border-border/60">
                   <div className="flex items-center gap-2">
                     <Sliders className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-semibold">{t('极速语音朗读配置 (M5-TTS)')}</span>
+                    <span className="text-sm font-semibold">{t('极速语音合成配置')}</span>
                   </div>
                   <Badge variant="outline" className="text-xs font-mono">
                     v{configuringModule.version}

@@ -114,7 +114,7 @@ export const SystemSettingsDialog: React.FC = () => {
           const isM5 = activeTtsModule.id === 'tts_m5_onnx'
           return {
             ...category,
-            name: isM5 ? t('极速语音朗读 (M5-TTS)') : t('个性声音克隆 (Moss-TTS)'),
+            name: isM5 ? t('极速语音合成与朗读') : t('个性化声音克隆与朗读'),
             description: isM5
               ? t('51款预置音色、默认语速与发音人收藏管理')
               : t('离线多发音人音色库、音色克隆与收藏管理')

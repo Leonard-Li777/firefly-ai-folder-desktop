@@ -2182,6 +2182,32 @@
     "$files": ["src/renderer/components/common/SupportedFormats.tsx(6577-6594)"],
     "$id": 11419
   },
+  "语音播放待安装或启动，请在插件中心开启": {
+    "en-US": "语音播放待安装或启动，请在插件中心开启",
+    "es-ES": "语音播放待安装或启动，请在插件中心开启",
+    "ar-EG": "语音播放待安装或启动，请在插件中心开启",
+    "pt-PT": "语音播放待安装或启动，请在插件中心开启",
+    "ru-RU": "语音播放待安装或启动，请在插件中心开启",
+    "ja-JP": "语音播放待安装或启动，请在插件中心开启",
+    "de-DE": "语音播放待安装或启动，请在插件中心开启",
+    "fr-FR": "语音播放待安装或启动，请在插件中心开启",
+    "ko-KR": "语音播放待安装或启动，请在插件中心开启",
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(6363-6386)"],
+    "$id": 31569
+  },
+  "语音播放待安装/启动": {
+    "en-US": "语音播放待安装/启动",
+    "es-ES": "语音播放待安装/启动",
+    "ar-EG": "语音播放待安装/启动",
+    "pt-PT": "语音播放待安装/启动",
+    "ru-RU": "语音播放待安装/启动",
+    "ja-JP": "语音播放待安装/启动",
+    "de-DE": "语音播放待安装/启动",
+    "fr-FR": "语音播放待安装/启动",
+    "ko-KR": "语音播放待安装/启动",
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(6781-6795)"],
+    "$id": 31570
+  },
   "已在文件夹中定位音频文件": {
     "en-US": "Audio files have been located in the folder",
     "es-ES": "Los archivos de audio se han ubicado en la carpeta",
@@ -2192,7 +2218,7 @@
     "de-DE": "Audiodateien wurden im Ordner gefunden",
     "fr-FR": "Les fichiers audio ont été localisés dans le dossier",
     "ko-KR": "오디오 파일이 폴더에 있습니다",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(6922-6938)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(7877-7893)"],
     "$id": 21215
   },
   "音频文件尚未生成，播放后将自动缓存": {
@@ -2205,7 +2231,7 @@
     "de-DE": "Die Audiodatei wurde noch nicht generiert und wird nach der Wiedergabe automatisch zwischengespeichert",
     "fr-FR": "Le fichier audio n'a pas encore été généré et sera automatiquement mis en cache après la lecture",
     "ko-KR": "오디오 파일은 아직 생성되지 않았으며 재생 후 자동으로 캐시됩니다",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(6976-6997)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(7933-7954)"],
     "$id": 21216
   },
   "正在缓冲语音，已就绪 {current}s / {target}s...": {
@@ -2218,7 +2244,7 @@
     "de-DE": "Puffernde Stimme, bereit {current}s / {target}s...",
     "fr-FR": "Voix tampon, prêt {current}s / {target}s...",
     "ko-KR": "음성 버퍼링 중, {current}s/{target}s 준비됨...",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(7781-7821)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(8761-8801)"],
     "$id": 22280
   },
   "正在准备语音，请稍候...": {
@@ -2231,7 +2257,7 @@
     "de-DE": "Stimme wird vorbereitet, bitte warten...",
     "fr-FR": "Préparation de la voix, veuillez patienter...",
     "ko-KR": "음성 준비 중입니다. 잠시 기다려 주세요...",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(8094-8111)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(9081-9098)"],
     "$id": 22281
   },
   "暂停朗读": {
@@ -2244,7 +2270,7 @@
     "de-DE": "Leseunterbrechung",
     "fr-FR": "Pause lecture",
     "ko-KR": "읽기 일시 중지",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(8157-8165)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(9146-9154)"],
     "$id": 21217
   },
   "继续朗读": {
@@ -2257,7 +2283,7 @@
     "de-DE": "Lesen Sie weiter laut",
     "fr-FR": "Continuez à lire à haute voix",
     "ko-KR": "소리내어 계속 읽기",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(8214-8222)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(9205-9213)"],
     "$id": 21218
   },
   "语音朗读": {
@@ -2270,7 +2296,7 @@
     "de-DE": "Stimmenlesen",
     "fr-FR": "Lecture vocale",
     "ko-KR": "음성 읽기",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(8244-8252)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(9236-9244)"],
     "$id": 21219
   },
   "准备中...": {
@@ -2283,7 +2309,7 @@
     "de-DE": "Vorbereitung läuft...",
     "fr-FR": "En préparation...",
     "ko-KR": "준비 중...",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(9166-9176)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(10178-10188)"],
     "$id": 22282
   },
   "播放中": {
@@ -2296,7 +2322,7 @@
     "de-DE": "Spielend",
     "fr-FR": "Jouer",
     "ko-KR": "재생",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(9362-9369)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(10378-10385)"],
     "$id": 21220
   },
   "暂停": {
@@ -2309,7 +2335,7 @@
     "de-DE": "Pausieren",
     "fr-FR": "Suspendre",
     "ko-KR": "일시 중지",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(9426-9432)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(10444-10450)"],
     "$id": 21221
   },
   "朗读": {
@@ -2322,7 +2348,7 @@
     "de-DE": "Vorlesen",
     "fr-FR": "Lire à haute voix",
     "ko-KR": "소리내어 읽기",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(9458-9464)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(10477-10483)"],
     "$id": 21222
   },
   "切换朗读发音人": {
@@ -2335,7 +2361,7 @@
     "de-DE": "Wechseln Sie zum Vorlesesprecher",
     "fr-FR": "Basculer pour lire le prononciateur à haute voix",
     "ko-KR": "소리내어 발음기로 전환",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(9956-9967)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(10993-11004)"],
     "$id": 21223
   },
   "收藏音色": {
@@ -2348,7 +2374,7 @@
     "de-DE": "Kollektion tone",
     "fr-FR": "Ton de collection",
     "ko-KR": "컬렉션 톤",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(10649-10657)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(11696-11704)"],
     "$id": 21224
   },
   "自定义": {
@@ -2361,7 +2387,7 @@
     "de-DE": "Benutzerdefiniert",
     "fr-FR": "Personnalisé",
     "ko-KR": "사용자 지정",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(11650-11657)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(12717-12724)"],
     "$id": 21651
   },
   "管理音色与设置...": {
@@ -2374,7 +2400,7 @@
     "de-DE": "Verwalten Sie Klangfarbe und Einstellungen...",
     "fr-FR": "Gérer le timbre et les paramètres...",
     "ko-KR": "음색 및 설정을 관리합니다...",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(12422-12436)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(13506-13520)"],
     "$id": 21225
   },
   "调节朗读语速": {
@@ -2387,7 +2413,7 @@
     "de-DE": "Passen Sie die Geschwindigkeit des Vorlesens an",
     "fr-FR": "Ajustez la vitesse de lecture à haute voix",
     "ko-KR": "소리내어 읽는 속도 조정",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(12844-12854)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(13944-13954)"],
     "$id": 21226
   },
   "在文件夹中定位音频文件": {
@@ -2400,7 +2426,7 @@
     "de-DE": "Audiodateien in Ordnern suchen",
     "fr-FR": "Localiser les fichiers audio dans des dossiers",
     "ko-KR": "폴더에서 오디오 파일 찾기",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(14242-14257)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(15377-15392)"],
     "$id": 21227
   },
   "无法加载文件预览，请检查文件权限或格式。": {

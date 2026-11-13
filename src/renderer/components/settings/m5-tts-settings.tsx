@@ -252,7 +252,7 @@ export const M5TTSSettings: React.FC = () => {
         <div>
           <h2 className="text-xl font-bold flex items-center gap-2">
             <Zap className="w-5 h-5 text-amber-500" />
-            <span>{t('极速语音朗读 (M5-TTS)')}</span>
+            <span>{t('极速语音合成与朗读')}</span>
           </h2>
           <p className="text-xs text-muted-foreground mt-1">
             {t('【超轻量极速发音】首字毫秒级发音，内存仅需 ~350MB，普通轻薄本丝滑流畅。')}
