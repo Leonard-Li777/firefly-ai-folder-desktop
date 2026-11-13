@@ -220,8 +220,8 @@
       "source": "shared",
       "asset": {
         "name": "m5-tts-1.0.0.zip",
-        "sha256": "814b190f671e32a7e19add7655b032145ef96fc560f3326466042b5b4d96c240",
-        "size": 305845248,
+        "sha256": "04f3b6195c7128a0de6325fe2f38c09507d444d08d0fea38e2dc1a97715039c1",
+        "size": 253215862,
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/m5-tts-1.0.0.zip"
       }
     },

@@ -21,10 +21,7 @@ import {
   ArrowLeft
 } from 'lucide-react'
 import { WelcomeStepLayout } from './WelcomeStepLayout'
-import type {
-  HardwareProbeResult,
-  WelcomeSelection
-} from './welcome-types'
+import type { HardwareProbeResult, WelcomeSelection } from './welcome-types'
 
 // 资源清单权威体积字典 (与 BOM SSOT 严格对齐)
 const RESOURCE_BYTES_MAP: Record<string, number> = {
@@ -35,7 +32,7 @@ const RESOURCE_BYTES_MAP: Record<string, number> = {
   'nsfw-l3': 33311367,
   'sensevoice-onnx': 160304482,
   'moss-tts': 240822786,
-  'm5-tts': 305845248,
+  'm5-tts': 253215862,
   'mobile-clip': 57910236
 }
 
@@ -116,7 +113,10 @@ export function WelcomeStep2PluginSetup({
           <span>{t('预计占用空间:')}</span>
           <span className="font-mono text-sm font-semibold text-primary">{displaySize}</span>
         </div>
-        <div data-testid="welcome-step2-later-method-hint" className="text-muted-foreground text-[11px] sm:text-xs">
+        <div
+          data-testid="welcome-step2-later-method-hint"
+          className="text-muted-foreground text-[11px] sm:text-xs"
+        >
           {t('先挑插件，稍后决定安装方式 · 现在还不会下载文件')}
         </div>
       </div>
@@ -163,7 +163,9 @@ export function WelcomeStep2PluginSetup({
               </div>
               <div className="min-w-0">
                 <div className="text-xs text-muted-foreground">{t('电脑内存 (RAM)')}</div>
-                <div className="text-sm font-semibold text-foreground truncate">{hardware.totalMemGB} GB</div>
+                <div className="text-sm font-semibold text-foreground truncate">
+                  {hardware.totalMemGB} GB
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-3 p-1">
@@ -186,7 +188,9 @@ export function WelcomeStep2PluginSetup({
               </div>
               <div className="min-w-0">
                 <div className="text-xs text-muted-foreground">{t('磁盘剩余空间')}</div>
-                <div className="text-sm font-semibold text-foreground truncate">{hardware.storageFreeGB} GB</div>
+                <div className="text-sm font-semibold text-foreground truncate">
+                  {hardware.storageFreeGB} GB
+                </div>
               </div>
             </div>
           </div>
@@ -251,7 +255,10 @@ export function WelcomeStep2PluginSetup({
                 </div>
               </div>
               <div className="text-right shrink-0">
-                <Badge variant="outline" className="text-xs bg-muted text-muted-foreground font-mono border-border">
+                <Badge
+                  variant="outline"
+                  className="text-xs bg-muted text-muted-foreground font-mono border-border"
+                >
                   242.2 MiB
                 </Badge>
               </div>
@@ -281,7 +288,9 @@ export function WelcomeStep2PluginSetup({
                     )}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                    {t('占用内存极少，反应极快；只处理文档和图片；老电脑和低配轻薄本也能流畅运行不卡顿')}
+                    {t(
+                      '占用内存极少，反应极快；只处理文档和图片；老电脑和低配轻薄本也能流畅运行不卡顿'
+                    )}
                   </div>
                   <div className="mt-2 flex items-center gap-2">
                     <span
@@ -295,7 +304,10 @@ export function WelcomeStep2PluginSetup({
                 </div>
               </div>
               <div className="text-right shrink-0">
-                <Badge variant="outline" className="text-xs bg-muted text-muted-foreground font-mono border-border">
+                <Badge
+                  variant="outline"
+                  className="text-xs bg-muted text-muted-foreground font-mono border-border"
+                >
                   304.4 MiB
                 </Badge>
               </div>
@@ -397,8 +409,13 @@ export function WelcomeStep2PluginSetup({
                 </div>
                 <Checkbox checked={Boolean(selectedOptionals.tts_m5_onnx)} />
               </div>
-              <div data-testid="welcome-tts-description" className="text-[11px] text-muted-foreground mt-2 leading-relaxed">
-                {t('用自然真人声音把文档读给你听。实时长文朗读、50+音色、中英文混读，文件分析结果直接收听')}
+              <div
+                data-testid="welcome-tts-description"
+                className="text-[11px] text-muted-foreground mt-2 leading-relaxed"
+              >
+                {t(
+                  '用自然真人声音把文档读给你听。实时长文朗读、50+音色、中英文混读，文件分析结果直接收听'
+                )}
               </div>
             </div>
             <div className="mt-3 flex justify-between items-center text-[11px]">
