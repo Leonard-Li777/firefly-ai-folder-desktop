@@ -90,6 +90,7 @@ import {
   DirMigrationCoordinator,
   type DirMigrationProgressPayload
 } from './dir-migration-coordinator'
+import { resolveAppRegion } from '../../main/worktree-env'
 import type {
   DirRuntimePhase,
   PluginDirErrorCode,
@@ -3600,41 +3601,45 @@ export class ModularResourceService implements IModularResourceService {
     onProgress?: (event: ModuleDownloadProgressEvent) => void
   ): Promise<void> {
     const dao = this.getDao()
+    const isIntl = resolveAppRegion() === 'intl'
     const candidateUrls: string[] = []
 
-    // 1. 公共 R2 CDN 高速加速源（最高优先级且公开可用）
     const assetName = task.asset_name || spec.asset_name
-    if (assetName) {
-      const r2Url = `https://download.iocn.cn/firefly-resources/${assetName}`
-      candidateUrls.push(r2Url)
+    const r2Url = assetName ? `https://download.iocn.cn/firefly-resources/${assetName}` : null
+    const githubUrl =
+      spec.active_url ||
+      task.active_url ||
+      (assetName
+        ? `https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/${assetName}`
+        : null)
+
+    // 双轨下载调度策略（对齐 engine 资源下载）：
+    // - 国际版 (intl): 海外网络环境优先直连 GitHub Releases，若失败/超时平滑回退 R2 CDN；
+    // - 国内版 (cn): 国内优先腾讯云 EdgeOne CDN 加速的 R2 镜像，若失败平滑回退 GitHub Releases。
+    if (isIntl) {
+      if (githubUrl) candidateUrls.push(githubUrl)
+      if (r2Url && !candidateUrls.includes(r2Url)) candidateUrls.push(r2Url)
+    } else {
+      if (r2Url) candidateUrls.push(r2Url)
+      if (githubUrl && !candidateUrls.includes(githubUrl)) candidateUrls.push(githubUrl)
     }
 
-    // 2. 收集原始配置 URL，并过滤私有仓库 404 镜像（方案 A 过滤规则）
+    // 收集额外的备选 URL（如有）
     const rawUrls: string[] = []
-    if (task.active_url) rawUrls.push(task.active_url)
-    if (spec.active_url && !rawUrls.includes(spec.active_url)) rawUrls.push(spec.active_url)
+    if (task.active_url && !candidateUrls.includes(task.active_url)) rawUrls.push(task.active_url)
+    if (spec.active_url && !candidateUrls.includes(spec.active_url)) rawUrls.push(spec.active_url)
     if (Array.isArray((spec as any).urls)) {
       for (const u of (spec as any).urls) {
-        if (u && !rawUrls.includes(u)) rawUrls.push(u)
+        if (u && !rawUrls.includes(u) && !candidateUrls.includes(u)) rawUrls.push(u)
       }
     }
     if (Array.isArray((task as any).urls)) {
       for (const u of (task as any).urls) {
-        if (u && !rawUrls.includes(u)) rawUrls.push(u)
+        if (u && !rawUrls.includes(u) && !candidateUrls.includes(u)) rawUrls.push(u)
       }
     }
-
-    const isPrivateGithubRepo = (u: string) =>
-      u.includes('github.com/Leonard-Li777/firefly-resources/releases/download')
-
     for (const u of rawUrls) {
-      // 方案 A：在 firefly-resources 仍为私有仓时，匿名下载过滤剔除私有 GitHub Release URL，防 404 假死
-      if (isPrivateGithubRepo(u)) {
-        continue
-      }
-      if (!candidateUrls.includes(u)) {
-        candidateUrls.push(u)
-      }
+      candidateUrls.push(u)
     }
 
     if (candidateUrls.length === 0) {
@@ -3706,35 +3711,70 @@ export class ModularResourceService implements IModularResourceService {
         }
       })
     } else {
-      result = await this.downloadService.downloadWithVerification({
-        taskId: `${moduleId}:${task.resource_id}`,
-        url: candidateUrls[0],
-        destPath: archivePath,
-        expectedBytes: task.expected_bytes,
-        expectedSha256: task.expected_sha256,
-        etag: task.etag ?? undefined,
-        transport: this.transport,
-        onProgress: prog => {
-          const total = prog.totalBytes || task.expected_bytes || 1
-          const pct = Math.min(92, Math.round((prog.receivedBytes / total) * 92))
-          dao.resources.updateProgressSync(task.resource_id, prog.receivedBytes, 'downloading')
-          this.liveProgress.set(moduleId, {
-            percentage: pct,
-            speed_bytes_per_sec: prog.speed,
-            is_resumed: hadPartBefore
+      let lastDownloadError: any = null
+      let successfulResult: VerifiedDownloadResult | null = null
+
+      for (let i = 0; i < candidateUrls.length; i++) {
+        const currentUrl = candidateUrls[i]
+        logger.info(
+          LogCategory.SYSTEM,
+          `[Download] 尝试下载源 [${i + 1}/${candidateUrls.length}] (${task.resource_id}): ${currentUrl}`
+        )
+        try {
+          const attempt = await this.downloadService.downloadWithVerification({
+            taskId: `${moduleId}:${task.resource_id}`,
+            url: currentUrl,
+            destPath: archivePath,
+            expectedBytes: task.expected_bytes,
+            expectedSha256: task.expected_sha256,
+            etag: task.etag ?? undefined,
+            transport: this.transport,
+            onProgress: prog => {
+              const total = prog.totalBytes || task.expected_bytes || 1
+              const pct = Math.min(92, Math.round((prog.receivedBytes / total) * 92))
+              dao.resources.updateProgressSync(task.resource_id, prog.receivedBytes, 'downloading')
+              this.liveProgress.set(moduleId, {
+                percentage: pct,
+                speed_bytes_per_sec: prog.speed,
+                is_resumed: hadPartBefore
+              })
+              onProgress?.({
+                moduleId,
+                resourceId: task.resource_id,
+                downloadedBytes: prog.receivedBytes,
+                expectedBytes: total,
+                percentage: pct,
+                speedBytesPerSec: prog.speed,
+                isResumed: hadPartBefore,
+                state: 'downloading'
+              })
+            }
           })
-          onProgress?.({
-            moduleId,
-            resourceId: task.resource_id,
-            downloadedBytes: prog.receivedBytes,
-            expectedBytes: total,
-            percentage: pct,
-            speedBytesPerSec: prog.speed,
-            isResumed: hadPartBefore,
-            state: 'downloading'
-          })
+
+          if (attempt && attempt.success) {
+            successfulResult = attempt
+            break
+          } else {
+            const failReason = attempt?.errorMessage || attempt?.errorCode || '校验未通过'
+            lastDownloadError = new Error(failReason)
+            logger.warn(
+              LogCategory.SYSTEM,
+              `[Download] 源未成功 (${currentUrl}): ${failReason}${i < candidateUrls.length - 1 ? '，平滑回退下一个备用源...' : ''}`
+            )
+          }
+        } catch (downloadErr: any) {
+          lastDownloadError = downloadErr
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[Download] 源异常 (${currentUrl}): ${downloadErr.message}${i < candidateUrls.length - 1 ? '，平滑回退下一个备用源...' : ''}`
+          )
         }
-      })
+      }
+
+      if (!successfulResult) {
+        throw lastDownloadError || new Error(`所有可用下载源均失败: ${task.resource_id}`)
+      }
+      result = successfulResult
     }
 
     if (result.etag || result.lastModified) {
