@@ -3027,7 +3027,7 @@ export class ModularResourceService implements IModularResourceService {
 
     // 失效语音音色内存缓存，确保 voice_tts 槽位切换或卸载立即生效
     try {
-      const { voiceArchiveService } = require('../audio/voice-archive-service')
+      const { voiceArchiveService } = await import('../audio/voice-archive-service')
       voiceArchiveService?.invalidatePresetVoicesCache?.()
     } catch (err) {
       logger.warn(LogCategory.SYSTEM, '[ModularResource] 失效语音音色缓存告警:', err)
@@ -3039,7 +3039,7 @@ export class ModularResourceService implements IModularResourceService {
         return
       }
       try {
-        const { omniService } = require('./omni-service')
+        const { omniService } = await import('./omni-service')
         if (typeof omniService?.handleTopologyChanged === 'function') {
           await omniService.handleTopologyChanged(opts)
         }
@@ -3562,7 +3562,7 @@ export class ModularResourceService implements IModularResourceService {
           await this.notifyRuntimePluginTopologyChanged({
             moduleId,
             reason: 'module_install',
-            restartPolicy: 'ensure-running'
+            restartPolicy: 'restart'
           })
           if (slot === 'base_embedding') {
             await this.syncEmbeddingProfileToConfig()
@@ -3936,7 +3936,7 @@ export class ModularResourceService implements IModularResourceService {
    */
   private async stopOmniProcessForUninstall(): Promise<boolean> {
     try {
-      const { omniService } = require('./omni-service')
+      const { omniService } = await import('./omni-service')
       if (omniService?.isManagedLifecycleActive?.()) {
         await omniService.stop()
         return true
