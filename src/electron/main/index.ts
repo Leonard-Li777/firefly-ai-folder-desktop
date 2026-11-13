@@ -835,7 +835,17 @@ app.on('ready', async () => {
       : path.join(app.getPath('userData'), 'modules')
   PluginPathResolver.initialize(initialPluginsRoot)
   try {
-    const { modularResourceService } = require('../runtime-services/system/modular-resource-service')
+    const sharedSubDir = PluginPathResolver.getSharedDirForRoot(initialPluginsRoot)
+    if (!fs.existsSync(sharedSubDir)) {
+      fs.mkdirSync(sharedSubDir, { recursive: true })
+    }
+  } catch (err) {
+    logger.warn(LogCategory.MAIN, `[App] 预创建插件共享目录失败: ${initialPluginsRoot}`, err)
+  }
+  try {
+    const {
+      modularResourceService
+    } = require('../runtime-services/system/modular-resource-service')
     modularResourceService.setConfigOrchestrator(ConfigOrchestrator.getInstance())
   } catch {}
 

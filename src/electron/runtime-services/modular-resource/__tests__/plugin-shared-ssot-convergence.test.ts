@@ -123,10 +123,10 @@ describe('Plugin Shared SSOT Convergence & M5-TTS Spec Tests (TC-SSOT-01~36)', (
     })
 
     it('TC-SSOT-05: deriveTargetLocalPath 对内置共享资源映射为 modules/_shared/<subDir>', () => {
-      expect(deriveTargetLocalPath('m5-tts')).toBe('modules/_shared/m5-tts')
-      expect(deriveTargetLocalPath('moss-tts')).toBe('modules/_shared/moss-tts')
-      expect(deriveTargetLocalPath('mobile-clip')).toBe('modules/_shared/mobile-clip')
-      expect(deriveTargetLocalPath('pocket-cpu-int8-onnx')).toBe('modules/_shared/pocket-cpu')
+      expect(deriveTargetLocalPath('m5-tts')).toBe('modules/_shared/tts-e43ab9e3')
+      expect(deriveTargetLocalPath('moss-tts')).toBe('modules/_shared/tts-8a04293a')
+      expect(deriveTargetLocalPath('mobile-clip')).toBe('modules/_shared/emb-a892a600')
+      expect(deriveTargetLocalPath('pocket-cpu-int8-onnx')).toBe('modules/_shared/cpu-485c04b7')
       expect(deriveTargetLocalPath('unknown-xyz-resource')).toBeNull()
     })
   })
@@ -164,7 +164,7 @@ describe('Plugin Shared SSOT Convergence & M5-TTS Spec Tests (TC-SSOT-01~36)', (
 
     it('TC-SSOT-07: runFastReadyBarrier 在具有合法 .ready.json 标记与特征文件时快速放行', async () => {
       const pluginsRoot = path.join(tmpDir, 'plugins')
-      const m5Dir = path.join(pluginsRoot, '_shared', 'm5-tts')
+      const m5Dir = path.join(pluginsRoot, '_shared', 'tts-e43ab9e3')
       fs.mkdirSync(m5Dir, { recursive: true })
 
       // 准备符合 catalogMeta 规范的特征文件与 .ready.json 标记
@@ -183,7 +183,7 @@ describe('Plugin Shared SSOT Convergence & M5-TTS Spec Tests (TC-SSOT-01~36)', (
           version: 1,
           algo: 'sha256-v1',
           resourceId: 'm5-tts',
-          sharedSubDir: 'm5-tts',
+          sharedSubDir: 'tts-e43ab9e3',
           digest: 'a'.repeat(64),
           fileCount: 8,
           totalBytes: 1000501,
@@ -199,7 +199,7 @@ describe('Plugin Shared SSOT Convergence & M5-TTS Spec Tests (TC-SSOT-01~36)', (
       testDb
         .prepare(
           `INSERT OR REPLACE INTO resource_downloads (resource_id, asset_name, target_local_path, active_source_key, expected_bytes, expected_sha256, actual_sha256, download_state, created_at, updated_at)
-           VALUES ('m5-tts', 'm5-tts-1.0.0.zip', 'modules/_shared/m5-tts', 'auto', 1000, 'sha', 'sha', 'completed', ?, ?)`
+           VALUES ('m5-tts', 'tts-e43ab9e3-1.0.0.zip', 'modules/_shared/tts-e43ab9e3', 'auto', 1000, 'sha', 'sha', 'completed', ?, ?)`
         )
         .run(nowMs, nowMs)
       testDb

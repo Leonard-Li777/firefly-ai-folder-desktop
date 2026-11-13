@@ -1364,6 +1364,18 @@ export class OmniService {
         if (pluginsRoot) {
           env.FIREFLY_MODULES_ROOT = pluginsRoot
           sharedDir = PluginPathResolver.getSharedDirForRoot(pluginsRoot)
+          // 确保物理目录存在，防止全新启动（或重置用户目录后）Rust 端的 canonicalize 报 os error 3
+          try {
+            if (!fs.existsSync(sharedDir)) {
+              fs.mkdirSync(sharedDir, { recursive: true })
+            }
+          } catch (mkdirErr) {
+            logger.warn(
+              LogCategory.SYSTEM,
+              `[OmniService] 自动创建 sharedDir 失败 (${sharedDir}):`,
+              mkdirErr
+            )
+          }
           env.FIREFLY_SHARED_DIR = sharedDir
           logger.info(
             LogCategory.SYSTEM,
