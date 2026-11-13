@@ -21,18 +21,18 @@ describe('PluginCleanupService & Immutable Pointer Rollback (Ticket 09)', () => 
     } catch {}
   })
 
-  it('should detect and remove legacy plaintext model directories', async () => {
-    // 构造明文旧目录
-    const legacyGemmaDir = path.join(sharedDir, 'embeddinggemma-2-onnx')
-    fs.mkdirSync(legacyGemmaDir, { recursive: true })
-    fs.writeFileSync(path.join(legacyGemmaDir, 'model.onnx'), 'DUMMY_RAW_ONNX')
+  it('Genesis V1: 不盲目删除模型目录，确保受管资源文件安全留存', async () => {
+    // 构造受管模型目录
+    const gemmaDir = path.join(sharedDir, 'emb-391b9a03')
+    fs.mkdirSync(gemmaDir, { recursive: true })
+    fs.writeFileSync(path.join(gemmaDir, 'model_q4.onnx'), 'DUMMY_RAW_ONNX')
 
-    const legacyVoiceDir = path.join(sharedDir, 'sensevoice-onnx')
-    fs.mkdirSync(legacyVoiceDir, { recursive: true })
-    fs.writeFileSync(path.join(legacyVoiceDir, 'model.int8.onnx'), 'DUMMY_RAW_ONNX')
+    const voiceDir = path.join(sharedDir, 'asr-f3b8224c')
+    fs.mkdirSync(voiceDir, { recursive: true })
+    fs.writeFileSync(path.join(voiceDir, 'model.int8.onnx'), 'DUMMY_RAW_ONNX')
 
-    // 构造合法匿名目录
-    const validSlotDir = path.join(sharedDir, 'emb-391b9a03')
+    // 构造合法匿名密文槽位目录
+    const validSlotDir = path.join(sharedDir, 'cpu-485c04b7')
     fs.mkdirSync(validSlotDir, { recursive: true })
     fs.writeFileSync(path.join(validSlotDir, 'model.sha1.ffpc'), 'ENCRYPTED_FFPC')
     writeCurrentJsonSync(validSlotDir, {
@@ -43,11 +43,10 @@ describe('PluginCleanupService & Immutable Pointer Rollback (Ticket 09)', () => 
 
     const result = await PluginCleanupService.cleanupLegacyPlaintextAssets(sharedDir)
 
-    expect(result.removedDirs).toContain('embeddinggemma-2-onnx')
-    expect(result.removedDirs).toContain('sensevoice-onnx')
-    expect(fs.existsSync(legacyGemmaDir)).toBe(false)
-    expect(fs.existsSync(legacyVoiceDir)).toBe(false)
+    expect(fs.existsSync(gemmaDir)).toBe(true)
+    expect(fs.existsSync(voiceDir)).toBe(true)
     expect(fs.existsSync(validSlotDir)).toBe(true)
+    expect(result.removedDirs).toEqual([])
   })
 
   it('should prune obsolete ffpc containers beyond 1 historical retention limit', async () => {

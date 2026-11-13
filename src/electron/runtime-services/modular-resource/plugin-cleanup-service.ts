@@ -1,17 +1,16 @@
 /**
- * 存量明文旧缓存清理与历史版本淘汰服务 (PluginCleanupService)
- * 遵循 docs/specs/plugin-asset-encryption-spec.md §3.2.1 / §5.3 / §8 (Ticket 09)
+ * 插件版本淘汰与清理服务 (PluginCleanupService)
+ *
+ * 注：V4 为创世版本，不存在历史上线遗留包；不再执行未受管明文目录的主动全量扫描删除，
+ * 避免对本地开发或受管 ONNX 资源造成误删；
+ * 本服务专职负责：
+ * 1. 匿名密文槽位（带 current.json）在升级换代时的超额不可变容器淘汰（保留最新 1 个历史版本供回滚）；
+ * 2. 处理上一轮因 Windows EBUSY 句柄占用而积压在 pending_delete.json 中的安全删除队列。
  */
 
 import * as fs from 'fs'
 import * as path from 'path'
-import {
-  logger,
-  LogCategory,
-  readCurrentJsonSync,
-  ALL_BUILTIN_SHARED_RESOURCE_IDS,
-  deriveTargetLocalPath
-} from '@firefly/shared'
+import { logger, LogCategory, readCurrentJsonSync } from '@firefly/shared'
 
 export interface CleanupResult {
   removedDirs: string[]
@@ -19,23 +18,12 @@ export interface CleanupResult {
   pendingDeletions: string[]
 }
 
-export const LEGACY_PLAINTEXT_DIRS = new Set([
-  'embeddinggemma-2-onnx',
-  'sensevoice-onnx',
-  'moss-tts',
-  'm5-tts',
-  'chinese-clip',
-  'mobile-clip',
-  'nsfw-mobilenetv2',
-  'nsfw-l3',
-  'bekko-a8m',
-  'pocket-cpu-int8-onnx',
-  'sherpa-onnx-runtime'
-])
+/** 兼容保留空 Set，避免外部引用引发未定义异常 */
+export const LEGACY_PLAINTEXT_DIRS = new Set<string>()
 
 export class PluginCleanupService {
   /**
-   * 启动期冷扫存量明文目录与未引用的历史过期密文容器
+   * 启动期对账清理：淘汰超额历史密文容器并处理 EBUSY 积压删除队列
    *
    * @param sharedDir pluginsRootDir 下的 _shared 物理路径
    */
@@ -60,31 +48,9 @@ export class PluginCleanupService {
 
       for (const entry of entries) {
         if (!entry.isDirectory()) continue
-        const dirName = entry.name
-        const fullDirPath = path.join(sharedDir, dirName)
+        const fullDirPath = path.join(sharedDir, entry.name)
 
-        // 2. 检测旧版明文目录：直接命中已知明文库，或目录下包含明文 .onnx 且无 current.json
-        if (
-          LEGACY_PLAINTEXT_DIRS.has(dirName) ||
-          (await this.isUnmanagedPlaintextOnnxDir(fullDirPath))
-        ) {
-          try {
-            await fs.promises.rm(fullDirPath, { recursive: true, force: true })
-            result.removedDirs.push(dirName)
-            logger.info(LogCategory.SYSTEM, `[PluginCleanup] 成功清除存量明文旧目录: ${dirName}`)
-          } catch (err: any) {
-            logger.warn(
-              LogCategory.SYSTEM,
-              `[PluginCleanup] 清理明文旧目录 ${dirName} 遭遇占用，登记重试:`,
-              err?.message
-            )
-            await this.enqueuePendingDelete(pendingDeleteFile, fullDirPath)
-            result.pendingDeletions.push(fullDirPath)
-          }
-          continue
-        }
-
-        // 3. 匿名槽位目录清理：若存在 current.json，保留活跃版本 + 最多 1 个历史版本，淘汰超额历史容器
+        // 匿名槽位目录清理：若存在 current.json，保留活跃版本 + 最多 1 个历史版本，淘汰超额历史容器
         await this.pruneObsoleteVersionsInSlotDir(fullDirPath, pendingDeleteFile, result)
       }
     } catch (scanErr) {
@@ -92,40 +58,6 @@ export class PluginCleanupService {
     }
 
     return result
-  }
-
-  /**
-   * 判断是否为未受管的明文 ONNX 目录（含 .onnx 且无 current.json）
-   * 严禁误伤已受管的合法规范共享子目录（如 emb-391b9a03, asr-f3b8224c 等）或已打标记的目录
-   */
-  private static async isUnmanagedPlaintextOnnxDir(dirPath: string): Promise<boolean> {
-    try {
-      const dirName = path.basename(dirPath)
-
-      // 1. 绝对不能误删已受管的规范共享资源目录 (如 emb-391b9a03, asr-f3b8224c, tts-e43ab9e3 等)
-      const isCanonical = ALL_BUILTIN_SHARED_RESOURCE_IDS.some(id => {
-        const canonicalRel = deriveTargetLocalPath(id)
-        return canonicalRel ? path.basename(canonicalRel) === dirName : false
-      })
-      if (isCanonical) {
-        return false
-      }
-
-      // 2. 若存在任何就绪、核验或清单标记，说明是受管物化资源，绝对严禁当作孤儿垃圾删除
-      if (
-        fs.existsSync(path.join(dirPath, '.ready.json')) ||
-        fs.existsSync(path.join(dirPath, '.verified')) ||
-        fs.existsSync(path.join(dirPath, 'manifest.json')) ||
-        fs.existsSync(path.join(dirPath, 'current.json'))
-      ) {
-        return false
-      }
-
-      const files = await fs.promises.readdir(dirPath)
-      return files.some(f => f.endsWith('.onnx'))
-    } catch {
-      return false
-    }
   }
 
   /**
