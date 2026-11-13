@@ -500,6 +500,17 @@ export class StartupReconciler {
     }
 
     // ------------------------------------------------------------------
+    // 阶段 1D: 存量明文旧模型目录与超额历史密文容器冷清扫 (Ticket 09)
+    // ------------------------------------------------------------------
+    const sharedDir = PluginPathResolver.getSharedDirForRoot(pluginsRootDir)
+    try {
+      const { PluginCleanupService } = await import('./plugin-cleanup-service')
+      await PluginCleanupService.cleanupLegacyPlaintextAssets(sharedDir)
+    } catch (cleanupErr) {
+      logger.warn(LogCategory.SYSTEM, '[StartupReconciler] 存量旧资产清扫异常:', cleanupErr)
+    }
+
+    // ------------------------------------------------------------------
     // 阶段 2: 后台延迟自包含 Dry-Run 校验队列
     // ------------------------------------------------------------------
     if (!skipDeferredQueue) {

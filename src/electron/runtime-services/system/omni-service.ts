@@ -21,6 +21,7 @@ import {
   findAvailablePort,
   isPathEqual,
   PluginPathResolver,
+  resolveActiveModelPaths,
   BUILTIN_PLUGIN_CATALOG_META,
   BuiltinSharedResourceId,
   CHILD_MODEL_ENV_KEYS_TO_PURGE
@@ -583,6 +584,33 @@ export class OmniService {
   private pendingUpdateSince = 0
   /** 开发态二进制热更新轮询定时器 */
   private devBinaryWatchTimer: NodeJS.Timeout | null = null
+  /** 密钥代次失配防重复弹窗标志 */
+  private isKeyEpochMismatchPrompted = false
+
+  /**
+   * 拦截处理 Omni KeyEpoch 失配，触发前端大白话 UX 提示与系统通知 (Ticket 07)
+   */
+  private handleKeyEpochMismatch(detail: string): void {
+    if (this.isKeyEpochMismatchPrompted) return
+    this.isKeyEpochMismatchPrompted = true
+
+    const userMessage = '该功能组件版本与当前软件不匹配，请重新导入最新离线总包或更新客户端。'
+
+    try {
+      for (const win of BrowserWindow.getAllWindows()) {
+        if (!win.isDestroyed()) {
+          win.webContents.send('plugin:key-epoch-mismatch', {
+            message: userMessage,
+            detail
+          })
+        }
+      }
+    } catch {}
+
+    try {
+      dialog.showErrorBox('功能组件版本不匹配', userMessage)
+    } catch {}
+  }
 
   /**
    * 注册 Omni 服务启动/重启就绪回调
@@ -1365,10 +1393,25 @@ export class OmniService {
               BUILTIN_PLUGIN_CATALOG_META[item.resourceId as BuiltinSharedResourceId]
             if (!meta || !item.physicalDir) continue
 
-            const envValue =
+            let envValue =
               meta.envVarType === 'file' && meta.envFileRelativePath
                 ? path.join(item.physicalDir, meta.envFileRelativePath)
                 : item.physicalDir
+
+            // 不可变挂载指针契约 (Ticket 07 & Spec §3.2.1):
+            // 优先从 current.json 反解真实物理文件路径
+            const activePaths = resolveActiveModelPaths(item.physicalDir)
+            if (activePaths?.activeFile) {
+              envValue = path.join(item.physicalDir, activePaths.activeFile)
+            } else if (activePaths?.activeFiles) {
+              if (activePaths.activeFiles.visual) {
+                env.VISUAL_MODEL_PATH = path.join(item.physicalDir, activePaths.activeFiles.visual)
+              }
+              if (activePaths.activeFiles.text) {
+                env.TEXT_MODEL_PATH = path.join(item.physicalDir, activePaths.activeFiles.text)
+              }
+            }
+
             if (meta.envVarType === 'file' && !fs.existsSync(envValue)) {
               logger.warn(
                 LogCategory.SYSTEM,
@@ -1557,6 +1600,13 @@ export class OmniService {
         const str = stripAnsi(data).trim()
         if (str && !isCzkawkaDump(str)) {
           logger.warn(LogCategory.SYSTEM, `[Omni:err] ${str}`)
+          if (str.includes('KeyEpochMismatch')) {
+            logger.error(
+              LogCategory.SYSTEM,
+              `[OmniService] ❌ 检测到组件密钥代次不匹配 (KeyEpochMismatch): ${str}`
+            )
+            this.handleKeyEpochMismatch(str)
+          }
         }
       })
 
@@ -1773,10 +1823,7 @@ export class OmniService {
    * @param intervalMs 轮询间隔（默认 500ms）
    * @returns true=端口已可达；false=超时仍未可达
    */
-  private async waitForEnginePortReady(
-    totalMs = 30_000,
-    intervalMs = 500
-  ): Promise<boolean> {
+  private async waitForEnginePortReady(totalMs = 30_000, intervalMs = 500): Promise<boolean> {
     const deadline = Date.now() + totalMs
     let lastErr = ''
     while (Date.now() < deadline) {

@@ -71,3 +71,4 @@ export {
   type ReconcileOptions,
   type ReconcileResult
 } from './startup-reconciler'
+export * from './plugin-cleanup-service'
