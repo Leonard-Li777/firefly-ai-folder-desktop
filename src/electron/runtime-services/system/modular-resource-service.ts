@@ -1319,6 +1319,8 @@ export class ModularResourceService implements IModularResourceService {
     process.env.FIREFLY_MODULES_ROOT = resolvedTarget
     this.cachedUsedBytes = 0
     this.lastUsedBytesCalculatedAt = 0
+    this.fastReadySnapshot.clear()
+    this.repairPendingResources.clear()
 
     return { success: true, appliedPath: resolvedTarget }
   }
@@ -3002,6 +3004,16 @@ export class ModularResourceService implements IModularResourceService {
         (snap.status === 'ready_fast' || snap.status === 'legacy_heal') &&
         snap.physicalDir
       ) {
+        if (!fs.existsSync(snap.physicalDir)) {
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[ModularResource] 快照中的物理资源目录不存在，执行 Fail-Closed 隔离: ${resId} (${snap.physicalDir})`
+          )
+          this.fastReadySnapshot.delete(resId)
+          this.repairPendingResources.add(resId)
+          continue
+        }
+
         result.push({
           ...snap,
           catalogMeta: catMeta

@@ -16,10 +16,7 @@ import {
   Zap,
   ShieldCheck
 } from 'lucide-react'
-import {
-  usePluginCenterStore,
-  formatPluginErrorMessage
-} from '@stores/plugin-center-store'
+import { usePluginCenterStore, formatPluginErrorMessage } from '@stores/plugin-center-store'
 
 interface WelcomeStep3PluginDirProps {
   onBack: () => void
@@ -76,8 +73,13 @@ export function WelcomeStep3PluginDir({
   const [appliedPath, setAppliedPath] = useState<string | null>(initialAppliedPath)
 
   useEffect(() => {
-    loadDirInfo()
-  }, [loadDirInfo])
+    void loadDirInfo().then(info => {
+      const activePath = info?.currentPath || info?.currentDir
+      if (activePath && !appliedPath && !initialAppliedPath) {
+        onDirApplied?.(activePath)
+      }
+    })
+  }, [loadDirInfo, appliedPath, initialAppliedPath, onDirApplied])
 
   const isBusy = isPicking || isApplying
 
@@ -138,9 +140,7 @@ export function WelcomeStep3PluginDir({
       testId="welcome-step3-container"
       maxWidthClass="max-w-3xl"
       title={t('选择插件安装目录')}
-      subtitle={t(
-        '给 AI 大脑模型与功能扩展组件选一个长期存放的文件夹，之后也可以在设置里更改'
-      )}
+      subtitle={t('给 AI 大脑模型与功能扩展组件选一个长期存放的文件夹，之后也可以在设置里更改')}
       footer={
         <>
           <Button
@@ -170,9 +170,7 @@ export function WelcomeStep3PluginDir({
         <Card className="p-4 rounded-lg bg-card border border-border shadow-sm">
           <CardContent className="p-0 space-y-3">
             <div>
-              <h2 className="text-sm font-semibold text-foreground">
-                {t('插件与模型存储目录')}
-              </h2>
+              <h2 className="text-sm font-semibold text-foreground">{t('插件与模型存储目录')}</h2>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {t('存放 AI 大脑模型与功能扩展组件的本地文件夹')}
               </p>
@@ -248,9 +246,7 @@ export function WelcomeStep3PluginDir({
                 className="flex items-start gap-2.5 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs"
               >
                 <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
-                <span>
-                  {t('已设定为新的安装文件夹，之后装的插件都会放在这里，无需重启软件')}
-                </span>
+                <span>{t('已设定为新的安装文件夹，之后装的插件都会放在这里，无需重启软件')}</span>
               </div>
             )}
 
@@ -292,9 +288,7 @@ export function WelcomeStep3PluginDir({
             <div className="flex items-start gap-2 text-xs text-foreground">
               <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
               <span>
-                {t(
-                  '请使用纯英文路径，不要包含中文或空格，也不要选系统文件夹或磁盘根目录'
-                )}
+                {t('请使用纯英文路径，不要包含中文或空格，也不要选系统文件夹或磁盘根目录')}
               </span>
             </div>
           </CardContent>

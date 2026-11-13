@@ -14,6 +14,7 @@ import {
   type WelcomeSelection
 } from './welcome-types'
 import { useWelcomeStore } from '@stores/config-store'
+import { usePluginCenterStore } from '@stores/plugin-center-store'
 import { Header } from '../common/Header'
 import './welcome.css'
 import { captureEvent } from '../../lib/posthog'
@@ -88,12 +89,9 @@ export function WelcomeWizard({ initialStep = 1, onComplete }: WelcomeWizardProp
           }
           setHardware(hw)
 
-          const targetEngine = hw.totalMemGB < 8
-            ? 'engine_classic_light'
-            : 'engine_gemma_unified'
-          const targetGenMode = !hw.isGpuSupported || hw.vramGB < 4 || hw.totalMemGB <= 16
-            ? 'cpu'
-            : 'local'
+          const targetEngine = hw.totalMemGB < 8 ? 'engine_classic_light' : 'engine_gemma_unified'
+          const targetGenMode =
+            !hw.isGpuSupported || hw.vramGB < 4 || hw.totalMemGB <= 16 ? 'cpu' : 'local'
 
           setSelection(prev => ({
             ...prev,
@@ -116,6 +114,19 @@ export function WelcomeWizard({ initialStep = 1, onComplete }: WelcomeWizardProp
     }
 
     probeHardware()
+
+    // 挂载时主动拉取主进程当前生效的插件目录，确保 Step 5 顶部摘要权威展示用户配置的实际目录
+    void usePluginCenterStore
+      .getState()
+      .loadDirInfo()
+      .then(info => {
+        const activePath = info?.currentPath || info?.currentDir
+        if (isMounted && activePath) {
+          setPluginDir(activePath)
+        }
+      })
+      .catch(() => {})
+
     return () => {
       isMounted = false
     }

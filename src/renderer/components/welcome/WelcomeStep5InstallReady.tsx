@@ -17,7 +17,7 @@ import {
   Wifi
 } from 'lucide-react'
 import type { HardwareProbeResult, WelcomeSelection } from './welcome-types'
-import { formatPluginErrorMessage } from '@stores/plugin-center-store'
+import { formatPluginErrorMessage, usePluginCenterStore } from '@stores/plugin-center-store'
 
 /**
  * 安装页的两类展示态由 installMethod 决定：
@@ -77,6 +77,8 @@ export function WelcomeStep5InstallReady({
   onFinish
 }: WelcomeStep5InstallReadyProps) {
   const { t } = useVoerkaI18n(i18nScope)
+  const storePluginDir = usePluginCenterStore(s => s.dirInfo?.currentPath || s.dirInfo?.currentDir)
+  const effectivePluginDir = pluginDir || storePluginDir
   const { installMethod, selectedEngine, selectedOptionals, generativeEngineMode } = selection
   const optionalIds = Object.keys(selectedOptionals).filter(k => selectedOptionals[k])
 
@@ -383,7 +385,7 @@ export function WelcomeStep5InstallReady({
         <HardDrive className="w-4 h-4 text-muted-foreground" />
         {t('安装到')}:{' '}
         <b className="font-mono font-semibold text-foreground break-all">
-          {pluginDir || t('默认文件夹')}
+          {effectivePluginDir || t('默认文件夹')}
         </b>
       </span>
     </div>

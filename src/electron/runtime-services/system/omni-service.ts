@@ -1403,7 +1403,15 @@ export class OmniService {
             const meta =
               item.catalogMeta ||
               BUILTIN_PLUGIN_CATALOG_META[item.resourceId as BuiltinSharedResourceId]
-            if (!meta || !item.physicalDir) continue
+            if (!meta || !item.physicalDir || !fs.existsSync(item.physicalDir)) {
+              if (item.physicalDir && !fs.existsSync(item.physicalDir)) {
+                logger.warn(
+                  LogCategory.SYSTEM,
+                  `[OmniService] 跳过物理目录不存在的共享资源挂载: ${item.resourceId} (${item.physicalDir})`
+                )
+              }
+              continue
+            }
 
             let envValue =
               meta.envVarType === 'file' && meta.envFileRelativePath
