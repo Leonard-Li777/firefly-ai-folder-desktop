@@ -104,9 +104,11 @@ describe('WelcomeStep5InstallReady (欢迎向导第五步：安装与就绪)', (
     expect(finalBtn.textContent).toContain('开启智能文件管理之旅')
 
     // 主引擎 + 3 个选配插件全部真实安装并调用
-    for (const optId of ['perception_nsfw', 'asr_sensevoice_onnx', 'tts_m5_onnx']) {
-      expect(api.install).toHaveBeenCalledWith(optId)
-    }
+    await waitFor(() => {
+      for (const optId of ['perception_nsfw', 'asr_sensevoice_onnx', 'tts_m5_onnx']) {
+        expect(api.install).toHaveBeenCalledWith(optId)
+      }
+    })
     expect(props.onReady).toHaveBeenCalledTimes(1)
 
     fireEvent.click(finalBtn)
@@ -282,7 +284,24 @@ describe('WelcomeStep5InstallReady (欢迎向导第五步：安装与就绪)', (
 
     setup()
 
-    expect(screen.getByTestId('welcome-step5-download-speed-bar')).toBeDefined()
+    const speedBar = screen.getByTestId('welcome-step5-download-speed-bar')
+    expect(speedBar.textContent).toContain('正在连接高速下载节点...')
+
+    // 触发下载进度事件：首包到达但瞬时速率未就绪时，展示正在下载与字节数，绝不倒退为连接中
+    await act(async () => {
+      progressCallback?.({
+        moduleId: 'engine_gemma_unified',
+        resourceId: 'emb-391b9a03',
+        percentage: 10,
+        speedBytesPerSec: 0,
+        downloadedBytes: 1024 * 1024 * 20,
+        expectedBytes: 1024 * 1024 * 242.2,
+        state: 'downloading'
+      })
+    })
+    expect(speedBar.textContent).toContain('正在下载...')
+    expect(speedBar.textContent).toContain('20.0 MB')
+    expect(speedBar.textContent).toContain('242.2 MB')
 
     // 触发下载进度事件，带速率与下载字节
     await act(async () => {
@@ -297,7 +316,6 @@ describe('WelcomeStep5InstallReady (欢迎向导第五步：安装与就绪)', (
       })
     })
 
-    const speedBar = screen.getByTestId('welcome-step5-download-speed-bar')
     expect(speedBar.textContent).toContain('5.2 MB/s')
     expect(speedBar.textContent).toContain('110.0 MB')
     expect(speedBar.textContent).toContain('242.2 MB')

@@ -104,6 +104,7 @@ export function WelcomeStep5InstallReady({
   const [runToken, setRunToken] = useState(0)
   const [packageRequestToken, setPackageRequestToken] = useState(0)
   const startedRef = useRef(false)
+  const lastNonZeroSpeedRef = useRef(0)
 
   const isBusy = phase === 'installing' || phase === 'importing' || phase === 'smoke_testing'
 
@@ -116,9 +117,13 @@ export function WelcomeStep5InstallReady({
         if (typeof payload.percentage === 'number') {
           setPercentage(prev => Math.max(prev, Math.min(95, Math.round(payload.percentage))))
         }
+        const incomingSpeed =
+          typeof payload.speedBytesPerSec === 'number' ? payload.speedBytesPerSec : 0
+        if (incomingSpeed > 0) {
+          lastNonZeroSpeedRef.current = incomingSpeed
+        }
         setDownloadStats({
-          speedBytesPerSec:
-            typeof payload.speedBytesPerSec === 'number' ? payload.speedBytesPerSec : 0,
+          speedBytesPerSec: incomingSpeed,
           downloadedBytes:
             typeof payload.downloadedBytes === 'number' ? payload.downloadedBytes : 0,
           expectedBytes: typeof payload.expectedBytes === 'number' ? payload.expectedBytes : 0,
@@ -190,29 +195,32 @@ export function WelcomeStep5InstallReady({
       if (modular?.updateState) {
         await modular.updateState(selectedEngine, { active: true })
       }
-      setPercentage(prev => Math.max(prev, 75))
 
       await syncGenerativeMode()
 
-      // 4. 选配插件实打实安装，真实等待完成，杜绝异步抢跑竞态
-      const totalOptionals = optionalIds.length
-      if (totalOptionals > 0) {
-        for (let i = 0; i < totalOptionals; i++) {
-          const optId = optionalIds[i]
-          try {
-            await modular?.install?.(optId)
-          } catch (err: any) {
-            console.warn(`[OnlineInstall] 选配插件安装异常: ${optId}`, err)
-          }
-          const stepPercent = Math.round(75 + ((i + 1) / totalOptionals) * 23)
-          setPercentage(prev => Math.max(prev, stepPercent))
-        }
-      }
-
-      setBackgroundCount(0)
+      // 4. 核心主引擎与自检通过，立刻放行解锁「开启智能文件管理之旅」，绝不阻塞用户进入
       setPercentage(100)
       setPhase('ready')
       onReady?.()
+
+      // 5. 其余选配扩展插件在后台以非阻塞方式继续安装（fire-and-forget）
+      const totalOptionals = optionalIds.length
+      if (totalOptionals > 0) {
+        setBackgroundCount(totalOptionals)
+        ;(async () => {
+          for (const optId of optionalIds) {
+            try {
+              await modular?.install?.(optId)
+            } catch (err: any) {
+              console.warn(`[OnlineInstall] 选配插件后台安装异常: ${optId}`, err)
+            } finally {
+              setBackgroundCount(prev => Math.max(0, prev - 1))
+            }
+          }
+        })()
+      } else {
+        setBackgroundCount(0)
+      }
     }
 
     const runOffline = async () => {
@@ -502,51 +510,72 @@ export function WelcomeStep5InstallReady({
               />
 
               {/* 在线下载过程中的速率与已下载/总大小指示器 */}
-              {phase === 'installing' && (
-                <div
-                  data-testid="welcome-step5-download-speed-bar"
-                  className="flex items-center justify-between text-xs text-muted-foreground pt-0.5"
-                >
-                  <span className="inline-flex items-center gap-1.5 font-mono">
-                    {downloadStats.state === 'extracting' ? (
-                      <span className="text-primary font-sans">
-                        {t('正在校验并安全解压安装包...')}
+              {phase === 'installing' &&
+                (() => {
+                  const effectiveSpeed =
+                    downloadStats.speedBytesPerSec > 0
+                      ? downloadStats.speedBytesPerSec
+                      : lastNonZeroSpeedRef.current
+                  const hasDownloaded = downloadStats.downloadedBytes > 0
+
+                  return (
+                    <div
+                      data-testid="welcome-step5-download-speed-bar"
+                      className="flex items-center justify-between text-xs text-muted-foreground pt-0.5"
+                    >
+                      <span className="inline-flex items-center gap-1.5 font-mono">
+                        {downloadStats.state === 'extracting' ? (
+                          <span className="text-primary font-sans">
+                            {t('正在校验并安全解压安装包...')}
+                          </span>
+                        ) : downloadStats.state === 'verifying' ? (
+                          <span className="text-primary font-sans">
+                            {t('正在校验文件完整性...')}
+                          </span>
+                        ) : effectiveSpeed > 0 ? (
+                          <>
+                            <span className="text-primary font-semibold">
+                              ⚡ {formatBytes(effectiveSpeed)}/s
+                            </span>
+                            {downloadStats.expectedBytes > 0 && (
+                              <span>
+                                ({formatBytes(downloadStats.downloadedBytes)} /{' '}
+                                {formatBytes(downloadStats.expectedBytes)})
+                              </span>
+                            )}
+                          </>
+                        ) : hasDownloaded ? (
+                          <>
+                            <span className="text-primary font-sans">{t('正在下载...')}</span>
+                            {downloadStats.expectedBytes > 0 && (
+                              <span>
+                                ({formatBytes(downloadStats.downloadedBytes)} /{' '}
+                                {formatBytes(downloadStats.expectedBytes)})
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <span>{t('正在连接高速下载节点...')}</span>
+                        )}
                       </span>
-                    ) : downloadStats.state === 'verifying' ? (
-                      <span className="text-primary font-sans">{t('正在校验文件完整性...')}</span>
-                    ) : downloadStats.speedBytesPerSec > 0 ? (
-                      <>
-                        <span className="text-primary font-semibold">
-                          ⚡ {formatBytes(downloadStats.speedBytesPerSec)}/s
-                        </span>
-                        {downloadStats.expectedBytes > 0 && (
-                          <span>
-                            ({formatBytes(downloadStats.downloadedBytes)} /{' '}
-                            {formatBytes(downloadStats.expectedBytes)})
+                      {downloadStats.expectedBytes > 0 &&
+                        downloadStats.state === 'downloading' &&
+                        effectiveSpeed > 0 && (
+                          <span className="text-muted-foreground">
+                            {t('预计还需')}{' '}
+                            {Math.max(
+                              1,
+                              Math.ceil(
+                                (downloadStats.expectedBytes - downloadStats.downloadedBytes) /
+                                  effectiveSpeed
+                              )
+                            )}{' '}
+                            {t('秒')}
                           </span>
                         )}
-                      </>
-                    ) : (
-                      <span>{t('正在连接高速下载节点...')}</span>
-                    )}
-                  </span>
-                  {downloadStats.expectedBytes > 0 &&
-                    downloadStats.state === 'downloading' &&
-                    downloadStats.speedBytesPerSec > 0 && (
-                      <span className="text-muted-foreground">
-                        {t('预计还需')}{' '}
-                        {Math.max(
-                          1,
-                          Math.ceil(
-                            (downloadStats.expectedBytes - downloadStats.downloadedBytes) /
-                              downloadStats.speedBytesPerSec
-                          )
-                        )}{' '}
-                        {t('秒')}
-                      </span>
-                    )}
-                </div>
-              )}
+                    </div>
+                  )
+                })()}
 
               {/* 首次启动自检阶段：明确提示下载已 100% 完成，打消用户误以为卡住的疑虑 */}
               {phase === 'smoke_testing' && (

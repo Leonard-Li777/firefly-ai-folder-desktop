@@ -5,7 +5,13 @@
 
 import * as fs from 'fs'
 import * as path from 'path'
-import { logger, LogCategory, readCurrentJsonSync } from '@firefly/shared'
+import {
+  logger,
+  LogCategory,
+  readCurrentJsonSync,
+  ALL_BUILTIN_SHARED_RESOURCE_IDS,
+  deriveTargetLocalPath
+} from '@firefly/shared'
 
 export interface CleanupResult {
   removedDirs: string[]
@@ -90,11 +96,30 @@ export class PluginCleanupService {
 
   /**
    * 判断是否为未受管的明文 ONNX 目录（含 .onnx 且无 current.json）
+   * 严禁误伤已受管的合法规范共享子目录（如 emb-391b9a03, asr-f3b8224c 等）或已打标记的目录
    */
   private static async isUnmanagedPlaintextOnnxDir(dirPath: string): Promise<boolean> {
     try {
-      const currentJson = path.join(dirPath, 'current.json')
-      if (fs.existsSync(currentJson)) return false
+      const dirName = path.basename(dirPath)
+
+      // 1. 绝对不能误删已受管的规范共享资源目录 (如 emb-391b9a03, asr-f3b8224c, tts-e43ab9e3 等)
+      const isCanonical = ALL_BUILTIN_SHARED_RESOURCE_IDS.some(id => {
+        const canonicalRel = deriveTargetLocalPath(id)
+        return canonicalRel ? path.basename(canonicalRel) === dirName : false
+      })
+      if (isCanonical) {
+        return false
+      }
+
+      // 2. 若存在任何就绪、核验或清单标记，说明是受管物化资源，绝对严禁当作孤儿垃圾删除
+      if (
+        fs.existsSync(path.join(dirPath, '.ready.json')) ||
+        fs.existsSync(path.join(dirPath, '.verified')) ||
+        fs.existsSync(path.join(dirPath, 'manifest.json')) ||
+        fs.existsSync(path.join(dirPath, 'current.json'))
+      ) {
+        return false
+      }
 
       const files = await fs.promises.readdir(dirPath)
       return files.some(f => f.endsWith('.onnx'))

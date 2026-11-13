@@ -1722,6 +1722,53 @@ export class FileDownloadService {
           (expectedBytes - (blockCount - 1) * FIXED_BLOCK_SIZE)
       }
 
+      const sessionStartTime = Date.now()
+      const initialBytes = committedBytes
+      let lastProgressEmitTime = 0
+      let lastSpeedSampleTime = sessionStartTime
+      let lastSpeedSampleBytes = committedBytes
+      let smoothedSpeed = 0
+      const inFlightBlockBytes = new Map<number, number>()
+
+      const emitProgressThrottled = (force = false) => {
+        const now = Date.now()
+        if (!force && now - lastProgressEmitTime < 150) {
+          return
+        }
+        lastProgressEmitTime = now
+
+        let inflightTotal = 0
+        for (const b of inFlightBlockBytes.values()) {
+          inflightTotal += b
+        }
+        const currentTotalBytes = Math.min(expectedBytes, committedBytes + inflightTotal)
+        const currentPercent = Math.min(99, Math.round((currentTotalBytes / expectedBytes) * 100))
+
+        const sampleDuration = (now - lastSpeedSampleTime) / 1000
+        if (sampleDuration >= 0.4) {
+          const sampleBytes = currentTotalBytes - lastSpeedSampleBytes
+          const instantSpeed =
+            sampleDuration > 0 && sampleBytes > 0 ? sampleBytes / sampleDuration : 0
+          smoothedSpeed =
+            smoothedSpeed === 0 ? instantSpeed : smoothedSpeed * 0.7 + instantSpeed * 0.3
+          lastSpeedSampleTime = now
+          lastSpeedSampleBytes = currentTotalBytes
+        }
+
+        const sessionDuration = (now - sessionStartTime) / 1000
+        const sessionBytes = currentTotalBytes - initialBytes
+        const fallbackSpeed =
+          sessionDuration > 0 && sessionBytes > 0 ? sessionBytes / sessionDuration : 0
+        const effectiveSpeed = smoothedSpeed > 0 ? smoothedSpeed : fallbackSpeed
+
+        onProgress?.({
+          percent: currentPercent,
+          receivedBytes: currentTotalBytes,
+          totalBytes: expectedBytes,
+          speed: Math.round(effectiveSpeed)
+        })
+      }
+
       const activeTransport = transport || this.customTransport
       const sourceRouter = options.router || new DualTrackSourceRouter()
       let currentSource = sourceRouter.selectBestSource(urls)
@@ -1776,6 +1823,7 @@ export class FileDownloadService {
               )
 
               const chunks: Buffer[] = []
+              let blockReceived = 0
               req.on('response', (res: IDownloadTransportResponse) => {
                 if (res.statusCode === 429) {
                   if (clearWorkerWatchdogs) clearWorkerWatchdogs()
@@ -1804,7 +1852,12 @@ export class FileDownloadService {
                   return
                 }
 
-                res.on('data', c => chunks.push(c))
+                res.on('data', c => {
+                  chunks.push(c)
+                  blockReceived += c.length
+                  inFlightBlockBytes.set(blockIndex, blockReceived)
+                  emitProgressThrottled(false)
+                })
                 res.on('end', () => {
                   if (clearWorkerWatchdogs) clearWorkerWatchdogs()
                   resolveNet(Buffer.concat(chunks))
@@ -1830,18 +1883,15 @@ export class FileDownloadService {
             // 排队串行写入操作系统
             await enqueueWrite(start, blockBuffer)
             completedBlocks.add(blockIndex)
+            inFlightBlockBytes.delete(blockIndex)
             uncommittedBatchCount++
             committedBytes += rangeLength
 
-            onProgress?.({
-              percent: Math.min(99, Math.round((committedBytes / expectedBytes) * 100)),
-              receivedBytes: committedBytes,
-              totalBytes: expectedBytes,
-              speed: 0
-            })
+            emitProgressThrottled(true)
 
             await flushMeta(false)
           } catch (err: any) {
+            inFlightBlockBytes.delete(blockIndex)
             if (err?.is429) {
               // 429 降并发并将块放回未完成队列
               pendingBlocks.unshift(blockIndex)
@@ -1902,11 +1952,13 @@ export class FileDownloadService {
       } catch {}
     }
 
+    const totalDuration = (Date.now() - sessionStartTime) / 1000
+    const finalSpeed = totalDuration > 0 ? (expectedBytes - initialBytes) / totalDuration : 0
     onProgress?.({
       percent: 100,
       receivedBytes: expectedBytes,
       totalBytes: expectedBytes,
-      speed: 0
+      speed: Math.round(smoothedSpeed > 0 ? smoothedSpeed : finalSpeed)
     })
     return {
       success: true,
