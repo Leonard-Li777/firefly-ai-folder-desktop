@@ -847,6 +847,14 @@ app.on('ready', async () => {
       modularResourceService
     } = require('../runtime-services/system/modular-resource-service')
     modularResourceService.setConfigOrchestrator(ConfigOrchestrator.getInstance())
+    // 提前注入 getDb 依赖（方案 B）：在 IPC handler 注册前建立数据库访问通道，
+    // 避免打包产物中动态 require('../database/database-service') 路径不可达的问题。
+    // 使用 getter 函数延迟求值，databaseService.db 在 initialize() 前为 null，
+    // 但 IPC 层已有容错逻辑（方案 A）返回空数组，不会导致崩溃。
+    modularResourceService.configureRuntimeDependencies({
+      getDb: () => databaseService.db,
+      configOrchestrator: ConfigOrchestrator.getInstance()
+    })
   } catch {}
 
   // 注册 IPC 处理器，确保在任何窗口创建及前端加载之前 IPC 响应就绪

@@ -75,6 +75,14 @@ export function registerModularResourceIpcHandlers(
           includeDraft: filter?.includeDraft ?? effectiveDevMode
         })
       } catch (err: any) {
+        // 启动时序竞态防御：首次运行/升级时窗口提前创建（main/index.ts:875），
+        // 渲染进程可能在 databaseService.initialize() 完成前调用本接口。
+        // 此时 getDb() 抛出"数据库尚未初始化"，返回空列表避免崩溃，
+        // 数据库就绪后前端重新请求会返回真实数据。
+        if (err?.message?.includes('数据库尚未初始化')) {
+          logger.warn(LogCategory.MAIN, '[ModularResourceIPC] list 时数据库未就绪，返回空列表')
+          return []
+        }
         logger.error(LogCategory.MAIN, '[ModularResourceIPC] list 失败:', err)
         throw err
       }
