@@ -591,7 +591,10 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
 
             {/* Controls Group */}
             <div className="flex items-center space-x-3 flex-shrink-0">
-              {/* 插件中心全局入口按钮：排在 GlobalTTSPlaybackBar 左侧，紧邻用户头像区域 */}
+              {/* 全局 TTS 播放控制条：排在插件中心左侧，位于 Controls Group 首位 */}
+              <GlobalTTSPlaybackBar />
+
+              {/* 插件中心全局入口按钮：排在 GlobalTTSPlaybackBar 右侧，紧邻用户头像区域 */}
               <button
                 type="button"
                 data-no-drag
@@ -625,9 +628,6 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                   </>
                 )}
               </button>
-
-              {/* 全局 TTS 播放控制条：紧邻用户头像左侧 */}
-              <GlobalTTSPlaybackBar />
 
               {/* User Avatar Menu */}
               <div

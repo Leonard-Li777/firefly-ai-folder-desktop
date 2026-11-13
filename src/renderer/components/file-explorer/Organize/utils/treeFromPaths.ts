@@ -51,3 +51,36 @@ export function pathsToDirectoryNodes(paths: string[]): VirtualDirectoryNode[] {
 
   return convertToNodes(rootMap)
 }
+
+/**
+ * 将工作流预置目录树 (DirectoryTreeNode[] 格式，如 { name: string, children?: DirectoryTreeNode[] })
+ * 转换为 VirtualDirectoryNode[] 嵌套树，供 Organize 目录微调 (StructureView) 直接消费
+ */
+export function directoryTreeNodesToVirtualNodes(
+  treeNodes: any[],
+  parentKey: string = ''
+): VirtualDirectoryNode[] {
+  if (!Array.isArray(treeNodes) || treeNodes.length === 0) {
+    return []
+  }
+
+  return treeNodes.map(node => {
+    const name = String(node?.name || '').trim()
+    const currentKey = parentKey ? `${parentKey}/${name}` : name
+    const rawChildren = node?.children || node?.subdirectories || []
+
+    return {
+      name,
+      parent: parentKey || null,
+      parentKey: parentKey || undefined,
+      files: [],
+      fileCount: 0,
+      totalSize: 0,
+      subdirectories:
+        Array.isArray(rawChildren) && rawChildren.length > 0
+          ? directoryTreeNodesToVirtualNodes(rawChildren, currentKey)
+          : []
+    }
+  })
+}
+

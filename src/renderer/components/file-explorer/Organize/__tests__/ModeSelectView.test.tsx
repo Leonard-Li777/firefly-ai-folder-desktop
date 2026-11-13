@@ -112,4 +112,36 @@ describe('ModeSelectView 2+3 结构化网格与高级 AI 门禁', () => {
     fireEvent.click(screen.getByText('自定义目录树'))
     expect(mockOnSelectMode).toHaveBeenCalledWith('custom-tree')
   })
+
+  it('未绑定工作流时，不得展示【工作流预置目录树】模式卡片', () => {
+    render(<ModeSelectView onSelectMode={mockOnSelectMode} boundWorkflow={null} />)
+
+    expect(screen.queryByText('工作流预置目录树')).toBeNull()
+  })
+
+  it('已绑定工作流时，应当展示【工作流预置目录树】模式卡片，点击触发 workflow-preset 回调', () => {
+    const mockBoundWorkflow = {
+      id: 'builtin.workflow.photography-raw',
+      name: '专业摄影底片管理',
+      preset_directory_tree: [
+        {
+          name: '01_精选RAW',
+          children: [{ name: '风景' }]
+        }
+      ]
+    }
+
+    render(
+      <ModeSelectView
+        onSelectMode={mockOnSelectMode}
+        boundWorkflow={mockBoundWorkflow}
+      />
+    )
+
+    expect(screen.getByText('工作流预置目录树')).toBeDefined()
+    expect(screen.getByText('专业摄影底片管理')).toBeDefined()
+
+    fireEvent.click(screen.getByText('工作流预置目录树'))
+    expect(mockOnSelectMode).toHaveBeenCalledWith('workflow-preset')
+  })
 })

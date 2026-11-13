@@ -17,6 +17,7 @@ export type Stage =
 export type OrganizeMode =
   | 'smart-clustering'
   | 'identity-blueprint'
+  | 'workflow-preset'
   | 'fast-organize'
   | 'fine-organize'
   | 'custom-tree'

@@ -1294,6 +1294,9 @@ export function useOrganizeState() {
         setStage('external-ai')
       } else if (mode === 'custom-tree') {
         setStage('custom-tree')
+      } else if (mode === 'workflow-preset') {
+        // 工作流预置目录树模式由 Organize/index.tsx 的 handleSelectWorkflowPreset 专门处理填入并直达 structure
+        return
       } else {
         setStage('candidates')
       }
@@ -1662,12 +1665,14 @@ export function useOrganizeState() {
         }
       }
 
-      // ─── 统一归类底座：身份蓝图、精细整理、外部AI均走端侧离线向量余弦打分与内存重塑 ──
+      // ─── 统一归类底座：身份蓝图、工作流预置模式、精细整理、自定义目录树、外部AI均走端侧离线向量余弦打分与内存重塑 ──
       const shouldUseCosineMatching =
         organizeMode === 'identity-blueprint' ||
+        organizeMode === 'workflow-preset' ||
         organizeMode === 'fine-organize' ||
         organizeMode === 'custom-tree' ||
         (draft as any)?.source === 'identity-blueprint' ||
+        (draft as any)?.source === 'workflow-preset' ||
         (draft as any)?.source === 'external-ai' ||
         (draft as any)?.source === 'custom-tree' ||
         (draft as any)?.source === 'draft' ||
@@ -1862,9 +1867,15 @@ export function useOrganizeState() {
     // 优先使用后端估算的批次数（与实际整理上报的 totalSteps 保持一致）。
     // 此前按全部文件数估算会导致与实际批次数不一致（例如快速整理的骨架直出会先按已有标签预分配文件）。
     let batchCount = Math.ceil(toOrganizeFiles.map(f => f.id).length / batchSize)
-    const isBlueprint =
-      organizeMode === 'identity-blueprint' || (draft as any)?.source === 'identity-blueprint'
-    if (!isBlueprint) {
+    const isBlueprintOrPreset =
+      organizeMode === 'identity-blueprint' ||
+      organizeMode === 'workflow-preset' ||
+      organizeMode === 'custom-tree' ||
+      (draft as any)?.source === 'identity-blueprint' ||
+      (draft as any)?.source === 'workflow-preset' ||
+      (draft as any)?.source === 'custom-tree' ||
+      (draft as any)?.source === 'external-ai'
+    if (!isBlueprintOrPreset) {
       try {
         const backendTagsTree = convertTreeForBackend(draftTree)
         const allFiles = collectAllFiles(dimensionGroups, regenerateFiles)
@@ -2744,6 +2755,13 @@ export function useOrganizeState() {
     const isVDirOrDraft = Boolean(currentVDir?.id || organizeMode === 'incremental-organize')
 
     if (stage === 'structure') {
+      if (
+        organizeMode === 'workflow-preset' ||
+        draft?.source === 'workflow-preset'
+      ) {
+        setStage('mode-select')
+        return
+      }
       if (organizeMode === 'custom-tree' || draft?.source === 'custom-tree' || draft?.source === 'user-defined') {
         setStage('custom-tree')
         return

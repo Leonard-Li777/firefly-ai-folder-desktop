@@ -306,7 +306,7 @@ export function DoneView({
             className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
           />
           <p className="text-[10px] text-muted-foreground leading-tight">
-            {t('低于及格线的文件将实时移入【未归类】，高于者归入对应目录')}
+            {t('低于目录准入及格线的文件将实时移入【未归类】')}
           </p>
         </div>
 
@@ -335,7 +335,7 @@ export function DoneView({
             className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-amber-500"
           />
           <p className="text-[10px] text-muted-foreground leading-tight">
-            {t('同一文件语义同时契合多个主题时允许展示的最大目录数量')}
+            {t('同一文件语义同时契合多目录时允许展示的最大目录数量')}
           </p>
         </div>
       </div>
@@ -516,7 +516,7 @@ export function DoneView({
                                 ? t('AI 优先找补前 200 个 (共 {count} 个)', {
                                     count: unclassifiedFiles.length
                                   })
-                                : t('高级 AI 深度找补 ({count} 个)', {
+                                : t('生成式 AI 深度找补 ({count} 个)', {
                                     count: unclassifiedFiles.length
                                   })}
                           </span>

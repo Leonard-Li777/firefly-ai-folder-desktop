@@ -44,7 +44,7 @@ import { SplitPane } from '../../common/SplitPane'
 import { OrganizeMode } from './types'
 import { HintBanner } from '../../ui/hint-banner'
 import { isUnclassifiedNodeName } from './utils/helpers'
-import { pathsToDirectoryNodes } from './utils/treeFromPaths'
+import { pathsToDirectoryNodes, directoryTreeNodesToVirtualNodes } from './utils/treeFromPaths'
 
 export const Organize: React.FC = () => {
   useVoerkaI18n(i18nScope)
@@ -289,6 +289,80 @@ export const Organize: React.FC = () => {
       }
     },
     [currentWorkspaceDirectory?.id, loadVirtualDirectories, resetOrganizeState, navigate]
+  )
+
+  const [workflows, setWorkflows] = useState<any[]>([])
+
+  useEffect(() => {
+    let isMounted = true
+    window.electronAPI
+      ?.getLocalWorkflows?.()
+      .then((res: any) => {
+        if (isMounted && res?.success && Array.isArray(res.data) && res.data.length > 0) {
+          setWorkflows(res.data)
+        }
+      })
+      .catch((err: unknown) => {
+        // 禁止静默降级：IPC 通道缺失或主进程异常显式打印日志
+        console.warn('[Organize] 获取本地工作流列表失败:', err)
+      })
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  // 解析当前工作目录绑定的工作流实体
+  const boundWorkflow = useMemo(() => {
+    const boundId = currentWorkspaceDirectory?.bound_workflow_id
+    if (!boundId) return null
+    return workflows.find((w: any) => w.id === boundId) || null
+  }, [currentWorkspaceDirectory?.bound_workflow_id, workflows])
+
+  const handleSelectWorkflowPreset = useCallback(() => {
+    if (!boundWorkflow) return
+
+    let rawTree: any[] = []
+    if (boundWorkflow.preset_directory_tree) {
+      try {
+        const parsed =
+          typeof boundWorkflow.preset_directory_tree === 'string'
+            ? JSON.parse(boundWorkflow.preset_directory_tree)
+            : boundWorkflow.preset_directory_tree
+        if (Array.isArray(parsed)) {
+          rawTree = parsed
+        }
+      } catch (e) {
+        console.warn('[Organize] 解析工作流预置目录树失败:', e)
+      }
+    } else if (Array.isArray(boundWorkflow.presetDirectoryTree)) {
+      rawTree = boundWorkflow.presetDirectoryTree
+    }
+
+    const convertedTree = directoryTreeNodesToVirtualNodes(rawTree)
+    const workflowName = boundWorkflow.name || t('已绑定工作流')
+    const vdirName = `${workflowName} 整理`
+
+    setDraft({
+      name: vdirName,
+      strategy: boundWorkflow.id,
+      source: 'workflow-preset',
+      perspective: workflowName,
+      rationale: boundWorkflow.summary || t('基于当前工作目录绑定的专属工作流预置目录大纲')
+    })
+    setOrganizeMode('workflow-preset')
+    setDraftTree(convertedTree)
+    setStage('structure')
+  }, [boundWorkflow, setDraft, setOrganizeMode, setDraftTree, setStage])
+
+  const handleOrganizeModeSelect = useCallback(
+    (mode: OrganizeMode) => {
+      if (mode === 'workflow-preset') {
+        handleSelectWorkflowPreset()
+        return
+      }
+      handleModeSelect(mode)
+    },
+    [handleModeSelect, handleSelectWorkflowPreset]
   )
 
   const handleSelectIdentityStructure = useCallback(
@@ -955,9 +1029,10 @@ export const Organize: React.FC = () => {
                           {stage === 'mode-select' && (
                             <ModeSelectView
                               organizeMode={organizeMode}
-                              onSelectMode={handleModeSelect}
+                              onSelectMode={handleOrganizeModeSelect}
                               hasVirtualDirectories={virtualDirectories.length > 0}
                               virtualDirectories={virtualDirectories}
+                              boundWorkflow={boundWorkflow}
                               onSelectIncrementalVd={handleSelectIncrementalVd}
                               onSelectDraftVDir={handleSelectDraftVDir}
                               onDeleteDraftVDir={handleDeleteDraftVDir}

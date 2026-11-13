@@ -120,7 +120,10 @@ export function StageBreadcrumb({
     ]
 
     steps =
-      organizeMode === 'incremental-organize' || currentVDir?.source === 'draft'
+      organizeMode === 'incremental-organize' ||
+      organizeMode === 'workflow-preset' ||
+      draft?.source === 'workflow-preset' ||
+      currentVDir?.source === 'draft'
         ? organizeSteps.filter(s => s.key !== 'candidates' && s.key !== 'custom-tree' && s.key !== 'external-ai')
         : organizeSteps
   }

@@ -9,6 +9,7 @@ export function ModeSelectView({
   onSelectMode,
   hasVirtualDirectories = false,
   virtualDirectories = [],
+  boundWorkflow = null,
   onSelectIncrementalVd,
   onSelectDraftVDir,
   onDeleteDraftVDir
@@ -25,6 +26,12 @@ export function ModeSelectView({
     dirCount?: number
     directoryCount?: number
   }>
+  boundWorkflow?: {
+    id: string
+    name: string
+    presetDirectoryTree?: any[]
+    preset_directory_tree?: any
+  } | null
   onSelectIncrementalVd?: (vdId: number) => void
   onSelectDraftVDir?: (vdId: number) => void
   onDeleteDraftVDir?: (vdId: number) => void
@@ -60,6 +67,35 @@ export function ModeSelectView({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+              {/* 0. 工作流预置目录树 (当前工作目录绑定工作流时专属展示 · 翡翠绿) */}
+              {Boolean(boundWorkflow) && (
+                <div
+                  onClick={() => onSelectMode('workflow-preset')}
+                  className="group relative cursor-pointer rounded-xl p-4 border-2 bg-card/90 backdrop-blur-xs border-emerald-500/40 hover:border-emerald-500/80 hover:bg-emerald-500/[0.03] hover:-translate-y-0.5 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-200 flex flex-col justify-between select-none overflow-hidden"
+                >
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="w-9 h-9 rounded-lg flex items-center justify-center border transition-all duration-200 bg-emerald-500/15 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 group-hover:bg-gradient-to-br group-hover:from-emerald-500 group-hover:to-teal-600 group-hover:text-white group-hover:shadow-sm group-hover:scale-105 shrink-0">
+                        <MaterialIcon icon="account_tree" className="text-lg" />
+                      </div>
+                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1 shadow-2xs shrink-0 max-w-[120px] truncate">
+                        <MaterialIcon icon="link" className="text-[11px] text-emerald-500 shrink-0" />
+                        <span className="truncate">{boundWorkflow?.name || t('已绑定工作流')}</span>
+                      </span>
+                    </div>
+
+                    <div>
+                      <h4 className="text-sm font-bold text-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors flex items-center gap-1.5">
+                        {t('工作流预置目录树')}
+                      </h4>
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
+                        {t('直接填入当前绑定的工作流预置目录结构，跳过方案推导，直接进入目录结构微调。')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* 1. 身份蓝图 (推荐 · 琥珀金) */}
               <div
                 onClick={() => onSelectMode('identity-blueprint')}
