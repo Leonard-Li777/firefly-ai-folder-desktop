@@ -4,6 +4,74 @@
   "lastUpdated": "2026-09-26",
   "models": [
     {
+      "id": "Vortecks/LFM3-1.7B-Heretic-Abliterated-GGUF:Q4_K_M",
+      "name": "LFM3 1.7B（ограничивать•легкий）",
+      "company": "Vortecks",
+      "parameterSize": "1.7B",
+      "intelligenceLevel": 2,
+      "modelSize": "1.02GB",
+      "totalSize": "1.02GB",
+      "recommended": true,
+      "description": "Недостаточно видеопамяти, и если вы хотите правильно классифицировать файлы, вы должны выбрать меня, чтобы ограничить версию (с ограниченным доступом).",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "ограничивать",
+        "побег из тюрьмы",
+        "NSFW",
+        "только текст",
+        "легкий",
+        "Поддержка работы процессора"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "alexwkleung/LFM3-1.7B-Heretic-GGUF:Q4_K_M",
+      "name": "LFM3 1.7B（побег из тюрьмы•легкий）",
+      "company": "alexwkleung",
+      "parameterSize": "1.7B",
+      "intelligenceLevel": 2,
+      "modelSize": "1.02GB",
+      "totalSize": "1.02GB",
+      "recommended": true,
+      "description": "Недостаточно видеопамяти, и если вы хотите правильно классифицировать файлы, вы должны выбрать me. Единственным недостатком является то, что он поддерживает только текст.",
+      "source": "modelscope",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "ограничивать",
+        "побег из тюрьмы",
+        "NSFW",
+        "только текст",
+        "легкий",
+        "Поддержка работы процессора"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
       "id": "MNN/MNN-Pocket-0.3B-GGUF:Q4_1",
       "name": "MNN-Pocket 0.3B（Экспресс•легкий）",
       "company": "MNN",
@@ -11,7 +79,7 @@
       "intelligenceLevel": 1,
       "modelSize": "183MB",
       "totalSize": "183MB",
-      "recommended": false,
+      "recommended": true,
       "description": "MNN-Pocket 0.3B — это сверхлегкая модель с чрезвычайно низким использованием памяти и графической памяти, а также поддерживающая быстрое понимание и генерацию текста.",
       "source": "modelscope",
       "quantization": "Q4_1",
@@ -43,7 +111,7 @@
       "intelligenceLevel": 1,
       "modelSize": "183MB",
       "totalSize": "183MB",
-      "recommended": false,
+      "recommended": true,
       "description": "MNN-Pocket 0.3B — это сверхлегкая модель с чрезвычайно низким использованием памяти и графической памяти, а также поддерживающая быстрое понимание и генерацию текста.",
       "source": "huggingface",
       "quantization": "Q4_1",

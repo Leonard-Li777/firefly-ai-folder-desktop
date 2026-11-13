@@ -4,6 +4,74 @@
   "lastUpdated": "2026-09-26",
   "models": [
     {
+      "id": "Vortecks/LFM3-1.7B-Heretic-Abliterated-GGUF:Q4_K_M",
+      "name": "LFM3 1.7B（Begrenzen•Leicht）",
+      "company": "Vortecks",
+      "parameterSize": "1.7B",
+      "intelligenceLevel": 2,
+      "modelSize": "1.02GB",
+      "totalSize": "1.02GB",
+      "recommended": true,
+      "description": "Es ist nicht genügend Videospeicher vorhanden, und wenn Sie Dateien richtig klassifizieren möchten, müssen Sie mich auswählen, um die Version einzuschränken (Abliteriert).",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "Begrenzen",
+        "Gefängnisausbruch",
+        "NSFW",
+        "Nur Text",
+        "Leicht",
+        "Unterstützt den CPU-Betrieb"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "alexwkleung/LFM3-1.7B-Heretic-GGUF:Q4_K_M",
+      "name": "LFM3 1.7B（Gefängnisausbruch•Leicht）",
+      "company": "alexwkleung",
+      "parameterSize": "1.7B",
+      "intelligenceLevel": 2,
+      "modelSize": "1.02GB",
+      "totalSize": "1.02GB",
+      "recommended": true,
+      "description": "Es ist nicht genügend Videospeicher vorhanden, und wenn Sie Dateien richtig klassifizieren möchten, müssen Sie mich auswählen. Der einzige Nachteil ist, dass es nur Text unterstützt.",
+      "source": "modelscope",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "Begrenzen",
+        "Gefängnisausbruch",
+        "NSFW",
+        "Nur Text",
+        "Leicht",
+        "Unterstützt den CPU-Betrieb"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
       "id": "MNN/MNN-Pocket-0.3B-GGUF:Q4_1",
       "name": "MNN-Pocket 0.3B（Blitzschnell•Leicht）",
       "company": "MNN",
@@ -11,7 +79,7 @@
       "intelligenceLevel": 1,
       "modelSize": "183MB",
       "totalSize": "183MB",
-      "recommended": false,
+      "recommended": true,
       "description": "MNN-Pocket 0.3B ist ein ultraleichtes Modell mit extrem geringer Speicher- und Grafikspeichernutzung und unterstützt schnelles Textverständnis und -generierung.",
       "source": "modelscope",
       "quantization": "Q4_1",
@@ -43,7 +111,7 @@
       "intelligenceLevel": 1,
       "modelSize": "183MB",
       "totalSize": "183MB",
-      "recommended": false,
+      "recommended": true,
       "description": "MNN-Pocket 0.3B ist ein ultraleichtes Modell mit extrem geringer Speicher- und Grafikspeichernutzung und unterstützt schnelles Textverständnis und -generierung.",
       "source": "huggingface",
       "quantization": "Q4_1",

@@ -4,6 +4,74 @@
   "lastUpdated": "2026-09-26",
   "models": [
     {
+      "id": "Vortecks/LFM3-1.7B-Heretic-Abliterated-GGUF:Q4_K_M",
+      "name": "LFM3 1.7B（制限する•軽量）",
+      "company": "Vortecks",
+      "parameterSize": "1.7B",
+      "intelligenceLevel": 2,
+      "modelSize": "1.02GB",
+      "totalSize": "1.02GB",
+      "recommended": true,
+      "description": "ビデオメモリが不足しているため、ファイルを正しく分類する場合は、バージョンを制限するために私を選択する必要があります（Abliterated）。",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "制限する",
+        "脱獄",
+        "NSFW",
+        "テキストのみ",
+        "軽量",
+        "CPU動作をサポート"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "alexwkleung/LFM3-1.7B-Heretic-GGUF:Q4_K_M",
+      "name": "LFM3 1.7B（脱獄•軽量）",
+      "company": "alexwkleung",
+      "parameterSize": "1.7B",
+      "intelligenceLevel": 2,
+      "modelSize": "1.02GB",
+      "totalSize": "1.02GB",
+      "recommended": true,
+      "description": "ビデオメモリが不足しているため、ファイルを正しく分類したい場合は、私を選択する必要があります。 唯一の欠点は、テキストのみをサポートすることです。",
+      "source": "modelscope",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "制限する",
+        "脱獄",
+        "NSFW",
+        "テキストのみ",
+        "軽量",
+        "CPU動作をサポート"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
       "id": "MNN/MNN-Pocket-0.3B-GGUF:Q4_1",
       "name": "MNN-Pocket 0.3B（超高速•軽量）",
       "company": "MNN",
@@ -11,7 +79,7 @@
       "intelligenceLevel": 1,
       "modelSize": "183MB",
       "totalSize": "183MB",
-      "recommended": false,
+      "recommended": true,
       "description": "MNN-Pocket 0.3B は、メモリとグラフィックス メモリの使用量が極めて少ない超軽量モデルで、高速なテキストの理解と生成をサポートします。",
       "source": "modelscope",
       "quantization": "Q4_1",
@@ -43,7 +111,7 @@
       "intelligenceLevel": 1,
       "modelSize": "183MB",
       "totalSize": "183MB",
-      "recommended": false,
+      "recommended": true,
       "description": "MNN-Pocket 0.3B は、メモリとグラフィックス メモリの使用量が極めて少ない超軽量モデルで、高速なテキストの理解と生成をサポートします。",
       "source": "huggingface",
       "quantization": "Q4_1",

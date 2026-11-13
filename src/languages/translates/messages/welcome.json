@@ -91,7 +91,7 @@
       "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(3750-3756)",
       "src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(4293-4299)",
       "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(2389-2395)",
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10709-10715)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(11687-11693)"
     ],
     "$id": 28471
   },
@@ -215,7 +215,7 @@
     "ko-KR": "남은 디스크 공간이 부족합니다. 다운로드 및 설치를 위해 최소 2GB를 예약하세요.",
     "$files": [
       "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(6572-6604)",
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(16681-16713)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(17659-17691)"
     ],
     "$id": 31528
   },
@@ -768,7 +768,7 @@
     "de-DE": "Es gab ein Problem beim Starten des Motors. Bitte versuchen Sie es erneut oder wechseln Sie zur ultraschnellen und leichten Engine.",
     "fr-FR": "Il y a eu un problème au démarrage du moteur. Veuillez réessayer ou passer au moteur ultra-rapide et léger.",
     "ko-KR": "엔진을 시동하는 데 문제가 발생했습니다. 다시 시도하거나 초고속 경량 엔진으로 전환해 보세요.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(4937-4965)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(5158-5186)"],
     "$id": 31514
   },
   "当前版本暂不支持导入离线总包": {
@@ -781,7 +781,7 @@
     "de-DE": "Die aktuelle Version unterstützt den Import allgemeiner Offline-Pakete nicht.",
     "fr-FR": "La version actuelle ne prend pas en charge l'importation de packages généraux hors ligne.",
     "ko-KR": "현재 버전은 오프라인 일반 패키지 가져오기를 지원하지 않습니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(5785-5803)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(6455-6473)"],
     "$id": 31754
   },
   "还没有挑选安装包，点下面的按钮再选一次就好": {
@@ -794,7 +794,7 @@
     "de-DE": "Sie haben das Installationspaket noch nicht ausgewählt. Klicken Sie einfach auf die Schaltfläche unten, um es erneut auszuwählen.",
     "fr-FR": "Vous n'avez pas encore sélectionné le package d'installation, cliquez simplement sur le bouton ci-dessous pour le sélectionner à nouveau.",
     "ko-KR": "아직 설치 패키지를 선택하지 않았습니다. 아래 버튼을 클릭하여 다시 선택하세요.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(6194-6219)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(6864-6889)"],
     "$id": 31779
   },
   "所选离线总包中未包含核心检索引擎，请确认文件为完整的 Firefly 离线总包": {
@@ -807,7 +807,7 @@
     "de-DE": "Die Kernsuchmaschine ist nicht im ausgewählten Offline-Paket enthalten. Bitte bestätigen Sie, dass es sich bei der Datei um ein vollständiges Firefly-Offline-Paket handelt.",
     "fr-FR": "Le moteur de recherche principal n'est pas inclus dans le package hors ligne sélectionné. Veuillez confirmer que le fichier est un package hors ligne Firefly complet.",
     "ko-KR": "선택한 오프라인 패키지에는 핵심 검색 엔진이 포함되어 있지 않습니다. 파일이 완전한 Firefly 오프라인 패키지인지 확인하세요.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(6899-6942)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(7569-7612)"],
     "$id": 31756
   },
   "离线引擎自检未通过，请确认离线总包文件完整无损": {
@@ -820,7 +820,7 @@
     "de-DE": "Der Selbsttest der Offline-Engine ist fehlgeschlagen. Bitte bestätigen Sie, dass die allgemeine Offline-Paketdatei intakt ist.",
     "fr-FR": "L'autotest du moteur hors ligne a échoué. Veuillez confirmer que le fichier du package général hors ligne est intact.",
     "ko-KR": "오프라인 엔진 자체 테스트에 실패했습니다. 오프라인 일반 패키지 파일이 손상되지 않았는지 확인해주세요.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(7708-7735)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(8378-8405)"],
     "$id": 31757
   },
   "安装遇到问题，请重试": {
@@ -833,7 +833,7 @@
     "de-DE": "Bei der Installation ist ein Problem aufgetreten. Bitte versuchen Sie es erneut",
     "fr-FR": "L'installation a rencontré un problème, veuillez réessayer",
     "ko-KR": "설치에 문제가 발생했습니다. 다시 시도해 주세요.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(8215-8229)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(9193-9207)"],
     "$id": 31758
   },
   "等待挑选离线安装包": {
@@ -846,7 +846,7 @@
     "de-DE": "Warten auf Auswahl des Offline-Installationspakets",
     "fr-FR": "En attente de la sélection du package d'installation hors ligne",
     "ko-KR": "오프라인 설치 패키지 선택을 기다리는 중",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(8998-9011)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(9976-9989)"],
     "$id": 31780
   },
   "正在装好主检索引擎，请稍候...": {
@@ -859,7 +859,7 @@
     "de-DE": "Installation der Hauptsuchmaschine, bitte warten...",
     "fr-FR": "Installation du moteur de recherche principal, veuillez patienter...",
     "ko-KR": "기본 검색 엔진을 설치하는 중입니다. 잠시 기다려 주세요...",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(9053-9073)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10031-10051)"],
     "$id": 31759
   },
   "正在校验并导入离线安装包，请稍候...": {
@@ -872,7 +872,7 @@
     "de-DE": "Offline-Installationspaket wird überprüft und importiert. Bitte warten...",
     "fr-FR": "Vérification et importation du package d'installation hors ligne, veuillez patienter...",
     "ko-KR": "오프라인 설치 패키지를 확인하고 가져오는 중입니다. 잠시 기다려 주세요...",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(9114-9137)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10092-10115)"],
     "$id": 31760
   },
   "正在检查引擎能不能正常工作...": {
@@ -885,7 +885,7 @@
     "de-DE": "Prüfen, ob der Motor einwandfrei funktionieren kann...",
     "fr-FR": "Vérifier si le moteur peut fonctionner correctement...",
     "ko-KR": "엔진이 제대로 작동하는지 확인 중...",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(9182-9202)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10160-10180)"],
     "$id": 31761
   },
   "主检索引擎安装完成，可以开始使用了！": {
@@ -898,7 +898,7 @@
     "de-DE": "Die Hauptsuchmaschine ist installiert und kann genutzt werden!",
     "fr-FR": "Le moteur de recherche principal est installé et peut être utilisé !",
     "ko-KR": "메인 검색 엔진이 설치되어 사용 가능해요!",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(9239-9261)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10217-10239)"],
     "$id": 31762
   },
   "安装遇到问题": {
@@ -911,7 +911,7 @@
     "de-DE": "Bei der Installation sind Probleme aufgetreten",
     "fr-FR": "L'installation a rencontré des problèmes",
     "ko-KR": "설치에 문제가 발생했습니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(9275-9285)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10253-10263)"],
     "$id": 31763
   },
   "导入离线安装包": {
@@ -924,7 +924,7 @@
     "de-DE": "Offline-Installationspaket importieren",
     "fr-FR": "Importer le package d'installation hors ligne",
     "ko-KR": "오프라인 설치 패키지 가져오기",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(9728-9739)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10706-10717)"],
     "$id": 31766
   },
   "联网在线安装": {
@@ -937,7 +937,7 @@
     "de-DE": "Netzwerk-Online-Installation",
     "fr-FR": "Installation réseau en ligne",
     "ko-KR": "네트워크 온라인 설치",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(9743-9753)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10721-10731)"],
     "$id": 31767
   },
   "安装到": {
@@ -950,7 +950,7 @@
     "de-DE": "Installieren",
     "fr-FR": "Installer sur",
     "ko-KR": "에 설치하다",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(9905-9912)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10883-10890)"],
     "$id": 31768
   },
   "默认文件夹": {
@@ -963,7 +963,7 @@
     "de-DE": "Standardordner",
     "fr-FR": "Dossier par défaut",
     "ko-KR": "기본 폴더",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10021-10030)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10999-11008)"],
     "$id": 31769
   },
   "正在为你装好智能文件管理": {
@@ -976,7 +976,7 @@
     "de-DE": "Die intelligente Dateiverwaltung wird für Sie installiert",
     "fr-FR": "La gestion intelligente des fichiers est en cours d'installation pour vous",
     "ko-KR": "스마트 파일 관리가 설치되고 있습니다",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10204-10220)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(11182-11198)"],
     "$id": 31764
   },
   "把你准备好的安装包交给软件，剩下的事它会自动做完": {
@@ -989,7 +989,7 @@
     "de-DE": "Geben Sie der Software das von Ihnen vorbereitete Installationspaket und sie erledigt den Rest automatisch.",
     "fr-FR": "Donnez au logiciel le package d'installation que vous avez préparé et il fera le reste automatiquement.",
     "ko-KR": "소프트웨어에 준비한 설치 패키지를 제공하면 나머지는 자동으로 수행됩니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10267-10295)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(11245-11273)"],
     "$id": 31781
   },
   "先装好最核心的搜索大脑，剩下的插件会在后台接着装，不用一直等": {
@@ -1002,7 +1002,7 @@
     "de-DE": "Installieren Sie zuerst das zentrale Suchhirn und die restlichen Fähigkeiten werden im Hintergrund installiert, sodass Sie nicht warten müssen.",
     "fr-FR": "Installez d'abord le cerveau de recherche principal, et le reste des compétences sera installé en arrière-plan, vous n'aurez donc pas à attendre.",
     "ko-KR": "핵심 검색 브레인을 먼저 설치하면 나머지 스킬은 백그라운드에서 설치되므로 기다릴 필요가 없습니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10314-10348)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(11292-11326)"],
     "$id": 31765
   },
   "开启智能文件管理之旅": {
@@ -1015,7 +1015,7 @@
     "de-DE": "Beginnen Sie die Reise der intelligenten Dateiverwaltung",
     "fr-FR": "Commencez l’aventure de la gestion intelligente des fichiers",
     "ko-KR": "지능형 파일 관리의 여정을 시작하세요",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(11152-11166)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(12130-12144)"],
     "$id": 31772
   },
   "请挑选离线安装包": {
@@ -1028,7 +1028,7 @@
     "de-DE": "Bitte wählen Sie das Offline-Installationspaket aus",
     "fr-FR": "Veuillez sélectionner le package d'installation hors ligne",
     "ko-KR": "오프라인 설치 패키지를 선택하세요.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(12160-12172)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13138-13150)"],
     "$id": 31782
   },
   "选中你事先下载好的完整安装包，软件会自动把它装到上一步选好的文件夹里；全程不联网，也不会上传任何文件。": {
@@ -1041,7 +1041,7 @@
     "de-DE": "Wählen Sie das vollständige Installationspaket aus, das Sie zuvor heruntergeladen haben. Die Software installiert es automatisch in dem im vorherigen Schritt ausgewählten Ordner. Der gesamte Vorgang ist nicht mit dem Internet verbunden und es werden keine Dateien hochgeladen.",
     "fr-FR": "Sélectionnez le package d'installation complet que vous avez téléchargé à l'avance et le logiciel l'installera automatiquement dans le dossier sélectionné à l'étape précédente ; l'ensemble du processus ne sera pas connecté à Internet et aucun fichier ne sera téléchargé.",
     "ko-KR": "미리 다운로드한 전체 설치 패키지를 선택하면 소프트웨어가 이전 단계에서 선택한 폴더에 자동으로 설치합니다. 전체 프로세스는 인터넷에 연결되지 않으며 파일도 업로드되지 않습니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(12315-12396)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13293-13374)"],
     "$id": 31783
   },
   "选择离线安装包": {
@@ -1054,7 +1054,7 @@
     "de-DE": "Wählen Sie das Offline-Installationspaket aus",
     "fr-FR": "Sélectionnez le package d'installation hors ligne",
     "ko-KR": "오프라인 설치 패키지 선택",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13288-13299)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(14266-14277)"],
     "$id": 31784
   },
   "也可以返回上一步改成在线安装，让软件联网自动下载": {
@@ -1067,7 +1067,7 @@
     "de-DE": "Sie können auch zum vorherigen Schritt zurückkehren und zur Online-Installation wechseln, damit die Software automatisch online heruntergeladen werden kann.",
     "fr-FR": "Vous pouvez également revenir à l'étape précédente et passer à l'installation en ligne, afin que le logiciel puisse être automatiquement téléchargé en ligne.",
     "ko-KR": "이전 단계로 돌아가서 온라인 설치로 변경하면 소프트웨어가 온라인에서 자동으로 다운로드될 수도 있습니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13421-13449)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(14399-14427)"],
     "$id": 31785
   },
   "主检索引擎安装完成，其它插件继续后台下载，不影响你现在就开始用": {
@@ -1080,7 +1080,7 @@
     "de-DE": "Die Hauptsuchmaschine wird installiert und andere Plug-ins werden im Hintergrund weiterhin heruntergeladen. Es hat keinen Einfluss auf Ihre Fähigkeit, es jetzt zu verwenden.",
     "fr-FR": "Le moteur de recherche principal est installé et les autres plug-ins continuent à se télécharger en arrière-plan. Cela n’affecte pas votre capacité à commencer à l’utiliser maintenant.",
     "ko-KR": "기본 검색 엔진이 설치되고 다른 플러그인은 백그라운드에서 계속 다운로드됩니다. 지금 사용을 시작하는 능력에는 영향을 미치지 않습니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(15413-15448)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(16391-16426)"],
     "$id": 31770
   },
   "重试": {
@@ -1093,7 +1093,7 @@
     "de-DE": "Wiederholen",
     "fr-FR": "Réessayer",
     "ko-KR": "재시도",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(16157-16163)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(17135-17141)"],
     "$id": 28468
   },
   "也可以返回上一步，换一种安装方式再试": {
@@ -1106,7 +1106,7 @@
     "de-DE": "Sie können auch zum vorherigen Schritt zurückkehren und eine andere Installationsmethode ausprobieren.",
     "fr-FR": "Vous pouvez également revenir à l'étape précédente et essayer une autre méthode d'installation.",
     "ko-KR": "이전 단계로 돌아가서 다른 설치 방법을 시도해 볼 수도 있습니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(16298-16320)"],
+    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(17276-17298)"],
     "$id": 31771
   },
   "第 {step} 步 / 共 5 步": {

@@ -4,6 +4,74 @@
   "lastUpdated": "2026-09-26",
   "models": [
     {
+      "id": "Vortecks/LFM3-1.7B-Heretic-Abliterated-GGUF:Q4_K_M",
+      "name": "LFM3 1.7B（Limitar•Leve）",
+      "company": "Vortecks",
+      "parameterSize": "1.7B",
+      "intelligenceLevel": 2,
+      "modelSize": "1.02GB",
+      "totalSize": "1.02GB",
+      "recommended": true,
+      "description": "Não há memória de vídeo suficiente, e se você quiser classificar os arquivos corretamente, você deve me escolher para restringir a versão (Abliterated).",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "Limitar",
+        "Fuga da prisão",
+        "NSFW",
+        "Somente texto",
+        "Leve",
+        "Suporte à operação da CPU"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "alexwkleung/LFM3-1.7B-Heretic-GGUF:Q4_K_M",
+      "name": "LFM3 1.7B（Fuga da prisão•Leve）",
+      "company": "alexwkleung",
+      "parameterSize": "1.7B",
+      "intelligenceLevel": 2,
+      "modelSize": "1.02GB",
+      "totalSize": "1.02GB",
+      "recommended": true,
+      "description": "Não há memória de vídeo suficiente e, se quiser classificar os ficheiros correctamente, deve escolher-me. A única desvantagem é que só suporta texto.",
+      "source": "modelscope",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "Limitar",
+        "Fuga da prisão",
+        "NSFW",
+        "Somente texto",
+        "Leve",
+        "Suporte à operação da CPU"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
       "id": "MNN/MNN-Pocket-0.3B-GGUF:Q4_1",
       "name": "MNN-Pocket 0.3B（Ultra-rápido•Leve）",
       "company": "MNN",
@@ -11,7 +79,7 @@
       "intelligenceLevel": 1,
       "modelSize": "183MB",
       "totalSize": "183MB",
-      "recommended": false,
+      "recommended": true,
       "description": "MNN-Pocket 0.3B é um modelo ultraleve com uso extremamente baixo de memória e memória gráfica e suporta rápida compreensão e geração de texto.",
       "source": "modelscope",
       "quantization": "Q4_1",
@@ -43,7 +111,7 @@
       "intelligenceLevel": 1,
       "modelSize": "183MB",
       "totalSize": "183MB",
-      "recommended": false,
+      "recommended": true,
       "description": "MNN-Pocket 0.3B é um modelo ultraleve com uso extremamente baixo de memória e memória gráfica e suporta rápida compreensão e geração de texto.",
       "source": "huggingface",
       "quantization": "Q4_1",

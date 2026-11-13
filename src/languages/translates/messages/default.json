@@ -9,7 +9,7 @@
     "de-DE": "Der Start der Anwendung wird vorbereitet...",
     "fr-FR": "Préparation du lancement de l'application...",
     "ko-KR": "애플리케이션 실행 준비 중...",
-    "$files": ["src/renderer/App.tsx(11384-11399)"],
+    "$files": ["src/renderer/App.tsx(11727-11742)"],
     "$id": 7602
   },
   "正在检测应用配置...": {
@@ -22,7 +22,7 @@
     "de-DE": "Anwendungskonfiguration wird erkannt...",
     "fr-FR": "Détection de la configuration de l'application...",
     "ko-KR": "애플리케이션 구성을 감지하는 중...",
-    "$files": ["src/renderer/App.tsx(12741-12756)"],
+    "$files": ["src/renderer/App.tsx(13120-13135)"],
     "$id": 7614
   },
   "正在验证授权状态...": {
@@ -35,7 +35,7 @@
     "de-DE": "Autorisierungsstatus wird überprüft...",
     "fr-FR": "Vérification de l'état d'autorisation...",
     "ko-KR": "승인 상태 확인 중...",
-    "$files": ["src/renderer/App.tsx(16284-16299)"],
+    "$files": ["src/renderer/App.tsx(16760-16775)"],
     "$id": 7615
   },
   "正在初始化应用环境...": {
@@ -48,7 +48,7 @@
     "de-DE": "Anwendungsumgebung wird initialisiert...",
     "fr-FR": "Initialisation de l'environnement d'application...",
     "ko-KR": "애플리케이션 환경 초기화 중...",
-    "$files": ["src/renderer/App.tsx(24671-24687)"],
+    "$files": ["src/renderer/App.tsx(25819-25835)"],
     "$id": 7618
   },
   "正在初始化AI服务...": {
@@ -61,7 +61,7 @@
     "de-DE": "KI-Dienst wird initialisiert...",
     "fr-FR": "Initialisation du service IA...",
     "ko-KR": "AI 서비스 초기화 중...",
-    "$files": ["src/renderer/App.tsx(24829-24845)"],
+    "$files": ["src/renderer/App.tsx(25982-25998)"],
     "$id": 7619
   },
   "正在加载应用配置...": {
@@ -74,7 +74,7 @@
     "de-DE": "Anwendungskonfiguration wird geladen...",
     "fr-FR": "Chargement de la configuration de l'application...",
     "ko-KR": "애플리케이션 구성 로드 중...",
-    "$files": ["src/renderer/App.tsx(25107-25122)"],
+    "$files": ["src/renderer/App.tsx(26269-26284)"],
     "$id": 7620
   },
   "正在检查 AI 状态...": {
@@ -87,7 +87,7 @@
     "de-DE": "AI-Status wird überprüft...",
     "fr-FR": "Vérification de l'état de l'IA...",
     "ko-KR": "AI 상태를 확인하는 중...",
-    "$files": ["src/renderer/App.tsx(25173-25190)"],
+    "$files": ["src/renderer/App.tsx(26337-26354)"],
     "$id": 7621
   },
   "萤核智能文件夹需要访问您的“下载”文件夹以整理和检索文件。": {
@@ -713,21 +713,8 @@
     "de-DE": "Firefly-Beamter",
     "fr-FR": "Officiel de luciole",
     "ko-KR": "반딧불 공식",
-    "$files": ["src/electron/runtime-services/database/database.ts(24087-24101)"],
+    "$files": ["src/electron/runtime-services/database/database.ts(24086-24100)"],
     "$id": 22920
-  },
-  "正在处理中，请等待当前任务完成": {
-    "en-US": "Processing, please wait for the current task to be completed",
-    "es-ES": "Procesando, espere a que se complete la tarea actual",
-    "ar-EG": "جاري المعالجة، يرجى الانتظار حتى تكتمل المهمة الحالية",
-    "pt-PT": "Processando, aguarde a conclusão da tarefa atual",
-    "ru-RU": "Обработка, пожалуйста, дождитесь завершения текущей задачи",
-    "ja-JP": "処理しています。現在のタスクが完了するまでお待ちください",
-    "de-DE": "Wird verarbeitet. Bitte warten Sie, bis die aktuelle Aufgabe abgeschlossen ist",
-    "fr-FR": "Traitement en cours, veuillez attendre que la tâche en cours soit terminée",
-    "ko-KR": "처리 중입니다. 현재 작업이 완료될 때까지 기다려 주세요.",
-    "$files": ["src/electron/runtime-services/integration/file-scanner-integration.ts(3263-3282)"],
-    "$id": 7661
   },
   "配额已用尽：已分析 {count} 个私有目录文件，当前配额为 {quota} 个文件。可以通过邀请好友解锁更多额度。": {
     "en-US": "Quota exhausted: {count} private directory files analyzed, current quota is {quota} files. You can unlock more credits by inviting friends.",
@@ -741,6 +728,19 @@
     "ko-KR": "할당량 소진: {count}개의 개인 디렉터리 파일이 분석되었으며, 현재 할당량은 {quota}개 파일입니다. 친구를 초대하면 더 많은 크레딧을 잠금 해제할 수 있습니다.",
     "$files": ["src/electron/runtime-services/invitation/invitation-service.ts(4226-4300)"],
     "$id": 7662
+  },
+  "正在处理中，请等待当前任务完成": {
+    "en-US": "Processing, please wait for the current task to be completed",
+    "es-ES": "Procesando, espere a que se complete la tarea actual",
+    "ar-EG": "جاري المعالجة، يرجى الانتظار حتى تكتمل المهمة الحالية",
+    "pt-PT": "Processando, aguarde a conclusão da tarefa atual",
+    "ru-RU": "Обработка, пожалуйста, дождитесь завершения текущей задачи",
+    "ja-JP": "処理しています。現在のタスクが完了するまでお待ちください",
+    "de-DE": "Wird verarbeitet. Bitte warten Sie, bis die aktuelle Aufgabe abgeschlossen ist",
+    "fr-FR": "Traitement en cours, veuillez attendre que la tâche en cours soit terminée",
+    "ko-KR": "처리 중입니다. 현재 작업이 완료될 때까지 기다려 주세요.",
+    "$files": ["src/electron/runtime-services/integration/file-scanner-integration.ts(3263-3282)"],
+    "$id": 7661
   },
   "云端执行失败": {
     "en-US": "Cloud execution failed",
@@ -781,7 +781,7 @@
     "de-DE": "Dieses Verzeichnis wurde als {typeName} erstellt",
     "fr-FR": "Ce répertoire a été créé en tant que {typeName}",
     "ko-KR": "해당 디렉토리가 {typeName}(으)로 생성되었습니다",
-    "$files": ["src/electron/runtime-services/database/dao/workspace-dao.ts(6690-6711)"],
+    "$files": ["src/electron/runtime-services/database/dao/workspace-dao.ts(6686-6707)"],
     "$id": 8124
   }
 }

@@ -38,7 +38,7 @@
     "$files": [
       "src/renderer/stores/ai-service-store.ts(6533-6541)",
       "src/renderer/stores/ai-service-store.ts(10217-10225)",
-      "src/renderer/stores/tier-store.ts(5338-5346)"
+      "src/renderer/stores/tier-store.ts(6770-6778)"
     ],
     "$id": 8872
   },
@@ -143,7 +143,7 @@
     "de-DE": "Die Überprüfung der Plug-in-Signatur ist fehlgeschlagen. Das Installationspaket wurde möglicherweise beschädigt oder illegal manipuliert und wurde sicher beendet.",
     "fr-FR": "La vérification de la signature du plug-in a échoué. Le package d'installation a peut-être été endommagé ou altéré illégalement et a été terminé en toute sécurité.",
     "ko-KR": "플러그인 서명 확인에 실패했습니다. 설치 패키지가 손상되었거나 불법적으로 변조되었을 수 있으며 안전하게 종료되었습니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(2891-2926)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(3003-3038)"],
     "$id": 31289
   },
   "插件核心模型或资源文件校验不一致，文件可能已损坏，请重新下载或获取。": {
@@ -156,7 +156,7 @@
     "de-DE": "Das Plug-in-Kernmodell oder die Überprüfung der Ressourcendatei ist inkonsistent. Die Datei ist möglicherweise beschädigt. Bitte laden Sie es herunter oder laden Sie es erneut herunter.",
     "fr-FR": "Le modèle principal du plug-in ou la vérification du fichier de ressources est incohérent. Le fichier est peut-être endommagé. Veuillez le télécharger ou l'obtenir à nouveau.",
     "ko-KR": "플러그인 코어 모델 또는 리소스 파일 확인이 일관되지 않습니다. 파일이 손상되었을 수 있습니다. 다시 다운로드하거나 구하십시오.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(2954-2992)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(3067-3105)"],
     "$id": 31290
   },
   "该插件当前正在运行中，请先切换至其他同类型插件或将其卸载后再试。": {
@@ -169,7 +169,7 @@
     "de-DE": "Dieses Plug-in wird derzeit ausgeführt. Bitte wechseln Sie zu einem anderen Plug-in desselben Typs oder deinstallieren Sie es und versuchen Sie es erneut.",
     "fr-FR": "Ce plug-in est actuellement en cours d'exécution. Veuillez passer à un autre plug-in du même type ou le désinstaller et réessayer.",
     "ko-KR": "이 플러그인은 현재 실행 중입니다. 동일한 유형의 다른 플러그인으로 전환하거나 제거한 후 다시 시도하십시오.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3023-3059)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(3137-3173)"],
     "$id": 31622
   },
   "检测到已安装同等或更高版本的插件，无需重复安装。": {
@@ -182,7 +182,7 @@
     "de-DE": "Es wurde erkannt, dass eine gleichwertige oder höhere Version des Plug-Ins bereits installiert ist und keine Neuinstallation erforderlich ist.",
     "fr-FR": "Il est détecté qu'une version équivalente ou supérieure du plug-in est déjà installée et il n'est pas nécessaire de la réinstaller.",
     "ko-KR": "동일하거나 상위 버전의 플러그인이 이미 설치되어 있는 것으로 확인되어 다시 설치할 필요가 없습니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3084-3112)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(3199-3227)"],
     "$id": 31292
   },
   "插件所需资源与现有组件存在版本冲突，无法直接覆盖。": {
@@ -195,7 +195,7 @@
     "de-DE": "Die vom Plug-in benötigten Ressourcen weisen Versionskonflikte mit vorhandenen Komponenten auf und können nicht direkt überschrieben werden.",
     "fr-FR": "Les ressources requises par le plug-in ont des conflits de version avec les composants existants et ne peuvent pas être directement écrasées.",
     "ko-KR": "플러그인에 필요한 리소스는 기존 구성 요소와 버전 충돌이 있으므로 직접 덮어쓸 수 없습니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3138-3167)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(3254-3283)"],
     "$id": 31293
   },
   "电脑磁盘剩余存储空间不足，无法解压或安装该插件，请清理磁盘空间后重试。": {
@@ -208,7 +208,7 @@
     "de-DE": "Der verbleibende Speicherplatz auf der Computerfestplatte reicht nicht aus, um das Plug-in zu dekomprimieren oder zu installieren. Bitte löschen Sie den Speicherplatz und versuchen Sie es erneut.",
     "fr-FR": "L'espace de stockage restant sur le disque de l'ordinateur est insuffisant pour décompresser ou installer le plug-in. Veuillez libérer de l'espace disque et réessayer.",
     "ko-KR": "컴퓨터 디스크에 플러그인의 압축을 풀거나 설치하기에는 남은 저장 공간이 부족합니다. 디스크 공간을 비운 후 다시 시도하십시오.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3190-3229)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(3307-3346)"],
     "$id": 31294
   },
   "离线安装包内包含非法路径或被禁止的文件，系统已安全拦截。": {
@@ -221,7 +221,7 @@
     "de-DE": "Das Offline-Installationspaket enthält illegale Pfade oder verbotene Dateien und das System hat diese sicher blockiert.",
     "fr-FR": "Le package d'installation hors ligne contient des chemins illégaux ou des fichiers interdits, et le système les a bloqués en toute sécurité.",
     "ko-KR": "오프라인 설치 패키지에는 불법 경로나 금지 파일이 포함되어 있어 시스템이 이를 안전하게 차단했습니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3256-3288)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(3374-3406)"],
     "$id": 31295
   },
   "已有更高优先级的离线包任务正在进行，当前操作已取消。": {
@@ -234,7 +234,7 @@
     "de-DE": "Es wird bereits eine Offline-Paketaufgabe mit höherer Priorität ausgeführt und der aktuelle Vorgang wurde abgebrochen.",
     "fr-FR": "Une tâche de package hors ligne de priorité plus élevée est déjà en cours et l'opération en cours a été annulée.",
     "ko-KR": "이미 진행 중인 우선순위가 더 높은 오프라인 패키지 작업이 있으며 현재 작업이 취소되었습니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3311-3341)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(3430-3460)"],
     "$id": 31296
   },
   "插件资源目录命名格式不合规，安装已取消。": {
@@ -247,7 +247,7 @@
     "de-DE": "Das Benennungsformat des Plug-in-Ressourcenverzeichnisses ist nicht konform und die Installation wurde abgebrochen.",
     "fr-FR": "Le format de dénomination du répertoire des ressources du plug-in n'est pas conforme et l'installation a été annulée.",
     "ko-KR": "플러그인 리소스 디렉터리의 이름 지정 형식이 호환되지 않아 설치가 취소되었습니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3370-3394)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(3490-3514)"],
     "$id": 31297
   },
   "插件描述配置文件格式有误或缺失必要信息，无法读取。": {
@@ -260,7 +260,7 @@
     "de-DE": "Die Plug-in-Beschreibungskonfigurationsdatei hat ein falsches Format oder es fehlen notwendige Informationen und sie kann nicht gelesen werden.",
     "fr-FR": "Le fichier de configuration de description du plug-in a un format incorrect ou ne contient pas les informations nécessaires et n'est pas lisible.",
     "ko-KR": "플러그인 설명 구성 파일의 형식이 잘못되었거나 필요한 정보가 누락되어 읽을 수 없습니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3419-3448)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(3540-3569)"],
     "$id": 31298
   },
   "离线安装包中缺少必要的插件信息描述文件。": {
@@ -273,7 +273,7 @@
     "de-DE": "Die erforderliche Plug-in-Informationsbeschreibungsdatei fehlt im Offline-Installationspaket.",
     "fr-FR": "Le fichier de description des informations de plug-in nécessaire est absent du package d'installation hors ligne.",
     "ko-KR": "필요한 플러그인 정보 설명 파일이 오프라인 설치 패키지에 없습니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3473-3497)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(3595-3619)"],
     "$id": 31299
   },
   "离线总包中未包含任何可用的插件内容。": {
@@ -286,7 +286,7 @@
     "de-DE": "Im Offline-Paket sind keine Plug-in-Inhalte verfügbar.",
     "fr-FR": "Aucun contenu de plug-in n'est disponible dans le package hors ligne.",
     "ko-KR": "오프라인 패키지에서는 플러그인 콘텐츠를 사용할 수 없습니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3518-3540)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(3641-3663)"],
     "$id": 31300
   },
   "当前有其他离线任务正在运行，请稍候再试。": {
@@ -299,7 +299,7 @@
     "de-DE": "Derzeit werden andere Offline-Aufgaben ausgeführt. Bitte versuchen Sie es später noch einmal.",
     "fr-FR": "D'autres tâches hors ligne sont en cours d'exécution. Veuillez réessayer plus tard.",
     "ko-KR": "현재 실행 중인 다른 오프라인 작업이 있습니다. 나중에 다시 시도해 주세요.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3560-3584)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(3684-3708)"],
     "$id": 31301
   },
   "当前没有满足官方安全验证的已安装插件可供导出，请先导入或安装官方插件。": {
@@ -312,7 +312,7 @@
     "de-DE": "Derzeit sind keine Plug-ins installiert, die die offizielle Sicherheitsüberprüfung für den Export erfüllen. Bitte importieren oder installieren Sie zuerst offizielle Plug-Ins.",
     "fr-FR": "Il n’existe actuellement aucun plug-in installé répondant aux critères de sécurité officiels pour l’exportation. Veuillez d'abord importer ou installer les plug-ins officiels.",
     "ko-KR": "현재 내보내기에 대한 공식 보안 검증을 충족하는 플러그인이 설치되어 있지 않습니다. 먼저 공식 플러그인을 가져오거나 설치하세요.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3605-3644)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(3730-3769)"],
     "$id": 31623
   },
   "检测到部分插件资源文件不完整或已损坏，无法打包导出，请修复后再试。": {
@@ -325,7 +325,7 @@
     "de-DE": "Es wurde festgestellt, dass einige Plug-in-Ressourcendateien unvollständig oder beschädigt sind und nicht gepackt und exportiert werden können. Bitte reparieren Sie es und versuchen Sie es erneut.",
     "fr-FR": "Il est détecté que certains fichiers de ressources du plug-in sont incomplets ou endommagés et ne peuvent pas être empaquetés ni exportés. Veuillez réparer et réessayer.",
     "ko-KR": "일부 플러그인 리소스 파일이 불완전하거나 손상되어 패키지화하고 내보낼 수 없는 것으로 감지되었습니다. 수리한 후 다시 시도하십시오.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3678-3722)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(3804-3849)"],
     "$id": 31624
   },
   "写入导出文件失败，请检查目标磁盘空间及写入权限后重试。": {
@@ -338,7 +338,7 @@
     "de-DE": "Die Exportdatei konnte nicht geschrieben werden. Bitte überprüfen Sie den Speicherplatz und die Schreibberechtigungen auf der Zielfestplatte und versuchen Sie es erneut.",
     "fr-FR": "Échec de l'écriture du fichier d'exportation. Veuillez vérifier l'espace disque cible et les autorisations d'écriture, puis réessayer.",
     "ko-KR": "내보내기 파일을 쓰지 못했습니다. 대상 디스크 공간과 쓰기 권한을 확인한 후 다시 시도하십시오.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3746-3777)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(3875-3906)"],
     "$id": 31625
   },
   "已取消本次离线包操作。": {
@@ -351,7 +351,7 @@
     "de-DE": "Dieser Offline-Paketvorgang wurde abgebrochen.",
     "fr-FR": "Cette opération de package hors ligne a été annulée.",
     "ko-KR": "이 오프라인 패키지 작업이 취소되었습니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3795-3810)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(3925-3940)"],
     "$id": 31626
   },
   "系统正在执行其他校验或导出任务，请稍候再试。": {
@@ -364,7 +364,7 @@
     "de-DE": "Das System führt gerade andere Verifizierungs- oder Exportaufgaben aus. Bitte versuchen Sie es später noch einmal.",
     "fr-FR": "Le système effectue d'autres tâches de vérification ou d'exportation. Veuillez réessayer plus tard.",
     "ko-KR": "시스템에서 다른 확인 또는 내보내기 작업을 수행 중입니다. 나중에 다시 시도해 주세요.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3823-3849)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(3954-3980)"],
     "$id": 31627
   },
   "当前有离线包正在解压或安装中，请稍候再试。": {
@@ -377,7 +377,7 @@
     "de-DE": "Derzeit werden Offline-Pakete dekomprimiert oder installiert. Bitte versuchen Sie es später erneut.",
     "fr-FR": "Des packages hors ligne sont actuellement en cours de décompression ou d'installation. Veuillez réessayer plus tard.",
     "ko-KR": "현재 압축을 풀거나 설치하는 오프라인 패키지가 있습니다. 나중에 다시 시도해 주세요.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3869-3894)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(4001-4026)"],
     "$id": 31302
   },
   "离线包安全校验连续异常，为保障系统安全已停止处理该文件。": {
@@ -390,7 +390,7 @@
     "de-DE": "Die Offline-Sicherheitsüberprüfung des Pakets war weiterhin abnormal und die Verarbeitung der Datei wurde gestoppt, um die Systemsicherheit zu gewährleisten.",
     "fr-FR": "La vérification de la sécurité du package hors ligne est toujours anormale et le traitement du fichier a été arrêté pour garantir la sécurité du système.",
     "ko-KR": "오프라인 패키지 보안 검증이 계속해서 비정상적이며, 시스템 보안 확보를 위해 파일 처리를 중단했습니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3927-3959)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(4060-4092)"],
     "$id": 31303
   },
   "网络连接超时或中断，请检查网络后重试。": {
@@ -403,7 +403,7 @@
     "de-DE": "Die Netzwerkverbindung ist abgelaufen oder wurde unterbrochen. Bitte überprüfen Sie das Netzwerk und versuchen Sie es erneut.",
     "fr-FR": "La connexion réseau a expiré ou a été interrompue. Veuillez vérifier le réseau et réessayer.",
     "ko-KR": "네트워크 연결 시간이 초과되었거나 중단되었습니다. 네트워크를 확인하고 다시 시도해 주세요.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(3981-4004)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(4115-4138)"],
     "$id": 31304
   },
   "系统权限不足，无法写入插件目录，请以管理员身份运行或检查目录权限。": {
@@ -416,7 +416,7 @@
     "de-DE": "Unzureichende Systemberechtigungen zum Schreiben in das Plug-in-Verzeichnis. Bitte führen Sie es als Administrator aus oder überprüfen Sie die Verzeichnisberechtigungen.",
     "fr-FR": "Autorisations système insuffisantes pour écrire dans le répertoire du plug-in, veuillez l'exécuter en tant qu'administrateur ou vérifier les autorisations du répertoire.",
     "ko-KR": "플러그인 디렉터리에 쓸 수 있는 시스템 권한이 부족합니다. 관리자로 실행하거나 디렉터리 권한을 확인하세요.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4030-4067)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(4165-4202)"],
     "$id": 31305
   },
   "当前电脑硬件或系统架构不受该插件支持。": {
@@ -429,7 +429,7 @@
     "de-DE": "Die aktuelle Computerhardware oder Systemarchitektur wird von diesem Plug-in nicht unterstützt.",
     "fr-FR": "Le matériel informatique ou l'architecture système actuelle n'est pas pris en charge par ce plug-in.",
     "ko-KR": "현재 컴퓨터 하드웨어 또는 시스템 아키텍처는 이 플러그인에서 지원되지 않습니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4092-4115)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(4228-4251)"],
     "$id": 31306
   },
   "文件完整性校验失败，请重新获取安装包。": {
@@ -442,7 +442,7 @@
     "de-DE": "Die Prüfung der Dateiintegrität ist fehlgeschlagen. Bitte besorgen Sie sich das Installationspaket erneut.",
     "fr-FR": "La vérification de l'intégrité des fichiers a échoué. Veuillez récupérer le package d'installation.",
     "ko-KR": "파일 무결성 검사에 실패했습니다. 설치 패키지를 다시 받으십시오.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4139-4162)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(4276-4299)"],
     "$id": 31307
   },
   "组件资源下载失败，请检查网络连接后重试。": {
@@ -455,7 +455,7 @@
     "de-DE": "Der Download der Komponentenressource ist fehlgeschlagen. Bitte überprüfen Sie die Netzwerkverbindung und versuchen Sie es erneut.",
     "fr-FR": "Le téléchargement des ressources du composant a échoué. Veuillez vérifier la connexion réseau et réessayer.",
     "ko-KR": "구성요소 리소스 다운로드에 실패했습니다. 네트워크 연결을 확인한 후 다시 시도해 주세요.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4186-4210)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(4324-4348)"],
     "$id": 31308
   },
   "未找到对应的插件信息，可能已被移除。": {
@@ -468,7 +468,7 @@
     "de-DE": "Die entsprechenden Plug-in-Informationen wurden nicht gefunden und wurden möglicherweise entfernt.",
     "fr-FR": "Les informations correspondantes sur le plug-in n'ont pas été trouvées et ont peut-être été supprimées.",
     "ko-KR": "해당 플러그인 정보를 찾을 수 없어 제거되었을 수 있습니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4235-4257)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(4374-4396)"],
     "$id": 31309
   },
   "插件激活校验未通过，已自动为您恢复至原运行状态。": {
@@ -481,7 +481,7 @@
     "de-DE": "Die Überprüfung der Plug-in-Aktivierung ist fehlgeschlagen und wurde für Sie automatisch in den ursprünglichen Betriebszustand zurückversetzt.",
     "fr-FR": "La vérification de l'activation du plug-in a échoué et a été automatiquement restaurée à son état d'exécution d'origine pour vous.",
     "ko-KR": "플러그인 활성화 확인에 실패했으며 자동으로 원래 실행 상태로 복원되었습니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4281-4309)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(4421-4449)"],
     "$id": 31628
   },
   "检测到插件模型文件不完整或损坏，请重新下载修复。": {
@@ -494,7 +494,7 @@
     "de-DE": "Es wurde festgestellt, dass die Plug-in-Modelldatei unvollständig oder beschädigt ist. Laden Sie sie bitte erneut herunter, um das Problem zu beheben.",
     "fr-FR": "Il est détecté que le fichier de modèle de plug-in est incomplet ou endommagé, veuillez le télécharger à nouveau pour le réparer.",
     "ko-KR": "플러그인 모델 파일이 불완전하거나 손상된 것으로 감지되었습니다. 다시 다운로드하여 수정하시기 바랍니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4331-4359)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(4472-4500)"],
     "$id": 31629
   },
   "插件快速检测超时，后台正在校验中。": {
@@ -507,7 +507,7 @@
     "de-DE": "Die Plug-in-Schnellerkennung ist abgelaufen und wird im Hintergrund überprüft.",
     "fr-FR": "La détection rapide du plug-in a expiré et est en cours de vérification en arrière-plan.",
     "ko-KR": "플러그인 빠른 감지 시간이 초과되어 백그라운드에서 확인 중입니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4386-4407)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(4528-4549)"],
     "$id": 31630
   },
   "当前分类必须保留一个启用的插件，无法直接停用。": {
@@ -520,7 +520,7 @@
     "de-DE": "Die aktuelle Kategorie muss ein aktiviertes Plug-In behalten und kann nicht direkt deaktiviert werden.",
     "fr-FR": "La catégorie actuelle doit conserver un plug-in activé et ne peut pas être désactivée directement.",
     "ko-KR": "현재 카테고리는 활성화된 플러그인을 유지해야 하며 직접 비활성화할 수 없습니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4435-4462)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(4578-4605)"],
     "$id": 31631
   },
   "基础 AI 引擎为系统核心底座，必须保持激活，无法直接停用。": {
@@ -533,7 +533,7 @@
     "de-DE": "Die grundlegende KI-Engine ist die Kernbasis des Systems und muss aktiviert bleiben und kann nicht direkt deaktiviert werden.",
     "fr-FR": "Le moteur d’IA de base est la base du système et doit rester activé et ne peut pas être désactivé directement.",
     "ko-KR": "기본 AI 엔진은 시스템의 핵심 기반으로 활성화된 상태를 유지해야 하며 직접 비활성화할 수 없습니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4502-4536)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(4646-4680)"],
     "$id": 31632
   },
   "必须先安装并启用另一款可替换的基础 AI 引擎，才能卸载当前使用的引擎。": {
@@ -546,7 +546,7 @@
     "de-DE": "Eine alternative Basis-KI-Engine muss installiert und aktiviert werden, bevor die aktuell verwendete Engine deinstalliert werden kann.",
     "fr-FR": "Un moteur AI de base alternatif doit être installé et activé avant que le moteur actuellement utilisé puisse être désinstallé.",
     "ko-KR": "현재 사용되는 엔진을 제거하려면 먼저 대체 기본 AI 엔진을 설치하고 활성화해야 합니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4580-4627)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(4725-4773)"],
     "$id": 31633
   },
   "配置格式不正确，请检查输入内容后重试。": {
@@ -559,7 +559,7 @@
     "de-DE": "Das Konfigurationsformat ist falsch. Bitte überprüfen Sie den Eingabeinhalt und versuchen Sie es erneut.",
     "fr-FR": "Le format de configuration est incorrect, veuillez vérifier le contenu d'entrée et réessayer.",
     "ko-KR": "구성 형식이 잘못되었습니다. 입력 내용을 확인하고 다시 시도해 주세요.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4660-4683)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(4808-4831)"],
     "$id": 31634
   },
   "插件操作发生未知异常，请稍后重试。": {
@@ -572,7 +572,7 @@
     "de-DE": "Während des Plug-in-Vorgangs ist eine unbekannte Ausnahme aufgetreten. Bitte versuchen Sie es später erneut.",
     "fr-FR": "Une exception inconnue s'est produite lors du fonctionnement du plug-in. Veuillez réessayer plus tard.",
     "ko-KR": "플러그인 작업 중 알 수 없는 예외가 발생했습니다. 나중에 다시 시도해 주세요.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4705-4726)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(4854-4875)"],
     "$id": 31310
   },
   "文件夹路径不能包含中文，请选择纯英文路径": {
@@ -585,7 +585,7 @@
     "de-DE": "Der Ordnerpfad darf keine chinesischen Zeichen enthalten. Bitte wählen Sie einen rein englischen Pfad.",
     "fr-FR": "Le chemin du dossier ne peut pas contenir de caractères chinois, veuillez sélectionner un chemin en anglais pur.",
     "ko-KR": "폴더 경로에는 한자가 포함될 수 없습니다. 순수 영어 경로를 선택하십시오.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4795-4819)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(4946-4970)"],
     "$id": 31311
   },
   "文件夹路径中不能有空格，请去掉空格后重试": {
@@ -598,7 +598,7 @@
     "de-DE": "Der Ordnerpfad darf keine Leerzeichen enthalten. Bitte entfernen Sie die Leerzeichen und versuchen Sie es erneut.",
     "fr-FR": "Il ne peut pas y avoir d'espaces dans le chemin du dossier. Veuillez supprimer les espaces et réessayer.",
     "ko-KR": "폴더 경로에는 공백이 있어서는 안 됩니다. 공백을 제거하고 다시 시도하십시오.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4847-4871)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(4999-5023)"],
     "$id": 31312
   },
   "文件夹名称不能使用系统保留字（如 CON、PRN 等）": {
@@ -611,7 +611,7 @@
     "de-DE": "Ordnernamen dürfen keine vom System reservierten Wörter (wie CON, PRN usw.) verwenden.",
     "fr-FR": "Les noms de dossiers ne peuvent pas utiliser de mots réservés au système (tels que CON, PRN, etc.)",
     "ko-KR": "폴더 이름에는 시스템 예약어(예: CON, PRN 등)를 사용할 수 없습니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4905-4936)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(5058-5089)"],
     "$id": 31313
   },
   "文件夹层级太深，请选择路径更短的文件夹": {
@@ -624,7 +624,7 @@
     "de-DE": "Die Ordnerebene ist zu tief. Bitte wählen Sie einen Ordner mit einem kürzeren Pfad",
     "fr-FR": "Le niveau du dossier est trop profond, veuillez choisir un dossier avec un chemin plus court",
     "ko-KR": "폴더 수준이 너무 깊습니다. 경로가 더 짧은 폴더를 선택하세요.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(4958-4981)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(5112-5135)"],
     "$id": 31314
   },
   "该文件夹没有写入权限，请更换其他磁盘位置": {
@@ -637,7 +637,7 @@
     "de-DE": "Dieser Ordner hat keine Schreibberechtigung. Bitte wechseln Sie zu einem anderen Speicherort auf der Festplatte",
     "fr-FR": "Ce dossier n'a pas d'autorisation d'écriture, veuillez le modifier vers un autre emplacement de disque",
     "ko-KR": "이 폴더에는 쓰기 권한이 없습니다. 다른 디스크 위치로 변경하세요.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(5007-5031)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(5162-5186)"],
     "$id": 31315
   },
   "所选位置是一个文件，请选择一个文件夹": {
@@ -650,7 +650,7 @@
     "de-DE": "Der ausgewählte Speicherort ist eine Datei. Bitte wählen Sie einen Ordner aus",
     "fr-FR": "L'emplacement sélectionné est un fichier, veuillez sélectionner un dossier",
     "ko-KR": "선택한 위치는 파일입니다. 폴더를 선택하세요.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(5060-5082)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(5216-5238)"],
     "$id": 31316
   },
   "请选择完整的磁盘绝对路径": {
@@ -663,7 +663,7 @@
     "de-DE": "Bitte wählen Sie den vollständigen absoluten Festplattenpfad aus",
     "fr-FR": "Veuillez sélectionner le chemin absolu complet du disque",
     "ko-KR": "전체 절대 디스크 경로를 선택하십시오.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(5108-5124)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(5265-5281)"],
     "$id": 31317
   },
   "不支持局域网共享路径，请选择本地磁盘文件夹": {
@@ -676,7 +676,7 @@
     "de-DE": "Der freigegebene LAN-Pfad wird nicht unterstützt. Bitte wählen Sie einen lokalen Festplattenordner aus",
     "fr-FR": "Le chemin partagé LAN n'est pas pris en charge, veuillez sélectionner un dossier de disque local",
     "ko-KR": "LAN 공유 경로는 지원되지 않습니다. 로컬 디스크 폴더를 선택하세요.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(5151-5176)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(5309-5334)"],
     "$id": 31318
   },
   "所选文件夹与当前正在使用的插件目录相同，无需迁移": {
@@ -689,7 +689,7 @@
     "de-DE": "Der ausgewählte Ordner ist derselbe wie das aktuell verwendete Plugin-Verzeichnis, eine Migration ist nicht erforderlich",
     "fr-FR": "Le dossier sélectionné est le même que le répertoire du plugin actuellement utilisé, aucune migration n'est requise",
     "ko-KR": "선택한 폴더는 현재 사용 중인 플러그인 디렉터리와 동일하므로 마이그레이션이 필요하지 않습니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(5200-5228)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(5359-5387)"],
     "$id": 31319
   },
   "目标磁盘可用空间不足，请清理磁盘后重试": {
@@ -702,7 +702,7 @@
     "de-DE": "Auf der Zielfestplatte ist nicht genügend freier Speicherplatz vorhanden. Bitte reinigen Sie die Festplatte und versuchen Sie es erneut.",
     "fr-FR": "Le disque cible ne dispose pas d'un espace libre suffisant. Veuillez nettoyer le disque et réessayer.",
     "ko-KR": "대상 디스크에 여유 공간이 부족합니다. 디스크를 청소한 후 다시 시도하십시오.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(5255-5278)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(5415-5438)"],
     "$id": 31320
   },
   "不能选择系统核心文件夹或磁盘根目录，请选择普通自定义文件夹": {
@@ -715,7 +715,7 @@
     "de-DE": "Der Systemkernordner oder das Festplattenstammverzeichnis können nicht ausgewählt werden. Bitte wählen Sie einen normalen benutzerdefinierten Ordner aus.",
     "fr-FR": "Le dossier principal du système ou le répertoire racine du disque ne peut pas être sélectionné. Veuillez sélectionner un dossier personnalisé normal.",
     "ko-KR": "시스템 코어 폴더 또는 디스크 루트 디렉터리는 선택할 수 없습니다. 일반 사용자 정의 폴더를 선택하세요.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(5307-5340)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(5468-5501)"],
     "$id": 31321
   },
   "插件目录变更需重启软件生效，暂无法进行其他操作": {
@@ -728,7 +728,7 @@
     "de-DE": "Änderungen am Plug-in-Verzeichnis erfordern einen Neustart der Software, damit sie wirksam werden, und andere Vorgänge sind vorübergehend nicht verfügbar.",
     "fr-FR": "Les modifications apportées au répertoire des plug-ins nécessitent le redémarrage du logiciel pour prendre effet et les autres opérations sont temporairement indisponibles.",
     "ko-KR": "플러그인 디렉토리에 대한 변경 사항을 적용하려면 소프트웨어를 다시 시작해야 하며 다른 작업은 일시적으로 사용할 수 없습니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(5371-5398)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(5533-5560)"],
     "$id": 31322
   },
   "迁移过程中磁盘空间耗尽，已自动取消并安全还原": {
@@ -741,7 +741,7 @@
     "de-DE": "Während der Migration war der Speicherplatz erschöpft, sie wurde automatisch abgebrochen und sicher wiederhergestellt",
     "fr-FR": "L'espace disque a été épuisé lors de la migration, il a été automatiquement annulé et restauré en toute sécurité",
     "ko-KR": "마이그레이션 중 디스크 공간이 소진되어 자동 취소되었으며 안전하게 복원되었습니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(5433-5459)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(5596-5622)"],
     "$id": 31323
   },
   "已取消插件目录迁移，保持原目录不变": {
@@ -754,7 +754,7 @@
     "de-DE": "Die Migration des Plug-in-Verzeichnisses wurde abgebrochen und das ursprüngliche Verzeichnis bleibt unverändert.",
     "fr-FR": "La migration du répertoire de plug-in a été annulée et le répertoire d'origine reste inchangé.",
     "ko-KR": "플러그인 디렉토리 마이그레이션이 취소되었으며 원래 디렉토리는 변경되지 않은 상태로 유지됩니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(5487-5508)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(5651-5672)"],
     "$id": 31324
   },
   "目录迁移已进入最后提交阶段，无法取消，请稍候": {
@@ -767,7 +767,7 @@
     "de-DE": "Die Verzeichnismigration ist in die letzte Übermittlungsphase eingetreten und kann nicht abgebrochen werden. Bitte warten.",
     "fr-FR": "La migration de l'annuaire est entrée dans la phase de soumission finale et ne peut pas être annulée. S'il vous plaît, attendez.",
     "ko-KR": "디렉터리 마이그레이션이 최종 제출 단계에 진입했으며 취소할 수 없습니다. 기다리세요.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(5542-5568)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(5707-5733)"],
     "$id": 31325
   },
   "文件复制过程中发现损坏，已自动安全回滚": {
@@ -780,7 +780,7 @@
     "de-DE": "Beim Kopieren der Datei wurde ein Schaden festgestellt, der automatisch und sicher behoben wurde.",
     "fr-FR": "Des dommages ont été constatés lors de la copie des fichiers et ont été automatiquement et en toute sécurité annulés.",
     "ko-KR": "파일 복사 중 손상이 발견되어 자동으로 안전하게 롤백되었습니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(5590-5613)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(5756-5779)"],
     "$id": 31326
   },
   "不支持包含快捷方式或符号链接的目录": {
@@ -793,7 +793,7 @@
     "de-DE": "Verzeichnisse mit Verknüpfungen oder symbolischen Links werden nicht unterstützt",
     "fr-FR": "Les répertoires contenant des raccourcis ou des liens symboliques ne sont pas pris en charge",
     "ko-KR": "바로가기나 심볼릭 링크가 포함된 디렉터리는 지원되지 않습니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(5638-5659)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(5805-5826)"],
     "$id": 31327
   },
   "目标文件夹中的旧模型文件正被其他程序占用，无法覆盖": {
@@ -806,7 +806,7 @@
     "de-DE": "Die alte Modelldatei im Zielordner wird von einem anderen Programm verwendet und kann nicht überschrieben werden.",
     "fr-FR": "L'ancien fichier modèle dans le dossier de destination est utilisé par un autre programme et ne peut pas être écrasé.",
     "ko-KR": "대상 폴더에 있는 이전 모델 파일은 다른 프로그램에서 사용 중이므로 덮어쓸 수 없습니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(5688-5717)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(5856-5885)"],
     "$id": 31328
   },
   "网络连接缓慢或超时，正在自动切换备用网络重试": {
@@ -819,7 +819,7 @@
     "de-DE": "Die Netzwerkverbindung ist langsam oder es ist eine Zeitüberschreitung aufgetreten. Es wird automatisch zum Backup-Netzwerk gewechselt, um es erneut zu versuchen.",
     "fr-FR": "La connexion réseau est lente ou a expiré. Il passe automatiquement au réseau de sauvegarde pour réessayer.",
     "ko-KR": "네트워크 연결이 느리거나 시간이 초과되었습니다. 다시 시도하기 위해 자동으로 백업 네트워크로 전환됩니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(5741-5767)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(5910-5936)"],
     "$id": 31329
   },
   "文件正在被其他程序占用，请关闭相关应用后重试。": {
@@ -833,8 +833,8 @@
     "fr-FR": "Le fichier est occupé par d'autres programmes. Veuillez fermer l'application concernée et réessayer.",
     "ko-KR": "파일이 다른 프로그램에 의해 사용되고 있습니다. 해당 응용 프로그램을 닫고 다시 시도하십시오.",
     "$files": [
-      "src/renderer/stores/plugin-center-store.ts(6529-6556)",
-      "src/renderer/stores/plugin-center-store.ts(6748-6775)"
+      "src/renderer/stores/plugin-center-store.ts(7722-7749)",
+      "src/renderer/stores/plugin-center-store.ts(7951-7978)"
     ],
     "$id": 31330
   },
@@ -848,7 +848,7 @@
     "de-DE": "Classic Light KI-Engine (Classic Light)",
     "fr-FR": "Moteur AI Light classique (Classic Light)",
     "ko-KR": "클래식 라이트 AI 엔진(클래식 라이트)",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(13654-13684)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(15052-15082)"],
     "$id": 31331
   },
   "基础 AI 引擎": {
@@ -862,8 +862,8 @@
     "fr-FR": "Moteur d'IA de base",
     "ko-KR": "기본 AI 엔진",
     "$files": [
-      "src/renderer/stores/plugin-center-store.ts(14129-14141)",
-      "src/renderer/stores/plugin-center-store.ts(14993-15005)"
+      "src/renderer/stores/plugin-center-store.ts(15541-15553)",
+      "src/renderer/stores/plugin-center-store.ts(16435-16447)"
     ],
     "$id": 31332
   },
@@ -877,7 +877,7 @@
     "de-DE": "[Dateien und Bilder nach Bedeutung suchen] Suchen Sie schnell nach Fotos und Dokumenten basierend auf der allgemeinen Bedeutung Ihrer Beschreibung. Da sie nur sehr wenig Speicher beanspruchen, können selbst alte Computer und dünne und leichte Notebooks der unteren Preisklasse reibungslos laufen. Unterstützt kein Audio und Video",
     "fr-FR": "[Rechercher des fichiers et des images par signification] Recherchez rapidement des photos et des documents en fonction de la signification générale de votre description. Occupant très peu de mémoire, même les vieux ordinateurs et les ordinateurs portables bas de gamme fins et légers peuvent fonctionner sans problème. Ne prend pas en charge l'audio et la vidéo",
     "ko-KR": "[의미로 파일, 그림 찾기] 설명의 일반적인 의미를 기준으로 사진, 문서를 빠르게 검색하세요. 메모리를 거의 차지하지 않아 오래된 컴퓨터와 얇고 가벼운 저가형 노트북도 원활하게 작동할 수 있습니다. 오디오 및 비디오를 지원하지 않습니다",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(14247-14323)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(15664-15741)"],
     "$id": 31333
   },
   "配置要求极低 · 老电脑与轻薄本首选": {
@@ -890,7 +890,7 @@
     "de-DE": "Extrem geringer Konfigurationsaufwand · Die erste Wahl für alte Computer und dünne und leichte Laptops",
     "fr-FR": "Exigences de configuration extrêmement faibles · Le premier choix pour les vieux ordinateurs et les ordinateurs portables fins et légers",
     "ko-KR": "매우 낮은 구성 요구 사항 · 오래된 컴퓨터와 얇고 가벼운 노트북을 위한 첫 번째 선택",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(14403-14425)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(15825-15847)"],
     "$id": 31334
   },
   "统一全模态 AI 引擎 (Gemma Unified)": {
@@ -903,7 +903,7 @@
     "de-DE": "Einheitliche, vollmodale KI-Engine (Gemma Unified)",
     "fr-FR": "Moteur d'IA tout modal unifié (Gemma Unified)",
     "ko-KR": "통합 올모달 AI 엔진(Gemma Unified)",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(14517-14548)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(15945-15976)"],
     "$id": 31335
   },
   "【更聪明的全能搜索大脑】对复杂句子和图片、音视频的理解更深入精准，找东西更懂你的心思。推荐 8GB 或以上内存电脑使用。": {
@@ -916,7 +916,7 @@
     "de-DE": "[Intelligenteres Allround-Suchgehirn] Es kann komplexe Sätze, Bilder, Audios und Videos tiefer und genauer verstehen und Ihre Gedanken bei der Suche nach Dingen besser verstehen. Empfohlen für Computer mit 8 GB oder mehr Speicher.",
     "fr-FR": "[Cerveau de recherche complet plus intelligent] Il peut comprendre des phrases complexes, des images, des audios et des vidéos plus profondément et plus précisément, et il peut mieux comprendre vos pensées lorsque vous recherchez des choses. Recommandé pour les ordinateurs dotés de 8 Go ou plus de mémoire.",
     "ko-KR": "[더 똑똑해진 만능 검색 두뇌] 복잡한 문장, 그림, 오디오, 동영상을 더 깊고 정확하게 이해할 수 있으며, 물건을 찾을 때의 생각을 더 잘 이해할 수 있습니다. 메모리가 8GB 이상인 컴퓨터에 권장됩니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(15111-15184)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(16558-16632)"],
     "$id": 31336
   },
   "推荐配置 · 电脑内存 8GB 或以上": {
@@ -929,7 +929,7 @@
     "de-DE": "Empfohlene Konfiguration · Computerspeicher 8 GB oder mehr",
     "fr-FR": "Configuration recommandée · Mémoire de l'ordinateur 8 Go ou plus",
     "ko-KR": "권장 구성 · 컴퓨터 메모리 8GB 이상",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(15268-15291)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(16720-16743)"],
     "$id": 31337
   },
   "轻量CPU生成式引擎 (Pocket CPU)": {
@@ -942,7 +942,7 @@
     "de-DE": "Leichte CPU-generative Engine (Pocket-CPU)",
     "fr-FR": "Moteur générateur de CPU léger (Pocket CPU)",
     "ko-KR": "경량 CPU 생성 엔진(포켓 CPU)",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(15382-15409)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(16840-16867)"],
     "$id": 31338
   },
   "生成式引擎": {
@@ -956,7 +956,7 @@
     "fr-FR": "Moteur génératif",
     "ko-KR": "생성 엔진",
     "$files": [
-      "src/renderer/stores/plugin-center-store.ts(15850-15859)",
+      "src/renderer/stores/plugin-center-store.ts(17322-17331)",
       "src/renderer/stores/settings-store.ts(3720-3729)",
       "src/renderer/stores/settings-store.ts(4756-4765)"
     ],
@@ -972,7 +972,7 @@
     "de-DE": "[Standard auf dünnen und leichten Büro-Laptops] Unterstützt die intelligente Tiefenreinigung von Dateinamen, die Extraktion von Beschreibungen und die Tiefenanalyse von Inhalten. Dieses Plug-in ist nicht erforderlich, wenn die Firecore-Engine aktiviert ist.",
     "fr-FR": "[Standard sur les ordinateurs portables de bureau fins et légers] Prend en charge le polissage intelligent en profondeur des noms de fichiers, l'extraction de descriptions et l'analyse approfondie du contenu. Ce plug-in n'est pas requis si le moteur Firecore est activé.",
     "ko-KR": "[얇고 가벼운 사무용 노트북 표준] 지능형 파일명 심층연마, 설명 추출, 컨텐츠 심층분석을 지원합니다. Firecore 엔진이 활성화된 경우에는 이 플러그인이 필요하지 않습니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(15966-16029)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(17443-17507)"],
     "$id": 31339
   },
   "配置要求极低 · 纯CPU运行": {
@@ -985,7 +985,7 @@
     "de-DE": "Extrem niedrige Konfigurationsanforderungen · Reiner CPU-Betrieb",
     "fr-FR": "Exigences de configuration extrêmement faibles · Fonctionnement pur du processeur",
     "ko-KR": "매우 낮은 구성 요구 사항 · 순수한 CPU 작동",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(16109-16128)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(17591-17610)"],
     "$id": 31340
   },
   "敏感内容与 NSFW 分级识别": {
@@ -998,7 +998,7 @@
     "de-DE": "Identifizierung sensibler Inhalte und NSFW-Bewertung",
     "fr-FR": "Contenu sensible et identification de la classification NSFW",
     "ko-KR": "민감한 콘텐츠 및 NSFW 등급 식별",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(16211-16230)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(17699-17718)"],
     "$id": 31341
   },
   "文件内容萃取": {
@@ -1012,8 +1012,8 @@
     "fr-FR": "Extraction du contenu du fichier",
     "ko-KR": "파일 콘텐츠 추출",
     "$files": [
-      "src/renderer/stores/plugin-center-store.ts(16672-16682)",
-      "src/renderer/stores/plugin-center-store.ts(17533-17543)"
+      "src/renderer/stores/plugin-center-store.ts(18174-18184)",
+      "src/renderer/stores/plugin-center-store.ts(19065-19075)"
     ],
     "$id": 31342
   },
@@ -1027,7 +1027,7 @@
     "de-DE": "[Markierung privater und sensibler Bilder und Texte] Identifizieren Sie automatisch private und sensible Bilder und Dokumente/AIGC-Texte mit expliziten und sensiblen Beschreibungen und markieren Sie sie, um Peinlichkeiten bei der Anzeige auf einem Bildschirm zu vermeiden. Alle Computer laufen extrem schnell.",
     "fr-FR": "[Marquage d'images et de textes privés et sensibles] Identifiez automatiquement les images et documents/textes AIGC privés et sensibles contenant des descriptions explicites et sensibles et marquez-les pour éviter tout embarras lors de la visualisation sur un écran. Tous les ordinateurs fonctionnent extrêmement vite.",
     "ko-KR": "[개인적이고 민감한 이미지 및 텍스트 마킹] 노골적이고 민감한 설명이 포함된 개인적이고 민감한 이미지와 문서/AIGC 텍스트를 자동으로 식별하고 표시하여 화면에서 볼 때 당황스럽지 않도록 합니다. 모든 컴퓨터는 매우 빠르게 실행됩니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(16791-16871)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(18298-18379)"],
     "$id": 31343
   },
   "配置要求极低 · 极速处理": {
@@ -1040,7 +1040,7 @@
     "de-DE": "Minimale Konfigurationsanforderungen · Extrem schnelle Verarbeitung",
     "fr-FR": "Exigences de configuration minimales · Traitement extrêmement rapide",
     "ko-KR": "최소한의 구성 요구 사항 · 매우 빠른 처리",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(16951-16968)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(18463-18480)"],
     "$id": 31344
   },
   "语音识别与字幕提取 ASR (SenseVoice)": {
@@ -1053,7 +1053,7 @@
     "de-DE": "Spracherkennung und Untertitelextraktion ASR (SenseVoice)",
     "fr-FR": "Reconnaissance vocale et extraction de sous-titres ASR (SenseVoice)",
     "ko-KR": "음성인식 및 자막 추출 ASR(SenseVoice)",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(17063-17093)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(18581-18611)"],
     "$id": 31345
   },
   "【录音与视频自动转文字】听懂视频和录音里的说话内容并提取字幕，可以直接搜索“某句话是谁说的”。较耗算力，推荐 16GB 内存或有显卡。": {
@@ -1066,7 +1066,7 @@
     "de-DE": "[Aufzeichnungen und Videos automatisch in Text umwandeln] Verstehen Sie den Sprachinhalt in Videos und Aufzeichnungen und extrahieren Sie Untertitel. Sie können direkt nach „Wer hat einen bestimmten Satz gesagt“ suchen? Es verbraucht mehr Rechenleistung, daher werden 16 GB Arbeitsspeicher oder eine Grafikkarte empfohlen.",
     "fr-FR": "[Convertir automatiquement les enregistrements et les vidéos en texte] Comprenez le contenu vocal des vidéos et des enregistrements et extrayez les sous-titres. Vous pouvez rechercher directement « qui a dit une certaine phrase ». Il consomme plus de puissance de calcul, donc 16 Go de mémoire ou une carte graphique sont recommandés.",
     "ko-KR": "[녹화, 동영상을 텍스트로 자동 변환] 동영상, 녹취 내 음성 내용을 이해하고 자막을 추출합니다. \"어떤 문장을 누가 말했는지\"를 직접 검색할 수 있습니다. 컴퓨팅 파워를 더 많이 소모하므로 16GB 메모리나 그래픽 카드를 권장합니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(17652-17732)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(19189-19270)"],
     "$id": 31346
   },
   "较耗算力 · 推荐 16GB 内存或有显卡": {
@@ -1079,7 +1079,7 @@
     "de-DE": "Mehr Rechenleistung erforderlich · 16 GB Speicher oder Grafikkarte empfohlen",
     "fr-FR": "Plus de puissance de calcul requise · Mémoire de 16 Go ou carte graphique recommandée",
     "ko-KR": "더 많은 컴퓨팅 성능 필요 · 16GB 메모리 또는 그래픽 카드 권장",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(17810-17835)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(19352-19377)"],
     "$id": 31347
   },
   "个性声音克隆朗读 (Moss-TTS)": {
@@ -1092,7 +1092,7 @@
     "de-DE": "Personalisiertes Voice-Clone-Lesen (Moss-TTS)",
     "fr-FR": "Lecture personnalisée du clone vocal (Moss-TTS)",
     "ko-KR": "맞춤형 음성클론리딩(Moss-TTS)",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(17916-17939)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(19464-19487)"],
     "$id": 31348
   },
   "语音合成 (TTS)": {
@@ -1106,8 +1106,8 @@
     "fr-FR": "Synthèse vocale (TTS)",
     "ko-KR": "음성 합성",
     "$files": [
-      "src/renderer/stores/plugin-center-store.ts(18365-18379)",
-      "src/renderer/stores/plugin-center-store.ts(19169-19183)",
+      "src/renderer/stores/plugin-center-store.ts(19927-19941)",
+      "src/renderer/stores/plugin-center-store.ts(20761-20775)",
       "src/renderer/stores/settings-store.ts(3850-3864)",
       "src/renderer/stores/settings-store.ts(5296-5310)"
     ],
@@ -1123,7 +1123,7 @@
     "de-DE": "[Unterstützt das Klonen exklusiver Stimmen] Integrierter Sound-Extraktor, laden Sie eine Aufnahme hoch, um exklusive Stimmen zum Lesen von Artikeln zu klonen. Unterstützt über 50 handverlesene Sounds und benutzerdefinierte Klone.",
     "fr-FR": "[Prend en charge le clonage de voix exclusives] Extracteur de son intégré, téléchargez un enregistrement pour cloner des voix exclusives pour lire des articles. Prend en charge plus de 50 sons triés sur le volet et clones personnalisés.",
     "ko-KR": "[전용 음성 복제 지원] 내장된 사운드 추출기, 기사를 읽으려면 독점 음성을 복제하는 녹음을 업로드하세요. 50개 이상의 엄선된 사운드와 사용자 정의 클론을 지원합니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(18473-18541)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(20040-20109)"],
     "$id": 31349
   },
   "配置要求低 · 普通电脑流畅发音": {
@@ -1136,7 +1136,7 @@
     "de-DE": "Geringe Konfigurationsanforderungen · Normaler Computer für reibungslose Aussprache",
     "fr-FR": "Faibles exigences de configuration · Ordinateur ordinaire pour une prononciation fluide",
     "ko-KR": "낮은 구성 요구 사항 · 원활한 발음을 위한 일반 컴퓨터",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(18621-18641)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(20193-20213)"],
     "$id": 31350
   },
   "极速轻量语音朗读 (M5-TTS)": {
@@ -1149,7 +1149,7 @@
     "de-DE": "Extrem schnelles und leichtes Sprachlesen (M5-TTS)",
     "fr-FR": "Lecture vocale extrêmement rapide et légère (M5-TTS)",
     "ko-KR": "매우 빠르고 가벼운 음성 판독(M5-TTS)",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(18724-18745)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(20302-20323)"],
     "$id": 31351
   },
   "【极速省电朗读】按下播放毫秒级即刻发声，内置 50+ 丰富高品质声线，长篇文档朗读流畅不卡顿。普通轻薄本流畅运行。": {
@@ -1162,7 +1162,7 @@
     "de-DE": "[Extrem schnelles und stromsparendes Lesen] Drücken Sie Play und der Ton beginnt sofort in Millisekunden. Es sind mehr als 50 reichhaltige und hochwertige Stimmen integriert, und lange Dokumente können reibungslos und ohne Verzögerung vorgelesen werden. Gewöhnliche dünne und leichte Notebooks laufen flüssig.",
     "fr-FR": "[Lecture extrêmement rapide et économe en énergie] Appuyez sur Play et le son démarrera instantanément en millisecondes. Il intègre plus de 50 voix riches et de haute qualité, et les documents longs peuvent être lus à haute voix en douceur, sans décalage. Les ordinateurs portables fins et légers ordinaires fonctionnent sans problème.",
     "ko-KR": "[매우 빠르고 절전형 읽기] 재생을 누르면 소리가 밀리초 단위로 즉시 시작됩니다. 50개 이상의 풍부하고 고품질의 음성이 내장되어 있으며, 긴 문서를 지연 없이 원활하게 큰 소리로 읽을 수 있습니다. 보통의 얇고 가벼운 노트북은 원활하게 작동합니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(19277-19347)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(20874-20945)"],
     "$id": 31352
   },
   "配置要求极低 · 普通轻薄本流畅发音": {
@@ -1175,7 +1175,7 @@
     "de-DE": "Extrem geringe Konfigurationsanforderungen · Reibungslose Aussprache für gewöhnliche dünne und leichte Notebooks",
     "fr-FR": "Exigences de configuration extrêmement faibles · Prononciation fluide pour les ordinateurs portables fins et légers ordinaires",
     "ko-KR": "매우 낮은 구성 요구 사항 · 일반 얇고 가벼운 노트북을 위한 부드러운 발음",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(19427-19449)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(21029-21051)"],
     "$id": 31353
   },
   "本地生图 Studio": {
@@ -1188,7 +1188,7 @@
     "de-DE": "Lokales Kartierungsstudio",
     "fr-FR": "Studio de cartographie local",
     "ko-KR": "로컬 매핑 스튜디오",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(19533-19548)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(21141-21156)"],
     "$id": 31354
   },
   "【电脑本地自己画图】输入一句话即可在本地画出精美图片，不花一分钱。需要较好的独立显卡。": {
@@ -1201,7 +1201,7 @@
     "de-DE": "[Bilder lokal auf Ihrem Computer zeichnen] Geben Sie einen Satz ein, um lokal schöne Bilder zu zeichnen, ohne einen Cent auszugeben. Erfordert eine bessere separate Grafikkarte.",
     "fr-FR": "[Dessinez des images localement sur votre ordinateur] Entrez une phrase pour dessiner de belles images localement sans dépenser un centime. Nécessite une meilleure carte graphique discrète.",
     "ko-KR": "[컴퓨터에 로컬로 그림 그리기] 문장을 입력하면 한 푼도 쓰지 않고 로컬에서 아름다운 그림을 그릴 수 있습니다. 더 나은 개별 그래픽 카드가 필요합니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(19869-19925)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(21487-21544)"],
     "$id": 31355
   },
   "较高配置 · 需要独立显卡": {
@@ -1214,7 +1214,7 @@
     "de-DE": "Höhere Konfiguration · Erfordert separate Grafikkarte",
     "fr-FR": "Configuration supérieure · Nécessite une carte graphique discrète",
     "ko-KR": "더 높은 구성 · 별도의 그래픽 카드 필요",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(20002-20019)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(21625-21642)"],
     "$id": 31356
   },
   "压缩包透视与深度解析器": {
@@ -1227,7 +1227,7 @@
     "de-DE": "Komprimierte Paketperspektive und Tiefenparser",
     "fr-FR": "Analyseur de perspective et de profondeur de package compressé",
     "ko-KR": "압축된 패키지 관점 및 깊이 파서",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(20110-20125)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(21739-21754)"],
     "$id": 31357
   },
   "【不用解压直接搜压缩包】不用解压 zip/rar 就能直接查看和搜索里面的文件内容，无额外电脑负担。": {
@@ -1240,7 +1240,7 @@
     "de-DE": "[Komprimiertes Paket direkt ohne Dekomprimierung durchsuchen] Sie können den Dateiinhalt in der ZIP-/RAR-Datei direkt anzeigen und durchsuchen, ohne sie zu dekomprimieren, ohne zusätzliche Computerbelastung.",
     "fr-FR": "[Rechercher le package compressé directement sans décompresser] Vous pouvez directement afficher et rechercher le contenu du fichier à l'intérieur du zip/rar sans le décompresser, sans aucune charge informatique supplémentaire.",
     "ko-KR": "[압축해제 없이 압축된 패키지 직접 검색] zip/rar 안의 파일 내용을 압축해제 없이 바로 열람 및 검색이 가능하며 추가적인 컴퓨터 부담도 없습니다.",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(20443-20506)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(22083-22147)"],
     "$id": 31358
   },
   "配置要求极低 · 无额外负担": {
@@ -1253,7 +1253,7 @@
     "de-DE": "Minimale Konfigurationsanforderungen · Keine zusätzliche Belastung",
     "fr-FR": "Exigences de configuration minimales · Aucune charge supplémentaire",
     "ko-KR": "최소 구성 요구 사항 · 추가 부담 없음",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(20586-20604)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(22231-22249)"],
     "$id": 31359
   },
   "下载失败": {
@@ -1266,7 +1266,7 @@
     "de-DE": "Der Download ist fehlgeschlagen",
     "fr-FR": "Le téléchargement a échoué",
     "ko-KR": "다운로드 실패",
-    "$files": ["src/renderer/stores/plugin-center-store.ts(34411-34419)"],
+    "$files": ["src/renderer/stores/plugin-center-store.ts(36708-36716)"],
     "$id": 31360
   },
   "界面与显示偏好": {
@@ -1629,6 +1629,19 @@
     "$files": ["src/renderer/stores/settings-store.ts(14494-14506)"],
     "$id": 5501
   },
+  "已退出登录": {
+    "en-US": "Logged out",
+    "es-ES": "Cerrado sesión",
+    "ar-EG": "تم تسجيل الخروج",
+    "pt-PT": "Desconectado",
+    "ru-RU": "Вышел из системы",
+    "ja-JP": "ログアウトしました",
+    "de-DE": "Abgemeldet",
+    "fr-FR": "Déconnecté",
+    "ko-KR": "로그아웃됨",
+    "$files": ["src/renderer/stores/tier-store.ts(3679-3688)"],
+    "$id": 31557
+  },
   "交易失败，已归还扣币，原因：{reason}": {
     "en-US": "The transaction failed and the deducted firecores have been returned. Reason: {reason}",
     "es-ES": "La transacción falló y las monedas deducidas fueron devueltas. Razón: {reason}",
@@ -1639,7 +1652,7 @@
     "de-DE": "Die Transaktion ist fehlgeschlagen und die abgezogenen Firecores wurden zurückgegeben. Grund: {reason}",
     "fr-FR": "La transaction a échoué et les pièces déduites ont été restituées. Raison: {reason}",
     "ko-KR": "거래가 실패하여 차감된 코인이 반환되었습니다. 이유: {reason}",
-    "$files": ["src/renderer/stores/tier-store.ts(6404-6430)"],
+    "$files": ["src/renderer/stores/tier-store.ts(7836-7862)"],
     "$id": 8873
   },
   "当前设备登录已失效或已被账号解绑，请重新绑定": {
@@ -1652,7 +1665,7 @@
     "de-DE": "Die aktuelle Geräteanmeldung ist abgelaufen oder die Bindung an das Konto wurde aufgehoben. Bitte binden Sie es erneut.",
     "fr-FR": "La connexion actuelle à l'appareil a expiré ou n'a pas été liée au compte, veuillez la relier à nouveau.",
     "ko-KR": "현재 기기 로그인이 만료되었거나 계정 바인딩이 해제되었습니다. 다시 바인딩해 주세요.",
-    "$files": ["src/renderer/stores/tier-store.ts(6668-6694)"],
+    "$files": ["src/renderer/stores/tier-store.ts(8251-8277)"],
     "$id": 31362
   },
   "正在合成音频，合成后会自动切换": {
@@ -1665,7 +1678,7 @@
     "de-DE": "Audio wird synthetisiert und nach der Synthese automatisch umgeschaltet",
     "fr-FR": "L'audio est en cours de synthèse et il sera automatiquement commuté après la synthèse",
     "ko-KR": "오디오가 합성되고 있으며 합성 후 자동으로 전환됩니다",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(17441-17460)"],
+    "$files": ["src/renderer/stores/tts-audio-store.ts(17381-17400)"],
     "$id": 21557
   },
   "已自动切换播放": {
@@ -1679,8 +1692,8 @@
     "fr-FR": "La lecture a été automatiquement commutée",
     "ko-KR": "재생이 자동으로 전환되었습니다",
     "$files": [
-      "src/renderer/stores/tts-audio-store.ts(22998-23009)",
-      "src/renderer/stores/tts-audio-store.ts(27737-27748)"
+      "src/renderer/stores/tts-audio-store.ts(22938-22949)",
+      "src/renderer/stores/tts-audio-store.ts(27677-27688)"
     ],
     "$id": 21559
   },
@@ -1695,11 +1708,11 @@
     "fr-FR": "Le clip audio est trop long et a été automatiquement tronqué.",
     "ko-KR": "오디오 클립이 너무 길어서 자동으로 잘렸습니다.",
     "$files": [
-      "src/renderer/stores/tts-audio-store.ts(25021-25036)",
-      "src/renderer/stores/tts-audio-store.ts(30167-30182)",
-      "src/renderer/stores/tts-audio-store.ts(52090-52105)",
-      "src/renderer/stores/tts-audio-store.ts(58704-58719)",
-      "src/renderer/stores/tts-audio-store.ts(66019-66034)"
+      "src/renderer/stores/tts-audio-store.ts(24961-24976)",
+      "src/renderer/stores/tts-audio-store.ts(30107-30122)",
+      "src/renderer/stores/tts-audio-store.ts(50868-50883)",
+      "src/renderer/stores/tts-audio-store.ts(57478-57493)",
+      "src/renderer/stores/tts-audio-store.ts(63655-63670)"
     ],
     "$id": 22279
   },
@@ -1714,8 +1727,8 @@
     "fr-FR": "La commutation de tonalité a échoué et le service de synthèse vocale n'est pas disponible",
     "ko-KR": "톤 전환에 실패하고 음성 합성 서비스를 사용할 수 없습니다",
     "$files": [
-      "src/renderer/stores/tts-audio-store.ts(25328-25348)",
-      "src/renderer/stores/tts-audio-store.ts(32554-32574)"
+      "src/renderer/stores/tts-audio-store.ts(25268-25288)",
+      "src/renderer/stores/tts-audio-store.ts(32494-32514)"
     ],
     "$id": 21558
   },
@@ -1729,7 +1742,7 @@
     "de-DE": "Benutzerdefinierter Klontonwert",
     "fr-FR": "Tonalité de clonage définie par l'utilisateur",
     "ko-KR": "사용자 정의 클론 톤",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(34057-34070)"],
+    "$files": ["src/renderer/stores/tts-audio-store.ts(33997-34010)"],
     "$id": 21644
   },
   "语音合成失败，请检查服务连接状态": {
@@ -1742,7 +1755,7 @@
     "de-DE": "Sprachsynthese fehlgeschlagen, bitte überprüfen Sie den Status der Dienstverbindung",
     "fr-FR": "La synthèse vocale a échoué, veuillez vérifier l'état de la connexion au service",
     "ko-KR": "음성 합성 실패,서비스 연결 상태를 확인하시기 바랍니다",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(52779-52799)"],
+    "$files": ["src/renderer/stores/tts-audio-store.ts(51557-51577)"],
     "$id": 21560
   },
   "语音合成未能生成有效音频，请稍后重试": {
@@ -1755,7 +1768,7 @@
     "de-DE": "Sprachsynthese konnte kein gültiges Audio generieren, bitte versuchen Sie es später erneut",
     "fr-FR": "La synthèse vocale n'a pas réussi à générer un son valide, veuillez réessayer plus tard",
     "ko-KR": "음성 합성이 유효한 오디오를 생성하지 못했습니다.",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(56639-56661)"],
+    "$files": ["src/renderer/stores/tts-audio-store.ts(55413-55435)"],
     "$id": 21561
   },
   "语音合成服务异常，请稍后重试": {
@@ -1768,7 +1781,7 @@
     "de-DE": "Der Sprachsynthesedienst ist abnormal, bitte versuchen Sie es später erneut",
     "fr-FR": "Le service de synthèse vocale est anormal, veuillez réessayer plus tard",
     "ko-KR": "음성 합성 서비스가 이상,나중에 다시 시도하십시오",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(57079-57097)"],
+    "$files": ["src/renderer/stores/tts-audio-store.ts(55853-55871)"],
     "$id": 21562
   },
   "该片段正在合成中，请稍候...": {
@@ -1781,7 +1794,7 @@
     "de-DE": "Dieser Clip wird synthetisiert, bitte warten...",
     "fr-FR": "Ce clip est en cours de synthèse, veuillez patienter...",
     "ko-KR": "이 클립은 합성되고,기다려주십시오...",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(63138-63157)"],
+    "$files": ["src/renderer/stores/tts-audio-store.ts(61912-61931)"],
     "$id": 21645
   },
   "该片段合成失败，请稍后重试": {
@@ -1794,7 +1807,7 @@
     "de-DE": "Die Clipsynthese ist fehlgeschlagen, bitte versuchen Sie es später erneut",
     "fr-FR": "La synthèse du clip a échoué, veuillez réessayer plus tard",
     "ko-KR": "클립 합성에 실패,나중에 다시 시도하십시오",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(66332-66349)"],
+    "$files": ["src/renderer/stores/tts-audio-store.ts(63968-63985)"],
     "$id": 21646
   }
 }
