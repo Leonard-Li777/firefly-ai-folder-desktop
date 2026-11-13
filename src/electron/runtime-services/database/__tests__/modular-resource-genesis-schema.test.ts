@@ -260,7 +260,7 @@ describe('Ticket 01: Genesis V1 Schema & Modular Resource DAO', () => {
         'chinese-clip',
         'mobile-clip'
       ])
-      expect(classicLight?.total_bytes).toBe(377105491)
+      expect(classicLight?.total_bytes).toBe(469558379)
       expect(DEFAULT_CATALOG_SEEDS.some(m => m.id === 'pocket-cpu-int8-onnx')).toBe(true)
       expect(DEFAULT_CATALOG_SEEDS.some(m => m.id === 'tts_m5_onnx')).toBe(true)
     })

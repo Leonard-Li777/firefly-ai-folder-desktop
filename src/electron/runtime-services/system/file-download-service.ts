@@ -1292,7 +1292,7 @@ export class FileDownloadService {
         // 非 200 / 206 响应直接失败
         if (statusCode !== 200 && statusCode !== 206) {
           cleanup()
-          logger.error(LogCategory.SYSTEM, `[Download] HTTP 状态码异常: ${statusCode}`)
+          logger.error(LogCategory.SYSTEM, `[Download] HTTP 状态码异常: ${statusCode}, url: ${url}`)
           resolve({
             success: false,
             actualSha256: '',

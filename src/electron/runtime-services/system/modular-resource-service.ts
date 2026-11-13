@@ -3604,24 +3604,39 @@ export class ModularResourceService implements IModularResourceService {
     const isIntl = resolveAppRegion() === 'intl'
     const candidateUrls: string[] = []
 
-    const assetName = task.asset_name || spec.asset_name
-    const r2Url = assetName ? `https://download.iocn.cn/firefly-resources/${assetName}` : null
-    const githubUrl =
-      spec.active_url ||
-      task.active_url ||
-      (assetName
-        ? `https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/${assetName}`
-        : null)
+    const builtinMeta =
+      BUILTIN_PLUGIN_CATALOG_META[spec.resource_id as BuiltinSharedResourceId] ||
+      BUILTIN_PLUGIN_CATALOG_META[task.resource_id as BuiltinSharedResourceId]
 
-    // 双轨下载调度策略（对齐 engine 资源下载）：
-    // - 国际版 (intl): 海外网络环境优先直连 GitHub Releases，若失败/超时平滑回退 R2 CDN；
-    // - 国内版 (cn): 国内优先腾讯云 EdgeOne CDN 加速的 R2 镜像，若失败平滑回退 GitHub Releases。
-    if (isIntl) {
-      if (githubUrl) candidateUrls.push(githubUrl)
-      if (r2Url && !candidateUrls.includes(r2Url)) candidateUrls.push(r2Url)
+    const isOfficialPreset =
+      Boolean(builtinMeta) &&
+      (!spec.active_url || spec.active_url === builtinMeta.defaultActiveUrl) &&
+      (!task.active_url || task.active_url === builtinMeta.defaultActiveUrl)
+
+    if (isOfficialPreset && builtinMeta) {
+      const assetName = builtinMeta.assetName || task.asset_name || spec.asset_name
+      const r2Url = assetName ? `https://download.iocn.cn/firefly-resources/${assetName}` : null
+      const githubUrl =
+        builtinMeta.defaultActiveUrl ||
+        (assetName
+          ? `https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/${assetName}`
+          : null)
+
+      // 双轨下载调度策略（对齐 engine 资源下载）：
+      // - 国际版 (intl): 海外网络环境优先直连 GitHub Releases，若失败/超时平滑回退 R2 CDN；
+      // - 国内版 (cn): 国内优先腾讯云 EdgeOne CDN 加速的 R2 镜像，若失败平滑回退 GitHub Releases。
+      if (isIntl) {
+        if (githubUrl) candidateUrls.push(githubUrl)
+        if (r2Url && !candidateUrls.includes(r2Url)) candidateUrls.push(r2Url)
+      } else {
+        if (r2Url) candidateUrls.push(r2Url)
+        if (githubUrl && !candidateUrls.includes(githubUrl)) candidateUrls.push(githubUrl)
+      }
     } else {
-      if (r2Url) candidateUrls.push(r2Url)
-      if (githubUrl && !candidateUrls.includes(githubUrl)) candidateUrls.push(githubUrl)
+      if (spec.active_url) candidateUrls.push(spec.active_url)
+      if (task.active_url && !candidateUrls.includes(task.active_url)) {
+        candidateUrls.push(task.active_url)
+      }
     }
 
     // 收集额外的备选 URL（如有）
@@ -3673,44 +3688,70 @@ export class ModularResourceService implements IModularResourceService {
 
     dao.resources.updateProgressSync(task.resource_id, task.downloaded_bytes || 0, 'downloading')
 
-    const hasMultipleUrls =
-      (Array.isArray((spec as any).urls) && (spec as any).urls.length > 1) ||
-      (Array.isArray((task as any).urls) && (task as any).urls.length > 1)
+    // 大文件（>4MiB）且存在可用 URL 时，默认优先启用固定 4MiB 块网格并发断点续传下载器
+    const canUseFixedBlocks =
+      typeof this.downloadService.downloadWithFixedBlocks === 'function' &&
+      candidateUrls.length > 0 &&
+      task.expected_bytes > 4 * 1024 * 1024
 
-    let result: VerifiedDownloadResult
-    if (hasMultipleUrls && typeof this.downloadService.downloadWithFixedBlocks === 'function') {
-      result = await this.downloadService.downloadWithFixedBlocks({
-        taskId: `${moduleId}:${task.resource_id}`,
-        assetId: task.resource_id,
-        urls: candidateUrls,
-        destPath: archivePath,
-        expectedBytes: task.expected_bytes,
-        expectedSha256: task.expected_sha256,
-        router: this.sourceRouter,
-        transport: this.transport,
-        onProgress: prog => {
-          // ISS-13: 字节加权下载阶段 0 ~ 92%
-          const total = prog.totalBytes || task.expected_bytes || 1
-          const pct = Math.min(92, Math.round((prog.receivedBytes / total) * 92))
-          dao.resources.updateProgressSync(task.resource_id, prog.receivedBytes, 'downloading')
-          this.liveProgress.set(moduleId, {
-            percentage: pct,
-            speed_bytes_per_sec: prog.speed,
-            is_resumed: hadPartBefore
-          })
-          onProgress?.({
-            moduleId,
-            resourceId: task.resource_id,
-            downloadedBytes: prog.receivedBytes,
-            expectedBytes: total,
-            percentage: pct,
-            speedBytesPerSec: prog.speed,
-            isResumed: hadPartBefore,
-            state: 'downloading'
-          })
+    let result: VerifiedDownloadResult | null = null
+
+    if (canUseFixedBlocks) {
+      logger.info(
+        LogCategory.SYSTEM,
+        `[Download] 启用固定 4MiB 块网格并发断点续传下载器 (${task.resource_id}, expected: ${(task.expected_bytes / 1024 / 1024).toFixed(1)}MB, 候选源: ${candidateUrls.length})`
+      )
+      try {
+        result = await this.downloadService.downloadWithFixedBlocks({
+          taskId: `${moduleId}:${task.resource_id}`,
+          assetId: task.resource_id,
+          urls: candidateUrls,
+          destPath: archivePath,
+          expectedBytes: task.expected_bytes,
+          expectedSha256: task.expected_sha256,
+          maxConcurrency: 6,
+          maxInflightBlocks: 6,
+          router: this.sourceRouter,
+          transport: this.transport,
+          onProgress: prog => {
+            // ISS-13: 字节加权下载阶段 0 ~ 92%
+            const total = prog.totalBytes || task.expected_bytes || 1
+            const pct = Math.min(92, Math.round((prog.receivedBytes / total) * 92))
+            dao.resources.updateProgressSync(task.resource_id, prog.receivedBytes, 'downloading')
+            this.liveProgress.set(moduleId, {
+              percentage: pct,
+              speed_bytes_per_sec: prog.speed,
+              is_resumed: hadPartBefore
+            })
+            onProgress?.({
+              moduleId,
+              resourceId: task.resource_id,
+              downloadedBytes: prog.receivedBytes,
+              expectedBytes: total,
+              percentage: pct,
+              speedBytesPerSec: prog.speed,
+              isResumed: hadPartBefore,
+              state: 'downloading'
+            })
+          }
+        })
+        if (!result.success) {
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[Download] 并发分块下载未成功 (${task.resource_id}): ${result.errorMessage || result.errorCode}，平滑降级至单流重试下载...`
+          )
+          result = null
         }
-      })
-    } else {
+      } catch (blockErr: any) {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[Download] 并发分块下载异常 (${task.resource_id}): ${blockErr.message}，平滑降级至单流重试下载...`
+        )
+        result = null
+      }
+    }
+
+    if (!result) {
       let lastDownloadError: any = null
       let successfulResult: VerifiedDownloadResult | null = null
 
