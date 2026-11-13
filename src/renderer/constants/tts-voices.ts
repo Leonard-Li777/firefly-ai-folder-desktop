@@ -789,19 +789,49 @@ export const AUDITION_LANGUAGE_OPTIONS = [
   }
 ]
 
-/** 按音色 ID 查找发音人，优先查找自定义列表，支持数字与字符串，若无则尝试按 sid 匹配，兜底默认音色 */
+/** 按音色 ID 查找发音人，优先查找动态加载的音色列表，支持 ID、displayName、去前缀匹配、数字 sid，智能适配 M5 与 MOSS */
 export function getVoiceById(id: string | number, customVoices: VoiceMeta[] = []): VoiceMeta {
-  const idStr = String(id)
-  const custom = customVoices.find(v => v.id === idStr)
-  if (custom) return custom
-  const found = PRESET_VOICES.find(v => v.id === idStr)
+  const idStr = String(id).trim()
+  const lowerId = idStr.toLowerCase()
+
+  // 1. 优先在动态音色列表中精确比对 ID 与 displayName
+  const inDynamicExact = customVoices.find(
+    v => v.id === idStr || v.displayName === idStr || v.id.toLowerCase() === lowerId
+  )
+  if (inDynamicExact) return inDynamicExact
+
+  // 2. 在动态音色列表中模糊与后缀匹配（如 azure_yunye 匹配 voice_m5_azure_云野，或云野匹配 voice_m5_azure_云野）
+  const inDynamicFuzzy = customVoices.find(
+    v =>
+      v.id.endsWith(idStr) ||
+      v.id.includes(idStr) ||
+      (v.displayName && idStr.includes(v.displayName)) ||
+      (v.displayName && v.displayName.includes(idStr))
+  )
+  if (inDynamicFuzzy) return inDynamicFuzzy
+
+  // 3. 在静态预置库中精确查找
+  const found = PRESET_VOICES.find(
+    v => v.id === idStr || v.displayName === idStr || v.id.toLowerCase() === lowerId
+  )
   if (found) return found
-  // 容错：如果传入的是历史数字 sid，尝试按 sid 匹配
+
+  // 4. 容错：如果传入的是历史数字 sid，尝试按 sid 匹配
   const numId = Number(id)
   if (!isNaN(numId)) {
+    const dynamicBySid = customVoices.find(v => v.sid === numId)
+    if (dynamicBySid) return dynamicBySid
     const bySid = PRESET_VOICES.find(v => v.sid === numId)
     if (bySid) return bySid
   }
+
+  // 5. 智能默认兜底：若动态列表包含 M5 音色，优先兜底 M5 云希；否则兜底预置首项
+  if (customVoices.length > 0) {
+    const m5Yunxi = customVoices.find(v => v.id.includes('云希') || v.displayName === '云希')
+    if (m5Yunxi) return m5Yunxi
+    return customVoices[0]
+  }
+
   const defaultVoice = PRESET_VOICES.find(v => v.id === DEFAULT_VOICE_ID)
   return defaultVoice || PRESET_VOICES[0]
 }

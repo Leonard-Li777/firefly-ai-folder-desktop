@@ -85,17 +85,17 @@ export function cleanTextForTTS(text: string, options?: { isLrc?: boolean }): st
 /**
  * 将长文本拆解为若干饱满的自然短句序列，保留句末标点
  * 核心优化：
- * 1. 设立短句聚合下限（minChunkLength = 45），避免过碎切片引发自回归模型 RTF 倒挂（发声时长 < 推理时长导致断音等待）
- * 2. 设立上限（maxChunkLength = 120），超长自然句按次级标点（逗号/分号/空格）平滑拆解
+ * 1. 设立短句聚合下限（minChunkLength = 20），紧凑聚合短小短句，杜绝单字孤立
+ * 2. 设立上限（maxChunkLength = 38），RTF 优化后目标：单句约 8~12s 生成，尽快送达 Web Audio 时间轴
  *
  * @param text 清洗后的纯文本
- * @param maxChunkLength 单句最大字符阈值（默认 120）
- * @param minChunkLength 短句聚合下限阈值（默认 45）
+ * @param maxChunkLength 单句最大字符阈值（默认 38）
+ * @param minChunkLength 短句聚合下限阈值（默认 20）
  */
 export function splitTextIntoChunks(
   text: string,
-  maxChunkLength = 120,
-  minChunkLength = 45
+  maxChunkLength = 38,
+  minChunkLength = 20
 ): string[] {
   if (!text || !text.trim()) return []
 

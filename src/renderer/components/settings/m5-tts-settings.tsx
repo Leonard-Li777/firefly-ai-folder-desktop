@@ -66,10 +66,11 @@ export const M5TTSSettings: React.FC = () => {
   // 2. 音色库数据源 (M5 动态拉取 51 款预置高保真音色)
   const allVoicesFromStore = useTTSAudioStore(s => s.allVoices)
   const allVoices = allVoicesFromStore && allVoicesFromStore.length > 0 ? allVoicesFromStore : []
+  const refreshVoices = useTTSAudioStore(s => s.refreshVoices)
 
   useEffect(() => {
-    ttsAudioStore.refreshVoices()
-  }, [ttsAudioStore])
+    refreshVoices()
+  }, [refreshVoices])
 
   // 3. 本地搜索与过滤状态
   const [searchQuery, setSearchQuery] = useState('')
@@ -206,6 +207,22 @@ export const M5TTSSettings: React.FC = () => {
         } else if (ttsAudioStore.status === 'loading') {
           await ttsAudioStore.stop()
           setAuditionVoiceId(null)
+        } else {
+          // status === 'idle' 或 'error' 时重新从头播放该试听音色
+          try {
+            await ttsAudioStore.play(textToSpeak, {
+              textId: `audition-${voice.id}`,
+              voiceId: voice.id,
+              displayName: voice.displayName,
+              fieldName: 'audition',
+              fileFingerprint: 'preview',
+              sid: voice.sid,
+              speed: ttsSpeed
+            })
+          } catch (err) {
+            console.error('[M5TTSSettings] 重新试听失败:', err)
+            setAuditionVoiceId(null)
+          }
         }
       } else {
         setAuditionVoiceId(voice.id)

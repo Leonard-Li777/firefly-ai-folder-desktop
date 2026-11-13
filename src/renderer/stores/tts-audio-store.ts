@@ -211,14 +211,12 @@ async function safeSynthesizeChunk(
   }
 }
 
-/** 预缓冲水线配置常数 (P1: 自适应蓄水池门禁以消除 RTF>1 欠载断流) */
+/** 预缓冲水线配置常数 (自适应抗饥饿流式管线：单句自愈秒开，长文本双句蓄水安全起播，后续分句后台持续无缝衔接) */
 export const TTS_BUFFER_WATERMARK = {
-  /** 最小就绪分句数（长文本预蓄 2 句） */
+  /** 最小就绪分句数（单句短文本 1 句自愈放行；多句文本至少蓄满 2 句且安全时长达标，杜绝断流冷场） */
   MIN_BUFFERED_CHUNKS: 2,
-  /** 最小声学安全时长（秒，累积音频时长达到 15.0 秒即可放行，足以覆盖后续 1.35x RTF 下的稳定连续播放） */
-  MIN_BUFFERED_DURATION_SEC: 3.5,
-  /** 单句合成超时熔断时间（毫秒，适配当前 15~25s 真实生成耗时，防止提前泄流） */
-  CHUNK_SYNTHESIZE_TIMEOUT_MS: 15000
+  /** 最小声学安全时长（秒，RTF 优化后单句约 8~12s，蓄满 5.0 秒即安全起播，减少首帧等待） */
+  MIN_BUFFERED_DURATION_SEC: 5.0
 }
 
 /** 预缓冲就绪节点结构（存储已完成 WSOLA 派生且已 decodeAudioData 的纯内存 AudioBuffer） */
@@ -1218,6 +1216,11 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     const isSpeedChanged =
       options?.speed !== undefined && Math.abs(options.speed - state.speed) >= 0.01
 
+    const isAuditionMode =
+      targetTextId.startsWith('audition-') ||
+      options?.fieldName === 'audition' ||
+      options?.fileFingerprint === 'preview'
+
     if (!isVoiceChanged && !isSpeedChanged) {
       if (
         state.status === 'playing' &&
@@ -1237,11 +1240,10 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         return
       }
     } else if (
-      state.status === 'playing' ||
-      state.status === 'loading' ||
-      state.status === 'paused'
+      !isAuditionMode &&
+      (state.status === 'playing' || state.status === 'loading' || state.status === 'paused')
     ) {
-      // 若当前正在播放或暂停同段文本但改变了音色或倍速，直接走平滑热切，接续当前进度
+      // 若当前正在播放长文章但改变了音色或倍速，走平滑热切无缝接续当前阅读进度（试听场景除外，试听必须从头独立完整发音）
       const oldSpeed = state.speed
       if (options?.voiceId !== undefined) {
         const matched = getVoiceById(options.voiceId, get().allVoices)
@@ -1433,11 +1435,12 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     if (targetCachePath && window.electronAPI?.tts?.readWavMetadata) {
       try {
         const metadata = await window.electronAPI.tts.readWavMetadata(targetCachePath)
-        // 语速严格一致才命中，确保不同倍率拥有独立的纯正原音，杜绝变调
+        // 语速严格一致 + 分句总数一致才命中，确保不同分句粒度的缓存不会被复用而导致"重播第一段"的幻影错位
         if (
           metadata &&
           metadata.completed &&
-          (metadata.speed === undefined || Math.abs(metadata.speed - chosenSpeed) < 0.01)
+          (metadata.speed === undefined || Math.abs(metadata.speed - chosenSpeed) < 0.01) &&
+          (metadata.total === undefined || metadata.total === chunks.length)
         ) {
           const fullWavBuffer = await window.electronAPI.tts.readWavFile(targetCachePath)
           if (fullWavBuffer && fullWavBuffer.byteLength > 44) {
@@ -1569,46 +1572,13 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         }
 
         if (!baseBuffer) {
-          // 核心声学架构：底层请求 1.0x 基准母本合成，并通过纯 Rust WSOLA 极速算法派生任意目标倍速
-          const synthPromise = safeSynthesizeChunk(
+          const synthRes = await safeSynthesizeChunk(
             chunkText,
             chosenVoiceId,
             1.0,
             thisSessionId,
             chosenSid
           )
-
-          let synthRes: { buffer: ArrayBuffer; hitCap: boolean; steps: number } | null = null
-          // 若起播门禁尚未放行且蓄水池已具备首句，在等待后续分句时注入 8000ms 超时门禁探测
-          if (!isWatermarkSatisfied && readyBufferList.length > 0) {
-            let timer: ReturnType<typeof setTimeout> | undefined
-            try {
-              const timeoutPromise = new Promise<null>(resolve => {
-                timer = setTimeout(
-                  () => resolve(null),
-                  TTS_BUFFER_WATERMARK.CHUNK_SYNTHESIZE_TIMEOUT_MS
-                )
-              })
-              const raceResult = await Promise.race([synthPromise, timeoutPromise])
-
-              if (raceResult === null) {
-                console.warn('[TTS] 预缓冲后续分句等待超时(>8000ms)，降级以首句立即放行起播')
-                // 放行起播门禁，原子压入已就绪首句
-                isWatermarkSatisfied = true
-                flushPrebufferedChunks(readyBufferList, ctx)
-                readyBufferList.length = 0
-                totalBufferedDuration = 0
-                // 后台继续等待该分句真实合成完毕，绝不跳过该句
-                synthRes = await synthPromise
-              } else {
-                synthRes = raceResult
-              }
-            } finally {
-              if (timer) clearTimeout(timer)
-            }
-          } else {
-            synthRes = await synthPromise
-          }
           if (synthRes) {
             if (synthRes.hitCap) {
               toast.warning(t('音频片段过长已自动截断'))
@@ -1693,15 +1663,15 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
           totalBufferedDuration += audioBuffer.duration
           set({ bufferedDuration: totalBufferedDuration })
 
-          // 水线判定：条件 A（达标声学安全时长 >= 15.0s）或 条件 B（末尾自愈：所有剩余分句已蓄满，短文本 1~2 句直接放行）
-          const satisfiesCount =
+          // 水线判定：条件 A（末尾自愈：所有剩余分句已蓄满，短文本 1 句直接放行）
+          // 条件 B（多句文本安全水线：蓄满 >= 2 句且总时长 >= 10.0 秒，杜绝首句过早泄流引发断音卡顿）
+          const isLastRemaining = readyBufferList.length >= remainingChunksCount
+          const satisfiesSafetyWatermark =
             readyBufferList.length >=
-            Math.min(TTS_BUFFER_WATERMARK.MIN_BUFFERED_CHUNKS, remainingChunksCount)
-          const satisfiesDuration =
+              Math.min(TTS_BUFFER_WATERMARK.MIN_BUFFERED_CHUNKS, remainingChunksCount) &&
             totalBufferedDuration >= TTS_BUFFER_WATERMARK.MIN_BUFFERED_DURATION_SEC
-          const satisfiesAllRemaining = readyBufferList.length >= remainingChunksCount
 
-          if (satisfiesCount || satisfiesDuration || satisfiesAllRemaining) {
+          if (isLastRemaining || satisfiesSafetyWatermark) {
             isWatermarkSatisfied = true
             flushPrebufferedChunks(readyBufferList, ctx)
             readyBufferList.length = 0
@@ -1976,37 +1946,13 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         }
 
         if (!baseBuffer) {
-          const synthPromise = safeSynthesizeChunk(chunkText, voiceId, 1.0, thisSeekSession, sid)
-
-          let synthRes: { buffer: ArrayBuffer; hitCap: boolean; steps: number } | null = null
-          // 若起播门禁尚未放行且蓄水池已具备首句，注入 8000ms 超时门禁探测
-          if (!isWatermarkSatisfied && readyBufferList.length > 0) {
-            let timer: ReturnType<typeof setTimeout> | undefined
-            try {
-              const timeoutPromise = new Promise<null>(resolve => {
-                timer = setTimeout(
-                  () => resolve(null),
-                  TTS_BUFFER_WATERMARK.CHUNK_SYNTHESIZE_TIMEOUT_MS
-                )
-              })
-              const raceResult = await Promise.race([synthPromise, timeoutPromise])
-
-              if (raceResult === null) {
-                console.warn('[TTS Seek] 预缓冲后续分句等待超时(>8000ms)，降级以首句立即放行起播')
-                isWatermarkSatisfied = true
-                flushPrebufferedChunks(readyBufferList, ctx)
-                readyBufferList.length = 0
-                totalBufferedDuration = 0
-                synthRes = await synthPromise
-              } else {
-                synthRes = raceResult
-              }
-            } finally {
-              if (timer) clearTimeout(timer)
-            }
-          } else {
-            synthRes = await synthPromise
-          }
+          const synthRes = await safeSynthesizeChunk(
+            chunkText,
+            voiceId,
+            1.0,
+            thisSeekSession,
+            sid
+          )
           if (synthRes) {
             if (synthRes.hitCap) {
               toast.warning(t('音频片段过长已自动截断'))
@@ -2071,15 +2017,15 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
           totalBufferedDuration += audioBuffer.duration
           set({ bufferedDuration: totalBufferedDuration })
 
-          // 水线判定：条件 A（达标声学安全时长 >= 15.0s）或 条件 B（末尾自愈：所有剩余分句已蓄满，短文本 1~2 句直接放行）
-          const satisfiesCount =
+          // 水线判定：条件 A（末尾自愈：所有剩余分句已蓄满，短文本 1 句直接放行）
+          // 条件 B（多句文本安全水线：蓄满 >= 2 句且总时长 >= 10.0 秒，杜绝首句过早泄流引发断音卡顿）
+          const isLastRemaining = readyBufferList.length >= remainingChunksCount
+          const satisfiesSafetyWatermark =
             readyBufferList.length >=
-            Math.min(TTS_BUFFER_WATERMARK.MIN_BUFFERED_CHUNKS, remainingChunksCount)
-          const satisfiesDuration =
+              Math.min(TTS_BUFFER_WATERMARK.MIN_BUFFERED_CHUNKS, remainingChunksCount) &&
             totalBufferedDuration >= TTS_BUFFER_WATERMARK.MIN_BUFFERED_DURATION_SEC
-          const satisfiesAllRemaining = readyBufferList.length >= remainingChunksCount
 
-          if (satisfiesCount || satisfiesDuration || satisfiesAllRemaining) {
+          if (isLastRemaining || satisfiesSafetyWatermark) {
             isWatermarkSatisfied = true
             flushPrebufferedChunks(readyBufferList, ctx)
             readyBufferList.length = 0

@@ -19,6 +19,7 @@ import { promisify } from 'node:util'
 import { shell } from 'electron'
 import { logger, LogCategory, isSubPath } from '@firefly/shared'
 import { databaseService } from '../database/database-service'
+import { modularResourceService } from '../system/modular-resource-service'
 import { omniClient } from '../../services/omni-client'
 
 const execFileAsync = promisify(execFile)
@@ -531,14 +532,16 @@ export class TTSWavCacheService {
   }
 
   /**
-   * 读取本地完整 WAV 文件供秒播
+   * 读取本地完整 WAV 文件供秒播（自适应解包剥离任何冗余外壳）
    */
   public async readWavFile(wavPath: string): Promise<Buffer | null> {
     try {
       if (!fs.existsSync(wavPath)) {
         return null
       }
-      return await fsPromises.readFile(wavPath)
+      const rawBuf = await fsPromises.readFile(wavPath)
+      const { wavBuffer } = this.unwrapWavBuffer(rawBuf)
+      return wavBuffer
     } catch (err) {
       logger.warn(LogCategory.FILE_PROCESSOR, `[TTS缓存服务] 读取 WAV 文件失败 (${wavPath}):`, err)
       return null
@@ -738,12 +741,83 @@ export class TTSWavCacheService {
   }
 
   /**
+   * 严格解包并归一化 WAV 音频 Buffer
+   * 若音频外层被重复嵌套包裹了错误假头（如外层 48kHz 双声道而内层为 24kHz 单声道），
+   * 递归剥离所有冗余外壳，恢复最内层纯正声学格式，并准确提取规格参数。
+   */
+  public unwrapWavBuffer(
+    inputBuffer: Buffer,
+    defaultVoiceId?: string | number
+  ): {
+    wavBuffer: Buffer
+    rawPcm: Buffer
+    numChannels: number
+    sampleRate: number
+    bitsPerSample: number
+  } {
+    let cur = inputBuffer
+    // 递归剥离多层嵌套 RIFF 头
+    while (
+      cur.length >= 88 &&
+      cur.toString('ascii', 0, 4) === 'RIFF' &&
+      cur.toString('ascii', 8, 12) === 'WAVE' &&
+      cur.toString('ascii', 44, 48) === 'RIFF' &&
+      cur.toString('ascii', 52, 56) === 'WAVE'
+    ) {
+      logger.info(
+        LogCategory.FILE_PROCESSOR,
+        `[TTS缓存服务] 检测并剥离嵌套外层假 WAV 头 (外层大小: ${cur.length} 字节)`
+      )
+      cur = cur.subarray(44)
+    }
+
+    if (
+      cur.length >= 44 &&
+      cur.toString('ascii', 0, 4) === 'RIFF' &&
+      cur.toString('ascii', 8, 12) === 'WAVE'
+    ) {
+      const numChannels = cur.readUInt16LE(22)
+      const sampleRate = cur.readUInt32LE(24)
+      const bitsPerSample = cur.readUInt16LE(34)
+      const rawPcm = cur.subarray(44)
+      return {
+        wavBuffer: cur,
+        rawPcm,
+        numChannels,
+        sampleRate,
+        bitsPerSample
+      }
+    }
+
+    // 确定当前引擎声学规格：M5-TTS 专有 24000Hz 单声道，杜绝 48000Hz 污染
+    const safeVoiceStr = String(defaultVoiceId || '')
+    const isM5 =
+      safeVoiceStr.includes('m5') ||
+      safeVoiceStr.includes('azure_') ||
+      safeVoiceStr.startsWith('preset_') ||
+      modularResourceService.getActiveModuleBySlot('voice_tts')?.id === 'tts_m5_onnx'
+
+    const numChannels = isM5 ? 1 : 2
+    const sampleRate = isM5 ? 24000 : 48000
+    const bitsPerSample = 16
+    const wrappedWav = this.wrapPcmAsWav(cur, numChannels, sampleRate, bitsPerSample)
+
+    return {
+      wavBuffer: wrappedWav,
+      rawPcm: cur,
+      numChannels,
+      sampleRate,
+      bitsPerSample
+    }
+  }
+
+  /**
    * 将分句 PCM 数据包装为标准 44 字节 WAV 容器
    */
   public wrapPcmAsWav(
     pcmData: Buffer,
-    numChannels = 2,
-    sampleRate = 48000,
+    numChannels = 1,
+    sampleRate = 24000,
     bitsPerSample = 16
   ): Buffer {
     const byteRate = sampleRate * numChannels * (bitsPerSample / 8)
@@ -774,11 +848,9 @@ export class TTSWavCacheService {
    */
   public calculateWavDuration(wavBuffer: Buffer): number {
     if (wavBuffer.length < 44) return 0
-    const numChannels = wavBuffer.readUInt16LE(22)
-    const sampleRate = wavBuffer.readUInt32LE(24)
-    const bitsPerSample = wavBuffer.readUInt16LE(34)
-    const dataSize = wavBuffer.length - 44
-    const bytesPerSec = sampleRate * numChannels * (bitsPerSample / 8)
+    const unwrap = this.unwrapWavBuffer(wavBuffer)
+    const dataSize = unwrap.rawPcm.length
+    const bytesPerSec = unwrap.sampleRate * unwrap.numChannels * (unwrap.bitsPerSample / 8)
     return bytesPerSec > 0 ? dataSize / bytesPerSec : 0
   }
 
@@ -798,12 +870,11 @@ export class TTSWavCacheService {
         ? params.chunkData
         : Buffer.from(params.chunkData)
 
-      let wavBuffer = inputBuffer
-      if (inputBuffer.length > 44 && inputBuffer.toString('ascii', 0, 4) === 'RIFF') {
-        wavBuffer = inputBuffer
-      } else {
-        wavBuffer = this.wrapPcmAsWav(inputBuffer, 2, 48000, 16)
-      }
+      // 严格解包与规格校验，杜绝双层套壳与 48kHz 错配
+      const { wavBuffer, sampleRate, numChannels } = this.unwrapWavBuffer(
+        inputBuffer,
+        params.voiceId
+      )
 
       await fsPromises.writeFile(chunkPath, wavBuffer)
 
@@ -811,6 +882,11 @@ export class TTSWavCacheService {
       if (!duration || duration <= 0) {
         duration = this.calculateWavDuration(wavBuffer)
       }
+
+      logger.debug(
+        LogCategory.FILE_PROCESSOR,
+        `[TTS缓存服务] 成功写入分片 chunk_${params.chunkIndex}.wav (规格: ${sampleRate}Hz ${numChannels}ch, 大小: ${wavBuffer.length} 字节, 时长: ${duration.toFixed(2)}s)`
+      )
 
       const manifestPath = path.join(chunksDir, 'manifest.json')
       let manifest: TTSChunkManifest = {
@@ -956,13 +1032,15 @@ export class TTSWavCacheService {
         const chunkBuffer = await fsPromises.readFile(chunkPath)
         if (chunkBuffer.length < 44) continue
 
-        numChannels = chunkBuffer.readUInt16LE(22)
-        sampleRate = chunkBuffer.readUInt32LE(24)
-        byteRate = chunkBuffer.readUInt32LE(28)
-        blockAlign = chunkBuffer.readUInt16LE(32)
-        bitsPerSample = chunkBuffer.readUInt16LE(34)
+        // 严格解包分片，提取真实单声道 24kHz 声学规格，阻断任何假外壳污染
+        const unwrap = this.unwrapWavBuffer(chunkBuffer, params.voiceId)
+        numChannels = unwrap.numChannels
+        sampleRate = unwrap.sampleRate
+        bitsPerSample = unwrap.bitsPerSample
+        byteRate = sampleRate * numChannels * (bitsPerSample / 8)
+        blockAlign = numChannels * (bitsPerSample / 8)
 
-        const rawPcm = chunkBuffer.subarray(44)
+        const rawPcm = unwrap.rawPcm
         const bytesPerSec = sampleRate * numChannels * (bitsPerSample / 8)
         const duration = bytesPerSec > 0 ? rawPcm.length / bytesPerSec : 0
 

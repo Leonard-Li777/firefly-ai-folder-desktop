@@ -63,7 +63,6 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
 }) => {
   // 从设置中心统一订阅配置，确保与设置面板收藏列表修改实时同步
   const config = useSettingsStore(s => s.config)
-  const ttsEnabled = (config as any)?.ttsEnabled ?? true
 
   // 严密门控：未安装或未激活任何 TTS 插件时，系统完全不呈现相关 UI，零开销安全跳过
   const modules = usePluginCenterStore(s => s.modules)
@@ -197,9 +196,32 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
     return (config as any)?.ttsSpeed ?? speed ?? 1.0
   }, [isThisActive, speed, (config as any)?.ttsSpeed])
 
-  // 若功能在设置中全局关闭，或当前未安装/未激活 TTS 插件，完全不呈现 UI 并安全跳过
-  if (!ttsEnabled || !hasActiveTTS) {
+  // 两级门禁：
+  // 1) 用户在设置中主动关闭语音功能（ttsEnabled=false）→ 完全隐藏，不显示任何占位
+  //    （避免「已主动关闭」却提示「待安装」的语义冲突）。
+  // 2) ttsEnabled 开启但插件未就绪（未安装或未激活）→ 呈现「待安装/启动」小字占位，
+  //    让用户知晓此处有语音功能位，而非空白。
+  const ttsEnabled = (config as any)?.ttsEnabled ?? true
+  if (!ttsEnabled) {
     return null
+  }
+  if (!hasActiveTTS) {
+    return (
+      <div
+        data-testid="tts-action-placeholder"
+        title={t('语音播放待安装或启动，请在插件中心开启')}
+        className={cn(
+          'inline-flex items-center gap-1 select-none cursor-default',
+          compact ? 'px-1.5 py-0.5' : 'px-2 py-1',
+          className
+        )}
+      >
+        <MaterialIcon icon="volume_off" className="text-[13px] text-muted-foreground/70 flex-shrink-0" />
+        <span className="text-[10px] text-muted-foreground/70 whitespace-nowrap">
+          {t('语音播放待安装/启动')}
+        </span>
+      </div>
+    )
   }
 
   // 播放/暂停主逻辑

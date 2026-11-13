@@ -151,7 +151,11 @@ export class VoiceArchiveService {
     try {
       if (activeModuleId === 'tts_m5_onnx') {
         const candidateJsonPaths = [
+          pluginsRoot
+            ? path.join(pluginsRoot, '_shared', 'm5-tts', 'models', 'audio', 'm5', 'preset_voices.json')
+            : '',
           pluginsRoot ? path.join(pluginsRoot, '_shared', 'm5-tts', 'preset_voices.json') : '',
+          process.env.OMNI_M5_VOICES_PATH || '',
           ResourceLocator.resolveResourcePath?.('models/audio/m5/preset_voices.json') || '',
           path.join(
             ResourceLocator.getBaseResourceDir(),
