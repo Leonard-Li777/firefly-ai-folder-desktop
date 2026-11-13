@@ -50,6 +50,14 @@ function getModularApi(): any {
   return w.electronAPI?.modularResource ?? w.modularResource ?? null
 }
 
+function formatBytes(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes <= 0) return '0 B'
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
+  const val = (bytes / Math.pow(1024, i)).toFixed(1)
+  return `${val} ${units[i]}`
+}
+
 /**
  * 欢迎向导 Step 5：安装与就绪
  *
@@ -78,6 +86,16 @@ export function WelcomeStep5InstallReady({
     initialReady ? 'ready' : isOffline ? 'select_package' : 'installing'
   )
   const [percentage, setPercentage] = useState(initialReady ? 100 : isOffline ? 0 : 5)
+  const [downloadStats, setDownloadStats] = useState<{
+    speedBytesPerSec: number
+    downloadedBytes: number
+    expectedBytes: number
+    state?: string
+  }>({
+    speedBytesPerSec: 0,
+    downloadedBytes: 0,
+    expectedBytes: 0
+  })
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   // 离线总包是一次性带齐全部插件，没有「后台继续下载」的概念
   const [backgroundCount, setBackgroundCount] = useState(
@@ -94,8 +112,18 @@ export function WelcomeStep5InstallReady({
     const modular = getModularApi()
     if (!modular?.onProgress) return
     const unsub = modular.onProgress((payload: any) => {
-      if (payload?.moduleId === selectedEngine && typeof payload.percentage === 'number') {
-        setPercentage(prev => Math.max(prev, Math.min(95, Math.round(payload.percentage))))
+      if (payload?.moduleId === selectedEngine) {
+        if (typeof payload.percentage === 'number') {
+          setPercentage(prev => Math.max(prev, Math.min(95, Math.round(payload.percentage))))
+        }
+        setDownloadStats({
+          speedBytesPerSec:
+            typeof payload.speedBytesPerSec === 'number' ? payload.speedBytesPerSec : 0,
+          downloadedBytes:
+            typeof payload.downloadedBytes === 'number' ? payload.downloadedBytes : 0,
+          expectedBytes: typeof payload.expectedBytes === 'number' ? payload.expectedBytes : 0,
+          state: payload.state
+        })
       }
     })
     return () => {
@@ -127,10 +155,10 @@ export function WelcomeStep5InstallReady({
     const isBaseEngineRecord = (rec: any) =>
       Boolean(
         rec &&
-          (rec.capability_slot === 'base_embedding' ||
-            rec.capability_slot === 'base_ai_engine' ||
-            rec.id === 'engine_classic_light' ||
-            rec.id === 'engine_gemma_unified')
+        (rec.capability_slot === 'base_embedding' ||
+          rec.capability_slot === 'base_ai_engine' ||
+          rec.id === 'engine_classic_light' ||
+          rec.id === 'engine_gemma_unified')
       )
 
     const runOnline = async () => {
@@ -227,14 +255,13 @@ export function WelcomeStep5InstallReady({
       }
 
       if (!importedEngine) {
-        throw new Error(
-          t('所选离线总包中未包含核心检索引擎，请确认文件为完整的 Firefly 离线总包')
-        )
+        throw new Error(t('所选离线总包中未包含核心检索引擎，请确认文件为完整的 Firefly 离线总包'))
       }
 
-      const activeEngineId = importedEngine.id === 'engine_classic_light'
-        ? 'engine_classic_light'
-        : 'engine_gemma_unified'
+      const activeEngineId =
+        importedEngine.id === 'engine_classic_light'
+          ? 'engine_classic_light'
+          : 'engine_gemma_unified'
 
       const isAlreadyActive =
         importedEngine.install_state === 'active' || importedEngine.state === 'active'
@@ -248,9 +275,7 @@ export function WelcomeStep5InstallReady({
       if (modular?.smokeTest) {
         const smokeRes = await modular.smokeTest({ profile })
         if (!smokeRes?.success) {
-          throw new Error(
-            smokeRes?.error || t('离线引擎自检未通过，请确认离线总包文件完整无损')
-          )
+          throw new Error(smokeRes?.error || t('离线引擎自检未通过，请确认离线总包文件完整无损'))
         }
       }
 
@@ -309,9 +334,17 @@ export function WelcomeStep5InstallReady({
 
   const phaseTitle = (() => {
     if (phase === 'select_package') return t('等待挑选离线安装包')
-    if (phase === 'installing') return t('正在装好主检索引擎，请稍候...')
+    if (phase === 'installing') {
+      if (downloadStats.state === 'extracting') {
+        return t('安装包下载完成，正在安全解压...')
+      }
+      if (downloadStats.state === 'verifying') {
+        return t('安装包下载完成，正在校验完整性...')
+      }
+      return t('正在装好主检索引擎，请稍候...')
+    }
     if (phase === 'importing') return t('正在校验并导入离线安装包，请稍候...')
-    if (phase === 'smoke_testing') return t('正在检查引擎能不能正常工作...')
+    if (phase === 'smoke_testing') return t('主检索引擎已下载完成，正在进行首次启动检验...')
     if (phase === 'ready') return t('主检索引擎安装完成，可以开始使用了！')
     return t('安装遇到问题')
   })()
@@ -342,9 +375,11 @@ export function WelcomeStep5InstallReady({
       testId="welcome-step5-container"
       maxWidthClass="max-w-2xl"
       title={t('正在为你装好智能文件管理')}
-      subtitle={isOffline
-              ? t('把你准备好的安装包交给软件，剩下的事它会自动做完')
-              : t('先装好最核心的搜索大脑，剩下的插件会在后台接着装，不用一直等')}
+      subtitle={
+        isOffline
+          ? t('把你准备好的安装包交给软件，剩下的事它会自动做完')
+          : t('先装好最核心的搜索大脑，剩下的插件会在后台接着装，不用一直等')
+      }
       footer={
         <>
           <Button
@@ -374,128 +409,203 @@ export function WelcomeStep5InstallReady({
         </>
       }
     >
+      <div className="space-y-4">
+        {phase === 'select_package' && (
+          /* 离线展示态：一进页面只给按钮，绝不提前弹系统文件框 */
+          <Card
+            data-testid="welcome-step5-select-package-card"
+            className="p-5 rounded-xl bg-card border border-border shadow-sm"
+          >
+            <CardContent className="p-0 space-y-4">
+              {summaryRow}
 
-        <div className="space-y-4">
-          {phase === 'select_package' && (
-            /* 离线展示态：一进页面只给按钮，绝不提前弹系统文件框 */
-            <Card
-              data-testid="welcome-step5-select-package-card"
-              className="p-5 rounded-xl bg-card border border-border shadow-sm"
-            >
-              <CardContent className="p-0 space-y-4">
-                {summaryRow}
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
+                <span className="w-10 h-10 shrink-0 rounded-lg bg-emerald-500/15 inline-flex items-center justify-center">
+                  <PackageOpen className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                </span>
+                <div>
+                  <div className="text-sm font-semibold text-foreground">
+                    {t('请挑选离线安装包')}
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+                    {t(
+                      '选中你事先下载好的完整安装包，软件会自动把它装到上一步选好的文件夹里；全程不联网，也不会上传任何文件。'
+                    )}
+                  </p>
+                </div>
+              </div>
 
-                <div className="flex items-start gap-3 p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
-                  <span className="w-10 h-10 shrink-0 rounded-lg bg-emerald-500/15 inline-flex items-center justify-center">
-                    <PackageOpen className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              {errorMessage && (
+                <div
+                  data-testid="welcome-step5-select-package-error"
+                  className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs"
+                >
+                  {errorMessage}
+                </div>
+              )}
+
+              <div className="flex flex-wrap items-center gap-3">
+                <Button
+                  data-testid="welcome-step5-select-package-btn"
+                  onClick={handleSelectPackage}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-5"
+                >
+                  <FolderOpen className="w-4 h-4 mr-1.5" />
+                  {t('选择离线安装包')}
+                </Button>
+                <span className="text-xs text-muted-foreground">
+                  {t('也可以返回上一步改成在线安装，让软件联网自动下载')}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {phase !== 'select_package' && (
+          <Card className="p-5 rounded-xl bg-card border border-border shadow-sm">
+            <CardContent className="p-0 space-y-4">
+              {/* 本轮安装的两个关键选择，让用户知道进度对应什么 */}
+              {summaryRow}
+
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2 font-medium text-foreground">
+                  {isBusy ? (
+                    <RefreshCw className="w-4 h-4 text-primary animate-spin" />
+                  ) : phase === 'ready' ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+                  )}
+                  <span
+                    className={
+                      phase === 'ready'
+                        ? 'text-emerald-700 dark:text-emerald-300 font-semibold'
+                        : ''
+                    }
+                  >
+                    {phaseTitle}
                   </span>
-                  <div>
-                    <div className="text-sm font-semibold text-foreground">
-                      {t('请挑选离线安装包')}
+                </div>
+                <span className="font-mono font-medium text-foreground">
+                  {phase === 'ready'
+                    ? '100%'
+                    : phase === 'smoke_testing'
+                      ? `${percentage}% (${t('自检中')})`
+                      : `${percentage}%`}
+                </span>
+              </div>
+
+              <ProgressBar
+                value={phase === 'ready' ? 100 : percentage}
+                max={100}
+                colorClass="bg-primary"
+              />
+
+              {/* 在线下载过程中的速率与已下载/总大小指示器 */}
+              {phase === 'installing' && (
+                <div
+                  data-testid="welcome-step5-download-speed-bar"
+                  className="flex items-center justify-between text-xs text-muted-foreground pt-0.5"
+                >
+                  <span className="inline-flex items-center gap-1.5 font-mono">
+                    {downloadStats.state === 'extracting' ? (
+                      <span className="text-primary font-sans">
+                        {t('正在校验并安全解压安装包...')}
+                      </span>
+                    ) : downloadStats.state === 'verifying' ? (
+                      <span className="text-primary font-sans">{t('正在校验文件完整性...')}</span>
+                    ) : downloadStats.speedBytesPerSec > 0 ? (
+                      <>
+                        <span className="text-primary font-semibold">
+                          ⚡ {formatBytes(downloadStats.speedBytesPerSec)}/s
+                        </span>
+                        {downloadStats.expectedBytes > 0 && (
+                          <span>
+                            ({formatBytes(downloadStats.downloadedBytes)} /{' '}
+                            {formatBytes(downloadStats.expectedBytes)})
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <span>{t('正在连接高速下载节点...')}</span>
+                    )}
+                  </span>
+                  {downloadStats.expectedBytes > 0 &&
+                    downloadStats.state === 'downloading' &&
+                    downloadStats.speedBytesPerSec > 0 && (
+                      <span className="text-muted-foreground">
+                        {t('预计还需')}{' '}
+                        {Math.max(
+                          1,
+                          Math.ceil(
+                            (downloadStats.expectedBytes - downloadStats.downloadedBytes) /
+                              downloadStats.speedBytesPerSec
+                          )
+                        )}{' '}
+                        {t('秒')}
+                      </span>
+                    )}
+                </div>
+              )}
+
+              {/* 首次启动自检阶段：明确提示下载已 100% 完成，打消用户误以为卡住的疑虑 */}
+              {phase === 'smoke_testing' && (
+                <div
+                  data-testid="welcome-step5-smoke-testing-hint"
+                  className="flex items-start gap-2.5 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-800 dark:text-emerald-300"
+                >
+                  <Sparkles className="w-4 h-4 shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
+                  <div className="space-y-0.5">
+                    <div className="font-semibold text-foreground">
+                      {t('核心组件已全部下载完成！')}
                     </div>
-                    <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-                      {t(
-                        '选中你事先下载好的完整安装包，软件会自动把它装到上一步选好的文件夹里；全程不联网，也不会上传任何文件。'
-                      )}
+                    <p className="text-muted-foreground leading-relaxed">
+                      {t('正在首次启动检索引擎并测试检索功能，通常需要 5~15 秒，请稍候...')}
                     </p>
                   </div>
                 </div>
+              )}
 
-                {errorMessage && (
-                  <div
-                    data-testid="welcome-step5-select-package-error"
-                    className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs"
-                  >
-                    {errorMessage}
-                  </div>
-                )}
-
-                <div className="flex flex-wrap items-center gap-3">
-                  <Button
-                    data-testid="welcome-step5-select-package-btn"
-                    onClick={handleSelectPackage}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-5"
-                  >
-                    <FolderOpen className="w-4 h-4 mr-1.5" />
-                    {t('选择离线安装包')}
-                  </Button>
-                  <span className="text-xs text-muted-foreground">
-                    {t('也可以返回上一步改成在线安装，让软件联网自动下载')}
-                  </span>
+              {/* 主引擎完成即放行，其余插件继续后台下载 */}
+              {phase === 'ready' && backgroundCount > 0 && (
+                <div
+                  data-testid="welcome-step5-background-hint"
+                  className="flex items-start gap-2 p-3 rounded-lg bg-primary/10 border border-primary/30 text-primary text-xs"
+                >
+                  <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                  <span>{t('主检索引擎安装完成，其它插件继续后台下载，不影响你现在就开始用')}</span>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              )}
 
-          {phase !== 'select_package' && (
-            <Card className="p-5 rounded-xl bg-card border border-border shadow-sm">
-              <CardContent className="p-0 space-y-4">
-                {/* 本轮安装的两个关键选择，让用户知道进度对应什么 */}
-                {summaryRow}
-
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2 font-medium text-foreground">
-                    {isBusy ? (
-                      <RefreshCw className="w-4 h-4 text-primary animate-spin" />
-                    ) : phase === 'ready' ? (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    ) : (
-                      <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
-                    )}
-                    <span className={phase === 'ready' ? 'text-emerald-700 dark:text-emerald-300 font-semibold' : ''}>
-                      {phaseTitle}
+              {phase === 'error' && (
+                <div className="p-3 bg-red-500/10 text-red-700 dark:text-red-300 rounded-lg text-xs flex flex-col gap-2">
+                  <div>{errorMessage}</div>
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    <Button
+                      data-testid="welcome-step5-retry-btn"
+                      size="sm"
+                      variant="outline"
+                      onClick={handleRetry}
+                    >
+                      <RefreshCw className="w-3.5 h-3.5 mr-1" />
+                      {t('重试')}
+                    </Button>
+                    <span className="text-red-600 dark:text-red-400">
+                      {t('也可以返回上一步，换一种安装方式再试')}
                     </span>
                   </div>
-                  <span className="font-mono font-medium text-foreground">
-                    {phase === 'ready' ? '100%' : `${percentage}%`}
-                  </span>
                 </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
-                <ProgressBar value={phase === 'ready' ? 100 : percentage} max={100} colorClass="bg-primary" />
-
-                {/* 主引擎完成即放行，其余插件继续后台下载 */}
-                {phase === 'ready' && backgroundCount > 0 && (
-                  <div
-                    data-testid="welcome-step5-background-hint"
-                    className="flex items-start gap-2 p-3 rounded-lg bg-primary/10 border border-primary/30 text-primary text-xs"
-                  >
-                    <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                    <span>
-                      {t('主检索引擎安装完成，其它插件继续后台下载，不影响你现在就开始用')}
-                    </span>
-                  </div>
-                )}
-
-                {phase === 'error' && (
-                  <div className="p-3 bg-red-500/10 text-red-700 dark:text-red-300 rounded-lg text-xs flex flex-col gap-2">
-                    <div>{errorMessage}</div>
-                    <div className="flex flex-wrap items-center gap-2 pt-1">
-                      <Button
-                        data-testid="welcome-step5-retry-btn"
-                        size="sm"
-                        variant="outline"
-                        onClick={handleRetry}
-                      >
-                        <RefreshCw className="w-3.5 h-3.5 mr-1" />
-                        {t('重试')}
-                      </Button>
-                      <span className="text-red-600 dark:text-red-400">
-                        {t('也可以返回上一步，换一种安装方式再试')}
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          {hardware.storageFreeGB < 2.0 && (
-            <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-700 dark:text-red-300 text-xs">
-              {t('磁盘剩余空间不足，请至少预留 2GB 空间以供下载与安装')}
-            </div>
-          )}
-        </div>
+        {hardware.storageFreeGB < 2.0 && (
+          <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-700 dark:text-red-300 text-xs">
+            {t('磁盘剩余空间不足，请至少预留 2GB 空间以供下载与安装')}
+          </div>
+        )}
+      </div>
     </WelcomeStepLayout>
   )
 }
-

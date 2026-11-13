@@ -10,6 +10,7 @@ import { net, app as electronApp } from 'electron'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as crypto from 'crypto'
+import * as childProcess from 'child_process'
 import { logger, LogCategory } from '@firefly/shared'
 
 // 跨 VM Realm / Vitest 环境安全兜底：修复 Buffer / Uint8Array 在 vm 隔离上下文中的 instanceof 判定失败
@@ -789,26 +790,59 @@ export async function safeExtractZip(
   fs.mkdirSync(tmpDir, { recursive: true })
 
   try {
-    const zip = new AdmZip(zipFilePath)
-    const entries = zip.getEntries()
-
-    for (const entry of entries) {
-      const targetPath = safeResolveZipEntry(tmpDir, entry.entryName)
-
-      if (entry.isDirectory) {
-        fs.mkdirSync(targetPath, { recursive: true })
+    let entries: any[] = []
+    let useFallbackExtractor = false
+    try {
+      const zip = new AdmZip(zipFilePath)
+      entries = zip.getEntries()
+    } catch (zipErr: any) {
+      if (zipErr?.message?.includes('Duplicate entry name')) {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[Extract] AdmZip 检测到压缩包包含重复条目 (${zipErr.message})，安全启用系统原生解压通道回退`
+        )
+        useFallbackExtractor = true
       } else {
-        const fileDir = path.dirname(targetPath)
-        if (!fs.existsSync(fileDir)) {
-          fs.mkdirSync(fileDir, { recursive: true })
+        throw zipErr
+      }
+    }
+
+    if (useFallbackExtractor) {
+      // 1. 先用 tar -tf 提取所有条目，逐项通过 safeResolveZipEntry 严格门禁检查 (防 ZipSlip 绝对路径/ADS/设备名/越界)
+      const listOutput = childProcess.execFileSync('tar', ['-tf', zipFilePath], {
+        encoding: 'utf8',
+        stdio: ['pipe', 'pipe', 'ignore']
+      })
+      const lines = listOutput
+        .split(/\r?\n/)
+        .map(l => l.trim())
+        .filter(Boolean)
+      for (const line of lines) {
+        safeResolveZipEntry(tmpDir, line)
+      }
+      // 2. 门禁检查 100% 通过后，通过 tar -xf 原生解压到 tmpDir (天然支持 LWW 覆盖语义)
+      childProcess.execFileSync('tar', ['-xf', zipFilePath, '-C', tmpDir], {
+        stdio: ['pipe', 'pipe', 'ignore']
+      })
+    } else {
+      for (const entry of entries) {
+        const targetPath = safeResolveZipEntry(tmpDir, entry.entryName)
+
+        if (entry.isDirectory) {
+          fs.mkdirSync(targetPath, { recursive: true })
+        } else {
+          const fileDir = path.dirname(targetPath)
+          if (!fs.existsSync(fileDir)) {
+            fs.mkdirSync(fileDir, { recursive: true })
+          }
+          let data: Buffer
+          try {
+            data = (entry as any).getData()
+          } catch {
+            data = Buffer.alloc(0)
+          }
+          fs.writeFileSync(targetPath, data)
         }
-        let data: Buffer
-        try {
-          data = (entry as any).getData()
-        } catch {
-          data = Buffer.alloc(0)
-        }
-        fs.writeFileSync(targetPath, data)
       }
     }
 

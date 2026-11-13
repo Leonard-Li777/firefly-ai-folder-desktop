@@ -183,9 +183,7 @@ describe('WelcomeStep5InstallReady (欢迎向导第五步：安装与就绪)', (
     })
     expect(api.smokeTest).toHaveBeenCalledWith({ profile: 'gemma_unified' })
     expect(api.install).not.toHaveBeenCalledWith('engine_gemma_unified')
-    expect(screen.getByTestId('welcome-step5-container').textContent).toContain(
-      '导入离线安装包'
-    )
+    expect(screen.getByTestId('welcome-step5-container').textContent).toContain('导入离线安装包')
   })
 
   it('离线文件框点取消：退回选包态并给温和提示，不会连弹文件框，可再点一次', async () => {
@@ -259,6 +257,95 @@ describe('WelcomeStep5InstallReady (欢迎向导第五步：安装与就绪)', (
     expect(api.install).not.toHaveBeenCalled()
     expect((screen.getByTestId('welcome-enter-app-btn') as HTMLButtonElement).disabled).toBe(false)
     expect(screen.getByTestId('welcome-step5-background-hint')).toBeDefined()
+  })
+
+  it('在线下载时实时展示下载速率指示器与数据量指示', async () => {
+    let progressCallback: any
+    api.onProgress = vi.fn((cb: any) => {
+      progressCallback = cb
+      return () => undefined
+    })
+
+    let resolveInstall: any
+    let isFirst = true
+    api.install = vi.fn().mockImplementation(
+      () =>
+        new Promise(resolve => {
+          if (isFirst) {
+            isFirst = false
+            resolveInstall = resolve
+          } else {
+            resolve({ id: 'mock' })
+          }
+        })
+    )
+
+    setup()
+
+    expect(screen.getByTestId('welcome-step5-download-speed-bar')).toBeDefined()
+
+    // 触发下载进度事件，带速率与下载字节
+    await act(async () => {
+      progressCallback?.({
+        moduleId: 'engine_gemma_unified',
+        resourceId: 'emb-391b9a03',
+        percentage: 45,
+        speedBytesPerSec: 1024 * 1024 * 5.2, // 5.2 MB/s
+        downloadedBytes: 1024 * 1024 * 110,
+        expectedBytes: 1024 * 1024 * 242.2,
+        state: 'downloading'
+      })
+    })
+
+    const speedBar = screen.getByTestId('welcome-step5-download-speed-bar')
+    expect(speedBar.textContent).toContain('5.2 MB/s')
+    expect(speedBar.textContent).toContain('110.0 MB')
+    expect(speedBar.textContent).toContain('242.2 MB')
+
+    // 触发解压事件，展示解压状态
+    await act(async () => {
+      progressCallback?.({
+        moduleId: 'engine_gemma_unified',
+        resourceId: 'emb-391b9a03',
+        percentage: 95,
+        speedBytesPerSec: 0,
+        downloadedBytes: 1024 * 1024 * 242.2,
+        expectedBytes: 1024 * 1024 * 242.2,
+        state: 'extracting'
+      })
+    })
+    expect(speedBar.textContent).toContain('正在校验并安全解压安装包...')
+
+    await act(async () => {
+      resolveInstall({ id: 'mock' })
+    })
+    await waitReady()
+  })
+
+  it('引擎首次自检 (smoke_testing) 阶段明确展示下载已完成提示卡片与自检状态', async () => {
+    let resolveSmoke: any
+    api.smokeTest = vi.fn().mockImplementation(
+      () =>
+        new Promise(resolve => {
+          resolveSmoke = resolve
+        })
+    )
+
+    setup()
+
+    await waitFor(() => {
+      expect(screen.getByText('主检索引擎已下载完成，正在进行首次启动检验...')).toBeDefined()
+    })
+
+    const hint = screen.getByTestId('welcome-step5-smoke-testing-hint')
+    expect(hint.textContent).toContain('核心组件已全部下载完成！')
+    expect(hint.textContent).toContain('通常需要 5~15 秒')
+    expect(screen.getByText(/自检中/)).toBeDefined()
+
+    await act(async () => {
+      resolveSmoke({ success: true })
+    })
+    await waitReady()
   })
 
   it('明暗自适应：不得写死亮色色值', async () => {
