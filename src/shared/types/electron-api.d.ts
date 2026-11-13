@@ -1158,6 +1158,7 @@ declare global {
         }) => Promise<any>
         listSeatedDevices: (payload?: { sessionToken?: string }) => Promise<any>
         unbindDevice: (payload?: { deviceId?: string; machineId?: string }) => Promise<any>
+        logout: () => Promise<{ success: boolean; message?: string; error?: string }>
       }
     }
 

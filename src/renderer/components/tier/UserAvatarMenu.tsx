@@ -15,7 +15,8 @@ import {
   Building2,
   CalendarClock,
   ReceiptText,
-  ExternalLink
+  ExternalLink,
+  LogOut
 } from 'lucide-react'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
@@ -45,12 +46,13 @@ interface UserAvatarMenuProps {
 }
 
 export const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({ onOpenChange }) => {
-  const { tier, firecores, subscription, fetchProfile, openRulesDialog } = useTierStore()
+  const { tier, firecores, subscription, fetchProfile, openRulesDialog, logout } = useTierStore()
   const { openSettings } = useSettingsStore()
   const config = useConfigStore(state => state.config)
   const location = useLocation()
 
   const [isOpen, setIsOpenState] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const updateIsOpen = useCallback(
     (open: boolean) => {
       setIsOpenState(open)
@@ -316,35 +318,60 @@ export const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({ onOpenChange }) 
                     )}
                   />
 
-                  {/* 1. 顶部身份首行：等级徽章 与 管理订阅入口彻底解耦 */}
+                  {/* 1. 顶部身份首行：等级徽章 与 退出登录 / 管理订阅入口 */}
                   <div className="flex items-center justify-between gap-2 relative z-10">
                     <span
                       className={cn(
-                        'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide shadow-sm select-none',
+                        'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide shadow-sm select-none shrink-0',
                         tierConfig.badgeClass
                       )}
                     >
                       {tierConfig.name}
                     </span>
 
-                    {tier !== UserTier.FREE && (
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {tier !== UserTier.FREE && (
+                        <button
+                          type="button"
+                          data-no-drag
+                          style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+                          onClick={e => {
+                            e.stopPropagation()
+                            handleMenuClick(() => {
+                              setIsAccountManagementOpen(true)
+                            })
+                          }}
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-accent/80 transition-all px-2 py-1 rounded-lg cursor-pointer no-drag select-none group border border-border/40 hover:border-border/80 bg-background/50 shadow-xs"
+                          title={t('管理订阅与权益')}
+                        >
+                          <span>{t('管理订阅')}</span>
+                          <ChevronRight className="w-3 h-3 text-muted-foreground/70 group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
+                        </button>
+                      )}
+
                       <button
                         type="button"
                         data-no-drag
+                        data-testid="user-avatar-logout-btn"
                         style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
-                        onClick={e => {
+                        disabled={isLoggingOut}
+                        onClick={async e => {
                           e.stopPropagation()
-                          handleMenuClick(() => {
-                            setIsAccountManagementOpen(true)
-                          })
+                          setIsLoggingOut(true)
+                          try {
+                            updateIsOpen(false)
+                            await logout()
+                          } finally {
+                            setIsLoggingOut(false)
+                          }
                         }}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-accent/80 transition-all px-2 py-1 rounded-lg cursor-pointer no-drag select-none group border border-border/40 hover:border-border/80 bg-background/50 shadow-xs"
-                        title={t('管理订阅与权益')}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all px-2 py-1 rounded-lg cursor-pointer no-drag select-none group border border-border/40 hover:border-destructive/30 bg-background/50 shadow-xs"
+                        title={t('退出登录')}
                       >
-                        <span>{t('管理订阅')}</span>
-                        <ChevronRight className="w-3 h-3 text-muted-foreground/70 group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
+                        <LogOut className="w-3 h-3 text-muted-foreground/70 group-hover:text-destructive transition-colors shrink-0" />
+                        <span>{isLoggingOut ? t('退出中...') : t('退出登录')}</span>
                       </button>
-                    )}
+                    </div>
                   </div>
 
                   {/* 2. 独立有效期展示行：仅付费会员展示，从容容纳中英文长格式日期，不挤压首行 */}

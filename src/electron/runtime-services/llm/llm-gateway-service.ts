@@ -329,21 +329,31 @@ export class LlmGatewayService implements ILlmGatewayService {
       // 仅未设为激活态，不应被误判为「未安装」（与插件中心口径一致）。
       // 按 ai_engine_cpu 槽位聚合判定，不绑定单一模块 id，对未来 CPU 引擎成员更稳健。
       const dao = modularResourceService?.getDao?.()
-      const cpuModules = (dao?.modules?.listAllSync?.() ?? []).filter(
+      const allRows = dao?.modules?.listAllSync?.() ?? []
+      const cpuModules = allRows.filter(
         (m: { capability_slot?: string; install_state?: string }) =>
           m.capability_slot === 'ai_engine_cpu'
       )
+      const cpuStates = cpuModules
+        .map((m: { id: string; install_state?: string }) => `${m.id}=${m.install_state}`)
+        .join(',')
       const cpuInstalledState = cpuModules.some(
         (m: { capability_slot?: string; install_state?: string }) =>
           m.install_state === 'active' || m.install_state === 'installed_inactive'
       )
+      logger.debug(
+        LogCategory.SYSTEM,
+        `[LlmGateway] CPU安装探测: 槽位扫描 total=${allRows.length} cpu=[${cpuStates || '空'}]`
+      )
       if (!cpuInstalledState) {
+        logger.debug(LogCategory.SYSTEM, '[LlmGateway] CPU安装探测: 无已安装模块 -> not_installed')
         return 'not_installed'
       }
 
       const meta = BUILTIN_PLUGIN_CATALOG_META['pocket-cpu-int8-onnx']
       const pluginsRoot = modularResourceService?.getPluginsRootDir?.()
       if (!pluginsRoot) {
+        logger.debug(LogCategory.SYSTEM, '[LlmGateway] CPU安装探测: pluginsRoot 为空 -> corrupt')
         return 'corrupt'
       }
 
@@ -355,6 +365,10 @@ export class LlmGatewayService implements ILlmGatewayService {
           minPrimaryFileBytes: meta.minPrimaryFileBytes,
           requireReadyMarker: true
         }
+      )
+      logger.debug(
+        LogCategory.SYSTEM,
+        `[LlmGateway] CPU安装探测: 资产校验 root=${pluginsRoot} sub=${meta.sharedSubDir} readyDir=${readyDir || 'null'} -> ${readyDir ? 'installed' : 'corrupt'}`
       )
       return readyDir ? 'installed' : 'corrupt'
     } catch (err) {

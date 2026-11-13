@@ -794,7 +794,8 @@ const electronAPI = {
     listSeatedDevices: (payload?: { sessionToken?: string }): Promise<any> =>
       ipcRenderer.invoke('deviceBind/listSeatedDevices', payload),
     unbindDevice: (payload?: { deviceId?: string; machineId?: string }): Promise<any> =>
-      ipcRenderer.invoke('deviceBind/unbindDevice', payload)
+      ipcRenderer.invoke('deviceBind/unbindDevice', payload),
+    logout: (): Promise<any> => ipcRenderer.invoke('deviceBind/logout')
   },
 
   // 工作目录管理

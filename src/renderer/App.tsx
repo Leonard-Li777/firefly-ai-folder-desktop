@@ -26,6 +26,7 @@ import { SplitPreviewPanel } from './components/file-explorer/SplitPreviewPanel'
 import { Organize } from './components/file-explorer/Organize/index'
 import { GlobalSearchOverlay } from './components/file-explorer/GlobalSearchOverlay'
 import { PluginCenterOverlay } from './components/plugin-center/PluginCenterOverlay'
+import { usePluginCenterStore } from './stores/plugin-center-store'
 import { WelcomeWizard } from './components/welcome/WelcomeWizard'
 import { resolveWelcomeGateState, type WelcomeGateModuleLike } from './lib/welcome-gate'
 // PRD-0044（S5）：InitialSetupOverlay / GpuDriverOverlay / ModelDownloadProgress / use-model-download
@@ -62,7 +63,9 @@ const App: React.FC = () => {
     closeRulesDialog,
     isUpgradeOpen,
     openUpgradeDialog,
-    closeUpgradeDialog
+    closeUpgradeDialog,
+    isDeviceBindOpen,
+    setIsDeviceBindOpen
   } = useTierStore()
   const currentWorkspaceDirectory = useVirtualDirectoryStore(s => s.currentWorkspaceDirectory)
 
@@ -80,7 +83,6 @@ const App: React.FC = () => {
     error?: string
     canOffline?: boolean
   } | null>(null)
-  const [isDeviceBindOpen, setIsDeviceBindOpen] = useState(false)
 
   // 首次启动时检测当前设备是否已绑定微信小程序账号（未登录强制扫码绑定，不可跳过）
   // 离线/未授权检测优先：保证如果离线的话，弹出的是离线弹层，而不是登录；
@@ -529,6 +531,15 @@ const App: React.FC = () => {
     }
     initTheme()
   }, [setTheme])
+
+  // 启动期预加载插件清单：无条件从后端拉取真实 install_state，刷新前端 store 的种子兜底数据。
+  // 根因：usePluginCenterStore.modules 初始值来自 getInitialPlugins()，其中 TTS 插件种子的
+  // install_state 恒为 'not_installed'；若不在启动期主动 loadModules()，TTSActionGroup /
+  // GlobalTTSPlaybackBar 等依赖 hasActiveTTS 判定的 UI 会长期误判为「未激活」而不显示，
+  // 直到用户手动打开插件中心浮层才刷新。启动期无条件预加载一次即可彻底消除该空窗。
+  useEffect(() => {
+    void usePluginCenterStore.getState().loadModules()
+  }, [])
 
   // PRD-0044（S5）：模型未下载强制跳转链（含迁移冷却竞态处理）随「内置模型下载链」整体清退删除。
   // 依据：V4 已取消内置模型，模型存在性与下载完全归萤核AI引擎自管；

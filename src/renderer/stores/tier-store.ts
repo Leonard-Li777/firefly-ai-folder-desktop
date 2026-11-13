@@ -18,12 +18,17 @@ interface TierState {
   isUpgradeOpen: boolean
   isRulesOpen: boolean
   rulesDefaultTab: string | undefined
+  isDeviceBindOpen: boolean
 
   clearRefCode: () => void
   openUpgradeDialog: () => void
   closeUpgradeDialog: () => void
   openRulesDialog: (tab?: string) => void
   closeRulesDialog: () => void
+  openDeviceBindModal: () => void
+  closeDeviceBindModal: () => void
+  setIsDeviceBindOpen: (open: boolean) => void
+  logout: () => Promise<void>
   fetchProfile: () => Promise<void>
   syncFromCloud: () => Promise<void>
   fetchConsumptionDetails: () => Promise<void>
@@ -38,6 +43,8 @@ interface TierState {
   updateCurrentCount: (type: string, count: number) => void
   registerProfileListener: () => void
 }
+
+let isManualLogout = false
 
 export const useTierStore = create<TierState>()(
   subscribeWithSelector((set, get) => ({
@@ -63,6 +70,7 @@ export const useTierStore = create<TierState>()(
     consumptionDetails: [],
     subscription: undefined,
     isUpgradeOpen: false,
+    isDeviceBindOpen: false,
     clearRefCode: () => {
       set({ refCode: null })
     },
@@ -80,6 +88,47 @@ export const useTierStore = create<TierState>()(
     },
     closeRulesDialog: () => {
       set({ isRulesOpen: false, rulesDefaultTab: undefined })
+    },
+    openDeviceBindModal: () => {
+      set({ isDeviceBindOpen: true })
+    },
+    closeDeviceBindModal: () => {
+      set({ isDeviceBindOpen: false })
+    },
+    setIsDeviceBindOpen: (open: boolean) => {
+      set({ isDeviceBindOpen: open })
+    },
+
+    logout: async () => {
+      isManualLogout = true
+      set({ isLoading: true })
+      try {
+        if (window.electronAPI?.deviceBind?.logout) {
+          await window.electronAPI.deviceBind.logout()
+        } else if (window.electronAPI?.deviceBind?.unbindDevice) {
+          await window.electronAPI.deviceBind.unbindDevice()
+        }
+      } catch (error) {
+        console.error('Failed to logout device:', error)
+      } finally {
+        set({
+          tier: UserTier.FREE,
+          firecores: 0,
+          refCode: null,
+          entitlements: [],
+          counters: {},
+          subscription: undefined,
+          isLoading: false,
+          isDeviceBindOpen: true
+        })
+        toast.success(t('已退出登录'))
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('firefly:device-unbound'))
+        }
+        setTimeout(() => {
+          isManualLogout = false
+        }, 1500)
+      }
     },
 
     fetchProfile: async () => {
@@ -194,9 +243,16 @@ export const useTierStore = create<TierState>()(
       })
       window.electronAPI.userTier.removeDeviceUnbound?.()
       window.electronAPI.userTier.onDeviceUnbound?.(() => {
-        set({ refCode: null })
+        set({
+          tier: UserTier.FREE,
+          refCode: null,
+          subscription: undefined,
+          isDeviceBindOpen: true
+        })
         get().fetchProfile()
-        toast.warning(t('当前设备登录已失效或已被账号解绑，请重新绑定'))
+        if (!isManualLogout) {
+          toast.warning(t('当前设备登录已失效或已被账号解绑，请重新绑定'))
+        }
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('firefly:device-unbound'))
         }

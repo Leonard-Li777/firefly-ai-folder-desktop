@@ -102,12 +102,25 @@ export function createSupabaseClient(
       } catch (e) {
         logger.warn(LogCategory.SUPABASE, '[SupabaseClientFactory] 读取 DEVICE_AUTH_TOKEN 失败:', e)
       }
+
+      // 规范化 Headers 实例，杜绝因对 Headers 对象执行普通对象展开展开为 {} 导致 apikey 与 authorization 凭据丢失
+      const headers = new Headers(init?.headers)
       if (deviceToken) {
-        fetchOptions.headers = {
-          ...fetchOptions.headers,
-          'x-device-token': deviceToken
-        }
+        headers.set('x-device-token', deviceToken)
       }
+      if (!headers.has('apikey') && key) {
+        headers.set('apikey', key)
+      }
+      if (!headers.has('authorization') && key) {
+        headers.set('authorization', `Bearer ${key}`)
+      }
+      if (machineId && !headers.has('x-machine-id')) {
+        headers.set('x-machine-id', machineId)
+      }
+      if (signature && !headers.has('x-signature')) {
+        headers.set('x-signature', signature)
+      }
+      fetchOptions.headers = headers
 
       let timeout = 60000
       try {

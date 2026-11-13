@@ -122,7 +122,7 @@ describe('DeviceBindModal (Stage 2 关注公众号填口令 / 邮箱验证码二
     const passcodeInput = await screen.findByTestId('oa-passcode-input')
     fireEvent.change(passcodeInput, { target: { value: '7394' } })
 
-    const inviteInput = screen.getByPlaceholderText('选填：输入好友的8位或16位邀请码或邀请链接')
+    const inviteInput = screen.getByPlaceholderText(/选填：输入好友/)
     fireEvent.change(inviteInput, { target: { value: 'AB3K7MPQ' } })
 
     fireEvent.click(screen.getByTestId('stage2-submit-btn'))
@@ -135,6 +135,7 @@ describe('DeviceBindModal (Stage 2 关注公众号填口令 / 邮箱验证码二
     await waitFor(() => {
       expect(screen.getByTestId('bind-success-badge')).toBeDefined()
     })
+    expect(mockToastSuccess).toHaveBeenCalledWith('账号激活成功！好友邀请奖励已发放至您的账户')
     expect(mockSyncFromCloud).toHaveBeenCalledTimes(1)
   })
 

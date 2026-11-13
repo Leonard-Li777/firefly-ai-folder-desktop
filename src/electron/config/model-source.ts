@@ -13,6 +13,56 @@ export const MODEL_CONFIG_SOURCE = () => ({
   lastUpdated: '2026-09-26',
   models: [
     {
+      id: 'Vortecks/LFM3-1.7B-Heretic-Abliterated-GGUF:Q4_K_M',
+      name: `LFM3 1.7B（${t('去限制')}•${t('轻量')}）`,
+      company: 'Vortecks',
+      parameterSize: '1.7B',
+      intelligenceLevel: 2,
+      modelSize: '1.02GB',
+      totalSize: '1.02GB',
+      recommended: true,
+      description: t('显存不足，又想正确分类文件，必须选我，去限制版本（Abliterated）。'),
+      source: 'huggingface',
+      quantization: 'Q4_K_M',
+      isMultiModal: false,
+      contextLength: 131072,
+      capabilities: ['TEXT'],
+      performance: {
+        speed: 'fast',
+        quality: 'high'
+      },
+      tags: [t('去限制'), t('越狱'), 'NSFW', t('仅文本'), t('轻量'), t('支持CPU运行')],
+      recommendedConfig: {
+        numCtx: 8192,
+        numPredict: 2048
+      }
+    },
+    {
+      id: 'alexwkleung/LFM3-1.7B-Heretic-GGUF:Q4_K_M',
+      name: `LFM3 1.7B（${t('越狱')}•${t('轻量')}）`,
+      company: 'alexwkleung',
+      parameterSize: '1.7B',
+      intelligenceLevel: 2,
+      modelSize: '1.02GB',
+      totalSize: '1.02GB',
+      recommended: true,
+      description: t('显存不足，又想正确分类文件，必须选我，唯一缺点仅支持文本。'),
+      source: 'modelscope',
+      quantization: 'Q4_K_M',
+      isMultiModal: false,
+      contextLength: 131072,
+      capabilities: ['TEXT'],
+      performance: {
+        speed: 'fast',
+        quality: 'high'
+      },
+      tags: [t('去限制'), t('越狱'), 'NSFW', t('仅文本'), t('轻量'), t('支持CPU运行')],
+      recommendedConfig: {
+        numCtx: 8192,
+        numPredict: 2048
+      }
+    },
+    {
       id: 'MNN/MNN-Pocket-0.3B-GGUF:Q4_1',
       name: `MNN-Pocket 0.3B（${t('极速')}•${t('轻量')}）`,
       company: 'MNN',

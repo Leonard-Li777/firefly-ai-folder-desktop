@@ -107,6 +107,16 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
   useEffect(() => {
     if (!open) return
     window.electronAPI!.getMachineId().then(setMachineId)
+    const state = useTierStore.getState()
+    if (!state.refCode) {
+      if (typeof state.syncFromCloud === 'function') {
+        state.syncFromCloud().catch(() => {
+          state.fetchProfile().catch(() => {})
+        })
+      } else {
+        state.fetchProfile().catch(() => {})
+      }
+    }
   }, [open])
 
   if (!open) return null
@@ -655,7 +665,7 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                       </p>
                     ) : (
                       <p className="text-muted-foreground text-sm leading-relaxed">
-                        {t('登录并绑定常用邮箱后，即可生成您的专属邀请链接')}
+                        {t('完成账号登录与设备绑定后，即可生成您的专属邀请链接')}
                       </p>
                     )}
                   </div>

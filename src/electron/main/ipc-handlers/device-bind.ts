@@ -123,4 +123,13 @@ export function registerDeviceBindIPCHandlers(): void {
       return { success: false, error: err?.message || 'unknown' }
     }
   })
+
+  ipcMain.handle('deviceBind/logout', async () => {
+    try {
+      return await DeviceBindService.getInstance().logout()
+    } catch (err: any) {
+      logger.error(LogCategory.IPC, '[IPC] deviceBind/logout failed:', err)
+      return { success: false, error: err?.message || 'unknown' }
+    }
+  })
 }

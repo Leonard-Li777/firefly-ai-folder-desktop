@@ -550,16 +550,20 @@ export class DeviceBindService {
         }
       }
 
-      // 分支 C: claimed / consumed (手机端已确认且已完成邮箱验证)
-      if (data?.status === 'claimed' || data?.status === 'consumed') {
-        const sessionToken = data.session_token
+      // 分支 C: bound / claimed / consumed (手机端已确认且已完成邮箱验证，或老用户扫码直接转正)
+      if (
+        data?.status === 'bound' ||
+        data?.status === 'claimed' ||
+        data?.status === 'consumed'
+      ) {
+        const sessionToken = data.device_token || data.session_token
         const sessionId = data.session_id
         if (sessionToken) {
           await this.setDeviceToken(sessionToken)
         }
 
-        // 若已就席入座 (seated === true)
-        if (data.seated) {
+        // 若已就席入座 (seated === true 或 status === 'bound')
+        if (data.status === 'bound' || data.seated) {
           return {
             success: true,
             status: 'bound',
@@ -986,6 +990,59 @@ export class DeviceBindService {
       p_bind_session_token: bindSessionToken,
       p_invitation_code: invitationCode ? invitationCode.trim() : null
     })
+  }
+
+  /**
+   * 退出登录：
+   * 1. 尝试通知云端解绑本机席位与吊销活跃会话
+   * 2. 无论云端通知是否成功，强制彻底清空本地设备会话凭据 (DEVICE_AUTH_TOKEN 与 BIND_SESSION_TOKEN)
+   * 3. 广播 deviceUnbound 事件通知前端刷新状态并重置用户档案
+   */
+  public async logout(): Promise<{ success: boolean; message?: string }> {
+    try {
+      const token = this.getDeviceToken()
+      if (token) {
+        try {
+          const client = this.getClient()
+          await client.functions.invoke('seat-device', {
+            headers: {
+              authorization: `Bearer ${token}`
+            },
+            body: {
+              action: 'unbind'
+            }
+          })
+        } catch (cloudErr) {
+          logger.warn(
+            LogCategory.SYSTEM,
+            '[DeviceBindService] 退出登录通知云端失败(继续本地登出):',
+            cloudErr
+          )
+        }
+      }
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[DeviceBindService] 退出登录预处理异常:', err)
+    } finally {
+      await this.clearAllTokens()
+      try {
+        const { UserTierService } = await import('../user-tier/user-tier-service')
+        UserTierService.getInstance().reloadServices()
+      } catch (tierErr) {
+        logger.warn(
+          LogCategory.SYSTEM,
+          '[DeviceBindService] 退出登录重置 UserTierService 异常:',
+          tierErr
+        )
+      }
+      const mainWindow = getMainWindow()
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('userTier/deviceUnbound')
+      }
+    }
+    return {
+      success: true,
+      message: '已退出登录'
+    }
   }
 
   /**

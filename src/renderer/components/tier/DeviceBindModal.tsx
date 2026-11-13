@@ -226,6 +226,9 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
                 stopPolling()
                 setStep('success')
                 toast.success('微信设备绑定成功！')
+                if (pollRes.user?.ref_code) {
+                  useTierStore.setState({ refCode: pollRes.user.ref_code })
+                }
                 await syncFromCloud().catch(syncErr => {
                   console.warn('[DeviceBindModal] 绑定成功后同步云端权益失败:', syncErr)
                 })
@@ -347,13 +350,13 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
     if (res?.success && res.status === 'active') {
       if (cleanInvite && res.invitation_result) {
         if (res.invitation_result.success) {
-          toast.success(`${successPrefix}已额外获得好友邀请分析额度与萤火奖励`)
+          toast.success('账号激活成功！好友邀请奖励已发放至您的账户')
         } else {
           const invMsg = formatErrorMessage(
             (res.invitation_result as any)?.code,
             res.invitation_result.message || '邀请码未生效'
           )
-          toast.warning(`${successPrefix}但${invMsg}`)
+          toast.warning(`账号激活成功，但${invMsg}`)
         }
       } else {
         toast.success('账号激活与设备绑定成功！')
@@ -644,7 +647,7 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
                       微信扫码关注「{OA_ACCOUNT_NAME}」
                     </div>
                     <p className="text-muted-foreground text-[11px]">
-                      关注后查看欢迎消息中的 4 位数字口令（也可在公众号内回复“口令”获取）
+                      关注后点击：私信，查看欢迎消息中的 4 位数字口令（也可在公众号内回复“口令”获取）
                     </p>
                   </div>
                 </div>
@@ -716,14 +719,16 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
             )}
 
             {/* 好友邀请码 (智能墓碑感知) */}
-            <div className="space-y-1 pt-1 border-t border-border/40">
+            <div className="space-y-1.5 pt-1 border-t border-border/40">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold text-foreground flex items-center gap-1">
                   <Gift className="w-3.5 h-3.5 text-primary" />
                   好友邀请码 (选填)
                 </label>
-                {deviceConsumedInvitation && (
+                {deviceConsumedInvitation ? (
                   <span className="text-[11px] text-muted-foreground">本机已参与过</span>
+                ) : (
+                  <span className="text-[11px] text-primary font-medium">填写可获专属赠送奖励</span>
                 )}
               </div>
               <Input
@@ -731,13 +736,18 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
                 placeholder={
                   deviceConsumedInvitation
                     ? '本机已参与过好友邀请，无需重复填写'
-                    : '选填：输入好友的8位或16位邀请码或邀请链接'
+                    : '选填：输入好友的 8 位或 16 位邀请码或邀请链接'
                 }
                 value={invitationCode}
                 onChange={e => setInvitationCode(e.target.value)}
                 disabled={deviceConsumedInvitation || step === 'submitting'}
                 className="text-xs h-9 font-mono"
               />
+              {!deviceConsumedInvitation && (
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  填写好友邀请码，双方均可额外获赠好友邀请分析额度与萤火奖励
+                </p>
+              )}
             </div>
 
             {/* 提交激活按钮 */}

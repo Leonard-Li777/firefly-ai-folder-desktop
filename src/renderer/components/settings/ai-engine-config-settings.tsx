@@ -523,6 +523,9 @@ export const AIEngineConfigSettings: React.FC = () => {
 
   /** 底座安装态感知（萤核AI引擎为内置捆绑组件，恒为已安装） */
   const cpuInstalled = llmSnapshot?.installation?.cpu === 'installed'
+  // corrupt：DB 记录已安装，但物理权重缺失/校验失败。必须与「未安装」区分，
+  // 否则用户在插件中心看到「已安装」而此处显示「未安装」，产生矛盾且误导。
+  const cpuCorrupt = llmSnapshot?.installation?.cpu === 'corrupt'
   const localInstalled = true
 
   // 自动纠偏：若当前配置模式为 cpu，但快照明确上报未安装，自动矫正为默认内置的 local 萤核AI引擎
@@ -550,6 +553,16 @@ export const AIEngineConfigSettings: React.FC = () => {
     const unavailable = llmSnapshot?.unavailableReason
 
     if (!cpuInstalled && llmSnapshot !== null) {
+      // corrupt（DB 已安装但物理权重损坏/丢失）与 not_installed（真未安装）区分显示，
+      // 避免与插件中心「已安装」状态自相矛盾、误导用户。
+      if (cpuCorrupt) {
+        return (
+          <Badge className="font-semibold px-2 py-0.5 text-[11px] rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400">
+            <CircleAlert className="h-3.5 w-3.5 mr-1" />
+            {t('文件损坏，需修复')}
+          </Badge>
+        )
+      }
       return (
         <Badge className="font-semibold px-2 py-0.5 text-[11px] rounded-full border border-border/60 bg-muted text-muted-foreground">
           <Clock className="h-3.5 w-3.5 mr-1" />
@@ -855,7 +868,7 @@ export const AIEngineConfigSettings: React.FC = () => {
                         usePluginCenterStore.getState().setSelectedCategory('ai-engine')
                       }}
                     >
-                      {t('下载引擎')}
+                      {cpuCorrupt ? t('去修复') : t('下载引擎')}
                     </Button>
                   ) : undefined
               }

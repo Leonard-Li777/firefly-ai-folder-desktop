@@ -4457,6 +4457,13 @@ export class ModularResourceService implements IModularResourceService {
   /**
    * 导出全量离线插件总包 (.ffbundle)
    * 对接 OfflineBundleExporter（官方公钥强校验 + 流式 SHA-256 + 原子刷盘）。
+   *
+   * ⚠️ 设计边界（详见 docs/specs/plugin-center-offline-package-and-environment-visibility-spec.md §2.1.1）：
+   * 本方法是「构建期/开发者模式(isDev)专用」能力，生产环境 UI 已物理隐藏导出入口。
+   * 仅通过「离线包导入」落地的官方签名模块可被导出；「插件中心在线装」模块因 CDN 散装下载
+   * 不携带官方 manifest.sig，会在 getExportableModules 的签名铁律处被跳过，从而返回 EMPTY_SOURCE
+   * （提示文案「请先在插件中心下载所需插件」在在线装场景下具误导性，属已知现象，非缺陷）。
+   * 客户端永不持有官方私钥，无法为在线装资源补签——在线导出不作为面向终端用户的功能提供。
    */
   async exportOfflineBundle(
     targetFilePath: string,
