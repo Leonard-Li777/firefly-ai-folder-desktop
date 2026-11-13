@@ -1991,20 +1991,39 @@ export class OmniService {
     } else if (opts.moduleId === 'tts_moss_onnx' || opts.moduleId === 'tts_m5_onnx') {
       const expectedEngine =
         opts.moduleId === 'tts_m5_onnx' ? 'm5-tts-50m-int8' : 'moss-tts-nano-100m'
-      const statusRes = await fetch(`${this.baseUrl}/api/audio/tts/status`, {
-        signal: AbortSignal.timeout(4000)
-      })
-      if (!statusRes.ok) {
-        throw new Error(`TTS 服务状态查询失败: HTTP ${statusRes.status}`)
+      // 引擎重启后模型加载需要时间，执行有界轮询（最长 15s，每 500ms 重试），杜绝单次 4s 超时误杀降级
+      const deadline = Date.now() + 15_000
+      let lastError = ''
+      let isReady = false
+
+      while (Date.now() < deadline) {
+        try {
+          const statusRes = await fetch(`${this.baseUrl}/api/audio/tts/status`, {
+            signal: AbortSignal.timeout(2000)
+          })
+          if (statusRes.ok) {
+            const ttsStatus = (await statusRes.json()) as {
+              ready?: boolean
+              total_voices?: number
+              engine?: string
+            }
+            if (ttsStatus?.ready && ttsStatus.engine === expectedEngine) {
+              isReady = true
+              break
+            }
+            lastError = `ready=${Boolean(ttsStatus?.ready)}, engine=${ttsStatus?.engine || 'none'}`
+          } else {
+            lastError = `HTTP ${statusRes.status}`
+          }
+        } catch (err: any) {
+          lastError = err?.message || String(err)
+        }
+        await new Promise(resolve => setTimeout(resolve, 500))
       }
-      const ttsStatus = (await statusRes.json()) as {
-        ready?: boolean
-        total_voices?: number
-        engine?: string
-      }
-      if (!ttsStatus?.ready || ttsStatus.engine !== expectedEngine) {
+
+      if (!isReady) {
         throw new Error(
-          `TTS 引擎挂载验证未通过 (expected=${expectedEngine}, actual=${ttsStatus?.engine || 'none'}, ready=${Boolean(ttsStatus?.ready)})`
+          `TTS 引擎挂载验证未通过 (expected=${expectedEngine}, details: ${lastError})`
         )
       }
     }

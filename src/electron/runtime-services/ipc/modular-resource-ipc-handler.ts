@@ -59,6 +59,13 @@ export function registerModularResourceIpcHandlers(
 ): void {
   logger.info(LogCategory.MAIN, '正在注册 ModularResource IPC 处理器...')
 
+  // 为后台静默安装队列注入窗口进度广播通道
+  if (typeof service.setProgressBroadcaster === 'function') {
+    service.setProgressBroadcaster(progressEvt => {
+      broadcastModularResourceProgress(progressEvt)
+    })
+  }
+
   let devModeEnabled = typeof app !== 'undefined' ? !app.isPackaged : true
 
   ipcMain.handle(
@@ -135,6 +142,23 @@ export function registerModularResourceIpcHandlers(
       throw err
     }
   })
+
+  ipcMain.handle(
+    'modular-resource:enqueue-background-installs',
+    async (_event, moduleIds: string[]) => {
+      try {
+        const res = await service.enqueueBackgroundInstalls(moduleIds)
+        return res
+      } catch (err: any) {
+        logger.error(
+          LogCategory.MAIN,
+          `[ModularResourceIPC] enqueue-background-installs 失败:`,
+          err
+        )
+        throw err
+      }
+    }
+  )
 
   ipcMain.handle('modular-resource:uninstall', async (_event, moduleId: string) => {
     try {

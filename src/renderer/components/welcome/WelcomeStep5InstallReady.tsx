@@ -129,6 +129,11 @@ export function WelcomeStep5InstallReady({
           expectedBytes: typeof payload.expectedBytes === 'number' ? payload.expectedBytes : 0,
           state: payload.state
         })
+      } else if (
+        payload?.moduleId &&
+        (payload.state === 'completed' || payload.state === 'failed')
+      ) {
+        setBackgroundCount(prev => Math.max(0, prev - 1))
       }
     })
     return () => {
@@ -203,21 +208,27 @@ export function WelcomeStep5InstallReady({
       setPhase('ready')
       onReady?.()
 
-      // 5. 其余选配扩展插件在后台以非阻塞方式继续安装（fire-and-forget）
+      // 5. 其余选配扩展插件在后台以非阻塞方式交由主进程任务队列接管（进入主界面不中断、不丢状态）
       const totalOptionals = optionalIds.length
       if (totalOptionals > 0) {
         setBackgroundCount(totalOptionals)
-        ;(async () => {
-          for (const optId of optionalIds) {
-            try {
-              await modular?.install?.(optId)
-            } catch (err: any) {
-              console.warn(`[OnlineInstall] 选配插件后台安装异常: ${optId}`, err)
-            } finally {
-              setBackgroundCount(prev => Math.max(0, prev - 1))
+        if (typeof modular?.enqueueBackgroundInstalls === 'function') {
+          modular.enqueueBackgroundInstalls(optionalIds).catch((err: any) => {
+            console.warn('[OnlineInstall] 排队后台选配插件安装异常:', err)
+          })
+        } else {
+          ;(async () => {
+            for (const optId of optionalIds) {
+              try {
+                await modular?.install?.(optId)
+              } catch (err: any) {
+                console.warn(`[OnlineInstall] 选配插件后台安装异常: ${optId}`, err)
+              } finally {
+                setBackgroundCount(prev => Math.max(0, prev - 1))
+              }
             }
-          }
-        })()
+          })()
+        }
       } else {
         setBackgroundCount(0)
       }

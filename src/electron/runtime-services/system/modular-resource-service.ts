@@ -90,6 +90,7 @@ import {
   DirMigrationCoordinator,
   type DirMigrationProgressPayload
 } from './dir-migration-coordinator'
+import { voiceArchiveService } from '../audio/voice-archive-service'
 import { resolveAppRegion } from '../../main/worktree-env'
 import type {
   DirRuntimePhase,
@@ -397,6 +398,12 @@ export interface IModularResourceService {
     moduleId: string,
     onProgress?: (event: ModuleDownloadProgressEvent) => void
   ): Promise<BuiltinModuleView>
+
+  /** 将选配模块加入后台静默安装队列（单实例串行 Singleflight，支持跨上下文接管） */
+  enqueueBackgroundInstalls(moduleIds: string[]): Promise<string[]>
+
+  /** 设置后台安装进度全局广播回调 */
+  setProgressBroadcaster(broadcaster: (event: ModuleDownloadProgressEvent) => void): void
 
   /** 卸载模块（事务内解绑并计算引用计数 -> 归零标记 pending_delete -> 事务外 Tombstone 重命名与退避删除） */
   uninstallModule(moduleId: string): Promise<BuiltinModuleView>
@@ -823,6 +830,9 @@ export class ModularResourceService implements IModularResourceService {
   private schemaIndexDriftDetected = false
   private bgVerificationInFlight: Promise<void> | null = null
   private bgVerificationTimer: NodeJS.Timeout | null = null
+  private backgroundInstallQueue: string[] = []
+  private isProcessingBackgroundQueue = false
+  private backgroundProgressBroadcaster?: (event: ModuleDownloadProgressEvent) => void
 
   /**
    * 槽位排他事务单写者互斥锁 (Spec §3.1)
@@ -3027,7 +3037,6 @@ export class ModularResourceService implements IModularResourceService {
 
     // 失效语音音色内存缓存，确保 voice_tts 槽位切换或卸载立即生效
     try {
-      const { voiceArchiveService } = await import('../audio/voice-archive-service')
       voiceArchiveService?.invalidatePresetVoicesCache?.()
     } catch (err) {
       logger.warn(LogCategory.SYSTEM, '[ModularResource] 失效语音音色缓存告警:', err)
@@ -3589,6 +3598,84 @@ export class ModularResourceService implements IModularResourceService {
         throw err
       }
     })
+  }
+
+  /**
+   * 将选配模块加入后台静默安装队列（单实例串行 Singleflight，支持跨上下文接管）
+   */
+  async enqueueBackgroundInstalls(moduleIds: string[]): Promise<string[]> {
+    this.assertWriteGateAllowed()
+    this.ensureDefaultSeeds()
+    const dao = this.getDao()
+    const validIds: string[] = []
+
+    for (const id of moduleIds) {
+      if (!id || typeof id !== 'string') continue
+      const rec = dao.modules.findByIdSync(id)
+      if (rec && rec.install_state === 'active') {
+        continue // 已激活的无需重复安装
+      }
+      if (!this.backgroundInstallQueue.includes(id)) {
+        this.backgroundInstallQueue.push(id)
+        validIds.push(id)
+      }
+    }
+
+    if (!this.isProcessingBackgroundQueue && this.backgroundInstallQueue.length > 0) {
+      void this.processBackgroundInstallQueue()
+    }
+
+    return validIds
+  }
+
+  /**
+   * 注册后台安装进度全局广播回调
+   */
+  public setProgressBroadcaster(broadcaster: (event: ModuleDownloadProgressEvent) => void): void {
+    this.backgroundProgressBroadcaster = broadcaster
+  }
+
+  /**
+   * 顺序处理后台安装队列
+   */
+  private async processBackgroundInstallQueue(): Promise<void> {
+    if (this.isProcessingBackgroundQueue) return
+    this.isProcessingBackgroundQueue = true
+
+    try {
+      while (this.backgroundInstallQueue.length > 0) {
+        const nextId = this.backgroundInstallQueue.shift()!
+        try {
+          logger.info(
+            LogCategory.SYSTEM,
+            `[ModularResource] 开始执行后台选配插件静默安装: ${nextId}`
+          )
+          await this.installModule(nextId, progressEvt => {
+            this.backgroundProgressBroadcaster?.(progressEvt)
+          })
+          logger.info(LogCategory.SYSTEM, `[ModularResource] 后台选配插件安装就绪并激活: ${nextId}`)
+        } catch (err: any) {
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[ModularResource] 后台选配插件安装异常 (${nextId}):`,
+            err
+          )
+          this.backgroundProgressBroadcaster?.({
+            moduleId: nextId,
+            resourceId: '',
+            downloadedBytes: 0,
+            expectedBytes: 0,
+            percentage: 0,
+            speedBytesPerSec: 0,
+            isResumed: false,
+            state: 'failed',
+            errorMessage: err?.message || String(err)
+          })
+        }
+      }
+    } finally {
+      this.isProcessingBackgroundQueue = false
+    }
   }
 
   /**

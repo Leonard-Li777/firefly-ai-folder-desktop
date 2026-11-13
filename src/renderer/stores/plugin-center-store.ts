@@ -272,6 +272,7 @@ export interface IModularResourceBridge {
   getDevMode?: () => Promise<boolean>
   setDevMode?: (payload: { enabled: boolean }) => Promise<boolean>
   install: (moduleId: string) => Promise<PluginModuleItem>
+  enqueueBackgroundInstalls?: (moduleIds: string[]) => Promise<string[]>
   uninstall: (moduleId: string) => Promise<PluginModuleItem>
   updateState: (
     moduleId: string,
@@ -1150,6 +1151,11 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
               : m
           )
         }))
+        return
+      }
+      if (evt.state === 'completed') {
+        // 后台下载与安装/解压完成：拉取权威事实源，刷新已启用状态并清理残留进度
+        void get().loadModules()
         return
       }
       get().updateDownloadProgress(evt.moduleId, {
