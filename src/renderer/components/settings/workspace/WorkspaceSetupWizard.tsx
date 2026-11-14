@@ -607,9 +607,9 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     return parseWorkspaceConfig(workspace.workspace_config)
   }, [workspace.workspace_config])
 
-  // 当前选中的工作流 ID
+  // 当前选中的工作流 ID (初始为空，由已有绑定或高置信度推荐决策，杜绝低分推荐盲目默认预选)
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string>(
-    (workspace as any).bound_workflow_id || 'builtin.workflow.photography-raw'
+    (workspace as any).bound_workflow_id || ''
   )
 
   // Stage B 语义分与解锁集合 (单代际 epoch 绑定)
@@ -946,10 +946,12 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     return s1 >= 70 && s1 - s2 >= 15
   }, [workflowRecommendations])
 
-  // 初始自动预选推荐工作流
+  // 初始自动预选推荐工作流 (置信度守卫：仅当推荐分 >= 70 时自动预选，避免低分弱推荐被强加默认选中引发困惑)
   useEffect(() => {
     if (top1Recommendation && !hasUserInteractedRef.current) {
-      setSelectedWorkflowId(top1Recommendation.id)
+      if (top1Recommendation.score >= 70) {
+        setSelectedWorkflowId(top1Recommendation.id)
+      }
     }
   }, [top1Recommendation])
 
@@ -1504,7 +1506,11 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
                       : 'bg-muted text-muted-foreground'
                   )}
                 >
-                  {`${isTopRecommendationHighlighted ? '🔥 ' : '★ '}${t('推荐首选 · 实测 {score} 分', { score: top1Recommendation.score })}`}
+                  {isTopRecommendationHighlighted
+                    ? `🔥 ${t('推荐首选 · 实测 {score} 分', { score: top1Recommendation.score })}`
+                    : top1Recommendation.score >= 70
+                      ? `★ ${t('参考首选 · 实测 {score} 分', { score: top1Recommendation.score })}`
+                      : `💡 ${t('建议方案 · 契合度较低 ({score}分)', { score: top1Recommendation.score })}`}
                 </span>
                 <h4 className="text-sm font-bold text-foreground truncate">
                   {top1Recommendation.name}
@@ -1955,7 +1961,13 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
               type="button"
               variant="default"
               size="default"
-              onClick={() => setCurrentStep(2)}
+              disabled={!selectedWorkflowId && !top1Recommendation}
+              onClick={() => {
+                if (!selectedWorkflowId && top1Recommendation) {
+                  setSelectedWorkflowId(top1Recommendation.id)
+                }
+                setCurrentStep(2)
+              }}
               className="w-full sm:w-auto flex items-center justify-center gap-2 text-xs font-bold px-5 bg-primary text-primary-foreground hover:bg-primary/90 h-9 shadow-xs"
             >
               <span>{t('下一步')}</span>

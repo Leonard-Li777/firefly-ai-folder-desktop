@@ -255,7 +255,7 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
     expect(screen.getByText('已完成多维画像嗅探')).toBeDefined()
     expect(screen.getByText('程序与安装包')).toBeDefined()
     expect(screen.getByText('压缩归档 (.zip/.7z)')).toBeDefined()
-    expect(screen.getByText('快捷方式与应用')).toBeDefined()
+    expect(screen.getByText('快捷方式与链接')).toBeDefined()
 
     // 默认展示分类与卡片（mockWorkflows 共有 8 套，Top 6 限制下默认只呈现 6 套）
     expect(screen.getByText('全场景官方工作流矩阵库')).toBeDefined()
@@ -308,7 +308,7 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
     // 包含板块与实测命中数计算：
     // 白名单: .lnk (25) + .png (35) + .docx (15) = 75 / 100
     expect(screen.getByText(/基于当前目录扫描，预计将展示 75 \/ 100 个文件/)).toBeDefined()
-    expect(screen.getByText(/其余 25 个非此类文件将安全隐藏/)).toBeDefined()
+    expect(screen.getByText(/其余 25 个非此类文件将在本软件中隐藏/)).toBeDefined()
 
     // 专属排除卡片存在 (Desktop_Old_Backups)
     expect(screen.getByText('Desktop_Old_Backups')).toBeDefined()

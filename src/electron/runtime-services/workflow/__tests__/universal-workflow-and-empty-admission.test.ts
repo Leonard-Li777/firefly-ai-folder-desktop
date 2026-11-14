@@ -30,7 +30,7 @@ describe('Universal Workflow & Empty Admission Diagnostics & .chm Category Tests
       topExtensions: [{ ext: 'chm', count: 3 }]
     }
 
-    const recs = recommendWorkflowByProfile(stats, allTemplates)
+    const recs = recommendWorkflowByProfile(stats, BLUEPRINT_STATIC_TEMPLATES)
     expect(recs.length).toBeGreaterThan(0)
     const top = recs[0]
     expect(top.workflowId).toBe('builtin.workflow.general-inbox')
@@ -51,7 +51,7 @@ describe('Universal Workflow & Empty Admission Diagnostics & .chm Category Tests
       topExtensions: [{ ext: 'chm', count: 10 }]
     }
 
-    const recs = recommendWorkflowByProfile(stats, allTemplates)
+    const recs = recommendWorkflowByProfile(stats, BLUEPRINT_STATIC_TEMPLATES)
     expect(recs.length).toBeGreaterThan(0)
     const top = recs[0]
     expect(top.workflowId).toBe('builtin.workflow.general-inbox')
@@ -60,7 +60,44 @@ describe('Universal Workflow & Empty Admission Diagnostics & .chm Category Tests
     expect(top.score).toBe(60)
   })
 
-  it('4. 当工作区绑定 builtin.workflow.general-inbox 且开启 SQLite 外键约束时，策略提交必须成功且杜绝 FOREIGN KEY 异常', async () => {
+  it('4. 当目录具备明确垂直工作流格式 (如文档/代码) 时，垂直工作流必须优先于通用工作流，通用工作流绝不凭伪 T2 逆序霸榜', () => {
+    const stats: any = {
+      totalSampled: 10,
+      totalFiles: 10,
+      docCount: 10,
+      imageCount: 0,
+      videoCount: 0,
+      otherCount: 0,
+      countsByExt: { docx: 6, xlsx: 4 },
+      extensionCounts: { docx: 6, xlsx: 4 },
+      topExtensions: [{ ext: 'docx', count: 6 }, { ext: 'xlsx', count: 4 }]
+    }
+    const universalWf: any = {
+      id: 'builtin.workflow.general-inbox',
+      name: '通用文件收纳与分类体系',
+      summary: '全格式放行',
+      category: 'office',
+      persona: 'general',
+      workspace_config: JSON.stringify({ customIncludeRules: [] })
+    }
+    const allTemplates = [universalWf, ...BLUEPRINT_STATIC_TEMPLATES]
+    const recs = recommendWorkflowByProfile(stats, allTemplates)
+    expect(recs.length).toBeGreaterThan(0)
+    const top = recs[0]
+    // 首推绝不是通用工作流，而是垂直文档工作流
+    expect(top.workflowId).not.toBe('builtin.workflow.general-inbox')
+    expect(top.score).toBeGreaterThanOrEqual(68)
+
+    // 通用工作流存在但必须排在垂直工作流之后，且得分为泛用基准分 55
+    const universalRec = recs.find(r => r.workflowId === 'builtin.workflow.general-inbox')
+    if (universalRec) {
+      expect(universalRec.score).toBe(55)
+      expect(universalRec.tier).toBe('T3')
+      expect(recs.indexOf(universalRec)).toBeGreaterThan(0)
+    }
+  })
+
+  it('5. 当工作区绑定 builtin.workflow.general-inbox 且开启 SQLite 外键约束时，策略提交必须成功且杜绝 FOREIGN KEY 异常', async () => {
     const Database = (await import('better-sqlite3')).default
     const { WorkspacePolicyCommitService } = await import('../../workspace/workspace-policy-commit-service')
 

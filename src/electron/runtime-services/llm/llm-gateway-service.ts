@@ -821,7 +821,7 @@ export class LlmGatewayService implements ILlmGatewayService {
     }
 
     // 超时与中断信号绑定 (M-5 / S-3)
-    const timeoutMs = options?.timeoutMs ?? (mode === 'cpu' ? 30000 : 120000)
+    const timeoutMs = options?.timeoutMs ?? 120000
     const timeoutController = new AbortController()
     const timer = setTimeout(() => {
       timeoutController.abort(new LlmGatewayError('TIMEOUT', `推理执行超时 (${timeoutMs}ms)`))
