@@ -1571,7 +1571,46 @@ const electronAPI = {
       voiceId: string | number
       chunkIndex: number
       chunkText?: string
-    }): Promise<ArrayBuffer | null> => ipcRenderer.invoke('tts:read-chunk', params)
+    }): Promise<ArrayBuffer | null> => ipcRenderer.invoke('tts:read-chunk', params),
+
+    // M5-TTS 纯流式会话 API (v1.7.2 规格书 §4.0)
+    startStream: (req: {
+      text: string
+      voiceId: string
+      speed: number
+      resumeCharStart?: number
+    }): Promise<{
+      ok: boolean
+      sessionId?: string
+      sampleRate?: number
+      errorCode?: string
+    }> => ipcRenderer.invoke('tts:stream-start', req),
+    sendFlow: (cmd: { sessionId: string; command: 'pause' | 'resume' }): void =>
+      ipcRenderer.send('tts:stream-flow', cmd),
+    sendHeartbeat: (hb: { sessionId: string; bufferedSeconds: number }): void =>
+      ipcRenderer.send('tts:stream-heartbeat', hb),
+    abortStream: (req: { sessionId: string }): void => ipcRenderer.send('tts:stream-abort', req),
+    onStreamChunkData: (callback: (payload: any) => void): (() => void) => {
+      const handler = (_event: any, payload: any) => callback(payload)
+      ipcRenderer.on('tts:stream-chunk-data', handler)
+      return () => {
+        ipcRenderer.removeListener('tts:stream-chunk-data', handler)
+      }
+    },
+    onStreamEnded: (callback: (payload: any) => void): (() => void) => {
+      const handler = (_event: any, payload: any) => callback(payload)
+      ipcRenderer.on('tts:stream-ended', handler)
+      return () => {
+        ipcRenderer.removeListener('tts:stream-ended', handler)
+      }
+    },
+    onBusyRejected: (callback: (payload: any) => void): (() => void) => {
+      const handler = (_event: any, payload: any) => callback(payload)
+      ipcRenderer.on('tts:busy-rejected', handler)
+      return () => {
+        ipcRenderer.removeListener('tts:busy-rejected', handler)
+      }
+    }
   },
 
   externalApi: {

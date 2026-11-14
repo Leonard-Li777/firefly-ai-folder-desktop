@@ -1142,6 +1142,23 @@ declare global {
           chunkIndex: number
           chunkText?: string
         }) => Promise<ArrayBuffer | null>
+        startStream: (req: {
+          text: string
+          voiceId: string
+          speed: number
+          resumeCharStart?: number
+        }) => Promise<{
+          ok: boolean
+          sessionId?: string
+          sampleRate?: number
+          errorCode?: string
+        }>
+        sendFlow: (cmd: { sessionId: string; command: 'pause' | 'resume' }) => void
+        sendHeartbeat: (hb: { sessionId: string; bufferedSeconds: number }) => void
+        abortStream: (req: { sessionId: string }) => void
+        onStreamChunkData: (callback: (payload: any) => void) => () => void
+        onStreamEnded: (callback: (payload: any) => void) => () => void
+        onBusyRejected: (callback: (payload: any) => void) => () => void
       }
       modularResource?: import('../../renderer/stores/plugin-center-store').IModularResourceBridge
       deviceBind: {

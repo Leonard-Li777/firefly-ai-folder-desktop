@@ -11,6 +11,7 @@
 
 import { create } from 'zustand'
 import { cleanTextForTTS, splitTextIntoChunks } from '../lib/text-chunker'
+import { StreamingPCMPlayer } from '../utils/streaming-pcm-player'
 import { useConfigStore } from './config-store'
 import { useSettingsStore } from './settings-store'
 import { usePluginCenterStore } from './plugin-center-store'
@@ -183,6 +184,9 @@ let progressTimer: ReturnType<typeof setInterval> | null = null
 let isAllChunksScheduled = false
 let isHotSwitchInProgress = false
 
+let currentStreamingPlayer: StreamingPCMPlayer | null = null
+let activeStreamCleanups: (() => void)[] = []
+
 let activeSynthesizingCount = 0
 
 function updateSynthesizingCounter(delta: number) {
@@ -205,10 +209,29 @@ async function safeSynthesizeChunk(
   }
   updateSynthesizingCounter(1)
   try {
-    return await window.electronAPI.tts.synthesizeChunk(text, voiceId, speed, sessionId, sid)
+    // 对齐规格书 §4.3: 遇到忙碌冲突等瞬态失败执行有界指数退避重试 (最多 3 次，间隔 500ms、1000ms、2000ms)
+    let retryDelay = 500
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const res = await window.electronAPI.tts.synthesizeChunk(text, voiceId, speed, sessionId, sid)
+      if (res && res.buffer && res.buffer.byteLength > 0) {
+        return res
+      }
+      if (attempt < 2) {
+        await new Promise(resolve => setTimeout(resolve, retryDelay))
+        retryDelay *= 2
+      }
+    }
+    return null
   } finally {
     updateSynthesizingCounter(-1)
   }
+}
+
+// 注册 Scheme A 遭遇流式占用被拒绝时的全局广播提示
+if (typeof window !== 'undefined' && window.electronAPI?.tts?.onBusyRejected) {
+  window.electronAPI.tts.onBusyRejected(() => {
+    toast.warning(t('语音引擎正处于沉浸式流式朗读中，分块请求已排队'), 3000, 'tts-busy-rejected')
+  })
 }
 
 /** 预缓冲水线配置常数 (自适应抗饥饿流式管线：单句自愈秒开，长文本双句蓄水安全起播，后续分句后台持续无缝衔接) */
@@ -1148,6 +1171,12 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
   },
 
   pause: async () => {
+    if (currentStreamingPlayer) {
+      currentStreamingPlayer.pause()
+      stopProgressMonitor()
+      set({ status: 'paused' })
+      return
+    }
     if (audioContext && audioContext.state === 'running') {
       await audioContext.suspend()
       stopProgressMonitor()
@@ -1156,6 +1185,12 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
   },
 
   resume: async () => {
+    if (currentStreamingPlayer) {
+      await currentStreamingPlayer.resume()
+      set({ status: 'playing' })
+      ensureProgressMonitor()
+      return
+    }
     if (audioContext && audioContext.state === 'suspended') {
       await audioContext.resume()
       set({ status: 'playing' })
@@ -1166,6 +1201,13 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
   },
 
   stop: async () => {
+    if (currentStreamingPlayer) {
+      currentStreamingPlayer.stop()
+      currentStreamingPlayer = null
+    }
+    activeStreamCleanups.forEach(fn => fn())
+    activeStreamCleanups = []
+
     isHotSwitchInProgress = false
     stopProgressMonitor()
     clearScheduledSources()
@@ -1481,7 +1523,93 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
       }
     }
 
-    // 5. 流式合成调度循环（基于独立分片池架构，每句严格按 index 顺序消费与排程，杜绝旧断点导致重复播放首段）
+    // 5. 纯流式通道优先尝试 (Scheme B - M5 Pure Streaming: 首包 ~120ms 发声，TTFS 降至 0.8s)
+    const isM5Active =
+      hasActiveTTSPlugin() &&
+      (getActiveTTSPluginId() === 'tts_m5_onnx' ||
+        String(chosenVoiceId).includes('m5') ||
+        String(chosenVoiceId).startsWith('preset_') ||
+        String(chosenVoiceId).includes('azure_'))
+
+    if (isM5Active && window.electronAPI?.tts?.startStream) {
+      try {
+        if (currentStreamingPlayer) {
+          currentStreamingPlayer.stop()
+          currentStreamingPlayer = null
+        }
+        activeStreamCleanups.forEach(fn => fn())
+        activeStreamCleanups = []
+
+        const streamAck = await window.electronAPI.tts.startStream({
+          text,
+          voiceId: String(chosenVoiceId),
+          speed: chosenSpeed
+        })
+
+        if (streamAck.ok && streamAck.sessionId) {
+          if (activeSessionId !== thisSessionId) {
+            window.electronAPI.tts.abortStream?.({ sessionId: streamAck.sessionId })
+            return
+          }
+
+          // 构造分句字符区间表，用于根据 playedCharEnd 动态定位 currentSentenceIndex 与逐句高亮
+          let charOffset = 0
+          const chunkRanges = chunks.map(chunk => {
+            const start = charOffset
+            charOffset += chunk.length
+            return { start, end: charOffset }
+          })
+
+          const player = new StreamingPCMPlayer({
+            onProgress: playedCharEnd => {
+              if (activeSessionId !== thisSessionId) return
+              const foundIdx = chunkRanges.findIndex(
+                r => playedCharEnd >= r.start && playedCharEnd <= r.end
+              )
+              if (foundIdx !== -1 && get().currentSentenceIndex !== foundIdx) {
+                set({ currentSentenceIndex: foundIdx })
+              }
+            },
+            onEnded: () => {
+              if (activeSessionId !== thisSessionId) return
+              set({ status: 'idle', currentSentenceIndex: 0 })
+              stopProgressMonitor()
+            },
+            onError: err => {
+              console.error('[TTS Stream Player] 播放器异常:', err)
+            }
+          })
+
+          currentStreamingPlayer = player
+          await player.start(streamAck.sessionId)
+
+          // 注册下行流数据与结束监听
+          const unlistenChunk = window.electronAPI.tts.onStreamChunkData((payload: any) => {
+            if (activeSessionId !== thisSessionId || payload.sessionId !== streamAck.sessionId)
+              return
+            player.pushChunk(payload)
+            if (get().status === 'loading') {
+              set({ status: 'playing' })
+            }
+          })
+
+          const unlistenEnded = window.electronAPI.tts.onStreamEnded((payload: any) => {
+            if (activeSessionId !== thisSessionId || payload.sessionId !== streamAck.sessionId)
+              return
+            if (payload.reason === 'error' || payload.reason === 'renderer_frozen') {
+              set({ status: 'error', errorMessage: payload.errorCode || '流式播放中断' })
+            }
+          })
+
+          activeStreamCleanups.push(unlistenChunk, unlistenEnded)
+          return
+        }
+      } catch (streamErr) {
+        console.warn('[TTS] 启动纯流式通道失败，平滑降级至分片合成模式:', streamErr)
+      }
+    }
+
+    // 6. 流式合成调度循环 (Scheme A 传统分片降级路线)
     try {
       const startIndex = 0
 
@@ -1758,7 +1886,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
       return savedPath
     } catch (err) {
       console.error('[TTS] 导出音频失败:', err)
-      set({ status: previousStatus, errorMessage: '导出音频失败' })
+      set({ status: previousStatus, errorMessage: t('导出音频失败') })
       return null
     }
   },
@@ -1903,13 +2031,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         }
 
         if (!baseBuffer) {
-          const synthRes = await safeSynthesizeChunk(
-            chunkText,
-            voiceId,
-            1.0,
-            thisSeekSession,
-            sid
-          )
+          const synthRes = await safeSynthesizeChunk(chunkText, voiceId, 1.0, thisSeekSession, sid)
           if (synthRes) {
             if (synthRes.hitCap) {
               toast.warning(t('音频片段过长已自动截断'))

@@ -18,6 +18,7 @@ import { useTierStore } from '../../stores/tier-store'
 import { toast } from '../common/Toast'
 import { DeviceEvictDialog } from './DeviceEvictDialog'
 import { extractInvitationCodeInput } from '../../lib/marketing-link'
+import { t } from '@app/languages'
 
 const oaQrImageUrl = new URL('../../assets/official-account-qr.jpg', import.meta.url).href
 const OA_ACCOUNT_NAME = '萤核智能文件夹'
@@ -44,45 +45,45 @@ type BindStep = 'qr_loading' | 'qr_polling' | 'contact_input' | 'submitting' | '
 type Stage2ContactTab = 'wechat_oa' | 'email'
 
 function formatErrorMessage(err?: string, fallbackMessage?: string): string {
-  if (!err && !fallbackMessage) return '网络开小差了，请点击重试'
+  if (!err && !fallbackMessage) return t('网络开小差了，请点击重试')
   // §3.4 UI 大白话文案映射表（严禁技术术语）
-  if (err === 'INVALID_INVITATION_CODE') return '这个邀请码无效，请核对后再试'
-  if (err === 'SELF_INVITATION_FORBIDDEN') return '不能使用自己的邀请码哦'
-  if (err === 'MUTUAL_INVITATION_FORBIDDEN') return '你和该好友已经互相邀请过，不能重复兑换'
-  if (err === 'ALREADY_INVITED') return '这个账号已经使用过邀请资格了'
+  if (err === 'INVALID_INVITATION_CODE') return t('这个邀请码无效，请核对后再试')
+  if (err === 'SELF_INVITATION_FORBIDDEN') return t('不能使用自己的邀请码哦')
+  if (err === 'MUTUAL_INVITATION_FORBIDDEN') return t('你和该好友已经互相邀请过，不能重复兑换')
+  if (err === 'ALREADY_INVITED') return t('这个账号已经使用过邀请资格了')
   if (err === 'DEVICE_GRAPH_OVERLAP_FORBIDDEN' || err === 'DEVICE_ALREADY_CONSUMED') {
-    return '当前设备已使用过邀请奖励或与对方设备存在关联，暂不支持此次兑换'
+    return t('当前设备已使用过邀请奖励或与对方设备存在关联，暂不支持此次兑换')
   }
-  if (err === 'INVITATION_CAP_REACHED') return '该好友的邀请名额已用完'
-  if (err === 'INVALID_CODE') return '验证码不正确，请重新输入'
-  if (err === 'CODE_EXPIRED') return '邮箱验证码已过期，请重新获取'
+  if (err === 'INVITATION_CAP_REACHED') return t('该好友的邀请名额已用完')
+  if (err === 'INVALID_CODE') return t('验证码不正确，请重新输入')
+  if (err === 'CODE_EXPIRED') return t('邮箱验证码已过期，请重新获取')
   if (err === 'SESSION_EXPIRED' || err === 'BIND_SESSION_EXPIRED') {
-    return '微信扫码登录状态已过期，请重新扫码登录'
+    return t('微信扫码登录状态已过期，请重新扫码登录')
   }
-  if (err === 'REDISPATCH_EXHAUSTED') return '操作过于频繁或重试次数已达上限，请重新扫码获取'
-  if (err === 'MAX_ATTEMPTS_EXCEEDED') return '验证码错误次数过多，请稍后再试'
+  if (err === 'REDISPATCH_EXHAUSTED') return t('操作过于频繁或重试次数已达上限，请重新扫码获取')
+  if (err === 'MAX_ATTEMPTS_EXCEEDED') return t('验证码错误次数过多，请稍后再试')
   if (err === 'EMAIL_ALREADY_BOUND' || err === 'EMAIL_OCCUPIED')
-    return '该邮箱已绑定其他账号，请更换邮箱后重试'
-  if (err === 'NEED_SEAT') return '当前电脑账号下的登录设备已达上限，请先移除一台不常用的旧设备'
+    return t('该邮箱已绑定其他账号，请更换邮箱后重试')
+  if (err === 'NEED_SEAT') return t('当前电脑账号下的登录设备已达上限，请先移除一台不常用的旧设备')
   if (err === 'DEVICE_UNBOUND' || err === 'SESSION_INVALID' || err === 'UNAUTHORIZED') {
-    return '登录状态已失效，请重新登录'
+    return t('登录状态已失效，请重新登录')
   }
   if (err === 'INVITER_INACTIVE' || err === 'INVITEE_INACTIVE')
-    return '账号状态异常，暂不支持此次兑换'
-  if (err === 'RETRY_LATER' || err === 'CONCURRENT_LOCK_RETRY') return '系统繁忙，请稍后再试'
+    return t('账号状态异常，暂不支持此次兑换')
+  if (err === 'RETRY_LATER' || err === 'CONCURRENT_LOCK_RETRY') return t('系统繁忙，请稍后再试')
 
   // 其他常见错误的大白话处理
-  if (err === 'RATE_LIMIT_EXCEEDED') return '操作过于频繁，请 1 分钟后再试'
-  if (err === 'machine_id_missing') return '未检测到当前电脑硬件标识'
-  if (err === 'CLAIM_PENDING') return '当前二维码正在被其他手机确认，请稍等或点击刷新二维码'
-  if (err === 'DISPOSABLE_DOMAIN') return '请使用常见的个人邮箱，暂不支持临时或一次性邮箱'
+  if (err === 'RATE_LIMIT_EXCEEDED') return t('操作过于频繁，请 1 分钟后再试')
+  if (err === 'machine_id_missing') return t('未检测到当前电脑硬件标识')
+  if (err === 'CLAIM_PENDING') return t('当前二维码正在被其他手机确认，请稍等或点击刷新二维码')
+  if (err === 'DISPOSABLE_DOMAIN') return t('请使用常见的个人邮箱，暂不支持临时或一次性邮箱')
   if (err === 'SEAT_FAILED' || err === 'MISSING_SESSION_TOKEN') {
-    return fallbackMessage || '当前电脑登录席位激活失败，请点击重试或刷新二维码'
+    return fallbackMessage || t('当前电脑登录席位激活失败，请点击重试或刷新二维码')
   }
   if (err === 'EVICT_QUOTA_EXCEEDED') {
-    return fallbackMessage || '本月自助换绑次数已用完，请替换闲置超过 90 天的旧电脑或联系客服'
+    return fallbackMessage || t('本月自助换绑次数已用完，请替换闲置超过 90 天的旧电脑或联系客服')
   }
-  return fallbackMessage || err || '网络开小差了，请点击重试'
+  return fallbackMessage || err || t('网络开小差了，请点击重试')
 }
 
 export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenChange }) => {
@@ -225,7 +226,7 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
               if (pollRes.status === 'bound' && pollRes.seated !== false) {
                 stopPolling()
                 setStep('success')
-                toast.success('微信设备绑定成功！')
+                toast.success(t('微信设备绑定成功！'))
                 if (pollRes.user?.ref_code) {
                   useTierStore.setState({ refCode: pollRes.user.ref_code })
                 }
@@ -245,7 +246,7 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
               }
             } else if (pollRes?.error === 'CODE_EXPIRED' || pollRes?.status === 'expired') {
               stopPolling()
-              setError('二维码已过期，请点击刷新二维码重试')
+              setError(t('二维码已过期，请点击刷新二维码重试'))
             } else if (pollRes?.status === 'error' || pollRes?.error) {
               stopPolling()
               setError(formatErrorMessage(pollRes.error, pollRes.message))
@@ -289,7 +290,7 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
   const handleSendOtp = async () => {
     const cleanEmail = email.trim()
     if (!cleanEmail || !cleanEmail.includes('@') || !cleanEmail.includes('.')) {
-      toast.error('请输入格式正确的邮箱地址')
+      toast.error(t('请输入格式正确的邮箱地址'))
       return
     }
 
@@ -298,7 +299,7 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
     try {
       const res = await window.electronAPI.deviceBind.sendEmailOtp({ email: cleanEmail })
       if (res?.success) {
-        toast.success('验证码已发送至您的邮箱，请注意查收')
+        toast.success(t('验证码已发送至您的邮箱，请注意查收'))
         setCooldown(res.cooldown_seconds || 60)
       } else {
         if (
@@ -306,8 +307,8 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
           res?.error === 'BIND_SESSION_EXPIRED' ||
           res?.error === 'UNAUTHORIZED'
         ) {
-          toast.error('微信扫码状态已过期，请重新扫码登录')
-          setError('微信扫码状态已过期，请重新扫码登录')
+          toast.error(t('微信扫码状态已过期，请重新扫码登录'))
+          setError(t('微信扫码状态已过期，请重新扫码登录'))
           if (window.electronAPI?.deviceBind?.resetToQr) {
             await window.electronAPI.deviceBind.resetToQr()
           }
@@ -350,16 +351,16 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
     if (res?.success && res.status === 'active') {
       if (cleanInvite && res.invitation_result) {
         if (res.invitation_result.success) {
-          toast.success('账号激活成功！好友邀请奖励已发放至您的账户')
+          toast.success(t('账号激活成功！好友邀请奖励已发放至您的账户'))
         } else {
           const invMsg = formatErrorMessage(
             (res.invitation_result as any)?.code,
-            res.invitation_result.message || '邀请码未生效'
+            res.invitation_result.message || t('邀请码未生效')
           )
-          toast.warning(`账号激活成功，但${invMsg}`)
+          toast.warning(t('账号激活成功，但{msg}', { msg: invMsg }))
         }
       } else {
-        toast.success('账号激活与设备绑定成功！')
+        toast.success(t('账号激活与设备绑定成功！'))
       }
 
       setStep('success')
@@ -373,8 +374,8 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
     }
 
     if (res?.error === 'SESSION_EXPIRED' || res?.error === 'BIND_SESSION_EXPIRED') {
-      toast.error('微信扫码状态已过期，请重新扫码登录')
-      setError('微信扫码状态已过期，请重新扫码登录')
+      toast.error(t('微信扫码状态已过期，请重新扫码登录'))
+      setError(t('微信扫码状态已过期，请重新扫码登录'))
       if (window.electronAPI?.deviceBind?.resetToQr) {
         await window.electronAPI.deviceBind.resetToQr()
       }
@@ -404,8 +405,8 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
     const cleanInvite = extractInvitationCodeInput(invitationCode) || ''
 
     if (cleanPasscode !== OA_FOLLOW_PASSCODE) {
-      setError(`口令不正确，请扫码关注公众号「${OA_ACCOUNT_NAME}」后输入自动回复中的 4 位数字口令`)
-      toast.error('口令不正确，请核对公众号自动回复')
+      setError(t('口令不正确，请扫码关注公众号「{name}」后输入自动回复中的 4 位数字口令', { name: OA_ACCOUNT_NAME }))
+      toast.error(t('口令不正确，请核对公众号自动回复'))
       return
     }
 
@@ -416,7 +417,7 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
       const res = await window.electronAPI.deviceBind.completeOaContactBinding({
         invitationCode: cleanInvite || undefined
       })
-      await finishStage2Activation(res, cleanInvite, '公众号验证成功！')
+      await finishStage2Activation(res, cleanInvite, t('公众号验证成功！'))
     } catch (err: any) {
       setError(formatErrorMessage(err?.message))
       setStep('contact_input')
@@ -430,11 +431,11 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
     const cleanInvite = extractInvitationCodeInput(invitationCode) || ''
 
     if (!cleanEmail || !cleanEmail.includes('@')) {
-      toast.error('请输入正确的常用邮箱')
+      toast.error(t('请输入正确的常用邮箱'))
       return
     }
     if (!cleanOtp || cleanOtp.length < 6) {
-      toast.error('请输入 6 位邮箱验证码')
+      toast.error(t('请输入 6 位邮箱验证码'))
       return
     }
 
@@ -447,7 +448,7 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
         code: cleanOtp,
         invitationCode: cleanInvite || undefined
       })
-      await finishStage2Activation(res, cleanInvite, '邮箱绑定成功！')
+      await finishStage2Activation(res, cleanInvite, t('邮箱绑定成功！'))
     } catch (err: any) {
       setError(formatErrorMessage(err?.message))
       setStep('contact_input')
@@ -481,16 +482,16 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
           <DialogTitle className="text-lg font-bold tracking-tight">
             {step === 'contact_input' || step === 'submitting'
               ? ENABLE_EMAIL_BINDING
-                ? '关注公众号或绑定邮箱 · 完成账号激活'
-                : '关注公众号 · 完成账号激活'
-              : '微信扫码登录 · 绑定当前电脑'}
+                ? t('关注公众号或绑定邮箱 · 完成账号激活')
+                : t('关注公众号 · 完成账号激活')
+              : t('微信扫码登录 · 绑定当前电脑')}
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
             {step === 'contact_input' || step === 'submitting'
               ? ENABLE_EMAIL_BINDING
-                ? '任选一种方式即可进入软件，后续重要升级与福利通知不错过'
-                : '关注官方公众号获取 4 位数字口令，重要升级与福利通知不错过'
-              : '使用微信扫描小程序码，同一账号支持在多台设备间共享权益'}
+                ? t('任选一种方式即可进入软件，后续重要升级与福利通知不错过')
+                : t('关注官方公众号获取 4 位数字口令，重要升级与福利通知不错过')
+              : t('使用微信扫描小程序码，同一账号支持在多台设备间共享权益')}
           </DialogDescription>
         </DialogHeader>
 
@@ -501,7 +502,7 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
               {step === 'qr_loading' && (
                 <div className="flex flex-col items-center gap-2 text-muted-foreground text-xs">
                   <RefreshCw className="w-6 h-6 animate-spin text-primary" />
-                  <span>正在生成微信专属二维码...</span>
+                  <span>{t('正在生成微信专属二维码...')}</span>
                 </div>
               )}
 
@@ -515,7 +516,7 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
                     className="mt-2 text-xs h-8"
                     onClick={() => loadBindCode(true)}
                   >
-                    <RefreshCw className="w-3.5 h-3.5 mr-1" /> 重试
+                    <RefreshCw className="w-3.5 h-3.5 mr-1" /> {t('重试')}
                   </Button>
                 </div>
               )}
@@ -525,7 +526,7 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
                   <img
                     data-testid="bind-qr-image"
                     src={bindData.imageDataUrl}
-                    alt="微信扫码绑定"
+                    alt={t('微信扫码绑定')}
                     className="w-56 h-56 object-contain"
                   />
                 </div>
@@ -537,7 +538,7 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
                 <div className="flex items-center justify-between px-3 py-2 bg-muted/40 rounded-lg border border-border/50 text-xs">
                   <div className="flex items-center gap-1.5 text-muted-foreground">
                     <ShieldCheck className="w-4 h-4 text-primary" />
-                    <span>设备校验码:</span>
+                    <span>{t('设备校验码:')}</span>
                   </div>
                   <span
                     data-testid="bind-code-text"
@@ -550,9 +551,9 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
                 <div className="flex items-center justify-between px-3 py-1.5 text-[11px] text-muted-foreground/80">
                   <div className="flex items-center gap-1">
                     <Laptop className="w-3.5 h-3.5" />
-                    <span>{bindData.deviceLabel || '当前电脑'}</span>
+                    <span>{bindData.deviceLabel || t('当前电脑')}</span>
                   </div>
-                  <span>尾号: ...{bindData.machineIdTail || '----'}</span>
+                  <span>{t('尾号: ...')}{bindData.machineIdTail || '----'}</span>
                 </div>
               </div>
             )}
@@ -569,7 +570,7 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
                 <RefreshCw
                   className={`w-3.5 h-3.5 mr-1.5 ${step === 'qr_loading' ? 'animate-spin' : ''}`}
                 />
-                刷新二维码
+                {t('刷新二维码')}
               </Button>
             </div>
           </div>
@@ -602,7 +603,7 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  关注公众号填口令
+                  {t('关注公众号填口令')}
                 </button>
                 <button
                   type="button"
@@ -618,7 +619,7 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  邮箱验证码
+                  {t('邮箱验证码')}
                 </button>
               </div>
             )}
@@ -629,12 +630,12 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
                   <div className="w-28 h-28 shrink-0 rounded-lg bg-white p-1.5 border border-border/50 flex items-center justify-center overflow-hidden">
                     {oaQrLoadFailed ? (
                       <div className="text-[11px] text-center text-muted-foreground leading-snug px-1">
-                        二维码加载失败，请在微信搜索关注“{OA_ACCOUNT_NAME}”
+                        {t('二维码加载失败，请在微信搜索关注“{name}”', { name: OA_ACCOUNT_NAME })}
                       </div>
                     ) : (
                       <img
                         src={oaQrImageUrl}
-                        alt={`${OA_ACCOUNT_NAME}公众号二维码`}
+                        alt={t('{name}公众号二维码', { name: OA_ACCOUNT_NAME })}
                         className="w-full h-full object-contain"
                         onError={() => {
                           setOaQrLoadFailed(true)
@@ -644,22 +645,22 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
                   </div>
                   <div className="space-y-1.5 text-xs leading-relaxed">
                     <div className="font-semibold text-foreground">
-                      微信扫码关注「{OA_ACCOUNT_NAME}」
+                      {t('微信扫码关注「{name}」', { name: OA_ACCOUNT_NAME })}
                     </div>
                     <p className="text-muted-foreground text-[11px]">
-                      关注后点击：私信，查看欢迎消息中的 4 位数字口令（也可在公众号内回复“口令”获取）
+                      {t('关注后点击：私信，查看欢迎消息中的 4 位数字口令（也可在公众号内回复“口令”获取）')}
                     </p>
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-foreground">4 位数字口令</label>
+                  <label className="text-xs font-semibold text-foreground">{t('4 位数字口令')}</label>
                   <Input
                     data-testid="oa-passcode-input"
                     type="text"
                     inputMode="numeric"
                     maxLength={4}
-                    placeholder="输入公众号回复的 4 位数字口令"
+                    placeholder={t('输入公众号回复的 4 位数字口令')}
                     value={oaPasscode}
                     onChange={e => setOaPasscode(e.target.value.replace(/\D/g, '').slice(0, 4))}
                     disabled={step === 'submitting'}
@@ -673,10 +674,10 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
               <div className="space-y-3" data-testid="panel-email-otp">
                 {/* 邮箱输入 */}
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-foreground">常用邮箱</label>
+                  <label className="text-xs font-semibold text-foreground">{t('常用邮箱')}</label>
                   <Input
                     type="email"
-                    placeholder="例如 yourname@qq.com / 163.com"
+                    placeholder={t('例如 yourname@qq.com / 163.com')}
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     disabled={step === 'submitting'}
@@ -686,12 +687,12 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
 
                 {/* 验证码输入与获取按钮 */}
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-foreground">邮箱验证码</label>
+                  <label className="text-xs font-semibold text-foreground">{t('邮箱验证码')}</label>
                   <div className="flex gap-2">
                     <Input
                       type="text"
                       maxLength={6}
-                      placeholder="6 位数字"
+                      placeholder={t('6 位数字')}
                       value={otpCode}
                       onChange={e => setOtpCode(e.target.value)}
                       disabled={step === 'submitting'}
@@ -708,9 +709,9 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
                       {sendingOtp ? (
                         <RefreshCw className="w-3.5 h-3.5 animate-spin mr-1" />
                       ) : cooldown > 0 ? (
-                        `${cooldown} 秒后重发`
+                        t('{count} 秒后重发', { count: cooldown })
                       ) : (
-                        '获取验证码'
+                        t('获取验证码')
                       )}
                     </Button>
                   </div>
@@ -723,20 +724,20 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
               <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold text-foreground flex items-center gap-1">
                   <Gift className="w-3.5 h-3.5 text-primary" />
-                  好友邀请码 (选填)
+                  {t('好友邀请码 (选填)')}
                 </label>
                 {deviceConsumedInvitation ? (
-                  <span className="text-[11px] text-muted-foreground">本机已参与过</span>
+                  <span className="text-[11px] text-muted-foreground">{t('本机已参与过')}</span>
                 ) : (
-                  <span className="text-[11px] text-primary font-medium">填写可获专属赠送奖励</span>
+                  <span className="text-[11px] text-primary font-medium">{t('填写可获专属赠送奖励')}</span>
                 )}
               </div>
               <Input
                 type="text"
                 placeholder={
                   deviceConsumedInvitation
-                    ? '本机已参与过好友邀请，无需重复填写'
-                    : '选填：输入好友的 8 位或 16 位邀请码或邀请链接'
+                    ? t('本机已参与过好友邀请，无需重复填写')
+                    : t('选填：输入好友的 8 位或 16 位邀请码或邀请链接')
                 }
                 value={invitationCode}
                 onChange={e => setInvitationCode(e.target.value)}
@@ -745,7 +746,7 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
               />
               {!deviceConsumedInvitation && (
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  填写好友邀请码，双方均可额外获赠好友邀请分析额度与萤火奖励
+                  {t('填写好友邀请码，双方均可额外获赠好友邀请分析额度与萤火奖励')}
                 </p>
               )}
             </div>
@@ -770,10 +771,10 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
               {step === 'submitting' ? (
                 <>
                   <RefreshCw className="w-3.5 h-3.5 animate-spin mr-1.5" />
-                  正在激活账号...
+                  {t('正在激活账号...')}
                 </>
               ) : (
-                '完成绑定并进入软件'
+                t('完成绑定并进入软件')
               )}
             </Button>
 
@@ -789,7 +790,7 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
                 disabled={step === 'submitting'}
               >
                 <ArrowLeft className="w-3.5 h-3.5 mr-1" />
-                返回重新扫码
+                {t('返回重新扫码')}
               </Button>
             </div>
           </div>
@@ -802,8 +803,8 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
             className="flex flex-col items-center justify-center py-8 space-y-3 animate-in fade-in zoom-in-95"
           >
             <CheckCircle2 className="w-16 h-16 text-emerald-500" />
-            <span className="text-base font-bold text-foreground">绑定与账号激活成功</span>
-            <span className="text-xs text-muted-foreground">正在同步会员资产并进入软件...</span>
+            <span className="text-base font-bold text-foreground">{t('绑定与账号激活成功')}</span>
+            <span className="text-xs text-muted-foreground">{t('正在同步会员资产并进入软件...')}</span>
           </div>
         )}
       </DialogContent>
@@ -820,7 +821,7 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
         sessionToken={pendingSessionToken}
         onEvictedSuccess={async () => {
           setStep('success')
-          toast.success('设备替换成功，已完成登录！')
+          toast.success(t('设备替换成功，已完成登录！'))
           const codeCandidate = extractInvitationCodeInput(invitationCode)
           if (codeCandidate) {
             try {
@@ -831,13 +832,13 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
                 )) ??
                 (await window.electronAPI.invitation?.redeem?.(codeCandidate))
               if (redeemRes?.success) {
-                toast.success('好友邀请奖励兑换成功！')
+                toast.success(t('好友邀请奖励兑换成功！'))
               } else if (redeemRes && redeemRes.success === false) {
                 const warnMsg = formatErrorMessage(
                   redeemRes.error || (redeemRes as any).code,
-                  redeemRes.message || '邀请奖励兑换未生效'
+                  redeemRes.message || t('邀请奖励兑换未生效')
                 )
-                toast.warning(`换绑成功，但${warnMsg}`)
+                toast.warning(t('换绑成功，但{msg}', { msg: warnMsg }))
               }
             } catch (redeemErr: any) {
               console.warn('[DeviceBindModal] 换绑后置补兑邀请码异常:', redeemErr)

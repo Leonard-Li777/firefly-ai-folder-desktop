@@ -8,8 +8,7 @@ import { useTTSAudioStore } from '../../stores/tts-audio-store'
 import { useOrganizeStore } from '../../stores/organize-store'
 import { HintBanner } from '../ui/hint-banner'
 
-// 正文与 title（截断时的悬浮全量）共用同一来源
-const CONTENTION_TEXT = '检测到界面卡顿，文件分析队列可能占用了较多算力，暂停它可让当前操作更流畅'
+// 正文与 title（截断时的悬浮全量）共用同一中文文案，均内联 t('...') 以便构建期字符串提取
 
 /**
  * 算力争抢横幅（挂在 DirectoryHeader 底部，贯穿视口宽度）
@@ -62,7 +61,8 @@ export function ResourceContentionBanner() {
   return (
     <HintBanner
       icon={<Cpu className="w-3.5 h-3.5 animate-pulse" />}
-      title={t(CONTENTION_TEXT)}
+      // t() 为构建期字符串提取宏，只接受静态字面量；故此处内联原文而非传变量
+      title={t('检测到界面卡顿，文件分析队列可能占用了较多算力，暂停它可让当前操作更流畅')}
       className="border-t border-amber-500/30 bg-amber-500/15 text-amber-800 dark:text-amber-300 py-1.5"
       style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
       actions={
@@ -78,7 +78,7 @@ export function ResourceContentionBanner() {
       }
       onClose={() => setDismissed(true)}
     >
-      {t(CONTENTION_TEXT)}
+      {t('检测到界面卡顿，文件分析队列可能占用了较多算力，暂停它可让当前操作更流畅')}
     </HintBanner>
   )
 }

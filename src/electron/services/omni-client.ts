@@ -9,8 +9,17 @@
  *    （TaxonomyAliasCache 内存总线已按主设计废除，展示别名一律分表直查）
  */
 
+import http from 'node:http'
 import { LogCategory, logger } from '@firefly/shared'
 import { omniService } from '../runtime-services/system/omni-service'
+import {
+  M5FrameParser,
+  StreamChunkPayload,
+  StreamEndMeta,
+  StreamErrorMeta
+} from '../runtime-services/ai/m5-frame-parser'
+
+export { StreamChunkPayload, StreamEndMeta, StreamErrorMeta }
 
 /** 分类树多叉树节点（对齐 Omni taxonomy.rs TaxonomyNode） */
 export interface OmniTaxonomyNode {
@@ -758,6 +767,13 @@ export class OmniClient {
         body: JSON.stringify(payload),
         signal
       })
+      if (res.status === 409) {
+        logger.warn(
+          LogCategory.MAIN,
+          '[OmniClient] TTS 分块合成遭遇流式会话占用冲突 HTTP 409 (ENGINE_BUSY_STREAMING)'
+        )
+        throw new Error('ENGINE_BUSY_STREAMING')
+      }
       if (!res.ok) {
         logger.warn(LogCategory.MAIN, `[OmniClient] TTS 合成失败 HTTP ${res.status}`)
         return null
@@ -862,9 +878,7 @@ export class OmniClient {
   /**
    * 获取 TTS 引擎状态：GET /api/audio/tts/status
    */
-  async getTTSStatus(
-    signal?: AbortSignal
-  ): Promise<{
+  async getTTSStatus(signal?: AbortSignal): Promise<{
     ready: boolean
     total_voices?: number
     sample_rate?: number
@@ -978,6 +992,222 @@ export class OmniClient {
       logger.warn(LogCategory.MAIN, '[OmniClient] splitTTSChunks 请求异常:', err)
       return null
     }
+  }
+
+  /**
+   * 纯流式语音合成：POST /api/audio/tts/stream
+   * 严格对齐 docs/specs/m5-tts-pure-streaming-session-spec.md v1.7.2 §3.4 / §4.2
+   * 建立 HTTP Chunked 连接，通过 M5FrameParser 实时解帧，并提供 pause/resume 反压控制
+   */
+  async startTTSStream(
+    params: {
+      text: string
+      voiceId: string | number
+      speed: number
+      resumeCharStart?: number
+    },
+    callbacks: {
+      onChunk: (payload: StreamChunkPayload) => void
+      onEnd: (meta: StreamEndMeta) => void
+      onError: (meta: StreamErrorMeta) => void
+    },
+    signal?: AbortSignal
+  ): Promise<{
+    sessionId: string
+    pause: () => void
+    resume: () => void
+    abort: () => void
+  }> {
+    await omniService.ensureRunning()
+
+    const rawBaseUrl = this.getBaseUrl()
+    const url = new URL(`${rawBaseUrl}/api/audio/tts/stream`)
+    const port = parseInt(url.port, 10) || 80
+    // 强制使用 127.0.0.1 字面量，消除 Windows DNS / IPv6 延迟
+    const hostname = url.hostname === 'localhost' ? '127.0.0.1' : url.hostname
+
+    const requestBody = JSON.stringify({
+      text: params.text,
+      voice_id: String(params.voiceId),
+      speed: params.speed,
+      resume_char_start: params.resumeCharStart
+    })
+
+    return new Promise((resolve, reject) => {
+      let isSettled = false
+      let sessionId = ''
+      let incomingRes: http.IncomingMessage | null = null
+      const parser = new M5FrameParser()
+
+      // 独立 3000ms 建连超时定时器（严禁依赖 socket 空闲超时）
+      const connectTimeout = setTimeout(() => {
+        if (!isSettled) {
+          isSettled = true
+          req.destroy(new Error('CONNECT_TIMEOUT'))
+          reject(new Error('TTS_STREAM_CONNECT_TIMEOUT'))
+        }
+      }, 3000)
+
+      const req = http.request(
+        {
+          hostname,
+          port,
+          path: url.pathname,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(requestBody)
+          }
+        },
+        res => {
+          clearTimeout(connectTimeout)
+          incomingRes = res
+
+          // 提取会话 ID
+          sessionId = (res.headers['x-session-id'] as string) || `sess_${Date.now()}`
+
+          // 冲突处理：409 Conflict 拒绝并发流（Scheme A/B 互斥）
+          if (res.statusCode === 409) {
+            let errBuf = Buffer.alloc(0)
+            res.on('data', chunk => {
+              errBuf = Buffer.concat([errBuf, chunk])
+            })
+            res.on('end', () => {
+              try {
+                const errObj = JSON.parse(errBuf.toString('utf-8'))
+                logger.warn(
+                  LogCategory.MAIN,
+                  `[OmniClient] TTS 流式请求冲突 409 (ENGINE_BUSY_STREAMING): ${errObj.message || ''}`
+                )
+                if (!isSettled) {
+                  isSettled = true
+                  reject(new Error(errObj.code || 'ENGINE_BUSY_STREAMING'))
+                }
+              } catch {
+                if (!isSettled) {
+                  isSettled = true
+                  reject(new Error('ENGINE_BUSY_STREAMING'))
+                }
+              }
+            })
+            return
+          }
+
+          if (res.statusCode !== 200) {
+            if (!isSettled) {
+              isSettled = true
+              reject(new Error(`TTS_STREAM_HTTP_${res.statusCode}`))
+            }
+            return
+          }
+
+          if (!isSettled) {
+            isSettled = true
+            resolve({
+              sessionId,
+              pause: () => {
+                if (incomingRes && !incomingRes.destroyed) {
+                  incomingRes.pause()
+                }
+              },
+              resume: () => {
+                if (incomingRes && !incomingRes.destroyed) {
+                  incomingRes.resume()
+                }
+              },
+              abort: () => {
+                if (!req.destroyed) {
+                  req.destroy()
+                }
+              }
+            })
+          }
+
+          res.on('data', (chunk: Buffer) => {
+            const frames = parser.push(chunk)
+            if (frames === 'FATAL_DESYNC') {
+              logger.error(
+                LogCategory.MAIN,
+                `[OmniClient] M5SF 帧解析致命脱节 FATAL_DESYNC: sessionId=${sessionId}`
+              )
+              callbacks.onError({
+                code: 'FATAL_DESYNC',
+                message: 'Stream frame protocol desync detected'
+              })
+              req.destroy()
+              return
+            }
+
+            for (const frame of frames) {
+              if (frame.type === 'AUDIO') {
+                frame.payload.sessionId = sessionId
+                callbacks.onChunk(frame.payload)
+              } else if (frame.type === 'END') {
+                callbacks.onEnd(frame.meta)
+              } else if (frame.type === 'ERROR') {
+                callbacks.onError(frame.meta)
+              }
+            }
+          })
+
+          res.on('end', () => {
+            logger.debug(
+              LogCategory.MAIN,
+              `[OmniClient] TTS 流式连接正常结束: sessionId=${sessionId}`
+            )
+          })
+
+          res.on('error', (err: Error) => {
+            logger.warn(
+              LogCategory.MAIN,
+              `[OmniClient] TTS 流式响应流异常: sessionId=${sessionId}`,
+              err
+            )
+            callbacks.onError({
+              code: 'RESPONSE_STREAM_ERROR',
+              message: err.message
+            })
+          })
+        }
+      )
+
+      // 开启 TCP_NODELAY，消除 40ms Nagle 算法等待
+      req.setNoDelay(true)
+
+      req.on('error', (err: Error) => {
+        clearTimeout(connectTimeout)
+        if (!isSettled) {
+          isSettled = true
+          reject(err)
+        } else {
+          callbacks.onError({
+            code: 'REQUEST_ERROR',
+            message: err.message
+          })
+        }
+      })
+
+      // 接入外部 AbortSignal
+      if (signal) {
+        if (signal.aborted) {
+          clearTimeout(connectTimeout)
+          req.destroy()
+          reject(new Error('ABORTED'))
+          return
+        }
+        signal.addEventListener(
+          'abort',
+          () => {
+            clearTimeout(connectTimeout)
+            req.destroy()
+          },
+          { once: true }
+        )
+      }
+
+      req.write(requestBody)
+      req.end()
+    })
   }
 }
 

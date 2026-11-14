@@ -11,7 +11,13 @@
 import * as fs from 'fs'
 import { ipcMain, dialog, BrowserWindow } from 'electron'
 import { logger, LogCategory } from '@firefly/shared'
-import { omniClient, TTSChunkResult } from '../../services/omni-client'
+import {
+  omniClient,
+  TTSChunkResult,
+  StreamChunkPayload,
+  StreamEndMeta,
+  StreamErrorMeta
+} from '../../services/omni-client'
 import {
   ttsWavCacheService,
   TTSWavMetadata
@@ -27,7 +33,7 @@ export function registerTTSIPCHandlers(): void {
   ipcMain.handle(
     'tts:synthesize-chunk',
     async (
-      _event,
+      event,
       text: string,
       voiceId: string | number,
       speed: number,
@@ -63,7 +69,21 @@ export function registerTTSIPCHandlers(): void {
         )
         return result
       } catch (err: unknown) {
-        logger.warn(LogCategory.MAIN, '[TTS IPC] synthesize-chunk 失败:', err)
+        const msg = err instanceof Error ? err.message : String(err)
+        if (msg === 'ENGINE_BUSY_STREAMING') {
+          logger.warn(
+            LogCategory.MAIN,
+            `[TTS冲突] Scheme A 分片请求遇流式会话占用已拒绝 (409 Conflict): sessionId=${sessionId}`
+          )
+          if (!event.sender.isDestroyed()) {
+            event.sender.send('tts:busy-rejected', {
+              code: 'ENGINE_BUSY_STREAMING',
+              message: 'TTS 引擎正处于沉浸式流式朗读中，分块通道暂不可用'
+            })
+          }
+        } else {
+          logger.warn(LogCategory.MAIN, '[TTS IPC] synthesize-chunk 失败:', err)
+        }
         return null
       } finally {
         if (sessionId !== undefined && controller) {
@@ -452,6 +472,196 @@ export function registerTTSIPCHandlers(): void {
     } catch (err) {
       logger.warn(LogCategory.MAIN, '[TTS IPC] read-chunk 失败:', err)
       return null
+    }
+  })
+
+  // ============================================================================
+  // M5-TTS 纯流式会话 IPC 管道 (v1.7.2 规格书 §4.0 / §4.2 / §4.3)
+  // ============================================================================
+
+  interface ActiveStreamSession {
+    sessionId: string
+    sender: Electron.WebContents
+    pause: () => void
+    resume: () => void
+    abort: () => void
+    lastHeartbeatTime: number
+    pendingFramesCount: number
+    watchdogTimer: NodeJS.Timeout
+  }
+
+  const activeStreamSessions = new Map<string, ActiveStreamSession>()
+
+  // 18. 启动纯流式 TTS 会话
+  ipcMain.handle(
+    'tts:stream-start',
+    async (
+      event,
+      req: {
+        text: string
+        voiceId: string
+        speed: number
+        resumeCharStart?: number
+      }
+    ): Promise<{
+      ok: boolean
+      sessionId?: string
+      sampleRate?: number
+      errorCode?: string
+    }> => {
+      // 若存在旧流式会话，先主动优雅中止（单机单活抢占）
+      for (const [oldId, oldSession] of activeStreamSessions.entries()) {
+        logger.info(LogCategory.MAIN, `[TTS Stream IPC] 抢占中止旧流式会话: ${oldId}`)
+        oldSession.abort()
+        clearInterval(oldSession.watchdogTimer)
+        activeStreamSessions.delete(oldId)
+      }
+
+      try {
+        const streamCtrl = await omniClient.startTTSStream(
+          {
+            text: req.text,
+            voiceId: req.voiceId,
+            speed: req.speed,
+            resumeCharStart: req.resumeCharStart
+          },
+          {
+            onChunk: (payload: StreamChunkPayload) => {
+              const session = activeStreamSessions.get(payload.sessionId)
+              if (session && !session.sender.isDestroyed()) {
+                session.pendingFramesCount++
+                session.sender.send('tts:stream-chunk-data', payload)
+              }
+            },
+            onEnd: (meta: StreamEndMeta) => {
+              const session = activeStreamSessions.get(streamCtrl.sessionId)
+              if (session) {
+                clearInterval(session.watchdogTimer)
+                activeStreamSessions.delete(streamCtrl.sessionId)
+                if (!session.sender.isDestroyed()) {
+                  session.sender.send('tts:stream-ended', {
+                    sessionId: streamCtrl.sessionId,
+                    reason: 'completed',
+                    summary: meta
+                  })
+                }
+              }
+            },
+            onError: (meta: StreamErrorMeta) => {
+              const session = activeStreamSessions.get(streamCtrl.sessionId)
+              if (session) {
+                clearInterval(session.watchdogTimer)
+                activeStreamSessions.delete(streamCtrl.sessionId)
+                if (!session.sender.isDestroyed()) {
+                  session.sender.send('tts:stream-ended', {
+                    sessionId: streamCtrl.sessionId,
+                    reason: 'error',
+                    errorCode: meta.code
+                  })
+                }
+              }
+            }
+          }
+        )
+
+        // 设置 1000ms 心跳假死看门狗（积压 >= 16 帧且 5s 无心跳熔断）
+        const watchdogTimer = setInterval(() => {
+          const session = activeStreamSessions.get(streamCtrl.sessionId)
+          if (!session) {
+            clearInterval(watchdogTimer)
+            return
+          }
+          const now = Date.now()
+          if (session.pendingFramesCount >= 16 && now - session.lastHeartbeatTime > 5000) {
+            logger.error(
+              LogCategory.MAIN,
+              `[TTS Stream IPC] 渲染层假死熔断: sessionId=${streamCtrl.sessionId}, 积压帧=${session.pendingFramesCount}`
+            )
+            session.abort()
+            clearInterval(watchdogTimer)
+            activeStreamSessions.delete(streamCtrl.sessionId)
+            if (!session.sender.isDestroyed()) {
+              session.sender.send('tts:stream-ended', {
+                sessionId: streamCtrl.sessionId,
+                reason: 'renderer_frozen',
+                errorCode: 'RENDERER_FROZEN_TIMEOUT'
+              })
+            }
+          }
+        }, 1000)
+
+        activeStreamSessions.set(streamCtrl.sessionId, {
+          sessionId: streamCtrl.sessionId,
+          sender: event.sender,
+          pause: streamCtrl.pause,
+          resume: streamCtrl.resume,
+          abort: streamCtrl.abort,
+          lastHeartbeatTime: Date.now(),
+          pendingFramesCount: 0,
+          watchdogTimer
+        })
+
+        return {
+          ok: true,
+          sessionId: streamCtrl.sessionId,
+          sampleRate: 24000
+        }
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err)
+        if (msg === 'ENGINE_BUSY_STREAMING') {
+          event.sender.send('tts:busy-rejected', {
+            code: 'ENGINE_BUSY_STREAMING',
+            message: 'TTS 引擎正处于沉浸式流式朗读中，分块通道暂不可用'
+          })
+          return { ok: false, errorCode: 'ENGINE_BUSY_STREAMING' }
+        }
+        logger.warn(LogCategory.MAIN, '[TTS Stream IPC] 启动流式会话失败:', err)
+        return { ok: false, errorCode: msg }
+      }
+    }
+  )
+
+  // 19. 接收渲染层反压流控指令
+  ipcMain.on(
+    'tts:stream-flow',
+    (_event, cmd: { sessionId: string; command: 'pause' | 'resume' }) => {
+      const session = activeStreamSessions.get(cmd.sessionId)
+      if (session) {
+        if (cmd.command === 'pause') {
+          session.pause()
+        } else if (cmd.command === 'resume') {
+          session.resume()
+        }
+      }
+    }
+  )
+
+  // 20. 接收渲染层心跳脉冲
+  ipcMain.on(
+    'tts:stream-heartbeat',
+    (_event, hb: { sessionId: string; bufferedSeconds: number }) => {
+      const session = activeStreamSessions.get(hb.sessionId)
+      if (session) {
+        session.lastHeartbeatTime = Date.now()
+        // 渲染层消费后重置积压计数
+        session.pendingFramesCount = Math.max(0, session.pendingFramesCount - 4)
+      }
+    }
+  )
+
+  // 21. 显式中止流式会话
+  ipcMain.on('tts:stream-abort', (_event, req: { sessionId: string }) => {
+    const session = activeStreamSessions.get(req.sessionId)
+    if (session) {
+      session.abort()
+      clearInterval(session.watchdogTimer)
+      activeStreamSessions.delete(req.sessionId)
+      if (!session.sender.isDestroyed()) {
+        session.sender.send('tts:stream-ended', {
+          sessionId: req.sessionId,
+          reason: 'aborted'
+        })
+      }
     }
   })
 }
