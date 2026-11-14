@@ -87,7 +87,7 @@ describe('WelcomeStep5InstallReady (欢迎向导第五步：安装与就绪)', (
 
     await waitReady()
 
-    expect(api.install).toHaveBeenCalledWith('engine_gemma_unified')
+    expect(api.install).toHaveBeenCalledWith('engine_gemma_unified', { skipLocalPreset: true })
     expect(api.smokeTest).toHaveBeenCalledWith({ profile: 'gemma_unified' })
     expect(api.updateState).toHaveBeenCalledWith('engine_gemma_unified', { active: true })
     expect((window as any).electronAPI.llmGateway.setDesiredMode).toHaveBeenCalledWith('cpu')
@@ -152,7 +152,7 @@ describe('WelcomeStep5InstallReady (欢迎向导第五步：安装与就绪)', (
     )
     expect(screen.queryByTestId('welcome-step5-select-package-card')).toBeNull()
     expect(screen.queryByTestId('welcome-step5-select-package-btn')).toBeNull()
-    expect(api.install).toHaveBeenCalledWith('engine_gemma_unified')
+    expect(api.install).toHaveBeenCalledWith('engine_gemma_unified', { skipLocalPreset: true })
 
     await waitReady()
   })

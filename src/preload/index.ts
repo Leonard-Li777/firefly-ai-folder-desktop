@@ -22,8 +22,8 @@ export const modularResourcePreloadBridge: IModularResourceBridge = {
   getDevMode: () => ipcRenderer.invoke('modular-resource:get-dev-mode'),
   setDevMode: (payload: { enabled: boolean }) =>
     ipcRenderer.invoke('modular-resource:set-dev-mode', payload),
-  install: (moduleId: string): Promise<PluginModuleItem> =>
-    ipcRenderer.invoke('modular-resource:install', moduleId),
+  install: (moduleId: string, options?: { skipLocalPreset?: boolean }): Promise<PluginModuleItem> =>
+    ipcRenderer.invoke('modular-resource:install', moduleId, options),
   enqueueBackgroundInstalls: (moduleIds: string[]): Promise<string[]> =>
     ipcRenderer.invoke('modular-resource:enqueue-background-installs', moduleIds),
   uninstall: (moduleId: string): Promise<PluginModuleItem> =>

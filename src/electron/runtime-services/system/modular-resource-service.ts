@@ -396,7 +396,8 @@ export interface IModularResourceService {
   /** 幂等下载并安装模块（引用计数复用 -> Range 206 -> SHA-256 -> Zip Slip 解压 -> 原子 rename） */
   installModule(
     moduleId: string,
-    onProgress?: (event: ModuleDownloadProgressEvent) => void
+    onProgress?: (event: ModuleDownloadProgressEvent) => void,
+    options?: { skipLocalPreset?: boolean }
   ): Promise<BuiltinModuleView>
 
   /** 将选配模块加入后台静默安装队列（单实例串行 Singleflight，支持跨上下文接管） */
@@ -3377,7 +3378,8 @@ export class ModularResourceService implements IModularResourceService {
    */
   async installModule(
     moduleId: string,
-    onProgress?: (event: ModuleDownloadProgressEvent) => void
+    onProgress?: (event: ModuleDownloadProgressEvent) => void,
+    options?: { skipLocalPreset?: boolean }
   ): Promise<BuiltinModuleView> {
     this.assertWriteGateAllowed()
     this.ensureDefaultSeeds()
@@ -3505,8 +3507,10 @@ export class ModularResourceService implements IModularResourceService {
             continue
           }
 
-          // L2: 本地后备预置包打捞 (apps/desktop/build/presetResources 等)
-          const l2Hit = await this.checkL2LocalPresetPreflight(spec, targetAbsDir)
+          // L2: 本地后备预置包打捞 (apps/desktop/build/presetResources 等)；显式指定 skipLocalPreset 时跳过以强制走真实网络下载
+          const l2Hit = options?.skipLocalPreset
+            ? false
+            : await this.checkL2LocalPresetPreflight(spec, targetAbsDir)
           if (l2Hit) {
             dao.resources.markVerifiedSync(spec.resource_id, true)
             dao.resources.updateProgressSync(spec.resource_id, spec.expected_bytes, 'completed')

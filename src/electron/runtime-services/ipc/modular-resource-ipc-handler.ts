@@ -131,12 +131,18 @@ export function registerModularResourceIpcHandlers(
     return { devModeEffective: envelope.visibility.developerModeEnabled }
   })
 
-  ipcMain.handle('modular-resource:install', async (_event, moduleId: string) => {
-    try {
-      const res = await service.installModule(moduleId, progressEvt => {
-        broadcastModularResourceProgress(progressEvt)
-      })
-      return res
+  ipcMain.handle(
+    'modular-resource:install',
+    async (_event, moduleId: string, options?: { skipLocalPreset?: boolean }) => {
+      try {
+        const res = await service.installModule(
+          moduleId,
+          progressEvt => {
+            broadcastModularResourceProgress(progressEvt)
+          },
+          options
+        )
+        return res
     } catch (err: any) {
       logger.error(LogCategory.MAIN, `[ModularResourceIPC] install(${moduleId}) 失败:`, err)
       throw err

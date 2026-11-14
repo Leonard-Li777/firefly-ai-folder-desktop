@@ -145,14 +145,17 @@ export function WelcomeStep5InstallReady({
     }
   }, [selectedEngine])
 
-  // 冒烟自检阶段（通常耗时 10~30s）平滑推进进度条 75% -> 96%，避免界面停滞不动
+  // 解压完成后的引擎冷启动激活与冒烟自检阶段（通常耗时 10~60s）平滑推进进度条 75% -> 96%，避免卡在 75% 停滞不动
+  const isPostDownloadInit =
+    phase === 'smoke_testing' ||
+    (phase === 'installing' && (percentage >= 75 || downloadStats.state === 'completed'))
   useEffect(() => {
-    if (phase !== 'smoke_testing') return
+    if (!isPostDownloadInit) return
     const timer = setInterval(() => {
       setPercentage(prev => (prev < 96 ? Math.max(75, prev + 1) : prev))
     }, 900)
     return () => clearInterval(timer)
-  }, [phase])
+  }, [isPostDownloadInit])
 
   useEffect(() => {
     // React StrictMode / 从 Step 4 返回再进来时避免重复触发同一轮安装
@@ -187,9 +190,9 @@ export function WelcomeStep5InstallReady({
     const runOnline = async () => {
       setPhase('installing')
       setPercentage(5)
-      // 1. 主检索引擎下载与解压
+      // 1. 主检索引擎在线下载与解压（显式跳过本地 build/presetResources 直通，保证在线模式真实走网络下载与速率展示）
       if (modular?.install) {
-        await modular.install(selectedEngine)
+        await modular.install(selectedEngine, { skipLocalPreset: true })
       }
       setPercentage(prev => Math.max(prev, 75))
 
@@ -367,6 +370,9 @@ export function WelcomeStep5InstallReady({
   const phaseTitle = (() => {
     if (phase === 'select_package') return t('等待挑选离线安装包')
     if (phase === 'installing') {
+      if (percentage >= 75 || downloadStats.state === 'completed') {
+        return t('核心组件已下载完成，正在初始化并装载检索引擎...')
+      }
       if (downloadStats.state === 'extracting') {
         return t('安装包下载完成，正在安全解压...')
       }
