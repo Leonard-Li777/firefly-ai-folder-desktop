@@ -12,6 +12,19 @@
     "$files": ["src/renderer/components/ui/dialog.tsx(2345-2351)"],
     "$id": 5981
   },
+  "点击联系客服邮箱": {
+    "en-US": "Click to contact customer service email",
+    "es-ES": "Haga clic para contactar con el correo electrónico de atención al cliente",
+    "ar-EG": "انقر للاتصال بالبريد الإلكتروني لخدمة العملاء",
+    "pt-PT": "Clique para entrar em contato com o e-mail de atendimento ao cliente",
+    "ru-RU": "Нажмите, чтобы связаться со службой поддержки клиентов по электронной почте",
+    "ja-JP": "クリックしてカスタマーサービスのメールアドレスに連絡してください",
+    "de-DE": "Klicken Sie hier, um den Kundendienst per E-Mail zu kontaktieren",
+    "fr-FR": "Cliquez pour contacter l'e-mail du service client",
+    "ko-KR": "고객 서비스 이메일에 문의하려면 클릭하세요.",
+    "$files": ["src/renderer/components/ui/EmailSvg.tsx(1423-1435)"],
+    "$id": 32193
+  },
   "关闭提示": {
     "en-US": "Close prompt",
     "es-ES": "Cerrar mensaje",

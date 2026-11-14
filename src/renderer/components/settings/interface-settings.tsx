@@ -604,7 +604,7 @@ export const InterfaceSettings: React.FC = () => {
                 </span>
                 <span className="font-mono text-muted-foreground">
                   {dirMigrationProgress?.percentage ?? 0}% ({dirMigrationProgress?.copiedFiles ?? 0}{' '}
-                  / {dirMigrationProgress?.totalFiles ?? 0} 个文件)
+                  / {dirMigrationProgress?.totalFiles ?? 0} {t('个文件')})
                 </span>
               </div>
               <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">

@@ -340,7 +340,7 @@ export const Organize: React.FC = () => {
 
     const convertedTree = directoryTreeNodesToVirtualNodes(rawTree)
     const workflowName = boundWorkflow.name || t('已绑定工作流')
-    const vdirName = `${workflowName} 整理`
+    const vdirName = t('{name} 整理', { name: workflowName })
 
     setDraft({
       name: vdirName,
@@ -376,8 +376,8 @@ export const Organize: React.FC = () => {
       const tree = pathsToDirectoryNodes(structure.paths)
       const vdirName =
         structure.identities.length > 0
-          ? `${structure.identities.join(' + ')} 整理`
-          : `${structure.name} 整理`
+          ? t('{names} 整理', { names: structure.identities.join(' + ') })
+          : t('{name} 整理', { name: structure.name })
 
       setDraft({
         name: vdirName,

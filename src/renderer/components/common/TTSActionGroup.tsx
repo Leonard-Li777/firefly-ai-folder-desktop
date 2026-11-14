@@ -380,9 +380,9 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
                       {voice.isCustom
                         ? t('自定义')
                         : voice.lang === 'zh'
-                          ? '中文'
+                          ? t('中文')
                           : voice.lang === 'ja'
-                            ? '日文'
+                            ? t('日文')
                             : 'EN'}
                     </span>
                   </button>

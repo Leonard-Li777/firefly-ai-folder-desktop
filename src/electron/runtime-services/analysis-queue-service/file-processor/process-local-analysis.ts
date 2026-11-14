@@ -191,13 +191,13 @@ export async function processLocalAnalysis(
 
   if (!deps.dimensionAnalyzer) throw new Error(t('AI 服务未就绪'))
 
-  // ========== 第四阶段：AI 目录分析 ==========
+  // ========== 第四阶段：AI 目录分析与智能命名 ==========
   // 目录上下文已提前获取，此处直接复用
   updateItemStatus(item.id, 'analyzing', 55, undefined, { analysisStage: 4 })
 
   const existingDimensions = ConfigDbManager.getInstance().getFileDimensions()
 
-  // ========== 第五阶段：AI 智能命名与维度标签分析 ==========
+  // 智能命名与维度标签分析（Stage 4）：
   // 增强分析（quick_name）与全面分析（full）共用同一套「快速命名」提示词（QuickNamingSystemPrompt）。
   // 全面分析相对增强分析只多出上方的「质量评分 + 多模态描述」一步：此处把该步产出的多模态描述
   // 并入正文再交给命名模型，避免音频/视频（不传 filePath，无视觉直读）在命名时丢失多模态信息。

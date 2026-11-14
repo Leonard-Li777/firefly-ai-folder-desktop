@@ -1199,7 +1199,7 @@
     "ru-RU": "Распознавание речи и извлечение субтитров",
     "ja-JP": "音声認識と字幕抽出",
     "de-DE": "Spracherkennung und Untertitelextraktion",
-    "fr-FR": "语音识别与字幕提取",
+    "fr-FR": "Reconnaissance vocale et extraction de sous-titres",
     "ko-KR": "음성인식 및 자막 추출",
     "$files": [
       "src/renderer/stores/plugin-center-store.ts(18049-18062)"
@@ -1303,7 +1303,7 @@
     "pt-PT": "Síntese de fala extremamente rápida e leitura em voz alta",
     "ru-RU": "Чрезвычайно быстрый синтез речи и чтение вслух",
     "ja-JP": "非常に高速な音声合成と読み上げ",
-    "de-DE": "极速语音合成与朗读",
+    "de-DE": "Extrem schnelle Sprachsynthese und Vorlesen",
     "fr-FR": "Synthèse vocale et lecture à haute voix extrêmement rapides",
     "ko-KR": "매우 빠른 음성 합성 및 소리내어 읽기",
     "$files": [
@@ -1930,6 +1930,21 @@
     ],
     "$id": 31362
   },
+  "语音引擎正处于沉浸式流式朗读中，分块请求已排队": {
+    "en-US": "The speech engine is in immersive streaming reading, chunked requests are queued",
+    "es-ES": "El motor de voz está en lectura de transmisión inmersiva, las solicitudes fragmentadas están en cola",
+    "ar-EG": "محرك الكلام في حالة قراءة متدفقة غامرة، ويتم وضع الطلبات المقسمة في قائمة الانتظار",
+    "pt-PT": "O mecanismo de fala está em leitura de streaming imersiva, solicitações fragmentadas são enfileiradas",
+    "ru-RU": "Речевой движок находится в режиме иммерсивного потокового чтения, фрагментированные запросы ставятся в очередь.",
+    "ja-JP": "音声エンジンはイマーシブ ストリーミング読み上げであり、チャンク化されたリクエストはキューに入れられます。",
+    "de-DE": "Die Sprach-Engine befindet sich im immersiven Streaming-Lesen, Chunk-Anfragen werden in die Warteschlange gestellt",
+    "fr-FR": "Le moteur vocal est en lecture continue immersive, les requêtes fragmentées sont mises en file d'attente",
+    "ko-KR": "음성 엔진이 몰입형 스트리밍 읽기에 있고 청크 요청이 대기열에 추가됩니다.",
+    "$files": [
+      "src/renderer/stores/tts-audio-store.ts(6647-6674)"
+    ],
+    "$id": 32263
+  },
   "正在合成音频，合成后会自动切换": {
     "en-US": "Audio is being synthesized, and it will be automatically switched after synthesis",
     "es-ES": "El audio se está sintetizando y se cambiará automáticamente después de la síntesis",
@@ -1941,7 +1956,7 @@
     "fr-FR": "L'audio est en cours de synthèse et il sera automatiquement commuté après la synthèse",
     "ko-KR": "오디오가 합성되고 있으며 합성 후 자동으로 전환됩니다",
     "$files": [
-      "src/renderer/stores/tts-audio-store.ts(17392-17411)"
+      "src/renderer/stores/tts-audio-store.ts(18204-18223)"
     ],
     "$id": 21557
   },
@@ -1956,8 +1971,8 @@
     "fr-FR": "La lecture a été automatiquement commutée",
     "ko-KR": "재생이 자동으로 전환되었습니다",
     "$files": [
-      "src/renderer/stores/tts-audio-store.ts(22949-22960)",
-      "src/renderer/stores/tts-audio-store.ts(27688-27699)"
+      "src/renderer/stores/tts-audio-store.ts(23761-23772)",
+      "src/renderer/stores/tts-audio-store.ts(28500-28511)"
     ],
     "$id": 21559
   },
@@ -1972,11 +1987,11 @@
     "fr-FR": "Le clip audio est trop long et a été automatiquement tronqué.",
     "ko-KR": "오디오 클립이 너무 길어서 자동으로 잘렸습니다.",
     "$files": [
-      "src/renderer/stores/tts-audio-store.ts(24972-24987)",
-      "src/renderer/stores/tts-audio-store.ts(30118-30133)",
-      "src/renderer/stores/tts-audio-store.ts(48961-48976)",
-      "src/renderer/stores/tts-audio-store.ts(55840-55855)",
-      "src/renderer/stores/tts-audio-store.ts(62017-62032)"
+      "src/renderer/stores/tts-audio-store.ts(25784-25799)",
+      "src/renderer/stores/tts-audio-store.ts(30930-30945)",
+      "src/renderer/stores/tts-audio-store.ts(53690-53705)",
+      "src/renderer/stores/tts-audio-store.ts(60569-60584)",
+      "src/renderer/stores/tts-audio-store.ts(66677-66692)"
     ],
     "$id": 22279
   },
@@ -1991,8 +2006,8 @@
     "fr-FR": "La commutation de tonalité a échoué et le service de synthèse vocale n'est pas disponible",
     "ko-KR": "톤 전환에 실패하고 음성 합성 서비스를 사용할 수 없습니다",
     "$files": [
-      "src/renderer/stores/tts-audio-store.ts(25279-25299)",
-      "src/renderer/stores/tts-audio-store.ts(32505-32525)"
+      "src/renderer/stores/tts-audio-store.ts(26091-26111)",
+      "src/renderer/stores/tts-audio-store.ts(33317-33337)"
     ],
     "$id": 21558
   },
@@ -2007,7 +2022,7 @@
     "fr-FR": "Tonalité de clonage définie par l'utilisateur",
     "ko-KR": "사용자 정의 클론 톤",
     "$files": [
-      "src/renderer/stores/tts-audio-store.ts(34008-34021)"
+      "src/renderer/stores/tts-audio-store.ts(34820-34833)"
     ],
     "$id": 21644
   },
@@ -2022,7 +2037,7 @@
     "fr-FR": "La synthèse vocale a échoué, veuillez vérifier l'état de la connexion au service",
     "ko-KR": "음성 합성 실패,서비스 연결 상태를 확인하시기 바랍니다",
     "$files": [
-      "src/renderer/stores/tts-audio-store.ts(49650-49670)"
+      "src/renderer/stores/tts-audio-store.ts(54379-54399)"
     ],
     "$id": 21560
   },
@@ -2037,7 +2052,7 @@
     "fr-FR": "La synthèse vocale n'a pas réussi à générer un son valide, veuillez réessayer plus tard",
     "ko-KR": "음성 합성이 유효한 오디오를 생성하지 못했습니다.",
     "$files": [
-      "src/renderer/stores/tts-audio-store.ts(53775-53797)"
+      "src/renderer/stores/tts-audio-store.ts(58504-58526)"
     ],
     "$id": 21561
   },
@@ -2052,9 +2067,24 @@
     "fr-FR": "Le service de synthèse vocale est anormal, veuillez réessayer plus tard",
     "ko-KR": "음성 합성 서비스가 이상,나중에 다시 시도하십시오",
     "$files": [
-      "src/renderer/stores/tts-audio-store.ts(54215-54233)"
+      "src/renderer/stores/tts-audio-store.ts(58944-58962)"
     ],
     "$id": 21562
+  },
+  "导出音频失败": {
+    "en-US": "Failed to export audio",
+    "es-ES": "No se pudo exportar el audio",
+    "ar-EG": "فشل تصدير الصوت",
+    "pt-PT": "Falha ao exportar áudio",
+    "ru-RU": "Не удалось экспортировать аудио.",
+    "ja-JP": "オーディオのエクスポートに失敗しました",
+    "de-DE": "Audio konnte nicht exportiert werden",
+    "fr-FR": "Échec de l'exportation de l'audio",
+    "ko-KR": "오디오를 내보내지 못했습니다.",
+    "$files": [
+      "src/renderer/stores/tts-audio-store.ts(61251-61261)"
+    ],
+    "$id": 32060
   },
   "该片段正在合成中，请稍候...": {
     "en-US": "This clip is being synthesized, please wait...",
@@ -2067,7 +2097,7 @@
     "fr-FR": "Ce clip est en cours de synthèse, veuillez patienter...",
     "ko-KR": "이 클립은 합성되고,기다려주십시오...",
     "$files": [
-      "src/renderer/stores/tts-audio-store.ts(60274-60293)"
+      "src/renderer/stores/tts-audio-store.ts(65006-65025)"
     ],
     "$id": 21645
   },
@@ -2082,7 +2112,7 @@
     "fr-FR": "La synthèse du clip a échoué, veuillez réessayer plus tard",
     "ko-KR": "클립 합성에 실패,나중에 다시 시도하십시오",
     "$files": [
-      "src/renderer/stores/tts-audio-store.ts(62330-62347)"
+      "src/renderer/stores/tts-audio-store.ts(66990-67007)"
     ],
     "$id": 21646
   }

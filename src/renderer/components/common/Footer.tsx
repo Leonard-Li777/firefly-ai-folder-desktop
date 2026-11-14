@@ -39,15 +39,6 @@ import { PersistentTooltip } from '@/renderer/components/common/PersistentToolti
 
 import { getStageLabel } from '@/renderer/components/analysis/AnalysisQueueContent'
 
-/** 区域 → 中文显示名 */
-const REGION_LABELS: Record<string, string> = { CN: '国内版', INTL: '国际版' }
-/** 构建环境 → 中文显示名 */
-const ENV_LABELS: Record<string, string> = {
-  development: '开发',
-  canary: '灰度',
-  production: '生产'
-}
-
 /**
  * 构建时注入的环境标识原始值（"区域 - 环境 - 分支"）
  * 使用 typeof 守卫：配置变更后 dev server 未重启时 define 未注入，
@@ -56,14 +47,25 @@ const ENV_LABELS: Record<string, string> = {
 const DEV_BUILD_LABEL_RAW: string = typeof __BUILD_LABEL__ !== 'undefined' ? __BUILD_LABEL__ : ''
 
 /**
- * 将构建时注入的 __BUILD_LABEL__ 映射为中文显示文案
+ * 将构建时注入的 __BUILD_LABEL__ 映射为本地化显示文案
  * 例如 "INTL - development - pay" → "国际版 - 开发 - pay"
+ *
+ * t() 是构建期字符串提取宏，只接受静态字符串字面量、不支持运行时变量，
+ * 因此 region/env 映射不能写成 t(查表结果)，必须在组件作用域内用静态 t('...') 逐条返回。
  */
-function getDevBuildLabel(): string {
+function getDevBuildLabel(t: (s: string) => string): string {
   const parts = (DEV_BUILD_LABEL_RAW || '').split(' - ')
   if (parts.length < 3) return DEV_BUILD_LABEL_RAW
-  const region = REGION_LABELS[parts[0]] || parts[0]
-  const env = ENV_LABELS[parts[1]] || parts[1]
+  // 区域 → 本地化显示名
+  const regionLabels: Record<string, string> = { CN: t('国内版'), INTL: t('国际版') }
+  // 构建环境 → 本地化显示名
+  const envLabels: Record<string, string> = {
+    development: t('开发'),
+    canary: t('灰度'),
+    production: t('生产')
+  }
+  const region = regionLabels[parts[0]] || parts[0]
+  const env = envLabels[parts[1]] || parts[1]
   const branch = parts.slice(2).join(' - ')
   return `${region} - ${env} - ${branch}`
 }
@@ -478,13 +480,8 @@ export function Footer() {
       const cpuRuntime = llmSnapshot?.runtime?.cpu || 'stopped'
       const unavailableReason = llmSnapshot?.unavailableReason
 
-      // 生成式引擎（轻量CPU引擎）仅在真实 AI 推理中或队列推进到 Stage 3/4（生成式引擎阶段）时显示「推理中」；
-      // Stage 1/2 属于 CPU 内容提取与原生评分阶段，此时保持就绪态
-      const isGenerativeInferencing =
-        status === AIServiceStatus.PROCESSING ||
-        (isQueueAnalyzing && (analyzing?.stage ?? 0) >= 3)
-
-      if (isGenerativeInferencing) {
+      // 真实调用到了轻量CPU引擎进行生成式推理
+      if (status === AIServiceStatus.PROCESSING) {
         return {
           text: `${cpuHeader} ${t('推理中')}`,
           icon: 'auto_awesome',
@@ -689,14 +686,10 @@ export function Footer() {
   // 注意：高级AI引擎未开启（isAdvancedAiEnabled 已在上方计算）时，Tier 2 引擎探活离线属预期，
   // 不应把状态强制覆盖为 STOPPED，直接回落展示基础AI引擎自身的状态（serviceStatus）。
   const effectiveStatus = useMemo(() => {
+    // 轻量CPU引擎状态展示：以真实调用到了生成式引擎（serviceStatus === PROCESSING）为准，
+    // 未调用时按底层轻量底座实际运行时（ready/loading/failed/stopped）展示就绪等真实态
     if (isCpuMode) {
-      // 轻量CPU引擎：仅在真实生成式推理中 (serviceStatus === PROCESSING) 或分析队列推进到 Stage 3/4 (生成式引擎阶段) 时进入 PROCESSING；
-      // Stage 1/2 属于 CPU 内容提取与原生评分阶段，生成式引擎尚未介入，保持展示各底座的就绪态
-      const isCpuInferencing =
-        serviceStatus === AIServiceStatus.PROCESSING ||
-        (isQueueAnalyzing && (analyzing?.stage ?? 0) >= 3)
-
-      if (isCpuInferencing) {
+      if (serviceStatus === AIServiceStatus.PROCESSING) {
         return AIServiceStatus.PROCESSING
       }
       const cpuRuntime = llmSnapshot?.runtime?.cpu || 'stopped'
@@ -706,7 +699,7 @@ export function Footer() {
       return AIServiceStatus.STOPPED
     }
 
-    // 非 CPU 模式 (本地萤核 / 云端引擎)：队列分析优先
+    // 非 CPU 模式 (本地萤核 / 云端引擎)：原逻辑已完成
     if (isQueueAnalyzing || serviceStatus === AIServiceStatus.PROCESSING) {
       return AIServiceStatus.PROCESSING
     }
@@ -734,7 +727,6 @@ export function Footer() {
     return serviceStatus
   }, [
     isQueueAnalyzing,
-    analyzing?.stage,
     isCpuMode,
     llmSnapshot,
     modelMode,
@@ -1118,7 +1110,7 @@ export function Footer() {
               className="text-xs px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium pr-2"
               title={t('开发模式标识：区域 - 环境 - 分支')}
             >
-              {getDevBuildLabel()}
+              {getDevBuildLabel(t)}
             </span>
           </>
         )}

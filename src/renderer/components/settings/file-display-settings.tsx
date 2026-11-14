@@ -384,14 +384,14 @@ export const FileDisplaySettings: React.FC = () => {
                       <span className="w-6 h-6 rounded bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-400 font-bold text-[10px] flex items-center justify-center shrink-0">
                         PDF
                       </span>
-                      <span>示例文件.pdf</span>
+                      <span>{t('示例文件.pdf')}</span>
                     </div>
                   </td>
                   {activeFields.includes('qualityScore') && (
                     <td className="p-2.5 whitespace-nowrap">
                       <div className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded border border-amber-200/50 dark:border-amber-800/40">
                         <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500 shrink-0" />
-                        <span>4.2 分</span>
+                        <span>{t('4.2 分')}</span>
                       </div>
                     </td>
                   )}
@@ -435,14 +435,14 @@ export const FileDisplaySettings: React.FC = () => {
                       <span className="w-6 h-6 rounded bg-blue-100 text-blue-600 dark:bg-blue-950 dark:text-blue-400 font-bold text-[10px] flex items-center justify-center shrink-0">
                         PNG
                       </span>
-                      <span>控制台界面原型.png</span>
+                      <span>{t('控制台界面原型.png')}</span>
                     </div>
                   </td>
                   {activeFields.includes('qualityScore') && (
                     <td className="p-2.5 whitespace-nowrap">
                       <div className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded border border-amber-200/50 dark:border-amber-800/40">
                         <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500 shrink-0" />
-                        <span>4.8 分</span>
+                        <span>{t('4.8 分')}</span>
                       </div>
                     </td>
                   )}

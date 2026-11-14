@@ -195,6 +195,9 @@ export class EngineSwappingCoordinator {
    * 显式解除置换门闩（例如引擎指标提前上报 ready 或超时自然到达）
    */
   exitSwapping(): void {
+    if (!this.isSwapping && !this.waitResolve && !this.waitPromise) {
+      return
+    }
     if (this.swappingTimer) {
       clearTimeout(this.swappingTimer)
       this.swappingTimer = null
@@ -214,6 +217,9 @@ export class EngineSwappingCoordinator {
    * 中止置换等待，向所有正在排队的请求抛出 Abort 错误（支持 permanent 500、retryable 503 与 cancelled 499）
    */
   abortSwapping(reason: AbortSwappingReason): void {
+    if (!this.isSwapping && !this.waitReject && !this.waitPromise) {
+      return
+    }
     if (this.swappingTimer) {
       clearTimeout(this.swappingTimer)
       this.swappingTimer = null

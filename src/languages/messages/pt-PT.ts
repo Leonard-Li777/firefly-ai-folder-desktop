@@ -10562,7 +10562,7 @@ export default  {
     "32184": "Segunda categoria",
     "32185": "Gratuito se inativo por mais de 90 dias",
     "32186": "Computadores comumente usados",
-    "32187": "已被锁定 · 禁止替换",
+    "32187": "Bloqueado · Nenhuma substituição permitida",
     "32188": "Inativo há mais de 90 dias · Substituição gratuita",
     "32189": "Usado recentemente:",
     "32191": "Substituindo e fazendo login...",
@@ -10575,5 +10575,14 @@ export default  {
     "32198": "Contexto muito longo, bom para processamento de arquivos em lotes grandes",
     "32199": "Texto longo",
     "32200": "Modelo de raciocínio profundo com excelente hierarquia estrutural",
-    "32201": "Raciocínio profundo"
+    "32201": "Raciocínio profundo",
+    "32263": "O mecanismo de fala está em leitura de streaming imersiva, solicitações fragmentadas são enfileiradas",
+    "32268": "A CPU continuará ocupada durante a análise do arquivo. Se houver atrasos na pesquisa, na síntese de fala, na classificação e na limpeza de arquivos, você poderá pausar a fila de análise e ceder o poder de computação à operação atual.",
+    "32270": "Versão doméstica",
+    "32271": "Versão internacional",
+    "32272": "Desenvolver",
+    "32273": "Tons de cinza",
+    "32274": "Produção",
+    "32275": "...",
+    "32276": "A interface está travada. A fila de análise de arquivos pode estar ocupando mais poder computacional. Pausá-lo pode tornar a operação atual mais suave."
 }

@@ -16,31 +16,31 @@ interface ExternalAiGuideViewProps {
 const AI_PLATFORMS = [
   {
     name: '字节跳动 · 豆包',
-    desc: '国内响应迅速，上下文丰富',
+    desc: t('国内响应迅速，上下文丰富'),
     url: 'https://www.doubao.com/chat/',
     icon: 'smart_toy',
-    badge: '推荐'
+    badge: t('推荐')
   },
   {
     name: 'OpenAI · ChatGPT',
-    desc: '全球顶尖大模型，架构逻辑严密',
+    desc: t('全球顶尖大模型，架构逻辑严密'),
     url: 'https://chatgpt.com/',
     icon: 'bolt',
-    badge: '强大'
+    badge: t('强大')
   },
   {
     name: '月之暗面 · Kimi',
-    desc: '超长上下文，擅长大批量文件处理',
+    desc: t('超长上下文，擅长大批量文件处理'),
     url: 'https://kimi.moonshot.cn/',
     icon: 'auto_awesome',
-    badge: '长文本'
+    badge: t('长文本')
   },
   {
     name: '深度求索 · DeepSeek',
-    desc: '深度推理模型，结构化层次极佳',
+    desc: t('深度推理模型，结构化层次极佳'),
     url: 'https://chat.deepseek.com/',
     icon: 'psychology',
-    badge: '深度推理'
+    badge: t('深度推理')
   }
 ]
 

@@ -178,4 +178,99 @@ describe('LlmGatewayService.probeCpuInstallation 安装态口径 (TC-SSOT-21~23)
     expect(snap.runtime.cpu).toBe('failed')
     expect(snap.cpuLastError).toBe('模型资产未安装')
   })
+
+  it('TC-PREHEAT-03: preheat 自动调用 ensureRunning 拉起 Omni 底座服务', async () => {
+    seedCpuModule(testDb, 'active')
+    await LlmGatewayService.getInstance().setDesiredMode('cpu')
+
+    let ensureRunningCalled = false
+    const mockOmni = {
+      ensureRunning: vi.fn().mockImplementation(async () => {
+        ensureRunningCalled = true
+        return true
+      }),
+      getBaseUrl: () => 'http://127.0.0.1:38200',
+      getOmniToken: () => 'mock-token'
+    } as any
+
+    LlmGatewayService.getInstance().setOmniServiceResolverForTesting(() => mockOmni)
+
+    const originalFetch = global.fetch
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ ok: true })
+    } as any)
+
+    try {
+      await LlmGatewayService.getInstance().preheat({ wait: true })
+      expect(ensureRunningCalled).toBe(true)
+      const snap = LlmGatewayService.getInstance().getSnapshot()
+      expect(snap.runtime.cpu).toBe('ready')
+      expect(snap.cpuLastError).toBeNull()
+    } finally {
+      global.fetch = originalFetch
+      LlmGatewayService.getInstance().setOmniServiceResolverForTesting(null)
+    }
+  })
+
+  it('TC-PREHEAT-04: 底座服务 ensureRunning 失败时 preheat 准确上报启动失败', async () => {
+    seedCpuModule(testDb, 'active')
+    await LlmGatewayService.getInstance().setDesiredMode('cpu')
+
+    const mockOmni = {
+      ensureRunning: vi.fn().mockResolvedValue(false),
+      getBaseUrl: () => 'http://127.0.0.1:38200',
+      getOmniToken: () => 'mock-token'
+    } as any
+
+    LlmGatewayService.getInstance().setOmniServiceResolverForTesting(() => mockOmni)
+
+    try {
+      await LlmGatewayService.getInstance().preheat({ wait: true })
+      const snap = LlmGatewayService.getInstance().getSnapshot()
+      expect(snap.runtime.cpu).toBe('failed')
+      expect(snap.cpuLastError).toBe('底座引擎服务启动失败')
+    } finally {
+      LlmGatewayService.getInstance().setOmniServiceResolverForTesting(null)
+    }
+  })
+
+  it('TC-PREHEAT-05: preheat 遇到网络瞬态 fetch failed 时自动重试并最终成功', async () => {
+    seedCpuModule(testDb, 'active')
+    await LlmGatewayService.getInstance().setDesiredMode('cpu')
+
+    const mockOmni = {
+      ensureRunning: vi.fn().mockResolvedValue(true),
+      getBaseUrl: () => 'http://127.0.0.1:38200',
+      getOmniToken: () => 'mock-token'
+    } as any
+
+    LlmGatewayService.getInstance().setOmniServiceResolverForTesting(() => mockOmni)
+
+    const originalFetch = global.fetch
+    let callCount = 0
+    global.fetch = vi.fn().mockImplementation(async () => {
+      callCount++
+      if (callCount === 1) {
+        throw new TypeError('fetch failed')
+      }
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ ok: true })
+      } as any
+    })
+
+    try {
+      await LlmGatewayService.getInstance().preheat({ wait: true })
+      expect(callCount).toBe(2) // 验证经历了 1 次瞬态失败后的重试
+      const snap = LlmGatewayService.getInstance().getSnapshot()
+      expect(snap.runtime.cpu).toBe('ready')
+      expect(snap.cpuLastError).toBeNull()
+    } finally {
+      global.fetch = originalFetch
+      LlmGatewayService.getInstance().setOmniServiceResolverForTesting(null)
+    }
+  })
 })

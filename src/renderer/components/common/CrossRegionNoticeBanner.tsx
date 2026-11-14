@@ -55,8 +55,8 @@ export const CrossRegionNoticeBanner: React.FC = () => {
         type="button"
         onClick={handleDismiss}
         className="p-1 rounded-md text-sky-600 dark:text-sky-400 hover:bg-sky-500/15 transition-colors shrink-0 ml-2"
-        aria-label="关闭提示"
-        title="关闭提示"
+        aria-label={t('关闭提示')}
+        title={t('关闭提示')}
       >
         <X className="w-3.5 h-3.5" />
       </button>

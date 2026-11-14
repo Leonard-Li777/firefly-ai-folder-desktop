@@ -2466,14 +2466,14 @@
     "$id": 32136
   },
   "当前电脑": {
-    "en-US": "current computer",
-    "es-ES": "computadora actual",
+    "en-US": "Current computer",
+    "es-ES": "Computadora actual",
     "ar-EG": "الكمبيوتر الحالي",
-    "pt-PT": "computador atual",
+    "pt-PT": "Computador atual",
     "ru-RU": "текущий компьютер",
     "ja-JP": "現在のコンピュータ",
-    "de-DE": "aktuellen Computer",
-    "fr-FR": "ordinateur actuel",
+    "de-DE": "Aktuellen Computer",
+    "fr-FR": "Ordinateur actuel",
     "ko-KR": "현재 컴퓨터",
     "$files": [
       "src/renderer/components/tier/DeviceBindModal.tsx(20250-20258)"
@@ -2604,7 +2604,7 @@
   },
   "4 位数字口令": {
     "en-US": "4 digit password",
-    "es-ES": "contraseña de 4 dígitos",
+    "es-ES": "Contraseña de 4 dígitos",
     "ar-EG": "كلمة مرور مكونة من 4 أرقام",
     "pt-PT": "Senha de 4 dígitos",
     "ru-RU": "4-значный пароль",
@@ -2965,14 +2965,14 @@
     "$id": 32169
   },
   "未知时间": {
-    "en-US": "unknown time",
-    "es-ES": "hora desconocida",
+    "en-US": "Unknown time",
+    "es-ES": "Hora desconocida",
     "ar-EG": "وقت غير معروف",
-    "pt-PT": "hora desconhecida",
+    "pt-PT": "Hora desconhecida",
     "ru-RU": "неизвестное время",
     "ja-JP": "不明な時間",
-    "de-DE": "unbekannte Zeit",
-    "fr-FR": "heure inconnue",
+    "de-DE": "Unbekannte Zeit",
+    "fr-FR": "Heure inconnue",
     "ko-KR": "알 수 없는 시간",
     "$files": [
       "src/renderer/components/tier/DeviceEvictDialog.tsx(3306-3314)"
@@ -3212,7 +3212,7 @@
     "ru-RU": "Часто используемые компьютеры",
     "ja-JP": "よく使われるコンピュータ",
     "de-DE": "Häufig verwendete Computer",
-    "fr-FR": "常用电脑",
+    "fr-FR": "Ordinateurs couramment utilisés",
     "ko-KR": "일반적으로 사용되는 컴퓨터",
     "$files": [
       "src/renderer/components/tier/DeviceEvictDialog.tsx(10325-10333)"
@@ -3223,10 +3223,10 @@
     "en-US": "Locked · No replacement allowed",
     "es-ES": "Bloqueado · No se permite reemplazo",
     "ar-EG": "مغلق · لا يسمح بالاستبدال",
-    "pt-PT": "已被锁定 · 禁止替换",
-    "ru-RU": "已被锁定 · 禁止替换",
-    "ja-JP": "已被锁定 · 禁止替换",
-    "de-DE": "已被锁定 · 禁止替换",
+    "pt-PT": "Bloqueado · Nenhuma substituição permitida",
+    "ru-RU": "Заблокировано · Замена не допускается",
+    "ja-JP": "ロック済み・交換不可",
+    "de-DE": "Gesperrt · Kein Austausch möglich",
     "fr-FR": "Verrouillé · Aucun remplacement autorisé",
     "ko-KR": "잠김 · 교체 불가",
     "$files": [

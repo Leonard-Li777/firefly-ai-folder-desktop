@@ -1,4 +1,5 @@
 import React from 'react'
+import { t } from '@app/languages'
 
 interface EmailSvgProps {
   email?: string
@@ -39,7 +40,7 @@ export const EmailSvg: React.FC<EmailSvgProps> = ({
     <button
       type="button"
       onClick={handleClick}
-      title="点击联系客服邮箱"
+      title={t('点击联系客服邮箱')}
       className={`inline-flex items-center align-middle hover:opacity-80 transition-opacity cursor-pointer border-none bg-transparent p-0 ${className}`}
     >
       <img

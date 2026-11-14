@@ -14,7 +14,11 @@ import { useSettingsStore } from '../../stores/settings-store'
 import { MaterialIcon, cn } from '../../lib/utils'
 import FileList from '../file-explorer/FileList'
 
-/** 分析模式的展示名称，与设置页 analysis-settings 保持一致 */
+/**
+ * 分析模式的展示名称，与设置页 analysis-settings 保持一致。
+ * t() 是构建期字符串提取宏、只接受静态字面量，故此处保留纯静态原文键，
+ * 展示时经 modeLabelOf() 在组件内用静态 t('...') 动态翻译（切换语言可刷新）。
+ */
 const ANALYSIS_MODE_LABEL: Record<string, string> = {
   simple: '标准分析',
   quick_name: '增强分析',
@@ -27,17 +31,8 @@ const ANALYSIS_MODE_LABEL: Record<string, string> = {
  * 3=AI 质量评分完成（增强分析）、4=维度标签与智能命名完成（全面分析）。
  *
  * 注意：标准分析模式的完成标志是 stage=2，不是 stage=1。
+ * 展示时 stage → 文案经组件内 stageLocalized 显式映射到静态 t('...')。
  */
-const STAGE_LABEL: Record<number, string> = {
-  0: '未分析',
-  1: '基础身份提取',
-  2: '标准分析',
-  3: '增强分析',
-  4: '全面分析'
-}
-
-/** 把 stage 数值翻译为「已完成到哪一步」的中文描述 */
-const describeStage = (stage: number): string => STAGE_LABEL[stage] ?? '未分析'
 
 /**
  * 批量分析前的确认弹窗。
@@ -75,7 +70,13 @@ export function AnalysisConfirmModal() {
     if (!isAdvancedAi) return 'simple'
     return (s.getConfigValue<string>('ANALYSIS_MODE') as string) ?? 'full'
   })
-  const currentModeLabel = t(ANALYSIS_MODE_LABEL[currentMode] || '全面分析')
+  // t() 为构建期提取宏，键须静态字面量，故用 record 显式映射到静态 t('...')（与 modeLabelOf 同源）
+  const currentModeLocalized: Record<string, string> = {
+    simple: t('标准分析'),
+    quick_name: t('增强分析'),
+    full: t('全面分析')
+  }
+  const currentModeLabel = currentModeLocalized[currentMode] || t('全面分析')
 
   const totalCount = pendingAddItems.length
   const analyzedCount = confirmModalFiles.length
@@ -108,9 +109,18 @@ export function AnalysisConfirmModal() {
       })
   }, [confirmModalFiles])
 
-  /** 把 completed_mode 取值转为展示文案，历史数据（null）退回按 stage 推断的通用表述 */
-  const modeLabelOf = (mode: string): string =>
-    ANALYSIS_MODE_LABEL[mode] ? t(ANALYSIS_MODE_LABEL[mode]) : t('分析')
+  /**
+   * 把 completed_mode 取值转为展示文案，历史数据（null）退回按 stage 推断的通用表述。
+   * t() 为构建期提取宏，键须为静态字面量，故在此用 record 显式映射到静态 t('...')。
+   */
+  const modeLabelOf = (mode: string): string => {
+    const localized: Record<string, string> = {
+      simple: t('标准分析'),
+      quick_name: t('增强分析'),
+      full: t('全面分析')
+    }
+    return localized[mode] || t('分析')
+  }
 
   const mappedFiles = React.useMemo(() => {
     return confirmModalFiles.map((file, index) => {
@@ -174,7 +184,15 @@ export function AnalysisConfirmModal() {
         if (stage > 0) stages.add(stage)
       }
       const topStage = Math.max(...Array.from(stages), 0)
-      parts.push(t(describeStage(topStage)))
+      // t() 为构建期提取宏，键须静态字面量，故按 stage 显式映射到静态 t('...')（与 modeLabelOf 同源）
+      const stageLocalized: Record<number, string> = {
+        0: t('未分析'),
+        1: t('基础身份提取'),
+        2: t('标准分析'),
+        3: t('增强分析'),
+        4: t('全面分析')
+      }
+      parts.push(stageLocalized[topStage] ?? t('未分析'))
     }
     return parts.length > 0 ? parts.join(' / ') : t('基础身份提取')
   }, [confirmModalInsufficientFiles, modeLabelOf])

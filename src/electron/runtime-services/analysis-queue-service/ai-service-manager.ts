@@ -79,19 +79,40 @@ export class AIServiceManager {
           return false
         }
 
-        // 如果没有预热模型（不是 ready 状态），主动触发预热
+        // 如果没有预热模型（不是 ready 状态），主动触发拉起与预热
         if (snapshot.runtime.cpu !== 'ready') {
-          logger.info(
-            LogCategory.ANALYSIS_QUEUE,
-            '[分析队列] 检测到轻量CPU引擎尚未预热，正在主动预热模型...'
-          )
-          this.notifyFrontend(
-            'info',
-            t('正在预热轻量CPU模型，即将开始分析...'),
-            true,
-            'waiting-for-ai',
-            0
-          )
+          // 检查底层微服务是否在运行，提供准确的大白话提示
+          const { OmniService } = await import('../system/omni-service')
+          const omniInstance = OmniService.getInstance()
+          const omniRunning =
+            typeof omniInstance.isServiceRunning === 'function'
+              ? omniInstance.isServiceRunning()
+              : (omniInstance.isReady?.() ?? false)
+          if (!omniRunning) {
+            logger.info(
+              LogCategory.ANALYSIS_QUEUE,
+              '[分析队列] 检测到轻量CPU引擎底座服务未运行，正在自动拉起...'
+            )
+            this.notifyFrontend(
+              'info',
+              t('正在启动轻量CPU引擎，即将开始分析...'),
+              true,
+              'waiting-for-ai',
+              0
+            )
+          } else {
+            logger.info(
+              LogCategory.ANALYSIS_QUEUE,
+              '[分析队列] 检测到轻量CPU引擎尚未预热，正在主动预热模型...'
+            )
+            this.notifyFrontend(
+              'info',
+              t('正在预热轻量CPU模型，即将开始分析...'),
+              true,
+              'waiting-for-ai',
+              0
+            )
+          }
           await llmGatewayService.preheat({ wait: true })
 
           const afterSnap = llmGatewayService.getSnapshot()

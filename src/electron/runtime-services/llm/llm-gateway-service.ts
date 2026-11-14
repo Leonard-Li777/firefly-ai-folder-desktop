@@ -233,6 +233,17 @@ export class LlmGatewayService implements ILlmGatewayService {
     this.lastReportedCpuState = null
   }
 
+  /**
+   * 测试接缝：注入 OmniService 单例解析器（允许单测注入 mock）
+   */
+  private omniServiceResolver: () => OmniService = () => {
+    return OmniService.getInstance()
+  }
+
+  public setOmniServiceResolverForTesting(resolver: (() => OmniService) | null): void {
+    this.omniServiceResolver = resolver ?? (() => OmniService.getInstance())
+  }
+
   private constructor() {
     this.initModeFromConfig()
     this.loadCrashState()
@@ -660,13 +671,31 @@ export class LlmGatewayService implements ILlmGatewayService {
       return
     }
 
+    this.cpuRuntimeState = 'loading'
+
+    // 自动拉起底座微服务 (firefly-omni)，消除因微服务未启动导致的 fetch failed
+    try {
+      const omniService = this.omniServiceResolver()
+      const omniReady = await omniService.ensureRunning()
+      if (!omniReady) {
+        this.cpuRuntimeState = 'failed'
+        this.cpuLastError = '底座引擎服务启动失败'
+        logger.error(LogCategory.AI_SERVICE, '[LlmGateway] 预热失败: 无法拉起 Omni 基础服务')
+        return
+      }
+    } catch (err: any) {
+      this.cpuRuntimeState = 'failed'
+      this.cpuLastError = `底座引擎服务启动异常: ${err?.message || err}`
+      logger.error(LogCategory.AI_SERVICE, '[LlmGateway] 预热异常: 拉起 Omni 服务失败', err)
+      return
+    }
+
     const baseUrl = this.getOmniBaseUrl()
     const wait = options?.wait ?? true
 
-    this.cpuRuntimeState = 'loading'
     try {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-      let token = OmniService.getInstance().getOmniToken()
+      let token = this.omniServiceResolver().getOmniToken()
       if (!token) {
         try {
           const runFile = path.join(app.getPath('userData'), 'run', 'omni.token')
@@ -680,11 +709,32 @@ export class LlmGatewayService implements ILlmGatewayService {
         headers['Authorization'] = `Bearer ${token}`
       }
 
-      const res = await fetch(`${baseUrl}/v1/engines/cpu/session`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ wait, reset_crash_count: true })
-      })
+      // 瞬态网络重试（最多 3 次，间隔 500ms），防止微服务刚就绪时的连接握手边缘
+      let lastErr: any = null
+      let res: Response | null = null
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          res = await fetch(`${baseUrl}/v1/engines/cpu/session`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ wait, reset_crash_count: true })
+          })
+          if (res) break
+        } catch (fetchErr: any) {
+          lastErr = fetchErr
+          logger.warn(
+            LogCategory.AI_SERVICE,
+            `[LlmGateway] 预热网络请求异常 (尝试 ${attempt + 1}/3): ${fetchErr?.message}`
+          )
+          if (attempt < 2) {
+            await new Promise(r => setTimeout(r, 500))
+          }
+        }
+      }
+
+      if (!res) {
+        throw lastErr || new Error('网络连接异常')
+      }
 
       if (res.ok) {
         // 预热成功主动清零 crash 计数与熔断状态

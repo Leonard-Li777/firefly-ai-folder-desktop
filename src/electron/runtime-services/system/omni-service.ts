@@ -780,6 +780,13 @@ export class OmniService {
   }
 
   /**
+   * 检查 Omni 服务是否处于运行状态（isReady 的友好别名）
+   */
+  public isServiceRunning(): boolean {
+    return this.isReady()
+  }
+
+  /**
    * 确保 Omni 服务处于运行与就绪状态（若未运行则自动按需拉起）
    */
   public async ensureRunning(): Promise<boolean> {

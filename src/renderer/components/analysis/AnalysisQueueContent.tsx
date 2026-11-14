@@ -44,9 +44,7 @@ interface ColumnWidths {
   actions: number
 }
 
-// 算力提示横幅文案：正文与 title（截断时的悬浮全量）共用同一来源
-const CPU_HINT_TEXT =
-  '文件分析运行期间会持续占用 CPU，若搜索、语音合成、文件整理、文件清理出现卡顿，可暂停分析队列把算力让给当前操作'
+// 算力提示横幅文案：正文与 title（截断时的悬浮全量）共用同一中文文案，均内联 t('...') 以便构建期字符串提取
 
 const DEFAULT_COL_WIDTHS: ColumnWidths = {
   index: 44,
@@ -888,14 +886,14 @@ export function AnalysisQueueContent({
           {running && !isCpuHintDismissed && !isCpuHintHidden && (
             <HintBanner
               icon={<Cpu className="w-3.5 h-3.5" />}
-              title={t(CPU_HINT_TEXT)}
+              title={t('文件分析运行期间会持续占用 CPU，若搜索、语音合成、文件整理、文件清理出现卡顿，可暂停分析队列把算力让给当前操作')}
               className="shrink-0 border-b border-amber-500/20"
               actions={
                 <HintBannerLink onClick={handleDismissCpuHint}>{t('知道了')}</HintBannerLink>
               }
               onClose={() => setIsCpuHintHidden(true)}
             >
-              {t(CPU_HINT_TEXT)}
+              {t('文件分析运行期间会持续占用 CPU，若搜索、语音合成、文件整理、文件清理出现卡顿，可暂停分析队列把算力让给当前操作')}
             </HintBanner>
           )}
           <div
