@@ -110,10 +110,10 @@
       "version": "INT8-v3",
       "source": "shared",
       "asset": {
-        "name": "chinese-clip-int8-v3.zip",
-        "sha256": "67a5e4a0d0985085a3ad9e153efa5d4817af3851b6c4c7c8933b5c0a83ca3093",
-        "size": 212925967,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/chinese-clip-int8-v3.zip"
+        "name": "emb-a42b0c8f-3.0.0.zip",
+        "sha256": "61395a58014e8dedd77c45513473425eae4bb0a589f2bb65a5915302d1b58cd7",
+        "size": 259907575,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/emb-a42b0c8f-3.0.0.zip"
       },
       "files": [
         {
@@ -152,46 +152,46 @@
       "version": "INT8",
       "source": "shared",
       "asset": {
-        "name": "mobile-clip-int8.zip",
-        "sha256": "a236176147ad695655d2d54c810f925d574620689299b713484018b7dd8a910c",
-        "size": 57910236,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/mobile-clip-int8.zip"
+        "name": "emb-a892a600-1.0.0.zip",
+        "sha256": "afade3a71b0378484393b14b91cffce7147bd1ca937431487eb35fc8aa7f0b74",
+        "size": 78209518,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/emb-a892a600-1.0.0.zip"
       }
     },
     "nsfw-mobilenetv2": {
       "version": "1.0.0",
       "source": "shared",
       "asset": {
-        "name": "nsfw-mobilenetv2-1.0.0.zip",
-        "sha256": "af66beb688c2d05574cd32d72bd55169acd381bdbeb2b97deb016827ad6c6af1",
-        "size": 9556862,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/nsfw-mobilenetv2-1.0.0.zip"
+        "name": "nsfw-d1a5b4e4-1.0.0.zip",
+        "sha256": "82cd9d0b74dbbe5e42d503281314bb9c84f41265b67ea4b5339ecde25b1d538a",
+        "size": 10300309,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/nsfw-d1a5b4e4-1.0.0.zip"
       }
     },
     "nsfw-l3": {
-      "version": "1.2.0",
+      "version": "1.3.0",
       "source": "shared",
       "asset": {
-        "name": "nsfw-l3-1.2.0.zip",
-        "sha256": "929e5e074783194c8af976cab37b9dff43c2dfddb6626ee2041e2517c3cc443f",
-        "size": 33311367,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/nsfw-l3-1.2.0.zip"
+        "name": "nsfw-71e9aaa6-1.3.0.zip",
+        "sha256": "affd390ff0db3625ffd5d997152d25cd98edd93f703651ea119c4988d69a8aa9",
+        "size": 33288889,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/nsfw-71e9aaa6-1.3.0.zip"
       },
       "files": [
         {
+          "name": "current.json",
+          "size": 214,
+          "sha256": "d44971738aba3d7556f60439ebaba0aff999b315f0cb666faf2a7e2cd9634be8"
+        },
+        {
+          "name": "model.97d4bbd193a030fa945b484ad4ad484c8bc791fe2e3aabcf74b1d4d42470d7d7.ffpc",
+          "size": 33272361,
+          "sha256": "97d4bbd193a030fa945b484ad4ad484c8bc791fe2e3aabcf74b1d4d42470d7d7"
+        },
+        {
           "name": "model_manifest.json",
-          "size": 21393,
-          "sha256": "df72fead2463ae124599d020e253bf08ee8f9a2fbddd8ba5bff71be1ce7f7a38"
-        },
-        {
-          "name": "nsfw_l3_int8.onnx",
-          "size": 31397696,
-          "sha256": "11a04bdc58fabc152e8b9248cc19bfe6df532240af12333ad4793c07229d8df0"
-        },
-        {
-          "name": "tokenizer.json",
-          "size": 1891928,
-          "sha256": "3acc19e1869c8a1915bfc1435fac935aad6d9a78bab92d7a5bad2ae216a9fc3f"
+          "size": 22106,
+          "sha256": "a6f19734980a7493569cb7ea4b40f713ea8c7d616890205eca1dfdf4f3e5c018"
         }
       ]
     },
@@ -199,30 +199,30 @@
       "version": "1.0.0",
       "source": "shared",
       "asset": {
-        "name": "embeddinggemma-2-onnx-1.0.0.zip",
-        "sha256": "f2cfc8643f708702c3abeeb5130df42becb909793d5ade429531daf810314f26",
-        "size": 254003864,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/embeddinggemma-2-onnx-1.0.0.zip"
+        "name": "emb-391b9a03-1.0.0.zip",
+        "sha256": "9f06233305f483b595cdacaa621584b9f776bf825d47e57563c34cf5ca89d579",
+        "size": 315619906,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/emb-391b9a03-1.0.0.zip"
       }
     },
     "bekko-a8m": {
       "version": "1.0.0",
       "source": "shared",
       "asset": {
-        "name": "bekko-a8m-1.0.0.zip",
-        "sha256": "315c4cba94333207522ae6e12c5de234199d1c4fc11740b05ac32aebd3e82d13",
-        "size": 106269288,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/bekko-a8m-1.0.0.zip"
+        "name": "emb-a70ec85a-1.0.0.zip",
+        "sha256": "1e1952bc79a73a9e626f19bb56e92247e2bd0a0e18da8f5fdeceb240675fee55",
+        "size": 130113519,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/emb-a70ec85a-1.0.0.zip"
       }
     },
     "m5-tts": {
       "version": "1.0.0",
       "source": "shared",
       "asset": {
-        "name": "m5-tts-1.0.0.zip",
-        "sha256": "04f3b6195c7128a0de6325fe2f38c09507d444d08d0fea38e2dc1a97715039c1",
-        "size": 253215862,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/m5-tts-1.0.0.zip"
+        "name": "tts-e43ab9e3-1.0.0.zip",
+        "sha256": "04430e1e1b732a31dd72be14efbcb80c867230182e8decdb68896320669b34fd",
+        "size": 315301980,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/tts-e43ab9e3-1.0.0.zip"
       }
     },
     "moss-tts": {
@@ -261,10 +261,10 @@
       "version": "1.0.0",
       "source": "shared",
       "asset": {
-        "name": "pocket-cpu-int8-onnx-1.0.0.zip",
-        "sha256": "cde1aca83d8a22061a185891b49867896096f9b0c45bd3fef86dcc40402811c7",
-        "size": 250572161,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/pocket-cpu-int8-onnx-1.0.0.zip"
+        "name": "cpu-485c04b7-1.0.0.zip",
+        "sha256": "45063e619442605700612ec4ba830d9da4c85d03e076bfd3cd7330c1e6fc3736",
+        "size": 367596402,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/cpu-485c04b7-1.0.0.zip"
       }
     }
   },
