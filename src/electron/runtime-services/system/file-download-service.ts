@@ -661,6 +661,7 @@ export class DualTrackSourceRouter {
       concurrency: number
       cooldownUntil: number
       consecutive429Count: number
+      consecutiveSuccessCount: number
     }
   >()
 
@@ -685,11 +686,17 @@ export class DualTrackSourceRouter {
   } {
     let state = this.sourcesState.get(url)
     if (!state) {
-      state = { concurrency: 8, cooldownUntil: 0, consecutive429Count: 0 }
+      state = {
+        concurrency: 8,
+        cooldownUntil: 0,
+        consecutive429Count: 0,
+        consecutiveSuccessCount: 0
+      }
       this.sourcesState.set(url, state)
     }
 
     state.consecutive429Count++
+    state.consecutiveSuccessCount = 0
     if (state.concurrency > 1) {
       // AIMD 乘性减并发 8 -> 4 -> 2 -> 1
       state.concurrency = Math.max(1, Math.floor(state.concurrency / 2))
@@ -716,15 +723,27 @@ export class DualTrackSourceRouter {
     if (state) {
       state.consecutive429Count = 0
       state.cooldownUntil = 0
+      state.consecutiveSuccessCount++
+      // AIMD 加性增：每连续成功 4 个块逐步恢复并发上限至 8，避免偶发抖动后并发永久锁死
+      if (state.concurrency < 8 && state.consecutiveSuccessCount >= 4) {
+        state.concurrency = Math.min(8, state.concurrency + 1)
+        state.consecutiveSuccessCount = 0
+      }
     }
   }
 
   reportFailure(url: string, failureReason?: string, now = Date.now()): void {
     let state = this.sourcesState.get(url)
     if (!state) {
-      state = { concurrency: 8, cooldownUntil: 0, consecutive429Count: 0 }
+      state = {
+        concurrency: 8,
+        cooldownUntil: 0,
+        consecutive429Count: 0,
+        consecutiveSuccessCount: 0
+      }
       this.sourcesState.set(url, state)
     }
+    state.consecutiveSuccessCount = 0
     if (state.concurrency > 1) {
       state.concurrency = Math.max(1, Math.floor(state.concurrency / 2))
     } else {
@@ -1650,6 +1669,9 @@ export class FileDownloadService {
     }
 
     // 3. 打开文件句柄 (O_RDWR | O_CREAT)
+    const sessionStartTime = Date.now()
+    let initialBytes = 0
+    let smoothedSpeed = 0
     const fileHandle = await fs.promises.open(partPath, fs.constants.O_RDWR | fs.constants.O_CREAT)
 
     try {
@@ -1722,12 +1744,10 @@ export class FileDownloadService {
           (expectedBytes - (blockCount - 1) * FIXED_BLOCK_SIZE)
       }
 
-      const sessionStartTime = Date.now()
-      const initialBytes = committedBytes
+      initialBytes = committedBytes
       let lastProgressEmitTime = 0
       let lastSpeedSampleTime = sessionStartTime
       let lastSpeedSampleBytes = committedBytes
-      let smoothedSpeed = 0
       const inFlightBlockBytes = new Map<number, number>()
 
       const emitProgressThrottled = (force = false) => {
@@ -1773,6 +1793,8 @@ export class FileDownloadService {
       const sourceRouter = options.router || new DualTrackSourceRouter()
       let currentSource = sourceRouter.selectBestSource(urls)
       let activeUrl = currentSource.url
+      const blockRetryCounts = new Map<number, number>()
+      const MAX_BLOCK_RETRIES = 8
 
       // Worker 循环执行未完成块
       const workerRun = async () => {
@@ -1788,6 +1810,7 @@ export class FileDownloadService {
           if (blockIndex === undefined) break
 
           activeInflight++
+          const requestUrl = activeUrl
           const start = blockIndex * FIXED_BLOCK_SIZE
           const end = Math.min(start + FIXED_BLOCK_SIZE - 1, expectedBytes - 1)
           const rangeLength = end - start + 1
@@ -1800,9 +1823,9 @@ export class FileDownloadService {
               }
 
               const req = activeTransport
-                ? activeTransport.request({ url: activeUrl, method: 'GET', headers })
+                ? activeTransport.request({ url: requestUrl, method: 'GET', headers })
                 : (net.request({
-                    url: activeUrl,
+                    url: requestUrl,
                     method: 'GET',
                     headers
                   }) as unknown as IDownloadTransportRequest)
@@ -1832,7 +1855,7 @@ export class FileDownloadService {
                   const retrySec = retryHeader
                     ? parseInt(Array.isArray(retryHeader) ? retryHeader[0] : retryHeader, 10)
                     : undefined
-                  const res429 = sourceRouter.handle429(activeUrl, retrySec)
+                  const res429 = sourceRouter.handle429(requestUrl, retrySec)
                   const err429: any = new Error('HTTP_429_TOO_MANY_REQUESTS')
                   err429.is429 = true
                   err429.routerResult = res429
@@ -1882,6 +1905,7 @@ export class FileDownloadService {
 
             // 排队串行写入操作系统
             await enqueueWrite(start, blockBuffer)
+            sourceRouter.recordSuccess(requestUrl)
             completedBlocks.add(blockIndex)
             inFlightBlockBytes.delete(blockIndex)
             uncommittedBatchCount++
@@ -1892,21 +1916,29 @@ export class FileDownloadService {
             await flushMeta(false)
           } catch (err: any) {
             inFlightBlockBytes.delete(blockIndex)
+            const msg = String(err?.message || '')
+            if (signal?.aborted || msg === 'DOWNLOAD_ABORTED') {
+              throw err
+            }
+            const retries = (blockRetryCounts.get(blockIndex) ?? 0) + 1
+            blockRetryCounts.set(blockIndex, retries)
+            if (retries > MAX_BLOCK_RETRIES) {
+              throw err
+            }
+
             if (err?.is429) {
               // 429 降并发并将块放回未完成队列
               pendingBlocks.unshift(blockIndex)
               const best = sourceRouter.selectBestSource(urls)
               activeUrl = best.url
               await new Promise(r => setTimeout(r, 50))
-            } else if (err?.isTimeout || err?.message?.includes('RANGE')) {
-              // 看门狗超时或非 206 假响应：向 router 报告失败，重入块并尝试切源
-              sourceRouter.reportFailure(activeUrl, err.errorCode || 'NETWORK_FAILURE')
+            } else {
+              // 超时、非 206 假响应、或瞬态网络抖动（ECONNRESET/ERR_/5xx 等）：记入源失败，放回块并切换备用源
+              sourceRouter.reportFailure(requestUrl, err?.errorCode || 'NETWORK_FAILURE')
               pendingBlocks.unshift(blockIndex)
               const best = sourceRouter.selectBestSource(urls)
               activeUrl = best.url
               await new Promise(r => setTimeout(r, 100))
-            } else {
-              throw err
             }
           } finally {
             activeInflight--

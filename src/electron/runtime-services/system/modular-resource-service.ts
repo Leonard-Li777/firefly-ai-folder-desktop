@@ -3714,7 +3714,10 @@ export class ModularResourceService implements IModularResourceService {
 
     if (isOfficialPreset && builtinMeta) {
       const assetName = builtinMeta.assetName || task.asset_name || spec.asset_name
-      const r2Url = assetName ? `https://download.iocn.cn/firefly-resources/${assetName}` : null
+      const shaTag = (task.expected_sha256 || spec.expected_sha256 || '').trim().slice(0, 8)
+      const r2Url = assetName
+        ? `https://download.iocn.cn/firefly-resources/${assetName}${shaTag ? `?v=${shaTag}` : ''}`
+        : null
       const githubUrl =
         builtinMeta.defaultActiveUrl ||
         (assetName
@@ -3808,8 +3811,8 @@ export class ModularResourceService implements IModularResourceService {
           destPath: archivePath,
           expectedBytes: task.expected_bytes,
           expectedSha256: task.expected_sha256,
-          maxConcurrency: 6,
-          maxInflightBlocks: 6,
+          maxConcurrency: 8,
+          maxInflightBlocks: 8,
           router: this.sourceRouter,
           transport: this.transport,
           onProgress: prog => {
