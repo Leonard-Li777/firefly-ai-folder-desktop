@@ -1524,15 +1524,19 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     }
 
     // 5. 纯流式通道优先尝试 (Scheme B - M5 Pure Streaming: 首包 ~120ms 发声，TTFS 降至 0.8s)
-    const isM5Active =
-      hasActiveTTSPlugin() &&
-      (getActiveTTSPluginId() === 'tts_m5_onnx' ||
-        String(chosenVoiceId).includes('m5') ||
-        String(chosenVoiceId).startsWith('preset_') ||
-        String(chosenVoiceId).includes('azure_'))
+    // 只要系统暴露了 startStream 且发音人属于 M5/预置音色或 M5 为激活引擎，一律优先流式建连
+    const isM5Voice =
+      !chosenVoiceId ||
+      String(chosenVoiceId).includes('m5') ||
+      String(chosenVoiceId).startsWith('preset_') ||
+      String(chosenVoiceId).includes('azure_') ||
+      getActiveTTSPluginId() === 'tts_m5_onnx'
 
-    if (isM5Active && window.electronAPI?.tts?.startStream) {
+    if (isM5Voice && window.electronAPI?.tts?.startStream) {
       try {
+        console.info(
+          `[TTS] 命中 M5-TTS 极速纯流式会话通道 (voiceId=${chosenVoiceId})，发起 stream-start...`
+        )
         if (currentStreamingPlayer) {
           currentStreamingPlayer.stop()
           currentStreamingPlayer = null
@@ -1547,6 +1551,9 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         })
 
         if (streamAck.ok && streamAck.sessionId) {
+          console.info(
+            `[TTS] 纯流式会话建连成功 (sessionId=${streamAck.sessionId})，首包准备发声...`
+          )
           if (activeSessionId !== thisSessionId) {
             window.electronAPI.tts.abortStream?.({ sessionId: streamAck.sessionId })
             return
