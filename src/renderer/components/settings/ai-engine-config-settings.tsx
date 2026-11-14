@@ -257,6 +257,13 @@ export const AIEngineConfigSettings: React.FC = () => {
     }, 3000)
 
     updateConfigValue('AI_SERVICE_MODE', mode)
+    if (mode === 'cpu' || mode === 'cloud') {
+      if (typeof window.electronAPI?.engineBridge?.shutdown === 'function') {
+        window.electronAPI.engineBridge.shutdown().catch(err => {
+          console.warn('[AiEngineConfigSettings] 切换模式时关闭萤核AI引擎异常:', err)
+        })
+      }
+    }
     if (window.electronAPI?.llmGateway?.setDesiredMode) {
       window.electronAPI.llmGateway.setDesiredMode(mode).catch(err => {
         console.warn('[AiEngineConfigSettings] 切换生效引擎失败:', err)

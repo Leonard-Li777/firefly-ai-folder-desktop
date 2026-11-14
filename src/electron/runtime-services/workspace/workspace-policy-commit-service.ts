@@ -100,6 +100,84 @@ function mapSqliteErrorCode(err: any): PolicyCommitErrorCode {
   return 'UNKNOWN'
 }
 
+const UNIVERSAL_WORKFLOW_SEED = {
+  id: 'builtin.workflow.general-inbox',
+  user_id: null,
+  author: 'Firefly Official',
+  name: '通用文件收纳与分类体系',
+  version: '1.0.0',
+  persona: 'general',
+  category: 'office',
+  summary: '适用于日常杂项文件、通用资料与冷门未分类文件的综合整理体系，全格式放行不设限',
+  source: 'official',
+  status: 'published',
+  naming_pattern: '[创建日期]_[业务分类]_[文件名称]',
+  naming_template: '[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}',
+  preset_directory_tree: JSON.stringify([
+    {
+      name: '01-收件整理',
+      children: [{ name: '待处理与临时中转' }, { name: '近期常用' }]
+    },
+    {
+      name: '02-分类存放',
+      children: [
+        { name: '文档与资料' },
+        { name: '媒体与图片' },
+        { name: '应用与软件' }
+      ]
+    },
+    {
+      name: '03-长期归档',
+      children: [{ name: '已完结归档' }, { name: '重要备份' }]
+    }
+  ]),
+  preview_tree: null,
+  icon_svg:
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>',
+  workspace_config: JSON.stringify({
+    schemaVersion: 1,
+    status: 'ready',
+    policyVersion: 1,
+    workflowId: 'builtin.workflow.general-inbox',
+    extensionWeights: {},
+    customExcludeRules: [],
+    customIncludeRules: [],
+    baseAIConfig: {
+      analysisMode: 'quick_name',
+      embeddingProfile: 'classic_light',
+      mrlDimension: 256,
+      videoQuotaMax: 10,
+      videoCutSensitivity: 'medium',
+      videoSoftTokenBudget: 48,
+      videoAsrDurationSec: 0,
+      audioAnalysisDurationSec: 0,
+      enableImageOcr: true,
+      ocrModelSize: 'tiny',
+      maxContentSizeKb: 4096,
+      enableOfficeCover: true,
+      reuseBasicAnalysisData: true
+    },
+    derivedSnapshot: {
+      analysisMode: 'quick_name',
+      embeddingProfile: 'classic_light',
+      mrlDimension: 256,
+      videoQuotaMax: 10,
+      videoCutSensitivity: 'medium',
+      videoSoftTokenBudget: 48,
+      videoAsrDurationSec: 0,
+      audioAnalysisDurationSec: 0,
+      enableImageOcr: true,
+      ocrModelSize: 'tiny',
+      maxContentSizeKb: 4096,
+      enableOfficeCover: true,
+      reuseBasicAnalysisData: true
+    },
+    namingPattern: '[创建日期]_[业务分类]_[文件名称]',
+    namingTemplate: '[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    configuredAt: 1762425600000
+  })
+}
+
 export class WorkspacePolicyCommitService {
   private deps: WorkspacePolicyCommitDependencies
   /** 按 workspaceId 维护的串行执行队列锁，防止并发冲突与撕裂 */
@@ -223,6 +301,58 @@ export class WorkspacePolicyCommitService {
           effectiveWorkflowId = params.workflowId || null
         } else if (row.bound_workflow_id) {
           effectiveWorkflowId = row.bound_workflow_id
+        }
+
+        // 校验目标工作流在 local_workflows 表中的物理存在性，防御性阻断外键约束破坏
+        if (effectiveWorkflowId) {
+          let hasLocalWorkflowsTable = false
+          try {
+            const tableCheck = db
+              .prepare(
+                "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'local_workflows'"
+              )
+              .get()
+            hasLocalWorkflowsTable = Boolean(tableCheck)
+          } catch {}
+
+          if (hasLocalWorkflowsTable) {
+            let exists = db
+              .prepare('SELECT 1 FROM local_workflows WHERE id = ?')
+              .get(effectiveWorkflowId)
+
+            if (!exists && effectiveWorkflowId === 'builtin.workflow.general-inbox') {
+              // 自动补种官方通用文件工作流，消除外键约束冲突
+              try {
+                db.prepare(`
+                  INSERT OR REPLACE INTO local_workflows (
+                    id, user_id, author, name, version, persona, category, summary,
+                    source, status, workspace_config, naming_pattern, naming_template,
+                    preset_directory_tree, preview_tree, icon_svg
+                  ) VALUES (
+                    @id, @user_id, @author, @name, @version, @persona, @category, @summary,
+                    @source, @status, @workspace_config, @naming_pattern, @naming_template,
+                    @preset_directory_tree, @preview_tree, @icon_svg
+                  )
+                `).run(UNIVERSAL_WORKFLOW_SEED)
+                exists = db
+                  .prepare('SELECT 1 FROM local_workflows WHERE id = ?')
+                  .get(effectiveWorkflowId)
+              } catch (seedErr: any) {
+                logger.warn(
+                  LogCategory.SYSTEM,
+                  `[WorkspacePolicyCommitService] 补种通用工作流异常: ${seedErr.message}`
+                )
+              }
+            }
+
+            if (!exists) {
+              logger.warn(
+                LogCategory.SYSTEM,
+                `[WorkspacePolicyCommitService] 绑定的工作流 [${effectiveWorkflowId}] 不存在于 local_workflows 表中，置空以避免外键约束冲突`
+              )
+              effectiveWorkflowId = null
+            }
+          }
         }
 
         const rawTarget = (params.targetConfig || params.templateConfig || {}) as any

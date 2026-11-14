@@ -454,7 +454,7 @@ const electronAPI = {
       modelName: string | null
       status: string
       loading: boolean
-      modelMode?: 'local' | 'cloud' | null
+      modelMode?: 'local' | 'cloud' | 'cpu' | null
       provider?: string | null
       backend?: string
     }) => void

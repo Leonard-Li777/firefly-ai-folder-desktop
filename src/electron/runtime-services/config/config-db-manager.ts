@@ -9,7 +9,12 @@ import {
   ResourceLocator,
   updateRuntimeFileConstants,
   CONTROLLED_DIMENSION_ROOT_CODES,
-  getCanonicalConceptName
+  getCanonicalConceptName,
+  CATEGORY_EXT_MAP,
+  CATEGORY_MIME_MAP,
+  EXT_TO_MIME_MAP,
+  BROWSER_NATIVE_IMAGE_EXTS,
+  DECODABLE_IMAGE_EXTS
 } from '@firefly/shared'
 import { createSupabaseClient } from '../system/supabase-client-factory'
 import { WORKSPACE_CONSTANTS } from '@firefly/server'
@@ -23,6 +28,7 @@ import { BrowserWindow } from 'electron'
 import type Database from 'better-sqlite3'
 import { resolveAppRegion } from '../../main/worktree-env'
 import { LocalWorkflowDao, LocalWorkflowRecord } from '../database/dao/modular-resource-dao'
+import { t } from '@app/languages'
 // ADR-0038 / Issue #682 与主设计 §7/§8（Fix-03）：
 // 原 builtin identity / fileDimension 灌库链路（buildBuiltinTagIdentity / buildBuiltinImportPlan
 // / tag_aliases 单表 / file_tags source='builtin' 行）已随单体 tag_aliases 表一并废弃删除，
@@ -421,22 +427,29 @@ export class ConfigDbManager {
   }
 
   /**
-   * 从 file-constants.json 读取全局文件常量配置写入 file_constants 表（先清空再导入）
+   * 将源自 file-extension-policies.json (SSOT) 的全局文件常量配置写入 file_constants 表（先清空再导入）
    */
   private loadInitialFileConstantsToDb(db: Database.Database): void {
     try {
-      const configPath = this.getConfigFilePath('file-constants.json')
-
-      if (!fs.existsSync(configPath)) {
-        logger.warn(
-          LogCategory.CONFIG,
-          `ConfigDbManager: 初始 file-constants 配置文件不存在: ${configPath}`
-        )
-        return
+      // 默认基于 @firefly/shared (file-extension-policies.json) 单一事实源派生标准常量
+      const defaultConstants: Record<string, any> = {
+        group_ext_map: CATEGORY_EXT_MAP,
+        group_mime_map: CATEGORY_MIME_MAP,
+        ext_to_mime_map: EXT_TO_MIME_MAP,
+        browser_native_image_exts: BROWSER_NATIVE_IMAGE_EXTS,
+        decodable_image_exts: DECODABLE_IMAGE_EXTS
       }
 
-      const raw = fs.readFileSync(configPath, 'utf-8')
-      const parsed = JSON.parse(raw)
+      let parsed = defaultConstants
+      const configPath = this.getConfigFilePath('file-constants.json')
+      if (fs.existsSync(configPath)) {
+        try {
+          const raw = fs.readFileSync(configPath, 'utf-8')
+          parsed = { ...defaultConstants, ...JSON.parse(raw) }
+        } catch (e: any) {
+          logger.warn(LogCategory.CONFIG, `ConfigDbManager: 解析外部 file-constants.json 异常: ${e.message}`)
+        }
+      }
 
       const insertStmt = db.prepare(
         `INSERT OR REPLACE INTO file_constants (key, value, updated_at) VALUES (?, ?, ?)`
@@ -452,7 +465,7 @@ export class ConfigDbManager {
       // 同步更新 @firefly/shared 运行时常量缓存
       updateRuntimeFileConstants(parsed)
 
-      logger.info(LogCategory.CONFIG, `ConfigDbManager: 成功导入初始 file_constants 数据`)
+      logger.info(LogCategory.CONFIG, `ConfigDbManager: 成功导入初始 file_constants 数据 (SSOT 对齐)`)
     } catch (error) {
       logger.error(LogCategory.CONFIG, 'ConfigDbManager: 导入初始 file_constants 失败:', error)
     }
@@ -529,6 +542,12 @@ export class ConfigDbManager {
             logger.error(LogCategory.CONFIG, `ConfigDbManager: 写入工作流失败 [${item.id}]:`, err)
           }
         }
+        // 确保官方通用文件工作流始终落库持久化，满足外键约束
+        try {
+          this.ensureUniversalGeneralWorkflowInDb(db)
+        } catch (err) {
+          logger.error(LogCategory.CONFIG, 'ConfigDbManager: 写入官方通用工作流失败:', err)
+        }
       })()
 
       this.localWorkflows = dao.getAll()
@@ -538,6 +557,134 @@ export class ConfigDbManager {
       )
     } catch (error) {
       logger.error(LogCategory.CONFIG, 'ConfigDbManager: 加载初始 local_workflow 失败:', error)
+    }
+  }
+
+  /**
+   * 确保官方通用文件工作流持久化落库到 local_workflows 表中，物理满足外键约束
+   */
+  ensureUniversalGeneralWorkflowInDb(db?: Database.Database): LocalWorkflowRecord {
+    const targetDb = db || databaseService.db
+    const universalWf = this.createUniversalGeneralWorkflow()
+    if (targetDb) {
+      try {
+        const dao = new LocalWorkflowDao(targetDb)
+        dao.upsert({
+          id: universalWf.id,
+          user_id: null,
+          author: universalWf.author || 'Firefly Official',
+          name: universalWf.name,
+          version: universalWf.version || '1.0.0',
+          persona: universalWf.persona,
+          category: universalWf.category,
+          summary: universalWf.summary,
+          source: 'official',
+          status: universalWf.status || 'published',
+          workspace_config:
+            typeof universalWf.workspace_config === 'object'
+              ? JSON.stringify(universalWf.workspace_config)
+              : universalWf.workspace_config,
+          naming_pattern: universalWf.naming_pattern,
+          naming_template: universalWf.naming_template,
+          preset_directory_tree:
+            typeof universalWf.preset_directory_tree === 'object'
+              ? JSON.stringify(universalWf.preset_directory_tree)
+              : universalWf.preset_directory_tree,
+          preview_tree:
+            typeof universalWf.preview_tree === 'object'
+              ? JSON.stringify(universalWf.preview_tree)
+              : universalWf.preview_tree,
+          icon_svg: universalWf.icon_svg
+        } as any)
+      } catch (err) {
+        logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 写入通用工作流到 DB 异常:', err)
+      }
+    }
+    return universalWf
+  }
+
+  /**
+   * 构造官方标准通用文件工作流 (不设包含规则白名单，全格式放行)
+   */
+  createUniversalGeneralWorkflow(): LocalWorkflowRecord {
+    return {
+      id: 'builtin.workflow.general-inbox',
+      user_id: null,
+      author: 'Firefly Official',
+      name: t('通用文件收纳与分类体系'),
+      version: '1.0.0',
+      persona: 'general',
+      category: 'office',
+      summary: t('适用于日常杂项文件、通用资料与冷门未分类文件的综合整理体系，全格式放行不设限'),
+      source: 'official',
+      status: 'published',
+      naming_pattern: t('[创建日期]_[业务分类]_[文件名称]'),
+      naming_template: '[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}',
+      preset_directory_tree: JSON.stringify([
+        {
+          name: t('01-收件整理'),
+          children: [{ name: t('待处理与临时中转') }, { name: t('近期常用') }]
+        },
+        {
+          name: t('02-分类存放'),
+          children: [
+            { name: t('文档与资料') },
+            { name: t('媒体与图片') },
+            { name: t('应用与软件') }
+          ]
+        },
+        {
+          name: t('03-长期归档'),
+          children: [{ name: t('已完结归档') }, { name: t('重要备份') }]
+        }
+      ]),
+      preview_tree: null,
+      icon_svg:
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>',
+      workspace_config: JSON.stringify({
+        schemaVersion: 1,
+        status: 'ready',
+        policyVersion: 1,
+        workflowId: 'builtin.workflow.general-inbox',
+        extensionWeights: {},
+        customExcludeRules: [],
+        customIncludeRules: [],
+        baseAIConfig: {
+          analysisMode: 'quick_name',
+          embeddingProfile: 'classic_light',
+          mrlDimension: 256,
+          videoQuotaMax: 10,
+          videoCutSensitivity: 'medium',
+          videoSoftTokenBudget: 48,
+          videoAsrDurationSec: 0,
+          audioAnalysisDurationSec: 0,
+          enableImageOcr: true,
+          ocrModelSize: 'tiny',
+          maxContentSizeKb: 4096,
+          enableOfficeCover: true,
+          reuseBasicAnalysisData: true
+        },
+        derivedSnapshot: {
+          analysisMode: 'quick_name',
+          embeddingProfile: 'classic_light',
+          mrlDimension: 256,
+          videoQuotaMax: 10,
+          videoCutSensitivity: 'medium',
+          videoSoftTokenBudget: 48,
+          videoAsrDurationSec: 0,
+          audioAnalysisDurationSec: 0,
+          enableImageOcr: true,
+          ocrModelSize: 'tiny',
+          maxContentSizeKb: 4096,
+          enableOfficeCover: true,
+          reuseBasicAnalysisData: true
+        },
+        namingPattern: t('[创建日期]_[业务分类]_[文件名称]'),
+        namingTemplate: '[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}',
+        configuredAt: 1762425600000
+      }),
+      created_at: '2026-01-01T00:00:00.000Z',
+      modified_at: '2026-01-01T00:00:00.000Z'
     }
   }
 
@@ -557,6 +704,12 @@ export class ConfigDbManager {
           logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 兜底查询 local_workflows 失败:', err)
         }
       }
+    }
+    // 确保列表常驻包含官方预置的通用文件工作流（零白名单限制），且确保持久化入库以满足外键约束
+    if (!list.some(w => w.id === 'builtin.workflow.general-inbox')) {
+      const universalWf = this.ensureUniversalGeneralWorkflowInDb()
+      list = [universalWf, ...list]
+      this.localWorkflows = list
     }
     if (filter?.source) {
       list = list.filter(w => w.source === filter.source)

@@ -191,6 +191,17 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
 
   async getCapabilities(): Promise<AICapabilities> {
     const aiServiceMode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
+    if (aiServiceMode === 'cpu') {
+      return {
+        supportsText: true,
+        supportsImage: false,
+        supportsAudio: false,
+        supportsVideo: false,
+        maxContextSize: 2048,
+        modelName: '轻量CPU引擎 (Pocket-CPU)',
+        provider: 'cpu'
+      }
+    }
     if (aiServiceMode === 'cloud') {
       const provider = ConfigOrchestrator.getInstance().getValue<string>(
         'AI_CLOUD_PROVIDER'
@@ -400,6 +411,9 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
 
   isMultiModalModel(modelId?: string): boolean {
     const aiServiceMode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
+    if (aiServiceMode === 'cpu') {
+      return false
+    }
     if (aiServiceMode === 'cloud') {
       const provider = ConfigOrchestrator.getInstance().getValue<string>(
         'AI_CLOUD_PROVIDER'
@@ -512,6 +526,10 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
 
   async getContextLength(): Promise<number> {
     try {
+      const aiServiceMode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
+      if (aiServiceMode === 'cpu') {
+        return 2048
+      }
       const capabilities = await this.getCapabilities()
       return capabilities.maxContextSize || 4096
     } catch (error) {
@@ -523,6 +541,12 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
   async getActualContextLimit(): Promise<number> {
     try {
       const aiServiceMode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
+
+      // CPU 模式：硬上限 2048
+      if (aiServiceMode === 'cpu') {
+        logger.info(LogCategory.MODEL_CAPABILITY_ADAPTER, `[轻量CPU引擎] 使用固定上下文限制: 2048`)
+        return 2048
+      }
 
       // 云端模式：使用更大的上下文
       if (aiServiceMode === 'cloud') {
@@ -576,6 +600,11 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
     try {
       const aiServiceMode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
 
+      // CPU 模式：轻量引擎最大输出限制为 256
+      if (aiServiceMode === 'cpu') {
+        return 256
+      }
+
       // 云端模式：允许更大的输出
       if (aiServiceMode === 'cloud') {
         return 4096
@@ -622,6 +651,9 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
   async getModelParameterSize(): Promise<number> {
     try {
       const aiServiceMode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
+      if (aiServiceMode === 'cpu') {
+        return 0.5
+      }
       if (aiServiceMode === 'cloud') {
         return 0
       }
@@ -734,7 +766,9 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
   ): Promise<IModelCapabilityMatch> {
     const aiServiceMode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
     const modelId =
-      aiServiceMode === 'cloud'
+      aiServiceMode === 'cpu'
+        ? 'pocket-cpu'
+        : aiServiceMode === 'cloud'
         ? (ConfigOrchestrator.getInstance().getValue<string>(
             'AI_CLOUD_SELECTED_MODEL_ID'
           ) as string)
@@ -1083,7 +1117,9 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
   private generateCacheKey(context: IFileAnalysisContext): string {
     const aiServiceMode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
     const modelId =
-      aiServiceMode === 'cloud'
+      aiServiceMode === 'cpu'
+        ? 'pocket-cpu'
+        : aiServiceMode === 'cloud'
         ? (ConfigOrchestrator.getInstance().getValue<string>(
             'AI_CLOUD_SELECTED_MODEL_ID'
           ) as string)

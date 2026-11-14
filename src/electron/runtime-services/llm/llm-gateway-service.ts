@@ -38,6 +38,9 @@ import {
   type DirectoryPlanOutput
 } from './task-specs'
 import { OmniService } from '../system/omni-service'
+import { modularResourceService } from '../system/modular-resource-service'
+import { EngineBridgeService, engineBridgeService } from '../engine-bridge/engine-bridge-service'
+import { ConfigOrchestrator } from '../../config/config-orchestrator'
 
 export type GatewayErrorCode =
   | 'MODE_DISABLED'
@@ -209,18 +212,11 @@ export class LlmGatewayService implements ILlmGatewayService {
    * 避免生产代码 CJS require 与 ESM 单例不一致导致的探测失真）。
    */
   private modularResourceResolver: () => any = () => {
-    // 生产：延迟 CJS require，规避循环依赖
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { modularResourceService } = require('../system/modular-resource-service')
     return modularResourceService
   }
 
   public setModularResourceResolverForTesting(resolver: (() => any) | null): void {
-    this.modularResourceResolver =
-      resolver ?? (() => {
-        const { modularResourceService } = require('../system/modular-resource-service')
-        return modularResourceService
-      })
+    this.modularResourceResolver = resolver ?? (() => modularResourceService)
   }
 
   private constructor() {
@@ -295,14 +291,21 @@ export class LlmGatewayService implements ILlmGatewayService {
    */
   private initModeFromConfig(): void {
     try {
-      const { ConfigOrchestrator } = require('../../config/config-orchestrator')
       const orchestrator = ConfigOrchestrator?.getInstance?.()
-      const savedMode =
-        orchestrator?.getValue?.('AI_SERVICE_MODE') ||
-        orchestrator?.getValue?.('AI_SERVICE_LAST_ENABLED_MODE')
+      const savedMode = (orchestrator?.getValue?.('AI_SERVICE_MODE') ||
+        orchestrator?.getValue?.('AI_SERVICE_LAST_ENABLED_MODE')) as string | undefined
       if (savedMode && ['local', 'cpu', 'cloud', 'disabled'].includes(savedMode)) {
         this.desiredMode = savedMode as GenerativeEngineMode
       }
+      orchestrator?.onConfigChange?.((changes: Record<string, any>) => {
+        if ('AI_SERVICE_MODE' in changes) {
+          const newMode = changes['AI_SERVICE_MODE']
+          if (newMode && ['local', 'cpu', 'cloud', 'disabled'].includes(newMode)) {
+            this.desiredMode = newMode as GenerativeEngineMode
+            this.routeEpoch++
+          }
+        }
+      })
     } catch {
       // 容灾忽略（单测或无配置环境）
     }
@@ -387,7 +390,6 @@ export class LlmGatewayService implements ILlmGatewayService {
 
     try {
       // 萤核AI引擎为系统内置捆绑组件（PRD-0044 Invariant），探查实际引擎可执行文件
-      const { EngineBridgeService } = require('../engine-bridge/engine-bridge-service')
       const exe = EngineBridgeService?.getInstance?.()?.resolveEngineExecutable?.()
       if (exe && fs.existsSync(exe)) {
         return 'installed'
@@ -475,6 +477,14 @@ export class LlmGatewayService implements ILlmGatewayService {
    * 获取当前生成式引擎状态快照 (真实探针驱动，零虚假硬编码)
    */
   public getSnapshot(): GenerativeEngineSnapshot {
+    // 始终以 ConfigOrchestrator 为单一事实源同步 desiredMode（避免运行时动态切配置后失步）
+    const orchestratorMode = ConfigOrchestrator?.getInstance?.()?.getValue?.('AI_SERVICE_MODE') as
+      | GenerativeEngineMode
+      | undefined
+    if (orchestratorMode && ['local', 'cpu', 'cloud', 'disabled'].includes(orchestratorMode)) {
+      this.desiredMode = orchestratorMode
+    }
+
     const rawSnapshot: GenerativeEngineSnapshot = {
       desiredMode: this.desiredMode,
       effectiveMode: 'disabled',
@@ -517,33 +527,129 @@ export class LlmGatewayService implements ILlmGatewayService {
 
     // 持久化记录前序生效模式供仪表盘与向导回溯
     try {
-      const { ConfigOrchestrator } = require('../../config/config-orchestrator')
       const orchestrator = ConfigOrchestrator?.getInstance?.()
-      if (mode !== 'disabled') {
-        orchestrator?.setValues?.({
-          AI_SERVICE_MODE: mode,
-          AI_SERVICE_LAST_ENABLED_MODE: mode
-        })
+      if (mode !== 'disabled' && orchestrator) {
+        if (typeof orchestrator.updateValues === 'function') {
+          await orchestrator.updateValues({
+            AI_SERVICE_MODE: mode,
+            AI_SERVICE_LAST_ENABLED_MODE: mode
+          })
+        } else if (typeof orchestrator.setValue === 'function') {
+          orchestrator.setValue('AI_SERVICE_MODE', mode)
+          orchestrator.setValue('AI_SERVICE_LAST_ENABLED_MODE', mode)
+        }
       }
     } catch {}
+
+    // 状态双向对齐与引擎互斥逻辑 (TASK-04 / 插件中心与全局设置双向互斥对齐)
+    if (mode === 'cpu') {
+      try {
+        const modularService = this.modularResourceResolver?.() ?? modularResourceService
+        const dao = modularService?.getDao?.()
+        const cpuMod = dao?.modules?.findByIdSync?.('pocket-cpu-int8-onnx')
+        if (
+          cpuMod &&
+          (cpuMod.install_state === 'installed_inactive' || cpuMod.install_state === 'active')
+        ) {
+          if (cpuMod.install_state !== 'active') {
+            await modularService.updateModuleState('pocket-cpu-int8-onnx', { active: true })
+          }
+        }
+      } catch (err) {
+        logger.warn(LogCategory.AI_SERVICE, '[LlmGateway] 激活 CPU 引擎插件状态异常:', err)
+      }
+      try {
+        await engineBridgeService.shutdown()
+      } catch (err) {
+        logger.warn(LogCategory.AI_SERVICE, '[LlmGateway] 切换至 CPU 模式关停萤核引擎异常:', err)
+      }
+    } else if (mode === 'local') {
+      try {
+        const modularService = this.modularResourceResolver?.() ?? modularResourceService
+        const dao = modularService?.getDao?.()
+        const cpuMod = dao?.modules?.findByIdSync?.('pocket-cpu-int8-onnx')
+        if (cpuMod && cpuMod.install_state === 'active') {
+          await modularService.updateModuleState('pocket-cpu-int8-onnx', { active: false })
+        }
+      } catch (err) {
+        logger.warn(LogCategory.AI_SERVICE, '[LlmGateway] 停用 CPU 引擎插件异常:', err)
+      }
+      try {
+        await this.drain()
+      } catch (err) {
+        logger.warn(LogCategory.AI_SERVICE, '[LlmGateway] 排空 CPU 会话异常:', err)
+      }
+    } else if (mode === 'cloud' || mode === 'disabled') {
+      try {
+        const modularService = this.modularResourceResolver?.() ?? modularResourceService
+        const dao = modularService?.getDao?.()
+        const cpuMod = dao?.modules?.findByIdSync?.('pocket-cpu-int8-onnx')
+        if (cpuMod && cpuMod.install_state === 'active') {
+          await modularService.updateModuleState('pocket-cpu-int8-onnx', { active: false })
+        }
+      } catch {}
+      try {
+        await engineBridgeService.shutdown()
+      } catch {}
+    }
   }
 
   /**
    * 显式预热底座模型 (可解开 CRASH_LOOP 熔断)
    */
   public async preheat(options?: { wait?: boolean }): Promise<void> {
+    const configMode = ConfigOrchestrator?.getInstance?.()?.getValue?.('AI_SERVICE_MODE') as
+      | GenerativeEngineMode
+      | undefined
+    if (configMode && ['local', 'cpu', 'cloud', 'disabled'].includes(configMode)) {
+      this.desiredMode = configMode
+    }
+
     const snapshot = this.getSnapshot()
-    if (snapshot.effectiveMode !== 'cpu') return
+    // 只要期望模式或生效模式是 cpu，就应当推进预热
+    if (snapshot.effectiveMode !== 'cpu' && snapshot.desiredMode !== 'cpu') {
+      const reason = snapshot.unavailableReason || `desiredMode=${snapshot.desiredMode}`
+      this.cpuLastError = `预热被跳过: 模式不可用 (${reason})`
+      logger.warn(
+        LogCategory.AI_SERVICE,
+        `[LlmGateway] 预热被跳过: effectiveMode=${snapshot.effectiveMode}, reason=${reason}`
+      )
+      return
+    }
+
+    // 检查安装资产状态
+    if (snapshot.installation.cpu === 'not_installed' || snapshot.installation.cpu === 'corrupt') {
+      const msg = snapshot.installation.cpu === 'not_installed' ? '模型资产未安装' : '模型资产损坏'
+      this.cpuRuntimeState = 'failed'
+      this.cpuLastError = msg
+      logger.warn(LogCategory.AI_SERVICE, `[LlmGateway] 预热失败: ${msg}`)
+      return
+    }
 
     const baseUrl = this.getOmniBaseUrl()
-    const wait = options?.wait ?? false
+    const wait = options?.wait ?? true
 
     this.cpuRuntimeState = 'loading'
     try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+      let token = OmniService.getInstance().getOmniToken()
+      if (!token) {
+        try {
+          const runFile = path.join(app.getPath('userData'), 'run', 'omni.token')
+          if (fs.existsSync(runFile)) {
+            const tokenData = JSON.parse(fs.readFileSync(runFile, 'utf8'))
+            if (tokenData?.token) token = tokenData.token
+          }
+        } catch {}
+      }
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
       const res = await fetch(`${baseUrl}/v1/engines/cpu/session`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ wait })
+        headers,
+        body: JSON.stringify({ wait, reset_crash_count: true })
       })
 
       if (res.ok) {
@@ -552,12 +658,17 @@ export class LlmGatewayService implements ILlmGatewayService {
         this.cpuLastError = null
         this.cpuRuntimeState = 'ready'
         this.saveCrashState()
+        logger.info(LogCategory.AI_SERVICE, '[LlmGateway] 轻量CPU引擎预热成功，状态已就绪')
       } else {
+        const errorText = await res.text().catch(() => '')
         this.cpuRuntimeState = 'failed'
+        this.cpuLastError = `HTTP ${res.status}${errorText ? `: ${errorText}` : ''}`
+        logger.error(LogCategory.AI_SERVICE, `[LlmGateway] 预热请求返回错误: ${this.cpuLastError}`)
       }
     } catch (err: any) {
       this.cpuRuntimeState = 'failed'
-      logger.warn(LogCategory.AI_SERVICE, `[LlmGateway] 预热请求异常: ${err.message}`)
+      this.cpuLastError = err?.message || '网络连接异常'
+      logger.warn(LogCategory.AI_SERVICE, `[LlmGateway] 预热请求异常: ${this.cpuLastError}`)
     }
   }
 
@@ -694,8 +805,7 @@ export class LlmGatewayService implements ILlmGatewayService {
     }
 
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      Host: '127.0.0.1'
+      'Content-Type': 'application/json'
     }
     const token = OmniService.getInstance().getOmniToken()
     if (token) {
@@ -896,8 +1006,7 @@ export class LlmGatewayService implements ILlmGatewayService {
     }
 
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      Host: '127.0.0.1'
+      'Content-Type': 'application/json'
     }
     const token = OmniService.getInstance().getOmniToken()
     if (token) {

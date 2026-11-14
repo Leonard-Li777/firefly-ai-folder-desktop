@@ -16,7 +16,8 @@ import {
   logger,
   extensionFromFileName,
   getFileCategory,
-  FileCategory
+  FileCategory,
+  SHORTCUT_LINK_EXTENSIONS
 } from '@firefly/shared'
 
 /**
@@ -72,6 +73,7 @@ export const DOCUMENT_EXTENSIONS = new Set([
   'htm',
   'epub',
   'mobi',
+  'chm',
   'rtf',
   'log',
   'tex',
@@ -189,9 +191,11 @@ export const ARCHIVE_EXTENSIONS = new Set([
 ])
 
 /**
- * 快捷方式与链接类扩展名
+ * 快捷方式与链接类扩展名 (统一源自 file-extension-policies.json SSOT)
  */
-export const SHORTCUT_EXTENSIONS = new Set(['lnk', 'url', 'webloc', 'desktop'])
+export const SHORTCUT_EXTENSIONS = new Set(
+  Array.from(SHORTCUT_LINK_EXTENSIONS).map(e => e.replace(/^\./, ''))
+)
 
 /**
  * 音频与音乐类扩展名
@@ -418,7 +422,7 @@ export class DirectoryProfiler {
               executableCount++
             } else if (category === FileCategory.ARCHIVE || ARCHIVE_EXTENSIONS.has(extNoDot)) {
               archiveCount++
-            } else if (category === FileCategory.APPLICATION || SHORTCUT_EXTENSIONS.has(extNoDot)) {
+            } else if (SHORTCUT_EXTENSIONS.has(extNoDot)) {
               shortcutCount++
             } else {
               otherCount++

@@ -676,7 +676,7 @@ export class EngineBridgeService {
   private async shouldEngineRun(): Promise<boolean> {
     try {
       const mode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE') || 'local'
-      return mode !== 'cloud' && mode !== 'disabled'
+      return mode === 'local'
     } catch (err) {
       logger.debug(
         LogCategory.SYSTEM,

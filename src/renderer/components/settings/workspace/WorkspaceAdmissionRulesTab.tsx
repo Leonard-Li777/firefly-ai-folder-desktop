@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react'
 import {
   WorkspaceDirectory,
   WorkspaceConfig,
@@ -25,6 +25,7 @@ import {
   Lock,
   ArrowUpRight,
   Save,
+  RotateCcw,
   X,
   FolderOpen,
   CheckCircle2,
@@ -36,6 +37,16 @@ import {
 export interface WorkspaceAdmissionRulesTabProps {
   workspace: WorkspaceDirectory
   onConfigSaved?: () => void
+  onDirtyChange?: (isDirty: boolean) => void
+}
+
+export interface WorkspaceAdmissionRulesTabHandle {
+  /** 当前包含与排除规则是否处于已修改未保存状态 */
+  isDirty: () => boolean
+  /** 保存当前已修改的规则，返回是否保存成功 */
+  save: () => Promise<boolean>
+  /** 放弃当前未保存的修改，恢复初始状态 */
+  discard: () => void
 }
 
 export type WorkspaceIgnoreRulesTabProps = WorkspaceAdmissionRulesTabProps
@@ -51,12 +62,13 @@ export type WorkspaceIgnoreRulesTabProps = WorkspaceAdmissionRulesTabProps
  *    （包含规则留空即表示不限格式，除排除项外全量放行）；
  * 2. 包含规则标签化管理：常驻可编辑，支持输入纯小写/带点扩展名、批量添加与分类快速预设；
  * 3. 实时影响预览与安全告知：实时测算纳入/排除比例与文件数量，常驻醒目“绝不删除用户磁盘物理文件”绿色安全徽标；
- * 4. 专属排除规则与系统全局基线完整保留并紧密协同，始终与包含规则同时参与准入判定。
+ * 4. 专属排除规则与系统全局基线完整保留并紧密协同，始终与包含规则同时参与准入判定；
+ * 5. 未保存状态守护与 Confirm 提示：通过 Ref 对外暴露 isDirty, save, discard 接口，供弹窗离开时拦截。
  */
-export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProps> = ({
-  workspace,
-  onConfigSaved
-}) => {
+export const WorkspaceAdmissionRulesTab = forwardRef<
+  WorkspaceAdmissionRulesTabHandle,
+  WorkspaceAdmissionRulesTabProps
+>(function WorkspaceAdmissionRulesTab({ workspace, onConfigSaved, onDirtyChange }, ref) {
   const systemRules = useSettingsStore(s => s.ignoreRules)
   const openSystemSettings = useSettingsStore(s => s.openSystemSettings)
 
@@ -204,8 +216,8 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProp
     })
   }
 
-  const handleSaveWhitelist = async () => {
-    if (!workspace.id) return
+  const handleSaveWhitelist = useCallback(async (): Promise<boolean> => {
+    if (!workspace.id) return false
     setIsSavingWhitelist(true)
     try {
       // 始终按实际配置写入：不再存在「切到标准模式就清空包含规则」的互斥分支
@@ -221,16 +233,38 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProp
               : t('包含规则已更新，已生效 {count} 项扩展名', { count: targetPatterns.length })
           )
           onConfigSaved?.()
+          return true
         } else {
           toast.error(res.error || t('更新包含规则失败'))
+          return false
         }
       }
+      return false
     } catch (err: any) {
       toast.error(err?.message || t('保存包含规则失败'))
+      return false
     } finally {
       setIsSavingWhitelist(false)
     }
-  }
+  }, [workspace.id, whitelistTags, onConfigSaved])
+
+  const handleDiscard = useCallback(() => {
+    setWhitelistTags(initialWhitelist)
+  }, [initialWhitelist])
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      isDirty: () => isWhitelistDirty,
+      save: handleSaveWhitelist,
+      discard: handleDiscard
+    }),
+    [isWhitelistDirty, handleSaveWhitelist, handleDiscard]
+  )
+
+  useEffect(() => {
+    onDirtyChange?.(isWhitelistDirty)
+  }, [isWhitelistDirty, onDirtyChange])
 
   // 预设分类扩展名库 (动态获取，遵守 AGENTS.md §2.6 语言热切换铁律)
   const getPresetGroups = () => [
@@ -401,20 +435,35 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProp
         </div>
 
         {isWhitelistDirty && (
-          <Button
-            type="button"
-            size="sm"
-            onClick={handleSaveWhitelist}
-            disabled={isSavingWhitelist}
-            className="text-xs font-semibold flex items-center gap-1.5 h-8 px-3 shadow-sm shrink-0 bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            {isSavingWhitelist ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <Save className="w-3.5 h-3.5" />
-            )}
-            <span>{isSavingWhitelist ? t('正在保存...') : t('保存包含与排除规则')}</span>
-          </Button>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleDiscard}
+              disabled={isSavingWhitelist}
+              data-testid="discard-admission-rules"
+              className="text-xs text-muted-foreground hover:text-foreground h-8 px-2.5 flex items-center gap-1"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>{t('放弃修改')}</span>
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleSaveWhitelist}
+              disabled={isSavingWhitelist}
+              data-testid="save-admission-rules"
+              className="text-xs font-semibold flex items-center gap-1.5 h-8 px-3 shadow-sm bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              {isSavingWhitelist ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Save className="w-3.5 h-3.5" />
+              )}
+              <span>{isSavingWhitelist ? t('正在保存...') : t('保存包含与排除规则')}</span>
+            </Button>
+          </div>
         )}
       </div>
 
@@ -939,4 +988,4 @@ export const WorkspaceAdmissionRulesTab: React.FC<WorkspaceAdmissionRulesTabProp
       </Card>
     </div>
   )
-}
+})

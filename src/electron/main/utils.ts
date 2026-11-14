@@ -171,6 +171,8 @@ export const enrichAIStatus = async (info: any) => {
   const currentSelectedModelId =
     currentMode === 'cloud'
       ? orchestrator.getValue<string>('AI_CLOUD_SELECTED_MODEL_ID')
+      : currentMode === 'cpu'
+      ? 'qwen2.5-0.5b-instruct'
       : (await import('../runtime-services/engine-bridge')).engineBridgeService.getSnapshot().model
   const currentCloudProvider = orchestrator.getValue<string>('AI_CLOUD_PROVIDER')
 
@@ -252,6 +254,20 @@ export const enrichAIStatus = async (info: any) => {
       LogCategory.MAIN,
       '[enrichAIStatus] 探测到 CONNECTING 状态且无模型名称，维持当前 provider 显示'
     )
+  }
+
+  if (enriched.modelMode === 'cpu') {
+    // CPU 模式由轻量级CPU引擎承载，屏蔽云端 API 密钥类历史残留报错
+    if (isApiKeyError || errorMessage.includes('云端')) {
+      enriched.error = null
+      if (enriched.status === AIServiceStatus.ERROR) {
+        enriched.status = AIServiceStatus.IDLE
+      }
+    }
+    enriched.modelName = null
+    if (!enriched.provider) {
+      enriched.provider = 'cpu'
+    }
   }
 
   if (enriched.modelMode === 'cloud' && isApiKeyError) {

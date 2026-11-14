@@ -15,7 +15,9 @@ import { RowRenderer, renderAnalysisStatus } from './components/RowRenderer'
 import { formatDate, isImageFile } from './utils'
 import { formatFileSize, getFileIcon } from '../FileItem'
 
-import { AnalysisStatus } from '@firefly/types'
+import { AnalysisStatus, parseWorkspaceConfig, isWorkspaceConfigReady } from '@firefly/types'
+import { Button } from '../../ui/button'
+import { Sliders } from 'lucide-react'
 import { Checkbox } from '../../ui/checkbox'
 import { ColumnResizer } from './components/ColumnResizer'
 import { ContextMenu } from '../../common/ContextMenu'
@@ -34,6 +36,8 @@ import { useFileListSelection } from './hooks/useFileListSelection'
 import { useSearchStore } from '../../../stores/search-store'
 import { useTierStore } from '../../../stores/tier-store'
 import { useDragSelectStore } from '../../../stores/drag-select-store'
+import { useSettingsStore } from '../../../stores/settings-store'
+import { useVirtualDirectoryStore } from '../../../stores/virtual-directory-store'
 
 // 静态导入 react-window 兼容 CJS/ESM 与 v1/v2 规范
 import * as ReactWindowModule from 'react-window'
@@ -230,6 +234,100 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
   // 搜索列表模式下 1:1 对齐物理文件，无需展平多行，卡片第三行以横向画廊呈现多切片
   const searchListItems = items
   const effectiveItems = items
+
+  // 订阅工作目录信息用于真实目录排障
+  const workspaceDirectories = useVirtualDirectoryStore(s => s.workspaceDirectories)
+  const currentWorkspaceDirectory = useVirtualDirectoryStore(s => s.currentWorkspaceDirectory)
+
+  // 匹配当前真实目录对应的工作区配置
+  const targetWorkspace = useMemo(() => {
+    if (!isRealDirectory) return null
+    const searchPath = workspaceDirectoryPath || currentPath
+    if (searchPath) {
+      const matched = workspaceDirectories.find(
+        w => w.path && (isPathEqual(w.path, searchPath) || (isSubPath && isSubPath(w.path, searchPath)))
+      )
+      if (matched) return matched
+    }
+    return currentWorkspaceDirectory
+  }, [isRealDirectory, workspaceDirectoryPath, currentPath, workspaceDirectories, currentWorkspaceDirectory, isPathEqual, isSubPath])
+
+  // 检查当前工作目录是否配置了非空包含规则 (customIncludeRules 或 whitelist_patterns)
+  const hasActiveIncludeRules = useMemo(() => {
+    if (!isRealDirectory || !targetWorkspace) return false
+    // 1. 优先检查 workspace.whitelist_patterns
+    let rawWhitelist = targetWorkspace.whitelist_patterns
+    if (typeof rawWhitelist === 'string') {
+      try {
+        rawWhitelist = JSON.parse(rawWhitelist)
+      } catch {
+        rawWhitelist = []
+      }
+    }
+    if (Array.isArray(rawWhitelist) && rawWhitelist.length > 0) {
+      return true
+    }
+
+    // 2. 检查 workspace_config.customIncludeRules (直接解析原始 JSON，防 parseWorkspaceConfig 状态降级抹杀)
+    if (targetWorkspace.workspace_config) {
+      try {
+        let rawCfg = targetWorkspace.workspace_config
+        if (typeof rawCfg === 'string') {
+          rawCfg = JSON.parse(rawCfg)
+        }
+        const includeRules = (rawCfg as any)?.customIncludeRules
+        if (Array.isArray(includeRules) && includeRules.length > 0) {
+          return true
+        }
+      } catch {
+        // 安全忽略 JSON 解析异常
+      }
+    }
+    return false
+  }, [isRealDirectory, targetWorkspace])
+
+  const hasIncludeRulesMismatch = isRealDirectory && items.length === 0 && hasActiveIncludeRules
+
+  const handleOpenAdmissionRules = useCallback(() => {
+    const wsId = targetWorkspace?.id ?? currentWorkspaceDirectory?.id
+    if (wsId != null) {
+      useSettingsStore.getState().openWorkspaceSettings({
+        workspaceId: wsId,
+        targetTab: 'ignore_rules'
+      })
+    }
+  }, [targetWorkspace?.id, currentWorkspaceDirectory?.id])
+
+  const renderEmptyState = useCallback(
+    (loadingText: string) => {
+      if (items.length !== 0) {
+        return <EmptyState icon="folder_off" title={loadingText} isLoading={true} />
+      }
+
+      if (hasIncludeRulesMismatch) {
+        return (
+          <EmptyState
+            icon="filter_alt"
+            title={t('当前没有可显示文件，是否错误设置了文件包含规则？')}
+            description={t('当前工作目录已启用文件包含白名单，非白名单内的文件已被自动隐藏。')}
+          >
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleOpenAdmissionRules}
+              className="mt-3 gap-2 text-primary border-primary/30 hover:bg-primary/10 shadow-sm font-medium"
+            >
+              <Sliders className="w-4 h-4 text-primary" />
+              {t('立即查看文件准入与包含排除配置')}
+            </Button>
+          </EmptyState>
+        )
+      }
+
+      return <EmptyState icon="folder_off" title={t('目录为空')} isLoading={false} />
+    },
+    [items.length, hasIncludeRulesMismatch, handleOpenAdmissionRules]
+  )
 
   const columnCount = useMemo(() => {
     // 增加安全边距（约 48px）用于处理滚动条和容器内边距，使布局更宽松
@@ -1014,7 +1112,9 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
             fontSize: `${Math.max(11, Math.min(18, Math.round(11 + ((gridCardWidth - 50) / 350) * 7)))}px`
           }}
         >
-          {(() => {
+          {items.length === 0 ? (
+            renderEmptyState(t('正在准备列表...'))
+          ) : (() => {
             // 根据 gridCardWidth 动态缩放列表行高（从 50px 时 32px 到 400px 时 80px，默认 200px 时为标准 48px）
             const listRowHeight = Math.max(30, Math.round(32 + ((gridCardWidth - 50) / 350) * 48))
             const listFontSize = Math.max(
@@ -1050,11 +1150,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
                 </ListComponent>
               )
             ) : (
-              <EmptyState
-                icon="folder_off"
-                title={items.length === 0 ? t('目录为空') : t('正在准备列表...')}
-                isLoading={items.length !== 0}
-              />
+              renderEmptyState(t('正在准备列表...'))
             )
           })()}
         </div>
@@ -1092,7 +1188,9 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
         )}
 
         <div className="flex-1 overflow-y-auto p-4 scrollbar-thin" onScroll={e => handleScroll(e)}>
-          {waterfallColumnsData && (
+          {items.length === 0 ? (
+            renderEmptyState(t('正在准备瀑布流...'))
+          ) : waterfallColumnsData ? (
             <div className="flex gap-4 items-start w-full justify-center">
               {waterfallColumnsData.columns.map(({ colIndex, columnItems }) => {
                 return (
@@ -1161,7 +1259,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
                 )
               })}
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     )
@@ -1208,7 +1306,9 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
           />
         )}
         <SelectionBox viewMode={viewMode} scrollOffset={scrollOffset} containerRef={containerRef} />
-        {reactWindowAvailable &&
+        {items.length === 0 ? (
+          renderEmptyState(t('正在准备网格...'))
+        ) : reactWindowAvailable &&
         GridComponent &&
         containerSize.width > 0 &&
         containerSize.height > 0 ? (
@@ -1245,11 +1345,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
             )}
           </div>
         ) : (
-          <EmptyState
-            icon="folder_off"
-            title={items.length === 0 ? t('目录为空') : t('正在准备网格...')}
-            isLoading={items.length !== 0}
-          />
+          renderEmptyState(t('正在准备网格...'))
         )}
       </div>
     )
@@ -1270,11 +1366,14 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
       }}
     >
       <SelectionBox viewMode={viewMode} scrollOffset={scrollOffset} containerRef={containerRef} />
-      <div
-        className="flex-1 overflow-x-auto overflow-y-auto scrollbar-thin"
-        onScroll={e => handleScroll(e)}
-      >
-        <table className="text-sm text-left" style={{ width: totalWidth, tableLayout: 'fixed' }}>
+      {items.length === 0 ? (
+        renderEmptyState(t('目录为空'))
+      ) : (
+        <div
+          className="flex-1 overflow-x-auto overflow-y-auto scrollbar-thin"
+          onScroll={e => handleScroll(e)}
+        >
+          <table className="text-sm text-left" style={{ width: totalWidth, tableLayout: 'fixed' }}>
           <colgroup>
             <col style={{ width: columnWidths.checkbox }} />
             <col style={{ width: columnWidths.name }} />
@@ -1429,6 +1528,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
           </tbody>
         </table>
       </div>
+      )}
     </div>
   )
 }

@@ -171,7 +171,7 @@ export const CpuEngineDashboard: React.FC<CpuEngineDashboardProps> = ({ snapshot
           {/* 右侧动作按钮区 */}
           <div className="flex items-center gap-2 shrink-0">
             <Button
-              variant="outline"
+              variant="default"
               size="sm"
               onClick={handlePreheatClick}
               disabled={preheating || runtimeState === 'ready' || runtimeState === 'loading'}

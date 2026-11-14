@@ -296,6 +296,11 @@ interface AIClassificationRequest {
 interface ModelStatusChange {
   modelName: string | null
   status: string
+  loading?: boolean
+  modelMode?: 'local' | 'cloud' | 'cpu' | null
+  provider?: string | null
+  backend?: string
+  error?: any
 }
 
 // AI 服务初始化结果接口

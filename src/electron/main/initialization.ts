@@ -794,7 +794,7 @@ export async function initializeFullServices(): Promise<void> {
       ) {
         ;(service as any).setEnsureLocalServerHandler(async () => {
           const mode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
-          if (mode === 'disabled' || mode === 'cloud') {
+          if (mode === 'disabled' || mode === 'cloud' || mode === 'cpu') {
             return false
           }
           const { engineBridgeService } = await import('../runtime-services/engine-bridge')
@@ -829,7 +829,7 @@ export async function initializeFullServices(): Promise<void> {
         // onConfigChange 回调的 changes 值即为该 key 的新值
         if ('AI_SERVICE_MODE' in changes) {
           const newMode = changes['AI_SERVICE_MODE']
-          if (newMode === 'disabled' || newMode === 'cloud') {
+          if (newMode === 'disabled' || newMode === 'cloud' || newMode === 'cpu') {
             logger.info(
               LogCategory.MAIN,
               `[initialization] 生效引擎切换为 ${newMode}，请求萤核AI引擎完全退出`

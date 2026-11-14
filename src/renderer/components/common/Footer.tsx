@@ -28,7 +28,13 @@ import { useEngineStore } from '@/renderer/stores/engine-store'
 import { useSettingsStore } from '@/renderer/stores/settings-store'
 import { useVirtualDirectoryStore } from '@/renderer/stores/virtual-directory-store'
 import { useAnalyzedDirectoryStore } from '@/renderer/stores/analyzed-directory-store'
-import { compareVersions, LogCategory, logger, ErrorNormalizer } from '@firefly/shared'
+import {
+  compareVersions,
+  LogCategory,
+  logger,
+  ErrorNormalizer,
+  type GenerativeEngineSnapshot
+} from '@firefly/shared'
 import { PersistentTooltip } from '@/renderer/components/common/PersistentTooltip'
 
 import { getStageLabel } from '@/renderer/components/analysis/AnalysisQueueContent'
@@ -106,6 +112,11 @@ export function Footer() {
   const [hardwareInfo, setHardwareInfo] = useState<HardwareInfo | null>(null)
   const [licenseType, setLicenseType] = useState<string | null>(null)
 
+  // 是否开启高级AI引擎（AI_SERVICE_MODE）：disabled = 仅基础AI引擎（Omni）生效
+  const isAdvancedAiEnabled = (config as any)?.AI_SERVICE_MODE !== 'disabled'
+  const currentAiServiceMode = (config as any)?.AI_SERVICE_MODE || modelMode || 'local'
+  const isCpuMode = currentAiServiceMode === 'cpu' || modelMode === 'cpu'
+
   // Tier 2 引擎在线状态（PRD-0043 下载引导流）：共用 useEngineStore 统一快照与广播订阅
   const engineSnapshot = useEngineStore(s => s.snapshot)
   useEffect(() => {
@@ -114,8 +125,36 @@ export function Footer() {
   }, [])
   const engineOnline = engineSnapshot ? !!engineSnapshot.connected : null
 
-  // 引导条触发判据（PRD-0042 Task 6 / PRD-0043）：未连接 Tier 2 引擎 且 未配置云端 AI
-  const showEngineGuide = modelMode !== 'cloud' && engineOnline === false
+  // 引导条触发判据（PRD-0042 Task 6 / PRD-0043）：仅在本地萤核AI引擎模式、已开启高级AI且未连接 Tier 2 引擎时触发
+  // CPU 模式与云端模式下绝不展示萤核引导条
+  const showEngineGuide =
+    currentAiServiceMode === 'local' && isAdvancedAiEnabled && engineOnline === false
+
+  // 大模型统一网关快照状态，用于精准驱动轻量CPU引擎状态
+  const [llmSnapshot, setLlmSnapshot] = useState<GenerativeEngineSnapshot | null>(null)
+  useEffect(() => {
+    let isMounted = true
+    const fetchLlmSnapshot = async () => {
+      try {
+        if (window.electronAPI?.llmGateway?.getSnapshot) {
+          const snap = await window.electronAPI.llmGateway.getSnapshot()
+          if (isMounted) {
+            setLlmSnapshot(snap)
+          }
+        }
+      } catch (err) {
+        // 静默捕获
+      }
+    }
+    void fetchLlmSnapshot()
+    const timer = setInterval(() => {
+      void fetchLlmSnapshot()
+    }, 3000)
+    return () => {
+      isMounted = false
+      clearInterval(timer)
+    }
+  }, [])
 
   /**
    * 引导条点击链路（PRD-0043）：
@@ -132,9 +171,7 @@ export function Footer() {
     }
   }
 
-  const showAiError = serviceStatus === AIServiceStatus.ERROR || !!error
   const errorMessageDisplay = useMemo(() => {
-    if (!showAiError) return ''
     const candidate = error || lastError
     if (candidate) {
       if (typeof candidate === 'object') {
@@ -156,7 +193,51 @@ export function Footer() {
       }
     }
     return t('AI服务异常')
-  }, [showAiError, error, lastError, activeLanguage])
+  }, [error, lastError, activeLanguage])
+
+  // CPU 模式下的专用错误文案映射
+  const cpuErrorMessage = useMemo(() => {
+    if (!isCpuMode) return ''
+    if (llmSnapshot?.unavailableReason === 'CRASH_LOOP') {
+      return t('引擎曾连续异常退出，已熔断保护')
+    }
+    if (llmSnapshot?.unavailableReason === 'LOW_MEMORY') {
+      return t('电脑可用内存较低，已暂停推理服务')
+    }
+    if (
+      llmSnapshot?.unavailableReason === 'ENGINE_CRASHED' ||
+      llmSnapshot?.runtime?.cpu === 'failed'
+    ) {
+      return llmSnapshot?.cpuLastError || t('轻量模型文件或运行时解析异常')
+    }
+    return ''
+  }, [isCpuMode, llmSnapshot, activeLanguage])
+
+  const isCloudApiKeyError = useMemo(() => {
+    const msg = errorMessageDisplay || ''
+    return (
+      msg.includes('API') ||
+      msg.includes('云端') ||
+      msg.includes('密钥') ||
+      (error as any)?.code === 'API_KEY_REQUIRED'
+    )
+  }, [errorMessageDisplay, error])
+
+  // 是否展示错误次级提示行：
+  // 1. CPU 模式下：仅当轻量CPU真实发生熔断、低内存或载入失败时才显示错误；绝不展示任何云端API密钥错误！
+  // 2. 本地模式下：过滤云端 API 密钥类错误；
+  // 3. 云端模式下：正常展示
+  const showAiError = isCpuMode
+    ? Boolean(
+        llmSnapshot?.unavailableReason === 'CRASH_LOOP' ||
+          llmSnapshot?.unavailableReason === 'LOW_MEMORY' ||
+          llmSnapshot?.unavailableReason === 'ENGINE_CRASHED' ||
+          llmSnapshot?.runtime?.cpu === 'failed'
+      )
+    : (serviceStatus === AIServiceStatus.ERROR || Boolean(error)) &&
+      !(currentAiServiceMode !== 'cloud' && isCloudApiKeyError)
+
+  const finalErrorMessage = isCpuMode ? cpuErrorMessage : errorMessageDisplay
 
   const workspaceDirectories = useVirtualDirectoryStore(s => s.workspaceDirectories)
   const currentWorkspaceDirectory = useVirtualDirectoryStore(s => s.currentWorkspaceDirectory)
@@ -311,7 +392,9 @@ export function Footer() {
 
   useEffect(() => {
     if (window.electronAPI) {
-      window.electronAPI.getHardwareInfo().then(setHardwareInfo)
+      if (typeof window.electronAPI.getHardwareInfo === 'function') {
+        window.electronAPI.getHardwareInfo().then(setHardwareInfo)
+      }
 
       if (window.electronAPI.license?.getStatus) {
         window.electronAPI.license.getStatus().then((result: any) => {
@@ -331,8 +414,6 @@ export function Footer() {
     serviceStatus === AIServiceStatus.PENDING ||
     serviceStatus === AIServiceStatus.CONFIGURING
 
-  // 是否开启高级AI引擎（AI_SERVICE_MODE）：disabled = 仅基础AI引擎（Omni）生效
-  const isAdvancedAiEnabled = (config as any)?.AI_SERVICE_MODE !== 'disabled'
 
   const shouldShowRecommendation = useMemo(() => {
     // 仅在已开启高级AI引擎且选择萤核AI引擎（本地模式）时才检测推荐；
@@ -392,6 +473,69 @@ export function Footer() {
   )
 
   function getFooterDisplay(status: AIServiceStatus) {
+    if (isCpuMode) {
+      const cpuHeader = `[${t('轻量CPU引擎')}]`
+      const cpuRuntime = llmSnapshot?.runtime?.cpu || 'stopped'
+      const unavailableReason = llmSnapshot?.unavailableReason
+
+      // 生成式引擎（轻量CPU引擎）仅在真实 AI 推理中或队列推进到 Stage 3/4（生成式引擎阶段）时显示「推理中」；
+      // Stage 1/2 属于 CPU 内容提取与原生评分阶段，此时保持就绪态
+      const isGenerativeInferencing =
+        status === AIServiceStatus.PROCESSING ||
+        (isQueueAnalyzing && (analyzing?.stage ?? 0) >= 3)
+
+      if (isGenerativeInferencing) {
+        return {
+          text: `${cpuHeader} ${t('推理中')}`,
+          icon: 'auto_awesome',
+          color: 'text-purple-500',
+          animate: 'animate-pulse'
+        }
+      }
+      if (unavailableReason === 'CRASH_LOOP') {
+        return {
+          text: `${cpuHeader} ${t('服务异常')}`,
+          icon: 'error_outline',
+          color: 'text-red-500'
+        }
+      }
+      if (unavailableReason === 'LOW_MEMORY') {
+        return {
+          text: `${cpuHeader} ${t('内存不足')}`,
+          icon: 'warning',
+          color: 'text-amber-500'
+        }
+      }
+      if (unavailableReason === 'ENGINE_CRASHED' || cpuRuntime === 'failed' || status === AIServiceStatus.ERROR) {
+        return {
+          text: `${cpuHeader} ${t('服务异常')}`,
+          icon: 'error_outline',
+          color: 'text-red-500'
+        }
+      }
+      if (cpuRuntime === 'loading' || status === AIServiceStatus.LOADING || status === AIServiceStatus.INITIALIZING) {
+        return {
+          text: `${cpuHeader} ${t('启动中')}`,
+          icon: 'sync',
+          color: 'text-blue-500',
+          animate: 'animate-spin'
+        }
+      }
+      if (cpuRuntime === 'ready' || status === AIServiceStatus.IDLE) {
+        return {
+          text: `${cpuHeader} ${t('已就绪')}`,
+          icon: 'check_circle',
+          color: 'text-green-500'
+        }
+      }
+      // 停止 / 未启动状态
+      return {
+        text: `${cpuHeader} ${t('已停止')}`,
+        icon: 'stop_circle',
+        color: 'text-gray-400'
+      }
+    }
+
     // 「兼容模式」标记的权威来源是引擎列表（/api/engine/list）的 matchType：
     // 仅当当前激活引擎被引擎端标记为 matchType === 'compatible' 时才展示，
     // 不依赖可能过期的 AI_ENGINE_DRIVER_COMPATIBLE_MODE / AI_ENGINE_FORCE_CPU_MODE 配置项，
@@ -545,17 +689,25 @@ export function Footer() {
   // 注意：高级AI引擎未开启（isAdvancedAiEnabled 已在上方计算）时，Tier 2 引擎探活离线属预期，
   // 不应把状态强制覆盖为 STOPPED，直接回落展示基础AI引擎自身的状态（serviceStatus）。
   const effectiveStatus = useMemo(() => {
-    // 【队列分析优先】分析队列中存在 analyzing 项 ⇒ 整条分析流水线正在工作，Footer 必须显示「分析中」。
-    //
-    // 为什么不能只依赖下面两个 LLM 推理信号：
-    // 图像/视频的 GPU 感知与向量化由**独立的 firefly-omni 进程**承担（omniService.perceive），
-    // 该阶段既不改变 Tier 2 引擎的 status（恒为 ready），也不经过 LlamaIndexAIService.chat
-    // （serviceStatus 恒为 idle）。若只认 LLM 推理信号，Footer 会在整个 GPU 感知阶段
-    // 误显示绿色「AI 服务就绪」，而右侧队列按钮却已经在报「感知/解析」——同一栏自相矛盾。
-    //
-    // 队列状态是「分析是否在进行」的唯一权威事实源：它覆盖 CPU 提取、GPU 感知、LLM 命名全阶段，
-    // 而 serviceStatus / engine.raw.status 只是其中一个子阶段的信号。
-    if (isQueueAnalyzing) {
+    if (isCpuMode) {
+      // 轻量CPU引擎：仅在真实生成式推理中 (serviceStatus === PROCESSING) 或分析队列推进到 Stage 3/4 (生成式引擎阶段) 时进入 PROCESSING；
+      // Stage 1/2 属于 CPU 内容提取与原生评分阶段，生成式引擎尚未介入，保持展示各底座的就绪态
+      const isCpuInferencing =
+        serviceStatus === AIServiceStatus.PROCESSING ||
+        (isQueueAnalyzing && (analyzing?.stage ?? 0) >= 3)
+
+      if (isCpuInferencing) {
+        return AIServiceStatus.PROCESSING
+      }
+      const cpuRuntime = llmSnapshot?.runtime?.cpu || 'stopped'
+      if (cpuRuntime === 'loading') return AIServiceStatus.LOADING
+      if (cpuRuntime === 'ready') return AIServiceStatus.IDLE
+      if (cpuRuntime === 'failed') return AIServiceStatus.ERROR
+      return AIServiceStatus.STOPPED
+    }
+
+    // 非 CPU 模式 (本地萤核 / 云端引擎)：队列分析优先
+    if (isQueueAnalyzing || serviceStatus === AIServiceStatus.PROCESSING) {
       return AIServiceStatus.PROCESSING
     }
     if (modelMode === 'local' && isAdvancedAiEnabled) {
@@ -564,7 +716,6 @@ export function Footer() {
       }
       if (engineSnapshot?.connected) {
         if (
-          serviceStatus === AIServiceStatus.PROCESSING ||
           engineSnapshot.raw?.status === 'processing' ||
           engineSnapshot.raw?.status === 'model_loading'
         ) {
@@ -583,6 +734,9 @@ export function Footer() {
     return serviceStatus
   }, [
     isQueueAnalyzing,
+    analyzing?.stage,
+    isCpuMode,
+    llmSnapshot,
     modelMode,
     engineOnline,
     engineSnapshot,
@@ -600,7 +754,7 @@ export function Footer() {
   // - 已开启高级AI引擎：文案明确标注"高级"二字，提示高级AI引擎未运行
   // 高级AI引擎开启时（isAdvancedAiEnabled 已在上方计算），文案明确标注"高级"二字
   const effectiveAiServiceInfo =
-    engineOnline === false && modelMode === 'local' && isAdvancedAiEnabled
+    engineOnline === false && modelMode === 'local' && !isCpuMode && isAdvancedAiEnabled
       ? {
           text: t('生成式引擎未运行，AI 服务未就绪'),
           icon: 'radio_button_unchecked',
@@ -714,14 +868,18 @@ export function Footer() {
                 {showAiError && (
                   <div className="mt-0.5 truncate max-w-[480px] block">
                     <PersistentTooltip
-                      id={`ai_footer_error_${error?.code || (error as any)?.type || 'general'}`}
+                      id={`ai_footer_error_${isCpuMode ? 'cpu' : (error?.code || (error as any)?.type || 'general')}`}
                       content={t('AI服务出现异常，点击查看详情与修复方案')}
                       position="top"
                       visible={true}
                     >
                       <button
                         className="text-xs leading-tight text-red-500 font-medium transition-all duration-200 hover:underline cursor-pointer flex items-center gap-1 text-left"
-                        onClick={openErrorDialog}
+                        onClick={() =>
+                          isCpuMode
+                            ? openSettings(SettingsCategory.AI_ENGINE_CONFIG)
+                            : openErrorDialog()
+                        }
                         title={t('点击查看AI服务错误详情')}
                       >
                         <MaterialIcon
@@ -729,7 +887,7 @@ export function Footer() {
                           className="text-xs shrink-0 animate-pulse"
                         />
                         <span className="">
-                          {errorMessageDisplay}，{t('点击查看原因')}
+                          {finalErrorMessage}，{t('点击查看原因')}
                         </span>
                       </button>
                     </PersistentTooltip>

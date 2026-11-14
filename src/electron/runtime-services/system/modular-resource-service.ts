@@ -587,7 +587,7 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
   // 3. 生成式引擎：轻量 CPU 引擎 (Pocket CPU)
   {
     id: BUILTIN_MODULE_CATALOG_META['pocket-cpu-int8-onnx'].id,
-    name: '离线轻量智能引擎',
+    name: '轻量CPU引擎',
     description:
       '【办公轻薄本标配】内存仅占约400MB，0门槛秒级响应，完全离线私密。支持智能文件名深度润色、描述提取与内容深度解析。',
     icon: 'Cpu',
@@ -3067,7 +3067,11 @@ export class ModularResourceService implements IModularResourceService {
       try {
         const { omniService } = await import('./omni-service')
         if (typeof omniService?.handleTopologyChanged === 'function') {
-          await omniService.handleTopologyChanged(opts)
+          await omniService.handleTopologyChanged({
+            moduleId: opts.moduleId,
+            reason: opts.reason || 'module_change',
+            restartPolicy: opts.restartPolicy === 'stop-if-unused' ? 'none' : (opts.restartPolicy || 'restart')
+          })
         }
       } catch (err) {
         if (this.topologyListener) {
@@ -4595,6 +4599,9 @@ export class ModularResourceService implements IModularResourceService {
         if (slot === 'base_embedding') {
           await this.syncEmbeddingProfileToConfig()
         }
+        if (slot === 'ai_engine_cpu') {
+          await this.syncCpuEngineStateToConfig(true)
+        }
       } catch (activateErr: any) {
         const errMsg = activateErr?.message || String(activateErr)
         logger.error(
@@ -4641,6 +4648,9 @@ export class ModularResourceService implements IModularResourceService {
       }).catch(err => {
         logger.warn(LogCategory.SYSTEM, '[ModularResource] 停用模块刷新拓扑告警:', err)
       })
+      if (existing.capability_slot === 'ai_engine_cpu') {
+        await this.syncCpuEngineStateToConfig(false)
+      }
     }
 
     return this.buildModuleView(dao.modules.findByIdSync(moduleId)!)
@@ -4850,6 +4860,62 @@ export class ModularResourceService implements IModularResourceService {
       }
     } catch (err) {
       logger.warn(LogCategory.SYSTEM, '[ModularResource] 同步底座嵌入画像到配置告警:', err)
+    }
+  }
+
+  /**
+   * 同步 CPU 引擎激活/停用状态到 ConfigOrchestrator、LlmGatewayService 与 EngineBridgeService
+   * 实现插件中心与全局设置页面的双向互斥对齐 (TASK-04 / Invariant)
+   */
+  public async syncCpuEngineStateToConfig(active: boolean): Promise<void> {
+    try {
+      let configOrch = this.injectedConfigOrchestrator
+      if (!configOrch) {
+        try {
+          const { ConfigOrchestrator } = await import('../../config/config-orchestrator')
+          configOrch = ConfigOrchestrator.getInstance()
+        } catch {
+          // ignore in test
+        }
+      }
+
+      const { llmGatewayService } = await import('../llm/llm-gateway-service')
+      const { engineBridgeService } = await import('../engine-bridge/engine-bridge-service')
+
+      if (active) {
+        if (configOrch) {
+          if (typeof configOrch.updateValues === 'function') {
+            await configOrch.updateValues({
+              AI_SERVICE_MODE: 'cpu',
+              AI_SERVICE_LAST_ENABLED_MODE: 'cpu'
+            })
+          } else if (typeof configOrch.setValue === 'function') {
+            configOrch.setValue('AI_SERVICE_MODE', 'cpu')
+            configOrch.setValue('AI_SERVICE_LAST_ENABLED_MODE', 'cpu')
+          }
+        }
+        await llmGatewayService.setDesiredMode('cpu')
+        await engineBridgeService.shutdown()
+      } else {
+        const currentMode = configOrch?.getValue?.('AI_SERVICE_MODE')
+        if (currentMode === 'cpu') {
+          if (configOrch) {
+            if (typeof configOrch.updateValues === 'function') {
+              await configOrch.updateValues({
+                AI_SERVICE_MODE: 'local',
+                AI_SERVICE_LAST_ENABLED_MODE: 'local'
+              })
+            } else if (typeof configOrch.setValue === 'function') {
+              configOrch.setValue('AI_SERVICE_MODE', 'local')
+              configOrch.setValue('AI_SERVICE_LAST_ENABLED_MODE', 'local')
+            }
+          }
+          await llmGatewayService.setDesiredMode('local')
+          await llmGatewayService.drain()
+        }
+      }
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[ModularResource] 同步 CPU 引擎状态到全局配置异常:', err)
     }
   }
 

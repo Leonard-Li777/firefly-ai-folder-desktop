@@ -61,6 +61,84 @@ export class AIServiceManager {
       return true
     }
 
+    // 轻量CPU引擎：分析文件时若尚未预热模型，主动执行预热
+    if (mode === 'cpu') {
+      try {
+        const { llmGatewayService } = await import('../llm/llm-gateway-service')
+        const snapshot = llmGatewayService.getSnapshot()
+
+        if (snapshot.unavailableReason === 'CRASH_LOOP') {
+          logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 轻量CPU引擎处于熔断保护状态')
+          this.notifyFrontend(
+            'warning',
+            t('轻量CPU引擎异常，请在设置中重新自检'),
+            false,
+            'waiting-for-ai',
+            5000
+          )
+          return false
+        }
+
+        // 如果没有预热模型（不是 ready 状态），主动触发预热
+        if (snapshot.runtime.cpu !== 'ready') {
+          logger.info(
+            LogCategory.ANALYSIS_QUEUE,
+            '[分析队列] 检测到轻量CPU引擎尚未预热，正在主动预热模型...'
+          )
+          this.notifyFrontend(
+            'info',
+            t('正在预热轻量CPU模型，即将开始分析...'),
+            true,
+            'waiting-for-ai',
+            0
+          )
+          await llmGatewayService.preheat({ wait: true })
+
+          const afterSnap = llmGatewayService.getSnapshot()
+          if (afterSnap.runtime.cpu === 'ready') {
+            logger.info(
+              LogCategory.ANALYSIS_QUEUE,
+              '[分析队列] 轻量CPU引擎主动预热成功，开始分析'
+            )
+            this.notifyFrontend(
+              'success',
+              t('轻量CPU引擎已就绪，开始分析'),
+              false,
+              'waiting-for-ai',
+              3000
+            )
+            this.lastHealthCheckOkTime = Date.now()
+            return true
+          } else {
+            const failureReason =
+              afterSnap.cpuLastError ||
+              afterSnap.unavailableReason ||
+              afterSnap.runtime.cpu ||
+              '引擎未就绪'
+            logger.error(
+              LogCategory.ANALYSIS_QUEUE,
+              '[分析队列] 轻量CPU引擎主动预热失败:',
+              failureReason
+            )
+            this.notifyFrontend(
+              'error',
+              t('轻量CPU引擎预热失败，请重试'),
+              false,
+              'waiting-for-ai',
+              5000
+            )
+            return false
+          }
+        }
+
+        this.lastHealthCheckOkTime = Date.now()
+        return true
+      } catch (err) {
+        logger.error(LogCategory.ANALYSIS_QUEUE, '[分析队列] 轻量CPU引擎预热异常:', err)
+        return false
+      }
+    }
+
     const aiService = this.getAIService()
     if (!aiService) {
       logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] AI 服务未初始化，无法检查状态')

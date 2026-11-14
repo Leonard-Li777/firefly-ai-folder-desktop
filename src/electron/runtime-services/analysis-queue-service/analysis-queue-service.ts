@@ -556,7 +556,8 @@ export class AnalysisQueueService {
         // 仅在明确处于 CPU 引擎模式时串行；非 CPU 引擎（GPU/云端/vulkan/cuda 等）均启用并行
         // 引擎可能上报 "CPU (AVX2)" / "cpu-avx" 等变体，用前缀匹配避免全等漏判
         // 引擎离线（backend 为 null）时视为非 CPU 引擎：分析由 Tier 1 兜底时本就无 CPU 引擎约束
-        const isCpuEngine = aiServiceMode === 'local' && isCpuBackend(currentEngineAcc)
+        const isCpuEngine =
+          aiServiceMode === 'cpu' || (aiServiceMode === 'local' && isCpuBackend(currentEngineAcc))
 
         // 统一走 analysis-mode 模块解析，避免与 file-processor / DAO 的口径漂移
         const analysisMode = resolveAnalysisMode()
@@ -907,7 +908,10 @@ export class AnalysisQueueService {
                   this.updateItemStatus(item.id, 'pending', 0)
                   const isReady = await this.aiServiceManager.waitForAIServiceReady()
                   if (isReady && !signal.aborted && this.running) {
-                    await engineBridgeService?.ensureMode?.('language')
+                    const currentMode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
+                    if (currentMode === 'local') {
+                      await engineBridgeService?.ensureMode?.('language')
+                    }
                     try {
                       logger.info(
                         LogCategory.ANALYSIS_QUEUE,
@@ -947,6 +951,18 @@ export class AnalysisQueueService {
                         )
                       }
                     }
+                  } else {
+                    // 若等待超时/引擎无法恢复，标记为 failed，停止死循环
+                    logger.warn(
+                      LogCategory.ANALYSIS_QUEUE,
+                      `[并行队列:GPU通道] AI 引擎未能就绪或已取消，任务标记为失败: ${item.name}`
+                    )
+                    this.updateItemStatus(
+                      item.id,
+                      'failed',
+                      100,
+                      err instanceof Error ? err.message : String(err)
+                    )
                   }
                 } else {
                   logger.error(

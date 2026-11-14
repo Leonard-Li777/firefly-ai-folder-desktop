@@ -353,4 +353,78 @@ describe('WorkspaceAdmissionRulesTab 包含与排除规则管理及影响预览'
     })
     expect(window.electronAPI.updateWorkspaceConfig).not.toHaveBeenCalled()
   })
+
+  it('需求验证: 规则被修改时右上角提供「放弃修改」按钮，点击立即恢复初始并消除未保存状态', async () => {
+    render(<WorkspaceAdmissionRulesTab workspace={mockStandardWorkspace} />)
+
+    const input = screen.getByPlaceholderText(
+      '输入扩展名（如 png 或 .docx，回车添加，支持逗号分隔）'
+    )
+    fireEvent.change(input, { target: { value: 'docx' } })
+    fireEvent.click(screen.getByText('添加'))
+
+    // 此时出现「保存包含与排除规则」以及「放弃修改」按钮
+    expect(await screen.findByText('保存包含与排除规则')).toBeDefined()
+    const discardBtn = screen.getByTestId('discard-admission-rules')
+    expect(discardBtn).toBeDefined()
+
+    // 点击放弃修改
+    fireEvent.click(discardBtn)
+
+    // 保存与放弃按钮均消失，还原为初始状态
+    await waitFor(() => {
+      expect(screen.queryByText('保存包含与排除规则')).toBeNull()
+      expect(screen.queryByTestId('discard-admission-rules')).toBeNull()
+      expect(screen.queryByTestId('whitelist-tag-.docx')).toBeNull()
+    })
+  })
+
+  it('需求验证: 通过 Ref 暴露 isDirty/save/discard，未点击保存时可通过美化对话框拦截并保存', async () => {
+    const ref = React.createRef<any>()
+    render(<WorkspaceAdmissionRulesTab ref={ref} workspace={mockStandardWorkspace} />)
+
+    expect(ref.current.isDirty()).toBe(false)
+
+    // 添加扩展名
+    const input = screen.getByPlaceholderText(
+      '输入扩展名（如 png 或 .docx，回车添加，支持逗号分隔）'
+    )
+    fireEvent.change(input, { target: { value: 'pdf' } })
+    fireEvent.click(screen.getByText('添加'))
+
+    // isDirty 应变为 true
+    expect(ref.current.isDirty()).toBe(true)
+
+    // 模拟美化对话框中用户点击【保存并继续】
+    if (ref.current.isDirty()) {
+      const ok = await ref.current.save()
+      expect(ok).toBe(true)
+      expect(mockUpdateWorkspaceWhitelist).toHaveBeenCalledWith(mockStandardWorkspace.id, ['.pdf'])
+    }
+  })
+
+  it('需求验证: 模拟美化对话框中用户点击【不保存】，调用 discard 丢弃修改并消除未保存状态', async () => {
+    const ref = React.createRef<any>()
+    render(<WorkspaceAdmissionRulesTab ref={ref} workspace={mockStandardWorkspace} />)
+
+    // 添加扩展名
+    const input = screen.getByPlaceholderText(
+      '输入扩展名（如 png 或 .docx，回车添加，支持逗号分隔）'
+    )
+    fireEvent.change(input, { target: { value: 'xlsx' } })
+    fireEvent.click(screen.getByText('添加'))
+
+    expect(ref.current.isDirty()).toBe(true)
+
+    // 模拟美化对话框中用户点击【不保存】
+    if (ref.current.isDirty()) {
+      ref.current.discard()
+    }
+
+    // discard 后 React 重新渲染，isDirty 变为 false，未调用保存
+    await waitFor(() => {
+      expect(ref.current.isDirty()).toBe(false)
+    })
+    expect(mockUpdateWorkspaceWhitelist).not.toHaveBeenCalledWith(mockStandardWorkspace.id, ['.xlsx'])
+  })
 })

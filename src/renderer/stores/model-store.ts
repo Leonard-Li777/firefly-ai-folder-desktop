@@ -14,7 +14,7 @@ interface ModelState {
   serviceStatus: AIServiceStatus
 
   /** 模型运行模式 */
-  modelMode: 'local' | 'cloud' | null
+  modelMode: 'local' | 'cloud' | 'cpu' | null
 
   /** 错误信息（当 status 为 error 时使用） */
   lastError: string | null
@@ -41,7 +41,7 @@ interface ModelState {
   /** 设置AI服务核心状态机 */
   setServiceStatus: (status: AIServiceStatus) => void
   /** 设置模型模式 */
-  setModelMode: (mode: 'local' | 'cloud' | null) => void
+  setModelMode: (mode: 'local' | 'cloud' | 'cpu' | null) => void
   /** 设置模型提供商 */
   setProvider: (provider: string | null) => void
   /** 设置错误信息 */
@@ -74,7 +74,7 @@ export const useModelStore = create<ModelState>()(set => ({
 
   setServiceStatus: (status: AIServiceStatus) => set({ serviceStatus: status }),
 
-  setModelMode: (mode: 'local' | 'cloud' | null) => set({ modelMode: mode }),
+  setModelMode: (mode: 'local' | 'cloud' | 'cpu' | null) => set({ modelMode: mode }),
 
   setProvider: (provider: string | null) => set({ provider: provider }),
 

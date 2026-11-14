@@ -9,7 +9,9 @@
     "de-DE": "Firefly-Beamter",
     "fr-FR": "Officiel de luciole",
     "ko-KR": "반딧불 공식",
-    "$files": ["src/renderer/components/plugin-center/format-plugin-author.ts(278-292)"],
+    "$files": [
+      "src/renderer/components/plugin-center/format-plugin-author.ts(278-292)"
+    ],
     "$id": 22970
   },
   "社区贡献（作者未提供）": {
@@ -22,7 +24,9 @@
     "de-DE": "Community-Beiträge (nicht vom Autor bereitgestellt)",
     "fr-FR": "Contributions de la communauté (non fournies par l'auteur)",
     "ko-KR": "커뮤니티 기여(작성자가 제공하지 않음)",
-    "$files": ["src/renderer/components/plugin-center/format-plugin-author.ts(368-383)"],
+    "$files": [
+      "src/renderer/components/plugin-center/format-plugin-author.ts(368-383)"
+    ],
     "$id": 22971
   },
   "第三方插件（作者未提供）": {
@@ -35,7 +39,9 @@
     "de-DE": "Plug-Ins von Drittanbietern (nicht vom Autor bereitgestellt)",
     "fr-FR": "Plugins tiers (non fournis par l'auteur)",
     "ko-KR": "타사 플러그인(저작자가 제공하지 않음)",
-    "$files": ["src/renderer/components/plugin-center/format-plugin-author.ts(421-437)"],
+    "$files": [
+      "src/renderer/components/plugin-center/format-plugin-author.ts(421-437)"
+    ],
     "$id": 22972
   },
   "基础语义检索引擎": {
@@ -48,7 +54,9 @@
     "de-DE": "Grundlegende semantische Suchmaschine",
     "fr-FR": "Moteur de recherche sémantique de base",
     "ko-KR": "기본 의미 검색 엔진",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(1865-1877)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(1865-1877)"
+    ],
     "$id": 28311
   },
   "必选单例 · 二选一互斥": {
@@ -61,7 +69,9 @@
     "de-DE": "Erforderlicher Singleton · Beide Optionen schließen sich gegenseitig aus",
     "fr-FR": "Singleton requis · Les deux choix s'excluent mutuellement",
     "ko-KR": "필수 싱글톤 · 둘 중 하나를 선택하면 상호 배타적입니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(1957-1973)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(1957-1973)"
+    ],
     "$id": 28312
   },
   "整个软件的核心搜索大脑（二选一）。换引擎会自动重新建立全部文件的搜索索引。": {
@@ -74,20 +84,24 @@
     "de-DE": "Das zentrale Suchhirn der gesamten Software (wählen Sie eines von zwei). Beim Ändern der Engine wird der Suchindex aller Dateien automatisch wiederhergestellt.",
     "fr-FR": "Le cerveau de recherche principal de l'ensemble du logiciel (choisissez l'un des deux). Changer de moteur rétablira automatiquement l'index de recherche de tous les fichiers.",
     "ko-KR": "전체 소프트웨어의 핵심 검색 두뇌입니다(둘 중 하나 선택). 엔진을 변경하면 모든 파일의 검색 색인이 자동으로 다시 설정됩니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(1997-2049)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(1997-2049)"
+    ],
     "$id": 28536
   },
   "轻量CPU引擎": {
-    "en-US": "轻量CPU引擎",
-    "es-ES": "轻量CPU引擎",
-    "ar-EG": "轻量CPU引擎",
-    "pt-PT": "轻量CPU引擎",
-    "ru-RU": "轻量CPU引擎",
+    "en-US": "Lightweight CPU engine",
+    "es-ES": "Motor de CPU liviano",
+    "ar-EG": "محرك وحدة المعالجة المركزية خفيف الوزن",
+    "pt-PT": "Motor de CPU leve",
+    "ru-RU": "Легкий процессорный движок",
     "ja-JP": "轻量CPU引擎",
-    "de-DE": "轻量CPU引擎",
-    "fr-FR": "轻量CPU引擎",
-    "ko-KR": "轻量CPU引擎",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(2172-2184)"],
+    "de-DE": "Leichte CPU-Engine",
+    "fr-FR": "Moteur CPU léger",
+    "ko-KR": "경량 CPU 엔진",
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(2172-2183)"
+    ],
     "$id": 31826
   },
   "轻量极速 · 纯CPU运行": {
@@ -100,7 +114,9 @@
     "de-DE": "Leicht und extrem schnell · Reiner CPU-Betrieb",
     "fr-FR": "Léger et extrêmement rapide · Fonctionnement pur du processeur",
     "ko-KR": "가볍고 매우 빠릅니다. · 순수한 CPU 작동",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(2263-2280)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(2262-2279)"
+    ],
     "$id": 31402
   },
   "办公轻薄本标配，内存仅占约400MB，0门槛秒级响应，完全离线私密。": {
@@ -113,7 +129,9 @@
     "de-DE": "Ein standardmäßiger dünner und leichter Laptop für den Bürogebrauch mit nur etwa 400 MB Speicher, einer Reaktionszeit von 0 Sekunden und vollständiger Offline-Privatsphäre.",
     "fr-FR": "Un ordinateur portable standard fin et léger pour une utilisation bureautique, avec seulement environ 400 Mo de mémoire, une réponse en 0 seconde et une confidentialité totale hors ligne.",
     "ko-KR": "약 400MB의 메모리, 0초 응답, 완전한 오프라인 개인 정보 보호 기능을 갖춘 얇고 가벼운 사무실용 표준 노트북입니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(2304-2342)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(2303-2341)"
+    ],
     "$id": 31403
   },
   "语音识别与字幕提取": {
@@ -126,7 +144,9 @@
     "de-DE": "语音识别与字幕提取",
     "fr-FR": "语音识别与字幕提取",
     "ko-KR": "语音识别与字幕提取",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(2464-2477)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(2463-2476)"
+    ],
     "$id": 31827
   },
   "选配单选 · 互斥生效": {
@@ -140,9 +160,9 @@
     "fr-FR": "Sélection radio en option · Effet mutuellement exclusif",
     "ko-KR": "선택적 라디오 선택 · 상호 배타적 효과",
     "$files": [
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(2558-2573)",
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(2846-2861)",
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3673-3688)"
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(2557-2572)",
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(2845-2860)",
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3672-3687)"
     ],
     "$id": 28315
   },
@@ -156,7 +176,9 @@
     "de-DE": "Verstehen Sie den gesprochenen Inhalt in Audio und Video und wandeln Sie ihn in Textuntertitel um. Sie können Dateien direkt per Dialog durchsuchen.",
     "fr-FR": "Comprenez le contenu parlé en audio et vidéo et convertissez-le en sous-titres texte. Vous pouvez rechercher des fichiers directement par dialogue.",
     "ko-KR": "오디오 및 비디오의 음성 내용을 이해하고 이를 텍스트 자막으로 변환합니다. 대화를 통해 직접 파일을 검색할 수 있습니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(2597-2631)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(2596-2630)"
+    ],
     "$id": 28537
   },
   "离线语音合成与朗读": {
@@ -169,7 +191,9 @@
     "de-DE": "离线语音合成与朗读",
     "fr-FR": "离线语音合成与朗读",
     "ko-KR": "离线语音合成与朗读",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(2753-2766)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(2752-2765)"
+    ],
     "$id": 31828
   },
   "用好听的真人声音把文档读给你听，支持戴耳机离线听书看材料。": {
@@ -182,7 +206,9 @@
     "de-DE": "Lesen Sie das Dokument mit einer netten Stimme einer echten Person vor und unterstützen Sie das Offline-Lesen und Anhören von Büchern und Materialien mit Kopfhörern.",
     "fr-FR": "Lisez le document avec une belle voix réelle et prenez en charge la lecture et l'écoute hors ligne de livres et de documents avec des écouteurs.",
     "ko-KR": "실제 사람의 목소리로 문서를 읽어주고, 헤드폰으로 책과 자료를 오프라인으로 읽고 들을 수 있도록 지원합니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(2885-2918)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(2884-2917)"
+    ],
     "$id": 28538
   },
   "内容感知与合规分级识别": {
@@ -195,7 +221,9 @@
     "de-DE": "Identifizierung von Inhaltsbewusstsein und Compliance-Klassifizierung",
     "fr-FR": "Identification du contenu et de la classification de conformité",
     "ko-KR": "콘텐츠 인식 및 규정 준수 분류 식별",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3036-3051)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3035-3050)"
+    ],
     "$id": 28319
   },
   "选配感知 · 原生插槽": {
@@ -208,7 +236,9 @@
     "de-DE": "Optionaler Bewusstseins-Slot",
     "fr-FR": "Sensibilisation facultative · Emplacement natif",
     "ko-KR": "선택적 인식 · 기본 슬롯",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3132-3147)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3131-3146)"
+    ],
     "$id": 28320
   },
   "自动识别私密照片和敏感内容并打标，防止当众投屏或查看时尴尬。": {
@@ -221,7 +251,9 @@
     "de-DE": "Identifizieren und markieren Sie Boudoir-Fotos und sensible Inhalte automatisch, um Peinlichkeiten beim Casting oder beim Ansehen in der Öffentlichkeit zu vermeiden.",
     "fr-FR": "Identifiez et marquez automatiquement les photos privées et le contenu sensible pour éviter tout embarras lors de la diffusion ou du visionnage en public.",
     "ko-KR": "프라이빗 사진과 민감한 콘텐츠를 자동으로 식별하고 표시하여 공개적으로 전송하거나 볼 때 당황하지 않도록 하세요.",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3171-3205)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3170-3204)"
+    ],
     "$id": 28539
   },
   "专用格式解析切槽": {
@@ -234,7 +266,9 @@
     "de-DE": "Parsen und Grooven spezieller Formate",
     "fr-FR": "Analyse et rainurage de formats spéciaux",
     "ko-KR": "특수 형식 구문 분석 및 그루빙",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3305-3317)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3304-3316)"
+    ],
     "$id": 28322
   },
   "多选并发 · 自由扩展": {
@@ -247,7 +281,9 @@
     "de-DE": "Parallelität bei Mehrfachauswahl · Kostenlose Erweiterung",
     "fr-FR": "Concurrence à sélection multiple · Expansion gratuite",
     "ko-KR": "다중 선택 동시성 · 무료 확장",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3391-3406)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3390-3405)"
+    ],
     "$id": 28323
   },
   "不用解压就能透视压缩包等特殊文件内容，直接搜索内部资料。": {
@@ -260,7 +296,9 @@
     "de-DE": "Sie können den Inhalt spezieller Dateien wie komprimierter Dateien durchsehen, ohne diese zu dekomprimieren, und direkt nach internen Informationen suchen.",
     "fr-FR": "Vous pouvez voir le contenu de fichiers spéciaux tels que des fichiers compressés sans les décompresser et rechercher directement des informations internes.",
     "ko-KR": "압축파일 등 특수파일의 내용을 압축을 풀지 않고도 훑어볼 수 있고, 내부정보를 직접 검색할 수 있습니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3430-3462)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3429-3461)"
+    ],
     "$id": 28540
   },
   "人像与画面场景识别": {
@@ -273,7 +311,9 @@
     "de-DE": "Porträt- und Szenenerkennung",
     "fr-FR": "Reconnaissance de portraits et de scènes",
     "ko-KR": "인물 및 장면 인식",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3580-3593)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3579-3592)"
+    ],
     "$id": 31642
   },
   "智能识别照片里的人物画面特征，方便按人物回忆查找相册。": {
@@ -286,7 +326,9 @@
     "de-DE": "Identifizieren Sie auf intelligente Weise die Merkmale von Personen auf Fotos und erleichtern Sie so die Suche in Alben basierend auf den Erinnerungen der Personen.",
     "fr-FR": "Identifiez intelligemment les caractéristiques des personnes sur les photos, ce qui facilite la recherche d'albums en fonction des souvenirs des personnes.",
     "ko-KR": "사진 속 인물의 특징을 지능적으로 식별하여 인물의 추억을 바탕으로 앨범을 쉽게 검색할 수 있습니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3712-3743)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3711-3742)"
+    ],
     "$id": 31643
   },
   "高级视觉生成引擎": {
@@ -299,7 +341,9 @@
     "de-DE": "Erweiterte Engine zur visuellen Generierung",
     "fr-FR": "Moteur de génération visuelle avancé",
     "ko-KR": "고급 비주얼 생성 엔진",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3867-3879)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3866-3878)"
+    ],
     "$id": 31644
   },
   "选配单选 · 独显推荐": {
@@ -312,7 +356,9 @@
     "de-DE": "Optionale Einzelauswahl. Empfohlen für eigenständige Grafiken",
     "fr-FR": "Choix unique en option·Recommandé pour les graphiques autonomes",
     "ko-KR": "선택적 단일 선택·독립형 그래픽에 권장",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3959-3974)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3958-3973)"
+    ],
     "$id": 31645
   },
   "在电脑本地画图与修复图片的高性能扩展引擎（需独立显卡）。": {
@@ -325,7 +371,9 @@
     "de-DE": "Eine leistungsstarke Erweiterungs-Engine zum lokalen Zeichnen und Reparieren von Bildern auf Ihrem Computer (erfordert unabhängige Grafikkarte).",
     "fr-FR": "Un moteur d'extension performant pour dessiner et réparer des images localement sur votre ordinateur (nécessite une carte graphique indépendante).",
     "ko-KR": "컴퓨터에서 로컬로 이미지를 그리고 복구하기 위한 고성능 확장 엔진(독립 그래픽 카드 필요)",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3998-4030)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(3997-4029)"
+    ],
     "$id": 31646
   },
   "智能工具与扩展技能": {
@@ -338,7 +386,9 @@
     "de-DE": "Intelligente Tools und erweiterte Fähigkeiten",
     "fr-FR": "Outils intelligents et compétences étendues",
     "ko-KR": "스마트 도구 및 확장된 기술",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(4125-4138)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(4124-4137)"
+    ],
     "$id": 28325
   },
   "多选并发 · 独立运行": {
@@ -351,7 +401,9 @@
     "de-DE": "Parallelität bei Mehrfachauswahl · Unabhängiger Betrieb",
     "fr-FR": "Concurrence à sélection multiple · opération indépendante",
     "ko-KR": "다중 선택 동시성 · 독립 운영",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(4238-4253)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(4237-4252)"
+    ],
     "$id": 28326
   },
   "丰富的智能扩展小工具，可自由开启多款，辅助日常整理与分析。": {
@@ -364,7 +416,9 @@
     "de-DE": "Umfangreiche intelligente Erweiterungs-Widgets, von denen Sie eine Vielzahl frei öffnen können, um die tägliche Organisation und Analyse zu erleichtern.",
     "fr-FR": "De riches widgets d'extension intelligents, vous pouvez en ouvrir librement une variété pour faciliter l'organisation et l'analyse quotidiennes.",
     "ko-KR": "풍부한 스마트 확장 위젯을 통해 다양한 위젯을 자유롭게 열어 일상적인 구성 및 분석을 지원할 수 있습니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(4277-4310)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(4276-4309)"
+    ],
     "$id": 28541
   },
   "全部插件": {
@@ -377,7 +431,9 @@
     "de-DE": "Alle Plugins",
     "fr-FR": "Tous les plugins",
     "ko-KR": "모든 플러그인",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(9714-9722)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(9713-9721)"
+    ],
     "$id": 22991
   },
   "AI 引擎": {
@@ -391,7 +447,7 @@
     "fr-FR": "Moteur d'IA",
     "ko-KR": "AI 엔진",
     "$files": [
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(9759-9768)",
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(9758-9767)",
       "src/renderer/components/plugin-center/PluginListItem.tsx(4659-4668)"
     ],
     "$id": 22973
@@ -407,7 +463,7 @@
     "fr-FR": "Analyse perceptuelle",
     "ko-KR": "지각 분석",
     "$files": [
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(9806-9814)",
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(9805-9813)",
       "src/renderer/components/plugin-center/PluginListItem.tsx(4710-4718)"
     ],
     "$id": 22974
@@ -423,7 +479,7 @@
     "fr-FR": "Multimédia",
     "ko-KR": "멀티미디어",
     "$files": [
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(9847-9854)",
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(9846-9853)",
       "src/renderer/components/plugin-center/PluginListItem.tsx(4755-4762)"
     ],
     "$id": 22975
@@ -439,7 +495,7 @@
     "fr-FR": "Analyse des formats",
     "ko-KR": "형식 분석",
     "$files": [
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(9888-9896)",
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(9887-9895)",
       "src/renderer/components/plugin-center/PluginListItem.tsx(4800-4808)",
       "src/renderer/components/plugin-center/PluginListItem.tsx(4851-4859)"
     ],
@@ -455,7 +511,9 @@
     "de-DE": "Auf {name} umgestellt, wurde das ursprüngliche Plug-in derselben Kategorie automatisch deaktiviert",
     "fr-FR": "Basculé sur {name}, le plug-in d'origine de la même catégorie a été automatiquement désactivé",
     "ko-KR": "{name}로 전환되어 원래 동일한 카테고리 플러그인이 자동으로 비활성화되었습니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(12115-12142)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(12114-12141)"
+    ],
     "$id": 31647
   },
   "已启用 {name}": {
@@ -468,7 +526,9 @@
     "de-DE": "{name} ermöglicht",
     "fr-FR": "{name} activé",
     "ko-KR": "{name} 활성화됨",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(12186-12200)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(12185-12199)"
+    ],
     "$id": 31648
   },
   "已停用 {name}": {
@@ -481,7 +541,9 @@
     "de-DE": "Deaktiviert {name}",
     "fr-FR": "Désactivé {name}",
     "ko-KR": "장애가 있는 {name}",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(12281-12295)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(12280-12294)"
+    ],
     "$id": 31649
   },
   "基础 AI 引擎为系统核心底座，必须保持激活，请直接切换另一款引擎": {
@@ -494,7 +556,9 @@
     "de-DE": "Die grundlegende KI-Engine ist die Kernbasis des Systems und muss aktiviert bleiben. Bitte wechseln Sie direkt zu einem anderen Motor.",
     "fr-FR": "Le moteur d’IA de base est la base du système et doit rester activé. Veuillez passer directement à un autre moteur.",
     "ko-KR": "기본 AI 엔진은 시스템의 핵심 기반이며 활성화된 상태를 유지해야 합니다. 다른 엔진으로 직접 전환해 보세요.",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(12827-12864)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(12826-12863)"
+    ],
     "$id": 28328
   },
   "插件卸载成功": {
@@ -507,7 +571,9 @@
     "de-DE": "Plug-in erfolgreich deinstalliert",
     "fr-FR": "Plug-in désinstallé avec succès",
     "ko-KR": "플러그인이 성공적으로 제거되었습니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(14185-14195)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(14184-14194)"
+    ],
     "$id": 31650
   },
   "配置内容格式有误，请检查大括号、引号与逗号是否成对匹配": {
@@ -520,7 +586,9 @@
     "de-DE": "Das Format des Konfigurationsinhalts ist falsch. Bitte prüfen Sie, ob die Klammern, Anführungszeichen und Kommas paarweise übereinstimmen.",
     "fr-FR": "Le format du contenu de configuration est incorrect. Veuillez vérifier si les accolades, les guillemets et les virgules correspondent par paires.",
     "ko-KR": "구성 콘텐츠의 형식이 잘못되었습니다. 중괄호, 따옴표, 쉼표가 쌍으로 일치하는지 확인하세요.",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(16049-16080)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(16048-16079)"
+    ],
     "$id": 31651
   },
   "插件存储目录已成功迁移，需重启软件以加载新目录资源。当前插件中心所有写操作已临时安全锁定。": {
@@ -533,7 +601,9 @@
     "de-DE": "Das Plug-in-Speicherverzeichnis wurde erfolgreich migriert und die Software muss neu gestartet werden, um die neuen Verzeichnisressourcen zu laden. Alle Schreibvorgänge im aktuellen Plug-in-Center wurden vorübergehend sicherheitsgesperrt.",
     "fr-FR": "Le répertoire de stockage du plug-in a été migré avec succès et le logiciel doit être redémarré pour charger les nouvelles ressources du répertoire. Toutes les opérations d'écriture dans le centre de plug-ins actuel ont été temporairement verrouillées.",
     "ko-KR": "플러그인 스토리지 디렉터리가 성공적으로 마이그레이션되었으며 새 디렉터리 리소스를 로드하려면 소프트웨어를 다시 시작해야 합니다. 현재 플러그인 센터의 모든 쓰기 작업이 일시적으로 안전 잠금되었습니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(17311-17377)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(17310-17376)"
+    ],
     "$id": 31405
   },
   "立即重启": {
@@ -546,7 +616,9 @@
     "de-DE": "Starten Sie jetzt neu",
     "fr-FR": "Redémarrer maintenant",
     "ko-KR": "지금 다시 시작",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(17651-17659)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(17650-17658)"
+    ],
     "$id": 31406
   },
   "返回插件列表": {
@@ -559,7 +631,9 @@
     "de-DE": "Zurück zur Plugin-Liste",
     "fr-FR": "Revenir à la liste des plugins",
     "ko-KR": "플러그인 목록으로 돌아가기",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(18222-18232)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(18221-18231)"
+    ],
     "$id": 22993
   },
   "返回": {
@@ -572,7 +646,9 @@
     "de-DE": "Zurückkehren",
     "fr-FR": "Retour",
     "ko-KR": "반품",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(18320-18326)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(18319-18325)"
+    ],
     "$id": 22994
   },
   "插件中心": {
@@ -585,7 +661,9 @@
     "de-DE": "Plug-in-Center",
     "fr-FR": "Centre de plug-ins",
     "ko-KR": "플러그인 센터",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(18577-18585)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(18576-18584)"
+    ],
     "$id": 22995
   },
   "配置插件运行时参数与专有模型通道": {
@@ -598,7 +676,9 @@
     "de-DE": "Konfigurieren Sie Plug-in-Laufzeitparameter und proprietäre Modellkanäle",
     "fr-FR": "Configurer les paramètres d'exécution du plug-in et les canaux de modèle propriétaires",
     "ko-KR": "플러그인 런타임 매개변수 및 독점 모델 채널 구성",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(19098-19118)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(19097-19117)"
+    ],
     "$id": 22996
   },
   "管理本地 AI 引擎、离线多媒体工具与格式解析扩展能力": {
@@ -611,7 +691,9 @@
     "de-DE": "Verwalten Sie die lokale KI-Engine, Offline-Multimedia-Tools und Format-Parsing-Erweiterungsfunktionen",
     "fr-FR": "Gérez le moteur d'IA local, les outils multimédias hors ligne et les capacités d'extension d'analyse de format.",
     "ko-KR": "로컬 AI 엔진, 오프라인 멀티미디어 도구 및 형식 구문 분석 확장 기능을 관리합니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(19138-19169)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(19137-19168)"
+    ],
     "$id": 22997
   },
   "开发者模式": {
@@ -625,8 +707,8 @@
     "fr-FR": "Mode développeur",
     "ko-KR": "개발자 모드",
     "$files": [
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(19696-19705)",
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(19918-19927)"
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(19695-19704)",
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(19917-19926)"
     ],
     "$id": 28329
   },
@@ -640,7 +722,9 @@
     "de-DE": "Lokales Entwicklungs-Plug-in erfolgreich importiert",
     "fr-FR": "Plug-in de développement local importé avec succès",
     "ko-KR": "로컬 개발 플러그인을 성공적으로 가져왔습니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(20399-20413)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(20398-20412)"
+    ],
     "$id": 28330
   },
   "选择本地开发目录并导入": {
@@ -653,7 +737,9 @@
     "de-DE": "Wählen Sie das lokale Entwicklungsverzeichnis aus und importieren Sie es",
     "fr-FR": "Sélectionnez le répertoire de développement local et importez",
     "ko-KR": "로컬 개발 디렉터리를 선택하고 가져옵니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(20803-20818)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(20802-20817)"
+    ],
     "$id": 28331
   },
   "导入本地插件": {
@@ -666,7 +752,9 @@
     "de-DE": "Lokales Plugin importieren",
     "fr-FR": "Importer un plugin local",
     "ko-KR": "로컬 플러그인 가져오기",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(20886-20896)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(20885-20895)"
+    ],
     "$id": 28332
   },
   "离线插件总包导出成功": {
@@ -679,7 +767,9 @@
     "de-DE": "Das Offline-Plugin-Gesamtpaket wurde erfolgreich exportiert",
     "fr-FR": "Le package total du plug-in hors ligne a été exporté avec succès",
     "ko-KR": "오프라인 플러그인 전체 패키지를 성공적으로 내보냈습니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(21434-21448)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(21433-21447)"
+    ],
     "$id": 31410
   },
   "导出包含所有已安装插件及共享资产的离线总包 (.ffbundle)": {
@@ -692,7 +782,9 @@
     "de-DE": "Exportieren Sie ein Offline-Bundle (.ffbundle), das alle installierten Plugins und freigegebenen Assets enthält",
     "fr-FR": "Exportez un bundle hors ligne (.ffbundle) contenant tous les plugins installés et les ressources partagées",
     "ko-KR": "설치된 모든 플러그인과 공유 자산이 포함된 오프라인 번들(.ffbundle) 내보내기",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(21842-21879)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(21841-21878)"
+    ],
     "$id": 31652
   },
   "正在导出总包...": {
@@ -705,7 +797,9 @@
     "de-DE": "Allgemeines Paket exportieren...",
     "fr-FR": "Exportation du package général...",
     "ko-KR": "일반 패키지를 내보내는 중...",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(22046-22059)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(22045-22058)"
+    ],
     "$id": 31412
   },
   "导出离线总包": {
@@ -718,7 +812,9 @@
     "de-DE": "Offline-Gesamtpaket exportieren",
     "fr-FR": "Exporter le package total hors ligne",
     "ko-KR": "오프라인 전체 패키지 내보내기",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(22206-22216)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(22205-22215)"
+    ],
     "$id": 31413
   },
   "离线插件包导入成功": {
@@ -731,7 +827,9 @@
     "de-DE": "Offline-Plug-in-Paket erfolgreich importiert",
     "fr-FR": "Package de plug-in hors ligne importé avec succès",
     "ko-KR": "오프라인 플러그인 패키지를 성공적으로 가져왔습니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(22671-22684)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(22670-22683)"
+    ],
     "$id": 31414
   },
   "导入离线插件包 (.ffp / .zip)": {
@@ -744,7 +842,9 @@
     "de-DE": "Offline-Plugin-Paket importieren (.ffp / .zip)",
     "fr-FR": "Importer un package de plug-in hors ligne (.ffp / .zip)",
     "ko-KR": "오프라인 플러그인 패키지 가져오기(.ffp / .zip)",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(23045-23070)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(23044-23069)"
+    ],
     "$id": 28333
   },
   "正在导入...": {
@@ -757,7 +857,9 @@
     "de-DE": "Importieren...",
     "fr-FR": "Importation...",
     "ko-KR": "가져오는 중...",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(23227-23238)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(23226-23237)"
+    ],
     "$id": 31415
   },
   "导入离线包": {
@@ -770,7 +872,9 @@
     "de-DE": "Offline-Paket importieren",
     "fr-FR": "Importer un package hors ligne",
     "ko-KR": "오프라인 패키지 가져오기",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(23377-23386)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(23376-23385)"
+    ],
     "$id": 28334
   },
   "关闭插件中心 (Esc)": {
@@ -783,7 +887,9 @@
     "de-DE": "Plugin Center schließen (Esc)",
     "fr-FR": "Fermer le centre de plugins (Esc)",
     "ko-KR": "플러그인 센터 닫기(Esc)",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(23730-23746)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(23729-23745)"
+    ],
     "$id": 28335
   },
   "关闭插件中心": {
@@ -796,7 +902,9 @@
     "de-DE": "Schließen Sie das Plugin-Center",
     "fr-FR": "Fermer le centre de plugins",
     "ko-KR": "플러그인 센터 닫기",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(23773-23783)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(23772-23782)"
+    ],
     "$id": 28336
   },
   "生成式引擎配置": {
@@ -809,7 +917,9 @@
     "de-DE": "Generative Motorkonfiguration",
     "fr-FR": "Configuration du moteur génératif",
     "ko-KR": "생성 엔진 구성",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(24755-24766)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(24754-24765)"
+    ],
     "$id": 28337
   },
   "极速语音合成配置": {
@@ -822,7 +932,9 @@
     "de-DE": "极速语音合成配置",
     "fr-FR": "极速语音合成配置",
     "ko-KR": "极速语音合成配置",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(25464-25476)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(25463-25475)"
+    ],
     "$id": 31829
   },
   "离线语音合成与发音人管理": {
@@ -835,7 +947,9 @@
     "de-DE": "Offline-Sprachsynthese und Sprecherverwaltung",
     "fr-FR": "Synthèse vocale hors ligne et gestion des locuteurs",
     "ko-KR": "오프라인 음성 합성 및 스피커 관리",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(26301-26317)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(26300-26316)"
+    ],
     "$id": 22999
   },
   "插件个性化配置项": {
@@ -848,7 +962,9 @@
     "de-DE": "Plug-in für personalisierte Konfigurationselemente",
     "fr-FR": "Éléments de configuration personnalisés du plug-in",
     "ko-KR": "플러그인 개인화 구성 항목",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(26976-26988)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(26975-26987)"
+    ],
     "$id": 31653
   },
   "通过下方设置项可自定义该插件的运行偏好，保存后将立即生效并持久化保存。": {
@@ -861,7 +977,9 @@
     "de-DE": "Sie können die Ausführungseinstellungen des Plug-ins über die folgenden Einstellungen anpassen. Nach dem Speichern wird es sofort wirksam und bleibt bestehen.",
     "fr-FR": "Vous pouvez personnaliser les préférences d'exécution du plug-in via les paramètres ci-dessous. Une fois enregistré, il prendra effet immédiatement et sera conservé.",
     "ko-KR": "아래 설정을 통해 플러그인의 실행 기본 설정을 사용자 정의할 수 있습니다. 저장하면 즉시 적용되고 지속됩니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(27124-27163)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(27123-27162)"
+    ],
     "$id": 31654
   },
   "请输入插件参数配置内容（如 {\"key\": \"value\"}）": {
@@ -874,7 +992,9 @@
     "de-DE": "Bitte geben Sie den Inhalt der Plug-in-Parameterkonfiguration ein (z. B. {\"key\": \"value\"}).",
     "fr-FR": "Veuillez saisir le contenu de configuration des paramètres du plug-in (tel que {\"key\": \"value\"})",
     "ko-KR": "플러그인 매개변수 구성 내용(예: {\"key\": \"value\"})을 입력하세요.",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(27838-27873)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(27837-27872)"
+    ],
     "$id": 31655
   },
   "取消": {
@@ -888,8 +1008,8 @@
     "fr-FR": "Annuler",
     "ko-KR": "취소",
     "$files": [
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(28498-28504)",
-      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(38524-38530)",
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(28497-28503)",
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(38523-38529)",
       "src/renderer/components/plugin-center/PluginListItem.tsx(25437-25443)"
     ],
     "$id": 23002
@@ -904,7 +1024,9 @@
     "de-DE": "Konfiguration speichern",
     "fr-FR": "Enregistrer la configuration",
     "ko-KR": "구성 저장",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(28646-28654)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(28645-28653)"
+    ],
     "$id": 23003
   },
   "全部市场": {
@@ -917,7 +1039,9 @@
     "de-DE": "Alle Märkte",
     "fr-FR": "Tous les marchés",
     "ko-KR": "모든 시장",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(29929-29937)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(29928-29936)"
+    ],
     "$id": 28338
   },
   "已安装": {
@@ -930,7 +1054,9 @@
     "de-DE": "Installiert  ",
     "fr-FR": "Installé",
     "ko-KR": "설치됨  ",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(30526-30533)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(30525-30532)"
+    ],
     "$id": 28339
   },
   "搜索插件名称或描述...": {
@@ -943,7 +1069,9 @@
     "de-DE": "Nach Name oder Beschreibung des Plugins suchen...",
     "fr-FR": "Rechercher le nom ou la description du plugin...",
     "ko-KR": "플러그인 이름 또는 설명 검색...",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(31813-31829)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(31812-31828)"
+    ],
     "$id": 23004
   },
   "新版本已就绪，旧模型清理被系统占用": {
@@ -956,7 +1084,9 @@
     "de-DE": "Die neue Version ist fertig, die alte Modellbereinigung ist vom System belegt",
     "fr-FR": "La nouvelle version est prête, le nettoyage de l'ancien modèle est occupé par le système",
     "ko-KR": "새 버전이 준비되었으며 이전 모델 정리가 시스템에서 사용됩니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(32674-32695)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(32673-32694)"
+    ],
     "$id": 28340
   },
   "🔄 立即重启应用以释放磁盘": {
@@ -969,7 +1099,9 @@
     "de-DE": "🔄 Starten Sie die App jetzt neu, um die Festplatte freizugeben",
     "fr-FR": "🔄 Redémarrez l'application maintenant pour libérer le disque",
     "ko-KR": "🔄 지금 앱을 다시 시작하여 디스크 공간을 확보하세요",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(33180-33198)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(33179-33197)"
+    ],
     "$id": 28341
   },
   "未找到匹配的插件模块": {
@@ -982,7 +1114,9 @@
     "de-DE": "Kein passendes Plugin-Modul gefunden",
     "fr-FR": "Aucun module de plugin correspondant trouvé",
     "ko-KR": "일치하는 플러그인 모듈을 찾을 수 없습니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(33557-33571)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(33556-33570)"
+    ],
     "$id": 23005
   },
   "请尝试切换分类或使用更简短的关键词搜索": {
@@ -995,7 +1129,9 @@
     "de-DE": "Versuchen Sie bitte, die Kategorien zu wechseln oder eine kürzere Stichwortsuche zu verwenden",
     "fr-FR": "Veuillez essayer de changer de catégorie ou d'utiliser une recherche par mot clé plus courte.",
     "ko-KR": "카테고리를 전환하거나 더 짧은 키워드 검색을 사용해 보세요.",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(33657-33680)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(33656-33679)"
+    ],
     "$id": 23006
   },
   "所属槽位": {
@@ -1008,7 +1144,9 @@
     "de-DE": "Slot",
     "fr-FR": "Fente",
     "ko-KR": "슬롯",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(36365-36373)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(36364-36372)"
+    ],
     "$id": 31656
   },
   "已加载 {total} 个内置与扩展模块": {
@@ -1021,7 +1159,9 @@
     "de-DE": "{total} integrierte und Erweiterungsmodule geladen",
     "fr-FR": "{total} modules intégrés et d'extension chargés",
     "ko-KR": "{total} 내장 및 확장 모듈이 로드됨",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(37351-37375)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(37350-37374)"
+    ],
     "$id": 23007
   },
   "纯本地离线推理 · 零隐私数据回传": {
@@ -1034,7 +1174,9 @@
     "de-DE": "Rein lokale Offline-Inferenz · Daten-Backhaul ohne Datenschutz",
     "fr-FR": "Inférence hors ligne purement locale · Liaison de données sans confidentialité",
     "ko-KR": "순수 로컬 오프라인 추론 · 개인정보 데이터 백홀 없음",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(37451-37472)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(37450-37471)"
+    ],
     "$id": 23008
   },
   "切换基础语义检索引擎": {
@@ -1047,7 +1189,9 @@
     "de-DE": "Wechseln Sie die grundlegende semantische Suchmaschine",
     "fr-FR": "Changer de moteur de recherche sémantique de base",
     "ko-KR": "기본 의미 검색 엔진 전환",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(37983-37997)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(37982-37996)"
+    ],
     "$id": 31573
   },
   "切换引擎需要重建文件索引，花费较多时间，是否切换？": {
@@ -1060,7 +1204,9 @@
     "de-DE": "Der Wechsel der Engine erfordert die Neuerstellung von Dateiindizes, was viel Zeit in Anspruch nimmt. Möchten Sie wechseln?",
     "fr-FR": "Changer de moteur nécessite de reconstruire les index de fichiers, ce qui prend beaucoup de temps. Voulez-vous changer ?",
     "ko-KR": "스위칭 엔진을 사용하려면 파일 인덱스를 다시 작성해야 하는데, 이는 많은 시간이 걸립니다. 전환하시겠습니까?",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(38215-38244)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(38214-38243)"
+    ],
     "$id": 31574
   },
   "确认切换": {
@@ -1073,7 +1219,9 @@
     "de-DE": "Wechsel bestätigen",
     "fr-FR": "Confirmer le changement",
     "ko-KR": "스위치 확인",
-    "$files": ["src/renderer/components/plugin-center/PluginCenterOverlay.tsx(38823-38831)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(38822-38830)"
+    ],
     "$id": 31575
   },
   "插件目录正在迁移或等待重启生效，暂无法执行操作": {
@@ -1086,7 +1234,9 @@
     "de-DE": "Das Plug-in-Verzeichnis wird migriert oder wartet darauf, dass ein Neustart wirksam wird. Der Vorgang kann derzeit nicht durchgeführt werden.",
     "fr-FR": "Le répertoire du plug-in est en cours de migration ou attend qu'un redémarrage prenne effet. The operation cannot be performed at the moment.",
     "ko-KR": "플러그인 디렉토리가 마이그레이션 중이거나 다시 시작이 적용될 때까지 기다리고 있습니다. 지금은 작업을 수행할 수 없습니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(3787-3814)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(3787-3814)"
+    ],
     "$id": 31417
   },
   "工具扩展": {
@@ -1099,7 +1249,9 @@
     "de-DE": "Werkzeugerweiterungen",
     "fr-FR": "Extensions d'outils",
     "ko-KR": "도구 확장",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(4891-4899)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(4891-4899)"
+    ],
     "$id": 22978
   },
   "安装包总体积": {
@@ -1112,7 +1264,9 @@
     "de-DE": "Das Gesamtvolumen des Installationspakets",
     "fr-FR": "Le volume total du package d'installation",
     "ko-KR": "설치 패키지의 총 볼륨",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(5245-5255)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(5245-5255)"
+    ],
     "$id": 22979
   },
   "配置要求极低 · 老电脑与轻薄本首选": {
@@ -1125,7 +1279,9 @@
     "de-DE": "Extrem geringer Konfigurationsaufwand · Die erste Wahl für alte Computer und dünne und leichte Laptops",
     "fr-FR": "Exigences de configuration extrêmement faibles · Le premier choix pour les vieux ordinateurs et les ordinateurs portables fins et légers",
     "ko-KR": "매우 낮은 구성 요구 사항 · 오래된 컴퓨터와 얇고 가벼운 노트북을 위한 첫 번째 선택",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(5596-5618)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(5596-5618)"
+    ],
     "$id": 28542
   },
   "推荐配置 · 电脑内存 8GB 或以上": {
@@ -1138,7 +1294,9 @@
     "de-DE": "Empfohlene Konfiguration · Computerspeicher 8 GB oder mehr",
     "fr-FR": "Configuration recommandée · Mémoire de l'ordinateur 8 Go ou plus",
     "ko-KR": "권장 구성 · 컴퓨터 메모리 8GB 이상",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(5739-5762)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(5739-5762)"
+    ],
     "$id": 28543
   },
   "配置要求极低 · 极速处理": {
@@ -1151,7 +1309,9 @@
     "de-DE": "Minimale Konfigurationsanforderungen · Extrem schnelle Verarbeitung",
     "fr-FR": "Exigences de configuration minimales · Traitement extrêmement rapide",
     "ko-KR": "최소한의 구성 요구 사항 · 매우 빠른 처리",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(5874-5891)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(5874-5891)"
+    ],
     "$id": 28544
   },
   "较耗算力 · 推荐 16GB 内存或有显卡": {
@@ -1164,7 +1324,9 @@
     "de-DE": "Mehr Rechenleistung erforderlich · 16 GB Speicher oder Grafikkarte empfohlen",
     "fr-FR": "Plus de puissance de calcul requise · Mémoire de 16 Go ou carte graphique recommandée",
     "ko-KR": "더 많은 컴퓨팅 성능 필요 · 16GB 메모리 또는 그래픽 카드 권장",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(6005-6030)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(6005-6030)"
+    ],
     "$id": 28545
   },
   "配置要求低 · 普通电脑流畅发音": {
@@ -1177,7 +1339,9 @@
     "de-DE": "Geringe Konfigurationsanforderungen · Normaler Computer für reibungslose Aussprache",
     "fr-FR": "Faibles exigences de configuration · Ordinateur ordinaire pour une prononciation fluide",
     "ko-KR": "낮은 구성 요구 사항 · 원활한 발음을 위한 일반 컴퓨터",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(6140-6160)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(6140-6160)"
+    ],
     "$id": 28546
   },
   "配置要求极低 · 普通轻薄本流畅发音": {
@@ -1190,7 +1354,9 @@
     "de-DE": "Extrem geringe Konfigurationsanforderungen · Reibungslose Aussprache für gewöhnliche dünne und leichte Notebooks",
     "fr-FR": "Exigences de configuration extrêmement faibles · Prononciation fluide pour les ordinateurs portables fins et légers ordinaires",
     "ko-KR": "매우 낮은 구성 요구 사항 · 일반 얇고 가벼운 노트북을 위한 부드러운 발음",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(6268-6290)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(6268-6290)"
+    ],
     "$id": 31657
   },
   "配置要求极低 · 纯CPU运行": {
@@ -1203,7 +1369,9 @@
     "de-DE": "Extrem niedrige Konfigurationsanforderungen · Reiner CPU-Betrieb",
     "fr-FR": "Exigences de configuration extrêmement faibles · Fonctionnement pur du processeur",
     "ko-KR": "매우 낮은 구성 요구 사항 · 순수한 CPU 작동",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(6407-6426)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(6407-6426)"
+    ],
     "$id": 31658
   },
   "较高配置 · 需要独立显卡": {
@@ -1216,7 +1384,9 @@
     "de-DE": "Höhere Konfiguration · Erfordert separate Grafikkarte",
     "fr-FR": "Configuration supérieure · Nécessite une carte graphique discrète",
     "ko-KR": "더 높은 구성 · 별도의 그래픽 카드 필요",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(6536-6553)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(6536-6553)"
+    ],
     "$id": 28547
   },
   "配置要求极低 · 无额外负担": {
@@ -1229,7 +1399,9 @@
     "de-DE": "Minimale Konfigurationsanforderungen · Keine zusätzliche Belastung",
     "fr-FR": "Exigences de configuration minimales · Aucune charge supplémentaire",
     "ko-KR": "최소 구성 요구 사항 · 추가 부담 없음",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(6668-6686)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(6668-6686)"
+    ],
     "$id": 28548
   },
   "即将推出": {
@@ -1258,7 +1430,9 @@
     "de-DE": "Entwicklungsversion",
     "fr-FR": "Version de développement",
     "ko-KR": "개발 버전",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(9106-9113)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(9106-9113)"
+    ],
     "$id": 28342
   },
   "安全停用": {
@@ -1271,7 +1445,9 @@
     "de-DE": "Sichere Deaktivierung",
     "fr-FR": "Désactivation sécurisée",
     "ko-KR": "안전한 비활성화",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(9565-9573)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(9565-9573)"
+    ],
     "$id": 28343
   },
   "已下架": {
@@ -1284,7 +1460,9 @@
     "de-DE": "ENTFERNT",
     "fr-FR": "Supprimé",
     "ko-KR": "제거됨",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(9888-9895)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(9888-9895)"
+    ],
     "$id": 28344
   },
   "正在校验插件": {
@@ -1297,7 +1475,9 @@
     "de-DE": "Plugin überprüfen",
     "fr-FR": "Vérification du plugin",
     "ko-KR": "플러그인 확인 중",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(10355-10365)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(10355-10365)"
+    ],
     "$id": 31659
   },
   "模型损坏需修复": {
@@ -1310,7 +1490,9 @@
     "de-DE": "Das Modell ist beschädigt und muss repariert werden",
     "fr-FR": "Le modèle est endommagé et doit être réparé",
     "ko-KR": "모델이 손상되어 수리가 필요함",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(10782-10793)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(10782-10793)"
+    ],
     "$id": 31660
   },
   "必选二选一": {
@@ -1323,7 +1505,9 @@
     "de-DE": "Muss eines von beiden wählen",
     "fr-FR": "Doit choisir l'un des deux",
     "ko-KR": "둘 중 하나를 선택해야 함",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(11466-11475)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(11466-11475)"
+    ],
     "$id": 28345
   },
   "选配互斥": {
@@ -1336,7 +1520,9 @@
     "de-DE": "Sich gegenseitig ausschließende Optionen",
     "fr-FR": "Options mutuellement exclusives",
     "ko-KR": "상호 배타적인 옵션",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(11854-11862)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(11854-11862)"
+    ],
     "$id": 28346
   },
   "此能力正在本地化适配中": {
@@ -1349,7 +1535,9 @@
     "de-DE": "Diese Fähigkeit wird lokal angepasst",
     "fr-FR": "Cette capacité est en cours d'adaptation localement",
     "ko-KR": "이 기능은 로컬로 조정되고 있습니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(14614-14629)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(14614-14629)"
+    ],
     "$id": 22981
   },
   "正在下载安装包...": {
@@ -1362,7 +1550,9 @@
     "de-DE": "Installationspaket wird heruntergeladen...",
     "fr-FR": "Téléchargement du package d'installation...",
     "ko-KR": "설치 패키지 다운로드 중...",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(15334-15348)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(15334-15348)"
+    ],
     "$id": 22982
   },
   "断点续传": {
@@ -1375,7 +1565,9 @@
     "de-DE": "Setzen Sie den Upload vom Haltepunkt fort",
     "fr-FR": "Reprendre le téléchargement à partir du point d'arrêt",
     "ko-KR": "중단점에서 업로드 재개",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(15648-15656)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(15648-15656)"
+    ],
     "$id": 22983
   },
   "已崩溃，点击重启": {
@@ -1388,7 +1580,9 @@
     "de-DE": "Absturz, zum Neustart klicken",
     "fr-FR": "Crash, cliquez pour redémarrer",
     "ko-KR": "충돌이 발생했습니다. 다시 시작하려면 클릭하세요.",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(16735-16747)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(16735-16747)"
+    ],
     "$id": 31661
   },
   "重启": {
@@ -1401,7 +1595,9 @@
     "de-DE": "Neustart",
     "fr-FR": "Redémarrage",
     "ko-KR": "다시 시작",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(17219-17225)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(17219-17225)"
+    ],
     "$id": 31662
   },
   "卸载清理模型资产": {
@@ -1414,7 +1610,9 @@
     "de-DE": "Deinstallieren Sie saubere Modellressourcen",
     "fr-FR": "Désinstaller les éléments de modèle propres",
     "ko-KR": "클린 모델 자산 제거",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(17695-17707)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(17695-17707)"
+    ],
     "$id": 31663
   },
   "卸载": {
@@ -1443,7 +1641,9 @@
     "de-DE": "Sicherheitsblockierung",
     "fr-FR": "Blocage de sécurité",
     "ko-KR": "안전 차단",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(18246-18254)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(18246-18254)"
+    ],
     "$id": 28347
   },
   "使用中": {
@@ -1456,7 +1656,9 @@
     "de-DE": "Im Einsatz",
     "fr-FR": "Utilisé",
     "ko-KR": "사용 중",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(18871-18878)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(18871-18878)"
+    ],
     "$id": 31665
   },
   "停用": {
@@ -1469,7 +1671,9 @@
     "de-DE": "Deaktivieren",
     "fr-FR": "Désactiver",
     "ko-KR": "비활성화하다",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(19585-19591)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(19585-19591)"
+    ],
     "$id": 31666
   },
   "启用": {
@@ -1482,7 +1686,9 @@
     "de-DE": "Aktivieren",
     "fr-FR": "Activer",
     "ko-KR": "~할 수 있게 하다",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(20352-20358)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(20352-20358)"
+    ],
     "$id": 31667
   },
   "配置": {
@@ -1495,7 +1701,9 @@
     "de-DE": "Konfiguration",
     "fr-FR": "Configuration",
     "ko-KR": "구성",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(21001-21007)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(21001-21007)"
+    ],
     "$id": 22986
   },
   "将自动切换至其他已安装的引擎并卸载当前引擎": {
@@ -1508,7 +1716,9 @@
     "de-DE": "Wechselt automatisch zu anderen installierten Engines und deinstalliert die aktuelle Engine",
     "fr-FR": "Passera automatiquement aux autres moteurs installés et désinstallera le moteur actuel",
     "ko-KR": "설치된 다른 엔진으로 자동 전환하고 현재 엔진을 제거합니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(21720-21745)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(21720-21745)"
+    ],
     "$id": 31668
   },
   "卸载扩展模块": {
@@ -1521,7 +1731,9 @@
     "de-DE": "Erweiterungsmodul deinstallieren",
     "fr-FR": "Désinstaller le module d'extension",
     "ko-KR": "확장 모듈 제거",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(21771-21781)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(21771-21781)"
+    ],
     "$id": 31669
   },
   "切换并卸载": {
@@ -1534,7 +1746,9 @@
     "de-DE": "Wechseln und deinstallieren",
     "fr-FR": "Changer et désinstaller",
     "ko-KR": "전환 및 제거",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(21978-21987)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(21978-21987)"
+    ],
     "$id": 31670
   },
   "安装失败": {
@@ -1547,7 +1761,9 @@
     "de-DE": "Die Installation ist fehlgeschlagen",
     "fr-FR": "L'installation a échoué",
     "ko-KR": "설치 실패",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(22438-22446)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(22438-22446)"
+    ],
     "$id": 22987
   },
   "重试": {
@@ -1560,7 +1776,9 @@
     "de-DE": "Wiederholen",
     "fr-FR": "Réessayer",
     "ko-KR": "재시도",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(22979-22985)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(22979-22985)"
+    ],
     "$id": 22988
   },
   "该模块已下架，不可安装": {
@@ -1573,7 +1791,9 @@
     "de-DE": "Dieses Modul wurde aus den Regalen entfernt und kann nicht installiert werden.",
     "fr-FR": "Ce module a été retiré des étagères et ne peut pas être installé.",
     "ko-KR": "이 모듈은 선반에서 제거되었으므로 설치할 수 없습니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(23293-23308)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(23293-23308)"
+    ],
     "$id": 28351
   },
   "未安装扩展模块": {
@@ -1586,7 +1806,9 @@
     "de-DE": "Erweiterungsmodul nicht installiert",
     "fr-FR": "Module d'extension non installé",
     "ko-KR": "확장 모듈이 설치되지 않았습니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(23479-23490)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(23479-23490)"
+    ],
     "$id": 22989
   },
   "下载安装": {
@@ -1599,7 +1821,9 @@
     "de-DE": "Herunterladen und installieren",
     "fr-FR": "Téléchargez et installez",
     "ko-KR": "다운로드 및 설치",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(24175-24183)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(24175-24183)"
+    ],
     "$id": 22990
   },
   "确认切换并卸载当前引擎": {
@@ -1612,7 +1836,9 @@
     "de-DE": "Bestätigen Sie den Wechsel und deinstallieren Sie die aktuelle Engine",
     "fr-FR": "Confirmez le changement et désinstallez le moteur actuel",
     "ko-KR": "스위치를 확인하고 현재 엔진을 제거합니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(24699-24714)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(24699-24714)"
+    ],
     "$id": 31671
   },
   "确认卸载插件": {
@@ -1625,7 +1851,9 @@
     "de-DE": "Bestätigen Sie, um das Plugin zu deinstallieren",
     "fr-FR": "Confirmez pour désinstaller le plugin",
     "ko-KR": "플러그인 제거 확인",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(24718-24728)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(24718-24728)"
+    ],
     "$id": 31672
   },
   "即将自动切换至同类型的另一款已安装引擎，并移除当前引擎资产，预计释放约 {size} 磁盘空间。是否确认卸载？": {
@@ -1638,7 +1866,9 @@
     "de-DE": "Es wird automatisch zu einer anderen installierten Engine des gleichen Typs gewechselt und die aktuellen Engine-Assets entfernt. Es wird geschätzt, dass etwa {size} Speicherplatz freigegeben wird. Möchten Sie die Deinstallation wirklich durchführen?",
     "fr-FR": "Il passera automatiquement à un autre moteur installé du même type et supprimera les actifs du moteur actuel. On estime qu'environ {size} espace disque sera libéré. Etes-vous sûr de désinstaller ?",
     "ko-KR": "동일한 유형의 설치된 다른 엔진으로 자동 전환되고 현재 엔진 자산이 제거됩니다. 약 {size}개의 디스크 공간이 해제될 것으로 예상됩니다. 제거하시겠습니까?",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(24916-24996)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(24916-24996)"
+    ],
     "$id": 31673
   },
   "即将从电脑中移除该插件及其模型资产，预计释放约 {size} 磁盘空间。是否确认卸载？": {
@@ -1651,7 +1881,9 @@
     "de-DE": "Das Plug-in und seine Modellressourcen werden von Ihrem Computer entfernt, wodurch voraussichtlich etwa {size} Speicherplatz frei wird. Möchten Sie die Deinstallation wirklich durchführen?",
     "fr-FR": "Le plug-in et ses actifs de modèle seront supprimés de votre ordinateur, ce qui devrait libérer environ {size} d'espace disque. Etes-vous sûr de désinstaller ?",
     "ko-KR": "플러그인과 해당 모델 자산이 컴퓨터에서 제거되어 약 {size}개의 디스크 공간이 확보될 것으로 예상됩니다. 제거하시겠습니까?",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(25098-25166)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(25098-25166)"
+    ],
     "$id": 31674
   },
   "确认切换并卸载": {
@@ -1664,7 +1896,9 @@
     "de-DE": "Wechsel bestätigen und deinstallieren",
     "fr-FR": "Confirmez le changement et désinstallez",
     "ko-KR": "스위치 확인 및 제거",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(25768-25779)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(25768-25779)"
+    ],
     "$id": 31675
   },
   "确认卸载": {
@@ -1677,7 +1911,9 @@
     "de-DE": "Bestätigen Sie die Deinstallation",
     "fr-FR": "Confirmer la désinstallation",
     "ko-KR": "제거 확인",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(25783-25791)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(25783-25791)"
+    ],
     "$id": 31676
   },
   "重要版本更新提示": {
@@ -1690,7 +1926,9 @@
     "de-DE": "Wichtige Versionshinweise",
     "fr-FR": "Avis de mise à jour majeure",
     "ko-KR": "중요 버전 업데이트 알림",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(3035-3047)"],
+    "$files": [
+      "src/renderer/components/update/UpdateNotification.tsx(3035-3047)"
+    ],
     "$id": 21098
   },
   "检测到应用存在重大架构或协议演进，当前版本已无法继续提供基础服务，必须升级至 v{version} 即可恢复使用。": {
@@ -1703,7 +1941,9 @@
     "de-DE": "Es wurde eine wesentliche architektonische oder protokollbezogene Weiterentwicklung der App festgestellt. Die aktuelle Version kann die Basisservices nicht mehr bereitstellen; ein Upgrade auf v{version} ist erforderlich, um die Nutzung wieder aufzunehmen.",
     "fr-FR": "Une évolution importante de l'architecture ou du protocole a été détectée ; la version actuelle ne peut plus fournir les services de base. Il est impératif de mettre à niveau vers v{version} pour rétablir le fonctionnement.",
     "ko-KR": "앱에 중요한 아키텍처 또는 프로토콜 진화가 감지되어, 현재 버전으로는 기본 서비스를 더 ��상 제공할 수 없으며 v{version}으로 업그레이드해야만 사용이 복구됩니다.",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(3177-3238)"],
+    "$files": [
+      "src/renderer/components/update/UpdateNotification.tsx(3177-3238)"
+    ],
     "$id": 21099
   },
   "正在差分增量下载...": {
@@ -1716,7 +1956,9 @@
     "de-DE": "Differenzielle Zuzugsübertragung wird geladen...",
     "fr-FR": "Téléchargement incrémental par différences en cours...",
     "ko-KR": "차등 증분 다운로드 중...",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(3815-3830)"],
+    "$files": [
+      "src/renderer/components/update/UpdateNotification.tsx(3815-3830)"
+    ],
     "$id": 21100
   },
   "速度: {speed}/s": {
@@ -1729,7 +1971,9 @@
     "de-DE": "Geschwindigkeit: {speed}/s",
     "fr-FR": "Vitesse : {speed}/s",
     "ko-KR": "속도: {speed}/s",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(4416-4433)"],
+    "$files": [
+      "src/renderer/components/update/UpdateNotification.tsx(4416-4433)"
+    ],
     "$id": 21101
   },
   "更新包下载遇到网络障碍": {
@@ -1742,7 +1986,9 @@
     "de-DE": "Netzwerkausfall beim Herunterladen des Update-Pakets",
     "fr-FR": "Obstacle réseau rencontré lors du téléchargement du paquet de mise à jour",
     "ko-KR": "업데이트 패키지 다운로드 중 네트워크 장애 발생",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(4905-4920)"],
+    "$files": [
+      "src/renderer/components/update/UpdateNotification.tsx(4905-4920)"
+    ],
     "$id": 21102
   },
   "网络连接超时或不可达": {
@@ -1755,7 +2001,9 @@
     "de-DE": "Netzwerkzeitüberschreitung oder nicht erreichbar",
     "fr-FR": "Délai d'attente d'expiration de la connexion ou réseau inatteignable",
     "ko-KR": "네트워크 연결 시간 초과 또는 접근 불가",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(4987-5001)"],
+    "$files": [
+      "src/renderer/components/update/UpdateNotification.tsx(4987-5001)"
+    ],
     "$id": 21103
   },
   "正在准备覆盖安装...": {
@@ -1768,7 +2016,9 @@
     "de-DE": "Aufbereiten des Überlagerungshinweises...",
     "fr-FR": "Préparation de l'installation par écrasement en cours...",
     "ko-KR": "자동 덮어쓰기 설치 준비 중...",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(5629-5644)"],
+    "$files": [
+      "src/renderer/components/update/UpdateNotification.tsx(5629-5644)"
+    ],
     "$id": 21104
   },
   "立即重启并生效": {
@@ -1781,7 +2031,9 @@
     "de-DE": "Sofort neu starten und aktivieren",
     "fr-FR": "Redémarrer immédiatement pour appliquer les changements",
     "ko-KR": "즉시 재시작하여 적용",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(5648-5659)"],
+    "$files": [
+      "src/renderer/components/update/UpdateNotification.tsx(5648-5659)"
+    ],
     "$id": 21105
   },
   "正在重新探测...": {
@@ -1794,7 +2046,9 @@
     "de-DE": "Neuer Suchvorgang läuft...",
     "fr-FR": "Nouvelle détection en cours...",
     "ko-KR": "재탐색 중...",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(6258-6271)"],
+    "$files": [
+      "src/renderer/components/update/UpdateNotification.tsx(6258-6271)"
+    ],
     "$id": 21106
   },
   "重试连接": {
@@ -1807,7 +2061,9 @@
     "de-DE": "Verbindung erneut herstellen",
     "fr-FR": "Tenter de reconnecter",
     "ko-KR": "연결 재시도",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(6275-6283)"],
+    "$files": [
+      "src/renderer/components/update/UpdateNotification.tsx(6275-6283)"
+    ],
     "$id": 21107
   },
   "正在高速下载更新包...": {
@@ -1820,7 +2076,9 @@
     "de-DE": "Update-Paket wird mit hoher Geschwindigkeit heruntergeladen...",
     "fr-FR": "Téléchargement accéléré du paquet de mise à jour en cours...",
     "ko-KR": "고속으로 업데이트 패키지 다운로드 중...",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(6514-6530)"],
+    "$files": [
+      "src/renderer/components/update/UpdateNotification.tsx(6514-6530)"
+    ],
     "$id": 21108
   },
   "官网手动下载": {
@@ -1833,7 +2091,9 @@
     "de-DE": "Website manuell herunterladen",
     "fr-FR": "Téléchargement manuel depuis le site officiel",
     "ko-KR": "공식 웹사이트에서 수동으로 다운로드",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(6878-6888)"],
+    "$files": [
+      "src/renderer/components/update/UpdateNotification.tsx(6878-6888)"
+    ],
     "$id": 21109
   },
   "退出应用": {
@@ -1846,7 +2106,9 @@
     "de-DE": "App beenden",
     "fr-FR": "Quitter l'application",
     "ko-KR": "앱에서 종료",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(7558-7566)"],
+    "$files": [
+      "src/renderer/components/update/UpdateNotification.tsx(7558-7566)"
+    ],
     "$id": 21110
   },
   "新版本已就绪": {
@@ -1859,7 +2121,9 @@
     "de-DE": "Neue Version bereit",
     "fr-FR": "Nouvelle version prête",
     "ko-KR": "새 버전이 준비되었습니다",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(8608-8618)"],
+    "$files": [
+      "src/renderer/components/update/UpdateNotification.tsx(8608-8618)"
+    ],
     "$id": 21111
   },
   "正在后台下载新版本": {
@@ -1872,7 +2136,9 @@
     "de-DE": "Neue Version wird im Hintergrund heruntergeladen",
     "fr-FR": "Téléchargement de la nouvelle version en arrière-plan",
     "ko-KR": "백그라운드로 새 버전 다운로드 중",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(8622-8635)"],
+    "$files": [
+      "src/renderer/components/update/UpdateNotification.tsx(8622-8635)"
+    ],
     "$id": 21112
   },
   "关闭": {
@@ -1885,7 +2151,9 @@
     "de-DE": "Schließen",
     "fr-FR": "Fermer",
     "ko-KR": "닫기",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(8852-8858)"],
+    "$files": [
+      "src/renderer/components/update/UpdateNotification.tsx(8852-8858)"
+    ],
     "$id": 21113
   },
   "萤核智能文件夹 v{version} 已下载完成，可立即重启更新或在下次启动时自动应用。": {
@@ -1898,7 +2166,9 @@
     "de-DE": "Firefly AI Folder v{version} wurde erfolgreich heruntergeladen. Sie können sofort neu starten, um das Update anzuwenden, oder es beim nächsten Start automatisch anwenden.",
     "fr-FR": "Le téléchargement de Firefly AI Folder v{version} est terminé. Vous pouvez redémarrer immédiatement pour mettre à jour ou appliquer automatiquement la mise à jour au prochain démarrage.",
     "ko-KR": "Firefly AI Folder v{version} 다운로드 완료. 즉시 재시작하여 업데이트하거나 다음 시작 시 자동 적용할 수 있습니다.",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(9097-9145)"],
+    "$files": [
+      "src/renderer/components/update/UpdateNotification.tsx(9097-9145)"
+    ],
     "$id": 21114
   },
   "正在为您拉取最新版本 v{version} 增量差分更新包...": {
@@ -1911,7 +2181,9 @@
     "de-DE": "Erstelle nun das inkrementelle Delta-Updatepaket für die neueste Version v{version} für Sie...",
     "fr-FR": "Téléchargement du paquet de mise à jour différentielle incrémentielle v{version}...",
     "ko-KR": "최신 버전 v{version} 증분 차등 업데이트 패키지를 가져오는 중...",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(9270-9306)"],
+    "$files": [
+      "src/renderer/components/update/UpdateNotification.tsx(9270-9306)"
+    ],
     "$id": 21115
   },
   "下次启动生效": {
@@ -1924,7 +2196,9 @@
     "de-DE": "Wirkt beim nächsten Start",
     "fr-FR": "Prise d'effet au prochain démarrage",
     "ko-KR": "다음 시작 시 적용",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(10369-10379)"],
+    "$files": [
+      "src/renderer/components/update/UpdateNotification.tsx(10369-10379)"
+    ],
     "$id": 21116
   },
   "立即重启更新": {
@@ -1937,7 +2211,9 @@
     "de-DE": "Sofort neu starten",
     "fr-FR": "Redémarrer immédiatement pour mettre à jour",
     "ko-KR": "즉시 재시작하여 업데이트",
-    "$files": ["src/renderer/components/update/UpdateNotification.tsx(10727-10737)"],
+    "$files": [
+      "src/renderer/components/update/UpdateNotification.tsx(10727-10737)"
+    ],
     "$id": 21117
   }
 }
