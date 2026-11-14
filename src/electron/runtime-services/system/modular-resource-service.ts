@@ -528,7 +528,7 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
   // 1. 检索式引擎：经典轻量极速档 (二选一必选)
   {
     id: BUILTIN_MODULE_CATALOG_META.engine_classic_light.id,
-    name: '经典轻量检索式引擎 (Classic Light)',
+    name: '经典轻量语义搜索',
     description:
       '【通过意思找文件与图片】根据你描述的大致意思快速搜索照片和文档。占用极少内存，即使老电脑和低配轻薄本也能流畅运行。',
     icon: 'Feather',
@@ -545,7 +545,7 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     contributes: {
       settings: {
         scope: 'workspace',
-        tabTitle: '检索式引擎',
+        tabTitle: '基础 AI 引擎',
         componentId: 'basic_ai_engine',
         priority: 10
       }
@@ -557,7 +557,7 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
   // 2. 检索式引擎：统一全模态档 (二选一必选)
   {
     id: BUILTIN_MODULE_CATALOG_META.engine_gemma_unified.id,
-    name: '统一全模态检索式引擎 (Gemma Unified)',
+    name: '高精度全能语义搜索',
     description:
       '【更聪明的全能搜索大脑】对复杂句子和图片的理解更深入精准，找东西更懂你的心思。推荐 8GB 或以上内存电脑使用。',
     icon: 'Layers',
@@ -574,7 +574,7 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     contributes: {
       settings: {
         scope: 'workspace',
-        tabTitle: '检索式引擎',
+        tabTitle: '基础 AI 引擎',
         componentId: 'basic_ai_engine',
         priority: 10
       }
@@ -586,7 +586,7 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
   // 3. 生成式引擎：轻量 CPU 引擎 (Pocket CPU)
   {
     id: BUILTIN_MODULE_CATALOG_META['pocket-cpu-int8-onnx'].id,
-    name: '轻量CPU生成式引擎 (Pocket CPU)',
+    name: '离线轻量智能引擎',
     description:
       '【办公轻薄本标配】内存仅占约400MB，0门槛秒级响应，完全离线私密。支持智能文件名深度润色、描述提取与内容深度解析。',
     icon: 'Cpu',
@@ -612,10 +612,10 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
       buildResourceSpecFromCatalog
     )
   },
-  // 4. 感知分析模型：敏感内容与 NSFW 分级识别 (包含社区开源识图模型 MobileNetV2 与自研 nsfw-l3 文本模型)
+  // 4. 感知分析模型：敏感内容与安全识别
   {
     id: BUILTIN_MODULE_CATALOG_META.perception_nsfw.id,
-    name: '敏感内容与 NSFW 分级识别',
+    name: '敏感内容过滤与安全识别',
     description:
       '【私密与敏感图文标记】自动识别私密敏感图片与包含露骨敏感描述的文档/AIGC文本并打上标记，防止投屏查看时尴尬。所有电脑均可极速运行。',
     icon: 'ShieldAlert',
@@ -641,10 +641,10 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
       buildResourceSpecFromCatalog
     )
   },
-  // 4. 语音识别与字幕提取 ASR (SenseVoice, 纯模型，转码复用系统内置 FFmpeg，运行时锁定域 A sherpa)
+  // 5. 语音识别与字幕提取 ASR (SenseVoice, 纯模型，转码复用系统内置 FFmpeg，运行时锁定域 A sherpa)
   {
     id: BUILTIN_MODULE_CATALOG_META.asr_sensevoice_onnx.id,
-    name: '语音识别与字幕提取 ASR (SenseVoice)',
+    name: '语音识别与字幕提取',
     description:
       '【录音与视频自动转文字】听懂视频和录音里的说话内容并提取字幕，可以直接搜索“某句话是谁说的”。较耗算力，推荐 16GB 内存或有显卡。',
     icon: 'Mic',
@@ -670,12 +670,12 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
       buildResourceSpecFromCatalog
     )
   },
-  // 5. 离线语音合成 TTS (Moss-TTS 与 M5-TTS)
+  // 6. 离线语音合成 TTS (Moss-TTS 与 M5-TTS)
   {
     id: BUILTIN_MODULE_CATALOG_META.tts_moss_onnx.id,
-    name: '个性声音克隆 (Moss-TTS)',
+    name: '个性化声音克隆与朗读',
     description:
-      '【支持克隆专属声音】内置声音提取器，上传一段录音即可克隆专属声音朗读文章。支持 51 款精选音色与自定义克隆。',
+      '【支持克隆专属声音】内置声音提取器，上传一段录音即可克隆专属声音朗读文章。支持 50+ 款精选音色与自定义克隆。',
     icon: 'Volume2',
     kind: 'builtin-module',
     version: BUILTIN_MODULE_CATALOG_META.tts_moss_onnx.version,
@@ -690,7 +690,7 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     contributes: {
       settings: {
         scope: 'global',
-        tabTitle: '语音合成 (TTS)',
+        tabTitle: '个性化声音克隆',
         componentId: 'tts',
         priority: 30
       }
@@ -701,9 +701,9 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
   },
   {
     id: BUILTIN_MODULE_CATALOG_META.tts_m5_onnx.id,
-    name: '极速语音合成 (M5-TTS)',
+    name: '极速语音合成与朗读',
     description:
-      '【超轻量极速发音】首字 200ms 秒开朗读，内存占用极低（仅需 ~350MB），包含 51 款精品音色，普通笔记本丝滑朗读。',
+      '【极速省电朗读】按下播放毫秒级即刻发声，内置 50+ 丰富高品质声线，长篇文档朗读流畅不卡顿。普通轻薄本流畅运行。',
     icon: 'Zap',
     kind: 'builtin-module',
     version: BUILTIN_MODULE_CATALOG_META.tts_m5_onnx.version,
@@ -721,7 +721,7 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     contributes: {
       settings: {
         scope: 'global',
-        tabTitle: '语音合成 (TTS)',
+        tabTitle: '极速语音朗读',
         componentId: 'tts',
         priority: 30
       }
@@ -2207,12 +2207,16 @@ export class ModularResourceService implements IModularResourceService {
       sharedDir
     ])
 
-    // 清理应用异常退出残留的 active-mounts-*.json 清单文件
+    // 清理应用异常退出残留的 active-mounts-*.json 清单文件（跳过当前进程写入的实时清单，防止并发启动竞态误删触发 os error 2）
     const runDir = path.join(baseDir, 'run')
+    const currentPidPrefix = `active-mounts-${process.pid}-`
     if (fs.existsSync(runDir)) {
       try {
         for (const f of fs.readdirSync(runDir)) {
           if (f.startsWith('active-mounts-') && f.endsWith('.json')) {
+            if (f.startsWith(currentPidPrefix)) {
+              continue
+            }
             try {
               fs.unlinkSync(path.join(runDir, f))
               cleanedTombstones++
@@ -3218,13 +3222,17 @@ export class ModularResourceService implements IModularResourceService {
       }
     }
 
-    const name = meta.name || seed?.name || record.id
-    const description = meta.description || seed?.description || ''
-    const icon = meta.icon || seed?.icon
+    const name = seed?.name || meta.name || record.id
+    const description = seed?.description || meta.description || ''
+    const icon = seed?.icon || meta.icon
+
+    const isQueuedInBackground =
+      record.install_state !== 'active' && this.backgroundInstallQueue.includes(record.id)
+    const effectiveInstallState = isQueuedInBackground ? 'downloading' : record.install_state
 
     const live = this.liveProgress.get(record.id)
     let downloadProgress = live
-    if (!downloadProgress && record.install_state === 'downloading' && resources.length > 0) {
+    if (!downloadProgress && effectiveInstallState === 'downloading' && resources.length > 0) {
       const totalExpected = resources.reduce((acc, r) => acc + (r.expected_bytes || 0), 0)
       const totalDownloaded = resources.reduce((acc, r) => acc + (r.downloaded_bytes || 0), 0)
       const percentage =
@@ -3249,15 +3257,15 @@ export class ModularResourceService implements IModularResourceService {
 
     // G-02 安装事实严格门禁算法
     const canInstall =
-      record.install_state === 'not_installed' && record.availability !== 'coming_soon'
+      effectiveInstallState === 'not_installed' && record.availability !== 'coming_soon'
     const canActivate =
-      record.install_state === 'installed_inactive' &&
+      effectiveInstallState === 'installed_inactive' &&
       record.availability !== 'coming_soon' &&
       !(record.availability === 'draft' && !devModeEffective) &&
       record.delist_reason !== 'security_violation' &&
       !holdReasons.includes('slotPreempted')
     const canUninstall =
-      record.install_state !== 'not_installed' &&
+      effectiveInstallState !== 'not_installed' &&
       (record.slot_policy !== 'exclusive_required' ||
         this.findReadyBackupModulesSync(record).length > 0)
 
@@ -3285,6 +3293,7 @@ export class ModularResourceService implements IModularResourceService {
 
     return {
       ...record,
+      install_state: effectiveInstallState,
       name,
       description,
       icon,
@@ -3630,6 +3639,26 @@ export class ModularResourceService implements IModularResourceService {
       if (!this.backgroundInstallQueue.includes(id)) {
         this.backgroundInstallQueue.push(id)
         validIds.push(id)
+        if (!rec || rec.install_state !== 'downloading') {
+          dao.modules.updateInstallStateSync(id, 'downloading')
+        }
+        if (!this.liveProgress.has(id)) {
+          this.liveProgress.set(id, {
+            percentage: 0,
+            speed_bytes_per_sec: 0,
+            is_resumed: false
+          })
+        }
+        this.backgroundProgressBroadcaster?.({
+          moduleId: id,
+          resourceId: '',
+          downloadedBytes: 0,
+          expectedBytes: 0,
+          percentage: 0,
+          speedBytesPerSec: 0,
+          isResumed: false,
+          state: 'downloading'
+        })
       }
     }
 
@@ -3715,14 +3744,24 @@ export class ModularResourceService implements IModularResourceService {
     if (isOfficialPreset && builtinMeta) {
       const assetName = builtinMeta.assetName || task.asset_name || spec.asset_name
       const shaTag = (task.expected_sha256 || spec.expected_sha256 || '').trim().slice(0, 8)
-      const r2Url = assetName
-        ? `https://download.iocn.cn/firefly-resources/${assetName}${shaTag ? `?v=${shaTag}` : ''}`
-        : null
       const githubUrl =
         builtinMeta.defaultActiveUrl ||
         (assetName
           ? `https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/${assetName}`
           : null)
+      // R2 文件名以发布源（defaultActiveUrl）的文件名为准，避免 sensevoice-onnx / moss-tts 等沿用旧 assetName 导致 404
+      let r2AssetName = assetName
+      if (githubUrl) {
+        try {
+          const base = path.posix.basename(new URL(githubUrl).pathname)
+          if (base.endsWith('.zip') || base.endsWith('.ffp')) {
+            r2AssetName = base
+          }
+        } catch {}
+      }
+      const r2Url = r2AssetName
+        ? `https://download.iocn.cn/firefly-resources/${r2AssetName}${shaTag ? `?v=${shaTag}` : ''}`
+        : null
 
       // 双轨下载调度策略（对齐 engine 资源下载）：
       // - 国际版 (intl): 海外网络环境优先直连 GitHub Releases，若失败/超时平滑回退 R2 CDN；

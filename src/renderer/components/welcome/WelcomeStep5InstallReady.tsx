@@ -117,7 +117,9 @@ export function WelcomeStep5InstallReady({
     const unsub = modular.onProgress((payload: any) => {
       if (payload?.moduleId === selectedEngine) {
         if (typeof payload.percentage === 'number') {
-          setPercentage(prev => Math.max(prev, Math.min(95, Math.round(payload.percentage))))
+          // 下载与解压占 0%~75% 区间，预留 75%~96% 给随后进行的引擎冷启动冒烟自检，避免直接跳到 95% 卡顿假象
+          const scaled = Math.round(payload.percentage * 0.75)
+          setPercentage(prev => Math.max(prev, Math.min(75, scaled)))
         }
         const incomingSpeed =
           typeof payload.speedBytesPerSec === 'number' ? payload.speedBytesPerSec : 0
@@ -142,6 +144,15 @@ export function WelcomeStep5InstallReady({
       unsub?.()
     }
   }, [selectedEngine])
+
+  // 冒烟自检阶段（通常耗时 10~30s）平滑推进进度条 75% -> 96%，避免界面停滞不动
+  useEffect(() => {
+    if (phase !== 'smoke_testing') return
+    const timer = setInterval(() => {
+      setPercentage(prev => (prev < 96 ? Math.max(75, prev + 1) : prev))
+    }, 900)
+    return () => clearInterval(timer)
+  }, [phase])
 
   useEffect(() => {
     // React StrictMode / 从 Step 4 返回再进来时避免重复触发同一轮安装
