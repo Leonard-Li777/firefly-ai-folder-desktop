@@ -14,12 +14,12 @@ import { LogCategory, logger } from '@firefly/shared'
 import { omniService } from '../runtime-services/system/omni-service'
 import {
   M5FrameParser,
-  StreamChunkPayload,
-  StreamEndMeta,
-  StreamErrorMeta
+  type StreamChunkPayload,
+  type StreamEndMeta,
+  type StreamErrorMeta
 } from '../runtime-services/ai/m5-frame-parser'
 
-export { StreamChunkPayload, StreamEndMeta, StreamErrorMeta }
+export type { StreamChunkPayload, StreamEndMeta, StreamErrorMeta }
 
 /** 分类树多叉树节点（对齐 Omni taxonomy.rs TaxonomyNode） */
 export interface OmniTaxonomyNode {

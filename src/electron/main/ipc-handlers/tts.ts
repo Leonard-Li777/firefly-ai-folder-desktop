@@ -13,10 +13,10 @@ import { ipcMain, dialog, BrowserWindow } from 'electron'
 import { logger, LogCategory } from '@firefly/shared'
 import {
   omniClient,
-  TTSChunkResult,
-  StreamChunkPayload,
-  StreamEndMeta,
-  StreamErrorMeta
+  type TTSChunkResult,
+  type StreamChunkPayload,
+  type StreamEndMeta,
+  type StreamErrorMeta
 } from '../../services/omni-client'
 import {
   ttsWavCacheService,

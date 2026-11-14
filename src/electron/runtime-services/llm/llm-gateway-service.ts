@@ -207,6 +207,18 @@ export class LlmGatewayService implements ILlmGatewayService {
   public installationOverride?: Partial<GenerativeEngineInstallationState> | null
   public runtimeOverride?: Partial<GenerativeEngineRuntimeState> | null
 
+  // CPU 引擎安装探测缓存与防刷屏状态记录
+  private cachedCpuInstallState: {
+    state: 'installed' | 'not_installed' | 'corrupt'
+    expireAt: number
+  } | null = null
+  private lastReportedCpuState: string | null = null
+  private readonly CPU_PROBE_CACHE_TTL_MS = 15_000
+
+  public invalidateCpuProbeCache(): void {
+    this.cachedCpuInstallState = null
+  }
+
   /**
    * 测试接缝：注入模块化资源服务（用于在测试中绑定内存库，
    * 避免生产代码 CJS require 与 ESM 单例不一致导致的探测失真）。
@@ -217,6 +229,8 @@ export class LlmGatewayService implements ILlmGatewayService {
 
   public setModularResourceResolverForTesting(resolver: (() => any) | null): void {
     this.modularResourceResolver = resolver ?? (() => modularResourceService)
+    this.cachedCpuInstallState = null
+    this.lastReportedCpuState = null
   }
 
   private constructor() {
@@ -301,8 +315,10 @@ export class LlmGatewayService implements ILlmGatewayService {
         if ('AI_SERVICE_MODE' in changes) {
           const newMode = changes['AI_SERVICE_MODE']
           if (newMode && ['local', 'cpu', 'cloud', 'disabled'].includes(newMode)) {
-            this.desiredMode = newMode as GenerativeEngineMode
-            this.routeEpoch++
+            if (this.desiredMode !== newMode) {
+              this.desiredMode = newMode as GenerativeEngineMode
+              this.routeEpoch++
+            }
           }
         }
       })
@@ -320,10 +336,17 @@ export class LlmGatewayService implements ILlmGatewayService {
    * installed_inactive（已下载权重、待启用）均视为 installed；
    * 再校验域 B _shared/pocket-cpu (.ready.json + >=10MB) 决定 installed / corrupt；
    * 严禁扫描只读安装目录 extraResources 或非受控旧目录。
+   *
+   * 优化说明：引入 15s 短缓存与状态变更差量日志，消除高频快照拉取引发的同步 I/O 与日志刷屏。
    */
-  private probeCpuInstallation(): 'installed' | 'not_installed' | 'corrupt' {
+  private probeCpuInstallation(forceRefresh = false): 'installed' | 'not_installed' | 'corrupt' {
     if (this.installationOverride?.cpu) {
       return this.installationOverride.cpu
+    }
+
+    const now = Date.now()
+    if (!forceRefresh && this.cachedCpuInstallState && now < this.cachedCpuInstallState.expireAt) {
+      return this.cachedCpuInstallState.state
     }
 
     try {
@@ -344,36 +367,46 @@ export class LlmGatewayService implements ILlmGatewayService {
         (m: { capability_slot?: string; install_state?: string }) =>
           m.install_state === 'active' || m.install_state === 'installed_inactive'
       )
-      logger.debug(
-        LogCategory.SYSTEM,
-        `[LlmGateway] CPU安装探测: 槽位扫描 total=${allRows.length} cpu=[${cpuStates || '空'}]`
-      )
+
+      let result: 'installed' | 'not_installed' | 'corrupt' = 'not_installed'
+      let readyDir: string | null = null
+
       if (!cpuInstalledState) {
-        logger.debug(LogCategory.SYSTEM, '[LlmGateway] CPU安装探测: 无已安装模块 -> not_installed')
-        return 'not_installed'
-      }
-
-      const meta = BUILTIN_PLUGIN_CATALOG_META['pocket-cpu-int8-onnx']
-      const pluginsRoot = modularResourceService?.getPluginsRootDir?.()
-      if (!pluginsRoot) {
-        logger.debug(LogCategory.SYSTEM, '[LlmGateway] CPU安装探测: pluginsRoot 为空 -> corrupt')
-        return 'corrupt'
-      }
-
-      const readyDir = PluginPathResolver.getReadySharedResourceDirForRoot(
-        pluginsRoot,
-        meta.sharedSubDir,
-        {
-          requiredFileGroups: meta.requiredFileGroups,
-          minPrimaryFileBytes: meta.minPrimaryFileBytes,
-          requireReadyMarker: true
+        result = 'not_installed'
+      } else {
+        const meta = BUILTIN_PLUGIN_CATALOG_META['pocket-cpu-int8-onnx']
+        const pluginsRoot = modularResourceService?.getPluginsRootDir?.()
+        if (!pluginsRoot) {
+          result = 'corrupt'
+        } else {
+          readyDir = PluginPathResolver.getReadySharedResourceDirForRoot(
+            pluginsRoot,
+            meta.sharedSubDir,
+            {
+              requiredFileGroups: meta.requiredFileGroups,
+              minPrimaryFileBytes: meta.minPrimaryFileBytes,
+              requireReadyMarker: true
+            }
+          )
+          result = readyDir ? 'installed' : 'corrupt'
         }
-      )
-      logger.debug(
-        LogCategory.SYSTEM,
-        `[LlmGateway] CPU安装探测: 资产校验 root=${pluginsRoot} sub=${meta.sharedSubDir} readyDir=${readyDir || 'null'} -> ${readyDir ? 'installed' : 'corrupt'}`
-      )
-      return readyDir ? 'installed' : 'corrupt'
+      }
+
+      // 仅在状态改变时记录日志，杜绝每 3 秒高频日志刷屏
+      const stateKey = `${result}:${cpuStates}`
+      if (this.lastReportedCpuState !== stateKey) {
+        this.lastReportedCpuState = stateKey
+        logger.info(
+          LogCategory.SYSTEM,
+          `[LlmGateway] CPU安装探测状态: ${result} (槽位: [${cpuStates || '空'}], 资产: ${readyDir ? 'ready' : 'missing'})`
+        )
+      }
+
+      this.cachedCpuInstallState = {
+        state: result,
+        expireAt: now + this.CPU_PROBE_CACHE_TTL_MS
+      }
+      return result
     } catch (err) {
       logger.warn(LogCategory.SYSTEM, '[LlmGatewayService] 探测 CPU 引擎安装资产异常:', err)
       return 'not_installed'
@@ -514,6 +547,7 @@ export class LlmGatewayService implements ILlmGatewayService {
    * 变更期望底座模式 (Zero-Barrier 秒级平滑切换)
    */
   public async setDesiredMode(mode: GenerativeEngineMode): Promise<void> {
+    this.cachedCpuInstallState = null
     if (this.desiredMode === mode) return
 
     const prevMode = this.desiredMode
