@@ -27,12 +27,12 @@ import type { HardwareProbeResult, WelcomeSelection } from './welcome-types'
 const RESOURCE_BYTES_MAP: Record<string, number> = {
   'bekko-a8m': 106269288,
   'chinese-clip': 212925967,
-  'embeddinggemma-2-onnx': 254003864,
-  'nsfw-mobilenetv2': 9556862,
-  'nsfw-l3': 33311367,
+  'embeddinggemma-2-onnx': 315811299,
+  'nsfw-mobilenetv2': 10300307,
+  'nsfw-l3': 33278739,
   'sensevoice-onnx': 160304482,
   'moss-tts': 240822786,
-  'm5-tts': 253215862,
+  'm5-tts': 315205872,
   'mobile-clip': 57910236
 }
 

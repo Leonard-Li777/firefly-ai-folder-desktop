@@ -152,7 +152,29 @@ export class VoiceArchiveService {
       if (activeModuleId === 'tts_m5_onnx') {
         const candidateJsonPaths = [
           pluginsRoot
-            ? path.join(pluginsRoot, '_shared', 'm5-tts', 'models', 'audio', 'm5', 'preset_voices.json')
+            ? path.join(pluginsRoot, '_shared', 'tts-e43ab9e3', 'preset_voices.json')
+            : '',
+          pluginsRoot
+            ? path.join(
+                pluginsRoot,
+                '_shared',
+                'tts-e43ab9e3',
+                'models',
+                'audio',
+                'm5',
+                'preset_voices.json'
+              )
+            : '',
+          pluginsRoot
+            ? path.join(
+                pluginsRoot,
+                '_shared',
+                'm5-tts',
+                'models',
+                'audio',
+                'm5',
+                'preset_voices.json'
+              )
             : '',
           pluginsRoot ? path.join(pluginsRoot, '_shared', 'm5-tts', 'preset_voices.json') : '',
           process.env.OMNI_M5_VOICES_PATH || '',
@@ -200,6 +222,7 @@ export class VoiceArchiveService {
 
       if (activeModuleId === 'tts_moss_onnx') {
         const candidates = [
+          pluginsRoot ? path.join(pluginsRoot, '_shared', 'tts-8a04293a', 'preset_voices.bin') : '',
           pluginsRoot ? path.join(pluginsRoot, '_shared', 'moss-tts', 'preset_voices.bin') : '',
           process.env.OMNI_MOSS_VOICES_PATH || '',
           ResourceLocator.resolveResourcePath?.('modules/_shared/moss-tts/preset_voices.bin') || '',
