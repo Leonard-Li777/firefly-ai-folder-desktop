@@ -278,12 +278,10 @@ export class LoggingService {
   }
 
   /**
-   * 递归对日志数据中的字符串值做脱敏处理（文件名 + API Key）
+   * 递归对日志数据中的字符串值做脱敏处理（文件名 + API Key + 插件大白话）
+   * 遵循规格：plugin-log-plain-language-sanitization-spec.md 全环境强制生效
    */
   private sanitizeData(data: any, depth = 0): any {
-    // 开发环境不脱敏，方便调试
-    if (process.env.NODE_ENV === 'development') return data
-
     if (data === null || data === undefined) return data
     if (depth > 15) return Array.isArray(data) ? '[Array...]' : '[Object...]'
 

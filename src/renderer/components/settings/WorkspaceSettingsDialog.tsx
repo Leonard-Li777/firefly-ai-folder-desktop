@@ -6,6 +6,14 @@ import {
   HardwareInfo
 } from '@firefly/types'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter
+} from '../ui/alert-dialog'
 import { Button } from '../ui/button'
 import { Label } from '../ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
@@ -23,13 +31,19 @@ import {
   ChevronRight,
   RotateCcw,
   CheckCircle2,
-  Clock
+  Clock,
+  AlertTriangle,
+  Save,
+  Loader2
 } from 'lucide-react'
 
 import { WorkspaceSetupWizard } from './workspace/WorkspaceSetupWizard'
 import { BasicAIEngineTab } from './workspace/BasicAIEngineTab'
 import { ContentExtractionTab } from './workspace/ContentExtractionTab'
-import { WorkspaceAdmissionRulesTab } from './workspace/WorkspaceAdmissionRulesTab'
+import {
+  WorkspaceAdmissionRulesTab,
+  WorkspaceAdmissionRulesTabHandle
+} from './workspace/WorkspaceAdmissionRulesTab'
 import { WorkspaceMaintenanceTab } from './workspace/WorkspaceMaintenanceTab'
 
 type WorkspaceTabId = 'basic_ai_engine' | 'content_extraction' | 'ignore_rules' | 'maintenance'
@@ -82,6 +96,84 @@ export const WorkspaceSettingsDialog: React.FC = () => {
     () => new Set(['basic_ai_engine'])
   )
 
+  // 引用规则管理 Tab 暴露的脏状态与操作 Handle
+  const rulesTabRef = React.useRef<WorkspaceAdmissionRulesTabHandle>(null)
+
+  // 美化的未保存规则确认对话框状态与挂起的离开动作
+  const [showUnsavedConfirmDialog, setShowUnsavedConfirmDialog] = useState(false)
+  const [isSavingOnConfirm, setIsSavingOnConfirm] = useState(false)
+  const pendingActionRef = React.useRef<(() => void | Promise<void>) | null>(null)
+
+  /**
+   * 离开准入规则 Tab 或关闭设置弹窗前置检查：
+   * 若规则已修改但用户未点击右上角的「保存包含与排除规则」，则弹出美化 React 确认对话框询问用户是否保存
+   */
+  const requestLeaveAction = (action: () => void | Promise<void>) => {
+    if (rulesTabRef.current?.isDirty()) {
+      pendingActionRef.current = action
+      setShowUnsavedConfirmDialog(true)
+    } else {
+      void action()
+    }
+  }
+
+  // 美化弹窗中点击【保存并继续】
+  const handleConfirmSave = async () => {
+    setIsSavingOnConfirm(true)
+    try {
+      const ok = await rulesTabRef.current?.save()
+      if (ok) {
+        setShowUnsavedConfirmDialog(false)
+        const nextAction = pendingActionRef.current
+        pendingActionRef.current = null
+        if (nextAction) {
+          await nextAction()
+        }
+      }
+    } finally {
+      setIsSavingOnConfirm(false)
+    }
+  }
+
+  // 美化弹窗中点击【不保存】（放弃本次修改并继续离开）
+  const handleConfirmDiscard = async () => {
+    rulesTabRef.current?.discard()
+    setShowUnsavedConfirmDialog(false)
+    const nextAction = pendingActionRef.current
+    pendingActionRef.current = null
+    if (nextAction) {
+      await nextAction()
+    }
+  }
+
+  // 美化弹窗中点击【取消】（留在当前页面继续编辑）
+  const handleConfirmCancel = () => {
+    pendingActionRef.current = null
+    setShowUnsavedConfirmDialog(false)
+  }
+
+  const handleRequestClose = () => {
+    requestLeaveAction(() => closeSettings())
+  }
+
+  const handleTabChange = (tabId: WorkspaceTabId) => {
+    if (tabId === activeTab) return
+    requestLeaveAction(() => setActiveTab(tabId))
+  }
+
+  const handleWorkspaceChange = (val: string) => {
+    const nextId = Number(val)
+    if (nextId === selectedWorkspaceId) return
+    requestLeaveAction(() => {
+      setSelectedWorkspaceId(nextId)
+      setIsManualWizardMode(false)
+    })
+  }
+
+  const handleRunWizard = () => {
+    requestLeaveAction(() => setIsManualWizardMode(true))
+  }
+
   // 1a. 初始化或同步选中的工作区 ID
   useEffect(() => {
     if (isOpen) {
@@ -102,7 +194,11 @@ export const WorkspaceSettingsDialog: React.FC = () => {
         setIsManualWizardMode(true)
       } else {
         if (targetWorkspaceTab) {
-          setActiveTab(targetWorkspaceTab as WorkspaceTabId)
+          const tabKey =
+            targetWorkspaceTab === 'admission' || targetWorkspaceTab === 'admission_rules'
+              ? 'ignore_rules'
+              : targetWorkspaceTab
+          setActiveTab(tabKey as WorkspaceTabId)
         }
         setIsManualWizardMode(false)
       }
@@ -227,7 +323,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
   if (!isOpen) return null
 
   return (
-    <Dialog open={isOpen} onOpenChange={open => !open && closeSettings()}>
+    <Dialog open={isOpen} onOpenChange={open => !open && void handleRequestClose()}>
       <DialogContent className="max-w-5xl w-[88vw] h-[82vh] flex flex-col p-0 bg-background dark:bg-card text-foreground border-4 border-border rounded-2xl shadow-2xl transform-gpu [contain:content]">
         {/* 顶部 Header：工作区选择与状态概览 (pr-16 预留右上角绝对定位关闭按钮空间，杜绝重叠) */}
         <DialogHeader className="pl-6 pr-14 sm:pr-16 py-3.5 border-b flex-shrink-0 flex flex-row items-center justify-between gap-4">
@@ -278,10 +374,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
             </Label>
             <Select
               value={activeWorkspace?.id != null ? String(activeWorkspace.id) : undefined}
-              onValueChange={val => {
-                setSelectedWorkspaceId(Number(val))
-                setIsManualWizardMode(false)
-              }}
+              onValueChange={handleWorkspaceChange}
             >
               <SelectTrigger className="h-8 text-xs font-semibold w-48 sm:w-56 bg-muted/30">
                 <SelectValue placeholder={t('选择工作目录...')} />
@@ -342,7 +435,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                           !isActive &&
                             'hover:bg-muted/60 text-muted-foreground hover:text-foreground'
                         )}
-                        onClick={() => setActiveTab(tab.id)}
+                        onClick={() => void handleTabChange(tab.id)}
                       >
                         <div className="flex items-start gap-2.5">
                           <MaterialIcon icon={tab.icon} className="text-base shrink-0 mt-0.5" />
@@ -369,7 +462,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                     type="button"
                     variant="ghost"
                     size="sm"
-                    onClick={() => setIsManualWizardMode(true)}
+                    onClick={() => void handleRunWizard()}
                     className="w-full text-xs text-muted-foreground hover:text-foreground flex items-center justify-between p-2 h-auto"
                   >
                     <div className="flex items-center gap-1.5">
@@ -425,6 +518,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                     )}
                   >
                     <MemoizedWorkspaceAdmissionRulesTab
+                      ref={rulesTabRef}
                       key={activeWorkspace.id}
                       workspace={activeWorkspace}
                       onConfigSaved={refreshWorkspaceData}
@@ -450,6 +544,80 @@ export const WorkspaceSettingsDialog: React.FC = () => {
             </>
           )}
         </div>
+
+        {/* 规则修改未保存：系统中美化的 React 确认对话框 */}
+        <AlertDialog
+          open={showUnsavedConfirmDialog}
+          onOpenChange={setShowUnsavedConfirmDialog}
+        >
+          <AlertDialogContent
+            data-testid="unsaved-admission-rules-dialog"
+            className="border-2 border-border max-w-md bg-background dark:bg-card text-foreground rounded-2xl shadow-2xl"
+          >
+            <AlertDialogHeader>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <AlertDialogTitle className="text-base font-bold text-foreground">
+                  {t('文件准入与包含规则已修改')}
+                </AlertDialogTitle>
+              </div>
+              <AlertDialogDescription asChild>
+                <div className="text-xs text-muted-foreground pt-2 space-y-2 leading-relaxed">
+                  <p className="font-semibold text-foreground text-sm">
+                    {t('文件准入与包含规则已修改，是否保存？')}
+                  </p>
+                  <p>
+                    {t(
+                      '当前工作目录的文件准入与包含规则已发生变动，但尚未保存。若不保存，您刚才的所有修改都将丢失。'
+                    )}
+                  </p>
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+
+            <AlertDialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isSavingOnConfirm}
+                data-testid="unsaved-confirm-cancel-btn"
+                onClick={handleConfirmCancel}
+                className="text-xs"
+              >
+                {t('取消')}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={isSavingOnConfirm}
+                data-testid="unsaved-confirm-discard-btn"
+                onClick={handleConfirmDiscard}
+                className="text-xs text-muted-foreground hover:text-destructive"
+              >
+                {t('不保存')}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                disabled={isSavingOnConfirm}
+                data-testid="unsaved-confirm-save-btn"
+                onClick={handleConfirmSave}
+                className="text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-1.5 shadow-sm"
+              >
+                {isSavingOnConfirm ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Save className="w-3.5 h-3.5" />
+                )}
+                <span>{isSavingOnConfirm ? t('正在保存...') : t('保存并继续')}</span>
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </DialogContent>
     </Dialog>
   )
