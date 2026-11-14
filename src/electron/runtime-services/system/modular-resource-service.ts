@@ -3507,10 +3507,18 @@ export class ModularResourceService implements IModularResourceService {
             continue
           }
 
-          // L2: 本地后备预置包打捞 (apps/desktop/build/presetResources 等)；显式指定 skipLocalPreset 时跳过以强制走真实网络下载
-          const l2Hit = options?.skipLocalPreset
-            ? false
-            : await this.checkL2LocalPresetPreflight(spec, targetAbsDir)
+          // L2: 本地后备预置包打捞 (apps/desktop/build/presetResources 等)；
+          // 当显式传入 skipLocalPreset 或全局开发环境变量 FIREFLY_SKIP_LOCAL_PRESET=1 时跳过，强制走真实网络下载测试
+          const envSkipRaw = process.env.FIREFLY_SKIP_LOCAL_PRESET?.trim().toLowerCase()
+          const envSkipLocalPreset =
+            envSkipRaw === '1' ||
+            envSkipRaw === 'true' ||
+            envSkipRaw === 'yes' ||
+            envSkipRaw === 'on'
+          const l2Hit =
+            options?.skipLocalPreset || envSkipLocalPreset
+              ? false
+              : await this.checkL2LocalPresetPreflight(spec, targetAbsDir)
           if (l2Hit) {
             dao.resources.markVerifiedSync(spec.resource_id, true)
             dao.resources.updateProgressSync(spec.resource_id, spec.expected_bytes, 'completed')
@@ -3697,6 +3705,17 @@ export class ModularResourceService implements IModularResourceService {
           )
           await this.installModule(nextId, progressEvt => {
             this.backgroundProgressBroadcaster?.(progressEvt)
+          })
+          // installModule 返回代表激活与底座挂载已彻底完成，再补发一次最终态同步事件，确保前端立刻从「下载/激活中」切为已激活
+          this.backgroundProgressBroadcaster?.({
+            moduleId: nextId,
+            resourceId: '',
+            downloadedBytes: 0,
+            expectedBytes: 0,
+            percentage: 100,
+            speedBytesPerSec: 0,
+            isResumed: false,
+            state: 'completed'
           })
           logger.info(LogCategory.SYSTEM, `[ModularResource] 后台选配插件安装就绪并激活: ${nextId}`)
         } catch (err: any) {

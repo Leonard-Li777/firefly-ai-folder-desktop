@@ -190,9 +190,9 @@ export function WelcomeStep5InstallReady({
     const runOnline = async () => {
       setPhase('installing')
       setPercentage(5)
-      // 1. 主检索引擎在线下载与解压（显式跳过本地 build/presetResources 直通，保证在线模式真实走网络下载与速率展示）
+      // 1. 主检索引擎下载与解压（默认优先命中本地预置缓存，如需测试真实网络下载请配置 FIREFLY_SKIP_LOCAL_PRESET=1）
       if (modular?.install) {
-        await modular.install(selectedEngine, { skipLocalPreset: true })
+        await modular.install(selectedEngine)
       }
       setPercentage(prev => Math.max(prev, 75))
 
