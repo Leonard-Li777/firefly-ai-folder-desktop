@@ -42,7 +42,7 @@ describe('Plugin Shared SSOT Convergence & M5-TTS Spec Tests (TC-SSOT-01~36)', (
     const dao = new ModularResourceDao(testDb)
     dao.modules.upsertModuleSync({
       id: 'tts_m5_onnx',
-      name: 'M5-TTS 极速语音合成',
+      name: '极速语音合成与朗读',
       version: '1.0.0',
       category: 'media',
       capability_slot: 'voice_tts',
@@ -53,7 +53,7 @@ describe('Plugin Shared SSOT Convergence & M5-TTS Spec Tests (TC-SSOT-01~36)', (
     } as any)
     dao.modules.upsertModuleSync({
       id: 'tts_moss_onnx',
-      name: 'MOSS-TTS 语音合成',
+      name: '个性化声音克隆与朗读',
       version: '1.0.0',
       category: 'media',
       capability_slot: 'voice_tts',

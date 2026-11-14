@@ -52,7 +52,7 @@ describe('TTSActionGroup: 未安装与激活状态下的 UI 与业务呈现测�
   it('当安装了 TTS 插件但处于停用状态时，呈现「待安装/启动」小字占位', () => {
     const inactiveModule: PluginModuleItem = {
       id: 'tts_moss_onnx',
-      name: '个性声音克隆 (Moss-TTS)',
+      name: '个性化声音克隆与朗读',
       version: '1.0.0',
       category: 'media',
       capability_slot: 'voice_tts',
@@ -64,7 +64,7 @@ describe('TTSActionGroup: 未安装与激活状态下的 UI 与业务呈现测�
       contributes: {
         settings: {
           scope: 'global',
-          tabTitle: '语音合成 (TTS)',
+          tabTitle: '个性化声音克隆',
           componentId: 'tts'
         }
       }
@@ -82,7 +82,7 @@ describe('TTSActionGroup: 未安装与激活状态下的 UI 与业务呈现测�
   it('当激活了 M5-TTS 插件时，组件正常呈现朗读操作胶囊', () => {
     const activeM5Module: PluginModuleItem = {
       id: 'tts_m5_onnx',
-      name: '极速语音合成 (M5-TTS)',
+      name: '极速语音合成与朗读',
       version: '1.0.0',
       category: 'media',
       capability_slot: 'voice_tts',
@@ -90,11 +90,11 @@ describe('TTSActionGroup: 未安装与激活状态下的 UI 与业务呈现测�
       availability: 'available',
       total_bytes: 1000,
       install_state: 'active',
-      description: 'M5-TTS 插件',
+      description: '极速语音朗读插件',
       contributes: {
         settings: {
           scope: 'global',
-          tabTitle: '极速语音朗读 (M5-TTS)',
+          tabTitle: '极速语音朗读',
           componentId: 'tts'
         }
       }
@@ -113,7 +113,7 @@ describe('TTSActionGroup: 未安装与激活状态下的 UI 与业务呈现测�
     // 即使有已激活的 TTS 插件，用户主动关闭语音功能也应完全隐藏（而非显示「待安装」占位）
     const activeM5Module: PluginModuleItem = {
       id: 'tts_m5_onnx',
-      name: '极速语音合成 (M5-TTS)',
+      name: '极速语音合成与朗读',
       version: '1.0.0',
       category: 'media',
       capability_slot: 'voice_tts',
@@ -121,11 +121,11 @@ describe('TTSActionGroup: 未安装与激活状态下的 UI 与业务呈现测�
       availability: 'available',
       total_bytes: 1000,
       install_state: 'active',
-      description: 'M5-TTS 插件',
+      description: '极速语音朗读插件',
       contributes: {
         settings: {
           scope: 'global',
-          tabTitle: '极速语音朗读 (M5-TTS)',
+          tabTitle: '极速语音朗读',
           componentId: 'tts'
         }
       }

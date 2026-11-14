@@ -9,7 +9,9 @@
     "de-DE": "Willkommen - Erste Einrichtung",
     "fr-FR": "Bienvenue - Configuration initiale",
     "ko-KR": "어서오세요 - 초기 설정",
-    "$files": ["src/renderer/components/welcome/WelcomeStep1.tsx(1871-1886)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep1.tsx(1871-1886)"
+    ],
     "$id": 4599
   },
   "请选择您偏好的语言以继续": {
@@ -22,7 +24,9 @@
     "de-DE": "Bitte wählen Sie Ihre bevorzugte Sprache, um fortzufahren",
     "fr-FR": "Veuillez sélectionner la langue de votre choix pour continuer",
     "ko-KR": "계속 진행하기 위해 사용자 선호 언어를 선택하십시오.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep1.tsx(1905-1921)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep1.tsx(1905-1921)"
+    ],
     "$id": 4600
   },
   "继续": {
@@ -35,7 +39,9 @@
     "de-DE": "Weiter\r",
     "fr-FR": "Continuer\r",
     "ko-KR": "계속",
-    "$files": ["src/renderer/components/welcome/WelcomeStep1.tsx(2216-2222)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep1.tsx(2216-2222)"
+    ],
     "$id": 4583
   },
   "语言选择": {
@@ -48,7 +54,9 @@
     "de-DE": "Sprachauswahl",
     "fr-FR": "Sélection de la langue",
     "ko-KR": "언어 선택",
-    "$files": ["src/renderer/components/welcome/WelcomeStep1.tsx(2667-2675)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep1.tsx(2667-2675)"
+    ],
     "$id": 4595
   },
   "预计占用空间:": {
@@ -61,7 +69,9 @@
     "de-DE": "Geschätzter belegter Platz:",
     "fr-FR": "Espace occupé estimé :",
     "ko-KR": "예상 점유 공간:",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(3112-3123)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(3109-3120)"
+    ],
     "$id": 31618
   },
   "先挑插件，稍后决定安装方式 · 现在还不会下载文件": {
@@ -74,7 +84,9 @@
     "de-DE": "Wählen Sie zuerst das Plugin aus und entscheiden Sie später, wie Sie es installieren. · Die Datei wird noch nicht heruntergeladen",
     "fr-FR": "Choisissez d'abord le plugin, décidez comment l'installer plus tard · Le fichier ne sera pas encore téléchargé",
     "ko-KR": "플러그인을 먼저 선택하고 설치 방법은 나중에 결정하세요. · 파일이 아직 다운로드되지 않습니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(3370-3399)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(3396-3425)"
+    ],
     "$id": 31787
   },
   "返回": {
@@ -88,10 +100,10 @@
     "fr-FR": "Retour",
     "ko-KR": "반품",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(3750-3756)",
-      "src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(4293-4299)",
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(3776-3782)",
+      "src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(4516-4522)",
       "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(2389-2395)",
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(11687-11693)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(14113-14119)"
     ],
     "$id": 28471
   },
@@ -106,8 +118,8 @@
     "fr-FR": "Étape suivante",
     "ko-KR": "다음 단계",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(4058-4065)",
-      "src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(4569-4576)",
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(4084-4091)",
+      "src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(4792-4799)",
       "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(2642-2649)"
     ],
     "$id": 31723
@@ -122,7 +134,9 @@
     "de-DE": "KI-Engine und intelligente Funktionsassemblierung",
     "fr-FR": "Moteur IA et assemblage de capacités intelligentes",
     "ko-KR": "AI 엔진 및 지능형 기능 조립",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(4243-4259)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(4269-4285)"
+    ],
     "$id": 31788
   },
   "已检测您的电脑硬件，为您推荐最流畅的搜索大脑与实用整理技能": {
@@ -135,7 +149,9 @@
     "de-DE": "Ihre Computer-Hardware wurde getestet und Ihnen werden die reibungsloseste Suche, Gehirn- und praktische Organisationsfähigkeiten empfohlen.",
     "fr-FR": "Votre matériel informatique a été testé et les compétences de recherche les plus fluides et d'organisation pratique vous sont recommandées.",
     "ko-KR": "귀하의 컴퓨터 하드웨어는 테스트되었으며 가장 원활한 검색 두뇌와 실용적인 구성 기술이 귀하에게 권장됩니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(4278-4311)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(4304-4337)"
+    ],
     "$id": 31789
   },
   "电脑内存 (RAM)": {
@@ -148,7 +164,9 @@
     "de-DE": "Computerspeicher (RAM)",
     "fr-FR": "Mémoire de l'ordinateur (RAM)",
     "ko-KR": "컴퓨터 메모리(RAM)",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(4908-4922)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(4934-4948)"
+    ],
     "$id": 31517
   },
   "图形显卡 (GPU)": {
@@ -161,7 +179,9 @@
     "de-DE": "Grafikkarte (GPU)",
     "fr-FR": "Carte graphique (GPU)",
     "ko-KR": "그래픽 카드(GPU)",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(5401-5415)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(5463-5477)"
+    ],
     "$id": 31518
   },
   "检测中...": {
@@ -174,7 +194,9 @@
     "de-DE": "Wird erkannt …  ",
     "fr-FR": "Détection en cours...",
     "ko-KR": "감지 중...  ",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(5618-5628)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(5680-5690)"
+    ],
     "$id": 31725
   },
   "集成显卡 / 普通办公": {
@@ -187,7 +209,9 @@
     "de-DE": "Integrierte Grafikkarte / allgemeines Büro",
     "fr-FR": "Carte graphique intégrée / bureautique générale",
     "ko-KR": "통합 그래픽 카드 / 일반 사무실",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(5652-5667)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(5714-5729)"
+    ],
     "$id": 31519
   },
   "磁盘剩余空间": {
@@ -200,7 +224,9 @@
     "de-DE": "Verbleibender Speicherplatz auf der Festplatte",
     "fr-FR": "Espace disque restant",
     "ko-KR": "디스크 남은 공간",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(6057-6067)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(6119-6129)"
+    ],
     "$id": 31520
   },
   "磁盘剩余空间不足，请至少预留 2GB 空间以供下载与安装": {
@@ -214,8 +240,8 @@
     "fr-FR": "Espace disque restant insuffisant, veuillez réserver au moins 2 Go pour le téléchargement et l'installation",
     "ko-KR": "남은 디스크 공간이 부족합니다. 다운로드 및 설치를 위해 최소 2GB를 예약하세요.",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(6572-6604)",
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(17659-17691)"
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(6670-6702)",
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(24154-24186)"
     ],
     "$id": 31528
   },
@@ -229,7 +255,9 @@
     "de-DE": "Suchmaschinen-Kernhirn (wählen Sie eines von zwei · erforderlich)",
     "fr-FR": "Cerveau central du moteur de recherche (choisissez l'un des deux · obligatoire)",
     "ko-KR": "검색엔진 코어브레인(2가지 중 택1·필수)",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(6957-6979)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(7055-7077)"
+    ],
     "$id": 31790
   },
   "用你的大白话随心找文件和整理目录的核心动力": {
@@ -242,7 +270,9 @@
     "de-DE": "Die Hauptmotivation, Dateien in Ihrer eigenen Sprache zu finden und Verzeichnisse zu organisieren",
     "fr-FR": "La principale motivation pour rechercher des fichiers et organiser des répertoires dans votre propre langue",
     "ko-KR": "자신의 언어로 파일을 찾고 디렉토리를 구성하려는 핵심 동기",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(7070-7095)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(7168-7193)"
+    ],
     "$id": 31530
   },
   "高智能全能引擎（理解更准）": {
@@ -255,7 +285,9 @@
     "de-DE": "Hochintelligenter Allround-Motor (genaueres Verständnis)",
     "fr-FR": "Moteur polyvalent hautement intelligent (compréhension plus précise)",
     "ko-KR": "고도로 지능화된 만능 엔진(보다 정확한 이해)",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(8025-8042)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(8123-8140)"
+    ],
     "$id": 31531
   },
   "推荐": {
@@ -269,8 +301,8 @@
     "fr-FR": "Recommander",
     "ko-KR": "추천하다",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(8249-8255)",
-      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(10322-10328)"
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(8347-8353)",
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(10473-10479)"
     ],
     "$id": 31791
   },
@@ -284,7 +316,9 @@
     "de-DE": "Finden Sie Text, Bilder, Videos und Aufzeichnungen genauer; Mindestspeicher 8 GB, 16 GB empfohlen",
     "fr-FR": "Trouvez du texte, des images, des vidéos et des enregistrements avec plus de précision ; mémoire minimale 8 Go, 16 Go recommandés",
     "ko-KR": "텍스트, 사진, 비디오 및 녹음을 더 정확하게 찾으십시오. minimum memory 8GB, 16G recommended",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(8445-8480)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(8543-8578)"
+    ],
     "$id": 31792
   },
   "支持音视频": {
@@ -297,7 +331,9 @@
     "de-DE": "Unterstützt Audio und Video",
     "fr-FR": "Prise en charge audio et vidéo",
     "ko-KR": "오디오 및 비디오 지원",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(8864-8873)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(8962-8971)"
+    ],
     "$id": 31727
   },
   "极速轻巧引擎（老电脑、NAS首选）": {
@@ -310,7 +346,9 @@
     "de-DE": "Extrem schnelle und leichte Engine (erste Wahl für alte Computer und NAS)",
     "fr-FR": "Moteur extrêmement rapide et léger (premier choix pour les anciens ordinateurs et NAS)",
     "ko-KR": "매우 빠르고 가벼운 엔진(오래된 컴퓨터 및 NAS에 우선 선택)",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(10087-10108)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(10238-10259)"
+    ],
     "$id": 31830
   },
   "占用内存极少，反应极快；只处理文档和图片；老电脑和低配轻薄本也能流畅运行不卡顿": {
@@ -323,7 +361,9 @@
     "de-DE": "Es beansprucht sehr wenig Speicher und reagiert sehr schnell; es verarbeitet nur Dokumente und Bilder; Es läuft auch auf alten Computern und preisgünstigen, dünnen und leichten Notebooks reibungslos und ohne Verzögerungen.",
     "fr-FR": "Il prend très peu de mémoire et répond très rapidement ; il ne traite que des documents et des images ; il peut également fonctionner sans problème sur les vieux ordinateurs et les ordinateurs portables fins et légers bas de gamme, sans décalage.",
     "ko-KR": "메모리를 거의 차지하지 않고 매우 빠르게 반응합니다. 문서와 사진만 처리합니다. 또한 오래된 컴퓨터와 얇고 가벼운 저가형 노트북에서도 지연 없이 원활하게 실행될 수 있습니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(10518-10561)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(10669-10735)"
+    ],
     "$id": 31793
   },
   "不支持音视频": {
@@ -336,7 +376,9 @@
     "de-DE": "Unterstützt kein Audio und Video",
     "fr-FR": "Ne prend pas en charge l'audio et la vidéo",
     "ko-KR": "오디오 및 비디오를 지원하지 않습니다",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(10976-10986)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(11171-11181)"
+    ],
     "$id": 31730
   },
   "实用智能技能扩展（选配 · 后续可随时调整）": {
@@ -349,7 +391,9 @@
     "de-DE": "Praktische intelligente Skill-Erweiterung (optional · jederzeit nachträglich anpassbar)",
     "fr-FR": "Extension des compétences intelligentes et pratiques (facultatif · peut être ajusté à tout moment ultérieurement)",
     "ko-KR": "실용적인 지능형 스킬 확장(선택사항 · 추후 언제든지 조정 가능)",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(11710-11736)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(11958-11984)"
+    ],
     "$id": 31831
   },
   "后续由您决定获取方式，不耽误您马上使用": {
@@ -362,7 +406,9 @@
     "de-DE": "Sie entscheiden selbst, wie Sie es später erhalten und können es sofort und ohne Verzögerung nutzen.",
     "fr-FR": "C'est à vous de décider comment l'obtenir ultérieurement, et vous pourrez l'utiliser immédiatement, sans délai.",
     "ko-KR": "어떻게 구하실지는 추후에 결정하시고, 지체 없이 바로 이용하시면 됩니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(11827-11850)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(12075-12098)"
+    ],
     "$id": 31794
   },
   "私密与敏感图文识别（NSFW）": {
@@ -375,7 +421,9 @@
     "de-DE": "Private und sensible Bild- und Texterkennung (NSFW)",
     "fr-FR": "Reconnaissance d'images et de textes privés et sensibles (NSFW)",
     "ko-KR": "비공개적이고 민감한 이미지 및 텍스트 인식(NSFW)",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(12717-12736)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(12965-12984)"
+    ],
     "$id": 31610
   },
   "自动识别私密照片与敏感内容并打上安全标签，投屏或分享时避免尴尬": {
@@ -388,7 +436,9 @@
     "de-DE": "Identifizieren Sie Boudoir-Fotos und sensible Inhalte automatisch und kennzeichnen Sie sie sicher, um Peinlichkeiten beim Streamen oder Teilen zu vermeiden.",
     "fr-FR": "Identifiez automatiquement les photos privées et le contenu sensible et étiquetez-les en toute sécurité pour éviter tout embarras lors de la diffusion ou du partage.",
     "ko-KR": "프라이빗 사진과 민감한 콘텐츠를 자동으로 식별하고 안전하게 라벨을 지정해 전송하거나 공유할 때 당황하지 마세요.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(12986-13021)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(13234-13269)"
+    ],
     "$id": 31540
   },
   "推荐勾选": {
@@ -402,8 +452,8 @@
     "fr-FR": "Il est recommandé de vérifier",
     "ko-KR": "확인하는 것이 좋습니다",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(13207-13215)",
-      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(16009-16017)"
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(13455-13463)",
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(16340-16348)"
     ],
     "$id": 31541
   },
@@ -417,7 +467,9 @@
     "de-DE": "Audio und Video zu Untertiteltext (ASR)",
     "fr-FR": "Audio et vidéo pour sous-titrer le texte (ASR)",
     "ko-KR": "오디오 및 비디오를 자막 텍스트로 변환(ASR)",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(14103-14120)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(14351-14368)"
+    ],
     "$id": 31611
   },
   "听懂视频和录音里的对白并提取字幕，可以直接按台词找到对应视频": {
@@ -430,7 +482,9 @@
     "de-DE": "Verstehen Sie den Dialog in Videos und Aufnahmen und extrahieren Sie Untertitel. Über die Zeilen können Sie direkt zum entsprechenden Video gelangen.",
     "fr-FR": "Comprenez le dialogue dans les vidéos et les enregistrements et extrayez les sous-titres. Vous pouvez retrouver directement la vidéo correspondante par les lignes.",
     "ko-KR": "영상과 녹음 속 대화를 이해하고 자막을 추출합니다. 해당 영상을 라인별로 바로 찾아보실 수 있습니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(14374-14408)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(14622-14656)"
+    ],
     "$id": 31543
   },
   "可选功能": {
@@ -443,7 +497,9 @@
     "de-DE": "Optionale Funktionen",
     "fr-FR": "Fonctionnalités optionnelles",
     "ko-KR": "선택적 기능",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(14587-14595)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(14835-14843)"
+    ],
     "$id": 28461
   },
   "离线语音朗读（TTS）": {
@@ -456,7 +512,9 @@
     "de-DE": "Offline-Sprachlesen (TTS)",
     "fr-FR": "Lecture vocale hors ligne (TTS)",
     "ko-KR": "오프라인 음성 읽기(TTS)",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(15467-15482)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(15715-15730)"
+    ],
     "$id": 31612
   },
   "用自然真人声音把文档读给你听。实时长文朗读、50+音色、中英文混读，文件分析结果直接收听": {
@@ -469,7 +527,9 @@
     "de-DE": "Das Dokument wird Ihnen mit natürlicher menschlicher Stimme vorgelesen. Langtextlesen in Echtzeit, mehr als 50 Töne, gemischtes Lesen in Chinesisch und Englisch und direktes Anhören der Ergebnisse der Dateianalyse",
     "fr-FR": "Le document vous est lu d’une voix humaine naturelle. Lecture de textes longs en temps réel, plus de 50 tonalités, lecture mixte en chinois et en anglais et écoute directe des résultats d'analyse de fichiers",
     "ko-KR": "문서는 자연스러운 사람의 목소리로 읽어집니다. 실시간 장문 읽기, 50개 이상의 톤, 중국어와 영어 혼합 읽기, 파일 분석 결과 직접 듣기",
-    "$files": ["src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(15775-15823)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(16070-16137)"
+    ],
     "$id": 31795
   },
   "所选文件夹不满足要求，请重新选择": {
@@ -482,7 +542,9 @@
     "de-DE": "Der ausgewählte Ordner entspricht nicht den Anforderungen. Bitte wählen Sie ihn erneut aus",
     "fr-FR": "Le dossier sélectionné ne répond pas aux exigences, veuillez sélectionner à nouveau",
     "ko-KR": "선택한 폴더가 요구 사항을 충족하지 않습니다. 다시 선택하세요.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(2960-2980)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(3199-3219)"
+    ],
     "$id": 31734
   },
   "这个文件夹暂时不能设为安装目录，请沿用默认目录；进入主界面后可在设置里更改": {
@@ -495,7 +557,9 @@
     "de-DE": "Dieser Ordner kann vorerst nicht als Installationsverzeichnis festgelegt werden. Please use the default directory; Sie können es in den Einstellungen ändern, nachdem Sie die Hauptoberfläche aufgerufen haben.",
     "fr-FR": "Ce dossier ne peut pas être défini comme répertoire d'installation pour le moment. Veuillez utiliser le répertoire par défaut ; vous pouvez le modifier dans les paramètres après être entré dans l'interface principale.",
     "ko-KR": "이 폴더는 당분간 설치 디렉터리로 설정할 수 없습니다. 기본 디렉토리를 사용하십시오. 메인 인터페이스에 들어간 후 설정에서 변경할 수 있습니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(3328-3369)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(3567-3608)"
+    ],
     "$id": 31735
   },
   "选择插件安装目录": {
@@ -508,7 +572,9 @@
     "de-DE": "Wählen Sie das Plug-in-Installationsverzeichnis aus",
     "fr-FR": "Sélectionnez le répertoire d'installation du plug-in",
     "ko-KR": "플러그인 설치 디렉터리를 선택하세요.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(3854-3866)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(4093-4105)"
+    ],
     "$id": 31736
   },
   "给 AI 大脑模型与功能扩展组件选一个长期存放的文件夹，之后也可以在设置里更改": {
@@ -521,7 +587,9 @@
     "de-DE": "Wählen Sie einen Langzeitspeicherordner für das KI-Gehirnmodell und die Funktionserweiterungskomponenten. Sie können es auch später in den Einstellungen ändern.",
     "fr-FR": "Sélectionnez un dossier de stockage à long terme pour le modèle cérébral IA et les composants d'extension fonctionnelle. Vous pourrez également le modifier ultérieurement dans les paramètres.",
     "ko-KR": "AI 뇌 모델 및 기능 확장 구성 요소에 대한 장기 저장 폴더를 선택합니다. 나중에 설정에서 변경할 수도 있습니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(3885-3937)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(4124-4167)"
+    ],
     "$id": 31737
   },
   "插件与模型存储目录": {
@@ -534,7 +602,9 @@
     "de-DE": "Plug-in- und Modellspeicherverzeichnis",
     "fr-FR": "Répertoire de stockage des plug-ins et des modèles",
     "ko-KR": "플러그인 및 모델 저장 디렉터리",
-    "$files": ["src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(4948-4961)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(5154-5167)"
+    ],
     "$id": 31741
   },
   "存放 AI 大脑模型与功能扩展组件的本地文件夹": {
@@ -547,7 +617,9 @@
     "de-DE": "Ein lokaler Ordner, der KI-Gehirnmodelle und funktionale Erweiterungskomponenten speichert",
     "fr-FR": "Un dossier local qui stocke les modèles cérébraux d'IA et les composants d'expansion fonctionnelle",
     "ko-KR": "AI 두뇌 모델과 기능 확장 구성 요소를 저장하는 로컬 폴더",
-    "$files": ["src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(5068-5095)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(5259-5286)"
+    ],
     "$id": 31742
   },
   "当前默认插件存储路径包含中文字符，可能影响部分 AI 模型稳定运行，强烈建议更改到纯英文磁盘目录": {
@@ -560,7 +632,9 @@
     "de-DE": "Der aktuelle Standard-Plug-In-Speicherpfad enthält chinesische Zeichen, die den stabilen Betrieb einiger KI-Modelle beeinträchtigen können. Es wird dringend empfohlen, auf ein rein englisches Festplattenverzeichnis zu wechseln.",
     "fr-FR": "Le chemin de stockage actuel du plug-in par défaut contient des caractères chinois, ce qui peut affecter le fonctionnement stable de certains modèles d'IA. Il est fortement recommandé de passer à un répertoire de disque en anglais pur.",
     "ko-KR": "현재 기본 플러그인 저장 경로에는 중국어 문자가 포함되어 있어 일부 AI 모델의 안정적인 작동에 영향을 미칠 수 있습니다. 순수 영어 디스크 디렉터리로 변경하는 것이 좋습니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(5615-5688)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(5806-5879)"
+    ],
     "$id": 31743
   },
   "正在获取目录信息...": {
@@ -573,7 +647,9 @@
     "de-DE": "Verzeichnisinformationen abrufen...",
     "fr-FR": "Obtention d'informations sur l'annuaire...",
     "ko-KR": "디렉터리 정보를 가져오는 중...",
-    "$files": ["src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(6290-6305)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(6481-6496)"
+    ],
     "$id": 31744
   },
   "已占用空间": {
@@ -586,7 +662,9 @@
     "de-DE": "Platz belegt",
     "fr-FR": "Espace occupé",
     "ko-KR": "점유 공간",
-    "$files": ["src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(6497-6506)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(6688-6697)"
+    ],
     "$id": 31745
   },
   "磁盘可用空间": {
@@ -599,7 +677,9 @@
     "de-DE": "Freier Speicherplatz auf der Festplatte",
     "fr-FR": "Espace libre sur le disque",
     "ko-KR": "디스크 여유 공간",
-    "$files": ["src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(6732-6742)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(6923-6933)"
+    ],
     "$id": 31746
   },
   "更改目录": {
@@ -612,7 +692,9 @@
     "de-DE": "Verzeichnis wechseln",
     "fr-FR": "Changer de répertoire",
     "ko-KR": "디렉토리 변경",
-    "$files": ["src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(7580-7588)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(7771-7779)"
+    ],
     "$id": 31747
   },
   "不改也可以，直接沿用上面的默认目录": {
@@ -625,7 +707,9 @@
     "de-DE": "Sie können es unverändert lassen und einfach das oben stehende Standardverzeichnis verwenden.",
     "fr-FR": "Vous pouvez le laisser inchangé et utiliser simplement le répertoire par défaut ci-dessus.",
     "ko-KR": "변경하지 않고 그대로 두고 위의 기본 디렉터리를 사용하면 됩니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(7699-7720)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(7890-7911)"
+    ],
     "$id": 31748
   },
   "已设定为新的安装文件夹，之后装的插件都会放在这里，无需重启软件": {
@@ -638,7 +722,9 @@
     "de-DE": "Es wurde als neuer Installationsordner festgelegt. Alle zukünftig installierten Plug-Ins werden hier platziert, ohne dass die Software neu gestartet werden muss.",
     "fr-FR": "Il a été défini comme nouveau dossier d'installation. Tous les plug-ins installés à l'avenir seront placés ici sans redémarrer le logiciel.",
     "ko-KR": "새로운 설치 폴더로 설정되었습니다. 앞으로 설치되는 모든 플러그인은 소프트웨어를 다시 시작하지 않고도 여기에 배치됩니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(8250-8285)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(8422-8457)"
+    ],
     "$id": 31619
   },
   "AI 模型和插件体积较大，请确保所选磁盘有足够可用空间，建议至少预留 10GB 以上；空间不足时会自动拦截": {
@@ -651,7 +737,9 @@
     "de-DE": "KI-Modelle und Plug-Ins sind groß. Bitte stellen Sie sicher, dass auf der ausgewählten Festplatte genügend freier Speicherplatz vorhanden ist. Es wird empfohlen, mindestens 10 GB zu reservieren; Es wird automatisch abgefangen, wenn nicht genügend Platz vorhanden ist.",
     "fr-FR": "Les modèles et plug-ins d’IA sont de grande taille. Veuillez vous assurer que le disque sélectionné dispose de suffisamment d'espace libre. Il est recommandé de réserver au moins 10 Go ; il sera automatiquement intercepté en cas de manque d'espace.",
     "ko-KR": "AI 모델과 플러그인은 크기가 큽니다. 선택한 디스크에 여유 공간이 충분한지 확인하세요. 최소 10GB를 예약하는 것이 좋습니다. 공간이 부족하면 자동으로 차단됩니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(9320-9396)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(9475-9551)"
+    ],
     "$id": 31738
   },
   "建议选择固态硬盘（SSD）上的文件夹，模型加载和文件搜索会明显更快；机械硬盘也能用，只是首次加载较慢": {
@@ -664,7 +752,9 @@
     "de-DE": "Es wird empfohlen, einen Ordner auf einem Solid State Drive (SSD) auszuwählen. Das Laden von Modellen und die Dateisuche werden deutlich schneller. Es können auch mechanische Festplatten verwendet werden, allerdings ist das erste Laden langsamer.",
     "fr-FR": "Il est recommandé de choisir un dossier sur un disque SSD (Solid State Drive). Le chargement du modèle et la recherche de fichiers seront nettement plus rapides. Des disques durs mécaniques peuvent également être utilisés, mais le premier chargement est plus lent.",
     "ko-KR": "SSD(Solid State Drive)의 폴더를 선택하는 것이 좋습니다. 모델 로딩 및 파일 검색 속도가 훨씬 빨라집니다. 기계식 하드 드라이브도 사용할 수 있지만 첫 번째 로딩 속도가 느립니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(9665-9738)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(9820-9893)"
+    ],
     "$id": 31739
   },
   "请使用纯英文路径，不要包含中文或空格，也不要选系统文件夹或磁盘根目录": {
@@ -677,7 +767,9 @@
     "de-DE": "Bitte verwenden Sie einen rein englischen Pfad, enthalten Sie keine chinesischen Zeichen oder Leerzeichen und wählen Sie keinen Systemordner oder Festplattenstammverzeichnis aus.",
     "fr-FR": "Veuillez utiliser un chemin en anglais pur, ne pas contenir de caractères ou d'espaces chinois et ne pas sélectionner de dossier système ou de répertoire racine du disque.",
     "ko-KR": "순수 영문 경로를 사용하시고, 한자나 공백을 포함하지 마시고, 시스템 폴더나 디스크 루트 디렉터리를 선택하지 마세요.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(10019-10076)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(10174-10212)"
+    ],
     "$id": 31740
   },
   "插件怎么装？": {
@@ -690,7 +782,9 @@
     "de-DE": "Wie installiere ich das Plug-in?",
     "fr-FR": "Comment installer le plugin ?",
     "ko-KR": "플러그인을 설치하는 방법은 무엇입니까?",
-    "$files": ["src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(1979-1989)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(1979-1989)"
+    ],
     "$id": 31718
   },
   "插件和存放文件夹都定好了，最后选一种拿插件的方式；点下一步才会开始装，现在还不会占用你的磁盘": {
@@ -703,7 +797,9 @@
     "de-DE": "Die Fertigkeiten und der Speicherordner wurden festgelegt. Wählen Sie schließlich einen Weg, um das Plug-In zu erhalten. Klicken Sie auf „Weiter“, um die Installation zu starten. Ihre Festplatte wird noch nicht belegt.",
     "fr-FR": "Les compétences et le dossier de stockage ont été déterminés, et enfin choisi un moyen d'obtenir le plug-in ; cliquez sur Suivant pour démarrer l'installation, et elle n'occupera pas encore votre disque.",
     "ko-KR": "스킬과 저장 폴더가 결정되었으며, 마지막으로 플러그인을 얻을 수 있는 방법을 선택합니다. 다음을 클릭하여 설치를 시작하면 아직 디스크를 차지하지 않습니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(2009-2059)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(2009-2059)"
+    ],
     "$id": 31620
   },
   "已选中，下一步继续": {
@@ -716,7 +812,9 @@
     "de-DE": "Ausgewählt, fahren Sie mit dem nächsten Schritt fort",
     "fr-FR": "Sélectionné, passez à l'étape suivante",
     "ko-KR": "선택되었습니다. 다음 단계로 진행하세요.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(5661-5674)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(5661-5674)"
+    ],
     "$id": 31720
   },
   "点这张卡片选中": {
@@ -729,7 +827,9 @@
     "de-DE": "Klicken Sie auf diese Karte, um sie auszuwählen",
     "fr-FR": "Cliquez sur cette carte pour la sélectionner",
     "ko-KR": "이 카드를 클릭하여 선택하세요.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(5678-5689)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(5678-5689)"
+    ],
     "$id": 31721
   },
   "两种方式只是拿插件的途径不同，装好之后功能完全一样；以后也随时可以在插件中心增减，不用担心现在选错。": {
@@ -742,7 +842,9 @@
     "de-DE": "Bei den beiden Methoden handelt es sich lediglich um unterschiedliche Möglichkeiten, das Plug-in zu erhalten. Nach der Installation sind die Funktionen genau gleich; Sie können sie in Zukunft jederzeit im Plug-in-Center hinzufügen oder entfernen, sodass Sie sich jetzt keine Sorgen machen müssen, dass Sie das falsche auswählen.",
     "fr-FR": "Les deux méthodes ne sont que des manières différentes d’obtenir le plug-in. Après l'installation, les fonctions sont exactement les mêmes ; vous pouvez les ajouter ou les soustraire à tout moment dans le centre de plug-ins à l'avenir, vous n'avez donc pas à vous soucier de sélectionner le mauvais maintenant.",
     "ko-KR": "두 가지 방법은 플러그인을 얻는 방법이 다릅니다. 설치 후 기능은 정확히 동일합니다. 나중에 플러그인 센터에서 언제든지 추가하거나 뺄 수 있으므로 지금은 잘못된 것을 선택하는 것에 대해 걱정할 필요가 없습니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(6133-6203)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(6133-6203)"
+    ],
     "$id": 31722
   },
   "离线总包里已经带了全部插件；前面选好的引擎和插件，会作为导入完成后优先启用哪一项的参考。": {
@@ -755,7 +857,9 @@
     "de-DE": "Alle Funktionen sind im Offline-Gesamtpaket enthalten; Die zuvor ausgewählten Engines und Plug-Ins werden als Referenz verwendet und nach Abschluss des Imports als erstes aktiviert.",
     "fr-FR": "Toutes les fonctionnalités ont été incluses dans le package total hors ligne ; les moteurs et plug-ins sélectionnés précédemment seront utilisés comme référence pour lesquels on sera activé en premier une fois l'importation terminée.",
     "ko-KR": "모든 기능이 오프라인 전체 패키지에 포함되었습니다. 이전에 선택한 엔진과 플러그인은 가져오기가 완료된 후 먼저 활성화되는 참조로 사용됩니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(6735-6801)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(6735-6801)"
+    ],
     "$id": 31621
   },
   "引擎启动遇到问题，请尝试重试或切换为极速轻巧引擎": {
@@ -768,7 +872,9 @@
     "de-DE": "Es gab ein Problem beim Starten des Motors. Bitte versuchen Sie es erneut oder wechseln Sie zur ultraschnellen und leichten Engine.",
     "fr-FR": "Il y a eu un problème au démarrage du moteur. Veuillez réessayer ou passer au moteur ultra-rapide et léger.",
     "ko-KR": "엔진을 시동하는 데 문제가 발생했습니다. 다시 시도하거나 초고속 경량 엔진으로 전환해 보세요.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(5158-5186)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(7156-7184)"
+    ],
     "$id": 31514
   },
   "当前版本暂不支持导入离线总包": {
@@ -781,7 +887,9 @@
     "de-DE": "Die aktuelle Version unterstützt den Import allgemeiner Offline-Pakete nicht.",
     "fr-FR": "La version actuelle ne prend pas en charge l'importation de packages généraux hors ligne.",
     "ko-KR": "현재 버전은 오프라인 일반 패키지 가져오기를 지원하지 않습니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(6455-6473)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(8720-8738)"
+    ],
     "$id": 31754
   },
   "还没有挑选安装包，点下面的按钮再选一次就好": {
@@ -794,7 +902,9 @@
     "de-DE": "Sie haben das Installationspaket noch nicht ausgewählt. Klicken Sie einfach auf die Schaltfläche unten, um es erneut auszuwählen.",
     "fr-FR": "Vous n'avez pas encore sélectionné le package d'installation, cliquez simplement sur le bouton ci-dessous pour le sélectionner à nouveau.",
     "ko-KR": "아직 설치 패키지를 선택하지 않았습니다. 아래 버튼을 클릭하여 다시 선택하세요.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(6864-6889)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(9117-9142)"
+    ],
     "$id": 31779
   },
   "所选离线总包中未包含核心检索引擎，请确认文件为完整的 Firefly 离线总包": {
@@ -807,7 +917,9 @@
     "de-DE": "Die Kernsuchmaschine ist nicht im ausgewählten Offline-Paket enthalten. Bitte bestätigen Sie, dass es sich bei der Datei um ein vollständiges Firefly-Offline-Paket handelt.",
     "fr-FR": "Le moteur de recherche principal n'est pas inclus dans le package hors ligne sélectionné. Veuillez confirmer que le fichier est un package hors ligne Firefly complet.",
     "ko-KR": "선택한 오프라인 패키지에는 핵심 검색 엔진이 포함되어 있지 않습니다. 파일이 완전한 Firefly 오프라인 패키지인지 확인하세요.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(7569-7612)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(9790-9833)"
+    ],
     "$id": 31756
   },
   "离线引擎自检未通过，请确认离线总包文件完整无损": {
@@ -820,7 +932,9 @@
     "de-DE": "Der Selbsttest der Offline-Engine ist fehlgeschlagen. Bitte bestätigen Sie, dass die allgemeine Offline-Paketdatei intakt ist.",
     "fr-FR": "L'autotest du moteur hors ligne a échoué. Veuillez confirmer que le fichier du package général hors ligne est intact.",
     "ko-KR": "오프라인 엔진 자체 테스트에 실패했습니다. 오프라인 일반 패키지 파일이 손상되지 않았는지 확인해주세요.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(8378-8405)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10568-10595)"
+    ],
     "$id": 31757
   },
   "安装遇到问题，请重试": {
@@ -833,7 +947,9 @@
     "de-DE": "Bei der Installation ist ein Problem aufgetreten. Bitte versuchen Sie es erneut",
     "fr-FR": "L'installation a rencontré un problème, veuillez réessayer",
     "ko-KR": "설치에 문제가 발생했습니다. 다시 시도해 주세요.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(9193-9207)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(11344-11358)"
+    ],
     "$id": 31758
   },
   "等待挑选离线安装包": {
@@ -846,8 +962,55 @@
     "de-DE": "Warten auf Auswahl des Offline-Installationspakets",
     "fr-FR": "En attente de la sélection du package d'installation hors ligne",
     "ko-KR": "오프라인 설치 패키지 선택을 기다리는 중",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(9976-9989)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(12096-12109)"
+    ],
     "$id": 31780
+  },
+  "核心组件已下载完成，正在初始化并装载检索引擎...": {
+    "en-US": "核心组件已下载完成，正在初始化并装载检索引擎...",
+    "es-ES": "核心组件已下载完成，正在初始化并装载检索引擎...",
+    "ar-EG": "核心组件已下载完成，正在初始化并装载检索引擎...",
+    "pt-PT": "核心组件已下载完成，正在初始化并装载检索引擎...",
+    "ru-RU": "核心组件已下载完成，正在初始化并装载检索引擎...",
+    "ja-JP": "核心组件已下载完成，正在初始化并装载检索引擎...",
+    "de-DE": "核心组件已下载完成，正在初始化并装载检索引擎...",
+    "fr-FR": "核心组件已下载完成，正在初始化并装载检索引擎...",
+    "ko-KR": "核心组件已下载完成，正在初始化并装载检索引擎...",
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(12229-12258)"
+    ],
+    "$id": 31839
+  },
+  "安装包下载完成，正在安全解压...": {
+    "en-US": "安装包下载完成，正在安全解压...",
+    "es-ES": "安装包下载完成，正在安全解压...",
+    "ar-EG": "安装包下载完成，正在安全解压...",
+    "pt-PT": "安装包下载完成，正在安全解压...",
+    "ru-RU": "安装包下载完成，正在安全解压...",
+    "ja-JP": "安装包下载完成，正在安全解压...",
+    "de-DE": "安装包下载完成，正在安全解压...",
+    "fr-FR": "安装包下载完成，正在安全解压...",
+    "ko-KR": "安装包下载完成，正在安全解压...",
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(12333-12354)"
+    ],
+    "$id": 31840
+  },
+  "安装包下载完成，正在校验完整性...": {
+    "en-US": "安装包下载完成，正在校验完整性...",
+    "es-ES": "安装包下载完成，正在校验完整性...",
+    "ar-EG": "安装包下载完成，正在校验完整性...",
+    "pt-PT": "安装包下载完成，正在校验完整性...",
+    "ru-RU": "安装包下载完成，正在校验完整性...",
+    "ja-JP": "安装包下载完成，正在校验完整性...",
+    "de-DE": "安装包下载完成，正在校验完整性...",
+    "fr-FR": "安装包下载完成，正在校验完整性...",
+    "ko-KR": "安装包下载完成，正在校验完整性...",
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(12428-12450)"
+    ],
+    "$id": 31841
   },
   "正在装好主检索引擎，请稍候...": {
     "en-US": "Installing the main search engine, please wait...",
@@ -859,7 +1022,9 @@
     "de-DE": "Installation der Hauptsuchmaschine, bitte warten...",
     "fr-FR": "Installation du moteur de recherche principal, veuillez patienter...",
     "ko-KR": "기본 검색 엔진을 설치하는 중입니다. 잠시 기다려 주세요...",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10031-10051)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(12473-12493)"
+    ],
     "$id": 31759
   },
   "正在校验并导入离线安装包，请稍候...": {
@@ -872,21 +1037,25 @@
     "de-DE": "Offline-Installationspaket wird überprüft und importiert. Bitte warten...",
     "fr-FR": "Vérification et importation du package d'installation hors ligne, veuillez patienter...",
     "ko-KR": "오프라인 설치 패키지를 확인하고 가져오는 중입니다. 잠시 기다려 주세요...",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10092-10115)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(12539-12562)"
+    ],
     "$id": 31760
   },
-  "正在检查引擎能不能正常工作...": {
-    "en-US": "Checking whether the engine can work properly...",
-    "es-ES": "Comprobando si el motor puede funcionar correctamente...",
-    "ar-EG": "التحقق مما إذا كان المحرك يمكن أن يعمل بشكل صحيح ...",
-    "pt-PT": "Verificando se o motor pode funcionar corretamente...",
-    "ru-RU": "Проверяем работоспособность двигателя...",
-    "ja-JP": "エンジンが正常に作動するか確認中です...",
-    "de-DE": "Prüfen, ob der Motor einwandfrei funktionieren kann...",
-    "fr-FR": "Vérifier si le moteur peut fonctionner correctement...",
-    "ko-KR": "엔진이 제대로 작동하는지 확인 중...",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10160-10180)"],
-    "$id": 31761
+  "主检索引擎已下载完成，正在进行首次启动检验...": {
+    "en-US": "主检索引擎已下载完成，正在进行首次启动检验...",
+    "es-ES": "主检索引擎已下载完成，正在进行首次启动检验...",
+    "ar-EG": "主检索引擎已下载完成，正在进行首次启动检验...",
+    "pt-PT": "主检索引擎已下载完成，正在进行首次启动检验...",
+    "ru-RU": "主检索引擎已下载完成，正在进行首次启动检验...",
+    "ja-JP": "主检索引擎已下载完成，正在进行首次启动检验...",
+    "de-DE": "主检索引擎已下载完成，正在进行首次启动检验...",
+    "fr-FR": "主检索引擎已下载完成，正在进行首次启动检验...",
+    "ko-KR": "主检索引擎已下载完成，正在进行首次启动检验...",
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(12606-12634)"
+    ],
+    "$id": 31842
   },
   "主检索引擎安装完成，可以开始使用了！": {
     "en-US": "The main search engine is installed and can be used!",
@@ -898,7 +1067,9 @@
     "de-DE": "Die Hauptsuchmaschine ist installiert und kann genutzt werden!",
     "fr-FR": "Le moteur de recherche principal est installé et peut être utilisé !",
     "ko-KR": "메인 검색 엔진이 설치되어 사용 가능해요!",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10217-10239)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(12670-12692)"
+    ],
     "$id": 31762
   },
   "安装遇到问题": {
@@ -911,7 +1082,9 @@
     "de-DE": "Bei der Installation sind Probleme aufgetreten",
     "fr-FR": "L'installation a rencontré des problèmes",
     "ko-KR": "설치에 문제가 발생했습니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10253-10263)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(12705-12715)"
+    ],
     "$id": 31763
   },
   "导入离线安装包": {
@@ -924,7 +1097,9 @@
     "de-DE": "Offline-Installationspaket importieren",
     "fr-FR": "Importer le package d'installation hors ligne",
     "ko-KR": "오프라인 설치 패키지 가져오기",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10706-10717)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13146-13157)"
+    ],
     "$id": 31766
   },
   "联网在线安装": {
@@ -937,7 +1112,9 @@
     "de-DE": "Netzwerk-Online-Installation",
     "fr-FR": "Installation réseau en ligne",
     "ko-KR": "네트워크 온라인 설치",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10721-10731)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13161-13171)"
+    ],
     "$id": 31767
   },
   "安装到": {
@@ -950,7 +1127,9 @@
     "de-DE": "Installieren",
     "fr-FR": "Installer sur",
     "ko-KR": "에 설치하다",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10883-10890)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13319-13326)"
+    ],
     "$id": 31768
   },
   "默认文件夹": {
@@ -963,7 +1142,9 @@
     "de-DE": "Standardordner",
     "fr-FR": "Dossier par défaut",
     "ko-KR": "기본 폴더",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10999-11008)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13442-13451)"
+    ],
     "$id": 31769
   },
   "正在为你装好智能文件管理": {
@@ -976,7 +1157,9 @@
     "de-DE": "Die intelligente Dateiverwaltung wird für Sie installiert",
     "fr-FR": "La gestion intelligente des fichiers est en cours d'installation pour vous",
     "ko-KR": "스마트 파일 관리가 설치되고 있습니다",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(11182-11198)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13615-13631)"
+    ],
     "$id": 31764
   },
   "把你准备好的安装包交给软件，剩下的事它会自动做完": {
@@ -989,7 +1172,9 @@
     "de-DE": "Geben Sie der Software das von Ihnen vorbereitete Installationspaket und sie erledigt den Rest automatisch.",
     "fr-FR": "Donnez au logiciel le package d'installation que vous avez préparé et il fera le reste automatiquement.",
     "ko-KR": "소프트웨어에 준비한 설치 패키지를 제공하면 나머지는 자동으로 수행됩니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(11245-11273)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13681-13709)"
+    ],
     "$id": 31781
   },
   "先装好最核心的搜索大脑，剩下的插件会在后台接着装，不用一直等": {
@@ -1002,7 +1187,9 @@
     "de-DE": "Installieren Sie zuerst das zentrale Suchhirn und die restlichen Fähigkeiten werden im Hintergrund installiert, sodass Sie nicht warten müssen.",
     "fr-FR": "Installez d'abord le cerveau de recherche principal, et le reste des compétences sera installé en arrière-plan, vous n'aurez donc pas à attendre.",
     "ko-KR": "핵심 검색 브레인을 먼저 설치하면 나머지 스킬은 백그라운드에서 설치되므로 기다릴 필요가 없습니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(11292-11326)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13723-13757)"
+    ],
     "$id": 31765
   },
   "开启智能文件管理之旅": {
@@ -1015,7 +1202,9 @@
     "de-DE": "Beginnen Sie die Reise der intelligenten Dateiverwaltung",
     "fr-FR": "Commencez l’aventure de la gestion intelligente des fichiers",
     "ko-KR": "지능형 파일 관리의 여정을 시작하세요",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(12130-12144)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(14544-14558)"
+    ],
     "$id": 31772
   },
   "请挑选离线安装包": {
@@ -1028,7 +1217,9 @@
     "de-DE": "Bitte wählen Sie das Offline-Installationspaket aus",
     "fr-FR": "Veuillez sélectionner le package d'installation hors ligne",
     "ko-KR": "오프라인 설치 패키지를 선택하세요.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13138-13150)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(15496-15508)"
+    ],
     "$id": 31782
   },
   "选中你事先下载好的完整安装包，软件会自动把它装到上一步选好的文件夹里；全程不联网，也不会上传任何文件。": {
@@ -1041,7 +1232,9 @@
     "de-DE": "Wählen Sie das vollständige Installationspaket aus, das Sie zuvor heruntergeladen haben. Die Software installiert es automatisch in dem im vorherigen Schritt ausgewählten Ordner. Der gesamte Vorgang ist nicht mit dem Internet verbunden und es werden keine Dateien hochgeladen.",
     "fr-FR": "Sélectionnez le package d'installation complet que vous avez téléchargé à l'avance et le logiciel l'installera automatiquement dans le dossier sélectionné à l'étape précédente ; l'ensemble du processus ne sera pas connecté à Internet et aucun fichier ne sera téléchargé.",
     "ko-KR": "미리 다운로드한 전체 설치 패키지를 선택하면 소프트웨어가 이전 단계에서 선택한 폴더에 자동으로 설치합니다. 전체 프로세스는 인터넷에 연결되지 않으며 파일도 업로드되지 않습니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13293-13374)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(15642-15720)"
+    ],
     "$id": 31783
   },
   "选择离线安装包": {
@@ -1054,7 +1247,9 @@
     "de-DE": "Wählen Sie das Offline-Installationspaket aus",
     "fr-FR": "Sélectionnez le package d'installation hors ligne",
     "ko-KR": "오프라인 설치 패키지 선택",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(14266-14277)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(16550-16561)"
+    ],
     "$id": 31784
   },
   "也可以返回上一步改成在线安装，让软件联网自动下载": {
@@ -1067,8 +1262,145 @@
     "de-DE": "Sie können auch zum vorherigen Schritt zurückkehren und zur Online-Installation wechseln, damit die Software automatisch online heruntergeladen werden kann.",
     "fr-FR": "Vous pouvez également revenir à l'étape précédente et passer à l'installation en ligne, afin que le logiciel puisse être automatiquement téléchargé en ligne.",
     "ko-KR": "이전 단계로 돌아가서 온라인 설치로 변경하면 소프트웨어가 온라인에서 자동으로 다운로드될 수도 있습니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(14399-14427)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(16674-16702)"
+    ],
     "$id": 31785
+  },
+  "自检中": {
+    "en-US": "自检中",
+    "es-ES": "自检中",
+    "ar-EG": "自检中",
+    "pt-PT": "自检中",
+    "ru-RU": "自检中",
+    "ja-JP": "自检中",
+    "de-DE": "自检中",
+    "fr-FR": "自检中",
+    "ko-KR": "自检中",
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(18159-18166)"
+    ],
+    "$id": 31843
+  },
+  "正在校验并安全解压安装包...": {
+    "en-US": "正在校验并安全解压安装包...",
+    "es-ES": "正在校验并安全解压安装包...",
+    "ar-EG": "正在校验并安全解压安装包...",
+    "pt-PT": "正在校验并安全解压安装包...",
+    "ru-RU": "正在校验并安全解压安装包...",
+    "ja-JP": "正在校验并安全解压安装包...",
+    "de-DE": "正在校验并安全解压安装包...",
+    "fr-FR": "正在校验并安全解压安装包...",
+    "ko-KR": "正在校验并安全解压安装包...",
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(19314-19333)"
+    ],
+    "$id": 31844
+  },
+  "正在校验文件完整性...": {
+    "en-US": "正在校验文件完整性...",
+    "es-ES": "正在校验文件完整性...",
+    "ar-EG": "正在校验文件完整性...",
+    "pt-PT": "正在校验文件完整性...",
+    "ru-RU": "正在校验文件完整性...",
+    "ja-JP": "正在校验文件完整性...",
+    "de-DE": "正在校验文件完整性...",
+    "fr-FR": "正在校验文件完整性...",
+    "ko-KR": "正在校验文件完整性...",
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(19535-19551)"
+    ],
+    "$id": 31845
+  },
+  "正在下载...": {
+    "en-US": "Downloading...",
+    "es-ES": "Descargando...",
+    "ar-EG": "جارٍ التنزيل...",
+    "pt-PT": "Baixando...",
+    "ru-RU": "Загрузка...",
+    "ja-JP": "正在下载...",
+    "de-DE": "Herunterladen...",
+    "fr-FR": "Téléchargement...",
+    "ko-KR": "다운로드 중...",
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(20350-20361)"
+    ],
+    "$id": 31846
+  },
+  "正在连接高速下载节点...": {
+    "en-US": "正在连接高速下载节点...",
+    "es-ES": "正在连接高速下载节点...",
+    "ar-EG": "正在连接高速下载节点...",
+    "pt-PT": "正在连接高速下载节点...",
+    "ru-RU": "正在连接高速下载节点...",
+    "ja-JP": "正在连接高速下载节点...",
+    "de-DE": "正在连接高速下载节点...",
+    "fr-FR": "正在连接高速下载节点...",
+    "ko-KR": "正在连接高速下载节点...",
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(20797-20814)"
+    ],
+    "$id": 31847
+  },
+  "预计还需": {
+    "en-US": "预计还需",
+    "es-ES": "预计还需",
+    "ar-EG": "预计还需",
+    "pt-PT": "预计还需",
+    "ru-RU": "预计还需",
+    "ja-JP": "预计还需",
+    "de-DE": "预计还需",
+    "fr-FR": "预计还需",
+    "ko-KR": "预计还需",
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(21148-21156)"
+    ],
+    "$id": 31848
+  },
+  "秒": {
+    "en-US": "Seconds  ",
+    "es-ES": "Segundos",
+    "ar-EG": "ثانية",
+    "pt-PT": "Segundos",
+    "ru-RU": "сек",
+    "ja-JP": "秒",
+    "de-DE": "Sekunden",
+    "fr-FR": "Secondes",
+    "ko-KR": "초",
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(21519-21524)"
+    ],
+    "$id": 31849
+  },
+  "核心组件已全部下载完成！": {
+    "en-US": "核心组件已全部下载完成！",
+    "es-ES": "核心组件已全部下载完成！",
+    "ar-EG": "核心组件已全部下载完成！",
+    "pt-PT": "核心组件已全部下载完成！",
+    "ru-RU": "核心组件已全部下载完成！",
+    "ja-JP": "核心组件已全部下载完成！",
+    "de-DE": "核心组件已全部下载完成！",
+    "fr-FR": "核心组件已全部下载完成！",
+    "ko-KR": "核心组件已全部下载完成！",
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(22277-22293)"
+    ],
+    "$id": 31850
+  },
+  "正在首次启动检索引擎并测试检索功能，通常需要 5~15 秒，请稍候...": {
+    "en-US": "正在首次启动检索引擎并测试检索功能，通常需要 5~15 秒，请稍候...",
+    "es-ES": "正在首次启动检索引擎并测试检索功能，通常需要 5~15 秒，请稍候...",
+    "ar-EG": "正在首次启动检索引擎并测试检索功能，通常需要 5~15 秒，请稍候...",
+    "pt-PT": "正在首次启动检索引擎并测试检索功能，通常需要 5~15 秒，请稍候...",
+    "ru-RU": "正在首次启动检索引擎并测试检索功能，通常需要 5~15 秒，请稍候...",
+    "ja-JP": "正在首次启动检索引擎并测试检索功能，通常需要 5~15 秒，请稍候...",
+    "de-DE": "正在首次启动检索引擎并测试检索功能，通常需要 5~15 秒，请稍候...",
+    "fr-FR": "正在首次启动检索引擎并测试检索功能，通常需要 5~15 秒，请稍候...",
+    "ko-KR": "正在首次启动检索引擎并测试检索功能，通常需要 5~15 秒，请稍候...",
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(22420-22460)"
+    ],
+    "$id": 31851
   },
   "主检索引擎安装完成，其它插件继续后台下载，不影响你现在就开始用": {
     "en-US": "The main search engine is installed, and other plug-ins continue to download in the background. It does not affect your ability to start using it now.",
@@ -1080,7 +1412,9 @@
     "de-DE": "Die Hauptsuchmaschine wird installiert und andere Plug-ins werden im Hintergrund weiterhin heruntergeladen. Es hat keinen Einfluss auf Ihre Fähigkeit, es jetzt zu verwenden.",
     "fr-FR": "Le moteur de recherche principal est installé et les autres plug-ins continuent à se télécharger en arrière-plan. Cela n’affecte pas votre capacité à commencer à l’utiliser maintenant.",
     "ko-KR": "기본 검색 엔진이 설치되고 다른 플러그인은 백그라운드에서 계속 다운로드됩니다. 지금 사용을 시작하는 능력에는 영향을 미치지 않습니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(16391-16426)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(22991-23026)"
+    ],
     "$id": 31770
   },
   "重试": {
@@ -1093,7 +1427,9 @@
     "de-DE": "Wiederholen",
     "fr-FR": "Réessayer",
     "ko-KR": "재시도",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(17135-17141)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(23670-23676)"
+    ],
     "$id": 28468
   },
   "也可以返回上一步，换一种安装方式再试": {
@@ -1106,7 +1442,9 @@
     "de-DE": "Sie können auch zum vorherigen Schritt zurückkehren und eine andere Installationsmethode ausprobieren.",
     "fr-FR": "Vous pouvez également revenir à l'étape précédente et essayer une autre méthode d'installation.",
     "ko-KR": "이전 단계로 돌아가서 다른 설치 방법을 시도해 볼 수도 있습니다.",
-    "$files": ["src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(17276-17298)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(23802-23824)"
+    ],
     "$id": 31771
   },
   "第 {step} 步 / 共 5 步": {
@@ -1119,7 +1457,9 @@
     "de-DE": "Schritt {step} / insgesamt 5 Schritte",
     "fr-FR": "Étape {step} / 5 étapes au total",
     "ko-KR": "{step} 단계 / 총 5단계",
-    "$files": ["src/renderer/components/welcome/WelcomeStepper.tsx(988-1010)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStepper.tsx(988-1010)"
+    ],
     "$id": 31773
   },
   "萤核智能文件夹": {
@@ -1132,7 +1472,9 @@
     "de-DE": "Firefly AI Folder",
     "fr-FR": "Firefly AI Folder",
     "ko-KR": "Firefly AI Folder",
-    "$files": ["src/renderer/components/welcome/WelcomeWizard.tsx(4441-4452)"],
+    "$files": [
+      "src/renderer/components/welcome/WelcomeWizard.tsx(4676-4687)"
+    ],
     "$id": 2978
   }
 }

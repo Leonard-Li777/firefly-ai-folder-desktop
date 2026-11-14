@@ -979,6 +979,151 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
     return count
   }, [duplicateGroups])
 
+  // 计算当前勾选待处理项目的分类统计（删除/更名/修正扩展名/清理隐私/优化转码）
+  const selectedActionSummary = useMemo(() => {
+    let trashCount = 0
+    let renameCount = 0
+    let extFixCount = 0
+    let exifCleanCount = 0
+    let videoOptCount = 0
+
+    for (const group of duplicateGroups) {
+      for (const file of group.files) {
+        if (!file.selectedForDelete || !file.path) {
+          continue
+        }
+        if (group.strategy === 'bad_names') {
+          renameCount++
+        } else if (group.strategy === 'bad_extensions') {
+          extFixCount++
+        } else if (group.strategy === 'exif_remover') {
+          exifCleanCount++
+        } else if (group.strategy === 'video_optimizer') {
+          videoOptCount++
+        } else {
+          trashCount++
+        }
+      }
+    }
+
+    const totalCount = trashCount + renameCount + extFixCount + exifCleanCount + videoOptCount
+    const hasTrash = trashCount > 0
+    const nonTrashKinds: Array<'rename' | 'extFix' | 'exif' | 'videoOpt'> = []
+    if (renameCount > 0) nonTrashKinds.push('rename')
+    if (extFixCount > 0) nonTrashKinds.push('extFix')
+    if (exifCleanCount > 0) nonTrashKinds.push('exif')
+    if (videoOptCount > 0) nonTrashKinds.push('videoOpt')
+
+    const hasNonTrash = nonTrashKinds.length > 0
+    const isPureTrash = hasTrash && !hasNonTrash
+    const isPureNonTrash = !hasTrash && hasNonTrash
+    const isSingleNonTrash = isPureNonTrash && nonTrashKinds.length === 1
+    const singleNonTrashType = isSingleNonTrash ? nonTrashKinds[0] : null
+    const distinctActionTypeCount = (hasTrash ? 1 : 0) + nonTrashKinds.length
+
+    return {
+      trashCount,
+      renameCount,
+      extFixCount,
+      exifCleanCount,
+      videoOptCount,
+      totalCount,
+      hasTrash,
+      hasNonTrash,
+      isPureTrash,
+      isPureNonTrash,
+      isSingleNonTrash,
+      singleNonTrashType,
+      distinctActionTypeCount
+    }
+  }, [duplicateGroups])
+
+  // 根据当前勾选项目的实际操作类型，智能生成准确的弹窗标题、描述与确认按钮文案
+  const confirmDialogConfig = useMemo(() => {
+    const {
+      trashCount,
+      renameCount,
+      extFixCount,
+      exifCleanCount,
+      videoOptCount,
+      totalCount,
+      hasTrash,
+      isPureTrash,
+      isPureNonTrash,
+      singleNonTrashType,
+      distinctActionTypeCount
+    } = selectedActionSummary
+
+    let title = t('确认执行批量处理？')
+    let mainDescription = ''
+    let confirmBtnText = t('确认批量处理')
+    let isDestructive = hasTrash
+
+    if (isPureTrash) {
+      title = t('确认批量移入回收站？')
+      mainDescription = t(
+        '选中的 {count} 个文件将被移入回收站。此操作为破坏性文件清理，请核对后确认。',
+        { count: totalCount }
+      )
+      confirmBtnText = t('确认移入回收站')
+    } else if (isPureNonTrash && singleNonTrashType) {
+      isDestructive = false
+      if (singleNonTrashType === 'rename') {
+        title = t('确认批量重命名？')
+        mainDescription = t(
+          '选中的 {count} 个文件将被按推荐规范重命名。此操作不包含删除，请核对后确认。',
+          { count: renameCount }
+        )
+        confirmBtnText = t('确认重命名')
+      } else if (singleNonTrashType === 'extFix') {
+        title = t('确认批量修正扩展名？')
+        mainDescription = t(
+          '选中的 {count} 个文件将根据真实文件类型修正扩展名，请核对后确认。',
+          { count: extFixCount }
+        )
+        confirmBtnText = t('确认修正')
+      } else if (singleNonTrashType === 'exif') {
+        title = t('确认批量清理隐私信息？')
+        mainDescription = t(
+          '选中的 {count} 个图片将清除 Exif 隐私信息并另存为无隐私副本（保留原文件），请核对后确认。',
+          { count: exifCleanCount }
+        )
+        confirmBtnText = t('确认清理隐私')
+      } else if (singleNonTrashType === 'videoOpt') {
+        title = t('确认批量优化视频？')
+        mainDescription = t(
+          '选中的 {count} 个视频将进行转码压缩并另存为优化副本（保留原文件），请核对后确认。',
+          { count: videoOptCount }
+        )
+        confirmBtnText = t('确认优化')
+      }
+    } else if (isPureNonTrash) {
+      isDestructive = false
+      title = t('确认执行批量处理？')
+      mainDescription = t(
+        '即将对选中的 {count} 个文件执行批量处理。本次操作均为非删除的安全处理，原文件均会妥善保留，请核对后确认。',
+        { count: totalCount }
+      )
+      confirmBtnText = t('确认执行处理')
+    } else {
+      // 既有破坏性删除又有安全处理项 (hasTrash && hasNonTrash)
+      title = t('确认执行批量处理？')
+      mainDescription = t(
+        '即将对选中的 {count} 个项目执行批量处理。其中包含移入回收站与安全处理项目，请仔细核对明细后确认。',
+        { count: totalCount }
+      )
+      confirmBtnText = t('确认批量处理')
+    }
+
+    return {
+      title,
+      mainDescription,
+      confirmBtnText,
+      isDestructive,
+      showDetailsCard: distinctActionTypeCount > 1
+    }
+  }, [selectedActionSummary])
+
   // 当勾选待处理文件数量变动时，即时同步给父组件（用于顶栏按钮显示：批量处理全部勾选 (N)）
   useEffect(() => {
     if (onSelectedCountChange) {
@@ -2520,15 +2665,91 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
         />
       )}
 
-      {/* 5. 破坏性二次确认安全弹窗 (Spec §4.4 / §7.1.1) */}
+      {/* 5. 二次确认安全弹窗 (根据勾选项目类型智能适配准确描述) */}
       <AlertDialog open={isDestructiveConfirmOpen} onOpenChange={setIsDestructiveConfirmOpen}>
         <AlertDialogContent data-testid="confirm-destructive">
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('确认批量移入回收站？')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('选中的 {count} 个文件将被移入回收站。此操作为破坏性文件清理，请核对后确认。', {
-                count: totalSelectedCount
-              })}
+            <AlertDialogTitle>{confirmDialogConfig.title}</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <p>{confirmDialogConfig.mainDescription}</p>
+
+                {confirmDialogConfig.showDetailsCard && (
+                  <div className="mt-2.5 space-y-1.5 rounded-lg border border-border/60 bg-muted/40 p-2.5 text-xs text-foreground/85">
+                    <div className="text-[11px] font-semibold text-muted-foreground mb-1">
+                      {t('待处理项目明细：')}
+                    </div>
+                    {selectedActionSummary.trashCount > 0 && (
+                      <div className="flex items-center justify-between text-destructive">
+                        <span className="flex items-center gap-1.5 font-medium">
+                          <MaterialIcon icon="delete" className="text-sm" />
+                          <span>{t('移入系统回收站（可还原）')}</span>
+                        </span>
+                        <span className="font-semibold tabular-nums">
+                          {t('{count} 个文件', { count: selectedActionSummary.trashCount })}
+                        </span>
+                      </div>
+                    )}
+                    {selectedActionSummary.renameCount > 0 && (
+                      <div className="flex items-center justify-between text-amber-600 dark:text-amber-400">
+                        <span className="flex items-center gap-1.5 font-medium">
+                          <MaterialIcon icon="drive_file_rename_outline" className="text-sm" />
+                          <span>{t('按推荐规范重命名')}</span>
+                        </span>
+                        <span className="font-semibold tabular-nums">
+                          {t('{count} 个文件', { count: selectedActionSummary.renameCount })}
+                        </span>
+                      </div>
+                    )}
+                    {selectedActionSummary.extFixCount > 0 && (
+                      <div className="flex items-center justify-between text-indigo-600 dark:text-indigo-400">
+                        <span className="flex items-center gap-1.5 font-medium">
+                          <MaterialIcon icon="build" className="text-sm" />
+                          <span>{t('修正错误扩展名')}</span>
+                        </span>
+                        <span className="font-semibold tabular-nums">
+                          {t('{count} 个文件', { count: selectedActionSummary.extFixCount })}
+                        </span>
+                      </div>
+                    )}
+                    {selectedActionSummary.exifCleanCount > 0 && (
+                      <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400">
+                        <span className="flex items-center gap-1.5 font-medium">
+                          <MaterialIcon icon="privacy_tip" className="text-sm" />
+                          <span>{t('清理 Exif 隐私（另存副本保留原件）')}</span>
+                        </span>
+                        <span className="font-semibold tabular-nums">
+                          {t('{count} 个图片', { count: selectedActionSummary.exifCleanCount })}
+                        </span>
+                      </div>
+                    )}
+                    {selectedActionSummary.videoOptCount > 0 && (
+                      <div className="flex items-center justify-between text-primary">
+                        <span className="flex items-center gap-1.5 font-medium">
+                          <MaterialIcon icon="auto_fix_high" className="text-sm" />
+                          <span>{t('视频转码优化（另存副本保留原件）')}</span>
+                        </span>
+                        <span className="font-semibold tabular-nums">
+                          {t('{count} 个视频', { count: selectedActionSummary.videoOptCount })}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {selectedActionSummary.hasTrash && selectedActionSummary.hasNonTrash && (
+                  <p className="text-[11px] text-muted-foreground pt-1">
+                    {t(
+                      '注：移入回收站的文件随时可在系统回收站中还原；更名、修正与优化类操作不删除原文件。'
+                    )}
+                  </p>
+                )}
+                {selectedActionSummary.isPureNonTrash && confirmDialogConfig.showDetailsCard && (
+                  <p className="text-[11px] text-muted-foreground pt-1">
+                    {t('注：本次批量处理不包含任何删除操作，原文件均会安全保留。')}
+                  </p>
+                )}
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -2540,13 +2761,17 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
             </AlertDialogCancel>
             <AlertDialogAction
               data-testid="confirm-destructive-accept"
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className={cn(
+                confirmDialogConfig.isDestructive
+                  ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                  : 'bg-primary text-primary-foreground hover:bg-primary/90'
+              )}
               onClick={() => {
                 setIsDestructiveConfirmOpen(false)
                 executeBatchProcessConfirmed()
               }}
             >
-              {t('确认移入回收站')}
+              {confirmDialogConfig.confirmBtnText}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

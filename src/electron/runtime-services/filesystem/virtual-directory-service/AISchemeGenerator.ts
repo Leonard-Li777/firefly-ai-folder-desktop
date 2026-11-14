@@ -430,11 +430,39 @@ export class AISchemeGenerator {
       // 4. 将 OmniClusterTreeResult 转换为系统统一的 AIDirectoryStructure
       // 目录命名已在 Omni Rust 端按规格 §5.1 的 tanh 饱和词频 + 提示词语义提振公式生成，
       // 此处仅做 Omni 返回「其他/空」时的确定性兜底，绝不再用纯文本重叠覆盖语义命名。
+      // 预处理：消除镜像倒错路径 (例如 ["高质量", "lilun"] 与 ["lilun", "高质量"])
+      const multisetMap = new Map<string, any>()
+      const preparedClusters: typeof clusters = []
+      for (const cluster of clusters) {
+        const pathFromRust = (cluster.path || []).filter(Boolean)
+        const hasMeaningfulPath =
+          pathFromRust.length > 0 &&
+          !pathFromRust.every(p => p === DEFAULT_CLUSTER_FALLBACK_NAME)
+        const rawPath = hasMeaningfulPath ? pathFromRust : [cluster.folderName || DEFAULT_CLUSTER_FALLBACK_NAME]
+        if (rawPath.length < 2) {
+          preparedClusters.push(cluster)
+          continue
+        }
+        const sortedKey = [...rawPath].sort().join('::')
+        if (multisetMap.has(sortedKey)) {
+          const existCluster = multisetMap.get(sortedKey)
+          existCluster.fingerprints = Array.from(new Set([...existCluster.fingerprints, ...cluster.fingerprints]))
+          logger.warn(
+            LogCategory.FILE_ORGANIZATION,
+            `[HAC智能聚类] 检测到镜像倒错路径 "${rawPath.join('/')}"，已合并入主路径 "${existCluster.path.join('/')}"`
+          )
+        } else {
+          multisetMap.set(sortedKey, cluster)
+          preparedClusters.push(cluster)
+        }
+      }
+
       const dirMap = new Map<string, any>()
+      const seenDirNames = new Map<string, string>()
       const usedLeafKeys = new Set<string>()
 
-      for (const cluster of clusters) {
-        // 统计簇内全部文件的关键词频次（仅用于空名兜底，Rust 端已完成正式打分）
+      for (const cluster of preparedClusters) {
+        // 统计簇内全部文件的关键词频次（仅用于空名兜底与重名消歧，Rust 端已完成正式打分）
         const kwFreq = new Map<string, number>()
         for (const fp of cluster.fingerprints) {
           const kws = fpTagMap.get(fp) || []
@@ -443,10 +471,11 @@ export class AISchemeGenerator {
           }
         }
 
-        const fallbackKeyword =
-          Array.from(kwFreq.entries())
-            .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] ||
-          DEFAULT_CLUSTER_FALLBACK_NAME
+        const sortedKeywords = Array.from(kwFreq.entries())
+          .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+          .map(e => e[0])
+
+        const fallbackKeyword = sortedKeywords[0] || DEFAULT_CLUSTER_FALLBACK_NAME
 
         const pathFromRust = (cluster.path || []).filter(Boolean)
         const hasMeaningfulPath =
@@ -456,7 +485,60 @@ export class AISchemeGenerator {
           cluster.folderName && cluster.folderName !== DEFAULT_CLUSTER_FALLBACK_NAME
             ? cluster.folderName
             : fallbackKeyword
-        let clusterPath = hasMeaningfulPath ? pathFromRust : [rustFolderName]
+        let clusterPath = hasMeaningfulPath ? [...pathFromRust] : [rustFolderName]
+
+        // 逐级检查整树目录名全局唯一性，防止不同层级或不同分支出现同名目录
+        for (let i = 0; i < clusterPath.length; i++) {
+          const originalName = clusterPath[i]
+          if (
+            originalName === DEFAULT_CLUSTER_FALLBACK_NAME ||
+            originalName === SENTINEL_NAMES.UNCLASSIFIED
+          ) {
+            continue
+          }
+
+          const currentPrefixKey = clusterPath.slice(0, i + 1).join('/')
+          const existingKey = seenDirNames.get(originalName)
+
+          if (existingKey && existingKey !== currentPrefixKey) {
+            // 发生跨层级或跨分支重名冲突！挑选新名称
+            const ancestors = clusterPath.slice(0, i)
+            const candidate = sortedKeywords.find(
+              kw =>
+                kw !== originalName &&
+                !seenDirNames.has(kw) &&
+                !ancestors.includes(kw) &&
+                kw !== DEFAULT_CLUSTER_FALLBACK_NAME &&
+                kw !== SENTINEL_NAMES.UNCLASSIFIED
+            )
+
+            let uniqueName: string
+            if (candidate) {
+              uniqueName = candidate
+            } else {
+              // 备选词耗尽时使用父级上下文消歧
+              const parentName = i > 0 ? clusterPath[i - 1] : ''
+              let candidateName = parentName ? `${parentName}_${originalName}` : originalName
+              let ordinal = 2
+              while (seenDirNames.has(candidateName) && seenDirNames.get(candidateName) !== currentPrefixKey) {
+                candidateName = parentName
+                  ? `${parentName}_${originalName} (${ordinal})`
+                  : `${originalName} (${ordinal})`
+                ordinal += 1
+              }
+              uniqueName = candidateName
+            }
+
+            logger.warn(
+              LogCategory.FILE_ORGANIZATION,
+              `[HAC智能聚类] 目录名 "${originalName}" 在整树已有节点中已存在，消歧更名为 "${uniqueName}" (路径: ${currentPrefixKey})`
+            )
+            clusterPath[i] = uniqueName
+          }
+
+          seenDirNames.set(clusterPath[i], clusterPath.slice(0, i + 1).join('/'))
+        }
+
         let leafKey = clusterPath.join('/')
 
         // 不同簇可能因共享主题词派生出同一路径；静默并入同一叶节点会吞掉聚类成果

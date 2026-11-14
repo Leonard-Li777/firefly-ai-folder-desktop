@@ -82,52 +82,72 @@ export function cleanTextForTTS(text: string, options?: { isLrc?: boolean }): st
   return cleaned.trim()
 }
 
+export interface SplitChunksOptions {
+  /** 是否启用阶梯切片（第0句极速出声，第1句过渡，后续稳态），默认为 true */
+  ladder?: boolean
+  maxChunkLength?: number
+  minChunkLength?: number
+}
+
 /**
  * 将长文本拆解为若干饱满的自然短句序列，保留句末标点
- * 核心优化：
- * 1. 设立短句聚合下限（minChunkLength = 20），紧凑聚合短小短句，杜绝单字孤立
- * 2. 设立上限（maxChunkLength = 38），RTF 优化后目标：单句约 8~12s 生成，尽快送达 Web Audio 时间轴
+ * 核心优化（阶梯流式切片 Ladder Streaming Chunker）：
+ * 1. 首句（Chunk 0）：极速首发音（8~18字），Backbone 仅需 ~25-35步（约1秒），结合 Codec 毫秒级解码，出声时间直接降至 < 2.5s~3.5s
+ * 2. 过渡句（Chunk 1）：平滑承接（14~26字），在首句发音期间无感完成计算
+ * 3. 稳态句（Chunk 2+）：饱满声学段落（20~36字），生成速度恒快于播放速度（RTF < 0.7），无缝不卡顿
+ * 4. 支持中文冒号、破折号、引号、括号等丰富次级标点切分，杜绝标题与长句无法切片的巨块孤岛
  *
  * @param text 清洗后的纯文本
- * @param maxChunkLength 单句最大字符阈值（默认 38）
- * @param minChunkLength 短句聚合下限阈值（默认 20）
+ * @param options 切片参数选项或数字（向后兼容旧调用约定）
+ * @param legacyMinLength 向后兼容旧调用签名的 minChunkLength
  */
 export function splitTextIntoChunks(
   text: string,
-  maxChunkLength = 38,
-  minChunkLength = 20
+  options?: SplitChunksOptions | number,
+  legacyMinLength?: number
 ): string[] {
   if (!text || !text.trim()) return []
+
+  const isNumericLegacy = typeof options === 'number'
+  const isLadder = isNumericLegacy ? false : (options?.ladder ?? true)
+  const defaultMax = isNumericLegacy ? options : (options?.maxChunkLength ?? 36)
+  const defaultMin = isNumericLegacy ? (legacyMinLength ?? 20) : (options?.minChunkLength ?? 20)
 
   // 1. 基于句末标点正则初次切句：包含句号、问号、叹号、分号及换行符
   const rawSentences = text.match(/[^。！？；\n\r.!?]+[。！？；\n\r.!?]*/g) || [text]
 
-  // 2. 将超长自然句先按逗号、顿号等次级停顿安全规整为初级片段
+  // 2. 将超长自然句先按逗号、顿号、冒号、括号等次级停顿安全规整为初级片段
   const normalizedPieces: string[] = []
+  // 增强次级标点：覆盖冒号、破折号、括号、顿号、逗号、空格
+  const secondaryRegex = /[^，,、 :：；;()（）「」『』—\n\r]+[，,、 :：；;()（）「」『』—\n\r]*/g
+
   for (const raw of rawSentences) {
     const trimmed = raw.trim()
     if (!trimmed) continue
 
-    if (trimmed.length <= maxChunkLength) {
+    // 初始保守上限（为后续阶梯聚合留足余量）
+    const initialCutoff = isLadder ? 18 : defaultMax
+
+    if (trimmed.length <= initialCutoff) {
       normalizedPieces.push(trimmed)
       continue
     }
 
-    // 超过最大阈值，按逗号/空格等次级停顿符号拆分
-    const subMatches = trimmed.match(/[^，,、 ]+[，,、 ]*/g)
+    // 超过阈值，按次级停顿符号拆分
+    const subMatches = trimmed.match(secondaryRegex)
     if (!subMatches || subMatches.length === 1) {
       // 无法通过次级标点切分（无停顿超长单句），按硬长度分块
       let start = 0
       while (start < trimmed.length) {
-        normalizedPieces.push(trimmed.slice(start, start + maxChunkLength))
-        start += maxChunkLength
+        normalizedPieces.push(trimmed.slice(start, start + initialCutoff))
+        start += initialCutoff
       }
       continue
     }
 
     let subBuffer = ''
     for (const sub of subMatches) {
-      if (subBuffer.length + sub.length > maxChunkLength && subBuffer.length > 0) {
+      if (subBuffer.length + sub.length > initialCutoff && subBuffer.length > 0) {
         normalizedPieces.push(subBuffer.trim())
         subBuffer = sub
       } else {
@@ -139,7 +159,7 @@ export function splitTextIntoChunks(
     }
   }
 
-  // 3. 执行贪婪向上聚合：若当前片段未达 minChunkLength，继续合并后续片段，直至逼近饱和区间
+  // 3. 执行动态阶梯式向上聚合：根据当前已收集的 chunks 数量，动态调整当前句的目标预算
   const chunks: string[] = []
   let currentBuffer = ''
 
@@ -149,8 +169,31 @@ export function splitTextIntoChunks(
       continue
     }
 
+    // 动态确定当前分句的水位线
+    let currentMin: number
+    let currentMax: number
+
+    if (isLadder) {
+      if (chunks.length === 0) {
+        // 首句极速首发音：8~18 字符
+        currentMin = 8
+        currentMax = 18
+      } else if (chunks.length === 1) {
+        // 过渡句：14~26 字符
+        currentMin = 14
+        currentMax = 26
+      } else {
+        // 稳态句：20~36 字符
+        currentMin = defaultMin
+        currentMax = defaultMax
+      }
+    } else {
+      currentMin = defaultMin
+      currentMax = defaultMax
+    }
+
     // 若累积长度未达下限且尚未超过上限，贪婪合并后续短句；一旦达到下限且遇到新句，即切片输出
-    if (currentBuffer.length < minChunkLength && currentBuffer.length + piece.length <= maxChunkLength) {
+    if (currentBuffer.length < currentMin && currentBuffer.length + piece.length <= currentMax) {
       currentBuffer += piece
     } else {
       chunks.push(currentBuffer.trim())

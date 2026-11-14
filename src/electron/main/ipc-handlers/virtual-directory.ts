@@ -576,7 +576,7 @@ export function registerVirtualDirectoryIPCHandlers() {
           message: t('AI 服务正在初始化中，请稍候再试')
         }
       }
-      // 容量断路器：LLM由文件推导目录模式单次上限 500 个文件（找补模式除外）
+      // 整理容量：记录大文件数日志，遵从用户选择权继续执行整理
       if (!options?.isRescue) {
         let fileCount = options?.fileIds?.length ?? (options?.selectedFileIds?.length ?? (options?.files?.length ?? undefined))
         if (fileCount === undefined) {
@@ -587,14 +587,7 @@ export function registerVirtualDirectoryIPCHandlers() {
           }
         }
         if (fileCount !== undefined && fileCount > 500) {
-          logger.warn(LogCategory.MAIN, '[IPC] virtual-directory/reorganize: 文件数超限被拦截', { fileCount })
-          return {
-            success: false,
-            errorCode: 'ORGANIZE_CAPACITY_EXCEEDED',
-            limit: 500,
-            actual: fileCount,
-            message: t('当前待推导文件数（{count}）超出单次处理上限（500个），请在「已分析」页面勾选目标文件分批整理', { count: fileCount })
-          }
+          logger.warn(LogCategory.MAIN, '[IPC] virtual-directory/reorganize: 待推导文件数较大，遵从用户选择继续执行整理', { fileCount })
         }
       }
 
@@ -990,29 +983,17 @@ export function registerVirtualDirectoryIPCHandlers() {
       const mrlDim =
         ConfigOrchestrator.getInstance().getValue<number>('EMBEDDING_MRL_DIMENSION') || 512
 
-      // 容量断路器：单次批量整理硬上限 3,000 个文件（支持 force: true 强行穿透）
+      // 整理容量：记录大文件数日志，遵从用户选择权继续执行余弦打分计算（不硬阻断用户）
       let candidateCount = request.fileIds?.length
       if (candidateCount === undefined && request.workspaceId && organizeRealDirectoryService) {
         candidateCount = organizeRealDirectoryService.getWorkspaceAnalyzedFileCount(request.workspaceId)
       }
       const capacityLimit = ConfigOrchestrator.getInstance().getValue<number>('ORGANIZE_CAPACITY_LIMIT') ?? 3000
-      if (!request.force && candidateCount !== undefined && candidateCount > capacityLimit) {
-        logger.warn(LogCategory.FILE_ORGANIZATION, '[IPC] calculate-file-paths-cosine: 文件数超限被拦截', {
+      if (candidateCount !== undefined && candidateCount > capacityLimit) {
+        logger.warn(LogCategory.FILE_ORGANIZATION, '[IPC] calculate-file-paths-cosine: 待计算文件数超出推荐上限，遵从用户选择继续执行余弦打分', {
           candidateCount,
-          limit: capacityLimit
-        })
-        return {
-          success: false,
-          errorCode: 'ORGANIZE_CAPACITY_EXCEEDED',
           limit: capacityLimit,
-          actual: candidateCount,
-          message: t('当前待计算文件数（{count}）超出批量整理上限（{limit}个），请在「已分析」页面勾选目标文件后发起整理', { count: candidateCount, limit: capacityLimit.toLocaleString() })
-        }
-      }
-      if (request.force && candidateCount !== undefined && candidateCount > capacityLimit) {
-        logger.warn(LogCategory.FILE_ORGANIZATION, '[IPC] calculate-file-paths-cosine: 用户确认风险，强制穿透容量限制计算余弦打分', {
-          candidateCount,
-          limit: capacityLimit
+          force: request.force
         })
       }
 
@@ -1274,35 +1255,18 @@ export function registerVirtualDirectoryIPCHandlers() {
         }
       }
 
-      // 容量断路器：单次批量整理硬上限 3,000 个文件（支持 force: true 强行穿透）
+      // 整理容量：记录大文件数日志，遵从用户选择权继续执行智能聚类（不硬阻断用户）
       let fileCount = params.fileIds?.length
       if (fileCount === undefined && organizeRealDirectoryService) {
         fileCount = organizeRealDirectoryService.getWorkspaceAnalyzedFileCount(wsId)
       }
       const capacityLimit = ConfigOrchestrator.getInstance().getValue<number>('ORGANIZE_CAPACITY_LIMIT') ?? 3000
-      if (!params.force && fileCount !== undefined && fileCount > capacityLimit) {
-        logger.warn(LogCategory.FILE_ORGANIZATION, '[IPC] smart-cluster-hac: 文件数超限被拦截', {
+      if (fileCount !== undefined && fileCount > capacityLimit) {
+        logger.warn(LogCategory.FILE_ORGANIZATION, '[IPC] smart-cluster-hac: 待整理文件数超出推荐上限，遵从用户选择继续执行智能聚类', {
           wsId,
           fileCount,
-          limit: capacityLimit
-        })
-        const msg = t('当前待整理文件数量（{count}）超出批量整理上限（{limit}个），请在「已分析」页面勾选目标文件后发起整理', { count: fileCount, limit: capacityLimit.toLocaleString() })
-        return {
-          success: false,
-          errorCode: 'ORGANIZE_CAPACITY_EXCEEDED',
           limit: capacityLimit,
-          actual: fileCount,
-          message: msg,
-          summary: msg,
-          directories: [],
-          durationMs: 0
-        }
-      }
-      if (params.force && fileCount !== undefined && fileCount > capacityLimit) {
-        logger.warn(LogCategory.FILE_ORGANIZATION, '[IPC] smart-cluster-hac: 用户确认风险，强制穿透容量限制执行智能聚类', {
-          wsId,
-          fileCount,
-          limit: capacityLimit
+          force: params.force
         })
       }
 

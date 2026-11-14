@@ -655,6 +655,9 @@
     "ko-KR": "{count}개 파일",
     "$files": [
       "src/renderer/components/file-explorer/Organize/index.tsx(40372-40387)",
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(126098-126113)",
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(126790-126805)",
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(127464-127479)",
       "src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(17475-17490)"
     ],
     "$id": 8570
@@ -794,7 +797,7 @@
       "src/renderer/components/file-explorer/Organize/index.tsx(52767-52773)",
       "src/renderer/components/file-explorer/Organize/index.tsx(54283-54289)",
       "src/renderer/components/file-explorer/Organize/index.tsx(62248-62254)",
-      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(120972-120978)",
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(129943-129949)",
       "src/renderer/components/file-explorer/Organize/components/EditStrategyDialog.tsx(1775-1781)",
       "src/renderer/components/file-explorer/Organize/components/StructureView.tsx(7536-7542)",
       "src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(13541-13547)",
@@ -2196,7 +2199,7 @@
     "ko-KR": "비슷한 음악",
     "$files": [
       "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(30589-30597)",
-      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(78673-78681)"
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(83202-83210)"
     ],
     "$id": 10802
   },
@@ -2212,7 +2215,7 @@
     "ko-KR": "유사한 동영상",
     "$files": [
       "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(30700-30708)",
-      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(78883-78891)"
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(83412-83420)"
     ],
     "$id": 10803
   },
@@ -2241,7 +2244,7 @@
     "ko-KR": "문서 의미론은 유사합니다",
     "$files": [
       "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(30949-30959)",
-      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(80567-80577)"
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(85096-85106)"
     ],
     "$id": 9940
   },
@@ -2257,7 +2260,7 @@
     "ko-KR": "파생 파일 복사",
     "$files": [
       "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(31116-31126)",
-      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(80644-80654)"
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(85173-85183)"
     ],
     "$id": 9941
   },
@@ -2273,8 +2276,8 @@
     "ko-KR": "빈 폴더",
     "$files": [
       "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(31263-31271)",
-      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(79016-79024)",
-      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(85095-85103)"
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(83545-83553)",
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(89624-89632)"
     ],
     "$id": 10804
   },
@@ -2290,7 +2293,7 @@
     "ko-KR": "매우 큰 파일",
     "$files": [
       "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(31370-31378)",
-      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(79149-79157)"
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(83678-83686)"
     ],
     "$id": 10805
   },
@@ -2319,7 +2322,7 @@
     "ko-KR": "빈 파일",
     "$files": [
       "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(31531-31538)",
-      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(79288-79295)"
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(83817-83824)"
     ],
     "$id": 10806
   },
@@ -2335,8 +2338,8 @@
     "ko-KR": "임시 캐시",
     "$files": [
       "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(31631-31639)",
-      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(79434-79442)",
-      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(85554-85562)"
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(83963-83971)",
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(90083-90091)"
     ],
     "$id": 10807
   },
@@ -2352,7 +2355,7 @@
     "ko-KR": "깨진 소프트 링크",
     "$files": [
       "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(31729-31738)",
-      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(79586-79595)"
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(84115-84124)"
     ],
     "$id": 10808
   },
@@ -2368,7 +2371,7 @@
     "ko-KR": "손상된 파일",
     "$files": [
       "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(31819-31827)",
-      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(79739-79747)"
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(84268-84276)"
     ],
     "$id": 10809
   },
@@ -2384,7 +2387,7 @@
     "ko-KR": "잘못된 확장자",
     "$files": [
       "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(31914-31923)",
-      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(79897-79906)"
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(84426-84435)"
     ],
     "$id": 10810
   },
@@ -2400,7 +2403,7 @@
     "ko-KR": "예외 파일 이름",
     "$files": [
       "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(32006-32015)",
-      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(80055-80064)"
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(84584-84593)"
     ],
     "$id": 10811
   },
@@ -2416,7 +2419,7 @@
     "ko-KR": "Exif 개인 정보 정리",
     "$files": [
       "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(32123-32135)",
-      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(80220-80232)"
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(84749-84761)"
     ],
     "$id": 10812
   },
@@ -2472,6 +2475,273 @@
     "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(32544-32645)"],
     "$id": 11372
   },
+  "确认执行批量处理？": {
+    "en-US": "确认执行批量处理？",
+    "es-ES": "确认执行批量处理？",
+    "ar-EG": "确认执行批量处理？",
+    "pt-PT": "确认执行批量处理？",
+    "ru-RU": "确认执行批量处理？",
+    "ja-JP": "确认执行批量处理？",
+    "de-DE": "确认执行批量处理？",
+    "fr-FR": "确认执行批量处理？",
+    "ko-KR": "确认执行批量处理？",
+    "$files": [
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(36108-36121)",
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(37637-37650)",
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(37906-37919)"
+    ],
+    "$id": 31852
+  },
+  "确认批量处理": {
+    "en-US": "确认批量处理",
+    "es-ES": "确认批量处理",
+    "ar-EG": "确认批量处理",
+    "pt-PT": "确认批量处理",
+    "ru-RU": "确认批量处理",
+    "ja-JP": "确认批量处理",
+    "de-DE": "确认批量处理",
+    "fr-FR": "确认批量处理",
+    "ko-KR": "确认批量处理",
+    "$files": [
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(36179-36189)",
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(38079-38089)"
+    ],
+    "$id": 31853
+  },
+  "确认批量移入回收站？": {
+    "en-US": "Confirm to move batch to recycle bin?",
+    "es-ES": "¿Confirmar para mover el lote a la papelera de reciclaje?",
+    "ar-EG": "هل تريد تأكيد نقل الدفعة إلى سلة المحذوفات؟",
+    "pt-PT": "Confirmar para mover o lote para a lixeira?",
+    "ru-RU": "Подтвердить перемещение партии в корзину?",
+    "ja-JP": "バッチをごみ箱に移動することを確認しますか?",
+    "de-DE": "Bestätigen, dass die Charge in den Papierkorb verschoben werden soll?",
+    "fr-FR": "Confirmer pour déplacer le lot vers la corbeille ?",
+    "ko-KR": "배치를 휴지통으로 이동하시겠습니까?",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(36266-36280)"],
+    "$id": 31774
+  },
+  "选中的 {count} 个文件将被移入回收站。此操作为破坏性文件清理，请核对后确认。": {
+    "en-US": "The {count} files selected will be moved to the trash. This operation is destructive file cleaning, please check and confirm.",
+    "es-ES": "Los {count} archivos seleccionados se moverán a la papelera. Esta operación es una limpieza de archivos destructiva, verifique y confirme.",
+    "ar-EG": "سيتم نقل الملفات {count} المحددة إلى سلة المهملات. هذه العملية عبارة عن تنظيف مدمر للملفات، يرجى التحقق والتأكيد.",
+    "pt-PT": "Os arquivos {count} selecionados serão movidos para a lixeira. Esta operação é uma limpeza destrutiva de arquivos, verifique e confirme.",
+    "ru-RU": "Выбранные файлы {count} будут перемещены в корзину. Эта операция является деструктивной очисткой файлов, пожалуйста, проверьте и подтвердите.",
+    "ja-JP": "選択した {count} ファイルはゴミ箱に移動されます。この操作は破壊的なファイル クリーニングです。確認してください。",
+    "de-DE": "Die {count} ausgewählten Dateien werden in den Papierkorb verschoben. Bei diesem Vorgang handelt es sich um eine destruktive Dateibereinigung. Bitte überprüfen und bestätigen Sie.",
+    "fr-FR": "Les {count} fichiers sélectionnés seront déplacés vers la corbeille. Cette opération est un nettoyage de fichiers destructeur, veuillez vérifier et confirmer.",
+    "ko-KR": "선택한 {count} 파일은 휴지통으로 이동됩니다. 이 작업은 파괴적인 파일 정리이므로 확인하고 확인하시기 바랍니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(36307-36363)"],
+    "$id": 31775
+  },
+  "确认移入回收站": {
+    "en-US": "Confirm move to recycle bin",
+    "es-ES": "Confirmar mover a la papelera de reciclaje",
+    "ar-EG": "تأكيد النقل إلى سلة المحذوفات",
+    "pt-PT": "Confirme a mudança para a lixeira",
+    "ru-RU": "Подтвердите перемещение в корзину",
+    "ja-JP": "ごみ箱への移動を確認する",
+    "de-DE": "Bestätigen Sie die Verschiebung in den Papierkorb",
+    "fr-FR": "Confirmer le déplacement vers la corbeille",
+    "ko-KR": "휴지통으로 이동 확인",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(36429-36440)"],
+    "$id": 31776
+  },
+  "确认批量重命名？": {
+    "en-US": "确认批量重命名？",
+    "es-ES": "确认批量重命名？",
+    "ar-EG": "确认批量重命名？",
+    "pt-PT": "确认批量重命名？",
+    "ru-RU": "确认批量重命名？",
+    "ja-JP": "确认批量重命名？",
+    "de-DE": "确认批量重命名？",
+    "fr-FR": "确认批量重命名？",
+    "ko-KR": "确认批量重命名？",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(36590-36602)"],
+    "$id": 31854
+  },
+  "选中的 {count} 个文件将被按推荐规范重命名。此操作不包含删除，请核对后确认。": {
+    "en-US": "选中的 {count} 个文件将被按推荐规范重命名。此操作不包含删除，请核对后确认。",
+    "es-ES": "选中的 {count} 个文件将被按推荐规范重命名。此操作不包含删除，请核对后确认。",
+    "ar-EG": "选中的 {count} 个文件将被按推荐规范重命名。此操作不包含删除，请核对后确认。",
+    "pt-PT": "选中的 {count} 个文件将被按推荐规范重命名。此操作不包含删除，请核对后确认。",
+    "ru-RU": "选中的 {count} 个文件将被按推荐规范重命名。此操作不包含删除，请核对后确认。",
+    "ja-JP": "选中的 {count} 个文件将被按推荐规范重命名。此操作不包含删除，请核对后确认。",
+    "de-DE": "选中的 {count} 个文件将被按推荐规范重命名。此操作不包含删除，请核对后确认。",
+    "fr-FR": "选中的 {count} 个文件将被按推荐规范重命名。此操作不包含删除，请核对后确认。",
+    "ko-KR": "选中的 {count} 个文件将被按推荐规范重命名。此操作不包含删除，请核对后确认。",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(36631-36689)"],
+    "$id": 31855
+  },
+  "确认重命名": {
+    "en-US": "确认重命名",
+    "es-ES": "确认重命名",
+    "ar-EG": "确认重命名",
+    "pt-PT": "确认重命名",
+    "ru-RU": "确认重命名",
+    "ja-JP": "确认重命名",
+    "de-DE": "确认重命名",
+    "fr-FR": "确认重命名",
+    "ko-KR": "确认重命名",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(36762-36771)"],
+    "$id": 31856
+  },
+  "确认批量修正扩展名？": {
+    "en-US": "确认批量修正扩展名？",
+    "es-ES": "确认批量修正扩展名？",
+    "ar-EG": "确认批量修正扩展名？",
+    "pt-PT": "确认批量修正扩展名？",
+    "ru-RU": "确认批量修正扩展名？",
+    "ja-JP": "确认批量修正扩展名？",
+    "de-DE": "确认批量修正扩展名？",
+    "fr-FR": "确认批量修正扩展名？",
+    "ko-KR": "确认批量修正扩展名？",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(36843-36857)"],
+    "$id": 31857
+  },
+  "选中的 {count} 个文件将根据真实文件类型修正扩展名，请核对后确认。": {
+    "en-US": "选中的 {count} 个文件将根据真实文件类型修正扩展名，请核对后确认。",
+    "es-ES": "选中的 {count} 个文件将根据真实文件类型修正扩展名，请核对后确认。",
+    "ar-EG": "选中的 {count} 个文件将根据真实文件类型修正扩展名，请核对后确认。",
+    "pt-PT": "选中的 {count} 个文件将根据真实文件类型修正扩展名，请核对后确认。",
+    "ru-RU": "选中的 {count} 个文件将根据真实文件类型修正扩展名，请核对后确认。",
+    "ja-JP": "选中的 {count} 个文件将根据真实文件类型修正扩展名，请核对后确认。",
+    "de-DE": "选中的 {count} 个文件将根据真实文件类型修正扩展名，请核对后确认。",
+    "fr-FR": "选中的 {count} 个文件将根据真实文件类型修正扩展名，请核对后确认。",
+    "ko-KR": "选中的 {count} 个文件将根据真实文件类型修正扩展名，请核对后确认。",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(36886-36939)"],
+    "$id": 31858
+  },
+  "确认修正": {
+    "en-US": "确认修正",
+    "es-ES": "确认修正",
+    "ar-EG": "确认修正",
+    "pt-PT": "确认修正",
+    "ru-RU": "确认修正",
+    "ja-JP": "确认修正",
+    "de-DE": "确认修正",
+    "fr-FR": "确认修正",
+    "ko-KR": "确认修正",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(37012-37020)"],
+    "$id": 31859
+  },
+  "确认批量清理隐私信息？": {
+    "en-US": "确认批量清理隐私信息？",
+    "es-ES": "确认批量清理隐私信息？",
+    "ar-EG": "确认批量清理隐私信息？",
+    "pt-PT": "确认批量清理隐私信息？",
+    "ru-RU": "确认批量清理隐私信息？",
+    "ja-JP": "确认批量清理隐私信息？",
+    "de-DE": "确认批量清理隐私信息？",
+    "fr-FR": "确认批量清理隐私信息？",
+    "ko-KR": "确认批量清理隐私信息？",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(37090-37105)"],
+    "$id": 31860
+  },
+  "选中的 {count} 个图片将清除 Exif 隐私信息并另存为无隐私副本（保留原文件），请核对后确认。": {
+    "en-US": "选中的 {count} 个图片将清除 Exif 隐私信息并另存为无隐私副本（保留原文件），请核对后确认。",
+    "es-ES": "选中的 {count} 个图片将清除 Exif 隐私信息并另存为无隐私副本（保留原文件），请核对后确认。",
+    "ar-EG": "选中的 {count} 个图片将清除 Exif 隐私信息并另存为无隐私副本（保留原文件），请核对后确认。",
+    "pt-PT": "选中的 {count} 个图片将清除 Exif 隐私信息并另存为无隐私副本（保留原文件），请核对后确认。",
+    "ru-RU": "选中的 {count} 个图片将清除 Exif 隐私信息并另存为无隐私副本（保留原文件），请核对后确认。",
+    "ja-JP": "选中的 {count} 个图片将清除 Exif 隐私信息并另存为无隐私副本（保留原文件），请核对后确认。",
+    "de-DE": "选中的 {count} 个图片将清除 Exif 隐私信息并另存为无隐私副本（保留原文件），请核对后确认。",
+    "fr-FR": "选中的 {count} 个图片将清除 Exif 隐私信息并另存为无隐私副本（保留原文件），请核对后确认。",
+    "ko-KR": "选中的 {count} 个图片将清除 Exif 隐私信息并另存为无隐私副本（保留原文件），请核对后确认。",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(37134-37202)"],
+    "$id": 31861
+  },
+  "确认清理隐私": {
+    "en-US": "确认清理隐私",
+    "es-ES": "确认清理隐私",
+    "ar-EG": "确认清理隐私",
+    "pt-PT": "确认清理隐私",
+    "ru-RU": "确认清理隐私",
+    "ja-JP": "确认清理隐私",
+    "de-DE": "确认清理隐私",
+    "fr-FR": "确认清理隐私",
+    "ko-KR": "确认清理隐私",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(37278-37288)"],
+    "$id": 31862
+  },
+  "确认批量优化视频？": {
+    "en-US": "确认批量优化视频？",
+    "es-ES": "确认批量优化视频？",
+    "ar-EG": "确认批量优化视频？",
+    "pt-PT": "确认批量优化视频？",
+    "ru-RU": "确认批量优化视频？",
+    "ja-JP": "确认批量优化视频？",
+    "de-DE": "确认批量优化视频？",
+    "fr-FR": "确认批量优化视频？",
+    "ko-KR": "确认批量优化视频？",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(37362-37375)"],
+    "$id": 31863
+  },
+  "选中的 {count} 个视频将进行转码压缩并另存为优化副本（保留原文件），请核对后确认。": {
+    "en-US": "选中的 {count} 个视频将进行转码压缩并另存为优化副本（保留原文件），请核对后确认。",
+    "es-ES": "选中的 {count} 个视频将进行转码压缩并另存为优化副本（保留原文件），请核对后确认。",
+    "ar-EG": "选中的 {count} 个视频将进行转码压缩并另存为优化副本（保留原文件），请核对后确认。",
+    "pt-PT": "选中的 {count} 个视频将进行转码压缩并另存为优化副本（保留原文件），请核对后确认。",
+    "ru-RU": "选中的 {count} 个视频将进行转码压缩并另存为优化副本（保留原文件），请核对后确认。",
+    "ja-JP": "选中的 {count} 个视频将进行转码压缩并另存为优化副本（保留原文件），请核对后确认。",
+    "de-DE": "选中的 {count} 个视频将进行转码压缩并另存为优化副本（保留原文件），请核对后确认。",
+    "fr-FR": "选中的 {count} 个视频将进行转码压缩并另存为优化副本（保留原文件），请核对后确认。",
+    "ko-KR": "选中的 {count} 个视频将进行转码压缩并另存为优化副本（保留原文件），请核对后确认。",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(37404-37465)"],
+    "$id": 31864
+  },
+  "确认优化": {
+    "en-US": "确认优化",
+    "es-ES": "确认优化",
+    "ar-EG": "确认优化",
+    "pt-PT": "确认优化",
+    "ru-RU": "确认优化",
+    "ja-JP": "确认优化",
+    "de-DE": "确认优化",
+    "fr-FR": "确认优化",
+    "ko-KR": "确认优化",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(37540-37548)"],
+    "$id": 31865
+  },
+  "即将对选中的 {count} 个文件执行批量处理。本次操作均为非删除的安全处理，原文件均会妥善保留，请核对后确认。": {
+    "en-US": "即将对选中的 {count} 个文件执行批量处理。本次操作均为非删除的安全处理，原文件均会妥善保留，请核对后确认。",
+    "es-ES": "即将对选中的 {count} 个文件执行批量处理。本次操作均为非删除的安全处理，原文件均会妥善保留，请核对后确认。",
+    "ar-EG": "即将对选中的 {count} 个文件执行批量处理。本次操作均为非删除的安全处理，原文件均会妥善保留，请核对后确认。",
+    "pt-PT": "即将对选中的 {count} 个文件执行批量处理。本次操作均为非删除的安全处理，原文件均会妥善保留，请核对后确认。",
+    "ru-RU": "即将对选中的 {count} 个文件执行批量处理。本次操作均为非删除的安全处理，原文件均会妥善保留，请核对后确认。",
+    "ja-JP": "即将对选中的 {count} 个文件执行批量处理。本次操作均为非删除的安全处理，原文件均会妥善保留，请核对后确认。",
+    "de-DE": "即将对选中的 {count} 个文件执行批量处理。本次操作均为非删除的安全处理，原文件均会妥善保留，请核对后确认。",
+    "fr-FR": "即将对选中的 {count} 个文件执行批量处理。本次操作均为非删除的安全处理，原文件均会妥善保留，请核对后确认。",
+    "ko-KR": "即将对选中的 {count} 个文件执行批量处理。本次操作均为非删除的安全处理，原文件均会妥善保留，请核对后确认。",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(37677-37748)"],
+    "$id": 31866
+  },
+  "确认执行处理": {
+    "en-US": "确认执行处理",
+    "es-ES": "确认执行处理",
+    "ar-EG": "确认执行处理",
+    "pt-PT": "确认执行处理",
+    "ru-RU": "确认执行处理",
+    "ja-JP": "确认执行处理",
+    "de-DE": "确认执行处理",
+    "fr-FR": "确认执行处理",
+    "ko-KR": "确认执行处理",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(37814-37824)"],
+    "$id": 31867
+  },
+  "即将对选中的 {count} 个项目执行批量处理。其中包含移入回收站与安全处理项目，请仔细核对明细后确认。": {
+    "en-US": "即将对选中的 {count} 个项目执行批量处理。其中包含移入回收站与安全处理项目，请仔细核对明细后确认。",
+    "es-ES": "即将对选中的 {count} 个项目执行批量处理。其中包含移入回收站与安全处理项目，请仔细核对明细后确认。",
+    "ar-EG": "即将对选中的 {count} 个项目执行批量处理。其中包含移入回收站与安全处理项目，请仔细核对明细后确认。",
+    "pt-PT": "即将对选中的 {count} 个项目执行批量处理。其中包含移入回收站与安全处理项目，请仔细核对明细后确认。",
+    "ru-RU": "即将对选中的 {count} 个项目执行批量处理。其中包含移入回收站与安全处理项目，请仔细核对明细后确认。",
+    "ja-JP": "即将对选中的 {count} 个项目执行批量处理。其中包含移入回收站与安全处理项目，请仔细核对明细后确认。",
+    "de-DE": "即将对选中的 {count} 个项目执行批量处理。其中包含移入回收站与安全处理项目，请仔细核对明细后确认。",
+    "fr-FR": "即将对选中的 {count} 个项目执行批量处理。其中包含移入回收站与安全处理项目，请仔细核对明细后确认。",
+    "ko-KR": "即将对选中的 {count} 个项目执行批量处理。其中包含移入回收站与安全处理项目，请仔细核对明细后确认。",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(37946-38013)"],
+    "$id": 31868
+  },
   "未勾选任何需要处理的文件": {
     "en-US": "No files need to be processed are checked",
     "es-ES": "No es necesario procesar ningún archivo.",
@@ -2482,7 +2752,7 @@
     "de-DE": "Es werden keine zu verarbeitenden Dateien überprüft",
     "fr-FR": "Aucun fichier à traiter n'est vérifié",
     "ko-KR": "처리할 필요가 없는 파일이 확인되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(34326-34342)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(38855-38871)"],
     "$id": 11323
   },
   "正在批量处理勾选的文件，请稍候...": {
@@ -2495,7 +2765,7 @@
     "de-DE": "Die ausgewählten Dateien werden im Batch-Verfahren verarbeitet, bitte warten...",
     "fr-FR": "Traitement en masse des fichiers cochés, veuillez patienter. ...",
     "ko-KR": "선택한 파일을 대량으로 처리하고 있습니다. 기다려 주십시오...",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(34823-34845)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(39352-39374)"],
     "$id": 11373
   },
   "部分文件删除失败: {message}": {
@@ -2508,7 +2778,7 @@
     "de-DE": "Einige Dateien konnten nicht gelöscht werden: {message}",
     "fr-FR": "Échec de la suppression de certains fichiers : {message}",
     "ko-KR": "일부 파일을 삭제하지 못했습니다: {message}",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(35814-35837)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(40343-40366)"],
     "$id": 11324
   },
   "删除 {count} 个": {
@@ -2521,7 +2791,7 @@
     "de-DE": "Löschen {count}",
     "fr-FR": "Supprimer {count}",
     "ko-KR": "삭제 {count}",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(41389-41405)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(45918-45934)"],
     "$id": 11325
   },
   "更名 {count} 个": {
@@ -2534,7 +2804,7 @@
     "de-DE": "{count} Elemente umbenannt",
     "fr-FR": "{count} éléments renommés",
     "ko-KR": "{count}개 항목의 이름이 변경되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(41479-41495)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(46008-46024)"],
     "$id": 11326
   },
   "修正格式 {count} 个": {
@@ -2547,7 +2817,7 @@
     "de-DE": "Korrigieren Sie das Format von {count} Elementen",
     "fr-FR": "Correction du format {count} éléments",
     "ko-KR": "형식 {count} 항목 수정",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(41570-41588)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(46099-46117)"],
     "$id": 11327
   },
   "优化视频 {count} 个": {
@@ -2560,7 +2830,7 @@
     "de-DE": "Optimieren Sie {count} Videos",
     "fr-FR": "Optimiser {count} vidéos",
     "ko-KR": "{count} 동영상 최적화",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(41665-41683)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(46194-46212)"],
     "$id": 11328
   },
   "清理隐私 {count} 个": {
@@ -2573,7 +2843,7 @@
     "de-DE": "Bereinigen Sie Datenschutzelemente {count}",
     "fr-FR": "Nettoyer les {count} éléments de confidentialité",
     "ko-KR": "개인 정보 보호 {count} 항목 정리",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(41772-41790)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(46301-46319)"],
     "$id": 11329
   },
   "批量处理完成，共处理 {count} 个项目（{details}）": {
@@ -2586,7 +2856,7 @@
     "de-DE": "Die Stapelverarbeitung wurde abgeschlossen. Insgesamt wurden {count} Elemente ({details}) verarbeitet",
     "fr-FR": "Traitement par lots terminé, un total de {count} éléments ({details}) ont été traités",
     "ko-KR": "일괄 처리가 완료되어 총 {count}개 항목({details})이 처리되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(42003-42040)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(46532-46569)"],
     "$id": 11330
   },
   "未检测到需要处理的有效文件": {
@@ -2599,7 +2869,7 @@
     "de-DE": "Es wurden keine gültigen Dateien zur Verarbeitung gefunden",
     "fr-FR": "Aucun fichier valide détecté pour le traitement",
     "ko-KR": "처리할 유효한 파일이 감지되지 않았습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(42181-42198)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(46710-46727)"],
     "$id": 11331
   },
   "批量处理执行失败": {
@@ -2612,7 +2882,7 @@
     "de-DE": "Die Batch-Verarbeitung ist fehlgeschlagen.",
     "fr-FR": "L'exécution du traitement par lots a échoué",
     "ko-KR": "대량 처리 실패",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(42445-42457)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(46974-46986)"],
     "$id": 11374
   },
   "清理分析统计": {
@@ -2625,7 +2895,7 @@
     "de-DE": "Analysestatistiken bereinigen",
     "fr-FR": "Nettoyer les statistiques d'analyse",
     "ko-KR": "분석 통계 정리",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(44485-44495)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(49014-49024)"],
     "$id": 10791
   },
   "智能查重与冗余分析": {
@@ -2638,7 +2908,7 @@
     "de-DE": "Intelligente Dublettenprüfung und Redundanzanalyse",
     "fr-FR": "Vérification intelligente des duplications et analyse de la redondance",
     "ko-KR": "지능형 중복 검사 및 중복성 분석",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(44609-44622)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(49138-49151)"],
     "$id": 11181
   },
   "扫描中...": {
@@ -2651,7 +2921,7 @@
     "de-DE": "Scannen...",
     "fr-FR": "Balayage...",
     "ko-KR": "스캐닝...",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(45322-45332)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(49851-49861)"],
     "$id": 9917
   },
   "重新扫描": {
@@ -2664,7 +2934,7 @@
     "de-DE": "Erneut scannen",
     "fr-FR": "Nouvelle analyse",
     "ko-KR": "다시 스캔",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(45336-45344)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(49865-49873)"],
     "$id": 9918
   },
   "已扫描文件": {
@@ -2677,7 +2947,7 @@
     "de-DE": "Gescannte Datei",
     "fr-FR": "Fichier numérisé",
     "ko-KR": "스캔한 파일",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(45761-45770)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(50290-50299)"],
     "$id": 11182
   },
   "冗余组数": {
@@ -2690,7 +2960,7 @@
     "de-DE": "Anzahl redundanter Gruppen",
     "fr-FR": "Nombre de groupes redondants",
     "ko-KR": "중복 그룹 수",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(46267-46275)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(50796-50804)"],
     "$id": 11183
   },
   "可释放空间": {
@@ -2703,7 +2973,7 @@
     "de-DE": "Freiraum",
     "fr-FR": "Espace libre",
     "ko-KR": "여유 공간",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(46827-46836)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(51356-51365)"],
     "$id": 9920
   },
   "相似度匹配阈值": {
@@ -2716,7 +2986,7 @@
     "de-DE": "Schwellenwert für Ähnlichkeitsübereinstimmung",
     "fr-FR": "Seuil de correspondance de similarité",
     "ko-KR": "유사성 일치 임계값",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(47689-47700)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(52218-52229)"],
     "$id": 11184
   },
   "容差": {
@@ -2729,7 +2999,7 @@
     "de-DE": "Toleranz",
     "fr-FR": "Tolérance",
     "ko-KR": "용인",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(48703-48709)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(53232-53238)"],
     "$id": 11185
   },
   "最大容差": {
@@ -2742,7 +3012,7 @@
     "de-DE": "Maximale Toleranz",
     "fr-FR": "Tolérance maximale",
     "ko-KR": "최대 공차",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(48727-48735)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(53256-53264)"],
     "$id": 11186
   },
   "连拍": {
@@ -2755,7 +3025,7 @@
     "de-DE": "Serienaufnahme",
     "fr-FR": "Prise de vue en continu",
     "ko-KR": "연속 촬영",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(48774-48780)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(53303-53309)"],
     "$id": 11187
   },
   "连拍微移": {
@@ -2768,7 +3038,7 @@
     "de-DE": "Mikroverschiebung für Serienaufnahmen",
     "fr-FR": "Micro-shift de prise de vue en continu",
     "ko-KR": "연속 촬영 마이크로 시프트",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(48798-48806)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(53327-53335)"],
     "$id": 11188
   },
   "标准": {
@@ -2782,7 +3052,7 @@
     "fr-FR": "Standard",
     "ko-KR": "기준",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(48845-48851)",
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(53374-53380)",
       "src/renderer/components/file-explorer/Organize/components/SmartClusteringView.tsx(36850-36856)"
     ],
     "$id": 11189
@@ -2797,7 +3067,7 @@
     "de-DE": "Empfohlene Standards",
     "fr-FR": "Normes recommandées",
     "ko-KR": "권장 표준",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(48869-48877)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(53398-53406)"],
     "$id": 11190
   },
   "严苛": {
@@ -2810,7 +3080,7 @@
     "de-DE": "Harsch",
     "fr-FR": "Rude",
     "ko-KR": "가혹한",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(48916-48922)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(53445-53451)"],
     "$id": 11191
   },
   "高度相似": {
@@ -2823,7 +3093,7 @@
     "de-DE": "Sehr ähnlich",
     "fr-FR": "Très similaire",
     "ko-KR": "매우 유사함",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(48940-48948)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(53469-53477)"],
     "$id": 11192
   },
   "精确": {
@@ -2836,7 +3106,7 @@
     "de-DE": "Genau",
     "fr-FR": "Précis",
     "ko-KR": "정확한",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(48987-48993)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(53516-53522)"],
     "$id": 11193
   },
   "内容完全一致": {
@@ -2849,7 +3119,7 @@
     "de-DE": "Der Inhalt ist genau derselbe",
     "fr-FR": "Le contenu est exactement le même",
     "ko-KR": "내용은 완전 똑같네요",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(49012-49022)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(53541-53551)"],
     "$id": 11194
   },
   "显示所有检出的结果": {
@@ -2862,7 +3132,7 @@
     "de-DE": "Alle erkannten Ergebnisse anzeigen",
     "fr-FR": "Afficher tous les résultats détectés",
     "ko-KR": "감지된 결과 모두 표시",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(50909-50922)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(55438-55451)"],
     "$id": 11332
   },
   "切换全部结果视图": {
@@ -2875,7 +3145,7 @@
     "de-DE": "Alle Ergebnisansichten umschalten",
     "fr-FR": "Basculer la vue de tous les résultats",
     "ko-KR": "모든 결과 보기 전환",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(52192-52204)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(56721-56733)"],
     "$id": 11255
   },
   "即将推出": {
@@ -2888,7 +3158,7 @@
     "de-DE": "Kommt bald",
     "fr-FR": "à venir",
     "ko-KR": "곧 온다",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(58591-58599)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(63120-63128)"],
     "$id": 11196
   },
   "推荐保留规则：": {
@@ -2901,7 +3171,7 @@
     "de-DE": "Empfohlene Aufbewahrungsregeln:",
     "fr-FR": "Règles de conservation recommandées :",
     "ko-KR": "권장 보관 규칙:",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(60562-60573)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(65091-65102)"],
     "$id": 11197
   },
   "★ 最高分辨率优先 (多模态推荐)": {
@@ -2914,7 +3184,7 @@
     "de-DE": "★ Höchste Auflösung zuerst (multimodale Empfehlung)",
     "fr-FR": "★ La plus haute résolution en premier (recommandation multimodale)",
     "ko-KR": "★ 최고 해상도 우선(다중 모드 권장)",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(61064-61085)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(65593-65614)"],
     "$id": 11198
   },
   "★ 最佳 AI 质量评分优先": {
@@ -2927,7 +3197,7 @@
     "de-DE": "★ Beste KI-Qualitätsbewertung mit Priorität",
     "fr-FR": "★ Meilleur score de qualité IA prioritaire",
     "ko-KR": "★ 최고의 AI 품질 점수가 우선적으로 부여됩니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(61177-61195)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(65706-65724)"],
     "$id": 11199
   },
   "🕒 最新修改时间优先": {
@@ -2940,7 +3210,7 @@
     "de-DE": "🕒 Letzte Änderungszeitpriorität",
     "fr-FR": "🕒 Priorité de l'heure de la dernière modification",
     "ko-KR": "🕒 최신 수정 시간 우선순위",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(61263-61278)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(65792-65807)"],
     "$id": 11200
   },
   "📅 最早创建时间优先 (保留母本)": {
@@ -2953,7 +3223,7 @@
     "de-DE": "📅 Der früheste Erstellungszeitpunkt hat Vorrang (behalten Sie die übergeordnete Kopie)",
     "fr-FR": "📅 L'heure de création la plus ancienne prévaut (conserver la copie parent)",
     "ko-KR": "📅 가장 빠른 생성 시간이 우선합니다(상위 복사본 유지).",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(61345-61367)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(65874-65896)"],
     "$id": 11201
   },
   "📝 原始简短文件名优先": {
@@ -2966,7 +3236,7 @@
     "de-DE": "📝 Der ursprüngliche Kurzdateiname hat Vorrang",
     "fr-FR": "📝 Le nom court du fichier original est prioritaire",
     "ko-KR": "📝 원본 짧은 파일 이름이 우선 적용됩니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(61433-61449)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(65962-65978)"],
     "$id": 11202
   },
   "搜索组名或文件名...": {
@@ -2979,7 +3249,7 @@
     "de-DE": "Nach Gruppennamen oder Dateinamen suchen...",
     "fr-FR": "Rechercher un nom de groupe ou un nom de fichier...",
     "ko-KR": "그룹 이름이나 파일 이름을 검색하세요...",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(62041-62056)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(66570-66585)"],
     "$id": 11206
   },
   "取消所有选中项，全部标记为保留": {
@@ -2992,7 +3262,7 @@
     "de-DE": "Deaktivieren Sie alle Auswahlen und markieren Sie alle als beibehalten",
     "fr-FR": "Décochez toutes les sélections et marquez tout comme conservé",
     "ko-KR": "모든 선택 항목을 선택 취소하고 모두 유지됨으로 표시",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(63199-63218)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(67728-67747)"],
     "$id": 11333
   },
   "全保留": {
@@ -3006,8 +3276,8 @@
     "fr-FR": "Tous réservés",
     "ko-KR": "모두 예약됨",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(63474-63481)",
-      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(87518-87525)"
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(68003-68010)",
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(92047-92054)"
     ],
     "$id": 11211
   },
@@ -3021,7 +3291,7 @@
     "de-DE": "Globale umgekehrte Auswahl aller Dateien",
     "fr-FR": "Sélection inversée globale de tous les fichiers",
     "ko-KR": "모든 파일의 전역 역선택",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(63956-63970)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(68485-68499)"],
     "$id": 11334
   },
   "反选": {
@@ -3035,8 +3305,8 @@
     "fr-FR": "Inverse la sélection",
     "ko-KR": "선택 취소",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(64123-64129)",
-      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(88153-88159)"
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(68652-68658)",
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(92682-92688)"
     ],
     "$id": 11213
   },
@@ -3050,7 +3320,7 @@
     "de-DE": "Omni-multimodales Dual-Track-Scannen ...",
     "fr-FR": "Numérisation omni multimodale à double piste...",
     "ko-KR": "옴니 멀티모달 듀얼 트랙 스캐닝...",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(65855-65875)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(70384-70404)"],
     "$id": 11169
   },
   "特征比对中": {
@@ -3063,7 +3333,7 @@
     "de-DE": "Funktionsvergleich läuft",
     "fr-FR": "Comparaison des fonctionnalités en cours",
     "ko-KR": "기능 비교 진행 중",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(66216-66225)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(70745-70754)"],
     "$id": 11335
   },
   "已扫描 {scanned} / {total} 个文件，已流式发现 {found} 个待处理组": {
@@ -3076,7 +3346,7 @@
     "de-DE": "{scanned} / {total} Dateien gescannt, {found} ausstehende Gruppen beim Streaming gefunden",
     "fr-FR": "{scanned}/{total} fichiers analysés, {found} groupes en attente trouvés en streaming",
     "ko-KR": "{scanned} / {total}개의 파일이 검색되었으며, {found}개의 보류 중인 그룹이 스트리밍 중으로 발견되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(66477-66566)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(71006-71095)"],
     "$id": 11336
   },
   "正在对 {count} 个文件进行多模态哈希比对与启发式规则分析...": {
@@ -3089,7 +3359,7 @@
     "de-DE": "Multimodaler Hash-Vergleich und heuristische Analyse von {count}-Dateien ...",
     "fr-FR": "Comparaison de hachage multimodal et analyse heuristique de {count} fichiers...",
     "ko-KR": "{count} 파일의 다중 모드 해시 비교 및 ​​휴리스틱 분석...",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(66941-66980)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(71470-71509)"],
     "$id": 11337
   },
   "尚未开始分析此工作区": {
@@ -3102,7 +3372,7 @@
     "de-DE": "Die Analyse dieses Arbeitsbereichs hat noch nicht begonnen",
     "fr-FR": "L'analyse de cet espace de travail n'a pas encore commencé",
     "ko-KR": "이 작업공간에 대한 분석이 아직 시작되지 않았습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(70460-70474)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(74989-75003)"],
     "$id": 11338
   },
   "深度检测当前工作区内的重复文件、图像相似副本、大文件及异常文件，并提供一键智能瘦身方案": {
@@ -3115,7 +3385,7 @@
     "de-DE": "Erkennen Sie doppelte Dateien, ähnliche Kopien von Bildern, große Dateien und abnormale Dateien im aktuellen Arbeitsbereich gründlich und stellen Sie eine intelligente Lösung zum Verschlanken mit einem Klick bereit",
     "fr-FR": "Détectez en profondeur les fichiers en double, les copies similaires d'images, les fichiers volumineux et les fichiers anormaux dans l'espace de travail actuel, et fournissez une solution minceur intelligente en un clic.",
     "ko-KR": "현재 작업공간 내 중복 파일, 유사 이미지 사본, 대용량 파일, 비정상 파일을 심층적으로 탐지하고 원클릭 지능형 슬리밍 솔루션 제공",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(70629-70708)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(75158-75237)"],
     "$id": 11339
   },
   "多模态哈希查重": {
@@ -3128,7 +3398,7 @@
     "de-DE": "Multimodale Hash-Prüfung",
     "fr-FR": "Vérification du hachage multimodal",
     "ko-KR": "다중 모드 해시 검사",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(71256-71267)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(75785-75796)"],
     "$id": 11340
   },
   "视觉感知相似度": {
@@ -3141,7 +3411,7 @@
     "de-DE": "Visuelle Wahrnehmungsähnlichkeit",
     "fr-FR": "Similarité de perception visuelle",
     "ko-KR": "시각적 인식 유사성",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(71618-71629)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(76147-76158)"],
     "$id": 11341
   },
   "异常与断链排查": {
@@ -3154,7 +3424,7 @@
     "de-DE": "Fehlerbehebung bei Anomalien und defekten Links",
     "fr-FR": "Dépannage des anomalies et des liens rompus",
     "ko-KR": "이상 및 끊어진 링크 문제 해결",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(72075-72086)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(76604-76615)"],
     "$id": 11342
   },
   "开始清理分析与查重": {
@@ -3167,7 +3437,7 @@
     "de-DE": "Beginnen Sie mit der Reinigungsanalyse und der Suche nach Duplikaten",
     "fr-FR": "Démarrer l'analyse de nettoyage et vérifier les doublons",
     "ko-KR": "분석 정리 및 중복 확인 시작",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(72761-72774)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(77290-77303)"],
     "$id": 11343
   },
   "正在持续比对文件特征...": {
@@ -3180,7 +3450,7 @@
     "de-DE": "Kontinuierlicher Vergleich der Dateieigenschaften ...",
     "fr-FR": "Comparer continuellement les caractéristiques des fichiers...",
     "ko-KR": "지속적으로 파일 특성을 비교 중입니다...",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(73927-73944)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(78456-78473)"],
     "$id": 11345
   },
   "当前所选策略下无重复文件": {
@@ -3193,7 +3463,7 @@
     "de-DE": "Unter der aktuell ausgewählten Richtlinie gibt es keine doppelten Dateien",
     "fr-FR": "Il n'y a aucun fichier en double dans la stratégie actuellement sélectionnée",
     "ko-KR": "현재 선택한 정책에 중복된 파일이 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(74071-74087)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(78600-78616)"],
     "$id": 11157
   },
   "未发现重复或冗余文件": {
@@ -3206,7 +3476,7 @@
     "de-DE": "Keine doppelten oder redundanten Dateien gefunden",
     "fr-FR": "Aucun fichier en double ou redondant trouvé",
     "ko-KR": "중복되거나 중복된 파일이 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(74122-74136)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(78651-78665)"],
     "$id": 9938
   },
   "扫描中一旦发现重复或相似组将即刻呈现在下方，请稍候": {
@@ -3219,7 +3489,7 @@
     "de-DE": "Sobald beim Scannen doppelte oder ähnliche Gruppen gefunden werden, werden diese sofort unten angezeigt. Bitte warten.",
     "fr-FR": "Une fois que des groupes en double ou similaires sont trouvés lors de l'analyse, ils seront immédiatement affichés ci-dessous. S'il vous plaît, attendez.",
     "ko-KR": "스캔 중에 중복되거나 유사한 그룹이 발견되면 즉시 아래에 표시됩니다. 기다리세요.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(74323-74352)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(78852-78881)"],
     "$id": 11346
   },
   "没有找到与搜索关键词匹配的重复文件组": {
@@ -3232,7 +3502,7 @@
     "de-DE": "Es wurden keine doppelten Dateigruppen gefunden, die den Suchbegriffen entsprechen",
     "fr-FR": "Aucun groupe de fichiers en double correspondant aux mots-clés de recherche n'a été trouvé",
     "ko-KR": "검색 키워드와 일치하는 중복된 파일 그룹이 발견되지 않았습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(74432-74454)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(78961-78983)"],
     "$id": 11208
   },
   "其他策略分类中发现了 {count} 个待处理组，点击下方按钮可查看全部": {
@@ -3245,7 +3515,7 @@
     "de-DE": "{count} ausstehende Gruppen in anderen Richtlinienkategorien gefunden, klicken Sie auf die Schaltfläche unten, um alle anzuzeigen",
     "fr-FR": "{count} groupes en attente trouvés dans d'autres catégories de règles. Cliquez sur le bouton ci-dessous pour les afficher tous.",
     "ko-KR": "{count} 다른 정책 카테고리에서 보류 중인 그룹을 찾았습니다. 모두 보려면 아래 버튼을 클릭하세요.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(74585-74663)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(79114-79192)"],
     "$id": 11158
   },
   "当前工作区文件非常整洁，无冗余副本或多余碎片": {
@@ -3258,7 +3528,7 @@
     "de-DE": "Die aktuellen Arbeitsbereichsdateien sind sehr sauber, ohne überflüssige Kopien oder unnötige Fragmente",
     "fr-FR": "Les fichiers de l'espace de travail actuels sont très propres, sans copies redondantes ni fragments inutiles",
     "ko-KR": "현재 작업 공간 파일은 중복된 복사본이나 불필요한 조각 없이 매우 깨끗합니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(74808-74834)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(79337-79363)"],
     "$id": 11209
   },
   "查看全部 {count} 个发现结果": {
@@ -3271,7 +3541,7 @@
     "de-DE": "Alle {count} Ergebnisse anzeigen",
     "fr-FR": "Afficher tous les {count} résultats",
     "ko-KR": "모든 {count} 결과 보기",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(75525-75547)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(80054-80076)"],
     "$id": 11159
   },
   "100% 精确一致": {
@@ -3284,7 +3554,7 @@
     "de-DE": "100 % genau und konsistent",
     "fr-FR": "100 % précis et cohérent",
     "ko-KR": "100% 정확하고 일관됨",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(78348-78361)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(82877-82890)"],
     "$id": 9925
   },
   "视觉相似图片": {
@@ -3297,7 +3567,7 @@
     "de-DE": "Visuell ähnliche Bilder",
     "fr-FR": "Images visuellement similaires",
     "ko-KR": "시각적으로 유사한 이미지",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(78472-78482)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(83001-83011)"],
     "$id": 9926
   },
   "视频优化": {
@@ -3310,7 +3580,7 @@
     "de-DE": "Videooptimierung",
     "fr-FR": "Optimisation vidéo",
     "ko-KR": "비디오 최적화",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(80395-80403)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(84924-84932)"],
     "$id": 10813
   },
   "精确一致 100%": {
@@ -3323,7 +3593,7 @@
     "de-DE": "100 % genau und konsistent",
     "fr-FR": "100 % précis et cohérent",
     "ko-KR": "100% 정확하고 일관됨",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(81288-81301)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(85817-85830)"],
     "$id": 11281
   },
   "损坏置信度 100%": {
@@ -3336,7 +3606,7 @@
     "de-DE": "Schadensvertrauen 100 %",
     "fr-FR": "Confiance aux dégâts 100 %",
     "ko-KR": "피해 신뢰도 100%",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(81755-81769)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(86284-86298)"],
     "$id": 11282
   },
   "断裂失效 100%": {
@@ -3349,7 +3619,7 @@
     "de-DE": "Bruchversagen 100 %",
     "fr-FR": "Rupture échec 100%",
     "ko-KR": "파손 실패 100%",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(82241-82254)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(86770-86783)"],
     "$id": 11283
   },
   "格式置信度 100%": {
@@ -3362,7 +3632,7 @@
     "de-DE": "Formatsicherheit 100 %",
     "fr-FR": "Confiance du format 100 %",
     "ko-KR": "형식 신뢰도 100%",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(82728-82742)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(87257-87271)"],
     "$id": 11284
   },
   "命名合规度 100%": {
@@ -3375,7 +3645,7 @@
     "de-DE": "Namenskonformität 100 %",
     "fr-FR": "Conformité de dénomination 100 %",
     "ko-KR": "명명 준수 100%",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(83207-83221)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(87736-87750)"],
     "$id": 11285
   },
   "优化空间 {percent}%": {
@@ -3388,7 +3658,7 @@
     "de-DE": "Optimierungsraum {percent} %",
     "fr-FR": "Espace d'optimisation {percent} %",
     "ko-KR": "최적화 공간 {percent}%",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(83666-83685)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(88195-88214)"],
     "$id": 11286
   },
   "隐私敏感度 100%": {
@@ -3401,7 +3671,7 @@
     "de-DE": "Datenschutzsensibilität 100 %",
     "fr-FR": "Sensibilité de confidentialité 100 %",
     "ko-KR": "개인정보 민감도 100%",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(84174-84188)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(88703-88717)"],
     "$id": 11287
   },
   "0 字节空文件": {
@@ -3414,7 +3684,7 @@
     "de-DE": "0 Byte leere Datei",
     "fr-FR": "Fichier vide de 0 octet",
     "ko-KR": "0바이트의 빈 파일",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(84635-84646)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(89164-89175)"],
     "$id": 11288
   },
   "大文件排序": {
@@ -3427,7 +3697,7 @@
     "de-DE": "Sortieren Sie große Dateien",
     "fr-FR": "Trier les gros fichiers",
     "ko-KR": "대용량 파일 정렬",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(86027-86036)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(90556-90565)"],
     "$id": 11256
   },
   "相似度 {percent}%": {
@@ -3440,7 +3710,7 @@
     "de-DE": "Ähnlichkeit {percent}%",
     "fr-FR": "Similitude {percent} %",
     "ko-KR": "유사성 {percent}%",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(86503-86521)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(91032-91050)"],
     "$id": 9942
   },
   "本组全部保留": {
@@ -3453,7 +3723,7 @@
     "de-DE": "Behalten Sie alle in dieser Gruppe",
     "fr-FR": "Gardez tout dans ce groupe",
     "ko-KR": "이 그룹에 모두 유지",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(87434-87444)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(91963-91973)"],
     "$id": 11210
   },
   "反选本组状态": {
@@ -3466,7 +3736,7 @@
     "de-DE": "Kehren Sie den Status dieser Gruppe um",
     "fr-FR": "Inverser le statut de ce groupe",
     "ko-KR": "이 그룹의 상태 반전",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(88069-88079)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(92598-92608)"],
     "$id": 11212
   },
   "删除": {
@@ -3480,7 +3750,7 @@
     "fr-FR": "Supprimer",
     "ko-KR": "삭제",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(88763-88769)",
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(93292-93298)",
       "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(7984-7990)"
     ],
     "$id": 8664
@@ -3495,7 +3765,7 @@
     "de-DE": "Optimierung",
     "fr-FR": "Optimisation",
     "ko-KR": "최적화",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(89121-89127)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(93650-93656)"],
     "$id": 11289
   },
   "清理": {
@@ -3508,7 +3778,7 @@
     "de-DE": "Aufräumen",
     "fr-FR": "Nettoyer",
     "ko-KR": "청소하다",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(89469-89475)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(93998-94004)"],
     "$id": 11290
   },
   "更名": {
@@ -3521,7 +3791,7 @@
     "de-DE": "Namen ändern",
     "fr-FR": "Changer de nom",
     "ko-KR": "이름 변경",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(89846-89852)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(94375-94381)"],
     "$id": 11291
   },
   "修正": {
@@ -3534,7 +3804,7 @@
     "de-DE": "Korrektur",
     "fr-FR": "Correction",
     "ko-KR": "보정",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(90221-90227)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(94750-94756)"],
     "$id": 11292
   },
   "对本组选中的文件执行{action}": {
@@ -3547,7 +3817,7 @@
     "de-DE": "Führen Sie {action} für die in dieser Gruppe ausgewählten Dateien aus",
     "fr-FR": "Exécuter {action} sur les fichiers sélectionnés dans ce groupe",
     "ko-KR": "이 그룹에서 선택한 파일에 대해 {action}를 실행합니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(91547-91569)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(96076-96098)"],
     "$id": 11293
   },
   "处理中...": {
@@ -3560,7 +3830,7 @@
     "de-DE": "Verarbeitung...",
     "fr-FR": "Traitement...",
     "ko-KR": "처리 중...",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(92182-92192)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(96711-96721)"],
     "$id": 11294
   },
   "大小: {size}": {
@@ -3573,7 +3843,7 @@
     "de-DE": "Größe: {size}",
     "fr-FR": "Taille: {size}",
     "ko-KR": "크기: {size}",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(95773-95787)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(100302-100316)"],
     "$id": 11174
   },
   "分辨率: {res}": {
@@ -3586,7 +3856,7 @@
     "de-DE": "Auflösung: {res}",
     "fr-FR": "Résolution: {res}",
     "ko-KR": "해결: {res}",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(95848-95862)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(100377-100391)"],
     "$id": 11175
   },
   "路径: {path}": {
@@ -3599,7 +3869,7 @@
     "de-DE": "Weg: {path}",
     "fr-FR": "Chemin: {path}",
     "ko-KR": "길: {path}",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(95901-95915)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(100430-100444)"],
     "$id": 11176
   },
   "勾选此文件": {
@@ -3612,7 +3882,7 @@
     "de-DE": "Überprüfen Sie diese Datei",
     "fr-FR": "Vérifiez ce fichier",
     "ko-KR": "이 파일을 확인하세요",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(97381-97390)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(101910-101919)"],
     "$id": 11295
   },
   "智能命名: {name}": {
@@ -3625,7 +3895,7 @@
     "de-DE": "Intelligente Benennung: {name}",
     "fr-FR": "Dénomination intelligente : {name}",
     "ko-KR": "스마트 이름 지정: {name}",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(100343-100359)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(104872-104888)"],
     "$id": 11224
   },
   "最大": {
@@ -3639,8 +3909,8 @@
     "fr-FR": "Maximum",
     "ko-KR": "최고",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(101363-101369)",
-      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(115392-115398)"
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(105892-105898)",
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(119921-119927)"
     ],
     "$id": 11216
   },
@@ -3654,7 +3924,7 @@
     "de-DE": "Vorgeschlagene Namensänderung: {name}",
     "fr-FR": "Changement de nom suggéré : {name}",
     "ko-KR": "제안된 이름 변경: {name}",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(107875-107891)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(112404-112420)"],
     "$id": 11205
   },
   "推荐更名: {name}": {
@@ -3667,7 +3937,7 @@
     "de-DE": "Empfohlene Namensänderung: {name}",
     "fr-FR": "Changement de nom recommandé : {name}",
     "ko-KR": "권장되는 이름 변경: {name}",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(108440-108456)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(112969-112985)"],
     "$id": 11207
   },
   "真实格式应为: {ext}": {
@@ -3680,7 +3950,7 @@
     "de-DE": "Das tatsächliche Format sollte sein: {ext}",
     "fr-FR": "Le format réel devrait être : {ext}",
     "ko-KR": "실제 형식은 다음과 같아야 합니다: {ext}",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(109112-109129)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(113641-113658)"],
     "$id": 11215
   },
   "实际格式: {ext}": {
@@ -3693,7 +3963,7 @@
     "de-DE": "Tatsächliches Format: {ext}",
     "fr-FR": "Format réel : {ext}",
     "ko-KR": "실제 형식: {ext}",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(109679-109694)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(114208-114223)"],
     "$id": 11218
   },
   "质量分": {
@@ -3707,7 +3977,7 @@
     "fr-FR": "Points de qualité",
     "ko-KR": "품질 포인트",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(116328-116335)",
+      "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(120857-120864)",
       "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(2158-2165)"
     ],
     "$id": 10836
@@ -3722,7 +3992,7 @@
     "de-DE": "Optimal",
     "fr-FR": "Optimale",
     "ko-KR": "최적의",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(116851-116857)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(121380-121386)"],
     "$id": 11217
   },
   "勾选以删除此文件": {
@@ -3735,47 +4005,138 @@
     "de-DE": "Aktivieren Sie diese Option, um diese Datei zu löschen",
     "fr-FR": "Cochez pour supprimer ce fichier",
     "ko-KR": "이 파일을 삭제하려면 선택하세요.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(118570-118582)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(123099-123111)"],
     "$id": 11223
   },
-  "确认批量移入回收站？": {
-    "en-US": "Confirm to move batch to recycle bin?",
-    "es-ES": "¿Confirmar para mover el lote a la papelera de reciclaje?",
-    "ar-EG": "هل تريد تأكيد نقل الدفعة إلى سلة المحذوفات؟",
-    "pt-PT": "Confirmar para mover o lote para a lixeira?",
-    "ru-RU": "Подтвердить перемещение партии в корзину?",
-    "ja-JP": "バッチをごみ箱に移動することを確認しますか?",
-    "de-DE": "Bestätigen, dass die Charge in den Papierkorb verschoben werden soll?",
-    "fr-FR": "Confirmer pour déplacer le lot vers la corbeille ?",
-    "ko-KR": "배치를 휴지통으로 이동하시겠습니까?",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(120483-120497)"],
-    "$id": 31774
+  "待处理项目明细：": {
+    "en-US": "待处理项目明细：",
+    "es-ES": "待处理项目明细：",
+    "ar-EG": "待处理项目明细：",
+    "pt-PT": "待处理项目明细：",
+    "ru-RU": "待处理项目明细：",
+    "ja-JP": "待处理项目明细：",
+    "de-DE": "待处理项目明细：",
+    "fr-FR": "待处理项目明细：",
+    "ko-KR": "待处理项目明细：",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(125547-125559)"],
+    "$id": 31869
   },
-  "选中的 {count} 个文件将被移入回收站。此操作为破坏性文件清理，请核对后确认。": {
-    "en-US": "The {count} files selected will be moved to the trash. This operation is destructive file cleaning, please check and confirm.",
-    "es-ES": "Los {count} archivos seleccionados se moverán a la papelera. Esta operación es una limpieza de archivos destructiva, verifique y confirme.",
-    "ar-EG": "سيتم نقل الملفات {count} المحددة إلى سلة المهملات. هذه العملية عبارة عن تنظيف مدمر للملفات، يرجى التحقق والتأكيد.",
-    "pt-PT": "Os arquivos {count} selecionados serão movidos para a lixeira. Esta operação é uma limpeza destrutiva de arquivos, verifique e confirme.",
-    "ru-RU": "Выбранные файлы {count} будут перемещены в корзину. Эта операция является деструктивной очисткой файлов, пожалуйста, проверьте и подтвердите.",
-    "ja-JP": "選択した {count} ファイルはゴミ箱に移動されます。この操作は破壊的なファイル クリーニングです。確認してください。",
-    "de-DE": "Die {count} ausgewählten Dateien werden in den Papierkorb verschoben. Bei diesem Vorgang handelt es sich um eine destruktive Dateibereinigung. Bitte überprüfen und bestätigen Sie.",
-    "fr-FR": "Les {count} fichiers sélectionnés seront déplacés vers la corbeille. Cette opération est un nettoyage de fichiers destructeur, veuillez vérifier et confirmer.",
-    "ko-KR": "선택한 {count} 파일은 휴지통으로 이동됩니다. 이 작업은 파괴적인 파일 정리이므로 확인하고 확인하시기 바랍니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(120573-120619)"],
-    "$id": 31775
+  "移入系统回收站（可还原）": {
+    "en-US": "移入系统回收站（可还原）",
+    "es-ES": "移入系统回收站（可还原）",
+    "ar-EG": "移入系统回收站（可还原）",
+    "pt-PT": "移入系统回收站（可还原）",
+    "ru-RU": "移入系统回收站（可还原）",
+    "ja-JP": "移入系统回收站（可还原）",
+    "de-DE": "移入系统回收站（可还原）",
+    "fr-FR": "移入系统回收站（可还原）",
+    "ko-KR": "移入系统回收站（可还原）",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(125940-125956)"],
+    "$id": 31870
   },
-  "确认移入回收站": {
-    "en-US": "Confirm move to recycle bin",
-    "es-ES": "Confirmar mover a la papelera de reciclaje",
-    "ar-EG": "تأكيد النقل إلى سلة المحذوفات",
-    "pt-PT": "Confirme a mudança para a lixeira",
-    "ru-RU": "Подтвердите перемещение в корзину",
-    "ja-JP": "ごみ箱への移動を確認する",
-    "de-DE": "Bestätigen Sie die Verschiebung in den Papierkorb",
-    "fr-FR": "Confirmer le déplacement vers la corbeille",
-    "ko-KR": "휴지통으로 이동 확인",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(121378-121389)"],
-    "$id": 31776
+  "按推荐规范重命名": {
+    "en-US": "按推荐规范重命名",
+    "es-ES": "按推荐规范重命名",
+    "ar-EG": "按推荐规范重命名",
+    "pt-PT": "按推荐规范重命名",
+    "ru-RU": "按推荐规范重命名",
+    "ja-JP": "按推荐规范重命名",
+    "de-DE": "按推荐规范重命名",
+    "fr-FR": "按推荐规范重命名",
+    "ko-KR": "按推荐规范重命名",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(126636-126648)"],
+    "$id": 31871
+  },
+  "修正错误扩展名": {
+    "en-US": "修正错误扩展名",
+    "es-ES": "修正错误扩展名",
+    "ar-EG": "修正错误扩展名",
+    "pt-PT": "修正错误扩展名",
+    "ru-RU": "修正错误扩展名",
+    "ja-JP": "修正错误扩展名",
+    "de-DE": "修正错误扩展名",
+    "fr-FR": "修正错误扩展名",
+    "ko-KR": "修正错误扩展名",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(127311-127322)"],
+    "$id": 31872
+  },
+  "清理 Exif 隐私（另存副本保留原件）": {
+    "en-US": "清理 Exif 隐私（另存副本保留原件）",
+    "es-ES": "清理 Exif 隐私（另存副本保留原件）",
+    "ar-EG": "清理 Exif 隐私（另存副本保留原件）",
+    "pt-PT": "清理 Exif 隐私（另存副本保留原件）",
+    "ru-RU": "清理 Exif 隐私（另存副本保留原件）",
+    "ja-JP": "清理 Exif 隐私（另存副本保留原件）",
+    "de-DE": "清理 Exif 隐私（另存副本保留原件）",
+    "fr-FR": "清理 Exif 隐私（另存副本保留原件）",
+    "ko-KR": "清理 Exif 隐私（另存副本保留原件）",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(127996-128020)"],
+    "$id": 31873
+  },
+  "{count} 个图片": {
+    "en-US": "{count} 个图片",
+    "es-ES": "{count} 个图片",
+    "ar-EG": "{count} 个图片",
+    "pt-PT": "{count} 个图片",
+    "ru-RU": "{count} 个图片",
+    "ja-JP": "{count} 个图片",
+    "de-DE": "{count} 个图片",
+    "fr-FR": "{count} 个图片",
+    "ko-KR": "{count} 个图片",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(128162-128177)"],
+    "$id": 31874
+  },
+  "视频转码优化（另存副本保留原件）": {
+    "en-US": "视频转码优化（另存副本保留原件）",
+    "es-ES": "视频转码优化（另存副本保留原件）",
+    "ar-EG": "视频转码优化（另存副本保留原件）",
+    "pt-PT": "视频转码优化（另存副本保留原件）",
+    "ru-RU": "视频转码优化（另存副本保留原件）",
+    "ja-JP": "视频转码优化（另存副本保留原件）",
+    "de-DE": "视频转码优化（另存副本保留原件）",
+    "fr-FR": "视频转码优化（另存副本保留原件）",
+    "ko-KR": "视频转码优化（另存副本保留原件）",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(128672-128692)"],
+    "$id": 31875
+  },
+  "{count} 个视频": {
+    "en-US": "{count} 个视频",
+    "es-ES": "{count} 个视频",
+    "ar-EG": "{count} 个视频",
+    "pt-PT": "{count} 个视频",
+    "ru-RU": "{count} 个视频",
+    "ja-JP": "{count} 个视频",
+    "de-DE": "{count} 个视频",
+    "fr-FR": "{count} 个视频",
+    "ko-KR": "{count} 个视频",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(128834-128849)"],
+    "$id": 31876
+  },
+  "注：移入回收站的文件随时可在系统回收站中还原；更名、修正与优化类操作不删除原文件。": {
+    "en-US": "注：移入回收站的文件随时可在系统回收站中还原；更名、修正与优化类操作不删除原文件。",
+    "es-ES": "注：移入回收站的文件随时可在系统回收站中还原；更名、修正与优化类操作不删除原文件。",
+    "ar-EG": "注：移入回收站的文件随时可在系统回收站中还原；更名、修正与优化类操作不删除原文件。",
+    "pt-PT": "注：移入回收站的文件随时可在系统回收站中还原；更名、修正与优化类操作不删除原文件。",
+    "ru-RU": "注：移入回收站的文件随时可在系统回收站中还原；更名、修正与优化类操作不删除原文件。",
+    "ja-JP": "注：移入回收站的文件随时可在系统回收站中还原；更名、修正与优化类操作不删除原文件。",
+    "de-DE": "注：移入回收站的文件随时可在系统回收站中还原；更名、修正与优化类操作不删除原文件。",
+    "fr-FR": "注：移入回收站的文件随时可在系统回收站中还原；更名、修正与优化类操作不删除原文件。",
+    "ko-KR": "注：移入回收站的文件随时可在系统回收站中还原；更名、修正与优化类操作不删除原文件。",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(129222-129291)"],
+    "$id": 31877
+  },
+  "注：本次批量处理不包含任何删除操作，原文件均会安全保留。": {
+    "en-US": "注：本次批量处理不包含任何删除操作，原文件均会安全保留。",
+    "es-ES": "注：本次批量处理不包含任何删除操作，原文件均会安全保留。",
+    "ar-EG": "注：本次批量处理不包含任何删除操作，原文件均会安全保留。",
+    "pt-PT": "注：本次批量处理不包含任何删除操作，原文件均会安全保留。",
+    "ru-RU": "注：本次批量处理不包含任何删除操作，原文件均会安全保留。",
+    "ja-JP": "注：本次批量处理不包含任何删除操作，原文件均会安全保留。",
+    "de-DE": "注：本次批量处理不包含任何删除操作，原文件均会安全保留。",
+    "fr-FR": "注：本次批量处理不包含任何删除操作，原文件均会安全保留。",
+    "ko-KR": "注：本次批量处理不包含任何删除操作，原文件均会安全保留。",
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(129555-129587)"],
+    "$id": 31878
   },
   "文件类型": {
     "en-US": "File type",

@@ -1901,10 +1901,11 @@ export function useOrganizeState() {
       }
     }
 
-    if (!bypassCapacityLimit && toOrganizeFiles.length > organizeCapacityLimit) {
-      toast.error(t('待整理文件数量超出上限（{limit}个），请前往「已分析」页面勾选文件后重试', { limit: organizeCapacityLimit.toLocaleString() }))
-      setShowCapacityLimitDialog(true)
-      return
+    if (toOrganizeFiles.length > organizeCapacityLimit) {
+      logger.warn(
+        LogCategory.FILE_ORGANIZATION,
+        `[开始整理] 待整理文件数 (${toOrganizeFiles.length}) 超出推荐上限 (${organizeCapacityLimit})，遵从用户选择继续执行整理`
+      )
     }
 
     if (batchCount > maxBatchWarnLimit) {

@@ -238,11 +238,11 @@ describe('PluginCenterOverlay (弹层交互、失焦保护与配置挂载)', () 
 
     // 搜索关键词
     const searchInput = screen.getByPlaceholderText('搜索插件名称或描述...')
-    fireEvent.change(searchInput, { target: { value: 'TTS' } })
+    fireEvent.change(searchInput, { target: { value: '朗读' } })
 
-    // 应该只展示 TTS 插件卡片（匹配 Moss-TTS 与 M5-TTS），不展示压缩包透视
-    expect(screen.getByText(/个性声音克隆朗读.*Moss-TTS/)).toBeInTheDocument()
-    expect(screen.getByText(/极速轻量语音朗读.*M5-TTS/)).toBeInTheDocument()
+    // 应该只展示语音朗读相关插件卡片，不展示压缩包透视
+    expect(screen.getByText('个性化声音克隆与朗读')).toBeInTheDocument()
+    expect(screen.getByText('极速语音合成与朗读')).toBeInTheDocument()
     expect(screen.queryByText(/压缩包透视/)).not.toBeInTheDocument()
 
     // 清空搜索并切换至「格式解析」分类，验证 archive_vfs_parser 已归入 parser 分类
@@ -514,7 +514,7 @@ describe('方案 A: 能力槽位聚类分组与互斥语义 (Slot Grouping & Mut
     // 检查语音合成槽位分组
     const ttsGroup = screen.getByTestId('slot-group-voice_tts')
     expect(ttsGroup).toBeInTheDocument()
-    expect(ttsGroup).toHaveTextContent('离线语音合成与朗读 (TTS)')
+    expect(ttsGroup).toHaveTextContent('离线语音合成与朗读')
     expect(ttsGroup).toHaveTextContent('选配单选 · 互斥生效')
 
     // 检查本地生图已正确归位至高级视觉生成引擎槽位（不再错误掉入 general）

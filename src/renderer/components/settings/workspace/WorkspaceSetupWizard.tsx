@@ -556,6 +556,8 @@ function getWorkflowReasonDisplay(reasonCode?: RecommendReasonCode, fallbackText
       return t('结合目录特征与文件名深度理解，推荐此专属场景')
     case 'default_fallback':
       return t('文件类型较丰富，推荐采用通用归档方案')
+    case 'zero_extension_match':
+      return t('未检测到特定专有格式，推荐无格式限制的通用文件工作流（展示全部文件）')
     default:
       return fallbackText || t('文件格式与当前工作流预设高度契合')
   }
@@ -699,7 +701,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
 
     let executableCount = cat?.executable ?? cat?.installer ?? stats.installerCount ?? 0
     let archiveCount = cat?.archive ?? stats.archiveCount ?? 0
-    let shortcutCount = cat?.application ?? cat?.shortcut ?? stats.shortcutCount ?? 0
+    let shortcutCount = cat?.shortcut ?? stats.shortcutCount ?? 0
     let codeCount = cat?.code ?? 0
     let effectiveDocCount = cat?.doc ?? (cat ? (cat.doc ?? 0) : docCount)
     let effectiveImageCount = cat?.image ?? imageCount
@@ -765,7 +767,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
       },
       {
         key: 'shortcut',
-        label: t('快捷方式与应用'),
+        label: t('快捷方式与链接'),
         count: shortcutCount,
         colorClass: 'bg-cyan-500',
         textClass: 'text-cyan-600 dark:text-cyan-400',
@@ -1095,7 +1097,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
       hiddenCount,
       isWhitelistActive: true,
       description: t(
-        '基于当前目录扫描，预计将展示 {matchedCount} / {totalFiles} 个文件（其余 {hiddenCount} 个非此类文件将安全隐藏，绝不改动磁盘原文件）',
+        '基于当前目录扫描，预计将展示 {matchedCount} / {totalFiles} 个文件（其余 {hiddenCount} 个非此类文件将在本软件中隐藏，绝不改动磁盘原文件）',
         {
           matchedCount,
           totalFiles,
@@ -1815,7 +1817,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
                   {t('包含')}
                 </h4>
                 <span className="text-xs font-semibold text-emerald-700/80 dark:text-emerald-300/80">
-                  {t('以下文件才会显示在工作（真实）目录中')}
+                  {t('以下文件才会显示在工作目录中')}
                 </span>
               </div>
             </div>

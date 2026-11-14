@@ -785,6 +785,59 @@ export class DirectoryContextService {
   /**
    * 解析目录的有效生效配置（考虑自底向上的继承链）
    */
+  /**
+   * 查找目录所属工作区（含父工作区）绑定的工作流配置中的智能文件名附加属性模板。
+   * 解析顺序：优先使用目录自身 bound_workflow_id，否则回退到所属工作区 bound_workflow_id。
+   * 用于让属性面板「智能文件名附加属性」能正确展示工作流预设模板（此前仅文件重命名链路读取，展示层缺失）。
+   */
+  private async resolveBoundWorkflowNamingTemplate(directoryPath: string): Promise<string | null> {
+    try {
+      let workflowId: string | null | undefined
+      try {
+        const dirRow = this.db
+          .prepare(
+            `SELECT bound_workflow_id FROM workspace_directories WHERE path = ? LIMIT 1`
+          )
+          .get(directoryPath) as { bound_workflow_id?: string | null } | undefined
+        workflowId = dirRow?.bound_workflow_id
+      } catch {
+        workflowId = undefined
+      }
+
+      if (!workflowId) {
+        // 目录未绑定工作流时，回退到所属工作区（根或父工作区）绑定的工作流
+        // 归属判定：工作区根路径等于目标路径，或目标路径位于工作区根路径之下（LIKE 'root%' 前缀匹配）
+        const wsRow = this.db
+          .prepare(
+            `
+            SELECT w.bound_workflow_id AS bound_workflow_id
+            FROM workspaces w
+            WHERE w.path = ?
+               OR ? LIKE w.path || '%'
+            ORDER BY LENGTH(w.path) DESC
+            LIMIT 1
+          `
+          )
+          .get(directoryPath, directoryPath) as
+          | { bound_workflow_id?: string | null }
+          | undefined
+        workflowId = wsRow?.bound_workflow_id
+      }
+
+      if (!workflowId) return null
+
+      const wfRecord = await databaseService.getLocalWorkflowById(workflowId)
+      return wfRecord?.naming_template?.trim() || null
+    } catch (err) {
+      logger.warn(
+        LogCategory.DIRECTORY_CONTEXT,
+        `[工作流命名] 解析绑定工作流附加属性模板失败: ${directoryPath}`,
+        err
+      )
+      return null
+    }
+  }
+
   async getEffectiveDirectoryConfig(
     directoryPath: string
   ): Promise<DirectoryContextAnalysis | null> {
@@ -809,6 +862,14 @@ export class DirectoryContextService {
         ...current,
         inheritMode,
         inheritedFrom: {}
+      }
+
+      // 合并绑定工作流的智能文件名附加属性模板（目录自身未显式设置时作为生效兜底）
+      if (!effective.namingTemplate?.trim()) {
+        const wfTemplate = await this.resolveBoundWorkflowNamingTemplate(directoryPath)
+        if (wfTemplate) {
+          effective.namingTemplate = wfTemplate
+        }
       }
 
       // 如果是根目录，或者全部字段是 current_only / broadcast，直接返回自身配置

@@ -54,13 +54,18 @@ const code = 'block';
     expect(cleaned).toContain('我的情也真，我的爱也真')
   })
 
-  it('短文本未达下限时贪婪聚合为饱满单句，避免过碎碎片断音', () => {
+  it('阶梯模式下首句极速出声，非阶梯模式短文本贪婪聚合为饱满单句', () => {
     const text = '你好！欢迎使用萤核智能文件夹。这是一个测试长句；请问今天有什么可以帮您的？'
-    // 默认 minChunkLength = 45，由于总长 39 < 45，贪婪合并为 1 句，朗读约 8s，推理仅需 1.5s
-    const chunks = splitTextIntoChunks(text)
+    // 默认启用阶梯模式：首句 8~18 字符切出供秒级出声，后续作为过渡句
+    const ladderChunks = splitTextIntoChunks(text)
+    expect(ladderChunks.length).toBe(2)
+    expect(ladderChunks[0]).toBe('你好！欢迎使用萤核智能文件夹。')
+    expect(ladderChunks[1]).toBe('这是一个测试长句；请问今天有什么可以帮您的？')
 
-    expect(chunks.length).toBe(1)
-    expect(chunks[0]).toBe('你好！欢迎使用萤核智能文件夹。这是一个测试长句；请问今天有什么可以帮您的？')
+    // 显式指定非阶梯模式：总长 39 < 45，贪婪合并为 1 句
+    const flatChunks = splitTextIntoChunks(text, { ladder: false, minChunkLength: 45, maxChunkLength: 120 })
+    expect(flatChunks.length).toBe(1)
+    expect(flatChunks[0]).toBe('你好！欢迎使用萤核智能文件夹。这是一个测试长句；请问今天有什么可以帮您的？')
   })
 
   it('长文本切片遵循 45~120 字符饱满度聚合与句末标点保留', () => {

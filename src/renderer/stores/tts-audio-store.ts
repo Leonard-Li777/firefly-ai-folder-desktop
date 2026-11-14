@@ -1481,58 +1481,9 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
       }
     }
 
-    // 5. 流式合成调度循环（支持断点续播与边播边落盘）
+    // 5. 流式合成调度循环（基于独立分片池架构，每句严格按 index 顺序消费与排程，杜绝旧断点导致重复播放首段）
     try {
-      let startIndex = 0
-
-      // 检查是否存在断点（优先自 1.0x 基准母本或当前目标文件恢复）
-      const resumeCandidatePath = base1xCachePath || targetCachePath
-      if (resumeCandidatePath && window.electronAPI?.tts?.readWavMetadata) {
-        try {
-          const meta = await window.electronAPI.tts.readWavMetadata(resumeCandidatePath)
-          if (
-            meta &&
-            !meta.completed &&
-            meta.done > 0 &&
-            meta.done < chunks.length &&
-            (meta.voiceId === undefined || meta.voiceId === chosenVoiceId)
-          ) {
-            const partialBuf = await window.electronAPI.tts.readWavFile(resumeCandidatePath)
-            if (partialBuf && partialBuf.byteLength > 44) {
-              let playBuf = partialBuf
-              if (Math.abs(chosenSpeed - 1.0) >= 0.01 && window.electronAPI?.tts?.scaleWav) {
-                const scaled = await window.electronAPI.tts.scaleWav(partialBuf, chosenSpeed)
-                if (scaled && scaled.byteLength > 44) {
-                  playBuf = scaled
-                }
-              }
-
-              const partialAudio = await ctx.decodeAudioData(playBuf.slice(0))
-              if (activeSessionId === thisSessionId) {
-                const source = ctx.createBufferSource()
-                source.buffer = partialAudio
-                source.playbackRate.value = 1.0
-                source.connect(ctx.destination)
-
-                const startAt = Math.max(ctx.currentTime + 0.05, nextStartTime)
-                source.start(startAt)
-                const effectiveDuration = partialAudio.duration
-                nextStartTime = startAt + effectiveDuration
-                scheduledSources.push({
-                  source,
-                  startTime: startAt,
-                  endTime: nextStartTime,
-                  index: meta.done - 1
-                })
-                set({ status: 'playing', currentSentenceIndex: meta.done - 1 })
-                startIndex = meta.done
-              }
-            }
-          }
-        } catch (e) {
-          console.warn('[TTS] 断点恢复异常，从首句合成:', e)
-        }
-      }
+      const startIndex = 0
 
       // 预缓冲安全水线蓄水池
       const readyBufferList: PrebufferedChunkItem[] = []
@@ -1663,15 +1614,21 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
           totalBufferedDuration += audioBuffer.duration
           set({ bufferedDuration: totalBufferedDuration })
 
-          // 水线判定：条件 A（末尾自愈：所有剩余分句已蓄满，短文本 1 句直接放行）
-          // 条件 B（多句文本安全水线：蓄满 >= 2 句且总时长 >= 10.0 秒，杜绝首句过早泄流引发断音卡顿）
+          // 水线判定：
+          // 1. 首句极速起播（Fast First Playback）：首句只要就绪且时长 >= 1.0s，立即起播！绝不死等后续分句！
+          // 2. 末尾自愈：所有剩余分句已蓄满，短文本 1 句直接放行
+          // 3. 多句安全水线：蓄满 >= 2 句且总时长达标
+          const isFirstChunkReady =
+            readyBufferList.length >= 1 &&
+            readyBufferList[0].index === startIndex &&
+            readyBufferList[0].buffer.duration >= 1.0
           const isLastRemaining = readyBufferList.length >= remainingChunksCount
           const satisfiesSafetyWatermark =
             readyBufferList.length >=
               Math.min(TTS_BUFFER_WATERMARK.MIN_BUFFERED_CHUNKS, remainingChunksCount) &&
             totalBufferedDuration >= TTS_BUFFER_WATERMARK.MIN_BUFFERED_DURATION_SEC
 
-          if (isLastRemaining || satisfiesSafetyWatermark) {
+          if (isFirstChunkReady || isLastRemaining || satisfiesSafetyWatermark) {
             isWatermarkSatisfied = true
             flushPrebufferedChunks(readyBufferList, ctx)
             readyBufferList.length = 0
@@ -2017,15 +1974,21 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
           totalBufferedDuration += audioBuffer.duration
           set({ bufferedDuration: totalBufferedDuration })
 
-          // 水线判定：条件 A（末尾自愈：所有剩余分句已蓄满，短文本 1 句直接放行）
-          // 条件 B（多句文本安全水线：蓄满 >= 2 句且总时长 >= 10.0 秒，杜绝首句过早泄流引发断音卡顿）
+          // 水线判定：
+          // 1. 首句极速起播（Fast First Playback）：首句只要就绪且时长 >= 1.0s，立即起播！绝不死等后续分句！
+          // 2. 末尾自愈：所有剩余分句已蓄满，短文本 1 句直接放行
+          // 3. 多句安全水线：蓄满 >= 2 句且总时长达标
+          const isFirstChunkReady =
+            readyBufferList.length >= 1 &&
+            readyBufferList[0].index === clampedIndex &&
+            readyBufferList[0].buffer.duration >= 1.0
           const isLastRemaining = readyBufferList.length >= remainingChunksCount
           const satisfiesSafetyWatermark =
             readyBufferList.length >=
               Math.min(TTS_BUFFER_WATERMARK.MIN_BUFFERED_CHUNKS, remainingChunksCount) &&
             totalBufferedDuration >= TTS_BUFFER_WATERMARK.MIN_BUFFERED_DURATION_SEC
 
-          if (isLastRemaining || satisfiesSafetyWatermark) {
+          if (isFirstChunkReady || isLastRemaining || satisfiesSafetyWatermark) {
             isWatermarkSatisfied = true
             flushPrebufferedChunks(readyBufferList, ctx)
             readyBufferList.length = 0

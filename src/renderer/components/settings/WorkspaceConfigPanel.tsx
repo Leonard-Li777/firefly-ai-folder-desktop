@@ -160,9 +160,9 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
     }
     const globalProfile = getConfigValue<string>('AI_EMBEDDING_PROFILE')
     if (globalProfile === 'gemma_unified') {
-      return t('统一全模态 AI 引擎 (Gemma Unified)')
+      return t('高精度全能语义搜索')
     }
-    return t('经典轻量 AI 引擎 (Classic Light)')
+    return t('经典轻量语义搜索')
   }, [activeBaseEmbeddingModule, getConfigValue])
 
   const handleJumpToPlugins = useCallback(() => {

@@ -789,7 +789,7 @@
     "de-DE": "Intelligentes Clustering von endseitigem HAC ist abgeschlossen und {count} Themenkataloge werden im Konsens festgelegt (zeitaufwändige {ms} ms)",
     "fr-FR": "Le clustering intelligent des HAC côté terminal est terminé et les {count} catalogues de sujets sont déterminés par consensus ({ms} ms chronophages)",
     "ko-KR": "엔드사이드 해크의 지능형 클러스터링이 완료되고{count}주제 카탈로그는 합의에 의해 결정됩니다(시간이 많이 걸리는{ms}밀리초).",
-    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(22195-22243)"],
+    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(25581-25629)"],
     "$id": 19964
   },
   "智能聚类整理": {
@@ -802,7 +802,7 @@
     "de-DE": "Intelligentes Clustering und Sortieren",
     "fr-FR": "Regroupement et tri intelligents",
     "ko-KR": "지능형 클러스터링 및 정렬",
-    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(30453-30463)"],
+    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(33839-33849)"],
     "$id": 21920
   },
   "核心引擎未初始化，请等待初始化完成后再试": {
@@ -816,8 +816,8 @@
     "fr-FR": "Le moteur principal n'a pas été initialisé, veuillez attendre la fin de l'initialisation et réessayer.",
     "ko-KR": "핵심 엔진이 초기화되지 않았습니다. 초기화가 완료된 후 다시 시도해 주세요.",
     "$files": [
-      "src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(46134-46158)",
-      "src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(47000-47024)"
+      "src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(49520-49544)",
+      "src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(50386-50410)"
     ],
     "$id": 8077
   },

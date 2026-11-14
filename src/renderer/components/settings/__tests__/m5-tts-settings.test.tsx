@@ -42,7 +42,7 @@ describe('M5TTSSettings 极速语音合成设置面板测试', () => {
     render(<M5TTSSettings />)
 
     // 验证核心标题与特性说明
-    expect(screen.getByText('极速语音朗读 (M5-TTS)')).toBeInTheDocument()
+    expect(screen.getByText('极速语音合成与朗读')).toBeInTheDocument()
     expect(screen.getByText('默认朗读倍率')).toBeInTheDocument()
     expect(screen.getByText('我的收藏音色')).toBeInTheDocument()
     expect(screen.getByText('发音人音色库')).toBeInTheDocument()

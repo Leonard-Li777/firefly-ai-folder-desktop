@@ -456,33 +456,68 @@ export function registerTTSIPCHandlers(): void {
   })
 }
 
-/** 本地正则分句降级辅助函数 */
-function fallbackLocalSplitChunks(text: string, minLen = 45, maxLen = 120): string[] {
+/** 本地正则分句降级辅助函数（与前端保持一致的阶梯式切片：首句 8~18 字极速首发音，过渡句 14~26 字，稳态 20~36 字） */
+function fallbackLocalSplitChunks(text: string): string[] {
   if (!text || !text.trim()) return []
   const rawSentences = text.match(/[^。！？；\n\r.!?]+[。！？；\n\r.!?]*/g) || [text]
-  const chunks: string[] = []
-  let current = ''
+  const secondaryRegex = /[^，,、 :：；;()（）「」『』—\n\r]+[，,、 :：；;()（）「」『』—\n\r]*/g
+  const normalizedPieces: string[] = []
 
   for (const raw of rawSentences) {
     const trimmed = raw.trim()
     if (!trimmed) continue
 
-    if (!current) {
-      current = trimmed
+    if (trimmed.length <= 18) {
+      normalizedPieces.push(trimmed)
       continue
     }
 
-    // 若累积长度未达下限且尚未超过上限，贪婪合并后续短句；一旦达到下限且遇到新句，即切片输出
-    if (current.length < minLen && current.length + trimmed.length <= maxLen) {
-      current += trimmed
-    } else {
-      chunks.push(current.trim())
-      current = trimmed
+    const subMatches = trimmed.match(secondaryRegex)
+    if (!subMatches || subMatches.length === 1) {
+      let start = 0
+      while (start < trimmed.length) {
+        normalizedPieces.push(trimmed.slice(start, start + 18))
+        start += 18
+      }
+      continue
+    }
+
+    let subBuffer = ''
+    for (const sub of subMatches) {
+      if (subBuffer.length + sub.length > 18 && subBuffer.length > 0) {
+        normalizedPieces.push(subBuffer.trim())
+        subBuffer = sub
+      } else {
+        subBuffer += sub
+      }
+    }
+    if (subBuffer.trim()) {
+      normalizedPieces.push(subBuffer.trim())
     }
   }
 
-  if (current.trim()) {
-    chunks.push(current.trim())
+  const chunks: string[] = []
+  let currentBuffer = ''
+
+  for (const piece of normalizedPieces) {
+    if (!currentBuffer) {
+      currentBuffer = piece
+      continue
+    }
+
+    const currentMin = chunks.length === 0 ? 8 : chunks.length === 1 ? 14 : 20
+    const currentMax = chunks.length === 0 ? 18 : chunks.length === 1 ? 26 : 36
+
+    if (currentBuffer.length < currentMin && currentBuffer.length + piece.length <= currentMax) {
+      currentBuffer += piece
+    } else {
+      chunks.push(currentBuffer.trim())
+      currentBuffer = piece
+    }
   }
-  return chunks.length > 0 ? chunks : [text.trim()]
+
+  if (currentBuffer.trim()) {
+    chunks.push(currentBuffer.trim())
+  }
+  return chunks.map(c => c.trim()).filter(Boolean)
 }

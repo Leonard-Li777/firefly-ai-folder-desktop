@@ -488,7 +488,7 @@ export function getInitialPlugins(): PluginModuleItem[] {
     },
     {
       id: 'pocket-cpu-int8-onnx',
-      name: t('离线轻量智能引擎'),
+      name: t('轻量CPU引擎'),
       version: '1.0.0',
       category: 'ai-engine',
       capability_slot: 'ai_engine_cpu',
@@ -592,7 +592,7 @@ export function getInitialPlugins(): PluginModuleItem[] {
       contributes: {
         settings: {
           scope: 'global',
-          tabTitle: t('语音合成 (TTS)'),
+          tabTitle: t('个性化声音克隆'),
           componentId: 'tts',
           priority: 30
         }
@@ -622,7 +622,7 @@ export function getInitialPlugins(): PluginModuleItem[] {
       contributes: {
         settings: {
           scope: 'global',
-          tabTitle: t('语音合成 (TTS)'),
+          tabTitle: t('极速语音朗读'),
           componentId: 'tts',
           priority: 30
         }
@@ -1154,7 +1154,12 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
         return
       }
       if (evt.state === 'completed') {
-        // 后台下载与安装/解压完成：拉取权威事实源，刷新已启用状态并清理残留进度
+        // 先将进度置为 100%（防止资源解压完成后等待 Omni 挂载激活期间界面一直停在 0%），再拉取权威事实源刷新状态
+        get().updateDownloadProgress(evt.moduleId, {
+          percentage: 100,
+          speed_bytes_per_sec: 0,
+          is_resumed: false
+        })
         void get().loadModules()
         return
       }

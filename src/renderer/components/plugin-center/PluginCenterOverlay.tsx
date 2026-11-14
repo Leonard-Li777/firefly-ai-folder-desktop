@@ -79,7 +79,7 @@ function getSlotDefinition(
     case 'ai_engine_cpu':
       return {
         key: 'ai_engine_cpu',
-        name: t('轻量CPU生成式引擎'),
+        name: t('轻量CPU引擎'),
         policy: 'exclusive_optional',
         icon: '⚡',
         badgeText: t('轻量极速 · 纯CPU运行'),
@@ -90,7 +90,7 @@ function getSlotDefinition(
     case 'asr':
       return {
         key: 'voice_asr',
-        name: t('语音识别与字幕提取 (ASR)'),
+        name: t('语音识别与字幕提取'),
         policy: 'exclusive_optional',
         icon: '🎙️',
         badgeText: t('选配单选 · 互斥生效'),
@@ -101,7 +101,7 @@ function getSlotDefinition(
     case 'tts':
       return {
         key: 'voice_tts',
-        name: t('离线语音合成与朗读 (TTS)'),
+        name: t('离线语音合成与朗读'),
         policy: 'exclusive_optional',
         icon: '🔊',
         badgeText: t('选配单选 · 互斥生效'),
