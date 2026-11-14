@@ -10584,5 +10584,6 @@ export default  {
     "32273": "Niveaux de gris",
     "32274": "Production",
     "32275": "...",
-    "32276": "L'interface est bloquée. La file d’attente d’analyse des fichiers peut consommer plus de puissance de calcul. Le mettre en pause peut rendre l’opération en cours plus fluide."
+    "32276": "L'interface est bloquée. La file d’attente d’analyse des fichiers peut consommer plus de puissance de calcul. Le mettre en pause peut rendre l’opération en cours plus fluide.",
+    "32283": "正在启动轻量CPU引擎，即将开始分析..."
 }

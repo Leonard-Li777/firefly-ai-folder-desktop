@@ -30,7 +30,7 @@ describe('Universal Workflow & Empty Admission Diagnostics & .chm Category Tests
       topExtensions: [{ ext: 'chm', count: 3 }]
     }
 
-    const recs = recommendWorkflowByProfile(stats, BLUEPRINT_STATIC_TEMPLATES)
+    const recs = recommendWorkflowByProfile(stats, allTemplates)
     expect(recs.length).toBeGreaterThan(0)
     const top = recs[0]
     expect(top.workflowId).toBe('builtin.workflow.general-inbox')
@@ -51,7 +51,7 @@ describe('Universal Workflow & Empty Admission Diagnostics & .chm Category Tests
       topExtensions: [{ ext: 'chm', count: 10 }]
     }
 
-    const recs = recommendWorkflowByProfile(stats, BLUEPRINT_STATIC_TEMPLATES)
+    const recs = recommendWorkflowByProfile(stats, allTemplates)
     expect(recs.length).toBeGreaterThan(0)
     const top = recs[0]
     expect(top.workflowId).toBe('builtin.workflow.general-inbox')

@@ -20,7 +20,8 @@ import {
   resolveEffectiveMode,
   ResourceLocator,
   PluginPathResolver,
-  BUILTIN_PLUGIN_CATALOG_META
+  BUILTIN_PLUGIN_CATALOG_META,
+  sanitizeUnicodeContent
 } from '@firefly/shared'
 import type { TaskSpec, FinishReason } from './task-specs/types'
 import {
@@ -592,12 +593,15 @@ export class LlmGatewayService implements ILlmGatewayService {
         const modularService = this.modularResourceResolver?.() ?? modularResourceService
         const dao = modularService?.getDao?.()
         const cpuMod = dao?.modules?.findByIdSync?.('pocket-cpu-int8-onnx')
-        if (
+        const isPhysicallyInstalled = this.probeCpuInstallation() === 'installed'
+        if (isPhysicallyInstalled && (!cpuMod || cpuMod.install_state !== 'active')) {
+          await modularService?.updateModuleState?.('pocket-cpu-int8-onnx', { active: true })
+        } else if (
           cpuMod &&
           (cpuMod.install_state === 'installed_inactive' || cpuMod.install_state === 'active')
         ) {
           if (cpuMod.install_state !== 'active') {
-            await modularService.updateModuleState('pocket-cpu-int8-onnx', { active: true })
+            await modularService?.updateModuleState?.('pocket-cpu-int8-onnx', { active: true })
           }
         }
       } catch (err) {
@@ -881,8 +885,8 @@ export class LlmGatewayService implements ILlmGatewayService {
       model: 'pocket-cpu-int8',
       task_id: taskSpec.taskId,
       messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt }
+        { role: 'system', content: sanitizeUnicodeContent(systemPrompt) },
+        { role: 'user', content: sanitizeUnicodeContent(userPrompt) }
       ],
       temperature: options?.temperature ?? 0.0,
       max_tokens: options?.maxTokens ?? 64

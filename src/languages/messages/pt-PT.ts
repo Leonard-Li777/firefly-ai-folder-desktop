@@ -10584,5 +10584,6 @@ export default  {
     "32273": "Tons de cinza",
     "32274": "Produção",
     "32275": "...",
-    "32276": "A interface está travada. A fila de análise de arquivos pode estar ocupando mais poder computacional. Pausá-lo pode tornar a operação atual mais suave."
+    "32276": "A interface está travada. A fila de análise de arquivos pode estar ocupando mais poder computacional. Pausá-lo pode tornar a operação atual mais suave.",
+    "32283": "正在启动轻量CPU引擎，即将开始分析..."
 }

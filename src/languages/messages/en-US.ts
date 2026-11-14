@@ -10584,5 +10584,6 @@ export default  {
     "32273": "Grayscale",
     "32274": "Production",
     "32275": "...",
-    "32276": "The interface is stuck. The file analysis queue may be taking up more computing power. Pausing it can make the current operation smoother."
+    "32276": "The interface is stuck. The file analysis queue may be taking up more computing power. Pausing it can make the current operation smoother.",
+    "32283": "正在启动轻量CPU引擎，即将开始分析..."
 }

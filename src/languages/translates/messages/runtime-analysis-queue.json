@@ -12,6 +12,19 @@
     "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(2177-2200)"],
     "$id": 32061
   },
+  "正在启动轻量CPU引擎，即将开始分析...": {
+    "en-US": "正在启动轻量CPU引擎，即将开始分析...",
+    "es-ES": "正在启动轻量CPU引擎，即将开始分析...",
+    "ar-EG": "正在启动轻量CPU引擎，即将开始分析...",
+    "pt-PT": "正在启动轻量CPU引擎，即将开始分析...",
+    "ru-RU": "正在启动轻量CPU引擎，即将开始分析...",
+    "ja-JP": "正在启动轻量CPU引擎，即将开始分析...",
+    "de-DE": "正在启动轻量CPU引擎，即将开始分析...",
+    "fr-FR": "正在启动轻量CPU引擎，即将开始分析...",
+    "ko-KR": "正在启动轻量CPU引擎，即将开始分析...",
+    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(3022-3047)"],
+    "$id": 32283
+  },
   "正在预热轻量CPU模型，即将开始分析...": {
     "en-US": "The lightweight CPU model is being warmed up and analysis is about to begin...",
     "es-ES": "El modelo de CPU liviano se está calentando y el análisis está a punto de comenzar...",
@@ -22,7 +35,7 @@
     "de-DE": "Das leichte CPU-Modell wird aufgewärmt und die Analyse beginnt gleich ...",
     "fr-FR": "Le modèle de CPU léger est en cours d'échauffement et l'analyse est sur le point de commencer...",
     "ko-KR": "경량 CPU 모델이 워밍업 중이며 분석이 곧 시작됩니다...",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(2605-2630)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(3363-3388)"],
     "$id": 32062
   },
   "轻量CPU引擎已就绪，开始分析": {
@@ -35,7 +48,7 @@
     "de-DE": "Die leichte CPU-Engine ist bereit, mit der Analyse zu beginnen",
     "fr-FR": "Le moteur CPU léger est prêt à démarrer l'analyse",
     "ko-KR": "경량 CPU 엔진이 분석을 시작할 준비가 되었습니다.",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(3087-3106)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(3866-3885)"],
     "$id": 32063
   },
   "轻量CPU引擎预热失败，请重试": {
@@ -48,7 +61,7 @@
     "de-DE": "Das Aufwärmen der Lightweight-CPU-Engine ist fehlgeschlagen. Bitte versuchen Sie es erneut",
     "fr-FR": "Échec du préchauffage du moteur du processeur léger. Veuillez réessayer.",
     "ko-KR": "경량 CPU 엔진 워밍업에 실패했습니다. 다시 시도해 주세요.",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(3709-3728)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(4488-4507)"],
     "$id": 32064
   },
   "AI引擎异常断开，正在重新连接...": {
@@ -61,7 +74,7 @@
     "de-DE": "Die KI-Engine wurde ungewöhnlich getrennt und stellt die Verbindung wieder her ...",
     "fr-FR": "Le moteur IA s'est déconnecté anormalement et est en train de se reconnecter...",
     "ko-KR": "AI 엔진이 비정상적으로 연결이 끊겼다가 다시 연결 중인데...",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(6393-6415)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(7172-7194)"],
     "$id": 4601
   },
   "AI引擎状态异常，正在尝试恢复...": {
@@ -74,7 +87,7 @@
     "de-DE": "Der Status der KI-Engine ist abnormal und versucht, sich zu erholen ...",
     "fr-FR": "L'état du moteur AI est anormal et tente de récupérer...",
     "ko-KR": "AI 엔진 상태가 비정상이라 복구중인데...",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(6662-6684)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(7441-7463)"],
     "$id": 4602
   },
   "AI引擎已恢复": {
@@ -88,8 +101,8 @@
     "fr-FR": "Le moteur AI a été restauré",
     "ko-KR": "AI 엔진이 복원되었습니다.",
     "$files": [
-      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(7305-7316)",
-      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(9956-9967)"
+      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(8084-8095)",
+      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(10735-10746)"
     ],
     "$id": 4603
   },
@@ -104,9 +117,9 @@
     "fr-FR": "Le moteur AI n'a pas pu démarrer. Veuillez vérifier la configuration et réessayer.",
     "ko-KR": "AI 엔진을 시작하지 못했습니다. 구성을 확인한 후 다시 시도해 주세요.",
     "$files": [
-      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(7693-7714)",
-      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(8614-8635)",
-      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(10341-10362)"
+      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(8472-8493)",
+      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(9393-9414)",
+      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(11120-11141)"
     ],
     "$id": 4604
   },
@@ -120,7 +133,7 @@
     "de-DE": "Warten auf den Start der KI-Engine, bitte warten ...",
     "fr-FR": "En attente du démarrage du moteur IA, veuillez patienter...",
     "ko-KR": "AI 엔진 시작 대기 중, 잠시만 기다려 주십시오...",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(7974-7995)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(8753-8774)"],
     "$id": 4275
   },
   "分析已暂停": {
@@ -133,7 +146,7 @@
     "de-DE": "Die Analyse ist pausiert",
     "fr-FR": "Analyse en pause",
     "ko-KR": "분석 일시 정지됨",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(8234-8243)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(9013-9022)"],
     "$id": 4276
   },
   "AI引擎已就绪，开始分析": {
@@ -146,7 +159,7 @@
     "de-DE": "Die KI-Engine ist bereit, mit der Analyse zu beginnen",
     "fr-FR": "Moteur IA prêt, démarrage de l'analyse",
     "ko-KR": "AI 엔진 준비 완료, 분석 시작",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(9246-9262)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(10025-10041)"],
     "$id": 4277
   },
   "AI引擎状态异常，正在尝试重启...": {
@@ -159,7 +172,7 @@
     "de-DE": "Der Status der KI-Engine ist abnormal und es wird versucht, neu zu starten ...",
     "fr-FR": "L'état du moteur AI est anormal et tente de redémarrer...",
     "ko-KR": "AI 엔진 상태가 비정상이라 다시 시작하려고 하는데...",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(9490-9512)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(10269-10291)"],
     "$id": 4605
   },
   "等待AI引擎启动超时": {
@@ -172,7 +185,7 @@
     "de-DE": "Zeitüberschreitung beim Warten auf den Start der KI-Engine",
     "fr-FR": "Délai d'attente du démarrage du moteur IA dépassé",
     "ko-KR": "AI 엔진 시작 대기 시간 초과",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(10662-10676)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(11441-11455)"],
     "$id": 4279
   },
   "当前AI已经在工作中，如：分析队列，请停止后再请求": {

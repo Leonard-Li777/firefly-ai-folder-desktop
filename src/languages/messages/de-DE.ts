@@ -10584,5 +10584,6 @@ export default  {
     "32273": "Graustufen",
     "32274": "Produktion",
     "32275": "...",
-    "32276": "Die Schnittstelle steckt fest. Die Dateianalysewarteschlange beansprucht möglicherweise mehr Rechenleistung. Durch Anhalten kann der aktuelle Vorgang reibungsloser ablaufen."
+    "32276": "Die Schnittstelle steckt fest. Die Dateianalysewarteschlange beansprucht möglicherweise mehr Rechenleistung. Durch Anhalten kann der aktuelle Vorgang reibungsloser ablaufen.",
+    "32283": "正在启动轻量CPU引擎，即将开始分析..."
 }

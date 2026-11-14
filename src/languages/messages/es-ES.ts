@@ -10584,5 +10584,6 @@ export default  {
     "32273": "Escala de grises",
     "32274": "Producción",
     "32275": "...",
-    "32276": "La interfaz está bloqueada. Es posible que la cola de análisis de archivos esté consumiendo más potencia informática. Pausarlo puede hacer que la operación actual sea más fluida."
+    "32276": "La interfaz está bloqueada. Es posible que la cola de análisis de archivos esté consumiendo más potencia informática. Pausarlo puede hacer que la operación actual sea más fluida.",
+    "32283": "正在启动轻量CPU引擎，即将开始分析..."
 }

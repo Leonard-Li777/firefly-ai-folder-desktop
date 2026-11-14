@@ -273,4 +273,66 @@ describe('LlmGatewayService.probeCpuInstallation 安装态口径 (TC-SSOT-21~23)
       LlmGatewayService.getInstance().setOmniServiceResolverForTesting(null)
     }
   })
+
+  it('TC-DESIRED-MODE-01: setDesiredMode("cpu") 当物理资产已就绪但模块状态未激活时，自动激活模块', async () => {
+    // 先切到 local 确保 desiredMode 改变
+    await LlmGatewayService.getInstance().setDesiredMode('local')
+    // 模块在 DB 中为 not_installed（或 installed_inactive）
+    seedCpuModule(testDb, 'installed_inactive')
+    const updateSpy = vi.spyOn(modularResourceService, 'updateModuleState')
+
+    await LlmGatewayService.getInstance().setDesiredMode('cpu')
+
+    expect(updateSpy).toHaveBeenCalledWith('pocket-cpu-int8-onnx', { active: true })
+    updateSpy.mockRestore()
+  })
+
+  it('TC-UNICODE-01: executeCpuChat 自动清洗 prompt 中的孤立代理对与 NUL 字符', async () => {
+    seedCpuModule(testDb, 'active')
+    await LlmGatewayService.getInstance().setDesiredMode('cpu')
+
+    const originalFetch = global.fetch
+    let capturedBody: any = null
+    global.fetch = vi.fn().mockImplementation(async (_url, init) => {
+      capturedBody = JSON.parse(init.body as string)
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          choices: [
+            {
+              message: { content: '{"name":"测试文件名"}' },
+              finish_reason: 'stop'
+            }
+          ]
+        })
+      } as any
+    })
+
+    try {
+      const mockTaskSpec = {
+        taskId: 'short-name',
+        allowedModes: ['cpu', 'local', 'cloud'],
+        systemPrompt: () => 'System \uD83D Prompt', // 孤立高位代理
+        userPrompt: () => 'User\0Prompt \uDC00 End', // NUL 与孤立低位代理
+        postValidate: async (raw: string) => JSON.parse(raw)
+      } as any
+
+      const res = await (LlmGatewayService.getInstance() as any).executeCpuChat(
+        mockTaskSpec,
+        {},
+        { timeoutMs: 5000 }
+      )
+      expect(res).toEqual({ name: '测试文件名' })
+      expect(capturedBody).not.toBeNull()
+      // 验证发送出去的 messages 已经清洗：孤立代理对转为了 \uFFFD，\0 被剥离
+      expect(capturedBody.messages[0].content).toBe('System \uFFFD Prompt')
+      expect(capturedBody.messages[1].content).toBe('UserPrompt \uFFFD End')
+      // 验证 JSON 字符串不含非法的 \\ud83d 逃逸
+      expect(JSON.stringify(capturedBody)).not.toContain('\\ud83d')
+      expect(JSON.stringify(capturedBody)).not.toContain('\\udc00')
+    } finally {
+      global.fetch = originalFetch
+    }
+  })
 })
