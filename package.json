@@ -10,6 +10,8 @@
     "url": "https://github.com/Leonard-Li777/firefly-ai-folder-desktop.git"
   },
   "scripts": {
+    "codegen:profiles": "node scripts/generate-resource-profiles.js",
+    "check:profiles": "node scripts/generate-resource-profiles.js --check",
     "postinstall": "node pro/scripts/run.js copy-viewer-resources.js && node pro/scripts/run.js rebuild-extract-icon.js",
     "download:llama": "node pro/scripts/run.js download-llama-cpp-releases.js",
     "download:llama:update": "cross-env FORCE_UPDATE=true pnpm download:llama",
