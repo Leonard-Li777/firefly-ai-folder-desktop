@@ -658,8 +658,10 @@ export function registerTTSIPCHandlers(): void {
       const session = activeStreamSessions.get(cmd.sessionId)
       if (session) {
         if (cmd.command === 'pause') {
+          logger.info(LogCategory.MAIN, `[TTS Stream IPC] 收到反压暂停指令: sessionId=${cmd.sessionId}`)
           session.pause()
         } else if (cmd.command === 'resume') {
+          logger.info(LogCategory.MAIN, `[TTS Stream IPC] 收到反压恢复指令: sessionId=${cmd.sessionId}`)
           session.resume()
         }
       }

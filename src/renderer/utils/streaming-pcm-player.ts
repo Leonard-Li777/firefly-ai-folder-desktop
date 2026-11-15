@@ -49,8 +49,8 @@ export class StreamingPCMPlayer {
   private hasScheduledFirst = false
 
   // 抖动预缓冲水线配置与队列 (消除 CPU 推理波动与偶发延迟卡顿)
-  private static readonly MIN_PREBUFFER_SEC = 4.0 // 4.0s 预缓冲安全水线 (蓄满 2 个 2.0s 块起播，构建抗抖动蓄水池)
-  private static readonly MAX_PREBUFFER_WAIT_MS = 6000 // 最长等待 6.0s 超时强制起播
+  private static readonly MIN_PREBUFFER_SEC = 5.0 // 5.0s 预缓冲安全水线 (蓄满约 3 个分块起播，构建充足抗抖动蓄水池)
+  private static readonly MAX_PREBUFFER_WAIT_MS = 8000 // 最长等待 8.0s 超时强制起播
   private pendingChunks: StreamChunkPayload[] = []
   private bufferedDurationSec = 0
   private isPlaybackStarted = false
@@ -204,11 +204,11 @@ export class StreamingPCMPlayer {
     if (!this.isPlaybackStarted) {
       this.pendingChunks.push(payload)
 
-      // 满足起播水线：累积缓冲 >= MIN_PREBUFFER_SEC，或者这是流的末尾包 (isLast)，短文本不卡顿
+      // 满足起播水线：累积缓冲 >= MIN_PREBUFFER_SEC (5.0s)，或流末尾包 (isLast)，或蓄满 3 个分块
       if (
         this.bufferedDurationSec >= StreamingPCMPlayer.MIN_PREBUFFER_SEC ||
         payload.isLast ||
-        this.pendingChunks.length >= 2
+        this.pendingChunks.length >= 3
       ) {
         this.flushPendingChunks()
       }
@@ -354,13 +354,20 @@ export class StreamingPCMPlayer {
   private checkBackpressure(ctx: AudioContext): void {
     const bufferedSec = Math.max(0, this.nextPlayTime - ctx.currentTime)
 
-    if (bufferedSec >= 8.0 && !this.isFlowPaused) {
+    // 25.0s 充盈阈值：桌面端内存宽裕，给予充分抗网络与大段 Prefill 缓冲储备
+    if (bufferedSec >= 25.0 && !this.isFlowPaused) {
+      console.info(
+        `[StreamingPCMPlayer] 缓冲极其充盈 (${bufferedSec.toFixed(1)}s >= 25.0s)，触发有界反压暂停`
+      )
       this.isFlowPaused = true
       window.electronAPI?.tts?.sendFlow?.({
         sessionId: this.sessionId,
         command: 'pause'
       })
-    } else if (bufferedSec <= 3.0 && this.isFlowPaused) {
+    } else if (bufferedSec <= 10.0 && this.isFlowPaused) {
+      console.info(
+        `[StreamingPCMPlayer] 缓冲正常回落 (${bufferedSec.toFixed(1)}s <= 10.0s)，解除反压恢复推流`
+      )
       this.isFlowPaused = false
       window.electronAPI?.tts?.sendFlow?.({
         sessionId: this.sessionId,
@@ -379,6 +386,8 @@ export class StreamingPCMPlayer {
       sessionId: this.sessionId,
       bufferedSeconds: bufferedSec
     })
+    // 关键修复：心跳周期必须持续检测并驱动反压恢复，杜绝 pause 后因无分块到达导致永久死锁
+    this.checkBackpressure(this.audioCtx)
   }
 
   /**
