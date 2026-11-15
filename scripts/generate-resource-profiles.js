@@ -87,16 +87,18 @@ function generateCode() {
     'export const BUILTIN_RESOURCE_PROFILES: Readonly<Record<string, ResourceProfile>> = {'
   ]
 
-  for (const [resId, p] of Object.entries(profiles)) {
+  const profileEntries = Object.entries(profiles)
+  profileEntries.forEach(([resId, p], idx) => {
     lines.push(`  '${resId}': {`)
     lines.push(`    resourceIdHash8: '${p.resourceIdHash8}',`)
     lines.push(`    slot: '${p.slot}',`)
     lines.push(`    version: '${p.version}',`)
     lines.push(`    keyEpoch: ${p.keyEpoch},`)
     lines.push(`    cipherSuite: '${p.cipherSuite}',`)
-    lines.push(`    requiredRoles: ${JSON.stringify(p.requiredRoles)},`)
-    lines.push('  },')
-  }
+    const rolesStr = '[' + p.requiredRoles.map(r => `'${r}'`).join(', ') + ']'
+    lines.push(`    requiredRoles: ${rolesStr}`)
+    lines.push(idx === profileEntries.length - 1 ? '  }' : '  },')
+  })
 
   lines.push('} as const', '')
   lines.push(
