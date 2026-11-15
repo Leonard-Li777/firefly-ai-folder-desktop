@@ -113,7 +113,7 @@ NUL
 
 # Llama binaries
 build/extraResources/llama/*
-build/extraResources/configs/*.json
+build/extraResources/configs/text-nsfw-*.json
 trusted-signing-metadata.json
 build/extraResources/configs/binaries.json
 build/extraResources/configs/models.json
