@@ -588,4 +588,47 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
       expect(screen.getByText(/🔥 推荐首选/)).toBeDefined()
     })
   })
+
+  it('用户无需绑定工作流：Step 1 与 Step 2 底部展示「跳过向导」按钮并触发 onSkip', async () => {
+    const onFinish = vi.fn()
+    const onSkip = vi.fn()
+
+    render(
+      <WorkspaceSetupWizard
+        workspace={mockWorkspace}
+        onFinish={onFinish}
+        onSkip={onSkip}
+      />
+    )
+
+    // 等待首屏加载
+    await waitFor(() => {
+      expect(screen.getAllByText('电脑桌面急救与杂乱清理流').length).toBeGreaterThan(0)
+    })
+
+    // 1. Step 1 底部应渲染跳过向导按钮
+    const skipBtnStep1 = screen.getByTestId('skip-wizard-btn')
+    expect(skipBtnStep1).toBeDefined()
+    expect(skipBtnStep1.textContent).toContain('跳过向导')
+
+    // 点击跳过
+    fireEvent.click(skipBtnStep1)
+    expect(onSkip).toHaveBeenCalledTimes(1)
+
+    // 2. 进入 Step 2
+    const nextBtn = screen.getByRole('button', { name: /下一步/ })
+    fireEvent.click(nextBtn)
+
+    await waitFor(() => {
+      expect(screen.getByText('包含与排除规则确认')).toBeDefined()
+    })
+
+    // Step 2 底部同样渲染跳过向导按钮
+    const skipBtnStep2 = screen.getByTestId('skip-wizard-btn-step2')
+    expect(skipBtnStep2).toBeDefined()
+    expect(skipBtnStep2.textContent).toContain('跳过向导')
+
+    fireEvent.click(skipBtnStep2)
+    expect(onSkip).toHaveBeenCalledTimes(2)
+  })
 })

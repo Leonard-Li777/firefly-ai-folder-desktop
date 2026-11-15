@@ -48,6 +48,14 @@ export class StreamingPCMPlayer {
   private startTime = 0
   private hasScheduledFirst = false
 
+  // 抖动预缓冲水线配置与队列 (消除 CPU 推理波动与偶发延迟卡顿)
+  private static readonly MIN_PREBUFFER_SEC = 4.0 // 4.0s 预缓冲安全水线 (蓄满 2 个 2.0s 块起播，构建抗抖动蓄水池)
+  private static readonly MAX_PREBUFFER_WAIT_MS = 6000 // 最长等待 6.0s 超时强制起播
+  private pendingChunks: StreamChunkPayload[] = []
+  private bufferedDurationSec = 0
+  private isPlaybackStarted = false
+  private startTimeoutTimer: NodeJS.Timeout | null = null
+
   // 单极点 DC 阻隔滤波器历史寄存器 (跨 Chunk 连续保持)
   private dcPrevX = 0
   private dcPrevY = 0
@@ -141,6 +149,22 @@ export class StreamingPCMPlayer {
     this.dcPrevY = 0
     this.isFlowPaused = false
 
+    // 重置预缓冲蓄水池
+    this.isPlaybackStarted = false
+    this.pendingChunks = []
+    this.bufferedDurationSec = 0
+    if (this.startTimeoutTimer) {
+      clearTimeout(this.startTimeoutTimer)
+    }
+    this.startTimeoutTimer = setTimeout(() => {
+      if (!this.isPlaybackStarted && this.pendingChunks.length > 0) {
+        console.warn(
+          `[StreamingPCMPlayer] 预缓冲达到 ${StreamingPCMPlayer.MAX_PREBUFFER_WAIT_MS}ms 超时门限，强制起播现有缓冲`
+        )
+        this.flushPendingChunks()
+      }
+    }, StreamingPCMPlayer.MAX_PREBUFFER_WAIT_MS)
+
     this.ledger = {
       receivedSampleEnd: 0,
       scheduledSampleEnd: 0,
@@ -174,8 +198,55 @@ export class StreamingPCMPlayer {
       return
     }
 
+    const chunkDuration = payload.sampleCount / 24000
+    this.bufferedDurationSec += chunkDuration
+
+    if (!this.isPlaybackStarted) {
+      this.pendingChunks.push(payload)
+
+      // 满足起播水线：累积缓冲 >= MIN_PREBUFFER_SEC，或者这是流的末尾包 (isLast)，短文本不卡顿
+      if (
+        this.bufferedDurationSec >= StreamingPCMPlayer.MIN_PREBUFFER_SEC ||
+        payload.isLast ||
+        this.pendingChunks.length >= 2
+      ) {
+        this.flushPendingChunks()
+      }
+      return
+    }
+
+    // 已经起播，直接排程该块
+    this.scheduleChunk(payload)
+  }
+
+  /**
+   * 预缓冲水线达成，将蓄水池中的数据块一次性排程发声
+   */
+  private flushPendingChunks(): void {
+    if (this.isPlaybackStarted) return
+    this.isPlaybackStarted = true
+    if (this.startTimeoutTimer) {
+      clearTimeout(this.startTimeoutTimer)
+      this.startTimeoutTimer = null
+    }
+
+    console.info(
+      `[StreamingPCMPlayer] 预缓冲安全水线就绪: 累积 ${this.bufferedDurationSec.toFixed(2)}s 音频 (${this.pendingChunks.length} 个分块)，启动链式排程发声`
+    )
+
+    const chunks = this.pendingChunks
+    this.pendingChunks = []
+
+    for (const chunk of chunks) {
+      this.scheduleChunk(chunk)
+    }
+  }
+
+  /**
+   * 链式排程单个音频块进入 Web Audio 硬件引擎
+   */
+  private scheduleChunk(payload: StreamChunkPayload): void {
     const ctx = this.getOrCreateContext()
-    const targetSampleRate = ctx.sampleRate
     const rawI16 = new Int16Array(payload.pcm)
     const sampleCount = rawI16.length
 
@@ -220,16 +291,26 @@ export class StreamingPCMPlayer {
     // 4. 微秒级链式排程与欠载保护钳位
     const duration = audioBuffer.duration
     let startAt = 0
+    const now = ctx.currentTime
 
     if (!this.hasScheduledFirst) {
       this.hasScheduledFirst = true
-      startAt = ctx.currentTime + 0.05
+      startAt = now + 0.05
       this.startTime = startAt
       this.nextPlayTime = startAt + duration
     } else {
-      // 欠载保护钳位 (Underrun Clamp)
-      startAt = Math.max(this.nextPlayTime, ctx.currentTime + 0.015)
-      this.nextPlayTime = startAt + duration
+      if (this.nextPlayTime <= now) {
+        // 欠载保护钳位 (Underrun Clamp)
+        const gap = now - this.nextPlayTime
+        console.warn(
+          `[StreamingPCMPlayer] ⚠️ 音频缓冲欠载 (Underrun): 滞后 ${(gap * 1000).toFixed(1)}ms`
+        )
+        startAt = now + 0.03
+        this.nextPlayTime = startAt + duration
+      } else {
+        startAt = this.nextPlayTime
+        this.nextPlayTime = startAt + duration
+      }
     }
 
     // 5. 创建并排程 AudioBufferSourceNode
@@ -398,10 +479,13 @@ export class StreamingPCMPlayer {
     this.dcPrevX = 0
     this.dcPrevY = 0
 
-    // 3. 重新校准起播硬件基准时间
+    // 3. 重新校准起播硬件基准时间与预缓冲
     this.startTime = this.audioCtx.currentTime + 0.05
     this.nextPlayTime = this.startTime
     this.hasScheduledFirst = false
+    this.isPlaybackStarted = false
+    this.pendingChunks = []
+    this.bufferedDurationSec = 0
   }
 
   /**
@@ -413,6 +497,13 @@ export class StreamingPCMPlayer {
   }
 
   private cleanup(): void {
+    if (this.startTimeoutTimer) {
+      clearTimeout(this.startTimeoutTimer)
+      this.startTimeoutTimer = null
+    }
+    this.pendingChunks = []
+    this.bufferedDurationSec = 0
+    this.isPlaybackStarted = false
     if (this.deviceChangeListener && typeof navigator !== 'undefined' && navigator.mediaDevices) {
       navigator.mediaDevices.removeEventListener('devicechange', this.deviceChangeListener)
       this.deviceChangeListener = null

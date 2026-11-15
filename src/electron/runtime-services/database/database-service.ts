@@ -2262,11 +2262,14 @@ export class DatabaseService {
               }
 
               // (PRD-0057 S4 / GH #714) 用户手动批量打标旁路闸门：
-              // 来源为 user，走豁免短路（isTagAdmissible 永不拒，断言全部放行）
+              // 来源为 user，走豁免短路（isTagAdmissible 永不拒，断言全部放行）。
+              // dimensionNames 仍按契约传入：当前 user 组在闸门①步即豁免短路，但若未来
+              // tagGroup 语义变化或非 user 路径复用本裁决，维度名按名拒绝（R-G2-07）即刻生效。
               const tagName = item.tagName || getCanonicalConceptName(item.tagCode) || item.tagCode
               const verdict = isTagAdmissible({
                 name: tagName,
-                tagGroup: item.tagGroup
+                tagGroup: item.tagGroup,
+                dimensionNames: ConfigDbManager.getInstance().getDimensionNameBlacklist()
               })
               if (verdict.outcome === 'rejected') {
                 logger.debug(

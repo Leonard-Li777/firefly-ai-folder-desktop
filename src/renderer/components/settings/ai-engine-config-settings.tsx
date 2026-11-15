@@ -89,6 +89,7 @@ export const AIEngineConfigSettings: React.FC = () => {
   useSettingsConfig()
   const aiServiceMode = useSettingsStore(s => s.config?.aiServiceMode)
   // 是否启用高级AI引擎：默认开启（未设置或不为 'disabled' 时均为开启态）
+  const isDeveloperMode = usePluginCenterStore(s => s.isDeveloperMode)
   const isEnabled = aiServiceMode !== 'disabled'
   const isCloudMode = aiServiceMode === 'cloud'
   const isCpuMode = aiServiceMode === 'cpu'
@@ -509,8 +510,9 @@ export const AIEngineConfigSettings: React.FC = () => {
     : null
 
   /** 萤核分支两态（PRD-0044）：已连接 = 引擎状态卡；未连接 = 提示卡 + 聚焦主按钮 */
-  const isLocalBranch = isEnabled && activeMode === 'local'
-  const isCpuBranch = isEnabled && activeMode === 'cpu'
+  const isLocalBranch =
+    isEnabled && (activeMode === 'local' || (!isDeveloperMode && activeMode === 'cpu'))
+  const isCpuBranch = isEnabled && activeMode === 'cpu' && isDeveloperMode
   const engineConnected = !!snapshot?.connected
   // 引擎侧 AI 推理服务是否运行中（引擎契约：llama.cpp 子进程存活时 status 为
   // "ready"（空闲）或 "processing"（推理中），"starting" 表示正在拉起）。
@@ -845,41 +847,42 @@ export const AIEngineConfigSettings: React.FC = () => {
         </Card>
       )}
 
-      {/* 开启态：显示三个底座单选卡 (标准宽屏>=900px并排3列，窄屏自适应竖排) */}
+      {/* 开启态：显示生效底座单选卡 (普通用户默认展示萤核与云端两列，开发者模式展示三列) */}
       {isEnabled && (
         <div className="space-y-5">
-          {/* 第二层级：三生效引擎单选卡 (Spec §5.1, §5.2 / AC-01, AC-02) */}
+          {/* 第二层级：生效引擎单选卡 (Spec §5.1, §5.2 / AC-01, AC-02) */}
           <div
             role="radiogroup"
             aria-label={t('生效引擎')}
-            className="grid grid-cols-1 md:grid-cols-3 gap-3.5"
+            className={`grid grid-cols-1 ${isDeveloperMode ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-3.5`}
           >
-            {/* 卡片 1: 轻量CPU引擎 (Pocket CPU) */}
-            {renderModeOption(
-              'cpu',
-              t('轻量CPU引擎'),
-              modeDescriptions.cpu,
-              <Cpu className="h-[18px] w-[18px]" />,
-              renderCpuBadge(),
-              {
-                disabled: !cpuInstalled && llmSnapshot !== null,
-                footerAction:
-                  !cpuInstalled && llmSnapshot !== null ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 text-xs"
-                      onClick={() => {
-                        void useSettingsStore.getState().closeSystemSettings()
-                        void usePluginCenterStore.getState().openOverlay()
-                        usePluginCenterStore.getState().setSelectedCategory('ai-engine')
-                      }}
-                    >
-                      {cpuCorrupt ? t('去修复') : t('下载引擎')}
-                    </Button>
-                  ) : undefined
-              }
-            )}
+            {/* 卡片 1: 轻量CPU引擎 (Pocket CPU) - 仅开发者模式下可见 */}
+            {isDeveloperMode &&
+              renderModeOption(
+                'cpu',
+                t('轻量CPU引擎'),
+                modeDescriptions.cpu,
+                <Cpu className="h-[18px] w-[18px]" />,
+                renderCpuBadge(),
+                {
+                  disabled: !cpuInstalled && llmSnapshot !== null,
+                  footerAction:
+                    !cpuInstalled && llmSnapshot !== null ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs"
+                        onClick={() => {
+                          void useSettingsStore.getState().closeSystemSettings()
+                          void usePluginCenterStore.getState().openOverlay()
+                          usePluginCenterStore.getState().setSelectedCategory('ai-engine')
+                        }}
+                      >
+                        {cpuCorrupt ? t('去修复') : t('下载引擎')}
+                      </Button>
+                    ) : undefined
+                }
+              )}
 
             {/* 卡片 2: 萤核AI引擎 (Local GPU) */}
             {renderModeOption(
@@ -889,7 +892,10 @@ export const AIEngineConfigSettings: React.FC = () => {
               <Zap className="h-[18px] w-[18px]" />,
               renderStatusBadge('local'),
               {
-                warningText: isVramLow ? t('您的设备显存不足 4GB，推荐使用轻量CPU引擎') : undefined
+                warningText:
+                  isVramLow && isDeveloperMode
+                    ? t('您的设备显存不足 4GB，推荐使用轻量CPU引擎')
+                    : undefined
               }
             )}
 
@@ -923,8 +929,8 @@ export const AIEngineConfigSettings: React.FC = () => {
             </div>
           )}
 
-          {/* 轻量CPU分支：通俗大白话仪表盘 (Spec §5.3 / AC-04) */}
-          {isCpuBranch && (
+          {/* 轻量CPU分支：通俗大白话仪表盘 (仅开发者模式呈现) */}
+          {isDeveloperMode && isCpuBranch && (
             <CpuEngineDashboard snapshot={llmSnapshot} onRefresh={fetchLlmSnapshot} />
           )}
 

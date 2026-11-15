@@ -555,7 +555,7 @@ export function computeGroupedMetrics(
       const fusionSubItems: SubtaskItem[] = []
 
       const knownFusionKeys = [
-        { key: 'bekkoEmbedMs', label: t('语义特征嵌入'), badge: 'bekko-a8m', color: '#8b5cf6', type: 'sync' as const, weight: 41 },
+        { key: 'bekkoEmbedMs', label: t('语义特征嵌入'), badge: '轻量文本语义搜索', color: '#8b5cf6', type: 'sync' as const, weight: 41 },
         { key: 'keybertMs', label: t('主题词抽取'), badge: 'MMR', color: '#a855f7', type: 'sync' as const, weight: 42 },
         { key: 'slotSummaryMs', label: t('5W摘要重命名'), badge: 'SlotEngine', color: '#c084fc', type: 'sync' as const, weight: 43 },
         { key: 'fusionMs', label: t('多模态融合裁决'), badge: 'fused_tags', color: '#6366f1', type: 'sync' as const, weight: 44 }

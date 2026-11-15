@@ -2065,7 +2065,7 @@
     "de-DE": "Arbeitsverzeichnis verwalten",
     "fr-FR": "Gérer le répertoire de travail",
     "ko-KR": "작업 디렉토리 관리",
-    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(6556-6566)"],
+    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(6677-6687)"],
     "$id": 10218
   },
   "你可以删除不需要的工作目录，以腾出槽位": {
@@ -2078,7 +2078,7 @@
     "de-DE": "Sie können nicht benötigte Arbeitsverzeichnisse löschen, um Slots freizugeben.",
     "fr-FR": "Vous pouvez supprimer les répertoires de travail inutiles pour libérer des emplacements",
     "ko-KR": "필요 없는 작업 디렉토리를 삭제하여 슬롯을 확보할 수 있습니다.",
-    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(6691-6714)"],
+    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(6812-6835)"],
     "$id": 10219
   },
   "打开设置": {
@@ -2091,7 +2091,7 @@
     "de-DE": "Einstellungen öffnen",
     "fr-FR": "Ouvrir les paramètres",
     "ko-KR": "설정 열기",
-    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(6970-6978)"],
+    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(7091-7099)"],
     "$id": 10220
   },
   "搜索...": {

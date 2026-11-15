@@ -12,6 +12,40 @@ interface AboutDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
+// 开源第三方致谢（平铺名单，覆盖系统用到的框架/库/模型/基础设施）。name 为原文不翻译。
+const getOpenSourceNotices = () => [
+  { name: 'Electron', url: 'https://github.com/electron/electron' },
+  { name: 'React', url: 'https://github.com/facebook/react' },
+  { name: 'TypeScript', url: 'https://github.com/microsoft/TypeScript' },
+  { name: 'Vite', url: 'https://github.com/vitejs/vite' },
+  { name: 'pnpm', url: 'https://github.com/pnpm/pnpm' },
+  { name: 'Tailwind CSS', url: 'https://github.com/tailwindlabs/tailwindcss' },
+  { name: 'Radix UI', url: 'https://github.com/radix-ui/primitives' },
+  { name: 'zustand', url: 'https://github.com/pmndrs/zustand' },
+  { name: 'lucide', url: 'https://github.com/lucide-icons/lucide' },
+  { name: 'Electron Forge', url: 'https://github.com/electron/forge' },
+  { name: 'llama.cpp', url: 'https://github.com/ggml-org/llama.cpp' },
+  { name: 'Flyfish Viewer (@file-viewer)', url: 'https://github.com/flyfish-dev/file-viewer' },
+  { name: 'pdf.js', url: 'https://github.com/mozilla/pdf.js' },
+  { name: 'epub.js', url: 'https://github.com/futurepress/epub.js' },
+  { name: 'sharp', url: 'https://github.com/lovell/sharp' },
+  { name: 'FFmpeg', url: 'https://ffmpeg.org' },
+  { name: 'SQLite', url: 'https://www.sqlite.org' },
+  { name: 'better-sqlite3', url: 'https://github.com/WiseLibs/better-sqlite3' },
+  { name: 'Supabase', url: 'https://github.com/supabase/supabase' },
+  { name: 'PostHog', url: 'https://github.com/PostHog/posthog' },
+  { name: 'pinyin-pro', url: 'https://github.com/zh-lx/pinyin-pro' },
+  { name: 'jszip', url: 'https://github.com/Stuk/jszip' },
+  { name: 'fastfetch', url: 'https://github.com/fastfetch-cli/fastfetch' },
+  { name: 'markitdown', url: 'https://github.com/microsoft/markitdown' },
+  { name: 'Hugging Face', url: 'https://huggingface.co' },
+  { name: 'ModelScope', url: 'https://modelscope.cn' },
+  { name: 'Gemma', url: 'https://github.com/google-deepmind/gemma' },
+  { name: 'Qwen', url: 'https://github.com/QwenLM' },
+  { name: 'MiniCPM', url: 'https://github.com/OpenBMB/MiniCPM' },
+  { name: 'LFM (Liquid AI)', url: 'https://github.com/Liquid4All' },
+]
+
 export const AboutDialog: React.FC<AboutDialogProps> = ({ open, onOpenChange }) => {
   const [omniVersion, setOmniVersion] = React.useState<string>('')
   const [isCheckingUpdate, setIsCheckingUpdate] = React.useState(false)
@@ -137,87 +171,34 @@ export const AboutDialog: React.FC<AboutDialogProps> = ({ open, onOpenChange }) 
             </ul>
           </div>
 
-          {/* 开源第三方致谢 */}
+          {/* 开源第三方致谢（极简清单，覆盖系统核心开源依赖） */}
           <div className="bg-muted/30 rounded-lg p-4">
-            <h3 className="text-sm font-semibold mb-3">
+            <h3 className="text-sm font-semibold mb-2">
               {t('开源第三方致谢 (Open Source Notices)')}
             </h3>
-            <p className="text-sm text-muted-foreground mb-3">
-              {t(
-                '本软件在开发过程中使用并集成了以下第三方开源组件。对这些项目的开发者和社区表示由衷的感谢：'
-              )}
+            <p className="text-xs text-muted-foreground mb-3">
+              {t('本软件集成了众多优秀的开源项目，在此向其开发者与社区致谢（节选核心依赖）：')}
             </p>
-            <div className="space-y-4">
-              <div className="border rounded-md p-3 text-sm space-y-2">
-                <div className="font-medium">{t('Flyfish Viewer')}</div>
-                <div className="text-muted-foreground">
-                  <p>
-                    {t('项目地址')}:{' '}
-                    <a
-                      href="https://github.com/flyfish-dev/file-viewer"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={e => {
-                        e.preventDefault()
-                        openExternalLink('https://github.com/flyfish-dev/file-viewer')
-                      }}
-                      className="text-primary hover:underline"
-                    >
-                      https://github.com/flyfish-dev/file-viewer
-                    </a>
-                  </p>
-                  <p>
-                    {t('说明')}: {t('高级文件预览渲染')}
-                  </p>
-                </div>
-              </div>
-              <div className="border rounded-md p-3 text-sm space-y-2">
-                <div className="font-medium">llama.cpp</div>
-                <div className="text-muted-foreground">
-                  <p>
-                    {t('项目地址')}:{' '}
-                    <a
-                      href="https://github.com/ggml-org/llama.cpp"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={e => {
-                        e.preventDefault()
-                        openExternalLink('https://github.com/ggml-org/llama.cpp')
-                      }}
-                      className="text-primary hover:underline"
-                    >
-                      https://github.com/ggml-org/llama.cpp
-                    </a>
-                  </p>
-                  <p>
-                    {t('说明')}: {t('高性能本地 AI 推理引擎')}
-                  </p>
-                </div>
-              </div>
-              <div className="border rounded-md p-3 text-sm space-y-2">
-                <div className="font-medium">fastfetch</div>
-                <div className="text-muted-foreground">
-                  <p>
-                    {t('项目地址')}:{' '}
-                    <a
-                      href="https://github.com/fastfetch-cli/fastfetch"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={e => {
-                        e.preventDefault()
-                        openExternalLink('https://github.com/fastfetch-cli/fastfetch')
-                      }}
-                      className="text-primary hover:underline"
-                    >
-                      https://github.com/fastfetch-cli/fastfetch
-                    </a>
-                  </p>
-                  <p>
-                    {t('说明')}: {t('轻量级系统硬件信息采集工具')}
-                  </p>
-                </div>
-              </div>
+            <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
+              {getOpenSourceNotices().map(n => (
+                <a
+                  key={n.name}
+                  href={n.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={e => {
+                    e.preventDefault()
+                    openExternalLink(n.url)
+                  }}
+                  className="text-primary/90 hover:underline"
+                >
+                  {n.name}
+                </a>
+              ))}
             </div>
+            <p className="text-xs text-muted-foreground/60 mt-3">
+              {t('以上仅为部分核心依赖，完整清单以 package.json 与各开源项目许可为准。')}
+            </p>
           </div>
         </div>
 

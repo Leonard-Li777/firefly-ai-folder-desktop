@@ -437,7 +437,10 @@ export const Organize: React.FC = () => {
                 await store.setCurrentWorkspaceDirectory(target)
                 navigate('/real-directory')
                 if (target?.id) {
-                  useSettingsStore.getState().openWorkspaceSettings({ workspaceId: target.id })
+                  useSettingsStore.getState().openWorkspaceSettings({
+                    workspaceId: target.id,
+                    targetTab: 'wizard'
+                  })
                 }
               } catch (e: any) {
                 toast.error(e?.message || t('添加工作目录失败'))

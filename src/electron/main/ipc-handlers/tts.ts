@@ -517,6 +517,19 @@ export function registerTTSIPCHandlers(): void {
         activeStreamSessions.delete(oldId)
       }
 
+      // 同时主动中止在途的传统分块合成请求，杜绝非流式分块在后台空跑掠夺 CPU 算力与触发 409 冲突
+      for (const [sessId, set] of activeSessionControllers.entries()) {
+        for (const ctrl of set) {
+          ctrl.abort()
+        }
+        activeSessionControllers.delete(sessId)
+      }
+
+      logger.info(
+        LogCategory.MAIN,
+        `[TTS Stream IPC] 收到流式会话请求: voiceId=${req.voiceId}, speed=${req.speed}, 文本长度=${req.text.length}, 起始字符=${req.resumeCharStart || 0}`
+      )
+
       try {
         const streamCtrl = await omniClient.startTTSStream(
           {
@@ -530,12 +543,29 @@ export function registerTTSIPCHandlers(): void {
               const session = activeStreamSessions.get(payload.sessionId)
               if (session && !session.sender.isDestroyed()) {
                 session.pendingFramesCount++
+                if (
+                  payload.isFirst ||
+                  payload.isLast ||
+                  session.pendingFramesCount <= 3 ||
+                  session.pendingFramesCount % 4 === 0
+                ) {
+                  const chunkSec = (payload.sampleCount / 24000).toFixed(2)
+                  const totalSec = ((payload.startSample + payload.sampleCount) / 24000).toFixed(2)
+                  logger.info(
+                    LogCategory.MAIN,
+                    `[TTS Stream IPC] 收到音频块 seq=${payload.startSample}: 采样=${payload.sampleCount} (${chunkSec}s, 累计=${totalSec}s), 字符=[${payload.charStart}..${payload.charEnd}]`
+                  )
+                }
                 session.sender.send('tts:stream-chunk-data', payload)
               }
             },
             onEnd: (meta: StreamEndMeta) => {
               const session = activeStreamSessions.get(streamCtrl.sessionId)
               if (session) {
+                logger.info(
+                  LogCategory.MAIN,
+                  `[TTS Stream IPC] 流式会话完成: sessionId=${streamCtrl.sessionId}, 总帧数=${meta.totalFrames}, 总采样=${meta.totalSamples} (${(meta.totalSamples / 24000).toFixed(2)}s), 耗时=${meta.elapsedMs}ms`
+                )
                 clearInterval(session.watchdogTimer)
                 activeStreamSessions.delete(streamCtrl.sessionId)
                 if (!session.sender.isDestroyed()) {

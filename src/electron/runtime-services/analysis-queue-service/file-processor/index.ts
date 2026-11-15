@@ -49,6 +49,7 @@ import {
   getAiTargetStage
 } from '../../../config/analysis-mode'
 import { databaseService } from '../../database/database-service'
+import { ConfigDbManager } from '../../config/config-db-manager'
 import { quotaChecker } from '../../user-tier/quota-checker-proxy'
 import { userTierService } from '../../user-tier/user-tier-service'
 import { magikaService } from '../../system/magika-service'
@@ -3754,8 +3755,13 @@ export class FileProcessor {
             // 夹具未声明分组时按分析引擎产出归 'ai'（勿依赖 insertTagToDb 的 'fact' 缺省）
             const mockGroup = isTagProvenanceGroup(rel.tag_group) ? rel.tag_group : 'ai'
 
-            // (PRD-0057 S4 / GH #714) 旁路闸门：mock 回灌准入裁决
-            const verdict = isTagAdmissible({ name: tag.name, tagGroup: mockGroup })
+            // (PRD-0057 S4 / GH #714) 旁路闸门：mock 回灌准入裁决。
+            // 传入维度名黑名单激活 R-G2-07 按名拒绝：AI 误将维度名（如「作者」）作为内容标签时拦截。
+            const verdict = isTagAdmissible({
+              name: tag.name,
+              tagGroup: mockGroup,
+              dimensionNames: ConfigDbManager.getInstance().getDimensionNameBlacklist()
+            })
             if (verdict.outcome === 'rejected') {
               logger.debug(
                 LogCategory.ANALYSIS_QUEUE,

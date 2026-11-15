@@ -599,6 +599,7 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     slot_policy: BUILTIN_MODULE_CATALOG_META['pocket-cpu-int8-onnx'].slotPolicy,
     backend_type: BUILTIN_MODULE_CATALOG_META['pocket-cpu-int8-onnx'].backendType,
     author_code: 'official',
+    availability: BUILTIN_MODULE_CATALOG_META['pocket-cpu-int8-onnx'].availability,
     total_bytes: BUILTIN_MODULE_CATALOG_META['pocket-cpu-int8-onnx'].totalBytes,
     install_state: 'not_installed',
     contributes: {

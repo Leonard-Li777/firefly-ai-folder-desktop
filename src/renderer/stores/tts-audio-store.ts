@@ -1053,6 +1053,108 @@ function triggerHotSwitch(changed: {
   })()
 }
 
+/**
+ * 启动纯流式 PCM 播放会话 (Scheme B - M5 Pure Streaming)
+ * 支持指定 resumeCharStart 实现从任意分句/字符偏移量精准秒级恢复与进度条拖拽定位
+ */
+async function launchStreamingSession(params: {
+  sessionId: number
+  text: string
+  voiceId: string
+  speed: number
+  resumeCharStart?: number
+  initialSentenceIndex?: number
+  chunks: string[]
+}): Promise<boolean> {
+  if (typeof window.electronAPI?.tts?.startStream !== 'function') return false
+  try {
+    if (currentStreamingPlayer) {
+      currentStreamingPlayer.stop()
+      currentStreamingPlayer = null
+    }
+    activeStreamCleanups.forEach(fn => fn())
+    activeStreamCleanups = []
+
+    console.info(
+      `[TTS] 发起纯流式会话: voiceId=${params.voiceId}, speed=${params.speed}, resumeCharStart=${params.resumeCharStart || 0}`
+    )
+
+    const streamAck = await window.electronAPI.tts.startStream({
+      text: params.text,
+      voiceId: String(params.voiceId),
+      speed: params.speed,
+      resumeCharStart: params.resumeCharStart
+    })
+
+    if (!streamAck.ok || !streamAck.sessionId) {
+      return false
+    }
+
+    if (activeSessionId !== params.sessionId) {
+      window.electronAPI.tts.abortStream?.({ sessionId: streamAck.sessionId })
+      return false
+    }
+
+    // 构造分句字符区间表，用于根据 playedCharEnd 动态定位 currentSentenceIndex 与逐句高亮
+    let charOffset = 0
+    const chunkRanges = params.chunks.map(chunk => {
+      const start = charOffset
+      charOffset += chunk.length
+      return { start, end: charOffset }
+    })
+
+    const player = new StreamingPCMPlayer({
+      onProgress: playedCharEnd => {
+        if (activeSessionId !== params.sessionId) return
+        const foundIdx = chunkRanges.findIndex(
+          r => playedCharEnd >= r.start && playedCharEnd <= r.end
+        )
+        if (foundIdx !== -1 && useTTSAudioStore.getState().currentSentenceIndex !== foundIdx) {
+          useTTSAudioStore.setState({ currentSentenceIndex: foundIdx })
+        }
+      },
+      onEnded: () => {
+        if (activeSessionId !== params.sessionId) return
+        useTTSAudioStore.setState({ status: 'idle', currentSentenceIndex: 0 })
+        stopProgressMonitor()
+      },
+      onError: err => {
+        console.error('[TTS Stream Player] 播放器异常:', err)
+      }
+    })
+
+    currentStreamingPlayer = player
+    await player.start(streamAck.sessionId)
+
+    // 注册下行流数据与结束监听
+    const unlistenChunk = window.electronAPI.tts.onStreamChunkData((payload: any) => {
+      if (activeSessionId !== params.sessionId || payload.sessionId !== streamAck.sessionId)
+        return
+      player.pushChunk(payload)
+      if (useTTSAudioStore.getState().status === 'loading') {
+        useTTSAudioStore.setState({ status: 'playing' })
+      }
+    })
+
+    const unlistenEnded = window.electronAPI.tts.onStreamEnded((payload: any) => {
+      if (activeSessionId !== params.sessionId || payload.sessionId !== streamAck.sessionId)
+        return
+      if (payload.reason === 'error' || payload.reason === 'renderer_frozen') {
+        useTTSAudioStore.setState({
+          status: 'error',
+          errorMessage: payload.errorCode || '流式播放中断'
+        })
+      }
+    })
+
+    activeStreamCleanups.push(unlistenChunk, unlistenEnded)
+    return true
+  } catch (err) {
+    console.warn('[TTS] 启动纯流式会话失败:', err)
+    return false
+  }
+}
+
 export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
   playingText: '',
   playingTextId: '',
@@ -1532,88 +1634,22 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
       String(chosenVoiceId).includes('azure_') ||
       getActiveTTSPluginId() === 'tts_m5_onnx'
 
-    if (isM5Voice && window.electronAPI?.tts?.startStream) {
-      try {
-        console.info(
-          `[TTS] 命中 M5-TTS 极速纯流式会话通道 (voiceId=${chosenVoiceId})，发起 stream-start...`
-        )
-        if (currentStreamingPlayer) {
-          currentStreamingPlayer.stop()
-          currentStreamingPlayer = null
-        }
-        activeStreamCleanups.forEach(fn => fn())
-        activeStreamCleanups = []
-
-        const streamAck = await window.electronAPI.tts.startStream({
-          text,
-          voiceId: String(chosenVoiceId),
-          speed: chosenSpeed
-        })
-
-        if (streamAck.ok && streamAck.sessionId) {
-          console.info(
-            `[TTS] 纯流式会话建连成功 (sessionId=${streamAck.sessionId})，首包准备发声...`
-          )
-          if (activeSessionId !== thisSessionId) {
-            window.electronAPI.tts.abortStream?.({ sessionId: streamAck.sessionId })
-            return
-          }
-
-          // 构造分句字符区间表，用于根据 playedCharEnd 动态定位 currentSentenceIndex 与逐句高亮
-          let charOffset = 0
-          const chunkRanges = chunks.map(chunk => {
-            const start = charOffset
-            charOffset += chunk.length
-            return { start, end: charOffset }
-          })
-
-          const player = new StreamingPCMPlayer({
-            onProgress: playedCharEnd => {
-              if (activeSessionId !== thisSessionId) return
-              const foundIdx = chunkRanges.findIndex(
-                r => playedCharEnd >= r.start && playedCharEnd <= r.end
-              )
-              if (foundIdx !== -1 && get().currentSentenceIndex !== foundIdx) {
-                set({ currentSentenceIndex: foundIdx })
-              }
-            },
-            onEnded: () => {
-              if (activeSessionId !== thisSessionId) return
-              set({ status: 'idle', currentSentenceIndex: 0 })
-              stopProgressMonitor()
-            },
-            onError: err => {
-              console.error('[TTS Stream Player] 播放器异常:', err)
-            }
-          })
-
-          currentStreamingPlayer = player
-          await player.start(streamAck.sessionId)
-
-          // 注册下行流数据与结束监听
-          const unlistenChunk = window.electronAPI.tts.onStreamChunkData((payload: any) => {
-            if (activeSessionId !== thisSessionId || payload.sessionId !== streamAck.sessionId)
-              return
-            player.pushChunk(payload)
-            if (get().status === 'loading') {
-              set({ status: 'playing' })
-            }
-          })
-
-          const unlistenEnded = window.electronAPI.tts.onStreamEnded((payload: any) => {
-            if (activeSessionId !== thisSessionId || payload.sessionId !== streamAck.sessionId)
-              return
-            if (payload.reason === 'error' || payload.reason === 'renderer_frozen') {
-              set({ status: 'error', errorMessage: payload.errorCode || '流式播放中断' })
-            }
-          })
-
-          activeStreamCleanups.push(unlistenChunk, unlistenEnded)
-          return
-        }
-      } catch (streamErr) {
-        console.warn('[TTS] 启动纯流式通道失败，平滑降级至分片合成模式:', streamErr)
+    if (isM5Voice && typeof (window.electronAPI as any)?.tts?.startStream === 'function') {
+      console.info(
+        `[TTS] 命中极速语音合成与朗读纯流式会话通道 (voiceId=${chosenVoiceId})，发起 stream-start...`
+      )
+      const launched = await launchStreamingSession({
+        sessionId: thisSessionId,
+        text,
+        voiceId: String(chosenVoiceId),
+        speed: chosenSpeed,
+        initialSentenceIndex: 0,
+        chunks
+      })
+      if (launched) {
+        return
       }
+      console.warn('[TTS] 启动纯流式通道失败，平滑降级至分片合成模式')
     }
 
     // 6. 流式合成调度循环 (Scheme A 传统分片降级路线)
@@ -1984,7 +2020,46 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
       }
     }
 
-    // 2. 分句流式合成模式下的片段跳转与插队优先合成
+    // 2. 纯流式模式下的片段跳转 (通过 resumeCharStart 精准无缝定位)
+    const isM5Voice =
+      !state.currentVoiceId ||
+      String(state.currentVoiceId).includes('m5') ||
+      String(state.currentVoiceId).startsWith('preset_') ||
+      String(state.currentVoiceId).includes('azure_') ||
+      getActiveTTSPluginId() === 'tts_m5_onnx'
+
+    if (isM5Voice && typeof (window.electronAPI as any)?.tts?.startStream === 'function') {
+      let resumeCharStart = 0
+      for (let i = 0; i < clampedIndex; i++) {
+        resumeCharStart += currentCleanedChunks[i].length
+      }
+
+      const thisSeekSession = ++sessionCounter
+      activeSessionId = thisSeekSession
+
+      toast.info(t('跳转至目标片段并重新流式合成...'), 2000, 'tts-seek-loading')
+      set({
+        status: 'loading',
+        currentSentenceIndex: clampedIndex,
+        bufferedDuration: 0
+      })
+
+      const ok = await launchStreamingSession({
+        sessionId: thisSeekSession,
+        text: state.playingText,
+        voiceId: String(state.currentVoiceId || DEFAULT_VOICE_ID),
+        speed: state.speed,
+        resumeCharStart,
+        initialSentenceIndex: clampedIndex,
+        chunks: currentCleanedChunks
+      })
+
+      if (ok) {
+        return
+      }
+    }
+
+    // 3. 分句流式合成模式下的片段跳转与插队优先合成 (Scheme A 降级通道)
     const thisSeekSession = ++sessionCounter
     activeSessionId = thisSeekSession
     if (window.electronAPI?.tts?.abortSession) {

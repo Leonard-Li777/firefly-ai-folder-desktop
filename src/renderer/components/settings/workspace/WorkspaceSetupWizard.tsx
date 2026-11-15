@@ -77,6 +77,10 @@ export interface WorkspaceSetupWizardProps {
    * @param mode 'complete' 自动完成并进入工作目录；'customize' 切入个性化微调配置
    */
   onFinish: (mode: 'complete' | 'customize', readyConfig: WorkspaceConfig) => void
+  /**
+   * 跳过向导回调（不绑定工作流，直接退出向导并进入工作目录设置）
+   */
+  onSkip?: () => void
 }
 
 /** 目录嗅探画像统计结构 */
@@ -574,7 +578,8 @@ function getWorkflowReasonDisplay(reasonCode?: RecommendReasonCode, fallbackText
 export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
   workspace,
   hardwareInfo,
-  onFinish
+  onFinish,
+  onSkip
 }) => {
   // 向导步骤状态机：步骤 1 (选择工作流) ➔ 步骤 2 (包含与排除规则确认)
   const [currentStep, setCurrentStep] = useState<1 | 2>(1)
@@ -1296,6 +1301,18 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
         {workflowsLoadError && (
           <p className="text-xs text-muted-foreground max-w-md break-words">{workflowsLoadError}</p>
         )}
+        {onSkip && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onSkip}
+            data-testid="skip-wizard-btn"
+            className="mt-2 text-xs"
+          >
+            <span>{t('跳过向导，直接进入设置')}</span>
+          </Button>
+        )}
       </div>
     )
   }
@@ -1956,6 +1973,18 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
         </div>
 
         <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+          {onSkip && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="default"
+              onClick={onSkip}
+              data-testid="skip-wizard-btn"
+              className="w-full sm:w-auto flex items-center justify-center gap-1.5 text-xs font-semibold px-3 text-muted-foreground hover:text-foreground h-9"
+            >
+              <span>{t('跳过向导')}</span>
+            </Button>
+          )}
           {currentStep === 1 ? (
             <Button
               type="button"
@@ -1976,6 +2005,19 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
           ) : (
             /* 步骤 2 并行双强主出口 (Ticket 04 AC-4.6) */
             <div className="flex items-center gap-2.5 w-full sm:w-auto">
+              {onSkip && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="default"
+                  onClick={onSkip}
+                  data-testid="skip-wizard-btn-step2"
+                  className="w-full sm:w-auto flex items-center justify-center gap-1.5 text-xs font-semibold px-3 text-muted-foreground hover:text-foreground h-9"
+                >
+                  <span>{t('跳过向导')}</span>
+                </Button>
+              )}
+
               {/* 出口 1：个性化微调工作目录配置 (高亮边框强调；悬停沿用主题主色文字与浅底，规避暗色模式下 --primary-foreground 深黑对比度失真) */}
               <Button
                 type="button"

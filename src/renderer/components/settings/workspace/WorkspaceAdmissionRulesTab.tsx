@@ -2,11 +2,17 @@ import React, { useState, useMemo, useEffect, useCallback, useImperativeHandle, 
 import {
   WorkspaceDirectory,
   WorkspaceConfig,
+  WorkspaceConfigReady,
+  HardwareInfo,
   IIgnoreRule,
   parseWorkspaceConfig,
   SettingsCategory
 } from '@firefly/types'
-import { filterOutGlobalExclusionRules, isValidAdmissionExtension } from '@firefly/shared'
+import {
+  filterOutGlobalExclusionRules,
+  isValidAdmissionExtension,
+  mapIntentToParameters
+} from '@firefly/shared'
 import { useSettingsStore } from '../../../stores/settings-store'
 import { Card } from '../../ui/card'
 import { Button } from '../../ui/button'
@@ -36,6 +42,7 @@ import {
 
 export interface WorkspaceAdmissionRulesTabProps {
   workspace: WorkspaceDirectory
+  hardwareInfo?: HardwareInfo | null
   onConfigSaved?: () => void
   onDirtyChange?: (isDirty: boolean) => void
 }
@@ -68,7 +75,10 @@ export type WorkspaceIgnoreRulesTabProps = WorkspaceAdmissionRulesTabProps
 export const WorkspaceAdmissionRulesTab = forwardRef<
   WorkspaceAdmissionRulesTabHandle,
   WorkspaceAdmissionRulesTabProps
->(function WorkspaceAdmissionRulesTab({ workspace, onConfigSaved, onDirtyChange }, ref) {
+>(function WorkspaceAdmissionRulesTab(
+  { workspace, hardwareInfo, onConfigSaved, onDirtyChange },
+  ref
+) {
   const systemRules = useSettingsStore(s => s.ignoreRules)
   const openSystemSettings = useSettingsStore(s => s.openSystemSettings)
 
@@ -330,16 +340,25 @@ export const WorkspaceAdmissionRulesTab = forwardRef<
   const persistRules = async (nextRules: IIgnoreRule[]) => {
     if (!workspace.id) return
     try {
-      if (parsedConfig.status !== 'ready') {
-        toast.error(t('请先在向导中完成基础场景配置'))
-        return
-      }
+      const isReady = parsedConfig.status === 'ready'
+      const baseDerived = mapIntentToParameters('fast_archive', hardwareInfo)
 
-      const updatedConfig: WorkspaceConfig = {
-        ...parsedConfig,
-        customExcludeRules: nextRules,
-        configuredAt: Date.now()
-      }
+      const updatedConfig: WorkspaceConfig = isReady
+        ? {
+            ...parsedConfig,
+            customExcludeRules: nextRules,
+            configuredAt: Date.now()
+          }
+        : {
+            schemaVersion: 1,
+            status: 'ready',
+            policyVersion: 1,
+            baseAIConfig: baseDerived,
+            derivedSnapshot: baseDerived,
+            customExcludeRules: nextRules,
+            customIncludeRules: [],
+            configuredAt: Date.now()
+          }
 
       if (window.electronAPI?.updateWorkspaceConfig) {
         const res = await window.electronAPI.updateWorkspaceConfig(workspace.id, updatedConfig)
@@ -465,65 +484,6 @@ export const WorkspaceAdmissionRulesTab = forwardRef<
             </Button>
           </div>
         )}
-      </div>
-
-      {/* 醒目绿色安全铁律提示 */}
-      <div className="flex items-start gap-3 p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-900 dark:text-emerald-200">
-        <div className="p-1 rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5">
-          <ShieldCheck className="w-5 h-5" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-bold text-xs">{t('底层物理安全保障')}</span>
-            <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
-              <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-              {t('绝不删除用户磁盘物理文件')}
-            </span>
-          </div>
-          <p className="text-[11px] mt-1 text-emerald-800/90 dark:text-emerald-300/90 leading-relaxed">
-            {t(
-              '修改包含与排除规则仅影响真实目录中显示的文件，不会触碰您电脑磁盘中的任何原始物理文件。'
-            )}
-          </p>
-        </div>
-      </div>
-
-      {/* 两套规则常驻叠加：规格已废除二选一互斥模式，此处仅说明固定判定顺序 */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <Label className="text-sm font-semibold flex items-center gap-2">
-            <ListFilter className="w-4 h-4 text-primary" />
-            <span>{t('文件准入规则 (可同时设置)')}</span>
-          </Label>
-          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-            {t('包含 + 排除叠加生效')}
-          </span>
-        </div>
-
-        <Card className="p-3.5 bg-muted/10 border-border/70 space-y-2.5">
-          <p className="text-[11px] text-foreground leading-relaxed">
-            {t(
-              '包含规则与排除规则是两套独立配置，可同时设置、叠加生效，无需在两者之间二选一。系统按以下固定顺序判定：'
-            )}
-          </p>
-          <div className="flex flex-wrap items-center gap-1.5">
-            {[t('1. 系统硬排除'), t('2. 目录专属排除'), t('3. 包含规则'), t('4. 默认放行')].map(
-              (step, idx) => (
-                <React.Fragment key={step}>
-                  {idx > 0 && <span className="text-[10px] text-muted-foreground">→</span>}
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-muted/60 text-foreground border border-border/60">
-                    {step}
-                  </span>
-                </React.Fragment>
-              )
-            )}
-          </div>
-          <p className="text-[11px] text-muted-foreground leading-relaxed">
-            {t(
-              '包含规则留空表示不限格式，除排除项外全量放行；填写后仅放行这些扩展名。排除规则始终优先生效，可在宽泛包含规则下精确剔除缩略图、缓存目录等文件。'
-            )}
-          </p>
-        </Card>
       </div>
 
       {/* 实时影响测算与大白话预览 */}
@@ -986,6 +946,65 @@ export const WorkspaceAdmissionRulesTab = forwardRef<
           ))}
         </div>
       </Card>
+
+      {/* 醒目绿色安全铁律提示 */}
+      <div className="flex items-start gap-3 p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-900 dark:text-emerald-200">
+        <div className="p-1 rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5">
+          <ShieldCheck className="w-5 h-5" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-bold text-xs">{t('底层物理安全保障')}</span>
+            <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+              <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+              {t('绝不删除用户磁盘物理文件')}
+            </span>
+          </div>
+          <p className="text-[11px] mt-1 text-emerald-800/90 dark:text-emerald-300/90 leading-relaxed">
+            {t(
+              '修改包含与排除规则仅影响真实目录中显示的文件，不会触碰您电脑磁盘中的任何原始物理文件。'
+            )}
+          </p>
+        </div>
+      </div>
+
+      {/* 两套规则常驻叠加：规格已废除二选一互斥模式，此处仅说明固定判定顺序 */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <Label className="text-sm font-semibold flex items-center gap-2">
+            <ListFilter className="w-4 h-4 text-primary" />
+            <span>{t('文件准入规则 (可同时设置)')}</span>
+          </Label>
+          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+            {t('包含 + 排除叠加生效')}
+          </span>
+        </div>
+
+        <Card className="p-3.5 bg-muted/10 border-border/70 space-y-2.5">
+          <p className="text-[11px] text-foreground leading-relaxed">
+            {t(
+              '包含规则与排除规则是两套独立配置，可同时设置、叠加生效，无需在两者之间二选一。系统按以下固定顺序判定：'
+            )}
+          </p>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {[t('1. 系统硬排除'), t('2. 目录专属排除'), t('3. 包含规则'), t('4. 默认放行')].map(
+              (step, idx) => (
+                <React.Fragment key={step}>
+                  {idx > 0 && <span className="text-[10px] text-muted-foreground">→</span>}
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-muted/60 text-foreground border border-border/60">
+                    {step}
+                  </span>
+                </React.Fragment>
+              )
+            )}
+          </div>
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            {t(
+              '包含规则留空表示不限格式，除排除项外全量放行；填写后仅放行这些扩展名。排除规则始终优先生效，可在宽泛包含规则下精确剔除缩略图、缓存目录等文件。'
+            )}
+          </p>
+        </Card>
+      </div>
     </div>
   )
 })

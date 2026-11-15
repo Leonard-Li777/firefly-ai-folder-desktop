@@ -64,9 +64,6 @@ export const ContentExtractionSettings: React.FC = () => {
   const [localMaxContentSizeKb, setLocalMaxContentSizeKb] = useState<number>(
     getConfigValue<number>('MAX_CONTENT_SIZE_KB') ?? 30
   )
-  const [localEnableOfficeCover, setLocalEnableOfficeCover] = useState<boolean>(
-    getConfigValue<boolean>('ENABLE_OFFICE_COVER') ?? false
-  )
   const [localMaxDocOcrItems, setLocalMaxDocOcrItems] = useState<number>(
     getConfigValue<number>('MAX_DOCUMENT_OCR_ITEMS') ?? 3
   )
@@ -136,11 +133,6 @@ export const ContentExtractionSettings: React.FC = () => {
     const externalSize = getConfigValue<number>('MAX_CONTENT_SIZE_KB') ?? 30
     if (externalSize !== localMaxContentSizeKb) {
       setLocalMaxContentSizeKb(externalSize)
-    }
-
-    const externalOfficeCover = getConfigValue<boolean>('ENABLE_OFFICE_COVER') ?? false
-    if (externalOfficeCover !== localEnableOfficeCover) {
-      setLocalEnableOfficeCover(externalOfficeCover)
     }
 
     const externalOcrItems = getConfigValue<number>('MAX_DOCUMENT_OCR_ITEMS') ?? 3
@@ -308,23 +300,22 @@ export const ContentExtractionSettings: React.FC = () => {
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {localEnableOfficeCover
+                    {(getConfigValue<boolean>('ENABLE_OFFICE_COVER') ?? false)
                       ? t('开启，调用LibreOffice转首页为缩略图封面（非常耗时）')
                       : t('关闭，跳过Office封面图提取')}
                   </p>
                 </div>
                 <Switch
                   id="office-cover-switch"
-                  checked={localEnableOfficeCover}
+                  checked={getConfigValue<boolean>('ENABLE_OFFICE_COVER') ?? false}
                   onCheckedChange={checked => {
-                    setLocalEnableOfficeCover(checked)
                     updateConfigValue('ENABLE_OFFICE_COVER', checked)
                     captureEvent('切换Office封面截图', { enabled: checked })
                   }}
                 />
               </div>
 
-              {localEnableOfficeCover && (
+              {(getConfigValue<boolean>('ENABLE_OFFICE_COVER') ?? false) && (
                 <div className="pt-3 border-t border-border/40">
                   <div className="flex items-start justify-between">
                     <div className="flex-1 pr-4">

@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { WorkspaceDirectory, WorkspaceConfig, parseWorkspaceConfig } from '@firefly/types'
-import { getIntentDisplayName } from '../WorkspaceConfigPanel'
 import { Card } from '../../ui/card'
 import { Button } from '../../ui/button'
 import { Switch } from '../../ui/switch'
@@ -410,15 +409,7 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-border/40 text-[11px] text-muted-foreground">
-          <div className="flex items-center gap-2 min-w-0">
-            <Layers className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
-            <span>{t('场景意图: ')}</span>
-            <span className="font-semibold text-foreground truncate">
-              {isReady ? getIntentDisplayName(parsedConfig.intent) : t('未指定')}
-            </span>
-          </div>
-
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border/40 text-[11px] text-muted-foreground">
           <div className="flex items-center gap-2 min-w-0">
             <Sparkles className="w-3.5 h-3.5 shrink-0 text-primary" />
             <span>{t('绑定工作流: ')}</span>

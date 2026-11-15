@@ -75,6 +75,7 @@ describe('WorkspaceSettingsDialog 美化确认对话框拦截测试 (无原生co
 
     window.electronAPI = {
       updateWorkspaceWhitelist: mockUpdateWorkspaceWhitelist,
+      updateWorkspaceConfig: vi.fn().mockResolvedValue({ success: true }),
       previewWorkspaceWhitelistImpact: vi.fn().mockResolvedValue({
         success: true,
         totalFiles: 10,
@@ -83,7 +84,20 @@ describe('WorkspaceSettingsDialog 美化确认对话框拦截测试 (无原生co
         isSampled: false
       }),
       getAllWorkspaceDirectories: vi.fn().mockResolvedValue([mockWorkspace]),
-      getHardwareInfo: vi.fn().mockResolvedValue(null)
+      getHardwareInfo: vi.fn().mockResolvedValue(null),
+      workflow: {
+        getAllWorkflows: vi.fn().mockResolvedValue([
+          {
+            id: 'builtin.workflow.test',
+            name: '测试工作流',
+            category: 'office',
+            persona: '日常办公',
+            summary: '测试摘要',
+            extensions: JSON.stringify({ common: [], weights: {} }),
+            workspace_config: JSON.stringify({ customIncludeRules: [], customExcludeRules: [] })
+          }
+        ])
+      }
     } as any
   })
 
@@ -198,5 +212,80 @@ describe('WorkspaceSettingsDialog 美化确认对话框拦截测试 (无原生co
     // 依然停留在当前页面，右上角的保存按钮依然在
     expect(screen.getByText('保存包含与排除规则')).toBeDefined()
     expect(mockUpdateWorkspaceWhitelist).not.toHaveBeenCalled()
+  })
+
+  it('工作目录未绑定工作流时(status: pending)，打开工作目录设置直接进入 4-Tab 视图而非被向导阻断', async () => {
+    // 构造一个未绑定工作流的 pending 工作区
+    const pendingWorkspace: WorkspaceDirectory = {
+      ...mockWorkspace,
+      id: 2,
+      name: 'unbound-dir',
+      workspace_config: JSON.stringify({
+        schemaVersion: 1,
+        status: 'pending'
+      })
+    }
+
+    useVirtualDirectoryStore.setState({
+      workspaceDirectories: [pendingWorkspace],
+      currentWorkspaceDirectory: pendingWorkspace
+    })
+
+    useSettingsStore.setState({
+      isWorkspaceSettingsOpen: true,
+      targetWorkspaceId: 2,
+      targetWorkspaceTab: null // 正常打开设置，非 wizard
+    })
+
+    render(<WorkspaceSettingsDialog />)
+
+    // 应直接展示 4-Tab 导航（例如「检索式引擎」、「文件准入与包含排除」），而不是向导首屏「工作目录工作流向导」
+    await waitFor(() => {
+      expect(screen.getAllByText('检索式引擎').length).toBeGreaterThan(0)
+      expect(screen.getByText('文件准入与包含排除')).toBeDefined()
+      expect(screen.getByText('未绑定工作流')).toBeDefined()
+    })
+
+    // 不应出现向导专有的「选择工作流」步骤胶囊
+    expect(screen.queryByText('选择工作流')).toBeNull()
+  })
+
+  it('在向导视图中点击【跳过向导】，退出向导模式切入 4-Tab 高级设置', async () => {
+    const pendingWorkspace: WorkspaceDirectory = {
+      ...mockWorkspace,
+      id: 3,
+      name: 'wizard-skip-dir',
+      workspace_config: JSON.stringify({
+        schemaVersion: 1,
+        status: 'pending'
+      })
+    }
+
+    useVirtualDirectoryStore.setState({
+      workspaceDirectories: [pendingWorkspace],
+      currentWorkspaceDirectory: pendingWorkspace
+    })
+
+    useSettingsStore.setState({
+      isWorkspaceSettingsOpen: true,
+      targetWorkspaceId: 3,
+      targetWorkspaceTab: 'wizard' // 显式进入向导
+    })
+
+    render(<WorkspaceSettingsDialog />)
+
+    // 应展示向导中的跳过按钮
+    const skipBtn = await screen.findByTestId('skip-wizard-btn')
+    expect(skipBtn).toBeDefined()
+    expect(skipBtn.textContent).toContain('跳过向导')
+
+    // 点击【跳过向导】
+    fireEvent.click(skipBtn)
+
+    // 应退出向导，直接切入 4-Tab 设置页面
+    await waitFor(() => {
+      expect(screen.getAllByText('检索式引擎').length).toBeGreaterThan(0)
+      expect(screen.getByText('文件准入与包含排除')).toBeDefined()
+    })
   })
 })

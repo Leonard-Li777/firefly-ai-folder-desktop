@@ -867,7 +867,10 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
           // 7. 新建工作目录主动弹出配置向导
           const targetDir = officialDirectory || newDirectory
           if (targetDir?.id) {
-            useSettingsStore.getState().openWorkspaceSettings({ workspaceId: targetDir.id })
+            useSettingsStore.getState().openWorkspaceSettings({
+              workspaceId: targetDir.id,
+              targetTab: 'wizard'
+            })
           }
         }
       } catch (error: any) {

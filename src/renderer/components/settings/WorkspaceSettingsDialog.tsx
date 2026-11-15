@@ -2,9 +2,11 @@ import React, { useState, useEffect, useMemo, memo } from 'react'
 import {
   WorkspaceDirectory,
   WorkspaceConfig,
+  WorkspaceConfigReady,
   parseWorkspaceConfig,
   HardwareInfo
 } from '@firefly/types'
+import { mapIntentToParameters } from '@firefly/shared'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog'
 import {
   AlertDialog,
@@ -91,6 +93,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<number | null>(null)
   const [activeTab, setActiveTab] = useState<WorkspaceTabId>('basic_ai_engine')
   const [isManualWizardMode, setIsManualWizardMode] = useState<boolean>(false)
+  const [isWizardDismissed, setIsWizardDismissed] = useState<boolean>(false)
   const [hardwareInfo, setHardwareInfo] = useState<HardwareInfo | null>(null)
   const [visitedTabs, setVisitedTabs] = useState<Set<WorkspaceTabId>>(
     () => new Set(['basic_ai_engine'])
@@ -167,11 +170,15 @@ export const WorkspaceSettingsDialog: React.FC = () => {
     requestLeaveAction(() => {
       setSelectedWorkspaceId(nextId)
       setIsManualWizardMode(false)
+      setIsWizardDismissed(false)
     })
   }
 
   const handleRunWizard = () => {
-    requestLeaveAction(() => setIsManualWizardMode(true))
+    requestLeaveAction(() => {
+      setIsWizardDismissed(false)
+      setIsManualWizardMode(true)
+    })
   }
 
   // 1a. 初始化或同步选中的工作区 ID
@@ -190,6 +197,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
   // 1b. 弹窗打开或路由锚点变化时，直达目标 Tab 或工作流向导模式
   useEffect(() => {
     if (isOpen) {
+      setIsWizardDismissed(false)
       if (targetWorkspaceTab === 'wizard') {
         setIsManualWizardMode(true)
       } else {
@@ -237,9 +245,42 @@ export const WorkspaceSettingsDialog: React.FC = () => {
     return parseWorkspaceConfig(activeWorkspace.workspace_config)
   }, [activeWorkspace?.workspace_config])
 
-  // 判断是否应该展示设置向导
+  // 判断是否应该展示设置向导：
+  // 仅在用户显式要求向导模式（targetWorkspaceTab === 'wizard' 或手动点击运行向导）且未点击跳过时展示向导；
+  // 即使工作区未绑定工作流（isPending），只要用户是打开工作目录设置，均允许直接进入 4-Tab 高级设置。
   const isPending = parsedConfig.status === 'pending'
-  const showWizard = isPending || isManualWizardMode
+  const showWizard =
+    !isWizardDismissed && (isManualWizardMode || targetWorkspaceTab === 'wizard')
+
+  // 用户点击【跳过向导】：退出向导模式，进入 4-Tab 高级设置，并持久化默认就绪配置（不绑定工作流）
+  const handleSkipWizard = async () => {
+    setIsManualWizardMode(false)
+    setIsWizardDismissed(true)
+
+    if (
+      activeWorkspace?.id != null &&
+      parsedConfig.status === 'pending' &&
+      window.electronAPI?.updateWorkspaceConfig
+    ) {
+      try {
+        const baseDerived = mapIntentToParameters('fast_archive', hardwareInfo)
+        const skippedConfig: WorkspaceConfigReady = {
+          schemaVersion: 1,
+          status: 'ready',
+          policyVersion: 1,
+          baseAIConfig: baseDerived,
+          derivedSnapshot: baseDerived,
+          customExcludeRules: [],
+          customIncludeRules: [],
+          configuredAt: Date.now()
+        }
+        await window.electronAPI.updateWorkspaceConfig(activeWorkspace.id, skippedConfig)
+        await refreshWorkspaceData()
+      } catch (err) {
+        console.warn('[WorkspaceSettingsDialog] 跳过向导持久化默认就绪配置失败:', err)
+      }
+    }
+  }
 
   // 刷新工作区列表数据
   const refreshWorkspaceData = async () => {
@@ -349,7 +390,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                     {isPending ? (
                       <>
                         <Clock className="w-3 h-3" />
-                        <span>{t('待配置 (向导)')}</span>
+                        <span>{t('未绑定工作流')}</span>
                       </>
                     ) : (
                       <>
@@ -405,6 +446,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
               <WorkspaceSetupWizard
                 workspace={activeWorkspace}
                 hardwareInfo={hardwareInfo}
+                onSkip={handleSkipWizard}
                 onFinish={async (mode, readyConfig) => {
                   await refreshWorkspaceData()
                   if (mode === 'complete') {
@@ -412,6 +454,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                   } else {
                     // 切入深度自定义模式：直达「文件准入与包含排除」Tab
                     setIsManualWizardMode(false)
+                    setIsWizardDismissed(true)
                     setActiveTab('ignore_rules')
                   }
                 }}
@@ -521,6 +564,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                       ref={rulesTabRef}
                       key={activeWorkspace.id}
                       workspace={activeWorkspace}
+                      hardwareInfo={hardwareInfo}
                       onConfigSaved={refreshWorkspaceData}
                     />
                   </div>

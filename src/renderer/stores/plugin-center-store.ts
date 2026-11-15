@@ -496,7 +496,7 @@ export function getInitialPlugins(): PluginModuleItem[] {
       backend_type: 'omni_onnx',
       author_code: 'official',
       author_name: null,
-      availability: 'approved',
+      availability: 'draft',
       ...buildSeedCatalogFields('pocket-cpu-int8-onnx'),
       install_state: 'not_installed',
       contributes: {

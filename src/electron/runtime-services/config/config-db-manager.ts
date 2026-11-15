@@ -1119,6 +1119,39 @@ export class ConfigDbManager {
     return this.fileConstantsMap.get(key) as T
   }
 
+  /**
+   * 维度名黑名单（R-G2-07 按名拒绝的数据源）
+   *
+   * 从权威维度集 getFileDimensions() 收集全部维度展示名（当前语言），
+   * 供标签准入闸 isTagAdmissible 的 dimensionNames 入参消费：AI 误将维度名
+   * 本身作为内容标签时按名拒绝（如「作者」同时是 OMW 受控根维度 hownet.*[作者]）。
+   *
+   * - 单一事实源：直接派生自 getFileDimensions()，不另建维度名副本；
+   * - 随语言变化：维度名走 tag_aliases_{lang} 还原，语言切换后 invalidateDimensionCache()
+   *   会清空 fileDimensionsCache，本方法下次调用即按新语言重建；
+   * - 过滤空串与占位 code 名，避免把兜底值误当维度名。
+   */
+  getDimensionNameBlacklist(): Set<string> {
+    const set = new Set<string>()
+    try {
+      for (const dim of this.getFileDimensions()) {
+        const name = typeof dim?.name === 'string' ? dim.name.trim() : ''
+        // 占位名 = code 本身（维度别名缺失时的兜底），不属于用户可读维度名，排除
+        if (name && name !== dim?.code) {
+          set.add(name)
+        }
+      }
+    } catch (err) {
+      // 降级不静默：黑名单构建失败时上报，闸门退化为仅按受控根 code 拦截（仍安全）
+      logger.warn(
+        LogCategory.CONFIG,
+        'ConfigDbManager: 构建维度名黑名单失败，闸门退化为仅受控根 code 拦截:',
+        err
+      )
+    }
+    return set
+  }
+
   getAllFileConstants(): Record<string, any> {
     return Object.fromEntries(this.fileConstantsMap)
   }

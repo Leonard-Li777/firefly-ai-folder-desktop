@@ -23,6 +23,7 @@ import { ColumnResizer } from './components/ColumnResizer'
 import { ContextMenu } from '../../common/ContextMenu'
 import { SelectionBox } from './components/SelectionBox'
 import { VirtualRowRenderer } from './components/VirtualRowRenderer'
+import { FileAdmissionNoticeBar } from './components/FileAdmissionNoticeBar'
 import { EmptyState } from '../../common/EmptyState'
 import { Loading } from '../../common/Loading'
 import { t } from '@app/languages'
@@ -1154,6 +1155,12 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
             )
           })()}
         </div>
+
+        <FileAdmissionNoticeBar
+          visible={isRealDirectory}
+          workspaceId={targetWorkspace?.id ?? currentWorkspaceDirectory?.id}
+          onOpenAdmissionRules={handleOpenAdmissionRules}
+        />
       </div>
     )
   }
@@ -1261,6 +1268,12 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
             </div>
           ) : null}
         </div>
+
+        <FileAdmissionNoticeBar
+          visible={isRealDirectory}
+          workspaceId={targetWorkspace?.id ?? currentWorkspaceDirectory?.id}
+          onOpenAdmissionRules={handleOpenAdmissionRules}
+        />
       </div>
     )
   }
@@ -1347,6 +1360,12 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
         ) : (
           renderEmptyState(t('正在准备网格...'))
         )}
+
+        <FileAdmissionNoticeBar
+          visible={isRealDirectory}
+          workspaceId={targetWorkspace?.id ?? currentWorkspaceDirectory?.id}
+          onOpenAdmissionRules={handleOpenAdmissionRules}
+        />
       </div>
     )
   }
@@ -1529,6 +1548,12 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
         </table>
       </div>
       )}
+
+      <FileAdmissionNoticeBar
+        visible={isRealDirectory}
+        workspaceId={targetWorkspace?.id ?? currentWorkspaceDirectory?.id}
+        onOpenAdmissionRules={handleOpenAdmissionRules}
+      />
     </div>
   )
 }

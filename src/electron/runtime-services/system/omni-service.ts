@@ -2005,7 +2005,7 @@ export class OmniService {
       }
     } else if (opts.moduleId === 'tts_moss_onnx' || opts.moduleId === 'tts_m5_onnx') {
       const expectedEngine =
-        opts.moduleId === 'tts_m5_onnx' ? 'm5-tts-50m-int8' : 'moss-tts-nano-100m'
+        opts.moduleId === 'tts_m5_onnx' ? 'express-voice-24k' : 'clone-voice-48k'
       // 引擎重启后模型加载需要时间，执行有界轮询（最长 15s，每 500ms 重试），杜绝单次 4s 超时误杀降级
       const deadline = Date.now() + 15_000
       let lastError = ''

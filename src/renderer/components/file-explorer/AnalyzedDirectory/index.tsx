@@ -468,7 +468,10 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
                 setCurrentWorkspaceDirectory(target)
                 navigate('/real-directory')
                 if (target?.id) {
-                  useSettingsStore.getState().openWorkspaceSettings({ workspaceId: target.id })
+                  useSettingsStore.getState().openWorkspaceSettings({
+                    workspaceId: target.id,
+                    targetTab: 'wizard'
+                  })
                 }
               } catch (e: any) {
                 toast.error(e?.message || t('添加工作目录失败'))
@@ -743,7 +746,10 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
                 const allDirs = await window.electronAPI!.getAllWorkspaceDirectories()
                 const official = allDirs.find(d => isPathEqual(d.path, p))
                 if (official?.id) {
-                  useSettingsStore.getState().openWorkspaceSettings({ workspaceId: official.id })
+                  useSettingsStore.getState().openWorkspaceSettings({
+                    workspaceId: official.id,
+                    targetTab: 'wizard'
+                  })
                 }
               } catch (e: any) {
                 toast.error(e?.message || t('添加工作目录失败'))
