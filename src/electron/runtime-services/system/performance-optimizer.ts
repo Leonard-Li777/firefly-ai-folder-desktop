@@ -380,7 +380,7 @@ export class PerformanceOptimizer extends EventEmitter {
     const responseTimes: number[] = []
 
     try {
-      loggingService.info(LogCategory.PERFORMANCE_OPTIMIZER, '开始模型预热')
+      loggingService.debug(LogCategory.PERFORMANCE_OPTIMIZER, '开始模型预热')
       this.emit('warmup-started')
 
       for (let i = 0; i < this.warmupConfig.requestCount; i++) {
@@ -430,7 +430,7 @@ export class PerformanceOptimizer extends EventEmitter {
 
       if (result.success) {
         this.isWarmedUp = true
-        loggingService.info(
+        loggingService.debug(
           LogCategory.PERFORMANCE_OPTIMIZER,
           `模型预热完成，成功: ${successfulRequests}/${this.warmupConfig.requestCount}，平均响应时间: ${avgResponseTime.toFixed(2)}ms`
         )
@@ -529,7 +529,7 @@ export class PerformanceOptimizer extends EventEmitter {
       }
     }, monitoringInterval)
 
-    loggingService.info(
+    loggingService.debug(
       LogCategory.PERFORMANCE_OPTIMIZER,
       `性能监控已启动，间隔: ${monitoringInterval}ms`
     )
@@ -572,7 +572,7 @@ export class PerformanceOptimizer extends EventEmitter {
     const errors: string[] = []
 
     try {
-      loggingService.info(LogCategory.PERFORMANCE_OPTIMIZER, '开始性能优化')
+      loggingService.debug(LogCategory.PERFORMANCE_OPTIMIZER, '开始性能优化')
       this.emit('optimization-started')
 
       // 获取当前性能指标（复用调用方已获取的指标，避免重复计算）
@@ -584,7 +584,7 @@ export class PerformanceOptimizer extends EventEmitter {
         .sort((a, b) => a.priority - b.priority)
 
       if (applicableStrategies.length === 0) {
-        loggingService.info(LogCategory.PERFORMANCE_OPTIMIZER, '没有需要执行的优化策略')
+        loggingService.debug(LogCategory.PERFORMANCE_OPTIMIZER, '没有需要执行的优化策略')
         return { executed, skipped, errors }
       }
 
@@ -608,7 +608,7 @@ export class PerformanceOptimizer extends EventEmitter {
 
           if (success) {
             executed.push(strategy.name)
-            loggingService.info(
+            loggingService.debug(
               LogCategory.PERFORMANCE_OPTIMIZER,
               `优化策略执行成功: ${strategy.name}`
             )
@@ -635,7 +635,7 @@ export class PerformanceOptimizer extends EventEmitter {
       this.statistics.optimizationCount++
       this.statistics.lastUpdate = new Date()
 
-      loggingService.info(
+      loggingService.debug(
         LogCategory.PERFORMANCE_OPTIMIZER,
         `性能优化完成，执行: ${executed.length}，跳过: ${skipped.length}，错误: ${errors.length}`
       )
@@ -721,7 +721,7 @@ export class PerformanceOptimizer extends EventEmitter {
     this.performanceThresholds = { ...this.performanceThresholds, ...thresholds }
     this.saveConfiguration()
 
-    loggingService.info(LogCategory.PERFORMANCE_OPTIMIZER, '性能阈值已更新', thresholds)
+    loggingService.debug(LogCategory.PERFORMANCE_OPTIMIZER, '性能阈值已更新', thresholds)
     this.emit('thresholds-updated', this.performanceThresholds)
   }
 
@@ -732,7 +732,7 @@ export class PerformanceOptimizer extends EventEmitter {
     this.warmupConfig = { ...this.warmupConfig, ...config }
     this.saveConfiguration()
 
-    loggingService.info(LogCategory.PERFORMANCE_OPTIMIZER, '预热配置已更新', config)
+    loggingService.debug(LogCategory.PERFORMANCE_OPTIMIZER, '预热配置已更新', config)
     this.emit('warmup-config-updated', this.warmupConfig)
   }
 
@@ -862,7 +862,7 @@ export class PerformanceOptimizer extends EventEmitter {
         concurrencyController.updateMaxConcurrency(newCurrent)
         this.currentConcurrency = newCurrent
 
-        loggingService.info(
+        loggingService.debug(
           LogCategory.PERFORMANCE_OPTIMIZER,
           `并发数已降低: ${previous} -> ${newCurrent}`
         )
@@ -897,7 +897,7 @@ export class PerformanceOptimizer extends EventEmitter {
         concurrencyController.updateMaxConcurrency(newCurrent)
         this.currentConcurrency = newCurrent
 
-        loggingService.info(
+        loggingService.debug(
           LogCategory.PERFORMANCE_OPTIMIZER,
           `并发数已增加: ${previous} -> ${newCurrent}`
         )
@@ -924,7 +924,7 @@ export class PerformanceOptimizer extends EventEmitter {
         0
       )
 
-      loggingService.info(
+      loggingService.debug(
         LogCategory.PERFORMANCE_OPTIMIZER,
         `内存优化完成，释放内存: ${totalMemoryReleased}MB`
       )
@@ -947,7 +947,7 @@ export class PerformanceOptimizer extends EventEmitter {
 
       const clearedRequests = statsBefore.queuedRequests - statsAfter.queuedRequests
 
-      loggingService.info(
+      loggingService.debug(
         LogCategory.PERFORMANCE_OPTIMIZER,
         `队列已清理，清除请求数: ${clearedRequests}`
       )
@@ -1022,7 +1022,7 @@ export class PerformanceOptimizer extends EventEmitter {
     this.requestTimes = []
     this.requestStartTimes.clear()
 
-    loggingService.info(LogCategory.PERFORMANCE_OPTIMIZER, '性能优化服务已清理')
+    loggingService.debug(LogCategory.PERFORMANCE_OPTIMIZER, '性能优化服务已清理')
   }
 }
 

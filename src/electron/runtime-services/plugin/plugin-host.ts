@@ -43,6 +43,7 @@ export interface PluginHostOptions {
   handshakeTimeoutMs?: number
   /** 自定义日志记录器 */
   logger?: {
+    debug: (...args: any[]) => void
     info: (...args: any[]) => void
     warn: (...args: any[]) => void
     error: (...args: any[]) => void
@@ -93,6 +94,7 @@ export class PluginHost {
   private readonly utilityProcessFactory?: UtilityProcessFactory
   private readonly handshakeTimeoutMs: number
   private readonly logger: {
+    debug: (...args: any[]) => void
     info: (...args: any[]) => void
     warn: (...args: any[]) => void
     error: (...args: any[]) => void
@@ -183,7 +185,7 @@ export class PluginHost {
 
       try {
         const generation = this.stateMachine.bumpGeneration()
-        this.logger.info(`[PluginHost:${this.manifest.id}] Spawning generation ${generation}...`)
+        this.logger.debug(`[PluginHost:${this.manifest.id}] Spawning generation ${generation}...`)
 
         let proc: IPluginUtilityProcess
         if (this.utilityProcessFactory) {
@@ -485,7 +487,7 @@ export class PluginHost {
   }): Promise<TResult> {
     // 0. 大文件拦截 (>1GB 直接跳过深度解析，回退 Omni 基线，绝不判死) (AC 4)
     if (isFileSizeTooLarge(input.fileSize)) {
-      this.logger.info(
+      this.logger.debug(
         `[PluginHost:${this.manifest.id}] File size ${input.fileSize}B > 1GB, skipping plugin analysis (too_large)`
       )
       const tooLargeErr = new FileTooLargeError(input.fileSize)
@@ -587,7 +589,7 @@ export class PluginHost {
           deadlineTimer = null
           const elapsed = Date.now() - lastStartedAt
           remainingDeadlineMs = Math.max(0, remainingDeadlineMs - elapsed)
-          this.logger.info(
+          this.logger.debug(
             `[PluginHost:${this.manifest.id}] Paused deadline for task ${input.taskId}, remaining: ${remainingDeadlineMs}ms`
           )
         }
@@ -597,7 +599,7 @@ export class PluginHost {
         if (!deadlineTimer && remainingDeadlineMs > 0) {
           lastStartedAt = Date.now()
           startWatchdogTimer(remainingDeadlineMs)
-          this.logger.info(
+          this.logger.debug(
             `[PluginHost:${this.manifest.id}] Resumed deadline for task ${input.taskId}, duration: ${remainingDeadlineMs}ms`
           )
         }
@@ -616,7 +618,7 @@ export class PluginHost {
           task.remainingDeadlineMs = remainingDeadlineMs
           task.deadlineTimer = deadlineTimer
         }
-        this.logger.info(
+        this.logger.debug(
           `[PluginHost:${this.manifest.id}] Extended deadline for task ${input.taskId} by ${bonusMs}ms (new total remaining: ${remainingDeadlineMs}ms)`
         )
       }
@@ -779,7 +781,7 @@ export class PluginHost {
     if (this.stateMachine.state === 'STOPPED') return
     if (this.retirePromise) return this.retirePromise
 
-    this.logger.info(`[PluginHost:${this.manifest.id}] Retiring process...`)
+    this.logger.debug(`[PluginHost:${this.manifest.id}] Retiring process...`)
     this.isRetiring = true
 
     if (this.stateMachine.state === 'READY') {
@@ -850,7 +852,7 @@ export class PluginHost {
     const currentTask = this.stateMachine.currentTask
     if (!currentTask || this.stateMachine.state !== 'BUSY') return
 
-    this.logger.info(
+    this.logger.debug(
       `[PluginHost:${this.manifest.id}] Compensating task ${currentTask.taskId} after sleep resume (+${bonusCompensationMs}ms)`
     )
     if (typeof currentTask.extendDeadline === 'function') {

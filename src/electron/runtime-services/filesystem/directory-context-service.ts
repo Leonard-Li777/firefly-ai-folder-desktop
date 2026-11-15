@@ -73,7 +73,7 @@ export class DirectoryContextService {
     const mockDbPath = process.env.TEST_MOCK_DB_PATH
     if (!mockDbPath || !require('node:fs').existsSync(mockDbPath)) return null
 
-    logger.info(
+    logger.debug(
       LogCategory.DIRECTORY_CONTEXT,
       `[测试模式] 正在从模拟数据库尝试获取目录分析结果: ${directoryPath}`
     )
@@ -99,7 +99,7 @@ export class DirectoryContextService {
       if (row && row.context_analysis) {
         const analysis = JSON.parse(row.context_analysis)
         db.close()
-        logger.info(
+        logger.debug(
           LogCategory.DIRECTORY_CONTEXT,
           `[测试模式] 成功从模拟数据库获取目录分析结果: ${directoryPath}`
         )
@@ -154,12 +154,12 @@ export class DirectoryContextService {
             cached.namingTemplate ||
             (cached.recommendedTags && Object.keys(cached.recommendedTags).length > 0))
         ) {
-          logger.info(LogCategory.DIRECTORY_CONTEXT, `使用缓存的目录上下文分析: ${directoryPath}`)
+          logger.debug(LogCategory.DIRECTORY_CONTEXT, `使用缓存的目录上下文分析: ${directoryPath}`)
           return cached
         }
       }
 
-      logger.info(LogCategory.DIRECTORY_CONTEXT, `开始分析目录上下文: ${directoryPath}`)
+      logger.debug(LogCategory.DIRECTORY_CONTEXT, `开始分析目录上下文: ${directoryPath}`)
 
       // 读取已有记录（包含用户自定义编辑内容与继承配置）
       const existing = await this.getDirectoryContext(directoryPath)
@@ -255,7 +255,7 @@ export class DirectoryContextService {
       // 7. 保存到数据库
       await this.saveContextAnalysis(directoryPath, contextAnalysis)
 
-      logger.info(LogCategory.DIRECTORY_CONTEXT, `目录上下文分析完成: ${directoryPath}`)
+      logger.debug(LogCategory.DIRECTORY_CONTEXT, `目录上下文分析完成: ${directoryPath}`)
       return contextAnalysis
     } catch (error) {
       logger.error(LogCategory.DIRECTORY_CONTEXT, `目录上下文分析失败: ${directoryPath}`, error)
@@ -569,7 +569,7 @@ export class DirectoryContextService {
   ): Promise<void> {
     try {
       analysis.namingPattern = validateAndNormalizeNamingPattern(analysis.namingPattern)
-      logger.info(LogCategory.DIRECTORY_CONTEXT, `保存目录上下文分析: ${directoryPath}`)
+      logger.debug(LogCategory.DIRECTORY_CONTEXT, `保存目录上下文分析: ${directoryPath}`)
 
       try {
         await databaseService.addDirectory(directoryPath)
@@ -632,7 +632,7 @@ export class DirectoryContextService {
           `保存目录上下文分析失败：未找到匹配的记录: ${directoryPath}`
         )
       } else {
-        logger.info(
+        logger.debug(
           LogCategory.DIRECTORY_CONTEXT,
           `成功保存目录上下文分析: ${directoryPath}, changes: ${result.changes}`
         )
@@ -767,7 +767,7 @@ export class DirectoryContextService {
       }
 
       await this.saveContextAnalysis(directoryPath, existing)
-      logger.info(
+      logger.debug(
         LogCategory.DIRECTORY_CONTEXT,
         `目录上下文分析字段已更新: ${directoryPath}`,
         updates
@@ -1029,7 +1029,7 @@ export class DirectoryContextService {
           .run(directoryPath)
       })()
 
-      logger.info(LogCategory.DIRECTORY_CONTEXT, `已清除目录上下文分析: ${directoryPath}`)
+      logger.debug(LogCategory.DIRECTORY_CONTEXT, `已清除目录上下文分析: ${directoryPath}`)
       // 广播目录画像清空事件给所有前端窗口
       try {
         const { BrowserWindow } = require('electron')
@@ -1250,7 +1250,7 @@ export class DirectoryContextService {
         }
       })()
 
-      logger.info(
+      logger.debug(
         LogCategory.DIRECTORY_CONTEXT,
         `批量应用命名模板完成: 目录=${directoryPath}, 模板=${template}, 更新数=${updatedCount}/${targetRows.length}`
       )

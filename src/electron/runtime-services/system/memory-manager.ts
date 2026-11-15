@@ -304,7 +304,7 @@ export class MemoryManager extends EventEmitter {
       }
     }, this.monitoringConfig.monitoringInterval)
 
-    loggingService.info(
+    loggingService.debug(
       LogCategory.MEMORY_MANAGER,
       `内存监控已启动，间隔: ${this.monitoringConfig.monitoringInterval}ms`
     )
@@ -345,7 +345,7 @@ export class MemoryManager extends EventEmitter {
   updateMemoryThresholds(thresholds: Partial<IMemoryThresholds>): void {
     this.memoryThresholds = { ...this.memoryThresholds, ...thresholds }
 
-    loggingService.info(LogCategory.MEMORY_MANAGER, '内存阈值配置已更新', thresholds)
+    loggingService.debug(LogCategory.MEMORY_MANAGER, '内存阈值配置已更新', thresholds)
     this.emit('thresholds-updated', this.memoryThresholds)
   }
 
@@ -361,7 +361,7 @@ export class MemoryManager extends EventEmitter {
       this.startMemoryMonitoring()
     }
 
-    loggingService.info(LogCategory.MEMORY_MANAGER, '监控配置已更新', config)
+    loggingService.debug(LogCategory.MEMORY_MANAGER, '监控配置已更新', config)
     this.emit('monitoring-config-updated', this.monitoringConfig)
   }
 

@@ -406,7 +406,7 @@ export class ResourceManager extends EventEmitter {
       if (this.hardwareMonitoringEnabled) {
         this.startResourceMonitoring()
       } else {
-        loggingService.info(LogCategory.RESOURCE_MANAGER, '硬件监控已禁用，跳过资源监控启动')
+        loggingService.debug(LogCategory.RESOURCE_MANAGER, '硬件监控已禁用，跳过资源监控启动')
       }
 
       loggingService.info(LogCategory.RESOURCE_MANAGER, '资源管理服务初始化完成')
@@ -504,7 +504,7 @@ export class ResourceManager extends EventEmitter {
       }
     }, this.monitoringConfig.monitoringInterval)
 
-    loggingService.info(
+    loggingService.debug(
       LogCategory.RESOURCE_MANAGER,
       `资源监控已启动，间隔: ${this.monitoringConfig.monitoringInterval}ms`
     )
@@ -547,7 +547,7 @@ export class ResourceManager extends EventEmitter {
     const results: IResourceCleanupResult[] = []
 
     try {
-      loggingService.info(LogCategory.RESOURCE_MANAGER, '开始资源清理')
+      loggingService.debug(LogCategory.RESOURCE_MANAGER, '开始资源清理')
       this.emit('cleanup-started', { resourceTypes })
 
       // 获取当前资源状态
@@ -569,7 +569,7 @@ export class ResourceManager extends EventEmitter {
         .sort((a, b) => a.priority - b.priority)
 
       if (applicableStrategies.length === 0) {
-        loggingService.info(LogCategory.RESOURCE_MANAGER, '没有需要执行的清理策略')
+        loggingService.debug(LogCategory.RESOURCE_MANAGER, '没有需要执行的清理策略')
         return results
       }
 
@@ -582,7 +582,7 @@ export class ResourceManager extends EventEmitter {
               results.push(result)
 
               if (result.success) {
-                loggingService.info(
+                loggingService.debug(
                   LogCategory.RESOURCE_MANAGER,
                   `清理策略执行成功: ${strategy.name}, 释放资源: ${result.resourceReleased}`
                 )
@@ -618,7 +618,7 @@ export class ResourceManager extends EventEmitter {
         0
       )
 
-      loggingService.info(
+      loggingService.debug(
         LogCategory.RESOURCE_MANAGER,
         `资源清理完成，总释放资源: ${totalResourceReleased}，执行策略: ${results.length}`
       )
@@ -676,7 +676,7 @@ export class ResourceManager extends EventEmitter {
       this.startResourceMonitoring()
     }
 
-    loggingService.info(LogCategory.RESOURCE_MANAGER, '监控配置已更新', config)
+    loggingService.debug(LogCategory.RESOURCE_MANAGER, '监控配置已更新', config)
     this.emit('monitoring-config-updated', this.monitoringConfig)
   }
 
@@ -686,7 +686,7 @@ export class ResourceManager extends EventEmitter {
   updateCleanupStrategies(strategies: IResourceCleanupStrategy[]): void {
     this.cleanupStrategies = [...strategies]
 
-    loggingService.info(LogCategory.RESOURCE_MANAGER, '清理策略已更新')
+    loggingService.debug(LogCategory.RESOURCE_MANAGER, '清理策略已更新')
     this.emit('strategies-updated', this.cleanupStrategies)
   }
 
@@ -1150,7 +1150,7 @@ export class ResourceManager extends EventEmitter {
     this.resourceHistory.clear()
     this.resourceStatistics.clear()
 
-    loggingService.info(LogCategory.RESOURCE_MANAGER, '资源管理服务已清理')
+    loggingService.debug(LogCategory.RESOURCE_MANAGER, '资源管理服务已清理')
   }
 }
 

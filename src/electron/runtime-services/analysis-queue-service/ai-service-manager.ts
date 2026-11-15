@@ -54,7 +54,7 @@ export class AIServiceManager {
     const mode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
 
     if (isTest || mode === 'cloud') {
-      logger.info(
+      logger.debug(
         LogCategory.ANALYSIS_QUEUE,
         `[分析队列] ${isTest ? '集成测试环境' : '云端模式'}跳过 AI 服务就绪检查`
       )
@@ -89,7 +89,7 @@ export class AIServiceManager {
               ? omniInstance.isServiceRunning()
               : (omniInstance.isReady?.() ?? false)
           if (!omniRunning) {
-            logger.info(
+            logger.debug(
               LogCategory.ANALYSIS_QUEUE,
               '[分析队列] 检测到轻量CPU引擎底座服务未运行，正在自动拉起...'
             )
@@ -101,7 +101,7 @@ export class AIServiceManager {
               0
             )
           } else {
-            logger.info(
+            logger.debug(
               LogCategory.ANALYSIS_QUEUE,
               '[分析队列] 检测到轻量CPU引擎尚未预热，正在主动预热模型...'
             )
@@ -117,7 +117,7 @@ export class AIServiceManager {
 
           const afterSnap = llmGatewayService.getSnapshot()
           if (afterSnap.runtime.cpu === 'ready') {
-            logger.info(
+            logger.debug(
               LogCategory.ANALYSIS_QUEUE,
               '[分析队列] 轻量CPU引擎主动预热成功，开始分析'
             )
@@ -181,7 +181,7 @@ export class AIServiceManager {
     const engineSnap = engineBridgeService?.getSnapshot?.()
     const isEngineStarting = engineSnap && engineSnap.available && engineSnap.raw?.status === 'starting'
     if (isEngineStarting) {
-      logger.info(
+      logger.debug(
         LogCategory.ANALYSIS_QUEUE,
         '[分析队列] 底层 AI 引擎正在加载模型 (status: starting)，等待就绪...'
       )
@@ -243,7 +243,7 @@ export class AIServiceManager {
           // 再次验证健康检查
           const isHealthyAfterRestart = await aiService.healthCheck()
           if (isHealthyAfterRestart) {
-            logger.info(LogCategory.ANALYSIS_QUEUE, '[分析队列] AI服务重启成功，底层服务已恢复运行')
+            logger.debug(LogCategory.ANALYSIS_QUEUE, '[分析队列] AI服务重启成功，底层服务已恢复运行')
             this.lastHealthCheckOkTime = Date.now()
             this.notifyFrontend('success', t('AI引擎已恢复'), false, 'waiting-for-ai', 3000)
             return true
@@ -265,7 +265,7 @@ export class AIServiceManager {
       return false
     }
 
-    logger.info(
+    logger.debug(
       LogCategory.ANALYSIS_QUEUE,
       `[分析队列] AI服务未就绪 (当前状态: ${status}), 开始等待...`
     )
@@ -307,7 +307,7 @@ export class AIServiceManager {
 
       status = aiService.getServiceStatus()
       if (status === AIServiceStatus.IDLE || status === AIServiceStatus.PROCESSING) {
-        logger.info(LogCategory.ANALYSIS_QUEUE, '[分析队列] AI服务已就绪，继续执行')
+        logger.debug(LogCategory.ANALYSIS_QUEUE, '[分析队列] AI服务已就绪，继续执行')
         this.notifyFrontend('success', t('AI引擎已就绪，开始分析'), false, 'waiting-for-ai', 3000)
         return true
       }
@@ -321,7 +321,7 @@ export class AIServiceManager {
           await aiService.restart()
           status = aiService.getServiceStatus()
           if (status === AIServiceStatus.IDLE || status === AIServiceStatus.PROCESSING) {
-            logger.info(LogCategory.ANALYSIS_QUEUE, '[分析队列] AI服务重启成功，继续执行')
+            logger.debug(LogCategory.ANALYSIS_QUEUE, '[分析队列] AI服务重启成功，继续执行')
             this.lastHealthCheckOkTime = Date.now()
             this.notifyFrontend('success', t('AI引擎已恢复'), false, 'waiting-for-ai', 3000)
             return true

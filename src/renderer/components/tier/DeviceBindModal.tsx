@@ -746,7 +746,7 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
               />
               {!deviceConsumedInvitation && (
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  {t('填写好友邀请码，双方均可额外获赠好友邀请分析额度与萤火奖励')}
+                  {t('填写好友邀请码，双方均可额外获赠萤火奖励')}
                 </p>
               )}
             </div>

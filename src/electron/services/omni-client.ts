@@ -56,6 +56,30 @@ export interface OmniTagAliasRow {
 /** 多语言别名响应：Vec<TagAliasRow>（对齐 Rust Vec<TagAliasRow>，Slice 7） */
 export type OmniTaxonomyAliasesResponse = OmniTagAliasRow[]
 
+/** inspect-tag 回源单项入参（对齐 Rust InspectTagItem，camelCase） */
+export interface OmniInspectTagItem {
+  tagName: string
+  /** 回源场景无父级约束，传空串；端点仍按受控词表精确匹配 lemma 返回 code */
+  targetParentCode: string
+}
+
+/** inspect-tag 回源单项结果（对齐 Rust InspectTagItemResult，camelCase） */
+export interface OmniInspectTagItemResult {
+  tagName: string
+  isControlled: boolean
+  matchedParent: boolean
+  code: string | null
+  canonicalName: string | null
+  parentCodes: string[]
+  ancestryMatchedCode: string | null
+}
+
+/** inspect-tag 批量回源响应（对齐 Rust InspectTagBatchResponse） */
+export interface OmniInspectTagBatchResponse {
+  success: boolean
+  results: OmniInspectTagItemResult[]
+}
+
 /**
  * zvec v3 编码器身份（对齐 apps/omni/crates/omni-core/src/lib.rs `pub mod encoder_id`
  * 与方案 §3.5）：0=Unknown/Legacy, 1=Bekko, 2=ChineseCLIP, 3=MobileCLIP, 4=Gemma。
@@ -423,6 +447,34 @@ export class OmniClient {
     if (options?.codes?.length) params.set('codes', options.codes.join(','))
     if (options?.prefix) params.set('prefix', options.prefix)
     return this.request<OmniTagAliasRow[]>(`/api/v1/taxonomy/aliases?${params.toString()}`)
+  }
+
+  /**
+   * 按 lemma 批量回源语义包受控词：POST /api/v1/taxonomy/inspect-tag
+   *
+   * 运行时「首见回源」专用：本地 tag_aliases_[lang] 镜像未命中的 lemma，用本端点查 pack。
+   * 端点内部按 lemma 精确匹配 pack 别名表（omw > hownet > builtin 权威优先级），
+   * 只返回受控 code（is_controlled_code 校验），**永不返回 _ext**。
+   * 回源场景无父级约束，targetParentCode 传空串即可（端点仍按 lemma 匹配返回 code）。
+   *
+   * @param items 批量 lemma 项
+   * @param locale 语言区域代码，如 zh-CN
+   * @param timeoutMs 单次请求预算，回源走打标主链路前置，默认 5000ms
+   */
+  async inspectTags(
+    items: OmniInspectTagItem[],
+    locale = 'zh-CN',
+    timeoutMs = 5000
+  ): Promise<OmniInspectTagBatchResponse | null> {
+    if (!items.length) return { success: true, results: [] }
+    return this.request<OmniInspectTagBatchResponse>(
+      '/api/v1/taxonomy/inspect-tag',
+      {
+        method: 'POST',
+        body: JSON.stringify({ items, language: locale })
+      },
+      timeoutMs
+    )
   }
 
   /**

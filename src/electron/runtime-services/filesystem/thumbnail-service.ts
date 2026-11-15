@@ -151,7 +151,7 @@ export class ThumbnailService {
         if (process.platform === 'win32') {
           try {
             await execFileAsync('attrib', ['+h', thumbnailDirPath], { windowsHide: true })
-            logger.info(
+            logger.debug(
               LogCategory.FILE_PROCESSOR,
               `[缩略图服务] 已将目录设置为隐藏: ${thumbnailDirPath}`
             )
@@ -185,7 +185,7 @@ export class ThumbnailService {
   ): Promise<boolean> {
     const normalizedPath = path.resolve(filePath)
     try {
-      logger.info(
+      logger.debug(
         LogCategory.FILE_PROCESSOR,
         `[缩略图服务] 尝试使用Native方法生成缩略图: ${normalizedPath}`
       )
@@ -207,7 +207,7 @@ export class ThumbnailService {
       })
 
       if (!thumbnail || thumbnail.isEmpty()) {
-        logger.info(LogCategory.FILE_PROCESSOR, `[缩略图服务] Native方法返回空图片, 尝试Sharp回退`)
+        logger.debug(LogCategory.FILE_PROCESSOR, `[缩略图服务] Native方法返回空图片, 尝试Sharp回退`)
         return this.generateThumbnailWithSharp(normalizedPath, outputPath, size)
       }
 
@@ -217,14 +217,14 @@ export class ThumbnailService {
       // 使用Sharp转换为 WebP
       await sharp(buffer).webp({ quality: 90 }).toFile(outputPath)
 
-      logger.info(
+      logger.debug(
         LogCategory.FILE_PROCESSOR,
         `[缩略图服务] Native方法成功生成 WebP 缩略图: ${outputPath}`
       )
       return true
     } catch (error) {
       // 降低日志级别，因为很多文件类型（如Office）Native方法失败是正常的
-      logger.info(
+      logger.debug(
         LogCategory.FILE_PROCESSOR,
         `[缩略图服务] Native方法生成失败(预期内回退): ${error instanceof Error ? error.message : String(error)}`
       )
@@ -245,7 +245,7 @@ export class ThumbnailService {
         return false
       }
 
-      logger.info(
+      logger.debug(
         LogCategory.FILE_PROCESSOR,
         `[缩略图服务] 尝试使用Sharp直接生成图片缩略图: ${filePath}`
       )
@@ -257,7 +257,7 @@ export class ThumbnailService {
 
       await sharpInstance.webp({ quality: 90 }).toFile(outputPath)
 
-      logger.info(
+      logger.debug(
         LogCategory.FILE_PROCESSOR,
         `[缩略图服务] Sharp方法成功生成 WebP 缩略图: ${outputPath}`
       )
@@ -299,7 +299,7 @@ export class ThumbnailService {
       // 优先检查磁盘目标路径是否已经存在缩略图
       try {
         await fs.access(outputPath)
-        logger.info(
+        logger.debug(
           LogCategory.FILE_PROCESSOR,
           `[缩略图服务] 目标缩略图已存在于磁盘，跳过 Omni 生成并直接复用: ${outputPath}`
         )
@@ -369,7 +369,7 @@ export class ThumbnailService {
 
       // 检查负向缓存
       if (this.failedThumbnailsSet.has(cacheKey)) {
-        logger.info(
+        logger.debug(
           LogCategory.FILE_PROCESSOR,
           `[缩略图服务] 匹配负向缓存，快速返回失败结果: ${filePath}`
         )
@@ -391,7 +391,7 @@ export class ThumbnailService {
       // 0. 优先检查磁盘是否已存在该缩略图（复用既有缩略图，避免重复生成开销）
       try {
         await fs.access(thumbnailAbsPath)
-        logger.info(
+        logger.debug(
           LogCategory.FILE_PROCESSOR,
           `[缩略图服务] 命中磁盘现有缩略图，直接复用: ${thumbnailAbsPath}`
         )
@@ -439,7 +439,7 @@ export class ThumbnailService {
       }
 
       // 优先级2:尝试Fallback方法(仅Office/PDF)
-      logger.info(
+      logger.debug(
         LogCategory.FILE_PROCESSOR,
         `[缩略图服务] Native方法失败或不支持, 尝试Fallback方法`
       )
@@ -487,7 +487,7 @@ export class ThumbnailService {
     try {
       const absolutePath = path.join(workspaceDirectoryPath, thumbnailPath)
       await fs.unlink(absolutePath)
-      logger.info(LogCategory.FILE_PROCESSOR, `[缩略图服务] 已删除缩略图: ${absolutePath}`)
+      logger.debug(LogCategory.FILE_PROCESSOR, `[缩略图服务] 已删除缩略图: ${absolutePath}`)
       return true
     } catch (error) {
       logger.warn(LogCategory.FILE_PROCESSOR, `[缩略图服务] 删除缩略图失败:`, error)
@@ -509,7 +509,7 @@ export class ThumbnailService {
       try {
         await fs.access(thumbnailDir)
         await fs.rm(thumbnailDir, { recursive: true, force: true })
-        logger.info(LogCategory.FILE_PROCESSOR, `[缩略图服务] 已清理缩略图目录: ${thumbnailDir}`)
+        logger.debug(LogCategory.FILE_PROCESSOR, `[缩略图服务] 已清理缩略图目录: ${thumbnailDir}`)
       } catch {
         // 目录不存在,无需清理
       }
@@ -556,7 +556,7 @@ export class ThumbnailService {
       }
 
       // 3. 转码为原尺寸 webp
-      logger.info(
+      logger.debug(
         LogCategory.FILE_PROCESSOR,
         `[缩略图服务] 正在对不支持的图片进行原尺寸转码 WebP: ${filePath} -> ${transcodedAbsPath}`
       )

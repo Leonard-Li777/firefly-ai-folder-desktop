@@ -108,7 +108,7 @@ export class AutoUpdateService {
     autoUpdater.autoInstallOnAppQuit = true // 默认允许用户退出应用时自动应用更新
     autoUpdater.disableWebInstaller = true
     autoUpdater.logger = {
-      info: (msg: any) => logger.info(LogCategory.SYSTEM, `[AutoUpdater] ${msg}`),
+      info: (msg: any) => logger.debug(LogCategory.SYSTEM, `[AutoUpdater] ${msg}`),
       warn: (msg: any) => logger.warn(LogCategory.SYSTEM, `[AutoUpdater] ${msg}`),
       error: (msg: any) => logger.error(LogCategory.SYSTEM, `[AutoUpdater] ${msg}`)
     }
@@ -128,7 +128,7 @@ export class AutoUpdateService {
       clearInterval(this.pollTimer)
     }
     this.pollTimer = setInterval(() => {
-      logger.info(LogCategory.SYSTEM, '[AutoUpdater] 触发周期性静默更新检查 (4小时间隔)...')
+      logger.debug(LogCategory.SYSTEM, '[AutoUpdater] 触发周期性静默更新检查 (4小时间隔)...')
       this.checkForUpdates(false).catch(err => {
         logger.warn(LogCategory.SYSTEM, '[AutoUpdater] 周期性静默检查更新失败:', err)
       })
@@ -156,7 +156,7 @@ export class AutoUpdateService {
           url: this.R2_BASE_URL,
           channel
         })
-        logger.info(LogCategory.SYSTEM, `[AutoUpdater] 已切换更新源至 R2: ${this.R2_BASE_URL} (channel=${channel})`)
+        logger.debug(LogCategory.SYSTEM, `[AutoUpdater] 已切换更新源至 R2: ${this.R2_BASE_URL} (channel=${channel})`)
       } else {
         autoUpdater.setFeedURL({
           provider: 'github',
@@ -164,7 +164,7 @@ export class AutoUpdateService {
           repo: this.GITHUB_REPO,
           channel
         })
-        logger.info(
+        logger.debug(
           LogCategory.SYSTEM,
           `[AutoUpdater] 已切换更新源至 GitHub Releases: ${this.GITHUB_OWNER}/${this.GITHUB_REPO} (channel=${channel})`
         )
@@ -290,7 +290,7 @@ export class AutoUpdateService {
     // 检查本地缓存中是否已存在有效安装包（复用防重下）
     const cachedFilePath = await this.verifyLocalCachedInstaller(this.activeUpdateInfo)
     if (cachedFilePath) {
-      logger.info(LogCategory.SYSTEM, `[AutoUpdater] 命中本地完整安装包缓存，跳过下载: ${cachedFilePath}`)
+      logger.debug(LogCategory.SYSTEM, `[AutoUpdater] 命中本地完整安装包缓存，跳过下载: ${cachedFilePath}`)
       this.updateState({
         status: 'downloaded',
         downloadedFilePath: cachedFilePath,
@@ -321,13 +321,13 @@ export class AutoUpdateService {
    * 退出应用并安装更新（包含四步优雅关停与释放锁机制）
    */
   public async quitAndInstall(): Promise<void> {
-    logger.info(LogCategory.SYSTEM, '[AutoUpdater] 用户触发立即重启安装，启动四步优雅关停握手...')
+    logger.debug(LogCategory.SYSTEM, '[AutoUpdater] 用户触发立即重启安装，启动四步优雅关停握手...')
     this.updateState({ status: 'installing' })
 
     // 非 Windows 平台（macOS DMG 或 Linux DEB/RPM）：打开安装包引导用户覆盖安装
     if (process.platform !== 'win32') {
       if (this.state.downloadedFilePath && fs.existsSync(this.state.downloadedFilePath)) {
-        logger.info(LogCategory.SYSTEM, `[AutoUpdater] 跨平台打开安装包: ${this.state.downloadedFilePath}`)
+        logger.debug(LogCategory.SYSTEM, `[AutoUpdater] 跨平台打开安装包: ${this.state.downloadedFilePath}`)
         await shell.openPath(this.state.downloadedFilePath)
       }
       return
@@ -340,7 +340,7 @@ export class AutoUpdateService {
         const { databaseService } = require('../database/database-service')
         const db = databaseService?.db
         if (db) {
-          logger.info(LogCategory.SYSTEM, '[AutoUpdater] 优雅停机 Step 1: 正在执行 SQLite WAL Checkpoint...')
+          logger.debug(LogCategory.SYSTEM, '[AutoUpdater] 优雅停机 Step 1: 正在执行 SQLite WAL Checkpoint...')
           db.pragma('wal_checkpoint(TRUNCATE)')
         }
       } catch (dbErr: any) {
@@ -351,7 +351,7 @@ export class AutoUpdateService {
       try {
         const { omniService } = require('./omni-service')
         if (omniService) {
-          logger.info(LogCategory.SYSTEM, '[AutoUpdater] 优雅停机 Step 2: 显式停用 omniService 阻断看门狗...')
+          logger.debug(LogCategory.SYSTEM, '[AutoUpdater] 优雅停机 Step 2: 显式停用 omniService 阻断看门狗...')
           omniService.stop()
         }
       } catch {}
@@ -365,7 +365,7 @@ export class AutoUpdateService {
 
       // 步骤 3: 兜底调用 ProcessReaper 清理本 Worktree 实例名下的所有挂载子进程
       try {
-        logger.info(LogCategory.SYSTEM, '[AutoUpdater] 优雅停机 Step 3: ProcessReaper 清扫所有子进程...')
+        logger.debug(LogCategory.SYSTEM, '[AutoUpdater] 优雅停机 Step 3: ProcessReaper 清扫所有子进程...')
         const { ProcessReaper } = require('../../main/process-reaper')
         ProcessReaper.getInstance().cleanup()
       } catch (reaperErr: any) {
@@ -373,7 +373,7 @@ export class AutoUpdateService {
       }
 
       // 步骤 4: 延迟 500ms 保证文件锁完全释放后，执行 NSIS 静默提权覆盖安装
-      logger.info(LogCategory.SYSTEM, '[AutoUpdater] 优雅停机 Step 4: 执行 autoUpdater.quitAndInstall(true, true)')
+      logger.debug(LogCategory.SYSTEM, '[AutoUpdater] 优雅停机 Step 4: 执行 autoUpdater.quitAndInstall(true, true)')
       setTimeout(() => {
         try {
           autoUpdater.quitAndInstall(true, true)
@@ -431,7 +431,7 @@ export class AutoUpdateService {
 
     // L1 -> L2: 差分下载失败自动回退同源全量下载
     if (phase === 'download' && !this.isFullDownloadFallback) {
-      logger.info(LogCategory.SYSTEM, '[AutoUpdater] L1 -> L2 降级: 差分增量下载失败，切换为同源全量下载重试...')
+      logger.debug(LogCategory.SYSTEM, '[AutoUpdater] L1 -> L2 降级: 差分增量下载失败，切换为同源全量下载重试...')
       this.isFullDownloadFallback = true
       autoUpdater.disableDifferentialDownload = true
       try {
@@ -445,7 +445,7 @@ export class AutoUpdateService {
     // L2 -> L3: 同源全量失败或网络断流，故障转移至异地双轨备用源
     if (!this.hasTriedFailover) {
       const fallbackTrack: UpdateTrack = this.state.currentTrack === 'r2' ? 'github' : 'r2'
-      logger.info(LogCategory.SYSTEM, `[AutoUpdater] L2 -> L3 降级: 触发双轨 Failover 切换至备用源: ${fallbackTrack}`)
+      logger.debug(LogCategory.SYSTEM, `[AutoUpdater] L2 -> L3 降级: 触发双轨 Failover 切换至备用源: ${fallbackTrack}`)
       this.hasTriedFailover = true
       this.isFullDownloadFallback = false
       autoUpdater.disableDifferentialDownload = false
@@ -471,7 +471,7 @@ export class AutoUpdateService {
    */
   private setupUpdaterListeners(): void {
     autoUpdater.on('checking-for-update', () => {
-      logger.info(LogCategory.SYSTEM, '[AutoUpdater] 正在检索云端更新清单...')
+      logger.debug(LogCategory.SYSTEM, '[AutoUpdater] 正在检索云端更新清单...')
       this.updateState({ status: 'checking', error: null })
     })
 

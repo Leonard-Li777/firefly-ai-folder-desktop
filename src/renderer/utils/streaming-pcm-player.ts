@@ -49,7 +49,7 @@ export class StreamingPCMPlayer {
   private hasScheduledFirst = false
 
   // 抖动预缓冲水线配置与队列 (消除 CPU 推理波动与偶发延迟卡顿)
-  private static readonly MIN_PREBUFFER_SEC = 5.0 // 5.0s 预缓冲安全水线 (蓄满约 3 个分块起播，构建充足抗抖动蓄水池)
+  private static readonly MIN_PREBUFFER_SEC = 1.5 // 1.5s 预缓冲安全水线 (首句秒播，构建充足抗抖动蓄水池且杜绝首播等待)
   private static readonly MAX_PREBUFFER_WAIT_MS = 8000 // 最长等待 8.0s 超时强制起播
   private pendingChunks: StreamChunkPayload[] = []
   private bufferedDurationSec = 0
@@ -204,11 +204,11 @@ export class StreamingPCMPlayer {
     if (!this.isPlaybackStarted) {
       this.pendingChunks.push(payload)
 
-      // 满足起播水线：累积缓冲 >= MIN_PREBUFFER_SEC (5.0s)，或流末尾包 (isLast)，或蓄满 3 个分块
+      // 满足起播水线：累积缓冲 >= MIN_PREBUFFER_SEC (1.5s)，或流末尾包 (isLast)，或已有至少 1 个完整分块
       if (
         this.bufferedDurationSec >= StreamingPCMPlayer.MIN_PREBUFFER_SEC ||
         payload.isLast ||
-        this.pendingChunks.length >= 3
+        this.pendingChunks.length >= 1
       ) {
         this.flushPendingChunks()
       }
@@ -354,19 +354,19 @@ export class StreamingPCMPlayer {
   private checkBackpressure(ctx: AudioContext): void {
     const bufferedSec = Math.max(0, this.nextPlayTime - ctx.currentTime)
 
-    // 25.0s 充盈阈值：桌面端内存宽裕，给予充分抗网络与大段 Prefill 缓冲储备
-    if (bufferedSec >= 25.0 && !this.isFlowPaused) {
+    // 60.0s 充盈阈值：桌面端内存宽裕，给予充分抗网络与大段本地 Prefill 缓冲储备
+    if (bufferedSec >= 60.0 && !this.isFlowPaused) {
       console.info(
-        `[StreamingPCMPlayer] 缓冲极其充盈 (${bufferedSec.toFixed(1)}s >= 25.0s)，触发有界反压暂停`
+        `[StreamingPCMPlayer] 缓冲极其充盈 (${bufferedSec.toFixed(1)}s >= 60.0s)，触发有界反压暂停`
       )
       this.isFlowPaused = true
       window.electronAPI?.tts?.sendFlow?.({
         sessionId: this.sessionId,
         command: 'pause'
       })
-    } else if (bufferedSec <= 10.0 && this.isFlowPaused) {
+    } else if (bufferedSec <= 20.0 && this.isFlowPaused) {
       console.info(
-        `[StreamingPCMPlayer] 缓冲正常回落 (${bufferedSec.toFixed(1)}s <= 10.0s)，解除反压恢复推流`
+        `[StreamingPCMPlayer] 缓冲正常回落 (${bufferedSec.toFixed(1)}s <= 20.0s)，解除反压恢复推流`
       )
       this.isFlowPaused = false
       window.electronAPI?.tts?.sendFlow?.({

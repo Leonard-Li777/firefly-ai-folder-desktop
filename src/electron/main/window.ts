@@ -308,7 +308,7 @@ const installRendererCrashGuards = (win: BrowserWindow, label: string): void => 
       stabilityTimer = null
       if (win.isDestroyed() || wc.isDestroyed()) return
       if (reloadCount > 0) {
-        logger.info(
+        logger.debug(
           LogCategory.MAIN,
           `[CrashGuard] ${label} 页面已稳定运行 ${Math.round(STABILITY_RESET_MS / 1000)}s，重置自愈计数`
         )
@@ -327,7 +327,7 @@ export const getMainWindow = (): BrowserWindow | null => {
 }
 
 export const createWindow = () => {
-  logger.info(LogCategory.MAIN, '[createWindow] 开始创建主浏览器窗口...')
+  logger.debug(LogCategory.MAIN, '[createWindow] 开始创建主浏览器窗口...')
 
   const splashWindow = new BrowserWindow({
     width: 1024,
@@ -359,7 +359,7 @@ export const createWindow = () => {
   )
 
   splashWindow.once('ready-to-show', () => {
-    logger.info(LogCategory.MAIN, `[createWindow] 显示启动画面 (使用 ${bootImageName})`)
+    logger.debug(LogCategory.MAIN, `[createWindow] 显示启动画面 (使用 ${bootImageName})`)
     splashWindow.show()
   })
 
@@ -396,13 +396,13 @@ export const createWindow = () => {
     mainWindow.center()
   }
 
-  logger.info(LogCategory.MAIN, '[createWindow] 主浏览器窗口已创建，并设置为隐藏。')
+  logger.debug(LogCategory.MAIN, '[createWindow] 主浏览器窗口已创建，并设置为隐藏。')
 
   // 安装渲染进程崩溃兜底：白屏不再静默，转为「日志 + 自动重载 + 兜底页」
   installRendererCrashGuards(mainWindow, 'main')
 
   mainWindow.once('ready-to-show', () => {
-    logger.info(LogCategory.MAIN, '[createWindow] 渲染进程内容已加载完毕，准备显示窗口。')
+    logger.debug(LogCategory.MAIN, '[createWindow] 渲染进程内容已加载完毕，准备显示窗口。')
     if (!splashWindow.isDestroyed()) {
       splashWindow.destroy()
     }
@@ -413,17 +413,17 @@ export const createWindow = () => {
     }
 
     mainWindow.show()
-    logger.info(LogCategory.MAIN, `__IS_PROD__: ${__IS_PROD__}`)
-    logger.info(LogCategory.MAIN, `[createWindow] 应用窗口尺寸配置: ${width}x${height}`)
-    logger.info(
+    logger.debug(LogCategory.MAIN, `__IS_PROD__: ${__IS_PROD__}`)
+    logger.debug(LogCategory.MAIN, `[createWindow] 应用窗口尺寸配置: ${width}x${height}`)
+    logger.debug(
       LogCategory.MAIN,
       `[createWindow] 窗口已显示，最终尺寸: ${mainWindow.getBounds().width}x${mainWindow.getBounds().height}`
     )
 
     if (process.env.DEVTOOLS === 'true') {
-      logger.info(LogCategory.MAIN, '[createWindow] 尝试打开开发者工具...')
+      logger.debug(LogCategory.MAIN, '[createWindow] 尝试打开开发者工具...')
       mainWindow.webContents.openDevTools()
-      logger.info(LogCategory.MAIN, '[createWindow] 开发者工具已打开。')
+      logger.debug(LogCategory.MAIN, '[createWindow] 开发者工具已打开。')
     }
   })
 
@@ -435,13 +435,13 @@ export const createWindow = () => {
     if (isShortcutTriggered) {
       if (mainWindow.webContents.isDevToolsOpened()) {
         mainWindow.webContents.closeDevTools()
-        logger.info(
+        logger.debug(
           LogCategory.MAIN,
           `[DevTools] 开发者工具已关闭 (${__IS_PROD__ ? 'Ctrl+Shift+F12' : 'F12'})`
         )
       } else {
         mainWindow.webContents.openDevTools()
-        logger.info(
+        logger.debug(
           LogCategory.MAIN,
           `[DevTools] 开发者工具已打开 (${__IS_PROD__ ? 'Ctrl+Shift+F12' : 'F12'})`
         )
@@ -463,19 +463,19 @@ export const createWindow = () => {
   })
 
   if (process.env['ELECTRON_RENDERER_URL']) {
-    logger.info(
+    logger.debug(
       LogCategory.MAIN,
       `[createWindow] 加载开发服务器URL: ${process.env['ELECTRON_RENDERER_URL']}`
     )
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
-    logger.info(LogCategory.MAIN, '[createWindow] 开发服务器URL加载完成。')
+    logger.debug(LogCategory.MAIN, '[createWindow] 开发服务器URL加载完成。')
   } else {
-    logger.info(LogCategory.MAIN, '[createWindow] 正在加载生产环境的index.html...')
+    logger.debug(LogCategory.MAIN, '[createWindow] 正在加载生产环境的index.html...')
     const indexHtml = path.join(__dirname, '../renderer/index.html')
     if (fs.existsSync(indexHtml)) {
-      logger.info(LogCategory.MAIN, `[createWindow] 找到并加载生产环境index.html: ${indexHtml}`)
+      logger.debug(LogCategory.MAIN, `[createWindow] 找到并加载生产环境index.html: ${indexHtml}`)
       mainWindow.loadURL(pathToFileURL(indexHtml).toString())
-      logger.info(LogCategory.MAIN, '[createWindow] 生产环境index.html加载完成。')
+      logger.debug(LogCategory.MAIN, '[createWindow] 生产环境index.html加载完成。')
     } else {
       logger.error(LogCategory.MAIN, `[createWindow] 生产环境index.html未找到: ${indexHtml}`)
       // 此处若不兜底，窗口会永远停留在 show:false（ready-to-show 不会触发，splash 也不会销毁），
@@ -536,7 +536,7 @@ export const createWindow = () => {
 }
 
 export const createPreviewWindow = (params: { filePath: string; extension: string }) => {
-  logger.info(LogCategory.MAIN, '[createPreviewWindow] 开始创建预览窗口...', params)
+  logger.debug(LogCategory.MAIN, '[createPreviewWindow] 开始创建预览窗口...', params)
 
   const previewWindow = new BrowserWindow({
     width: 1024,
@@ -566,12 +566,12 @@ export const createPreviewWindow = (params: { filePath: string; extension: strin
 
   if (process.env['ELECTRON_RENDERER_URL']) {
     const url = `${process.env['ELECTRON_RENDERER_URL']}#/preview-window?${queryParams}`
-    logger.info(LogCategory.MAIN, `[createPreviewWindow] 加载开发服务器URL: ${url}`)
+    logger.debug(LogCategory.MAIN, `[createPreviewWindow] 加载开发服务器URL: ${url}`)
     previewWindow.loadURL(url)
   } else {
     const indexHtml = path.join(__dirname, '../renderer/index.html')
     const url = `${pathToFileURL(indexHtml).toString()}#/preview-window?${queryParams}`
-    logger.info(LogCategory.MAIN, `[createPreviewWindow] 加载生产环境URL: ${url}`)
+    logger.debug(LogCategory.MAIN, `[createPreviewWindow] 加载生产环境URL: ${url}`)
     previewWindow.loadURL(url)
   }
 
@@ -602,7 +602,7 @@ export const closeQueueWindow = (): void => {
 }
 
 export const createQueueWindow = (): BrowserWindow => {
-  logger.info(LogCategory.MAIN, '[createQueueWindow] 开始创建独立分析队列窗口...')
+  logger.debug(LogCategory.MAIN, '[createQueueWindow] 开始创建独立分析队列窗口...')
 
   if (queueWindowInstance && !queueWindowInstance.isDestroyed()) {
     if (queueWindowInstance.isMinimized()) queueWindowInstance.restore()
@@ -635,12 +635,12 @@ export const createQueueWindow = (): BrowserWindow => {
 
   if (process.env['ELECTRON_RENDERER_URL']) {
     const url = `${process.env['ELECTRON_RENDERER_URL']}#/queue-window`
-    logger.info(LogCategory.MAIN, `[createQueueWindow] 加载开发服务器URL: ${url}`)
+    logger.debug(LogCategory.MAIN, `[createQueueWindow] 加载开发服务器URL: ${url}`)
     queueWindowInstance.loadURL(url)
   } else {
     const indexHtml = path.join(__dirname, '../renderer/index.html')
     const url = `${pathToFileURL(indexHtml).toString()}#/queue-window`
-    logger.info(LogCategory.MAIN, `[createQueueWindow] 加载生产环境URL: ${url}`)
+    logger.debug(LogCategory.MAIN, `[createQueueWindow] 加载生产环境URL: ${url}`)
     queueWindowInstance.loadURL(url)
   }
 

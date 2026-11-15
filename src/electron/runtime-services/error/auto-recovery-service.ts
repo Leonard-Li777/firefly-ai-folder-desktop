@@ -80,7 +80,7 @@ export class AutoRecoveryService extends EventEmitter {
       level: 1,
       priority: 1,
       action: async () => {
-        loggingService.info(LogCategory.AUTO_RECOVERY, '尝试重启关键服务')
+        loggingService.debug(LogCategory.AUTO_RECOVERY, '尝试重启关键服务')
         // 实现服务重启逻辑
         return await this.restartCriticalServices()
       },
@@ -97,7 +97,7 @@ export class AutoRecoveryService extends EventEmitter {
       level: 2,
       priority: 2,
       action: async () => {
-        loggingService.info(LogCategory.AUTO_RECOVERY, '尝试清理内存')
+        loggingService.debug(LogCategory.AUTO_RECOVERY, '尝试清理内存')
         return await this.cleanupMemory()
       },
       maxRetries: 2,
@@ -113,7 +113,7 @@ export class AutoRecoveryService extends EventEmitter {
       level: 3,
       priority: 3,
       action: async () => {
-        loggingService.info(LogCategory.AUTO_RECOVERY, '尝试重新连接数据库')
+        loggingService.debug(LogCategory.AUTO_RECOVERY, '尝试重新连接数据库')
         return await this.reconnectDatabase()
       },
       maxRetries: 5,
@@ -129,7 +129,7 @@ export class AutoRecoveryService extends EventEmitter {
       level: 4,
       priority: 4,
       action: async () => {
-        loggingService.info(LogCategory.AUTO_RECOVERY, '尝试重新建立网络连接')
+        loggingService.debug(LogCategory.AUTO_RECOVERY, '尝试重新建立网络连接')
         return await this.reconnectNetwork()
       },
       maxRetries: 3,
@@ -145,7 +145,7 @@ export class AutoRecoveryService extends EventEmitter {
       level: 5,
       priority: 5,
       action: async () => {
-        loggingService.info(LogCategory.AUTO_RECOVERY, '尝试恢复应用状态')
+        loggingService.debug(LogCategory.AUTO_RECOVERY, '尝试恢复应用状态')
         return await this.restoreApplicationState()
       },
       maxRetries: 2,
@@ -161,7 +161,7 @@ export class AutoRecoveryService extends EventEmitter {
       level: 6,
       priority: 6,
       action: async () => {
-        loggingService.info(LogCategory.AUTO_RECOVERY, '执行优雅关闭')
+        loggingService.debug(LogCategory.AUTO_RECOVERY, '执行优雅关闭')
         return await this.gracefulShutdown()
       },
       maxRetries: 1,
@@ -173,7 +173,7 @@ export class AutoRecoveryService extends EventEmitter {
    * 处理可恢复错误
    */
   private async handleRecoverableError(error: AppError): Promise<void> {
-    loggingService.info(LogCategory.AUTO_RECOVERY, '处理可恢复错误', { error })
+    loggingService.debug(LogCategory.AUTO_RECOVERY, '处理可恢复错误', { error })
 
     // 获取适用于此错误类型的恢复策略
     const applicableStrategies = this.getApplicableStrategies(error.type)
@@ -187,7 +187,7 @@ export class AutoRecoveryService extends EventEmitter {
     for (const strategy of applicableStrategies) {
       const success = await this.executeRecoveryStrategy(strategy, error)
       if (success) {
-        loggingService.info(LogCategory.AUTO_RECOVERY, `恢复策略 ${strategy.name} 执行成功`)
+        loggingService.debug(LogCategory.AUTO_RECOVERY, `恢复策略 ${strategy.name} 执行成功`)
         this.emit('recovery-success', { error, strategy })
         return
       }
@@ -206,7 +206,7 @@ export class AutoRecoveryService extends EventEmitter {
       loggingService.warn(LogCategory.AUTO_RECOVERY, '检测到关键健康状态', { healthStatus })
       await this.handleCriticalHealthStatus(healthStatus)
     } else if (healthStatus.overall === 'warning') {
-      loggingService.info(LogCategory.AUTO_RECOVERY, '检测到警告健康状态', { healthStatus })
+      loggingService.debug(LogCategory.AUTO_RECOVERY, '检测到警告健康状态', { healthStatus })
       await this.handleWarningHealthStatus(healthStatus)
     }
   }
@@ -234,7 +234,7 @@ export class AutoRecoveryService extends EventEmitter {
    */
   private async handleWarningHealthStatus(healthStatus: SystemHealthStatus): Promise<void> {
     // 可以在这里添加预防性恢复措施
-    loggingService.info(LogCategory.AUTO_RECOVERY, '执行预防性恢复措施')
+    loggingService.debug(LogCategory.AUTO_RECOVERY, '执行预防性恢复措施')
 
     // 例如：清理内存、优化性能等
     await this.preventiveMaintenance()
@@ -353,12 +353,12 @@ export class AutoRecoveryService extends EventEmitter {
       for (const serviceName of criticalServices) {
         try {
           // 这里可以实现具体的服务重启逻辑
-          loggingService.info(LogCategory.AUTO_RECOVERY, `重启服务: ${serviceName}`)
+          loggingService.debug(LogCategory.AUTO_RECOVERY, `重启服务: ${serviceName}`)
 
           // 模拟服务重启
           await new Promise(resolve => setTimeout(resolve, 1000))
 
-          loggingService.info(LogCategory.AUTO_RECOVERY, `服务重启成功: ${serviceName}`)
+          loggingService.debug(LogCategory.AUTO_RECOVERY, `服务重启成功: ${serviceName}`)
         } catch (error) {
           loggingService.error(LogCategory.AUTO_RECOVERY, `服务重启失败: ${serviceName}`, { error })
           return false
@@ -385,7 +385,7 @@ export class AutoRecoveryService extends EventEmitter {
       // 清理不必要的缓存
       // 这里可以添加具体的缓存清理逻辑
 
-      loggingService.info(LogCategory.AUTO_RECOVERY, '内存清理完成')
+      loggingService.debug(LogCategory.AUTO_RECOVERY, '内存清理完成')
       return true
     } catch (error) {
       loggingService.error(LogCategory.AUTO_RECOVERY, '内存清理失败', { error })
@@ -399,12 +399,12 @@ export class AutoRecoveryService extends EventEmitter {
   private async reconnectDatabase(): Promise<boolean> {
     try {
       // 这里可以实现数据库重连逻辑
-      loggingService.info(LogCategory.AUTO_RECOVERY, '重新连接数据库')
+      loggingService.debug(LogCategory.AUTO_RECOVERY, '重新连接数据库')
 
       // 模拟数据库重连
       await new Promise(resolve => setTimeout(resolve, 2000))
 
-      loggingService.info(LogCategory.AUTO_RECOVERY, '数据库重连成功')
+      loggingService.debug(LogCategory.AUTO_RECOVERY, '数据库重连成功')
       return true
     } catch (error) {
       loggingService.error(LogCategory.AUTO_RECOVERY, '数据库重连失败', { error })
@@ -418,12 +418,12 @@ export class AutoRecoveryService extends EventEmitter {
   private async reconnectNetwork(): Promise<boolean> {
     try {
       // 这里可以实现网络重连逻辑
-      loggingService.info(LogCategory.AUTO_RECOVERY, '重新建立网络连接')
+      loggingService.debug(LogCategory.AUTO_RECOVERY, '重新建立网络连接')
 
       // 模拟网络重连
       await new Promise(resolve => setTimeout(resolve, 3000))
 
-      loggingService.info(LogCategory.AUTO_RECOVERY, '网络重连成功')
+      loggingService.debug(LogCategory.AUTO_RECOVERY, '网络重连成功')
       return true
     } catch (error) {
       loggingService.error(LogCategory.AUTO_RECOVERY, '网络重连失败', { error })
@@ -437,12 +437,12 @@ export class AutoRecoveryService extends EventEmitter {
   private async restoreApplicationState(): Promise<boolean> {
     try {
       // 这里可以实现状态恢复逻辑
-      loggingService.info(LogCategory.AUTO_RECOVERY, '恢复应用状态')
+      loggingService.debug(LogCategory.AUTO_RECOVERY, '恢复应用状态')
 
       // 从持久化存储恢复状态
       // 这里可以添加具体的状态恢复逻辑
 
-      loggingService.info(LogCategory.AUTO_RECOVERY, '应用状态恢复成功')
+      loggingService.debug(LogCategory.AUTO_RECOVERY, '应用状态恢复成功')
       return true
     } catch (error) {
       loggingService.error(LogCategory.AUTO_RECOVERY, '应用状态恢复失败', { error })
@@ -456,7 +456,7 @@ export class AutoRecoveryService extends EventEmitter {
   private async preventiveMaintenance(): Promise<boolean> {
     try {
       // 执行预防性维护任务
-      loggingService.info(LogCategory.AUTO_RECOVERY, '执行预防性维护')
+      loggingService.debug(LogCategory.AUTO_RECOVERY, '执行预防性维护')
 
       // 清理临时文件
       await this.cleanupTempFiles()
@@ -464,7 +464,7 @@ export class AutoRecoveryService extends EventEmitter {
       // 优化内存使用
       await this.optimizeMemoryUsage()
 
-      loggingService.info(LogCategory.AUTO_RECOVERY, '预防性维护完成')
+      loggingService.debug(LogCategory.AUTO_RECOVERY, '预防性维护完成')
       return true
     } catch (error) {
       loggingService.error(LogCategory.AUTO_RECOVERY, '预防性维护失败', { error })
@@ -477,7 +477,7 @@ export class AutoRecoveryService extends EventEmitter {
    */
   private async cleanupTempFiles(): Promise<void> {
     // 这里可以实现临时文件清理逻辑
-    loggingService.info(LogCategory.AUTO_RECOVERY, '清理临时文件')
+    loggingService.debug(LogCategory.AUTO_RECOVERY, '清理临时文件')
   }
 
   /**
@@ -485,7 +485,7 @@ export class AutoRecoveryService extends EventEmitter {
    */
   private async optimizeMemoryUsage(): Promise<void> {
     // 这里可以实现内存优化逻辑
-    loggingService.info(LogCategory.AUTO_RECOVERY, '优化内存使用')
+    loggingService.debug(LogCategory.AUTO_RECOVERY, '优化内存使用')
   }
 
   /**
@@ -493,7 +493,7 @@ export class AutoRecoveryService extends EventEmitter {
    */
   private async gracefulShutdown(): Promise<boolean> {
     try {
-      loggingService.info(LogCategory.AUTO_RECOVERY, '执行优雅关闭')
+      loggingService.debug(LogCategory.AUTO_RECOVERY, '执行优雅关闭')
 
       // 保存应用状态
       await this.saveApplicationState()
@@ -517,7 +517,7 @@ export class AutoRecoveryService extends EventEmitter {
    */
   private async saveApplicationState(): Promise<void> {
     // 这里可以实现状态保存逻辑
-    loggingService.info(LogCategory.AUTO_RECOVERY, '保存应用状态')
+    loggingService.debug(LogCategory.AUTO_RECOVERY, '保存应用状态')
   }
 
   /**
@@ -525,7 +525,7 @@ export class AutoRecoveryService extends EventEmitter {
    */
   private async shutdownAllServices(): Promise<void> {
     // 这里可以实现服务关闭逻辑
-    loggingService.info(LogCategory.AUTO_RECOVERY, '关闭所有服务')
+    loggingService.debug(LogCategory.AUTO_RECOVERY, '关闭所有服务')
   }
 
   /**
@@ -533,7 +533,7 @@ export class AutoRecoveryService extends EventEmitter {
    */
   public addRecoveryStrategy(strategy: RecoveryStrategy): void {
     errorHandlingService.addRecoveryStrategy(strategy)
-    loggingService.info(LogCategory.AUTO_RECOVERY, `添加恢复策略: ${strategy.name}`)
+    loggingService.debug(LogCategory.AUTO_RECOVERY, `添加恢复策略: ${strategy.name}`)
   }
 
   /**
@@ -541,7 +541,7 @@ export class AutoRecoveryService extends EventEmitter {
    */
   public removeRecoveryStrategy(strategyId: string): void {
     errorHandlingService.removeRecoveryStrategy(strategyId)
-    loggingService.info(LogCategory.AUTO_RECOVERY, `移除恢复策略: ${strategyId}`)
+    loggingService.debug(LogCategory.AUTO_RECOVERY, `移除恢复策略: ${strategyId}`)
   }
 
   /**
@@ -549,7 +549,7 @@ export class AutoRecoveryService extends EventEmitter {
    */
   public enableRecovery(): void {
     this.isRecoveryEnabled = true
-    loggingService.info(LogCategory.AUTO_RECOVERY, '自动恢复已启用')
+    loggingService.debug(LogCategory.AUTO_RECOVERY, '自动恢复已启用')
   }
 
   /**
@@ -557,7 +557,7 @@ export class AutoRecoveryService extends EventEmitter {
    */
   public disableRecovery(): void {
     this.isRecoveryEnabled = false
-    loggingService.info(LogCategory.AUTO_RECOVERY, '自动恢复已禁用')
+    loggingService.debug(LogCategory.AUTO_RECOVERY, '自动恢复已禁用')
   }
 
   /**
@@ -631,14 +631,14 @@ export class AutoRecoveryService extends EventEmitter {
       failedRecoveries: 0,
       averageRecoveryTime: 0
     }
-    loggingService.info(LogCategory.AUTO_RECOVERY, '恢复历史已清除')
+    loggingService.debug(LogCategory.AUTO_RECOVERY, '恢复历史已清除')
   }
 
   /**
    * 手动触发恢复
    */
   public async triggerManualRecovery(error: AppError): Promise<void> {
-    loggingService.info(LogCategory.AUTO_RECOVERY, '手动触发恢复', { error })
+    loggingService.debug(LogCategory.AUTO_RECOVERY, '手动触发恢复', { error })
     await this.handleRecoverableError(error)
   }
 

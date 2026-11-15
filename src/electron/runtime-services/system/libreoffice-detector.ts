@@ -44,7 +44,7 @@ export class LibreOfficeDetector {
     }
 
     try {
-      logger.info(LogCategory.FILE_PROCESSOR, '[LibreOffice检测] 开始检测系统LibreOffice安装状态')
+      logger.debug(LogCategory.FILE_PROCESSOR, '[LibreOffice检测] 开始检测系统LibreOffice安装状态')
 
       let result: LibreOfficeDetectionResult
       // 根据不同平台使用不同的检测方法
@@ -174,7 +174,7 @@ export class LibreOfficeDetector {
           ConfigOrchestrator.getInstance().getValue<string>('LIBREOFFICE_PATH')
         if (currentConfigValue !== libreOfficePath) {
           ConfigOrchestrator.getInstance().updateValue('LIBREOFFICE_PATH', libreOfficePath)
-          logger.info(
+          logger.debug(
             LogCategory.FILE_PROCESSOR,
             '[LibreOffice检测] 已更新保存路径到系统设置:',
             libreOfficePath
@@ -187,7 +187,7 @@ export class LibreOfficeDetector {
         }
       }
 
-      logger.info(LogCategory.FILE_PROCESSOR, '[LibreOffice检测] Windows平台未检测到LibreOffice')
+      logger.debug(LogCategory.FILE_PROCESSOR, '[LibreOffice检测] Windows平台未检测到LibreOffice')
       return {
         installed: false,
         error: t('未检测到 LibreOffice，请将其安装到默认路径或确保其在系统 PATH 中')
@@ -221,7 +221,7 @@ export class LibreOfficeDetector {
       // 方法1：检查/Applications目录
       const appPath = '/Applications/LibreOffice.app'
       if (await this.checkFileExists(appPath)) {
-        logger.info(LogCategory.FILE_PROCESSOR, '[LibreOffice检测] 在Applications找到LibreOffice')
+        logger.debug(LogCategory.FILE_PROCESSOR, '[LibreOffice检测] 在Applications找到LibreOffice')
 
         // 获取可执行文件路径
         const sofficePath = path.join(appPath, 'Contents/MacOS/soffice')
@@ -231,7 +231,7 @@ export class LibreOfficeDetector {
             'LIBREOFFICE_PATH',
             toShortPathOnWindows(sofficePath)
           )
-          logger.info(
+          logger.debug(
             LogCategory.FILE_PROCESSOR,
             '[LibreOffice检测] 已保存路径到系统设置:',
             sofficePath
@@ -249,7 +249,7 @@ export class LibreOfficeDetector {
         const { stdout } = await execFileAsync('which', ['soffice'], { timeout: 5000 })
         const sofficePath = stdout.trim()
         if (sofficePath) {
-          logger.info(
+          logger.debug(
             LogCategory.FILE_PROCESSOR,
             '[LibreOffice检测] macOS命令行检测成功:',
             sofficePath
@@ -263,7 +263,7 @@ export class LibreOfficeDetector {
               'LIBREOFFICE_PATH',
               toShortPathOnWindows(sofficePath)
             )
-            logger.info(
+            logger.debug(
               LogCategory.FILE_PROCESSOR,
               '[LibreOffice检测] 已更新保存路径到系统设置:',
               sofficePath
@@ -279,7 +279,7 @@ export class LibreOfficeDetector {
         // 命令行检测失败
       }
 
-      logger.info(LogCategory.FILE_PROCESSOR, '[LibreOffice检测] macOS平台未检测到LibreOffice')
+      logger.debug(LogCategory.FILE_PROCESSOR, '[LibreOffice检测] macOS平台未检测到LibreOffice')
       return {
         installed: false,
         error: t('未检测到 LibreOffice，请将其安装到默认路径或确保其在系统 PATH 中')
@@ -304,7 +304,7 @@ export class LibreOfficeDetector {
         const sofficePath = whichOutput.trim()
 
         if (sofficePath) {
-          logger.info(
+          logger.debug(
             LogCategory.FILE_PROCESSOR,
             '[LibreOffice检测] Linux检测到soffice路径:',
             sofficePath
@@ -315,7 +315,7 @@ export class LibreOfficeDetector {
             'LIBREOFFICE_PATH',
             toShortPathOnWindows(sofficePath)
           )
-          logger.info(
+          logger.debug(
             LogCategory.FILE_PROCESSOR,
             '[LibreOffice检测] 已保存路径到系统设置:',
             sofficePath
@@ -334,7 +334,7 @@ export class LibreOfficeDetector {
       try {
         const { stdout } = await execAsync('dpkg -l | grep libreoffice', { timeout: 5000 })
         if (stdout.trim()) {
-          logger.info(LogCategory.FILE_PROCESSOR, '[LibreOffice检测] 通过dpkg检测到LibreOffice')
+          logger.debug(LogCategory.FILE_PROCESSOR, '[LibreOffice检测] 通过dpkg检测到LibreOffice')
 
           // 尝试获取路径
           try {
@@ -351,7 +351,7 @@ export class LibreOfficeDetector {
                   'LIBREOFFICE_PATH',
                   toShortPathOnWindows(libreOfficePath)
                 )
-                logger.info(
+                logger.debug(
                   LogCategory.FILE_PROCESSOR,
                   '[LibreOffice检测] 已更新保存路径到系统设置:',
                   libreOfficePath
@@ -379,7 +379,7 @@ export class LibreOfficeDetector {
       try {
         const { stdout } = await execAsync('rpm -qa | grep libreoffice', { timeout: 5000 })
         if (stdout.trim()) {
-          logger.info(LogCategory.FILE_PROCESSOR, '[LibreOffice检测] 通过rpm检测到LibreOffice')
+          logger.debug(LogCategory.FILE_PROCESSOR, '[LibreOffice检测] 通过rpm检测到LibreOffice')
 
           // 尝试获取路径
           try {
@@ -393,7 +393,7 @@ export class LibreOfficeDetector {
                 'LIBREOFFICE_PATH',
                 toShortPathOnWindows(libreOfficePath)
               )
-              logger.info(
+              logger.debug(
                 LogCategory.FILE_PROCESSOR,
                 '[LibreOffice检测] 已保存路径到系统设置:',
                 libreOfficePath
@@ -416,7 +416,7 @@ export class LibreOfficeDetector {
         // rpm检测失败
       }
 
-      logger.info(LogCategory.FILE_PROCESSOR, '[LibreOffice检测] Linux平台未检测到LibreOffice')
+      logger.debug(LogCategory.FILE_PROCESSOR, '[LibreOffice检测] Linux平台未检测到LibreOffice')
       return {
         installed: false,
         error: t('未检测到 LibreOffice，请将其安装到默认路径或确保其在系统 PATH 中')

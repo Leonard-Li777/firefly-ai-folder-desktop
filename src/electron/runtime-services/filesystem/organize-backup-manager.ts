@@ -33,7 +33,7 @@ export class OrganizeBackupManager {
   private ensureBackupDirectory(): void {
     if (!fs.existsSync(this.backupDir)) {
       fs.mkdirSync(this.backupDir, { recursive: true })
-      logger.info(LogCategory.FILE_ORGANIZATION, '创建备份目录', { backupDir: this.backupDir })
+      logger.debug(LogCategory.FILE_ORGANIZATION, '创建备份目录', { backupDir: this.backupDir })
     }
   }
 
@@ -128,7 +128,7 @@ export class OrganizeBackupManager {
       // 恢复文件
       fs.copyFileSync(record.backupPath, originalPath)
 
-      logger.info(LogCategory.FILE_ORGANIZATION, '文件恢复成功', {
+      logger.debug(LogCategory.FILE_ORGANIZATION, '文件恢复成功', {
         original: originalPath,
         backup: record.backupPath
       })
@@ -150,7 +150,7 @@ export class OrganizeBackupManager {
     let success = 0
     let failed = 0
 
-    logger.info(LogCategory.FILE_ORGANIZATION, '开始恢复所有备份', {
+    logger.debug(LogCategory.FILE_ORGANIZATION, '开始恢复所有备份', {
       total: this.backupRecords.length
     })
 
@@ -175,7 +175,7 @@ export class OrganizeBackupManager {
     try {
       if (fs.existsSync(this.backupDir)) {
         fs.rmSync(this.backupDir, { recursive: true, force: true })
-        logger.info(LogCategory.FILE_ORGANIZATION, '清理备份目录', { backupDir: this.backupDir })
+        logger.debug(LogCategory.FILE_ORGANIZATION, '清理备份目录', { backupDir: this.backupDir })
       }
     } catch (error: any) {
       logger.error(LogCategory.FILE_ORGANIZATION, '清理备份失败', {
@@ -226,7 +226,7 @@ export class OrganizeBackupManager {
 
       fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf-8')
 
-      logger.info(LogCategory.FILE_ORGANIZATION, '保存备份清单', { manifestPath })
+      logger.debug(LogCategory.FILE_ORGANIZATION, '保存备份清单', { manifestPath })
     } catch (error: any) {
       logger.error(LogCategory.FILE_ORGANIZATION, '保存备份清单失败', {
         error: error.message
@@ -256,7 +256,7 @@ export class OrganizeBackupManager {
       manager.sessionId = manifest.sessionId
       manager.backupRecords = manifest.records
 
-      logger.info(LogCategory.FILE_ORGANIZATION, '从清单加载备份', {
+      logger.debug(LogCategory.FILE_ORGANIZATION, '从清单加载备份', {
         sessionId,
         recordCount: manager.backupRecords.length
       })

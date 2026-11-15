@@ -1768,7 +1768,7 @@ export class ModularResourceService implements IModularResourceService {
         try {
           const verify = await streamVerifySha256(presetPath, spec.expected_sha256)
           if (verify.valid) {
-            logger.info(
+            logger.debug(
               LogCategory.SYSTEM,
               `[ModularResource] L2 预置包探活命中: ${presetPath}，本地物化至 ${targetAbsDir}`
             )
@@ -1864,7 +1864,7 @@ export class ModularResourceService implements IModularResourceService {
       if (canonicalPath) {
         if (res.target_local_path !== canonicalPath) {
           try {
-            logger.info(
+            logger.debug(
               LogCategory.SYSTEM,
               '[ModularResource] 修复偏离 SSOT 的 target_local_path',
               {
@@ -3704,7 +3704,7 @@ export class ModularResourceService implements IModularResourceService {
       while (this.backgroundInstallQueue.length > 0) {
         const nextId = this.backgroundInstallQueue.shift()!
         try {
-          logger.info(
+          logger.debug(
             LogCategory.SYSTEM,
             `[ModularResource] 开始执行后台选配插件静默安装: ${nextId}`
           )
@@ -3722,7 +3722,7 @@ export class ModularResourceService implements IModularResourceService {
             isResumed: false,
             state: 'completed'
           })
-          logger.info(LogCategory.SYSTEM, `[ModularResource] 后台选配插件安装就绪并激活: ${nextId}`)
+          logger.debug(LogCategory.SYSTEM, `[ModularResource] 后台选配插件安装就绪并激活: ${nextId}`)
         } catch (err: any) {
           logger.warn(
             LogCategory.SYSTEM,
@@ -3866,7 +3866,7 @@ export class ModularResourceService implements IModularResourceService {
     let result: VerifiedDownloadResult | null = null
 
     if (canUseFixedBlocks) {
-      logger.info(
+      logger.debug(
         LogCategory.SYSTEM,
         `[Download] 启用固定 4MiB 块网格并发断点续传下载器 (${task.resource_id}, expected: ${(task.expected_bytes / 1024 / 1024).toFixed(1)}MB, 候选源: ${candidateUrls.length})`
       )
@@ -3926,7 +3926,7 @@ export class ModularResourceService implements IModularResourceService {
 
       for (let i = 0; i < candidateUrls.length; i++) {
         const currentUrl = candidateUrls[i]
-        logger.info(
+        logger.debug(
           LogCategory.SYSTEM,
           `[Download] 尝试下载源 [${i + 1}/${candidateUrls.length}] (${task.resource_id}): ${currentUrl}`
         )
@@ -4761,7 +4761,7 @@ export class ModularResourceService implements IModularResourceService {
 
           // 在线散装下载模块若不具备官方原签清单，优雅跳过并记录日志，严禁伪造签名或中断其他已签名官方模块导出
           if (!fs.existsSync(manifestPath) || !fs.existsSync(sigPath)) {
-            logger.info(
+            logger.debug(
               LogCategory.SYSTEM,
               `[ModularResource] 模块 ${mod.id} 缺少官方清单/签名凭证 (${manifestDir})，已跳过离线总包打包`
             )
@@ -4851,7 +4851,7 @@ export class ModularResourceService implements IModularResourceService {
       const currentProfile = configOrch.getValue?.('AI_EMBEDDING_PROFILE')
 
       if (currentProfile !== targetProfile) {
-        logger.info(
+        logger.debug(
           LogCategory.SYSTEM,
           `[ModularResource] 同步底座槽位活跃状态到配置: ${currentProfile} -> ${targetProfile}`
         )

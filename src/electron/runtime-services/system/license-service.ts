@@ -212,7 +212,7 @@ export class LicenseService {
     const machineId = SystemIdentityService.getInstance().getMachineId()
     const invitationCode = encodeMachineIdToRef(machineId)
 
-    logger.info(LogCategory.SYSTEM, '[License] 开始授权状态校验...', {
+    logger.debug(LogCategory.SYSTEM, '[License] 开始授权状态校验...', {
       machineId,
       requestCode: invitationCode,
       licensePath: this.licenseFilePath,
@@ -233,7 +233,7 @@ export class LicenseService {
       // 1. 优先检查离线授权文件 (最可靠，离线可用，企业版用户首选)
       const offlineResult = await this.checkOfflineLicense()
       if (offlineResult.status === LicenseStatus.AUTHORIZED) {
-        logger.info(LogCategory.SYSTEM, `[License] 离线授权校验成功`)
+        logger.debug(LogCategory.SYSTEM, `[License] 离线授权校验成功`)
         return offlineResult
       }
 
@@ -244,7 +244,7 @@ export class LicenseService {
       }
 
       // 2. 在线网络授权校验 (个人版/联网用户兜底)
-      logger.info(LogCategory.SYSTEM, '[License] 开始校验在线授权真实网络连通性...')
+      logger.debug(LogCategory.SYSTEM, '[License] 开始校验在线授权真实网络连通性...')
       const isActuallyOnline = await this.checkRealConnectivity()
 
       if (isActuallyOnline) {
@@ -290,7 +290,7 @@ export class LicenseService {
         return offlineResult
       }
 
-      logger.info(LogCategory.SYSTEM, '[License] 未找到有效授权')
+      logger.debug(LogCategory.SYSTEM, '[License] 未找到有效授权')
       return { status: LicenseStatus.UNAUTHORIZED }
     }
 
@@ -315,7 +315,7 @@ export class LicenseService {
     }
 
     const isOnline = net.isOnline()
-    logger.info(LogCategory.SYSTEM, `[License] 开始检查网络连通性, net.isOnline(): ${isOnline}`)
+    logger.debug(LogCategory.SYSTEM, `[License] 开始检查网络连通性, net.isOnline(): ${isOnline}`)
 
     const orchestrator = ConfigOrchestrator.getInstance()
     const mirror = orchestrator.getValue<'cn' | 'global'>('DOWNLOAD_MIRROR') || 'cn'
@@ -357,7 +357,7 @@ export class LicenseService {
     // 2. 备选逻辑：如果主服务器宕机，通过地域对应的 HA 地址确认"用户确已联网"
     // 国际化支持：国内检查百度，国外检查 Google
     const fallbackUrl = mirror === 'global' ? 'https://www.google.com' : 'https://www.baidu.com'
-    logger.info(LogCategory.SYSTEM, `[License] 主服务器连接失败，尝试备选地址: ${fallbackUrl}`)
+    logger.debug(LogCategory.SYSTEM, `[License] 主服务器连接失败，尝试备选地址: ${fallbackUrl}`)
 
     const isFallbackOk = await checkUrl(fallbackUrl, 5000)
 
@@ -382,7 +382,7 @@ export class LicenseService {
     let licenseStr = config.getValue<string>('OFFLINE_LICENSE')
 
     if (!licenseStr && fs.existsSync(this.licenseFilePath)) {
-      logger.info(
+      logger.debug(
         LogCategory.SYSTEM,
         '[License] 配置中未找到授权，尝试读取本地授权文件:',
         this.licenseFilePath
@@ -643,7 +643,7 @@ export class LicenseService {
 
     // 首次安装：LAST_SERVER_CONNECT_TIME 为 0，设置为当前时间
     if (lastServerConnect === 0) {
-      logger.info(
+      logger.debug(
         LogCategory.SYSTEM,
         '[License] 首次安装，初始化 LAST_SERVER_CONNECT_TIME 为当前时间'
       )

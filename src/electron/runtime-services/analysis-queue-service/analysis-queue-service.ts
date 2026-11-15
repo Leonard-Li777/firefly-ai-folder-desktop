@@ -728,7 +728,7 @@ export class AnalysisQueueService {
                       )
                     } else {
                       shouldSkipCpu = false
-                      logger.info(
+                      logger.debug(
                         LogCategory.ANALYSIS_QUEUE,
                         `[并行队列:CPU通道] 基础数据不完整 (${completeness.missingReasons.join(', ')})，执行 CPU 提取补全: ${item.name}`
                       )
@@ -781,7 +781,7 @@ export class AnalysisQueueService {
 
                 this.updateItemStatus(item.id, 'analyzing', 10, undefined, { analysisStage: 2 })
                 await this.fileProcessor.processFile(item, signal, 'cpu')
-                logger.info(
+                logger.debug(
                   LogCategory.ANALYSIS_QUEUE,
                   `[并行队列:CPU通道] CPU 提取完成并发出就绪通知: ${item.name} (id: ${item.id})`
                 )
@@ -804,13 +804,13 @@ export class AnalysisQueueService {
           }
 
           const runGPUConsumer = async () => {
-            logger.info(
+            logger.debug(
               LogCategory.ANALYSIS_QUEUE,
               `[并行队列:GPU通道] 启动 GPU 消费者循环，待处理文件数: ${pendingItems.length}`
             )
             for (const item of pendingItems) {
               if (signal.aborted || !this.running) {
-                logger.info(
+                logger.debug(
                   LogCategory.ANALYSIS_QUEUE,
                   `[并行队列:GPU通道] 收到中止或停止信号，退出 GPU 循环`
                 )
@@ -833,7 +833,7 @@ export class AnalysisQueueService {
               }
 
               try {
-                logger.info(
+                logger.debug(
                   LogCategory.ANALYSIS_QUEUE,
                   `[并行队列:GPU通道] 等待 CPU 提取阶段就绪: ${item.name} (id: ${item.id})`
                 )
@@ -845,7 +845,7 @@ export class AnalysisQueueService {
                   signal,
                   this.stage2WaitTimeoutMs
                 )
-                logger.info(
+                logger.debug(
                   LogCategory.ANALYSIS_QUEUE,
                   `[并行队列:GPU通道] CPU 阶段已就绪，进入 GPU AI 分析: ${item.name}`
                 )
@@ -875,7 +875,7 @@ export class AnalysisQueueService {
                   'gpu',
                   cpuSkippedIds.has(item.id)
                 )
-                logger.info(
+                logger.debug(
                   LogCategory.ANALYSIS_QUEUE,
                   `[并行队列:GPU通道] GPU AI 分析成功完成: ${item.name}`
                 )
@@ -894,7 +894,7 @@ export class AnalysisQueueService {
                   )
                   this.updateItemStatus(item.id, 'pending', 0)
                 } else if (isAbort) {
-                  logger.info(
+                  logger.debug(
                     LogCategory.ANALYSIS_QUEUE,
                     `[并行队列:GPU通道] GPU 任务被中止: ${item.name}`
                   )
@@ -913,7 +913,7 @@ export class AnalysisQueueService {
                       await engineBridgeService?.ensureMode?.('language')
                     }
                     try {
-                      logger.info(
+                      logger.debug(
                         LogCategory.ANALYSIS_QUEUE,
                         `[并行队列:GPU通道] AI 引擎已恢复，重试 GPU AI 分析: ${item.name}`
                       )
@@ -926,7 +926,7 @@ export class AnalysisQueueService {
                         'gpu',
                         cpuSkippedIds.has(item.id)
                       )
-                      logger.info(
+                      logger.debug(
                         LogCategory.ANALYSIS_QUEUE,
                         `[并行队列:GPU通道] 重试后 GPU AI 分析成功完成: ${item.name}`
                       )
@@ -1185,7 +1185,7 @@ export class AnalysisQueueService {
     }
 
     if (this.current && belongsToDirectory(this.current.path)) {
-      logger.info(
+      logger.debug(
         LogCategory.ANALYSIS_QUEUE,
         '[分析队列] 删除工作目录前中止在途任务，释放 .VirtualDirectory 句柄:',
         this.current.path
@@ -1970,7 +1970,7 @@ export class AnalysisQueueService {
       logger.error(LogCategory.ANALYSIS_QUEUE, '[分析队列] 检查已分析文件失败:', error)
     }
 
-    logger.info(
+    logger.debug(
       LogCategory.ANALYSIS_QUEUE,
       `[分析队列] 检查已分析文件 (模式: ${analysisMode}, 目标Stage: ${getRequiredStage(analysisMode)}): 传入 ${filePaths.length} 个, 已完成 ${result.filter(r => r.status === 'analyzed').length} 个, 分析不完整 ${result.filter(r => r.status === 'insufficient').length} 个`
     )

@@ -14,7 +14,7 @@ import { unifiedModelManager } from '../llama/unified-model-manager'
  * 注册云端模型配置相关的IPC处理器
  */
 export function registerCloudModelConfigIPCHandlers(): void {
-  logger.info(LogCategory.IPC, '注册云端模型配置IPC处理器...')
+  logger.debug(LogCategory.IPC, '注册云端模型配置IPC处理器...')
 
   // 获取所有云端配置
   ipcMain.handle('cloud-model-config:get-configs', async () => {
@@ -45,7 +45,7 @@ export function registerCloudModelConfigIPCHandlers(): void {
   // 添加新配置
   ipcMain.handle('cloud-model-config:add-config', async (_, config: CloudModelConfig) => {
     try {
-      logger.info(LogCategory.IPC, `处理IPC请求: 添加云端配置 provider=${config.provider}`)
+      logger.debug(LogCategory.IPC, `处理IPC请求: 添加云端配置 provider=${config.provider}`)
       await cloudModelConfigService.addConfig(config)
       return { success: true }
     } catch (error) {
@@ -60,7 +60,7 @@ export function registerCloudModelConfigIPCHandlers(): void {
     'cloud-model-config:update-config',
     async (_, index: number, config: CloudModelConfig) => {
       try {
-        logger.info(
+        logger.debug(
           LogCategory.IPC,
           `处理IPC请求: 更新云端配置 index=${index} provider=${config.provider}`
         )
@@ -77,7 +77,7 @@ export function registerCloudModelConfigIPCHandlers(): void {
   // 删除配置
   ipcMain.handle('cloud-model-config:delete-config', async (_, index: number) => {
     try {
-      logger.info(LogCategory.IPC, `处理IPC请求: 删除云端配置 index=${index}`)
+      logger.debug(LogCategory.IPC, `处理IPC请求: 删除云端配置 index=${index}`)
       await cloudModelConfigService.deleteConfig(index)
       return { success: true }
     } catch (error) {
@@ -103,7 +103,7 @@ export function registerCloudModelConfigIPCHandlers(): void {
   // 设置当前选中的配置索引
   ipcMain.handle('cloud-model-config:set-selected-index', async (_, index: number) => {
     try {
-      logger.info(LogCategory.IPC, `处理IPC请求: 设置选中的云端配置索引 ${index}`)
+      logger.debug(LogCategory.IPC, `处理IPC请求: 设置选中的云端配置索引 ${index}`)
       await cloudModelConfigService.setSelectedIndex(index)
       return { success: true }
     } catch (error) {
@@ -116,7 +116,7 @@ export function registerCloudModelConfigIPCHandlers(): void {
   // 测试配置有效性
   ipcMain.handle('cloud-model-config:test-config', async (_, config: CloudModelConfig) => {
     try {
-      logger.info(LogCategory.IPC, `处理IPC请求: 测试云端配置 provider=${config.provider}`)
+      logger.debug(LogCategory.IPC, `处理IPC请求: 测试云端配置 provider=${config.provider}`)
       const result = await cloudModelConfigService.testConfig(config)
       return { success: true, data: result }
     } catch (error) {
@@ -131,7 +131,7 @@ export function registerCloudModelConfigIPCHandlers(): void {
     'cloud-model-config:get-provider-models',
     async (_, provider: string, apiKey: string, baseUrl?: string, throwOnError = false) => {
       try {
-        logger.info(LogCategory.IPC, `处理IPC请求: 获取${provider}的模型列表`)
+        logger.debug(LogCategory.IPC, `处理IPC请求: 获取${provider}的模型列表`)
         const models = await cloudModelConfigService.getProviderModels(
           provider,
           apiKey,

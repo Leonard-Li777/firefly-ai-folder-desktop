@@ -4,8 +4,8 @@
  */
 
 export const M5_MAGIC_BYTES = Buffer.from([0x4d, 0x35, 0x53, 0x54]) // 固定字节序列 'M5ST'
-export const MAX_PAYLOAD_LEN = 131072 // 128KB 净荷硬上限
-export const MAX_STASH_BYTES = 1048576 // 半包暂存区 1MB 硬上限
+export const MAX_PAYLOAD_LEN = 16 * 1024 * 1024 // 16MB 净荷硬上限（完美覆盖整句与大段高质量无损 PCM，杜绝 128KB 误杀脱节）
+export const MAX_STASH_BYTES = 64 * 1024 * 1024 // 半包暂存区 64MB 硬上限
 
 export interface StreamChunkPayload {
   sessionId: string

@@ -99,7 +99,7 @@ export class AIErrorHandler extends EventEmitter {
       level: 1,
       priority: 1,
       action: async () => {
-        loggingService.info(LogCategory.AI_ERROR_HANDLER, '执行服务器健康检查策略')
+        loggingService.debug(LogCategory.AI_ERROR_HANDLER, '执行服务器健康检查策略')
         try {
           const aiService = LlamaIndexAIService.getInstance()
           if (aiService) {
@@ -132,7 +132,7 @@ export class AIErrorHandler extends EventEmitter {
       level: 1,
       priority: 1,
       action: async () => {
-        loggingService.info(LogCategory.AI_ERROR_HANDLER, '执行模型重新加载与自动降级策略')
+        loggingService.debug(LogCategory.AI_ERROR_HANDLER, '执行模型重新加载与自动降级策略')
         try {
           const aiService = LlamaIndexAIService.getInstance()
           if (!aiService) return false
@@ -200,14 +200,14 @@ export class AIErrorHandler extends EventEmitter {
       level: 2,
       priority: 2,
       action: async () => {
-        loggingService.info(LogCategory.AI_ERROR_HANDLER, '执行增加超时时间策略')
+        loggingService.debug(LogCategory.AI_ERROR_HANDLER, '执行增加超时时间策略')
         try {
           const currentTimeout =
             ConfigOrchestrator.getInstance().getValue<number>('AI_REQUEST_TIMEOUT')
           const newTimeout = Math.min(currentTimeout * 1.5, 300000) // 最大5分钟
 
           ConfigOrchestrator.getInstance().updateValue('AI_REQUEST_TIMEOUT', newTimeout)
-          loggingService.info(
+          loggingService.debug(
             LogCategory.AI_ERROR_HANDLER,
             `自动增加请求超时时间: ${currentTimeout} -> ${newTimeout}`
           )
@@ -231,7 +231,7 @@ export class AIErrorHandler extends EventEmitter {
       level: 1,
       priority: 1,
       action: async () => {
-        loggingService.info(LogCategory.AI_ERROR_HANDLER, '执行重试连接策略')
+        loggingService.debug(LogCategory.AI_ERROR_HANDLER, '执行重试连接策略')
         // 等待一段时间后重试
         await new Promise(resolve => setTimeout(resolve, 2000))
         return true
@@ -249,7 +249,7 @@ export class AIErrorHandler extends EventEmitter {
       level: 1,
       priority: 1,
       action: async () => {
-        loggingService.info(LogCategory.AI_ERROR_HANDLER, '执行磁盘空间检查策略')
+        loggingService.debug(LogCategory.AI_ERROR_HANDLER, '执行磁盘空间检查策略')
         // 磁盘空间不足通常需要用户手动清理，但可以尝试清理临时文件
         try {
           // 提示用户检查磁盘空间
@@ -264,7 +264,7 @@ export class AIErrorHandler extends EventEmitter {
       retryDelay: 1000
     })
 
-    loggingService.info(LogCategory.AI_ERROR_HANDLER, 'AI错误处理服务已启动')
+    loggingService.debug(LogCategory.AI_ERROR_HANDLER, 'AI错误处理服务已启动')
   }
 
   /**
@@ -459,13 +459,13 @@ export class AIErrorHandler extends EventEmitter {
       // 尝试每个恢复策略
       for (const strategy of strategies) {
         try {
-          loggingService.info(LogCategory.AI_ERROR_HANDLER, `尝试恢复策略: ${strategy.name}`)
+          loggingService.debug(LogCategory.AI_ERROR_HANDLER, `尝试恢复策略: ${strategy.name}`)
 
           const success = await this.executeRecoveryStrategy(strategy)
 
           if (success) {
             const duration = Date.now() - startTime
-            loggingService.info(
+            loggingService.debug(
               LogCategory.AI_ERROR_HANDLER,
               `恢复策略 ${strategy.name} 执行成功，耗时 ${duration}ms`
             )
@@ -635,7 +635,7 @@ export class AIErrorHandler extends EventEmitter {
    */
   public clearErrorHistory(): void {
     this.errorHistory = []
-    loggingService.info(LogCategory.AI_ERROR_HANDLER, t('AI错误历史已清除'))
+    loggingService.debug(LogCategory.AI_ERROR_HANDLER, t('AI错误历史已清除'))
   }
 
   /**
@@ -778,7 +778,7 @@ export class AIErrorHandler extends EventEmitter {
         const existingPriority = priorityMap[service.lastInitError.code || ''] ?? 99
         const incomingPriority = priorityMap[error.aiErrorType] ?? 99
         if (existingPriority < incomingPriority) {
-          logger.info(
+          logger.debug(
             LogCategory.AI_ERROR_HANDLER,
             `[pushErrorToFrontend] 忽略推送较笼统的错误 [${error.aiErrorType}] 到前端，保留更具体的错误 [${(service as any).lastInitError.code}]: ${(service as any).lastInitError.message}`
           )

@@ -198,7 +198,7 @@ export class UserTierService {
       this.recentSpendTxIds.delete(dedupKey)
     }, 5000)
 
-    logger.info(
+    logger.debug(
       LogCategory.SYSTEM,
       '[DEBUG-SPEND]spendFirecores 入口: type=%s, firecores=%d, txId=%s',
       type,
@@ -211,13 +211,13 @@ export class UserTierService {
 
     if (isCloudFirst && this.getDataManager().isOnline()) {
       try {
-        logger.info(LogCategory.SYSTEM, '[DEBUG-SPEND]云优先路径: 调用RPC, txId=%s', txId)
+        logger.debug(LogCategory.SYSTEM, '[DEBUG-SPEND]云优先路径: 调用RPC, txId=%s', txId)
         const result = await this.getTierService().spendFirecores(machineId, {
           type,
           id: txId,
           metadata: { ...metadata, workspaceId: scope }
         })
-        logger.info(
+        logger.debug(
           LogCategory.SYSTEM,
           '[DEBUG-SPEND]云优先路径 RPC结果: success=%s',
           result.success
@@ -243,7 +243,7 @@ export class UserTierService {
             db.prepare(
               `UPDATE pending_firecore_operations SET status = 'completed', synced_at = ? WHERE id = ?`
             ).run(new Date().toISOString(), txId)
-            logger.info(
+            logger.debug(
               LogCategory.SYSTEM,
               '[DEBUG-SPEND]云优先路径: pending已更新为completed, txId=%s',
               txId
@@ -268,7 +268,7 @@ export class UserTierService {
     }
 
     // 1. 本地扣减与暂存
-    logger.info(
+    logger.debug(
       LogCategory.SYSTEM,
       '[DEBUG-SPEND]本地优先路径: spendFirecoresLocal, txId=%s, firecores=%d',
       txId,
@@ -289,7 +289,7 @@ export class UserTierService {
     // 2. 异步上报云端 (如果在线)
     if (this.getDataManager().isOnline()) {
       try {
-        logger.info(LogCategory.SYSTEM, '[DEBUG-SPEND]调用云端RPC, txId=%s', txId)
+        logger.debug(LogCategory.SYSTEM, '[DEBUG-SPEND]调用云端RPC, txId=%s', txId)
         const result = await this.getTierService().spendFirecores(machineId, {
           type,
           id: txId,
@@ -340,7 +340,7 @@ export class UserTierService {
   }
 
   async syncToCache(machineId: string): Promise<void> {
-    logger.info(LogCategory.SYSTEM, '[DEBUG-SYNC] syncToCache 被调用: machineId=%s', machineId)
+    logger.debug(LogCategory.SYSTEM, '[DEBUG-SYNC] syncToCache 被调用: machineId=%s', machineId)
     await this.getDataManager().trySync()
   }
 
@@ -574,7 +574,7 @@ export class UserTierService {
   async initialize(): Promise<void> {
     await databaseService.ensureInitialized()
     if (!databaseService.db) {
-      logger.info(
+      logger.debug(
         LogCategory.SYSTEM,
         '[UserTierService] 数据库未初始化 (语言未确认)，暂缓 UserTierService 数据库加载'
       )
@@ -582,7 +582,7 @@ export class UserTierService {
     }
 
     const initProcess = async () => {
-      logger.info(
+      logger.debug(
         LogCategory.SYSTEM,
         '[UserTierService] net modules keys:',
         Object.keys(net),
@@ -590,7 +590,7 @@ export class UserTierService {
         typeof net.isOnline
       )
       const machineId = await SystemIdentityService.getInstance().getMachineId()
-      logger.info(LogCategory.SYSTEM, '[UserTierService] 初始化开始, machineId:', machineId)
+      logger.debug(LogCategory.SYSTEM, '[UserTierService] 初始化开始, machineId:', machineId)
       await this.refreshVerifiedOfflineLicense()
       // ensureKeys 可能因网络等问题失败，但不阻塞后续初始化
       try {
@@ -614,12 +614,12 @@ export class UserTierService {
       this.getDataManager()
       // 初始时通知一次 Profile 改变，防止渲染进程显示残留/为 0
       this.notifyProfileChanged()
-      logger.info(LogCategory.SYSTEM, '[UserTierService] 初始化完成，开始后台同步')
+      logger.debug(LogCategory.SYSTEM, '[UserTierService] 初始化完成，开始后台同步')
       // 后台同步
       await this.syncLocalCacheAndNotify(machineId).catch(err => {
         logger.error(LogCategory.SYSTEM, '[UserTierService] 初始云端同步失败:', err)
       })
-      logger.info(LogCategory.SYSTEM, '[UserTierService] 初始云端同步完成')
+      logger.debug(LogCategory.SYSTEM, '[UserTierService] 初始云端同步完成')
     }
 
     if (app.isReady()) {
@@ -631,7 +631,7 @@ export class UserTierService {
   }
 
   async syncLocalCacheAndNotify(machineId: string): Promise<void> {
-    logger.info(
+    logger.debug(
       LogCategory.SYSTEM,
       '[UserTierService] syncLocalCacheAndNotify 开始, machineId:',
       machineId

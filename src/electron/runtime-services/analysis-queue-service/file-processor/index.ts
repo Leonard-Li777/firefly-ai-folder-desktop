@@ -557,7 +557,7 @@ export async function persistOmniVectors(params: OmniVectorPersistenceParams): P
           samplingIntervalSeconds: samplingIntervalSeconds ?? 1.0
         }))
       )
-      logger.info(
+      logger.debug(
         LogCategory.ANALYSIS_QUEUE,
         `[分析队列] 视频切片元数据落库完成: fp=${fileFingerprint}, 切片数=${videoChunks.length}`
       )
@@ -592,7 +592,7 @@ export async function persistOmniVectors(params: OmniVectorPersistenceParams): P
           await databaseService.upsertFileVectorsToOmni(chunkVectors)
         }
       }
-      logger.info(
+      logger.debug(
         LogCategory.ANALYSIS_QUEUE,
         `[分析队列] 视频时序切片持久化完成: fp=${fileFingerprint}, chunksCount=${videoChunks.length}, vectorSaved=${vectorSaved}`
       )
@@ -636,7 +636,7 @@ export async function cleanupOrphanedVideoChunks(
     }
     db.prepare(deleteQuery).run(...deleteParams)
 
-    logger.info(
+    logger.debug(
       LogCategory.ANALYSIS_QUEUE,
       `[FileProcessor] 已精确清理 [${startSec ?? 0}s ~ ${endSec ?? 'all'}s] 范围内的 ${oldChunkFps.length} 条旧切片向量: ${fileFingerprint}`
     )
@@ -691,6 +691,77 @@ function createRetagCompletedHandler(filePath: string, fileFingerprint: string) 
       }
       notifyFileAnalysisUpdated(filePath, fileFingerprint, 'retag', 'completed')
     }
+  }
+}
+
+/**
+ * 运行时「首见回源」：把本批 lemma 中本地镜像未命中的，批量查 pack 补进 tag_aliases_[lang]。
+ *
+ * 对应设计三步：① 查镜像 → ② 未命中查 pack → ③ pack 有则补镜像再用（pack 无才让下游派生 _ext）。
+ * 挂载点在 executeProTagReconciliation **之前**：此时 AI 已吐出 groundTruthTags（lemma 已知），
+ * 但 resolveControlledCode（同步）尚未执行。在此批量补镜像后，下游同步反查即可命中受控 code，
+ * 不再误派生 _ext（如「妈妈→omw.10332385.n」而非 _ext.45f1364f）。
+ *
+ * 失败安全：回源是优化路径，任何异常都只 warn 不阻断打标主链路（下游仍走镜像→_ext 兜底）。
+ * @param lemmas 本批已知 lemma 列表（来自 groundTruthTags.tagName）
+ * @param locale 语言，如 zh-CN
+ */
+async function ensureLemmaAliasesSeeded(
+  lemmas: Array<string | undefined | null>,
+  locale?: string
+): Promise<void> {
+  const candidates = [
+    ...new Set(
+      lemmas
+        .map(l => (typeof l === 'string' ? l.trim() : ''))
+        .filter(l => l.length > 0)
+    )
+  ]
+  if (candidates.length === 0) return
+
+  const targetLocale = locale || databaseService.getCurrentLanguage?.() || 'zh-CN'
+
+  // ① 镜像已命中的不需要回源
+  const missLemmas = candidates.filter(l => !databaseService.findTagCodeByLemma(l, targetLocale))
+  if (missLemmas.length === 0) return
+
+  // ② 未命中的批量查 pack（分批防 payload 过大）
+  const BATCH = 200
+  let seeded = 0
+  for (let i = 0; i < missLemmas.length; i += BATCH) {
+    const slice = missLemmas.slice(i, i + BATCH)
+    try {
+      const resp = await omniClient.inspectTags(
+        slice.map(tagName => ({ tagName, targetParentCode: '' })),
+        targetLocale
+      )
+      if (!resp?.success || !Array.isArray(resp.results) || resp.results.length === 0) continue
+
+      // ③ pack 命中且 is_controlled → 补进镜像表
+      const rows = resp.results
+        .filter(r => r.isControlled && r.code)
+        .map(r => ({
+          tagCode: r.code as string,
+          lemma: r.tagName,
+          isCanonical: r.tagName === r.canonicalName || !r.canonicalName
+        }))
+      if (rows.length > 0) {
+        seeded += databaseService.seedTagAliasRows(rows, targetLocale)
+      }
+    } catch (err) {
+      logger.warn(
+        LogCategory.ANALYSIS_QUEUE,
+        '[分析队列] 运行时首见回源 pack 失败（不阻断打标，下游走 _ext 兜底）:',
+        err
+      )
+    }
+  }
+
+  if (seeded > 0) {
+    logger.debug(
+      LogCategory.ANALYSIS_QUEUE,
+      `[分析队列] 首见回源补镜像完成：候选=${candidates.length}, 镜像未命中=${missLemmas.length}, 补入=${seeded}, lang=${targetLocale}`
+    )
   }
 }
 
@@ -1011,7 +1082,7 @@ export class FileProcessor {
       if (mockJsonPath && fs.existsSync(mockJsonPath)) {
         const handled = await this.applyMockResult(item.id, filePath, currentWorkspaceId)
         if (handled) {
-          logger.info(LogCategory.ANALYSIS_QUEUE, `[测试模式] 拦截器已处理完成: ${item.name}`)
+          logger.debug(LogCategory.ANALYSIS_QUEUE, `[测试模式] 拦截器已处理完成: ${item.name}`)
           return
         }
         logger.warn(
@@ -1021,7 +1092,7 @@ export class FileProcessor {
         // 普通集成测试模式下未命中 mock 也直接标记为完成，避免因缺少真实 AI 服务导致队列卡死；E2E 测试模式正常走真实 AI
         const isTest = shouldSkipAIServiceInTest()
         if (isTest) {
-          logger.info(
+          logger.debug(
             LogCategory.ANALYSIS_QUEUE,
             `[测试模式] 文件不在 mock 库中，标记为已跳过: ${item.name}`
           )
@@ -1079,14 +1150,14 @@ export class FileProcessor {
           if (!completeness.isComplete) {
             // 数据有残缺（如向量未落盘、缺少 OCR 等），即使用户开启复用，也必须进入 CPU 提取补全
             forcedReextract = true
-            logger.info(
+            logger.debug(
               LogCategory.ANALYSIS_QUEUE,
               `[串行队列] 文件基础数据不完整 (${completeness.missingReasons.join(', ')})，触发 CPU 阶段重新提取: ${item.name}`
             )
           } else {
             // 数据健全存在（向量在、切片在、OCR在、摘要在）：复用并跳过 CPU 提取
             forcedReextract = false
-            logger.info(
+            logger.debug(
               LogCategory.ANALYSIS_QUEUE,
               `[串行队列] 文件基础数据健全存在（向量、OCR/LRC/摘要均完备），执行复用并跳过 CPU 提取: ${item.name}`
             )
@@ -1097,7 +1168,7 @@ export class FileProcessor {
           if (isAiStageEnabled(analysisMode)) {
             // quick_name / full 模式：跳过 CPU 提取，直接进入 GPU AI 阶段（stage3/4）。
             // 注意：AI 阶段入口会自行校验并撤销「以当前模式衡量尚未达标」的残留 is_analyzed 标记。
-            logger.info(
+            logger.debug(
               LogCategory.ANALYSIS_QUEUE,
               `[串行队列] 文件已处于 Stage ${initialStage} >= 2，跳过 CPU 提取，直接进入 GPU AI 阶段: ${item.name}`
             )
@@ -1107,7 +1178,7 @@ export class FileProcessor {
           // 此时 stage 已 >= 2 必然满足完成条件，因此可直接补写完成标记并结束，
           // 无需再重复跑一遍 CPU 提取。此前的实现在 alreadyAnalyzed 为 true 时会继续重跑 CPU，
           // 既浪费算力，也无法修正「stage 达标但 is_analyzed 错误为 0」的状态。
-          logger.info(
+          logger.debug(
             LogCategory.ANALYSIS_QUEUE,
             `[串行队列] 文件已处于 Stage ${initialStage}，简单模式（${analysisMode}）下已满足完成条件，确保完成标记后就绪: ${item.name}`
           )
@@ -1135,7 +1206,7 @@ export class FileProcessor {
       const isPrivate = rootWorkspaceDir.type === 'PRIVATE'
       const isSpeedy = rootWorkspaceDir?.type === 'SPEEDY'
 
-      logger.info(
+      logger.debug(
         LogCategory.ANALYSIS_QUEUE,
         `[配额调试] 文件: ${filePath}, workspaceId: ${currentWorkspaceId}, 目录类型: ${rootWorkspaceDir?.type || 'unknown'}, isPrivate: ${isPrivate}`
       )
@@ -1166,7 +1237,7 @@ export class FileProcessor {
       const actualSize = currentStats.size
       if (actualSize === 0) {
         const fileName = item.name || path.basename(filePath) || '未知文件'
-        logger.info(LogCategory.ANALYSIS_QUEUE, `[分析队列] 发现空文件，跳过AI分析: ${fileName}`)
+        logger.debug(LogCategory.ANALYSIS_QUEUE, `[分析队列] 发现空文件，跳过AI分析: ${fileName}`)
         await this.handleEmptyFile(item, currentWorkspaceId)
         this.updateItemStatus(item.id, 'completed', 100)
         return
@@ -1191,7 +1262,7 @@ export class FileProcessor {
           const currentStage = getFileStageFromDB(db, currentWorkspaceId, filePath)
           // 简单分类模式的完成标志是 stage 2（CPU 内容提取完成）
           const canMark = isAnalysisComplete(currentStage, analysisMode)
-          logger.info(
+          logger.debug(
             LogCategory.ANALYSIS_QUEUE,
             `[分析队列] 非 AI 模式（${analysisMode}）跳过 GPU AI 阶段: ${item.name}`,
             { currentStage, willMarkAnalyzed: canMark }
@@ -1223,7 +1294,7 @@ export class FileProcessor {
               )
               .run(currentWorkspaceId, filePath)
             if (reverted.changes > 0) {
-              logger.info(
+              logger.debug(
                 LogCategory.ANALYSIS_QUEUE,
                 `[分析队列] 模式（${analysisMode}）下 stage=${stageBeforeGpu} 未达标，撤销残留的已分析标记，交由 AI 阶段重新判定: ${item.name}`
               )
@@ -1494,7 +1565,7 @@ export class FileProcessor {
         // 本处位于 AI 阶段（stage3/4）推理之前，符合「CPU 阶段不依赖目录语义」的架构约定。
         try {
           const parentDir = path.dirname(filePath)
-          logger.info(
+          logger.debug(
             LogCategory.ANALYSIS_QUEUE,
             `[目录上下文] 文件 ${item.name} 开始 AI 分析，优先获取/自动分析所在父级目录: ${parentDir}`
           )
@@ -1625,7 +1696,7 @@ export class FileProcessor {
           coreNameSource = 'ai'
         } else if (hasSubstantive && hasValid5W) {
           // 次优：有正文但大模型偷懒照抄，拦截回落 CPU 5W 机械名
-          logger.info(
+          logger.debug(
             LogCategory.ANALYSIS_QUEUE,
             '[智能命名仲裁] 检测到大模型偷懒照抄原名，回落采纳 CPU 5W 机械名',
             {
@@ -1775,6 +1846,12 @@ export class FileProcessor {
           }
         }
 
+        // 运行时首见回源：本批 lemma 本地镜像未命中的，批量查 pack 补镜像（防误派生 _ext）
+        await ensureLemmaAliasesSeeded(
+          preflightContext?.groundTruthTags?.map(t => t.tagName),
+          baseMetadata?.language
+        )
+
         // 运行找补裁决器：将 CPU 既定事实标签与 AI 推理标签合并，物理事实绝对覆盖，全量无损入库（打破 8 个上限限制）
         // resolveControlledCode：中文词形优先反查 Omni 语义包（omw.* > builtin.*），禁止无脑 _ext / 冒号 code
         executeProTagReconciliation({
@@ -1835,7 +1912,7 @@ export class FileProcessor {
       let fileFingerprint = existingWorkspaceFile?.file_fingerprint || '0'.repeat(32)
       const isLocallyAnalyzed = existingWorkspaceFile?.is_analyzed === 1
 
-      logger.info(LogCategory.ANALYSIS_QUEUE, `[分析队列] 文件状态检查: ${item.name}`, {
+      logger.debug(LogCategory.ANALYSIS_QUEUE, `[分析队列] 文件状态检查: ${item.name}`, {
         isLocallyAnalyzed,
         forceReanalyze: item.forceReanalyze,
         fileFingerprint: fileFingerprint.substring(0, 8) + '...'
@@ -1864,7 +1941,7 @@ export class FileProcessor {
       let stage1CloudReuseMs = 0
 
       if (needsNewHash) {
-        logger.info(
+        logger.debug(
           LogCategory.ANALYSIS_QUEUE,
           `[分析队列] 准备计算真实文件指纹: ${item.name}${isTempHash ? ' (替换临时ID)' : ''}${metadataMismatched ? ' (元数据已变动)' : ''}`
         )
@@ -1926,7 +2003,7 @@ export class FileProcessor {
             WHERE path = ?`
           ).run(fileFingerprint, new Date().toISOString(), new Date().toISOString(), filePath)
 
-          logger.info(
+          logger.debug(
             LogCategory.ANALYSIS_QUEUE,
             `[分析队列] 阶段1完成，已更新指纹与基础信息: ${item.name} (${fileFingerprint.substring(0, 8)}...), 耗时: ${stage1FingerprintMs}ms`
           )
@@ -1936,7 +2013,7 @@ export class FileProcessor {
       } else {
         // 复用已有指纹判定
         stage1LocalReuseMs = Math.max(Date.now() - tStage1Start, 1)
-        logger.info(
+        logger.debug(
           LogCategory.ANALYSIS_QUEUE,
           `[分析队列] 阶段1完成，复用已有指纹与基础信息: ${item.name} (${fileFingerprint.substring(0, 8)}...), 耗时: ${stage1LocalReuseMs}ms`
         )
@@ -1966,7 +2043,7 @@ export class FileProcessor {
                 await databaseService.getAnalyzedFileByContentHash(fileFingerprint)
               stage1LocalReuseMs = Date.now() - tLocalStart
               if (localCachedFile) {
-                logger.info(
+                logger.debug(
                   LogCategory.ANALYSIS_QUEUE,
                   `[分析队列] 命中本地内容缓存: ${item.name}, 查询耗时: ${stage1LocalReuseMs}ms`
                 )
@@ -1991,7 +2068,7 @@ export class FileProcessor {
                   language
                 )
                 if (cloudCachedData) {
-                  logger.info(LogCategory.ANALYSIS_QUEUE, `[分析队列] 命中云端缓存: ${item.name}`)
+                  logger.debug(LogCategory.ANALYSIS_QUEUE, `[分析队列] 命中云端缓存: ${item.name}`)
                   isCloudCache = true
                 }
               } catch (cloudError) {
@@ -2007,7 +2084,7 @@ export class FileProcessor {
       }
 
       if (cloudCachedData) {
-        logger.info(LogCategory.ANALYSIS_QUEUE, `[分析队列] 应用缓存数据: ${item.name}`)
+        logger.debug(LogCategory.ANALYSIS_QUEUE, `[分析队列] 应用缓存数据: ${item.name}`)
         this.updateItemStatus(item.id, 'analyzing', 50)
 
         try {
@@ -2019,7 +2096,7 @@ export class FileProcessor {
             currentWorkspaceId
           )
           this.updateItemStatus(item.id, 'completed', 100, undefined, { fromCache: true })
-          logger.info(
+          logger.debug(
             LogCategory.ANALYSIS_QUEUE,
             `[分析队列] 项目分析完成 (缓存命中): ${item.name}`
           )
@@ -2044,7 +2121,7 @@ export class FileProcessor {
       if (!magikaCategory) {
         if (existingBasicData.category) {
           magikaCategory = existingBasicData.category
-          logger.info(
+          logger.debug(
             LogCategory.ANALYSIS_QUEUE,
             `[复用数据] 已复用文件类型 (Magika): ${item.name}`
           )
@@ -2334,7 +2411,7 @@ export class FileProcessor {
 
             // 门禁断点：若切片起点超出当前权益上限，读时阻断后续切片（等待升级 Pro 后唤醒）
             if (chunkStart >= currentLimit) {
-              logger.info(
+              logger.debug(
                 LogCategory.ANALYSIS_QUEUE,
                 `[分析队列] 片段 ${k} 起点 ${chunkStart}s 达到当前权益上限 ${currentLimit}s，断点暂停等待升级: ${filePath}`
               )
@@ -2343,7 +2420,7 @@ export class FileProcessor {
 
             // 跨设备文件缺失预检 (FIN-07)
             if (!fs.existsSync(filePath)) {
-              logger.info(
+              logger.debug(
                 LogCategory.ANALYSIS_QUEUE,
                 `[分析队列] 跨设备原文件不存在，跳过调度: ${filePath}`
               )
@@ -2520,7 +2597,7 @@ export class FileProcessor {
             `[FileProcessor] Magika 分类对象缺少 label/group，媒体分组事实将不可用: ${item.name} (${JSON.stringify(magikaCategory).slice(0, 200)})`
           )
         } else {
-          logger.info(
+          logger.debug(
             LogCategory.ANALYSIS_QUEUE,
             `[FileProcessor] Magika 分类识别完成: ${item.name} (${magikaLabel})`
           )
@@ -2550,13 +2627,13 @@ export class FileProcessor {
       if (!combinedContent.trim()) {
         if (isImage && anydocResult?.ocrText?.trim()) {
           combinedContent = anydocResult.ocrText.trim()
-          logger.info(
+          logger.debug(
             LogCategory.ANALYSIS_QUEUE,
             `[FileProcessor] 感知 OCR 兜底合并进 content: ${item.name}, 长度: ${combinedContent.length}`
           )
         } else if (isAudioVideoContent && anydocResult?.audioTranscript?.trim()) {
           combinedContent = anydocResult.audioTranscript.trim()
-          logger.info(
+          logger.debug(
             LogCategory.ANALYSIS_QUEUE,
             `[FileProcessor] 感知音频转录兜底合并进 content: ${item.name}, 长度: ${combinedContent.length}`
           )
@@ -2566,7 +2643,7 @@ export class FileProcessor {
       // 复用数据：Omni 未返回内容时（完全跳过或仅按需请求了缺失指标），回退到已有内容
       if (!combinedContent.trim() && existingBasicData.content && !isImage) {
         combinedContent = existingBasicData.content
-        logger.info(
+        logger.debug(
           LogCategory.ANALYSIS_QUEUE,
           `[复用数据] 复用已有文本内容: ${item.name}, 长度: ${combinedContent.length}`
         )
@@ -2582,7 +2659,7 @@ export class FileProcessor {
             timer.end('文本提取')
             if (textContent) {
               combinedContent = textContent
-              logger.info(
+              logger.debug(
                 LogCategory.ANALYSIS_QUEUE,
                 `[FileProcessor] TextFileProcessor 降级提取文本内容成功: ${item.name}, 长度: ${textContent.length}`
               )
@@ -2684,7 +2761,7 @@ export class FileProcessor {
         const currentContentBytes = Buffer.byteLength(combinedContent, 'utf8')
 
         if (currentContentBytes > maxBytes) {
-          logger.info(
+          logger.debug(
             LogCategory.ANALYSIS_QUEUE,
             `[FileProcessor] 组合后文本总字节数(${currentContentBytes} B)超出配置上限，统一按 MAX_CONTENT_SIZE_KB (${finalMaxKb}KB = ${maxBytes} B) 进行 UTF-8 字符边界防乱码安全截断`
           )
@@ -2729,7 +2806,7 @@ export class FileProcessor {
         }
       }
 
-      logger.info(
+      logger.debug(
         LogCategory.ANALYSIS_QUEUE,
         `[FileProcessor] 阶段2内容与元数据提取完成: file=${item.name} combinedContentLen=${combinedContent.length} (metadataKeys=${Object.keys(contentResult.metadata || {}).length})`
       )
@@ -2742,7 +2819,7 @@ export class FileProcessor {
           const buf = Buffer.from(anydocResult.perception.cover_webp_base64, 'base64')
           await fs.promises.writeFile(webpPath, buf)
           thumbnailRelativePath = path.relative(rootWorkspaceDir.path, webpPath)
-          logger.info(
+          logger.debug(
             LogCategory.ANALYSIS_QUEUE,
             `[FileProcessor] Omni 原生代表帧封面已落盘: ${thumbnailRelativePath}`
           )
@@ -2903,7 +2980,7 @@ export class FileProcessor {
         metadata: contentResult.metadata
       }
 
-      logger.info(LogCategory.ANALYSIS_QUEUE, `[分析队列] 并行提取阶段处理完成: ${item.name}`, {
+      logger.debug(LogCategory.ANALYSIS_QUEUE, `[分析队列] 并行提取阶段处理完成: ${item.name}`, {
         hasContent: !!contentResult.content && contentResult.content.length > 0,
         contentLength: contentResult.content?.length || 0,
         fileSize: fileInfo.size,
@@ -3018,6 +3095,12 @@ export class FileProcessor {
               // 容错：清空失败不阻断后续落库（INSERT OR REPLACE 会覆盖同主键行）
             }
           }
+          // 运行时首见回源：本批 lemma 本地镜像未命中的，批量查 pack 补镜像（防误派生 _ext）
+          await ensureLemmaAliasesSeeded(
+            preflightContext?.groundTruthTags?.map(t => t.tagName),
+            language
+          )
+
           executeProTagReconciliation({
             db,
             fileFingerprint,
@@ -3122,7 +3205,7 @@ export class FileProcessor {
           if (dbFile && dbFile.content) {
             fileInfo.content = dbFile.content
             if (fileInfo.content) {
-              logger.info(
+              logger.debug(
                 LogCategory.ANALYSIS_QUEUE,
                 `[分析队列] 从数据库回捞内容成功: ${item.name}, 长度: ${fileInfo.content.length}`
               )
@@ -3185,9 +3268,15 @@ export class FileProcessor {
           null
         )
 
-        logger.info(
+        logger.debug(
           LogCategory.ANALYSIS_QUEUE,
           `[基础分析] 保存 category: ${JSON.stringify(magikaCategory).slice(0, 200)}`
+        )
+
+        // 运行时首见回源：本批 lemma 本地镜像未命中的，批量查 pack 补镜像（防误派生 _ext）
+        await ensureLemmaAliasesSeeded(
+          preflightContext?.groundTruthTags?.map(t => t.tagName),
+          language
         )
 
         // 运行找补裁决器单点持久化：全量注入物理事实（来源、状态、安全、水印、作者、分类、扩展名等）
@@ -3243,9 +3332,9 @@ export class FileProcessor {
         const parentDir = path.dirname(filePath)
         directoryContext = await this.analyzeDirectoryContext(parentDir, false)
         if (directoryContext) {
-          logger.info(LogCategory.ANALYSIS_QUEUE, `[目录上下文] 预获取目录上下文成功: ${parentDir}`)
+          logger.debug(LogCategory.ANALYSIS_QUEUE, `[目录上下文] 预获取目录上下文成功: ${parentDir}`)
         } else {
-          logger.info(
+          logger.debug(
             LogCategory.ANALYSIS_QUEUE,
             `[目录上下文] 目录上下文暂不可用（将跳过目录维度增强）: ${parentDir}`
           )
@@ -3355,7 +3444,7 @@ export class FileProcessor {
         finalTargetSmartName = aiSmartNameCleanedMain
         finalTargetSmartNameSource = 'ai'
       } else if (hasSubstantiveMain && hasValid5WMain) {
-        logger.info(
+        logger.debug(
           LogCategory.ANALYSIS_QUEUE,
           '[智能命名仲裁] 主流程大模型偷懒照抄原名，回落采纳 CPU 5W 机械名',
           {
@@ -3401,6 +3490,12 @@ export class FileProcessor {
         stage1Benchmark,
         finalTargetSmartNameSource,
         null
+      )
+
+      // 运行时首见回源：本批 lemma 本地镜像未命中的，批量查 pack 补镜像（防误派生 _ext）
+      await ensureLemmaAliasesSeeded(
+        preflightContext?.groundTruthTags?.map(t => t.tagName),
+        language
       )
 
       // 运行找补裁决器单点持久化：将 CPU 既定事实标签（含清洗后的作者、分类、扩展名）与 AI 推理标签合并，物理事实绝对覆盖，全量无损原子入库
@@ -3458,7 +3553,7 @@ export class FileProcessor {
     } catch (error: any) {
       const isAbort = error && (error.name === 'AbortError' || error.message === 'Aborted')
       if (isAbort) {
-        logger.info(
+        logger.debug(
           LogCategory.ANALYSIS_QUEUE,
           `[分析队列] 分析任务被中止，恢复状态为 pending: ${item.name}`
         )
@@ -3496,7 +3591,7 @@ export class FileProcessor {
         // 严禁静默降级为 completed（AGENTS.md §2.9；2026-10-20 用户报告回归护栏：
         // analysis-error-classifier.test.ts + file-processor-stage2-persistence.test.ts）。
         if (allowTier1Fallback && tier1FallbackName) {
-          logger.info(
+          logger.debug(
             LogCategory.ANALYSIS_QUEUE,
             `[分析队列] Tier 2 AI 推理失败，自动降级 Tier 1 命名兜底: ${item.name} -> ${tier1FallbackName}`
           )

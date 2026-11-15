@@ -285,7 +285,7 @@ export class CanonicalMaintenanceService {
       // （启动路径不调用 runMaintenance，只能等下次配置变更或重启）。这里只记「最后一次」原因，
       // 由闸主在 finally 前补跑一轮——合并突发变更，不会放大成 N 轮。
       this.pendingMaintenanceReason = reason
-      logger.info(
+      logger.debug(
         LogCategory.ANALYSIS_QUEUE,
         `[CanonicalMaintenance] 已有维护任务在运行，本次触发已排队（合并为补跑一轮）: reason=${reason}`
       )
@@ -300,7 +300,7 @@ export class CanonicalMaintenanceService {
         const next = this.pendingMaintenanceReason
         if (!next) break
         this.pendingMaintenanceReason = null
-        logger.info(
+        logger.debug(
           LogCategory.ANALYSIS_QUEUE,
           `[CanonicalMaintenance] 维护期间有新触发，补跑一轮: reason=${next}`
         )
@@ -352,7 +352,7 @@ export class CanonicalMaintenanceService {
     }
     this.lastMaintenance = { reason, at: this.deps.now(), invalidated, requeued }
     const counts = this.getRebuildCounts()
-    logger.info(
+    logger.debug(
       LogCategory.ANALYSIS_QUEUE,
       `[CanonicalMaintenance] 维护任务完成: reason=${reason}, 失效=${invalidated}, 重析入队=${requeued}, ` +
         `待重建=${counts.pending + counts.uncomputed}, 已就绪=${counts.ready}, 失败=${counts.failed}`
@@ -373,7 +373,7 @@ export class CanonicalMaintenanceService {
       if (changed < batchSize) break
     }
     if (total > 0) {
-      logger.info(
+      logger.debug(
         LogCategory.ANALYSIS_QUEUE,
         `[CanonicalMaintenance] 状态失效：${total} 行 ready/visual_only 已置 pending（skipped 不动，canonical_text 保留）`
       )
@@ -478,7 +478,7 @@ export class CanonicalMaintenanceService {
           requeued += await this.requeueForReanalysis(dao, fresh, spec.label, reasons)
         }
       }
-      logger.info(
+      logger.debug(
         LogCategory.ANALYSIS_QUEUE,
         `[CanonicalMaintenance] 槽位探活 ${spec.label}（dim=${spec.dim}）：匹配=${matched}, ` +
           `异空间=${mismatched}, 缺失=${missing}, 已知缺口跳过=${knownGap}, 入队=${toRequeue.length}`
@@ -536,7 +536,7 @@ export class CanonicalMaintenanceService {
     this.backfillRunning = true
     try {
       if (await this.deps.isQueueBusy()) {
-        logger.info(
+        logger.debug(
           LogCategory.ANALYSIS_QUEUE,
           '[CanonicalMaintenance] 分析队列忙碌，canonical 回填暂停（可断点续跑）'
         )
@@ -563,7 +563,7 @@ export class CanonicalMaintenanceService {
           // 游标只推进到**已处理**的最后一个指纹：未处理的必须留给下次续跑，
           // 否则会静默跳过整批剩余候选（切档后这部分行永不重算）。
           this.backfillCursor = i > 0 ? fingerprints[i - 1] : this.backfillCursor
-          logger.info(
+          logger.debug(
             LogCategory.ANALYSIS_QUEUE,
             `[CanonicalMaintenance] 分析队列转忙，canonical 回填中途暂停（已固化 ${solidified}/${fingerprints.length}，续跑游标=${this.backfillCursor}）`
           )
@@ -738,7 +738,7 @@ export function installCanonicalMaintenanceListener(
     const unsubscribe = orchestrator.onValueChange(key as any, async (newVal, oldVal) => {
       // 无关配置变更不触发：仅 profile 或 activeDim 的**真实变化**才维护
       if (!newVal || !oldVal || newVal === oldVal) return
-      logger.info(
+      logger.debug(
         LogCategory.ANALYSIS_QUEUE,
         `[CanonicalMaintenance] 检测到 ${key} 变更 (${String(oldVal)} -> ${String(newVal)})，启动 canonical 维护任务`
       )

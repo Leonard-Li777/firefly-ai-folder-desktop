@@ -46,7 +46,7 @@ class FileWatcherService {
       const timer = setTimeout(() => {
         const omitted = this.fileEventLogOmitted.get(eventType) || 0
         if (omitted > 0) {
-          logger.info(LogCategory.FILE_WATCHER, `检测到文件${eventType}日志，已省略${omitted}个`)
+          logger.debug(LogCategory.FILE_WATCHER, `检测到文件${eventType}日志，已省略${omitted}个`)
         }
         this.fileEventLogTimers.delete(eventType)
       }, 1000)
@@ -58,7 +58,7 @@ class FileWatcherService {
     if (count < 5) {
       const actionText =
         eventType === FileWatcherService.EVENT_TYPE_ADD ? '新文件' : `文件${eventType}`
-      logger.info(LogCategory.FILE_WATCHER, `检测到${actionText}: ${filePath}`)
+      logger.debug(LogCategory.FILE_WATCHER, `检测到${actionText}: ${filePath}`)
       this.fileEventLogCounts.set(eventType, count + 1)
     } else {
       this.fileEventLogOmitted.set(eventType, (this.fileEventLogOmitted.get(eventType) || 0) + 1)
@@ -107,17 +107,17 @@ class FileWatcherService {
     }
 
     try {
-      logger.info(LogCategory.FILE_WATCHER, '初始化文件监听服务...')
+      logger.debug(LogCategory.FILE_WATCHER, '初始化文件监听服务...')
 
       // 加载忽略规则
       this.ignoreRules = loadIgnoreRules()
-      logger.info(LogCategory.FILE_WATCHER, `已加载 ${this.ignoreRules.length} 条忽略规则`)
+      logger.debug(LogCategory.FILE_WATCHER, `已加载 ${this.ignoreRules.length} 条忽略规则`)
 
       // 启动所有启用了 autoWatch 的工作目录的监听
       await this.startAllAutoWatchers()
 
       this.isInitialized = true
-      logger.info(LogCategory.FILE_WATCHER, '文件监听服务初始化成功')
+      logger.debug(LogCategory.FILE_WATCHER, '文件监听服务初始化成功')
     } catch (error) {
       logger.error(LogCategory.FILE_WATCHER, '文件监听服务初始化失败:', error)
       throw error
@@ -132,7 +132,7 @@ class FileWatcherService {
       const directories = await databaseService.getAllWorkspaceDirectories()
       const autoWatchDirs = directories.filter(dir => dir.autoWatch && dir.isActive)
 
-      logger.info(LogCategory.FILE_WATCHER, `找到 ${autoWatchDirs.length} 个启用自动监听的目录`)
+      logger.debug(LogCategory.FILE_WATCHER, `找到 ${autoWatchDirs.length} 个启用自动监听的目录`)
 
       for (const directory of autoWatchDirs) {
         if (directory.id) {
@@ -154,11 +154,11 @@ class FileWatcherService {
     try {
       // 如果已经在监听，先停止
       if (this.watchers.has(workspaceId)) {
-        logger.info(LogCategory.FILE_WATCHER, `目录 ${directoryPath} 已在监听中，先停止旧的监听器`)
+        logger.debug(LogCategory.FILE_WATCHER, `目录 ${directoryPath} 已在监听中，先停止旧的监听器`)
         await this.stopWatching(workspaceId)
       }
 
-      logger.info(LogCategory.FILE_WATCHER, `开始监听目录: ${directoryPath}`)
+      logger.debug(LogCategory.FILE_WATCHER, `开始监听目录: ${directoryPath}`)
       try {
         const policy = workspaceAdmissionService.getEffectivePolicy(workspaceId)
         if (policy?.primaryExtensions) {
@@ -235,11 +235,11 @@ class FileWatcherService {
 
       // 监听就绪事件
       watcher.on('ready', () => {
-        logger.info(LogCategory.FILE_WATCHER, `目录 ${directoryPath} 监听就绪`)
+        logger.debug(LogCategory.FILE_WATCHER, `目录 ${directoryPath} 监听就绪`)
       })
 
       this.watchers.set(workspaceId, watcher)
-      logger.info(LogCategory.FILE_WATCHER, `成功启动对目录 ${directoryPath} 的监听`)
+      logger.debug(LogCategory.FILE_WATCHER, `成功启动对目录 ${directoryPath} 的监听`)
     } catch (error) {
       logger.error(LogCategory.FILE_WATCHER, `启动目录监听失败: ${directoryPath}`, error)
       throw error
@@ -257,7 +257,7 @@ class FileWatcherService {
         await watcher.close()
         this.watchers.delete(workspaceId)
         this.workspaceWhitelistCache.delete(workspaceId)
-        logger.info(LogCategory.FILE_WATCHER, `已停止监听目录 ID: ${workspaceId}`)
+        logger.debug(LogCategory.FILE_WATCHER, `已停止监听目录 ID: ${workspaceId}`)
       }
     } catch (error) {
       logger.error(LogCategory.FILE_WATCHER, `停止目录监听失败 ID: ${workspaceId}`, error)
@@ -281,7 +281,7 @@ class FileWatcherService {
   muteAutoWatch(workspaceId: number, durationMs = 30000): void {
     const until = Date.now() + durationMs
     this.autoWatchMuteUntil.set(workspaceId, until)
-    logger.info(
+    logger.debug(
       LogCategory.FILE_WATCHER,
       `工作区 ${workspaceId} 自动监听分析已进入静默期 (${durationMs}ms，截止: ${new Date(until).toLocaleTimeString()})`
     )
@@ -302,7 +302,7 @@ class FileWatcherService {
 
   updateWorkspaceWhitelist(workspaceId: number, patterns: string[] | null | undefined): void {
     this.workspaceWhitelistCache.set(workspaceId, compileWhitelistExtSet(patterns))
-    logger.info(LogCategory.FILE_WATCHER, `工作区 ID: ${workspaceId} 白名单已更新`)
+    logger.debug(LogCategory.FILE_WATCHER, `工作区 ID: ${workspaceId} 白名单已更新`)
   }
 
   async onWorkspacePolicyUpdated(workspaceId: number, policy: any): Promise<void> {
@@ -349,7 +349,7 @@ class FileWatcherService {
     this.syncingPaths.add(dirPath)
 
     try {
-      logger.info(LogCategory.FILE_WATCHER, `开始全量同步目录: ${dirPath}`)
+      logger.debug(LogCategory.FILE_WATCHER, `开始全量同步目录: ${dirPath}`)
 
       // 1. 获取工作空间
       const workspace = await databaseService.findRootWorkspaceDirectory(dirPath)
@@ -384,7 +384,7 @@ class FileWatcherService {
           diskDirSet.add(fullPath)
         }
       }
-      logger.info(
+      logger.debug(
         LogCategory.FILE_WATCHER,
         `单层级扫描完成，找到 ${diskFileMap.size} 个文件, ${diskDirSet.size} 个子目录: ${dirPath}`
       )
@@ -429,9 +429,9 @@ class FileWatcherService {
 
       // 批量将新增文件写入数据库
       if (filesToAdd.length > 0) {
-        logger.info(LogCategory.FILE_WATCHER, `开始批量将 ${filesToAdd.length} 个文件写入数据库...`)
+        logger.debug(LogCategory.FILE_WATCHER, `开始批量将 ${filesToAdd.length} 个文件写入数据库...`)
         await databaseService.addFilesFromPathsBatch(filesToAdd, workspace.id)
-        logger.info(LogCategory.FILE_WATCHER, `批量写入数据库完成`)
+        logger.debug(LogCategory.FILE_WATCHER, `批量写入数据库完成`)
       }
 
       // 处理删除（仅处理当前目录下已不存在的文件）
@@ -456,7 +456,7 @@ class FileWatcherService {
       }
 
       // 更新日志信息包含目录数量
-      logger.info(
+      logger.debug(
         LogCategory.FILE_WATCHER,
         `目录同步完成: ${dirPath} (新增:${added}, 更新:${updated}, 删除:${deleted}, 子目录:${dirsAdded})`
       )
@@ -530,7 +530,7 @@ class FileWatcherService {
         workspaceId,
         true
       )
-      logger.info(
+      logger.debug(
         LogCategory.FILE_WATCHER,
         `文件已添加到数据库: ${filePath}, Fingerprint: ${fileId}`
       )
@@ -546,7 +546,7 @@ class FileWatcherService {
         } else {
           const fileRecord = await databaseService.getFileByPath(filePath)
           if (fileRecord && fileRecord.isAnalyzed) {
-            logger.info(LogCategory.FILE_WATCHER, `文件已被分析过，跳过加入分析队列: ${filePath}`)
+            logger.debug(LogCategory.FILE_WATCHER, `文件已被分析过，跳过加入分析队列: ${filePath}`)
           } else {
             const fileName = path.basename(filePath)
             const fileExt = path.extname(filePath).toLowerCase()
@@ -563,7 +563,7 @@ class FileWatcherService {
               false
             )
 
-            logger.info(LogCategory.FILE_WATCHER, `[自动监听] 实时新增文件已加入分析队列: ${filePath}`)
+            logger.debug(LogCategory.FILE_WATCHER, `[自动监听] 实时新增文件已加入分析队列: ${filePath}`)
           }
         }
       }
@@ -657,7 +657,7 @@ class FileWatcherService {
         } else {
           const contentHash = await calculateFileFingerprint(filePath)
           if (file.contentHash === contentHash && file.isAnalyzed) {
-            logger.info(LogCategory.FILE_WATCHER, `文件内容无变化，跳过队列分析: ${filePath}`)
+            logger.debug(LogCategory.FILE_WATCHER, `文件内容无变化，跳过队列分析: ${filePath}`)
           } else {
             const fileName = path.basename(filePath)
             const fileExt = path.extname(filePath).toLowerCase()
@@ -674,7 +674,7 @@ class FileWatcherService {
               true
             )
 
-            logger.info(LogCategory.FILE_WATCHER, `[自动监听] 实时修改文件已重新加入分析队列: ${filePath}`)
+            logger.debug(LogCategory.FILE_WATCHER, `[自动监听] 实时修改文件已重新加入分析队列: ${filePath}`)
           }
         }
       }
@@ -707,7 +707,7 @@ class FileWatcherService {
       const file = await databaseService.getFileByPath(filePath)
       if (file) {
         await databaseService.updateFileStatus(file.fileId || file.id, 0)
-        logger.info(LogCategory.FILE_WATCHER, `文件不存在，已更新数据库状态 status=0: ${filePath}`)
+        logger.debug(LogCategory.FILE_WATCHER, `文件不存在，已更新数据库状态 status=0: ${filePath}`)
       }
 
       // 伴生文件孤儿解绑重评 (AC-2 / VET-08)
@@ -726,7 +726,7 @@ class FileWatcherService {
               !workspaceAdmissionService.shouldAdmitFile(workspaceId, candidatePath, false)
             ) {
               await databaseService.updateFileStatus(cFile.fileId || cFile.id, 0)
-              logger.info(
+              logger.debug(
                 LogCategory.FILE_WATCHER,
                 `主文件已删除，孤儿伴生文件已解绑: ${candidatePath}`
               )
@@ -753,7 +753,7 @@ class FileWatcherService {
   async reloadIgnoreRules(): Promise<void> {
     try {
       this.ignoreRules = loadIgnoreRules()
-      logger.info(
+      logger.debug(
         LogCategory.FILE_WATCHER,
         `[文件监听] 已重新加载 ${this.ignoreRules.length} 条忽略规则`
       )
@@ -764,7 +764,7 @@ class FileWatcherService {
 
   async cleanup(): Promise<void> {
     try {
-      logger.info(LogCategory.FILE_WATCHER, '清理文件监听服务...')
+      logger.debug(LogCategory.FILE_WATCHER, '清理文件监听服务...')
 
       for (const [workspaceId, watcher] of this.watchers.entries()) {
         await watcher.close()
@@ -774,7 +774,7 @@ class FileWatcherService {
       this.watchers.clear()
       this.isInitialized = false
 
-      logger.info(LogCategory.FILE_WATCHER, '文件监听服务已清理')
+      logger.debug(LogCategory.FILE_WATCHER, '文件监听服务已清理')
     } catch (error) {
       logger.error(LogCategory.FILE_WATCHER, '清理文件监听服务失败:', error)
       throw error

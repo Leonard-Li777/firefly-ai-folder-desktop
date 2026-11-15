@@ -105,13 +105,11 @@ export class ConfigDbManager {
   }
 
   /**
-   * 分表初值补录（主设计 §2，C1=(b) 定稿，Fix-01/Fix-02）
-   * - 目标语言分表已有行 → 计算差集（其它分表有、目标表缺的 code）：差集为空则幂等跳过
-   *   （避免每次启动都请求 Omni）；差集非空仅为缺失 code 走 `codes=` 补录（只补缺、不触碰已有行）；
-   * - 若库内其它语言分表已有行（目标表为空）→ 取其全部 tag_code 经 Omni `codes=` 批量补录目标语言（切语言场景）；
-   * - 否则（首次初始化该语言，无旧语言表）→ 以 `source=dimension,tag` 拉受控全集建表（首建场景）。
-   * 动态/自定义标签不在分表建语言行（走 file_tags expanded/user）。补录行经 INSERT OR REPLACE
-   * 写入，保持镜像与语义包一致。
+   * 分表初值灌表（主设计 §2/§7）：
+   * - 仅当目标语言分表**首次创建**（表为空）时，以 `source=dimension,tag` 拉受控分类树全集建表；
+   * - 分表已有数据（含运行时动态/_ext 词）一律幂等跳过，绝不回源——防止启动重复请求 Omni、
+   *   也防止把其它语言分表的运行时词倒灌进来。
+   * 分类树外的词库开放概念不在启动期灌入（防 13 万词膨胀），由运行时「首见回源」按需补镜像。
    * @param db 主库连接
    * @param language 目标 locale，如 zh-CN
    */
@@ -121,68 +119,24 @@ export class ConfigDbManager {
       (db.prepare(`SELECT COUNT(*) AS cnt FROM ${table}`).get() as { cnt: number } | undefined)
         ?.cnt ?? 0
 
-    // 收集其它语言分表的 code 集（SQLite GLOB；不用 LIKE——其 '_' 是单字符通配会误匹配）
-    const otherTables = (
-      db
-        .prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name GLOB 'tag_aliases_*'`)
-        .all() as Array<{ name: string }>
-    )
-      .map(r => r.name)
-      .filter(n => n !== table)
-
-    const sourceCodes = new Set<string>()
-    for (const t of otherTables) {
-      try {
-        const rows = db.prepare(`SELECT DISTINCT tag_code FROM ${t}`).all() as Array<{
-          tag_code: string
-        }>
-        rows.forEach(r => sourceCodes.add(r.tag_code))
-      } catch (err) {
-        logger.warn(LogCategory.CONFIG, `ConfigDbManager: 读取历史分表 ${t} code 集失败:`, err)
-      }
-    }
-
-    // Fix-02 差集补录：目标表非空时仅补「其它分表已有、目标表缺失」的 code；
-    // 差集为空即维持原幂等跳过语义，不请求 Omni
-    let codes: string[] = []
+    // 首次创建该语言分表才灌表；已有数据（含运行时动态/_ext 词）一律幂等跳过，不回源。
+    // 旧「差集补录」会把其它语言分表的 code（含运行时 _ext/动态词）倒灌到目标语言，
+    // 违背「轻灌受控分类树 + 运行时按需回源」原则，已移除。
     if (existingCnt > 0) {
-      const targetCodes = new Set(
-        (
-          db.prepare(`SELECT DISTINCT tag_code FROM ${table}`).all() as Array<{ tag_code: string }>
-        ).map(r => r.tag_code)
+      logger.debug(
+        LogCategory.CONFIG,
+        `ConfigDbManager: 分表 ${table} 已有 ${existingCnt} 行，跳过初值灌表（首次创建才灌）`
       )
-      codes = [...sourceCodes].filter(c => !targetCodes.has(c))
-      if (codes.length === 0) {
-        logger.debug(
-          LogCategory.CONFIG,
-          `ConfigDbManager: 分表 ${table} 已有 ${existingCnt} 行且无差集，跳过初值补录`
-        )
-        return
-      }
-    } else {
-      codes = [...sourceCodes]
+      return
     }
 
     let rows: OmniTagAliasRow[] = []
-    if (codes.length > 0) {
-      // 切语言补漏：codes= 精确批量点查，未命中 code 不出行；分批防 URL 超长
-      const CODE_BATCH = 400
-      for (let i = 0; i < codes.length; i += CODE_BATCH) {
-        const batch = await omniClient.getTaxonomyAliases(language, {
-          codes: codes.slice(i, i + CODE_BATCH)
-        })
-        if (batch) rows.push(...batch)
-      }
-    } else {
-      // 首建全集：全量镜像语义包受控词（omw.* / hownet.* / builtin.*）。
-      //
-      // 为何不传 source：镜像表的本职是承载 findTagCodeByLemma 的受控反查需求面，
-      // 必须覆盖 pack 全部受控词（含 omw/hownet 词库开放概念，如「妈妈→omw.10332385.n」）。
-      // 原实现传 source=dimension,tag 只镜像受控分类树（~1.1k 行），把 13 万词库词整体排除，
-      // 导致分类树外的词库词反查必然落空 → 派生 _ext → 被 R3.3 写回镜像表污染（恶性循环）。
-      // Omni 端点不传 source/codes 时返回 pack tag_aliases 全量（该表本就只含受控词、无 _ext）。
-      rows = (await omniClient.getTaxonomyAliases(language)) ?? []
-    }
+    // 防膨胀铁律：启动灌表只镜像「受控分类树」(source=dimension,tag)，绝不全量拉词库。
+    // 13 万词库开放概念（如「妈妈→omw.10332385.n」）大多数运行时根本不会生成，全量灌只会让
+    // 分表无谓膨胀；分类树外的词库词反查落空时，由运行时「首见回源」(见 file-processor
+    // ensureLemmaAliasesSeeded) 按需查 pack → 补镜像 → 再用，pack 也没有才派生 _ext。
+    const SEED_SOURCES = 'dimension,tag'
+    rows = (await omniClient.getTaxonomyAliases(language, { source: SEED_SOURCES })) ?? []
 
     if (rows.length === 0) {
       logger.warn(
@@ -201,9 +155,9 @@ export class ConfigDbManager {
         insert.run(r.tag_code, r.lemma, r.is_canonical ? 1 : 0, r.n ?? 1, r.count ?? 0)
       }
     })()
-    logger.info(
+    logger.debug(
       LogCategory.CONFIG,
-      `ConfigDbManager: 分表 ${table} 初值补录完成 rows=${rows.length}, 来源=${codes.length > 0 ? 'codes补漏' : '受控全集'}, 耗时=${Date.now() - t0}ms`
+      `ConfigDbManager: 分表 ${table} 初值灌表完成 rows=${rows.length}, 来源=受控分类树(source=dimension,tag), 耗时=${Date.now() - t0}ms`
     )
   }
 
@@ -234,7 +188,7 @@ export class ConfigDbManager {
       // 6. 将所有配置加载到内存中
       this.loadAllConfigsFromDb(db)
 
-      logger.info(
+      logger.debug(
         LogCategory.CONFIG,
         `ConfigDbManager: 从本地 JSON 加载初始配置完成 (语言: ${resolvedLanguage})`
       )
@@ -273,7 +227,7 @@ export class ConfigDbManager {
         })
       })()
 
-      logger.info(LogCategory.CONFIG, `ConfigDbManager: 成功导入初始 app_config 数据`)
+      logger.debug(LogCategory.CONFIG, `ConfigDbManager: 成功导入初始 app_config 数据`)
     } catch (error) {
       logger.error(LogCategory.CONFIG, 'ConfigDbManager: 导入初始 app_config 失败:', error)
     }
@@ -309,7 +263,7 @@ export class ConfigDbManager {
             })
           })()
 
-          logger.info(LogCategory.CONFIG, `ConfigDbManager: 成功增量导入初始 system_config 数据`)
+          logger.debug(LogCategory.CONFIG, `ConfigDbManager: 成功增量导入初始 system_config 数据`)
         } catch (err) {
           logger.error(
             LogCategory.CONFIG,
@@ -335,7 +289,7 @@ export class ConfigDbManager {
           if (content && content.trim() !== '') {
             const config = JSON.parse(content)
             insertStmt.run('LOCAL_MODEL_CONFIGS', JSON.stringify(config), now)
-            logger.info(
+            logger.debug(
               LogCategory.CONFIG,
               `ConfigDbManager: 成功导入初始 LOCAL_MODEL_CONFIGS 数据`
             )
@@ -359,7 +313,7 @@ export class ConfigDbManager {
           if (content && content.trim() !== '') {
             const config = JSON.parse(content)
             insertStmt.run('LOCAL_MODEL_CONFIGS_OLLAMA', JSON.stringify(config), now)
-            logger.info(
+            logger.debug(
               LogCategory.CONFIG,
               `ConfigDbManager: 成功导入初始 LOCAL_MODEL_CONFIGS_OLLAMA 数据`
             )
@@ -389,7 +343,7 @@ export class ConfigDbManager {
               // 映射预设确保包含 provider 字段
               const mappedPresets = localPresets.map((p: any) => ({ ...p, provider: p.id }))
               insertStmt.run('CLOUD_MODEL_CONFIGS', JSON.stringify(mappedPresets), now)
-              logger.info(
+              logger.debug(
                 LogCategory.CONFIG,
                 `ConfigDbManager: 成功导入初始 CLOUD_MODEL_CONFIGS 数据 (${mappedPresets.length} 个服务商)`
               )
@@ -419,7 +373,7 @@ export class ConfigDbManager {
           db.prepare(
             `INSERT OR REPLACE INTO system_config (key, value, updated_at) VALUES ('DIMENSION_POLICIES', ?, ?)`
           ).run(raw, now)
-          logger.info(
+          logger.debug(
             LogCategory.CONFIG,
             'ConfigDbManager: 成功从 preset 导入并刷新 DIMENSION_POLICIES 数据'
           )
@@ -471,7 +425,7 @@ export class ConfigDbManager {
       // 同步更新 @firefly/shared 运行时常量缓存
       updateRuntimeFileConstants(parsed)
 
-      logger.info(LogCategory.CONFIG, `ConfigDbManager: 成功导入初始 file_constants 数据 (SSOT 对齐)`)
+      logger.debug(LogCategory.CONFIG, `ConfigDbManager: 成功导入初始 file_constants 数据 (SSOT 对齐)`)
     } catch (error) {
       logger.error(LogCategory.CONFIG, 'ConfigDbManager: 导入初始 file_constants 失败:', error)
     }
@@ -557,7 +511,7 @@ export class ConfigDbManager {
       })()
 
       this.localWorkflows = dao.getAll()
-      logger.info(
+      logger.debug(
         LogCategory.CONFIG,
         `ConfigDbManager: 初始 local_workflows 配置加载完成 (${this.localWorkflows.length} 个工作流, 语言: ${language})`
       )
@@ -1090,7 +1044,7 @@ export class ConfigDbManager {
       const db = databaseService.db
       const dims = this.loadDimensionsFromAuthority(language, db || undefined)
       this.fileDimensionsCache = dims
-      logger.info(
+      logger.debug(
         LogCategory.CONFIG,
         `ConfigDbManager: 维度数据源预载完成，共 ${dims.length} 个维度 (语言: ${language})`
       )
@@ -1176,7 +1130,7 @@ export class ConfigDbManager {
   async syncFromCloud(): Promise<void> {
     // 集成测试环境下禁止远程配置同步，避免干扰测试结果
     if (isTestEnvironment()) {
-      logger.info(LogCategory.CONFIG, 'ConfigDbManager: 检测到测试环境，跳过同步')
+      logger.debug(LogCategory.CONFIG, 'ConfigDbManager: 检测到测试环境，跳过同步')
       return
     }
 
@@ -1184,7 +1138,7 @@ export class ConfigDbManager {
     try {
       const tierData = userTierService.getCachedData()
       if (tierData?.computed_limits?.can_offline === true) {
-        logger.info(LogCategory.CONFIG, 'ConfigDbManager: 检测到企业版离线授权，跳过云端配置同步')
+        logger.debug(LogCategory.CONFIG, 'ConfigDbManager: 检测到企业版离线授权，跳过云端配置同步')
         return
       }
     } catch {
@@ -1214,7 +1168,7 @@ export class ConfigDbManager {
     const appSchema = getSharedSchemaName()
     const systemSchema = getSharedSchemaName()
 
-    logger.info(LogCategory.CONFIG, 'ConfigDbManager: 开始从云端拉取配置...')
+    logger.debug(LogCategory.CONFIG, 'ConfigDbManager: 开始从云端拉取配置...')
 
     const maxRetries = 3
     let lastError: any = null

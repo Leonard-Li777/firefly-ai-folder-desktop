@@ -44,7 +44,7 @@ export class ErrorHandlingService extends EventEmitter {
         level: 1,
         priority: 1,
         action: async () => {
-          loggingService.info(LogCategory.ERROR_HANDLING, '执行重试操作策略')
+          loggingService.debug(LogCategory.ERROR_HANDLING, '执行重试操作策略')
           // 具体重试逻辑由调用者实现
           return true
         },
@@ -59,7 +59,7 @@ export class ErrorHandlingService extends EventEmitter {
         level: 2,
         priority: 2,
         action: async () => {
-          loggingService.info(LogCategory.ERROR_HANDLING, '执行清理缓存策略')
+          loggingService.debug(LogCategory.ERROR_HANDLING, '执行清理缓存策略')
           // 实现缓存清理逻辑
           return true
         },
@@ -92,7 +92,7 @@ export class ErrorHandlingService extends EventEmitter {
         level: 4,
         priority: 4,
         action: async () => {
-          loggingService.info(LogCategory.ERROR_HANDLING, '执行优雅关闭策略')
+          loggingService.debug(LogCategory.ERROR_HANDLING, '执行优雅关闭策略')
           // 实现优雅关闭逻辑
           return true
         },
@@ -215,7 +215,7 @@ export class ErrorHandlingService extends EventEmitter {
         try {
           const success = await this.executeRecoveryStrategy(strategy)
           if (success) {
-            loggingService.info(LogCategory.ERROR_HANDLING, `恢复策略 ${strategy.name} 执行成功`)
+            loggingService.debug(LogCategory.ERROR_HANDLING, `恢复策略 ${strategy.name} 执行成功`)
             this.emit('recovery-success', { error, strategy })
             return
           }
@@ -344,7 +344,7 @@ export class ErrorHandlingService extends EventEmitter {
    */
   public addRecoveryStrategy(strategy: RecoveryStrategy): void {
     this.recoveryStrategies.set(strategy.id, strategy)
-    loggingService.info(LogCategory.ERROR_HANDLING, `添加恢复策略: ${strategy.name}`)
+    loggingService.debug(LogCategory.ERROR_HANDLING, `添加恢复策略: ${strategy.name}`)
   }
 
   /**
@@ -352,7 +352,7 @@ export class ErrorHandlingService extends EventEmitter {
    */
   public removeRecoveryStrategy(strategyId: string): void {
     this.recoveryStrategies.delete(strategyId)
-    loggingService.info(LogCategory.ERROR_HANDLING, `移除恢复策略: ${strategyId}`)
+    loggingService.debug(LogCategory.ERROR_HANDLING, `移除恢复策略: ${strategyId}`)
   }
 
   /**
@@ -434,7 +434,7 @@ export class ErrorHandlingService extends EventEmitter {
   public clearErrorHistory(): void {
     this.errorHistory = []
     this.errorCounts.clear()
-    loggingService.info(LogCategory.ERROR_HANDLING, '错误历史已清除')
+    loggingService.debug(LogCategory.ERROR_HANDLING, '错误历史已清除')
   }
 
   /**
@@ -445,7 +445,7 @@ export class ErrorHandlingService extends EventEmitter {
     this.errorHistory = this.errorHistory.filter(error => error.timestamp >= olderThan)
     const afterCount = this.errorHistory.length
 
-    loggingService.info(LogCategory.ERROR_HANDLING, `清除了 ${beforeCount - afterCount} 条旧错误`)
+    loggingService.debug(LogCategory.ERROR_HANDLING, `清除了 ${beforeCount - afterCount} 条旧错误`)
   }
 
   /**

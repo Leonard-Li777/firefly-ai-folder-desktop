@@ -1071,6 +1071,9 @@ async function launchStreamingSession(params: {
   fieldName?: string
   displayName?: string
   prefillWavBuffer?: ArrayBuffer | null
+  prefillPcmBuffer?: ArrayBuffer | null
+  prefillCharStart?: number
+  prefillCharEnd?: number
 }): Promise<boolean> {
   if (typeof window.electronAPI?.tts?.startStream !== 'function') return false
   try {
@@ -1137,28 +1140,32 @@ async function launchStreamingSession(params: {
     currentStreamingPlayer = player
     await player.start(streamAck.sessionId)
 
-    // 断点无缝续播：若存在本地未完成前序音频，将纯 24000Hz PCM 剥离头部后作为先头帧喂入播放器，实现零秒起播发声
-    if (params.prefillWavBuffer && params.resumeCharStart && params.resumeCharStart > 0) {
-      const prefillBuf = params.prefillWavBuffer
-      if (prefillBuf.byteLength > 44) {
-        const rawPcm = prefillBuf.slice(44)
-        const sampleCount = Math.floor(rawPcm.byteLength / 2)
-        console.info(
-          `[TTS] 注入断点前序已合成音频: ${(sampleCount / 24000).toFixed(2)}s, 字符=[0..${params.resumeCharStart}]`
-        )
-        player.pushChunk({
-          sessionId: streamAck.sessionId,
-          seq: 0,
-          charStart: 0,
-          charEnd: params.resumeCharStart,
-          startSample: 0,
-          sampleCount,
-          pcm: rawPcm,
-          isFirst: true,
-          isLast: false
-        })
-        useTTSAudioStore.setState({ status: 'playing' })
-      }
+    // 断点无缝续播 / 本地文件秒播接驳：若存在本地已有音频片段，直接作为先头帧喂入播放器，实现零秒立即起播
+    const prefillPcm = params.prefillPcmBuffer
+      ? params.prefillPcmBuffer
+      : params.prefillWavBuffer && params.prefillWavBuffer.byteLength > 44
+        ? params.prefillWavBuffer.slice(44)
+        : null
+
+    if (prefillPcm && prefillPcm.byteLength > 0) {
+      const sampleCount = Math.floor(prefillPcm.byteLength / 2)
+      const pStart = params.prefillCharStart ?? 0
+      const pEnd = params.prefillCharEnd ?? (params.resumeCharStart || 0)
+      console.info(
+        `[TTS] 注入本地文件已合成音频秒播: ${(sampleCount / 24000).toFixed(2)}s, 字符=[${pStart}..${pEnd}]`
+      )
+      player.pushChunk({
+        sessionId: streamAck.sessionId,
+        seq: 0,
+        charStart: pStart,
+        charEnd: pEnd,
+        startSample: 0,
+        sampleCount,
+        pcm: prefillPcm,
+        isFirst: true,
+        isLast: false
+      })
+      useTTSAudioStore.setState({ status: 'playing' })
     }
 
     // 注册下行流数据与结束监听
@@ -1620,13 +1627,21 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         const isSpeedMatched =
           metadata?.speed === undefined || Math.abs(metadata.speed - chosenSpeed) < 0.01
 
-        // (1) 完整秒播：已标记 completed 且语速匹配（分句数一致或流式单文件标记），直接读取完整本地 WAV 秒播
-        if (
+        const hasValidSamples =
+          typeof metadata?.totalSamples === 'number' ? metadata.totalSamples > 0 : true
+
+        // 判定全量已完成：metadata 显式标记 completed，或者已合成字符覆盖全文，或分句数完全匹配（严禁单凭 total === 1 盲判）
+        const isFullCompleted = Boolean(
           metadata &&
-          metadata.completed &&
           isSpeedMatched &&
-          (metadata.total === undefined || metadata.total === chunks.length || metadata.total === 1)
-        ) {
+          hasValidSamples &&
+          (metadata.completed === true ||
+            (typeof metadata.doneCharEnd === 'number' && metadata.doneCharEnd >= text.length) ||
+            (metadata.total > 1 && metadata.total === chunks.length && metadata.done === chunks.length))
+        )
+
+        // (1) 完整秒播：已全量完成且语速匹配，直接读取完整本地 WAV 秒播
+        if (isFullCompleted) {
           const fullWavBuffer = await window.electronAPI.tts.readWavFile(targetCachePath)
           if (fullWavBuffer && fullWavBuffer.byteLength > 44) {
             if (activeSessionId !== thisSessionId) return
@@ -1634,51 +1649,66 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
             const audioBuffer = await ctx.decodeAudioData(fullWavBuffer.slice(0))
             if (activeSessionId !== thisSessionId) return
 
-            clearScheduledSources()
-            currentMasterCues = metadata.chunks || null
-            currentMasterTotalDuration = audioBuffer.duration
+            // 严密防线：若解码后的时长大于 0.2 秒，才作为合法母带立即秒播，否则平滑降级断点/流式通道
+            if (audioBuffer.duration > 0.2) {
+              clearScheduledSources()
+              if (currentStreamingPlayer) {
+                currentStreamingPlayer.stop()
+                currentStreamingPlayer = null
+              }
+              currentMasterCues = metadata.chunks || null
+              currentMasterTotalDuration = audioBuffer.duration
 
-            const source = ctx.createBufferSource()
-            source.buffer = audioBuffer
-            source.playbackRate.value = 1.0
-            source.connect(ctx.destination)
+              const source = ctx.createBufferSource()
+              source.buffer = audioBuffer
+              source.playbackRate.value = 1.0
+              source.connect(ctx.destination)
 
-            const startAt = Math.max(ctx.currentTime + 0.05, nextStartTime)
-            source.start(startAt)
-            const effectiveDuration = audioBuffer.duration
-            nextStartTime = startAt + effectiveDuration
-            scheduledSources.push({
-              source,
-              startTime: startAt,
-              endTime: nextStartTime,
-              index: 0,
-              isFullAudio: true,
-              offsetInAudio: 0
-            })
+              const startAt = Math.max(ctx.currentTime + 0.05, nextStartTime)
+              source.start(startAt)
+              const effectiveDuration = audioBuffer.duration
+              nextStartTime = startAt + effectiveDuration
+              scheduledSources.push({
+                source,
+                startTime: startAt,
+                endTime: nextStartTime,
+                index: 0,
+                isFullAudio: true,
+                offsetInAudio: 0
+              })
 
-            isAllChunksScheduled = true
-            set({ status: 'playing' })
-            return
+              isAllChunksScheduled = true
+              set({ status: 'playing' })
+              return
+            }
           }
         }
 
         // (2) 断点续录与断点续播：未完成合成，但本地已存在部分合法音频且记录了断点进度
         if (
           metadata &&
-          !metadata.completed &&
+          !isFullCompleted &&
           isSpeedMatched &&
-          typeof metadata.doneCharEnd === 'number' &&
-          metadata.doneCharEnd > 0 &&
-          metadata.doneCharEnd < text.length
+          ((typeof metadata.doneCharEnd === 'number' && metadata.doneCharEnd > 0) ||
+            (typeof metadata.totalSamples === 'number' && metadata.totalSamples > 0))
         ) {
-          resumeCharStart = metadata.doneCharEnd
-          console.info(
-            `[TTS] 命中本地未完成音频断点: doneCharEnd=${resumeCharStart}/${text.length}, 启动断点继续流式合成与无缝续播`
-          )
           try {
             const partialBuffer = await window.electronAPI.tts.readWavFile(targetCachePath)
             if (partialBuffer && partialBuffer.byteLength > 44) {
               prefillWavBuffer = partialBuffer
+              if (typeof metadata.doneCharEnd === 'number' && metadata.doneCharEnd > 0) {
+                resumeCharStart = Math.min(metadata.doneCharEnd, text.length)
+              } else if (metadata.chunks && metadata.chunks.length > 0) {
+                const lastChunkIdx = metadata.chunks[metadata.chunks.length - 1].index
+                let accChars = 0
+                for (let i = 0; i <= Math.min(lastChunkIdx, chunks.length - 1); i++) {
+                  accChars += chunks[i].length
+                }
+                resumeCharStart = Math.min(accChars, text.length)
+              }
+              console.info(
+                `[TTS] 🎯 命中本地未完成音频断点: resumeCharStart=${resumeCharStart}/${text.length}, 已有音频=${((partialBuffer.byteLength - 44) / 48000).toFixed(2)}s, 启动前缀秒播与后台断点续录`
+              )
             }
           } catch (pErr) {
             console.warn('[TTS] 读取断点前置音频异常:', pErr)
@@ -1715,7 +1745,9 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         fileFingerprint: targetFingerprint,
         fieldName: targetFieldName,
         displayName: chosenDisplayName,
-        prefillWavBuffer
+        prefillWavBuffer,
+        prefillCharStart: 0,
+        prefillCharEnd: resumeCharStart
       })
       if (launched) {
         return
@@ -2022,76 +2054,99 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     const sid = state.currentSid ?? 63
     const speed = state.speed
 
-    // 1. 若当前文本已具备整段全量缓存文件，直接按字符比例换算时间毫秒级定位起播
+    // 计算目标分句在全文中的字符偏移量区间
+    let targetCharStart = 0
+    for (let i = 0; i < clampedIndex; i++) {
+      targetCharStart += currentCleanedChunks[i].length
+    }
+
+    // 检查本地是否有已录制/正在录制的缓存文件
+    const cachePath = state.currentCachePath
+    let localWavBuffer: ArrayBuffer | null = null
+    let localMetadata: any = null
+
     if (
-      state.currentCachePath &&
+      cachePath &&
       window.electronAPI?.tts?.readWavMetadata &&
       window.electronAPI?.tts?.readWavFile
     ) {
       try {
-        const metadata = await window.electronAPI.tts.readWavMetadata(state.currentCachePath)
-        if (metadata && metadata.completed) {
-          const fullWavBuffer = await window.electronAPI.tts.readWavFile(state.currentCachePath)
-          if (fullWavBuffer && fullWavBuffer.byteLength > 44) {
-            const audioBuffer = await ctx.decodeAudioData(fullWavBuffer.slice(0))
-            const totalDuration = audioBuffer.duration
-
-            // 优先读取精准内嵌时间戳索引表 (Cue Table)，实现 0.0000s 误差级绝对精准定位！
-            let offset = 0
-            if (
-              metadata.chunks &&
-              metadata.chunks[clampedIndex] &&
-              typeof metadata.chunks[clampedIndex].startTime === 'number'
-            ) {
-              offset = metadata.chunks[clampedIndex].startTime
-            } else {
-              // 容错降级：按字符累积比例估算时间偏移量
-              let totalChars = 0
-              for (const c of currentCleanedChunks) {
-                totalChars += Math.max(1, c.length)
-              }
-              let accumulatedChars = 0
-              for (let i = 0; i < clampedIndex; i++) {
-                accumulatedChars += Math.max(1, currentCleanedChunks[i].length)
-              }
-              offset = (accumulatedChars / totalChars) * totalDuration
-            }
-            const clampedOffset = Math.max(0, Math.min(Math.max(0, totalDuration - 0.05), offset))
-
-            clearScheduledSources()
-            currentMasterCues = metadata.chunks || null
-            currentMasterTotalDuration = totalDuration
-
-            const startAt = ctx.currentTime + 0.02
-            const source = ctx.createBufferSource()
-            source.buffer = audioBuffer
-            source.playbackRate.value = 1.0
-            source.connect(ctx.destination)
-            source.start(startAt, clampedOffset)
-
-            const remaining = totalDuration - clampedOffset
-            scheduledSources.push({
-              source,
-              startTime: startAt,
-              endTime: startAt + remaining,
-              index: clampedIndex,
-              isFullAudio: true,
-              offsetInAudio: clampedOffset
-            })
-            nextStartTime = startAt + remaining
-            isAllChunksScheduled = true
-
-            set({ status: 'playing', currentSentenceIndex: clampedIndex })
-            ensureProgressMonitor()
-            return
-          }
+        localMetadata = await window.electronAPI.tts.readWavMetadata(cachePath)
+        if (localMetadata) {
+          localWavBuffer = await window.electronAPI.tts.readWavFile(cachePath)
         }
       } catch (err) {
-        console.warn('[TTS Seek] 全量音频跳转异常，回退分句流式通道:', err)
+        console.warn('[TTS Seek] 读取本地音频文件异常:', err)
       }
     }
 
-    // 2. 纯流式模式下的片段跳转 (通过 resumeCharStart 精准无缝定位)
+    // 1. 若当前文本已具备整段全量缓存文件 (completed === true)，直接按时间毫秒级定位起播
+    if (localMetadata && localMetadata.completed && localWavBuffer && localWavBuffer.byteLength > 44) {
+      try {
+        const audioBuffer = await ctx.decodeAudioData(localWavBuffer.slice(0))
+        const totalDuration = audioBuffer.duration
+
+        if (totalDuration > 0.2) {
+          // 优先读取精准内嵌时间戳索引表 (Cue Table)，实现 0.0000s 误差级绝对精准定位！
+          let offset = 0
+          if (
+            localMetadata.chunks &&
+            localMetadata.chunks[clampedIndex] &&
+            typeof localMetadata.chunks[clampedIndex].startTime === 'number'
+          ) {
+            offset = localMetadata.chunks[clampedIndex].startTime
+          } else {
+            // 容错降级：按字符累积比例估算时间偏移量
+            let totalChars = 0
+            for (const c of currentCleanedChunks) {
+              totalChars += Math.max(1, c.length)
+            }
+            let accumulatedChars = 0
+            for (let i = 0; i < clampedIndex; i++) {
+              accumulatedChars += Math.max(1, currentCleanedChunks[i].length)
+            }
+            offset = (accumulatedChars / totalChars) * totalDuration
+          }
+          const clampedOffset = Math.max(0, Math.min(Math.max(0, totalDuration - 0.05), offset))
+
+          clearScheduledSources()
+          if (currentStreamingPlayer) {
+            currentStreamingPlayer.stop()
+            currentStreamingPlayer = null
+          }
+          currentMasterCues = localMetadata.chunks || null
+          currentMasterTotalDuration = totalDuration
+
+          const startAt = ctx.currentTime + 0.02
+          const source = ctx.createBufferSource()
+          source.buffer = audioBuffer
+          source.playbackRate.value = 1.0
+          source.connect(ctx.destination)
+          source.start(startAt, clampedOffset)
+
+          const remaining = totalDuration - clampedOffset
+          scheduledSources.push({
+            source,
+            startTime: startAt,
+            endTime: startAt + remaining,
+            index: clampedIndex,
+            isFullAudio: true,
+            offsetInAudio: clampedOffset
+          })
+          nextStartTime = startAt + remaining
+          isAllChunksScheduled = true
+
+          set({ status: 'playing', currentSentenceIndex: clampedIndex })
+          ensureProgressMonitor()
+          return
+        }
+      } catch (err) {
+        console.warn('[TTS Seek] 全量音频跳转异常，回退流式通道:', err)
+      }
+    }
+
+    // 2. 纯流式边播边录状态下的片段跳转：
+    // 核心心智：既然已经落了本地文件，若拖动目标句已在本地已录入范围内，则切出本地音频立即秒播，同时向后断点继续合成
     const isM5Voice =
       !state.currentVoiceId ||
       String(state.currentVoiceId).includes('m5') ||
@@ -2100,36 +2155,91 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
       getActiveTTSPluginId() === 'tts_m5_onnx'
 
     if (isM5Voice && typeof (window.electronAPI as any)?.tts?.startStream === 'function') {
-      let resumeCharStart = 0
-      for (let i = 0; i < clampedIndex; i++) {
-        resumeCharStart += currentCleanedChunks[i].length
-      }
-
       const thisSeekSession = ++sessionCounter
       activeSessionId = thisSeekSession
 
-      toast.info(t('跳转至目标片段并重新流式合成...'), 2000, 'tts-seek-loading')
-      set({
-        status: 'loading',
-        currentSentenceIndex: clampedIndex,
-        bufferedDuration: 0
-      })
+      const doneCharEnd = localMetadata?.doneCharEnd || 0
+      const hasLocalAudioForTarget =
+        Boolean(localWavBuffer && localWavBuffer.byteLength > 44) &&
+        (doneCharEnd > targetCharStart ||
+          Boolean(localMetadata?.chunks && localMetadata.chunks.some((c: any) => c.index === clampedIndex)))
 
-      const ok = await launchStreamingSession({
-        sessionId: thisSeekSession,
-        text: state.playingText,
-        voiceId: String(state.currentVoiceId || DEFAULT_VOICE_ID),
-        speed: state.speed,
-        resumeCharStart,
-        initialSentenceIndex: clampedIndex,
-        chunks: currentCleanedChunks,
-        targetCachePath: state.currentCachePath || undefined,
-        filePath: state.currentFilePath || undefined,
-        displayName: state.currentTitle || undefined
-      })
+      if (hasLocalAudioForTarget && localWavBuffer && localWavBuffer.byteLength > 44) {
+        // 从本地文件中切出从 targetCharStart 开始到已录制末尾的全部纯 24kHz PCM
+        let startSample = 0
+        if (
+          localMetadata?.chunks &&
+          localMetadata.chunks[clampedIndex] &&
+          typeof localMetadata.chunks[clampedIndex].startTime === 'number'
+        ) {
+          startSample = Math.floor(localMetadata.chunks[clampedIndex].startTime * 24000)
+        } else {
+          const ratio = Math.max(0, Math.min(1, targetCharStart / Math.max(1, doneCharEnd)))
+          const totalSamples = Math.floor((localWavBuffer.byteLength - 44) / 2)
+          startSample = Math.floor(totalSamples * ratio)
+        }
 
-      if (ok) {
-        return
+        const startByteOffset = 44 + startSample * 2
+        const pcmSlice = localWavBuffer.slice(Math.min(startByteOffset, localWavBuffer.byteLength))
+
+        console.info(
+          `[TTS Seek] 🎯 命中本地已落盘文件秒播通道: 目标分句=${clampedIndex + 1}, 起始字符=${targetCharStart}, 本地已有字符=${doneCharEnd}, 切片PCM=${pcmSlice.byteLength}字节 (${(pcmSlice.byteLength / 48000).toFixed(2)}s)`
+        )
+
+        clearScheduledSources()
+        set({
+          status: 'playing',
+          currentSentenceIndex: clampedIndex,
+          bufferedDuration: pcmSlice.byteLength / 48000
+        })
+
+        // 启动纯流式会话：注入本地切片实现 0 毫秒秒播，同时从 doneCharEnd 断点向后继续合成！
+        const ok = await launchStreamingSession({
+          sessionId: thisSeekSession,
+          text: state.playingText,
+          voiceId: String(state.currentVoiceId || DEFAULT_VOICE_ID),
+          speed: state.speed,
+          resumeCharStart: doneCharEnd, // 断点继续合成：从本地已录制末尾继续
+          initialSentenceIndex: clampedIndex,
+          chunks: currentCleanedChunks,
+          targetCachePath: cachePath || undefined,
+          filePath: state.currentFilePath || undefined,
+          displayName: state.currentTitle || undefined,
+          prefillPcmBuffer: pcmSlice, // 本地已有 PCM 秒播注入！
+          prefillCharStart: targetCharStart,
+          prefillCharEnd: doneCharEnd
+        })
+
+        if (ok) {
+          return
+        }
+      } else {
+        // 目标句尚未录入本地文件（拖动到了未合成的远端）：
+        // 直接从 targetCharStart 发起断点续合成，首句到达后立即起播
+        toast.info(t('跳转至目标片段并重新流式合成...'), 2000, 'tts-seek-loading')
+        clearScheduledSources()
+        set({
+          status: 'loading',
+          currentSentenceIndex: clampedIndex,
+          bufferedDuration: 0
+        })
+
+        const ok = await launchStreamingSession({
+          sessionId: thisSeekSession,
+          text: state.playingText,
+          voiceId: String(state.currentVoiceId || DEFAULT_VOICE_ID),
+          speed: state.speed,
+          resumeCharStart: targetCharStart, // 从目标分句开始合成
+          initialSentenceIndex: clampedIndex,
+          chunks: currentCleanedChunks,
+          targetCachePath: cachePath || undefined,
+          filePath: state.currentFilePath || undefined,
+          displayName: state.currentTitle || undefined
+        })
+
+        if (ok) {
+          return
+        }
       }
     }
 

@@ -559,7 +559,7 @@ export class FileDao {
       analyzedFileCount: analyzedCountResult.count
     }
 
-    logger.info(
+    logger.debug(
       LogCategory.DATABASE_SERVICE,
       `目录分析结果已加载: ${dirPath}, contextAnalysis: ${result.contextAnalysis ? '存在' : 'null'}, isAnalyzed: ${result.isAnalyzed}`
     )
@@ -1551,7 +1551,7 @@ export class FileDao {
       const actualPath = fileRecord.path
       const fileFingerprint = fileRecord.file_fingerprint
 
-      logger.info(LogCategory.DATABASE_SERVICE, '找到匹配记录，准备清空数据', {
+      logger.debug(LogCategory.DATABASE_SERVICE, '找到匹配记录，准备清空数据', {
         actualPath,
         id: actualId,
         isAnalyzed: fileRecord.is_analyzed
@@ -1637,7 +1637,7 @@ export class FileDao {
         )
       })()
 
-      logger.info(LogCategory.DATABASE_SERVICE, '文件分析数据已完全清空', { filePath: actualPath })
+      logger.debug(LogCategory.DATABASE_SERVICE, '文件分析数据已完全清空', { filePath: actualPath })
     } catch (error) {
       logger.error(LogCategory.DATABASE_SERVICE, '重置文件分析数据失败', { error, filePath })
       throw error
@@ -1810,7 +1810,7 @@ export class FileDao {
         .run(new Date().toISOString(), workspaceId, filePath)
 
       if (result.changes > 0) {
-        logger.info(
+        logger.debug(
           LogCategory.ANALYSIS_QUEUE,
           `[FileDao] 补齐已分析标记: ${filePath}（受影响 ${result.changes} 行）`
         )
@@ -1849,7 +1849,7 @@ export class FileDao {
             .run(fileFingerprint, JSON.stringify(stats))
         }
       })()
-      logger.info(
+      logger.debug(
         LogCategory.DATABASE_SERVICE,
         `已更新 file_contents.analysis_stats.analysis_stage 为 ${stage}: ${fileFingerprint}`
       )
@@ -1941,7 +1941,7 @@ export class FileDao {
             )
         }
       })()
-      logger.info(
+      logger.debug(
         LogCategory.DATABASE_SERVICE,
         `已更新 file_contents.analysis_stats.analysis_stage 为 ${stage}: ${fileFingerprint}`
       )
@@ -2175,7 +2175,7 @@ export class FileDao {
           this.syncFTSTags(fp)
         }
       })()
-      logger.info(
+      logger.debug(
         LogCategory.DATABASE_SERVICE,
         `[FileDao] 批量同步 FTS 标签完成，共 ${uniqueFingerprints.length} 项`
       )
@@ -2266,7 +2266,7 @@ export class FileDao {
         }
       })()
       if (rewritten > 0) {
-        logger.info(
+        logger.debug(
           LogCategory.DATABASE_SERVICE,
           `[FileDao] 拼音索引 reconciler 刷新 ${rewritten} 行`
         )
@@ -2307,7 +2307,7 @@ export class FileDao {
         if (this.pinyinScanCursor === 0) break
       }
       if (total > 0) {
-        logger.info(LogCategory.DATABASE_SERVICE, `[FileDao] 拼音索引启动回填完成：${total} 行`)
+        logger.debug(LogCategory.DATABASE_SERVICE, `[FileDao] 拼音索引启动回填完成：${total} 行`)
       }
       if (this.pinyinScanCursor !== 0) {
         logger.warn(

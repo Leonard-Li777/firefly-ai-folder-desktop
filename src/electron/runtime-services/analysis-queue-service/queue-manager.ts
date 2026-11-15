@@ -83,9 +83,9 @@ export class QueueManager {
    */
   async loadFromDB(): Promise<void> {
     try {
-      logger.info(LogCategory.ANALYSIS_QUEUE, '[分析队列] 从数据库加载队列状态...')
+      logger.debug(LogCategory.ANALYSIS_QUEUE, '[分析队列] 从数据库加载队列状态...')
       const rows = databaseService.getAnalysisQueue()
-      logger.info(LogCategory.ANALYSIS_QUEUE, '[分析队列] 从数据库加载到', rows.length, '个项目')
+      logger.debug(LogCategory.ANALYSIS_QUEUE, '[分析队列] 从数据库加载到', rows.length, '个项目')
 
       let skippedCount = 0
 
@@ -200,7 +200,7 @@ export class QueueManager {
       // 重置所有 analyzing 状态的项目为 pending
       const analyzingItems = this.queue.filter(item => item.status === 'analyzing')
       if (analyzingItems.length > 0) {
-        logger.info(
+        logger.debug(
           LogCategory.ANALYSIS_QUEUE,
           '[分析队列] 重置',
           analyzingItems.length,
@@ -257,7 +257,7 @@ export class QueueManager {
       return 0
     })
 
-    logger.info(
+    logger.debug(
       LogCategory.ANALYSIS_QUEUE,
       '[分析队列] 添加项目到队列，输入数量:',
       inputs.length,
@@ -428,7 +428,7 @@ export class QueueManager {
             updatedCount++
 
             const reason = isExplicitForce ? '用户强制重新分析' : '失败重试'
-            logger.info(
+            logger.debug(
               LogCategory.ANALYSIS_QUEUE,
               `[分析队列] 文件已在队列中 (原状态: ${oldStatus})，${reason}，重置为 pending: ${file.nativePath}`
             )
@@ -510,7 +510,7 @@ export class QueueManager {
 
         const isExplicitForce = Boolean(forceReanalyze || file.forceReanalyze)
         if (isAlreadyAnalyzed && !isExplicitForce) {
-          logger.info(
+          logger.debug(
             LogCategory.ANALYSIS_QUEUE,
             `[分析队列] 文件已被分析过且未指定强制重新分析，跳过入队: ${file.nativePath}`
           )
@@ -561,7 +561,7 @@ export class QueueManager {
 
     try {
       transaction?.()
-      logger.info(
+      logger.debug(
         LogCategory.ANALYSIS_QUEUE,
         '[分析队列] 批量操作完成，新增:',
         addedCount,
@@ -650,7 +650,7 @@ export class QueueManager {
     }
 
     const pendingCount = this.queue.filter(i => i.status !== 'completed').length
-    logger.info(
+    logger.debug(
       LogCategory.ANALYSIS_QUEUE,
       `[分析队列] 清空待处理项目，当前待处理数量: ${pendingCount}`
     )
@@ -779,7 +779,7 @@ export class QueueManager {
     }
 
     if (idsToRemove.length > 0) {
-      logger.info(
+      logger.debug(
         LogCategory.ANALYSIS_QUEUE,
         `[分析队列] 根据准入策略取消了 ${idsToRemove.length} 个不匹配的待分析任务 (工作区 ID: ${workspaceId})`
       )
@@ -801,7 +801,7 @@ export class QueueManager {
     }
 
     const totalCount = this.queue.length
-    logger.info(
+    logger.debug(
       LogCategory.ANALYSIS_QUEUE,
       `[分析队列] 清空所有队列项目，当前总数量: ${totalCount}`
     )
@@ -908,7 +908,7 @@ export class QueueManager {
           progress: 100,
           error: null
         })
-        logger.info(
+        logger.debug(
           LogCategory.ANALYSIS_QUEUE,
           `[分析队列] 同步将已完成上下文分析的目录队列项标记为 completed: ${directoryPath}`
         )

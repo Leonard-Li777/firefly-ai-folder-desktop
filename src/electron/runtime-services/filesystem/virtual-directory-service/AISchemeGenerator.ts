@@ -387,7 +387,7 @@ export class AISchemeGenerator {
         return null
       }
 
-      logger.info(
+      logger.debug(
         LogCategory.FILE_ORGANIZATION,
         `[HAC智能聚类] 正在调用 Omni 端侧 HAC 聚类引擎: 文档数=${clusterDocs.length}, prompt=${userPrompt || 'none'}, profile=${embeddingProfile}, dim=${embeddingDim}, jitAdmitted=${jitGate.admitted.length}, jitDeferred=${jitGate.deferred.length}`
       )
@@ -422,7 +422,7 @@ export class AISchemeGenerator {
 
       const { clusters, unclassifiedFiles, otherFiles, durationMs } = clusterRes.result
       const finalUnclassified = unclassifiedFiles || otherFiles || []
-      logger.info(
+      logger.debug(
         LogCategory.FILE_ORGANIZATION,
         `[HAC智能聚类] 聚类计算成功: 生成簇数=${clusters.length}, 未归类=${finalUnclassified.length}, 耗时=${durationMs}ms`
       )
@@ -850,7 +850,7 @@ export class AISchemeGenerator {
           await analysisQueueService.addItems(inputs, forceReanalyze)
         })
       await enqueuer(missingInputs, false)
-      logger.info(
+      logger.debug(
         LogCategory.FILE_ORGANIZATION,
         `[HAC智能聚类] ${missingInputs.length} 个未向量化文件已排入后台低优先级分析队列静默消费 (forceReanalyze=false)`
       )
@@ -1109,7 +1109,7 @@ export class AISchemeGenerator {
       if (typeof state.setDirectoryContextService === 'function') {
         state.setDirectoryContextService(activeDirectoryContextService)
       }
-      logger.info(
+      logger.debug(
         LogCategory.FILE_ORGANIZATION,
         'generateNameAndStrategyCandidates 自动修复：自愈绑定 directoryContextService 成功'
       )
@@ -1138,7 +1138,7 @@ export class AISchemeGenerator {
       sampleFileNames.push(f.smart_name || path.basename(f.path))
     })
 
-    logger.info(LogCategory.FILE_ORGANIZATION, 'DEBUG generateNameAndStrategyCandidates stats:', {
+    logger.debug(LogCategory.FILE_ORGANIZATION, 'DEBUG generateNameAndStrategyCandidates stats:', {
       hasDirectoryContextService: !!activeDirectoryContextService,
       hasDirectoryAnalyzer: !!directoryAnalyzer,
       filesCount: files.length,
@@ -1153,7 +1153,7 @@ export class AISchemeGenerator {
     let skeletonTags: string[] = []
     try {
       workspaceDir = await databaseService.getWorkspaceDirectoryById(workspaceId)
-      logger.info(LogCategory.FILE_ORGANIZATION, '获取维度标签:', {
+      logger.debug(LogCategory.FILE_ORGANIZATION, '获取维度标签:', {
         workspaceId,
         workspaceDirPath: workspaceDir?.path,
         hasProviderDimensionGroups: typeof this.provider.getDimensionGroups === 'function'
@@ -1192,7 +1192,7 @@ export class AISchemeGenerator {
           }
         }
 
-        logger.info(LogCategory.FILE_ORGANIZATION, '维度标签结果:', {
+        logger.debug(LogCategory.FILE_ORGANIZATION, '维度标签结果:', {
           groupsCount: groups.length,
           tagsCount: groups.reduce((sum: number, g: any) => sum + (g.tags?.length || 0), 0),
           selectedFileTagSet: selectedFileTagSet?.size
@@ -1373,7 +1373,7 @@ export class AISchemeGenerator {
     // 收集文件列表
     if (options.isRescue && options.files && options.files.length > 0) {
       filesToOrganize = options.files
-      logger.info(
+      logger.debug(
         LogCategory.FILE_ORGANIZATION,
         '补救整理批次，直接使用前端传入的待分类文件列表:',
         {
@@ -1406,7 +1406,7 @@ export class AISchemeGenerator {
           id: f.id,
           name: f.smart_name || f.name || f.path.split(/[\\/]/).pop() || ''
         }))
-        logger.info(LogCategory.FILE_ORGANIZATION, '预览模式获取文件:', {
+        logger.debug(LogCategory.FILE_ORGANIZATION, '预览模式获取文件:', {
           totalFiles: allFiles.length,
           analyzedFiles: analyzedFiles.length,
           filesToSend: filesToOrganize.length
@@ -1492,7 +1492,7 @@ export class AISchemeGenerator {
       }
 
       backfillTree(options.selectedTagsTree)
-      logger.info(
+      logger.debug(
         LogCategory.FILE_ORGANIZATION,
         '回填标签树文件成功，已将符合标签的文件关联到骨架节点中'
       )

@@ -201,7 +201,7 @@ export class DuplicateDetectionService {
       options.workspaceDirectoryPath && fs.existsSync(options.workspaceDirectoryPath)
     )
 
-    logger.info(LogCategory.FILE_ORGANIZATION, '开始执行双轨查重扫描', {
+    logger.debug(LogCategory.FILE_ORGANIZATION, '开始执行双轨查重扫描', {
       workspaceDirectoryPath: options.workspaceDirectoryPath,
       targetFilesCount: fileIdsCount > 0 ? fileIdsCount : '全目录全量物理文件',
       strategiesCount: options.strategies?.length ?? 0,
@@ -236,7 +236,7 @@ export class DuplicateDetectionService {
     // 4. 默认智能推荐保留项打标 (最高分辨率 > 最高质量分 > 最新修改时间)
     this.applySmartRecommendKeep(mergedGroups, 'highest_resolution')
 
-    logger.info(
+    logger.debug(
       LogCategory.FILE_ORGANIZATION,
       `查重扫描完成，发现 ${mergedGroups.length} 个相似/重复组，耗时: ${Date.now() - startTime}ms`
     )
@@ -882,7 +882,7 @@ export class DuplicateDetectionService {
     fileTargets: Array<string | { path: string; newName?: string }>,
     workspaceDirectoryPath?: string
   ): Promise<DuplicateFixResult> {
-    logger.info(LogCategory.FILE_ORGANIZATION, `开始执行专属修复动作: ${action}`, {
+    logger.debug(LogCategory.FILE_ORGANIZATION, `开始执行专属修复动作: ${action}`, {
       count: fileTargets.length,
       workspaceDirectoryPath
     })
@@ -1331,7 +1331,7 @@ export class DuplicateDetectionService {
               hasOpenedFirstItem = true
               try {
                 shell.showItemInFolder(outFilePath)
-                logger.info(
+                logger.debug(
                   LogCategory.FILE_ORGANIZATION,
                   `[Exif清理] 首个文件处理完成，已立即打开文件管理器并定位: ${outFilePath}`
                 )
@@ -1371,7 +1371,7 @@ export class DuplicateDetectionService {
           let failMessage = ''
 
           // 步骤 1：直接调用 Omni Czkawka 引擎服务执行视频转码
-          logger.info(LogCategory.FILE_ORGANIZATION, `[视频优化] 向 Omni 发起转码请求: ${filePath}`)
+          logger.debug(LogCategory.FILE_ORGANIZATION, `[视频优化] 向 Omni 发起转码请求: ${filePath}`)
           try {
             const resp = await fetch(`${this.omniApiUrl}/api/cleanup/fix`, {
               method: 'POST',
@@ -1381,7 +1381,7 @@ export class DuplicateDetectionService {
             })
             if (resp.ok) {
               const fixRes = (await resp.json()) as any
-              logger.info(LogCategory.FILE_ORGANIZATION, `[视频优化] Omni 转码返回结果:`, fixRes)
+              logger.debug(LogCategory.FILE_ORGANIZATION, `[视频优化] Omni 转码返回结果:`, fixRes)
               if (fixRes.success_count > 0) {
                 // czkawka 在 overwrite_original = false 时，生成的优化视频位于同目录，名为 *.czkawka_optimized.mp4
                 const srcDir = path.dirname(filePath)
@@ -1394,7 +1394,7 @@ export class DuplicateDetectionService {
                   moveFileAtomically(optimizedCandidate, actualOutFile)
                   finalTranscodedPath = actualOutFile
                   omniTranscoded = true
-                  logger.info(
+                  logger.debug(
                     LogCategory.FILE_ORGANIZATION,
                     `[视频优化] 捕获并移动优化视频成功: ${actualOutFile}`
                   )
@@ -1411,7 +1411,7 @@ export class DuplicateDetectionService {
                       moveFileAtomically(candFull, targetOut)
                       finalTranscodedPath = targetOut
                       omniTranscoded = true
-                      logger.info(
+                      logger.debug(
                         LogCategory.FILE_ORGANIZATION,
                         `[视频优化] 捕获候选转码文件成功: ${targetOut}`
                       )
@@ -1456,7 +1456,7 @@ export class DuplicateDetectionService {
               hasOpenedFirstItem = true
               try {
                 shell.showItemInFolder(finalTranscodedPath)
-                logger.info(
+                logger.debug(
                   LogCategory.FILE_ORGANIZATION,
                   `[视频优化] 首个文件优化完成，已立即打开文件管理器并定位: ${finalTranscodedPath}`
                 )
@@ -1498,7 +1498,7 @@ export class DuplicateDetectionService {
     ) {
       try {
         await shell.openPath(targetOutputDirectory)
-        logger.info(
+        logger.debug(
           LogCategory.FILE_ORGANIZATION,
           `已使用系统文件管理器打开生成目录: ${targetOutputDirectory}`
         )

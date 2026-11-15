@@ -839,7 +839,7 @@ export class OmniService {
       void this.checkBinaryUpdated()
     }, intervalMs)
     this.devBinaryWatchTimer.unref?.()
-    logger.info(
+    logger.debug(
       LogCategory.SYSTEM,
       `[OmniService] 已开启 Omni 引擎二进制热更新监听（每 ${intervalMs}ms 比对部署产物）`
     )
@@ -1318,22 +1318,22 @@ export class OmniService {
       if (dbPath) {
         spawnArgs.push('--db-path', dbPath)
         env.OMNI_DB_PATH = dbPath
-        logger.info(LogCategory.SYSTEM, `[OmniService] 🎯 业务主库路径 (--db-path): ${dbPath}`)
+        logger.debug(LogCategory.SYSTEM, `[OmniService] 🎯 业务主库路径 (--db-path): ${dbPath}`)
         const vectorsDir = expectedVectorsDir || path.join(path.dirname(dbPath), 'vectors')
         spawnArgs.push('--vectors-path', vectorsDir)
         env.OMNI_VECTORS_PATH = vectorsDir
-        logger.info(
+        logger.debug(
           LogCategory.SYSTEM,
           `[OmniService] 🎯 矢量数据隔离路径 (--vectors-path): ${vectorsDir}`
         )
       }
       if (packPath) {
         spawnArgs.push('--pack-path', packPath)
-        logger.info(LogCategory.SYSTEM, `[OmniService] 🎯 语义包路径 (--pack-path): ${packPath}`)
+        logger.debug(LogCategory.SYSTEM, `[OmniService] 🎯 语义包路径 (--pack-path): ${packPath}`)
       }
       if (geoPath) {
         env.OMNI_GEO_DATA_PATH = geoPath
-        logger.info(
+        logger.debug(
           LogCategory.SYSTEM,
           `[OmniService] 🌍 地理数据集路径 (OMNI_GEO_DATA_PATH): ${geoPath}`
         )
@@ -1384,7 +1384,7 @@ export class OmniService {
             )
           }
           env.FIREFLY_SHARED_DIR = sharedDir
-          logger.info(
+          logger.debug(
             LogCategory.SYSTEM,
             `[OmniService] 🧩 统一插件根目录 (FIREFLY_MODULES_ROOT): ${pluginsRoot}`
           )
@@ -1511,7 +1511,7 @@ export class OmniService {
         env.FIREFLY_ACTIVE_MODEL_MOUNTS_FILE = manifestAbsPath
         env.FIREFLY_STRICT_ACTIVE_PLUGINS = '1'
         this.currentMountManifestPath = manifestAbsPath
-        logger.info(
+        logger.debug(
           LogCategory.SYSTEM,
           `[OmniService] 📦 下发单轨挂载清单 (${expectedMountResourceIds.length} 项): ${expectedMountResourceIds.join(', ') || 'none'}`
         )
@@ -1536,7 +1536,7 @@ export class OmniService {
       const ppocrDir = ResourceLocator.resolveResourcePath?.('models/PP-OCRv6')
       if (ppocrDir && fs.existsSync(ppocrDir)) {
         env.OMNI_PPOCR_MODEL_PATH = ppocrDir
-        logger.info(
+        logger.debug(
           LogCategory.SYSTEM,
           `[OmniService] 🔤 PP-OCRv6 只读底座模型目录 (OMNI_PPOCR_MODEL_PATH): ${ppocrDir}`
         )
@@ -1553,14 +1553,14 @@ export class OmniService {
             configOrch.getValue<'classic_light' | 'gemma_unified'>('AI_EMBEDDING_PROFILE') ||
             'classic_light'
           spawnArgs.push('--embedding-profile', embeddingProfile)
-          logger.info(
+          logger.debug(
             LogCategory.SYSTEM,
             `[OmniService] 🎯 嵌入画像档位 (--embedding-profile): ${embeddingProfile}`
           )
 
           const mrlDimension = configOrch.getValue<number>('EMBEDDING_MRL_DIMENSION') || 512
           spawnArgs.push('--mrl-dimension', String(mrlDimension))
-          logger.info(
+          logger.debug(
             LogCategory.SYSTEM,
             `[OmniService] 🎯 MRL 向量维度 (--mrl-dimension): ${mrlDimension}`
           )
@@ -1616,7 +1616,7 @@ export class OmniService {
             str.includes('[胜出') ||
             str.includes('[MossTtsPerf]')
           if (isInfoMsg) {
-            logger.info(LogCategory.SYSTEM, `[Omni] ${str}`)
+            logger.debug(LogCategory.SYSTEM, `[Omni] ${str}`)
           } else {
             logger.debug(LogCategory.SYSTEM, `[Omni] ${str}`)
           }
@@ -1673,7 +1673,7 @@ export class OmniService {
         // 子进程异常退出后，先检测是否对应端口上已有服务接管，若健康则直接接入，不触发重启
         const aliveAfterExit = await this.checkHealth()
         if (aliveAfterExit) {
-          logger.info(
+          logger.debug(
             LogCategory.SYSTEM,
             `[OmniService] ${this.actualPort} 端口已有外部服务接管，直接连接`
           )
@@ -2168,7 +2168,7 @@ export class OmniService {
 
     const delay = Math.min(1000 * Math.pow(2, this.restartAttempts), 15000)
     this.restartAttempts++
-    logger.info(
+    logger.debug(
       LogCategory.SYSTEM,
       `[OmniService] 安排在 ${delay}ms 后尝试重启 Omni 服务 (第 ${this.restartAttempts} 次)...`
     )
@@ -2288,7 +2288,7 @@ export class OmniService {
       })
 
       if (res.ok) {
-        logger.info(
+        logger.debug(
           LogCategory.SYSTEM,
           `[OmniService] 已向 Omni 引擎同步配置: enable_office_cover=${enableOfficeCover}, max_document_ocr_items=${maxDocOcrItems}, enable_image_ocr=${enableImageOcr}, ocr_model_size=${ocrModelSize}, audio_analysis_duration=${audioAnalysisDuration}s, excluded_items_count=${excludedItems.length}, language=${currentLanguage}, embedding_profile=${embeddingProfile}, mrl_dimension=${mrlDimension}`
         )
@@ -2309,7 +2309,7 @@ export class OmniService {
    * 卸载指定插槽的模型（释放 Windows 文件句柄）
    */
   public async unloadSlot(slot: string): Promise<boolean> {
-    logger.info(LogCategory.SYSTEM, `[OmniService] 触发卸载插槽模型以释放句柄: ${slot}`)
+    logger.debug(LogCategory.SYSTEM, `[OmniService] 触发卸载插槽模型以释放句柄: ${slot}`)
     return this.syncConfigFromDesktop()
   }
 
@@ -2334,7 +2334,7 @@ export class OmniService {
         return false
       }
       const json = await res.json()
-      logger.info(LogCategory.SYSTEM, `[OmniService] Omni 热重连结果:`, JSON.stringify(json))
+      logger.debug(LogCategory.SYSTEM, `[OmniService] Omni 热重连结果:`, JSON.stringify(json))
       return json.omwAvailable === true
     } catch (err: any) {
       logger.warn(LogCategory.SYSTEM, `[OmniService] POST /api/reconnect 异常:`, err.message)
@@ -2602,7 +2602,7 @@ export class OmniService {
       try {
         const fs = await import('node:fs/promises')
         await fs.access(options.skipIfExistsPath)
-        logger.info(
+        logger.debug(
           LogCategory.SYSTEM,
           `[OmniService] 目标缩略图已存在于磁盘，跳过 Omni /api/cover 封面生成: ${options.skipIfExistsPath}`
         )
@@ -2768,19 +2768,19 @@ export class OmniService {
         json.winning_hypothesis ||
         (json.candidate_hypotheses && json.candidate_hypotheses.length > 0)
       ) {
-        logger.info(
+        logger.debug(
           LogCategory.SYSTEM,
           `[级联仲裁:Desktop] 终局胜出: "${json.winning_hypothesis?.prompt_text || '无'}" (置信度: ${json.winning_hypothesis?.confidence ?? 'N/A'}) | 建议命名: ${json.smart_name || '无'}`
         )
         if (json.candidate_hypotheses && json.candidate_hypotheses.length > 0) {
           const top100 = json.candidate_hypotheses.slice(0, 100)
-          logger.info(
+          logger.debug(
             LogCategory.SYSTEM,
             `[普遍语法造句:Desktop] Top ${top100.length} 候选造句排列表 (总数: ${json.candidate_hypotheses.length}):`
           )
           for (let i = 0; i < top100.length; i++) {
             const cand = top100[i]
-            logger.info(
+            logger.debug(
               LogCategory.SYSTEM,
               `  [${String(i + 1).padStart(3, ' ')}] conf=${cand.confidence.toFixed(3)} winner=${cand.is_winner ? '★YES' : ' NO '} prompt="${cand.prompt_text}"`
             )
@@ -2790,13 +2790,13 @@ export class OmniService {
 
       // 输出所有融合标签 (fused_tags)
       if (json.fused_tags && json.fused_tags.length > 0) {
-        logger.info(
+        logger.debug(
           LogCategory.SYSTEM,
           `[双锚点融合:Desktop] 最终胜出融合标签 (count=${json.fused_tags.length}):`
         )
         for (let i = 0; i < json.fused_tags.length; i++) {
           const t = json.fused_tags[i]
-          logger.info(
+          logger.debug(
             LogCategory.SYSTEM,
             `  [${String(i + 1).padStart(2, ' ')}] conf=${t.confidence.toFixed(3)} code=${t.code.padEnd(30, ' ')} name=${t.name.padEnd(10, ' ')} parent=${t.parent_codes?.join(',') ?? 'None'}`
           )
@@ -2805,13 +2805,13 @@ export class OmniService {
 
       // 输出原生事实标签 (fact_tags, Task 2)
       if (json.fact_tags && json.fact_tags.length > 0) {
-        logger.info(
+        logger.debug(
           LogCategory.SYSTEM,
           `[事实标签:Desktop] 接收 Omni fact_tags (count=${json.fact_tags.length}): [${json.fact_tags.map(t => t.name).join(', ')}]`
         )
         for (let i = 0; i < json.fact_tags.length; i++) {
           const t = json.fact_tags[i]
-          logger.info(
+          logger.debug(
             LogCategory.SYSTEM,
             `  [${String(i + 1).padStart(2, ' ')}] conf=${t.confidence.toFixed(3)} code=${t.code.padEnd(30, ' ')} name=${t.name.padEnd(12, ' ')} engine=${t.engine ?? 'metadata'}`
           )

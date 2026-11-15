@@ -704,7 +704,7 @@ export class EngineBridgeService {
       void this.checkBinaryUpdated()
     }, intervalMs)
     this.devBinaryWatchTimer.unref?.()
-    logger.info(
+    logger.debug(
       LogCategory.SYSTEM,
       `[EngineBridge] 已开启引擎二进制热更新监听（每 ${intervalMs}ms 比对集成目录产物）`
     )
@@ -759,7 +759,7 @@ export class EngineBridgeService {
     // 保留 pending 状态，等引擎回到 ready 后由 applyStatus 触发补检。
     if (this.lastRawStatus?.status === 'processing') {
       if (!this.deferredBinaryRestart) {
-        logger.info(
+        logger.debug(
           LogCategory.SYSTEM,
           '[EngineBridge] 检测到引擎二进制更新，但引擎正在处理分析请求，推迟到空闲后重启'
         )
@@ -1441,7 +1441,7 @@ export class EngineBridgeService {
         return false
       }
       if (!(await this.shouldEngineRun())) {
-        logger.info(
+        logger.debug(
           LogCategory.SYSTEM,
           '[EngineBridge] 当前高级AI引擎已禁用或处于云端模式，跳过拉起'
         )
@@ -1458,7 +1458,7 @@ export class EngineBridgeService {
         }
         // 「HTTP 可响应」≠「推理服务可用」：必须按 status 分层判定
         if (this.isServiceUsable(status)) {
-          logger.info(
+          logger.debug(
             LogCategory.SYSTEM,
             `[EngineBridge] 复用已运行的 Tier 2 引擎 (${this.baseUrl})`
           )
@@ -1701,7 +1701,7 @@ export class EngineBridgeService {
     try {
       // 引擎未运行或正处于离线状态时，先平稳拉起并等待就绪，避免 fetch 直接抛错
       if (!this.lastRawStatus) {
-        logger.info(LogCategory.SYSTEM, '[EngineBridge] 打开面板前检测到引擎未运行，主动平稳拉起')
+        logger.debug(LogCategory.SYSTEM, '[EngineBridge] 打开面板前检测到引擎未运行，主动平稳拉起')
         const ok = await this.ensureRunning({ force: true })
         if (!ok) {
           return { ok: false, error: '未能成功拉起引擎服务' }
@@ -1908,7 +1908,7 @@ export class EngineBridgeService {
       const ok = res.ok && body.success !== false
       if (ok) {
         this.lastSyncedThinking = enableThinking
-        logger.info(
+        logger.debug(
           LogCategory.SYSTEM,
           `[EngineBridge] 已同步思考模式至引擎: enable_thinking=${enableThinking}`
         )
@@ -1965,7 +1965,7 @@ export class EngineBridgeService {
           source: 'runtime',
           preventAutoReload: false
         })
-        logger.info(
+        logger.debug(
           LogCategory.SYSTEM,
           `[EngineBridge] 已从引擎同步思考模式至桌面: ENABLE_THINKING_MODE=${engineValue}（原值 ${desktopValue}）`
         )
@@ -2174,7 +2174,7 @@ export class EngineBridgeService {
           `[EngineBridge] 切换后端 ${backend} 失败: ${body.error || res.status}`
         )
       } else {
-        logger.info(
+        logger.debug(
           LogCategory.SYSTEM,
           `[EngineBridge] 已请求切换后端至 ${backend}（重启服务后生效）`
         )
@@ -2216,7 +2216,7 @@ export class EngineBridgeService {
     })
 
     if (!decision.heal) {
-      logger.info(
+      logger.debug(
         LogCategory.SYSTEM,
         `[EngineBridge] 引擎退出后不自愈（${decision.reason}，code=${exitCode}）`
       )
@@ -2243,7 +2243,7 @@ export class EngineBridgeService {
       // 延迟窗口内用户可能已停用高级引擎或切到云端：执行前必须重新确认意图。
       // ensureRunning({force:true}) 会跳过 shouldEngineRun 检查，故这里必须自己拦一道。
       if (!(await this.shouldEngineRun())) {
-        logger.info(
+        logger.debug(
           LogCategory.SYSTEM,
           '[EngineBridge] 崩溃自愈取消：当前已停用高级AI引擎或切至云端模式'
         )

@@ -86,7 +86,7 @@ async function exportTreeToDirectory(
         const targetFileName = swap ? rawName || rawSmartName : rawSmartName || rawName
         const targetPath = path.join(dirPath, targetFileName)
 
-        logger.info(LogCategory.FILE_ORGANIZATION, '[exportTreeToDirectory] 导出文件', {
+        logger.debug(LogCategory.FILE_ORGANIZATION, '[exportTreeToDirectory] 导出文件', {
           sourcePath,
           swap,
           realDiskName,
@@ -152,7 +152,7 @@ async function moveTreeToDirectory(tree: any[], targetDir: string): Promise<Phys
 
         // 物理整理落盘多归属保护：同一物理文件仅对 Top-1 路径执行物理移动，跳过后续多归属路径移动
         if (movedSourcePaths.has(sourcePath)) {
-          logger.info(LogCategory.FILE_ORGANIZATION, '[moveTreeToDirectory] 多归属文件已在首选路径移动，跳过重复物理移动', {
+          logger.debug(LogCategory.FILE_ORGANIZATION, '[moveTreeToDirectory] 多归属文件已在首选路径移动，跳过重复物理移动', {
             sourcePath,
             targetDir: dirPath
           })
@@ -173,7 +173,7 @@ async function moveTreeToDirectory(tree: any[], targetDir: string): Promise<Phys
         const targetFileName = swap ? rawName || rawSmartName : rawSmartName || rawName
         const targetPath = path.join(dirPath, targetFileName)
 
-        logger.info(LogCategory.FILE_ORGANIZATION, '[moveTreeToDirectory] 移动文件导出真实目录', {
+        logger.debug(LogCategory.FILE_ORGANIZATION, '[moveTreeToDirectory] 移动文件导出真实目录', {
           sourcePath,
           swap,
           realDiskName,
@@ -432,7 +432,7 @@ export function registerVirtualDirectoryIPCHandlers() {
       selectedFileIds?: number[]
     ) => {
       if (globalLlamaIndexService?.isSwitchingService()) {
-        logger.info(
+        logger.debug(
           LogCategory.MAIN,
           '[IPC] virtual-directory/generate-name-and-strategy-candidates: 模型正在切换中，拒绝请求'
         )
@@ -544,7 +544,7 @@ export function registerVirtualDirectoryIPCHandlers() {
     'virtual-directory/reorganize',
     async (event, virtualDirectoryId: number, options: any) => {
       if (globalLlamaIndexService?.isSwitchingService()) {
-        logger.info(
+        logger.debug(
           LogCategory.MAIN,
           '[IPC] virtual-directory/reorganize: 模型正在切换中，拒绝请求'
         )
@@ -1305,7 +1305,7 @@ export function registerVirtualDirectoryIPCHandlers() {
 
   ipcMain.handle('analyze-directory-context', async (event, dirPath: string, force?: boolean) => {
     if (globalLlamaIndexService?.isSwitchingService()) {
-      logger.info(LogCategory.MAIN, '[IPC] analyze-directory-context: 模型正在切换中，拒绝请求')
+      logger.debug(LogCategory.MAIN, '[IPC] analyze-directory-context: 模型正在切换中，拒绝请求')
       return {
         success: false,
         status: 'SERVICE_SWITCHING',
@@ -1333,7 +1333,7 @@ export function registerVirtualDirectoryIPCHandlers() {
         await import('../../runtime-services/filesystem/directory-context-service')
       activeContextService = new DirectoryContextService(globalLlamaIndexService)
       setDirectoryContextService(activeContextService)
-      logger.info(
+      logger.debug(
         LogCategory.MAIN,
         '[IPC] analyze-directory-context 运行时自愈绑定 directoryContextService 成功'
       )
@@ -1349,7 +1349,7 @@ export function registerVirtualDirectoryIPCHandlers() {
           .get(dirPath) as any
         if (prevUnit) {
           databaseService.db?.prepare('DELETE FROM file_units WHERE id = ?').run(prevUnit.id)
-          logger.info(LogCategory.MAIN, `[IPC] 目录重新分析时清除旧的最小单元记录: ${dirPath}`)
+          logger.debug(LogCategory.MAIN, `[IPC] 目录重新分析时清除旧的最小单元记录: ${dirPath}`)
         }
       } catch (e) {
         logger.warn(LogCategory.MAIN, '[IPC] 清除最小单元记录失败:', dirPath, e)
@@ -1385,7 +1385,7 @@ export function registerVirtualDirectoryIPCHandlers() {
               groupingConfidence: unitResult.confidence,
               workspaceId: wsId
             })
-            logger.info(
+            logger.debug(
               LogCategory.MAIN,
               `[IPC] 画象时识别为最小单元: ${dirPath} (${unitResult.unitType})`
             )
@@ -1415,7 +1415,7 @@ export function registerVirtualDirectoryIPCHandlers() {
         await import('../../runtime-services/filesystem/directory-context-service')
       activeContextService = new DirectoryContextService(globalLlamaIndexService)
       setDirectoryContextService(activeContextService)
-      logger.info(
+      logger.debug(
         LogCategory.MAIN,
         '[IPC] clear-directory-context 运行时自愈绑定 directoryContextService 成功'
       )

@@ -249,7 +249,7 @@ export class DatabaseService {
     const isLanguageConfirmed =
       ConfigOrchestrator.getInstance().getValue<boolean>('LANGUAGE_CONFIRMED')
     if (!isLanguageConfirmed) {
-      logger.info(
+      logger.debug(
         LogCategory.DATABASE_SERVICE,
         '语言尚未确认 (LANGUAGE_CONFIRMED = false)，跳过 ensureInitialized 数据库自动创建'
       )
@@ -468,7 +468,7 @@ export class DatabaseService {
       const userVersion = this._db.pragma('user_version', { simple: true }) as number
       for (const migration of migrations) {
         if (migration.version > userVersion) {
-          logger.info(
+          logger.debug(
             LogCategory.DATABASE_SERVICE,
             t('正在执行迁移版本 {version}: {name}', {
               version: migration.version,
@@ -532,7 +532,7 @@ export class DatabaseService {
     }
 
     // 调试模式 (DEBUG_MIGRATIONS=true)：逐条拆分并顺序执行，定位具体出错语句
-    logger.info(
+    logger.debug(
       LogCategory.DATABASE_SERVICE,
       `[DEBUG_MIGRATIONS] 启用单条 SQL 排错模式，正在执行迁移版本 ${migrationVersion}...`
     )
@@ -1658,7 +1658,7 @@ export class DatabaseService {
       })()
 
       this.clearDimensionsCache()
-      logger.info(
+      logger.debug(
         LogCategory.DATABASE_SERVICE,
         `全局删除标签成功: dimId=${dimensionId}, tagName=${tagName}`
       )
@@ -2650,6 +2650,51 @@ export class DatabaseService {
     } catch (error) {
       logger.error(LogCategory.DATABASE_SERVICE, 'findTagCodeByLemma 反查失败:', error)
       return undefined
+    }
+  }
+
+  /**
+   * 运行时「首见回源」：把从 pack 回源命中的受控词补写进 tag_aliases_[lang] 镜像表。
+   *
+   * 只补受控 code（omw.* / hownet.* / builtin.*）；严禁写入 `_ext.` 开头的派生码——否则会复现旧恶性循环
+   * （派生 _ext → 写回镜像 → 同名词永久钉死在 _ext、丢失受控 parentCodes）。
+   * 幂等：INSERT OR REPLACE，按 (tag_code, lemma) 主键去重。
+   * @param rows 回源命中的受控别名行（tag_code + lemma + is_canonical）
+   * @param locale 目标语言，如 zh-CN
+   * @returns 实际写入行数（过滤 _ext 后）
+   */
+  public seedTagAliasRows(
+    rows: Array<{ tagCode: string; lemma: string; isCanonical?: boolean }>,
+    locale?: string
+  ): number {
+    if (!this._db || !rows.length) return 0
+    const targetLocale = locale || this.currentLanguage || 'zh-CN'
+    const langTable = resolveTagAliasesLangTable(targetLocale)
+    // 防污染闸：_ext.*/user.*/custom. 等非受控 code 一律不入镜像表
+    const controlled = rows.filter(
+      r =>
+        r.tagCode &&
+        !r.tagCode.startsWith('_ext.') &&
+        !r.tagCode.startsWith('user.') &&
+        !r.tagCode.startsWith('custom.')
+    )
+    if (!controlled.length) return 0
+    try {
+      const insert = this._db.prepare(
+        `INSERT OR REPLACE INTO ${langTable} (tag_code, lemma, is_canonical, n, count)
+         VALUES (?, ?, ?, ?, ?)`
+      )
+      let written = 0
+      this._db.transaction(() => {
+        for (const r of controlled) {
+          insert.run(r.tagCode, r.lemma, r.isCanonical ? 1 : 0, 1, 0)
+          written++
+        }
+      })()
+      return written
+    } catch (error) {
+      logger.warn(LogCategory.DATABASE_SERVICE, 'seedTagAliasRows 补写镜像表失败:', error)
+      return 0
     }
   }
 

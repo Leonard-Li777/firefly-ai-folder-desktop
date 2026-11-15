@@ -23,7 +23,7 @@ export function registerAIServiceIPCHandlers() {
     'ai-service/initialize',
     async (_event, options?: { onlyDeploy?: boolean; forceDeploy?: boolean }) => {
       try {
-        logger.info(
+        logger.debug(
           LogCategory.MAIN,
           `[IPC] 收到AI服务初始化请求, options: ${JSON.stringify(options)}`
         )
@@ -32,7 +32,7 @@ export function registerAIServiceIPCHandlers() {
         const isTestEnv = shouldSkipAIServiceInTest()
 
         if (isTestEnv) {
-          logger.info(LogCategory.MAIN, '[IPC] 集成测试环境：跳过 AI 引擎部署和初始化')
+          logger.debug(LogCategory.MAIN, '[IPC] 集成测试环境：跳过 AI 引擎部署和初始化')
           const { llamaModelManager } =
             await import('../../runtime-services/llama/llama-model-manager')
           llamaModelManager.clearCache()
@@ -50,14 +50,14 @@ export function registerAIServiceIPCHandlers() {
           const tier2Online = options?.onlyDeploy
             ? await engineBridgeService.healthCheck().then(s => s !== null)
             : await engineBridgeService.ensureRunning().catch(() => false)
-          logger.info(
+          logger.debug(
             LogCategory.MAIN,
             `[IPC] Tier 2 引擎探活结果: ${tier2Online ? '在线' : '不可用（将由 Tier 1 保底）'}`
           )
         }
 
         if (options?.onlyDeploy) {
-          logger.info(LogCategory.MAIN, '[IPC] 检测到 onlyDeploy 标志，仅确认引擎可用性，不启动服务')
+          logger.debug(LogCategory.MAIN, '[IPC] 检测到 onlyDeploy 标志，仅确认引擎可用性，不启动服务')
           if (!globalLlamaIndexService) {
             const service = LlamaIndexAIService.getInstance(
               ConfigOrchestrator.getInstance(),
@@ -91,12 +91,12 @@ export function registerAIServiceIPCHandlers() {
         if (initMode !== 'cloud') {
           const isInitialized = globalLlamaIndexService.isInitialized()
           if (!isInitialized) {
-            logger.info(LogCategory.MAIN, '[IPC] 开始完整AI服务初始化...')
+            logger.debug(LogCategory.MAIN, '[IPC] 开始完整AI服务初始化...')
           }
 
           if (globalLlamaIndexService) {
             if (options?.forceDeploy) {
-              logger.info(
+              logger.debug(
                 LogCategory.MAIN,
                 '[IPC] 检测到 forceDeploy，触发 AI 服务配置重载以重连外部引擎'
               )
@@ -110,7 +110,7 @@ export function registerAIServiceIPCHandlers() {
             logger.info(LogCategory.MAIN, '[IPC] AI服务初始化完成')
           }
         } else {
-          logger.info(
+          logger.debug(
             LogCategory.MAIN,
             '[IPC] 云端模式：跳过本地 AI 服务进程初始化，确保 AI 服务就绪'
           )
@@ -123,7 +123,7 @@ export function registerAIServiceIPCHandlers() {
           const { DirectoryContextService } =
             await import('../../runtime-services/filesystem/directory-context-service')
           setDirectoryContextService(new DirectoryContextService(globalLlamaIndexService))
-          logger.info(LogCategory.MAIN, '[IPC] 目录上下文服务已成功注册并绑定')
+          logger.debug(LogCategory.MAIN, '[IPC] 目录上下文服务已成功注册并绑定')
         }
 
         llamaModelManager.clearCache()
@@ -202,7 +202,7 @@ export function registerAIServiceIPCHandlers() {
 
   ipcMain.handle('ai-service/on-model-changed', async (_event, modelId: string) => {
     try {
-      logger.info(LogCategory.MAIN, `[IPC] 收到模型切换通知: ${modelId}`)
+      logger.debug(LogCategory.MAIN, `[IPC] 收到模型切换通知: ${modelId}`)
       lastGetAIStatusCache = null
       clearEnrichCache()
 
@@ -265,7 +265,7 @@ export function registerAIServiceIPCHandlers() {
       'AI_SERVICE_MODE' in changes ||
       'AI_CLOUD_PROVIDER' in changes
     ) {
-      logger.info(LogCategory.MAIN, '[ai-service] 关键模型配置改变，清空 get-ai-status 缓存')
+      logger.debug(LogCategory.MAIN, '[ai-service] 关键模型配置改变，清空 get-ai-status 缓存')
       lastGetAIStatusCache = null
       clearEnrichCache()
     }
@@ -347,7 +347,7 @@ export function registerAIServiceIPCHandlers() {
 
       // 调试：记录 backend 值
       if (result.modelMode === 'local') {
-        logger.info(
+        logger.debug(
           LogCategory.MAIN,
           `[getAIStatus] backend=${result.backend}, provider=${result.provider}`
         )
@@ -390,7 +390,7 @@ export function registerAIServiceIPCHandlers() {
         const { DirectoryContextService } =
           await import('../../runtime-services/filesystem/directory-context-service')
         setDirectoryContextService(new DirectoryContextService(globalLlamaIndexService))
-        logger.info(
+        logger.debug(
           LogCategory.MAIN,
           '[IPC] initialize-ai-service 自动绑定 directoryContextService 成功'
         )
@@ -419,7 +419,7 @@ export function registerAIServiceIPCHandlers() {
       }
     ) => {
       if (globalLlamaIndexService?.isSwitchingService()) {
-        logger.info(LogCategory.MAIN, '[Main] llama-server聊天: 模型正在切换中，拒绝请求')
+        logger.debug(LogCategory.MAIN, '[Main] llama-server聊天: 模型正在切换中，拒绝请求')
         return {
           success: false,
           status: 'SERVICE_SWITCHING',
@@ -427,7 +427,7 @@ export function registerAIServiceIPCHandlers() {
         }
       }
       try {
-        logger.info(LogCategory.MAIN, '[Main] llama-server聊天请求:', {
+        logger.debug(LogCategory.MAIN, '[Main] llama-server聊天请求:', {
           model: options.model,
           messageCount: options.messages.length
         })
@@ -437,7 +437,7 @@ export function registerAIServiceIPCHandlers() {
           temperature: options.temperature || 0.3,
           maxTokens: options.maxTokens || 500
         } as any)
-        logger.info(LogCategory.MAIN, '[Main] llama-server聊天完成')
+        logger.debug(LogCategory.MAIN, '[Main] llama-server聊天完成')
         return response
       } catch (error) {
         logger.error(LogCategory.MAIN, '[Main] llama-server聊天失败:', error)
@@ -483,7 +483,7 @@ export function registerAIServiceIPCHandlers() {
       }
     ) => {
       if (globalLlamaIndexService?.isSwitchingService()) {
-        logger.info(LogCategory.MAIN, '[Main] ai-chat: 模型正在切换中，拒绝请求')
+        logger.debug(LogCategory.MAIN, '[Main] ai-chat: 模型正在切换中，拒绝请求')
         return {
           success: false,
           status: 'SERVICE_SWITCHING',
@@ -513,7 +513,7 @@ export function registerAIServiceIPCHandlers() {
         }
       }
       try {
-        logger.info(LogCategory.MAIN, '[Main] 收到AI聊天请求:', {
+        logger.debug(LogCategory.MAIN, '[Main] 收到AI聊天请求:', {
           model: options.model,
           messageCount: options.messages.length
         })

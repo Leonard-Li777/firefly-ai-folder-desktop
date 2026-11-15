@@ -600,9 +600,14 @@ export function registerTTSIPCHandlers(): void {
                   )
                 }
 
-                // 实时流式写入目标 WAV 文件
+                // 实时流式写入目标 WAV 文件并记录分句 Cue
                 if (session.recorder) {
-                  session.recorder.appendChunk(payload.pcm, payload.charEnd).catch(() => {})
+                  session.recorder
+                    .appendChunk(payload.pcm, payload.charEnd, {
+                      charStart: payload.charStart,
+                      sampleCount: payload.sampleCount
+                    })
+                    .catch(() => {})
                 }
 
                 session.sender.send('tts:stream-chunk-data', payload)
