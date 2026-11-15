@@ -551,7 +551,7 @@ export function nestGroupTags(
   group: DimensionGroup,
   tags: DimensionTag[],
   level: number,
-  maxScaleDepth: number = 7,
+  maxScaleDepth: number = 8,
   pathCountMap?: Record<string, number>,
   removeEmptyTags = false
 ): { directTags: DimensionTag[]; childTagsMap: DimensionChildTagsMap } {
@@ -961,7 +961,7 @@ export function buildDimensionTree(
   parentId: number | null = null,
   parentTag: string | null = null,
   level = 0,
-  maxScaleDepth: number = 7,
+  maxScaleDepth: number = 8,
   pathCountMap?: Record<string, number>,
   removeEmptyTags = false
 ): DimensionTreeNode[] {

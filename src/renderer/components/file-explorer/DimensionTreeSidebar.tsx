@@ -25,7 +25,7 @@ const EMPTY_PAN_DIMENSION_IDS: number[] = []
 
 /**
  * 默认展开标签层级数：仅自动展开前 5 级标签，第 6 级及更深默认折叠，需用户手动点击展开。
- * 与 maxScaleDepth（默认 7）解耦：maxScaleDepth 决定树构建上限，此常量仅决定初始展开面。
+ * 与 maxScaleDepth（默认 8）解耦：maxScaleDepth 决定树构建上限，此常量仅决定初始展开面。
  */
 const DEFAULT_EXPANDED_TAG_LEVELS = 5
 
@@ -417,7 +417,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
   // 记录是否已完成初次挂载与外部持久化注入 (B-2 修复)
   const isInitializedRef = useRef(false)
 
-  // 标签树层级深度刻度状态 (2~10 刻度，ADR-0034 §4 推荐默认 7 级，最小 2 级)
+  // 标签树层级深度刻度状态 (2~10 刻度，ADR-0034 §4 推荐默认 8 级，最小 2 级)
   const [maxScaleDepth, setMaxScaleDepth] = useState<number>(() => {
     if (storageKey) {
       try {
@@ -428,7 +428,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
         }
       } catch {}
     }
-    return 7
+    return 8
   })
 
   useEffect(() => {
