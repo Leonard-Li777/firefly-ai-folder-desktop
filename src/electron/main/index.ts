@@ -625,7 +625,7 @@ setEarlyInitializationPromise(
       await SystemIdentityService.getInstance().initialize()
       // PostHog 客户端已在模块加载时创建（临时标识），此处更新为真实机器 ID 并检查授权
       await postHogMain.init()
-      logger.info(LogCategory.MAIN, '[App] 身份系统与追踪服务早期初始化完成')
+      logger.debug(LogCategory.MAIN, '[App] 身份系统与追踪服务早期初始化完成')
     } catch (err) {
       console.error('Early service initialization background task failed:', err)
     }
@@ -661,7 +661,7 @@ ConfigOrchestrator.getInstance().onValueChange<boolean>('LANGUAGE_CONFIRMED', as
   if (confirmed && !databaseService.db) {
     const language = (ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') ||
       'zh-CN') as LanguageCode
-    logger.info(
+    logger.debug(
       LogCategory.MAIN,
       `用户已在欢迎界面确认语言 (${language})，开始建立并初始化数据库...`
     )
@@ -687,7 +687,7 @@ ConfigOrchestrator.getInstance().onValueChange<string>(
     const isLanguageConfirmed =
       ConfigOrchestrator.getInstance().getValue<boolean>('LANGUAGE_CONFIRMED')
     if (!isLanguageConfirmed) {
-      logger.info(
+      logger.debug(
         LogCategory.MAIN,
         `语言暂未确认 (LANGUAGE_CONFIRMED = false)，跳过自动创建/切换数据库 (${newLanguage})`
       )
@@ -695,7 +695,7 @@ ConfigOrchestrator.getInstance().onValueChange<string>(
     }
 
     if (newLanguage !== oldLanguage) {
-      logger.info(
+      logger.debug(
         LogCategory.MAIN,
         `语言由 ${oldLanguage} 切换为 ${newLanguage}，基于统一单主库动态刷新多语言展示与服务...`
       )
@@ -707,7 +707,7 @@ ConfigOrchestrator.getInstance().onValueChange<string>(
         if (databaseService.db) {
           try {
             const rebuildResult = await databaseService.rebuildNamePathsForLanguage(newLanguage)
-            logger.info(
+            logger.debug(
               LogCategory.MAIN,
               `[LanguageSwitch] 已按 ${newLanguage} 重建物化展示路径 name_path: 更新 ${rebuildResult.updatedCount} 行 (涉及 ${rebuildResult.distinctPathsCount} 条路径)`
             )
@@ -760,7 +760,7 @@ ConfigOrchestrator.getInstance().onValueChange<string>(
   'AI_ENGINE',
   async (newEngine, oldEngine) => {
     if (newEngine !== oldEngine) {
-      logger.info(
+      logger.debug(
         LogCategory.MAIN,
         `AI 引擎由 ${oldEngine} 切换为 ${newEngine}，正在刷新硬件信息...`
       )
@@ -909,7 +909,7 @@ app.on('ready', async () => {
       const langCode = lcidMap[lcid]
       if (langCode) {
         orchestrator.updateValues({ DEFAULT_LANGUAGE: langCode }, { source: 'runtime' })
-        logger.info(LogCategory.MAIN, `[App] 从安装程序中读取到语言选择: ${langCode} (${lcid})`)
+        logger.debug(LogCategory.MAIN, `[App] 从安装程序中读取到语言选择: ${langCode} (${lcid})`)
       }
 
       // 删除文件，确保只在初次运行时处理一次
@@ -921,7 +921,7 @@ app.on('ready', async () => {
 
   const baseInitPromise = (async () => {
     await earlyInitializationPromise
-    logger.info(LogCategory.MAIN, '[App] 身份系统与追踪服务初始化已就绪')
+    logger.debug(LogCategory.MAIN, '[App] 身份系统与追踪服务初始化已就绪')
   })()
 
   const regionDetectPromise = regionDetectionService.detectAndSetMirror().catch(err => {
@@ -933,12 +933,12 @@ app.on('ready', async () => {
 
   try {
     await baseInitPromise
-    logger.info(LogCategory.MAIN, '[App] 应用启动，进入配置阶段...')
+    logger.debug(LogCategory.MAIN, '[App] 应用启动，进入配置阶段...')
 
     // 1. 初始化最小服务（所有环境通用）
     // PRD-0044：安装进度 IPC（system:initial-setup-status）随 InitialSetupOverlay 一并清退，
     // 首启/升级进度改由主进程日志记录（渲染进程已无监听方）
-    logger.info(
+    logger.debug(
       LogCategory.MAIN,
       isFirstRun
         ? '[App] 正在准备首次启动安装...'
@@ -946,7 +946,7 @@ app.on('ready', async () => {
     )
 
     await initializeMinimalServices({
-      onProgress: msg => logger.info(LogCategory.MAIN, `[App] 安装进度: ${msg}`)
+      onProgress: msg => logger.debug(LogCategory.MAIN, `[App] 安装进度: ${msg}`)
     })
 
     if (isInitialSetupNeeded) {
@@ -959,13 +959,13 @@ app.on('ready', async () => {
 
     // 2. 测试环境下的特殊注入逻辑
     if (process.env.NODE_ENV === 'test') {
-      logger.info(LogCategory.MAIN, '[Test] 检测到测试环境，执行全量服务初始化并注入工作目录')
+      logger.debug(LogCategory.MAIN, '[Test] 检测到测试环境，执行全量服务初始化并注入工作目录')
       try {
         await initializeFullServices()
         // 注意：initializeFullServices 内部已调用 globalLlamaIndexService.initialize()
         // 且有独立的 try-catch 处理初始化错误，此处不需要重复调用
         if (globalLlamaIndexService) {
-          logger.info(LogCategory.MAIN, '[Test] 服务初始化完成')
+          logger.debug(LogCategory.MAIN, '[Test] 服务初始化完成')
         }
 
         const desktopPath = process.env.TEST_SPEEDY_PATH!
@@ -984,7 +984,7 @@ app.on('ready', async () => {
           recursive: true,
           isActive: true
         })
-        logger.info(LogCategory.MAIN, '[Test] 已成功注入预设工作目录')
+        logger.debug(LogCategory.MAIN, '[Test] 已成功注入预设工作目录')
       } catch (err) {
         logger.error(LogCategory.MAIN, '[Test] 初始化或注入失败，应用将退出:', err)
         console.error('=== FIREFLY_CRASH: 测试模式初始化失败 ===', err)
@@ -1007,7 +1007,7 @@ app.on('ready', async () => {
 
     if (licenseResult.status !== LicenseStatus.AUTHORIZED) {
       try {
-        logger.info(LogCategory.MAIN, '[App] 未检测到授权，尝试执行一次在线同步确认...')
+        logger.debug(LogCategory.MAIN, '[App] 未检测到授权，尝试执行一次在线同步确认...')
         await initializeHardwareDetection(true)
         licenseResult = await LicenseService.getInstance().checkLicenseStatus(true)
         if (licenseResult.status === LicenseStatus.AUTHORIZED) {
@@ -1022,20 +1022,20 @@ app.on('ready', async () => {
     if (licenseResult.status !== LicenseStatus.AUTHORIZED) {
       logger.warn(LogCategory.MAIN, '★★★ 授权校验未通过，锁定 AI 核心服务初始化 ★★★')
     } else {
-      logger.info(LogCategory.MAIN, '[App] 授权校验通过，正在加载 AI 服务模块...')
+      logger.debug(LogCategory.MAIN, '[App] 授权校验通过，正在加载 AI 服务模块...')
       await initializeLlamaServer()
-      logger.info(LogCategory.MAIN, '[App] AI 服务模块加载完成')
+      logger.debug(LogCategory.MAIN, '[App] AI 服务模块加载完成')
     }
   } catch (error) {
     logger.error(LogCategory.MAIN, '[App] 授权检查过程发生异常:', error)
   }
 
   if (!isInitialSetupNeeded) {
-    logger.info(LogCategory.MAIN, '[App] 准备创建主窗口...')
+    logger.debug(LogCategory.MAIN, '[App] 准备创建主窗口...')
     createWindow()
     logger.info(LogCategory.MAIN, '[App] 主窗口创建指令已发送。')
   } else {
-    logger.info(LogCategory.MAIN, '[App] 初始安装已在早期创建窗口，跳过重复创建')
+    logger.debug(LogCategory.MAIN, '[App] 初始安装已在早期创建窗口，跳过重复创建')
   }
 })
 

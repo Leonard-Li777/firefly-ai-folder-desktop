@@ -42,7 +42,7 @@ export function registerMiscIPCHandlers() {
     loggingService.bindSessionId(sessionId)
   })
   ipcMain.handle('app:relaunch', async () => {
-    logger.info(LogCategory.IPC, '准备重启应用...')
+    logger.debug(LogCategory.IPC, '准备重启应用...')
     const windows = BrowserWindow.getAllWindows()
     windows.forEach(win => {
       if (!win.isDestroyed()) {
@@ -55,7 +55,7 @@ export function registerMiscIPCHandlers() {
 
   ipcMain.handle('show-item-in-folder', async (event, filePath: string) => {
     try {
-      logger.info(LogCategory.MAIN, '[Main] 在资源管理器中定位文件:', filePath)
+      logger.debug(LogCategory.MAIN, '[Main] 在资源管理器中定位文件:', filePath)
       shell.showItemInFolder(filePath)
       return { success: true }
     } catch (error) {
@@ -66,7 +66,7 @@ export function registerMiscIPCHandlers() {
 
   ipcMain.handle('copy-file-to-clipboard', async (event, filePath: string) => {
     try {
-      logger.info(LogCategory.MAIN, '[Main] 复制文件到剪贴板:', filePath)
+      logger.debug(LogCategory.MAIN, '[Main] 复制文件到剪贴板:', filePath)
       const normalizedPath =
         process.platform === 'win32' ? path.win32.normalize(filePath) : filePath
       await safeClipboard.writeFiles([normalizedPath])
@@ -79,7 +79,7 @@ export function registerMiscIPCHandlers() {
 
   ipcMain.handle('copy-files-to-clipboard', async (event, filePaths: string[]) => {
     try {
-      logger.info(LogCategory.MAIN, '[Main] 复制多个文件到剪贴板:', filePaths)
+      logger.debug(LogCategory.MAIN, '[Main] 复制多个文件到剪贴板:', filePaths)
       if (!filePaths || filePaths.length === 0) return { success: false }
       const normalizedPaths =
         process.platform === 'win32' ? filePaths.map(p => path.win32.normalize(p)) : filePaths
@@ -195,7 +195,7 @@ export function registerMiscIPCHandlers() {
   // 预览即时图片转码
   ipcMain.handle('preview/get-temp-image', async (event, filePath: string) => {
     try {
-      logger.info(LogCategory.MAIN, '[IPC] 预览即时图片转码请求:', { filePath })
+      logger.debug(LogCategory.MAIN, '[IPC] 预览即时图片转码请求:', { filePath })
       const db = databaseService.db
       if (!db) throw new Error('数据库未连接')
       const workspaceFile = (await db
@@ -541,7 +541,7 @@ export function registerMiscIPCHandlers() {
         buffer = Buffer.alloc(MAX_SIZE)
         await fd.read(buffer, 0, MAX_SIZE, 0)
         await fd.close()
-        logger.info(LogCategory.MAIN, `[预处理] 文件超过1MB，已截取前1MB: ${filePath}`)
+        logger.debug(LogCategory.MAIN, `[预处理] 文件超过1MB，已截取前1MB: ${filePath}`)
       } else {
         buffer = await fs.promises.readFile(filePath)
       }
@@ -597,7 +597,7 @@ export function registerMiscIPCHandlers() {
       const baseName = path.basename(filePath, ext)
       const tempFilePath = path.join(tempDir, `${baseName}_preview_${Date.now()}${ext}`)
       await fs.promises.writeFile(tempFilePath, decoded, 'utf-8')
-      logger.info(
+      logger.debug(
         LogCategory.MAIN,
         `[预处理] 文本预览文件已处理（编码: ${usedEncoding}）: ${filePath} -> ${tempFilePath}`
       )
@@ -613,7 +613,7 @@ export function registerMiscIPCHandlers() {
       if (filePath.startsWith(tempDir) && filePath.includes('_preview_')) {
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath)
-          logger.info(LogCategory.MAIN, `[预处理] 已成功清理预览临时文件: ${filePath}`)
+          logger.debug(LogCategory.MAIN, `[预处理] 已成功清理预览临时文件: ${filePath}`)
         }
       }
       return { success: true }
@@ -703,7 +703,7 @@ export function registerMiscIPCHandlers() {
         }
         const targetPath = path.join(logsDir, filename)
         fs.writeFileSync(targetPath, content, 'utf8')
-        logger.info(LogCategory.MAIN, `[Diagnostic] DOM 变动诊断报告已成功写入本地: ${targetPath}`)
+        logger.debug(LogCategory.MAIN, `[Diagnostic] DOM 变动诊断报告已成功写入本地: ${targetPath}`)
         return { success: true, path: targetPath }
       } catch (err: any) {
         logger.error(LogCategory.MAIN, `[Diagnostic] 写入诊断报告失败:`, err)
@@ -737,7 +737,7 @@ export function registerMiscIPCHandlers() {
     process.env.IS_INTEGRATION_TEST === 'true' ||
     process.env.IS_E2E_TEST === 'true'
   ) {
-    logger.info(LogCategory.MAIN, '[IPC] 注册数据库直连 IPC 处理程序 (开发/测试模式)')
+    logger.debug(LogCategory.MAIN, '[IPC] 注册数据库直连 IPC 处理程序 (开发/测试模式)')
     ipcMain.handle('database/execute-get', async (event, sql: string, params: any[]) => {
       const db = databaseService.db
       if (!db) throw new Error(t('数据库未初始化'))

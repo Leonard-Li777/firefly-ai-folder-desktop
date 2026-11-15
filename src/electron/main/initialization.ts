@@ -98,7 +98,7 @@ import { t, changeLanguage } from '@app/languages'
  */
 export async function initializeHardwareDetection(wait = false): Promise<void> {
   try {
-    logger.info(LogCategory.STARTUP, `正在${wait ? '同步' : '异步'}检测系统硬件资源...`)
+    logger.debug(LogCategory.STARTUP, `正在${wait ? '同步' : '异步'}检测系统硬件资源...`)
 
     const config = ConfigOrchestrator.getInstance()
     const oldInfo = {
@@ -110,7 +110,7 @@ export async function initializeHardwareDetection(wait = false): Promise<void> {
 
     const runDetection = async () => {
       const resources = await hardwareDetectionService.detectSystemResources(true)
-      logger.info(LogCategory.STARTUP, '硬件资源检测完成，正在对比变更...', {
+      logger.debug(LogCategory.STARTUP, '硬件资源检测完成，正在对比变更...', {
         cpu: resources.cpu.model,
         memory: resources.memory.total,
         gpus: resources.gpus.length
@@ -157,7 +157,7 @@ export async function initializeHardwareDetection(wait = false): Promise<void> {
         config.updateValue('EMBEDDING_MRL_DIMENSION', settings.mrlDimension)
         // 抽帧间隔已改由引擎按 120s 单文件预算自决，不再持久化（避免与引擎求解值冲突）
         config.updateValue('VIDEO_SOFT_TOKEN_BUDGET', settings.videoSoftTokenBudget)
-        logger.info(
+        logger.debug(
           LogCategory.STARTUP,
           `[Profile] 首次启动自适应推荐嵌入画像: profile=${settings.profile}, mrl=${settings.mrlDimension}, videoTokens=${settings.videoSoftTokenBudget} (内存: ${totalMemGB.toFixed(1)}GB, CPU: ${cpuCores}核)`
         )
@@ -215,13 +215,13 @@ export async function initDatabaseAndDependentServices(
   force = false
 ): Promise<void> {
   try {
-    logger.info(
+    logger.debug(
       LogCategory.MAIN,
       `正在初始化数据库服务 (语言: ${language}${force ? ', 强制重新初始化' : ''})...`
     )
 
     if (force && databaseService.db) {
-      logger.info(LogCategory.MAIN, '强制重新初始化：关闭旧数据库连接...')
+      logger.debug(LogCategory.MAIN, '强制重新初始化：关闭旧数据库连接...')
       databaseService.close()
       virtualDirectoryService.reset()
       // 清理旧的回调，避免重复注册
@@ -270,9 +270,8 @@ export async function initDatabaseAndDependentServices(
     modularResourceService.setConfigOrchestrator(ConfigOrchestrator.getInstance())
 
     // 工作区策略提交服务单例注入数据库运行时依赖，杜绝打包产物中动态 require 失败
-    const { workspacePolicyCommitService } = await import(
-      '../runtime-services/workspace/workspace-policy-commit-service'
-    )
+    const { workspacePolicyCommitService } =
+      await import('../runtime-services/workspace/workspace-policy-commit-service')
     workspacePolicyCommitService.configureDependencies({
       getDb: () => databaseService.db
     })
@@ -356,7 +355,7 @@ export async function initDatabaseAndDependentServices(
           logger.error(LogCategory.CONFIG, '数据库初始化后同步云端配置失败:', err)
         })
 
-      logger.info(LogCategory.MAIN, '依赖数据库的业务服务初始化完成')
+      logger.debug(LogCategory.MAIN, '依赖数据库的业务服务初始化完成')
     } else {
       logger.error(LogCategory.MAIN, '数据库初始化失败，未获得有效的数据库实例')
     }
@@ -479,7 +478,7 @@ export function registerServiceHealthChecks(): void {
     }
   })
 
-  logger.info(LogCategory.MAIN, '服务健康检查注册完成')
+  logger.debug(LogCategory.MAIN, '服务健康检查注册完成')
 }
 
 /**
@@ -491,12 +490,12 @@ export async function initializeMinimalServices(options?: {
   try {
     // 关键：将桌面侧 ConfigOrchestrator 注入 AI 包（包内服务如 unifiedModelManager 通过该静态入口读取配置）
     AIPackageConfigOrchestrator.setInstance(ConfigOrchestrator.getInstance())
-    logger.info(LogCategory.MAIN, '正在初始化配置阶段所需的最小服务...')
-    logger.info(LogCategory.MAIN, '日志服务初始化成功')
-    logger.info(LogCategory.MAIN, '错误处理服务初始化成功')
-    logger.info(LogCategory.MAIN, '自动恢复服务初始化成功')
-    logger.info(LogCategory.MAIN, '正在初始化系统健康检查服务...')
-    logger.info(LogCategory.MAIN, '系统健康检查服务初始化成功')
+    logger.debug(LogCategory.MAIN, '正在初始化配置阶段所需的最小服务...')
+    logger.debug(LogCategory.MAIN, '日志服务初始化成功')
+    logger.debug(LogCategory.MAIN, '错误处理服务初始化成功')
+    logger.debug(LogCategory.MAIN, '自动恢复服务初始化成功')
+    logger.debug(LogCategory.MAIN, '正在初始化系统健康检查服务...')
+    logger.debug(LogCategory.MAIN, '系统健康检查服务初始化成功')
     invitationService.initialize()
 
     // 注入硬件探测服务的依赖 (ConfigOrchestrator, deploymentIntegrityVerifier)
@@ -517,11 +516,11 @@ export async function initializeMinimalServices(options?: {
     )
     cloudAnalysisService.setSupabaseClient(supabaseClient)
     cloudAnalysisService.setIdentityProvider(SystemIdentityService.getInstance())
-    logger.info(LogCategory.MAIN, '系统身份服务初始化成功')
+    logger.debug(LogCategory.MAIN, '系统身份服务初始化成功')
 
     try {
       await cloudAnalysisService.initialize()
-      logger.info(LogCategory.MAIN, '系统身份 Supabase 注册完成')
+      logger.debug(LogCategory.MAIN, '系统身份 Supabase 注册完成')
     } catch (err) {
       logger.warn(LogCategory.MAIN, '系统身份 Supabase 注册未完成 (可能离线):', err)
     }
@@ -536,7 +535,7 @@ export async function initializeMinimalServices(options?: {
         const { engineBridgeService } = await import('../runtime-services/engine-bridge')
         const tier2Online = await engineBridgeService.ensureRunning().catch(() => false)
         if (tier2Online) {
-          logger.info(
+          logger.debug(
             LogCategory.MAIN,
             '[EngineBridge] Tier 2 引擎在线，AIService 本地调用将重定向至端口 38400'
           )
@@ -559,7 +558,7 @@ export async function initializeMinimalServices(options?: {
     registerClipTextRuntimeReset()
 
     await ffmpegService.initialize()
-    logger.info(LogCategory.MAIN, 'FFmpeg 服务初始化完成')
+    logger.debug(LogCategory.MAIN, 'FFmpeg 服务初始化完成')
 
     const isLanguageConfirmed =
       ConfigOrchestrator.getInstance().getValue<boolean>('LANGUAGE_CONFIRMED')
@@ -571,11 +570,11 @@ export async function initializeMinimalServices(options?: {
 
       // 执行数据迁移
       await dataMigrationService.migrate()
-      logger.info(LogCategory.MAIN, '数据库服务初始化成功')
+      logger.debug(LogCategory.MAIN, '数据库服务初始化成功')
 
       // ADR-0038 / Issue #682：多语言别名分表已落库，展示与反查走 DB 直查，不再需要内存总线 TaxonomyAliasCache
     } else {
-      logger.info(
+      logger.debug(
         LogCategory.MAIN,
         '[Initialization] 语言尚未确认 (LANGUAGE_CONFIRMED = false)，延迟初始化数据库，等待用户选择语言...'
       )
@@ -583,19 +582,19 @@ export async function initializeMinimalServices(options?: {
 
     try {
       unifiedModelManager.ensureLoaded()
-      logger.info(LogCategory.MAIN, '统一模型配置初始化成功 (含云端服务商)')
+      logger.debug(LogCategory.MAIN, '统一模型配置初始化成功 (含云端服务商)')
     } catch (error) {
       logger.error(LogCategory.MAIN, '统一模型配置初始化失败:', error)
     }
 
-    logger.info(LogCategory.MAIN, '正在初始化配置服务...')
+    logger.debug(LogCategory.MAIN, '正在初始化配置服务...')
     // 异步同步云端配置 (非阻塞，仅启动时同步一次)
     ConfigDbManager.getInstance()
       .syncFromCloud()
       .catch(err => {
         logger.error(LogCategory.CONFIG, 'ConfigDbManager syncFromCloud failed:', err)
       })
-    logger.info(LogCategory.MAIN, '配置服务初始化成功')
+    logger.debug(LogCategory.MAIN, '配置服务初始化成功')
 
     LicenseService.getInstance().initializeGraceTimestamps()
     LicenseService.getInstance().startTimeMonitor()
@@ -617,7 +616,7 @@ export async function initializeMinimalServices(options?: {
       logger.error(LogCategory.SYSTEM, '网络拦截服务初始化失败:', err)
     })
 
-    logger.info(LogCategory.MAIN, '配置阶段最小服务初始化完成')
+    logger.debug(LogCategory.MAIN, '配置阶段最小服务初始化完成')
   } catch (error) {
     logger.error(LogCategory.MAIN, '最小服务初始化失败:', error)
     try {
@@ -641,35 +640,35 @@ export async function initializeFullServices(): Promise<void> {
   setInitializationPhaseStarted(true)
 
   try {
-    logger.info(LogCategory.MAIN, '进入初始化阶段，开始完整服务初始化...')
-    logger.info(LogCategory.MAIN, '正在初始化统一AI服务...')
+    logger.debug(LogCategory.MAIN, '进入初始化阶段，开始完整服务初始化...')
+    logger.debug(LogCategory.MAIN, '正在初始化统一AI服务...')
 
     const fullInitMode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
 
     if (fullInitMode === 'cloud') {
-      logger.info(LogCategory.MAIN, '当前为云端模式，跳过本地 AI 引擎初始化')
+      logger.debug(LogCategory.MAIN, '当前为云端模式，跳过本地 AI 引擎初始化')
     } else if (fullInitMode === 'disabled') {
-      logger.info(LogCategory.MAIN, '当前为禁用模式，跳过本地 AI 引擎初始化')
+      logger.debug(LogCategory.MAIN, '当前为禁用模式，跳过本地 AI 引擎初始化')
     } else {
-      logger.info(LogCategory.MAIN, '本地模式：启动阶段自适应拉起 Tier 2 引擎模型推理服务')
+      logger.debug(LogCategory.MAIN, '本地模式：启动阶段自适应拉起 Tier 2 引擎模型推理服务')
       // 启动阶段在初始化 AI 服务前，确保外部 Tier 2 引擎与模型推理服务就绪（避免 waitForModelReady 超时）
       if (!shouldSkipAIServiceInTest()) {
         try {
           const { engineBridgeService } = await import('../runtime-services/engine-bridge')
           const targetMode = analysisQueueService.determineIntentMode()
           if (!targetMode) {
-            logger.info(
+            logger.debug(
               LogCategory.MAIN,
               '[EngineBridge] 启动阶段判定当前无需拉起引擎模型（分析模式为标准分析且无高维修正需求）'
             )
           } else {
-            logger.info(
+            logger.debug(
               LogCategory.MAIN,
               `[EngineBridge] 启动阶段自适应拉起 Tier 2 引擎模型，目标意图: ${targetMode}`
             )
             const res = await engineBridgeService.ensureMode(targetMode, { force: true })
             if (res.ok) {
-              logger.info(
+              logger.debug(
                 LogCategory.MAIN,
                 `[EngineBridge] Tier 2 引擎模型推理服务已就绪 (${targetMode})`
               )
@@ -762,7 +761,7 @@ export async function initializeFullServices(): Promise<void> {
       })
 
       if (service.listenerCount('error') <= 1) {
-        logger.info(
+        logger.debug(
           LogCategory.MAIN,
           `正在注册 AI 服务全局错误监听器 (当前监听器数: ${service.listenerCount('error')})`
         )
@@ -940,16 +939,16 @@ export async function initializeFullServices(): Promise<void> {
         if (!globalLlamaIndexService.isInitialized()) {
           // 单元/集成测试环境下跳过 AI 服务初始化（使用 mock 数据），E2E 端到端测试不跳过真实 AI 初始化
           if (shouldSkipAIServiceInTest()) {
-            logger.info(LogCategory.MAIN, '[Test] 集成测试环境跳过 AI 服务初始化')
+            logger.debug(LogCategory.MAIN, '[Test] 集成测试环境跳过 AI 服务初始化')
           } else {
             await globalLlamaIndexService.initialize()
           }
         }
-        logger.info(LogCategory.MAIN, '统一AI服务初始化成功')
+        logger.debug(LogCategory.MAIN, '统一AI服务初始化成功')
 
         if (databaseService.db) {
           setDirectoryContextService(new DirectoryContextService(globalLlamaIndexService))
-          logger.info(LogCategory.MAIN, '目录上下文服务已初始化 (AI 已就绪)')
+          logger.debug(LogCategory.MAIN, '目录上下文服务已初始化 (AI 已就绪)')
         }
       } catch (error) {
         logger.error(LogCategory.MAIN, '统一AI服务初始化失败，等待用户手动重试:', error)
@@ -1024,7 +1023,7 @@ export async function initializeFullServices(): Promise<void> {
       logger.error(LogCategory.MAIN, '[OmniService] 原生微服务启动失败:', err)
     })
 
-    logger.info(LogCategory.MAIN, '正在初始化核心引擎...')
+    logger.debug(LogCategory.MAIN, '正在初始化核心引擎...')
     try {
       const adapters = await createCoreEngineAdapters()
       const resourcesPath = ResourceLocator.getBaseResourceDir()
@@ -1087,18 +1086,18 @@ export async function initializeFullServices(): Promise<void> {
       logger.error(LogCategory.MAIN, '核心引擎初始化失败:', error)
     }
 
-    logger.info(LogCategory.MAIN, '正在初始化文件监听服务...')
+    logger.debug(LogCategory.MAIN, '正在初始化文件监听服务...')
     try {
       await fileWatcherService.initialize()
-      logger.info(LogCategory.MAIN, '文件监听服务初始化成功')
+      logger.debug(LogCategory.MAIN, '文件监听服务初始化成功')
     } catch (error) {
       logger.error(LogCategory.MAIN, '文件监听服务初始化失败:', error)
     }
 
-    logger.info(LogCategory.MAIN, '正在初始化分析队列服务...')
+    logger.debug(LogCategory.MAIN, '正在初始化分析队列服务...')
     try {
       await analysisQueueService.initialize()
-      logger.info(LogCategory.MAIN, '分析队列服务初始化成功')
+      logger.debug(LogCategory.MAIN, '分析队列服务初始化成功')
     } catch (error) {
       logger.error(LogCategory.MAIN, '[analysis-queue] 分析队列服务初始化失败:', error)
     }
@@ -1166,13 +1165,13 @@ export async function initializeFullServices(): Promise<void> {
     }
 
     logger.info(LogCategory.MAIN, '初始化阶段完成，所有服务已初始化')
-    logger.info(LogCategory.MAIN, '开始同步云端配置...')
+    logger.debug(LogCategory.MAIN, '开始同步云端配置...')
 
     // 挂载自动更新服务 (支持双轨寻路与探针快速故障转移)
     try {
       const { autoUpdateService } = await import('../runtime-services/system/auto-update-service')
       autoUpdateService.initialize()
-      logger.info(LogCategory.MAIN, '[AutoUpdate] 自动更新服务初始化成功')
+      logger.debug(LogCategory.MAIN, '[AutoUpdate] 自动更新服务初始化成功')
     } catch (updateErr: any) {
       logger.warn(LogCategory.MAIN, '[AutoUpdate] 自动更新服务初始化失败:', updateErr.message)
     }
