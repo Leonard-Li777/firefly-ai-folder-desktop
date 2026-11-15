@@ -586,7 +586,8 @@ export function getInitialPlugins(): PluginModuleItem[] {
       backend_type: 'omni_onnx',
       author_code: 'official',
       author_name: null,
-      availability: 'approved',
+      // moss-tts 插件暂以 draft 状态发布：插件中心（scope=market，非开发者模式）不展示
+      availability: 'draft',
       ...buildSeedCatalogFields('tts_moss_onnx'),
       install_state: 'not_installed',
       contributes: {

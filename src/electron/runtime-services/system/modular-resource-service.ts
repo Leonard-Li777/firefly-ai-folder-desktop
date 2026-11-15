@@ -676,6 +676,8 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
   {
     id: BUILTIN_MODULE_CATALOG_META.tts_moss_onnx.id,
     name: '个性化声音克隆与朗读',
+    // moss-tts 插件暂以 draft 状态发布：插件中心（scope=market，非开发者模式）不展示
+    availability: 'draft',
     description:
       '【支持克隆专属声音】内置声音提取器，上传一段录音即可克隆专属声音朗读文章。支持 50+ 款精选音色与自定义克隆。',
     icon: 'Volume2',
