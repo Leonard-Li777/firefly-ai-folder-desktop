@@ -1579,6 +1579,11 @@ const electronAPI = {
       voiceId: string
       speed: number
       resumeCharStart?: number
+      targetCachePath?: string
+      filePath?: string
+      fileFingerprint?: string
+      fieldName?: string
+      displayName?: string
     }): Promise<{
       ok: boolean
       sessionId?: string

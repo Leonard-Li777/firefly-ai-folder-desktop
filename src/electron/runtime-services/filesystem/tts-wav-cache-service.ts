@@ -68,6 +68,10 @@ export interface TTSWavMetadata {
   fieldName?: string
   /** 全文分句时间戳索引表（供合并后整音频 0 误差秒切任意分句） */
   chunks?: TTSChunkCue[]
+  /** 断点续存：当前已合成完成的字符截断位置 */
+  doneCharEnd?: number
+  /** 累计 PCM 采样点数量 */
+  totalSamples?: number
 }
 
 export interface SaveChunkParams {
@@ -1176,3 +1180,237 @@ export class TTSWavCacheService {
 }
 
 export const ttsWavCacheService = new TTSWavCacheService()
+
+/**
+ * 流式 WAV 录制与实时落盘参数
+ */
+export interface StreamWavRecorderOptions {
+  wavPath: string
+  voiceId: string | number
+  displayName?: string
+  speed: number
+  fileFingerprint?: string
+  fieldName?: string
+  textLength: number
+  resumeCharStart?: number
+}
+
+/**
+ * 流式 WAV 实时落盘与断点续存记录器
+ * 核心特性：
+ * 1. 24000Hz 16-bit 单声道标准 WAV 实时流式追加
+ * 2. 每次分块写入实时更新头部 RIFF/data 大小，支持随时在系统资源管理器中定位与外部播放器试听
+ * 3. 严格排队串行写入，杜绝高频 IPC 写入竞态错位
+ * 4. 正常收敛或中途终止均写入自包含 'meta' chunk，保留断点进度 (doneCharEnd) 供二次无缝断点续录续播
+ */
+export class StreamWavRecorder {
+  private fileHandle: fsPromises.FileHandle | null = null
+  private totalPcmBytes = 0
+  private lastCharEnd = 0
+  private isFinalized = false
+  private writeQueue: Promise<void> = Promise.resolve()
+
+  constructor(private options: StreamWavRecorderOptions) {
+    this.lastCharEnd = options.resumeCharStart || 0
+  }
+
+  public getWavPath(): string {
+    return this.options.wavPath
+  }
+
+  public async init(): Promise<void> {
+    try {
+      const parentDir = path.dirname(this.options.wavPath)
+      if (!fs.existsSync(parentDir)) {
+        await fsPromises.mkdir(parentDir, { recursive: true })
+      }
+
+      const isResuming =
+        Boolean(this.options.resumeCharStart && this.options.resumeCharStart > 0) &&
+        fs.existsSync(this.options.wavPath)
+
+      if (isResuming) {
+        // 断点续录：读取已有文件的 data chunk 长度并定位
+        const stats = await fsPromises.stat(this.options.wavPath)
+        if (stats.size >= 44) {
+          const handle = await fsPromises.open(this.options.wavPath, 'r+')
+          const headBuf = Buffer.alloc(44)
+          await handle.read(headBuf, 0, 44, 0)
+
+          if (
+            headBuf.toString('ascii', 0, 4) === 'RIFF' &&
+            headBuf.toString('ascii', 8, 12) === 'WAVE'
+          ) {
+            // 读取现有 data chunk 大小
+            const existingDataBytes = headBuf.readUInt32LE(40)
+            const expectedDataEnd = 44 + existingDataBytes
+
+            // 若文件存在旧 meta chunk 或多余数据，截断至纯 PCM 末尾
+            if (stats.size > expectedDataEnd) {
+              await handle.truncate(expectedDataEnd)
+            }
+
+            this.totalPcmBytes = existingDataBytes
+            this.fileHandle = handle
+            logger.info(
+              LogCategory.FILE_PROCESSOR,
+              `[StreamWavRecorder] 成功接续断点录制: ${this.options.wavPath}, 已有 PCM=${this.totalPcmBytes} 字节 (${(this.totalPcmBytes / 48000).toFixed(2)}s), 起始字符=${this.options.resumeCharStart}`
+            )
+            return
+          } else {
+            await handle.close()
+          }
+        }
+      }
+
+      // 全新录制：写入 44 字节标准 WAV 头部 (24000Hz, 16bit, 单声道 PCM)
+      const header = Buffer.alloc(44)
+      header.write('RIFF', 0)
+      header.writeUInt32LE(36, 4) // 初始 riffSize = 36
+      header.write('WAVE', 8)
+      header.write('fmt ', 12)
+      header.writeUInt32LE(16, 16) // Subchunk1Size = 16
+      header.writeUInt16LE(1, 20) // AudioFormat = 1 (PCM)
+      header.writeUInt16LE(1, 22) // NumChannels = 1 (单声道)
+      header.writeUInt32LE(24000, 24) // SampleRate = 24000
+      header.writeUInt32LE(48000, 28) // ByteRate = 24000 * 1 * 2 = 48000
+      header.writeUInt16LE(2, 32) // BlockAlign = 1 * 2 = 2
+      header.writeUInt16LE(16, 34) // BitsPerSample = 16
+      header.write('data', 36)
+      header.writeUInt32LE(0, 40) // 初始 dataSize = 0
+
+      // 打开并创建/覆写文件
+      const handle = await fsPromises.open(this.options.wavPath, 'w+')
+      await handle.write(header, 0, 44, 0)
+      this.fileHandle = handle
+      this.totalPcmBytes = 0
+      logger.info(
+        LogCategory.FILE_PROCESSOR,
+        `[StreamWavRecorder] 成功初始化流式 WAV 文件: ${this.options.wavPath}`
+      )
+    } catch (err) {
+      logger.error(LogCategory.FILE_PROCESSOR, `[StreamWavRecorder] 初始化 WAV 录制失败:`, err)
+      if (this.fileHandle) {
+        await this.fileHandle.close().catch(() => {})
+        this.fileHandle = null
+      }
+    }
+  }
+
+  /**
+   * 追加写入音频分块 PCM
+   */
+  public appendChunk(pcmData: ArrayBuffer | Uint8Array, charEnd: number): Promise<void> {
+    if (this.isFinalized) return Promise.resolve()
+
+    this.writeQueue = this.writeQueue.then(async () => {
+      if (!this.fileHandle || this.isFinalized) return
+
+      try {
+        const buf = Buffer.isBuffer(pcmData)
+          ? pcmData
+          : ArrayBuffer.isView(pcmData)
+            ? Buffer.from(pcmData.buffer, pcmData.byteOffset, pcmData.byteLength)
+            : Buffer.from(pcmData)
+
+        if (buf.length === 0) return
+
+        // 追加写入 PCM 数据到文件末尾 (偏移位置: 44 + this.totalPcmBytes)
+        const writePos = 44 + this.totalPcmBytes
+        await this.fileHandle.write(buf, 0, buf.length, writePos)
+        this.totalPcmBytes += buf.length
+        this.lastCharEnd = Math.max(this.lastCharEnd, charEnd)
+
+        // 实时更新头部 44 字节中的 riffSize 与 dataSize，确保文件随时处于合法合规 WAV 状态
+        const riffSizeBuf = Buffer.alloc(4)
+        riffSizeBuf.writeUInt32LE(36 + this.totalPcmBytes, 0)
+        await this.fileHandle.write(riffSizeBuf, 0, 4, 4)
+
+        const dataSizeBuf = Buffer.alloc(4)
+        dataSizeBuf.writeUInt32LE(this.totalPcmBytes, 0)
+        await this.fileHandle.write(dataSizeBuf, 0, 4, 40)
+      } catch (err) {
+        logger.warn(LogCategory.FILE_PROCESSOR, `[StreamWavRecorder] 追加 PCM 块异常:`, err)
+      }
+    })
+
+    return this.writeQueue
+  }
+
+  /**
+   * 会话完成或中断时，收敛并写入自包含 meta chunk 与闭合句柄
+   */
+  public async finalize(completed: boolean): Promise<void> {
+    if (this.isFinalized) return
+    this.isFinalized = true
+
+    await this.writeQueue.catch(() => {})
+
+    if (!this.fileHandle) return
+
+    try {
+      // 1. PCM 数据 2 字节对齐
+      const pcmPadding = this.totalPcmBytes % 2 !== 0 ? 1 : 0
+      let curOffset = 44 + this.totalPcmBytes
+      if (pcmPadding) {
+        await this.fileHandle.write(Buffer.alloc(1, 0), 0, 1, curOffset)
+        curOffset += 1
+      }
+
+      // 2. 构造并写入 meta Chunk
+      const finalDoneCharEnd = completed ? this.options.textLength : this.lastCharEnd
+      const metaObj: TTSWavMetadata = {
+        completed,
+        total: 1,
+        done: completed ? 1 : 0,
+        speed: this.options.speed,
+        voiceId: String(this.options.voiceId),
+        displayName: this.options.displayName,
+        fingerprint: this.options.fileFingerprint,
+        fieldName: this.options.fieldName,
+        doneCharEnd: finalDoneCharEnd,
+        totalSamples: Math.floor(this.totalPcmBytes / 2)
+      }
+
+      const metaJsonBuf = Buffer.from(JSON.stringify(metaObj), 'utf-8')
+      const metaChunkSize = metaJsonBuf.length
+      const metaPadding = metaChunkSize % 2 !== 0 ? 1 : 0
+
+      const metaHeader = Buffer.alloc(8)
+      metaHeader.write('meta', 0)
+      metaHeader.writeUInt32LE(metaChunkSize, 4)
+
+      await this.fileHandle.write(metaHeader, 0, 8, curOffset)
+      curOffset += 8
+      await this.fileHandle.write(metaJsonBuf, 0, metaChunkSize, curOffset)
+      curOffset += metaChunkSize
+
+      if (metaPadding) {
+        await this.fileHandle.write(Buffer.alloc(1, 0), 0, 1, curOffset)
+        curOffset += 1
+      }
+
+      // 3. 更新头部 RIFF 总大小: curOffset - 8
+      const finalRiffSizeBuf = Buffer.alloc(4)
+      finalRiffSizeBuf.writeUInt32LE(curOffset - 8, 0)
+      await this.fileHandle.write(finalRiffSizeBuf, 0, 4, 4)
+
+      // 4. 更新 data chunk 大小
+      const finalDataSizeBuf = Buffer.alloc(4)
+      finalDataSizeBuf.writeUInt32LE(this.totalPcmBytes, 0)
+      await this.fileHandle.write(finalDataSizeBuf, 0, 4, 40)
+
+      logger.info(
+        LogCategory.FILE_PROCESSOR,
+        `[StreamWavRecorder] 成功收敛落盘流式 WAV 文件: ${path.basename(this.options.wavPath)}, completed=${completed}, 字符进度=${finalDoneCharEnd}/${this.options.textLength}, PCM 大小=${this.totalPcmBytes} 字节`
+      )
+    } catch (err) {
+      logger.warn(LogCategory.FILE_PROCESSOR, `[StreamWavRecorder] finalize 异常:`, err)
+    } finally {
+      try {
+        await this.fileHandle.close()
+      } catch {}
+      this.fileHandle = null
+    }
+  }
+}

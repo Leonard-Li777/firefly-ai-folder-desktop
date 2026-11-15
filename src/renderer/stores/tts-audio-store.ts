@@ -1065,6 +1065,12 @@ async function launchStreamingSession(params: {
   resumeCharStart?: number
   initialSentenceIndex?: number
   chunks: string[]
+  targetCachePath?: string
+  filePath?: string
+  fileFingerprint?: string
+  fieldName?: string
+  displayName?: string
+  prefillWavBuffer?: ArrayBuffer | null
 }): Promise<boolean> {
   if (typeof window.electronAPI?.tts?.startStream !== 'function') return false
   try {
@@ -1076,14 +1082,19 @@ async function launchStreamingSession(params: {
     activeStreamCleanups = []
 
     console.info(
-      `[TTS] 发起纯流式会话: voiceId=${params.voiceId}, speed=${params.speed}, resumeCharStart=${params.resumeCharStart || 0}`
+      `[TTS] 发起纯流式会话: voiceId=${params.voiceId}, speed=${params.speed}, resumeCharStart=${params.resumeCharStart || 0}, targetCachePath=${params.targetCachePath || 'auto'}`
     )
 
     const streamAck = await window.electronAPI.tts.startStream({
       text: params.text,
       voiceId: String(params.voiceId),
       speed: params.speed,
-      resumeCharStart: params.resumeCharStart
+      resumeCharStart: params.resumeCharStart,
+      targetCachePath: params.targetCachePath,
+      filePath: params.filePath,
+      fileFingerprint: params.fileFingerprint,
+      fieldName: params.fieldName,
+      displayName: params.displayName
     })
 
     if (!streamAck.ok || !streamAck.sessionId) {
@@ -1125,6 +1136,30 @@ async function launchStreamingSession(params: {
 
     currentStreamingPlayer = player
     await player.start(streamAck.sessionId)
+
+    // 断点无缝续播：若存在本地未完成前序音频，将纯 24000Hz PCM 剥离头部后作为先头帧喂入播放器，实现零秒起播发声
+    if (params.prefillWavBuffer && params.resumeCharStart && params.resumeCharStart > 0) {
+      const prefillBuf = params.prefillWavBuffer
+      if (prefillBuf.byteLength > 44) {
+        const rawPcm = prefillBuf.slice(44)
+        const sampleCount = Math.floor(rawPcm.byteLength / 2)
+        console.info(
+          `[TTS] 注入断点前序已合成音频: ${(sampleCount / 24000).toFixed(2)}s, 字符=[0..${params.resumeCharStart}]`
+        )
+        player.pushChunk({
+          sessionId: streamAck.sessionId,
+          seq: 0,
+          charStart: 0,
+          charEnd: params.resumeCharStart,
+          startSample: 0,
+          sampleCount,
+          pcm: rawPcm,
+          isFirst: true,
+          isLast: false
+        })
+        useTTSAudioStore.setState({ status: 'playing' })
+      }
+    }
 
     // 注册下行流数据与结束监听
     const unlistenChunk = window.electronAPI.tts.onStreamChunkData((payload: any) => {
@@ -1575,16 +1610,22 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     // 启动进度轮询监测
     ensureProgressMonitor()
 
-    // 4. 检查本地磁盘缓存：若已全部完成，直接读取完整本地 WAV 秒播
+    // 4. 检查本地磁盘缓存：若已全部完成，直接读取完整本地 WAV 秒播；若未完成，提取断点支持断点续录续播
+    let resumeCharStart = 0
+    let prefillWavBuffer: ArrayBuffer | null = null
+
     if (targetCachePath && window.electronAPI?.tts?.readWavMetadata) {
       try {
         const metadata = await window.electronAPI.tts.readWavMetadata(targetCachePath)
-        // 语速严格一致 + 分句总数一致才命中，确保不同分句粒度的缓存不会被复用而导致"重播第一段"的幻影错位
+        const isSpeedMatched =
+          metadata?.speed === undefined || Math.abs(metadata.speed - chosenSpeed) < 0.01
+
+        // (1) 完整秒播：已标记 completed 且语速匹配（分句数一致或流式单文件标记），直接读取完整本地 WAV 秒播
         if (
           metadata &&
           metadata.completed &&
-          (metadata.speed === undefined || Math.abs(metadata.speed - chosenSpeed) < 0.01) &&
-          (metadata.total === undefined || metadata.total === chunks.length)
+          isSpeedMatched &&
+          (metadata.total === undefined || metadata.total === chunks.length || metadata.total === 1)
         ) {
           const fullWavBuffer = await window.electronAPI.tts.readWavFile(targetCachePath)
           if (fullWavBuffer && fullWavBuffer.byteLength > 44) {
@@ -1620,8 +1661,31 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
             return
           }
         }
+
+        // (2) 断点续录与断点续播：未完成合成，但本地已存在部分合法音频且记录了断点进度
+        if (
+          metadata &&
+          !metadata.completed &&
+          isSpeedMatched &&
+          typeof metadata.doneCharEnd === 'number' &&
+          metadata.doneCharEnd > 0 &&
+          metadata.doneCharEnd < text.length
+        ) {
+          resumeCharStart = metadata.doneCharEnd
+          console.info(
+            `[TTS] 命中本地未完成音频断点: doneCharEnd=${resumeCharStart}/${text.length}, 启动断点继续流式合成与无缝续播`
+          )
+          try {
+            const partialBuffer = await window.electronAPI.tts.readWavFile(targetCachePath)
+            if (partialBuffer && partialBuffer.byteLength > 44) {
+              prefillWavBuffer = partialBuffer
+            }
+          } catch (pErr) {
+            console.warn('[TTS] 读取断点前置音频异常:', pErr)
+          }
+        }
       } catch (cacheErr) {
-        console.warn('[TTS] 读取全量本地缓存异常，回退流式合成:', cacheErr)
+        console.warn('[TTS] 读取本地缓存异常，回退流式合成:', cacheErr)
       }
     }
 
@@ -1643,8 +1707,15 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         text,
         voiceId: String(chosenVoiceId),
         speed: chosenSpeed,
+        resumeCharStart,
         initialSentenceIndex: 0,
-        chunks
+        chunks,
+        targetCachePath: targetCachePath || undefined,
+        filePath: options?.filePath,
+        fileFingerprint: targetFingerprint,
+        fieldName: targetFieldName,
+        displayName: chosenDisplayName,
+        prefillWavBuffer
       })
       if (launched) {
         return
@@ -2051,7 +2122,10 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         speed: state.speed,
         resumeCharStart,
         initialSentenceIndex: clampedIndex,
-        chunks: currentCleanedChunks
+        chunks: currentCleanedChunks,
+        targetCachePath: state.currentCachePath || undefined,
+        filePath: state.currentFilePath || undefined,
+        displayName: state.currentTitle || undefined
       })
 
       if (ok) {

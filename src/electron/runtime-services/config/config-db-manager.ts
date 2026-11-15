@@ -174,8 +174,14 @@ export class ConfigDbManager {
         if (batch) rows.push(...batch)
       }
     } else {
-      // 首建全集：source=dimension,tag 受控全集（与语义包 file_tags.source 治理一致）
-      rows = (await omniClient.getTaxonomyAliases(language, { source: 'dimension,tag' })) ?? []
+      // 首建全集：全量镜像语义包受控词（omw.* / hownet.* / builtin.*）。
+      //
+      // 为何不传 source：镜像表的本职是承载 findTagCodeByLemma 的受控反查需求面，
+      // 必须覆盖 pack 全部受控词（含 omw/hownet 词库开放概念，如「妈妈→omw.10332385.n」）。
+      // 原实现传 source=dimension,tag 只镜像受控分类树（~1.1k 行），把 13 万词库词整体排除，
+      // 导致分类树外的词库词反查必然落空 → 派生 _ext → 被 R3.3 写回镜像表污染（恶性循环）。
+      // Omni 端点不传 source/codes 时返回 pack tag_aliases 全量（该表本就只含受控词、无 _ext）。
+      rows = (await omniClient.getTaxonomyAliases(language)) ?? []
     }
 
     if (rows.length === 0) {

@@ -20,7 +20,8 @@ import {
 } from '../../services/omni-client'
 import {
   ttsWavCacheService,
-  TTSWavMetadata
+  TTSWavMetadata,
+  StreamWavRecorder
 } from '../../runtime-services/filesystem/tts-wav-cache-service'
 import { voiceArchiveService } from '../../runtime-services/audio/voice-archive-service'
 import { modularResourceService } from '../../runtime-services/system/modular-resource-service'
@@ -488,6 +489,7 @@ export function registerTTSIPCHandlers(): void {
     lastHeartbeatTime: number
     pendingFramesCount: number
     watchdogTimer: NodeJS.Timeout
+    recorder?: StreamWavRecorder
   }
 
   const activeStreamSessions = new Map<string, ActiveStreamSession>()
@@ -502,6 +504,11 @@ export function registerTTSIPCHandlers(): void {
         voiceId: string
         speed: number
         resumeCharStart?: number
+        targetCachePath?: string
+        filePath?: string
+        fileFingerprint?: string
+        fieldName?: string
+        displayName?: string
       }
     ): Promise<{
       ok: boolean
@@ -514,6 +521,9 @@ export function registerTTSIPCHandlers(): void {
         logger.info(LogCategory.MAIN, `[TTS Stream IPC] 抢占中止旧流式会话: ${oldId}`)
         oldSession.abort()
         clearInterval(oldSession.watchdogTimer)
+        if (oldSession.recorder) {
+          oldSession.recorder.finalize(false).catch(() => {})
+        }
         activeStreamSessions.delete(oldId)
       }
 
@@ -529,6 +539,39 @@ export function registerTTSIPCHandlers(): void {
         LogCategory.MAIN,
         `[TTS Stream IPC] 收到流式会话请求: voiceId=${req.voiceId}, speed=${req.speed}, 文本长度=${req.text.length}, 起始字符=${req.resumeCharStart || 0}`
       )
+
+      // 启动并初始化流式 WAV 落盘记录器
+      let recorder: StreamWavRecorder | undefined
+      try {
+        let cachePath = req.targetCachePath
+        if (!cachePath) {
+          cachePath = (await ttsWavCacheService.getCacheWavPath({
+            filePath: req.filePath,
+            fieldName: req.fieldName,
+            fileFingerprint: req.fileFingerprint,
+            displayName: req.displayName,
+            text: req.text,
+            voiceId: req.voiceId,
+            speed: req.speed
+          })) || undefined
+        }
+
+        if (cachePath) {
+          recorder = new StreamWavRecorder({
+            wavPath: cachePath,
+            voiceId: req.voiceId,
+            displayName: req.displayName,
+            speed: req.speed,
+            fileFingerprint: req.fileFingerprint,
+            fieldName: req.fieldName,
+            textLength: req.text.length,
+            resumeCharStart: req.resumeCharStart
+          })
+          await recorder.init()
+        }
+      } catch (recErr) {
+        logger.warn(LogCategory.MAIN, '[TTS Stream IPC] 初始化 StreamWavRecorder 异常:', recErr)
+      }
 
       try {
         const streamCtrl = await omniClient.startTTSStream(
@@ -556,6 +599,12 @@ export function registerTTSIPCHandlers(): void {
                     `[TTS Stream IPC] 收到音频块 seq=${payload.startSample}: 采样=${payload.sampleCount} (${chunkSec}s, 累计=${totalSec}s), 字符=[${payload.charStart}..${payload.charEnd}]`
                   )
                 }
+
+                // 实时流式写入目标 WAV 文件
+                if (session.recorder) {
+                  session.recorder.appendChunk(payload.pcm, payload.charEnd).catch(() => {})
+                }
+
                 session.sender.send('tts:stream-chunk-data', payload)
               }
             },
@@ -567,6 +616,9 @@ export function registerTTSIPCHandlers(): void {
                   `[TTS Stream IPC] 流式会话完成: sessionId=${streamCtrl.sessionId}, 总帧数=${meta.totalFrames}, 总采样=${meta.totalSamples} (${(meta.totalSamples / 24000).toFixed(2)}s), 耗时=${meta.elapsedMs}ms`
                 )
                 clearInterval(session.watchdogTimer)
+                if (session.recorder) {
+                  session.recorder.finalize(true).catch(() => {})
+                }
                 activeStreamSessions.delete(streamCtrl.sessionId)
                 if (!session.sender.isDestroyed()) {
                   session.sender.send('tts:stream-ended', {
@@ -581,6 +633,9 @@ export function registerTTSIPCHandlers(): void {
               const session = activeStreamSessions.get(streamCtrl.sessionId)
               if (session) {
                 clearInterval(session.watchdogTimer)
+                if (session.recorder) {
+                  session.recorder.finalize(false).catch(() => {})
+                }
                 activeStreamSessions.delete(streamCtrl.sessionId)
                 if (!session.sender.isDestroyed()) {
                   session.sender.send('tts:stream-ended', {
@@ -609,6 +664,9 @@ export function registerTTSIPCHandlers(): void {
             )
             session.abort()
             clearInterval(watchdogTimer)
+            if (session.recorder) {
+              session.recorder.finalize(false).catch(() => {})
+            }
             activeStreamSessions.delete(streamCtrl.sessionId)
             if (!session.sender.isDestroyed()) {
               session.sender.send('tts:stream-ended', {
@@ -628,7 +686,8 @@ export function registerTTSIPCHandlers(): void {
           abort: streamCtrl.abort,
           lastHeartbeatTime: Date.now(),
           pendingFramesCount: 0,
-          watchdogTimer
+          watchdogTimer,
+          recorder
         })
 
         return {
@@ -637,6 +696,9 @@ export function registerTTSIPCHandlers(): void {
           sampleRate: 24000
         }
       } catch (err: unknown) {
+        if (recorder) {
+          recorder.finalize(false).catch(() => {})
+        }
         const msg = err instanceof Error ? err.message : String(err)
         if (msg === 'ENGINE_BUSY_STREAMING') {
           event.sender.send('tts:busy-rejected', {
@@ -685,6 +747,9 @@ export function registerTTSIPCHandlers(): void {
   ipcMain.on('tts:stream-abort', (_event, req: { sessionId: string }) => {
     const session = activeStreamSessions.get(req.sessionId)
     if (session) {
+      if (session.recorder) {
+        session.recorder.finalize(false).catch(() => {})
+      }
       session.abort()
       clearInterval(session.watchdogTimer)
       activeStreamSessions.delete(req.sessionId)
