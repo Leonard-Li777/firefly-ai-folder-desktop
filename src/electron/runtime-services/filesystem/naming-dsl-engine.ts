@@ -89,11 +89,34 @@ function pickNamingMetadata(
 
   // 1. 分辨率 / 宽高相关
   const resKeys = [
-    'ImageWidth', 'imageWidth', 'image_width', 'SourceImageWidth', 'ExifImageWidth',
-    'VideoWidth', 'videoWidth', 'video_width', 'width', 'Width', '宽度',
-    'ImageHeight', 'imageHeight', 'image_height', 'SourceImageHeight', 'ExifImageHeight',
-    'VideoHeight', 'videoHeight', 'video_height', 'height', 'Height', '高度',
-    'ImageSize', 'imageSize', 'image_size', 'Resolution', 'resolution', '分辨率'
+    'ImageWidth',
+    'imageWidth',
+    'image_width',
+    'SourceImageWidth',
+    'ExifImageWidth',
+    'VideoWidth',
+    'videoWidth',
+    'video_width',
+    'width',
+    'Width',
+    '宽度',
+    'ImageHeight',
+    'imageHeight',
+    'image_height',
+    'SourceImageHeight',
+    'ExifImageHeight',
+    'VideoHeight',
+    'videoHeight',
+    'video_height',
+    'height',
+    'Height',
+    '高度',
+    'ImageSize',
+    'imageSize',
+    'image_size',
+    'Resolution',
+    'resolution',
+    '分辨率'
   ]
   for (const k of resKeys) {
     if (isValidValue(merged[k])) {
@@ -103,10 +126,26 @@ function pickNamingMetadata(
 
   // 2. 时长相关
   const durKeys = [
-    'Duration', 'duration', 'durationText', 'duration_seconds', 'durationSeconds',
-    'duration_ms', 'durationMs', 'Duration_ms', 'DurationMs', 'TrackDuration',
-    'track_duration', 'MediaDuration', 'media_duration', 'PlayTime', 'play_time',
-    'AudioDuration', 'VideoDuration', 'Length', 'length', '时长'
+    'Duration',
+    'duration',
+    'durationText',
+    'duration_seconds',
+    'durationSeconds',
+    'duration_ms',
+    'durationMs',
+    'Duration_ms',
+    'DurationMs',
+    'TrackDuration',
+    'track_duration',
+    'MediaDuration',
+    'media_duration',
+    'PlayTime',
+    'play_time',
+    'AudioDuration',
+    'VideoDuration',
+    'Length',
+    'length',
+    '时长'
   ]
   for (const k of durKeys) {
     if (isValidValue(merged[k])) {
@@ -116,9 +155,19 @@ function pickNamingMetadata(
 
   // 3. 页数相关
   const pageKeys = [
-    'PageCount', 'pageCount', 'Pages', 'pages', 'page_count', 'pages_count',
-    'NumberOfPages', 'number_of_pages', 'SlideCount', 'slide_count',
-    'SheetCount', 'sheet_count', '页数'
+    'PageCount',
+    'pageCount',
+    'Pages',
+    'pages',
+    'page_count',
+    'pages_count',
+    'NumberOfPages',
+    'number_of_pages',
+    'SlideCount',
+    'slide_count',
+    'SheetCount',
+    'sheet_count',
+    '页数'
   ]
   for (const k of pageKeys) {
     if (isValidValue(merged[k])) {
@@ -128,11 +177,32 @@ function pickNamingMetadata(
 
   // 4. 编码格式相关
   const codecKeys = [
-    'CompressorID', 'CompressorName', 'VideoCodec', 'videoCodec', 'video_codec',
-    'AudioCodec', 'audioCodec', 'audio_codec', 'AudioFormat', 'audio_format',
-    'CodecID', 'codecID', 'codec_id', 'Codec', 'codec', 'FourCC', 'fourcc',
-    'VideoFormat', 'video_format', 'Compressor', 'Format', 'format',
-    'Compression', 'compression', '编码', '编码格式'
+    'CompressorID',
+    'CompressorName',
+    'VideoCodec',
+    'videoCodec',
+    'video_codec',
+    'AudioCodec',
+    'audioCodec',
+    'audio_codec',
+    'AudioFormat',
+    'audio_format',
+    'CodecID',
+    'codecID',
+    'codec_id',
+    'Codec',
+    'codec',
+    'FourCC',
+    'fourcc',
+    'VideoFormat',
+    'video_format',
+    'Compressor',
+    'Format',
+    'format',
+    'Compression',
+    'compression',
+    '编码',
+    '编码格式'
   ]
   for (const k of codecKeys) {
     if (isValidValue(merged[k])) {
@@ -142,9 +212,23 @@ function pickNamingMetadata(
 
   // 5. 常见标量（作者、修改/创建时间等）
   const commonKeys = [
-    'author', 'Author', '作者', 'artist', 'Artist', '创作者',
-    'title', 'Title', 'make', 'Make', 'model', 'Model',
-    'date_taken', 'shooting_time', 'create_date', 'creation_time', 'modify_date'
+    'author',
+    'Author',
+    '作者',
+    'artist',
+    'Artist',
+    '创作者',
+    'title',
+    'Title',
+    'make',
+    'Make',
+    'model',
+    'Model',
+    'date_taken',
+    'shooting_time',
+    'create_date',
+    'creation_time',
+    'modify_date'
   ]
   for (const k of commonKeys) {
     if (isValidValue(merged[k])) {
@@ -299,8 +383,10 @@ export class NamingDSLEngine {
     }
 
     const origExt = context.extension || path.extname(context.path).replace(/^\./, '')
-    const baseOrigName = context.name ? context.name.replace(new RegExp(`\\.${origExt}$`, 'i'), '') : ''
-    
+    const baseOrigName = context.name
+      ? context.name.replace(new RegExp(`\\.${origExt}$`, 'i'), '')
+      : ''
+
     let metaObj: Record<string, any> = {}
     if (context.metadata) {
       if (typeof context.metadata === 'string') {
@@ -360,7 +446,11 @@ export class NamingDSLEngine {
       addKey(cleanKey.toLowerCase())
 
       // 若原始键是受控概念（或权威 code），双向扩展规范名与 code，严禁使用 t()
-      if (cleanKey.startsWith('builtin.') || cleanKey.startsWith('omw.') || cleanKey.startsWith('hownet.')) {
+      if (
+        cleanKey.startsWith('builtin.') ||
+        cleanKey.startsWith('omw.') ||
+        cleanKey.startsWith('hownet.')
+      ) {
         const canonical = getCanonicalConceptName(cleanKey)
         if (canonical) {
           addKey(canonical)
@@ -392,11 +482,7 @@ export class NamingDSLEngine {
       for (const item of context.dimensionTags) {
         if (item && typeof item === 'object') {
           const val = item.tagName || item.tag || item.value || item.tagValue
-          const dims = [
-            item.dimensionName,
-            item.dimension,
-            item.dimensionCode
-          ].filter(Boolean)
+          const dims = [item.dimensionName, item.dimension, item.dimensionCode].filter(Boolean)
 
           for (const d of dims) {
             registerDimensionValue(d, val)
@@ -408,7 +494,8 @@ export class NamingDSLEngine {
     if (Array.isArray(context.tags)) {
       for (const tItem of context.tags) {
         if (tItem && typeof tItem === 'object') {
-          const tagVal = tItem.tagValue || (tItem as any).value || (tItem as any).tag || (tItem as any).tagName
+          const tagVal =
+            tItem.tagValue || (tItem as any).value || (tItem as any).tag || (tItem as any).tagName
           const dims = [
             tItem.dimensionName,
             (tItem as any).dimension,
@@ -529,7 +616,11 @@ export class NamingDSLEngine {
 
       // 2) 受控概念解析归一（中文名 -> code，或 code -> canonicalName）
       let code: string | undefined
-      if (dimKey.startsWith('builtin.') || dimKey.startsWith('omw.') || dimKey.startsWith('hownet.')) {
+      if (
+        dimKey.startsWith('builtin.') ||
+        dimKey.startsWith('omw.') ||
+        dimKey.startsWith('hownet.')
+      ) {
         code = dimKey
       } else if (isControlledConcept(dimKey)) {
         code = concept(dimKey as any)
@@ -611,10 +702,22 @@ export class NamingDSLEngine {
         if (!w || !h) {
           for (const [k, v] of Object.entries(metaObj)) {
             const lk = k.toLowerCase()
-            if (!w && (lk === 'imagewidth' || lk === 'width' || lk === 'videowidth' || lk === 'sourceimagewidth')) {
+            if (
+              !w &&
+              (lk === 'imagewidth' ||
+                lk === 'width' ||
+                lk === 'videowidth' ||
+                lk === 'sourceimagewidth')
+            ) {
               w = v
             }
-            if (!h && (lk === 'imageheight' || lk === 'height' || lk === 'videoheight' || lk === 'sourceimageheight')) {
+            if (
+              !h &&
+              (lk === 'imageheight' ||
+                lk === 'height' ||
+                lk === 'videoheight' ||
+                lk === 'sourceimageheight')
+            ) {
               h = v
             }
           }
@@ -892,8 +995,16 @@ export class NamingDSLEngine {
           }
 
           // 核心媒体编码名称标准化映射
-          if (upper === 'AVC1' || upper === 'H.264' || upper === 'H264' || upper === 'AVC') return 'H264'
-          if (upper === 'HEV1' || upper === 'HVC1' || upper === 'H.265' || upper === 'H265' || upper === 'HEVC') return 'H265'
+          if (upper === 'AVC1' || upper === 'H.264' || upper === 'H264' || upper === 'AVC')
+            return 'H264'
+          if (
+            upper === 'HEV1' ||
+            upper === 'HVC1' ||
+            upper === 'H.265' ||
+            upper === 'H265' ||
+            upper === 'HEVC'
+          )
+            return 'H265'
           if (upper.includes('PRORES') || upper.startsWith('AP')) return 'ProRes'
           if (upper === 'MP4A-40-2' || upper === 'MP4A' || upper === 'AAC') return 'AAC'
           if (upper === 'AV01' || upper === 'AV1') return 'AV1'
@@ -904,7 +1015,10 @@ export class NamingDSLEngine {
           if (upper === 'OPUS') return 'Opus'
           if (upper === 'VORBIS') return 'Vorbis'
 
-          return cStr.replace(/[\\/:*?"<>|]/g, '').trim().toUpperCase()
+          return cStr
+            .replace(/[\\/:*?"<>|]/g, '')
+            .trim()
+            .toUpperCase()
         }
       }
 
@@ -933,7 +1047,6 @@ export class NamingDSLEngine {
       metaObj['作者'] ||
       dimTagsMap['作者'] ||
       dimTagsMap[concept('作者')] ||
-      dimTagsMap['builtin.author'] ||
       dimTagsMap['Author'] ||
       dimTagsMap['创作者'] ||
       ''
@@ -1069,11 +1182,7 @@ export class NamingDSLEngine {
     ) {
       return 'date'
     }
-    if (
-      tStr.includes('TAG:') ||
-      tStr.includes('AUTHOR') ||
-      tStr.includes('LANG')
-    ) {
+    if (tStr.includes('TAG:') || tStr.includes('AUTHOR') || tStr.includes('LANG')) {
       return 'tag'
     }
     if (tStr.includes('META:')) {
@@ -1163,7 +1272,7 @@ export class NamingDSLEngine {
           fileMeta?: string
         }>
 
-        const rowMap = new Map<number, typeof rows[0]>()
+        const rowMap = new Map<number, (typeof rows)[0]>()
         for (const row of rows) {
           rowMap.set(row.id, row)
         }
@@ -1175,8 +1284,6 @@ export class NamingDSLEngine {
           const row = rowMap.get(f.id)
           if (!row) {
             setHydrationToCache(cacheKey, {
-
-  
               metadata: {}
             })
             continue
@@ -1213,7 +1320,6 @@ export class NamingDSLEngine {
           const mergedMeta = { ...(prevCached?.metadata || {}), ...pickedMeta }
 
           setHydrationToCache(cacheKey, {
-
             qualityScore: mergedQ,
             metadata: mergedMeta
           })
@@ -1510,9 +1616,15 @@ export class NamingDSLEngine {
       if (!db) return
 
       // 读取 workspace_files 表获取 file_fingerprint 与路径/名称及 is_analyzed
-      const wfRow = db.prepare(`
+      const wfRow = db
+        .prepare(
+          `
         SELECT file_fingerprint, name, path, is_analyzed FROM workspace_files WHERE id = ?
-      `).get(fileId) as { file_fingerprint: string; name: string; path: string; is_analyzed?: number } | undefined
+      `
+        )
+        .get(fileId) as
+        | { file_fingerprint: string; name: string; path: string; is_analyzed?: number }
+        | undefined
 
       if (!wfRow || !wfRow.file_fingerprint) return
 
@@ -1527,16 +1639,22 @@ export class NamingDSLEngine {
       // 批量更名并保存最终名称，属于「模板套用维度」的人工保存；
       // smart_name_source（核心名来源：'ai'/'machine'/NULL）与本路径无关，保持不动，
       // 因为批量更名只改变外层展示名，不重新生成核心名。
-      db.prepare(`
+      db.prepare(
+        `
         UPDATE files
         SET smart_name = ?, smart_name_template_source = 'user', modified_at = CURRENT_TIMESTAMP
         WHERE file_fingerprint = ?
-      `).run(newSmartName, wfRow.file_fingerprint)
+      `
+      ).run(newSmartName, wfRow.file_fingerprint)
 
       // 确保 raw_smart_name 存在且不带扩展名，落 files.raw_smart_name 列
-      const existingRow = db.prepare(`
+      const existingRow = db
+        .prepare(
+          `
         SELECT raw_smart_name FROM files WHERE file_fingerprint = ?
-      `).get(wfRow.file_fingerprint) as { raw_smart_name?: string } | undefined
+      `
+        )
+        .get(wfRow.file_fingerprint) as { raw_smart_name?: string } | undefined
 
       if (!existingRow?.raw_smart_name) {
         const fileExt = path.extname(wfRow.path || wfRow.name || '').replace(/^\./, '')
@@ -1547,16 +1665,25 @@ export class NamingDSLEngine {
         raw = raw.replace(/\.[a-zA-Z0-9]{1,10}$/i, '').trim()
         const rawSmartName =
           raw ||
-          path.basename(wfRow.name || wfRow.path || '', path.extname(wfRow.name || wfRow.path || ''))
-        db.prepare(`
+          path.basename(
+            wfRow.name || wfRow.path || '',
+            path.extname(wfRow.name || wfRow.path || '')
+          )
+        db.prepare(
+          `
           UPDATE files SET raw_smart_name = ? WHERE file_fingerprint = ?
-        `).run(rawSmartName, wfRow.file_fingerprint)
+        `
+        ).run(rawSmartName, wfRow.file_fingerprint)
       }
 
       // 记录本次生效的命名模板到 file_contents.meta
-      const contentRow = db.prepare(`
+      const contentRow = db
+        .prepare(
+          `
         SELECT meta FROM file_contents WHERE file_fingerprint = ?
-      `).get(wfRow.file_fingerprint) as { meta: string } | undefined
+      `
+        )
+        .get(wfRow.file_fingerprint) as { meta: string } | undefined
 
       let metaObj: Record<string, any> = {}
       try {
@@ -1569,11 +1696,13 @@ export class NamingDSLEngine {
 
       metaObj.naming_template = namingTemplate
 
-      db.prepare(`
+      db.prepare(
+        `
         INSERT INTO file_contents (file_fingerprint, meta)
         VALUES (?, ?)
         ON CONFLICT(file_fingerprint) DO UPDATE SET meta = excluded.meta
-      `).run(JSON.stringify(metaObj), wfRow.file_fingerprint)
+      `
+      ).run(JSON.stringify(metaObj), wfRow.file_fingerprint)
     } catch (err) {
       logger.warn(
         LogCategory.DATABASE_SERVICE,
