@@ -679,6 +679,72 @@ export function getInitialPlugins(): PluginModuleItem[] {
         text: t('配置要求极低 · 无额外负担')
       },
       icon: 'Archive'
+    },
+    {
+      id: 'face_recognition_tool',
+      name: t('人脸识别与相册人物聚类'),
+      version: '0.1.0',
+      category: 'perception',
+      capability_slot: 'tool',
+      slot_policy: 'multi_active',
+      author_code: 'official',
+      author_name: null,
+      availability: 'coming_soon',
+      delist_reason: null,
+      total_bytes: 0,
+      install_state: 'not_installed',
+      description: t(
+        '【自动认出照片里是谁】自动识别照片中的人脸，把同一个人的照片归到一起，按人物快速翻找相册。普通电脑即可运行。'
+      ),
+      hardware_requirement: {
+        level: 'minimal',
+        text: t('配置要求低 · 普通电脑流畅运行')
+      },
+      icon: 'ScanFace'
+    },
+    {
+      id: 'object_detection_pro',
+      name: t('专业物体检测'),
+      version: '0.1.0',
+      category: 'perception',
+      capability_slot: 'tool',
+      slot_policy: 'multi_active',
+      author_code: 'official',
+      author_name: null,
+      availability: 'coming_soon',
+      delist_reason: null,
+      total_bytes: 0,
+      install_state: 'not_installed',
+      description: t(
+        '【照片里有什么一眼标出】自动框出并识别照片里的常见物体（人、车、动物、物品等），可按物体内容搜图。普通电脑即可运行。'
+      ),
+      hardware_requirement: {
+        level: 'minimal',
+        text: t('配置要求低 · 普通电脑流畅运行')
+      },
+      icon: 'ScanSearch'
+    },
+    {
+      id: 'password_vault_cracker',
+      name: t('密码管家与本地加密破解'),
+      version: '0.1.0',
+      category: 'tool',
+      capability_slot: 'tool',
+      slot_policy: 'multi_active',
+      author_code: 'official',
+      author_name: null,
+      availability: 'coming_soon',
+      delist_reason: null,
+      total_bytes: 0,
+      install_state: 'not_installed',
+      description: t(
+        '【两条路帮你打开加密文件】① 有密码：统一记住你的压缩包/Office 密码，下次解压不用再手动输入；② 忘了密码：用专业高效的破解技术，在你的电脑本地自动找回，全程不上云，文件不外泄。'
+      ),
+      hardware_requirement: {
+        level: 'minimal',
+        text: t('配置要求低 · 普通电脑即可运行')
+      },
+      icon: 'KeyRound'
     }
   ]
 }

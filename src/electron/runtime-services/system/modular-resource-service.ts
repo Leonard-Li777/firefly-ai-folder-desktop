@@ -772,6 +772,69 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     firecore_cost: 0,
     total_bytes: BUILTIN_MODULE_CATALOG_META.archive_vfs_parser.totalBytes,
     install_state: 'not_installed'
+  },
+  {
+    id: BUILTIN_MODULE_CATALOG_META.face_recognition_tool.id,
+    name: '人脸识别与相册人物聚类',
+    description:
+      '【自动认出照片里是谁】自动识别照片中的人脸，把同一个人的照片归到一起，按人物快速翻找相册。普通电脑即可运行。',
+    icon: 'ScanFace',
+    kind: 'builtin-module',
+    version: BUILTIN_MODULE_CATALOG_META.face_recognition_tool.version,
+    catalog_version: BUILTIN_MODULE_CATALOG_META.face_recognition_tool.catalogVersion,
+    category: BUILTIN_MODULE_CATALOG_META.face_recognition_tool.category,
+    capability_slot: BUILTIN_MODULE_CATALOG_META.face_recognition_tool.capabilitySlot,
+    slot_policy: BUILTIN_MODULE_CATALOG_META.face_recognition_tool.slotPolicy,
+    backend_type: BUILTIN_MODULE_CATALOG_META.face_recognition_tool.backendType,
+    author_code: 'official',
+    author_name: null,
+    availability: 'coming_soon',
+    delist_reason: null,
+    firecore_cost: 0,
+    total_bytes: BUILTIN_MODULE_CATALOG_META.face_recognition_tool.totalBytes,
+    install_state: 'not_installed'
+  },
+  {
+    id: BUILTIN_MODULE_CATALOG_META.object_detection_pro.id,
+    name: '专业物体检测',
+    description:
+      '【照片里有什么一眼标出】自动框出并识别照片里的常见物体（人、车、动物、物品等），可按物体内容搜图。普通电脑即可运行。',
+    icon: 'ScanSearch',
+    kind: 'builtin-module',
+    version: BUILTIN_MODULE_CATALOG_META.object_detection_pro.version,
+    catalog_version: BUILTIN_MODULE_CATALOG_META.object_detection_pro.catalogVersion,
+    category: BUILTIN_MODULE_CATALOG_META.object_detection_pro.category,
+    capability_slot: BUILTIN_MODULE_CATALOG_META.object_detection_pro.capabilitySlot,
+    slot_policy: BUILTIN_MODULE_CATALOG_META.object_detection_pro.slotPolicy,
+    backend_type: BUILTIN_MODULE_CATALOG_META.object_detection_pro.backendType,
+    author_code: 'official',
+    author_name: null,
+    availability: 'coming_soon',
+    delist_reason: null,
+    firecore_cost: 0,
+    total_bytes: BUILTIN_MODULE_CATALOG_META.object_detection_pro.totalBytes,
+    install_state: 'not_installed'
+  },
+  {
+    id: BUILTIN_MODULE_CATALOG_META.password_vault_cracker.id,
+    name: '密码管家与本地加密破解',
+    description:
+      '【两条路帮你打开加密文件】① 有密码：统一记住你的压缩包/Office 密码，下次解压不用再手动输入；② 忘了密码：用专业高效的破解技术，在你的电脑本地自动找回，全程不上云，文件不外泄。',
+    icon: 'KeyRound',
+    kind: 'builtin-module',
+    version: BUILTIN_MODULE_CATALOG_META.password_vault_cracker.version,
+    catalog_version: BUILTIN_MODULE_CATALOG_META.password_vault_cracker.catalogVersion,
+    category: BUILTIN_MODULE_CATALOG_META.password_vault_cracker.category,
+    capability_slot: BUILTIN_MODULE_CATALOG_META.password_vault_cracker.capabilitySlot,
+    slot_policy: BUILTIN_MODULE_CATALOG_META.password_vault_cracker.slotPolicy,
+    backend_type: BUILTIN_MODULE_CATALOG_META.password_vault_cracker.backendType,
+    author_code: 'official',
+    author_name: null,
+    availability: 'coming_soon',
+    delist_reason: null,
+    firecore_cost: 0,
+    total_bytes: BUILTIN_MODULE_CATALOG_META.password_vault_cracker.totalBytes,
+    install_state: 'not_installed'
   }
 ]
 
