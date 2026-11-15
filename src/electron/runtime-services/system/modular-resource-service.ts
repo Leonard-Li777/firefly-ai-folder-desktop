@@ -2050,10 +2050,13 @@ export class ModularResourceService implements IModularResourceService {
 
           backfilledBindings.push({ moduleId: modId, resourceId: resId })
 
+          const currentLang = this.getConfigOrchestrator()?.getValue?.('DEFAULT_LANGUAGE') || 'zh-CN'
+          const isZh = String(currentLang).toLowerCase().startsWith('zh')
           if (
             !physicallyReady &&
             modId === 'engine_classic_light' &&
             resId === 'mobile-clip' &&
+            !isZh &&
             (modRow.install_state === 'active' || modRow.install_state === 'installed_inactive')
           ) {
             this.deferredBackfillResources.add(resId)
@@ -2113,10 +2116,13 @@ export class ModularResourceService implements IModularResourceService {
   }
 
   /**
-   * 为 engine_classic_light 保活场景判断除可选同伴 mobile-clip 外其余核心资产是否就绪
+   * 为 engine_classic_light 保活场景判断当前语言核心资产是否就绪
+   * 中文环境要求 bekko-a8m + chinese-clip；非中文环境要求 bekko-a8m + mobile-clip
    */
   private isClassicEngineCoreReady(boundResources: ResourceDownloadRecord[]): boolean {
-    const coreIds = ['bekko-a8m', 'chinese-clip']
+    const currentLang = this.getConfigOrchestrator()?.getValue?.('DEFAULT_LANGUAGE') || 'zh-CN'
+    const isZh = String(currentLang).toLowerCase().startsWith('zh')
+    const coreIds = isZh ? ['bekko-a8m', 'chinese-clip'] : ['bekko-a8m', 'mobile-clip']
     return coreIds.every(coreId => {
       const res = boundResources.find(r => r.resource_id === coreId)
       if (!res || res.download_state !== 'completed') return false
@@ -2388,7 +2394,16 @@ export class ModularResourceService implements IModularResourceService {
             }
 
             if (res.download_state !== 'completed' || !resExists) {
-              if (res.resource_id === 'mobile-clip' && coreReadyForClassic) {
+              const currentLang = this.getConfigOrchestrator()?.getValue?.('DEFAULT_LANGUAGE') || 'zh-CN'
+              const isZh = String(currentLang).toLowerCase().startsWith('zh')
+              // 语言互斥处理：中文环境 mobile-clip 互斥放行；非中文环境 chinese-clip 互斥放行
+              if (res.resource_id === 'mobile-clip' && isZh && coreReadyForClassic) {
+                continue
+              }
+              if (res.resource_id === 'chinese-clip' && !isZh && coreReadyForClassic) {
+                continue
+              }
+              if (res.resource_id === 'mobile-clip' && !isZh && coreReadyForClassic) {
                 needsClassicMobileClipBackfill = true
                 continue
               }
@@ -4141,9 +4156,12 @@ export class ModularResourceService implements IModularResourceService {
         throw new Error(`模块资源处于待修复状态，禁止激活: ${moduleId}/${res.resource_id}`)
       }
       if (res.download_state !== 'completed') {
+        const currentLang = this.getConfigOrchestrator()?.getValue?.('DEFAULT_LANGUAGE') || 'zh-CN'
+        const isZh = String(currentLang).toLowerCase().startsWith('zh')
         if (
           moduleId === 'engine_classic_light' &&
-          res.resource_id === 'mobile-clip' &&
+          ((res.resource_id === 'mobile-clip' && isZh) ||
+            (res.resource_id === 'chinese-clip' && !isZh)) &&
           coreReadyForClassic
         ) {
           continue

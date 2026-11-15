@@ -1420,6 +1420,30 @@ export class OmniService {
               continue
             }
 
+            // 语言场景互斥（chinese-clip vs mobile-clip）：
+            // 中文环境优先且仅激活 chinese-clip；海外/非中文环境优先激活 mobile-clip
+            const currentLang = this.getConfigValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
+            const isZh = currentLang.toLowerCase().startsWith('zh')
+            if (isZh && item.resourceId === 'mobile-clip') {
+              const hasChineseClip = mountable.some(m => m.resourceId === 'chinese-clip')
+              if (hasChineseClip) {
+                logger.debug(
+                  LogCategory.SYSTEM,
+                  '[OmniService] 中文语言环境下，chinese-clip 优先，跳过 mobile-clip 互斥挂载'
+                )
+                continue
+              }
+            } else if (!isZh && item.resourceId === 'chinese-clip') {
+              const hasMobileClip = mountable.some(m => m.resourceId === 'mobile-clip')
+              if (hasMobileClip) {
+                logger.debug(
+                  LogCategory.SYSTEM,
+                  '[OmniService] 非中文语言环境下，mobile-clip 优先，跳过 chinese-clip 互斥挂载'
+                )
+                continue
+              }
+            }
+
             let envValue =
               meta.envVarType === 'file' && meta.envFileRelativePath
                 ? path.join(item.physicalDir, meta.envFileRelativePath)
@@ -1431,11 +1455,17 @@ export class OmniService {
             if (activePaths?.activeFile) {
               envValue = path.join(item.physicalDir, activePaths.activeFile)
             } else if (activePaths?.activeFiles) {
-              if (activePaths.activeFiles.visual) {
-                env.VISUAL_MODEL_PATH = path.join(item.physicalDir, activePaths.activeFiles.visual)
-              }
-              if (activePaths.activeFiles.text) {
-                env.TEXT_MODEL_PATH = path.join(item.physicalDir, activePaths.activeFiles.text)
+              const allowInjectClipPaths = isZh
+                ? item.resourceId === 'chinese-clip' || !mountable.some(m => m.resourceId === 'chinese-clip')
+                : item.resourceId === 'mobile-clip' || !mountable.some(m => m.resourceId === 'mobile-clip')
+
+              if (allowInjectClipPaths) {
+                if (activePaths.activeFiles.visual) {
+                  env.VISUAL_MODEL_PATH = path.join(item.physicalDir, activePaths.activeFiles.visual)
+                }
+                if (activePaths.activeFiles.text) {
+                  env.TEXT_MODEL_PATH = path.join(item.physicalDir, activePaths.activeFiles.text)
+                }
               }
             }
 
@@ -1943,10 +1973,12 @@ export class OmniService {
           }
         }
 
-        // 若本次激活挂载了 mobile-clip，检查英文词表双向核验（Pro 模式下 vocab.valid 必须为 true）
-        if (target.expectedResourceIds.includes('mobile-clip')) {
+        // 若本次激活挂载了 mobile-clip，检查英文词表双向核验（仅在非中文且为 Pro 模式下 vocab.valid 必须为 true）
+        const lang = this.getConfigValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
+        const isZh = lang.toLowerCase().startsWith('zh')
+        if (!isZh && target.expectedResourceIds.includes('mobile-clip')) {
           const vocab = data?.mobileClipVocab
-          const isPro = Boolean(data?.isPro ?? vocab != null)
+          const isPro = data?.isPro === true
           if (isPro && (!vocab || vocab.valid !== true || vocab.status !== 'ready')) {
             return {
               ok: false,
