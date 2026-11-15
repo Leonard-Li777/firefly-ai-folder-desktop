@@ -150,6 +150,8 @@ export interface OmniPerceptionOptions {
   videoAnalyzeStartSec?: number
   /** 文件指纹，用于感知完成后在 Omni 内部就地批量落盘向量（Ticket 02 / 04） */
   fileFingerprint?: string
+  /** 是否跳过 CPU 阶段 5W 造句（当后续由生成式 AI 接管时置为 true） */
+  skip5wSynthesis?: boolean
 }
 
 export interface OmniPerceptionBenchmarkResponse {
@@ -1444,6 +1446,45 @@ export class OmniService {
               }
             }
 
+            // 自愈同步：若挂载了 chinese-clip，但物理目录缺失伴随视觉词表与矩阵，自动从随包目录同步补齐
+            if (item.resourceId === 'chinese-clip' && fs.existsSync(item.physicalDir)) {
+              try {
+                const targetBin = path.join(item.physicalDir, 'tags_visual_zh_embeddings.bin')
+                const targetTxt = path.join(item.physicalDir, 'tags_visual_zh.txt')
+                if (!fs.existsSync(targetBin)) {
+                  const srcBin =
+                    ResourceLocator.resolveResourcePath(
+                      'models/clip/tags_visual_zh_embeddings.bin'
+                    ) || ResourceLocator.resolveResourcePath('clip/tags_visual_zh_embeddings.bin')
+                  if (srcBin && fs.existsSync(srcBin)) {
+                    fs.copyFileSync(srcBin, targetBin)
+                    logger.info(
+                      LogCategory.SYSTEM,
+                      `[OmniService] 已自动为 chinese-clip 补齐缺失的视觉嵌入矩阵: ${targetBin}`
+                    )
+                  }
+                }
+                if (!fs.existsSync(targetTxt)) {
+                  const srcTxt =
+                    ResourceLocator.resolveResourcePath('models/clip/tags_visual_zh.txt') ||
+                    ResourceLocator.resolveResourcePath('clip/tags_visual_zh.txt')
+                  if (srcTxt && fs.existsSync(srcTxt)) {
+                    fs.copyFileSync(srcTxt, targetTxt)
+                    logger.info(
+                      LogCategory.SYSTEM,
+                      `[OmniService] 已自动为 chinese-clip 补齐缺失的视觉词表: ${targetTxt}`
+                    )
+                  }
+                }
+              } catch (clipSyncErr) {
+                logger.warn(
+                  LogCategory.SYSTEM,
+                  `[OmniService] 同步 chinese-clip 伴随词表异常:`,
+                  clipSyncErr
+                )
+              }
+            }
+
             let envValue =
               meta.envVarType === 'file' && meta.envFileRelativePath
                 ? path.join(item.physicalDir, meta.envFileRelativePath)
@@ -1456,12 +1497,17 @@ export class OmniService {
               envValue = path.join(item.physicalDir, activePaths.activeFile)
             } else if (activePaths?.activeFiles) {
               const allowInjectClipPaths = isZh
-                ? item.resourceId === 'chinese-clip' || !mountable.some(m => m.resourceId === 'chinese-clip')
-                : item.resourceId === 'mobile-clip' || !mountable.some(m => m.resourceId === 'mobile-clip')
+                ? item.resourceId === 'chinese-clip' ||
+                  !mountable.some(m => m.resourceId === 'chinese-clip')
+                : item.resourceId === 'mobile-clip' ||
+                  !mountable.some(m => m.resourceId === 'mobile-clip')
 
               if (allowInjectClipPaths) {
                 if (activePaths.activeFiles.visual) {
-                  env.VISUAL_MODEL_PATH = path.join(item.physicalDir, activePaths.activeFiles.visual)
+                  env.VISUAL_MODEL_PATH = path.join(
+                    item.physicalDir,
+                    activePaths.activeFiles.visual
+                  )
                 }
                 if (activePaths.activeFiles.text) {
                   env.TEXT_MODEL_PATH = path.join(item.physicalDir, activePaths.activeFiles.text)
@@ -2754,7 +2800,8 @@ export class OmniService {
       video_cut_sensitivity:
         options?.videoCutSensitivity ?? this.getConfigValue<string>('VIDEO_CUT_SENSITIVITY'),
       video_max_analyze_sec: options?.videoMaxAnalyzeSec,
-      video_analyze_start_sec: options?.videoAnalyzeStartSec
+      video_analyze_start_sec: options?.videoAnalyzeStartSec,
+      skip_5w_synthesis: options?.skip5wSynthesis
     }
     logger.debug(
       LogCategory.SYSTEM,

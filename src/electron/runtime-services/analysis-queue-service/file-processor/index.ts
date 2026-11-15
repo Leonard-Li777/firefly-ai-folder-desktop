@@ -711,11 +711,7 @@ async function ensureLemmaAliasesSeeded(
   locale?: string
 ): Promise<void> {
   const candidates = [
-    ...new Set(
-      lemmas
-        .map(l => (typeof l === 'string' ? l.trim() : ''))
-        .filter(l => l.length > 0)
-    )
+    ...new Set(lemmas.map(l => (typeof l === 'string' ? l.trim() : '')).filter(l => l.length > 0))
   ]
   if (candidates.length === 0) return
 
@@ -1835,7 +1831,8 @@ export class FileProcessor {
               enableVisualTags: false,
               enableGeoReverse: false,
               enableTextAnalysis: true,
-              generateThumbnail: false
+              generateThumbnail: false,
+              skip5wSynthesis: true
             })
           } catch (anchorWarmupErr) {
             logger.warn(
@@ -2322,7 +2319,8 @@ export class FileProcessor {
             videoMaxAnalyzeSec: 300, // 物理严格封顶 300s，彻底杜绝 2h 大请求穿透击穿 Omni/CPU (FIN-04)
             enableTextAnalysis: true,
             generateThumbnail: !existingThumbCheck.exists,
-            fileFingerprint
+            fileFingerprint,
+            skip5wSynthesis: isAiStageEnabled(analysisMode)
           })
           .catch(err => {
             logger.warn(LogCategory.ANALYSIS_QUEUE, `[Omni/anydoc] 0号切片提取失败: ${err.message}`)
@@ -2456,7 +2454,8 @@ export class FileProcessor {
                 videoMaxAnalyzeSec: chunkEnd,
                 enableTextAnalysis: false,
                 generateThumbnail: false,
-                fileFingerprint
+                fileFingerprint,
+                skip5wSynthesis: true
               })
 
               const chunkFrames = chunkResult.perception?.video_chunks || []
@@ -3332,7 +3331,10 @@ export class FileProcessor {
         const parentDir = path.dirname(filePath)
         directoryContext = await this.analyzeDirectoryContext(parentDir, false)
         if (directoryContext) {
-          logger.debug(LogCategory.ANALYSIS_QUEUE, `[目录上下文] 预获取目录上下文成功: ${parentDir}`)
+          logger.debug(
+            LogCategory.ANALYSIS_QUEUE,
+            `[目录上下文] 预获取目录上下文成功: ${parentDir}`
+          )
         } else {
           logger.debug(
             LogCategory.ANALYSIS_QUEUE,
