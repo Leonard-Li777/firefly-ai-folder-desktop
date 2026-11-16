@@ -2079,7 +2079,11 @@ export class OmniService {
       const profile = opts.moduleId === 'engine_gemma_unified' ? 'gemma_unified' : 'classic_light'
       const smoke = await this.runSmokeTest({ profile })
       if (!smoke.success) {
-        throw new Error(smoke.error || `向量底座 ${opts.moduleId} 激活冒烟失败`)
+        const err = new Error(smoke.error || `向量底座 ${opts.moduleId} 激活冒烟失败`)
+        if (smoke.errorCode) {
+          ;(err as any).code = smoke.errorCode
+        }
+        throw err
       }
     } else if (opts.moduleId === 'tts_moss_onnx' || opts.moduleId === 'tts_m5_onnx') {
       const expectedEngine =
@@ -3576,10 +3580,32 @@ export class OmniService {
         signal: controller.signal
       })
       if (!res.ok) {
-        if (res.status === 503) {
-          throw new Error('http_503')
+        let detail = ''
+        try {
+          const body = (await res.json()) as { error?: string }
+          detail = body?.error || ''
+        } catch {
+          // 忽略非 JSON 错误响应解析异常
         }
-        throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+        if (res.status === 503) {
+          const isDecryptFail =
+            detail.includes('AEAD') ||
+            detail.includes('解密失败') ||
+            detail.includes('密钥版本不匹配') ||
+            detail.includes('AeadDecryptFailed')
+          const err = new Error(
+            isDecryptFail
+              ? `AEAD_DECRYPT_FAILED: ${detail || 'http_503'}`
+              : detail
+                ? `http_503: ${detail}`
+                : 'http_503'
+          )
+          ;(err as any).status = 503
+          ;(err as any).code = isDecryptFail ? 'AEAD_DECRYPT_FAILED' : 'HTTP_503'
+          ;(err as any).detail = detail
+          throw err
+        }
+        throw new Error(`HTTP ${res.status}: ${res.statusText}${detail ? ` - ${detail}` : ''}`)
       }
       return (await res.json()) as {
         vectors: number[][]
@@ -3656,7 +3682,23 @@ export class OmniService {
         '[OmniService] runSmokeTest 异常:',
         err?.message || String(err)
       )
-      return { success: false, error: err?.message || String(err) }
+      const isDecryptFail =
+        err?.code === 'AEAD_DECRYPT_FAILED' ||
+        err?.message?.includes('AEAD') ||
+        err?.message?.includes('解密失败') ||
+        err?.message?.includes('密钥版本不匹配') ||
+        err?.message?.includes('AeadDecryptFailed') ||
+        err?.message?.includes('DECRYPT_FAILED') ||
+        err?.detail?.includes('AEAD') ||
+        err?.detail?.includes('解密失败')
+      if (isDecryptFail) {
+        return {
+          success: false,
+          errorCode: 'AEAD_DECRYPT_FAILED',
+          error: '插件文件可能被篡改或密钥版本不匹配，请从官方源下载'
+        }
+      }
+      return { success: false, error: err?.message || String(err), errorCode: err?.code }
     }
   }
 }

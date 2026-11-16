@@ -429,6 +429,27 @@ describe('Ticket 08: 插件中心环境可见性、时钟防护与大白话排�
       )
     })
 
+    it('将 Omni 模型解密失败与 503 异常拦截转换为官方源重新下载的大白话提示（零黑话直出）', () => {
+      const expectedTip = '插件文件可能被篡改或密钥版本不匹配，请从官方源下载'
+      // 1. 结构化错误码转换
+      expect(formatPluginErrorMessage({ code: 'AEAD_DECRYPT_FAILED' })).toBe(expectedTip)
+      expect(formatPluginErrorMessage({ code: 'DECRYPT_FAILED' })).toBe(expectedTip)
+      expect(formatPluginErrorMessage({ code: 'HTTP_503' })).toBe(expectedTip)
+
+      // 2. 裸 http_503 字符串与 Error 实例转换
+      expect(formatPluginErrorMessage('http_503')).toBe(expectedTip)
+      expect(formatPluginErrorMessage(new Error('http_503'))).toBe(expectedTip)
+      expect(formatPluginErrorMessage(new Error('batchEmbedText 异常或超时: http_503'))).toBe(
+        expectedTip
+      )
+
+      // 3. 后端详细解密失败文本转换
+      const backendErrText =
+        '高精度全能语义搜索 文本塔容器解密失败 ("/path/to/text.ffpc"): AEAD 解密失败（文件可能被篡改或密钥版本不匹配）'
+      expect(formatPluginErrorMessage(new Error(backendErrText))).toBe(expectedTip)
+      expect(formatPluginErrorMessage(backendErrText)).toBe(expectedTip)
+    })
+
     it('对包含底层工程黑话的未知异常进行安全过滤，避免黑话堆栈裸露给用户', () => {
       const technicalError = new Error('ONNX runtime execution error in IPC channel')
       const sanitized = formatPluginErrorMessage(technicalError)

@@ -590,7 +590,14 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
           ) : isError ? (
             /* 错误状态：展示异常说明与重试按钮 (经过大白话映射脱敏) */
             <div className="flex items-center gap-2">
-              <span className="text-xs text-destructive truncate max-w-[150px] sm:max-w-[180px]">
+              <span
+                className="text-xs text-destructive truncate max-w-[150px] sm:max-w-[180px]"
+                title={
+                  module.error_message
+                    ? formatPluginErrorMessage(module.error_message)
+                    : t('安装失败')
+                }
+              >
                 {module.error_message
                   ? formatPluginErrorMessage(module.error_message)
                   : t('安装失败')}

@@ -152,7 +152,14 @@ export class WorkflowSemanticMatcherService {
           )
           return { status: 'degraded', reason: 'timeout', durationMs }
         }
-        if (err?.message === 'http_503') {
+        if (
+          err?.message === 'http_503' ||
+          err?.message?.startsWith('http_503') ||
+          err?.message?.includes('http_503') ||
+          err?.code === 'HTTP_503' ||
+          err?.code === 'AEAD_DECRYPT_FAILED' ||
+          (err as any)?.status === 503
+        ) {
           logger.warn(LogCategory.SYSTEM, '[WorkflowSemanticMatcherService] 引擎 503 瞬态不可用')
           return { status: 'degraded', reason: 'http_503', durationMs }
         }

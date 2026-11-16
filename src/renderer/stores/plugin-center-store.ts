@@ -146,6 +146,9 @@ export function getPluginErrorMessages(): Record<string, string> {
     CANNOT_UNINSTALL_LAST_REQUIRED_SLOT: t(
       '必须先安装并启用另一款可替换的基础 AI 引擎，才能卸载当前使用的引擎。'
     ),
+    AEAD_DECRYPT_FAILED: t('插件文件可能被篡改或密钥版本不匹配，请从官方源下载'),
+    DECRYPT_FAILED: t('插件文件可能被篡改或密钥版本不匹配，请从官方源下载'),
+    HTTP_503: t('插件文件可能被篡改或密钥版本不匹配，请从官方源下载'),
     INVALID_USER_CONFIG: t('配置格式不正确，请检查输入内容后重试。'),
     UNKNOWN_ERROR: t('插件操作发生未知异常，请稍后重试。'),
     // 目录管理与镜像下载大白话提示 (RULE 2.16 & Spec §7.4)
@@ -230,7 +233,17 @@ export function formatPluginErrorMessage(error: unknown): string {
     }
   }
 
-  // 常见系统异常转换
+  // 常见系统异常转换与解密/503拦截
+  if (
+    rawMessage.includes('AEAD') ||
+    rawMessage.includes('解密失败') ||
+    rawMessage.includes('密钥版本不匹配') ||
+    rawMessage.includes('AeadDecryptFailed') ||
+    rawMessage.toLowerCase().includes('http_503') ||
+    rawMessage.toLowerCase().includes('decrypt_failed')
+  ) {
+    return t('插件文件可能被篡改或密钥版本不匹配，请从官方源下载')
+  }
   if (rawMessage.includes('EBUSY') || rawMessage.includes('resource busy')) {
     return t('文件正在被其他程序占用，请关闭相关应用后重试。')
   }
@@ -251,7 +264,7 @@ export function formatPluginErrorMessage(error: unknown): string {
   // 过滤专业术语黑话（ONNX, IPC, SHA-256, JSON Schema 等），避免残缺符号句直出
   const sanitized = rawMessage
     .replace(
-      /\b(ONNX|IPC|Token|Checksum|CRC32|SHA-?256|Ed25519|JSON\s*Schema|JSON|user_config)\b/gi,
+      /\b(ONNX|IPC|Token|Checksum|CRC32|SHA-?256|Ed25519|JSON\s*Schema|JSON|user_config|HTTP_?503)\b/gi,
       ''
     )
     .replace(/\s{2,}/g, ' ')
