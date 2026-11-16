@@ -15,6 +15,7 @@ import { registerPreviewIPCHandlers } from './preview'
 import { registerVoiceIPCHandlers } from './voice'
 import { registerExternalApiIPCHandlers } from './external-api'
 import { registerModularResourceIpcHandlers } from '../../runtime-services/ipc/modular-resource-ipc-handler'
+import { registerHibernationIPCHandlers } from '../../runtime-services/ipc/hibernation-ipc-handler'
 import { syncedDirectories } from '../state'
 import { logger, LogCategory } from '@firefly/shared'
 
@@ -38,6 +39,7 @@ export async function setupIPCHandlers(): Promise<void> {
   registerVoiceIPCHandlers()
   registerExternalApiIPCHandlers()
   registerModularResourceIpcHandlers()
+  registerHibernationIPCHandlers()
 
   if (syncedDirectoriesCleanupInterval) {
     clearInterval(syncedDirectoriesCleanupInterval)

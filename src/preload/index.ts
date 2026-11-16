@@ -108,4 +108,27 @@ export const modularResourcePreloadBridge: IModularResourceBridge = {
   }
 }
 
+export interface IHibernationBridge {
+  getSnapshot: () => Promise<any>
+  reclaimAll: () => Promise<{ success: boolean; releasedBytes: number }>
+  forceReset: (targetId: string) => Promise<boolean>
+  retryModule: (targetId: string) => Promise<boolean>
+  onSnapshotChanged: (callback: (snapshot: any) => void) => () => void
+}
+
+export const hibernationPreloadBridge: IHibernationBridge = {
+  getSnapshot: () => ipcRenderer.invoke('module-hibernation:get-snapshot'),
+  reclaimAll: () => ipcRenderer.invoke('module-hibernation:reclaim-all'),
+  forceReset: (targetId: string) => ipcRenderer.invoke('module-hibernation:force-reset', targetId),
+  retryModule: (targetId: string) =>
+    ipcRenderer.invoke('module-hibernation:retry-module', targetId),
+  onSnapshotChanged: (callback: (snapshot: any) => void) => {
+    const handler = (_event: unknown, snap: any) => callback(snap)
+    ipcRenderer.on('module-hibernation:snapshot-changed', handler as any)
+    return () => {
+      ipcRenderer.removeListener('module-hibernation:snapshot-changed', handler as any)
+    }
+  }
+}
+
 export default modularResourcePreloadBridge

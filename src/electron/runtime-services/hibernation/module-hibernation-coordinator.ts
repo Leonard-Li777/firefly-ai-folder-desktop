@@ -8,6 +8,7 @@ import { logger, LogCategory } from '@firefly/shared'
 import { LeaseRegistry } from './lease-registry'
 import { computeHibernationMemoryThreshold, MemoryProbe, memoryProbe } from './memory-probe'
 import { IModuleRuntimeStore, moduleRuntimeStore } from './module-runtime-store'
+import { projectMemoryGauges } from './memory-gauges'
 import {
   AdmissionToken,
   ANALYSIS_SUITE_IDLE_TIMEOUT_MS,
@@ -28,6 +29,7 @@ import {
   HibernationColdStartError,
   HibernationGateAbortedError,
   HibernationLeaseHandle,
+  HibernationSnapshot,
   IEngineBridgeService,
   IN_FLIGHT_OP_NO_PROGRESS_HARD_TIMEOUT_MS,
   IN_FLIGHT_OP_STALL_TIMEOUT_MS,
@@ -39,6 +41,7 @@ import {
   LifecycleOperation,
   LifecycleToken,
   MAX_GRACE_PERIOD_MS,
+  ModuleRuntimeMetric,
   ModuleRuntimeState,
   ProcessTreeIdentity,
   STABLE_RESIDENT_RESET_MS,
@@ -443,7 +446,30 @@ export class ModuleHibernationCoordinator {
       return false
     }
 
-    return this.runtimeStore.update(targetId, apply)
+    const updated = this.runtimeStore.update(targetId, apply)
+    if (updated) {
+      this.triggerSnapshotBroadcast()
+    }
+    return updated
+  }
+
+  /**
+   * 按代际提交运行时快照变更 (commitIfEpoch)
+   * 仅当当前代际与采样代际一致时写入并触发广播
+   */
+  commitIfEpoch(
+    targetId: string,
+    epoch: number,
+    apply: (draft: ModuleRuntimeState) => void
+  ): boolean {
+    if (this.currentEpoch(targetId) !== epoch) {
+      return false
+    }
+    const updated = this.runtimeStore.update(targetId, apply)
+    if (updated) {
+      this.triggerSnapshotBroadcast()
+    }
+    return updated
   }
 
   /**
@@ -3004,8 +3030,217 @@ export class ModuleHibernationCoordinator {
     }
   }
 
+  // ==========================================
+  // 快照聚合、全量回收与 IPC 支撑 (Ticket 11)
+  // ==========================================
+
+  private readonly snapshotListeners = new Set<(snapshot: HibernationSnapshot) => void>()
+  private snapshotBroadcastTimer?: ReturnType<typeof setTimeout>
+
+  /**
+   * 注册快照变更监听器（节流广播）
+   */
+  onSnapshotChanged(callback: (snapshot: HibernationSnapshot) => void): () => void {
+    this.snapshotListeners.add(callback)
+    return () => {
+      this.snapshotListeners.delete(callback)
+    }
+  }
+
+  /**
+   * 触发快照广播（100ms 节流）
+   */
+  triggerSnapshotBroadcast(): void {
+    if (this.snapshotBroadcastTimer) return
+    this.snapshotBroadcastTimer = setTimeout(async () => {
+      this.snapshotBroadcastTimer = undefined
+      try {
+        const snap = await this.getSnapshot()
+        for (const cb of this.snapshotListeners) {
+          try {
+            cb(snap)
+          } catch (err) {
+            logger.warn(LogCategory.SYSTEM, '[Coordinator] snapshotListener 派发失败', err)
+          }
+        }
+      } catch (err) {
+        logger.warn(LogCategory.SYSTEM, '[Coordinator] triggerSnapshotBroadcast 失败', err)
+      }
+    }, 100)
+  }
+
+  /**
+   * 获取当前模块休眠与能耗全景快照 (spec §3.3.2)
+   */
+  async getSnapshot(): Promise<HibernationSnapshot> {
+    const metrics: ModuleRuntimeMetric[] = []
+    for (const [targetId, meta] of Object.entries(HIBERNATABLE_TARGET_CATALOG)) {
+      const state = this.runtimeStore.get(targetId)
+      const activeTasks = this.leaseRegistryInstance?.countActiveByTarget(targetId) ?? 0
+      if (state) {
+        metrics.push({
+          ...state,
+          activeTasks
+        })
+      } else {
+        metrics.push({
+          id: targetId,
+          clusterId: meta.clusterId,
+          modelGeneration: 0,
+          defaultMemoryKind: meta.defaultMemoryKind,
+          effectiveMemoryKind: meta.defaultMemoryKind,
+          i18nNameKey: meta.i18nNameKey,
+          i18nDescKey: meta.i18nDescKey,
+          state: 'hibernated',
+          residentBytes: 0,
+          lastActiveTimestamp: Date.now(),
+          crashStreak: 0,
+          unloadFailStreak: 0,
+          blockedUnloadNoHandle: 0,
+          blockedUnloadIdentity: null,
+          activeTasks
+        })
+      }
+    }
+
+    const memoryGauges = projectMemoryGauges(metrics)
+    const availableMemoryBytes = this.getFreeMemoryProvider?.() ?? os.freemem()
+    const totalSaved = memoryGauges.totalSavedRamBytes + memoryGauges.totalSavedVramBytes
+    const isEnergySaving = totalSaved > 0 && metrics.some(m => m.state === 'hibernated')
+
+    return {
+      enabled: true,
+      isEnergySaving,
+      ...memoryGauges,
+      availableMemoryBytes,
+      modules: metrics
+    }
+  }
+
+  /**
+   * 一键释放全量空闲可休眠模块 (spec §3.4.1)
+   */
+  async reclaimAll(): Promise<{ success: boolean; releasedBytes: number }> {
+    let totalReleasedBytes = 0
+    for (const [targetId, meta] of Object.entries(HIBERNATABLE_TARGET_CATALOG)) {
+      const runtime = this.runtimeStore.get(targetId)
+      if (!runtime) continue
+
+      // 逐模块筛选：中间态与换型让权守卫
+      if (
+        runtime.state === 'hibernated' ||
+        runtime.state === 'draining' ||
+        runtime.state === 'loading' ||
+        (this.leaseRegistryInstance?.countActiveByTarget(targetId) ?? 0) > 0 ||
+        this.isSwapInProgress(targetId) ||
+        (runtime.state === 'error' && runtime.lastFailureKind !== 'unload')
+      ) {
+        continue
+      }
+
+      if (runtime.state === 'resident') {
+        const releasedBefore = runtime.lastReleasedBytes ?? 0
+        const drained = await this.drainModuleTwoStage(targetId)
+        if (drained) {
+          const updated = this.runtimeStore.get(targetId)
+          const delta = (updated?.lastReleasedBytes ?? 0) - releasedBefore
+          totalReleasedBytes += delta > 0 ? delta : (runtime.residentBytes ?? 0)
+        }
+      } else if (runtime.state === 'error' && runtime.lastFailureKind === 'unload') {
+        // error + unload 状态下的一键释放
+        const slotAcquired = this.tryAcquireAdmissionSlot(targetId)
+        if (!slotAcquired) continue
+        try {
+          const epoch = this.currentEpoch(targetId)
+          if (meta.type === 'engine_service') {
+            const oldId = this.engineBridgeServiceInstance?.currentIdentity?.(targetId)
+            if (oldId) {
+              await this.stopServiceBounded(targetId, oldId)
+            }
+          } else if (meta.type === 'omni_module') {
+            await this.engineBridgeServiceInstance?.drainOmniModule?.(targetId)
+          }
+
+          const committed = this.commitIfEpoch(targetId, epoch, d => {
+            d.state = 'hibernated'
+            d.unloadFailStreak = 0
+            if (runtime.residentBytes > 0) {
+              d.lastReleasedBytes = runtime.residentBytes
+            }
+          })
+          if (committed) {
+            totalReleasedBytes += runtime.residentBytes ?? 0
+            this.onClusterActivityChanged(meta.clusterId)
+            this.dispatchWaitingForTarget(targetId)
+          }
+        } finally {
+          this.releaseAdmissionSlot(targetId)
+        }
+      }
+    }
+
+    this.triggerSnapshotBroadcast()
+    return { success: true, releasedBytes: totalReleasedBytes }
+  }
+
+  /**
+   * 手动强制解除模块持久门闩 (forceReset)
+   */
+  async forceReset(targetId: string): Promise<boolean> {
+    const meta = HIBERNATABLE_TARGET_CATALOG[targetId]
+    if (!meta) return false
+
+    const identity = this.engineBridgeServiceInstance?.currentIdentity?.(targetId)
+    if (identity && !this.engineBridgeServiceInstance?.isProcessTreeExited?.(identity)) {
+      await this.engineBridgeServiceInstance?.forceKillOldGeneration?.(identity)
+    }
+
+    await this.runtimeStore.persistBlockedUnloadGate(targetId, 0, null)
+    this.blockedUnloadCache.set(targetId, false)
+
+    const current = this.runtimeStore.get(targetId)
+    if (current && current.state === 'error') {
+      const epoch = this.currentEpoch(targetId)
+      this.commitIfEpoch(targetId, epoch, d => {
+        d.state = 'hibernated'
+        d.crashStreak = 0
+        d.unloadFailStreak = 0
+        d.lastFailureKind = undefined
+        d.blockedUnloadNoHandle = 0
+        d.blockedUnloadIdentity = null
+      })
+    }
+
+    this.triggerSnapshotBroadcast()
+    return true
+  }
+
+  /**
+   * 手动重试处于 error 态的模块 (retryModule)
+   */
+  async retryModule(targetId: string): Promise<boolean> {
+    const current = this.runtimeStore.get(targetId)
+    if (!current || current.state !== 'error') return false
+
+    const token = this.beginLifecycleOperation(targetId, 'unload_retry')
+    if (!token) return false
+
+    this.commitRuntimeSnapshot(token, d => {
+      d.state = 'hibernated'
+      d.unloadFailStreak = 0
+      d.lastFailureKind = undefined
+    })
+    this.triggerSnapshotBroadcast()
+    return true
+  }
+
   /** 测试清理 */
   destroy(): void {
+    if (this.snapshotBroadcastTimer) {
+      clearTimeout(this.snapshotBroadcastTimer)
+      this.snapshotBroadcastTimer = undefined
+    }
+    this.snapshotListeners.clear()
     for (const cleanup of Array.from(this.stoppingCleanups)) {
       try {
         cleanup()

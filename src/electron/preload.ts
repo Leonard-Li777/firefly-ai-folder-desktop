@@ -45,7 +45,7 @@ import type {
   DeepLinkTargetPayload,
   LaunchOutcome
 } from './runtime-services/system/external-app-launcher'
-import { modularResourcePreloadBridge } from '../preload'
+import { modularResourcePreloadBridge, hibernationPreloadBridge } from '../preload'
 
 /**
  * 暴露给渲染进程的安全API
@@ -1634,7 +1634,8 @@ const electronAPI = {
   },
 
   // 模块化资源与插件中心生命周期桥
-  modularResource: modularResourcePreloadBridge
+  modularResource: modularResourcePreloadBridge,
+  hibernation: hibernationPreloadBridge
 }
 
 // 类型定义
@@ -1652,6 +1653,7 @@ contextBridge.exposeInMainWorld('__APP_REGION__', appRegion)
 contextBridge.exposeInMainWorld('__HAS_CROSS_REGION_DATA__', hasPeerData)
 contextBridge.exposeInMainWorld('electronAPI', electronAPI)
 contextBridge.exposeInMainWorld('modularResource', modularResourcePreloadBridge)
+contextBridge.exposeInMainWorld('hibernation', hibernationPreloadBridge)
 
 // 暴露 AI 功能到渲染进程
 // 注意：通过 IPC 调用主进程的 llama-server 服务
