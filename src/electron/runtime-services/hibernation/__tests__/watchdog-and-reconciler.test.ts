@@ -319,7 +319,7 @@ describe('Ticket 05: 看门狗、对账器与崩溃熔断器', () => {
       expect(state.blockedUnloadIdentity).toBeNull()
       expect(state.state).toBe('hibernated')
       expect(coordinator.isBlockedUnload(targetId)).toBe(false)
-      const key = `${targetId}_${identity.pid}_${identity.startTimeMs}`
+      const key = coordinator.getIdentityKey(identity)
       expect(coordinator.hasSuppressedStoppingIdentity(key)).toBe(false)
     })
 
@@ -334,7 +334,7 @@ describe('Ticket 05: 看门狗、对账器与崩溃熔断器', () => {
         startTimeMs: Date.now() - 50_000,
         generation: 1
       }
-      const key = `${targetId}_${identity.pid}_${identity.startTimeMs}`
+      const key = coordinator.getIdentityKey(identity)
       coordinator.suppressStoppingIdentity({
         targetId,
         identity,

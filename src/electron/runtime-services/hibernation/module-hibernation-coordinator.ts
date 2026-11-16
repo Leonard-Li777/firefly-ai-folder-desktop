@@ -9,6 +9,7 @@ import { MemoryProbe, memoryProbe } from './memory-probe'
 import { IModuleRuntimeStore, moduleRuntimeStore } from './module-runtime-store'
 import {
   AdmissionToken,
+  AsyncMutex,
   CANCEL_INTENT_HARD_TTL_MS,
   CANCEL_INTENT_MIN_TTL_MS,
   CRASH_BREAKER_THRESHOLD,
@@ -23,6 +24,10 @@ import {
   ModuleRuntimeState,
   ProcessTreeIdentity,
   STABLE_RESIDENT_RESET_MS,
+  STOP_COMPLETION_HARD_TIMEOUT_MS,
+  STOP_SERVICE_HARD_TIMEOUT_MS,
+  StoppingTaskEntry,
+  StopServiceResult,
   SuppressedStoppingIdentityEntry,
   TargetCancelIntentEntry
 } from './types'
@@ -64,10 +69,17 @@ export class ModuleHibernationCoordinator {
   private readonly lastCrashAtMap = new Map<string, number>()
   private readonly residentSinceMap = new Map<string, number>()
 
-  /** 换型与停机在途上下文跟踪集合 (targetId) */
+  /** 换型与停机在途上下文跟踪集合与字典 */
   private readonly swapCancelContexts = new Set<string>()
-  private readonly targetStoppingIdentity = new Set<string>()
+  private readonly targetStoppingIdentity = new Map<string, string>() // targetId -> identityKey
   private readonly pendingSwapDraining = new Set<string>()
+
+  /** per-target 停机串行化互斥锁: targetId -> AsyncMutex */
+  private readonly targetStoppingMutex = new Map<string, AsyncMutex>()
+  /** 停机在途任务索引: identityKey -> StoppingTaskEntry */
+  private readonly activeStoppingTasksByIdentity = new Map<string, StoppingTaskEntry>()
+  /** 活跃中的停机任务清理句柄集合 (P2-5 统一防泄漏) */
+  private readonly stoppingCleanups = new Set<() => void>()
 
   constructor(options?: ModuleHibernationCoordinatorOptions) {
     this.runtimeStore = options?.runtimeStore ?? moduleRuntimeStore
@@ -412,7 +424,7 @@ export class ModuleHibernationCoordinator {
   // ==========================================
 
   suppressStoppingIdentity(entry: SuppressedStoppingIdentityEntry): void {
-    const key = `${entry.targetId}_${entry.identity.pid}_${entry.identity.startTimeMs}`
+    const key = this.getIdentityKey(entry.identity)
     this.globalSuppressedStoppingIdentities.set(key, entry)
   }
 
@@ -447,9 +459,11 @@ export class ModuleHibernationCoordinator {
     return this.swapCancelContexts.has(targetId)
   }
 
-  setStoppingIdentity(targetId: string, active: boolean): void {
-    if (active) {
-      this.targetStoppingIdentity.add(targetId)
+  setStoppingIdentity(targetId: string, identityKeyOrActive?: string | boolean): void {
+    if (typeof identityKeyOrActive === 'string') {
+      this.targetStoppingIdentity.set(targetId, identityKeyOrActive)
+    } else if (identityKeyOrActive === true) {
+      this.targetStoppingIdentity.set(targetId, 'active')
     } else {
       this.targetStoppingIdentity.delete(targetId)
     }
@@ -457,6 +471,10 @@ export class ModuleHibernationCoordinator {
 
   hasStoppingIdentity(targetId: string): boolean {
     return this.targetStoppingIdentity.has(targetId)
+  }
+
+  getStoppingIdentityKey(targetId: string): string | undefined {
+    return this.targetStoppingIdentity.get(targetId)
   }
 
   setPendingSwapDraining(targetId: string, active: boolean): void {
@@ -836,6 +854,423 @@ export class ModuleHibernationCoordinator {
   }
 
   // ==========================================
+  // 有界停机原语与取消加载 (Ticket 06)
+  // ==========================================
+
+  /** 获取指定目标的停机串行排队互斥锁 */
+  getTargetStoppingMutex(targetId: string): AsyncMutex {
+    let mutex = this.targetStoppingMutex.get(targetId)
+    if (!mutex) {
+      mutex = new AsyncMutex()
+      this.targetStoppingMutex.set(targetId, mutex)
+    }
+    return mutex
+  }
+
+  /** 获取进程树唯一身份标识符键名 */
+  getIdentityKey(identity: ProcessTreeIdentity): string {
+    return `${identity.pid}_${identity.startTimeMs}`
+  }
+
+  /**
+   * 有界停机原语 (stopServiceBounded)
+   * 遵循 L3 规格书 §2.1 / §2.2
+   * 1. per-target 串行化排队；
+   * 2. 旧 identity 串行等待与 failed_unknown 阻断；
+   * 3. 取消意图与取消上下文自动继承全局抑制；
+   * 4. 同 identity 重试执行同步物理探针即刻自愈；
+   * 5. 唯一维护与决议 resultPromise；
+   * 6. 15s 硬超时立即 resolve(failed_unknown) 并移出互斥锁，启动后台轻量对账。
+   */
+  async stopServiceBounded(
+    targetId: string,
+    expectedIdentity: ProcessTreeIdentity
+  ): Promise<StopServiceResult> {
+    const identityKey = this.getIdentityKey(expectedIdentity)
+
+    // P3-6: 在获取互斥锁之前，若已有同 identity 且处于 running 的在途停机，直接复用其 Promise
+    const runningEntry = this.activeStoppingTasksByIdentity.get(identityKey)
+    if (runningEntry && runningEntry.status === 'running') {
+      logger.info(
+        LogCategory.SYSTEM,
+        `[Coordinator] 并发复用在途停机任务 Promise: targetId=${targetId}, key=${identityKey}`
+      )
+      return runningEntry.resultPromise
+    }
+
+    const mutex = this.getTargetStoppingMutex(targetId)
+    return mutex.runExclusive(async () => {
+      // ISS-06: 严格检查并等待旧 identity 退出，若旧任务处于 failed_unknown 坚决阻断新停机
+      const oldIdentityKey = this.targetStoppingIdentity.get(targetId)
+      if (oldIdentityKey && oldIdentityKey !== identityKey) {
+        const oldEntry = this.activeStoppingTasksByIdentity.get(oldIdentityKey)
+        if (oldEntry && oldEntry.status !== 'stopped_confirmed') {
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[Coordinator] 检测到旧代次进程正在停机，串行等待退出: targetId=${targetId}, oldKey=${oldIdentityKey}, newKey=${identityKey}`
+          )
+          const prevRes = await oldEntry.resultPromise
+          if (prevRes.status !== 'stopped_confirmed') {
+            return {
+              status: 'failed_unknown',
+              reason: 'previous_identity_failed_to_exit'
+            }
+          }
+        }
+      }
+
+      // ISS-04 / ISS-05: 若当前 target 处于持久取消意图集合或活跃取消上下文，新建停机任务自动继承全局抑制
+      if (this.targetCancelIntent.has(targetId) || this.swapCancelContexts.has(targetId)) {
+        this.globalSuppressedStoppingIdentities.set(identityKey, {
+          targetId,
+          identity: expectedIdentity,
+          suppressedAt: Date.now()
+        })
+      }
+
+      // ISS-08 (P1-2): 检查当前同 identity 任务；若处于 failed_unknown，先执行同步探针自愈！
+      const existing = this.activeStoppingTasksByIdentity.get(identityKey)
+      if (existing) {
+        if (existing.status === 'failed_unknown') {
+          const isExited = this.engineBridgeServiceInstance
+            ? this.engineBridgeServiceInstance.isProcessTreeExited(expectedIdentity)
+            : true
+          if (isExited === true) {
+            logger.info(
+              LogCategory.SYSTEM,
+              `[Coordinator] 同 identity 重试探针确证已退出，即刻自愈: targetId=${targetId}, key=${identityKey}`
+            )
+            existing.status = 'stopped_confirmed'
+            this.activeStoppingTasksByIdentity.delete(identityKey)
+            if (this.targetStoppingIdentity.get(targetId) === identityKey) {
+              this.targetStoppingIdentity.delete(targetId)
+            }
+            return { status: 'stopped_confirmed' }
+          }
+          // P1-2: 探针未确证退出（进程仍存活），坚决不可返回陈旧的 failed_unknown Promise！
+          // 移除旧条目，允许重新发起下层停机指令与超时监控
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[Coordinator] 同 identity 重试时探针显示仍未退出，重置旧状态并重新发起停机: targetId=${targetId}, key=${identityKey}`
+          )
+          this.activeStoppingTasksByIdentity.delete(identityKey)
+        } else if (existing.status === 'running') {
+          return existing.resultPromise
+        }
+      }
+
+      let resolveResultFn!: (res: StopServiceResult) => void
+      const resultPromise = new Promise<StopServiceResult>(resolve => {
+        resolveResultFn = resolve
+      })
+
+      let isResolved = false
+      let pollTimer: ReturnType<typeof setInterval> | undefined
+      let hardTimeoutTimer: ReturnType<typeof setTimeout> | undefined
+      let unsubscribeExit: (() => void) | undefined
+      let backgroundReconcileTimer: ReturnType<typeof setInterval> | undefined
+
+      const cleanupTimersAndListeners = () => {
+        this.stoppingCleanups.delete(cleanupTimersAndListeners)
+        if (unsubscribeExit) {
+          unsubscribeExit()
+          unsubscribeExit = undefined
+        }
+        if (pollTimer) {
+          clearInterval(pollTimer)
+          pollTimer = undefined
+        }
+        if (hardTimeoutTimer) {
+          clearTimeout(hardTimeoutTimer)
+          hardTimeoutTimer = undefined
+        }
+        if (backgroundReconcileTimer) {
+          clearInterval(backgroundReconcileTimer)
+          backgroundReconcileTimer = undefined
+        }
+      }
+      this.stoppingCleanups.add(cleanupTimersAndListeners)
+
+      const onExitConfirmed = () => {
+        const isSuppressed =
+          this.globalSuppressedStoppingIdentities.has(identityKey) ||
+          this.targetCancelIntent.has(targetId) ||
+          this.swapCancelContexts.has(targetId) ||
+          this.activeStoppingTasksByIdentity.get(identityKey)?.submissionSuppressed === true
+
+        // ISS-01 / ISS-03 / ISS-09: 退出回调分级处理机制：处于抑制集合的条目严格零写 Store
+        if (isSuppressed) {
+          logger.info(
+            LogCategory.SYSTEM,
+            `[Coordinator] 停机确证退出命中全局抑制，零写 Store 并清理内部条目: targetId=${targetId}, key=${identityKey}`
+          )
+          cleanupTimersAndListeners()
+          this.activeStoppingTasksByIdentity.delete(identityKey)
+          if (this.targetStoppingIdentity.get(targetId) === identityKey) {
+            this.targetStoppingIdentity.delete(targetId)
+          }
+          this.globalSuppressedStoppingIdentities.delete(identityKey)
+          if (!isResolved) {
+            isResolved = true
+            resolveResultFn({ status: 'stopped_confirmed' })
+          }
+          return
+        }
+
+        const entry = this.activeStoppingTasksByIdentity.get(identityKey)
+        if (!entry) {
+          cleanupTimersAndListeners()
+          // P1-1: 必须决议 Promise 防止 Mutex 死锁
+          if (!isResolved) {
+            isResolved = true
+            resolveResultFn({ status: 'stopped_confirmed' })
+          }
+          return
+        }
+
+        // 状态提交前校验 target 当前在册 owner；非当前在册属主严禁写 Store
+        const currentOwner = this.activeLifecycleOwner.get(targetId)
+        if (entry.associatedTokenId && currentOwner?.tokenId !== entry.associatedTokenId) {
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[Coordinator] 退出回调属主不匹配，阻止非法提交: targetId=${targetId}, expected=${entry.associatedTokenId}, current=${currentOwner?.tokenId}`
+          )
+          cleanupTimersAndListeners()
+          this.activeStoppingTasksByIdentity.delete(identityKey)
+          if (this.targetStoppingIdentity.get(targetId) === identityKey) {
+            this.targetStoppingIdentity.delete(targetId)
+          }
+          // P1-1: 必须明确决议 resultPromise，确保释放排队锁
+          if (!isResolved) {
+            isResolved = true
+            resolveResultFn({
+              status: 'failed_unknown',
+              reason: 'owner_token_mismatch'
+            })
+          }
+          return
+        }
+
+        if (isResolved) {
+          // 若已硬超时决议为 failed_unknown，由后台对账收敛清理
+          entry.status = 'stopped_confirmed'
+          this.activeStoppingTasksByIdentity.delete(identityKey)
+          if (this.targetStoppingIdentity.get(targetId) === identityKey) {
+            this.targetStoppingIdentity.delete(targetId)
+          }
+          cleanupTimersAndListeners()
+          logger.info(
+            LogCategory.SYSTEM,
+            `[Coordinator] 硬超时后后台对账确认退出收敛: targetId=${targetId}, key=${identityKey}`
+          )
+          return
+        }
+
+        isResolved = true
+        cleanupTimersAndListeners()
+        entry.status = 'stopped_confirmed'
+        this.activeStoppingTasksByIdentity.delete(identityKey)
+        if (this.targetStoppingIdentity.get(targetId) === identityKey) {
+          this.targetStoppingIdentity.delete(targetId)
+        }
+        resolveResultFn({ status: 'stopped_confirmed' })
+      }
+
+      const entry: StoppingTaskEntry = {
+        identity: expectedIdentity,
+        status: 'running',
+        resultPromise,
+        resolveResult: resolveResultFn
+      }
+      this.activeStoppingTasksByIdentity.set(identityKey, entry)
+      this.targetStoppingIdentity.set(targetId, identityKey)
+
+      // P2-4: 若未注入 engineBridgeServiceInstance，视为无可观测物理进程树，快速决议
+      if (!this.engineBridgeServiceInstance) {
+        onExitConfirmed()
+        return resultPromise
+      }
+
+      // 挂接退出事件监听与轮询保底
+      if (typeof this.engineBridgeServiceInstance.onProcessTreeExit === 'function') {
+        unsubscribeExit = this.engineBridgeServiceInstance.onProcessTreeExit(
+          expectedIdentity,
+          onExitConfirmed
+        )
+      }
+      if (this.engineBridgeServiceInstance.isProcessTreeExited(expectedIdentity) === true) {
+        onExitConfirmed()
+        return resultPromise
+      }
+
+      pollTimer = setInterval(() => {
+        if (this.engineBridgeServiceInstance?.isProcessTreeExited(expectedIdentity) === true) {
+          onExitConfirmed()
+        }
+      }, 500)
+      if (pollTimer && typeof pollTimer.unref === 'function') {
+        pollTimer.unref()
+      }
+
+      // 15s 硬超时处理：唯一 resolveResult(failed_unknown)，释放 mutex，启动后台轻量对账
+      hardTimeoutTimer = setTimeout(() => {
+        if (!isResolved) {
+          isResolved = true
+          cleanupTimersAndListeners()
+          const ent = this.activeStoppingTasksByIdentity.get(identityKey)
+          if (ent) ent.status = 'failed_unknown'
+          logger.error(
+            LogCategory.SYSTEM,
+            `[Coordinator] 停机流程达到 15s 硬超时上限，标记 failed_unknown 并释放排队锁: targetId=${targetId}, key=${identityKey}`
+          )
+          resolveResultFn({
+            status: 'failed_unknown',
+            reason: 'process_tree_stuck_timeout'
+          })
+
+          // 后台轻量对账轮询 (每 3s 一次，最多 5 次)
+          let reconcileCount = 0
+          backgroundReconcileTimer = setInterval(() => {
+            reconcileCount++
+            if (this.engineBridgeServiceInstance?.isProcessTreeExited(expectedIdentity) === true) {
+              onExitConfirmed()
+            } else if (reconcileCount >= 5) {
+              if (backgroundReconcileTimer) clearInterval(backgroundReconcileTimer)
+              backgroundReconcileTimer = undefined
+              logger.warn(
+                LogCategory.SYSTEM,
+                `[Coordinator] 后台轻量对账轮询结束仍未退出: targetId=${targetId}, key=${identityKey}`
+              )
+            }
+          }, 3000)
+          if (backgroundReconcileTimer && typeof backgroundReconcileTimer.unref === 'function') {
+            backgroundReconcileTimer.unref()
+          }
+        }
+      }, STOP_COMPLETION_HARD_TIMEOUT_MS)
+      if (hardTimeoutTimer && typeof hardTimeoutTimer.unref === 'function') {
+        hardTimeoutTimer.unref()
+      }
+
+      // 执行底层停机指令
+      ;(async () => {
+        let timeoutTimer: ReturnType<typeof setTimeout> | undefined
+        try {
+          if (this.engineBridgeServiceInstance) {
+            await Promise.race([
+              this.engineBridgeServiceInstance.stopProcessTree(expectedIdentity).catch(err => {
+                logger.warn(
+                  LogCategory.SYSTEM,
+                  `[Coordinator] 底层 stopProcessTree 异常，继续探针等待: pid=${expectedIdentity.pid}`,
+                  err
+                )
+              }),
+              new Promise<void>(resolve => {
+                timeoutTimer = setTimeout(resolve, STOP_SERVICE_HARD_TIMEOUT_MS)
+                if (timeoutTimer && typeof timeoutTimer.unref === 'function') {
+                  timeoutTimer.unref()
+                }
+              })
+            ])
+            if (this.engineBridgeServiceInstance.isProcessTreeExited(expectedIdentity) === true) {
+              onExitConfirmed()
+            }
+          }
+        } finally {
+          if (timeoutTimer) clearTimeout(timeoutTimer)
+        }
+      })()
+
+      return resultPromise
+    })
+  }
+
+  /**
+   * 取消加载缓慢在途操作 (cancelSlowLoading)
+   * 支持三分支收敛：确证消亡 -> hibernated；未确证有 identity -> 抑制登记等待对账；句柄丢失 -> 升级持久门闩
+   */
+  async cancelSlowLoading(targetId: string): Promise<void> {
+    const ops = Array.from(this.activeInFlightOps.values()).filter(
+      op => op.targetId === targetId && (op.status === 'running' || op.spawnState === 'spawning')
+    )
+    if (ops.length === 0) {
+      return
+    }
+
+    this.registerCancelIntent(targetId)
+
+    for (const op of ops) {
+      op.abortController?.abort()
+      op.status = 'failed_unknown'
+
+      let isConfirmedExited = false
+      let killRes: 'killed' | 'no_handle' | 'unknown' = 'unknown'
+      const treeHandle = op.jobHandle ?? op.identity?.treeHandle
+
+      try {
+        if (this.engineBridgeServiceInstance) {
+          killRes = await this.engineBridgeServiceInstance.forceKillOldGeneration(
+            op.targetId,
+            op.generation,
+            treeHandle
+          )
+          if (killRes === 'killed') {
+            isConfirmedExited = true
+          } else if (killRes === 'no_handle') {
+            isConfirmedExited = false
+          } else if (op.identity) {
+            const exitRes = await this.engineBridgeServiceInstance
+              .awaitProcessTreeExit(op.identity, 3_000)
+              .catch(() => 'unknown' as const)
+            if (exitRes === 'exited') {
+              isConfirmedExited = true
+            }
+          }
+        } else {
+          isConfirmedExited = true
+        }
+      } catch {
+        isConfirmedExited = false
+      }
+
+      if (isConfirmedExited) {
+        // 分支 1：确证消亡，归位 hibernated 并 settled
+        const token = this.beginLifecycleOperation(targetId, 'crash_recovery')
+        if (token) {
+          try {
+            this.commitRuntimeSnapshot(token, draft => {
+              draft.state = 'hibernated'
+              draft.residentBytes = 0
+              draft.residentSample = undefined
+              draft.errorPhase = undefined
+              draft.errorMessage = undefined
+            })
+          } finally {
+            this.endLifecycleOperation(token)
+          }
+        }
+        this.finalizeOpAsSettled(op)
+      } else if (killRes === 'no_handle' || !op.identity) {
+        // 分支 3：句柄丢失或 identity 缺失 (no_handle)，立即写入持久门闩并锁定（P2-3 / P3-7）
+        await this.persistBlockedUnloadGate(targetId, 1, op.identity ?? null)
+        this.updateBlockedUnloadCache(targetId, true)
+        this.dispatchRuntimeError(targetId, 'unload', '取消加载后句柄丢失，已启用持久安全保护')
+        this.finalizeOpAsFailedUnknown(op)
+      } else {
+        // 分支 2：未能确证但持有正常 identity，登记全局抑制，压入后台对账循环重试（≤30s 等待，>30s 自动升阶）
+        this.suppressStoppingIdentity({
+          targetId,
+          identity: op.identity,
+          suppressedAt: Date.now(),
+          unknownRetryCount: 1
+        })
+        this.dispatchRuntimeError(targetId, 'unload', '用户取消加载，底层进程正在确认退出')
+        this.finalizeOpAsFailedUnknown(op)
+      }
+    }
+  }
+
+  // ==========================================
   // 槽位兼容与通知方法
   // ==========================================
 
@@ -863,6 +1298,13 @@ export class ModuleHibernationCoordinator {
 
   /** 测试清理 */
   destroy(): void {
+    for (const cleanup of Array.from(this.stoppingCleanups)) {
+      try {
+        cleanup()
+      } catch {}
+    }
+    this.stoppingCleanups.clear()
+
     this.targetEpochs.clear()
     this.activeLifecycleOwner.clear()
     this.activeInFlightOps.clear()
@@ -874,6 +1316,8 @@ export class ModuleHibernationCoordinator {
     this.swapCancelContexts.clear()
     this.targetStoppingIdentity.clear()
     this.pendingSwapDraining.clear()
+    this.targetStoppingMutex.clear()
+    this.activeStoppingTasksByIdentity.clear()
   }
 }
 

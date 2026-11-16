@@ -269,8 +269,26 @@ export const IN_FLIGHT_OP_STALL_TIMEOUT_MS = 60_000 // 60s 有进度算子停滞
 export const IN_FLIGHT_OP_NO_PROGRESS_HARD_TIMEOUT_MS = 120_000 // 120s 无进度算子硬超时
 export const CANCEL_INTENT_MIN_TTL_MS = 5_000 // 5s 取消意图最小防抖
 export const CANCEL_INTENT_HARD_TTL_MS = 60_000 // 60s 取消意图硬超时
+export const STOP_SERVICE_HARD_TIMEOUT_MS = 10_000 // 10s 底层停机指令超时
+export const STOP_COMPLETION_HARD_TIMEOUT_MS = 15_000 // 15s 停机有界全流程硬超时
 export const CRASH_WINDOW_MS = 300_000 // 5分钟 崩溃统计滑动窗口
 export const STABLE_RESIDENT_RESET_MS = 60_000 // 1分钟 稳定驻留拉式单调重置门限
+
+/** 停机终态决议契约 (StopServiceResult) */
+export interface StopServiceResult {
+  readonly status: 'stopped_confirmed' | 'failed_unknown'
+  readonly reason?: string
+}
+
+/** 停机中任务在册条目 (StoppingTaskEntry) */
+export interface StoppingTaskEntry {
+  readonly identity: ProcessTreeIdentity
+  status: 'running' | 'stopped_confirmed' | 'failed_unknown'
+  readonly resultPromise: Promise<StopServiceResult>
+  readonly resolveResult: (res: StopServiceResult) => void
+  submissionSuppressed?: boolean
+  associatedTokenId?: string
+}
 
 /** 在途物理操作条目契约 (InFlightPhysicalOp) */
 export interface InFlightPhysicalOp {
@@ -305,6 +323,29 @@ export interface TargetCancelIntentEntry {
   readonly registeredAt: number
 }
 
+/** 轻量 FIFO 异步排队互斥锁 */
+export class AsyncMutex {
+  private queue: Promise<void> = Promise.resolve()
+
+  async runExclusive<T>(fn: () => Promise<T> | T): Promise<T> {
+    let release!: () => void
+    const nextWait = new Promise<void>(resolve => {
+      release = resolve
+    })
+    const prevWait = this.queue
+    this.queue = prevWait.then(
+      () => nextWait,
+      () => nextWait
+    )
+    try {
+      await prevWait
+      return await fn()
+    } finally {
+      release()
+    }
+  }
+}
+
 /** EngineBridgeService 最小能力抽象（供休眠调度器解耦与单测） */
 export interface IEngineBridgeService {
   isProcessTreeExited(identity: ProcessTreeIdentity): boolean | 'unknown'
@@ -318,4 +359,5 @@ export interface IEngineBridgeService {
     identity: ProcessTreeIdentity,
     timeoutMs: number
   ): Promise<'exited' | 'timeout' | 'unknown'>
+  onProcessTreeExit?(identity: ProcessTreeIdentity, callback: () => void): () => void
 }
