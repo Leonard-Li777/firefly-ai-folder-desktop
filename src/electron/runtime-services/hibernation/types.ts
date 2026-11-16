@@ -277,6 +277,37 @@ export const CRASH_WINDOW_MS = 300_000 // 5分钟 崩溃统计滑动窗口
 export const STABLE_RESIDENT_RESET_MS = 60_000 // 1分钟 稳定驻留拉式单调重置门限
 export const COLD_START_MIN_TIMEOUT_MS = 1_000 // 1s 冷启动超时下限钳制保护
 export const COLD_START_DEFAULT_TIMEOUT_MS = 60_000 // 60s 冷启动默认看门狗超时
+export const LEASE_SWAP_DRAIN_TIMEOUT_MS = 10_000 // 10s 换型等待租约排空硬上限 (Ticket 08)
+export const CANCEL_AWAIT_STOP_TIMEOUT_MS = 3_000 // 3s 取消等待停机任务超时 (Ticket 08)
+
+/** 换型前置状态备份快照结构 (供取消换型原子回滚使用) */
+export interface SwapRollbackSnapshot {
+  readonly generation: number
+  readonly residentBytes: number
+  readonly residentSample?: ResidentMemorySample
+  readonly lastReleased?: ReleasedMemorySnapshot
+}
+
+/** 换型协作取消与所有权上下文 (SwapCancelContext) */
+export interface SwapCancelContext {
+  readonly targetId: string
+  swapTokenId: string
+  readonly abortController: AbortController
+  cancelRequested: boolean
+  readonly inFlightOps: Map<string, InFlightPhysicalOp>
+  inFlightStoppingIdentity?: ProcessTreeIdentity
+  inFlightStoppingState?: 'none' | 'in_flight' | 'settled'
+  inFlightStoppingResult?: StopServiceResult
+  inFlightLoadOpId?: string
+  rollbackSnapshot: SwapRollbackSnapshot
+  rollbackHandledByCancel?: boolean
+  committed?: boolean
+}
+
+/** 取消换型终态决议契约 */
+export interface CancelSwapResult {
+  readonly status: 'cancelled' | 'already_committed' | 'no_swap_in_progress'
+}
 
 /** 冷启动与准入门闩中断异常 */
 export class HibernationGateAbortedError extends Error {
@@ -389,6 +420,8 @@ export interface IEngineBridgeService {
     timeoutMs: number
   ): Promise<'exited' | 'timeout' | 'unknown'>
   onProcessTreeExit?(identity: ProcessTreeIdentity, callback: () => void): () => void
+  currentIdentity?(targetId: string): ProcessTreeIdentity | undefined
+  isServiceRunning?(targetId: string): boolean
   loadModel?(
     targetId: string,
     modelId?: string,

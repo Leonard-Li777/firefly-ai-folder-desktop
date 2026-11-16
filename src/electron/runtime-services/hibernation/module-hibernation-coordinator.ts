@@ -10,8 +10,10 @@ import { IModuleRuntimeStore, moduleRuntimeStore } from './module-runtime-store'
 import {
   AdmissionToken,
   AsyncMutex,
+  CANCEL_AWAIT_STOP_TIMEOUT_MS,
   CANCEL_INTENT_HARD_TTL_MS,
   CANCEL_INTENT_MIN_TTL_MS,
+  CancelSwapResult,
   COLD_START_DEFAULT_TIMEOUT_MS,
   COLD_START_MIN_TIMEOUT_MS,
   CRASH_BREAKER_THRESHOLD,
@@ -23,6 +25,7 @@ import {
   IN_FLIGHT_OP_STALL_TIMEOUT_MS,
   InFlightPhysicalOp,
   InflightLoad,
+  LEASE_SWAP_DRAIN_TIMEOUT_MS,
   LIFECYCLE_OWNER_MAX_TTL_MS,
   LifecycleOperation,
   LifecycleToken,
@@ -34,6 +37,8 @@ import {
   StoppingTaskEntry,
   StopServiceResult,
   SuppressedStoppingIdentityEntry,
+  SwapCancelContext,
+  SwapRollbackSnapshot,
   TargetCancelIntentEntry
 } from './types'
 
@@ -77,9 +82,16 @@ export class ModuleHibernationCoordinator {
   private readonly residentSinceMap = new Map<string, number>()
 
   /** 换型与停机在途上下文跟踪集合与字典 */
-  private readonly swapCancelContexts = new Set<string>()
+  private readonly swapCancelContexts = new Map<string, SwapCancelContext>()
   private readonly targetStoppingIdentity = new Map<string, string>() // targetId -> identityKey
   private readonly pendingSwapDraining = new Set<string>()
+
+  /** 引擎生命周期全局互斥锁 (Ticket 08: 保护换型事务与取消协作) */
+  private readonly engineLifecycleMutex = new AsyncMutex()
+  /** 换型引用计数持有集: targetId -> count */
+  private readonly swapHoldCount = new Map<string, number>()
+  /** 处于换型锁定中的目标集合 */
+  private readonly swappingTargets = new Set<string>()
 
   /** per-target 停机串行化互斥锁: targetId -> AsyncMutex */
   private readonly targetStoppingMutex = new Map<string, AsyncMutex>()
@@ -147,11 +159,74 @@ export class ModuleHibernationCoordinator {
   }
 
   /**
-   * 目标是否正处于模型换型持有中
+   * 目标是否正处于模型换型持有中 (Ticket 08: 引用计数持有 + 属主判定)
    */
   isSwapInProgress(targetId: string): boolean {
-    const owner = this.activeLifecycleOwner.get(targetId)
-    return owner?.operation === 'model_swap'
+    return (
+      (this.swapHoldCount.get(targetId) ?? 0) > 0 ||
+      this.swappingTargets.has(targetId) ||
+      this.activeLifecycleOwner.get(targetId)?.operation === 'model_swap'
+    )
+  }
+
+  /**
+   * 换型前置标记持有 (holdSwap)
+   * 在进入互斥锁之前同步执行，清算阶段 2 等待分桶，阻止新请求进入
+   */
+  holdSwap(targetId: string): void {
+    this.bumpEpoch(targetId) // 换型登记前严格推进代际，使在此之前发起的收割回写立即失效
+    const cur = this.swapHoldCount.get(targetId) ?? 0
+    this.swapHoldCount.set(targetId, cur + 1)
+    this.swappingTargets.add(targetId)
+  }
+
+  /**
+   * 释放换型持有 (releaseSwapHold)
+   * 引用计数归零前绝不提前移除标记
+   */
+  releaseSwapHold(targetId: string): void {
+    const cur = this.swapHoldCount.get(targetId) ?? 0
+    if (cur <= 1) {
+      this.swapHoldCount.delete(targetId)
+      this.swappingTargets.delete(targetId)
+    } else {
+      this.swapHoldCount.set(targetId, cur - 1)
+    }
+  }
+
+  /** 推进模型代次 (Ticket 08) */
+  bumpModelGeneration(targetId: string): number {
+    const current = this.runtimeStore.get(targetId)?.modelGeneration ?? 1
+    const next = current + 1
+    this.runtimeStore.update(targetId, d => {
+      d.modelGeneration = next
+    })
+    return next
+  }
+
+  /** 回滚模型代次 (Ticket 08) */
+  restoreModelGeneration(
+    targetId: string,
+    initiatorToken: LifecycleToken,
+    expectedGeneration: number,
+    previousGeneration: number
+  ): boolean {
+    const currentOwner = this.activeLifecycleOwner.get(targetId)
+    if (
+      initiatorToken.tokenId !== 'rollback_stub' &&
+      (!currentOwner || currentOwner.tokenId !== initiatorToken.tokenId)
+    ) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[Coordinator] restoreModelGeneration 属主冲突拒绝: targetId=${targetId}`
+      )
+      return false
+    }
+    return this.runtimeStore.update(targetId, d => {
+      if (d.modelGeneration === expectedGeneration) {
+        d.modelGeneration = previousGeneration
+      }
+    })
   }
 
   /** 获取指定目标当前活跃属主 Token */
@@ -461,7 +536,19 @@ export class ModuleHibernationCoordinator {
 
   setSwapCancelContext(targetId: string, active: boolean): void {
     if (active) {
-      this.swapCancelContexts.add(targetId)
+      if (!this.swapCancelContexts.has(targetId)) {
+        this.swapCancelContexts.set(targetId, {
+          targetId,
+          swapTokenId: 'manual_swap_context',
+          abortController: new AbortController(),
+          cancelRequested: false,
+          inFlightOps: new Map(),
+          rollbackSnapshot: {
+            generation: this.runtimeStore.get(targetId)?.modelGeneration ?? 1,
+            residentBytes: this.runtimeStore.get(targetId)?.residentBytes ?? 0
+          }
+        })
+      }
     } else {
       this.swapCancelContexts.delete(targetId)
     }
@@ -1007,7 +1094,7 @@ export class ModuleHibernationCoordinator {
         const isSuppressed =
           this.globalSuppressedStoppingIdentities.has(identityKey) ||
           this.targetCancelIntent.has(targetId) ||
-          this.swapCancelContexts.has(targetId) ||
+          this.swapCancelContexts.get(targetId)?.cancelRequested === true ||
           this.activeStoppingTasksByIdentity.get(identityKey)?.submissionSuppressed === true
 
         // ISS-01 / ISS-03 / ISS-09: 退出回调分级处理机制：处于抑制集合的条目严格零写 Store
@@ -1653,6 +1740,595 @@ export class ModuleHibernationCoordinator {
 
     // 4. 执行单飞加载
     return this.startSingleFlightLoadWithToken(parentToken, modelId)
+  }
+
+  // ==========================================
+  // 大模型热切换事务与取消协作上下文 (Ticket 08)
+  // ==========================================
+
+  /**
+   * 前置收敛目标模块所有在途物理操作 (15s 上限)
+   */
+  async awaitAllInFlightOpsSettled(
+    targetId: string,
+    cancelCtx: SwapCancelContext,
+    timeoutMs = 15_000
+  ): Promise<void> {
+    const ops = Array.from(this.activeInFlightOps.values()).filter(o => o.targetId === targetId)
+    for (const op of ops) {
+      cancelCtx.inFlightOps.set(op.opId, op)
+    }
+
+    const settleResults = await Promise.allSettled(
+      ops.map(async op => {
+        if (op.status === 'settled') return 'settled'
+        if (op.status === 'failed_unknown') return 'failed_unknown'
+
+        op.abortController?.abort()
+        let timeoutTimer: ReturnType<typeof setTimeout> | undefined
+        try {
+          const timeoutP = new Promise<'timeout'>(r => {
+            timeoutTimer = setTimeout(() => r('timeout'), timeoutMs)
+          })
+          const raceRes = await Promise.race([
+            op.completionPromise?.then(() =>
+              (op.status as string) === 'failed_unknown'
+                ? ('failed_unknown' as const)
+                : ('settled' as const)
+            ) ?? Promise.resolve('settled' as const),
+            timeoutP
+          ])
+          if (raceRes === 'timeout' || (op.status as string) === 'failed_unknown') {
+            this.finalizeOpAsFailedUnknown(op)
+            return 'failed_unknown'
+          } else {
+            this.finalizeOpAsSettled(op)
+            return 'settled'
+          }
+        } catch {
+          this.finalizeOpAsFailedUnknown(op)
+          return 'failed_unknown'
+        } finally {
+          if (timeoutTimer) clearTimeout(timeoutTimer)
+        }
+      })
+    )
+
+    const hasUnsettled = settleResults.some(
+      res =>
+        res.status === 'rejected' || (res.status === 'fulfilled' && res.value === 'failed_unknown')
+    )
+    if (hasUnsettled) {
+      throw new HibernationGateAbortedError(
+        targetId,
+        'UNLOAD_ESCALATED',
+        '模块部分在途进程释放超时，已启动安全保护'
+      )
+    }
+  }
+
+  /**
+   * 中止目标引擎所有在途业务租约
+   */
+  cancelInFlightEngineLeases(targetId: string, reason: string): void {
+    if (!this.leaseRegistryInstance) return
+    if (typeof (this.leaseRegistryInstance as any).cancelAllByTarget === 'function') {
+      try {
+        ;(this.leaseRegistryInstance as any).cancelAllByTarget(targetId, reason)
+      } catch {}
+    }
+    const leases = (this.leaseRegistryInstance as any).leases
+    if (leases instanceof Map) {
+      for (const lease of leases.values()) {
+        if (lease.targetId === targetId && !lease.released) {
+          try {
+            lease.abortController.abort(reason)
+          } catch {}
+        }
+      }
+    }
+  }
+
+  /**
+   * 等待业务租约排空（带超时上界）
+   */
+  async waitForLeasesDrained(targetId: string, timeoutMs: number): Promise<boolean> {
+    if (!this.leaseRegistryInstance) return true
+    if (this.leaseRegistryInstance.countActiveByTarget(targetId) === 0) return true
+
+    const start = Date.now()
+    while (Date.now() - start < timeoutMs) {
+      if (this.leaseRegistryInstance.countActiveByTarget(targetId) === 0) {
+        return true
+      }
+      await new Promise(r => setTimeout(r, 100))
+    }
+    return this.leaseRegistryInstance.countActiveByTarget(targetId) === 0
+  }
+
+  /**
+   * 本地大模型热切换事务 (beginModelSwap)
+   * 遵循 L3 规格书 §2.1 契约：
+   * 1. 最高调度优先级，由 engineLifecycleMutex 全局互斥锁守护；
+   * 2. 进入临界区前同步执行 holdSwap(targetId)，阻止新请求并清算分桶；
+   * 3. 推进代次 bumpEpoch 作废在途操作，中止旧在途租约并受 10s 硬上界约束；
+   * 4. 构建 SwapCancelContext 协作取消上下文，支持极速协作取消；
+   * 5. 严格前置确认旧进程退出（stopped_confirmed），失败坚决阻断新模型启动；
+   * 6. 新模型加载成功后原子释放换型锁，向 UI 广播换型完成。
+   */
+  async beginModelSwap(
+    targetId: string,
+    nextModelId: string
+  ): Promise<{ status: 'swapped'; generation: number }> {
+    this.holdSwap(targetId)
+
+    const cancelAbortCtrl = new AbortController()
+    const currentRt = this.runtimeStore.get(targetId)
+    if (!currentRt) {
+      this.releaseSwapHold(targetId)
+      throw new Error(`Target not found in runtimeStore: ${targetId}`)
+    }
+
+    const cancelCtx: SwapCancelContext = {
+      targetId,
+      swapTokenId: 'pending_lock',
+      abortController: cancelAbortCtrl,
+      cancelRequested: false,
+      inFlightOps: new Map<string, InFlightPhysicalOp>(),
+      inFlightStoppingState: 'none',
+      rollbackSnapshot: {
+        generation: currentRt.modelGeneration,
+        residentBytes: currentRt.residentBytes,
+        residentSample: currentRt.residentSample ? { ...currentRt.residentSample } : undefined,
+        lastReleased: currentRt.lastReleased ? { ...currentRt.lastReleased } : undefined
+      }
+    }
+    this.swapCancelContexts.set(targetId, cancelCtx)
+
+    let finalGeneration = currentRt.modelGeneration
+
+    try {
+      await this.engineLifecycleMutex.runExclusive(async () => {
+        if (cancelCtx.cancelRequested) {
+          cancelCtx.rollbackHandledByCancel = true
+          throw new HibernationGateAbortedError(targetId, 'MODEL_SWAPPED', '本地大模型切换已被取消')
+        }
+
+        const rtBefore = this.runtimeStore.get(targetId) ?? currentRt
+        const previousGeneration = rtBefore.modelGeneration
+        const nextGeneration = this.bumpModelGeneration(targetId)
+        finalGeneration = nextGeneration
+
+        let swapToken: LifecycleToken | undefined
+        try {
+          try {
+            swapToken = this.beginLifecycleOperation(targetId, 'model_swap')
+          } catch (err) {
+            logger.error(
+              LogCategory.SYSTEM,
+              `[Coordinator] failed_to_begin_lifecycle_operation_model_swap: targetId=${targetId}`,
+              err
+            )
+          }
+
+          if (!swapToken) {
+            const stubToken: LifecycleToken = {
+              targetId,
+              operation: 'model_swap',
+              tokenId: 'rollback_stub',
+              epoch: this.currentEpoch(targetId),
+              modelGeneration: nextGeneration,
+              grantedAt: Date.now()
+            }
+            this.restoreModelGeneration(targetId, stubToken, nextGeneration, previousGeneration)
+            throw new HibernationGateAbortedError(
+              targetId,
+              'OPERATION_LOCKED',
+              '无法获取模型换型生命周期属主令牌'
+            )
+          }
+
+          cancelCtx.swapTokenId = swapToken.tokenId
+
+          const assertSwapActive = () => {
+            const ctx = this.swapCancelContexts.get(targetId)
+            if (
+              ctx?.cancelRequested ||
+              !this.isSwapInProgress(targetId) ||
+              this.activeLifecycleOwner.get(targetId)?.tokenId !== swapToken!.tokenId
+            ) {
+              if (ctx?.cancelRequested) {
+                ctx.rollbackHandledByCancel = true
+              }
+              throw new HibernationGateAbortedError(
+                targetId,
+                'MODEL_SWAPPED',
+                '本地大模型切换已被取消或已被其他操作接管'
+              )
+            }
+          }
+
+          const raceCancel = <T>(p: Promise<T>): Promise<T> => {
+            p.catch(err => {
+              logger.debug(
+                LogCategory.SYSTEM,
+                `[Coordinator] raceCancel consumed late rejection: targetId=${targetId}`,
+                err
+              )
+            })
+            if (cancelAbortCtrl.signal.aborted) {
+              assertSwapActive()
+            }
+            let onAbort: (() => void) | undefined
+            const cancelP = new Promise<T>((_, reject) => {
+              onAbort = () => {
+                try {
+                  assertSwapActive()
+                } catch (e) {
+                  reject(e)
+                }
+              }
+              cancelAbortCtrl.signal.addEventListener('abort', onAbort, { once: true })
+            })
+            return Promise.race([p, cancelP]).finally(() => {
+              if (onAbort) {
+                cancelAbortCtrl.signal.removeEventListener('abort', onAbort)
+              }
+            })
+          }
+
+          // 进入换型临界区同步跃迁为 draining 状态
+          this.commitRuntimeSnapshot(swapToken, d => {
+            d.state = 'draining'
+            d.modelGeneration = nextGeneration
+            d.lastReleased = undefined
+            d.residentSample = undefined
+          })
+
+          const residentBytesAtEntry = currentRt.residentBytes
+          this.invalidateInflight(targetId, 'MODEL_SWAPPED')
+
+          // 统一收敛目标模块所有在途操作 (15s 上限)
+          await raceCancel(this.awaitAllInFlightOpsSettled(targetId, cancelCtx))
+          assertSwapActive()
+
+          // 中止在途租约并有界等待排空
+          this.cancelInFlightEngineLeases(targetId, 'MODEL_SWAPPED')
+          assertSwapActive()
+
+          this.setPendingSwapDraining(targetId, true)
+          let drained = false
+          try {
+            drained = await raceCancel(
+              this.waitForLeasesDrained(targetId, LEASE_SWAP_DRAIN_TIMEOUT_MS)
+            )
+          } finally {
+            this.setPendingSwapDraining(targetId, false)
+          }
+          assertSwapActive()
+
+          // 物理副作用收敛：若旧身份已在途停机，直接复用其停机任务并 await 结果 (P1-03)
+          const oldStoppingKey = this.targetStoppingIdentity.get(targetId)
+          if (oldStoppingKey) {
+            const oldStoppingEntry = this.activeStoppingTasksByIdentity.get(oldStoppingKey)
+            if (oldStoppingEntry && oldStoppingEntry.status !== 'stopped_confirmed') {
+              logger.info(
+                LogCategory.SYSTEM,
+                `[Coordinator] 换型前置等待已在途停机任务: targetId=${targetId}, oldStoppingKey=${oldStoppingKey}`
+              )
+              cancelCtx.inFlightStoppingIdentity = oldStoppingEntry.identity
+              cancelCtx.inFlightStoppingState = 'in_flight'
+              const prevRes = await raceCancel(oldStoppingEntry.resultPromise)
+              cancelCtx.inFlightStoppingState = 'settled'
+              cancelCtx.inFlightStoppingResult = prevRes
+              assertSwapActive()
+              if (prevRes.status !== 'stopped_confirmed') {
+                if (
+                  this.engineBridgeServiceInstance?.isProcessTreeExited(oldStoppingEntry.identity)
+                ) {
+                  this.activeStoppingTasksByIdentity.delete(oldStoppingKey)
+                  if (this.targetStoppingIdentity.get(targetId) === oldStoppingKey) {
+                    this.targetStoppingIdentity.delete(targetId)
+                  }
+                } else {
+                  this.commitRuntimeSnapshot(swapToken, d => {
+                    d.state = 'error'
+                    d.lastFailureKind = 'unload'
+                    d.modelGeneration = previousGeneration
+                    d.unloadFailStreak += 1
+                  })
+                  throw new HibernationGateAbortedError(
+                    targetId,
+                    'UNLOAD_ESCALATED',
+                    '本地大模型切换失败，旧模型进程退出失败，请重启应用'
+                  )
+                }
+              }
+            }
+          }
+
+          // 采样当前旧进程物理身份
+          const oldIdentity = this.engineBridgeServiceInstance?.currentIdentity
+            ? this.engineBridgeServiceInstance.currentIdentity(targetId)
+            : undefined
+
+          let isRunning = false
+          try {
+            isRunning =
+              oldIdentity !== undefined &&
+              (this.engineBridgeServiceInstance?.isServiceRunning
+                ? this.engineBridgeServiceInstance.isServiceRunning(targetId)
+                : false)
+          } catch {
+            isRunning = true
+          }
+
+          const mustStop = !drained || isRunning || oldIdentity !== undefined
+
+          if (mustStop && oldIdentity !== undefined) {
+            let stopped = false
+            try {
+              cancelCtx.inFlightStoppingIdentity = oldIdentity
+              cancelCtx.inFlightStoppingState = 'in_flight'
+              const stopResult = await raceCancel(this.stopServiceBounded(targetId, oldIdentity))
+              cancelCtx.inFlightStoppingState = 'settled'
+              cancelCtx.inFlightStoppingResult = stopResult
+              stopped = stopResult.status === 'stopped_confirmed'
+            } catch (err) {
+              logger.error(
+                LogCategory.SYSTEM,
+                `[Coordinator] engine_stop_escalate_unexpected: targetId=${targetId}`,
+                err
+              )
+              stopped = false
+            }
+            assertSwapActive()
+
+            // 无论停机成败，强制收敛租约
+            this.leaseRegistryInstance?.forceReleaseByTarget(targetId)
+            assertSwapActive()
+
+            if (!stopped) {
+              logger.error(
+                LogCategory.SYSTEM,
+                `[Coordinator] 旧模型停机未确证退出，阻断新模型启动: targetId=${targetId}`
+              )
+              this.commitRuntimeSnapshot(swapToken, d => {
+                d.state = 'error'
+                d.lastFailureKind = 'unload'
+                d.modelGeneration = previousGeneration
+                d.unloadFailStreak += 1
+              })
+              const clusterId = HIBERNATABLE_TARGET_CATALOG[targetId]?.clusterId
+              if (clusterId) {
+                this.onClusterActivityChanged(clusterId)
+              }
+              throw new HibernationGateAbortedError(
+                targetId,
+                'UNLOAD_ESCALATED',
+                '本地大模型切换失败，旧模型进程无法退出，请重启应用'
+              )
+            }
+
+            // 旧进程确证退出，原子归位 hibernated
+            this.commitRuntimeSnapshot(swapToken, d => {
+              d.state = 'hibernated'
+              d.unloadFailStreak = 0
+              if (residentBytesAtEntry > 0) {
+                const kind = currentRt.effectiveMemoryKind ?? 'ram'
+                d.lastReleasedBytes = residentBytesAtEntry
+                d.lastReleased = {
+                  bytes: residentBytesAtEntry,
+                  releasedAt: Date.now(),
+                  modelGeneration: d.modelGeneration,
+                  kind,
+                  state: 'available'
+                }
+              }
+            })
+            const clusterId = HIBERNATABLE_TARGET_CATALOG[targetId]?.clusterId
+            if (clusterId) {
+              this.onClusterActivityChanged(clusterId)
+            }
+          } else {
+            this.leaseRegistryInstance?.forceReleaseByTarget(targetId)
+            assertSwapActive()
+            this.commitRuntimeSnapshot(swapToken, d => {
+              d.state = 'hibernated'
+              d.unloadFailStreak = 0
+              if (residentBytesAtEntry > 0) {
+                const kind = currentRt.effectiveMemoryKind ?? 'ram'
+                d.lastReleasedBytes = residentBytesAtEntry
+                d.lastReleased = {
+                  bytes: residentBytesAtEntry,
+                  releasedAt: Date.now(),
+                  modelGeneration: d.modelGeneration,
+                  kind,
+                  state: 'available'
+                }
+              }
+            })
+            const clusterId = HIBERNATABLE_TARGET_CATALOG[targetId]?.clusterId
+            if (clusterId) {
+              this.onClusterActivityChanged(clusterId)
+            }
+          }
+
+          assertSwapActive()
+
+          // 携带换型 Token 进入单飞冷启动新模型
+          const loadPromise = this.startSingleFlightLoadWithToken(swapToken, nextModelId)
+          const loadOp = Array.from(this.activeInFlightOps.values()).find(
+            op => op.targetId === targetId && op.type === 'load'
+          )
+          if (loadOp) {
+            cancelCtx.inFlightLoadOpId = loadOp.opId
+          }
+          await raceCancel(loadPromise)
+          cancelCtx.committed = true
+        } finally {
+          // 仅当未发生协作取消交接时，换型协程才主动终结属主 (P1-01)
+          if (
+            swapToken &&
+            !cancelCtx.rollbackHandledByCancel &&
+            this.activeLifecycleOwner.get(targetId)?.tokenId === swapToken.tokenId
+          ) {
+            this.endLifecycleOperation(swapToken)
+          }
+        }
+      })
+      return { status: 'swapped', generation: finalGeneration }
+    } finally {
+      // 仅当未发生协作取消交接时，换型协程才清理上下文与换型持有 (P1-01)
+      if (!cancelCtx.rollbackHandledByCancel) {
+        this.swapCancelContexts.delete(targetId)
+        this.releaseSwapHold(targetId)
+      }
+    }
+  }
+
+  /**
+   * 取消大模型热切换 (cancelModelSwap)
+   */
+  async cancelModelSwap(targetId: string): Promise<CancelSwapResult> {
+    const cancelCtx = this.swapCancelContexts.get(targetId)
+    if (!cancelCtx || !this.isSwapInProgress(targetId) || cancelCtx.committed) {
+      return { status: cancelCtx?.committed ? 'already_committed' : 'no_swap_in_progress' }
+    }
+
+    // 锁外同步设置取消意图与持久标记
+    this.registerCancelIntent(targetId)
+    cancelCtx.cancelRequested = true
+
+    const stoppingKey = this.targetStoppingIdentity.get(targetId)
+    if (stoppingKey) {
+      const stoppingEntry = this.activeStoppingTasksByIdentity.get(stoppingKey)
+      if (stoppingEntry) {
+        this.globalSuppressedStoppingIdentities.set(stoppingKey, {
+          targetId,
+          identity: stoppingEntry.identity,
+          suppressedAt: Date.now()
+        })
+      }
+    }
+
+    cancelCtx.abortController.abort()
+
+    try {
+      return await this.engineLifecycleMutex.runExclusive(async (): Promise<CancelSwapResult> => {
+        if (cancelCtx.committed) {
+          logger.info(
+            LogCategory.SYSTEM,
+            `[Coordinator] 取消换型到达时换型已完成提交: targetId=${targetId}`
+          )
+          return { status: 'already_committed' }
+        }
+
+        cancelCtx.rollbackHandledByCancel = true
+
+        // 回收在途物理操作
+        const allTargetOps = Array.from(this.activeInFlightOps.values()).filter(
+          o => o.targetId === targetId
+        )
+        for (const op of allTargetOps) {
+          if (op.status === 'running') {
+            op.abortController?.abort()
+            const timeoutP = new Promise<void>(r => setTimeout(r, 5_000))
+            await Promise.race([op.completionPromise, timeoutP]).catch(() => {})
+          }
+        }
+
+        // 接管在途停机任务并有界等待
+        if (stoppingKey) {
+          const stoppingEntry = this.activeStoppingTasksByIdentity.get(stoppingKey)
+          if (stoppingEntry && stoppingEntry.status === 'running') {
+            stoppingEntry.submissionSuppressed = true
+            let cancelTimer: ReturnType<typeof setTimeout> | undefined
+            const timeoutP = new Promise<void>(r => {
+              cancelTimer = setTimeout(r, CANCEL_AWAIT_STOP_TIMEOUT_MS)
+            })
+            await Promise.race([stoppingEntry.resultPromise, timeoutP]).catch(() => {})
+            if (cancelTimer) clearTimeout(cancelTimer)
+          }
+        }
+
+        const rollback = cancelCtx.rollbackSnapshot
+        const stoppingRes = cancelCtx.inFlightStoppingResult
+        const confirmedStopped = stoppingRes?.status === 'stopped_confirmed'
+        const stoppingFailed = stoppingRes?.status === 'failed_unknown'
+        const stoppingInFlight =
+          cancelCtx.inFlightStoppingState === 'in_flight' || stoppingKey !== undefined
+
+        const oldId = this.engineBridgeServiceInstance?.currentIdentity
+          ? this.engineBridgeServiceInstance.currentIdentity(targetId)
+          : undefined
+        const isRunning =
+          oldId !== undefined &&
+          (this.engineBridgeServiceInstance?.isServiceRunning
+            ? this.engineBridgeServiceInstance.isServiceRunning(targetId)
+            : false)
+
+        const currentToken = this.activeLifecycleOwner.get(targetId)
+        const applyRollback = (draft: ModuleRuntimeState) => {
+          if (confirmedStopped) {
+            draft.state = 'hibernated'
+            draft.modelGeneration = rollback ? rollback.generation : draft.modelGeneration
+            draft.residentBytes = 0
+            draft.residentSample = undefined
+            if (rollback?.lastReleased) {
+              draft.lastReleased = { ...rollback.lastReleased, state: 'available' }
+            }
+          } else if (stoppingFailed || (stoppingInFlight && !confirmedStopped)) {
+            draft.state = 'error'
+            draft.lastFailureKind = 'unload'
+            draft.modelGeneration = rollback ? rollback.generation : draft.modelGeneration
+            draft.residentBytes = 0
+            draft.residentSample = undefined
+          } else if (isRunning) {
+            draft.state = 'resident'
+            draft.modelGeneration = rollback ? rollback.generation : draft.modelGeneration
+            draft.residentSince = Date.now()
+            draft.crashStreak = 0
+            draft.lastCrashGeneration = undefined
+            draft.lastFailureKind = undefined
+            draft.errorPhase = undefined
+            draft.errorMessage = undefined
+            draft.lastErrorI18nKey = undefined
+            draft.residentBytes = rollback ? rollback.residentBytes : draft.residentBytes
+            draft.residentSample = rollback ? rollback.residentSample : undefined
+            draft.lastReleased = undefined
+          } else {
+            draft.state = 'hibernated'
+            draft.modelGeneration = rollback ? rollback.generation : draft.modelGeneration
+            draft.residentBytes = 0
+            draft.residentSample = undefined
+            if (rollback?.lastReleased) {
+              draft.lastReleased = { ...rollback.lastReleased, state: 'available' }
+            }
+          }
+        }
+
+        if (currentToken && currentToken.operation === 'model_swap') {
+          this.commitRuntimeSnapshot(currentToken, applyRollback)
+          this.endLifecycleOperation(currentToken)
+        } else {
+          this.runtimeStore.update(targetId, applyRollback)
+        }
+
+        const clusterId = HIBERNATABLE_TARGET_CATALOG[targetId]?.clusterId
+        if (clusterId) {
+          this.onClusterActivityChanged(clusterId)
+        }
+        return { status: 'cancelled' }
+      })
+    } finally {
+      const currentToken = this.activeLifecycleOwner.get(targetId)
+      if (!currentToken || currentToken.operation !== 'model_swap') {
+        this.swapCancelContexts.delete(targetId)
+        this.targetCancelIntent.delete(targetId)
+      }
+      this.releaseSwapHold(targetId)
+    }
   }
 
   // ==========================================
