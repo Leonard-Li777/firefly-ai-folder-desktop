@@ -1,3 +1,5 @@
 export * from './types'
 export * from './module-runtime-store'
 export * from './lease-registry'
+export * from './memory-probe'
+export * from './module-hibernation-coordinator'

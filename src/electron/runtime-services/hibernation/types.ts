@@ -219,3 +219,43 @@ export interface AcquireLeaseOptions {
   clusterId?: 'analysis_suite' | 'tts_media'
   livenessSourceKey?: 'task_progress' | 'player_state'
 }
+
+// ==========================================
+// 动态内存判定与协调器核心调度常量与类型 (Ticket 04)
+// ==========================================
+
+export const IDLE_MULTIPLIER_BUCKETS = [
+  { maxMs: 2 * 60_000, multiplier: 1.0 }, // < 2 min: 活跃操作期，严守基准线，减少打扰
+  { maxMs: 10 * 60_000, multiplier: 1.5 }, // 2 ~ 10 min: 短暂离开，适度放宽回收阈值
+  { maxMs: Infinity, multiplier: 2.0 } // > 10 min: 长期无操作，激进回收释放，最大化省电
+] as const
+
+export const MEMORY_THRESHOLD_BASE_DIVISOR = 16 // 1/16 物理总内存比例基准线 (6.25%)
+export const MIN_MEMORY_THRESHOLD_BYTES = 128 * 1024 * 1024 // 128 MB 下限保护
+export const MAX_MEMORY_THRESHOLD_BYTES = 4 * 1024 * 1024 * 1024 // 4 GB 上限钳制
+export const MEMORY_HYSTERESIS_RATIO = 1.08 // 8% 滞回抗抖释放比率
+export const ANALYSIS_SUITE_IDLE_TIMEOUT_MS = 300_000 // 5 分钟空闲阈值
+export const TTS_IDLE_TIMEOUT_MS = 300_000 // 5 分钟空闲阈值
+export const MAX_GRACE_PERIOD_MS = 1_200_000 // 20 分钟宽限上限
+export const DRAIN_CANCELABLE_WINDOW_MS = 500 // 阶段 1 可撤销窗口
+export const CRASH_BREAKER_THRESHOLD = 2 // 连续崩溃熔断阈值
+export const UNLOAD_FAIL_ESCALATION = 3 // 卸载失败升级阈值
+export const MACOS_FREEMEM_BIAS_MB = 2048 // macOS 经验校准补偿值 (2GB)
+
+export type LifecycleOperation =
+  | 'idle_hibernation'
+  | 'crash_recovery'
+  | 'model_swap'
+  | 'unload_retry'
+  | 'single_flight_load'
+
+export interface LifecycleToken {
+  readonly tokenId: string
+  readonly targetId: string
+  readonly epoch: number
+  readonly modelGeneration: number
+  readonly operation: LifecycleOperation
+  readonly grantedAt: number
+}
+
+export type AdmissionToken = LifecycleToken

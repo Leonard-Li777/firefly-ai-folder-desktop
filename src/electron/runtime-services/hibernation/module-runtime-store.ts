@@ -27,6 +27,7 @@ export interface IModuleRuntimeStore {
   ): Promise<void>
   persistSnapshot(targetId: string): Promise<void>
   isBlockedUnload(targetId: string): boolean
+  update(targetId: string, apply: (draft: ModuleRuntimeState) => void): boolean
   resetForTesting(): void
 }
 
@@ -264,6 +265,13 @@ export class ModuleRuntimeStore implements IModuleRuntimeStore {
   public isBlockedUnload(targetId: string): boolean {
     const entry = this.get(targetId)
     return entry.blockedUnloadNoHandle === 1
+  }
+
+  public update(targetId: string, apply: (draft: ModuleRuntimeState) => void): boolean {
+    const current = this.states.get(targetId)
+    if (!current) return false
+    apply(current)
+    return true
   }
 
   public resetForTesting(): void {
