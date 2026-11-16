@@ -31,3 +31,6 @@ export * from './ai-skill-api-service'
 
 // 插件沙箱与宿主管理服务
 export * from './plugin'
+
+// 模块休眠与能耗透视服务 (L3 规格书规范)
+export * from './hibernation'

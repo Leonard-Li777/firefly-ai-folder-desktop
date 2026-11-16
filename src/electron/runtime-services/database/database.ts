@@ -769,6 +769,20 @@ export const GENESIS_V1_SCHEMA = `
   CREATE TRIGGER trg_file_contents_update_modified_at AFTER UPDATE ON file_contents BEGIN
     UPDATE files SET modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = new.file_fingerprint;
   END;
+
+  -- 26. 模块运行时快照与持久门闩表 (Module Runtime Snapshots)
+  CREATE TABLE IF NOT EXISTS module_runtime_snapshots (
+    target_id                   TEXT PRIMARY KEY,
+    state                       TEXT NOT NULL DEFAULT 'hibernated',
+    model_generation            INTEGER NOT NULL DEFAULT 0,
+    resident_bytes              INTEGER NOT NULL DEFAULT 0,
+    last_released_bytes         INTEGER,
+    crash_streak                INTEGER NOT NULL DEFAULT 0,
+    unload_fail_streak          INTEGER NOT NULL DEFAULT 0,
+    blocked_unload_no_handle    INTEGER NOT NULL DEFAULT 0,
+    blocked_unload_identity     TEXT,
+    updated_at                  DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 `
 
 /**
@@ -784,6 +798,7 @@ export const migrations: IMigrationConfig[] = [
     up: GENESIS_V1_SCHEMA,
     // down 仅供开发期手动回滚参考；创世建库期（ADR-0038）直接删除数据库文件重建，不执行此脚本
     down: `
+      DROP TABLE IF EXISTS module_runtime_snapshots;
       DROP TABLE IF EXISTS file_video_chunks;
       DROP TABLE IF EXISTS memory_cache;
       DROP TABLE IF EXISTS pending_firecore_operations;
