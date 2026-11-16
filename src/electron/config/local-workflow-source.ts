@@ -85,7 +85,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'designer',
     category: 'creative',
     naming_pattern: t('[业务模块]_[页面名称]_[状态变体]'),
-    naming_template: t('[{TAG:文件类型}]{SMART_NAME}_v{META:版本}'),
+    naming_template: `[{TAG:${t('文件类型')}}]{SMART_NAME}_v{META:${t('版本')}}`,
     preset_directory_tree: [
       {
         name: t('10-设计规范与组件库'),
@@ -193,7 +193,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'engineer',
     category: 'office',
     naming_pattern: t('[业务归属]_[主题名称]_[生成日期]'),
-    naming_template: t('[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('文件类型')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-工程源码与组件'),
@@ -313,7 +313,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'engineer',
     category: 'office',
     naming_pattern: t('[业务归属]_[主题名称]_[生成日期]'),
-    naming_template: t('[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('文件类型')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-系统设计与API文档'),
@@ -433,7 +433,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'general',
     category: 'entertainment',
     naming_pattern: t('[业务归属]_[主题名称]_[生成日期]'),
-    naming_template: t('[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('文件类型')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-Projects (进行中项目)'),
@@ -525,7 +525,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'general',
     category: 'entertainment',
     naming_pattern: t('[业务归属]_[主题名称]_[生成日期]'),
-    naming_template: t('[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('文件类型')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('10-19 组织治理与规章'),
@@ -621,7 +621,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'photographer',
     category: 'creative',
     naming_pattern: t('[拍摄场景]_[主题主体]'),
-    naming_template: t('[{TAG:内容标签}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('内容标签')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-原始拍片RAW'),
@@ -753,7 +753,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'videographer',
     category: 'creative',
     naming_pattern: t('[场景机位]_[片段主题]_[人物动作]'),
-    naming_template: t('[{TAG:画质等级}]{SMART_NAME}_{TAG:景别}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('画质等级')}}]{SMART_NAME}_{TAG:${t('景别')}}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-拍摄实录Footage'),
@@ -881,7 +881,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'researcher',
     category: 'creative',
     naming_pattern: t('[业务归属]_[主题名称]_[生成日期]'),
-    naming_template: t('[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('文件类型')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-核心文献库'),
@@ -989,7 +989,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'financial',
     category: 'office',
     naming_pattern: t('[签署双方]_[业务性质]_[标的要点]'),
-    naming_template: t('[{TAG:财务类型}]{SMART_NAME}_{MOD:YYYY-MM-DD}'),
+    naming_template: `[{TAG:${t('财务类型')}}]{SMART_NAME}_{MOD:YYYY-MM-DD}`,
     preset_directory_tree: [
       {
         name: t('01-原始发票报销'),
@@ -1154,7 +1154,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'general',
     category: 'entertainment',
     naming_pattern: t('[业务归属]_[主题名称]_[生成日期]'),
-    naming_template: t('[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('文件类型')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-核心身份与证照'),
@@ -1262,7 +1262,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'creator',
     category: 'entertainment',
     naming_pattern: t('[业务归属]_[主题名称]_[生成日期]'),
-    naming_template: t('[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('文件类型')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-选题灵感与策划库'),
@@ -1378,7 +1378,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'operator',
     category: 'office',
     naming_pattern: t('[业务归属]_[主题名称]_[生成日期]'),
-    naming_template: t('[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('文件类型')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-选品调研与样品'),
@@ -1478,7 +1478,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'engineer',
     category: 'office',
     naming_pattern: t('[业务归属]_[主题名称]_[生成日期]'),
-    naming_template: t('[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('文件类型')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-游戏设计文档GDD'),
@@ -1602,7 +1602,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'operator',
     category: 'office',
     naming_pattern: t('[业务归属]_[主题名称]_[生成日期]'),
-    naming_template: t('[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('文件类型')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-产品刊登与多语Listing'),
@@ -1694,7 +1694,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'legal',
     category: 'office',
     naming_pattern: t('[案件名称]_[当事人]_[文书类型]'),
-    naming_template: t('[{TAG:文件用途}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('文件用途')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-委托与立案'),
@@ -2070,7 +2070,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'medical',
     category: 'office',
     naming_pattern: t('[患者编号或课题]_[资料类型]_[内容要点]'),
-    naming_template: t('[{TAG:文档细分}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('文档细分')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-病历与检查报告'),
@@ -2410,7 +2410,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'teacher',
     category: 'office',
     naming_pattern: t('[学科年级]_[单元或主题]_[资料类型]'),
-    naming_template: t('[{TAG:学科领域}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('学科领域')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-教案与课件'),
@@ -2742,7 +2742,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'consultant',
     category: 'office',
     naming_pattern: t('[项目或公司名]_[研究主题]_[资料类型]'),
-    naming_template: t('[{TAG:文件用途}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('文件用途')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-行业与竞品研究'),
@@ -3090,7 +3090,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'architect',
     category: 'creative',
     naming_pattern: t('[项目名称]_[图纸内容]_[设计阶段]'),
-    naming_template: t('[{TAG:文件用途}]{SMART_NAME}_v{META:版本}'),
+    naming_template: `[{TAG:${t('文件用途')}}]{SMART_NAME}_v{META:${t('版本')}}`,
     preset_directory_tree: [
       {
         name: t('01-方案与效果图'),
@@ -3510,7 +3510,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'writer',
     category: 'entertainment',
     naming_pattern: t('[作品名]_[卷次章节]_[情节要点]'),
-    naming_template: t('[{TAG:处理状态}]{SMART_NAME}_{MOD:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('处理状态')}}]{SMART_NAME}_{MOD:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-设定与大纲'),
@@ -3806,7 +3806,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'medical',
     category: 'entertainment',
     naming_pattern: t('[客户编号]_[档案内容]_[调理阶段]'),
-    naming_template: t('[{TAG:文件用途}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('文件用途')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-健康档案与评估'),
@@ -4100,7 +4100,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'product',
     category: 'office',
     naming_pattern: t('[产品或模块]_[功能主题]_[文档类型]'),
-    naming_template: t('[{TAG:文件用途}]{SMART_NAME}_v{META:版本}'),
+    naming_template: `[{TAG:${t('文件用途')}}]{SMART_NAME}_v{META:${t('版本')}}`,
     preset_directory_tree: [
       {
         name: t('01-产品规划'),
@@ -4414,7 +4414,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'data_scientist',
     category: 'office',
     naming_pattern: t('[项目或数据集]_[分析步骤]_[产出类型]'),
-    naming_template: t('[{TAG:文件用途}]{SMART_NAME}_{MOD:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('文件用途')}}]{SMART_NAME}_{MOD:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-原始数据'),
@@ -4902,7 +4902,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'qa',
     category: 'office',
     naming_pattern: t('[产品版本]_[测试模块]_[记录类型]'),
-    naming_template: t('[{TAG:文件用途}]{SMART_NAME}_{MOD:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('文件用途')}}]{SMART_NAME}_{MOD:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-测试计划'),
@@ -5350,7 +5350,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'sales',
     category: 'office',
     naming_pattern: t('[客户名称]_[商机或项目]_[资料类型]'),
-    naming_template: t('[{TAG:文件用途}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('文件用途')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-客户与商机'),
@@ -5680,7 +5680,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'hr',
     category: 'office',
     naming_pattern: t('[部门或姓名]_[人事事项]_[资料类型]'),
-    naming_template: t('[{TAG:文件用途}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('文件用途')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-组织与岗位'),
@@ -5998,7 +5998,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'marketer',
     category: 'office',
     naming_pattern: t('[品牌或活动]_[内容主题]_[物料类型]'),
-    naming_template: t('[{TAG:文件用途}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('文件用途')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-市场与品牌定位'),
@@ -6404,7 +6404,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'legal',
     category: 'office',
     naming_pattern: t('[事项名称]_[对方公司]_[文件类型]'),
-    naming_template: t('[{TAG:合同票据细分}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('合同票据细分')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-合同审查'),
@@ -6758,7 +6758,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'engineer',
     category: 'office',
     naming_pattern: t('[项目板卡]_[功能模块]_[文件内容]'),
-    naming_template: t('[{TAG:源代码细分}]{SMART_NAME}_v{META:版本}'),
+    naming_template: `[{TAG:${t('源代码细分')}}]{SMART_NAME}_v{META:${t('版本')}}`,
     preset_directory_tree: [
       {
         name: t('01-硬件设计'),
@@ -7123,7 +7123,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'modeler',
     category: 'creative',
     naming_pattern: t('[资产类型]_[模型主体]_[精度档位]'),
-    naming_template: t('[{TAG:内容标签}]{SMART_NAME}_v{META:版本}'),
+    naming_template: `[{TAG:${t('内容标签')}}]{SMART_NAME}_v{META:${t('版本')}}`,
     preset_directory_tree: [
       {
         name: t('01-参考与设定'),
@@ -7475,7 +7475,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'freelancer',
     category: 'creative',
     naming_pattern: t('[客户名称]_[项目内容]_[文件用途]'),
-    naming_template: t('[{TAG:处理状态}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('处理状态')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-接单与报价'),
@@ -7757,7 +7757,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'general',
     category: 'entertainment',
     naming_pattern: t('[知识主题]_[核心观点]_[来源出处]'),
-    naming_template: t('[{TAG:学科领域}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('学科领域')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-随手记收集箱'),
@@ -7945,7 +7945,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'gamer',
     category: 'entertainment',
     naming_pattern: t('[游戏名称]_[内容主题]_[场景或战绩]'),
-    naming_template: t('[{TAG:游戏类型}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('游戏类型')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-游戏安装文件'),
@@ -8293,7 +8293,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'reader',
     category: 'entertainment',
     naming_pattern: t('[书名]_[题材流派]_[卷册信息]'),
-    naming_template: t('《{SMART_NAME}》_[{TAG:作者}]_[{TAG:出版状态}]'),
+    naming_template: `《{SMART_NAME}》_[{TAG:${t('作者')}}]_[{TAG:${t('出版状态')}}]`,
     preset_directory_tree: [
       { name: t('01-最近在读与追更'), children: [{ name: t('连载网文最新更新') }] },
       {
@@ -8510,7 +8510,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'cinephile',
     category: 'entertainment',
     naming_pattern: t('[影视作品名]_[年份]_[季集或版本]'),
-    naming_template: t('{SMART_NAME}_[{TAG:画质等级}]'),
+    naming_template: `{SMART_NAME}_[{TAG:${t('画质等级')}}]`,
     preset_directory_tree: [
       {
         name: t('01-电影收藏'),
@@ -8839,7 +8839,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'otaku',
     category: 'entertainment',
     naming_pattern: t('[作品名称]_[卷册或话数]_[内容主题]'),
-    naming_template: t('[{TAG:作者}]{SMART_NAME}_[{TAG:作品来源}]'),
+    naming_template: `[{TAG:${t('作者')}}]{SMART_NAME}_[{TAG:${t('作品来源')}}]`,
     preset_directory_tree: [
       { name: t('01-追番清单'), children: [{ name: t('本季新番与待看') }] },
       {
@@ -9096,7 +9096,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'tech_geek',
     category: 'entertainment',
     naming_pattern: t('[硬件品牌型号]_[资料类型]_[要点]'),
-    naming_template: t('[{TAG:内容标签}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('内容标签')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-装机配置单'),
@@ -9337,7 +9337,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'foodie',
     category: 'entertainment',
     naming_pattern: t('[菜名]_[菜系或场景]_[关键食材]'),
-    naming_template: t('[{TAG:内容标签}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('内容标签')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-家常菜与主食'),
@@ -9529,7 +9529,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'pet_owner',
     category: 'entertainment',
     naming_pattern: t('[宠物名字]_[事件主题]_[场景]'),
-    naming_template: t('[{TAG:内容标签}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('内容标签')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-健康与疫苗档案'),
@@ -9704,7 +9704,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'traveler',
     category: 'entertainment',
     naming_pattern: t('[目的地或活动]_[内容主题]_[细节或时间]'),
-    naming_template: t('[{TAG:地理位置}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('地理位置')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-行程与订单'),
@@ -10001,7 +10001,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'audiophile',
     category: 'creative',
     naming_pattern: t('[项目名称]_[曲目或音轨]_[制作阶段]'),
-    naming_template: t('[{TAG:音乐类型}]{SMART_NAME}_v{META:版本}'),
+    naming_template: `[{TAG:${t('音乐类型')}}]{SMART_NAME}_v{META:${t('版本')}}`,
     preset_directory_tree: [
       {
         name: t('01-编曲工程'),
@@ -10331,7 +10331,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'designer',
     category: 'creative',
     naming_pattern: t('[客户品牌]_[物料名称]_[使用场景]'),
-    naming_template: t('[{TAG:处理状态}]{SMART_NAME}_v{META:版本}'),
+    naming_template: `[{TAG:${t('处理状态')}}]{SMART_NAME}_v{META:${t('版本')}}`,
     preset_directory_tree: [
       {
         name: t('01-品牌规范'),
@@ -10592,7 +10592,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'illustrator',
     category: 'creative',
     naming_pattern: t('[约稿项目]_[角色或主题]_[绘制阶段]'),
-    naming_template: t('[{TAG:作品来源}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('作品来源')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-约稿与授权'),
@@ -10881,7 +10881,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'engineer',
     category: 'office',
     naming_pattern: t('[项目名称]_[功能模块]_[内容要点]'),
-    naming_template: t('[{TAG:运行平台}]{SMART_NAME}_v{META:版本}'),
+    naming_template: `[{TAG:${t('运行平台')}}]{SMART_NAME}_v{META:${t('版本')}}`,
     preset_directory_tree: [
       {
         name: t('01-iOS 工程源码'),
@@ -11305,7 +11305,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'sre',
     category: 'office',
     naming_pattern: t('[服务名称]_[环境]_[用途]'),
-    naming_template: t('[{TAG:安全等级}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('安全等级')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-容器与集群部署'),
@@ -11651,7 +11651,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'logistics',
     category: 'office',
     naming_pattern: t('[供应商或项目]_[单据类型]_[批次或月份]'),
-    naming_template: t('[{TAG:合同票据细分}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('合同票据细分')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-供应商管理'),
@@ -11877,7 +11877,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'student',
     category: 'office',
     naming_pattern: t('[申请学校]_[材料名称]_[用途]'),
-    naming_template: t('[{TAG:处理状态}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('处理状态')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-选校与申请要求'),
@@ -12058,7 +12058,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'general',
     category: 'office',
     naming_pattern: t('[内容主题]_[用途]'),
-    naming_template: t('[{TAG:处理状态}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('处理状态')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-今日急需处理'),
@@ -12358,7 +12358,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'general',
     category: 'office',
     naming_pattern: t('[内容主题]_[来源或用途]'),
-    naming_template: t('[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('文件类型')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-软件安装包'),
@@ -12859,7 +12859,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'general',
     category: 'office',
     naming_pattern: t('[事项主题]_[下一步动作]'),
-    naming_template: t('[{TAG:处理状态}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('处理状态')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       { name: t('01-收件箱'), children: [] },
       { name: t('02-马上要办'), children: [] },
@@ -13097,7 +13097,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'general',
     category: 'office',
     naming_pattern: t('[内容主题]_[用途]'),
-    naming_template: t('[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('文件类型')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-常用软件快捷方式'),
@@ -13410,7 +13410,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'qa',
     category: 'office',
     naming_pattern: t('[被测系统]_[测试内容]_[版本号]'),
-    naming_template: t('[{TAG:处理状态}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('处理状态')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-测试用例与脚本'),
@@ -13741,7 +13741,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'parent',
     category: 'entertainment',
     naming_pattern: t('[科目]_[年级]_[资料主题]'),
-    naming_template: t('[{TAG:学科领域}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('学科领域')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-学科教辅资料'),
@@ -14006,7 +14006,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'parent',
     category: 'entertainment',
     naming_pattern: t('[科目]_[学期阶段]_[内容主题]'),
-    naming_template: t('[{TAG:学科领域}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('学科领域')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-开学计划'),
@@ -14197,7 +14197,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'senior',
     category: 'entertainment',
     naming_pattern: t('[人物]_[场合或事项]_[年代]'),
-    naming_template: t('[{TAG:家庭生活细分}]{SMART_NAME}'),
+    naming_template: `[{TAG:${t('家庭生活细分')}}]{SMART_NAME}`,
     preset_directory_tree: [
       {
         name: t('01-家庭老照片与相册'),
@@ -14467,7 +14467,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'senior',
     category: 'entertainment',
     naming_pattern: t('[就诊人]_[医院或科室]_[报告或单据名称]'),
-    naming_template: t('[{TAG:处理状态}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('处理状态')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-看病前准备'),
@@ -14650,7 +14650,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'general',
     category: 'office',
     naming_pattern: t('[部门]_[事项]_[文件种类]'),
-    naming_template: t('[{TAG:处理状态}]{SMART_NAME}_{MOD:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('处理状态')}}]{SMART_NAME}_{MOD:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-公文与函件'),
@@ -14865,7 +14865,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'clerk',
     category: 'office',
     naming_pattern: t('[单位]_[事项]_[文号]'),
-    naming_template: t('[{TAG:处理状态}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('处理状态')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-收文登记'),
@@ -15056,7 +15056,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'general',
     category: 'entertainment',
     naming_pattern: t('[家庭成员]_[证件或单据名称]'),
-    naming_template: t('[{TAG:家庭生活细分}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('家庭生活细分')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-家人证件'),
@@ -15245,7 +15245,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'collector',
     category: 'entertainment',
     naming_pattern: t('[作品名]_[季集或卷号]_[版本特色]'),
-    naming_template: t('[{TAG:文件类型}]{SMART_NAME}[_{TAG:画质等级}]'),
+    naming_template: `[{TAG:${t('文件类型')}}]{SMART_NAME}[_{TAG:${t('画质等级')}}]`,
     preset_directory_tree: [
       {
         name: t('01-电影'),
@@ -15610,7 +15610,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'engineer',
     category: 'office',
     naming_pattern: t('[技术栈]_[组件功能]_[适用场景]'),
-    naming_template: t('[{TAG:源代码细分}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('源代码细分')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       {
         name: t('01-项目脚手架'),
@@ -16005,7 +16005,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'general',
     category: 'office',
     naming_pattern: t('[软件名]_[产生场景]'),
-    naming_template: t('[{TAG:系统文件细分}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('系统文件细分')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       { name: t('01-软件运行日志'), children: [] },
       { name: t('02-崩溃与错误记录'), children: [] },
@@ -16163,7 +16163,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'general',
     category: 'office',
     naming_pattern: t('[文件主题]_[相关人或群]_[用途]'),
-    naming_template: t('[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('文件类型')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       { name: t('01-文档与表格'), children: [] },
       { name: t('02-图片'), children: [] },
@@ -16467,7 +16467,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'general',
     category: 'office',
     naming_pattern: t('[内容]_[来源设备]_[用途]'),
-    naming_template: t('[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('文件类型')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       { name: t('01-手机照片与视频'), children: [] },
       { name: t('02-手机录音'), children: [] },
@@ -16750,7 +16750,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'general',
     category: 'office',
     naming_pattern: t('[界面或软件]_[关键内容]_[用途]'),
-    naming_template: t('[{TAG:截图细分}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('截图细分')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       { name: t('01-聊天与沟通截图'), children: [] },
       { name: t('02-网页与资料截图'), children: [] },
@@ -16913,7 +16913,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'general',
     category: 'office',
     naming_pattern: t('[主题]_[要点]'),
-    naming_template: t('[{TAG:处理状态}]{SMART_NAME}_{MOD:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('处理状态')}}]{SMART_NAME}_{MOD:YYYYMMDD}`,
     preset_directory_tree: [
       { name: t('01-随手记的便签'), children: [] },
       { name: t('02-写了一半的草稿'), children: [] },
@@ -17060,7 +17060,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'general',
     category: 'entertainment',
     naming_pattern: t('[内容主题]_[用途]_[来源]'),
-    naming_template: t('[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('文件类型')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       { name: t('01-随身办公文档'), children: [] },
       { name: t('02-照片与视频'), children: [] },
@@ -17430,7 +17430,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'general',
     category: 'office',
     naming_pattern: t('[单据名称]_[归属人]_[关键日期或编号]'),
-    naming_template: t('[{TAG:合同票据细分}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('合同票据细分')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       { name: t('01-证件扫描'), children: [] },
       { name: t('02-合同与协议扫描'), children: [] },
@@ -17570,7 +17570,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'general',
     category: 'office',
     naming_pattern: t('[所属项目]_[文档主题]_[用途]'),
-    naming_template: t('[{TAG:处理状态}]{SMART_NAME}_{MOD:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('处理状态')}}]{SMART_NAME}_{MOD:YYYYMMDD}`,
     preset_directory_tree: [
       { name: t('01-合同与协议'), children: [] },
       { name: t('02-方案与汇报'), children: [] },
@@ -17750,7 +17750,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     persona: 'researcher',
     category: 'office',
     naming_pattern: t('[课题或课程]_[资料主题]_[作者或出处]'),
-    naming_template: t('[{TAG:学科领域}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_template: `[{TAG:${t('学科领域')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     preset_directory_tree: [
       { name: t('01-课程与教材'), children: [] },
       { name: t('02-学习笔记'), children: [] },
