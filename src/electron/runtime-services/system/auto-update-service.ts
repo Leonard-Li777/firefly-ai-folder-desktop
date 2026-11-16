@@ -156,6 +156,20 @@ export class AutoUpdateService {
   }
 
   /**
+   * 当前更新频道（AC2.1 · 工单 02）：cn | intl
+   */
+  public getChannel(): 'cn' | 'intl' {
+    return resolveAppRegion()
+  }
+
+  /**
+   * 当前下载提供方（AC2.1 · 工单 02）：r2 | github
+   */
+  public getCurrentProvider(): 'r2' | 'github' {
+    return this.state.currentTrack
+  }
+
+  /**
    * 配置下载源 Feed URL
    */
   public configureFeedUrl(track: UpdateTrack): void {
