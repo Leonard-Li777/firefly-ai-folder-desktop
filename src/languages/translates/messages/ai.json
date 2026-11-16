@@ -128,7 +128,7 @@
     "de-DE": "Motor wechseln",
     "fr-FR": "Changer de moteur",
     "ko-KR": "스위치 엔진",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(6204-6212)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(5974-5982)"],
     "$id": 7979
   },
   "配置云端模型": {
@@ -141,7 +141,7 @@
     "de-DE": "Cloud-Modell konfigurieren",
     "fr-FR": "Configurer le modèle cloud",
     "ko-KR": "클라우드 모델 구성",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(6489-6499)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(6251-6261)"],
     "$id": 10189
   },
   "升级显卡驱动": {
@@ -154,7 +154,7 @@
     "de-DE": "Aktualisieren Sie den Grafikkartentreiber",
     "fr-FR": "Mettre à niveau le pilote de la carte graphique",
     "ko-KR": "그래픽 카드 드라이버 업그레이드",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(6921-6931)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(6670-6680)"],
     "$id": 4652
   },
   "切换到 CPU 引擎": {
@@ -167,7 +167,7 @@
     "de-DE": "Zum CPU-Engine wechseln",
     "fr-FR": "Passer au moteur CPU",
     "ko-KR": "CPU 엔진으로 전환",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(7169-7183)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(6912-6926)"],
     "$id": 19378
   },
   "重新部署 AI 引擎": {
@@ -180,7 +180,7 @@
     "de-DE": "Stellen Sie die KI-Engine erneut bereit",
     "fr-FR": "Redéployer le moteur IA",
     "ko-KR": "AI 엔진 재배치",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8032-8046)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(7751-7765)"],
     "$id": 4629
   },
   "管理设置": {
@@ -193,7 +193,7 @@
     "de-DE": "Einstellungen verwalten",
     "fr-FR": "Paramètres de gestion",
     "ko-KR": "관리 설정",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8538-8546)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8243-8251)"],
     "$id": 3837
   },
   "去配置 API 密钥": {
@@ -206,7 +206,7 @@
     "de-DE": "API-Schlüssel konfigurieren",
     "fr-FR": "Aller configurer la clé API",
     "ko-KR": "API 키를 구성하러 가기",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8628-8642)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8331-8345)"],
     "$id": 4357
   },
   "管理模型": {
@@ -219,7 +219,7 @@
     "de-DE": "Verwaltungsmodell",
     "fr-FR": "Modèle de gestion\r",
     "ko-KR": "관리 모델",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8712-8720)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8413-8421)"],
     "$id": 3841
   },
   "重试启动": {
@@ -232,7 +232,7 @@
     "de-DE": "Versuchen Sie den Start erneut",
     "fr-FR": "Réessayez le démarrage",
     "ko-KR": "시동 재시도",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(9081-9089)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8768-8776)"],
     "$id": 4470
   },
   "查看设置": {
@@ -245,7 +245,7 @@
     "de-DE": "Einstellungen anzeigen",
     "fr-FR": "Afficher les paramètres",
     "ko-KR": "설정 보기",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(9262-9270)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8943-8951)"],
     "$id": 4471
   },
   "在引擎中查看": {
@@ -258,7 +258,7 @@
     "de-DE": "In the engine view",
     "fr-FR": "View in the engine",
     "ko-KR": "엔진에서 보기",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(9505-9515)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(9177-9187)"],
     "$id": 19419
   },
   "切换标准分析": {
@@ -271,21 +271,21 @@
     "de-DE": "Switch to Standard Analysis",
     "fr-FR": "Toggle Standard Analysis",
     "ko-KR": "표준 분석으로 전환",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(9921-9931)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(9578-9588)"],
     "$id": 19420
   },
-  "标准分析模式由检索式引擎处理，高效完成文件标签、智能文件名和摘要": {
-    "en-US": "Standard analysis mode is processed by the search engine to efficiently complete file tags, intelligent file names and summaries",
-    "es-ES": "El motor de búsqueda procesa el modo de análisis estándar para completar eficientemente etiquetas de archivos, nombres de archivos inteligentes y resúmenes.",
-    "ar-EG": "تتم معالجة وضع التحليل القياسي بواسطة محرك البحث لإكمال علامات الملفات وأسماء الملفات الذكية والملخصات بكفاءة",
-    "pt-PT": "O modo de análise padrão é processado pelo mecanismo de pesquisa para completar com eficiência tags de arquivos, nomes de arquivos inteligentes e resumos",
-    "ru-RU": "Стандартный режим анализа обрабатывается поисковой системой для эффективного заполнения тегов файлов, интеллектуальных имен файлов и сводок.",
-    "ja-JP": "標準分析モードは検索エンジンによって処理され、ファイルタグ、インテリジェントなファイル名、概要を効率的に完成させます。",
-    "de-DE": "Der Standardanalysemodus wird von der Suchmaschine verarbeitet, um Datei-Tags, intelligente Dateinamen und Zusammenfassungen effizient zu vervollständigen",
-    "fr-FR": "Le mode d'analyse standard est traité par le moteur de recherche pour compléter efficacement les balises de fichiers, les noms de fichiers intelligents et les résumés.",
-    "ko-KR": "표준 분석 모드는 검색 엔진에서 처리되어 파일 태그, 지능형 파일 이름 및 요약을 효율적으로 완성합니다.",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(10361-10397)"],
-    "$id": 28305
+  "建议调整分析模式为「标准分析模式」（由检索式引擎处理，高效完成文件标签、智能文件名和摘要）": {
+    "en-US": "It is recommended to adjust the analysis mode to the \"standard analysis mode\" (processed by the retrieval engine to efficiently complete the file label, smart file name and summary)",
+    "es-ES": "Se recomienda ajustar el modo de análisis al \"modo de análisis estándar\" (procesado por el motor de recuperación para completar de manera eficiente la etiqueta del archivo, el nombre inteligente del archivo y el resumen)",
+    "ar-EG": "يوصى بضبط وضع التحليل على \"وضع التحليل القياسي\" (تتم معالجته بواسطة محرك الاسترجاع لإكمال تسمية الملف واسم الملف الذكي والملخص بكفاءة)",
+    "pt-PT": "Recomenda-se ajustar o modo de análise ao \"modo de análise padrão \"(processado pelo mecanismo de recuperação para completar eficientemente o rótulo do arquivo, o nome do arquivo inteligente e o resumo)",
+    "ru-RU": "Рекомендуется настроить режим анализа на \"стандартный режим анализа\" (обрабатывается поисковой системой для эффективного заполнения метки файла, интеллектуального имени файла и сводной информации).",
+    "ja-JP": "分析モードを\"標準分析モード\"に調整することをお勧めします（ファイルラベル、スマートファイル名、要約を効率的に完了するために検索エンジンによって処",
+    "de-DE": "Es wird empfohlen, den Analysemodus auf den \"Standardanalysemodus\" einzustellen (wird von der Retrieval-Engine verarbeitet, um die Dateibezeichnung, den intelligenten Dateinamen und die Zusammenfassung effizient zu vervollständigen)",
+    "fr-FR": "Il est recommandé d'ajuster le mode d'analyse au \"mode d'analyse standard \"(traité par le moteur de récupération pour compléter efficacement l'étiquette du fichier, le nom de fichier intelligent et le résumé)",
+    "ko-KR": "분석 모드를\"표준 분석 모드\"로 조정하는 것이 좋습니다(검색 엔진에서 처리하여 파일 레이블,스마트 파일 이름 및 요약을 효율적으로 완료)",
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(10017-10079)"],
+    "$id": 36079
   },
   "错误详情": {
     "en-US": "Error details",
@@ -297,7 +297,7 @@
     "de-DE": "Fehlerdetails",
     "fr-FR": "Détails de l'erreur",
     "ko-KR": "오류 세부정보",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(11906-11914)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(11569-11577)"],
     "$id": 4472
   },
   "详细信息: ": {
@@ -310,7 +310,7 @@
     "de-DE": "Details:",
     "fr-FR": "Détails :\r",
     "ko-KR": "자세한 정보:",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(12898-12908)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(12543-12553)"],
     "$id": 3851
   },
   "系统诊断信息": {
@@ -323,7 +323,7 @@
     "de-DE": "Informationen zur Systemdiagnose",
     "fr-FR": "Informations de diagnostic du système",
     "ko-KR": "시스템 진단 정보",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(13455-13465)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(13085-13095)"],
     "$id": 4473
   },
   "系统内存": {
@@ -336,7 +336,7 @@
     "de-DE": "Systemspeicher",
     "fr-FR": "Mémoire système",
     "ko-KR": "시스템 메모리",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(13766-13774)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(13391-13399)"],
     "$id": 4474
   },
   "可用显存": {
@@ -349,7 +349,7 @@
     "de-DE": "Verfügbarer Videospeicher",
     "fr-FR": "Mémoire vidéo disponible",
     "ko-KR": "사용 가능한 비디오 메모리",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(14167-14175)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(13784-13792)"],
     "$id": 4475
   },
   "模型文件": {
@@ -362,7 +362,7 @@
     "de-DE": "Modelldatei",
     "fr-FR": "Fichier modèle",
     "ko-KR": "모델 파일",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(14571-14579)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(14180-14188)"],
     "$id": 4476
   },
   "存在": {
@@ -375,7 +375,7 @@
     "de-DE": "Vorhanden",
     "fr-FR": "Existant",
     "ko-KR": "존재함",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(14956-14962)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(14557-14563)"],
     "$id": 3856
   },
   "缺失": {
@@ -388,7 +388,7 @@
     "de-DE": "Fehlt",
     "fr-FR": "Manquant",
     "ko-KR": "누락됨",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(14966-14972)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(14567-14573)"],
     "$id": 3857
   },
   "端口状态": {
@@ -401,7 +401,7 @@
     "de-DE": "Portstatus",
     "fr-FR": "Statut du port",
     "ko-KR": "포트 상태",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(15234-15242)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(14829-14837)"],
     "$id": 4477
   },
   "可用": {
@@ -414,7 +414,7 @@
     "de-DE": "Verfügbar",
     "fr-FR": "Disponible",
     "ko-KR": "사용 가능",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(15615-15621)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(15202-15208)"],
     "$id": 3859
   },
   "被占用": {
@@ -427,7 +427,7 @@
     "de-DE": "Belegt",
     "fr-FR": "Occupé",
     "ko-KR": "사용 중",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(15625-15632)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(15212-15219)"],
     "$id": 3860
   },
   "网络连接": {
@@ -440,7 +440,7 @@
     "de-DE": "Netzwerkverbindung",
     "fr-FR": "Connexion réseau",
     "ko-KR": "네트워크 연결",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(15900-15908)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(15481-15489)"],
     "$id": 4478
   },
   "正常": {
@@ -453,7 +453,7 @@
     "de-DE": "Normal",
     "fr-FR": "Normale",
     "ko-KR": "정상",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(16293-16299)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(15866-15872)"],
     "$id": 3862
   },
   "异常": {
@@ -466,7 +466,7 @@
     "de-DE": "Fehlerhaft",
     "fr-FR": "Anormale",
     "ko-KR": "비정상",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(16303-16309)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(15876-15882)"],
     "$id": 3863
   },
   "建议解决方案": {
@@ -479,7 +479,7 @@
     "de-DE": "Empfohlene Lösung",
     "fr-FR": "Solution recommandée",
     "ko-KR": "권장 해결 방안",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(16722-16732)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(16283-16293)"],
     "$id": 3864
   }
 }
