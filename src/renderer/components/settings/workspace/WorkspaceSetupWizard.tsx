@@ -1973,7 +1973,8 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
         </div>
 
         <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
-          {onSkip && (
+          {/* 跳过向导按钮每步仅渲染一个：Step 1 用此处通用按钮，Step 2 在下方双出口分支内渲染 skip-wizard-btn-step2 */}
+          {onSkip && currentStep === 1 && (
             <Button
               type="button"
               variant="ghost"

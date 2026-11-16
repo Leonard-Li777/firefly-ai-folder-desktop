@@ -581,11 +581,11 @@ export function getInitialPlugins(): PluginModuleItem[] {
         }
       },
       description: t(
-        '【录音与视频自动转文字】听懂视频和录音里的说话内容并提取字幕，可以直接搜索“某句话是谁说的”。较耗算力，推荐 16GB 内存或有显卡。'
+        '【录音与视频自动转文字】听懂视频和录音里的说话内容并提取字幕，可以直接搜索“某句话是谁说的”。较耗算力，8GB 内存的电脑就能用。'
       ),
       hardware_requirement: {
         level: 'heavy',
-        text: t('较耗算力 · 推荐 16GB 内存或有显卡')
+        text: t('较耗算力 · 电脑内存 8GB 或以上')
       },
       icon: 'Mic'
     },

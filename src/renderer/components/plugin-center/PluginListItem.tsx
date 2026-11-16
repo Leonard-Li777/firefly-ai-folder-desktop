@@ -218,7 +218,7 @@ export const PluginListItem: React.FC<PluginListItemProps> = ({
       case 'asr_sensevoice_onnx':
         return {
           level: 'heavy' as const,
-          text: t('较耗算力 · 推荐 16GB 内存或有显卡')
+          text: t('较耗算力 · 电脑内存 8GB 或以上')
         }
       case 'tts_moss_onnx':
         return {

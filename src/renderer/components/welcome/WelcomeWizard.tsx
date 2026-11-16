@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useVoerkaI18n } from '@voerkai18n/react'
 import i18nScope from '@src/languages'
 import { WelcomeStep1 } from './WelcomeStep1'
@@ -10,6 +10,7 @@ import { WelcomeStepper, type WelcomeStepNumber } from './WelcomeStepper'
 import {
   DEFAULT_HARDWARE,
   DEFAULT_WELCOME_SELECTION,
+  isAsrRecommendedByHardware,
   type HardwareProbeResult,
   type WelcomeSelection
 } from './welcome-types'
@@ -51,6 +52,11 @@ export function WelcomeWizard({ initialStep = 1, onComplete }: WelcomeWizardProp
   const [pluginDir, setPluginDir] = useState<string | null>(null)
   // 主引擎已就绪：从 Step 5 返回再进来时恢复完成态，不重复下载
   const [installCompleted, setInstallCompleted] = useState(false)
+  // 用户在向导里手动改动过的选择键（引擎 / 各选配插件）。
+  // 硬件探测是异步回填的，一旦回填晚于用户操作就会把用户显式意图静默改回默认，
+  // 导致「用户明明勾了语音识别插件，它却永远不进安装队列」。
+  // 因此：回填只允许覆盖用户从未触碰过的键，用户碰过的键一律以用户意图为准。
+  const userTouchedKeysRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     setCurrentStep(initialStep)
@@ -93,18 +99,31 @@ export function WelcomeWizard({ initialStep = 1, onComplete }: WelcomeWizardProp
           const targetGenMode =
             !hw.isGpuSupported || hw.vramGB < 4 || hw.totalMemGB <= 16 ? 'cpu' : 'local'
 
-          setSelection(prev => ({
-            ...prev,
-            selectedEngine: targetEngine,
-            generativeEngineMode: targetGenMode,
-            selectedOptionals: {
-              ...prev.selectedOptionals,
-              perception_nsfw: true,
-              asr_sensevoice_onnx: hw.totalMemGB >= 16 && hw.isGpuSupported,
-              // 离线语音朗读恒为单一插件，不随硬件档位切换
-              tts_m5_onnx: true
+          // 硬件推荐只回填「用户尚未手动改动过」的项；用户碰过的键一律保留用户意图
+          const touched = userTouchedKeysRef.current
+          const recommendedOptionals: Record<string, boolean> = {
+            perception_nsfw: true,
+            asr_sensevoice_onnx: isAsrRecommendedByHardware(hw),
+            // 离线语音朗读恒为单一插件，不随硬件档位切换
+            tts_m5_onnx: true
+          }
+
+          setSelection(prev => {
+            const nextOptionals = { ...prev.selectedOptionals }
+            for (const [key, recommended] of Object.entries(recommendedOptionals)) {
+              if (!touched.has(key)) {
+                nextOptionals[key] = recommended
+              }
             }
-          }))
+            return {
+              ...prev,
+              selectedEngine: touched.has('selectedEngine') ? prev.selectedEngine : targetEngine,
+              generativeEngineMode: touched.has('generativeEngineMode')
+                ? prev.generativeEngineMode
+                : targetGenMode,
+              selectedOptionals: nextOptionals
+            }
+          })
         }
       } catch (err) {
         console.warn('[Welcome] 硬件探测异常，采用标准默认推荐:', err)
@@ -145,7 +164,13 @@ export function WelcomeWizard({ initialStep = 1, onComplete }: WelcomeWizardProp
     })
   }, [currentStep])
 
-  const handleSelectionChange = (patch: Partial<WelcomeSelection>) => {
+  const handleSelectionChange = (patch: Partial<WelcomeSelection>, touchedKeys?: string[]) => {
+    // 记录用户显式改动过的键，后续硬件回填不得覆盖这些键
+    if (touchedKeys && touchedKeys.length > 0) {
+      for (const key of touchedKeys) {
+        userTouchedKeysRef.current.add(key)
+      }
+    }
     setSelection(prev => ({ ...prev, ...patch }))
   }
 
