@@ -113,8 +113,10 @@ export interface ModuleRuntimeState {
   lastReleasedBytes?: number
   lastReleased?: ReleasedMemorySnapshot
   lastActiveTimestamp: number
+  residentSince?: number
   crashStreak: number
   unloadFailStreak: number
+  lastCrashGeneration?: number
   lastFailureKind?: 'load' | 'unload'
   errorPhase?: 'load' | 'unload'
   errorMessage?: string
@@ -261,7 +263,7 @@ export interface LifecycleToken {
 export type AdmissionToken = LifecycleToken
 
 // ==========================================
-// 看门狗、对账器与崩溃熔断常量与契约 (Ticket 05)
+// 看门狗、对账器与崩溃熔断常量与契约 (Ticket 05 / 06 / 07)
 // ==========================================
 
 export const LIFECYCLE_OWNER_MAX_TTL_MS = 60_000 // 60s 属主最大生存周期
@@ -273,6 +275,20 @@ export const STOP_SERVICE_HARD_TIMEOUT_MS = 10_000 // 10s 底层停机指令超�
 export const STOP_COMPLETION_HARD_TIMEOUT_MS = 15_000 // 15s 停机有界全流程硬超时
 export const CRASH_WINDOW_MS = 300_000 // 5分钟 崩溃统计滑动窗口
 export const STABLE_RESIDENT_RESET_MS = 60_000 // 1分钟 稳定驻留拉式单调重置门限
+export const COLD_START_MIN_TIMEOUT_MS = 1_000 // 1s 冷启动超时下限钳制保护
+export const COLD_START_DEFAULT_TIMEOUT_MS = 60_000 // 60s 冷启动默认看门狗超时
+
+/** 冷启动与准入门闩中断异常 */
+export class HibernationGateAbortedError extends Error {
+  constructor(
+    public readonly targetId: string,
+    public readonly code: string,
+    message: string
+  ) {
+    super(message)
+    this.name = 'HibernationGateAbortedError'
+  }
+}
 
 /** 停机终态决议契约 (StopServiceResult) */
 export interface StopServiceResult {
@@ -290,21 +306,34 @@ export interface StoppingTaskEntry {
   associatedTokenId?: string
 }
 
+/** 单飞加载在途屏障记录 (InflightLoad) */
+export interface InflightLoad {
+  readonly attemptId: number
+  readonly modelId?: string
+  readonly promise: Promise<void>
+  readonly abort: AbortController
+  readonly rejectWaiters: (err: Error) => void
+  watchdogTimer?: ReturnType<typeof setTimeout>
+}
+
 /** 在途物理操作条目契约 (InFlightPhysicalOp) */
 export interface InFlightPhysicalOp {
   readonly opId: string
   readonly targetId: string
   readonly generation: number
   readonly createdAt: number
+  type?: 'load' | 'unload'
   lastProgressAt?: number
-  status: 'running' | 'settled' | 'failed_unknown'
-  spawnState?: 'spawning' | 'spawned'
+  status: 'running' | 'settled' | 'failed_unknown' | 'stopped_confirmed'
+  spawnState?: 'not_started' | 'spawning' | 'spawned' | 'failed' // 严格四态屏障 (Ticket 07)
   supportsProgress: boolean // 严格必填布尔，无隐式兜底
   extendedTimeoutGranted?: boolean
   abortController?: AbortController
   jobHandle?: string
   identity?: ProcessTreeIdentity
   resolveCompletion?: () => void
+  completionPromise?: Promise<void>
+  resolveCompletionFn?: () => void
 }
 
 /** 抑制退出条目契约 (SuppressedStoppingIdentityEntry) */
@@ -360,4 +389,12 @@ export interface IEngineBridgeService {
     timeoutMs: number
   ): Promise<'exited' | 'timeout' | 'unknown'>
   onProcessTreeExit?(identity: ProcessTreeIdentity, callback: () => void): () => void
+  loadModel?(
+    targetId: string,
+    modelId?: string,
+    options?: {
+      signal?: AbortSignal
+      onProgress?: (progress?: any) => void
+    }
+  ): Promise<{ identity: ProcessTreeIdentity; jobHandle?: string }>
 }

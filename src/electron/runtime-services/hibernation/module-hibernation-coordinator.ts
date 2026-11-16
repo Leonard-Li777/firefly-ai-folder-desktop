@@ -12,12 +12,17 @@ import {
   AsyncMutex,
   CANCEL_INTENT_HARD_TTL_MS,
   CANCEL_INTENT_MIN_TTL_MS,
+  COLD_START_DEFAULT_TIMEOUT_MS,
+  COLD_START_MIN_TIMEOUT_MS,
   CRASH_BREAKER_THRESHOLD,
   CRASH_WINDOW_MS,
+  HIBERNATABLE_TARGET_CATALOG,
+  HibernationGateAbortedError,
   IEngineBridgeService,
   IN_FLIGHT_OP_NO_PROGRESS_HARD_TIMEOUT_MS,
   IN_FLIGHT_OP_STALL_TIMEOUT_MS,
   InFlightPhysicalOp,
+  InflightLoad,
   LIFECYCLE_OWNER_MAX_TTL_MS,
   LifecycleOperation,
   LifecycleToken,
@@ -38,6 +43,7 @@ export interface ModuleHibernationCoordinatorOptions {
   memoryProbe?: MemoryProbe
   engineBridgeService?: IEngineBridgeService
   onClusterActivityChanged?: (clusterId: 'analysis_suite' | 'tts_media') => void
+  coldStartTimeoutMsProvider?: (targetId?: string) => number
 }
 
 /** 模块休眠调度协调器核心骨架 */
@@ -47,6 +53,7 @@ export class ModuleHibernationCoordinator {
   private readonly memoryProbe: MemoryProbe
   private engineBridgeServiceInstance?: IEngineBridgeService
   private readonly onClusterActivityChangedCb?: (clusterId: 'analysis_suite' | 'tts_media') => void
+  private readonly coldStartTimeoutMsProvider?: (targetId?: string) => number
 
   /** 各目标当前代际 Fencing 计数器: targetId -> epoch */
   private readonly targetEpochs = new Map<string, number>()
@@ -81,12 +88,17 @@ export class ModuleHibernationCoordinator {
   /** 活跃中的停机任务清理句柄集合 (P2-5 统一防泄漏) */
   private readonly stoppingCleanups = new Set<() => void>()
 
+  /** 单飞加载在途屏障索引 (Ticket 07): targetId -> InflightLoad */
+  private readonly inflightLoads = new Map<string, InflightLoad>()
+  private nextAttemptId = 0
+
   constructor(options?: ModuleHibernationCoordinatorOptions) {
     this.runtimeStore = options?.runtimeStore ?? moduleRuntimeStore
     this.leaseRegistryInstance = options?.leaseRegistry
     this.memoryProbe = options?.memoryProbe ?? memoryProbe
     this.engineBridgeServiceInstance = options?.engineBridgeService
     this.onClusterActivityChangedCb = options?.onClusterActivityChanged
+    this.coldStartTimeoutMsProvider = options?.coldStartTimeoutMsProvider
   }
 
   /** 注入或绑定租约中心引用 */
@@ -1271,6 +1283,379 @@ export class ModuleHibernationCoordinator {
   }
 
   // ==========================================
+  // 单飞冷启动加载协程与四态屏障 (Ticket 07)
+  // ==========================================
+
+  /**
+   * 动态读取冷启动超时时长（支持配置化注入与下限 1000ms 钳制，默认 60s）
+   */
+  coldStartTimeoutMs(targetId?: string): number {
+    const configured = this.coldStartTimeoutMsProvider
+      ? this.coldStartTimeoutMsProvider(targetId)
+      : COLD_START_DEFAULT_TIMEOUT_MS
+    return Math.max(COLD_START_MIN_TIMEOUT_MS, configured)
+  }
+
+  /**
+   * 获取当前目标的在途单飞加载信息
+   */
+  getInflightLoad(targetId: string): InflightLoad | undefined {
+    return this.inflightLoads.get(targetId)
+  }
+
+  /**
+   * 作废在途单飞加载屏障 (P2-4: 供模型换型与超时协作)
+   */
+  invalidateInflight(
+    targetId: string,
+    reason: 'MODEL_SWAPPED' | 'LOAD_TIMEOUT' | 'PREEMPTED' = 'PREEMPTED'
+  ): void {
+    const inflight = this.inflightLoads.get(targetId)
+    if (!inflight) return
+    if (inflight.watchdogTimer) {
+      clearTimeout(inflight.watchdogTimer)
+      inflight.watchdogTimer = undefined
+    }
+    inflight.abort.abort(reason)
+    inflight.rejectWaiters(
+      new HibernationGateAbortedError(targetId, reason, `加载已被中断: ${reason}`)
+    )
+    this.inflightLoads.delete(targetId)
+  }
+
+  /**
+   * 携带生命周期令牌进入单飞冷启动装载 (startSingleFlightLoadWithToken)
+   * 遵循 L3 规格书 §2.1 契约：
+   * 1. 令牌交接 handoverLifecycleOwner，代次校验与防抢占；
+   * 2. 快照预占 loading 与 reserved；
+   * 3. 严格落实 spawnState 四态流转 (not_started -> spawning -> spawned -> failed)；
+   * 4. 动态看门狗超时监控与主动 Abort；
+   * 5. 跨代隔离原子提交终态 (resident / error)；
+   * 6. 双重屏障孤儿进程树安全拔除。
+   */
+  async startSingleFlightLoadWithToken(
+    parentToken: LifecycleToken,
+    modelId?: string
+  ): Promise<void> {
+    const targetId = parentToken.targetId
+
+    // ISS-01 / ISS-04: 单飞子协程经 handoverLifecycleOwner 交接所有权与校验 generation
+    const loadToken = this.handoverLifecycleOwner(parentToken, 'single_flight_load')
+    if (!loadToken) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[Coordinator] startSingleFlightLoadWithToken: 父 Token 已失效，静默让权: targetId=${targetId}, parentTokenId=${parentToken.tokenId}`
+      )
+      return
+    }
+
+    // 同步置 loading 并将快照状态标记为 reserved
+    this.commitRuntimeSnapshot(loadToken, d => {
+      d.state = 'loading'
+      if (d.lastReleased) {
+        d.lastReleased = { ...d.lastReleased, state: 'reserved' }
+      }
+    })
+
+    const attemptId = ++this.nextAttemptId
+    const abortCtrl = new AbortController()
+    let rejectWaitersFn!: (err: Error) => void
+    let resolveWaitersFn!: () => void
+    const loadPromise = new Promise<void>((resolve, reject) => {
+      resolveWaitersFn = resolve
+      rejectWaitersFn = reject
+    })
+    // 挂载空捕获防无外部等待者时的 Unhandled Rejection
+    loadPromise.catch(() => {})
+
+    let resolveCompletionFn!: () => void
+    const completionPromise = new Promise<void>(resolve => {
+      resolveCompletionFn = resolve
+    })
+
+    let spawnedProcessIdentity: ProcessTreeIdentity | undefined
+
+    // 注册物理在途加载操作（初始化 spawnState: 'not_started'）
+    const now = Date.now()
+    const opId = `load_${attemptId}_${now}`
+    const inFlightOp: InFlightPhysicalOp = {
+      opId,
+      type: 'load',
+      targetId,
+      generation: loadToken.modelGeneration,
+      jobHandle: undefined,
+      abortController: abortCtrl,
+      completionPromise,
+      status: 'running',
+      spawnState: 'not_started',
+      createdAt: now,
+      lastProgressAt: now,
+      supportsProgress: true,
+      resolveCompletionFn
+    }
+    this.registerInFlightOp(inFlightOp)
+
+    const timeoutMs = this.coldStartTimeoutMs(targetId)
+    const inflightLoad: InflightLoad = {
+      attemptId,
+      modelId,
+      promise: loadPromise,
+      abort: abortCtrl,
+      rejectWaiters: rejectWaitersFn,
+      watchdogTimer: setTimeout(() => {
+        // P2-7: 严格核验在途 attemptId，防止失效定时器注入脏信号
+        if (this.inflightLoads.get(targetId)?.attemptId !== attemptId) return
+        logger.error(
+          LogCategory.SYSTEM,
+          `[Coordinator] 冷启动加载硬超时 (${timeoutMs}ms)，触发主动 Abort 熔断: targetId=${targetId}, attemptId=${attemptId}`
+        )
+        abortCtrl.abort('LOAD_TIMEOUT')
+      }, timeoutMs)
+    }
+    if (inflightLoad.watchdogTimer && typeof inflightLoad.watchdogTimer.unref === 'function') {
+      inflightLoad.watchdogTimer.unref()
+    }
+    this.inflightLoads.set(targetId, inflightLoad)
+
+    try {
+      // 步骤 1：进入实际进程拉起前显式置为 spawning，并同步刷新活性时基
+      inFlightOp.spawnState = 'spawning'
+      inFlightOp.lastProgressAt = Date.now()
+
+      if (!this.engineBridgeServiceInstance?.loadModel) {
+        throw new Error(`EngineBridgeService 不支持 loadModel: targetId=${targetId}`)
+      }
+
+      const createAbortError = () => {
+        const reason = (abortCtrl.signal.reason as string) || 'LOAD_ABORTED'
+        const message =
+          reason === 'LOAD_TIMEOUT'
+            ? '加载超时'
+            : reason === 'MODEL_SWAPPED'
+              ? '加载已被中断: MODEL_SWAPPED'
+              : '加载已被取消'
+        return new HibernationGateAbortedError(targetId, reason, message)
+      }
+
+      const abortPromise = new Promise<never>((_, reject) => {
+        if (abortCtrl.signal.aborted) {
+          reject(createAbortError())
+          return
+        }
+        abortCtrl.signal.addEventListener(
+          'abort',
+          () => {
+            reject(createAbortError())
+          },
+          { once: true }
+        )
+      })
+
+      // P2-8: 对原始 loadModel 挂载后置保护，若超时或抢占后迟到返回，立即拔除游离孤儿
+      const rawLoadPromise = this.engineBridgeServiceInstance.loadModel(targetId, modelId, {
+        signal: abortCtrl.signal,
+        onProgress: () => {
+          inFlightOp.lastProgressAt = Date.now()
+        }
+      })
+      rawLoadPromise
+        .then(res => {
+          if (
+            abortCtrl.signal.aborted ||
+            this.inflightLoads.get(targetId)?.attemptId !== attemptId
+          ) {
+            logger.warn(
+              LogCategory.SYSTEM,
+              `[Coordinator] 迟到返回的底层进程已被作废，立即拔除: targetId=${targetId}, pid=${res.identity.pid}`
+            )
+            this.engineBridgeServiceInstance?.stopProcessTree(res.identity).catch(() => {})
+          }
+        })
+        .catch(() => {})
+
+      // 步骤 2：挂载 onProgress 进度回调，持续刷新活性时基，与 abort 信号安全竞速
+      const loadRes = await Promise.race([rawLoadPromise, abortPromise])
+
+      // 步骤 3：spawn 返回瞬间同一微任务首帧同步记录 identity 并置 spawned
+      spawnedProcessIdentity = loadRes.identity
+      inFlightOp.identity = loadRes.identity
+      inFlightOp.jobHandle = loadRes.jobHandle
+      inFlightOp.spawnState = 'spawned'
+      inFlightOp.lastProgressAt = Date.now()
+
+      // 屏障一：加载返回瞬间核验 abort 状态
+      if (abortCtrl.signal.aborted) {
+        throw new HibernationGateAbortedError(targetId, 'LOAD_ABORTED', '加载已被取消')
+      }
+
+      // 屏障二：核验当前 Token 所有权是否已被换型抢占
+      const currentOwner = this.activeLifecycleOwner.get(targetId)
+      if (!currentOwner || currentOwner.tokenId !== loadToken.tokenId) {
+        throw new HibernationGateAbortedError(
+          targetId,
+          'LOAD_PREEMPTED',
+          '加载已被新生命周期操作接管'
+        )
+      }
+
+      // 加载成功彻底消费快照，residentSince 与 crashStreak 跨代原子重置
+      const committed = this.commitRuntimeSnapshot(loadToken, d => {
+        d.state = 'resident'
+        d.modelGeneration = loadToken.modelGeneration
+        d.residentSince = Date.now()
+        d.crashStreak = 0
+        d.unloadFailStreak = 0
+        d.lastCrashGeneration = undefined
+        d.lastFailureKind = undefined
+        d.errorPhase = undefined
+        d.errorMessage = undefined
+        d.lastErrorI18nKey = undefined
+        d.lastReleased = undefined
+        // P1-3: 实测采样出来前，初始化为元数据字典预估值，避免透视为 0
+        d.residentBytes = HIBERNATABLE_TARGET_CATALOG[targetId]?.estimatedMemoryBytes ?? 0
+        d.residentSample = undefined
+      })
+
+      if (!committed) {
+        throw new HibernationGateAbortedError(targetId, 'LOAD_COMMIT_REJECTED', '加载结果提交被拒')
+      }
+
+      this.recordLoadSuccess(targetId)
+
+      // P2-6: 加载成功后广播集群活动变化通知
+      const clusterId = HIBERNATABLE_TARGET_CATALOG[targetId]?.clusterId
+      if (clusterId) {
+        this.onClusterActivityChanged(clusterId)
+      }
+
+      resolveWaitersFn()
+    } catch (err: any) {
+      // 若抛错且未生成物理进程，同步置 spawnState = 'failed'
+      if (!spawnedProcessIdentity) {
+        inFlightOp.spawnState = 'failed'
+      }
+
+      // 异常时恢复快照为 available，原子提交 error(load)，严格按代次累加 crashStreak
+      this.commitRuntimeSnapshot(loadToken, d => {
+        d.state = 'error'
+        d.lastFailureKind = 'load'
+        d.errorPhase = 'load'
+        d.lastErrorI18nKey = err?.code ?? 'LOAD_FAILED'
+        d.errorMessage = err?.message ?? '加载失败'
+        // P1-1: 若错误码为 SERVICE_UNAVAILABLE，严禁计入 crashStreak，杜绝基础设施抖动误熔断
+        if (
+          err?.code !== 'SERVICE_UNAVAILABLE' &&
+          d.modelGeneration === loadToken.modelGeneration
+        ) {
+          d.crashStreak += 1
+          d.lastCrashGeneration = loadToken.modelGeneration
+        }
+        if (d.lastReleased) {
+          d.lastReleased = { ...d.lastReleased, state: 'available' }
+        }
+      })
+
+      rejectWaitersFn(err)
+      throw err
+    } finally {
+      // P1-2: 屏障清理严格收敛至 finally 块，且加严 attemptId 校验
+      if (this.inflightLoads.get(targetId)?.attemptId === attemptId) {
+        if (inflightLoad.watchdogTimer) {
+          clearTimeout(inflightLoad.watchdogTimer)
+          inflightLoad.watchdogTimer = undefined
+        }
+        this.inflightLoads.delete(targetId)
+      }
+
+      // 零间隙双重屏障兜底强回收：
+      // 若进程已拉起但加载未能成功提交（abort / 换型抢占 / 加载抛错），必须 await 有界整树退出物理确认 (5s)
+      const currentOwner = this.activeLifecycleOwner.get(targetId)
+      const ownerMismatched = !currentOwner || currentOwner.tokenId !== loadToken.tokenId
+      if (
+        spawnedProcessIdentity &&
+        (ownerMismatched || abortCtrl.signal.aborted || inFlightOp.spawnState !== 'spawned')
+      ) {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[Coordinator] 单飞加载未完成或被抢占，回收孤儿进程树: targetId=${targetId}, pid=${spawnedProcessIdentity.pid}`
+        )
+        if (this.engineBridgeServiceInstance) {
+          await this.engineBridgeServiceInstance
+            .stopProcessTree(spawnedProcessIdentity)
+            .catch(() => {})
+          const exitStatus = await this.engineBridgeServiceInstance
+            .awaitProcessTreeExit(spawnedProcessIdentity, 5_000)
+            .catch(() => 'unknown' as const)
+          if (exitStatus !== 'exited') {
+            logger.error(
+              LogCategory.SYSTEM,
+              `[Coordinator] 孤儿进程树 5s 未能确证退出，沉淀至全局抑制条目移交对账器: targetId=${targetId}, pid=${spawnedProcessIdentity.pid}`
+            )
+            inFlightOp.status = 'failed_unknown'
+            // P2-5: 沉淀至全局抑制条目，交由后台对账器持续强杀与对账
+            this.suppressStoppingIdentity({
+              targetId,
+              identity: spawnedProcessIdentity,
+              suppressedAt: Date.now(),
+              unknownRetryCount: 1
+            })
+          } else {
+            inFlightOp.status = 'stopped_confirmed'
+          }
+        } else {
+          inFlightOp.status = 'stopped_confirmed'
+        }
+      } else {
+        inFlightOp.status = 'settled'
+      }
+
+      resolveCompletionFn()
+      this.activeInFlightOps.delete(opId)
+      this.endLifecycleOperation(loadToken)
+    }
+  }
+
+  /**
+   * 按需单飞冷启动对外入口 (SingleFlightBarrier 统一屏障)
+   * 同 target 的并发加载请求统一复用单一 Inflight Promise，杜绝重复调用底层引擎接口
+   */
+  async startSingleFlightLoad(targetId: string, modelId?: string): Promise<void> {
+    // 1. 若当前目标已有在途单飞加载，直接复用其 Promise
+    const existing = this.inflightLoads.get(targetId)
+    if (existing) {
+      logger.info(
+        LogCategory.SYSTEM,
+        `[Coordinator] 复用在途单飞加载 Promise: targetId=${targetId}, attemptId=${existing.attemptId}`
+      )
+      return existing.promise
+    }
+
+    // 2. 若模块已处于 resident，且未要求特定模型或模型一致，直接放行
+    const rt = this.runtimeStore.get(targetId)
+    if (rt?.state === 'resident') {
+      return
+    }
+
+    // 3. 申领 single_flight_load 生命周期令牌
+    const parentToken = this.beginLifecycleOperation(targetId, 'single_flight_load')
+    if (!parentToken) {
+      // 若已被并发任务申领，二次检查是否已在途
+      const inflightAgain = this.inflightLoads.get(targetId)
+      if (inflightAgain) {
+        return inflightAgain.promise
+      }
+      throw new HibernationGateAbortedError(
+        targetId,
+        'OPERATION_LOCKED',
+        '无法申领加载令牌，当前有其他生命周期操作在运行'
+      )
+    }
+
+    // 4. 执行单飞加载
+    return this.startSingleFlightLoadWithToken(parentToken, modelId)
+  }
+
+  // ==========================================
   // 槽位兼容与通知方法
   // ==========================================
 
@@ -1318,6 +1703,13 @@ export class ModuleHibernationCoordinator {
     this.pendingSwapDraining.clear()
     this.targetStoppingMutex.clear()
     this.activeStoppingTasksByIdentity.clear()
+
+    for (const load of Array.from(this.inflightLoads.values())) {
+      if (load.watchdogTimer) {
+        clearTimeout(load.watchdogTimer)
+      }
+    }
+    this.inflightLoads.clear()
   }
 }
 
