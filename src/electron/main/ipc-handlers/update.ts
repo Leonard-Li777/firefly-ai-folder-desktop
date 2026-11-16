@@ -17,13 +17,8 @@ export function registerUpdateIPCHandlers(): void {
     return autoUpdateService.getState()
   })
 
-  ipcMain.handle('update:start-download', async () => {
-    logger.info(LogCategory.SYSTEM, '[IPC:update:start-download] 收到开始下载更新包请求')
-    await autoUpdateService.startDownload()
-    return true
-  })
-
-  // Spec L242 对齐别名
+  // 正典下载通道（工单 09 · P1-1/A9）：统一下载入口为 update:download，preload 暴露名 download。
+  // 旧 update:start-download 别名通道已删除（@deprecated）。
   ipcMain.handle('update:download', async () => {
     logger.info(LogCategory.SYSTEM, '[IPC:update:download] 收到开始下载更新包请求')
     await autoUpdateService.startDownload()

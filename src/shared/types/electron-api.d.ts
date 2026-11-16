@@ -1009,7 +1009,9 @@ declare global {
           releaseNotes: string | null
           releaseDate: string | null
         }>
-        startDownload: () => Promise<boolean>
+        /** @deprecated 旧下载入口，已收敛到 download（工单 09 · P1-1/A9） */
+        startDownload?: () => Promise<boolean>
+        download: () => Promise<boolean>
         quitAndInstall: () => Promise<boolean>
         exitApp: () => Promise<boolean>
         onStatusChanged: (
@@ -1035,6 +1037,7 @@ declare global {
             } | null
             error: string | null
             currentTrack: 'r2' | 'github'
+            /** P1-3 DTO 拆分：状态推流不下发 downloadedFilePath（留 Main），此处为兼容遗留恒为 null */
             downloadedFilePath: string | null
             releaseNotes: string | null
             releaseDate: string | null

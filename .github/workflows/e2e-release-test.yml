@@ -263,13 +263,13 @@ jobs:
         run: |
           $htmlDir = "pro/tests/e2e/release-pkg/reports/html"
           if (-not (Test-Path $htmlDir)) { New-Item -ItemType Directory -Path $htmlDir -Force }
-          
+
           # 1. 优先从 reports/logs 复制
           $candidateLogs = @(
             "pro/tests/e2e/release-pkg/reports/logs/app.log",
             "pro/tests/e2e/release-pkg/reports/app.log"
           )
-          
+
           # 2. 搜索系统临时目录下的 firefly-e2e-* 独立 UserData
           $tempPattern = Join-Path $env:TEMP "firefly-e2e-*\userdata\logs\app.log"
           $foundTempLogs = Get-ChildItem -Path $tempPattern -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
@@ -303,6 +303,83 @@ jobs:
           name: playwright-report-windows
           path: pro/tests/e2e/release-pkg/reports/html
           retention-days: 14
+
+  # ==============================================================================
+  # 1.5 差分增量更新 E2E (P1-20 门禁) - 验证升级传输字节 < 50MB
+  # ==============================================================================
+  # 前置：需真实 v(N) 旧版与 v(N+1) 新版双版本产物。旧版 URL 未供给时本 Job 自动 skip，
+  #       绝不伪通过污染门禁。完整差分触发链路见
+  #       pro/tests/e2e/release-pkg/suites/differential-update.spec.ts 内 TODO(CI-real-artifacts)。
+  differential-e2e-windows:
+    name: Differential Update E2E (Windows)
+    needs: resolve-release
+    # 仅当旧版与新版安装包 URL 均已解析时才运行；缺任一版本则整 Job skip
+    if: |
+      always() &&
+      needs.resolve-release.outputs.win_exe_url != '' &&
+      inputs.old_win_exe_url != ''
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Checkout Private Pro Module (E2E Test Suites)
+        uses: actions/checkout@v4
+        with:
+          repository: Leonard-Li777/firefly-ai-folder-desktop-pro
+          token: ${{ secrets.PRO_SUBMODULE_TOKEN || secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.SUBMODULE_ACCESS_TOKEN || secrets.PAT || secrets.GH_PAT || secrets.RELEASE_TOKEN }}
+          path: pro
+          ref: master
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.15.0
+
+      - name: Install E2E Test Dependencies
+        run: npm --prefix pro/tests/e2e/release-pkg install
+
+      # 下载 v(N) 旧版安装包（直装基线）
+      - name: Download Old Version Installer (v(N))
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path "D:\diff-old" -Force
+          $oldName = "${{ inputs.old_win_exe_name }}"
+          if (-not $oldName) { $oldName = "old-firefly-setup.exe" }
+          Write-Host "Downloading OLD installer: ${{ inputs.old_win_exe_url }} -> D:\diff-old\$oldName"
+          curl.exe -L -s -S -o "D:\diff-old\$oldName" "${{ inputs.old_win_exe_url }}"
+
+      # 下载 v(N+1) 新版全套发布产物（含 .exe / .blockmap / cn.yml）供计量服务器提供差分块
+      - name: Download New Version Release Artifacts (v(N+1))
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path "D:\diff-new" -Force
+          $newName = "${{ needs.resolve-release.outputs.win_exe_name }}"
+          Write-Host "Downloading NEW installer: ${{ needs.resolve-release.outputs.win_exe_url }} -> D:\diff-new\$newName"
+          curl.exe -L -s -S -o "D:\diff-new\$newName" "${{ needs.resolve-release.outputs.win_exe_url }}"
+          # 同步下载差分基线配套文件（.blockmap / cn.yml）；文件名与产物对齐
+          $base = [System.IO.Path]::GetFileNameWithoutExtension($newName)
+          foreach ($ext in @(".blockmap", ".exe.blockmap")) {
+            $u = "${{ needs.resolve-release.outputs.win_exe_url }}$ext"
+            Write-Host "Attempting blockmap: $u"
+            curl.exe -L -s -S -f -o "D:\diff-new\$newName$ext" "$u" || Write-Host "blockmap not at $u (may differ)"
+          }
+
+      # TODO(CI-real-artifacts): 差分触发链路需 CI 团队在真实双版本产物环境实测补全：
+      #   1. 静默直装 v(N) 旧版到隔离目录；
+      #   2. 启动本地计量服务器 rootDir=D:\diff-new（node helpers/metering-server）；
+      #   3. 以 v(N) 为基线启动客户端，updater feed 指向 http://127.0.0.1:<port>/；
+      #   4. 运行 differential-update.spec.ts，断言 Range 命中 >0 且传输字节 <50MB。
+      #   当前占位步骤仅校验双版本产物齐备，真实差分实测由 CI 团队接线后启用门禁。
+      - name: Verify Differential Artifacts Present
+        shell: pwsh
+        run: |
+          $old = Get-ChildItem "D:\diff-old\*.exe" | Select-Object -First 1
+          $new = Get-ChildItem "D:\diff-new\*.exe" | Select-Object -First 1
+          if (-not $old) { Write-Warning "OLD installer missing - differential gate cannot run"; exit 1 }
+          if (-not $new) { Write-Warning "NEW installer missing - differential gate cannot run"; exit 1 }
+          Write-Host "Differential artifacts verified: OLD=$($old.Name) NEW=$($new.Name)"
+          Write-Host "Differential E2E spec: pro/tests/e2e/release-pkg/suites/differential-update.spec.ts"
 
   # ==============================================================================
   # 2. Linux DEB E2E Release Test (Multi-Arch Container with QEMU)
@@ -342,7 +419,7 @@ jobs:
       - name: Run DEB Test inside Multi-Arch Ubuntu Container
         run: |
           curl -L -s -S -o /tmp/app.deb "${{ needs.resolve-release.outputs.linux_deb_url }}"
-          
+
           # 自动检测 DEB 安装包目标架构 (amd64 / arm64)
           PKG_ARCH=$(dpkg-deb -f /tmp/app.deb Architecture 2>/dev/null || echo "amd64")
           DOCKER_PLATFORM="linux/amd64"
@@ -423,7 +500,7 @@ jobs:
         run: |
           sudo chmod -R 777 pro/tests/e2e/release-pkg/reports 2>/dev/null || true
           mkdir -p pro/tests/e2e/release-pkg/reports/html
-          
+
           FOUND_LOG=""
           # 1. 优先从 reports/logs 复制
           for p in "pro/tests/e2e/release-pkg/reports/logs/app.log" "pro/tests/e2e/release-pkg/reports/app.log"; do
@@ -506,7 +583,7 @@ jobs:
       - name: Run RPM Test inside Multi-Arch Fedora Container
         run: |
           curl -L -s -S -o /tmp/app.rpm "${{ needs.resolve-release.outputs.linux_rpm_url }}"
-          
+
           # 自动检测 RPM 二进制内部真实架构 (x86_64 / aarch64)
           sudo apt-get update && sudo apt-get install -y rpm file
           RPM_ARCH=$(rpm -qp --queryformat '%{ARCH}' /tmp/app.rpm 2>/dev/null || echo "x86_64")
@@ -585,7 +662,7 @@ jobs:
         run: |
           sudo chmod -R 777 pro/tests/e2e/release-pkg/reports 2>/dev/null || true
           mkdir -p pro/tests/e2e/release-pkg/reports/html
-          
+
           FOUND_LOG=""
           # 1. 优先从 reports/logs 复制
           for p in "pro/tests/e2e/release-pkg/reports/logs/app.log" "pro/tests/e2e/release-pkg/reports/app.log"; do
@@ -668,24 +745,24 @@ jobs:
         run: |
           curl -L -s -S -o /tmp/app.dmg "${{ needs.resolve-release.outputs.mac_arm64_dmg_url }}"
           hdiutil attach /tmp/app.dmg -mountpoint /tmp/firefly-mount -nobrowse -quiet
-          
+
           APP_PATH=$(find /tmp/firefly-mount -maxdepth 2 -name "*.app" | head -n 1)
           if [ -z "$APP_PATH" ]; then
             echo "Failed to locate .app bundle inside mounted macOS DMG!"
             exit 1
           fi
-          
+
           echo "Copying $APP_PATH to /Applications..."
           cp -R "$APP_PATH" /Applications/
           hdiutil detach /tmp/firefly-mount -quiet || true
-          
+
           INSTALLED_APP=$(find /Applications -maxdepth 1 -name "firefly*.app" | head -n 1)
           EXECUTABLE="$INSTALLED_APP/Contents/MacOS/$(defaults read "$INSTALLED_APP/Contents/Info.plist" CFBundleExecutable 2>/dev/null || echo "firefly-ai-folder")"
-          
+
           if [ ! -f "$EXECUTABLE" ]; then
             EXECUTABLE=$(find "$INSTALLED_APP/Contents/MacOS" -type f -perm +111 | head -n 1)
           fi
-          
+
           echo "Located macOS Executable: $EXECUTABLE"
           echo "TEST_APP_EXECUTABLE=$EXECUTABLE" >> $GITHUB_ENV
 
@@ -701,7 +778,7 @@ jobs:
         if: always()
         run: |
           mkdir -p pro/tests/e2e/release-pkg/reports/html
-          
+
           FOUND_LOG=""
           # 1. 优先从 reports/logs 复制
           for p in "pro/tests/e2e/release-pkg/reports/logs/app.log" "pro/tests/e2e/release-pkg/reports/app.log"; do
@@ -780,24 +857,24 @@ jobs:
         run: |
           curl -L -s -S -o /tmp/app.dmg "${{ needs.resolve-release.outputs.mac_x64_dmg_url }}"
           hdiutil attach /tmp/app.dmg -mountpoint /tmp/firefly-mount -nobrowse -quiet
-          
+
           APP_PATH=$(find /tmp/firefly-mount -maxdepth 2 -name "*.app" | head -n 1)
           if [ -z "$APP_PATH" ]; then
             echo "Failed to locate .app bundle inside mounted macOS DMG!"
             exit 1
           fi
-          
+
           echo "Copying $APP_PATH to /Applications..."
           cp -R "$APP_PATH" /Applications/
           hdiutil detach /tmp/firefly-mount -quiet || true
-          
+
           INSTALLED_APP=$(find /Applications -maxdepth 1 -name "firefly*.app" | head -n 1)
           EXECUTABLE="$INSTALLED_APP/Contents/MacOS/$(defaults read "$INSTALLED_APP/Contents/Info.plist" CFBundleExecutable 2>/dev/null || echo "firefly-ai-folder")"
-          
+
           if [ ! -f "$EXECUTABLE" ]; then
             EXECUTABLE=$(find "$INSTALLED_APP/Contents/MacOS" -type f -perm +111 | head -n 1)
           fi
-          
+
           echo "Located macOS Executable: $EXECUTABLE"
           echo "TEST_APP_EXECUTABLE=$EXECUTABLE" >> $GITHUB_ENV
 
@@ -813,7 +890,7 @@ jobs:
         if: always()
         run: |
           mkdir -p pro/tests/e2e/release-pkg/reports/html
-          
+
           FOUND_LOG=""
           # 1. 优先从 reports/logs 复制
           for p in "pro/tests/e2e/release-pkg/reports/logs/app.log" "pro/tests/e2e/release-pkg/reports/app.log"; do
@@ -863,7 +940,8 @@ jobs:
   # ==============================================================================
   publish-report:
     name: Publish Test Report & Summary
-    needs: [resolve-release, e2e-windows, e2e-linux-deb, e2e-linux-rpm, e2e-macos-arm64, e2e-macos-x64]
+    needs:
+      [resolve-release, e2e-windows, e2e-linux-deb, e2e-linux-rpm, e2e-macos-arm64, e2e-macos-x64]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -908,7 +986,7 @@ jobs:
           RUN_ID="${{ github.run_id }}"
           PAGES_DIR="./gh-pages-deploy"
           TARGET_RUN_DIR="$PAGES_DIR/reports/$RUN_ID"
-          
+
           mkdir -p "$TARGET_RUN_DIR"
           touch "$PAGES_DIR/.nojekyll"
 
@@ -1139,7 +1217,7 @@ jobs:
           # 替换动态变量
           TIME_STR="$(date -u '+%Y-%m-%d %H:%M:%S UTC')"
           TAG_STR="${{ needs.resolve-release.outputs.tag_name || 'Latest' }}"
-          
+
           sed -i "s|RUN_ID_PLACEHOLDER|$RUN_ID|g" "$TARGET_RUN_DIR/index.html"
           sed -i "s|TARGET_TAG_PLACEHOLDER|$TAG_STR|g" "$TARGET_RUN_DIR/index.html"
           sed -i "s|TIMESTAMP_PLACEHOLDER|$TIME_STR|g" "$TARGET_RUN_DIR/index.html"
@@ -1205,7 +1283,7 @@ jobs:
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           PAGES_BASE="https://leonard-li777.github.io/firefly-ai-folder-desktop"
           RUN_PAGES_URL="$PAGES_BASE/reports/${{ github.run_id }}/index.html"
-          
+
           echo "## 📊 Release 安装包 E2E 全流程功能测试结果汇总" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "🌐 **在线测试报告总览 (GitHub Pages)**: [点击直接在线查看本次测试仪表盘]($RUN_PAGES_URL)" >> $GITHUB_STEP_SUMMARY
@@ -1230,7 +1308,8 @@ jobs:
   # ==============================================================================
   trigger-marketing-deploy:
     name: 触发官网全渠道发版
-    needs: [resolve-release, e2e-windows, e2e-linux-deb, e2e-linux-rpm, e2e-macos-arm64, e2e-macos-x64]
+    needs:
+      [resolve-release, e2e-windows, e2e-linux-deb, e2e-linux-rpm, e2e-macos-arm64, e2e-macos-x64]
     if: |
       needs.e2e-windows.result == 'success' &&
       needs.e2e-linux-deb.result == 'success' &&
@@ -1275,5 +1354,3 @@ jobs:
             } catch (error) {
               core.setFailed(`❌ 触发官网发版工作流失败: ${error.message}`);
             }
-
-

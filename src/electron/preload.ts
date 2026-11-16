@@ -1456,16 +1456,17 @@ const electronAPI = {
   update: {
     check: (manual?: boolean): Promise<any> => ipcRenderer.invoke('update:check', manual),
     getState: (): Promise<any> => ipcRenderer.invoke('update:get-state'),
-    startDownload: (): Promise<boolean> => ipcRenderer.invoke('update:start-download'),
+    // 正典下载通道为 update:download（工单 09 · P1-1/A9 通道收敛）。
+    // 旧 startDownload / update:start-download 已废弃。
+    download: (): Promise<boolean> => ipcRenderer.invoke('update:download'),
     quitAndInstall: (): Promise<boolean> => ipcRenderer.invoke('update:quit-and-install'),
     exitApp: (): Promise<boolean> => ipcRenderer.invoke('update:exit-app'),
     onStatusChanged: (callback: (state: any) => void): (() => void) => {
       const handler = (_event: any, state: any) => callback(state)
+      // 唯一状态推流通道；死通道 update:status-change 已删除双听桥接（工单 09）
       ipcRenderer.on('update:status-changed', handler)
-      ipcRenderer.on('update:status-change', handler)
       return () => {
         ipcRenderer.removeListener('update:status-changed', handler)
-        ipcRenderer.removeListener('update:status-change', handler)
       }
     }
   },

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell } from 'electron'
+import { app, BrowserWindow, shell, powerMonitor } from 'electron'
 import * as path from 'path'
 import * as fs from 'fs'
 import * as crypto from 'crypto'
@@ -13,6 +13,7 @@ import {
   runShutdownSequenceWithOverallTimeout,
   type ShutdownCapabilities
 } from './shutdown-coordinator'
+import { checkDiskSpace } from './file-download-service'
 
 export type UpdateTrack = 'r2' | 'github'
 export type UpdateStatus =
@@ -65,6 +66,8 @@ export class AutoUpdateService {
 
   private isInitialized = false
   private isChecking = false
+  // A6 · 并发复用锁：在飞的更新检查 Promise，三路并发（5s 首检/4h 轮询/手动）复用同一任务
+  private inFlightCheck: Promise<UpdateState> | null = null
   private hasTriedFailover = false
   private isFullDownloadFallback = false
   private activeUpdateInfo: (UpdateInfo & { minVersion?: string }) | null = null
@@ -76,6 +79,17 @@ export class AutoUpdateService {
 
   private pollTimer: NodeJS.Timeout | null = null
   private readonly POLL_INTERVAL_MS = 4 * 60 * 60 * 1000 // 4 小时轮询一次
+
+  // P2-5：系统唤醒补检的 resume 监听句柄（用于注销）
+  private resumeHandler: (() => void) | null = null
+
+  // 停滞看门狗（工单 08 · P1）：下载长时间无字节进展时触发降级
+  private stallWatchdogTimer: NodeJS.Timeout | null = null
+  private readonly DOWNLOAD_STALL_TIMEOUT_MS = 120 * 1000 // 2 分钟零进展视为停滞
+
+  // 进度推流节流（工单 09 · P1-2）：downloading 进度 300ms 节流，终态立即 flush
+  private progressThrottleTimer: NodeJS.Timeout | null = null
+  private readonly PROGRESS_THROTTLE_MS = 300
 
   /**
    * 关停前扩展点注册表（工单 07 · P0-6）。
@@ -108,10 +122,20 @@ export class AutoUpdateService {
   }
 
   /**
-   * 初始化自动更新监听器与配置
+   * 初始化自动更新监听器与配置（工单 11 · P1-17）。
+   * 测试环境短路仍置 isInitialized=true + logger.info，保证状态机可观测。
    */
   public initialize(): void {
-    if (this.isInitialized || isTestEnvironment()) {
+    if (isTestEnvironment()) {
+      // P1-17：测试环境短路——仍标记已初始化并显式上报，使测试侧能观测到状态机存在
+      this.isInitialized = true
+      logger.info(
+        LogCategory.SYSTEM,
+        '[AutoUpdater] 测试环境短路：已标记 isInitialized=true（跳过真实初始化）'
+      )
+      return
+    }
+    if (this.isInitialized) {
       return
     }
     this.isInitialized = true
@@ -146,6 +170,19 @@ export class AutoUpdateService {
         logger.warn(LogCategory.SYSTEM, '[AutoUpdater] 周期性静默检查更新失败:', err)
       })
     }, this.POLL_INTERVAL_MS)
+
+    // P2-5：系统从休眠/待机恢复后 30s 静默补检，捕获长待机期间错过的更新窗口
+    if (powerMonitor) {
+      this.resumeHandler = () => {
+        logger.debug(LogCategory.SYSTEM, '[AutoUpdater] 系统唤醒，30s 后静默补检更新 (P2-5)...')
+        setTimeout(() => {
+          this.checkForUpdates(false).catch(err => {
+            logger.warn(LogCategory.SYSTEM, '[AutoUpdater] 唤醒后补检更新失败:', err)
+          })
+        }, 30 * 1000)
+      }
+      powerMonitor.on('resume', this.resumeHandler)
+    }
   }
 
   /**
@@ -181,9 +218,16 @@ export class AutoUpdateService {
         autoUpdater.setFeedURL({
           provider: 'generic',
           url: this.R2_BASE_URL,
-          channel
+          channel,
+          // 工单 08 · P0-2：R2 generic provider 关闭多范围并行下载。
+          // Electron-Builder 多范围请求在 CDN/对象存储偶发返回 416 Range Not Satisfiable，
+          // 导致差分下载失败退化为全量；关闭后单范围下载稳定。
+          useMultipleRangeRequest: false
         })
-        logger.debug(LogCategory.SYSTEM, `[AutoUpdater] 已切换更新源至 R2: ${this.R2_BASE_URL} (channel=${channel})`)
+        logger.debug(
+          LogCategory.SYSTEM,
+          `[AutoUpdater] 已切换更新源至 R2: ${this.R2_BASE_URL} (channel=${channel})`
+        )
       } else {
         autoUpdater.setFeedURL({
           provider: 'github',
@@ -203,47 +247,72 @@ export class AutoUpdateService {
 
   /**
    * 检查网络连通性探针（2500ms 硬超时）
+   * 返回 'alive'（域可达，含频道不存在）/ 'missing'（频道 yml 404/410，无新版）/ 'down'（真不可达）。
+   * 区分 missing 与 down 是为了避免「无新版」被误判为源故障而触发无谓 failover。
    */
-  public async probeEndpoint(track: UpdateTrack): Promise<boolean> {
+  public async probeEndpoint(track: UpdateTrack): Promise<'alive' | 'missing' | 'down'> {
     const channel = resolveAppRegion()
     const probeUrl =
       track === 'r2'
         ? `${this.R2_BASE_URL}/${channel}.yml`
         : `https://github.com/${this.GITHUB_OWNER}/${this.GITHUB_REPO}/releases`
 
-    return new Promise<boolean>(resolve => {
+    return new Promise<'alive' | 'missing' | 'down'>(resolve => {
       let isResolved = false
       const client = probeUrl.startsWith('https') ? https : http
 
+      const finish = (result: 'alive' | 'missing' | 'down') => {
+        if (isResolved) return
+        isResolved = true
+        clearTimeout(timer)
+        resolve(result)
+      }
+
       const timer = setTimeout(() => {
-        if (!isResolved) {
-          isResolved = true
-          logger.warn(LogCategory.SYSTEM, `[AutoUpdater] 探针超时 (${this.PROBE_TIMEOUT_MS}ms): ${probeUrl}`)
-          resolve(false)
-        }
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[AutoUpdater] 探针超时 (${this.PROBE_TIMEOUT_MS}ms): ${probeUrl}`
+        )
+        finish('down')
       }, this.PROBE_TIMEOUT_MS)
 
       try {
-        const req = client.request(probeUrl, { method: 'HEAD', timeout: this.PROBE_TIMEOUT_MS }, res => {
-          res.resume()
-          req.destroy()
-          if (!isResolved) {
-            isResolved = true
-            clearTimeout(timer)
+        const req = client.request(
+          probeUrl,
+          { method: 'HEAD', timeout: this.PROBE_TIMEOUT_MS },
+          res => {
+            res.resume()
+            req.destroy()
             const statusCode = res.statusCode || 0
-            // 2xx 或 3xx 或 404 (说明域已连通) 均视为网络通畅
-            resolve(statusCode > 0 && statusCode < 500)
+            // 404/410 表示域名可达但频道清单不存在（通常为已是最新版无该频道包），视为 alive 而非源故障
+            if (statusCode === 404 || statusCode === 410) {
+              logger.debug(
+                LogCategory.SYSTEM,
+                `[AutoUpdater] 探针频道不存在 (${statusCode}): ${probeUrl}`
+              )
+              finish('missing')
+              return
+            }
+            // 2xx 或 3xx 均视为网络通畅
+            if (statusCode > 0 && statusCode < 500) {
+              finish('alive')
+              return
+            }
+            logger.warn(
+              LogCategory.SYSTEM,
+              `[AutoUpdater] 探针服务端异常 (${statusCode}): ${probeUrl}`
+            )
+            finish('down')
           }
-        })
+        )
 
         req.on('error', err => {
           req.destroy()
-          if (!isResolved) {
-            isResolved = true
-            clearTimeout(timer)
-            logger.warn(LogCategory.SYSTEM, `[AutoUpdater] 探针网络错误: ${err.message} (${probeUrl})`)
-            resolve(false)
-          }
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[AutoUpdater] 探针网络错误: ${err.message} (${probeUrl})`
+          )
+          finish('down')
         })
 
         req.on('timeout', () => {
@@ -251,12 +320,12 @@ export class AutoUpdateService {
         })
 
         req.end()
-      } catch {
-        if (!isResolved) {
-          isResolved = true
-          clearTimeout(timer)
-          resolve(false)
-        }
+      } catch (err: any) {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[AutoUpdater] 探针构造请求异常: ${err?.message ?? err} (${probeUrl})`
+        )
+        finish('down')
       }
     })
   }
@@ -266,10 +335,23 @@ export class AutoUpdateService {
    * @param manual 是否为用户主动点击触发（手动触发会在界面显示 loading 与明确提示）
    */
   public async checkForUpdates(manual = false): Promise<UpdateState> {
-    if (this.isChecking) {
-      return this.getState()
+    // A6 · 并发复用锁：5s 首检 / 4h 轮询 / 手动检查三路并发时复用进行中任务，避免状态机跳变
+    if (this.inFlightCheck) {
+      return this.inFlightCheck
     }
 
+    this.inFlightCheck = this.runCheckForUpdates(manual)
+    try {
+      return await this.inFlightCheck
+    } finally {
+      this.inFlightCheck = null
+    }
+  }
+
+  /**
+   * 执行一次完整的更新检查流程（供 checkForUpdates 串接，见 A6 并发复用锁）
+   */
+  private async runCheckForUpdates(manual: boolean): Promise<UpdateState> {
     this.isChecking = true
     this.updateState({
       status: 'checking',
@@ -277,16 +359,30 @@ export class AutoUpdateService {
     })
 
     try {
-      // 探针健康预检：首选源不可达且尚未探查时，静默快速平滑降级
-      const isAlive = await this.probeEndpoint(this.state.currentTrack)
-      if (!isAlive && !this.hasTriedFailover) {
+      // 手动触发视为显式重试意愿：复位降级旗标，允许重新评估首选源与差分下载，
+      // 避免一次网络抖动将客户端永久钉在全量+备用源（修复 P0-5）。
+      if (manual) {
+        this.hasTriedFailover = false
+        this.isFullDownloadFallback = false
+        autoUpdater.disableDifferentialDownload = false
+      }
+
+      // 探针健康预检：仅当首选源「真不可达」且本轮尚未探查时，静默平滑降级。
+      // missing（频道不存在/无新版）不算源故障，避免无谓切源（修复 P0-7）。
+      const probeResult = await this.probeEndpoint(this.state.currentTrack)
+      if (probeResult === 'down' && !this.hasTriedFailover) {
         const fallbackTrack: UpdateTrack = this.state.currentTrack === 'r2' ? 'github' : 'r2'
         logger.warn(
           LogCategory.SYSTEM,
-          `[AutoUpdater] 首选源 ${this.state.currentTrack} 探针不通，平滑降级至备用源 ${fallbackTrack}`
+          `[AutoUpdater] 首选源 ${this.state.currentTrack} 探针不可达，平滑降级至备用源 ${fallbackTrack}`
         )
         this.hasTriedFailover = true
         this.configureFeedUrl(fallbackTrack)
+      } else if (probeResult === 'missing') {
+        logger.debug(
+          LogCategory.SYSTEM,
+          `[AutoUpdater] 首选源 ${this.state.currentTrack} 频道清单不存在（可能已最新），保持当前源`
+        )
       }
 
       await autoUpdater.checkForUpdates()
@@ -317,7 +413,10 @@ export class AutoUpdateService {
     // 检查本地缓存中是否已存在有效安装包（复用防重下）
     const cachedFilePath = await this.verifyLocalCachedInstaller(this.activeUpdateInfo)
     if (cachedFilePath) {
-      logger.debug(LogCategory.SYSTEM, `[AutoUpdater] 命中本地完整安装包缓存，跳过下载: ${cachedFilePath}`)
+      logger.debug(
+        LogCategory.SYSTEM,
+        `[AutoUpdater] 命中本地完整安装包缓存，跳过下载: ${cachedFilePath}`
+      )
       this.updateState({
         status: 'downloaded',
         downloadedFilePath: cachedFilePath,
@@ -336,9 +435,20 @@ export class AutoUpdateService {
       error: null
     })
 
+    // 磁盘空间预检（工单 08 · P1）：全量包 600MB~800MB，空间不足提前失败避免半成品污染缓存
+    const approxBytes = this.activeUpdateInfo?.files?.[0]?.size || 800 * 1024 * 1024
+    const hasSpace = this.preflightDiskSpace(approxBytes)
+    if (!hasSpace) {
+      return
+    }
+
+    // 启动停滞看门狗（首字节到达前也受保护）
+    this.resetDownloadStallWatchdog(true)
+
     try {
       await autoUpdater.downloadUpdate()
     } catch (err: any) {
+      this.stopDownloadStallWatchdog()
       logger.error(LogCategory.SYSTEM, '[AutoUpdater] 下载更新异常:', err)
       await this.handleUpdateError(err, 'download')
     }
@@ -354,7 +464,10 @@ export class AutoUpdateService {
     // 非 Windows 平台（macOS DMG 或 Linux DEB/RPM）：打开安装包引导用户覆盖安装
     if (process.platform !== 'win32') {
       if (this.state.downloadedFilePath && fs.existsSync(this.state.downloadedFilePath)) {
-        logger.debug(LogCategory.SYSTEM, `[AutoUpdater] 跨平台打开安装包: ${this.state.downloadedFilePath}`)
+        logger.debug(
+          LogCategory.SYSTEM,
+          `[AutoUpdater] 跨平台打开安装包: ${this.state.downloadedFilePath}`
+        )
         await shell.openPath(this.state.downloadedFilePath)
       }
       return
@@ -377,13 +490,17 @@ export class AutoUpdateService {
       )
       this.updateState({
         status: 'error',
-        error: `关停失败(${blocked})，请重试或手动重启后更新`
+        error: `关停失败(${blocked})，请重试或手动重启后更新`,
+        isMandatory: false // A7 红线：error 状态绝不进入强更分支
       })
       return
     }
 
     // 第 4 步: 全部阻断步骤通过 → 静默提权覆盖安装（isSilent, isForceRunAfter）
-    logger.debug(LogCategory.SYSTEM, '[AutoUpdater] 关停握手通过，执行 autoUpdater.quitAndInstall(true, true)')
+    logger.debug(
+      LogCategory.SYSTEM,
+      '[AutoUpdater] 关停握手通过，执行 autoUpdater.quitAndInstall(true, true)'
+    )
     try {
       autoUpdater.quitAndInstall(true, true)
     } catch (quitErr: any) {
@@ -461,7 +578,10 @@ export class AutoUpdateService {
    */
   private async runBeforeQuitHooks(): Promise<void> {
     if (this.beforeQuitHooks.length === 0) return
-    logger.debug(LogCategory.SYSTEM, `[AutoUpdater] 执行 ${this.beforeQuitHooks.length} 个关停前钩子...`)
+    logger.debug(
+      LogCategory.SYSTEM,
+      `[AutoUpdater] 执行 ${this.beforeQuitHooks.length} 个关停前钩子...`
+    )
     for (const hook of this.beforeQuitHooks) {
       try {
         await hook.fn()
@@ -483,9 +603,14 @@ export class AutoUpdateService {
    * 不触发 before-quit/will-quit（与安全重启铁律一致）。
    */
   public async exitAppForUpdate(): Promise<void> {
-    logger.info(LogCategory.SYSTEM, '[AutoUpdater] update:exit-app 走 ShutdownCoordinator 关停编排(去安装步)...')
+    logger.info(
+      LogCategory.SYSTEM,
+      '[AutoUpdater] update:exit-app 走 ShutdownCoordinator 关停编排(去安装步)...'
+    )
     const caps = this.buildShutdownCapabilities()
-    const outcome = await runShutdownSequenceWithOverallTimeout(caps, () => runShutdownSequence(caps))
+    const outcome = await runShutdownSequenceWithOverallTimeout(caps, () =>
+      runShutdownSequence(caps)
+    )
 
     if (!outcome.canProceed) {
       const blocked = outcome.blockedBy.join(', ')
@@ -533,15 +658,78 @@ export class AutoUpdateService {
   }
 
   /**
+   * 评估是否触发强制更新（工单 09 · A7 三分支红线 + P1-15 minVersion 安全解析）。
+   * 仅允许在 phase==='update-available' 事件内调用；error 事件绝不进入本分支。
+   * minVersion 缺失 / 非法 semver / prerelease 一律 logger.warn 并按"不强制"处理。
+   */
+  private evaluateMandatoryUpdate(minVersion?: string): boolean {
+    const currentVersion = this.state.currentVersion
+
+    // 分支 1：minVersion 缺失 → 不强制
+    if (!minVersion) {
+      logger.debug(LogCategory.SYSTEM, '[AutoUpdater] 无 minVersion 门禁，按常规更新处理')
+      return false
+    }
+
+    // 分支 2：非法 semver → warn + 不强制（严禁漏阻断/误阻断）
+    if (!semver.valid(minVersion)) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[AutoUpdater] minVersion 非法 semver ("${minVersion}")，安全降级为不强制更新`
+      )
+      return false
+    }
+
+    // 分支 3：prerelease 版本 → warn + 不强制（避免预发布标签干扰门禁判定）
+    if (semver.prerelease(minVersion)) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[AutoUpdater] minVersion 为 prerelease ("${minVersion}")，安全降级为不强制更新`
+      )
+      return false
+    }
+
+    // 分支 4：当前版本非法 → 不强制（防御性，正常不应发生）
+    if (!semver.valid(currentVersion)) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[AutoUpdater] 当前版本 "${currentVersion}" 非法 semver，无法判定强更门禁，按不强制处理`
+      )
+      return false
+    }
+
+    // 分支 5：三者齐备 → 比对版本
+    if (semver.lt(currentVersion, minVersion)) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[AutoUpdater] 当前版本 ${currentVersion} 低于最低要求版本 ${minVersion}，触发强制更新！`
+      )
+      return true
+    }
+
+    return false
+  }
+
+  /**
    * 处理三级降级与错误闭环
    */
-  private async handleUpdateError(error: any, phase: 'check' | 'download', isManual = false): Promise<void> {
+  private async handleUpdateError(
+    error: any,
+    phase: 'check' | 'download',
+    isManual = false
+  ): Promise<void> {
     const errorMsg = error?.message || String(error)
-    logger.warn(LogCategory.SYSTEM, `[AutoUpdater] 发生更新错误 (阶段=${phase}, 当前源=${this.state.currentTrack}): ${errorMsg}`)
+    logger.warn(
+      LogCategory.SYSTEM,
+      `[AutoUpdater] 发生更新错误 (阶段=${phase}, 当前源=${this.state.currentTrack}): ${errorMsg}`
+    )
 
     // L1 -> L2: 差分下载失败自动回退同源全量下载
     if (phase === 'download' && !this.isFullDownloadFallback) {
-      logger.debug(LogCategory.SYSTEM, '[AutoUpdater] L1 -> L2 降级: 差分增量下载失败，切换为同源全量下载重试...')
+      logger.debug(
+        LogCategory.SYSTEM,
+        '[AutoUpdater] L1 -> L2 降级: 差分增量下载失败，切换为同源全量下载重试...'
+      )
       this.isFullDownloadFallback = true
       autoUpdater.disableDifferentialDownload = true
       try {
@@ -555,7 +743,10 @@ export class AutoUpdateService {
     // L2 -> L3: 同源全量失败或网络断流，故障转移至异地双轨备用源
     if (!this.hasTriedFailover) {
       const fallbackTrack: UpdateTrack = this.state.currentTrack === 'r2' ? 'github' : 'r2'
-      logger.debug(LogCategory.SYSTEM, `[AutoUpdater] L2 -> L3 降级: 触发双轨 Failover 切换至备用源: ${fallbackTrack}`)
+      logger.debug(
+        LogCategory.SYSTEM,
+        `[AutoUpdater] L2 -> L3 降级: 触发双轨 Failover 切换至备用源: ${fallbackTrack}`
+      )
       this.hasTriedFailover = true
       this.isFullDownloadFallback = false
       autoUpdater.disableDifferentialDownload = false
@@ -572,13 +763,92 @@ export class AutoUpdateService {
     // 全部降级路径耗尽，进入 error 终端状态
     this.updateState({
       status: 'error',
-      error: errorMsg
+      error: errorMsg,
+      isMandatory: false // A7 红线：error 事件（check/download 网络失败）绝不进入强更分支
     })
   }
 
   /**
    * 注册 electron-updater 原生事件流
    */
+  /**
+   * 重置下载停滞看门狗（工单 08 · P1）。
+   * @param progressed 本次进度回调是否观测到字节净进展；有进展则重置计时，无进展则保留原计时。
+   */
+  private resetDownloadStallWatchdog(progressed: boolean): void {
+    if (!progressed) {
+      return
+    }
+    if (this.stallWatchdogTimer) {
+      clearTimeout(this.stallWatchdogTimer)
+    }
+    this.stallWatchdogTimer = setTimeout(() => {
+      this.stallWatchdogTimer = null
+      if (this.state.status !== 'downloading') {
+        return
+      }
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[AutoUpdater] 下载停滞超时 (${this.DOWNLOAD_STALL_TIMEOUT_MS}ms 零字节进展)，触发降级重试`
+      )
+      // 视为下载阶段错误，进入 L1->L2->L3 降级链
+      this.handleUpdateError(new Error('下载停滞：连接长时间无字节进展'), 'download').catch(
+        () => {}
+      )
+    }, this.DOWNLOAD_STALL_TIMEOUT_MS)
+  }
+
+  /**
+   * 停止下载停滞看门狗（下载完成/失败/取消时调用）
+   */
+  private stopDownloadStallWatchdog(): void {
+    if (this.stallWatchdogTimer) {
+      clearTimeout(this.stallWatchdogTimer)
+      this.stallWatchdogTimer = null
+    }
+  }
+
+  /**
+   * 磁盘空间预检（工单 08 · P1）。
+   * 下载前校验缓存卷剩余空间是否满足全量安装包所需，避免 ENOSPC 导致的
+   * 半成品 pending 恢复包污染缓存与后续差分组装。
+   * 复用 file-download-service 的 checkDiskSpace（防重复造轮子），512MB 缓冲。
+   * @returns true 表示空间充足（或预检不可用）可继续；false 表示空间不足已置 error 状态。
+   */
+  private preflightDiskSpace(totalBytes: number): boolean {
+    try {
+      const cacheDir = path.dirname(app.getPath('userData'))
+      const result = checkDiskSpace(cacheDir, {
+        archiveBytes: totalBytes,
+        maxUncompressedBytes: 0,
+        extraBufferBytes: 512 * 1024 * 1024
+      })
+      if (!result.sufficient) {
+        const availMB = Math.floor(result.availableBytes / (1024 * 1024))
+        const needMB = Math.floor(result.requiredBytes / (1024 * 1024))
+        logger.error(
+          LogCategory.SYSTEM,
+          `[AutoUpdater] 磁盘空间不足: 可用 ${availMB}MB < 所需 ${needMB}MB (含 512MB 缓冲)`
+        )
+        this.updateState({
+          status: 'error',
+          error: `磁盘空间不足：需约 ${needMB}MB，当前可用 ${availMB}MB，请清理后重试`,
+          isMandatory: false // A7 红线：error 状态不进入强更分支
+        })
+        return false
+      }
+      logger.debug(
+        LogCategory.SYSTEM,
+        `[AutoUpdater] 磁盘空间预检通过: 可用 ${Math.floor(result.availableBytes / (1024 * 1024))}MB`
+      )
+      return true
+    } catch (err: any) {
+      // 预检自身失败（如 statfs 不可用）不应阻断下载，显式 warn 后放行
+      logger.warn(LogCategory.SYSTEM, `[AutoUpdater] 磁盘空间预检跳过: ${err?.message ?? err}`)
+      return true
+    }
+  }
+
   private setupUpdaterListeners(): void {
     autoUpdater.on('checking-for-update', () => {
       logger.debug(LogCategory.SYSTEM, '[AutoUpdater] 正在检索云端更新清单...')
@@ -586,25 +856,21 @@ export class AutoUpdateService {
     })
 
     autoUpdater.on('update-available', (info: UpdateInfo & { minVersion?: string }) => {
-      logger.info(LogCategory.SYSTEM, `[AutoUpdater] 发现新版本: ${info.version} (当前: ${this.state.currentVersion})`)
+      logger.info(
+        LogCategory.SYSTEM,
+        `[AutoUpdater] 发现新版本: ${info.version} (当前: ${this.state.currentVersion})`
+      )
       this.activeUpdateInfo = info
 
-      let isMandatory = false
-      const minVersion = info.minVersion || null
-      if (minVersion && semver.valid(minVersion) && semver.valid(this.state.currentVersion)) {
-        if (semver.lt(this.state.currentVersion, minVersion)) {
-          isMandatory = true
-          logger.warn(
-            LogCategory.SYSTEM,
-            `[AutoUpdater] 当前版本 ${this.state.currentVersion} 低于最低要求版本 ${minVersion}，触发强制更新！`
-          )
-        }
-      }
+      // A7 · 强更三分支红线：仅当 phase==='update-available' && semver.valid(minVersion) && current<minVersion
+      // 三者齐备时才触发；error 事件（check/download 网络失败）绝不进入此分支，避免离线误锁死。
+      // error 事件在下方 handleUpdateError 中仅置 error 状态、isMandatory 永不被置 true。
+      const isMandatory = this.evaluateMandatoryUpdate(info.minVersion)
 
       this.updateState({
         status: 'available',
         latestVersion: info.version,
-        minVersion,
+        minVersion: info.minVersion || null,
         isMandatory,
         releaseDate: info.releaseDate || null,
         releaseNotes: typeof info.releaseNotes === 'string' ? info.releaseNotes : null,
@@ -624,24 +890,34 @@ export class AutoUpdateService {
         status: 'not-available',
         latestVersion: info.version,
         error: null,
-        progress: null
+        progress: null,
+        isMandatory: false // A7 红线：非 available 状态显式复位强更，防残留 true 误弹遮罩
       })
     })
 
     autoUpdater.on('download-progress', (progressObj: any) => {
+      const transferred = progressObj.transferred || 0
+      const lastTransferred = this.state.progress?.transferred || 0
       this.updateState({
         status: 'downloading',
         progress: {
           percent: Math.round(progressObj.percent || 0),
-          transferred: progressObj.transferred || 0,
+          transferred,
           total: progressObj.total || 0,
           bytesPerSecond: progressObj.bytesPerSecond || 0
         }
       })
+      // 停滞看门狗喂狗（工单 08 · P1）：只要字节数有净进展即重置计时；
+      // 捕获长时间零进展的僵死连接，触发 L1->L2/L3 降级而非无限挂起。
+      this.resetDownloadStallWatchdog(transferred > lastTransferred)
     })
 
     autoUpdater.on('update-downloaded', (event: any) => {
-      logger.info(LogCategory.SYSTEM, `[AutoUpdater] 更新包已成功下载完毕: ${event?.downloadedFile || ''}`)
+      logger.info(
+        LogCategory.SYSTEM,
+        `[AutoUpdater] 更新包已成功下载完毕: ${event?.downloadedFile || ''}`
+      )
+      this.stopDownloadStallWatchdog()
       this.updateState({
         status: 'downloaded',
         downloadedFilePath: event?.downloadedFile || null,
@@ -656,12 +932,18 @@ export class AutoUpdateService {
 
     autoUpdater.on('error', (err: any) => {
       logger.error(LogCategory.SYSTEM, '[AutoUpdater] 监听到底层 Updater 错误:', err)
-      this.handleUpdateError(err, this.state.status === 'downloading' ? 'download' : 'check').catch(() => {})
+      this.stopDownloadStallWatchdog()
+      this.handleUpdateError(err, this.state.status === 'downloading' ? 'download' : 'check').catch(
+        () => {}
+      )
     })
   }
 
   /**
-   * 变更状态并向所有渲染窗口广播更新事件
+   * 变更状态并向所有渲染窗口广播更新事件（工单 09 · P1-2 推流加固）。
+   * - downloading 进度事件做 300ms 节流，避免高频 download-progress 淹没渲染进程；
+   * - 终态（downloaded/error/not-available/available/installing/checking 等）立即 flush；
+   * - 推送前 `webContents.isDestroyed()` 守卫，防销毁窗口崩溃。
    */
   private updateState(partial: Partial<UpdateState>): void {
     this.state = {
@@ -669,15 +951,45 @@ export class AutoUpdateService {
       ...partial
     }
 
+    // 终态或非进度态立即 flush；仅 downloading 持续进度做节流
+    const isProgressTick = this.state.status === 'downloading'
+    if (!isProgressTick) {
+      this.flushStateToWindows()
+      return
+    }
+
+    if (this.progressThrottleTimer) {
+      return // 节流窗口内，丢弃本次高频进度
+    }
+    this.progressThrottleTimer = setTimeout(() => {
+      this.progressThrottleTimer = null
+      // 节流到期时可能已切到终态，终态由自身 flush；此处仅当仍在 downloading 才补发
+      if (this.state.status === 'downloading') {
+        this.flushStateToWindows()
+      }
+    }, this.PROGRESS_THROTTLE_MS)
+  }
+
+  /**
+   * 将当前状态立即广播至所有存活窗口（工单 09 · P1-2 isDestroyed 守卫 + P1-3 DTO 拆分）。
+   * downloadedFilePath 仅留在 Main 进程使用，不下发渲染层（避免泄漏本地文件系统路径）。
+   */
+  private flushStateToWindows(): void {
+    const { downloadedFilePath: _omitted, ...stateDTO } = this.state
     try {
       const wins = BrowserWindow.getAllWindows()
       for (const win of wins) {
         if (!win.isDestroyed()) {
-          win.webContents.send('update:status-changed', this.state)
+          win.webContents.send('update:status-changed', stateDTO)
         }
       }
-    } catch {
-      // 忽略窗口广播异常
+    } catch (err: any) {
+      // 广播异常显式上报，禁止静默降级
+      logger.warn(LogCategory.SYSTEM, `[AutoUpdater] 状态广播异常: ${err?.message ?? err}`)
+    }
+    if (this.progressThrottleTimer) {
+      clearTimeout(this.progressThrottleTimer)
+      this.progressThrottleTimer = null
     }
   }
 }
