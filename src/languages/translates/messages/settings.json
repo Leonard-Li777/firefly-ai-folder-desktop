@@ -2030,9 +2030,7 @@
     "de-DE": "Keine benutzerdefinierten Regeln vorhanden. Klicken Sie oben auf „Regel hinzufügen“, um eine zu erstellen.",
     "fr-FR": "Aucune règle personnalisée. Cliquez sur « Ajouter une règle » ci-dessus pour en créer une",
     "ko-KR": "사용자 지정 규칙이 없습니다. 위의 \"규칙 추가\"를 클릭하여 생성하세요",
-    "$files": [
-      "src/renderer/components/settings/analysis-exclusion-rules-settings.tsx(12592-12616)"
-    ],
+    "$files": ["src/renderer/components/settings/analysis-exclusion-rules-settings.tsx(12592-12616)"],
     "$id": 20567
   },
   "暂无匹配规则": {
@@ -2045,9 +2043,7 @@
     "de-DE": "Keine passenden Regeln gefunden.",
     "fr-FR": "Aucune règle de correspondance",
     "ko-KR": "일치하는 규칙 없음",
-    "$files": [
-      "src/renderer/components/settings/analysis-exclusion-rules-settings.tsx(12640-12650)"
-    ],
+    "$files": ["src/renderer/components/settings/analysis-exclusion-rules-settings.tsx(12640-12650)"],
     "$id": 20568
   },
   "排除清理": {
@@ -2060,9 +2056,7 @@
     "de-DE": "Ausnahmebereinigung",
     "fr-FR": "Exclusions de nettoyage",
     "ko-KR": "제외 및 정리",
-    "$files": [
-      "src/renderer/components/settings/analysis-exclusion-rules-settings.tsx(14185-14193)"
-    ],
+    "$files": ["src/renderer/components/settings/analysis-exclusion-rules-settings.tsx(14185-14193)"],
     "$id": 20569
   },
   "内置规则不可删除；通配符支持 * 和 ?，正则表达式支持更复杂的路径匹配模式。": {
@@ -2075,9 +2069,7 @@
     "de-DE": "Eingebaute Regeln können nicht gelöscht werden; Wildcards unterstützen * und ?, Regulausdrücke ermöglichen komplexere Pfadmatchingsmuster.",
     "fr-FR": "Les règles intégrées ne peuvent pas être supprimées ; les jokers prennent en charge * et ?, et les expressions régulières prennent en charge des modèles de correspondance de chemins plus complexes.",
     "ko-KR": "기본 제공 규칙은 삭제할 수 없습니다. 와일드카드는 * 및 ?를 지원하며, 정규식(RegEx)은 더 복잡한 경로 매칭 패턴을 지원합니다.",
-    "$files": [
-      "src/renderer/components/settings/analysis-exclusion-rules-settings.tsx(16512-16555)"
-    ],
+    "$files": ["src/renderer/components/settings/analysis-exclusion-rules-settings.tsx(16512-16555)"],
     "$id": 20570
   },
   "语义索引维护已完成": {
@@ -8836,9 +8828,7 @@
     "de-DE": "Die Einschlussregeln wurden gelöscht und nun werden alle Mengen gemäß den Ausschlussregeln freigegeben",
     "fr-FR": "Les règles d'inclusion ont été effacées et désormais toutes les quantités sont libérées conformément aux règles d'exclusion.",
     "ko-KR": "포함 규칙이 해제되어 이제 제외 규칙에 따라 모든 수량이 공개됩니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(7303-7325)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(7303-7325)"],
     "$id": 31680
   },
   "包含规则已更新，已生效 {count} 项扩展名": {
@@ -8851,9 +8841,7 @@
     "de-DE": "Schließen Sie Regeln ein, die mit den {count} gültigen Erweiterungen aktualisiert wurden",
     "fr-FR": "Inclure les règles mises à jour avec {count} extensions en vigueur",
     "ko-KR": "유효한 {count} 확장으로 업데이트된 규칙 포함",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(7343-7371)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(7343-7371)"],
     "$id": 26690
   },
   "更新包含规则失败": {
@@ -8866,9 +8854,7 @@
     "de-DE": "Einschlussregeln konnten nicht aktualisiert werden",
     "fr-FR": "Échec de la mise à jour des règles d'inclusion",
     "ko-KR": "포함 규칙을 업데이트하지 못했습니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(7521-7533)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(7521-7533)"],
     "$id": 26704
   },
   "保存包含规则失败": {
@@ -8881,9 +8867,7 @@
     "de-DE": "Einschlussregeln konnten nicht gespeichert werden",
     "fr-FR": "Échec de l'enregistrement des règles d'inclusion",
     "ko-KR": "포함 규칙을 저장하지 못했습니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(7655-7667)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(7655-7667)"],
     "$id": 26708
   },
   "常用文档": {
@@ -8896,9 +8880,7 @@
     "de-DE": "Häufig verwendete Dokumente",
     "fr-FR": "Documents couramment utilisés",
     "ko-KR": "일반적으로 사용되는 문서",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(8322-8330)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(8322-8330)"],
     "$id": 23252
   },
   "摄影与RAW": {
@@ -8911,9 +8893,7 @@
     "de-DE": "Fotografie und RAW",
     "fr-FR": "Photographie et RAW",
     "ko-KR": "사진 및 RAW",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(8427-8437)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(8427-8437)"],
     "$id": 23253
   },
   "影视视频": {
@@ -8926,9 +8906,7 @@
     "de-DE": "Film und Fernsehen",
     "fr-FR": "Cinéma et télévision",
     "ko-KR": "영화와 텔레비전",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(8540-8548)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(8540-8548)"],
     "$id": 23254
   },
   "音乐音频": {
@@ -8941,9 +8919,7 @@
     "de-DE": "Musik-Audio",
     "fr-FR": "Musique audio",
     "ko-KR": "음악 오디오",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(8627-8635)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(8627-8635)"],
     "$id": 23255
   },
   "设计工程": {
@@ -8956,9 +8932,7 @@
     "de-DE": "Konstruktionstechnik",
     "fr-FR": "Ingénierie de conception",
     "ko-KR": "디자인 엔지니어링",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(8715-8723)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(8715-8723)"],
     "$id": 23256
   },
   "目录专属忽略规则已更新": {
@@ -8971,9 +8945,7 @@
     "de-DE": "Verzeichnisspezifische Ignorierregeln aktualisiert",
     "fr-FR": "Règles d'ignorance spécifiques à l'annuaire mises à jour",
     "ko-KR": "디렉터리별 무시 규칙이 업데이트되었습니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(10922-10937)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(10922-10937)"],
     "$id": 23258
   },
   "更新规则失败": {
@@ -8986,9 +8958,7 @@
     "de-DE": "Aktualisierungsregeln fehlgeschlagen",
     "fr-FR": "Échec de la mise à jour des règles",
     "ko-KR": "업데이트 규칙 실패",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(11020-11030)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(11020-11030)"],
     "$id": 23259
   },
   "保存忽略规则异常": {
@@ -9001,9 +8971,7 @@
     "de-DE": "Ausnahme der Ignorierungsregel speichern",
     "fr-FR": "Enregistrer l'exception à la règle d'ignorance",
     "ko-KR": "무시 규칙 예외 저장",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(11110-11122)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(11110-11122)"],
     "$id": 23260
   },
   "规则匹配值不能为空": {
@@ -9016,9 +8984,7 @@
     "de-DE": "Der Regelübereinstimmungswert darf nicht leer sein",
     "fr-FR": "La valeur de correspondance de règle ne peut pas être vide",
     "ko-KR": "규칙 일치 값은 비워둘 수 없습니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(11226-11239)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(11226-11239)"],
     "$id": 23261
   },
   "这项已经在全局规则里排除了，不需要在当前目录重复添加": {
@@ -9031,9 +8997,7 @@
     "de-DE": "Dies wurde in den globalen Regeln ausgeschlossen und muss im aktuellen Verzeichnis nicht wiederholt hinzugefügt werden.",
     "fr-FR": "Cela a été exclu dans les règles globales et n'a pas besoin d'être ajouté à plusieurs reprises dans le répertoire actuel.",
     "ko-KR": "이는 전역 규칙에서 제외되었으므로 현재 디렉터리에 반복적으로 추가할 필요가 없습니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(11695-11725)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(11695-11725)"],
     "$id": 30559
   },
   "特定文件名": {
@@ -9110,9 +9074,7 @@
     "de-DE": "Dateizugriffs- und Einschlussregeln (aktuelles Arbeitsverzeichnis)",
     "fr-FR": "Règles d'accès et d'inclusion aux fichiers (répertoire de travail actuel)",
     "ko-KR": "파일 액세스 및 포함 규칙(현재 작업 디렉터리)",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(13255-13277)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(13255-13277)"],
     "$id": 26797
   },
   "包含规则与排除规则可同时设置、一起生效；系统会先排除、再按包含规则过滤，最后放行其余文件。": {
@@ -9125,9 +9087,7 @@
     "de-DE": "Einschlussregeln und Ausschlussregeln können gleichzeitig festgelegt werden und gemeinsam wirksam werden; Das System schließt die verbleibenden Dateien zunächst aus, filtert sie dann gemäß den Einschlussregeln und lässt sie schließlich zu.",
     "fr-FR": "Les règles d'inclusion et les règles d'exclusion peuvent être définies en même temps et prendre effet ensemble ; le système exclura d'abord, puis filtrera selon les règles d'inclusion et enfin autorisera les fichiers restants.",
     "ko-KR": "포함 규칙과 제외 규칙은 동시에 설정되어 함께 적용될 수 있습니다. 시스템은 먼저 제외하고 포함 규칙에 따라 필터링한 다음 마지막으로 나머지 파일을 허용합니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(13379-13443)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(13379-13443)"],
     "$id": 31681
   },
   "放弃修改": {
@@ -9140,9 +9100,7 @@
     "de-DE": "Verzichten Sie auf Änderungen",
     "fr-FR": "Abandonner les modifications",
     "ko-KR": "변경 사항 포기",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(14017-14025)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(14017-14025)"],
     "$id": 32083
   },
   "保存包含与排除规则": {
@@ -9155,9 +9113,7 @@
     "de-DE": "Einschluss- und Ausschlussregeln speichern",
     "fr-FR": "Enregistrer les règles d'inclusion et d'exclusion",
     "ko-KR": "포함 및 제외 규칙 저장",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(14671-14684)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(14671-14684)"],
     "$id": 31682
   },
   "预期影响测算": {
@@ -9170,9 +9126,7 @@
     "de-DE": "Berechnung der erwarteten Auswirkungen",
     "fr-FR": "Calcul de l'impact attendu",
     "ko-KR": "예상 영향 계산",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(15088-15098)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(15088-15098)"],
     "$id": 23291
   },
   "基于物理抽样估算": {
@@ -9185,9 +9139,7 @@
     "de-DE": "Schätzung basierend auf physischer Probenahme",
     "fr-FR": "Estimation basée sur un échantillonnage physique",
     "ko-KR": "물리적 샘플링을 기반으로 한 추정",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(15406-15418)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(15406-15418)"],
     "$id": 23292
   },
   "基于已扫描文件库": {
@@ -9200,9 +9152,7 @@
     "de-DE": "Basierend auf der gescannten Dateibibliothek",
     "fr-FR": "Basé sur la bibliothèque de fichiers numérisés",
     "ko-KR": "스캔한 파일 라이브러리 기반",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(15422-15434)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(15422-15434)"],
     "$id": 23293
   },
   "包含规则留空：按排除规则放行其余文件": {
@@ -9215,9 +9165,7 @@
     "de-DE": "Lassen Sie die Einschlussregel leer: Die verbleibenden Dateien werden gemäß der Ausschlussregel freigegeben",
     "fr-FR": "Laissez la règle d'inclusion vide : les fichiers restants seront libérés selon la règle d'exclusion",
     "ko-KR": "포함 규칙을 비워 두세요. 나머지 파일은 제외 규칙에 따라 릴리스됩니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(15708-15730)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(15708-15730)"],
     "$id": 31692
   },
   "待测算": {
@@ -9230,9 +9178,7 @@
     "de-DE": "Zu messen",
     "fr-FR": "A mesurer",
     "ko-KR": "측정 대상",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(15876-15883)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(15876-15883)"],
     "$id": 31693
   },
   "当前未设置包含规则：目录下共 {totalFiles} 个文件，除系统硬排除与目录专属排除规则命中的文件外，其余 {included} 个均将纳入 AI 分析。": {
@@ -9245,9 +9191,7 @@
     "de-DE": "Derzeit sind keine Einschlussregeln festgelegt: Es befinden sich {totalFiles} Dateien im Verzeichnis. Mit Ausnahme der Dateien, die von harten Systemausschlüssen und verzeichnisspezifischen Ausschlussregeln betroffen sind, werden die verbleibenden {included}-Dateien in die KI-Analyse einbezogen.",
     "fr-FR": "Aucune règle d'inclusion n'est actuellement définie : il y a {totalFiles} fichiers dans le répertoire. À l'exception des fichiers touchés par les exclusions matérielles du système et les règles d'exclusion spécifiques au répertoire, les {included} fichiers restants seront inclus dans l'analyse IA.",
     "ko-KR": "현재 포함 규칙 세트가 없습니다. 디렉터리에 {totalFiles} 파일이 있습니다. 시스템 하드 제외 및 디렉터리별 제외 규칙에 해당하는 파일을 제외하고 나머지 {included} 파일은 AI 분석에 포함됩니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(16331-16436)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(16331-16436)"],
     "$id": 31694
   },
   "当前未设置包含规则：除系统硬排除与目录专属排除规则命中的文件外，其余文件均将纳入 AI 索引与分析。可随时添加包含规则，与排除规则同时生效。": {
@@ -9260,9 +9204,7 @@
     "de-DE": "Derzeit sind keine Einschlussregeln festgelegt: Mit Ausnahme der Dateien, die von systembedingten harten Ausschlüssen und verzeichnisspezifischen Ausschlussregeln betroffen sind, werden alle anderen Dateien in die KI-Indizierung und -Analyse einbezogen. Einschlussregeln können jederzeit hinzugefügt werden und treten gleichzeitig mit den Ausschlussregeln in Kraft.",
     "fr-FR": "Aucune règle d'inclusion n'est actuellement définie : à l'exception des fichiers touchés par les exclusions matérielles du système et les règles d'exclusion spécifiques au répertoire, tous les autres fichiers seront inclus dans l'indexation et l'analyse de l'IA. Des règles d'inclusion peuvent être ajoutées à tout moment et prendront effet en même temps que les règles d'exclusion.",
     "ko-KR": "현재 설정된 포함 규칙이 없습니다. 시스템 하드 제외 및 디렉터리별 제외 규칙에 해당하는 파일을 제외하고 다른 모든 파일은 AI 인덱싱 및 분석에 포함됩니다. 포함 규칙은 언제든지 추가할 수 있으며 제외 규칙과 동시에 적용됩니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(16562-16657)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(16562-16657)"],
     "$id": 31695
   },
   "预计纳入: {inPct}%": {
@@ -9275,9 +9217,7 @@
     "de-DE": "Geschätzte Einbeziehung: {inPct} %",
     "fr-FR": "Inclusion estimée : {inPct} %",
     "ko-KR": "예상 포함: {inPct}%",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(16979-16997)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(16979-16997)"],
     "$id": 23298
   },
   "预计排除: {outPct}%": {
@@ -9290,9 +9230,7 @@
     "de-DE": "Erwartete Ausschlüsse: {outPct} %",
     "fr-FR": "Exclusions attendues : {outPct} %",
     "ko-KR": "예상 제외: {outPct}%",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(17425-17444)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(17425-17444)"],
     "$id": 23299
   },
   "基于当前目录嗅探（共 {total} 个文件），预期将精准纳入 {included} 个目标格式文件（约 {inPct}%），并自动排除其余 {excluded} 个非包含规则文件（约 {outPct}%）。": {
@@ -9305,9 +9243,7 @@
     "de-DE": "Basierend auf dem Sniffing des aktuellen Verzeichnisses (insgesamt {total} Dateien) wird erwartet, dass {included} Dateien im Zielformat (ca. {inPct} %) korrekt eingeschlossen werden und die verbleibenden {excluded} Dateien mit Nichteinschlussregeln (ca. {outPct} %) automatisch ausgeschlossen werden.",
     "fr-FR": "Sur la base de l'analyse du répertoire actuel ({total} fichiers au total), il est prévu que {included} fichiers au format cible (environ {inPct} %) seront inclus avec précision, et les {excluded} fichiers de règles de non-inclusion restants (environ {outPct} %) seront automatiquement exclus.",
     "ko-KR": "현재 디렉터리(총 {total}개 파일)의 스니핑을 기반으로 {included} 대상 형식 파일(약 {inPct}%)이 정확하게 포함되고 나머지 {excluded} 비포함 규칙 파일(약 {outPct}%)이 자동으로 제외될 것으로 예상됩니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(18388-18519)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(18388-18519)"],
     "$id": 26974
   },
   "基于已扫描文件库（共 {total} 个文件），预期将精准纳入 {included} 个目标格式文件（约 {inPct}%），并自动排除其余 {excluded} 个非包含规则文件（约 {outPct}%）。": {
@@ -9320,9 +9256,7 @@
     "de-DE": "Basierend auf der gescannten Dateibibliothek (insgesamt {total} Dateien) wird erwartet, dass {included} Dateien im Zielformat (ungefähr {inPct} %) korrekt einbezogen werden und die verbleibenden {excluded} Dateien mit Nichteinschlussregeln (ungefähr {outPct} %) automatisch ausgeschlossen werden.",
     "fr-FR": "Sur la base de la bibliothèque de fichiers analysés ({total} fichiers au total), il est prévu que {included} fichiers au format cible (environ {inPct} %) soient inclus avec précision, et les {excluded} fichiers de règles de non-inclusion restants (environ {outPct} %) seront automatiquement exclus.",
     "ko-KR": "스캔한 파일 라이브러리(총 {total}개 파일)를 기반으로 {included} 대상 형식 파일(약 {inPct}%)이 정확하게 포함되고 나머지 {excluded} 비포함 규칙 파일(약 {outPct}%)이 자동으로 제외될 것으로 예상됩니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(18835-18966)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(18835-18966)"],
     "$id": 31726
   },
   "已设定 {count} 种目标扩展名。保存后仅允许符合这些扩展名的文件进入 AI 分析队列。": {
@@ -9335,9 +9269,7 @@
     "de-DE": "{count} Zielerweiterungen wurden festgelegt. Nur Dateien mit diesen Erweiterungen dürfen nach dem Speichern in die KI-Analysewarteschlange gelangen.",
     "fr-FR": "{count} extensions cibles ont été définies. Seuls les fichiers correspondant à ces extensions sont autorisés à entrer dans la file d'attente d'analyse AI après l'enregistrement.",
     "ko-KR": "{count} 대상 확장이 설정되었습니다. 이러한 확장자와 일치하는 파일만 저장 후 AI 분석 대기열에 들어갈 수 있습니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(19280-19351)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(19280-19351)"],
     "$id": 23301
   },
   "目录专属包含规则": {
@@ -9350,9 +9282,7 @@
     "de-DE": "Verzeichnisspezifische Einschlussregeln",
     "fr-FR": "Règles d'inclusion spécifiques à l'annuaire",
     "ko-KR": "디렉터리별 포함 규칙",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(19811-19823)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(19811-19823)"],
     "$id": 31753
   },
   "清空包含规则": {
@@ -9365,9 +9295,7 @@
     "de-DE": "Klare Include-Regeln",
     "fr-FR": "Effacer les règles d'inclusion",
     "ko-KR": "포함 규칙 지우기",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(20310-20320)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(20310-20320)"],
     "$id": 26944
   },
   "暂未添加任何包含规则扩展名": {
@@ -9380,9 +9308,7 @@
     "de-DE": "Es wurden noch keine Erweiterungen für Einschlussregeln hinzugefügt",
     "fr-FR": "Aucune extension de règle d'inclusion n'a encore été ajoutée",
     "ko-KR": "포함 규칙 확장이 아직 추가되지 않았습니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(20658-20675)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(20658-20675)"],
     "$id": 26967
   },
   "请在下方输入扩展名（如 .cr3 或 docx），或点击快速预设一键选用": {
@@ -9395,9 +9321,7 @@
     "de-DE": "Bitte geben Sie unten die Erweiterung ein (z. B. .cr3 oder docx) oder klicken Sie auf „Schnellvoreinstellung“, um sie mit einem Klick auszuwählen",
     "fr-FR": "Veuillez saisir l'extension ci-dessous (telle que .cr3 ou docx), ou cliquez sur Préréglage rapide pour la sélectionner en un seul clic.",
     "ko-KR": "아래에 확장자(예: .cr3 또는 docx)를 입력하거나 빠른 사전 설정을 클릭하여 한 번의 클릭으로 선택하세요.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(20775-20815)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(20775-20815)"],
     "$id": 23285
   },
   "移除此扩展名": {
@@ -9410,9 +9334,7 @@
     "de-DE": "Entfernen Sie diese Erweiterung",
     "fr-FR": "Supprimer cette extension",
     "ko-KR": "이 확장 프로그램 삭제",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(21551-21561)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(21551-21561)"],
     "$id": 23286
   },
   "输入扩展名（如 png 或 .docx，回车添加，支持逗号分隔）": {
@@ -9425,9 +9347,7 @@
     "de-DE": "Geben Sie die Erweiterung ein (z. B. PNG oder .docx, drücken Sie zum Hinzufügen die Eingabetaste, Komma-Trennung wird unterstützt)",
     "fr-FR": "Entrez l'extension (telle que png ou .docx, appuyez sur Entrée pour ajouter, la séparation par virgule est prise en charge)",
     "ko-KR": "확장자를 입력하세요(예: png 또는 .docx, Enter를 눌러 추가하세요. 쉼표 구분이 지원됩니다).",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(21839-21875)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(21839-21875)"],
     "$id": 23287
   },
   "添加": {
@@ -9440,9 +9360,7 @@
     "de-DE": "Hinzufügen",
     "fr-FR": "Ajouter",
     "ko-KR": "추가",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(22491-22497)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(22491-22497)"],
     "$id": 23288
   },
   "常用类型快速选用": {
@@ -9455,9 +9373,7 @@
     "de-DE": "Schnelle Auswahl häufig verwendeter Typen",
     "fr-FR": "Sélection rapide des types couramment utilisés",
     "ko-KR": "일반적으로 사용되는 유형의 빠른 선택",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(22705-22717)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(22705-22717)"],
     "$id": 23289
   },
   "+ 全选": {
@@ -9470,9 +9386,7 @@
     "de-DE": "+ Alles auswählen",
     "fr-FR": "+ Tout sélectionner",
     "ko-KR": "+ 모두 선택",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(24183-24191)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(24183-24191)"],
     "$id": 23290
   },
   "目录专属排除规则": {
@@ -9485,9 +9399,7 @@
     "de-DE": "Verzeichnisspezifische Ausschlussregeln",
     "fr-FR": "Règles d'exclusion spécifiques à l'annuaire",
     "ko-KR": "디렉터리별 제외 규칙",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(24718-24730)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(24718-24730)"],
     "$id": 31755
   },
   "添加排除项": {
@@ -9500,9 +9412,7 @@
     "de-DE": "Ausschlüsse hinzufügen",
     "fr-FR": "Ajouter des exclusions",
     "ko-KR": "제외 추가",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(25217-25226)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(25217-25226)"],
     "$id": 23303
   },
   "这里只显示当前目录额外要排除的项；全局规则里已经排除的，不会在这里重复出现。": {
@@ -9515,9 +9425,7 @@
     "de-DE": "Hier werden nur Elemente angezeigt, die im aktuellen Verzeichnis ausgeschlossen werden müssen. Elemente, die in globalen Regeln ausgeschlossen wurden, werden hier nicht wiederholt.",
     "fr-FR": "Seuls les éléments qui doivent être exclus du répertoire actuel sont affichés ici ; les éléments qui ont été exclus dans les règles globales ne seront pas répétés ici.",
     "ko-KR": "현재 디렉터리에서 제외해야 하는 항목만 여기에 표시됩니다. 전역 규칙에서 제외된 항목은 여기서 반복되지 않습니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(25365-25407)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(25365-25407)"],
     "$id": 30560
   },
   "已自动合并 {count} 项与全局规则重复的排除项，它们依然生效。": {
@@ -9530,9 +9438,7 @@
     "de-DE": "{count} Ausschlüsse, die Duplikate globaler Regeln waren, wurden automatisch zusammengeführt und bleiben in Kraft.",
     "fr-FR": "{count} exclusions qui étaient des doublons de règles globales ont été automatiquement fusionnées et restent en vigueur.",
     "ko-KR": "전역 규칙과 중복된 {count} 제외는 자동으로 병합되어 계속 유효합니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(25541-25579)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(25541-25579)"],
     "$id": 30561
   },
   "新增目录排除规则": {
@@ -9545,9 +9451,7 @@
     "de-DE": "Fügen Sie Verzeichnisausschlussregeln hinzu",
     "fr-FR": "Ajouter des règles d'exclusion de répertoire",
     "ko-KR": "디렉터리 제외 규칙 추가",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(25935-25947)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(25935-25947)"],
     "$id": 23304
   },
   "匹配类型": {
@@ -9560,9 +9464,7 @@
     "de-DE": "Übereinstimmungstyp",
     "fr-FR": "Type de correspondance",
     "ko-KR": "일치 유형",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(26457-26465)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(26457-26465)"],
     "$id": 23305
   },
   "匹配值": {
@@ -9575,9 +9477,7 @@
     "de-DE": "Übereinstimmungswert",
     "fr-FR": "Valeur de correspondance",
     "ko-KR": "일치 값",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(27469-27476)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(27469-27476)"],
     "$id": 23306
   },
   "输入要排除的名称或模式": {
@@ -9590,9 +9490,7 @@
     "de-DE": "Geben Sie einen Namen oder ein Muster zum Ausschließen ein",
     "fr-FR": "Saisissez un nom ou un modèle à exclure",
     "ko-KR": "제외할 이름이나 패턴을 입력하세요.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(27791-27806)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(27791-27806)"],
     "$id": 23307
   },
   "备注说明 (可选)": {
@@ -9605,9 +9503,7 @@
     "de-DE": "Bemerkungen (optional)",
     "fr-FR": "Remarques (facultatif)",
     "ko-KR": "비고(선택사항)",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(28205-28218)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(28205-28218)"],
     "$id": 23308
   },
   "例如：本地临时编译构建输出目录": {
@@ -9620,9 +9516,7 @@
     "de-DE": "Beispiel: lokales temporäres Kompilierungs-Build-Ausgabeverzeichnis",
     "fr-FR": "Par exemple : répertoire de sortie de la compilation temporaire locale",
     "ko-KR": "예: 로컬 임시 컴파일 빌드 출력 디렉터리",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(28300-28319)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(28300-28319)"],
     "$id": 23309
   },
   "保存排除规则": {
@@ -9635,9 +9529,7 @@
     "de-DE": "Ausschlussregel speichern",
     "fr-FR": "Enregistrer la règle d'exclusion",
     "ko-KR": "제외 규칙 저장",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(29278-29288)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(29278-29288)"],
     "$id": 23310
   },
   "当前工作目录暂无专属排除规则，仅遵守下方系统全局基线。": {
@@ -9650,9 +9542,7 @@
     "de-DE": "Derzeit gibt es keine exklusiven Ausschlussregeln für das aktuelle Arbeitsverzeichnis und richtet sich lediglich nach der unten aufgeführten globalen Systemgrundlinie.",
     "fr-FR": "Il n'existe actuellement aucune règle d'exclusion exclusive pour le répertoire de travail actuel et se conforme uniquement à la référence globale du système ci-dessous.",
     "ko-KR": "현재 현재 작업 디렉터리에 대한 배타적 제외 규칙은 없으며 아래의 시스템 전역 기준만 준수합니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(29606-29637)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(29606-29637)"],
     "$id": 23311
   },
   "若该目录下有专用的临时构建、缓存或私人文件夹无需分析，可点击上方「添加排除项」。": {
@@ -9665,9 +9555,7 @@
     "de-DE": "Wenn es in diesem Verzeichnis dedizierte temporäre Builds, Caches oder private Ordner gibt, die keiner Analyse bedürfen, können Sie oben auf „Ausschlüsse hinzufügen“ klicken.",
     "fr-FR": "S'il existe des builds temporaires dédiés, des caches ou des dossiers privés dans ce répertoire qui ne nécessitent pas d'analyse, vous pouvez cliquer sur « Ajouter des exclusions » ci-dessus.",
     "ko-KR": "이 디렉터리에 분석이 필요하지 않은 전용 임시 빌드, 캐시 또는 개인 폴더가 있는 경우 위의 \"제외 추가\"를 클릭할 수 있습니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(29728-29791)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(29728-29791)"],
     "$id": 23312
   },
   "删除此规则": {
@@ -9680,9 +9568,7 @@
     "de-DE": "Löschen Sie diese Regel",
     "fr-FR": "Supprimer cette règle",
     "ko-KR": "이 규칙 삭제",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(31664-31673)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(31664-31673)"],
     "$id": 23313
   },
   "继承自系统的全局排除规则 (只读)": {
@@ -9695,9 +9581,7 @@
     "de-DE": "Vom System geerbte globale Ausschlussregeln (schreibgeschützt)",
     "fr-FR": "Règles d'exclusion globales héritées du système (lecture seule)",
     "ko-KR": "시스템에서 상속된 전역 제외 규칙(읽기 전용)",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(32279-32300)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(32279-32300)"],
     "$id": 31786
   },
   "前往系统设置管理": {
@@ -9710,9 +9594,7 @@
     "de-DE": "Gehen Sie zur Systemeinstellungsverwaltung",
     "fr-FR": "Accédez à la gestion des paramètres système",
     "ko-KR": "시스템 설정 관리로 이동",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(32650-32662)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(32650-32662)"],
     "$id": 23315
   },
   "以下规则属于系统全域安全生命线（如 .git, node_modules, .VirtualDirectory 等）。当前目录自动继承并受其保护，目录规则无法覆写或解除系统规则。": {
@@ -9725,9 +9607,7 @@
     "de-DE": "Die folgenden Regeln gehören zur systemweiten Sicherheitslebensader (z. B. .git, node_modules, .VirtualDirectory usw.). Das aktuelle Verzeichnis wird automatisch von diesem geerbt und geschützt, und Verzeichnisregeln können Systemregeln nicht überschreiben oder aufheben.",
     "fr-FR": "Les règles suivantes appartiennent à la bouée de sauvetage de sécurité à l'échelle du système (telle que .git, node_modules, .VirtualDirectory, etc.). Le répertoire actuel est automatiquement hérité et protégé par celui-ci, et les règles du répertoire ne peuvent pas écraser ou annuler les règles du système.",
     "ko-KR": "다음 규칙은 시스템 전체 보안 생명선(예: .git, node_modules, .VirtualDirectory 등)에 속합니다. 현재 디렉터리는 자동으로 상속되어 보호되며 디렉터리 규칙은 시스템 규칙을 덮어쓰거나 취소할 수 없습니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(32846-32952)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(32846-32952)"],
     "$id": 23316
   },
   "底层物理安全保障": {
@@ -9740,9 +9620,7 @@
     "de-DE": "Grundlegende physische Sicherheit",
     "fr-FR": "Sécurité physique sous-jacente",
     "ko-KR": "기본 물리적 보안",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(33974-33986)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(33974-33986)"],
     "$id": 23270
   },
   "绝不删除用户磁盘物理文件": {
@@ -9755,9 +9633,7 @@
     "de-DE": "Löschen Sie niemals die physischen Dateien der Benutzerfestplatte",
     "fr-FR": "Ne supprimez jamais les fichiers physiques du disque utilisateur",
     "ko-KR": "사용자 디스크 물리적 파일을 삭제하지 마십시오.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(34300-34316)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(34300-34316)"],
     "$id": 23271
   },
   "修改包含与排除规则仅影响真实目录中显示的文件，不会触碰您电脑磁盘中的任何原始物理文件。": {
@@ -9770,9 +9646,7 @@
     "de-DE": "Das Ändern der Einschluss- und Ausschlussregeln wirkt sich nur auf die im tatsächlichen Verzeichnis angezeigten Dateien aus und berührt nicht die ursprünglichen physischen Dateien auf der Festplatte Ihres Computers.",
     "fr-FR": "La modification des règles d'inclusion et d'exclusion n'affecte que les fichiers affichés dans le répertoire réel et ne touche aucun des fichiers physiques d'origine sur le disque de votre ordinateur.",
     "ko-KR": "포함 및 제외 규칙을 수정하면 실제 디렉터리에 표시된 파일에만 영향을 미치며 컴퓨터 디스크에 있는 원본 실제 파일에는 영향을 주지 않습니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(34473-34535)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(34473-34535)"],
     "$id": 31683
   },
   "文件准入规则 (可同时设置)": {
@@ -9785,9 +9659,7 @@
     "de-DE": "Dateizugriffsregeln (können gleichzeitig festgelegt werden)",
     "fr-FR": "Règles d'accès aux fichiers (peuvent être définies en même temps)",
     "ko-KR": "파일 접근 규칙 (동시에 설정 가능)",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(34892-34910)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(34892-34910)"],
     "$id": 31684
   },
   "包含 + 排除叠加生效": {
@@ -9800,9 +9672,7 @@
     "de-DE": "Die Überlagerung „Einschließen + Ausschließen“ wird wirksam",
     "fr-FR": "La superposition Inclure + Exclure prend effet",
     "ko-KR": "포함 + 제외 오버레이가 적용됩니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(35057-35072)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(35057-35072)"],
     "$id": 31685
   },
   "包含规则与排除规则是两套独立配置，可同时设置、叠加生效，无需在两者之间二选一。系统按以下固定顺序判定：": {
@@ -9815,9 +9685,7 @@
     "de-DE": "Einschlussregeln und Ausschlussregeln sind zwei unabhängige Konfigurationssätze, die gleichzeitig festgelegt und überlagert werden können, um wirksam zu werden. Es besteht keine Notwendigkeit, sich für eines der beiden zu entscheiden. Das System ermittelt in folgender fester Reihenfolge:",
     "fr-FR": "Les règles d'inclusion et les règles d'exclusion sont deux ensembles indépendants de configurations qui peuvent être définies en même temps et superposées pour prendre effet. Il n’est pas nécessaire d’en choisir un entre les deux. Le système détermine dans l'ordre fixe suivant :",
     "ko-KR": "포함 규칙과 제외 규칙은 동시에 설정하고 겹쳐서 적용할 수 있는 두 개의 독립적인 구성 세트입니다. 둘 중 하나를 선택할 필요는 없습니다. 시스템은 다음과 같은 고정된 순서로 결정합니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(35266-35336)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(35266-35336)"],
     "$id": 31686
   },
   "1. 系统硬排除": {
@@ -9830,9 +9698,7 @@
     "de-DE": "1. Harter Systemausschluss",
     "fr-FR": "1. Exclusion matérielle du système",
     "ko-KR": "1. 시스템 하드 제외",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(35445-35457)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(35445-35457)"],
     "$id": 31687
   },
   "2. 目录专属排除": {
@@ -9845,9 +9711,7 @@
     "de-DE": "2. Verzeichnisspezifische Ausschlüsse",
     "fr-FR": "2. Exclusions spécifiques à l'annuaire",
     "ko-KR": "2. 디렉터리별 제외",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(35460-35473)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(35460-35473)"],
     "$id": 31688
   },
   "3. 包含规则": {
@@ -9860,9 +9724,7 @@
     "de-DE": "3. Regeln einschließen",
     "fr-FR": "3. Inclure des règles",
     "ko-KR": "3. 규칙 포함",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(35476-35487)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(35476-35487)"],
     "$id": 31689
   },
   "4. 默认放行": {
@@ -9875,9 +9737,7 @@
     "de-DE": "4. Standardmäßig freigeben",
     "fr-FR": "4. Libération par défaut",
     "ko-KR": "4. 기본적으로 릴리스",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(35490-35501)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(35490-35501)"],
     "$id": 31690
   },
   "包含规则留空表示不限格式，除排除项外全量放行；填写后仅放行这些扩展名。排除规则始终优先生效，可在宽泛包含规则下精确剔除缩略图、缓存目录等文件。": {
@@ -9890,9 +9750,7 @@
     "de-DE": "Lassen Sie die Einschlussregel leer, um anzugeben, dass es keine Einschränkung für das Format gibt und alle Erweiterungen außer Ausschlüssen zulässig sind. Nach dem Ausfüllen sind nur noch diese Erweiterungen zulässig. Ausschlussregeln treten immer zuerst in Kraft, und Dateien wie Miniaturansichten und Cache-Verzeichnisse können mithilfe umfassender Einschlussregeln genau ausgeschlossen werden.",
     "fr-FR": "Laissez la règle d'inclusion vide pour indiquer qu'il n'y a aucune restriction sur le format et que toutes les extensions seront autorisées à l'exception des exclusions ; après remplissage, seules ces extensions seront autorisées. Les règles d'exclusion prennent toujours effet en premier, et les fichiers tels que les miniatures et les répertoires de cache peuvent être exclus avec précision selon des règles d'inclusion générales.",
     "ko-KR": "형식에 제한이 없으며 제외를 제외한 모든 확장이 허용됨을 나타내려면 포함 규칙을 비워 두세요. 입력한 후에는 이러한 확장만 허용됩니다. 제외 규칙은 항상 먼저 적용되며 축소판 및 캐시 디렉터리와 같은 파일은 광범위한 포함 규칙에 따라 정확하게 제외될 수 있습니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(36034-36124)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(36034-36124)"],
     "$id": 31691
   },
   "当前环境无法直接打开本地目录": {
@@ -10113,9 +9971,7 @@
     "de-DE": "Die Bindung des Workflows wurde aufgehoben und der aktuelle Whitelist-Snapshot wurde sicher aufbewahrt.",
     "fr-FR": "Le flux de travail a été dissocié et l'instantané actuel de la liste blanche a été conservé en toute sécurité.",
     "ko-KR": "워크플로 바인딩이 해제되었으며 현재 화이트리스트 스냅샷이 안전하게 보관되었습니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(10096-10121)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(10096-10121)"],
     "$id": 23333
   },
   "解除工作流绑定失败": {
@@ -10128,9 +9984,7 @@
     "de-DE": "Die Bindung des Workflows konnte nicht aufgehoben werden",
     "fr-FR": "Échec de la dissociation du flux de travail",
     "ko-KR": "워크플로 바인딩을 해제하지 못했습니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(10246-10259)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(10246-10259)"],
     "$id": 23334
   },
   "解除工作流绑定异常": {
@@ -10143,9 +9997,7 @@
     "de-DE": "Unbinding-Workflow-Ausnahme",
     "fr-FR": "Exception de workflow de dissociation",
     "ko-KR": "바인딩 해제 워크플로 예외",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(10343-10356)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(10343-10356)"],
     "$id": 23335
   },
   "白名单已清空，已恢复为标准全量入场模式": {
@@ -10158,9 +10010,7 @@
     "de-DE": "Die Whitelist wurde gelöscht und ist wieder im Standard-Vollzulassungsmodus.",
     "fr-FR": "La liste blanche a été effacée et est revenue au mode d'admission complète standard.",
     "ko-KR": "화이트리스트가 지워지고 표준 전체 허용 모드로 돌아왔습니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(11386-11409)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(11386-11409)"],
     "$id": 23336
   },
   "清空白名单失败": {
@@ -10173,9 +10023,7 @@
     "de-DE": "Leere Liste konnte nicht gelöscht werden",
     "fr-FR": "Échec de la suppression de la liste vide",
     "ko-KR": "빈 목록을 지우지 못했습니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(11542-11553)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(11542-11553)"],
     "$id": 23337
   },
   "清空白名单异常": {
@@ -10188,9 +10036,7 @@
     "de-DE": "Leere Listenausnahme löschen",
     "fr-FR": "Supprimer l'exception de liste vide",
     "ko-KR": "빈 목록 예외 지우기",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(11637-11648)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(11637-11648)"],
     "$id": 23338
   },
   "目录维护与管理": {
@@ -10203,9 +10049,7 @@
     "de-DE": "Verzeichnispflege und -verwaltung",
     "fr-FR": "Maintenance et gestion d'annuaire",
     "ko-KR": "디렉토리 유지 및 관리",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(12033-12044)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(12033-12044)"],
     "$id": 23339
   },
   "监控文件变动、全量扫描、清理空文件夹或重置当前目录的 AI 分析数据。": {
@@ -10218,9 +10062,7 @@
     "de-DE": "Überwachen Sie Dateiänderungen, führen Sie einen vollständigen Scan durch, bereinigen Sie leere Ordner oder setzen Sie die KI-Analysedaten des aktuellen Verzeichnisses zurück.",
     "fr-FR": "Surveillez les modifications de fichiers, effectuez une analyse complète, nettoyez les dossiers vides ou réinitialisez les données d'analyse AI du répertoire actuel.",
     "ko-KR": "파일 변경 사항을 모니터링하고, 전체 검사를 수행하고, 빈 폴더를 정리하거나, 현재 디렉터리의 AI 분석 데이터를 재설정합니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(12143-12182)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(12143-12182)"],
     "$id": 23340
   },
   "待配置": {
@@ -10233,9 +10075,7 @@
     "de-DE": "Zu konfigurieren",
     "fr-FR": "A configurer",
     "ko-KR": "구성 예정",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(13237-13244)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(13237-13244)"],
     "$id": 23341
   },
   "在操作系统资源管理器中查看此文件夹": {
@@ -10248,9 +10088,7 @@
     "de-DE": "Sehen Sie sich diesen Ordner im Betriebssystem-Explorer an",
     "fr-FR": "Afficher ce dossier dans l'explorateur du système d'exploitation",
     "ko-KR": "운영 체제 탐색기에서 이 폴더 보기",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(13734-13755)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(13734-13755)"],
     "$id": 23342
   },
   "打开文件夹": {
@@ -10263,9 +10101,7 @@
     "de-DE": "Ordner öffnen",
     "fr-FR": "Ouvrir le dossier",
     "ko-KR": "폴더 열기",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(13845-13854)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(13845-13854)"],
     "$id": 23343
   },
   "绑定工作流: ": {
@@ -10278,9 +10114,7 @@
     "de-DE": "Bindungsworkflow:",
     "fr-FR": "Flux de travail de liaison :",
     "ko-KR": "바인딩 작업 흐름:",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(14186-14197)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(14186-14197)"],
     "$id": 23345
   },
   "未绑定 (标准模式)": {
@@ -10293,9 +10127,7 @@
     "de-DE": "Ungebunden (Standardmodus)",
     "fr-FR": "Non lié (mode standard)",
     "ko-KR": "언바운드(표준 모드)",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(14396-14410)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(14396-14410)"],
     "$id": 23346
   },
   "添加时间: ": {
@@ -10308,9 +10140,7 @@
     "de-DE": "Hinzugefügte Zeit:",
     "fr-FR": "Temps ajouté :",
     "ko-KR": "추가된 시간:",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(14616-14626)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(14616-14626)"],
     "$id": 23347
   },
   "自动监听文件变动 (Auto Watch)": {
@@ -10323,9 +10153,7 @@
     "de-DE": "Dateiänderungen automatisch überwachen (Auto Watch)",
     "fr-FR": "Surveiller automatiquement les modifications de fichiers (Auto Watch)",
     "ko-KR": "파일 변경 사항 자동 모니터링(Auto Watch)",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(15598-15623)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(15598-15623)"],
     "$id": 23348
   },
   "实时监听中": {
@@ -10338,9 +10166,7 @@
     "de-DE": "Überwachung in Echtzeit",
     "fr-FR": "Surveillance en temps réel",
     "ko-KR": "실시간 모니터링",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(15838-15847)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(15838-15847)"],
     "$id": 23349
   },
   "实时感知当前目录下新增、修改与删除的文件。开启后新文件将自动同步并加入 AI 智能分析队列。": {
@@ -10353,9 +10179,7 @@
     "de-DE": "Erkennen Sie neue, geänderte und gelöschte Dateien im aktuellen Verzeichnis in Echtzeit. Nach dem Öffnen werden neue Dateien automatisch synchronisiert und der intelligenten KI-Analysewarteschlange hinzugefügt.",
     "fr-FR": "Détectez les fichiers nouveaux, modifiés et supprimés dans le répertoire actuel en temps réel. Après ouverture, les nouveaux fichiers seront automatiquement synchronisés et ajoutés à la file d'attente d'analyse intelligente de l'IA.",
     "ko-KR": "현재 디렉토리에서 신규, 수정, 삭제된 파일을 실시간으로 탐지합니다. 열면 새 파일이 자동으로 동기화되어 AI 지능형 분석 대기열에 추가됩니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(16004-16072)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(16004-16072)"],
     "$id": 23350
   },
   "重新扫描与变动检测": {
@@ -10368,9 +10192,7 @@
     "de-DE": "Erneutes Scannen und Änderungserkennung",
     "fr-FR": "Nouvelle analyse et détection des modifications",
     "ko-KR": "재검색 및 변경 감지",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(17134-17147)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(17134-17147)"],
     "$id": 23351
   },
   "对物理磁盘文件进行全量比对，检查是否有脱机添加的新文件或改动，并可选择将其推入分析队列。": {
@@ -10383,9 +10205,7 @@
     "de-DE": "Führen Sie einen vollständigen Vergleich der physischen Festplattendateien durch, um zu prüfen, ob offline neue Dateien oder Änderungen hinzugefügt wurden, und verschieben Sie diese optional in die Analysewarteschlange.",
     "fr-FR": "Effectuez une comparaison complète des fichiers du disque physique pour vérifier si de nouveaux fichiers ou des modifications ont été ajoutés hors ligne et, éventuellement, placez-les dans la file d'attente d'analyse.",
     "ko-KR": "물리적 디스크 파일의 전체 비교를 수행하여 새 파일이나 오프라인으로 추가된 변경 사항이 있는지 확인하고 선택적으로 분석 대기열에 푸시합니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(17246-17312)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(17246-17312)"],
     "$id": 23352
   },
   "重新扫描": {
@@ -10398,9 +10218,7 @@
     "de-DE": "Erneut scannen",
     "fr-FR": "Nouvelle analyse",
     "ko-KR": "다시 스캔",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(17839-17847)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(17839-17847)"],
     "$id": 23353
   },
   "扫描并清理空文件夹": {
@@ -10413,9 +10231,7 @@
     "de-DE": "Leere Ordner scannen und bereinigen",
     "fr-FR": "Scanner et nettoyer les dossiers vides",
     "ko-KR": "빈 폴더 스캔 및 정리",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(18445-18458)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(18445-18458)"],
     "$id": 23354
   },
   "递归扫描当前目录因整理或删除后遗留的空文件夹，支持查看详情并一键批量清理。": {
@@ -10428,9 +10244,7 @@
     "de-DE": "Durchsuchen Sie das aktuelle Verzeichnis rekursiv nach leeren Ordnern, die nach dem Sortieren oder Löschen übrig geblieben sind. Es unterstützt die Anzeige von Details und die Stapelbereinigung mit einem Klick.",
     "fr-FR": "Analysez de manière récursive le répertoire actuel à la recherche des dossiers vides laissés après le tri ou la suppression. Il prend en charge l'affichage des détails et le nettoyage par lots en un seul clic.",
     "ko-KR": "정렬 또는 삭제 후 남은 빈 폴더가 있는지 현재 디렉터리를 반복적으로 검색합니다. 한 번의 클릭으로 세부 정보 보기 및 일괄 정리를 지원합니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(18557-18598)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(18557-18598)"],
     "$id": 23355
   },
   "清理空文件夹": {
@@ -10443,9 +10257,7 @@
     "de-DE": "Leere Ordner bereinigen",
     "fr-FR": "Nettoyer les dossiers vides",
     "ko-KR": "빈 폴더 정리",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(19135-19145)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(19135-19145)"],
     "$id": 23356
   },
   "重新运行场景设置向导": {
@@ -10458,9 +10270,7 @@
     "de-DE": "Führen Sie den Szenario-Setup-Assistenten erneut aus",
     "fr-FR": "Réexécutez l'assistant de configuration du scénario",
     "ko-KR": "시나리오 설정 마법사 다시 실행",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(19737-19751)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(19737-19751)"],
     "$id": 23357
   },
   "重新启动极简向导，由系统再次探测目录内容并提供「极速整理/创意图库/影视素材/桌面杂乱」预设推荐。": {
@@ -10473,9 +10283,7 @@
     "de-DE": "Starten Sie den Minimalist-Assistenten neu und das System erkennt den Verzeichnisinhalt erneut und gibt Standardempfehlungen für „Schnelle Organisation/Kreative Galerie/Videomaterialien/Desktop-Unordnung“.",
     "fr-FR": "Redémarrez l'assistant minimaliste et le système détectera à nouveau le contenu du répertoire et fournira les recommandations par défaut de « Organisation rapide/Galerie créative/Matériaux vidéo/Encombrement du bureau ».",
     "ko-KR": "미니멀리스트 마법사를 다시 시작하면 시스템이 디렉터리 콘텐츠를 다시 감지하고 \"빠른 정리/창의적인 갤러리/비디오 자료/데스크톱 클러터\"의 기본 권장 사항을 제공합니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(19850-19921)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(19850-19921)"],
     "$id": 23358
   },
   "运行向导": {
@@ -10488,9 +10296,7 @@
     "de-DE": "Assistent ausführen",
     "fr-FR": "Exécuter l'assistant",
     "ko-KR": "마법사 실행",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(20288-20296)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(20288-20296)"],
     "$id": 23359
   },
   "工作流绑定与白名单快照保护": {
@@ -10503,9 +10309,7 @@
     "de-DE": "Workflow-Bindung und Whitelist-Snapshot-Schutz",
     "fr-FR": "Liaison de workflow et protection des instantanés de liste blanche",
     "ko-KR": "워크플로 바인딩 및 화이트리스트 스냅샷 보호",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(21049-21066)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(21049-21066)"],
     "$id": 23360
   },
   "已绑定: {name}": {
@@ -10518,9 +10322,7 @@
     "de-DE": "Gebunden: {name}",
     "fr-FR": "Lié: {name}",
     "ko-KR": "바운드: {name}",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(21307-21322)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(21307-21322)"],
     "$id": 23361
   },
   "未绑定 (通用模式)": {
@@ -10533,9 +10335,7 @@
     "de-DE": "Ungebunden (generischer Modus)",
     "fr-FR": "Non lié (mode générique)",
     "ko-KR": "언바운드(일반 모드)",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(21637-21651)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(21637-21651)"],
     "$id": 23362
   },
   "包含规则快照生效中 ({count})": {
@@ -10548,9 +10348,7 @@
     "de-DE": "Enthält einen Regel-Snapshot in Kraft ({count})",
     "fr-FR": "Contient un instantané de règle en vigueur ({count})",
     "ko-KR": "적용 중인 규칙 스냅샷 포함({count})",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(21912-21935)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(21912-21935)"],
     "$id": 27011
   },
   "已绑定专属业务工作流。解除绑定后目录将恢复为通用模式，且自动保留包含规则快照防止非目标文件涌入。": {
@@ -10563,9 +10361,7 @@
     "de-DE": "Der exklusive Geschäftsworkflow wurde gebunden. Nach dem Aufheben der Bindung kehrt das Verzeichnis in den Universalmodus zurück und Snapshots mit Regeln werden automatisch beibehalten, um den Zustrom von Nicht-Zieldateien zu verhindern.",
     "fr-FR": "Le flux de travail commercial exclusif a été lié. Après la dissociation, le répertoire reviendra en mode universel et les instantanés contenant des règles seront automatiquement conservés pour empêcher l'afflux de fichiers non cibles.",
     "ko-KR": "독점적인 비즈니스 워크플로우가 바인딩되었습니다. 바인딩 해제 후 디렉터리는 범용 모드로 돌아가고, 규칙이 포함된 스냅샷은 자동으로 유지되어 대상이 아닌 파일의 유입을 방지합니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(22188-22264)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(22188-22264)"],
     "$id": 27065
   },
   "当前目录未绑定专属工作流。若存在包含规则快照，将继续作为安全保护生效，亦可随时清空恢复全量模式。": {
@@ -10578,9 +10374,7 @@
     "de-DE": "An das aktuelle Verzeichnis ist kein dedizierter Workflow gebunden. Wenn ein Snapshot vorhanden ist, der Regeln enthält, bleibt dieser weiterhin als Sicherheitsschutz wirksam und kann jederzeit gelöscht und im Vollmodus wiederhergestellt werden.",
     "fr-FR": "Le répertoire actuel n'est pas associé à un flux de travail dédié. S'il existe un instantané contenant des règles, il continuera à être efficace en tant que protection de sécurité et pourra être effacé et restauré en mode complet à tout moment.",
     "ko-KR": "현재 디렉터리에는 바인딩된 전용 워크플로가 없습니다. 규칙이 포함된 스냅샷이 있는 경우 이는 보안 보호로서 계속 유효하며 언제든지 삭제하고 전체 모드로 복원할 수 있습니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(22309-22385)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(22309-22385)"],
     "$id": 27069
   },
   "解除工作流绑定": {
@@ -10593,9 +10387,7 @@
     "de-DE": "Workflow entbinden",
     "fr-FR": "Dissocier le flux de travail",
     "ko-KR": "워크플로 바인딩 해제",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(23064-23075)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(23064-23075)"],
     "$id": 23366
   },
   "清空包含规则并恢复全量模式": {
@@ -10608,9 +10400,7 @@
     "de-DE": "Inklusionsregeln löschen und Vollmodus wiederherstellen",
     "fr-FR": "Effacer les règles d'inclusion et restaurer le mode complet",
     "ko-KR": "포함 규칙을 지우고 전체 모드를 복원합니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(23685-23702)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(23685-23702)"],
     "$id": 27199
   },
   "前往绑定工作流": {
@@ -10623,9 +10413,7 @@
     "de-DE": "Gehen Sie zum Bindungsworkflow",
     "fr-FR": "Accéder au workflow de liaison",
     "ko-KR": "바인딩 워크플로로 이동",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(24139-24150)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(24139-24150)"],
     "$id": 23368
   },
   "生效中扩展名快照:": {
@@ -10638,9 +10426,7 @@
     "de-DE": "Schnappschuss der geltenden Erweiterung:",
     "fr-FR": "Aperçu de l'extension en vigueur :",
     "ko-KR": "적용 중인 확장의 스냅샷:",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(24545-24558)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(24545-24558)"],
     "$id": 23369
   },
   "安全重置目录分析数据": {
@@ -10653,9 +10439,7 @@
     "de-DE": "Kataloganalysedaten sicher zurücksetzen",
     "fr-FR": "Réinitialisez en toute sécurité les données d'analyse du catalogue",
     "ko-KR": "카탈로그 분석 데이터를 안전하게 재설정",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(25777-25791)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(25777-25791)"],
     "$id": 23370
   },
   "清空当前目录所有文件的 AI 标签、分镜缓存与文本索引。受跨工作区孤儿保护机制守护，共享文件绝不误伤。": {
@@ -10668,9 +10452,7 @@
     "de-DE": "Löschen Sie die AI-Tags, den Storyboard-Cache und den Textindex aller Dateien im aktuellen Verzeichnis. Geschützt durch den arbeitsbereichsübergreifenden Waisenschutzmechanismus werden freigegebene Dateien niemals versehentlich beschädigt.",
     "fr-FR": "Effacez les balises AI, le cache du storyboard et l'index de texte de tous les fichiers du répertoire actuel. Protégés par le mécanisme de protection des orphelins entre espaces de travail, les fichiers partagés ne seront jamais endommagés accidentellement.",
     "ko-KR": "현재 디렉터리에 있는 모든 파일의 AI 태그, 스토리보드 캐시, 텍스트 인덱스를 지웁니다. 작업 공간 간 고아 보호 메커니즘으로 보호되므로 공유 파일이 실수로 손상되는 일이 없습니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(25890-25963)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(25890-25963)"],
     "$id": 23371
   },
   "重置数据...": {
@@ -10683,9 +10465,7 @@
     "de-DE": "Daten zurücksetzen...",
     "fr-FR": "Réinitialiser les données...",
     "ko-KR": "데이터 재설정...",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(26361-26372)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(26361-26372)"],
     "$id": 23372
   },
   "从应用中移除工作目录": {
@@ -10698,9 +10478,7 @@
     "de-DE": "Entfernen Sie das Arbeitsverzeichnis aus der Anwendung",
     "fr-FR": "Supprimer le répertoire de travail de l'application",
     "ko-KR": "애플리케이션에서 작업 디렉터리를 제거합니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(26952-26966)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(26952-26966)"],
     "$id": 23373
   },
   "解除此目录在应用内的绑定并清空其索引记录。此操作完全不会影响或删除物理磁盘上的真实文件。": {
@@ -10713,9 +10491,7 @@
     "de-DE": "Heben Sie die Bindung dieses Verzeichnisses innerhalb der Anwendung auf und löschen Sie seine Indexdatensätze. Dieser Vorgang wirkt sich überhaupt nicht auf die tatsächlichen Dateien auf der physischen Festplatte aus und löscht diese auch nicht.",
     "fr-FR": "Dissociez ce répertoire dans l'application et effacez ses enregistrements d'index. Cette opération n’affecte ni ne supprime du tout les fichiers réels sur le disque physique.",
     "ko-KR": "애플리케이션 내에서 이 디렉터리를 바인딩 해제하고 해당 인덱스 레코드를 지웁니다. 이 작업은 물리적 디스크의 실제 파일에 전혀 영향을 주거나 삭제하지 않습니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(27065-27131)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(27065-27131)"],
     "$id": 23374
   },
   "移除目录...": {
@@ -10728,9 +10504,7 @@
     "de-DE": "Verzeichnis entfernen...",
     "fr-FR": "Supprimer le répertoire...",
     "ko-KR": "디렉토리 제거...",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(27576-27587)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(27576-27587)"],
     "$id": 23375
   },
   "确认安全重置「{name}」？": {
@@ -10743,9 +10517,7 @@
     "de-DE": "Sicheren Reset „{name}“ bestätigen?",
     "fr-FR": "Confirmer la réinitialisation sécurisée « {name} » ?",
     "ko-KR": "'{name}' 안전한 재설정을 확인하시겠습니까?",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(28006-28025)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(28006-28025)"],
     "$id": 23376
   },
   "此操作将清空当前目录下所有文件的 AI 分析成果与分镜缓存，但不会删除物理磁盘上的真实文件。": {
@@ -10758,9 +10530,7 @@
     "de-DE": "Durch diesen Vorgang werden die Ergebnisse der KI-Analyse und der Storyboard-Cache aller Dateien im aktuellen Verzeichnis gelöscht, die tatsächlichen Dateien auf der physischen Festplatte werden jedoch nicht gelöscht.",
     "fr-FR": "Cette opération effacera les résultats de l'analyse IA et le cache du storyboard de tous les fichiers du répertoire actuel, mais ne supprimera pas les fichiers réels sur le disque physique.",
     "ko-KR": "이 작업을 수행하면 현재 디렉터리에 있는 모든 파일의 AI 분석 결과와 스토리보드 캐시가 지워지지만 실제 디스크에 있는 실제 파일은 삭제되지 않습니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(28270-28342)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(28270-28342)"],
     "$id": 23377
   },
   "受孤儿保护机制守护：其他工作区引用的共享文件自动受到免疫保留。": {
@@ -10773,9 +10543,7 @@
     "de-DE": "Geschützt durch den Waisenschutzmechanismus: Freigegebene Dateien, auf die von anderen Arbeitsbereichen verwiesen wird, werden automatisch durch Immunretention geschützt.",
     "fr-FR": "Protégés par le mécanisme de protection des orphelins : les fichiers partagés référencés par d'autres espaces de travail sont automatiquement protégés par la rétention immunitaire.",
     "ko-KR": "고아 보호 메커니즘으로 보호됨: 다른 작업 공간에서 참조하는 공유 파일은 면역 보존을 통해 자동으로 보호됩니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(28623-28658)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(28623-28658)"],
     "$id": 23378
   },
   "确认安全重置": {
@@ -10788,9 +10556,7 @@
     "de-DE": "Bestätigen Sie den sicheren Reset",
     "fr-FR": "Confirmer la réinitialisation sécurisée",
     "ko-KR": "안전한 재설정 확인",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(29437-29447)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(29437-29447)"],
     "$id": 23379
   },
   "确认移除工作目录「{name}」？": {
@@ -10803,9 +10569,7 @@
     "de-DE": "Sind Sie sicher, dass Sie das Arbeitsverzeichnis „{name}“ entfernen möchten?",
     "fr-FR": "Êtes-vous sûr de vouloir supprimer le répertoire de travail « {name} » ?",
     "ko-KR": "정말로 \"{name}\" 작업 디렉터리를 제거하시겠습니까?",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(29920-29941)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(29920-29941)"],
     "$id": 23380
   },
   "确定要从应用中移除此工作目录吗？相关的文件索引与分析数据将被清理。": {
@@ -10818,9 +10582,7 @@
     "de-DE": "Möchten Sie dieses Arbeitsverzeichnis wirklich aus der App entfernen? Relevante Dateiindizierungs- und Analysedaten werden bereinigt.",
     "fr-FR": "Êtes-vous sûr de vouloir supprimer ce répertoire de travail de l'application ? Les données pertinentes d’indexation et d’analyse des fichiers seront nettoyées.",
     "ko-KR": "앱에서 이 작업 디렉터리를 삭제하시겠습니까? 관련 파일 인덱싱 및 분석 데이터가 정리됩니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(30166-30203)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(30166-30203)"],
     "$id": 23381
   },
   "安全保障：物理磁盘上的文件和文件夹 100% 完好无损。": {
@@ -10833,9 +10595,7 @@
     "de-DE": "Sicher und geschützt: Dateien und Ordner auf der physischen Festplatte sind zu 100 % intakt.",
     "fr-FR": "Sûr et sécurisé : les fichiers et dossiers sur le disque physique sont 100 % intacts.",
     "ko-KR": "안전하고 안전함: 물리적 디스크의 파일과 폴더는 100% 손상되지 않습니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(30470-30502)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(30470-30502)"],
     "$id": 23382
   },
   "确认移除": {
@@ -10848,9 +10608,7 @@
     "de-DE": "Bestätigen Sie das Entfernen",
     "fr-FR": "Confirmer la suppression",
     "ko-KR": "제거 확인",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(31276-31284)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(31276-31284)"],
     "$id": 23383
   },
   "确认解除工作流绑定？": {
@@ -10863,9 +10621,7 @@
     "de-DE": "Sind Sie sicher, dass Sie die Bindung des Workflows aufheben?",
     "fr-FR": "Êtes-vous sûr de dissocier le flux de travail ?",
     "ko-KR": "워크플로 바인딩을 해제하시겠습니까?",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(31765-31779)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(31765-31779)"],
     "$id": 23384
   },
   "解除工作流绑定后，该目录将切换为通用管理模式，不再受特定工作流规则统领。": {
@@ -10878,9 +10634,7 @@
     "de-DE": "Nach dem Aufheben der Workflow-Bindung wechselt das Verzeichnis in den allgemeinen Verwaltungsmodus und unterliegt nicht mehr bestimmten Workflow-Regeln.",
     "fr-FR": "Après dissociation du workflow, l'annuaire passera en mode de gestion générale et ne sera plus régi par des règles de workflow spécifiques.",
     "ko-KR": "워크플로 바인딩을 해제하면 디렉터리는 일반 관리 모드로 전환되며 더 이상 특정 워크플로 규칙의 적용을 받지 않습니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(31998-32038)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(31998-32038)"],
     "$id": 23385
   },
   "【快照安全保护】：为防止非目标垃圾文件骤然涌入分析队列，当前生效的包含规则扩展名（共 {count} 项）将作为安全快照完整保留。": {
@@ -10893,9 +10647,7 @@
     "de-DE": "[Snapshot-Sicherheitsschutz]: Um zu verhindern, dass nicht zum Ziel gehörende Junk-Dateien plötzlich in die Analysewarteschlange gelangen, werden die derzeit gültigen Einschlussregelerweiterungen (insgesamt {count} Elemente) vollständig als Sicherheits-Snapshots beibehalten.",
     "fr-FR": "[Protection de sécurité des instantanés] : afin d'empêcher les fichiers indésirables non cibles d'inonder soudainement la file d'attente d'analyse, les extensions de règles d'inclusion actuellement efficaces (un total de {count} éléments) seront entièrement conservées en tant qu'instantanés de sécurité.",
     "ko-KR": "[스냅샷 보안 보호]: 대상이 아닌 정크 파일이 갑자기 분석 대기열로 넘쳐나는 것을 방지하기 위해 현재 유효한 포함 규칙 확장(총 {count}개 항목)이 보안 스냅샷으로 완전히 유지됩니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(32345-32438)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(32345-32438)"],
     "$id": 27220
   },
   "解除绑定 (保留快照)": {
@@ -10908,9 +10660,7 @@
     "de-DE": "Bindung aufheben (Schnappschuss behalten)",
     "fr-FR": "Dissocier (conserver l'instantané)",
     "ko-KR": "바인딩 해제(스냅샷 유지)",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(33237-33252)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(33237-33252)"],
     "$id": 23387
   },
   "确认清空包含规则并恢复全量模式？": {
@@ -10923,9 +10673,7 @@
     "de-DE": "Sind Sie sicher, dass Sie die Einschlussregeln löschen und den Vollmodus wiederherstellen?",
     "fr-FR": "Êtes-vous sûr d'effacer les règles d'inclusion et de restaurer le mode complet ?",
     "ko-KR": "포함 규칙을 지우고 전체 모드를 복원하시겠습니까?",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(33762-33782)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(33762-33782)"],
     "$id": 27234
   },
   "清空包含规则后，目录将恢复为标准全量入场模式。除系统与自定义排除规则拦截的项目外，所有新增与存量合法文件都将纳入扫描与 AI 分析队列。": {
@@ -10938,9 +10686,7 @@
     "de-DE": "Nach dem Löschen der Einschlussregeln kehrt das Verzeichnis in den standardmäßigen Volleingabemodus zurück. Zusätzlich zu den vom System blockierten Elementen und benutzerdefinierten Ausschlussregeln werden alle neuen und vorhandenen legitimen Dateien in die Scan- und KI-Analysewarteschlange aufgenommen.",
     "fr-FR": "Après avoir effacé les règles d'inclusion, le répertoire reviendra au mode de saisie complète standard. En plus des éléments bloqués par le système et des règles d'exclusion personnalisées, tous les fichiers légitimes nouveaux et existants seront inclus dans la file d'attente d'analyse et d'analyse IA.",
     "ko-KR": "포함 규칙을 지우면 디렉터리가 표준 전체 항목 모드로 되돌아갑니다. 시스템 및 사용자 정의 제외 규칙에 의해 차단된 항목 외에도 모든 신규 및 기존 합법적인 파일이 검색 및 AI 분석 대기열에 포함됩니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(34001-34095)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(34001-34095)"],
     "$id": 27279
   },
   "此操作将清空当前已配置的 {count} 项扩展名放行包含规则，并触发增量补扫。": {
@@ -10953,9 +10699,7 @@
     "de-DE": "Durch diesen Vorgang werden die aktuell konfigurierten Einschlussregeln für {count}-Erweiterungen gelöscht und inkrementelle Scans ausgelöst.",
     "fr-FR": "Cette opération effacera les règles d'inclusion d'extension {count} actuellement configurées et déclenchera des analyses incrémentielles.",
     "ko-KR": "이 작업은 현재 구성된 {count} 확장 프로그램 포함 규칙을 지우고 증분 스캔을 트리거합니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(34429-34473)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(34429-34473)"],
     "$id": 27354
   },
   "清空白名单并恢复全量": {
@@ -10968,9 +10712,7 @@
     "de-DE": "Löschen Sie die leere Liste und stellen Sie die volle Kapazität wieder her",
     "fr-FR": "Effacez la liste vide et restaurez la pleine capacité",
     "ko-KR": "빈 목록을 지우고 전체 용량을 복원합니다.",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(35299-35313)"
-    ],
+    "$files": ["src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(35299-35313)"],
     "$id": 23391
   },
   "专业摄影师": {

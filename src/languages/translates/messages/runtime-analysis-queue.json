@@ -9,9 +9,7 @@
     "de-DE": "Die Lightweight-CPU-Engine ist abnormal. Bitte überprüfen Sie den Selbsttest in den Einstellungen erneut.",
     "fr-FR": "Le moteur CPU léger est anormal, veuillez revérifier l'auto-test dans les paramètres.",
     "ko-KR": "경량 CPU 엔진이 비정상입니다. 설정에서 자체 테스트를 다시 확인하세요.",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(2178-2201)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(2178-2201)"],
     "$id": 32061
   },
   "正在启动轻量CPU引擎，即将开始分析...": {
@@ -24,9 +22,7 @@
     "de-DE": "Die leichte CPU-Engine wird gestartet und die Analyse beginnt gleich ...",
     "fr-FR": "En démarrant le moteur CPU léger, l'analyse est sur le point de commencer...",
     "ko-KR": "경량 CPU 엔진을 가동하여 분석이 시작됩니다...",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(3024-3049)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(3024-3049)"],
     "$id": 32283
   },
   "正在预热轻量CPU模型，即将开始分析...": {
@@ -39,9 +35,7 @@
     "de-DE": "Das leichte CPU-Modell wird aufgewärmt und die Analyse beginnt gleich ...",
     "fr-FR": "Le modèle de CPU léger est en cours d'échauffement et l'analyse est sur le point de commencer...",
     "ko-KR": "경량 CPU 모델이 워밍업 중이며 분석이 곧 시작됩니다...",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(3366-3391)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(3366-3391)"],
     "$id": 32062
   },
   "轻量CPU引擎已就绪，开始分析": {
@@ -54,9 +48,7 @@
     "de-DE": "Die leichte CPU-Engine ist bereit, mit der Analyse zu beginnen",
     "fr-FR": "Le moteur CPU léger est prêt à démarrer l'analyse",
     "ko-KR": "경량 CPU 엔진이 분석을 시작할 준비가 되었습니다.",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(3870-3889)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(3870-3889)"],
     "$id": 32063
   },
   "轻量CPU引擎预热失败，请重试": {
@@ -69,9 +61,7 @@
     "de-DE": "Das Aufwärmen der Lightweight-CPU-Engine ist fehlgeschlagen. Bitte versuchen Sie es erneut",
     "fr-FR": "Échec du préchauffage du moteur du processeur léger. Veuillez réessayer.",
     "ko-KR": "경량 CPU 엔진 워밍업에 실패했습니다. 다시 시도해 주세요.",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(4492-4511)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(4492-4511)"],
     "$id": 32064
   },
   "AI引擎异常断开，正在重新连接...": {
@@ -84,9 +74,7 @@
     "de-DE": "Die KI-Engine wurde ungewöhnlich getrennt und stellt die Verbindung wieder her ...",
     "fr-FR": "Le moteur IA s'est déconnecté anormalement et est en train de se reconnecter...",
     "ko-KR": "AI 엔진이 비정상적으로 연결이 끊겼다가 다시 연결 중인데...",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(7177-7199)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(7177-7199)"],
     "$id": 4601
   },
   "AI引擎状态异常，正在尝试恢复...": {
@@ -99,9 +87,7 @@
     "de-DE": "Der Status der KI-Engine ist abnormal und versucht, sich zu erholen ...",
     "fr-FR": "L'état du moteur AI est anormal et tente de récupérer...",
     "ko-KR": "AI 엔진 상태가 비정상이라 복구중인데...",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(7446-7468)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(7446-7468)"],
     "$id": 4602
   },
   "AI引擎已恢复": {
@@ -147,9 +133,7 @@
     "de-DE": "Warten auf den Start der KI-Engine, bitte warten ...",
     "fr-FR": "En attente du démarrage du moteur IA, veuillez patienter...",
     "ko-KR": "AI 엔진 시작 대기 중, 잠시만 기다려 주십시오...",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(8760-8781)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(8760-8781)"],
     "$id": 4275
   },
   "分析已暂停": {
@@ -162,9 +146,7 @@
     "de-DE": "Die Analyse ist pausiert",
     "fr-FR": "Analyse en pause",
     "ko-KR": "분석 일시 정지됨",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(9020-9029)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(9020-9029)"],
     "$id": 4276
   },
   "AI引擎已就绪，开始分析": {
@@ -177,9 +159,7 @@
     "de-DE": "Die KI-Engine ist bereit, mit der Analyse zu beginnen",
     "fr-FR": "Moteur IA prêt, démarrage de l'analyse",
     "ko-KR": "AI 엔진 준비 완료, 분석 시작",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(10033-10049)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(10033-10049)"],
     "$id": 4277
   },
   "AI引擎状态异常，正在尝试重启...": {
@@ -192,9 +172,7 @@
     "de-DE": "Der Status der KI-Engine ist abnormal und es wird versucht, neu zu starten ...",
     "fr-FR": "L'état du moteur AI est anormal et tente de redémarrer...",
     "ko-KR": "AI 엔진 상태가 비정상이라 다시 시작하려고 하는데...",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(10277-10299)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(10277-10299)"],
     "$id": 4605
   },
   "等待AI引擎启动超时": {
@@ -207,9 +185,7 @@
     "de-DE": "Zeitüberschreitung beim Warten auf den Start der KI-Engine",
     "fr-FR": "Délai d'attente du démarrage du moteur IA dépassé",
     "ko-KR": "AI 엔진 시작 대기 시간 초과",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(11450-11464)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(11450-11464)"],
     "$id": 4279
   },
   "当前AI已经在工作中，如：分析队列，请停止后再请求": {
@@ -222,9 +198,7 @@
     "de-DE": "Die KI arbeitet derzeit, etwa an der Analyse der Warteschlange. Bitte stoppen Sie und fordern Sie dann erneut an.",
     "fr-FR": "L'IA travaille actuellement, comme l'analyse de la file d'attente. Veuillez arrêter, puis demander à nouveau.",
     "ko-KR": "현재 대기열 분석 등 AI가 작동하고 있다. 중지한 후 다시 요청하세요.",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(51078-51107)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(51078-51107)"],
     "$id": 11304
   },
   "分析超时": {
@@ -237,9 +211,7 @@
     "de-DE": "Analyse-Timeout",
     "fr-FR": "Délai d'analyse",
     "ko-KR": "분석 시간 초과",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(53225-53233)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(53225-53233)"],
     "$id": 2976
   },
   "建议切换低显存需求的AI模型": {
@@ -269,9 +241,7 @@
     "de-DE": "Gehen Sie zu den Einstellungen",
     "fr-FR": "Allez dans les paramètres",
     "ko-KR": "설정으로 이동",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(53415-53423)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(53415-53423)"],
     "$id": 4521
   },
   "配额已用尽：已分析 {count} 个私有目录文件，当前配额为 {quota} 个文件。可以通过邀请好友解锁更多额度。": {
@@ -664,9 +634,7 @@
     "de-DE": " (Erneut versucht: {retryCount} mal)",
     "fr-FR": " (Réessai {retryCount} fois)",
     "ko-KR": " (재시도 {retryCount}회 완료)",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/error-handler.ts(11635-11660)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(11635-11660)"],
     "$id": 5865
   },
   " - 建议检查系统状态": {
@@ -679,9 +647,7 @@
     "de-DE": " - Es wird empfohlen, den Systemstatus zu überprüfen",
     "fr-FR": " - Il est recommandé de vérifier l'état du système",
     "ko-KR": " - 시스템 상태 점검 권장",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/error-handler.ts(11804-11819)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(11804-11819)"],
     "$id": 5866
   },
   " - 可能需要人工干预": {
@@ -694,9 +660,7 @@
     "de-DE": "- Manuelle Eingabe erforderlich",
     "fr-FR": "- Une intervention manuelle pourrait être nécessaire",
     "ko-KR": "- 수동 개입이 필요할 수 있음",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/error-handler.ts(11880-11895)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(11880-11895)"],
     "$id": 5867
   },
   " - 系统将自动重试": {
@@ -709,9 +673,7 @@
     "de-DE": "- Das System wird automatisch erneut versuchen",
     "fr-FR": "- Le système réessayera automatiquement",
     "ko-KR": "- 시스템이 자동으로 다시 시도함",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/error-handler.ts(11958-11972)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(11958-11972)"],
     "$id": 5868
   },
   " - 将跳过此文件": {
@@ -724,9 +686,7 @@
     "de-DE": "- Diese Datei wird übersprungen",
     "fr-FR": "- Ce fichier sera ignoré",
     "ko-KR": "- 이 파일은 건너뜀",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/error-handler.ts(12032-12045)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(12032-12045)"],
     "$id": 5869
   },
   " - 大文件处理，建议增加超时时间": {
@@ -739,9 +699,7 @@
     "de-DE": "- Bearbeitung großer Dateien, es wird empfohlen, die Zeitüberschreitung zu verlängern",
     "fr-FR": "- Traitement de fichiers volumineux, il est recommandé d'augmenter le délai d'expiration",
     "ko-KR": "- 대용량 파일 처리, 타임아웃 시간 증가 권장",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/error-handler.ts(12333-12354)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/error-handler.ts(12333-12354)"],
     "$id": 5870
   },
   "数据库未连接，无法清空待处理项目": {
@@ -754,9 +712,7 @@
     "de-DE": "Die Datenbank ist nicht verbunden und ausstehende Elemente können nicht gelöscht werden.",
     "fr-FR": "La base de données n'est pas connectée et les éléments en attente ne peuvent pas être effacés.",
     "ko-KR": "데이터베이스 연결이 없어 처리 대기 항목을 비울 수 없습니다",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/queue-manager.ts(20414-20434)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/queue-manager.ts(20414-20434)"],
     "$id": 8129
   },
   "数据库未初始化": {
@@ -786,9 +742,7 @@
     "de-DE": "Unbekannte Datei",
     "fr-FR": "Fichier inconnu",
     "ko-KR": "알 수 없는 파일",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(777-785)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(777-785)"],
     "$id": 8969
   },
   "空文件": {
@@ -818,9 +772,7 @@
     "de-DE": "Dateigröße beträgt 0",
     "fr-FR": "Taille du fichier égale à zéro",
     "ko-KR": "파일 크기가 0임",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(2873-2883)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(2873-2883)"],
     "$id": 8971
   },
   "建议减少 PDF 分析页数或关闭 OCR 功能": {
@@ -833,9 +785,7 @@
     "de-DE": "Es wird empfohlen, die Anzahl der PDF-Analyseseiten zu reduzieren oder die OCR-Funktion auszuschalten",
     "fr-FR": "Il est recommandé de réduire le nombre de pages d'analyse PDF ou de désactiver la fonction OCR",
     "ko-KR": "PDF 분석 페이지 수를 줄이거나 OCR 기능을 끄는 것이 좋습니다",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(132335-132362)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(132335-132362)"],
     "$id": 11054
   },
   "AI 服务未就绪": {
@@ -864,9 +814,7 @@
     "de-DE": "Zusammenfassung",
     "fr-FR": "Résumé",
     "ko-KR": "요약",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/file-processor/process-local-analysis.ts(7497-7503)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/process-local-analysis.ts(7497-7503)"],
     "$id": 20481
   },
   "正文": {
@@ -879,9 +827,7 @@
     "de-DE": "Text",
     "fr-FR": "Corps",
     "ko-KR": "본문",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/file-processor/process-local-analysis.ts(7613-7619)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/process-local-analysis.ts(7613-7619)"],
     "$id": 20482
   },
   "无法获取文件路径记录": {
@@ -894,9 +840,7 @@
     "de-DE": "Dateipfadeintrag konnte nicht abgerufen werden",
     "fr-FR": "Impossible d'obtenir l'enregistrement du chemin du fichier",
     "ko-KR": "파일 경로 레코드를 조회할 수 없습니다",
-    "$files": [
-      "src/electron/runtime-services/analysis-queue-service/file-processor/save-local-cache-result.ts(5325-5339)"
-    ],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/save-local-cache-result.ts(5325-5339)"],
     "$id": 8132
   }
 }
