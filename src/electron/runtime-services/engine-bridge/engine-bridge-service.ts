@@ -19,7 +19,6 @@ import * as path from 'node:path'
 import * as fs from 'node:fs'
 import { app, BrowserWindow } from 'electron'
 import { ResourceLocator, logger, LogCategory, APP_PORTS } from '@firefly/shared'
-import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
 import { Tier2CircuitBreaker, Tier2CircuitState } from './tier2-circuit-breaker'
 import { CRASH_HEAL_MAX_ATTEMPTS, decideCrashHeal } from './crash-heal-policy'
 import { isServiceUsableStatus, shouldTriggerServiceStartAt } from './service-start-policy'
@@ -33,7 +32,12 @@ import {
 import { EngineLifecycleStateMachine } from './engine-lifecycle-state-machine'
 import { EngineModelCatalogResolver } from './engine-model-catalog-resolver'
 import { isLocalDevRuntime } from '../../main/worktree-env'
-import { ProcessTreeIdentity } from '../hibernation/types'
+import {
+  OmniModuleDrainResult,
+  OmniModuleStatusResult,
+  ProcessTreeIdentity
+} from '../hibernation/types'
+import { omniService } from '../system/omni-service'
 import { processTreeManager, ProcessTreeManager } from './process-tree-manager'
 
 /** Tier 2 引擎基准端口（与本地 AI 服务端口收敛一致：38400） */
@@ -2660,6 +2664,66 @@ export class EngineBridgeService {
     }
     this.processTreeManager.setIdentity(targetId, identity)
     return { identity }
+  }
+
+  /**
+   * 触发 Omni 端侧模型 Session 动态排空与内存释放 (spec §3.4.2)
+   */
+  public async drainOmniModule(
+    targetId: string,
+    options?: { waitDrainMs?: number; signal?: AbortSignal }
+  ): Promise<OmniModuleDrainResult> {
+    const baseUrl = omniService.getBaseUrl()
+    const waitMs = options?.waitDrainMs ?? 3000
+    const url = `${baseUrl}/v1/modules/${encodeURIComponent(targetId)}/session?wait_drain_ms=${waitMs}`
+    const timeoutSignal = AbortSignal.timeout(waitMs + 3000)
+    const signal = options?.signal
+      ? typeof AbortSignal.any === 'function'
+        ? AbortSignal.any([options.signal, timeoutSignal])
+        : options.signal
+      : timeoutSignal
+
+    const res = await fetch(url, {
+      method: 'DELETE',
+      signal
+    })
+    if (!res.ok) {
+      const errJson = (await res.json().catch(() => ({}))) as any
+      throw new Error(
+        errJson.error || `Failed to drain omni module ${targetId}: HTTP ${res.status}`
+      )
+    }
+    return (await res.json()) as OmniModuleDrainResult
+  }
+
+  /**
+   * 探测 Omni 端侧模型 Session 驻留状态 (spec §3.4.2)
+   */
+  public async getOmniModuleStatus(
+    targetId: string,
+    options?: { signal?: AbortSignal }
+  ): Promise<OmniModuleStatusResult> {
+    try {
+      const baseUrl = omniService.getBaseUrl()
+      const url = `${baseUrl}/v1/modules/${encodeURIComponent(targetId)}/session/status`
+      const timeoutSignal = AbortSignal.timeout(3000)
+      const signal = options?.signal
+        ? typeof AbortSignal.any === 'function'
+          ? AbortSignal.any([options.signal, timeoutSignal])
+          : options.signal
+        : timeoutSignal
+
+      const res = await fetch(url, {
+        method: 'GET',
+        signal
+      })
+      if (!res.ok) {
+        return { loaded: false, residentBytes: 0, serviceReachable: false }
+      }
+      return (await res.json()) as OmniModuleStatusResult
+    } catch {
+      return { loaded: false, residentBytes: 0, serviceReachable: false }
+    }
   }
 }
 

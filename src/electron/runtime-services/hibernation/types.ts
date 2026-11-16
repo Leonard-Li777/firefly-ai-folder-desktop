@@ -406,6 +406,19 @@ export class AsyncMutex {
   }
 }
 
+export interface OmniModuleDrainResult {
+  readonly success: boolean
+  readonly status: string
+  readonly releasedBytes: number
+  readonly message?: string
+}
+
+export interface OmniModuleStatusResult {
+  readonly loaded: boolean
+  readonly residentBytes: number
+  readonly serviceReachable: boolean
+}
+
 /** EngineBridgeService 最小能力抽象（供休眠调度器解耦与单测） */
 export interface IEngineBridgeService {
   isProcessTreeExited(identity: ProcessTreeIdentity): boolean | 'unknown'
@@ -430,6 +443,14 @@ export interface IEngineBridgeService {
       onProgress?: (progress?: any) => void
     }
   ): Promise<{ identity: ProcessTreeIdentity; jobHandle?: string }>
+  drainOmniModule?(
+    targetId: string,
+    options?: { waitDrainMs?: number; signal?: AbortSignal }
+  ): Promise<OmniModuleDrainResult>
+  getOmniModuleStatus?(
+    targetId: string,
+    options?: { signal?: AbortSignal }
+  ): Promise<OmniModuleStatusResult>
 }
 
 // ==========================================

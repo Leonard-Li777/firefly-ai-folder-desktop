@@ -2606,16 +2606,34 @@ export class ModuleHibernationCoordinator {
         }
       }
 
+      let actualReleasedBytes = residentBytesAtEntry
+      if (meta?.type === 'omni_module') {
+        try {
+          const drainRes = await this.engineBridgeServiceInstance?.drainOmniModule?.(targetId, {
+            waitDrainMs: 3000
+          })
+          if (drainRes && drainRes.releasedBytes > 0) {
+            actualReleasedBytes = drainRes.releasedBytes
+          }
+        } catch (err) {
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[Coordinator] omni_module 卸载调用失败，回落目录估值: targetId=${targetId}`,
+            err
+          )
+        }
+      }
+
       // 卸载成功，原子归位 hibernated
       this.commitRuntimeSnapshot(drainToken, d => {
         d.state = 'hibernated'
         d.residentBytes = 0
         d.residentSample = undefined
         d.unloadFailStreak = 0
-        if (residentBytesAtEntry > 0) {
-          d.lastReleasedBytes = residentBytesAtEntry
+        if (actualReleasedBytes > 0) {
+          d.lastReleasedBytes = actualReleasedBytes
           d.lastReleased = {
-            bytes: residentBytesAtEntry,
+            bytes: actualReleasedBytes,
             releasedAt: Date.now(),
             modelGeneration: d.modelGeneration,
             kind: d.effectiveMemoryKind ?? 'ram',
