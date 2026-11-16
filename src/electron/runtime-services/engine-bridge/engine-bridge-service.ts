@@ -33,6 +33,8 @@ import {
 import { EngineLifecycleStateMachine } from './engine-lifecycle-state-machine'
 import { EngineModelCatalogResolver } from './engine-model-catalog-resolver'
 import { isLocalDevRuntime } from '../../main/worktree-env'
+import { ProcessTreeIdentity } from '../hibernation/types'
+import { processTreeManager, ProcessTreeManager } from './process-tree-manager'
 
 /** Tier 2 引擎基准端口（与本地 AI 服务端口收敛一致：38400） */
 export const TIER2_ENGINE_PORT = APP_PORTS.LLAMA_LOCAL_SERVER
@@ -297,6 +299,8 @@ export class EngineBridgeService {
   private lastBackendMatchType: 'best' | 'compatible' | 'fallback' | null = null
   /** 引擎列表拉取防抖标志（与模型计数同策略，避免并发重复拉取） */
   private engineListFetching = false
+  /** 操作系统原生进程树与 JobObject 管理中心 (Ticket 02) */
+  private readonly processTreeManager: ProcessTreeManager = processTreeManager
   /** 引擎思考模式同步 in-flight Promise（并发调用共享同一次同步，均可 await 到完成） */
   private thinkingSyncPromise: Promise<void> | null = null
   /** 最近一次与引擎对齐的思考模式值（防止「引擎→桌面」回写再触发「桌面→引擎」死循环） */
@@ -1619,6 +1623,13 @@ export class EngineBridgeService {
           const { processReaper } = require('../../main/process-reaper')
           processReaper.unregisterChild(child.pid)
         } catch {}
+        if (child.pid) {
+          const currentIdent = this.processTreeManager.currentIdentity('firefly-ai-engine')
+          if (currentIdent && currentIdent.pid === child.pid) {
+            this.processTreeManager.notifyProcessTreeExit(currentIdent)
+            this.processTreeManager.clearIdentity('firefly-ai-engine')
+          }
+        }
         this.process = null
         this.applyOffline()
         // 宿主已死：在途的启动请求必然失败（连接被拒 / abort），清空在途表避免残留
@@ -2549,6 +2560,106 @@ export class EngineBridgeService {
     this.lastModelCountFetchAt = 0
     this.lastModelCountFetchOk = false
     this.circuitBreaker.reset()
+  }
+
+  // ==========================================
+  // 操作系统进程树管理与代际控制原语 (Ticket 02)
+  // ==========================================
+
+  /** 采样当前子进程树身份（pid + 创建时间 + 平台 JobObject/PGID 句柄），无进程时返回 undefined */
+  public currentIdentity(targetId: string = 'firefly-ai-engine'): ProcessTreeIdentity | undefined {
+    let identity = this.processTreeManager.currentIdentity(targetId)
+    if (!identity && targetId === 'firefly-ai-engine' && this.process?.pid) {
+      identity = {
+        pid: this.process.pid,
+        startTimeMs: this.lastSpawnedAt || Date.now(),
+        generation: 1
+      }
+    }
+    return identity
+  }
+
+  /**
+   * 检查指定目标模块底层物理进程是否在操作系统中运行
+   */
+  public isServiceRunning(targetId: string = 'firefly-ai-engine'): boolean {
+    if (targetId === 'firefly-ai-engine') {
+      if (this.process !== null && !this.process.killed && typeof this.process.pid === 'number') {
+        const res = this.processTreeManager.isProcessTreeExited({
+          pid: this.process.pid,
+          startTimeMs: this.lastSpawnedAt || 0,
+          generation: 1
+        })
+        return res === false
+      }
+    }
+    const identity = this.processTreeManager.currentIdentity(targetId)
+    if (!identity) return false
+    return this.processTreeManager.isProcessTreeExited(identity) === false
+  }
+
+  /**
+   * 核验指定身份的整棵进程树在操作系统中是否已确认退出
+   */
+  public isProcessTreeExited(identity: ProcessTreeIdentity): boolean {
+    const res = this.processTreeManager.isProcessTreeExited(identity)
+    return res === true
+  }
+
+  /** 订阅整棵进程树完全退出事件 */
+  public onProcessTreeExit(identity: ProcessTreeIdentity, callback: () => void): () => void {
+    return this.processTreeManager.onProcessTreeExit(identity, callback)
+  }
+
+  /** 终止整棵进程树 */
+  public async stopProcessTree(identity: ProcessTreeIdentity): Promise<void> {
+    await this.processTreeManager.stopProcessTree(identity)
+  }
+
+  /** 有界确认进程树退出（三态签名） */
+  public async awaitProcessTreeExit(
+    identity: ProcessTreeIdentity,
+    timeoutMs: number
+  ): Promise<'exited' | 'timeout' | 'unknown'> {
+    return this.processTreeManager.awaitProcessTreeExit(identity, timeoutMs)
+  }
+
+  /**
+   * 平台级代际精准强杀
+   */
+  public forceKillOldGeneration(
+    targetId: string,
+    generation: number,
+    jobHandle?: string
+  ): Promise<'killed' | 'no_handle' | 'unknown'> {
+    return this.processTreeManager.forceKillOldGeneration(targetId, generation, jobHandle)
+  }
+
+  /** 加载大模型并返回生成的整棵进程树物理身份 */
+  public async loadModel(
+    targetId: string,
+    modelId?: string,
+    _opts?: { signal?: AbortSignal; onProgress?: (progress: number) => void }
+  ): Promise<{ identity: ProcessTreeIdentity }> {
+    const startRes = await this.startService({ modelId })
+    if (!startRes.ok) {
+      throw new Error(startRes.error || `Failed to load model for ${targetId}`)
+    }
+    const current = this.currentIdentity(targetId)
+    if (current) {
+      return { identity: current }
+    }
+    const pid = this.process?.pid
+    if (typeof pid !== 'number' || pid <= 0) {
+      throw new Error(`Engine process not available for target ${targetId}`)
+    }
+    const identity: ProcessTreeIdentity = {
+      pid,
+      startTimeMs: this.lastSpawnedAt || Date.now(),
+      generation: 1
+    }
+    this.processTreeManager.setIdentity(targetId, identity)
+    return { identity }
   }
 }
 

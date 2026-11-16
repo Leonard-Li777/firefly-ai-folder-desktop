@@ -22,3 +22,11 @@ export type {
   EngineMetricsSnapshot,
   EngineCapability
 } from './engine-swapping-coordinator'
+export {
+  ProcessTreeManager,
+  processTreeManager,
+  formatJobObjectName,
+  PID_REUSE_TOLERANCE_MS,
+  DefaultPlatformProcessTreeDriver
+} from './process-tree-manager'
+export type { IPlatformProcessTreeDriver, ProcessTreeManagerOptions } from './process-tree-manager'
