@@ -8,6 +8,11 @@ import semver from 'semver'
 import { autoUpdater, UpdateInfo } from 'electron-updater'
 import { logger, LogCategory, isTestEnvironment } from '@firefly/shared'
 import { resolveAppRegion } from '../../main/worktree-env'
+import {
+  runShutdownSequence,
+  runShutdownSequenceWithOverallTimeout,
+  type ShutdownCapabilities
+} from './shutdown-coordinator'
 
 export type UpdateTrack = 'r2' | 'github'
 export type UpdateStatus =
@@ -333,59 +338,105 @@ export class AutoUpdateService {
       return
     }
 
-    // Windows 平台：四步彻底关停
+    // Windows 平台：四步关停握手（P0-6 · ShutdownCoordinator 失败语义表）
+    // 组合根注入关停能力，逐项落地 §2.7.3 判定表，消除历史空 catch 与 500ms 魔数。
+    const caps = this.buildShutdownCapabilities()
+
+    const outcome = await runShutdownSequenceWithOverallTimeout(caps, () =>
+      runShutdownSequence(caps)
+    )
+
+    if (!outcome.canProceed) {
+      // 阻断：不调用 quitAndInstall，置为可重试状态（UI 提示用户重试关停）
+      const blocked = outcome.blockedBy.join(', ')
+      logger.error(
+        LogCategory.SYSTEM,
+        `[AutoUpdater] 关停握手被阻断(${blocked})，不执行安装，等待用户重试`
+      )
+      this.updateState({
+        status: 'error',
+        error: `关停失败(${blocked})，请重试或手动重启后更新`
+      })
+      return
+    }
+
+    // 第 4 步: 全部阻断步骤通过 → 静默提权覆盖安装（isSilent, isForceRunAfter）
+    logger.debug(LogCategory.SYSTEM, '[AutoUpdater] 关停握手通过，执行 autoUpdater.quitAndInstall(true, true)')
     try {
-      // 步骤 1: SQLite WAL 刷盘并关闭持久连接
-      try {
+      autoUpdater.quitAndInstall(true, true)
+    } catch (quitErr: any) {
+      logger.error(LogCategory.SYSTEM, '[AutoUpdater] quitAndInstall 异常，尝试强制退出:', quitErr)
+      app.quit()
+    }
+  }
+
+  /**
+   * 组装 ShutdownCoordinator 所需的关停能力（§2.7.2 四步）。
+   * 每步独立 require，避免模块加载顺序导致的启动期耦合；失败语义由编排器判定。
+   */
+  private buildShutdownCapabilities(): ShutdownCapabilities {
+    return {
+      checkpointWal: async () => {
         const { databaseService } = require('../database/database-service')
         const db = databaseService?.db
-        if (db) {
-          logger.debug(LogCategory.SYSTEM, '[AutoUpdater] 优雅停机 Step 1: 正在执行 SQLite WAL Checkpoint...')
-          db.pragma('wal_checkpoint(TRUNCATE)')
+        if (!db) {
+          // 无活跃 DB（如未初始化）视为无写者，非 busy
+          return { busy: false }
         }
-      } catch (dbErr: any) {
-        logger.warn(LogCategory.SYSTEM, '[AutoUpdater] SQLite Checkpoint 警告 (忽略):', dbErr.message)
-      }
-
-      // 步骤 2: 显式停止 omniService 与 llamaServerService，阻断自愈看门狗 scheduleRestart
-      try {
+        logger.debug(LogCategory.SYSTEM, '[AutoUpdater] Step 1: 执行 SQLite WAL Checkpoint...')
+        // pragma('wal_checkpoint(TRUNCATE)') 返回 (busy, log, checkpoint) 三元组
+        const row = db.pragma('wal_checkpoint(TRUNCATE)') as unknown as [number, number, number]
+        const busy = Array.isArray(row) ? Number(row[0]) === 1 : false
+        return { busy }
+      },
+      stopOmni: async () => {
         const { omniService } = require('./omni-service')
-        if (omniService) {
-          logger.debug(LogCategory.SYSTEM, '[AutoUpdater] 优雅停机 Step 2: 显式停用 omniService 阻断看门狗...')
-          omniService.stop()
-        }
-      } catch {}
-
-      try {
+        if (!omniService) return
+        logger.debug(LogCategory.SYSTEM, '[AutoUpdater] Step 2: 显式停机 omniService 阻断看门狗...')
+        await omniService.stop()
+      },
+      stopLlamaServer: async () => {
         const { llamaServerService } = require('@firefly/electron-llamaIndex-service')
-        if (llamaServerService && typeof llamaServerService.stop === 'function') {
-          await llamaServerService.stop()
+        // 真实停机方法是 stopServer()（历史误调 stop() 因守卫恒 false 导致引擎从未停机）
+        if (llamaServerService && typeof llamaServerService.stopServer === 'function') {
+          logger.debug(LogCategory.SYSTEM, '[AutoUpdater] Step 2: 停机 llamaServerService...')
+          await llamaServerService.stopServer()
         }
-      } catch {}
-
-      // 步骤 3: 兜底调用 ProcessReaper 清理本 Worktree 实例名下的所有挂载子进程
-      try {
-        logger.debug(LogCategory.SYSTEM, '[AutoUpdater] 优雅停机 Step 3: ProcessReaper 清扫所有子进程...')
+      },
+      stopLibreOffice: async () => {
+        const { libreOfficeDaemonService } = require('./libreoffice-daemon-service')
+        if (libreOfficeDaemonService && typeof libreOfficeDaemonService.stopDaemon === 'function') {
+          logger.debug(LogCategory.SYSTEM, '[AutoUpdater] Step 2: 停机 libreoffice 守护进程...')
+          libreOfficeDaemonService.stopDaemon()
+        }
+      },
+      reapProcesses: async () => {
+        logger.debug(LogCategory.SYSTEM, '[AutoUpdater] Step 3: ProcessReaper 清扫所有子进程...')
         const { ProcessReaper } = require('../../main/process-reaper')
         ProcessReaper.getInstance().cleanup()
-      } catch (reaperErr: any) {
-        logger.warn(LogCategory.SYSTEM, '[AutoUpdater] ProcessReaper 清扫警告:', reaperErr.message)
       }
-
-      // 步骤 4: 延迟 500ms 保证文件锁完全释放后，执行 NSIS 静默提权覆盖安装
-      logger.debug(LogCategory.SYSTEM, '[AutoUpdater] 优雅停机 Step 4: 执行 autoUpdater.quitAndInstall(true, true)')
-      setTimeout(() => {
-        try {
-          autoUpdater.quitAndInstall(true, true)
-        } catch (quitErr: any) {
-          logger.error(LogCategory.SYSTEM, '[AutoUpdater] quitAndInstall 异常，尝试强制退出:', quitErr)
-          app.quit()
-        }
-      }, 500)
-    } catch (err: any) {
-      logger.error(LogCategory.SYSTEM, '[AutoUpdater] 优雅停机流程发生异常:', err)
-      autoUpdater.quitAndInstall(true, true)
     }
+  }
+
+  /**
+   * 强制更新遮罩的"退出应用"(P0-11)：走同一 ShutdownCoordinator 关停编排，
+   * 但去掉"拉起安装器"步，最终 app.exit(0) 仅整体超时兜底，
+   * 不触发 before-quit/will-quit（与安全重启铁律一致）。
+   */
+  public async exitAppForUpdate(): Promise<void> {
+    logger.info(LogCategory.SYSTEM, '[AutoUpdater] update:exit-app 走 ShutdownCoordinator 关停编排(去安装步)...')
+    const caps = this.buildShutdownCapabilities()
+    const outcome = await runShutdownSequenceWithOverallTimeout(caps, () => runShutdownSequence(caps))
+
+    if (!outcome.canProceed) {
+      const blocked = outcome.blockedBy.join(', ')
+      logger.error(
+        LogCategory.SYSTEM,
+        `[AutoUpdater] exit-app 关停被阻断(${blocked})，仍 app.exit(0) 兜底退出`
+      )
+    }
+    // P0-11: 最终 app.exit(0) 直接退出，不触发 before-quit/will-quit
+    app.exit(0)
   }
 
   /**

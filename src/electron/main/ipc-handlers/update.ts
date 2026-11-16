@@ -38,8 +38,8 @@ export function registerUpdateIPCHandlers(): void {
 
   ipcMain.handle('update:exit-app', async () => {
     logger.info(LogCategory.SYSTEM, '[IPC:update:exit-app] 用户在强制更新遮罩点击退出应用')
-    const { app } = await import('electron')
-    app.exit(0)
+    // P0-11: 走同一 ShutdownCoordinator 关停编排(去安装步)，app.exit(0) 仅整体超时兜底
+    await autoUpdateService.exitAppForUpdate()
     return true
   })
 }
