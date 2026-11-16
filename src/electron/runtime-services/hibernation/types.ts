@@ -157,3 +157,65 @@ export interface ModuleRuntimeSnapshotRecord {
   blocked_unload_identity: string | null
   updated_at: string
 }
+
+// ==========================================
+// 引用租约中心 (LeaseRegistry) 类型与常量
+// ==========================================
+
+export const LEASE_TTL_MS = 90_000 // 90 秒租约单轮心跳有效期
+export const LEASE_HEARTBEAT_MS = 30_000 // 30 秒心跳上报推荐周期
+export const LEASE_ABSOLUTE_MAX_MS = 1_200_000 // 20 分钟单次租约绝对硬截止
+
+export type WorkflowAbortReason =
+  | 'DEADLINE_EXCEEDED'
+  | 'IDLE_TIMEOUT'
+  | 'MANUAL_STOP'
+  | 'TASK_TIMEOUT'
+  | 'LEASE_EXPIRED'
+  | 'LEASE_REAP_ESCALATED'
+  | 'SERVICE_STOPPED'
+  | 'APP_TERMINATING'
+
+export interface LivenessSnapshot {
+  readonly lastSignalAt: number
+  readonly sourceKey: 'task_progress' | 'player_state'
+  readonly lastPlaybackState?: 'playing' | 'paused' | 'stopped'
+}
+
+export interface LivenessSourceRegistry {
+  snapshot(leaseId: string): LivenessSnapshot
+  recordSignal(leaseId: string, at: number): void
+  recordPlayback(leaseId: string, state: 'playing' | 'paused' | 'stopped', at: number): void
+  evict(leaseId: string): void
+}
+
+export interface HibernationLeaseHandle {
+  readonly leaseId: string
+  readonly targetId: string
+  readonly clusterId: 'analysis_suite' | 'tts_media'
+  release(): void
+}
+
+export interface LeaseRegistryEntry {
+  leaseId: string
+  targetId: string
+  clusterId: 'analysis_suite' | 'tts_media'
+  grantedAt: number
+  expiresAt: number
+  absoluteDeadlineAt: number
+  rotationCount: number
+  abortController: AbortController
+  livenessSourceKey: 'task_progress' | 'player_state'
+  reaping: boolean
+  released: boolean
+  terminalized?: boolean
+  reapRetryStreak?: number
+  reapRetryTimer?: ReturnType<typeof setTimeout>
+  expiryTimer?: ReturnType<typeof setTimeout>
+}
+
+export interface AcquireLeaseOptions {
+  targetId: string
+  clusterId?: 'analysis_suite' | 'tts_media'
+  livenessSourceKey?: 'task_progress' | 'player_state'
+}
