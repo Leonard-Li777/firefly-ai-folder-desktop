@@ -65,6 +65,32 @@ describe('WorkflowSemanticMatcherService (Stage B)', () => {
         category: 'life',
         icon: 'heart',
         is_active: 1
+      },
+      {
+        id: 'builtin.workflow.dev-code-workspace',
+        name: '软件研发与代码仓库',
+        summary: '整理工程代码与脚本',
+        persona: 'developer',
+        preset_directory_tree: { name: 'src', children: [{ name: 'tests' }] },
+        workspace_config: { extensionWeights: { '.ts': 0.5, '.rs': 0.5 } },
+        extensionWeights: { '.ts': 0.5, '.rs': 0.5 },
+        source: 'preset',
+        category: 'developer',
+        icon: 'code',
+        is_active: 1
+      },
+      {
+        id: 'builtin.workflow.personal-finance-accounting',
+        name: '个人财务与记账收纳',
+        summary: '发票报销与账单明细',
+        persona: 'finance',
+        preset_directory_tree: { name: '账单', children: [{ name: '2026' }] },
+        workspace_config: { extensionWeights: { '.xlsx': 0.5, '.csv': 0.5 } },
+        extensionWeights: { '.xlsx': 0.5, '.csv': 0.5 },
+        source: 'preset',
+        category: 'life',
+        icon: 'dollar',
+        is_active: 1
       }
     ]
 
@@ -74,38 +100,37 @@ describe('WorkflowSemanticMatcherService (Stage B)', () => {
     } as any)
   })
 
-  it('准则 1: 双门禁解锁验证 (cos >= 0.65 且 sigma >= 1e-4 解锁，反之不解锁)', async () => {
-    // 构造 2 维向量让 screenshots 余弦 = 0.72, medical 余弦 = 0.50
+  it('准则 1: 统计显著性严密解锁门禁 (cos >= 0.52 且 cos >= mean + 1.5 * sigma 解锁，反之不解锁)', async () => {
+    // 构造 2 维向量让 screenshots 余弦 = 0.85, medical/dev/finance 余弦 = 0.40
     // vDir = [1, 0]
-    // screenshots = [0.72, sqrt(1 - 0.72^2)]
-    // medical = [0.50, sqrt(1 - 0.50^2)]
-    const y1 = Math.sqrt(Math.max(0, 1 - 0.72 * 0.72))
-    const y2 = Math.sqrt(Math.max(0, 1 - 0.5 * 0.5))
+    // screenshots = [0.85, sqrt(1 - 0.85^2)]
+    // medical/dev/finance = [0.40, sqrt(1 - 0.40^2)]
+    const y1 = Math.sqrt(Math.max(0, 1 - 0.85 * 0.85))
+    const y2 = Math.sqrt(Math.max(0, 1 - 0.4 * 0.4))
 
     vi.spyOn(OmniService, 'getInstance').mockReturnValue({
       isReady: () => true,
       resolveEmbeddingTarget: async () => ({ profile: 'classic_light', dim: 2 }),
       batchEmbedText: async (texts: string[]) => {
-        // 如果是目录 batch 编码 [summaryText, stem1]
-        if (texts.length <= 2 && texts[0].includes('测试相册')) {
+        // 如果是目录 batch 编码 [dirText]
+        if (texts.length === 1 && texts[0].includes('测试相册')) {
           return {
-            vectors: [
-              [1, 0],
-              [1, 0]
-            ],
-            count: texts.length,
+            vectors: [[1, 0]],
+            count: 1,
             dim: 2,
             profile: 'classic_light',
             durationMs: 5
           }
         }
-        // 如果是工作流 batch 编码
+        // 如果是工作流 batch 编码 (4 个)
         return {
           vectors: [
-            [0.72, y1],
-            [0.5, y2]
+            [0.85, y1],
+            [0.4, y2],
+            [0.4, y2],
+            [0.4, y2]
           ],
-          count: 2,
+          count: 4,
           dim: 2,
           profile: 'classic_light',
           durationMs: 10
@@ -127,6 +152,8 @@ describe('WorkflowSemanticMatcherService (Stage B)', () => {
       expect(res.batchSigma).toBeGreaterThan(1e-4)
       expect(res.unlockedWorkflowIds).toContain('builtin.workflow.screenshots-screenrecord-vault')
       expect(res.unlockedWorkflowIds).not.toContain('builtin.workflow.senior-medical-care-pipeline')
+      expect(res.unlockedWorkflowIds).not.toContain('builtin.workflow.dev-code-workspace')
+      expect(res.unlockedWorkflowIds).not.toContain('builtin.workflow.personal-finance-accounting')
       expect(
         res.semanticScoresByWorkflowId['builtin.workflow.screenshots-screenrecord-vault']
       ).toBeGreaterThan(0.5)
@@ -265,5 +292,89 @@ describe('WorkflowSemanticMatcherService (Stage B)', () => {
     expect(resB.status).toBe('ok')
     // 仅编码了一次目录本身 (batch size 1)
     expect(embedCalls - initialEmbedCalls).toBe(1)
+  })
+
+  it('AC-01: 工作流目录树 JSON 字符串反序列化与去噪 (保护 3D/4K 前缀)', () => {
+    // 动态提取私有方法进行原子测试
+    const m = matcher as any
+    const rawTreeJson = JSON.stringify({
+      name: '10-设计规范',
+      description: '公司全局UI规范',
+      children: [
+        { name: '3D模型库' },
+        { name: '4K超清素材' },
+        { name: '(01) 阶段初稿' },
+        { name: '2D动效分镜' }
+      ]
+    })
+    const text = m.buildWorkflowSemanticText({
+      name: '三维设计流水线',
+      summary: '管理3D建模与设计资产',
+      preset_directory_tree: rawTreeJson
+    })
+
+    // 验证标号被剥离，3D/4K/2D 等业务词被严格保护
+    expect(text).toContain('目录结构包含：')
+    expect(text).toContain('设计规范')
+    expect(text).not.toContain('10-设计规范')
+    expect(text).toContain('3D模型库')
+    expect(text).toContain('4K超清素材')
+    expect(text).toContain('阶段初稿')
+    expect(text).not.toContain('(01) 阶段初稿')
+    expect(text).toContain('2D动效分镜')
+  })
+
+  it('AC-02 & AC-03: 双级路径自然语言上下文组装与单次自注意力整句编码', async () => {
+    const m = matcher as any
+
+    // 1. 验证双级路径提取并过滤 Windows 盘符
+    const reqDual: WorkflowSemanticsScoreRequest = {
+      probeSeq: 10,
+      dirPath: 'D:\\Projects\\FireflyApp\\01-Drafts\\',
+      countsByExt: { txt: 2 },
+      sampledFileNames: [
+        { stem: '第一章', count: 1 },
+        { stem: '人物设定', count: 2 }
+      ]
+    }
+    const textDual = m.buildDirectorySemanticText(reqDual)
+    expect(textDual).toContain('工作目录：FireflyApp / 01-Drafts')
+    expect(textDual).toContain('包含的主要文件有：第一章、人物设定')
+    expect(textDual).not.toContain('D:')
+    expect(textDual).not.toContain('doc:')
+    expect(textDual).not.toContain('image:')
+
+    // 2. 根盘符安全兜底
+    const reqRoot: WorkflowSemanticsScoreRequest = {
+      probeSeq: 11,
+      dirPath: 'C:\\'
+    }
+    const textRoot = m.buildDirectorySemanticText(reqRoot)
+    expect(textRoot).toContain('工作目录：C:')
+
+    // 3. 验证仅发起单次整句 embedding 调用
+    let embeddedBatchTexts: string[][] = []
+    vi.spyOn(OmniService, 'getInstance').mockReturnValue({
+      isReady: () => true,
+      resolveEmbeddingTarget: async () => ({ profile: 'classic_light', dim: 2 }),
+      batchEmbedText: async (texts: string[]) => {
+        embeddedBatchTexts.push(texts)
+        return {
+          vectors: texts.map(() => [1, 0]),
+          count: texts.length,
+          dim: 2,
+          profile: 'classic_light',
+          durationMs: 5
+        }
+      }
+    } as any)
+
+    await matcher.scoreWorkflowSemantics(reqDual)
+    // 目录端请求只应调用一次 batchEmbedText，且 batch 长度为 1 (单句自注意力编码)
+    const dirCall = embeddedBatchTexts.find(batch =>
+      batch[0].includes('工作目录：FireflyApp / 01-Drafts')
+    )
+    expect(dirCall).toBeDefined()
+    expect(dirCall?.length).toBe(1)
   })
 })

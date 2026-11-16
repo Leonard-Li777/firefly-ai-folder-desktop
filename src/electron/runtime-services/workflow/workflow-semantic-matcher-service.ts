@@ -10,12 +10,13 @@
  */
 
 import crypto from 'crypto'
+import path from 'path'
 import type {
   LocalWorkflowRecord,
   WorkflowSemanticsScoreRequest,
   WorkflowSemanticsScoreResult
 } from '@firefly/types'
-import { logger, LogCategory, MODALITY_EXTS, canonicalizeExtensionToken } from '@firefly/shared'
+import { logger, LogCategory, stripTrailingSlash } from '@firefly/shared'
 import { ConfigDbManager } from '../config/config-db-manager'
 import { OmniService } from '../system/omni-service'
 
@@ -56,6 +57,14 @@ function cosineSimilarity(a: number[], b: number[]): number {
 
 function flattenDirectoryTree(node: any): string[] {
   if (!node) return []
+  if (typeof node === 'string') {
+    try {
+      const parsed = JSON.parse(node)
+      return flattenDirectoryTree(parsed)
+    } catch {
+      return [node.trim()].filter(Boolean)
+    }
+  }
   const texts: string[] = []
   if (Array.isArray(node)) {
     for (const item of node) {
@@ -64,8 +73,14 @@ function flattenDirectoryTree(node: any): string[] {
     return texts
   }
   if (typeof node === 'object') {
+    // 仅剔除后随分隔符的纯数字标号或括号标号，严格保护 "3D" / "4K" / "2D" 等业务前缀
     if (typeof node.name === 'string' && node.name.trim()) {
-      texts.push(node.name.trim())
+      const cleanName = node.name
+        .replace(/^\s*(?:[\(（]\s*\d+(?:[.\-_]\d+)*\s*[\)）]|\d+(?:[.\-_]\d+)*[\s\-_.、]+)/, '')
+        .trim()
+      if (cleanName) {
+        texts.push(cleanName)
+      }
     }
     if (typeof node.description === 'string' && node.description.trim()) {
       texts.push(node.description.trim())
@@ -268,11 +283,9 @@ export class WorkflowSemanticMatcherService {
       }
     }
 
-    // 5. 拼装目录画像文本与 Top 24 词干向量
-    const summaryText = this.buildDirectorySummaryText(req, effectiveLang)
-    const validStems = (req.sampledFileNames || []).filter(s => s.stem && s.stem.trim())
-
-    if (!summaryText && validStems.length === 0) {
+    // 5. 拼装目录文本并单次整句自注意力编码 (彻底消除均值池化向心坍缩)
+    const dirText = this.buildDirectorySemanticText(req)
+    if (!dirText.trim()) {
       return {
         status: 'degraded',
         reason: 'invalid_input',
@@ -280,72 +293,16 @@ export class WorkflowSemanticMatcherService {
       }
     }
 
-    // 单批编码目录画像：[summaryText (若有), ...stems] (最多 1 + 24 = 25 条 <= 32)
-    const textsToEmbed: string[] = []
-    let hasSummary = false
-    if (summaryText) {
-      textsToEmbed.push(summaryText)
-      hasSummary = true
-    }
-    for (const s of validStems) {
-      textsToEmbed.push(s.stem.trim())
-    }
-
-    const dirBatchResult = await omni.batchEmbedText(textsToEmbed, {
+    const dirBatchResult = await omni.batchEmbedText([dirText], {
       profile: target.profile,
       dim: target.dim,
       skipAutoStart: true,
       signal,
       timeoutMs: 1200
     })
+    const vDirNorm = l2Norm(dirBatchResult.vectors[0])
 
-    let vSummaryNorm: number[] | null = null
-    let stemVectorsStartIndex = 0
-    if (hasSummary) {
-      vSummaryNorm = l2Norm(dirBatchResult.vectors[0])
-      stemVectorsStartIndex = 1
-    }
-
-    let vDirNorm: number[]
-    if (validStems.length === 0) {
-      // 纯词干为空兜底：直接使用 summaryText 向量，返回 status: 'ok'
-      logger.debug(
-        LogCategory.SYSTEM,
-        '[WorkflowSemanticMatcherService] names_pool_skipped (词干为空)'
-      )
-      vDirNorm = vSummaryNorm!
-    } else {
-      // 词干加权池化: w_i = 1 + ln(max(1, count_i))
-      const stemVectors = dirBatchResult.vectors.slice(stemVectorsStartIndex)
-      let totalWeight = 0
-      const dim = target.dim
-      const pooled = new Array(dim).fill(0)
-
-      for (let i = 0; i < validStems.length; i++) {
-        const count = Math.max(1, Math.floor(validStems[i].count))
-        const w = 1 + Math.log(count)
-        totalWeight += w
-        const sVec = stemVectors[i]
-        for (let d = 0; d < dim; d++) {
-          pooled[d] += w * sVec[d]
-        }
-      }
-
-      const vNamesNorm = totalWeight > 0 ? l2Norm(pooled.map(x => x / totalWeight)) : pooled
-
-      if (!hasSummary) {
-        vDirNorm = vNamesNorm
-      } else {
-        // 融合: L2Norm(0.45 * L2Norm(v_summary) + 0.55 * L2Norm(v_names))
-        const fused = new Array(dim).fill(0)
-        for (let d = 0; d < dim; d++) {
-          fused[d] = 0.45 * vSummaryNorm![d] + 0.55 * vNamesNorm[d]
-        }
-        vDirNorm = l2Norm(fused)
-      }
-    }
-
-    // 6. 余弦打分、方差计算与双门禁解锁 (Spec §2.2.2)
+    // 6. 余弦打分、方差计算与双门禁解锁 (Spec §3.3)
     const rawCosineByWorkflowId: Record<string, number> = {}
     const workflowIds = Array.from(allVectorsMap.keys())
     const cosines: number[] = []
@@ -378,15 +335,16 @@ export class WorkflowSemanticMatcherService {
         semanticScoresByWorkflowId[wId] = 0.5
       }
     } else {
-      const denom = Math.max(sigma, 1e-4) * 1.5
+      // 分母收紧为 1.2，增强中段敏感度
+      const denom = Math.max(sigma, 1e-4) * 1.2
       for (const wId of workflowIds) {
         const cos = rawCosineByWorkflowId[wId]
         const z = (cos - mean) / denom
         const sSem = clamp(0.5 + 0.5 * Math.tanh(z), 0, 1)
         semanticScoresByWorkflowId[wId] = Number(sSem.toFixed(4))
 
-        // 解锁条件: cos >= 0.65 && sigma >= 1e-4
-        if (cos >= 0.65) {
+        // 统计显著性严密解锁门禁：绝对余弦 >= 0.52 且高出均值 1.5 个标准差 (仅允许顶层约 6.7%)
+        if (cos >= 0.52 && cos >= mean + 1.5 * sigma) {
           unlockedWorkflowIds.push(wId)
         }
       }
@@ -497,54 +455,35 @@ export class WorkflowSemanticMatcherService {
     summary?: string | null
     preset_directory_tree?: any
   }): string {
-    const treeText = flattenDirectoryTree(w.preset_directory_tree).join('、')
-    const parts = [w.name, w.summary || '']
-    if (treeText) {
-      parts.push(treeText)
-    }
-    return parts.filter(Boolean).join('。').slice(0, 1024)
+    const treeItems = flattenDirectoryTree(w.preset_directory_tree)
+    const treeText = treeItems.length > 0 ? `目录结构包含：${treeItems.join('、')}` : ''
+    const parts = [w.name, w.summary || '', treeText].filter(Boolean)
+    return parts.join('。').slice(0, 1024)
   }
 
-  private buildDirectorySummaryText(req: WorkflowSemanticsScoreRequest, lang: string): string {
+  private buildDirectorySemanticText(req: WorkflowSemanticsScoreRequest): string {
+    const cleanPath = stripTrailingSlash(req.dirPath || '')
+    // 过滤 Windows 盘符（如 "C:"），提取末尾双级路径作为高密度上下文，优先级高于单级 directoryName
+    const segments = cleanPath.split(/[/\\]/).filter(Boolean)
+    const realSegments = segments.filter(s => !/^[a-zA-Z]:$/.test(s))
+    const dualLevelPath =
+      realSegments.length >= 2 ? realSegments.slice(-2).join(' / ') : realSegments[0] || ''
     const dirName =
-      req.directoryName || req.dirPath.replace(/\\/g, '/').split('/').filter(Boolean).pop() || ''
+      dualLevelPath || req.directoryName || path.basename(cleanPath) || cleanPath || ''
 
-    // 统计前 5 模态占比
-    const counts = req.countsByExt || {}
-    let total = 0
-    const modalityCounts: Record<string, number> = {}
+    // 提取 Top 16 词干，防止超长尾部噪声干扰自注意力窗口
+    const validStems = (req.sampledFileNames || [])
+      .filter(s => s && typeof s.stem === 'string' && s.stem.trim())
+      .map(s => s.stem.trim())
+      .slice(0, 16)
 
-    for (const [rawExt, count] of Object.entries(counts)) {
-      if (typeof count !== 'number' || count <= 0) continue
-      total += count
-      const dotted = canonicalizeExtensionToken(rawExt, { withDot: true })
-      let matchedMod: string | null = null
-      for (const [mod, exts] of Object.entries(MODALITY_EXTS)) {
-        if ((exts as readonly string[]).includes(dotted as any)) {
-          matchedMod = mod
-          break
-        }
-      }
-      const finalMod = matchedMod || 'other'
-      modalityCounts[finalMod] = (modalityCounts[finalMod] || 0) + count
-    }
-
-    const sortedMods = Object.entries(modalityCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
-
-    const modLabels = sortedMods.map(([m, c]) => {
-      const pct = total > 0 ? Math.round((c / total) * 100) : 0
-      return `${m}: ${pct}%`
-    })
-
-    const summaryParts: string[] = []
+    const parts: string[] = []
     if (dirName) {
-      summaryParts.push(dirName)
+      parts.push(`工作目录：${dirName}`)
     }
-    if (modLabels.length > 0) {
-      summaryParts.push(modLabels.join(', '))
+    if (validStems.length > 0) {
+      parts.push(`包含的主要文件有：${validStems.join('、')}`)
     }
-    return summaryParts.join(' - ').slice(0, 512)
+    return parts.join('。').slice(0, 512)
   }
 }

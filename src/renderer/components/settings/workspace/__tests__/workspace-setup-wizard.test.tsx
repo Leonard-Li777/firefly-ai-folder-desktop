@@ -589,17 +589,46 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
     })
   })
 
+  it('AC-06: Stage B 单样本冷启动触发 (totalSampled = 1 仍正常发起 scoreWorkflowSemantics)', async () => {
+    const mockScoreSemantics = vi.fn().mockResolvedValue({
+      status: 'ok',
+      semanticScoresByWorkflowId: {
+        'builtin.workflow.desktop-declutter': 0.88
+      },
+      unlockedWorkflowIds: ['builtin.workflow.desktop-declutter']
+    })
+
+    ;(window as any).electronAPI.utils.probeDirectoryProfile = vi.fn().mockResolvedValue({
+      detectedIntent: 'fast_archive',
+      confidence: 0.8,
+      stats: {
+        totalSampled: 1,
+        totalFiles: 1,
+        countsByExt: { fountain: 1 },
+        sampledFileNames: [{ stem: '大纲草稿', count: 1 }]
+      }
+    })
+    ;(window as any).electronAPI.utils.scoreWorkflowSemantics = mockScoreSemantics
+
+    const onFinish = vi.fn()
+    render(<WorkspaceSetupWizard workspace={mockWorkspace} onFinish={onFinish} />)
+
+    await waitFor(() => {
+      expect(mockScoreSemantics).toHaveBeenCalledTimes(1)
+    })
+    expect(mockScoreSemantics).toHaveBeenCalledWith(
+      expect.objectContaining({
+        totalFiles: 1,
+        countsByExt: { fountain: 1 }
+      })
+    )
+  })
+
   it('用户无需绑定工作流：Step 1 与 Step 2 底部展示「跳过向导」按钮并触发 onSkip', async () => {
     const onFinish = vi.fn()
     const onSkip = vi.fn()
 
-    render(
-      <WorkspaceSetupWizard
-        workspace={mockWorkspace}
-        onFinish={onFinish}
-        onSkip={onSkip}
-      />
-    )
+    render(<WorkspaceSetupWizard workspace={mockWorkspace} onFinish={onFinish} onSkip={onSkip} />)
 
     // 等待首屏加载
     await waitFor(() => {

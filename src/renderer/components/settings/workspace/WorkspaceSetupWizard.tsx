@@ -644,9 +644,9 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
         if (result) {
           setProfileResult(result as DirectoryProfileResult)
 
-          // Stage B: 触发异步端侧语义向量打分 (仅在 totalSampled >= 5 且有接口时触发)
+          // Stage B: 触发异步端侧语义向量打分 (放宽至 >= 1 单样本冷启动)
           const sampled = (result as any).stats?.totalSampled ?? 0
-          if (sampled >= 5 && window.electronAPI?.utils?.scoreWorkflowSemantics) {
+          if (sampled >= 1 && window.electronAPI?.utils?.scoreWorkflowSemantics) {
             const req: WorkflowSemanticsScoreRequest = {
               probeSeq: epoch,
               dirPath: workspace.path,

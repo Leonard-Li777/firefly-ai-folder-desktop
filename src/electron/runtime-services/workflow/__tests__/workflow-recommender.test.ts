@@ -538,5 +538,42 @@ describe('Workflow Preset & Recommender Engine (Spec v1.1 §3.2)', () => {
       ]).toContain(topRec.workflowId)
       expect(topRec.score).toBeGreaterThanOrEqual(85)
     })
+
+    it('AC-05: 格式正交下的全漏斗穿透、防通用流反客为主与灵敏度 30 / 封顶 85 验证', () => {
+      // 场景：单样本冷启动 (1 个 .fountain 剧本文件)，所有官方模板均未收录 .fountain
+      const singleSampleNovelStats: DirectoryProfileStats = {
+        totalFiles: 1,
+        totalSampled: 1,
+        countsByExt: { fountain: 1 },
+        topExtensions: [{ ext: '.fountain', count: 1 }],
+        // 模拟 Stage B 端侧语义匹配：写作出版流显著拔尖解锁，余弦/置信度给出极高语义分 (0.95)
+        semanticScoresByWorkflowId: {
+          'builtin.workflow.writing-publishing-pipeline': 0.95
+        },
+        unlockedWorkflowIds: ['builtin.workflow.writing-publishing-pipeline']
+      }
+
+      const recs = recommendWorkflowByProfile(singleSampleNovelStats, BLUEPRINT_STATIC_TEMPLATES)
+      expect(recs.length).toBeGreaterThan(0)
+
+      // 1. 验证穿透全漏斗：首选必须是写作出版流，而非通用归档兜底
+      const topRec = recs[0]
+      expect(topRec.workflowId).toBe('builtin.workflow.writing-publishing-pipeline')
+      expect(topRec.reasonCode).not.toBe('insufficient_samples')
+      expect(topRec.reasonCode).not.toBe('empty_directory')
+      expect(topRec.reasonCode).not.toBe('zero_extension_match')
+
+      // 2. 验证灵敏度乘数 30 加成使得零扩展名样本得分成功超越通用流基准 (55 分)，并赋予语义推荐原因码
+      expect(topRec.score).toBeGreaterThan(55)
+      expect(topRec.score).toBeLessThanOrEqual(85)
+      expect(topRec.reasonCode).toBe('semantic_filename_boost')
+      expect(topRec.matchReason).toContain('结合目录语义与抽样文件名特征')
+
+      // 3. 验证通用流被成功压制，绝未拉升至 75 分反客为主抢占 Top 1
+      const universalRec = recs.find(r => r.workflowId === 'builtin.workflow.universal-inbox')
+      if (universalRec) {
+        expect(universalRec.score).toBe(55)
+      }
+    })
   })
 })
