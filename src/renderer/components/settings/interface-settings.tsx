@@ -316,6 +316,32 @@ export const InterfaceSettings: React.FC = () => {
         </div>
       </Card>
 
+      {/* 智能休眠与能耗保护 */}
+      <Card className="p-4 bg-card dark:bg-card">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <Label
+              htmlFor="smart-hibernation"
+              className="text-base font-medium text-card-foreground cursor-pointer"
+            >
+              {t('启用智能休眠节能')}
+            </Label>
+            <p className="text-sm text-muted-foreground">
+              {t(
+                '开启后将在模块闲置且电脑内存紧张时自动释放内存，为电脑节能省电；首次使用对应功能时需短暂加载，就绪后后续使用无需等待。'
+              )}
+            </p>
+          </div>
+          <Switch
+            id="smart-hibernation"
+            checked={getConfigValue<boolean>('ENABLE_SMART_MODULE_HIBERNATION' as any) ?? true}
+            onCheckedChange={checked => {
+              updateConfigValue('ENABLE_SMART_MODULE_HIBERNATION' as any, checked)
+            }}
+          />
+        </div>
+      </Card>
+
       {/* 主题设置 */}
       <Card className="p-4 bg-card dark:bg-card">
         <div className="space-y-4">

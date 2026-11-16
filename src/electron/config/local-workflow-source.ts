@@ -9689,39 +9689,50 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   }
   },
   {
+  {
     id: 'builtin.workflow.illustration-cg-art',
-    name: t('商业插画原画与CG美术资产库'),
-    summary: t(
-      '针对商业插画师与原画设计师，涵盖构图线稿草图、分层工程PSD/Procreate、专属笔刷与商用授权书'
-    ),
+    name: t('插画与原画作品库'),
+    summary: t(''),
     version: '1.0.0',
     persona: 'illustrator',
     category: 'creative',
-    naming_pattern: t('[业务归属]_[主题名称]_[生成日期]'),
-    naming_template: t('[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_pattern: t('[约稿项目]_[角色或主题]_[绘制阶段]'),
+    naming_template: t('[{TAG:作品来源}]{SMART_NAME}_{CRE:YYYYMMDD}'),
     preset_directory_tree: [
-      { name: t('01-草图线稿与构图构思'), children: [{ name: t('低保真草图脑暴与构图探索') }] },
-      {
-        name: t('02-分层工程文件PSD_Procreate'),
-        children: [{ name: t('多图层分层上色原始工程') }]
-      },
-      { name: t('03-笔刷资产与纹理贴图'), children: [{ name: t('Photoshop特供笔刷与水彩肌理') }] },
-      { name: t('04-角色三视图与立绘资产'), children: [{ name: t('角色拆件立绘与Live2D原画') }] },
-      {
-        name: t('05-高清展示成片与授权书'),
-        children: [{ name: t('无水印4K商业成图与商用授权书') }]
-      }
+      { name: t('01-约稿与授权'), children: [{ name: t('需求说明与参考图') }, { name: t('报价与授权合同') }] },
+      { name: t('02-草图与线稿'), children: [{ name: t('构图草稿') }, { name: t('精修线稿') }] },
+      { name: t('03-分层工程文件'), children: [{ name: t('分层上色源文件') }, { name: t('角色立绘与三视图') }] },
+      { name: t('04-笔刷与纹理素材'), children: [{ name: t('笔刷预设') }, { name: t('纹理与贴图') }] },
+      { name: t('05-成稿与交付'), children: [{ name: t('高清成图') }, { name: t('小样与水印预览') }] }
     ],
     icon_svg:
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>',
     extensionWeights: {
-      '.clip': 0.2,
-      '.sai': 0.2,
-      '.procreate': 0.2,
-      '.psd': 0.1,
-      '.png': 0.1,
-      '.jpg': 0.1,
-      '.tif': 0.1
+      '.psd': 0.15,
+      '.clip': 0.13,
+      '.procreate': 0.09,
+      '.sai': 0.05,
+      '.sai2': 0.03,
+      '.psb': 0.02,
+      '.kra': 0.025,
+      '.mdp': 0.01,
+      '.csp': 0.02,
+      '.ai': 0.03,
+      '.eps': 0.01,
+      '.svg': 0.02,
+      '.png': 0.155,
+      '.jpg': 0.07,
+      '.jpeg': 0.02,
+      '.tif': 0.03,
+      '.tiff': 0.01,
+      '.webp': 0.02,
+      '.tga': 0.01,
+      '.abr': 0.02,
+      '.sut': 0.01,
+      '.brushset': 0.015,
+      '.pdf': 0.03,
+      '.docx': 0.01,
+      '.zip': 0.015
     },
     customIncludeRules: [
       {
@@ -9741,6 +9752,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       {
         id: 'builtin.workflow.illustration-cg-art-exclusive-3',
         type: 'extension',
+        value: '.sai2',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.illustration-cg-art-exclusive-4',
+        type: 'extension',
         value: '.procreate',
         isActive: true,
         isSystem: true
@@ -9753,109 +9771,285 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       },
       {
+        id: 'builtin.workflow.illustration-cg-art-exclusive-5',
+        type: 'extension',
+        value: '.psb',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.illustration-cg-art-exclusive-6',
+        type: 'extension',
+        value: '.kra',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.illustration-cg-art-exclusive-7',
+        type: 'extension',
+        value: '.mdp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.illustration-cg-art-exclusive-8',
+        type: 'extension',
+        value: '.csp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.illustration-cg-art-exclusive-9',
+        type: 'extension',
+        value: '.ai',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.illustration-cg-art-exclusive-10',
+        type: 'extension',
+        value: '.eps',
+        isActive: true,
+        isSystem: true
+      },
+      {
         id: 'builtin.workflow.illustration-cg-art-common-2',
         type: 'extension',
-        value: '.png',
+        value: '.svg',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.illustration-cg-art-common-3',
         type: 'extension',
-        value: '.jpg',
+        value: '.png',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.illustration-cg-art-common-4',
         type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.illustration-cg-art-common-5',
+        type: 'extension',
+        value: '.jpeg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.illustration-cg-art-common-6',
+        type: 'extension',
         value: '.tif',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.illustration-cg-art-common-7',
+        type: 'extension',
+        value: '.tiff',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.illustration-cg-art-common-8',
+        type: 'extension',
+        value: '.webp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.illustration-cg-art-common-9',
+        type: 'extension',
+        value: '.tga',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.illustration-cg-art-exclusive-11',
+        type: 'extension',
+        value: '.abr',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.illustration-cg-art-exclusive-12',
+        type: 'extension',
+        value: '.sut',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.illustration-cg-art-exclusive-13',
+        type: 'extension',
+        value: '.brushset',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.illustration-cg-art-common-10',
+        type: 'extension',
+        value: '.pdf',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.illustration-cg-art-common-11',
+        type: 'extension',
+        value: '.docx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.illustration-cg-art-common-12',
+        type: 'extension',
+        value: '.zip',
         isActive: true,
         isSystem: true
       }
     ],
-    customExcludeRules: [],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.illustration-cg-art-ignore-1',
+        type: 'extension',
+        value: '.tmp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.illustration-cg-art-ignore-2',
+        type: 'extension',
+        value: '.temp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.illustration-cg-art-ignore-3',
+        type: 'extension',
+        value: '.log',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.illustration-cg-art-ignore-4',
+        type: 'extension',
+        value: '.bak',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.illustration-cg-art-ignore-5',
+        type: 'extension',
+        value: '.swp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.illustration-cg-art-ignore-6',
+        type: 'extension',
+        value: '.ds_store',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.illustration-cg-art-ignore-7',
+        type: 'extension',
+        value: '.crdownload',
+        isActive: true,
+        isSystem: true
+      }
+    ],
     baseAIKey: 'LIGHT'
+  }
   },
   {
+  {
     id: 'builtin.workflow.mobile-app-dev',
-    name: t('移动端 App 双端研发工程体系'),
-    summary: t(
-      '支持iOS/Android原生与Flutter/RN跨平台，包含双端工程、开发者打包证书、商店提审截图与发布包'
-    ),
+    name: t('手机 App 开发与上架工程库'),
+    summary: t(''),
     version: '1.0.0',
     persona: 'engineer',
     category: 'office',
-    naming_pattern: t('[业务模块]_[页面名称]_[状态变体]'),
-    naming_template: t('[{TAG:设计软件}]{SMART_NAME}_v{META:版本}'),
+    naming_pattern: t('[项目名称]_[功能模块]_[内容要点]'),
+    naming_template: t('[{TAG:运行平台}]{SMART_NAME}_v{META:版本}'),
     preset_directory_tree: [
-      { name: t('01-iOS原生工程与源码'), children: [{ name: t('Xcode工程项目与CocoaPods依赖') }] },
-      {
-        name: t('02-Android原生工程与源码'),
-        children: [{ name: t('AndroidStudio工程与Gradle配置') }]
-      },
-      { name: t('03-跨平台混合框架'), children: [{ name: t('Flutter或ReactNative源码组件') }] },
-      {
-        name: t('04-开发者证书与配置文件'),
-        children: [
-          { name: t('苹果P12证书与描述文件MobileProvision') },
-          { name: t('安卓签名Keystore与JKS密钥') }
-        ]
-      },
-      {
-        name: t('05-应用商店提审物料'),
-        children: [
-          { name: t('AppStore五寸半截图与更新文案') },
-          { name: t('双端发布打包APK_AAB与IPA归档') }
-        ]
-      }
+      { name: t('01-iOS 工程源码'), children: [{ name: t('项目代码与界面文件') }, { name: t('依赖库与工程配置') }] },
+      { name: t('02-Android 工程源码'), children: [{ name: t('项目代码与界面文件') }, { name: t('构建脚本与工程配置') }] },
+      { name: t('03-跨平台工程源码'), children: [{ name: t('共用代码与组件') }, { name: t('图片资源与配置') }] },
+      { name: t('04-签名证书与密钥'), children: [{ name: t('苹果证书与描述文件') }, { name: t('安卓签名密钥') }] },
+      { name: t('05-打包与上架材料'), children: [{ name: t('安装包归档') }, { name: t('商店截图与文案') }] }
     ],
     icon_svg:
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
     extensionWeights: {
-      '.ipa': 0.1538,
-      '.apk': 0.1538,
-      '.aab': 0.1538,
-      '.xcworkspace': 0.1538,
-      '.swift': 0.0769,
-      '.kt': 0.0769,
-      '.dart': 0.0769,
-      '.plist': 0.0769,
-      '.xml': 0.0772
+      '.swift': 0.11,
+      '.m': 0.02,
+      '.h': 0.03,
+      '.mm': 0.005,
+      '.kt': 0.105,
+      '.kts': 0.01,
+      '.java': 0.055,
+      '.dart': 0.075,
+      '.js': 0.025,
+      '.jsx': 0.01,
+      '.ts': 0.04,
+      '.tsx': 0.02,
+      '.xml': 0.075,
+      '.json': 0.055,
+      '.yaml': 0.02,
+      '.yml': 0.015,
+      '.gradle': 0.03,
+      '.properties': 0.01,
+      '.plist': 0.015,
+      '.storyboard': 0.01,
+      '.xib': 0.008,
+      '.pbxproj': 0.008,
+      '.xcconfig': 0.005,
+      '.entitlements': 0.004,
+      '.mobileprovision': 0.005,
+      '.p12': 0.003,
+      '.cer': 0.003,
+      '.keystore': 0.003,
+      '.jks': 0.003,
+      '.ipa': 0.025,
+      '.apk': 0.03,
+      '.aab': 0.015,
+      '.aar': 0.008,
+      '.png': 0.07,
+      '.jpg': 0.015,
+      '.svg': 0.025,
+      '.md': 0.02,
+      '.zip': 0.015
     },
     customIncludeRules: [
       {
+        id: 'builtin.workflow.mobile-app-dev-common-1',
+        type: 'extension',
+        value: '.swift',
+        isActive: true,
+        isSystem: true
+      },
+      {
         id: 'builtin.workflow.mobile-app-dev-exclusive-1',
         type: 'extension',
-        value: '.ipa',
+        value: '.m',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.mobile-app-dev-exclusive-2',
         type: 'extension',
-        value: '.apk',
+        value: '.h',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.mobile-app-dev-exclusive-3',
         type: 'extension',
-        value: '.aab',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.mobile-app-dev-exclusive-4',
-        type: 'extension',
-        value: '.xcworkspace',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.mobile-app-dev-common-1',
-        type: 'extension',
-        value: '.swift',
+        value: '.mm',
         isActive: true,
         isSystem: true
       },
@@ -9867,71 +10061,369 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       },
       {
+        id: 'builtin.workflow.mobile-app-dev-exclusive-4',
+        type: 'extension',
+        value: '.kts',
+        isActive: true,
+        isSystem: true
+      },
+      {
         id: 'builtin.workflow.mobile-app-dev-common-3',
         type: 'extension',
-        value: '.dart',
+        value: '.java',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.mobile-app-dev-common-4',
         type: 'extension',
-        value: '.plist',
+        value: '.dart',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.mobile-app-dev-common-5',
         type: 'extension',
+        value: '.js',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-common-6',
+        type: 'extension',
+        value: '.jsx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-common-7',
+        type: 'extension',
+        value: '.ts',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-common-8',
+        type: 'extension',
+        value: '.tsx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-common-9',
+        type: 'extension',
         value: '.xml',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-common-10',
+        type: 'extension',
+        value: '.json',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-common-11',
+        type: 'extension',
+        value: '.yaml',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-common-12',
+        type: 'extension',
+        value: '.yml',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-common-13',
+        type: 'extension',
+        value: '.gradle',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-common-14',
+        type: 'extension',
+        value: '.properties',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-common-15',
+        type: 'extension',
+        value: '.plist',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-exclusive-5',
+        type: 'extension',
+        value: '.storyboard',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-exclusive-6',
+        type: 'extension',
+        value: '.xib',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-exclusive-7',
+        type: 'extension',
+        value: '.pbxproj',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-exclusive-8',
+        type: 'extension',
+        value: '.xcconfig',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-exclusive-9',
+        type: 'extension',
+        value: '.entitlements',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-exclusive-10',
+        type: 'extension',
+        value: '.mobileprovision',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-exclusive-11',
+        type: 'extension',
+        value: '.p12',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-exclusive-12',
+        type: 'extension',
+        value: '.cer',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-exclusive-13',
+        type: 'extension',
+        value: '.keystore',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-exclusive-14',
+        type: 'extension',
+        value: '.jks',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-exclusive-15',
+        type: 'extension',
+        value: '.ipa',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-exclusive-16',
+        type: 'extension',
+        value: '.apk',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-exclusive-17',
+        type: 'extension',
+        value: '.aab',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-exclusive-18',
+        type: 'extension',
+        value: '.aar',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-common-16',
+        type: 'extension',
+        value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-common-17',
+        type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-common-18',
+        type: 'extension',
+        value: '.svg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-common-19',
+        type: 'extension',
+        value: '.md',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-common-20',
+        type: 'extension',
+        value: '.zip',
         isActive: true,
         isSystem: true
       }
     ],
-    customExcludeRules: [],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.mobile-app-dev-ignore-1',
+        type: 'extension',
+        value: '.tmp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-ignore-2',
+        type: 'extension',
+        value: '.temp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-ignore-3',
+        type: 'extension',
+        value: '.bak',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-ignore-4',
+        type: 'extension',
+        value: '.log',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-ignore-5',
+        type: 'extension',
+        value: '.swp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-ignore-6',
+        type: 'extension',
+        value: '.ds_store',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-ignore-7',
+        type: 'extension',
+        value: '.class',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-ignore-8',
+        type: 'extension',
+        value: '.dex',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-ignore-9',
+        type: 'extension',
+        value: '.o',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-ignore-10',
+        type: 'extension',
+        value: '.obj',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.mobile-app-dev-ignore-11',
+        type: 'extension',
+        value: '.iml',
+        isActive: true,
+        isSystem: true
+      }
+    ],
     baseAIKey: 'LIGHT'
+  }
   },
   {
+  {
     id: 'builtin.workflow.cloud-native-sre',
-    name: t('云原生 SRE 与生产运维体系'),
-    summary: t(
-      '覆盖Kubernetes集群编排清单、Terraform/Ansible脚本、Prometheus告警看板与生产巡检故障复盘'
-    ),
+    name: t('服务器运维与故障复盘库'),
+    summary: t(''),
     version: '1.0.0',
     persona: 'sre',
     category: 'office',
-    naming_pattern: t('[创建日期]_[业务分类]_[文件名称]'),
-    naming_template: t('[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_pattern: t('[服务名称]_[环境]_[用途]'),
+    naming_template: t('[{TAG:安全等级}]{SMART_NAME}_{CRE:YYYYMMDD}'),
     preset_directory_tree: [
-      {
-        name: t('01-容器化与Kubernetes编排'),
-        children: [
-          { name: t('K8s集群Deployment与Service清单') },
-          { name: t('Dockerfile与HelmCharts包') }
-        ]
-      },
-      { name: t('02-基础设施即代码IaC'), children: [{ name: t('Terraform与Ansible自动化剧本') }] },
-      {
-        name: t('03-监控告警与可观测性'),
-        children: [{ name: t('Prometheus告警规则与Grafana看板') }]
-      },
-      { name: t('04-CI_CD流水线配置'), children: [{ name: t('GitLabCI与GitHubActions脚本') }] },
-      {
-        name: t('05-生产巡检与事故复盘'),
-        children: [{ name: t('每月机房巡检报告与故障P0_P1复盘') }]
-      }
+      { name: t('01-容器与集群部署'), children: [{ name: t('K8s 部署清单') }, { name: t('Docker 镜像构建') }] },
+      { name: t('02-基础设施自动化'), children: [{ name: t('Terraform 云资源脚本') }, { name: t('Ansible 批量剧本') }] },
+      { name: t('03-监控与告警'), children: [{ name: t('Prometheus 告警规则') }, { name: t('Grafana 监控看板') }] },
+      { name: t('04-自动发布流水线'), children: [{ name: t('流水线配置') }, { name: t('构建与发布脚本') }] },
+      { name: t('05-巡检与故障复盘'), children: [{ name: t('例行巡检报告') }, { name: t('故障复盘记录') }] }
     ],
     icon_svg:
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
     extensionWeights: {
-      '.tf': 0.2,
-      '.tfvars': 0.2,
-      '.yaml': 0.1,
-      '.yml': 0.1,
-      '.sh': 0.1,
-      '.json': 0.1,
-      '.conf': 0.1,
-      '.log': 0.1
+      '.tf': 0.085,
+      '.tfvars': 0.03,
+      '.hcl': 0.01,
+      '.yaml': 0.15,
+      '.yml': 0.105,
+      '.json': 0.065,
+      '.toml': 0.015,
+      '.ini': 0.015,
+      '.conf': 0.035,
+      '.cfg': 0.015,
+      '.env': 0.015,
+      '.properties': 0.01,
+      '.sh': 0.085,
+      '.bash': 0.01,
+      '.ps1': 0.015,
+      '.py': 0.05,
+      '.j2': 0.015,
+      '.tpl': 0.015,
+      '.service': 0.01,
+      '.sql': 0.02,
+      '.log': 0.065,
+      '.md': 0.045,
+      '.txt': 0.01,
+      '.pdf': 0.025,
+      '.docx': 0.02,
+      '.xlsx': 0.015,
+      '.csv': 0.015,
+      '.tgz': 0.01,
+      '.gz': 0.01,
+      '.zip': 0.015
     },
     customIncludeRules: [
       {
@@ -9945,6 +10437,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.cloud-native-sre-exclusive-2',
         type: 'extension',
         value: '.tfvars',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-exclusive-3',
+        type: 'extension',
+        value: '.hcl',
         isActive: true,
         isSystem: true
       },
@@ -9965,63 +10464,285 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       {
         id: 'builtin.workflow.cloud-native-sre-common-3',
         type: 'extension',
-        value: '.sh',
+        value: '.json',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.cloud-native-sre-common-4',
         type: 'extension',
-        value: '.json',
+        value: '.toml',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.cloud-native-sre-common-5',
         type: 'extension',
-        value: '.conf',
+        value: '.ini',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.cloud-native-sre-common-6',
         type: 'extension',
+        value: '.conf',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-common-7',
+        type: 'extension',
+        value: '.cfg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-common-8',
+        type: 'extension',
+        value: '.env',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-common-9',
+        type: 'extension',
+        value: '.properties',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-common-10',
+        type: 'extension',
+        value: '.sh',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-common-11',
+        type: 'extension',
+        value: '.bash',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-common-12',
+        type: 'extension',
+        value: '.ps1',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-common-13',
+        type: 'extension',
+        value: '.py',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-exclusive-4',
+        type: 'extension',
+        value: '.j2',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-exclusive-5',
+        type: 'extension',
+        value: '.tpl',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-exclusive-6',
+        type: 'extension',
+        value: '.service',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-common-14',
+        type: 'extension',
+        value: '.sql',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-common-15',
+        type: 'extension',
         value: '.log',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-common-16',
+        type: 'extension',
+        value: '.md',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-common-17',
+        type: 'extension',
+        value: '.txt',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-common-18',
+        type: 'extension',
+        value: '.pdf',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-common-19',
+        type: 'extension',
+        value: '.docx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-common-20',
+        type: 'extension',
+        value: '.xlsx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-common-21',
+        type: 'extension',
+        value: '.csv',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-common-22',
+        type: 'extension',
+        value: '.tgz',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-common-23',
+        type: 'extension',
+        value: '.gz',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-common-24',
+        type: 'extension',
+        value: '.zip',
         isActive: true,
         isSystem: true
       }
     ],
-    customExcludeRules: [],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.cloud-native-sre-ignore-1',
+        type: 'extension',
+        value: '.tmp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-ignore-2',
+        type: 'extension',
+        value: '.temp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-ignore-3',
+        type: 'extension',
+        value: '.bak',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-ignore-4',
+        type: 'extension',
+        value: '.swp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-ignore-5',
+        type: 'extension',
+        value: '.ds_store',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-ignore-6',
+        type: 'extension',
+        value: '.tfstate',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-ignore-7',
+        type: 'extension',
+        value: '.pem',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-ignore-8',
+        type: 'extension',
+        value: '.key',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.cloud-native-sre-ignore-9',
+        type: 'extension',
+        value: '.pfx',
+        isActive: true,
+        isSystem: true
+      }
+    ],
     baseAIKey: 'LIGHT'
+  }
   },
   {
+  {
     id: 'builtin.workflow.supply-chain-logistics',
-    name: t('企业供应链与采购仓储全景管线'),
-    summary: t(
-      '包含供应商准入考核表、采购订单PO合同、来料IQC质检单、WMS实物盘点与国际货运报关凭单'
-    ),
+    name: t('采购与仓库管理单据库'),
+    summary: t(''),
     version: '1.0.0',
     persona: 'logistics',
     category: 'office',
-    naming_pattern: t('[创建日期]_[业务分类]_[文件名称]'),
-    naming_template: t('[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_pattern: t('[供应商或项目]_[单据类型]_[批次或月份]'),
+    naming_template: t('[{TAG:合同票据细分}]{SMART_NAME}_{CRE:YYYYMMDD}'),
     preset_directory_tree: [
-      { name: t('01-供应商评审与准入'), children: [{ name: t('合格供应商名录与营业资质') }] },
-      { name: t('02-采购订单与合同审批'), children: [{ name: t('采购合同PO与账期对账单') }] },
-      {
-        name: t('03-来料质检与验货报告'),
-        children: [{ name: t('入库IQC质检单与不良品退换凭证') }]
-      },
-      { name: t('04-仓储WMS与库存盘点'), children: [{ name: t('安全库存预警与月末实物盘点表') }] },
-      { name: t('05-干线物流与国际报关'), children: [{ name: t('国内货运提单与海运报关单据') }] }
+      { name: t('01-供应商管理'), children: [{ name: t('供应商名录与资质') }, { name: t('评审与考核记录') }] },
+      { name: t('02-采购订单与合同'), children: [{ name: t('采购订单') }, { name: t('合同与对账单') }] },
+      { name: t('03-收货与质检'), children: [{ name: t('入库验收单') }, { name: t('质检与退换记录') }] },
+      { name: t('04-库存与盘点'), children: [{ name: t('库存台账') }, { name: t('盘点表与预警') }] },
+      { name: t('05-物流与报关'), children: [{ name: t('运单与提单') }, { name: t('报关单据') }] }
     ],
     icon_svg:
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
     extensionWeights: {
-      '.xlsx': 0.25,
-      '.csv': 0.25,
-      '.pdf': 0.25,
-      '.docx': 0.25
+      '.xlsx': 0.23,
+      '.xls': 0.05,
+      '.et': 0.015,
+      '.csv': 0.08,
+      '.pdf': 0.22,
+      '.docx': 0.09,
+      '.doc': 0.03,
+      '.wps': 0.01,
+      '.pptx': 0.015,
+      '.dps': 0.005,
+      '.ofd': 0.04,
+      '.jpg': 0.08,
+      '.jpeg': 0.025,
+      '.png': 0.045,
+      '.tif': 0.015,
+      '.tiff': 0.005,
+      '.zip': 0.03,
+      '.txt': 0.015
     },
     customIncludeRules: [
       {
@@ -10034,63 +10755,202 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       {
         id: 'builtin.workflow.supply-chain-logistics-common-2',
         type: 'extension',
-        value: '.csv',
+        value: '.xls',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.supply-chain-logistics-common-3',
         type: 'extension',
-        value: '.pdf',
+        value: '.et',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.supply-chain-logistics-common-4',
         type: 'extension',
+        value: '.csv',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.supply-chain-logistics-common-5',
+        type: 'extension',
+        value: '.pdf',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.supply-chain-logistics-common-6',
+        type: 'extension',
         value: '.docx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.supply-chain-logistics-common-7',
+        type: 'extension',
+        value: '.doc',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.supply-chain-logistics-common-8',
+        type: 'extension',
+        value: '.wps',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.supply-chain-logistics-common-9',
+        type: 'extension',
+        value: '.pptx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.supply-chain-logistics-common-10',
+        type: 'extension',
+        value: '.dps',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.supply-chain-logistics-common-11',
+        type: 'extension',
+        value: '.ofd',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.supply-chain-logistics-common-12',
+        type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.supply-chain-logistics-common-13',
+        type: 'extension',
+        value: '.jpeg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.supply-chain-logistics-common-14',
+        type: 'extension',
+        value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.supply-chain-logistics-common-15',
+        type: 'extension',
+        value: '.tif',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.supply-chain-logistics-common-16',
+        type: 'extension',
+        value: '.tiff',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.supply-chain-logistics-common-17',
+        type: 'extension',
+        value: '.zip',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.supply-chain-logistics-common-18',
+        type: 'extension',
+        value: '.txt',
         isActive: true,
         isSystem: true
       }
     ],
-    customExcludeRules: [],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.supply-chain-logistics-ignore-1',
+        type: 'extension',
+        value: '.tmp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.supply-chain-logistics-ignore-2',
+        type: 'extension',
+        value: '.temp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.supply-chain-logistics-ignore-3',
+        type: 'extension',
+        value: '.bak',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.supply-chain-logistics-ignore-4',
+        type: 'extension',
+        value: '.ds_store',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.supply-chain-logistics-ignore-5',
+        type: 'extension',
+        value: '.crdownload',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.supply-chain-logistics-ignore-6',
+        type: 'extension',
+        value: '.exe',
+        isActive: true,
+        isSystem: true
+      }
+    ],
     baseAIKey: 'LIGHT'
+  }
   },
   {
+  {
     id: 'builtin.workflow.study-abroad-application',
-    name: t('海外名校留学申请与签证全景规划'),
-    summary: t(
-      '专为出国留学学子规划，收录择校方案清单、语言标化成绩、个人陈述PS/推荐信RL、中英成绩单与签证面签资料'
-    ),
+    name: t('留学申请与签证材料库'),
+    summary: t(''),
     version: '1.0.0',
     persona: 'student',
     category: 'office',
-    naming_pattern: t('[业务归属]_[主题名称]_[生成日期]'),
-    naming_template: t('[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_pattern: t('[申请学校]_[材料名称]_[用途]'),
+    naming_template: t('[{TAG:处理状态}]{SMART_NAME}_{CRE:YYYYMMDD}'),
     preset_directory_tree: [
-      { name: t('01-选校定位与专业匹配'), children: [{ name: t('目标院校梯度清单与申请要求') }] },
-      { name: t('02-语言考试与标化成绩'), children: [{ name: t('雅思托福成绩单与GRE备考错题') }] },
-      {
-        name: t('03-文书创作与润色精修'),
-        children: [{ name: t('个人陈述PS与简历CV终稿') }, { name: t('教授推荐信RL与研究计划RP') }]
-      },
-      {
-        name: t('04-官方成绩单与资产证明'),
-        children: [{ name: t('大学中英文成绩单与银行存款证明') }]
-      },
-      {
-        name: t('05-Offer录用与留学签证'),
-        children: [{ name: t('录取通知书Offer与签证I20面签资料') }]
-      }
+      { name: t('01-选校与申请要求'), children: [{ name: t('目标学校清单') }, { name: t('专业与申请要求') }] },
+      { name: t('02-考试成绩'), children: [{ name: t('语言考试成绩单') }, { name: t('备考资料与错题') }] },
+      { name: t('03-申请文书'), children: [{ name: t('个人陈述与简历') }, { name: t('推荐信与研究计划') }] },
+      { name: t('04-证明材料'), children: [{ name: t('成绩单与在读证明') }, { name: t('存款与资金证明') }] },
+      { name: t('05-录取与签证'), children: [{ name: t('录取通知书') }, { name: t('签证表格与面签材料') }] }
     ],
     icon_svg:
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
     extensionWeights: {
-      '.pdf': 0.45,
-      '.docx': 0.3,
-      '.xlsx': 0.1,
+      '.pdf': 0.38,
+      '.docx': 0.24,
+      '.doc': 0.04,
+      '.xlsx': 0.06,
+      '.xls': 0.02,
       '.jpg': 0.08,
-      '.png': 0.07
+      '.jpeg': 0.03,
+      '.png': 0.06,
+      '.heic': 0.03,
+      '.zip': 0.03,
+      '.txt': 0.02,
+      '.pptx': 0.01
     },
     customIncludeRules: [
       {
@@ -10110,60 +10970,167 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       {
         id: 'builtin.workflow.study-abroad-application-common-3',
         type: 'extension',
-        value: '.xlsx',
+        value: '.doc',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.study-abroad-application-common-4',
         type: 'extension',
-        value: '.jpg',
+        value: '.xlsx',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.study-abroad-application-common-5',
         type: 'extension',
+        value: '.xls',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.study-abroad-application-common-6',
+        type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.study-abroad-application-common-7',
+        type: 'extension',
+        value: '.jpeg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.study-abroad-application-common-8',
+        type: 'extension',
         value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.study-abroad-application-common-9',
+        type: 'extension',
+        value: '.heic',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.study-abroad-application-common-10',
+        type: 'extension',
+        value: '.zip',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.study-abroad-application-common-11',
+        type: 'extension',
+        value: '.txt',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.study-abroad-application-common-12',
+        type: 'extension',
+        value: '.pptx',
         isActive: true,
         isSystem: true
       }
     ],
-    customExcludeRules: [],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.study-abroad-application-ignore-1',
+        type: 'extension',
+        value: '.tmp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.study-abroad-application-ignore-2',
+        type: 'extension',
+        value: '.temp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.study-abroad-application-ignore-3',
+        type: 'extension',
+        value: '.bak',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.study-abroad-application-ignore-4',
+        type: 'extension',
+        value: '.ds_store',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.study-abroad-application-ignore-5',
+        type: 'extension',
+        value: '.crdownload',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.study-abroad-application-ignore-6',
+        type: 'extension',
+        value: '.part',
+        isActive: true,
+        isSystem: true
+      }
+    ],
     baseAIKey: 'LIGHT'
+  }
   },
   {
+  {
     id: 'builtin.workflow.desktop-declutter',
-    name: t('电脑桌面急救与高效分流体系'),
-    summary: t(
-      '专为电脑桌面设计，快速收纳今日待办、当前工作草稿、临时截图、安装包与历史旧桌面备份'
-    ),
+    name: t('桌面文件快速整理'),
+    summary: t(''),
     version: '1.0.0',
     persona: 'general',
     category: 'office',
-    naming_pattern: t('[创建日期]_[业务归属]_[文件名称]'),
-    naming_template: t('[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_pattern: t('[内容主题]_[用途]'),
+    naming_template: t('[{TAG:处理状态}]{SMART_NAME}_{CRE:YYYYMMDD}'),
     preset_directory_tree: [
-      { name: t('00-今日临时待办Today'), children: [{ name: t('待处理重要文件与备忘') }] },
-      { name: t('01-进行中工作草稿'), children: [{ name: t('当前正在编辑处理的文档') }] },
-      { name: t('02-截图与临时图片'), children: [{ name: t('快捷截图与参考图片') }] },
-      { name: t('03-待归档重要资料'), children: [{ name: t('合同发票与证件电子单') }] },
-      { name: t('04-安装包与压缩文件'), children: [{ name: t('软件安装包与解压临时包') }] },
-      { name: t('99-旧桌面历史归档Archive'), children: [{ name: t('往期桌面历史备份归档') }] }
+      { name: t('01-今日急需处理'), children: [{ name: t('今天必做任务与急用文件') }, { name: t('临时备忘与待发材料') }] },
+      { name: t('02-正在编辑的工作草稿'), children: [{ name: t('近期正在修改的文档表格') }, { name: t('未定稿方案与演示文稿') }] },
+      { name: t('03-临时截图与参考图片'), children: [{ name: t('屏幕截图与聊天保存图片') }, { name: t('临时录屏与参考素材') }] },
+      { name: t('04-重要合同发票与证件'), children: [{ name: t('合同协议与报销电子发票') }, { name: t('个人证件扫描与重要凭据') }] },
+      { name: t('05-软件安装包与压缩包'), children: [{ name: t('软件安装程序与快捷方式') }, { name: t('压缩包与已解压临时文件') }] },
+      { name: t('06-旧桌面历史打包存档'), children: [{ name: t('往期桌面文件集中封存') }] }
     ],
     icon_svg:
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
     extensionWeights: {
       '.lnk': 0.12,
-      '.url': 0.03,
-      '.png': 0.075,
-      '.jpg': 0.075,
-      '.docx': 0.117,
-      '.xlsx': 0.117,
-      '.pptx': 0.117,
-      '.pdf': 0.117,
-      '.exe': 0.117,
-      '.zip': 0.115
+      '.url': 0.025,
+      '.docx': 0.11,
+      '.doc': 0.025,
+      '.xlsx': 0.07,
+      '.xls': 0.015,
+      '.pptx': 0.045,
+      '.ppt': 0.01,
+      '.pdf': 0.1,
+      '.txt': 0.035,
+      '.csv': 0.01,
+      '.png': 0.1,
+      '.jpg': 0.08,
+      '.jpeg': 0.025,
+      '.gif': 0.01,
+      '.webp': 0.01,
+      '.bmp': 0.005,
+      '.mp4': 0.025,
+      '.mov': 0.01,
+      '.mp3': 0.01,
+      '.exe': 0.045,
+      '.msi': 0.015,
+      '.zip': 0.06,
+      '.rar': 0.025,
+      '.7z': 0.015
     },
     customIncludeRules: [
       {
@@ -10190,49 +11157,154 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       {
         id: 'builtin.workflow.desktop-declutter-common-2',
         type: 'extension',
-        value: '.xlsx',
+        value: '.doc',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.desktop-declutter-common-3',
         type: 'extension',
-        value: '.pptx',
+        value: '.xlsx',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.desktop-declutter-common-4',
         type: 'extension',
-        value: '.pdf',
+        value: '.xls',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.desktop-declutter-common-5',
         type: 'extension',
-        value: '.png',
+        value: '.pptx',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.desktop-declutter-common-6',
         type: 'extension',
-        value: '.jpg',
+        value: '.ppt',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.desktop-declutter-common-7',
         type: 'extension',
-        value: '.exe',
+        value: '.pdf',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.desktop-declutter-common-8',
         type: 'extension',
+        value: '.txt',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-declutter-common-9',
+        type: 'extension',
+        value: '.csv',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-declutter-common-10',
+        type: 'extension',
+        value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-declutter-common-11',
+        type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-declutter-common-12',
+        type: 'extension',
+        value: '.jpeg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-declutter-common-13',
+        type: 'extension',
+        value: '.gif',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-declutter-common-14',
+        type: 'extension',
+        value: '.webp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-declutter-common-15',
+        type: 'extension',
+        value: '.bmp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-declutter-common-16',
+        type: 'extension',
+        value: '.mp4',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-declutter-common-17',
+        type: 'extension',
+        value: '.mov',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-declutter-common-18',
+        type: 'extension',
+        value: '.mp3',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-declutter-common-19',
+        type: 'extension',
+        value: '.exe',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-declutter-common-20',
+        type: 'extension',
+        value: '.msi',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-declutter-common-21',
+        type: 'extension',
         value: '.zip',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-declutter-common-22',
+        type: 'extension',
+        value: '.rar',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-declutter-common-23',
+        type: 'extension',
+        value: '.7z',
         isActive: true,
         isSystem: true
       }
@@ -10254,71 +11326,120 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       },
       {
         id: 'builtin.workflow.desktop-declutter-ignore-3',
-        type: 'file',
-        value: 'desktop.ini',
+        type: 'extension',
+        value: '.bak',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.desktop-declutter-ignore-4',
-        type: 'file',
-        value: 'thumbs.db',
+        type: 'extension',
+        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.desktop-declutter-ignore-5',
         type: 'extension',
-        value: '.ds_store',
+        value: '.db',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-declutter-ignore-6',
+        type: 'extension',
+        value: '.ini',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-declutter-ignore-7',
+        type: 'extension',
+        value: '.crdownload',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-declutter-ignore-8',
+        type: 'extension',
+        value: '.part',
         isActive: true,
         isSystem: true
       }
     ],
     baseAIKey: 'LIGHT'
+  }
   },
   {
+  {
     id: 'builtin.workflow.downloads-triage',
-    name: t('下载目录全景分流与软件归档管线'),
-    summary: t(
-      '根据介质与用途全景分流：软件安装程序、办公文档、图片影音、压缩归档包，并设立过期清理缓冲期'
-    ),
+    name: t('下载文件夹自动分类'),
+    summary: t(''),
     version: '1.0.0',
     persona: 'general',
     category: 'office',
-    naming_pattern: t('[下载类型]_[文件主题]_[生成时间]'),
-    naming_template: t('[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_pattern: t('[内容主题]_[来源或用途]'),
+    naming_template: t('[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}'),
     preset_directory_tree: [
-      {
-        name: t('01-软件安装与驱动工具'),
-        children: [{ name: t('应用程序安装包Setup') }, { name: t('系统补丁与驱动程序') }]
-      },
-      {
-        name: t('02-日常工作与办公文档'),
-        children: [{ name: t('PDF电子书与说明书') }, { name: t('Word报表与Excel数据表格') }]
-      },
-      {
-        name: t('03-网络媒体与图片音视频'),
-        children: [{ name: t('高清壁纸与网页素材图片') }, { name: t('下载音频与影视短片') }]
-      },
-      {
-        name: t('04-压缩包与数据镜像'),
-        children: [{ name: t('RAR_ZIP_7Z压缩归档包') }, { name: t('ISO光盘镜像与代码仓库Zip') }]
-      },
-      { name: t('05-待清理过期临时件'), children: [{ name: t('超过30天可安全删除清理') }] }
+      { name: t('01-软件安装包'), children: [{ name: t('应用程序安装包') }, { name: t('驱动与系统补丁') }] },
+      { name: t('02-文档与电子书'), children: [{ name: t('办公文档') }, { name: t('电子书与说明书') }] },
+      { name: t('03-图片与音视频'), children: [{ name: t('壁纸与素材图片') }, { name: t('音乐与视频') }] },
+      { name: t('04-压缩包与镜像'), children: [{ name: t('压缩文件') }, { name: t('光盘镜像') }] },
+      { name: t('05-过期文件待清理'), children: [{ name: t('长期未用的旧下载') }, { name: t('重复下载与残留') }] }
     ],
     icon_svg:
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
     extensionWeights: {
-      '.jpg': 0.1501,
-      '.exe': 0.0944,
-      '.msi': 0.0944,
-      '.dmg': 0.0944,
-      '.pkg': 0.0944,
-      '.zip': 0.0944,
-      '.rar': 0.0944,
-      '.7z': 0.0944,
-      '.pdf': 0.0944,
-      '.mp4': 0.0947
+      '.exe': 0.07,
+      '.msi': 0.03,
+      '.dmg': 0.025,
+      '.pkg': 0.015,
+      '.apk': 0.02,
+      '.deb': 0.008,
+      '.rpm': 0.005,
+      '.appimage': 0.004,
+      '.zip': 0.09,
+      '.rar': 0.045,
+      '.7z': 0.03,
+      '.tar': 0.008,
+      '.gz': 0.008,
+      '.tgz': 0.004,
+      '.xz': 0.003,
+      '.bz2': 0.002,
+      '.iso': 0.015,
+      '.img': 0.003,
+      '.pdf': 0.08,
+      '.docx': 0.035,
+      '.doc': 0.01,
+      '.xlsx': 0.02,
+      '.xls': 0.005,
+      '.pptx': 0.012,
+      '.ppt': 0.003,
+      '.txt': 0.015,
+      '.csv': 0.005,
+      '.epub': 0.012,
+      '.mobi': 0.004,
+      '.azw3': 0.003,
+      '.jpg': 0.09,
+      '.jpeg': 0.03,
+      '.png': 0.07,
+      '.gif': 0.015,
+      '.webp': 0.015,
+      '.bmp': 0.003,
+      '.svg': 0.008,
+      '.ico': 0.003,
+      '.mp4': 0.063,
+      '.mkv': 0.02,
+      '.avi': 0.008,
+      '.mov': 0.01,
+      '.wmv': 0.004,
+      '.webm': 0.006,
+      '.mp3': 0.035,
+      '.flac': 0.01,
+      '.wav': 0.006,
+      '.m4a': 0.006,
+      '.aac': 0.004,
+      '.torrent': 0.005
     },
     customIncludeRules: [
       {
@@ -10350,44 +11471,324 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       },
       {
+        id: 'builtin.workflow.downloads-triage-exclusive-5',
+        type: 'extension',
+        value: '.apk',
+        isActive: true,
+        isSystem: true
+      },
+      {
         id: 'builtin.workflow.downloads-triage-common-1',
         type: 'extension',
-        value: '.zip',
+        value: '.deb',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.downloads-triage-common-2',
         type: 'extension',
-        value: '.rar',
+        value: '.rpm',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.downloads-triage-common-3',
         type: 'extension',
-        value: '.7z',
+        value: '.appimage',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.downloads-triage-common-4',
         type: 'extension',
-        value: '.pdf',
+        value: '.zip',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.downloads-triage-common-5',
         type: 'extension',
-        value: '.mp4',
+        value: '.rar',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.downloads-triage-common-6',
         type: 'extension',
+        value: '.7z',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-7',
+        type: 'extension',
+        value: '.tar',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-8',
+        type: 'extension',
+        value: '.gz',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-9',
+        type: 'extension',
+        value: '.tgz',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-10',
+        type: 'extension',
+        value: '.xz',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-11',
+        type: 'extension',
+        value: '.bz2',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-12',
+        type: 'extension',
+        value: '.iso',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-13',
+        type: 'extension',
+        value: '.img',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-14',
+        type: 'extension',
+        value: '.pdf',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-15',
+        type: 'extension',
+        value: '.docx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-16',
+        type: 'extension',
+        value: '.doc',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-17',
+        type: 'extension',
+        value: '.xlsx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-18',
+        type: 'extension',
+        value: '.xls',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-19',
+        type: 'extension',
+        value: '.pptx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-20',
+        type: 'extension',
+        value: '.ppt',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-21',
+        type: 'extension',
+        value: '.txt',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-22',
+        type: 'extension',
+        value: '.csv',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-exclusive-6',
+        type: 'extension',
+        value: '.epub',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-exclusive-7',
+        type: 'extension',
+        value: '.mobi',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-exclusive-8',
+        type: 'extension',
+        value: '.azw3',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-23',
+        type: 'extension',
         value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-24',
+        type: 'extension',
+        value: '.jpeg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-25',
+        type: 'extension',
+        value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-26',
+        type: 'extension',
+        value: '.gif',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-27',
+        type: 'extension',
+        value: '.webp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-28',
+        type: 'extension',
+        value: '.bmp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-29',
+        type: 'extension',
+        value: '.svg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-30',
+        type: 'extension',
+        value: '.ico',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-31',
+        type: 'extension',
+        value: '.mp4',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-32',
+        type: 'extension',
+        value: '.mkv',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-33',
+        type: 'extension',
+        value: '.avi',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-34',
+        type: 'extension',
+        value: '.mov',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-35',
+        type: 'extension',
+        value: '.wmv',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-36',
+        type: 'extension',
+        value: '.webm',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-37',
+        type: 'extension',
+        value: '.mp3',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-38',
+        type: 'extension',
+        value: '.flac',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-39',
+        type: 'extension',
+        value: '.wav',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-40',
+        type: 'extension',
+        value: '.m4a',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-41',
+        type: 'extension',
+        value: '.aac',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-common-42',
+        type: 'extension',
+        value: '.torrent',
         isActive: true,
         isSystem: true
       }
@@ -10410,67 +11811,97 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       {
         id: 'builtin.workflow.downloads-triage-ignore-3',
         type: 'extension',
-        value: '.aria2',
+        value: '.partial',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.downloads-triage-ignore-4',
         type: 'extension',
-        value: '.downloading',
+        value: '.aria2',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.downloads-triage-ignore-5',
         type: 'extension',
-        value: '.tmp',
+        value: '.downloading',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.downloads-triage-ignore-6',
-        type: 'file',
-        value: 'thumbs.db',
+        type: 'extension',
+        value: '.tmp',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.downloads-triage-ignore-7',
         type: 'extension',
+        value: '.temp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-ignore-8',
+        type: 'extension',
         value: '.ds_store',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.downloads-triage-ignore-9',
+        type: 'extension',
+        value: '.db',
         isActive: true,
         isSystem: true
       }
     ],
     baseAIKey: 'LIGHT'
+  }
   },
   {
+  {
     id: 'builtin.workflow.inbox-staging-universal',
-    name: t('GTD 个人收件箱与万能周转体系'),
+    name: t('个人文件收件箱与待办整理'),
     summary: t('基于GTD工作法建立收集箱、待行动、等待跟进、随时参考与冷归档全生命周期中转'),
     version: '1.0.0',
     persona: 'general',
     category: 'office',
-    naming_pattern: t('[创建日期]_[业务分类]_[文件名称]'),
-    naming_template: t('[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_pattern: t('[事项主题]_[下一步动作]'),
+    naming_template: t('[{TAG:处理状态}]{SMART_NAME}_{CRE:YYYYMMDD}'),
     preset_directory_tree: [
-      { name: t('00-收件箱Inbox'), children: [{ name: t('新进待分拣文件收集箱') }] },
-      { name: t('01-行动执行Actions'), children: [{ name: t('本周需要处理完成的文件') }] },
-      { name: t('02-等待跟进Waiting'), children: [{ name: t('等待他人反馈与外部审批') }] },
-      { name: t('03-参考资料Reference'), children: [{ name: t('随时查阅的资料手册与指南') }] },
-      { name: t('04-冷归档Archive'), children: [{ name: t('已完结事项与历史凭证备份') }] }
+      { name: t('01-收件箱'), children: [] },
+      { name: t('02-马上要办'), children: [] },
+      { name: t('03-等人回复'), children: [] },
+      { name: t('04-常用参考'), children: [] },
+      { name: t('05-办完归档'), children: [] }
     ],
     icon_svg:
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
     extensionWeights: {
-      '.jpg': 0.075,
+      '.docx': 0.15,
+      '.doc': 0.025,
+      '.xlsx': 0.095,
+      '.xls': 0.015,
+      '.pptx': 0.035,
+      '.pdf': 0.16,
+      '.txt': 0.085,
+      '.md': 0.025,
+      '.csv': 0.015,
+      '.jpg': 0.095,
+      '.jpeg': 0.025,
       '.png': 0.075,
-      '.docx': 0.17,
-      '.xlsx': 0.17,
-      '.pdf': 0.17,
-      '.txt': 0.17,
-      '.zip': 0.17
+      '.heic': 0.015,
+      '.zip': 0.06,
+      '.rar': 0.015,
+      '.7z': 0.01,
+      '.mp3': 0.015,
+      '.m4a': 0.01,
+      '.mp4': 0.025,
+      '.eml': 0.03,
+      '.msg': 0.02
     },
     customIncludeRules: [
       {
@@ -10483,101 +11914,237 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       {
         id: 'builtin.workflow.inbox-staging-universal-common-2',
         type: 'extension',
-        value: '.xlsx',
+        value: '.doc',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.inbox-staging-universal-common-3',
         type: 'extension',
-        value: '.pdf',
+        value: '.xlsx',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.inbox-staging-universal-common-4',
         type: 'extension',
-        value: '.jpg',
+        value: '.xls',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.inbox-staging-universal-common-5',
         type: 'extension',
-        value: '.png',
+        value: '.pptx',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.inbox-staging-universal-common-6',
         type: 'extension',
-        value: '.txt',
+        value: '.pdf',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.inbox-staging-universal-common-7',
         type: 'extension',
+        value: '.txt',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.inbox-staging-universal-common-8',
+        type: 'extension',
+        value: '.md',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.inbox-staging-universal-common-9',
+        type: 'extension',
+        value: '.csv',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.inbox-staging-universal-common-10',
+        type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.inbox-staging-universal-common-11',
+        type: 'extension',
+        value: '.jpeg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.inbox-staging-universal-common-12',
+        type: 'extension',
+        value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.inbox-staging-universal-common-13',
+        type: 'extension',
+        value: '.heic',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.inbox-staging-universal-common-14',
+        type: 'extension',
         value: '.zip',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.inbox-staging-universal-common-15',
+        type: 'extension',
+        value: '.rar',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.inbox-staging-universal-common-16',
+        type: 'extension',
+        value: '.7z',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.inbox-staging-universal-common-17',
+        type: 'extension',
+        value: '.mp3',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.inbox-staging-universal-common-18',
+        type: 'extension',
+        value: '.m4a',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.inbox-staging-universal-common-19',
+        type: 'extension',
+        value: '.mp4',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.inbox-staging-universal-common-20',
+        type: 'extension',
+        value: '.eml',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.inbox-staging-universal-common-21',
+        type: 'extension',
+        value: '.msg',
         isActive: true,
         isSystem: true
       }
     ],
-    customExcludeRules: [],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.inbox-staging-universal-ignore-1',
+        type: 'extension',
+        value: '.tmp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.inbox-staging-universal-ignore-2',
+        type: 'extension',
+        value: '.temp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.inbox-staging-universal-ignore-3',
+        type: 'extension',
+        value: '.bak',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.inbox-staging-universal-ignore-4',
+        type: 'extension',
+        value: '.ds_store',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.inbox-staging-universal-ignore-5',
+        type: 'extension',
+        value: '.crdownload',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.inbox-staging-universal-ignore-6',
+        type: 'extension',
+        value: '.part',
+        isActive: true,
+        isSystem: true
+      }
+    ],
     baseAIKey: 'LIGHT'
+  }
   },
   {
+  {
     id: 'builtin.workflow.desktop-classic-classification',
-    name: t('电脑桌面经典应用与多维资产分类体系'),
-    summary: t(
-      '针对电脑桌面高频堆积的应用快捷方式、各业务文档、临时截图素材与安装包进行物理实体功能分类'
-    ),
+    name: t('桌面软件与文件分类整理'),
+    summary: t(''),
     version: '1.0.0',
     persona: 'general',
     category: 'office',
-    naming_pattern: t('[业务归属]_[主题名称]_[生成日期]'),
-    naming_template: t('[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_pattern: t('[内容主题]_[用途]'),
+    naming_template: t('[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}'),
     preset_directory_tree: [
-      {
-        name: t('01-常用应用与快捷方式'),
-        children: [
-          { name: t('01-办公协同与即时通讯') },
-          { name: t('02-开发运维与技术工具') },
-          { name: t('03-设计创作与多媒体') },
-          { name: t('04-游戏娱乐与生活影音') },
-          { name: t('05-系统辅助与管理工具') }
-        ]
-      },
-      {
-        name: t('02-日常工作与个人文档'),
-        children: [
-          { name: t('01-合同协议与商务发票') },
-          { name: t('02-工作报表与周月总结') },
-          { name: t('03-个人证件与申报证明') },
-          { name: t('04-便签备忘与待查资料') }
-        ]
-      },
-      {
-        name: t('03-临时截图与媒体素材'),
-        children: [{ name: t('01-桌面截图与录屏原件') }, { name: t('02-设计参考与临时图片') }]
-      },
-      {
-        name: t('04-软件安装与压缩暂存'),
-        children: [{ name: t('01-软件安装包与驱动程序') }, { name: t('02-压缩文件与临时解压包') }]
-      }
+      { name: t('01-常用软件快捷方式'), children: [{ name: t('办公与聊天') }, { name: t('上网与下载工具') }, { name: t('设计与影音播放') }, { name: t('游戏娱乐') }, { name: t('系统小工具') }] },
+      { name: t('02-工作与个人文档'), children: [{ name: t('合同票据') }, { name: t('报表与总结') }, { name: t('证件与证明') }, { name: t('便签与备忘') }] },
+      { name: t('03-截图与图片'), children: [{ name: t('屏幕截图与录屏') }, { name: t('参考图片') }] },
+      { name: t('04-安装包与压缩包'), children: [{ name: t('软件安装包') }, { name: t('压缩文件') }] }
     ],
     icon_svg:
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
     extensionWeights: {
-      '.lnk': 0.13,
+      '.lnk': 0.16,
       '.url': 0.03,
-      '.jpg': 0.12,
-      '.exe': 0.12,
-      '.docx': 0.12,
-      '.xlsx': 0.12,
-      '.pptx': 0.12,
-      '.pdf': 0.12,
-      '.zip': 0.12
+      '.exe': 0.055,
+      '.msi': 0.015,
+      '.docx': 0.105,
+      '.doc': 0.02,
+      '.xlsx': 0.065,
+      '.xls': 0.012,
+      '.pptx': 0.045,
+      '.ppt': 0.008,
+      '.pdf': 0.095,
+      '.txt': 0.03,
+      '.csv': 0.01,
+      '.jpg': 0.085,
+      '.jpeg': 0.022,
+      '.png': 0.07,
+      '.gif': 0.01,
+      '.webp': 0.01,
+      '.bmp': 0.004,
+      '.mp4': 0.022,
+      '.mov': 0.008,
+      '.mkv': 0.008,
+      '.mp3': 0.012,
+      '.flac': 0.005,
+      '.zip': 0.055,
+      '.rar': 0.025,
+      '.7z': 0.014
     },
     customIncludeRules: [
       {
@@ -10604,91 +12171,276 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       {
         id: 'builtin.workflow.desktop-classic-classification-common-2',
         type: 'extension',
-        value: '.docx',
+        value: '.msi',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.desktop-classic-classification-common-3',
         type: 'extension',
-        value: '.xlsx',
+        value: '.docx',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.desktop-classic-classification-common-4',
         type: 'extension',
-        value: '.pptx',
+        value: '.doc',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.desktop-classic-classification-common-5',
         type: 'extension',
-        value: '.pdf',
+        value: '.xlsx',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.desktop-classic-classification-common-6',
         type: 'extension',
-        value: '.jpg',
+        value: '.xls',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.desktop-classic-classification-common-7',
         type: 'extension',
+        value: '.pptx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-classic-classification-common-8',
+        type: 'extension',
+        value: '.ppt',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-classic-classification-common-9',
+        type: 'extension',
+        value: '.pdf',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-classic-classification-common-10',
+        type: 'extension',
+        value: '.txt',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-classic-classification-common-11',
+        type: 'extension',
+        value: '.csv',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-classic-classification-common-12',
+        type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-classic-classification-common-13',
+        type: 'extension',
+        value: '.jpeg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-classic-classification-common-14',
+        type: 'extension',
+        value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-classic-classification-common-15',
+        type: 'extension',
+        value: '.gif',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-classic-classification-common-16',
+        type: 'extension',
+        value: '.webp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-classic-classification-common-17',
+        type: 'extension',
+        value: '.bmp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-classic-classification-common-18',
+        type: 'extension',
+        value: '.mp4',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-classic-classification-common-19',
+        type: 'extension',
+        value: '.mov',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-classic-classification-common-20',
+        type: 'extension',
+        value: '.mkv',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-classic-classification-common-21',
+        type: 'extension',
+        value: '.mp3',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-classic-classification-common-22',
+        type: 'extension',
+        value: '.flac',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-classic-classification-common-23',
+        type: 'extension',
         value: '.zip',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-classic-classification-common-24',
+        type: 'extension',
+        value: '.rar',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-classic-classification-common-25',
+        type: 'extension',
+        value: '.7z',
         isActive: true,
         isSystem: true
       }
     ],
-    customExcludeRules: [],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.desktop-classic-classification-ignore-1',
+        type: 'extension',
+        value: '.tmp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-classic-classification-ignore-2',
+        type: 'extension',
+        value: '.temp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-classic-classification-ignore-3',
+        type: 'extension',
+        value: '.bak',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-classic-classification-ignore-4',
+        type: 'extension',
+        value: '.ds_store',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-classic-classification-ignore-5',
+        type: 'extension',
+        value: '.db',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-classic-classification-ignore-6',
+        type: 'extension',
+        value: '.ini',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.desktop-classic-classification-ignore-7',
+        type: 'extension',
+        value: '.crdownload',
+        isActive: true,
+        isSystem: true
+      }
+    ],
     baseAIKey: 'LIGHT'
+  }
   },
   {
+  {
     id: 'builtin.workflow.qa-testing-asset-vault',
-    name: t('软件测试工程资产库与质量度量中心'),
+    name: t('软件测试用例与报告库'),
     summary: t('归档自动化测试脚本工程、手工用例脑图、Bug复现截图抓包、压测基准与版本准出清单'),
     version: '1.0.0',
     persona: 'qa',
     category: 'office',
-    naming_pattern: t('[业务归属]_[主题名称]_[生成日期]'),
-    naming_template: t('[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_pattern: t('[被测系统]_[测试内容]_[版本号]'),
+    naming_template: t('[{TAG:处理状态}]{SMART_NAME}_{CRE:YYYYMMDD}'),
     preset_directory_tree: [
-      {
-        name: t('01-自动化测试工程'),
-        children: [
-          { name: t('01-E2E端到端与UI自动化用例') },
-          { name: t('02-API接口用例与Mock测试脚本') }
-        ]
-      },
-      {
-        name: t('02-测试文档与凭据'),
-        children: [
-          { name: t('01-测试策略大纲与评审脑图') },
-          { name: t('02-Bug复现截图录屏与抓包日志') }
-        ]
-      },
-      {
-        name: t('03-性能与安全专项'),
-        children: [
-          { name: t('01-JMeter压测脚本与基线配置') },
-          { name: t('02-安全渗透测试与漏洞扫描报告') }
-        ]
-      },
-      { name: t('04-准出与复盘资产'), children: [{ name: t('01-发布版本质量度量与准出清单') }] }
+      { name: t('01-测试用例与脚本'), children: [{ name: t('功能与界面测试用例') }, { name: t('接口测试脚本') }, { name: t('自动化测试工程') }] },
+      { name: t('02-测试计划与报告'), children: [{ name: t('测试计划与方案') }, { name: t('测试报告与总结') }] },
+      { name: t('03-缺陷记录'), children: [{ name: t('缺陷清单') }, { name: t('复现截图与录屏') }, { name: t('抓包与日志') }] },
+      { name: t('04-性能与安全测试'), children: [{ name: t('压测脚本与结果') }, { name: t('安全扫描报告') }] },
+      { name: t('05-发布质量检查'), children: [{ name: t('上线检查清单') }, { name: t('版本质量统计') }] }
     ],
     icon_svg:
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
     extensionWeights: {
-      '.xlsx': 0.1667,
-      '.docx': 0.1667,
-      '.pdf': 0.1667,
-      '.jmx': 0.1667,
-      '.yaml': 0.1667,
-      '.png': 0.1665
+      '.xlsx': 0.15,
+      '.xls': 0.025,
+      '.csv': 0.035,
+      '.docx': 0.075,
+      '.doc': 0.015,
+      '.pdf': 0.075,
+      '.md': 0.03,
+      '.txt': 0.02,
+      '.xmind': 0.02,
+      '.jmx': 0.045,
+      '.yaml': 0.045,
+      '.yml': 0.025,
+      '.json': 0.045,
+      '.har': 0.025,
+      '.pcap': 0.01,
+      '.pcapng': 0.01,
+      '.log': 0.045,
+      '.png': 0.1,
+      '.jpg': 0.03,
+      '.jpeg': 0.01,
+      '.mp4': 0.035,
+      '.gif': 0.015,
+      '.py': 0.035,
+      '.js': 0.02,
+      '.ts': 0.015,
+      '.java': 0.012,
+      '.feature': 0.008,
+      '.robot': 0.006,
+      '.side': 0.004,
+      '.zip': 0.015
     },
     customIncludeRules: [
       {
@@ -10701,79 +12453,295 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       {
         id: 'builtin.workflow.qa-testing-asset-vault-common-2',
         type: 'extension',
-        value: '.docx',
+        value: '.xls',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.qa-testing-asset-vault-common-3',
         type: 'extension',
-        value: '.pdf',
+        value: '.csv',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.qa-testing-asset-vault-common-4',
         type: 'extension',
-        value: '.jmx',
+        value: '.docx',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.qa-testing-asset-vault-common-5',
         type: 'extension',
-        value: '.yaml',
+        value: '.doc',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.qa-testing-asset-vault-common-6',
         type: 'extension',
+        value: '.pdf',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-common-7',
+        type: 'extension',
+        value: '.md',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-common-8',
+        type: 'extension',
+        value: '.txt',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-exclusive-1',
+        type: 'extension',
+        value: '.xmind',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-common-9',
+        type: 'extension',
+        value: '.jmx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-common-10',
+        type: 'extension',
+        value: '.yaml',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-common-11',
+        type: 'extension',
+        value: '.yml',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-common-12',
+        type: 'extension',
+        value: '.json',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-exclusive-2',
+        type: 'extension',
+        value: '.har',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-exclusive-3',
+        type: 'extension',
+        value: '.pcap',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-exclusive-4',
+        type: 'extension',
+        value: '.pcapng',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-common-13',
+        type: 'extension',
+        value: '.log',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-common-14',
+        type: 'extension',
         value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-common-15',
+        type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-common-16',
+        type: 'extension',
+        value: '.jpeg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-common-17',
+        type: 'extension',
+        value: '.mp4',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-common-18',
+        type: 'extension',
+        value: '.gif',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-common-19',
+        type: 'extension',
+        value: '.py',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-common-20',
+        type: 'extension',
+        value: '.js',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-common-21',
+        type: 'extension',
+        value: '.ts',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-common-22',
+        type: 'extension',
+        value: '.java',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-exclusive-5',
+        type: 'extension',
+        value: '.feature',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-exclusive-6',
+        type: 'extension',
+        value: '.robot',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-exclusive-7',
+        type: 'extension',
+        value: '.side',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-common-23',
+        type: 'extension',
+        value: '.zip',
         isActive: true,
         isSystem: true
       }
     ],
-    customExcludeRules: [],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-ignore-1',
+        type: 'extension',
+        value: '.tmp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-ignore-2',
+        type: 'extension',
+        value: '.temp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-ignore-3',
+        type: 'extension',
+        value: '.bak',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-ignore-4',
+        type: 'extension',
+        value: '.swp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-ignore-5',
+        type: 'extension',
+        value: '.ds_store',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.qa-testing-asset-vault-ignore-6',
+        type: 'extension',
+        value: '.class',
+        isActive: true,
+        isSystem: true
+      }
+    ],
     baseAIKey: 'LIGHT'
+  }
   },
   {
+  {
     id: 'builtin.workflow.k12-education-vault',
-    name: t('K12 中小学学科知识与成长教育资料库'),
+    name: t('中小学学习资料与成长记录库'),
     summary: t('收纳语数英主科学科教辅、日常课后作业、错题重难点归纳、名师网课讲义与课外才艺考级'),
     version: '1.0.0',
     persona: 'parent',
     category: 'entertainment',
-    naming_pattern: t('[业务归属]_[主题名称]_[生成日期]'),
-    naming_template: t('[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_pattern: t('[科目]_[年级]_[资料主题]'),
+    naming_template: t('[{TAG:学科领域}]{SMART_NAME}_{CRE:YYYYMMDD}'),
     preset_directory_tree: [
-      {
-        name: t('01-主要学科教辅资料'),
-        children: [
-          { name: t('01-语文阅读与写作素材') },
-          { name: t('02-数学奥数与思维练习题') },
-          { name: t('03-英语听力音频与分级阅读') }
-        ]
-      },
-      {
-        name: t('02-平时作业与错题精选'),
-        children: [{ name: t('01-各科随堂作业与电子试卷') }, { name: t('02-错题本归纳与复习笔记') }]
-      },
-      { name: t('03-网课录播与课件讲义'), children: [{ name: t('01-名师网课视频与板书') }] },
-      {
-        name: t('04-课外兴趣与才艺拓展'),
-        children: [{ name: t('01-书法绘画与考级证书') }, { name: t('02-体育赛事与社会实践记录') }]
-      }
+      { name: t('01-学科教辅资料'), children: [{ name: t('语文阅读与作文') }, { name: t('数学练习与思维题') }, { name: t('英语听力与阅读') }] },
+      { name: t('02-作业与错题'), children: [{ name: t('各科作业与试卷') }, { name: t('错题本与复习笔记') }] },
+      { name: t('03-网课与课件'), children: [{ name: t('网课视频') }, { name: t('课件与讲义') }] },
+      { name: t('04-兴趣与成长记录'), children: [{ name: t('书法绘画与考级') }, { name: t('体育与实践活动') }] }
     ],
     icon_svg:
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>',
     extensionWeights: {
-      '.pdf': 0.1875,
-      '.docx': 0.1875,
-      '.pptx': 0.1875,
-      '.mp4': 0.1875,
-      '.jpg': 0.125,
-      '.png': 0.125
+      '.pdf': 0.21,
+      '.docx': 0.11,
+      '.doc': 0.03,
+      '.pptx': 0.08,
+      '.ppt': 0.015,
+      '.xlsx': 0.035,
+      '.jpg': 0.095,
+      '.jpeg': 0.03,
+      '.png': 0.055,
+      '.heic': 0.015,
+      '.mp4': 0.12,
+      '.mkv': 0.015,
+      '.avi': 0.008,
+      '.mov': 0.01,
+      '.mp3': 0.07,
+      '.m4a': 0.02,
+      '.wav': 0.01,
+      '.flac': 0.005,
+      '.zip': 0.03,
+      '.rar': 0.015,
+      '.epub': 0.012,
+      '.txt': 0.01
     },
     customIncludeRules: [
       {
@@ -10793,63 +12761,231 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       {
         id: 'builtin.workflow.k12-education-vault-common-3',
         type: 'extension',
-        value: '.pptx',
+        value: '.doc',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.k12-education-vault-common-4',
         type: 'extension',
-        value: '.mp4',
+        value: '.pptx',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.k12-education-vault-common-5',
         type: 'extension',
-        value: '.jpg',
+        value: '.ppt',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.k12-education-vault-common-6',
         type: 'extension',
+        value: '.xlsx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-education-vault-common-7',
+        type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-education-vault-common-8',
+        type: 'extension',
+        value: '.jpeg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-education-vault-common-9',
+        type: 'extension',
         value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-education-vault-common-10',
+        type: 'extension',
+        value: '.heic',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-education-vault-common-11',
+        type: 'extension',
+        value: '.mp4',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-education-vault-common-12',
+        type: 'extension',
+        value: '.mkv',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-education-vault-common-13',
+        type: 'extension',
+        value: '.avi',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-education-vault-common-14',
+        type: 'extension',
+        value: '.mov',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-education-vault-common-15',
+        type: 'extension',
+        value: '.mp3',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-education-vault-common-16',
+        type: 'extension',
+        value: '.m4a',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-education-vault-common-17',
+        type: 'extension',
+        value: '.wav',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-education-vault-common-18',
+        type: 'extension',
+        value: '.flac',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-education-vault-common-19',
+        type: 'extension',
+        value: '.zip',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-education-vault-common-20',
+        type: 'extension',
+        value: '.rar',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-education-vault-exclusive-1',
+        type: 'extension',
+        value: '.epub',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-education-vault-common-21',
+        type: 'extension',
+        value: '.txt',
         isActive: true,
         isSystem: true
       }
     ],
-    customExcludeRules: [],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.k12-education-vault-ignore-1',
+        type: 'extension',
+        value: '.tmp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-education-vault-ignore-2',
+        type: 'extension',
+        value: '.temp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-education-vault-ignore-3',
+        type: 'extension',
+        value: '.bak',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-education-vault-ignore-4',
+        type: 'extension',
+        value: '.ds_store',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-education-vault-ignore-5',
+        type: 'extension',
+        value: '.crdownload',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-education-vault-ignore-6',
+        type: 'extension',
+        value: '.part',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-education-vault-ignore-7',
+        type: 'extension',
+        value: '.exe',
+        isActive: true,
+        isSystem: true
+      }
+    ],
     baseAIKey: 'LIGHT'
+  }
   },
   {
+  {
     id: 'builtin.workflow.k12-school-term-pipeline',
-    name: t('K12 学期阶段学习与升学备考工作流'),
-    summary: t(
-      '按学期生命周期分阶段管理：新学期规划课表、日常上课作业打卡、期中期末冲刺与寒暑假实践'
-    ),
+    name: t('学期学习计划与备考整理'),
+    summary: t(''),
     version: '1.0.0',
     persona: 'parent',
     category: 'entertainment',
-    naming_pattern: t('[业务归属]_[主题名称]_[生成日期]'),
-    naming_template: t('[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_pattern: t('[科目]_[学期阶段]_[内容主题]'),
+    naming_template: t('[{TAG:学科领域}]{SMART_NAME}_{CRE:YYYYMMDD}'),
     preset_directory_tree: [
-      { name: t('01-开学规划与课表选课'), children: [{ name: t('01-学期学习计划与作息表') }] },
-      { name: t('02-日常学习与随堂练习'), children: [{ name: t('01-每日课表跟进与打卡') }] },
-      {
-        name: t('03-期中期末专项冲刺'),
-        children: [{ name: t('01-期中冲刺模拟卷') }, { name: t('02-期末复盘与总成绩单') }]
-      },
-      { name: t('04-学期归档与暑寒假规划'), children: [{ name: t('01-寒暑假作业与实践报告') }] }
+      { name: t('01-开学计划'), children: [{ name: t('学期计划与作息表') }, { name: t('课表与选课') }] },
+      { name: t('02-日常学习'), children: [{ name: t('每日打卡与作业') }, { name: t('随堂练习') }] },
+      { name: t('03-期中期末冲刺'), children: [{ name: t('复习提纲与模拟卷') }, { name: t('成绩单与总结') }] },
+      { name: t('04-寒暑假'), children: [{ name: t('假期作业与实践') }, { name: t('假期阅读与拓展') }] }
     ],
     icon_svg:
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>',
     extensionWeights: {
-      '.pdf': 0.2,
-      '.docx': 0.2,
-      '.xlsx': 0.2,
-      '.pptx': 0.2,
-      '.jpg': 0.2
+      '.pdf': 0.27,
+      '.docx': 0.17,
+      '.doc': 0.035,
+      '.xlsx': 0.11,
+      '.xls': 0.02,
+      '.pptx': 0.075,
+      '.jpg': 0.11,
+      '.jpeg': 0.03,
+      '.png': 0.055,
+      '.heic': 0.02,
+      '.mp4': 0.04,
+      '.mp3': 0.025,
+      '.zip': 0.025,
+      '.txt': 0.015
     },
     customIncludeRules: [
       {
@@ -10869,63 +13005,177 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       {
         id: 'builtin.workflow.k12-school-term-pipeline-common-3',
         type: 'extension',
-        value: '.xlsx',
+        value: '.doc',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.k12-school-term-pipeline-common-4',
         type: 'extension',
-        value: '.pptx',
+        value: '.xlsx',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.k12-school-term-pipeline-common-5',
         type: 'extension',
+        value: '.xls',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-school-term-pipeline-common-6',
+        type: 'extension',
+        value: '.pptx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-school-term-pipeline-common-7',
+        type: 'extension',
         value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-school-term-pipeline-common-8',
+        type: 'extension',
+        value: '.jpeg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-school-term-pipeline-common-9',
+        type: 'extension',
+        value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-school-term-pipeline-common-10',
+        type: 'extension',
+        value: '.heic',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-school-term-pipeline-common-11',
+        type: 'extension',
+        value: '.mp4',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-school-term-pipeline-common-12',
+        type: 'extension',
+        value: '.mp3',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-school-term-pipeline-common-13',
+        type: 'extension',
+        value: '.zip',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-school-term-pipeline-common-14',
+        type: 'extension',
+        value: '.txt',
         isActive: true,
         isSystem: true
       }
     ],
-    customExcludeRules: [],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.k12-school-term-pipeline-ignore-1',
+        type: 'extension',
+        value: '.tmp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-school-term-pipeline-ignore-2',
+        type: 'extension',
+        value: '.temp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-school-term-pipeline-ignore-3',
+        type: 'extension',
+        value: '.bak',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-school-term-pipeline-ignore-4',
+        type: 'extension',
+        value: '.ds_store',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-school-term-pipeline-ignore-5',
+        type: 'extension',
+        value: '.crdownload',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.k12-school-term-pipeline-ignore-6',
+        type: 'extension',
+        value: '.part',
+        isActive: true,
+        isSystem: true
+      }
+    ],
     baseAIKey: 'LIGHT'
+  }
   },
   {
+  {
     id: 'builtin.workflow.senior-life-archive',
-    name: t('银发长辈生活档案与家庭回忆录'),
+    name: t('长辈生活档案与家庭回忆录'),
     summary: t('家庭老照片数字化、历年体检病历单据、处方常用药品清单与经典戏曲养生音画库'),
     version: '1.0.0',
     persona: 'senior',
     category: 'entertainment',
-    naming_pattern: t('[业务归属]_[主题名称]_[生成日期]'),
-    naming_template: t('[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_pattern: t('[人物]_[场合或事项]_[年代]'),
+    naming_template: t('[{TAG:家庭生活细分}]{SMART_NAME}'),
     preset_directory_tree: [
-      {
-        name: t('01-家庭老照片与回忆相册'),
-        children: [{ name: t('01-家庭团聚与亲友合影') }, { name: t('02-历史老照片数字化扫描') }]
-      },
-      {
-        name: t('02-健康体检与医疗就医单'),
-        children: [{ name: t('01-医院体检报告与化验单') }, { name: t('02-常用处方药品清单与医嘱') }]
-      },
-      {
-        name: t('03-戏曲曲艺与养生文摘'),
-        children: [
-          { name: t('01-经典戏曲评书与老歌音频') },
-          { name: t('02-日常养生食谱与保健知识') }
-        ]
-      },
-      { name: t('04-养老证件与重要备忘'), children: [{ name: t('01-身份证医保卡社保卡复印件') }] }
+      { name: t('01-家庭老照片与相册'), children: [{ name: t('全家福与亲友合影') }, { name: t('老照片扫描件') }] },
+      { name: t('02-人生回忆与家族故事'), children: [{ name: t('口述历史与回忆文章') }, { name: t('家谱与老物件记录') }] },
+      { name: t('03-戏曲老歌与养生'), children: [{ name: t('戏曲评书与老歌') }, { name: t('养生食谱与保健知识') }] },
+      { name: t('04-证件与重要备忘'), children: [{ name: t('证件复印件') }, { name: t('重要事项备忘') }] }
     ],
     icon_svg:
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>',
     extensionWeights: {
-      '.pdf': 0.38,
-      '.docx': 0.34,
-      '.mp4': 0.1,
-      '.jpg': 0.1,
-      '.png': 0.08
+      '.jpg': 0.3,
+      '.jpeg': 0.06,
+      '.png': 0.055,
+      '.heic': 0.025,
+      '.bmp': 0.01,
+      '.tif': 0.02,
+      '.tiff': 0.008,
+      '.mp4': 0.07,
+      '.mov': 0.02,
+      '.avi': 0.015,
+      '.mkv': 0.008,
+      '.rmvb': 0.012,
+      '.rm': 0.006,
+      '.mp3': 0.12,
+      '.m4a': 0.02,
+      '.wav': 0.012,
+      '.flac': 0.008,
+      '.wma': 0.01,
+      '.pdf': 0.12,
+      '.docx': 0.045,
+      '.doc': 0.015,
+      '.txt': 0.016,
+      '.zip': 0.025
     },
     customIncludeRules: [
       {
@@ -10938,57 +13188,244 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       {
         id: 'builtin.workflow.senior-life-archive-common-2',
         type: 'extension',
-        value: '.png',
+        value: '.jpeg',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.senior-life-archive-common-3',
         type: 'extension',
-        value: '.mp4',
+        value: '.png',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.senior-life-archive-common-4',
         type: 'extension',
-        value: '.pdf',
+        value: '.heic',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.senior-life-archive-common-5',
         type: 'extension',
+        value: '.bmp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-life-archive-common-6',
+        type: 'extension',
+        value: '.tif',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-life-archive-common-7',
+        type: 'extension',
+        value: '.tiff',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-life-archive-common-8',
+        type: 'extension',
+        value: '.mp4',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-life-archive-common-9',
+        type: 'extension',
+        value: '.mov',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-life-archive-common-10',
+        type: 'extension',
+        value: '.avi',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-life-archive-common-11',
+        type: 'extension',
+        value: '.mkv',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-life-archive-common-12',
+        type: 'extension',
+        value: '.rmvb',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-life-archive-common-13',
+        type: 'extension',
+        value: '.rm',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-life-archive-common-14',
+        type: 'extension',
+        value: '.mp3',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-life-archive-common-15',
+        type: 'extension',
+        value: '.m4a',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-life-archive-common-16',
+        type: 'extension',
+        value: '.wav',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-life-archive-common-17',
+        type: 'extension',
+        value: '.flac',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-life-archive-common-18',
+        type: 'extension',
+        value: '.wma',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-life-archive-common-19',
+        type: 'extension',
+        value: '.pdf',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-life-archive-common-20',
+        type: 'extension',
         value: '.docx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-life-archive-common-21',
+        type: 'extension',
+        value: '.doc',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-life-archive-common-22',
+        type: 'extension',
+        value: '.txt',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-life-archive-common-23',
+        type: 'extension',
+        value: '.zip',
         isActive: true,
         isSystem: true
       }
     ],
-    customExcludeRules: [],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.senior-life-archive-ignore-1',
+        type: 'extension',
+        value: '.tmp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-life-archive-ignore-2',
+        type: 'extension',
+        value: '.temp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-life-archive-ignore-3',
+        type: 'extension',
+        value: '.bak',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-life-archive-ignore-4',
+        type: 'extension',
+        value: '.ds_store',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-life-archive-ignore-5',
+        type: 'extension',
+        value: '.db',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-life-archive-ignore-6',
+        type: 'extension',
+        value: '.exe',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-life-archive-ignore-7',
+        type: 'extension',
+        value: '.lnk',
+        isActive: true,
+        isSystem: true
+      }
+    ],
     baseAIKey: 'LIGHT'
+  }
   },
   {
+  {
     id: 'builtin.workflow.senior-medical-care-pipeline',
-    name: t('长辈就医挂号与体检随访全生命周期'),
+    name: t('长辈就医与体检记录库'),
     summary: t('按就医挂号、门诊检查进行中、医保报销结算与年度随访长期建档全流程管理'),
     version: '1.0.0',
     persona: 'senior',
     category: 'entertainment',
-    naming_pattern: t('[业务归属]_[主题名称]_[生成日期]'),
-    naming_template: t('[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}'),
+    naming_pattern: t('[就诊人]_[医院或科室]_[报告或单据名称]'),
+    naming_template: t('[{TAG:处理状态}]{SMART_NAME}_{CRE:YYYYMMDD}'),
     preset_directory_tree: [
-      { name: t('01-就医挂号与就诊前准备'), children: [{ name: t('01-病历本与历史症状记录') }] },
-      { name: t('02-门诊就医与检查进行中'), children: [{ name: t('01-门诊挂号单与检查发票') }] },
-      { name: t('03-报销凭据与复诊随访'), children: [{ name: t('01-医保报销单据与回执') }] },
-      { name: t('04-长期健康档案归档'), children: [{ name: t('01-年度健康汇总表') }] }
+      { name: t('01-看病前准备'), children: [{ name: t('病历与症状记录') }, { name: t('挂号凭证与预约单') }] },
+      { name: t('02-检查与化验'), children: [{ name: t('检查报告单') }, { name: t('化验与影像结果') }] },
+      { name: t('03-费用与报销'), children: [{ name: t('发票与费用清单') }, { name: t('医保报销回执') }] },
+      { name: t('04-复诊与长期档案'), children: [{ name: t('复诊提醒与医嘱') }, { name: t('年度体检汇总') }] }
     ],
     icon_svg:
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>',
     extensionWeights: {
-      '.pdf': 0.45,
-      '.docx': 0.3,
-      '.jpg': 0.15,
-      '.png': 0.1
+      '.pdf': 0.34,
+      '.jpg': 0.22,
+      '.jpeg': 0.05,
+      '.png': 0.08,
+      '.heic': 0.05,
+      '.docx': 0.06,
+      '.doc': 0.03,
+      '.xlsx': 0.05,
+      '.xls': 0.02,
+      '.ofd': 0.06,
+      '.zip': 0.02,
+      '.dcm': 0.01,
+      '.dicom': 0.01
     },
     customIncludeRules: [
       {
@@ -11008,20 +13445,127 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       {
         id: 'builtin.workflow.senior-medical-care-pipeline-common-3',
         type: 'extension',
-        value: '.png',
+        value: '.jpeg',
         isActive: true,
         isSystem: true
       },
       {
         id: 'builtin.workflow.senior-medical-care-pipeline-common-4',
         type: 'extension',
+        value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-medical-care-pipeline-common-5',
+        type: 'extension',
+        value: '.heic',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-medical-care-pipeline-common-6',
+        type: 'extension',
         value: '.docx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-medical-care-pipeline-common-7',
+        type: 'extension',
+        value: '.doc',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-medical-care-pipeline-common-8',
+        type: 'extension',
+        value: '.xlsx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-medical-care-pipeline-common-9',
+        type: 'extension',
+        value: '.xls',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-medical-care-pipeline-common-10',
+        type: 'extension',
+        value: '.ofd',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-medical-care-pipeline-common-11',
+        type: 'extension',
+        value: '.zip',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-medical-care-pipeline-exclusive-1',
+        type: 'extension',
+        value: '.dcm',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-medical-care-pipeline-exclusive-2',
+        type: 'extension',
+        value: '.dicom',
         isActive: true,
         isSystem: true
       }
     ],
-    customExcludeRules: [],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.senior-medical-care-pipeline-ignore-1',
+        type: 'extension',
+        value: '.tmp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-medical-care-pipeline-ignore-2',
+        type: 'extension',
+        value: '.temp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-medical-care-pipeline-ignore-3',
+        type: 'extension',
+        value: '.bak',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-medical-care-pipeline-ignore-4',
+        type: 'extension',
+        value: '.ds_store',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-medical-care-pipeline-ignore-5',
+        type: 'extension',
+        value: '.crdownload',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.senior-medical-care-pipeline-ignore-6',
+        type: 'extension',
+        value: '.exe',
+        isActive: true,
+        isSystem: true
+      }
+    ],
     baseAIKey: 'LIGHT'
+  }
   },
   {
     id: 'builtin.workflow.office-docs',

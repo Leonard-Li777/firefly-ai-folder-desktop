@@ -36,6 +36,7 @@ import {
   type GenerativeEngineSnapshot
 } from '@firefly/shared'
 import { PersistentTooltip } from '@/renderer/components/common/PersistentTooltip'
+import { EnergyTransparencyBadge } from '@/renderer/components/common/EnergyTransparencyBadge'
 
 import { getStageLabel } from '@/renderer/components/analysis/AnalysisQueueContent'
 
@@ -232,9 +233,9 @@ export function Footer() {
   const showAiError = isCpuMode
     ? Boolean(
         llmSnapshot?.unavailableReason === 'CRASH_LOOP' ||
-          llmSnapshot?.unavailableReason === 'LOW_MEMORY' ||
-          llmSnapshot?.unavailableReason === 'ENGINE_CRASHED' ||
-          llmSnapshot?.runtime?.cpu === 'failed'
+        llmSnapshot?.unavailableReason === 'LOW_MEMORY' ||
+        llmSnapshot?.unavailableReason === 'ENGINE_CRASHED' ||
+        llmSnapshot?.runtime?.cpu === 'failed'
       )
     : (serviceStatus === AIServiceStatus.ERROR || Boolean(error)) &&
       !(currentAiServiceMode !== 'cloud' && isCloudApiKeyError)
@@ -416,7 +417,6 @@ export function Footer() {
     serviceStatus === AIServiceStatus.PENDING ||
     serviceStatus === AIServiceStatus.CONFIGURING
 
-
   const shouldShowRecommendation = useMemo(() => {
     // 仅在已开启高级AI引擎且选择萤核AI引擎（本地模式）时才检测推荐；
     // 高级AI引擎禁用/云端模式下不展示（基础AI引擎不涉及模型切换）
@@ -503,14 +503,22 @@ export function Footer() {
           color: 'text-amber-500'
         }
       }
-      if (unavailableReason === 'ENGINE_CRASHED' || cpuRuntime === 'failed' || status === AIServiceStatus.ERROR) {
+      if (
+        unavailableReason === 'ENGINE_CRASHED' ||
+        cpuRuntime === 'failed' ||
+        status === AIServiceStatus.ERROR
+      ) {
         return {
           text: `${cpuHeader} ${t('服务异常')}`,
           icon: 'error_outline',
           color: 'text-red-500'
         }
       }
-      if (cpuRuntime === 'loading' || status === AIServiceStatus.LOADING || status === AIServiceStatus.INITIALIZING) {
+      if (
+        cpuRuntime === 'loading' ||
+        status === AIServiceStatus.LOADING ||
+        status === AIServiceStatus.INITIALIZING
+      ) {
         return {
           text: `${cpuHeader} ${t('启动中')}`,
           icon: 'sync',
@@ -860,7 +868,7 @@ export function Footer() {
                 {showAiError && (
                   <div className="mt-0.5 truncate max-w-[480px] block">
                     <PersistentTooltip
-                      id={`ai_footer_error_${isCpuMode ? 'cpu' : (error?.code || (error as any)?.type || 'general')}`}
+                      id={`ai_footer_error_${isCpuMode ? 'cpu' : error?.code || (error as any)?.type || 'general'}`}
                       content={t('AI服务出现异常，点击查看详情与修复方案')}
                       position="top"
                       visible={true}
@@ -1055,6 +1063,8 @@ export function Footer() {
             )}
           </span>
         </button>
+        <span className="text-xs text-muted-foreground/30 mx-1.5">|</span>
+        <EnergyTransparencyBadge />
         <span className="text-xs text-muted-foreground/30 mx-1.5">|</span>
         <button
           onClick={() =>
