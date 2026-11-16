@@ -259,3 +259,63 @@ export interface LifecycleToken {
 }
 
 export type AdmissionToken = LifecycleToken
+
+// ==========================================
+// 看门狗、对账器与崩溃熔断常量与契约 (Ticket 05)
+// ==========================================
+
+export const LIFECYCLE_OWNER_MAX_TTL_MS = 60_000 // 60s 属主最大生存周期
+export const IN_FLIGHT_OP_STALL_TIMEOUT_MS = 60_000 // 60s 有进度算子停滞判定
+export const IN_FLIGHT_OP_NO_PROGRESS_HARD_TIMEOUT_MS = 120_000 // 120s 无进度算子硬超时
+export const CANCEL_INTENT_MIN_TTL_MS = 5_000 // 5s 取消意图最小防抖
+export const CANCEL_INTENT_HARD_TTL_MS = 60_000 // 60s 取消意图硬超时
+export const CRASH_WINDOW_MS = 300_000 // 5分钟 崩溃统计滑动窗口
+export const STABLE_RESIDENT_RESET_MS = 60_000 // 1分钟 稳定驻留拉式单调重置门限
+
+/** 在途物理操作条目契约 (InFlightPhysicalOp) */
+export interface InFlightPhysicalOp {
+  readonly opId: string
+  readonly targetId: string
+  readonly generation: number
+  readonly createdAt: number
+  lastProgressAt?: number
+  status: 'running' | 'settled' | 'failed_unknown'
+  spawnState?: 'spawning' | 'spawned'
+  supportsProgress: boolean // 严格必填布尔，无隐式兜底
+  extendedTimeoutGranted?: boolean
+  abortController?: AbortController
+  jobHandle?: string
+  identity?: ProcessTreeIdentity
+  resolveCompletion?: () => void
+}
+
+/** 抑制退出条目契约 (SuppressedStoppingIdentityEntry) */
+export interface SuppressedStoppingIdentityEntry {
+  readonly targetId: string
+  readonly identity: ProcessTreeIdentity
+  readonly suppressedAt: number
+  unknownRetryCount?: number
+  lastRetryAt?: number
+  escalatedToPersistentLock?: boolean
+}
+
+/** 取消意图条目契约 (TargetCancelIntentEntry) */
+export interface TargetCancelIntentEntry {
+  readonly targetId: string
+  readonly registeredAt: number
+}
+
+/** EngineBridgeService 最小能力抽象（供休眠调度器解耦与单测） */
+export interface IEngineBridgeService {
+  isProcessTreeExited(identity: ProcessTreeIdentity): boolean | 'unknown'
+  stopProcessTree(identity: ProcessTreeIdentity): Promise<void>
+  forceKillOldGeneration(
+    targetId: string,
+    generation: number,
+    jobHandle?: string
+  ): Promise<'killed' | 'no_handle' | 'unknown'>
+  awaitProcessTreeExit(
+    identity: ProcessTreeIdentity,
+    timeoutMs: number
+  ): Promise<'exited' | 'timeout' | 'unknown'>
+}
