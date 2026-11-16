@@ -276,7 +276,7 @@ export const AIServiceErrorDialog: React.FC<IAIServiceErrorDialogProps> = ({
         })
       }
 
-      // 如果是 Llama 引擎未找到/部署失败错误，提供重新部署引擎按钮
+      // 如果是生成式萤核AI引擎未找到/部署失败错误，提供重新部署引擎按钮
       if (aiError.code === AIErrorType.ENGINE_NOT_FOUND) {
         actions.push({
           label: t('重新部署 AI 引擎'),
@@ -353,7 +353,11 @@ export const AIServiceErrorDialog: React.FC<IAIServiceErrorDialogProps> = ({
         suggestions: (aiError.suggestions && aiError.suggestions.length > 0
           ? aiError.suggestions
           : completeInfo.solutions
-        ).concat(t('标准分析模式由检索式引擎处理，高效完成文件标签、智能文件名和摘要')),
+        ).concat(
+          t(
+            '建议调整分析模式为「标准分析模式」（由检索式引擎处理，高效完成文件标签、智能文件名和摘要）'
+          )
+        ),
         actions
       }
     },

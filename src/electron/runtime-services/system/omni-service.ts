@@ -1056,7 +1056,7 @@ export class OmniService {
     }
 
     const detail = [
-      '基础AI引擎组件缺失，文件分析能力受限',
+      '检索式引擎组件缺失，文件分析能力受限',
       '',
       '缺失的文件：',
       exePath,
@@ -1073,8 +1073,8 @@ export class OmniService {
     try {
       const shown = dialog?.showMessageBox({
         type: 'warning',
-        title: '基础AI引擎组件缺失',
-        message: '基础AI引擎组件缺失，文件分析能力受限',
+        title: '检索式引擎组件缺失',
+        message: '检索式引擎组件缺失，文件分析能力受限',
         detail,
         buttons: ['打开组件目录', '知道了'],
         defaultId: 0,
