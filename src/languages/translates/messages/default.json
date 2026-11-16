@@ -885,7 +885,7 @@
     "de-DE": "Firefly-Beamter",
     "fr-FR": "Officiel de luciole",
     "ko-KR": "반딧불 공식",
-    "$files": ["src/electron/runtime-services/database/database.ts(24086-24100)"],
+    "$files": ["src/electron/runtime-services/database/database.ts(23643-23657)"],
     "$id": 22920
   },
   "正在处理中，请等待当前任务完成": {

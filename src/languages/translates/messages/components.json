@@ -890,7 +890,7 @@
     "$files": [
       "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(28497-28503)",
       "src/renderer/components/plugin-center/PluginCenterOverlay.tsx(38523-38529)",
-      "src/renderer/components/plugin-center/PluginListItem.tsx(25437-25443)"
+      "src/renderer/components/plugin-center/PluginListItem.tsx(25650-25656)"
     ],
     "$id": 23002
   },
@@ -1547,7 +1547,10 @@
     "de-DE": "Die Installation ist fehlgeschlagen",
     "fr-FR": "L'installation a échoué",
     "ko-KR": "설치 실패",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(22438-22446)"],
+    "$files": [
+      "src/renderer/components/plugin-center/PluginListItem.tsx(22482-22490)",
+      "src/renderer/components/plugin-center/PluginListItem.tsx(22651-22659)"
+    ],
     "$id": 22987
   },
   "重试": {
@@ -1560,7 +1563,7 @@
     "de-DE": "Wiederholen",
     "fr-FR": "Réessayer",
     "ko-KR": "재시도",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(22979-22985)"],
+    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(23192-23198)"],
     "$id": 22988
   },
   "该模块已下架，不可安装": {
@@ -1573,7 +1576,7 @@
     "de-DE": "Dieses Modul wurde aus den Regalen entfernt und kann nicht installiert werden.",
     "fr-FR": "Ce module a été retiré des étagères et ne peut pas être installé.",
     "ko-KR": "이 모듈은 선반에서 제거되었으므로 설치할 수 없습니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(23293-23308)"],
+    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(23506-23521)"],
     "$id": 28351
   },
   "未安装扩展模块": {
@@ -1586,7 +1589,7 @@
     "de-DE": "Erweiterungsmodul nicht installiert",
     "fr-FR": "Module d'extension non installé",
     "ko-KR": "확장 모듈이 설치되지 않았습니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(23479-23490)"],
+    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(23692-23703)"],
     "$id": 22989
   },
   "下载安装": {
@@ -1599,7 +1602,7 @@
     "de-DE": "Herunterladen und installieren",
     "fr-FR": "Téléchargez et installez",
     "ko-KR": "다운로드 및 설치",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(24175-24183)"],
+    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(24388-24396)"],
     "$id": 22990
   },
   "确认切换并卸载当前引擎": {
@@ -1612,7 +1615,7 @@
     "de-DE": "Bestätigen Sie den Wechsel und deinstallieren Sie die aktuelle Engine",
     "fr-FR": "Confirmez le changement et désinstallez le moteur actuel",
     "ko-KR": "스위치를 확인하고 현재 엔진을 제거합니다.",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(24699-24714)"],
+    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(24912-24927)"],
     "$id": 31671
   },
   "确认卸载插件": {
@@ -1625,7 +1628,7 @@
     "de-DE": "Bestätigen Sie, um das Plugin zu deinstallieren",
     "fr-FR": "Confirmez pour désinstaller le plugin",
     "ko-KR": "플러그인 제거 확인",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(24718-24728)"],
+    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(24931-24941)"],
     "$id": 31672
   },
   "即将自动切换至同类型的另一款已安装引擎，并移除当前引擎资产，预计释放约 {size} 磁盘空间。是否确认卸载？": {
@@ -1638,7 +1641,7 @@
     "de-DE": "Es wird automatisch zu einer anderen installierten Engine des gleichen Typs gewechselt und die aktuellen Engine-Assets entfernt. Es wird geschätzt, dass etwa {size} Speicherplatz freigegeben wird. Möchten Sie die Deinstallation wirklich durchführen?",
     "fr-FR": "Il passera automatiquement à un autre moteur installé du même type et supprimera les actifs du moteur actuel. On estime qu'environ {size} espace disque sera libéré. Etes-vous sûr de désinstaller ?",
     "ko-KR": "동일한 유형의 설치된 다른 엔진으로 자동 전환되고 현재 엔진 자산이 제거됩니다. 약 {size}개의 디스크 공간이 해제될 것으로 예상됩니다. 제거하시겠습니까?",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(24916-24996)"],
+    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(25129-25209)"],
     "$id": 31673
   },
   "即将从电脑中移除该插件及其模型资产，预计释放约 {size} 磁盘空间。是否确认卸载？": {
@@ -1651,7 +1654,7 @@
     "de-DE": "Das Plug-in und seine Modellressourcen werden von Ihrem Computer entfernt, wodurch voraussichtlich etwa {size} Speicherplatz frei wird. Möchten Sie die Deinstallation wirklich durchführen?",
     "fr-FR": "Le plug-in et ses actifs de modèle seront supprimés de votre ordinateur, ce qui devrait libérer environ {size} d'espace disque. Etes-vous sûr de désinstaller ?",
     "ko-KR": "플러그인과 해당 모델 자산이 컴퓨터에서 제거되어 약 {size}개의 디스크 공간이 확보될 것으로 예상됩니다. 제거하시겠습니까?",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(25098-25166)"],
+    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(25311-25379)"],
     "$id": 31674
   },
   "确认切换并卸载": {
@@ -1664,7 +1667,7 @@
     "de-DE": "Wechsel bestätigen und deinstallieren",
     "fr-FR": "Confirmez le changement et désinstallez",
     "ko-KR": "스위치 확인 및 제거",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(25768-25779)"],
+    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(25981-25992)"],
     "$id": 31675
   },
   "确认卸载": {
@@ -1677,7 +1680,7 @@
     "de-DE": "Bestätigen Sie die Deinstallation",
     "fr-FR": "Confirmer la désinstallation",
     "ko-KR": "제거 확인",
-    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(25783-25791)"],
+    "$files": ["src/renderer/components/plugin-center/PluginListItem.tsx(25996-26004)"],
     "$id": 31676
   },
   "重要版本更新提示": {
