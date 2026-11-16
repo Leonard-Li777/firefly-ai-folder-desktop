@@ -126,6 +126,25 @@ export function resolveAnalysisMode(): AnalysisMode {
 }
 
 /**
+ * 能力感知型分析模式解析器
+ *
+ * 当系统处于本地推理模式，但外部引擎未安装任何可用引擎包（hasInstalledAiEngine === false）时，
+ * 强制将高级 AI 模式（quick_name/full）优雅收敛为 simple 保底，确保 Omni 产出 CPU 5W 机械名并在 Stage 2 落库，
+ * 彻底阻断因派发 GPU 阶段遇到反代 503 触发的无限 pending 死循环。
+ *
+ * @param hasInstalledAiEngine 是否存在已安装/可用的本地 AI 引擎（若为 undefined/true 则遵照用户配置）
+ * @returns 实际生效的分析模式
+ */
+export function resolveEffectiveAnalysisMode(hasInstalledAiEngine?: boolean | null): AnalysisMode {
+  const configured = resolveAnalysisMode()
+  if (configured === 'simple') return 'simple'
+  if (hasInstalledAiEngine === false) {
+    return 'simple'
+  }
+  return configured
+}
+
+/**
  * 该模式是否需要执行 AI 阶段（stage 3 / stage 4）。
  *
  * 仅 quick_name 与 full 会执行 AI 阶段；simple 模式在 CPU 提取完成后即视为结束。
@@ -306,4 +325,3 @@ export function getCpuTargetStage(_mode: AnalysisMode = resolveAnalysisMode()): 
 export function getAiTargetStage(mode: AnalysisMode = resolveAnalysisMode()): number {
   return mode === 'quick_name' ? 3 : 4
 }
-

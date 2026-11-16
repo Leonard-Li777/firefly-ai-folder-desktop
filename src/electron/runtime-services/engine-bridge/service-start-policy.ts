@@ -67,8 +67,15 @@ export function shouldTriggerServiceStartAt(params: {
   now: number
   lastImplicitStartAt: number
   explicit: boolean
+  hasInstalledEngines?: boolean
 }): boolean {
-  const { status, now, lastImplicitStartAt, explicit } = params
+  const { status, now, lastImplicitStartAt, explicit, hasInstalledEngines } = params
+
+  // 若明确已知宿主未安装任何可用引擎（hasInstalledEngines === false），且非用户显式点击，阻断隐式自动拉起
+  if (!explicit && hasInstalledEngines === false) {
+    return false
+  }
+
   if (status === SERVICE_TRIGGERABLE_STATUS) {
     return explicit || now - lastImplicitStartAt >= IMPLICIT_START_MIN_INTERVAL_MS
   }

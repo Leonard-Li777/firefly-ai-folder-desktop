@@ -57,10 +57,12 @@ export class EngineLifecycleStateMachine {
     status?: string | null
     now?: number
     explicit?: boolean
+    hasInstalledEngines?: boolean
   }): ProbeEvaluationResult {
     const now = typeof params.now === 'number' ? params.now : Date.now()
     const status = params.status ?? undefined
     const explicit = params.explicit === true
+    const hasInstalledEngines = params.hasInstalledEngines
 
     this.consecutiveProbeFailures = 0
 
@@ -77,7 +79,8 @@ export class EngineLifecycleStateMachine {
       status,
       now,
       lastImplicitStartAt: this.lastImplicitStartAt,
-      explicit
+      explicit,
+      hasInstalledEngines
     })
 
     if (shouldTriggerStart) {
@@ -98,13 +101,15 @@ export class EngineLifecycleStateMachine {
     status?: string | null
     now?: number
     explicit?: boolean
+    hasInstalledEngines?: boolean
   }): boolean {
     const now = typeof params.now === 'number' ? params.now : Date.now()
     return shouldTriggerServiceStartAt({
       status: params.status ?? undefined,
       now,
       lastImplicitStartAt: this.lastImplicitStartAt,
-      explicit: params.explicit === true
+      explicit: params.explicit === true,
+      hasInstalledEngines: params.hasInstalledEngines
     })
   }
 

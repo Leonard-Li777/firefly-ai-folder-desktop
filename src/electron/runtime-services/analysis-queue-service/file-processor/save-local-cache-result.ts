@@ -15,7 +15,8 @@ import {
 } from '@firefly/shared'
 import { t } from '@app/languages'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
-import { isAnalyzedForMode, resolveAnalysisMode } from '../../../config/analysis-mode'
+import { isAnalyzedForMode, resolveEffectiveAnalysisMode } from '../../../config/analysis-mode'
+import { engineBridgeService } from '../../engine-bridge'
 import { databaseService } from '../../database/database-service'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -57,7 +58,8 @@ export async function saveLocalAnalysisResult(
     ? extractedContent.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '')
     : extractedContent
 
-  const isBinaryNulSkip = !!cleanedContent && cleanedContent.includes('[Binary File] NUL byte detected')
+  const isBinaryNulSkip =
+    !!cleanedContent && cleanedContent.includes('[Binary File] NUL byte detected')
   const isReadable = !isBinaryNulSkip && isHumanReadable(cleanedContent)
 
   const shouldSaveContent = isReadable
@@ -99,7 +101,16 @@ export async function saveLocalAnalysisResult(
   // 使后续判定能识别「用 quick_name 分析过的文件在 full 模式下尚未完成」。
   //
   // 注意：isBasic 表示走的是简单分类分支，此时模式可能是 simple。
-  const effectiveMode = resolveAnalysisMode()
+  const aiServiceMode =
+    ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE') ?? 'local'
+  const hasInstalledAiEngine =
+    aiServiceMode === 'local'
+      ? engineBridgeService.hasInstalledEngines !== false &&
+        Boolean(
+          engineBridgeService.getSnapshot().backend || engineBridgeService.getSnapshot().model
+        )
+      : true
+  const effectiveMode = resolveEffectiveAnalysisMode(hasInstalledAiEngine)
   initialStatsWithBenchmark.completed_mode = effectiveMode
 
   // 统一通过「分析模式单一事实来源」判定是否完成。

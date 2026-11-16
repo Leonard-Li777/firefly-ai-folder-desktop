@@ -265,7 +265,10 @@ export class EngineBridgeService {
    * `ensureMode('embedding')` 的 `startService({mode:'embedding'})` 合并，
    * `mode` 会被静默丢弃（静默降级），随后 `waitForServiceReady('embedding')` 必然超时。
    */
-  private startServiceInFlight = new Map<string, Promise<{ ok: boolean; error?: string }>>()
+  private startServiceInFlight = new Map<
+    string,
+    Promise<{ ok: boolean; code?: string; canDegrade?: boolean; error?: string }>
+  >()
   /**
    * 推理服务启动的串行链：不同意图**排队执行**，绝不并发下发。
    *
@@ -277,6 +280,8 @@ export class EngineBridgeService {
    * 整条链，后续所有启动请求永久拒绝。
    */
   private startServiceChain: Promise<unknown> = Promise.resolve()
+  /** 宿主是否已安装可用的 llama-server 引擎（null=未知/初始状态，false=明确未安装，true=已安装就绪） */
+  public hasInstalledEngines: boolean | null = null
   /** 最近一次「隐式触发」启动的时刻（0 = 从未触发）；见 `service-start-policy.ts` */
   private lastImplicitStartAt = 0
   private pollTimer: NodeJS.Timeout | null = null
@@ -1334,8 +1339,14 @@ export class EngineBridgeService {
       if (res.ok) {
         const list = (await res.json()) as Array<{
           backend?: string
+          isInstalled?: boolean
+          installed?: boolean
           matchType?: 'best' | 'compatible' | 'fallback'
         }>
+        if (Array.isArray(list) && list.length > 0) {
+          const hasAnyInstalled = list.some(e => e?.isInstalled === true || e?.installed === true)
+          this.hasInstalledEngines = hasAnyInstalled
+        }
         const activeBackend = this.lastRawStatus.active_backend || this.lastRawStatus.backend
         if (Array.isArray(list) && activeBackend) {
           // 归一化比较：cuda134/cuda 等具体变体与列表 backend 字段对齐（忽略大小写）
@@ -1387,7 +1398,8 @@ export class EngineBridgeService {
       status: status?.status,
       now: Date.now(),
       lastImplicitStartAt: this.lastImplicitStartAt,
-      explicit: options?.explicit === true
+      explicit: options?.explicit === true,
+      hasInstalledEngines: this.hasInstalledEngines ?? undefined
     })
   }
 
@@ -2005,7 +2017,7 @@ export class EngineBridgeService {
   public async startService(options?: {
     mode?: 'language' | 'embedding'
     modelId?: string
-  }): Promise<{ ok: boolean; error?: string }> {
+  }): Promise<{ ok: boolean; code?: string; canDegrade?: boolean; error?: string }> {
     const key = `${options?.mode ?? 'auto'}|${options?.modelId ?? ''}`
 
     const existing = this.startServiceInFlight.get(key)
@@ -2035,7 +2047,7 @@ export class EngineBridgeService {
   private async doStartService(options?: {
     mode?: 'language' | 'embedding'
     modelId?: string
-  }): Promise<{ ok: boolean; error?: string }> {
+  }): Promise<{ ok: boolean; code?: string; canDegrade?: boolean; error?: string }> {
     // 启动前对齐思考模式：CLI 启动参数以引擎 config.json 为准，先拉回桌面保证请求级一致；
     // 若桌面配置与引擎不一致且桌面是用户刚改过的，setThinkingMode 路径会在配置变更时已推送。
     await this.syncThinkingModeFromEngine()
@@ -2046,13 +2058,32 @@ export class EngineBridgeService {
         body: options ? JSON.stringify(options) : undefined,
         signal: AbortSignal.timeout(SERVICE_ACTION_TIMEOUT_MS)
       })
-      const body = (await res.json().catch(() => ({}))) as { success?: boolean; error?: string }
+      const body = (await res.json().catch(() => ({}))) as {
+        success?: boolean
+        code?: string
+        error?: string
+      }
       const ok = res.ok && body.success !== false
       if (!ok) {
+        if (res.status === 422 || body.code === 'no_engine_installed') {
+          this.hasInstalledEngines = false
+          logger.info(
+            LogCategory.SYSTEM,
+            `[EngineBridge] 引擎未安装或无兼容硬件引擎包，切换至未安装降级待命态: ${body.error || 'no_engine_installed'}`
+          )
+          return {
+            ok: false,
+            code: 'no_engine_installed',
+            canDegrade: true,
+            error: body.error || '未安装本地推理引擎，将由基础引擎保底'
+          }
+        }
         logger.warn(
           LogCategory.SYSTEM,
           `[EngineBridge] 启动 AI 服务失败: ${body.error || res.status}`
         )
+      } else {
+        this.hasInstalledEngines = true
       }
       return { ok, error: ok ? undefined : body.error || `引擎返回 ${res.status}` }
     } catch (err) {
@@ -2071,7 +2102,7 @@ export class EngineBridgeService {
   public async ensureMode(
     mode: 'language' | 'embedding',
     options?: { force?: boolean }
-  ): Promise<{ ok: boolean; error?: string }> {
+  ): Promise<{ ok: boolean; code?: string; canDegrade?: boolean; error?: string }> {
     const running = await this.ensureRunning({ mode, force: options?.force })
     if (!running) {
       return { ok: false, error: 'AI引擎未运行且拉起失败' }

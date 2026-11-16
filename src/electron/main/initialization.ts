@@ -950,54 +950,73 @@ export async function initializeFullServices(): Promise<void> {
           }
         }
         logger.debug(LogCategory.MAIN, '统一AI服务初始化成功')
-
-        if (databaseService.db) {
-          setDirectoryContextService(new DirectoryContextService(globalLlamaIndexService))
-          logger.debug(LogCategory.MAIN, '目录上下文服务已初始化 (AI 已就绪)')
-        }
       } catch (error) {
-        logger.error(LogCategory.MAIN, '统一AI服务初始化失败，等待用户手动重试:', error)
-        try {
-          const service = LlamaIndexAIService.getInstance() as any
-          let targetError = ErrorNormalizer.normalize(
-            error,
-            AIErrorType.SERVER_START_FAILED,
-            'main:initializeFullServices'
+        const errCode = (error as any)?.code
+        const errStr = error instanceof Error ? error.message : String(error)
+        const isNoEngineOrDegraded =
+          errCode === 'no_engine_installed' ||
+          errStr.includes('no_engine_installed') ||
+          errStr.includes('未检测到已安装或硬件兼容的计算引擎') ||
+          errStr.includes('未安装本地推理引擎') ||
+          errStr.includes('未发现任何 llama-server 引擎') ||
+          errStr.includes('没有任何与当前硬件指令集兼容的可用引擎') ||
+          errStr.includes('未找到萤核AI引擎可执行文件')
+
+        if (isNoEngineOrDegraded) {
+          logger.info(
+            LogCategory.MAIN,
+            '[initialization] 本地 AI 推理引擎未安装或未就绪，系统转由基础 AI 引擎全程保底，不阻塞应用启动与文件分析'
           )
+        } else {
+          logger.error(LogCategory.MAIN, '统一AI服务初始化失败，等待用户手动重试:', error)
+          try {
+            const service = LlamaIndexAIService.getInstance() as any
+            let targetError = ErrorNormalizer.normalize(
+              error,
+              AIErrorType.SERVER_START_FAILED,
+              'main:initializeFullServices'
+            )
 
-          if (service && service.lastInitError) {
-            const priorityMap: Record<string, number> = {
-              GPU_DRIVER_OUTDATED: 1,
-              INSUFFICIENT_VRAM: 1,
-              MODEL_OUT_OF_MEMORY: 1,
-              INSUFFICIENT_MEMORY: 2,
-              GPU_NOT_AVAILABLE: 2,
-              MODEL_LOAD_FAILED: 3,
-              MODEL_NOT_FOUND: 3,
-              MODEL_CORRUPTED: 3,
-              FREQUENT_CRASH: 3,
-              SERVER_START_FAILED: 4,
-              SERVICE_SWITCH_FAILED: 4,
-              MODEL_SWITCH_FAILED: 4,
-              CONFIG_INVALID: 5,
-              CONNECTION_FAILED: 5,
-              NETWORK_ERROR: 5,
-              SERVER_CRASHED: 5
+            if (service && service.lastInitError) {
+              const priorityMap: Record<string, number> = {
+                GPU_DRIVER_OUTDATED: 1,
+                INSUFFICIENT_VRAM: 1,
+                MODEL_OUT_OF_MEMORY: 1,
+                INSUFFICIENT_MEMORY: 2,
+                GPU_NOT_AVAILABLE: 2,
+                MODEL_LOAD_FAILED: 3,
+                MODEL_NOT_FOUND: 3,
+                MODEL_CORRUPTED: 3,
+                FREQUENT_CRASH: 3,
+                SERVER_START_FAILED: 4,
+                SERVICE_SWITCH_FAILED: 4,
+                MODEL_SWITCH_FAILED: 4,
+                CONFIG_INVALID: 5,
+                CONNECTION_FAILED: 5,
+                NETWORK_ERROR: 5,
+                SERVER_CRASHED: 5
+              }
+              const existingPriority = priorityMap[service.lastInitError.code || ''] ?? 99
+              const incomingPriority = priorityMap[targetError.code || ''] ?? 99
+              if (existingPriority < incomingPriority) {
+                targetError = service.lastInitError
+              }
             }
-            const existingPriority = priorityMap[service.lastInitError.code || ''] ?? 99
-            const incomingPriority = priorityMap[targetError.code || ''] ?? 99
-            if (existingPriority < incomingPriority) {
-              targetError = service.lastInitError
-            }
+
+            BrowserWindow.getAllWindows().forEach(win => {
+              if (!win.isDestroyed() && !win.webContents.isDestroyed()) {
+                win.webContents.send('ai-service:error', targetError)
+              }
+            })
+          } catch (normalizeError) {
+            logger.error(LogCategory.MAIN, '规范化或广播AI初始化错误失败:', normalizeError)
           }
-
-          BrowserWindow.getAllWindows().forEach(win => {
-            if (!win.isDestroyed() && !win.webContents.isDestroyed()) {
-              win.webContents.send('ai-service:error', targetError)
-            }
-          })
-        } catch (normalizeError) {
-          logger.error(LogCategory.MAIN, '规范化或广播AI初始化错误失败:', normalizeError)
+        }
+      } finally {
+        // 保证无论 AI 引擎是否就绪，工作区目录上下文服务 100% 成功注入
+        if (databaseService.db && !getDirectoryContextService()) {
+          setDirectoryContextService(new DirectoryContextService(globalLlamaIndexService))
+          logger.debug(LogCategory.MAIN, '目录上下文服务已初始化')
         }
       }
     }

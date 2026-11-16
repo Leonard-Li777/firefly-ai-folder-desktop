@@ -41,13 +41,16 @@ import {
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import {
   resolveAnalysisMode,
+  resolveEffectiveAnalysisMode,
   isAiStageEnabled,
   isAnalysisComplete,
   isStageSufficientForMode,
   resolveAchievedStage,
   getCpuTargetStage,
-  getAiTargetStage
+  getAiTargetStage,
+  type AnalysisMode
 } from '../../../config/analysis-mode'
+import { engineBridgeService } from '../../engine-bridge'
 import { databaseService } from '../../database/database-service'
 import { ConfigDbManager } from '../../config/config-db-manager'
 import { quotaChecker } from '../../user-tier/quota-checker-proxy'
@@ -761,6 +764,22 @@ async function ensureLemmaAliasesSeeded(
   }
 }
 
+/**
+ * 获取当前能力感知型有效分析模式
+ */
+function getEffectiveAnalysisMode(): AnalysisMode {
+  const aiServiceMode =
+    ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE') ?? 'local'
+  const hasInstalledAiEngine =
+    aiServiceMode === 'local'
+      ? engineBridgeService.hasInstalledEngines !== false &&
+        Boolean(
+          engineBridgeService.getSnapshot().backend || engineBridgeService.getSnapshot().model
+        )
+      : true
+  return resolveEffectiveAnalysisMode(hasInstalledAiEngine)
+}
+
 export class FileProcessor {
   private mockData: any = null
   private selectWorkspaceFileStmt: any = null
@@ -1018,7 +1037,7 @@ export class FileProcessor {
     let tier1FallbackName: string | null = null
     let filePath: string | null = null
     let currentWorkspaceId: number | null | undefined = null
-    let analysisMode = resolveAnalysisMode()
+    let analysisMode = getEffectiveAnalysisMode()
     try {
       // 入口中止检查：用户点击暂停时，队列服务的 pause() 会 abort 当前 signal。
       // 必须在真正开始分析前检查一次，否则已排队的下一个文件仍会照常执行，
@@ -1110,8 +1129,8 @@ export class FileProcessor {
         ConfigOrchestrator.getInstance().getValue<boolean>('REUSE_BASIC_ANALYSIS_DATA') ?? true
       const initialStage = db ? getFileStageFromDB(db, currentWorkspaceId, filePath) : 0
 
-      // 提前读取分析模式配置（统一走 analysis-mode 模块，避免各处口径漂移与静默兜底）
-      analysisMode = resolveAnalysisMode()
+      // 提前读取分析模式配置（统一走能力感知型解析，避免各处口径漂移与静默兜底）
+      analysisMode = getEffectiveAnalysisMode()
 
       if (phase === 'all') {
         // 串行分支与并行分支保持一致：只要文件已处于 Stage >= 2（CPU 提取已完成）

@@ -31,6 +31,7 @@ import { BrowserWindow } from 'electron'
 import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
 import {
   resolveAnalysisMode,
+  resolveEffectiveAnalysisMode,
   isAiStageEnabled,
   isAnalysisComplete,
   isAnalyzedForMode,
@@ -559,8 +560,15 @@ export class AnalysisQueueService {
         const isCpuEngine =
           aiServiceMode === 'cpu' || (aiServiceMode === 'local' && isCpuBackend(currentEngineAcc))
 
-        // 统一走 analysis-mode 模块解析，避免与 file-processor / DAO 的口径漂移
-        const analysisMode = resolveAnalysisMode()
+        // 统一走 analysis-mode 模块解析，考虑底层本地引擎可用性
+        const hasInstalledAiEngine =
+          aiServiceMode === 'local'
+            ? engineBridgeService.hasInstalledEngines !== false &&
+              Boolean(
+                engineBridgeService.getSnapshot().backend || engineBridgeService.getSnapshot().model
+              )
+            : true
+        const analysisMode = resolveEffectiveAnalysisMode(hasInstalledAiEngine)
 
         const decisionSnapshot = this.queueManager.getSnapshot(undefined, activeWorkspaceId)
         const hasAnalysisPending = decisionSnapshot.items.some(i => i.status === 'pending')
@@ -908,7 +916,8 @@ export class AnalysisQueueService {
                   this.updateItemStatus(item.id, 'pending', 0)
                   const isReady = await this.aiServiceManager.waitForAIServiceReady()
                   if (isReady && !signal.aborted && this.running) {
-                    const currentMode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
+                    const currentMode =
+                      ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
                     if (currentMode === 'local') {
                       await engineBridgeService?.ensureMode?.('language')
                     }

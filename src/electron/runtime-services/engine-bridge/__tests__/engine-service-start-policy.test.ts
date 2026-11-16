@@ -116,7 +116,7 @@ describe('shouldTriggerServiceStartAt：error 只允许显式重试', () => {
 describe('shouldTriggerServiceStartAt：可用态与未知态不得触发', () => {
   const base = { now: 1_000_000, lastImplicitStartAt: 0, explicit: false }
 
-  it.each(['ready', 'processing', 'starting'])('%s 下不触发（含显式）', (status) => {
+  it.each(['ready', 'processing', 'starting'])('%s 下不触发（含显式）', status => {
     expect(shouldTriggerServiceStartAt({ ...base, status })).toBe(false)
     expect(shouldTriggerServiceStartAt({ ...base, status, explicit: true })).toBe(false)
   })
@@ -129,8 +129,44 @@ describe('shouldTriggerServiceStartAt：可用态与未知态不得触发', () =
 
   it('未知字符串不触发（不得靠兜底放行）', () => {
     expect(shouldTriggerServiceStartAt({ ...base, status: 'whatever' })).toBe(false)
-    expect(shouldTriggerServiceStartAt({ ...base, status: 'whatever', explicit: true })).toBe(
-      false
-    )
+    expect(shouldTriggerServiceStartAt({ ...base, status: 'whatever', explicit: true })).toBe(false)
+  })
+})
+
+describe('shouldTriggerServiceStartAt：未安装引擎前置阻断真值表', () => {
+  const base = { now: 1_000_000, lastImplicitStartAt: 0, status: 'stopped', explicit: false }
+
+  it('hasInstalledEngines: false 时阻断隐式自动拉起（即使 status=stopped 且窗口已过）', () => {
+    expect(
+      shouldTriggerServiceStartAt({
+        ...base,
+        hasInstalledEngines: false
+      })
+    ).toBe(false)
+  })
+
+  it('hasInstalledEngines: false 时允许显式点击启动重试', () => {
+    expect(
+      shouldTriggerServiceStartAt({
+        ...base,
+        explicit: true,
+        hasInstalledEngines: false
+      })
+    ).toBe(true)
+  })
+
+  it('hasInstalledEngines: true 或 undefined 时保持原启动行为', () => {
+    expect(
+      shouldTriggerServiceStartAt({
+        ...base,
+        hasInstalledEngines: true
+      })
+    ).toBe(true)
+    expect(
+      shouldTriggerServiceStartAt({
+        ...base,
+        hasInstalledEngines: undefined
+      })
+    ).toBe(true)
   })
 })

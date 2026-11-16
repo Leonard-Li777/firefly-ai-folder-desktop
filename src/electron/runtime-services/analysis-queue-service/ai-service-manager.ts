@@ -1,6 +1,6 @@
 import { AIServiceStatus, ILlamaIndexAIService } from '@firefly/types'
-import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
-import { isAiStageEnabled } from '@app/electron/config/analysis-mode'
+import { ConfigOrchestrator } from '../../config/config-orchestrator'
+import { isAiStageEnabled } from '../../config/analysis-mode'
 import { LogCategory, logger, isTestEnvironment, shouldSkipAIServiceInTest } from '@firefly/shared'
 import { t } from '@app/languages'
 import { engineBridgeService } from '../engine-bridge'
@@ -117,10 +117,7 @@ export class AIServiceManager {
 
           const afterSnap = llmGatewayService.getSnapshot()
           if (afterSnap.runtime.cpu === 'ready') {
-            logger.debug(
-              LogCategory.ANALYSIS_QUEUE,
-              '[分析队列] 轻量CPU引擎主动预热成功，开始分析'
-            )
+            logger.debug(LogCategory.ANALYSIS_QUEUE, '[分析队列] 轻量CPU引擎主动预热成功，开始分析')
             this.notifyFrontend(
               'success',
               t('轻量CPU引擎已就绪，开始分析'),
@@ -179,7 +176,8 @@ export class AIServiceManager {
 
     // 检查底层本地引擎桥接状态：若底层正在启动中（如正在加载模型），绝不能视为已就绪
     const engineSnap = engineBridgeService?.getSnapshot?.()
-    const isEngineStarting = engineSnap && engineSnap.available && engineSnap.raw?.status === 'starting'
+    const isEngineStarting =
+      engineSnap && engineSnap.available && engineSnap.raw?.status === 'starting'
     if (isEngineStarting) {
       logger.debug(
         LogCategory.ANALYSIS_QUEUE,
@@ -193,7 +191,20 @@ export class AIServiceManager {
       }
     }
 
+    // 检查本地计算引擎是否未安装或未就绪待命态：直接放行队列由 CPU 基础分析保底，不阻塞
+    const hasNoInstalledEngine =
+      engineBridgeService?.hasInstalledEngines === false ||
+      (engineSnap?.available && !engineSnap.backend && !engineSnap.model)
+
     let status = aiService.getServiceStatus()
+
+    if (hasNoInstalledEngine || status === AIServiceStatus.STOPPED) {
+      logger.info(
+        LogCategory.ANALYSIS_QUEUE,
+        '[分析队列] 本地计算引擎未就绪或未安装，队列自动放行至 CPU 基础分析保底'
+      )
+      return true
+    }
 
     if (status === AIServiceStatus.IDLE || status === AIServiceStatus.PROCESSING) {
       // 【性能优化】如果上次深度健康检查在缓存有效期内且引擎未处于启动中，直接返回成功
@@ -243,7 +254,10 @@ export class AIServiceManager {
           // 再次验证健康检查
           const isHealthyAfterRestart = await aiService.healthCheck()
           if (isHealthyAfterRestart) {
-            logger.debug(LogCategory.ANALYSIS_QUEUE, '[分析队列] AI服务重启成功，底层服务已恢复运行')
+            logger.debug(
+              LogCategory.ANALYSIS_QUEUE,
+              '[分析队列] AI服务重启成功，底层服务已恢复运行'
+            )
             this.lastHealthCheckOkTime = Date.now()
             this.notifyFrontend('success', t('AI引擎已恢复'), false, 'waiting-for-ai', 3000)
             return true
