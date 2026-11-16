@@ -105,348 +105,350 @@ const DirectoryProfileSectionComponent: React.FC<{
   isUnit,
   workspaceDirectoryPath
 }) => {
-    const { activeLanguage } = useVoerkaI18n(i18nScope)
-    const currentAnalysisMode = useSettingsStore(
-      s => (s.getConfigValue<string>('ANALYSIS_MODE') as string) ?? 'quick_name'
-    )
-    const isAiGenerationMode =
-      currentAnalysisMode === 'quick_name' || currentAnalysisMode === 'full'
-    const openSettings = useSettingsStore(s => s.openSettings)
+  const { activeLanguage } = useVoerkaI18n(i18nScope)
+  const currentAnalysisMode = useSettingsStore(
+    s => (s.getConfigValue<string>('ANALYSIS_MODE') as string) ?? 'quick_name'
+  )
+  const isAiGenerationMode = currentAnalysisMode === 'quick_name' || currentAnalysisMode === 'full'
+  const openSettings = useSettingsStore(s => s.openSettings)
 
-    if (!analysisResult || !isDirAnalysis(analysisResult)) return null
+  if (!analysisResult || !isDirAnalysis(analysisResult)) return null
 
-    const ctx = analysisResult.contextAnalysis
-    const dirPath = analysisResult.path
-    const presetTemplates = getPresetNamingTemplates()
+  const ctx = analysisResult.contextAnalysis
+  const dirPath = analysisResult.path
+  const presetTemplates = getPresetNamingTemplates()
 
-    const isPathEqual =
-      window.electronAPI?.utils?.isPathEqual ||
-      ((a: string, b: string) =>
-        a?.toLowerCase().replace(/[\\/]+$/, '') === b?.toLowerCase().replace(/[\\/]+$/, ''))
+  const isPathEqual =
+    window.electronAPI?.utils?.isPathEqual ||
+    ((a: string, b: string) =>
+      a?.toLowerCase().replace(/[\\/]+$/, '') === b?.toLowerCase().replace(/[\\/]+$/, ''))
 
-    const isWorkspaceRoot = Boolean(
-      workspaceDirectoryPath && dirPath && isPathEqual(dirPath, workspaceDirectoryPath)
-    )
+  const isWorkspaceRoot = Boolean(
+    workspaceDirectoryPath && dirPath && isPathEqual(dirPath, workspaceDirectoryPath)
+  )
 
-    const inheritOptions: Array<{ key: 'inherit' | 'current_only' | 'broadcast'; label: string }> =
-      isWorkspaceRoot
-        ? [
+  const inheritOptions: Array<{ key: 'inherit' | 'current_only' | 'broadcast'; label: string }> =
+    isWorkspaceRoot
+      ? [
           { key: 'broadcast', label: t('应用到子目录') },
           { key: 'current_only', label: t('仅当前生效') }
         ]
-        : [
+      : [
           { key: 'inherit', label: t('继承父级') },
           { key: 'current_only', label: t('仅当前生效') },
           { key: 'broadcast', label: t('应用到子目录') }
         ]
 
-    // 智能文件名格式编辑状态
-    const [editingNamingPattern, setEditingNamingPattern] = useState(false)
-    const [namingPatternValue, setNamingPatternValue] = useState('')
-    const [savingNamingPattern, setSavingNamingPattern] = useState(false)
-    const namingPatternInputRef = useRef<HTMLInputElement>(null)
+  // 智能文件名格式编辑状态
+  const [editingNamingPattern, setEditingNamingPattern] = useState(false)
+  const [namingPatternValue, setNamingPatternValue] = useState('')
+  const [savingNamingPattern, setSavingNamingPattern] = useState(false)
+  const namingPatternInputRef = useRef<HTMLInputElement>(null)
 
-    // AI分析策略编辑状态
-    const [editingAnalysisStrategy, setEditingAnalysisStrategy] = useState(false)
-    const [analysisStrategyValue, setAnalysisStrategyValue] = useState('')
-    const [savingAnalysisStrategy, setSavingAnalysisStrategy] = useState(false)
+  // AI分析策略编辑状态
+  const [editingAnalysisStrategy, setEditingAnalysisStrategy] = useState(false)
+  const [analysisStrategyValue, setAnalysisStrategyValue] = useState('')
+  const [savingAnalysisStrategy, setSavingAnalysisStrategy] = useState(false)
 
-    // 智能文件名附加属性（命名模板）编辑与操作状态
-    const [editingNamingTemplate, setEditingNamingTemplate] = useState(false)
-    const [namingTemplateValue, setNamingTemplateValue] = useState('')
-    const [savingNamingTemplate, setSavingNamingTemplate] = useState(false)
-    const [applyingTemplate, setApplyingTemplate] = useState(false)
-    const [showAdvancedConfig, setShowAdvancedConfig] = useState(false)
-    const templateInputRef = useRef<HTMLInputElement>(null)
+  // 智能文件名附加属性（命名模板）编辑与操作状态
+  const [editingNamingTemplate, setEditingNamingTemplate] = useState(false)
+  const [namingTemplateValue, setNamingTemplateValue] = useState('')
+  const [savingNamingTemplate, setSavingNamingTemplate] = useState(false)
+  const [applyingTemplate, setApplyingTemplate] = useState(false)
+  const [showAdvancedConfig, setShowAdvancedConfig] = useState(false)
+  const templateInputRef = useRef<HTMLInputElement>(null)
 
-    // 快捷插入 DSL 标签至模板输入框光标处
-    const handleInsertTagToTemplate = (tagText: string) => {
-      const input = templateInputRef.current
-      if (input) {
-        const start = input.selectionStart ?? namingTemplateValue.length
-        const end = input.selectionEnd ?? namingTemplateValue.length
-        const newVal =
-          namingTemplateValue.substring(0, start) +
-          tagText +
-          namingTemplateValue.substring(end)
-        setNamingTemplateValue(newVal)
-        setTimeout(() => {
-          input.focus()
-          const nextPos = start + tagText.length
-          input.setSelectionRange(nextPos, nextPos)
-        }, 0)
-      } else {
-        setNamingTemplateValue(prev => prev + tagText)
-      }
+  // 快捷插入 DSL 标签至模板输入框光标处
+  const handleInsertTagToTemplate = (tagText: string) => {
+    const input = templateInputRef.current
+    if (input) {
+      const start = input.selectionStart ?? namingTemplateValue.length
+      const end = input.selectionEnd ?? namingTemplateValue.length
+      const newVal =
+        namingTemplateValue.substring(0, start) + tagText + namingTemplateValue.substring(end)
+      setNamingTemplateValue(newVal)
+      setTimeout(() => {
+        input.focus()
+        const nextPos = start + tagText.length
+        input.setSelectionRange(nextPos, nextPos)
+      }, 0)
+    } else {
+      setNamingTemplateValue(prev => prev + tagText)
     }
+  }
 
-    // 继承模式
-    const inheritMode = ctx?.inheritMode || {
-      analysisStrategy: 'inherit',
-      namingPattern: 'inherit',
-      namingTemplate: 'inherit'
+  // 继承模式
+  const inheritMode = ctx?.inheritMode || {
+    analysisStrategy: 'inherit',
+    namingPattern: 'inherit',
+    namingTemplate: 'inherit'
+  }
+  const inheritedFrom = ctx?.inheritedFrom || {}
+
+  const getEffectiveInheritMode = (
+    field: 'analysisStrategy' | 'namingPattern' | 'namingTemplate'
+  ): 'inherit' | 'current_only' | 'broadcast' => {
+    const rawMode = inheritMode[field]
+    if (isWorkspaceRoot) {
+      return rawMode === 'current_only' ? 'current_only' : 'broadcast'
     }
-    const inheritedFrom = ctx?.inheritedFrom || {}
+    return rawMode || 'inherit'
+  }
 
-    const getEffectiveInheritMode = (
-      field: 'analysisStrategy' | 'namingPattern' | 'namingTemplate'
-    ): 'inherit' | 'current_only' | 'broadcast' => {
-      const rawMode = inheritMode[field]
-      if (isWorkspaceRoot) {
-        return rawMode === 'current_only' ? 'current_only' : 'broadcast'
-      }
-      return rawMode || 'inherit'
+  const handleUpdateInheritMode = async (
+    field: 'analysisStrategy' | 'namingPattern' | 'namingTemplate',
+    mode: 'inherit' | 'current_only' | 'broadcast'
+  ) => {
+    try {
+      await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
+        inheritMode: {
+          [field]: mode
+        }
+      })
+      toast.success(t('继承模式已更新'))
+      if (onRefresh) onRefresh()
+    } catch {
+      toast.error(t('更新继承模式失败'))
     }
+  }
 
-    const handleUpdateInheritMode = async (
-      field: 'analysisStrategy' | 'namingPattern' | 'namingTemplate',
-      mode: 'inherit' | 'current_only' | 'broadcast'
-    ) => {
-      try {
-        await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
-          inheritMode: {
-            [field]: mode
-          }
-        })
-        toast.success(t('继承模式已更新'))
-        if (onRefresh) onRefresh()
-      } catch {
-        toast.error(t('更新继承模式失败'))
-      }
-    }
+  // 当 ctx 变化时同步编辑框的值
+  useEffect(() => {
+    setNamingPatternValue(ctx?.namingPattern || '')
+    setAnalysisStrategyValue(ctx?.analysisStrategy || '')
+    setNamingTemplateValue(ctx?.namingTemplate || '')
+  }, [ctx?.namingPattern, ctx?.analysisStrategy, ctx?.namingTemplate])
 
-    // 当 ctx 变化时同步编辑框的值
-    useEffect(() => {
-      if (ctx?.namingPattern) setNamingPatternValue(ctx.namingPattern)
-      if (ctx?.analysisStrategy) setAnalysisStrategyValue(ctx.analysisStrategy)
-      setNamingTemplateValue(ctx?.namingTemplate || '')
-    }, [ctx?.namingPattern, ctx?.analysisStrategy, ctx?.namingTemplate])
-
-    // 保存智能文件名格式
-    const handleSaveNamingPattern = async () => {
-      if (!dirPath || !namingPatternValue.trim()) return
-      const trimmedVal = namingPatternValue.trim()
-      if (!isValidNamingPattern(trimmedVal)) {
-        toast.error(
-          t('格式不符合要求：规则中必须包含“内容描述”或“描述”（例如：[领域]内容描述、内容描述_角色名）')
+  // 保存智能文件名格式
+  const handleSaveNamingPattern = async () => {
+    if (!dirPath || !namingPatternValue.trim()) return
+    const trimmedVal = namingPatternValue.trim()
+    if (!isValidNamingPattern(trimmedVal)) {
+      toast.error(
+        t(
+          '格式不符合要求：规则中必须包含“内容描述”或“描述”（例如：[领域]内容描述、内容描述_角色名）'
         )
+      )
+      return
+    }
+    setSavingNamingPattern(true)
+    try {
+      await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
+        namingPattern: trimmedVal
+      })
+      toast.success(
+        !isAiGenerationMode
+          ? t('智能文件名格式已保存，将在切换为增强或全面分析后生效')
+          : t('智能文件名格式已更新')
+      )
+      setEditingNamingPattern(false)
+      if (onRefresh) onRefresh()
+    } catch (error: any) {
+      logger.error(LogCategory.FILE_ANALYSIS, '更新智能文件名格式失败:', error)
+      toast.error(t('保存失败，请重试'))
+    } finally {
+      setSavingNamingPattern(false)
+    }
+  }
+
+  // 保存AI分析策略
+  const handleSaveAnalysisStrategy = async () => {
+    if (!dirPath || !analysisStrategyValue.trim()) return
+    setSavingAnalysisStrategy(true)
+    try {
+      await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
+        analysisStrategy: analysisStrategyValue.trim()
+      })
+      toast.success(
+        !isAiGenerationMode
+          ? t('AI分析策略已保存，将在切换为增强或全面分析后生效')
+          : t('AI分析策略已更新')
+      )
+      setEditingAnalysisStrategy(false)
+      if (onRefresh) onRefresh()
+    } catch (error: any) {
+      logger.error(LogCategory.FILE_ANALYSIS, '更新AI分析策略失败:', error)
+      toast.error(t('保存失败，请重试'))
+    } finally {
+      setSavingAnalysisStrategy(false)
+    }
+  }
+
+  // 一键采纳AI建议的分析策略并立即启用
+  const handleAdoptAnalysisStrategySuggestion = async (suggestion: string) => {
+    if (!dirPath || !suggestion.trim()) return
+    const val = suggestion.trim()
+    setAnalysisStrategyValue(val)
+    setSavingAnalysisStrategy(true)
+    try {
+      await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
+        analysisStrategy: val
+      })
+      toast.success(
+        !isAiGenerationMode
+          ? t('已采纳AI建议并保存，将在切换为增强或全面分析后生效')
+          : t('已采纳AI建议并启用')
+      )
+      setEditingAnalysisStrategy(false)
+      if (onRefresh) onRefresh()
+    } catch (error: any) {
+      logger.error(LogCategory.FILE_ANALYSIS, '采纳AI建议失败:', error)
+      toast.error(t('采纳失败，请重试'))
+    } finally {
+      setSavingAnalysisStrategy(false)
+    }
+  }
+
+  // 一键采纳AI建议的智能文件名格式并立即启用
+  const handleAdoptNamingPatternSuggestion = async (suggestion: string) => {
+    if (!dirPath || !suggestion.trim()) return
+    const val = suggestion.trim()
+    setNamingPatternValue(val)
+    setSavingNamingPattern(true)
+    try {
+      await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
+        namingPattern: val
+      })
+      toast.success(
+        !isAiGenerationMode
+          ? t('已采纳AI建议并保存，将在切换为增强或全面分析后生效')
+          : t('已采纳AI建议并启用')
+      )
+      setEditingNamingPattern(false)
+      if (onRefresh) onRefresh()
+    } catch (error: any) {
+      logger.error(LogCategory.FILE_ANALYSIS, '采纳AI建议失败:', error)
+      toast.error(t('采纳失败，请重试'))
+    } finally {
+      setSavingNamingPattern(false)
+    }
+  }
+
+  // 复制智能文件名格式要求给外部 AI（如豆包、ChatGPT）
+  const handleCopyNamingFormatPrompt = async () => {
+    try {
+      const currentLang =
+        activeLanguage || getLanguage?.() || (i18nScope as any)?.activeLanguage || 'zh-CN'
+      let content: string | null = null
+      try {
+        const { loadPromptParagraph } = await import('@firefly/shared')
+        content = await loadPromptParagraph('smart-naming-format-prompt', currentLang)
+      } catch (loadErr) {
+        logger.warn(
+          LogCategory.FILE_ANALYSIS,
+          '加载多语言提示词段落失败，使用内置兜底模版:',
+          loadErr
+        )
+      }
+      if (!content?.trim()) {
+        toast.error(t('无法复制：未找到智能文件名格式要求内容'))
         return
       }
-      setSavingNamingPattern(true)
-      try {
-        await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
-          namingPattern: trimmedVal
-        })
+      await navigator.clipboard.writeText(content.trim())
+      toast.success(t('格式要求已复制到剪贴板，已为您开启编辑模式'))
+      // 自动进入智能文件名编辑态，并让输入框聚焦
+      setEditingNamingPattern(true)
+      setTimeout(() => {
+        namingPatternInputRef.current?.focus()
+      }, 50)
+    } catch (error) {
+      logger.error(LogCategory.FILE_ANALYSIS, '复制智能文件名格式要求失败:', error)
+      toast.error(t('复制失败，请重试'))
+    }
+  }
+
+  // 保存智能文件名附加属性（命名模板）
+  const handleSaveNamingTemplate = async (newVal?: string) => {
+    if (!dirPath) return
+    const valToSave = (newVal !== undefined ? newVal : namingTemplateValue).trim()
+    setSavingNamingTemplate(true)
+    try {
+      await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
+        namingTemplate: valToSave
+      })
+      setNamingTemplateValue(valToSave)
+      toast.success(t('智能文件名附加属性已更新'))
+      setEditingNamingTemplate(false)
+      if (onRefresh) onRefresh()
+
+      // 触发全应用事件更新目录配置
+      window.dispatchEvent(new CustomEvent('directory-context-updated'))
+    } catch (error: any) {
+      logger.error(LogCategory.FILE_ANALYSIS, '更新智能文件名附加属性失败:', error)
+      toast.error(t('保存失败，请重试'))
+    } finally {
+      setSavingNamingTemplate(false)
+    }
+  }
+
+  // 批量应用模板至该目录下所有已分析文件
+  const handleApplyTemplateToFiles = async () => {
+    if (!dirPath) return
+    setApplyingTemplate(true)
+    try {
+      const res = await window.electronAPI!.applyDirectoryNamingTemplateToFiles(dirPath)
+      if (res?.success) {
         toast.success(
-          !isAiGenerationMode
-            ? t('智能文件名格式已保存，将在切换为增强或全面分析后生效')
-            : t('智能文件名格式已更新')
+          t('已成功将命名模板应用至 {count} 个已分析文件', {
+            count: res.updatedCount
+          })
         )
-        setEditingNamingPattern(false)
-        if (onRefresh) onRefresh()
-      } catch (error: any) {
-        logger.error(LogCategory.FILE_ANALYSIS, '更新智能文件名格式失败:', error)
-        toast.error(t('保存失败，请重试'))
-      } finally {
-        setSavingNamingPattern(false)
-      }
-    }
-
-    // 保存AI分析策略
-    const handleSaveAnalysisStrategy = async () => {
-      if (!dirPath || !analysisStrategyValue.trim()) return
-      setSavingAnalysisStrategy(true)
-      try {
-        await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
-          analysisStrategy: analysisStrategyValue.trim()
-        })
-        toast.success(
-          !isAiGenerationMode
-            ? t('AI分析策略已保存，将在切换为增强或全面分析后生效')
-            : t('AI分析策略已更新')
-        )
-        setEditingAnalysisStrategy(false)
-        if (onRefresh) onRefresh()
-      } catch (error: any) {
-        logger.error(LogCategory.FILE_ANALYSIS, '更新AI分析策略失败:', error)
-        toast.error(t('保存失败，请重试'))
-      } finally {
-        setSavingAnalysisStrategy(false)
-      }
-    }
-
-    // 一键采纳AI建议的分析策略并立即启用
-    const handleAdoptAnalysisStrategySuggestion = async (suggestion: string) => {
-      if (!dirPath || !suggestion.trim()) return
-      const val = suggestion.trim()
-      setAnalysisStrategyValue(val)
-      setSavingAnalysisStrategy(true)
-      try {
-        await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
-          analysisStrategy: val
-        })
-        toast.success(
-          !isAiGenerationMode
-            ? t('已采纳AI建议并保存，将在切换为增强或全面分析后生效')
-            : t('已采纳AI建议并启用')
-        )
-        setEditingAnalysisStrategy(false)
-        if (onRefresh) onRefresh()
-      } catch (error: any) {
-        logger.error(LogCategory.FILE_ANALYSIS, '采纳AI建议失败:', error)
-        toast.error(t('采纳失败，请重试'))
-      } finally {
-        setSavingAnalysisStrategy(false)
-      }
-    }
-
-    // 一键采纳AI建议的智能文件名格式并立即启用
-    const handleAdoptNamingPatternSuggestion = async (suggestion: string) => {
-      if (!dirPath || !suggestion.trim()) return
-      const val = suggestion.trim()
-      setNamingPatternValue(val)
-      setSavingNamingPattern(true)
-      try {
-        await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
-          namingPattern: val
-        })
-        toast.success(
-          !isAiGenerationMode
-            ? t('已采纳AI建议并保存，将在切换为增强或全面分析后生效')
-            : t('已采纳AI建议并启用')
-        )
-        setEditingNamingPattern(false)
-        if (onRefresh) onRefresh()
-      } catch (error: any) {
-        logger.error(LogCategory.FILE_ANALYSIS, '采纳AI建议失败:', error)
-        toast.error(t('采纳失败，请重试'))
-      } finally {
-        setSavingNamingPattern(false)
-      }
-    }
-
-    // 复制智能文件名格式要求给外部 AI（如豆包、ChatGPT）
-    const handleCopyNamingFormatPrompt = async () => {
-      try {
-        const currentLang =
-          activeLanguage ||
-          getLanguage?.() ||
-          (i18nScope as any)?.activeLanguage ||
-          'zh-CN'
-        let content: string | null = null
-        try {
-          const { loadPromptParagraph } = await import('@firefly/shared')
-          content = await loadPromptParagraph('smart-naming-format-prompt', currentLang)
-        } catch (loadErr) {
-          logger.warn(LogCategory.FILE_ANALYSIS, '加载多语言提示词段落失败，使用内置兜底模版:', loadErr)
-        }
-        if (!content?.trim()) {
-          toast.error(t('无法复制：未找到智能文件名格式要求内容'))
-          return
-        }
-        await navigator.clipboard.writeText(content.trim())
-        toast.success(t('格式要求已复制到剪贴板，已为您开启编辑模式'))
-        // 自动进入智能文件名编辑态，并让输入框聚焦
-        setEditingNamingPattern(true)
-        setTimeout(() => {
-          namingPatternInputRef.current?.focus()
-        }, 50)
-      } catch (error) {
-        logger.error(LogCategory.FILE_ANALYSIS, '复制智能文件名格式要求失败:', error)
-        toast.error(t('复制失败，请重试'))
-      }
-    }
-
-    // 保存智能文件名附加属性（命名模板）
-    const handleSaveNamingTemplate = async (newVal?: string) => {
-      if (!dirPath) return
-      const valToSave = (newVal !== undefined ? newVal : namingTemplateValue).trim()
-      setSavingNamingTemplate(true)
-      try {
-        await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
-          namingTemplate: valToSave
-        })
-        setNamingTemplateValue(valToSave)
-        toast.success(t('智能文件名附加属性已更新'))
-        setEditingNamingTemplate(false)
         if (onRefresh) onRefresh()
 
-        // 触发全应用事件更新目录配置
+        // 触发全应用各页面事件监听，立即更新所有页面的智能文件名显示与列表
+        window.dispatchEvent(new CustomEvent('smartname-updated'))
+        window.dispatchEvent(new CustomEvent('files-updated'))
+        window.dispatchEvent(new CustomEvent('tags-updated'))
+        window.dispatchEvent(new CustomEvent('tags:updated'))
         window.dispatchEvent(new CustomEvent('directory-context-updated'))
-      } catch (error: any) {
-        logger.error(LogCategory.FILE_ANALYSIS, '更新智能文件名附加属性失败:', error)
-        toast.error(t('保存失败，请重试'))
-      } finally {
-        setSavingNamingTemplate(false)
       }
+    } catch (err: any) {
+      logger.error(LogCategory.FILE_ANALYSIS, '批量应用命名模板失败:', err)
+      toast.error(t('批量应用失败，请重试'))
+    } finally {
+      setApplyingTemplate(false)
     }
+  }
 
-    // 批量应用模板至该目录下所有已分析文件
-    const handleApplyTemplateToFiles = async () => {
-      if (!dirPath) return
-      setApplyingTemplate(true)
-      try {
-        const res = await window.electronAPI!.applyDirectoryNamingTemplateToFiles(dirPath)
-        if (res?.success) {
-          toast.success(
-            t('已成功将命名模板应用至 {count} 个已分析文件', {
-              count: res.updatedCount
-            })
-          )
-          if (onRefresh) onRefresh()
+  // 编辑按钮（增强显示 — 带背景和文字标签的醒目样式）
+  const editButtonClass =
+    'inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-border/60 bg-muted/40 hover:bg-primary/10 hover:border-primary/30 text-muted-foreground hover:text-primary text-xs font-medium transition-all duration-200 flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50'
 
-          // 触发全应用各页面事件监听，立即更新所有页面的智能文件名显示与列表
-          window.dispatchEvent(new CustomEvent('smartname-updated'))
-          window.dispatchEvent(new CustomEvent('files-updated'))
-          window.dispatchEvent(new CustomEvent('tags-updated'))
-          window.dispatchEvent(new CustomEvent('tags:updated'))
-          window.dispatchEvent(new CustomEvent('directory-context-updated'))
-        }
-      } catch (err: any) {
-        logger.error(LogCategory.FILE_ANALYSIS, '批量应用命名模板失败:', err)
-        toast.error(t('批量应用失败，请重试'))
-      } finally {
-        setApplyingTemplate(false)
-      }
-    }
-
-    // 编辑按钮（增强显示 — 带背景和文字标签的醒目样式）
-    const editButtonClass =
-      'inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-border/60 bg-muted/40 hover:bg-primary/10 hover:border-primary/30 text-muted-foreground hover:text-primary text-xs font-medium transition-all duration-200 flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50'
-
-    return (
-      <>
-        {/* 目录路径信息 */}
-        <div className="border-t border-border pt-4 mb-6">
-          <div className="text-sm space-y-2 text-muted-foreground">
-            <div>
-              <strong className="font-medium text-foreground">{t('路径:')}</strong>{' '}
-              <span className="break-all">{analysisResult.path}</span>
-            </div>
-            <p>
-              <strong className="font-medium text-foreground">{t('文件总数:')}</strong>{' '}
-              {analysisResult.fileCount} {t('个')}
-            </p>
-            <p>
-              <strong className="font-medium text-foreground">{t('已分析:')}</strong>{' '}
-              {analysisResult.analyzedFileCount} {t('个')}
-            </p>
-            {analysisResult.lastScanAt && (
-              <p>
-                <strong className="font-medium text-foreground">{t('最后扫描:')}</strong>{' '}
-                {formatDate(analysisResult.lastScanAt)}
-              </p>
-            )}
+  return (
+    <>
+      {/* 目录路径信息 */}
+      <div className="border-t border-border pt-4 mb-6">
+        <div className="text-sm space-y-2 text-muted-foreground">
+          <div>
+            <strong className="font-medium text-foreground">{t('路径:')}</strong>{' '}
+            <span className="break-all">{analysisResult.path}</span>
           </div>
+          <p>
+            <strong className="font-medium text-foreground">{t('文件总数:')}</strong>{' '}
+            {analysisResult.fileCount} {t('个')}
+          </p>
+          <p>
+            <strong className="font-medium text-foreground">{t('已分析:')}</strong>{' '}
+            {analysisResult.analyzedFileCount} {t('个')}
+          </p>
+          {analysisResult.lastScanAt && (
+            <p>
+              <strong className="font-medium text-foreground">{t('最后扫描:')}</strong>{' '}
+              {formatDate(analysisResult.lastScanAt)}
+            </p>
+          )}
         </div>
+      </div>
 
-        {/* 智能文件名格式 + 高级配置（附加属性与AI分析策略） — 组合可编辑区块 */}
-        {(ctx?.analysisStrategy || ctx?.namingPattern || ctx?.namingTemplate !== undefined || ctx) && !isUnit && (
+      {/* 智能文件名格式 + 高级配置（附加属性与AI分析策略） — 组合可编辑区块 */}
+      {(ctx?.analysisStrategy || ctx?.namingPattern || ctx?.namingTemplate !== undefined || ctx) &&
+        !isUnit && (
           <div className="border-t border-border pt-4 mb-6 group/tooltip">
             <div className="">
               <div className="bg-primary/10 rounded-lg px-4 py-3 -mx-4 space-y-5">
                 {/* 1. 智能文件名格式（常显在最上方） */}
-                {(ctx?.namingPattern !== undefined || ctx?.namingPattern_suggestion !== undefined) && (
+                {(ctx?.namingPattern !== undefined ||
+                  ctx?.namingPattern_suggestion !== undefined) && (
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-1.5 flex-wrap">
@@ -484,9 +486,14 @@ const DirectoryProfileSectionComponent: React.FC<{
                     {!isAiGenerationMode && (
                       <div className="mb-2.5 p-2 rounded-md border border-amber-500/35 bg-amber-500/10 dark:bg-amber-500/15 flex items-center justify-between gap-2 text-xs text-amber-900 dark:text-amber-200">
                         <div className="flex items-center gap-1.5 min-w-0">
-                          <MaterialIcon icon="warning" className="text-sm text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                          <MaterialIcon
+                            icon="warning"
+                            className="text-sm text-amber-600 dark:text-amber-400 flex-shrink-0"
+                          />
                           <span className="truncate">
-                            {t('当前为标准分析模式。智能文件名格式在【增强分析】或【全面分析】下生效，支持提前配置。')}
+                            {t(
+                              '当前为标准分析模式。智能文件名格式在【增强分析】或【全面分析】下生效，支持提前配置。'
+                            )}
                           </span>
                         </div>
                         <button
@@ -503,7 +510,10 @@ const DirectoryProfileSectionComponent: React.FC<{
                     {/* 继承模式控制 */}
                     <div className="flex items-center gap-3 text-xs mb-2">
                       {inheritOptions.map(item => (
-                        <label key={item.key} className="flex items-center gap-1 cursor-pointer select-none">
+                        <label
+                          key={item.key}
+                          className="flex items-center gap-1 cursor-pointer select-none"
+                        >
                           <input
                             type="radio"
                             name="inherit_naming_pattern"
@@ -562,7 +572,8 @@ const DirectoryProfileSectionComponent: React.FC<{
                               </div>
                               <ul className="list-disc list-inside text-[11px] text-muted-foreground/90 space-y-0.5 font-mono">
                                 <li>
-                                  {t('内容描述')}_{t('角色名')} / [{t('领域')}]{t('内容描述')}_{t('角色名')}
+                                  {t('内容描述')}_{t('角色名')} / [{t('领域')}]{t('内容描述')}_
+                                  {t('角色名')}
                                 </li>
                                 <li>
                                   [{t('系列名')}]{t('内容描述')} / [{t('领域')}]{t('内容描述')}
@@ -584,14 +595,16 @@ const DirectoryProfileSectionComponent: React.FC<{
 
                               <div className="text-[10px] text-muted-foreground/80">
                                 {t('分隔符提示：属性之间可以用下划线“_”或中划线“-”连接（例如：')}[
-                                  {t('领域')}
-                                ]{t('内容描述')}-{t('角色名')}
+                                {t('领域')}]{t('内容描述')}-{t('角色名')}
                                 {t('）')}
                               </div>
 
                               <div className="text-[10px] text-amber-500/90 pt-1 border-t border-border/40">
-                                * {t('规则中必须包含“内容描述”或“描述”，不符合格式要求的规则将自动还原为默认值')}[{t('领域')}]
-                                {t('内容描述')}
+                                *{' '}
+                                {t(
+                                  '规则中必须包含“内容描述”或“描述”，不符合格式要求的规则将自动还原为默认值'
+                                )}
+                                [{t('领域')}]{t('内容描述')}
                               </div>
                             </div>
                           </div>
@@ -638,63 +651,69 @@ const DirectoryProfileSectionComponent: React.FC<{
                           </div>
                         ) : (
                           <div className="text-xs text-muted-foreground/60 italic bg-background/50 dark:bg-background/30 p-3 rounded-md border border-dashed border-border/60 leading-relaxed">
-                            {t('未配置正式智能文件名格式（可点击右上角编辑手动输入，或采纳下方 AI 建议）')}
+                            {t(
+                              '未配置正式智能文件名格式（可点击右上角编辑手动输入，或采纳下方 AI 建议）'
+                            )}
                           </div>
                         )}
                       </div>
                     )}
 
-                      {/* 外部 AI 帮生成格式引导卡片（非编辑态和编辑态均常显，支持一键复制格式提示词并进入编辑态） */}
-                      <div className="mt-2.5 p-2.5 rounded-md border border-primary/25 bg-primary/[0.04] dark:bg-primary/[0.08] flex flex-col gap-1.5 transition-all">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
-                            <MaterialIcon icon="psychology" className="text-sm text-primary" />
-                            <span>{t('让外部 AI 帮生成格式')}</span>
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-6 px-2 text-xs border-primary/30 text-primary hover:bg-primary hover:text-secondary-foreground gap-1"
-                            onClick={handleCopyNamingFormatPrompt}
-                            title={t('复制格式提示词发给豆包或 ChatGPT，并自动进入编辑模式')}
-                          >
-                            <MaterialIcon icon="content_copy" className="text-xs" />
-                            <span>{t('复制格式提示词')}</span>
-                          </Button>
+                    {/* 外部 AI 帮生成格式引导卡片（非编辑态和编辑态均常显，支持一键复制格式提示词并进入编辑态） */}
+                    <div className="mt-2.5 p-2.5 rounded-md border border-primary/25 bg-primary/[0.04] dark:bg-primary/[0.08] flex flex-col gap-1.5 transition-all">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
+                          <MaterialIcon icon="psychology" className="text-sm text-primary" />
+                          <span>{t('让外部 AI 帮生成格式')}</span>
                         </div>
-                        {/* 常用外部 AI 官网快捷入口（与批量整理「外部 AI 生成目录结构」页一致） */}
-                        <div className="grid grid-cols-2 gap-1.5">
-                          {EXTERNAL_AI_PLATFORMS.map(p => (
-                            <div
-                              key={p.name}
-                              onClick={() => openExternalLink(p.url)}
-                              title={p.url}
-                              className="group cursor-pointer rounded-md px-2 py-1.5 border border-border/50 bg-muted/15 hover:bg-muted/40 hover:border-primary/40 transition-all flex items-center justify-between select-none"
-                            >
-                              <div className="flex items-center gap-1.5 min-w-0">
-                                <div className="w-5 h-5 rounded bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20 group-hover:scale-105 transition-transform">
-                                  <MaterialIcon icon={p.icon} className="text-[11px]" />
-                                </div>
-                                <span className="text-[11px] font-medium text-foreground group-hover:text-primary transition-colors truncate">
-                                  {p.name}
-                                </span>
-                              </div>
-                              <MaterialIcon
-                                icon="launch"
-                                className="text-[10px] text-muted-foreground/60 group-hover:text-primary transition-colors shrink-0 ml-1"
-                              />
-                            </div>
-                          ))}
-                        </div>
-                        <div className="pt-1 text-[11px] font-mono text-muted-foreground/80 border-t border-primary/10 flex flex-wrap items-center gap-1">
-                          <span>{t('格式示例：')}</span>
-                          <span className="font-semibold text-foreground/90">[xxx]xxx</span>
-                          <span className="text-muted-foreground/70">([{t('领域')}]{t('内容描述')})</span>
-                          <span className="text-muted-foreground/40">|</span>
-                          <span className="font-semibold text-foreground/90">xxx_xxx</span>
-                          <span className="text-muted-foreground/70">({t('内容描述')}_{t('角色名')}、{t('领域')}_{t('内容描述')})</span>
-                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-6 px-2 text-xs border-primary/30 text-primary hover:bg-primary hover:text-secondary-foreground gap-1"
+                          onClick={handleCopyNamingFormatPrompt}
+                          title={t('复制格式提示词发给豆包或 ChatGPT，并自动进入编辑模式')}
+                        >
+                          <MaterialIcon icon="content_copy" className="text-xs" />
+                          <span>{t('复制格式提示词')}</span>
+                        </Button>
                       </div>
+                      {/* 常用外部 AI 官网快捷入口（与批量整理「外部 AI 生成目录结构」页一致） */}
+                      <div className="grid grid-cols-2 gap-1.5">
+                        {EXTERNAL_AI_PLATFORMS.map(p => (
+                          <div
+                            key={p.name}
+                            onClick={() => openExternalLink(p.url)}
+                            title={p.url}
+                            className="group cursor-pointer rounded-md px-2 py-1.5 border border-border/50 bg-muted/15 hover:bg-muted/40 hover:border-primary/40 transition-all flex items-center justify-between select-none"
+                          >
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <div className="w-5 h-5 rounded bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20 group-hover:scale-105 transition-transform">
+                                <MaterialIcon icon={p.icon} className="text-[11px]" />
+                              </div>
+                              <span className="text-[11px] font-medium text-foreground group-hover:text-primary transition-colors truncate">
+                                {p.name}
+                              </span>
+                            </div>
+                            <MaterialIcon
+                              icon="launch"
+                              className="text-[10px] text-muted-foreground/60 group-hover:text-primary transition-colors shrink-0 ml-1"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="pt-1 text-[11px] font-mono text-muted-foreground/80 border-t border-primary/10 flex flex-wrap items-center gap-1">
+                        <span>{t('格式示例：')}</span>
+                        <span className="font-semibold text-foreground/90">[xxx]xxx</span>
+                        <span className="text-muted-foreground/70">
+                          ([{t('领域')}]{t('内容描述')})
+                        </span>
+                        <span className="text-muted-foreground/40">|</span>
+                        <span className="font-semibold text-foreground/90">xxx_xxx</span>
+                        <span className="text-muted-foreground/70">
+                          ({t('内容描述')}_{t('角色名')}、{t('领域')}_{t('内容描述')})
+                        </span>
+                      </div>
+                    </div>
 
                     {/* 智能文件名格式建议展示与一键采纳（如果输入框/当前值与AI建议值相同，则不显示AI建议） */}
                     {Boolean(
@@ -775,7 +794,9 @@ const DirectoryProfileSectionComponent: React.FC<{
                                 className="text-xs text-muted-foreground cursor-help"
                               />
                               <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 hidden group-hover/help:block z-50 w-64 p-2 bg-popover text-popover-foreground text-xs rounded-md shadow-lg border border-border leading-relaxed whitespace-normal pointer-events-none">
-                                {t('在文件分析完毕后自动按该模板生成最终智能文件名，是AI生成的智能文件名的有力补充更快更可控。更多信息，请参考整理页面的批量更名功能')}
+                                {t(
+                                  '在文件分析完毕后自动按该模板生成最终智能文件名，是AI生成的智能文件名的有力补充更快更可控。更多信息，请参考整理页面的批量更名功能'
+                                )}
                               </div>
                             </div>
                           </div>
@@ -802,7 +823,10 @@ const DirectoryProfileSectionComponent: React.FC<{
                         {/* 继承模式控制 */}
                         <div className="flex items-center gap-3 text-xs mb-2">
                           {inheritOptions.map(item => (
-                            <label key={item.key} className="flex items-center gap-1 cursor-pointer select-none">
+                            <label
+                              key={item.key}
+                              className="flex items-center gap-1 cursor-pointer select-none"
+                            >
                               <input
                                 type="radio"
                                 name="inherit_naming_template"
@@ -838,7 +862,9 @@ const DirectoryProfileSectionComponent: React.FC<{
                           <div className="space-y-3 p-3 bg-background/60 dark:bg-background/40 rounded-lg border border-primary/30">
                             {/* 快速载入预设 */}
                             <div className="flex items-center gap-2">
-                              <span className="text-xs text-muted-foreground whitespace-nowrap">{t('载入预设:')}</span>
+                              <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                {t('载入预设:')}
+                              </span>
                               <select
                                 onChange={e => {
                                   const val = e.target.value
@@ -852,7 +878,9 @@ const DirectoryProfileSectionComponent: React.FC<{
                                 defaultValue=""
                                 className="w-full h-7 text-xs text-foreground bg-background px-2 py-0.5 rounded border border-border/60 hover:border-primary/50 focus:border-primary outline-none transition-all duration-150 cursor-pointer truncate"
                               >
-                                <option value="" disabled>{t('选择预设模板快速填入...')}</option>
+                                <option value="" disabled>
+                                  {t('选择预设模板快速填入...')}
+                                </option>
                                 <option value="__CLEAR__">{t('清空模板 (不使用附加属性)')}</option>
                                 {presetTemplates.map((preset, pIdx) => (
                                   <option key={pIdx} value={preset.template}>
@@ -865,7 +893,9 @@ const DirectoryProfileSectionComponent: React.FC<{
                             {/* 手动编辑输入框 */}
                             <div className="space-y-1.5">
                               <div className="flex items-center justify-between text-xs">
-                                <span className="font-medium text-foreground">{t('模板表达式 (支持自由手动编辑)')}:</span>
+                                <span className="font-medium text-foreground">
+                                  {t('模板表达式 (支持自由手动编辑)')}:
+                                </span>
                                 {namingTemplateValue && (
                                   <button
                                     type="button"
@@ -884,7 +914,9 @@ const DirectoryProfileSectionComponent: React.FC<{
                                 type="text"
                                 value={namingTemplateValue}
                                 onChange={e => setNamingTemplateValue(e.target.value)}
-                                placeholder={t('例如: [{TAG:文件类型}]{SMART_NAME}_{MOD:YYYY-MM-DD}')}
+                                placeholder={t(
+                                  '例如: [{TAG:文件类型}]{SMART_NAME}_{MOD:YYYY-MM-DD}'
+                                )}
                                 className="w-full font-mono text-xs text-foreground bg-background px-3 py-2 rounded-md border border-primary/40 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all duration-200"
                                 autoFocus
                               />
@@ -924,7 +956,10 @@ const DirectoryProfileSectionComponent: React.FC<{
                             {/* 操作按钮 */}
                             <div className="flex items-center justify-between pt-1 border-t border-border/40">
                               <span className="text-xs text-muted-foreground/70">
-                                <MaterialIcon icon="info" className="text-xs inline mr-1 align-text-top text-amber-500" />
+                                <MaterialIcon
+                                  icon="info"
+                                  className="text-xs inline mr-1 align-text-top text-amber-500"
+                                />
                                 {t('支持任意自定义前后缀、文字与 DSL 标签组合')}
                               </span>
                               <div className="flex gap-2">
@@ -978,14 +1013,18 @@ const DirectoryProfileSectionComponent: React.FC<{
                                 }}
                                 className="w-full h-9 text-xs text-foreground bg-background px-3 py-1.5 rounded-md border border-border/60 hover:border-primary/50 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all duration-150 cursor-pointer truncate"
                               >
-                                <option value="__NONE__">{t('不使用附加模板 (仅保留原始智能名)')}</option>
+                                <option value="__NONE__">
+                                  {t('不使用附加模板 (仅保留原始智能名)')}
+                                </option>
                                 {presetTemplates.map((preset, pIdx) => (
                                   <option key={pIdx} value={preset.template}>
                                     {preset.name} - {preset.template}
                                   </option>
                                 ))}
                                 {namingTemplateValue &&
-                                  !presetTemplates.some(p => p.template === namingTemplateValue) && (
+                                  !presetTemplates.some(
+                                    p => p.template === namingTemplateValue
+                                  ) && (
                                     <option value="__CUSTOM__">
                                       {t('自定义')}: {namingTemplateValue}
                                     </option>
@@ -996,7 +1035,10 @@ const DirectoryProfileSectionComponent: React.FC<{
                             {namingTemplateValue ? (
                               <div className="flex items-center justify-between text-[11px] font-mono px-3 py-1.5 rounded bg-muted/40 text-muted-foreground border border-border/40">
                                 <span className="truncate" title={namingTemplateValue}>
-                                  {t('当前模板:')} <span className="text-foreground font-medium">{namingTemplateValue}</span>
+                                  {t('当前模板:')}{' '}
+                                  <span className="text-foreground font-medium">
+                                    {namingTemplateValue}
+                                  </span>
                                 </span>
                               </div>
                             ) : (
@@ -1017,14 +1059,19 @@ const DirectoryProfileSectionComponent: React.FC<{
                                 icon={applyingTemplate ? 'sync' : 'auto_fix_high'}
                                 className={cn('text-sm', applyingTemplate && 'animate-spin')}
                               />
-                              <span>{applyingTemplate ? t('应用中...') : t('将附加属性应用至当前目录已分析文件')}</span>
+                              <span>
+                                {applyingTemplate
+                                  ? t('应用中...')
+                                  : t('将附加属性应用至当前目录已分析文件')}
+                              </span>
                             </button>
                           </div>
                         )}
                       </div>
 
                       {/* 2.2 AI分析策略（放在高级配置最末尾） */}
-                      {(ctx?.analysisStrategy !== undefined || ctx?.analysisStrategy_suggestion !== undefined) && (
+                      {(ctx?.analysisStrategy !== undefined ||
+                        ctx?.analysisStrategy_suggestion !== undefined) && (
                         <div className="border-t border-border/30 pt-4">
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-1.5 flex-wrap">
@@ -1058,9 +1105,14 @@ const DirectoryProfileSectionComponent: React.FC<{
                           {!isAiGenerationMode && (
                             <div className="mb-2.5 p-2 rounded-md border border-amber-500/35 bg-amber-500/10 dark:bg-amber-500/15 flex items-center justify-between gap-2 text-xs text-amber-900 dark:text-amber-200">
                               <div className="flex items-center gap-1.5 min-w-0">
-                                <MaterialIcon icon="warning" className="text-sm text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                                <MaterialIcon
+                                  icon="warning"
+                                  className="text-sm text-amber-600 dark:text-amber-400 flex-shrink-0"
+                                />
                                 <span className="truncate">
-                                  {t('当前为标准分析模式。AI分析策略在【增强分析】或【全面分析】下生效，支持提前配置。')}
+                                  {t(
+                                    '当前为标准分析模式。AI分析策略在【增强分析】或【全面分析】下生效，支持提前配置。'
+                                  )}
                                 </span>
                               </div>
                               <button
@@ -1077,12 +1129,17 @@ const DirectoryProfileSectionComponent: React.FC<{
                           {/* 继承模式控制 */}
                           <div className="flex items-center gap-3 text-xs mb-2">
                             {inheritOptions.map(item => (
-                              <label key={item.key} className="flex items-center gap-1 cursor-pointer select-none">
+                              <label
+                                key={item.key}
+                                className="flex items-center gap-1 cursor-pointer select-none"
+                              >
                                 <input
                                   type="radio"
                                   name="inherit_analysis_strategy"
                                   checked={getEffectiveInheritMode('analysisStrategy') === item.key}
-                                  onChange={() => handleUpdateInheritMode('analysisStrategy', item.key)}
+                                  onChange={() =>
+                                    handleUpdateInheritMode('analysisStrategy', item.key)
+                                  }
                                   className="accent-primary w-3 h-3"
                                 />
                                 <span
@@ -1113,7 +1170,9 @@ const DirectoryProfileSectionComponent: React.FC<{
                               <textarea
                                 value={analysisStrategyValue}
                                 onChange={e => setAnalysisStrategyValue(e.target.value)}
-                                placeholder={t('请输入AI分析策略，例如关注文件标签、元数据、内容大纲等要求...')}
+                                placeholder={t(
+                                  '请输入AI分析策略，例如关注文件标签、元数据、内容大纲等要求...'
+                                )}
                                 className="w-full text-sm text-foreground bg-background p-3 rounded-md border border-primary/40 focus:border-primary focus:ring-1 focus:ring-primary/30 whitespace-pre-wrap leading-relaxed resize-y min-h-[80px] outline-none transition-all duration-200"
                                 rows={4}
                                 autoFocus
@@ -1139,7 +1198,9 @@ const DirectoryProfileSectionComponent: React.FC<{
                                     variant="default"
                                     size="sm"
                                     onClick={handleSaveAnalysisStrategy}
-                                    disabled={savingAnalysisStrategy || !analysisStrategyValue.trim()}
+                                    disabled={
+                                      savingAnalysisStrategy || !analysisStrategyValue.trim()
+                                    }
                                   >
                                     {savingAnalysisStrategy ? (
                                       <>
@@ -1161,7 +1222,9 @@ const DirectoryProfileSectionComponent: React.FC<{
                                 </p>
                               ) : (
                                 <p className="text-xs text-muted-foreground/60 italic bg-background/50 dark:bg-background/30 p-3 rounded-md border border-dashed border-border/60 leading-relaxed">
-                                  {t('未配置正式分析策略（可点击右上角编辑手动输入，或采纳下方 AI 建议）')}
+                                  {t(
+                                    '未配置正式分析策略（可点击右上角编辑手动输入，或采纳下方 AI 建议）'
+                                  )}
                                 </p>
                               )}
                             </div>
@@ -1173,7 +1236,8 @@ const DirectoryProfileSectionComponent: React.FC<{
                             ctx.analysisStrategy_suggestion.trim() &&
                             (editingAnalysisStrategy
                               ? analysisStrategyValue.trim()
-                              : (ctx?.analysisStrategy || '').trim()) !== ctx.analysisStrategy_suggestion.trim()
+                              : (ctx?.analysisStrategy || '').trim()) !==
+                              ctx.analysisStrategy_suggestion.trim()
                           ) && (
                             <div className="mt-2.5 p-2.5 rounded-md border border-primary/25 bg-primary/[0.04] dark:bg-primary/[0.08] flex flex-col gap-1.5 transition-all">
                               <div className="flex items-center justify-between relative">
@@ -1182,7 +1246,10 @@ const DirectoryProfileSectionComponent: React.FC<{
                                   {t('可通过目录画像再次自动生成')}
                                 </div>
                                 <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
-                                  <MaterialIcon icon="auto_awesome" className="text-sm text-primary" />
+                                  <MaterialIcon
+                                    icon="auto_awesome"
+                                    className="text-sm text-primary"
+                                  />
                                   <span>{t('AI建议')}</span>
                                 </div>
                                 <Button
@@ -1190,7 +1257,9 @@ const DirectoryProfileSectionComponent: React.FC<{
                                   size="sm"
                                   className="h-6 px-2 text-xs border-primary/30 text-primary hover:bg-primary hover:hover:text-secondary-foreground gap-1"
                                   onClick={() =>
-                                    handleAdoptAnalysisStrategySuggestion(ctx.analysisStrategy_suggestion!)
+                                    handleAdoptAnalysisStrategySuggestion(
+                                      ctx.analysisStrategy_suggestion!
+                                    )
                                   }
                                   disabled={savingAnalysisStrategy}
                                   title={t('采纳此AI建议并正式启用')}
@@ -1214,100 +1283,100 @@ const DirectoryProfileSectionComponent: React.FC<{
           </div>
         )}
 
-        {/* 推荐标签 */}
-        {ctx?.recommendedTags && Object.keys(ctx.recommendedTags).length > 0 && (
-          <div className="border-t border-border pt-4 mb-6">
-            <h3 className="text-sm font-semibold mb-3 text-foreground">{t('推荐标签')}</h3>
-            <div className="space-y-3">
-              {Object.entries(ctx.recommendedTags).map(
-                ([dimension, tags]: [string, any], dimIdx: number) => (
-                  <div key={dimIdx}>
-                    <p className="text-xs font-medium text-foreground mb-1.5">{dimension}:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {Array.isArray(tags) &&
-                        tags.map((tag: string, tagIdx: number) => (
-                          <span
-                            key={tagIdx}
-                            className={cn(
-                              'text-xs px-3 py-1.5 rounded-full font-medium',
-                              getTagColor(dimIdx * 10 + tagIdx)
-                            )}
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                    </div>
-                  </div>
-                )
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* 文件类型分布 */}
-        {ctx?.fileTypeDistribution && Object.keys(ctx.fileTypeDistribution).length > 0 && (
-          <div className="border-t border-border pt-4 mb-6">
-            <h3 className="text-sm font-semibold mb-3 text-foreground">{t('文件类型分布')}</h3>
-            <div className="space-y-2">
-              {Object.entries(ctx.fileTypeDistribution as Record<string, number>)
-                .sort(([, a], [, b]) => b - a)
-                .map(([type, count], idx) => {
-                  const total = Object.values(
-                    ctx.fileTypeDistribution as Record<string, number>
-                  ).reduce((sum: number, c: number) => sum + c, 0)
-                  const percentage = total > 0 ? (count / total) * 100 : 0
-                  return (
-                    <div key={idx} className="flex items-center text-xs text-muted-foreground">
-                      <span className="w-20 capitalize">{type}</span>
-                      <div className="flex-1 mx-2 min-w-0">
-                        <ProgressBar
-                          value={count}
-                          max={total}
-                          className="h-1.5"
-                          colorClass="bg-primary"
-                        />
-                      </div>
-                      <span className="w-16 text-right">
-                        {count} ({percentage.toFixed(0)}%)
-                      </span>
-                    </div>
-                  )
-                })}
-            </div>
-          </div>
-        )}
-
-        {/* 目录特征 - 元数据：特殊文件、分析时间 */}
-        {ctx && (
-          <div className="border-t border-border pt-4 mb-6">
-            <div className="text-sm space-y-2 text-muted-foreground">
-              {ctx.specialFiles && ctx.specialFiles.length > 0 && (
-                <div>
-                  <strong className="font-medium text-foreground">{t('特殊文件:')}</strong>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {Array.isArray(ctx.specialFiles) &&
-                      ctx.specialFiles.map((file: string, idx: number) => (
+      {/* 推荐标签 */}
+      {ctx?.recommendedTags && Object.keys(ctx.recommendedTags).length > 0 && (
+        <div className="border-t border-border pt-4 mb-6">
+          <h3 className="text-sm font-semibold mb-3 text-foreground">{t('推荐标签')}</h3>
+          <div className="space-y-3">
+            {Object.entries(ctx.recommendedTags).map(
+              ([dimension, tags]: [string, any], dimIdx: number) => (
+                <div key={dimIdx}>
+                  <p className="text-xs font-medium text-foreground mb-1.5">{dimension}:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.isArray(tags) &&
+                      tags.map((tag: string, tagIdx: number) => (
                         <span
-                          key={idx}
-                          className="text-xs bg-yellow-500/10 text-yellow-600 dark:text-yellow-500 px-2 py-1 rounded font-mono"
+                          key={tagIdx}
+                          className={cn(
+                            'text-xs px-3 py-1.5 rounded-full font-medium',
+                            getTagColor(dimIdx * 10 + tagIdx)
+                          )}
                         >
-                          {file}
+                          {tag}
                         </span>
                       ))}
                   </div>
                 </div>
-              )}
-              {ctx.analyzedAt && (
-                <p>
-                  <strong className="font-medium text-foreground">{t('分析时间:')}</strong>{' '}
-                  {formatDate(ctx.analyzedAt)}
-                </p>
-              )}
-            </div>
+              )
+            )}
           </div>
-        )}
-      </>
-    )
+        </div>
+      )}
+
+      {/* 文件类型分布 */}
+      {ctx?.fileTypeDistribution && Object.keys(ctx.fileTypeDistribution).length > 0 && (
+        <div className="border-t border-border pt-4 mb-6">
+          <h3 className="text-sm font-semibold mb-3 text-foreground">{t('文件类型分布')}</h3>
+          <div className="space-y-2">
+            {Object.entries(ctx.fileTypeDistribution as Record<string, number>)
+              .sort(([, a], [, b]) => b - a)
+              .map(([type, count], idx) => {
+                const total = Object.values(
+                  ctx.fileTypeDistribution as Record<string, number>
+                ).reduce((sum: number, c: number) => sum + c, 0)
+                const percentage = total > 0 ? (count / total) * 100 : 0
+                return (
+                  <div key={idx} className="flex items-center text-xs text-muted-foreground">
+                    <span className="w-20 capitalize">{type}</span>
+                    <div className="flex-1 mx-2 min-w-0">
+                      <ProgressBar
+                        value={count}
+                        max={total}
+                        className="h-1.5"
+                        colorClass="bg-primary"
+                      />
+                    </div>
+                    <span className="w-16 text-right">
+                      {count} ({percentage.toFixed(0)}%)
+                    </span>
+                  </div>
+                )
+              })}
+          </div>
+        </div>
+      )}
+
+      {/* 目录特征 - 元数据：特殊文件、分析时间 */}
+      {ctx && (
+        <div className="border-t border-border pt-4 mb-6">
+          <div className="text-sm space-y-2 text-muted-foreground">
+            {ctx.specialFiles && ctx.specialFiles.length > 0 && (
+              <div>
+                <strong className="font-medium text-foreground">{t('特殊文件:')}</strong>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {Array.isArray(ctx.specialFiles) &&
+                    ctx.specialFiles.map((file: string, idx: number) => (
+                      <span
+                        key={idx}
+                        className="text-xs bg-yellow-500/10 text-yellow-600 dark:text-yellow-500 px-2 py-1 rounded font-mono"
+                      >
+                        {file}
+                      </span>
+                    ))}
+                </div>
+              </div>
+            )}
+            {ctx.analyzedAt && (
+              <p>
+                <strong className="font-medium text-foreground">{t('分析时间:')}</strong>{' '}
+                {formatDate(ctx.analyzedAt)}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  )
 }
 
 // 使用 React.memo 优化渲染，避免在文件列表频繁更新或扫描时引发无谓的 DOM 突变

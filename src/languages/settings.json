@@ -55,6 +55,7 @@
   ],
   "namespaces": {
     "file-dimension-source": "src/electron/config/file-dimension-source.ts",
+    "local-workflow-source": "src/electron/config/local-workflow-source.ts",
     "model-source": "src/electron/config/model-source.ts",
     "providers-source": "src/electron/config/providers-source.ts",
     "system-config-source": "src/electron/config/system-config-source.ts",

@@ -786,19 +786,22 @@ export class DirectoryContextService {
    * 解析目录的有效生效配置（考虑自底向上的继承链）
    */
   /**
-   * 查找目录所属工作区（含父工作区）绑定的工作流配置中的智能文件名附加属性模板。
+   * 查找目录所属工作区（含父工作区）绑定的工作流配置中的智能文件名规则（格式与附加属性模板）。
    * 解析顺序：优先使用目录自身 bound_workflow_id，否则回退到所属工作区 bound_workflow_id。
-   * 用于让属性面板「智能文件名附加属性」能正确展示工作流预设模板（此前仅文件重命名链路读取，展示层缺失）。
+   * 用于让属性面板「智能文件名格式」与「智能文件名附加属性」能正确展示工作流预设配置（此前仅文件重命名链路读取，展示层缺失）。
    */
-  private async resolveBoundWorkflowNamingTemplate(directoryPath: string): Promise<string | null> {
+  private async resolveBoundWorkflowNamingRules(directoryPath: string): Promise<{
+    namingPattern: string | null
+    namingTemplate: string | null
+  } | null> {
     try {
       let workflowId: string | null | undefined
       try {
         const dirRow = this.db
           .prepare(
-            `SELECT bound_workflow_id FROM workspace_directories WHERE path = ? LIMIT 1`
+            `SELECT bound_workflow_id FROM workspace_directories WHERE path = ? OR LOWER(path) = LOWER(?) LIMIT 1`
           )
-          .get(directoryPath) as { bound_workflow_id?: string | null } | undefined
+          .get(directoryPath, directoryPath) as { bound_workflow_id?: string | null } | undefined
         workflowId = dirRow?.bound_workflow_id
       } catch {
         workflowId = undefined
@@ -813,12 +816,14 @@ export class DirectoryContextService {
             SELECT w.bound_workflow_id AS bound_workflow_id
             FROM workspaces w
             WHERE w.path = ?
+               OR LOWER(w.path) = LOWER(?)
                OR ? LIKE w.path || '%'
+               OR LOWER(?) LIKE LOWER(w.path) || '%'
             ORDER BY LENGTH(w.path) DESC
             LIMIT 1
           `
           )
-          .get(directoryPath, directoryPath) as
+          .get(directoryPath, directoryPath, directoryPath, directoryPath) as
           | { bound_workflow_id?: string | null }
           | undefined
         workflowId = wsRow?.bound_workflow_id
@@ -826,24 +831,89 @@ export class DirectoryContextService {
 
       if (!workflowId) return null
 
-      const wfRecord = await databaseService.getLocalWorkflowById(workflowId)
-      return wfRecord?.naming_template?.trim() || null
+      let namingPattern: string | null = null
+      let namingTemplate: string | null = null
+      try {
+        const wfRow = this.db
+          .prepare(
+            'SELECT naming_pattern, naming_template FROM local_workflows WHERE id = ? LIMIT 1'
+          )
+          .get(workflowId) as
+          | { naming_pattern?: string | null; naming_template?: string | null }
+          | undefined
+        if (wfRow) {
+          namingPattern = wfRow.naming_pattern?.trim() || null
+          namingTemplate = wfRow.naming_template?.trim() || null
+        }
+      } catch {
+        // 忽略局部 SQL 异常，后续回退到 databaseService
+      }
+
+      if (!namingPattern && !namingTemplate) {
+        try {
+          const wfRecord = await databaseService.getLocalWorkflowById(workflowId)
+          if (wfRecord) {
+            namingPattern = wfRecord.naming_pattern?.trim() || null
+            namingTemplate = wfRecord.naming_template?.trim() || null
+          }
+        } catch {}
+      }
+
+      if (!namingPattern && !namingTemplate) return null
+
+      return {
+        namingPattern,
+        namingTemplate
+      }
     } catch (err) {
       logger.warn(
         LogCategory.DIRECTORY_CONTEXT,
-        `[工作流命名] 解析绑定工作流附加属性模板失败: ${directoryPath}`,
+        `[工作流命名] 解析绑定工作流命名规则失败: ${directoryPath}`,
         err
       )
       return null
     }
   }
 
+  private async resolveBoundWorkflowNamingTemplate(directoryPath: string): Promise<string | null> {
+    const rules = await this.resolveBoundWorkflowNamingRules(directoryPath)
+    return rules?.namingTemplate || null
+  }
+
   async getEffectiveDirectoryConfig(
     directoryPath: string
   ): Promise<DirectoryContextAnalysis | null> {
     try {
-      const current = await this.getDirectoryContext(directoryPath)
-      if (!current) return null
+      let current = await this.getDirectoryContext(directoryPath)
+      const wfNaming = await this.resolveBoundWorkflowNamingRules(directoryPath)
+
+      // 如果当前目录未生成上下文画像，但所属工作区存在或绑定了工作流，构造默认有效上下文以供面板展示
+      if (!current) {
+        if (!wfNaming?.namingPattern && !wfNaming?.namingTemplate) {
+          return null
+        }
+        const isRoot = !this.findAncestorDirectories(directoryPath).length
+        const defaultMode: ConfigInheritMode = isRoot ? 'broadcast' : 'inherit'
+        current = {
+          directoryPath,
+          fileTypeDistribution: {},
+          recommendedTags: {},
+          specialFiles: [],
+          description: '',
+          namingPattern: wfNaming.namingPattern || '',
+          analysisStrategy: '',
+          namingTemplate: wfNaming.namingTemplate || '',
+          analysisStrategy_suggestion: '',
+          namingPattern_suggestion: '',
+          inheritMode: {
+            analysisStrategy: defaultMode,
+            namingPattern: defaultMode,
+            namingTemplate: defaultMode
+          },
+          confidence: 1.0,
+          analyzedAt: new Date()
+        }
+      }
 
       const isRoot = !this.findAncestorDirectories(directoryPath).length
       const defaultMode: ConfigInheritMode = isRoot ? 'broadcast' : 'inherit'
@@ -864,11 +934,13 @@ export class DirectoryContextService {
         inheritedFrom: {}
       }
 
-      // 合并绑定工作流的智能文件名附加属性模板（目录自身未显式设置时作为生效兜底）
-      if (!effective.namingTemplate?.trim()) {
-        const wfTemplate = await this.resolveBoundWorkflowNamingTemplate(directoryPath)
-        if (wfTemplate) {
-          effective.namingTemplate = wfTemplate
+      // 合并绑定工作流的智能文件名格式与附加属性模板（目录自身未显式设置时作为生效兜底）
+      if (wfNaming) {
+        if (!effective.namingPattern?.trim() && wfNaming.namingPattern) {
+          effective.namingPattern = wfNaming.namingPattern
+        }
+        if (!effective.namingTemplate?.trim() && wfNaming.namingTemplate) {
+          effective.namingTemplate = wfNaming.namingTemplate
         }
       }
 
@@ -936,6 +1008,16 @@ export class DirectoryContextService {
           effective.namingTemplate = ancestorContext.namingTemplate
           if (!effective.inheritedFrom) effective.inheritedFrom = {}
           effective.inheritedFrom.namingTemplate = ancestorPath
+        }
+      }
+
+      // 继承链回溯完毕后，若最终仍未命中有效规则，再次以绑定工作流兜底
+      if (wfNaming) {
+        if (!effective.namingPattern?.trim() && wfNaming.namingPattern) {
+          effective.namingPattern = wfNaming.namingPattern
+        }
+        if (!effective.namingTemplate?.trim() && wfNaming.namingTemplate) {
+          effective.namingTemplate = wfNaming.namingTemplate
         }
       }
 
@@ -1178,7 +1260,11 @@ export class DirectoryContextService {
               WHERE ftr.file_fingerprint = ?
             `
             )
-            .all(row.file_fingerprint) as Array<{ name: string | null; tag_code: string; dimension_code: string }>
+            .all(row.file_fingerprint) as Array<{
+            name: string | null
+            tag_code: string
+            dimension_code: string
+          }>
 
           const targetLocale =
             ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
