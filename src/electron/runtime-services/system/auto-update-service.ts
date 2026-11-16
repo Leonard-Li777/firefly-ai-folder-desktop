@@ -77,6 +77,14 @@ export class AutoUpdateService {
   private pollTimer: NodeJS.Timeout | null = null
   private readonly POLL_INTERVAL_MS = 4 * 60 * 60 * 1000 // 4 小时轮询一次
 
+  /**
+   * 关停前扩展点注册表（工单 07 · P0-6）。
+   * 允许其它子系统（如需在退出前 flush 的服务）注册关停钩子，由
+   * ShutdownCoordinator 在四步关停握手前统一执行。
+   * 钩子失败不阻断（非关键扩展），但必须 logger.warn 显式上报——禁止静默降级。
+   */
+  private beforeQuitHooks: Array<{ name: string; fn: () => void | Promise<void> }> = []
+
   private constructor() {
     try {
       this.state.currentVersion = app.getVersion()
@@ -411,9 +419,46 @@ export class AutoUpdateService {
         }
       },
       reapProcesses: async () => {
+        // 先执行已注册关停前钩子（非关键扩展，失败不阻断）
+        await this.runBeforeQuitHooks()
         logger.debug(LogCategory.SYSTEM, '[AutoUpdater] Step 3: ProcessReaper 清扫所有子进程...')
         const { ProcessReaper } = require('../../main/process-reaper')
         ProcessReaper.getInstance().cleanup()
+      }
+    }
+  }
+
+  /**
+   * 注册关停前扩展钩子（工单 07 · P0-6 验收第 1 条）。
+   * 其它子系统在 initialize() 阶段调用，把自己的"退出前收尾逻辑"（如 flush 缓冲、
+   * 释放单例句柄）挂到关停编排器上。钩子在四步关停握手的 ProcessReaper 清扫前执行。
+   * @param name 钩子名（日志定位用）
+   * @param fn 钩子函数；抛错由编排器 warn 上报，不阻断关停
+   */
+  public registerBeforeQuitHook(name: string, fn: () => void | Promise<void>): void {
+    this.beforeQuitHooks.push({ name, fn })
+    logger.debug(LogCategory.SYSTEM, `[AutoUpdater] 已注册关停前钩子: ${name}`)
+  }
+
+  /**
+   * 执行所有已注册的关停前钩子。
+   * 每个钩子独立 try/catch 显式上报——禁止空 catch 静默降级（AGENTS.md 系统不变量 3）。
+   * 钩子属非关键扩展，失败不阻断关停（与 libreoffice 同级语义）。
+   */
+  private async runBeforeQuitHooks(): Promise<void> {
+    if (this.beforeQuitHooks.length === 0) return
+    logger.debug(LogCategory.SYSTEM, `[AutoUpdater] 执行 ${this.beforeQuitHooks.length} 个关停前钩子...`)
+    for (const hook of this.beforeQuitHooks) {
+      try {
+        await hook.fn()
+        logger.debug(LogCategory.SYSTEM, `[AutoUpdater] 关停前钩子成功: ${hook.name}`)
+      } catch (hookErr: any) {
+        // 禁止静默降级：钩子失败显式上报后继续，不阻断关停
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[AutoUpdater] 关停前钩子失败(继续): ${hook.name}:`,
+          hookErr?.message
+        )
       }
     }
   }

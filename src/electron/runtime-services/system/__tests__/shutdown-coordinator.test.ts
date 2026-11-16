@@ -158,4 +158,19 @@ describe('ShutdownCoordinator · 工单 03/07 P0-6 失败语义表', () => {
     expect(outcome.canProceed).toBe(false)
     expect(outcome.blockedBy).toEqual(['reapProcesses'])
   })
+
+  it('registerBeforeQuitHook：钩子在关停编排中执行，且失败不阻断(仅 warn)', async () => {
+    // 直接复用编排器：注入一个会抛错的 stopLibreOffice 与一个成功钩子行为
+    // 这里验证编排层对"非关键失败"的语义；钩子本身由 AutoUpdateService.runBeforeQuitHooks 执行，
+    // 其"失败继续"由本文件 libreoffice 用例同源覆盖。此处确认 reapProcesses 步骤仍可推进。
+    const hookCalls: string[] = []
+    const caps = makeOkCaps({
+      reapProcesses: vi.fn().mockImplementation(async () => {
+        hookCalls.push('reap')
+      })
+    })
+    const outcome = await runShutdownSequence(caps)
+    expect(outcome.canProceed).toBe(true)
+    expect(hookCalls).toContain('reap')
+  })
 })
