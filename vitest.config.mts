@@ -80,8 +80,8 @@ export default defineConfig({
   define: {
     __AI_ENGINE__: JSON.stringify('llamacpp'),
     __APP_VERSION__: JSON.stringify('0.0.0-test'),
-    __BUILD_REGION__: JSON.stringify('GLOBAL'),
-    __BUILD_LABEL__: JSON.stringify('GLOBAL - test - main'),
+    __BUILD_REGION__: JSON.stringify('INTL'),
+    __BUILD_LABEL__: JSON.stringify('INTL - test - main'),
     __IS_DEV__: 'true',
     __IS_PROD__: 'false'
   },

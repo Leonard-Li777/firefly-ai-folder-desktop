@@ -411,6 +411,8 @@ export class DeviceBindService {
       let code = ''
       let expiresAt = ''
       let imageDataUrl = ''
+      // 真实失败原因：业务限频/占用/机器校验/网络异常等，统一透传给 UI，避免误报为网络问题
+      let bindCodeErrorMsg = ''
 
       // 1. 调用云端原子 RPC rpc_create_device_bind_code 生成 8 位设备绑定码
       try {
@@ -435,6 +437,8 @@ export class DeviceBindService {
             '[DeviceBindService] rpc_create_device_bind_code 失败:',
             rpcErr || rpcData
           )
+          bindCodeErrorMsg =
+            (rpcErr as any)?.message || rpcData?.message || rpcData?.error || '云端登录码服务异常'
         }
       } catch (rpcEx) {
         logger.warn(
@@ -442,10 +446,16 @@ export class DeviceBindService {
           '[DeviceBindService] 调用 rpc_create_device_bind_code 异常:',
           rpcEx
         )
+        bindCodeErrorMsg = (rpcEx as any)?.message || '云端登录码服务异常'
       }
 
       if (!code) {
-        return { success: false, error: '生成微信登录码失败，请检查网络连接' }
+        return {
+          success: false,
+          error: bindCodeErrorMsg
+            ? `生成微信登录码失败：${bindCodeErrorMsg}`
+            : '生成微信登录码失败，请稍后重试'
+        }
       }
 
       // 2. 将设备绑定短码提交给 Edge Function wxpay-qrcode (type='bind')，获取微信官方真实小程序码

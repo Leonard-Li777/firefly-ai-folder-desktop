@@ -412,15 +412,19 @@ export class UserTierService {
         }
         return locals
       }
-      return cloudData.map(tx => ({
-        id: tx.id,
-        type: tx.transaction_type,
-        firecores: tx.firecores,
-        balance_after: tx.balance_after,
-        status: 'completed',
-        time: tx.created_at,
-        metadata: tx.metadata || null
-      }))
+      const locals = this.getDataManager().getLocalPendingRecords()
+      return this.mergeCloudWithLocals(
+        cloudData.map(tx => ({
+          id: tx.id,
+          type: tx.transaction_type,
+          firecores: tx.firecores,
+          balance_after: tx.balance_after,
+          status: 'completed',
+          time: tx.created_at,
+          metadata: tx.metadata || null
+        })),
+        locals
+      )
     } catch {
       const locals = this.getDataManager().getLocalPendingRecords()
       if (locals.length === 0) {
@@ -473,20 +477,48 @@ export class UserTierService {
           return // 本地已有记录且云端为空，不做更新
         }
       } else {
-        result = cloudData.map(tx => ({
-          id: tx.id,
-          type: tx.transaction_type,
-          firecores: tx.firecores,
-          balance_after: tx.balance_after,
-          status: 'completed',
-          time: tx.created_at,
-          metadata: tx.metadata || null
-        }))
+        result = this.mergeCloudWithLocals(
+          cloudData.map(tx => ({
+            id: tx.id,
+            type: tx.transaction_type,
+            firecores: tx.firecores,
+            balance_after: tx.balance_after,
+            status: 'completed',
+            time: tx.created_at,
+            metadata: tx.metadata || null
+          })),
+          this.getDataManager().getLocalPendingRecords()
+        )
       }
       this.notifyFirecoreTransactionsUpdated(result)
     } catch {
       // 后台获取云端数据失败，静默忽略（本地数据已展示）
     }
+  }
+
+  /**
+   * 云端流水与本地记录的合并策略（展示层）：
+   * 云端为流水 SSOT，但端侧收入类流水（welcome_grant 等）按设计不由端侧上报
+   * （见 UserTierDataManager.replayOfflineQueue 的云端 SSOT 注释），云端可能长期没有其镜像。
+   * 合并时保留云端全量，并追加「云端缺失类型的本地收入记录」，
+   * 防止云同步整体覆盖后，本地专属收入（如欢迎赠送）从流水中凭空消失。
+   * 同类型已被云端覆盖的本地记录（如云端已镜像的 invitation_receive）与
+   * id 重复的记录均不再追加，避免展示层重复。
+   */
+  private mergeCloudWithLocals(cloudData: any[], locals: any[]): any[] {
+    const cloudTypes = new Set(cloudData.map(tx => tx.type))
+    const cloudIds = new Set(cloudData.map(tx => tx.id))
+    const incomeTypes = new Set([
+      'welcome_grant',
+      'invitation_earn',
+      'invitation_receive',
+      'upload_earn',
+      'admin_adjust'
+    ])
+    const localOnly = locals.filter(
+      l => incomeTypes.has(l.type) && !cloudTypes.has(l.type) && !cloudIds.has(l.id)
+    )
+    return [...cloudData, ...localOnly]
   }
 
   async removeVDirEntitlement(vdirId: number): Promise<void> {

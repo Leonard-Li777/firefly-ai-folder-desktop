@@ -104,7 +104,9 @@ const App: React.FC = () => {
               ? window.electronAPI.deviceBind.getUnseatedSession()
               : Promise.resolve({ unseated: false })
           ])
-          if (isMounted && ((res?.success && !res.bound) || hasSession || unseatedRes?.unseated)) {
+          // 失败封闭（fail-closed）：只有云端明确确认已绑定才放行；
+          // 查询失败（网络抖动/云端异常）一律视为未绑定，强制弹出登录，杜绝未登录直接进入主界面
+          if (isMounted && (!(res?.success && res.bound) || hasSession || unseatedRes?.unseated)) {
             setIsDeviceBindOpen(true)
           }
         }
