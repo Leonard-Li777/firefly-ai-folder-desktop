@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-11-10T20:08:38.745Z",
+  "generatedAt": "2026-11-16T11:38:33.069Z",
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources"
@@ -110,10 +110,10 @@
       "version": "INT8-v3",
       "source": "shared",
       "asset": {
-        "name": "emb-a42b0c8f-3.0.0.zip",
-        "sha256": "e811d464d345cc4aa3bf4a0df96fa1cffc13a3a28a65c8a1ef478a2de8f4a4ac",
-        "size": 259907576,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/emb-a42b0c8f-3.0.0.zip"
+        "name": "chinese-clip-int8-v3.zip",
+        "sha256": "b3a8894da5ccfeafc086db83174306f9dc368b982faf8f12aecf8b625b7416bf",
+        "size": 242100071,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/chinese-clip-int8-v3.zip"
       },
       "files": [
         {
@@ -129,12 +129,12 @@
         {
           "name": "tags_visual_gemma_512.bin",
           "size": 307200,
-          "sha256": "b71efdcbf333dead0210c8ce7c2ad677cce5be2c548e7a168706c5ec79f55149"
+          "sha256": "095f17da6c648703cc76e4c350bbadf791c95087f74105f390f4b6d1729fcb9a"
         },
         {
           "name": "tags_visual_gemma_512.meta.json",
           "size": 5016,
-          "sha256": "78b22ae8763dd7c23ae3fe686a049464cd5398479987bf852fff7ecc56731f1a"
+          "sha256": "5879e9e0ed8f78a5fb9b28dad38a2ef10cc903904596d4e8378c95ee678153eb"
         },
         {
           "name": "omw_concepts_gemma_512.bin",
