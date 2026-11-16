@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-11-16T11:38:33.069Z",
+  "generatedAt": "2026-11-16T16:21:57.503Z",
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources"
@@ -265,6 +265,16 @@
         "sha256": "e4fb012270f48172a5621fed848193af88d131f44ae03083823aa727d4e516db",
         "size": 367596403,
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/cpu-485c04b7-1.0.0.zip"
+      }
+    },
+    "offline-bundle": {
+      "version": "1.0.0",
+      "source": "shared",
+      "asset": {
+        "name": "firefly-offline-bundle-1.0.0.zip",
+        "sha256": "1339677f2b5f2c75f1f9f008d7ddc8816ef925e92636510b2ae57b9936a5ea94",
+        "size": 1543875879,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-offline-bundle-1.0.0.zip"
       }
     }
   },
