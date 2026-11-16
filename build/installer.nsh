@@ -68,6 +68,14 @@
 
     ; 尝试删除整个安装目录（递归删除所有剩余内容）
     RMDir /r "$INSTDIR"
+
+    ; ── 卸载时清理 ProgramData 共享副本（P0-2 · A1 B 路径）───────────────
+    ; 仅清本产品目录，不动用户级 installer.exe（由各用户自行管理）
+    ClearErrors
+    RMDir /r "$COMMONAPPDATA\firefly-ai-folder\installer"
+    RMDir "$COMMONAPPDATA\firefly-ai-folder"
+    IfErrors 0 +2
+        ClearErrors
 !macroend
 
 ; 安装前检测 VC++ Redistributable 并关闭正在运行的应用
@@ -155,6 +163,32 @@
         FileClose $0
     doneLang:
 
+    ; ── 差分基线播种（P0-2 · A1 裁决 B 路径）─────────────────────────────
+    ; perMachine:true 提权上下文下，electron-builder 模板把 $EXEPATH 播种到提权账户的
+    ;   $LOCALAPPDATA\${APP_INSTALLER_STORE_FILE}，多用户场景路径错配（Spec F-7/EXT-ISS-A1）。
+    ; B 路径：安装器只负责把本次安装包副本写入【ProgramData 共享只读缓存】与【INSTDIR 版本化副本】，
+    ;   两者父目录默认继承 Users 读 ACL，无需 AccessControl 插件；
+    ;   真正的用户级 installer.exe 播种由客户端 installer-baseline-seeder.ts 在普通用户上下文完成。
+    ; $EXEPATH = 本次运行的安装器本体（即完整安装包），${VERSION} = appInfo.version。
+    ClearErrors
+    CreateDirectory "$COMMONAPPDATA\firefly-ai-folder\installer"
+    IfFileExists "$COMMONAPPDATA\firefly-ai-folder\installer\installer-${VERSION}.exe" 0 +2
+        Delete "$COMMONAPPDATA\firefly-ai-folder\installer\installer-${VERSION}.exe"
+    CopyFiles /SILENT "$EXEPATH" "$COMMONAPPDATA\firefly-ai-folder\installer\installer-${VERSION}.exe"
+    IfErrors 0 seedInstDirCopy
+        ; 严禁静默降级：ProgramData 副本写失败须留痕（DetailPrint 在 assisted 安装界面可见；
+        ;   不阻断安装，差分届时退化为全量下载，客户端 seeder 会 logger.warn 上报 no-source-candidate）
+        DetailPrint "BaselineSeeder: ProgramData 副本写入失败 installer-${VERSION}.exe"
+        ClearErrors
+    seedInstDirCopy:
+    ; INSTDIR 版本化副本（客户端 seeder 的回退来源）
+    ClearErrors
+    CreateDirectory "$INSTDIR\installer"
+    IfFileExists "$INSTDIR\installer\installer-${VERSION}.exe" 0 +2
+        Delete "$INSTDIR\installer\installer-${VERSION}.exe"
+    CopyFiles /SILENT "$EXEPATH" "$INSTDIR\installer\installer-${VERSION}.exe"
+    IfErrors 0 +2
+        ClearErrors
     SetOutPath "$INSTDIR"
 
     ; 判定快捷方式显示名称

@@ -78,6 +78,11 @@ import { ConfigDbManager } from '../runtime-services/config/config-db-manager'
 import { createModelCapabilityAdapter } from '../adapters/model-capability-adapter'
 import * as path from 'path'
 import * as fs from 'fs'
+import { resolveAppRegion } from './worktree-env'
+import {
+  computeUpdaterCacheDir,
+  seedBaselineInstaller
+} from '../runtime-services/system/installer-baseline-seeder'
 import {
   globalLlamaIndexService,
   setGlobalLlamaIndexService,
@@ -1176,21 +1181,59 @@ export async function initializeFullServices(): Promise<void> {
       logger.warn(LogCategory.MAIN, '[AutoUpdate] 自动更新服务初始化失败:', updateErr.message)
     }
 
-    // 启动期安全清理废弃旧临时文件与更新残余
+    // 启动期安全清理废弃旧临时文件 + 差分基线播种（P0-2 / P0-3 · 工单 06）
+    // 修正 F-3 盘符与目录名错配：electron-updater 真实缓存根为
+    //   %LOCALAPPDATA%\<updaterCacheDirName>  （getAppCacheDir → LOCALAPPDATA）
+    //   updaterCacheDirName = firefly-ai-folder_v4_<cn|intl>-updater（app-update.yml 单一事实源）
+    // 旧代码清理的是 %APPDATA%(Roaming) userData 下的 `<app.getName()>-updater`
+    //   = firefly-ai-folder-updater → 盘符(Roaming≠Local) + 目录名(缺 _v4_<region>) 双重错配，清错目录。
     try {
-      const userData = app.getPath('userData')
-      const updaterTempDir = path.join(userData, `${app.getName()}-updater`)
-      if (fs.existsSync(updaterTempDir)) {
-        const files = fs.readdirSync(updaterTempDir)
+      const localAppData = process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local')
+      const region = resolveAppRegion() // 'cn' | 'intl'
+      const updaterCacheDir = computeUpdaterCacheDir(localAppData, region)
+
+      if (fs.existsSync(updaterCacheDir)) {
+        const files = fs.readdirSync(updaterCacheDir)
         for (const f of files) {
-          if (f.startsWith('temp-') || f.endsWith('.tmp')) {
+          // 版本感知剪枝（P0-3）：仅清理明确过期的临时文件
+          //   永久保留 installer.exe（差分基线，cacheDir 根）与 pending 目录（已下载新版包）
+          const isTemp =
+            (f.startsWith('temp-') || f.endsWith('.tmp')) &&
+            f !== 'installer.exe' &&
+            f !== 'pending'
+          if (isTemp) {
             try {
-              fs.unlinkSync(path.join(updaterTempDir, f))
-            } catch {}
+              fs.unlinkSync(path.join(updaterCacheDir, f))
+            } catch (unlinkErr: any) {
+              // 严禁静默降级：单文件清理失败显式上报，不阻断启动
+              logger.warn(
+                LogCategory.MAIN,
+                '[Initialization] 清理更新临时文件失败:',
+                unlinkErr?.message
+              )
+            }
           }
         }
       }
-    } catch {}
+
+      // 差分基线播种（P0-2 · A1 裁决 B 路径）：把已安装版本的安装包副本
+      // 复制为 <cacheDir>\installer.exe，使 electron-updater 差分引擎能命中基线、避免退化全量。
+      // 任何失败均由 seeder 内部 logger.warn 显式上报后返回，不阻断启动。
+      await seedBaselineInstaller({
+        currentVersion: app.getVersion(),
+        localAppDataDir: localAppData,
+        programDataDir: process.env.PROGRAMDATA || path.join(localAppData, '..'),
+        installDir: path.dirname(app.getPath('exe')),
+        region
+      })
+    } catch (cleanupErr: any) {
+      // 严禁静默降级：清理/播种编排整体失败显式上报（AGENTS.md 系统不变量 3）
+      logger.warn(
+        LogCategory.MAIN,
+        '[Initialization] 启动期更新缓存清理/基线播种失败:',
+        cleanupErr?.message
+      )
+    }
 
     logger.info(LogCategory.MAIN, '完整服务初始化完成')
   } catch (error) {
