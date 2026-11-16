@@ -34,7 +34,11 @@ if (fs.existsSync(envPath)) {
 
 const rawRegion = (process.env.BUILD_REGION || 'CN').trim().toLowerCase()
 const BUILD_REGION = rawRegion === 'cn' ? 'cn' : 'intl'
-const MAJOR_VERSION = 'v' + (String(packageJson.version || '4.0.0').match(/\d+/) ? String(packageJson.version).match(/\d+/)![0] : '4')
+const MAJOR_VERSION =
+  'v' +
+  (String(packageJson.version || '4.0.0').match(/\d+/)
+    ? String(packageJson.version).match(/\d+/)![0]
+    : '4')
 const APP_NAME = `firefly-ai-folder_${MAJOR_VERSION}_${BUILD_REGION}`
 const EXECUTABLE_NAME = process.platform === 'win32' ? 'firefly-ai-folder' : APP_NAME
 const SHORTCUT_NAME = BUILD_REGION === 'cn' ? '萤核智能文件夹' : 'Firefly AI folder'
@@ -615,7 +619,9 @@ const config: ForgeConfig = {
             // 去重
             const uniqueDirs = Array.from(new Set(allMatchedDirs))
             if (uniqueDirs.length > 0) {
-              console.log(`[preMake] macOS 检测到 ${uniqueDirs.length} 个 ${moduleName} 实例，正在全量重建为当前宿主 Node.js 版本...`)
+              console.log(
+                `[preMake] macOS 检测到 ${uniqueDirs.length} 个 ${moduleName} 实例，正在全量重建为当前宿主 Node.js 版本...`
+              )
               for (const targetDir of uniqueDirs) {
                 const rebuildDir = path.join(targetDir, 'build')
                 if (fs.existsSync(rebuildDir)) {
@@ -636,12 +642,20 @@ const config: ForgeConfig = {
                   console.log(`[preMake] ✅ ${moduleName} 已在 ${targetDir} 重建完成`)
                   try {
                     require(path.join(targetDir, releaseFile))
-                    console.log(`[preMake] ✅ ${moduleName} 加载测试通过 (Node.js v${process.versions.node})`)
+                    console.log(
+                      `[preMake] ✅ ${moduleName} 加载测试通过 (Node.js v${process.versions.node})`
+                    )
                   } catch (loadErr) {
-                    console.warn(`[preMake] ⚠️ ${moduleName} 加载验证警告:`, (loadErr as Error).message)
+                    console.warn(
+                      `[preMake] ⚠️ ${moduleName} 加载验证警告:`,
+                      (loadErr as Error).message
+                    )
                   }
                 } catch (rebuildErr) {
-                  console.warn(`[preMake] ❌ 重建 ${moduleName} 失败:`, (rebuildErr as Error).message)
+                  console.warn(
+                    `[preMake] ❌ 重建 ${moduleName} 失败:`,
+                    (rebuildErr as Error).message
+                  )
                 }
               }
             }
@@ -728,7 +742,10 @@ const config: ForgeConfig = {
       if (aiEngine !== 'ollama') {
         // 数据源统一为 preset-resources.lock.json（ADR-0029）
         // 若构建目录已存在由 download/consume 动态写入的最真实 lock，优先使用构建目录中的 lock
-        const dynamicBuildLock = path.join(__dirname, 'build/extraResources/configs/preset-resources.lock.json')
+        const dynamicBuildLock = path.join(
+          __dirname,
+          'build/extraResources/configs/preset-resources.lock.json'
+        )
         const lockPath = fs.existsSync(dynamicBuildLock)
           ? dynamicBuildLock
           : resolveResourcePath(`build/extraResources/configs/preset-resources.lock.json`)
@@ -823,9 +840,7 @@ const config: ForgeConfig = {
               `❌ 错误: AI 引擎二进制包验证失败，打包已中断！\n${errors.join('\n')}\n请确保重新运行下载流程 (pnpm make 或 scripts/download-llama-cpp-releases.js) 完成下载。`
             )
           }
-          console.log(
-            `[prePackage] ✅ AI 引擎二进制包完整性验证通过 (共 ${files.length} 个包)`
-          )
+          console.log(`[prePackage] ✅ AI 引擎二进制包完整性验证通过 (共 ${files.length} 个包)`)
 
           const binDir = resolveResourcePath('build/extraResources/bin')
           if (!fs.existsSync(binDir)) {
@@ -858,19 +873,25 @@ const config: ForgeConfig = {
               }
             }
 
-            // slice-3 解耦：同步 Tier 2 引擎二进制（缺失时不阻断打包，仅告警）
-            const engineSrcDir = resolveResourcePath('build/presetResources/firefly-ai-engine')
+            // slice-3：同步与校验 Tier 2 引擎二进制 (firefly-ai-engine)
             const engineBinDir = path.join(binDir, 'firefly-ai-engine')
-            if (fs.existsSync(engineSrcDir)) {
-              if (fs.existsSync(engineBinDir)) {
-                fs.rmSync(engineBinDir, { recursive: true, force: true })
-              }
-              fs.cpSync(engineSrcDir, engineBinDir, { recursive: true })
-              console.log(`[prePackage] ✅ 已同步 Tier 2 引擎二进制: ${engineBinDir}`)
+            const engineExeName =
+              process.platform === 'win32' ? 'firefly-ai-engine.exe' : 'firefly-ai-engine'
+            const hasDeployedExe = fs.existsSync(path.join(engineBinDir, engineExeName))
+
+            if (hasDeployedExe) {
+              console.log(`[prePackage] ✅ Tier 2 引擎已就绪并内嵌: ${engineBinDir}`)
             } else {
-              console.warn(
-                `[prePackage] ⚠️ 未找到 Tier 2 引擎资源 ${engineSrcDir}，跳过引擎同步（运行由 Tier 1 兜底）`
-              )
+              const errMsg = `[prePackage] ❌ 未在 bin 目录找到 Tier 2 引擎可执行文件 (${engineExeName})，请确保先执行 setup-resources`
+              if (
+                process.env.CI ||
+                process.env.GITHUB_ACTIONS ||
+                process.env.NODE_ENV === 'production'
+              ) {
+                throw new Error(errMsg)
+              } else {
+                console.warn(`[prePackage] ⚠️ ${errMsg}`)
+              }
             }
           }
         } catch (e: any) {
@@ -1184,7 +1205,10 @@ const config: ForgeConfig = {
 
         // 生成 electron-updater 客户端所需的 resources/app-update.yml
         try {
-          const manifestScriptPath = path.join(__dirname, 'pro/scripts/generate-channel-manifest.js')
+          const manifestScriptPath = path.join(
+            __dirname,
+            'pro/scripts/generate-channel-manifest.js'
+          )
           if (fs.existsSync(manifestScriptPath)) {
             const { writeAppUpdateYaml } = require(manifestScriptPath)
             const appUpdatePath = writeAppUpdateYaml(resourcesDir, {
@@ -1218,11 +1242,14 @@ const config: ForgeConfig = {
           const result = generateChannelManifest({
             outDir,
             version: packageJson.version,
-            minVersion: process.env.MIN_UPDATE_VERSION || (packageJson as any).minUpdateVersion || '4.0.0',
+            minVersion:
+              process.env.MIN_UPDATE_VERSION || (packageJson as any).minUpdateVersion || '4.0.0',
             region: BUILD_REGION
           })
           if (result) {
-            console.log(`[postMake] ✅ 已生成含 blockMapSize 的渠道更新清单: ${result.manifestPath}`)
+            console.log(
+              `[postMake] ✅ 已生成含 blockMapSize 的渠道更新清单: ${result.manifestPath}`
+            )
           }
         }
       } catch (err: any) {
@@ -1889,7 +1916,6 @@ function setup() {
     )
   }
 }
-
 
 /*
  * node-llama-cpp 二进制文件在其 package.json 中有一个 cpu 标志，这意味着
