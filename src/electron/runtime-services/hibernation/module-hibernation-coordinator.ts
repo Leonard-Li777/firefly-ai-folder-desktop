@@ -3,12 +3,14 @@
  * 遵循 L3 规格书: docs/specs/unified-module-hibernation-and-energy-transparency-spec.md §2.1 / §2.2
  */
 
+import * as os from 'node:os'
 import { logger, LogCategory } from '@firefly/shared'
 import { LeaseRegistry } from './lease-registry'
-import { MemoryProbe, memoryProbe } from './memory-probe'
+import { computeHibernationMemoryThreshold, MemoryProbe, memoryProbe } from './memory-probe'
 import { IModuleRuntimeStore, moduleRuntimeStore } from './module-runtime-store'
 import {
   AdmissionToken,
+  ANALYSIS_SUITE_IDLE_TIMEOUT_MS,
   AsyncMutex,
   CANCEL_AWAIT_STOP_TIMEOUT_MS,
   CANCEL_INTENT_HARD_TTL_MS,
@@ -18,17 +20,25 @@ import {
   COLD_START_MIN_TIMEOUT_MS,
   CRASH_BREAKER_THRESHOLD,
   CRASH_WINDOW_MS,
+  DRAIN_CANCELABLE_WINDOW_MS,
+  DrainTransactionContext,
+  GateQueueWaiter,
+  GateRequest,
   HIBERNATABLE_TARGET_CATALOG,
+  HibernationColdStartError,
   HibernationGateAbortedError,
+  HibernationLeaseHandle,
   IEngineBridgeService,
   IN_FLIGHT_OP_NO_PROGRESS_HARD_TIMEOUT_MS,
   IN_FLIGHT_OP_STALL_TIMEOUT_MS,
   InFlightPhysicalOp,
   InflightLoad,
+  IPowerMonitorService,
   LEASE_SWAP_DRAIN_TIMEOUT_MS,
   LIFECYCLE_OWNER_MAX_TTL_MS,
   LifecycleOperation,
   LifecycleToken,
+  MAX_GRACE_PERIOD_MS,
   ModuleRuntimeState,
   ProcessTreeIdentity,
   STABLE_RESIDENT_RESET_MS,
@@ -39,7 +49,8 @@ import {
   SuppressedStoppingIdentityEntry,
   SwapCancelContext,
   SwapRollbackSnapshot,
-  TargetCancelIntentEntry
+  TargetCancelIntentEntry,
+  TTS_IDLE_TIMEOUT_MS
 } from './types'
 
 export interface ModuleHibernationCoordinatorOptions {
@@ -49,6 +60,10 @@ export interface ModuleHibernationCoordinatorOptions {
   engineBridgeService?: IEngineBridgeService
   onClusterActivityChanged?: (clusterId: 'analysis_suite' | 'tts_media') => void
   coldStartTimeoutMsProvider?: (targetId?: string) => number
+  powerMonitorService?: IPowerMonitorService
+  getSystemIdleTime?: () => number
+  getFreeMemory?: () => number
+  getTotalMemory?: () => number
 }
 
 /** 模块休眠调度协调器核心骨架 */
@@ -104,6 +119,20 @@ export class ModuleHibernationCoordinator {
   private readonly inflightLoads = new Map<string, InflightLoad>()
   private nextAttemptId = 0
 
+  /** Gate 阶段 2 分桶等待者队列 (Ticket 09): targetId -> GateQueueWaiter[] */
+  private readonly gateWaiters = new Map<string, GateQueueWaiter[]>()
+  /** 在途两阶段排空事务上下文 (Ticket 09): targetId -> DrainTransactionContext */
+  private readonly activeDrain = new Map<string, DrainTransactionContext>()
+
+  /** 群组空闲倒计时与宽限计时字典 (Ticket 09) */
+  private readonly clusterIdleTimers = new Map<string, ReturnType<typeof setTimeout>>()
+  private readonly clusterGraceTimers = new Map<string, ReturnType<typeof setTimeout>>()
+  private readonly clusterIdleStartTime = new Map<string, number>()
+  private powerMonitorServiceInstance?: IPowerMonitorService
+  private readonly getSystemIdleTimeProvider?: () => number
+  private readonly getFreeMemoryProvider?: () => number
+  private readonly getTotalMemoryProvider?: () => number
+
   constructor(options?: ModuleHibernationCoordinatorOptions) {
     this.runtimeStore = options?.runtimeStore ?? moduleRuntimeStore
     this.leaseRegistryInstance = options?.leaseRegistry
@@ -111,6 +140,14 @@ export class ModuleHibernationCoordinator {
     this.engineBridgeServiceInstance = options?.engineBridgeService
     this.onClusterActivityChangedCb = options?.onClusterActivityChanged
     this.coldStartTimeoutMsProvider = options?.coldStartTimeoutMsProvider
+    this.powerMonitorServiceInstance = options?.powerMonitorService
+    this.getSystemIdleTimeProvider = options?.getSystemIdleTime
+    this.getFreeMemoryProvider = options?.getFreeMemory
+    this.getTotalMemoryProvider = options?.getTotalMemory
+
+    if (options?.powerMonitorService) {
+      this.setupPowerMonitorIntegration(options.powerMonitorService)
+    }
   }
 
   /** 注入或绑定租约中心引用 */
@@ -2348,12 +2385,604 @@ export class ModuleHibernationCoordinator {
     this.endLifecycleOperation(token)
   }
 
+  /**
+   * 群组是否安全可排空 (Ticket 09)
+   * 仅当群组无活跃业务租约时允许优雅排空
+   */
+  isClusterDrainSafe(clusterId: 'analysis_suite' | 'tts_media'): boolean {
+    if (!this.leaseRegistryInstance) return true
+    return this.leaseRegistryInstance.countActive(clusterId) === 0
+  }
+
+  // ==========================================
+  // Gate 分桶等待队列原语 (Ticket 09)
+  // ==========================================
+
+  /**
+   * 挂起等待者入目标分桶队列
+   */
+  enqueueForTarget(req: GateRequest): Promise<HibernationLeaseHandle> {
+    let resolveFn!: (h: HibernationLeaseHandle) => void
+    let rejectFn!: (err: Error) => void
+    const p = new Promise<HibernationLeaseHandle>((resolve, reject) => {
+      resolveFn = resolve
+      rejectFn = reject
+    })
+    const waiter: GateQueueWaiter = {
+      req,
+      resolve: resolveFn,
+      reject: rejectFn
+    }
+    const bucket = this.gateWaiters.get(req.targetId) ?? []
+    bucket.push(waiter)
+    this.gateWaiters.set(req.targetId, bucket)
+    return p
+  }
+
+  /**
+   * 分桶唤醒等待者并链入单飞加载或直接授予
+   */
+  dispatchWaitingForTarget(targetId: string, error?: Error): void {
+    const bucket = this.gateWaiters.get(targetId)
+    if (!bucket || bucket.length === 0) return
+    this.gateWaiters.delete(targetId)
+
+    if (error) {
+      for (const waiter of bucket) {
+        try {
+          waiter.reject(error)
+        } catch {}
+      }
+      return
+    }
+
+    ;(async () => {
+      try {
+        const rt = this.runtimeStore.get(targetId)
+        if (rt?.state === 'hibernated') {
+          await this.startSingleFlightLoad(targetId)
+        }
+        for (const waiter of bucket) {
+          try {
+            const handle = this.acquireLeaseForRequest(waiter.req)
+            waiter.resolve(handle)
+          } catch (e) {
+            waiter.reject(e as Error)
+          }
+        }
+      } catch (err) {
+        for (const waiter of bucket) {
+          try {
+            waiter.reject(err as Error)
+          } catch {}
+        }
+      }
+    })()
+  }
+
+  /**
+   * 分桶全量拒绝清算
+   */
+  rejectAllForTarget(targetId: string, error: HibernationGateAbortedError): number {
+    const bucket = this.gateWaiters.get(targetId)
+    if (!bucket || bucket.length === 0) return 0
+    this.gateWaiters.delete(targetId)
+    for (const waiter of bucket) {
+      try {
+        waiter.reject(error)
+      } catch {}
+    }
+    return bucket.length
+  }
+
+  // ==========================================
+  // 两阶段排空流水线 (Ticket 09)
+  // ==========================================
+
+  /**
+   * 清除在途排空事务
+   */
+  clearDrain(targetId: string, ctx?: DrainTransactionContext): void {
+    const cur = this.activeDrain.get(targetId)
+    if (!ctx || cur === ctx) {
+      if (cur?.cancelWindowTimer) {
+        clearTimeout(cur.cancelWindowTimer)
+        cur.cancelWindowTimer = undefined
+      }
+      this.activeDrain.delete(targetId)
+    }
+  }
+
+  /**
+   * 阶段 2 不可逆临界点守卫
+   */
+  guardBeforeIrreversibleDrain(ctx: DrainTransactionContext): boolean {
+    if (ctx.cancelRequested || ctx.irreversible) return false
+    if (this.isSwapInProgress(ctx.targetId) || this.currentEpoch(ctx.targetId) !== ctx.epoch) {
+      logger.info(
+        LogCategory.SYSTEM,
+        `[Coordinator] drain_yielded_to_swap: targetId=${ctx.targetId}`
+      )
+      return false
+    }
+    ctx.irreversible = true
+    if (ctx.cancelWindowTimer) {
+      clearTimeout(ctx.cancelWindowTimer)
+      ctx.cancelWindowTimer = undefined
+    }
+    return true
+  }
+
+  /**
+   * 模块两阶段排空核心原语 (drainModuleTwoStage)
+   * 阶段 1: 500ms 可撤销窗口 (新任务入场即时恢复 resident)
+   * 阶段 2: 不可逆卸载 (新任务入分桶等待冷启动)
+   */
+  async drainModuleTwoStage(targetId: string): Promise<boolean> {
+    if (this.isSwapInProgress(targetId)) return false
+
+    const meta = HIBERNATABLE_TARGET_CATALOG[targetId]
+    const clusterId = meta?.clusterId ?? 'analysis_suite'
+    if (!this.isClusterDrainSafe(clusterId)) return false
+
+    const rt = this.runtimeStore.get(targetId)
+    if (rt?.state !== 'resident') return false
+
+    let drainToken: LifecycleToken | undefined
+    try {
+      drainToken = this.beginLifecycleOperation(targetId, 'idle_hibernation')
+    } catch (err) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[Coordinator] beginLifecycleOperation idle_hibernation 失败: targetId=${targetId}`,
+        err
+      )
+      return false
+    }
+    if (!drainToken) return false
+
+    const epoch = this.currentEpoch(targetId)
+    const residentBytesAtEntry = rt.residentBytes
+
+    this.commitRuntimeSnapshot(drainToken, d => {
+      d.state = 'draining'
+    })
+
+    let cancelNotifyFn!: () => void
+    const cancelPromise = new Promise<void>(resolve => {
+      cancelNotifyFn = resolve
+    })
+
+    const ctx: DrainTransactionContext = {
+      targetId,
+      epoch,
+      residentBytesAtEntry,
+      cancelRequested: false,
+      irreversible: false,
+      cancelNotify: cancelNotifyFn
+    }
+    this.activeDrain.set(targetId, ctx)
+
+    try {
+      // 阶段 1: 500ms 可撤销窗口挂起
+      let windowTimer: ReturnType<typeof setTimeout> | undefined
+      const windowPromise = new Promise<void>(resolve => {
+        windowTimer = setTimeout(resolve, DRAIN_CANCELABLE_WINDOW_MS)
+      })
+      ctx.cancelWindowTimer = windowTimer
+
+      await Promise.race([windowPromise, cancelPromise])
+
+      // 阶段 2: 临界点校验
+      if (!this.guardBeforeIrreversibleDrain(ctx)) {
+        logger.info(
+          LogCategory.SYSTEM,
+          `[Coordinator] 两阶段排空在不可逆点前被中止/让权: targetId=${targetId}`
+        )
+        return false
+      }
+
+      // 执行不可逆卸载
+      if (meta?.type === 'engine_service') {
+        const oldId = this.engineBridgeServiceInstance?.currentIdentity?.(targetId)
+        if (oldId) {
+          const stopRes = await this.stopServiceBounded(targetId, oldId)
+          if (stopRes.status !== 'stopped_confirmed') {
+            logger.error(
+              LogCategory.SYSTEM,
+              `[Coordinator] 两阶段排空停机未确证退出: targetId=${targetId}`
+            )
+            this.commitRuntimeSnapshot(drainToken, d => {
+              d.state = 'error'
+              d.lastFailureKind = 'unload'
+              d.unloadFailStreak += 1
+            })
+            this.dispatchWaitingForTarget(
+              targetId,
+              new HibernationGateAbortedError(targetId, 'UNLOAD_ESCALATED', '卸载停机失败')
+            )
+            return false
+          }
+        }
+      }
+
+      // 卸载成功，原子归位 hibernated
+      this.commitRuntimeSnapshot(drainToken, d => {
+        d.state = 'hibernated'
+        d.residentBytes = 0
+        d.residentSample = undefined
+        d.unloadFailStreak = 0
+        if (residentBytesAtEntry > 0) {
+          d.lastReleasedBytes = residentBytesAtEntry
+          d.lastReleased = {
+            bytes: residentBytesAtEntry,
+            releasedAt: Date.now(),
+            modelGeneration: d.modelGeneration,
+            kind: d.effectiveMemoryKind ?? 'ram',
+            state: 'available'
+          }
+        }
+      })
+
+      // 属主优先归位释放，杜绝分桶等待者唤醒链入冷启动时发生属主冲突 (OPERATION_LOCKED)
+      if (drainToken && this.activeLifecycleOwner.get(targetId)?.tokenId === drainToken.tokenId) {
+        this.endLifecycleOperation(drainToken)
+        drainToken = undefined
+      }
+
+      this.onClusterActivityChanged(clusterId)
+      // 唤醒分桶等待者（属主已释放，等待者可顺畅申领 single_flight_load 令牌）
+      this.dispatchWaitingForTarget(targetId)
+      return true
+    } finally {
+      this.clearDrain(targetId, ctx)
+      if (drainToken && this.activeLifecycleOwner.get(targetId)?.tokenId === drainToken.tokenId) {
+        this.endLifecycleOperation(drainToken)
+      }
+    }
+  }
+
+  // ==========================================
+  // 业务入场防护门闩 (withHibernationGate)
+  // ==========================================
+
+  /**
+   * 业务调用层入场防护门闩 (withHibernationGate)
+   * 1. 权威持久门闩拦截
+   * 2. 状态机分派与单飞冷启动/排队
+   * 3. 租约自动生命周期与 release 兜底
+   */
+  async withHibernationGate<T>(
+    req: GateRequest,
+    fn: (lease: HibernationLeaseHandle, signal: AbortSignal) => Promise<T>
+  ): Promise<T> {
+    const targetId = req.targetId
+
+    // 1. 持久门闩阻断前置检查
+    const rt = this.runtimeStore.get(targetId)
+    if (rt && (rt.blockedUnloadNoHandle === 1 || rt.blockedUnloadIdentity !== null)) {
+      throw new HibernationGateAbortedError(
+        targetId,
+        'UNLOAD_ESCALATED',
+        '模块由于进程无法正常终止已进入持久阻断门闩，请重启应用'
+      )
+    }
+
+    // 2. 状态分派与租约申领
+    const lease = await this.enqueueOrGrant(req)
+
+    // 3. 执行任务并在 finally 保证 release
+    try {
+      return await fn(lease, lease.abortController.signal)
+    } finally {
+      lease.release()
+    }
+  }
+
+  /**
+   * 准入分派核心原语 (enqueueOrGrant)
+   */
+  private async enqueueOrGrant(req: GateRequest): Promise<HibernationLeaseHandle> {
+    const targetId = req.targetId
+
+    if (this.isSwapInProgress(targetId)) {
+      throw new HibernationGateAbortedError(
+        targetId,
+        'MODEL_SWAPPED',
+        '本地大模型正在换型中，请稍后重试'
+      )
+    }
+
+    const rt = this.runtimeStore.get(targetId)
+    const state = rt?.state ?? 'hibernated'
+
+    // 1. resident 状态：直接获取租约
+    if (state === 'resident') {
+      return this.acquireLeaseForRequest(req)
+    }
+
+    // 2. loading 状态：链入既有单飞等待
+    if (state === 'loading') {
+      const inflight = this.inflightLoads.get(targetId)
+      if (inflight) {
+        await inflight.promise
+      }
+      return this.acquireLeaseForRequest(req)
+    }
+
+    // 3. hibernated 状态：触发单飞冷启动加载
+    if (state === 'hibernated') {
+      await this.startSingleFlightLoad(targetId)
+      return this.acquireLeaseForRequest(req)
+    }
+
+    // 4 & 5. draining 状态：区分阶段 1 (可撤销) 与 阶段 2 (不可逆)
+    if (state === 'draining') {
+      const drainCtx = this.activeDrain.get(targetId)
+      if (drainCtx && !drainCtx.irreversible) {
+        // 阶段 1 可撤销窗口：同步中止排空并恢复 resident
+        drainCtx.cancelRequested = true
+        if (drainCtx.cancelWindowTimer) {
+          clearTimeout(drainCtx.cancelWindowTimer)
+          drainCtx.cancelWindowTimer = undefined
+        }
+        drainCtx.cancelNotify?.()
+        this.clearDrain(targetId, drainCtx)
+
+        const owner = this.activeLifecycleOwner.get(targetId)
+        if (owner && owner.operation === 'idle_hibernation') {
+          this.commitRuntimeSnapshot(owner, d => {
+            d.state = 'resident'
+          })
+          this.endLifecycleOperation(owner)
+        } else {
+          this.runtimeStore.update(targetId, d => {
+            d.state = 'resident'
+          })
+        }
+        return this.acquireLeaseForRequest(req)
+      } else {
+        // 阶段 2 不可逆排空：挂入分桶等待队列
+        return this.enqueueForTarget(req)
+      }
+    }
+
+    // 6. error 状态
+    if (state === 'error') {
+      if (rt?.lastFailureKind === 'unload') {
+        throw new HibernationGateAbortedError(
+          targetId,
+          'UNLOAD_ESCALATED',
+          '模块卸载失败处于错误状态，请重启应用'
+        )
+      }
+      if ((rt?.crashStreak ?? 0) >= CRASH_BREAKER_THRESHOLD) {
+        throw new HibernationColdStartError(
+          targetId,
+          'CRASH_LOOP',
+          '模块连续崩溃达到熔断上限，已暂停冷启动'
+        )
+      }
+      this.runtimeStore.update(targetId, d => {
+        d.lastFailureKind = undefined
+        d.errorPhase = undefined
+        d.errorMessage = undefined
+      })
+      await this.startSingleFlightLoad(targetId)
+      return this.acquireLeaseForRequest(req)
+    }
+
+    return this.acquireLeaseForRequest(req)
+  }
+
+  private acquireLeaseForRequest(req: GateRequest): HibernationLeaseHandle {
+    if (!this.leaseRegistryInstance) {
+      const abortCtrl = new AbortController()
+      return {
+        leaseId: `stub_lease_${Date.now()}`,
+        targetId: req.targetId,
+        clusterId: req.clusterId ?? 'analysis_suite',
+        abortController: abortCtrl,
+        release: () => {}
+      } as any
+    }
+    return this.leaseRegistryInstance.acquireLease({
+      targetId: req.targetId,
+      clusterId: req.clusterId,
+      livenessSourceKey: req.livenessSourceKey
+    })
+  }
+
+  // ==========================================
+  // 群组空闲休眠定时器调度与动态内存判定 (Ticket 09)
+  // ==========================================
+
+  /**
+   * 启动群组空闲休眠倒计时
+   */
+  scheduleIdleHibernation(clusterId: 'analysis_suite' | 'tts_media'): void {
+    this.cancelIdleHibernation(clusterId)
+
+    const idleTimeout =
+      clusterId === 'analysis_suite' ? ANALYSIS_SUITE_IDLE_TIMEOUT_MS : TTS_IDLE_TIMEOUT_MS
+
+    this.clusterIdleStartTime.set(clusterId, Date.now())
+
+    const timer = setTimeout(() => {
+      void this.handleClusterIdleTimeout(clusterId)
+    }, idleTimeout)
+
+    if (timer && typeof timer.unref === 'function') {
+      timer.unref()
+    }
+    this.clusterIdleTimers.set(clusterId, timer)
+  }
+
+  /**
+   * 取消群组空闲休眠倒计时
+   */
+  cancelIdleHibernation(clusterId: 'analysis_suite' | 'tts_media'): void {
+    const timer = this.clusterIdleTimers.get(clusterId)
+    if (timer) {
+      clearTimeout(timer)
+      this.clusterIdleTimers.delete(clusterId)
+    }
+    const graceTimer = this.clusterGraceTimers.get(clusterId)
+    if (graceTimer) {
+      clearTimeout(graceTimer)
+      this.clusterGraceTimers.delete(clusterId)
+    }
+    this.clusterIdleStartTime.delete(clusterId)
+  }
+
+  private async handleClusterIdleTimeout(clusterId: 'analysis_suite' | 'tts_media'): Promise<void> {
+    if (!this.isClusterDrainSafe(clusterId)) {
+      logger.info(
+        LogCategory.SYSTEM,
+        `[Coordinator] 群组仍有活跃任务，取消空闲排空: clusterId=${clusterId}`
+      )
+      return
+    }
+
+    const idleStart = this.clusterIdleStartTime.get(clusterId) ?? Date.now()
+    const idleDurationMs = Date.now() - idleStart
+    const totalMem = this.getTotalMemoryProvider ? this.getTotalMemoryProvider() : os.totalmem()
+    const freeMem = this.getFreeMemoryProvider ? this.getFreeMemoryProvider() : os.freemem()
+
+    const idleSec = this.getSystemIdleTimeProvider
+      ? this.getSystemIdleTimeProvider()
+      : this.powerMonitorServiceInstance
+        ? this.powerMonitorServiceInstance.getSystemIdleTime()
+        : Math.floor(idleDurationMs / 1000)
+
+    const threshold = computeHibernationMemoryThreshold(totalMem, idleSec * 1000)
+
+    const isMemoryTight = freeMem < threshold
+    const isGracePeriodExceeded = idleDurationMs >= MAX_GRACE_PERIOD_MS
+
+    if (isMemoryTight || isGracePeriodExceeded) {
+      logger.info(
+        LogCategory.SYSTEM,
+        `[Coordinator] 触发群组空闲排空: clusterId=${clusterId}, freeMem=${freeMem}, threshold=${threshold}`
+      )
+      await this.drainClusterResidentTargets(clusterId)
+    } else {
+      // 内存充裕，进入 60s 宽限重检
+      const graceTimer = setTimeout(() => {
+        void this.handleClusterIdleTimeout(clusterId)
+      }, STABLE_RESIDENT_RESET_MS)
+      if (graceTimer && typeof graceTimer.unref === 'function') {
+        graceTimer.unref()
+      }
+      this.clusterGraceTimers.set(clusterId, graceTimer)
+    }
+  }
+
+  /**
+   * 优雅排空群组内所有处于 resident 的模块
+   */
+  async drainClusterResidentTargets(clusterId: 'analysis_suite' | 'tts_media'): Promise<void> {
+    const targets = this.idleDrainTargets(clusterId)
+    for (const targetId of targets) {
+      await this.drainModuleTwoStage(targetId).catch(err => {
+        logger.error(
+          LogCategory.SYSTEM,
+          `[Coordinator] drainModuleTwoStage failed: targetId=${targetId}`,
+          err
+        )
+      })
+    }
+  }
+
+  /**
+   * 获取指定群组内所有处于 resident 且未在换型中的目标列表
+   */
+  idleDrainTargets(clusterId: 'analysis_suite' | 'tts_media'): string[] {
+    const targets: string[] = []
+    for (const [id, meta] of Object.entries(HIBERNATABLE_TARGET_CATALOG)) {
+      if (meta.clusterId === clusterId) {
+        const rt = this.runtimeStore.get(id)
+        if (rt?.state === 'resident' && !this.isSwapInProgress(id)) {
+          targets.push(id)
+        }
+      }
+    }
+    return targets
+  }
+
+  /**
+   * 动态内存自适应阈值计算代理 (Ticket 04 / 09)
+   */
+  computeHibernationMemoryThreshold(
+    totalPhysicalMemoryBytes: number,
+    idleDurationMs: number = 0,
+    userOverrideThresholdMb?: number
+  ): number {
+    return computeHibernationMemoryThreshold(
+      totalPhysicalMemoryBytes,
+      idleDurationMs,
+      userOverrideThresholdMb
+    )
+  }
+
+  // ==========================================
+  // 系统事件即时节能 (powerMonitor 锁屏与休眠)
+  // ==========================================
+
+  /**
+   * 绑定 powerMonitor 节能监听
+   */
+  setupPowerMonitorIntegration(pm?: IPowerMonitorService): void {
+    const powerMonitor = pm ?? this.powerMonitorServiceInstance
+    if (!powerMonitor) return
+
+    this.powerMonitorServiceInstance = powerMonitor
+
+    powerMonitor.on('lock-screen', () => {
+      logger.info(LogCategory.SYSTEM, '[Coordinator] 收到锁屏事件 (lock-screen)，执行即时节能')
+      this.handlePowerEventImmediateEviction()
+    })
+
+    powerMonitor.on('suspend', () => {
+      logger.info(LogCategory.SYSTEM, '[Coordinator] 收到休眠挂起事件 (suspend)，执行即时节能')
+      this.handlePowerEventImmediateEviction()
+    })
+
+    powerMonitor.on('resume', () => {
+      logger.info(LogCategory.SYSTEM, '[Coordinator] 收到系统恢复事件 (resume)，执行对账')
+      this.reconcile()
+    })
+  }
+
+  private handlePowerEventImmediateEviction(): void {
+    for (const [targetId, meta] of Object.entries(HIBERNATABLE_TARGET_CATALOG)) {
+      const rt = this.runtimeStore.get(targetId)
+      if (
+        rt?.state === 'resident' &&
+        this.isClusterDrainSafe(meta.clusterId) &&
+        !this.isSwapInProgress(targetId)
+      ) {
+        this.drainModuleTwoStage(targetId).catch(() => {})
+      }
+    }
+  }
+
   /** 触发集群活动变化通知 */
   onClusterActivityChanged(clusterId: 'analysis_suite' | 'tts_media'): void {
     try {
       this.onClusterActivityChangedCb?.(clusterId)
     } catch {
       // 容错隔离
+    }
+
+    const count =
+      typeof this.leaseRegistryInstance?.countActive === 'function'
+        ? this.leaseRegistryInstance.countActive(clusterId)
+        : 0
+    if (count === 0) {
+      this.scheduleIdleHibernation(clusterId)
+    } else {
+      this.cancelIdleHibernation(clusterId)
     }
   }
 
@@ -2365,6 +2994,26 @@ export class ModuleHibernationCoordinator {
       } catch {}
     }
     this.stoppingCleanups.clear()
+
+    // 清理群组定时器与排空窗口定时器
+    for (const timer of Array.from(this.clusterIdleTimers.values())) {
+      clearTimeout(timer)
+    }
+    this.clusterIdleTimers.clear()
+
+    for (const timer of Array.from(this.clusterGraceTimers.values())) {
+      clearTimeout(timer)
+    }
+    this.clusterGraceTimers.clear()
+    this.clusterIdleStartTime.clear()
+
+    for (const ctx of Array.from(this.activeDrain.values())) {
+      if (ctx.cancelWindowTimer) {
+        clearTimeout(ctx.cancelWindowTimer)
+      }
+    }
+    this.activeDrain.clear()
+    this.gateWaiters.clear()
 
     this.targetEpochs.clear()
     this.activeLifecycleOwner.clear()

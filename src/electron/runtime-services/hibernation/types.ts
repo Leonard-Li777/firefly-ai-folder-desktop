@@ -431,3 +431,46 @@ export interface IEngineBridgeService {
     }
   ): Promise<{ identity: ProcessTreeIdentity; jobHandle?: string }>
 }
+
+// ==========================================
+// 业务入场防护门闩与两阶段排空契约 (Ticket 09)
+// ==========================================
+
+export interface GateRequest {
+  readonly targetId: string
+  readonly clusterId?: 'analysis_suite' | 'tts_media'
+  readonly livenessSourceKey?: 'task_progress' | 'player_state'
+}
+
+export interface DrainTransactionContext {
+  readonly targetId: string
+  readonly epoch: number
+  readonly residentBytesAtEntry?: number
+  cancelRequested: boolean
+  irreversible: boolean
+  cancelWindowTimer?: ReturnType<typeof setTimeout>
+  cancelNotify?: () => void
+}
+
+export interface GateQueueWaiter {
+  readonly req: GateRequest
+  readonly resolve: (handle: HibernationLeaseHandle) => void
+  readonly reject: (err: Error) => void
+}
+
+export class HibernationColdStartError extends Error {
+  constructor(
+    public readonly targetId: string,
+    public readonly code: string,
+    message: string
+  ) {
+    super(message)
+    this.name = 'HibernationColdStartError'
+  }
+}
+
+/** PowerMonitor 服务抽象契约（供解耦与单测） */
+export interface IPowerMonitorService {
+  on(event: 'lock-screen' | 'unlock-screen' | 'suspend' | 'resume', listener: () => void): this
+  getSystemIdleTime(): number
+}
