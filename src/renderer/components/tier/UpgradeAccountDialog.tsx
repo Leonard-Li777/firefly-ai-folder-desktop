@@ -101,7 +101,7 @@ export const UpgradeAccountDialog: React.FC<UpgradeAccountDialogProps> = ({
         t('7*24专属技术支持通道')
       ],
       current: tier === UserTier.ENTERPRISE,
-      buttonText: tier === UserTier.ENTERPRISE ? t('当前计划') : t('联系升级'),
+      buttonText: tier === UserTier.ENTERPRISE ? t('当前计划') : t('立即升级'),
       buttonVariant: 'secondary' as const,
       disabled: tier === UserTier.ENTERPRISE
     }
