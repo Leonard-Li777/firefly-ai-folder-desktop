@@ -65,6 +65,14 @@ function registerClipTextRuntimeReset(): void {
     omniClient.clearClipTextHealthCache()
     invalidateClipTextWarmState()
     logger.info(LogCategory.MAIN, '[CLIP] Omni 已就绪，已复位文本塔探活缓存与热态纪元')
+    // 延迟 3s 后台静默预热 70 套官方工作流向量缓存，避免用户首次打开工作目录向导时现场编码 70 套触发超时降级
+    setTimeout(() => {
+      import('../runtime-services/workflow/workflow-semantic-matcher-service')
+        .then(({ WorkflowSemanticMatcherService }) =>
+          WorkflowSemanticMatcherService.getInstance().tryPrewarm()
+        )
+        .catch(() => {})
+    }, 3000)
   })
 }
 import { invitationService } from '../runtime-services/invitation/invitation-service'

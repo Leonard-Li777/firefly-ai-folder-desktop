@@ -579,5 +579,256 @@ describe('Workflow Preset & Recommender Engine (Spec v1.1 §3.2)', () => {
         expect(universalRec.score).toBe(55)
       }
     })
+
+    it('回归场景: 45% 快捷方式与链接 (.lnk/.url) + 多模态杂散（含偶发 .epub 与 Stage B 噪声）必须首推桌面工作流，绝不误推菜谱库或非桌面垂直流', () => {
+      const desktopIds = [
+        'builtin.workflow.desktop-declutter',
+        'builtin.workflow.desktop-classic-classification'
+      ]
+
+      // 场景 1: .lnk 45% + 1 个偶发 .epub + 杂散文档/图片/音视频/代码，即使路径未命名为 Desktop
+      const lnkWithEpubStats: DirectoryProfileStats = {
+        totalFiles: 100,
+        totalSampled: 100,
+        countsByExt: {
+          '.lnk': 45,
+          '.png': 11,
+          '.jpg': 10,
+          '.docx': 9,
+          '.xlsx': 5,
+          '.pdf': 5,
+          '.epub': 1,
+          '.mp3': 6,
+          '.js': 4,
+          '.mp4': 2,
+          '.txt': 2
+        },
+        isDesktopPath: false,
+        isDownloadsPath: false,
+        // 模拟 Stage B 杂乱软件名引发的温和噪声（未解锁）
+        semanticScoresByWorkflowId: {
+          'builtin.workflow.cooking-recipes-vault': 0.78,
+          'builtin.workflow.desktop-declutter': 0.25,
+          'builtin.workflow.desktop-classic-classification': 0.25
+        },
+        unlockedWorkflowIds: []
+      }
+      const res1 = recommendWorkflowByProfile(lnkWithEpubStats)
+      expect(desktopIds).toContain(res1[0].workflowId)
+      expect(res1[0].score).toBeGreaterThanOrEqual(80)
+      // 前 5 名中不应出现将 .lnk 列为排除名单却误获桌面加成的垂直工作流高分篡位
+      const cookingRec1 = res1.find(r => r.workflowId === 'builtin.workflow.cooking-recipes-vault')
+      if (cookingRec1) {
+        expect(cookingRec1.score).toBeLessThanOrEqual(68)
+      }
+      const legalRec1 = res1.find(r => r.workflowId === 'builtin.workflow.legal-case-dossier')
+      if (legalRec1) {
+        expect(legalRec1.reasonCode).not.toBe('desktop_declutter')
+        expect(legalRec1.score).toBeLessThanOrEqual(68)
+      }
+
+      // 场景 2: 快捷方式与链接全为 .url (45%)，不含 .lnk，验证聚合统计 SHORTCUT_EXTS 同样稳推桌面工作流
+      const urlOnlyStats: DirectoryProfileStats = {
+        totalFiles: 98,
+        totalSampled: 98,
+        countsByExt: {
+          '.url': 45,
+          '.png': 11,
+          '.jpg': 10,
+          '.docx': 10,
+          '.xlsx': 5,
+          '.pdf': 5,
+          '.mp3': 6,
+          '.js': 4,
+          '.mp4': 2
+        },
+        isDesktopPath: false,
+        isDownloadsPath: false
+      }
+      const res2 = recommendWorkflowByProfile(urlOnlyStats)
+      expect(desktopIds).toContain(res2[0].workflowId)
+      expect(res2[0].score).toBeGreaterThanOrEqual(80)
+      expect(res2[0].workflowId).not.toBe('builtin.workflow.cooking-recipes-vault')
+    })
+
+    it('回归场景: TS/JS/HTML/JSON/MD 前端代码项目 (无 .tsx/.vue/.kt/.h) 必须稳推代码工作流 T2 (>=85分)，绝不落入通用数字资产或菜谱', () => {
+      const codeProjectStats: DirectoryProfileStats = {
+        totalFiles: 129,
+        totalSampled: 129,
+        countsByExt: {
+          md: 48,
+          json: 27,
+          yaml: 2,
+          html: 15,
+          ts: 13,
+          js: 7,
+          ico: 1,
+          txt: 1,
+          jpg: 4,
+          png: 6,
+          webp: 1
+        }
+      }
+      const recs = recommendWorkflowByProfile(codeProjectStats)
+      expect([
+        'builtin.workflow.code-asset-vault',
+        'builtin.workflow.frontend-dev',
+        'builtin.workflow.backend-arch'
+      ]).toContain(recs[0].workflowId)
+      expect(recs[0].tier).toBe('T2')
+      expect(recs[0].score).toBeGreaterThanOrEqual(85)
+      expect(recs[0].workflowId).not.toBe('builtin.workflow.para-universal')
+      expect(recs[0].workflowId).not.toBe('builtin.workflow.cooking-recipes-vault')
+    })
+
+    it('回归场景: 音乐收藏目录 (.flac + .mp3 + .lrc + .jpg) 前 3 名必须包含音乐与影音收藏工作流，绝不被长辈档案等杂项抢占', () => {
+      const musicCollectionStats: DirectoryProfileStats = {
+        totalFiles: 300,
+        totalSampled: 300,
+        countsByExt: {
+          flac: 63,
+          lrc: 133,
+          mp3: 87,
+          jpg: 16,
+          ini: 1
+        }
+      }
+      const recs = recommendWorkflowByProfile(musicCollectionStats)
+      const top3Ids = recs.slice(0, 3).map(r => r.workflowId)
+      expect(top3Ids).toContain('builtin.workflow.music-audio')
+      expect(top3Ids).toContain('builtin.workflow.media-collector-vault')
+      expect(top3Ids).toContain('builtin.workflow.movie-cinema')
+      // 影音收藏库必须处于高分阵营 (>= 85)，显著领先长辈生活档案等 T3 模板
+      const mediaRec = recs.find(r => r.workflowId === 'builtin.workflow.media-collector-vault')
+      const movieRec = recs.find(r => r.workflowId === 'builtin.workflow.movie-cinema')
+      expect(mediaRec?.score).toBeGreaterThanOrEqual(85)
+      expect(movieRec?.score).toBeGreaterThanOrEqual(85)
+      const seniorRec = recs.find(r => r.workflowId === 'builtin.workflow.senior-life-archive')
+      if (seniorRec) {
+        expect(seniorRec.score).toBeLessThan(70)
+      }
+    })
+
+    it('回归场景: 纯 .txt 科幻小说目录在 Stage B 语义解锁后，小说与电子书书库稳居榜首并击败通用数字资产管理体系', () => {
+      const sciFiNovelStats: DirectoryProfileStats = {
+        totalFiles: 251,
+        totalSampled: 251,
+        countsByExt: { txt: 249, downloading: 1, jpg: 1 },
+        semanticScoresByWorkflowId: {
+          'builtin.workflow.novel': 0.95,
+          'builtin.workflow.para-universal': 0.4,
+          'builtin.workflow.johnny-decimal': 0.4
+        },
+        unlockedWorkflowIds: ['builtin.workflow.novel']
+      }
+      const recs = recommendWorkflowByProfile(sciFiNovelStats)
+      expect(recs[0].workflowId).toBe('builtin.workflow.novel')
+      expect(recs[0].score).toBeGreaterThanOrEqual(70)
+      expect(recs[0].score - (recs[1]?.score ?? 0)).toBeGreaterThanOrEqual(15)
+    })
+
+    it('回归场景: 多项目创意混合目录 (图/文/视频/JSON/ZIP) 未语义解锁时，宠物档案/菜谱库等零专属垂类恒封顶 <=70，绝不误推数据分析或宠物/菜谱', () => {
+      const mixedCreativeProjects: DirectoryProfileStats = {
+        totalFiles: 126,
+        totalSampled: 126,
+        countsByExt: {
+          zip: 4,
+          txt: 11,
+          pdf: 9,
+          docx: 1,
+          jpg: 17,
+          psd: 4,
+          json: 27,
+          mp3: 3,
+          mp4: 16,
+          png: 22,
+          webp: 1,
+          ico: 1,
+          db: 1,
+          gif: 1,
+          svg: 2,
+          md: 1,
+          xlsx: 5
+        }
+      }
+      const recs = recommendWorkflowByProfile(mixedCreativeProjects)
+      expect(recs[0].workflowId).not.toBe('builtin.workflow.pet-care-diary')
+      expect(recs[0].workflowId).not.toBe('builtin.workflow.cooking-recipes-vault')
+      expect(recs[0].workflowId).not.toBe('builtin.workflow.data-science-analytics')
+      for (const weakId of [
+        'builtin.workflow.pet-care-diary',
+        'builtin.workflow.cooking-recipes-vault',
+        'builtin.workflow.senior-life-archive'
+      ]) {
+        const hit = recs.find(r => r.workflowId === weakId)
+        if (hit) {
+          expect(hit.score).toBeLessThanOrEqual(70)
+        }
+      }
+    })
+
+    it('回归场景: Download 下载目录含少量 .log/.inf 与多个 .apk 时，必须首推下载文件夹自动分类 (99分)，严禁 2 个 .log 篡位 T1 倒挂，且手机开发/硬件装机绝不虚高', () => {
+      const downloadStats: DirectoryProfileStats = {
+        totalFiles: 265,
+        totalSampled: 265,
+        countsByExt: {
+          zip: 82,
+          exe: 50,
+          apk: 20,
+          png: 14,
+          pdf: 9,
+          sys: 9,
+          cat: 8,
+          inf: 8,
+          mp4: 8,
+          txt: 8,
+          '7z': 7,
+          xlsx: 5,
+          html: 5,
+          msi: 3,
+          jpeg: 3,
+          'tar.xz': 3,
+          json: 3,
+          md: 2,
+          gz: 2,
+          log: 2,
+          'tar.gz': 2,
+          ico: 2,
+          ini: 1,
+          rpm: 1,
+          onnx: 1,
+          jpg: 1,
+          iso: 1,
+          docx: 1,
+          ods: 1,
+          icns: 1,
+          pyobj: 1,
+          rar: 1
+        },
+        isDownloadsPath: true,
+        isDesktopPath: false,
+        semanticScoresByWorkflowId: {
+          'builtin.workflow.downloads-triage': 0.96,
+          'builtin.workflow.mobile-app-dev': 0.88,
+          'builtin.workflow.pc-hardware-gear': 0.78,
+          'builtin.workflow.system-cache-appdata-vault': 0.2
+        },
+        unlockedWorkflowIds: [
+          'builtin.workflow.downloads-triage',
+          'builtin.workflow.mobile-app-dev'
+        ]
+      }
+      const recs = recommendWorkflowByProfile(downloadStats)
+      expect(recs[0].workflowId).toBe('builtin.workflow.downloads-triage')
+      expect(recs[0].score).toBe(99)
+      expect(recs[0].score - (recs[1]?.score ?? 0)).toBeGreaterThanOrEqual(15)
+      // 严禁仅 2 个 .log (0.75%) 晋升 T1 倒挂 99 分
+      expect(recs[0].workflowId).not.toBe('builtin.workflow.system-cache-appdata-vault')
+      // 严禁手机开发库借 .apk 拿 99 分或硬件装机库借 .exe/.zip+3%.inf 拿 83 分
+      const mobileRec = recs.find(r => r.workflowId === 'builtin.workflow.mobile-app-dev')
+      if (mobileRec) expect(mobileRec.score).toBeLessThanOrEqual(74)
+      const pcRec = recs.find(r => r.workflowId === 'builtin.workflow.pc-hardware-gear')
+      if (pcRec) expect(pcRec.score).toBeLessThanOrEqual(70)
+    })
   })
 })

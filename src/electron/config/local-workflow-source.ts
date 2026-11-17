@@ -9401,7 +9401,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       },
       {
-        id: 'builtin.workflow.cooking-recipes-vault-exclusive-1',
+        id: 'builtin.workflow.cooking-recipes-vault-common-epub',
         type: 'extension',
         value: '.epub',
         isActive: true,
@@ -17988,7 +17988,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
 /**
  * 组装单套工作流就绪配置
  * 彻底消除冗余字段：baseAIConfig 由共享预设键引用，
- * namingPattern / namingTemplate 由顶层字段权威承载，derivedSnapshot 已废弃。
+ * namingPattern / namingTemplate 由顶层字段权威承载，derivedSnapshot 已彻底删除。
  */
 const buildWorkspaceConfig = (def: LocalWorkflowDefinition): WorkspaceConfigReady => {
   const baseAi = BASE_AI_CONFIG_PRESETS[def.baseAIKey]
@@ -18043,3 +18043,6 @@ export const LOCAL_WORKFLOW_SOURCE = (): Array<{
     icon_svg: def.icon_svg
   }))
 }
+
+/** 兼容别名：与旧事实源工厂签名对齐 */
+export const LOCAL_WORKFLOW_CONFIG_SOURCE = LOCAL_WORKFLOW_SOURCE

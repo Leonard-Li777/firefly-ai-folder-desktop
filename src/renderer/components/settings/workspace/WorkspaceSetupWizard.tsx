@@ -633,6 +633,41 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     setSemanticScores({})
     setUnlockedWorkflowIds([])
 
+    let retryTimer: ReturnType<typeof setTimeout> | null = null
+
+    const runStageB = (req: WorkflowSemanticsScoreRequest, allowRetry: boolean) => {
+      const scoreFn = window.electronAPI?.utils?.scoreWorkflowSemantics
+      if (!scoreFn) return
+      // 渲染端全异步外层超时 5000ms 熔断保护 (Promise.race，不阻塞 Stage A 首屏)
+      const timeoutPromise = new Promise<{ status: 'degraded'; reason: 'timeout' }>(resolve =>
+        setTimeout(() => resolve({ status: 'degraded', reason: 'timeout' }), 5000)
+      )
+
+      Promise.race([scoreFn(req), timeoutPromise])
+        .then(bRes => {
+          if (cancelled || epoch !== probeSeqRef.current || boundKeyRef.current !== boundKey) {
+            return
+          }
+          if (bRes?.status === 'ok') {
+            setSemanticScores(bRes.semanticScoresByWorkflowId || {})
+            setUnlockedWorkflowIds([...(bRes.unlockedWorkflowIds || [])])
+          } else if (
+            allowRetry &&
+            (bRes?.reason === 'timeout' || bRes?.reason === 'engine_not_ready')
+          ) {
+            // 首次冷启动预热或引擎拉起尚未完成时，延迟 2.5s 静默重试 1 次（此时后台官方向量多已落缓存）
+            retryTimer = setTimeout(() => {
+              if (!cancelled && epoch === probeSeqRef.current && boundKeyRef.current === boundKey) {
+                runStageB(req, false)
+              }
+            }, 2500)
+          }
+        })
+        .catch(err => {
+          console.warn('[WorkspaceSetupWizard] Stage B 语义打分异常:', err)
+        })
+    }
+
     const probe = async () => {
       if (!window.electronAPI?.utils?.probeDirectoryProfile || !workspace.path) return
       setIsProbing(true)
@@ -646,37 +681,19 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
 
           // Stage B: 触发异步端侧语义向量打分 (放宽至 >= 1 单样本冷启动)
           const sampled = (result as any).stats?.totalSampled ?? 0
-          if (sampled >= 1 && window.electronAPI?.utils?.scoreWorkflowSemantics) {
+          if (
+            sampled >= 1 &&
+            typeof window.electronAPI?.utils?.scoreWorkflowSemantics === 'function'
+          ) {
             const req: WorkflowSemanticsScoreRequest = {
               probeSeq: epoch,
               dirPath: workspace.path,
               countsByExt: (result as any).stats?.countsByExt || {},
               totalFiles: sampled,
-              sampledFileNames: (result as any).stats?.sampledFileNames || []
+              sampledFileNames: (result as any).stats?.sampledFileNames || [],
+              sampledSubDirNames: (result as any).stats?.sampledSubDirNames || []
             }
-
-            // 渲染端外层超时 1500ms 熔断保护 (Promise.race)
-            const timeoutPromise = new Promise<{ status: 'degraded'; reason: 'timeout' }>(resolve =>
-              setTimeout(() => resolve({ status: 'degraded', reason: 'timeout' }), 1500)
-            )
-
-            Promise.race([window.electronAPI.utils.scoreWorkflowSemantics(req), timeoutPromise])
-              .then(bRes => {
-                if (
-                  cancelled ||
-                  epoch !== probeSeqRef.current ||
-                  boundKeyRef.current !== boundKey
-                ) {
-                  return
-                }
-                if (bRes?.status === 'ok') {
-                  setSemanticScores(bRes.semanticScoresByWorkflowId || {})
-                  setUnlockedWorkflowIds([...(bRes.unlockedWorkflowIds || [])])
-                }
-              })
-              .catch(err => {
-                console.warn('[WorkspaceSetupWizard] Stage B 语义打分异常:', err)
-              })
+            runStageB(req, true)
           }
         }
       } catch (err) {
@@ -691,6 +708,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     probe()
     return () => {
       cancelled = true
+      if (retryTimer) clearTimeout(retryTimer)
     }
   }, [workspace.id, workspace.path, parsedConfig.status])
 
@@ -1138,8 +1156,8 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
 
       // 解析 AI 引擎参数
       let baseAi: TechnicalEngineParameters
-      if (selectedTemplateConfig?.baseAIConfig || selectedTemplateConfig?.derivedSnapshot) {
-        baseAi = selectedTemplateConfig.baseAIConfig || selectedTemplateConfig.derivedSnapshot
+      if (selectedTemplateConfig?.baseAIConfig) {
+        baseAi = selectedTemplateConfig.baseAIConfig
       } else if (selectedWorkflow.engine_params_json) {
         try {
           baseAi = JSON.parse(selectedWorkflow.engine_params_json)

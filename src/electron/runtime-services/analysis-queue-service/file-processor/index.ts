@@ -67,6 +67,7 @@ import {
   type FileInfoInput
 } from '@firefly/core-engine'
 import { executeProPreflight, executeProTagReconciliation } from '@pro'
+import { extractAiLemmasFromDimResult } from './lemma-candidates'
 import { omniService } from '../../system/omni-service'
 import { omniClient } from '../../../services/omni-client'
 import { modularResourceService } from '../../system/modular-resource-service'
@@ -699,8 +700,7 @@ function createRetagCompletedHandler(filePath: string, fileFingerprint: string) 
 
 /**
  * 运行时「首见回源」：把本批 lemma 中本地镜像未命中的，批量查 pack 补进 tag_aliases_[lang]。
- *
- * 对应设计三步：① 查镜像 → ② 未命中查 pack → ③ pack 有则补镜像再用（pack 无才让下游派生 _ext）。
+ * * 对应设计三步：① 查镜像 → ② 未命中查 pack → ③ pack 有则补镜像再用（pack 无才让下游派生 _ext）。
  * 挂载点在 executeProTagReconciliation **之前**：此时 AI 已吐出 groundTruthTags（lemma 已知），
  * 但 resolveControlledCode（同步）尚未执行。在此批量补镜像后，下游同步反查即可命中受控 code，
  * 不再误派生 _ext（如「妈妈→omw.10332385.n」而非 _ext.45f1364f）。
@@ -709,12 +709,20 @@ function createRetagCompletedHandler(filePath: string, fileFingerprint: string) 
  * @param lemmas 本批已知 lemma 列表（来自 groundTruthTags.tagName）
  * @param locale 语言，如 zh-CN
  */
-async function ensureLemmaAliasesSeeded(
+export async function ensureLemmaAliasesSeeded(
   lemmas: Array<string | undefined | null>,
-  locale?: string
+  locale?: string,
+  aiLemmas?: Array<string | undefined | null>
 ): Promise<void> {
+  // 回源候选必须覆盖 groundTruthTags（CPU 物理事实）与 aiLemmas（AI 推理 lemma）两类来源。
+  // 「妈妈」这类词是 AI 推理标签，若只回源 groundTruthTags 会漏掉，导致镜像长期无受控码，
+  // 下游 resolveControlledCode 落空 → 派生 _ext.45f1364f（实测 bug）。
   const candidates = [
-    ...new Set(lemmas.map(l => (typeof l === 'string' ? l.trim() : '')).filter(l => l.length > 0))
+    ...new Set(
+      [...lemmas, ...(aiLemmas ?? [])]
+        .map(l => (typeof l === 'string' ? l.trim() : ''))
+        .filter(l => l.length > 0)
+    )
   ]
   if (candidates.length === 0) return
 
@@ -1867,7 +1875,8 @@ export class FileProcessor {
         // 运行时首见回源：本批 lemma 本地镜像未命中的，批量查 pack 补镜像（防误派生 _ext）
         await ensureLemmaAliasesSeeded(
           preflightContext?.groundTruthTags?.map(t => t.tagName),
-          baseMetadata?.language
+          baseMetadata?.language,
+          extractAiLemmasFromDimResult(dimResult)
         )
 
         // 运行找补裁决器：将 CPU 既定事实标签与 AI 推理标签合并，物理事实绝对覆盖，全量无损入库（打破 8 个上限限制）
@@ -3116,6 +3125,7 @@ export class FileProcessor {
             }
           }
           // 运行时首见回源：本批 lemma 本地镜像未命中的，批量查 pack 补镜像（防误派生 _ext）
+          // 此分支（CPU Stage 2）无 AI 推理结果（dimResult 为 null），仅回源 groundTruthTags。
           await ensureLemmaAliasesSeeded(
             preflightContext?.groundTruthTags?.map(t => t.tagName),
             language
@@ -3294,6 +3304,7 @@ export class FileProcessor {
         )
 
         // 运行时首见回源：本批 lemma 本地镜像未命中的，批量查 pack 补镜像（防误派生 _ext）
+        // 此 simple 基础分析分支无 AI 推理结果（下游传 dimResult: null），仅回源 groundTruthTags。
         await ensureLemmaAliasesSeeded(
           preflightContext?.groundTruthTags?.map(t => t.tagName),
           language
@@ -3518,7 +3529,8 @@ export class FileProcessor {
       // 运行时首见回源：本批 lemma 本地镜像未命中的，批量查 pack 补镜像（防误派生 _ext）
       await ensureLemmaAliasesSeeded(
         preflightContext?.groundTruthTags?.map(t => t.tagName),
-        language
+        language,
+        extractAiLemmasFromDimResult(dimResult)
       )
 
       // 运行找补裁决器单点持久化：将 CPU 既定事实标签（含清洗后的作者、分类、扩展名）与 AI 推理标签合并，物理事实绝对覆盖，全量无损原子入库
