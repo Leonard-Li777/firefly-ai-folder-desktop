@@ -88,6 +88,8 @@ describe('worktree-env: initWorktreeEnvironment 主分支与特性分支统一�
   beforeEach(() => {
     process.env = { ...originalEnv }
     mockIsPackaged = false
+    // 清理 test-setup.ts 全局注入的 __BUILD_REGION__，让用例严格走环境变量路径
+    delete (globalThis as any).__BUILD_REGION__
     _resetCachedInfoForTesting()
   })
 
@@ -141,6 +143,8 @@ describe('worktree-env: resolveAppRegion 决议顺序四级加固 (ISS-03)', () 
     process.env = { ...originalEnv }
     delete process.env.APP_REGION
     delete process.env.BUILD_REGION
+    // 清理 test-setup.ts 全局注入的编译常量，保证"未注入"用例的前置条件成立
+    delete (globalThis as any).__BUILD_REGION__
     _resetCachedInfoForTesting()
   })
 

@@ -72,13 +72,13 @@ describe('WelcomeStep2PluginSetup (欢迎向导第二步：只选择、不安装
     return { ...props, unmount: view.unmount }
   }
 
-  it('硬件看板与去重精确体积：推荐组合 727.7 MiB', () => {
+  it('硬件看板与去重精确体积：推荐组合 796.2 MiB', () => {
     setup()
 
     expect(screen.getByText('16 GB')).toBeDefined()
     expect(screen.getByText('50 GB')).toBeDefined()
     expect(within(screen.getByTestId('welcome-engine-gemma-card')).getByText('推荐')).toBeDefined()
-    expect(screen.getByText('727.7 MiB')).toBeDefined()
+    expect(screen.getByText('796.2 MiB')).toBeDefined()
   })
 
   it('本页绝不安装：没有「开启 Firefly」、没有离线导入按钮、没有进度条，点击也不触发任何安装 API', () => {
@@ -141,18 +141,22 @@ describe('WelcomeStep2PluginSetup (欢迎向导第二步：只选择、不安装
     expect(desc.className).toContain('text-muted-foreground')
   })
 
-  it('取消勾选离线语音朗读后体积精确减到 436.0 MiB，并通过 onChange 上报', () => {
+  it('取消勾选离线语音朗读后体积精确减到 495.6 MiB，并通过 onChange 上报', () => {
     const props = setup()
 
     fireEvent.click(screen.getByText('离线语音朗读（TTS）'))
 
-    expect(props.onChange).toHaveBeenCalledWith({
-      selectedOptionals: {
-        perception_nsfw: true,
-        asr_sensevoice_onnx: true,
-        tts_m5_onnx: false
-      }
-    })
+    // 第二个参数是「用户显式手动改动过的键」，容器据此在硬件探测回填时跳过该键
+    expect(props.onChange).toHaveBeenCalledWith(
+      {
+        selectedOptionals: {
+          perception_nsfw: true,
+          asr_sensevoice_onnx: true,
+          tts_m5_onnx: false
+        }
+      },
+      ['tts_m5_onnx']
+    )
     // 组件是受控的，单元测试里由外层决定新值；这里验证体积算法对不含 TTS 的组合仍精确
     setup({
       selection: {
@@ -160,10 +164,10 @@ describe('WelcomeStep2PluginSetup (欢迎向导第二步：只选择、不安装
         selectedOptionals: { ...recommendedSelection.selectedOptionals, tts_m5_onnx: false }
       }
     })
-    expect(screen.getByText('436.0 MiB')).toBeDefined()
+    expect(screen.getByText('495.6 MiB')).toBeDefined()
   })
 
-  it('切换引擎通过 onChange 上报；4GB 内存推荐组合体积 692.2 MiB', () => {
+  it('切换引擎通过 onChange 上报；4GB 内存推荐组合体积 701.8 MiB', () => {
     const lowMemorySelection: WelcomeSelection = {
       ...DEFAULT_WELCOME_SELECTION,
       selectedEngine: 'engine_classic_light',
@@ -176,13 +180,16 @@ describe('WelcomeStep2PluginSetup (欢迎向导第二步：只选择、不安装
     const props = setup({ selection: lowMemorySelection, hardware: { ...DEFAULT_HARDWARE, totalMemGB: 4 } })
 
     expect(within(screen.getByTestId('welcome-engine-classic-card')).getByText('推荐')).toBeDefined()
-    expect(screen.getByText('692.2 MiB')).toBeDefined()
+    expect(screen.getByText('701.8 MiB')).toBeDefined()
 
     fireEvent.click(screen.getByTestId('welcome-engine-gemma-card'))
-    expect(props.onChange).toHaveBeenCalledWith({ selectedEngine: 'engine_gemma_unified' })
+    expect(props.onChange).toHaveBeenCalledWith(
+      { selectedEngine: 'engine_gemma_unified' },
+      ['selectedEngine']
+    )
   })
 
-  it('取消所有选配后仅剩必装引擎：242.2 MiB，全部勾选 Classic 组合 845.1 MiB', () => {
+  it('取消所有选配后仅剩必装引擎：301.2 MiB，全部勾选 Classic 组合 854.7 MiB', () => {
     const noOptionals: WelcomeSelection = {
       ...recommendedSelection,
       selectedOptionals: {
@@ -192,7 +199,9 @@ describe('WelcomeStep2PluginSetup (欢迎向导第二步：只选择、不安装
       }
     }
     const firstRender = setup({ selection: noOptionals })
-    expect(screen.getAllByText('242.2 MiB').length).toBe(2)
+    // 引擎卡片角标仍展示单插件体积，预计占用空间展示去重后的总量
+    expect(screen.getByText('301.2 MiB')).toBeDefined()
+    expect(screen.getAllByText('242.2 MiB').length).toBe(1)
     firstRender.unmount()
 
     const classicAll: WelcomeSelection = {
@@ -201,7 +210,7 @@ describe('WelcomeStep2PluginSetup (欢迎向导第二步：只选择、不安装
     }
     setup({ selection: classicAll })
     expect(screen.getAllByText('304.4 MiB').length).toBe(1)
-    expect(screen.getByText('845.1 MiB')).toBeDefined()
+    expect(screen.getByText('854.7 MiB')).toBeDefined()
   })
 
   it('引擎能力差异文案：全能引擎支持音视频、轻巧引擎明确不支持音视频', () => {

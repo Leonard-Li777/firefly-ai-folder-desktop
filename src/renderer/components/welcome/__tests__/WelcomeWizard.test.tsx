@@ -51,26 +51,33 @@ vi.mock('../common/Header', () => ({
 }))
 
 // Step 3 复用插件中心的目录 store；这里只替换渲染层门面，不改动真实 store
-vi.mock('@stores/plugin-center-store', () => ({
-  usePluginCenterStore: (selector: any) =>
-    selector({
-      dirInfo: {
-        currentPath: 'D:\\FireflyModules',
-        currentDir: 'D:\\FireflyModules',
-        usedBytes: 512 * 1024 * 1024,
-        freeBytes: 80 * 1024 * 1024 * 1024,
-        defaultDirNonAscii: false
-      },
-      dirPhase: 'STABLE',
-      dirMigrationProgress: null,
-      loadDirInfo: vi.fn().mockResolvedValue(null),
-      pickDirectory: vi.fn().mockResolvedValue(null),
-      validatePluginDir: vi.fn().mockResolvedValue({ valid: true }),
-      changePluginDir: vi.fn().mockResolvedValue({ success: true }),
-      subscribeDirMigrationProgress: vi.fn(() => () => undefined)
-    }),
-  formatPluginErrorMessage: () => '插件操作发生未知异常，请稍后重试。'
+const pluginCenterStoreMock = vi.hoisted(() => ({
+  dirInfo: {
+    currentPath: 'D:\\FireflyModules',
+    currentDir: 'D:\\FireflyModules',
+    usedBytes: 512 * 1024 * 1024,
+    freeBytes: 80 * 1024 * 1024 * 1024,
+    defaultDirNonAscii: false
+  },
+  dirPhase: 'STABLE',
+  dirMigrationProgress: null,
+  loadDirInfo: vi.fn().mockResolvedValue(null),
+  pickDirectory: vi.fn().mockResolvedValue(null),
+  validatePluginDir: vi.fn().mockResolvedValue({ valid: true }),
+  changePluginDir: vi.fn().mockResolvedValue({ success: true }),
+  subscribeDirMigrationProgress: vi.fn(() => () => undefined)
 }))
+
+vi.mock('@stores/plugin-center-store', () => {
+  // 向导容器挂载时会直接调用 usePluginCenterStore.getState().loadDirInfo()，
+  // 门面必须同时暴露选择器与 getState 两种取用方式，否则挂载即抛 TypeError
+  const usePluginCenterStore: any = (selector: any) => selector(pluginCenterStoreMock)
+  usePluginCenterStore.getState = () => pluginCenterStoreMock
+  return {
+    usePluginCenterStore,
+    formatPluginErrorMessage: () => '插件操作发生未知异常，请稍后重试。'
+  }
+})
 
 import { WelcomeWizard } from '../WelcomeWizard'
 
@@ -98,6 +105,7 @@ describe('WelcomeWizard 五步流转测试 (能力 -> 目录 -> 安装方式 -> 
           abortAll: vi.fn().mockResolvedValue(true),
           importOfflinePackage: vi.fn().mockResolvedValue(null),
           applyInitialPluginDir: vi.fn().mockResolvedValue({ success: true }),
+          enqueueBackgroundInstalls: vi.fn().mockResolvedValue([]),
           onProgress: vi.fn(() => () => undefined)
         },
         llmGateway: { setDesiredMode: vi.fn().mockResolvedValue(true) }
@@ -321,5 +329,195 @@ describe('WelcomeWizard 五步流转测试 (能力 -> 目录 -> 安装方式 -> 
       )
       unmount()
     }
+  })
+})
+
+/**
+ * 选配插件安装契约回归（真实事故：首次安装时用户手动勾选「语音识别与字幕提取」，
+ * 进入主界面后其它选配插件都装好了，唯独它没装、插件中心仍显示「下载安装」按钮）。
+ *
+ * 两条独立根因：
+ * 1. 硬件探测回填无条件覆盖用户手动勾选（探测晚于用户操作时，用户意图被静默丢弃，
+ *    该插件永远不会进入后台安装队列，且界面无任何提示）；
+ * 2. ASR 预选门槛过高（曾写成「内存 ≥ 16GB 且有独显」），而 totalMemGB 是系统可用内存
+ *    （16GB 机器实测仅 15.5GB），导致 8G~16GB 的普通电脑一律落选，用户以为「装不了」。
+ *    现口径：内存 ≥ 8G 即默认勾选。
+ */
+describe('WelcomeWizard 选配插件选择保留契约 (语音识别与字幕提取)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    Object.assign(window, {
+      electronAPI: {
+        detectSystemResources: vi.fn().mockResolvedValue({
+          totalMemGB: 16,
+          totalMemMB: 16384,
+          gpuName: 'NVIDIA RTX 4070',
+          vramGB: 8,
+          isGpuSupported: true,
+          storageFreeGB: 50
+        }),
+        modularResource: {
+          install: vi.fn().mockResolvedValue({ id: 'mock', install_state: 'active' }),
+          smokeTest: vi.fn().mockResolvedValue({ success: true, latency_ms: 100 }),
+          updateState: vi.fn().mockResolvedValue({ id: 'mock', install_state: 'active' }),
+          abortAll: vi.fn().mockResolvedValue(true),
+          importOfflinePackage: vi.fn().mockResolvedValue(null),
+          applyInitialPluginDir: vi.fn().mockResolvedValue({ success: true }),
+          enqueueBackgroundInstalls: vi.fn().mockResolvedValue([]),
+          onProgress: vi.fn(() => () => undefined)
+        },
+        llmGateway: { setDesiredMode: vi.fn().mockResolvedValue(true) }
+      }
+    })
+  })
+
+  /** Step 1 -> Step 2（能力装配） */
+  const goToStep2 = async () => {
+    fireEvent.click(screen.getByText('继续'))
+    await waitFor(() => expect(screen.getByText('AI 引擎与智能能力装配')).toBeDefined())
+  }
+
+  const goToStep3 = async () => {
+    fireEvent.click(screen.getByTestId('welcome-step2-next-btn'))
+    await waitFor(() => expect(screen.getByText('选择插件安装目录')).toBeDefined())
+  }
+
+  const goToStep4 = async () => {
+    fireEvent.click(screen.getByTestId('welcome-step3-next-btn'))
+    await waitFor(() => expect(screen.getByText('插件怎么装？')).toBeDefined())
+  }
+
+  it('硬件探测晚于用户操作时，用户手动勾选的语音识别插件必须保留并进入安装队列', async () => {
+    let resolveProbe: (value: any) => void = () => {}
+    const probePromise = new Promise<any>(resolve => {
+      resolveProbe = resolve
+    })
+    ;(window as any).electronAPI.detectSystemResources = vi.fn(() => probePromise)
+
+    const modular = (window as any).electronAPI.modularResource
+    render(<WelcomeWizard onComplete={vi.fn()} />)
+
+    await goToStep2()
+
+    // 低配机器：探针结论是「不推荐语音识别」，用户仍手动勾选
+    fireEvent.click(screen.getByTestId('welcome-asr-sensevoice-card'))
+    expect(screen.getByTestId('welcome-asr-sensevoice-card').className).toContain('border-emerald-500')
+
+    // 硬件探测此刻才返回：绝不能把用户已勾选的项改回未勾选
+    await act(async () => {
+      resolveProbe({
+        totalMemGB: 3.7,
+        totalMemMB: 3900,
+        gpuName: '集成显卡 / 普通办公',
+        vramGB: 0,
+        isGpuSupported: false,
+        storageFreeGB: 50
+      })
+      await probePromise
+    })
+    expect(screen.getByTestId('welcome-asr-sensevoice-card').className).toContain('border-emerald-500')
+
+    await goToStep3()
+    await goToStep4()
+    fireEvent.click(screen.getByTestId('welcome-step4-next-btn'))
+    await waitFor(() => expect(screen.getByTestId('welcome-step5-container')).toBeDefined())
+    await waitFor(() => {
+      expect(screen.getByText('主检索引擎安装完成，可以开始使用了！')).toBeDefined()
+    })
+
+    await waitFor(() => expect(modular.enqueueBackgroundInstalls).toHaveBeenCalled())
+    const queuedIds = modular.enqueueBackgroundInstalls.mock.calls[0][0] as string[]
+    expect(queuedIds).toContain('asr_sensevoice_onnx')
+  })
+
+  it('硬件探测晚于用户操作时，用户手动取消勾选的插件不得被回填重新勾上', async () => {
+    let resolveProbe: (value: any) => void = () => {}
+    const probePromise = new Promise<any>(resolve => {
+      resolveProbe = resolve
+    })
+    ;(window as any).electronAPI.detectSystemResources = vi.fn(() => probePromise)
+
+    const modular = (window as any).electronAPI.modularResource
+    render(<WelcomeWizard onComplete={vi.fn()} />)
+
+    await goToStep2()
+
+    // 用户先勾选再取消：最终意图是「不装」
+    fireEvent.click(screen.getByTestId('welcome-asr-sensevoice-card'))
+    expect(screen.getByTestId('welcome-asr-sensevoice-card').className).toContain('border-emerald-500')
+    fireEvent.click(screen.getByTestId('welcome-asr-sensevoice-card'))
+    expect(screen.getByTestId('welcome-asr-sensevoice-card').className).not.toContain(
+      'border-emerald-500'
+    )
+
+    // 高配机器的探针结论是「推荐语音识别」，但不得覆盖用户已经取消的选择
+    await act(async () => {
+      resolveProbe({
+        totalMemGB: 31.2,
+        totalMemMB: 31900,
+        gpuName: 'NVIDIA GeForce RTX 4080',
+        vramGB: 16,
+        isGpuSupported: true,
+        storageFreeGB: 120
+      })
+      await probePromise
+    })
+    expect(screen.getByTestId('welcome-asr-sensevoice-card').className).not.toContain(
+      'border-emerald-500'
+    )
+
+    await goToStep3()
+    await goToStep4()
+    fireEvent.click(screen.getByTestId('welcome-step4-next-btn'))
+    await waitFor(() => expect(screen.getByTestId('welcome-step5-container')).toBeDefined())
+    await waitFor(() => {
+      expect(screen.getByText('主检索引擎安装完成，可以开始使用了！')).toBeDefined()
+    })
+
+    await waitFor(() => expect(modular.enqueueBackgroundInstalls).toHaveBeenCalled())
+    const queuedIds = modular.enqueueBackgroundInstalls.mock.calls[0][0] as string[]
+    expect(queuedIds).not.toContain('asr_sensevoice_onnx')
+  })
+
+  it('内存达到 8G 即默认勾选语音识别（8G 机器实测可用内存仅 7.6GB 也要算达标）', async () => {
+    ;(window as any).electronAPI.detectSystemResources = vi.fn().mockResolvedValue({
+      totalMemGB: 7.6,
+      totalMemMB: 7800,
+      gpuName: '集成显卡 / 普通办公',
+      vramGB: 0,
+      isGpuSupported: false,
+      storageFreeGB: 50
+    })
+
+    render(<WelcomeWizard onComplete={vi.fn()} />)
+    await goToStep2()
+
+    await waitFor(() => expect(screen.getByText('7.6 GB')).toBeDefined())
+    await waitFor(() =>
+      expect(screen.getByTestId('welcome-asr-sensevoice-card').className).toContain(
+        'border-emerald-500'
+      )
+    )
+  })
+
+  it('内存不足 8G 的机器不预勾选语音识别（不把重插件推给跑不动的机器）', async () => {
+    ;(window as any).electronAPI.detectSystemResources = vi.fn().mockResolvedValue({
+      totalMemGB: 3.7,
+      totalMemMB: 3900,
+      gpuName: '集成显卡 / 普通办公',
+      vramGB: 0,
+      isGpuSupported: false,
+      storageFreeGB: 50
+    })
+
+    render(<WelcomeWizard onComplete={vi.fn()} />)
+    await goToStep2()
+
+    await waitFor(() => expect(screen.getByText('3.7 GB')).toBeDefined())
+    await waitFor(() =>
+      expect(screen.getByTestId('welcome-asr-sensevoice-card').className).not.toContain(
+        'border-emerald-500'
+      )
+    )
   })
 })

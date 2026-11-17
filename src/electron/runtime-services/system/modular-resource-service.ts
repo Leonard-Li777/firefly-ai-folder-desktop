@@ -3804,9 +3804,13 @@ export class ModularResourceService implements IModularResourceService {
           })
           logger.debug(LogCategory.SYSTEM, `[ModularResource] 后台选配插件安装就绪并激活: ${nextId}`)
         } catch (err: any) {
-          logger.warn(
+          // 后台选配安装失败必须显式上浮（禁止静默降级）：
+          // 用户在向导里看不到任何提示，只有事后到插件中心才发现插件根本没装上。
+          // 这里以 error 级别记录，并依赖 installModule 已写入的 install_state='error'
+          // + error_message，让插件中心直接展示失败原因与「重新下载安装」入口。
+          logger.error(
             LogCategory.SYSTEM,
-            `[ModularResource] 后台选配插件安装异常 (${nextId}):`,
+            `[ModularResource] 后台选配插件安装失败 (${nextId}):`,
             err
           )
           this.backgroundProgressBroadcaster?.({

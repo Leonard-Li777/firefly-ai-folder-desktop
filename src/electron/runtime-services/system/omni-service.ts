@@ -1255,6 +1255,15 @@ export class OmniService {
       const existingPath = process.env.PATH || ''
       const injectedPath = [binDir, existingPath].filter(Boolean).join(path.delimiter)
 
+      // Linux/WSL 动态链接器不搜索 exe 同目录的 .so（Windows 下 DLL 同目录即可自动加载），
+      // 必须经 LD_LIBRARY_PATH 显式下发 binDir，否则 omni 一启动就因找不到
+      // libsherpa-onnx-c-api.so / libonnxruntime.so 崩溃，HTTP 端口永不监听 ⇒
+      // OmniClient fetch failed ⇒ OmniService 反复重启直至耗尽重试次数。
+      // 保留继承的 LD_LIBRARY_PATH（系统库路径），binDir 置于最前优先解析自带库。
+      const isWin = process.platform === 'win32'
+      const existingLibPath = process.env.LD_LIBRARY_PATH || ''
+      const injectedLibPath = [binDir, existingLibPath].filter(Boolean).join(path.delimiter)
+
       // 绑定操作系统单实例文件咨询锁与安全令牌 (Spec §8)
       const runDir = dbPath
         ? path.join(path.dirname(dbPath), 'run')
@@ -1269,6 +1278,7 @@ export class OmniService {
       const env: Record<string, string | undefined> = {
         ...process.env,
         PATH: injectedPath,
+        ...(isWin ? {} : { LD_LIBRARY_PATH: injectedLibPath }),
         OMNI_PORT: String(port),
         OMNI_DEV_MODE: isDevMode ? '1' : '0',
         FIREFLY_RUN_DIR: runDir,

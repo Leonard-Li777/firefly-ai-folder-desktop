@@ -283,7 +283,8 @@ export async function initDatabaseAndDependentServices(
 
     unifiedModelManager.ensureLoaded(true)
 
-    // 数据库就绪后，为新用户一次性插入 welcome_grant（幂等：确定性 txId + INSERT OR IGNORE）
+    // tier 收入流水已上移云端：由云端绑定/注册 RPC 原子入账（云端 SSOT），
+    // 端侧通过 trySync 拉取镜像，严禁端侧合成收入流水（防自铸萤火）
     if (databaseService.db) {
       // 清理已移出插件中心的历史内置模块记录 (TASK-01 / Genesis V1 幂等清扫)
       try {
@@ -297,19 +298,18 @@ export async function initDatabaseAndDependentServices(
       try {
         const { SystemIdentityService } =
           await import('../runtime-services/system/system-identity-service')
-        const { UserTierDataManager } = await import('@firefly/core-engine')
         const { userTierService } = await import('../runtime-services/user-tier/user-tier-service')
         const machineId = await SystemIdentityService.getInstance().getMachineId()
-        const tc = ConfigOrchestrator.getInstance().getTierConstants()
-        UserTierDataManager.insertWelcomeGrant(databaseService.db, machineId, tc)
 
-        // 插入 welcome_grant 后立即初始化并同步刷新缓存，确保 UI 菜单即刻感知并更新萤火数
+        // welcome_grant 等收入流水已上移云端：由云端绑定/注册 RPC 原子入账，
+        // 端侧通过 trySync 拉取镜像（云端 SSOT，严禁端侧合成或上报收入，防自铸萤火）。
+        // 详见 docs/specs/cloud-provisioned-income-transactions-spec.md
         await userTierService.initialize()
         userTierService.syncToCache(machineId).catch(err => {
-          logger.error(LogCategory.MAIN, '[Initialization] welcome_grant 同步失败:', err)
+          logger.error(LogCategory.MAIN, '[Initialization] tier 缓存同步失败:', err)
         })
       } catch (e) {
-        logger.error(LogCategory.MAIN, '[Initialization] welcome_grant 插入失败:', e)
+        logger.error(LogCategory.MAIN, '[Initialization] tier 服务初始化失败:', e)
       }
     }
 

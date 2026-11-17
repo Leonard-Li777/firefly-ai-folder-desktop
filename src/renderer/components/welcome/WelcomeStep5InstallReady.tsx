@@ -99,6 +99,8 @@ export function WelcomeStep5InstallReady({
     expectedBytes: 0
   })
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  // 选配插件后台安装失败提示（禁止静默降级：失败必须让用户看见，并给出补装入口指引）
+  const [backgroundError, setBackgroundError] = useState<string | null>(null)
   // 离线总包是一次性带齐全部插件，没有「后台继续下载」的概念
   const [backgroundCount, setBackgroundCount] = useState(
     initialReady && !isOffline ? optionalIds.length : 0
@@ -138,6 +140,12 @@ export function WelcomeStep5InstallReady({
         (payload.state === 'completed' || payload.state === 'failed')
       ) {
         setBackgroundCount(prev => Math.max(0, prev - 1))
+        if (payload.state === 'failed') {
+          // 选配插件装失败必须显式提示，禁止只在控制台留痕让用户完全无感
+          setBackgroundError(
+            t('有个选配插件没装上，稍后到「插件中心」点一下「下载安装」就能补上')
+          )
+        }
       }
     })
     return () => {
@@ -231,6 +239,10 @@ export function WelcomeStep5InstallReady({
         if (typeof modular?.enqueueBackgroundInstalls === 'function') {
           modular.enqueueBackgroundInstalls(optionalIds).catch((err: any) => {
             console.warn('[OnlineInstall] 排队后台选配插件安装异常:', err)
+            // 排队本身失败（例如插件目录正在迁移）同样必须让用户看见，否则选配插件永远装不上
+            setBackgroundError(
+              t('选配插件没能开始下载，稍后到「插件中心」点一下「下载安装」就能补上')
+            )
           })
         } else {
           ;(async () => {
@@ -633,6 +645,17 @@ export function WelcomeStep5InstallReady({
                 >
                   <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                   <span>{t('主检索引擎安装完成，其它插件继续后台下载，不影响你现在就开始用')}</span>
+                </div>
+              )}
+
+              {/* 选配插件后台安装失败提示：给出明确的补装入口指引，避免用户以为「装好了」 */}
+              {backgroundError && (
+                <div
+                  data-testid="welcome-step5-background-error"
+                  className="flex items-start gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs"
+                >
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{backgroundError}</span>
                 </div>
               )}
 

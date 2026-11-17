@@ -58,7 +58,22 @@ export function detectWorktreeName(): string {
           if (topWorktreeMatch && topWorktreeMatch[1]) {
             return sanitizeName(topWorktreeMatch[1])
           }
-          return sanitizeName(path.basename(currentDir))
+          // 子模块场景（如 apps/desktop）：.git 文件指向 .../modules/xxx，不含 worktrees 段。
+          // 此时严禁用目录名兜底（会错误地把 "desktop" 当成 worktree 后缀），
+          // 应解析 gitdir 下的 HEAD 获取真实分支名，主分支返回 'main'
+          const gitDirMatch = content.match(/gitdir:\s*(.+)/i)
+          if (gitDirMatch && gitDirMatch[1]) {
+            const gitDir = path.resolve(currentDir, gitDirMatch[1].trim())
+            const head = fs.readFileSync(path.join(gitDir, 'HEAD'), 'utf-8').trim()
+            const branchMatch = head.match(/refs[/\\]heads[/\\](.+)/i)
+            if (branchMatch && branchMatch[1]) {
+              return sanitizeName(branchMatch[1])
+            }
+            // detached HEAD（HEAD 内容为裸 commit SHA，submodule checkout 常见）：
+            // 无法判定分支归属，安全回落主分支，严禁把 SHA 当成 worktree 后缀
+            return 'main'
+          }
+          return 'main'
         } else if (stat.isDirectory()) {
           // 主仓库并且不是以 worktrees 命名的目录
           const topWorktreeMatch = currentDir.match(/worktrees[/\\]([^/\r\n\\]+)/i)

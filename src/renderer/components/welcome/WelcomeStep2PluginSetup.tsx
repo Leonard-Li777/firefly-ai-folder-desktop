@@ -21,6 +21,7 @@ import {
   ArrowLeft
 } from 'lucide-react'
 import { WelcomeStepLayout } from './WelcomeStepLayout'
+import { isAsrRecommendedByHardware } from './welcome-types'
 import type { HardwareProbeResult, WelcomeSelection } from './welcome-types'
 
 // 资源清单权威体积字典 (与 BOM SSOT 严格对齐)
@@ -49,7 +50,11 @@ export interface WelcomeStep2PluginSetupProps {
   selection: WelcomeSelection
   hardware: HardwareProbeResult
   isDetectingHw?: boolean
-  onChange: (patch: Partial<WelcomeSelection>) => void
+  /**
+   * 上报选择变更。touchedKeys 用于标记「用户显式手动改动过」的键，
+   * 容器据此在硬件探测回填时跳过这些键，避免把用户勾选静默改回默认。
+   */
+  onChange: (patch: Partial<WelcomeSelection>, touchedKeys?: string[]) => void
   onBack: () => void
   onNext: () => void
 }
@@ -97,13 +102,20 @@ export function WelcomeStep2PluginSetup({
   // 磁盘可用空间门禁 (ENOSPC Guard: < 2.0GB 强制阻断)
   const isDiskSpaceInsufficient = hardware.storageFreeGB < 2.0
 
+  // 语音识别是否按硬件能力推荐勾选（内存 ≥ 8G 即满足）；
+  // 硬件探针未回填前不做推荐声明，避免拿占位默认值误导用户
+  const asrRecommended = !isDetectingHw && isAsrRecommendedByHardware(hardware)
+
   const handleToggleOptional = (key: string) => {
-    onChange({
-      selectedOptionals: {
-        ...selectedOptionals,
-        [key]: !selectedOptionals[key]
-      }
-    })
+    onChange(
+      {
+        selectedOptionals: {
+          ...selectedOptionals,
+          [key]: !selectedOptionals[key]
+        }
+      },
+      [key]
+    )
   }
 
   const footer = (
@@ -221,7 +233,7 @@ export function WelcomeStep2PluginSetup({
           {/* Gemma Unified */}
           <div
             data-testid="welcome-engine-gemma-card"
-            onClick={() => onChange({ selectedEngine: 'engine_gemma_unified' })}
+            onClick={() => onChange({ selectedEngine: 'engine_gemma_unified' }, ['selectedEngine'])}
             className={`relative p-3.5 rounded-lg border-2 cursor-pointer transition-all ${
               selectedEngine === 'engine_gemma_unified'
                 ? 'border-primary bg-primary/5 shadow-sm'
@@ -268,7 +280,7 @@ export function WelcomeStep2PluginSetup({
           {/* Classic Light */}
           <div
             data-testid="welcome-engine-classic-card"
-            onClick={() => onChange({ selectedEngine: 'engine_classic_light' })}
+            onClick={() => onChange({ selectedEngine: 'engine_classic_light' }, ['selectedEngine'])}
             className={`relative p-3.5 rounded-lg border-2 cursor-pointer transition-all ${
               selectedEngine === 'engine_classic_light'
                 ? 'border-primary bg-primary/5 shadow-sm'
@@ -384,7 +396,15 @@ export function WelcomeStep2PluginSetup({
               </div>
             </div>
             <div className="mt-3 flex justify-between items-center text-[11px]">
-              <span className="text-muted-foreground">{t('可选功能')}</span>
+              <span
+                className={
+                  asrRecommended
+                    ? 'text-emerald-600 font-medium'
+                    : 'text-muted-foreground'
+                }
+              >
+                {asrRecommended ? t('推荐勾选') : t('可选功能')}
+              </span>
               <span className="font-mono text-muted-foreground">160.8 MiB</span>
             </div>
           </div>
