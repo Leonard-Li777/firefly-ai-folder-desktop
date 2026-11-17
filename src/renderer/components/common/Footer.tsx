@@ -842,7 +842,7 @@ export function Footer() {
   }
 
   return (
-    <footer className="bg-card border-t border-border px-6 py-3 flex justify-between items-center text-sm text-foreground overflow-hidden gap-2">
+    <footer className="relative z-30 bg-card border-t border-border px-6 py-3 flex justify-between items-center text-sm text-foreground gap-2">
       {/* 左侧AI状态区：min-w-0+shrink 允许在空间不足时收缩，防止撑破footer布局 */}
       <div className="flex items-center gap-4 min-w-0 shrink">
         <div className="flex items-center space-x-6 min-w-0">

@@ -9,7 +9,8 @@
  * 4. 底部提供「一键释放可休眠内存」单按钮，点击排空并弹 Toast。
  */
 
-import React, { useState, useEffect, useRef, useMemo } from 'react'
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { Leaf, Zap, RefreshCw, X, Loader2, Info, AlertTriangle } from 'lucide-react'
 import { useHibernationStore, selectHibernationGauges } from '../../stores/hibernation-store'
 import { toast } from './Toast'
@@ -69,6 +70,13 @@ export const EnergyTransparencyBadge: React.FC<{ className?: string }> = ({ clas
   const [isOpen, setIsOpen] = useState(false)
   const [retryingTarget, setRetryingTarget] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const popoverRef = useRef<HTMLDivElement>(null)
+  const [coords, setCoords] = useState<{ bottom: number; right: number; maxHeight: number }>({
+    bottom: 48,
+    right: 16,
+    maxHeight: 480
+  })
 
   const { snapshot, isReclaiming, reclaimAll, retryModule, subscribe } = useHibernationStore()
 
@@ -80,19 +88,51 @@ export const EnergyTransparencyBadge: React.FC<{ className?: string }> = ({ clas
     }
   }, [subscribe])
 
-  // 点击外部自动收起卡片
+  // 计算浮层坐标（始终悬浮在 Footer 触发按钮正上方，严防溢出屏幕与遮挡）
+  const updateCoords = useCallback(() => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect()
+      setCoords({
+        bottom: Math.max(16, window.innerHeight - rect.top + 8),
+        right: Math.max(16, window.innerWidth - rect.right),
+        maxHeight: Math.max(200, Math.min(540, rect.top - 24))
+      })
+    }
+  }, [])
+
+  useEffect(() => {
+    if (isOpen) {
+      updateCoords()
+    }
+  }, [isOpen, updateCoords])
+
+  // 点击外部自动收起卡片，并在视口尺寸或滚动变化时实时重算坐标
   useEffect(() => {
     if (!isOpen) return
     const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      const target = e.target as Node
+      if (
+        buttonRef.current &&
+        !buttonRef.current.contains(target) &&
+        popoverRef.current &&
+        !popoverRef.current.contains(target)
+      ) {
         setIsOpen(false)
       }
     }
+    const handleResizeOrScroll = () => {
+      updateCoords()
+    }
+
     document.addEventListener('mousedown', handleClickOutside)
+    window.addEventListener('resize', handleResizeOrScroll)
+    window.addEventListener('scroll', handleResizeOrScroll, true)
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
+      window.removeEventListener('resize', handleResizeOrScroll)
+      window.removeEventListener('scroll', handleResizeOrScroll, true)
     }
-  }, [isOpen])
+  }, [isOpen, updateCoords])
 
   // 纯函数派生仪表盘数据
   const gauges = useMemo(() => selectHibernationGauges(snapshot), [snapshot])
@@ -148,9 +188,13 @@ export const EnergyTransparencyBadge: React.FC<{ className?: string }> = ({ clas
     <div className={cn('relative inline-flex items-center', className)} ref={containerRef}>
       {/* 底部 Footer 节能胶囊按钮 */}
       <button
+        ref={buttonRef}
         type="button"
         data-testid="energy-badge-trigger"
-        onClick={() => setIsOpen(prev => !prev)}
+        onClick={() => {
+          updateCoords()
+          setIsOpen(prev => !prev)
+        }}
         className={cn(
           'flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium transition-all duration-200 cursor-pointer select-none',
           gauges.isEnergySaving
@@ -177,176 +221,189 @@ export const EnergyTransparencyBadge: React.FC<{ className?: string }> = ({ clas
         </span>
       </button>
 
-      {/* Hover / Click 浮动透视看板 */}
-      {isOpen && (
-        <div className="absolute bottom-full right-0 mb-2 w-84 sm:w-96 rounded-xl border border-border/60 bg-popover/95 backdrop-blur-md text-popover-foreground shadow-2xl p-4 z-50 animate-in fade-in zoom-in-95 duration-150">
-          {/* 标题栏 */}
-          <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/40">
-            <div className="flex items-center gap-1.5">
-              <Leaf className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <h4 className="text-sm font-semibold text-foreground">{t('系统内存与能耗管理')}</h4>
+      {/* Hover / Click 浮动透视看板：通过 createPortal 挂载到 body，彻底消除父容器 overflow-hidden 截断与层叠上下文遮挡 */}
+      {isOpen &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            ref={popoverRef}
+            style={{
+              position: 'fixed',
+              bottom: `${coords.bottom}px`,
+              right: `${coords.right}px`,
+              maxHeight: `${coords.maxHeight}px`,
+              zIndex: 9999
+            }}
+            className="w-84 sm:w-96 rounded-xl border border-border/60 bg-popover/95 backdrop-blur-md text-popover-foreground shadow-2xl p-4 overflow-y-auto animate-in fade-in zoom-in-95 duration-150 select-none"
+          >
+            {/* 标题栏 */}
+            <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/40">
+              <div className="flex items-center gap-1.5">
+                <Leaf className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <h4 className="text-sm font-semibold text-foreground">{t('系统内存与能耗管理')}</h4>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="p-1 rounded-md text-muted-foreground/60 hover:text-foreground hover:bg-muted/50 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
-              className="p-1 rounded-md text-muted-foreground/60 hover:text-foreground hover:bg-muted/50 transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
 
-          {/* 电脑当前剩余可用内存透视 */}
-          <div className="mb-3 px-2.5 py-1.5 rounded-lg bg-muted/40 text-xs text-muted-foreground flex items-center justify-between">
-            <span>
-              {t('电脑当前剩余内存: {mem}', {
-                mem: formatMemoryBytes(snapshot?.availableMemoryBytes)
-              })}
-            </span>
-            {gauges.isEnergySaving && (
-              <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                {t('(已触发智能休眠保护)')}
+            {/* 电脑当前剩余可用内存透视 */}
+            <div className="mb-3 px-2.5 py-1.5 rounded-lg bg-muted/40 text-xs text-muted-foreground flex items-center justify-between">
+              <span>
+                {t('电脑当前剩余内存: {mem}', {
+                  mem: formatMemoryBytes(snapshot?.availableMemoryBytes)
+                })}
               </span>
-            )}
-          </div>
-
-          {/* 模块列表分区 */}
-          <div className="space-y-3 max-h-64 overflow-y-auto pr-1 text-xs">
-            {/* 🟢 正在内存运行 */}
-            {residentModules.length > 0 && (
-              <div>
-                <div className="font-medium text-foreground flex items-center justify-between mb-1">
-                  <span className="flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
-                    <span>{t('正在内存运行')}</span>
-                  </span>
-                  <span className="text-muted-foreground/80 font-normal">
-                    {t('约 {size}', { size: formatMemoryBytes(totalResidentBytes) })}
-                  </span>
-                </div>
-                <ul className="space-y-1 pl-3 text-muted-foreground">
-                  {residentModules.map(m => {
-                    const kindLabel =
-                      (m.effectiveMemoryKind ?? m.defaultMemoryKind) === 'vram'
-                        ? t('显存')
-                        : t('内存')
-                    const bytes = m.residentSample?.bytes || m.residentBytes
-                    return (
-                      <li key={m.id} className="flex items-center justify-between py-0.5">
-                        <span>• {getModuleDisplayName(m)}</span>
-                        <span className="opacity-75">
-                          {t('约 {size} {kind}', {
-                            size: formatMemoryBytes(bytes),
-                            kind: kindLabel
-                          })}
-                        </span>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
-            )}
-
-            {/* 💤 已休眠节能 */}
-            {hibernatedModules.length > 0 && (
-              <div>
-                <div className="font-medium text-foreground flex items-center justify-between mb-1">
-                  <span className="flex items-center gap-1 text-muted-foreground">
-                    <span>💤</span>
-                    <span>{t('已休眠节能')}</span>
-                  </span>
-                  <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                    {t('已省约 {size}', { size: formatMemoryBytes(totalSavedBytes) })}
-                  </span>
-                </div>
-                <ul className="space-y-1 pl-3 text-muted-foreground">
-                  {hibernatedModules.map(m => {
-                    const kindLabel =
-                      (m.effectiveMemoryKind ?? m.defaultMemoryKind) === 'vram'
-                        ? t('显存')
-                        : t('内存')
-                    const bytes = m.lastReleased?.bytes || m.lastReleasedBytes || 0
-                    return (
-                      <li key={m.id} className="flex items-center justify-between py-0.5">
-                        <span>• {getModuleDisplayName(m)}</span>
-                        <span className="text-emerald-600/80 dark:text-emerald-400/80">
-                          {t('已省约 {size} {kind}', {
-                            size: formatMemoryBytes(bytes),
-                            kind: kindLabel
-                          })}
-                        </span>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
-            )}
-
-            {/* ⚠️ 运行异常 */}
-            {errorModules.length > 0 && (
-              <div className="pt-1 border-t border-border/30">
-                <div className="font-medium text-amber-600 dark:text-amber-400 flex items-center gap-1 mb-1">
-                  <AlertTriangle className="w-3.5 h-3.5" />
-                  <span>{t('运行异常 (点击可重试)')}</span>
-                </div>
-                <ul className="space-y-1.5 pl-3">
-                  {errorModules.map(m => (
-                    <li key={m.id} className="flex items-center justify-between gap-2">
-                      <span className="text-muted-foreground truncate">
-                        • {getModuleDisplayName(m)}
-                      </span>
-                      <button
-                        type="button"
-                        disabled={retryingTarget === m.id}
-                        onClick={() => handleRetry(m.id)}
-                        className="px-2 py-0.5 rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-medium text-xs transition-colors shrink-0 flex items-center gap-1"
-                      >
-                        {retryingTarget === m.id && <Loader2 className="w-3 h-3 animate-spin" />}
-                        <span>{t('重试')}</span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-
-          {/* 未决异常提示 */}
-          {gauges.hasUncertainMemoryModules && (
-            <div className="mt-2.5 px-2.5 py-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs flex items-center gap-1.5">
-              <Info className="w-3.5 h-3.5 shrink-0" />
-              <span>{t('部分内存占用正在确认中')}</span>
-            </div>
-          )}
-
-          {/* 底部大白话提示 */}
-          <div className="mt-3 pt-2.5 border-t border-border/40 text-[11px] text-muted-foreground/70 leading-relaxed flex items-start gap-1">
-            <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-            <span>{t('闲置时自动休眠，首次使用短暂加载，后续无需等待。')}</span>
-          </div>
-
-          {/* 一键释放单按钮 */}
-          <div className="mt-3">
-            <button
-              type="button"
-              disabled={isReclaiming}
-              onClick={handleReclaimAll}
-              className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-xs transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
-            >
-              {isReclaiming ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>{t('正在释放...')}</span>
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  <span>{t('一键释放可休眠内存')}</span>
-                </>
+              {gauges.isEnergySaving && (
+                <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                  {t('(已触发智能休眠保护)')}
+                </span>
               )}
-            </button>
-          </div>
-        </div>
-      )}
+            </div>
+
+            {/* 模块列表分区 */}
+            <div className="space-y-3 max-h-64 overflow-y-auto pr-1 text-xs">
+              {/* 🟢 正在内存运行 */}
+              {residentModules.length > 0 && (
+                <div>
+                  <div className="font-medium text-foreground flex items-center justify-between mb-1">
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+                      <span>{t('正在内存运行')}</span>
+                    </span>
+                    <span className="text-muted-foreground/80 font-normal">
+                      {t('约 {size}', { size: formatMemoryBytes(totalResidentBytes) })}
+                    </span>
+                  </div>
+                  <ul className="space-y-1 pl-3 text-muted-foreground">
+                    {residentModules.map(m => {
+                      const kindLabel =
+                        (m.effectiveMemoryKind ?? m.defaultMemoryKind) === 'vram'
+                          ? t('显存')
+                          : t('内存')
+                      const bytes = m.residentSample?.bytes || m.residentBytes
+                      return (
+                        <li key={m.id} className="flex items-center justify-between py-0.5">
+                          <span>• {getModuleDisplayName(m)}</span>
+                          <span className="opacity-75">
+                            {t('约 {size} {kind}', {
+                              size: formatMemoryBytes(bytes),
+                              kind: kindLabel
+                            })}
+                          </span>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              )}
+
+              {/* 💤 已休眠节能 */}
+              {hibernatedModules.length > 0 && (
+                <div>
+                  <div className="font-medium text-foreground flex items-center justify-between mb-1">
+                    <span className="flex items-center gap-1 text-muted-foreground">
+                      <span>💤</span>
+                      <span>{t('已休眠节能')}</span>
+                    </span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                      {t('已省约 {size}', { size: formatMemoryBytes(totalSavedBytes) })}
+                    </span>
+                  </div>
+                  <ul className="space-y-1 pl-3 text-muted-foreground">
+                    {hibernatedModules.map(m => {
+                      const kindLabel =
+                        (m.effectiveMemoryKind ?? m.defaultMemoryKind) === 'vram'
+                          ? t('显存')
+                          : t('内存')
+                      const bytes = m.lastReleased?.bytes || m.lastReleasedBytes || 0
+                      return (
+                        <li key={m.id} className="flex items-center justify-between py-0.5">
+                          <span>• {getModuleDisplayName(m)}</span>
+                          <span className="text-emerald-600/80 dark:text-emerald-400/80">
+                            {t('已省约 {size} {kind}', {
+                              size: formatMemoryBytes(bytes),
+                              kind: kindLabel
+                            })}
+                          </span>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              )}
+
+              {/* ⚠️ 运行异常 */}
+              {errorModules.length > 0 && (
+                <div className="pt-1 border-t border-border/30">
+                  <div className="font-medium text-amber-600 dark:text-amber-400 flex items-center gap-1 mb-1">
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    <span>{t('运行异常 (点击可重试)')}</span>
+                  </div>
+                  <ul className="space-y-1.5 pl-3">
+                    {errorModules.map(m => (
+                      <li key={m.id} className="flex items-center justify-between gap-2">
+                        <span className="text-muted-foreground truncate">
+                          • {getModuleDisplayName(m)}
+                        </span>
+                        <button
+                          type="button"
+                          disabled={retryingTarget === m.id}
+                          onClick={() => handleRetry(m.id)}
+                          className="px-2 py-0.5 rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-medium text-xs transition-colors shrink-0 flex items-center gap-1"
+                        >
+                          {retryingTarget === m.id && <Loader2 className="w-3 h-3 animate-spin" />}
+                          <span>{t('重试')}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            {/* 未决异常提示 */}
+            {gauges.hasUncertainMemoryModules && (
+              <div className="mt-2.5 px-2.5 py-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs flex items-center gap-1.5">
+                <Info className="w-3.5 h-3.5 shrink-0" />
+                <span>{t('部分内存占用正在确认中')}</span>
+              </div>
+            )}
+
+            {/* 底部大白话提示 */}
+            <div className="mt-3 pt-2.5 border-t border-border/40 text-[11px] text-muted-foreground/70 leading-relaxed flex items-start gap-1">
+              <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+              <span>{t('闲置时自动休眠，首次使用短暂加载，后续无需等待。')}</span>
+            </div>
+
+            {/* 一键释放单按钮 */}
+            <div className="mt-3">
+              <button
+                type="button"
+                disabled={isReclaiming}
+                onClick={handleReclaimAll}
+                className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-xs transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
+              >
+                {isReclaiming ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>{t('正在释放...')}</span>
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>{t('一键释放可休眠内存')}</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   )
 }
