@@ -148,6 +148,12 @@ export interface HibernationSnapshot {
   totalSavedRamBytes: number
   totalSavedVramBytes: number
   availableMemoryBytes: number
+  /** 系统物理总内存 (字节度量) */
+  totalMemoryBytes?: number
+  /** 动态自适应内存保护阈值 (字节度量) */
+  memoryThresholdBytes?: number
+  /** 是否因可用内存跌破门限而真正处于低内存压力保护态 */
+  isMemoryPressured?: boolean
   readonly hasUncertainVramModules: boolean
   readonly hasUncertainMemoryModules: boolean
   readonly uncertainKinds: readonly ('ram' | 'vram')[]

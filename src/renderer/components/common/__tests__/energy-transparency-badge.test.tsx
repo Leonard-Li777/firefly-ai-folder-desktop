@@ -187,8 +187,8 @@ describe('Ticket 12: Footer 节能胶囊与 Hover 透视看板组件', () => {
 
     // 标题栏与内存
     expect(screen.getByText('系统内存与能耗管理')).toBeDefined()
-    expect(screen.getByText(/电脑当前剩余内存/)).toBeDefined()
-    expect(screen.getByText('(已触发智能休眠保护)')).toBeDefined()
+    expect(screen.getByText(/电脑当前可用内存/)).toBeDefined()
+    expect(screen.getByText('(处于闲置节能)')).toBeDefined()
 
     // 正在内存运行分栏（草稿态模块被过滤，仅展示 approved 运行模块）
     expect(screen.getByText('正在内存运行')).toBeDefined()
@@ -294,5 +294,21 @@ describe('Ticket 12: Footer 节能胶囊与 Hover 透视看板组件', () => {
     fireEvent.click(screen.getByTestId('energy-badge-trigger'))
 
     expect(screen.getByText('部分内存占用正在确认中')).toBeDefined()
+  })
+
+  it('当系统真正处于低内存压力态时，展示已触发低内存保护警示', () => {
+    act(() => {
+      useHibernationStore.setState({
+        snapshot: {
+          ...initialHibernatedSnapshot,
+          isMemoryPressured: true
+        }
+      })
+    })
+
+    render(<EnergyTransparencyBadge />)
+    fireEvent.click(screen.getByTestId('energy-badge-trigger'))
+
+    expect(screen.getByText('(已触发低内存保护)')).toBeDefined()
   })
 })

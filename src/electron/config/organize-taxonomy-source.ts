@@ -108,7 +108,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '基于项目与基础资产解耦的标准化设计团队工作流',
     category: 'creative',
     persona: 'designer',
-    naming_template: '[{TAG:设计软件}]{SMART_NAME}_v{META:版本}',
+    naming_template: `[{TAG:${t('设计软件')}}]{SMART_NAME}_v{META:${t('版本')}}`,
     naming_pattern: '[业务模块]_[页面名称]_[状态变体]',
     preset_directory_tree: [
       {
@@ -186,7 +186,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '包含构建包、静态资源、端侧测试与发布脚本的规范拓扑',
     category: 'office',
     persona: 'engineer',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -263,7 +263,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '规范数据库迁移、API文档、K8s编排与压测日志结构',
     category: 'office',
     persona: 'engineer',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -336,7 +336,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '业界公认的最适合高频数字创作者与知识工作者的经典结构 (项目/领域/资源/归档)',
     category: 'entertainment',
     persona: 'general',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -405,7 +405,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '绝不迷路的十进制数字编号系统，适合行政、法务与严谨结构化档案',
     category: 'entertainment',
     persona: 'general',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -474,7 +474,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '从机身RAW导入、初筛挑片、工程修图到客户交付的全流程组织',
     category: 'creative',
     persona: 'photographer',
-    naming_template: '[{TAG:设备型号}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('设备型号')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[拍摄场景]_[主题主体]',
     preset_directory_tree: [
       {
@@ -557,7 +557,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '适配PR/FCPX/达芬奇剪辑管线，涵盖音画分离、字幕花字与多端输出',
     category: 'creative',
     persona: 'videographer',
-    naming_template: '[{TAG:分辨率}]{SMART_NAME}_{TAG:景别}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分辨率')}}]{SMART_NAME}_{TAG:${t('景别')}}_{CRE:YYYYMMDD}`,
     naming_pattern: '[场景机位]_[片段主题]_[人物动作]',
     preset_directory_tree: [
       {
@@ -640,7 +640,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '论文开题、文献精读、实验原始记录与学位论文答辩终稿归纳',
     category: 'creative',
     persona: 'researcher',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -721,7 +721,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '税务月结、发票票据、工资表与年报审计标准化归类',
     category: 'office',
     persona: 'financial',
-    naming_template: '[{TAG:合同类型}]{SMART_NAME}_{MOD:YYYY-MM-DD}',
+    naming_template: `[{TAG:${t('合同类型')}}]{SMART_NAME}_{MOD:YYYY-MM-DD}`,
     naming_pattern: '[签署双方]_[业务性质]_[标的要点]',
     preset_directory_tree: [
       {
@@ -810,7 +810,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '家庭证件、房产购车合同、家电凭据、保单与健康医疗报告终身归档',
     category: 'entertainment',
     persona: 'general',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -888,7 +888,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '从小红书、抖音、公众号到视频号的内容策划、视觉素材与数据复盘',
     category: 'entertainment',
     persona: 'creator',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -969,7 +969,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '电商选品打样、直通车投流物料、商品主图详情页与大促活动复盘',
     category: 'office',
     persona: 'operator',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -1048,7 +1048,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '覆盖Unity/Unreal/Godot策划案、美术精灵图、音效音频与构建Demo包',
     category: 'office',
     persona: 'engineer',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -1131,7 +1131,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '覆盖多语言Listing商品图、头程报关与FBA海外仓单、站外引流推广与退换货核算',
     category: 'office',
     persona: 'operator',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -1200,7 +1200,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '按当事人起诉状、原告证据链、庭审笔录、代理词、裁决判决书严谨归类',
     category: 'office',
     persona: 'legal',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -1269,7 +1269,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '规范患者化验单影像报告、专病队列随访表、伦理审查批件与SCI论文草稿',
     category: 'office',
     persona: 'medical',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -1340,7 +1340,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '包含教学大纲课件PPT、单元试卷与解析、公开课录像、家校互访沟通记录',
     category: 'office',
     persona: 'teacher',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -1410,7 +1410,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '涵盖行业宏观研报、标的企业财报梳理、高管专家访谈录音、战略建议汇报底稿',
     category: 'office',
     persona: 'consultant',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -1478,7 +1478,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '组织DWG/DXF总平面图、3D效果图渲染高精位图、结构力学计算书、工程预算清单',
     category: 'creative',
     persona: 'architect',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -1551,7 +1551,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '世界观大纲设定、角色小传关系图、分卷正文草稿、采风摄影资料与出版审校意见',
     category: 'entertainment',
     persona: 'writer',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -1620,7 +1620,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '记录来访者心理评估量表、定制膳食热量食谱、运动心率日志与复盘调理方案',
     category: 'entertainment',
     persona: 'medical',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -1689,7 +1689,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
       '覆盖产品愿景规划、PRD功能规格书、原型与交互设计、用户调研反馈与敏捷迭代交付的端到端管理架构',
     category: 'office',
     persona: 'product',
-    naming_template: '[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('属性')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[创建日期]_[业务分类]_[文件名称]',
     preset_directory_tree: [
       {
@@ -1792,7 +1792,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
       '遵循CRISP-DM工业标准的数据挖掘与商业智能架构 (原始数据、特征清洗、Notebook实验、模型沉淀与BI看板)',
     category: 'office',
     persona: 'data_scientist',
-    naming_template: '[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('属性')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[创建日期]_[业务分类]_[文件名称]',
     preset_directory_tree: [
       {
@@ -1895,7 +1895,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
       '涵盖测试策略大纲、手工与自动化测试用例集、缺陷Bug复现与排查日志、性能压测指标及版本准出报告',
     category: 'office',
     persona: 'qa',
-    naming_template: '[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('属性')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[创建日期]_[业务分类]_[文件名称]',
     preset_directory_tree: [
       {
@@ -1995,7 +1995,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
       '覆盖销售全漏斗生命周期：潜客线索挖掘、客户画像与拜访纪要、商业方案报价、招投标资质文件、签约合同与发票回款对账',
     category: 'office',
     persona: 'sales',
-    naming_template: '[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('属性')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[创建日期]_[业务分类]_[文件名称]',
     preset_directory_tree: [
       {
@@ -2093,7 +2093,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
       '人力资源经典模块全覆盖：组织架构与岗位JD、招聘简历与面试评估、入转调离手续合规、薪酬绩效考核、员工培训与企业文化',
     category: 'office',
     persona: 'hr',
-    naming_template: '[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('属性')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[创建日期]_[业务分类]_[文件名称]',
     preset_directory_tree: [
       {
@@ -2190,7 +2190,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
       '4A与互联网品牌营销全流程：行业竞品调研、整合营销全案、创意文案与宣发物料、KOL与渠道媒介排期、活动ROI结案',
     category: 'office',
     persona: 'marketer',
-    naming_template: '[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('属性')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[创建日期]_[业务分类]_[文件名称]',
     preset_directory_tree: [
       {
@@ -2290,7 +2290,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
       '专为公司法务打造的合同全生命周期管理、合规制度审查、知识产权商标专利布局与法律纠纷争议处理体系',
     category: 'office',
     persona: 'legal',
-    naming_template: '[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('属性')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[创建日期]_[业务分类]_[文件名称]',
     preset_directory_tree: [
       {
@@ -2397,7 +2397,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
       '软硬件协同开发工业标准：硬件原理图PCB与BOM、底层BSP驱动与SDK、RTOS固件源码、通信协议抓包与量产固件烧录包',
     category: 'office',
     persona: 'engineer',
-    naming_template: '[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('属性')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[创建日期]_[业务分类]_[文件名称]',
     preset_directory_tree: [
       {
@@ -2516,7 +2516,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
       '专业CG视觉制作管线：概念原画参考、高低模模型工程(Blender/C4D/Maya)、材质贴图与PBR纹理、骨骼动画与高画质成片渲染',
     category: 'creative',
     persona: 'modeler',
-    naming_template: '[{TAG:贴图类型}]{SMART_NAME}_{TAG:材质}',
+    naming_template: `[{TAG:${t('贴图类型')}}]{SMART_NAME}_{TAG:${t('材质')}}`,
     naming_pattern: '[资产分类]_[模型主体]_[面数档位]',
     preset_directory_tree: [
       {
@@ -2647,7 +2647,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
       '适合独立创作者、自由职业者与独立顾问的商业管理架构：客户Brief与报价排期、签约合同、过程版交付、结算发票与作品集归档',
     category: 'creative',
     persona: 'freelancer',
-    naming_template: '[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('属性')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[创建日期]_[业务分类]_[文件名称]',
     preset_directory_tree: [
       {
@@ -2746,7 +2746,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
       '适合自学者、终身学者与数字知识创作者的第二大脑架构：文献收集箱、卡片盒原子笔记、技能实战项目工程与长期思维复盘',
     category: 'entertainment',
     persona: 'general',
-    naming_template: '[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('属性')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[创建日期]_[业务分类]_[文件名称]',
     preset_directory_tree: [
       {
@@ -2840,7 +2840,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
       '专为单机/主机玩家设计，涵盖游戏安装本体、本地通关存档备份、MOD补丁与汉化、精彩录屏及攻略Wiki',
     category: 'entertainment',
     persona: 'gamer',
-    naming_template: '[{TAG:游戏名}]{SMART_NAME}_{CRE:YYYYMMDD_HHmm}',
+    naming_template: `[{TAG:${t('游戏名')}}]{SMART_NAME}_{CRE:YYYYMMDD_HHmm}`,
     naming_pattern: '[游戏名称]_[高光时刻]_[地图战绩]',
     preset_directory_tree: [
       {
@@ -2942,7 +2942,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
       '专为小说读者与书友打造，分类收录网络小说连载、精排EPUB/TXT、出版物经典、轻小说与个人推书书单',
     category: 'entertainment',
     persona: 'reader',
-    naming_template: '《{SMART_NAME}》作者_{TAG:作者}_{TAG:完结状态}',
+    naming_template: `《{SMART_NAME}》作者_{TAG:${t('作者')}}_{TAG:${t('完结状态')}}`,
     naming_pattern: '[作品书名]_[核心流派]_[字数卷册]',
     preset_directory_tree: [
       {
@@ -3046,7 +3046,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '汇集4K UHD HDR原盘蓝光电影、无损音乐FLAC/DSD、追剧剧集季集归档与双语外挂字幕',
     category: 'entertainment',
     persona: 'cinephile',
-    naming_template: '{SMART_NAME}.{TAG:上映年份}.{TAG:分辨率}.{TAG:压制规格}',
+    naming_template: `{SMART_NAME}.{TAG:${t('上映年份')}}.{TAG:${t('分辨率')}}.{TAG:${t('压制规格')}}`,
     naming_pattern: '[电影片名]_[上映年份]_[制式规格]',
     preset_directory_tree: [
       {
@@ -3148,7 +3148,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
       '专为动漫爱好者与ACG同好打造，涵盖季度新番追番、高清漫画分卷、Pixiv插画壁纸、广播剧Drama与展会周边',
     category: 'entertainment',
     persona: 'otaku',
-    naming_template: '[{TAG:画师作者}]{SMART_NAME}_Vol.{META:卷号}',
+    naming_template: `[{TAG:${t('画师作者')}}]{SMART_NAME}_Vol.{META:${t('卷号')}}`,
     naming_pattern: '[作品系列]_[分卷编号]_[核心画师]',
     preset_directory_tree: [
       {
@@ -3241,7 +3241,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '收录装机方案配置单、主板显卡BIOS固件、外设按键宏、基准跑分截图与数码发票电子保修卡',
     category: 'entertainment',
     persona: 'tech_geek',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -3326,7 +3326,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '管理私房家常快手菜、西式烘焙配方表、养生靓汤清单、精选调饮鸡尾酒与美食探店打卡记录',
     category: 'entertainment',
     persona: 'foodie',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -3415,7 +3415,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '全面记录宠物疫苗免疫簿、驱虫化验单、日常高清萌照、主粮成分评测与每月养宠开销记账',
     category: 'entertainment',
     persona: 'pet_owner',
-    naming_template: '[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('属性')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[创建日期]_[业务分类]_[文件名称]',
     preset_directory_tree: [
       {
@@ -3500,7 +3500,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '涵盖自驾游路书、机票酒店订单凭单、相机RAW原始底片、精修风景照、GPX徒步轨迹与纪念票根',
     category: 'entertainment',
     persona: 'traveler',
-    naming_template: '[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('属性')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[创建日期]_[业务分类]_[文件名称]',
     preset_directory_tree: [
       {
@@ -3598,7 +3598,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
       '支持DAW编曲宿主工程、采样音效库Loops、人声分轨干声、合成器音色预设、混音母带与商用版权',
     category: 'creative',
     persona: 'audiophile',
-    naming_template: '{TAG:音轨号} - {SMART_NAME} - {TAG:歌手}',
+    naming_template: `{TAG:${t('音轨号')}} - {SMART_NAME} - {TAG:${t('歌手')}}`,
     naming_pattern: '[音轨序号]_[曲目名称]_[演绎歌手]',
     preset_directory_tree: [
       {
@@ -3694,7 +3694,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '规范管理企业VI视觉手册、印刷画册排版、CMYK印刷校色打样、商用矢量字体与品牌KV海报',
     category: 'creative',
     persona: 'designer',
-    naming_template: '[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('属性')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[创建日期]_[业务分类]_[文件名称]',
     preset_directory_tree: [
       {
@@ -3784,7 +3784,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
       '针对商业插画师与原画设计师，涵盖构图线稿草图、分层工程PSD/Procreate、专属笔刷与商用授权书',
     category: 'creative',
     persona: 'illustrator',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -3865,7 +3865,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
       '支持iOS/Android原生与Flutter/RN跨平台，包含双端工程、开发者打包证书、商店提审截图与发布包',
     category: 'office',
     persona: 'engineer',
-    naming_template: '[{TAG:设计软件}]{SMART_NAME}_v{META:版本}',
+    naming_template: `[{TAG:${t('设计软件')}}]{SMART_NAME}_v{META:${t('版本')}}`,
     naming_pattern: '[业务模块]_[页面名称]_[状态变体]',
     preset_directory_tree: [
       {
@@ -3956,7 +3956,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
       '覆盖Kubernetes集群编排清单、Terraform/Ansible脚本、Prometheus告警看板与生产巡检故障复盘',
     category: 'office',
     persona: 'sre',
-    naming_template: '[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('属性')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[创建日期]_[业务分类]_[文件名称]',
     preset_directory_tree: [
       {
@@ -4041,7 +4041,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '包含供应商准入考核表、采购订单PO合同、来料IQC质检单、WMS实物盘点与国际货运报关凭单',
     category: 'office',
     persona: 'logistics',
-    naming_template: '[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('属性')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[创建日期]_[业务分类]_[文件名称]',
     preset_directory_tree: [
       {
@@ -4118,7 +4118,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
       '专为出国留学学子规划，收录择校方案清单、语言标化成绩、个人陈述PS/推荐信RL、中英成绩单与签证面签资料',
     category: 'office',
     persona: 'student',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -4199,7 +4199,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '专为电脑桌面设计，快速收纳今日待办、当前工作草稿、临时截图、安装包与历史旧桌面备份',
     category: 'office',
     persona: 'general',
-    naming_template: '[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('属性')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[创建日期]_[业务归属]_[文件名称]',
     preset_directory_tree: [
       {
@@ -4291,7 +4291,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
       '根据介质与用途全景分流：软件安装程序、办公文档、图片影音、压缩归档包，并设立过期清理缓冲期',
     category: 'office',
     persona: 'general',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[下载类型]_[文件主题]_[生成时间]',
     preset_directory_tree: [
       {
@@ -4398,7 +4398,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '基于GTD工作法建立收集箱、待行动、等待跟进、随时参考与冷归档全生命周期中转',
     category: 'office',
     persona: 'general',
-    naming_template: '[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('属性')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[创建日期]_[业务分类]_[文件名称]',
     preset_directory_tree: [
       {
@@ -4478,7 +4478,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
       '针对电脑桌面高频堆积的应用快捷方式、各业务文档、临时截图素材与安装包进行物理实体功能分类',
     category: 'office',
     persona: 'general',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -4586,7 +4586,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '归档自动化测试脚本工程、手工用例脑图、Bug复现截图抓包、压测基准与版本准出清单',
     category: 'office',
     persona: 'qa',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -4667,7 +4667,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '收纳语数英主科学科教辅、日常课后作业、错题重难点归纳、名师网课讲义与课外才艺考级',
     category: 'entertainment',
     persona: 'parent',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -4752,7 +4752,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '按学期生命周期分阶段管理：新学期规划课表、日常上课作业打卡、期中期末冲刺与寒暑假实践',
     category: 'entertainment',
     persona: 'parent',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -4824,7 +4824,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '家庭老照片数字化、历年体检病历单据、处方常用药品清单与经典戏曲养生音画库',
     category: 'entertainment',
     persona: 'senior',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -4904,7 +4904,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '按就医挂号、门诊检查进行中、医保报销结算与年度随访长期建档全流程管理',
     category: 'entertainment',
     persona: 'senior',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -4971,7 +4971,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '收纳规范行政红头公文、办公物资盘点表、收发台账、日常报销发票与常用合同盖章审批件',
     category: 'office',
     persona: 'general',
-    naming_template: '[{TAG:部门}]{SMART_NAME}_{MOD:YYYYMMDD}',
+    naming_template: `[{TAG:${t('部门')}}]{SMART_NAME}_{MOD:YYYYMMDD}`,
     naming_pattern: '[汇报主题]_[业务事项]_[拟写部门]',
     preset_directory_tree: [
       {
@@ -5058,7 +5058,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '外来文书收文承办、领导批示传阅交办、在办催办督查与办结归档销号全流程',
     category: 'office',
     persona: 'clerk',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -5126,7 +5126,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '家庭核心成员身份户口簿、房产土地契税合同、医疗人身车险保单与水电账单分类留存',
     category: 'entertainment',
     persona: 'general',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -5210,7 +5210,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '电视剧集按季收纳、高清电影原盘、无损Hi-Res音频专辑、电子书漫画与装机镜像工具分类仓储',
     category: 'entertainment',
     persona: 'collector',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -5297,7 +5297,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '收纳前后端全栈Starter脚手架、通用UI组件库、工具函数封装、Docker配置及自动化运维脚本',
     category: 'office',
     persona: 'engineer',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -5381,7 +5381,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '针对应用运行日志、崩溃转储Dump、解压临时缓存与历史未删残留的分类隔离体系',
     category: 'office',
     persona: 'general',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -5431,7 +5431,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '针对微信WeChat Files、QQ、钉钉接收文档、发票、音视频与压缩包的结构化收敛体系',
     category: 'office',
     persona: 'general',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -5482,7 +5482,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '针对手机通过AirDrop、局域网快传传到电脑的照片、录音备忘与单据的中转分类体系',
     category: 'office',
     persona: 'general',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -5531,7 +5531,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '针对快捷键截图、微信截图、Snipaste与录屏素材的按用途分流归档体系',
     category: 'office',
     persona: 'general',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -5580,7 +5580,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '针对散落的新建文本文档、未命名表格、副本文件与随手记事草稿的收敛急救体系',
     category: 'office',
     persona: 'general',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -5627,7 +5627,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '针对从他人U盘、移动硬盘或相机卡拷出的临时散乱数据文件夹的分流体系',
     category: 'entertainment',
     persona: 'general',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -5676,7 +5676,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '针对手机扫描全能王PDF、证件翻拍、合同盖章件与报销发票的数字化归档体系',
     category: 'office',
     persona: 'general',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -5725,7 +5725,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '针对个人Documents文档库中沉淀的日常办公文件的高效分类收纳体系',
     category: 'office',
     persona: 'general',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {
@@ -5773,7 +5773,7 @@ export const BLUEPRINT_STATIC_TEMPLATES = [
     summary: '针对学生、自学者与科研人员课程讲义、电子书、学术论文与练习题库的归集体系',
     category: 'office',
     persona: 'researcher',
-    naming_template: '[{TAG:分类}]{SMART_NAME}_{CRE:YYYYMMDD}',
+    naming_template: `[{TAG:${t('分类')}}]{SMART_NAME}_{CRE:YYYYMMDD}`,
     naming_pattern: '[业务归属]_[主题名称]_[生成日期]',
     preset_directory_tree: [
       {

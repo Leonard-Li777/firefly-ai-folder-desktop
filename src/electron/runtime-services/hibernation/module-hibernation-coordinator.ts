@@ -3108,7 +3108,10 @@ export class ModuleHibernationCoordinator {
     }
 
     const memoryGauges = projectMemoryGauges(metrics)
+    const totalMemoryBytes = this.getTotalMemoryProvider?.() ?? os.totalmem()
     const availableMemoryBytes = this.getFreeMemoryProvider?.() ?? os.freemem()
+    const memoryThresholdBytes = computeHibernationMemoryThreshold(totalMemoryBytes, 0)
+    const isMemoryPressured = availableMemoryBytes < memoryThresholdBytes
     const totalSaved = memoryGauges.totalSavedRamBytes + memoryGauges.totalSavedVramBytes
     const isEnergySaving = totalSaved > 0 && metrics.some(m => m.state === 'hibernated')
 
@@ -3117,6 +3120,9 @@ export class ModuleHibernationCoordinator {
       isEnergySaving,
       ...memoryGauges,
       availableMemoryBytes,
+      totalMemoryBytes,
+      memoryThresholdBytes,
+      isMemoryPressured,
       modules: metrics
     }
   }

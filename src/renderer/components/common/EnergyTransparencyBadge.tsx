@@ -311,18 +311,20 @@ export const EnergyTransparencyBadge: React.FC<{ className?: string }> = ({ clas
               </button>
             </div>
 
-            {/* 电脑当前剩余可用内存透视 */}
+            {/* 电脑当前可用内存透视 */}
             <div className="mb-3 px-2.5 py-1.5 rounded-lg bg-muted/40 text-xs text-muted-foreground flex items-center justify-between">
               <span>
-                {t('电脑当前剩余内存: {mem}', {
+                {t('电脑当前可用内存: {mem}', {
                   mem: formatMemoryBytes(snapshot?.availableMemoryBytes)
                 })}
               </span>
-              {hibernatedModules.length > 0 && (
+              {snapshot?.isMemoryPressured ? (
+                <span className="text-amber-500 font-medium">{t('(已触发低内存保护)')}</span>
+              ) : hibernatedModules.length > 0 ? (
                 <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                  {t('(已触发智能休眠保护)')}
+                  {t('(处于闲置节能)')}
                 </span>
-              )}
+              ) : null}
             </div>
 
             {/* 模块列表分区 */}
