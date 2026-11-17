@@ -9,7 +9,7 @@
     "de-DE": "Der Start der Anwendung wird vorbereitet...",
     "fr-FR": "Préparation du lancement de l'application...",
     "ko-KR": "애플리케이션 실행 준비 중...",
-    "$files": ["src/renderer/App.tsx(11727-11742)"],
+    "$files": ["src/renderer/App.tsx(11832-11847)"],
     "$id": 7602
   },
   "正在检测应用配置...": {
@@ -22,7 +22,7 @@
     "de-DE": "Anwendungskonfiguration wird erkannt...",
     "fr-FR": "Détection de la configuration de l'application...",
     "ko-KR": "애플리케이션 구성을 감지하는 중...",
-    "$files": ["src/renderer/App.tsx(13120-13135)"],
+    "$files": ["src/renderer/App.tsx(13225-13240)"],
     "$id": 7614
   },
   "正在验证授权状态...": {
@@ -35,7 +35,7 @@
     "de-DE": "Autorisierungsstatus wird überprüft...",
     "fr-FR": "Vérification de l'état d'autorisation...",
     "ko-KR": "승인 상태 확인 중...",
-    "$files": ["src/renderer/App.tsx(16760-16775)"],
+    "$files": ["src/renderer/App.tsx(16865-16880)"],
     "$id": 7615
   },
   "正在初始化应用环境...": {
@@ -48,7 +48,7 @@
     "de-DE": "Anwendungsumgebung wird initialisiert...",
     "fr-FR": "Initialisation de l'environnement d'application...",
     "ko-KR": "애플리케이션 환경 초기화 중...",
-    "$files": ["src/renderer/App.tsx(25819-25835)"],
+    "$files": ["src/renderer/App.tsx(25924-25940)"],
     "$id": 7618
   },
   "正在初始化AI服务...": {
@@ -61,7 +61,7 @@
     "de-DE": "KI-Dienst wird initialisiert...",
     "fr-FR": "Initialisation du service IA...",
     "ko-KR": "AI 서비스 초기화 중...",
-    "$files": ["src/renderer/App.tsx(25982-25998)"],
+    "$files": ["src/renderer/App.tsx(26087-26103)"],
     "$id": 7619
   },
   "正在加载应用配置...": {
@@ -74,7 +74,7 @@
     "de-DE": "Anwendungskonfiguration wird geladen...",
     "fr-FR": "Chargement de la configuration de l'application...",
     "ko-KR": "애플리케이션 구성 로드 중...",
-    "$files": ["src/renderer/App.tsx(26269-26284)"],
+    "$files": ["src/renderer/App.tsx(26374-26389)"],
     "$id": 7620
   },
   "正在检查 AI 状态...": {
@@ -87,7 +87,7 @@
     "de-DE": "AI-Status wird überprüft...",
     "fr-FR": "Vérification de l'état de l'IA...",
     "ko-KR": "AI 상태를 확인하는 중...",
-    "$files": ["src/renderer/App.tsx(26337-26354)"],
+    "$files": ["src/renderer/App.tsx(26442-26459)"],
     "$id": 7621
   },
   "萤核智能文件夹需要访问您的“下载”文件夹以整理和检索文件。": {

@@ -108,20 +108,9 @@ export async function getFileAnalysisData(
   const wsPath: string = rootWorkspace.path ?? ''
   const wsType: string = rootWorkspace.type ?? ''
 
-  // 2.1 调度门闩前置拦截：工作区未就绪前物理阻断分析队列插入 (TASK-01 旁路防御)
+  // 2.1 调度门闩前置校验：若工作区未就绪，自动自适应就绪默认 AI 策略，确保不阻断分析
   if (autoQueue && !databaseService.isWorkspaceConfigReady(workspaceId)) {
-    return {
-      belongsToWorkspace: true,
-      workspace: {
-        id: workspaceId,
-        name: wsName,
-        path: wsPath,
-        type: wsType
-      },
-      isAnalyzed: false,
-      queued: false,
-      message: '工作区尚未完成 AI 分析策略配置，请先完成配置'
-    }
+    await databaseService.ensureWorkspaceConfigReady(workspaceId)
   }
 
   const workspaceFile = db

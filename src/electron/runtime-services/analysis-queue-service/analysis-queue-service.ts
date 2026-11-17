@@ -492,7 +492,11 @@ export class AnalysisQueueService {
 
   async start(workspaceId?: number): Promise<void> {
     if (workspaceId) {
-      const isReady = await databaseService.isWorkspaceConfigReady(workspaceId)
+      let isReady = await databaseService.isWorkspaceConfigReady(workspaceId)
+      if (!isReady) {
+        await databaseService.ensureWorkspaceConfigReady(workspaceId)
+        isReady = await databaseService.isWorkspaceConfigReady(workspaceId)
+      }
       if (!isReady) {
         logger.warn(
           LogCategory.ANALYSIS_QUEUE,
@@ -533,9 +537,13 @@ export class AnalysisQueueService {
       try {
         const activeWorkspaceId = this.runningWorkspaceStack[this.runningWorkspaceStack.length - 1]
 
-        // TASK-01 动态刹车：若当前工作区尚未确认配置 (pending)，立即阻断消费并挂起
+        // TASK-01 动态刹车：若当前工作区尚未确认配置 (pending)，尝试自适应就绪默认配置
         if (activeWorkspaceId != null) {
-          const isConfigReady = await databaseService.isWorkspaceConfigReady(activeWorkspaceId)
+          let isConfigReady = await databaseService.isWorkspaceConfigReady(activeWorkspaceId)
+          if (!isConfigReady) {
+            await databaseService.ensureWorkspaceConfigReady(activeWorkspaceId)
+            isConfigReady = await databaseService.isWorkspaceConfigReady(activeWorkspaceId)
+          }
           if (!isConfigReady) {
             logger.warn(
               LogCategory.ANALYSIS_QUEUE,

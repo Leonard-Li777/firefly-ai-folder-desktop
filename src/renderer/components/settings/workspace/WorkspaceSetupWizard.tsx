@@ -1166,13 +1166,8 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
           : [],
         customIncludeRules: selectedTemplateConfig?.customIncludeRules || [],
         baseAIConfig: baseAi,
-        derivedSnapshot: baseAi,
         advancedAIPrompts: selectedTemplateConfig?.advancedAIPrompts || undefined,
         unitRecognition: selectedTemplateConfig?.unitRecognition || undefined,
-        namingPattern:
-          selectedWorkflow.naming_pattern || selectedTemplateConfig?.namingPattern || undefined,
-        namingTemplate:
-          selectedWorkflow.naming_template || selectedTemplateConfig?.namingTemplate || undefined,
         configuredAt: Date.now()
       }
 

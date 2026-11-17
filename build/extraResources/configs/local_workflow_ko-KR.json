@@ -4399,7 +4399,7 @@
           "isSystem": true
         },
         {
-          "id": "builtin.workflow.architectural-cad-design-exclusive-14",
+          "id": "builtin.workflow.architectural-cad-design-common-14-psd",
           "type": "extension",
           "value": ".psd",
           "isActive": true,
@@ -4763,7 +4763,7 @@
           "isSystem": true
         },
         {
-          "id": "builtin.workflow.writing-publishing-pipeline-exclusive-3",
+          "id": "builtin.workflow.writing-publishing-pipeline-common-13-psd",
           "type": "extension",
           "value": ".psd",
           "isActive": true,
@@ -8971,21 +8971,21 @@
           "isSystem": true
         },
         {
-          "id": "builtin.workflow.creative-assets-exclusive-17",
+          "id": "builtin.workflow.creative-assets-common-13-tga",
           "type": "extension",
           "value": ".tga",
           "isActive": true,
           "isSystem": true
         },
         {
-          "id": "builtin.workflow.creative-assets-exclusive-18",
+          "id": "builtin.workflow.creative-assets-common-14-psd",
           "type": "extension",
           "value": ".psd",
           "isActive": true,
           "isSystem": true
         },
         {
-          "id": "builtin.workflow.creative-assets-exclusive-19",
+          "id": "builtin.workflow.creative-assets-common-15-aep",
           "type": "extension",
           "value": ".aep",
           "isActive": true,
@@ -10239,13 +10239,6 @@
           "isSystem": true
         },
         {
-          "id": "builtin.workflow.novel-exclusive-8",
-          "type": "extension",
-          "value": ".chm",
-          "isActive": true,
-          "isSystem": true
-        },
-        {
           "id": "builtin.workflow.novel-exclusive-9",
           "type": "extension",
           "value": ".djvu",
@@ -10318,14 +10311,13 @@
         "reuseBasicAnalysisData": true
       },
       "extensionWeights": {
-        ".epub": 0.28,
+        ".epub": 0.29,
         ".mobi": 0.1,
         ".azw": 0.02,
         ".azw3": 0.08,
         ".kfx": 0.02,
         ".fb2": 0.01,
         ".umd": 0.01,
-        ".chm": 0.01,
         ".djvu": 0.02,
         ".pdf": 0.12,
         ".txt": 0.2,
@@ -10961,7 +10953,7 @@
           "isSystem": true
         },
         {
-          "id": "builtin.workflow.anime-comic-exclusive-6",
+          "id": "builtin.workflow.anime-comic-common-9-psd",
           "type": "extension",
           "value": ".psd",
           "isActive": true,
@@ -15359,21 +15351,21 @@
           "isSystem": true
         },
         {
-          "id": "builtin.workflow.downloads-triage-exclusive-6",
+          "id": "builtin.workflow.downloads-triage-common-22-epub",
           "type": "extension",
           "value": ".epub",
           "isActive": true,
           "isSystem": true
         },
         {
-          "id": "builtin.workflow.downloads-triage-exclusive-7",
+          "id": "builtin.workflow.downloads-triage-common-22-mobi",
           "type": "extension",
           "value": ".mobi",
           "isActive": true,
           "isSystem": true
         },
         {
-          "id": "builtin.workflow.downloads-triage-exclusive-8",
+          "id": "builtin.workflow.downloads-triage-common-22-azw3",
           "type": "extension",
           "value": ".azw3",
           "isActive": true,
@@ -20486,17 +20478,11 @@
         "reuseBasicAnalysisData": true
       },
       "extensionWeights": {
-        ".png": 0.45,
-        ".jpg": 0.12,
-        ".jpeg": 0.03,
-        ".gif": 0.06,
-        ".webp": 0.03,
-        ".bmp": 0.01,
-        ".mp4": 0.14,
-        ".mov": 0.08,
-        ".mkv": 0.04,
-        ".webm": 0.02,
-        ".avi": 0.02
+        ".png": 0.48,
+        ".jpg": 0.36,
+        ".gif": 0.08,
+        ".mp4": 0.05,
+        ".mov": 0.03
       },
       "configuredAt": 1762425600000
     },

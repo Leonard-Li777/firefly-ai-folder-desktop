@@ -1322,6 +1322,15 @@ export class DatabaseService {
     return this.workspaceDao.isConfigReady(workspaceId)
   }
 
+  /**
+   * 确保工作区配置处于就绪状态 (若为 pending，自适应赋予默认未绑定工作流的就绪策略)
+   */
+  async ensureWorkspaceConfigReady(workspaceId: number): Promise<boolean> {
+    await this.ensureInitialized()
+    if (!this.workspaceDao) return false
+    return this.workspaceDao.ensureConfigReady(workspaceId)
+  }
+
   // --- Local Workflow Methods ---
   async getLocalWorkflowById(id: string): Promise<LocalWorkflowRecord | undefined> {
     await this.ensureInitialized()

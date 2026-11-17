@@ -120,11 +120,7 @@ const UNIVERSAL_WORKFLOW_SEED = {
     },
     {
       name: '02-分类存放',
-      children: [
-        { name: '文档与资料' },
-        { name: '媒体与图片' },
-        { name: '应用与软件' }
-      ]
+      children: [{ name: '文档与资料' }, { name: '媒体与图片' }, { name: '应用与软件' }]
     },
     {
       name: '03-长期归档',
@@ -157,23 +153,6 @@ const UNIVERSAL_WORKFLOW_SEED = {
       enableOfficeCover: true,
       reuseBasicAnalysisData: true
     },
-    derivedSnapshot: {
-      analysisMode: 'quick_name',
-      embeddingProfile: 'classic_light',
-      mrlDimension: 256,
-      videoQuotaMax: 10,
-      videoCutSensitivity: 'medium',
-      videoSoftTokenBudget: 48,
-      videoAsrDurationSec: 0,
-      audioAnalysisDurationSec: 0,
-      enableImageOcr: true,
-      ocrModelSize: 'tiny',
-      maxContentSizeKb: 4096,
-      enableOfficeCover: true,
-      reuseBasicAnalysisData: true
-    },
-    namingPattern: '[创建日期]_[业务分类]_[文件名称]',
-    namingTemplate: '[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}',
     configuredAt: 1762425600000
   })
 }
@@ -323,7 +302,8 @@ export class WorkspacePolicyCommitService {
             if (!exists && effectiveWorkflowId === 'builtin.workflow.general-inbox') {
               // 自动补种官方通用文件工作流，消除外键约束冲突
               try {
-                db.prepare(`
+                db.prepare(
+                  `
                   INSERT OR REPLACE INTO local_workflows (
                     id, user_id, author, name, version, persona, category, summary,
                     source, status, workspace_config, naming_pattern, naming_template,
@@ -333,7 +313,8 @@ export class WorkspacePolicyCommitService {
                     @source, @status, @workspace_config, @naming_pattern, @naming_template,
                     @preset_directory_tree, @preview_tree, @icon_svg
                   )
-                `).run(UNIVERSAL_WORKFLOW_SEED)
+                `
+                ).run(UNIVERSAL_WORKFLOW_SEED)
                 exists = db
                   .prepare('SELECT 1 FROM local_workflows WHERE id = ?')
                   .get(effectiveWorkflowId)
@@ -384,9 +365,7 @@ export class WorkspacePolicyCommitService {
           const prevReady = prevConfig.status === 'ready' ? prevConfig : null
 
           const userExcludes = (prevReady?.customExcludeRules || []).filter((r: any) => !r.isSystem)
-          const userIncludes = (prevReady?.customIncludeRules || []).filter(
-            (r: any) => !r.isSystem
-          )
+          const userIncludes = (prevReady?.customIncludeRules || []).filter((r: any) => !r.isSystem)
 
           const newTemplateExcludes = (configToPersist.customExcludeRules || []).filter(
             (r: any) => r.isSystem

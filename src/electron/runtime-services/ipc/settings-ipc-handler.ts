@@ -433,13 +433,10 @@ export function registerSettingsIPCHandlers(): void {
           customExcludeRules: config.customExcludeRules,
           extensionWeights: config.extensionWeights,
           baseAIConfig: config.baseAIConfig,
-          derivedSnapshot: config.derivedSnapshot,
           intent: config.intent,
           overrides: config.overrides,
           advancedAIPrompts: config.advancedAIPrompts,
-          unitRecognition: config.unitRecognition,
-          namingPattern: config.namingPattern,
-          namingTemplate: config.namingTemplate
+          unitRecognition: config.unitRecognition
         }
 
         const result = await workspaceAdmissionService.applyPolicyMutation(workspaceId, mutation)
@@ -540,8 +537,7 @@ export function registerSettingsIPCHandlers(): void {
           const { directoryProfilerService } =
             await import('../filesystem/directory-profiler-service')
           const profile = await directoryProfilerService.probeProfile(workspace.path)
-          const extCounts =
-            profile.stats?.countsByExt || (profile.stats as any)?.extensionCounts
+          const extCounts = profile.stats?.countsByExt || (profile.stats as any)?.extensionCounts
           if (extCounts) {
             probeExtensionCounts = extCounts
           }

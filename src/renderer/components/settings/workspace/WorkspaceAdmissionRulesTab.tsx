@@ -1,4 +1,11 @@
-import React, { useState, useMemo, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react'
+import React, {
+  useState,
+  useMemo,
+  useEffect,
+  useCallback,
+  useImperativeHandle,
+  forwardRef
+} from 'react'
 import {
   WorkspaceDirectory,
   WorkspaceConfig,
@@ -354,7 +361,6 @@ export const WorkspaceAdmissionRulesTab = forwardRef<
             status: 'ready',
             policyVersion: 1,
             baseAIConfig: baseDerived,
-            derivedSnapshot: baseDerived,
             customExcludeRules: nextRules,
             customIncludeRules: [],
             configuredAt: Date.now()

@@ -128,8 +128,8 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
 
   // 基线快照与工作目录 overrides
   const baseDerived: TechnicalEngineParameters = useMemo(() => {
-    if (isReady && (parsedConfig.baseAIConfig || parsedConfig.derivedSnapshot)) {
-      return parsedConfig.baseAIConfig || parsedConfig.derivedSnapshot
+    if (isReady && parsedConfig.baseAIConfig) {
+      return parsedConfig.baseAIConfig
     }
     return mapIntentToParameters(currentIntent, hardwareInfo)
   }, [isReady, parsedConfig, currentIntent, hardwareInfo])
@@ -173,7 +173,6 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
           intent: currentIntent,
           policyVersion: 1,
           baseAIConfig: baseDerived,
-          derivedSnapshot: baseDerived,
           overrides: hasAnyOverride ? targetOverrides : undefined,
           customExcludeRules:
             parsedConfig.status === 'ready' ? parsedConfig.customExcludeRules || [] : [],

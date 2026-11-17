@@ -41,7 +41,7 @@ import {
   shouldIngressFile,
   type EffectiveFilterPolicy
 } from '@firefly/shared'
-import { LOCAL_WORKFLOW_CONFIG_SOURCE } from '../../config/organize-taxonomy-source'
+import { LOCAL_WORKFLOW_SOURCE } from '../../config/local-workflow-source'
 
 export interface WorkspacePolicyMutation {
   workflowId?: string | null
@@ -55,13 +55,10 @@ export interface WorkspacePolicyMutation {
   /** 工作区专有排除规则列表 (标准规范命名) */
   customExcludeRules?: IFilterRule[]
   baseAIConfig?: BaseAIConfig
-  derivedSnapshot?: TechnicalEngineParameters
   intent?: WorkspaceConfigIntent
   overrides?: Partial<TechnicalEngineParameters>
   advancedAIPrompts?: WorkspaceConfigReady['advancedAIPrompts']
   unitRecognition?: WorkspaceConfigReady['unitRecognition']
-  namingPattern?: string
-  namingTemplate?: string
 }
 
 export interface PolicyImpactPreview {
@@ -307,7 +304,7 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
     }
 
     try {
-      const builtins = LOCAL_WORKFLOW_CONFIG_SOURCE()
+      const builtins = LOCAL_WORKFLOW_SOURCE()
       const found = builtins.find(w => w.id === workflowId)
       if (found) {
         return found as unknown as Partial<LocalWorkflowRecord>
@@ -343,15 +340,6 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
           if (parsed.baseAIConfig) {
             result.baseAIConfig = parsed.baseAIConfig
           }
-          if (parsed.derivedSnapshot) {
-            result.derivedSnapshot = parsed.derivedSnapshot
-          }
-          if (parsed.namingPattern) {
-            result.namingPattern = parsed.namingPattern
-          }
-          if (parsed.namingTemplate) {
-            result.namingTemplate = parsed.namingTemplate
-          }
           if (parsed.extensionWeights && typeof parsed.extensionWeights === 'object') {
             result.extensionWeights = parsed.extensionWeights
           }
@@ -381,13 +369,6 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
           }
         }
       } catch {}
-    }
-
-    if (workflow.naming_pattern && !result.namingPattern) {
-      result.namingPattern = workflow.naming_pattern
-    }
-    if (workflow.naming_template && !result.namingTemplate) {
-      result.namingTemplate = workflow.naming_template
     }
 
     return result
@@ -556,14 +537,6 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
       currentReady?.baseAIConfig ||
       defaultBaseAi
 
-    const nextDerivedSnapshot: TechnicalEngineParameters =
-      mutation.derivedSnapshot ||
-      mutation.baseAIConfig ||
-      (mutation.restoreWorkflowDefault ? templateOverlay?.derivedSnapshot : undefined) ||
-      templateOverlay?.derivedSnapshot ||
-      currentReady?.derivedSnapshot ||
-      nextBaseAi
-
     // 4. 计算扩展名期望占比权重 (Spec §3.1.3 覆盖优先级修复)
     // 优先级：mutation.restoreWorkflowDefault ➔ templateOverlay / blueprint 优先；
     // 否则：mutation 显式权重 ➔ currentReady 已有权重 ➔ templateOverlay / blueprint 兜底
@@ -598,11 +571,6 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
       baseAIConfig: nextBaseAi,
       advancedAIPrompts: mutation.advancedAIPrompts ?? currentReady?.advancedAIPrompts,
       unitRecognition: mutation.unitRecognition ?? currentReady?.unitRecognition,
-      namingPattern:
-        mutation.namingPattern ?? templateOverlay?.namingPattern ?? currentReady?.namingPattern,
-      namingTemplate:
-        mutation.namingTemplate ?? templateOverlay?.namingTemplate ?? currentReady?.namingTemplate,
-      derivedSnapshot: nextDerivedSnapshot,
       configuredAt: Date.now()
     }
 

@@ -338,8 +338,12 @@ export class QueueManager {
         continue
       }
 
-      // RV-01 调度门闩前置校验：工作区配置若未就绪 (status !== 'ready')，拦截入队
-      const isReady = await databaseService.isWorkspaceConfigReady(resolvedWorkspaceId)
+      // RV-01 调度门闩前置校验：工作区配置若未就绪 (status !== 'ready')，自适应就绪默认配置（未绑定工作流放行）
+      let isReady = await databaseService.isWorkspaceConfigReady(resolvedWorkspaceId)
+      if (!isReady) {
+        await databaseService.ensureWorkspaceConfigReady(resolvedWorkspaceId)
+        isReady = await databaseService.isWorkspaceConfigReady(resolvedWorkspaceId)
+      }
       if (!isReady) {
         logger.warn(
           LogCategory.ANALYSIS_QUEUE,
@@ -698,7 +702,12 @@ export class QueueManager {
       if (!dirSiblingsMap.has(dir)) {
         const set = new Set<string>()
         for (const q of this.queue) {
-          if (q.workspaceId === workspaceId && q.itemType !== 'directory' && q.path && path.dirname(q.path) === dir) {
+          if (
+            q.workspaceId === workspaceId &&
+            q.itemType !== 'directory' &&
+            q.path &&
+            path.dirname(q.path) === dir
+          ) {
             set.add(q.name || path.basename(q.path))
           }
         }

@@ -173,6 +173,7 @@ export class LeaseRegistry {
       leaseId,
       targetId: req.targetId,
       clusterId,
+      abortController: entry.abortController,
       release: () => this.release(leaseId)
     }
   }

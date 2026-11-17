@@ -2,15 +2,11 @@
  * 官方预置工作流本地事实源 (Local Workflow Source)
  * 由 apps/desktop/build/extraResources/configs/local_workflow_zh-CN.json 清理而来
  *
- * 清理与规范化约定：
- * 1. 删除冗余字段 derivedSnapshot 的「逐套完整数据副本」（历史遗留，原恒等于 baseAIConfig 的 13 字段副本）；
- *    因类型仍必填，改为引用与 baseAIConfig 相同的共享预设实例，不再内联重复字段；
- * 2. 删除重复字段 workspace_config.namingPattern / namingTemplate 中的逐套冗余：
- *    原与顶层 naming_pattern / naming_template 逐字相同，现仅由顶层声明一份语义、工厂单点装配；
- * 3. DRY 收敛：70 套工作流的 baseAIConfig 仅有 2 种取值（LIGHT / FULL），
- *    抽取为共享预设并由键引用，避免逐套重复声明 13 个字段；
- * 4. 面向用户文本 100% 显式包裹 t('字面量')，供 voerkai18n 构建期静态 AST 提取；
- *    naming_pattern / naming_template 含中文语义片段，同样纳入 t() 覆盖。
+ * 核心架构准则（SSOT 与零冗余）：
+ * 1. 彻底删除 workspace_config 下的冗余字段 derivedSnapshot、namingPattern、namingTemplate；
+ * 2. 70 套工作流的 baseAIConfig 仅有 2 种取值（LIGHT / FULL），抽取为共享预设并由键引用；
+ * 3. 面向用户文本 100% 显式包裹 t('字面量')，供 voerkai18n 构建期静态 AST 提取；
+ * 4. 树形结构 preset_directory_tree 包含全量层级信息，叶子 paths 纯动态派生。
  */
 
 import { t } from '@app/languages'
@@ -3344,7 +3340,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       },
       {
-        id: 'builtin.workflow.architectural-cad-design-exclusive-14',
+        id: 'builtin.workflow.architectural-cad-design-common-14-psd',
         type: 'extension',
         value: '.psd',
         isActive: true,
@@ -3668,7 +3664,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       },
       {
-        id: 'builtin.workflow.writing-publishing-pipeline-exclusive-3',
+        id: 'builtin.workflow.writing-publishing-pipeline-common-13-psd',
         type: 'extension',
         value: '.psd',
         isActive: true,
@@ -7370,21 +7366,21 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       },
       {
-        id: 'builtin.workflow.creative-assets-exclusive-17',
+        id: 'builtin.workflow.creative-assets-common-13-tga',
         type: 'extension',
         value: '.tga',
         isActive: true,
         isSystem: true
       },
       {
-        id: 'builtin.workflow.creative-assets-exclusive-18',
+        id: 'builtin.workflow.creative-assets-common-14-psd',
         type: 'extension',
         value: '.psd',
         isActive: true,
         isSystem: true
       },
       {
-        id: 'builtin.workflow.creative-assets-exclusive-19',
+        id: 'builtin.workflow.creative-assets-common-15-aep',
         type: 'extension',
         value: '.aep',
         isActive: true,
@@ -8318,14 +8314,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     icon_svg:
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>',
     extensionWeights: {
-      '.epub': 0.28,
+      '.epub': 0.29,
       '.mobi': 0.1,
       '.azw': 0.02,
       '.azw3': 0.08,
       '.kfx': 0.02,
       '.fb2': 0.01,
       '.umd': 0.01,
-      '.chm': 0.01,
       '.djvu': 0.02,
       '.pdf': 0.12,
       '.txt': 0.2,
@@ -8385,13 +8380,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isActive: true,
         isSystem: true
       },
-      {
-        id: 'builtin.workflow.novel-exclusive-8',
-        type: 'extension',
-        value: '.chm',
-        isActive: true,
-        isSystem: true
-      },
+
       {
         id: 'builtin.workflow.novel-exclusive-9',
         type: 'extension',
@@ -8984,7 +8973,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       },
       {
-        id: 'builtin.workflow.anime-comic-exclusive-6',
+        id: 'builtin.workflow.anime-comic-common-9-psd',
         type: 'extension',
         value: '.psd',
         isActive: true,
@@ -12623,21 +12612,21 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       },
       {
-        id: 'builtin.workflow.downloads-triage-exclusive-6',
+        id: 'builtin.workflow.downloads-triage-common-22-epub',
         type: 'extension',
         value: '.epub',
         isActive: true,
         isSystem: true
       },
       {
-        id: 'builtin.workflow.downloads-triage-exclusive-7',
+        id: 'builtin.workflow.downloads-triage-common-22-mobi',
         type: 'extension',
         value: '.mobi',
         isActive: true,
         isSystem: true
       },
       {
-        id: 'builtin.workflow.downloads-triage-exclusive-8',
+        id: 'builtin.workflow.downloads-triage-common-22-azw3',
         type: 'extension',
         value: '.azw3',
         isActive: true,
@@ -16761,17 +16750,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     icon_svg:
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
     extensionWeights: {
-      '.png': 0.45,
-      '.jpg': 0.12,
-      '.jpeg': 0.03,
-      '.gif': 0.06,
-      '.webp': 0.03,
-      '.bmp': 0.01,
-      '.mp4': 0.14,
-      '.mov': 0.08,
-      '.mkv': 0.04,
-      '.webm': 0.02,
-      '.avi': 0.02
+      '.png': 0.48,
+      '.jpg': 0.36,
+      '.gif': 0.08,
+      '.mp4': 0.05,
+      '.mov': 0.03
     },
     customIncludeRules: [
       {
@@ -18004,9 +17987,8 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
 
 /**
  * 组装单套工作流就绪配置
- * 已剔除逐套重复的 13 字段数据副本：baseAIConfig 由共享预设键引用，
- * derivedSnapshot 亦引用同一预设实例（类型必填，但不再逐套内联重复字段）。
- * namingPattern / namingTemplate 仅保留顶层一份语义。
+ * 彻底消除冗余字段：baseAIConfig 由共享预设键引用，
+ * namingPattern / namingTemplate 由顶层字段权威承载，derivedSnapshot 已废弃。
  */
 const buildWorkspaceConfig = (def: LocalWorkflowDefinition): WorkspaceConfigReady => {
   const baseAi = BASE_AI_CONFIG_PRESETS[def.baseAIKey]
@@ -18018,11 +18000,7 @@ const buildWorkspaceConfig = (def: LocalWorkflowDefinition): WorkspaceConfigRead
     customExcludeRules: def.customExcludeRules,
     customIncludeRules: def.customIncludeRules,
     baseAIConfig: baseAi,
-    namingPattern: def.naming_pattern,
-    namingTemplate: def.naming_template,
     extensionWeights: def.extensionWeights,
-    // 类型必填：引用与 baseAIConfig 相同的预设实例，避免逐套重复 13 字段
-    derivedSnapshot: baseAi,
     configuredAt: 1762425600000
   }
 }

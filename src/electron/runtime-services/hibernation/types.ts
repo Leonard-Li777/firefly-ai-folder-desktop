@@ -137,6 +137,8 @@ export interface ModuleRuntimeMetric extends ModuleRuntimeState {
   readonly activeTasks: number
   /** 模块可用性状态 (approved | draft | coming_soon | delisted) */
   readonly availability?: 'approved' | 'draft' | 'coming_soon' | 'delisted'
+  readonly estimatedMemoryBytes?: number
+  readonly i18nDescKey?: string
 }
 
 /** 全局快照契约 */
@@ -209,6 +211,7 @@ export interface HibernationLeaseHandle {
   readonly leaseId: string
   readonly targetId: string
   readonly clusterId: 'analysis_suite' | 'tts_media'
+  readonly abortController?: AbortController
   release(): void
 }
 

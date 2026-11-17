@@ -11,9 +11,9 @@
     "ko-KR": "파일 유형",
     "$files": [
       "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(8491-8499)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1265-1273)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1331-1339)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(43429-43437)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1221-1229)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1286-1294)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(42768-42776)"
     ],
     "$id": 8370
   },
@@ -269,8 +269,8 @@
     "$files": [
       "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(24012-24017)",
       "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(24394-24399)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(14903-14908)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(15086-15091)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(13912-13917)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(14083-14088)"
     ],
     "$id": 8388
   },
@@ -526,12 +526,12 @@
     "ko-KR": "취소",
     "$files": [
       "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(30423-30429)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(17616-17622)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(24986-24992)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(36777-36783)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(45557-45563)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(52526-52532)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(57830-57836)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(16570-16576)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(24137-24143)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(35867-35873)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(44964-44970)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(52224-52230)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(57851-57857)"
     ],
     "$id": 8406
   },
@@ -559,12 +559,12 @@
     "fr-FR": "Noms de fichiers intelligents",
     "ko-KR": "스마트 파일 이름",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1280-1289)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1458-1467)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1596-1605)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1735-1744)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1848-1857)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(2170-2179)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1236-1245)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1409-1418)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1542-1551)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1676-1685)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1784-1793)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(2096-2105)"
     ],
     "$id": 10715
   },
@@ -579,7 +579,7 @@
     "fr-FR": "Date",
     "ko-KR": "날짜",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1296-1302)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1252-1258)"
     ],
     "$id": 10716
   },
@@ -594,7 +594,7 @@
     "fr-FR": "Le type de fichier est précédé du préfixe, suivi du nom du fichier intelligent et de la date de modification.",
     "ko-KR": "파일 형식 앞에는 스마트 파일 이름과 수정 날짜가 옵니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1393-1416)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1347-1370)"
     ],
     "$id": 10717
   },
@@ -609,8 +609,8 @@
     "fr-FR": "Date de modification",
     "ko-KR": "수정일",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1443-1451)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(43203-43211)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1394-1402)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(42545-42553)"
     ],
     "$id": 10718
   },
@@ -625,7 +625,7 @@
     "fr-FR": "Préfixe de date pour faciliter le tri par heure",
     "ko-KR": "시간별로 쉽게 정렬할 수 있는 날짜 접두사",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1538-1554)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1487-1503)"
     ],
     "$id": 10719
   },
@@ -640,7 +640,7 @@
     "fr-FR": "Dimension thématique",
     "ko-KR": "테마 차원",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1581-1589)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1527-1535)"
     ],
     "$id": 10720
   },
@@ -655,9 +655,9 @@
     "fr-FR": "Thème",
     "ko-KR": "주제",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1634-1640)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(2342-2348)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(43518-43524)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1579-1585)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(2262-2268)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(42856-42862)"
     ],
     "$id": 9453
   },
@@ -672,7 +672,7 @@
     "fr-FR": "Les balises de sujet sont placées devant pour renforcer les attributs de classification",
     "ko-KR": "분류 속성을 강화하기 위해 제목 태그를 앞에 배치합니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1678-1695)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1622-1639)"
     ],
     "$id": 10721
   },
@@ -687,8 +687,8 @@
     "fr-FR": "Auteur",
     "ko-KR": "작가",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1722-1728)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(43614-43620)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1663-1669)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(42951-42957)"
     ],
     "$id": 9450
   },
@@ -703,7 +703,7 @@
     "fr-FR": "Préfixe d'auteur ou de créateur",
     "ko-KR": "작성자 또는 작성자 접두어",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1809-1821)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1748-1760)"
     ],
     "$id": 10722
   },
@@ -718,8 +718,8 @@
     "fr-FR": "Résolution",
     "ko-KR": "해결",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1864-1871)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1927-1934)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1800-1807)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1862-1869)"
     ],
     "$id": 10723
   },
@@ -734,8 +734,8 @@
     "fr-FR": "Numéro de série",
     "ko-KR": "일련번호",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1878-1884)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(2040-2046)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1814-1820)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1971-1977)"
     ],
     "$id": 10724
   },
@@ -750,7 +750,7 @@
     "fr-FR": "Dénomination spécifique aux médias multimodaux",
     "ko-KR": "다중 모드 미디어별 이름 지정",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1970-1983)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1904-1917)"
     ],
     "$id": 10725
   },
@@ -765,8 +765,8 @@
     "fr-FR": "Date de création",
     "ko-KR": "생성일",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(2010-2018)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(43286-43294)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1941-1949)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(42627-42635)"
     ],
     "$id": 10726
   },
@@ -781,8 +781,8 @@
     "fr-FR": "Nom de fichier d'origine",
     "ko-KR": "원본 파일명",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(2025-2033)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(43690-43698)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1956-1964)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(43026-43034)"
     ],
     "$id": 10727
   },
@@ -797,7 +797,7 @@
     "fr-FR": "Conservez le nom de fichier d'origine et le numéro de série à trois chiffres",
     "ko-KR": "원본 파일명과 3자리 일련번호를 유지하세요.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(2128-2143)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(2057-2072)"
     ],
     "$id": 10728
   },
@@ -812,7 +812,7 @@
     "fr-FR": "Points de qualité",
     "ko-KR": "품질 포인트",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(2186-2193)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(2112-2119)"
     ],
     "$id": 10729
   },
@@ -827,7 +827,7 @@
     "fr-FR": "Signaler le niveau de qualité de l'IA",
     "ko-KR": "AI 품질평가점수 신고",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(2266-2280)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(2190-2204)"
     ],
     "$id": 10730
   },
@@ -842,7 +842,7 @@
     "fr-FR": "Combinaison d'attributs pleine dimension",
     "ko-KR": "전체 차원 속성 조합",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(2304-2315)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(2225-2236)"
     ],
     "$id": 10731
   },
@@ -857,7 +857,7 @@
     "fr-FR": "Dénomination composée du sujet, du nom, de la date et du numéro de série",
     "ko-KR": "주체, 이름, 날짜, 일련번호를 복합적으로 명명하는 것",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(2414-2433)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(2333-2352)"
     ],
     "$id": 10732
   },
@@ -872,8 +872,8 @@
     "fr-FR": "Appliquer au sous-répertoire",
     "ko-KR": "하위 디렉터리에 적용",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(4079-4089)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(4314-4324)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(3900-3910)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(4127-4137)"
     ],
     "$id": 10733
   },
@@ -888,8 +888,8 @@
     "fr-FR": "Uniquement en vigueur actuellement",
     "ko-KR": "현재만 유효",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(4135-4144)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(4262-4271)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(3955-3964)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(4076-4085)"
     ],
     "$id": 9905
   },
@@ -904,7 +904,7 @@
     "fr-FR": "Hériter du parent",
     "ko-KR": "부모로부터 상속",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(4208-4216)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(4023-4031)"
     ],
     "$id": 9904
   },
@@ -919,7 +919,7 @@
     "fr-FR": "Le mode héritage a été mis à jour",
     "ko-KR": "상속 모드가 업데이트되었습니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(7080-7091)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(6680-6691)"
     ],
     "$id": 9902
   },
@@ -934,7 +934,7 @@
     "fr-FR": "Échec de la mise à jour du schéma d'héritage",
     "ko-KR": "상속 스키마를 업데이트하지 못했습니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(7168-7180)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(6759-6771)"
     ],
     "$id": 9903
   },
@@ -949,7 +949,7 @@
     "fr-FR": "\"\"\"Format\" ne répond pas aux exigences: la règle doit contenir “description du contenu \" ou \"description\" (par exemple: description du contenu [domaine], description du contenu_nom du rôle)",
     "ko-KR": "\"형식\"이\"콘텐츠 설명\"또는\"설명\"을 포함해야 합니다(예:[도메인]콘텐츠 설명,콘텐츠 설명_역할 이름).",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(7758-7810)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(7302-7365)"
     ],
     "$id": 11464
   },
@@ -964,7 +964,7 @@
     "fr-FR": "Le format de nom de fichier intelligent a été enregistré et prendra effet après le basculement vers l'analyse avancée ou complète.",
     "ko-KR": "스마트 파일명 형식이 저장되었으며, 고급 또는 전체 분석으로 전환 시 적용됩니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(8093-8123)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(7624-7654)"
     ],
     "$id": 20337
   },
@@ -979,7 +979,7 @@
     "fr-FR": "Format de nom de fichier intelligent mis à jour",
     "ko-KR": "스마트 파일 이름 형식이 업데이트되었습니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(8140-8154)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(7668-7682)"
     ],
     "$id": 8408
   },
@@ -994,9 +994,9 @@
     "fr-FR": "Échec de l'enregistrement, veuillez réessayer",
     "ko-KR": "저장하지 못했습니다. 다시 시도해 주세요.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(8366-8378)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(9131-9143)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(12828-12840)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(7876-7888)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(8574-8586)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(11979-11991)"
     ],
     "$id": 8409
   },
@@ -1011,7 +1011,7 @@
     "fr-FR": "La stratégie d'analyse IA a été enregistrée et prendra effet après le basculement vers l'analyse avancée ou complète.",
     "ko-KR": "AI 분석 전략이 저장되었으며, ���급 또는 전체 분석으로 전환 시 적용됩니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(8858-8887)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(8322-8351)"
     ],
     "$id": 20345
   },
@@ -1026,7 +1026,7 @@
     "fr-FR": "La stratégie d'analyse de l'IA a été mise à jour",
     "ko-KR": "AI 분석 전략이 업데이트되었습니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(8904-8917)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(8365-8378)"
     ],
     "$id": 8410
   },
@@ -1041,8 +1041,8 @@
     "fr-FR": "Les suggestions de l'IA ont été adoptées et enregistrées ; elles prendront effet après le basculement vers l'analyse avancée ou complète.",
     "ko-KR": "AI 제안이 채택되고 저장되었으며, 고급 또는 전체 분석으로 전환 시 적용됩니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(9703-9733)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(10539-10569)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(9094-9124)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(9857-9887)"
     ],
     "$id": 20347
   },
@@ -1057,8 +1057,8 @@
     "fr-FR": "Suggestions d’IA adoptées et activées",
     "ko-KR": "AI 제안 채택 및 활성화",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(9750-9764)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(10586-10600)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(9138-9152)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(9901-9915)"
     ],
     "$id": 10734
   },
@@ -1073,8 +1073,8 @@
     "fr-FR": "L'adoption a échoué, veuillez réessayer",
     "ko-KR": "채택에 실패했습니다. 다시 시도해 주세요.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(9976-9988)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(10809-10821)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(9346-9358)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(10106-10118)"
     ],
     "$id": 10735
   },
@@ -1089,7 +1089,7 @@
     "fr-FR": "Impossible de copier: Le contenu requis pour le format de nom de fichier intelligent n'a pas été trouvé",
     "ko-KR": "복사할 수 없음:스마트 파일 이름 형식에 필요한 콘텐츠를 찾을 수 없습니다",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(11568-11591)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(10817-10840)"
     ],
     "$id": 11389
   },
@@ -1104,7 +1104,7 @@
     "fr-FR": "Les exigences de format ont été copiées dans le presse-papiers et le mode d'édition a été activé pour vous",
     "ko-KR": "형식 요구 사항이 클립보드에 복사되었으며 편집 모드가 켜져 있습니다",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(11707-11732)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(10944-10969)"
     ],
     "$id": 11624
   },
@@ -1119,7 +1119,7 @@
     "fr-FR": "Échec de la copie, veuillez réessayer",
     "ko-KR": "복사에 실패했습니다. 다시 시도해 주세요.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(12021-12033)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(11234-11246)"
     ],
     "$id": 11625
   },
@@ -1134,7 +1134,7 @@
     "fr-FR": "Pièces jointes de nom de fichier intelligentes mises à jour",
     "ko-KR": "스마트 파일 이름 첨부 파일이 업데이트되었습니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(12503-12519)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(11676-11692)"
     ],
     "$id": 10736
   },
@@ -1149,7 +1149,7 @@
     "fr-FR": "Le modèle nommé a été appliqué avec succès à {count} fichiers analysés",
     "ko-KR": "{count} 구문 분석된 파일에 명명된 템플릿을 성공적으로 적용했습니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(13235-13265)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(12346-12376)"
     ],
     "$id": 10737
   },
@@ -1164,7 +1164,7 @@
     "fr-FR": "L'application par lots a échoué, veuillez réessayer",
     "ko-KR": "일괄 신청에 실패했습니다. 다시 시도해 주세요.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(13897-13911)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(12965-12979)"
     ],
     "$id": 10738
   },
@@ -1179,7 +1179,7 @@
     "fr-FR": "Chemin :",
     "ko-KR": "경로:",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(14637-14644)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(13661-13668)"
     ],
     "$id": 8411
   },
@@ -1194,7 +1194,7 @@
     "fr-FR": "Nombre total de fichiers :",
     "ko-KR": "총 파일 수:",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(14834-14843)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(13846-13855)"
     ],
     "$id": 8412
   },
@@ -1209,7 +1209,7 @@
     "fr-FR": "Déjà analysé :",
     "ko-KR": "분석 완료:",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(15010-15018)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(14010-14018)"
     ],
     "$id": 8413
   },
@@ -1224,7 +1224,7 @@
     "fr-FR": "Dernière analyse :",
     "ko-KR": "최근 스캔:",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(15242-15251)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(14227-14236)"
     ],
     "$id": 8414
   },
@@ -1239,7 +1239,7 @@
     "fr-FR": "Format de nom de fichier intelligent",
     "ko-KR": "스마트 파일명 형식",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(16197-16208)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(15176-15187)"
     ],
     "$id": 8424
   },
@@ -1254,7 +1254,7 @@
     "fr-FR": "La configuration ici affectera le format de dénomination de nom de fichier intelligent pour les fichiers de ce répertoire.",
     "ko-KR": "여기의 구성은 이 디렉터리에 있는 파일의 스마트 파일 이름 명명 형식에 영향을 미칩니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(16870-16898)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(15840-15868)"
     ],
     "$id": 8425
   },
@@ -1269,7 +1269,7 @@
     "fr-FR": "Modifier les formats de noms de fichiers intelligents",
     "ko-KR": "스마트 파일 이름 형식 편집",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(17332-17345)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(16292-16305)"
     ],
     "$id": 8426
   },
@@ -1284,9 +1284,9 @@
     "fr-FR": "Modifier",
     "ko-KR": "편집하다",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(17626-17632)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(36787-36793)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(52536-52542)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(16580-16586)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(35877-35883)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(52234-52240)"
     ],
     "$id": 8419
   },
@@ -1301,7 +1301,7 @@
     "fr-FR": "L'analyse actuelle est en mode standard. Le format de nom de fichier intelligent prend effet sous [Analyse avancée] ou [Analyse complète], la préconfiguration est supportée.",
     "ko-KR": "현재 표준 분석 모드입니다. 스마트 파일명 형식은 [고급 분석] 또는 [전체 분석]에서 적용되며 사전 구성을 지원합니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(18304-18350)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(17330-17407)"
     ],
     "$id": 20349
   },
@@ -1316,8 +1316,8 @@
     "fr-FR": "Basculer le mode d'analyse",
     "ko-KR": "분석 모드 전환",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(18857-18867)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(53868-53878)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(17935-17945)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(53720-53730)"
     ],
     "$id": 20370
   },
@@ -1332,9 +1332,9 @@
     "fr-FR": "Source:",
     "ko-KR": "원천:",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(20675-20681)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(38659-38665)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(55911-55917)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(19795-19801)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(37804-37810)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(55894-55900)"
     ],
     "$id": 10739
   },
@@ -1349,7 +1349,7 @@
     "fr-FR": "[Champ] Description du contenu",
     "ko-KR": "[필드] 콘텐츠 설명",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(21228-21240)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(20336-20348)"
     ],
     "$id": 8427
   },
@@ -1364,7 +1364,7 @@
     "fr-FR": "Afficher les exigences de format",
     "ko-KR": "형식 요구사항 보기",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(21971-21981)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(21071-21081)"
     ],
     "$id": 8428
   },
@@ -1379,7 +1379,7 @@
     "fr-FR": "Exigences relatives au format de nom de fichier intelligent",
     "ko-KR": "스마트 파일 이름 형식 요구 사항",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22414-22427)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(21510-21523)"
     ],
     "$id": 11626
   },
@@ -1394,7 +1394,7 @@
     "fr-FR": "Les règles de dénomination suivantes sont prises en charge, vous pouvez écrire vos propres mots-clés, générés par l'IA (en fonction de la capacité de l'IA à suivre)",
     "ko-KR": "다음과 같은 명명 규칙이 지원됩니다. AI가 생성한 자신만의 키워드를 작성할 수 있습니다(AI의 따라가는 능력에 따라 다름).",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22586-22663)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(21679-21755)"
     ],
     "$id": 10745
   },
@@ -1409,21 +1409,21 @@
     "fr-FR": "Description du contenu",
     "ko-KR": "콘텐츠 설명",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22941-22949)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22977-22985)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23124-23132)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23149-23157)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23298-23306)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23432-23440)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23456-23464)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23600-23608)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23754-23762)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23842-23850)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(24137-24145)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(24477-24485)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(30431-30439)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(30694-30702)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(30727-30735)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22028-22036)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22064-22072)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22243-22251)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22268-22276)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22414-22422)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22545-22553)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22569-22577)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22710-22718)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22861-22869)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22947-22955)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23201-23209)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23640-23648)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(29491-29499)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(29797-29805)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(29830-29838)"
     ],
     "$id": 9451
   },
@@ -1438,10 +1438,10 @@
     "fr-FR": "Nom du personnage",
     "ko-KR": "문자 이름",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22953-22960)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22989-22996)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(24149-24156)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(30706-30713)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22040-22047)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22111-22118)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23213-23220)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(29809-29816)"
     ],
     "$id": 11465
   },
@@ -1456,13 +1456,13 @@
     "fr-FR": "Champ",
     "ko-KR": "필드",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22967-22973)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23139-23145)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23446-23452)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(24093-24099)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(24433-24439)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(30421-30427)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(30717-30723)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22054-22060)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22258-22264)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22559-22565)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23191-23197)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23630-23636)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(29481-29487)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(29820-29826)"
     ],
     "$id": 9452
   },
@@ -1477,7 +1477,7 @@
     "fr-FR": "Nom de la série",
     "ko-KR": "시리즈명",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23113-23120)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22232-22239)"
     ],
     "$id": 10746
   },
@@ -1492,7 +1492,7 @@
     "fr-FR": "Numéro du nom de fichier d'origine",
     "ko-KR": "원본 파일 이름 번호",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23274-23284)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22390-22400)"
     ],
     "$id": 10747
   },
@@ -1507,7 +1507,7 @@
     "fr-FR": "Statut",
     "ko-KR": "상태",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23288-23294)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22404-22410)"
     ],
     "$id": 10748
   },
@@ -1522,7 +1522,7 @@
     "fr-FR": "Version",
     "ko-KR": "버전",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23422-23428)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22535-22541)"
     ],
     "$id": 10749
   },
@@ -1537,9 +1537,9 @@
     "fr-FR": "Années",
     "ko-KR": "연령",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23580-23586)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23590-23596)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23744-23750)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22690-22696)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22700-22706)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22851-22857)"
     ],
     "$id": 9454
   },
@@ -1554,7 +1554,7 @@
     "fr-FR": "Classification",
     "ko-KR": "분류",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23724-23730)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22831-22837)"
     ],
     "$id": 9455
   },
@@ -1569,7 +1569,7 @@
     "fr-FR": "Nom du lieu",
     "ko-KR": "지명",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23734-23740)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(22841-22847)"
     ],
     "$id": 10750
   },
@@ -1584,7 +1584,7 @@
     "fr-FR": "Indicateur de séparateur : les propriétés peuvent être connectées par un soulignement « _ » ou un tiret « - » (par exemple :",
     "ko-KR": "구분자 힌트: 속성 사이에는 밑줄(\"_\")이나 대시(\"-\")로 연결할 수 있습니다(예:",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(24017-24053)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23118-23154)"
     ],
     "$id": 19498
   },
@@ -1599,7 +1599,7 @@
     "fr-FR": ")",
     "ko-KR": ")",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(24193-24198)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23256-23261)"
     ],
     "$id": 19499
   },
@@ -1614,7 +1614,7 @@
     "fr-FR": "“Description \" ou \"Description\" du contenu doit être inclus dans la règle, et les règles qui ne répondent pas aux exigences de format seront automatiquement restaurées aux valeurs par défaut",
     "ko-KR": "\"콘텐츠 설명\"또는\"설명\"규칙에 포함되어야 하며 형식 요구 사항을 충족하지 않는 규칙은 자동으로 기본값으로 복원됩니다",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(24387-24429)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23483-23560)"
     ],
     "$id": 11466
   },
@@ -1629,9 +1629,9 @@
     "fr-FR": "Économie",
     "ko-KR": "절약",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(25614-25621)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(46210-46217)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(58536-58543)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(24754-24761)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(45606-45613)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(58622-58629)"
     ],
     "$id": 8421
   },
@@ -1646,9 +1646,9 @@
     "fr-FR": "Sauvegarder",
     "ko-KR": "저장",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(25734-25740)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(46342-46348)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(58674-58680)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(24871-24877)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(45735-45741)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(58757-58763)"
     ],
     "$id": 8422
   },
@@ -1663,7 +1663,7 @@
     "fr-FR": "Veuillez d'abord le configurer, ce qui affectera la dénomination intelligente des fichiers.",
     "ko-KR": "파일의 지능적인 이름 지정에 영향을 미치는 구성을 먼저 구성하십시오.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(26381-26399)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(25506-25524)"
     ],
     "$id": 8432
   },
@@ -1678,7 +1678,7 @@
     "fr-FR": "Le format formel du nom de fichier intelligent n'est pas configuré (vous pouvez cliquer sur le coin supérieur droit pour modifier et saisir manuellement, ou adopter les suggestions d'IA ci-dessous)",
     "ko-KR": "정식 스마트 파일 이름 형식이 구성되지 않았습니다. (오른쪽 상단을 클릭하여 수동으로 편집하고 입력하거나 아래 AI 제안을 채택할 수 있습니다.)",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(26915-26957)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(26031-26104)"
     ],
     "$id": 10751
   },
@@ -1693,7 +1693,7 @@
     "fr-FR": "Laissez l'IA externe vous aider à générer le format",
     "ko-KR": "외부 인공 지능이 형식을 생성하는 데 도움이되도록하십시오",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(27638-27654)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(26791-26807)"
     ],
     "$id": 11628
   },
@@ -1708,7 +1708,7 @@
     "fr-FR": "Copiez le mot d'invite de format et envoyez-le à Bean bag ou ChatGPT, et entrez automatiquement en mode d'édition",
     "ko-KR": "형식 프롬프트 단어를 복사하여 빈백 또는 챗그펫으로 보내고 자동으로 편집 모드로 들어갑니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(28067-28101)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(27199-27233)"
     ],
     "$id": 11629
   },
@@ -1723,7 +1723,7 @@
     "fr-FR": "Copier les exigences de format",
     "ko-KR": "형식 요구사항 복사",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(28255-28266)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(27378-27389)"
     ],
     "$id": 11461
   },
@@ -1738,7 +1738,7 @@
     "fr-FR": "Exemple de format：",
     "ko-KR": "형식 예제：",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(30235-30244)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(29274-29283)"
     ],
     "$id": 11631
   },
@@ -1753,8 +1753,8 @@
     "fr-FR": "Peut être généré automatiquement à nouveau via les images du catalogue",
     "ko-KR": "카탈로그 이미지를 통해 자동으로 다시 생성 가능",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(31884-31901)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(60931-60948)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(30992-31009)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(61084-61101)"
     ],
     "$id": 8415
   },
@@ -1769,8 +1769,8 @@
     "fr-FR": "Suggestions d'IA",
     "ko-KR": "AI 제안",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(32177-32185)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(61248-61256)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(31281-31289)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(61503-61511)"
     ],
     "$id": 10742
   },
@@ -1785,8 +1785,8 @@
     "fr-FR": "Adoptez cette suggestion d'IA et lancez-la officiellement",
     "ko-KR": "이 AI 제안을 채택하고 공식 출시하세요.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(32762-32778)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(61908-61924)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(31856-31872)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(62229-62245)"
     ],
     "$id": 10743
   },
@@ -1801,8 +1801,8 @@
     "fr-FR": "Adopter des suggestions",
     "ko-KR": "제안을 채택하다",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(32925-32933)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(62089-62097)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(32016-32024)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(62407-62415)"
     ],
     "$id": 10744
   },
@@ -1817,7 +1817,7 @@
     "fr-FR": "Configuration avancée",
     "ko-KR": "고급 구성",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(33974-33982)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(33045-33053)"
     ],
     "$id": 11632
   },
@@ -1832,7 +1832,7 @@
     "fr-FR": "Attributs supplémentaires, stratégie d'analyse de l'IA",
     "ko-KR": "추가 속성,인공 지능 분석 전략",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(34110-34125)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(33179-33194)"
     ],
     "$id": 11633
   },
@@ -1847,7 +1847,7 @@
     "fr-FR": "Réduire",
     "ko-KR": "접기",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(34314-34320)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(33379-33385)"
     ],
     "$id": 11634
   },
@@ -1862,7 +1862,7 @@
     "fr-FR": "Développer",
     "ko-KR": "확장하다",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(34324-34330)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(33389-33395)"
     ],
     "$id": 11635
   },
@@ -1877,7 +1877,7 @@
     "fr-FR": "Pièces jointes intelligentes aux noms de fichiers",
     "ko-KR": "스마트 파일 이름 첨부",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(35118-35131)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(34167-34180)"
     ],
     "$id": 10752
   },
@@ -1892,7 +1892,7 @@
     "fr-FR": "Une fois l'analyse du fichier terminée, le nom de fichier intelligent final est automatiquement généré selon le modèle, qui est un complément puissant au nom de fichier intelligent généré par l'IA, qui est plus rapide et plus contrôlable. Pour plus d'informations, veuillez vous référer à la fonction de renommage par lots de la page de l'organisation.",
     "ko-KR": "파일 분석이 완료되면 템플릿에 따라 최종 스마트 파일 이름이 자동으로 생성됩니다. 이는 AI가 생성한 스마트 파일 이름을 강력하게 보완하여 더 빠르고 제어하기 쉽습니다. 자세한 내용은 기관 페이지의 일괄 이름 바꾸기 기능을 참고하세요.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(35770-35839)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(34811-34915)"
     ],
     "$id": 10753
   },
@@ -1907,7 +1907,7 @@
     "fr-FR": "Modifier les pièces jointes intelligentes des noms de fichiers",
     "ko-KR": "스마트 파일 이름 첨부 파일 편집",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(36453-36468)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(35549-35564)"
     ],
     "$id": 10754
   },
@@ -1922,7 +1922,7 @@
     "fr-FR": "Charger par défaut :",
     "ko-KR": "기본값 로드:",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(39272-39281)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(38440-38449)"
     ],
     "$id": 10755
   },
@@ -1937,7 +1937,7 @@
     "fr-FR": "Choisissez un modèle prédéfini à remplir rapidement...",
     "ko-KR": "빠르게 작성하려면 미리 설정된 템플릿을 선택하세요.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(40239-40256)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(39459-39476)"
     ],
     "$id": 10756
   },
@@ -1952,7 +1952,7 @@
     "fr-FR": "Modèle clair (aucun attribut supplémentaire utilisé)",
     "ko-KR": "템플릿 지우기(추가 속성이 사용되지 않음)",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(40328-40346)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(39580-39598)"
     ],
     "$id": 10757
   },
@@ -1967,7 +1967,7 @@
     "fr-FR": "Expression de modèle (prend en charge l'édition manuelle gratuite)",
     "ko-KR": "템플릿 표현(무료 수동 편집 지원)",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(41018-41038)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(40293-40313)"
     ],
     "$id": 10758
   },
@@ -1982,7 +1982,7 @@
     "fr-FR": "Contenu clair",
     "ko-KR": "콘텐츠 지우기",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(41649-41657)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(40947-40955)"
     ],
     "$id": 10759
   },
@@ -1997,7 +1997,7 @@
     "fr-FR": "Par exemple : [{TAG:Type de fichier}]{SMART_NAME}_{MOD:AAAA-MM-JJ}",
     "ko-KR": "예: [{TAG:파일 유형}]{SMART_NAME}_{MOD:YYYY-MM-DD}",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(42113-42162)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(41402-41486)"
     ],
     "$id": 10760
   },
@@ -2012,7 +2012,7 @@
     "fr-FR": "Cliquez pour insérer rapidement une étiquette au curseur",
     "ko-KR": "커서에 레이블을 빠르게 삽입하려면 클릭하세요.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(42880-42896)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(42227-42243)"
     ],
     "$id": 10761
   },
@@ -2027,7 +2027,7 @@
     "fr-FR": "Nom intelligent d'origine",
     "ko-KR": "원래 스마트 이름",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(43119-43128)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(42462-42471)"
     ],
     "$id": 10762
   },
@@ -2042,7 +2042,7 @@
     "fr-FR": "Numéro de série à deux chiffres",
     "ko-KR": "두 자리 일련번호",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(43363-43371)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(42703-42711)"
     ],
     "$id": 10763
   },
@@ -2057,7 +2057,7 @@
     "fr-FR": "Balise de type de fichier",
     "ko-KR": "파일 형식 태그",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(43450-43460)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(42789-42799)"
     ],
     "$id": 10764
   },
@@ -2072,7 +2072,7 @@
     "fr-FR": "Balise d'objet",
     "ko-KR": "제목 태그",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(43537-43545)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(42875-42883)"
     ],
     "$id": 10765
   },
@@ -2087,7 +2087,7 @@
     "fr-FR": "Prend en charge toute combinaison de suffixes personnalisés, de texte et de balises DSL",
     "ko-KR": "사용자 정의 접미사, 텍스트 및 DSL 태그의 모든 조합을 지원합니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(45066-45093)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(44482-44509)"
     ],
     "$id": 10766
   },
@@ -2102,7 +2102,7 @@
     "fr-FR": "Aucun modèle supplémentaire n'est utilisé (seul le nom intelligent d'origine est conservé)",
     "ko-KR": "추가 템플릿은 사용되지 않습니다. (원래 스마트 이름만 유지됩니다.)",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(48108-48130)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(47506-47528)"
     ],
     "$id": 10767
   },
@@ -2117,7 +2117,7 @@
     "fr-FR": "Personnaliser",
     "ko-KR": "사용자 정의",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(48713-48720)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(48207-48214)"
     ],
     "$id": 10768
   },
@@ -2132,7 +2132,7 @@
     "fr-FR": "Modèle actuel :",
     "ko-KR": "현재 템플릿:",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(49272-49281)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(48757-48766)"
     ],
     "$id": 10769
   },
@@ -2147,7 +2147,7 @@
     "fr-FR": "Si des modèles supplémentaires ne sont pas activés, le nom de fichier intelligent généré par AI sera utilisé directement.",
     "ko-KR": "추가 템플릿이 활성화되지 않은 경우 AI가 출력한 스마트 파일 이름이 직접 사용됩니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(49605-49634)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(49196-49225)"
     ],
     "$id": 10770
   },
@@ -2162,7 +2162,7 @@
     "fr-FR": "Réappliquer le modèle de dénomination aux fichiers analysés dans le répertoire actuel",
     "ko-KR": "현재 디렉터리의 분석된 파일에 명명 템플릿을 다시 적용합니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(50258-50282)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(49839-49863)"
     ],
     "$id": 10771
   },
@@ -2177,7 +2177,7 @@
     "fr-FR": "Candidature...",
     "ko-KR": "신청 중...",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(50631-50641)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(50273-50283)"
     ],
     "$id": 10772
   },
@@ -2192,7 +2192,7 @@
     "fr-FR": "Applique des propriétés supplémentaires aux fichiers analysés dans le répertoire actuel",
     "ko-KR": "현재 디렉터리의 구문 분석된 파일에 추가 속성을 적용합니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(50645-50666)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(50321-50342)"
     ],
     "$id": 10773
   },
@@ -2207,7 +2207,7 @@
     "fr-FR": "Stratégie d'analyse de l'IA",
     "ko-KR": "AI 분석 전략",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(51340-51350)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(51059-51069)"
     ],
     "$id": 8416
   },
@@ -2222,7 +2222,7 @@
     "fr-FR": "Niveau de confiance :",
     "ko-KR": "신뢰도:",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(51617-51626)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(51332-51341)",
       "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(7619-7628)"
     ],
     "$id": 8417
@@ -2238,7 +2238,7 @@
     "fr-FR": "Modifier la stratégie d'analyse de l'IA",
     "ko-KR": "AI 분석 전략 편집",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(52201-52213)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(51905-51917)"
     ],
     "$id": 8418
   },
@@ -2253,7 +2253,7 @@
     "fr-FR": "L'analyse actuelle est en mode standard. La stratégie d'analyse IA prend effet sous [Analyse avancée] ou [Analyse complète], la préconfiguration est supportée.",
     "ko-KR": "현재 표준 분석 모드입니다. AI 분석 전략은 [고급 분석] 또는 [전체 분석]에서 적용되며 사전 구성을 지원합니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(53268-53313)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(53056-53138)"
     ],
     "$id": 20371
   },
@@ -2268,7 +2268,7 @@
     "fr-FR": "Veuillez entrer la stratégie d'analyse de l'IA, par exemple en prêtant attention aux balises de fichiers, aux métadonnées, au aperçu du contenu et à d'autres exigences...",
     "ko-KR": "파일 태그, 메타데이터, 콘텐츠 개요 및 기타 요구 사항에 주의하는 등 AI 분석 전략을 입력하세요...",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(56439-56476)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(56412-56484)"
     ],
     "$id": 10740
   },
@@ -2283,7 +2283,7 @@
     "fr-FR": "Affecte les résultats de l'analyse des fichiers AI tels que : les balises, les descriptions, etc.",
     "ko-KR": "태그, 설명 등 AI 파일 분석 결과에 영향을 미칩니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(57322-57344)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(57352-57374)"
     ],
     "$id": 8420
   },
@@ -2298,7 +2298,7 @@
     "fr-FR": "Aucune stratégie d'analyse formelle n'est configurée (vous pouvez cliquer sur le coin supérieur droit pour modifier la saisie manuelle, ou adopter les suggestions d'IA ci-dessous)",
     "ko-KR": "공식적인 분석 전략이 구성되지 않았습니다. (오른쪽 상단을 클릭하여 수동 입력을 편집하거나 아래 AI 제안을 채택할 수 있습니다.)",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(59579-59618)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(59648-59724)"
     ],
     "$id": 10741
   },
@@ -2313,7 +2313,7 @@
     "fr-FR": "Balises recommandées",
     "ko-KR": "추천 태그",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(62919-62927)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(63208-63216)"
     ],
     "$id": 8433
   },
@@ -2328,7 +2328,7 @@
     "fr-FR": "Répartition des types de fichiers",
     "ko-KR": "파일 유형 분포",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(64234-64244)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(64435-64445)"
     ],
     "$id": 8434
   },
@@ -2343,7 +2343,7 @@
     "fr-FR": "Fichiers spéciaux :",
     "ko-KR": "특수 파일:",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(65886-65895)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(65981-65990)"
     ],
     "$id": 8435
   },
@@ -2358,7 +2358,7 @@
     "fr-FR": "Durée d'analyse :",
     "ko-KR": "분석 시간:",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(66615-66624)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(66662-66671)"
     ],
     "$id": 8436
   },

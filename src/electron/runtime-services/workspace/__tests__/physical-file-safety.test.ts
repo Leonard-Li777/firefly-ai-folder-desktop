@@ -5,7 +5,17 @@ import os from 'node:os'
 import crypto from 'node:crypto'
 import Database from 'better-sqlite3'
 import { WorkspacePolicyCommitService } from '../workspace-policy-commit-service'
-import { BLUEPRINT_STATIC_TEMPLATES } from '../../../config/organize-taxonomy-source'
+import { LOCAL_WORKFLOW_SOURCE } from '../../../config/local-workflow-source'
+
+function toTemplateConfig(wf: any) {
+  const includeRules = (wf.workspace_config?.customIncludeRules || []).map((r: any) =>
+    typeof r === 'string' ? r : r.value
+  )
+  return {
+    workflowId: wf.id,
+    customIncludeRules: includeRules as string[]
+  }
+}
 
 /**
  * 计算单个物理文件的 SHA-256 哈希
@@ -122,35 +132,27 @@ describe('AC-5.3: 物理资产绝对安全回归测试 (Physical File Safety Inv
   })
 
   it('断言 1: 应用白名单工作流与多次策略切换后，物理文件集合 100% 零删除、零新增、零重命名', async () => {
-    const t1 = BLUEPRINT_STATIC_TEMPLATES[0]
-    const t2 = BLUEPRINT_STATIC_TEMPLATES[1]
-    const t3 = BLUEPRINT_STATIC_TEMPLATES[2]
+    const all = LOCAL_WORKFLOW_SOURCE()
+    const t1 = all[0]
+    const t2 = all[1]
+    const t3 = all[2]
 
     await commitService.commitPolicy({
       workspaceId: 1,
-      templateConfig: {
-        workflowId: t1.workflow_id,
-        customIncludeRules: t1.extensions.common as string[]
-      },
-      boundWorkflowId: t1.workflow_id
+      templateConfig: toTemplateConfig(t1),
+      boundWorkflowId: t1.id
     })
 
     await commitService.commitPolicy({
       workspaceId: 1,
-      templateConfig: {
-        workflowId: t2.workflow_id,
-        customIncludeRules: t2.extensions.common as string[]
-      },
-      boundWorkflowId: t2.workflow_id
+      templateConfig: toTemplateConfig(t2),
+      boundWorkflowId: t2.id
     })
 
     await commitService.commitPolicy({
       workspaceId: 1,
-      templateConfig: {
-        workflowId: t3.workflow_id,
-        customIncludeRules: t3.extensions.common as string[]
-      },
-      boundWorkflowId: t3.workflow_id
+      templateConfig: toTemplateConfig(t3),
+      boundWorkflowId: t3.id
     })
 
     // 扫描当前物理目录
@@ -162,16 +164,14 @@ describe('AC-5.3: 物理资产绝对安全回归测试 (Physical File Safety Inv
   })
 
   it('断言 2: 无论经历多少次规则重载与工作流切换，所有物理文件 SHA-256 哈希 100% 字节级不变', async () => {
+    const all = LOCAL_WORKFLOW_SOURCE()
     // 连续切换前 5 个模板
     for (let i = 0; i < 5; i++) {
-      const tmpl = BLUEPRINT_STATIC_TEMPLATES[i]
+      const tmpl = all[i]
       const res = await commitService.commitPolicy({
         workspaceId: 1,
-        templateConfig: {
-          workflowId: tmpl.workflow_id,
-          customIncludeRules: tmpl.extensions.common as string[]
-        },
-        boundWorkflowId: tmpl.workflow_id
+        templateConfig: toTemplateConfig(tmpl),
+        boundWorkflowId: tmpl.id
       })
       expect(res.success).toBe(true)
     }

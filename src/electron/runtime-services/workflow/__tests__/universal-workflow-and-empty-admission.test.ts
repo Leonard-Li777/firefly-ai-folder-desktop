@@ -6,7 +6,7 @@ import {
   DOCUMENT_EXTENSIONS
 } from '../../filesystem/directory-profiler-service'
 import { recommendWorkflowByProfile } from '../../workflow/workflow-preset-and-recommender'
-import { BLUEPRINT_STATIC_TEMPLATES } from '../../../config/organize-taxonomy-source'
+import { LOCAL_WORKFLOW_SOURCE } from '../../../config/local-workflow-source'
 
 describe('Universal Workflow & Empty Admission Diagnostics & .chm Category Tests', () => {
   it('1. .chm 文件必须归类为 EBOOK，计入 DOCUMENT_EXTENSIONS，绝对禁止归入 SHORTCUT_EXTENSIONS', () => {
@@ -30,7 +30,7 @@ describe('Universal Workflow & Empty Admission Diagnostics & .chm Category Tests
       topExtensions: [{ ext: 'chm', count: 3 }]
     }
 
-    const recs = recommendWorkflowByProfile(stats, BLUEPRINT_STATIC_TEMPLATES)
+    const recs = recommendWorkflowByProfile(stats)
     expect(recs.length).toBeGreaterThan(0)
     const top = recs[0]
     expect(top.workflowId).toBe('builtin.workflow.general-inbox')
@@ -51,7 +51,7 @@ describe('Universal Workflow & Empty Admission Diagnostics & .chm Category Tests
       topExtensions: [{ ext: 'chm', count: 10 }]
     }
 
-    const recs = recommendWorkflowByProfile(stats, BLUEPRINT_STATIC_TEMPLATES)
+    const recs = recommendWorkflowByProfile(stats)
     expect(recs.length).toBeGreaterThan(0)
     const top = recs[0]
     expect(top.workflowId).toBe('builtin.workflow.general-inbox')
@@ -70,7 +70,10 @@ describe('Universal Workflow & Empty Admission Diagnostics & .chm Category Tests
       otherCount: 0,
       countsByExt: { docx: 6, xlsx: 4 },
       extensionCounts: { docx: 6, xlsx: 4 },
-      topExtensions: [{ ext: 'docx', count: 6 }, { ext: 'xlsx', count: 4 }]
+      topExtensions: [
+        { ext: 'docx', count: 6 },
+        { ext: 'xlsx', count: 4 }
+      ]
     }
     const universalWf: any = {
       id: 'builtin.workflow.general-inbox',
@@ -80,7 +83,7 @@ describe('Universal Workflow & Empty Admission Diagnostics & .chm Category Tests
       persona: 'general',
       workspace_config: JSON.stringify({ customIncludeRules: [] })
     }
-    const allTemplates = [universalWf, ...BLUEPRINT_STATIC_TEMPLATES]
+    const allTemplates = [universalWf, ...LOCAL_WORKFLOW_SOURCE()]
     const recs = recommendWorkflowByProfile(stats, allTemplates)
     expect(recs.length).toBeGreaterThan(0)
     const top = recs[0]
@@ -99,7 +102,8 @@ describe('Universal Workflow & Empty Admission Diagnostics & .chm Category Tests
 
   it('5. 当工作区绑定 builtin.workflow.general-inbox 且开启 SQLite 外键约束时，策略提交必须成功且杜绝 FOREIGN KEY 异常', async () => {
     const Database = (await import('better-sqlite3')).default
-    const { WorkspacePolicyCommitService } = await import('../../workspace/workspace-policy-commit-service')
+    const { WorkspacePolicyCommitService } =
+      await import('../../workspace/workspace-policy-commit-service')
 
     const db = new Database(':memory:')
     // 强制开启外键约束检查
@@ -145,10 +149,12 @@ describe('Universal Workflow & Empty Admission Diagnostics & .chm Category Tests
     `)
 
     // 插入待配置的工作区
-    db.prepare(`
+    db.prepare(
+      `
       INSERT INTO workspaces (workspace_id, path, name, workspace_config)
       VALUES (1, 'G:\\\\person\\\\H\\\\小说\\\\成人小说', '成人小说', '{"schemaVersion":1,"status":"pending"}');
-    `).run()
+    `
+    ).run()
 
     const commitService = new WorkspacePolicyCommitService({ db })
 
@@ -175,10 +181,14 @@ describe('Universal Workflow & Empty Admission Diagnostics & .chm Category Tests
     expect(result.errorCode).toBeUndefined()
 
     // 验证外键已物理满足且 workspaces.bound_workflow_id 成功写入
-    const row = db.prepare('SELECT bound_workflow_id FROM workspaces WHERE workspace_id = 1').get() as any
+    const row = db
+      .prepare('SELECT bound_workflow_id FROM workspaces WHERE workspace_id = 1')
+      .get() as any
     expect(row.bound_workflow_id).toBe('builtin.workflow.general-inbox')
 
-    const wfRow = db.prepare('SELECT id, name FROM local_workflows WHERE id = ?').get('builtin.workflow.general-inbox') as any
+    const wfRow = db
+      .prepare('SELECT id, name FROM local_workflows WHERE id = ?')
+      .get('builtin.workflow.general-inbox') as any
     expect(wfRow).toBeDefined()
     expect(wfRow.id).toBe('builtin.workflow.general-inbox')
   })

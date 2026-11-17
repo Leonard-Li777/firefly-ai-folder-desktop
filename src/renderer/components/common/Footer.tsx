@@ -248,11 +248,7 @@ export function Footer() {
     if (currentWorkspaceDirectory?.workspace_config) {
       const parsed = parseWorkspaceConfig(currentWorkspaceDirectory.workspace_config)
       if (parsed.status === 'ready') {
-        return (
-          parsed.overrides?.analysisMode ??
-          (parsed.baseAIConfig || parsed.derivedSnapshot)?.analysisMode ??
-          'quick_name'
-        )
+        return parsed.overrides?.analysisMode ?? parsed.baseAIConfig?.analysisMode ?? 'quick_name'
       }
     }
     return config?.analysisMode ?? 'quick_name'

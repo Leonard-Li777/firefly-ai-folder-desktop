@@ -82,8 +82,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Módulo de negócios]_[Nome da página]_[Variante de status]",
-      "namingTemplate": "[{TAG:Tipo de ficheiro}]{SMART_NAME}_v{META:Versão}",
       "extensionWeights": {
         ".fig": 0.28,
         ".sketch": 0.12,
@@ -92,21 +90,6 @@
         ".ai": 0.1,
         ".svg": 0.1,
         ".png": 0.1
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -270,8 +253,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Atribuição comercial]_[Nome da entidade]",
-      "namingTemplate": "[{TAG:Tipo de ficheiro}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".vue": 0.1538,
         ".tsx": 0.1538,
@@ -282,21 +263,6 @@
         ".css": 0.0769,
         ".html": 0.0769,
         ".json": 0.0772
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -474,8 +440,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Atribuição comercial]_[Nome da entidade]",
-      "namingTemplate": "[{TAG:Tipo de ficheiro}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".proto": 0.1667,
         ".graphql": 0.1667,
@@ -486,21 +450,6 @@
         ".py": 0.0833,
         ".yml": 0.0833,
         ".yaml": 0.0834
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -643,8 +592,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Atribuição comercial]_[Nome da entidade]",
-      "namingTemplate": "[{TAG:Tipo de ficheiro}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".docx": 0.1667,
         ".xlsx": 0.1667,
@@ -652,21 +599,6 @@
         ".pdf": 0.1667,
         ".md": 0.1667,
         ".txt": 0.1665
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -809,8 +741,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Atribuição comercial]_[Nome da entidade]",
-      "namingTemplate": "[{TAG:Tipo de ficheiro}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.1667,
         ".xlsx": 0.1667,
@@ -818,21 +748,6 @@
         ".pptx": 0.1667,
         ".txt": 0.1667,
         ".zip": 0.1665
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -1003,8 +918,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[cena de filmagem]_[assunto]",
-      "namingTemplate": "[{TAG:Tags de conteúdo}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".cr3": 0.125,
         ".cr2": 0.125,
@@ -1016,21 +929,6 @@
         ".jpg": 0.0625,
         ".tif": 0.0625,
         ".lrtemplate": 0.0625
-      },
-      "derivedSnapshot": {
-        "analysisMode": "full",
-        "embeddingProfile": "gemma_unified",
-        "mrlDimension": 512,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -1215,8 +1113,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Câmera de cena]_[Tema do clipe]_[Ação do personagem]",
-      "namingTemplate": "[{TAG:Nível de qualidade da imagem}]{SMART_NAME}_{TAG:Tipo de plano}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".prproj": 0.1429,
         ".drp": 0.1429,
@@ -1228,21 +1124,6 @@
         ".wav": 0.0714,
         ".cube": 0.0714,
         ".srt": 0.0714
-      },
-      "derivedSnapshot": {
-        "analysisMode": "full",
-        "embeddingProfile": "gemma_unified",
-        "mrlDimension": 512,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -1413,8 +1294,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Atribuição comercial]_[Nome da entidade]",
-      "namingTemplate": "[{TAG:Tipo de ficheiro}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".tex": 0.1818,
         ".bib": 0.1818,
@@ -1424,21 +1303,6 @@
         ".csl": 0.0909,
         ".pptx": 0.0909,
         ".xlsx": 0.091
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -1659,8 +1523,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Assinatura das partes]_[Natureza do negócio]_[Pontos-chave do assunto]",
-      "namingTemplate": "[{TAG:Tipo financeiro}]{SMART_NAME}_{MOD:YYYY-MM-DD}",
       "extensionWeights": {
         ".ofd": 0.2222,
         ".qbo": 0.2222,
@@ -1669,21 +1531,6 @@
         ".csv": 0.1111,
         ".pdf": 0.1111,
         ".docx": 0.1112
-      },
-      "derivedSnapshot": {
-        "analysisMode": "full",
-        "embeddingProfile": "gemma_unified",
-        "mrlDimension": 512,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -1840,8 +1687,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Atribuição comercial]_[Nome da entidade]",
-      "namingTemplate": "[{TAG:Tipo de ficheiro}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".jpg": 0.075,
         ".png": 0.075,
@@ -1849,21 +1694,6 @@
         ".xlsx": 0.2125,
         ".docx": 0.2125,
         ".mp4": 0.2125
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -2034,8 +1864,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Atribuição comercial]_[Nome da entidade]",
-      "namingTemplate": "[{TAG:Tipo de ficheiro}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".aep": 0.2,
         ".prproj": 0.2,
@@ -2045,21 +1873,6 @@
         ".mov": 0.1,
         ".docx": 0.1,
         ".psd": 0.1
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -2223,8 +2036,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Atribuição comercial]_[Nome da entidade]",
-      "namingTemplate": "[{TAG:Tipo de ficheiro}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".xlsx": 0.15,
         ".csv": 0.15,
@@ -2233,21 +2044,6 @@
         ".png": 0.125,
         ".docx": 0.15,
         ".pdf": 0.15
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -2432,8 +2228,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Atribuição comercial]_[Nome da entidade]",
-      "namingTemplate": "[{TAG:Tipo de ficheiro}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".unity": 0.1429,
         ".uproject": 0.1429,
@@ -2445,21 +2239,6 @@
         ".ogg": 0.0714,
         ".cs": 0.0714,
         ".cpp": 0.0714
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -2616,8 +2395,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Atribuição comercial]_[Nome da entidade]",
-      "namingTemplate": "[{TAG:Tipo de ficheiro}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".xlsx": 0.1875,
         ".csv": 0.1875,
@@ -2625,21 +2402,6 @@
         ".docx": 0.1875,
         ".png": 0.125,
         ".jpg": 0.125
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -3035,8 +2797,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Nome do processo]_[Parte]_[tipo de Documento]",
-      "namingTemplate": "[{TAG:Utilização do ficheiro}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".docx": 0.16,
         ".doc": 0.05,
@@ -3067,21 +2827,6 @@
         ".zip": 0.02,
         ".rar": 0.02,
         ".7z": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -3449,8 +3194,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Número do doente ou sujeito]_[tipo de Dados]_[pontos de conteúdo]",
-      "namingTemplate": "[{TAG:Segmentação de documento}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".dcm": 0.18,
         ".nii": 0.02,
@@ -3477,21 +3220,6 @@
         ".txt": 0.02,
         ".zip": 0.03,
         ".rtf": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -3852,8 +3580,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Grau da disciplina]_[unidade ou disciplina]_[tipo de dados]",
-      "namingTemplate": "[{TAG:Área de assunto}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pptx": 0.16,
         ".ppt": 0.06,
@@ -3879,21 +3605,6 @@
         ".zip": 0.02,
         ".rar": 0.02,
         ".epub": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -4261,8 +3972,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Nome do projecto ou da empresa]_[tema da investigação]_[tipo de dados]",
-      "namingTemplate": "[{TAG:Utilização do ficheiro}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pptx": 0.16,
         ".ppt": 0.04,
@@ -4289,21 +3998,6 @@
         ".msg": 0.01,
         ".zip": 0.04,
         ".rar": 0.03
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -4705,7 +4399,7 @@
           "isSystem": true
         },
         {
-          "id": "builtin.workflow.architectural-cad-design-exclusive-14",
+          "id": "builtin.workflow.architectural-cad-design-common-14-psd",
           "type": "extension",
           "value": ".psd",
           "isActive": true,
@@ -4755,8 +4449,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Nome do projecto]_[conteúdo do desenho]_[fase de concepção]",
-      "namingTemplate": "[{TAG:Utilização do ficheiro}]{SMART_NAME}_v{META:Versão}",
       "extensionWeights": {
         ".dwg": 0.2,
         ".dxf": 0.04,
@@ -4789,21 +4481,6 @@
         ".zip": 0.02,
         ".rar": 0.01,
         ".7z": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -5086,7 +4763,7 @@
           "isSystem": true
         },
         {
-          "id": "builtin.workflow.writing-publishing-pipeline-exclusive-3",
+          "id": "builtin.workflow.writing-publishing-pipeline-common-13-psd",
           "type": "extension",
           "value": ".psd",
           "isActive": true,
@@ -5136,8 +4813,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Título Do Trabalho]_[Volume Capítulo]",
-      "namingTemplate": "[{TAG:Status de processamento}]{SMART_NAME}_{MOD:YYYYMMDD}",
       "extensionWeights": {
         ".docx": 0.24,
         ".doc": 0.06,
@@ -5159,21 +4834,6 @@
         ".mp3": 0.01,
         ".zip": 0.06,
         ".rar": 0.03
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -5499,8 +5159,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Número do cliente]_[conteúdo do ficheiro]_[fase de condicionamento]",
-      "namingTemplate": "[{TAG:Utilização do ficheiro}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.22,
         ".docx": 0.12,
@@ -5521,21 +5179,6 @@
         ".mov": 0.01,
         ".txt": 0.02,
         ".zip": 0.05
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -5875,8 +5518,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Produto ou módulo]_[tópico funcional]_[tipo de Documento]",
-      "namingTemplate": "[{TAG:Utilização do ficheiro}]{SMART_NAME}_v{META:Versão}",
       "extensionWeights": {
         ".rp": 0.1,
         ".xmind": 0.08,
@@ -5899,21 +5540,6 @@
         ".html": 0.02,
         ".mp4": 0.01,
         ".zip": 0.03
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -6421,8 +6047,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Projecto ou conjunto de dados]_[passos de análise]_[tipo de saída]",
-      "namingTemplate": "[{TAG:Utilização do ficheiro}]{SMART_NAME}_{MOD:YYYYMMDD}",
       "extensionWeights": {
         ".ipynb": 0.09,
         ".py": 0.09,
@@ -6465,21 +6089,6 @@
         ".gz": 0.02,
         ".yaml": 0.01,
         ".yml": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -6945,8 +6554,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Versão do produto] _ [Módulo de ensaio]_[tipo de Registo]",
-      "namingTemplate": "[{TAG:Utilização do ficheiro}]{SMART_NAME}_{MOD:YYYYMMDD}",
       "extensionWeights": {
         ".xlsx": 0.12,
         ".xls": 0.03,
@@ -6983,21 +6590,6 @@
         ".webm": 0.01,
         ".mov": 0.01,
         ".zip": 0.02
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -7358,8 +6950,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Nome do cliente]_[oportunidade de negócio ou projecto]_[tipo de dados]",
-      "namingTemplate": "[{TAG:Utilização do ficheiro}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".xlsx": 0.14,
         ".xls": 0.03,
@@ -7383,21 +6973,6 @@
         ".txt": 0.01,
         ".zip": 0.04,
         ".rar": 0.03
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -7751,8 +7326,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Departamento ou nome]_[assuntos de pessoal]_[Tipo de dados]",
-      "namingTemplate": "[{TAG:Utilização do ficheiro}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".docx": 0.16,
         ".doc": 0.04,
@@ -7775,21 +7348,6 @@
         ".msg": 0.01,
         ".txt": 0.01,
         ".mp4": 0.03
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -8220,8 +7778,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Marca ou evento]_[tema do conteúdo]_[Tipo de Material]",
-      "namingTemplate": "[{TAG:Utilização do ficheiro}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pptx": 0.11,
         ".ppt": 0.03,
@@ -8255,21 +7811,6 @@
         ".zip": 0.03,
         ".rar": 0.02,
         ".7z": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -8651,8 +8192,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Nome do artigo]_[empresa contraparte]_[tipo de ficheiro]",
-      "namingTemplate": "[{TAG:Desagregação Contratos e Faturas}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".docx": 0.22,
         ".doc": 0.06,
@@ -8679,21 +8218,6 @@
         ".zip": 0.04,
         ".rar": 0.02,
         ".7z": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -9096,8 +8620,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Quadro do projecto] _ [módulo de função]_[conteúdo do ficheiro]",
-      "namingTemplate": "[{TAG:Segmentação de código-fonte}]{SMART_NAME}_v{META:Versão}",
       "extensionWeights": {
         ".c": 0.12,
         ".h": 0.1,
@@ -9130,21 +8652,6 @@
         ".xlsx": 0.03,
         ".md": 0.02,
         ".zip": 0.02
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -9464,21 +8971,21 @@
           "isSystem": true
         },
         {
-          "id": "builtin.workflow.creative-assets-exclusive-17",
+          "id": "builtin.workflow.creative-assets-common-13-tga",
           "type": "extension",
           "value": ".tga",
           "isActive": true,
           "isSystem": true
         },
         {
-          "id": "builtin.workflow.creative-assets-exclusive-18",
+          "id": "builtin.workflow.creative-assets-common-14-psd",
           "type": "extension",
           "value": ".psd",
           "isActive": true,
           "isSystem": true
         },
         {
-          "id": "builtin.workflow.creative-assets-exclusive-19",
+          "id": "builtin.workflow.creative-assets-common-15-aep",
           "type": "extension",
           "value": ".aep",
           "isActive": true,
@@ -9521,8 +9028,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Tipo de Ativo]_[corpo do modelo]_[Equipamento de precisão]",
-      "namingTemplate": "[{TAG:Tags de conteúdo}]{SMART_NAME}_v{META:Versão}",
       "extensionWeights": {
         ".blend": 0.1,
         ".c4d": 0.06,
@@ -9556,21 +9061,6 @@
         ".mp4": 0.03,
         ".mov": 0.01,
         ".zip": 0.02
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -9891,8 +9381,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Nome do cliente]_[conteúdo do projecto]_[finalidade do ficheiro]",
-      "namingTemplate": "[{TAG:Status de processamento}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.2,
         ".docx": 0.1,
@@ -9916,21 +9404,6 @@
         ".mp4": 0.03,
         ".mov": 0.01,
         ".ofd": 0.02
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -10164,8 +9637,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Tema do conhecimento]_[Ponto de vista Central]_[Fonte Fonte]",
-      "namingTemplate": "[{TAG:Área de assunto}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".md": 0.3,
         ".markdown": 0.02,
@@ -10179,21 +9650,6 @@
         ".canvas": 0.03,
         ".png": 0.08,
         ".jpg": 0.05
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -10567,8 +10023,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Nome do jogo]_[tema do conteúdo]_[cena ou gravação]",
-      "namingTemplate": "[{TAG:Tipo de jogo}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".sav": 0.06,
         ".srm": 0.02,
@@ -10602,21 +10056,6 @@
         ".webm": 0.02,
         ".pdf": 0.07,
         ".txt": 0.04
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -10800,13 +10239,6 @@
           "isSystem": true
         },
         {
-          "id": "builtin.workflow.novel-exclusive-8",
-          "type": "extension",
-          "value": ".chm",
-          "isActive": true,
-          "isSystem": true
-        },
-        {
           "id": "builtin.workflow.novel-exclusive-9",
           "type": "extension",
           "value": ".djvu",
@@ -10878,17 +10310,14 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Título]_[Assunto e género]_[volume de informação]",
-      "namingTemplate": "《{SMART_NAME}》_[{TAG:Autor}]_[{TAG:Status da publicação}]",
       "extensionWeights": {
-        ".epub": 0.28,
+        ".epub": 0.29,
         ".mobi": 0.1,
         ".azw": 0.02,
         ".azw3": 0.08,
         ".kfx": 0.02,
         ".fb2": 0.01,
         ".umd": 0.01,
-        ".chm": 0.01,
         ".djvu": 0.02,
         ".pdf": 0.12,
         ".txt": 0.2,
@@ -10897,21 +10326,6 @@
         ".zip": 0.05,
         ".rar": 0.03,
         ".7z": 0.02
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -11276,8 +10690,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Título da obra cinematográfica e televisiva]_[ano]_[época ou versão]",
-      "namingTemplate": "{SMART_NAME}_[{TAG:Nível de qualidade da imagem}]",
       "extensionWeights": {
         ".mkv": 0.25,
         ".mp4": 0.15,
@@ -11309,21 +10721,6 @@
         ".nfo": 0.02,
         ".jpg": 0.03,
         ".png": 0.02
-      },
-      "derivedSnapshot": {
-        "analysisMode": "full",
-        "embeddingProfile": "gemma_unified",
-        "mrlDimension": 512,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -11556,7 +10953,7 @@
           "isSystem": true
         },
         {
-          "id": "builtin.workflow.anime-comic-exclusive-6",
+          "id": "builtin.workflow.anime-comic-common-9-psd",
           "type": "extension",
           "value": ".psd",
           "isActive": true,
@@ -11620,8 +11017,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Título do trabalho]_[Volume ou número de palavras]_[assunto do conteúdo]",
-      "namingTemplate": "[{TAG:Autor}]{SMART_NAME}_[{TAG:Fonte da obra}]",
       "extensionWeights": {
         ".cbz": 0.18,
         ".cbr": 0.1,
@@ -11644,21 +11039,6 @@
         ".wav": 0.01,
         ".m4a": 0.01,
         ".txt": 0.02
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -11938,8 +11318,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Modelo da marca de Hardware]_[tipo de Dados]_[pontos-chave]",
-      "namingTemplate": "[{TAG:Tags de conteúdo}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".rom": 0.06,
         ".cap": 0.05,
@@ -11960,21 +11338,6 @@
         ".xlsx": 0.05,
         ".csv": 0.02,
         ".html": 0.03
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -12212,8 +11575,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Nome do prato]_[cozinha ou cena]_[ingredientes-chave]",
-      "namingTemplate": "[{TAG:Tags de conteúdo}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.241,
         ".docx": 0.1095,
@@ -12229,21 +11590,6 @@
         ".webp": 0.0167,
         ".mp4": 0.1095,
         ".mov": 0.0437
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -12467,8 +11813,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Nome do animal de estimação]_[assunto do evento]_[cena]",
-      "namingTemplate": "[{TAG:Tags de conteúdo}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".jpg": 0.1448,
         ".jpeg": 0.031,
@@ -12482,21 +11826,6 @@
         ".docx": 0.05,
         ".xlsx": 0.0667,
         ".txt": 0.05
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -12822,8 +12151,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Destino ou evento]_[assunto do Conteúdo]_[detalhes ou hora]",
-      "namingTemplate": "[{TAG:Localização geográfica}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".jpg": 0.22,
         ".jpeg": 0.05,
@@ -12851,21 +12178,6 @@
         ".txt": 0.02,
         ".prproj": 0.01,
         ".drp": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -13225,8 +12537,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Nome do projeto]_[faixa ou faixa de áudio]_[fase de produção]",
-      "namingTemplate": "[{TAG:Tipo de música}]{SMART_NAME}_v{META:Versão}",
       "extensionWeights": {
         ".als": 0.05,
         ".cpr": 0.04,
@@ -13258,21 +12568,6 @@
         ".pdf": 0.04,
         ".docx": 0.02,
         ".zip": 0.03
-      },
-      "derivedSnapshot": {
-        "analysisMode": "full",
-        "embeddingProfile": "gemma_unified",
-        "mrlDimension": 512,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -13569,8 +12864,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Marca do Cliente]_[Nome do Material]_[cenário de Utilização]",
-      "namingTemplate": "[{TAG:Status de processamento}]{SMART_NAME}_v{META:Versão}",
       "extensionWeights": {
         ".ai": 0.16,
         ".cdr": 0.08,
@@ -13594,21 +12887,6 @@
         ".woff": 0.01,
         ".woff2": 0.01,
         ".zip": 0.02
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -13933,8 +13211,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Projecto de Projecto]_[carácter ou tema]_[fase de desenho]",
-      "namingTemplate": "[{TAG:Fonte da obra}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".psd": 0.15,
         ".clip": 0.13,
@@ -13961,21 +13237,6 @@
         ".pdf": 0.03,
         ".docx": 0.01,
         ".zip": 0.015
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -14419,8 +13680,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Nome do projecto]_[módulo de função]_[pontos de conteúdo]",
-      "namingTemplate": "[{TAG:Plataforma operacional}]{SMART_NAME}_v{META:Versão}",
       "extensionWeights": {
         ".swift": 0.11,
         ".m": 0.02,
@@ -14460,21 +13719,6 @@
         ".svg": 0.025,
         ".md": 0.02,
         ".zip": 0.015
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -14848,8 +14092,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Nome do serviço]_[Ambiente]_[finalidade]",
-      "namingTemplate": "[{TAG:Nível de segurança}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".tf": 0.085,
         ".tfvars": 0.03,
@@ -14881,21 +14123,6 @@
         ".tgz": 0.01,
         ".gz": 0.01,
         ".zip": 0.015
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -15164,8 +14391,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Fornecedor ou projecto]_[tipo de Documento]",
-      "namingTemplate": "[{TAG:Desagregação Contratos e Faturas}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".xlsx": 0.23,
         ".xls": 0.05,
@@ -15185,21 +14410,6 @@
         ".tiff": 0.005,
         ".zip": 0.03,
         ".txt": 0.015
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -15426,8 +14636,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Escola de candidatura]_[nome do Material]_[finalidade]",
-      "namingTemplate": "[{TAG:Status de processamento}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.38,
         ".docx": 0.24,
@@ -15441,21 +14649,6 @@
         ".zip": 0.03,
         ".txt": 0.02,
         ".pptx": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -15787,8 +14980,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Assunto do conteúdo]_[finalidade]",
-      "namingTemplate": "[{TAG:Status de processamento}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".lnk": 0.131,
         ".url": 0.0273,
@@ -15815,21 +15006,6 @@
         ".zip": 0.0655,
         ".rar": 0.0273,
         ".7z": 0.0164
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -16175,21 +15351,21 @@
           "isSystem": true
         },
         {
-          "id": "builtin.workflow.downloads-triage-exclusive-6",
+          "id": "builtin.workflow.downloads-triage-common-22-epub",
           "type": "extension",
           "value": ".epub",
           "isActive": true,
           "isSystem": true
         },
         {
-          "id": "builtin.workflow.downloads-triage-exclusive-7",
+          "id": "builtin.workflow.downloads-triage-common-22-mobi",
           "type": "extension",
           "value": ".mobi",
           "isActive": true,
           "isSystem": true
         },
         {
-          "id": "builtin.workflow.downloads-triage-exclusive-8",
+          "id": "builtin.workflow.downloads-triage-common-22-azw3",
           "type": "extension",
           "value": ".azw3",
           "isActive": true,
@@ -16351,8 +15527,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Assunto do conteúdo]_[fonte ou finalidade]",
-      "namingTemplate": "[{TAG:Tipo de ficheiro}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".exe": 0.0758,
         ".msi": 0.0324,
@@ -16404,21 +15578,6 @@
         ".m4a": 0.0065,
         ".aac": 0.0043,
         ".torrent": 0.0054
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -16708,8 +15867,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Objecto]_[acção seguinte]",
-      "namingTemplate": "[{TAG:Status de processamento}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".docx": 0.1595,
         ".doc": 0.0266,
@@ -16732,21 +15889,6 @@
         ".mp4": 0.0266,
         ".eml": 0.0319,
         ".msg": 0.0213
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -17050,8 +16192,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Assunto do conteúdo]_[finalidade]",
-      "namingTemplate": "[{TAG:Tipo de ficheiro}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".lnk": 0.1687,
         ".url": 0.0315,
@@ -17080,21 +16220,6 @@
         ".zip": 0.0578,
         ".rar": 0.0263,
         ".7z": 0.0147
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -17451,8 +16576,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Sistema em teste]_[Conteúdo do teste]_[número da versão]",
-      "namingTemplate": "[{TAG:Status de processamento}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".xlsx": 0.15,
         ".xls": 0.025,
@@ -17484,21 +16607,6 @@
         ".robot": 0.006,
         ".side": 0.004,
         ".zip": 0.015
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -17808,8 +16916,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Assunto]_[Grau] _ [Assunto Material]",
-      "namingTemplate": "[{TAG:Área de assunto}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.21,
         ".docx": 0.11,
@@ -17833,21 +16939,6 @@
         ".rar": 0.015,
         ".epub": 0.012,
         ".txt": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -18080,8 +17171,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Assunto]_[Fase Semestral]_[Tema Do Conteúdo]",
-      "namingTemplate": "[{TAG:Área de assunto}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.27,
         ".docx": 0.17,
@@ -18097,21 +17186,6 @@
         ".mp3": 0.025,
         ".zip": 0.025,
         ".txt": 0.015
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -18411,8 +17485,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Pessoa]_[ocasião ou evento]_[idade]",
-      "namingTemplate": "[{TAG:Segmentação da vida familiar}]{SMART_NAME}",
       "extensionWeights": {
         ".jpg": 0.1997,
         ".jpeg": 0.0399,
@@ -18437,21 +17509,6 @@
         ".doc": 0.0191,
         ".txt": 0.0204,
         ".zip": 0.0318
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -18674,8 +17731,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Doente]_[Hospital ou Serviço]_[ nome do relatório ou documento]",
-      "namingTemplate": "[{TAG:Status de processamento}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.3972,
         ".jpg": 0.1648,
@@ -18690,21 +17745,6 @@
         ".zip": 0.0233,
         ".dcm": 0.0117,
         ".dicom": 0.0117
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -18955,8 +17995,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Departamento]_[Assuntos]_[Tipo De Ficheiro]",
-      "namingTemplate": "[{TAG:Status de processamento}]{SMART_NAME}_{MOD:YYYYMMDD}",
       "extensionWeights": {
         ".docx": 0.2,
         ".doc": 0.08,
@@ -18975,21 +18013,6 @@
         ".jpg": 0.06,
         ".jpeg": 0.02,
         ".png": 0.03
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -19231,8 +18254,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Unidade]_[matéria]_[número do documento]",
-      "namingTemplate": "[{TAG:Status de processamento}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".docx": 0.22,
         ".doc": 0.08,
@@ -19248,21 +18269,6 @@
         ".png": 0.04,
         ".tif": 0.05,
         ".tiff": 0.03
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -19490,8 +18496,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Membro da família]_[nome do certificado ou documento]",
-      "namingTemplate": "[{TAG:Segmentação da vida familiar}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.4349,
         ".jpg": 0.0759,
@@ -19505,21 +18509,6 @@
         ".doc": 0.029,
         ".xlsx": 0.0869,
         ".xls": 0.029
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -19915,8 +18904,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Nome da obra]_[número da coleção ou do Volume da estação]_[características da versão]",
-      "namingTemplate": "[{TAG:Tipo de ficheiro}]{SMART_NAME}[_{TAG:Nível de qualidade da imagem}]",
       "extensionWeights": {
         ".mkv": 0.14,
         ".mp4": 0.1,
@@ -19950,21 +18937,6 @@
         ".ass": 0.03,
         ".ssa": 0.01,
         ".nfo": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -20381,8 +19353,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Pilha de tecnologia]_[Função componente]_[Cenário aplicável]",
-      "namingTemplate": "[{TAG:Segmentação de código-fonte}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".ts": 0.1,
         ".tsx": 0.06,
@@ -20415,21 +19385,6 @@
         ".html": 0.02,
         ".css": 0.02,
         ".scss": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -20650,8 +19605,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Nome do Software]_[gerar cena]",
-      "namingTemplate": "[{TAG:Detalhamento do arquivo do sistema}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".log": 0.3,
         ".dump": 0.06,
@@ -20666,21 +19619,6 @@
         ".crdownload": 0.03,
         ".chk": 0.02,
         ".etl": 0.02
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -20998,8 +19936,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Assunto do ficheiro]_[pessoa ou grupo relacionado]_[finalidade]",
-      "namingTemplate": "[{TAG:Tipo de ficheiro}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.1364,
         ".docx": 0.1362,
@@ -21027,21 +19963,6 @@
         ".rar": 0.0341,
         ".7z": 0.0114,
         ".apk": 0.0227
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -21338,8 +20259,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Conteúdo] _ [equipamento de origem]_[finalidade]",
-      "namingTemplate": "[{TAG:Tipo de ficheiro}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".jpg": 0.0608,
         ".jpeg": 0.0152,
@@ -21367,21 +20286,6 @@
         ".rar": 0.029,
         ".7z": 0.0145,
         ".apk": 0.0434
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -21573,35 +20477,12 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Interface ou software]_[Conteúdo-chave]_[finalidade]",
-      "namingTemplate": "[{TAG:Categorias de Capturas}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
-        ".png": 0.45,
-        ".jpg": 0.12,
-        ".jpeg": 0.03,
-        ".gif": 0.06,
-        ".webp": 0.03,
-        ".bmp": 0.01,
-        ".mp4": 0.14,
-        ".mov": 0.08,
-        ".mkv": 0.04,
-        ".webm": 0.02,
-        ".avi": 0.02
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        ".png": 0.48,
+        ".jpg": 0.36,
+        ".gif": 0.08,
+        ".mp4": 0.05,
+        ".mov": 0.03
       },
       "configuredAt": 1762425600000
     },
@@ -21779,8 +20660,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Assunto]_[Pontos Principais]",
-      "namingTemplate": "[{TAG:Status de processamento}]{SMART_NAME}_{MOD:YYYYMMDD}",
       "extensionWeights": {
         ".txt": 0.2731,
         ".md": 0.1637,
@@ -21792,21 +20671,6 @@
         ".png": 0.0832,
         ".jpg": 0.0555,
         ".jpeg": 0.0208
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -22176,8 +21040,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Assunto do conteúdo]_[finalidade]_[fonte]",
-      "namingTemplate": "[{TAG:Tipo de ficheiro}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.0879,
         ".docx": 0.0874,
@@ -22215,21 +21077,6 @@
         ".epub": 0.0109,
         ".mobi": 0.0109,
         ".apk": 0.0109
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -22400,8 +21247,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Nome do documento]_[proprietário]",
-      "namingTemplate": "[{TAG:Desagregação Contratos e Faturas}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.5551,
         ".jpg": 0.0679,
@@ -22412,21 +21257,6 @@
         ".bmp": 0.0068,
         ".heic": 0.0271,
         ".ofd": 0.111
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -22632,8 +21462,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Projecto a que pertence]_[objecto do documento]_[objecto]",
-      "namingTemplate": "[{TAG:Status de processamento}]{SMART_NAME}_{MOD:YYYYMMDD}",
       "extensionWeights": {
         ".docx": 0.24,
         ".doc": 0.08,
@@ -22649,21 +21477,6 @@
         ".txt": 0.03,
         ".rtf": 0.02,
         ".ofd": 0.04
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -22939,8 +21752,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[Tópico ou curso]_[assunto Material]_[autor ou fonte]",
-      "namingTemplate": "[{TAG:Área de assunto}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.34,
         ".docx": 0.08,
@@ -22964,21 +21775,6 @@
         ".ipynb": 0.04,
         ".py": 0.03,
         ".r": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },

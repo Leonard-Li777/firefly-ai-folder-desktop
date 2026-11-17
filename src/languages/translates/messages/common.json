@@ -126,27 +126,27 @@
     "fr-FR": "Moteur CPU léger",
     "ko-KR": "경량 CPU 엔진",
     "$files": [
-      "src/renderer/components/common/EnergyTransparencyBadge.tsx(1195-1206)",
-      "src/renderer/components/common/EnergyTransparencyBadge.tsx(1550-1561)",
+      "src/renderer/components/common/EnergyTransparencyBadge.tsx(1249-1260)",
+      "src/renderer/components/common/EnergyTransparencyBadge.tsx(1624-1635)",
       "src/renderer/components/common/Footer.tsx(16065-16076)"
     ],
     "$id": 32069
   },
-  "本地大模型引擎": {
-    "en-US": "Local large model engine",
-    "es-ES": "Motor de modelo grande local.",
-    "ar-EG": "محرك نموذجي كبير محلي",
-    "pt-PT": "Motor de modelo local grande",
-    "ru-RU": "Локальный двигатель большой модели",
-    "ja-JP": "ローカル大型モデルエンジン",
-    "de-DE": "Lokale Großmodelllok",
-    "fr-FR": "Moteur local grand modèle",
-    "ko-KR": "로컬 대형 모델 엔진",
+  "萤核AI引擎": {
+    "en-US": "Firefly AI Engine",
+    "es-ES": "Motor de IA Firefly AI",
+    "ar-EG": "محرك Firefly AI",
+    "pt-PT": "Motor de IA Firefly",
+    "ru-RU": "Двигатель искусственного интеллекта огненного ядра",
+    "ja-JP": "Firefly AI フォルダーエンジン",
+    "de-DE": "Firefly AI Engine",
+    "fr-FR": "Moteur AI Firefly",
+    "ko-KR": "Firefly AI Folder 엔진",
     "$files": [
-      "src/renderer/components/common/EnergyTransparencyBadge.tsx(1245-1256)",
-      "src/renderer/components/common/EnergyTransparencyBadge.tsx(1606-1617)"
+      "src/renderer/components/common/EnergyTransparencyBadge.tsx(1320-1330)",
+      "src/renderer/components/common/EnergyTransparencyBadge.tsx(1680-1690)"
     ],
-    "$id": 34943
+    "$id": 38591
   },
   "语音识别与字幕提取": {
     "en-US": "Speech recognition and subtitle extraction",
@@ -159,8 +159,8 @@
     "fr-FR": "Reconnaissance vocale et extraction de sous-titres",
     "ko-KR": "음성인식 및 자막 추출",
     "$files": [
-      "src/renderer/components/common/EnergyTransparencyBadge.tsx(1297-1310)",
-      "src/renderer/components/common/EnergyTransparencyBadge.tsx(1664-1677)"
+      "src/renderer/components/common/EnergyTransparencyBadge.tsx(1371-1384)",
+      "src/renderer/components/common/EnergyTransparencyBadge.tsx(1737-1750)"
     ],
     "$id": 34944
   },
@@ -175,8 +175,8 @@
     "fr-FR": "Lecture vocale extrêmement rapide",
     "ko-KR": "매우 빠른 음성 읽기",
     "$files": [
-      "src/renderer/components/common/EnergyTransparencyBadge.tsx(1370-1380)",
-      "src/renderer/components/common/EnergyTransparencyBadge.tsx(1716-1726)"
+      "src/renderer/components/common/EnergyTransparencyBadge.tsx(1444-1454)",
+      "src/renderer/components/common/EnergyTransparencyBadge.tsx(1789-1799)"
     ],
     "$id": 34945
   },
@@ -191,8 +191,8 @@
     "fr-FR": "Clonage vocal personnalisé",
     "ko-KR": "개인화된 음성 복제",
     "$files": [
-      "src/renderer/components/common/EnergyTransparencyBadge.tsx(1419-1430)",
-      "src/renderer/components/common/EnergyTransparencyBadge.tsx(1767-1778)"
+      "src/renderer/components/common/EnergyTransparencyBadge.tsx(1493-1504)",
+      "src/renderer/components/common/EnergyTransparencyBadge.tsx(1840-1851)"
     ],
     "$id": 34946
   },
@@ -206,7 +206,7 @@
     "de-DE": "Ungefähr {size} Speicher freigegeben",
     "fr-FR": "Environ {size} mémoire libérée",
     "ko-KR": "릴리스된 {size} 메모리 정보",
-    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(3653-3671)"],
+    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(6562-6580)"],
     "$id": 34947
   },
   "所有可休眠模块均已处于节能状态": {
@@ -219,7 +219,7 @@
     "de-DE": "Alle schlaffähigen Module befinden sich bereits im Energiesparzustand",
     "fr-FR": "Tous les modules hibernables sont déjà en état d'économie d'énergie",
     "ko-KR": "모든 최대 절전 모드 모듈은 이미 에너지 절약 상태에 있습니다.",
-    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(3756-3775)"],
+    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(6665-6684)"],
     "$id": 34948
   },
   "释放模块内存失败": {
@@ -232,7 +232,7 @@
     "de-DE": "Modulspeicher konnte nicht freigegeben werden",
     "fr-FR": "Échec de la libération de la mémoire du module",
     "ko-KR": "모듈 메모리를 해제하지 못했습니다.",
-    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(3818-3830)"],
+    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(6727-6739)"],
     "$id": 34949
   },
   "重试成功": {
@@ -245,7 +245,7 @@
     "de-DE": "Wiederholung erfolgreich",
     "fr-FR": "Réessayez avec succès",
     "ko-KR": "재시도 성공",
-    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(4043-4051)"],
+    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(6952-6960)"],
     "$id": 34950
   },
   "重试失败": {
@@ -259,8 +259,8 @@
     "fr-FR": "La nouvelle tentative a échoué",
     "ko-KR": "재시도 실패",
     "$files": [
-      "src/renderer/components/common/EnergyTransparencyBadge.tsx(4089-4097)",
-      "src/renderer/components/common/EnergyTransparencyBadge.tsx(4140-4148)"
+      "src/renderer/components/common/EnergyTransparencyBadge.tsx(6998-7006)",
+      "src/renderer/components/common/EnergyTransparencyBadge.tsx(7049-7057)"
     ],
     "$id": 34951
   },
@@ -274,7 +274,7 @@
     "de-DE": "Klicken Sie hier, um das Dashboard für das Energiemanagement des Systems anzuzeigen ({count} Module wurden in den Ruhezustand versetzt)",
     "fr-FR": "Cliquez pour afficher le tableau de bord de gestion de l'énergie du système ({count} modules ont été mis en veille prolongée)",
     "ko-KR": "시스템 에너지 관리 대시보드를 보려면 클릭하세요. ({count} 모듈이 최대 절전 모드로 전환되었습니다.)",
-    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(4965-4998)"],
+    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(7945-7978)"],
     "$id": 34952
   },
   "点击查看系统能耗管理看板（运行中）": {
@@ -287,7 +287,7 @@
     "de-DE": "Klicken Sie hier, um das Energiemanagement-Dashboard des Systems anzuzeigen (läuft)",
     "fr-FR": "Cliquez pour afficher le tableau de bord de gestion de l'énergie du système (en cours d'exécution)",
     "ko-KR": "시스템 에너지 관리 대시보드를 보려면 클릭하세요(실행 중).",
-    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(5042-5063)"],
+    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(8022-8043)"],
     "$id": 34953
   },
   "🌿 节能中 · {count}个模块已休眠": {
@@ -300,7 +300,7 @@
     "de-DE": "🌿 Energieeinsparung · {count} Module waren inaktiv",
     "fr-FR": "🌿 Économie d'énergie · {count} modules sont restés en veille",
     "ko-KR": "🙂 에너지 절약 · {count}개의 모듈이 휴면 상태입니다.",
-    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(5454-5480)"],
+    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(8434-8460)"],
     "$id": 34954
   },
   "⚡ 运行中": {
@@ -313,7 +313,7 @@
     "de-DE": "⚡ Laufen",
     "fr-FR": "⚡ Courir",
     "ko-KR": "⚡ 달리기",
-    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(5524-5533)"],
+    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(8504-8513)"],
     "$id": 34955
   },
   "系统内存与能耗管理": {
@@ -326,7 +326,7 @@
     "de-DE": "Verwaltung des Systemspeichers und des Energieverbrauchs",
     "fr-FR": "Gestion de la mémoire système et de la consommation d’énergie",
     "ko-KR": "시스템 메모리 및 에너지 소비 관리",
-    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(6176-6189)"],
+    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(9564-9577)"],
     "$id": 34956
   },
   "电脑当前剩余内存: {mem}": {
@@ -339,7 +339,7 @@
     "de-DE": "Der aktuell verbleibende Speicher des Computers: {mem}",
     "fr-FR": "La mémoire restante actuelle de l'ordinateur : {mem}",
     "ko-KR": "현재 컴퓨터에 남아 있는 메모리: {mem}",
-    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(6728-6747)"],
+    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(10142-10161)"],
     "$id": 34957
   },
   "(已触发智能休眠保护)": {
@@ -352,7 +352,7 @@
     "de-DE": "(Intelligenter Schlafschutz wurde ausgelöst)",
     "fr-FR": "(La protection intelligente du sommeil a été déclenchée)",
     "ko-KR": "(스마트 수면 보호가 실행되었습니다)",
-    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(7001-7016)"],
+    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(10434-10449)"],
     "$id": 34958
   },
   "正在内存运行": {
@@ -365,21 +365,21 @@
     "de-DE": "Läuft im Speicher",
     "fr-FR": "S'exécutant en mémoire",
     "ko-KR": "메모리에서 실행 중",
-    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(7549-7559)"],
+    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(11006-11016)"],
     "$id": 34959
   },
-  "约 {size}": {
-    "en-US": "About {size}",
-    "es-ES": "Acerca de {size}",
-    "ar-EG": "عن {size}",
-    "pt-PT": "Sobre {size}",
-    "ru-RU": "о {size}",
-    "ja-JP": "について {size}",
-    "de-DE": "Um {size}",
-    "fr-FR": "à propos de {size}",
-    "ko-KR": "에 대한 {size}",
-    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(7690-7702)"],
-    "$id": 34960
+  "合计占用: 约 {size}": {
+    "en-US": "Total occupancy: approximately {size}",
+    "es-ES": "Ocupación total: aproximadamente {size}",
+    "ar-EG": "إجمالي الإشغال: تقريبا {size}",
+    "pt-PT": "Ocupação total: aproximadamente {size}",
+    "ru-RU": "Общая вместимость: приблизительно {size}",
+    "ja-JP": "総占有率：約{size}",
+    "de-DE": "Gesamtbelegung: ungefähr {size}",
+    "fr-FR": "Occupation totale: environ {size}",
+    "ko-KR": "총 점유율:약{size}",
+    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(11153-11171)"],
+    "$id": 38592
   },
   "显存": {
     "en-US": "Video memory",
@@ -392,8 +392,8 @@
     "fr-FR": "Mémoire vidéo",
     "ko-KR": "비디오 메모리",
     "$files": [
-      "src/renderer/components/common/EnergyTransparencyBadge.tsx(8063-8069)",
-      "src/renderer/components/common/EnergyTransparencyBadge.tsx(9639-9645)"
+      "src/renderer/components/common/EnergyTransparencyBadge.tsx(11546-11552)",
+      "src/renderer/components/common/EnergyTransparencyBadge.tsx(13523-13529)"
     ],
     "$id": 34961
   },
@@ -408,8 +408,8 @@
     "fr-FR": "Mémoire",
     "ko-KR": "메모리",
     "$files": [
-      "src/renderer/components/common/EnergyTransparencyBadge.tsx(8097-8103)",
-      "src/renderer/components/common/EnergyTransparencyBadge.tsx(9673-9679)"
+      "src/renderer/components/common/EnergyTransparencyBadge.tsx(11582-11588)",
+      "src/renderer/components/common/EnergyTransparencyBadge.tsx(13559-13565)"
     ],
     "$id": 34962
   },
@@ -423,8 +423,24 @@
     "de-DE": "Um {size} {kind}",
     "fr-FR": "à propos de {size} {kind}",
     "ko-KR": "에 대한 {size} {kind}",
-    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(8448-8467)"],
+    "$files": [
+      "src/renderer/components/common/EnergyTransparencyBadge.tsx(11989-12008)",
+      "src/renderer/components/common/EnergyTransparencyBadge.tsx(14012-14031)"
+    ],
     "$id": 34963
+  },
+  "运行中": {
+    "en-US": "Running",
+    "es-ES": "Correr",
+    "ar-EG": "جري",
+    "pt-PT": "Correndo",
+    "ru-RU": "Бег",
+    "ja-JP": "ランニング",
+    "de-DE": "Läuft",
+    "fr-FR": "En cours d'exécution",
+    "ko-KR": "달리기",
+    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(12391-12398)"],
+    "$id": 38603
   },
   "已休眠节能": {
     "en-US": "Already dormant to save energy",
@@ -436,34 +452,34 @@
     "de-DE": "Bereits inaktiv, um Energie zu sparen",
     "fr-FR": "Déjà en veille pour économiser de l'énergie",
     "ko-KR": "에너지 절약을 위해 이미 휴면 상태",
-    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(9111-9120)"],
+    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(12971-12980)"],
     "$id": 34964
   },
-  "已省约 {size}": {
-    "en-US": "Saved about {size}",
-    "es-ES": "Guardado sobre {size}",
-    "ar-EG": "تم الحفظ حوالي {size}",
-    "pt-PT": "Salvo cerca de {size}",
-    "ru-RU": "Сохранено около {size}",
-    "ja-JP": "{size} について保存しました",
-    "de-DE": "Gespeichert über {size}",
-    "fr-FR": "Enregistré environ {size}",
-    "ko-KR": "{size}에 대해 저장됨",
-    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(9265-9279)"],
-    "$id": 34965
+  "合计释放: 约 {size}": {
+    "en-US": "Total release: approximately {size}",
+    "es-ES": "Liberación total: aproximadamente {size}",
+    "ar-EG": "إجمالي الإصدار: تقريبا {size}",
+    "pt-PT": "Libertação Total: aproximadamente {size}",
+    "ru-RU": "Общий объем выпуска: приблизительно {size}",
+    "ja-JP": "総リリース数：約{size}",
+    "de-DE": "Gesamtfreigabe: ungefähr {size}",
+    "fr-FR": "Libération totale: environ {size}",
+    "ko-KR": "총 릴리스:약{size}",
+    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(13131-13149)"],
+    "$id": 38604
   },
-  "已省约 {size} {kind}": {
-    "en-US": "Saved about {size} {kind}",
-    "es-ES": "Guardado sobre {size} {kind}",
-    "ar-EG": "تم الحفظ حوالي {size} {kind}",
-    "pt-PT": "Salvo cerca de {size} {kind}",
-    "ru-RU": "Сохранено около {size} {kind}",
-    "ja-JP": "{size} {kind} について保存しました",
-    "de-DE": "Gespeichert über {size} {kind}",
-    "fr-FR": "Enregistré environ {size} {kind}",
-    "ko-KR": "{size} {kind}에 대해 저장됨",
-    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(10065-10086)"],
-    "$id": 34966
+  "已释放": {
+    "en-US": "Released",
+    "es-ES": "Liberado",
+    "ar-EG": "صدر",
+    "pt-PT": "Lançado",
+    "ru-RU": "Выпущенный",
+    "ja-JP": "リリースされました",
+    "de-DE": "Freigegeben",
+    "fr-FR": "Libéré",
+    "ko-KR": "방출",
+    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(14415-14422)"],
+    "$id": 38605
   },
   "运行异常 (点击可重试)": {
     "en-US": "Operation exception (click to try again)",
@@ -475,7 +491,7 @@
     "de-DE": "Vorgangsausnahme (klicken Sie, um es erneut zu versuchen)",
     "fr-FR": "Exception d'opération (cliquez pour réessayer)",
     "ko-KR": "작업 예외(다시 시도하려면 클릭)",
-    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(10715-10731)"],
+    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(14978-14994)"],
     "$id": 34967
   },
   "重试": {
@@ -489,7 +505,7 @@
     "fr-FR": "Réessayer",
     "ko-KR": "재시도",
     "$files": [
-      "src/renderer/components/common/EnergyTransparencyBadge.tsx(11637-11643)",
+      "src/renderer/components/common/EnergyTransparencyBadge.tsx(15930-15936)",
       "src/renderer/components/common/ErrorBoundary.tsx(2549-2555)"
     ],
     "$id": 3892
@@ -504,7 +520,7 @@
     "de-DE": "Ein Teil der Speichernutzung wird bestätigt",
     "fr-FR": "Une partie de l'utilisation de la mémoire est en cours de confirmation",
     "ko-KR": "메모리 사용량의 일부를 확인 중입니다.",
-    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(12107-12122)"],
+    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(16424-16439)"],
     "$id": 34968
   },
   "闲置时自动休眠，首次使用短暂加载，后续无需等待。": {
@@ -517,7 +533,7 @@
     "de-DE": "Geht im Leerlauf automatisch in den Ruhezustand, lädt das Gerät zum ersten Mal kurz und muss nicht auf spätere Verwendungen warten.",
     "fr-FR": "Se met automatiquement en veille lorsqu'il est inactif, se charge brièvement pour la première fois et n'a pas besoin d'attendre les utilisations ultérieures.",
     "ko-KR": "유휴 상태에서는 자동으로 절전 모드로 전환되고 처음에는 잠시 로드되며 이후 사용을 기다릴 필요가 없습니다.",
-    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(12413-12441)"],
+    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(16742-16770)"],
     "$id": 34969
   },
   "正在释放...": {
@@ -530,7 +546,7 @@
     "de-DE": "Veröffentlichung...",
     "fr-FR": "Libération...",
     "ko-KR": "출시 중...",
-    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(13047-13058)"],
+    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(17402-17413)"],
     "$id": 34970
   },
   "一键释放可休眠内存": {
@@ -543,7 +559,7 @@
     "de-DE": "Geben Sie den Ruhezustandsspeicher mit einem Klick frei",
     "fr-FR": "Libérez la mémoire hibernable en un seul clic",
     "ko-KR": "한 번의 클릭으로 최대 절전 모드 메모리 해제",
-    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(13208-13221)"],
+    "$files": ["src/renderer/components/common/EnergyTransparencyBadge.tsx(17573-17586)"],
     "$id": 34971
   },
   "应用出现错误": {
@@ -1156,7 +1172,7 @@
     "de-DE": "Im KI-Dienst ist eine Anomalie aufgetreten. Klicken Sie hier, um Details und Reparaturplan anzuzeigen.",
     "fr-FR": "Une anomalie se produit dans le service AI. Cliquez pour afficher les détails et le plan de réparation.",
     "ko-KR": "AI 서비스에 이상이 발생합니다. 자세한 내용과 수리 계획을 보려면 클릭하세요.",
-    "$files": ["src/renderer/components/common/Footer.tsx(29516-29540)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(29514-29538)"],
     "$id": 11301
   },
   "点击查看AI服务错误详情": {
@@ -1169,7 +1185,7 @@
     "de-DE": "Klicken Sie hier, um Details zu AI-Dienstfehlern anzuzeigen",
     "fr-FR": "Cliquez pour afficher les détails de l'erreur du service AI",
     "ko-KR": "AI 서비스 오류 세부정보를 보려면 클릭하세요.",
-    "$files": ["src/renderer/components/common/Footer.tsx(30103-30119)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(30101-30117)"],
     "$id": 11302
   },
   "点击查看原因": {
@@ -1182,7 +1198,7 @@
     "de-DE": "Klicken Sie hier, um zu sehen, warum",
     "fr-FR": "Cliquez pour voir pourquoi",
     "ko-KR": "이유를 보려면 클릭하세요.",
-    "$files": ["src/renderer/components/common/Footer.tsx(30418-30428)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(30416-30426)"],
     "$id": 11214
   },
   "检测到您有高性能显卡，请切换更聪明的AI模型，立即设置": {
@@ -1196,8 +1212,8 @@
     "fr-FR": "Vous avez détecté que vous disposez d'une carte graphique hautes performances, veuillez passer à un modèle d'IA plus intelligent et le configurer maintenant",
     "ko-KR": "고성능 그래픽 카드가 있는 것으로 감지되었습니다. 지금 더 스마트한 AI 모델로 전환하여 설정하세요.",
     "$files": [
-      "src/renderer/components/common/Footer.tsx(30928-30959)",
-      "src/renderer/components/common/Footer.tsx(31003-31034)"
+      "src/renderer/components/common/Footer.tsx(30926-30957)",
+      "src/renderer/components/common/Footer.tsx(31001-31032)"
     ],
     "$id": 4525
   },
@@ -1211,7 +1227,7 @@
     "de-DE": "Derzeit handelt es sich um eine integrierte Retrieval-Engine. Es wird empfohlen, eine generative Engine zu konfigurieren. Nach der Konfiguration können die Analyseergebnisse verbessert werden. Klicken Sie hier, um die Konfiguration aufzurufen.",
     "fr-FR": "Actuellement, il s'agit d'un moteur de récupération intégré. Il est recommandé de configurer un moteur génératif. Après configuration, les résultats de l'analyse peuvent être améliorés. Cliquez pour entrer dans la configuration.",
     "ko-KR": "현재는 내장된 검색 엔진입니다. 생성 엔진을 구성하는 것이 좋습니다. 구성 후 분석 결과를 향상시킬 수 있습니다. 구성을 입력하려면 클릭하세요.",
-    "$files": ["src/renderer/components/common/Footer.tsx(31480-31547)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(31478-31545)"],
     "$id": 28309
   },
   "当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果": {
@@ -1224,7 +1240,7 @@
     "de-DE": "Derzeit handelt es sich um eine integrierte Retrieval-Engine. Es wird empfohlen, eine generative Engine zu konfigurieren. Nach der Konfiguration können die Analyseergebnisse verbessert werden.",
     "fr-FR": "Actuellement, il s'agit d'un moteur de récupération intégré. Il est recommandé de configurer un moteur génératif. Après configuration, les résultats de l'analyse peuvent être améliorés.",
     "ko-KR": "현재는 내장된 검색 엔진입니다. 생성 엔진을 구성하는 것이 좋습니다. 구성 후 분석 결과를 향상시킬 수 있습니다.",
-    "$files": ["src/renderer/components/common/Footer.tsx(31728-31764)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(31726-31762)"],
     "$id": 28310
   },
   "萤核智能文件夹 - 更新日志": {
@@ -1237,7 +1253,7 @@
     "de-DE": "Firefly AI Folder - Änderungsprotokoll",
     "fr-FR": "Firefly AI Folder - Notes de mise à jour",
     "ko-KR": "형광석 스마트 폴더 - 업데이트 로그",
-    "$files": ["src/renderer/components/common/Footer.tsx(32260-32278)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(32258-32276)"],
     "$id": 3278
   },
   "最新版本: v{version}": {
@@ -1250,7 +1266,7 @@
     "de-DE": "Neueste Version: v{version}",
     "fr-FR": "Dernière version : v{version}",
     "ko-KR": "최신 버전: v{version}",
-    "$files": ["src/renderer/components/common/Footer.tsx(32460-32480)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(32458-32478)"],
     "$id": 3279
   },
   "稍后再说": {
@@ -1263,7 +1279,7 @@
     "de-DE": "Später",
     "fr-FR": "Plus tard",
     "ko-KR": "나중에 하기",
-    "$files": ["src/renderer/components/common/Footer.tsx(33201-33209)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(33199-33207)"],
     "$id": 3280
   },
   "无法打开下载页面": {
@@ -1276,7 +1292,7 @@
     "de-DE": "Download-Seite kann nicht geöffnet werden",
     "fr-FR": "Impossible d'ouvrir la page de téléchargement",
     "ko-KR": "다운로드 페이지를 열 수 없습니다",
-    "$files": ["src/renderer/components/common/Footer.tsx(33456-33468)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(33454-33466)"],
     "$id": 4526
   },
   "去官网下载新版": {
@@ -1289,7 +1305,7 @@
     "de-DE": "Neue Version von der offiziellen Website herunterladen",
     "fr-FR": "Télécharger la nouvelle version sur le site officiel",
     "ko-KR": "공식 홈페이지에서 새 버전 다운로드",
-    "$files": ["src/renderer/components/common/Footer.tsx(33649-33660)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(33647-33658)"],
     "$id": 3283
   },
   "查看分析队列 - 当前: {ws}{name}": {
@@ -1302,7 +1318,7 @@
     "de-DE": "Analysewarteschlange anzeigen – Aktuell: {ws}{name}",
     "fr-FR": "Afficher la file d'attente d'analyse - Actuel : {ws}{name}",
     "ko-KR": "분석 대기열 보기 - 현재: {ws}{name}",
-    "$files": ["src/renderer/components/common/Footer.tsx(34255-34282)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(34253-34280)"],
     "$id": 7806
   },
   "查看分析队列 - {count} 个文件等待中": {
@@ -1315,7 +1331,7 @@
     "de-DE": "Analysewarteschlange anzeigen - {count} Dateien warten\r",
     "fr-FR": "Voir la file d'analyse - {count} fichiers en attente\r",
     "ko-KR": "분석 대기열 보기 - {count}개 파일 대기 중\r",
-    "$files": ["src/renderer/components/common/Footer.tsx(34451-34478)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(34449-34476)"],
     "$id": 3910
   },
   "等待: {count}": {
@@ -1329,8 +1345,8 @@
     "fr-FR": "En attente : {count}",
     "ko-KR": "기다리다: {count}",
     "$files": [
-      "src/renderer/components/common/Footer.tsx(37817-37832)",
-      "src/renderer/components/common/Footer.tsx(38281-38296)"
+      "src/renderer/components/common/Footer.tsx(37815-37830)",
+      "src/renderer/components/common/Footer.tsx(38279-38294)"
     ],
     "$id": 3913
   },
@@ -1344,7 +1360,7 @@
     "de-DE": "Warteschlange angehalten",
     "fr-FR": "Mise en attente de la file d'attente",
     "ko-KR": "대기열 일시 중지",
-    "$files": ["src/renderer/components/common/Footer.tsx(37987-37995)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(37985-37993)"],
     "$id": 11246
   },
   "空闲": {
@@ -1357,7 +1373,7 @@
     "de-DE": "Leerlauf",
     "fr-FR": "Inactif",
     "ko-KR": "게으른",
-    "$files": ["src/renderer/components/common/Footer.tsx(38109-38115)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(38107-38113)"],
     "$id": 3912
   },
   "点击配置当前工作区AI策略与分析模式: {name}": {
@@ -1370,7 +1386,7 @@
     "de-DE": "Klicken Sie hier, um die aktuelle KI-Strategie und den Analysemodus für den Arbeitsbereich zu konfigurieren: {name}",
     "fr-FR": "Cliquez pour configurer la stratégie d'IA et le mode d'analyse actuels de l'espace de travail : {name}",
     "ko-KR": "현재 작업 공간 AI 전략 및 분석 모드를 구성하려면 클릭하세요. {name}",
-    "$files": ["src/renderer/components/common/Footer.tsx(38972-39002)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(38970-39000)"],
     "$id": 22936
   },
   "点击打开工作区配置": {
@@ -1383,7 +1399,7 @@
     "de-DE": "Klicken Sie hier, um die Arbeitsbereichskonfiguration zu öffnen",
     "fr-FR": "Cliquez pour ouvrir la configuration de l'espace de travail",
     "ko-KR": "작업공간 구성을 열려면 클릭하세요.",
-    "$files": ["src/renderer/components/common/Footer.tsx(39096-39109)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(39094-39107)"],
     "$id": 22937
   },
   "标准分析": {
@@ -1396,7 +1412,7 @@
     "de-DE": "Standardanalyse",
     "fr-FR": "Analyse standard",
     "ko-KR": "표준 분석",
-    "$files": ["src/renderer/components/common/Footer.tsx(39557-39565)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(39555-39563)"],
     "$id": 19427
   },
   "增强分析": {
@@ -1409,7 +1425,7 @@
     "de-DE": "Erweiterte Analyse",
     "fr-FR": "Analyse avancée",
     "ko-KR": "강화 분석",
-    "$files": ["src/renderer/components/common/Footer.tsx(39638-39646)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(39636-39644)"],
     "$id": 19428
   },
   "全面分析": {
@@ -1422,7 +1438,7 @@
     "de-DE": "Umfassende Analyse",
     "fr-FR": "Analyse complète",
     "ko-KR": "종합적인 분석",
-    "$files": ["src/renderer/components/common/Footer.tsx(39666-39674)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(39664-39672)"],
     "$id": 9424
   },
   "点击打开AI引擎配置": {
@@ -1435,7 +1451,7 @@
     "de-DE": "Klicken Sie hier, um die KI-Engine-Konfiguration zu öffnen",
     "fr-FR": "Cliquez pour ouvrir la configuration du moteur AI",
     "ko-KR": "AI 엔진 구성을 열려면 클릭하세요.",
-    "$files": ["src/renderer/components/common/Footer.tsx(40010-40024)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(40008-40022)"],
     "$id": 7683
   },
   "思考": {
@@ -1448,7 +1464,7 @@
     "de-DE": "Denken",
     "fr-FR": "Pense",
     "ko-KR": "생각하다",
-    "$files": ["src/renderer/components/common/Footer.tsx(40077-40083)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(40075-40081)"],
     "$id": 7747
   },
   "开发模式标识：区域 - 环境 - 分支": {
@@ -1461,7 +1477,7 @@
     "de-DE": "Entwicklermodus-Kennung: Region - Umgebung - Zweig",
     "fr-FR": "Identifiant du mode de développement：Région - Environnement - Branche",
     "ko-KR": "개발 모드 식별자：영역 - 환경 - 브랜치",
-    "$files": ["src/renderer/components/common/Footer.tsx(40902-40925)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(40900-40923)"],
     "$id": 11484
   },
   "发现新版本 v{version}": {
@@ -1474,7 +1490,7 @@
     "de-DE": "Neue Version v{version} entdeckt",
     "fr-FR": "Nouvelle version détectée v{version}",
     "ko-KR": "새 버전 감지 v{version}",
-    "$files": ["src/renderer/components/common/Footer.tsx(41694-41714)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(41692-41712)"],
     "$id": 3263
   },
   "最小化窗口": {

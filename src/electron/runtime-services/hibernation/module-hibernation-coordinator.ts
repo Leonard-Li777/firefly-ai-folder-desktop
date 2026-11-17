@@ -2717,7 +2717,7 @@ export class ModuleHibernationCoordinator {
 
     // 3. 执行任务并在 finally 保证 release
     try {
-      return await fn(lease, lease.abortController.signal)
+      return await fn(lease, lease.abortController?.signal as AbortSignal)
     } finally {
       lease.release()
     }
@@ -2994,7 +2994,7 @@ export class ModuleHibernationCoordinator {
 
     powerMonitor.on('resume', () => {
       logger.info(LogCategory.SYSTEM, '[Coordinator] 收到系统恢复事件 (resume)，执行对账')
-      this.reconcile()
+      void this.reconcileSuppressedIdentities()
     })
   }
 
@@ -3184,7 +3184,7 @@ export class ModuleHibernationCoordinator {
             this.dispatchWaitingForTarget(targetId)
           }
         } finally {
-          this.releaseAdmissionSlot(targetId)
+          this.releaseAdmissionSlot(slotAcquired)
         }
       }
     }
@@ -3202,7 +3202,11 @@ export class ModuleHibernationCoordinator {
 
     const identity = this.engineBridgeServiceInstance?.currentIdentity?.(targetId)
     if (identity && !this.engineBridgeServiceInstance?.isProcessTreeExited?.(identity)) {
-      await this.engineBridgeServiceInstance?.forceKillOldGeneration?.(identity)
+      await this.engineBridgeServiceInstance?.forceKillOldGeneration?.(
+        targetId,
+        identity.generation,
+        identity.treeHandle
+      )
     }
 
     await this.runtimeStore.persistBlockedUnloadGate(targetId, 0, null)

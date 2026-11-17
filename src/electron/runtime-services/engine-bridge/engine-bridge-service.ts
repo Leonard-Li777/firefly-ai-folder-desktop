@@ -32,6 +32,7 @@ import {
 import { EngineLifecycleStateMachine } from './engine-lifecycle-state-machine'
 import { EngineModelCatalogResolver } from './engine-model-catalog-resolver'
 import { isLocalDevRuntime } from '../../main/worktree-env'
+import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import {
   OmniModuleDrainResult,
   OmniModuleStatusResult,
@@ -434,7 +435,7 @@ export class EngineBridgeService {
     try {
       this.thinkingConfigUnsubscribe = ConfigOrchestrator.getInstance().onValueChange<boolean>(
         'ENABLE_THINKING_MODE',
-        value => {
+        (value: boolean) => {
           const next = Boolean(value)
           // 引擎→桌面回写触发的变更不再回推，避免死循环
           if (this.lastSyncedThinking === next) {

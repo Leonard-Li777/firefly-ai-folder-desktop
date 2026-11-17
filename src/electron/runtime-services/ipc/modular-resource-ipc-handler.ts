@@ -323,7 +323,14 @@ export function registerModularResourceIpcHandlers(
 
   ipcMain.handle(
     'modular-resource:import-offline-package',
-    async (_event, payload?: { archivePath?: string; preferredEngineId?: string }) => {
+    async (
+      _event,
+      payload?: {
+        archivePath?: string
+        preferredEngineId?: string
+        autoActivateModuleIds?: string[]
+      }
+    ) => {
       try {
         let src = payload?.archivePath
         if (!src) {

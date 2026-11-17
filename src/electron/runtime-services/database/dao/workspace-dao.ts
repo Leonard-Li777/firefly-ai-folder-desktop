@@ -4,7 +4,8 @@ import {
   parseWorkspaceConfig,
   serializeWorkspaceConfig,
   isWorkspaceConfigReady,
-  type WorkspaceConfig
+  type WorkspaceConfig,
+  type WorkspaceConfigReady
 } from '@firefly/types'
 import {
   LogCategory,
@@ -527,10 +528,21 @@ export class WorkspaceDao {
    * 更新工作区专有配置
    */
   async updateConfig(workspaceId: number, config: WorkspaceConfig): Promise<boolean> {
-    if (config.status === 'ready' && !isWorkspaceConfigReady(config)) {
-      throw new Error(
-        '[WorkspaceDao] 拒绝写入非法 ready 配置: 缺少必要基础 AI 配置 (baseAIConfig) 或过滤规则数组'
-      )
+    if (config.status === 'ready') {
+      if (!(config as any).baseAIConfig && (config as any).derivedSnapshot) {
+        ;(config as any).baseAIConfig = (config as any).derivedSnapshot
+      }
+      if (!Array.isArray(config.customExcludeRules)) {
+        config.customExcludeRules = []
+      }
+      if (!Array.isArray(config.customIncludeRules)) {
+        config.customIncludeRules = []
+      }
+      if (!isWorkspaceConfigReady(config)) {
+        throw new Error(
+          '[WorkspaceDao] 拒绝写入非法 ready 配置: 缺少必要基础 AI 配置 (baseAIConfig) 或过滤规则数组'
+        )
+      }
     }
     const serialized = serializeWorkspaceConfig(config)
     const result = this.db
@@ -538,6 +550,36 @@ export class WorkspaceDao {
       .run(serialized, workspaceId)
     invalidateWorkspacePolicyCache(workspaceId)
     return result.changes > 0
+  }
+
+  /**
+   * 确保工作区配置处于就绪状态 (若为 pending 或残缺，自适应赋予默认未绑定工作流的就绪策略)
+   */
+  async ensureConfigReady(workspaceId: number): Promise<boolean> {
+    try {
+      const config = await this.getConfig(workspaceId)
+      if (isWorkspaceConfigReady(config)) {
+        return true
+      }
+      const defaultConfig: WorkspaceConfigReady = {
+        schemaVersion: 1,
+        status: 'ready',
+        policyVersion: 1,
+        baseAIConfig: mapIntentToParameters('fast_archive'),
+        customExcludeRules: [],
+        customIncludeRules: [],
+        configuredAt: Date.now()
+      }
+      await this.updateConfig(workspaceId, defaultConfig)
+      logger.info(
+        LogCategory.DATABASE,
+        `[WorkspaceDao] 工作区 ${workspaceId} 尚未就绪，已自适应就绪为默认 AI 策略 (未绑定工作流)`
+      )
+      return true
+    } catch (err) {
+      logger.error(LogCategory.DATABASE, `[WorkspaceDao] 确保工作区 ${workspaceId} 就绪失败:`, err)
+      return false
+    }
   }
 
   /**

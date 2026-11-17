@@ -95,8 +95,8 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
 
   // 基线快照与局部微调覆盖
   const baseDerived: TechnicalEngineParameters = useMemo(() => {
-    if (isReady && (parsedConfig.baseAIConfig || parsedConfig.derivedSnapshot)) {
-      return parsedConfig.baseAIConfig || parsedConfig.derivedSnapshot
+    if (isReady && parsedConfig.baseAIConfig) {
+      return parsedConfig.baseAIConfig
     }
     return mapIntentToParameters(currentIntent, hardwareInfo)
   }, [isReady, parsedConfig, currentIntent, hardwareInfo])
@@ -143,7 +143,6 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
           intent: currentIntent,
           policyVersion: 1,
           baseAIConfig: baseDerived,
-          derivedSnapshot: baseDerived,
           overrides: hasAnyOverride ? targetOverrides : undefined,
           customExcludeRules:
             parsedConfig.status === 'ready' ? parsedConfig.customExcludeRules || [] : [],

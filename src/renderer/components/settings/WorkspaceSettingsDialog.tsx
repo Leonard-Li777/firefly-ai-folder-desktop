@@ -156,6 +156,9 @@ export const WorkspaceSettingsDialog: React.FC = () => {
   }
 
   const handleRequestClose = () => {
+    if (parsedConfig.status === 'pending') {
+      ensureDefaultReadyConfig().catch(() => {})
+    }
     requestLeaveAction(() => closeSettings())
   }
 
@@ -249,14 +252,10 @@ export const WorkspaceSettingsDialog: React.FC = () => {
   // 仅在用户显式要求向导模式（targetWorkspaceTab === 'wizard' 或手动点击运行向导）且未点击跳过时展示向导；
   // 即使工作区未绑定工作流（isPending），只要用户是打开工作目录设置，均允许直接进入 4-Tab 高级设置。
   const isPending = parsedConfig.status === 'pending'
-  const showWizard =
-    !isWizardDismissed && (isManualWizardMode || targetWorkspaceTab === 'wizard')
+  const showWizard = !isWizardDismissed && (isManualWizardMode || targetWorkspaceTab === 'wizard')
 
-  // 用户点击【跳过向导】：退出向导模式，进入 4-Tab 高级设置，并持久化默认就绪配置（不绑定工作流）
-  const handleSkipWizard = async () => {
-    setIsManualWizardMode(false)
-    setIsWizardDismissed(true)
-
+  // 确保当前工作区就绪为默认配置（若处于 pending，保存为默认 AI 策略且未绑定工作流）
+  const ensureDefaultReadyConfig = async () => {
     if (
       activeWorkspace?.id != null &&
       parsedConfig.status === 'pending' &&
@@ -269,7 +268,6 @@ export const WorkspaceSettingsDialog: React.FC = () => {
           status: 'ready',
           policyVersion: 1,
           baseAIConfig: baseDerived,
-          derivedSnapshot: baseDerived,
           customExcludeRules: [],
           customIncludeRules: [],
           configuredAt: Date.now()
@@ -277,9 +275,16 @@ export const WorkspaceSettingsDialog: React.FC = () => {
         await window.electronAPI.updateWorkspaceConfig(activeWorkspace.id, skippedConfig)
         await refreshWorkspaceData()
       } catch (err) {
-        console.warn('[WorkspaceSettingsDialog] 跳过向导持久化默认就绪配置失败:', err)
+        console.warn('[WorkspaceSettingsDialog] 持久化默认就绪配置失败:', err)
       }
     }
+  }
+
+  // 用户点击【跳过向导】：退出向导模式，进入 4-Tab 高级设置，并持久化默认就绪配置（不绑定工作流）
+  const handleSkipWizard = async () => {
+    setIsManualWizardMode(false)
+    setIsWizardDismissed(true)
+    await ensureDefaultReadyConfig()
   }
 
   // 刷新工作区列表数据
@@ -590,10 +595,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
         </div>
 
         {/* 规则修改未保存：系统中美化的 React 确认对话框 */}
-        <AlertDialog
-          open={showUnsavedConfirmDialog}
-          onOpenChange={setShowUnsavedConfirmDialog}
-        >
+        <AlertDialog open={showUnsavedConfirmDialog} onOpenChange={setShowUnsavedConfirmDialog}>
           <AlertDialogContent
             data-testid="unsaved-admission-rules-dialog"
             className="border-2 border-border max-w-md bg-background dark:bg-card text-foreground rounded-2xl shadow-2xl"

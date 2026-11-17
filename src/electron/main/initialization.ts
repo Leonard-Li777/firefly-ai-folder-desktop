@@ -88,6 +88,7 @@ import {
   setGlobalLlamaIndexService,
   coreEngine,
   setCoreEngine,
+  directoryContextService,
   setDirectoryContextService,
   setOrganizeRealDirectoryService,
   setFileCleanupService,
@@ -1014,7 +1015,7 @@ export async function initializeFullServices(): Promise<void> {
         }
       } finally {
         // 保证无论 AI 引擎是否就绪，工作区目录上下文服务 100% 成功注入
-        if (databaseService.db && !getDirectoryContextService()) {
+        if (databaseService.db && !directoryContextService) {
           setDirectoryContextService(new DirectoryContextService(globalLlamaIndexService))
           logger.debug(LogCategory.MAIN, '目录上下文服务已初始化')
         }

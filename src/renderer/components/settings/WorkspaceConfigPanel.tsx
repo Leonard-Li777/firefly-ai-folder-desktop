@@ -310,7 +310,6 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
         intent: selectedIntent,
         policyVersion: parsedConfig.status === 'ready' ? parsedConfig.policyVersion || 1 : 1,
         baseAIConfig: derivedSnapshot,
-        derivedSnapshot,
         overrides: hasOverrides ? overrides : undefined,
         extensionWeights:
           parsedConfig.status === 'ready' ? parsedConfig.extensionWeights : undefined,
