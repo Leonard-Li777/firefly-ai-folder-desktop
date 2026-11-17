@@ -101,6 +101,7 @@ export class WorkflowSemanticMatcherService {
   private static readonly MAX_CACHE_ENTRIES = 4
 
   private readonly inflight = new Map<string, Promise<WorkflowSemanticsScoreResult>>()
+  private readonly officialPrewarmInflight = new Map<string, Promise<Map<string, number[]>>>()
 
   private constructor() {}
 
@@ -112,7 +113,7 @@ export class WorkflowSemanticMatcherService {
   }
 
   /**
-   * 评分主入口：带入参防爆、Singleflight 在途去重、1200ms 超时与双门禁解锁
+   * 评分主入口：带入参防爆、Singleflight 在途去重、分级超时（热路径 1200ms / 冷启动全量官方向量 4500ms）与双门禁解锁
    */
   public async scoreWorkflowSemantics(
     req: WorkflowSemanticsScoreRequest
@@ -135,20 +136,25 @@ export class WorkflowSemanticMatcherService {
     // 2. Singleflight 在途去重
     const inflightKey = this.buildInflightKey(req)
     return this.runSingleflight(inflightKey, async () => {
+      // 若全量官方工作流(>=16套)尚无缓存（首次冷启动需编码 70 套），放宽单次等待至 4500ms；热路径保持 1200ms 极速熔断
+      const officialCount = ConfigDbManager.getInstance().getLocalWorkflows().length
+      const hasAnyOfficialCache = this.lruCache.size > 0
+      const timeoutBudgetMs = officialCount >= 16 && !hasAnyOfficialCache ? 4500 : 1200
+
       const abortController = new AbortController()
       const timer = setTimeout(() => {
         abortController.abort()
-      }, 1200)
+      }, timeoutBudgetMs)
 
       try {
-        const result = await this.doScore(req, abortController.signal, startMs)
+        const result = await this.doScore(req, abortController.signal, startMs, timeoutBudgetMs)
         return result
       } catch (err: any) {
         const durationMs = Date.now() - startMs
         if (abortController.signal.aborted || err?.name === 'AbortError') {
           logger.warn(
             LogCategory.SYSTEM,
-            `[WorkflowSemanticMatcherService] 1200ms 超时中止: ${err?.message}`
+            `[WorkflowSemanticMatcherService] ${timeoutBudgetMs}ms 超时中止: ${err?.message}`
           )
           return { status: 'degraded', reason: 'timeout', durationMs }
         }
@@ -230,6 +236,14 @@ export class WorkflowSemanticMatcherService {
         }
       }
     }
+    if (Array.isArray(req.sampledSubDirNames)) {
+      if (req.sampledSubDirNames.length > 16) return false
+      for (const name of req.sampledSubDirNames) {
+        if (typeof name !== 'string' || name.length > 64) {
+          return false
+        }
+      }
+    }
     return true
   }
 
@@ -237,7 +251,8 @@ export class WorkflowSemanticMatcherService {
     const parts = [
       req.dirPath,
       JSON.stringify(req.countsByExt),
-      JSON.stringify(req.sampledFileNames || [])
+      JSON.stringify(req.sampledFileNames || []),
+      JSON.stringify(req.sampledSubDirNames || [])
     ]
     return crypto.createHash('sha256').update(parts.join('|')).digest('hex')
   }
@@ -256,7 +271,8 @@ export class WorkflowSemanticMatcherService {
   private async doScore(
     req: WorkflowSemanticsScoreRequest,
     signal: AbortSignal,
-    startMs: number
+    startMs: number,
+    timeoutBudgetMs: number
   ): Promise<WorkflowSemanticsScoreResult> {
     const omni = OmniService.getInstance()
     const configDb = ConfigDbManager.getInstance()
@@ -270,7 +286,7 @@ export class WorkflowSemanticMatcherService {
     const officialIdSet = new Set(officialWorkflows.map(w => w.id))
     const customWorkflows = (req.customWorkflows || []).filter(w => !officialIdSet.has(w.id))
 
-    // 3. 官方向量获取/计算 (LRU 缓存)
+    // 3. 官方向量获取/计算 (LRU 缓存 + 后台独立 Singleflight 预热防中止清零)
     const officialSignature = this.computeWorkflowsSignature(officialWorkflows)
     const officialVectorsMap = await this.getOrComputeOfficialVectors(
       officialWorkflows,
@@ -284,7 +300,13 @@ export class WorkflowSemanticMatcherService {
     const allVectorsMap = new Map<string, number[]>(officialVectorsMap)
     if (customWorkflows.length > 0) {
       const customTexts = customWorkflows.map(w => this.buildWorkflowSemanticText(w))
-      const customVectors = await this.embedInBatches(omni, customTexts, target, signal)
+      const customVectors = await this.embedInBatches(
+        omni,
+        customTexts,
+        target,
+        signal,
+        timeoutBudgetMs
+      )
       for (let i = 0; i < customWorkflows.length; i++) {
         allVectorsMap.set(customWorkflows[i].id, l2Norm(customVectors[i]))
       }
@@ -305,7 +327,7 @@ export class WorkflowSemanticMatcherService {
       dim: target.dim,
       skipAutoStart: true,
       signal,
-      timeoutMs: 1200
+      timeoutMs: timeoutBudgetMs
     })
     const vDirNorm = l2Norm(dirBatchResult.vectors[0])
 
@@ -342,20 +364,34 @@ export class WorkflowSemanticMatcherService {
         semanticScoresByWorkflowId[wId] = 0.5
       }
     } else {
-      // 分母收紧为 1.2，增强中段敏感度
-      const denom = Math.max(sigma, 1e-4) * 1.2
+      // 引入有效标准差下限 0.045，防止无主题杂乱目录在各向异性向量空间中因低方差放大随机噪声（Small-Variance Z-Score Explosion）
+      const effectiveSigma = Math.max(sigma, 0.045)
+      const denom = effectiveSigma * 1.2
+      // 解锁所需绝对超额余弦下限：至少同时高于均值 1.5*sigma 与 0.06 绝对间隔
+      const unlockThreshold = mean + Math.max(1.5 * sigma, 0.06)
       for (const wId of workflowIds) {
         const cos = rawCosineByWorkflowId[wId]
         const z = (cos - mean) / denom
         const sSem = clamp(0.5 + 0.5 * Math.tanh(z), 0, 1)
         semanticScoresByWorkflowId[wId] = Number(sSem.toFixed(4))
 
-        // 统计显著性严密解锁门禁：绝对余弦 >= 0.52 且高出均值 1.5 个标准差 (仅允许顶层约 6.7%)
-        if (cos >= 0.52 && cos >= mean + 1.5 * sigma) {
+        // 统计显著性严密解锁门禁：绝对余弦 >= 0.52 且同时高出均值 max(1.5*sigma, 0.06)
+        if (cos >= 0.52 && cos >= unlockThreshold) {
           unlockedWorkflowIds.push(wId)
         }
       }
     }
+
+    const durationMs = Date.now() - startMs
+    const top3Preview = [...workflowIds]
+      .sort((a, b) => (rawCosineByWorkflowId[b] ?? 0) - (rawCosineByWorkflowId[a] ?? 0))
+      .slice(0, 3)
+      .map(id => `${id}=${(rawCosineByWorkflowId[id] ?? 0).toFixed(3)}`)
+      .join(', ')
+    logger.info(
+      LogCategory.SYSTEM,
+      `[WorkflowSemanticMatcherService] 语义打分完成 (${durationMs}ms, mean=${mean.toFixed(3)}, sigma=${sigma.toFixed(4)}, unlocked=${unlockedWorkflowIds.length}): top3=[${top3Preview}]`
+    )
 
     return {
       status: 'ok',
@@ -364,8 +400,35 @@ export class WorkflowSemanticMatcherService {
       batchSigma: Number(sigma.toFixed(5)),
       unlockedWorkflowIds,
       effectiveLang,
-      durationMs: Date.now() - startMs
+      durationMs
     }
+  }
+
+  private raceWithAbort<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
+    if (!signal) return promise
+    if (signal.aborted) {
+      const abortErr = new Error('The operation was aborted')
+      abortErr.name = 'AbortError'
+      return Promise.reject(abortErr)
+    }
+    return new Promise<T>((resolve, reject) => {
+      const onAbort = () => {
+        const abortErr = new Error('The operation was aborted')
+        abortErr.name = 'AbortError'
+        reject(abortErr)
+      }
+      signal.addEventListener('abort', onAbort, { once: true })
+      promise.then(
+        val => {
+          signal.removeEventListener('abort', onAbort)
+          resolve(val)
+        },
+        err => {
+          signal.removeEventListener('abort', onAbort)
+          reject(err)
+        }
+      )
+    })
   }
 
   private computeWorkflowsSignature(workflows: LocalWorkflowRecord[]): string {
@@ -397,16 +460,58 @@ export class WorkflowSemanticMatcherService {
       return existing.vectorsById
     }
 
-    // 编码所有官方工作流 (分批 <= 32)
+    // 生产全量工作流 (>=16套) 采用独立后台 Singleflight 计算与 15s 批超时，
+    // 即使某次前台请求因超时提前降级，后台仍会算完并落盘至 lruCache，彻底根治冷启动反复超时死循环
+    const isFullOfficialCatalog = workflows.length >= 16
+    if (isFullOfficialCatalog) {
+      let prewarmTask = this.officialPrewarmInflight.get(cacheKey)
+      if (!prewarmTask) {
+        const omni = OmniService.getInstance()
+        const texts = workflows.map(w => this.buildWorkflowSemanticText(w))
+        prewarmTask = this.embedInBatches(omni, texts, target, undefined, 15000)
+          .then(rawVectors => {
+            const vectorsById = new Map<string, number[]>()
+            for (let i = 0; i < workflows.length; i++) {
+              vectorsById.set(workflows[i].id, l2Norm(rawVectors[i]))
+            }
+            this.putOfficialVectorsCache(cacheKey, signature, effectiveLang, target, vectorsById)
+            logger.info(
+              LogCategory.SYSTEM,
+              `[WorkflowSemanticMatcherService] 官方向量缓存预热完成 (${workflows.length} 套, profile=${target.profile}, dim=${target.dim})`
+            )
+            return vectorsById
+          })
+          .finally(() => {
+            this.officialPrewarmInflight.delete(cacheKey)
+          })
+        // 挂载静默 catch 防止前台提前超时后出现未捕获拒绝
+        prewarmTask.catch(() => {})
+        this.officialPrewarmInflight.set(cacheKey, prewarmTask)
+      }
+      return this.raceWithAbort(prewarmTask, signal)
+    }
+
+    // 小型/测试工作流集透传前台 signal，便于快速物理中止
     const omni = OmniService.getInstance()
     const texts = workflows.map(w => this.buildWorkflowSemanticText(w))
-    const rawVectors = await this.embedInBatches(omni, texts, target, signal)
+    const rawVectors = await this.embedInBatches(omni, texts, target, signal, 1200)
 
     const vectorsById = new Map<string, number[]>()
     for (let i = 0; i < workflows.length; i++) {
       vectorsById.set(workflows[i].id, l2Norm(rawVectors[i]))
     }
 
+    this.putOfficialVectorsCache(cacheKey, signature, effectiveLang, target, vectorsById)
+    return vectorsById
+  }
+
+  private putOfficialVectorsCache(
+    cacheKey: string,
+    signature: string,
+    effectiveLang: string,
+    target: { profile: string; dim: number },
+    vectorsById: Map<string, number[]>
+  ): void {
     // 写入 LRU 缓存 (上限 4 条)
     if (this.lruCache.size >= WorkflowSemanticMatcherService.MAX_CACHE_ENTRIES) {
       let oldestKey: string | null = null
@@ -431,15 +536,14 @@ export class WorkflowSemanticMatcherService {
       vectorsById,
       lastAccessed: Date.now()
     })
-
-    return vectorsById
   }
 
   private async embedInBatches(
     omni: OmniService,
     texts: string[],
     target: { profile: string; dim: number },
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    timeoutMs: number = 1200
   ): Promise<number[][]> {
     const result: number[][] = []
     const BATCH_SIZE = 32
@@ -450,7 +554,7 @@ export class WorkflowSemanticMatcherService {
         dim: target.dim,
         skipAutoStart: true,
         signal,
-        timeoutMs: 1200
+        timeoutMs
       })
       result.push(...res.vectors)
     }
@@ -478,6 +582,12 @@ export class WorkflowSemanticMatcherService {
     const dirName =
       dualLevelPath || req.directoryName || path.basename(cleanPath) || cleanPath || ''
 
+    // 提取顶层子目录名（最多 12 个），辅助还原多项目/多模块目录的整体业务主题
+    const validSubDirs = (req.sampledSubDirNames || [])
+      .filter(s => typeof s === 'string' && s.trim())
+      .map(s => s.trim())
+      .slice(0, 12)
+
     // 提取 Top 16 词干，防止超长尾部噪声干扰自注意力窗口
     const validStems = (req.sampledFileNames || [])
       .filter(s => s && typeof s.stem === 'string' && s.stem.trim())
@@ -487,6 +597,9 @@ export class WorkflowSemanticMatcherService {
     const parts: string[] = []
     if (dirName) {
       parts.push(`工作目录：${dirName}`)
+    }
+    if (validSubDirs.length > 0) {
+      parts.push(`包含的子目录有：${validSubDirs.join('、')}`)
     }
     if (validStems.length > 0) {
       parts.push(`包含的主要文件有：${validStems.join('、')}`)

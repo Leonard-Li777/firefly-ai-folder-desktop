@@ -1000,7 +1000,10 @@ export class LocalWorkflowDao implements ILocalWorkflowDAO {
       let extensionWeights: Record<string, number> | undefined
       if (r.workspace_config) {
         try {
-          const cfg = typeof r.workspace_config === 'string' ? JSON.parse(r.workspace_config) : r.workspace_config
+          const cfg =
+            typeof r.workspace_config === 'string'
+              ? JSON.parse(r.workspace_config)
+              : r.workspace_config
           if (cfg && cfg.extensionWeights && typeof cfg.extensionWeights === 'object') {
             extensionWeights = cfg.extensionWeights
           }
@@ -1052,7 +1055,6 @@ export class LocalWorkflowDao implements ILocalWorkflowDAO {
       const rawConfig = (record as any).workspaceConfig || {}
       const baseAi =
         rawConfig.baseAIConfig ||
-        rawConfig.derivedSnapshot ||
         (typeof record.engine_params_json === 'string' ? JSON.parse(record.engine_params_json) : {})
       workspaceConfigStr = JSON.stringify({
         schemaVersion: 1,
@@ -1070,12 +1072,9 @@ export class LocalWorkflowDao implements ILocalWorkflowDAO {
             ? JSON.parse(record.filter_rules || '[]')
             : []),
         baseAIConfig: baseAi,
-        derivedSnapshot: baseAi,
         advancedAIPrompts: rawConfig.advancedAIPrompts || undefined,
         unitRecognition: rawConfig.unitRecognition || undefined,
         extensionWeights: rawConfig.extensionWeights || undefined,
-        namingPattern: record.naming_pattern || rawConfig.namingPattern || undefined,
-        namingTemplate: record.naming_template || rawConfig.namingTemplate || undefined,
         configuredAt: Date.now()
       })
     }

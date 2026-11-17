@@ -66,11 +66,7 @@ export class LocalWorkflowService {
           ? manifest.id.trim()
           : `wf_usr_${Math.random().toString(36).substring(2, 10)}${Date.now().toString(36).slice(-4)}`
 
-      const baseAi =
-        (unifiedConfig as any)?.baseAIConfig ||
-        (unifiedConfig as any)?.derivedSnapshot ||
-        manifest.engineParameters ||
-        {}
+      const baseAi = (unifiedConfig as any)?.baseAIConfig || manifest.engineParameters || {}
       const workspaceConfigStr = JSON.stringify({
         schemaVersion: 1,
         status: 'ready',
@@ -85,13 +81,9 @@ export class LocalWorkflowService {
             ? manifest.whitelistPatterns || manifest.filterPatterns || []
             : []),
         baseAIConfig: baseAi,
-        derivedSnapshot: baseAi,
         advancedAIPrompts: (unifiedConfig as any)?.advancedAIPrompts || undefined,
         unitRecognition: (unifiedConfig as any)?.unitRecognition || undefined,
         extensionWeights: (unifiedConfig as any)?.extensionWeights || undefined,
-        namingPattern: manifest.namingPattern || (unifiedConfig as any)?.namingPattern || undefined,
-        namingTemplate:
-          manifest.namingTemplate || (unifiedConfig as any)?.namingTemplate || undefined,
         configuredAt: Date.now()
       })
 

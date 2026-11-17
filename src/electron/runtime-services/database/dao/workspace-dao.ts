@@ -529,9 +529,6 @@ export class WorkspaceDao {
    */
   async updateConfig(workspaceId: number, config: WorkspaceConfig): Promise<boolean> {
     if (config.status === 'ready') {
-      if (!(config as any).baseAIConfig && (config as any).derivedSnapshot) {
-        ;(config as any).baseAIConfig = (config as any).derivedSnapshot
-      }
       if (!Array.isArray(config.customExcludeRules)) {
         config.customExcludeRules = []
       }

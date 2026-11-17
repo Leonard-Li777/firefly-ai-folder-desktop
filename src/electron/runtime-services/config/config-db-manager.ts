@@ -407,7 +407,10 @@ export class ConfigDbManager {
           const raw = fs.readFileSync(configPath, 'utf-8')
           parsed = { ...defaultConstants, ...JSON.parse(raw) }
         } catch (e: any) {
-          logger.warn(LogCategory.CONFIG, `ConfigDbManager: 解析外部 file-constants.json 异常: ${e.message}`)
+          logger.warn(
+            LogCategory.CONFIG,
+            `ConfigDbManager: 解析外部 file-constants.json 异常: ${e.message}`
+          )
         }
       }
 
@@ -425,7 +428,10 @@ export class ConfigDbManager {
       // 同步更新 @firefly/shared 运行时常量缓存
       updateRuntimeFileConstants(parsed)
 
-      logger.debug(LogCategory.CONFIG, `ConfigDbManager: 成功导入初始 file_constants 数据 (SSOT 对齐)`)
+      logger.debug(
+        LogCategory.CONFIG,
+        `ConfigDbManager: 成功导入初始 file_constants 数据 (SSOT 对齐)`
+      )
     } catch (error) {
       logger.error(LogCategory.CONFIG, 'ConfigDbManager: 导入初始 file_constants 失败:', error)
     }
@@ -624,23 +630,6 @@ export class ConfigDbManager {
           enableOfficeCover: true,
           reuseBasicAnalysisData: true
         },
-        derivedSnapshot: {
-          analysisMode: 'quick_name',
-          embeddingProfile: 'classic_light',
-          mrlDimension: 256,
-          videoQuotaMax: 10,
-          videoCutSensitivity: 'medium',
-          videoSoftTokenBudget: 48,
-          videoAsrDurationSec: 0,
-          audioAnalysisDurationSec: 0,
-          enableImageOcr: true,
-          ocrModelSize: 'tiny',
-          maxContentSizeKb: 4096,
-          enableOfficeCover: true,
-          reuseBasicAnalysisData: true
-        },
-        namingPattern: t('[创建日期]_[业务分类]_[文件名称]'),
-        namingTemplate: '[{TAG:属性}]{SMART_NAME}_{CRE:YYYYMMDD}',
         configuredAt: 1762425600000
       }),
       created_at: '2026-01-01T00:00:00.000Z',

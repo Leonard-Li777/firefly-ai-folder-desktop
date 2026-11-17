@@ -301,7 +301,7 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
         }
       }
 
-      const derivedSnapshot = mapIntentToParameters(selectedIntent, actualHw)
+      const baseAIConfig = mapIntentToParameters(selectedIntent, actualHw)
       const hasOverrides = Object.keys(overrides).length > 0
 
       const readyConfig: WorkspaceConfig = {
@@ -309,7 +309,7 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
         status: 'ready',
         intent: selectedIntent,
         policyVersion: parsedConfig.status === 'ready' ? parsedConfig.policyVersion || 1 : 1,
-        baseAIConfig: derivedSnapshot,
+        baseAIConfig,
         overrides: hasOverrides ? overrides : undefined,
         extensionWeights:
           parsedConfig.status === 'ready' ? parsedConfig.extensionWeights : undefined,

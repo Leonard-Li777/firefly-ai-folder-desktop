@@ -377,4 +377,72 @@ describe('WorkflowSemanticMatcherService (Stage B)', () => {
     expect(dirCall).toBeDefined()
     expect(dirCall?.length).toBe(1)
   })
+
+  it('回归防炸门禁: 无主题杂乱目录在低方差下绝不因微小噪声误解锁垂直工作流或制造剧烈分差', async () => {
+    // 构造 4 个低方差余弦：一个无关工作流偶然 0.585，其余 3 个为 0.54
+    // mean = 0.55125, sigma ≈ 0.0195，0.585 高出均值 1.73 * sigma，但绝对超额仅 0.03375 < 0.06
+    const vec = (cos: number) => [cos, Math.sqrt(Math.max(0, 1 - cos * cos))]
+    // 使签名唯一，避免命中前序用例缓存
+    mockWorkflows[1].summary = '长辈就医病历、化验单与随访资料（低方差噪声测试）'
+
+    vi.spyOn(OmniService, 'getInstance').mockReturnValue({
+      isReady: () => true,
+      resolveEmbeddingTarget: async () => ({ profile: 'classic_light', dim: 2 }),
+      batchEmbedText: async (texts: string[]) => {
+        if (texts.length === 1 && texts[0].includes('杂乱桌面')) {
+          return {
+            vectors: [[1, 0]],
+            count: 1,
+            dim: 2,
+            profile: 'classic_light',
+            durationMs: 5
+          }
+        }
+        return {
+          vectors: [vec(0.54), vec(0.585), vec(0.54), vec(0.54)],
+          count: 4,
+          dim: 2,
+          profile: 'classic_light',
+          durationMs: 10
+        }
+      }
+    } as any)
+
+    const req: WorkflowSemanticsScoreRequest = {
+      probeSeq: 99,
+      dirPath: 'C:\\Users\\Test\\杂乱桌面',
+      countsByExt: { lnk: 45, jpg: 21, docx: 20, mp3: 6, js: 4, mp4: 2 },
+      sampledFileNames: [
+        { stem: 'Chrome', count: 1 },
+        { stem: '微信', count: 1 }
+      ]
+    }
+
+    const res = await matcher.scoreWorkflowSemantics(req)
+    expect(res.status).toBe('ok')
+    if (res.status === 'ok') {
+      // 绝对超额不足 0.06，严禁误解锁
+      expect(res.unlockedWorkflowIds).toEqual([])
+      // 有效标准差地板 0.045 平滑后，sSem 应温和位于 (0.5, 0.85)，不得狂飙至 > 0.90
+      const noisyScore =
+        res.semanticScoresByWorkflowId['builtin.workflow.senior-medical-care-pipeline']
+      expect(noisyScore).toBeGreaterThan(0.5)
+      expect(noisyScore).toBeLessThan(0.85)
+    }
+  })
+
+  it('回归防偏斜: 顶层子目录名 sampledSubDirNames 应拼入目录语义文本，防止单个孤立文件绑架主题', () => {
+    const m = matcher as any
+    const req: WorkflowSemanticsScoreRequest = {
+      probeSeq: 100,
+      dirPath: 'F:\\项目创意',
+      countsByExt: { zip: 4, json: 27, jpg: 17, png: 22 },
+      sampledSubDirNames: ['创意封面秒设计', '朋友圈图文', '工作流', '萤核智能文件夹'],
+      sampledFileNames: [{ stem: 'workflow', count: 5 }]
+    }
+    const text = m.buildDirectorySemanticText(req)
+    expect(text).toContain('工作目录：项目创意')
+    expect(text).toContain('包含的子目录有：创意封面秒设计、朋友圈图文、工作流、萤核智能文件夹')
+    expect(text).toContain('包含的主要文件有：workflow')
+  })
 })

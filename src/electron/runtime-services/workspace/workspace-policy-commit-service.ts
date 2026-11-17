@@ -350,11 +350,6 @@ export class WorkspacePolicyCommitService {
             embeddingProfile: 'classic_light',
             mrlDimension: 256
           },
-          derivedSnapshot: {
-            analysisMode: 'simple',
-            embeddingProfile: 'classic_light',
-            mrlDimension: 256
-          },
           configuredAt: Date.now(),
           ...rawTarget
         }

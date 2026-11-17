@@ -233,6 +233,7 @@ export interface DirectoryProfileStats {
   categoryCounts?: Record<string, number>
   topExtensions: Array<{ ext: string; count: number }>
   sampledFileNames?: SampledFileStemCount[]
+  sampledSubDirNames?: string[]
   durationMs: number
   hitTimeBudget: boolean
 }
@@ -257,7 +258,8 @@ export class DirectoryProfiler {
   constructor(options?: { maxDepth?: number; maxFiles?: number; timeBudgetMs?: number }) {
     this.maxDepth = options?.maxDepth ?? 2
     this.maxFiles = options?.maxFiles ?? 300
-    this.timeBudgetMs = options?.timeBudgetMs ?? 60
+    // 放宽默认时间盒至 300ms：避免冷盘/首次扫描多子目录在 60ms 提前截断，只采到顶层 1 个孤立文件导致画像严重失真
+    this.timeBudgetMs = options?.timeBudgetMs ?? 300
   }
 
   /**
@@ -290,8 +292,9 @@ export class DirectoryProfiler {
     // 再次剥离边缘标点
     s = s.replace(/^[\s\[\]()（）【】_.-]+|[\s\[\]()（）【】_.-]+$/g, '')
 
-    // 过滤纯符号或长度 < 2 的碎片
+    // 过滤纯符号、纯数字编号（如 000 / 001 / 002）或长度 < 2 的碎片，防止无意义数字占满 Stage B 语义窗口
     if (s.length < 2) return null
+    if (/^\d+$/.test(s)) return null
     if (!/[a-zA-Z0-9\u4e00-\u9fa5]/.test(s)) return null
 
     return s.slice(0, 24)
@@ -316,10 +319,15 @@ export class DirectoryProfiler {
     let otherCount = 0
     let totalSampled = 0
     let hitTimeBudget = false
+    const sampledSubDirNames: string[] = []
+    const subtreeSampledCounts = new Map<string, number>()
+    let perSubtreeQuota = this.maxFiles
 
     // 内部实际执行遍历的异步任务
     const traverseTask = async (): Promise<void> => {
-      const queue: Array<{ dirPath: string; depth: number }> = [{ dirPath: targetPath, depth: 0 }]
+      const queue: Array<{ dirPath: string; depth: number; rootSubdirKey: string | null }> = [
+        { dirPath: targetPath, depth: 0, rootSubdirKey: null }
+      ]
       let filesProcessedSinceYield = 0
 
       while (queue.length > 0) {
@@ -334,12 +342,43 @@ export class DirectoryProfiler {
         const current = queue.shift()!
         if (!current) break
 
+        // 若该顶层子树已达均衡采样配额，直接跳过避免单一海量素材子目录绑架全局画像
+        if (
+          current.rootSubdirKey &&
+          (subtreeSampledCounts.get(current.rootSubdirKey) ?? 0) >= perSubtreeQuota
+        ) {
+          continue
+        }
+
         let entries: fs.Dirent[]
         try {
           entries = await fs.promises.readdir(current.dirPath, { withFileTypes: true })
         } catch {
           // 遭遇权限拒绝、文件被占用或目录不存在时安全跳过
           continue
+        }
+
+        // 第 0 层预先统计有效顶层子目录数量并计算均衡采样配额，同时采集顶层子目录语义名称
+        if (current.depth === 0) {
+          let validTopLevelSubDirs = 0
+          for (const e of entries) {
+            if (e.isSymbolicLink() || !e.isDirectory()) continue
+            const lower = e.name.toLowerCase()
+            if (IGNORED_DIRECTORY_NAMES.has(lower) || lower.startsWith('.')) continue
+            validTopLevelSubDirs++
+            if (sampledSubDirNames.length < 12) {
+              const cleanedDirName = this.cleanFileNameStem(e.name) || e.name.trim().slice(0, 24)
+              if (cleanedDirName && !sampledSubDirNames.includes(cleanedDirName)) {
+                sampledSubDirNames.push(cleanedDirName)
+              }
+            }
+          }
+          if (validTopLevelSubDirs >= 2) {
+            perSubtreeQuota = Math.max(
+              40,
+              Math.floor(this.maxFiles / Math.min(validTopLevelSubDirs, 6))
+            )
+          }
         }
 
         for (const entry of entries) {
@@ -371,7 +410,8 @@ export class DirectoryProfiler {
             if (current.depth < this.maxDepth && queue.length < 1000) {
               queue.push({
                 dirPath: path.join(current.dirPath, entry.name),
-                depth: current.depth + 1
+                depth: current.depth + 1,
+                rootSubdirKey: current.depth === 0 ? entry.name : current.rootSubdirKey
               })
             }
           } else if (entry.isFile()) {
@@ -379,6 +419,14 @@ export class DirectoryProfiler {
             // 忽略隐藏文件 (如 .DS_Store, .gitignore)
             if (fileName.startsWith('.')) {
               continue
+            }
+
+            if (current.rootSubdirKey) {
+              const subCnt = subtreeSampledCounts.get(current.rootSubdirKey) ?? 0
+              if (subCnt >= perSubtreeQuota) {
+                break
+              }
+              subtreeSampledCounts.set(current.rootSubdirKey, subCnt + 1)
             }
 
             totalSampled++
@@ -497,6 +545,7 @@ export class DirectoryProfiler {
       },
       topExtensions,
       sampledFileNames,
+      sampledSubDirNames,
       durationMs,
       hitTimeBudget
     }
