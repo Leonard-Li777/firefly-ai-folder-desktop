@@ -50,8 +50,11 @@ export const modularResourcePreloadBridge: IModularResourceBridge = {
   restartApp: () => ipcRenderer.invoke('modular-resource:restart-app'),
   exportOfflinePackage: (payload: { moduleId: string; targetFilePath?: string }) =>
     ipcRenderer.invoke('modular-resource:export-offline-package', payload),
-  importOfflinePackage: (payload?: { archivePath?: string; preferredEngineId?: string }) =>
-    ipcRenderer.invoke('modular-resource:import-offline-package', payload),
+  importOfflinePackage: (payload?: {
+    archivePath?: string
+    preferredEngineId?: string
+    autoActivateModuleIds?: string[]
+  }) => ipcRenderer.invoke('modular-resource:import-offline-package', payload),
   exportOfflineBundle: (): Promise<string | null> =>
     ipcRenderer.invoke('modular-resource:export-offline-bundle'),
   getEnvironmentVisibility: (): Promise<EnvironmentVisibilityEnvelope> =>

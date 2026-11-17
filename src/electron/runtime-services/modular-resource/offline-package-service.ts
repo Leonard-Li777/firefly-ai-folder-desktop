@@ -648,6 +648,7 @@ export class OfflinePackageService {
     options?: {
       rootPublicKey?: string
       preferredEngineId?: string
+      autoActivateModuleIds?: string[]
     }
   ): Promise<BuiltinModuleView> {
     const bundleManifestBuf = await readSmallEntry('bundle.manifest.json')
@@ -830,9 +831,14 @@ export class OfflinePackageService {
 
           let targetInstallState =
             existingMod?.install_state === 'active' ? 'active' : 'installed_inactive'
-          if (chosenAutoActivateId === meta.moduleId) {
+          const shouldAutoActivate =
+            chosenAutoActivateId === meta.moduleId ||
+            Boolean(options?.autoActivateModuleIds?.includes(meta.moduleId))
+          if (shouldAutoActivate) {
             targetInstallState = 'active'
-            autoActivatedSlotModuleId = meta.moduleId
+            if (chosenAutoActivateId === meta.moduleId) {
+              autoActivatedSlotModuleId = meta.moduleId
+            }
           }
 
           dao.modules.upsertModuleSync({
@@ -892,6 +898,7 @@ export class OfflinePackageService {
     options?: {
       rootPublicKey?: string
       preferredEngineId?: string
+      autoActivateModuleIds?: string[]
     }
   ): Promise<BuiltinModuleView> {
     if (!fs.existsSync(archivePath)) {

@@ -1764,9 +1764,11 @@ export class FileProcessor {
             (await directoryContextService?.getEffectiveDirectoryConfig(parentDir)) ||
             directoryContext
           const workflowNamingForTemplate = await this.resolveWorkflowNamingConfig(rootWorkspaceDir)
+          // 若目录已解析出生效配置，严格以目录配置为准（用户显式设置为空串时严禁被工作流模板强行覆盖）
           const template =
-            effectiveDirConfig?.namingTemplate?.trim() ||
-            workflowNamingForTemplate?.namingTemplate?.trim()
+            effectiveDirConfig?.namingTemplate !== undefined
+              ? effectiveDirConfig.namingTemplate.trim()
+              : workflowNamingForTemplate?.namingTemplate?.trim()
           if (template) {
             const fileRenameContext = {
               id: 0,

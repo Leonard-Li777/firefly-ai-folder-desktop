@@ -787,8 +787,10 @@ export class DirectoryContextService {
    */
   /**
    * 查找目录所属工作区（含父工作区）绑定的工作流配置中的智能文件名规则（格式与附加属性模板）。
-   * 解析顺序：优先使用目录自身 bound_workflow_id，否则回退到所属工作区 bound_workflow_id。
-   * 用于让属性面板「智能文件名格式」与「智能文件名附加属性」能正确展示工作流预设配置（此前仅文件重命名链路读取，展示层缺失）。
+   * 解析顺序：
+   * 1. 优先使用目录自身 bound_workflow_id；
+   * 2. 其次使用所属工作区 bound_workflow_id 与 workspaces.workspace_config（优先尊重用户在工作区级自定义的值）；
+   * 3. 最后回退读取 local_workflows 表中官方模板预设值。
    */
   private async resolveBoundWorkflowNamingRules(directoryPath: string): Promise<{
     namingPattern: string | null
@@ -796,6 +798,8 @@ export class DirectoryContextService {
   } | null> {
     try {
       let workflowId: string | null | undefined
+      let workspaceCustomConfig: any = null
+
       try {
         const dirRow = this.db
           .prepare(
@@ -807,13 +811,12 @@ export class DirectoryContextService {
         workflowId = undefined
       }
 
-      if (!workflowId) {
-        // 目录未绑定工作流时，回退到所属工作区（根或父工作区）绑定的工作流
-        // 归属判定：工作区根路径等于目标路径，或目标路径位于工作区根路径之下（LIKE 'root%' 前缀匹配）
+      // 查询所属工作区记录（含绑定的工作流ID与工作区级配置 JSON）
+      try {
         const wsRow = this.db
           .prepare(
             `
-            SELECT w.bound_workflow_id AS bound_workflow_id
+            SELECT w.bound_workflow_id AS bound_workflow_id, w.workspace_config AS workspace_config
             FROM workspaces w
             WHERE w.path = ?
                OR LOWER(w.path) = LOWER(?)
@@ -824,39 +827,70 @@ export class DirectoryContextService {
           `
           )
           .get(directoryPath, directoryPath, directoryPath, directoryPath) as
-          | { bound_workflow_id?: string | null }
+          | { bound_workflow_id?: string | null; workspace_config?: string | null }
           | undefined
-        workflowId = wsRow?.bound_workflow_id
-      }
 
-      if (!workflowId) return null
+        if (!workflowId) {
+          workflowId = wsRow?.bound_workflow_id
+        }
+
+        if (wsRow?.workspace_config) {
+          try {
+            workspaceCustomConfig = JSON.parse(wsRow.workspace_config)
+          } catch {}
+        }
+      } catch {}
+
+      if (!workflowId && !workspaceCustomConfig) return null
 
       let namingPattern: string | null = null
       let namingTemplate: string | null = null
-      try {
-        const wfRow = this.db
-          .prepare(
-            'SELECT naming_pattern, naming_template FROM local_workflows WHERE id = ? LIMIT 1'
-          )
-          .get(workflowId) as
-          | { naming_pattern?: string | null; naming_template?: string | null }
-          | undefined
-        if (wfRow) {
-          namingPattern = wfRow.naming_pattern?.trim() || null
-          namingTemplate = wfRow.naming_template?.trim() || null
+
+      // 1. 优先读取工作区配置中用户自定义的 namingPattern 与 namingTemplate
+      if (workspaceCustomConfig) {
+        if (typeof workspaceCustomConfig.namingPattern === 'string') {
+          namingPattern = workspaceCustomConfig.namingPattern.trim() || null
         }
-      } catch {
-        // 忽略局部 SQL 异常，后续回退到 databaseService
+        if (typeof workspaceCustomConfig.namingTemplate === 'string') {
+          namingTemplate = workspaceCustomConfig.namingTemplate.trim() || null
+        }
       }
 
-      if (!namingPattern && !namingTemplate) {
+      // 2. 若工作区配置中未显式定义，回退读取 local_workflows 表中模板预设
+      if (workflowId && (!namingPattern || !namingTemplate)) {
         try {
-          const wfRecord = await databaseService.getLocalWorkflowById(workflowId)
-          if (wfRecord) {
-            namingPattern = wfRecord.naming_pattern?.trim() || null
-            namingTemplate = wfRecord.naming_template?.trim() || null
+          const wfRow = this.db
+            .prepare(
+              'SELECT naming_pattern, naming_template FROM local_workflows WHERE id = ? LIMIT 1'
+            )
+            .get(workflowId) as
+            | { naming_pattern?: string | null; naming_template?: string | null }
+            | undefined
+          if (wfRow) {
+            if (!namingPattern && wfRow.naming_pattern?.trim()) {
+              namingPattern = wfRow.naming_pattern.trim()
+            }
+            if (!namingTemplate && wfRow.naming_template?.trim()) {
+              namingTemplate = wfRow.naming_template.trim()
+            }
           }
-        } catch {}
+        } catch {
+          // 忽略局部 SQL 异常，后续回退到 databaseService
+        }
+
+        if (!namingPattern || !namingTemplate) {
+          try {
+            const wfRecord = await databaseService.getLocalWorkflowById(workflowId)
+            if (wfRecord) {
+              if (!namingPattern && wfRecord.naming_pattern?.trim()) {
+                namingPattern = wfRecord.naming_pattern.trim()
+              }
+              if (!namingTemplate && wfRecord.naming_template?.trim()) {
+                namingTemplate = wfRecord.naming_template.trim()
+              }
+            }
+          } catch {}
+        }
       }
 
       if (!namingPattern && !namingTemplate) return null
@@ -886,6 +920,17 @@ export class DirectoryContextService {
     try {
       let current = await this.getDirectoryContext(directoryPath)
       const wfNaming = await this.resolveBoundWorkflowNamingRules(directoryPath)
+
+      // 判断目录自身是否曾被用户显式自定义配置（用户修改优先于工作流，包括显式保存为空）
+      const hasExplicitCustomPattern = Boolean(
+        (current?.customConfigSnapshot && 'namingPattern' in current.customConfigSnapshot) ||
+        (current?.namingPattern && current.namingPattern.trim().length > 0)
+      )
+
+      const hasExplicitCustomTemplate = Boolean(
+        (current?.customConfigSnapshot && 'namingTemplate' in current.customConfigSnapshot) ||
+        (current?.namingTemplate && current.namingTemplate.trim().length > 0)
+      )
 
       // 如果当前目录未生成上下文画像，但所属工作区存在或绑定了工作流，构造默认有效上下文以供面板展示
       if (!current) {
@@ -934,12 +979,12 @@ export class DirectoryContextService {
         inheritedFrom: {}
       }
 
-      // 合并绑定工作流的智能文件名格式与附加属性模板（目录自身未显式设置时作为生效兜底）
+      // 若目录自身尚未显式配置，以绑定工作流/工作区规则作为初始生效兜底
       if (wfNaming) {
-        if (!effective.namingPattern?.trim() && wfNaming.namingPattern) {
+        if (!hasExplicitCustomPattern && wfNaming.namingPattern) {
           effective.namingPattern = wfNaming.namingPattern
         }
-        if (!effective.namingTemplate?.trim() && wfNaming.namingTemplate) {
+        if (!hasExplicitCustomTemplate && wfNaming.namingTemplate) {
           effective.namingTemplate = wfNaming.namingTemplate
         }
       }
@@ -986,8 +1031,9 @@ export class DirectoryContextService {
           effective.inheritedFrom.analysisStrategy = ancestorPath
         }
 
-        // 检查智能文件名规则：祖先未显式阻断且当前需要继承
+        // 检查智能文件名规则：祖先未显式阻断且当前需要继承，且当前目录未显式自定义
         if (
+          !hasExplicitCustomPattern &&
           inheritMode.namingPattern === 'inherit' &&
           !effective.inheritedFrom?.namingPattern &&
           ancestorMode.namingPattern !== 'current_only' &&
@@ -998,12 +1044,13 @@ export class DirectoryContextService {
           effective.inheritedFrom.namingPattern = ancestorPath
         }
 
-        // 检查智能文件名重命名模板：祖先未显式阻断且当前需要继承
+        // 检查智能文件名重命名模板：祖先未显式阻断且当前需要继承，且当前目录未显式自定义
         if (
+          !hasExplicitCustomTemplate &&
           inheritMode.namingTemplate === 'inherit' &&
           !effective.inheritedFrom?.namingTemplate &&
           ancestorMode.namingTemplate !== 'current_only' &&
-          ancestorContext.namingTemplate
+          ancestorContext.namingTemplate !== undefined
         ) {
           effective.namingTemplate = ancestorContext.namingTemplate
           if (!effective.inheritedFrom) effective.inheritedFrom = {}
@@ -1011,12 +1058,20 @@ export class DirectoryContextService {
         }
       }
 
-      // 继承链回溯完毕后，若最终仍未命中有效规则，再次以绑定工作流兜底
+      // 继承链回溯完毕后，若最终仍未命中有效规则且目录未显式自定义，再次以工作流规则兜底
       if (wfNaming) {
-        if (!effective.namingPattern?.trim() && wfNaming.namingPattern) {
+        if (
+          !hasExplicitCustomPattern &&
+          !effective.namingPattern?.trim() &&
+          wfNaming.namingPattern
+        ) {
           effective.namingPattern = wfNaming.namingPattern
         }
-        if (!effective.namingTemplate?.trim() && wfNaming.namingTemplate) {
+        if (
+          !hasExplicitCustomTemplate &&
+          !effective.namingTemplate?.trim() &&
+          wfNaming.namingTemplate
+        ) {
           effective.namingTemplate = wfNaming.namingTemplate
         }
       }

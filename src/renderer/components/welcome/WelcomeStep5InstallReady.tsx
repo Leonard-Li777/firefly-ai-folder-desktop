@@ -142,9 +142,7 @@ export function WelcomeStep5InstallReady({
         setBackgroundCount(prev => Math.max(0, prev - 1))
         if (payload.state === 'failed') {
           // 选配插件装失败必须显式提示，禁止只在控制台留痕让用户完全无感
-          setBackgroundError(
-            t('有个选配插件没装上，稍后到「插件中心」点一下「下载安装」就能补上')
-          )
+          setBackgroundError(t('有个选配插件没装上，稍后到「插件中心」点一下「下载安装」就能补上'))
         }
       }
     })
@@ -274,7 +272,8 @@ export function WelcomeStep5InstallReady({
       }
 
       const imported = await modular.importOfflinePackage({
-        preferredEngineId: selectedEngine
+        preferredEngineId: selectedEngine,
+        autoActivateModuleIds: optionalIds
       })
       if (!imported) {
         // 用户在系统文件框里点了取消：不强判为失败，退回「待选包」态即可再点一次。
@@ -314,6 +313,17 @@ export function WelcomeStep5InstallReady({
         importedEngine.install_state === 'active' || importedEngine.state === 'active'
       if (modular?.updateState && !isAlreadyActive) {
         await modular.updateState(activeEngineId, { active: true })
+      }
+
+      // 激活在 Step 2 勾选的选配插件（如敏感内容过滤 perception_nsfw）
+      if (modular?.updateState && optionalIds.length > 0) {
+        for (const optId of optionalIds) {
+          try {
+            await modular.updateState(optId, { active: true })
+          } catch (optErr) {
+            console.warn(`[OfflineInstall] 激活选配模块 ${optId} 失败:`, optErr)
+          }
+        }
       }
 
       setPhase('smoke_testing')
@@ -631,7 +641,7 @@ export function WelcomeStep5InstallReady({
                       {t('核心组件已全部下载完成！')}
                     </div>
                     <p className="text-muted-foreground leading-relaxed">
-                      {t('正在首次启动检索引擎并测试检索功能，通常需要 5~15 秒，请稍候...')}
+                      {t('正在首次启动检索引擎并测试检索功能，通常需要约1分钟，请稍候...')}
                     </p>
                   </div>
                 </div>

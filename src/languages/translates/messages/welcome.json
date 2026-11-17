@@ -241,7 +241,7 @@
     "ko-KR": "남은 디스크 공간이 부족합니다. 다운로드 및 설치를 위해 최소 2GB를 예약하세요.",
     "$files": [
       "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(7247-7279)",
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(25817-25849)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(25814-25846)"
     ],
     "$id": 31528
   },
@@ -1418,20 +1418,20 @@
     ],
     "$id": 31850
   },
-  "正在首次启动检索引擎并测试检索功能，通常需要 5~15 秒，请稍候...": {
-    "en-US": "Starting the search engine for the first time and testing the search function, it usually takes 5~15 seconds, please wait...",
-    "es-ES": "Iniciar el motor de búsqueda por primera vez y probar la función de búsqueda, generalmente demora entre 5 y 15 segundos, espere...",
-    "ar-EG": "بدء تشغيل محرك البحث لأول مرة واختبار وظيفة البحث، عادة ما يستغرق الأمر من 5 إلى 15 ثانية، يرجى الانتظار...",
-    "pt-PT": "Iniciando o mecanismo de pesquisa pela primeira vez e testando a função de pesquisa, geralmente leva de 5 a 15 segundos, aguarde...",
-    "ru-RU": "Первый запуск поисковой системы и тестирование функции поиска обычно занимает 5–15 секунд, подождите...",
-    "ja-JP": "初めて検索エンジンを起動して検索機能をテストする場合、通常は 5 ～ 15 秒かかります。お待ちください...",
-    "de-DE": "Das erste Starten der Suchmaschine und das Testen der Suchfunktion dauert normalerweise 5 bis 15 Sekunden. Bitte warten Sie ...",
-    "fr-FR": "Démarrage du moteur de recherche pour la première fois et test de la fonction de recherche, cela prend généralement 5 à 15 secondes, veuillez patienter...",
-    "ko-KR": "검색 엔진을 처음 시작하고 검색 기능을 테스트하는 데에는 일반적으로 5~15초 정도 소요됩니다. 잠시 기다려 주십시오.",
+  "正在首次启动检索引擎并测试检索功能，通常需要约1分钟，请稍候...": {
+    "en-US": "Starting the search engine for the first time and testing the search function, it usually takes about 1 minute, please wait...",
+    "es-ES": "Al iniciar el motor de búsqueda por primera vez y probar la función de búsqueda, generalmente toma alrededor de 1 minuto, espere...",
+    "ar-EG": "بدء تشغيل محرك البحث لأول مرة واختبار وظيفة البحث ، وعادة ما يستغرق حوالي 1 دقيقة ، يرجى الانتظار...",
+    "pt-PT": "Iniciando o mecanismo de pesquisa pela primeira vez e testando a função de pesquisa, geralmente leva cerca de 1 minuto, aguarde...",
+    "ru-RU": "Запуск поисковой системы в первый раз и тестирование функции поиска обычно занимает около 1 минуты, пожалуйста, подождите...",
+    "ja-JP": "検索エンジンを初めて起動して検索機能をテストすると、通常は約1分かかりますので、お待ちください。..",
+    "de-DE": "Das erste Starten der Suchmaschine und das Testen der Suchfunktion dauert in der Regel etwa 1 Minute, bitte warten Sie...",
+    "fr-FR": "Démarrer le moteur de recherche pour la première fois et tester la fonction de recherche, cela prend généralement environ 1 minute, veuillez patienter...",
+    "ko-KR": "처음 검색 엔진을 시작하고 검색 기능을 테스트,그것은 일반적으로 약 1 분 정도 걸립니다,기다려주십시오...",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(23519-23559)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(23519-23556)"
     ],
-    "$id": 31851
+    "$id": 38606
   },
   "主检索引擎安装完成，其它插件继续后台下载，不影响你现在就开始用": {
     "en-US": "The main search engine is installed, and other plug-ins continue to download in the background. It does not affect your ability to start using it now.",
@@ -1444,7 +1444,7 @@
     "fr-FR": "Le moteur de recherche principal est installé et les autres plug-ins continuent à se télécharger en arrière-plan. Cela n’affecte pas votre capacité à commencer à l’utiliser maintenant.",
     "ko-KR": "기본 검색 엔진이 설치되고 다른 플러그인은 백그라운드에서 계속 다운로드됩니다. 지금 사용을 시작하는 능력에는 영향을 미치지 않습니다.",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(24103-24138)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(24100-24135)"
     ],
     "$id": 31770
   },
@@ -1459,7 +1459,7 @@
     "fr-FR": "Réessayer",
     "ko-KR": "재시도",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(25319-25325)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(25316-25322)"
     ],
     "$id": 28468
   },
@@ -1474,7 +1474,7 @@
     "fr-FR": "Vous pouvez également revenir à l'étape précédente et essayer une autre méthode d'installation.",
     "ko-KR": "이전 단계로 돌아가서 다른 설치 방법을 시도해 볼 수도 있습니다.",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(25454-25476)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(25451-25473)"
     ],
     "$id": 31771
   },

@@ -143,11 +143,12 @@ export function registerModularResourceIpcHandlers(
           options
         )
         return res
-    } catch (err: any) {
-      logger.error(LogCategory.MAIN, `[ModularResourceIPC] install(${moduleId}) 失败:`, err)
-      throw err
+      } catch (err: any) {
+        logger.error(LogCategory.MAIN, `[ModularResourceIPC] install(${moduleId}) 失败:`, err)
+        throw err
+      }
     }
-  })
+  )
 
   ipcMain.handle(
     'modular-resource:enqueue-background-installs',
@@ -340,7 +341,10 @@ export function registerModularResourceIpcHandlers(
           src = res.filePaths[0]
         }
         return await service.importOfflinePackage(src, {
-          preferredEngineId: payload?.preferredEngineId
+          preferredEngineId: payload?.preferredEngineId,
+          autoActivateModuleIds: Array.isArray(payload?.autoActivateModuleIds)
+            ? payload.autoActivateModuleIds
+            : undefined
         })
       } catch (err: any) {
         logger.error(LogCategory.MAIN, '[ModularResourceIPC] import-offline-package 失败:', err)

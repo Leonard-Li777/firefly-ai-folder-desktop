@@ -314,6 +314,7 @@ export interface IModularResourceBridge {
   importOfflinePackage?: (payload?: {
     archivePath?: string
     preferredEngineId?: string
+    autoActivateModuleIds?: string[]
   }) => Promise<PluginModuleItem | null>
   exportOfflineBundle?: () => Promise<string | null>
   getEnvironmentVisibility?: () => Promise<EnvironmentVisibilityEnvelope>

@@ -180,12 +180,39 @@ describe('WelcomeStep5InstallReady (欢迎向导第五步：安装与就绪)', (
     await waitReady()
 
     expect(api.abortAll).toHaveBeenCalledTimes(1)
-    expect(api.importOfflinePackage).toHaveBeenCalledWith({
-      preferredEngineId: 'engine_gemma_unified'
-    })
+    expect(api.importOfflinePackage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        preferredEngineId: 'engine_gemma_unified'
+      })
+    )
     expect(api.smokeTest).toHaveBeenCalledWith({ profile: 'gemma_unified' })
     expect(api.install).not.toHaveBeenCalledWith('engine_gemma_unified')
     expect(screen.getByTestId('welcome-step5-container').textContent).toContain('导入离线安装包')
+  })
+
+  it('离线导入完成后自动激活选中的选配插件（如 perception_nsfw）', async () => {
+    setup({
+      selection: {
+        ...onlineSelection,
+        installMethod: 'offline',
+        selectedOptionals: {
+          perception_nsfw: true,
+          asr_sensevoice_onnx: false,
+          tts_m5_onnx: false
+        }
+      }
+    })
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('welcome-step5-select-package-btn'))
+    })
+    await waitReady()
+
+    expect(api.importOfflinePackage).toHaveBeenCalledWith({
+      preferredEngineId: 'engine_gemma_unified',
+      autoActivateModuleIds: ['perception_nsfw']
+    })
+    expect(api.updateState).toHaveBeenCalledWith('perception_nsfw', { active: true })
   })
 
   it('离线文件框点取消：退回选包态并给温和提示，不会连弹文件框，可再点一次', async () => {
@@ -357,7 +384,7 @@ describe('WelcomeStep5InstallReady (欢迎向导第五步：安装与就绪)', (
 
     const hint = screen.getByTestId('welcome-step5-smoke-testing-hint')
     expect(hint.textContent).toContain('核心组件已全部下载完成！')
-    expect(hint.textContent).toContain('通常需要 5~15 秒')
+    expect(hint.textContent).toContain('通常需要约1分钟')
     expect(screen.getByText(/自检中/)).toBeDefined()
 
     await act(async () => {

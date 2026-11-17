@@ -466,7 +466,11 @@ export interface IModularResourceService {
   /** 导入离线插件包 / 离线总包 (.ffp / .zip) */
   importOfflinePackage(
     archivePath: string,
-    options?: { rootPublicKey?: string; preferredEngineId?: string }
+    options?: {
+      rootPublicKey?: string
+      preferredEngineId?: string
+      autoActivateModuleIds?: string[]
+    }
   ): Promise<BuiltinModuleView>
 
   /** 获取当前进程内存生效的插件根目录 (IN-01) */
@@ -899,6 +903,7 @@ export class ModularResourceService implements IModularResourceService {
   private bgVerificationTimer: NodeJS.Timeout | null = null
   private backgroundInstallQueue: string[] = []
   private isProcessingBackgroundQueue = false
+  private activeInstallingModuleId: string | null = null
   private backgroundProgressBroadcaster?: (event: ModuleDownloadProgressEvent) => void
 
   /**
@@ -2113,7 +2118,8 @@ export class ModularResourceService implements IModularResourceService {
 
           backfilledBindings.push({ moduleId: modId, resourceId: resId })
 
-          const currentLang = this.getConfigOrchestrator()?.getValue?.('DEFAULT_LANGUAGE') || 'zh-CN'
+          const currentLang =
+            this.getConfigOrchestrator()?.getValue?.('DEFAULT_LANGUAGE') || 'zh-CN'
           const isZh = String(currentLang).toLowerCase().startsWith('zh')
           if (
             !physicallyReady &&
@@ -2426,6 +2432,14 @@ export class ModularResourceService implements IModularResourceService {
         mod.install_state === 'installed_inactive' ||
         mod.install_state === 'downloading'
       ) {
+        // 关键时序防护：如果模块正处于后台静默安装队列或正在进行安装执行，绝不能在启动对账中重置，保持其生命周期正常完成
+        if (
+          mod.install_state === 'downloading' &&
+          (this.backgroundInstallQueue.includes(mod.id) || this.activeInstallingModuleId === mod.id)
+        ) {
+          continue
+        }
+
         const boundResources = dao.resources.findResourcesByModuleSync(mod.id)
         let missingPhysical = false
         let needsClassicMobileClipBackfill = false
@@ -2457,7 +2471,8 @@ export class ModularResourceService implements IModularResourceService {
             }
 
             if (res.download_state !== 'completed' || !resExists) {
-              const currentLang = this.getConfigOrchestrator()?.getValue?.('DEFAULT_LANGUAGE') || 'zh-CN'
+              const currentLang =
+                this.getConfigOrchestrator()?.getValue?.('DEFAULT_LANGUAGE') || 'zh-CN'
               const isZh = String(currentLang).toLowerCase().startsWith('zh')
               // 语言互斥处理：中文环境 mobile-clip 互斥放行；非中文环境 chinese-clip 互斥放行
               if (res.resource_id === 'mobile-clip' && isZh && coreReadyForClassic) {
@@ -3151,7 +3166,8 @@ export class ModularResourceService implements IModularResourceService {
           await omniService.handleTopologyChanged({
             moduleId: opts.moduleId,
             reason: opts.reason || 'module_change',
-            restartPolicy: opts.restartPolicy === 'stop-if-unused' ? 'none' : (opts.restartPolicy || 'restart')
+            restartPolicy:
+              opts.restartPolicy === 'stop-if-unused' ? 'none' : opts.restartPolicy || 'restart'
           })
         }
       } catch (err) {
@@ -3783,6 +3799,7 @@ export class ModularResourceService implements IModularResourceService {
     try {
       while (this.backgroundInstallQueue.length > 0) {
         const nextId = this.backgroundInstallQueue.shift()!
+        this.activeInstallingModuleId = nextId
         try {
           logger.debug(
             LogCategory.SYSTEM,
@@ -3802,7 +3819,10 @@ export class ModularResourceService implements IModularResourceService {
             isResumed: false,
             state: 'completed'
           })
-          logger.debug(LogCategory.SYSTEM, `[ModularResource] 后台选配插件安装就绪并激活: ${nextId}`)
+          logger.debug(
+            LogCategory.SYSTEM,
+            `[ModularResource] 后台选配插件安装就绪并激活: ${nextId}`
+          )
         } catch (err: any) {
           // 后台选配安装失败必须显式上浮（禁止静默降级）：
           // 用户在向导里看不到任何提示，只有事后到插件中心才发现插件根本没装上。
@@ -3824,9 +3844,12 @@ export class ModularResourceService implements IModularResourceService {
             state: 'failed',
             errorMessage: err?.message || String(err)
           })
+        } finally {
+          this.activeInstallingModuleId = null
         }
       }
     } finally {
+      this.activeInstallingModuleId = null
       this.isProcessingBackgroundQueue = false
     }
   }
@@ -5009,7 +5032,11 @@ export class ModularResourceService implements IModularResourceService {
 
   async importOfflinePackage(
     archivePath: string,
-    options?: { rootPublicKey?: string; preferredEngineId?: string }
+    options?: {
+      rootPublicKey?: string
+      preferredEngineId?: string
+      autoActivateModuleIds?: string[]
+    }
   ): Promise<BuiltinModuleView> {
     this.ensureDefaultSeeds()
     return this.offlinePackageService.importOfflinePackage(archivePath, options)
