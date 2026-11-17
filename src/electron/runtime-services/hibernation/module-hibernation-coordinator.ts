@@ -168,8 +168,23 @@ export class ModuleHibernationCoordinator {
     this.engineBridgeServiceInstance = service
   }
 
-  /** 获取底层引擎桥接服务 */
+  /** 获取底层引擎桥接服务（支持懒加载单例兜底） */
   getEngineBridgeService(): IEngineBridgeService | undefined {
+    if (!this.engineBridgeServiceInstance) {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { engineBridgeService } = require('../engine-bridge')
+        if (engineBridgeService) {
+          this.engineBridgeServiceInstance = engineBridgeService
+          logger.info(
+            LogCategory.SYSTEM,
+            '[HibernationDiag] 成功懒加载注入 engineBridgeService 单例'
+          )
+        }
+      } catch (err) {
+        logger.warn(LogCategory.SYSTEM, '[HibernationDiag] 懒加载 engineBridgeService 失败:', err)
+      }
+    }
     return this.engineBridgeServiceInstance
   }
 

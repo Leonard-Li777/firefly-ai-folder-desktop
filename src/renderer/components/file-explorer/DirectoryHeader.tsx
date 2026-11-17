@@ -595,6 +595,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
               <GlobalTTSPlaybackBar />
 
               {/* 插件中心全局入口按钮：排在 GlobalTTSPlaybackBar 右侧，紧邻用户头像区域 */}
+              {/* 图标采用 Material Symbols 矢量 extension（拼图块），带主题色圆形底托，与工具栏其它图标统一质感 */}
               <button
                 type="button"
                 data-no-drag
@@ -609,7 +610,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                 }}
                 style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
                 className={cn(
-                  'no-drag flex-shrink-0 h-8 px-3 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer flex items-center gap-1.5 border shadow-2xs select-none active:scale-95',
+                  'no-drag group flex-shrink-0 h-8 pl-1.5 pr-3 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer flex items-center gap-1.5 border shadow-2xs select-none hover:shadow-sm active:scale-95',
                   isPluginCenterOpen
                     ? 'bg-primary text-primary-foreground border-primary hover:bg-primary/90 shadow-sm'
                     : 'bg-[var(--surface-field)] border-[var(--surface-field-border)] hover:bg-accent text-foreground'
@@ -618,12 +619,16 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
               >
                 {isPluginCenterOpen ? (
                   <>
-                    <MaterialIcon icon="close" className="text-xs shrink-0" />
+                    <span className="w-5 h-5 rounded-full flex items-center justify-center bg-primary-foreground/20 shrink-0">
+                      <MaterialIcon icon="close" className="text-[13px] leading-none" />
+                    </span>
                     <span>{t('关闭插件中心')}</span>
                   </>
                 ) : (
                   <>
-                    <span className="shrink-0 text-sm leading-none">🧩</span>
+                    <span className="w-5 h-5 rounded-full flex items-center justify-center bg-violet-500/10 text-violet-600 dark:text-violet-400 shrink-0 transition-colors duration-150 group-hover:bg-violet-500/20">
+                      <MaterialIcon icon="extension" className="text-[13px] leading-none" />
+                    </span>
                     <span>{t('插件中心')}</span>
                   </>
                 )}

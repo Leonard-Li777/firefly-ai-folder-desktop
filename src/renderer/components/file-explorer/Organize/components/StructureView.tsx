@@ -16,7 +16,6 @@ export function StructureView({
   draft,
   candidate,
   isGenerating,
-  onReorganize,
   onDeleteNode,
   onRenameNode,
   onAddSubdir,
@@ -30,6 +29,7 @@ export function StructureView({
   draft: { name: string; strategy: string; source: any } | null
   candidate: any
   isGenerating?: boolean
+  // 「换一个」按钮已移除，onReorganize 仅为兼容调用方传值而保留，组件内不再消费
   onReorganize?: () => void
   onDeleteNode?: (nodeKey: string) => void
   onRenameNode?: (nodeKey: string, newName: string) => void
@@ -55,9 +55,7 @@ export function StructureView({
           files: [], // 强制清空文件列表，预览阶段只展示目录结构
           // 增量整理模式保留文件计数（来自快照数据），方便用户核验已归类数量；
           // 其余模式置 0（结构纯大纲，无需计数）
-          fileCount: isIncrementalMode
-            ? (node.files ? node.files.length : 0) + subFileCount
-            : 0,
+          fileCount: isIncrementalMode ? (node.files ? node.files.length : 0) + subFileCount : 0,
           subdirectories: updatedSubs
         }
       })
@@ -74,11 +72,6 @@ export function StructureView({
   }
 
   const isIncremental = organizeMode === ('incremental-organize' as OrganizeMode)
-  // 仅针对在数据库 SQLite 中已真实落盘的整理任务（已落盘草稿或已保存虚拟目录，id > 0）隐藏“换一个”按钮；
-  // 快速整理/精细整理在未点击“开始整理”落盘前的内存预览阶段（currentVDir 为 null），“换一个”按钮正常呈现！
-  const isPersistedVDir = Boolean(
-    currentVDir && typeof currentVDir.id === 'number' && currentVDir.id > 0
-  )
 
   const confirmDelete = () => {
     if (deleteTargetKey) {
@@ -114,17 +107,6 @@ export function StructureView({
                   <div className="flex items-center gap-2 mb-3">
                     <MaterialIcon icon="folder_open" className="text-primary text-sm" />
                     <span className="text-sm font-bold">{t('目录树预览')}</span>
-                    {!isGenerating && !isIncremental && !isPersistedVDir && onReorganize && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={onReorganize}
-                        className="h-7 px-3 text-xs rounded-lg gap-1.5 border-primary/20 text-primary hover:bg-primary/5 hover:text-primary font-bold shadow-xs ml-2"
-                      >
-                        <MaterialIcon icon="refresh" className="text-sm" />
-                        {t('换一个')}
-                      </Button>
-                    )}
                     {isGenerating && (
                       <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full flex items-center gap-1">
                         <span className="relative flex h-2 w-2">
@@ -135,7 +117,7 @@ export function StructureView({
                       </span>
                     )}
                     <span className="text-xs text-muted-foreground/50">
-                      {t('已按文件数量裁剪目录个数')}
+                      {t('你可以对目录树进行微调')}
                     </span>
                   </div>
                   {isGenerating && tree.length === 0 ? (
