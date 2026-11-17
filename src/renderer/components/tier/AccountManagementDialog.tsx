@@ -55,6 +55,7 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
   const [isUnbindingSelf, setIsUnbindingSelf] = useState<boolean>(false)
   const [isDeviceBound, setIsDeviceBound] = useState<boolean>(false)
   const [isEnterpriseOffline, setIsEnterpriseOffline] = useState<boolean>(false)
+  const [slotLimit, setSlotLimit] = useState<number>(2)
 
   const handleSyncStatus = async () => {
     setIsSyncing(true)
@@ -102,6 +103,14 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
         if (!isOffline && window.electronAPI?.deviceBind?.getStatus) {
           const bindStatus = await window.electronAPI.deviceBind.getStatus()
           setIsDeviceBound(!!bindStatus?.bound)
+          if (bindStatus?.bound && window.electronAPI?.deviceBind?.listSeatedDevices) {
+            try {
+              const listRes = await window.electronAPI.deviceBind.listSeatedDevices({})
+              if (listRes?.success && typeof listRes.slot_limit === 'number') {
+                setSlotLimit(listRes.slot_limit)
+              }
+            } catch {}
+          }
         } else {
           setIsDeviceBound(false)
         }
@@ -651,7 +660,9 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
                     {t('已绑定设备与席位')}
                   </p>
                   <p className="text-[10px] text-muted-foreground truncate">
-                    {t('最多支持 6 台设备同时登录与席位管理')}
+                    {t('最多支持 {count} 台设备同时登录与席位管理', {
+                      count: slotLimit
+                    })}
                   </p>
                 </div>
               </div>

@@ -82,8 +82,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[비즈니스 모듈]_[페이지 이름]_[상태 변형]",
-      "namingTemplate": "[{TAG:파일 유형}]{SMART_NAME}_v{META:버전}",
       "extensionWeights": {
         ".fig": 0.28,
         ".sketch": 0.12,
@@ -92,21 +90,6 @@
         ".ai": 0.1,
         ".svg": 0.1,
         ".png": 0.1
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -270,8 +253,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[비즈니스 속성]_[제목 이름]",
-      "namingTemplate": "[{TAG:파일 유형}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".vue": 0.1538,
         ".tsx": 0.1538,
@@ -282,21 +263,6 @@
         ".css": 0.0769,
         ".html": 0.0769,
         ".json": 0.0772
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -474,8 +440,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[비즈니스 속성]_[제목 이름]",
-      "namingTemplate": "[{TAG:파일 유형}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".proto": 0.1667,
         ".graphql": 0.1667,
@@ -486,21 +450,6 @@
         ".py": 0.0833,
         ".yml": 0.0833,
         ".yaml": 0.0834
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -643,8 +592,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[비즈니스 속성]_[제목 이름]",
-      "namingTemplate": "[{TAG:파일 유형}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".docx": 0.1667,
         ".xlsx": 0.1667,
@@ -652,21 +599,6 @@
         ".pdf": 0.1667,
         ".md": 0.1667,
         ".txt": 0.1665
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -809,8 +741,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[비즈니스 속성]_[제목 이름]",
-      "namingTemplate": "[{TAG:파일 유형}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.1667,
         ".xlsx": 0.1667,
@@ -818,21 +748,6 @@
         ".pptx": 0.1667,
         ".txt": 0.1667,
         ".zip": 0.1665
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -1003,8 +918,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[촬영현장]_[주제]",
-      "namingTemplate": "[{TAG:콘텐츠 태그}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".cr3": 0.125,
         ".cr2": 0.125,
@@ -1016,21 +929,6 @@
         ".jpg": 0.0625,
         ".tif": 0.0625,
         ".lrtemplate": 0.0625
-      },
-      "derivedSnapshot": {
-        "analysisMode": "full",
-        "embeddingProfile": "gemma_unified",
-        "mrlDimension": 512,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -1215,8 +1113,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[씬 카메라]_[클립 테마]_[캐릭터 액션]",
-      "namingTemplate": "[{TAG:이미지 품질 수준}]{SMART_NAME}_{TAG:샷 종류}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".prproj": 0.1429,
         ".drp": 0.1429,
@@ -1228,21 +1124,6 @@
         ".wav": 0.0714,
         ".cube": 0.0714,
         ".srt": 0.0714
-      },
-      "derivedSnapshot": {
-        "analysisMode": "full",
-        "embeddingProfile": "gemma_unified",
-        "mrlDimension": 512,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -1413,8 +1294,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[비즈니스 속성]_[제목 이름]",
-      "namingTemplate": "[{TAG:파일 유형}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".tex": 0.1818,
         ".bib": 0.1818,
@@ -1424,21 +1303,6 @@
         ".csl": 0.0909,
         ".pptx": 0.0909,
         ".xlsx": 0.091
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -1659,8 +1523,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[체결 당사자]_[업무 성격]_[주제의 핵심]",
-      "namingTemplate": "[{TAG:금융 유형}]{SMART_NAME}_{MOD:YYYY-MM-DD}",
       "extensionWeights": {
         ".ofd": 0.2222,
         ".qbo": 0.2222,
@@ -1669,21 +1531,6 @@
         ".csv": 0.1111,
         ".pdf": 0.1111,
         ".docx": 0.1112
-      },
-      "derivedSnapshot": {
-        "analysisMode": "full",
-        "embeddingProfile": "gemma_unified",
-        "mrlDimension": 512,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -1840,8 +1687,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[비즈니스 속성]_[제목 이름]",
-      "namingTemplate": "[{TAG:파일 유형}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".jpg": 0.075,
         ".png": 0.075,
@@ -1849,21 +1694,6 @@
         ".xlsx": 0.2125,
         ".docx": 0.2125,
         ".mp4": 0.2125
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -2034,8 +1864,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[비즈니스 속성]_[제목 이름]",
-      "namingTemplate": "[{TAG:파일 유형}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".aep": 0.2,
         ".prproj": 0.2,
@@ -2045,21 +1873,6 @@
         ".mov": 0.1,
         ".docx": 0.1,
         ".psd": 0.1
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -2223,8 +2036,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[비즈니스 속성]_[제목 이름]",
-      "namingTemplate": "[{TAG:파일 유형}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".xlsx": 0.15,
         ".csv": 0.15,
@@ -2233,21 +2044,6 @@
         ".png": 0.125,
         ".docx": 0.15,
         ".pdf": 0.15
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -2432,8 +2228,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[비즈니스 속성]_[제목 이름]",
-      "namingTemplate": "[{TAG:파일 유형}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".unity": 0.1429,
         ".uproject": 0.1429,
@@ -2445,21 +2239,6 @@
         ".ogg": 0.0714,
         ".cs": 0.0714,
         ".cpp": 0.0714
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -2616,8 +2395,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[비즈니스 속성]_[제목 이름]",
-      "namingTemplate": "[{TAG:파일 유형}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".xlsx": 0.1875,
         ".csv": 0.1875,
@@ -2625,21 +2402,6 @@
         ".docx": 0.1875,
         ".png": 0.125,
         ".jpg": 0.125
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -3035,8 +2797,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[사례 이름]_[당사자]_[문서 유형]",
-      "namingTemplate": "[{TAG:파일 용도}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".docx": 0.16,
         ".doc": 0.05,
@@ -3067,21 +2827,6 @@
         ".zip": 0.02,
         ".rar": 0.02,
         ".7z": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -3449,8 +3194,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[환자 번호 또는 대상]_[데이터 유형]_[콘텐츠 포인트]",
-      "namingTemplate": "[{TAG:문서 세분화}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".dcm": 0.18,
         ".nii": 0.02,
@@ -3477,21 +3220,6 @@
         ".txt": 0.02,
         ".zip": 0.03,
         ".rtf": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -3852,8 +3580,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[주제 등급]_[단위 또는 주제]_[데이터 유형]",
-      "namingTemplate": "[{TAG:주제 영역}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pptx": 0.16,
         ".ppt": 0.06,
@@ -3879,21 +3605,6 @@
         ".zip": 0.02,
         ".rar": 0.02,
         ".epub": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -4261,8 +3972,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[프로젝트 또는 회사 이름]_[연구 주제]_[데이터 유형]",
-      "namingTemplate": "[{TAG:파일 용도}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pptx": 0.16,
         ".ppt": 0.04,
@@ -4289,21 +3998,6 @@
         ".msg": 0.01,
         ".zip": 0.04,
         ".rar": 0.03
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -4755,8 +4449,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[프로젝트 이름]_[도면 내용]_[디자인 단계]",
-      "namingTemplate": "[{TAG:파일 용도}]{SMART_NAME}_v{META:버전}",
       "extensionWeights": {
         ".dwg": 0.2,
         ".dxf": 0.04,
@@ -4789,21 +4481,6 @@
         ".zip": 0.02,
         ".rar": 0.01,
         ".7z": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -5136,8 +4813,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[작업 제목]_[볼륨 장]",
-      "namingTemplate": "[{TAG:처리상태}]{SMART_NAME}_{MOD:YYYYMMDD}",
       "extensionWeights": {
         ".docx": 0.24,
         ".doc": 0.06,
@@ -5159,21 +4834,6 @@
         ".mp3": 0.01,
         ".zip": 0.06,
         ".rar": 0.03
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -5499,8 +5159,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[고객 번호]_[파일 내용]_[컨디셔닝 단계]",
-      "namingTemplate": "[{TAG:파일 용도}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.22,
         ".docx": 0.12,
@@ -5521,21 +5179,6 @@
         ".mov": 0.01,
         ".txt": 0.02,
         ".zip": 0.05
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -5875,8 +5518,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[제품 또는 모듈]_[기능 항목]_[문서 유형]",
-      "namingTemplate": "[{TAG:파일 용도}]{SMART_NAME}_v{META:버전}",
       "extensionWeights": {
         ".rp": 0.1,
         ".xmind": 0.08,
@@ -5899,21 +5540,6 @@
         ".html": 0.02,
         ".mp4": 0.01,
         ".zip": 0.03
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -6421,8 +6047,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[프로젝트 또는 데이터 세트]_[분석 단계]_[출력 유형]",
-      "namingTemplate": "[{TAG:파일 용도}]{SMART_NAME}_{MOD:YYYYMMDD}",
       "extensionWeights": {
         ".ipynb": 0.09,
         ".py": 0.09,
@@ -6465,21 +6089,6 @@
         ".gz": 0.02,
         ".yaml": 0.01,
         ".yml": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -6945,8 +6554,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[제품 버전]_[테스트 모듈]_[레코드 유형]",
-      "namingTemplate": "[{TAG:파일 용도}]{SMART_NAME}_{MOD:YYYYMMDD}",
       "extensionWeights": {
         ".xlsx": 0.12,
         ".xls": 0.03,
@@ -6983,21 +6590,6 @@
         ".webm": 0.01,
         ".mov": 0.01,
         ".zip": 0.02
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -7358,8 +6950,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[고객 이름]_[비즈니스 기회 또는 프로젝트]_[데이터 유형]",
-      "namingTemplate": "[{TAG:파일 용도}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".xlsx": 0.14,
         ".xls": 0.03,
@@ -7383,21 +6973,6 @@
         ".txt": 0.01,
         ".zip": 0.04,
         ".rar": 0.03
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -7751,8 +7326,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[부서 또는 이름]_[인사 사항]_[데이터 유형]",
-      "namingTemplate": "[{TAG:파일 용도}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".docx": 0.16,
         ".doc": 0.04,
@@ -7775,21 +7348,6 @@
         ".msg": 0.01,
         ".txt": 0.01,
         ".mp4": 0.03
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -8220,8 +7778,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[브랜드 또는 이벤트]_[콘텐츠 테마]_[재료 유형]",
-      "namingTemplate": "[{TAG:파일 용도}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pptx": 0.11,
         ".ppt": 0.03,
@@ -8255,21 +7811,6 @@
         ".zip": 0.03,
         ".rar": 0.02,
         ".7z": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -8651,8 +8192,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[상품명]_[거래 상대방 회사]_[파일 형식]",
-      "namingTemplate": "[{TAG:계약 및 어음 세부 분류}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".docx": 0.22,
         ".doc": 0.06,
@@ -8679,21 +8218,6 @@
         ".zip": 0.04,
         ".rar": 0.02,
         ".7z": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -9096,8 +8620,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[프로젝트 보드]_[기능 모듈]_[파일 내용]",
-      "namingTemplate": "[{TAG:소스 코드 분할}]{SMART_NAME}_v{META:버전}",
       "extensionWeights": {
         ".c": 0.12,
         ".h": 0.1,
@@ -9130,21 +8652,6 @@
         ".xlsx": 0.03,
         ".md": 0.02,
         ".zip": 0.02
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -9521,8 +9028,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[자산 유형]_[모델 본체]_[정밀 기어]",
-      "namingTemplate": "[{TAG:콘텐츠 태그}]{SMART_NAME}_v{META:버전}",
       "extensionWeights": {
         ".blend": 0.1,
         ".c4d": 0.06,
@@ -9556,21 +9061,6 @@
         ".mp4": 0.03,
         ".mov": 0.01,
         ".zip": 0.02
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -9891,8 +9381,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[고객 이름]_[프로젝트 내용]_[파일 목적]",
-      "namingTemplate": "[{TAG:처리상태}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.2,
         ".docx": 0.1,
@@ -9916,21 +9404,6 @@
         ".mp4": 0.03,
         ".mov": 0.01,
         ".ofd": 0.02
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -10164,8 +9637,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[지식 주제]_[핵심 관점]_[소스 소스]",
-      "namingTemplate": "[{TAG:주제 영역}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".md": 0.3,
         ".markdown": 0.02,
@@ -10179,21 +9650,6 @@
         ".canvas": 0.03,
         ".png": 0.08,
         ".jpg": 0.05
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -10567,8 +10023,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[게임 이름]_[콘텐츠 테마]_[장면 또는 레코드]",
-      "namingTemplate": "[{TAG:게임 유형}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".sav": 0.06,
         ".srm": 0.02,
@@ -10602,21 +10056,6 @@
         ".webm": 0.02,
         ".pdf": 0.07,
         ".txt": 0.04
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -10878,8 +10317,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[제목]_[제목 및 장르]_[볼륨 정보]",
-      "namingTemplate": "《{SMART_NAME}》_[{TAG:작가}]_[{TAG:출판현황}]",
       "extensionWeights": {
         ".epub": 0.28,
         ".mobi": 0.1,
@@ -10897,21 +10334,6 @@
         ".zip": 0.05,
         ".rar": 0.03,
         ".7z": 0.02
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -11276,8 +10698,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[영화 및 텔레비전 작품의 제목]_[연도]_[시즌 또는 버전]",
-      "namingTemplate": "{SMART_NAME}_[{TAG:이미지 품질 수준}]",
       "extensionWeights": {
         ".mkv": 0.25,
         ".mp4": 0.15,
@@ -11309,21 +10729,6 @@
         ".nfo": 0.02,
         ".jpg": 0.03,
         ".png": 0.02
-      },
-      "derivedSnapshot": {
-        "analysisMode": "full",
-        "embeddingProfile": "gemma_unified",
-        "mrlDimension": 512,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -11620,8 +11025,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[작품의 제목]_[볼륨 또는 단어의 수]_[내용 제목]",
-      "namingTemplate": "[{TAG:작가}]{SMART_NAME}_[{TAG:작품 출처}]",
       "extensionWeights": {
         ".cbz": 0.18,
         ".cbr": 0.1,
@@ -11644,21 +11047,6 @@
         ".wav": 0.01,
         ".m4a": 0.01,
         ".txt": 0.02
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -11938,8 +11326,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[하드웨어 브랜드 모델]_[데이터 유형]_[키 포인트]",
-      "namingTemplate": "[{TAG:콘텐츠 태그}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".rom": 0.06,
         ".cap": 0.05,
@@ -11960,21 +11346,6 @@
         ".xlsx": 0.05,
         ".csv": 0.02,
         ".html": 0.03
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -12212,8 +11583,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[요리 이름]_[요리 또는 장면]_[주요 재료]",
-      "namingTemplate": "[{TAG:콘텐츠 태그}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.241,
         ".docx": 0.1095,
@@ -12229,21 +11598,6 @@
         ".webp": 0.0167,
         ".mp4": 0.1095,
         ".mov": 0.0437
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -12467,8 +11821,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[애완 동물 이름]_[이벤트 제목]_[장면]",
-      "namingTemplate": "[{TAG:콘텐츠 태그}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".jpg": 0.1448,
         ".jpeg": 0.031,
@@ -12482,21 +11834,6 @@
         ".docx": 0.05,
         ".xlsx": 0.0667,
         ".txt": 0.05
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -12822,8 +12159,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[대상 또는 이벤트]_[내용 제목]_[세부 사항 또는 시간]",
-      "namingTemplate": "[{TAG:지리적 위치}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".jpg": 0.22,
         ".jpeg": 0.05,
@@ -12851,21 +12186,6 @@
         ".txt": 0.02,
         ".prproj": 0.01,
         ".drp": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -13225,8 +12545,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[프로젝트 이름]_[트랙 또는 오디오 트랙]_[제작 단계]",
-      "namingTemplate": "[{TAG:음악 유형}]{SMART_NAME}_v{META:버전}",
       "extensionWeights": {
         ".als": 0.05,
         ".cpr": 0.04,
@@ -13258,21 +12576,6 @@
         ".pdf": 0.04,
         ".docx": 0.02,
         ".zip": 0.03
-      },
-      "derivedSnapshot": {
-        "analysisMode": "full",
-        "embeddingProfile": "gemma_unified",
-        "mrlDimension": 512,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -13569,8 +12872,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[고객 브랜드]_[재료 이름]_[사용 시나리오]",
-      "namingTemplate": "[{TAG:처리상태}]{SMART_NAME}_v{META:버전}",
       "extensionWeights": {
         ".ai": 0.16,
         ".cdr": 0.08,
@@ -13594,21 +12895,6 @@
         ".woff": 0.01,
         ".woff2": 0.01,
         ".zip": 0.02
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -13933,8 +13219,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[프로젝트 초안]_[캐릭터 또는 테마]_[드로잉 스테이지]",
-      "namingTemplate": "[{TAG:작품 출처}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".psd": 0.15,
         ".clip": 0.13,
@@ -13961,21 +13245,6 @@
         ".pdf": 0.03,
         ".docx": 0.01,
         ".zip": 0.015
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -14419,8 +13688,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[프로젝트 이름]_[기능 모듈]_[콘텐츠 포인트]",
-      "namingTemplate": "[{TAG:운영 플랫폼}]{SMART_NAME}_v{META:버전}",
       "extensionWeights": {
         ".swift": 0.11,
         ".m": 0.02,
@@ -14460,21 +13727,6 @@
         ".svg": 0.025,
         ".md": 0.02,
         ".zip": 0.015
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -14848,8 +14100,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[서비스 이름]_[환경]_[목적]",
-      "namingTemplate": "[{TAG:보안 수준}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".tf": 0.085,
         ".tfvars": 0.03,
@@ -14881,21 +14131,6 @@
         ".tgz": 0.01,
         ".gz": 0.01,
         ".zip": 0.015
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -15164,8 +14399,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[공급업체 또는 프로젝트]_[문서 유형]",
-      "namingTemplate": "[{TAG:계약 및 어음 세부 분류}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".xlsx": 0.23,
         ".xls": 0.05,
@@ -15185,21 +14418,6 @@
         ".tiff": 0.005,
         ".zip": 0.03,
         ".txt": 0.015
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -15426,8 +14644,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[응용 학교]_[재료 이름]_[목적]",
-      "namingTemplate": "[{TAG:처리상태}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.38,
         ".docx": 0.24,
@@ -15441,21 +14657,6 @@
         ".zip": 0.03,
         ".txt": 0.02,
         ".pptx": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -15787,8 +14988,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[내용 제목]_[목적]",
-      "namingTemplate": "[{TAG:처리상태}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".lnk": 0.131,
         ".url": 0.0273,
@@ -15815,21 +15014,6 @@
         ".zip": 0.0655,
         ".rar": 0.0273,
         ".7z": 0.0164
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -16351,8 +15535,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[내용 제목]_[출처 또는 목적]",
-      "namingTemplate": "[{TAG:파일 유형}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".exe": 0.0758,
         ".msi": 0.0324,
@@ -16404,21 +15586,6 @@
         ".m4a": 0.0065,
         ".aac": 0.0043,
         ".torrent": 0.0054
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -16708,8 +15875,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[주제]_[다음 조치]",
-      "namingTemplate": "[{TAG:처리상태}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".docx": 0.1595,
         ".doc": 0.0266,
@@ -16732,21 +15897,6 @@
         ".mp4": 0.0266,
         ".eml": 0.0319,
         ".msg": 0.0213
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -17050,8 +16200,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[내용 제목]_[목적]",
-      "namingTemplate": "[{TAG:파일 유형}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".lnk": 0.1687,
         ".url": 0.0315,
@@ -17080,21 +16228,6 @@
         ".zip": 0.0578,
         ".rar": 0.0263,
         ".7z": 0.0147
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -17451,8 +16584,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[테스트 중인 시스템]_[테스트 내용]_[버전 번호]",
-      "namingTemplate": "[{TAG:처리상태}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".xlsx": 0.15,
         ".xls": 0.025,
@@ -17484,21 +16615,6 @@
         ".robot": 0.006,
         ".side": 0.004,
         ".zip": 0.015
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -17808,8 +16924,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[제목]_[학년]_[소재 제목]",
-      "namingTemplate": "[{TAG:주제 영역}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.21,
         ".docx": 0.11,
@@ -17833,21 +16947,6 @@
         ".rar": 0.015,
         ".epub": 0.012,
         ".txt": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -18080,8 +17179,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[주제]_[학기 단계]_[내용 주제]",
-      "namingTemplate": "[{TAG:주제 영역}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.27,
         ".docx": 0.17,
@@ -18097,21 +17194,6 @@
         ".mp3": 0.025,
         ".zip": 0.025,
         ".txt": 0.015
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -18411,8 +17493,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[사람]_[행사 또는 이벤트]_[연령]",
-      "namingTemplate": "[{TAG:가족 생활 세분화}]{SMART_NAME}",
       "extensionWeights": {
         ".jpg": 0.1997,
         ".jpeg": 0.0399,
@@ -18437,21 +17517,6 @@
         ".doc": 0.0191,
         ".txt": 0.0204,
         ".zip": 0.0318
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -18674,8 +17739,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[환자]_[병원 또는 부서]_[보고서 또는 문서의 이름]",
-      "namingTemplate": "[{TAG:처리상태}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.3972,
         ".jpg": 0.1648,
@@ -18690,21 +17753,6 @@
         ".zip": 0.0233,
         ".dcm": 0.0117,
         ".dicom": 0.0117
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -18955,8 +18003,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[부서]_[사항]_[파일 형식]",
-      "namingTemplate": "[{TAG:처리상태}]{SMART_NAME}_{MOD:YYYYMMDD}",
       "extensionWeights": {
         ".docx": 0.2,
         ".doc": 0.08,
@@ -18975,21 +18021,6 @@
         ".jpg": 0.06,
         ".jpeg": 0.02,
         ".png": 0.03
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -19231,8 +18262,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[단위]_[물질]_[문서 번호]",
-      "namingTemplate": "[{TAG:처리상태}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".docx": 0.22,
         ".doc": 0.08,
@@ -19248,21 +18277,6 @@
         ".png": 0.04,
         ".tif": 0.05,
         ".tiff": 0.03
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -19490,8 +18504,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[가족 구성원]_[인증서 또는 문서의 이름]",
-      "namingTemplate": "[{TAG:가족 생활 세분화}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.4349,
         ".jpg": 0.0759,
@@ -19505,21 +18517,6 @@
         ".doc": 0.029,
         ".xlsx": 0.0869,
         ".xls": 0.029
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -19915,8 +18912,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[작업 이름]_[시즌 컬렉션 또는 볼륨 번호]_[버전 기능]",
-      "namingTemplate": "[{TAG:파일 유형}]{SMART_NAME}[_{TAG:이미지 품질 수준}]",
       "extensionWeights": {
         ".mkv": 0.14,
         ".mp4": 0.1,
@@ -19950,21 +18945,6 @@
         ".ass": 0.03,
         ".ssa": 0.01,
         ".nfo": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -20381,8 +19361,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[기술 스택]_[구성 요소 함수]_[적용 시나리오]",
-      "namingTemplate": "[{TAG:소스 코드 분할}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".ts": 0.1,
         ".tsx": 0.06,
@@ -20415,21 +19393,6 @@
         ".html": 0.02,
         ".css": 0.02,
         ".scss": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -20650,8 +19613,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[소프트웨어 이름]_[장면 생성]",
-      "namingTemplate": "[{TAG:시스템 파일 분석}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".log": 0.3,
         ".dump": 0.06,
@@ -20666,21 +19627,6 @@
         ".crdownload": 0.03,
         ".chk": 0.02,
         ".etl": 0.02
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -20998,8 +19944,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[파일 제목]_[관련 개인 또는 그룹]_[목적]",
-      "namingTemplate": "[{TAG:파일 유형}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.1364,
         ".docx": 0.1362,
@@ -21027,21 +19971,6 @@
         ".rar": 0.0341,
         ".7z": 0.0114,
         ".apk": 0.0227
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -21338,8 +20267,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[내용]_[소스 장비]_[목적]",
-      "namingTemplate": "[{TAG:파일 유형}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".jpg": 0.0608,
         ".jpeg": 0.0152,
@@ -21367,21 +20294,6 @@
         ".rar": 0.029,
         ".7z": 0.0145,
         ".apk": 0.0434
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -21573,8 +20485,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[인터페이스 또는 소프트웨어]_[주요 내용]_[목적]",
-      "namingTemplate": "[{TAG:스크린샷 분류}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".png": 0.45,
         ".jpg": 0.12,
@@ -21587,21 +20497,6 @@
         ".mkv": 0.04,
         ".webm": 0.02,
         ".avi": 0.02
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -21779,8 +20674,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[제목]_[주요 포인트]",
-      "namingTemplate": "[{TAG:처리상태}]{SMART_NAME}_{MOD:YYYYMMDD}",
       "extensionWeights": {
         ".txt": 0.2731,
         ".md": 0.1637,
@@ -21792,21 +20685,6 @@
         ".png": 0.0832,
         ".jpg": 0.0555,
         ".jpeg": 0.0208
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -22176,8 +21054,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[내용 제목]_[목적]_[출처]",
-      "namingTemplate": "[{TAG:파일 유형}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.0879,
         ".docx": 0.0874,
@@ -22215,21 +21091,6 @@
         ".epub": 0.0109,
         ".mobi": 0.0109,
         ".apk": 0.0109
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -22400,8 +21261,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[문서 이름]_[소유자]",
-      "namingTemplate": "[{TAG:계약 및 어음 세부 분류}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.5551,
         ".jpg": 0.0679,
@@ -22412,21 +21271,6 @@
         ".bmp": 0.0068,
         ".heic": 0.0271,
         ".ofd": 0.111
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -22632,8 +21476,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[그것이 속한 프로젝트]_[문서 제목]_[목적]",
-      "namingTemplate": "[{TAG:처리상태}]{SMART_NAME}_{MOD:YYYYMMDD}",
       "extensionWeights": {
         ".docx": 0.24,
         ".doc": 0.08,
@@ -22649,21 +21491,6 @@
         ".txt": 0.03,
         ".rtf": 0.02,
         ".ofd": 0.04
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },
@@ -22939,8 +21766,6 @@
         "enableOfficeCover": true,
         "reuseBasicAnalysisData": true
       },
-      "namingPattern": "[주제 또는 코스]_[소재 주제]_[저자 또는 출처]",
-      "namingTemplate": "[{TAG:주제 영역}]{SMART_NAME}_{CRE:YYYYMMDD}",
       "extensionWeights": {
         ".pdf": 0.34,
         ".docx": 0.08,
@@ -22964,21 +21789,6 @@
         ".ipynb": 0.04,
         ".py": 0.03,
         ".r": 0.01
-      },
-      "derivedSnapshot": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
       },
       "configuredAt": 1762425600000
     },

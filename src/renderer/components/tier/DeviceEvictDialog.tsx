@@ -38,6 +38,7 @@ export const DeviceEvictDialog: React.FC<DeviceEvictDialogProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [monthlyUnbindLimit, setMonthlyUnbindLimit] = useState<number | null>(null)
   const [monthlyUnbindRemaining, setMonthlyUnbindRemaining] = useState<number | null>(null)
+  const [slotLimit, setSlotLimit] = useState<number>(2)
 
   const loadDevices = useCallback(async () => {
     setLoading(true)
@@ -49,6 +50,9 @@ export const DeviceEvictDialog: React.FC<DeviceEvictDialogProps> = ({
       const res = await window.electronAPI.deviceBind.listSeatedDevices({ sessionToken })
       if (res.success && Array.isArray(res.devices)) {
         setDevices(res.devices)
+        if (typeof (res as any).slot_limit === 'number') {
+          setSlotLimit((res as any).slot_limit)
+        }
         if (typeof res.monthly_unbind_limit === 'number') {
           setMonthlyUnbindLimit(res.monthly_unbind_limit)
         }
@@ -81,6 +85,7 @@ export const DeviceEvictDialog: React.FC<DeviceEvictDialogProps> = ({
       setErrorMessage(null)
       setMonthlyUnbindLimit(null)
       setMonthlyUnbindRemaining(null)
+      setSlotLimit(2)
     }
   }, [open, loadDevices])
 
@@ -132,7 +137,10 @@ export const DeviceEvictDialog: React.FC<DeviceEvictDialogProps> = ({
         toast.success(t('设备替换成功，已完成登录！'))
         onEvictedSuccess?.()
         onOpenChange(false)
-      } else if (res.error === 'EVICT_TARGET_ALREADY_UNBOUND') {
+      } else if (
+        res.error === 'EVICT_TARGET_INVALID' ||
+        res.error === 'EVICT_TARGET_ALREADY_UNBOUND'
+      ) {
         toast.warning(t('所选设备已被解除绑定，正在为您刷新设备列表...'))
         await loadDevices()
       } else if (
@@ -178,10 +186,18 @@ export const DeviceEvictDialog: React.FC<DeviceEvictDialogProps> = ({
             <ShieldAlert className="w-6 h-6" />
           </div>
           <DialogTitle className="text-lg font-bold tracking-tight">
-            {t('设备绑定席位已满（6 / 6 台）')}
+            {t('设备绑定席位已满（{count} / {limit} 台）', {
+              count: devices.length,
+              limit: slotLimit
+            })}
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            {t('您的账号最多支持在 6 台电脑上同时登录。请选择一台旧电脑移出席位，以激活当前电脑。')}
+            {t(
+              '您的账号最多支持在 {limit} 台电脑上同时登录。请选择一台旧电脑移出席位，以激活当前电脑。',
+              {
+                limit: slotLimit
+              }
+            )}
           </DialogDescription>
         </DialogHeader>
 
@@ -200,18 +216,6 @@ export const DeviceEvictDialog: React.FC<DeviceEvictDialogProps> = ({
           </div>
         ) : (
           <div className="space-y-3 py-2">
-            {monthlyUnbindLimit !== null && monthlyUnbindRemaining !== null && (
-              <div className="px-3 py-2 rounded-lg bg-muted/50 border border-border/50 text-[11px] text-muted-foreground flex items-center justify-between">
-                <span>
-                  {t('本月剩余自助换绑次数：')}
-                  <strong className="text-foreground font-semibold ml-1">
-                    {monthlyUnbindRemaining} / {monthlyUnbindLimit} {t('次')}
-                  </strong>
-                </span>
-                <span className="text-amber-600 dark:text-amber-400">{t('闲置超90天免计次数')}</span>
-              </div>
-            )}
-
             {errorMessage && (
               <div className="p-2.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
@@ -271,7 +275,10 @@ export const DeviceEvictDialog: React.FC<DeviceEvictDialogProps> = ({
                           )}
                         </div>
                         <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-                          <span>{t('尾号: ...')}{device.machine_id_tail}</span>
+                          <span>
+                            {t('尾号: ...')}
+                            {device.machine_id_tail}
+                          </span>
                           <span className="flex items-center gap-1">
                             <Clock className="w-3 h-3" />
                             {t('最近使用:')} {formatDate(device.last_seen_at || device.bound_at)}

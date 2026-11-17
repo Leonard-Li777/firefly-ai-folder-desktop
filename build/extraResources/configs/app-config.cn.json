@@ -28,7 +28,8 @@
         "regenerate_vdir_cost": 20,
         "export_vdir_cost": 5,
         "export_rdir_cost": 10,
-        "video_max_duration_seconds": 300
+        "video_max_duration_seconds": 300,
+        "device_slot_limit": 2
       },
       "pro": {
         "analysis_quota_total": 999999999,
@@ -44,7 +45,8 @@
         "regenerate_vdir_cost": 0,
         "export_vdir_cost": 0,
         "export_rdir_cost": 0,
-        "video_max_duration_seconds": 999999999
+        "video_max_duration_seconds": 999999999,
+        "device_slot_limit": 2
       },
       "agent": {
         "analysis_quota_total": 999999999,
@@ -60,7 +62,8 @@
         "regenerate_vdir_cost": 0,
         "export_vdir_cost": 0,
         "export_rdir_cost": 0,
-        "video_max_duration_seconds": 999999999
+        "video_max_duration_seconds": 999999999,
+        "device_slot_limit": 2
       },
       "enterprise": {
         "analysis_quota_total": 999999999,
@@ -76,7 +79,8 @@
         "regenerate_vdir_cost": 0,
         "export_vdir_cost": 0,
         "export_rdir_cost": 0,
-        "video_max_duration_seconds": 999999999
+        "video_max_duration_seconds": 999999999,
+        "device_slot_limit": 1
       }
     },
     "firecoreCloudFirstConfirm": {
@@ -291,5 +295,5 @@
     "spend_regenerate_vdir": 20
   },
   "IOS_VIRTUAL_PAY_ENABLED": false,
-  "MONTHLY_DEVICE_UNBIND_LIMIT": 5
+  "MONTHLY_DEVICE_UNBIND_LIMIT": 2
 }

@@ -1,7 +1,7 @@
 /**
  * Electron 运行时工作流推荐器服务接入层
- * 遵循 Spec v1.1 §3.2 与 Ticket 02 规范：
- * 默认连接 organize-taxonomy-source.ts 中的 BLUEPRINT_STATIC_TEMPLATES 事实源
+ * 遵循 workflow-config-ssot-unification-spec 规范：
+ * 默认连接 local-workflow-source.ts 中的 LOCAL_WORKFLOW_SOURCE 事实源
  */
 
 import {
@@ -10,7 +10,7 @@ import {
   WorkflowRecommendation,
   BlueprintStaticTemplate
 } from '@firefly/shared'
-import { BLUEPRINT_STATIC_TEMPLATES } from '../../config/organize-taxonomy-source'
+import { LOCAL_WORKFLOW_SOURCE } from '../../config/local-workflow-source'
 
 export type { DirectoryProfileStats, WorkflowRecommendation, BlueprintStaticTemplate }
 
@@ -19,12 +19,12 @@ export type { DirectoryProfileStats, WorkflowRecommendation, BlueprintStaticTemp
  *
  * @pure
  * @param stats 只读文件画像统计入参
- * @param templates 可选的蓝图静态模板列表，缺省时默认直读 BLUEPRINT_STATIC_TEMPLATES 事实源
+ * @param templates 可选的工作流模板列表，缺省时默认直读 LOCAL_WORKFLOW_SOURCE() 纯静态事实源
  * @returns 排序后的推荐结果数组 (最多 Top 5)
  */
 export function recommendWorkflowByProfile(
   stats: Readonly<DirectoryProfileStats>,
-  templates: readonly BlueprintStaticTemplate[] = BLUEPRINT_STATIC_TEMPLATES
+  templates = LOCAL_WORKFLOW_SOURCE()
 ): WorkflowRecommendation[] {
-  return baseRecommendWorkflowByProfile(stats, templates)
+  return baseRecommendWorkflowByProfile(stats, templates as any)
 }
