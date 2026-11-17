@@ -36,8 +36,20 @@ export const UpdateNotification: React.FC = () => {
   const [updateState, setUpdateState] = useState<UpdateStatePayload | null>(null)
   const [isDismissed, setIsDismissed] = useState(false)
   const [isRetrying, setIsRetrying] = useState(false)
+  // 工单04 AC4.3：跨平台引导覆盖 —— macOS/Linux 下载就绪后走「打开安装包完成更新」
+  const [downloadPlatform, setDownloadPlatform] = useState<string>('win32')
+  // 是否为需覆盖安装引导的平台（macOS .dmg / Linux .deb/.rpm/.AppImage）
+  const isOverwriteGuidePlatform = downloadPlatform === 'darwin' || downloadPlatform === 'linux'
 
   useEffect(() => {
+    // 复用 renderer 既有 getPlatform 范式，避免自然语言硬编码平台
+    try {
+      const p = window.electronAPI?.utils?.getPlatform?.()
+      if (p) setDownloadPlatform(p)
+    } catch {
+      // 检测失败按默认 win32 走 quitAndInstall 分支
+    }
+
     if (!window.electronAPI?.update) {
       return
     }
@@ -135,17 +147,35 @@ export const UpdateNotification: React.FC = () => {
           {/* 交互按钮与逃生通道 */}
           <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
             {isDownloaded ? (
-              <Button
-                className="w-full sm:flex-1 bg-primary text-primary-foreground font-semibold"
-                size="lg"
-                disabled={isInstalling}
-                onClick={() => {
-                  window.electronAPI?.update?.quitAndInstall()
-                }}
-              >
-                <MaterialIcon icon="restart_alt" className="mr-2" />
-                {isInstalling ? t('正在准备覆盖安装...') : t('立即重启并生效')}
-              </Button>
+              isOverwriteGuidePlatform ? (
+                <Button
+                  className="w-full sm:flex-1 bg-primary text-primary-foreground font-semibold"
+                  size="lg"
+                  onClick={() => {
+                    // 工单04 AC4.3：macOS/Linux 走覆盖安装引导，打开已下载安装包
+                    if (updateState?.downloadedFilePath) {
+                      window.electronAPI?.utils?.openFileWithDefaultApp?.(
+                        updateState.downloadedFilePath
+                      )
+                    }
+                  }}
+                >
+                  <MaterialIcon icon="open_in_new" className="mr-2" />
+                  {t('打开安装包完成更新')}
+                </Button>
+              ) : (
+                <Button
+                  className="w-full sm:flex-1 bg-primary text-primary-foreground font-semibold"
+                  size="lg"
+                  disabled={isInstalling}
+                  onClick={() => {
+                    window.electronAPI?.update?.quitAndInstall()
+                  }}
+                >
+                  <MaterialIcon icon="restart_alt" className="mr-2" />
+                  {isInstalling ? t('正在准备覆盖安装...') : t('立即重启并生效')}
+                </Button>
+              )
             ) : isError ? (
               <Button
                 className="w-full sm:flex-1"
@@ -279,17 +309,34 @@ export const UpdateNotification: React.FC = () => {
           >
             {t('下次启动生效')}
           </Button>
-          <Button
-            size="sm"
-            variant="default"
-            className="text-xs h-7 px-2.5"
-            onClick={() => {
-              window.electronAPI?.update?.quitAndInstall()
-            }}
-          >
-            <MaterialIcon icon="restart_alt" className="mr-1 text-sm" />
-            {t('立即重启更新')}
-          </Button>
+          {isOverwriteGuidePlatform ? (
+            <Button
+              size="sm"
+              variant="default"
+              className="text-xs h-7 px-2.5"
+              onClick={() => {
+                // 工单04 AC4.3：macOS/Linux 浮窗引导打开安装包覆盖安装
+                if (updateState?.downloadedFilePath) {
+                  window.electronAPI?.utils?.openFileWithDefaultApp?.(updateState.downloadedFilePath)
+                }
+              }}
+            >
+              <MaterialIcon icon="open_in_new" className="mr-1 text-sm" />
+              {t('打开安装包完成更新')}
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant="default"
+              className="text-xs h-7 px-2.5"
+              onClick={() => {
+                window.electronAPI?.update?.quitAndInstall()
+              }}
+            >
+              <MaterialIcon icon="restart_alt" className="mr-1 text-sm" />
+              {t('立即重启更新')}
+            </Button>
+          )}
         </div>
       )}
     </div>

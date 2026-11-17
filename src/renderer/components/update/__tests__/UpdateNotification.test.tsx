@@ -198,4 +198,68 @@ describe('工单04 · UpdateNotification 渲染层', () => {
     const { container } = render(<UpdateNotification />)
     expect(container.firstChild).toBeNull()
   })
+
+  // ----------------------------------------------------------------
+  // AC4.3 · macOS/Linux 跨平台引导覆盖（打开安装包完成更新）
+  // ----------------------------------------------------------------
+  it('AC4.3-A: mac/linux + downloaded 强更 → 显示「打开安装包完成更新」并调用 openFileWithDefaultApp', async () => {
+    const openMock = vi.fn()
+    ;(window as any).electronAPI.utils = { getPlatform: () => 'darwin', openFileWithDefaultApp: openMock }
+
+    onStatusChangedMock.mockImplementation((cb: any) => {
+      cb(
+        makeState({
+          isMandatory: true,
+          status: 'downloaded',
+          downloadedFilePath: '/tmp/firefly.dmg'
+        })
+      )
+      return () => {}
+    })
+
+    render(<UpdateNotification />)
+
+    await waitFor(() => {
+      expect(screen.getByText('重要版本更新提示')).toBeInTheDocument()
+    })
+
+    // 强更 downloaded 态在 mac/linux 下应显示「打开安装包完成更新」
+    const openBtn = await waitFor(() => screen.getByText('打开安装包完成更新'))
+    fireEvent.click(openBtn)
+
+    expect(openMock).toHaveBeenCalledWith('/tmp/firefly.dmg')
+    // 不应出现 Windows 专属的 quitAndInstall 文案
+    expect(screen.queryByText('立即重启并生效')).not.toBeInTheDocument()
+  })
+
+  it('AC4.3-B: win32 + downloaded 强更 → 仍走「立即重启并生效」(quitAndInstall)', async () => {
+    const openMock = vi.fn()
+    ;(window as any).electronAPI.utils = { getPlatform: () => 'win32', openFileWithDefaultApp: openMock }
+    const quitMock = (window as any).electronAPI.update.quitAndInstall as any
+
+    onStatusChangedMock.mockImplementation((cb: any) => {
+      cb(
+        makeState({
+          isMandatory: true,
+          status: 'downloaded',
+          downloadedFilePath: 'C:/tmp/setup.exe'
+        })
+      )
+      return () => {}
+    })
+
+    render(<UpdateNotification />)
+
+    await waitFor(() => {
+      expect(screen.getByText('重要版本更新提示')).toBeInTheDocument()
+    })
+
+    // win32 应走 quitAndInstall 分支
+    const restartBtn = await waitFor(() => screen.getByText('立即重启并生效'))
+    fireEvent.click(restartBtn)
+
+    expect(quitMock).toHaveBeenCalled()
+    expect(openMock).not.toHaveBeenCalled()
+    expect(screen.queryByText('打开安装包完成更新')).not.toBeInTheDocument()
+  })
 })
