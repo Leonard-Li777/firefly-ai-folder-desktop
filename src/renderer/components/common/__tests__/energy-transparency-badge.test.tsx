@@ -51,12 +51,30 @@ describe('Ticket 12: Footer 节能胶囊与 Hover 透视看板组件', () => {
     uncertainKinds: [],
     modules: [
       {
+        id: 'asr-sensevoice-onnx',
+        clusterId: 'analysis_suite',
+        modelGeneration: 1,
+        defaultMemoryKind: 'ram',
+        effectiveMemoryKind: 'ram',
+        i18nNameKey: '语音识别与字幕提取',
+        availability: 'approved',
+        state: 'resident',
+        residentBytes: 250 * 1024 * 1024,
+        lastActiveTimestamp: Date.now(),
+        crashStreak: 0,
+        unloadFailStreak: 0,
+        blockedUnloadNoHandle: 0,
+        blockedUnloadIdentity: null,
+        activeTasks: 0
+      },
+      {
         id: 'pocket-cpu-int8-onnx',
         clusterId: 'analysis_suite',
         modelGeneration: 1,
         defaultMemoryKind: 'ram',
         effectiveMemoryKind: 'ram',
         i18nNameKey: '轻量CPU引擎',
+        availability: 'draft',
         state: 'resident',
         residentBytes: 380 * 1024 * 1024,
         lastActiveTimestamp: Date.now(),
@@ -72,7 +90,8 @@ describe('Ticket 12: Footer 节能胶囊与 Hover 透视看板组件', () => {
         modelGeneration: 1,
         defaultMemoryKind: 'vram',
         effectiveMemoryKind: 'vram',
-        i18nNameKey: '本地大模型引擎',
+        i18nNameKey: '萤核AI引擎',
+        availability: 'approved',
         state: 'hibernated',
         residentBytes: 0,
         lastReleased: {
@@ -97,6 +116,7 @@ describe('Ticket 12: Footer 节能胶囊与 Hover 透视看板组件', () => {
         defaultMemoryKind: 'ram',
         effectiveMemoryKind: 'ram',
         i18nNameKey: '极速语音朗读',
+        availability: 'approved',
         state: 'hibernated',
         residentBytes: 0,
         lastReleased: {
@@ -170,14 +190,17 @@ describe('Ticket 12: Footer 节能胶囊与 Hover 透视看板组件', () => {
     expect(screen.getByText(/电脑当前剩余内存/)).toBeDefined()
     expect(screen.getByText('(已触发智能休眠保护)')).toBeDefined()
 
-    // 正在内存运行分栏
+    // 正在内存运行分栏（草稿态模块被过滤，仅展示 approved 运行模块）
     expect(screen.getByText('正在内存运行')).toBeDefined()
-    expect(screen.getByText(/轻量CPU引擎/)).toBeDefined()
+    expect(screen.getByText(/语音识别与字幕提取/)).toBeDefined()
+    expect(screen.queryByText(/轻量CPU引擎/)).toBeNull()
 
-    // 已休眠节能分栏
+    // 已休眠节能分栏（标准命名对齐 萤核AI引擎，并展示已释放标签与合计释放）
     expect(screen.getByText('已休眠节能')).toBeDefined()
-    expect(screen.getByText(/本地大模型引擎/)).toBeDefined()
+    expect(screen.getByText(/萤核AI引擎/)).toBeDefined()
     expect(screen.getByText(/极速语音朗读/)).toBeDefined()
+    expect(screen.getByText(/合计释放: 约/)).toBeDefined()
+    expect(screen.getAllByText(/已释放/).length).toBeGreaterThanOrEqual(2)
 
     // 一键释放按钮
     expect(screen.getByText('一键释放可休眠内存')).toBeDefined()
@@ -189,15 +212,16 @@ describe('Ticket 12: Footer 节能胶囊与 Hover 透视看板组件', () => {
       modules: [
         ...initialHibernatedSnapshot.modules,
         {
-          id: 'asr-sensevoice-onnx',
-          clusterId: 'analysis_suite',
+          id: 'tts-moss-onnx',
+          clusterId: 'tts_media',
           modelGeneration: 1,
           defaultMemoryKind: 'ram',
           effectiveMemoryKind: 'ram',
-          i18nNameKey: '语音识别与字幕提取',
+          i18nNameKey: '个性化声音克隆',
+          availability: 'approved',
           state: 'error',
           lastFailureKind: 'unload',
-          residentBytes: 250 * 1024 * 1024,
+          residentBytes: 450 * 1024 * 1024,
           lastActiveTimestamp: Date.now(),
           crashStreak: 0,
           unloadFailStreak: 1,
@@ -220,14 +244,14 @@ describe('Ticket 12: Footer 节能胶囊与 Hover 透视看板组件', () => {
     fireEvent.click(screen.getByTestId('energy-badge-trigger'))
 
     expect(screen.getByText(/运行异常 \(点击可重试\)/)).toBeDefined()
-    expect(screen.getByText(/语音识别与字幕提取/)).toBeDefined()
+    expect(screen.getByText(/个性化声音克隆/)).toBeDefined()
 
     const retryBtn = screen.getByRole('button', { name: /重试/ })
     await act(async () => {
       fireEvent.click(retryBtn)
     })
 
-    expect(mockRetry).toHaveBeenCalledWith('asr-sensevoice-onnx')
+    expect(mockRetry).toHaveBeenCalledWith('tts-moss-onnx')
     expect(toast.success).toHaveBeenCalledWith('重试成功')
   })
 

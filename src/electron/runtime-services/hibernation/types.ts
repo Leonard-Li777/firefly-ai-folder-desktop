@@ -20,6 +20,7 @@ export interface HibernatableTargetMeta {
   readonly i18nNameKey: string
   readonly i18nDescKey: string
   readonly estimatedMemoryBytes: number
+  readonly availability?: 'approved' | 'draft' | 'coming_soon' | 'delisted'
 }
 
 /** 纳管模块元数据字典 (SSOT) */
@@ -32,16 +33,18 @@ export const HIBERNATABLE_TARGET_CATALOG: Record<string, HibernatableTargetMeta>
     defaultMemoryKind: 'ram',
     i18nNameKey: '轻量CPU引擎',
     i18nDescKey: '智能润色文件名与生成文件摘要',
-    estimatedMemoryBytes: 380 * 1024 * 1024
+    estimatedMemoryBytes: 380 * 1024 * 1024,
+    availability: 'draft'
   },
   'firefly-ai-engine': {
     id: 'firefly-ai-engine',
     type: 'engine_service',
     clusterId: 'analysis_suite',
     defaultMemoryKind: 'vram',
-    i18nNameKey: '本地大模型引擎',
+    i18nNameKey: '萤核AI引擎',
     i18nDescKey: '深度理解文档、复杂问答与多模态分析',
-    estimatedMemoryBytes: 1800 * 1024 * 1024
+    estimatedMemoryBytes: 1800 * 1024 * 1024,
+    availability: 'approved'
   },
   'asr-sensevoice-onnx': {
     id: 'asr-sensevoice-onnx',
@@ -50,7 +53,8 @@ export const HIBERNATABLE_TARGET_CATALOG: Record<string, HibernatableTargetMeta>
     defaultMemoryKind: 'ram',
     i18nNameKey: '语音识别与字幕提取',
     i18nDescKey: '识别音频与视频中的说话内容并转写为文字',
-    estimatedMemoryBytes: 250 * 1024 * 1024
+    estimatedMemoryBytes: 250 * 1024 * 1024,
+    availability: 'approved'
   },
   // 群组 B: 语音朗读引擎 (独立按需单元)
   'tts-m5-onnx': {
@@ -60,7 +64,8 @@ export const HIBERNATABLE_TARGET_CATALOG: Record<string, HibernatableTargetMeta>
     defaultMemoryKind: 'ram',
     i18nNameKey: '极速语音朗读',
     i18nDescKey: '超快发音速度，顺畅听书与朗读文档',
-    estimatedMemoryBytes: 315 * 1024 * 1024
+    estimatedMemoryBytes: 315 * 1024 * 1024,
+    availability: 'approved'
   },
   'tts-moss-onnx': {
     id: 'tts-moss-onnx',
@@ -69,7 +74,8 @@ export const HIBERNATABLE_TARGET_CATALOG: Record<string, HibernatableTargetMeta>
     defaultMemoryKind: 'ram',
     i18nNameKey: '个性化声音克隆',
     i18nDescKey: '高度还原音色，更具表现力的高品质语音',
-    estimatedMemoryBytes: 450 * 1024 * 1024
+    estimatedMemoryBytes: 450 * 1024 * 1024,
+    availability: 'draft'
   }
 }
 
@@ -129,6 +135,8 @@ export interface ModuleRuntimeState {
 export interface ModuleRuntimeMetric extends ModuleRuntimeState {
   /** 只读派生兼容字段：严格由 leaseRegistry.countActiveByTarget 实时计算 */
   readonly activeTasks: number
+  /** 模块可用性状态 (approved | draft | coming_soon | delisted) */
+  readonly availability?: 'approved' | 'draft' | 'coming_soon' | 'delisted'
 }
 
 /** 全局快照契约 */

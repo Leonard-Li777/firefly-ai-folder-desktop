@@ -3080,6 +3080,8 @@ export class ModuleHibernationCoordinator {
       if (state) {
         metrics.push({
           ...state,
+          availability: meta.availability,
+          estimatedMemoryBytes: meta.estimatedMemoryBytes,
           activeTasks
         })
       } else {
@@ -3091,6 +3093,8 @@ export class ModuleHibernationCoordinator {
           effectiveMemoryKind: meta.defaultMemoryKind,
           i18nNameKey: meta.i18nNameKey,
           i18nDescKey: meta.i18nDescKey,
+          estimatedMemoryBytes: meta.estimatedMemoryBytes,
+          availability: meta.availability,
           state: 'hibernated',
           residentBytes: 0,
           lastActiveTimestamp: Date.now(),

@@ -38,7 +38,8 @@ function getModuleDisplayName(m: { id: string; i18nNameKey?: string }): string {
       case '轻量CPU引擎':
         return t('轻量CPU引擎')
       case '本地大模型引擎':
-        return t('本地大模型引擎')
+      case '萤核AI引擎':
+        return t('萤核AI引擎')
       case '语音识别与字幕提取':
         return t('语音识别与字幕提取')
       case '语音合成与朗读':
@@ -54,7 +55,7 @@ function getModuleDisplayName(m: { id: string; i18nNameKey?: string }): string {
     case 'pocket-cpu-int8-onnx':
       return t('轻量CPU引擎')
     case 'firefly-ai-engine':
-      return t('本地大模型引擎')
+      return t('萤核AI引擎')
     case 'asr-sensevoice-onnx':
       return t('语音识别与字幕提取')
     case 'tts-m5-onnx':
@@ -64,6 +65,48 @@ function getModuleDisplayName(m: { id: string; i18nNameKey?: string }): string {
     default:
       return m.id
   }
+}
+
+/**
+ * 获取模块的内存占用字节数（优先实测与释放快照，兜底按规格元数据估算）
+ */
+function getModuleMemoryBytes(m: {
+  id: string
+  residentBytes?: number
+  residentSample?: { bytes: number }
+  lastReleased?: { bytes: number }
+  lastReleasedBytes?: number
+  estimatedMemoryBytes?: number
+}): number {
+  if (m.residentSample && m.residentSample.bytes > 0) return m.residentSample.bytes
+  if (m.residentBytes && m.residentBytes > 0) return m.residentBytes
+  if (m.lastReleased && m.lastReleased.bytes > 0) return m.lastReleased.bytes
+  if (m.lastReleasedBytes && m.lastReleasedBytes > 0) return m.lastReleasedBytes
+  if (m.estimatedMemoryBytes && m.estimatedMemoryBytes > 0) return m.estimatedMemoryBytes
+
+  switch (m.id) {
+    case 'firefly-ai-engine':
+      return 1800 * 1024 * 1024
+    case 'tts-m5-onnx':
+      return 315 * 1024 * 1024
+    case 'asr-sensevoice-onnx':
+      return 250 * 1024 * 1024
+    case 'tts-moss-onnx':
+      return 450 * 1024 * 1024
+    case 'pocket-cpu-int8-onnx':
+      return 380 * 1024 * 1024
+    default:
+      return 0
+  }
+}
+
+/**
+ * 判断模块是否处于 draft 状态（draft 状态模块不显示在能耗透视弹层中）
+ */
+function isModuleDraft(m: { id: string; availability?: string }): boolean {
+  if (m.availability === 'draft') return true
+  if (m.id === 'pocket-cpu-int8-onnx') return true
+  return false
 }
 
 export const EnergyTransparencyBadge: React.FC<{ className?: string }> = ({ className }) => {
@@ -137,21 +180,38 @@ export const EnergyTransparencyBadge: React.FC<{ className?: string }> = ({ clas
   // 纯函数派生仪表盘数据
   const gauges = useMemo(() => selectHibernationGauges(snapshot), [snapshot])
 
-  // 统计已休眠与运行中模块
-  const modules = snapshot?.modules ?? []
+  // 过滤掉 draft 状态的模块（如处于草稿态的轻量CPU引擎，严禁在弹层中显示）
+  const visibleModules = useMemo(
+    () => (snapshot?.modules ?? []).filter(m => !isModuleDraft(m)),
+    [snapshot?.modules]
+  )
+
   const residentModules = useMemo(
     () =>
-      modules.filter(
+      visibleModules.filter(
         m => m.state === 'resident' || m.state === 'loading' || m.state === 'draining'
       ),
-    [modules]
+    [visibleModules]
   )
-  const hibernatedModules = useMemo(() => modules.filter(m => m.state === 'hibernated'), [modules])
-  const errorModules = useMemo(() => modules.filter(m => m.state === 'error'), [modules])
+  const hibernatedModules = useMemo(
+    () => visibleModules.filter(m => m.state === 'hibernated'),
+    [visibleModules]
+  )
+  const errorModules = useMemo(
+    () => visibleModules.filter(m => m.state === 'error'),
+    [visibleModules]
+  )
 
   const hibernatedCount = hibernatedModules.length
-  const totalResidentBytes = gauges.totalResidentRamBytes + gauges.totalResidentVramBytes
-  const totalSavedBytes = gauges.totalSavedRamBytes + gauges.totalSavedVramBytes
+  // 汇总可见模块的实测/释放/估算内存占用
+  const totalResidentBytes = useMemo(
+    () => residentModules.reduce((sum, m) => sum + getModuleMemoryBytes(m), 0),
+    [residentModules]
+  )
+  const totalSavedBytes = useMemo(
+    () => hibernatedModules.reduce((sum, m) => sum + getModuleMemoryBytes(m), 0),
+    [hibernatedModules]
+  )
 
   // 一键释放全量空闲内存
   const handleReclaimAll = async () => {
@@ -258,7 +318,7 @@ export const EnergyTransparencyBadge: React.FC<{ className?: string }> = ({ clas
                   mem: formatMemoryBytes(snapshot?.availableMemoryBytes)
                 })}
               </span>
-              {gauges.isEnergySaving && (
+              {hibernatedModules.length > 0 && (
                 <span className="text-emerald-600 dark:text-emerald-400 font-medium">
                   {t('(已触发智能休眠保护)')}
                 </span>
@@ -276,7 +336,7 @@ export const EnergyTransparencyBadge: React.FC<{ className?: string }> = ({ clas
                       <span>{t('正在内存运行')}</span>
                     </span>
                     <span className="text-muted-foreground/80 font-normal">
-                      {t('约 {size}', { size: formatMemoryBytes(totalResidentBytes) })}
+                      {t('合计占用: 约 {size}', { size: formatMemoryBytes(totalResidentBytes) })}
                     </span>
                   </div>
                   <ul className="space-y-1 pl-3 text-muted-foreground">
@@ -285,15 +345,20 @@ export const EnergyTransparencyBadge: React.FC<{ className?: string }> = ({ clas
                         (m.effectiveMemoryKind ?? m.defaultMemoryKind) === 'vram'
                           ? t('显存')
                           : t('内存')
-                      const bytes = m.residentSample?.bytes || m.residentBytes
+                      const bytes = getModuleMemoryBytes(m)
                       return (
                         <li key={m.id} className="flex items-center justify-between py-0.5">
                           <span>• {getModuleDisplayName(m)}</span>
-                          <span className="opacity-75">
-                            {t('约 {size} {kind}', {
-                              size: formatMemoryBytes(bytes),
-                              kind: kindLabel
-                            })}
+                          <span className="opacity-75 flex items-center gap-1.5">
+                            <span>
+                              {t('约 {size} {kind}', {
+                                size: formatMemoryBytes(bytes),
+                                kind: kindLabel
+                              })}
+                            </span>
+                            <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-500/10 text-blue-600 dark:text-sky-400 font-medium border border-blue-500/20">
+                              {t('运行中')}
+                            </span>
                           </span>
                         </li>
                       )
@@ -311,7 +376,7 @@ export const EnergyTransparencyBadge: React.FC<{ className?: string }> = ({ clas
                       <span>{t('已休眠节能')}</span>
                     </span>
                     <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                      {t('已省约 {size}', { size: formatMemoryBytes(totalSavedBytes) })}
+                      {t('合计释放: 约 {size}', { size: formatMemoryBytes(totalSavedBytes) })}
                     </span>
                   </div>
                   <ul className="space-y-1 pl-3 text-muted-foreground">
@@ -320,15 +385,20 @@ export const EnergyTransparencyBadge: React.FC<{ className?: string }> = ({ clas
                         (m.effectiveMemoryKind ?? m.defaultMemoryKind) === 'vram'
                           ? t('显存')
                           : t('内存')
-                      const bytes = m.lastReleased?.bytes || m.lastReleasedBytes || 0
+                      const bytes = getModuleMemoryBytes(m)
                       return (
                         <li key={m.id} className="flex items-center justify-between py-0.5">
                           <span>• {getModuleDisplayName(m)}</span>
-                          <span className="text-emerald-600/80 dark:text-emerald-400/80">
-                            {t('已省约 {size} {kind}', {
-                              size: formatMemoryBytes(bytes),
-                              kind: kindLabel
-                            })}
+                          <span className="text-emerald-600/90 dark:text-emerald-400/90 font-medium flex items-center gap-1.5">
+                            <span>
+                              {t('约 {size} {kind}', {
+                                size: formatMemoryBytes(bytes),
+                                kind: kindLabel
+                              })}
+                            </span>
+                            <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                              {t('已释放')}
+                            </span>
                           </span>
                         </li>
                       )
