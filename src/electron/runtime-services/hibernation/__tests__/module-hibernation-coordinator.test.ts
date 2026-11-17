@@ -341,5 +341,21 @@ describe('ModuleHibernationCoordinator & MemoryProbe (Ticket 04)', () => {
 
       coordinator.endLifecycleOperation(legitToken)
     })
+
+    it('外部独立启动与关闭通知能正确同步状态与内存占用至 runtimeStore', () => {
+      // 1. 初始为 hibernated
+      expect(store.get('firefly-ai-engine').state).toBe('hibernated')
+
+      // 2. 外部通知常驻
+      coordinator.notifyModuleResident('firefly-ai-engine', 1800 * 1024 * 1024)
+      expect(store.get('firefly-ai-engine').state).toBe('resident')
+      expect(store.get('firefly-ai-engine').residentBytes).toBe(1800 * 1024 * 1024)
+
+      // 3. 外部通知休眠
+      coordinator.notifyModuleHibernated('firefly-ai-engine', 1800 * 1024 * 1024)
+      expect(store.get('firefly-ai-engine').state).toBe('hibernated')
+      expect(store.get('firefly-ai-engine').residentBytes).toBe(0)
+      expect(store.get('firefly-ai-engine').lastReleasedBytes).toBe(1800 * 1024 * 1024)
+    })
   })
 })

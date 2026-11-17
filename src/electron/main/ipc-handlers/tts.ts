@@ -25,9 +25,15 @@ import {
 } from '../../runtime-services/filesystem/tts-wav-cache-service'
 import { voiceArchiveService } from '../../runtime-services/audio/voice-archive-service'
 import { modularResourceService } from '../../runtime-services/system/modular-resource-service'
+import { moduleHibernationCoordinator } from '../../runtime-services/hibernation/module-hibernation-coordinator'
 
 /** 管理会话级活跃请求的 AbortController，键为 sessionId */
 const activeSessionControllers = new Map<number, Set<AbortController>>()
+
+/** 检测当前是否有活跃的 TTS 合成或流式朗读任务 */
+export function isTTSActive(): boolean {
+  return activeSessionControllers.size > 0 || activeStreamSessions.size > 0
+}
 
 export function registerTTSIPCHandlers(): void {
   // 1. 单句语音合成（支持 voiceId 字符串或数字 sid）
@@ -59,6 +65,10 @@ export function registerTTSIPCHandlers(): void {
         }
         set.add(controller)
       }
+
+      // 同步 TTS 模块常驻状态至休眠协调器并取消媒体组空闲休眠
+      moduleHibernationCoordinator.notifyModuleResident('tts-m5-onnx')
+      moduleHibernationCoordinator.cancelIdleHibernation('tts_media')
 
       try {
         const result = await omniClient.synthesizeTTSChunk(
@@ -95,6 +105,9 @@ export function registerTTSIPCHandlers(): void {
               activeSessionControllers.delete(sessionId)
             }
           }
+        }
+        if (activeSessionControllers.size === 0 && activeStreamSessions.size === 0) {
+          moduleHibernationCoordinator.scheduleIdleHibernation('tts_media')
         }
       }
     }
@@ -545,15 +558,16 @@ export function registerTTSIPCHandlers(): void {
       try {
         let cachePath = req.targetCachePath
         if (!cachePath) {
-          cachePath = (await ttsWavCacheService.getCacheWavPath({
-            filePath: req.filePath,
-            fieldName: req.fieldName,
-            fileFingerprint: req.fileFingerprint,
-            displayName: req.displayName,
-            text: req.text,
-            voiceId: req.voiceId,
-            speed: req.speed
-          })) || undefined
+          cachePath =
+            (await ttsWavCacheService.getCacheWavPath({
+              filePath: req.filePath,
+              fieldName: req.fieldName,
+              fileFingerprint: req.fileFingerprint,
+              displayName: req.displayName,
+              text: req.text,
+              voiceId: req.voiceId,
+              speed: req.speed
+            })) || undefined
         }
 
         if (cachePath) {
@@ -571,6 +585,16 @@ export function registerTTSIPCHandlers(): void {
         }
       } catch (recErr) {
         logger.warn(LogCategory.MAIN, '[TTS Stream IPC] 初始化 StreamWavRecorder 异常:', recErr)
+      }
+
+      // 同步 TTS 模块常驻状态至休眠协调器并取消媒体组空闲休眠
+      moduleHibernationCoordinator.notifyModuleResident('tts-m5-onnx')
+      moduleHibernationCoordinator.cancelIdleHibernation('tts_media')
+
+      const checkAndScheduleTTSIdle = () => {
+        if (activeStreamSessions.size === 0 && activeSessionControllers.size === 0) {
+          moduleHibernationCoordinator.scheduleIdleHibernation('tts_media')
+        }
       }
 
       try {
@@ -625,6 +649,7 @@ export function registerTTSIPCHandlers(): void {
                   session.recorder.finalize(true).catch(() => {})
                 }
                 activeStreamSessions.delete(streamCtrl.sessionId)
+                checkAndScheduleTTSIdle()
                 if (!session.sender.isDestroyed()) {
                   session.sender.send('tts:stream-ended', {
                     sessionId: streamCtrl.sessionId,
@@ -642,6 +667,7 @@ export function registerTTSIPCHandlers(): void {
                   session.recorder.finalize(false).catch(() => {})
                 }
                 activeStreamSessions.delete(streamCtrl.sessionId)
+                checkAndScheduleTTSIdle()
                 if (!session.sender.isDestroyed()) {
                   session.sender.send('tts:stream-ended', {
                     sessionId: streamCtrl.sessionId,
@@ -673,6 +699,7 @@ export function registerTTSIPCHandlers(): void {
               session.recorder.finalize(false).catch(() => {})
             }
             activeStreamSessions.delete(streamCtrl.sessionId)
+            checkAndScheduleTTSIdle()
             if (!session.sender.isDestroyed()) {
               session.sender.send('tts:stream-ended', {
                 sessionId: streamCtrl.sessionId,
@@ -725,10 +752,16 @@ export function registerTTSIPCHandlers(): void {
       const session = activeStreamSessions.get(cmd.sessionId)
       if (session) {
         if (cmd.command === 'pause') {
-          logger.info(LogCategory.MAIN, `[TTS Stream IPC] 收到反压暂停指令: sessionId=${cmd.sessionId}`)
+          logger.info(
+            LogCategory.MAIN,
+            `[TTS Stream IPC] 收到反压暂停指令: sessionId=${cmd.sessionId}`
+          )
           session.pause()
         } else if (cmd.command === 'resume') {
-          logger.info(LogCategory.MAIN, `[TTS Stream IPC] 收到反压恢复指令: sessionId=${cmd.sessionId}`)
+          logger.info(
+            LogCategory.MAIN,
+            `[TTS Stream IPC] 收到反压恢复指令: sessionId=${cmd.sessionId}`
+          )
           session.resume()
         }
       }
@@ -758,6 +791,9 @@ export function registerTTSIPCHandlers(): void {
       session.abort()
       clearInterval(session.watchdogTimer)
       activeStreamSessions.delete(req.sessionId)
+      if (activeStreamSessions.size === 0 && activeSessionControllers.size === 0) {
+        moduleHibernationCoordinator.scheduleIdleHibernation('tts_media')
+      }
       if (!session.sender.isDestroyed()) {
         session.sender.send('tts:stream-ended', {
           sessionId: req.sessionId,

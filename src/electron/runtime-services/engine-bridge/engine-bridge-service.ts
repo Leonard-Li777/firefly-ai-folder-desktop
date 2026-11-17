@@ -1019,6 +1019,33 @@ export class EngineBridgeService {
         void this.checkBinaryUpdated()
       }, 800)
     }
+
+    // 同步引擎运行状态至休眠协调器（消除「引擎实际运行但 UI 显示已释放」的状态撒谎）
+    // 懒加载避免 engine-bridge ↔ hibernation 的循环依赖（coordinator 注入了 engineBridgeService）
+    this.syncEngineStateToCoordinator(data.status)
+  }
+
+  /**
+   * 将引擎探活状态同步至休眠协调器的 runtimeStore
+   * 懒加载 coordinator 单例，避免模块初始化时形成循环依赖
+   */
+  private syncEngineStateToCoordinator(
+    status: 'starting' | 'ready' | 'processing' | 'error' | 'stopped' | undefined
+  ): void {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { moduleHibernationCoordinator } =
+        require('../hibernation/module-hibernation-coordinator') as {
+          moduleHibernationCoordinator: import('../hibernation/module-hibernation-coordinator').ModuleHibernationCoordinator
+        }
+      if (status === 'ready' || status === 'processing' || status === 'starting') {
+        moduleHibernationCoordinator.notifyModuleResident('firefly-ai-engine')
+      } else if (status === 'stopped' || status === 'error') {
+        moduleHibernationCoordinator.notifyModuleHibernated('firefly-ai-engine')
+      }
+    } catch {
+      // coordinator 尚未初始化或模块加载失败时静默跳过，不影响探活主路径
+    }
   }
 
   /**
@@ -1039,6 +1066,8 @@ export class EngineBridgeService {
     if (wasOnline) {
       this.broadcastStatus()
     }
+    // 引擎离线时同步通知协调器（确保 UI 显示已释放而非常驻）
+    this.syncEngineStateToCoordinator('stopped')
   }
 
   /**

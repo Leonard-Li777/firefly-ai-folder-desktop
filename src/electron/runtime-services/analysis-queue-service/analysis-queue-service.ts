@@ -519,6 +519,7 @@ export class AnalysisQueueService {
     }
 
     this.running = true
+    this.syncHibernationState(true)
 
     if (this.isProcessingLoopActive) {
       this.wakeUp()
@@ -1104,7 +1105,29 @@ export class AnalysisQueueService {
       }
     }
     this.isProcessingLoopActive = false
+    this.syncHibernationState(false)
     this.emitUpdate()
+  }
+
+  /**
+   * 同步分析队列活跃状态至休眠协调器
+   * 彻底杜绝分析队列正在运行而 UI 却显示已休眠的状态撒谎
+   */
+  private syncHibernationState(active: boolean): void {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const {
+        moduleHibernationCoordinator
+      } = require('../hibernation/module-hibernation-coordinator')
+      if (active) {
+        moduleHibernationCoordinator.notifyModuleResident('firefly-ai-engine')
+        moduleHibernationCoordinator.cancelIdleHibernation('analysis_suite')
+      } else {
+        moduleHibernationCoordinator.scheduleIdleHibernation('analysis_suite')
+      }
+    } catch {
+      // 容错隔离
+    }
   }
 
   async pause(workspaceId?: number): Promise<void> {

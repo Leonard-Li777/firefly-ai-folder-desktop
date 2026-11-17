@@ -173,6 +173,78 @@ export class ModuleHibernationCoordinator {
     return this.engineBridgeServiceInstance
   }
 
+  /**
+   * 外部服务通知：模块已独立启动并常驻内存
+   *
+   * 适用场景：engine-bridge / omni-service 在自主启动模块后（未经过 withHibernationGate），
+   * 通过此接口将实际运行状态同步至 runtimeStore，避免 UI 仍显示「已休眠」的状态撒谎。
+   *
+   * @param targetId   HIBERNATABLE_TARGET_CATALOG 中的模块 ID（如 'firefly-ai-engine', 'tts-m5-onnx'）
+   * @param residentBytes  已知内存占用字节数（可选，0 或未传则不更新）
+   */
+  notifyModuleResident(targetId: string, residentBytes?: number): void {
+    const rt = this.runtimeStore.get(targetId)
+    if (!rt) {
+      // 目标 ID 不在目录中，静默忽略（无需 warn，防止外部误传 ID 刷日志）
+      return
+    }
+    if (rt.state === 'resident') {
+      // 已经是常驻状态，仅更新内存数（若有提供）并刷新活跃时间戳
+      if (residentBytes && residentBytes > 0) {
+        this.runtimeStore.update(targetId, d => {
+          d.residentBytes = residentBytes
+          d.lastActiveTimestamp = Date.now()
+        })
+        this.triggerSnapshotBroadcast()
+      }
+      return
+    }
+    this.runtimeStore.update(targetId, d => {
+      d.state = 'resident'
+      if (residentBytes && residentBytes > 0) {
+        d.residentBytes = residentBytes
+      }
+      d.lastActiveTimestamp = Date.now()
+    })
+    logger.info(
+      LogCategory.SYSTEM,
+      `[Coordinator] 外部通知：模块已常驻内存 targetId=${targetId}, residentBytes=${residentBytes ?? 'unknown'}`
+    )
+    this.triggerSnapshotBroadcast()
+  }
+
+  /**
+   * 外部服务通知：模块已独立关闭并释放内存
+   *
+   * 适用场景：engine-bridge 引擎停止、omni-service TTS 卸载等场景，
+   * 通过此接口将状态同步回 runtimeStore，确保 UI 准确反映已休眠/已释放。
+   *
+   * @param targetId        HIBERNATABLE_TARGET_CATALOG 中的模块 ID
+   * @param lastReleasedBytes  本次释放的内存字节数（可选）
+   */
+  notifyModuleHibernated(targetId: string, lastReleasedBytes?: number): void {
+    const rt = this.runtimeStore.get(targetId)
+    if (!rt) {
+      return
+    }
+    if (rt.state === 'hibernated') {
+      // 已经是休眠状态，无需重复通知
+      return
+    }
+    this.runtimeStore.update(targetId, d => {
+      d.state = 'hibernated'
+      if (lastReleasedBytes && lastReleasedBytes > 0) {
+        d.lastReleasedBytes = lastReleasedBytes
+      }
+      d.residentBytes = 0
+    })
+    logger.info(
+      LogCategory.SYSTEM,
+      `[Coordinator] 外部通知：模块已休眠/释放 targetId=${targetId}, lastReleasedBytes=${lastReleasedBytes ?? 'unknown'}`
+    )
+    this.triggerSnapshotBroadcast()
+  }
+
   /** 获取内存探针引用 */
   getMemoryProbe(): MemoryProbe {
     return this.memoryProbe
@@ -3070,9 +3142,85 @@ export class ModuleHibernationCoordinator {
   }
 
   /**
+   * 运行时事实源主动对账 (Active Liveness Reconciliation)
+   * 确保当引擎或模块通过独立通道拉起（或正在处理队列任务）时，
+   * 协调器状态与实际进程运行态绝对对齐，彻底杜绝「实际正在运行却显示已释放」的状态撒谎。
+   */
+  private reconcileLiveStates(): void {
+    try {
+      // 1. 萤核AI引擎 (firefly-ai-engine) 真实运行态对账
+      const engineBridge = this.getEngineBridgeService()
+      if (engineBridge) {
+        const rawStatus = (engineBridge as any).lastRawStatus?.status
+        const snapState =
+          typeof (engineBridge as any).getSnapshot === 'function'
+            ? (engineBridge as any).getSnapshot()?.state
+            : undefined
+        const isOnline =
+          rawStatus === 'ready' ||
+          rawStatus === 'processing' ||
+          snapState === 'ready' ||
+          snapState === 'processing'
+        if (isOnline) {
+          const rt = this.runtimeStore.get('firefly-ai-engine')
+          if (rt && rt.state !== 'resident') {
+            this.runtimeStore.update('firefly-ai-engine', d => {
+              d.state = 'resident'
+              d.lastActiveTimestamp = Date.now()
+            })
+          }
+        }
+      }
+    } catch {
+      // 容错隔离
+    }
+
+    try {
+      // 2. 文件分析队列忙碌态联动对账
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { analysisQueueService } = require('../analysis-queue-service')
+      if (
+        analysisQueueService &&
+        typeof analysisQueueService.isLocalModelBusy === 'function' &&
+        typeof analysisQueueService.hasPendingItems === 'function'
+      ) {
+        if (analysisQueueService.isLocalModelBusy() || analysisQueueService.hasPendingItems()) {
+          const rt = this.runtimeStore.get('firefly-ai-engine')
+          if (rt && rt.state !== 'resident') {
+            this.runtimeStore.update('firefly-ai-engine', d => {
+              d.state = 'resident'
+              d.lastActiveTimestamp = Date.now()
+            })
+          }
+        }
+      }
+    } catch {
+      // 容错隔离
+    }
+
+    try {
+      // 3. 极速语音朗读 (tts-m5-onnx) 活跃态联动对账
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { isTTSActive } = require('../../main/ipc-handlers/tts')
+      if (typeof isTTSActive === 'function' && isTTSActive()) {
+        const rt = this.runtimeStore.get('tts-m5-onnx')
+        if (rt && rt.state !== 'resident') {
+          this.runtimeStore.update('tts-m5-onnx', d => {
+            d.state = 'resident'
+            d.lastActiveTimestamp = Date.now()
+          })
+        }
+      }
+    } catch {
+      // 容错隔离
+    }
+  }
+
+  /**
    * 获取当前模块休眠与能耗全景快照 (spec §3.3.2)
    */
   async getSnapshot(): Promise<HibernationSnapshot> {
+    this.reconcileLiveStates()
     const metrics: ModuleRuntimeMetric[] = []
     for (const [targetId, meta] of Object.entries(HIBERNATABLE_TARGET_CATALOG)) {
       const state = this.runtimeStore.get(targetId)

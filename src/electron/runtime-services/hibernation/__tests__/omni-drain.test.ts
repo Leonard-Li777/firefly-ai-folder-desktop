@@ -4,6 +4,21 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+vi.mock('electron', () => ({
+  app: {
+    getPath: vi.fn().mockReturnValue('C:\\mock-user-data'),
+    isPackaged: false
+  }
+}))
+
+vi.mock('electron-conf', () => ({
+  Conf: vi.fn().mockImplementation(() => ({
+    get: vi.fn(),
+    set: vi.fn()
+  }))
+}))
+
 import { ModuleHibernationCoordinator } from '../module-hibernation-coordinator'
 import {
   IEngineBridgeService,
