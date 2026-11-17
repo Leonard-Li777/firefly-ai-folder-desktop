@@ -17,8 +17,6 @@ import {
   AlertDialogFooter
 } from '../ui/alert-dialog'
 import { Button } from '../ui/button'
-import { Label } from '../ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 import { useSettingsStore } from '../../stores/settings-store'
 import { useVirtualDirectoryStore } from '../../stores/virtual-directory-store'
 import { usePluginCenterStore } from '../../stores/plugin-center-store'
@@ -67,15 +65,12 @@ const MemoizedWorkspaceMaintenanceTab = memo(WorkspaceMaintenanceTab)
  *
  * 核心架构 (TASK-07 ~ TASK-11)：
  * 1. 物理层解耦：完全独立于系统设置，专属于具体工作目录的配置；
- * 2. 顶部工作区下拉切换：支持在所有已添加的工作目录之间自由切换（默认选中当前活动目录）；
- * 3. 极简向导流转：
+ * 2. 左侧一级工作目录列表：取代原顶部下拉，支持在所有已添加的工作目录之间自由切换（默认选中当前活动目录）；
+ * 3. 右侧内容区二级 Tab 菜单：目录维护与安全重置（首个 Tab）、检索式引擎、文件内容萃取、文件准入与包含排除；
+ * 4. 极简向导流转：
  *    - 当工作区为 pending 时，首先进入 WorkspaceSetupWizard；
  *    - 点击「完成并开始分析」自动持久化 ready 并关闭弹窗；
- *    - 点击「深度自定义设置 ➔」就地切换至 3-Tab 高级模式；
- * 4. 常态 3-Tab 高级模式：
- *    - 1. AI分析与多媒体策略 (TaskEngineSettings)
- *    - 2. 文件准入与包含排除规则 (WorkspaceAdmissionRulesTab)
- *    - 3. 目录维护与安全重置 (WorkspaceMaintenanceTab)
+ *    - 点击「深度自定义设置 ➔」就地切换至 4-Tab 高级模式；
  */
 export const WorkspaceSettingsDialog: React.FC = () => {
   const isOpen = useSettingsStore(s => s.isWorkspaceSettingsOpen)
@@ -91,12 +86,12 @@ export const WorkspaceSettingsDialog: React.FC = () => {
 
   // 当前正在查看与编辑的工作区 ID
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<number | null>(null)
-  const [activeTab, setActiveTab] = useState<WorkspaceTabId>('basic_ai_engine')
+  const [activeTab, setActiveTab] = useState<WorkspaceTabId>('maintenance')
   const [isManualWizardMode, setIsManualWizardMode] = useState<boolean>(false)
   const [isWizardDismissed, setIsWizardDismissed] = useState<boolean>(false)
   const [hardwareInfo, setHardwareInfo] = useState<HardwareInfo | null>(null)
   const [visitedTabs, setVisitedTabs] = useState<Set<WorkspaceTabId>>(
-    () => new Set(['basic_ai_engine'])
+    () => new Set(['maintenance'])
   )
 
   // 引用规则管理 Tab 暴露的脏状态与操作 Handle
@@ -308,15 +303,21 @@ export const WorkspaceSettingsDialog: React.FC = () => {
     }
   }
 
-  // 4-Tab 完整还原定义 (检索式引擎、文件内容萃取、忽略规则、目录维护)
-  // 内置常驻项：检索式引擎、文件准入与包含排除、目录维护与安全重置；
+  // 4-Tab 完整还原定义 (目录维护、检索式引擎、文件内容萃取、忽略规则)
+  // 内置常驻项：目录维护与安全重置、检索式引擎、文件准入与包含排除；
   // 文件内容萃取仍依据已激活插件动态挂载 (Spec §5.2)。
-  // 「检索式引擎」必须常驻：activeTab 默认值、visitedTabs 初值、向导完成回流以及
-  // 插件中心配置锚点 (targetTab: 'basic_ai_engine') 均指向它，右侧内容区也会默认渲染。
+  // 「目录维护与安全重置」为首个 Tab，且为 activeTab 默认值与 visitedTabs 初值。
+  // 「检索式引擎」必须常驻：插件中心配置锚点 (targetTab: 'basic_ai_engine') 仍指向它。
   // 若按插件激活状态过滤，全新安装或插件未激活时会出现「入口消失但内容仍在」、
   // 且 activeTab 指向不可见 Tab 的断裂，用户无法再进入检索式引擎设置。
   const tabs: WorkspaceTabInfo[] = useMemo(() => {
     const allTabs: WorkspaceTabInfo[] = [
+      {
+        id: 'maintenance',
+        name: t('目录维护与安全重置'),
+        icon: 'folder_open',
+        description: t('重新运行向导与两段式安全重置')
+      },
       {
         id: 'basic_ai_engine',
         name: t('检索式引擎'),
@@ -334,12 +335,6 @@ export const WorkspaceSettingsDialog: React.FC = () => {
         name: t('文件准入与包含排除'),
         icon: 'filter',
         description: t('包含规则与排除规则可同时设置、叠加生效')
-      },
-      {
-        id: 'maintenance',
-        name: t('目录维护与安全重置'),
-        icon: 'folder_open',
-        description: t('重新运行向导与两段式安全重置')
       }
     ]
 
@@ -371,7 +366,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && void handleRequestClose()}>
       <DialogContent className="max-w-5xl w-[88vw] h-[82vh] flex flex-col p-0 bg-background dark:bg-card text-foreground border-4 border-border rounded-2xl shadow-2xl transform-gpu [contain:content]">
-        {/* 顶部 Header：工作区选择与状态概览 (pr-16 预留右上角绝对定位关闭按钮空间，杜绝重叠) */}
+        {/* 顶部 Header：标题与状态概览 (pr-16 预留右上角绝对定位关闭按钮空间，杜绝重叠) */}
         <DialogHeader className="pl-6 pr-14 sm:pr-16 py-3.5 border-b flex-shrink-0 flex flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -412,31 +407,6 @@ export const WorkspaceSettingsDialog: React.FC = () => {
               </DialogDescription>
             </div>
           </div>
-
-          {/* 右侧：下拉切换目标工作目录 */}
-          <div className="flex items-center gap-2 shrink-0">
-            <Label className="text-xs text-muted-foreground hidden sm:inline">
-              {t('切换工作目录:')}
-            </Label>
-            <Select
-              value={activeWorkspace?.id != null ? String(activeWorkspace.id) : undefined}
-              onValueChange={handleWorkspaceChange}
-            >
-              <SelectTrigger className="h-8 text-xs font-semibold w-48 sm:w-56 bg-muted/30">
-                <SelectValue placeholder={t('选择工作目录...')} />
-              </SelectTrigger>
-              <SelectContent>
-                {workspaceDirectories.map(ws => (
-                  <SelectItem key={ws.id} value={String(ws.id)} className="text-xs">
-                    <div className="flex items-center gap-2">
-                      <FolderOpen className="w-3.5 h-3.5 text-primary shrink-0" />
-                      <span className="truncate">{ws.name}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
         </DialogHeader>
 
         {/* 主体内容区 */}
@@ -468,62 +438,77 @@ export const WorkspaceSettingsDialog: React.FC = () => {
           ) : (
             /* 2. 常态 4-Tab 高级设置视图 */
             <>
-              {/* 左侧导航栏 */}
+              {/* 一级导航：左侧工作目录列表 */}
               <div className="w-56 border-r flex flex-col flex-shrink-0 bg-muted/10">
-                <nav className="p-3 space-y-1.5 overflow-y-auto">
-                  {tabs.map(tab => {
-                    const isActive = activeTab === tab.id
+                <div className="px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground border-b border-border/40">
+                  {t('工作目录列表')}
+                </div>
+                <nav className="p-2 space-y-1 overflow-y-auto flex-1">
+                  {workspaceDirectories.map(ws => {
+                    const isActive = activeWorkspace?.id === ws.id
                     return (
                       <Button
-                        key={tab.id}
-                        variant={isActive ? 'default' : 'ghost'}
+                        key={ws.id}
+                        variant="ghost"
                         className={cn(
-                          'w-full justify-start text-left h-auto p-2.5 whitespace-break-spaces transition-all duration-200',
-                          isActive && 'bg-primary text-primary-foreground shadow-sm scale-[1.01]',
-                          !isActive &&
-                            'hover:bg-muted/60 text-muted-foreground hover:text-foreground'
+                          'w-full justify-start text-left h-auto p-2.5 transition-all duration-200 border',
+                          isActive
+                            ? 'bg-primary/10 text-primary border-primary/30'
+                            : 'border-transparent hover:bg-muted/60 text-muted-foreground hover:text-foreground'
                         )}
-                        onClick={() => void handleTabChange(tab.id)}
+                        onClick={() => void handleWorkspaceChange(String(ws.id))}
                       >
-                        <div className="flex items-start gap-2.5">
-                          <MaterialIcon icon={tab.icon} className="text-base shrink-0 mt-0.5" />
+                        <div className="flex items-center gap-2.5 w-full min-w-0">
+                          <FolderOpen
+                            className={cn(
+                              'w-4 h-4 shrink-0',
+                              isActive ? 'text-primary' : 'text-muted-foreground'
+                            )}
+                          />
                           <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-xs leading-snug">{tab.name}</div>
-                            <div
-                              className={cn(
-                                'text-[11px] mt-0.5 line-clamp-1 opacity-80',
-                                isActive ? 'text-primary-foreground' : 'text-muted-foreground'
-                              )}
-                            >
-                              {tab.description}
-                            </div>
+                            <div className="font-semibold text-xs truncate">{ws.name}</div>
+                            <div className="text-[10px] truncate opacity-70 mt-0.5">{ws.path}</div>
                           </div>
                         </div>
                       </Button>
                     )
                   })}
                 </nav>
-
-                {/* 底部重新运行向导小卡片 */}
-                <div className="mt-auto p-3 border-t border-border/40">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => void handleRunWizard()}
-                    className="w-full text-xs text-muted-foreground hover:text-foreground flex items-center justify-between p-2 h-auto"
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-primary" />
-                      <span>{t('运行场景向导')}</span>
-                    </div>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
               </div>
 
-              {/* 右侧 Tab 内容区 (Keep-Alive 保活) */}
+              {/* 右侧内容区：二级 Tab 菜单 + Tab 内容 (Keep-Alive 保活) */}
               <div className="flex-1 flex flex-col overflow-hidden bg-background">
+                {/* 二级 Tab 菜单（横向标签栏） */}
+                <div className="flex-shrink-0 px-4 pt-2.5 border-b border-border/60 overflow-x-auto">
+                  <div className="flex items-center gap-1">
+                    {tabs.map(tab => {
+                      const isActive = activeTab === tab.id
+                      return (
+                        <Button
+                          key={tab.id}
+                          variant="ghost"
+                          size="sm"
+                          title={tab.description}
+                          className={cn(
+                            'relative h-9 px-3.5 text-xs font-semibold whitespace-nowrap rounded-t-md rounded-b-none border-b-2 transition-all duration-200',
+                            isActive
+                              ? 'text-primary border-primary bg-primary/5'
+                              : 'text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/60'
+                          )}
+                          onClick={() => void handleTabChange(tab.id)}
+                        >
+                          <div className="flex items-center gap-1.5">
+                            <MaterialIcon icon={tab.icon} className="text-base" />
+                            <span>{tab.name}</span>
+                          </div>
+                        </Button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Tab 内容区 (Keep-Alive 保活) */}
+                <div className="flex-1 flex flex-col overflow-hidden">
                 {visitedTabs.has('basic_ai_engine') && (
                   <div
                     className={cn(
@@ -589,6 +574,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                     />
                   </div>
                 )}
+                </div>
               </div>
             </>
           )}

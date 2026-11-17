@@ -1005,6 +1005,8 @@ export class AnalysisQueueService {
           }
 
           try {
+            // 确保并发分析执行时 AI 引擎处于激活状态
+            moduleHibernationCoordinator.notifyModuleResident('firefly-ai-engine')
             await Promise.all([runCPUProducer(), runGPUConsumer()])
           } catch (error) {
             logger.error(LogCategory.ANALYSIS_QUEUE, '[并行队列] 并行通道执行异常:', error)
