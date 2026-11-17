@@ -203,6 +203,14 @@ export class ModuleHibernationCoordinator {
       d.state = 'resident'
       if (residentBytes && residentBytes > 0) {
         d.residentBytes = residentBytes
+        // 同时固化实测采样以满足 memory-gauges 核验规则，消除“确认中”误报
+        d.residentSample = {
+          bytes: residentBytes,
+          sampleSeq: (d.residentSample?.sampleSeq ?? 0) + 1,
+          sampledAt: Date.now(),
+          modelGeneration: d.modelGeneration,
+          kind: d.effectiveMemoryKind ?? d.defaultMemoryKind
+        }
       }
       d.lastActiveTimestamp = Date.now()
     })
