@@ -3175,7 +3175,16 @@ export class ModuleHibernationCoordinator {
             this.runtimeStore.update('firefly-ai-engine', d => {
               d.state = 'resident'
               d.lastActiveTimestamp = Date.now()
+              // 强制同步驻留采样，消除误报
+              d.residentSample = {
+                bytes: d.estimatedMemoryBytes ?? 2000 * 1024 * 1024,
+                sampleSeq: (d.residentSample?.sampleSeq ?? 0) + 1,
+                sampledAt: Date.now(),
+                modelGeneration: d.modelGeneration,
+                kind: d.effectiveMemoryKind ?? d.defaultMemoryKind
+              }
             })
+            this.triggerSnapshotBroadcast()
           }
         }
       }
@@ -3198,7 +3207,16 @@ export class ModuleHibernationCoordinator {
             this.runtimeStore.update('firefly-ai-engine', d => {
               d.state = 'resident'
               d.lastActiveTimestamp = Date.now()
+              // 强制同步驻留采样
+              d.residentSample = {
+                bytes: d.estimatedMemoryBytes ?? 2000 * 1024 * 1024,
+                sampleSeq: (d.residentSample?.sampleSeq ?? 0) + 1,
+                sampledAt: Date.now(),
+                modelGeneration: d.modelGeneration,
+                kind: d.effectiveMemoryKind ?? d.defaultMemoryKind
+              }
             })
+            this.triggerSnapshotBroadcast()
           }
         }
       }
@@ -3216,6 +3234,14 @@ export class ModuleHibernationCoordinator {
           this.runtimeStore.update('tts-m5-onnx', d => {
             d.state = 'resident'
             d.lastActiveTimestamp = Date.now()
+            // 补充驻留采样，消除“确认中”误报
+            d.residentSample = {
+              bytes: d.estimatedMemoryBytes ?? 300 * 1024 * 1024,
+              sampleSeq: (d.residentSample?.sampleSeq ?? 0) + 1,
+              sampledAt: Date.now(),
+              modelGeneration: d.modelGeneration,
+              kind: d.effectiveMemoryKind ?? d.defaultMemoryKind
+            }
           })
         }
       }

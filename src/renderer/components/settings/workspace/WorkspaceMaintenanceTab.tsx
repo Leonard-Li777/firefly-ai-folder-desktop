@@ -51,13 +51,12 @@ export interface WorkspaceMaintenanceTabProps {
  * 工作区专有：目录维护与安全重置面板 (TASK-11 完善版)
  *
  * 核心功能项按「每行一个卡片」整齐排列：
- * 1. 目录信息与打开物理文件夹
+ * 1. 目录信息（顶部同时提供「重新运行工作流向导」与「打开文件夹」快捷按钮）
  * 2. 自动监听文件变动 (Switch 控制)
  * 3. 重新扫描目录与文件差异检测
  * 4. 扫描并清理空文件夹
- * 5. 重新运行场景设置向导
- * 6. 两段式安全重置 AI 分析数据 (跨工作区孤儿保护)
- * 7. 从应用中移除工作目录
+ * 5. 两段式安全重置 AI 分析数据 (跨工作区孤儿保护)
+ * 6. 从应用中移除工作目录
  */
 export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = ({
   workspace,
@@ -378,7 +377,7 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
               <FolderOpen className="w-4 h-4" />
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h4 className="font-bold text-sm text-foreground truncate">{workspace.name}</h4>
                 {isReady ? (
                   <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-500/15 text-green-600 dark:text-green-400">
@@ -389,6 +388,11 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
                     {t('待配置')}
                   </span>
                 )}
+                <span className="flex items-center gap-1 text-[11px] text-muted-foreground font-normal">
+                  <Calendar className="w-3 h-3 shrink-0" />
+                  {t('添加时间: ')}
+                  {workspace.createdAt ? new Date(workspace.createdAt).toLocaleString() : '-'}
+                </span>
               </div>
               <p className="text-xs text-muted-foreground font-mono truncate mt-0.5">
                 {workspace.path}
@@ -396,37 +400,126 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
             </div>
           </div>
 
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleOpenFolder}
-            className="text-xs shrink-0 flex items-center gap-1.5 h-8 px-3"
-            title={t('在操作系统资源管理器中查看此文件夹')}
-          >
-            <ExternalLink className="w-3.5 h-3.5" />
-            <span>{t('打开文件夹')}</span>
-          </Button>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleOpenFolder}
+              className="text-xs shrink-0 flex items-center gap-1.5 h-8 px-3"
+              title={t('在操作系统资源管理器中查看此文件夹')}
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>{t('打开文件夹')}</span>
+            </Button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border/40 text-[11px] text-muted-foreground">
-          <div className="flex items-center gap-2 min-w-0">
-            <Sparkles className="w-3.5 h-3.5 shrink-0 text-primary" />
-            <span>{t('绑定工作流: ')}</span>
-            <span className="font-semibold text-foreground truncate">
-              {boundWorkflow
-                ? boundWorkflow.name
-                : workspace.bound_workflow_id || t('未绑定 (标准模式)')}
-            </span>
+        {/* 绑定工作流与白名单快照保护：状态、说明、操作与快照全部收口于此（原独立卡片已合并至此） */}
+        <div className="pt-3 border-t border-border/40 space-y-2.5">
+          {/* 绑定信息（左：状态行 + 说明文字两行；右：操作按钮） */}
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 space-y-1">
+              {/* 状态行：已绑定工作流名 / 未绑定 */}
+              <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                <Sparkles className="w-3.5 h-3.5 shrink-0 text-primary" />
+                {workspace.bound_workflow_id ? (
+                  <>
+                    <span className="text-xs font-semibold text-foreground shrink-0">
+                      {t('已绑定工作流:')}
+                    </span>
+                    <span className="text-xs text-muted-foreground truncate">
+                      {boundWorkflow ? boundWorkflow.name : workspace.bound_workflow_id}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-xs text-muted-foreground">{t('未绑定工作流')}</span>
+                )}
+              </div>
+              {/* 说明文字 */}
+              <p className="text-xs text-muted-foreground leading-relaxed pl-5">
+                {workspace.bound_workflow_id
+                  ? t(
+                      '已绑定专属业务工作流。解除绑定后目录将恢复为通用模式，且自动保留包含规则快照防止非目标文件涌入。'
+                    )
+                  : t(
+                      '当前目录未绑定专属工作流。若存在包含规则快照，将继续作为安全保护生效，亦可随时清空恢复全量模式。'
+                    )}
+              </p>
+            </div>
+
+            {/* 右侧操作按钮（上下两行）：解除工作流绑定 / 重新运行工作流向导 */}
+            <div className="flex flex-col items-end gap-2 shrink-0">
+              {Boolean(workspace.bound_workflow_id) && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isUnbinding}
+                  onClick={() => setShowUnbindDialog(true)}
+                  className="text-[11px] font-semibold h-7 px-2.5 text-muted-foreground hover:text-foreground"
+                >
+                  {isUnbinding ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                  <span>{t('解除工作流绑定')}</span>
+                </Button>
+              )}
+              {workspace.bound_workflow_id ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onRerunWizard}
+                  className="text-[11px] font-semibold h-7 px-2.5"
+                  title={t('重绑工作流')}
+                >
+                  <span>{t('重绑工作流')}</span>
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onRerunWizard}
+                  className="text-[11px] font-semibold h-7 px-2.5 flex items-center gap-1"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  <span>{t('前往绑定工作流')}</span>
+                </Button>
+              )}
+            </div>
           </div>
 
-          <div className="flex items-center gap-2 min-w-0">
-            <Calendar className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
-            <span>{t('添加时间: ')}</span>
-            <span className="font-semibold text-foreground truncate">
-              {workspace.createdAt ? new Date(workspace.createdAt).toLocaleString() : '-'}
-            </span>
-          </div>
+          {/* 生效中扩展名快照 */}
+          {whitelistPatterns.length > 0 && (
+            <div className="pt-2 border-t border-border/40 text-[11px] text-muted-foreground flex items-center gap-2 flex-wrap">
+              <ShieldCheck className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+              <span className="font-medium text-foreground">{t('生效中扩展名快照:')}</span>
+              <div className="flex items-center gap-1 flex-wrap font-mono text-[10px]">
+                {whitelistPatterns.slice(0, 8).map(ext => (
+                  <span
+                    key={ext}
+                    className="px-1.5 py-0.5 rounded bg-muted/80 text-foreground border border-border/60"
+                  >
+                    {ext}
+                  </span>
+                ))}
+                {whitelistPatterns.length > 8 && (
+                  <span className="text-muted-foreground">+{whitelistPatterns.length - 8}</span>
+                )}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isClearingWhitelist}
+                onClick={() => setShowClearWhitelistDialog(true)}
+                className="text-[11px] font-semibold h-7 px-2.5 ml-auto border-amber-500/30 text-amber-600 hover:bg-amber-500/10 dark:text-amber-400 shrink-0"
+              >
+                {isClearingWhitelist ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                <span>{t('清空包含规则')}</span>
+              </Button>
+            </div>
+          )}
         </div>
       </Card>
 
@@ -535,139 +628,7 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
         </Button>
       </Card>
 
-      {/* 5. 条目 4: 重新运行场景策略向导 */}
-      <Card className="p-4 flex items-center justify-between gap-4 border-border/70 hover:border-border transition-colors">
-        <div className="flex items-start gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 mt-0.5">
-            <Sparkles className="w-4 h-4" />
-          </div>
-          <div className="space-y-0.5 min-w-0">
-            <h4 className="text-sm font-bold text-foreground">{t('重新运行场景设置向导')}</h4>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {t(
-                '重新启动极简向导，由系统再次探测目录内容并提供「极速整理/创意图库/影视素材/桌面杂乱」预设推荐。'
-              )}
-            </p>
-          </div>
-        </div>
-
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={onRerunWizard}
-          className="text-xs font-semibold shrink-0 h-8 px-3 flex items-center gap-1.5"
-        >
-          <RotateCcw className="w-3.5 h-3.5" />
-          <span>{t('运行向导')}</span>
-        </Button>
-      </Card>
-
-      {/* 6. 条目 5: 工作流绑定与白名单快照保护 (Ticket 03: 非破坏性快照与独立清空) */}
-      <Card className="p-4 border-border/70 hover:border-border transition-colors space-y-3">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 mt-0.5">
-              <Layers className="w-4 h-4" />
-            </div>
-            <div className="space-y-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h4 className="text-sm font-bold text-foreground">
-                  {t('工作流绑定与白名单快照保护')}
-                </h4>
-                {workspace.bound_workflow_id ? (
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-600 dark:text-purple-400">
-                    {t('已绑定: {name}', {
-                      name: boundWorkflow ? boundWorkflow.name : workspace.bound_workflow_id
-                    })}
-                  </span>
-                ) : (
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                    {t('未绑定 (通用模式)')}
-                  </span>
-                )}
-                {whitelistPatterns.length > 0 && (
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400">
-                    {t('包含规则快照生效中 ({count})', { count: whitelistPatterns.length })}
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {workspace.bound_workflow_id
-                  ? t(
-                      '已绑定专属业务工作流。解除绑定后目录将恢复为通用模式，且自动保留包含规则快照防止非目标文件涌入。'
-                    )
-                  : t(
-                      '当前目录未绑定专属工作流。若存在包含规则快照，将继续作为安全保护生效，亦可随时清空恢复全量模式。'
-                    )}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
-            {Boolean(workspace.bound_workflow_id) && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={isUnbinding}
-                onClick={() => setShowUnbindDialog(true)}
-                className="text-xs font-semibold h-8 px-3 text-muted-foreground hover:text-foreground"
-              >
-                {isUnbinding ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : null}
-                <span>{t('解除工作流绑定')}</span>
-              </Button>
-            )}
-            {whitelistPatterns.length > 0 && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={isClearingWhitelist}
-                onClick={() => setShowClearWhitelistDialog(true)}
-                className="text-xs font-semibold h-8 px-3 border-amber-500/30 text-amber-600 hover:bg-amber-500/10 dark:text-amber-400"
-              >
-                {isClearingWhitelist ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : null}
-                <span>{t('清空包含规则并恢复全量模式')}</span>
-              </Button>
-            )}
-            {!workspace.bound_workflow_id && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={onRerunWizard}
-                className="text-xs font-semibold h-8 px-3 flex items-center gap-1.5"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>{t('前往绑定工作流')}</span>
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {whitelistPatterns.length > 0 && (
-          <div className="pt-2 border-t border-border/40 text-[11px] text-muted-foreground flex items-center gap-2 flex-wrap">
-            <ShieldCheck className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-            <span className="font-medium text-foreground">{t('生效中扩展名快照:')}</span>
-            <div className="flex items-center gap-1 flex-wrap font-mono text-[10px]">
-              {whitelistPatterns.slice(0, 8).map(ext => (
-                <span
-                  key={ext}
-                  className="px-1.5 py-0.5 rounded bg-muted/80 text-foreground border border-border/60"
-                >
-                  {ext}
-                </span>
-              ))}
-              {whitelistPatterns.length > 8 && (
-                <span className="text-muted-foreground">+{whitelistPatterns.length - 8}</span>
-              )}
-            </div>
-          </div>
-        )}
-      </Card>
-
-      {/* 6. 条目 5: 两段式安全重置 AI 分析数据 */}
+      {/* 5. 两段式安全重置 AI 分析数据（原「工作流绑定与白名单快照保护」已合并至顶部目录概览卡片） */}
       <Card className="p-4 flex items-center justify-between gap-4 border-destructive/30 bg-destructive/5 dark:bg-destructive/10 hover:border-destructive/40 transition-colors">
         <div className="flex items-start gap-3 min-w-0">
           <div className="w-9 h-9 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center shrink-0 mt-0.5">
@@ -695,7 +656,7 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
         </Button>
       </Card>
 
-      {/* 7. 条目 6: 从应用中移除工作目录 */}
+      {/* 6. 条目 5: 从应用中移除工作目录 */}
       <Card className="p-4 flex items-center justify-between gap-4 border-border/70 hover:border-destructive/40 transition-colors">
         <div className="flex items-start gap-3 min-w-0">
           <div className="w-9 h-9 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center shrink-0 mt-0.5">
