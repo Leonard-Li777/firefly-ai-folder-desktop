@@ -12,41 +12,27 @@
  *
  * 本文件保留为聚合出口：承载类实例状态（字段）、构造函数与静态成员，并经
  * Object.assign(TagTreeQuery.prototype, *Mixin) 将各查询器方法挂回主类原型；
- * 类型经 TagTreeQuery* 接口并入 TagTreeQuery。外部导入路径与 `new TagTreeQuery(db)`
+ * 类型经同名 TagTreeQuery 接口合并（extends 各 TagTreeQuery* 职责接口）补全，
+ * 使静态类型与 Object.assign 运行时挂载一致。外部导入路径与 `new TagTreeQuery(db)`
  * 调用签名零变化（Spec §2.3「移动不改逻辑」第 3 条 barrel 保导出兼容）。
  */
 import { FileDao } from '../../database/dao/file-dao'
 import Database from 'better-sqlite3'
-import {
-  FilteredFilesResponse,
-  GetDimensionGroupsOptions,
-  SelectedTag,
-  VirtualDirectoryFilter
-} from '@firefly/types'
-import { concept } from '@firefly/shared'
+import { FilteredFilesResponse, SelectedTag, VirtualDirectoryFilter } from '@firefly/types'
 import { HybridSearchArbiter } from './HybridSearchArbiter'
 import { HybridSearchSession } from './hybrid-search-session'
 import { escapeLikePrefixWindows, normalizeCodePath } from './tag-tree-query-path-utils'
-import {
-  tagTreeQueryAdjacencyMixin,
-  type TagTreeQueryAdjacency
-} from './tag-tree-query-adjacency'
-import {
-  tagTreeQuerySubtreeMixin,
-  type TagTreeQuerySubtree
-} from './tag-tree-query-subtree'
-import {
-  tagTreeQueryDimensionTreeMixin,
-  type TagTreeQueryDimensionTree
-} from './tag-tree-query-dimension-tree'
-import {
-  tagTreeQueryFilterMixin,
-  type TagTreeQueryFilter
-} from './tag-tree-query-filter'
-import {
-  tagTreeQuerySearchEnrichMixin,
-  type TagTreeQuerySearchEnrich
-} from './tag-tree-query-search-enrich'
+import { OMNI_MAP_TTL } from './tag-tree-query-shared'
+import { tagTreeQueryAdjacencyMixin } from './tag-tree-query-adjacency'
+import { tagTreeQuerySubtreeMixin } from './tag-tree-query-subtree'
+import { tagTreeQueryDimensionTreeMixin } from './tag-tree-query-dimension-tree'
+import { tagTreeQueryFilterMixin } from './tag-tree-query-filter'
+import { tagTreeQuerySearchEnrichMixin } from './tag-tree-query-search-enrich'
+import type { TagTreeQueryAdjacency } from './tag-tree-query-adjacency'
+import type { TagTreeQuerySubtree } from './tag-tree-query-subtree'
+import type { TagTreeQueryDimensionTree } from './tag-tree-query-dimension-tree'
+import type { TagTreeQueryFilter } from './tag-tree-query-filter'
+import type { TagTreeQuerySearchEnrich } from './tag-tree-query-search-enrich'
 
 // 原顶层导出函数改为 re-export（外部导入契约零变化）
 export { escapeLikePrefixWindows, normalizeCodePath }
@@ -91,12 +77,16 @@ export type HybridPageRef =
  * 2. 高效下推文件与复合标签的筛选计算，杜绝在 Node.js 内存中递归拼装扩展名映射；
  * 3. 彻底消除魔法数字区间（102..117），全量依托 file_tags_private 树与 file_tag_relations 自然主键关联。
  */
-export class TagTreeQuery
-  implements TagTreeQueryAdjacency,
+// ─── 接口合并：将各职责接口并入 TagTreeQuery 类型面，补全跨 mixin 的 this 访问可见性 ───
+export interface TagTreeQuery
+  extends
+    TagTreeQueryAdjacency,
     TagTreeQuerySubtree,
     TagTreeQueryDimensionTree,
     TagTreeQueryFilter,
-    TagTreeQuerySearchEnrich {
+    TagTreeQuerySearchEnrich {}
+
+export class TagTreeQuery implements TagTreeQuery {
   protected hybridArbiter: HybridSearchArbiter
   protected hybridSession: HybridSearchSession
   /**
@@ -108,10 +98,15 @@ export class TagTreeQuery
   protected _omniChildrenMap: Map<string, Set<string>> | null = null
   /** _omniChildrenMap 最后一次刷新时间戳（ms），TTL=60s 避免长会话数据陈旧 */
   protected _omniMapLoadedAt = 0
-  static readonly OMNI_MAP_TTL = 60_000
+  /** Omni 邻接图缓存 TTL：原为类私有静态字段，拆分后同源引用 shared 单一事实源（数值 60_000 逐字节一致） */
+  static readonly OMNI_MAP_TTL = OMNI_MAP_TTL
   /** Omni 受控树边是否已注入当前 _omniChildrenMap（获取 treeRes 后置 true，TTL 过期时随 map 重置为 false） */
   protected _omniEdgesInjected = false
   protected fileDao: FileDao
+  /** FTS 正排索引可用性探针缓存（见 isFtsAvailable，adjacency 查询器） */
+  protected _ftsAvailable: boolean | null = null
+  /** 拼音正排索引可用性探针缓存（见 isPinyinAvailable，adjacency 查询器） */
+  protected _pinyinAvailable: boolean | null = null
 
   constructor(
     protected db: Database.Database,
