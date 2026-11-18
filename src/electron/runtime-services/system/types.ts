@@ -15,7 +15,8 @@ import type {
   PluginDirInfo,
   ValidatePluginDirResult
 } from '@firefly/types/config-types'
-import type { VerifiedDownloadResult, DirMigrationProgressPayload } from './file-download-service'
+import type { VerifiedDownloadResult } from './file-download-service'
+import type { DirMigrationProgressPayload } from './dir-migration-coordinator'
 
 export type { PluginCapabilitySlot, SlotPolicy, BackendType, EmbeddingEpochRecord }
 export type {

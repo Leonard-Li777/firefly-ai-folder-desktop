@@ -123,7 +123,7 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
       buildResourceSpecFromCatalog
     )
   },
-  // 5. 语音识别与字幕提取 ASR
+  // 5. 语音识别与字幕提取 ASR (SenseVoice, 纯模型，转码复用系统内置 FFmpeg，运行时锁定域 A sherpa)
   {
     id: BUILTIN_MODULE_CATALOG_META.asr_sensevoice_onnx.id,
     name: '语音识别与字幕提取',
@@ -156,6 +156,7 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
   {
     id: BUILTIN_MODULE_CATALOG_META.tts_moss_onnx.id,
     name: '个性化声音克隆与朗读',
+    // moss-tts 插件暂以 draft 状态发布：插件中心（scope=market，非开发者模式）不展示
     availability: 'draft',
     description:
       '【支持克隆专属声音】内置声音提取器，上传一段录音即可克隆专属声音朗读文章。支持 50+ 款精选音色与自定义克隆。',
@@ -210,5 +211,109 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
       }
     },
     resources: BUILTIN_MODULE_CATALOG_META.tts_m5_onnx.resourceIds.map(buildResourceSpecFromCatalog)
+  },
+  {
+    id: BUILTIN_MODULE_CATALOG_META.diffusion_studio.id,
+    name: '本地生图 Studio',
+    description:
+      '【电脑本地自己画图】输入一句话即可在本地画出精美图片，不花一分钱。需要较好的独立显卡。',
+    icon: 'Sparkles',
+    kind: 'builtin-module',
+    version: BUILTIN_MODULE_CATALOG_META.diffusion_studio.version,
+    catalog_version: BUILTIN_MODULE_CATALOG_META.diffusion_studio.catalogVersion,
+    category: BUILTIN_MODULE_CATALOG_META.diffusion_studio.category,
+    capability_slot: BUILTIN_MODULE_CATALOG_META.diffusion_studio.capabilitySlot,
+    slot_policy: BUILTIN_MODULE_CATALOG_META.diffusion_studio.slotPolicy,
+    backend_type: BUILTIN_MODULE_CATALOG_META.diffusion_studio.backendType,
+    author_code: 'official',
+    author_name: null,
+    availability: 'coming_soon',
+    firecore_cost: 0,
+    total_bytes: BUILTIN_MODULE_CATALOG_META.diffusion_studio.totalBytes,
+    install_state: 'not_installed'
+  },
+  {
+    id: BUILTIN_MODULE_CATALOG_META.archive_vfs_parser.id,
+    name: '压缩包透视与深度解析器',
+    description:
+      '【不用解压直接搜压缩包】不用解压 zip/rar 就能直接查看和搜索里面的文件内容，无额外电脑负担。',
+    icon: 'Archive',
+    kind: 'builtin-module',
+    version: BUILTIN_MODULE_CATALOG_META.archive_vfs_parser.version,
+    catalog_version: BUILTIN_MODULE_CATALOG_META.archive_vfs_parser.catalogVersion,
+    category: BUILTIN_MODULE_CATALOG_META.archive_vfs_parser.category,
+    capability_slot: BUILTIN_MODULE_CATALOG_META.archive_vfs_parser.capabilitySlot,
+    slot_policy: BUILTIN_MODULE_CATALOG_META.archive_vfs_parser.slotPolicy,
+    backend_type: BUILTIN_MODULE_CATALOG_META.archive_vfs_parser.backendType,
+    author_code: 'official',
+    author_name: null,
+    availability: 'coming_soon',
+    delist_reason: null,
+    firecore_cost: 0,
+    total_bytes: BUILTIN_MODULE_CATALOG_META.archive_vfs_parser.totalBytes,
+    install_state: 'not_installed'
+  },
+  {
+    id: BUILTIN_MODULE_CATALOG_META.face_recognition_tool.id,
+    name: '人脸识别与相册人物聚类',
+    description:
+      '【自动认出照片里是谁】自动识别照片中的人脸，把同一个人的照片归到一起，按人物快速翻找相册。普通电脑即可运行。',
+    icon: 'ScanFace',
+    kind: 'builtin-module',
+    version: BUILTIN_MODULE_CATALOG_META.face_recognition_tool.version,
+    catalog_version: BUILTIN_MODULE_CATALOG_META.face_recognition_tool.catalogVersion,
+    category: BUILTIN_MODULE_CATALOG_META.face_recognition_tool.category,
+    capability_slot: BUILTIN_MODULE_CATALOG_META.face_recognition_tool.capabilitySlot,
+    slot_policy: BUILTIN_MODULE_CATALOG_META.face_recognition_tool.slotPolicy,
+    backend_type: BUILTIN_MODULE_CATALOG_META.face_recognition_tool.backendType,
+    author_code: 'official',
+    author_name: null,
+    availability: 'coming_soon',
+    delist_reason: null,
+    firecore_cost: 0,
+    total_bytes: BUILTIN_MODULE_CATALOG_META.face_recognition_tool.totalBytes,
+    install_state: 'not_installed'
+  },
+  {
+    id: BUILTIN_MODULE_CATALOG_META.object_detection_pro.id,
+    name: '专业物体检测',
+    description:
+      '【照片里有什么一眼标出】自动框出并识别照片里的常见物体（人、车、动物、物品等），可按物体内容搜图。普通电脑即可运行。',
+    icon: 'ScanSearch',
+    kind: 'builtin-module',
+    version: BUILTIN_MODULE_CATALOG_META.object_detection_pro.version,
+    catalog_version: BUILTIN_MODULE_CATALOG_META.object_detection_pro.catalogVersion,
+    category: BUILTIN_MODULE_CATALOG_META.object_detection_pro.category,
+    capability_slot: BUILTIN_MODULE_CATALOG_META.object_detection_pro.capabilitySlot,
+    slot_policy: BUILTIN_MODULE_CATALOG_META.object_detection_pro.slotPolicy,
+    backend_type: BUILTIN_MODULE_CATALOG_META.object_detection_pro.backendType,
+    author_code: 'official',
+    author_name: null,
+    availability: 'coming_soon',
+    delist_reason: null,
+    firecore_cost: 0,
+    total_bytes: BUILTIN_MODULE_CATALOG_META.object_detection_pro.totalBytes,
+    install_state: 'not_installed'
+  },
+  {
+    id: BUILTIN_MODULE_CATALOG_META.password_vault_cracker.id,
+    name: '密码管家与本地加密破解',
+    description:
+      '【两条路帮你打开加密文件】① 有密码：统一记住你的压缩包/Office 密码，下次解压不用再手动输入；② 忘了密码：用专业高效的破解技术，在你的电脑本地自动找回，全程不上云，文件不外泄。',
+    icon: 'KeyRound',
+    kind: 'builtin-module',
+    version: BUILTIN_MODULE_CATALOG_META.password_vault_cracker.version,
+    catalog_version: BUILTIN_MODULE_CATALOG_META.password_vault_cracker.catalogVersion,
+    category: BUILTIN_MODULE_CATALOG_META.password_vault_cracker.category,
+    capability_slot: BUILTIN_MODULE_CATALOG_META.password_vault_cracker.capabilitySlot,
+    slot_policy: BUILTIN_MODULE_CATALOG_META.password_vault_cracker.slotPolicy,
+    backend_type: BUILTIN_MODULE_CATALOG_META.password_vault_cracker.backendType,
+    author_code: 'official',
+    author_name: null,
+    availability: 'coming_soon',
+    delist_reason: null,
+    firecore_cost: 0,
+    total_bytes: BUILTIN_MODULE_CATALOG_META.password_vault_cracker.totalBytes,
+    install_state: 'not_installed'
   }
 ]

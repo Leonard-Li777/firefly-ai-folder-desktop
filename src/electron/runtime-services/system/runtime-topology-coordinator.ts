@@ -1,5 +1,4 @@
 import { AsyncLocalStorage } from 'async_hooks'
-import { logger } from '@firefly/shared'
 
 /**
  * 运行时拓扑单协调器 (`RuntimeTopologyCoordinator`)
