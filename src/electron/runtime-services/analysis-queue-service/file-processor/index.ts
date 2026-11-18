@@ -80,6 +80,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import { saveCloudResult } from './save-cloud-result'
+import { queueFtsSync } from '../fts-sync-hooks'
 import { handleEmptyFile } from './handle-empty-file'
 import { processLocalAnalysis } from './process-local-analysis'
 import {
@@ -196,7 +197,7 @@ function createRetagCompletedHandler(filePath: string, fileFingerprint: string) 
   return (outcome: any) => {
     if (outcome && outcome.tags && outcome.tags.length > 0) {
       try {
-        databaseService.syncFTSTags(fileFingerprint)
+        queueFtsSync(fileFingerprint)
       } catch (err) {
         logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 返送打标后同步 FTS 失败:', err)
       }
@@ -1342,7 +1343,7 @@ export class FileProcessor {
             databaseService.findTagCodeByLemma(lemma)?.tagCode
         })
 
-        databaseService.syncFTSTags(fileFingerprint)
+        queueFtsSync(fileFingerprint)
 
         // 工单 05 终态 A（GPU 复用）：标签落库 + FTS 同步后固化 canonical 语义文本/向量。
         // canonical 失败不阻断 completed（服务内部写 failed + warn）。
@@ -2792,7 +2793,7 @@ export class FileProcessor {
             databaseService.findTagCodeByLemma(lemma)?.tagCode
         })
 
-        databaseService.syncFTSTags(fileFingerprint)
+        queueFtsSync(fileFingerprint)
 
         // 工单 05 终态 B（simple 模式）：标签落库 + FTS 同步后固化 canonical 语义文本/向量
         await solidifyCanonicalForTerminal('simple', fileFingerprint)
@@ -3015,7 +3016,7 @@ export class FileProcessor {
         resolveControlledCode: (lemma: string) => databaseService.findTagCodeByLemma(lemma)?.tagCode
       })
 
-      databaseService.syncFTSTags(fileFingerprint)
+      queueFtsSync(fileFingerprint)
 
       // 工单 05 终态 C（主流程）：标签落库 + FTS 同步后固化 canonical 语义文本/向量
       await solidifyCanonicalForTerminal('main_flow', fileFingerprint)
@@ -3421,7 +3422,7 @@ export class FileProcessor {
         }
       }
 
-      databaseService.syncFTSTags(fingerprint)
+      queueFtsSync(fingerprint)
 
       this.updateItemStatus(itemId, 'completed', 100)
       return true
