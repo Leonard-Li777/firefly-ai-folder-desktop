@@ -1301,47 +1301,6 @@ export class ConfigDbManager {
     }
   }
 
-  /**
-   * 泛型设置方法 (会同时更新 SQLite 并同步内存)
-   */
-  setAppValue(key: string, value: any): void {
-    const db = databaseService.db
-    if (!db) return
-
-    const keyUpper = key.toUpperCase()
-    this.appConfigMap.set(keyUpper, value)
-
-    try {
-      db.prepare(`INSERT OR REPLACE INTO app_config (key, value, updated_at) VALUES (?, ?, ?)`).run(
-        keyUpper,
-        JSON.stringify(value),
-        new Date().toISOString()
-      )
-
-      this.broadcastConfigUpdate()
-    } catch (err) {
-      logger.error(LogCategory.CONFIG, `ConfigDbManager: 保存 app_config.${key} 失败:`, err)
-    }
-  }
-
-  setSystemValue(key: string, value: any): void {
-    const db = databaseService.db
-    if (!db) return
-
-    const keyUpper = key.toUpperCase()
-    this.systemConfigMap.set(keyUpper, value)
-
-    try {
-      db.prepare(
-        `INSERT OR REPLACE INTO system_config (key, value, updated_at) VALUES (?, ?, ?)`
-      ).run(keyUpper, JSON.stringify(value), new Date().toISOString())
-
-      this.broadcastConfigUpdate()
-    } catch (err) {
-      logger.error(LogCategory.CONFIG, `ConfigDbManager: 保存 system_config.${key} 失败:`, err)
-    }
-  }
-
   getTierConstants(): any {
     return this.getAppValue('TIER_CONSTANTS')
   }
