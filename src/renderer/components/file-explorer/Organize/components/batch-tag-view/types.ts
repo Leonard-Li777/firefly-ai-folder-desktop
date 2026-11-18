@@ -1,5 +1,5 @@
 import type React from 'react'
-import { DimensionGroup } from '@firefly/types'
+import { BatchTagOperation, BatchTagResult, DimensionGroup } from '@firefly/types'
 
 /**
  * 分类维度层级嵌套分组结构

@@ -37,7 +37,11 @@ import {
   resolveDimensionGroupCode,
   resolveDimensionRootCode
 } from './batch-tag-view/dimension-utils'
-import type { BatchTagViewProps } from './batch-tag-view/types'
+import type {
+  BatchTagViewProps,
+  HierarchicalDimensionGroup,
+  TagActionState
+} from './batch-tag-view/types'
 
 export { isExtensionDimension }
 export type { HierarchicalDimensionGroup } from './batch-tag-view/types'

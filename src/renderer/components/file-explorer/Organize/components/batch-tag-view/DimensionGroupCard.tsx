@@ -1,3 +1,4 @@
+import type { DimensionTag } from '@firefly/types'
 import React from 'react'
 import { t } from '@app/languages'
 import { MaterialIcon, cn } from '../../../../../lib/utils'
