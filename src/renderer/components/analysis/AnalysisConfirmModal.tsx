@@ -20,9 +20,9 @@ import FileList from '../file-explorer/FileList'
  * 展示时经 modeLabelOf() 在组件内用静态 t('...') 动态翻译（切换语言可刷新）。
  */
 const ANALYSIS_MODE_LABEL: Record<string, string> = {
-  simple: '标准分析',
-  quick_name: '增强分析',
-  full: '全面分析'
+  simple: t('标准分析'),
+  quick_name: t('增强分析'),
+  full: t('全面分析')
 }
 
 /**
@@ -297,13 +297,19 @@ export function AnalysisConfirmModal() {
         {/* 两种选择的实际结果说明，消除歧义 */}
         <div className="mt-3 shrink-0 rounded-lg border border-border/60 bg-muted/30 px-3 py-2 space-y-1">
           <div className="flex items-start gap-2 text-xs">
-            <MaterialIcon icon="skip_next" className="text-sm mt-px shrink-0 text-muted-foreground" />
+            <MaterialIcon
+              icon="skip_next"
+              className="text-sm mt-px shrink-0 text-muted-foreground"
+            />
             <span className="text-muted-foreground">
               {analyzedCount > 0
-                ? t('跳过：将这 {skipped} 个已完成文件排除，仅分析其余 {rest} 个文件，不再消耗算力。', {
-                    skipped: analyzedCount,
-                    rest: willAnalyzeOnSkip
-                  })
+                ? t(
+                    '跳过：将这 {skipped} 个已完成文件排除，仅分析其余 {rest} 个文件，不再消耗算力。',
+                    {
+                      skipped: analyzedCount,
+                      rest: willAnalyzeOnSkip
+                    }
+                  )
                 : t('继续：按当前分析模式补全这 {rest} 个文件，已完成的部分不会重复提取。', {
                     rest: willAnalyzeOnSkip
                   })}

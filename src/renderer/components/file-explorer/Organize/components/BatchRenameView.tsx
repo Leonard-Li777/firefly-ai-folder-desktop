@@ -105,11 +105,11 @@ function isTokenInTemplate(tokenValue: string, currentTemplate: string): boolean
 
   // DSL 元数据槽位规范名 (用于模板存在性校验与别名映射)
   const META_SLOT_NAMES = {
-    RESOLUTION: '分辨率',
-    DURATION: '时长',
-    PAGES: '页数',
-    CODEC: '编码',
-    CODEC_FORMAT: '编码格式'
+    RESOLUTION: t('分辨率'),
+    DURATION: t('时长'),
+    PAGES: t('页数'),
+    CODEC: t('编码'),
+    CODEC_FORMAT: t('编码格式')
   } as const
 
   // 2. 多模态元数据 {META:xxx}
